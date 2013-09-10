@@ -506,6 +506,13 @@ MULTI_THREAD_TEST_F(
 class LayerTreeHostTestCompositeAndReadbackDuringForcedDraw
     : public LayerTreeHostTest {
  protected:
+  static const int kFirstCommitSourceFrameNumber = 0;
+  static const int kReadbackSourceFrameNumber = 1;
+  static const int kReadbackReplacementAndForcedDrawSourceFrameNumber = 2;
+
+  LayerTreeHostTestCompositeAndReadbackDuringForcedDraw()
+      : did_post_readback_(false) {}
+
   virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
     // This enables forced draws after a single prepare to draw failure.
     settings->timeout_and_draw_when_animation_checkerboards = true;
@@ -517,40 +524,55 @@ class LayerTreeHostTestCompositeAndReadbackDuringForcedDraw
   virtual bool PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
                                      LayerTreeHostImpl::FrameData* frame_data,
                                      bool result) OVERRIDE {
-    EXPECT_GE(host_impl->active_tree()->source_frame_number(), 0);
-    EXPECT_LE(host_impl->active_tree()->source_frame_number(), 2);
+    int sfn = host_impl->active_tree()->source_frame_number();
+    EXPECT_TRUE(sfn == kFirstCommitSourceFrameNumber ||
+                sfn == kReadbackSourceFrameNumber ||
+                sfn == kReadbackReplacementAndForcedDrawSourceFrameNumber)
+        << sfn;
 
     // Before we react to the failed draw by initiating the forced draw
     // sequence, start a readback on the main thread.
-    if (host_impl->active_tree()->source_frame_number() == 0)
+    if (sfn == kFirstCommitSourceFrameNumber && !did_post_readback_) {
+      did_post_readback_ = true;
       PostReadbackToMainThread();
+    }
 
-    // Returning false will eventually result in a forced draw.
+    // Returning false will result in a forced draw.
     return false;
   }
 
   virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
     // We should only draw for the readback and the forced draw.
-    EXPECT_GE(host_impl->active_tree()->source_frame_number(), 1);
-    EXPECT_LE(host_impl->active_tree()->source_frame_number(), 2);
+    int sfn = host_impl->active_tree()->source_frame_number();
+    EXPECT_TRUE(sfn == kReadbackSourceFrameNumber ||
+                sfn == kReadbackReplacementAndForcedDrawSourceFrameNumber)
+        << sfn;
   }
 
   virtual void SwapBuffersOnThread(LayerTreeHostImpl* host_impl,
                                    bool result) OVERRIDE {
     // We should only swap for the forced draw.
-    EXPECT_EQ(host_impl->active_tree()->source_frame_number(), 2);
+    int sfn = host_impl->active_tree()->source_frame_number();
+    EXPECT_TRUE(sfn == kReadbackReplacementAndForcedDrawSourceFrameNumber)
+        << sfn;
     EndTest();
   }
 
   virtual void AfterTest() OVERRIDE {}
+
+  bool did_post_readback_;
 };
 
-// Flaky test. See http://crbug.com/287893.
-// MULTI_THREAD_TEST_F(LayerTreeHostTestCompositeAndReadbackDuringForcedDraw);
+MULTI_THREAD_TEST_F(LayerTreeHostTestCompositeAndReadbackDuringForcedDraw);
 
 class LayerTreeHostTestCompositeAndReadbackAfterForcedDraw
     : public LayerTreeHostTest {
  protected:
+  static const int kFirstCommitSourceFrameNumber = 0;
+  static const int kForcedDrawSourceFrameNumber = 1;
+  static const int kReadbackSourceFrameNumber = 2;
+  static const int kReadbackReplacementSourceFrameNumber = 3;
+
   virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
     // This enables forced draws after a single prepare to draw failure.
     settings->timeout_and_draw_when_animation_checkerboards = true;
@@ -562,19 +584,25 @@ class LayerTreeHostTestCompositeAndReadbackAfterForcedDraw
   virtual bool PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
                                      LayerTreeHostImpl::FrameData* frame_data,
                                      bool result) OVERRIDE {
-    EXPECT_GE(host_impl->active_tree()->source_frame_number(), 0);
-    EXPECT_LE(host_impl->active_tree()->source_frame_number(), 3);
+    int sfn = host_impl->active_tree()->source_frame_number();
+    EXPECT_TRUE(sfn == kFirstCommitSourceFrameNumber ||
+                sfn == kForcedDrawSourceFrameNumber ||
+                sfn == kReadbackSourceFrameNumber ||
+                sfn == kReadbackReplacementSourceFrameNumber)
+        << sfn;
 
-    // Returning false will eventually result in a forced draw.
+    // Returning false will result in a forced draw.
     return false;
   }
 
   virtual void DidCommit() OVERRIDE {
-    if (layer_tree_host()->source_frame_number() == 1) {
+    if (layer_tree_host()->source_frame_number() ==
+        kForcedDrawSourceFrameNumber) {
       // Avoid aborting the forced draw commit so source_frame_number
       // increments.
       layer_tree_host()->SetNeedsCommit();
-    } else if (layer_tree_host()->source_frame_number() == 2) {
+    } else if (layer_tree_host()->source_frame_number() ==
+               kReadbackSourceFrameNumber) {
       // Perform a readback immediately after the forced draw's commit.
       char pixels[4];
       layer_tree_host()->CompositeAndReadback(&pixels, gfx::Rect(0, 0, 1, 1));
@@ -584,16 +612,22 @@ class LayerTreeHostTestCompositeAndReadbackAfterForcedDraw
   virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
     // We should only draw for the the forced draw, readback, and
     // replacement commit.
-    EXPECT_GE(host_impl->active_tree()->source_frame_number(), 1);
-    EXPECT_LE(host_impl->active_tree()->source_frame_number(), 3);
+    int sfn = host_impl->active_tree()->source_frame_number();
+    EXPECT_TRUE(sfn == kForcedDrawSourceFrameNumber ||
+                sfn == kReadbackSourceFrameNumber ||
+                sfn == kReadbackReplacementSourceFrameNumber)
+        << sfn;
   }
 
   virtual void SwapBuffersOnThread(LayerTreeHostImpl* host_impl,
                                    bool result) OVERRIDE {
     // We should only swap for the forced draw and replacement commit.
-    EXPECT_TRUE(host_impl->active_tree()->source_frame_number() == 1 ||
-                host_impl->active_tree()->source_frame_number() == 3);
-    if (host_impl->active_tree()->source_frame_number() == 3)
+    int sfn = host_impl->active_tree()->source_frame_number();
+    EXPECT_TRUE(sfn == kForcedDrawSourceFrameNumber ||
+                sfn == kReadbackReplacementSourceFrameNumber)
+        << sfn;
+
+    if (sfn == kReadbackReplacementSourceFrameNumber)
       EndTest();
   }
 

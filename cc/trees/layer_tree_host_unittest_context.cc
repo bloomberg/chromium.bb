@@ -1491,15 +1491,18 @@ class LayerTreeHostContextTestCompositeAndReadbackBeforeOutputSurfaceInit
 SINGLE_AND_MULTI_THREAD_TEST_F(
     LayerTreeHostContextTestCompositeAndReadbackBeforeOutputSurfaceInit);
 
-// This test verifies that losing an output surface right during a
+// This test verifies that losing an output surface during a
 // simultaneous readback and forced redraw works and does not deadlock.
 class LayerTreeHostContextTestLoseOutputSurfaceDuringReadbackAndForcedDraw
     : public LayerTreeHostContextTest {
  protected:
-  static const int kCommitAfterFirstOutputSurfaceInitSourceFrameNumber = 0;
-  static const int kReadbackCommitSourceFrameNumber = 1;
-  static const int kReadbackReplacementCommitSourceFrameNumber = 2;
-  static const int kCommitAfterSecondOutputSurfaceInitSourceFrameNumber = 3;
+  static const int kFirstOutputSurfaceInitSourceFrameNumber = 0;
+  static const int kReadbackSourceFrameNumber = 1;
+  static const int kReadbackReplacementSourceFrameNumber = 2;
+  static const int kSecondOutputSurfaceInitSourceFrameNumber = 3;
+
+  LayerTreeHostContextTestLoseOutputSurfaceDuringReadbackAndForcedDraw()
+      : did_react_to_first_commit_(false) {}
 
   virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
     // This enables forced draws after a single prepare to draw failure.
@@ -1512,54 +1515,55 @@ class LayerTreeHostContextTestLoseOutputSurfaceDuringReadbackAndForcedDraw
   virtual bool PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
                                      LayerTreeHostImpl::FrameData* frame_data,
                                      bool result) OVERRIDE {
-    EXPECT_TRUE(host_impl->active_tree()->source_frame_number() ==
-                    kCommitAfterFirstOutputSurfaceInitSourceFrameNumber ||
-                host_impl->active_tree()->source_frame_number() ==
-                    kCommitAfterSecondOutputSurfaceInitSourceFrameNumber ||
-                host_impl->active_tree()->source_frame_number() ==
-                    kReadbackCommitSourceFrameNumber);
+    int sfn = host_impl->active_tree()->source_frame_number();
+    EXPECT_TRUE(sfn == kFirstOutputSurfaceInitSourceFrameNumber ||
+                sfn == kSecondOutputSurfaceInitSourceFrameNumber ||
+                sfn == kReadbackSourceFrameNumber)
+        << sfn;
 
     // Before we react to the failed draw by initiating the forced draw
     // sequence, start a readback on the main thread and then lose the context
     // to start output surface initialization all at the same time.
-    if (host_impl->active_tree()->source_frame_number() ==
-        kCommitAfterFirstOutputSurfaceInitSourceFrameNumber) {
+    if (sfn == kFirstOutputSurfaceInitSourceFrameNumber &&
+        !did_react_to_first_commit_) {
+      did_react_to_first_commit_ = true;
       PostReadbackToMainThread();
       LoseContext();
     }
 
-    // Returning false will eventually result in a forced draw.
     return false;
   }
 
   virtual void InitializedRendererOnThread(LayerTreeHostImpl* host_impl,
                                            bool success) OVERRIDE {
     // -1 is for the first output surface initialization.
-    EXPECT_TRUE(host_impl->active_tree()->source_frame_number() == -1 ||
-                host_impl->active_tree()->source_frame_number() ==
-                    kReadbackReplacementCommitSourceFrameNumber);
+    int sfn = host_impl->active_tree()->source_frame_number();
+    EXPECT_TRUE(sfn == -1 || sfn == kReadbackReplacementSourceFrameNumber)
+        << sfn;
   }
 
   virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
     // We should only draw the first commit after output surface initialization
     // and attempt to draw the readback commit (which will fail).
     // All others should abort because the output surface is lost.
-    EXPECT_TRUE(host_impl->active_tree()->source_frame_number() ==
-                    kCommitAfterSecondOutputSurfaceInitSourceFrameNumber ||
-                host_impl->active_tree()->source_frame_number() ==
-                    kReadbackCommitSourceFrameNumber);
+    int sfn = host_impl->active_tree()->source_frame_number();
+    EXPECT_TRUE(sfn == kSecondOutputSurfaceInitSourceFrameNumber ||
+                sfn == kReadbackSourceFrameNumber)
+        << sfn;
   }
 
   virtual void SwapBuffersOnThread(LayerTreeHostImpl* host_impl,
                                    bool result) OVERRIDE {
     // We should only swap the first commit after the second output surface
     // initialization.
-    EXPECT_TRUE(host_impl->active_tree()->source_frame_number() ==
-                kCommitAfterSecondOutputSurfaceInitSourceFrameNumber);
+    int sfn = host_impl->active_tree()->source_frame_number();
+    EXPECT_TRUE(sfn == kSecondOutputSurfaceInitSourceFrameNumber) << sfn;
     EndTest();
   }
 
   virtual void AfterTest() OVERRIDE {}
+
+  int did_react_to_first_commit_;
 };
 
 MULTI_THREAD_TEST_F(
@@ -1570,11 +1574,14 @@ MULTI_THREAD_TEST_F(
 class LayerTreeHostContextTestReadbackWithForcedDrawAndOutputSurfaceInit
     : public LayerTreeHostContextTest {
  protected:
-  static const int kCommitAfterFirstOutputSurfaceInitSourceFrameNumber = 0;
-  static const int kReadbackCommitSourceFrameNumber = 1;
-  static const int kReadbackReplacementCommitSourceFrameNumber = 2;
+  static const int kFirstOutputSurfaceInitSourceFrameNumber = 0;
+  static const int kReadbackSourceFrameNumber = 1;
+  static const int kReadbackReplacementSourceFrameNumber = 2;
   static const int kForcedDrawCommitSourceFrameNumber = 2;
-  static const int kCommitAfterSecondOutputSurfaceInitSourceFrameNumber = 2;
+  static const int kSecondOutputSurfaceInitSourceFrameNumber = 2;
+
+  LayerTreeHostContextTestReadbackWithForcedDrawAndOutputSurfaceInit()
+      : did_lose_context_(false) {}
 
   virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
     // This enables forced draws after a single prepare to draw failure.
@@ -1587,22 +1594,21 @@ class LayerTreeHostContextTestReadbackWithForcedDrawAndOutputSurfaceInit
   virtual bool PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
                                      LayerTreeHostImpl::FrameData* frame_data,
                                      bool result) OVERRIDE {
-    EXPECT_TRUE(host_impl->active_tree()->source_frame_number() ==
-                    kCommitAfterFirstOutputSurfaceInitSourceFrameNumber ||
-                host_impl->active_tree()->source_frame_number() ==
-                    kCommitAfterSecondOutputSurfaceInitSourceFrameNumber ||
-                host_impl->active_tree()->source_frame_number() ==
-                    kReadbackCommitSourceFrameNumber);
+    int sfn = host_impl->active_tree()->source_frame_number();
+    EXPECT_TRUE(sfn == kFirstOutputSurfaceInitSourceFrameNumber ||
+                sfn == kSecondOutputSurfaceInitSourceFrameNumber ||
+                sfn == kReadbackSourceFrameNumber)
+        << sfn;
 
     // Before we react to the failed draw by initiating the forced draw
     // sequence, start a readback on the main thread and then lose the context
     // to start output surface initialization all at the same time.
-    if (host_impl->active_tree()->source_frame_number() ==
-        kCommitAfterFirstOutputSurfaceInitSourceFrameNumber) {
+    if (sfn == kFirstOutputSurfaceInitSourceFrameNumber && !did_lose_context_) {
+      did_lose_context_ = true;
       LoseContext();
     }
 
-    // Returning false will eventually result in a forced draw.
+    // Returning false will result in a forced draw.
     return false;
   }
 
@@ -1619,31 +1625,33 @@ class LayerTreeHostContextTestReadbackWithForcedDrawAndOutputSurfaceInit
   virtual void InitializedRendererOnThread(LayerTreeHostImpl* host_impl,
                                            bool success) OVERRIDE {
     // -1 is for the first output surface initialization.
-    EXPECT_TRUE(host_impl->active_tree()->source_frame_number() == -1 ||
-                host_impl->active_tree()->source_frame_number() ==
-                    kCommitAfterFirstOutputSurfaceInitSourceFrameNumber);
+    int sfn = host_impl->active_tree()->source_frame_number();
+    EXPECT_TRUE(sfn == -1 || sfn == kFirstOutputSurfaceInitSourceFrameNumber)
+        << sfn;
   }
 
   virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
     // We should only draw the first commit after output surface initialization
     // and attempt to draw the readback commit (which will fail).
     // All others should abort because the output surface is lost.
-    EXPECT_TRUE(host_impl->active_tree()->source_frame_number() ==
-                    kForcedDrawCommitSourceFrameNumber ||
-                host_impl->active_tree()->source_frame_number() ==
-                    kReadbackCommitSourceFrameNumber);
+    int sfn = host_impl->active_tree()->source_frame_number();
+    EXPECT_TRUE(sfn == kForcedDrawCommitSourceFrameNumber ||
+                sfn == kReadbackSourceFrameNumber)
+        << sfn;
   }
 
   virtual void SwapBuffersOnThread(LayerTreeHostImpl* host_impl,
                                    bool result) OVERRIDE {
     // We should only swap the first commit after the second output surface
     // initialization.
-    EXPECT_TRUE(host_impl->active_tree()->source_frame_number() ==
-                kForcedDrawCommitSourceFrameNumber);
+    int sfn = host_impl->active_tree()->source_frame_number();
+    EXPECT_TRUE(sfn == kForcedDrawCommitSourceFrameNumber) << sfn;
     EndTest();
   }
 
   virtual void AfterTest() OVERRIDE {}
+
+  int did_lose_context_;
 };
 
 MULTI_THREAD_TEST_F(
