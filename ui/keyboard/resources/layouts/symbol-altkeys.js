@@ -36,7 +36,8 @@ var symbolAltKeys = {
   '!': ['\u00A1'], // Inverted exclamation mark
   '?': ['\u00BF'], // Inverted question mark
   '(': ['<', '{', '['],
-  ')': ['>', '}', ']']
+  ')': ['>', '}', ']'],
+  '.com' : ['.net','.org','.gov']
 };
 
 document.addEventListener('WebComponentsReady', function() {
