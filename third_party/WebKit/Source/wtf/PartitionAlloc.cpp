@@ -195,7 +195,7 @@ static ALWAYS_INLINE void partitionUnusePage(PartitionPageHeader* page)
 
 static ALWAYS_INLINE size_t partitionBucketSlots(const PartitionBucket* bucket)
 {
-    ASSERT(!(sizeof(PartitionPageHeader) % sizeof(void*)));
+    COMPILE_ASSERT(!(sizeof(PartitionPageHeader) % sizeof(void*)), PartitionPageHeader_size_should_be_multiple_of_pointer_size);
     return (kPartitionPageSize - sizeof(PartitionPageHeader)) / partitionBucketSize(bucket);
 }
 
