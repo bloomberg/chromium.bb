@@ -221,7 +221,6 @@
   fun:av_buffer_unref
   fun:av_frame_unref
   ...
-  fun:media::FFmpegVideoDecoder::Decode
 }
 {
   bug_287796
