@@ -1744,22 +1744,22 @@ TEST_F(WorkspaceWindowResizerTest, TouchResizeToEdge_RIGHT) {
   // the touch point.
   generator.GestureScrollSequence(gfx::Point(715, kRootHeight / 2),
                                   gfx::Point(725, kRootHeight / 2),
-                                  base::TimeDelta::FromMilliseconds(100),
-                                  1);
+                                  base::TimeDelta::FromMilliseconds(10),
+                                  5);
   EXPECT_EQ(gfx::Rect(100, 100, 625, kRootHeight - 200).ToString(),
             touch_resize_window_->bounds().ToString());
   // Drag more, but stop before being snapped to the edge.
   generator.GestureScrollSequence(gfx::Point(725, kRootHeight / 2),
                                   gfx::Point(760, kRootHeight / 2),
-                                  base::TimeDelta::FromMilliseconds(100),
-                                  1);
+                                  base::TimeDelta::FromMilliseconds(10),
+                                  5);
   EXPECT_EQ(gfx::Rect(100, 100, 660, kRootHeight - 200).ToString(),
             touch_resize_window_->bounds().ToString());
   // Drag even more to snap to the edge.
   generator.GestureScrollSequence(gfx::Point(760, kRootHeight / 2),
                                   gfx::Point(775, kRootHeight / 2),
-                                  base::TimeDelta::FromMilliseconds(100),
-                                  1);
+                                  base::TimeDelta::FromMilliseconds(10),
+                                  5);
   EXPECT_EQ(gfx::Rect(100, 100, 700, kRootHeight - 200).ToString(),
             touch_resize_window_->bounds().ToString());
 }
@@ -1778,22 +1778,22 @@ TEST_F(WorkspaceWindowResizerTest, TouchResizeToEdge_LEFT) {
   // the touch point.
   generator.GestureScrollSequence(gfx::Point(85, kRootHeight / 2),
                                   gfx::Point(75, kRootHeight / 2),
-                                  base::TimeDelta::FromMilliseconds(100),
-                                  1);
+                                  base::TimeDelta::FromMilliseconds(10),
+                                  5);
   EXPECT_EQ(gfx::Rect(75, 100, 625, kRootHeight - 200).ToString(),
             touch_resize_window_->bounds().ToString());
   // Drag more, but stop before being snapped to the edge.
   generator.GestureScrollSequence(gfx::Point(75, kRootHeight / 2),
                                   gfx::Point(40, kRootHeight / 2),
-                                  base::TimeDelta::FromMilliseconds(100),
-                                  1);
+                                  base::TimeDelta::FromMilliseconds(10),
+                                  5);
   EXPECT_EQ(gfx::Rect(40, 100, 660, kRootHeight - 200).ToString(),
             touch_resize_window_->bounds().ToString());
   // Drag even more to snap to the edge.
   generator.GestureScrollSequence(gfx::Point(40, kRootHeight / 2),
                                   gfx::Point(25, kRootHeight / 2),
-                                  base::TimeDelta::FromMilliseconds(100),
-                                  1);
+                                  base::TimeDelta::FromMilliseconds(10),
+                                  5);
   EXPECT_EQ(gfx::Rect(0, 100, 700, kRootHeight - 200).ToString(),
             touch_resize_window_->bounds().ToString());
 }
@@ -1812,22 +1812,22 @@ TEST_F(WorkspaceWindowResizerTest, TouchResizeToEdge_TOP) {
   // the touch point.
   generator.GestureScrollSequence(gfx::Point(400, 85),
                                   gfx::Point(400, 75),
-                                  base::TimeDelta::FromMilliseconds(100),
-                                  1);
+                                  base::TimeDelta::FromMilliseconds(10),
+                                  5);
   EXPECT_EQ(gfx::Rect(100, 75, 600, kRootHeight - 175).ToString(),
             touch_resize_window_->bounds().ToString());
   // Drag more, but stop before being snapped to the edge.
   generator.GestureScrollSequence(gfx::Point(400, 75),
                                   gfx::Point(400, 40),
-                                  base::TimeDelta::FromMilliseconds(100),
-                                  1);
+                                  base::TimeDelta::FromMilliseconds(10),
+                                  5);
   EXPECT_EQ(gfx::Rect(100, 40, 600, kRootHeight - 140).ToString(),
             touch_resize_window_->bounds().ToString());
   // Drag even more to snap to the edge.
   generator.GestureScrollSequence(gfx::Point(400, 40),
                                   gfx::Point(400, 25),
-                                  base::TimeDelta::FromMilliseconds(100),
-                                  1);
+                                  base::TimeDelta::FromMilliseconds(10),
+                                  5);
   EXPECT_EQ(gfx::Rect(100, 0, 600, kRootHeight - 100).ToString(),
             touch_resize_window_->bounds().ToString());
 }
@@ -1846,22 +1846,22 @@ TEST_F(WorkspaceWindowResizerTest, TouchResizeToEdge_BOTTOM) {
   // the touch point.
   generator.GestureScrollSequence(gfx::Point(400, kRootHeight - 85),
                                   gfx::Point(400, kRootHeight - 75),
-                                  base::TimeDelta::FromMilliseconds(100),
-                                  1);
+                                  base::TimeDelta::FromMilliseconds(10),
+                                  5);
   EXPECT_EQ(gfx::Rect(100, 100, 600, kRootHeight - 175).ToString(),
             touch_resize_window_->bounds().ToString());
   // Drag more, but stop before being snapped to the edge.
   generator.GestureScrollSequence(gfx::Point(400, kRootHeight - 75),
                                   gfx::Point(400, kRootHeight - 40),
-                                  base::TimeDelta::FromMilliseconds(100),
-                                  1);
+                                  base::TimeDelta::FromMilliseconds(10),
+                                  5);
   EXPECT_EQ(gfx::Rect(100, 100, 600, kRootHeight - 140).ToString(),
             touch_resize_window_->bounds().ToString());
   // Drag even more to snap to the edge.
   generator.GestureScrollSequence(gfx::Point(400, kRootHeight - 40),
                                   gfx::Point(400, kRootHeight - 25),
-                                  base::TimeDelta::FromMilliseconds(100),
-                                  1);
+                                  base::TimeDelta::FromMilliseconds(10),
+                                  5);
   EXPECT_EQ(gfx::Rect(100, 100, 600, kRootHeight - 100).ToString(),
             touch_resize_window_->bounds().ToString());
 }

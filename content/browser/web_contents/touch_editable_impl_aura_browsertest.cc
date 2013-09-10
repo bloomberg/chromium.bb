@@ -169,7 +169,7 @@ class TouchEditableImplAuraTest : public ContentBrowserTest {
         gfx::Point(10, 47),
         gfx::Point(30, 47),
         base::TimeDelta::FromMilliseconds(20),
-        1);
+        5);
     LOG(INFO) << "Handle moved. Now, waiting for selection to change.";
     touch_editable->WaitForSelectionChangeCallback();
     LOG(INFO) << "Selection changed.";

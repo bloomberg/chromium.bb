@@ -242,7 +242,7 @@ TEST_F(CustomFrameViewAshTest, MAYBE_ResizeButtonDrag) {
   {
     center = view->GetBoundsInScreen().CenterPoint();
     gfx::Point end = center;
-    end.Offset(40, 0);
+    end.Offset(80, 0);
     generator.GestureScrollSequence(center, end,
         base::TimeDelta::FromMilliseconds(100),
         3);
@@ -259,7 +259,7 @@ TEST_F(CustomFrameViewAshTest, MAYBE_ResizeButtonDrag) {
   {
     center = view->GetBoundsInScreen().CenterPoint();
     gfx::Point end = center;
-    end.Offset(-40, 0);
+    end.Offset(-80, 0);
     generator.GestureScrollSequence(center, end,
         base::TimeDelta::FromMilliseconds(100),
         3);

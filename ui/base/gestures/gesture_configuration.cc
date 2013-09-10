@@ -21,14 +21,14 @@ double
 double GestureConfiguration::max_swipe_deviation_ratio_ = 3;
 double
   GestureConfiguration::max_touch_down_duration_in_seconds_for_click_ = 0.8;
-double GestureConfiguration::max_touch_move_in_pixels_for_click_ = 10;
+double GestureConfiguration::max_touch_move_in_pixels_for_click_ = 25;
 double GestureConfiguration::max_distance_between_taps_for_double_tap_ = 20;
 double GestureConfiguration::min_distance_for_pinch_scroll_in_pixels_ = 20;
 double GestureConfiguration::min_flick_speed_squared_ = 550.f * 550.f;
 double GestureConfiguration::min_pinch_update_distance_in_pixels_ = 5;
 double GestureConfiguration::min_rail_break_velocity_ = 200;
 double GestureConfiguration::min_scroll_delta_squared_ = 4 * 4;
-int GestureConfiguration::min_scroll_successive_velocity_events_ = 3;
+int GestureConfiguration::min_scroll_successive_velocity_events_ = 4;
 float GestureConfiguration::min_scroll_velocity_ = 30.0f;
 double GestureConfiguration::min_swipe_speed_ = 20;
 double GestureConfiguration::scroll_prediction_seconds_ = 0.03;

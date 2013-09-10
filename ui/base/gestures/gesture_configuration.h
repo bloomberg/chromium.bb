@@ -232,7 +232,6 @@ class UI_EXPORT GestureConfiguration {
   static double min_pinch_update_distance_in_pixels_;
   static double min_rail_break_velocity_;
   static double min_scroll_delta_squared_;
-  // TODO(rjkroege): Expose these in chrome://gesture
   static int min_scroll_successive_velocity_events_;
   static float min_scroll_velocity_;
   static double min_swipe_speed_;

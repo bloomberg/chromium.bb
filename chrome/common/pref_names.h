@@ -851,6 +851,7 @@ extern const char kMinFlickSpeedSquared[];
 extern const char kMinPinchUpdateDistanceInPixels[];
 extern const char kMinRailBreakVelocity[];
 extern const char kMinScrollDeltaSquared[];
+extern const char kMinScrollSuccessiveVelocityEvents[];
 extern const char kMinSwipeSpeed[];
 extern const char kMinTouchDownDurationInSecondsForClick[];
 extern const char kPointsBufferedForVelocity[];

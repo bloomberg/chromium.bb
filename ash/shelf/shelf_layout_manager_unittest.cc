@@ -410,7 +410,7 @@ void ShelfLayoutManagerTest::RunGestureDragTests(gfx::Vector2d delta) {
   shelf->LayoutShelf();
 
   aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
-  const int kNumScrollSteps = 10;
+  const int kNumScrollSteps = 4;
   ShelfDragCallback handler(shelf_hidden, shelf_shown);
 
   // Swipe up on the shelf. This should not change any state.
@@ -468,10 +468,8 @@ void ShelfLayoutManagerTest::RunGestureDragTests(gfx::Vector2d delta) {
     end.set_x(start.x() - shelf_shown.width() * 3 / 10);
   else if (SHELF_ALIGNMENT_RIGHT == GetShelfLayoutManager()->GetAlignment())
     end.set_x(start.x() + shelf_shown.width() * 3 / 10);
-  generator.GestureScrollSequenceWithCallback(start, end,
-      base::TimeDelta::FromMilliseconds(100), 1,
-      base::Bind(&ShelfDragCallback::ProcessScroll,
-                 base::Unretained(&handler)));
+  generator.GestureScrollSequence(start, end,
+                                  base::TimeDelta::FromMilliseconds(10), 5);
   EXPECT_EQ(SHELF_VISIBLE, shelf->visibility_state());
   EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
   EXPECT_EQ(bounds_shelf.ToString(), window->bounds().ToString());
@@ -1443,19 +1441,19 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_GestureDrag) {
   ShelfLayoutManager* shelf = GetShelfLayoutManager();
   {
     SCOPED_TRACE("BOTTOM");
-    RunGestureDragTests(gfx::Vector2d(0, 100));
+    RunGestureDragTests(gfx::Vector2d(0, 120));
   }
 
   {
     SCOPED_TRACE("LEFT");
     shelf->SetAlignment(SHELF_ALIGNMENT_LEFT);
-    RunGestureDragTests(gfx::Vector2d(-100, 0));
+    RunGestureDragTests(gfx::Vector2d(-120, 0));
   }
 
   {
     SCOPED_TRACE("RIGHT");
     shelf->SetAlignment(SHELF_ALIGNMENT_RIGHT);
-    RunGestureDragTests(gfx::Vector2d(100, 0));
+    RunGestureDragTests(gfx::Vector2d(120, 0));
   }
 }
 
@@ -1536,7 +1534,7 @@ TEST_F(ShelfLayoutManagerTest, ShelfAnimatesWhenGestureComplete) {
     gfx::Point start(shelf_bounds_in_screen.CenterPoint());
     gfx::Point end(start.x(), shelf_bounds_in_screen.bottom());
     generator.GestureScrollSequence(start, end,
-        base::TimeDelta::FromMilliseconds(10), 1);
+        base::TimeDelta::FromMilliseconds(10), 5);
     EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
     EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->auto_hide_state());
 

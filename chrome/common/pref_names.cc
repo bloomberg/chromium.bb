@@ -2389,6 +2389,8 @@ const char kMinRailBreakVelocity[] =
     "gesture.min_rail_break_velocity";
 const char kMinScrollDeltaSquared[] =
     "gesture.min_scroll_delta_squared";
+const char kMinScrollSuccessiveVelocityEvents[] =
+    "gesture.min_scroll_successive_velocity_events";
 const char kMinSwipeSpeed[] =
     "gesture.min_swipe_speed";
 const char kMinTouchDownDurationInSecondsForClick[] =
