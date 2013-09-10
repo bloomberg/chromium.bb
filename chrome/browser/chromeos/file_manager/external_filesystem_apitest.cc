@@ -317,10 +317,9 @@ class DriveFileSystemExtensionApiTest : public FileSystemExtensionApiTestBase {
         "gdata/account_metadata.json");
     fake_drive_service_->LoadAppListForDriveApi("drive/applist.json");
 
-    return new drive::DriveIntegrationService(profile,
-                                              fake_drive_service_,
-                                              test_cache_root_.path(),
-                                              NULL);
+    return new drive::DriveIntegrationService(
+        profile, NULL,
+        fake_drive_service_, test_cache_root_.path(), NULL);
   }
 
   base::ScopedTempDir test_cache_root_;

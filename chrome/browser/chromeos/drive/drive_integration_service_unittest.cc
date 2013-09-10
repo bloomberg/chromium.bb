@@ -18,10 +18,8 @@ class DriveIntegrationServiceTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     profile_.reset(new TestingProfile);
     integration_service_.reset(new DriveIntegrationService(
-        profile_.get(),
-        new DummyDriveService,
-        base::FilePath(),
-        new DummyFileSystem));
+        profile_.get(), NULL,
+        new DummyDriveService, base::FilePath(), new DummyFileSystem));
   }
 
  protected:

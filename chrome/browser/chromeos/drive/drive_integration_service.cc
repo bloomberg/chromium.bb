@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/file_util.h"
+#include "base/prefs/pref_change_registrar.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/chromeos/drive/logging.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "chrome/browser/chromeos/drive/resource_metadata_storage.h"
+#include "chrome/browser/chromeos/profiles/profile_util.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
@@ -133,13 +135,50 @@ FileError InitializeMetadata(
 
 }  // namespace
 
+// Observes drive disable Preference's change.
+class DriveIntegrationService::PreferenceWatcher {
+ public:
+  explicit PreferenceWatcher(PrefService* pref_service)
+      : pref_service_(pref_service),
+        integration_service_(NULL),
+        weak_ptr_factory_(this) {
+    DCHECK(pref_service);
+    pref_change_registrar_.Init(pref_service);
+    pref_change_registrar_.Add(
+        prefs::kDisableDrive,
+        base::Bind(&PreferenceWatcher::OnPreferenceChanged,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  void set_integration_service(DriveIntegrationService* integration_service) {
+    integration_service_ = integration_service;
+  }
+
+ private:
+  void OnPreferenceChanged() {
+    DCHECK(integration_service_);
+    integration_service_->SetEnabled(
+        !pref_service_->GetBoolean(prefs::kDisableDrive));
+  }
+
+  PrefService* pref_service_;
+  PrefChangeRegistrar pref_change_registrar_;
+  DriveIntegrationService* integration_service_;
+
+  base::WeakPtrFactory<PreferenceWatcher> weak_ptr_factory_;
+  DISALLOW_COPY_AND_ASSIGN(PreferenceWatcher);
+};
+
 DriveIntegrationService::DriveIntegrationService(
     Profile* profile,
+    PreferenceWatcher* preference_watcher,
     DriveServiceInterface* test_drive_service,
     const base::FilePath& test_cache_root,
     FileSystemInterface* test_file_system)
     : profile_(profile),
       state_(NOT_INITIALIZED),
+      enabled_(false),
+      mounted_(false),
       cache_root_directory_(!test_cache_root.empty() ?
                             test_cache_root : util::GetCacheRootPath(profile)),
       weak_ptr_factory_(this) {
@@ -201,6 +240,11 @@ DriveIntegrationService::DriveIntegrationService(
   download_handler_.reset(new DownloadHandler(file_system()));
   debug_info_collector_.reset(
       new DebugInfoCollector(file_system(), cache_.get()));
+
+  if (preference_watcher) {
+    preference_watcher_.reset(preference_watcher);
+    preference_watcher->set_integration_service(this);
+  }
 }
 
 DriveIntegrationService::~DriveIntegrationService() {
@@ -244,6 +288,11 @@ void DriveIntegrationService::Shutdown() {
   drive_app_registry_.reset();
   scheduler_.reset();
   drive_service_.reset();
+}
+
+void DriveIntegrationService::SetEnabled(bool enabled) {
+  enabled_ = enabled;
+  // TODO(hidehiko): Implement actual enable procedure.
 }
 
 void DriveIntegrationService::AddObserver(
@@ -338,6 +387,7 @@ void DriveIntegrationService::AddDriveMountPoint() {
 
   if (success) {
     state_ = INITIALIZED;
+    mounted_ = true;
     util::Log(logging::LOG_INFO, "Drive mount point is added");
     FOR_EACH_OBSERVER(DriveIntegrationServiceObserver, observers_,
                       OnFileSystemMounted());
@@ -358,6 +408,7 @@ void DriveIntegrationService::RemoveDriveMountPoint() {
       BrowserContext::GetMountPoints(profile_);
   DCHECK(mount_points);
 
+  mounted_ = false;
   mount_points->RevokeFileSystem(
       util::GetDriveMountPointPath().BaseName().AsUTF8Unsafe());
   util::Log(logging::LOG_INFO, "Drive mount point is removed");
@@ -474,12 +525,19 @@ DriveIntegrationServiceFactory::~DriveIntegrationServiceFactory() {
 BrowserContextKeyedService*
 DriveIntegrationServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  Profile* profile = static_cast<Profile*>(context);
+  Profile* profile = Profile::FromBrowserContext(context);
 
   DriveIntegrationService* service = NULL;
   if (factory_for_test_.is_null()) {
-    service = new DriveIntegrationService(
-        profile, NULL, base::FilePath(), NULL);
+    DriveIntegrationService::PreferenceWatcher* preference_watcher = NULL;
+    if (chromeos::IsProfileAssociatedWithGaiaAccount(profile)) {
+      // Drive File System can be enabled.
+      preference_watcher =
+          new DriveIntegrationService::PreferenceWatcher(profile->GetPrefs());
+    }
+
+    service = new DriveIntegrationService(profile, preference_watcher,
+                                          NULL, base::FilePath(), NULL);
   } else {
     service = factory_for_test_.Run(profile);
   }
