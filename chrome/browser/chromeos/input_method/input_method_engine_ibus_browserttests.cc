@@ -6,14 +6,14 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/common/extensions/background_info.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/ibus/mock_ibus_client.h"
-#include "chromeos/dbus/ibus/mock_ibus_engine_factory_service.h"
-#include "chromeos/dbus/ibus/mock_ibus_engine_service.h"
-#include "chromeos/dbus/mock_dbus_thread_manager_without_gmock.h"
+#include "chromeos/dbus/ibus/ibus_text.h"
+#include "chromeos/ime/component_extension_ime_manager.h"
 #include "chromeos/ime/ibus_bridge.h"
 #include "chromeos/ime/input_method_descriptor.h"
 #include "chromeos/ime/input_method_manager.h"
+#include "chromeos/ime/mock_ime_candidate_window_handler.h"
+#include "chromeos/ime/mock_ime_input_context_handler.h"
+#include "chromeos/ime/mock_ime_property_handler.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "dbus/mock_bus.h"
@@ -42,38 +42,24 @@ enum TestType {
   kTestTypeComponent = 2,
 };
 
-void OnRegisterComponent(const IBusComponent& ibus_component,
-                         const IBusClient::RegisterComponentCallback& callback,
-                         const IBusClient::ErrorCallback& error_callback) {
-  callback.Run();
-}
-
 class InputMethodEngineIBusBrowserTest
     : public ExtensionBrowserTest,
       public ::testing::WithParamInterface<TestType> {
  public:
   InputMethodEngineIBusBrowserTest()
-      : ExtensionBrowserTest(),
-        mock_dbus_thread_manager_(NULL) {}
+      : ExtensionBrowserTest() {}
   virtual ~InputMethodEngineIBusBrowserTest() {}
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    mock_dbus_thread_manager_ = new MockDBusThreadManagerWithoutGMock();
-    DBusThreadManager::InitializeForTesting(mock_dbus_thread_manager_);
     ExtensionBrowserTest::SetUpInProcessBrowserTestFixture();
   }
 
   virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {
-    DBusThreadManager::Shutdown();
     extension_ = NULL;
   }
 
  protected:
   void LoadTestInputMethod() {
-    MockIBusClient* ibus_client = mock_dbus_thread_manager_->mock_ibus_client();
-    ibus_client->set_register_component_handler(
-        base::Bind(&OnRegisterComponent));
-
     // This will load "chrome/test/data/extensions/input_ime"
     ExtensionTestMessageListener ime_ready_listener("ReadyToUseImeEvent",
                                                     false);
@@ -81,12 +67,16 @@ class InputMethodEngineIBusBrowserTest
     ASSERT_TRUE(extension_);
     ASSERT_TRUE(ime_ready_listener.WaitUntilSatisfied());
 
-    // The reason why not EXPECT_EQ is that extension will be reloaded in the
-    // case of incognito mode switching. Thus registeration will be happend
-    // multiple times. Calling at least once per engine is sufficient for IBus
-    // component. Here, there is two engine, thus expectation is at least 4
-    // times.
-    EXPECT_LE(3, ibus_client->register_component_call_count());
+    // Make sure ComponentExtensionIMEManager is initialized.
+    // ComponentExtensionIMEManagerImpl::InitializeAsync posts
+    // ReadComponentExtensionsInfo to the FILE thread for the
+    // initialization.  If it is never initialized for some reasons,
+    // the test is timed out and failed.
+    ComponentExtensionIMEManager* ceimm =
+        InputMethodManager::Get()->GetComponentExtensionIMEManager();
+    while (!ceimm->IsInitialized()) {
+      content::RunAllPendingInMessageLoop(content::BrowserThread::FILE);
+    }
 
     // Extension IMEs are not enabled by default.
     std::vector<std::string> extension_ime_ids;
@@ -125,8 +115,6 @@ class InputMethodEngineIBusBrowserTest
   }
 
   const extensions::Extension* extension_;
-  MockDBusThreadManagerWithoutGMock* mock_dbus_thread_manager_;
-  scoped_refptr<dbus::MockBus> mock_bus_;
 };
 
 class KeyEventDoneCallback {
@@ -169,13 +157,21 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
                        BasicScenarioTest) {
   LoadTestInputMethod();
 
-  MockIBusEngineFactoryService* factory_service =
-      mock_dbus_thread_manager_->mock_ibus_engine_factory_service();
-  factory_service->CallCreateEngine(kIdentityIMEID);
+  InputMethodManager::Get()->ChangeInputMethod(kIdentityIMEID);
 
-  MockIBusEngineService* engine_service =
-      mock_dbus_thread_manager_->mock_ibus_engine_service();
-  IBusEngineHandlerInterface* engine_handler = engine_service->GetEngine();
+  scoped_ptr<MockIMEInputContextHandler> mock_input_context(
+      new MockIMEInputContextHandler());
+  scoped_ptr<MockIMECandidateWindowHandler> mock_candidate_window(
+      new MockIMECandidateWindowHandler());
+  scoped_ptr<MockIMEPropertyHandler> mock_property(
+      new MockIMEPropertyHandler());
+
+  IBusBridge::Get()->SetInputContextHandler(mock_input_context.get());
+  IBusBridge::Get()->SetCandidateWindowHandler(mock_candidate_window.get());
+  IBusBridge::Get()->SetPropertyHandler(mock_property.get());
+
+  IBusEngineHandlerInterface* engine_handler =
+      IBusBridge::Get()->GetEngineHandler();
   ASSERT_TRUE(engine_handler);
 
   // onActivate event should be fired if Enable function is called.
@@ -235,19 +231,31 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
   engine_handler->Disable();
   ASSERT_TRUE(disabled_listener.WaitUntilSatisfied());
   ASSERT_TRUE(disabled_listener.was_satisfied());
+
+  IBusBridge::Get()->SetInputContextHandler(NULL);
+  IBusBridge::Get()->SetCandidateWindowHandler(NULL);
+  IBusBridge::Get()->SetPropertyHandler(NULL);
 }
 
 IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
                        APIArgumentTest) {
   LoadTestInputMethod();
 
-  MockIBusEngineFactoryService* factory_service =
-      mock_dbus_thread_manager_->mock_ibus_engine_factory_service();
-  factory_service->CallCreateEngine(kAPIArgumentIMEID);
+  InputMethodManager::Get()->ChangeInputMethod(kAPIArgumentIMEID);
 
-  MockIBusEngineService* engine_service =
-      mock_dbus_thread_manager_->mock_ibus_engine_service();
-  IBusEngineHandlerInterface* engine_handler = engine_service->GetEngine();
+  scoped_ptr<MockIMEInputContextHandler> mock_input_context(
+      new MockIMEInputContextHandler());
+  scoped_ptr<MockIMECandidateWindowHandler> mock_candidate_window(
+      new MockIMECandidateWindowHandler());
+  scoped_ptr<MockIMEPropertyHandler> mock_property(
+      new MockIMEPropertyHandler());
+
+  IBusBridge::Get()->SetInputContextHandler(mock_input_context.get());
+  IBusBridge::Get()->SetCandidateWindowHandler(mock_candidate_window.get());
+  IBusBridge::Get()->SetPropertyHandler(mock_property.get());
+
+  IBusEngineHandlerInterface* engine_handler =
+      IBusBridge::Get()->GetEngineHandler();
   ASSERT_TRUE(engine_handler);
 
   extensions::ExtensionHost* host = FindHostWithPath(
@@ -373,20 +381,27 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
   // TODO(nona): Add browser tests for other API as well.
   {
     SCOPED_TRACE("commitText test");
+    mock_input_context->Reset();
+    mock_candidate_window->Reset();
+    mock_property->Reset();
+
     const char commit_text_test_script[] =
         "chrome.input.ime.commitText({"
         "  contextID: engineBridge.getFocusedContextID().contextID,"
         "  text:'COMMIT_TEXT'"
         "});";
 
-    engine_service->Clear();
     ASSERT_TRUE(content::ExecuteScript(host->host_contents(),
                                        commit_text_test_script));
-    EXPECT_EQ(1, engine_service->commit_text_call_count());
-    EXPECT_EQ("COMMIT_TEXT", engine_service->last_commit_text());
+    EXPECT_EQ(1, mock_input_context->commit_text_call_count());
+    EXPECT_EQ("COMMIT_TEXT", mock_input_context->last_commit_text());
   }
   {
     SCOPED_TRACE("setComposition test");
+    mock_input_context->Reset();
+    mock_candidate_window->Reset();
+    mock_property->Reset();
+
     const char set_composition_test_script[] =
         "chrome.input.ime.setComposition({"
         "  contextID: engineBridge.getFocusedContextID().contextID,"
@@ -403,16 +418,15 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
         "  }]"
         "});";
 
-    engine_service->Clear();
     ASSERT_TRUE(content::ExecuteScript(host->host_contents(),
                                        set_composition_test_script));
-    EXPECT_EQ(1, engine_service->update_preedit_call_count());
+    EXPECT_EQ(1, mock_input_context->update_preedit_text_call_count());
 
-    EXPECT_EQ(4U, engine_service->last_update_preedit_arg().cursor_pos);
-    EXPECT_TRUE(engine_service->last_update_preedit_arg().is_visible);
+    EXPECT_EQ(4U, mock_input_context->last_update_preedit_arg().cursor_pos);
+    EXPECT_TRUE(mock_input_context->last_update_preedit_arg().is_visible);
 
     const IBusText& ibus_text =
-        engine_service->last_update_preedit_arg().ibus_text;
+        mock_input_context->last_update_preedit_arg().ibus_text;
     EXPECT_EQ("COMPOSITION_TEXT", ibus_text.text());
     const std::vector<IBusText::UnderlineAttribute>& underlines =
         ibus_text.underline_attributes();
@@ -428,22 +442,29 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
   }
   {
     SCOPED_TRACE("clearComposition test");
+    mock_input_context->Reset();
+    mock_candidate_window->Reset();
+    mock_property->Reset();
+
     const char commite_text_test_script[] =
         "chrome.input.ime.clearComposition({"
         "  contextID: engineBridge.getFocusedContextID().contextID,"
         "});";
 
-    engine_service->Clear();
     ASSERT_TRUE(content::ExecuteScript(host->host_contents(),
                                        commite_text_test_script));
-    EXPECT_EQ(1, engine_service->update_preedit_call_count());
-    EXPECT_FALSE(engine_service->last_update_preedit_arg().is_visible);
+    EXPECT_EQ(1, mock_input_context->update_preedit_text_call_count());
+    EXPECT_FALSE(mock_input_context->last_update_preedit_arg().is_visible);
     const IBusText& ibus_text =
-        engine_service->last_update_preedit_arg().ibus_text;
+        mock_input_context->last_update_preedit_arg().ibus_text;
     EXPECT_TRUE(ibus_text.text().empty());
   }
   {
     SCOPED_TRACE("setCandidateWindowProperties:visibility test");
+    mock_input_context->Reset();
+    mock_candidate_window->Reset();
+    mock_property->Reset();
+
     const char set_candidate_window_properties_test_script[] =
         "chrome.input.ime.setCandidateWindowProperties({"
         "  engineID: engineBridge.getActiveEngineID(),"
@@ -451,15 +472,19 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
         "    visible: true,"
         "  }"
         "});";
-    engine_service->Clear();
     ASSERT_TRUE(content::ExecuteScript(
         host->host_contents(),
         set_candidate_window_properties_test_script));
-    EXPECT_EQ(1, engine_service->update_lookup_table_call_count());
-    EXPECT_TRUE(engine_service->last_update_lookup_table_arg().is_visible);
+    EXPECT_EQ(1, mock_candidate_window->update_lookup_table_call_count());
+    EXPECT_TRUE(
+        mock_candidate_window->last_update_lookup_table_arg().is_visible);
   }
   {
     SCOPED_TRACE("setCandidateWindowProperties:cursor_visibility test");
+    mock_input_context->Reset();
+    mock_candidate_window->Reset();
+    mock_property->Reset();
+
     const char set_candidate_window_properties_test_script[] =
         "chrome.input.ime.setCandidateWindowProperties({"
         "  engineID: engineBridge.getActiveEngineID(),"
@@ -467,21 +492,25 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
         "    cursorVisible: true,"
         "  }"
         "});";
-    engine_service->Clear();
     ASSERT_TRUE(content::ExecuteScript(
         host->host_contents(),
         set_candidate_window_properties_test_script));
-    EXPECT_EQ(1, engine_service->update_lookup_table_call_count());
+    EXPECT_EQ(1, mock_candidate_window->update_lookup_table_call_count());
 
     // window visibility is kept as before.
-    EXPECT_TRUE(engine_service->last_update_lookup_table_arg().is_visible);
+    EXPECT_TRUE(
+        mock_candidate_window->last_update_lookup_table_arg().is_visible);
 
     const IBusLookupTable& table =
-        engine_service->last_update_lookup_table_arg().lookup_table;
+        mock_candidate_window->last_update_lookup_table_arg().lookup_table;
     EXPECT_TRUE(table.is_cursor_visible());
   }
   {
     SCOPED_TRACE("setCandidateWindowProperties:vertical test");
+    mock_input_context->Reset();
+    mock_candidate_window->Reset();
+    mock_property->Reset();
+
     const char set_candidate_window_properties_test_script[] =
         "chrome.input.ime.setCandidateWindowProperties({"
         "  engineID: engineBridge.getActiveEngineID(),"
@@ -489,17 +518,17 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
         "    vertical: true,"
         "  }"
         "});";
-    engine_service->Clear();
     ASSERT_TRUE(content::ExecuteScript(
         host->host_contents(),
         set_candidate_window_properties_test_script));
-    EXPECT_EQ(1, engine_service->update_lookup_table_call_count());
+    EXPECT_EQ(1, mock_candidate_window->update_lookup_table_call_count());
 
     // window visibility is kept as before.
-    EXPECT_TRUE(engine_service->last_update_lookup_table_arg().is_visible);
+    EXPECT_TRUE(
+        mock_candidate_window->last_update_lookup_table_arg().is_visible);
 
     const IBusLookupTable& table =
-        engine_service->last_update_lookup_table_arg().lookup_table;
+        mock_candidate_window->last_update_lookup_table_arg().lookup_table;
 
     // cursor visibility is kept as before.
     EXPECT_TRUE(table.is_cursor_visible());
@@ -508,6 +537,10 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
   }
   {
     SCOPED_TRACE("setCandidateWindowProperties:pageSize test");
+    mock_input_context->Reset();
+    mock_candidate_window->Reset();
+    mock_property->Reset();
+
     const char set_candidate_window_properties_test_script[] =
         "chrome.input.ime.setCandidateWindowProperties({"
         "  engineID: engineBridge.getActiveEngineID(),"
@@ -515,17 +548,17 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
         "    pageSize: 7,"
         "  }"
         "});";
-    engine_service->Clear();
     ASSERT_TRUE(content::ExecuteScript(
         host->host_contents(),
         set_candidate_window_properties_test_script));
-    EXPECT_EQ(1, engine_service->update_lookup_table_call_count());
+    EXPECT_EQ(1, mock_candidate_window->update_lookup_table_call_count());
 
     // window visibility is kept as before.
-    EXPECT_TRUE(engine_service->last_update_lookup_table_arg().is_visible);
+    EXPECT_TRUE(
+        mock_candidate_window->last_update_lookup_table_arg().is_visible);
 
     const IBusLookupTable& table =
-        engine_service->last_update_lookup_table_arg().lookup_table;
+        mock_candidate_window->last_update_lookup_table_arg().lookup_table;
 
     // cursor visibility is kept as before.
     EXPECT_TRUE(table.is_cursor_visible());
@@ -537,6 +570,10 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
   }
   {
     SCOPED_TRACE("setCandidateWindowProperties:auxTextVisibility test");
+    mock_input_context->Reset();
+    mock_candidate_window->Reset();
+    mock_property->Reset();
+
     const char set_candidate_window_properties_test_script[] =
         "chrome.input.ime.setCandidateWindowProperties({"
         "  engineID: engineBridge.getActiveEngineID(),"
@@ -544,15 +581,19 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
         "    auxiliaryTextVisible: true"
         "  }"
         "});";
-    engine_service->Clear();
     ASSERT_TRUE(content::ExecuteScript(
         host->host_contents(),
         set_candidate_window_properties_test_script));
-    EXPECT_EQ(1, engine_service->update_auxiliary_text_call_count());
-    EXPECT_TRUE(engine_service->last_update_aux_text_arg().is_visible);
+    EXPECT_EQ(1, mock_candidate_window->update_auxiliary_text_call_count());
+    EXPECT_TRUE(
+        mock_candidate_window->last_update_auxiliary_text_arg().is_visible);
   }
   {
     SCOPED_TRACE("setCandidateWindowProperties:auxText test");
+    mock_input_context->Reset();
+    mock_candidate_window->Reset();
+    mock_property->Reset();
+
     const char set_candidate_window_properties_test_script[] =
         "chrome.input.ime.setCandidateWindowProperties({"
         "  engineID: engineBridge.getActiveEngineID(),"
@@ -560,20 +601,24 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
         "    auxiliaryText: 'AUXILIARY_TEXT'"
         "  }"
         "});";
-    engine_service->Clear();
     ASSERT_TRUE(content::ExecuteScript(
         host->host_contents(),
         set_candidate_window_properties_test_script));
-    EXPECT_EQ(1, engine_service->update_auxiliary_text_call_count());
+    EXPECT_EQ(1, mock_candidate_window->update_auxiliary_text_call_count());
 
     // aux text visibility is kept as before.
-    EXPECT_TRUE(engine_service->last_update_aux_text_arg().is_visible);
+    EXPECT_TRUE(
+        mock_candidate_window->last_update_auxiliary_text_arg().is_visible);
 
     EXPECT_EQ("AUXILIARY_TEXT",
-              engine_service->last_update_aux_text_arg().ibus_text.text());
+              mock_candidate_window->last_update_auxiliary_text_arg().text);
   }
   {
     SCOPED_TRACE("setCandidates test");
+    mock_input_context->Reset();
+    mock_candidate_window->Reset();
+    mock_property->Reset();
+
     const char set_candidates_test_script[] =
         "chrome.input.ime.setCandidates({"
         "  contextID: engineBridge.getFocusedContextID().contextID,"
@@ -600,15 +645,15 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
         "    }"
         "  }]"
         "});";
-    engine_service->Clear();
     ASSERT_TRUE(content::ExecuteScript(host->host_contents(),
                                        set_candidates_test_script));
 
     // window visibility is kept as before.
-    EXPECT_TRUE(engine_service->last_update_lookup_table_arg().is_visible);
+    EXPECT_TRUE(
+        mock_candidate_window->last_update_lookup_table_arg().is_visible);
 
     const IBusLookupTable& table =
-        engine_service->last_update_lookup_table_arg().lookup_table;
+        mock_candidate_window->last_update_lookup_table_arg().lookup_table;
 
     // cursor visibility is kept as before.
     EXPECT_TRUE(table.is_cursor_visible());
@@ -638,21 +683,25 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
   }
   {
     SCOPED_TRACE("setCursorPosition test");
+    mock_input_context->Reset();
+    mock_candidate_window->Reset();
+    mock_property->Reset();
+
     const char set_cursor_position_test_script[] =
         "chrome.input.ime.setCursorPosition({"
         "  contextID: engineBridge.getFocusedContextID().contextID,"
         "  candidateID: 2"
         "});";
-    engine_service->Clear();
     ASSERT_TRUE(content::ExecuteScript(
         host->host_contents(), set_cursor_position_test_script));
-    EXPECT_EQ(1, engine_service->update_lookup_table_call_count());
+    EXPECT_EQ(1, mock_candidate_window->update_lookup_table_call_count());
 
     // window visibility is kept as before.
-    EXPECT_TRUE(engine_service->last_update_lookup_table_arg().is_visible);
+    EXPECT_TRUE(
+        mock_candidate_window->last_update_lookup_table_arg().is_visible);
 
     const IBusLookupTable& table =
-        engine_service->last_update_lookup_table_arg().lookup_table;
+        mock_candidate_window->last_update_lookup_table_arg().lookup_table;
 
     // cursor visibility is kept as before.
     EXPECT_TRUE(table.is_cursor_visible());
@@ -671,6 +720,10 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
   }
   {
     SCOPED_TRACE("setMenuItem test");
+    mock_input_context->Reset();
+    mock_candidate_window->Reset();
+    mock_property->Reset();
+
     const char set_menu_item_test_script[] =
         "chrome.input.ime.setMenuItems({"
         "  engineID: engineBridge.getActiveEngineID(),"
@@ -696,13 +749,12 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
         "    checked: true"
         "  }]"
         "});";
-    engine_service->Clear();
     ASSERT_TRUE(content::ExecuteScript(
         host->host_contents(), set_menu_item_test_script));
-    EXPECT_EQ(1, engine_service->register_properties_call_count());
+    EXPECT_EQ(1, mock_property->register_properties_call_count());
 
     const IBusPropertyList& props =
-        engine_service->last_registered_properties();
+        mock_property->last_registered_properties();
     ASSERT_EQ(5U, props.size());
 
     EXPECT_EQ("ID0", props[0]->key());
@@ -727,6 +779,10 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
   }
   {
     SCOPED_TRACE("deleteSurroundingText test");
+    mock_input_context->Reset();
+    mock_candidate_window->Reset();
+    mock_property->Reset();
+
     const char delete_surrounding_text_test_script[] =
         "chrome.input.ime.deleteSurroundingText({"
         "  engineID: engineBridge.getActiveEngineID(),"
@@ -734,14 +790,17 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
         "  offset: 5,"
         "  length: 3"
         "});";
-    engine_service->Clear();
     ASSERT_TRUE(content::ExecuteScript(
         host->host_contents(), delete_surrounding_text_test_script));
 
-    EXPECT_EQ(1, engine_service->delete_surrounding_text_call_count());
-    EXPECT_EQ(5, engine_service->last_delete_surrounding_text_arg().offset);
-    EXPECT_EQ(3U, engine_service->last_delete_surrounding_text_arg().length);
+    EXPECT_EQ(1, mock_input_context->delete_surrounding_text_call_count());
+    EXPECT_EQ(5, mock_input_context->last_delete_surrounding_text_arg().offset);
+    EXPECT_EQ(3U,
+              mock_input_context->last_delete_surrounding_text_arg().length);
   }
+  IBusBridge::Get()->SetInputContextHandler(NULL);
+  IBusBridge::Get()->SetCandidateWindowHandler(NULL);
+  IBusBridge::Get()->SetPropertyHandler(NULL);
 }
 
 }  // namespace
