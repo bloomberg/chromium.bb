@@ -28,10 +28,25 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    CustomToV8,
-    NoInterfaceObject
-] interface MIDIOutput : MIDIPort {
-    [RaisesException] void send(Uint8Array data, optional double timestamp);
-    [RaisesException] void send(sequence<unsigned long> data, optional double timestamp);
-};
+#include "config.h"
+#include "V8MIDIInput.h"
+
+#include "V8MIDIAccess.h"
+#include "bindings/v8/V8HiddenPropertyName.h"
+
+namespace WebCore {
+
+v8::Handle<v8::Object> wrap(MIDIInput* input, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+{
+    ASSERT(input);
+    ASSERT(!DOMDataStore::containsWrapper<V8MIDIInput>(input, isolate));
+
+    v8::Handle<v8::Object> wrapper = V8MIDIInput::createWrapper(input, creationContext, isolate);
+
+    if (input->midiAccess())
+        V8HiddenPropertyName::setNamedHiddenReference(wrapper, "access", toV8(input->midiAccess(), creationContext, isolate));
+
+    return wrapper;
+}
+
+} // namespace WebCore

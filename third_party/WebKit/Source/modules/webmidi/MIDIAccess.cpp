@@ -82,8 +82,7 @@ void MIDIAccess::didAddInputPort(const String& id, const String& manufacturer, c
 {
     ASSERT(isMainThread());
 
-    // FIXME: Pass in |this| to create() method so we can filter system exclusive messages correctly.
-    m_inputs.append(MIDIInput::create(scriptExecutionContext(), id, manufacturer, name, version));
+    m_inputs.append(MIDIInput::create(this, scriptExecutionContext(), id, manufacturer, name, version));
 }
 
 void MIDIAccess::didAddOutputPort(const String& id, const String& manufacturer, const String& name, const String& version)

@@ -209,6 +209,8 @@
             'v8/custom/V8Int32ArrayCustom.h',
             'v8/custom/V8JavaScriptCallFrameCustom.cpp',
             'v8/custom/V8LocationCustom.cpp',
+            'v8/custom/V8MIDIInputCustom.cpp',
+            'v8/custom/V8MIDIOutputCustom.cpp',
             'v8/custom/V8MessageChannelCustom.cpp',
             'v8/custom/V8MessageEventCustom.cpp',
             'v8/custom/V8MessagePortCustom.cpp',

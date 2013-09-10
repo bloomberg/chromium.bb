@@ -34,13 +34,15 @@
 
 namespace WebCore {
 
-PassRefPtr<MIDIInput> MIDIInput::create(ScriptExecutionContext* context, const String& id, const String& manufacturer, const String& name, const String& version)
+PassRefPtr<MIDIInput> MIDIInput::create(MIDIAccess* access, ScriptExecutionContext* context, const String& id, const String& manufacturer, const String& name, const String& version)
 {
-    return adoptRef(new MIDIInput(context, id, manufacturer, name, version));
+    ASSERT(access);
+    return adoptRef(new MIDIInput(access, context, id, manufacturer, name, version));
 }
 
-MIDIInput::MIDIInput(ScriptExecutionContext* context, const String& id, const String& manufacturer, const String& name, const String& version)
+MIDIInput::MIDIInput(MIDIAccess* access, ScriptExecutionContext* context, const String& id, const String& manufacturer, const String& name, const String& version)
     : MIDIPort(context, id, manufacturer, name, MIDIPortTypeInput, version)
+    , m_access(access)
 {
     ScriptWrappable::init(this);
 }

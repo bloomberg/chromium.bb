@@ -39,6 +39,7 @@ namespace WebCore {
 
 PassRefPtr<MIDIOutput> MIDIOutput::create(MIDIAccess* access, unsigned portIndex, ScriptExecutionContext* context, const String& id, const String& manufacturer, const String& name, const String& version)
 {
+    ASSERT(access);
     return adoptRef(new MIDIOutput(access, portIndex, context, id, manufacturer, name, version));
 }
 

@@ -36,11 +36,12 @@
 
 namespace WebCore {
 
+class MIDIAccess;
 class ScriptExecutionContext;
 
 class MIDIInput : public MIDIPort {
 public:
-    static PassRefPtr<MIDIInput> create(ScriptExecutionContext*, const String& id, const String& manufacturer, const String& name, const String& version);
+    static PassRefPtr<MIDIInput> create(MIDIAccess*, ScriptExecutionContext*, const String& id, const String& manufacturer, const String& name, const String& version);
     virtual ~MIDIInput() { }
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(midimessage);
@@ -51,8 +52,12 @@ public:
     // |timeStamp| is a DOMHighResTimeStamp in the time coordinate system of performance.now().
     void didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp);
 
+    MIDIAccess* midiAccess() const { return m_access; }
+
 private:
-    MIDIInput(ScriptExecutionContext*, const String& id, const String& manufacturer, const String& name, const String& version);
+    MIDIInput(MIDIAccess*, ScriptExecutionContext*, const String& id, const String& manufacturer, const String& name, const String& version);
+
+    MIDIAccess* m_access;
 };
 
 typedef Vector<RefPtr<MIDIInput> > MIDIInputVector;

@@ -53,10 +53,12 @@ public:
     void send(Uint8Array*, ExceptionState&);
     void send(Vector<unsigned>, ExceptionState&);
 
+    MIDIAccess* midiAccess() const { return m_access; }
+
 private:
     MIDIOutput(MIDIAccess*, unsigned portIndex, ScriptExecutionContext*, const String& id, const String& manufacturer, const String& name, const String& version);
 
-    RefPtr<MIDIAccess> m_access;
+    MIDIAccess* m_access;
     unsigned m_portIndex;
 };
 
