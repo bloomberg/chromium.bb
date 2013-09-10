@@ -1192,9 +1192,9 @@ void CompositeEditCommand::moveParagraphs(const VisiblePosition& startOfParagrap
     document().frame()->editor().clearMisspellingsAndBadGrammar(endingSelection());
     deleteSelection(false, false, false, false);
 
-    ASSERT(destination.deepEquivalent().anchorNode()->inDocument());
+    ASSERT(destination.deepEquivalent().inDocument());
     cleanupAfterDeletion(destination);
-    ASSERT(destination.deepEquivalent().anchorNode()->inDocument());
+    ASSERT(destination.deepEquivalent().inDocument());
 
     // Add a br if pruning an empty block level element caused a collapse. For example:
     // foo^

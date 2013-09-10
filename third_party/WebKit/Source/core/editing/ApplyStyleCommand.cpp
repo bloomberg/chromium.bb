@@ -1067,8 +1067,8 @@ void ApplyStyleCommand::removeInlineStyle(EditingStyle* style, const Position &s
 {
     ASSERT(start.isNotNull());
     ASSERT(end.isNotNull());
-    ASSERT(start.anchorNode()->inDocument());
-    ASSERT(end.anchorNode()->inDocument());
+    ASSERT(start.inDocument());
+    ASSERT(end.inDocument());
     ASSERT(comparePositions(start, end) <= 0);
     // FIXME: We should assert that start/end are not in the middle of a text node.
 

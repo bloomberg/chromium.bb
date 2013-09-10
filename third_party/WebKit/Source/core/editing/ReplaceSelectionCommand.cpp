@@ -1164,7 +1164,7 @@ void ReplaceSelectionCommand::doApply()
         if (startOfParagraph(endOfInsertedContent) == startOfParagraphToMove) {
             insertNodeAt(createBreakElement(document()).get(), endOfInsertedContent.deepEquivalent());
             // Mutation events (bug 22634) triggered by inserting the <br> might have removed the content we're about to move
-            if (!startOfParagraphToMove.deepEquivalent().anchorNode()->inDocument())
+            if (!startOfParagraphToMove.deepEquivalent().inDocument())
                 return;
         }
 

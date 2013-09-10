@@ -2098,8 +2098,7 @@ void Editor::respondToChangedSelection(const VisibleSelection& oldSelection, Fra
         if (shouldCheckSpellingAndGrammar
             && closeTyping
             && oldSelection.isContentEditable()
-            && oldSelection.start().deprecatedNode()
-            && oldSelection.start().anchorNode()->inDocument()
+            && oldSelection.start().inDocument()
             && !isSelectionInTextField(oldSelection)) {
             spellCheckOldSelection(oldSelection, newAdjacentWords, newSelectedSentence);
         }

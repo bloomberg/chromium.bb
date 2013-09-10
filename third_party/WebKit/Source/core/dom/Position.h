@@ -128,6 +128,7 @@ public:
     Node* deprecatedNode() const { return m_anchorNode.get(); }
 
     Document* document() const { return m_anchorNode ? &m_anchorNode->document() : 0; }
+    bool inDocument() const { return m_anchorNode && m_anchorNode->inDocument(); }
     Element* rootEditableElement() const
     {
         Node* container = containerNode();

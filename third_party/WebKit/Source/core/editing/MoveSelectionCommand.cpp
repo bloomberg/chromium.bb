@@ -62,13 +62,13 @@ void MoveSelectionCommand::doApply()
     // set the destination to the ending point after the deletion.
     // Fixes: <rdar://problem/3910425> REGRESSION (Mail): Crash in ReplaceSelectionCommand;
     //        selection is empty, leading to null deref
-    if (!pos.anchorNode()->inDocument())
+    if (!pos.inDocument())
         pos = endingSelection().start();
 
     cleanupAfterDeletion(pos);
 
     setEndingSelection(VisibleSelection(pos, endingSelection().affinity(), endingSelection().isDirectional()));
-    if (!pos.anchorNode()->inDocument()) {
+    if (!pos.inDocument()) {
         // Document was modified out from under us.
         return;
     }
