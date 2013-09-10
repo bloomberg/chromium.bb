@@ -17,6 +17,18 @@
 namespace {
 
 const int kIconSize = 32;
+const char kImageSizePath[] = "s32-p/";
+
+// Add a query parameter to specify the size to fetch the image in. The
+// original profile image can be of an arbitrary size, we ask the server to
+// crop it to a square 32x32 using its smart cropping algorithm.
+GURL GetImageUrl(const GURL& url) {
+  std::string image_filename = url.ExtractFileName();
+  if (image_filename.empty())
+    return url;
+
+  return url.Resolve(kImageSizePath + image_filename);
+}
 
 }  // namespace
 
@@ -41,7 +53,7 @@ PeopleResult::PeopleResult(Profile* profile,
       new UrlIconSource(base::Bind(&PeopleResult::OnIconLoaded,
                                    weak_factory_.GetWeakPtr()),
                         profile_->GetRequestContext(),
-                        image_url_,
+                        GetImageUrl(image_url_),
                         kIconSize,
                         IDR_PROFILE_PICTURE_LOADING),
       gfx::Size(kIconSize, kIconSize));
