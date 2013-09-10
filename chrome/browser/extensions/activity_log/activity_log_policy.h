@@ -93,6 +93,9 @@ class ActivityLogPolicy {
   // different policies. If restrict_urls is empty then all URLs are removed.
   virtual void RemoveURLs(const std::vector<GURL>& restrict_urls) = 0;
 
+  // Remove all rows relating to a given extension.
+  virtual void RemoveExtensionData(const std::string& extension_id) = 0;
+
   // Deletes everything in the database.
   virtual void DeleteDatabase() = 0;
 

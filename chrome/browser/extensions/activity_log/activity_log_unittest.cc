@@ -63,7 +63,12 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
-  static void RetrieveActions_LogAndFetchActions(
+  static void RetrieveActions_LogAndFetchActions0(
+      scoped_ptr<std::vector<scoped_refptr<Action> > > i) {
+    ASSERT_EQ(0, static_cast<int>(i->size()));
+  }
+
+  static void RetrieveActions_LogAndFetchActions2(
       scoped_ptr<std::vector<scoped_refptr<Action> > > i) {
     ASSERT_EQ(2, static_cast<int>(i->size()));
   }
@@ -156,7 +161,7 @@ TEST_F(ActivityLogTest, LogAndFetchActions) {
       "",
       "",
       0,
-      base::Bind(ActivityLogTest::RetrieveActions_LogAndFetchActions));
+      base::Bind(ActivityLogTest::RetrieveActions_LogAndFetchActions2));
 }
 
 TEST_F(ActivityLogTest, LogPrerender) {
@@ -242,6 +247,43 @@ TEST_F(ActivityLogTest, ArgUrlExtraction) {
       "",
       0,
       base::Bind(ActivityLogTest::RetrieveActions_ArgUrlExtraction));
+}
+
+TEST_F(ActivityLogTest, UninstalledExtension) {
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder()
+          .SetManifest(DictionaryBuilder()
+                       .Set("name", "Test extension")
+                       .Set("version", "1.0.0")
+                       .Set("manifest_version", 2))
+          .Build();
+
+  ActivityLog* activity_log = ActivityLog::GetInstance(profile());
+  scoped_ptr<base::ListValue> args(new base::ListValue());
+  ASSERT_TRUE(GetDatabaseEnabled());
+
+  // Write some API calls
+  scoped_refptr<Action> action = new Action(extension->id(),
+                                            base::Time::Now(),
+                                            Action::ACTION_API_CALL,
+                                            "tabs.testMethod");
+  activity_log->LogAction(action);
+  action = new Action(extension->id(),
+                      base::Time::Now(),
+                      Action::ACTION_DOM_ACCESS,
+                      "document.write");
+  action->set_page_url(GURL("http://www.google.com"));
+
+  activity_log->OnExtensionUninstalled(extension);
+
+  activity_log->GetFilteredActions(
+      extension->id(),
+      Action::ACTION_ANY,
+      "",
+      "",
+      "",
+      0,
+      base::Bind(ActivityLogTest::RetrieveActions_LogAndFetchActions0));
 }
 
 }  // namespace extensions
