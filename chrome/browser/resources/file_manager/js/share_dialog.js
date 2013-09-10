@@ -7,7 +7,7 @@
 /**
  * @param {HTMLElement} parentNode Node to be parent for this dialog.
  * @constructor
- * @extends {cr.ui.dialogs.BaseDialog}
+ * @extends {FileManagerDialogBase}
  * @implements {ShareClient.Observer}
  */
 function ShareDialog(parentNode) {
@@ -21,7 +21,7 @@ function ShareDialog(parentNode) {
   this.failureTimeout_ = null;
   this.callback_ = null;
 
-  cr.ui.dialogs.BaseDialog.call(this, parentNode);
+  FileManagerDialogBase.call(this, parentNode);
 }
 
 /**
@@ -111,7 +111,7 @@ ShareDialog.WebViewAuthorizer.prototype.authorizeRequest_ = function(e) {
 };
 
 ShareDialog.prototype = {
-  __proto__: cr.ui.dialogs.BaseDialog.prototype
+  __proto__: FileManagerDialogBase.prototype
 };
 
 /**
@@ -119,7 +119,7 @@ ShareDialog.prototype = {
  * @private
  */
 ShareDialog.prototype.initDom_ = function() {
-  cr.ui.dialogs.BaseDialog.prototype.initDom_.call(this);
+  FileManagerDialogBase.prototype.initDom_.call(this);
   this.frame_.classList.add('share-dialog-frame');
 
   this.spinnerWrapper_ = this.document_.createElement('div');
@@ -204,7 +204,7 @@ ShareDialog.prototype.hideWithResult = function(result, opt_onHide) {
     clearTimeout(this.failureTimeout_);
     this.failureTimeout_ = null;
   }
-  cr.ui.dialogs.BaseDialog.prototype.hide.call(
+  FileManagerDialogBase.prototype.hide.call(
       this,
       function() {
         if (opt_onHide)
@@ -254,7 +254,12 @@ ShareDialog.prototype.show = function(entry, callback) {
     util.visitURL(e.targetUrl);
     e.preventDefault();
   });
-  cr.ui.dialogs.BaseDialog.prototype.show.call(this, '', null, null, null);
+  var show = FileManagerDialogBase.prototype.showBlankDialog.call(this);
+  if (!show) {
+    // The code shoundn't get here, since already-showing was handled before.
+    console.error('ShareDialog can\'t be shown.');
+    return;
+  }
 
   // Initialize and authorize the Web View tag asynchronously.
   var group = new AsyncUtil.Group();

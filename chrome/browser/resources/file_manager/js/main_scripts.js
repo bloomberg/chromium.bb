@@ -68,6 +68,7 @@
 
 //<include src="combobutton.js"/>
 //<include src="commandbutton.js"/>
+//<include src="ui/file_manager_dialog_base.js"/>
 //
 //<include src="app_installer.js"/>
 //<include src="async_util.js"/>

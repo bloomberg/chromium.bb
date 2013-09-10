@@ -82,10 +82,10 @@ var REGEXP_LOCALHOST_MATCH = /^https?:\/\/localhost(?:\:\d{1,5})?$/;
  *
  * @param {HTMLElement} parentNode Node to be parent for this dialog.
  * @constructor
- * @extends {cr.ui.dialogs.BaseDialog}
+ * @extends {FileManagerDialogBase}
  */
 function SuggestAppsDialog(parentNode) {
-  cr.ui.dialogs.BaseDialog.call(this, parentNode);
+  FileManagerDialogBase.call(this, parentNode);
 
   this.frame_.id = 'suggest-app-dialog';
 
@@ -154,7 +154,7 @@ function SuggestAppsDialog(parentNode) {
 }
 
 SuggestAppsDialog.prototype = {
-  __proto__: cr.ui.dialogs.BaseDialog.prototype
+  __proto__: FileManagerDialogBase.prototype
 };
 
 /**
@@ -267,8 +267,14 @@ SuggestAppsDialog.prototype.show = function(extension, mime, onDialogClosed) {
     if (this.urlOverrided_)
       title += ' [OVERRIDED]';
 
-    cr.ui.dialogs.BaseDialog.prototype.showWithTitle.apply(
-        this, [title, '', function() {}, null, null]);
+    var show =
+        FileManagerDialogBase.prototype.showTitleOnlyDialog.call(this, title);
+    if (!show) {
+      console.error('SuggestAppsDialog can\'t be shown');
+      this.state_ = SuggestAppsDialog.State.UNINITIALIZED;
+      this.onHide();
+      return;
+    }
 
     this.webviewContainer_.innerHTML =
         '<webview id="cws-widget" partition="persist:cwswidgets"></webview>';
@@ -424,7 +430,7 @@ SuggestAppsDialog.prototype.hide = function(opt_originalOnHide) {
   this.extension_ = null;
   this.mime_ = null;
 
-  cr.ui.dialogs.BaseDialog.prototype.hide.call(
+  FileManagerDialogBase.prototype.hide.call(
       this,
       this.onHide_.bind(this, opt_originalOnHide));
 };

@@ -17,10 +17,10 @@ cr.define('cr.filebrowser', function() {
    *
    * @param {HTMLElement} parentNode Node to be parent for this dialog.
    * @constructor
-   * @extends {cr.ui.dialogs.BaseDialog}
+   * @extends {FileManagerDialogBase}
    */
   function DefaultActionDialog(parentNode) {
-    cr.ui.dialogs.BaseDialog.call(this, parentNode);
+    FileManagerDialogBase.call(this, parentNode);
 
     this.frame_.id = 'default-action-dialog';
 
@@ -49,7 +49,7 @@ cr.define('cr.filebrowser', function() {
   }
 
   DefaultActionDialog.prototype = {
-    __proto__: cr.ui.dialogs.BaseDialog.prototype
+    __proto__: FileManagerDialogBase.prototype
   };
 
   /**
@@ -93,15 +93,19 @@ cr.define('cr.filebrowser', function() {
    * @param {string} message Message in dialog caption.
    * @param {Array.<Object>} items Items to render in the list.
    * @param {number} defaultIndex Item to select by default.
-   * @param {function(Object=)} onOk OK callback with the selected item.
+   * @param {function(Object=)} opt_onOk OK callback with the selected item.
    * @param {function()=} opt_onCancel Cancel callback.
-   * @param {function()=} opt_onShow Show callback.
    */
   DefaultActionDialog.prototype.show = function(title, message, items,
-      defaultIndex, onOk, opt_onCancel, opt_onShow) {
+      defaultIndex, opt_onOk, opt_onCancel) {
 
-    cr.ui.dialogs.BaseDialog.prototype.showWithTitle.apply(
-        this, [title, message, onOk, opt_onCancel, opt_onShow]);
+    var show = FileManagerDialogBase.prototype.showOkCancelDialog.call(
+        this, title, message, opt_onOk, opt_onCancel);
+
+    if (!show) {
+      console.error('DefaultActionDialog can\'t be shown.');
+      return;
+    }
 
     if (!message) {
       this.text_.setAttribute('hidden', 'hidden');

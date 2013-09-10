@@ -800,6 +800,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.alert = new d.AlertDialog(this.dialogDom_);
     this.confirm = new d.ConfirmDialog(this.dialogDom_);
     this.prompt = new d.PromptDialog(this.dialogDom_);
+
+    FileManagerDialogBase.setFileManager(this);
     this.shareDialog_ = new ShareDialog(this.dialogDom_);
     this.defaultTaskPicker =
         new cr.filebrowser.DefaultActionDialog(this.dialogDom_);
@@ -2113,9 +2115,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     }
     // Add the overlapped class to prevent the applicaiton window from
     // captureing mouse events.
-    this.enableDragOnTitleArea_(false);
     this.shareDialog_.show(entries[0], function(result) {
-      this.enableDragOnTitleArea_(true);
       if (result == ShareDialog.Result.NETWORK_ERROR)
         this.error.show(str('SHARE_ERROR'));
     }.bind(this));
@@ -2333,12 +2333,11 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   /**
-   * Set a flag to show whether users can drag on the title area or not.
-   * @param {boolean} flag True if users can drag on the title area.
-   * @private
-   */
-  FileManager.prototype.enableDragOnTitleArea_ = function(flag) {
-    this.dialogContainer_.classList.toggle('disable-header-drag', !flag);
+   * Called when a dialog is shown or hidden.
+   * @param {boolean} flag True if a dialog is shown, false if hidden.   */
+  FileManager.prototype.onDialogShownOrHidden = function(show) {
+    // Set/unset a flag to disable dragging on the title area.
+    this.dialogContainer_.classList.toggle('disable-header-drag', show);
   };
 
   /**
@@ -3779,7 +3778,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         };
         items.push(item);
       }
-      this.defaultTaskPicker.show(
+      var show = this.defaultTaskPicker.showOkCancelDialog(
           str('CHANGE_DEFAULT_APP_BUTTON_LABEL'),
           '',
           items,
@@ -3787,6 +3786,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
           function(action) {
             ActionChoiceUtil.setRememberedActionId(action.id);
           });
+      if (!show)
+        console.error('DefaultTaskPicker can\'t be shown.');
     }.bind(this);
 
     ActionChoiceUtil.getDefinedActions(loadTimeData, function(actions) {
