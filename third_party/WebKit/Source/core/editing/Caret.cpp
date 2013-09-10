@@ -95,7 +95,7 @@ static bool removingNodeRemovesPosition(Node* node, const Position& position)
 
 static void clearRenderViewSelection(const Position& position)
 {
-    RefPtr<Document> document = &position.anchorNode()->document();
+    RefPtr<Document> document = position.document();
     document->updateStyleIfNeeded();
     if (RenderView* view = document->renderView())
         view->clearSelection();

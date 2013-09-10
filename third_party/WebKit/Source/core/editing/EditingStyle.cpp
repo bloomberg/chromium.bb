@@ -1395,7 +1395,7 @@ StyleChange::StyleChange(EditingStyle* style, const Position& position)
     , m_applySubscript(false)
     , m_applySuperscript(false)
 {
-    Document* document = position.anchorNode() ? &position.anchorNode()->document() : 0;
+    Document* document = position.document();
     if (!style || !style->style() || !document || !document->frame())
         return;
 

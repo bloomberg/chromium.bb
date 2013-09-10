@@ -136,7 +136,7 @@ PassRefPtr<Range> VisibleSelection::firstRange() const
         return 0;
     Position start = m_start.parentAnchoredEquivalent();
     Position end = m_end.parentAnchoredEquivalent();
-    return Range::create(start.anchorNode()->document(), start, end);
+    return Range::create(*start.document(), start, end);
 }
 
 PassRefPtr<Range> VisibleSelection::toNormalizedRange() const
@@ -148,7 +148,7 @@ PassRefPtr<Range> VisibleSelection::toNormalizedRange() const
     // in the course of running edit commands which modify the DOM.
     // Failing to call this can result in equivalentXXXPosition calls returning
     // incorrect results.
-    m_start.anchorNode()->document().updateLayout();
+    m_start.document()->updateLayout();
 
     // Check again, because updating layout can clear the selection.
     if (isNone())
@@ -192,7 +192,7 @@ PassRefPtr<Range> VisibleSelection::toNormalizedRange() const
 
     // VisibleSelections are supposed to always be valid.  This constructor will ASSERT
     // if a valid range could not be created, which is fine for this callsite.
-    return Range::create(s.anchorNode()->document(), s, e);
+    return Range::create(*s.document(), s, e);
 }
 
 bool VisibleSelection::expandUsingGranularity(TextGranularity granularity)

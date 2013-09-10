@@ -242,7 +242,7 @@ void FrameSelection::setSelection(const VisibleSelection& newSelection, SetSelec
     // <http://bugs.webkit.org/show_bug.cgi?id=23464>: Infinite recursion at FrameSelection::setSelection
     // if document->frame() == m_frame we can get into an infinite loop
     if (s.base().anchorNode()) {
-        Document& document = s.base().anchorNode()->document();
+        Document& document = *s.base().document();
         if (document.frame() && document.frame() != m_frame && &document != m_frame->document()) {
             RefPtr<Frame> guard = document.frame();
             document.frame()->selection().setSelection(s, options, align, granularity);
@@ -321,7 +321,7 @@ static bool removingNodeRemovesPosition(Node* node, const Position& position)
 
 static void clearRenderViewSelection(const Position& position)
 {
-    RefPtr<Document> document = &position.anchorNode()->document();
+    RefPtr<Document> document = position.document();
     document->updateStyleIfNeeded();
     if (RenderView* view = document->renderView())
         view->clearSelection();
@@ -1142,7 +1142,7 @@ LayoutUnit FrameSelection::lineDirectionPointForBlockDirectionNavigation(EPositi
         break;
     }
 
-    Frame* frame = pos.anchorNode()->document().frame();
+    Frame* frame = pos.document()->frame();
     if (!frame)
         return x;
 

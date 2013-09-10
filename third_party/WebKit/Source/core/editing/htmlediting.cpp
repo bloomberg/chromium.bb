@@ -1049,7 +1049,7 @@ int indexForVisiblePosition(const VisiblePosition& visiblePosition, RefPtr<Conta
         return 0;
 
     Position p(visiblePosition.deepEquivalent());
-    Document& document = p.anchorNode()->document();
+    Document& document = *p.document();
     ShadowRoot* shadowRoot = p.anchorNode()->containingShadowRoot();
 
     if (shadowRoot)

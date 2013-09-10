@@ -86,7 +86,7 @@ DeleteSelectionCommand::DeleteSelectionCommand(Document& document, bool smartDel
 }
 
 DeleteSelectionCommand::DeleteSelectionCommand(const VisibleSelection& selection, bool smartDelete, bool mergeBlocksAfterDelete, bool replace, bool expandForSpecialElements, bool sanitizeMarkup)
-    : CompositeEditCommand(selection.start().anchorNode()->document())
+    : CompositeEditCommand(*selection.start().document())
     , m_hasSelectionToDelete(true)
     , m_smartDelete(smartDelete)
     , m_mergeBlocksAfterDelete(mergeBlocksAfterDelete)
