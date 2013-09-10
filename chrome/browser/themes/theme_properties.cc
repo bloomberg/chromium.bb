@@ -19,7 +19,7 @@ namespace {
 // browser_theme_pack.h
 
 // Default colors.
-#if defined(USE_AURA)
+#if defined(OS_CHROMEOS)
 // Used for theme fallback colors.
 const SkColor kDefaultColorFrame = SkColorSetRGB(109, 109, 109);
 const SkColor kDefaultColorFrameInactive = SkColorSetRGB(176, 176, 176);
