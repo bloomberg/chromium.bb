@@ -6,6 +6,7 @@
   "pages": [
     {
       "url": "https://mail.google.com/mail/u/0/#inbox/13c6a141fa95ffe0",
+      "name": "gmail_expand_collapse_conversation",
       "why": "Expand and Collapse a long conversation. # TODO(edmundyan): Find a long conversation rather than hardcode url",
       "credentials": "google",
       "navigate_steps": [

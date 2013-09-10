@@ -6,6 +6,7 @@
   "pages": [
     {
       "url": "https://plus.google.com/+BarackObama/posts",
+      "name": "plus_alt_posts_photos",
       "why": "Alternate between clicking posts and albums",
       "credentials": "google",
       "navigate_steps": [

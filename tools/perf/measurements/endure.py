@@ -64,6 +64,10 @@ class Endure(page_measurement.PageMeasurement):
     """Reset the starting time for each new page."""
     self._test_start_time = time.time()
 
+    # Prefix the page name so it can be picked up by endure parser.
+    if page.name and not page.display_name.startswith('endure_'):
+      page.name = 'endure_' + page.name
+
   def MeasurePage(self, page, tab, results):
     """Dump perf information if we have gone past our interval time."""
     now = time.time()

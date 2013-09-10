@@ -6,6 +6,7 @@
   "pages": [
     {
       "url": "https://mail.google.com/mail/",
+      "name": "gmail_alt_threadlist_conversation",
       "why": "Alternate between Inbox and the first email conversation",
       "credentials": "google",
       "navigate_steps" : [

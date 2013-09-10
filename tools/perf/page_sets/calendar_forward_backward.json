@@ -6,6 +6,7 @@
   "pages": [
     {
       "url": "https://www.google.com/calendar/",
+      "name": "calendar_forward_backward",
       "why": "Click forward(4x) and backwards(4x) repeatedly",
       "credentials": "google",
       "navigate_steps" : [

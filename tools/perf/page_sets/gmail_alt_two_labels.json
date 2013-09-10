@@ -6,6 +6,7 @@
   "pages": [
     {
       "url": "https://mail.google.com/mail/",
+      "name": "gmail_alt_two_labels",
       "why": "Alternate between Inbox and Sent Mail",
       "credentials": "google",
       "navigate_steps" : [
