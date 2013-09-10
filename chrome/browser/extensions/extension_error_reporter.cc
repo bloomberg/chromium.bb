@@ -53,7 +53,7 @@ void ExtensionErrorReporter::ReportError(const string16& message,
 
   // TODO(aa): Print the error message out somewhere better. I think we are
   // going to need some sort of 'extension inspector'.
-  LOG(ERROR) << "Extension error: " << message;
+  LOG(WARNING) << "Extension error: " << message;
 
   if (enable_noisy_errors_ && be_noisy) {
     chrome::ShowMessageBox(NULL, ASCIIToUTF16("Extension error"), message,
