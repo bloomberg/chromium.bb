@@ -139,7 +139,7 @@ DriveIntegrationService::DriveIntegrationService(
     const base::FilePath& test_cache_root,
     FileSystemInterface* test_file_system)
     : profile_(profile),
-      is_initialized_(false),
+      state_(NOT_INITIALIZED),
       cache_root_directory_(!test_cache_root.empty() ?
                             test_cache_root : util::GetCacheRootPath(profile)),
       weak_ptr_factory_(this) {
@@ -209,6 +209,9 @@ DriveIntegrationService::~DriveIntegrationService() {
 
 void DriveIntegrationService::Initialize() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_EQ(NOT_INITIALIZED, state_);
+
+  state_ = INITIALIZING;
   drive_service_->Initialize();
   file_system_->Initialize();
 
@@ -226,6 +229,8 @@ void DriveIntegrationService::Initialize() {
 
 void DriveIntegrationService::Shutdown() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  weak_ptr_factory_.InvalidateWeakPtrs();
 
   DriveNotificationManager* drive_notification_manager =
       DriveNotificationManagerFactory::GetForBrowserContext(profile_);
@@ -272,13 +277,21 @@ bool DriveIntegrationService::IsDriveEnabled() {
   if (!util::IsDriveEnabledForProfile(profile_))
     return false;
 
-  return is_initialized_;
+  // For backword compatibility, REMOUNTING also means enabled.
+  return state_ == INITIALIZED || state_ == REMOUNTING;
 }
 
 void DriveIntegrationService::ClearCacheAndRemountFileSystem(
     const base::Callback<void(bool)>& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
+
+  if (state_ != INITIALIZED) {
+    callback.Run(false);
+    return;
+  }
+
+  state_ = REMOUNTING;
 
   RemoveDriveMountPoint();
   // Reloading the file system will clear the resource metadata.
@@ -324,9 +337,12 @@ void DriveIntegrationService::AddDriveMountPoint() {
       drive_mount_point);
 
   if (success) {
+    state_ = INITIALIZED;
     util::Log(logging::LOG_INFO, "Drive mount point is added");
     FOR_EACH_OBSERVER(DriveIntegrationServiceObserver, observers_,
                       OnFileSystemMounted());
+  } else {
+    state_ = NOT_INITIALIZED;
   }
 }
 
@@ -362,9 +378,12 @@ void DriveIntegrationService::InitializeAfterMetadataInitialized(
       pref_service->SetFilePath(prefs::kDownloadDefaultDirectory,
                                 DownloadPrefs::GetDefaultDownloadDirectory());
     }
+
+    // Back to NOT_INITIALIZED state. Then, re-running Initialize() should
+    // work if the error is recovarable manually (such as out of disk space).
+    state_ = NOT_INITIALIZED;
     return;
   }
-  is_initialized_ = true;
 
   content::DownloadManager* download_manager =
       g_browser_process->download_status_updater() ?
@@ -388,6 +407,7 @@ void DriveIntegrationService::InitializeAfterMetadataInitialized(
   }
 
   AddDriveMountPoint();
+  state_ = INITIALIZED;
 }
 
 //===================== DriveIntegrationServiceFactory =======================

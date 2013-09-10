@@ -401,7 +401,8 @@ FileSystem::~FileSystem() {
   // shutdown.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  change_list_loader_->RemoveObserver(this);
+  if (change_list_loader_)
+    change_list_loader_->RemoveObserver(this);
 }
 
 void FileSystem::AddObserver(FileSystemObserver* observer) {

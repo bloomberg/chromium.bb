@@ -110,6 +110,13 @@ class DriveIntegrationService
       const base::Callback<void(bool)>& callback);
 
  private:
+  enum State {
+    NOT_INITIALIZED,
+    INITIALIZING,
+    INITIALIZED,
+    REMOUNTING,
+  };
+
   // Returns true if Drive is enabled.
   // Must be called on UI thread.
   bool IsDriveEnabled();
@@ -131,7 +138,7 @@ class DriveIntegrationService
   friend class DriveIntegrationServiceFactory;
 
   Profile* profile_;
-  bool is_initialized_;
+  State state_;
 
   base::FilePath cache_root_directory_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
