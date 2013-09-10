@@ -476,7 +476,9 @@ void ShillPropertyHandler::GetPropertiesCallback(
   VLOG(2) << "GetPropertiesCallback: " << type << " : " << path;
   pending_updates_[type].erase(path);
   if (call_status != DBUS_METHOD_CALL_SUCCESS) {
-    NET_LOG_ERROR("Failed to get properties",
+    // The shill service no longer exists.  This can happen when a network
+    // has been removed.
+    NET_LOG_DEBUG("Failed to get properties",
                   base::StringPrintf("%s: %d", path.c_str(), call_status));
     return;
   }

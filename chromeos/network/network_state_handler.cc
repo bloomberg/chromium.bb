@@ -469,7 +469,8 @@ void NetworkStateHandler::UpdateManagedStateProperties(
   ManagedState* managed = GetModifiableManagedState(managed_list, path);
   if (!managed) {
     if (type != ManagedState::MANAGED_TYPE_FAVORITE) {
-      LOG(ERROR) << "GetPropertiesCallback: " << path << " Not found!";
+      // The network has been removed from the list of visible networks.
+      NET_LOG_DEBUG("UpdateManagedStateProperties: Not found", path);
       return;
     }
     // A Favorite may not have been created yet if it was added later (e.g.
