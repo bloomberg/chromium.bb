@@ -633,7 +633,6 @@
             ['include', '^base/l10n/'],
             ['include', '^base/layout'],
             ['include', '^base/resource/'],
-            ['include', '^base/text/text_elider\\.'],
             ['include', '^base/ui_base_'],
           ],
           'link_settings': {
