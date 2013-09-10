@@ -84,8 +84,6 @@ class RtcpPeer : public Rtcp {
              c_name) {
   }
 
-  using Rtcp::ConvertTimeToNtp;
-  using Rtcp::ConvertNtpToTime;
   using Rtcp::CheckForWrapAround;
   using Rtcp::OnReceivedLipSyncInfo;
 };
@@ -308,15 +306,14 @@ TEST_F(RtcpTest, NtpAndTime) {
                      kReceiverSsrc,
                      kCName);
   rtcp_peer.set_clock(&testing_clock_);
-  int64 input_time_us = 12345678901000LL + Rtcp::kNtpEpochDeltaMicroseconds;
   uint32 ntp_seconds = 0;
   uint32 ntp_fractions = 0;
-  base::TimeTicks input_time =
-      base::TimeTicks::FromInternalValue(input_time_us);
-  rtcp_peer.ConvertTimeToNtp(input_time, &ntp_seconds, &ntp_fractions);
+  base::TimeTicks input_time = base::TimeTicks::FromInternalValue(
+    12345678901000LL + kNtpEpochDeltaMicroseconds);
+  ConvertTimeToNtp(input_time, &ntp_seconds, &ntp_fractions);
   EXPECT_EQ(12345678u, ntp_seconds);
   EXPECT_EQ(input_time,
-            rtcp_peer.ConvertNtpToTime(ntp_seconds, ntp_fractions));
+            ConvertNtpToTime(ntp_seconds, ntp_fractions));
 }
 
 TEST_F(RtcpTest, WrapAround) {
@@ -366,14 +363,13 @@ TEST_F(RtcpTest, RtpTimestampInSenderTime) {
   EXPECT_FALSE(rtcp_peer.RtpTimestampInSenderTime(frequency, rtp_timestamp,
                                                    &rtp_timestamp_in_ticks));
 
-  int64 input_time_us = 12345678901000LL + Rtcp::kNtpEpochDeltaMicroseconds;
   uint32 ntp_seconds = 0;
   uint32 ntp_fractions = 0;
-  base::TimeTicks input_time =
-      base::TimeTicks::FromInternalValue(input_time_us);
+  base::TimeTicks input_time = base::TimeTicks::FromInternalValue(
+      12345678901000LL + kNtpEpochDeltaMicroseconds);
 
   // Test exact match.
-  rtcp_peer.ConvertTimeToNtp(input_time, &ntp_seconds, &ntp_fractions);
+  ConvertTimeToNtp(input_time, &ntp_seconds, &ntp_fractions);
   rtcp_peer.OnReceivedLipSyncInfo(rtp_timestamp, ntp_seconds, ntp_fractions);
   EXPECT_TRUE(rtcp_peer.RtpTimestampInSenderTime(frequency, rtp_timestamp,
                                                   &rtp_timestamp_in_ticks));

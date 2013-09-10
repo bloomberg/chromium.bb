@@ -27,6 +27,10 @@ struct RtcpSenderInfo;
 
 typedef std::map<uint8, std::set<uint16> > MissingFramesAndPackets;
 
+// This object is only called from the main cast thread.
+// This class handles splitting encoded audio and video frames into packets and
+// add an RTP header to each packet. The sent packets are stored until they are
+// acknowledged by the remote peer or timed out.
 class RtpSender {
  public:
   RtpSender(const AudioSenderConfig* audio_config,
@@ -35,16 +39,23 @@ class RtpSender {
 
   ~RtpSender();
 
-  void IncomingEncodedVideoFrame(const EncodedVideoFrame& video_frame,
-                                 int64 capture_time);
+  // The video_frame objects ownership is handled by the main cast thread.
+  void IncomingEncodedVideoFrame(const EncodedVideoFrame* video_frame,
+                                 const base::TimeTicks& capture_time);
 
-  void IncomingEncodedAudioFrame(const EncodedAudioFrame& audio_frame,
-                                 int64 recorded_time);
+  // The audio_frame objects ownership is handled by the main cast thread.
+  void IncomingEncodedAudioFrame(const EncodedAudioFrame* audio_frame,
+                                 const base::TimeTicks& recorded_time);
 
-  void ResendPackets(
-      const MissingFramesAndPackets& missing_frames_and_packets);
+  void ResendPackets(const MissingFramesAndPackets& missing_packets);
 
-  void RtpStatistics(int64 now_ms, RtcpSenderInfo* sender_info);
+  void RtpStatistics(const base::TimeTicks& now, RtcpSenderInfo* sender_info);
+
+  // Used for testing.
+  void set_clock(base::TickClock* clock) {
+    // TODO(pwestin): review how we pass in a clock for testing.
+    clock_ = clock;
+  }
 
  private:
   void UpdateSequenceNumber(std::vector<uint8>* packet);

@@ -66,12 +66,6 @@ class RtpReceiverStatistics {
 
 class Rtcp {
  public:
-  // Network Time Protocol (NTP), which is in seconds relative to 0h UTC on
-  // 1 January 1900.
-  static const int64 kNtpEpochDeltaSeconds = GG_INT64_C(9435484800);
-  static const int64 kNtpEpochDeltaMicroseconds =
-      kNtpEpochDeltaSeconds * base::Time::kMicrosecondsPerSecond;
-
   Rtcp(RtcpSenderFeedback* sender_feedback,
        PacedPacketSender* paced_packet_sender,
        RtpSenderStatistics* rtp_sender_statistics,
@@ -104,19 +98,13 @@ class Rtcp {
   }
 
  protected:
-  void ConvertTimeToNtp(const base::TimeTicks& time,
-                        uint32* ntp_seconds,
-                        uint32* ntp_fractions) const;
-
-  base::TimeTicks ConvertNtpToTime(uint32 ntp_seconds,
-                                   uint32 ntp_fractions) const;
-
   int CheckForWrapAround(uint32 new_timestamp,
                          uint32 old_timestamp) const;
 
   void OnReceivedLipSyncInfo(uint32 rtp_timestamp,
                              uint32 ntp_seconds,
                              uint32 ntp_fraction);
+
  private:
   friend class LocalRtcpRttFeedback;
   friend class LocalRtcpReceiverFeedback;
@@ -137,23 +125,7 @@ class Rtcp {
   void UpdateRtt(const base::TimeDelta& sender_delay,
                  const base::TimeDelta& receiver_delay);
 
-  void ConvertTimeToFractions(int64 time_us,
-                              uint32* seconds,
-                              uint32* fractions) const;
-
   void UpdateNextTimeToSendRtcp();
-
-  inline uint32 ConvertToNtpDiff(uint32 delay_seconds, uint32 delay_fraction) {
-    return ((delay_seconds & 0x0000FFFF) << 16) +
-           ((delay_fraction & 0xFFFF0000) >> 16);
-  }
-
-  inline base::TimeDelta ConvertFromNtpDiff(uint32 ntp_delay) {
-    uint32 delay_ms = (ntp_delay & 0x0000ffff) * 1000;
-    delay_ms /= 65536;
-    delay_ms += ((ntp_delay & 0xffff0000) >> 16) * 1000;
-    return base::TimeDelta::FromMilliseconds(delay_ms);
-  }
 
   const base::TimeDelta rtcp_interval_;
   const RtcpMode rtcp_mode_;

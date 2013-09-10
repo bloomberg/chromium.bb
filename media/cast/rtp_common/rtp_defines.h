@@ -5,8 +5,6 @@
 #ifndef MEDIA_CAST_RTP_COMMON_RTP_DEFINES_H_
 #define MEDIA_CAST_RTP_COMMON_RTP_DEFINES_H_
 
-#include <cstring>
-
 #include "base/basictypes.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/rtcp/rtcp_defines.h"
@@ -44,26 +42,6 @@ class RtpPayloadFeedback {
  protected:
   virtual ~RtpPayloadFeedback() {}
 };
-
-inline bool IsNewerFrameId(uint8 frame_id, uint8 prev_frame_id) {
-  return (frame_id != prev_frame_id) &&
-      static_cast<uint8>(frame_id - prev_frame_id) < 0x80;
-}
-
-inline bool IsOlderFrameId(uint8 frame_id, uint8 prev_frame_id) {
-  return (frame_id == prev_frame_id) || IsNewerFrameId(prev_frame_id, frame_id);
-}
-
-inline bool IsNewerPacketId(uint16 packet_id, uint16 prev_packet_id) {
-  return (packet_id != prev_packet_id) &&
-      static_cast<uint16>(packet_id - prev_packet_id) < 0x8000;
-}
-
-inline bool IsNewerSequenceNumber(uint16 sequence_number,
-                                  uint16 prev_sequence_number) {
-  // Same function as IsNewerPacketId just different data and name.
-  return IsNewerPacketId(sequence_number, prev_sequence_number);
-}
 
 }  // namespace cast
 }  // namespace media

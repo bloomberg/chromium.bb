@@ -16,6 +16,8 @@
       'sources': [
         'cast_config.h',
         'cast_config.cc',
+        'cast_thread.h',
+        'cast_thread.cc',
       ], # source
     },
     {
@@ -71,6 +73,8 @@
             'rtcp/rtcp_receiver_unittest.cc',
             'rtcp/rtcp_sender_unittest.cc',
             'rtcp/rtcp_unittest.cc',
+            'video_sender/video_encoder_unittest.cc',
+            'video_sender/video_sender_unittest.cc',
           ], # source
         },
       ],  # targets

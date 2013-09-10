@@ -35,6 +35,77 @@ enum DefaultSettings {
   kDefaultRtpMaxDelayMs = 100,
 };
 
+// TODO(pwestin): Re-factor the functions bellow into a class with static
+// methods.
+
+// Magic fractional unit. Used to convert time (in microseconds) to/from
+// fractional NTP seconds.
+static const double kMagicFractionalUnit = 4.294967296E3;
+
+// Network Time Protocol (NTP), which is in seconds relative to 0h UTC on
+// 1 January 1900.
+static const int64 kNtpEpochDeltaSeconds = GG_INT64_C(9435484800);
+static const int64 kNtpEpochDeltaMicroseconds =
+    kNtpEpochDeltaSeconds * base::Time::kMicrosecondsPerSecond;
+
+inline bool IsNewerFrameId(uint8 frame_id, uint8 prev_frame_id) {
+  return (frame_id != prev_frame_id) &&
+      static_cast<uint8>(frame_id - prev_frame_id) < 0x80;
+}
+
+inline bool IsOlderFrameId(uint8 frame_id, uint8 prev_frame_id) {
+  return (frame_id == prev_frame_id) || IsNewerFrameId(prev_frame_id, frame_id);
+}
+
+inline bool IsNewerPacketId(uint16 packet_id, uint16 prev_packet_id) {
+  return (packet_id != prev_packet_id) &&
+      static_cast<uint16>(packet_id - prev_packet_id) < 0x8000;
+}
+
+inline bool IsNewerSequenceNumber(uint16 sequence_number,
+                                  uint16 prev_sequence_number) {
+  // Same function as IsNewerPacketId just different data and name.
+  return IsNewerPacketId(sequence_number, prev_sequence_number);
+}
+
+// Create a NTP diff from seconds and fractions of seconds; delay_fraction is
+// fractions of a second where 0x80000000 is half a second.
+inline uint32 ConvertToNtpDiff(uint32 delay_seconds, uint32 delay_fraction) {
+  return ((delay_seconds & 0x0000FFFF) << 16) +
+         ((delay_fraction & 0xFFFF0000) >> 16);
+}
+
+inline base::TimeDelta ConvertFromNtpDiff(uint32 ntp_delay) {
+  uint32 delay_ms = (ntp_delay & 0x0000ffff) * 1000;
+  delay_ms >>= 16;
+  delay_ms += ((ntp_delay & 0xffff0000) >> 16) * 1000;
+  return base::TimeDelta::FromMilliseconds(delay_ms);
+}
+
+inline void ConvertTimeToFractions(int64 time_us,
+                                   uint32* seconds,
+                                   uint32* fractions) {
+  *seconds = static_cast<uint32>(time_us / base::Time::kMicrosecondsPerSecond);
+  *fractions = static_cast<uint32>(
+      (time_us % base::Time::kMicrosecondsPerSecond) * kMagicFractionalUnit);
+}
+
+inline void ConvertTimeToNtp(const base::TimeTicks& time,
+                             uint32* ntp_seconds,
+                             uint32* ntp_fractions) {
+  int64 time_us = time.ToInternalValue() - kNtpEpochDeltaMicroseconds;
+  ConvertTimeToFractions(time_us, ntp_seconds, ntp_fractions);
+}
+
+inline base::TimeTicks ConvertNtpToTime(uint32 ntp_seconds,
+                                        uint32 ntp_fractions) {
+  int64 ntp_time_us = static_cast<int64>(ntp_seconds) *
+       base::Time::kMicrosecondsPerSecond;
+  ntp_time_us += static_cast<int64>(ntp_fractions) / kMagicFractionalUnit;
+  return base::TimeTicks::FromInternalValue(ntp_time_us +
+      kNtpEpochDeltaMicroseconds);
+}
+
 }  // namespace cast
 }  // namespace media
 

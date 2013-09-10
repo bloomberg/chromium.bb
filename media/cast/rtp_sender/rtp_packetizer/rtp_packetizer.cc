@@ -23,7 +23,6 @@ RtpPacketizer::RtpPacketizer(PacedPacketSender* transport,
     : config_(rtp_packetizer_config),
       transport_(transport),
       packet_storage_(packet_storage),
-      time_last_sent_rtp_timestamp_(0),
       sequence_number_(config_.sequence_number),
       rtp_timestamp_(config_.rtp_timestamp),
       frame_id_(0),
@@ -36,30 +35,33 @@ RtpPacketizer::RtpPacketizer(PacedPacketSender* transport,
 RtpPacketizer::~RtpPacketizer() {}
 
 void RtpPacketizer::IncomingEncodedVideoFrame(
-    const EncodedVideoFrame& video_frame,
-    int64 capture_time_ms) {
+    const EncodedVideoFrame* video_frame,
+    const base::TimeTicks& capture_time) {
   DCHECK(!config_.audio) << "Invalid state";
   if (config_.audio) return;
 
-  // Timestamp is in 90 KHz for video.
-  rtp_timestamp_ = static_cast<uint32>(capture_time_ms * 90);
-  time_last_sent_rtp_timestamp_ = capture_time_ms;
+  base::TimeTicks zero_time;
+  base::TimeDelta capture_delta = capture_time - zero_time;
 
-  Cast(video_frame.key_frame,
-       video_frame.last_referenced_frame_id,
+  // Timestamp is in 90 KHz for video.
+  rtp_timestamp_ = static_cast<uint32>(capture_delta.InMilliseconds() * 90);
+  time_last_sent_rtp_timestamp_ = capture_time;
+
+  Cast(video_frame->key_frame,
+       video_frame->last_referenced_frame_id,
        rtp_timestamp_,
-       video_frame.data);
+       video_frame->data);
 }
 
 void RtpPacketizer::IncomingEncodedAudioFrame(
-    const EncodedAudioFrame& audio_frame,
-    int64 recorded_time) {
+    const EncodedAudioFrame* audio_frame,
+    const base::TimeTicks& recorded_time) {
   DCHECK(config_.audio) << "Invalid state";
   if (!config_.audio) return;
 
-  rtp_timestamp_ += audio_frame.samples;  // Timestamp is in samples for audio.
+  rtp_timestamp_ += audio_frame->samples;  // Timestamp is in samples for audio.
   time_last_sent_rtp_timestamp_ = recorded_time;
-  Cast(true, 0, rtp_timestamp_, audio_frame.data);
+  Cast(true, 0, rtp_timestamp_, audio_frame->data);
 }
 
 uint16 RtpPacketizer::NextSequenceNumber() {
@@ -67,9 +69,9 @@ uint16 RtpPacketizer::NextSequenceNumber() {
   return sequence_number_ - 1;
 }
 
-bool RtpPacketizer::LastSentTimestamp(int64* time_sent,
+bool RtpPacketizer::LastSentTimestamp(base::TimeTicks* time_sent,
                                       uint32* rtp_timestamp) const {
-  if (time_last_sent_rtp_timestamp_ == 0) return false;
+  if (time_last_sent_rtp_timestamp_.is_null()) return false;
 
   *time_sent = time_last_sent_rtp_timestamp_;
   *rtp_timestamp = rtp_timestamp_;

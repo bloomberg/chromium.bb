@@ -17,7 +17,7 @@ namespace media {
 namespace cast {
 
 static const int kPayload = 127;
-static const uint32 kTimestamp = 10;
+static const uint32 kTimestampMs = 10;
 static const uint16 kSeqNum = 33;
 static const int kTimeOffset = 22222;
 static const int kMaxPacketLength = 1500;
@@ -46,7 +46,7 @@ class TestRtpPacketTransport : public PacedPacketSender {
         rtp_header.webrtc.header.markerBit);
     EXPECT_EQ(kPayload, rtp_header.webrtc.header.payloadType);
     EXPECT_EQ(sequence_number_, rtp_header.webrtc.header.sequenceNumber);
-    EXPECT_EQ(kTimestamp * 90, rtp_header.webrtc.header.timestamp);
+    EXPECT_EQ(kTimestampMs * 90, rtp_header.webrtc.header.timestamp);
     EXPECT_EQ(config_.ssrc, rtp_header.webrtc.header.ssrc);
     EXPECT_EQ(0, rtp_header.webrtc.header.numCSRCs);
   }
@@ -121,7 +121,10 @@ class RtpPacketizerTest : public ::testing::Test {
 TEST_F(RtpPacketizerTest, SendStandardPackets) {
   int expected_num_of_packets = kFrameSize / kMaxPacketLength + 1;
   transport_->SetExpectedNumberOfPackets(expected_num_of_packets);
-  rtp_packetizer_->IncomingEncodedVideoFrame(video_frame_, kTimestamp);
+
+  base::TimeTicks time;
+  time += base::TimeDelta::FromMilliseconds(kTimestampMs);
+    rtp_packetizer_->IncomingEncodedVideoFrame(&video_frame_,time);
 }
 
 TEST_F(RtpPacketizerTest, Stats) {
@@ -130,7 +133,10 @@ TEST_F(RtpPacketizerTest, Stats) {
   // Insert packets at varying lengths.
   unsigned int expected_num_of_packets = kFrameSize / kMaxPacketLength + 1;
   transport_->SetExpectedNumberOfPackets(expected_num_of_packets);
-  rtp_packetizer_->IncomingEncodedVideoFrame(video_frame_, kTimestamp);
+
+  base::TimeTicks time;
+  time += base::TimeDelta::FromMilliseconds(kTimestampMs);
+  rtp_packetizer_->IncomingEncodedVideoFrame(&video_frame_, time);
   EXPECT_EQ(expected_num_of_packets, rtp_packetizer_->send_packets_count());
   EXPECT_EQ(kFrameSize, rtp_packetizer_->send_octet_count());
 }

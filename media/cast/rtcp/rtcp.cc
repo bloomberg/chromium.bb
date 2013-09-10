@@ -21,9 +21,6 @@ static const int kMaxRttMs = 1000000;  // 1000 seconds.
 // Time limit for received RTCP messages when we stop using it for lip-sync.
 static const int64 kMaxDiffSinceReceivedRtcpMs = 100000;  // 100 seconds.
 
-// Magic fractional unit.
-static const double kMagicFractionalUnit = 4.294967296E3;
-
 class LocalRtcpRttFeedback : public RtcpRttFeedback {
  public:
   explicit LocalRtcpRttFeedback(Rtcp* rtcp)
@@ -376,30 +373,6 @@ bool Rtcp::Rtt(base::TimeDelta* rtt,
   *min_rtt = min_rtt_;
   *max_rtt = max_rtt_;
   return true;
-}
-
-void Rtcp::ConvertTimeToFractions(int64 time_us,
-                                  uint32* seconds,
-                                  uint32* fractions) const {
-  *seconds = static_cast<uint32>(time_us / base::Time::kMicrosecondsPerSecond);
-  *fractions = static_cast<uint32>(
-      (time_us % base::Time::kMicrosecondsPerSecond) * kMagicFractionalUnit);
-}
-
-void Rtcp::ConvertTimeToNtp(const base::TimeTicks& time,
-                            uint32* ntp_seconds,
-                            uint32* ntp_fractions) const {
-  int64 time_us = time.ToInternalValue() - kNtpEpochDeltaMicroseconds;
-  ConvertTimeToFractions(time_us, ntp_seconds, ntp_fractions);
-}
-
-base::TimeTicks Rtcp::ConvertNtpToTime(uint32 ntp_seconds,
-                                       uint32 ntp_fractions) const {
-  int64 ntp_time_us = static_cast<int64>(ntp_seconds) *
-       base::Time::kMicrosecondsPerSecond;
-  ntp_time_us += static_cast<int64>(ntp_fractions) / kMagicFractionalUnit;
-  return base::TimeTicks::FromInternalValue(ntp_time_us +
-      kNtpEpochDeltaMicroseconds);
 }
 
 int Rtcp::CheckForWrapAround(uint32 new_timestamp,

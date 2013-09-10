@@ -6,7 +6,7 @@
   'includes': [
 #    'audio_sender/audio_sender.gypi',
     'congestion_control/congestion_control.gypi',
-#    'video_sender/video_sender.gypi',
+    'video_sender/video_sender.gypi',
   ],
   'targets': [
     {
@@ -23,7 +23,7 @@
         'pacing/paced_sender.gyp:paced_sender',
         'rtcp/rtcp.gyp:cast_rtcp',
         'rtp_sender/rtp_sender.gyp:cast_rtp_sender',
-#       'video_sender',
+        'video_sender',
       ], # dependencies
     },
   ],

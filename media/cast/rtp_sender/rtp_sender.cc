@@ -12,25 +12,6 @@
 
 namespace media {
 namespace cast {
-namespace {
-
-// January 1970, in milliseconds.
-static const int64 kNtpJan1970 = 2208988800000LL;
-
-// Magic fractional unit.
-static const uint32 kMagicFractionalUnit = 4294967;
-
-void ConvertTimeToFractions(int64 time_ms, uint32* seconds,
-                            uint32* fractions) {
-  *seconds = static_cast<uint32>(time_ms / 1000);
-  *fractions = static_cast<uint32>((time_ms % 1000) * kMagicFractionalUnit);
-}
-
-void ConvertTimeToNtp(int64 time_ms, uint32* ntp_seconds,
-                      uint32* ntp_fractions) {
-  ConvertTimeToFractions(time_ms + kNtpJan1970, ntp_seconds, ntp_fractions);
-}
-}  // namespace
 
 RtpSender::RtpSender(const AudioSenderConfig* audio_config,
                      const VideoSenderConfig* video_config,
@@ -65,13 +46,13 @@ RtpSender::RtpSender(const AudioSenderConfig* audio_config,
 
 RtpSender::~RtpSender() {}
 
-void RtpSender::IncomingEncodedVideoFrame(const EncodedVideoFrame& video_frame,
-                                          int64 capture_time) {
+void RtpSender::IncomingEncodedVideoFrame(const EncodedVideoFrame* video_frame,
+    const base::TimeTicks& capture_time) {
   packetizer_->IncomingEncodedVideoFrame(video_frame, capture_time);
 }
 
-void RtpSender::IncomingEncodedAudioFrame(const EncodedAudioFrame& audio_frame,
-                                          int64 recorded_time) {
+void RtpSender::IncomingEncodedAudioFrame(const EncodedAudioFrame* audio_frame,
+    const base::TimeTicks& recorded_time) {
   packetizer_->IncomingEncodedAudioFrame(audio_frame, recorded_time);
 }
 
@@ -107,7 +88,6 @@ void RtpSender::ResendPackets(
         }
       } while (success);
 
-
     } else {
       for (std::set<uint16>::const_iterator set_it = packets.begin();
           set_it != packets.end(); ++set_it) {
@@ -138,23 +118,24 @@ void RtpSender::UpdateSequenceNumber(std::vector<uint8>* packet) {
   (*packet)[index + 1] =(static_cast<uint8>(new_sequence_number >> 8));
 }
 
-void RtpSender::RtpStatistics(int64 now_ms, RtcpSenderInfo* sender_info) {
+void RtpSender::RtpStatistics(const base::TimeTicks& now,
+                              RtcpSenderInfo* sender_info) {
   // The timestamp of this Rtcp packet should be estimated as the timestamp of
   // the frame being captured at this moment. We are calculating that
   // timestamp as the last frame's timestamp + the time since the last frame
   // was captured.
   uint32 ntp_seconds = 0;
   uint32 ntp_fraction = 0;
-  ConvertTimeToNtp(now_ms, &ntp_seconds, &ntp_fraction);
+  ConvertTimeToNtp(now, &ntp_seconds, &ntp_fraction);
   // sender_info->ntp_seconds = ntp_seconds;
   sender_info->ntp_fraction = ntp_fraction;
 
-  int64 time_sent_ms;
+  base::TimeTicks time_sent;
   uint32 rtp_timestamp;
-  if (packetizer_->LastSentTimestamp(&time_sent_ms, &rtp_timestamp)) {
-    int64 time_since_last_send_ms = now_ms - time_sent_ms;
+  if (packetizer_->LastSentTimestamp(&time_sent, &rtp_timestamp)) {
+    base::TimeDelta time_since_last_send = now - time_sent;
     sender_info->rtp_timestamp = rtp_timestamp +
-        time_since_last_send_ms * (config_.frequency / 1000);
+        time_since_last_send.InMilliseconds() * (config_.frequency / 1000);
   } else {
     sender_info->rtp_timestamp = 0;
   }
