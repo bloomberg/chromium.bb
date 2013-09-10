@@ -255,7 +255,7 @@ TEST_F(SyncerProtoUtilTest, AddRequestBirthday) {
 class DummyConnectionManager : public ServerConnectionManager {
  public:
   DummyConnectionManager()
-      : ServerConnectionManager("unused", 0, false, false),
+      : ServerConnectionManager("unused", 0, false, false, NULL),
         send_error_(false),
         access_denied_(false) {}
 

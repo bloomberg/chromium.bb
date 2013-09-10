@@ -21,6 +21,8 @@
 
 namespace syncer {
 
+class CancelationSignal;
+
 // A Syncer provides a control interface for driving the individual steps
 // of the sync cycle.  Each cycle (hopefully) moves the client into closer
 // synchronization with the server.  The individual steps are modeled
@@ -35,13 +37,10 @@ class SYNC_EXPORT_PRIVATE Syncer {
  public:
   typedef std::vector<int64> UnsyncedMetaHandles;
 
-  Syncer();
+  Syncer(CancelationSignal* cancelation_signal);
   virtual ~Syncer();
 
-  // Called by other threads to tell the syncer to stop what it's doing
-  // and return early from SyncShare, if possible.
   bool ExitRequested();
-  void RequestEarlyExit();
 
   // Fetches and applies updates, resolves conflicts and commits local changes
   // for |request_types| as necessary until client and server states are in
@@ -79,8 +78,7 @@ class SYNC_EXPORT_PRIVATE Syncer {
       sessions::SyncSession* session,
       sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source);
 
-  bool early_exit_requested_;
-  base::Lock early_exit_requested_lock_;
+  syncer::CancelationSignal* const cancelation_signal_;
 
   friend class SyncerTest;
   FRIEND_TEST_ALL_PREFIXES(SyncerTest, NameClashWithResolver);

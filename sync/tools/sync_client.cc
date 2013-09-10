@@ -27,6 +27,7 @@
 #include "net/dns/host_resolver.h"
 #include "net/http/transport_security_state.h"
 #include "net/url_request/url_request_test_util.h"
+#include "sync/internal_api/public/base/cancelation_signal.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/base_node.h"
 #include "sync/internal_api/public/engine/passive_model_worker.h"
@@ -349,6 +350,7 @@ int SyncClientMain(int argc, char* argv[]) {
       InternalComponentsFactory::ENCRYPTION_KEYSTORE,
       InternalComponentsFactory::BACKOFF_NORMAL
   };
+  CancelationSignal cancelation_signal;
 
   sync_manager->Init(database_dir.path(),
                     WeakHandle<JsEventHandler>(
@@ -368,7 +370,8 @@ int SyncClientMain(int argc, char* argv[]) {
                     &null_encryptor,
                     scoped_ptr<UnrecoverableErrorHandler>(
                         new LoggingUnrecoverableErrorHandler).Pass(),
-                    &LogUnrecoverableErrorContext, false);
+                    &LogUnrecoverableErrorContext, false,
+                    &cancelation_signal);
   // TODO(akalin): Avoid passing in model parameters multiple times by
   // organizing handling of model types.
   invalidator->UpdateCredentials(credentials.email, credentials.sync_token);

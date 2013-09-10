@@ -16,6 +16,7 @@
 #include "net/http/http_status_code.h"
 #include "sync/engine/net/url_translator.h"
 #include "sync/engine/syncer.h"
+#include "sync/internal_api/public/base/cancelation_signal.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/syncable/directory.h"
 #include "url/gurl.h"
@@ -114,13 +115,32 @@ bool ServerConnectionManager::Connection::ReadDownloadResponse(
 }
 
 ServerConnectionManager::ScopedConnectionHelper::ScopedConnectionHelper(
-    ServerConnectionManager* manager, Connection* connection)
-    : manager_(manager), connection_(connection) {}
+    CancelationSignal* signaller, scoped_ptr<Connection> connection)
+    : cancelation_signal_(signaller), connection_(connection.Pass()) {
+  // Special early return for tests.
+  if (!connection_.get())
+    return;
+
+  if (!cancelation_signal_->TryRegisterHandler(this)) {
+    connection_.reset();
+  }
+}
+
+// This function may be called from another thread.
+void ServerConnectionManager::ScopedConnectionHelper::OnStopRequested() {
+  DCHECK(connection_);
+  connection_->Abort();
+}
 
 ServerConnectionManager::ScopedConnectionHelper::~ScopedConnectionHelper() {
-  if (connection_)
-    manager_->OnConnectionDestroyed(connection_.get());
-  connection_.reset();
+  // We should be registered iff connection_.get() != NULL.
+  if (connection_.get()) {
+    // It is important that this be called before this destructor completes.
+    // Until the unregistration is complete, it's possible that the virtual
+    // OnStopRequested() function may be called from a different thread.  We
+    // need to unregister it before destruction modifies our vptr.
+    cancelation_signal_->UnregisterHandler(this);
+  }
 }
 
 ServerConnectionManager::Connection*
@@ -177,41 +197,18 @@ ServerConnectionManager::ServerConnectionManager(
     const string& server,
     int port,
     bool use_ssl,
-    bool use_oauth2_token)
+    bool use_oauth2_token,
+    CancelationSignal* cancelation_signal)
     : sync_server_(server),
       sync_server_port_(port),
       use_ssl_(use_ssl),
       use_oauth2_token_(use_oauth2_token),
       proto_sync_path_(kSyncServerSyncPath),
       server_status_(HttpResponse::NONE),
-      terminated_(false),
-      active_connection_(NULL) {
+      cancelation_signal_(cancelation_signal) {
 }
 
 ServerConnectionManager::~ServerConnectionManager() {
-}
-
-ServerConnectionManager::Connection*
-ServerConnectionManager::MakeActiveConnection() {
-  base::AutoLock lock(terminate_connection_lock_);
-  DCHECK(!active_connection_);
-  if (terminated_)
-    return NULL;
-
-  active_connection_ = MakeConnection();
-  return active_connection_;
-}
-
-void ServerConnectionManager::OnConnectionDestroyed(Connection* connection) {
-  DCHECK(connection);
-  base::AutoLock lock(terminate_connection_lock_);
-  // |active_connection_| can be NULL already if it was aborted. Also,
-  // it can legitimately be a different Connection object if a new Connection
-  // was created after a previous one was Aborted and destroyed.
-  if (active_connection_ != connection)
-    return;
-
-  active_connection_ = NULL;
 }
 
 bool ServerConnectionManager::SetAuthToken(const std::string& auth_token) {
@@ -278,7 +275,7 @@ bool ServerConnectionManager::PostBufferToPath(PostBufferParams* params,
 
   // When our connection object falls out of scope, it clears itself from
   // active_connection_.
-  ScopedConnectionHelper post(this, MakeActiveConnection());
+  ScopedConnectionHelper post(cancelation_signal_, MakeConnection());
   if (!post.get()) {
     params->response.server_status = HttpResponse::CONNECTION_UNAVAILABLE;
     return false;
@@ -343,20 +340,10 @@ void ServerConnectionManager::RemoveListener(
   listeners_.RemoveObserver(listener);
 }
 
-ServerConnectionManager::Connection* ServerConnectionManager::MakeConnection()
+scoped_ptr<ServerConnectionManager::Connection>
+ServerConnectionManager::MakeConnection()
 {
-  return NULL;  // For testing.
-}
-
-void ServerConnectionManager::TerminateAllIO() {
-  base::AutoLock lock(terminate_connection_lock_);
-  terminated_ = true;
-  if (active_connection_)
-    active_connection_->Abort();
-
-  // Sever our ties to this connection object. Note that it still may exist,
-  // since we don't own it, but it has been neutered.
-  active_connection_ = NULL;
+  return scoped_ptr<Connection>();  // For testing.
 }
 
 std::ostream& operator << (std::ostream& s, const struct HttpResponse& hr) {

@@ -20,7 +20,7 @@ class FakeSyncScheduler : public SyncScheduler {
   virtual ~FakeSyncScheduler();
 
   virtual void Start(Mode mode) OVERRIDE;
-  virtual void RequestStop() OVERRIDE;
+  virtual void Stop() OVERRIDE;
   virtual void ScheduleLocalNudge(
       const base::TimeDelta& desired_delay,
       ModelTypeSet types,

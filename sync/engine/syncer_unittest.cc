@@ -30,6 +30,7 @@
 #include "sync/engine/syncer.h"
 #include "sync/engine/syncer_proto_util.h"
 #include "sync/engine/traffic_recorder.h"
+#include "sync/internal_api/public/base/cancelation_signal.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/protocol/bookmark_specifics.pb.h"
@@ -228,7 +229,7 @@ class SyncerTest : public testing::Test,
             false,  // force enable pre-commit GU avoidance experiment
             "fake_invalidator_client_id"));
     context_->set_routing_info(routing_info);
-    syncer_ = new Syncer();
+    syncer_ = new Syncer(&cancelation_signal_);
 
     syncable::ReadTransaction trans(FROM_HERE, directory());
     syncable::Directory::Metahandles children;
@@ -551,6 +552,7 @@ class SyncerTest : public testing::Test,
   FakeEncryptor encryptor_;
   scoped_refptr<ExtensionsActivity> extensions_activity_;
   scoped_ptr<MockConnectionManager> mock_server_;
+  CancelationSignal cancelation_signal_;
 
   Syncer* syncer_;
 

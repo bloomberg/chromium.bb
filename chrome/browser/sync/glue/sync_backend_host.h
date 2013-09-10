@@ -20,6 +20,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "sync/internal_api/public/base/cancelation_signal.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/configure_reason.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
@@ -218,10 +219,9 @@ class SyncBackendHost
   bool SetDecryptionPassphrase(const std::string& passphrase)
       WARN_UNUSED_RESULT;
 
-  // Called on |frontend_loop_| to kick off shutdown procedure. After this, no
-  // further sync activity will occur with the sync server and no further
-  // change applications will occur from changes already downloaded.
-  // Furthermore, no notifications will be sent to any invalidation handler.
+  // Called on |frontend_loop_| to kick off shutdown procedure.  Attempts to cut
+  // short any long-lived or blocking sync thread tasks so that the shutdown on
+  // sync thread task that we're about to post won't have to wait very long.
   virtual void StopSyncingForShutdown();
 
   // Called on |frontend_loop_| to kick off shutdown.
@@ -339,7 +339,8 @@ class SyncBackendHost
             unrecoverable_error_handler,
         syncer::ReportUnrecoverableErrorFunction
             report_unrecoverable_error_function,
-        bool use_oauth2_token);
+        bool use_oauth2_token,
+        syncer::CancelationSignal* cancelation_signal);
     ~DoInitializeOptions();
 
     base::MessageLoop* sync_loop;
@@ -363,6 +364,7 @@ class SyncBackendHost
     syncer::ReportUnrecoverableErrorFunction
         report_unrecoverable_error_function;
     bool use_oauth2_token;
+    syncer::CancelationSignal* const cancelation_signal;
   };
 
   // Allows tests to perform alternate core initialization work.
@@ -523,10 +525,6 @@ class SyncBackendHost
   virtual void OnIncomingInvalidation(
       const syncer::ObjectIdInvalidationMap& invalidation_map) OVERRIDE;
 
-  // Handles stopping the core's SyncManager, accounting for whether
-  // initialization is done yet.
-  void StopSyncManagerForShutdown();
-
   base::WeakPtrFactory<SyncBackendHost> weak_ptr_factory_;
 
   content::NotificationRegistrar notification_registrar_;
@@ -588,6 +586,8 @@ class SyncBackendHost
 
   invalidation::InvalidationService* invalidator_;
   bool invalidation_handler_registered_;
+
+  syncer::CancelationSignal cancelation_signal_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncBackendHost);
 };

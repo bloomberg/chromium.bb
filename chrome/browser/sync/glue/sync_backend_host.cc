@@ -198,11 +198,10 @@ class SyncBackendHost::Core
   void DoFinishInitialProcessControlTypes();
 
   // The shutdown order is a bit complicated:
-  // 1) Call DoStopSyncManagerForShutdown() from |frontend_loop_| to request
-  //    sync manager to stop as soon as possible.
+  // 1) Call the SyncManagerStopHandle's RequestStop() from |frontend_loop_| to
+  //    request sync manager to stop as soon as possible.
   // 2) Post DoShutdown() to sync loop to clean up backend state, save
   //    directory and destroy sync manager.
-  void DoStopSyncManagerForShutdown();
   void DoShutdown(bool sync_disabled);
   void DoDestroySyncManager();
 
@@ -401,7 +400,8 @@ void SyncBackendHost::Initialize(
           new InternalComponentsFactoryImpl(factory_switches)).Pass(),
       unrecoverable_error_handler.Pass(),
       report_unrecoverable_error_function,
-      !cl->HasSwitch(switches::kSyncDisableOAuth2Token)));
+      !cl->HasSwitch(switches::kSyncDisableOAuth2Token),
+      &cancelation_signal_));
   InitCore(init_opts.Pass());
 }
 
@@ -492,24 +492,9 @@ bool SyncBackendHost::SetDecryptionPassphrase(const std::string& passphrase) {
   return true;
 }
 
-void SyncBackendHost::StopSyncManagerForShutdown() {
-  DCHECK_GT(initialization_state_, NOT_ATTEMPTED);
-  if (initialization_state_ == CREATING_SYNC_MANAGER) {
-    // We post here to implicitly wait for the SyncManager to be created,
-    // if needed.  We have to wait, since we need to shutdown immediately,
-    // and we need to tell the SyncManager so it can abort any activity
-    // (net I/O, data application).
-    DCHECK(registrar_->sync_thread()->IsRunning());
-    registrar_->sync_thread()->message_loop()->PostTask(FROM_HERE,
-        base::Bind(&SyncBackendHost::Core::DoStopSyncManagerForShutdown,
-                   core_.get()));
-  } else {
-    core_->DoStopSyncManagerForShutdown();
-  }
-}
-
 void SyncBackendHost::StopSyncingForShutdown() {
   DCHECK_EQ(base::MessageLoop::current(), frontend_loop_);
+  DCHECK_GT(initialization_state_, NOT_ATTEMPTED);
 
   // Immediately stop sending messages to the frontend.
   frontend_ = NULL;
@@ -521,7 +506,7 @@ void SyncBackendHost::StopSyncingForShutdown() {
 
   registrar_->RequestWorkerStopOnUIThread();
 
-  StopSyncManagerForShutdown();
+  cancelation_signal_.RequestStop();
 }
 
 scoped_ptr<base::Thread> SyncBackendHost::Shutdown(ShutdownOption option) {
@@ -883,7 +868,8 @@ SyncBackendHost::DoInitializeOptions::DoInitializeOptions(
     scoped_ptr<syncer::UnrecoverableErrorHandler> unrecoverable_error_handler,
     syncer::ReportUnrecoverableErrorFunction
         report_unrecoverable_error_function,
-    bool use_oauth2_token)
+    bool use_oauth2_token,
+    syncer::CancelationSignal* const cancelation_signal)
     : sync_loop(sync_loop),
       registrar(registrar),
       routing_info(routing_info),
@@ -903,7 +889,8 @@ SyncBackendHost::DoInitializeOptions::DoInitializeOptions(
       unrecoverable_error_handler(unrecoverable_error_handler.Pass()),
       report_unrecoverable_error_function(
           report_unrecoverable_error_function),
-      use_oauth2_token(use_oauth2_token) {
+      use_oauth2_token(use_oauth2_token),
+      cancelation_signal(cancelation_signal) {
 }
 
 SyncBackendHost::DoInitializeOptions::~DoInitializeOptions() {}
@@ -1168,7 +1155,8 @@ void SyncBackendHost::Core::DoInitialize(
                       &encryptor_,
                       options->unrecoverable_error_handler.Pass(),
                       options->report_unrecoverable_error_function,
-                      options->use_oauth2_token);
+                      options->use_oauth2_token,
+                      options->cancelation_signal);
 
   // |sync_manager_| may end up being NULL here in tests (in
   // synchronous initialization mode).
@@ -1276,11 +1264,6 @@ void SyncBackendHost::Core::DoSetDecryptionPassphrase(
 void SyncBackendHost::Core::DoEnableEncryptEverything() {
   DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
   sync_manager_->GetEncryptionHandler()->EnableEncryptEverything();
-}
-
-void SyncBackendHost::Core::DoStopSyncManagerForShutdown() {
-  if (sync_manager_)
-    sync_manager_->StopSyncingForShutdown();
 }
 
 void SyncBackendHost::Core::DoShutdown(bool sync_disabled) {

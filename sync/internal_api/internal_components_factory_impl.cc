@@ -21,15 +21,20 @@ InternalComponentsFactoryImpl::InternalComponentsFactoryImpl(
 InternalComponentsFactoryImpl::~InternalComponentsFactoryImpl() { }
 
 scoped_ptr<SyncScheduler> InternalComponentsFactoryImpl::BuildScheduler(
-    const std::string& name, sessions::SyncSessionContext* context) {
+    const std::string& name,
+    sessions::SyncSessionContext* context,
+    CancelationSignal* cancelation_signal) {
 
   scoped_ptr<BackoffDelayProvider> delay(BackoffDelayProvider::FromDefaults());
 
   if (switches_.backoff_override == BACKOFF_SHORT_INITIAL_RETRY_OVERRIDE)
     delay.reset(BackoffDelayProvider::WithShortInitialRetryOverride());
 
-  return scoped_ptr<SyncScheduler>(
-      new SyncSchedulerImpl(name, delay.release(), context, new Syncer()));
+  return scoped_ptr<SyncScheduler>(new SyncSchedulerImpl(
+          name,
+          delay.release(),
+          context,
+          new Syncer(cancelation_signal)));
 }
 
 scoped_ptr<sessions::SyncSessionContext>
