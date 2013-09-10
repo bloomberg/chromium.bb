@@ -30,6 +30,13 @@ del _path
 
 EXTERNAL_GERRIT_SSH_REMOTE = 'gerrit'
 
+# Retry a push in GitPush if git returns a error response with any of that
+# messages. It's all observed 'bad' GoB responses so far.
+GIT_TRANSIENT_ERRORS = (
+    r'! \[remote rejected\].* -> .* \(error in hook\)',
+    r'remote error: Internal Server Error',
+)
+
 
 class RemoteRef(object):
   """Object representing a remote ref.
@@ -906,7 +913,7 @@ def CreateBranch(git_repo, branch, branch_point='HEAD', track=False):
   RunGit(git_repo, cmd)
 
 
-def GitPush(git_repo, refspec, push_to, dryrun=False, force=False):
+def GitPush(git_repo, refspec, push_to, dryrun=False, force=False, retry=True):
   """Wrapper for pushing to a branch.
 
   Arguments:
@@ -914,6 +921,7 @@ def GitPush(git_repo, refspec, push_to, dryrun=False, force=False):
     refspec: The local ref to push to the remote.
     push_to: A RemoteRef object representing the remote ref to push to.
     force: Whether to bypass non-fastforward checks.
+    retry: Retry a push in case of transient errors.
   """
   cmd = ['push', push_to.remote, '%s:%s' % (refspec, push_to.ref)]
 
@@ -922,7 +930,16 @@ def GitPush(git_repo, refspec, push_to, dryrun=False, force=False):
   if force:
     cmd.append('--force')
 
-  RunGit(git_repo, cmd)
+  def _ShouldRetry(exc):
+    """Returns True if push operation failed with a transient error."""
+    if not isinstance(exc, cros_build_lib.RunCommandError):
+      return False
+    return any(re.search(msg, exc.result.error) for msg in GIT_TRANSIENT_ERRORS)
+
+  if retry:
+    cros_build_lib.GenericRetry(_ShouldRetry, 5, RunGit, git_repo, cmd, sleep=2)
+  else:
+    RunGit(git_repo, cmd)
 
 
 # TODO(build): Switch callers of this function to use CreateBranch instead.
