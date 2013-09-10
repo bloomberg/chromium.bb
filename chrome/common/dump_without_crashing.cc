@@ -31,7 +31,7 @@ void DumpWithoutCrashing() {
   typedef void (__cdecl *DumpProcessFunction)();
   DumpProcessFunction DumpProcess = reinterpret_cast<DumpProcessFunction>(
       ::GetProcAddress(::GetModuleHandle(chrome::kBrowserProcessExecutableName),
-                       "DumpProcess"));
+                       "DumpProcessWithoutCrash"));
   if (DumpProcess)
     DumpProcess();
 #elif defined(OS_POSIX)
