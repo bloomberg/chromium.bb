@@ -200,14 +200,13 @@ public class InvalidationService extends AndroidListener {
         // Attempt to retrieve a token for the user. This method will also invalidate
         // invalidAuthToken if it is non-null.
         AccountManagerHelper.get(this).getNewAuthTokenFromForeground(
-                account, invalidAuthToken, SyncStatusHelper.AUTH_TOKEN_TYPE_SYNC,
+                account, invalidAuthToken, getOAuth2ScopeWithType(),
                 new AccountManagerHelper.GetAuthTokenCallback() {
                     @Override
                     public void tokenAvailable(String token) {
                         if (token != null) {
-                            InvalidationService.setAuthToken(
-                                    InvalidationService.this.getApplicationContext(), pendingIntent,
-                                    token, SyncStatusHelper.AUTH_TOKEN_TYPE_SYNC);
+                            setAuthToken(InvalidationService.this.getApplicationContext(),
+                                    pendingIntent, token, getOAuth2ScopeWithType());
                         }
                     }
                 });
@@ -437,6 +436,10 @@ public class InvalidationService extends AndroidListener {
     @VisibleForTesting
     @Nullable static byte[] getClientIdForTest() {
         return sClientId;
+    }
+
+    private static String getOAuth2ScopeWithType() {
+        return "oauth2:" + SyncStatusHelper.CHROME_SYNC_OAUTH2_SCOPE;
     }
 
     /** Returns the client name used for the notification client. */
