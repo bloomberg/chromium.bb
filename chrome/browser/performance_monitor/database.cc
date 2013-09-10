@@ -212,9 +212,9 @@ bool Database::AddMetric(const std::string& activity,
                          const Metric& metric) {
   CHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   if (!metric.IsValid()) {
-    LOG(ERROR) << "Metric to be added is invalid. Type: " << metric.type
-               << ", Time: " << metric.time.ToInternalValue()
-               << ", Value: " << metric.value << ". Ignoring.";
+    DLOG(ERROR) << "Metric to be added is invalid. Type: " << metric.type
+                << ", Time: " << metric.time.ToInternalValue()
+                << ", Value: " << metric.value << ". Ignoring.";
     return false;
   }
 
