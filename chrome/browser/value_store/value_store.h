@@ -15,30 +15,85 @@
 // Interface for a storage area for Value objects.
 class ValueStore {
  public:
+  // Error codes returned from storage methods.
+  enum ErrorCode {
+    OK,
+
+    // The failure was due to some kind of database corruption. Depending on
+    // what is corrupted, some part of the database may be recoverable.
+    //
+    // For example, if the on-disk representation of leveldb is corrupted, it's
+    // likely the whole database will need to be wiped and started again.
+    //
+    // If a single key has been committed with an invalid JSON representation,
+    // just that key can be deleted without affecting the rest of the database.
+    CORRUPTION,
+
+    // The failure was due to the store being read-only (for example, policy).
+    READ_ONLY,
+
+    // The failure was due to the store running out of space.
+    QUOTA_EXCEEDED,
+
+    // Any other error.
+    OTHER_ERROR,
+  };
+
+  // Bundles an ErrorCode with further metadata.
+  struct Error {
+    Error(ErrorCode code,
+          const std::string& message,
+          scoped_ptr<std::string> key);
+    ~Error();
+
+    static scoped_ptr<Error> Create(ErrorCode code,
+                                    const std::string& message,
+                                    scoped_ptr<std::string> key) {
+      return make_scoped_ptr(new Error(code, message, key.Pass()));
+    }
+
+    // The error code.
+    const ErrorCode code;
+
+    // Message associated with the error.
+    const std::string message;
+
+    // The key associated with the error, if any. Use a scoped_ptr here
+    // because empty-string is a valid key.
+    //
+    // TODO(kalman): add test(s) for an empty key.
+    const scoped_ptr<std::string> key;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Error);
+  };
+
   // The result of a read operation (Get).
   class ReadResultType {
    public:
-    // Ownership of |settings| taken.
-    explicit ReadResultType(base::DictionaryValue* settings);
-    explicit ReadResultType(const std::string& error);
+    explicit ReadResultType(scoped_ptr<base::DictionaryValue> settings);
+    explicit ReadResultType(scoped_ptr<Error> error);
     ~ReadResultType();
+
+    bool HasError() const { return error_; }
 
     // Gets the settings read from the storage. Note that this represents
     // the root object. If you request the value for key "foo", that value will
-    // be in |settings.foo|.
-    // Must only be called if HasError() is false.
-    scoped_ptr<base::DictionaryValue>& settings();
+    // be in |settings|.|foo|.
+    //
+    // Must only be called if there is no error.
+    base::DictionaryValue& settings() { return *settings_; }
+    scoped_ptr<base::DictionaryValue> PassSettings() {
+      return settings_.Pass();
+    }
 
-    // Gets whether the operation failed.
-    bool HasError() const;
-
-    // Gets the error message describing the failure.
-    // Must only be called if HasError() is true.
-    const std::string& error() const;
+    // Only call if HasError is true.
+    const Error& error() const { return *error_; }
+    scoped_ptr<Error> PassError() { return error_.Pass(); }
 
    private:
     scoped_ptr<base::DictionaryValue> settings_;
-    const std::string error_;
+    scoped_ptr<Error> error_;
 
     DISALLOW_COPY_AND_ASSIGN(ReadResultType);
   };
@@ -47,25 +102,25 @@ class ValueStore {
   // The result of a write operation (Set/Remove/Clear).
   class WriteResultType {
    public:
-    // Ownership of |changes| taken.
-    explicit WriteResultType(ValueStoreChangeList* changes);
-    explicit WriteResultType(const std::string& error);
+    explicit WriteResultType(scoped_ptr<ValueStoreChangeList> changes);
+    explicit WriteResultType(scoped_ptr<Error> error);
     ~WriteResultType();
 
+    bool HasError() const { return error_; }
+
     // Gets the list of changes to the settings which resulted from the write.
-    // Must only be called if HasError() is false.
-    const ValueStoreChangeList& changes() const;
+    // Won't be present if the NO_GENERATE_CHANGES WriteOptions was given.
+    // Only call if HasError is false.
+    ValueStoreChangeList& changes() { return *changes_; }
+    scoped_ptr<ValueStoreChangeList> PassChanges() { return changes_.Pass(); }
 
-    // Gets whether the operation failed.
-    bool HasError() const;
-
-    // Gets the error message describing the failure.
-    // Must only be called if HasError() is true.
-    const std::string& error() const;
+    // Only call if HasError is true.
+    const Error& error() const { return *error_; }
+    scoped_ptr<Error> PassError() { return error_.Pass(); }
 
    private:
-    const scoped_ptr<ValueStoreChangeList> changes_;
-    const std::string error_;
+    scoped_ptr<ValueStoreChangeList> changes_;
+    scoped_ptr<Error> error_;
 
     DISALLOW_COPY_AND_ASSIGN(WriteResultType);
   };
@@ -81,10 +136,6 @@ class ValueStore {
 
     // Don't generate the changes for a WriteResult.
     NO_GENERATE_CHANGES = 1<<2,
-
-    // Don't check the old value before writing a new value. This will also
-    // result in an empty |old_value| in the WriteResult::changes list.
-    NO_CHECK_OLD_VALUE = 1<<3
   };
   typedef int WriteOptions;
 
@@ -92,13 +143,13 @@ class ValueStore {
 
   // Helpers for making a Read/WriteResult.
   template<typename T>
-  static ReadResult MakeReadResult(T arg) {
-    return ReadResult(new ReadResultType(arg));
+  static ReadResult MakeReadResult(scoped_ptr<T> arg) {
+    return ReadResult(new ReadResultType(arg.Pass()));
   }
 
   template<typename T>
-  static WriteResult MakeWriteResult(T arg) {
-    return WriteResult(new WriteResultType(arg));
+  static WriteResult MakeWriteResult(scoped_ptr<T> arg) {
+    return WriteResult(new WriteResultType(arg.Pass()));
   }
 
   // Gets the amount of space being used by a single value, in bytes.

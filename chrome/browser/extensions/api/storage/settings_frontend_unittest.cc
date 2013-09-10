@@ -111,7 +111,7 @@ TEST_F(ExtensionSettingsFrontendTest, SettingsPreservedAcrossReconstruction) {
   {
     ValueStore::ReadResult result = storage->Get();
     ASSERT_FALSE(result->HasError());
-    EXPECT_FALSE(result->settings()->empty());
+    EXPECT_FALSE(result->settings().empty());
   }
 
   ResetFrontend();
@@ -120,7 +120,7 @@ TEST_F(ExtensionSettingsFrontendTest, SettingsPreservedAcrossReconstruction) {
   {
     ValueStore::ReadResult result = storage->Get();
     ASSERT_FALSE(result->HasError());
-    EXPECT_FALSE(result->settings()->empty());
+    EXPECT_FALSE(result->settings().empty());
   }
 }
 
@@ -148,7 +148,7 @@ TEST_F(ExtensionSettingsFrontendTest, SettingsClearedOnUninstall) {
   {
     ValueStore::ReadResult result = storage->Get();
     ASSERT_FALSE(result->HasError());
-    EXPECT_TRUE(result->settings()->empty());
+    EXPECT_TRUE(result->settings().empty());
   }
 }
 

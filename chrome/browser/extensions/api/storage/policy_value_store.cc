@@ -10,18 +10,20 @@
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/policy_types.h"
 #include "chrome/browser/value_store/value_store_change.h"
+#include "chrome/browser/value_store/value_store_util.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
+
+namespace util = value_store_util;
 
 namespace extensions {
 
 namespace {
 
-const char kReadOnlyStoreErrorMessage[] = "This is a read-only store.";
-
-ValueStore::WriteResult WriteResultError() {
-  return ValueStore::MakeWriteResult(kReadOnlyStoreErrorMessage);
+scoped_ptr<ValueStore::Error> ReadOnlyError(scoped_ptr<std::string> key) {
+  return make_scoped_ptr(new ValueStore::Error(
+      ValueStore::READ_ONLY, "This is a read-only store.", key.Pass()));
 }
 
 }  // namespace
@@ -58,11 +60,11 @@ void PolicyValueStore::SetCurrentPolicy(const policy::PolicyMap& policy,
   ValueStore::ReadResult read_result = delegate_->Get();
   if (read_result->HasError()) {
     LOG(WARNING) << "Failed to read managed settings for extension "
-        << extension_id_ << ": " << read_result->error();
+        << extension_id_ << ": " << read_result->error().message;
     // Leave |previous_policy| empty, so that events are generated for every
     // policy in |current_policy|.
   } else {
-    read_result->settings()->Swap(&previous_policy);
+    read_result->settings().Swap(&previous_policy);
   }
 
   // Now get two lists of changes: changes after setting the current policies,
@@ -139,25 +141,25 @@ ValueStore::ReadResult PolicyValueStore::Get() {
 
 ValueStore::WriteResult PolicyValueStore::Set(
     WriteOptions options, const std::string& key, const base::Value& value) {
-  return WriteResultError();
+  return MakeWriteResult(ReadOnlyError(util::NewKey(key)));
 }
 
 ValueStore::WriteResult PolicyValueStore::Set(
     WriteOptions options, const base::DictionaryValue& settings) {
-  return WriteResultError();
+  return MakeWriteResult(ReadOnlyError(util::NoKey()));
 }
 
 ValueStore::WriteResult PolicyValueStore::Remove(const std::string& key) {
-  return WriteResultError();
+  return MakeWriteResult(ReadOnlyError(util::NewKey(key)));
 }
 
 ValueStore::WriteResult PolicyValueStore::Remove(
     const std::vector<std::string>& keys) {
-  return WriteResultError();
+  return MakeWriteResult(ReadOnlyError(util::NoKey()));
 }
 
 ValueStore::WriteResult PolicyValueStore::Clear() {
-  return WriteResultError();
+  return MakeWriteResult(ReadOnlyError(util::NoKey()));
 }
 
 }  // namespace extensions

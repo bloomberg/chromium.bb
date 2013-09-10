@@ -10,30 +10,12 @@ namespace {
 
 const char kGenericErrorMessage[] = "TestingValueStore configured to error";
 
-ValueStore::ReadResult ReadResultError() {
-  return ValueStore::MakeReadResult(kGenericErrorMessage);
-}
-
-ValueStore::WriteResult WriteResultError() {
-  return ValueStore::MakeWriteResult(kGenericErrorMessage);
-}
-
-std::vector<std::string> CreateVector(const std::string& string) {
-  std::vector<std::string> strings;
-  strings.push_back(string);
-  return strings;
-}
-
 }  // namespace
 
 TestingValueStore::TestingValueStore()
-    : read_count_(0), write_count_(0), fail_all_requests_(false) {}
+    : read_count_(0), write_count_(0), error_code_(OK) {}
 
 TestingValueStore::~TestingValueStore() {}
-
-void TestingValueStore::SetFailAllRequests(bool fail_all_requests) {
-  fail_all_requests_ = fail_all_requests;
-}
 
 size_t TestingValueStore::GetBytesInUse(const std::string& key) {
   // Let SettingsStorageQuotaEnforcer implement this.
@@ -55,15 +37,14 @@ size_t TestingValueStore::GetBytesInUse() {
 }
 
 ValueStore::ReadResult TestingValueStore::Get(const std::string& key) {
-  return Get(CreateVector(key));
+  return Get(std::vector<std::string>(1, key));
 }
 
 ValueStore::ReadResult TestingValueStore::Get(
     const std::vector<std::string>& keys) {
   read_count_++;
-  if (fail_all_requests_) {
-    return ReadResultError();
-  }
+  if (error_code_ != OK)
+    return MakeReadResult(TestingError());
 
   DictionaryValue* settings = new DictionaryValue();
   for (std::vector<std::string>::const_iterator it = keys.begin();
@@ -73,15 +54,14 @@ ValueStore::ReadResult TestingValueStore::Get(
       settings->SetWithoutPathExpansion(*it, value->DeepCopy());
     }
   }
-  return MakeReadResult(settings);
+  return MakeReadResult(make_scoped_ptr(settings));
 }
 
 ValueStore::ReadResult TestingValueStore::Get() {
   read_count_++;
-  if (fail_all_requests_) {
-    return ReadResultError();
-  }
-  return MakeReadResult(storage_.DeepCopy());
+  if (error_code_ != OK)
+    return MakeReadResult(TestingError());
+  return MakeReadResult(make_scoped_ptr(storage_.DeepCopy()));
 }
 
 ValueStore::WriteResult TestingValueStore::Set(
@@ -94,9 +74,8 @@ ValueStore::WriteResult TestingValueStore::Set(
 ValueStore::WriteResult TestingValueStore::Set(
     WriteOptions options, const DictionaryValue& settings) {
   write_count_++;
-  if (fail_all_requests_) {
-    return WriteResultError();
-  }
+  if (error_code_ != OK)
+    return MakeWriteResult(TestingError());
 
   scoped_ptr<ValueStoreChangeList> changes(new ValueStoreChangeList());
   for (DictionaryValue::Iterator it(settings); !it.IsAtEnd(); it.Advance()) {
@@ -111,19 +90,18 @@ ValueStore::WriteResult TestingValueStore::Set(
       storage_.SetWithoutPathExpansion(it.key(), it.value().DeepCopy());
     }
   }
-  return MakeWriteResult(changes.release());
+  return MakeWriteResult(changes.Pass());
 }
 
 ValueStore::WriteResult TestingValueStore::Remove(const std::string& key) {
-  return Remove(CreateVector(key));
+  return Remove(std::vector<std::string>(1, key));
 }
 
 ValueStore::WriteResult TestingValueStore::Remove(
     const std::vector<std::string>& keys) {
   write_count_++;
-  if (fail_all_requests_) {
-    return WriteResultError();
-  }
+  if (error_code_ != OK)
+    return MakeWriteResult(TestingError());
 
   scoped_ptr<ValueStoreChangeList> changes(new ValueStoreChangeList());
   for (std::vector<std::string>::const_iterator it = keys.begin();
@@ -133,7 +111,7 @@ ValueStore::WriteResult TestingValueStore::Remove(
       changes->push_back(ValueStoreChange(*it, old_value.release(), NULL));
     }
   }
-  return MakeWriteResult(changes.release());
+  return MakeWriteResult(changes.Pass());
 }
 
 ValueStore::WriteResult TestingValueStore::Clear() {
@@ -142,4 +120,9 @@ ValueStore::WriteResult TestingValueStore::Clear() {
     keys.push_back(it.key());
   }
   return Remove(keys);
+}
+
+scoped_ptr<ValueStore::Error> TestingValueStore::TestingError() {
+  return make_scoped_ptr(new ValueStore::Error(
+      error_code_, kGenericErrorMessage, scoped_ptr<std::string>()));
 }

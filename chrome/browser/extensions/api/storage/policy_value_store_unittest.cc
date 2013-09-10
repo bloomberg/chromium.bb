@@ -128,10 +128,10 @@ TEST_F(PolicyValueStoreTest, DontProvideRecommendedPolicies) {
   store_->SetCurrentPolicy(policies, false);
   ValueStore::ReadResult result = store_->Get();
   ASSERT_FALSE(result->HasError());
-  EXPECT_EQ(1u, result->settings()->size());
+  EXPECT_EQ(1u, result->settings().size());
   base::Value* value = NULL;
-  EXPECT_FALSE(result->settings()->Get("may", &value));
-  EXPECT_TRUE(result->settings()->Get("must", &value));
+  EXPECT_FALSE(result->settings().Get("may", &value));
+  EXPECT_TRUE(result->settings().Get("must", &value));
   EXPECT_TRUE(base::Value::Equals(&expected, value));
 }
 

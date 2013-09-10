@@ -14,8 +14,6 @@
 
 using content::BrowserThread;
 
-// Test suite for CachingValueStore, using a test database with a few simple
-// entries.
 class ValueStoreFrontendTest : public testing::Test {
  public:
   ValueStoreFrontendTest()

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/storage/syncable_settings_storage.h"
 
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/api/storage/settings_namespace.h"
 #include "chrome/browser/extensions/api/storage/settings_sync_processor.h"
 #include "chrome/browser/extensions/api/storage/settings_sync_util.h"
@@ -142,15 +143,15 @@ syncer::SyncError SyncableSettingsStorage::StartSyncing(
     return syncer::SyncError(
         FROM_HERE,
         syncer::SyncError::DATATYPE_ERROR,
-        std::string("Failed to get settings: ") + maybe_settings->error(),
+        base::StringPrintf("Failed to get settings: %s",
+            maybe_settings->error().message.c_str()),
         sync_processor_->type());
   }
 
-  const base::DictionaryValue& settings = *maybe_settings->settings().get();
-  if (sync_state.empty())
-    return SendLocalSettingsToSync(settings);
-  else
-    return OverwriteLocalSettingsWithSync(sync_state, settings);
+  const base::DictionaryValue& settings = maybe_settings->settings();
+  return sync_state.empty() ?
+      SendLocalSettingsToSync(settings) :
+      OverwriteLocalSettingsWithSync(sync_state, settings);
 }
 
 syncer::SyncError SyncableSettingsStorage::SendLocalSettingsToSync(
@@ -261,15 +262,14 @@ syncer::SyncError SyncableSettingsStorage::ProcessSyncChanges(
         errors.push_back(syncer::SyncError(
             FROM_HERE,
             syncer::SyncError::DATATYPE_ERROR,
-            std::string("Error getting current sync state for ") +
-                extension_id_ + "/" + key + ": " + maybe_settings->error(),
+            base::StringPrintf("Error getting current sync state for %s/%s: %s",
+                extension_id_.c_str(), key.c_str(),
+                maybe_settings->error().message.c_str()),
             sync_processor_->type()));
         continue;
       }
-      Value* value = NULL;
-      if (maybe_settings->settings()->GetWithoutPathExpansion(key, &value)) {
-        current_value.reset(value->DeepCopy());
-      }
+      maybe_settings->settings().RemoveWithoutPathExpansion(key,
+                                                            &current_value);
     }
 
     syncer::SyncError error;
@@ -341,8 +341,8 @@ syncer::SyncError SyncableSettingsStorage::OnSyncAdd(
     return syncer::SyncError(
         FROM_HERE,
         syncer::SyncError::DATATYPE_ERROR,
-        std::string("Error pushing sync add to local settings: ") +
-            result->error(),
+        base::StringPrintf("Error pushing sync add to local settings: %s",
+            result->error().message.c_str()),
         sync_processor_->type());
   }
   changes->push_back(ValueStoreChange(key, NULL, new_value));
@@ -361,8 +361,8 @@ syncer::SyncError SyncableSettingsStorage::OnSyncUpdate(
     return syncer::SyncError(
         FROM_HERE,
         syncer::SyncError::DATATYPE_ERROR,
-        std::string("Error pushing sync update to local settings: ") +
-            result->error(),
+        base::StringPrintf("Error pushing sync update to local settings: %s",
+            result->error().message.c_str()),
         sync_processor_->type());
   }
   changes->push_back(ValueStoreChange(key, old_value, new_value));
@@ -379,8 +379,8 @@ syncer::SyncError SyncableSettingsStorage::OnSyncDelete(
     return syncer::SyncError(
         FROM_HERE,
         syncer::SyncError::DATATYPE_ERROR,
-        std::string("Error pushing sync remove to local settings: ") +
-            result->error(),
+        base::StringPrintf("Error pushing sync remove to local settings: %s",
+            result->error().message.c_str()),
         sync_processor_->type());
   }
   changes->push_back(ValueStoreChange(key, old_value, NULL));

@@ -6,58 +6,40 @@
 
 #include "base/logging.h"
 
+// Implementation of Error.
+
+ValueStore::Error::Error(ErrorCode code,
+                         const std::string& message,
+                         scoped_ptr<std::string> key)
+    : code(code), message(message), key(key.Pass()) {}
+
+ValueStore::Error::~Error() {}
+
 // Implementation of ReadResultType.
 
-ValueStore::ReadResultType::ReadResultType(DictionaryValue* settings)
-    : settings_(settings) {
-  DCHECK(settings);
+ValueStore::ReadResultType::ReadResultType(scoped_ptr<DictionaryValue> settings)
+    : settings_(settings.Pass()) {
+  CHECK(settings_);
 }
 
-ValueStore::ReadResultType::ReadResultType(const std::string& error)
-    : error_(error) {
-  DCHECK(!error.empty());
+ValueStore::ReadResultType::ReadResultType(scoped_ptr<Error> error)
+    : error_(error.Pass()) {
+  CHECK(error_);
 }
 
 ValueStore::ReadResultType::~ReadResultType() {}
 
-bool ValueStore::ReadResultType::HasError() const {
-  return !error_.empty();
-}
-
-scoped_ptr<DictionaryValue>& ValueStore::ReadResultType::settings() {
-  DCHECK(!HasError());
-  return settings_;
-}
-
-const std::string& ValueStore::ReadResultType::error() const {
-  DCHECK(HasError());
-  return error_;
-}
-
 // Implementation of WriteResultType.
 
-ValueStore::WriteResultType::WriteResultType(ValueStoreChangeList* changes)
-    : changes_(changes) {
-  DCHECK(changes);
+ValueStore::WriteResultType::WriteResultType(
+    scoped_ptr<ValueStoreChangeList> changes)
+    : changes_(changes.Pass()) {
+  CHECK(changes_);
 }
 
-ValueStore::WriteResultType::WriteResultType(const std::string& error)
-    : error_(error) {
-  DCHECK(!error.empty());
+ValueStore::WriteResultType::WriteResultType(scoped_ptr<Error> error)
+    : error_(error.Pass()) {
+  CHECK(error_);
 }
 
 ValueStore::WriteResultType::~WriteResultType() {}
-
-bool ValueStore::WriteResultType::HasError() const {
-  return !error_.empty();
-}
-
-const ValueStoreChangeList& ValueStore::WriteResultType::changes() const {
-  DCHECK(!HasError());
-  return *changes_;
-}
-
-const std::string& ValueStore::WriteResultType::error() const {
-  DCHECK(HasError());
-  return error_;
-}

@@ -62,8 +62,8 @@ class ExtensionSettingsQuotaTest : public testing::Test {
   // Returns whether the settings in |storage_| and |delegate_| are the same as
   // |settings|.
   bool SettingsEqual(const DictionaryValue& settings) {
-    return settings.Equals(storage_->Get()->settings().get()) &&
-           settings.Equals(delegate_->Get()->settings().get());
+    return settings.Equals(&storage_->Get()->settings()) &&
+           settings.Equals(&delegate_->Get()->settings());
   }
 
   // Values with different serialized sizes.

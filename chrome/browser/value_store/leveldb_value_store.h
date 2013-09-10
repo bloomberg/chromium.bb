@@ -47,32 +47,36 @@ class LeveldbValueStore : public ValueStore {
   virtual WriteResult Clear() OVERRIDE;
 
  private:
-  // Tries to open the database if it hasn't been opened already.  Returns the
-  // error message on failure, or "" on success (guaranteeding that |db_| is
-  // non-NULL),
-  std::string EnsureDbIsOpen();
+  // Tries to open the database if it hasn't been opened already.
+  scoped_ptr<ValueStore::Error> EnsureDbIsOpen();
 
-  // Reads a setting from the database. Returns the error message on failure,
-  // or "" on success in which case |setting| will be reset to the Value read
-  // from the database. This value may be NULL.
-  std::string ReadFromDb(
+  // Reads a setting from the database.
+  scoped_ptr<ValueStore::Error> ReadFromDb(
       leveldb::ReadOptions options,
       const std::string& key,
       // Will be reset() with the result, if any.
       scoped_ptr<Value>* setting);
 
   // Adds a setting to a WriteBatch, and logs the change in |changes|. For use
-  // with WriteToDb. Returns the error message on failure, or "" on success.
-  std::string AddToBatch(
-      ValueStore::WriteOptions options,
-      const std::string& key,
-      const base::Value& value,
-      leveldb::WriteBatch* batch,
-      ValueStoreChangeList* changes);
+  // with WriteToDb.
+  scoped_ptr<ValueStore::Error> AddToBatch(ValueStore::WriteOptions options,
+                                           const std::string& key,
+                                           const base::Value& value,
+                                           leveldb::WriteBatch* batch,
+                                           ValueStoreChangeList* changes);
 
-  // Commits the changes in |batch| to the database, returning the error message
-  // on failure or "" on success.
-  std::string WriteToDb(leveldb::WriteBatch* batch);
+  // Commits the changes in |batch| to the database.
+  scoped_ptr<ValueStore::Error> WriteToDb(leveldb::WriteBatch* batch);
+
+  // Converts an error leveldb::Status to a ValueStore::Error. Returns a
+  // scoped_ptr for convenience; the result will always be non-empty.
+  scoped_ptr<ValueStore::Error> ToValueStoreError(
+      const leveldb::Status& status,
+      scoped_ptr<std::string> key);
+
+  // Removes the on-disk database at |db_path_|. Any file system locks should
+  // be released before calling this method.
+  void DeleteDbFile();
 
   // Returns whether the database is empty.
   bool IsEmpty();

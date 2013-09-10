@@ -56,11 +56,11 @@ testing::AssertionResult SettingsEq(
     ValueStore::ReadResult actual_result) {
   if (actual_result->HasError()) {
     return testing::AssertionFailure() <<
-        "Result has error: " << actual_result->error();
+        "Result has error: " << actual_result->error().message;
   }
 
   std::string error;
-  if (!ValuesEqual(&expected, actual_result->settings().get(), &error)) {
+  if (!ValuesEqual(&expected, &actual_result->settings(), &error)) {
     return testing::AssertionFailure() << error;
   }
 
@@ -75,7 +75,7 @@ testing::AssertionResult ChangesEq(
     ValueStore::WriteResult actual_result) {
   if (actual_result->HasError()) {
     return testing::AssertionFailure() <<
-        "Result has error: " << actual_result->error();
+        "Result has error: " << actual_result->error().message;
   }
 
   const ValueStoreChangeList& actual = actual_result->changes();

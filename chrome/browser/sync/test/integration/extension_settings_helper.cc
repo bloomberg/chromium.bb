@@ -36,23 +36,22 @@ std::string ToJson(const Value& value) {
   return json;
 }
 
-void GetAllSettingsOnFileThread(
-    scoped_ptr<DictionaryValue>* out,
-    base::WaitableEvent* signal,
-    ValueStore* storage) {
+void GetAllSettingsOnFileThread(DictionaryValue* out,
+                                base::WaitableEvent* signal,
+                                ValueStore* storage) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  out->swap(storage->Get()->settings());
+  out->Swap(&storage->Get()->settings());
   signal->Signal();
 }
 
 scoped_ptr<DictionaryValue> GetAllSettings(
     Profile* profile, const std::string& id) {
   base::WaitableEvent signal(false, false);
-  scoped_ptr<DictionaryValue> settings;
+  scoped_ptr<DictionaryValue> settings(new DictionaryValue());
   profile->GetExtensionService()->settings_frontend()->RunWithStorage(
       id,
       extensions::settings_namespace::SYNC,
-      base::Bind(&GetAllSettingsOnFileThread, &settings, &signal));
+      base::Bind(&GetAllSettingsOnFileThread, settings.get(), &signal));
   signal.Wait();
   return settings.Pass();
 }

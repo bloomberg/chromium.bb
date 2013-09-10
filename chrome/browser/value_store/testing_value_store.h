@@ -15,8 +15,9 @@ class TestingValueStore : public ValueStore {
   TestingValueStore();
   virtual ~TestingValueStore();
 
-  // Sets whether to fail all requests (default is false).
-  void SetFailAllRequests(bool fail_all_requests);
+  // Sets the error code for requests. If OK, errors won't be thrown.
+  // Defaults to OK.
+  void set_error_code(ErrorCode error_code) { error_code_ = error_code; }
 
   // Accessors for the number of reads/writes done by this value store. Each
   // Get* operation (except for the BytesInUse ones) counts as one read, and
@@ -44,10 +45,12 @@ class TestingValueStore : public ValueStore {
   virtual WriteResult Clear() OVERRIDE;
 
  private:
+  scoped_ptr<ValueStore::Error> TestingError();
+
   DictionaryValue storage_;
   int read_count_;
   int write_count_;
-  bool fail_all_requests_;
+  ErrorCode error_code_;
 
   DISALLOW_COPY_AND_ASSIGN(TestingValueStore);
 };

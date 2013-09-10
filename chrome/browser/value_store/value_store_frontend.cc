@@ -41,10 +41,10 @@ class ValueStoreFrontend::Backend : public base::RefCountedThreadSafe<Backend> {
     // callback.
     scoped_ptr<base::Value> value;
     if (!result->HasError()) {
-      result->settings()->RemoveWithoutPathExpansion(key, &value);
+      result->settings().RemoveWithoutPathExpansion(key, &value);
     } else {
-      LOG(INFO) << "Reading " << key << " from " << db_path_.value()
-                << " failed: " << result->error();
+      LOG(WARNING) << "Reading " << key << " from " << db_path_.value()
+                   << " failed: " << result->error().message;
     }
 
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
