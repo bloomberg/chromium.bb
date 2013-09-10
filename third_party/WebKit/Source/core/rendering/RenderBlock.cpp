@@ -5267,9 +5267,13 @@ PositionWithAffinity RenderBlock::positionForPoint(const LayoutPoint& point)
         LayoutUnit pointLogicalLeft = isHorizontalWritingMode() ? point.x() : point.y();
         LayoutUnit pointLogicalTop = isHorizontalWritingMode() ? point.y() : point.x();
 
-        if (pointLogicalTop < 0 || (pointLogicalTop < logicalHeight() && pointLogicalLeft < 0))
+        if (pointLogicalLeft < 0)
             return createPositionWithAffinity(caretMinOffset(), DOWNSTREAM);
-        if (pointLogicalTop >= logicalHeight() || (pointLogicalTop >= 0 && pointLogicalLeft >= logicalWidth()))
+        if (pointLogicalLeft >= logicalWidth())
+            return createPositionWithAffinity(caretMaxOffset(), DOWNSTREAM);
+        if (pointLogicalTop < 0)
+            return createPositionWithAffinity(caretMinOffset(), DOWNSTREAM);
+        if (pointLogicalTop >= logicalHeight())
             return createPositionWithAffinity(caretMaxOffset(), DOWNSTREAM);
     }
 
