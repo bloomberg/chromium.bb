@@ -4,6 +4,7 @@
 
 #include "ui/views/widget/desktop_aura/desktop_drop_target_win.h"
 
+#include "base/win/win_util.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/drag_drop_delegate.h"
 #include "ui/aura/window.h"
@@ -11,6 +12,7 @@
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_win.h"
 #include "ui/base/events/event.h"
+#include "ui/base/events/event_constants.h"
 
 using aura::client::DragDropDelegate;
 using ui::OSExchangeData;
@@ -121,6 +123,11 @@ void DesktopDropTargetWin::Translate(
       location,
       root_location,
       ui::DragDropTypes::DropEffectToDragOperation(effect)));
+  int flags = 0;
+  flags |= base::win::IsAltPressed() ? ui::EF_ALT_DOWN : ui::EF_NONE;
+  flags |= base::win::IsShiftPressed() ? ui::EF_SHIFT_DOWN : ui::EF_NONE;
+  flags |= base::win::IsCtrlPressed() ? ui::EF_CONTROL_DOWN : ui::EF_NONE;
+  (*event)->set_flags(flags);
   if (target_window_changed)
     (*delegate)->OnDragEntered(*event->get());
 }
