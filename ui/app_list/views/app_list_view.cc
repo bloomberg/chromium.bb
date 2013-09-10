@@ -64,70 +64,28 @@ AppListView::~AppListView() {
   RemoveAllChildViews(true);
 }
 
-void AppListView::InitAsBubble(gfx::NativeView parent,
-                               PaginationModel* pagination_model,
-                               views::View* anchor,
-                               const gfx::Point& anchor_point,
-                               views::BubbleBorder::Arrow arrow,
-                               bool border_accepts_events) {
-  app_list_main_view_ = new AppListMainView(delegate_.get(),
-                                            model_.get(),
-                                            pagination_model,
-                                            parent);
-  AddChildView(app_list_main_view_);
-#if defined(USE_AURA)
-  app_list_main_view_->SetPaintToLayer(true);
-  app_list_main_view_->SetFillsBoundsOpaquely(false);
-  app_list_main_view_->layer()->SetMasksToBounds(true);
-#endif
-
-  signin_view_ = new SigninView(
-      GetSigninDelegate(),
-      app_list_main_view_->GetPreferredSize().width());
-  AddChildView(signin_view_);
-
-  OnSigninStatusChanged();
-
+void AppListView::InitAsBubbleAttachedToAnchor(
+    gfx::NativeView parent,
+    PaginationModel* pagination_model,
+    views::View* anchor,
+    const gfx::Vector2d& anchor_offset,
+    views::BubbleBorder::Arrow arrow,
+    bool border_accepts_events) {
   set_anchor_view(anchor);
-  set_anchor_rect(gfx::Rect(anchor_point, gfx::Size()));
-  set_color(kContentsBackgroundColor);
-  set_margins(gfx::Insets());
-  set_move_with_anchor(true);
-  set_parent_window(parent);
-  set_close_on_deactivate(false);
-  set_close_on_esc(false);
-  set_anchor_view_insets(gfx::Insets(kArrowOffset, kArrowOffset,
-                                     kArrowOffset, kArrowOffset));
-  set_border_accepts_events(border_accepts_events);
-  set_shadow(views::BubbleBorder::BIG_SHADOW);
-#if defined(USE_AURA) && defined(OS_WIN)
-  if (!ui::win::IsAeroGlassEnabled() ||
-      CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableDwmComposition)) {
-    set_shadow(views::BubbleBorder::NO_SHADOW_OPAQUE_BORDER);
-  }
-#endif
-  views::BubbleDelegateView::CreateBubble(this);
-  SetBubbleArrow(arrow);
+  InitAsBubbleInternal(
+      parent, pagination_model, arrow, border_accepts_events, anchor_offset);
+}
 
-#if defined(USE_AURA)
-  GetWidget()->GetNativeWindow()->layer()->SetMasksToBounds(true);
-  GetBubbleFrameView()->set_background(new AppListBackground(
-      GetBubbleFrameView()->bubble_border()->GetBorderCornerRadius(),
-      app_list_main_view_));
-  set_background(NULL);
-#else
-  set_background(new AppListBackground(
-      GetBubbleFrameView()->bubble_border()->GetBorderCornerRadius(),
-      app_list_main_view_));
-
-  // On non-aura the bubble has two widgets, and it's possible for the border
-  // to be shown independently in odd situations. Explicitly hide the bubble
-  // widget to ensure that any WM_WINDOWPOSCHANGED messages triggered by the
-  // window manager do not have the SWP_SHOWWINDOW flag set which would cause
-  // the border to be shown. See http://crbug.com/231687 .
-  GetWidget()->Hide();
-#endif
+void AppListView::InitAsBubbleAtFixedLocation(
+    gfx::NativeView parent,
+    PaginationModel* pagination_model,
+    const gfx::Point& anchor_point_in_screen,
+    views::BubbleBorder::Arrow arrow,
+    bool border_accepts_events) {
+  set_anchor_view(NULL);
+  set_anchor_rect(gfx::Rect(anchor_point_in_screen, gfx::Size()));
+  InitAsBubbleInternal(
+      parent, pagination_model, arrow, border_accepts_events, gfx::Vector2d());
 }
 
 void AppListView::SetBubbleArrow(views::BubbleBorder::Arrow arrow) {
@@ -212,6 +170,70 @@ HWND AppListView::GetHWND() const {
 #endif
 }
 #endif
+
+void AppListView::InitAsBubbleInternal(gfx::NativeView parent,
+                                       PaginationModel* pagination_model,
+                                       views::BubbleBorder::Arrow arrow,
+                                       bool border_accepts_events,
+                                       const gfx::Vector2d& anchor_offset) {
+  app_list_main_view_ = new AppListMainView(delegate_.get(),
+                                            model_.get(),
+                                            pagination_model,
+                                            parent);
+  AddChildView(app_list_main_view_);
+#if defined(USE_AURA)
+  app_list_main_view_->SetPaintToLayer(true);
+  app_list_main_view_->SetFillsBoundsOpaquely(false);
+  app_list_main_view_->layer()->SetMasksToBounds(true);
+#endif
+
+  signin_view_ = new SigninView(
+      GetSigninDelegate(),
+      app_list_main_view_->GetPreferredSize().width());
+  AddChildView(signin_view_);
+
+  OnSigninStatusChanged();
+  set_color(kContentsBackgroundColor);
+  set_margins(gfx::Insets());
+  set_move_with_anchor(true);
+  set_parent_window(parent);
+  set_close_on_deactivate(false);
+  set_close_on_esc(false);
+  set_anchor_view_insets(gfx::Insets(kArrowOffset + anchor_offset.y(),
+                                     kArrowOffset + anchor_offset.x(),
+                                     kArrowOffset - anchor_offset.y(),
+                                     kArrowOffset - anchor_offset.x()));
+  set_border_accepts_events(border_accepts_events);
+  set_shadow(views::BubbleBorder::BIG_SHADOW);
+#if defined(USE_AURA) && defined(OS_WIN)
+  if (!ui::win::IsAeroGlassEnabled() ||
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableDwmComposition)) {
+    set_shadow(views::BubbleBorder::NO_SHADOW_OPAQUE_BORDER);
+  }
+#endif
+  views::BubbleDelegateView::CreateBubble(this);
+  SetBubbleArrow(arrow);
+
+#if defined(USE_AURA)
+  GetWidget()->GetNativeWindow()->layer()->SetMasksToBounds(true);
+  GetBubbleFrameView()->set_background(new AppListBackground(
+      GetBubbleFrameView()->bubble_border()->GetBorderCornerRadius(),
+      app_list_main_view_));
+  set_background(NULL);
+#else
+  set_background(new AppListBackground(
+      GetBubbleFrameView()->bubble_border()->GetBorderCornerRadius(),
+      app_list_main_view_));
+
+  // On non-aura the bubble has two widgets, and it's possible for the border
+  // to be shown independently in odd situations. Explicitly hide the bubble
+  // widget to ensure that any WM_WINDOWPOSCHANGED messages triggered by the
+  // window manager do not have the SWP_SHOWWINDOW flag set which would cause
+  // the border to be shown. See http://crbug.com/231687 .
+  GetWidget()->Hide();
+#endif
+}
 
 views::View* AppListView::GetInitiallyFocusedView() {
   return app_list_main_view_->search_box_view()->search_box();

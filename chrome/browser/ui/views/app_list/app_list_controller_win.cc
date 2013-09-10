@@ -646,12 +646,11 @@ class AppListViewFactory {
         new AppListControllerDelegateWin, profile);
     app_list::AppListView* view = new app_list::AppListView(view_delegate);
     gfx::Point cursor = gfx::Screen::GetNativeScreen()->GetCursorScreenPoint();
-    view->InitAsBubble(NULL,
-                       pagination_model,
-                       NULL,
-                       cursor,
-                       views::BubbleBorder::FLOAT,
-                       false /* border_accepts_events */);
+    view->InitAsBubbleAtFixedLocation(NULL,
+                                      pagination_model,
+                                      cursor,
+                                      views::BubbleBorder::FLOAT,
+                                      false /* border_accepts_events */);
     SetWindowAttributes(view->GetHWND());
     return new AppListViewWin(view, on_should_dismiss);
   }

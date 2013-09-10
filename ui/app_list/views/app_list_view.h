@@ -39,13 +39,22 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
   explicit AppListView(AppListViewDelegate* delegate);
   virtual ~AppListView();
 
-  // Initializes the widget.
-  void InitAsBubble(gfx::NativeView parent,
-                    PaginationModel* pagination_model,
-                    views::View* anchor,
-                    const gfx::Point& anchor_point,
-                    views::BubbleBorder::Arrow arrow,
-                    bool border_accepts_events);
+  // Initializes the widget and use a given |anchor| plus an |anchor_offset| for
+  // positioning.
+  void InitAsBubbleAttachedToAnchor(gfx::NativeView parent,
+                                    PaginationModel* pagination_model,
+                                    views::View* anchor,
+                                    const gfx::Vector2d& anchor_offset,
+                                    views::BubbleBorder::Arrow arrow,
+                                    bool border_accepts_events);
+
+  // Initializes the widget and use a fixed |anchor_point_in_screen| for
+  // positioning.
+  void InitAsBubbleAtFixedLocation(gfx::NativeView parent,
+                                   PaginationModel* pagination_model,
+                                   const gfx::Point& anchor_point_in_screen,
+                                   views::BubbleBorder::Arrow arrow,
+                                   bool border_accepts_events);
 
   void SetBubbleArrow(views::BubbleBorder::Arrow arrow);
 
@@ -91,6 +100,12 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
   AppListModel* model() { return model_.get(); }
 
  private:
+  void InitAsBubbleInternal(gfx::NativeView parent,
+                            PaginationModel* pagination_model,
+                            views::BubbleBorder::Arrow arrow,
+                            bool border_accepts_events,
+                            const gfx::Vector2d& anchor_offset);
+
   // Overridden from views::WidgetDelegateView:
   virtual views::View* GetInitiallyFocusedView() OVERRIDE;
   virtual gfx::ImageSkia GetWindowIcon() OVERRIDE;
