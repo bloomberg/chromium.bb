@@ -599,6 +599,9 @@
       <message desc="The tool-tip shown when the user hovers over the 'delete host' button. Clicking this button removes the host from the list and disables connections to it." name="IDR_TOOLTIP_DELETE">
         Disable remote connections to this computer
       </message>
+      <message desc="The tool-tip shown when the user hovers over the 'refresh host list' button. Clicking this button reloads the host list without reloading the app." name="IDR_TOOLTIP_REFRESH">
+        Refresh the list of hosts
+      </message>
       <message desc="The tool-tip shown when the user hovers over the 'rename host' button. Clicking this button allows the host name to be edited in-place." name="IDR_TOOLTIP_RENAME">
         Edit computer name
       </message>

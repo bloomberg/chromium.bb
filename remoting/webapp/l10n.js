@@ -6,8 +6,27 @@
 var l10n = l10n || {};
 
 /**
+ * Localize a tag, returning the tag itself and logging an error if no
+ * translation exists.
+ *
+ * @param {string} tag The localization tag.
+ * @param {(string|Array)=} opt_substitutions An optional set of substitution
+ *     strings corresponding to the "placeholders" attributes in messages.json.
+ * @return {string} The translated tag.
+ */
+l10n.getTranslationOrError = function(tag, opt_substitutions) {
+  var translation = chrome.i18n.getMessage(tag, opt_substitutions);
+  if (translation) {
+    return translation;
+  }
+  console.error('Missing translation for "' + tag + '"');
+  return tag;
+};
+
+/**
  * Localize an element by setting its innerText according to the specified tag
  * and an optional set of substitutions.
+ *
  * @param {Element} element The element to localize.
  * @param {string} tag The localization tag.
  * @param {(string|Array)=} opt_substitutions An optional set of substitution
@@ -18,11 +37,7 @@ var l10n = l10n || {};
  */
 l10n.localizeElementFromTag = function(element, tag, opt_substitutions,
                                        opt_asHtml) {
-  var translation = chrome.i18n.getMessage(tag, opt_substitutions);
-  if (!translation) {
-    console.error('Missing translation for "' + tag + '":', element);
-    translation = tag;  // Make errors more obvious
-  }
+  var translation = l10n.getTranslationOrError(tag, opt_substitutions);
   if (opt_asHtml) {
     element.innerHTML = translation;
   } else {
@@ -34,6 +49,7 @@ l10n.localizeElementFromTag = function(element, tag, opt_substitutions,
 /**
  * Localize an element by setting its innerText according to its i18n-content
  * attribute, and an optional set of substitutions.
+ *
  * @param {Element} element The element to localize.
  * @param {(string|Array)=} opt_substitutions An optional set of substitution
  *     strings corresponding to the "placeholders" attributes in messages.json.
@@ -56,7 +72,7 @@ l10n.localizeElement = function(element, opt_substitutions, opt_asHtml) {
  * HTML iff there are any substitutions.
  */
 l10n.localize = function() {
-  var elements = document.querySelectorAll('[i18n-content]');
+  var elements = document.querySelectorAll('[i18n-content],[i18n-title]');
   for (var i = 0; i < elements.length; ++i) {
     /** @type {Element} */ var element = elements[i];
     var substitutions = [];
@@ -78,10 +94,12 @@ l10n.localize = function() {
         break;
       }
     }
-    l10n.localizeElement(element, substitutions, substitutions.length != 0);
-    // Localize tool-tips
-    // TODO(jamiewalch): Move this logic to the html document.
-    var editButton = document.getElementById('this-host-rename');
-    editButton.title = chrome.i18n.getMessage(/*i18n-content*/'TOOLTIP_RENAME');
+    var titleTag = element.getAttribute('i18n-title');
+    if (titleTag) {
+      element.title = l10n.getTranslationOrError(titleTag, substitutions);
+    } else {
+      l10n.localizeElement(element, substitutions,
+                           substitutions.length != 0);
+    }
   }
 };

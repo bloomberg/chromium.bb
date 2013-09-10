@@ -12,8 +12,9 @@ annotated with the string "i18n-content", for example:
 
 This script also recognises localized strings in HTML and manifest.json files:
 
-  HTML:          <span i18n-content="PRODUCT_NAME"></span>
-              or ...i18n-value-name-1="BUTTON_NAME"...
+  HTML:          i18n-content="PRODUCT_NAME"
+              or i18n-value-name-1="BUTTON_NAME"
+              or i18n-title="TOOLTIP_NAME"
   manifest.json: __MSG_PRODUCT_NAME__
 
 Note that these forms must be exact; extra spaces are not permitted, though
@@ -54,6 +55,9 @@ def ExtractTagFromLine(file_type, line):
   if file_type == "html":
     # HTML-style (tags)
     m = re.search('i18n-content=[\'"]([^\'"]*)[\'"]', line)
+    if m: return m.group(1)
+    # HTML-style (titles)
+    m = re.search('i18n-title=[\'"]([^\'"]*)[\'"]', line)
     if m: return m.group(1)
     # HTML-style (substitutions)
     m = re.search('i18n-value-name-[1-9]=[\'"]([^\'"]*)[\'"]', line)
