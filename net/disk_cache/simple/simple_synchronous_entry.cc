@@ -520,6 +520,7 @@ bool SimpleSynchronousEntry::OpenOrCreateFiles(
     for (int i = 0; i < kSimpleEntryFileCount; ++i)
       out_entry_stat->data_size[i] = 0;
   } else {
+    base::TimeDelta entry_age = base::Time::Now() - base::Time::UnixEpoch();
     for (int i = 0; i < kSimpleEntryFileCount; ++i) {
       PlatformFileInfo file_info;
       bool success = GetPlatformFileInfo(files_[i], &file_info);
@@ -534,16 +535,18 @@ bool SimpleSynchronousEntry::OpenOrCreateFiles(
       else
         out_entry_stat->last_modified = file_info.last_modified;
 
-      base::TimeDelta entry_age =
+      base::TimeDelta stream_age =
           base::Time::Now() - out_entry_stat->last_modified;
-      SIMPLE_CACHE_UMA(CUSTOM_COUNTS,
-                       "SyncOpenEntryAge", cache_type_,
-                       entry_age.InHours(), 1, 1000, 50);
+      if (stream_age < entry_age)
+        entry_age = stream_age;
 
       // Keep the file size in |data size_| briefly until the key is initialized
       // properly.
       out_entry_stat->data_size[i] = file_info.size;
     }
+    SIMPLE_CACHE_UMA(CUSTOM_COUNTS,
+                     "SyncOpenEntryAge", cache_type_,
+                     entry_age.InHours(), 1, 1000, 50);
   }
 
   return true;
