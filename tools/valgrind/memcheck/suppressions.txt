@@ -3337,28 +3337,6 @@
    fun:_ZN3net10URLRequest5StartEv
 }
 {
-   bug_92876a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN3net18SSLClientSocketNSS10BufferSendEv
-   fun:_ZN3net18SSLClientSocketNSS13DoTransportIOEv
-   fun:_ZN3net18SSLClientSocketNSS11DoWriteLoopEi
-   fun:_ZN3net18SSLClientSocketNSS5WriteEPNS_8IOBufferEiP14CallbackRunnerI6Tuple1IiEE
-   fun:_ZN3net11SpdySession11WriteSocketEv
-}
-{
-   bug_92876b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN3net18SSLClientSocketNSS10BufferSendEv
-   fun:_ZN3net18SSLClientSocketNSS13DoTransportIOEv
-   fun:_ZN3net18SSLClientSocketNSS15DoHandshakeLoopEi
-   fun:_ZN3net18SSLClientSocketNSS7ConnectEP14CallbackRunnerI6Tuple1IiEE
-   fun:_ZN3net13SSLConnectJob12DoSSLConnectEv
-   fun:_ZN3net13SSLConnectJob6DoLoopEi
-   fun:_ZN3net13SSLConnectJob12OnIOCompleteEi
-}
-{
    bug_93250a
    Memcheck:Leak
    fun:_Znw*
@@ -7206,7 +7184,7 @@
    fun:_ZN7WebCore14HarfBuzzShaper19collectHarfBuzzRunsEv
 }
 {
-   bug_272179_c 
+   bug_272179_c
    Memcheck:Param
    sendmsg(msg.msg_iov[0])
    obj:/lib/x86_64-linux-gnu/libpthread-2.15.so
