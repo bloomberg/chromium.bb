@@ -232,4 +232,9 @@ void TestContextProvider::SetMemoryPolicyChangedCallback(
   memory_policy_changed_callback_ = cb;
 }
 
+void TestContextProvider::SetMaxTransferBufferUsageBytes(
+    size_t max_transfer_buffer_usage_bytes) {
+  context3d_->SetMaxTransferBufferUsageBytes(max_transfer_buffer_usage_bytes);
+}
+
 }  // namespace cc

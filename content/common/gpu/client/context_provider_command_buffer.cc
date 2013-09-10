@@ -266,6 +266,10 @@ void ContextProviderCommandBuffer::InitializeCapabilities() {
 
   caps.discard_framebuffer =
       extension_set.count("GL_EXT_discard_framebuffer") > 0;
+  size_t mapped_memory_limit = context3d_->GetMappedMemoryLimit();
+  caps.max_transfer_buffer_usage_bytes =
+      mapped_memory_limit == WebGraphicsContext3DCommandBufferImpl::kNoLimit
+      ? std::numeric_limits<size_t>::max() : mapped_memory_limit;
 
   capabilities_ = caps;
 }

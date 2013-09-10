@@ -205,6 +205,9 @@ class CC_EXPORT TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
 
   virtual WebKit::WebGLId NextImageId();
 
+  size_t GetTransferBufferMemoryUsedBytes() const;
+  void SetMaxTransferBufferUsageBytes(size_t max_transfer_buffer_usage_bytes);
+
  protected:
   struct Buffer {
     Buffer();
@@ -212,6 +215,7 @@ class CC_EXPORT TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
 
     WebKit::WGC3Denum target;
     scoped_ptr<uint8[]> pixels;
+    size_t size;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Buffer);

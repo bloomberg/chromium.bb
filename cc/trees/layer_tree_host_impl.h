@@ -436,6 +436,7 @@ class CC_EXPORT LayerTreeHostImpl
       ResourceProvider* resource_provider,
       bool skip_gl_renderer);
   void CreateAndSetTileManager(ResourceProvider* resource_provider,
+                               ContextProvider* context_provider,
                                bool using_map_image);
   void ReleaseTreeResources();
   void EnforceZeroBudget(bool zero_budget);

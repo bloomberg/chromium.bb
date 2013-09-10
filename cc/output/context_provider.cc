@@ -4,6 +4,8 @@
 
 #include "cc/output/context_provider.h"
 
+#include <limits>
+
 namespace cc {
 
 ContextProvider::Capabilities::Capabilities()
@@ -22,6 +24,7 @@ ContextProvider::Capabilities::Capabilities()
       texture_rectangle(false),
       texture_storage(false),
       texture_usage(false),
-      discard_framebuffer(false) {}
+      discard_framebuffer(false),
+      max_transfer_buffer_usage_bytes(std::numeric_limits<size_t>::max()) {}
 
 }  // namespace cc

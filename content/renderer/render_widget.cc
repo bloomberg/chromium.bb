@@ -62,6 +62,7 @@
 #include "webkit/renderer/compositor_bindings/web_rendering_stats_impl.h"
 
 #if defined(OS_ANDROID)
+#include "base/android/sys_utils.h"
 #include "content/renderer/android/synchronous_compositor_factory.h"
 #endif
 
@@ -647,16 +648,13 @@ bool RenderWidget::ForceCompositingModeEnabled() {
 }
 
 scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(bool fallback) {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
 #if defined(OS_ANDROID)
-   if (SynchronousCompositorFactory* factory =
-       SynchronousCompositorFactory::GetInstance()) {
+  if (SynchronousCompositorFactory* factory =
+      SynchronousCompositorFactory::GetInstance()) {
     return factory->CreateOutputSurface(routing_id());
   }
 #endif
-
-  uint32 output_surface_id = next_output_surface_id_++;
 
   // Explicitly disable antialiasing for the compositor. As of the time of
   // this writing, the only platform that supported antialiasing for the
@@ -674,14 +672,18 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(bool fallback) {
   attributes.noAutomaticFlushes = true;
   attributes.depth = false;
   attributes.stencil = false;
+
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(cc::switches::kForceDirectLayerDrawing))
     attributes.stencil = true;
+
   scoped_refptr<ContextProviderCommandBuffer> context_provider;
   if (!fallback) {
     context_provider = ContextProviderCommandBuffer::Create(
         CreateGraphicsContext3D(attributes));
   }
 
+  uint32 output_surface_id = next_output_surface_id_++;
   if (!context_provider.get()) {
     if (!command_line.HasSwitch(switches::kEnableSoftwareCompositing))
       return scoped_ptr<cc::OutputSurface>();
@@ -2523,10 +2525,39 @@ RenderWidget::CreateGraphicsContext3D(
           RenderThreadImpl::current(),
           weak_ptr_factory_.GetWeakPtr()));
 
-  if (!context->InitializeWithDefaultBufferSizes(
+#if defined(OS_ANDROID)
+  // If we raster too fast we become upload bound, and pending
+  // uploads consume memory. For maximum upload throughput, we would
+  // want to allow for upload_throughput * pipeline_time of pending
+  // uploads, after which we are just wasting memory. Since we don't
+  // know our upload throughput yet, this just caps our memory usage.
+  size_t divider = 1;
+  if (base::android::SysUtils::IsLowEndDevice())
+    divider = 3;
+
+  // For reference Nexus10 can upload 1MB in about 2.5ms.
+  const size_t max_bytes_uploaded_per_ms = (2 * 1024 * 1024) / (5 * divider);
+  // Deadline to draw a frame to achieve 60 frames per second.
+  const size_t kMillisecondsPerFrame = 16;
+  // Assuming a two frame deep pipeline between the CPU and the GPU.
+  const size_t max_transfer_buffer_usage_bytes =
+      2 * kMillisecondsPerFrame * max_bytes_uploaded_per_ms;
+  // We keep the MappedMemoryReclaimLimit the same as the upload limit
+  // to avoid unnecessarily stalling the compositor thread.
+  const size_t mapped_memory_reclaim_limit = max_transfer_buffer_usage_bytes;
+#else
+  const size_t mapped_memory_reclaim_limit =
+      WebGraphicsContext3DCommandBufferImpl::kNoLimit;
+#endif
+  if (!context->Initialize(
           attributes,
           false /* bind generates resources */,
-          CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE))
+          CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE,
+          kDefaultCommandBufferSize,
+          kDefaultStartTransferBufferSize,
+          kDefaultMinTransferBufferSize,
+          kDefaultMaxTransferBufferSize,
+          mapped_memory_reclaim_limit))
     return scoped_ptr<WebGraphicsContext3DCommandBufferImpl>();
   return context.Pass();
 }

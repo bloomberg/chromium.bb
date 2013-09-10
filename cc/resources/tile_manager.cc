@@ -124,7 +124,8 @@ scoped_ptr<TileManager> TileManager::Create(
     ResourceProvider* resource_provider,
     size_t num_raster_threads,
     RenderingStatsInstrumentation* rendering_stats_instrumentation,
-    bool use_map_image) {
+    bool use_map_image,
+    size_t max_transfer_buffer_usage_bytes) {
   return make_scoped_ptr(
       new TileManager(client,
                       resource_provider,
@@ -132,7 +133,9 @@ scoped_ptr<TileManager> TileManager::Create(
                       ImageRasterWorkerPool::Create(
                           resource_provider, num_raster_threads) :
                       PixelBufferRasterWorkerPool::Create(
-                          resource_provider, num_raster_threads),
+                          resource_provider,
+                          num_raster_threads,
+                          max_transfer_buffer_usage_bytes),
                       num_raster_threads,
                       rendering_stats_instrumentation));
 }

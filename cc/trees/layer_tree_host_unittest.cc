@@ -763,8 +763,6 @@ class LayerTreeHostTestAbortFrameWhenInvisible : public LayerTreeHostTest {
   }
 
   virtual void AfterTest() OVERRIDE {}
-
- private:
 };
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestAbortFrameWhenInvisible);
@@ -4562,6 +4560,55 @@ class LayerTreeHostTestAbortEvictedTextures : public LayerTreeHostTest {
 
 // Commits can only be aborted when using the thread proxy.
 MULTI_THREAD_TEST_F(LayerTreeHostTestAbortEvictedTextures);
+
+class LayerTreeHostTestMaxTransferBufferUsageBytes : public LayerTreeHostTest {
+ protected:
+  virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
+    settings->impl_side_painting = true;
+  }
+
+  virtual scoped_ptr<OutputSurface> CreateOutputSurface(bool fallback)
+      OVERRIDE {
+    context_provider_ = TestContextProvider::Create();
+    context_provider_->SetMaxTransferBufferUsageBytes(1024 * 1024);
+    return FakeOutputSurface::Create3d(context_provider_)
+        .PassAs<OutputSurface>();
+  }
+
+  virtual void SetupTree() OVERRIDE {
+    scoped_refptr<FakePictureLayer> root_layer =
+        FakePictureLayer::Create(&client_);
+    root_layer->SetBounds(gfx::Size(6000, 6000));
+    root_layer->SetIsDrawable(true);
+
+    layer_tree_host()->SetRootLayer(root_layer);
+    LayerTreeHostTest::SetupTree();
+  }
+
+  virtual void BeginTest() OVERRIDE {
+    PostSetNeedsCommitToMainThread();
+  }
+
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+    TestWebGraphicsContext3D* context = static_cast<TestWebGraphicsContext3D*>(
+        impl->output_surface()->context_provider()->Context3d());
+
+    // Expect that the transfer buffer memory used is equal to the
+    // MaxTransferBufferUsageBytes value set in CreateOutputSurface.
+    EXPECT_EQ(1024 * 1024u,
+              context->GetTransferBufferMemoryUsedBytes());
+    EndTest();
+  }
+
+  virtual void AfterTest() OVERRIDE {}
+
+ private:
+  scoped_refptr<TestContextProvider> context_provider_;
+  FakeContentLayerClient client_;
+};
+
+// Impl-side painting is a multi-threaded compositor feature.
+MULTI_THREAD_TEST_F(LayerTreeHostTestMaxTransferBufferUsageBytes);
 
 }  // namespace
 

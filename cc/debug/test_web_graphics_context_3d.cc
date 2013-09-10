@@ -481,13 +481,16 @@ void TestWebGraphicsContext3D::bufferData(WebKit::WGC3Denum target,
   base::ScopedPtrHashMap<unsigned, Buffer>& buffers = namespace_->buffers;
   DCHECK_GT(buffers.count(bound_buffer_), 0u);
   DCHECK_EQ(target, buffers.get(bound_buffer_)->target);
+  Buffer* buffer = buffers.get(bound_buffer_);
   if (context_lost_) {
-    buffers.get(bound_buffer_)->pixels.reset();
+    buffer->pixels.reset();
     return;
   }
-  buffers.get(bound_buffer_)->pixels.reset(new uint8[size]);
+
+  buffer->pixels.reset(new uint8[size]);
+  buffer->size = size;
   if (data != NULL)
-    memcpy(buffers.get(bound_buffer_)->pixels.get(), data, size);
+    memcpy(buffer->pixels.get(), data, size);
 }
 
 void* TestWebGraphicsContext3D::mapBufferCHROMIUM(WebKit::WGC3Denum target,
@@ -600,7 +603,25 @@ WebKit::WGC3Duint TestWebGraphicsContext3D::NextImageId() {
   return image_id;
 }
 
-TestWebGraphicsContext3D::Buffer::Buffer() : target(0) {}
+size_t TestWebGraphicsContext3D::GetTransferBufferMemoryUsedBytes() const {
+  size_t total_bytes = 0;
+  base::ScopedPtrHashMap<unsigned, Buffer>& buffers = namespace_->buffers;
+  base::ScopedPtrHashMap<unsigned, Buffer>::iterator it = buffers.begin();
+  for (; it != buffers.end(); ++it) {
+    Buffer* buffer = it->second;
+    if (buffer->target == GL_PIXEL_UNPACK_TRANSFER_BUFFER_CHROMIUM)
+      total_bytes += buffer->size;
+  }
+  return total_bytes;
+}
+
+void TestWebGraphicsContext3D::SetMaxTransferBufferUsageBytes(
+    size_t max_transfer_buffer_usage_bytes) {
+  test_capabilities_.max_transfer_buffer_usage_bytes =
+      max_transfer_buffer_usage_bytes;
+}
+
+TestWebGraphicsContext3D::Buffer::Buffer() : target(0), size(0) {}
 
 TestWebGraphicsContext3D::Buffer::~Buffer() {}
 

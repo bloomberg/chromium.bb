@@ -5,6 +5,7 @@
 #include "cc/trees/layer_tree_host_impl.h"
 
 #include <algorithm>
+#include <limits>
 
 #include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
@@ -68,6 +69,27 @@ void DidVisibilityChange(cc::LayerTreeHostImpl* id, bool visible) {
   }
 
   TRACE_EVENT_ASYNC_END0("webkit", "LayerTreeHostImpl::SetVisible", id);
+}
+
+size_t GetMaxTransferBufferUsageBytes(cc::ContextProvider* context_provider) {
+  if (context_provider) {
+    // We want to make sure the default transfer buffer size is equal to the
+    // amount of data that can be uploaded by the compositor to avoid stalling
+    // the pipeline.
+    // For reference Chromebook Pixel can upload 1MB in about 0.5ms.
+    const size_t kMaxBytesUploadedPerMs = 1024 * 1024 * 2;
+    // Assuming a two frame deep pipeline between CPU and GPU and we are
+    // drawing 60 frames per second which would require us to draw one
+    // frame in 16 milliseconds.
+    const size_t kMaxTransferBufferUsageBytes = 16 * 2 * kMaxBytesUploadedPerMs;
+    return std::min(
+        context_provider->ContextCapabilities().max_transfer_buffer_usage_bytes,
+        kMaxTransferBufferUsageBytes);
+  } else {
+    // Software compositing should not use this value in production. Just use a
+    // default value when testing uploads with the software compositor.
+    return std::numeric_limits<size_t>::max();
+  }
 }
 
 }  // namespace
@@ -1610,14 +1632,18 @@ void LayerTreeHostImpl::CreateAndSetRenderer(
 
 void LayerTreeHostImpl::CreateAndSetTileManager(
     ResourceProvider* resource_provider,
+    ContextProvider* context_provider,
     bool using_map_image) {
   DCHECK(settings_.impl_side_painting);
   DCHECK(resource_provider);
-  tile_manager_ = TileManager::Create(this,
-                                      resource_provider,
-                                      settings_.num_raster_threads,
-                                      rendering_stats_instrumentation_,
-                                      using_map_image);
+  tile_manager_ =
+      TileManager::Create(this,
+                          resource_provider,
+                          settings_.num_raster_threads,
+                          rendering_stats_instrumentation_,
+                          using_map_image,
+                          GetMaxTransferBufferUsageBytes(context_provider));
+
   UpdateTileManagerMemoryPolicy(ActualManagedMemoryPolicy());
   need_to_update_visible_tiles_before_draw_ = false;
 }
@@ -1661,6 +1687,7 @@ bool LayerTreeHostImpl::InitializeRenderer(
 
   if (settings_.impl_side_painting) {
     CreateAndSetTileManager(resource_provider.get(),
+                            output_surface->context_provider().get(),
                             GetRendererCapabilities().using_map_image);
   }
 
@@ -1773,6 +1800,7 @@ void LayerTreeHostImpl::ReleaseGL() {
 
   EnforceZeroBudget(true);
   CreateAndSetTileManager(resource_provider_.get(),
+                          NULL,
                           GetRendererCapabilities().using_map_image);
   DCHECK(tile_manager_);
 

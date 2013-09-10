@@ -94,35 +94,18 @@ bool WasCanceled(const internal::RasterWorkerPoolTask* task) {
 
 PixelBufferRasterWorkerPool::PixelBufferRasterWorkerPool(
     ResourceProvider* resource_provider,
-    size_t num_threads)
+    size_t num_threads,
+    size_t max_transfer_buffer_usage_bytes)
     : RasterWorkerPool(resource_provider, num_threads),
       shutdown_(false),
       scheduled_raster_task_count_(0),
       bytes_pending_upload_(0),
+      max_bytes_pending_upload_(max_transfer_buffer_usage_bytes),
       has_performed_uploads_since_last_flush_(false),
       check_for_completed_raster_tasks_pending_(false),
       should_notify_client_if_no_tasks_are_pending_(false),
       should_notify_client_if_no_tasks_required_for_activation_are_pending_(
           false) {
-// If we raster too fast we become upload bound, and pending
-// uploads consume memory. For maximum upload throughput, we would
-// want to allow for upload_throughput * pipeline_time of pending
-// uploads, after which we are just wasting memory. Since we don't
-// know our upload throughput yet, this just caps our memory usage.
-#if defined(OS_ANDROID)
-  size_t divider = 1;
-  if (base::android::SysUtils::IsLowEndDevice())
-    divider = 3;
-
-  // For reference Nexus10 can upload 1MB in about 2.5ms.
-  const size_t kMaxBytesUploadedPerMs = (2 * 1024 * 1024) / (5 * divider);
-#else
-  // For reference Chromebook Pixel can upload 1MB in about 0.5ms.
-  const size_t kMaxBytesUploadedPerMs = 1024 * 1024 * 2;
-#endif
-
-  // Assuming a two frame deep pipeline.
-  max_bytes_pending_upload_ = 16 * 2 * kMaxBytesUploadedPerMs;
 }
 
 PixelBufferRasterWorkerPool::~PixelBufferRasterWorkerPool() {

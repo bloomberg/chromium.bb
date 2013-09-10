@@ -52,6 +52,8 @@ class CC_EXPORT TestContextProvider
   void SetMemoryAllocation(const ManagedMemoryPolicy& policy,
                            bool discard_backbuffer_when_not_visible);
 
+  void SetMaxTransferBufferUsageBytes(size_t max_transfer_buffer_usage_bytes);
+
  protected:
   TestContextProvider();
   virtual ~TestContextProvider();

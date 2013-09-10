@@ -4,6 +4,7 @@
 
 #include "cc/resources/raster_worker_pool.h"
 
+#include <limits>
 #include <vector>
 
 #include "cc/debug/test_web_graphics_context_3d.h"
@@ -104,7 +105,7 @@ class RasterWorkerPoolTest : public testing::Test,
           resource_provider(), 1);
     } else {
       raster_worker_pool_ = PixelBufferRasterWorkerPool::Create(
-          resource_provider(), 1);
+          resource_provider(), 1, std::numeric_limits<size_t>::max());
     }
 
     raster_worker_pool_->SetClient(this);

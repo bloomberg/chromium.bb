@@ -43,6 +43,7 @@ class ContextProvider : public base::RefCountedThreadSafe<ContextProvider> {
     bool texture_storage;
     bool texture_usage;
     bool discard_framebuffer;
+    size_t max_transfer_buffer_usage_bytes;
 
     CC_EXPORT Capabilities();
   };

@@ -52,7 +52,8 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient {
       ResourceProvider* resource_provider,
       size_t num_raster_threads,
       RenderingStatsInstrumentation* rendering_stats_instrumentation,
-      bool use_map_image);
+      bool use_map_image,
+      size_t max_transfer_buffer_usage_bytes);
   virtual ~TileManager();
 
   const GlobalStateThatImpactsTilePriority& GlobalState() const {

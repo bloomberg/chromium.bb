@@ -18,9 +18,13 @@ class CC_EXPORT PixelBufferRasterWorkerPool : public RasterWorkerPool {
   virtual ~PixelBufferRasterWorkerPool();
 
   static scoped_ptr<RasterWorkerPool> Create(
-      ResourceProvider* resource_provider, size_t num_threads) {
+      ResourceProvider* resource_provider,
+      size_t num_threads,
+      size_t max_transfer_buffer_usage_bytes) {
     return make_scoped_ptr<RasterWorkerPool>(
-        new PixelBufferRasterWorkerPool(resource_provider, num_threads));
+        new PixelBufferRasterWorkerPool(resource_provider,
+                                        num_threads,
+                                        max_transfer_buffer_usage_bytes));
   }
 
   // Overridden from WorkerPool:
@@ -35,7 +39,8 @@ class CC_EXPORT PixelBufferRasterWorkerPool : public RasterWorkerPool {
 
  private:
   PixelBufferRasterWorkerPool(ResourceProvider* resource_provider,
-                              size_t num_threads);
+                              size_t num_threads,
+                              size_t max_transfer_buffer_usage_bytes);
 
   void FlushUploads();
   void CheckForCompletedUploads();

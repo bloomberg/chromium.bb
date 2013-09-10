@@ -131,6 +131,10 @@ class WebGraphicsContext3DCommandBufferImpl
           const WebGraphicsContext3D::Attributes& attributes,
           const GURL& active_url);
 
+  size_t GetMappedMemoryLimit() {
+    return mapped_memory_limit_;
+  }
+
   //----------------------------------------------------------------------
   // WebGraphicsContext3D methods
 
