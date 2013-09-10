@@ -222,10 +222,6 @@ class ChromeLauncherController : public ash::LauncherDelegate,
   // incognito window.
   void CreateNewIncognitoWindow();
 
-  // Checks whether the user is allowed to pin apps. Pinning may be disallowed
-  // by policy in case there is a pre-defined set of pinned apps.
-  bool CanPin() const;
-
   // Updates the pinned pref state. The pinned state consists of a list pref.
   // Each item of the list is a dictionary. The key |kAppIDPath| gives the
   // id of the app.
@@ -276,6 +272,7 @@ class ChromeLauncherController : public ash::LauncherDelegate,
   virtual const std::string& GetAppIDForLauncherID(ash::LauncherID id) OVERRIDE;
   virtual void PinAppWithID(const std::string& app_id) OVERRIDE;
   virtual bool IsAppPinned(const std::string& app_id) OVERRIDE;
+  virtual bool CanPin() const OVERRIDE;
   virtual void UnpinAppWithID(const std::string& app_id) OVERRIDE;
 
   // ash::LauncherItemDelegate overrides:

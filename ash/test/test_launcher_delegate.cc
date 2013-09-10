@@ -149,6 +149,10 @@ const std::string& TestLauncherDelegate::GetAppIDForLauncherID(LauncherID id) {
 void TestLauncherDelegate::PinAppWithID(const std::string& app_id) {
 }
 
+bool TestLauncherDelegate::CanPin() const {
+  return true;
+}
+
 bool TestLauncherDelegate::IsAppPinned(const std::string& app_id) {
   return false;
 }

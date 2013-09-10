@@ -1176,7 +1176,7 @@ void LauncherView::FinalizeRipOffDrag(bool cancel) {
 
 LauncherView::RemovableState LauncherView::RemovableByRipOff(int index) {
   LauncherItemType type = model_->items()[index].type;
-  if (type == TYPE_APP_LIST)
+  if (type == TYPE_APP_LIST || !delegate_->CanPin())
     return NOT_REMOVABLE;
   std::string app_id =
       delegate_->GetAppIDForLauncherID(model_->items()[index].id);

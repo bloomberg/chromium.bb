@@ -631,6 +631,12 @@ void ChromeLauncherController::SetLauncherItemImage(
   model_->Set(index, item);
 }
 
+bool ChromeLauncherController::CanPin() const {
+  const PrefService::Preference* pref =
+      profile_->GetPrefs()->FindPreference(prefs::kPinnedLauncherApps);
+  return pref && pref->IsUserModifiable();
+}
+
 bool ChromeLauncherController::IsAppPinned(const std::string& app_id) {
   for (IDToItemControllerMap::const_iterator i =
            id_to_item_controller_map_.begin();
@@ -687,12 +693,6 @@ void ChromeLauncherController::CreateNewWindow() {
 void ChromeLauncherController::CreateNewIncognitoWindow() {
   chrome::NewEmptyWindow(GetProfileForNewWindows()->GetOffTheRecordProfile(),
                          chrome::HOST_DESKTOP_TYPE_ASH);
-}
-
-bool ChromeLauncherController::CanPin() const {
-  const PrefService::Preference* pref =
-      profile_->GetPrefs()->FindPreference(prefs::kPinnedLauncherApps);
-  return pref && pref->IsUserModifiable();
 }
 
 void ChromeLauncherController::PersistPinnedState() {

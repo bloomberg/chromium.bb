@@ -46,6 +46,7 @@ class TestLauncherDelegate : public LauncherDelegate,
   virtual LauncherID GetLauncherIDForAppID(const std::string& app_id) OVERRIDE;
   virtual const std::string& GetAppIDForLauncherID(LauncherID id) OVERRIDE;
   virtual void PinAppWithID(const std::string& app_id) OVERRIDE;
+  virtual bool CanPin() const OVERRIDE;
   virtual bool IsAppPinned(const std::string& app_id) OVERRIDE;
   virtual void UnpinAppWithID(const std::string& app_id) OVERRIDE;
 

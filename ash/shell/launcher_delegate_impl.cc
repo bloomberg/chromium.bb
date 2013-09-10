@@ -87,6 +87,10 @@ bool LauncherDelegateImpl::IsAppPinned(const std::string& app_id) {
   return false;
 }
 
+bool LauncherDelegateImpl::CanPin() const {
+  return false;
+}
+
 void LauncherDelegateImpl::UnpinAppWithID(const std::string& app_id) {
 }
 
