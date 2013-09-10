@@ -1,0 +1,37 @@
+<!DOCTYPE HTML>
+<html>
+<body>
+<script src="../../fast/js/resources/js-test-pre.js"></script>
+
+<p id="before">Before</p>
+<input type="text" size=1000>
+<textarea></textarea>
+<p id="after">After</p>
+
+<p id="description"></p>
+<div id="console"></div>
+<script>
+description("This test makes sure that extending the selection by line doesn't get stuck in a particular corner case.");
+
+var before = document.getElementById("before");
+var after = document.getElementById("after");
+
+var sel = window.getSelection();
+sel.collapse(before.firstChild, 0);
+sel.extend(before.firstChild, 6);
+for (var i = 0; i < 4; i++) {
+    sel.modify("extend", "forward", "line");
+}
+shouldBe("sel.focusNode.parentElement", "after");
+
+sel.collapse(after.firstChild, 5);
+sel.extend(after.firstChild, 0);
+for (var i = 0; i < 3; i++) {
+    sel.modify("extend", "backward", "line");
+}
+shouldBe("sel.focusNode.parentElement", "before");
+</script>
+
+<script src="../../fast/js/resources/js-test-post.js"></script>
+</body>
+</html>

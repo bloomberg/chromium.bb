@@ -647,7 +647,7 @@ VisiblePosition FrameSelection::modifyExtendingForward(TextGranularity granulari
         pos = nextSentencePosition(pos);
         break;
     case LineGranularity:
-        pos = nextLinePosition(pos, lineDirectionPointForBlockDirectionNavigation(EXTENT));
+        pos = nextLinePosition(pos, lineDirectionPointForBlockDirectionNavigation(EXTENT), ContentIsEditable, TryToAdvancePosition);
         break;
     case ParagraphGranularity:
         pos = nextParagraphPosition(pos, lineDirectionPointForBlockDirectionNavigation(EXTENT));
@@ -729,7 +729,7 @@ VisiblePosition FrameSelection::modifyMovingForward(TextGranularity granularity)
         // to leave the selection at that line start (no need to call nextLinePosition!)
         pos = endForPlatform();
         if (!isRange() || !isStartOfLine(pos))
-            pos = nextLinePosition(pos, lineDirectionPointForBlockDirectionNavigation(START));
+            pos = nextLinePosition(pos, lineDirectionPointForBlockDirectionNavigation(START), ContentIsEditable, isRange() ? OkayToReturnSamePosition : TryToAdvancePosition);
         break;
     }
     case ParagraphGranularity:
@@ -815,7 +815,7 @@ VisiblePosition FrameSelection::modifyExtendingBackward(TextGranularity granular
         pos = previousSentencePosition(pos);
         break;
     case LineGranularity:
-        pos = previousLinePosition(pos, lineDirectionPointForBlockDirectionNavigation(EXTENT));
+        pos = previousLinePosition(pos, lineDirectionPointForBlockDirectionNavigation(EXTENT), ContentIsEditable, TryToAdvancePosition);
         break;
     case ParagraphGranularity:
         pos = previousParagraphPosition(pos, lineDirectionPointForBlockDirectionNavigation(EXTENT));
@@ -892,7 +892,7 @@ VisiblePosition FrameSelection::modifyMovingBackward(TextGranularity granularity
         pos = previousSentencePosition(VisiblePosition(m_selection.extent(), m_selection.affinity()));
         break;
     case LineGranularity:
-        pos = previousLinePosition(startForPlatform(), lineDirectionPointForBlockDirectionNavigation(START));
+        pos = previousLinePosition(startForPlatform(), lineDirectionPointForBlockDirectionNavigation(START), ContentIsEditable, isRange() ? OkayToReturnSamePosition : TryToAdvancePosition);
         break;
     case ParagraphGranularity:
         pos = previousParagraphPosition(startForPlatform(), lineDirectionPointForBlockDirectionNavigation(START));

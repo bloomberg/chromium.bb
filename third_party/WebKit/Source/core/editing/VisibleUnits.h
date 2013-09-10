@@ -36,6 +36,8 @@ class VisiblePosition;
 
 enum EWordSide { RightWordIfOnBoundary = false, LeftWordIfOnBoundary = true };
 
+enum EShouldAdvancePosition { TryToAdvancePosition, OkayToReturnSamePosition };
+
 // words
 VisiblePosition startOfWord(const VisiblePosition &, EWordSide = RightWordIfOnBoundary);
 VisiblePosition endOfWord(const VisiblePosition &, EWordSide = RightWordIfOnBoundary);
@@ -54,8 +56,8 @@ VisiblePosition nextSentencePosition(const VisiblePosition &);
 // lines
 VisiblePosition startOfLine(const VisiblePosition &);
 VisiblePosition endOfLine(const VisiblePosition &);
-VisiblePosition previousLinePosition(const VisiblePosition&, int lineDirectionPoint, EditableType = ContentIsEditable);
-VisiblePosition nextLinePosition(const VisiblePosition&, int lineDirectionPoint, EditableType = ContentIsEditable);
+VisiblePosition previousLinePosition(const VisiblePosition&, int lineDirectionPoint, EditableType = ContentIsEditable, EShouldAdvancePosition shouldAdvancePosition = OkayToReturnSamePosition);
+VisiblePosition nextLinePosition(const VisiblePosition&, int lineDirectionPoint, EditableType = ContentIsEditable, EShouldAdvancePosition shouldAdvancePosition = OkayToReturnSamePosition);
 bool inSameLine(const VisiblePosition &, const VisiblePosition &);
 bool isStartOfLine(const VisiblePosition &);
 bool isEndOfLine(const VisiblePosition &);

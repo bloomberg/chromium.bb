@@ -1,0 +1,17 @@
+Before
+
+
+var x = document.getElementById('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+After
+
+This test makes sure that extending the selection by line doesn't get stuck in a particular corner case.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS sel.focusNode.parentElement is after
+PASS sel.focusNode.parentElement is before
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
