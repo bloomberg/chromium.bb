@@ -200,8 +200,8 @@ void RenderVideo::paintReplaced(PaintInfo& paintInfo, const LayoutPoint& paintOf
 
 void RenderVideo::layout()
 {
-    RenderMedia::layout();
     updatePlayer();
+    RenderMedia::layout();
 }
 
 HTMLVideoElement* RenderVideo::videoElement() const
