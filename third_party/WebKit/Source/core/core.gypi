@@ -2851,8 +2851,6 @@
             'platform/graphics/GraphicsContext3DImagePacking.cpp',
             'platform/graphics/GraphicsContextAnnotation.cpp',
             'platform/graphics/GraphicsLayer.cpp',
-            'platform/graphics/GraphicsLayerTransform.cpp',
-            'platform/graphics/GraphicsLayerTransform.h',
             'platform/graphics/GraphicsTypes.cpp',
             'platform/graphics/Image.cpp',
             'platform/graphics/ImageBuffer.cpp',
