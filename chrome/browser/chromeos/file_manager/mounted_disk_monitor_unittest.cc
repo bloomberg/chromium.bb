@@ -8,65 +8,12 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "chrome/browser/chromeos/file_manager/fake_disk_mount_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace file_manager {
 namespace {
-
-// Fake implementation of DiskMountManager. Does nothing but returns some
-// disk information.
-class FakeDiskMountManager : public chromeos::disks::DiskMountManager {
- public:
-  FakeDiskMountManager() {}
-  virtual ~FakeDiskMountManager() {
-    STLDeleteValues(&disks_);
-  }
-
-  // DiskMountManager overrides.
-  virtual void AddObserver(Observer* observer) OVERRIDE {}
-  virtual void RemoveObserver(Observer* observer) OVERRIDE {}
-  virtual const DiskMap& disks() const OVERRIDE { return disks_; }
-
-  virtual const Disk* FindDiskBySourcePath(
-      const std::string& source_path) const OVERRIDE {
-    DiskMap::const_iterator iter = disks_.find(source_path);
-    if (iter == disks_.end())
-      return NULL;
-    return iter->second;
-  };
-
-  virtual const MountPointMap& mount_points() const OVERRIDE {
-    return mount_points_;
-  }
-  virtual void RequestMountInfoRefresh() OVERRIDE {}
-  virtual void MountPath(const std::string& source_path,
-                         const std::string& source_format,
-                         const std::string& mount_label,
-                         chromeos::MountType type) OVERRIDE {}
-  virtual void UnmountPath(const std::string& mount_path,
-                           chromeos::UnmountOptions options,
-                           const UnmountPathCallback& callback) OVERRIDE {}
-  virtual void FormatMountedDevice(const std::string& mount_path) OVERRIDE {}
-  virtual void UnmountDeviceRecursively(
-      const std::string& device_path,
-      const UnmountDeviceRecursivelyCallbackType& callback) OVERRIDE {}
-
-  virtual bool AddDiskForTest(Disk* disk) OVERRIDE {
-    DCHECK(disk);
-    DCHECK(disks_.find(disk->device_path()) == disks_.end());
-    disks_[disk->device_path()] = disk;
-    return true;
-  }
-  virtual bool AddMountPointForTest(
-      const MountPointInfo& mount_point) OVERRIDE { return false; }
-
- private:
-  DiskMap disks_;
-  MountPointMap mount_points_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeDiskMountManager);
-};
 
 // Creates a fake disk with |device_path| and |fs_uuid|.
 scoped_ptr<chromeos::disks::DiskMountManager::Disk> CreateDisk(
@@ -116,7 +63,7 @@ TEST_F(MountedDiskMonitorTest, WithoutSuspend) {
       "removable_device1", "/tmp/removable_device1",
       chromeos::MOUNT_TYPE_DEVICE, chromeos::disks::MOUNT_CONDITION_NONE);
 
-  disk_mount_manager_->AddDiskForTest(disk.release());
+  ASSERT_TRUE(disk_mount_manager_->AddDiskForTest(disk.release()));
 
   // First, the disk is not remounting.
   EXPECT_FALSE(mounted_disk_monitor_->DiskIsRemounting(*disk_ptr));
@@ -160,8 +107,8 @@ TEST_F(MountedDiskMonitorTest, SuspendAndResume) {
       "removable_device2", "/tmp/removable_device2",
       chromeos::MOUNT_TYPE_DEVICE, chromeos::disks::MOUNT_CONDITION_NONE);
 
-  disk_mount_manager_->AddDiskForTest(disk1.release());
-  disk_mount_manager_->AddDiskForTest(disk2.release());
+  ASSERT_TRUE(disk_mount_manager_->AddDiskForTest(disk1.release()));
+  ASSERT_TRUE(disk_mount_manager_->AddDiskForTest(disk2.release()));
 
   // Mount |disk1|.
   mounted_disk_monitor_->OnMountEvent(

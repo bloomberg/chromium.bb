@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/chromeos/file_manager/fake_disk_mount_manager.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager_observer.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
@@ -18,93 +19,6 @@
 
 namespace file_manager {
 namespace {
-
-// Fake implementation of DiskMountManager.
-class FakeDiskMountManager : public chromeos::disks::DiskMountManager {
- public:
-  struct MountRequest {
-    MountRequest(const std::string& source_path,
-                 const std::string& source_format,
-                 const std::string& mount_label,
-                 chromeos::MountType type)
-        : source_path(source_path),
-          source_format(source_format),
-          mount_label(mount_label),
-          type(type) {
-    }
-
-    std::string source_path;
-    std::string source_format;
-    std::string mount_label;
-    chromeos::MountType type;
-  };
-
-  struct UnmountRequest {
-    UnmountRequest(const std::string& mount_path,
-                   chromeos::UnmountOptions options)
-        : mount_path(mount_path),
-          options(options) {
-    }
-
-    std::string mount_path;
-    chromeos::UnmountOptions options;
-  };
-
-  FakeDiskMountManager() {}
-  virtual ~FakeDiskMountManager() {}
-
-  const std::vector<MountRequest>& mount_requests() const {
-    return mount_requests_;
-  }
-  const std::vector<UnmountRequest>& unmount_requests() const {
-    return unmount_requests_;
-  }
-
-  // DiskMountManager overrides.
-  virtual void AddObserver(Observer* observer) OVERRIDE {}
-  virtual void RemoveObserver(Observer* observer) OVERRIDE {}
-  virtual const DiskMap& disks() const OVERRIDE { return disks_; }
-  virtual const Disk* FindDiskBySourcePath(
-      const std::string& source_path) const OVERRIDE {
-    return NULL;
-  }
-  virtual const MountPointMap& mount_points() const OVERRIDE {
-    return mount_points_;
-  }
-  virtual void RequestMountInfoRefresh() OVERRIDE {}
-  virtual void MountPath(const std::string& source_path,
-                         const std::string& source_format,
-                         const std::string& mount_label,
-                         chromeos::MountType type) OVERRIDE {
-    mount_requests_.push_back(
-        MountRequest(source_path, source_format, mount_label, type));
-  }
-  virtual void UnmountPath(const std::string& mount_path,
-                           chromeos::UnmountOptions options,
-                           const UnmountPathCallback& callback) OVERRIDE {
-    unmount_requests_.push_back(UnmountRequest(mount_path, options));
-    // Currently |callback| is just ignored.
-  }
-  virtual void FormatMountedDevice(const std::string& mount_path) OVERRIDE {}
-  virtual void UnmountDeviceRecursively(
-      const std::string& device_path,
-      const UnmountDeviceRecursivelyCallbackType& callback) OVERRIDE {}
-
-  virtual bool AddDiskForTest(Disk* disk) OVERRIDE { return false; }
-  virtual bool AddMountPointForTest(
-      const MountPointInfo& mount_point) OVERRIDE {
-    return false;
-  }
-
- private:
-  DiskMap disks_;
-  MountPointMap mount_points_;
-
-  std::vector<MountRequest> mount_requests_;
-  std::vector<UnmountRequest> unmount_requests_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeDiskMountManager);
-};
 
 class LoggingObserver : public VolumeManagerObserver {
  public:

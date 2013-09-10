@@ -653,6 +653,8 @@
         'browser/chromeos/drive/write_on_cache_file_unittest.cc',
         'browser/chromeos/extensions/default_app_order_unittest.cc',
         'browser/chromeos/file_manager/desktop_notifications_unittest.cc',
+        'browser/chromeos/file_manager/fake_disk_mount_manager.cc',
+        'browser/chromeos/file_manager/fake_disk_mount_manager.h',
         'browser/chromeos/file_manager/file_tasks_unittest.cc',
         'browser/chromeos/file_manager/file_watcher_unittest.cc',
         'browser/chromeos/file_manager/mime_util_unittest.cc',
