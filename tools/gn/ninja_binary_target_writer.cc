@@ -28,9 +28,16 @@ EscapeOptions GetFlagOptions() {
 }
 
 struct DefineWriter {
-  void operator()(const std::string& s, std::ostream& out) const {
-    out << " -D" << s;
+  DefineWriter() {
+    options.mode = ESCAPE_SHELL;
   }
+
+  void operator()(const std::string& s, std::ostream& out) const {
+    out << " -D";
+    EscapeStringToStream(out, s, options);
+  }
+
+  EscapeOptions options;
 };
 
 struct IncludeWriter {
@@ -169,13 +176,8 @@ void NinjaBinaryTargetWriter::WriteLinkerStuff(
   // for the target from all child targets, and configs, but they still need
   // to be uniquified.
   out_ << "ldflags =";
-  const std::vector<std::string> all_ldflags = target_->all_ldflags();
-  std::set<std::string> seen_ldflags;
+  const OrderedSet<std::string> all_ldflags = target_->all_ldflags();
   for (size_t i = 0; i < all_ldflags.size(); i++) {
-    if (seen_ldflags.find(all_ldflags[i]) != seen_ldflags.end())
-      continue;  // Already done this flag.
-
-    seen_ldflags.insert(all_ldflags[i]);
     out_ << " ";
     EscapeStringToStream(out_, all_ldflags[i], flag_options);
   }

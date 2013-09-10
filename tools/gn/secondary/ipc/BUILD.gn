@@ -98,9 +98,6 @@ test("ipc_tests") {
     "unix_domain_socket_util_unittest.cc",
   ]
 
-  #if (toolkit_uses_gtk) {
-  #  deps += "/build/linux/system:gtk"
-  #}
   if (is_win || is_ios) {
     sources -= "unix_domain_socket_util_unittest.cc"
   }
@@ -132,9 +129,6 @@ test("ipc_perftests") {
     "ipc_test_base.h",
   ]
 
-  #if (toolkit_uses_gtk) {
-  #  deps += "/build/linux/system:gtk"
-  #}
   #if (is_android && gtest_target_type == "shared_library") {
   #  deps += "/testing/android/native_test.gyp:native_testNative_code"
   #}

@@ -16,6 +16,7 @@
 #include "base/synchronization/lock.h"
 #include "tools/gn/config_values.h"
 #include "tools/gn/item.h"
+#include "tools/gn/ordered_set.h"
 #include "tools/gn/script_values.h"
 #include "tools/gn/source_file.h"
 
@@ -139,7 +140,7 @@ class Target : public Item {
   const SourceDir& destdir() const { return destdir_; }
   void set_destdir(const SourceDir& d) { destdir_ = d; }
 
-  const std::vector<std::string>& all_ldflags() const { return all_ldflags_; }
+  const OrderedSet<std::string>& all_ldflags() const { return all_ldflags_; }
 
  private:
   // Pulls necessary information from dependents to this one when all
@@ -181,7 +182,7 @@ class Target : public Item {
   // Linker flags that apply to this target. These are inherited from
   // statically linked deps and all configs applying to this target. These
   // values may include duplicates.
-  std::vector<std::string> all_ldflags_;
+  OrderedSet<std::string> all_ldflags_;
 
   ConfigValues config_values_;  // Used for all binary targets.
   ScriptValues script_values_;  // Used for script (CUSTOM) targets.

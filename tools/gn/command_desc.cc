@@ -108,6 +108,21 @@ void PrintDeps(const Target* target, bool display_header) {
     OutputString("  " + deps[i].GetUserVisibleName(toolchain_label) + "\n");
 }
 
+// Ldflags are special in that they're inherited. We don't currently implement
+// a blame feature for this since the bottom-up inheritance makes this
+// difficult.
+void PrintLdflags(const Target* target, bool display_header) {
+  const OrderedSet<std::string>& ldflags = target->all_ldflags();
+  if (ldflags.empty())
+    return;
+
+  if (display_header)
+    OutputString("ldflags\n");
+
+  for (size_t i = 0; i < ldflags.size(); i++)
+    OutputString("  " + ldflags[i] + "\n");
+}
+
 void PrintConfigs(const Target* target, bool display_header) {
   // Configs (don't sort since the order determines how things are processed).
   if (display_header)
@@ -326,6 +341,8 @@ int RunDesc(const std::vector<std::string>& args) {
       PrintSources(target, false);
     } else if (what == "deps") {
       PrintDeps(target, false);
+    } else if (what == "ldflags") {
+      PrintLdflags(target, false);
 
     CONFIG_VALUE_HANDLER(defines)
     CONFIG_VALUE_HANDLER(includes)
@@ -334,7 +351,6 @@ int RunDesc(const std::vector<std::string>& args) {
     CONFIG_VALUE_HANDLER(cflags_cc)
     CONFIG_VALUE_HANDLER(cflags_objc)
     CONFIG_VALUE_HANDLER(cflags_objcc)
-    CONFIG_VALUE_HANDLER(ldflags)
 
     } else {
       OutputString("Don't know how to display \"" + what + "\".\n");
@@ -371,6 +387,7 @@ int RunDesc(const std::vector<std::string>& args) {
   OUTPUT_CONFIG_VALUE(cflags_cc)
   OUTPUT_CONFIG_VALUE(cflags_objc)
   OUTPUT_CONFIG_VALUE(cflags_objcc)
+  PrintLdflags(target, true);
 
   PrintDeps(target, true);
 

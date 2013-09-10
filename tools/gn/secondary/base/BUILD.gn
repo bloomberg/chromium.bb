@@ -857,22 +857,19 @@ component("base_i18n") {
   defines = [
     "BASE_I18N_IMPLEMENTATION",
   ]
+
+  if (toolkit_uses_gtk) {
+    # i18n/rtl.cc uses gtk
+    configs += "//build/config/linux:gtk"
+  }
+
   #'conditions': [
-  #  ['toolkit_uses_gtk==1', {
-  #    'deps': [
-  #      # i18n/rtl.cc uses gtk
-  #      '../build/linux/system.gyp:gtk',
-  #    ],
-  #  }],
   #  ['OS == "win"', {
   #    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
   #    'msvs_disabled_warnings': [
   #      4267,
   #    ],
   #  }],
-  #],
-  #'export_dependent_settings': [
-  #  'base',
   #],
   #'variables': {
   #  'enable_wexit_time_destructors': 1,
@@ -980,15 +977,9 @@ static_library("test_support_base") {
     set_sources_assignment_filter([])
     sources += "test_file_util_mac.cc"
   }
-  #if (!is_bsd) {
-  #  sources -= "test/test_file_util_linux.cc"
-  #}
-  #if (use_gtk) {
-  #  deps += "/build/linux/system:gtk"
-  #}
-  #export_dependent_settings [
-  #  'base',
-  #]
+  if (toolkit_uses_gtk) {
+    configs += "//build/config/linux:gtk"
+  }
 }
 
 # TODO(brettw) move to base/test.
@@ -1010,9 +1001,9 @@ static_library("test_support_perf") {
 
   direct_dependent_configs = [ ":perf_test_config" ]
 
-  #if (toolkit_uses_gtk) {
-  #  deps += "/build/linux/system:gtk",
-  #}
+  if (toolkit_uses_gtk) {
+    configs += "//build/config/linux:gtk"
+  }
 }
 
 # TODO(brettw) move to base/test.

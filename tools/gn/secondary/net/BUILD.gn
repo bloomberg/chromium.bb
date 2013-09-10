@@ -853,11 +853,12 @@ component("net") {
     "socket/tcp_client_socket_win.h",
     "socket/tcp_listen_socket.cc",
     "socket/tcp_listen_socket.h",
+    "socket/tcp_server_socket.cc",
     "socket/tcp_server_socket.h",
-    "socket/tcp_server_socket_libevent.cc",
-    "socket/tcp_server_socket_libevent.h",
-    "socket/tcp_server_socket_win.cc",
-    "socket/tcp_server_socket_win.h",
+    "socket/tcp_socket_libevent.cc",
+    "socket/tcp_socket_libevent.h",
+    "socket/tcp_socket_win.cc",
+    "socket/tcp_socket_win.h",
     "socket/transport_client_socket_pool.cc",
     "socket/transport_client_socket_pool.h",
     "socket/unix_domain_socket_posix.cc",
@@ -1078,8 +1079,8 @@ component("net") {
       "http/http_auth_handler_ntlm_portable.cc",
       "socket/tcp_client_socket_libevent.cc",
       "socket/tcp_client_socket_libevent.h",
-      "socket/tcp_server_socket_libevent.cc",
-      "socket/tcp_server_socket_libevent.h",
+      "socket/tcp_socket_libevent.cc",
+      "socket/tcp_socket_libevent.h",
       "ssl/client_cert_store_impl_nss.cc",
       "udp/udp_socket_libevent.cc",
       "udp/udp_socket_libevent.h",
@@ -1109,6 +1110,10 @@ component("net") {
       "//third_party/nss:nspr",
       "//third_party/nss:nss",
     ]
+  }
+
+  if (is_linux && use_nss) {
+    configs += "//third_party/nss:nss_linux_config"
   }
 
   if (is_chromeos) {
@@ -1201,4 +1206,26 @@ component("net") {
 grit("net_resources") {
   external = true
   source = "base/net_resources.grd"
+}
+
+static_library("http_server") {
+  sources = [
+    "server/http_connection.cc",
+    "server/http_connection.h",
+    "server/http_server.cc",
+    "server/http_server.h",
+    "server/http_server_request_info.cc",
+    "server/http_server_request_info.h",
+    "server/http_server_response_info.cc",
+    "server/http_server_response_info.h",
+    "server/web_socket.cc",
+    "server/web_socket.h",
+  ]
+  deps = [
+    ":net",
+    "//base",
+  ]
+
+  # TODO(brettw) figure out how to get this:
+  # 'variables': { 'enable_wexit_time_destructors': 1, },
 }

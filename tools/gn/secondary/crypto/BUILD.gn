@@ -122,7 +122,9 @@ component("crypto") {
     ]
   }
 
-  if (use_openssl) {
+  if (use_nss) {
+    configs += "//third_party/nss:nss_linux_config"
+  } else {
     sources -= [
       "ec_private_key_nss.cc",
       "ec_signature_creator_nss.cc",
@@ -145,7 +147,8 @@ component("crypto") {
       "third_party/nss/secsign.cc",
       "third_party/nss/sha512.cc",
     ]
-  } else {
+  }
+  if (!use_openssl) {
     sources -= [
       "ec_private_key_openssl.cc",
       "ec_signature_creator_openssl.cc",

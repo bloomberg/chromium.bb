@@ -25,7 +25,6 @@ declare_args() {
   is_chromeos = false
   # Debug build.
   is_debug = true
-  # Hello, world
   # IOS build.
   is_ios = false
 
@@ -156,6 +155,8 @@ if (is_component_build) {
 } else {
   component_mode = "static_library"
 }
+
+toolkit_uses_gtk = is_linux
 
 # =============================================================================
 # TARGET DEFAULTS

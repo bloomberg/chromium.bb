@@ -141,8 +141,7 @@ void Target::OnResolved() {
   // all of our configs. We do this for ldflags because it must get inherited
   // through the dependency tree (other flags don't work this way).
   for (ConfigValuesIterator iter(this); !iter.done(); iter.Next()) {
-    all_ldflags_.insert(all_ldflags_.end(),
-                        iter.cur().ldflags().begin(),
+    all_ldflags_.append(iter.cur().ldflags().begin(),
                         iter.cur().ldflags().end());
   }
 
@@ -200,8 +199,7 @@ void Target::PullDependentTargetInfo(std::set<const Config*>* unique_configs) {
         inherited_libraries_.insert(*i);
 
       // Inherited system libraries.
-      all_ldflags_.insert(all_ldflags_.end(),
-                          dep->all_ldflags().begin(), dep->all_ldflags().end());
+      all_ldflags_.append(dep->all_ldflags());
     }
   }
 

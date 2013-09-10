@@ -15,6 +15,15 @@ config("executable_ldconfig") {
 
 pkg_script = "pkg-config.py"
 
+config("fontconfig") {
+  ldflags = [ "-lfontconfig" ]
+}
+
+config("freetype2") {
+  cflags = exec_script(pkg_script, [ "--cflags", "freetype2" ], "list lines")
+  ldflags = exec_script(pkg_script, [ "--libs", "freetype2" ], "list lines")
+}
+
 config("glib") {
   glib_packages = "glib-2.0 gmodule-2.0 gobject-2.0 gthread-2.0"
 
@@ -31,6 +40,11 @@ config("gtk") {
 
   cflags = exec_script(pkg_script, [ "--cflags", gtk_packages ], "list lines")
   ldflags = exec_script(pkg_script, [ "--libs", gtk_packages ], "list lines")
+}
+
+config("pangocairo") {
+  cflags = exec_script(pkg_script, [ "--cflags", "pangocairo" ], "list lines")
+  ldflags = exec_script(pkg_script, [ "--libs", "pangocairo" ], "list lines")
 }
 
 config("udev") {
