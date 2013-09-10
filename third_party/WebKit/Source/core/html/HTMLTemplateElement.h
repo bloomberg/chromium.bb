@@ -31,10 +31,12 @@
 #ifndef HTMLTemplateElement_h
 #define HTMLTemplateElement_h
 
-#include "core/dom/DocumentFragment.h"
 #include "core/html/HTMLElement.h"
 
 namespace WebCore {
+
+class DocumentFragment;
+class TemplateContentDocumentFragment;
 
 class HTMLTemplateElement FINAL : public HTMLElement {
 public:
@@ -49,7 +51,7 @@ private:
 
     HTMLTemplateElement(const QualifiedName&, Document&);
 
-    mutable RefPtr<DocumentFragment> m_content;
+    mutable RefPtr<TemplateContentDocumentFragment> m_content;
 };
 
 inline HTMLTemplateElement* toHTMLTemplateElement(Node* node)
