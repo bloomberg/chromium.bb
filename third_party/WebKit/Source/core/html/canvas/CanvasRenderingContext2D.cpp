@@ -5,7 +5,7 @@
  * Copyright (C) 2008 Eric Seidel <eric@webkit.org>
  * Copyright (C) 2008 Dirk Schulze <krit@webkit.org>
  * Copyright (C) 2010 Torch Mobile (Beijing) Co. Ltd. All rights reserved.
- * Copyright (C) 2012 Intel Corporation. All rights reserved.
+ * Copyright (C) 2012, 2013 Intel Corporation. All rights reserved.
  * Copyright (C) 2013 Adobe Systems Incorporated. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -706,6 +706,31 @@ void CanvasRenderingContext2D::transform(float m11, float m12, float m21, float 
     modifiableState().m_transform = newTransform;
     c->concatCTM(transform);
     m_path.transform(transform.inverse());
+}
+
+void CanvasRenderingContext2D::resetTransform()
+{
+    GraphicsContext* c = drawingContext();
+    if (!c)
+        return;
+
+    AffineTransform ctm = state().m_transform;
+    bool invertibleCTM = state().m_invertibleCTM;
+    // It is possible that CTM is identity while CTM is not invertible.
+    // When CTM becomes non-invertible, realizeSaves() can make CTM identity.
+    if (ctm.isIdentity() && invertibleCTM)
+        return;
+
+    realizeSaves();
+    // resetTransform() resolves the non-invertible CTM state.
+    modifiableState().m_transform.makeIdentity();
+    modifiableState().m_invertibleCTM = true;
+    c->setCTM(canvas()->baseTransform());
+
+    if (invertibleCTM)
+        m_path.transform(ctm.inverse());
+    // When else, do nothing because all transform methods didn't update m_path when CTM became non-invertible.
+    // It means that resetTransform() restores m_path just before CTM became non-invertible.
 }
 
 void CanvasRenderingContext2D::setTransform(float m11, float m12, float m21, float m22, float dx, float dy)
