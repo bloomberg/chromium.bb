@@ -73,6 +73,9 @@ namespace {
 // The minimum useful height of the contents area of the dialog.
 const int kMinimumContentsHeight = 100;
 
+// The default height of the loading shield.
+const int kLoadingShieldHeight = 150;
+
 // Horizontal padding between text and other elements (in pixels).
 const int kAroundTextPadding = 4;
 
@@ -1312,7 +1315,8 @@ void AutofillDialogViews::UpdateAccountChooser() {
   bool show_loading = delegate_->ShouldShowSpinner();
   if (show_loading != loading_shield_->visible()) {
     loading_shield_->SetVisible(show_loading);
-    Layout();
+    InvalidateLayout();
+    ContentsPreferredSizeChanged();
   }
 
   // Update legal documents for the account.
@@ -1333,6 +1337,9 @@ void AutofillDialogViews::UpdateAccountChooser() {
     footnote_view_->SetVisible(!text.empty());
     ContentsPreferredSizeChanged();
   }
+
+  if (GetWidget())
+    GetWidget()->UpdateWindowTitle();
 }
 
 void AutofillDialogViews::UpdateButtonStrip() {
@@ -1436,6 +1443,9 @@ const content::NavigationController* AutofillDialogViews::ShowSignIn() {
   // TODO(abodenha) We should be able to use the WebContents of the WebView
   // to navigate instead of LoadInitialURL.  Figure out why it doesn't work.
 
+  sign_in_delegate_.reset(
+      new AutofillDialogSignInDelegate(this,
+                                       sign_in_webview_->GetWebContents()));
   sign_in_webview_->LoadInitialURL(wallet::GetSignInUrl());
 
   sign_in_webview_->SetVisible(true);
@@ -1447,7 +1457,6 @@ const content::NavigationController* AutofillDialogViews::ShowSignIn() {
 
 void AutofillDialogViews::HideSignIn() {
   sign_in_webview_->SetVisible(false);
-  UpdateButtonStrip();
   ContentsPreferredSizeChanged();
 }
 
@@ -1545,6 +1554,11 @@ void AutofillDialogViews::Layout() {
     return;
   }
 
+  if (loading_shield_->visible()) {
+    loading_shield_->SetBoundsRect(bounds());
+    return;
+  }
+
   const int x = content_bounds.x();
   const int y = content_bounds.y();
   const int width = content_bounds.width();
@@ -1567,19 +1581,21 @@ void AutofillDialogViews::Layout() {
     details_container_->set_ignore_layouts(false);
   }
 
-  if (loading_shield_->visible())
-    loading_shield_->SetBoundsRect(bounds());
-
   if (error_bubble_)
     error_bubble_->UpdatePosition();
 }
 
 void AutofillDialogViews::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  sign_in_delegate_->SetMinWidth(GetContentsBounds().width());
+  if (sign_in_delegate_)
+    sign_in_delegate_->SetMinWidth(GetContentsBounds().width());
 }
 
 base::string16 AutofillDialogViews::GetWindowTitle() const {
-  return delegate_->DialogTitle();
+  base::string16 title = delegate_->DialogTitle();
+  // Hack alert: we don't want the dialog to jiggle when a title is added or
+  // removed. Setting a non-empty string here keeps the dialog's title bar the
+  // same size.
+  return title.empty() ? ASCIIToUTF16(" ") : title;
 }
 
 void AutofillDialogViews::WindowClosing() {
@@ -1593,10 +1609,17 @@ void AutofillDialogViews::DeleteDelegate() {
 }
 
 int AutofillDialogViews::GetDialogButtons() const {
-  if (sign_in_webview_->visible())
+  if (SignInWebviewDictatesHeight())
     return ui::DIALOG_BUTTON_NONE;
 
   return delegate_->GetDialogButtons();
+}
+
+int AutofillDialogViews::GetDefaultDialogButton() const {
+  if (GetDialogButtons() & ui::DIALOG_BUTTON_OK)
+    return ui::DIALOG_BUTTON_OK;
+
+  return ui::DIALOG_BUTTON_NONE;
 }
 
 base::string16 AutofillDialogViews::GetDialogButtonLabel(
@@ -1777,7 +1800,7 @@ gfx::Size AutofillDialogViews::CalculatePreferredSize() {
   // Width is always set by the scroll area.
   const int width = scroll_size.width();
 
-  if (sign_in_webview_->visible()) {
+  if (SignInWebviewDictatesHeight()) {
     gfx::Size size = static_cast<views::View*>(sign_in_webview_)->
         GetPreferredSize();
     return gfx::Size(width + insets.width(), size.height() + insets.height());
@@ -1787,6 +1810,11 @@ gfx::Size AutofillDialogViews::CalculatePreferredSize() {
     int height = overlay_view_->GetHeightForContentsForWidth(width);
     if (height != 0)
       return gfx::Size(width + insets.width(), height + insets.height());
+  }
+
+  if (loading_shield_->visible()) {
+    return gfx::Size(width + insets.width(),
+                     kLoadingShieldHeight + insets.height());
   }
 
   int height = 0;
@@ -1856,9 +1884,6 @@ void AutofillDialogViews::InitChildViews() {
   sign_in_webview_ = new views::WebView(delegate_->profile());
   sign_in_webview_->SetVisible(false);
   AddChildView(sign_in_webview_);
-  sign_in_delegate_.reset(
-      new AutofillDialogSignInDelegate(this,
-                                       sign_in_webview_->GetWebContents()));
 
   overlay_view_ = new OverlayView(delegate_);
   overlay_view_->SetVisible(false);
@@ -2351,6 +2376,11 @@ views::Combobox* AutofillDialogViews::ComboboxForInput(
 void AutofillDialogViews::DetailsContainerBoundsChanged() {
   if (error_bubble_)
     error_bubble_->UpdatePosition();
+}
+
+bool AutofillDialogViews::SignInWebviewDictatesHeight() const {
+  return sign_in_webview_->visible() ||
+      (sign_in_webview_->web_contents() && loading_shield_->visible());
 }
 
 AutofillDialogViews::DetailsGroup::DetailsGroup(DialogSection section)

@@ -207,7 +207,7 @@ void DialogClientView::Layout() {
   }
 
   // Layout the row containing the buttons and the extra view.
-  if (has_dialog_buttons() || extra_view_) {
+  if (has_dialog_buttons() || ShouldShow(extra_view_)) {
     bounds.Inset(GetButtonRowInsets());
     const int height = GetButtonsAndExtraViewRowHeight();
     gfx::Rect row_bounds(bounds.x(), bounds.bottom() - height,

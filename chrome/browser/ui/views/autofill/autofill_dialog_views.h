@@ -123,6 +123,7 @@ class AutofillDialogViews : public AutofillDialogView,
   virtual void DeleteDelegate() OVERRIDE;
   virtual views::View* CreateOverlayView() OVERRIDE;
   virtual int GetDialogButtons() const OVERRIDE;
+  virtual int GetDefaultDialogButton() const OVERRIDE;
   virtual base::string16 GetDialogButtonLabel(ui::DialogButton button) const
       OVERRIDE;
   virtual bool ShouldDefaultButtonBeBlue() const OVERRIDE;
@@ -595,6 +596,11 @@ class AutofillDialogViews : public AutofillDialogView,
 
   // Called when the details container changes in size or position.
   void DetailsContainerBoundsChanged();
+
+  // Returns true when the dialog is showing the sign in webview. Also returns
+  // true if showing the loading indicator (spinner) after having gone through
+  // sign in.
+  bool SignInWebviewDictatesHeight() const;
 
   // The delegate that drives this view. Weak pointer, always non-NULL.
   AutofillDialogViewDelegate* const delegate_;

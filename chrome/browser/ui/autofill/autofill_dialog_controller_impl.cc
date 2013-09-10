@@ -692,6 +692,9 @@ TestableAutofillDialogView* AutofillDialogControllerImpl::GetTestableView() {
 // AutofillDialogViewDelegate implementation.
 
 string16 AutofillDialogControllerImpl::DialogTitle() const {
+  if (ShouldShowSpinner())
+    return string16();
+
   return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_TITLE);
 }
 
@@ -766,6 +769,9 @@ bool AutofillDialogControllerImpl::ShouldSaveInChrome() const {
 }
 
 int AutofillDialogControllerImpl::GetDialogButtons() const {
+  if (ShouldShowSpinner())
+    return ui::DIALOG_BUTTON_CANCEL;
+
   return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
 }
 
