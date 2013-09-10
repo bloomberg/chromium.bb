@@ -884,7 +884,7 @@ TEST_F(WebFrameTest, pageScaleFactorWrittenToHistoryItem)
 
 TEST_F(WebFrameTest, pageScaleFactorShrinksViewport)
 {
-    registerMockedHttpURLLoad("fixed_layout.html");
+    registerMockedHttpURLLoad("large-div.html");
 
     FixedLayoutTestWebViewClient client;
     client.m_screenInfo.deviceScaleFactor = 1;
@@ -892,7 +892,7 @@ TEST_F(WebFrameTest, pageScaleFactorShrinksViewport)
     int viewportWidth = 64;
     int viewportHeight = 48;
 
-    m_webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "fixed_layout.html", true, 0, &client);
+    m_webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "large-div.html", true, 0, &client);
     m_webView->enableFixedLayoutMode(true);
     m_webView->settings()->setViewportEnabled(true);
     m_webView->resize(WebSize(viewportWidth, viewportHeight));
@@ -1123,14 +1123,14 @@ TEST_F(WebFrameResizeTest, ResizeYieldsCorrectScrollAndScaleForFixedLayout)
 
 TEST_F(WebFrameTest, pageScaleFactorScalesPaintClip)
 {
-    registerMockedHttpURLLoad("fixed_layout.html");
+    registerMockedHttpURLLoad("large-div.html");
 
     FixedLayoutTestWebViewClient client;
     client.m_screenInfo.deviceScaleFactor = 1;
     int viewportWidth = 50;
     int viewportHeight = 50;
 
-    m_webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "fixed_layout.html", true, 0, &client);
+    m_webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "large-div.html", true, 0, &client);
     m_webView->enableFixedLayoutMode(true);
     m_webView->settings()->setViewportEnabled(true);
     m_webView->resize(WebSize(viewportWidth, viewportHeight));
