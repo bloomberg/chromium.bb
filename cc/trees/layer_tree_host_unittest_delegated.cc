@@ -16,6 +16,7 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_ack.h"
 #include "cc/output/delegated_frame_data.h"
+#include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/shared_quad_state.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/resources/returned_resource.h"
@@ -150,6 +151,39 @@ class LayerTreeHostDelegatedTest : public LayerTreeTest {
                  SK_ColorTRANSPARENT,
                  vertex_opacity,
                  false);
+    frame->render_pass_list[0]->shared_quad_state_list.push_back(sqs.Pass());
+    frame->render_pass_list[0]->quad_list.push_back(quad.PassAs<DrawQuad>());
+  }
+
+  void AddRenderPass(DelegatedFrameData* frame,
+                     RenderPass::Id id,
+                     gfx::Rect output_rect,
+                     gfx::Rect damage_rect,
+                     const FilterOperations& filters,
+                     const FilterOperations& background_filters) {
+    for (size_t i = 0; i < frame->render_pass_list.size(); ++i)
+      DCHECK(id != frame->render_pass_list[i]->id);
+
+    scoped_ptr<RenderPass> pass(RenderPass::Create());
+    pass->SetNew(id,
+                 output_rect,
+                 damage_rect,
+                 gfx::Transform());
+    frame->render_pass_list.push_back(pass.Pass());
+
+    scoped_ptr<SharedQuadState> sqs = SharedQuadState::Create();
+    scoped_ptr<RenderPassDrawQuad> quad = RenderPassDrawQuad::Create();
+
+    quad->SetNew(sqs.get(),
+                 output_rect,
+                 id,
+                 false,  // is_replica
+                 0,  // mask_resource_id
+                 damage_rect,
+                 gfx::Rect(0, 0, 1, 1),  // mask_uv_rect
+                 filters,
+                 skia::RefPtr<SkImageFilter>(),
+                 background_filters);
     frame->render_pass_list[0]->shared_quad_state_list.push_back(sqs.Pass());
     frame->render_pass_list[0]->quad_list.push_back(quad.PassAs<DrawQuad>());
   }
@@ -337,6 +371,131 @@ class LayerTreeHostDelegatedTestCreateChildId
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostDelegatedTestCreateChildId);
+
+class LayerTreeHostDelegatedTestOffscreenContext_NoFilters
+    : public LayerTreeHostDelegatedTestCaseSingleDelegatedLayer {
+ protected:
+  virtual void BeginTest() OVERRIDE {
+    scoped_ptr<DelegatedFrameData> frame =
+        CreateFrameData(gfx::Rect(0, 0, 1, 1),
+                        gfx::Rect(0, 0, 1, 1));
+    delegated_->SetFrameData(frame.Pass());
+
+    PostSetNeedsCommitToMainThread();
+  }
+
+  virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+    EXPECT_FALSE(host_impl->offscreen_context_provider());
+    EndTest();
+  }
+
+  virtual void AfterTest() OVERRIDE {}
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(
+    LayerTreeHostDelegatedTestOffscreenContext_NoFilters);
+
+class LayerTreeHostDelegatedTestOffscreenContext_Filters
+    : public LayerTreeHostDelegatedTestCaseSingleDelegatedLayer {
+ protected:
+  virtual void BeginTest() OVERRIDE {
+    scoped_ptr<DelegatedFrameData> frame =
+        CreateFrameData(gfx::Rect(0, 0, 1, 1),
+                        gfx::Rect(0, 0, 1, 1));
+
+    FilterOperations filters;
+    filters.Append(FilterOperation::CreateGrayscaleFilter(0.5f));
+    AddRenderPass(frame.get(),
+                  RenderPass::Id(2, 1),
+                  gfx::Rect(0, 0, 1, 1),
+                  gfx::Rect(0, 0, 1, 1),
+                  filters,
+                  FilterOperations());
+    delegated_->SetFrameData(frame.Pass());
+
+    PostSetNeedsCommitToMainThread();
+  }
+
+  virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+    bool expect_context = !delegating_renderer();
+    EXPECT_EQ(expect_context, !!host_impl->offscreen_context_provider());
+    EndTest();
+  }
+
+  virtual void AfterTest() OVERRIDE {}
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(
+    LayerTreeHostDelegatedTestOffscreenContext_Filters);
+
+class LayerTreeHostDelegatedTestOffscreenContext_BackgroundFilters
+    : public LayerTreeHostDelegatedTestCaseSingleDelegatedLayer {
+ protected:
+  virtual void BeginTest() OVERRIDE {
+    scoped_ptr<DelegatedFrameData> frame =
+        CreateFrameData(gfx::Rect(0, 0, 1, 1),
+                        gfx::Rect(0, 0, 1, 1));
+
+    FilterOperations filters;
+    filters.Append(FilterOperation::CreateGrayscaleFilter(0.5f));
+    AddRenderPass(frame.get(),
+                  RenderPass::Id(2, 1),
+                  gfx::Rect(0, 0, 1, 1),
+                  gfx::Rect(0, 0, 1, 1),
+                  FilterOperations(),
+                  filters);
+    delegated_->SetFrameData(frame.Pass());
+
+    PostSetNeedsCommitToMainThread();
+  }
+
+  virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+    bool expect_context = !delegating_renderer();
+    EXPECT_EQ(expect_context, !!host_impl->offscreen_context_provider());
+    EndTest();
+  }
+
+  virtual void AfterTest() OVERRIDE {}
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(
+    LayerTreeHostDelegatedTestOffscreenContext_BackgroundFilters);
+
+class LayerTreeHostDelegatedTestOffscreenContext_Filters_AddedToTree
+    : public LayerTreeHostDelegatedTestCaseSingleDelegatedLayer {
+ protected:
+  virtual void BeginTest() OVERRIDE {
+    scoped_ptr<DelegatedFrameData> frame =
+        CreateFrameData(gfx::Rect(0, 0, 1, 1),
+                        gfx::Rect(0, 0, 1, 1));
+
+    FilterOperations filters;
+    filters.Append(FilterOperation::CreateGrayscaleFilter(0.5f));
+    AddRenderPass(frame.get(),
+                  RenderPass::Id(2, 1),
+                  gfx::Rect(0, 0, 1, 1),
+                  gfx::Rect(0, 0, 1, 1),
+                  filters,
+                  FilterOperations());
+
+    delegated_->RemoveFromParent();
+    delegated_->SetFrameData(frame.Pass());
+    layer_tree_host()->root_layer()->AddChild(delegated_);
+
+    PostSetNeedsCommitToMainThread();
+  }
+
+  virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+    bool expect_context = !delegating_renderer();
+    EXPECT_EQ(expect_context, !!host_impl->offscreen_context_provider());
+    EndTest();
+  }
+
+  virtual void AfterTest() OVERRIDE {}
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(
+    LayerTreeHostDelegatedTestOffscreenContext_Filters_AddedToTree);
 
 class LayerTreeHostDelegatedTestLayerUsesFrameDamage
     : public LayerTreeHostDelegatedTestCaseSingleDelegatedLayer {

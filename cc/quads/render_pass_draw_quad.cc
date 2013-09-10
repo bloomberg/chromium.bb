@@ -7,6 +7,7 @@
 #include "base/values.h"
 #include "cc/base/math_util.h"
 #include "cc/debug/traced_value.h"
+#include "third_party/skia/include/core/SkImageFilter.h"
 
 namespace cc {
 

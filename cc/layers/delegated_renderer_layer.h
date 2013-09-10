@@ -49,6 +49,7 @@ class CC_EXPORT DelegatedRendererLayer : public Layer {
   ReturnedResourceArray unused_resources_for_child_compositor_;
 
   DelegatedRendererLayerClient* client_;
+  bool needs_filter_context_;
 
   DISALLOW_COPY_AND_ASSIGN(DelegatedRendererLayer);
 };

@@ -7,6 +7,8 @@
 #include "cc/layers/delegated_renderer_layer_client.h"
 #include "cc/layers/delegated_renderer_layer_impl.h"
 #include "cc/output/delegated_frame_data.h"
+#include "cc/quads/render_pass_draw_quad.h"
+#include "cc/trees/layer_tree_host.h"
 
 namespace cc {
 
@@ -19,7 +21,8 @@ scoped_refptr<DelegatedRendererLayer> DelegatedRendererLayer::Create(
 DelegatedRendererLayer::DelegatedRendererLayer(
     DelegatedRendererLayerClient* client)
     : Layer(),
-    client_(client) {}
+      client_(client),
+      needs_filter_context_(false) {}
 
 DelegatedRendererLayer::~DelegatedRendererLayer() {}
 
@@ -41,6 +44,9 @@ void DelegatedRendererLayer::SetLayerTreeHost(LayerTreeHost* host) {
     // TODO(danakj): Don't need to do this if the last frame commited was empty
     // or we never commited a frame with resources.
     SetNextCommitWaitsForActivation();
+  } else {
+    if (needs_filter_context_)
+      host->set_needs_filter_context();
   }
 
   Layer::SetLayerTreeHost(host);
@@ -99,6 +105,26 @@ void DelegatedRendererLayer::SetFrameData(
   } else {
     frame_size_ = gfx::Size();
   }
+
+  // If any RenderPassDrawQuad has a filter operation, then we need a filter
+  // context to draw this layer's content.
+  for (size_t i = 0;
+       !needs_filter_context_ && i < frame_data_->render_pass_list.size();
+       ++i) {
+    const QuadList& quad_list = frame_data_->render_pass_list[i]->quad_list;
+    for (size_t j = 0; !needs_filter_context_ && j < quad_list.size(); ++j) {
+      if (quad_list[j]->material != DrawQuad::RENDER_PASS)
+        continue;
+      const RenderPassDrawQuad* render_pass_quad =
+          RenderPassDrawQuad::MaterialCast(quad_list[j]);
+      if (!render_pass_quad->filters.IsEmpty() ||
+          !render_pass_quad->background_filters.IsEmpty())
+        needs_filter_context_ = true;
+    }
+  }
+  if (needs_filter_context_ && layer_tree_host())
+    layer_tree_host()->set_needs_filter_context();
+
   SetNeedsCommit();
   // The active frame needs to be replaced and resources returned before the
   // commit is called complete.
