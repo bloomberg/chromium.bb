@@ -302,10 +302,10 @@ const char* ConvertTransferStatusToErrorString(const UsbTransferStatus status) {
 
 #if defined(OS_CHROMEOS)
 void RequestUsbDevicesAccessHelper(
-    std::vector<scoped_refptr<UsbDevice> >* devices,
+    ScopedDeviceVector devices,
     std::vector<scoped_refptr<UsbDevice> >::iterator i,
     int interface_id,
-    const base::Closure& callback,
+    const base::Callback<void(ScopedDeviceVector result)>& callback,
     bool success) {
   if (success) {
     ++i;
@@ -313,20 +313,22 @@ void RequestUsbDevicesAccessHelper(
     i = devices->erase(i);
   }
   if (i == devices->end()) {
-    callback.Run();
+    callback.Run(devices.Pass());
     return;
   }
-  (*i)->RequestUsbAcess(interface_id,
-                        base::Bind(RequestUsbDevicesAccessHelper, devices, i,
-                                   interface_id, callback));
+  (*i)->RequestUsbAcess(interface_id, base::Bind(RequestUsbDevicesAccessHelper,
+                                                 base::Passed(devices.Pass()),
+                                                 i, interface_id, callback));
 }
 
 void RequestUsbDevicesAccess(
-    std::vector<scoped_refptr<UsbDevice> >* devices,
+    ScopedDeviceVector devices,
     int interface_id,
-    const base::Closure& callback) {
-  RequestUsbDevicesAccessHelper(devices, devices->begin(), interface_id,
-                               callback, true);
+    const base::Callback<void(ScopedDeviceVector result)>& callback) {
+  (*devices->begin())->RequestUsbAcess(
+      interface_id,
+      base::Bind(RequestUsbDevicesAccessHelper, base::Passed(devices.Pass()),
+                 devices->begin(), interface_id, callback));
 }
 #endif  // OS_CHROMEOS
 
@@ -561,16 +563,12 @@ void UsbFindDevicesFunction::AsyncWorkStart() {
   }
 
 #if defined(OS_CHROMEOS)
-  if (parameters_->options.interface_id.get()) {
-    int interface_id = *parameters_->options.interface_id.get();
-    RequestUsbDevicesAccess(devices.get(), interface_id,
-                            base::Bind(&UsbFindDevicesFunction::OpenDevices,
-                                       this,
-                                       base::Passed(devices.Pass())));
-    return;
-  }
-#endif  // OS_CHROMEOS
+  RequestUsbDevicesAccess(
+      devices.Pass(), interface_id,
+      base::Bind(&UsbFindDevicesFunction::OpenDevices, this));
+#else
   OpenDevices(devices.Pass());
+#endif  // OS_CHROMEOS
 }
 
 void UsbFindDevicesFunction::OpenDevices(ScopedDeviceVector devices) {
