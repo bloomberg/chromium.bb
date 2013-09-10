@@ -552,13 +552,14 @@ void WebViewImpl::handleMouseDown(Frame& mainFrame, const WebMouseEvent& event)
     }
 
     // Dispatch the contextmenu event regardless of if the click was swallowed.
+#if OS(WIN)
     // On Windows, we handle it on mouse up, not down.
-#if OS(MACOSX)
+#elif OS(MACOSX)
     if (event.button == WebMouseEvent::ButtonRight
         || (event.button == WebMouseEvent::ButtonLeft
             && event.modifiers & WebMouseEvent::ControlKey))
         mouseContextMenu(event);
-#elif OS(POSIX)
+#else
     if (event.button == WebMouseEvent::ButtonRight)
         mouseContextMenu(event);
 #endif
@@ -937,7 +938,7 @@ bool WebViewImpl::handleKeyEvent(const WebKeyboardEvent& event)
     const WebInputEvent::Type contextMenuTriggeringEventType =
 #if OS(WIN)
         WebInputEvent::KeyUp;
-#elif OS(POSIX)
+#else
         WebInputEvent::RawKeyDown;
 #endif
 

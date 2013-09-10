@@ -2079,15 +2079,15 @@ bool EventHandler::isInsideScrollbar(const IntPoint& windowPoint) const
 
 bool EventHandler::shouldTurnVerticalTicksIntoHorizontal(const HitTestResult& result, const PlatformWheelEvent& event) const
 {
-#if OS(POSIX) && !OS(MACOSX)
+#if OS(ANDROID) || OS(MACOSX) || OS(WIN)
+    UNUSED_PARAM(result);
+    UNUSED_PARAM(event);
+    return false;
+#else
     // GTK+ must scroll horizontally if the mouse pointer is on top of the
     // horizontal scrollbar while scrolling with the wheel.
     // This code comes from gtk/EventHandlerGtk.cpp.
     return !event.hasPreciseScrollingDeltas() && result.scrollbar() && result.scrollbar()->orientation() == HorizontalScrollbar;
-#else
-    UNUSED_PARAM(result);
-    UNUSED_PARAM(event);
-    return false;
 #endif
 }
 

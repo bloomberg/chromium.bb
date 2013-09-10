@@ -378,7 +378,7 @@ public:
             graphicsContext.save();
 
             graphicsContext.translate(0, currentHeight);
-#if !OS(POSIX) || OS(MACOSX)
+#if OS(WIN) || OS(MACOSX)
             // Account for the disabling of scaling in spoolPage. In the context
             // of spoolAllPagesWithBoundaries the scale HAS NOT been pre-applied.
             float scale = getPageShrink(pageIndex);
