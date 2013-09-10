@@ -17,6 +17,9 @@ import archive
 import chrome_paths
 import util
 
+sys.path.insert(0, os.path.join(chrome_paths.GetSrc(), 'build', 'android'))
+from pylib import constants
+
 
 def _AppendEnvironmentPath(env_name, path):
   if env_name in os.environ:
@@ -140,6 +143,7 @@ def main():
   if not options.android_packages:
     required_build_outputs += [cpp_tests_name]
   build_dir = chrome_paths.GetBuildDir(required_build_outputs)
+  constants.SetBuildType(os.path.basename(build_dir))
   print 'Using build outputs from', build_dir
 
   chromedriver = os.path.join(build_dir, server_name)
