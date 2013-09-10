@@ -110,9 +110,6 @@ class AutomationProvider
   // Call SetExpectedTabCount(0) to set this to true immediately.
   void OnInitialTabLoadsComplete();
 
-  // Called when the ChromeOS network library has finished its first update.
-  void OnNetworkLibraryInit();
-
   // Called when the chromeos WebUI OOBE/Login is ready.
   void OnOOBEWebuiReady();
 
@@ -347,9 +344,6 @@ class AutomationProvider
 
   // True iff browser finished loading initial set of tabs.
   bool initial_tab_loads_complete_;
-
-  // True iff the Chrome OS network library finished initialization.
-  bool network_library_initialized_;
 
   // True iff ChromeOS webui login ui is ready.
   bool login_webui_ready_;

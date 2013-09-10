@@ -1311,19 +1311,6 @@ class TestingAutomationProvider : public AutomationProvider,
   // Battery.
   void GetBatteryInfo(base::DictionaryValue* args, IPC::Message* reply_message);
 
-  // Network.
-  void GetNetworkInfo(base::DictionaryValue* args, IPC::Message* reply_message);
-
-  void NetworkScan(base::DictionaryValue* args, IPC::Message* reply_message);
-
-  void ToggleNetworkDevice(base::DictionaryValue* args,
-                           IPC::Message* reply_message);
-
-  void ConnectToHiddenWifiNetwork(base::DictionaryValue* args,
-                                  IPC::Message* reply_message);
-
-  void ForgetWifiNetwork(DictionaryValue* args, IPC::Message* reply_message);
-
   // Accessibility.
   void EnableSpokenFeedback(DictionaryValue* args, IPC::Message* reply_message);
 

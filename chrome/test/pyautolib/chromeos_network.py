@@ -32,10 +32,8 @@ class PyNetworkUITest(pyauto.PyUITest):
     self._PushServiceOrder('wifi,ethernet')
     self._ParseDefaultRoutingTable()
     pyauto.PyUITest.setUp(self)
-    self.ForgetAllRememberedNetworks()
 
   def tearDown(self):
-    self.ForgetAllRememberedNetworks()
     pyauto.PyUITest.tearDown(self)
     self._PopServiceOrder()
     # Remove the route entry for the power strip.

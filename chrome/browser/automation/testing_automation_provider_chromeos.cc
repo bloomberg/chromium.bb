@@ -19,7 +19,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
-#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/default_user_images.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
@@ -46,62 +45,18 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/dbus/update_engine_client.h"
-#include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/onc/onc_utils.h"
 #include "content/public/browser/web_contents.h"
-#include "net/base/network_change_notifier.h"
 #include "policy/policy_constants.h"
 #include "ui/views/widget/widget.h"
 
 using chromeos::DBusThreadManager;
 using chromeos::ExistingUserController;
-using chromeos::NetworkLibrary;
 using chromeos::UpdateEngineClient;
 using chromeos::User;
 using chromeos::UserManager;
 using chromeos::WizardController;
 
 namespace {
-
-DictionaryValue* GetNetworkInfoDict(const chromeos::Network* network) {
-  DictionaryValue* item = new DictionaryValue;
-  item->SetString("name", network->name());
-  item->SetString("device_path", network->device_path());
-  item->SetString("status", network->GetStateString());
-  return item;
-}
-
-DictionaryValue* GetWifiInfoDict(const chromeos::WifiNetwork* wifi) {
-  DictionaryValue* item = GetNetworkInfoDict(wifi);
-  item->SetInteger("strength", wifi->strength());
-  item->SetBoolean("encrypted", wifi->encrypted());
-  item->SetString("encryption", wifi->GetEncryptionString());
-  return item;
-}
-
-const char* UpdateStatusToString(
-    UpdateEngineClient::UpdateStatusOperation status) {
-  switch (status) {
-    case UpdateEngineClient::UPDATE_STATUS_IDLE:
-      return "idle";
-    case UpdateEngineClient::UPDATE_STATUS_CHECKING_FOR_UPDATE:
-      return "checking for update";
-    case UpdateEngineClient::UPDATE_STATUS_UPDATE_AVAILABLE:
-      return "update available";
-    case UpdateEngineClient::UPDATE_STATUS_DOWNLOADING:
-      return "downloading";
-    case UpdateEngineClient::UPDATE_STATUS_VERIFYING:
-      return "verifying";
-    case UpdateEngineClient::UPDATE_STATUS_FINALIZING:
-      return "finalizing";
-    case UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT:
-      return "updated need reboot";
-    case UpdateEngineClient::UPDATE_STATUS_REPORTING_ERROR_EVENT:
-      return "reporting error event";
-    default:
-      return "unknown";
-  }
-}
 
 void UpdateCheckCallback(AutomationJSONReply* reply,
                          UpdateEngineClient::UpdateCheckResult result) {
@@ -110,20 +65,6 @@ void UpdateCheckCallback(AutomationJSONReply* reply,
   else
     reply->SendError("update check failed");
   delete reply;
-}
-
-const std::string VPNProviderTypeToString(
-    chromeos::ProviderType provider_type) {
-  switch (provider_type) {
-    case chromeos::PROVIDER_TYPE_L2TP_IPSEC_PSK:
-      return std::string("L2TP_IPSEC_PSK");
-    case chromeos::PROVIDER_TYPE_L2TP_IPSEC_USER_CERT:
-      return std::string("L2TP_IPSEC_USER_CERT");
-    case chromeos::PROVIDER_TYPE_OPEN_VPN:
-      return std::string("OPEN_VPN");
-    default:
-      return std::string("UNSUPPORTED_PROVIDER_TYPE");
-  }
 }
 
 }  // namespace
@@ -491,248 +432,6 @@ void TestingAutomationProvider::GetBatteryInfo(DictionaryValue* args,
   }
 
   AutomationJSONReply(this, reply_message).SendSuccess(return_value.get());
-}
-
-void TestingAutomationProvider::GetNetworkInfo(DictionaryValue* args,
-                                               IPC::Message* reply_message) {
-  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
-  NetworkLibrary* network_library = NetworkLibrary::Get();
-
-  return_value->SetBoolean("offline_mode",
-                           net::NetworkChangeNotifier::IsOffline());
-
-  // Currently connected networks.
-  if (network_library->ethernet_network())
-    return_value->SetString(
-        "connected_ethernet",
-        network_library->ethernet_network()->service_path());
-  if (network_library->wifi_network())
-    return_value->SetString("connected_wifi",
-                            network_library->wifi_network()->service_path());
-  if (network_library->cellular_network())
-    return_value->SetString(
-        "connected_cellular",
-        network_library->cellular_network()->service_path());
-
-  // Ethernet network.
-  bool ethernet_available = network_library->ethernet_available();
-  bool ethernet_enabled = network_library->ethernet_enabled();
-  return_value->SetBoolean("ethernet_available", ethernet_available);
-  return_value->SetBoolean("ethernet_enabled", ethernet_enabled);
-  if (ethernet_available && ethernet_enabled) {
-    const chromeos::EthernetNetwork* ethernet_network =
-        network_library->ethernet_network();
-    if (ethernet_network) {
-      DictionaryValue* items = new DictionaryValue;
-      DictionaryValue* item = GetNetworkInfoDict(ethernet_network);
-      items->Set(ethernet_network->service_path(), item);
-      items->SetInteger("network_type", chromeos::TYPE_ETHERNET);
-      return_value->Set("ethernet_networks", items);
-    }
-  }
-
-  // Wi-fi networks.
-  bool wifi_available = network_library->wifi_available();
-  bool wifi_enabled = network_library->wifi_enabled();
-  return_value->SetBoolean("wifi_available", wifi_available);
-  return_value->SetBoolean("wifi_enabled", wifi_enabled);
-  if (wifi_available && wifi_enabled) {
-    const chromeos::WifiNetworkVector& wifi_networks =
-        network_library->wifi_networks();
-    DictionaryValue* items = new DictionaryValue;
-    for (chromeos::WifiNetworkVector::const_iterator iter =
-         wifi_networks.begin(); iter != wifi_networks.end(); ++iter) {
-      const chromeos::WifiNetwork* wifi = *iter;
-      DictionaryValue* item = GetWifiInfoDict(wifi);
-      items->Set(wifi->service_path(), item);
-    }
-    items->SetInteger("network_type", chromeos::TYPE_WIFI);
-    return_value->Set("wifi_networks", items);
-  }
-
-  // Cellular networks.
-  bool cellular_available = network_library->cellular_available();
-  bool cellular_enabled = network_library->cellular_enabled();
-  return_value->SetBoolean("cellular_available", cellular_available);
-  return_value->SetBoolean("cellular_enabled", cellular_enabled);
-  if (cellular_available && cellular_enabled) {
-    const chromeos::CellularNetworkVector& cellular_networks =
-        network_library->cellular_networks();
-    DictionaryValue* items = new DictionaryValue;
-    for (size_t i = 0; i < cellular_networks.size(); ++i) {
-      DictionaryValue* item = GetNetworkInfoDict(cellular_networks[i]);
-      item->SetInteger("strength", cellular_networks[i]->strength());
-      item->SetString("operator_name", cellular_networks[i]->operator_name());
-      item->SetString("operator_code", cellular_networks[i]->operator_code());
-      item->SetString("network_technology",
-                      cellular_networks[i]->GetNetworkTechnologyString());
-      item->SetString("activation_state",
-                      cellular_networks[i]->GetActivationStateString());
-      item->SetString("roaming_state",
-                      cellular_networks[i]->GetRoamingStateString());
-      items->Set(cellular_networks[i]->service_path(), item);
-    }
-    items->SetInteger("network_type", chromeos::TYPE_CELLULAR);
-    return_value->Set("cellular_networks", items);
-  }
-
-  // Remembered Wifi Networks.
-  const chromeos::WifiNetworkVector& remembered_wifi =
-      network_library->remembered_wifi_networks();
-  DictionaryValue* remembered_wifi_items = new DictionaryValue;
-  for (chromeos::WifiNetworkVector::const_iterator iter =
-       remembered_wifi.begin(); iter != remembered_wifi.end();
-       ++iter) {
-      const chromeos::WifiNetwork* wifi = *iter;
-      DictionaryValue* item = GetWifiInfoDict(wifi);
-      remembered_wifi_items->Set(wifi->service_path(), item);
-  }
-  remembered_wifi_items->SetInteger("network_type", chromeos::TYPE_WIFI);
-  return_value->Set("remembered_wifi", remembered_wifi_items);
-
-  AutomationJSONReply(this, reply_message).SendSuccess(return_value.get());
-}
-
-void TestingAutomationProvider::NetworkScan(DictionaryValue* args,
-                                            IPC::Message* reply_message) {
-  NetworkLibrary* network_library = NetworkLibrary::Get();
-  network_library->RequestNetworkScan();
-
-  // Set up an observer (it will delete itself).
-  new NetworkScanObserver(this, reply_message);
-}
-
-void TestingAutomationProvider::ToggleNetworkDevice(
-    DictionaryValue* args, IPC::Message* reply_message) {
-  AutomationJSONReply reply(this, reply_message);
-  std::string device;
-  bool enable;
-  if (!args->GetString("device", &device) ||
-      !args->GetBoolean("enable", &enable)) {
-    reply.SendError("Invalid or missing args.");
-    return;
-  }
-
-  // Set up an observer (it will delete itself).
-  new ToggleNetworkDeviceObserver(this, reply_message, device, enable);
-
-  NetworkLibrary* network_library = NetworkLibrary::Get();
-  if (device == "ethernet") {
-    network_library->EnableEthernetNetworkDevice(enable);
-  } else if (device == "wifi") {
-    network_library->EnableWifiNetworkDevice(enable);
-  } else if (device == "cellular") {
-    network_library->EnableCellularNetworkDevice(enable);
-  } else {
-    reply.SendError(
-        "Unknown device. Valid devices are ethernet, wifi, cellular.");
-    return;
-  }
-}
-
-void TestingAutomationProvider::ForgetWifiNetwork(
-    DictionaryValue* args, IPC::Message* reply_message) {
-  std::string service_path;
-  if (!args->GetString("service_path", &service_path)) {
-    AutomationJSONReply(this, reply_message).SendError(
-        "Invalid or missing args.");
-    return;
-  }
-
-  NetworkLibrary::Get()->ForgetNetwork(service_path);
-  AutomationJSONReply(this, reply_message).SendSuccess(NULL);
-}
-
-void TestingAutomationProvider::ConnectToHiddenWifiNetwork(
-    DictionaryValue* args, IPC::Message* reply_message) {
-  std::string ssid, security, password;
-  bool shared;
-  if (!args->GetString("ssid", &ssid) ||
-      !args->GetString("security", &security) ||
-      !args->GetString("password", &password) ||
-      !args->GetBoolean("shared", &shared)) {
-    AutomationJSONReply(this, reply_message).SendError(
-        "Invalid or missing args.");
-    return;
-  }
-
-  std::map<std::string, chromeos::ConnectionSecurity> connection_security_map;
-  connection_security_map["SECURITY_NONE"] = chromeos::SECURITY_NONE;
-  connection_security_map["SECURITY_WEP"] = chromeos::SECURITY_WEP;
-  connection_security_map["SECURITY_WPA"] = chromeos::SECURITY_WPA;
-  connection_security_map["SECURITY_RSN"] = chromeos::SECURITY_RSN;
-  connection_security_map["SECURITY_8021X"] = chromeos::SECURITY_8021X;
-
-  if (connection_security_map.find(security) == connection_security_map.end()) {
-    AutomationJSONReply(this, reply_message).SendError(
-        "Unknown security type.");
-    return;
-  }
-  chromeos::ConnectionSecurity connection_security =
-      connection_security_map[security];
-
-  NetworkLibrary* network_library = NetworkLibrary::Get();
-
-  // Set up an observer (it will delete itself).
-  new SSIDConnectObserver(this, reply_message, ssid);
-
-  bool save_credentials = false;
-
-  if (connection_security == chromeos::SECURITY_8021X) {
-    chromeos::NetworkLibrary::EAPConfigData config_data;
-    std::string eap_method, eap_auth, eap_identity;
-    if (!args->GetString("eap_method", &eap_method) ||
-        !args->GetString("eap_auth", &eap_auth) ||
-        !args->GetString("eap_identity", &eap_identity) ||
-        !args->GetBoolean("save_credentials", &save_credentials)) {
-      AutomationJSONReply(this, reply_message).SendError(
-          "Invalid or missing EAP args.");
-      return;
-    }
-
-    std::map<std::string, chromeos::EAPMethod> eap_method_map;
-    eap_method_map["EAP_METHOD_NONE"] = chromeos::EAP_METHOD_UNKNOWN;
-    eap_method_map["EAP_METHOD_PEAP"] = chromeos::EAP_METHOD_PEAP;
-    eap_method_map["EAP_METHOD_TLS"] = chromeos::EAP_METHOD_TLS;
-    eap_method_map["EAP_METHOD_TTLS"] = chromeos::EAP_METHOD_TTLS;
-    eap_method_map["EAP_METHOD_LEAP"] = chromeos::EAP_METHOD_LEAP;
-    if (eap_method_map.find(eap_method) == eap_method_map.end()) {
-      AutomationJSONReply(this, reply_message).SendError(
-          "Unknown EAP Method type.");
-      return;
-    }
-    config_data.method = eap_method_map[eap_method];
-
-    std::map<std::string, chromeos::EAPPhase2Auth> eap_auth_map;
-    eap_auth_map["EAP_PHASE_2_AUTH_AUTO"] = chromeos::EAP_PHASE_2_AUTH_AUTO;
-    eap_auth_map["EAP_PHASE_2_AUTH_MD5"] = chromeos::EAP_PHASE_2_AUTH_MD5;
-    eap_auth_map["EAP_PHASE_2_AUTH_MSCHAP"] =
-        chromeos::EAP_PHASE_2_AUTH_MSCHAP;
-    eap_auth_map["EAP_PHASE_2_AUTH_MSCHAPV2"] =
-        chromeos::EAP_PHASE_2_AUTH_MSCHAPV2;
-    eap_auth_map["EAP_PHASE_2_AUTH_PAP"] = chromeos::EAP_PHASE_2_AUTH_PAP;
-    eap_auth_map["EAP_PHASE_2_AUTH_CHAP"] = chromeos::EAP_PHASE_2_AUTH_CHAP;
-    if (eap_auth_map.find(eap_auth) == eap_auth_map.end()) {
-      AutomationJSONReply(this, reply_message).SendError(
-          "Unknown EAP Phase2 Auth type.");
-      return;
-    }
-    config_data.auth = eap_auth_map[eap_auth];
-
-    config_data.identity = eap_identity;
-
-    // TODO(stevenjb): Parse cert values?
-    config_data.use_system_cas = false;
-    config_data.client_cert_pkcs11_id = "";
-
-    network_library->ConnectToUnconfiguredWifiNetwork(
-        ssid, chromeos::SECURITY_8021X, password, &config_data,
-        save_credentials, shared);
-  } else {
-    network_library->ConnectToUnconfiguredWifiNetwork(
-        ssid, connection_security, password, NULL,
-        save_credentials, shared);
-  }
 }
 
 void TestingAutomationProvider::ExecuteJavascriptInOOBEWebUI(

@@ -1758,15 +1758,6 @@ void TestingAutomationProvider::BuildJSONHandlerMaps() {
 
   handler_map_["GetBatteryInfo"] = &TestingAutomationProvider::GetBatteryInfo;
 
-  handler_map_["GetNetworkInfo"] = &TestingAutomationProvider::GetNetworkInfo;
-  handler_map_["NetworkScan"] = &TestingAutomationProvider::NetworkScan;
-  handler_map_["ToggleNetworkDevice"] =
-      &TestingAutomationProvider::ToggleNetworkDevice;
-  handler_map_["ConnectToHiddenWifiNetwork"] =
-      &TestingAutomationProvider::ConnectToHiddenWifiNetwork;
-  handler_map_["ForgetWifiNetwork"] =
-      &TestingAutomationProvider::ForgetWifiNetwork;
-
   handler_map_["EnableSpokenFeedback"] =
       &TestingAutomationProvider::EnableSpokenFeedback;
   handler_map_["IsSpokenFeedbackEnabled"] =

@@ -23,7 +23,6 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -133,22 +132,6 @@ class InitialLoadObserver : public content::NotificationObserver {
 };
 
 #if defined(OS_CHROMEOS)
-// Watches for NetworkManager events. Because NetworkLibrary loads
-// asynchronously, this is used to make sure it is done before tests are run.
-class NetworkManagerInitObserver
-    : public chromeos::NetworkLibrary::NetworkManagerObserver {
- public:
-  explicit NetworkManagerInitObserver(AutomationProvider* automation);
-  virtual ~NetworkManagerInitObserver();
-  virtual bool Init();
-  virtual void OnNetworkManagerChanged(chromeos::NetworkLibrary* obj);
-
- private:
-  base::WeakPtr<AutomationProvider> automation_;
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkManagerInitObserver);
-};
-
 // Observes when the ChromeOS login WebUI becomes ready (by showing the login
 // form, account picker, a network error or the OOBE wizard, depending on Chrome
 // flags and state).
@@ -786,154 +769,6 @@ class ScreenUnlockObserver : public ScreenLockUnlockObserver,
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ScreenUnlockObserver);
-};
-
-class NetworkScanObserver
-    : public chromeos::NetworkLibrary::NetworkManagerObserver {
- public:
-  NetworkScanObserver(AutomationProvider* automation,
-                      IPC::Message* reply_message);
-
-  virtual ~NetworkScanObserver();
-
-  // NetworkLibrary::NetworkManagerObserver implementation.
-  virtual void OnNetworkManagerChanged(chromeos::NetworkLibrary* obj);
-
- private:
-  base::WeakPtr<AutomationProvider> automation_;
-  scoped_ptr<IPC::Message> reply_message_;
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkScanObserver);
-};
-
-class ToggleNetworkDeviceObserver
-    : public chromeos::NetworkLibrary::NetworkManagerObserver {
- public:
-  ToggleNetworkDeviceObserver(AutomationProvider* automation,
-                              IPC::Message* reply_message,
-                              const std::string& device,
-                              bool enable);
-
-  virtual ~ToggleNetworkDeviceObserver();
-
-  // NetworkLibrary::NetworkManagerObserver implementation.
-  virtual void OnNetworkManagerChanged(chromeos::NetworkLibrary* obj);
-
- private:
-  base::WeakPtr<AutomationProvider> automation_;
-  scoped_ptr<IPC::Message> reply_message_;
-  std::string device_;
-  bool enable_;
-
-  DISALLOW_COPY_AND_ASSIGN(ToggleNetworkDeviceObserver);
-};
-
-class NetworkStatusObserver
-    : public chromeos::NetworkLibrary::NetworkManagerObserver {
- public:
-  NetworkStatusObserver(AutomationProvider* automation,
-                        IPC::Message* reply_message);
-  virtual ~NetworkStatusObserver();
-
-  virtual const chromeos::Network* GetNetwork(
-      chromeos::NetworkLibrary* network_library) = 0;
-  // NetworkLibrary::NetworkManagerObserver implementation.
-  virtual void OnNetworkManagerChanged(chromeos::NetworkLibrary* obj);
-  virtual void NetworkStatusCheck(const chromeos::Network* network) = 0;
-
- protected:
-  base::WeakPtr<AutomationProvider> automation_;
-  scoped_ptr<IPC::Message> reply_message_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NetworkStatusObserver);
-};
-
-// Waits for a connection success or failure for the specified
-// network and returns the status to the automation provider.
-class NetworkConnectObserver : public NetworkStatusObserver {
- public:
-  NetworkConnectObserver(AutomationProvider* automation,
-                         IPC::Message* reply_message);
-
-  virtual void NetworkStatusCheck(const chromeos::Network* network);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NetworkConnectObserver);
-};
-
-// Waits until a network has disconnected.  Then returns success
-// or failure.
-class NetworkDisconnectObserver : public NetworkStatusObserver {
- public:
-  NetworkDisconnectObserver(AutomationProvider* automation,
-                            IPC::Message* reply_message,
-                            const std::string& service_path);
-
-  virtual void NetworkStatusCheck(const chromeos::Network* network);
-  const chromeos::Network* GetNetwork(
-      chromeos::NetworkLibrary* network_library);
-
- private:
-  std::string service_path_;
-  DISALLOW_COPY_AND_ASSIGN(NetworkDisconnectObserver);
-};
-
-// Waits for a connection success or failure for the specified
-// network and returns the status to the automation provider.
-class ServicePathConnectObserver : public NetworkConnectObserver {
- public:
-  ServicePathConnectObserver(AutomationProvider* automation,
-                             IPC::Message* reply_message,
-                             const std::string& service_path);
-
-  const chromeos::Network* GetNetwork(
-      chromeos::NetworkLibrary* network_library);
-
- private:
-  std::string service_path_;
-  DISALLOW_COPY_AND_ASSIGN(ServicePathConnectObserver);
-};
-
-// Waits for a connection success or failure for the specified
-// network and returns the status to the automation provider.
-class SSIDConnectObserver : public NetworkConnectObserver {
- public:
-  SSIDConnectObserver(AutomationProvider* automation,
-                      IPC::Message* reply_message,
-                      const std::string& ssid);
-
-  const chromeos::Network* GetNetwork(
-      chromeos::NetworkLibrary* network_library);
-
- private:
-  std::string ssid_;
-  DISALLOW_COPY_AND_ASSIGN(SSIDConnectObserver);
-};
-
-// Waits for a connection success or failure for the specified
-// virtual network and returns the status to the automation provider.
-class VirtualConnectObserver
-    : public chromeos::NetworkLibrary::NetworkManagerObserver {
- public:
-  VirtualConnectObserver(AutomationProvider* automation,
-                         IPC::Message* reply_message,
-                         const std::string& service_name);
-
-  virtual ~VirtualConnectObserver();
-
-  // NetworkLibrary::NetworkManagerObserver implementation.
-  virtual void OnNetworkManagerChanged(chromeos::NetworkLibrary* cros);
-
- private:
-  virtual chromeos::VirtualNetwork* GetVirtualNetwork(
-      const chromeos::NetworkLibrary* cros);
-
-  base::WeakPtr<AutomationProvider> automation_;
-  scoped_ptr<IPC::Message> reply_message_;
-  std::string service_name_;
-
-  DISALLOW_COPY_AND_ASSIGN(VirtualConnectObserver);
 };
 
 #endif  // defined(OS_CHROMEOS)

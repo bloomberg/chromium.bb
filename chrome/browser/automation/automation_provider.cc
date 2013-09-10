@@ -158,7 +158,6 @@ AutomationProvider::AutomationProvider(Profile* profile)
       use_initial_load_observers_(true),
       is_connected_(false),
       initial_tab_loads_complete_(false),
-      network_library_initialized_(true),
       login_webui_ready_(true) {
   TRACE_EVENT_BEGIN_ETW("AutomationProvider::AutomationProvider", 0, "");
 
@@ -222,13 +221,6 @@ bool AutomationProvider::InitializeChannel(const std::string& channel_id) {
       login_webui_ready_ = false;
       new OOBEWebuiReadyObserver(this);
     }
-
-    // Wait for the network manager to initialize.
-    // The observer will delete itself when done.
-    network_library_initialized_ = false;
-    NetworkManagerInitObserver* observer = new NetworkManagerInitObserver(this);
-    if (!observer->Init())
-      delete observer;
   }
 #endif
 
@@ -264,12 +256,6 @@ void AutomationProvider::OnInitialTabLoadsComplete() {
   SendInitialLoadMessage();
 }
 
-void AutomationProvider::OnNetworkLibraryInit() {
-  network_library_initialized_ = true;
-  VLOG(2) << "OnNetworkLibraryInit";
-  SendInitialLoadMessage();
-}
-
 void AutomationProvider::OnOOBEWebuiReady() {
   login_webui_ready_ = true;
   VLOG(2) << "OnOOBEWebuiReady";
@@ -277,8 +263,7 @@ void AutomationProvider::OnOOBEWebuiReady() {
 }
 
 void AutomationProvider::SendInitialLoadMessage() {
-  if (is_connected_ && initial_tab_loads_complete_ &&
-      network_library_initialized_ && login_webui_ready_) {
+  if (is_connected_ && initial_tab_loads_complete_ && login_webui_ready_) {
     VLOG(2) << "Initial loads complete; sending initial loads message.";
     Send(new AutomationMsg_InitialLoadsComplete());
   }
@@ -287,7 +272,6 @@ void AutomationProvider::SendInitialLoadMessage() {
 void AutomationProvider::DisableInitialLoadObservers() {
   use_initial_load_observers_ = false;
   OnInitialTabLoadsComplete();
-  OnNetworkLibraryInit();
   OnOOBEWebuiReady();
 }
 

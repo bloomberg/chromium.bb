@@ -38,13 +38,6 @@
 %ignore net::MapNetErrorToCertStatus(int);
 %include "net/cert/cert_status_flags.h"
 
-#if defined(OS_CHROMEOS)
-%include "chrome/browser/chromeos/cros/network_constants.h"
-%{
-#include "chrome/browser/chromeos/cros/network_constants.h"
-%}
-#endif
-
 %{
 #include "chrome/common/automation_constants.h"
 #include "chrome/common/pref_names.h"

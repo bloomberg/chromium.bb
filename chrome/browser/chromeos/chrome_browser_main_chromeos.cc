@@ -253,8 +253,7 @@ namespace internal {
 // destructor will get called if and only if this has been instantiated.
 class DBusServices {
  public:
-  explicit DBusServices(const content::MainFunctionParams& parameters)
-      : network_library_initialized_(false) {
+  explicit DBusServices(const content::MainFunctionParams& parameters) {
     if (!base::chromeos::IsRunningOnChromeOS()) {
       // Override this path on the desktop, so that the user policy key can be
       // stored by the stub SessionManagerClient.
@@ -282,15 +281,6 @@ class DBusServices {
             content::BrowserThread::FILE));
     disks::DiskMountManager::Initialize();
     cryptohome::AsyncMethodCaller::Initialize();
-
-    // Initialize NetworkLibrary only for the browser, unless running tests
-    // (which do their own NetworkLibrary setup with
-    // ScopedStubNetworkLibraryEnabler in InProcessBrowserTest).
-    if (!parameters.ui_task) {
-      const bool use_stub = !base::chromeos::IsRunningOnChromeOS();
-      NetworkLibrary::Initialize(use_stub);
-      network_library_initialized_ = true;
-    }
 
     // Always initialize these handlers which should not conflict with
     // NetworkLibrary.
@@ -324,8 +314,6 @@ class DBusServices {
   ~DBusServices() {
     CertLibrary::Shutdown();
     NetworkHandler::Shutdown();
-    if (network_library_initialized_)
-      NetworkLibrary::Shutdown();
 
     cryptohome::AsyncMethodCaller::Shutdown();
     disks::DiskMountManager::Shutdown();
@@ -341,7 +329,6 @@ class DBusServices {
   }
 
  private:
-  bool network_library_initialized_;
 
   DISALLOW_COPY_AND_ASSIGN(DBusServices);
 };
