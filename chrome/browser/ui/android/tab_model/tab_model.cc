@@ -84,10 +84,6 @@ ToolbarModel* TabModel::GetToolbarModel() {
   return toolbar_model_.get();
 }
 
-ToolbarModel::SecurityLevel TabModel::GetSecurityLevelForCurrentTab() {
-  return toolbar_model_->GetSecurityLevel(false);
-}
-
 string16 TabModel::GetSearchTermsForCurrentTab() {
   return toolbar_model_->GetText(true);
 }

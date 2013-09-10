@@ -151,10 +151,6 @@ browser_sync::SyncedTabDelegate* TabAndroid::GetSyncedTabDelegate() const {
   return synced_tab_delegate_.get();
 }
 
-ToolbarModel::SecurityLevel TabAndroid::GetSecurityLevel() {
-  return ToolbarModelImpl::GetSecurityLevelForWebContents(web_contents());
-}
-
 void TabAndroid::RunExternalProtocolDialog(const GURL& url) {
 }
 
@@ -305,6 +301,11 @@ void TabAndroid::LaunchBlockedPopups(JNIEnv* env, jobject obj) {
       it++) {
     popup_blocker_helper->ShowBlockedPopup(it->first);
   }
+}
+
+ToolbarModel::SecurityLevel TabAndroid::GetSecurityLevel(JNIEnv* env,
+                                                         jobject obj) {
+  return ToolbarModelImpl::GetSecurityLevelForWebContents(web_contents());
 }
 
 bool TabAndroid::RegisterTabAndroid(JNIEnv* env) {

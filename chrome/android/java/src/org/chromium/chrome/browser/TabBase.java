@@ -12,6 +12,7 @@ import android.view.View;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.ui.toolbar.ToolbarModelSecurityLevel;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
@@ -334,6 +335,14 @@ public abstract class TabBase implements NavigationClient {
     }
 
     /**
+     * @return The current {ToolbarModelSecurityLevel} for the tab.
+     */
+    public int getSecurityLevel() {
+        if (mNativeTabAndroid == 0) return ToolbarModelSecurityLevel.NONE;
+        return nativeGetSecurityLevel(mNativeTabAndroid);
+    }
+
+    /**
      * @return The {@link ContentViewClient} currently bound to any {@link ContentViewCore}
      *         associated with the current page.  There can still be a {@link ContentViewClient}
      *         even when there is no {@link ContentViewCore}.
@@ -595,4 +604,5 @@ public abstract class TabBase implements NavigationClient {
     private native void nativeDestroyWebContents(int nativeTabAndroid, boolean deleteNative);
     private native Profile nativeGetProfileAndroid(int nativeTabAndroid);
     private native void nativeLaunchBlockedPopups(int nativeTabAndroid);
+    private native int nativeGetSecurityLevel(int nativeTabAndroid);
 }

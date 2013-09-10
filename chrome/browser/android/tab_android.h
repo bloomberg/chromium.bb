@@ -64,9 +64,6 @@ class TabAndroid : public CoreTabHelperDelegate,
   Profile* GetProfile() const;
   browser_sync::SyncedTabDelegate* GetSyncedTabDelegate() const;
 
-  virtual ToolbarModel::SecurityLevel GetSecurityLevel();
-
-
   virtual void HandlePopupNavigation(chrome::NavigateParams* params) = 0;
 
   virtual void OnReceivedHttpAuthRequest(jobject auth_handler,
@@ -142,6 +139,7 @@ class TabAndroid : public CoreTabHelperDelegate,
   base::android::ScopedJavaLocalRef<jobject> GetProfileAndroid(JNIEnv* env,
                                                                jobject obj);
   void LaunchBlockedPopups(JNIEnv* env, jobject obj);
+  ToolbarModel::SecurityLevel GetSecurityLevel(JNIEnv* env, jobject obj);
 
  protected:
   virtual ~TabAndroid();

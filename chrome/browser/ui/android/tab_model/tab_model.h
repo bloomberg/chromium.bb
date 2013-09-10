@@ -58,8 +58,6 @@ class TabModel : public content::NotificationObserver,
 
   virtual void OpenClearBrowsingData() const = 0;
 
-  ToolbarModel::SecurityLevel GetSecurityLevelForCurrentTab();
-
   // Returns search terms extracted from the current url if possible.
   string16 GetSearchTermsForCurrentTab();
 
