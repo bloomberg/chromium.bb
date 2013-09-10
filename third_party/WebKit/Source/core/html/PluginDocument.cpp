@@ -143,9 +143,9 @@ void PluginDocumentParser::finish()
 
 PluginView* PluginDocumentParser::pluginView() const
 {
-    if (Widget* widget = static_cast<PluginDocument*>(document())->pluginWidget()) {
+    if (Widget* widget = toPluginDocument(document())->pluginWidget()) {
         ASSERT_WITH_SECURITY_IMPLICATION(widget->isPluginContainer());
-        return static_cast<PluginView*>(widget);
+        return toPluginView(widget);
     }
     return 0;
 }

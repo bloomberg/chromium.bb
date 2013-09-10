@@ -63,7 +63,7 @@ HTMLPlugInElement::~HTMLPlugInElement()
 
 bool HTMLPlugInElement::canProcessDrag() const
 {
-    const PluginView* plugin = pluginWidget() && pluginWidget()->isPluginView() ? static_cast<const PluginView*>(pluginWidget()) : 0;
+    const PluginView* plugin = pluginWidget() && pluginWidget()->isPluginView() ? toPluginView(pluginWidget()) : 0;
     return plugin ? plugin->canProcessDrag() : false;
 }
 
@@ -220,7 +220,7 @@ bool HTMLPlugInElement::isKeyboardFocusable() const
     if (!document().page())
         return false;
 
-    const PluginView* plugin = pluginWidget() && pluginWidget()->isPluginView() ? static_cast<const PluginView*>(pluginWidget()) : 0;
+    const PluginView* plugin = pluginWidget() && pluginWidget()->isPluginView() ? toPluginView(pluginWidget()) : 0;
     if (plugin)
         return plugin->supportsKeyboardFocus();
 

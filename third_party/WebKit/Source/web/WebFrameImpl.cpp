@@ -278,7 +278,7 @@ WebPluginContainerImpl* WebFrameImpl::pluginContainerFromFrame(Frame* frame)
         return 0;
     if (!frame->document() || !frame->document()->isPluginDocument())
         return 0;
-    PluginDocument* pluginDocument = static_cast<PluginDocument*>(frame->document());
+    PluginDocument* pluginDocument = toPluginDocument(frame->document());
     return toPluginContainerImpl(pluginDocument->pluginWidget());
 }
 
