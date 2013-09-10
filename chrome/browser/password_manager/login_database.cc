@@ -238,22 +238,31 @@ bool LoginDatabase::InitLoginsTable() {
 }
 
 void LoginDatabase::ReportMetrics() {
-  sql::Statement s(db_.GetCachedStatement(SQL_FROM_HERE,
-      "SELECT signon_realm, COUNT(username_value) FROM logins "
-      "GROUP BY signon_realm"));
+  sql::Statement s(db_.GetCachedStatement(
+      SQL_FROM_HERE,
+      "SELECT signon_realm, blacklisted_by_user, COUNT(username_value) "
+      "FROM logins GROUP BY signon_realm, blacklisted_by_user"));
 
   if (!s.is_valid())
     return;
 
   int total_accounts = 0;
+  int blacklisted_sites = 0;
   while (s.Step()) {
-    int accounts_per_site = s.ColumnInt(1);
-    total_accounts += accounts_per_site;
-    UMA_HISTOGRAM_CUSTOM_COUNTS("PasswordManager.AccountsPerSite",
-                                accounts_per_site, 0, 32, 6);
+    int blacklisted = s.ColumnInt(1);
+    int accounts_per_site = s.ColumnInt(2);
+    if (blacklisted) {
+      ++blacklisted_sites;
+    } else {
+      total_accounts += accounts_per_site;
+      UMA_HISTOGRAM_CUSTOM_COUNTS("PasswordManager.AccountsPerSite",
+                                  accounts_per_site, 0, 32, 6);
+    }
   }
   UMA_HISTOGRAM_CUSTOM_COUNTS("PasswordManager.TotalAccounts",
                               total_accounts, 0, 32, 6);
+  UMA_HISTOGRAM_CUSTOM_COUNTS("PasswordManager.BlacklistedSites",
+                              blacklisted_sites, 0, 32, 6);
 
   sql::Statement usage_statement(db_.GetCachedStatement(
       SQL_FROM_HERE,
