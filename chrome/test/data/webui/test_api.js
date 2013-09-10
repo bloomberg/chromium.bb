@@ -572,7 +572,6 @@ var testing = {};
     }
 
     var fieldName = path[path.length-1];
-    assertEquals(undefined, namespace[fieldName]);
     namespace[fieldName] = theFunction;
   }
 

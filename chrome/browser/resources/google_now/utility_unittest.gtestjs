@@ -179,8 +179,7 @@ TEST_F('GoogleNowUtilityUnitTest', 'WrapperWrapCallbackEvent', function() {
   wrapper.checkInWrappedCallback();
 
   // Step 4. Check that there won't be errors whe the page unloads.
-  assertTrue(onSuspendHandlerContainer.length == 1,
-             'onSuspendHandlerContainer.length must be 1');
+  assertEquals(1, onSuspendHandlerContainer.length);
   onSuspendHandlerContainer[0]();
 });
 
@@ -381,8 +380,7 @@ TEST_F('GoogleNowUtilityUnitTest', 'WrapperOnSuspendListenerFail', function() {
       reportError(eqJSON(testError));
 
   // Invocation.
-  assertTrue(onSuspendHandlerContainer.length == 1,
-             'onSuspendHandlerContainer.length must be 1');
+  assertEquals(1, onSuspendHandlerContainer.length);
   onSuspendHandlerContainer[0]();
 });
 
@@ -424,8 +422,7 @@ TEST_F('GoogleNowUtilityUnitTest',
   wrappedCallback();
 
   // Step 4. Fire runtime.onSuspend event.
-  assertTrue(onSuspendHandlerContainer.length == 1,
-             'onSuspendHandlerContainer.length must be 1');
+  assertEquals(1, onSuspendHandlerContainer.length);
   onSuspendHandlerContainer[0]();
 });
 
@@ -441,11 +438,6 @@ function areTasksConflicting(newTaskName, scheduledTaskName) {
 }
 
 function setUpTaskManagerTest(fixture) {
-  // We want to mock wrapper using makeAndRegisterMockApis(), which requires
-  // the mocked functions to not exist as a precondition. Resetting 'wrapper' to
-  // 'undefined'.
-  wrapper = undefined;
-
   fixture.makeAndRegisterMockApis([
     'wrapper.checkInWrappedCallback',
     'wrapper.registerWrapperPluginFactory',
@@ -620,8 +612,7 @@ TEST_F('GoogleNowUtilityUnitTest', 'TaskManagerSuspendError', function() {
   // Step 2. Invoke onSuspend event of the task manager.
   // Setup and expectations. The 2 callbacks in onSuspendHandlerContainer are
   // from the wrapper and the task manager.
-  assertTrue(onSuspendHandlerContainer.length == 2,
-             'onSuspendHandlerContainer.length must be 2');
+  assertEquals(2, onSuspendHandlerContainer.length);
   this.mockGlobals.expects(once()).reportError(eqToString(
       'Error: ASSERT: Incomplete task when unloading event page,' +
       ' queue = [{"name":"TASK A"}], testWrapperDebugState'));
@@ -725,4 +716,224 @@ TEST_F('GoogleNowUtilityUnitTest', 'TaskManagerNestedNonTask', function() {
   // be executed immediately.
   this.mockLocalFunctions.expects(once()).task2(ANYTHING);
   test.tasks.add(taskNameC, this.mockLocalFunctions.functions().task2);
+});
+
+var testAttemptAlarmName = 'attempt-scheduler-testAttempts';
+var testAttemptStorageKey = 'current-delay-testAttempts';
+var testInitialDelaySeconds = 239;
+var testMaximumDelaySeconds = 2239;
+// Value to be returned by mocked Math.random(). We want the value returned by
+// Math.random() to be predictable to be able to check results against expected
+// values. A fixed seed would be okay, but fixed seeding isn't possible in JS at
+// the moment.
+var testRandomValue = 0.31415926;
+
+function createTestAttempStorageEntry(delaySeconds) {
+  // Creates a test storage object that attempt manager uses to store current
+  // delay.
+  var storageObject = {};
+  storageObject[testAttemptStorageKey] = delaySeconds;
+  return storageObject;
+}
+
+function setupAttemptManagerTest(fixture) {
+  Math.random = function() { return testRandomValue; }
+
+  fixture.makeMockLocalFunctions([
+    'attempt',
+    'planForNextCallback',
+    'isRunningCallback'
+  ]);
+  fixture.makeAndRegisterMockApis([
+    'chrome.alarms.clear',
+    'chrome.alarms.create',
+    'chrome.storage.local.remove',
+    'chrome.storage.local.set',
+    'instrumented.alarms.get',
+    'instrumented.storage.local.get'
+  ]);
+
+  var testAttempts = buildAttemptManager(
+      'testAttempts',
+      fixture.mockLocalFunctions.functions().attempt,
+      testInitialDelaySeconds,
+      testMaximumDelaySeconds);
+  Mock4JS.verifyAllMocks();
+
+  return {
+    attempts: testAttempts
+  };
+}
+
+TEST_F('GoogleNowUtilityUnitTest', 'AttemptManagerStartStop', function() {
+  // Tests starting and stopping an attempt manager.
+
+  // Setup.
+  var test = setupAttemptManagerTest(this);
+
+  // Step 1. Check that attempt manager is not running.
+  // Expectations.
+  var alarmsGetSavedArgs = new SaveMockArguments();
+  this.mockApis.expects(once()).
+      instrumented_alarms_get(
+          alarmsGetSavedArgs.match(eq(testAttemptAlarmName)),
+          alarmsGetSavedArgs.match(ANYTHING)).
+      will(invokeCallback(alarmsGetSavedArgs, 1, undefined));
+  this.mockLocalFunctions.expects(once()).isRunningCallback(false);
+  // Invocation.
+  test.attempts.isRunning(
+      this.mockLocalFunctions.functions().isRunningCallback);
+  Mock4JS.verifyAllMocks();
+
+  // Step 2. Start attempt manager with no parameters.
+  // Expectations.
+  var expectedRetryDelaySeconds =
+      testInitialDelaySeconds * (1 + testRandomValue * 0.2);
+  this.mockApis.expects(once()).chrome_alarms_create(
+    testAttemptAlarmName,
+    eqJSON({
+      delayInMinutes: expectedRetryDelaySeconds / 60,
+      periodInMinutes: testMaximumDelaySeconds / 60
+    }));
+  this.mockApis.expects(once()).chrome_storage_local_set(
+      eqJSON(createTestAttempStorageEntry(expectedRetryDelaySeconds)));
+  // Invocation.
+  test.attempts.start();
+  Mock4JS.verifyAllMocks();
+
+  // Step 3. Check that attempt manager is running.
+  // Expectations.
+  alarmsGetSavedArgs = new SaveMockArguments();
+  this.mockApis.expects(once()).
+      instrumented_alarms_get(
+          alarmsGetSavedArgs.match(eq(testAttemptAlarmName)),
+          alarmsGetSavedArgs.match(ANYTHING)).
+      will(invokeCallback(alarmsGetSavedArgs, 1, {testField: 'TEST VALUE'}));
+  this.mockLocalFunctions.expects(once()).isRunningCallback(true);
+  // Invocation.
+  test.attempts.isRunning(
+      this.mockLocalFunctions.functions().isRunningCallback);
+  Mock4JS.verifyAllMocks();
+
+  // Step 4. Stop task manager.
+  // Expectations.
+  this.mockApis.expects(once()).chrome_alarms_clear(testAttemptAlarmName);
+  this.mockApis.expects(once()).chrome_storage_local_remove(
+      testAttemptStorageKey);
+  // Invocation.
+  test.attempts.stop();
+});
+
+TEST_F(
+    'GoogleNowUtilityUnitTest',
+    'AttemptManagerStartWithDelayParam',
+    function() {
+  // Tests starting an attempt manager with a delay parameter.
+
+  // Setup.
+  var test = setupAttemptManagerTest(this);
+  var testFirstDelaySeconds = 1039;
+
+  // Starting attempt manager with a parameter specifying first delay.
+  // Expectations.
+  this.mockApis.expects(once()).chrome_alarms_create(
+      testAttemptAlarmName,
+      eqJSON({
+        delayInMinutes: testFirstDelaySeconds / 60,
+        periodInMinutes: testMaximumDelaySeconds / 60
+      }));
+  this.mockApis.expects(once()).chrome_storage_local_remove(
+    testAttemptStorageKey);
+  // Invocation.
+  test.attempts.start(testFirstDelaySeconds);
+});
+
+TEST_F('GoogleNowUtilityUnitTest', 'AttemptManagerExponGrowth', function() {
+  // Tests that retry time grows exponentially. We don't need to check the case
+  // of growing more than once, since the object doesn't have state, and the
+  // test checks all its inputs and outputs of the tested code.
+
+  // Setup.
+  var test = setupAttemptManagerTest(this);
+  var testStoredRetryDelay = 433;
+
+  // Call planForNext, which prepares next attempt. Current retry time
+  // is less than 1/2 of the maximum delay.
+  // Expectations.
+  var expectedRetryDelaySeconds =
+      testStoredRetryDelay * 2 * (1 + testRandomValue * 0.2);
+  var storageGetSavedArgs = new SaveMockArguments();
+  this.mockApis.expects(once()).instrumented_storage_local_get(
+          storageGetSavedArgs.match(eq(testAttemptStorageKey)),
+          storageGetSavedArgs.match(ANYTHING)).
+      will(invokeCallback(
+          storageGetSavedArgs,
+          1,
+          createTestAttempStorageEntry(testStoredRetryDelay)));
+  this.mockApis.expects(once()).chrome_alarms_create(
+      testAttemptAlarmName,
+      eqJSON({
+        delayInMinutes: expectedRetryDelaySeconds / 60,
+        periodInMinutes: testMaximumDelaySeconds / 60}));
+  this.mockApis.expects(once()).chrome_storage_local_set(
+      eqJSON(createTestAttempStorageEntry(expectedRetryDelaySeconds)));
+  this.mockLocalFunctions.expects(once()).planForNextCallback();
+  // Invocation.
+  test.attempts.planForNext(
+      this.mockLocalFunctions.functions().planForNextCallback);
+});
+
+TEST_F('GoogleNowUtilityUnitTest', 'AttemptManagerGrowthLimit', function() {
+  // Tests that retry time stops growing at the maximum value.
+
+  // Setup.
+  var test = setupAttemptManagerTest(this);
+  var testStoredRetryDelay = 1500;
+
+  // Call planForNext, which prepares next attempt. Current retry time
+  // is greater than 1/2 of the maximum delay.
+  // Expectations.
+  var expectedRetryDelaySeconds = testMaximumDelaySeconds;
+  var storageGetSavedArgs = new SaveMockArguments();
+  this.mockApis.expects(once()).
+      instrumented_storage_local_get(
+          storageGetSavedArgs.match(eq(testAttemptStorageKey)),
+          storageGetSavedArgs.match(ANYTHING)).
+      will(invokeCallback(
+          storageGetSavedArgs,
+          1,
+          createTestAttempStorageEntry(testStoredRetryDelay)));
+  this.mockApis.expects(once()).chrome_alarms_create(
+      testAttemptAlarmName,
+      eqJSON({
+        delayInMinutes: expectedRetryDelaySeconds / 60,
+        periodInMinutes: testMaximumDelaySeconds / 60
+      }));
+  this.mockApis.expects(once()).chrome_storage_local_set(
+      eqJSON(createTestAttempStorageEntry(expectedRetryDelaySeconds)));
+  this.mockLocalFunctions.expects(once()).planForNextCallback();
+  // Invocation.
+  test.attempts.planForNext(
+      this.mockLocalFunctions.functions().planForNextCallback);
+});
+
+TEST_F('GoogleNowUtilityUnitTest', 'AttemptManagerAlarm', function() {
+  // Tests that firing the alarm invokes the attempt.
+
+  // Setup.
+  var test = setupAttemptManagerTest(this);
+  var onAlarmHandlerContainer = getMockHandlerContainer('alarms.onAlarm');
+  assertEquals(1, onAlarmHandlerContainer.length);
+
+  // Fire the alarm and check that this invokes the attempt callback.
+  // Expectations.
+  var alarmsGetSavedArgs = new SaveMockArguments();
+  this.mockApis.expects(once()).
+      instrumented_alarms_get(
+          alarmsGetSavedArgs.match(eq(testAttemptAlarmName)),
+          alarmsGetSavedArgs.match(ANYTHING)).
+      will(invokeCallback(alarmsGetSavedArgs, 1, {testField: 'TEST VALUE'}));
+  this.mockLocalFunctions.expects(once()).attempt();
+  // Invocation.
+  onAlarmHandlerContainer[0]({name: testAttemptAlarmName});
 });
