@@ -45,7 +45,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebRect.h"
 #include "skia/ext/skia_utils_mac.h"
-#include "wtf/HashMap.h"
+#include "wtf/HashSet.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/TemporaryChange.h"
 #include "wtf/UnusedParam.h"
@@ -61,12 +61,12 @@ using namespace WebCore;
 
 namespace WebCore {
 
-typedef HashMap<ScrollbarThemeClient*, ScrollbarThemeClient*> ScrollbarMap;
+typedef HashSet<ScrollbarThemeClient*> ScrollbarSet;
 
-static ScrollbarMap* scrollbarMap()
+static ScrollbarSet& scrollbarSet()
 {
-    static ScrollbarMap* map = new ScrollbarMap;
-    return map;
+    DEFINE_STATIC_LOCAL(ScrollbarSet, set, ());
+    return set;
 }
 
 }
@@ -92,12 +92,12 @@ static ScrollbarMap* scrollbarMap()
         return;
 
     static_cast<ScrollbarThemeMacCommon*>(ScrollbarTheme::theme())->preferencesChanged();
-    if (scrollbarMap()->isEmpty())
+    if (scrollbarSet().isEmpty())
         return;
-    ScrollbarMap::iterator end = scrollbarMap()->end();
-    for (ScrollbarMap::iterator it = scrollbarMap()->begin(); it != end; ++it) {
-        it->key->styleChanged();
-        it->key->invalidate();
+    ScrollbarSet::iterator end = scrollbarSet().end();
+    for (ScrollbarSet::iterator it = scrollbarSet().begin(); it != end; ++it) {
+        (*it)->styleChanged();
+        (*it)->invalidate();
     }
 }
 
@@ -140,12 +140,12 @@ ScrollbarTheme* ScrollbarTheme::nativeTheme()
 
 void ScrollbarThemeMacCommon::registerScrollbar(ScrollbarThemeClient* scrollbar)
 {
-    scrollbarMap()->add(scrollbar, scrollbar);
+    scrollbarSet().add(scrollbar);
 }
 
 void ScrollbarThemeMacCommon::unregisterScrollbar(ScrollbarThemeClient* scrollbar)
 {
-    scrollbarMap()->remove(scrollbar);
+    scrollbarSet().remove(scrollbar);
 }
 
 void ScrollbarThemeMacCommon::paintGivenTickmarks(GraphicsContext* context, ScrollbarThemeClient* scrollbar, const IntRect& rect, const Vector<IntRect>& tickmarks)
