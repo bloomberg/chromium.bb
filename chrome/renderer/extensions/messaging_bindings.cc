@@ -192,12 +192,13 @@ class ExtensionImpl : public extensions::ChromeV8Extension {
 
     void RunCallback() {
       v8::HandleScope handle_scope(isolate_);
-      v8::Handle<v8::Context> context = callback_->CreationContext();
+      v8::Handle<v8::Function> callback = callback_.NewHandle(isolate_);
+      v8::Handle<v8::Context> context = callback->CreationContext();
       if (context.IsEmpty())
         return;
       v8::Context::Scope context_scope(context);
       WebKit::WebScopedMicrotaskSuppression suppression;
-      callback_->Call(context->Global(), 0, NULL);
+      callback->Call(context->Global(), 0, NULL);
     }
 
     extensions::ScopedPersistent<v8::Object> object_;

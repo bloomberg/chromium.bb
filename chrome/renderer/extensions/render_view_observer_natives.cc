@@ -40,7 +40,7 @@ class LoadWatcher : public content::RenderViewObserver {
   void CallbackAndDie(bool succeeded) {
     v8::HandleScope handle_scope(context_->isolate());
     v8::Handle<v8::Value> args[] = { v8::Boolean::New(succeeded) };
-    context_->CallFunction(callback_.get(), 1, args);
+    context_->CallFunction(callback_.NewHandle(context_->isolate()), 1, args);
     delete this;
   }
 
