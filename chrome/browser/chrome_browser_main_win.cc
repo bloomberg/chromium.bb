@@ -30,6 +30,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/installer/launcher_support/chrome_launcher_support.h"
 #include "chrome/installer/util/browser_distribution.h"
@@ -141,11 +142,26 @@ int DoUninstallTasks(bool chrome_still_running) {
   return result;
 }
 
+void MaybeEnableHighResolutionTimeEverywhere() {
+  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+  bool user_enabled = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableHighResolutionTime);
+  if (user_enabled || channel == chrome::VersionInfo::CHANNEL_CANARY) {
+    bool is_enabled = base::TimeTicks::SetNowIsHighResNowIfSupported();
+    if (is_enabled && !user_enabled) {
+      // Ensure that all of the renderers will enable it too.
+      CommandLine::ForCurrentProcess()->AppendSwitch(
+          switches::kEnableHighResolutionTime);
+    }
+  }
+}
+
 // ChromeBrowserMainPartsWin ---------------------------------------------------
 
 ChromeBrowserMainPartsWin::ChromeBrowserMainPartsWin(
     const content::MainFunctionParams& parameters)
     : ChromeBrowserMainParts(parameters) {
+  MaybeEnableHighResolutionTimeEverywhere();
   if (base::win::IsMetroProcess()) {
     typedef const wchar_t* (*GetMetroSwitches)(void);
     GetMetroSwitches metro_switches_proc = reinterpret_cast<GetMetroSwitches>(

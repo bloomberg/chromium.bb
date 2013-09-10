@@ -135,7 +135,12 @@ void PlatformThread::YieldCurrentThread() {
 
 // static
 void PlatformThread::Sleep(TimeDelta duration) {
-  ::Sleep(duration.InMillisecondsRoundedUp());
+  // When measured with a high resolution clock, Sleep() sometimes returns much
+  // too early. We may need to call it repeatedly to get the desired duration.
+  TimeTicks end = TimeTicks::Now() + duration;
+  TimeTicks now;
+  while ((now = TimeTicks::Now()) < end)
+    ::Sleep((end - now).InMillisecondsRoundedUp());
 }
 
 // static
