@@ -7,6 +7,7 @@
 #include "apps/app_lifetime_monitor_factory.h"
 #include "apps/app_shim/app_shim_host_manager_mac.h"
 #include "apps/app_shim/app_shim_messages.h"
+#include "apps/launcher.h"
 #include "apps/native_app_window.h"
 #include "apps/shell_window.h"
 #include "apps/shell_window_registry.h"
@@ -20,7 +21,6 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
 #include "chrome/browser/ui/webui/ntp/core_app_launcher_handler.h"
 #include "chrome/browser/web_applications/web_app_mac.h"
@@ -120,11 +120,14 @@ ExtensionAppShimHandler::Delegate::GetAppExtension(
 
 void ExtensionAppShimHandler::Delegate::LaunchApp(
     Profile* profile,
-    const extensions::Extension* extension) {
+    const extensions::Extension* extension,
+    const std::vector<base::FilePath>& files) {
   CoreAppLauncherHandler::RecordAppLaunchType(
       extension_misc::APP_LAUNCH_CMD_LINE_APP, extension->GetType());
-  chrome::OpenApplication(
-      chrome::AppLaunchParams(profile, extension, NEW_FOREGROUND_TAB));
+  for (std::vector<base::FilePath>::const_iterator it = files.begin();
+       it != files.end(); ++it) {
+    apps::LaunchPlatformAppWithPath(profile, extension, *it);
+  }
 }
 
 void ExtensionAppShimHandler::Delegate::LaunchShim(
@@ -215,8 +218,10 @@ bool ExtensionAppShimHandler::RequestUserAttentionForWindow(
   }
 }
 
-void ExtensionAppShimHandler::OnShimLaunch(Host* host,
-                                           AppShimLaunchType launch_type) {
+void ExtensionAppShimHandler::OnShimLaunch(
+    Host* host,
+    AppShimLaunchType launch_type,
+    const std::vector<base::FilePath>& files) {
   const std::string& app_id = host->GetAppId();
   DCHECK(extensions::Extension::IdIsValid(app_id));
 
@@ -235,7 +240,7 @@ void ExtensionAppShimHandler::OnShimLaunch(Host* host,
   Profile* profile = delegate_->ProfileForPath(profile_path);
 
   if (profile) {
-    OnProfileLoaded(host, launch_type, profile);
+    OnProfileLoaded(host, launch_type, files, profile);
     return;
   }
 
@@ -247,14 +252,16 @@ void ExtensionAppShimHandler::OnShimLaunch(Host* host,
       profile_path,
       base::Bind(&ExtensionAppShimHandler::OnProfileLoaded,
                  weak_factory_.GetWeakPtr(),
-                 host, launch_type));
+                 host, launch_type, files));
 
   // Return now. OnAppLaunchComplete will be called when the app is activated.
 }
 
-void ExtensionAppShimHandler::OnProfileLoaded(Host* host,
-                                              AppShimLaunchType launch_type,
-                                              Profile* profile) {
+void ExtensionAppShimHandler::OnProfileLoaded(
+    Host* host,
+    AppShimLaunchType launch_type,
+    const std::vector<base::FilePath>& files,
+    Profile* profile) {
   const std::string& app_id = host->GetAppId();
   // TODO(jackhou): Add some UI for this case and remove the LOG.
   const extensions::Extension* extension =
@@ -271,7 +278,8 @@ void ExtensionAppShimHandler::OnProfileLoaded(Host* host,
   if (!hosts_.insert(make_pair(make_pair(profile, app_id), host)).second) {
     OnShimFocus(host,
                 launch_type == APP_SHIM_LAUNCH_NORMAL ?
-                    APP_SHIM_FOCUS_REOPEN : APP_SHIM_FOCUS_NORMAL);
+                    APP_SHIM_FOCUS_REOPEN : APP_SHIM_FOCUS_NORMAL,
+                files);
     host->OnAppLaunchComplete(APP_SHIM_LAUNCH_DUPLICATE_HOST);
     return;
   }
@@ -281,7 +289,7 @@ void ExtensionAppShimHandler::OnProfileLoaded(Host* host,
   // exists/was created' and time out with failure if we don't see that sign of
   // life within a certain window.
   if (launch_type == APP_SHIM_LAUNCH_NORMAL)
-    delegate_->LaunchApp(profile, extension);
+    delegate_->LaunchApp(profile, extension, files);
   else
     host->OnAppLaunchComplete(APP_SHIM_LAUNCH_SUCCESS);
 }
@@ -296,8 +304,10 @@ void ExtensionAppShimHandler::OnShimClose(Host* host) {
   }
 }
 
-void ExtensionAppShimHandler::OnShimFocus(Host* host,
-                                          AppShimFocusType focus_type) {
+void ExtensionAppShimHandler::OnShimFocus(
+    Host* host,
+    AppShimFocusType focus_type,
+    const std::vector<base::FilePath>& files) {
   DCHECK(delegate_->ProfileExistsForPath(host->GetProfilePath()));
   Profile* profile = delegate_->ProfileForPath(host->GetProfilePath());
 
@@ -314,19 +324,21 @@ void ExtensionAppShimHandler::OnShimFocus(Host* host,
     // relevant user settings. But shims don't have windows, so we
     // have to do it ourselves.
     ui::FocusWindowSet(native_windows, true);
+  }
+
+  if (focus_type == APP_SHIM_FOCUS_NORMAL ||
+      (focus_type == APP_SHIM_FOCUS_REOPEN && !native_windows.empty())) {
     return;
   }
 
-  if (focus_type == APP_SHIM_FOCUS_REOPEN) {
-    const extensions::Extension* extension =
-        delegate_->GetAppExtension(profile, host->GetAppId());
-    if (extension) {
-      delegate_->LaunchApp(profile, extension);
-    } else {
-      // Extensions may have been uninstalled or disabled since the shim
-      // started.
-      host->OnAppClosed();
-    }
+  const extensions::Extension* extension =
+      delegate_->GetAppExtension(profile, host->GetAppId());
+  if (extension) {
+    delegate_->LaunchApp(profile, extension, files);
+  } else {
+    // Extensions may have been uninstalled or disabled since the shim
+    // started.
+    host->OnAppClosed();
   }
 }
 
@@ -409,7 +421,7 @@ void ExtensionAppShimHandler::OnAppActivated(Profile* profile,
   Host* host = FindHost(profile, app_id);
   if (host) {
     host->OnAppLaunchComplete(APP_SHIM_LAUNCH_SUCCESS);
-    OnShimFocus(host, APP_SHIM_FOCUS_NORMAL);
+    OnShimFocus(host, APP_SHIM_FOCUS_NORMAL, std::vector<base::FilePath>());
     return;
   }
 

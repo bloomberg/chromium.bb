@@ -8,12 +8,15 @@
 // those app bundles.
 
 #import <Cocoa/Cocoa.h>
+#include <vector>
 
 #include "apps/app_shim/app_shim_messages.h"
 #include "base/at_exit.h"
 #include "base/command_line.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
+#include "base/mac/foundation_util.h"
 #include "base/mac/launch_services_util.h"
 #include "base/mac/mac_logging.h"
 #include "base/mac/mac_util.h"
@@ -54,18 +57,31 @@ base::Thread* g_io_thread = NULL;
 
 class AppShimController;
 
+// An application delegate to catch user interactions and send the appropriate
+// IPC messages to Chrome.
 @interface AppShimDelegate : NSObject<NSApplicationDelegate> {
  @private
-  AppShimController* appShimController_;  // Weak. Owns us.
+  AppShimController* appShimController_;  // Weak, initially NULL.
   BOOL terminateNow_;
   BOOL terminateRequested_;
+  std::vector<base::FilePath> filesToOpenAtStartup_;
 }
 
-- (id)initWithController:(AppShimController*)controller;
-- (BOOL)applicationOpenUntitledFile:(NSApplication *)app;
-- (void)applicationWillBecomeActive:(NSNotification*)notification;
-- (void)applicationWillHide:(NSNotification*)notification;
-- (void)applicationWillUnhide:(NSNotification*)notification;
+// The controller is initially NULL. Setting it indicates to the delegate that
+// the controller has finished initialization.
+- (void)setController:(AppShimController*)controller;
+
+// Gets files that were queued because the controller was not ready.
+// Returns whether any FilePaths were added to |out|.
+- (BOOL)getFilesToOpenAtStartup:(std::vector<base::FilePath>*)out;
+
+// If the controller is ready, this sends a FocusApp with the files to open.
+// Otherwise, this adds the files to |filesToOpenAtStartup_|.
+// Takes an array of NSString*.
+- (void)openFiles:(NSArray*)filename;
+
+// Terminate immediately. This is necessary as we override terminate: to send
+// a QuitApp message.
 - (void)terminateNow;
 
 @end
@@ -75,6 +91,11 @@ class AppShimController;
 class AppShimController : public IPC::Listener {
  public:
   AppShimController();
+  virtual ~AppShimController();
+
+  // Called when the main Chrome process responds to the Apple Event ping that
+  // was sent, or when the ping fails (if |success| is false).
+  void OnPingChromeReply(bool success);
 
   // Connects to Chrome and sends a LaunchApp message.
   void Init();
@@ -86,9 +107,11 @@ class AppShimController : public IPC::Listener {
 
   void SendQuitApp();
 
-  // Called when the app is activated, either by the user clicking on it in the
-  // dock or by Cmd+Tabbing to it.
-  void ActivateApp(bool is_reopen);
+  // Called when the app is activated, e.g. by clicking on it in the dock, by
+  // dropping a file on the dock icon, or by Cmd+Tabbing to it.
+  // Returns whether the message was sent.
+  bool SendFocusApp(apps::AppShimFocusType focus_type,
+                    const std::vector<base::FilePath>& files);
 
  private:
   // IPC::Listener implemetation.
@@ -109,14 +132,34 @@ class AppShimController : public IPC::Listener {
   void Close();
 
   IPC::ChannelProxy* channel_;
-  base::scoped_nsobject<AppShimDelegate> nsapp_delegate_;
+  base::scoped_nsobject<AppShimDelegate> delegate_;
   bool launch_app_done_;
 
   DISALLOW_COPY_AND_ASSIGN(AppShimController);
 };
 
-AppShimController::AppShimController() : channel_(NULL),
-                                         launch_app_done_(false) {}
+AppShimController::AppShimController()
+    : channel_(NULL),
+      delegate_([[AppShimDelegate alloc] init]),
+      launch_app_done_(false) {
+  // Since AppShimController is created before the main message loop starts,
+  // NSApp will not be set, so use sharedApplication.
+  [[NSApplication sharedApplication] setDelegate:delegate_];
+}
+
+AppShimController::~AppShimController() {
+  // Un-set the delegate since NSApplication does not retain it.
+  [NSApp setDelegate:nil];
+}
+
+void AppShimController::OnPingChromeReply(bool success) {
+  if (!success) {
+    [NSApp terminate:nil];
+    return;
+  }
+
+  Init();
+}
 
 void AppShimController::Init() {
   DCHECK(g_io_thread);
@@ -142,14 +185,16 @@ void AppShimController::Init() {
   bool launched_by_chrome =
       CommandLine::ForCurrentProcess()->HasSwitch(
           app_mode::kLaunchedByChromeProcessId);
-  channel_->Send(new AppShimHostMsg_LaunchApp(
-      g_info->profile_dir, g_info->app_mode_id,
-      launched_by_chrome ?
-          apps::APP_SHIM_LAUNCH_REGISTER_ONLY : apps::APP_SHIM_LAUNCH_NORMAL));
+  apps::AppShimLaunchType launch_type = launched_by_chrome ?
+          apps::APP_SHIM_LAUNCH_REGISTER_ONLY : apps::APP_SHIM_LAUNCH_NORMAL;
 
-  nsapp_delegate_.reset([[AppShimDelegate alloc] initWithController:this]);
-  DCHECK(![NSApp delegate]);
-  [NSApp setDelegate:nsapp_delegate_];
+  [delegate_ setController:this];
+
+  std::vector<base::FilePath> files;
+  [delegate_ getFilesToOpenAtStartup:&files];
+
+  channel_->Send(new AppShimHostMsg_LaunchApp(
+      g_info->profile_dir, g_info->app_mode_id, launch_type, files));
 }
 
 void AppShimController::SetUpMenu() {
@@ -212,6 +257,10 @@ void AppShimController::OnLaunchAppDone(apps::AppShimLaunchResult result) {
     return;
   }
 
+  std::vector<base::FilePath> files;
+  if ([delegate_ getFilesToOpenAtStartup:&files])
+    SendFocusApp(apps::APP_SHIM_FOCUS_OPEN_FILES, files);
+
   launch_app_done_ = true;
 }
 
@@ -224,14 +273,17 @@ void AppShimController::OnRequestUserAttention() {
 }
 
 void AppShimController::Close() {
-  [nsapp_delegate_ terminateNow];
+  [delegate_ terminateNow];
 }
 
-void AppShimController::ActivateApp(bool is_reopen) {
+bool AppShimController::SendFocusApp(apps::AppShimFocusType focus_type,
+                                     const std::vector<base::FilePath>& files) {
   if (launch_app_done_) {
-    channel_->Send(new AppShimHostMsg_FocusApp(
-        is_reopen ? apps::APP_SHIM_FOCUS_REOPEN : apps::APP_SHIM_FOCUS_NORMAL));
+    channel_->Send(new AppShimHostMsg_FocusApp(focus_type, files));
+    return true;
   }
+
+  return false;
 }
 
 void AppShimController::SendSetAppHidden(bool hidden) {
@@ -240,25 +292,70 @@ void AppShimController::SendSetAppHidden(bool hidden) {
 
 @implementation AppShimDelegate
 
-- (id)initWithController:(AppShimController*)controller {
-  if ((self = [super init])) {
-    appShimController_ = controller;
-  }
-  return self;
-}
+- (BOOL)getFilesToOpenAtStartup:(std::vector<base::FilePath>*)out {
+  if (filesToOpenAtStartup_.empty())
+    return NO;
 
-- (BOOL)applicationOpenUntitledFile:(NSApplication *)app {
-  appShimController_->ActivateApp(true);
+  out->insert(out->end(),
+              filesToOpenAtStartup_.begin(),
+              filesToOpenAtStartup_.end());
+  filesToOpenAtStartup_.clear();
   return YES;
 }
 
+- (void)setController:(AppShimController*)controller {
+  appShimController_ = controller;
+}
+
+- (void)openFiles:(NSArray*)filenames {
+  std::vector<base::FilePath> filePaths;
+  for (NSString* filename in filenames)
+    filePaths.push_back(base::mac::NSStringToFilePath(filename));
+
+  // If the AppShimController is ready, try to send a FocusApp. If that fails,
+  // (e.g. if launching has not finished), enqueue the files.
+  if (appShimController_ &&
+      appShimController_->SendFocusApp(apps::APP_SHIM_FOCUS_OPEN_FILES,
+                                       filePaths)) {
+    return;
+  }
+
+  filesToOpenAtStartup_.insert(filesToOpenAtStartup_.end(),
+                               filePaths.begin(),
+                               filePaths.end());
+}
+
+- (BOOL)application:(NSApplication*)app
+           openFile:(NSString*)filename {
+  [self openFiles:@[filename]];
+  return YES;
+}
+
+- (void)application:(NSApplication*)app
+          openFiles:(NSArray*)filenames {
+  [self openFiles:filenames];
+  [app replyToOpenOrPrint:NSApplicationDelegateReplySuccess];
+}
+
+- (BOOL)applicationOpenUntitledFile:(NSApplication*)app {
+  if (appShimController_) {
+    return appShimController_->SendFocusApp(apps::APP_SHIM_FOCUS_REOPEN,
+                                            std::vector<base::FilePath>());
+  }
+
+  return NO;
+}
+
 - (void)applicationWillBecomeActive:(NSNotification*)notification {
-  appShimController_->ActivateApp(false);
+  if (appShimController_) {
+    appShimController_->SendFocusApp(apps::APP_SHIM_FOCUS_NORMAL,
+                                     std::vector<base::FilePath>());
+  }
 }
 
 - (NSApplicationTerminateReply)
     applicationShouldTerminate:(NSApplication*)sender {
-  if (terminateNow_)
+  if (terminateNow_ || !appShimController_)
     return NSTerminateNow;
 
   appShimController_->SendQuitApp();
@@ -268,11 +365,13 @@ void AppShimController::SendSetAppHidden(bool hidden) {
 }
 
 - (void)applicationWillHide:(NSNotification*)notification {
-  appShimController_->SendSetAppHidden(true);
+  if (appShimController_)
+    appShimController_->SendSetAppHidden(true);
 }
 
 - (void)applicationWillUnhide:(NSNotification*)notification {
-  appShimController_->SendSetAppHidden(false);
+  if (appShimController_)
+    appShimController_->SendSetAppHidden(false);
 }
 
 - (void)terminateNow {
@@ -390,21 +489,6 @@ void AppShimController::SendSetAppHidden(bool hidden) {
 
 //-----------------------------------------------------------------------------
 
-namespace {
-
-// Called when the main Chrome process responds to the Apple Event ping that
-// was sent, or when the ping fails (if |success| is false).
-void OnPingChromeReply(bool success) {
-  if (!success) {
-    [NSApp terminate:nil];
-    return;
-  }
-  AppShimController* controller = new AppShimController;
-  controller->Init();
-}
-
-}  // namespace
-
 extern "C" {
 
 // |ChromeAppModeStart()| is the point of entry into the framework from the app
@@ -501,10 +585,16 @@ int ChromeAppModeStart(const app_mode::ChromeAppModeInfo* info) {
       return 1;
   }
 
+  AppShimController controller;
+  base::Callback<void(bool)> on_ping_chrome_reply =
+      base::Bind(&AppShimController::OnPingChromeReply,
+                 base::Unretained(&controller));
+
   // This code abuses the fact that Apple Events sent before the process is
   // fully initialized don't receive a reply until its run loop starts. Once
   // the reply is received, Chrome will have opened its IPC port, guaranteed.
-  [ReplyEventHandler pingProcess:psn andCall:base::Bind(&OnPingChromeReply)];
+  [ReplyEventHandler pingProcess:psn
+                         andCall:on_ping_chrome_reply];
 
   base::MessageLoopForUI main_message_loop;
   main_message_loop.set_thread_name("MainThread");

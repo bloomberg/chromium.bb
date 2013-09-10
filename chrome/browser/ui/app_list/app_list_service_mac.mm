@@ -513,7 +513,8 @@ AppListControllerDelegate* AppListServiceMac::CreateControllerDelegate() {
 }
 
 void AppListServiceMac::OnShimLaunch(apps::AppShimHandler::Host* host,
-                                     apps::AppShimLaunchType launch_type) {
+                                     apps::AppShimLaunchType launch_type,
+                                     const std::vector<base::FilePath>& files) {
   if (IsAppListVisible())
     DismissAppList();
   else
@@ -526,7 +527,8 @@ void AppListServiceMac::OnShimLaunch(apps::AppShimHandler::Host* host,
 void AppListServiceMac::OnShimClose(apps::AppShimHandler::Host* host) {}
 
 void AppListServiceMac::OnShimFocus(apps::AppShimHandler::Host* host,
-                                    apps::AppShimFocusType focus_type) {}
+                                    apps::AppShimFocusType focus_type,
+                                    const std::vector<base::FilePath>& files) {}
 
 void AppListServiceMac::OnShimSetHidden(apps::AppShimHandler::Host* host,
                                         bool hidden) {}

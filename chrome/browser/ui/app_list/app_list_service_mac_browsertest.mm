@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <vector>
+
 #include "apps/app_shim/app_shim_handler_mac.h"
 #include "base/command_line.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
@@ -24,7 +26,9 @@ class AppListServiceMacBrowserTest : public InProcessBrowserTest,
   void LaunchShim() {
     // AppList shims always launch normally (never relaunched via dock icon).
     AppShimHandler::GetForAppMode(app_mode::kAppListModeId)->
-        OnShimLaunch(this, apps::APP_SHIM_LAUNCH_NORMAL);
+        OnShimLaunch(this,
+                     apps::APP_SHIM_LAUNCH_NORMAL,
+                     std::vector<base::FilePath>());
   }
 
   // AppShimHandler::Host overrides:

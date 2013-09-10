@@ -5,6 +5,7 @@
 // Tests behavior when quitting apps with app shims.
 
 #import <Cocoa/Cocoa.h>
+#include <vector>
 
 #include "apps/app_shim/app_shim_host_manager_mac.h"
 #include "apps/app_shim/extension_app_shim_handler_mac.h"
@@ -75,7 +76,9 @@ class AppShimQuitTest : public PlatformAppBrowserTest {
     host_.reset(new FakeHost(profile()->GetPath().BaseName(),
                              extension_id_,
                              handler_));
-    handler_->OnShimLaunch(host_.get(), APP_SHIM_LAUNCH_REGISTER_ONLY);
+    handler_->OnShimLaunch(host_.get(),
+                           APP_SHIM_LAUNCH_REGISTER_ONLY,
+                           std::vector<base::FilePath>());
     EXPECT_EQ(host_.get(), handler_->FindHost(profile(), extension_id_));
 
     // Focus the app window.

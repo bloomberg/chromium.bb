@@ -63,9 +63,10 @@ bool AppShimHost::Send(IPC::Message* message) {
   return channel_->Send(message);
 }
 
-void AppShimHost::OnLaunchApp(base::FilePath profile_dir,
-                              std::string app_id,
-                              apps::AppShimLaunchType launch_type) {
+void AppShimHost::OnLaunchApp(const base::FilePath& profile_dir,
+                              const std::string& app_id,
+                              apps::AppShimLaunchType launch_type,
+                              const std::vector<base::FilePath>& files) {
   DCHECK(CalledOnValidThread());
   DCHECK(profile_path_.empty());
   // Only one app launch message per channel.
@@ -77,16 +78,17 @@ void AppShimHost::OnLaunchApp(base::FilePath profile_dir,
 
   apps::AppShimHandler* handler = apps::AppShimHandler::GetForAppMode(app_id_);
   if (handler)
-    handler->OnShimLaunch(this, launch_type);
+    handler->OnShimLaunch(this, launch_type, files);
   // |handler| can only be NULL after AppShimHostManager is destroyed. Since
   // this only happens at shutdown, do nothing here.
 }
 
-void AppShimHost::OnFocus(apps::AppShimFocusType focus_type) {
+void AppShimHost::OnFocus(apps::AppShimFocusType focus_type,
+                          const std::vector<base::FilePath>& files) {
   DCHECK(CalledOnValidThread());
   apps::AppShimHandler* handler = apps::AppShimHandler::GetForAppMode(app_id_);
   if (handler)
-    handler->OnShimFocus(this, focus_type);
+    handler->OnShimFocus(this, focus_type, files);
 }
 
 void AppShimHost::OnSetHidden(bool hidden) {

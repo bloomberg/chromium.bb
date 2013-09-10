@@ -35,6 +35,8 @@ enum AppShimFocusType {
   APP_SHIM_FOCUS_NORMAL = 0,
   // Focus the app or launch it if it has no windows open.
   APP_SHIM_FOCUS_REOPEN,
+  // Open the given file in the app.
+  APP_SHIM_FOCUS_OPEN_FILES,
   // Counter and end marker.
   APP_SHIM_FOCUS_NUM_TYPES
 };

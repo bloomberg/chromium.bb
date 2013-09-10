@@ -4,6 +4,8 @@
 
 #include "apps/app_shim/extension_app_shim_handler_mac.h"
 
+#include <vector>
+
 #include "apps/app_shim/app_shim_host_mac.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -35,7 +37,10 @@ class MockDelegate : public ExtensionAppShimHandler::Delegate {
   MOCK_METHOD2(GetWindows, ShellWindowList(Profile*, const std::string&));
 
   MOCK_METHOD2(GetAppExtension, const Extension*(Profile*, const std::string&));
-  MOCK_METHOD2(LaunchApp, void(Profile*, const Extension*));
+  MOCK_METHOD3(LaunchApp,
+               void(Profile*,
+                    const Extension*,
+                    const std::vector<base::FilePath>&));
   MOCK_METHOD2(LaunchShim, void(Profile*, const Extension*));
 
   MOCK_METHOD0(MaybeTerminate, void());
@@ -65,10 +70,15 @@ class TestingExtensionAppShimHandler : public ExtensionAppShimHandler {
   }
   virtual ~TestingExtensionAppShimHandler() {}
 
-  MOCK_METHOD2(OnShimFocus, void(Host*, AppShimFocusType));
+  MOCK_METHOD3(OnShimFocus,
+               void(Host* host,
+                    AppShimFocusType,
+                    const std::vector<base::FilePath>& files));
 
-  void RealOnShimFocus(Host* host, AppShimFocusType focus_type) {
-    ExtensionAppShimHandler::OnShimFocus(host, focus_type);
+  void RealOnShimFocus(Host* host,
+                       AppShimFocusType focus_type,
+                       const std::vector<base::FilePath>& files) {
+    ExtensionAppShimHandler::OnShimFocus(host, focus_type, files);
   }
 
   AppShimHandler::Host* FindHost(Profile* profile,
@@ -166,8 +176,20 @@ class ExtensionAppShimHandlerTest : public testing::Test {
         .WillRepeatedly(Return(extension_a_.get()));
     EXPECT_CALL(*delegate_, GetAppExtension(_, kTestAppIdB))
         .WillRepeatedly(Return(extension_b_.get()));
-    EXPECT_CALL(*delegate_, LaunchApp(_,_))
+    EXPECT_CALL(*delegate_, LaunchApp(_, _, _))
         .WillRepeatedly(Return());
+  }
+
+  void NormalLaunch(AppShimHandler::Host* host) {
+    handler_->OnShimLaunch(host,
+                           APP_SHIM_LAUNCH_NORMAL,
+                           std::vector<base::FilePath>());
+  }
+
+  void RegisterOnlyLaunch(AppShimHandler::Host* host) {
+    handler_->OnShimLaunch(host,
+                           APP_SHIM_LAUNCH_REGISTER_ONLY,
+                           std::vector<base::FilePath>());
   }
 
   MockDelegate* delegate_;
@@ -193,41 +215,45 @@ TEST_F(ExtensionAppShimHandlerTest, LaunchFailure) {
       .WillOnce(Return(false))
       .WillRepeatedly(Return(true));
   EXPECT_CALL(host_aa_, OnAppLaunchComplete(APP_SHIM_LAUNCH_PROFILE_NOT_FOUND));
-  handler_->OnShimLaunch(&host_aa_, APP_SHIM_LAUNCH_NORMAL);
+  NormalLaunch(&host_aa_);
 
   // App not found.
   EXPECT_CALL(*delegate_, GetAppExtension(&profile_a_, kTestAppIdA))
       .WillOnce(Return(static_cast<const Extension*>(NULL)))
       .WillRepeatedly(Return(extension_a_.get()));
   EXPECT_CALL(host_aa_, OnAppLaunchComplete(APP_SHIM_LAUNCH_APP_NOT_FOUND));
-  handler_->OnShimLaunch(&host_aa_, APP_SHIM_LAUNCH_NORMAL);
+  NormalLaunch(&host_aa_);
 }
 
 TEST_F(ExtensionAppShimHandlerTest, LaunchAndCloseShim) {
-  const AppShimLaunchType normal_launch = APP_SHIM_LAUNCH_NORMAL;
-
   // Normal startup.
-  handler_->OnShimLaunch(&host_aa_, normal_launch);
+  NormalLaunch(&host_aa_);
   EXPECT_EQ(&host_aa_, handler_->FindHost(&profile_a_, kTestAppIdA));
 
-  handler_->OnShimLaunch(&host_ab_, normal_launch);
+  NormalLaunch(&host_ab_);
   EXPECT_EQ(&host_ab_, handler_->FindHost(&profile_a_, kTestAppIdB));
 
-  handler_->OnShimLaunch(&host_bb_, normal_launch);
+  std::vector<base::FilePath> some_file(1, base::FilePath("some_file"));
+  EXPECT_CALL(*delegate_,
+              LaunchApp(&profile_b_, extension_b_.get(), some_file));
+  handler_->OnShimLaunch(&host_bb_, APP_SHIM_LAUNCH_NORMAL, some_file);
   EXPECT_EQ(&host_bb_, handler_->FindHost(&profile_b_, kTestAppIdB));
 
   // Activation when there is a registered shim finishes launch with success and
   // focuses the app.
   EXPECT_CALL(host_aa_, OnAppLaunchComplete(APP_SHIM_LAUNCH_SUCCESS));
-  EXPECT_CALL(*handler_, OnShimFocus(&host_aa_, APP_SHIM_FOCUS_NORMAL));
+  EXPECT_CALL(*handler_, OnShimFocus(&host_aa_, APP_SHIM_FOCUS_NORMAL, _));
   handler_->OnAppActivated(&profile_a_, kTestAppIdA);
 
   // Starting and closing a second host just focuses the app.
   EXPECT_CALL(*handler_, OnShimFocus(&host_aa_duplicate_,
-                                     APP_SHIM_FOCUS_REOPEN));
+                                     APP_SHIM_FOCUS_REOPEN,
+                                     some_file));
   EXPECT_CALL(host_aa_duplicate_,
               OnAppLaunchComplete(APP_SHIM_LAUNCH_DUPLICATE_HOST));
-  handler_->OnShimLaunch(&host_aa_duplicate_, normal_launch);
+  handler_->OnShimLaunch(&host_aa_duplicate_,
+                         APP_SHIM_LAUNCH_NORMAL,
+                         some_file);
   EXPECT_EQ(&host_aa_, handler_->FindHost(&profile_a_, kTestAppIdA));
   handler_->OnShimClose(&host_aa_duplicate_);
   EXPECT_EQ(&host_aa_, handler_->FindHost(&profile_a_, kTestAppIdA));
@@ -248,10 +274,11 @@ TEST_F(ExtensionAppShimHandlerTest, AppLifetime) {
 
   // Normal shim launch adds an entry in the map.
   // App should not be launched here, but return success to the shim.
-  EXPECT_CALL(*delegate_, LaunchApp(&profile_a_, extension_a_.get()))
+  EXPECT_CALL(*delegate_,
+              LaunchApp(&profile_a_, extension_a_.get(), _))
       .Times(0);
   EXPECT_CALL(host_aa_, OnAppLaunchComplete(APP_SHIM_LAUNCH_SUCCESS));
-  handler_->OnShimLaunch(&host_aa_, APP_SHIM_LAUNCH_REGISTER_ONLY);
+  RegisterOnlyLaunch(&host_aa_);
   EXPECT_EQ(&host_aa_, handler_->FindHost(&profile_a_, kTestAppIdA));
 
   // Return no shell windows for OnShimFocus and OnShimQuit.
@@ -260,19 +287,24 @@ TEST_F(ExtensionAppShimHandlerTest, AppLifetime) {
       .WillRepeatedly(Return(shell_window_list));
 
   // Non-reopen focus does nothing.
-  EXPECT_CALL(*handler_, OnShimFocus(&host_aa_, APP_SHIM_FOCUS_NORMAL))
+  EXPECT_CALL(*handler_, OnShimFocus(&host_aa_, APP_SHIM_FOCUS_NORMAL, _))
       .WillOnce(Invoke(handler_.get(),
                        &TestingExtensionAppShimHandler::RealOnShimFocus));
-  EXPECT_CALL(*delegate_, LaunchApp(&profile_a_, extension_a_.get()))
+  EXPECT_CALL(*delegate_,
+              LaunchApp(&profile_a_, extension_a_.get(), _))
       .Times(0);
-  handler_->OnShimFocus(&host_aa_, APP_SHIM_FOCUS_NORMAL);
+  handler_->OnShimFocus(&host_aa_,
+                        APP_SHIM_FOCUS_NORMAL,
+                        std::vector<base::FilePath>());
 
   // Reopen focus launches the app.
-  EXPECT_CALL(*handler_, OnShimFocus(&host_aa_, APP_SHIM_FOCUS_REOPEN))
+  EXPECT_CALL(*handler_, OnShimFocus(&host_aa_, APP_SHIM_FOCUS_REOPEN, _))
       .WillOnce(Invoke(handler_.get(),
                        &TestingExtensionAppShimHandler::RealOnShimFocus));
-  EXPECT_CALL(*delegate_, LaunchApp(&profile_a_, extension_a_.get()));
-  handler_->OnShimFocus(&host_aa_, APP_SHIM_FOCUS_REOPEN);
+  std::vector<base::FilePath> some_file(1, base::FilePath("some_file"));
+  EXPECT_CALL(*delegate_,
+              LaunchApp(&profile_a_, extension_a_.get(), some_file));
+  handler_->OnShimFocus(&host_aa_, APP_SHIM_FOCUS_REOPEN, some_file);
 
   // Quit just closes all the windows. This tests that it doesn't terminate,
   // but we expect closing all windows triggers a OnAppDeactivated from
@@ -288,15 +320,13 @@ TEST_F(ExtensionAppShimHandlerTest, AppLifetime) {
 }
 
 TEST_F(ExtensionAppShimHandlerTest, MaybeTerminate) {
-  const AppShimLaunchType register_only = APP_SHIM_LAUNCH_REGISTER_ONLY;
-
   // Launch shims, adding entries in the map.
   EXPECT_CALL(host_aa_, OnAppLaunchComplete(APP_SHIM_LAUNCH_SUCCESS));
-  handler_->OnShimLaunch(&host_aa_, register_only);
+  RegisterOnlyLaunch(&host_aa_);
   EXPECT_EQ(&host_aa_, handler_->FindHost(&profile_a_, kTestAppIdA));
 
   EXPECT_CALL(host_ab_, OnAppLaunchComplete(APP_SHIM_LAUNCH_SUCCESS));
-  handler_->OnShimLaunch(&host_ab_, register_only);
+  RegisterOnlyLaunch(&host_ab_);
   EXPECT_EQ(&host_ab_, handler_->FindHost(&profile_a_, kTestAppIdB));
 
   // Return empty window list.
@@ -315,7 +345,7 @@ TEST_F(ExtensionAppShimHandlerTest, MaybeTerminate) {
 
   // Launch a shim again.
   EXPECT_CALL(host_aa_, OnAppLaunchComplete(APP_SHIM_LAUNCH_SUCCESS));
-  handler_->OnShimLaunch(&host_aa_, register_only);
+  RegisterOnlyLaunch(&host_aa_);
   EXPECT_EQ(&host_aa_, handler_->FindHost(&profile_a_, kTestAppIdA));
 
   // Quitting after a browser window has opened should not terminate.
@@ -329,10 +359,10 @@ TEST_F(ExtensionAppShimHandlerTest, MaybeTerminate) {
 
 TEST_F(ExtensionAppShimHandlerTest, RegisterOnly) {
   // For an APP_SHIM_LAUNCH_REGISTER_ONLY, don't launch the app.
-  EXPECT_CALL(*delegate_, LaunchApp(_, _))
+  EXPECT_CALL(*delegate_, LaunchApp(_, _, _))
       .Times(0);
   EXPECT_CALL(host_aa_, OnAppLaunchComplete(APP_SHIM_LAUNCH_SUCCESS));
-  handler_->OnShimLaunch(&host_aa_, APP_SHIM_LAUNCH_REGISTER_ONLY);
+  RegisterOnlyLaunch(&host_aa_);
   EXPECT_TRUE(handler_->FindHost(&profile_a_, kTestAppIdA));
 
   // Close the shim, removing the entry in the map.
@@ -349,7 +379,7 @@ TEST_F(ExtensionAppShimHandlerTest, LoadProfile) {
       .WillRepeatedly(Return(&profile_a_));
   EXPECT_CALL(*delegate_, LoadProfileAsync(profile_path_a_, _))
       .WillOnce(Invoke(delegate_, &MockDelegate::CaptureLoadProfileCallback));
-  handler_->OnShimLaunch(&host_aa_, APP_SHIM_LAUNCH_NORMAL);
+  NormalLaunch(&host_aa_);
   EXPECT_FALSE(handler_->FindHost(&profile_a_, kTestAppIdA));
   delegate_->RunLoadProfileCallback(profile_path_a_, &profile_a_);
   EXPECT_TRUE(handler_->FindHost(&profile_a_, kTestAppIdA));

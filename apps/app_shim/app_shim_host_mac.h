@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_WEB_APPLICATIONS_APP_SHIM_HOST_MAC_H_
 
 #include <string>
+#include <vector>
 
 #include "apps/app_shim/app_shim_handler_mac.h"
 #include "base/files/file_path.h"
@@ -50,12 +51,14 @@ class AppShimHost : public IPC::Listener,
   // and app_id. Once the profile and app_id are stored, and all future
   // messages from the app shim relate to this app. The app is launched
   // immediately if |launch_now| is true.
-  void OnLaunchApp(base::FilePath profile_dir,
-                   std::string app_id,
-                   apps::AppShimLaunchType launch_type);
+  void OnLaunchApp(const base::FilePath& profile_dir,
+                   const std::string& app_id,
+                   apps::AppShimLaunchType launch_type,
+                   const std::vector<base::FilePath>& files);
 
   // Called when the app shim process notifies that the app was focused.
-  void OnFocus(apps::AppShimFocusType focus_type);
+  void OnFocus(apps::AppShimFocusType focus_type,
+               const std::vector<base::FilePath>& files);
 
   void OnSetHidden(bool hidden);
 

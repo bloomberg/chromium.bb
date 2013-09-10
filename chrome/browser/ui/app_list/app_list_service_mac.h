@@ -44,10 +44,12 @@ class AppListServiceMac : public AppListServiceImpl,
 
   // AppShimHandler overrides:
   virtual void OnShimLaunch(apps::AppShimHandler::Host* host,
-                            apps::AppShimLaunchType launch_type) OVERRIDE;
+                            apps::AppShimLaunchType launch_type,
+                            const std::vector<base::FilePath>& files) OVERRIDE;
   virtual void OnShimClose(apps::AppShimHandler::Host* host) OVERRIDE;
   virtual void OnShimFocus(apps::AppShimHandler::Host* host,
-                           apps::AppShimFocusType focus_type) OVERRIDE;
+                           apps::AppShimFocusType focus_type,
+                           const std::vector<base::FilePath>& files) OVERRIDE;
   virtual void OnShimSetHidden(apps::AppShimHandler::Host* host,
                                bool hidden) OVERRIDE;
   virtual void OnShimQuit(apps::AppShimHandler::Host* host) OVERRIDE;

@@ -6,6 +6,7 @@
 #define APPS_APP_SHIM_APP_SHIM_HANDLER_MAC_H_
 
 #include <string>
+#include <vector>
 
 #include "apps/app_shim/app_shim_launch.h"
 #include "base/files/file_path.h"
@@ -55,14 +56,22 @@ class AppShimHandler {
 
   // Invoked by the shim host when the shim process is launched. The handler
   // must call OnAppLaunchComplete to inform the shim of the result.
-  // |launch_now| indicates whether to launch the associated app.
-  virtual void OnShimLaunch(Host* host, AppShimLaunchType launch_type) = 0;
+  // |launch_type| indicates the type of launch.
+  // |files|, if non-empty, holds an array of files paths given as arguments, or
+  // dragged onto the app bundle or dock icon.
+  virtual void OnShimLaunch(Host* host,
+                            AppShimLaunchType launch_type,
+                            const std::vector<base::FilePath>& files) = 0;
 
   // Invoked by the shim host when the connection to the shim process is closed.
   virtual void OnShimClose(Host* host) = 0;
 
   // Invoked by the shim host when the shim process receives a focus event.
-  virtual void OnShimFocus(Host* host, AppShimFocusType focus_type) = 0;
+  // |files|, if non-empty, holds an array of files dragged onto the app bundle
+  // or dock icon.
+  virtual void OnShimFocus(Host* host,
+                           AppShimFocusType focus_type,
+                           const std::vector<base::FilePath>& files) = 0;
 
   // Invoked by the shim host when the shim process is hidden or shown.
   virtual void OnShimSetHidden(Host* host, bool hidden) = 0;

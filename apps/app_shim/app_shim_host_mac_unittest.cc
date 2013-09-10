@@ -4,6 +4,8 @@
 
 #include "apps/app_shim/app_shim_host_mac.h"
 
+#include <vector>
+
 #include "apps/app_shim/app_shim_messages.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_vector.h"
@@ -58,11 +60,12 @@ class AppShimHostTest : public testing::Test,
 
   TestingAppShimHost* host() { return host_.get(); }
 
-  void LaunchApp(bool launch_now) {
-    EXPECT_TRUE(host()->ReceiveMessage(new AppShimHostMsg_LaunchApp(
-        base::FilePath(kTestProfileDir), kTestAppId,
-        launch_now ? apps::APP_SHIM_LAUNCH_NORMAL :
-            apps::APP_SHIM_LAUNCH_REGISTER_ONLY)));
+  void LaunchApp(apps::AppShimLaunchType launch_type) {
+    EXPECT_TRUE(host()->ReceiveMessage(
+        new AppShimHostMsg_LaunchApp(base::FilePath(kTestProfileDir),
+                                     kTestAppId,
+                                     launch_type,
+                                     std::vector<base::FilePath>())));
   }
 
   apps::AppShimLaunchResult GetLaunchResult() {
@@ -80,7 +83,8 @@ class AppShimHostTest : public testing::Test,
 
  protected:
   virtual void OnShimLaunch(Host* host,
-                            apps::AppShimLaunchType launch_type) OVERRIDE {
+                            apps::AppShimLaunchType launch_type,
+                            const std::vector<base::FilePath>& file) OVERRIDE {
     ++launch_count_;
     if (launch_type == apps::APP_SHIM_LAUNCH_NORMAL)
       ++launch_now_count_;
@@ -90,7 +94,8 @@ class AppShimHostTest : public testing::Test,
   virtual void OnShimClose(Host* host) OVERRIDE { ++close_count_; }
 
   virtual void OnShimFocus(Host* host,
-                           apps::AppShimFocusType focus_type) OVERRIDE {
+                           apps::AppShimFocusType focus_type,
+                           const std::vector<base::FilePath>& file) OVERRIDE {
     ++focus_count_;
   }
 
@@ -121,7 +126,7 @@ class AppShimHostTest : public testing::Test,
 
 TEST_F(AppShimHostTest, TestLaunchAppWithHandler) {
   apps::AppShimHandler::RegisterHandler(kTestAppId, this);
-  LaunchApp(true);
+  LaunchApp(apps::APP_SHIM_LAUNCH_NORMAL);
   EXPECT_EQ(kTestAppId,
             implicit_cast<apps::AppShimHandler::Host*>(host())->GetAppId());
   EXPECT_EQ(apps::APP_SHIM_LAUNCH_SUCCESS, GetLaunchResult());
@@ -136,7 +141,8 @@ TEST_F(AppShimHostTest, TestLaunchAppWithHandler) {
   EXPECT_EQ(apps::APP_SHIM_LAUNCH_SUCCESS, GetLaunchResult());
 
   EXPECT_TRUE(host()->ReceiveMessage(
-      new AppShimHostMsg_FocusApp(apps::APP_SHIM_FOCUS_NORMAL)));
+      new AppShimHostMsg_FocusApp(apps::APP_SHIM_FOCUS_NORMAL,
+                                  std::vector<base::FilePath>())));
   EXPECT_EQ(1, focus_count_);
 
   EXPECT_TRUE(host()->ReceiveMessage(new AppShimHostMsg_QuitApp()));
@@ -149,7 +155,7 @@ TEST_F(AppShimHostTest, TestLaunchAppWithHandler) {
 
 TEST_F(AppShimHostTest, TestNoLaunchNow) {
   apps::AppShimHandler::RegisterHandler(kTestAppId, this);
-  LaunchApp(false);
+  LaunchApp(apps::APP_SHIM_LAUNCH_REGISTER_ONLY);
   EXPECT_EQ(kTestAppId,
             implicit_cast<apps::AppShimHandler::Host*>(host())->GetAppId());
   EXPECT_EQ(apps::APP_SHIM_LAUNCH_SUCCESS, GetLaunchResult());
@@ -163,7 +169,7 @@ TEST_F(AppShimHostTest, TestNoLaunchNow) {
 TEST_F(AppShimHostTest, TestFailLaunch) {
   apps::AppShimHandler::RegisterHandler(kTestAppId, this);
   launch_result_ = apps::APP_SHIM_LAUNCH_APP_NOT_FOUND;
-  LaunchApp(true);
+  LaunchApp(apps::APP_SHIM_LAUNCH_NORMAL);
   EXPECT_EQ(apps::APP_SHIM_LAUNCH_APP_NOT_FOUND, GetLaunchResult());
   apps::AppShimHandler::RemoveHandler(kTestAppId);
 }
