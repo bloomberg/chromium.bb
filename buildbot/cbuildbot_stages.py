@@ -56,6 +56,7 @@ particulars, please refer to which test failed i.e. above see the
 individual test that failed -- or if an update failed, check the
 corresponding update directory.
 """
+PRE_CQ = validation_pool.PRE_CQ
 
 
 class NonHaltingBuilderStage(bs.BuilderStage):
@@ -997,7 +998,7 @@ class CommitQueueSyncStage(LKGMCandidateSyncStage):
     # First, look for changes that were tested by the Pre-CQ.
     changes_to_test = []
     for change in changes:
-      status = pool.GetPreCQStatus(change)
+      status = pool.GetCLStatus(PRE_CQ, change)
       if status == manifest_version.BuilderStatus.STATUS_PASSED:
         changes_to_test.append(change)
 
@@ -1341,7 +1342,7 @@ class PreCQLauncherStage(SyncStage):
     busy, passed = set(), set()
 
     for change in changes:
-      status = pool.GetPreCQStatus(change)
+      status = pool.GetCLStatus(PRE_CQ, change)
 
       if status != self.STATUS_LAUNCHING:
         # The trybot has finished launching, so we should remove it from our
@@ -1396,8 +1397,8 @@ class PreCQLauncherStage(SyncStage):
       cmd += ['-g', number]
     cros_build_lib.RunCommand(cmd, cwd=self._build_root)
     for patch in plan:
-      if pool.GetPreCQStatus(patch) != self.STATUS_PASSED:
-        pool.UpdatePreCQStatus(patch, self.STATUS_LAUNCHING)
+      if pool.GetCLStatus(PRE_CQ, patch) != self.STATUS_PASSED:
+        pool.UpdateCLStatus(PRE_CQ, patch, self.STATUS_LAUNCHING)
 
   def GetDisjointTransactionsToTest(self, pool, changes):
     """Get the list of disjoint transactions to test.

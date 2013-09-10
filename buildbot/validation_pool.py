@@ -41,6 +41,10 @@ except ImportError:
   mox = None
 
 
+PRE_CQ = 'pre-cq'
+CQ = 'cq'
+
+
 class TreeIsClosedException(Exception):
   """Raised when the tree is closed and we wanted to submit changes."""
 
@@ -789,6 +793,18 @@ class PatchSeries(object):
         gerrit_number = cros_patch.FormatGerritNumber(
             change.gerrit_number, force_internal=change.internal)
         s = '%s | %s | %s' % (project, change.owner, gerrit_number)
+
+        # Print a count of how many times a given CL has passed or failed the
+        # CQ.
+        failures = ValidationPool.GetCLStatusCount(
+            CQ, change, ValidationPool.STATUS_FAILED)
+        if failures > 0:
+          s += ' | fails:%d' % failures
+        passed = ValidationPool.GetCLStatusCount(
+            CQ, change, ValidationPool.STATUS_PASSED)
+        if passed > 0:
+          s += ' | passed:%d' % passed
+
         cros_build_lib.PrintBuildbotLink(s, change.url)
 
     logging.debug('Done investigating changes.  Applied %s',
@@ -956,6 +972,7 @@ class ValidationPool(object):
     self.pre_cq = pre_cq
     self.dryrun = bool(dryrun) or self.GLOBAL_DRYRUN
     self.queue = 'A trybot' if pre_cq else 'The Commit Queue'
+    self.bot = PRE_CQ if pre_cq else CQ
 
     # See optional args for types of changes.
     self.changes = changes or []
@@ -1361,6 +1378,11 @@ class ValidationPool(object):
     assert self.is_master, 'Non-master builder calling SubmitPool'
     assert not self.pre_cq, 'Trybot calling SubmitPool'
 
+    # Mark all changes as successful.
+    for change in changes:
+      self.UpdateCLStatus(self.bot, change, self.STATUS_PASSED,
+                          dry_run=self.dryrun)
+
     # We use the default timeout here as while we want some robustness against
     # the tree status being red i.e. flakiness, we don't want to wait too long
     # as validation can become stale.
@@ -1556,9 +1578,10 @@ class ValidationPool(object):
     """Handler that is called when the Pre-CQ successfully verifies a change."""
     msg = '%(queue)s successfully verified your change in %(build_log)s .'
     for change in self.changes:
-      if self.GetPreCQStatus(change) != self.STATUS_PASSED:
+      if self.GetCLStatus(self.bot, change) != self.STATUS_PASSED:
         self.SendNotification(change, msg)
-        self.UpdatePreCQStatus(change, self.STATUS_PASSED)
+        self.UpdateCLStatus(self.bot, change, self.STATUS_PASSED,
+                            dry_run=self.dryrun)
 
   def _HandleCouldNotSubmit(self, change):
     """Handler that is called when Paladin can't submit a change.
@@ -1710,7 +1733,7 @@ class ValidationPool(object):
     changes = []
     for change in self.changes:
       # Ignore changes that were already verified.
-      if self.pre_cq and self.GetPreCQStatus(change) == self.STATUS_PASSED:
+      if self.pre_cq and self.GetCLStatus(PRE_CQ, change) == self.STATUS_PASSED:
         continue
       changes.append(change)
 
@@ -1724,10 +1747,11 @@ class ValidationPool(object):
       self.SendNotification(change, '%(details)s', details=msg)
       if change in suspects:
         self.RemoveCommitReady(change)
-      if self.pre_cq:
-        # Mark the change as failed. If the Ready bit is still set, the change
-        # will be retried automatically.
-        self.UpdatePreCQStatus(change, self.STATUS_FAILED)
+
+      # Mark the change as failed. If the Ready bit is still set, the change
+      # will be retried automatically.
+      self.UpdateCLStatus(self.bot, change, self.STATUS_FAILED,
+                          dry_run=self.dryrun)
 
   def GetValidationFailedMessage(self):
     """Returns message indicating these changes failed to be validated."""
@@ -1780,36 +1804,48 @@ class ValidationPool(object):
       change: GerritPatch instance to operate upon.
     """
     if self.pre_cq:
-      status = self.GetPreCQStatus(change)
+      status = self.GetCLStatus(self.bot, change)
       if status == self.STATUS_PASSED:
         return
     msg = ('%(queue)s has picked up your change. '
            'You can follow along at %(build_log)s .')
     self.SendNotification(change, msg)
-    if self.pre_cq and status == self.STATUS_LAUNCHING:
-      self.UpdatePreCQStatus(change, self.STATUS_INFLIGHT)
+    if not self.pre_cq or status == self.STATUS_LAUNCHING:
+      self.UpdateCLStatus(self.bot, change, self.STATUS_INFLIGHT,
+                          dry_run=self.dryrun)
 
-  def _GetPreCQStatusURL(self, change):
+  @classmethod
+  def GetCLStatusURL(cls, bot, change):
+    """Get the status URL for |change| on |bot|."""
     internal = 'int' if change.internal else 'ext'
-    components = [constants.MANIFEST_VERSIONS_GS_URL, 'pre-cq',
-                  internal, change.gerrit_number, change.patch_number]
+    components = [constants.MANIFEST_VERSIONS_GS_URL, bot,
+                  internal, str(change.gerrit_number), str(change.patch_number)]
     return '/'.join(components)
 
-  def GetPreCQStatus(self, change):
-    """Get Pre-CQ status for |change|."""
+  @classmethod
+  def GetCLStatus(cls, bot, change):
+    """Get the status for |change| on |bot|."""
+    url = cls.GetCLStatusURL(bot, change)
     ctx = gs.GSContext()
-    url = self._GetPreCQStatusURL(change)
     try:
       return ctx.Cat(url).output
     except gs.GSNoSuchKey:
       logging.debug('No status yet for %r', url)
       return None
 
-  def UpdatePreCQStatus(self, change, status):
-    """Update Google Storage URL for |change| with the Pre-CQ |status|."""
-    url = self._GetPreCQStatusURL(change)
-    ctx = gs.GSContext(dry_run=self.dryrun)
+  @classmethod
+  def UpdateCLStatus(cls, bot, change, status, dry_run):
+    """Update the |status| of |change| on |bot|."""
+    url = cls.GetCLStatusURL(bot, change)
+    ctx = gs.GSContext(dry_run=dry_run)
     ctx.Copy('-', url, input=status)
+    ctx.Counter('%s/%s' % (url, status)).Increment()
+
+  @classmethod
+  def GetCLStatusCount(cls, bot, change, status):
+    """Return how many times |change| has been set to |status| on |bot|."""
+    url = '%s/%s' % (cls.GetCLStatusURL(bot, change), status)
+    return gs.GSContext().Counter(url).Get()
 
   def CreateDisjointTransactions(self, manifest):
     """Create a list of disjoint transactions from the changes in the pool.

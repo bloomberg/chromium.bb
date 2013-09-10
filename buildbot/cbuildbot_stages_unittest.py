@@ -1760,21 +1760,21 @@ class ExtendedMasterCQSyncTest(MasterCQSyncTest):
                       tree_open=False)
 
 
-class PreCQStatusMock(partial_mock.PartialMock):
-  """Partial mock for PreCQStatus methods in ValidationPool."""
+class CLStatusMock(partial_mock.PartialMock):
+  """Partial mock for CLStatus methods in ValidationPool."""
 
   TARGET = 'chromite.buildbot.validation_pool.ValidationPool'
-  ATTRS = ('GetPreCQStatus', 'UpdatePreCQStatus',)
+  ATTRS = ('GetCLStatus', 'UpdateCLStatus',)
 
   def __init__(self):
     partial_mock.PartialMock.__init__(self)
     self.calls = {}
     self.status = {}
 
-  def GetPreCQStatus(self, _, change):
+  def GetCLStatus(self, _inst, _bot, change):
     return self.status.get(change)
 
-  def UpdatePreCQStatus(self, _, change, status):
+  def UpdateCLStatus(self, _inst, _bot, change, status):
     self.calls[status] = self.calls.get(status, 0) + 1
     self.status[change] = status
 
@@ -1788,7 +1788,7 @@ class PreCQLauncherStageTest(MasterCQSyncTest):
 
   def setUp(self):
     self.PatchObject(time, 'sleep', autospec=True)
-    self.pre_cq = PreCQStatusMock()
+    self.pre_cq = CLStatusMock()
     self.StartPatcher(self.pre_cq)
     self.sync_stage = stages.PreCQLauncherStage(self.options, self.build_config)
 
