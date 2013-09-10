@@ -416,6 +416,7 @@ void FELighting::applySoftware()
 
 PassRefPtr<SkImageFilter> FELighting::createImageFilter(SkiaImageFilterBuilder* builder)
 {
+    SkIRect rect = getCropRect(builder->cropOffset());
     RefPtr<SkImageFilter> input(builder ? builder->build(inputEffect(0), operatingColorSpace()) : 0);
     switch (m_lightSource->type()) {
     case LS_DISTANT: {
@@ -426,18 +427,18 @@ PassRefPtr<SkImageFilter> FELighting::createImageFilter(SkiaImageFilterBuilder* 
                            sinf(azimuthRad) * cosf(elevationRad),
                            sinf(elevationRad));
         if (m_specularConstant > 0)
-            return adoptRef(SkLightingImageFilter::CreateDistantLitSpecular(direction, m_lightingColor.rgb(), m_surfaceScale, m_specularConstant, m_specularExponent, input.get()));
+            return adoptRef(SkLightingImageFilter::CreateDistantLitSpecular(direction, m_lightingColor.rgb(), m_surfaceScale, m_specularConstant, m_specularExponent, input.get(), &rect));
         else
-            return adoptRef(SkLightingImageFilter::CreateDistantLitDiffuse(direction, m_lightingColor.rgb(), m_surfaceScale, m_diffuseConstant, input.get()));
+            return adoptRef(SkLightingImageFilter::CreateDistantLitDiffuse(direction, m_lightingColor.rgb(), m_surfaceScale, m_diffuseConstant, input.get(), &rect));
     }
     case LS_POINT: {
         PointLightSource* pointLightSource = static_cast<PointLightSource*>(m_lightSource.get());
         FloatPoint3D position = pointLightSource->position();
         SkPoint3 skPosition(position.x(), position.y(), position.z());
         if (m_specularConstant > 0)
-            return adoptRef(SkLightingImageFilter::CreatePointLitSpecular(skPosition, m_lightingColor.rgb(), m_surfaceScale, m_specularConstant, m_specularExponent, input.get()));
+            return adoptRef(SkLightingImageFilter::CreatePointLitSpecular(skPosition, m_lightingColor.rgb(), m_surfaceScale, m_specularConstant, m_specularExponent, input.get(), &rect));
         else
-            return adoptRef(SkLightingImageFilter::CreatePointLitDiffuse(skPosition, m_lightingColor.rgb(), m_surfaceScale, m_diffuseConstant, input.get()));
+            return adoptRef(SkLightingImageFilter::CreatePointLitDiffuse(skPosition, m_lightingColor.rgb(), m_surfaceScale, m_diffuseConstant, input.get(), &rect));
     }
     case LS_SPOT: {
         SpotLightSource* spotLightSource = static_cast<SpotLightSource*>(m_lightSource.get());
@@ -448,9 +449,9 @@ PassRefPtr<SkImageFilter> FELighting::createImageFilter(SkiaImageFilterBuilder* 
         if (!limitingConeAngle || limitingConeAngle > 90 || limitingConeAngle < -90)
             limitingConeAngle = 90;
         if (m_specularConstant > 0)
-            return adoptRef(SkLightingImageFilter::CreateSpotLitSpecular(location, target, specularExponent, limitingConeAngle, m_lightingColor.rgb(), m_surfaceScale, m_specularConstant, m_specularExponent, input.get()));
+            return adoptRef(SkLightingImageFilter::CreateSpotLitSpecular(location, target, specularExponent, limitingConeAngle, m_lightingColor.rgb(), m_surfaceScale, m_specularConstant, m_specularExponent, input.get(), &rect));
         else
-            return adoptRef(SkLightingImageFilter::CreateSpotLitDiffuse(location, target, specularExponent, limitingConeAngle, m_lightingColor.rgb(), m_surfaceScale, m_diffuseConstant, input.get()));
+            return adoptRef(SkLightingImageFilter::CreateSpotLitDiffuse(location, target, specularExponent, limitingConeAngle, m_lightingColor.rgb(), m_surfaceScale, m_diffuseConstant, input.get(), &rect));
     }
     default:
         ASSERT_NOT_REACHED();

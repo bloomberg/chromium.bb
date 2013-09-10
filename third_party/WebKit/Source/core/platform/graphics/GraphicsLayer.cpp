@@ -1253,6 +1253,8 @@ bool GraphicsLayer::setFilters(const FilterOperations& filters)
             return false;
         }
         SkiaImageFilterBuilder builder;
+        FilterOutsets outsets = filters.outsets();
+        builder.setCropOffset(FloatSize(outsets.left(), outsets.top()));
         RefPtr<SkImageFilter> imageFilter = builder.build(filters);
         m_layer->layer()->setFilter(imageFilter.get());
     } else {

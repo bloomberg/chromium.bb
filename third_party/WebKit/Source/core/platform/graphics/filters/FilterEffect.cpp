@@ -481,4 +481,17 @@ PassRefPtr<SkImageFilter> FilterEffect::createImageFilter(SkiaImageFilterBuilder
     return 0;
 }
 
+SkIRect FilterEffect::getCropRect(const FloatSize& cropOffset) const
+{
+    SkIRect rect;
+    FloatRect boundaries = effectBoundaries();
+    FloatSize resolution = filter()->filterResolution();
+    boundaries.scale(resolution.width(), resolution.height());
+    rect.fLeft = hasX() ? static_cast<int>(boundaries.x()) + cropOffset.width() : 0;
+    rect.fTop = hasY() ? static_cast<int>(boundaries.y()) + cropOffset.height() : 0;
+    rect.fRight = hasWidth() ? rect.fLeft + static_cast<int>(boundaries.width()) : SK_MaxS32;
+    rect.fBottom = hasHeight() ? rect.fTop + static_cast<int>(boundaries.height()) : SK_MaxS32;
+    return rect;
+}
+
 } // namespace WebCore

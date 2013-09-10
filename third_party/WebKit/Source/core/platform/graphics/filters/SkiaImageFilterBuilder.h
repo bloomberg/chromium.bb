@@ -27,6 +27,7 @@
 #define SkiaImageFilterBuilder_h
 
 #include "core/platform/graphics/ColorSpace.h"
+#include "core/platform/graphics/FloatSize.h"
 #include "wtf/HashMap.h"
 
 class SkImageFilter;
@@ -45,10 +46,15 @@ public:
 
     PassRefPtr<SkImageFilter> transformColorSpace(
         SkImageFilter* input, ColorSpace srcColorSpace, ColorSpace dstColorSpace);
+
+    void setCropOffset(const FloatSize& cropOffset) { m_cropOffset = cropOffset; };
+    FloatSize cropOffset() { return m_cropOffset; }
+
 private:
     typedef std::pair<FilterEffect*, ColorSpace> FilterColorSpacePair;
     typedef HashMap<FilterColorSpacePair, RefPtr<SkImageFilter> > FilterBuilderHashMap;
     FilterBuilderHashMap m_map;
+    FloatSize m_cropOffset;
 };
 
 } // namespace WebCore

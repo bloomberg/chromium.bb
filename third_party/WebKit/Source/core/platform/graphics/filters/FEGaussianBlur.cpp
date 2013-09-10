@@ -343,7 +343,8 @@ PassRefPtr<SkImageFilter> FEGaussianBlur::createImageFilter(SkiaImageFilterBuild
     RefPtr<SkImageFilter> input(builder->build(inputEffect(0), operatingColorSpace()));
     float stdX = filter()->applyHorizontalScale(m_stdX);
     float stdY = filter()->applyVerticalScale(m_stdY);
-    return adoptRef(new SkBlurImageFilter(SkFloatToScalar(stdX), SkFloatToScalar(stdY), input.get()));
+    SkIRect rect = getCropRect(builder->cropOffset());
+    return adoptRef(new SkBlurImageFilter(SkFloatToScalar(stdX), SkFloatToScalar(stdY), input.get(), &rect));
 }
 
 TextStream& FEGaussianBlur::externalRepresentation(TextStream& ts, int indent) const
