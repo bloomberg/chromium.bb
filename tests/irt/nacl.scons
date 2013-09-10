@@ -33,3 +33,25 @@ node = env.CommandSelLdrTestNacl(
      )
 
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_irt_interface_prefix_test')
+
+# IRT interface dev test
+
+interface_dev_test_nexe = env.ComponentProgram('irt_interface_dev_test',
+                                               'irt_interface_dev_test.c',
+                                               EXTRA_LIBS=['${NONIRT_LIBS}'])
+
+node = env.CommandSelLdrTestNacl(
+     'irt_interface_dev_enabled_test.out',
+     interface_dev_test_nexe,
+     osenv=['NACL_DANGEROUS_ENABLE_FILE_ACCESS=1',
+            'NACL_DANGEROUS_ENABLE_LIST_MAPPINGS=1'])
+
+env.AddNodeToTestSuite(node, ['small_tests'],
+                       'run_irt_interface_dev_enabled_test')
+
+node = env.CommandSelLdrTestNacl(
+     'irt_interface_dev_disabled_test.out',
+     interface_dev_test_nexe)
+
+env.AddNodeToTestSuite(node, ['small_tests'],
+                       'run_irt_interface_dev_disabled_test')

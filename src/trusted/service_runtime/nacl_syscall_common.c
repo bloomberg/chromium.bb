@@ -3475,6 +3475,14 @@ int32_t NaClSysSysconf(struct NaClAppThread *natp,
       result_value = 1 << 16;  /* always 64k pages */
       break;
     }
+    case NACL_ABI__SC_NACL_FILE_ACCESS_ENABLED: {
+      result_value = NaClAclBypassChecks;
+      break;
+    }
+    case NACL_ABI__SC_NACL_LIST_MAPPINGS_ENABLED: {
+      result_value = nap->enable_list_mappings;
+      break;
+    }
     default: {
       retval = -NACL_ABI_EINVAL;
       goto cleanup;
