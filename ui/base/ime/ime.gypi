@@ -10,6 +10,8 @@
       'composition_text.cc',
       'composition_text.h',
       'composition_underline.h',
+      'dummy_input_method_delegate.cc',
+      'dummy_input_method_delegate.h',
       'input_method.h',
       'input_method_base.cc',
       'input_method_base.h',

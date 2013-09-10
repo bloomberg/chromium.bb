@@ -4,7 +4,8 @@
 
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
-#include "ui/base/ime/dummy_input_method.h"
+#include "ui/base/ime/dummy_input_method_delegate.h"
+#include "ui/base/ime/fake_input_method.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/views/ime/input_method.h"
 #include "ui/views/test/views_test_base.h"
@@ -16,41 +17,10 @@ namespace views {
 
 typedef ViewsTestBase InputMethodBridgeTest;
 
-namespace {
-
-class TestInputMethod : public ui::DummyInputMethod {
- public:
-  TestInputMethod();
-  virtual ~TestInputMethod();
-
-  virtual void SetFocusedTextInputClient(ui::TextInputClient* client) OVERRIDE;
-  virtual ui::TextInputClient* GetTextInputClient() const OVERRIDE;
-
- private:
-  ui::TextInputClient* text_input_client_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestInputMethod);
-};
-
-TestInputMethod::TestInputMethod() : text_input_client_(NULL) {}
-
-TestInputMethod::~TestInputMethod() {}
-
-void TestInputMethod::SetFocusedTextInputClient(ui::TextInputClient* client) {
-  // This simulates what the real InputMethod implementation does.
-  if (text_input_client_)
-    text_input_client_->GetTextInputType();
-  text_input_client_ = client;
-}
-
-ui::TextInputClient* TestInputMethod::GetTextInputClient() const {
-  return text_input_client_;
-}
-
-}  // namespace
-
 TEST_F(InputMethodBridgeTest, DestructTest) {
-  TestInputMethod input_method;
+  ui::internal::DummyInputMethodDelegate input_method_delegate;
+  ui::FakeInputMethod input_method(&input_method_delegate);
+
   GetContext()->SetProperty(aura::client::kRootWindowInputMethodKey,
                             static_cast<ui::InputMethod*>(&input_method));
 
