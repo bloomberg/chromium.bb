@@ -10,6 +10,7 @@
   </outputs>
   <release seq="1">
     <includes>
+      <include name="IDR_SYNC_FILE_SYSTEM_INTERNALS_UTILS_JS" file="sync_file_system_internals/utils.js" type="BINDATA" />
       <include name="IDR_SYNC_FILE_SYSTEM_INTERNALS_EXTENSION_STATUSES_JS" file="sync_file_system_internals/extension_statuses.js" type="BINDATA" />
       <include name="IDR_SYNC_FILE_SYSTEM_INTERNALS_FILE_METADATA_JS" file="sync_file_system_internals/file_metadata.js" type="BINDATA" />
       <include name="IDR_SYNC_FILE_SYSTEM_INTERNALS_MAIN_HTML" file="sync_file_system_internals/main.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />

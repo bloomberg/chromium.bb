@@ -40,23 +40,6 @@ SyncService.onGetNotificationSource = function(sourceString) {
   $('notification-source').textContent = sourceString;
 }
 
-/**
- * Creates an element named |elementName| containing the content |text|.
- * @param {string} elementName Name of the new element to be created.
- * @param {string} text Text to be contained in the new element.
- * @param {Object} opt_attributes Optional attribute dictionary for the element.
- * @return {HTMLElement} The newly created HTML element.
- */
-function createElementFromText(elementName, text, opt_attributes) {
-  var element = document.createElement(elementName);
-  element.appendChild(document.createTextNode(text));
-  if (opt_attributes) {
-    for (var key in opt_attributes)
-      element.setAttribute(key, opt_attributes[key]);
-  }
-  return element;
-}
-
 // Keeps track of the last log event seen so it's not reprinted.
 var lastLogEventId = -1;
 

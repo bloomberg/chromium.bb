@@ -83,7 +83,7 @@ FileMetadata.onGetFileMetadata = function(fileMetadataMap) {
     var tr = document.createElement('tr');
     tr.appendChild(createElementFromText('td', 'Type'));
     tr.appendChild(createElementFromText('td', 'Status'));
-    tr.appendChild(createElementFromText('td', 'Title'));
+    tr.appendChild(createElementFromText('td', 'Path', {width: '250px'}));
     tr.appendChild(createElementFromText('td', 'Details'));
     header.appendChild(tr);
   }
@@ -96,7 +96,7 @@ FileMetadata.onGetFileMetadata = function(fileMetadataMap) {
     var tr = document.createElement('tr');
     tr.appendChild(createFileIconCell(metadatEntry.type));
     tr.appendChild(createElementFromText('td', metadatEntry.status));
-    tr.appendChild(createElementFromText('td', metadatEntry.title));
+    tr.appendChild(createElementFromText('td', metadatEntry.path));
     tr.appendChild(createElementFromDictionary('td', metadatEntry.details));
     itemContainer.appendChild(tr);
   }
@@ -110,35 +110,6 @@ function createFileIconCell(type) {
   var td = createElementFromText('td', type);
   td.setAttribute('class', type.toLowerCase() + '-icon');
   return td;
-}
-
-// TODO(calvinlo): Move to helper file so it doesn't need to be duplicated.
-/**
- * Creates an element with |tagName| containing the content |text|.
- * @param {string} elementName Name of the new element to be created.
- * @param {string} text Text to be contained in the new element.
- * @return {HTMLElement} The newly created HTML element.
- */
-function createElementFromText(tagName, text) {
-  var element = document.createElement(tagName);
-  element.appendChild(document.createTextNode(text));
-  return element;
-}
-
-/**
- * Creates an element with |tagName| containing the content |dict|.
- * @param {string} elementName Name of the new element to be created.
- * @param {Object.<string, string>} dict Dictionary to be contained in the new
- * element.
- * @return {HTMLElement} The newly created HTML element.
- */
-function createElementFromDictionary(tagName, dict) {
-  var element = document.createElement(tagName);
-  for (var key in dict) {
-    element.appendChild(document.createTextNode(key + ': ' + dict[key]));
-    element.appendChild(document.createElement('br'));
-  }
-  return element;
 }
 
 function main() {
