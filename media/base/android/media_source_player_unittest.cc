@@ -20,6 +20,11 @@ namespace media {
 
 static const int kDefaultDurationInMs = 10000;
 
+static const char kAudioMp4[] = "audio/mp4";
+static const char kVideoMp4[] = "video/mp4";
+static const char kAudioWebM[] = "audio/webm";
+static const char kVideoWebM[] = "video/webm";
+
 // Mock of MediaPlayerManager for testing purpose
 class MockMediaPlayerManager : public MediaPlayerManager {
  public:
@@ -506,10 +511,11 @@ TEST_F(MediaSourcePlayerTest, NoRequestForDataAfterInputEOS) {
   EXPECT_EQ(2, manager_->num_requests());
 }
 
-// Crashes. http://crbug.com/287817
-TEST_F(MediaSourcePlayerTest, DISABLED_CanPlayType_Widevine) {
-  if (!MediaCodecBridge::IsAvailable() || !MediaDrmBridge::IsAvailable())
+TEST_F(MediaSourcePlayerTest, IsTypeSupported_Widevine) {
+  if (!MediaCodecBridge::IsAvailable() || !MediaDrmBridge::IsAvailable()) {
+    LOG(INFO) << "Could not run test - not supported on device.";
     return;
+  }
 
   uint8 kWidevineUUID[] = { 0xED, 0xEF, 0x8B, 0xA9, 0x79, 0xD6, 0x4A, 0xCE,
                             0xA3, 0xC8, 0x27, 0xDC, 0xD5, 0x1D, 0x21, 0xED };
@@ -517,23 +523,51 @@ TEST_F(MediaSourcePlayerTest, DISABLED_CanPlayType_Widevine) {
   std::vector<uint8> widevine_uuid(kWidevineUUID,
                                    kWidevineUUID + arraysize(kWidevineUUID));
 
+  // We test "L3" fully. But for "L1" we don't check the result as it depend on
+  // whether the test device supports "L1" decoding.
+
   std::vector<std::string> codec_avc(1, "avc1");
-  EXPECT_TRUE(IsTypeSupported(widevine_uuid, "L3", "video/mp4", codec_avc));
-  EXPECT_TRUE(IsTypeSupported(widevine_uuid, "L1", "video/mp4", codec_avc));
+  std::vector<std::string> codec_aac(1, "mp4a");
+  std::vector<std::string> codec_avc_aac(1, "avc1");
+  codec_avc_aac.push_back("mp4a");
+
+  EXPECT_TRUE(IsTypeSupported(widevine_uuid, "L3", kVideoMp4, codec_avc));
+  IsTypeSupported(widevine_uuid, "L1", kVideoMp4, codec_avc);
+
+  // TODO(xhwang): L1/L3 doesn't apply to audio, so the result is messy.
+  // Clean this up after we have a solution to specifying decoding mode.
+  EXPECT_TRUE(IsTypeSupported(widevine_uuid, "L3", kAudioMp4, codec_aac));
+  IsTypeSupported(widevine_uuid, "L1", kAudioMp4, codec_aac);
+
+  EXPECT_TRUE(IsTypeSupported(widevine_uuid, "L3", kVideoMp4, codec_avc_aac));
+  IsTypeSupported(widevine_uuid, "L1", kVideoMp4, codec_avc_aac);
 
   std::vector<std::string> codec_vp8(1, "vp8");
-  EXPECT_TRUE(IsTypeSupported(widevine_uuid, "L3", "video/webm", codec_vp8));
-  EXPECT_FALSE(IsTypeSupported(widevine_uuid, "L1", "video/webm", codec_vp8));
-
   std::vector<std::string> codec_vorbis(1, "vorbis");
-  EXPECT_TRUE(IsTypeSupported(widevine_uuid, "L3", "video/webm", codec_vorbis));
-  EXPECT_FALSE(
-      IsTypeSupported(widevine_uuid, "L1", "video/webm", codec_vorbis));
+  std::vector<std::string> codec_vp8_vorbis(1, "vp8");
+  codec_vp8_vorbis.push_back("vorbis");
+
+  // TODO(xhwang): WebM is actually not supported but currently
+  // MediaDrmBridge.isCryptoSchemeSupported() doesn't check the container type.
+  // Fix isCryptoSchemeSupported() and update this test as necessary.
+  EXPECT_TRUE(IsTypeSupported(widevine_uuid, "L3", kVideoWebM, codec_vp8));
+  IsTypeSupported(widevine_uuid, "L1", kVideoWebM, codec_vp8);
+
+  // TODO(xhwang): L1/L3 doesn't apply to audio, so the result is messy.
+  // Clean this up after we have a solution to specifying decoding mode.
+  EXPECT_TRUE(IsTypeSupported(widevine_uuid, "L3", kAudioWebM, codec_vorbis));
+  IsTypeSupported(widevine_uuid, "L1", kAudioWebM, codec_vorbis);
+
+  EXPECT_TRUE(
+      IsTypeSupported(widevine_uuid, "L3", kVideoWebM, codec_vp8_vorbis));
+  IsTypeSupported(widevine_uuid, "L1", kVideoWebM, codec_vp8_vorbis);
 }
 
-TEST_F(MediaSourcePlayerTest, CanPlayType_InvalidUUID) {
-  if (!MediaCodecBridge::IsAvailable() || !MediaDrmBridge::IsAvailable())
+TEST_F(MediaSourcePlayerTest, IsTypeSupported_InvalidUUID) {
+  if (!MediaCodecBridge::IsAvailable() || !MediaDrmBridge::IsAvailable()) {
+    LOG(INFO) << "Could not run test - not supported on device.";
     return;
+  }
 
   uint8 kInvalidUUID[] = { 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
                            0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF };
@@ -542,8 +576,8 @@ TEST_F(MediaSourcePlayerTest, CanPlayType_InvalidUUID) {
                                   kInvalidUUID + arraysize(kInvalidUUID));
 
   std::vector<std::string> codec_avc(1, "avc1");
-  EXPECT_FALSE(IsTypeSupported(invalid_uuid, "L3", "video/mp4", codec_avc));
-  EXPECT_FALSE(IsTypeSupported(invalid_uuid, "L1", "video/mp4", codec_avc));
+  EXPECT_FALSE(IsTypeSupported(invalid_uuid, "L3", kVideoMp4, codec_avc));
+  EXPECT_FALSE(IsTypeSupported(invalid_uuid, "L1", kVideoMp4, codec_avc));
 }
 
 // TODO(xhwang): Are these IsTypeSupported tests device specific?

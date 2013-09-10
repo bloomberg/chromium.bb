@@ -42,6 +42,9 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys {
   // Checks whether MediaDRM is available.
   static bool IsAvailable();
 
+  static bool IsSecurityLevelSupported(const std::vector<uint8>& scheme_uuid,
+                                       const std::string& security_level);
+
   static bool IsCryptoSchemeSupported(const std::vector<uint8>& scheme_uuid,
                                       const std::string& container_mime_type);
 

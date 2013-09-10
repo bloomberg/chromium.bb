@@ -182,6 +182,14 @@ bool MediaDrmBridge::IsSecureDecoderRequired(
       GetSecurityLevelFromString(security_level_str));
 }
 
+bool MediaDrmBridge::IsSecurityLevelSupported(
+    const std::vector<uint8>& scheme_uuid,
+    const std::string& security_level) {
+  // Pass 0 as |media_keys_id| and NULL as |manager| as they are not used in
+  // creation time of MediaDrmBridge.
+  return MediaDrmBridge::Create(0, scheme_uuid, security_level, NULL) != NULL;
+}
+
 bool MediaDrmBridge::IsCryptoSchemeSupported(
     const std::vector<uint8>& scheme_uuid,
     const std::string& container_mime_type) {

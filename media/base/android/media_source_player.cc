@@ -33,13 +33,24 @@ bool MediaSourcePlayer::IsTypeSupported(
     const std::string& security_level,
     const std::string& container,
     const std::vector<std::string>& codecs) {
-  if (!MediaDrmBridge::IsCryptoSchemeSupported(scheme_uuid, container))
+  if (!MediaDrmBridge::IsCryptoSchemeSupported(scheme_uuid, container)) {
+    DVLOG(1) << "UUID and container '" << container << "' not supported.";
     return false;
+  }
+
+  if (!MediaDrmBridge::IsSecurityLevelSupported(scheme_uuid, security_level)) {
+    DVLOG(1) << "UUID and security level '" << security_level
+             << "' not supported.";
+    return false;
+  }
 
   bool is_secure = MediaDrmBridge::IsSecureDecoderRequired(security_level);
   for (size_t i = 0; i < codecs.size(); ++i) {
-    if (!MediaCodecBridge::CanDecode(codecs[i], is_secure))
+    if (!MediaCodecBridge::CanDecode(codecs[i], is_secure)) {
+      DVLOG(1) << "Codec '" << codecs[i] << "' "
+               << (is_secure ? "in secure mode " : "") << "not supported.";
       return false;
+    }
   }
 
   return true;
