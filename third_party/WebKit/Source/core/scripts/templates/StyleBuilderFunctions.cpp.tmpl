@@ -63,7 +63,8 @@ namespace WebCore {
     const CSSAnimationDataList* parentList = state.parentStyle()->{{animation|lower}}();
     size_t i = 0, parentSize = parentList ? parentList->size() : 0;
     for ( ; i < parentSize && parentList->animation(i)->is{{attribute}}Set(); ++i) {
-        if (list->size() <= i)
+        ASSERT(list->size() >= i);
+        if (list->size() == i)
             list->append(CSSAnimationData::create());
         list->animation(i)->set{{attribute}}(parentList->animation(i)->{{lower_first(attribute)}}());
         list->animation(i)->setAnimationMode(parentList->animation(i)->animationMode());
@@ -81,7 +82,8 @@ namespace WebCore {
     if (value->isValueList()) {
         // Walk each value and put it into an animation, creating new animations as needed.
         for (CSSValueListIterator i = value; i.hasMore(); i.advance()) {
-            if (childIndex <= list->size())
+            ASSERT(list->size() >= childIndex);
+            if (list->size() == childIndex)
                 list->append(CSSAnimationData::create());
             state.styleMap().mapAnimation{{attribute}}(list->animation(childIndex), i.value());
             ++childIndex;
