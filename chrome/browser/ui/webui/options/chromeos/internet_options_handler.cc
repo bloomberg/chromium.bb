@@ -135,6 +135,8 @@ const char kUpdateConnectionDataFunction[] =
     "options.internet.DetailsInternetPage.updateConnectionData";
 const char kUpdateCarrierFunction[] =
     "options.internet.DetailsInternetPage.updateCarrier";
+const char kUpdateLoggedInUserTypeFunction[] =
+    "options.network.NetworkList.updateLoggedInUserType";
 const char kUpdateSecurityTabFunction[] =
     "options.internet.DetailsInternetPage.updateSecurityTab";
 
@@ -339,6 +341,30 @@ std::string ConnectionStateString(const std::string& state) {
   else
     id = IDS_CHROMEOS_NETWORK_STATE_UNRECOGNIZED;
   return l10n_util::GetStringUTF8(id);
+}
+
+std::string LoggedInUserTypeToString(
+    LoginState::LoggedInUserType type) {
+  switch (type) {
+    case LoginState::LOGGED_IN_USER_NONE:
+      return "none";
+    case LoginState::LOGGED_IN_USER_REGULAR:
+      return "regular";
+    case LoginState::LOGGED_IN_USER_OWNER:
+      return "owner";
+    case LoginState::LOGGED_IN_USER_GUEST:
+      return "guest";
+    case LoginState::LOGGED_IN_USER_RETAIL_MODE:
+      return "retail-mode";
+    case LoginState::LOGGED_IN_USER_PUBLIC_ACCOUNT:
+      return "public-account";
+    case LoginState::LOGGED_IN_USER_LOCALLY_MANAGED:
+      return "locally-managed";
+    case LoginState::LOGGED_IN_USER_KIOSK_APP:
+      return "kiosk-app";
+    default:
+      return "";
+  }
 }
 
 std::string EncryptionString(const std::string& security,
@@ -777,6 +803,7 @@ InternetOptionsHandler::InternetOptionsHandler()
   registrar_.Add(this, chrome::NOTIFICATION_ENTER_PIN_ENDED,
                  content::NotificationService::AllSources());
   NetworkHandler::Get()->network_state_handler()->AddObserver(this, FROM_HERE);
+  LoginState::Get()->AddObserver(this);
 }
 
 InternetOptionsHandler::~InternetOptionsHandler() {
@@ -784,6 +811,8 @@ InternetOptionsHandler::~InternetOptionsHandler() {
     NetworkHandler::Get()->network_state_handler()->RemoveObserver(
         this, FROM_HERE);
   }
+  if (LoginState::Get()->IsInitialized())
+    LoginState::Get()->RemoveObserver(this);
 }
 
 void InternetOptionsHandler::GetLocalizedValues(
@@ -967,6 +996,7 @@ void InternetOptionsHandler::InitializePage() {
                                    dictionary);
   NetworkHandler::Get()->network_state_handler()->RequestScan();
   RefreshNetworkData();
+  UpdateLoggedInUserType();
 }
 
 void InternetOptionsHandler::RegisterMessages() {
@@ -1313,6 +1343,20 @@ void InternetOptionsHandler::NetworkPropertiesUpdated(
     return;
   RefreshNetworkData();
   UpdateConnectionData(network->path());
+}
+
+void InternetOptionsHandler::LoggedInStateChanged(
+    LoginState::LoggedInState state) {
+  UpdateLoggedInUserType();
+}
+
+void InternetOptionsHandler::UpdateLoggedInUserType() {
+  if (!web_ui())
+    return;
+  base::StringValue login_type(
+      LoggedInUserTypeToString(LoginState::Get()->GetLoggedInUserType()));
+  web_ui()->CallJavascriptFunction(
+      kUpdateLoggedInUserTypeFunction, login_type);
 }
 
 void InternetOptionsHandler::Observe(

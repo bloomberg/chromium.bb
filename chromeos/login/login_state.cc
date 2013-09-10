@@ -59,7 +59,7 @@ void LoginState::RemoveObserver(Observer* observer) {
 
 void LoginState::SetLoggedInState(LoggedInState state,
                                   LoggedInUserType type) {
-  if (state == logged_in_state_)
+  if (state == logged_in_state_ && type == logged_in_user_type_)
     return;
   VLOG(1) << "LoggedInState: " << state << " UserType: " << type;
   logged_in_state_ = state;

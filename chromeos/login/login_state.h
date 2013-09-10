@@ -33,7 +33,7 @@ class CHROMEOS_EXPORT LoginState {
 
   class Observer {
    public:
-    // Called when the login state changes.
+    // Called when either the login state or the logged in user type changes.
     virtual void LoggedInStateChanged(LoggedInState state) = 0;
 
    protected:
