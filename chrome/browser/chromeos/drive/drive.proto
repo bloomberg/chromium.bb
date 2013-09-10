@@ -103,7 +103,7 @@ message ResourceMetadataHeader {
 
 // Message to store information of an existing cache file.
 message FileCacheEntry {
-  // MD5 of the cache file. "local" if the file is locally modified.
+  // MD5 of the cache file.
   optional string md5 = 1;
 
   // True if the file is present locally.
@@ -115,10 +115,6 @@ message FileCacheEntry {
   // True if the file is dirty (i.e. modified locally).
   optional bool is_dirty = 4;
 
-  // TODO(hashimoto): Remove this block after DB merge. crbug.com/234487
-  // True if the file is in the persistent directory.
-  // optional bool is_persistent = 6;
-
   // When adding a new state, be sure to update TestFileCacheState and test
-  // functions defined in drive_test_util.cc.
+  // functions defined in test_util.cc.
 }
