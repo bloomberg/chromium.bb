@@ -291,16 +291,6 @@ int32_t NaClSysSysconf(struct NaClAppThread *natp,
                        int32_t              name,
                        int32_t              *result);
 
-int32_t NaClSysExceptionHandler(struct NaClAppThread *natp,
-                                uint32_t             handler_addr,
-                                uint32_t             old_handler);
-
-int32_t NaClSysExceptionStack(struct NaClAppThread *natp,
-                              uint32_t             stack_addr,
-                              uint32_t             stack_size);
-
-int32_t NaClSysExceptionClearFlag(struct NaClAppThread *natp);
-
 int32_t NaClSysTestInfoLeak(struct NaClAppThread *natp);
 
 int32_t NaClSysTestCrash(struct NaClAppThread *natp, int crash_type);

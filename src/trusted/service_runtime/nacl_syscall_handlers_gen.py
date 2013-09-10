@@ -21,7 +21,7 @@ import getopt
 import re
 import sys
 
-AUTOGEN_COMMENT = """\
+AUTOGEN_HEADER = """\
 /*
  * WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
  *
@@ -29,6 +29,10 @@ AUTOGEN_COMMENT = """\
  *
  * NaCl Server Runtime Service Call abstractions
  */
+
+#include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
+#include "native_client/src/trusted/service_runtime/sys_exception.h"
+#include "native_client/src/trusted/service_runtime/sys_list_mappings.h"
 """
 
 
@@ -294,7 +298,7 @@ def PrintSyscallTableInitializer(protos, ostr):
 
 
 def PrintImplSkel(architecture, protos, ostr):
-  print >>ostr, AUTOGEN_COMMENT
+  print >>ostr, AUTOGEN_HEADER
   for syscall_number, func_name, alist in protos:
     values = { 'name' : func_name,
                'arglist' : ArgList(architecture, alist),
