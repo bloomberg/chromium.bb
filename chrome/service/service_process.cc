@@ -35,6 +35,10 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
 
+#if defined(OS_LINUX) || defined(OS_OPENBSD)
+#include <glib-object.h>
+#endif
+
 #if defined(TOOLKIT_GTK)
 #include <gtk/gtk.h>
 #include "ui/gfx/gtk_util.h"
@@ -139,7 +143,13 @@ bool ServiceProcess::Initialize(base::MessageLoopForUI* message_loop,
   char **argv_pointer = argv.get();
   gtk_init_check(&argc, &argv_pointer);
   free(argv[0]);
+#elif defined(OS_LINUX) || defined(OS_OPENBSD)
+  // g_type_init has been deprecated since version 2.35.
+#if !GLIB_CHECK_VERSION(2, 35, 0)
+  // GLib type system initialization is needed for gconf.
+  g_type_init();
 #endif
+#endif // defined(OS_LINUX) || defined(OS_OPENBSD)
   main_message_loop_ = message_loop;
   service_process_state_.reset(state);
   network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
