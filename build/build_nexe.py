@@ -186,11 +186,8 @@ class Builder(object):
 
     if self.is_pnacl_toolchain:
       self.tool_prefix = 'pnacl-'
-      # TODO(jvoung): get rid of tool_subdir after newlib rename (empty).
-      tool_subdir = toolname
       tooldir = '%s_pnacl' % self.osname
     else:
-      tool_subdir = ''
       tooldir = '%s_%s_%s' % (self.osname, mainarch, toolname)
 
     self.root_path = options.root
@@ -201,7 +198,7 @@ class Builder(object):
 
     # Set the toolchain directories
     self.toolchain = os.path.join(options.toolpath, tooldir)
-    self.toolbin = os.path.join(self.toolchain, tool_subdir, 'bin')
+    self.toolbin = os.path.join(self.toolchain, 'bin')
     self.toolstamp = os.path.join(self.toolchain, 'stamp.prep')
     if not IsFile(self.toolstamp):
       raise Error('Could not find toolchain prep stamp file: ' + self.toolstamp)
