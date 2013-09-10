@@ -586,8 +586,7 @@ StyleDifference RenderStyle::diff(const RenderStyle* other, unsigned& changedCon
     if ((visibility() == COLLAPSE) != (other->visibility() == COLLAPSE))
         return StyleDifferenceLayout;
 
-    if ((rareNonInheritedData->opacity == 1 && other->rareNonInheritedData->opacity < 1)
-        || (rareNonInheritedData->opacity < 1 && other->rareNonInheritedData->opacity == 1)) {
+    if (rareNonInheritedData->hasOpacity() != other->rareNonInheritedData->hasOpacity()) {
         // FIXME: We would like to use SimplifiedLayout here, but we can't quite do that yet.
         // We need to make sure SimplifiedLayout can operate correctly on RenderInlines (we will need
         // to add a selfNeedsSimplifiedLayout bit in order to not get confused and taint every line).
@@ -595,6 +594,9 @@ StyleDifference RenderStyle::diff(const RenderStyle* other, unsigned& changedCon
         // a full layout is necessary to keep floating object lists sane.
         return StyleDifferenceLayout;
     }
+
+    if (rareNonInheritedData->hasFilters() != other->rareNonInheritedData->hasFilters())
+        return StyleDifferenceLayout;
 
     if (!QuotesData::equals(rareInheritedData->quotes.get(), other->rareInheritedData->quotes.get()))
         return StyleDifferenceLayout;

@@ -288,4 +288,9 @@ bool StyleRareNonInheritedData::transitionDataEquivalent(const StyleRareNonInher
     return true;
 }
 
+bool StyleRareNonInheritedData::hasFilters() const
+{
+    return m_filter.get() && !m_filter->m_operations.isEmpty();
+}
+
 } // namespace WebCore
