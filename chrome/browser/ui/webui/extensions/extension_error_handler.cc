@@ -90,11 +90,11 @@ void ExtensionErrorHandler::HandleRequestFileSource(
 
   // Three required arguments: extension_id, path_suffix, and error_message.
   std::string extension_id;
-  base::FilePath::StringType path_suffix;
+  base::FilePath::StringType path_suffix_string;
   base::string16 error_message;
 
   if (!args->GetDictionary(0, &dict) ||
-      !dict->GetString(kPathSuffixKey, &path_suffix) ||
+      !dict->GetString(kPathSuffixKey, &path_suffix_string) ||
       !dict->GetString(ExtensionError::kExtensionIdKey, &extension_id) ||
       !dict->GetString(ExtensionError::kMessageKey, &error_message)) {
     NOTREACHED();
@@ -105,6 +105,13 @@ void ExtensionErrorHandler::HandleRequestFileSource(
       ExtensionSystem::Get(Profile::FromWebUI(web_ui()))->
           extension_service()->GetExtensionById(extension_id,
                                                 true /* include disabled */ );
+
+  // Under no circumstances should we ever need to reference a file outside of
+  // the extension's directory. If it tries to, abort.
+  base::FilePath path_suffix(path_suffix_string);
+  if (path_suffix.ReferencesParent())
+    return;
+
   base::FilePath path = extension->path().Append(path_suffix);
 
   // Setting the title and the error message is the same for all file types.
@@ -118,7 +125,7 @@ void ExtensionErrorHandler::HandleRequestFileSource(
   base::Closure closure;
   std::string* contents = NULL;
 
-  if (path_suffix == kManifestFilename) {
+  if (path_suffix_string == kManifestFilename) {
     std::string manifest_key;
     if (!dict->GetString(ManifestError::kManifestKeyKey, &manifest_key)) {
       NOTREACHED();

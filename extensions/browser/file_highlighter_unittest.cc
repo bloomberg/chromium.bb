@@ -95,4 +95,26 @@ TEST(ManifestHighlighterUnitTest, ManifestHighlighterUnitTest) {
   EXPECT_EQ(kInternationalFeature, international_feature.GetFeature());
 }
 
+TEST(SouceHighlighterUnitTest, SourceHighlighterUnitTest) {
+  const char kBasicSourceFile[] = "line one\nline two\nline three";
+
+  SourceHighlighter basic1(kBasicSourceFile, 1u);
+  EXPECT_EQ("line one", basic1.GetFeature());
+  SourceHighlighter basic2(kBasicSourceFile, 2u);
+  EXPECT_EQ("line two", basic2.GetFeature());
+  SourceHighlighter basic3(kBasicSourceFile, 3u);
+  EXPECT_EQ("line three", basic3.GetFeature());
+
+  const char kNoNewlineSourceFile[] = "thisisonelonglinewithnobreaksinit";
+
+  SourceHighlighter full_line(kNoNewlineSourceFile, 1u);
+  EXPECT_EQ(kNoNewlineSourceFile, full_line.GetFeature());
+
+  SourceHighlighter line_zero(kNoNewlineSourceFile, 0u);
+  EXPECT_EQ(EmptyString(), line_zero.GetFeature());
+
+  SourceHighlighter out_of_bounds(kNoNewlineSourceFile, 2u);
+  EXPECT_EQ(EmptyString(), out_of_bounds.GetFeature());
+}
+
 }  // namespace extensions

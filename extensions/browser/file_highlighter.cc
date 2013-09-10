@@ -203,8 +203,19 @@ SourceHighlighter::~SourceHighlighter() {
 }
 
 void SourceHighlighter::Parse(size_t line_number) {
-  for (size_t i = 1; i < line_number; ++i)
-    start_ = contents_.find('\n', start_) + 1;
+  // If line 0 is requested, highlight nothing.
+  if (line_number == 0) {
+    start_ = contents_.size();
+    return;
+  }
+
+  for (size_t i = 1; i < line_number; ++i) {
+    start_ = contents_.find('\n', start_);
+    if (start_ == std::string::npos)
+      break;
+    start_ += 1;
+  }
+
   end_ = contents_.find('\n', start_);
 
   // If we went off the end of the string (i.e., the line number was invalid),
