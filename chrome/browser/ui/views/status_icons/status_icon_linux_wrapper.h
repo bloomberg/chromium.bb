@@ -8,12 +8,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/status_icons/desktop_notification_balloon.h"
 #include "chrome/browser/status_icons/status_icon.h"
-#include "ui/linux_ui/linux_ui.h"
+#include "ui/views/linux_ui/status_icon_linux.h"
 
 // Wrapper class for StatusIconLinux that implements the standard StatusIcon
 // interface. Also handles callbacks from StatusIconLinux.
 class StatusIconLinuxWrapper : public StatusIcon,
-                               public StatusIconLinux::Delegate,
+                               public views::StatusIconLinux::Delegate,
                                public StatusIconMenuModel::Observer {
  public:
   virtual ~StatusIconLinuxWrapper();
@@ -48,12 +48,12 @@ class StatusIconLinuxWrapper : public StatusIcon,
  private:
   // A status icon wrapper should only be created by calling
   // CreateWrappedStatusIcon().
-  explicit StatusIconLinuxWrapper(StatusIconLinux* status_icon);
+  explicit StatusIconLinuxWrapper(views::StatusIconLinux* status_icon);
 
   // Notification balloon.
   DesktopNotificationBalloon notification_;
 
-  scoped_ptr<StatusIconLinux> status_icon_;
+  scoped_ptr<views::StatusIconLinux> status_icon_;
 
   StatusIconMenuModel* menu_model_;
 

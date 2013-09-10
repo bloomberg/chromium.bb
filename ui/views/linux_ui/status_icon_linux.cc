@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/linux_ui/status_icon_linux.h"
+#include "ui/views/linux_ui/status_icon_linux.h"
+
+namespace views {
 
 StatusIconLinux::Delegate::~Delegate() {
 }
@@ -15,3 +17,5 @@ StatusIconLinux::~StatusIconLinux() {
 
 void StatusIconLinux::RefreshPlatformContextMenu() {
 }
+
+}  // namespace views

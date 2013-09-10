@@ -18,7 +18,7 @@
         '../../../../ui/base/strings/ui_strings.gyp:ui_strings',
         '../../../../ui/ui.gyp:ui',
         '../../../../ui/ui.gyp:ui_resources',
-        '../../../../ui/linux_ui/linux_ui.gyp:linux_ui',
+        '../../../../ui/views/views.gyp:views',
         '../../../chrome_resources.gyp:chrome_extra_resources',
         '../../../chrome_resources.gyp:chrome_resources',
         '../../../chrome_resources.gyp:chrome_strings',

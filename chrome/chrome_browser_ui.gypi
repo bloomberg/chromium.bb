@@ -2674,7 +2674,6 @@
             # gtk2 is the only component that can interact with gtk2 in our new
             # world.
             'browser/ui/libgtk2ui/libgtk2ui.gyp:gtk2ui',
-            '../ui/linux_ui/linux_ui.gyp:linux_ui',
             '../build/linux/system.gyp:gio',
           ],
         }],

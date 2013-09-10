@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_LINUX_UI_STATUS_ICON_LINUX_H_
-#define UI_LINUX_UI_STATUS_ICON_LINUX_H_
+#ifndef UI_VIEWS_LINUX_UI_STATUS_ICON_LINUX_H_
+#define UI_VIEWS_LINUX_UI_STATUS_ICON_LINUX_H_
 
 #include "base/strings/string16.h"
-#include "ui/linux_ui/linux_ui_export.h"
+#include "ui/views/views_export.h"
 
 namespace gfx {
 class ImageSkia;
@@ -16,11 +16,13 @@ namespace ui {
 class MenuModel;
 }  // namespace ui
 
+namespace views {
+
 // Since liblinux_ui cannot have dependencies on any chrome browser components
 // we cannot inherit from StatusIcon. So we implement the necessary methods
 // and let a wrapper class implement the StatusIcon interface and defer the
 // callbacks to a delegate. For the same reason, do not use StatusIconMenuModel.
-class LINUX_UI_EXPORT StatusIconLinux {
+class VIEWS_EXPORT StatusIconLinux {
  public:
   class Delegate {
    public:
@@ -54,5 +56,7 @@ class LINUX_UI_EXPORT StatusIconLinux {
  private:
   Delegate* delegate_;
 };
+
+}  // namespace views
 
 #endif  // UI_LINUX_UI_STATUS_ICON_LINUX_H_

@@ -1,14 +1,14 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_LINUX_UI_LINUX_UI_H_
-#define UI_LINUX_UI_LINUX_UI_H_
+#ifndef UI_VIEWS_LINUX_UI_LINUX_UI_H_
+#define UI_VIEWS_LINUX_UI_LINUX_UI_H_
 
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/linux_ui/linux_ui_export.h"
-#include "ui/linux_ui/status_icon_linux.h"
 #include "ui/shell_dialogs/linux_shell_dialog.h"
+#include "ui/views/linux_ui/status_icon_linux.h"
+#include "ui/views/views_export.h"
 
 // The main entrypoint into Linux toolkit specific code. GTK code should only
 // be executed behind this interface.
@@ -19,6 +19,9 @@ class Image;
 
 namespace ui {
 class NativeTheme;
+}
+
+namespace views {
 
 // Adapter class with targets to render like different toolkits. Set by any
 // project that wants to do linux desktop native rendering.
@@ -27,10 +30,7 @@ class NativeTheme;
 // minimum) GTK2 and GTK3. LinuxUI::instance() should actually be a very
 // complex method that pokes around with dlopen against a libuigtk2.so, a
 // liuigtk3.so, etc.
-//
-// TODO(erg): This class should be folded into ui/views/ instead of living in
-// its own component once we've deleted out the GTK+ port.
-class LINUX_UI_EXPORT LinuxUI : public LinuxShellDialog {
+class VIEWS_EXPORT LinuxUI : public ui::LinuxShellDialog {
  public:
   virtual ~LinuxUI() {}
 
@@ -52,7 +52,7 @@ class LINUX_UI_EXPORT LinuxUI : public LinuxShellDialog {
 
   // Returns a NativeTheme that will provide system colors and draw system
   // style widgets.
-  virtual NativeTheme* GetNativeTheme() const = 0;
+  virtual ui::NativeTheme* GetNativeTheme() const = 0;
 
   // Returns whether we should be using the native theme provided by this
   // object by default.
@@ -72,6 +72,6 @@ class LINUX_UI_EXPORT LinuxUI : public LinuxShellDialog {
       const string16& tool_tip) const = 0;
 };
 
-}  // namespace ui
+}  // namespace views
 
-#endif  // UI_LINUX_UI_LINUX_UI_H_
+#endif  // UI_VIEWS_LINUX_UI_LINUX_UI_H_

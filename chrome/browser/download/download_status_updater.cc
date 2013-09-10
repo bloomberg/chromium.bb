@@ -10,7 +10,7 @@
 #include "base/stl_util.h"
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-#include "ui/linux_ui/linux_ui.h"
+#include "ui/views/linux_ui/linux_ui.h"
 #endif
 
 namespace {
@@ -137,7 +137,7 @@ void DownloadStatusUpdater::OnDownloadUpdated(
 void DownloadStatusUpdater::UpdateAppIconDownloadProgress(
     content::DownloadItem* download) {
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  const ui::LinuxUI* linux_ui = ui::LinuxUI::instance();
+  const views::LinuxUI* linux_ui = views::LinuxUI::instance();
   if (linux_ui) {
     float progress = 0;
     int download_count = 0;

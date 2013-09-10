@@ -395,17 +395,17 @@ bool Gtk2UI::IsStatusIconSupported() const {
   return AppIndicatorIcon::CouldOpen();
 }
 
-scoped_ptr<StatusIconLinux> Gtk2UI::CreateLinuxStatusIcon(
+scoped_ptr<views::StatusIconLinux> Gtk2UI::CreateLinuxStatusIcon(
     const gfx::ImageSkia& image,
     const string16& tool_tip) const {
   if (AppIndicatorIcon::CouldOpen()) {
     ++indicators_count;
-    return scoped_ptr<StatusIconLinux>(new AppIndicatorIcon(
+    return scoped_ptr<views::StatusIconLinux>(new AppIndicatorIcon(
         base::StringPrintf("%s%d", kAppIndicatorIdPrefix, indicators_count),
         image,
         tool_tip));
   } else {
-    return scoped_ptr<StatusIconLinux>();
+    return scoped_ptr<views::StatusIconLinux>();
   }
 }
 
@@ -1042,6 +1042,6 @@ void Gtk2UI::ClearAllThemeData() {
 
 }  // namespace libgtk2ui
 
-ui::LinuxUI* BuildGtk2UI() {
+views::LinuxUI* BuildGtk2UI() {
   return new libgtk2ui::Gtk2UI;
 }

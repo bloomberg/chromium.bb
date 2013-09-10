@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/libgtk2ui/libgtk2ui_export.h"
 #include "chrome/browser/ui/libgtk2ui/owned_widget_gtk2.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/linux_ui/linux_ui.h"
+#include "ui/views/linux_ui/linux_ui.h"
 
 typedef struct _GdkColor GdkColor;
 typedef struct _GtkStyle GtkStyle;
@@ -28,7 +28,7 @@ namespace libgtk2ui {
 
 // Interface to GTK2 desktop features.
 //
-class Gtk2UI : public ui::LinuxUI {
+class Gtk2UI : public views::LinuxUI {
  public:
   Gtk2UI();
   virtual ~Gtk2UI();
@@ -48,7 +48,7 @@ class Gtk2UI : public ui::LinuxUI {
   virtual void SetDownloadCount(int count) const OVERRIDE;
   virtual void SetProgressFraction(float percentage) const OVERRIDE;
   virtual bool IsStatusIconSupported() const OVERRIDE;
-  virtual scoped_ptr<StatusIconLinux> CreateLinuxStatusIcon(
+  virtual scoped_ptr<views::StatusIconLinux> CreateLinuxStatusIcon(
       const gfx::ImageSkia& image,
       const string16& tool_tip) const OVERRIDE;
 
@@ -170,6 +170,6 @@ class Gtk2UI : public ui::LinuxUI {
 // interface, because eventually this .so will be loaded through dlopen at
 // runtime so our main binary can conditionally load GTK2 or GTK3 or EFL or
 // QT or whatever.
-LIBGTK2UI_EXPORT ui::LinuxUI* BuildGtk2UI();
+LIBGTK2UI_EXPORT views::LinuxUI* BuildGtk2UI();
 
 #endif  // CHROME_BROWSER_UI_LIBGTK2UI_GTK2_UI_H_

@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/libgtk2ui/gtk2_signal.h"
 #include "ui/base/models/menu_model.h"
-#include "ui/linux_ui/status_icon_linux.h"
+#include "ui/views/linux_ui/status_icon_linux.h"
 
 typedef struct _AppIndicator AppIndicator;
 typedef struct _GtkWidget GtkWidget;
@@ -20,7 +20,7 @@ class ImageSkia;
 
 namespace libgtk2ui {
 
-class AppIndicatorIcon : public StatusIconLinux {
+class AppIndicatorIcon : public views::StatusIconLinux {
  public:
   // The id uniquely identifies the new status icon from other chrome status
   // icons.
@@ -32,7 +32,7 @@ class AppIndicatorIcon : public StatusIconLinux {
   // Indicates whether libappindicator so could be opened.
   static bool CouldOpen();
 
-  // Overridden from StatusIconLinux:
+  // Overridden from views::StatusIconLinux:
   virtual void SetImage(const gfx::ImageSkia& image) OVERRIDE;
   virtual void SetPressedImage(const gfx::ImageSkia& image) OVERRIDE;
   virtual void SetToolTip(const string16& tool_tip) OVERRIDE;

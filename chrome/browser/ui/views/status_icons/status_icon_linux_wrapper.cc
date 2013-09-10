@@ -1,11 +1,13 @@
-
 // Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/views/status_icons/status_icon_linux_wrapper.h"
 
-StatusIconLinuxWrapper::StatusIconLinuxWrapper(StatusIconLinux* status_icon)
+#include "ui/views/linux_ui/linux_ui.h"
+
+StatusIconLinuxWrapper::StatusIconLinuxWrapper(
+    views::StatusIconLinux* status_icon)
     : menu_model_(NULL) {
   status_icon_.reset(status_icon);
   status_icon_->set_delegate(this);
@@ -49,9 +51,9 @@ void StatusIconLinuxWrapper::OnMenuStateChanged() {
 StatusIconLinuxWrapper* StatusIconLinuxWrapper::CreateWrappedStatusIcon(
     const gfx::ImageSkia& image,
     const string16& tool_tip) {
-  const ui::LinuxUI* linux_ui = ui::LinuxUI::instance();
+  const views::LinuxUI* linux_ui = views::LinuxUI::instance();
   if (linux_ui) {
-    scoped_ptr<StatusIconLinux> status_icon =
+    scoped_ptr<views::StatusIconLinux> status_icon =
         linux_ui->CreateLinuxStatusIcon(image, tool_tip);
     if (status_icon.get())
       return new StatusIconLinuxWrapper(status_icon.release());

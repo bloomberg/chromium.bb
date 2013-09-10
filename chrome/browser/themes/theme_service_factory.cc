@@ -20,7 +20,7 @@
 
 #if defined(USE_AURA) && defined(OS_LINUX) && !defined(OS_CHROMEOS)
 #include "chrome/browser/themes/theme_service_aurax11.h"
-#include "ui/linux_ui/linux_ui.h"
+#include "ui/views/linux_ui/linux_ui.h"
 #endif
 
 // static
@@ -74,7 +74,7 @@ void ThemeServiceFactory::RegisterProfilePrefs(
 #if defined(TOOLKIT_GTK)
   default_uses_system_theme = GtkThemeService::DefaultUsesSystemTheme();
 #elif defined(USE_AURA) && defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  const ui::LinuxUI* linux_ui = ui::LinuxUI::instance();
+  const views::LinuxUI* linux_ui = views::LinuxUI::instance();
   if (linux_ui)
     default_uses_system_theme = linux_ui->GetDefaultUsesSystemTheme();
 #endif

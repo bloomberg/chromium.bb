@@ -10,7 +10,7 @@
 #include "chrome/browser/themes/custom_theme_supplier.h"
 #include "chrome/common/pref_names.h"
 #include "ui/gfx/image/image.h"
-#include "ui/linux_ui/linux_ui.h"
+#include "ui/views/linux_ui/linux_ui.h"
 
 namespace {
 
@@ -29,7 +29,7 @@ class NativeThemeX11 : public CustomThemeSupplier {
   virtual ~NativeThemeX11();
 
   // These pointers are not owned by us.
-  const ui::LinuxUI* const linux_ui_;
+  const views::LinuxUI* const linux_ui_;
   PrefService* const pref_service_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeThemeX11);
@@ -37,7 +37,7 @@ class NativeThemeX11 : public CustomThemeSupplier {
 
 NativeThemeX11::NativeThemeX11(PrefService* pref_service)
     : CustomThemeSupplier(NATIVE_X11),
-      linux_ui_(ui::LinuxUI::instance()),
+      linux_ui_(views::LinuxUI::instance()),
       pref_service_(pref_service) {}
 
 void NativeThemeX11::StartUsingTheme() {
