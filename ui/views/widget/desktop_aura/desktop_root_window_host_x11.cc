@@ -521,6 +521,35 @@ void DesktopRootWindowHostX11::FlashFrame(bool flash_frame) {
   NOTIMPLEMENTED();
 }
 
+void DesktopRootWindowHostX11::OnRootViewLayout() const {
+  if (!window_mapped_)
+    return;
+
+  XSizeHints hints;
+  long supplied_return;
+  XGetWMNormalHints(xdisplay_, xwindow_, &hints, &supplied_return);
+
+  gfx::Size minimum = native_widget_delegate_->GetMinimumSize();
+  if (minimum.IsEmpty()) {
+    hints.flags &= ~PMinSize;
+  } else {
+    hints.flags |= PMinSize;
+    hints.min_width = minimum.width();
+    hints.min_height = minimum.height();
+  }
+
+  gfx::Size maximum = native_widget_delegate_->GetMaximumSize();
+  if (maximum.IsEmpty()) {
+    hints.flags &= ~PMaxSize;
+  } else {
+    hints.flags |= PMaxSize;
+    hints.max_width = maximum.width();
+    hints.max_height = maximum.height();
+  }
+
+  XSetWMNormalHints(xdisplay_, xwindow_, &hints);
+}
+
 void DesktopRootWindowHostX11::OnNativeWidgetFocus() {
   native_widget_delegate_->AsWidget()->GetInputMethod()->OnFocus();
 }

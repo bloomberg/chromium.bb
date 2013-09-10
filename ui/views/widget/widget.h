@@ -676,6 +676,10 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // mouse location to refresh hovering status in the widget.
   void SynthesizeMouseMoveEvent();
 
+  // Called by our RootView after it has performed a Layout. Used to forward
+  // window sizing information to the window server on some platforms.
+  void OnRootViewLayout();
+
   // Notification that our owner is closing.
   // NOTE: this is not invoked for aura as it's currently not needed there.
   // Under aura menus close by way of activation getting reset when the owner

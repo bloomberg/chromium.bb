@@ -967,6 +967,10 @@ void Widget::SynthesizeMouseMoveEvent() {
   root_view_->OnMouseMoved(mouse_event);
 }
 
+void Widget::OnRootViewLayout() {
+  native_widget_->OnRootViewLayout();
+}
+
 void Widget::OnOwnerClosing() {
 }
 

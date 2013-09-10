@@ -696,6 +696,11 @@ ui::NativeTheme* DesktopNativeWidgetAura::GetNativeTheme() const {
   return DesktopRootWindowHost::GetNativeTheme(window_);
 }
 
+void DesktopNativeWidgetAura::OnRootViewLayout() const {
+  if (window_)
+    desktop_root_window_host_->OnRootViewLayout();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopNativeWidgetAura, aura::WindowDelegate implementation:
 

@@ -119,6 +119,7 @@ class VIEWS_EXPORT DesktopRootWindowHostX11 :
                               const gfx::ImageSkia& app_icon) OVERRIDE;
   virtual void InitModalType(ui::ModalType modal_type) OVERRIDE;
   virtual void FlashFrame(bool flash_frame) OVERRIDE;
+  virtual void OnRootViewLayout() const OVERRIDE;
   virtual void OnNativeWidgetFocus() OVERRIDE;
   virtual void OnNativeWidgetBlur() OVERRIDE;
 

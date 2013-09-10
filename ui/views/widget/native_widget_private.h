@@ -213,6 +213,7 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget {
   virtual void EndMoveLoop() = 0;
   virtual void SetVisibilityChangedAnimationsEnabled(bool value) = 0;
   virtual ui::NativeTheme* GetNativeTheme() const = 0;
+  virtual void OnRootViewLayout() const = 0;
 
   // Overridden from NativeWidget:
   virtual internal::NativeWidgetPrivate* AsNativeWidgetPrivate() OVERRIDE;

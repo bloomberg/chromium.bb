@@ -688,6 +688,9 @@ ui::NativeTheme* NativeWidgetAura::GetNativeTheme() const {
 #endif
 }
 
+void NativeWidgetAura::OnRootViewLayout() const {
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetAura, views::InputMethodDelegate implementation:
 

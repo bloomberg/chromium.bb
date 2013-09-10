@@ -456,6 +456,9 @@ ui::NativeTheme* NativeWidgetWin::GetNativeTheme() const {
   return ui::NativeTheme::instance();
 }
 
+void NativeWidgetWin::OnRootViewLayout() const {
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetWin, NativeWidget implementation:
 

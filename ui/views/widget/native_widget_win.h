@@ -146,6 +146,7 @@ class VIEWS_EXPORT NativeWidgetWin : public internal::NativeWidgetPrivate,
   virtual void EndMoveLoop() OVERRIDE;
   virtual void SetVisibilityChangedAnimationsEnabled(bool value) OVERRIDE;
   virtual ui::NativeTheme* GetNativeTheme() const OVERRIDE;
+  virtual void OnRootViewLayout() const OVERRIDE;
 
   // Overridden from NativeWidget:
   virtual ui::EventHandler* GetEventHandler() OVERRIDE;

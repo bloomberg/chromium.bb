@@ -160,6 +160,7 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   virtual void EndMoveLoop() OVERRIDE;
   virtual void SetVisibilityChangedAnimationsEnabled(bool value) OVERRIDE;
   virtual ui::NativeTheme* GetNativeTheme() const OVERRIDE;
+  virtual void OnRootViewLayout() const OVERRIDE;
 
   // Overridden from aura::WindowDelegate:
   virtual gfx::Size GetMinimumSize() const OVERRIDE;
