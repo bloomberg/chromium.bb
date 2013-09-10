@@ -32,6 +32,7 @@ enum StatusCode {
   kChromeNotReachable = 100,
   kNoSuchExecutionContext,
   kDisconnected,
+  kForbidden = 103,
 };
 
 // Represents a WebDriver status, which may be an error or ok.

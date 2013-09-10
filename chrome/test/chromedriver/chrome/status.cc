@@ -55,6 +55,8 @@ const char* DefaultMessageForStatusCode(StatusCode code) {
       return "chrome not reachable";
     case kDisconnected:
       return "disconnected";
+    case kForbidden:
+      return "forbidden";
     default:
       return "<unknown>";
   }

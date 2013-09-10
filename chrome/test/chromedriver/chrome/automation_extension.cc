@@ -24,7 +24,7 @@ Status AutomationExtension::CaptureScreenshot(std::string* screenshot) {
       base::TimeDelta::FromSeconds(10),
       &result);
   if (status.IsError())
-    return Status(kUnknownError, "cannot take screenshot", status);
+    return Status(status.code(), "cannot take screenshot", status);
   if (!result->GetAsString(screenshot))
     return Status(kUnknownError, "screenshot is not a string");
   return Status(kOk);

@@ -743,13 +743,15 @@ Status ExecuteScreenshot(
     if (status.IsError())
       return status;
     status = extension->CaptureScreenshot(&screenshot);
-    if (status.IsError())
-      return status;
-  } else {
-    Status status = web_view->CaptureScreenshot(&screenshot);
-    if (status.IsError())
+    // If the screenshot was forbidden, fallback to DevTools.
+    if (status.code() != kForbidden)
       return status;
   }
+
+  status = web_view->CaptureScreenshot(&screenshot);
+  if (status.IsError())
+    return status;
+
   value->reset(new base::StringValue(screenshot));
   return Status(kOk);
 }

@@ -24,6 +24,7 @@ class AutomationExtension {
   ~AutomationExtension();
 
   // Captures the visible part of the current tab as a base64-encoded PNG.
+  // Returns |kForbidden| for security restricted pages.
   Status CaptureScreenshot(std::string* screenshot);
 
   // Gets the position of the current window.
