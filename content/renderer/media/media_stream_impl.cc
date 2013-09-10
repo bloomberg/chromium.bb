@@ -700,8 +700,10 @@ bool MediaStreamImpl::GetAuthorizedDeviceInfoForAudioRenderer(
     }
   }
 
-  if (session_id_str.isEmpty() || !device_info)
+  if (session_id_str.isEmpty() || !device_info ||
+      !device_info->device.matched_output.sample_rate) {
     return false;
+  }
 
   base::StringToInt(UTF16ToUTF8(session_id_str), session_id);
   *output_sample_rate = device_info->device.matched_output.sample_rate;
