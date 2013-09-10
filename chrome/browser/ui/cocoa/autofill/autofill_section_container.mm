@@ -466,6 +466,7 @@ bool CompareInputRows(const autofill::DetailInput* input1,
   [label setStringValue:labelText];
   [label setEditable:NO];
   [label setBordered:NO];
+  [label setDrawsBackground:NO];
   [label sizeToFit];
   return label.autorelease();
 }
