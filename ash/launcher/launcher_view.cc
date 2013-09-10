@@ -684,8 +684,16 @@ void LauncherView::EndDrag(bool cancel) {
   // Either destroy the temporarily created item - or - make the item visible.
   if (drag_and_drop_item_pinned_ && cancel)
     delegate_->UnpinAppWithID(drag_and_drop_app_id_);
-  else if (drag_and_drop_view)
-    drag_and_drop_view->SetSize(pre_drag_and_drop_size_);
+  else if (drag_and_drop_view) {
+    if (cancel) {
+      // When a hosted drag gets canceled, the item can remain in the same slot
+      // and it might have moved within the bounds. In that case the item need
+      // to animate back to its correct location.
+      AnimateToIdealBounds();
+    } else {
+      drag_and_drop_view->SetSize(pre_drag_and_drop_size_);
+    }
+  }
 
   drag_and_drop_launcher_id_ = 0;
 }

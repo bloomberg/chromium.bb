@@ -432,7 +432,8 @@ void AppsGridView::EndDrag(bool cancel) {
   // EndDrag was called before if |drag_view_| is NULL.
   if (!drag_view_)
     return;
-
+  // Coming here a drag and drop was in progress.
+  bool landed_in_drag_and_drop_host = forward_events_to_drag_and_drop_host_;
   if (forward_events_to_drag_and_drop_host_) {
     forward_events_to_drag_and_drop_host_ = false;
     drag_and_drop_host_->EndDrag(cancel);
@@ -446,7 +447,17 @@ void AppsGridView::EndDrag(bool cancel) {
     // If we had a drag and drop proxy icon, we delete it and make the real
     // item visible again.
     drag_and_drop_host_->DestroyDragIconProxy();
-    HideView(drag_view_, false);
+    if (landed_in_drag_and_drop_host) {
+      // Move the item directly to the target location, avoiding the "zip back"
+      // animation if the user was pinning it to the shelf.
+      int i = drop_target_.slot;
+      gfx::Rect bounds = view_model_.ideal_bounds(i);
+      drag_view_->SetBoundsRect(bounds);
+    }
+    // Fade in slowly if it landed in the shelf.
+    SetViewHidden(drag_view_,
+             false /* hide */,
+             !landed_in_drag_and_drop_host /* animate */);
   }
 
   // The drag can be ended after the synchronous drag is created but before it
@@ -970,7 +981,9 @@ void AppsGridView::StartDragAndDropHostDrag(const gfx::Point& grid_location) {
                                            drag_view_,
                                            delta,
                                            kDragAndDropProxyScale);
-  HideView(drag_view_, true);
+  SetViewHidden(drag_view_,
+           true /* hide */,
+           true /* no animation */);
 }
 
 void AppsGridView::DispatchDragEventToDragAndDropHost(
@@ -1171,10 +1184,12 @@ void AppsGridView::OnAppListModelStatusChanged() {
   SchedulePaint();
 }
 
-void AppsGridView::HideView(views::View* view, bool hide) {
+void AppsGridView::SetViewHidden(views::View* view, bool hide, bool immediate) {
 #if defined(USE_AURA)
   ui::ScopedLayerAnimationSettings animator(view->layer()->GetAnimator());
-  animator.SetPreemptionStrategy(ui::LayerAnimator::IMMEDIATELY_SET_NEW_TARGET);
+  animator.SetPreemptionStrategy(
+      immediate ? ui::LayerAnimator::IMMEDIATELY_SET_NEW_TARGET :
+                  ui::LayerAnimator::BLEND_WITH_CURRENT_ANIMATION);
   view->layer()->SetOpacity(hide ? 0 : 1);
 #endif
 }
