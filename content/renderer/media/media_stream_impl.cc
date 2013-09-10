@@ -563,19 +563,6 @@ void MediaStreamImpl::FrameWillClose(WebKit::WebFrame* frame) {
       ++request_it;
     }
   }
-
-  // Free the potentially-cached audio renderer.  If we don't do this, the
-  // audio device will be held open after the tab has been closed even though
-  // it's not being used.
-  WebRtcAudioDeviceImpl* audio_device =
-      dependency_factory_->GetWebRtcAudioDevice();
-  if (audio_device) {
-    scoped_refptr<WebRtcAudioRenderer> renderer(audio_device->renderer());
-    if (renderer.get()) {
-      renderer->Stop();  // This will clear the dependency factory's pointer.
-      DCHECK(!audio_device->renderer().get());
-    }
-  }
 }
 
 scoped_refptr<VideoFrameProvider>
