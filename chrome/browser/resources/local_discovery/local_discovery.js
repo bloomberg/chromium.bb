@@ -22,7 +22,7 @@ cr.define('local_discovery', function() {
    * Prefix for printer management page URLs, relative to base cloud print URL.
    * @type {string}
    */
-  var PRINTER_MANAGEMENT_PAGE_PREFIX = '#printer/id/';
+  var PRINTER_MANAGEMENT_PAGE_PREFIX = '#printers/';
 
   /**
    * Map of service names to corresponding service objects.
