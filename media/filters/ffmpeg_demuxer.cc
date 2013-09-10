@@ -635,8 +635,6 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
 
   media_log_->SetDoubleProperty("max_duration", max_duration.InSecondsF());
   media_log_->SetDoubleProperty("start_time", start_time_.InSecondsF());
-  media_log_->SetDoubleProperty("total_bytes",
-                                static_cast<double>(filesize_in_bytes));
   media_log_->SetIntegerProperty("bitrate", bitrate_);
 
   status_cb.Run(PIPELINE_OK);

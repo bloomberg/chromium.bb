@@ -371,6 +371,10 @@ void BufferedDataSource::StartCallback(
     total_bytes_ = loader_->instance_size();
     streaming_ = !assume_fully_buffered_ &&
         (total_bytes_ == kPositionNotSpecified || !loader_->range_supported());
+
+    media_log_->SetDoubleProperty("total_bytes",
+                                  static_cast<double>(total_bytes_));
+    media_log_->SetBooleanProperty("streaming", streaming_);
   } else {
     loader_->Stop();
   }
@@ -381,8 +385,14 @@ void BufferedDataSource::StartCallback(
   if (stop_signal_received_)
     return;
 
-  if (success)
+  if (success) {
     UpdateHostState_Locked();
+    media_log_->SetBooleanProperty("single_origin", loader_->HasSingleOrigin());
+    media_log_->SetBooleanProperty("passed_cors_access_check",
+                                   loader_->DidPassCORSAccessCheck());
+    media_log_->SetBooleanProperty("range_header_supported",
+                                   loader_->range_supported());
+  }
 
   base::ResetAndReturn(&init_cb_).Run(success);
 }
