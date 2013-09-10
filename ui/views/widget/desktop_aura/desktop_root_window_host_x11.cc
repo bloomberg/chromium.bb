@@ -120,6 +120,7 @@ DesktopRootWindowHostX11::DesktopRootWindowHostX11(
       atom_cache_(xdisplay_, kAtomsToCache),
       window_mapped_(false),
       focus_when_shown_(false),
+      is_fullscreen_(false),
       current_cursor_(ui::kCursorNull),
       native_widget_delegate_(native_widget_delegate),
       desktop_native_widget_aura_(desktop_native_widget_aura) {
@@ -472,13 +473,14 @@ NonClientFrameView* DesktopRootWindowHostX11::CreateNonClientFrameView() {
 }
 
 void DesktopRootWindowHostX11::SetFullscreen(bool fullscreen) {
+  is_fullscreen_ = fullscreen;
   SetWMSpecState(fullscreen,
                  atom_cache_.GetAtom("_NET_WM_STATE_FULLSCREEN"),
                  None);
 }
 
 bool DesktopRootWindowHostX11::IsFullscreen() const {
-  return HasWMSpecProperty("_NET_WM_STATE_FULLSCREEN");
+  return is_fullscreen_;
 }
 
 void DesktopRootWindowHostX11::SetOpacity(unsigned char opacity) {
@@ -1307,6 +1309,8 @@ bool DesktopRootWindowHostX11::Dispatch(const base::NativeEvent& event) {
           // worse off since we'd otherwise be returning our maximized bounds).
           restored_bounds_ = previous_bounds_;
         }
+
+        is_fullscreen_ = HasWMSpecProperty("_NET_WM_STATE_FULLSCREEN");
 
         // Now that we have different window properties, we may need to
         // relayout the window. (The windows code doesn't need this because

@@ -219,6 +219,10 @@ private:
   // The window manager state bits.
   std::set< ::Atom> window_properties_;
 
+  // Local flag for fullscreen state to avoid a state mismatch between
+  // server and local window_properties_ during app-initiated fullscreen.
+  bool is_fullscreen_;
+
   // We are owned by the RootWindow, but we have to have a back pointer to it.
   aura::RootWindow* root_window_;
 
