@@ -285,7 +285,10 @@ int QuicHttpStream::OnDataReceived(const char* data, int length) {
   if (!response_headers_received_) {
     // Grow the read buffer if necessary.
     if (read_buf_->RemainingCapacity() < length) {
-      read_buf_->SetCapacity(read_buf_->capacity() + kHeaderBufInitialSize);
+      size_t additional_capacity = length - read_buf_->RemainingCapacity();
+      if (additional_capacity < kHeaderBufInitialSize)
+        additional_capacity = kHeaderBufInitialSize;
+      read_buf_->SetCapacity(read_buf_->capacity() + additional_capacity);
     }
     memcpy(read_buf_->data(), data, length);
     read_buf_->set_offset(read_buf_->offset() + length);

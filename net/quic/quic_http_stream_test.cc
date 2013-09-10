@@ -19,6 +19,7 @@
 #include "net/quic/quic_client_session.h"
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_connection_helper.h"
+#include "net/quic/spdy_utils.h"
 #include "net/quic/test_tools/mock_clock.h"
 #include "net/quic/test_tools/mock_crypto_client_stream_factory.h"
 #include "net/quic/test_tools/mock_random.h"
@@ -380,6 +381,54 @@ TEST_F(QuicHttpStreamTest, GetRequest) {
   EXPECT_EQ(OK, callback_.WaitForResult());
   ASSERT_TRUE(response_.headers.get());
   EXPECT_EQ(404, response_.headers->response_code());
+  EXPECT_TRUE(response_.headers->HasHeaderValue("Content-Type", "text/plain"));
+
+  // There is no body, so this should return immediately.
+  EXPECT_EQ(0, stream_->ReadResponseBody(read_buffer_.get(),
+                                         read_buffer_->size(),
+                                         callback_.callback()));
+  EXPECT_TRUE(stream_->IsResponseBodyComplete());
+  EXPECT_TRUE(AtEof());
+}
+
+// Regression test for http://crbug.com/288128
+TEST_F(QuicHttpStreamTest, GetRequestLargeResponse) {
+  SetRequestString("GET", "/");
+  AddWrite(SYNCHRONOUS, ConstructDataPacket(1, true, kFin, 0,
+                                            request_data_));
+  Initialize();
+
+  request_.method = "GET";
+  request_.url = GURL("http://www.google.com/");
+
+  EXPECT_EQ(OK, stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
+                                          net_log_, callback_.callback()));
+  EXPECT_EQ(OK, stream_->SendRequest(headers_, &response_,
+                                     callback_.callback()));
+  EXPECT_EQ(&response_, stream_->GetResponseInfo());
+
+  // Ack the request.
+  scoped_ptr<QuicEncryptedPacket> ack(ConstructAckPacket(1, 0, 0));
+  ProcessPacket(*ack);
+
+  EXPECT_EQ(ERR_IO_PENDING,
+            stream_->ReadResponseHeaders(callback_.callback()));
+
+  SpdyHeaderBlock headers;
+  headers[":status"] = "200 OK";
+  headers[":version"] = "HTTP/1.1";
+  headers["content-type"] = "text/plain";
+  headers["big6"] = std::string(10000, 'x');  // Lots of x's.
+
+  std::string response = SpdyUtils::SerializeUncompressedHeaders(headers);
+  EXPECT_LT(4096u, response.length());
+  stream_->OnDataReceived(response.data(), response.length());
+  stream_->OnClose(QUIC_NO_ERROR);
+
+  // Now that the headers have been processed, the callback will return.
+  EXPECT_EQ(OK, callback_.WaitForResult());
+  ASSERT_TRUE(response_.headers.get());
+  EXPECT_EQ(200, response_.headers->response_code());
   EXPECT_TRUE(response_.headers->HasHeaderValue("Content-Type", "text/plain"));
 
   // There is no body, so this should return immediately.
