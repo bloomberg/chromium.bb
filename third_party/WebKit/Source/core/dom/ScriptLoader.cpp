@@ -77,9 +77,9 @@ ScriptLoader::~ScriptLoader()
     stopLoadRequest();
 }
 
-void ScriptLoader::insertedInto(ContainerNode* insertionPoint)
+void ScriptLoader::didNotifySubtreeInsertionsToDocument()
 {
-    if (insertionPoint->inDocument() && !m_parserInserted)
+    if (!m_parserInserted)
         prepareScript(); // FIXME: Provide a real starting line number here.
 }
 
