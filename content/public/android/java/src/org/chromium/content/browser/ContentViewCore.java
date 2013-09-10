@@ -27,6 +27,7 @@ import android.text.Editable;
 import android.util.Log;
 import android.util.Pair;
 import android.view.ActionMode;
+import android.view.HapticFeedbackConstants;
 import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -2428,6 +2429,12 @@ import java.util.Map;
             } else {
                 mStartHandlePoint.setLocalDip(x2, y2);
                 mEndHandlePoint.setLocalDip(x1, y1);
+            }
+
+            if (getSelectionHandleController().isShowing()) {
+                // TODO(cjhopman): Remove this when there is a better signal that long press caused
+                // a selection. See http://crbug.com/150151.
+                mContainerView.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
             }
 
             getSelectionHandleController().onSelectionChanged(anchorDir, focusDir);
