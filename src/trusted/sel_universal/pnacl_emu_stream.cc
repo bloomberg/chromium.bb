@@ -75,7 +75,12 @@ bool PnaclStreamFile(NaClCommandLoop* ncl, FILE* input_file,
     }
     if (SendDataChunk(ncl, static_cast<nacl_abi_size_t>(data_read),
                       data.get())) {
-      return false;
+      // If SendDataChunkFails, just return immediately, but don't fail.
+      // This will cause the final RPC to be run by the script to get the
+      // error string.
+      NaClLog(LOG_ERROR, "stream_file: SendDataChunk failed, but returning"
+                         " without failing. Expect call to StreamEnd.");
+      return true;
     }
     data_sent += data_read;
   }

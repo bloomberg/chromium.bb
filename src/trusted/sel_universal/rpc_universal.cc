@@ -539,14 +539,15 @@ static bool HandleRpc(NaClCommandLoop* ncl, const vector<string>& args) {
   fflush(stdout);
   fflush(stderr);
 
-  if (!ncl->InvokeNexeRpc(signature, inv, outv)) {
-    return false;
-  }
+  const bool rpc_result = ncl->InvokeNexeRpc(signature, inv, outv);
 
   printf("rpc call complete %s\n", signature.c_str());
   if (show_results) {
     ncl->DumpArgsAndResults(empty, outv);
   }
+
+  if (!rpc_result)
+    return false;
 
   // save output into variables
   for (size_t i = 0; outv[i] != 0; ++i) {
