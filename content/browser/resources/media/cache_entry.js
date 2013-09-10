@@ -176,6 +176,12 @@ cr.define('media', function() {
      * this file.
      */
     generateDetails: function() {
+      function makeElement(tag, content) {
+        var toReturn = document.createElement(tag);
+        toReturn.textContent = content;
+        return toReturn;
+      }
+
       this.details_.id = this.key;
       this.summaryText_.textContent = this.key || 'Unknown File';
 
@@ -188,8 +194,8 @@ cr.define('media', function() {
       this.detailTable_.appendChild(body);
 
       var headerRow = document.createElement('tr');
-      headerRow.appendChild(media.makeElement('th', 'Read From Cache'));
-      headerRow.appendChild(media.makeElement('th', 'Written To Cache'));
+      headerRow.appendChild(makeElement('th', 'Read From Cache'));
+      headerRow.appendChild(makeElement('th', 'Written To Cache'));
       header.appendChild(headerRow);
 
       var footerRow = document.createElement('tr');
@@ -209,8 +215,8 @@ cr.define('media', function() {
       var length = Math.max(read.length, written.length);
       for (var i = 0; i < length; i++) {
         var row = document.createElement('tr');
-        row.appendChild(media.makeElement('td', read[i] || ''));
-        row.appendChild(media.makeElement('td', written[i] || ''));
+        row.appendChild(makeElement('td', read[i] || ''));
+        row.appendChild(makeElement('td', written[i] || ''));
         body.appendChild(row);
       }
 

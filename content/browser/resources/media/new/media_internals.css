@@ -18,6 +18,8 @@ table {
 }
 td {
   border: 1px solid black;
+  word-wrap: break-word;
+  max-width: 200px;
 }
 thead {
   color: rgb(50,50,50);
@@ -43,7 +45,6 @@ h3 {
   padding: 0;
   padding-left: 25px;
   margin: 0;
-  max-height: 100%;
 }
 
 #list-wrapper {
@@ -52,7 +53,6 @@ h3 {
   justify-content: space-between;
   align-items: flex-start;
   align-content: stretch;
-  height: 100%;
 }
 
 #player-list-wrapper,
@@ -88,4 +88,8 @@ h3 {
 
 #log-wrapper > thead {
   position: fixed;
+}
+
+#graphs li {
+  list-style-type: none;
 }

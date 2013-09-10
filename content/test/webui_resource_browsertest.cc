@@ -12,6 +12,7 @@
 #include "content/test/content_browser_test.h"
 #include "content/test/content_browser_test_utils.h"
 #include "grit/content_resources.h"
+#include "grit/webui_resources.h"
 #include "net/base/net_util.h"
 
 namespace content {
@@ -32,6 +33,7 @@ class WebUIResourceBrowserTest : public ContentBrowserTest {
   }
 
   void RunMediaInternalsTest(const base::FilePath::CharType* file) {
+    AddLibrary(IDR_WEBUI_JS_CR);
     AddLibrary(IDR_MEDIA_INTERNALS_NEW_JS);
 
     base::FilePath path;

@@ -8,13 +8,35 @@
 var media = (function() {
   'use strict';
 
-  var manager_ = null;
+  var manager = null;
+
+  // A number->string mapping that is populated through the backend that
+  // describes the phase that the network entity is in.
+  var eventPhases = {};
+
+  // A number->string mapping that is populated through the backend that
+  // describes the type of event sent from the network.
+  var eventTypes = {};
+
+  // A mapping of number->CacheEntry where the number is a unique id for that
+  // network request.
+  var cacheEntries = {};
+
+  // A mapping of url->CacheEntity where the url is the url of the resource.
+  var cacheEntriesByKey = {};
+
+  var requrestURLs = {};
+
+  var media = {
+    BAR_WIDTH: 200,
+    BAR_HEIGHT: 25
+  };
 
   /**
    * Users of |media| must call initialize prior to calling other methods.
    */
-  media.initialize = function(manager) {
-    manager_ = manager;
+  media.initialize = function(theManager) {
+    manager = theManager;
   };
 
   media.onReceiveEverything = function(everything) {
@@ -23,14 +45,80 @@ var media = (function() {
     }
   };
 
-  media.onNetUpdate = function(update) {
-    // TODO(tyoverby): Implement
+  media.onReceiveConstants = function(constants) {
+    for (var key in constants.eventTypes) {
+      var value = constants.eventTypes[key];
+      eventTypes[value] = key;
+    }
+
+    for (var key in constants.eventPhases) {
+      var value = constants.eventPhases[key];
+      eventPhases[value] = key;
+    }
+  };
+
+  media.cacheForUrl = function(url) {
+    return cacheEntriesByKey[url];
+  };
+
+  media.onNetUpdate = function(updates) {
+    updates.forEach(function(update) {
+      var id = update.source.id;
+      if (!cacheEntries[id])
+        cacheEntries[id] = new media.CacheEntry;
+
+      switch (eventPhases[update.phase] + '.' + eventTypes[update.type]) {
+        case 'PHASE_BEGIN.DISK_CACHE_ENTRY_IMPL':
+          var key = update.params.key;
+
+          // Merge this source with anything we already know about this key.
+          if (cacheEntriesByKey[key]) {
+            cacheEntriesByKey[key].merge(cacheEntries[id]);
+            cacheEntries[id] = cacheEntriesByKey[key];
+          } else {
+            cacheEntriesByKey[key] = cacheEntries[id];
+          }
+          cacheEntriesByKey[key].key = key;
+          break;
+
+        case 'PHASE_BEGIN.SPARSE_READ':
+          cacheEntries[id].readBytes(update.params.offset,
+                                      update.params.buff_len);
+          cacheEntries[id].sparse = true;
+          break;
+
+        case 'PHASE_BEGIN.SPARSE_WRITE':
+          cacheEntries[id].writeBytes(update.params.offset,
+                                       update.params.buff_len);
+          cacheEntries[id].sparse = true;
+          break;
+
+        case 'PHASE_BEGIN.URL_REQUEST_START_JOB':
+          requrestURLs[update.source.id] = update.params.url;
+          break;
+
+        case 'PHASE_NONE.HTTP_TRANSACTION_READ_RESPONSE_HEADERS':
+          // Record the total size of the file if this was a range request.
+          var range = /content-range:\s*bytes\s*\d+-\d+\/(\d+)/i.exec(
+              update.params.headers);
+          var key = requrestURLs[update.source.id];
+          delete requrestURLs[update.source.id];
+          if (range && key) {
+            if (!cacheEntriesByKey[key]) {
+              cacheEntriesByKey[key] = new media.CacheEntry;
+              cacheEntriesByKey[key].key = key;
+            }
+            cacheEntriesByKey[key].size = range[1];
+          }
+          break;
+      }
+    });
   };
 
   media.onRendererTerminated = function(renderId) {
-    util.object.forEach(manager_.players_, function(playerInfo, id) {
+    util.object.forEach(manager.players_, function(playerInfo, id) {
       if (playerInfo.properties['render_id'] == renderId) {
-        manager_.removePlayer(id);
+        manager.removePlayer(id);
       }
     });
   };
@@ -40,18 +128,18 @@ var media = (function() {
   media.addAudioStream = function(event) {
     switch (event.status) {
       case 'created':
-        manager_.addAudioStream(event.id);
-        manager_.updateAudioStream(event.id, { 'playing': event.playing });
+        manager.addAudioStream(event.id);
+        manager.updateAudioStream(event.id, { 'playing': event.playing });
         break;
       case 'closed':
-        manager_.removeAudioStream(event.id);
+        manager.removeAudioStream(event.id);
         break;
     }
   };
 
   media.updateAudioStream = function(stream) {
-    manager_.addAudioStream(stream.id);
-    manager_.updateAudioStream(stream.id, stream);
+    manager.addAudioStream(stream.id);
+    manager.updateAudioStream(stream.id, stream);
   };
 
   media.onItemDeleted = function() {
@@ -61,7 +149,7 @@ var media = (function() {
   };
 
   media.onPlayerOpen = function(id, timestamp) {
-    manager_.addPlayer(id, timestamp);
+    manager.addPlayer(id, timestamp);
   };
 
   media.onMediaEvent = function(event) {
@@ -70,9 +158,9 @@ var media = (function() {
     // Although this gets called on every event, there is nothing we can do
     // because there is no onOpen event.
     media.onPlayerOpen(source);
-    manager_.updatePlayerInfoNoRecord(
+    manager.updatePlayerInfoNoRecord(
         source, event.ticksMillis, 'render_id', event.renderer);
-    manager_.updatePlayerInfoNoRecord(
+    manager.updatePlayerInfoNoRecord(
         source, event.ticksMillis, 'player_id', event.player);
 
     var propertyCount = 0;
@@ -85,19 +173,23 @@ var media = (function() {
           key === 'buffer_end' ||
           key === 'buffer_current' ||
           key === 'is_downloading_data') {
-        manager_.updatePlayerInfoNoRecord(
+        manager.updatePlayerInfoNoRecord(
             source, event.ticksMillis, key, value);
       } else {
-        manager_.updatePlayerInfo(source, event.ticksMillis, key, value);
+        manager.updatePlayerInfo(source, event.ticksMillis, key, value);
       }
       propertyCount += 1;
     });
 
     if (propertyCount === 0) {
-      manager_.updatePlayerInfo(
+      manager.updatePlayerInfo(
           source, event.ticksMillis, 'EVENT', event.type);
     }
   };
 
+  // |chrome| is not defined during tests.
+  if (window.chrome && window.chrome.send) {
+    chrome.send('getEverything');
+  }
   return media;
 }());
