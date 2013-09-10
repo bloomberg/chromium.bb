@@ -31,19 +31,6 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#if defined(OS_WIN)
-#define USB_KEYMAP(usb, xkb, win, mac, code) {usb, win, code}
-#elif defined(OS_LINUX)
-#define USB_KEYMAP(usb, xkb, win, mac, code) {usb, xkb, code}
-#elif defined(OS_MACOSX)
-#define USB_KEYMAP(usb, xkb, win, mac, code) {usb, mac, code}
-#else
-#define USB_KEYMAP(usb, xkb, win, mac, code) {usb, 0, code}
-#endif
-#include "ui/base/keycodes/usb_keycode_map.h"
-#undef USB_KEYMAP
-
 #include "ui/base/resource/resource_bundle.h"
 
 static const int kDefaultWsPort = 8880;
@@ -133,15 +120,14 @@ bool ExecuteScriptHelper(RenderViewHost* render_view_host,
 }
 
 void BuildSimpleWebKeyEvent(WebKit::WebInputEvent::Type type,
-                            ui::KeyboardCode key_code,
-                            int native_key_code,
+                            ui::KeyboardCode key,
                             bool control,
                             bool shift,
                             bool alt,
                             bool command,
                             NativeWebKeyboardEvent* event) {
-  event->nativeKeyCode = native_key_code;
-  event->windowsKeyCode = key_code;
+  event->nativeKeyCode = 0;
+  event->windowsKeyCode = key;
   event->setKeyIdentifierFromWindowsKeyCode();
   event->type = type;
   event->modifiers = 0;
@@ -151,8 +137,8 @@ void BuildSimpleWebKeyEvent(WebKit::WebInputEvent::Type type,
 
   if (type == WebKit::WebInputEvent::Char ||
       type == WebKit::WebInputEvent::RawKeyDown) {
-    event->text[0] = key_code;
-    event->unmodifiedText[0] = key_code;
+    event->text[0] = key;
+    event->unmodifiedText[0] = key;
   }
 
   if (control)
@@ -279,57 +265,26 @@ void SimulateMouseEvent(WebContents* web_contents,
 }
 
 void SimulateKeyPress(WebContents* web_contents,
-                      ui::KeyboardCode key_code,
+                      ui::KeyboardCode key,
                       bool control,
                       bool shift,
                       bool alt,
                       bool command) {
-  SimulateKeyPressWithCode(
-      web_contents, key_code, NULL, control, shift, alt, command);
-}
-
-void SimulateKeyPressWithCode(WebContents* web_contents,
-                              ui::KeyboardCode key_code,
-                              const char* code,
-                              bool control,
-                              bool shift,
-                              bool alt,
-                              bool command) {
-  int native_key_code = CodeToNativeKeycode(code);
-
   NativeWebKeyboardEvent event_down;
   BuildSimpleWebKeyEvent(
-      WebKit::WebInputEvent::RawKeyDown,
-      key_code,
-      native_key_code,
-      control,
-      shift,
-      alt,
-      command,
+      WebKit::WebInputEvent::RawKeyDown, key, control, shift, alt, command,
       &event_down);
   web_contents->GetRenderViewHost()->ForwardKeyboardEvent(event_down);
 
   NativeWebKeyboardEvent char_event;
   BuildSimpleWebKeyEvent(
-      WebKit::WebInputEvent::Char,
-      key_code,
-      native_key_code,
-      control,
-      shift,
-      alt,
-      command,
+      WebKit::WebInputEvent::Char, key, control, shift, alt, command,
       &char_event);
   web_contents->GetRenderViewHost()->ForwardKeyboardEvent(char_event);
 
   NativeWebKeyboardEvent event_up;
   BuildSimpleWebKeyEvent(
-      WebKit::WebInputEvent::KeyUp,
-      key_code,
-      native_key_code,
-      control,
-      shift,
-      alt,
-      command,
+      WebKit::WebInputEvent::KeyUp, key, control, shift, alt, command,
       &event_up);
   web_contents->GetRenderViewHost()->ForwardKeyboardEvent(event_up);
 }

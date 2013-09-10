@@ -33,8 +33,6 @@ TEST(UsbKeycodeMap, Basic) {
   // Verify that the first element in the table is the "invalid" code.
   EXPECT_EQ(InvalidUsbKeycode(), usb_keycode_map[0].usb_keycode);
   EXPECT_EQ(InvalidNativeKeycode(), usb_keycode_map[0].native_keycode);
-  EXPECT_EQ(InvalidKeyboardEventCode(), "Unidentified");
-  EXPECT_EQ(InvalidNativeKeycode(), CodeToNativeKeycode("Unidentified"));
 
   // Verify that there are no duplicate entries in the mapping.
   std::map<uint32_t, uint16_t> usb_to_native;
@@ -47,18 +45,6 @@ TEST(UsbKeycodeMap, Basic) {
     // Verify UsbKeycodeToNativeKeycode works for this key.
     EXPECT_EQ(usb_keycode_map[i].native_keycode,
               UsbKeycodeToNativeKeycode(usb_keycode_map[i].usb_keycode));
-
-    // Verify CodeToNativeKeycode and NativeKeycodeToCode work correctly.
-    if (usb_keycode_map[i].code) {
-      EXPECT_EQ(usb_keycode_map[i].native_keycode,
-                CodeToNativeKeycode(usb_keycode_map[i].code));
-      EXPECT_EQ(usb_keycode_map[i].code,
-                NativeKeycodeToCode(usb_keycode_map[i].native_keycode));
-    }
-    else {
-      EXPECT_EQ(InvalidNativeKeycode(),
-                CodeToNativeKeycode(usb_keycode_map[i].code));
-    }
 
     // Verify that the USB or native codes aren't duplicated.
     EXPECT_EQ(0U, usb_to_native.count(usb_keycode_map[i].usb_keycode))
