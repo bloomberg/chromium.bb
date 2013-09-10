@@ -6731,6 +6731,25 @@
    fun:_ZN3net10URLRequest21NotifyResponseStartedEv
 }
 {
+   bug_245714c
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7content17WorkerServiceImplC1Ev
+   fun:_ZN22DefaultSingletonTraitsIN7content17WorkerServiceImplEE3NewEv
+   fun:_ZN9SingletonIN7content17WorkerServiceImplE22DefaultSingletonTraitsIS1_ES1_E3getEv
+   fun:_ZN7content17WorkerServiceImpl11GetInstanceEv
+   fun:_ZN7content22ResourceRequestDetailsC1EPKN3net10URLRequestEi
+   fun:_ZN7content23ResourceRedirectDetailsC1EPKN3net10URLRequestEiRK4GURL
+   fun:_ZN7content26ResourceDispatcherHostImpl18DidReceiveRedirectEPNS_14ResourceLoaderERK4GURL
+   fun:_ZN7content14ResourceLoader18OnReceivedRedirectEPN3net10URLRequestERK4GURLPb
+   fun:_ZN3net10URLRequest22NotifyReceivedRedirectERK4GURLPb
+   fun:_ZN3net13URLRequestJob21NotifyHeadersCompleteEv
+   fun:_ZN3net17URLRequestHttpJob21NotifyHeadersCompleteEv
+   fun:_ZN3net17URLRequestHttpJob14SaveNextCookieEv
+   fun:_ZN3net17URLRequestHttpJob35SaveCookiesAndNotifyHeadersCompleteEi
+   fun:_ZN3net17URLRequestHttpJob16OnStartCompletedEi
+}
+{
    bug_245828
    Memcheck:Leak
    fun:_Znw*
