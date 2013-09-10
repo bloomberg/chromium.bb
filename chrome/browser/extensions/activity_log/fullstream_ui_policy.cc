@@ -282,32 +282,6 @@ void FullStreamUIPolicy::DoRemoveURLs(const std::vector<GURL>& restrict_urls) {
   }
 }
 
-void FullStreamUIPolicy::DoRemoveExtensionData(
-    const std::string& extension_id) {
-  if (extension_id.empty())
-    return;
-
-  sql::Connection* db = GetDatabaseConnection();
-  if (!db) {
-    LOG(ERROR) << "Unable to connect to database";
-    return;
-  }
-
-  // Make sure any queued in memory are sent to the database before cleaning.
-  activity_database()->AdviseFlush(ActivityDatabase::kFlushImmediately);
-
-  std::string sql_str = base::StringPrintf(
-      "DELETE FROM %s WHERE extension_id=?", kTableName);
-  sql::Statement statement(
-      db->GetCachedStatement(sql::StatementID(SQL_FROM_HERE), sql_str.c_str()));
-  statement.BindString(0, extension_id);
-  if (!statement.Run()) {
-    LOG(ERROR) << "Removing URLs for extension "
-               << extension_id << "from database failed: "
-               << statement.GetSQLStatement();
-  }
-}
-
 void FullStreamUIPolicy::DoDeleteDatabase() {
   sql::Connection* db = GetDatabaseConnection();
   if (!db) {
@@ -375,11 +349,6 @@ void FullStreamUIPolicy::ReadFilteredData(
 
 void FullStreamUIPolicy::RemoveURLs(const std::vector<GURL>& restrict_urls) {
   ScheduleAndForget(this, &FullStreamUIPolicy::DoRemoveURLs, restrict_urls);
-}
-
-void FullStreamUIPolicy::RemoveExtensionData(const std::string& extension_id) {
-  ScheduleAndForget(
-      this, &FullStreamUIPolicy::DoRemoveExtensionData, extension_id);
 }
 
 void FullStreamUIPolicy::DeleteDatabase() {

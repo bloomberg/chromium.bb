@@ -926,63 +926,6 @@ TEST_F(CountingPolicyTest, RemoveSpecificURLs) {
   policy->Close();
 }
 
-TEST_F(CountingPolicyTest, RemoveExtensionData) {
-  CountingPolicy* policy = new CountingPolicy(profile_.get());
-
-  // Use a mock clock to ensure that events are not recorded on the wrong day
-  // when the test is run close to local midnight.
-  base::SimpleTestClock* mock_clock = new base::SimpleTestClock();
-  mock_clock->SetNow(base::Time::Now().LocalMidnight() +
-                     base::TimeDelta::FromHours(12));
-  policy->SetClockForTesting(scoped_ptr<base::Clock>(mock_clock));
-
-  // Record some actions
-  scoped_refptr<Action> action = new Action("deleteextensiondata",
-                                            mock_clock->Now(),
-                                            Action::ACTION_DOM_ACCESS,
-                                            "lets");
-  action->mutable_args()->AppendString("vamoose");
-  action->set_page_title("Google");
-  action->set_arg_url(GURL("http://www.google.com"));
-  policy->ProcessAction(action);
-  policy->ProcessAction(action);
-  policy->ProcessAction(action);
-
-  scoped_refptr<Action> action2 = new Action("dontdelete",
-                                             mock_clock->Now(),
-                                             Action::ACTION_DOM_ACCESS,
-                                             "lets");
-  action->mutable_args()->AppendString("vamoose");
-  action->set_page_title("Google");
-  action->set_arg_url(GURL("http://www.google.com"));
-  policy->ProcessAction(action2);
-
-  policy->Flush();
-  policy->RemoveExtensionData("deleteextensiondata");
-
-  CheckReadFilteredData(
-      policy,
-      "deleteextensiondata",
-      Action::ACTION_ANY,
-      "",
-      "",
-      "",
-      -1,
-      base::Bind(
-          &CountingPolicyTest::RetrieveActions_FetchFilteredActions0));
-
-  CheckReadFilteredData(
-      policy,
-      "dontdelete",
-      Action::ACTION_ANY,
-      "",
-      "",
-      "",
-      -1,
-      base::Bind(
-          &CountingPolicyTest::RetrieveActions_FetchFilteredActions1));
-}
-
 TEST_F(CountingPolicyTest, DeleteActions) {
   CountingPolicy* policy = new CountingPolicy(profile_.get());
   // Disable row expiration for this test by setting a time before any actions

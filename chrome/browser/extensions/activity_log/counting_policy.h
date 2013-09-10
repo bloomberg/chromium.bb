@@ -48,9 +48,6 @@ class CountingPolicy : public ActivityLogDatabasePolicy {
   // Clean the URL data stored for this policy.
   virtual void RemoveURLs(const std::vector<GURL>&) OVERRIDE;
 
-  // Clean the data related to this extension for this policy.
-  virtual void RemoveExtensionData(const std::string& extension_id) OVERRIDE;
-
   // Delete everything in the database.
   virtual void DeleteDatabase() OVERRIDE;
 
@@ -91,10 +88,6 @@ class CountingPolicy : public ActivityLogDatabasePolicy {
   // The implementation of RemoveURLs; this must only run on the database
   // thread.
   void DoRemoveURLs(const std::vector<GURL>& restrict_urls);
-
-  // The implementation of RemoveExtensionData; this must only run on the
-  // database thread.
-  void DoRemoveExtensionData(const std::string& extension_id);
 
   // The implementation of DeleteDatabase; called on the database thread.
   void DoDeleteDatabase();
