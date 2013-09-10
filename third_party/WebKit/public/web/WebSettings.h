@@ -182,6 +182,7 @@ public:
     virtual void setWebAudioEnabled(bool) = 0;
     virtual void setWebGLErrorsToConsoleEnabled(bool) = 0;
     virtual void setWebSecurityEnabled(bool) = 0;
+    virtual void setWideViewportQuirkEnabled(bool) = 0;
     virtual void setXSSAuditorEnabled(bool) = 0;
 
     // DEPRECATED: Delete after Chromium-side calls deleted.

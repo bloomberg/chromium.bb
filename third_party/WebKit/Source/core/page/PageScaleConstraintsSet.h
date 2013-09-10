@@ -49,7 +49,7 @@ public:
     // is enabled.
     const PageScaleConstraints& pageDefinedConstraints() const { return m_pageDefinedConstraints; }
     void updatePageDefinedConstraints(const ViewportArguments&, IntSize viewSize);
-    void adjustPageDefinedConstraintsForAndroidWebView(const ViewportArguments&, IntSize viewSize, int layoutFallbackWidth, float deviceScaleFactor, bool useWideViewport, bool loadWithOverviewMode);
+    void adjustForAndroidWebViewQuirks(const ViewportArguments&, IntSize viewSize, int layoutFallbackWidth, float deviceScaleFactor, bool supportTargetDensityDPI, bool wideViewportQuirkEnabled, bool useWideViewport, bool loadWithOverviewMode);
 
     // Constraints may also be set from Chromium -- this overrides any
     // page-defined values.
