@@ -29,16 +29,14 @@ PrivetNotificationServiceFactory::~PrivetNotificationServiceFactory() {
 BrowserContextKeyedService*
 PrivetNotificationServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
-  return new PrivetNotificationService(
-      profile, g_browser_process->notification_ui_manager());
+  return new PrivetNotificationService(profile);
 }
 
 bool
 PrivetNotificationServiceFactory::ServiceIsCreatedWithBrowserContext() const {
-  // TODO(vitalybuka): re-enable after fixing broken tests.
-  return false;
-  return !CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableDeviceDiscovery);
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  return !command_line->HasSwitch(switches::kDisableDeviceDiscovery) &&
+      !command_line->HasSwitch(switches::kDisableDeviceDiscoveryNotifications);
 }
 
 bool PrivetNotificationServiceFactory::ServiceIsNULLWhileTesting() const {
