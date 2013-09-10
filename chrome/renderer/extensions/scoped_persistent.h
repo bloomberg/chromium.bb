@@ -40,20 +40,21 @@ class ScopedPersistent {
     handle_.Clear();
   }
 
-  bool IsEmpty() const {
-    return handle_.IsEmpty();
+  v8::Handle<T> operator->() const {
+    return get();
+  }
+
+  // TODO(dcarney): Remove this function
+  // This is an unsafe access to the underlying handle
+  v8::Handle<T> get() const {
+    return *reinterpret_cast<v8::Handle<T>*>(
+      const_cast<v8::Persistent<T>* >(&handle_));
   }
 
   v8::Handle<T> NewHandle() const {
     if (handle_.IsEmpty())
       return v8::Local<T>();
     return v8::Local<T>::New(GetIsolate(handle_), handle_);
-  }
-
-  v8::Handle<T> NewHandle(v8::Isolate* isolate) const {
-    if (handle_.IsEmpty())
-      return v8::Local<T>();
-    return v8::Local<T>::New(isolate, handle_);
   }
 
   template<typename P>

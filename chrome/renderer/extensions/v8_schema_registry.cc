@@ -108,12 +108,12 @@ v8::Handle<v8::Context> V8SchemaRegistry::GetOrCreateContext(
     v8::Isolate* isolate) {
   // It's ok to create local handles in this function, since this is only called
   // when we have a HandleScope.
-  if (context_.IsEmpty()) {
+  if (context_.get().IsEmpty()) {
     v8::Handle<v8::Context> context = v8::Context::New(isolate);
     context_.reset(context);
     return context;
   }
-  return context_.NewHandle(isolate);
+  return v8::Local<v8::Context>::New(isolate, context_.get());
 }
 
 }  // namespace extensions

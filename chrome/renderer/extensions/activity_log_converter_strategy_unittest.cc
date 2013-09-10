@@ -19,7 +19,7 @@ class ActivityLogConverterStrategyTest : public testing::Test {
       : isolate_(v8::Isolate::GetCurrent())
       , handle_scope_(isolate_)
       , context_(v8::Context::New(isolate_))
-      , context_scope_(context()) {
+      , context_scope_(context_.get()) {
   }
 
  protected:
@@ -32,7 +32,7 @@ class ActivityLogConverterStrategyTest : public testing::Test {
 
   testing::AssertionResult VerifyNull(v8::Local<v8::Value> v8_value) {
     scoped_ptr<base::Value> value(
-        converter_->FromV8Value(v8_value, context()));
+        converter_->FromV8Value(v8_value, context_.get()));
     if (value->IsType(base::Value::TYPE_NULL))
       return testing::AssertionSuccess();
     return testing::AssertionFailure();
@@ -42,7 +42,7 @@ class ActivityLogConverterStrategyTest : public testing::Test {
                                          bool expected) {
     bool out;
     scoped_ptr<base::Value> value(
-        converter_->FromV8Value(v8_value, context()));
+        converter_->FromV8Value(v8_value, context_.get()));
     if (value->IsType(base::Value::TYPE_BOOLEAN)
         && value->GetAsBoolean(&out)
         && out == expected)
@@ -54,7 +54,7 @@ class ActivityLogConverterStrategyTest : public testing::Test {
                                          int expected) {
     int out;
     scoped_ptr<base::Value> value(
-        converter_->FromV8Value(v8_value, context()));
+        converter_->FromV8Value(v8_value, context_.get()));
     if (value->IsType(base::Value::TYPE_INTEGER)
         && value->GetAsInteger(&out)
         && out == expected)
@@ -66,7 +66,7 @@ class ActivityLogConverterStrategyTest : public testing::Test {
                                         double expected) {
     double out;
     scoped_ptr<base::Value> value(
-        converter_->FromV8Value(v8_value, context()));
+        converter_->FromV8Value(v8_value, context_.get()));
     if (value->IsType(base::Value::TYPE_DOUBLE)
         && value->GetAsDouble(&out)
         && out == expected)
@@ -78,16 +78,12 @@ class ActivityLogConverterStrategyTest : public testing::Test {
                                         const std::string& expected) {
     std::string out;
     scoped_ptr<base::Value> value(
-        converter_->FromV8Value(v8_value, context()));
+        converter_->FromV8Value(v8_value, context_.get()));
     if (value->IsType(base::Value::TYPE_STRING)
         && value->GetAsString(&out)
         && out == expected)
       return testing::AssertionSuccess();
     return testing::AssertionFailure();
-  }
-
-  v8::Handle<v8::Context> context() const {
-    return context_.NewHandle(isolate_);
   }
 
   v8::Isolate* isolate_;
@@ -159,3 +155,4 @@ TEST_F(ActivityLogConverterStrategyTest, ConversionTest) {
 }
 
 }  // namespace extensions
+
