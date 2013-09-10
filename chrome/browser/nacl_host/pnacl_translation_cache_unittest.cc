@@ -187,7 +187,11 @@ TEST_F(PnaclTranslationCacheTest, StoreSmallOnDisk) {
   EXPECT_EQ(1, cache_->Size());
 }
 
+#if defined(OS_LINUX)
+TEST_F(PnaclTranslationCacheTest, DISABLED_StoreLargeOnDisk) {
+#else
 TEST_F(PnaclTranslationCacheTest, StoreLargeOnDisk) {
+#endif
   // Test a value too large(?) for a single I/O operation
   InitBackend(false);
   const std::string large_buffer(kLargeNexeSize, 'a');
@@ -221,7 +225,11 @@ TEST_F(PnaclTranslationCacheTest, GetOneOnDisk) {
   EXPECT_EQ(0, GetNexe(test_key).compare(test_store_val));
 }
 
+#if defined(OS_LINUX)
+TEST_F(PnaclTranslationCacheTest, DISABLED_GetLargeOnDisk) {
+#else
 TEST_F(PnaclTranslationCacheTest, GetLargeOnDisk) {
+#endif
   InitBackend(false);
   const std::string large_buffer(kLargeNexeSize, 'a');
   StoreNexe(test_key, large_buffer);
