@@ -21,14 +21,17 @@ const int kWriteFilePermissions = base::PLATFORM_FILE_OPEN |
 
 const int kCreateFilePermissions = base::PLATFORM_FILE_CREATE;
 
-const int kOpenFilePermissions = base::PLATFORM_FILE_CREATE |
-                                 base::PLATFORM_FILE_OPEN_ALWAYS |
-                                 base::PLATFORM_FILE_CREATE_ALWAYS |
-                                 base::PLATFORM_FILE_OPEN_TRUNCATED |
-                                 base::PLATFORM_FILE_WRITE |
-                                 base::PLATFORM_FILE_EXCLUSIVE_WRITE |
-                                 base::PLATFORM_FILE_DELETE_ON_CLOSE |
-                                 base::PLATFORM_FILE_WRITE_ATTRIBUTES;
+const int kOpenPepperFilePermissions = base::PLATFORM_FILE_OPEN |
+                                       base::PLATFORM_FILE_CREATE |
+                                       base::PLATFORM_FILE_OPEN_ALWAYS |
+                                       base::PLATFORM_FILE_CREATE_ALWAYS |
+                                       base::PLATFORM_FILE_OPEN_TRUNCATED |
+                                       base::PLATFORM_FILE_READ |
+                                       base::PLATFORM_FILE_WRITE |
+                                       base::PLATFORM_FILE_APPEND |
+                                       base::PLATFORM_FILE_EXCLUSIVE_WRITE |
+                                       base::PLATFORM_FILE_DELETE_ON_CLOSE |
+                                       base::PLATFORM_FILE_WRITE_ATTRIBUTES;
 
 
 }  // namespace fileapi

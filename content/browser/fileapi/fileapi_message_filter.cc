@@ -470,8 +470,7 @@ void FileAPIMessageFilter::OnOpenFile(
     int request_id, const GURL& path, int file_flags) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   base::PlatformFileError error;
-  const int open_permissions = base::PLATFORM_FILE_OPEN |
-                               (file_flags & fileapi::kOpenFilePermissions);
+  const int open_permissions = file_flags & fileapi::kOpenPepperFilePermissions;
   FileSystemURL url(context_->CrackURL(path));
   if (!HasPermissionsForFile(url, open_permissions, &error)) {
     Send(new FileSystemMsg_DidFail(request_id, error));
@@ -492,7 +491,7 @@ void FileAPIMessageFilter::OnOpenFile(
   }
 
   operations_[request_id] = operation_runner()->OpenFile(
-      url, file_flags, PeerHandle(),
+      url, open_permissions, PeerHandle(),
       base::Bind(&FileAPIMessageFilter::DidOpenFile, this, request_id,
                  quota_policy));
 }

@@ -38,6 +38,7 @@ const int kReadFilePermissions =
 const int kWriteFilePermissions =
     base::PLATFORM_FILE_OPEN |
     base::PLATFORM_FILE_WRITE |
+    base::PLATFORM_FILE_APPEND |
     base::PLATFORM_FILE_EXCLUSIVE_WRITE |
     base::PLATFORM_FILE_ASYNC |
     base::PLATFORM_FILE_WRITE_ATTRIBUTES;
