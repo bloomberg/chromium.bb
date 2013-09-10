@@ -69,7 +69,6 @@ base_non_configuration_keys = [
   'default_configuration',
   'dependencies',
   'dependencies_original',
-  'link_languages',
   'libraries',
   'postbuilds',
   'product_dir',
