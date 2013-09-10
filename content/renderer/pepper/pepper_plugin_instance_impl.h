@@ -15,6 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
+#include "cc/layers/content_layer_client.h"
 #include "cc/layers/texture_layer_client.h"
 #include "content/common/content_export.h"
 #include "content/public/renderer/pepper_plugin_instance.h"
@@ -114,7 +115,8 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
     : public base::RefCounted<PepperPluginInstanceImpl>,
       public base::SupportsWeakPtr<PepperPluginInstanceImpl>,
       public NON_EXPORTED_BASE(PepperPluginInstance),
-      public ppapi::PPB_Instance_Shared {
+      public ppapi::PPB_Instance_Shared,
+      public NON_EXPORTED_BASE(cc::TextureLayerClient) {
  public:
   // Create and return a PepperPluginInstanceImpl object which supports the most
   // recent version of PPP_Instance possible by querying the given
@@ -499,6 +501,12 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   // This is not inlined so as to avoid an unnecessary header include of v8.h.
   v8::Isolate* GetIsolate() const;
 
+  // cc::TextureLayerClient implementation.
+  virtual unsigned PrepareTexture() OVERRIDE;
+  virtual WebKit::WebGraphicsContext3D* Context3d() OVERRIDE;
+  virtual bool PrepareTextureMailbox(cc::TextureMailbox* mailbox,
+                                     bool use_shared_memory) OVERRIDE;
+
  private:
   friend class base::RefCounted<PepperPluginInstanceImpl>;
   friend class PpapiUnittest;
@@ -661,6 +669,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   scoped_refptr<cc::TextureLayer> texture_layer_;
   scoped_ptr<WebKit::WebLayer> web_layer_;
   bool layer_bound_to_fullscreen_;
+  bool layer_is_hardware_;
 
   // Plugin URL.
   GURL plugin_url_;
