@@ -45,7 +45,7 @@ class MockLocationProvider : public LocationProviderBase {
 };
 
 // Factory functions for the various sorts of mock location providers,
-// for use with GeolocationArbitrator::SetProviderFactoryForTest (i.e.
+// for use with LocationArbitrator::SetProviderFactoryForTest (i.e.
 // not intended for test code to use to get access to the mock, you can use
 // MockLocationProvider::instance_ for this, or make a custom factory method).
 

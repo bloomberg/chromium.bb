@@ -227,10 +227,10 @@ void GeolocationProviderImpl::CleanUp() {
   arbitrator_ = NULL;
 }
 
-GeolocationArbitrator* GeolocationProviderImpl::CreateArbitrator() {
-  GeolocationArbitratorImpl::LocationUpdateCallback callback = base::Bind(
+LocationArbitrator* GeolocationProviderImpl::CreateArbitrator() {
+  LocationArbitratorImpl::LocationUpdateCallback callback = base::Bind(
       &GeolocationProviderImpl::OnLocationUpdate, base::Unretained(this));
-  return new GeolocationArbitratorImpl(callback);
+  return new LocationArbitratorImpl(callback);
 }
 
 }  // namespace content

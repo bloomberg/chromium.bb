@@ -154,7 +154,7 @@ struct AccessPointLess {
 };
 
 GURL FormRequestURL(const GURL& url) {
-  if (url == GeolocationArbitratorImpl::DefaultNetworkProviderURL()) {
+  if (url == LocationArbitratorImpl::DefaultNetworkProviderURL()) {
     std::string api_key = google_apis::GetAPIKey();
     if (!api_key.empty()) {
       std::string query(url.query());

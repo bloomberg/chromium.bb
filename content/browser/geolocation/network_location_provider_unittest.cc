@@ -259,7 +259,7 @@ class GeolocationNetworkProviderTest : public testing::Test {
     // Check to see that the api key is being appended for the default
     // network provider url.
     bool is_default_url = UrlWithoutQuery(request_url) ==
-        UrlWithoutQuery(GeolocationArbitratorImpl::DefaultNetworkProviderURL());
+        UrlWithoutQuery(LocationArbitratorImpl::DefaultNetworkProviderURL());
     EXPECT_EQ(is_default_url, !request_url.query().empty());
 
     const std::string& upload_data = request.upload_data();
@@ -342,7 +342,7 @@ TEST_F(GeolocationNetworkProviderTest, StartProvider) {
 }
 
 TEST_F(GeolocationNetworkProviderTest, StartProviderDefaultUrl) {
-  test_server_url_ = GeolocationArbitratorImpl::DefaultNetworkProviderURL();
+  test_server_url_ = LocationArbitratorImpl::DefaultNetworkProviderURL();
   scoped_ptr<LocationProvider> provider(CreateProvider(true));
   EXPECT_TRUE(provider->StartProvider(false));
   net::TestURLFetcher* fetcher = get_url_fetcher_and_advance_id();

@@ -13,13 +13,13 @@ namespace content {
 
 struct Geoposition;
 
-class MockGeolocationArbitrator : public GeolocationArbitrator {
+class MockLocationArbitrator : public LocationArbitrator {
  public:
-  MockGeolocationArbitrator();
+  MockLocationArbitrator();
 
   bool providers_started() const { return providers_started_; }
 
-  // GeolocationArbitrator:
+  // LocationArbitrator:
   virtual void StartProviders(bool use_high_accuracy)
       OVERRIDE;
   virtual void StopProviders() OVERRIDE;
@@ -30,7 +30,7 @@ class MockGeolocationArbitrator : public GeolocationArbitrator {
   bool permission_granted_;
   bool providers_started_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockGeolocationArbitrator);
+  DISALLOW_COPY_AND_ASSIGN(MockLocationArbitrator);
 };
 
 }  // namespace content

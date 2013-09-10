@@ -30,21 +30,21 @@ class LocationProviderForTestArbitrator : public GeolocationProviderImpl {
   virtual ~LocationProviderForTestArbitrator() {}
 
   // Only valid for use on the geolocation thread.
-  MockGeolocationArbitrator* mock_arbitrator() const {
+  MockLocationArbitrator* mock_arbitrator() const {
     return mock_arbitrator_;
   }
 
  protected:
   // GeolocationProviderImpl implementation:
-  virtual GeolocationArbitrator* CreateArbitrator() OVERRIDE;
+  virtual LocationArbitrator* CreateArbitrator() OVERRIDE;
 
  private:
-  MockGeolocationArbitrator* mock_arbitrator_;
+  MockLocationArbitrator* mock_arbitrator_;
 };
 
-GeolocationArbitrator* LocationProviderForTestArbitrator::CreateArbitrator() {
+LocationArbitrator* LocationProviderForTestArbitrator::CreateArbitrator() {
   DCHECK(mock_arbitrator_ == NULL);
-  mock_arbitrator_ = new MockGeolocationArbitrator;
+  mock_arbitrator_ = new MockLocationArbitrator;
   return mock_arbitrator_;
 }
 

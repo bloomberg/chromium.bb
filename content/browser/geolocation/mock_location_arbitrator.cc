@@ -9,24 +9,24 @@
 
 namespace content {
 
-MockGeolocationArbitrator::MockGeolocationArbitrator()
+MockLocationArbitrator::MockLocationArbitrator()
     : permission_granted_(false),
       providers_started_(false) {
 }
 
-void MockGeolocationArbitrator::StartProviders(bool use_high_accuracy) {
+void MockLocationArbitrator::StartProviders(bool use_high_accuracy) {
   providers_started_ = true;;
 }
 
-void MockGeolocationArbitrator::StopProviders() {
+void MockLocationArbitrator::StopProviders() {
   providers_started_ = false;
 }
 
-void MockGeolocationArbitrator::OnPermissionGranted() {
+void MockLocationArbitrator::OnPermissionGranted() {
   permission_granted_ = true;
 }
 
-bool MockGeolocationArbitrator::HasPermissionBeenGranted() const {
+bool MockLocationArbitrator::HasPermissionBeenGranted() const {
   return permission_granted_;
 }
 

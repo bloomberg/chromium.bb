@@ -93,7 +93,6 @@ void ClosedInfoBarTracker::Clear() {
 
 // GeolocationPermissionContextTests ------------------------------------------
 
-// This class sets up GeolocationArbitrator.
 class GeolocationPermissionContextTests
     : public ChromeRenderViewHostTestHarness {
  protected:

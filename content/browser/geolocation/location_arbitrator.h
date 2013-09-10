@@ -12,9 +12,9 @@ namespace content {
 // This class is responsible for handling updates from multiple underlying
 // providers and resolving them to a single 'best' location fix at any given
 // moment.
-class CONTENT_EXPORT GeolocationArbitrator {
+class CONTENT_EXPORT LocationArbitrator {
 public:
-  virtual ~GeolocationArbitrator() {};
+  virtual ~LocationArbitrator() {};
 
   // See more details in geolocation_provider.
   virtual void StartProviders(bool use_high_accuracy) = 0;

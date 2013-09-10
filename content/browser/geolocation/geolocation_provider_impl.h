@@ -19,7 +19,7 @@
 template<typename Type> struct DefaultSingletonTraits;
 
 namespace content {
-class GeolocationArbitrator;
+class LocationArbitrator;
 
 // This is the main API to the geolocation subsystem. The application will hold
 // a single instance of this class and can register multiple clients to be
@@ -49,7 +49,7 @@ class CONTENT_EXPORT GeolocationProviderImpl
   // position to all registered clients.
   void OverrideLocationForTesting(const Geoposition& override_position);
 
-  // Callback from the GeolocationArbitrator. Public for testing.
+  // Callback from the LocationArbitrator. Public for testing.
   void OnLocationUpdate(const Geoposition& position);
 
   // Gets a pointer to the singleton instance of the location relayer, which
@@ -64,7 +64,7 @@ class CONTENT_EXPORT GeolocationProviderImpl
   virtual ~GeolocationProviderImpl();
 
   // Useful for injecting mock geolocation arbitrator in tests.
-  virtual GeolocationArbitrator* CreateArbitrator();
+  virtual LocationArbitrator* CreateArbitrator();
 
  private:
   typedef std::pair<LocationUpdateCallback, bool> LocationUpdateInfo;
@@ -103,7 +103,7 @@ class CONTENT_EXPORT GeolocationProviderImpl
   bool ignore_location_updates_;
 
   // Only to be used on the geolocation thread.
-  GeolocationArbitrator* arbitrator_;
+  LocationArbitrator* arbitrator_;
 
   DISALLOW_COPY_AND_ASSIGN(GeolocationProviderImpl);
 };

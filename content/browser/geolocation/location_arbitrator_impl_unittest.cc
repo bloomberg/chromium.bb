@@ -62,12 +62,12 @@ void SetReferencePosition(MockLocationProvider* provider) {
 
 namespace {
 
-class TestingGeolocationArbitrator : public GeolocationArbitratorImpl {
+class TestingLocationArbitrator : public LocationArbitratorImpl {
  public:
-  TestingGeolocationArbitrator(
-      const GeolocationArbitratorImpl::LocationUpdateCallback& callback,
+  TestingLocationArbitrator(
+      const LocationArbitratorImpl::LocationUpdateCallback& callback,
       AccessTokenStore* access_token_store)
-      : GeolocationArbitratorImpl(callback),
+      : LocationArbitratorImpl(callback),
         cell_(NULL),
         gps_(NULL),
         access_token_store_(access_token_store) {
@@ -110,10 +110,10 @@ class GeolocationLocationArbitratorTest : public testing::Test {
   virtual void SetUp() {
     access_token_store_ = new NiceMock<FakeAccessTokenStore>;
     observer_.reset(new MockLocationObserver);
-    GeolocationArbitratorImpl::LocationUpdateCallback callback =
+    LocationArbitratorImpl::LocationUpdateCallback callback =
         base::Bind(&MockLocationObserver::OnLocationUpdate,
                    base::Unretained(observer_.get()));
-    arbitrator_.reset(new TestingGeolocationArbitrator(
+    arbitrator_.reset(new TestingLocationArbitrator(
         callback, access_token_store_.get()));
   }
 
@@ -134,7 +134,7 @@ class GeolocationLocationArbitratorTest : public testing::Test {
   base::TimeDelta SwitchOnFreshnessCliff() {
     // Add 1, to ensure it meets any greater-than test.
     return base::TimeDelta::FromMilliseconds(
-        GeolocationArbitratorImpl::kFixStaleTimeoutMilliseconds + 1);
+        LocationArbitratorImpl::kFixStaleTimeoutMilliseconds + 1);
   }
 
   MockLocationProvider* cell() {
@@ -147,7 +147,7 @@ class GeolocationLocationArbitratorTest : public testing::Test {
 
   scoped_refptr<FakeAccessTokenStore> access_token_store_;
   scoped_ptr<MockLocationObserver> observer_;
-  scoped_ptr<TestingGeolocationArbitrator> arbitrator_;
+  scoped_ptr<TestingLocationArbitrator> arbitrator_;
   base::MessageLoop loop_;
 };
 
