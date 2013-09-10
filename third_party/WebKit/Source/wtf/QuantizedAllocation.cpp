@@ -28,29 +28,27 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WTF_h
-#define WTF_h
-
-#include "wtf/Compiler.h"
-#include "wtf/CurrentTime.h"
-#include "wtf/PartitionAlloc.h"
+#include "config.h"
+#include "wtf/QuantizedAllocation.h"
 
 namespace WTF {
 
-// This function must be called exactly once from the main thread before using anything else in WTF.
-WTF_EXPORT void initialize(TimeFunction currentTimeFunction, TimeFunction monotonicallyIncreasingTimeFunction);
-WTF_EXPORT void shutdown();
+unsigned short QuantizedAllocation::table[QuantizedAllocation::kTableSize];
 
-class Partitions {
-public:
-    static void initialize();
-    static void shutdown();
-    static ALWAYS_INLINE PartitionRoot* getBufferPartition() { return m_bufferAllocator.root(); }
-
-private:
-    static PartitionAllocator<4096> m_bufferAllocator;
-};
+void QuantizedAllocation::init()
+{
+    size_t currAllocation = 0;
+    size_t currRounding = kMinRounding;
+    size_t currRoundingLimit = kMinRoundingLimit / 2;
+    size_t numCurrRounding = 0;
+    for (size_t i = 0; i < kTableSize; ++i) {
+        table[i] = currRounding - 1;
+        currAllocation += kMinRoundingLimit;
+        if (currAllocation == currRoundingLimit * 2) {
+            currRoundingLimit *= 2;
+            currRounding *= 2;
+        }
+    }
+}
 
 } // namespace WTF
-
-#endif // WTF_h
