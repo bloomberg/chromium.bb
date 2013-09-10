@@ -37,6 +37,8 @@
 #include "core/editing/htmlediting.h"
 #include "core/html/HTMLHtmlElement.h"
 #include "core/html/HTMLTableElement.h"
+#include "core/page/Frame.h"
+#include "core/page/Settings.h"
 #include "core/platform/Logging.h"
 #include "core/rendering/InlineIterator.h"
 #include "core/rendering/InlineTextBox.h"
@@ -899,8 +901,11 @@ bool Position::isCandidate() const
                 return atFirstEditingPositionForNode() && !Position::nodeIsUserSelectNone(deprecatedNode());
             return m_anchorNode->rendererIsEditable() && !Position::nodeIsUserSelectNone(deprecatedNode()) && atEditingBoundary();
         }
-    } else
-        return m_anchorNode->rendererIsEditable() && !Position::nodeIsUserSelectNone(deprecatedNode()) && atEditingBoundary();
+    } else {
+        Frame* frame = m_anchorNode->document().frame();
+        bool caretBrowsing = frame->settings() && frame->settings()->caretBrowsingEnabled();
+        return (caretBrowsing || m_anchorNode->rendererIsEditable()) && !Position::nodeIsUserSelectNone(deprecatedNode()) && atEditingBoundary();
+    }
 
     return false;
 }

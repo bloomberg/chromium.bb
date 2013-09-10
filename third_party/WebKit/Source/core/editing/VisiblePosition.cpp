@@ -72,21 +72,22 @@ void VisiblePosition::init(const Position& position, EAffinity affinity)
 
 VisiblePosition VisiblePosition::next(EditingBoundaryCrossingRule rule) const
 {
-    // FIXME: Support CanSkipEditingBoundary
-    ASSERT(rule == CanCrossEditingBoundary || rule == CannotCrossEditingBoundary);
     VisiblePosition next(nextVisuallyDistinctCandidate(m_deepPosition), m_affinity);
 
-    if (rule == CanCrossEditingBoundary)
+    switch (rule) {
+    case CanCrossEditingBoundary:
         return next;
-
+    case CannotCrossEditingBoundary:
+        return honorEditingBoundaryAtOrAfter(next);
+    case CanSkipOverEditingBoundary:
+        return skipToEndOfEditingBoundary(next);
+    }
+    ASSERT_NOT_REACHED();
     return honorEditingBoundaryAtOrAfter(next);
 }
 
 VisiblePosition VisiblePosition::previous(EditingBoundaryCrossingRule rule) const
 {
-    // FIXME: Support CanSkipEditingBoundary
-    ASSERT(rule == CanCrossEditingBoundary || rule == CannotCrossEditingBoundary);
-    // find first previous DOM position that is visible
     Position pos = previousVisuallyDistinctCandidate(m_deepPosition);
 
     // return null visible position if there is no previous visible position
@@ -106,9 +107,16 @@ VisiblePosition VisiblePosition::previous(EditingBoundaryCrossingRule rule) cons
     }
 #endif
 
-    if (rule == CanCrossEditingBoundary)
+    switch (rule) {
+    case CanCrossEditingBoundary:
         return prev;
+    case CannotCrossEditingBoundary:
+        return honorEditingBoundaryAtOrBefore(prev);
+    case CanSkipOverEditingBoundary:
+        return skipToStartOfEditingBoundary(prev);
+    }
 
+    ASSERT_NOT_REACHED();
     return honorEditingBoundaryAtOrBefore(prev);
 }
 
@@ -494,6 +502,46 @@ VisiblePosition VisiblePosition::honorEditingBoundaryAtOrAfter(const VisiblePosi
         return VisiblePosition();
 
     // Return the next position after pos that is in the same editable region as this position
+    return firstEditablePositionAfterPositionInRoot(pos.deepEquivalent(), highestRoot);
+}
+
+VisiblePosition VisiblePosition::skipToStartOfEditingBoundary(const VisiblePosition &pos) const
+{
+    if (pos.isNull())
+        return pos;
+
+    Node* highestRoot = highestEditableRoot(deepEquivalent());
+    Node* highestRootOfPos = highestEditableRoot(pos.deepEquivalent());
+
+    // Return pos itself if the two are from the very same editable region, or both are non-editable.
+    if (highestRootOfPos == highestRoot)
+        return pos;
+
+    // If |pos| has an editable root, skip to the start
+    if (highestRootOfPos)
+        return previousVisuallyDistinctCandidate(Position(highestRootOfPos, Position::PositionIsBeforeAnchor).parentAnchoredEquivalent());
+
+    // That must mean that |pos| is not editable. Return the last position before pos that is in the same editable region as this position
+    return lastEditablePositionBeforePositionInRoot(pos.deepEquivalent(), highestRoot);
+}
+
+VisiblePosition VisiblePosition::skipToEndOfEditingBoundary(const VisiblePosition &pos) const
+{
+    if (pos.isNull())
+        return pos;
+
+    Node* highestRoot = highestEditableRoot(deepEquivalent());
+    Node* highestRootOfPos = highestEditableRoot(pos.deepEquivalent());
+
+    // Return pos itself if the two are from the very same editable region, or both are non-editable.
+    if (highestRootOfPos == highestRoot)
+        return pos;
+
+    // If |pos| has an editable root, skip to the end
+    if (highestRootOfPos)
+        return Position(highestRootOfPos, Position::PositionIsAfterAnchor).parentAnchoredEquivalent();
+
+    // That must mean that |pos| is not editable. Return the next position after pos that is in the same editable region as this position
     return firstEditablePositionAfterPositionInRoot(pos.deepEquivalent(), highestRoot);
 }
 

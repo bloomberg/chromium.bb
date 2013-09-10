@@ -73,6 +73,8 @@ public:
     VisiblePosition previous(EditingBoundaryCrossingRule = CanCrossEditingBoundary) const;
     VisiblePosition honorEditingBoundaryAtOrBefore(const VisiblePosition&) const;
     VisiblePosition honorEditingBoundaryAtOrAfter(const VisiblePosition&) const;
+    VisiblePosition skipToStartOfEditingBoundary(const VisiblePosition&) const;
+    VisiblePosition skipToEndOfEditingBoundary(const VisiblePosition&) const;
 
     VisiblePosition left(bool stayInEditableContent = false) const;
     VisiblePosition right(bool stayInEditableContent = false) const;
