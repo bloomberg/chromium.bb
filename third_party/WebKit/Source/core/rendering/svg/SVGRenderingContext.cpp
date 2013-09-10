@@ -236,30 +236,6 @@ void SVGRenderingContext::calculateTransformationToOutermostCoordinateSystem(con
         absoluteTransform.scale(deviceScaleFactor);
 }
 
-bool SVGRenderingContext::createImageBuffer(const FloatRect& targetRect, const AffineTransform& absoluteTransform, OwnPtr<ImageBuffer>& imageBuffer, RenderingMode renderingMode)
-{
-    IntRect paintRect = calculateImageBufferRect(targetRect, absoluteTransform);
-    // Don't create empty ImageBuffers.
-    if (paintRect.isEmpty())
-        return false;
-
-    IntSize clampedSize = clampedAbsoluteSize(paintRect.size());
-    OwnPtr<ImageBuffer> image = ImageBuffer::create(clampedSize, 1, renderingMode);
-    if (!image)
-        return false;
-
-    GraphicsContext* imageContext = image->context();
-    ASSERT(imageContext);
-
-    imageContext->scale(FloatSize(static_cast<float>(clampedSize.width()) / paintRect.width(),
-                                  static_cast<float>(clampedSize.height()) / paintRect.height()));
-    imageContext->translate(-paintRect.x(), -paintRect.y());
-    imageContext->concatCTM(absoluteTransform);
-
-    imageBuffer = image.release();
-    return true;
-}
-
 bool SVGRenderingContext::createImageBufferForPattern(const FloatRect& absoluteTargetRect, const FloatRect& clampedAbsoluteTargetRect, OwnPtr<ImageBuffer>& imageBuffer, RenderingMode renderingMode)
 {
     IntSize imageSize(roundedIntSize(clampedAbsoluteTargetRect.size()));

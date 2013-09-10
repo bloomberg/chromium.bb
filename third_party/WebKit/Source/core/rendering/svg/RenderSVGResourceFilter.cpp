@@ -123,6 +123,28 @@ bool RenderSVGResourceFilter::fitsInMaximumImageSize(const FloatSize& size, Floa
     return matchesFilterSize;
 }
 
+static bool createImageBuffer(const FloatRect& targetRect, const AffineTransform& absoluteTransform,
+    OwnPtr<ImageBuffer>& imageBuffer, RenderingMode renderingMode)
+{
+    IntRect paintRect = SVGRenderingContext::calculateImageBufferRect(targetRect, absoluteTransform);
+    // Don't create empty ImageBuffers.
+    if (paintRect.isEmpty())
+        return false;
+
+    OwnPtr<ImageBuffer> image = ImageBuffer::create(paintRect.size(), 1, renderingMode);
+    if (!image)
+        return false;
+
+    GraphicsContext* imageContext = image->context();
+    ASSERT(imageContext);
+
+    imageContext->translate(-paintRect.x(), -paintRect.y());
+    imageContext->concatCTM(absoluteTransform);
+
+    imageBuffer = image.release();
+    return true;
+}
+
 bool RenderSVGResourceFilter::applyResource(RenderObject* object, RenderStyle*, GraphicsContext*& context, unsigned short resourceMode)
 {
     ASSERT(object);
@@ -216,7 +238,7 @@ bool RenderSVGResourceFilter::applyResource(RenderObject* object, RenderStyle*, 
 
     OwnPtr<ImageBuffer> sourceGraphic;
     RenderingMode renderingMode = object->document().page()->settings().acceleratedFiltersEnabled() ? Accelerated : Unaccelerated;
-    if (!SVGRenderingContext::createImageBuffer(filterData->drawingRegion, effectiveTransform, sourceGraphic, renderingMode)) {
+    if (!createImageBuffer(filterData->drawingRegion, effectiveTransform, sourceGraphic, renderingMode)) {
         ASSERT(!m_filter.contains(object));
         filterData->savedContext = context;
         m_filter.set(object, filterData.leakPtr());
