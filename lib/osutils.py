@@ -445,6 +445,7 @@ def UmountDir(path, lazy=True, sudo=True, cleanup=True):
   if lazy:
     cmd += ['-l']
   runcmd(cmd)
+
   if cleanup:
     # We will randomly get EBUSY here even when the umount worked.  Suspect
     # this is due to the host distro doing stupid crap on us like autoscanning
