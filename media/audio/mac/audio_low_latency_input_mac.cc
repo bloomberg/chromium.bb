@@ -35,7 +35,9 @@ static std::ostream& operator<<(std::ostream& os,
 // for more details and background regarding this implementation.
 
 AUAudioInputStream::AUAudioInputStream(
-    AudioManagerMac* manager, const AudioParameters& params,
+    AudioManagerMac* manager,
+    const AudioParameters& input_params,
+    const AudioParameters& output_params,
     AudioDeviceID audio_device_id)
     : manager_(manager),
       sink_(NULL),
@@ -48,15 +50,15 @@ AUAudioInputStream::AUAudioInputStream(
   DCHECK(manager_);
 
   // Set up the desired (output) format specified by the client.
-  format_.mSampleRate = params.sample_rate();
+  format_.mSampleRate = input_params.sample_rate();
   format_.mFormatID = kAudioFormatLinearPCM;
   format_.mFormatFlags = kLinearPCMFormatFlagIsPacked |
                          kLinearPCMFormatFlagIsSignedInteger;
-  format_.mBitsPerChannel = params.bits_per_sample();
-  format_.mChannelsPerFrame = params.channels();
+  format_.mBitsPerChannel = input_params.bits_per_sample();
+  format_.mChannelsPerFrame = input_params.channels();
   format_.mFramesPerPacket = 1;  // uncompressed audio
   format_.mBytesPerPacket = (format_.mBitsPerChannel *
-                             params.channels()) / 8;
+                             input_params.channels()) / 8;
   format_.mBytesPerFrame = format_.mBytesPerPacket;
   format_.mReserved = 0;
 
@@ -68,10 +70,7 @@ AUAudioInputStream::AUAudioInputStream(
   // Note that we use the same native buffer size as for the output side here
   // since the AUHAL implementation requires that both capture and render side
   // use the same buffer size. See http://crbug.com/154352 for more details.
-  // TODO(xians): Get the audio parameters from the right device.
-  const AudioParameters parameters =
-      manager_->GetInputStreamParameters(AudioManagerBase::kDefaultDeviceId);
-  number_of_frames_ = parameters.frames_per_buffer();
+  number_of_frames_ = output_params.frames_per_buffer();
   DVLOG(1) << "Size of data buffer in frames : " << number_of_frames_;
 
   // Derive size (in bytes) of the buffers that we will render to.
@@ -85,7 +84,7 @@ AUAudioInputStream::AUAudioInputStream(
   audio_buffer_list_.mNumberBuffers = 1;
 
   AudioBuffer* audio_buffer = audio_buffer_list_.mBuffers;
-  audio_buffer->mNumberChannels = params.channels();
+  audio_buffer->mNumberChannels = input_params.channels();
   audio_buffer->mDataByteSize = data_byte_size;
   audio_buffer->mData = audio_data_buffer_.get();
 
@@ -93,9 +92,16 @@ AUAudioInputStream::AUAudioInputStream(
   // until a requested size is ready to be sent to the client.
   // It is not possible to ask for less than |kAudioFramesPerCallback| number of
   // audio frames.
-  const size_t requested_size_frames =
-      params.GetBytesPerBuffer() / format_.mBytesPerPacket;
-  DCHECK_GE(requested_size_frames, number_of_frames_);
+  size_t requested_size_frames =
+      input_params.GetBytesPerBuffer() / format_.mBytesPerPacket;
+  if (requested_size_frames < number_of_frames_) {
+    // For devices that only support a low sample rate like 8kHz, we adjust the
+    // buffer size to match number_of_frames_.  The value of number_of_frames_
+    // in this case has not been calculated based on hardware settings but
+    // rather our hardcoded defaults (see ChooseBufferSize).
+    requested_size_frames = number_of_frames_;
+  }
+
   requested_size_bytes_ = requested_size_frames * format_.mBytesPerFrame;
   DVLOG(1) << "Requested buffer size in bytes : " << requested_size_bytes_;
   DLOG_IF(INFO, requested_size_frames > number_of_frames_) << "FIFO is used";

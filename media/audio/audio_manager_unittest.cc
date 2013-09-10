@@ -59,4 +59,44 @@ TEST(AudioManagerTest, GetAudioOutputDeviceNames) {
 #endif  // defined(OS_MACOSX)
 }
 
+TEST(AudioManagerTest, GetDefaultOutputStreamParameters) {
+#if defined(OS_WIN) || defined(OS_MACOSX)
+  scoped_ptr<AudioManager> audio_manager(AudioManager::Create());
+  ASSERT_TRUE(audio_manager);
+  if (!audio_manager->HasAudioOutputDevices())
+    return;
+
+  AudioParameters params = audio_manager->GetDefaultOutputStreamParameters();
+  EXPECT_TRUE(params.IsValid());
+#endif  // defined(OS_WIN) || defined(OS_MACOSX)
+}
+
+TEST(AudioManagerTest, GetAssociatedOutputDeviceID) {
+#if defined(OS_WIN) || defined(OS_MACOSX)
+  scoped_ptr<AudioManager> audio_manager(AudioManager::Create());
+  ASSERT_TRUE(audio_manager);
+  if (!audio_manager->HasAudioOutputDevices() ||
+      !audio_manager->HasAudioInputDevices()) {
+    return;
+  }
+
+  AudioDeviceNames device_names;
+  audio_manager->GetAudioInputDeviceNames(&device_names);
+  bool found_an_associated_device = false;
+  for (AudioDeviceNames::iterator it = device_names.begin();
+       it != device_names.end();
+       ++it) {
+    EXPECT_FALSE(it->unique_id.empty());
+    EXPECT_FALSE(it->device_name.empty());
+    std::string output_device_id(
+        audio_manager->GetAssociatedOutputDeviceID(it->unique_id));
+    if (!output_device_id.empty()) {
+      VLOG(2) << it->unique_id << " matches with " << output_device_id;
+      found_an_associated_device = true;
+    }
+  }
+
+  EXPECT_TRUE(found_an_associated_device);
+#endif  // defined(OS_WIN) || defined(OS_MACOSX)
+}
 }  // namespace media

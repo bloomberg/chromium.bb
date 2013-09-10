@@ -291,7 +291,9 @@ void AudioInputDevice::AudioThreadCallback::Process(int pending_data) {
   uint8* ptr = static_cast<uint8*>(shared_memory_.memory());
   ptr += current_segment_id_ * segment_length_;
   AudioInputBuffer* buffer = reinterpret_cast<AudioInputBuffer*>(ptr);
-  DCHECK_EQ(buffer->params.size,
+  // Usually this will be equal but in the case of low sample rate (e.g. 8kHz,
+  // the buffer may be bigger (on mac at least)).
+  DCHECK_GE(buffer->params.size,
             segment_length_ - sizeof(AudioInputBufferParameters));
   double volume = buffer->params.volume;
   bool key_pressed = buffer->params.key_pressed;

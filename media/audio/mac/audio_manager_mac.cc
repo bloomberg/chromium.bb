@@ -198,7 +198,7 @@ static AudioDeviceID GetAudioDeviceIdByUId(bool is_input,
   UInt32 device_size = sizeof(audio_device_id);
   OSStatus result = -1;
 
-  if (device_id == AudioManagerBase::kDefaultDeviceId) {
+  if (device_id == AudioManagerBase::kDefaultDeviceId || device_id.empty()) {
     // Default Device.
     property_address.mSelector = is_input ?
         kAudioHardwarePropertyDefaultInputDevice :
@@ -272,7 +272,7 @@ bool AudioManagerMac::HasAudioInputDevices() {
   return HasAudioHardware(kAudioHardwarePropertyDefaultInputDevice);
 }
 
-// TODO(crogers): There are several places on the OSX specific code which
+// TODO(xians): There are several places on the OSX specific code which
 // could benefit from these helper functions.
 bool AudioManagerMac::GetDefaultInputDevice(
     AudioDeviceID* device) {
@@ -450,6 +450,64 @@ AudioParameters AudioManagerMac::GetInputStreamParameters(
       sample_rate, 16, buffer_size);
 }
 
+std::string AudioManagerMac::GetAssociatedOutputDeviceID(
+    const std::string& input_device_id) {
+  AudioDeviceID device = GetAudioDeviceIdByUId(true, input_device_id);
+  if (device == kAudioObjectUnknown)
+    return std::string();
+
+  UInt32 size = 0;
+  AudioObjectPropertyAddress pa = {
+    kAudioDevicePropertyRelatedDevices,
+    kAudioDevicePropertyScopeOutput,
+    kAudioObjectPropertyElementMaster
+  };
+  OSStatus result = AudioObjectGetPropertyDataSize(device, &pa, 0, 0, &size);
+  if (result || !size)
+    return std::string();
+
+  int device_count = size / sizeof(AudioDeviceID);
+  scoped_ptr_malloc<AudioDeviceID>
+      devices(reinterpret_cast<AudioDeviceID*>(malloc(size)));
+  result = AudioObjectGetPropertyData(
+      device, &pa, 0, NULL, &size, devices.get());
+  if (result)
+    return std::string();
+
+  for (int i = 0; i < device_count; ++i) {
+    // Get the number of  output channels of the device.
+    pa.mSelector = kAudioDevicePropertyStreams;
+    size = 0;
+    result = AudioObjectGetPropertyDataSize(devices.get()[i],
+                                            &pa,
+                                            0,
+                                            NULL,
+                                            &size);
+    if (result || !size)
+      continue;  // Skip if there aren't any output channels.
+
+    // Get device UID.
+    CFStringRef uid = NULL;
+    size = sizeof(uid);
+    pa.mSelector = kAudioDevicePropertyDeviceUID;
+    result = AudioObjectGetPropertyData(devices.get()[i],
+                                        &pa,
+                                        0,
+                                        NULL,
+                                        &size,
+                                        &uid);
+    if (result || !uid)
+      continue;
+
+    std::string ret(base::SysCFStringRefToUTF8(uid));
+    CFRelease(uid);
+    return ret;
+  }
+
+  // No matching device found.
+  return std::string();
+}
+
 AudioOutputStream* AudioManagerMac::MakeLinearOutputStream(
     const AudioParameters& params) {
   return MakeLowLatencyOutputStream(params, std::string(), std::string());
@@ -459,15 +517,19 @@ AudioOutputStream* AudioManagerMac::MakeLowLatencyOutputStream(
     const AudioParameters& params,
     const std::string& device_id,
     const std::string& input_device_id) {
-  DLOG_IF(ERROR, !device_id.empty()) << "Not implemented!";
   // Handle basic output with no input channels.
   if (params.input_channels() == 0) {
-    AudioDeviceID device = kAudioObjectUnknown;
-    GetDefaultOutputDevice(&device);
+    AudioDeviceID device = GetAudioDeviceIdByUId(false, device_id);
+    if (device == kAudioObjectUnknown) {
+      DLOG(ERROR) << "Failed to open output device: " << device_id;
+      return NULL;
+    }
     return new AUHALStream(this, params, device);
   }
 
-  // TODO(crogers): support more than stereo input.
+  DLOG_IF(ERROR, !device_id.empty()) << "Not implemented!";
+
+  // TODO(xians): support more than stereo input.
   if (params.input_channels() != 2) {
     // WebAudio is currently hard-coded to 2 channels so we should not
     // see this case.
@@ -504,7 +566,7 @@ AudioOutputStream* AudioManagerMac::MakeLowLatencyOutputStream(
   // different and arbitrary combinations of input and output devices
   // even running at different sample-rates.
   // kAudioDeviceUnknown translates to "use default" here.
-  // TODO(crogers): consider tracking UMA stats on AUHALStream
+  // TODO(xians): consider tracking UMA stats on AUHALStream
   // versus AudioSynchronizedStream.
   AudioDeviceID audio_device_id = GetAudioDeviceIdByUId(true, input_device_id);
   if (audio_device_id == kAudioObjectUnknown)
@@ -516,6 +578,33 @@ AudioOutputStream* AudioManagerMac::MakeLowLatencyOutputStream(
                                      kAudioDeviceUnknown);
 }
 
+std::string AudioManagerMac::GetDefaultOutputDeviceID() {
+  AudioDeviceID device_id = kAudioObjectUnknown;
+  if (!GetDefaultOutputDevice(&device_id))
+    return std::string();
+
+  const AudioObjectPropertyAddress property_address = {
+    kAudioDevicePropertyDeviceUID,
+    kAudioObjectPropertyScopeGlobal,
+    kAudioObjectPropertyElementMaster
+  };
+  CFStringRef device_uid = NULL;
+  UInt32 size = sizeof(device_uid);
+  OSStatus status = AudioObjectGetPropertyData(device_id,
+                                               &property_address,
+                                               0,
+                                               NULL,
+                                               &size,
+                                               &device_uid);
+  if (status != kAudioHardwareNoError || !device_uid)
+    return std::string();
+
+  std::string ret(base::SysCFStringRefToUTF8(device_uid));
+  CFRelease(device_uid);
+
+  return ret;
+}
+
 AudioInputStream* AudioManagerMac::MakeLinearInputStream(
     const AudioParameters& params, const std::string& device_id) {
   DCHECK_EQ(AudioParameters::AUDIO_PCM_LINEAR, params.format());
@@ -525,12 +614,24 @@ AudioInputStream* AudioManagerMac::MakeLinearInputStream(
 AudioInputStream* AudioManagerMac::MakeLowLatencyInputStream(
     const AudioParameters& params, const std::string& device_id) {
   DCHECK_EQ(AudioParameters::AUDIO_PCM_LOW_LATENCY, params.format());
-  // Gets the AudioDeviceID that refers to the AudioOutputDevice with the device
+  // Gets the AudioDeviceID that refers to the AudioInputDevice with the device
   // unique id. This AudioDeviceID is used to set the device for Audio Unit.
   AudioDeviceID audio_device_id = GetAudioDeviceIdByUId(true, device_id);
   AudioInputStream* stream = NULL;
-  if (audio_device_id != kAudioObjectUnknown)
-    stream = new AUAudioInputStream(this, params, audio_device_id);
+  if (audio_device_id != kAudioObjectUnknown) {
+    // AUAudioInputStream needs to be fed the preferred audio output parameters
+    // of the matching device so that the buffer size of both input and output
+    // can be matched.  See constructor of AUAudioInputStream for more.
+    const std::string associated_output_device(
+        GetAssociatedOutputDeviceID(device_id));
+    const AudioParameters output_params =
+        GetPreferredOutputStreamParameters(
+            associated_output_device.empty() ?
+                AudioManagerBase::kDefaultDeviceId : associated_output_device,
+            params);
+    stream = new AUAudioInputStream(this, params, output_params,
+        audio_device_id);
+  }
 
   return stream;
 }
@@ -538,17 +639,22 @@ AudioInputStream* AudioManagerMac::MakeLowLatencyInputStream(
 AudioParameters AudioManagerMac::GetPreferredOutputStreamParameters(
     const std::string& output_device_id,
     const AudioParameters& input_params) {
-  // TODO(tommi): Support |output_device_id|.
-  DLOG_IF(ERROR, !output_device_id.empty()) << "Not implemented!";
+  AudioDeviceID device = GetAudioDeviceIdByUId(false, output_device_id);
+  if (device == kAudioObjectUnknown) {
+    DLOG(ERROR) << "Invalid output device " << output_device_id;
+    return AudioParameters();
+  }
+
   int hardware_channels = 2;
-  if (!GetDefaultOutputChannels(&hardware_channels)) {
+  if (!GetDeviceChannels(device, kAudioDevicePropertyScopeOutput,
+                         &hardware_channels)) {
     // Fallback to stereo.
     hardware_channels = 2;
   }
 
   ChannelLayout channel_layout = GuessChannelLayout(hardware_channels);
 
-  const int hardware_sample_rate = AUAudioOutputStream::HardwareSampleRate();
+  const int hardware_sample_rate = HardwareSampleRateForDevice(device);
   const int buffer_size = ChooseBufferSize(hardware_sample_rate);
 
   int input_channels = 0;
@@ -556,7 +662,7 @@ AudioParameters AudioManagerMac::GetPreferredOutputStreamParameters(
     input_channels = input_params.input_channels();
 
     if (input_channels > 0) {
-      // TODO(crogers): given the limitations of the AudioOutputStream
+      // TODO(xians): given the limitations of the AudioOutputStream
       // back-ends used with synchronized I/O, we hard-code to stereo.
       // Specifically, this is a limitation of AudioSynchronizedStream which
       // can be removed as part of the work to consolidate these back-ends.
