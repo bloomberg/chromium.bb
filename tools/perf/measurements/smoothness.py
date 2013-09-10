@@ -6,14 +6,22 @@ from metrics import smoothness
 from metrics.gpu_rendering_stats import GpuRenderingStats
 from telemetry.page import page_measurement
 
+
 class DidNotScrollException(page_measurement.MeasurementFailure):
   def __init__(self):
     super(DidNotScrollException, self).__init__('Page did not scroll')
+
 
 class MissingDisplayFrameRate(page_measurement.MeasurementFailure):
   def __init__(self, name):
     super(MissingDisplayFrameRate, self).__init__(
         'Missing display frame rate metrics: ' + name)
+
+
+class MissingTimelineMarker(page_measurement.MeasurementFailure):
+  def __init__(self):
+    super(MissingTimelineMarker, self).__init__('Timeline marker not found')
+
 
 class Smoothness(page_measurement.PageMeasurement):
   def __init__(self):
@@ -59,7 +67,7 @@ class Smoothness(page_measurement.PageMeasurement):
                   smoothness.TIMELINE_MARKER)
               if s.parent_slice == None]
     if len(events) != 1:
-      raise LookupError, 'timeline marker not found'
+      raise MissingTimelineMarker()
     return events[0]
 
   def MeasurePage(self, page, tab, results):
