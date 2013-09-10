@@ -53,20 +53,6 @@ namespace WebCore {
         }                                 \
     }
 
-#define V8TRYCATCH_WITH_TYPECHECK(type, var, value, isolate) \
-    type var;                                                \
-    {                                                        \
-        bool ok = true;                                      \
-        {                                                    \
-            v8::TryCatch block;                              \
-            var = (value);                                   \
-            if (block.HasCaught())                           \
-                return block.ReThrow();                      \
-        }                                                    \
-        if (UNLIKELY(!ok))                                   \
-            return throwTypeError(isolate);                  \
-    }
-
 #define V8TRYCATCH_WITH_TYPECHECK_VOID(type, var, value, isolate) \
     type var;                                                     \
     {                                                             \
