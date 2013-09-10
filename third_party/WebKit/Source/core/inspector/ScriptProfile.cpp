@@ -87,7 +87,8 @@ static PassRefPtr<TypeBuilder::Profiler::CPUProfileNode> buildInspectorObjectFor
         .setLineNumber(node->GetLineNumber())
         .setHitCount(node->GetHitCount())
         .setCallUID(node->GetCallUid())
-        .setChildren(children.release());
+        .setChildren(children.release())
+        .setDeoptReason(node->GetBailoutReason());
     result->setId(node->GetNodeId());
     return result.release();
 }
