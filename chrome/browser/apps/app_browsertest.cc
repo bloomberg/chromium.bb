@@ -1044,9 +1044,12 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_WebContentsHasFocus) {
 //   1) Remove "MAYBE_" in the first line of the test definition
 //   2) Build Chromium browser_tests
 //   3) Make a copy of the PDF plug-in from a recent version of Chrome (Canary
-//      or recent development build) to your Chromium build. On Linux and Chrome
-//      OS, this just involves copying /opt/google.chrome/libpdf.so to
-//      <path-to-your-src>/out/Debug.
+//      or a recent development build) to your Chromium build:
+//      - On Linux and Chrome OS, copy /opt/google.chrome/libpdf.so to
+//        <path-to-your-src>/out/Debug
+//      - On OS X, copy PDF.plugin from
+//        <recent-chrome-app-folder>/*/*/*/*/"Internet Plug-Ins" to
+//        <path-to-your-src>/out/Debug/Chromium.app/*/*/*/*/"Internet Plug-Ins"
 //   4) Run browser_tests with the --enable-print-preview flag
 
 #if !defined(GOOGLE_CHROME_BUILD)
