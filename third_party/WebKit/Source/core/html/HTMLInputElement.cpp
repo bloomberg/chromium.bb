@@ -788,8 +788,6 @@ RenderObject* HTMLInputElement::createRenderer(RenderStyle* style)
 
 void HTMLInputElement::attach(const AttachContext& context)
 {
-    PostAttachCallbackDisabler disabler(this);
-
     if (!m_hasType)
         updateType();
 

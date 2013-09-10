@@ -61,6 +61,7 @@
 #include "core/dom/NamedNodeMap.h"
 #include "core/dom/NodeRenderStyle.h"
 #include "core/dom/NodeRenderingContext.h"
+#include "core/dom/PostAttachCallbacks.h"
 #include "core/dom/PseudoElement.h"
 #include "core/dom/ScriptableDocumentParser.h"
 #include "core/dom/SelectorQuery.h"
@@ -1312,9 +1313,7 @@ void Element::attach(const AttachContext& context)
 {
     ASSERT(document().inStyleRecalc());
 
-    PostAttachCallbackDisabler callbackDisabler(this);
     StyleResolverParentPusher parentPusher(this);
-    WidgetHierarchyUpdatesSuspensionScope suspendWidgetHierarchyUpdates;
 
     // We've already been through detach when doing a lazyAttach, but we might
     // need to clear any state that's been added since then.
@@ -2916,8 +2915,8 @@ static void scheduleLayerUpdateCallback(Node* node)
 
 void Element::scheduleLayerUpdate()
 {
-    if (postAttachCallbacksAreSuspended())
-        queuePostAttachCallback(scheduleLayerUpdateCallback, this);
+    if (document().inStyleRecalc())
+        PostAttachCallbacks::queueCallback(scheduleLayerUpdateCallback, this);
     else
         scheduleLayerUpdateCallback(this);
 }

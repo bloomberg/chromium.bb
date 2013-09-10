@@ -86,6 +86,7 @@
 #include "core/dom/NodeWithIndex.h"
 #include "core/dom/PageTransitionEvent.h"
 #include "core/dom/PopStateEvent.h"
+#include "core/dom/PostAttachCallbacks.h"
 #include "core/dom/ProcessingInstruction.h"
 #include "core/dom/QualifiedName.h"
 #include "core/dom/RequestAnimationFrameCallback.h"
@@ -1717,7 +1718,7 @@ void Document::recalcStyle(StyleRecalcChange change)
 
     m_inStyleRecalc = true;
     {
-        PostAttachCallbackDisabler disabler(this);
+        PostAttachCallbacks::SuspendScope suspendPostAttachCallbacks;
         WidgetHierarchyUpdatesSuspensionScope suspendWidgetHierarchyUpdates;
 
         RefPtr<FrameView> frameView = view();

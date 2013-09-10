@@ -51,13 +51,6 @@ static void dispatchChildInsertionEvents(Node*);
 static void dispatchChildRemovalEvents(Node*);
 static void updateTreeAfterInsertion(ContainerNode*, Node*);
 
-typedef pair<NodeCallback, RefPtr<Node> > CallbackInfo;
-typedef Vector<CallbackInfo> NodeCallbackQueue;
-
-static NodeCallbackQueue* s_postAttachCallbackQueue;
-
-static size_t s_attachDepth;
-
 ChildNodesLazySnapshot* ChildNodesLazySnapshot::latestSnapshot = 0;
 
 #ifndef NDEBUG
@@ -677,45 +670,6 @@ void ContainerNode::parserAppendChild(PassRefPtr<Node> newChild)
     ChildNodeInsertionNotifier(this).notify(newChild.get());
 
     attachAfterInsertion(newChild.get());
-}
-
-void ContainerNode::suspendPostAttachCallbacks()
-{
-    ++s_attachDepth;
-}
-
-void ContainerNode::resumePostAttachCallbacks()
-{
-    if (s_attachDepth == 1) {
-        RefPtr<ContainerNode> protect(this);
-
-        if (s_postAttachCallbackQueue)
-            dispatchPostAttachCallbacks();
-    }
-    --s_attachDepth;
-}
-
-void ContainerNode::queuePostAttachCallback(NodeCallback callback, Node* node)
-{
-    if (!s_postAttachCallbackQueue)
-        s_postAttachCallbackQueue = new NodeCallbackQueue;
-    s_postAttachCallbackQueue->append(CallbackInfo(callback, node));
-}
-
-bool ContainerNode::postAttachCallbacksAreSuspended()
-{
-    return s_attachDepth;
-}
-
-void ContainerNode::dispatchPostAttachCallbacks()
-{
-    // We recalculate size() each time through the loop because a callback
-    // can add more callbacks to the end of the queue.
-    for (size_t i = 0; i < s_postAttachCallbackQueue->size(); ++i) {
-        const CallbackInfo& info = (*s_postAttachCallbackQueue)[i];
-        info.first(info.second.get());
-    }
-    s_postAttachCallbackQueue->clear();
 }
 
 void ContainerNode::attach(const AttachContext& context)

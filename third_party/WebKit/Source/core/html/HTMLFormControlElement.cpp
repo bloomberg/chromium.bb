@@ -27,6 +27,7 @@
 
 #include "core/dom/Event.h"
 #include "core/dom/EventNames.h"
+#include "core/dom/PostAttachCallbacks.h"
 #include "core/html/HTMLFieldSetElement.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLInputElement.h"
@@ -213,8 +214,6 @@ static void focusPostAttach(Node* element)
 
 void HTMLFormControlElement::attach(const AttachContext& context)
 {
-    PostAttachCallbackDisabler disabler(this);
-
     HTMLElement::attach(context);
 
     // The call to updateFromElement() needs to go after the call through
@@ -226,7 +225,7 @@ void HTMLFormControlElement::attach(const AttachContext& context)
     if (shouldAutofocus(this)) {
         setAutofocused();
         ref();
-        queuePostAttachCallback(focusPostAttach, this);
+        PostAttachCallbacks::queueCallback(focusPostAttach, this);
     }
 }
 
@@ -305,7 +304,7 @@ void HTMLFormControlElement::didRecalcStyle(StyleRecalcChange)
     // updateFromElement() can cause the selection to change, and in turn
     // trigger synchronous layout, so it must not be called during style recalc.
     if (renderer())
-        queuePostAttachCallback(updateFromElementCallback, this);
+        PostAttachCallbacks::queueCallback(updateFromElementCallback, this);
 }
 
 bool HTMLFormControlElement::supportsFocus() const

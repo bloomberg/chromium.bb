@@ -22,6 +22,7 @@
 #include "core/html/HTMLPlugInImageElement.h"
 
 #include "bindings/v8/ScriptController.h"
+#include "core/dom/PostAttachCallbacks.h"
 #include "core/html/HTMLImageLoader.h"
 #include "core/html/PluginDocument.h"
 #include "core/loader/FrameLoader.h"
@@ -151,12 +152,10 @@ void HTMLPlugInImageElement::willRecalcStyle(StyleRecalcChange)
 
 void HTMLPlugInImageElement::attach(const AttachContext& context)
 {
-    PostAttachCallbackDisabler disabler(this);
-
     bool isImage = isImageType();
 
     if (!isImage)
-        queuePostAttachCallback(&HTMLPlugInImageElement::updateWidgetCallback, this);
+        PostAttachCallbacks::queueCallback(HTMLPlugInImageElement::updateWidgetCallback, this);
 
     HTMLPlugInElement::attach(context);
 

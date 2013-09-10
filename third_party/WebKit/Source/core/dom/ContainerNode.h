@@ -35,8 +35,6 @@ class ExceptionState;
 class FloatPoint;
 class HTMLCollection;
 
-typedef void (*NodeCallback)(Node*);
-
 namespace Private {
     template<class GenericNode, class GenericNodeContainer>
     void addChildNodesToDeletionQueue(GenericNode*& head, GenericNode*& tail, GenericNodeContainer*);
@@ -79,7 +77,6 @@ private:
 };
 
 class ContainerNode : public Node {
-    friend class PostAttachCallbackDisabler;
 public:
     virtual ~ContainerNode();
 
@@ -137,9 +134,6 @@ public:
 protected:
     ContainerNode(TreeScope*, ConstructionType = CreateContainer);
 
-    static void queuePostAttachCallback(NodeCallback, Node*);
-    static bool postAttachCallbacksAreSuspended();
-
     template<class GenericNode, class GenericNodeContainer>
     friend void appendChildToContainer(GenericNode* child, GenericNodeContainer*);
 
@@ -156,11 +150,6 @@ private:
 
     void attachChildren(const AttachContext& = AttachContext());
     void detachChildren(const AttachContext& = AttachContext());
-
-    static void dispatchPostAttachCallbacks();
-
-    void suspendPostAttachCallbacks();
-    void resumePostAttachCallbacks();
 
     bool getUpperLeftCorner(FloatPoint&) const;
     bool getLowerRightCorner(FloatPoint&) const;
@@ -329,24 +318,6 @@ private:
     unsigned m_currentIndex;
     OwnPtr<Vector<RefPtr<Node> > > m_childNodes; // Lazily instantiated.
     ChildNodesLazySnapshot* m_nextSnapshot;
-};
-
-class PostAttachCallbackDisabler {
-public:
-    PostAttachCallbackDisabler(ContainerNode* node)
-        : m_node(node)
-    {
-        ASSERT(m_node);
-        m_node->suspendPostAttachCallbacks();
-    }
-
-    ~PostAttachCallbackDisabler()
-    {
-        m_node->resumePostAttachCallbacks();
-    }
-
-private:
-    ContainerNode* m_node;
 };
 
 } // namespace WebCore

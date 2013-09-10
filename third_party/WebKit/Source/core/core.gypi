@@ -1954,6 +1954,8 @@
             'dom/ProcessingInstruction.h',
             'dom/ProgressEvent.cpp',
             'dom/ProgressEvent.h',
+            'dom/PostAttachCallbacks.cpp',
+            'dom/PostAttachCallbacks.h',
             'dom/Promise.h',
             'dom/PromiseResolver.h',
             'dom/PseudoElement.cpp',
