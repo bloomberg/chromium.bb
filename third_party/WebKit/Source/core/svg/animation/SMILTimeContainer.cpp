@@ -276,8 +276,7 @@ void SMILTimeContainer::updateAnimations(SMILTime elapsed, bool seekToTime)
         unsigned size = scheduled->size();
         for (unsigned n = 0; n < size; n++) {
             SVGSMILElement* animation = scheduled->at(n);
-            if (!animation->hasConditionsConnected())
-                animation->connectConditions();
+            animation->connectConditions();
         }
     }
 
