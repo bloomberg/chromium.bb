@@ -126,7 +126,7 @@ const char WebUILoginView::kViewClassName[] =
 WebUILoginView::WebUILoginView()
     : webui_login_(NULL),
       is_hidden_(false),
-      login_prompt_visible_handled_(false),
+      webui_visible_(false),
       should_emit_login_prompt_visible_(true),
       forward_keyboard_event_(true) {
   registrar_.Add(this,
@@ -436,7 +436,7 @@ void WebUILoginView::RequestMediaAccessPermission(
 
 void WebUILoginView::OnLoginPromptVisible() {
   // If we're hidden than will generate this signal once we're shown.
-  if (is_hidden_ || login_prompt_visible_handled_) {
+  if (is_hidden_ || webui_visible_) {
     LOG(WARNING) << "Login WebUI >> not emitting signal, hidden: "
                  << is_hidden_;
     return;
@@ -448,7 +448,7 @@ void WebUILoginView::OnLoginPromptVisible() {
         EmitLoginPromptVisible();
   }
 
-  login_prompt_visible_handled_ = true;
+  webui_visible_ = true;
 }
 
 void WebUILoginView::ReturnFocus(bool reverse) {

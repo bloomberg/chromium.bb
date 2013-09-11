@@ -95,6 +95,8 @@ class WebUILoginView : public views::View,
 
   void set_is_hidden(bool hidden) { is_hidden_ = hidden; }
 
+  bool webui_visible() const { return webui_visible_; }
+
   // Let suppress emission of this signal.
   void set_should_emit_login_prompt_visible(bool emit) {
     should_emit_login_prompt_visible_ = emit;
@@ -154,8 +156,8 @@ class WebUILoginView : public views::View,
   // True when WebUI is being initialized hidden.
   bool is_hidden_;
 
-  // True is login-prompt-visible event has been already handled.
-  bool login_prompt_visible_handled_;
+  // True when the WebUI has finished initializing and is visible.
+  bool webui_visible_;
 
   // Should we emit the login-prompt-visible signal when the login page is
   // displayed?

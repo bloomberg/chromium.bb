@@ -472,7 +472,6 @@ IN_PROC_BROWSER_TEST_P(KioskTest, LaunchAppUserCancel) {
 
   CrosSettings::Get()->SetBoolean(
       kAccountsPrefDeviceLocalAccountAutoLoginBailoutEnabled, true);
-  LOG(ERROR) << "BAILOUT!";
   content::WindowedNotificationObserver signal(
       chrome::NOTIFICATION_APP_TERMINATING,
       content::NotificationService::AllSources());

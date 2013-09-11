@@ -23,7 +23,7 @@ class AppLaunchManager : public StartupAppLauncher::Observer {
 
   void Start() {
     startup_app_launcher_->AddObserver(this);
-    startup_app_launcher_->Start();
+    startup_app_launcher_->Initialize();
   }
 
  private:
@@ -53,6 +53,10 @@ class AppLaunchManager : public StartupAppLauncher::Observer {
   virtual void OnInstallingApp() OVERRIDE {
     waiting_for_network_ = false;
     network_wait_timer_.Stop();
+  }
+
+  virtual void OnReadyToLaunch() OVERRIDE {
+    startup_app_launcher_->LaunchApp();
   }
 
   virtual void OnLaunchSucceeded() OVERRIDE { Cleanup(); }

@@ -17,11 +17,13 @@
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/oobe_display.h"
 #include "chrome/browser/chromeos/login/screens/error_screen_actor.h"
+#include "chrome/browser/chromeos/login/webui_login_view.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/notification_service.h"
 #include "net/base/network_change_notifier.h"
 
 namespace chromeos {
@@ -49,6 +51,8 @@ AppLaunchController::AppLaunchController(const std::string& app_id,
       app_launch_splash_screen_actor_(
           oobe_display_->GetAppLaunchSplashScreenActor()),
       error_screen_actor_(oobe_display_->GetErrorScreenActor()),
+      webui_visible_(false),
+      launcher_ready_(false),
       waiting_for_network_(false),
       network_wait_timedout_(false),
       showing_network_dialog_(false),
@@ -63,6 +67,12 @@ AppLaunchController::~AppLaunchController() {
 
 void AppLaunchController::StartAppLaunch() {
   DVLOG(1) << "Starting kiosk mode...";
+
+  webui_visible_ = host_->GetWebUILoginView()->webui_visible();
+  if (!webui_visible_) {
+    registrar_.Add(this, chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
+                   content::NotificationService::AllSources());
+  }
   launch_splash_start_time_ = base::TimeTicks::Now().ToInternalValue();
 
   // TODO(tengs): Add a loading profile app launch state.
@@ -117,6 +127,18 @@ void AppLaunchController::OnOwnerSigninSuccess() {
   signin_screen_.reset();
 }
 
+void AppLaunchController::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  DCHECK_EQ(chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE, type);
+  DCHECK(!webui_visible_);
+  webui_visible_ = true;
+  launch_splash_start_time_ = base::TimeTicks::Now().ToInternalValue();
+  if (launcher_ready_)
+    OnReadyToLaunch();
+}
+
 void AppLaunchController::OnCancelAppLaunch() {
   if (KioskAppManager::Get()->GetDisableBailoutShortcut())
     return;
@@ -131,7 +153,7 @@ void AppLaunchController::OnProfileLoaded(Profile* profile) {
   kiosk_profile_loader_.reset();
   startup_app_launcher_.reset(new StartupAppLauncher(profile_, app_id_));
   startup_app_launcher_->AddObserver(this);
-  startup_app_launcher_->Start();
+  startup_app_launcher_->Initialize();
 }
 
 void AppLaunchController::OnProfileLoadFailed(
@@ -196,7 +218,11 @@ void AppLaunchController::OnInstallingApp() {
   }
 }
 
-void AppLaunchController::OnLaunchSucceeded() {
+void AppLaunchController::OnReadyToLaunch() {
+  launcher_ready_ = true;
+  if (!webui_visible_)
+    return;
+
   const int64 time_taken_ms = (base::TimeTicks::Now() -
       base::TimeTicks::FromInternalValue(launch_splash_start_time_)).
       InMilliseconds();
@@ -207,12 +233,16 @@ void AppLaunchController::OnLaunchSucceeded() {
     content::BrowserThread::PostDelayedTask(
         content::BrowserThread::UI,
         FROM_HERE,
-        base::Bind(&AppLaunchController::OnLaunchSucceeded, AsWeakPtr()),
+        base::Bind(&AppLaunchController::OnReadyToLaunch, AsWeakPtr()),
         base::TimeDelta::FromMilliseconds(
             kAppInstallSplashScreenMinTimeMS - time_taken_ms));
     return;
   }
 
+  startup_app_launcher_->LaunchApp();
+}
+
+void AppLaunchController::OnLaunchSucceeded() {
   DVLOG(1) << "Kiosk launch succeeded!";
   Cleanup();
 }

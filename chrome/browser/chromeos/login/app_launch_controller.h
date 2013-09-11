@@ -18,6 +18,8 @@
 #include "chrome/browser/chromeos/login/app_launch_signin_screen.h"
 #include "chrome/browser/chromeos/login/screens/app_launch_splash_screen_actor.h"
 #include "chrome/browser/chromeos/login/screens/error_screen_actor.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class Profile;
 
@@ -35,7 +37,8 @@ class AppLaunchController
       public AppLaunchSplashScreenActor::Delegate,
       public KioskProfileLoader::Delegate,
       public StartupAppLauncher::Observer,
-      public AppLaunchSigninScreen::Delegate {
+      public AppLaunchSigninScreen::Delegate,
+      public content::NotificationObserver {
  public:
   AppLaunchController(const std::string& app_id,
                       LoginDisplayHost* host,
@@ -73,11 +76,17 @@ class AppLaunchController
   virtual void OnInitializingTokenService() OVERRIDE;
   virtual void OnInitializingNetwork() OVERRIDE;
   virtual void OnInstallingApp() OVERRIDE;
+  virtual void OnReadyToLaunch() OVERRIDE;
   virtual void OnLaunchSucceeded() OVERRIDE;
   virtual void OnLaunchFailed(KioskAppLaunchError::Error error) OVERRIDE;
 
   // AppLaunchSigninScreen::Delegate overrides:
   virtual void OnOwnerSigninSuccess() OVERRIDE;
+
+  // content::NotificationObserver overrides:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   Profile* profile_;
   const std::string app_id_;
@@ -88,6 +97,10 @@ class AppLaunchController
   scoped_ptr<KioskProfileLoader> kiosk_profile_loader_;
   scoped_ptr<StartupAppLauncher> startup_app_launcher_;
   scoped_ptr<AppLaunchSigninScreen> signin_screen_;
+
+  content::NotificationRegistrar registrar_;
+  bool webui_visible_;
+  bool launcher_ready_;
 
   base::OneShotTimer<AppLaunchController> network_wait_timer_;
   bool waiting_for_network_;

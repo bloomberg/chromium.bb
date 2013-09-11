@@ -58,7 +58,8 @@ bool IsAppInstalled(Profile* profile, const std::string& app_id) {
 StartupAppLauncher::StartupAppLauncher(Profile* profile,
                                        const std::string& app_id)
     : profile_(profile),
-      app_id_(app_id) {
+      app_id_(app_id),
+      ready_to_launch_(false) {
   DCHECK(profile_);
   DCHECK(Extension::IdIsValid(app_id_));
 }
@@ -71,7 +72,7 @@ StartupAppLauncher::~StartupAppLauncher() {
   net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
 }
 
-void StartupAppLauncher::Start() {
+void StartupAppLauncher::Initialize() {
   DVLOG(1) << "Starting... connection = "
            <<  net::NetworkChangeNotifier::GetConnectionType();
   StartLoadingOAuthFile();
@@ -210,7 +211,12 @@ void StartupAppLauncher::OnLaunchFailure(KioskAppLaunchError::Error error) {
   FOR_EACH_OBSERVER(Observer, observer_list_, OnLaunchFailed(error));
 }
 
-void StartupAppLauncher::Launch() {
+void StartupAppLauncher::LaunchApp() {
+  if (!ready_to_launch_) {
+    NOTREACHED();
+    LOG(ERROR) << "LaunchApp() called but launcher is not initialized.";
+  }
+
   const Extension* extension = extensions::ExtensionSystem::Get(profile_)->
       extension_service()->GetInstalledExtension(app_id_);
   CHECK(extension);
@@ -244,7 +250,7 @@ void StartupAppLauncher::BeginInstall() {
            <<  net::NetworkChangeNotifier::GetConnectionType();
 
   if (IsAppInstalled(profile_, app_id_)) {
-    Launch();
+    OnReadyToLaunch();
     return;
   }
 
@@ -260,17 +266,23 @@ void StartupAppLauncher::InstallCallback(bool success,
                                          const std::string& error) {
   installer_ = NULL;
   if (success) {
-    // Schedules Launch() to be called after the callback returns.
+    // Finish initialization after the callback returns.
     // So that the app finishes its installation.
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,
-        base::Bind(&StartupAppLauncher::Launch, AsWeakPtr()));
+        base::Bind(&StartupAppLauncher::OnReadyToLaunch,
+                   AsWeakPtr()));
     return;
   }
 
   LOG(ERROR) << "App install failed: " << error;
   OnLaunchFailure(KioskAppLaunchError::UNABLE_TO_INSTALL);
+}
+
+void StartupAppLauncher::OnReadyToLaunch() {
+  ready_to_launch_ = true;
+  FOR_EACH_OBSERVER(Observer, observer_list_, OnReadyToLaunch());
 }
 
 void StartupAppLauncher::OnNetworkChanged(

@@ -24,11 +24,13 @@ class WebstoreStandaloneInstaller;
 namespace chromeos {
 
 // Launches the app at startup. The flow roughly looks like this:
+// First call Initialize():
 // - Checks if the app is installed in user profile (aka app profile);
 // - If the app is installed, launch it and finish the flow;
 // - If not installed, prepare to start install by checking network online
 //   state;
 // - If network gets online, start to install the app from web store;
+// Report OnLauncherInitialized() or OnLaunchFailed() to observers:
 // - If all goes good, launches the app and finish the flow;
 class StartupAppLauncher
     : public base::SupportsWeakPtr<StartupAppLauncher>,
@@ -41,6 +43,7 @@ class StartupAppLauncher
     virtual void OnInitializingTokenService() = 0;
     virtual void OnInitializingNetwork() = 0;
     virtual void OnInstallingApp() = 0;
+    virtual void OnReadyToLaunch() = 0;
     virtual void OnLaunchSucceeded() = 0;
     virtual void OnLaunchFailed(KioskAppLaunchError::Error error) = 0;
 
@@ -52,9 +55,11 @@ class StartupAppLauncher
 
   virtual ~StartupAppLauncher();
 
-  // Starts app launcher. If |skip_auth_setup| is set, we will skip
-  // TokenService initialization.
-  void Start();
+  // Prepares the environment for an app launch.
+  void Initialize();
+
+  // Launches the app after the initialization is successful.
+  void LaunchApp();
 
   // Add and remove observers for app launch procedure.
   void AddObserver(Observer* observer);
@@ -71,10 +76,9 @@ class StartupAppLauncher
   void OnLaunchSuccess();
   void OnLaunchFailure(KioskAppLaunchError::Error error);
 
-  void Launch();
-
   void BeginInstall();
   void InstallCallback(bool success, const std::string& error);
+  void OnReadyToLaunch();
 
   void InitializeTokenService();
   void InitializeNetwork();
@@ -94,6 +98,7 @@ class StartupAppLauncher
   Profile* profile_;
   const std::string app_id_;
   ObserverList<Observer> observer_list_;
+  bool ready_to_launch_;
 
   scoped_refptr<extensions::WebstoreStandaloneInstaller> installer_;
   KioskOAuthParams auth_params_;
