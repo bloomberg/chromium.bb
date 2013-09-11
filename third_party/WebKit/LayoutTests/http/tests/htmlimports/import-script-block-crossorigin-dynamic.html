@@ -17,21 +17,9 @@ function testAndDone()
     finishJSTest();
 }
 
-var retryCount = 0;
-
 // This should be called run-check.js
 function check()
 {
-    if (!document.corsExternalScriptForLocalhostHasRun) {
-         retryCount++;
-         if (10 < retryCount) {
-             console.log("FAIL: Retried too many times.");
-             return finishJSTest();
-         }
-
-         return setTimeout(check, 100);
-    }
-
     testAndDone();
 }
 

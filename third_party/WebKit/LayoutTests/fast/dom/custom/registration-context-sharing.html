@@ -146,27 +146,16 @@ t.step(function () {
     link = documentA.createElement('link');
     link.rel = 'import';
     link.href = 'resources/empty-document.html';
-    documentA.head.appendChild(link);
-
-    // FIXME: When imports raise the 'load' event, use that instead of
-    // polling.
-    waitForLinkToLoad();
-});
-
-function waitForLinkToLoad() {
-    if (!link.import) {
-        setTimeout(waitForLinkToLoad, 100);
-        return;
-    }
-
-    t.step(function () {
+    link.onload = t.step_func(function () {
         var documentB = link.import;
         var tester = new TestRegistrationContextSharing(window,
                                                         documentA, documentB);
         tester.testRegistrationContextIsShared();
         t.done();
     });
-}
+
+    documentA.head.appendChild(link);
+});
 
 })();
 
