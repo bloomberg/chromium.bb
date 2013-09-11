@@ -3,13 +3,16 @@
   "name": "crosh_builtin",
   "manifest_version": 2,
   "content_security_policy": "script-src 'self'; object-src 'self'",
-  "version": "0.7.9",
+  "version": "0.8.22",
   "default_locale": "en",
   "description": "Built-in terminal for crosh.",
   "offline_enabled": true,
   "incognito": "split",
   "permissions": [
+    "clipboardRead",
+    "clipboardWrite",
     "unlimitedStorage",
+    "storage",
     "terminalPrivate"
   ]
 }
