@@ -1174,7 +1174,7 @@ static PassRefPtr<CSSValue> valueForAnimationTimingFunction(const CSSAnimationDa
     RefPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
     if (animList) {
         for (size_t i = 0; i < animList->size(); ++i)
-            list->append(createTimingFunctionValue(animList->animation(i)->timingFunction().get()));
+            list->append(createTimingFunctionValue(animList->animation(i)->timingFunction()));
     } else
         // Note that initialAnimationTimingFunction() is used for both transitions and animations
         list->append(createTimingFunctionValue(CSSAnimationData::initialAnimationTimingFunction().get()));
@@ -2485,7 +2485,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
                     const CSSAnimationData* animation = animations->animation(i);
                     list->append(cssValuePool().createValue(animation->name(), CSSPrimitiveValue::CSS_STRING));
                     list->append(cssValuePool().createValue(animation->duration(), CSSPrimitiveValue::CSS_S));
-                    list->append(createTimingFunctionValue(animation->timingFunction().get()));
+                    list->append(createTimingFunctionValue(animation->timingFunction()));
                     list->append(cssValuePool().createValue(animation->delay(), CSSPrimitiveValue::CSS_S));
                     if (animation->iterationCount() == CSSAnimationData::IterationCountInfinite)
                         list->append(cssValuePool().createIdentifierValue(CSSValueInfinite));
@@ -2652,7 +2652,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
                     const CSSAnimationData* animation = animList->animation(i);
                     list->append(createTransitionPropertyValue(animation));
                     list->append(cssValuePool().createValue(animation->duration(), CSSPrimitiveValue::CSS_S));
-                    list->append(createTimingFunctionValue(animation->timingFunction().get()));
+                    list->append(createTimingFunctionValue(animation->timingFunction()));
                     list->append(cssValuePool().createValue(animation->delay(), CSSPrimitiveValue::CSS_S));
                     transitionsList->append(list);
                 }

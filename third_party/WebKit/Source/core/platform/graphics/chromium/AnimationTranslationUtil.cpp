@@ -221,7 +221,7 @@ PassOwnPtr<WebKit::WebAnimation> createWebAnimation(const KeyframeValueList& val
         // If there hasn't been a timing function associated with this keyframe, use the
         // animation's timing function, if we have one.
         if (!originalTimingFunction && animation->isTimingFunctionSet())
-            originalTimingFunction = animation->timingFunction().get();
+            originalTimingFunction = animation->timingFunction();
 
         // Ease is the default timing function.
         WebKit::WebAnimationCurve::TimingFunctionType timingFunctionType = WebKit::WebAnimationCurve::TimingFunctionTypeEase;

@@ -161,7 +161,7 @@ void KeyframeAnimation::fetchIntervalEndpointsForProperty(CSSPropertyID property
 
     const TimingFunction* timingFunction = 0;
     if (const CSSAnimationData* matchedAnimation = getAnimationFromStyleByName(fromStyle, name()))
-        timingFunction = matchedAnimation->timingFunction().get();
+        timingFunction = matchedAnimation->timingFunction();
 
     prog = progress(scale, offset, timingFunction);
 }

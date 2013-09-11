@@ -491,7 +491,7 @@ double AnimationBase::progress(double scale, double offset, const TimingFunction
     const double fractionalTime = this->fractionalTime(scale, elapsedTime, offset);
 
     if (!timingFunction)
-        timingFunction = m_animation->timingFunction().get();
+        timingFunction = m_animation->timingFunction();
 
     return timingFunction->evaluate(fractionalTime, accuracyForDuration(m_animation->duration()));
 }
