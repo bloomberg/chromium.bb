@@ -63,5 +63,33 @@
         }],
       ],
     }],
+    ['OS=="win" and asan==1', {
+      'variables': {
+        'dest_dir': '<(PRODUCT_DIR)/syzygy',
+        'syzygy_exe_dir': '<(DEPTH)/third_party/syzygy/binaries/exe',
+      },
+      # Copy the SyzyASan runtime and logger to the syzygy directory.
+      'targets': [
+        {
+          'target_name': 'copy_syzyasan_binaries',
+          'type': 'none',
+          'outputs': [
+            '<(dest_dir)/agent_logger.exe',
+            '<(dest_dir)/asan_rtl.dll',
+            '<(dest_dir)/asan_rtl.dll.pdb',
+          ],
+          'copies': [
+            {
+              'destination': '<(dest_dir)',
+              'files': [
+                '<(syzygy_exe_dir)/agent_logger.exe',
+                '<(syzygy_exe_dir)/asan_rtl.dll',
+                '<(syzygy_exe_dir)/asan_rtl.dll.pdb',
+              ],
+            },
+          ],
+        },
+      ],
+    }],
   ],
 }
