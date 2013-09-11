@@ -883,7 +883,9 @@ LRESULT HWNDMessageHandler::OnWndProc(UINT message,
   if (delegate_)
     delegate_->PostHandleMSG(message, w_param, l_param);
   if (message == WM_NCDESTROY) {
+#if !defined(USE_AURA)
     base::MessageLoopForUI::current()->RemoveObserver(this);
+#endif
     if (delegate_)
       delegate_->HandleDestroyed();
   }
@@ -1191,6 +1193,10 @@ void HWNDMessageHandler::UnlockUpdates(bool force) {
 }
 
 void HWNDMessageHandler::RedrawInvalidRect() {
+// TODO(cpu): Remove the caller and this class as a message loop observer
+// because we don't need agressive repaints via RDW_UPDATENOW in Aura. The
+// general tracking bug for repaint issues is 177115.
+#if !defined(USE_AURA)
   if (!use_layered_buffer_) {
     RECT r = { 0, 0, 0, 0 };
     if (GetUpdateRect(hwnd(), &r, FALSE) && !IsRectEmpty(&r)) {
@@ -1198,6 +1204,7 @@ void HWNDMessageHandler::RedrawInvalidRect() {
                    RDW_INVALIDATE | RDW_UPDATENOW | RDW_NOCHILDREN);
     }
   }
+#endif
 }
 
 void HWNDMessageHandler::RedrawLayeredWindowContents() {
@@ -1316,11 +1323,13 @@ LRESULT HWNDMessageHandler::OnCreate(CREATESTRUCT* create_struct) {
   // creation time.
   ClientAreaSizeChanged();
 
+#if !defined(USE_AURA)
   // We need to add ourselves as a message loop observer so that we can repaint
   // aggressively if the contents of our window become invalid. Unfortunately
   // WM_PAINT messages are starved and we get flickery redrawing when resizing
   // if we do not do this.
   base::MessageLoopForUI::current()->AddObserver(this);
+#endif
 
   delegate_->HandleCreate();
 
