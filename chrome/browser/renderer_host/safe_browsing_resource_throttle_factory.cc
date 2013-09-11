@@ -16,18 +16,14 @@ SafeBrowsingResourceThrottleFactory*
 // static
 ResourceThrottle* SafeBrowsingResourceThrottleFactory::Create(
     net::URLRequest* request,
-    int render_process_host_id,
-    int render_view_id,
     bool is_subresource,
     SafeBrowsingService* service) {
 
 #if defined(FULL_SAFE_BROWSING)
-  return new SafeBrowsingResourceThrottle(request, render_process_host_id,
-                 render_view_id, is_subresource, service);
+  return new SafeBrowsingResourceThrottle(request, is_subresource, service);
 #elif defined(MOBILE_SAFE_BROWSING)
   if (factory_)
-    return factory_->CreateResourceThrottle(request, render_process_host_id,
-                         render_view_id, is_subresource, service);
+    return factory_->CreateResourceThrottle(request, is_subresource, service);
   return NULL;
 #else
 #error Need to define {FULL|MOBILE} SAFE_BROWSING mode.

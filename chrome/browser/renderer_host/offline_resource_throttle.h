@@ -25,9 +25,7 @@ class OfflineResourceThrottle
     : public content::ResourceThrottle,
       public base::SupportsWeakPtr<OfflineResourceThrottle> {
  public:
-  OfflineResourceThrottle(int render_process_id,
-                          int render_view_id,
-                          net::URLRequest* request,
+  OfflineResourceThrottle(net::URLRequest* request,
                           appcache::AppCacheService* appcache_service);
   virtual ~OfflineResourceThrottle();
 
@@ -48,8 +46,6 @@ class OfflineResourceThrottle
   // A callback to tell if an appcache exists.
   void OnCanHandleOfflineComplete(int rv);
 
-  int render_process_id_;
-  int render_view_id_;
   net::URLRequest* request_;
   // Safe to keep a pointer around since AppCacheService outlives all requests.
   appcache::AppCacheService* appcache_service_;

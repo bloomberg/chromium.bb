@@ -286,13 +286,12 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
   if (resource_type == ResourceType::MAIN_FRAME) {
     // We check offline first, then check safe browsing so that we still can
     // block unsafe site after we remove offline page.
-    throttles->push_back(new OfflineResourceThrottle(
-        child_id, route_id, request, appcache_service));
+    throttles->push_back(new OfflineResourceThrottle(request,
+                                                     appcache_service));
     // Add interstitial page while merge session process (cookie
     // reconstruction from OAuth2 refresh token in ChromeOS login) is still in
     // progress while we are attempting to load a google property.
-    throttles->push_back(new MergeSessionThrottle(
-        child_id, route_id, request));
+    throttles->push_back(new MergeSessionThrottle(request));
   }
 #endif
 
@@ -317,8 +316,6 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
 
   AppendStandardResourceThrottles(request,
                                   resource_context,
-                                  child_id,
-                                  route_id,
                                   resource_type,
                                   throttles);
 
@@ -361,8 +358,6 @@ void ChromeResourceDispatcherHostDelegate::DownloadStarting(
   if (!request->is_pending()) {
     AppendStandardResourceThrottles(request,
                                     resource_context,
-                                    child_id,
-                                    route_id,
                                     ResourceType::MAIN_FRAME,
                                     throttles);
   }
@@ -450,8 +445,6 @@ bool ChromeResourceDispatcherHostDelegate::HandleExternalProtocol(
 void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(
     net::URLRequest* request,
     content::ResourceContext* resource_context,
-    int child_id,
-    int route_id,
     ResourceType::Type resource_type,
     ScopedVector<content::ResourceThrottle>* throttles) {
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
@@ -462,8 +455,6 @@ void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(
     bool is_subresource_request = resource_type != ResourceType::MAIN_FRAME;
     content::ResourceThrottle* throttle =
         SafeBrowsingResourceThrottleFactory::Create(request,
-                                                    child_id,
-                                                    route_id,
                                                     is_subresource_request,
                                                     safe_browsing_.get());
     if (throttle)
@@ -474,7 +465,7 @@ void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(
 #if defined(ENABLE_MANAGED_USERS)
   bool is_subresource_request = resource_type != ResourceType::MAIN_FRAME;
   throttles->push_back(new ManagedModeResourceThrottle(
-        request, child_id, route_id, !is_subresource_request,
+        request, !is_subresource_request,
         io_data->managed_mode_url_filter()));
 #endif
 

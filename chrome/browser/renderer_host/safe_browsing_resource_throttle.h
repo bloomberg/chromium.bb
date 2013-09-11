@@ -49,8 +49,6 @@ class SafeBrowsingResourceThrottle
       public base::SupportsWeakPtr<SafeBrowsingResourceThrottle> {
  public:
   SafeBrowsingResourceThrottle(const net::URLRequest* request,
-                               int render_process_host_id,
-                               int render_view_id,
                                bool is_subresource,
                                SafeBrowsingService* safe_browsing);
 
@@ -116,8 +114,6 @@ class SafeBrowsingResourceThrottle
 
   GURL url_being_checked_;
 
-  int render_process_host_id_;
-  int render_view_id_;
   scoped_refptr<SafeBrowsingDatabaseManager> database_manager_;
   scoped_refptr<SafeBrowsingUIManager> ui_manager_;
   const net::URLRequest* request_;

@@ -34,8 +34,6 @@ class SafeBrowsingResourceThrottleFactory {
   // Creates a new resource throttle for safe browsing
   static content::ResourceThrottle* Create(
       net::URLRequest* request,
-      int render_process_host_id,
-      int render_view_id,
       bool is_subresource,
       SafeBrowsingService* service);
 
@@ -45,8 +43,6 @@ class SafeBrowsingResourceThrottleFactory {
 
   virtual content::ResourceThrottle* CreateResourceThrottle(
       net::URLRequest* request,
-      int render_process_host_id,
-      int render_view_id,
       bool is_subresource,
       SafeBrowsingService* service) = 0;
 

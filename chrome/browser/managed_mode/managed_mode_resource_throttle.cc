@@ -11,20 +11,17 @@
 #include "chrome/browser/managed_mode/managed_mode_url_filter.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_controller.h"
+#include "content/public/browser/resource_request_info.h"
 #include "net/url_request/url_request.h"
 
 using content::BrowserThread;
 
 ManagedModeResourceThrottle::ManagedModeResourceThrottle(
     const net::URLRequest* request,
-    int render_process_host_id,
-    int render_view_id,
     bool is_main_frame,
     const ManagedModeURLFilter* url_filter)
     : weak_ptr_factory_(this),
       request_(request),
-      render_process_host_id_(render_process_host_id),
-      render_view_id_(render_view_id),
       is_main_frame_(is_main_frame),
       url_filter_(url_filter) {}
 
@@ -43,9 +40,11 @@ void ManagedModeResourceThrottle::ShowInterstitialIfNeeded(bool is_redirect,
   }
 
   *defer = true;
+  const content::ResourceRequestInfo* info =
+      content::ResourceRequestInfo::ForRequest(request_);
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
       base::Bind(&ManagedModeNavigationObserver::OnRequestBlocked,
-                 render_process_host_id_, render_view_id_, url,
+                 info->GetChildID(), info->GetRouteID(), url,
                  base::Bind(&ManagedModeResourceThrottle::OnInterstitialResult,
                             weak_ptr_factory_.GetWeakPtr())));
 }

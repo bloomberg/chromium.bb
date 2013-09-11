@@ -16,6 +16,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_controller.h"
+#include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
@@ -56,12 +57,8 @@ void ShowDeleayedLoadingPage(
 
 }  // namespace
 
-MergeSessionThrottle::MergeSessionThrottle(int render_process_id,
-                                           int render_view_id,
-                                           net::URLRequest* request)
-    : render_process_id_(render_process_id),
-      render_view_id_(render_view_id),
-      request_(request) {
+MergeSessionThrottle::MergeSessionThrottle(net::URLRequest* request)
+    : request_(request) {
 }
 
 MergeSessionThrottle::~MergeSessionThrottle() {
@@ -73,13 +70,15 @@ void MergeSessionThrottle::WillStartRequest(bool* defer) {
     return;
 
   DVLOG(1) << "WillStartRequest: url=" << request_->url();
+  const content::ResourceRequestInfo* info =
+      content::ResourceRequestInfo::ForRequest(request_);
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
       base::Bind(
           &ShowDeleayedLoadingPage,
-          render_process_id_,
-          render_view_id_,
+          info->GetChildID(),
+          info->GetRouteID(),
           request_->url(),
           base::Bind(
               &MergeSessionThrottle::OnBlockingPageComplete,

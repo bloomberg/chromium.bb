@@ -101,8 +101,6 @@ class ChromeResourceDispatcherHostDelegate
   void AppendStandardResourceThrottles(
       net::URLRequest* request,
       content::ResourceContext* resource_context,
-      int child_id,
-      int route_id,
       ResourceType::Type resource_type,
       ScopedVector<content::ResourceThrottle>* throttles);
 

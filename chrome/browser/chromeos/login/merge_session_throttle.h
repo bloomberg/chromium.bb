@@ -22,9 +22,7 @@ class MergeSessionThrottle
     : public content::ResourceThrottle,
       public base::SupportsWeakPtr<MergeSessionThrottle> {
  public:
-  MergeSessionThrottle(int render_process_id,
-                       int render_view_id,
-                       net::URLRequest* request);
+  explicit MergeSessionThrottle(net::URLRequest* request);
   virtual ~MergeSessionThrottle();
 
   // content::ResourceThrottle implementation:
@@ -41,8 +39,6 @@ class MergeSessionThrottle
   // True if we should show the merge session in progress page.
   bool ShouldShowMergeSessionPage(const GURL& url) const;
 
-  int render_process_id_;
-  int render_view_id_;
   net::URLRequest* request_;
 
   DISALLOW_COPY_AND_ASSIGN(MergeSessionThrottle);

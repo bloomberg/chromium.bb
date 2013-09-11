@@ -10,6 +10,7 @@
 #include "chrome/browser/renderer_host/chrome_url_request_user_data.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "content/public/browser/resource_controller.h"
+#include "content/public/browser/resource_request_info.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request.h"
 
@@ -23,15 +24,11 @@ static const int kCheckUrlTimeoutMs = 5000;
 
 SafeBrowsingResourceThrottle::SafeBrowsingResourceThrottle(
     const net::URLRequest* request,
-    int render_process_host_id,
-    int render_view_id,
     bool is_subresource,
     SafeBrowsingService* safe_browsing)
     : state_(STATE_NONE),
       defer_state_(DEFERRED_NONE),
       threat_type_(SB_THREAT_TYPE_SAFE),
-      render_process_host_id_(render_process_host_id),
-      render_view_id_(render_view_id),
       database_manager_(safe_browsing->database_manager()),
       ui_manager_(safe_browsing->ui_manager()),
       request_(request),
@@ -104,11 +101,13 @@ void SafeBrowsingResourceThrottle::OnCheckBrowseUrlResult(
       ChromeURLRequestUserData* user_data =
           ChromeURLRequestUserData::Get(request_);
       if (user_data && user_data->is_prerender()) {
+        const content::ResourceRequestInfo* info =
+            content::ResourceRequestInfo::ForRequest(request_);
         prerender::PrerenderTracker* prerender_tracker = g_browser_process->
             prerender_tracker();
         if (prerender_tracker->TryCancelOnIOThread(
-                render_process_host_id_,
-                render_view_id_,
+                info->GetChildID(),
+                info->GetRouteID(),
                 prerender::FINAL_STATUS_SAFE_BROWSING)) {
           controller()->Cancel();
           should_show_blocking_page = false;
@@ -127,6 +126,8 @@ void SafeBrowsingResourceThrottle::StartDisplayingBlockingPage(
 
   state_ = STATE_DISPLAYING_BLOCKING_PAGE;
 
+  const content::ResourceRequestInfo* info =
+      content::ResourceRequestInfo::ForRequest(request_);
   ui_manager_->DisplayBlockingPage(
       url,
       request_->original_url(),
@@ -135,8 +136,8 @@ void SafeBrowsingResourceThrottle::StartDisplayingBlockingPage(
       threat_type,
       base::Bind(
           &SafeBrowsingResourceThrottle::OnBlockingPageComplete, AsWeakPtr()),
-      render_process_host_id_,
-      render_view_id_);
+      info->GetChildID(),
+      info->GetRouteID());
 }
 
 // SafeBrowsingService::UrlCheckCallback implementation, called on the IO
