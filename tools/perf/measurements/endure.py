@@ -118,7 +118,6 @@ class Endure(page_measurement.PageMeasurement):
 
     v8_bytes_used = v8_object_stats.V8ObjectStatsMetric.GetV8StatsTable(
                             tab, _V8_BYTES_USED)
-    print v8_bytes_used
     v8_bytes_used = sum(v8_bytes_used.values()) / 1024.0
     self._SaveToResults(results, 'V8BytesUsed_X',
                         'seconds', elapsed_time)
