@@ -51,4 +51,11 @@
 # The Skia roll to r11121 altered this layout test
 crbug.com/286312 virtual/gpu/fast/canvas/canvas-composite-transformclip.html [ ImageOnlyFailure ]
 
+# Skia CL r11158 improved GPU-base gradient rendering (and changed three baseline images)
+crbug.com/288674 css3/filters/effect-reference-zoom-hw.html [ ImageOnlyFailure ]
+crbug.com/288674 virtual/gpu/fast/canvas/canvas-text-alignment.html [ ImageOnlyFailure ]
+crbug.com/288674 virtual/gpu/fast/canvas/fillrect_gradient.html [ ImageOnlyFailure ]
+# This image difference is related to the recent oval rendering changes
+crbug.com/288674 virtual/gpu/fast/canvas/canvas-composite.html [ ImageOnlyFailure ]
+
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
