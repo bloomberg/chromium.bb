@@ -82,6 +82,7 @@ int main(int argc, char *argv[])
 		t = find_test(argv[1]);
 		if (t == NULL) {
 			fprintf(stderr, "unknown test: \"%s\"\n", argv[1]);
+			list_tests();
 			exit(EXIT_FAILURE);
 		}
 
