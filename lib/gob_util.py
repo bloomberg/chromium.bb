@@ -98,7 +98,7 @@ def ReadHttpResponse(conn, ignore_404=True):
         'A transient error occured while querying %s:\n'
         '%s %s %s\n'
         '%s %d %s' % (
-            conn.host, conn.params['method'], conn.params['url'],
+            conn.host, conn.req_params['method'], conn.req_params['url'],
             http_version, http_version, response.status, response.reason))
     if TRY_LIMIT - idx > 1:
       msg += '\n... will retry %d more times.' % (TRY_LIMIT - idx - 1)
