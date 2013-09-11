@@ -246,8 +246,6 @@ webkit.org/b/111626 [ Mac Debug ] svg/css/font-face-crash.html [ Crash Pass ]
 crbug.com/266213 [ Debug ] svg/custom/bug86392.html [ Crash ]
 crbug.com/266213 [ Debug ] svg/custom/unicode-in-tspan-multi-svg-crash.html [ Crash ]
 
-Bug(fmalita) svg/filters/big-sized-filter.svg [ NeedsRebaseline ]
-
 # -----------------------------------------------------------------
 # End SVG TESTS
 # -----------------------------------------------------------------
