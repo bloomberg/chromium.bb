@@ -3,6 +3,9 @@
 # found in the LICENSE file.
 
 {
+  'target_defaults': {
+    'allow_sharedlib_linksettings_propagation': 0,
+  },
   'targets': [
     {
       'target_name': 'sharedlib',

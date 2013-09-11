@@ -1671,7 +1671,14 @@ class DependencyGraphNode(object):
     Returns a list of dependency targets whose link_settings should be merged
     into this target.
     """
-    return self._LinkDependenciesInternal(targets, False)
+
+    # TODO(sbaig) Currently, chrome depends on the bug that shared libraries'
+    # link_settings are propagated.  So for now, we will allow it, unless the
+    # 'allow_sharedlib_linksettings_propagation' flag is explicitly set to
+    # False.  Once chrome is fixed, we can remove this flag.
+    include_shared_libraries = \
+        targets[self.ref].get('allow_sharedlib_linksettings_propagation', True)
+    return self._LinkDependenciesInternal(targets, include_shared_libraries)
 
   def DependenciesToLinkAgainst(self, targets):
     """
