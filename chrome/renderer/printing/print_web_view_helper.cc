@@ -25,6 +25,7 @@
 #include "content/public/renderer/web_preferences.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
+#include "net/base/escape.h"
 #include "printing/metafile.h"
 #include "printing/metafile_impl.h"
 #include "printing/units.h"
@@ -659,7 +660,8 @@ void PrepareFrameAndViewForPrint::CopySelection(
     const WebPreferences& preferences) {
   ResizeForPrinting();
   std::string url_str = "data:text/html;charset=utf-8,";
-  url_str.append(frame()->selectionAsMarkup().utf8());
+  url_str.append(
+      net::EscapeQueryParamValue(frame()->selectionAsMarkup().utf8(), false));
   RestoreSize();
   // Create a new WebView with the same settings as the current display one.
   // Except that we disable javascript (don't want any active content running
