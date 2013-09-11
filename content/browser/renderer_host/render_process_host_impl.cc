@@ -922,8 +922,8 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
 #if defined(ENABLE_WEBRTC)
     switches::kEnableWebRtcAecRecordings,
     switches::kEnableWebRtcTcpServerSocket,
+    switches::kDisableWebRtcHWEncoding,
     switches::kEnableWebRtcHWDecoding,
-    switches::kEnableWebRtcHWEncoding,
 #endif
     switches::kDisableWebKitMediaSource,
     switches::kEnableOverscrollNotifications,

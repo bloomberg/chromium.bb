@@ -892,7 +892,10 @@ const char kZygoteProcess[]                 = "zygote";
 
 #if defined(ENABLE_WEBRTC)
 // Disable WebRTC device enumeration.
-const char kDisableDeviceEnumeration[]        = "disable-device-enumeration";
+const char kDisableDeviceEnumeration[]      = "disable-device-enumeration";
+
+// Disables HW encode acceleration for WebRTC.
+const char kDisableWebRtcHWEncoding[]       = "disable-webrtc-hw-encoding";
 
 // Disable WebRTC DataChannels SCTP wire protocol support.
 const char kDisableSCTPDataChannels[]        = "disable-sctp-data-channels";
@@ -902,9 +905,6 @@ const char kEnableWebRtcAecRecordings[]     = "enable-webrtc-aec-recordings";
 
 // Enables HW decode acceleration for WebRTC.
 const char kEnableWebRtcHWDecoding[]        = "enable-webrtc-hw-decoding";
-
-// Enables HW encode acceleration for WebRTC.
-const char kEnableWebRtcHWEncoding[] = "enable-webrtc-hw-encoding";
 
 #endif
 
@@ -920,7 +920,7 @@ const char kDisableGestureRequirementForMediaPlayback[] =
 const char kDisableMediaHistoryLogging[]    = "disable-media-history";
 
 // Disable overscroll edge effects like those found in Android views.
-const char kDisableOverscrollEdgeEffect[] = "disable-overscroll-edge-effect";
+const char kDisableOverscrollEdgeEffect[]   = "disable-overscroll-edge-effect";
 
 // WebRTC is enabled by default on Android.
 const char kDisableWebRTC[]                 = "disable-webrtc";

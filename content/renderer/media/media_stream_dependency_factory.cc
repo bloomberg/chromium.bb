@@ -495,18 +495,20 @@ bool MediaStreamDependencyFactory::CreatePeerConnectionFactory() {
     scoped_refptr<RendererGpuVideoAcceleratorFactories> gpu_factories =
         RenderThreadImpl::current()->GetGpuFactories(media_loop_proxy);
 #if !defined(GOOGLE_TV)
-    if (cmd_line->HasSwitch(switches::kEnableWebRtcHWDecoding))
+    if (cmd_line->HasSwitch(switches::kEnableWebRtcHWDecoding)) {
       if (gpu_factories)
         decoder_factory.reset(new RTCVideoDecoderFactory(gpu_factories));
+    }
 #else
     // PeerConnectionFactory will hold the ownership of this
     // VideoDecoderFactory.
     decoder_factory.reset(decoder_factory_tv_ = new RTCVideoDecoderFactoryTv());
 #endif
 
-    if (cmd_line->HasSwitch(switches::kEnableWebRtcHWEncoding))
+    if (!cmd_line->HasSwitch(switches::kDisableWebRtcHWEncoding)) {
       if (gpu_factories)
         encoder_factory.reset(new RTCVideoEncoderFactory(gpu_factories));
+    }
 
     scoped_refptr<webrtc::PeerConnectionFactoryInterface> factory(
         webrtc::CreatePeerConnectionFactory(worker_thread_,

@@ -137,8 +137,8 @@ std::string DeriveCommandLine(const GURL& start_url,
       ::switches::kVModule,
       ::switches::kEnableWebGLDraftExtensions,
 #if defined(ENABLE_WEBRTC)
+      ::switches::kDisableWebRtcHWEncoding,
       ::switches::kEnableWebRtcHWDecoding,
-      ::switches::kEnableWebRtcHWEncoding,
 #endif
       ash::switches::kAshDefaultGuestWallpaperLarge,
       ash::switches::kAshDefaultGuestWallpaperSmall,

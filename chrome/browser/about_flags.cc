@@ -459,6 +459,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kDisableDeviceEnumeration)
   },
+  {
+    "disable-webrtc-hw-encoding",
+    IDS_FLAGS_DISABLE_WEBRTC_HW_ENCODING_NAME,
+    IDS_FLAGS_DISABLE_WEBRTC_HW_ENCODING_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kDisableWebRtcHWEncoding)
+  },
 #endif
 #if defined(OS_ANDROID)
   {
