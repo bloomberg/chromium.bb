@@ -46,8 +46,8 @@ public:
     virtual void postApplyResource(RenderObject*, GraphicsContext*&, unsigned short, const Path*, const RenderSVGShape*) OVERRIDE;
     virtual FloatRect resourceBoundingBox(RenderObject*);
 
-    SVGUnitTypes::SVGUnitType maskUnits() const { return toSVGMaskElement(node())->maskUnitsCurrentValue(); }
-    SVGUnitTypes::SVGUnitType maskContentUnits() const { return toSVGMaskElement(node())->maskContentUnitsCurrentValue(); }
+    SVGUnitTypes::SVGUnitType maskUnits() const { return toSVGMaskElement(element())->maskUnitsCurrentValue(); }
+    SVGUnitTypes::SVGUnitType maskContentUnits() const { return toSVGMaskElement(element())->maskContentUnitsCurrentValue(); }
 
     virtual RenderSVGResourceType resourceType() const { return s_resourceType; }
     static RenderSVGResourceType s_resourceType;

@@ -242,9 +242,8 @@ static void writeSVGPaintingResource(TextStream& ts, RenderSVGResource* resource
 
     // All other resources derive from RenderSVGResourceContainer
     RenderSVGResourceContainer* container = static_cast<RenderSVGResourceContainer*>(resource);
-    Node* node = container->node();
-    ASSERT(node);
-    ASSERT(node->isSVGElement());
+    SVGElement* element = container->element();
+    ASSERT(element);
 
     if (resource->resourceType() == PatternResourceType)
         ts << "[type=PATTERN]";
@@ -253,7 +252,7 @@ static void writeSVGPaintingResource(TextStream& ts, RenderSVGResource* resource
     else if (resource->resourceType() == RadialGradientResourceType)
         ts << "[type=RADIAL-GRADIENT]";
 
-    ts << " [id=\"" << toSVGElement(node)->getIdAttribute() << "\"]";
+    ts << " [id=\"" << element->getIdAttribute() << "\"]";
 }
 
 static void writeStyle(TextStream& ts, const RenderObject& object)
@@ -267,8 +266,7 @@ static void writeStyle(TextStream& ts, const RenderObject& object)
     writeIfNotDefault(ts, "opacity", style->opacity(), RenderStyle::initialOpacity());
     if (object.isSVGShape()) {
         const RenderSVGShape& shape = static_cast<const RenderSVGShape&>(object);
-        ASSERT(shape.node());
-        ASSERT(shape.node()->isSVGElement());
+        ASSERT(shape.element());
 
         Color fallbackColor;
         if (RenderSVGResource* strokePaintingResource = RenderSVGResource::strokePaintingResource(const_cast<RenderSVGShape*>(&shape), shape.style(), fallbackColor)) {
@@ -276,7 +274,7 @@ static void writeStyle(TextStream& ts, const RenderObject& object)
             ts << " [stroke={" << s;
             writeSVGPaintingResource(ts, strokePaintingResource);
 
-            SVGLengthContext lengthContext(toSVGElement(shape.node()));
+            SVGLengthContext lengthContext(toSVGElement(shape.element()));
             double dashOffset = svgStyle->strokeDashOffset().value(lengthContext);
             double strokeWidth = svgStyle->strokeWidth().value(lengthContext);
             const Vector<SVGLength>& dashes = svgStyle->strokeDashArray();
@@ -326,8 +324,7 @@ static TextStream& operator<<(TextStream& ts, const RenderSVGShape& shape)
 {
     writePositionAndStyle(ts, shape);
 
-    ASSERT(shape.node()->isSVGElement());
-    SVGElement* svgElement = toSVGElement(shape.node());
+    SVGElement* svgElement = shape.element();
     SVGLengthContext lengthContext(svgElement);
 
     if (svgElement->hasTagName(SVGNames::rectTag)) {
@@ -525,7 +522,7 @@ void writeSVGResourceContainer(TextStream& ts, const RenderObject& object, int i
         // Dump final results that are used for rendering. No use in asking SVGPatternElement for its patternUnits(), as it may
         // link to other patterns using xlink:href, we need to build the full inheritance chain, aka. collectPatternProperties()
         PatternAttributes attributes;
-        toSVGPatternElement(pattern->node())->collectPatternAttributes(attributes);
+        toSVGPatternElement(pattern->element())->collectPatternAttributes(attributes);
 
         writeNameValuePair(ts, "patternUnits", attributes.patternUnits());
         writeNameValuePair(ts, "patternContentUnits", attributes.patternContentUnits());
@@ -540,7 +537,7 @@ void writeSVGResourceContainer(TextStream& ts, const RenderObject& object, int i
         // Dump final results that are used for rendering. No use in asking SVGGradientElement for its gradientUnits(), as it may
         // link to other gradients using xlink:href, we need to build the full inheritance chain, aka. collectGradientProperties()
         LinearGradientAttributes attributes;
-        toSVGLinearGradientElement(gradient->node())->collectGradientAttributes(attributes);
+        toSVGLinearGradientElement(gradient->element())->collectGradientAttributes(attributes);
         writeCommonGradientProperties(ts, attributes.spreadMethod(), attributes.gradientTransform(), attributes.gradientUnits());
 
         ts << " [start=" << gradient->startPoint(attributes) << "] [end=" << gradient->endPoint(attributes) << "]\n";
@@ -550,7 +547,7 @@ void writeSVGResourceContainer(TextStream& ts, const RenderObject& object, int i
         // Dump final results that are used for rendering. No use in asking SVGGradientElement for its gradientUnits(), as it may
         // link to other gradients using xlink:href, we need to build the full inheritance chain, aka. collectGradientProperties()
         RadialGradientAttributes attributes;
-        toSVGRadialGradientElement(gradient->node())->collectGradientAttributes(attributes);
+        toSVGRadialGradientElement(gradient->element())->collectGradientAttributes(attributes);
         writeCommonGradientProperties(ts, attributes.spreadMethod(), attributes.gradientTransform(), attributes.gradientUnits());
 
         FloatPoint focalPoint = gradient->focalPoint(attributes);

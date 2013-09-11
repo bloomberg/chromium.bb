@@ -70,7 +70,7 @@ bool RenderSVGResourceMasker::applyResource(RenderObject* object, RenderStyle*,
     ASSERT_WITH_SECURITY_IMPLICATION(!needsLayout());
 
     FloatRect repaintRect = object->repaintRectInLocalCoordinates();
-    if (repaintRect.isEmpty() || !node()->hasChildNodes())
+    if (repaintRect.isEmpty() || !element()->hasChildNodes())
         return false;
 
     const SVGRenderStyle* svgStyle = style()->svgStyle();
@@ -113,13 +113,13 @@ void RenderSVGResourceMasker::drawMaskContent(GraphicsContext* context, const Fl
 
     // Adjust the mask image context according to the target objectBoundingBox.
     AffineTransform maskContentTransformation;
-    if (toSVGMaskElement(node())->maskContentUnitsCurrentValue() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX) {
+    if (toSVGMaskElement(element())->maskContentUnitsCurrentValue() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX) {
         maskContentTransformation.translate(targetBoundingBox.x(), targetBoundingBox.y());
         maskContentTransformation.scaleNonUniform(targetBoundingBox.width(), targetBoundingBox.height());
         context->concatCTM(maskContentTransformation);
     }
 
-    for (Node* childNode = node()->firstChild(); childNode; childNode = childNode->nextSibling()) {
+    for (Node* childNode = element()->firstChild(); childNode; childNode = childNode->nextSibling()) {
         RenderObject* renderer = childNode->renderer();
         if (!childNode->isSVGElement() || !renderer)
             continue;
@@ -133,7 +133,7 @@ void RenderSVGResourceMasker::drawMaskContent(GraphicsContext* context, const Fl
 
 void RenderSVGResourceMasker::calculateMaskContentRepaintRect()
 {
-    for (Node* childNode = node()->firstChild(); childNode; childNode = childNode->nextSibling()) {
+    for (Node* childNode = element()->firstChild(); childNode; childNode = childNode->nextSibling()) {
         RenderObject* renderer = childNode->renderer();
         if (!childNode->isSVGElement() || !renderer)
             continue;
@@ -146,7 +146,7 @@ void RenderSVGResourceMasker::calculateMaskContentRepaintRect()
 
 FloatRect RenderSVGResourceMasker::resourceBoundingBox(RenderObject* object)
 {
-    SVGMaskElement* maskElement = toSVGMaskElement(node());
+    SVGMaskElement* maskElement = toSVGMaskElement(element());
     ASSERT(maskElement);
 
     FloatRect objectBoundingBox = object->objectBoundingBox();

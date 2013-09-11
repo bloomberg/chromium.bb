@@ -58,7 +58,7 @@ public:
 
     bool hitTestClipContent(const FloatRect&, const FloatPoint&);
 
-    SVGUnitTypes::SVGUnitType clipPathUnits() const { return toSVGClipPathElement(node())->clipPathUnitsCurrentValue(); }
+    SVGUnitTypes::SVGUnitType clipPathUnits() const { return toSVGClipPathElement(element())->clipPathUnitsCurrentValue(); }
 
     static RenderSVGResourceType s_resourceType;
 private:

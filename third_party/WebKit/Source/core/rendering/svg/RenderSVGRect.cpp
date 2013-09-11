@@ -50,7 +50,7 @@ void RenderSVGRect::updateShapeFromElement()
     m_fillBoundingBox = FloatRect();
     m_innerStrokeRect = FloatRect();
     m_outerStrokeRect = FloatRect();
-    SVGRectElement* rect = toSVGRectElement(node());
+    SVGRectElement* rect = toSVGRectElement(element());
     ASSERT(rect);
 
     SVGLengthContext lengthContext(rect);

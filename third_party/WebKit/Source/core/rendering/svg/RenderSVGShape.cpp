@@ -63,8 +63,7 @@ void RenderSVGShape::updateShapeFromElement()
     m_path = adoptPtr(new Path);
     ASSERT(RenderSVGShape::isEmpty());
 
-    SVGGraphicsElement* element = toSVGGraphicsElement(node());
-    updatePathFromGraphicsElement(element, path());
+    updatePathFromGraphicsElement(toSVGGraphicsElement(element()), path());
     processMarkerPositions();
 
     m_fillBoundingBox = calculateObjectBoundingBox();
@@ -140,7 +139,6 @@ bool RenderSVGShape::strokeContains(const FloatPoint& point, bool requiresStroke
 void RenderSVGShape::layout()
 {
     LayoutRepainter repainter(*this, SVGRenderSupport::checkForSVGRepaintDuringLayout(this) && selfNeedsLayout());
-    SVGGraphicsElement* element = toSVGGraphicsElement(node());
 
     bool updateCachedBoundariesInParents = false;
 
@@ -153,7 +151,7 @@ void RenderSVGShape::layout()
     }
 
     if (m_needsTransformUpdate) {
-        m_localTransform = element->animatedLocalTransform();
+        m_localTransform =  toSVGGraphicsElement(element())->animatedLocalTransform();
         m_needsTransformUpdate = false;
         updateCachedBoundariesInParents = true;
     }
@@ -192,8 +190,7 @@ bool RenderSVGShape::setupNonScalingStrokeContext(AffineTransform& strokeTransfo
 
 AffineTransform RenderSVGShape::nonScalingStrokeTransform() const
 {
-    SVGGraphicsElement* element = toSVGGraphicsElement(node());
-    return element->getScreenCTM(SVGLocatable::DisallowStyleUpdate);
+    return toSVGGraphicsElement(element())->getScreenCTM(SVGLocatable::DisallowStyleUpdate);
 }
 
 bool RenderSVGShape::shouldGenerateMarkerPositions() const
@@ -201,8 +198,7 @@ bool RenderSVGShape::shouldGenerateMarkerPositions() const
     if (!style()->svgStyle()->hasMarkers())
         return false;
 
-    SVGGraphicsElement* element = toSVGGraphicsElement(node());
-    if (!element->supportsMarkers())
+    if (!toSVGGraphicsElement(element())->supportsMarkers())
         return false;
 
     SVGResources* resources = SVGResourcesCache::cachedResourcesForRenderObject(this);
@@ -414,8 +410,7 @@ void RenderSVGShape::updateRepaintBoundingBox()
 
 float RenderSVGShape::strokeWidth() const
 {
-    SVGElement* svgElement = toSVGElement(node());
-    SVGLengthContext lengthContext(svgElement);
+    SVGLengthContext lengthContext(element());
     return style()->svgStyle()->strokeWidth().value(lengthContext);
 }
 

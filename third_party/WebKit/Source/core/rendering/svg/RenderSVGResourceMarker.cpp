@@ -92,7 +92,7 @@ const AffineTransform& RenderSVGResourceMarker::localToParentTransform() const
 
 FloatPoint RenderSVGResourceMarker::referencePoint() const
 {
-    SVGMarkerElement* marker = toSVGMarkerElement(node());
+    SVGMarkerElement* marker = toSVGMarkerElement(element());
     ASSERT(marker);
 
     SVGLengthContext lengthContext(marker);
@@ -101,7 +101,7 @@ FloatPoint RenderSVGResourceMarker::referencePoint() const
 
 float RenderSVGResourceMarker::angle() const
 {
-    SVGMarkerElement* marker = toSVGMarkerElement(node());
+    SVGMarkerElement* marker = toSVGMarkerElement(element());
     ASSERT(marker);
 
     float angle = -1;
@@ -113,7 +113,7 @@ float RenderSVGResourceMarker::angle() const
 
 AffineTransform RenderSVGResourceMarker::markerTransformation(const FloatPoint& origin, float autoAngle, float strokeWidth) const
 {
-    SVGMarkerElement* marker = toSVGMarkerElement(node());
+    SVGMarkerElement* marker = toSVGMarkerElement(element());
     ASSERT(marker);
 
     float markerAngle = angle();
@@ -129,7 +129,7 @@ AffineTransform RenderSVGResourceMarker::markerTransformation(const FloatPoint& 
 void RenderSVGResourceMarker::draw(PaintInfo& paintInfo, const AffineTransform& transform)
 {
     // An empty viewBox disables rendering.
-    SVGMarkerElement* marker = toSVGMarkerElement(toSVGElement(node()));
+    SVGMarkerElement* marker = toSVGMarkerElement(element());
     ASSERT(marker);
     if (marker->hasAttribute(SVGNames::viewBoxAttr) && marker->viewBoxIsValid() && marker->viewBoxCurrentValue().isEmpty())
         return;
@@ -155,7 +155,7 @@ AffineTransform RenderSVGResourceMarker::markerContentTransformation(const Affin
 
 AffineTransform RenderSVGResourceMarker::viewportTransform() const
 {
-    SVGMarkerElement* marker = toSVGMarkerElement(node());
+    SVGMarkerElement* marker = toSVGMarkerElement(element());
     ASSERT(marker);
 
     return marker->viewBoxToViewTransform(m_viewport.width(), m_viewport.height());
@@ -166,7 +166,7 @@ void RenderSVGResourceMarker::calcViewport()
     if (!selfNeedsLayout())
         return;
 
-    SVGMarkerElement* marker = toSVGMarkerElement(node());
+    SVGMarkerElement* marker = toSVGMarkerElement(element());
     ASSERT(marker);
 
     SVGLengthContext lengthContext(marker);

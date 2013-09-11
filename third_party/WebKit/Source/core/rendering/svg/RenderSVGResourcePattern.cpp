@@ -58,7 +58,7 @@ PatternData* RenderSVGResourcePattern::buildPattern(RenderObject* object, unsign
     if (currentData && currentData->pattern)
         return currentData;
 
-    SVGPatternElement* patternElement = toSVGPatternElement(node());
+    SVGPatternElement* patternElement = toSVGPatternElement(element());
     if (!patternElement)
         return 0;
 

@@ -33,6 +33,7 @@
 
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
+#include "core/svg/SVGElement.h"
 #include "core/svg/SVGRect.h"
 
 namespace WebCore {
@@ -65,11 +66,16 @@ public:
 
     virtual void computeLayerHitTestRects(LayerHitTestRects&) const OVERRIDE;
 
+    SVGElement* element() const { return toSVGElement(RenderObject::node()); }
+
 protected:
     virtual void addLayerHitTestRects(LayerHitTestRects&, const RenderLayer* currentCompositedLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const OVERRIDE;
     virtual void willBeDestroyed();
 
 private:
+    // RenderSVGModelObject subclasses should use element() instead.
+    void node() const WTF_DELETED_FUNCTION;
+
     // This method should never be called, SVG uses a different nodeAtPoint method
     bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) OVERRIDE;
     virtual void absoluteFocusRingQuads(Vector<FloatQuad>&) OVERRIDE FINAL;
