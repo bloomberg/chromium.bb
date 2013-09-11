@@ -455,12 +455,10 @@ IN_PROC_BROWSER_TEST_P(KioskTest, LaunchAppNetworkDown) {
   lock_screen_waiter.Wait();
 
   // A network error screen should be shown after authenticating.
-  content::WindowedNotificationObserver network_error_signal(
-      chrome::NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN,
-      content::NotificationService::AllSources());
+  OobeScreenWaiter error_screen_waiter(OobeDisplay::SCREEN_ERROR_MESSAGE);
   static_cast<AppLaunchSigninScreen::Delegate*>(GetAppLaunchController())
     ->OnOwnerSigninSuccess();
-  network_error_signal.Wait();
+  error_screen_waiter.Wait();
 
   ASSERT_TRUE(GetAppLaunchController()->showing_network_dialog());
 

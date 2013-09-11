@@ -139,6 +139,8 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
     onBeforeShow: function(data) {
       cr.ui.Oobe.clearErrors();
       cr.ui.DropDown.show('offline-networks-list', false);
+      if (data === undefined)
+        return;
       if ('uiState' in data)
         this.setUIState(data['uiState']);
       if ('errorState' in data && 'network' in data)
