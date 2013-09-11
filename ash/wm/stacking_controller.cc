@@ -10,7 +10,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/wm/always_on_top_controller.h"
 #include "ash/wm/coordinate_conversion.h"
-#include "ash/wm/window_properties.h"
+#include "ash/wm/window_settings.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -47,10 +47,6 @@ bool IsSystemModal(aura::Window* window) {
 bool HasTransientParentWindow(aura::Window* window) {
   return window->transient_parent() &&
       window->transient_parent()->type() != aura::client::WINDOW_TYPE_UNKNOWN;
-}
-
-bool IsPanelAttached(aura::Window* window) {
-  return window->GetProperty(internal::kPanelAttachedKey);
 }
 
 internal::AlwaysOnTopController*
@@ -96,7 +92,7 @@ aura::Window* StackingController::GetDefaultParent(aura::Window* context,
       return GetContainerById(
           target_root, internal::kShellWindowId_UnparentedControlContainer);
     case aura::client::WINDOW_TYPE_PANEL:
-      if (IsPanelAttached(window))
+      if (wm::GetWindowSettings(window)->panel_attached())
         return GetContainerById(target_root,
                                 internal::kShellWindowId_PanelContainer);
       else

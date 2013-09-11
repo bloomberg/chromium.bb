@@ -14,6 +14,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/property_util.h"
+#include "ash/wm/window_settings.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
 #include "ash/wm/workspace/snap_sizer.h"
@@ -1421,7 +1422,8 @@ TEST_F(WorkspaceWindowResizerTest, CheckUserWindowMangedFlags) {
     EXPECT_EQ("0,150 400x200", window_->bounds().ToString());
     resizer->RevertDrag();
 
-    EXPECT_FALSE(ash::wm::HasUserChangedWindowPositionOrSize(window_.get()));
+    EXPECT_FALSE(
+        wm::GetWindowSettings(window_.get())->bounds_changed_by_user());
   }
 
   // Check that a completed move / size does change the user coordinates.
@@ -1434,7 +1436,8 @@ TEST_F(WorkspaceWindowResizerTest, CheckUserWindowMangedFlags) {
     resizer->Drag(CalculateDragPoint(*resizer, 0, 100), 0);
     EXPECT_EQ("0,150 400x200", window_->bounds().ToString());
     resizer->CompleteDrag(0);
-    EXPECT_TRUE(ash::wm::HasUserChangedWindowPositionOrSize(window_.get()));
+    EXPECT_TRUE(
+        wm::GetWindowSettings(window_.get())->bounds_changed_by_user());
   }
 }
 

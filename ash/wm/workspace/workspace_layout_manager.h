@@ -56,6 +56,10 @@ class ASH_EXPORT WorkspaceLayoutManager : public BaseLayoutManager {
                                        const void* key,
                                        intptr_t old) OVERRIDE;
 
+  // ash::WindowSettings::Observer overrides:
+  virtual void OnTrackedByWorkspaceChanged(aura::Window* window,
+                                           bool old) OVERRIDE;
+
  private:
   // Overridden from BaseLayoutManager:
   virtual void ShowStateChanged(aura::Window* window,

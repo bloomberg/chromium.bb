@@ -18,6 +18,7 @@
 #include "ui/views/view.h"
 
 #if defined(USE_ASH)
+#include "ash/wm/window_settings.h"
 #include "ash/wm/window_util.h"
 #endif
 
@@ -166,7 +167,9 @@ BrowserFrameAura::~BrowserFrameAura() {
 void BrowserFrameAura::SetWindowAutoManaged() {
 #if defined(USE_ASH)
   if (browser_view_->browser()->type() != Browser::TYPE_POPUP ||
-      browser_view_->browser()->is_app())
-    ash::wm::SetWindowPositionManaged(GetNativeWindow(), true);
+      browser_view_->browser()->is_app()) {
+    ash::wm::GetWindowSettings(GetNativeWindow())->
+        set_window_position_managed(true);
+  }
 #endif
 }

@@ -9,7 +9,7 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/wm/property_util.h"
+#include "ash/wm/window_settings.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/frame_caption_button_container_view.h"
 #include "base/memory/scoped_ptr.h"
@@ -567,9 +567,9 @@ TEST_F(FramePainterTest, MinimalHeaderStyle) {
   // style.
   EXPECT_FALSE(p->ShouldUseMinimalHeaderStyle(FramePainter::THEMED_YES));
 
-  SetTrackedByWorkspace(w->GetNativeWindow(), false);
+  wm::GetWindowSettings(w->GetNativeWindow())->SetTrackedByWorkspace(false);
   EXPECT_FALSE(p->ShouldUseMinimalHeaderStyle(FramePainter::THEMED_NO));
-  SetTrackedByWorkspace(w->GetNativeWindow(), true);
+  wm::GetWindowSettings(w->GetNativeWindow())->SetTrackedByWorkspace(true);
 }
 
 // Ensure the title text is vertically aligned with the window icon.
