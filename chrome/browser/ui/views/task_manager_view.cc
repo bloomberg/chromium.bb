@@ -138,30 +138,11 @@ void TaskManagerTableModel::OnItemsChanged(int start, int length) {
 void TaskManagerTableModel::OnItemsAdded(int start, int length) {
   if (observer_)
     observer_->OnItemsAdded(start, length);
-  // There's a bug in the Windows ListView where inserting items with groups
-  // enabled puts them in the wrong position, so we will need to rebuild the
-  // list view in this case.
-  // (see: http://connect.microsoft.com/VisualStudio/feedback/details/115345/).
-  //
-  // Turns out, forcing a list view rebuild causes http://crbug.com/69391
-  // because items are added to the ListView one-at-a-time when initially
-  // displaying the TaskManager, resulting in many ListView rebuilds. So we are
-  // no longer forcing a rebuild for now because the current UI doesn't use
-  // groups - if we are going to add groups in the upcoming TaskManager UI
-  // revamp, we'll need to re-enable this call to OnModelChanged() and also add
-  // code to avoid doing multiple rebuilds on startup (maybe just generate a
-  // single OnModelChanged() call after the initial population).
-
-  // OnModelChanged();
 }
 
 void TaskManagerTableModel::OnItemsRemoved(int start, int length) {
   if (observer_)
     observer_->OnItemsRemoved(start, length);
-
-  // We may need to change the indentation of some items if the topmost item
-  // in the group was removed, so update the view.
-  OnModelChanged();
 }
 
 // The Task manager UI container.

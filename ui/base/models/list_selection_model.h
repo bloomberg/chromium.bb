@@ -51,7 +51,7 @@ class UI_EXPORT ListSelectionModel {
   // This is used when a new tab is inserted into the tabstrip.
   void IncrementFrom(int index);
 
-  // Shifts all indices < |index| down by 1. If |index| is selected, it is
+  // Shifts all indices > |index| down by 1. If |index| is selected, it is
   // removed. For example, if the selection consists of [0, 1, 5] and this is
   // invoked with 1, it results in [0, 4]. This is used when a tab is removed
   // from the tabstrip.
