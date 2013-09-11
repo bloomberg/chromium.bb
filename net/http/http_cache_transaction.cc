@@ -196,14 +196,10 @@ HttpCache::Transaction::Transaction(
       io_callback_(base::Bind(&Transaction::OnIOComplete,
                               weak_factory_.GetWeakPtr())),
       transaction_pattern_(PATTERN_UNDEFINED),
-      defer_cache_sensitivity_delay_(false),
       transaction_delegate_(transaction_delegate) {
   COMPILE_ASSERT(HttpCache::Transaction::kNumValidationHeaders ==
                  arraysize(kValidationHeaders),
                  Invalid_number_of_validation_headers);
-  base::StringToInt(
-      base::FieldTrialList::FindFullName("CacheSensitivityAnalysis"),
-      &sensitivity_analysis_percent_increase_);
 }
 
 HttpCache::Transaction::~Transaction() {
@@ -212,8 +208,6 @@ HttpCache::Transaction::~Transaction() {
   callback_.Reset();
 
   transaction_delegate_ = NULL;
-  cache_io_start_ = base::TimeTicks();
-  deferred_cache_sensitivity_delay_ = base::TimeDelta();
 
   if (cache_) {
     if (entry_) {
@@ -668,9 +662,6 @@ int HttpCache::Transaction::DoLoop(int result) {
       case STATE_ADD_TO_ENTRY_COMPLETE:
         rv = DoAddToEntryComplete(rv);
         break;
-      case STATE_ADD_TO_ENTRY_COMPLETE_AFTER_DELAY:
-        rv = DoAddToEntryCompleteAfterDelay(rv);
-        break;
       case STATE_START_PARTIAL_CACHE_VALIDATION:
         DCHECK_EQ(OK, rv);
         rv = DoStartPartialCacheValidation();
@@ -1026,8 +1017,7 @@ int HttpCache::Transaction::DoOpenEntry() {
   net_log_.BeginEvent(NetLog::TYPE_HTTP_CACHE_OPEN_ENTRY);
   first_cache_access_since_ = TimeTicks::Now();
   ReportCacheActionStart();
-  defer_cache_sensitivity_delay_ = true;
-  return ResetCacheIOStart(cache_->OpenEntry(cache_key_, &new_entry_, this));
+  return cache_->OpenEntry(cache_key_, &new_entry_, this);
 }
 
 int HttpCache::Transaction::DoOpenEntryComplete(int result) {
@@ -1079,8 +1069,7 @@ int HttpCache::Transaction::DoCreateEntry() {
   cache_pending_ = true;
   net_log_.BeginEvent(NetLog::TYPE_HTTP_CACHE_CREATE_ENTRY);
   ReportCacheActionStart();
-  defer_cache_sensitivity_delay_ = true;
-  return ResetCacheIOStart(cache_->CreateEntry(cache_key_, &new_entry_, this));
+  return cache_->CreateEntry(cache_key_, &new_entry_, this);
 }
 
 int HttpCache::Transaction::DoCreateEntryComplete(int result) {
@@ -1122,7 +1111,7 @@ int HttpCache::Transaction::DoDoomEntry() {
     first_cache_access_since_ = TimeTicks::Now();
   net_log_.BeginEvent(NetLog::TYPE_HTTP_CACHE_DOOM_ENTRY);
   ReportCacheActionStart();
-  return ResetCacheIOStart(cache_->DoomEntry(cache_key_, this));
+  return cache_->DoomEntry(cache_key_, this);
 }
 
 int HttpCache::Transaction::DoDoomEntryComplete(int result) {
@@ -1146,8 +1135,6 @@ int HttpCache::Transaction::DoAddToEntry() {
 }
 
 int HttpCache::Transaction::DoAddToEntryComplete(int result) {
-  DCHECK(defer_cache_sensitivity_delay_);
-  defer_cache_sensitivity_delay_ = false;
   net_log_.EndEventWithNetErrorCode(NetLog::TYPE_HTTP_CACHE_ADD_TO_ENTRY,
                                     result);
   const TimeDelta entry_lock_wait =
@@ -1164,18 +1151,6 @@ int HttpCache::Transaction::DoAddToEntryComplete(int result) {
   // If there is a failure, the cache should have taken care of new_entry_.
   new_entry_ = NULL;
 
-  next_state_ = STATE_ADD_TO_ENTRY_COMPLETE_AFTER_DELAY;
-
-  if (deferred_cache_sensitivity_delay_ == base::TimeDelta())
-    return result;
-
-  base::TimeDelta delay = deferred_cache_sensitivity_delay_;
-  deferred_cache_sensitivity_delay_ = base::TimeDelta();
-  ScheduleDelayedLoop(delay, result);
-  return ERR_IO_PENDING;
-}
-
-int HttpCache::Transaction::DoAddToEntryCompleteAfterDelay(int result) {
   if (result == ERR_CACHE_RACE) {
     next_state_ = STATE_INIT_ENTRY;
     return OK;
@@ -1204,8 +1179,7 @@ int HttpCache::Transaction::DoStartPartialCacheValidation() {
     return OK;
 
   next_state_ = STATE_COMPLETE_PARTIAL_CACHE_VALIDATION;
-  return ResetCacheIOStart(
-      partial_->ShouldValidateCache(entry_->disk_entry, io_callback_));
+  return partial_->ShouldValidateCache(entry_->disk_entry, io_callback_);
 }
 
 int HttpCache::Transaction::DoCompletePartialCacheValidation(int result) {
@@ -1330,8 +1304,7 @@ int HttpCache::Transaction::DoTruncateCachedData() {
     net_log_.BeginEvent(NetLog::TYPE_HTTP_CACHE_WRITE_DATA);
   ReportCacheActionStart();
   // Truncate the stream.
-  return ResetCacheIOStart(
-      WriteToEntry(kResponseContentIndex, 0, NULL, 0, io_callback_));
+  return WriteToEntry(kResponseContentIndex, 0, NULL, 0, io_callback_);
 }
 
 int HttpCache::Transaction::DoTruncateCachedDataComplete(int result) {
@@ -1355,8 +1328,7 @@ int HttpCache::Transaction::DoTruncateCachedMetadata() {
   if (net_log_.IsLoggingAllEvents())
     net_log_.BeginEvent(NetLog::TYPE_HTTP_CACHE_WRITE_INFO);
   ReportCacheActionStart();
-  return ResetCacheIOStart(
-      WriteToEntry(kMetadataIndex, 0, NULL, 0, io_callback_));
+  return WriteToEntry(kMetadataIndex, 0, NULL, 0, io_callback_);
 }
 
 int HttpCache::Transaction::DoTruncateCachedMetadataComplete(int result) {
@@ -1408,8 +1380,8 @@ int HttpCache::Transaction::DoCacheReadResponse() {
 
   net_log_.BeginEvent(NetLog::TYPE_HTTP_CACHE_READ_INFO);
   ReportCacheActionStart();
-  return ResetCacheIOStart(entry_->disk_entry->ReadData(
-      kResponseInfoIndex, 0, read_buf_.get(), io_buf_len_, io_callback_));
+  return entry_->disk_entry->ReadData(kResponseInfoIndex, 0, read_buf_.get(),
+                                      io_buf_len_, io_callback_);
 }
 
 int HttpCache::Transaction::DoCacheReadResponseComplete(int result) {
@@ -1505,12 +1477,10 @@ int HttpCache::Transaction::DoCacheReadMetadata() {
 
   net_log_.BeginEvent(NetLog::TYPE_HTTP_CACHE_READ_INFO);
   ReportCacheActionStart();
-  return ResetCacheIOStart(
-      entry_->disk_entry->ReadData(kMetadataIndex,
-                                   0,
-                                   response_.metadata.get(),
-                                   response_.metadata->size(),
-                                   io_callback_));
+  return entry_->disk_entry->ReadData(kMetadataIndex, 0,
+                                      response_.metadata.get(),
+                                      response_.metadata->size(),
+                                      io_callback_);
 }
 
 int HttpCache::Transaction::DoCacheReadMetadataComplete(int result) {
@@ -1523,10 +1493,7 @@ int HttpCache::Transaction::DoCacheReadMetadataComplete(int result) {
 
 int HttpCache::Transaction::DoCacheQueryData() {
   next_state_ = STATE_CACHE_QUERY_DATA_COMPLETE;
-
-  // Balanced in DoCacheQueryDataComplete.
-  return ResetCacheIOStart(
-      entry_->disk_entry->ReadyForSparseIO(io_callback_));
+  return entry_->disk_entry->ReadyForSparseIO(io_callback_);
 }
 
 int HttpCache::Transaction::DoCacheQueryDataComplete(int result) {
@@ -1559,15 +1526,13 @@ int HttpCache::Transaction::DoCacheReadData() {
     net_log_.BeginEvent(NetLog::TYPE_HTTP_CACHE_READ_DATA);
   ReportCacheActionStart();
   if (partial_.get()) {
-    return ResetCacheIOStart(partial_->CacheRead(
-        entry_->disk_entry, read_buf_.get(), io_buf_len_, io_callback_));
+    return partial_->CacheRead(entry_->disk_entry, read_buf_.get(), io_buf_len_,
+                               io_callback_);
   }
 
-  return ResetCacheIOStart(entry_->disk_entry->ReadData(kResponseContentIndex,
-                                                        read_offset_,
-                                                        read_buf_.get(),
-                                                        io_buf_len_,
-                                                        io_callback_));
+  return entry_->disk_entry->ReadData(kResponseContentIndex, read_offset_,
+                                      read_buf_.get(), io_buf_len_,
+                                      io_callback_);
 }
 
 int HttpCache::Transaction::DoCacheReadDataComplete(int result) {
@@ -1608,8 +1573,7 @@ int HttpCache::Transaction::DoCacheWriteData(int num_bytes) {
     ReportCacheActionStart();
   }
 
-  return ResetCacheIOStart(
-      AppendResponseDataToEntry(read_buf_.get(), num_bytes, io_callback_));
+  return AppendResponseDataToEntry(read_buf_.get(), num_bytes, io_callback_);
 }
 
 int HttpCache::Transaction::DoCacheWriteDataComplete(int result) {
@@ -2294,8 +2258,8 @@ int HttpCache::Transaction::WriteResponseInfoToEntry(bool truncated) {
   data->Done();
 
   io_buf_len_ = data->pickle()->size();
-  return ResetCacheIOStart(entry_->disk_entry->WriteData(
-      kResponseInfoIndex, 0, data.get(), io_buf_len_, io_callback_, true));
+  return entry_->disk_entry->WriteData(kResponseInfoIndex, 0, data.get(),
+                                       io_buf_len_, io_callback_, true);
 }
 
 int HttpCache::Transaction::AppendResponseDataToEntry(
@@ -2392,6 +2356,15 @@ int HttpCache::Transaction::DoRestartPartialRequest() {
   return OK;
 }
 
+void HttpCache::Transaction::ResetNetworkTransaction() {
+  DCHECK(!old_network_trans_load_timing_);
+  DCHECK(network_trans_);
+  LoadTimingInfo load_timing;
+  if (network_trans_->GetLoadTimingInfo(&load_timing))
+    old_network_trans_load_timing_.reset(new LoadTimingInfo(load_timing));
+  network_trans_.reset();
+}
+
 // Histogram data from the end of 2010 show the following distribution of
 // response headers:
 //
@@ -2423,73 +2396,6 @@ bool HttpCache::Transaction::CanResume(bool has_data) {
 }
 
 void HttpCache::Transaction::OnIOComplete(int result) {
-  if (!cache_io_start_.is_null()) {
-    base::TimeDelta cache_time = base::TimeTicks::Now() - cache_io_start_;
-    cache_io_start_ = base::TimeTicks();
-    if (sensitivity_analysis_percent_increase_ > 0) {
-      cache_time *= sensitivity_analysis_percent_increase_;
-      cache_time /= 100;
-      if (!defer_cache_sensitivity_delay_) {
-        ScheduleDelayedLoop(cache_time, result);
-        return;
-      } else {
-        deferred_cache_sensitivity_delay_ += cache_time;
-      }
-    }
-  }
-  DCHECK(cache_io_start_.is_null());
-  DoLoop(result);
-}
-
-void HttpCache::Transaction::ScheduleDelayedLoop(base::TimeDelta delay,
-                                                 int result) {
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&HttpCache::Transaction::RunDelayedLoop,
-                 weak_factory_.GetWeakPtr(),
-                 base::TimeTicks::Now(),
-                 delay,
-                 result),
-      delay);
-}
-
-void HttpCache::Transaction::RunDelayedLoop(base::TimeTicks delay_start_time,
-                                            base::TimeDelta intended_delay,
-                                            int result) {
-  base::TimeDelta actual_delay = base::TimeTicks::Now() - delay_start_time;
-  int64 ratio;
-  int64 inverse_ratio;
-  if (intended_delay.InMicroseconds() > 0) {
-    ratio =
-        100 * actual_delay.InMicroseconds() / intended_delay.InMicroseconds();
-  } else {
-    ratio = 0;
-  }
-  if (actual_delay.InMicroseconds() > 0) {
-    inverse_ratio =
-        100 * intended_delay.InMicroseconds() / actual_delay.InMicroseconds();
-  } else {
-    inverse_ratio = 0;
-  }
-  bool ratio_sample = base::RandInt(0, 99) < ratio;
-  bool inverse_ratio_sample = base::RandInt(0, 99) < inverse_ratio;
-  int intended_delay_ms = intended_delay.InMilliseconds();
-  UMA_HISTOGRAM_COUNTS_10000(
-      "HttpCache.CacheSensitivityAnalysis_IntendedDelayMs",
-      intended_delay_ms);
-  if (ratio_sample) {
-    UMA_HISTOGRAM_COUNTS_10000(
-        "HttpCache.CacheSensitivityAnalysis_RatioByIntendedDelayMs",
-        intended_delay_ms);
-  }
-  if (inverse_ratio_sample) {
-    UMA_HISTOGRAM_COUNTS_10000(
-        "HttpCache.CacheSensitivityAnalysis_InverseRatioByIntendedDelayMs",
-        intended_delay_ms);
-  }
-
-  DCHECK(cache_io_start_.is_null());
-  DCHECK(deferred_cache_sensitivity_delay_ == base::TimeDelta());
   DoLoop(result);
 }
 
@@ -2597,22 +2503,6 @@ void HttpCache::Transaction::RecordHistograms() {
     default:
       NOTREACHED();
   }
-}
-
-int HttpCache::Transaction::ResetCacheIOStart(int return_value) {
-  DCHECK(cache_io_start_.is_null());
-  if (return_value == ERR_IO_PENDING)
-    cache_io_start_ = base::TimeTicks::Now();
-  return return_value;
-}
-
-void HttpCache::Transaction::ResetNetworkTransaction() {
-  DCHECK(!old_network_trans_load_timing_);
-  DCHECK(network_trans_);
-  LoadTimingInfo load_timing;
-  if (network_trans_->GetLoadTimingInfo(&load_timing))
-    old_network_trans_load_timing_.reset(new LoadTimingInfo(load_timing));
-  network_trans_.reset();
 }
 
 }  // namespace net

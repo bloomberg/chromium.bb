@@ -160,7 +160,6 @@ class HttpCache::Transaction : public HttpTransaction {
     STATE_DOOM_ENTRY_COMPLETE,
     STATE_ADD_TO_ENTRY,
     STATE_ADD_TO_ENTRY_COMPLETE,
-    STATE_ADD_TO_ENTRY_COMPLETE_AFTER_DELAY,
     STATE_START_PARTIAL_CACHE_VALIDATION,
     STATE_COMPLETE_PARTIAL_CACHE_VALIDATION,
     STATE_UPDATE_CACHED_RESPONSE,
@@ -232,7 +231,6 @@ class HttpCache::Transaction : public HttpTransaction {
   int DoDoomEntryComplete(int result);
   int DoAddToEntry();
   int DoAddToEntryComplete(int result);
-  int DoAddToEntryCompleteAfterDelay(int result);
   int DoStartPartialCacheValidation();
   int DoCompletePartialCacheValidation(int result);
   int DoUpdateCachedResponse();
@@ -364,6 +362,10 @@ class HttpCache::Transaction : public HttpTransaction {
   // between the byte range request and the cached entry.
   int DoRestartPartialRequest();
 
+  // Resets |network_trans_|, which must be non-NULL.  Also updates
+  // |old_network_trans_load_timing_|, which must be NULL when this is called.
+  void ResetNetworkTransaction();
+
   // Returns true if we should bother attempting to resume this request if it
   // is aborted while in progress. If |has_data| is true, the size of the stored
   // data is considered for the result.
@@ -378,19 +380,6 @@ class HttpCache::Transaction : public HttpTransaction {
   void ReportNetworkActionFinish();
   void UpdateTransactionPattern(TransactionPattern new_transaction_pattern);
   void RecordHistograms();
-
-  // Resets cache_io_start_ to the current time, if |return_value| is
-  // ERR_IO_PENDING.
-  // Returns |return_value|.
-  int ResetCacheIOStart(int return_value);
-
-  void ScheduleDelayedLoop(base::TimeDelta delay, int result);
-  void RunDelayedLoop(base::TimeTicks delay_start_time,
-                      base::TimeDelta intended_delay, int result);
-
-  // Resets |network_trans_|, which must be non-NULL.  Also updates
-  // |old_network_trans_load_timing_|, which must be NULL when this is called.
-  void ResetNetworkTransaction();
 
   State next_state_;
   const HttpRequestInfo* request_;
@@ -437,21 +426,6 @@ class HttpCache::Transaction : public HttpTransaction {
   base::TimeTicks entry_lock_waiting_since_;
   base::TimeTicks first_cache_access_since_;
   base::TimeTicks send_request_since_;
-
-  // For sensitivity analysis (field trials emulating longer cache IO times),
-  // the time at which a cache IO action has started, or base::TimeTicks()
-  // if no cache IO action is currently in progress.
-  base::TimeTicks cache_io_start_;
-
-  // For OpenEntry and CreateEntry, if sensitivity analysis would mandate
-  // a delay on return, we must defer that delay until AddToEntry has been
-  // called, to avoid a race condition on the address returned.
-  base::TimeDelta deferred_cache_sensitivity_delay_;
-  bool defer_cache_sensitivity_delay_;
-
-  // For sensitivity analysis, the simulated increase in cache service times,
-  // in percent.
-  int sensitivity_analysis_percent_increase_;
 
   HttpTransactionDelegate* transaction_delegate_;
 

@@ -80,40 +80,6 @@ void DisableShowProfileSwitcherTrialIfNecessary() {
   }
 }
 
-void SetupCacheSensitivityAnalysisFieldTrial() {
-  const base::FieldTrial::Probability kDivisor = 100;
-
-  base::FieldTrial::Probability sensitivity_analysis_probability = 0;
-
-#if defined(OS_ANDROID)
-  switch (chrome::VersionInfo::GetChannel()) {
-    case chrome::VersionInfo::CHANNEL_DEV:
-      sensitivity_analysis_probability = 10;
-      break;
-    case chrome::VersionInfo::CHANNEL_BETA:
-      sensitivity_analysis_probability = 5;
-      break;
-    case chrome::VersionInfo::CHANNEL_STABLE:
-      sensitivity_analysis_probability = 1;
-      break;
-    default:
-      break;
-  }
-#endif
-
-  scoped_refptr<base::FieldTrial> trial(
-      base::FieldTrialList::FactoryGetFieldTrial(
-          "CacheSensitivityAnalysis", kDivisor, "No", 2013, 06, 15,
-          base::FieldTrial::SESSION_RANDOMIZED, NULL));
-  trial->AppendGroup("ControlA", sensitivity_analysis_probability);
-  trial->AppendGroup("ControlB", sensitivity_analysis_probability);
-  trial->AppendGroup("100A", sensitivity_analysis_probability);
-  trial->AppendGroup("100B", sensitivity_analysis_probability);
-  trial->AppendGroup("200A", sensitivity_analysis_probability);
-  trial->AppendGroup("200B", sensitivity_analysis_probability);
-  // TODO(gavinp,rvargas): Re-add 400 group to field trial if results justify.
-}
-
 void SetupLowLatencyFlashAudioFieldTrial() {
   scoped_refptr<base::FieldTrial> trial(
       base::FieldTrialList::FactoryGetFieldTrial(
@@ -135,7 +101,6 @@ void SetupDesktopFieldTrials(const CommandLine& parsed_command_line,
   gpu_util::InitializeCompositingFieldTrial();
   OmniboxFieldTrial::ActivateStaticTrials();
   SetupInfiniteCacheFieldTrial();
-  SetupCacheSensitivityAnalysisFieldTrial();
   DisableShowProfileSwitcherTrialIfNecessary();
   SetupAppLauncherFieldTrial(local_state);
   SetupLowLatencyFlashAudioFieldTrial();
