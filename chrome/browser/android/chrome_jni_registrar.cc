@@ -24,6 +24,7 @@
 #include "chrome/browser/android/uma_utils.h"
 #include "chrome/browser/autofill/android/personal_data_manager_android.h"
 #include "chrome/browser/history/android/sqlite_cursor.h"
+#include "chrome/browser/invalidation/invalidation_controller_android.h"
 #include "chrome/browser/lifetime/application_lifetime_android.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/search_engines/template_url_service_android.h"
@@ -76,6 +77,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     RegisterChromeWebContentsDelegateAndroid },
   { "ContentViewUtil", RegisterContentViewUtil },
   { "DevToolsServer", RegisterDevToolsServer },
+  { "InvalidationController", invalidation::RegisterInvalidationController },
   { "FaviconHelper", FaviconHelper::RegisterFaviconHelper },
   { "FieldTrialHelper", RegisterFieldTrialHelper },
   { "ForeignSessionHelper",

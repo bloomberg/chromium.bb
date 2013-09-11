@@ -94,6 +94,7 @@ ProfileSyncServiceAndroid::~ProfileSyncServiceAndroid() {
 }
 
 void ProfileSyncServiceAndroid::SendNudgeNotification(
+    int object_source,
     const std::string& str_object_id,
     int64 version,
     const std::string& state) {
@@ -102,9 +103,11 @@ void ProfileSyncServiceAndroid::SendNudgeNotification(
   // TODO(nileshagrawal): Merge this with ChromeInvalidationClient::Invalidate.
   // Construct the ModelTypeStateMap and send it over with the notification.
   invalidation::ObjectId object_id(
-      ipc::invalidation::ObjectSource::CHROME_SYNC,
+      object_source,
       str_object_id);
-  if (version != ipc::invalidation::Constants::UNKNOWN) {
+  if (version == ipc::invalidation::Constants::UNKNOWN) {
+    version = syncer::Invalidation::kUnknownVersion;
+  } else {
     ObjectIdVersionMap::iterator it =
         max_invalidation_versions_.find(object_id);
     if ((it != max_invalidation_versions_.end()) &&
@@ -482,12 +485,13 @@ jlong ProfileSyncServiceAndroid::GetLastSyncedTimeForTest(
 
 void ProfileSyncServiceAndroid::NudgeSyncer(JNIEnv* env,
                                             jobject obj,
+                                            jint objectSource,
                                             jstring objectId,
                                             jlong version,
                                             jstring state) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  SendNudgeNotification(ConvertJavaStringToUTF8(env, objectId), version,
-                        ConvertJavaStringToUTF8(env, state));
+  SendNudgeNotification(objectSource, ConvertJavaStringToUTF8(env, objectId),
+                        version, ConvertJavaStringToUTF8(env, state));
 }
 
 void ProfileSyncServiceAndroid::NudgeSyncerForAllTypes(JNIEnv* env,

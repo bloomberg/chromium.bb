@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/invalidation/invalidation_service.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
@@ -18,6 +19,8 @@ class Profile;
 
 namespace invalidation {
 
+class InvalidationControllerAndroid;
+
 // This InvalidationService is used to deliver invalidations on Android.  The
 // Android operating system has its own mechanisms for delivering invalidations.
 // This class uses the NotificationService to communicate with a thin wrapper
@@ -27,7 +30,10 @@ class InvalidationServiceAndroid
       public InvalidationService,
       public content::NotificationObserver {
  public:
-  explicit InvalidationServiceAndroid(Profile* profile);
+  // Takes ownership of |invalidation_controller|.
+  InvalidationServiceAndroid(
+      Profile* profile,
+      InvalidationControllerAndroid* invalidation_controller);
   virtual ~InvalidationServiceAndroid();
 
   // InvalidationService implementation.
@@ -61,6 +67,7 @@ class InvalidationServiceAndroid
   syncer::InvalidatorRegistrar invalidator_registrar_;
   content::NotificationRegistrar registrar_;
   syncer::InvalidatorState invalidator_state_;
+  scoped_ptr<InvalidationControllerAndroid> invalidation_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(InvalidationServiceAndroid);
 };

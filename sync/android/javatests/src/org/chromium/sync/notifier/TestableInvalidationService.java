@@ -14,7 +14,9 @@ import com.google.ipc.invalidation.external.client.types.ObjectId;
 import org.chromium.base.CollectionUtil;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Subclass of {@link InvalidationService} that captures events and allows controlling
@@ -28,6 +30,12 @@ public class TestableInvalidationService extends InvalidationService {
 
     /** Object ids given to {@link #unregister}, one list element per call. */
     final List<List<ObjectId>> mUnregistrations = new ArrayList<List<ObjectId>>();
+
+    /**
+     * Current registered based on the cumulative calls to {@link #register} and
+     * {@link #unregister}.
+     */
+    final Set<ObjectId> mCurrentRegistrations = new HashSet<ObjectId>();
 
     /** Intents given to {@link #startService}. */
     final List<Intent> mStartedServices = new ArrayList<Intent>();
@@ -53,13 +61,17 @@ public class TestableInvalidationService extends InvalidationService {
 
     @Override
     public void register(byte[] clientId, Iterable<ObjectId> objectIds) {
-        mRegistrations.add(CollectionUtil.newArrayList(objectIds));
+        List<ObjectId> objectIdList = CollectionUtil.newArrayList(objectIds);
+        mRegistrations.add(objectIdList);
+        mCurrentRegistrations.addAll(objectIdList);
         super.register(clientId, objectIds);
     }
 
     @Override
     public void unregister(byte[] clientId, Iterable<ObjectId> objectIds) {
-        mUnregistrations.add(CollectionUtil.newArrayList(objectIds));
+        List<ObjectId> objectIdList = CollectionUtil.newArrayList(objectIds);
+        mUnregistrations.add(objectIdList);
+        mCurrentRegistrations.removeAll(objectIdList);
         super.unregister(clientId, objectIds);
     }
 

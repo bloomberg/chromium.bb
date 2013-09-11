@@ -21,6 +21,17 @@
           ],
           'includes': [ '../build/java.gypi' ],
         },
+        {
+          'target_name': 'sync_jni_headers',
+          'type': 'none',
+          'sources': [
+            'android/java/src/org/chromium/sync/notifier/InvalidationController.java',
+          ],
+          'variables': {
+            'jni_gen_package': 'sync',
+          },
+          'includes': [ '../build/jni_generator.gypi' ],
+        },
       ],
     }],
   ],

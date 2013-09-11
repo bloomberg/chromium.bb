@@ -20,6 +20,13 @@ namespace android {
 BASE_EXPORT ScopedJavaLocalRef<jbyteArray> ToJavaByteArray(
     JNIEnv* env, const uint8* bytes, size_t len);
 
+// Returns a new Java int array converted from the given int array.
+BASE_EXPORT ScopedJavaLocalRef<jintArray> ToJavaIntArray(
+    JNIEnv* env, const int* ints, size_t len);
+
+BASE_EXPORT ScopedJavaLocalRef<jintArray> ToJavaIntArray(
+    JNIEnv* env, const std::vector<int>& ints);
+
 // Returns a new Java long array converted from the given int64 array.
 BASE_EXPORT ScopedJavaLocalRef<jlongArray> ToJavaLongArray(
     JNIEnv* env, const int64* longs, size_t len);

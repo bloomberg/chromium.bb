@@ -13,6 +13,8 @@ import android.content.pm.PackageManager;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
+import com.google.ipc.invalidation.external.client.types.ObjectId;
+
 import org.chromium.base.ActivityStatus;
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.test.util.AdvancedMockContext;
@@ -171,6 +173,7 @@ public class InvalidationControllerTest extends InstrumentationTestCase {
         Set<String> actualTypes = new HashSet<String>();
         actualTypes.addAll(intent.getStringArrayListExtra(IntentProtocol.EXTRA_REGISTERED_TYPES));
         assertEquals(expectedTypes, actualTypes);
+        assertNull(IntentProtocol.getRegisteredObjectIds(intent));
     }
 
     @SmallTest
@@ -195,6 +198,7 @@ public class InvalidationControllerTest extends InstrumentationTestCase {
         Set<String> actualTypes = new HashSet<String>();
         actualTypes.addAll(intent.getStringArrayListExtra(IntentProtocol.EXTRA_REGISTERED_TYPES));
         assertEquals(expectedTypes, actualTypes);
+        assertNull(IntentProtocol.getRegisteredObjectIds(intent));
     }
 
     @SmallTest
@@ -275,6 +279,29 @@ public class InvalidationControllerTest extends InstrumentationTestCase {
         // Validate the values.
         assertEquals(storedAccount, resultAccount.get());
         assertEquals(true, resultAllTypes.get());
+    }
+
+    @SmallTest
+    @Feature({"Sync"})
+    public void testSetRegisteredObjectIds() {
+        InvalidationController controller = new InvalidationController(mContext);
+        ObjectId bookmark = ModelType.BOOKMARK.toObjectId();
+        controller.setRegisteredObjectIds(new int[] {1, 2, bookmark.getSource()},
+                                          new String[] {"a", "b", new String(bookmark.getName())});
+        assertEquals(1, mContext.getNumStartedIntents());
+
+        // Validate destination.
+        Intent intent = mContext.getStartedIntent(0);
+        validateIntentComponent(intent);
+        assertEquals(IntentProtocol.ACTION_REGISTER, intent.getAction());
+
+        // Validate registered object ids. The bookmark object should not be registered since it is
+        // a Sync type.
+        assertNull(intent.getStringArrayListExtra(IntentProtocol.EXTRA_REGISTERED_TYPES));
+        Set<ObjectId> objectIds = IntentProtocol.getRegisteredObjectIds(intent);
+        assertEquals(2, objectIds.size());
+        assertTrue(objectIds.contains(ObjectId.newInstance(1, "a".getBytes())));
+        assertTrue(objectIds.contains(ObjectId.newInstance(2, "b".getBytes())));
     }
 
     /**

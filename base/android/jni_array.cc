@@ -25,6 +25,25 @@ ScopedJavaLocalRef<jbyteArray> ToJavaByteArray(
   return ScopedJavaLocalRef<jbyteArray>(env, byte_array);
 }
 
+ScopedJavaLocalRef<jintArray> ToJavaIntArray(
+    JNIEnv* env, const int* ints, size_t len) {
+  jintArray int_array = env->NewIntArray(len);
+  CheckException(env);
+  DCHECK(int_array);
+
+  jint* elements = env->GetIntArrayElements(int_array, NULL);
+  memcpy(elements, ints, len * sizeof(*ints));
+  env->ReleaseIntArrayElements(int_array, elements, 0);
+  CheckException(env);
+
+  return ScopedJavaLocalRef<jintArray>(env, int_array);
+}
+
+ScopedJavaLocalRef<jintArray> ToJavaIntArray(
+    JNIEnv* env, const std::vector<int>& ints) {
+  return ToJavaIntArray(env, ints.begin(), ints.size());
+}
+
 ScopedJavaLocalRef<jlongArray> ToJavaLongArray(
     JNIEnv* env, const int64* longs, size_t len) {
   jlongArray long_array = env->NewLongArray(len);

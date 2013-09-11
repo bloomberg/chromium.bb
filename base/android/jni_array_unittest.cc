@@ -27,6 +27,34 @@ TEST(JniArray, BasicConversions) {
   EXPECT_EQ(8U, vec.size());
 }
 
+void CheckIntConversion(
+    JNIEnv* env,
+    const int* int_array,
+    const size_t len,
+    const ScopedJavaLocalRef<jintArray>& ints) {
+  ASSERT_TRUE(ints.obj());
+
+  jsize java_array_len = env->GetArrayLength(ints.obj());
+  ASSERT_EQ(static_cast<jsize>(len), java_array_len);
+
+  jint value;
+  for (size_t i = 0; i < len; ++i) {
+    env->GetIntArrayRegion(ints.obj(), i, 1, &value);
+    ASSERT_EQ(int_array[i], value);
+  }
+}
+
+TEST(JniArray, IntConversions) {
+  const int kInts[] = { 0, 1, -1, kint32min, kint32max};
+  const size_t kLen = arraysize(kInts);
+
+  JNIEnv* env = AttachCurrentThread();
+  CheckIntConversion(env, kInts, kLen, ToJavaIntArray(env, kInts, kLen));
+
+  const std::vector<int> vec(kInts, kInts + kLen);
+  CheckIntConversion(env, kInts, kLen, ToJavaIntArray(env, vec));
+}
+
 void CheckLongConversion(
     JNIEnv* env,
     const int64* long_array,

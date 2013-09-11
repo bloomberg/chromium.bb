@@ -20,6 +20,10 @@
 #include "chrome/browser/signin/token_service_factory.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/invalidation/invalidation_controller_android.h"
+#endif  // defined(OS_ANDROID)
+
 class TokenService;
 
 namespace invalidation {
@@ -86,7 +90,9 @@ BrowserContextKeyedService* InvalidationServiceFactory::BuildServiceInstanceFor(
   }
 
 #if defined(OS_ANDROID)
-  InvalidationServiceAndroid* service = new InvalidationServiceAndroid(profile);
+  InvalidationServiceAndroid* service = new InvalidationServiceAndroid(
+      profile,
+      new InvalidationControllerAndroid());
   return service;
 #else
   SigninManagerBase* signin_manager =

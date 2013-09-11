@@ -10,11 +10,16 @@ import android.content.Intent;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.ipc.invalidation.external.client.types.ObjectId;
+import com.google.protos.ipc.invalidation.Types;
 
 import org.chromium.base.ActivityStatus;
+import org.chromium.base.CalledByNative;
 import org.chromium.base.CollectionUtil;
 import org.chromium.sync.internal_api.pub.base.ModelType;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -44,6 +49,18 @@ public class InvalidationController implements ActivityStatus.StateListener {
         public static final String EXTRA_REGISTERED_TYPES = "registered_types";
 
         /**
+         * Int-array-valued intent extra containing sources of objects to register for.
+         * The array is parallel to EXTRA_REGISTERED_OBJECT_NAMES.
+         */
+        public static final String EXTRA_REGISTERED_OBJECT_SOURCES = "registered_object_sources";
+
+        /**
+         * String-array-valued intent extra containing names of objects to register for.
+         * The array is parallel to EXTRA_REGISTERED_OBJECT_SOURCES.
+         */
+        public static final String EXTRA_REGISTERED_OBJECT_NAMES = "registered_object_names";
+
+        /**
          * Boolean-valued intent extra indicating that the service should be stopped.
          */
         public static final String EXTRA_STOP = "stop";
@@ -71,6 +88,34 @@ public class InvalidationController implements ActivityStatus.StateListener {
             return registerIntent;
         }
 
+        /**
+         * Create an Intent that will start the invalidation listener service and
+         * register for the object ids with the specified sources and names.
+         * Sync-specific objects are filtered out of the request since Sync types
+         * are registered using the other version of createRegisterIntent.
+         */
+        public static Intent createRegisterIntent(Account account, int[] objectSources,
+                String[] objectNames) {
+            Preconditions.checkArgument(objectSources.length == objectNames.length,
+                "objectSources and objectNames must have the same length");
+
+            // Add all non-Sync objects to new lists.
+            ArrayList<Integer> sources = new ArrayList<Integer>();
+            ArrayList<String> names = new ArrayList<String>();
+            for (int i = 0; i < objectSources.length; i++) {
+                if (objectSources[i] != Types.ObjectSource.Type.CHROME_SYNC.getNumber()) {
+                    sources.add(objectSources[i]);
+                    names.add(objectNames[i]);
+                }
+            }
+
+            Intent registerIntent = new Intent(ACTION_REGISTER);
+            registerIntent.putIntegerArrayListExtra(EXTRA_REGISTERED_OBJECT_SOURCES, sources);
+            registerIntent.putStringArrayListExtra(EXTRA_REGISTERED_OBJECT_NAMES, names);
+            registerIntent.putExtra(EXTRA_ACCOUNT, account);
+            return registerIntent;
+        }
+
         /** Returns whether {@code intent} is a stop intent. */
         public static boolean isStop(Intent intent) {
             return intent.getBooleanExtra(EXTRA_STOP, false);
@@ -78,7 +123,26 @@ public class InvalidationController implements ActivityStatus.StateListener {
 
         /** Returns whether {@code intent} is a registered types change intent. */
         public static boolean isRegisteredTypesChange(Intent intent) {
-            return intent.hasExtra(EXTRA_REGISTERED_TYPES);
+            return intent.hasExtra(EXTRA_REGISTERED_TYPES) ||
+                    intent.hasExtra(EXTRA_REGISTERED_OBJECT_SOURCES);
+        }
+
+        /** Returns the object ids for which to register contained in the intent. */
+        public static Set<ObjectId> getRegisteredObjectIds(Intent intent) {
+            ArrayList<Integer> objectSources =
+                    intent.getIntegerArrayListExtra(EXTRA_REGISTERED_OBJECT_SOURCES);
+            ArrayList<String> objectNames =
+                    intent.getStringArrayListExtra(EXTRA_REGISTERED_OBJECT_NAMES);
+            if (objectSources == null || objectNames == null ||
+                    objectSources.size() != objectNames.size()) {
+                return null;
+            }
+            Set<ObjectId> objectIds = new HashSet<ObjectId>(objectSources.size());
+            for (int i = 0; i < objectSources.size(); i++) {
+                objectIds.add(ObjectId.newInstance(
+                        objectSources.get(i), objectNames.get(i).getBytes()));
+            }
+            return objectIds;
         }
 
         private IntentProtocol() {
@@ -122,6 +186,23 @@ public class InvalidationController implements ActivityStatus.StateListener {
     }
 
     /**
+     * Sets object ids for which the client should register for notification. This is intended for
+     * registering non-Sync types; Sync types are registered with {@code setRegisteredTypes}.
+     *
+     * @param objectSources The sources of the objects.
+     * @param objectNames   The names of the objects.
+     */
+    @CalledByNative
+    public void setRegisteredObjectIds(int[] objectSources, String[] objectNames) {
+        InvalidationPreferences invalidationPreferences = new InvalidationPreferences(mContext);
+        Account account = invalidationPreferences.getSavedSyncedAccount();
+        Intent registerIntent = IntentProtocol.createRegisterIntent(account, objectSources,
+                objectNames);
+        registerIntent.setClass(mContext, InvalidationService.class);
+        mContext.startService(registerIntent);
+    }
+
+    /**
      * Starts the invalidation client.
      */
     public void start() {
@@ -143,6 +224,7 @@ public class InvalidationController implements ActivityStatus.StateListener {
      *
      * Calling this method will create the instance if it does not yet exist.
      */
+    @CalledByNative
     public static InvalidationController get(Context context) {
         synchronized (LOCK) {
             if (sInstance == null) {

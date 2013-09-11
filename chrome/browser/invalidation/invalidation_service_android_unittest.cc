@@ -5,13 +5,27 @@
 #include "chrome/browser/invalidation/invalidation_service_android.h"
 
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/invalidation/invalidation_controller_android.h"
 #include "chrome/browser/invalidation/invalidation_service_factory.h"
 #include "chrome/browser/invalidation/invalidation_service_test_template.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_service.h"
+#include "sync/notifier/fake_invalidation_handler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace invalidation {
+
+class MockInvalidationControllerAndroid : public InvalidationControllerAndroid {
+ public:
+  MockInvalidationControllerAndroid() {}
+  virtual ~MockInvalidationControllerAndroid() {}
+
+  virtual void SetRegisteredObjectIds(const syncer::ObjectIdSet& ids) OVERRIDE {
+    registered_ids_ = ids;
+  }
+
+  syncer::ObjectIdSet registered_ids_;
+};
 
 class InvalidationServiceAndroidTestDelegate {
  public:
@@ -24,7 +38,9 @@ class InvalidationServiceAndroidTestDelegate {
   void CreateInvalidationService() {
     profile_.reset(new TestingProfile());
     invalidation_service_android_.reset(
-        new InvalidationServiceAndroid(profile_.get()));
+        new InvalidationServiceAndroid(
+            profile_.get(),
+            new MockInvalidationControllerAndroid()));
   }
 
   InvalidationService* GetInvalidationService() {
@@ -55,5 +71,78 @@ class InvalidationServiceAndroidTestDelegate {
 INSTANTIATE_TYPED_TEST_CASE_P(
     AndroidInvalidationServiceTest, InvalidationServiceTest,
     InvalidationServiceAndroidTestDelegate);
+
+class InvalidationServiceAndroidRegistrationTest : public testing::Test {
+ protected:
+  InvalidationServiceAndroidRegistrationTest()
+      : invalidation_controller_(new MockInvalidationControllerAndroid()),
+        invalidation_service_(&profile_, invalidation_controller_) {}
+
+  virtual ~InvalidationServiceAndroidRegistrationTest() {
+    invalidation_service_.Shutdown();
+  }
+
+  // Get the invalidation service being tested.
+  InvalidationService& invalidation_service() {
+    return invalidation_service_;
+  }
+
+  // Get the number of objects which are registered.
+  size_t RegisteredObjectCount() {
+    return registered_ids().size();
+  }
+
+  // Determines if the given object id is registered with the invalidation
+  // controller.
+  bool IsRegistered(const invalidation::ObjectId& id) {
+    return registered_ids().find(id) != registered_ids().end();
+  }
+
+ private:
+  // Get the set of objects registered with the invalidation controller.
+  const syncer::ObjectIdSet& registered_ids() {
+    return invalidation_controller_->registered_ids_;
+  }
+
+  TestingProfile profile_;
+  MockInvalidationControllerAndroid* invalidation_controller_;
+  InvalidationServiceAndroid invalidation_service_;
+};
+
+TEST_F(InvalidationServiceAndroidRegistrationTest, NoObjectRegistration) {
+  syncer::FakeInvalidationHandler handler;
+  invalidation_service().RegisterInvalidationHandler(&handler);
+  EXPECT_EQ(0U, RegisteredObjectCount());
+  invalidation_service().UnregisterInvalidationHandler(&handler);
+}
+
+TEST_F(InvalidationServiceAndroidRegistrationTest, UpdateObjectRegistration) {
+  syncer::FakeInvalidationHandler handler;
+  invalidation::ObjectId id1(1, "A");
+  invalidation::ObjectId id2(2, "B");
+  syncer::ObjectIdSet ids;
+  invalidation_service().RegisterInvalidationHandler(&handler);
+
+  // Register for both objects.
+  ids.insert(id1);
+  ids.insert(id2);
+  invalidation_service().UpdateRegisteredInvalidationIds(&handler, ids);
+  EXPECT_EQ(2U, RegisteredObjectCount());
+  EXPECT_TRUE(IsRegistered(id1));
+  EXPECT_TRUE(IsRegistered(id2));
+
+  // Unregister for object 2.
+  ids.erase(id2);
+  invalidation_service().UpdateRegisteredInvalidationIds(&handler, ids);
+  EXPECT_EQ(1U, RegisteredObjectCount());
+  EXPECT_TRUE(IsRegistered(id1));
+
+  // Unregister for object 1.
+  ids.erase(id1);
+  invalidation_service().UpdateRegisteredInvalidationIds(&handler, ids);
+  EXPECT_EQ(0U, RegisteredObjectCount());
+
+  invalidation_service().UnregisterInvalidationHandler(&handler);
+}
 
 }  // namespace invalidation

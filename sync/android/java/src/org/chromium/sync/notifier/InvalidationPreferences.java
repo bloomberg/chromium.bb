@@ -13,6 +13,7 @@ import android.util.Log;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.ipc.invalidation.external.client.types.ObjectId;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -54,6 +55,13 @@ public class InvalidationPreferences {
          */
         @VisibleForTesting
         public static final String SYNC_TANGO_TYPES = "sync_tango_types";
+
+        /**
+         * Shared preference key to store tango object ids for additional objects that we want to
+         * register for.
+         */
+        @VisibleForTesting
+        public static final String TANGO_OBJECT_IDS = "tango_object_ids";
 
         /** Shared preference key to store the name of the account in use. */
         @VisibleForTesting
@@ -106,6 +114,34 @@ public class InvalidationPreferences {
         editContext.editor.putStringSet(PrefKeys.SYNC_TANGO_TYPES, selectedTypesSet);
     }
 
+    /** Returns the saved non-sync object ids, or {@code null} if none exist. */
+    @Nullable
+    public Set<ObjectId> getSavedObjectIds() {
+      SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+      Set<String> objectIdStrings = preferences.getStringSet(PrefKeys.TANGO_OBJECT_IDS, null);
+      if (objectIdStrings == null) {
+          return null;
+      }
+      Set<ObjectId> objectIds = new HashSet<ObjectId>(objectIdStrings.size());
+      for (String objectIdString : objectIdStrings) {
+          ObjectId objectId = getObjectId(objectIdString);
+          if (objectId != null) {
+              objectIds.add(objectId);
+          }
+      }
+      return objectIds;
+    }
+
+    /** Sets the saved non-sync object ids */
+    public void setObjectIds(EditContext editContext, Collection<ObjectId> objectIds) {
+      Preconditions.checkNotNull(objectIds);
+      Set<String> objectIdStrings = new HashSet<String>(objectIds.size());
+      for (ObjectId objectId : objectIds) {
+          objectIdStrings.add(getObjectIdString(objectId));
+      }
+      editContext.editor.putStringSet(PrefKeys.TANGO_OBJECT_IDS, objectIdStrings);
+    }
+
     /** Returns the saved account, or {@code null} if none exists. */
     @Nullable public Account getSavedSyncedAccount() {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(mContext);
@@ -137,5 +173,30 @@ public class InvalidationPreferences {
     public void setInternalNotificationClientState(EditContext editContext, byte[] state) {
         editContext.editor.putString(PrefKeys.SYNC_TANGO_INTERNAL_STATE,
                 Base64.encodeToString(state, Base64.DEFAULT));
+    }
+
+    /** Converts the given object id to a string for storage in preferences. */
+    private String getObjectIdString(ObjectId objectId) {
+        return objectId.getSource() + ":" + new String(objectId.getName());
+    }
+
+    /**
+     * Converts the given object id string stored in preferences to an object id.
+     * Returns null if the string does not represent a valid object id.
+     */
+    private ObjectId getObjectId(String objectIdString) {
+        int separatorPos = objectIdString.indexOf(':');
+        // Ensure that the separator is surrounded by at least one character on each side.
+        if (separatorPos < 1 || separatorPos == objectIdString.length() - 1) {
+            return null;
+        }
+        int objectSource;
+        try {
+            objectSource = Integer.parseInt(objectIdString.substring(0, separatorPos));
+        } catch (NumberFormatException e) {
+            return null;
+        }
+        byte[] objectName = objectIdString.substring(separatorPos + 1).getBytes();
+        return ObjectId.newInstance(objectSource, objectName);
     }
 }

@@ -136,9 +136,11 @@ public class ProfileSyncService {
         syncSignIn(account);
     }
 
-    public void requestSyncFromNativeChrome(String objectId, long version, String payload) {
+    public void requestSyncFromNativeChrome(
+            int objectSource, String objectId, long version, String payload) {
         ThreadUtils.assertOnUiThread();
-        nativeNudgeSyncer(mNativeProfileSyncServiceAndroid, objectId, version, payload);
+        nativeNudgeSyncer(
+                mNativeProfileSyncServiceAndroid, objectSource, objectId, version, payload);
     }
 
     public void requestSyncFromNativeChromeForAllTypes() {
@@ -501,7 +503,8 @@ public class ProfileSyncService {
 
     // Native methods
     private native void nativeNudgeSyncer(
-            int nativeProfileSyncServiceAndroid, String objectId, long version, String payload);
+            int nativeProfileSyncServiceAndroid, int objectSource, String objectId, long version,
+            String payload);
     private native void nativeNudgeSyncerForAllTypes(int nativeProfileSyncServiceAndroid);
     private native int nativeInit();
     private native void nativeEnableSync(int nativeProfileSyncServiceAndroid);

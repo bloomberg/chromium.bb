@@ -15,6 +15,7 @@ import android.os.Handler;
 import android.util.Log;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.protos.ipc.invalidation.Types;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.content.browser.BrowserStartupController;
@@ -29,6 +30,8 @@ public abstract class ChromiumSyncAdapter extends AbstractThreadedSyncAdapter {
 
     // TODO(nyquist) Make these fields package protected once downstream sync adapter tests are
     // removed.
+    @VisibleForTesting
+    public static final String INVALIDATION_OBJECT_SOURCE_KEY = "objectSource";
     @VisibleForTesting
     public static final String INVALIDATION_OBJECT_ID_KEY = "objectId";
     @VisibleForTesting
@@ -124,6 +127,7 @@ public abstract class ChromiumSyncAdapter extends AbstractThreadedSyncAdapter {
             final Context context, final Account acct, Bundle extras,
             final SyncResult syncResult, final Semaphore semaphore) {
         final boolean syncAllTypes = extras.getString(INVALIDATION_OBJECT_ID_KEY) == null;
+        final int objectSource = syncAllTypes ? 0 : extras.getInt(INVALIDATION_OBJECT_SOURCE_KEY);
         final String objectId = syncAllTypes ? "" : extras.getString(INVALIDATION_OBJECT_ID_KEY);
         final long version = syncAllTypes ? 0 : extras.getLong(INVALIDATION_VERSION_KEY);
         final String payload = syncAllTypes ? "" : extras.getString(INVALIDATION_PAYLOAD_KEY);
@@ -136,7 +140,16 @@ public abstract class ChromiumSyncAdapter extends AbstractThreadedSyncAdapter {
                     Log.v(TAG, "Received sync tickle for all types.");
                     requestSyncForAllTypes();
                 } else {
-                    Log.v(TAG, "Received sync tickle for " + objectId + ".");
+                    // Invalidations persisted before objectSource was added should be assumed to be
+                    // for Sync objects. TODO(stepco): Remove this check once all persisted
+                    // invalidations can be expected to have the objectSource.
+                    int resolvedSource = objectSource;
+                    if (resolvedSource == 0) {
+                      resolvedSource = Types.ObjectSource.Type.CHROME_SYNC.getNumber();
+                    }
+                    Log.v(TAG, "Received sync tickle for " + resolvedSource + " " + objectId + ".");
+                    requestSync(resolvedSource, objectId, version, payload);
+                    // Call legacy requestSync. See comment on the method.
                     requestSync(objectId, version, payload);
                 }
                 semaphore.release();
@@ -153,10 +166,17 @@ public abstract class ChromiumSyncAdapter extends AbstractThreadedSyncAdapter {
         };
     }
 
+    /**
+     * Legacy requestSync method present to retain compatibility with a test which overrides it.
+     * TODO(stepco): Remove this method once the dependent test is updated to override the new
+     * requestSync method.
+     */
+    public void requestSync(String objectId, long version, String payload) {}
+
     @VisibleForTesting
-    public void requestSync(String objectId, long version, String payload) {
+    public void requestSync(int objectSource, String objectId, long version, String payload) {
         ProfileSyncService.get(mApplication)
-                .requestSyncFromNativeChrome(objectId, version, payload);
+                .requestSyncFromNativeChrome(objectSource, objectId, version, payload);
     }
 
     @VisibleForTesting

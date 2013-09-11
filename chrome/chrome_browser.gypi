@@ -890,6 +890,8 @@
         'browser/intranet_redirect_detector.h',
         'browser/invalidation/fake_invalidation_service.cc',
         'browser/invalidation/fake_invalidation_service.h',
+        'browser/invalidation/invalidation_controller_android.cc',
+        'browser/invalidation/invalidation_controller_android.h',
         'browser/invalidation/invalidation_service.h',
         'browser/invalidation/invalidation_service_android.cc',
         'browser/invalidation/invalidation_service_android.h',
@@ -3053,6 +3055,7 @@
         ['OS=="android"', {
           'dependencies': [
             '../components/components.gyp:web_contents_delegate_android',
+            '../sync/sync.gyp:sync_jni_headers',
             'chrome_browser_jni_headers',
           ],
           'dependencies!': [

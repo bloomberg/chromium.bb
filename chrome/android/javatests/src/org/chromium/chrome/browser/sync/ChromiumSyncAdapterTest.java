@@ -11,6 +11,8 @@ import android.content.SyncResult;
 import android.os.Bundle;
 import android.test.suitebuilder.annotation.MediumTest;
 
+import com.google.protos.ipc.invalidation.Types;
+
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.testshell.ChromiumTestShellTestBase;
 import org.chromium.sync.notifier.SyncStatusHelper;
@@ -27,6 +29,7 @@ public class ChromiumSyncAdapterTest extends ChromiumTestShellTestBase {
         private boolean mCommandlineInitialized;
         private boolean mSyncRequested;
         private boolean mSyncRequestedForAllTypes;
+        private int mObjectSource;
         private String mObjectId;
         private long mVersion;
         private String mPayload;
@@ -46,7 +49,8 @@ public class ChromiumSyncAdapterTest extends ChromiumTestShellTestBase {
         }
 
         @Override
-        public void requestSync( String objectId, long version, String payload) {
+        public void requestSync(int objectSource, String objectId, long version, String payload) {
+            mObjectSource = objectSource;
             mObjectId = objectId;
             mVersion = version;
             mPayload = payload;
@@ -78,11 +82,12 @@ public class ChromiumSyncAdapterTest extends ChromiumTestShellTestBase {
         assertTrue(mSyncAdapter.mCommandlineInitialized);
     }
 
-    @MediumTest
-    @Feature({"Sync"})
-    public void testRequestSyncSpecificDataType() {
+    private void testRequestSyncSpecificDataType(boolean withObjectSource) {
         SyncResult syncResult = new SyncResult();
         Bundle extras = new Bundle();
+        if (withObjectSource) {
+            extras.putInt(ChromiumSyncAdapter.INVALIDATION_OBJECT_SOURCE_KEY, 61);
+        }
         extras.putString(ChromiumSyncAdapter.INVALIDATION_OBJECT_ID_KEY, "objectid_value");
         extras.putLong(ChromiumSyncAdapter.INVALIDATION_VERSION_KEY, 42);
         extras.putString(ChromiumSyncAdapter.INVALIDATION_PAYLOAD_KEY, "payload_value");
@@ -90,10 +95,28 @@ public class ChromiumSyncAdapterTest extends ChromiumTestShellTestBase {
                 SyncStatusHelper.get(getActivity()).getContractAuthority(), null, syncResult);
         assertFalse(mSyncAdapter.mSyncRequestedForAllTypes);
         assertTrue(mSyncAdapter.mSyncRequested);
+        if (withObjectSource) {
+            assertEquals(61, mSyncAdapter.mObjectSource);
+        } else {
+            assertEquals(Types.ObjectSource.Type.CHROME_SYNC.getNumber(),
+                    mSyncAdapter.mObjectSource);
+        }
         assertEquals("objectid_value", mSyncAdapter.mObjectId);
         assertEquals(42, mSyncAdapter.mVersion);
         assertEquals("payload_value", mSyncAdapter.mPayload);
         assertTrue(mSyncAdapter.mCommandlineInitialized);
+    }
+
+    @MediumTest
+    @Feature({"Sync"})
+    public void testRequestSyncSpecificDataType() {
+      testRequestSyncSpecificDataType(true /* withObjectSource */);
+    }
+
+    @MediumTest
+    @Feature({"Sync"})
+    public void testRequestSyncSpecificDataType_withoutObjectSource() {
+      testRequestSyncSpecificDataType(false /* withObjectSource */);
     }
 
     @MediumTest

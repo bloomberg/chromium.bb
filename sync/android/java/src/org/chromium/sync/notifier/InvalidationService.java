@@ -95,7 +95,8 @@ public class InvalidationService extends AndroidListener {
             // If the intent requests a change in registrations, change them.
             List<String> regTypes =
                     intent.getStringArrayListExtra(IntentProtocol.EXTRA_REGISTERED_TYPES);
-            setRegisteredTypes(new HashSet<String>(regTypes));
+            setRegisteredTypes(regTypes != null ? new HashSet<String>(regTypes) : null,
+                    IntentProtocol.getRegisteredObjectIds(intent));
         } else {
             // Otherwise, we don't recognize the intent. Pass it to the notification client service.
             super.onHandleIntent(intent);
@@ -287,33 +288,81 @@ public class InvalidationService extends AndroidListener {
      * Reads the saved sync types from storage (if any) and returns a set containing the
      * corresponding object ids.
      */
-    @VisibleForTesting
-    Set<ObjectId> readRegistrationsFromPrefs() {
+    private Set<ObjectId> readSyncRegistrationsFromPrefs() {
         Set<String> savedTypes = new InvalidationPreferences(this).getSavedSyncedTypes();
         if (savedTypes == null) return Collections.emptySet();
         else return ModelType.syncTypesToObjectIds(savedTypes);
     }
 
     /**
+     * Reads the saved non-sync object ids from storage (if any) and returns a set containing the
+     * corresponding object ids.
+     */
+    private Set<ObjectId> readNonSyncRegistrationsFromPrefs() {
+        Set<ObjectId> objectIds = new InvalidationPreferences(this).getSavedObjectIds();
+        if (objectIds == null) return Collections.emptySet();
+        else return objectIds;
+    }
+
+    /**
+     * Reads the object registrations from storage (if any) and returns a set containing the
+     * corresponding object ids.
+     */
+    @VisibleForTesting
+    Set<ObjectId> readRegistrationsFromPrefs() {
+        return joinRegistrations(readSyncRegistrationsFromPrefs(),
+                readNonSyncRegistrationsFromPrefs());
+    }
+
+    /**
+     * Join Sync object registrations with non-Sync object registrations to get the full set of
+     * desired object registrations.
+     */
+    private static Set<ObjectId> joinRegistrations(Set<ObjectId> syncRegistrations,
+                                                   Set<ObjectId> nonSyncRegistrations) {
+        if (nonSyncRegistrations.isEmpty()) {
+            return syncRegistrations;
+        }
+        if (syncRegistrations.isEmpty()) {
+            return nonSyncRegistrations;
+        }
+        Set<ObjectId> registrations = new HashSet<ObjectId>(
+                syncRegistrations.size() + nonSyncRegistrations.size());
+        registrations.addAll(syncRegistrations);
+        registrations.addAll(nonSyncRegistrations);
+        return registrations;
+    }
+
+    /**
      * Sets the types for which notifications are required to {@code syncTypes}. {@code syncTypes}
      * is either a list of specific types or the special wildcard type
-     * {@link ModelType#ALL_TYPES_TYPE}.
+     * {@link ModelType#ALL_TYPES_TYPE}. Also registers for additional objects specified by
+     * {@code objectIds}. Either parameter may be null if the corresponding registrations are not
+     * changing.
      * <p>
      * @param syncTypes
      */
-    private void setRegisteredTypes(Set<String> syncTypes) {
+    private void setRegisteredTypes(Set<String> syncTypes, Set<ObjectId> objectIds) {
         // If we have a ready client and will be making registration change calls on it, then
         // read the current registrations from preferences before we write the new values, so that
         // we can take the diff of the two registration sets and determine which registration change
         // calls to make.
-        Set<ObjectId> existingRegistrations = (sClientId == null) ?
-                null : readRegistrationsFromPrefs();
+        Set<ObjectId> existingSyncRegistrations = (sClientId == null) ?
+                null : readSyncRegistrationsFromPrefs();
+        Set<ObjectId> existingNonSyncRegistrations = (sClientId == null) ?
+                null : readNonSyncRegistrationsFromPrefs();
 
-        // Write the new sync types to preferences. We do not expand the syncTypes to take into
-        // account the ALL_TYPES_TYPE at this point; we want to persist the wildcard unexpanded.
+        // Write the new sync types/object ids to preferences. We do not expand the syncTypes to
+        // take into account the ALL_TYPES_TYPE at this point; we want to persist the wildcard
+        // unexpanded.
         InvalidationPreferences prefs = new InvalidationPreferences(this);
         EditContext editContext = prefs.edit();
-        prefs.setSyncTypes(editContext, syncTypes);
+        if (syncTypes != null) {
+            prefs.setSyncTypes(editContext, syncTypes);
+        }
+        if (objectIds != null) {
+            prefs.setObjectIds(editContext, objectIds);
+        }
         prefs.commit(editContext);
 
         // If we do not have a ready invalidation client, we cannot change its registrations, so
@@ -327,10 +376,20 @@ public class InvalidationService extends AndroidListener {
         // expansion of the ALL_TYPES_TYPE wildcard.
         // NOTE: syncTypes MUST NOT be used below this line, since it contains an unexpanded
         // wildcard.
+        // When computing the desired set of object ids, if only sync types were provided, then
+        // keep the existing non-sync types, and vice-versa.
+        Set<ObjectId> desiredSyncRegistrations = syncTypes != null ?
+                ModelType.syncTypesToObjectIds(syncTypes) : existingSyncRegistrations;
+        Set<ObjectId> desiredNonSyncRegistrations = objectIds != null ?
+                objectIds : existingNonSyncRegistrations;
+        Set<ObjectId> desiredRegistrations = joinRegistrations(desiredNonSyncRegistrations,
+                desiredSyncRegistrations);
+        Set<ObjectId> existingRegistrations = joinRegistrations(existingNonSyncRegistrations,
+                existingSyncRegistrations);
+
         Set<ObjectId> unregistrations = new HashSet<ObjectId>();
         Set<ObjectId> registrations = new HashSet<ObjectId>();
-        computeRegistrationOps(existingRegistrations,
-                ModelType.syncTypesToObjectIds(syncTypes),
+        computeRegistrationOps(existingRegistrations, desiredRegistrations,
                 registrations, unregistrations);
         unregister(sClientId, unregistrations);
         register(sClientId, registrations);
@@ -371,6 +430,7 @@ public class InvalidationService extends AndroidListener {
             // Use an empty bundle in this case for compatibility with the v1 implementation.
         } else {
             if (objectId != null) {
+                bundle.putInt("objectSource", objectId.getSource());
                 bundle.putString("objectId", new String(objectId.getName()));
             }
             // We use "0" as the version if we have an unknown-version invalidation. This is OK

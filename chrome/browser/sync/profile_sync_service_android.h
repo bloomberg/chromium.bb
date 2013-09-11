@@ -33,10 +33,12 @@ class ProfileSyncServiceAndroid : public ProfileSyncServiceObserver {
   // This method should be called once right after contructing the object.
   void Init();
 
-  // Called from Java when we need to nudge native syncer. The |objectId|,
-  // |version| and |payload| values should come from an invalidation.
+  // Called from Java when we need to nudge native syncer. The |objectSource|,
+  // |objectId|, |version| and |payload| values should come from an
+  // invalidation.
   void NudgeSyncer(JNIEnv* env,
                    jobject obj,
+                   jint objectSource,
                    jstring objectId,
                    jlong version,
                    jstring payload);
@@ -210,9 +212,11 @@ class ProfileSyncServiceAndroid : public ProfileSyncServiceObserver {
   virtual ~ProfileSyncServiceAndroid();
   // Remove observers to profile sync service.
   void RemoveObserver();
-  // Called from Java when we need to nudge native syncer. The |objectId|,
-  // |version| and |payload| values should come from an invalidation.
-  void SendNudgeNotification(const std::string& str_object_id,
+  // Called from Java when we need to nudge native syncer. The |object_source|,
+  // |objectId|, |version| and |payload| values should come from an
+  // invalidation.
+  void SendNudgeNotification(int object_source,
+                             const std::string& str_object_id,
                              int64 version,
                              const std::string& payload);
 
