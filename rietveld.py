@@ -149,16 +149,11 @@ class Rietveld(object):
                 filename,
                 'Binary file is empty. Maybe the file wasn\'t uploaded in the '
                 'first place?')
-          raise patch.UnsupportedPatchFormat(
+          out.append(patch.FilePatchBinary(
               filename,
-              'Binary file support is temporarilly disabled due to a bug. '
-              'Please commit blindly the binary files first then commit the '
-              'source change as a separate CL. Sorry for the annoyance.')
-          #out.append(patch.FilePatchBinary(
-          #    filename,
-          #    content,
-          #    svn_props,
-          #    is_new=(status[0] == 'A')))
+              content,
+              svn_props,
+              is_new=(status[0] == 'A')))
         continue
 
       try:
