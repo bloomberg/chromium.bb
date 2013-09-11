@@ -7,7 +7,11 @@
 
 #include <string>
 
+#include "base/basictypes.h"
+#include "base/observer_list.h"
+#include "base/time/time.h"
 #include "chromeos/dbus/power_manager/policy.pb.h"
+#include "chromeos/dbus/power_manager/suspend.pb.h"
 #include "chromeos/dbus/power_manager_client.h"
 
 namespace chromeos {
@@ -52,9 +56,19 @@ class FakePowerManagerClient : public PowerManagerClient {
     return request_restart_call_count_;
   }
 
+  // Emulates that the dbus server sends a message "SuspendImminent" to the
+  // client.
+  void SendSuspendImminent();
+
+  // Emulates that the dbus server sends a message "SuspendStateChanged" to the
+  // client.
+  void SendSuspendStateChanged(
+      const power_manager::SuspendState& suspend_state);
+
  private:
   power_manager::PowerManagementPolicy policy_;
-
+  base::Time last_suspend_wall_time_;
+  ObserverList<Observer> observers_;
   int request_restart_call_count_;
 
   DISALLOW_COPY_AND_ASSIGN(FakePowerManagerClient);
