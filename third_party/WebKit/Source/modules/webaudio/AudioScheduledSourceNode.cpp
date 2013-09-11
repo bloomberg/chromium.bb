@@ -179,20 +179,30 @@ void AudioScheduledSourceNode::finish()
         context()->decrementActiveSourceCount();
     }
 
-    if (m_hasEndedListener)
-        callOnMainThread(&AudioScheduledSourceNode::notifyEndedDispatch, this);
+    if (m_hasEndedListener) {
+        // |task| will keep the AudioScheduledSourceNode alive until the listener has been handled.
+        OwnPtr<NotifyEndedTask> task = adoptPtr(new NotifyEndedTask(this));
+        callOnMainThread(&AudioScheduledSourceNode::notifyEndedDispatch, task.leakPtr());
+    }
 }
 
 void AudioScheduledSourceNode::notifyEndedDispatch(void* userData)
 {
-    static_cast<AudioScheduledSourceNode*>(userData)->notifyEnded();
+    OwnPtr<NotifyEndedTask> task = adoptPtr(static_cast<NotifyEndedTask*>(userData));
+
+    task->notifyEnded();
 }
 
-void AudioScheduledSourceNode::notifyEnded()
+AudioScheduledSourceNode::NotifyEndedTask::NotifyEndedTask(PassRefPtr<AudioScheduledSourceNode> sourceNode)
+    : m_scheduledNode(sourceNode)
+{
+}
+
+void AudioScheduledSourceNode::NotifyEndedTask::notifyEnded()
 {
     RefPtr<Event> event = Event::create(eventNames().endedEvent);
-    event->setTarget(this);
-    dispatchEvent(event.get());
+    event->setTarget(m_scheduledNode);
+    m_scheduledNode->dispatchEvent(event.get());
 }
 
 } // namespace WebCore
