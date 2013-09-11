@@ -1228,8 +1228,11 @@ handle_osc(struct terminal *terminal)
 	case 2: /* Window title*/
 		window_set_title(terminal->window, p);
 		break;
+	case 7: /* shell cwd as uri */
+		break;
 	default:
-		fprintf(stderr, "Unknown OSC escape code %d\n", code);
+		fprintf(stderr, "Unknown OSC escape code %d, text %s\n",
+			code, p);
 		break;
 	}
 }
