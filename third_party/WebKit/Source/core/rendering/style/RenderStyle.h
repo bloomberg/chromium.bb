@@ -320,8 +320,11 @@ protected:
 
 private:
     ALWAYS_INLINE RenderStyle();
-    // used to create the default style.
-    ALWAYS_INLINE RenderStyle(bool);
+
+    enum DefaultStyleTag {
+        DefaultStyle
+    };
+    ALWAYS_INLINE explicit RenderStyle(DefaultStyleTag);
     ALWAYS_INLINE RenderStyle(const RenderStyle&);
 
 public:

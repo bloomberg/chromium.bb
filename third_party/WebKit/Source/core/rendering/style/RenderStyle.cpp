@@ -80,7 +80,7 @@ PassRefPtr<RenderStyle> RenderStyle::create()
 
 PassRefPtr<RenderStyle> RenderStyle::createDefaultStyle()
 {
-    return adoptRef(new RenderStyle(true));
+    return adoptRef(new RenderStyle(DefaultStyle));
 }
 
 PassRefPtr<RenderStyle> RenderStyle::createAnonymousStyleWithDisplay(const RenderStyle* parentStyle, EDisplay display)
@@ -112,7 +112,7 @@ ALWAYS_INLINE RenderStyle::RenderStyle()
     COMPILE_ASSERT((sizeof(NonInheritedFlags) <= 8), NonInheritedFlags_does_not_grow);
 }
 
-ALWAYS_INLINE RenderStyle::RenderStyle(bool)
+ALWAYS_INLINE RenderStyle::RenderStyle(DefaultStyleTag)
 {
     setBitDefaults();
 
