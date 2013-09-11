@@ -24,6 +24,11 @@ class LauncherNavigatorTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     model_.reset(new LauncherModel);
 
+    // Add APP_LIST for test.
+    LauncherItem app_list;
+    app_list.type = TYPE_APP_LIST;
+    model_->Add(app_list);
+
     // Initially, applist launcher item is only created.
     int total_num = model_->item_count();
     EXPECT_EQ(1, total_num);

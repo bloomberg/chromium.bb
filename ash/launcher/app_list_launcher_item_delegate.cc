@@ -15,8 +15,10 @@ namespace ash {
 namespace internal {
 
 AppListLauncherItemDelegate::AppListLauncherItemDelegate() {
-  // TODO(simon.hong81): This works for the moment, but the AppList LauncherItem
-  // creation should move here.
+  LauncherItem app_list;
+  app_list.type = TYPE_APP_LIST;
+  Shell::GetInstance()->launcher_model()->Add(app_list);
+
   ash::Shell::GetInstance()->launcher_item_delegate_manager()->
       RegisterLauncherItemDelegate(ash::TYPE_APP_LIST, this);
 }

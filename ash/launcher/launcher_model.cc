@@ -59,9 +59,6 @@ bool CompareByWeight(const LauncherItem& a, const LauncherItem& b) {
 }  // namespace
 
 LauncherModel::LauncherModel() : next_id_(1), status_(STATUS_NORMAL) {
-  LauncherItem app_list;
-  app_list.type = TYPE_APP_LIST;
-  AddAt(0, app_list);
 }
 
 LauncherModel::~LauncherModel() {

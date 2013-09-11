@@ -11,6 +11,7 @@
 #include "ash/ash_switches.h"
 #include "ash/launcher/launcher_model.h"
 #include "ash/launcher/launcher_model_observer.h"
+#include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
@@ -254,7 +255,14 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     BrowserWithTestWindowTest::TearDown();
   }
 
+  void AddAppListLauncherItem() {
+    ash::LauncherItem app_list;
+    app_list.type = ash::TYPE_APP_LIST;
+    model_->Add(app_list);
+  }
+
   void InitLauncherController() {
+    AddAppListLauncherItem();
     launcher_controller_.reset(
         new ChromeLauncherController(profile(), model_.get()));
     launcher_controller_->Init();
@@ -1329,8 +1337,8 @@ TEST_F(ChromeLauncherControllerTest, V1AppMenuDeletionExecution) {
 // Tests that panels create launcher items correctly
 TEST_F(ChromeLauncherControllerTest, AppPanels) {
   InitLauncherControllerWithBrowser();
-  // Browser shortcut LauncherItem is added.
-  EXPECT_EQ(1, model_observer_->added());
+  // App list and Browser shortcut LauncherItems are added.
+  EXPECT_EQ(2, model_observer_->added());
 
   TestAppIconLoaderImpl* app_icon_loader = new TestAppIconLoaderImpl();
   SetAppIconLoader(app_icon_loader);
@@ -1343,7 +1351,7 @@ TEST_F(ChromeLauncherControllerTest, AppPanels) {
   ash::LauncherID launcher_id1 = launcher_controller_->CreateAppLauncherItem(
       &app_panel_controller, app_id, ash::STATUS_RUNNING);
   int panel_index = model_observer_->last_index();
-  EXPECT_EQ(2, model_observer_->added());
+  EXPECT_EQ(3, model_observer_->added());
   EXPECT_EQ(0, model_observer_->changed());
   EXPECT_EQ(1, app_icon_loader->fetch_count());
   model_observer_->clear_counts();
@@ -1472,7 +1480,7 @@ TEST_F(ChromeLauncherControllerTest, PersistLauncherItemPositions) {
   app_tab_helper->SetAppID(tab_strip_model->GetWebContentsAt(0), "1");
   app_tab_helper->SetAppID(tab_strip_model->GetWebContentsAt(1), "2");
   SetAppTabHelper(app_tab_helper);
-
+  AddAppListLauncherItem();
   launcher_controller_->Init();
 
   // Check LauncherItems are restored after resetting ChromeLauncherController.
@@ -1516,6 +1524,7 @@ TEST_F(ChromeLauncherControllerTest, PersistPinned) {
   SetAppTabHelper(app_tab_helper);
   app_icon_loader = new TestAppIconLoaderImpl;
   SetAppIconLoader(app_icon_loader);
+  AddAppListLauncherItem();
   launcher_controller_->Init();
 
   EXPECT_EQ(1, app_icon_loader->fetch_count());
