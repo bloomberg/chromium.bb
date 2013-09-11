@@ -101,17 +101,6 @@ class SYNC_EXPORT_PRIVATE ProcessCommitResponseCommand
       const sync_pb::CommitResponse_EntryResponse& entry_response,
       syncable::MutableEntry* local_entry);
 
-  // The server can override some values during a commit; the overridden values
-  // are returned as fields in the CommitResponse_EntryResponse.  This method
-  // stores the fields back in the client-visible (i.e. not the SERVER_* fields)
-  // fields of the entry.  This should only be done if the item did not change
-  // locally while the commit was in flight.
-  // Helper for ProcessSuccessfulCommitResponse.
-  void OverrideClientFieldsAfterCommit(
-      const sync_pb::SyncEntity& committed_entry,
-      const sync_pb::CommitResponse_EntryResponse& entry_response,
-      syncable::MutableEntry* local_entry);
-
   // Helper to extract the final name from the protobufs.
   const std::string& GetResultingPostCommitName(
       const sync_pb::SyncEntity& committed_entry,

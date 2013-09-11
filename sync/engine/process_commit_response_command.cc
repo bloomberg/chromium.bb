@@ -365,29 +365,6 @@ void ProcessCommitResponseCommand::UpdateServerFieldsAfterCommit(
   }
 }
 
-void ProcessCommitResponseCommand::OverrideClientFieldsAfterCommit(
-    const sync_pb::SyncEntity& committed_entry,
-    const sync_pb::CommitResponse_EntryResponse& entry_response,
-    syncable::MutableEntry* local_entry) {
-  if (committed_entry.deleted()) {
-    // If an entry's been deleted, nothing else matters.
-    DCHECK(local_entry->Get(IS_DEL));
-    return;
-  }
-
-  // Update the name.
-  const string& server_name =
-      GetResultingPostCommitName(committed_entry, entry_response);
-  const string& old_name =
-      local_entry->Get(syncable::NON_UNIQUE_NAME);
-
-  if (!server_name.empty() && old_name != server_name) {
-    DVLOG(1) << "During commit, server changed name: " << old_name
-             << " to new name: " << server_name;
-    local_entry->Put(syncable::NON_UNIQUE_NAME, server_name);
-  }
-}
-
 void ProcessCommitResponseCommand::ProcessSuccessfulCommitResponse(
     const sync_pb::SyncEntity& committed_entry,
     const sync_pb::CommitResponse_EntryResponse& entry_response,
@@ -414,12 +391,8 @@ void ProcessCommitResponseCommand::ProcessSuccessfulCommitResponse(
 
   // If the item doesn't need to be committed again (an item might need to be
   // committed again if it changed locally during the commit), we can remove
-  // it from the unsynced list.  Also, we should change the locally-
-  // visible properties to apply any canonicalizations or fixups
-  // that the server introduced during the commit.
+  // it from the unsynced list.
   if (syncing_was_set) {
-    OverrideClientFieldsAfterCommit(committed_entry, entry_response,
-                                    local_entry);
     local_entry->Put(IS_UNSYNCED, false);
   }
 
