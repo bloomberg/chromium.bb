@@ -15,6 +15,10 @@ var ClientRenderer = (function() {
 
     this.selectedPlayerLogIndex = 0;
 
+    this.filterFunction = function() { return true; };
+    this.filterText = document.getElementById('filter-text');
+    this.filterText.onkeyup = this.onTextChange_.bind(this);
+
     this.bufferCanvas = document.createElement('canvas');
     this.bufferCanvas.width = media.BAR_WIDTH;
     this.bufferCanvas.height = media.BAR_HEIGHT;
@@ -151,12 +155,14 @@ var ClientRenderer = (function() {
     },
 
     appendEventToLog_: function(event) {
-      var row = this.logTable.querySelector('tbody').insertRow(-1);
+      if (this.filterFunction(event.key)) {
+        var row = this.logTable.querySelector('tbody').insertRow(-1);
 
-      row.insertCell(-1).appendChild(document.createTextNode(
-          util.millisecondsToString(event.time)));
-      row.insertCell(-1).appendChild(document.createTextNode(event.key));
-      row.insertCell(-1).appendChild(document.createTextNode(event.value));
+        row.insertCell(-1).appendChild(document.createTextNode(
+            util.millisecondsToString(event.time)));
+        row.insertCell(-1).appendChild(document.createTextNode(event.key));
+        row.insertCell(-1).appendChild(document.createTextNode(event.value));
+      }
     },
 
     drawLog_: function() {
@@ -234,7 +240,29 @@ var ClientRenderer = (function() {
       ctx.fillRect(left, 0, middle - left, height);
       ctx.fillStyle = '#aa0';
       ctx.fillRect(middle, 0, right - middle, height);
-    }
+    },
+
+    onTextChange_: function(event) {
+      var text = this.filterText.value.toLowerCase();
+      var parts = text.split(',').map(function(part) {
+        return part.trim();
+      }).filter(function(part) {
+        return part.trim().length > 0;
+      });
+
+      this.filterFunction = function(text) {
+        text = text.toLowerCase();
+        return parts.length === 0 || parts.some(function(part) {
+          return text.indexOf(part) != -1;
+        });
+      };
+
+      if (this.selectedPlayer) {
+        removeChildren(this.logTable.querySelector('tbody'));
+        this.selectedPlayerLogIndex = 0;
+        this.drawLog_();
+      }
+    },
   };
 
   return ClientRenderer;
