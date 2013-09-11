@@ -588,7 +588,6 @@
             'common/importer/importer_data_types.cc',
             'common/importer/importer_url_row.cc',
             'common/net/url_util.cc',
-            'common/pepper_permission_util.cc',
             'common/spellcheck_common.cc',
           ],
           'dependencies!': [
@@ -651,6 +650,11 @@
           'sources/': [
             ['exclude', '^common/automation_']
           ]
+        }],
+        ['enable_plugins==0', {
+          'source!' : [
+            'common/pepper_permission_util.cc',
+          ],
         }],
         ['use_system_nspr==1', {
           'dependencies': [

@@ -170,6 +170,7 @@
     'common/font_config_ipc_linux.h',
     'common/font_list.cc',
     'common/font_list.h',
+    'common/font_list_android.cc',
     'common/font_list_mac.mm',
     'common/font_list_pango.cc',
     'common/font_list_win.cc',
@@ -433,10 +434,6 @@
       },
     }],
     ['OS=="android"',{
-      'sources!': [
-        'common/font_list.cc',
-        'common/sandbox_util.cc',
-      ],
       'link_settings': {
         'libraries': [
           '-landroid',  # ANativeWindow
@@ -483,8 +480,10 @@
       ],
     }, {  # enable_plugins == 0
       'sources!': [
+        'common/font_list.cc',
         'common/pepper_plugin_list.cc',
         'common/pepper_plugin_list.h',
+        'common/sandbox_util.cc',
       ],
     }],
     ['enable_gpu==1', {
