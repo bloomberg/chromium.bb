@@ -434,6 +434,11 @@ public:
     virtual void didScroll() OVERRIDE;
 
 protected:
+    explicit GraphicsLayer(GraphicsLayerClient*);
+    // GraphicsLayerFactoryChromium that wants to create a GraphicsLayer need to be friends.
+    friend class WebKit::GraphicsLayerFactoryChromium;
+
+private:
     // Adds a child without calling updateChildList(), so that adding children
     // can be batched before updating.
     void addChildInternal(GraphicsLayer*);
@@ -456,10 +461,6 @@ protected:
     void setReplicatedLayer(GraphicsLayer* layer) { m_replicatedLayer = layer; }
 
     int incrementPaintCount() { return ++m_paintCount; }
-
-    // Any factory classes that want to create a GraphicsLayer need to be friends.
-    friend class WebKit::GraphicsLayerFactoryChromium;
-    explicit GraphicsLayer(GraphicsLayerClient*);
 
     static void writeIndent(TextStream&, int indent);
 
@@ -520,12 +521,9 @@ protected:
 
     int m_paintCount;
 
-    Color m_contentsSolidColor;
-
     OwnPtr<WebKit::WebContentLayer> m_layer;
     OwnPtr<WebKit::WebImageLayer> m_imageLayer;
     OwnPtr<WebKit::WebNinePatchLayer> m_ninePatchLayer;
-    OwnPtr<WebKit::WebSolidColorLayer> m_contentsSolidColorLayer;
     WebKit::WebLayer* m_contentsLayer;
     // We don't have ownership of m_contentsLayer, but we do want to know if a given layer is the
     // same as our current layer in setContentsTo(). Since m_contentsLayer may be deleted at this point,
@@ -538,7 +536,6 @@ protected:
     OwnPtr<OpaqueRectTrackingContentLayerDelegate> m_opaqueRectTrackingContentLayerDelegate;
 
     ContentsLayerPurpose m_contentsLayerPurpose;
-    bool m_inSetChildren;
 
     typedef HashMap<String, int> AnimationIdMap;
     AnimationIdMap m_animationIdMap;
