@@ -115,21 +115,6 @@ void InputMethodTSF::CancelComposition(const TextInputClient* client) {
     ui::TSFBridge::GetInstance()->CancelComposition();
 }
 
-void InputMethodTSF::SetFocusedTextInputClient(TextInputClient* client) {
-  if (IsWindowFocused(client)) {
-    if (IsTextInputClientFocused(client)) {
-      ui::TSFBridge::GetInstance()->SetFocusedClient(
-          GetAttachedWindowHandle(client), client);
-    } else {
-      // SetFocusedTextInputClient(NULL) must be interpreted as
-      // "Remove the attached client".
-      ui::TSFBridge::GetInstance()->RemoveFocusedClient(
-          ui::TSFBridge::GetInstance()->GetFocusedTextInputClient());
-    }
-  }
-  InputMethodWin::SetFocusedTextInputClient(client);
-}
-
 void InputMethodTSF::DetachTextInputClient(TextInputClient* client) {
   InputMethodWin::DetachTextInputClient(client);
   ui::TSFBridge::GetInstance()->RemoveFocusedClient(client);
@@ -167,11 +152,6 @@ void InputMethodTSF::OnDidChangeFocusedClient(TextInputClient* focused_before,
 void InputMethodTSF::ConfirmCompositionText() {
   if (!IsTextInputTypeNone())
     ui::TSFBridge::GetInstance()->ConfirmComposition();
-}
-
-bool InputMethodTSF::IsWindowFocused(const TextInputClient* client) const {
-  HWND attached_window_handle = GetAttachedWindowHandle(client);
-  return attached_window_handle && GetFocus() == attached_window_handle;
 }
 
 }  // namespace ui

@@ -351,4 +351,20 @@ HWND InputMethodWin::GetAttachedWindowHandle(
 #endif
 }
 
+bool InputMethodWin::IsWindowFocused(const TextInputClient* client) const {
+  if (!client)
+    return false;
+  HWND attached_window_handle = GetAttachedWindowHandle(client);
+#if defined(USE_AURA)
+  // When Aura is enabled, |attached_window_handle| should always be a top-level
+  // window. So we can safely assume that |attached_window_handle| is ready for
+  // receiving keyboard input as long as it is an active window. This works well
+  // even when the |attached_window_handle| becomes active but has not received
+  // WM_FOCUS yet.
+  return attached_window_handle && GetActiveWindow() == attached_window_handle;
+#else
+  return attached_window_handle && GetFocus() == attached_window_handle;
+#endif
+}
+
 }  // namespace ui

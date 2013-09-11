@@ -57,6 +57,10 @@ class UI_EXPORT InputMethodWin : public InputMethodBase {
   // On Aura environment, |toplevel_window_handle_| is always returned.
   HWND GetAttachedWindowHandle(const TextInputClient* text_input_client) const;
 
+  // Returns true if the Win32 native window bound to |client| is considered
+  // to be ready for receiving keyboard input.
+  bool IsWindowFocused(const TextInputClient* client) const;
+
   // Indicates if the current input locale has an IME.
   bool active_;
 

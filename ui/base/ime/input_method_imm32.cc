@@ -120,11 +120,6 @@ void InputMethodIMM32::CancelComposition(const TextInputClient* client) {
     imm32_manager_.CancelIME(GetAttachedWindowHandle(client));
 }
 
-void InputMethodIMM32::SetFocusedTextInputClient(TextInputClient* client) {
-  ConfirmCompositionText();
-  InputMethodWin::SetFocusedTextInputClient(client);
-}
-
 bool InputMethodIMM32::IsCandidatePopupOpen() const {
   return is_candidate_popup_open_;
 }
@@ -284,13 +279,6 @@ void InputMethodIMM32::UpdateIMEState() {
   }
 
   imm32_manager_.SetTextInputMode(window_handle, GetTextInputMode());
-}
-
-bool InputMethodIMM32::IsWindowFocused(const TextInputClient* client) const {
-  if (!client)
-    return false;
-  HWND attached_window_handle = GetAttachedWindowHandle(client);
-  return attached_window_handle && GetFocus() == attached_window_handle;
 }
 
 }  // namespace ui

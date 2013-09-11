@@ -31,7 +31,6 @@ class UI_EXPORT InputMethodTSF : public InputMethodWin {
   virtual void OnTextInputTypeChanged(const TextInputClient* client) OVERRIDE;
   virtual void OnCaretBoundsChanged(const TextInputClient* client) OVERRIDE;
   virtual void CancelComposition(const TextInputClient* client) OVERRIDE;
-  virtual void SetFocusedTextInputClient(TextInputClient* client) OVERRIDE;
   virtual void DetachTextInputClient(TextInputClient* client) OVERRIDE;
   virtual bool IsCandidatePopupOpen() const OVERRIDE;
 
@@ -46,10 +45,6 @@ class UI_EXPORT InputMethodTSF : public InputMethodWin {
 
   // Asks the client to confirm current composition text.
   void ConfirmCompositionText();
-
-  // Returns true if the Win32 native window bound to |client| has Win32 input
-  // focus.
-  bool IsWindowFocused(const TextInputClient* client) const;
 
   // TSF event router and observer.
   scoped_ptr<TSFEventObserver> tsf_event_observer_;
