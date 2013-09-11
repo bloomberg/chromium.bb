@@ -73,7 +73,7 @@ PhotoImport.load = function(opt_filesystem, opt_params) {
     if (opt_filesystem) {
       onFilesystem(opt_filesystem);
     } else {
-      api.requestFileSystem(onFilesystem);
+      api.requestFileSystem('compatible', onFilesystem);
     }
   });
 };

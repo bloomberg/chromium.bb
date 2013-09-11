@@ -24,11 +24,13 @@ function ImageLoader() {
   this.worker_ = new Worker();
 
   // Grant permissions to the local file system and initialize the cache.
-  chrome.fileBrowserPrivate.requestFileSystem(function(filesystem) {
-    this.cache_.initialize(function() {
-      this.worker_.start();
+  chrome.fileBrowserPrivate.requestFileSystem(
+    'compatible',
+    function(filesystem) {
+      this.cache_.initialize(function() {
+        this.worker_.start();
+      }.bind(this));
     }.bind(this));
-  }.bind(this));
 
   chrome.extension.onMessageExternal.addListener(function(request,
                                                           sender,

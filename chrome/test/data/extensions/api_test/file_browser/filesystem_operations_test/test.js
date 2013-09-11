@@ -470,7 +470,9 @@ function collectTestsForMountPoint(mountPointName, mountPoint) {
  *     to run will be null.
  */
 function initTests(callback) {
-  chrome.fileBrowserPrivate.requestFileSystem(function(fileSystem) {
+  chrome.fileBrowserPrivate.requestFileSystem(
+    'compatible',
+    function(fileSystem) {
     if(!fileSystem) {
       callback(null, 'Failed to get file system.');
       return;

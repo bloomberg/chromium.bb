@@ -354,6 +354,12 @@ bool FileBrowserPrivateRequestFileSystemFunction::
 
 bool FileBrowserPrivateRequestFileSystemFunction::RunImpl() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  using extensions::api::file_browser_private::RequestFileSystem::Params;
+  const scoped_ptr<Params> params(Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  // TODO(satorux): Handle the file system ID. crbug.com/284963.
+  DCHECK_EQ("compatible", params->file_system_id);
 
   if (!dispatcher() || !render_view_host() || !render_view_host()->GetProcess())
     return false;

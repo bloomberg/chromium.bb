@@ -224,7 +224,7 @@ function run() {
     tryNextMountPoint();
   }
 
-  chrome.fileBrowserPrivate.requestFileSystem(onGotFileSystem);
+  chrome.fileBrowserPrivate.requestFileSystem('compatible', onGotFileSystem);
 }
 
 // Start the testing.

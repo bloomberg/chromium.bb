@@ -71,6 +71,7 @@ chrome.test.runTests([
   // Loads filesystem that contains drive mount point.
   function loadFileSystem() {
     chrome.fileBrowserPrivate.requestFileSystem(
+      'compatible',
       function (fileSystem) {
         chrome.test.assertFalse(!fileSystem, 'Failed to get file system.');
         fileSystem.root.getDirectory('drive/root/test_dir', {create: false},

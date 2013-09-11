@@ -226,7 +226,8 @@ function initTests(callback) {
   };
 
   // Get the file system.
-  chrome.fileBrowserPrivate.requestFileSystem(function(fileSystem) {
+  chrome.fileBrowserPrivate.requestFileSystem(
+    'compatible', function(fileSystem) {
     if(!fileSystem) {
       callback(testParams, 'Failed to get file system,');
       return;

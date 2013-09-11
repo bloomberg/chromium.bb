@@ -431,11 +431,13 @@ VolumeManager.getInstance = function(callback) {
       return;
     }
 
-    chrome.fileBrowserPrivate.requestFileSystem(function(filesystem) {
-      VolumeManager.instance_ = new VolumeManager(filesystem.root);
-      callback(VolumeManager.instance_);
-      completionCallback();
-    });
+    chrome.fileBrowserPrivate.requestFileSystem(
+      'compatible',
+      function(filesystem) {
+        VolumeManager.instance_ = new VolumeManager(filesystem.root);
+        callback(VolumeManager.instance_);
+        completionCallback();
+      });
   });
 };
 

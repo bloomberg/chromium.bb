@@ -209,11 +209,13 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     util.installFileErrorToString();
 
     metrics.startInterval('Load.FileSystem');
-    chrome.fileBrowserPrivate.requestFileSystem(function(filesystem) {
-      metrics.recordInterval('Load.FileSystem');
-      this.filesystem_ = filesystem;
-      callback();
-    }.bind(this));
+    chrome.fileBrowserPrivate.requestFileSystem(
+      'compatible',
+      function(filesystem) {
+        metrics.recordInterval('Load.FileSystem');
+        this.filesystem_ = filesystem;
+        callback();
+      }.bind(this));
   };
 
   /**
