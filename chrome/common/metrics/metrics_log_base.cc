@@ -166,9 +166,5 @@ void MetricsLogBase::RecordHistogramDelta(const std::string& histogram_name,
     bucket->set_min(min);
     bucket->set_max(max);
     bucket->set_count(count);
-
-    size_t index;
-    if (it->GetBucketIndex(&index))
-      bucket->set_bucket_index(index);
   }
 }
