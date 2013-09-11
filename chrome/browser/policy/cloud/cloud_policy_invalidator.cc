@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/hash.h"
 #include "base/location.h"
 #include "base/metrics/histogram.h"
 #include "base/rand_util.h"
@@ -44,6 +45,7 @@ CloudPolicyInvalidator::CloudPolicyInvalidator(
       ack_handle_(syncer::AckHandle::InvalidAckHandle()),
       weak_factory_(this),
       max_fetch_delay_(kMaxFetchDelayDefault),
+      policy_hash_value_(0),
       policy_refresh_count_(0) {
   DCHECK(core);
   DCHECK(task_runner.get());
@@ -123,6 +125,8 @@ void CloudPolicyInvalidator::OnCoreDisconnecting(CloudPolicyCore* core) {
 void CloudPolicyInvalidator::OnStoreLoaded(CloudPolicyStore* store) {
   DCHECK(state_ == STARTED);
   DCHECK(thread_checker_.CalledOnValidThread());
+  bool policy_changed = IsPolicyChanged(store->policy());
+
   if (registered_timestamp_) {
     // Update the kMetricPolicyRefresh histogram. In some cases, this object can
     // be constructed during an OnStoreLoaded callback, which causes
@@ -133,7 +137,7 @@ void CloudPolicyInvalidator::OnStoreLoaded(CloudPolicyStore* store) {
         store->policy()->timestamp() != registered_timestamp_) {
       UMA_HISTOGRAM_ENUMERATION(
           kMetricPolicyRefresh,
-          GetPolicyRefreshMetric(),
+          GetPolicyRefreshMetric(policy_changed),
           METRIC_POLICY_REFRESH_SIZE);
     }
 
@@ -320,8 +324,20 @@ void CloudPolicyInvalidator::AcknowledgeInvalidation() {
   weak_factory_.InvalidateWeakPtrs();
 }
 
-int CloudPolicyInvalidator::GetPolicyRefreshMetric() {
-  if (core_->store()->policy_changed()) {
+bool CloudPolicyInvalidator::IsPolicyChanged(
+    const enterprise_management::PolicyData* policy) {
+  // Determine if the policy changed by comparing its hash value to the
+  // previous policy's hash value.
+  uint32 new_hash_value = 0;
+  if (policy && policy->has_policy_value())
+    new_hash_value = base::Hash(policy->policy_value());
+  bool changed = new_hash_value != policy_hash_value_;
+  policy_hash_value_ = new_hash_value;
+  return changed;
+}
+
+int CloudPolicyInvalidator::GetPolicyRefreshMetric(bool policy_changed) {
+  if (policy_changed) {
     if (invalid_)
       return METRIC_POLICY_REFRESH_INVALIDATED_CHANGED;
     if (invalidations_enabled_)

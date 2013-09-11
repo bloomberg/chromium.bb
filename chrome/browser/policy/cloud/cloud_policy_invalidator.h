@@ -115,9 +115,13 @@ class CloudPolicyInvalidator : public syncer::InvalidationHandler,
   // Acknowledge the latest invalidation.
   void AcknowledgeInvalidation();
 
+  // Determines if the given policy is different from the policy passed in the
+  // previous call.
+  bool IsPolicyChanged(const enterprise_management::PolicyData* policy);
+
   // Get the kMetricPolicyRefresh histogram metric which should be incremented
   // when a policy is stored.
-  int GetPolicyRefreshMetric();
+  int GetPolicyRefreshMetric(bool policy_changed);
 
   // The state of the object.
   enum State {
@@ -176,6 +180,10 @@ class CloudPolicyInvalidator : public syncer::InvalidationHandler,
   // The maximum random delay, in ms, between receiving an invalidation and
   // fetching the new policy.
   int max_fetch_delay_;
+
+  // The hash value of the current policy. This is used to determine if a new
+  // policy is different from the current one.
+  uint32 policy_hash_value_;
 
   // A thread checker to make sure that callbacks are invoked on the correct
   // thread.

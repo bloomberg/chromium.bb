@@ -115,7 +115,6 @@ TEST_F(UserCloudPolicyStoreTest, LoadWithNoFile) {
 
   EXPECT_FALSE(store_->policy());
   EXPECT_TRUE(store_->policy_map().empty());
-  EXPECT_FALSE(store_->policy_changed());
 }
 
 TEST_F(UserCloudPolicyStoreTest, LoadWithInvalidFile) {
@@ -136,7 +135,6 @@ TEST_F(UserCloudPolicyStoreTest, LoadWithInvalidFile) {
 
   EXPECT_FALSE(store_->policy());
   EXPECT_TRUE(store_->policy_map().empty());
-  EXPECT_FALSE(store_->policy_changed());
 }
 
 TEST_F(UserCloudPolicyStoreTest, LoadImmediatelyWithNoFile) {
@@ -148,7 +146,6 @@ TEST_F(UserCloudPolicyStoreTest, LoadImmediatelyWithNoFile) {
 
   EXPECT_FALSE(store_->policy());
   EXPECT_TRUE(store_->policy_map().empty());
-  EXPECT_FALSE(store_->policy_changed());
 }
 
 TEST_F(UserCloudPolicyStoreTest, LoadImmediatelyWithInvalidFile) {
@@ -168,7 +165,6 @@ TEST_F(UserCloudPolicyStoreTest, LoadImmediatelyWithInvalidFile) {
 
   EXPECT_FALSE(store_->policy());
   EXPECT_TRUE(store_->policy_map().empty());
-  EXPECT_FALSE(store_->policy_changed());
 }
 
 TEST_F(UserCloudPolicyStoreTest, Store) {
@@ -287,7 +283,6 @@ TEST_F(UserCloudPolicyStoreTest, StoreThenLoadImmediately) {
   VerifyPolicyMap(store2.get());
   EXPECT_EQ(CloudPolicyStore::STATUS_OK, store2->status());
   store2->RemoveObserver(&observer_);
-  EXPECT_TRUE(store2->policy_changed());
 }
 
 TEST_F(UserCloudPolicyStoreTest, StoreValidationError) {
@@ -300,7 +295,6 @@ TEST_F(UserCloudPolicyStoreTest, StoreValidationError) {
   store_->Store(policy_.policy());
   RunUntilIdle();
   ASSERT_FALSE(store_->policy());
-  EXPECT_FALSE(store_->policy_changed());
 }
 
 TEST_F(UserCloudPolicyStoreTest, LoadValidationError) {
@@ -352,46 +346,6 @@ TEST_F(UserCloudPolicyStoreTest, LoadValidationError) {
 
   ASSERT_FALSE(store4->policy());
   store4->RemoveObserver(&observer_);
-}
-
-TEST_F(UserCloudPolicyStoreTest, PolicyChanged) {
-  EXPECT_CALL(observer_, OnStoreLoaded(store_.get())).Times(7);
-  EXPECT_FALSE(store_->policy_changed());
-
-  // Clearing before storing should not result in a change.
-  store_->Clear();
-  EXPECT_FALSE(store_->policy_changed());
-
-  // Storing an initial policy should result in a change.
-  store_->Store(policy_.policy());
-  RunUntilIdle();
-  EXPECT_TRUE(store_->policy_changed());
-
-  // Storing the same policy should not result in a change.
-  store_->Store(policy_.policy());
-  RunUntilIdle();
-  EXPECT_FALSE(store_->policy_changed());
-
-  // Storing a modified policy should result in a change.
-  policy_.payload().mutable_urlblacklist()->mutable_value()->add_entries(
-      "build.chromium.org");
-  policy_.Build();
-  store_->Store(policy_.policy());
-  RunUntilIdle();
-  EXPECT_TRUE(store_->policy_changed());
-
-  // Storing the same policy should not result in a change.
-  store_->Store(policy_.policy());
-  RunUntilIdle();
-  EXPECT_FALSE(store_->policy_changed());
-
-  // Clearing the policy should result in a change.
-  store_->Clear();
-  EXPECT_TRUE(store_->policy_changed());
-
-  // Clearing the policy again shouldn't result in a change.
-  store_->Clear();
-  EXPECT_FALSE(store_->policy_changed());
 }
 
 }  // namespace

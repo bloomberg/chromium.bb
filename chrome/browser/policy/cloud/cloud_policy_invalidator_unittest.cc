@@ -79,8 +79,8 @@ class CloudPolicyInvalidatorTest : public testing::Test {
   // |object| determines which policy object the store will report the
   // invalidator should register for. May be POLICY_OBJECT_NONE for no object.
   // |invalidation_version| determines what invalidation the store will report.
-  // |policy_changed| determines whether the store will report that the
-  // policy changed.
+  // |policy_changed| determines whether a policy value different from the
+  // current value will be stored.
   // |timestamp| determines the response timestamp the store will report.
   void StorePolicy(
       PolicyObject object,

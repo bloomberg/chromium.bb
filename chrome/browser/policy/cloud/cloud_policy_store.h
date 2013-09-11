@@ -80,12 +80,6 @@ class CloudPolicyStore {
     return validation_status_;
   }
 
-  // Returns true if the latest policy loaded was different from the previous
-  // policy.
-  bool policy_changed() const {
-    return policy_changed_;
-  }
-
   // Store a new policy blob. Pending load/store operations will be canceled.
   // The store operation may proceed asynchronously and observers are notified
   // once the operation finishes. If successful, OnStoreLoaded() will be invoked
@@ -151,13 +145,6 @@ class CloudPolicyStore {
   // Whether the store has completed asynchronous initialization, which is
   // triggered by calling Load().
   bool is_initialized_;
-
-  // Whether latest policy loaded was different from the previous policy.
-  bool policy_changed_;
-
-  // The hash value of the current policy. This is used to determine when the
-  // policy changes.
-  uint32 hash_value_;
 
   ObserverList<Observer, true> observers_;
 
