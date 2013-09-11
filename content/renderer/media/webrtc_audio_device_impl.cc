@@ -198,14 +198,8 @@ int32_t WebRtcAudioDeviceImpl::Terminate() {
   StopRecording();
   StopPlayout();
 
-  // It is necessary to stop the |renderer_| before going away.
-  if (renderer_.get()) {
-    // Grab a local reference while we call Stop(), which will trigger a call to
-    // RemoveAudioRenderer that clears our reference to the audio renderer.
-    scoped_refptr<WebRtcAudioRenderer> local_renderer(renderer_);
-    local_renderer->Stop();
-    DCHECK(!renderer_.get());
-  }
+  DCHECK(!renderer_.get() || !renderer_->IsStarted())
+      << "The shared audio renderer shouldn't be running";
 
   capturers_.clear();
 

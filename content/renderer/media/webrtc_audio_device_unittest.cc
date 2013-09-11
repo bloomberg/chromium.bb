@@ -549,9 +549,11 @@ TEST_F(MAYBE_WebRTCAudioDeviceTest, MAYBE_StartPlayout) {
   EXPECT_EQ(0, base->StartPlayout(ch));
   scoped_refptr<WebRtcAudioRenderer> renderer(
       CreateDefaultWebRtcAudioRenderer(kRenderViewId));
-
+  scoped_refptr<MediaStreamAudioRenderer> proxy(
+      renderer->CreateSharedAudioRendererProxy());
   EXPECT_TRUE(webrtc_audio_device->SetAudioRenderer(renderer.get()));
-  renderer->Play();
+  proxy->Start();
+  proxy->Play();
 
   EXPECT_TRUE(event.TimedWait(TestTimeouts::action_timeout()));
   WaitForIOThreadCompletion();
@@ -566,8 +568,7 @@ TEST_F(MAYBE_WebRTCAudioDeviceTest, MAYBE_StartPlayout) {
   EXPECT_EQ(0, external_media->DeRegisterExternalMediaProcessing(
       ch, webrtc::kPlaybackPerChannel));
   EXPECT_EQ(0, base->StopPlayout(ch));
-  renderer->Stop();
-
+  proxy->Stop();
   EXPECT_EQ(0, base->DeleteChannel(ch));
   EXPECT_EQ(0, base->Terminate());
 }
@@ -725,8 +726,11 @@ TEST_F(MAYBE_WebRTCAudioDeviceTest, MAYBE_PlayLocalFile) {
   EXPECT_EQ(0, base->StartPlayout(ch));
   scoped_refptr<WebRtcAudioRenderer> renderer(
       CreateDefaultWebRtcAudioRenderer(kRenderViewId));
+  scoped_refptr<MediaStreamAudioRenderer> proxy(
+      renderer->CreateSharedAudioRendererProxy());
   EXPECT_TRUE(webrtc_audio_device->SetAudioRenderer(renderer.get()));
-  renderer->Play();
+  proxy->Start();
+  proxy->Play();
 
   ScopedWebRTCPtr<webrtc::VoEFile> file(engine.get());
   ASSERT_TRUE(file.valid());
@@ -744,7 +748,7 @@ TEST_F(MAYBE_WebRTCAudioDeviceTest, MAYBE_PlayLocalFile) {
                                 base::TimeDelta::FromSeconds(2));
   message_loop_.Run();
 
-  renderer->Stop();
+  proxy->Stop();
   EXPECT_EQ(0, base->StopSend(ch));
   EXPECT_EQ(0, base->StopPlayout(ch));
   EXPECT_EQ(0, base->DeleteChannel(ch));
@@ -835,8 +839,11 @@ TEST_F(MAYBE_WebRTCAudioDeviceTest, MAYBE_FullDuplexAudioWithAGC) {
   EXPECT_EQ(0, base->StartSend(ch));
   scoped_refptr<WebRtcAudioRenderer> renderer(
       CreateDefaultWebRtcAudioRenderer(kRenderViewId));
+  scoped_refptr<MediaStreamAudioRenderer> proxy(
+      renderer->CreateSharedAudioRendererProxy());
   EXPECT_TRUE(webrtc_audio_device->SetAudioRenderer(renderer.get()));
-  renderer->Play();
+  proxy->Start();
+  proxy->Play();
 
   LOG(INFO) << ">> You should now be able to hear yourself in loopback...";
   message_loop_.PostDelayedTask(FROM_HERE,
@@ -845,7 +852,7 @@ TEST_F(MAYBE_WebRTCAudioDeviceTest, MAYBE_FullDuplexAudioWithAGC) {
   message_loop_.Run();
 
   local_audio_track->Stop();
-  renderer->Stop();
+  proxy->Stop();
   EXPECT_EQ(0, base->StopSend(ch));
   EXPECT_EQ(0, base->StopPlayout(ch));
 
@@ -948,15 +955,18 @@ TEST_F(MAYBE_WebRTCAudioDeviceTest, MAYBE_WebRtcPlayoutSetupTime) {
   scoped_refptr<WebRtcAudioRenderer> renderer(
       CreateDefaultWebRtcAudioRenderer(kRenderViewId));
   renderer->Initialize(renderer_source.get());
+  scoped_refptr<MediaStreamAudioRenderer> proxy(
+      renderer->CreateSharedAudioRendererProxy());
+  proxy->Start();
 
   // Start the timer and playout.
   base::Time start_time = base::Time::Now();
-  renderer->Play();
+  proxy->Play();
   EXPECT_TRUE(event.TimedWait(TestTimeouts::action_timeout()));
   int delay = (base::Time::Now() - start_time).InMilliseconds();
   PrintPerfResultMs("webrtc_playout_setup_c", "t", delay);
 
-  renderer->Stop();
+  proxy->Stop();
 }
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)

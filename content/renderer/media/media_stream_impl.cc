@@ -314,7 +314,8 @@ MediaStreamImpl::GetAudioRenderer(const GURL& url) {
     if (renderer.get() && !audio_device->SetAudioRenderer(renderer.get()))
       renderer = NULL;
   }
-  return renderer;
+
+  return renderer.get() ? renderer->CreateSharedAudioRendererProxy() : NULL;
 }
 
 // Callback from MediaStreamDispatcher.

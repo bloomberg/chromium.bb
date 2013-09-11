@@ -68,21 +68,11 @@ WebMediaPlayerMS::~WebMediaPlayerMS() {
   SetVideoFrameProviderClient(NULL);
   GetClient()->setWebLayer(NULL);
 
-  if (video_frame_provider_.get()) {
+  if (video_frame_provider_.get())
     video_frame_provider_->Stop();
-  }
 
-  if (audio_renderer_.get()) {
-    if (audio_renderer_->IsLocalRenderer()) {
-      audio_renderer_->Stop();
-    } else if (!paused_) {
-      // The |audio_renderer_| can be shared by multiple remote streams, and
-      // it will be stopped when WebRtcAudioDeviceImpl goes away. So we simply
-      // pause the |audio_renderer_| here to avoid re-creating the
-      // |audio_renderer_|.
-      audio_renderer_->Pause();
-    }
-  }
+  if (audio_renderer_.get())
+    audio_renderer_->Stop();
 
   media_log_->AddEvent(
       media_log_->CreateEvent(media::MediaLogEvent::WEBMEDIAPLAYER_DESTROYED));
