@@ -14,6 +14,16 @@
       "values": {
         "pv": {"type": "SZ", "data": "$MINI_INSTALLER_FILE_VERSION"}
       }
+    },
+    "HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\$CHROME_LONG_NAME": {
+      "exists": true,
+      "values": {
+        "UninstallString": {
+          "type": "SZ",
+          "data": "\"$LOCAL_APPDATA\\$CHROME_DIR\\Application\\$MINI_INSTALLER_FILE_VERSION\\Installer\\setup.exe\" --uninstall --multi-install --chrome"
+        },
+        "Version": {"type": "SZ", "data": "$MINI_INSTALLER_FILE_VERSION"}
+      }
     }
   }
 }

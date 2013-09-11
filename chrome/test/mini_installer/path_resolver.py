@@ -2,11 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import base64
+import hashlib
 import os
 import string
 import win32api
 import win32com.client
 from win32com.shell import shell, shellcon
+import win32security
 
 
 def _GetFileVersion(file_path):
@@ -34,6 +37,22 @@ def _GetProductName(file_path):
   return win32api.GetFileVersionInfo(file_path, product_name_entry)
 
 
+def _GetUserSpecificRegistrySuffix():
+  """Returns '.' plus the unpadded Base32 encoding of the MD5 of the user's SID.
+
+  The result must match the output from the method
+  UserSpecificRegistrySuffix::GetSuffix() in
+  chrome/installer/util/shell_util.cc. It will always be 27 characters long.
+  """
+  token_handle = win32security.OpenProcessToken(win32api.GetCurrentProcess(),
+                                                win32security.TOKEN_QUERY)
+  user_sid, _ = win32security.GetTokenInformation(token_handle,
+                                                  win32security.TokenUser)
+  user_sid_string = win32security.ConvertSidToStringSid(user_sid)
+  md5_digest = hashlib.md5(user_sid_string).digest()
+  return '.' + base64.b32encode(md5_digest).rstrip('=')
+
+
 class PathResolver:
   """Resolves variables in file paths and registry keys."""
 
@@ -53,6 +72,9 @@ class PathResolver:
             installation directory.
         * $CHROME_UPDATE_REGISTRY_SUBKEY: the registry key, excluding the root
             key, of Chrome for Google Update.
+        * $CHROME_HTML_PROG_ID: 'ChromeHTML' (or 'ChromiumHTM').
+        * $USER_SPECIFIC_REGISTRY_SUFFIX: the output from the function
+            _GetUserSpecificRegistrySuffix().
 
     Args:
       mini_installer_path: The path to mini_installer.exe.
@@ -64,17 +86,20 @@ class PathResolver:
                                                None, 0)
     local_appdata_path = shell.SHGetFolderPath(0, shellcon.CSIDL_LOCAL_APPDATA,
                                                None, 0)
+    user_specific_registry_suffix = _GetUserSpecificRegistrySuffix()
     if mini_installer_product_name == 'Google Chrome':
       chrome_short_name = 'Chrome'
       chrome_long_name = 'Google Chrome'
       chrome_dir = 'Google\\Chrome'
       chrome_update_registry_subkey = ('Software\\Google\\Update\\Clients\\'
                                        '{8A69D345-D564-463c-AFF1-A69D9E530F96}')
+      chrome_html_prog_id = 'ChromeHTML'
     elif mini_installer_product_name == 'Chromium':
       chrome_short_name = 'Chromium'
       chrome_long_name = 'Chromium'
       chrome_dir = 'Chromium'
       chrome_update_registry_subkey = 'Software\\Chromium'
+      chrome_html_prog_id = 'ChromiumHTM'
     else:
       raise KeyError("Unknown mini_installer product name '%s'" %
                      mini_installer_product_name)
@@ -88,6 +113,8 @@ class PathResolver:
         'CHROME_LONG_NAME': chrome_long_name,
         'CHROME_DIR': chrome_dir,
         'CHROME_UPDATE_REGISTRY_SUBKEY': chrome_update_registry_subkey,
+        'CHROME_HTML_PROG_ID': chrome_html_prog_id,
+        'USER_SPECIFIC_REGISTRY_SUFFIX': user_specific_registry_suffix,
     }
 
   def ResolvePath(self, path):
