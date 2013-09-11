@@ -603,6 +603,8 @@
         'browser/extensions/data_deleter.h',
         'browser/extensions/default_apps.cc',
         'browser/extensions/default_apps.h',
+        'browser/extensions/devtools_util.h',
+        'browser/extensions/devtools_util.cc',
         'browser/extensions/error_console/error_console.cc',
         'browser/extensions/error_console/error_console.h',
         'browser/extensions/event_listener_map.cc',

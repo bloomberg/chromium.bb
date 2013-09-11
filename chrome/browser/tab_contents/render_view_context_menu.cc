@@ -31,6 +31,7 @@
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/download/download_stats.h"
+#include "chrome/browser/extensions/devtools_util.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -1791,8 +1792,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       DCHECK(platform_app);
       DCHECK(platform_app->is_platform_app());
 
-      extensions::ExtensionSystem::Get(profile_)->extension_service()->
-          InspectBackgroundPage(platform_app);
+      extensions::devtools_util::InspectBackgroundPage(platform_app, profile_);
       break;
     }
 

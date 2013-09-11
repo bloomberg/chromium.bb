@@ -661,10 +661,6 @@ class ExtensionService
   static void RecordPermissionMessagesHistogram(
       const extensions::Extension* e, const char* histogram);
 
-  // Open a dev tools window for the background page for the given extension,
-  // starting the background page first if necessary.
-  void InspectBackgroundPage(const extensions::Extension* extension);
-
 #if defined(UNIT_TEST)
   void TrackTerminatedExtensionForTest(const extensions::Extension* extension) {
     TrackTerminatedExtension(extension);
@@ -785,9 +781,6 @@ class ExtensionService
 
   // Helper that updates the active extension list used for crash reporting.
   void UpdateActiveExtensionsInCrashReporter();
-
-  // Helper to inspect an ExtensionHost after it has been loaded.
-  void InspectExtensionHost(extensions::ExtensionHost* host);
 
   // Helper to determine whether we should initially enable an installed
   // (or upgraded) extension.

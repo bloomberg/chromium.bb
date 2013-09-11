@@ -22,6 +22,7 @@
 #include "chrome/browser/extensions/api/developer_private/developer_private_api_factory.h"
 #include "chrome/browser/extensions/api/developer_private/entry_picker.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
+#include "chrome/browser/extensions/devtools_util.h"
 #include "chrome/browser/extensions/extension_disabled_ui.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -733,7 +734,7 @@ bool DeveloperPrivateInspectFunction::RunImpl() {
         options.extension_id);
     DCHECK(extension);
     // Wakes up the background page and  opens the inspect window.
-    service->InspectBackgroundPage(extension);
+    devtools_util::InspectBackgroundPage(extension, profile());
     return false;
   }
 

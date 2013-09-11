@@ -28,6 +28,7 @@
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/crx_installer.h"
+#include "chrome/browser/extensions/devtools_util.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_disabled_ui.h"
@@ -728,13 +729,8 @@ void ExtensionSettingsHandler::HandleInspectMessage(
     const Extension* extension =
         extension_service_->extensions()->GetByID(extension_id);
     DCHECK(extension);
-
-    ExtensionService* service = extension_service_;
-    if (incognito)
-      service = ExtensionSystem::Get(extension_service_->
-          profile()->GetOffTheRecordProfile())->extension_service();
-
-    service->InspectBackgroundPage(extension);
+    devtools_util::InspectBackgroundPage(extension,
+                                         Profile::FromWebUI(web_ui()));
     return;
   }
 

@@ -29,7 +29,6 @@
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/extensions/api/app_runtime/app_runtime_api.h"
 #include "chrome/browser/extensions/api/declarative/rules_registry_service.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
@@ -55,7 +54,6 @@
 #include "chrome/browser/extensions/external_provider_impl.h"
 #include "chrome/browser/extensions/external_provider_interface.h"
 #include "chrome/browser/extensions/installed_loader.h"
-#include "chrome/browser/extensions/lazy_background_task_queue.h"
 #include "chrome/browser/extensions/management_policy.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
 #include "chrome/browser/extensions/permissions_updater.h"
@@ -2967,25 +2965,6 @@ void ExtensionService::SetBackgroundPageReady(const Extension* extension) {
       content::NotificationService::NoDetails());
 }
 
-void ExtensionService::InspectBackgroundPage(const Extension* extension) {
-  DCHECK(extension);
-
-  ExtensionProcessManager* pm = system_->process_manager();
-  extensions::LazyBackgroundTaskQueue* queue =
-      system_->lazy_background_task_queue();
-
-  extensions::ExtensionHost* host =
-      pm->GetBackgroundHostForExtension(extension->id());
-  if (host) {
-    InspectExtensionHost(host);
-  } else {
-    queue->AddPendingTask(
-        profile_, extension->id(),
-        base::Bind(&ExtensionService::InspectExtensionHost,
-                    base::Unretained(this)));
-  }
-}
-
 bool ExtensionService::IsBeingUpgraded(const Extension* extension) const {
   ExtensionRuntimeDataMap::const_iterator it =
       extension_runtime_data_.find(extension->id());
@@ -3021,12 +3000,6 @@ bool ExtensionService::HasUsedWebRequest(const Extension* extension) const {
 void ExtensionService::SetHasUsedWebRequest(const Extension* extension,
                                             bool value) {
   extension_runtime_data_[extension->id()].has_used_webrequest = value;
-}
-
-void ExtensionService::InspectExtensionHost(
-    extensions::ExtensionHost* host) {
-  if (host)
-    DevToolsWindow::OpenDevToolsWindow(host->render_view_host());
 }
 
 bool ExtensionService::ShouldEnableOnInstall(const Extension* extension) {
