@@ -24,6 +24,7 @@
 #include "base/rand_util.h"
 #include "base/sys_info.h"
 #include "build/build_config.h"
+#include "content/common/child_process_sandbox_support_impl_linux.h"
 #include "content/common/font_config_ipc_linux.h"
 #include "content/common/pepper_plugin_list.h"
 #include "content/common/sandbox_linux.h"
@@ -66,7 +67,7 @@ static void ProxyLocaltimeCallToBrowser(time_t input, struct tm* output,
 
   uint8_t reply_buf[512];
   const ssize_t r = UnixDomainSocket::SendRecvMsg(
-      Zygote::kMagicSandboxIPCDescriptor, reply_buf, sizeof(reply_buf), NULL,
+      GetSandboxFD(), reply_buf, sizeof(reply_buf), NULL,
       request);
   if (r == -1) {
     memset(output, 0, sizeof(struct tm));
@@ -302,7 +303,7 @@ static void PreSandboxInit() {
   InitializeWebRtcModule();
 #endif
   SkFontConfigInterface::SetGlobal(
-      new FontConfigIPC(Zygote::kMagicSandboxIPCDescriptor))->unref();
+      new FontConfigIPC(GetSandboxFD()))->unref();
 }
 
 // Do nothing here
@@ -468,7 +469,7 @@ bool ZygoteMain(const MainFunctionParams& params,
 
   if (forkdelegate != NULL) {
     VLOG(1) << "ZygoteMain: initializing fork delegate";
-    forkdelegate->Init(Zygote::kMagicSandboxIPCDescriptor);
+    forkdelegate->Init(GetSandboxFD());
   } else {
     VLOG(1) << "ZygoteMain: fork delegate is NULL";
   }

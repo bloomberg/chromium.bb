@@ -30,9 +30,6 @@ class Zygote {
 
   bool ProcessRequests();
 
-  static const int kBrowserDescriptor = 3;
-  static const int kMagicSandboxIPCDescriptor = 5;
-
  private:
   struct ZygoteProcessInfo {
     // Pid from inside the Zygote's PID namespace.

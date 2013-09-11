@@ -20,6 +20,7 @@
 #include "base/posix/global_descriptors.h"
 #include "base/posix/unix_domain_socket_linux.h"
 #include "base/process/kill.h"
+#include "content/common/child_process_sandbox_support_impl_linux.h"
 #include "content/common/sandbox_linux.h"
 #include "content/common/set_process_title.h"
 #include "content/common/zygote_commands_linux.h"
@@ -41,8 +42,6 @@ void SIGCHLDHandler(int signal) {
 }
 
 }  // namespace
-
-const int Zygote::kMagicSandboxIPCDescriptor;
 
 Zygote::Zygote(int sandbox_flags,
                ZygoteForkDelegate* helper)
@@ -77,7 +76,7 @@ bool Zygote::ProcessRequests() {
     // Let the ZygoteHost know we are ready to go.
     // The receiving code is in content/browser/zygote_host_linux.cc.
     std::vector<int> empty;
-    bool r = UnixDomainSocket::SendMsg(kBrowserDescriptor,
+    bool r = UnixDomainSocket::SendMsg(kZygoteSocketPairFd,
                                        kZygoteHelloMessage,
                                        sizeof(kZygoteHelloMessage), empty);
 #if defined(OS_CHROMEOS)
@@ -94,7 +93,7 @@ bool Zygote::ProcessRequests() {
 
   for (;;) {
     // This function call can return multiple times, once per fork().
-    if (HandleRequestFromBrowser(kBrowserDescriptor))
+    if (HandleRequestFromBrowser(kZygoteSocketPairFd))
       return true;
   }
 }
@@ -363,7 +362,7 @@ int Zygote::ForkWithRealPid(const std::string& process_type,
       request.WriteUInt64(dummy_inode);
 
       const ssize_t r = UnixDomainSocket::SendRecvMsg(
-          kMagicSandboxIPCDescriptor, reply_buf, sizeof(reply_buf), NULL,
+          GetSandboxFD(), reply_buf, sizeof(reply_buf), NULL,
           request);
       if (r == -1) {
         LOG(ERROR) << "Failed to get child process's real PID";
@@ -466,7 +465,7 @@ base::ProcessId Zygote::ReadArgsAndFork(const Pickle& pickle,
   }
 
   mapping.push_back(std::make_pair(
-      static_cast<uint32_t>(kSandboxIPCChannel), kMagicSandboxIPCDescriptor));
+      static_cast<uint32_t>(kSandboxIPCChannel), GetSandboxFD()));
 
   // Returns twice, once per process.
   base::ProcessId child_pid = ForkWithRealPid(process_type, fds, channel_id,
@@ -475,7 +474,7 @@ base::ProcessId Zygote::ReadArgsAndFork(const Pickle& pickle,
   if (!child_pid) {
     // This is the child process.
 
-    close(kBrowserDescriptor);  // Our socket from the browser.
+    close(kZygoteSocketPairFd);  // Our socket from the browser.
     if (UsingSUIDSandbox())
       close(kZygoteIdFd);  // Another socket from the browser.
     base::GlobalDescriptors::GetInstance()->Reset(mapping);

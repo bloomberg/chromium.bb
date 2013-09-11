@@ -5,6 +5,9 @@
 #ifndef CONTENT_COMMON_ZYGOTE_COMMANDS_LINUX_H_
 #define CONTENT_COMMON_ZYGOTE_COMMANDS_LINUX_H_
 
+#include "base/posix/global_descriptors.h"
+#include "ipc/ipc_descriptors.h"
+
 namespace content {
 
 // Contents of the initial message sent from the zygote to the browser when it
@@ -15,8 +18,8 @@ static const char kZygoteHelloMessage[] = "ZYGOTE_OK";
 const size_t kZygoteMaxMessageLength = 8192;
 
 // File descriptors initialized by the Zygote Host
-const int kZygoteSocketPairFd = 3;
-const int kZygoteRendererSocketFd = 5;
+const int kZygoteSocketPairFd =
+    kPrimaryIPCChannel + base::GlobalDescriptors::kBaseDescriptor;
 // This file descriptor is special. It is passed to the Zygote and a setuid
 // helper will be called to locate the process of the Zygote on the system.
 // This mechanism is used when multiple PID namespaces exist because of the

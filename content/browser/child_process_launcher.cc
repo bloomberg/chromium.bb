@@ -35,6 +35,7 @@
 #include "base/memory/singleton.h"
 #include "content/browser/renderer_host/render_sandbox_host_linux.h"
 #include "content/browser/zygote_host/zygote_host_impl_linux.h"
+#include "content/common/child_process_sandbox_support_impl_linux.h"
 #endif
 
 #if defined(OS_POSIX)
@@ -256,7 +257,7 @@ class ChildProcessLauncher::Context
             RenderSandboxHostLinux::GetInstance()->GetRendererSocket();
         fds_to_map.push_back(std::make_pair(
             sandbox_fd,
-            kSandboxIPCChannel + base::GlobalDescriptors::kBaseDescriptor));
+            GetSandboxFD()));
       }
 #endif  // defined(OS_MACOSX)
 
