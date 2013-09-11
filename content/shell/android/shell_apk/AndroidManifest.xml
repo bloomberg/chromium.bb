@@ -13,6 +13,7 @@
             android:protectionLevel="signature" />
 
     <application android:name="ContentShellApplication"
+            android:icon="@mipmap/app_icon"
             android:label="ContentShell">
         <activity android:name="ContentShellActivity"
                   android:launchMode="singleTask"
