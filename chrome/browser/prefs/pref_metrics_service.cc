@@ -25,6 +25,7 @@
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
+#include "chrome/browser/ui/tabs/pinned_tab_codec.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
@@ -149,7 +150,7 @@ void PrefMetricsService::RecordLaunchPrefs() {
                                 url_list->GetSize(), 1, 50, 20);
     // Similarly, check startup pages for known search engine TLD+1s.
     std::string url_text;
-    for (size_t i = 0; i < url_list->GetSize(); i++) {
+    for (size_t i = 0; i < url_list->GetSize(); ++i) {
       if (url_list->GetString(i, &url_text)) {
         GURL start_url(url_text);
         if (start_url.is_valid()) {
@@ -161,6 +162,21 @@ void PrefMetricsService::RecordLaunchPrefs() {
       }
     }
   }
+
+#if !defined(OS_ANDROID)
+  StartupTabs startup_tabs = PinnedTabCodec::ReadPinnedTabs(profile_);
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Settings.PinnedTabs",
+                              startup_tabs.size(), 1, 50, 20);
+  for (size_t i = 0; i < startup_tabs.size(); ++i) {
+    GURL start_url(startup_tabs.at(i).url);
+    if (start_url.is_valid()) {
+      UMA_HISTOGRAM_ENUMERATION(
+          "Settings.PinnedTabEngineTypes",
+          TemplateURLPrepopulateData::GetEngineType(start_url),
+          SEARCH_ENGINE_MAX);
+    }
+  }
+#endif
 }
 
 // static

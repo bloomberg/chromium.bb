@@ -14355,6 +14355,19 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Settings.PinnedTabEngineTypes" enum="OmniboxSearchEngineType">
+  <summary>
+    Tries to pretend pinned tab URLs are search URLs, and records the search
+    engine types of those URLs by comparing the TLD+1s of the URLs with those of
+    the different known search engines.  Recorded when a profile is opened, if
+    there are pinned tabs.  Note that at least one profile is opened on startup.
+  </summary>
+</histogram>
+
+<histogram name="Settings.PinnedTabs">
+  <summary>The number of pinned tabs opened when a profile is loaded.</summary>
+</histogram>
+
 <histogram name="Settings.ShowHomeButton" enum="BooleanEnabled">
   <summary>
     Whether or not the home button is enabled in user preferences when a profile
