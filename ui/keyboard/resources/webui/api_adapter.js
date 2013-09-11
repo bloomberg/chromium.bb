@@ -24,6 +24,16 @@ function sendKeyEvent(event) {
   var requestId = 0;
 
   /**
+   * Called when a text input box gets focus.
+   * @param {object} inputContext Describes an input context. It only contains
+   *     the type of text input box at present and only "password", "number" and
+   *     "text" are supported.
+   */
+  function OnTextInputBoxFocused(inputContext) {
+    // TODO(bshe): Making keyboard aware of inputContext.
+  }
+
+  /**
    * Gets the context of the focused input field. The context is returned as a
    * paramter in the |callback|.
    * @param {function(Object)} callback The callback function after the webui
@@ -61,6 +71,7 @@ function sendKeyEvent(event) {
     requestIdCallbackMap[requestId](inputContext);
   }
 
+  exports.OnTextInputBoxFocused = OnTextInputBoxFocused;
   exports.getInputContext = GetInputContext;
   exports.cancelRequest = CancelRequest;
   exports.GetInputContextCallback = GetInputContextCallback;

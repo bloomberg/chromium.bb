@@ -173,7 +173,9 @@ void KeyboardController::OnTextInputStateChanged(
 
   bool was_showing = keyboard_visible_;
   bool should_show = was_showing;
-  if (!client || client->GetTextInputType() == ui::TEXT_INPUT_TYPE_NONE) {
+  ui::TextInputType type =
+      client ? client->GetTextInputType() : ui::TEXT_INPUT_TYPE_NONE;
+  if (type == ui::TEXT_INPUT_TYPE_NONE) {
     should_show = false;
   } else {
     if (container_->children().empty()) {
@@ -182,6 +184,7 @@ void KeyboardController::OnTextInputStateChanged(
       container_->AddChild(keyboard);
       container_->layout_manager()->OnWindowResized();
     }
+    proxy_->SetUpdateInputType(type);
     container_->parent()->StackChildAtTop(container_);
     should_show = true;
   }

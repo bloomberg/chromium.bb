@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "content/public/common/media_stream_request.h"
+#include "ui/base/ime/text_input_type.h"
 #include "ui/keyboard/keyboard_export.h"
 
 namespace aura {
@@ -55,6 +56,11 @@ class KEYBOARD_EXPORT KeyboardControllerProxy {
   // simply hides the container. An overridden implementation can set up
   // necesasry animation, or delay the visibility change as it desires.
   virtual void HideKeyboardContainer(aura::Window* container);
+
+  // Calls OnTextInputBoxFocused javascript function through webui to update
+  // TextInputType on javascript side. This is for web ui keyboard. Extension
+  // keyboard can use chrome.input.ime.onFocus to get the same information.
+  void SetUpdateInputType(ui::TextInputType type);
 
  protected:
   // Gets the BrowserContext to use for creating the WebContents hosting the

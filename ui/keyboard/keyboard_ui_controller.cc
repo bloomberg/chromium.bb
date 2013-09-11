@@ -43,6 +43,7 @@ content::WebUIDataSource* CreateKeyboardUIDataSource() {
                           IDR_KEYBOARD_IMAGES_MICROPHONE_GREEN);
   source->AddResourcePath("layouts/latin-accents.js",
                           IDR_KEYBOARD_LAYOUTS_LATIN_ACCENTS);
+  source->AddResourcePath("layouts/numeric.html", IDR_KEYBOARD_LAYOUTS_NUMERIC);
   source->AddResourcePath("main.js", IDR_KEYBOARD_MAIN_JS);
   source->AddResourcePath("polymer.min.js", IDR_KEYBOARD_POLYMER);
   source->AddResourcePath("voice_input.js", IDR_KEYBOARD_VOICE_INPUT_JS);
