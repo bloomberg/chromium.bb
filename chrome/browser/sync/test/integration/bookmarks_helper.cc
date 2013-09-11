@@ -146,7 +146,7 @@ int CountNodesWithTitlesMatching(BookmarkModel* model,
 // Checks if the favicon data in |bitmap_a| and |bitmap_b| are equivalent.
 // Returns true if they match.
 bool FaviconBitmapsMatch(const SkBitmap& bitmap_a, const SkBitmap& bitmap_b) {
-  if (bitmap_a.getSize() == 0U && bitmap_a.getSize() == 0U)
+  if (bitmap_a.getSize() == 0U && bitmap_b.getSize() == 0U)
     return true;
   if ((bitmap_a.getSize() != bitmap_b.getSize()) ||
       (bitmap_a.width() != bitmap_b.width()) ||
