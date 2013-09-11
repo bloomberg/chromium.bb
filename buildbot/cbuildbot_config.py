@@ -1253,6 +1253,13 @@ internal_paladin.add_config('parrot-paladin',
   upload_hw_test_artifacts=True,
 )
 
+internal_paladin.add_config('samus-paladin',
+  boards=['samus'],
+  paladin_builder_name='samus paladin',
+  vm_tests=None,
+  important=False,
+)
+
 # x86 full unit tests
 internal_paladin.add_config('parrot32-paladin',
   boards=['parrot32'],
@@ -1522,6 +1529,11 @@ _release.add_config('peppy-release',
   boards=['peppy'],
 )
 
+_release.add_config('samus-release',
+  boards=['samus'],
+  hw_tests=[],
+)
+
 _release.add_config('slippy-release',
   boards=['slippy'],
   hw_tests=[],
@@ -1618,6 +1630,7 @@ _x86_firmware_boards = (
   'lumpy',
   'parrot',
   'peppy',
+  'samus',
   'stout',
   'stout32',
   'slippy',
@@ -1629,6 +1642,7 @@ _x86_firmware_boards = (
 _x86_depthcharge_firmware_boards = (
   'bayleybay',
   'link',
+  'samus',
 )
 
 _arm_firmware_boards = (
