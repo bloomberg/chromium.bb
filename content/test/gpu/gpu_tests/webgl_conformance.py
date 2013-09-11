@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 import json
+import optparse
 import os
 import sys
 
@@ -75,8 +76,17 @@ class WebglConformance(test_module.Test):
   enabled = False
   test = WebglConformanceValidator
 
+  @staticmethod
+  def AddTestCommandLineOptions(parser):
+    group = optparse.OptionGroup(parser, 'WebGL conformance options')
+    group.add_option('--webgl-conformance-version',
+        help='Version of the WebGL conformance tests to run.',
+        default='1.0.1')
+    parser.add_option_group(group)
+
   def CreatePageSet(self, options):
-    tests = self._ParseTests('00_test_list.txt', '1.0.1')
+    tests = self._ParseTests('00_test_list.txt',
+        options.webgl_conformance_version)
 
     page_set_dict = {
       'description': 'Executes WebGL conformance tests',
