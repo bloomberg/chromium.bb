@@ -452,7 +452,7 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self.assertEquals('0123456789+-*/ Hi, there!', value)
 
   def testGetCurrentUrl(self):
-    self.assertTrue('about:blank' in self._driver.GetCurrentUrl())
+    self.assertTrue('data:,' in self._driver.GetCurrentUrl())
 
   def testGoBackAndGoForward(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
@@ -616,6 +616,11 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self._driver.MouseMoveTo(self._driver.FindElement('tagName', 'div'))
     self._driver.MouseClick(2)
     self.assertTrue(self._driver.ExecuteScript('return success'))
+
+  def testHasFocusOnStartup(self):
+    # Some pages (about:blank) cause Chrome to put the focus in URL bar.
+    # This breaks tests depending on focus.
+    self.assertTrue(self._driver.ExecuteScript('return document.hasFocus()'))
 
 
 class ChromeSwitchesCapabilityTest(ChromeDriverBaseTest):

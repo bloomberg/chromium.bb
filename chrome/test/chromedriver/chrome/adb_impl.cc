@@ -166,7 +166,7 @@ Status AdbImpl::Launch(
   std::string response;
   Status status = ExecuteHostShellCommand(
       device_serial,
-      "am start -W -n " + package + "/" + activity + " -d about:blank",
+      "am start -W -n " + package + "/" + activity + " -d data:,",
       &response);
   if (!status.IsOk())
     return status;

@@ -115,7 +115,7 @@ Status PrepareCommandLine(int port,
   switches.SetFromSwitches(capabilities.switches);
 
   if (!switches.HasSwitch("user-data-dir")) {
-    command.AppendArg("about:blank");
+    command.AppendArg("data:,");
     if (!user_data_dir->CreateUniqueTempDir())
       return Status(kUnknownError, "cannot create temp dir for user data dir");
     switches.SetSwitch("user-data-dir", user_data_dir->path().value());
