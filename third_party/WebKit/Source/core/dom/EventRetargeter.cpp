@@ -100,6 +100,8 @@ void EventRetargeter::calculateEventPath(Node* node, Event* event)
             eventPath.append(adoptPtr(new TouchEventContext(node, eventTargetRespectingTargetRules(node), targetStack.last())));
         else
             eventPath.append(adoptPtr(new EventContext(node, eventTargetRespectingTargetRules(node), targetStack.last())));
+        if (!inDocument)
+            break;
         if (!node->isShadowRoot())
             continue;
         if (determineDispatchBehavior(event, toShadowRoot(node), targetStack.last()) == StayInsideShadowDOM)

@@ -7,8 +7,8 @@
 <p id="description"></p>
 <div id="test-container">
 <div id=d0 style='border:2px solid red'>
-<div onmouseout='testPassed("mouseout")'  onmouseover='document.getElementById("d0").innerHTML ="you should see PASS below"'>
-<div onmouseout='testPassed("mouseout")'>
+<div onmouseout='testFailed("mouseout")'  onmouseover='document.getElementById("d0").innerHTML ="you should see PASS below"'>
+<div onmouseout='testFailed("mouseout")'>
 <span id=target1 onmouseout='testPassed("mouseout")' >
 mouse over me
 </span>
@@ -23,7 +23,7 @@ mouse over me
 </div>
 <div id="console"></div>
 <script>
-description("Test that if node dies under mouse it receives mouseout event.");
+description("Test that if node dies under mouse it receives mouseout event but that the event does not propagate.");
 
 if (window.testRunner)
     testRunner.dumpAsText();
