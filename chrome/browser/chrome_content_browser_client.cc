@@ -100,6 +100,7 @@
 #include "chrome/common/extensions/manifest_handlers/shared_module_info.h"
 #include "chrome/common/extensions/permissions/permissions_data.h"
 #include "chrome/common/extensions/permissions/socket_permission.h"
+#include "chrome/common/extensions/web_accessible_resources_handler.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pepper_permission_util.h"
 #include "chrome/common/pref_names.h"
@@ -1045,6 +1046,37 @@ bool ChromeContentBrowserClient::CanCommitURL(
     return false;
   }
 
+  return true;
+}
+
+bool ChromeContentBrowserClient::ShouldAllowOpenURL(
+    content::SiteInstance* site_instance, const GURL& url) {
+  GURL from_url = site_instance->GetSiteURL();
+  // Do not allow pages from the web or other extensions navigate to
+  // non-web-accessible extension resources.
+  if (url.SchemeIs(extensions::kExtensionScheme) &&
+      (from_url.SchemeIsHTTPOrHTTPS() ||
+          from_url.SchemeIs(extensions::kExtensionScheme))) {
+    Profile* profile = Profile::FromBrowserContext(
+        site_instance->GetProcess()->GetBrowserContext());
+    ExtensionService* service =
+        extensions::ExtensionSystem::Get(profile)->extension_service();
+    if (!service)
+      return true;
+    const Extension* extension =
+        service->extensions()->GetExtensionOrAppByURL(url);
+    if (!extension)
+      return true;
+    const Extension* from_extension =
+        service->extensions()->GetExtensionOrAppByURL(
+            site_instance->GetSiteURL());
+    if (from_extension && from_extension->id() == extension->id())
+      return true;
+
+    if (!extensions::WebAccessibleResourcesInfo::IsResourceWebAccessible(
+            extension, url.path()))
+      return false;
+  }
   return true;
 }
 

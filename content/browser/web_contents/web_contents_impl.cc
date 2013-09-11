@@ -3322,6 +3322,11 @@ void WebContentsImpl::RequestTransferURL(
     bool user_gesture) {
   WebContents* new_contents = NULL;
   PageTransition transition_type = PAGE_TRANSITION_LINK;
+  GURL dest_url(url);
+  if (!GetContentClient()->browser()->ShouldAllowOpenURL(
+      GetSiteInstance(), url))
+    dest_url = GURL(kAboutBlankURL);
+
   if (render_manager_.web_ui()) {
     // When we're a Web UI, it will provide a page transition type for us (this
     // is so the new tab page can specify AUTO_BOOKMARK for automatically
@@ -3331,14 +3336,14 @@ void WebContentsImpl::RequestTransferURL(
     // want web sites to see a referrer of "chrome://blah" (and some
     // chrome: URLs might have search terms or other stuff we don't want to
     // send to the site), so we send no referrer.
-    OpenURLParams params(url, Referrer(), source_frame_id, disposition,
+    OpenURLParams params(dest_url, Referrer(), source_frame_id, disposition,
         render_manager_.web_ui()->GetLinkTransitionType(),
         false /* is_renderer_initiated */);
     params.transferred_global_request_id = old_request_id;
     new_contents = OpenURL(params);
     transition_type = render_manager_.web_ui()->GetLinkTransitionType();
   } else {
-    OpenURLParams params(url, referrer, source_frame_id, disposition,
+    OpenURLParams params(dest_url, referrer, source_frame_id, disposition,
         PAGE_TRANSITION_LINK, true /* is_renderer_initiated */);
     params.transferred_global_request_id = old_request_id;
     params.should_replace_current_entry = should_replace_current_entry;
@@ -3349,7 +3354,7 @@ void WebContentsImpl::RequestTransferURL(
     // Notify observers.
     FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                       DidOpenRequestedURL(new_contents,
-                                          url,
+                                          dest_url,
                                           referrer,
                                           disposition,
                                           transition_type,
