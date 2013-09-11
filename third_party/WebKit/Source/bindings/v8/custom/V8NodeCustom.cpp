@@ -139,7 +139,7 @@ v8::Handle<v8::Object> wrap(Node* impl, v8::Handle<v8::Object> creationContext, 
     case Node::TEXT_NODE:
         return wrap(toText(impl), creationContext, isolate);
     case Node::CDATA_SECTION_NODE:
-        return wrap(static_cast<CDATASection*>(impl), creationContext, isolate);
+        return wrap(toCDATASection(impl), creationContext, isolate);
     case Node::ENTITY_NODE:
         return wrap(static_cast<Entity*>(impl), creationContext, isolate);
     case Node::PROCESSING_INSTRUCTION_NODE:

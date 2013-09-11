@@ -40,6 +40,18 @@ private:
     virtual PassRefPtr<Text> cloneWithData(const String&) OVERRIDE;
 };
 
+inline CDATASection* toCDATASection(Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->nodeType() == Node::CDATA_SECTION_NODE);
+    return static_cast<CDATASection*>(node);
+}
+
+inline const CDATASection* toCDATASection(const Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->nodeType() == Node::CDATA_SECTION_NODE);
+    return static_cast<const CDATASection*>(node);
+}
+
 } // namespace WebCore
 
 #endif // CDATASection_h

@@ -29,8 +29,9 @@
  */
 
 #include "config.h"
-#include "V8CDATASection.h"
 #include "V8Text.h"
+
+#include "V8CDATASection.h"
 #include "core/dom/Node.h"
 #include "core/dom/Text.h"
 
@@ -40,8 +41,7 @@ v8::Handle<v8::Object> wrap(Text* impl, v8::Handle<v8::Object> creationContext, 
 {
     ASSERT(impl);
     if (impl->nodeType() == Node::CDATA_SECTION_NODE)
-      return wrap(static_cast<CDATASection*>(impl), creationContext, isolate);
-
+        return wrap(toCDATASection(impl), creationContext, isolate);
     return V8Text::createWrapper(impl, creationContext, isolate);
 }
 

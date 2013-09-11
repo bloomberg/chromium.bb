@@ -502,7 +502,7 @@ void MarkupAccumulator::appendStartMarkup(StringBuilder& result, const Node* nod
         appendElement(result, toElement(const_cast<Node*>(node)), namespaces);
         break;
     case Node::CDATA_SECTION_NODE:
-        appendCDATASection(result, static_cast<const CDATASection*>(node)->data());
+        appendCDATASection(result, toCDATASection(node)->data());
         break;
     case Node::ATTRIBUTE_NODE:
     case Node::ENTITY_NODE:
