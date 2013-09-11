@@ -9,7 +9,6 @@
 
 #include "ash/ash_export.h"
 #include "ash/shell_observer.h"
-#include "ash/wm/window_settings.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ui/aura/client/activation_change_observer.h"
@@ -33,10 +32,9 @@ namespace internal {
 // properly.
 class ASH_EXPORT BaseLayoutManager
     : public aura::LayoutManager,
+      public ash::ShellObserver,
       public aura::WindowObserver,
-      public aura::client::ActivationChangeObserver,
-      public ShellObserver,
-      public wm::WindowSettings::Observer {
+      public aura::client::ActivationChangeObserver {
  public:
   typedef std::set<aura::Window*> WindowSet;
 
@@ -51,7 +49,7 @@ class ASH_EXPORT BaseLayoutManager
   static gfx::Rect BoundsWithScreenEdgeVisible(aura::Window* window,
                                                const gfx::Rect& restore_bounds);
 
-  // aura::LayoutManager overrides:
+  // LayoutManager overrides:
   virtual void OnWindowResized() OVERRIDE;
   virtual void OnWindowAddedToLayout(aura::Window* child) OVERRIDE;
   virtual void OnWillRemoveWindowFromLayout(aura::Window* child) OVERRIDE;
@@ -61,7 +59,10 @@ class ASH_EXPORT BaseLayoutManager
   virtual void SetChildBounds(aura::Window* child,
                               const gfx::Rect& requested_bounds) OVERRIDE;
 
-  // aura::WindowObserver overrides:
+  // ash::ShellObserver overrides:
+  virtual void OnDisplayWorkAreaInsetsChanged() OVERRIDE;
+
+  // WindowObserver overrides:
   virtual void OnWindowPropertyChanged(aura::Window* window,
                                        const void* key,
                                        intptr_t old) OVERRIDE;
@@ -73,9 +74,6 @@ class ASH_EXPORT BaseLayoutManager
   // aura::client::ActivationChangeObserver overrides:
   virtual void OnWindowActivated(aura::Window* gained_active,
                                  aura::Window* lost_active) OVERRIDE;
-
-  // ash::ShellObserver overrides:
-  virtual void OnDisplayWorkAreaInsetsChanged() OVERRIDE;
 
  protected:
   enum AdjustWindowReason {

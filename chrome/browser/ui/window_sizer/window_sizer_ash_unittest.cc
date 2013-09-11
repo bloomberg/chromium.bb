@@ -7,7 +7,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_shell_delegate.h"
 #include "ash/wm/window_resizer.h"
-#include "ash/wm/window_settings.h"
+#include "ash/wm/window_util.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/window_sizer/window_sizer_common_unittest.h"
@@ -61,10 +61,8 @@ class TestBrowserWindowAura : public TestBrowserWindow {
     Browser::CreateParams create_params = params;
     create_params.window = this;
     browser_.reset(new Browser(create_params));
-    if (browser_->is_type_tabbed() || browser_->is_app()) {
-      ash::wm::GetWindowSettings(native_window_.get())->
-          set_window_position_managed(true);
-    }
+    if (browser_->is_type_tabbed() || browser_->is_app())
+      ash::wm::SetWindowPositionManaged(native_window_.get(), true);
   }
 
  private:

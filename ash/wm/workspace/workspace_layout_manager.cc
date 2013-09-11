@@ -14,7 +14,6 @@
 #include "ash/wm/frame_painter.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_properties.h"
-#include "ash/wm/window_settings.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/auto_window_management.h"
 #include "ui/aura/client/aura_constants.h"
@@ -119,7 +118,7 @@ void WorkspaceLayoutManager::OnChildWindowVisibilityChanged(Window* child,
 void WorkspaceLayoutManager::SetChildBounds(
     Window* child,
     const gfx::Rect& requested_bounds) {
-  if (!wm::GetWindowSettings(child)->tracked_by_workspace()) {
+  if (!GetTrackedByWorkspace(child)) {
     SetChildBoundsDirect(child, requested_bounds);
     return;
   }
@@ -143,12 +142,6 @@ void WorkspaceLayoutManager::OnDisplayWorkAreaInsetsChanged() {
     AdjustAllWindowsBoundsForWorkAreaChange(
         ADJUST_WINDOW_WORK_AREA_INSETS_CHANGED);
   }
-}
-
-void WorkspaceLayoutManager::OnTrackedByWorkspaceChanged(Window* window,
-                                                         bool old){
-  if (wm::GetWindowSettings(window)->tracked_by_workspace())
-    SetMaximizedOrFullscreenBounds(window);
 }
 
 void WorkspaceLayoutManager::OnWindowPropertyChanged(Window* window,
@@ -186,6 +179,11 @@ void WorkspaceLayoutManager::OnWindowPropertyChanged(Window* window,
       SetRestoreBoundsInScreen(window, restore);
   }
 
+  if (key == internal::kWindowTrackedByWorkspaceKey &&
+      GetTrackedByWorkspace(window)) {
+    SetMaximizedOrFullscreenBounds(window);
+  }
+
   if (key == aura::client::kAlwaysOnTopKey &&
       window->GetProperty(aura::client::kAlwaysOnTopKey)) {
     internal::AlwaysOnTopController* controller =
@@ -211,7 +209,7 @@ void WorkspaceLayoutManager::AdjustAllWindowsBoundsForWorkAreaChange(
 void WorkspaceLayoutManager::AdjustWindowBoundsForWorkAreaChange(
     Window* window,
     AdjustWindowReason reason) {
-  if (!wm::GetWindowSettings(window)->tracked_by_workspace())
+  if (!GetTrackedByWorkspace(window))
     return;
 
   // Do not cross fade here: the window's layer hierarchy may be messed up for
@@ -253,7 +251,7 @@ void WorkspaceLayoutManager::AdjustWindowBoundsWhenAdded(
   if (window->bounds().IsEmpty())
     return;
 
-  if (!wm::GetWindowSettings(window)->tracked_by_workspace())
+  if (!GetTrackedByWorkspace(window))
     return;
 
   if (SetMaximizedOrFullscreenBounds(window))
@@ -342,7 +340,7 @@ void WorkspaceLayoutManager::UpdateBoundsFromShowState(Window* window) {
 
 bool WorkspaceLayoutManager::SetMaximizedOrFullscreenBounds(
     aura::Window* window) {
-  if (!wm::GetWindowSettings(window)->tracked_by_workspace())
+  if (!GetTrackedByWorkspace(window))
     return false;
 
   // During animations there is a transform installed on the workspace

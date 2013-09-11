@@ -5,7 +5,7 @@
 #include "ash/wm/workspace/colored_window_controller.h"
 
 #include "ash/shell_window_ids.h"
-#include "ash/wm/window_settings.h"
+#include "ash/wm/property_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/gfx/canvas.h"
@@ -65,7 +65,7 @@ ColoredWindowController::ColoredWindowController(aura::Window* parent,
   widget->Init(params);
   // Do this so the parent doesn't attempt to enforce any bounds constraints on
   // us.
-  wm::GetWindowSettings(widget->GetNativeView())->SetTrackedByWorkspace(false);
+  SetTrackedByWorkspace(widget->GetNativeView(), false);
   widget->GetNativeView()->SetProperty(aura::client::kAnimationsDisabledKey,
                                        true);
   widget->GetNativeView()->SetName(window_name);

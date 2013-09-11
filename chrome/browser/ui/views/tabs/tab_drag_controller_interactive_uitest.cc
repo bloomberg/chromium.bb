@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/tabs/tab_drag_controller_interactive_uitest.h"
 
-#include "ash/wm/window_settings.h"
+#include "ash/wm/property_util.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -213,8 +213,7 @@ bool GetTrackedByWorkspace(Browser* browser) {
 #if !defined(USE_ASH) || defined(OS_WIN)  // TODO(win_ash)
   return true;
 #else
-  return ash::wm::GetWindowSettings(browser->window()->GetNativeWindow())->
-      tracked_by_workspace();
+  return ash::GetTrackedByWorkspace(browser->window()->GetNativeWindow());
 #endif
 }
 
@@ -559,10 +558,10 @@ void DetachToOwnWindowStep2(DetachToBrowserTabDragControllerTest* test) {
 
 #if defined(USE_ASH) && !defined(OS_WIN)  // TODO(win_ash)
 bool IsWindowPositionManaged(aura::Window* window) {
-  return ash::wm::GetWindowSettings(window)->window_position_managed();
+  return ash::wm::IsWindowPositionManaged(window);
 }
 bool HasUserChangedWindowPositionOrSize(aura::Window* window) {
-  return ash::wm::GetWindowSettings(window)->bounds_changed_by_user();
+  return ash::wm::HasUserChangedWindowPositionOrSize(window);
 }
 #else
 bool IsWindowPositionManaged(gfx::NativeWindow window) {

@@ -14,7 +14,7 @@
 #include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/panels/panel_layout_manager.h"
 #include "ash/wm/property_util.h"
-#include "ash/wm/window_settings.h"
+#include "ash/wm/window_properties.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
@@ -130,7 +130,7 @@ PanelWindowResizer::PanelWindowResizer(WindowResizer* next_window_resizer,
       panel_container_(NULL),
       initial_panel_container_(NULL),
       did_move_or_resize_(false),
-      was_attached_(wm::GetWindowSettings(GetTarget())->panel_attached()),
+      was_attached_(GetTarget()->GetProperty(internal::kPanelAttachedKey)),
       should_attach_(was_attached_),
       weak_ptr_factory_(this) {
   DCHECK(details_.is_resizable);
@@ -191,8 +191,8 @@ void PanelWindowResizer::StartedDragging() {
     GetPanelLayoutManager(panel_container_)->StartDragging(GetTarget());
   if (!was_attached_) {
     // Attach the panel while dragging placing it in front of other panels.
-    wm::GetWindowSettings(GetTarget())->set_continue_drag_after_reparent(true);
-    wm::GetWindowSettings(GetTarget())->set_panel_attached(true);
+    GetTarget()->SetProperty(internal::kContinueDragAfterReparent, true);
+    GetTarget()->SetProperty(internal::kPanelAttachedKey, true);
     // We use root window coordinates to ensure that during the drag the panel
     // is reparented to a container in the root window that has that window.
     GetTarget()->SetDefaultParentByRootWindow(
@@ -204,8 +204,9 @@ void PanelWindowResizer::StartedDragging() {
 void PanelWindowResizer::FinishDragging() {
   if (!did_move_or_resize_)
     return;
-  if (wm::GetWindowSettings(GetTarget())->panel_attached() != should_attach_) {
-    wm::GetWindowSettings(GetTarget())->set_panel_attached(should_attach_);
+  if (GetTarget()->GetProperty(internal::kPanelAttachedKey) !=
+      should_attach_) {
+    GetTarget()->SetProperty(internal::kPanelAttachedKey, should_attach_);
     // We use last known location to ensure that after the drag the panel
     // is reparented to a container in the root window that has that location.
     GetTarget()->SetDefaultParentByRootWindow(

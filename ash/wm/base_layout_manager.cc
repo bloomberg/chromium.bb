@@ -10,7 +10,6 @@
 #include "ash/shell.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_properties.h"
-#include "ash/wm/window_settings.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
 #include "ui/aura/client/activation_client.h"
@@ -61,7 +60,7 @@ gfx::Rect BaseLayoutManager::BoundsWithScreenEdgeVisible(
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// BaseLayoutManager, aura::LayoutManager overrides:
+// BaseLayoutManager, LayoutManager overrides:
 
 void BaseLayoutManager::OnWindowResized() {
 }
@@ -69,7 +68,6 @@ void BaseLayoutManager::OnWindowResized() {
 void BaseLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
   windows_.insert(child);
   child->AddObserver(this);
-  wm::GetWindowSettings(child)->AddObserver(this);
   // Only update the bounds if the window has a show state that depends on the
   // workspace area.
   if (wm::IsWindowMaximized(child) || wm::IsWindowFullscreen(child))
@@ -79,7 +77,6 @@ void BaseLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
 void BaseLayoutManager::OnWillRemoveWindowFromLayout(aura::Window* child) {
   windows_.erase(child);
   child->RemoveObserver(this);
-  wm::GetWindowSettings(child)->RemoveObserver(this);
 }
 
 void BaseLayoutManager::OnWindowRemovedFromLayout(aura::Window* child) {
@@ -107,7 +104,15 @@ void BaseLayoutManager::SetChildBounds(aura::Window* child,
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// BaseLayoutManager, aura::WindowObserver overrides:
+// BaseLayoutManager, ash::ShellObserver overrides:
+
+void BaseLayoutManager::OnDisplayWorkAreaInsetsChanged() {
+  AdjustAllWindowsBoundsForWorkAreaChange(
+      ADJUST_WINDOW_WORK_AREA_INSETS_CHANGED);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// BaseLayoutManager, WindowObserver overrides:
 
 void BaseLayoutManager::OnWindowPropertyChanged(aura::Window* window,
                                                 const void* key,
@@ -154,14 +159,6 @@ void BaseLayoutManager::OnWindowActivated(aura::Window* gained_active,
     gained_active->Show();
     DCHECK(!wm::IsWindowMinimized(gained_active));
   }
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// BaseLayoutManager, ash::ShellObserver overrides:
-
-void BaseLayoutManager::OnDisplayWorkAreaInsetsChanged() {
-  AdjustAllWindowsBoundsForWorkAreaChange(
-      ADJUST_WINDOW_WORK_AREA_INSETS_CHANGED);
 }
 
 //////////////////////////////////////////////////////////////////////////////

@@ -35,7 +35,7 @@
 #include "url/gurl.h"
 
 #if defined(USE_ASH)
-#include "ash/wm/window_settings.h"
+#include "ash/wm/property_util.h"
 #endif
 
 // The alpha and color of the bubble's shadow.
@@ -583,8 +583,7 @@ void StatusBubbleViews::Init() {
     popup_->SetOpacity(0x00);
     popup_->SetContentsView(view_);
 #if defined(USE_ASH)
-    ash::wm::GetWindowSettings(popup_->GetNativeWindow())->
-        set_ignored_by_shelf(true);
+    ash::SetIgnoredByShelf(popup_->GetNativeWindow(), true);
 #endif
     Reposition();
   }

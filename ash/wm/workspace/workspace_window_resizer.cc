@@ -20,7 +20,7 @@
 #include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/panels/panel_window_resizer.h"
 #include "ash/wm/property_util.h"
-#include "ash/wm/window_settings.h"
+#include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
 #include "ash/wm/workspace/snap_sizer.h"
@@ -67,10 +67,8 @@ scoped_ptr<WindowResizer> CreateWindowResizer(
     // Allow dragging maximized windows if it's not tracked by workspace. This
     // is set by tab dragging code.
     if (!wm::IsWindowNormal(window) &&
-        (window_component != HTCAPTION ||
-         wm::GetWindowSettings(window)->tracked_by_workspace())) {
+        (window_component != HTCAPTION || GetTrackedByWorkspace(window)))
       return scoped_ptr<WindowResizer>();
-    }
     window_resizer = internal::WorkspaceWindowResizer::Create(
         window,
         point_in_parent,
@@ -403,7 +401,7 @@ void WorkspaceWindowResizer::Drag(const gfx::Point& location_in_parent,
 }
 
 void WorkspaceWindowResizer::CompleteDrag(int event_flags) {
-  wm::GetWindowSettings(details_.window)->set_bounds_changed_by_user(true);
+  wm::SetUserHasChangedWindowPositionOrSize(details_.window, true);
   snap_phantom_window_controller_.reset();
   if (!did_move_or_resize_ || details_.window_component != HTCAPTION)
     return;
@@ -415,7 +413,7 @@ void WorkspaceWindowResizer::CompleteDrag(int event_flags) {
   // is called, so it does not matter.
   if (wm::IsWindowNormal(window()) &&
       (window()->type() != aura::client::WINDOW_TYPE_PANEL ||
-       !wm::GetWindowSettings(window())->panel_attached()) &&
+       !window()->GetProperty(kPanelAttachedKey)) &&
       (snap_type_ == SNAP_LEFT_EDGE || snap_type_ == SNAP_RIGHT_EDGE)) {
     if (!GetRestoreBoundsInScreen(window())) {
       gfx::Rect initial_bounds = ScreenAsh::ConvertRectToScreen(
@@ -701,8 +699,7 @@ bool WorkspaceWindowResizer::UpdateMagnetismWindow(const gfx::Rect& bounds,
 
   // Avoid magnetically snapping to popups, menus, tooltips, controls and
   // windows that are not tracked by workspace.
-  if (!wm::CanResizeWindow(window()) ||
-      !wm::GetWindowSettings(window())->tracked_by_workspace())
+  if (!wm::CanResizeWindow(window()) || !GetTrackedByWorkspace(window()))
     return false;
 
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
@@ -862,7 +859,7 @@ void WorkspaceWindowResizer::UpdateSnapPhantomWindow(const gfx::Point& location,
     return;
 
   if (window()->type() == aura::client::WINDOW_TYPE_PANEL &&
-      wm::GetWindowSettings(window())->panel_attached()) {
+      window()->GetProperty(kPanelAttachedKey)) {
     return;
   }
 

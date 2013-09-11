@@ -13,11 +13,11 @@
 #include "ash/wm/maximize_bubble_controller.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_animations.h"
-#include "ash/wm/window_settings.h"
+#include "ash/wm/window_properties.h"
+#include "ash/wm/window_util.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
 #include "ash/wm/workspace/snap_sizer.h"
 #include "grit/ash_strings.h"
-#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/base/events/event.h"
 #include "ui/base/events/event_handler.h"
@@ -176,7 +176,11 @@ void FrameMaximizeButton::OnWindowBoundsChanged(
 void FrameMaximizeButton::OnWindowPropertyChanged(aura::Window* window,
                                                   const void* key,
                                                   intptr_t old) {
-  Cancel(false);
+  // Changing the window position is managed status should not Cancel.
+  // Note that this case might happen when a non user managed window
+  // transitions from maximized to L/R maximized.
+  if (key != ash::internal::kWindowPositionManagedKey)
+    Cancel(false);
 }
 
 void FrameMaximizeButton::OnWindowDestroying(aura::Window* window) {
@@ -539,9 +543,9 @@ void FrameMaximizeButton::Snap(const SnapSizer& snap_sizer) {
         // The auto position manager will kick in when this is the only window.
         // To avoid interference with it we tell it temporarily to not change
         // the coordinates of this window.
-        wm::WindowSettings* settings = wm::GetWindowSettings(window);
-        bool was_managed = settings->window_position_managed();
-        settings->set_window_position_managed(false);
+        bool is_managed = ash::wm::IsWindowPositionManaged(window);
+        if (is_managed)
+          ash::wm::SetWindowPositionManaged(window, false);
 
         // Set the restore size we want to restore to.
         ash::SetRestoreBoundsInScreen(window,
@@ -551,7 +555,8 @@ void FrameMaximizeButton::Snap(const SnapSizer& snap_sizer) {
 
         // After the window is where we want it to be we allow the window to be
         // auto managed again.
-        settings->set_window_position_managed(was_managed);
+        if (is_managed)
+          ash::wm::SetWindowPositionManaged(window, true);
       } else {
         // Others might also have set up a restore rectangle already. If so,
         // we should not overwrite the restore rectangle.

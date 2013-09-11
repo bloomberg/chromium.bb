@@ -493,8 +493,6 @@
         'wm/window_cycle_controller.h',
         'wm/window_cycle_list.cc',
         'wm/window_cycle_list.h',
-        'wm/window_settings.cc',
-        'wm/window_settings.h',
         'wm/window_properties.cc',
         'wm/window_properties.h',
         'wm/window_resizer.cc',

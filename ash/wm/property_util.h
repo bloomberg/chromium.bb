@@ -37,6 +37,11 @@ ASH_EXPORT gfx::Rect GetRestoreBoundsInParent(aura::Window* window);
 // Deletes and clears the restore bounds property on |window|.
 ASH_EXPORT void ClearRestoreBounds(aura::Window* window);
 
+// Sets whether |window| is ignored when determining whether the shelf should
+// be darkened when overlapped.
+ASH_EXPORT void SetIgnoredByShelf(aura::Window* window, bool value);
+ASH_EXPORT bool GetIgnoredByShelf(const aura::Window* window);
+
 // Sets whether |window| should always be restored to the restore bounds
 // (sometimes the workspace layout manager restores the window to its original
 // bounds instead of the restore bounds. Setting this key overrides that
@@ -46,6 +51,14 @@ ASH_EXPORT void SetWindowAlwaysRestoresToRestoreBounds(aura::Window* window,
                                                        bool value);
 ASH_EXPORT bool GetWindowAlwaysRestoresToRestoreBounds(
     const aura::Window* window);
+
+// Sets whether the specified window is tracked by workspace code. Default is
+// true. If set to false the workspace does not switch the current workspace,
+// nor does it attempt to impose constraints on the bounds of the window. This
+// is intended for tab dragging.
+ASH_EXPORT void SetTrackedByWorkspace(aura::Window* window, bool value);
+ASH_EXPORT bool GetTrackedByWorkspace(const aura::Window* window);
+
 }  // namespace ash
 
 #endif  // ASH_WM_PROPERTY_UTIL_H_
