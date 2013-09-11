@@ -1,0 +1,21 @@
+<html>
+  <body>
+    <video controls="" name="video">
+      <!-- This test doesn't play the video, so any file will do
+           as long as it can be loaded. -->
+      <source src="bear-320x240-av-enc_a.webm" type="video/webm">
+    </video>
+    <script type="text/javascript">
+      function testKeySystemInstantiation(keySystem) {
+        var video = document.getElementsByTagName('video')[0];
+        var initData = new Uint8Array([0x41, 0x42, 0x43]);
+        try {
+          video.webkitGenerateKeyRequest(keySystem, initData);
+          return 'success';
+        } catch (err) {
+          return err.name;
+        }
+      }
+    </script>
+  </body>
+</html>

@@ -1165,6 +1165,7 @@
       ],
       'include_dirs': [
         '..',
+        '<(SHARED_INTERMEDIATE_DIR)',
       ],
       'defines': [
         'HAS_OUT_OF_PROC_TEST_RUNNER',
@@ -1488,6 +1489,7 @@
         'browser/media/chrome_webrtc_browsertest.cc',
         'browser/media/chrome_webrtc_audio_quality_browsertest.cc',
         'browser/media/chrome_webrtc_video_quality_browsertest.cc',
+        'browser/media/encrypted_media_istypesupported_browsertest.cc',
         'browser/media/webrtc_browsertest_base.cc',
         'browser/media/webrtc_browsertest_base.h',
         'browser/media/webrtc_browsertest_common.cc',
