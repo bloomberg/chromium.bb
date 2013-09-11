@@ -459,6 +459,7 @@ void RenderMessageFilter::OnCreateWindow(
   bool can_create_window =
       GetContentClient()->browser()->CanCreateWindow(
           params.opener_url,
+          params.opener_top_level_frame_url,
           params.opener_security_origin,
           params.window_container_type,
           params.target_url,

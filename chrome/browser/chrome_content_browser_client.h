@@ -196,6 +196,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       int render_view_id,
       int notification_id) OVERRIDE;
   virtual bool CanCreateWindow(const GURL& opener_url,
+                               const GURL& opener_top_level_frame_url,
                                const GURL& source_origin,
                                WindowContainerType container_type,
                                const GURL& target_url,

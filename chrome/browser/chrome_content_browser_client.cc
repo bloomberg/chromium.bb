@@ -1935,6 +1935,7 @@ void ChromeContentBrowserClient::CancelDesktopNotification(
 
 bool ChromeContentBrowserClient::CanCreateWindow(
     const GURL& opener_url,
+    const GURL& opener_top_level_frame_url,
     const GURL& source_origin,
     WindowContainerType container_type,
     const GURL& target_url,
@@ -2009,8 +2010,8 @@ bool ChromeContentBrowserClient::CanCreateWindow(
 
   if (!user_gesture && !CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kDisablePopupBlocking)) {
-    if (content_settings->GetContentSetting(opener_url,
-                                            opener_url,
+    if (content_settings->GetContentSetting(opener_top_level_frame_url,
+                                            opener_top_level_frame_url,
                                             CONTENT_SETTINGS_TYPE_POPUPS,
                                             std::string()) !=
         CONTENT_SETTING_ALLOW) {
