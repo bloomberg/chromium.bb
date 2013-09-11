@@ -35,7 +35,7 @@
 //
 // Generally speaking, OpenSSL provides many different ways to sign
 // digests. This code doesn't support all these cases, only the ones that
-// are required to sign the MAC during the OpenSSL handshake for TLS < 1.2.
+// are required to sign the MAC during the OpenSSL handshake for TLS.
 //
 // The OpenSSL EVP_PKEY type is a generic wrapper around key pairs.
 // Internally, it can hold a pointer to a RSA, DSA or ECDSA structure,
@@ -54,8 +54,8 @@
 // are used to hold the typical modulus / exponent / parameters for the
 // key pair).
 //
-// This source file thus defines a custom RSA_METHOD structure, which
-// fields points to static methods used to implement the corresponding
+// This source file thus defines a custom RSA_METHOD structure whose
+// fields point to static methods used to implement the corresponding
 // RSA operation using platform Android APIs.
 //
 // However, the platform APIs require a jobject JNI reference to work.
@@ -106,6 +106,7 @@ typedef crypto::ScopedOpenSSL<RSA, RSA_free> ScopedRSA;
 typedef crypto::ScopedOpenSSL<DSA, DSA_free> ScopedDSA;
 typedef crypto::ScopedOpenSSL<EC_KEY, EC_KEY_free> ScopedEC_KEY;
 typedef crypto::ScopedOpenSSL<EC_GROUP, EC_GROUP_free> ScopedEC_GROUP;
+typedef crypto::ScopedOpenSSL<X509_SIG, X509_SIG_free> ScopedX509_SIG;
 
 // Custom RSA_METHOD that uses the platform APIs.
 // Note that for now, only signing through RSA_sign() is really supported.
@@ -172,28 +173,79 @@ int RsaMethodFinish(RSA* rsa) {
   return 0;
 }
 
+// Although these parameters are, per OpenSSL, named |message| and
+// |message_len|, RsaMethodSign is actually passed a message digest,
+// not the original message.
 int RsaMethodSign(int type,
                   const unsigned char* message,
                   unsigned int message_len,
                   unsigned char* signature,
                   unsigned int* signature_len,
                   const RSA* rsa) {
-  // This is only used for client certificate support, which
-  // will always pass the NID_md5_sha1 |type| value.
-  DCHECK_EQ(NID_md5_sha1, type);
-  if (type != NID_md5_sha1) {
-    RSAerr(RSA_F_RSA_SIGN, RSA_R_UNKNOWN_ALGORITHM_TYPE);
-    return 0;
-  }
   // Retrieve private key JNI reference.
   jobject private_key = reinterpret_cast<jobject>(RSA_get_app_data(rsa));
   if (!private_key) {
     LOG(WARNING) << "Null JNI reference passed to RsaMethodSign!";
     return 0;
   }
-  // Sign message with it through JNI.
-  base::StringPiece message_piece(reinterpret_cast<const char*>(message),
-                                  static_cast<size_t>(message_len));
+
+  // See RSA_sign in third_party/openssl/openssl/crypto/rsa/rsa_sign.c.
+  base::StringPiece message_piece;
+  std::vector<uint8> buffer;  // To store |message| wrapped in a DigestInfo.
+  if (type == NID_md5_sha1) {
+    // For TLS < 1.2, sign just |message|.
+    message_piece.set(message, static_cast<size_t>(message_len));
+  } else {
+    // For TLS 1.2, wrap |message| in a PKCS #1 DigestInfo before signing.
+    ScopedX509_SIG sig(X509_SIG_new());
+    if (!sig.get())
+      return 0;
+    if (X509_ALGOR_set0(sig.get()->algor,
+                        OBJ_nid2obj(type), V_ASN1_NULL, 0) != 1) {
+      return 0;
+    }
+    if (sig.get()->algor->algorithm == NULL) {
+      RSAerr(RSA_F_RSA_SIGN, RSA_R_UNKNOWN_ALGORITHM_TYPE);
+      return 0;
+    }
+    if (sig.get()->algor->algorithm->length == 0) {
+      RSAerr(RSA_F_RSA_SIGN,
+             RSA_R_THE_ASN1_OBJECT_IDENTIFIER_IS_NOT_KNOWN_FOR_THIS_MD);
+      return 0;
+    }
+    if (ASN1_OCTET_STRING_set(sig.get()->digest, message, message_len) != 1)
+      return 0;
+
+    int len = i2d_X509_SIG(sig.get(), NULL);
+    if (len < 0) {
+      LOG(WARNING) << "Couldn't encode X509_SIG structure";
+      return 0;
+    }
+    buffer.resize(len);
+    // OpenSSL takes a pointer to a pointer so it can kindly increment
+    // it for you.
+    unsigned char* p = &buffer[0];
+    len = i2d_X509_SIG(sig.get(), &p);
+    if (len < 0) {
+      LOG(WARNING) << "Couldn't encode X509_SIG structure";
+      return 0;
+    }
+
+    message_piece.set(&buffer[0], static_cast<size_t>(len));
+  }
+
+  // Sanity-check the size.
+  //
+  // TODO(davidben): Do we need to do this? OpenSSL does, but
+  // RawSignDigestWithPrivateKey does error on sufficiently large
+  // input. However, it doesn't take the padding into account.
+  size_t expected_size = static_cast<size_t>(RSA_size(rsa));
+  if (message_piece.size() > expected_size - RSA_PKCS1_PADDING_SIZE) {
+    RSAerr(RSA_F_RSA_SIGN, RSA_R_DIGEST_TOO_BIG_FOR_RSA_KEY);
+    return 0;
+  }
+
+  // Sign |message_piece| with the private key through JNI.
   std::vector<uint8> result;
 
   if (!RawSignDigestWithPrivateKey(
@@ -202,7 +254,6 @@ int RsaMethodSign(int type,
     return 0;
   }
 
-  size_t expected_size = static_cast<size_t>(RSA_size(rsa));
   if (result.size() > expected_size) {
     LOG(ERROR) << "RSA Signature size mismatch, actual: "
                <<  result.size() << ", expected <= " << expected_size;
