@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/path_service.h"
@@ -13,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen.h"
 #include "chrome/browser/chromeos/login/enrollment/mock_enrollment_screen.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
@@ -35,6 +37,7 @@
 #include "chrome/browser/chromeos/login/wizard_in_process_browser_test.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/chromeos_test_utils.h"
@@ -43,7 +46,9 @@
 #include "chromeos/dbus/mock_dbus_thread_manager_without_gmock.h"
 #include "chromeos/network/network_state_handler.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_utils.h"
 #include "grit/generated_resources.h"
+#include "net/test/spawned_test_server/spawned_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/icu/source/common/unicode/locid.h"
@@ -502,6 +507,53 @@ IN_PROC_BROWSER_TEST_F(WizardControllerBrokenLocalStateTest,
       GetWebContents(),
       "$('error-message-restart-and-powerwash-button').click();"));
   ASSERT_EQ(1, fake_session_manager_client()->start_device_wipe_call_count());
+}
+
+class WizardControllerProxyAuthOnSigninTest : public WizardControllerTest {
+ protected:
+  WizardControllerProxyAuthOnSigninTest()
+      : proxy_server_(net::SpawnedTestServer::TYPE_BASIC_AUTH_PROXY,
+                      net::SpawnedTestServer::kLocalhost,
+                      base::FilePath()) {
+  }
+  virtual ~WizardControllerProxyAuthOnSigninTest() {}
+
+  // Overridden from WizardControllerTest:
+  virtual void SetUp() OVERRIDE {
+    ASSERT_TRUE(proxy_server_.Start());
+    WizardControllerTest::SetUp();
+  }
+
+  virtual void SetUpOnMainThread() OVERRIDE {
+    WizardControllerTest::SetUpOnMainThread();
+    WizardController::default_controller()->AdvanceToScreen(
+        WizardController::kNetworkScreenName);
+  }
+
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    command_line->AppendSwitchASCII(::switches::kProxyServer,
+                                    proxy_server_.host_port_pair().ToString());
+  }
+
+  net::SpawnedTestServer& proxy_server() { return proxy_server_; }
+
+ private:
+  net::SpawnedTestServer proxy_server_;
+
+  DISALLOW_COPY_AND_ASSIGN(WizardControllerProxyAuthOnSigninTest);
+};
+
+IN_PROC_BROWSER_TEST_F(WizardControllerProxyAuthOnSigninTest,
+                       ProxyAuthDialogOnSigninScreen) {
+  content::WindowedNotificationObserver auth_needed_waiter(
+      chrome::NOTIFICATION_AUTH_NEEDED,
+      content::NotificationService::AllSources());
+
+  EXPECT_EQ(WizardController::default_controller()->GetNetworkScreen(),
+            WizardController::default_controller()->current_screen());
+
+  LoginDisplayHostImpl::default_host()->StartSignInScreen();
+  auth_needed_waiter.Wait();
 }
 
 class WizardControllerKioskFlowTest : public WizardControllerFlowTest {
