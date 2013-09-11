@@ -475,3 +475,7 @@ TEST(Parser, LongExpression) {
 TEST(Parser, HangingIf) {
   DoParserErrorTest("if", 1, 1);
 }
+
+TEST(Parser, NegatingList) {
+  DoParserErrorTest("executable(\"wee\") { sources =- [ \"foo.cc\" ] }", 1, 30);
+}

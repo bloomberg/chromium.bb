@@ -194,6 +194,8 @@ scoped_ptr<ParseNode> Parser::ParseExpression(int precedence) {
   }
 
   scoped_ptr<ParseNode> left = (this->*prefix)(token);
+  if (has_error())
+    return left.Pass();
 
   while (!at_end() && !IsStatementBreak(cur_token().type()) &&
          precedence <= expressions_[cur_token().type()].precedence) {
