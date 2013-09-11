@@ -393,6 +393,8 @@ weston_seat_start_drag(struct weston_seat *seat,
 	weston_pointer_set_focus(seat->pointer, NULL,
 				 wl_fixed_from_int(0), wl_fixed_from_int(0));
 	weston_pointer_start_grab(seat->pointer, &drag->grab);
+
+	return 0;
 }
 
 static void
