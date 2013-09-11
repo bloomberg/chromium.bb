@@ -285,11 +285,9 @@ class PepperWidget : public WebWidget {
   }
 
   virtual void mouseCaptureLost() {
-    NOTIMPLEMENTED();
   }
 
   virtual void setFocus(bool focus) {
-    NOTIMPLEMENTED();
   }
 
   // TODO(piman): figure out IME and implement these if necessary.
