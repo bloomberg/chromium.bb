@@ -167,7 +167,7 @@ IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest,
                                                kVideoOnlyCallConstraints);
 }
 
-#if defined(OS_CHROMEOS) && !defined(NDEBUG)
+#if defined(USE_AURA) || (defined(OS_CHROMEOS) && !defined(NDEBUG))
 #define MAYBE_DenyingCameraDoesNotCauseStickyDenyForMics \
   DISABLED_DenyingCameraDoesNotCauseStickyDenyForMics
 #else
