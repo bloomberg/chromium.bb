@@ -32,6 +32,7 @@
 #define InputMethodContext_h
 
 #include "bindings/v8/ScriptWrappable.h"
+#include "core/editing/CompositionUnderline.h"
 #include "core/html/HTMLElement.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
@@ -40,6 +41,7 @@
 namespace WebCore {
 
 class Composition;
+class InputMethodController;
 class Node;
 
 class InputMethodContext : public ScriptWrappable {
@@ -57,9 +59,19 @@ public:
     void setCaretRectangle(Node* anchor, int x, int y, int w, int h);
     void setExclusionRectangle(Node* anchor, int x, int y, int w, int h);
 
+    String compositionText() const;
+    int selectionStart() const;
+    int selectionEnd() const;
+    const Vector<unsigned>& segments();
+
 private:
     InputMethodContext(HTMLElement*);
+    bool hasFocus() const;
+    CompositionUnderline selectedSegment() const;
+    InputMethodController& inputMethodController() const;
+
     RefPtr<Composition> m_composition;
+    Vector<unsigned> m_segments;
     HTMLElement* m_element;
 };
 
