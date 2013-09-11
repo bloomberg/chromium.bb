@@ -1483,9 +1483,6 @@ _release.add_config('butterfly-release',
 
 _release.add_config('falco-release',
   boards=['falco'],
-  # TODO(sosa): Restore temp removal of vm testing once devserver bug
-  # crbug.com/251309 is fixed.
-  vm_tests=None,
 )
 
 _release.add_config('fox-wtm2-release',
@@ -1519,27 +1516,15 @@ _release.add_config('parrot32-release',
 
 _release.add_config('parrot64-release',
   boards=['parrot64'],
-  # TODO(moch): Need to setup machines in the lab with this configuration
-  # Until then disabling hw_tests so that builder works
-  hw_tests=[],
-  # TODO(sosa): Restore temp removal of vm testing once devserver bug
-  # crbug.com/251309 is fixed.
-  vm_tests=None,
 )
 
 _release.add_config('peppy-release',
   boards=['peppy'],
-  # TODO(sosa): Restore temp removal of vm testing once devserver bug
-  # crbug.com/251309 is fixed.
-  vm_tests=None,
 )
 
 _release.add_config('slippy-release',
   boards=['slippy'],
   hw_tests=[],
-  # TODO(sosa): Restore temp removal of vm testing once devserver bug
-  # crbug.com/251309 is fixed.
-  vm_tests=None,
 )
 
 _release.add_config('sonic-release',
