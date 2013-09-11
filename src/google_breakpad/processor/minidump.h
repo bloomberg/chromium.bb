@@ -187,6 +187,7 @@ class MinidumpContext : public MinidumpStream {
   // NULL.
   const MDRawContextAMD64* GetContextAMD64() const;
   const MDRawContextARM*   GetContextARM() const;
+  const MDRawContextMIPS*  GetContextMIPS() const;
   const MDRawContextPPC*   GetContextPPC() const;
   const MDRawContextPPC64* GetContextPPC64() const;
   const MDRawContextSPARC* GetContextSPARC() const;
@@ -209,6 +210,7 @@ class MinidumpContext : public MinidumpStream {
     // so variables can NOT be named as sparc
     MDRawContextSPARC* ctx_sparc;
     MDRawContextARM*   arm;
+    MDRawContextMIPS*  ctx_mips;
   } context_;
 
   // Store this separately because of the weirdo AMD64 context

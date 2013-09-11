@@ -291,6 +291,9 @@ bool DwarfCFIRegisterNames(const typename ElfClass::Ehdr* elf_header,
     case EM_ARM:
       *register_names = DwarfCFIToModule::RegisterNames::ARM();
       return true;
+    case EM_MIPS:
+      *register_names = DwarfCFIToModule::RegisterNames::MIPS();
+      return true;
     case EM_X86_64:
       *register_names = DwarfCFIToModule::RegisterNames::X86_64();
       return true;
@@ -534,6 +537,7 @@ bool LoadSymbols(const string& obj_file,
   typedef typename ElfClass::Addr Addr;
   typedef typename ElfClass::Phdr Phdr;
   typedef typename ElfClass::Shdr Shdr;
+  typedef typename ElfClass::Word Word;
 
   Addr loading_addr = GetLoadingAddress<ElfClass>(
       GetOffset<ElfClass, Phdr>(elf_header, elf_header->e_phoff),
@@ -541,6 +545,8 @@ bool LoadSymbols(const string& obj_file,
   module->SetLoadAddress(loading_addr);
   info->set_loading_addr(loading_addr, obj_file);
 
+  Word debug_section_type = 
+      elf_header->e_machine == EM_MIPS ? SHT_MIPS_DWARF : SHT_PROGBITS;
   const Shdr* sections =
       GetOffset<ElfClass, Shdr>(elf_header, elf_header->e_shoff);
   const Shdr* section_names = sections + elf_header->e_shstrndx;
@@ -574,7 +580,7 @@ bool LoadSymbols(const string& obj_file,
 
     // Look for DWARF debugging information, and load it if present.
     const Shdr* dwarf_section =
-      FindElfSectionByName<ElfClass>(".debug_info", SHT_PROGBITS,
+      FindElfSectionByName<ElfClass>(".debug_info", debug_section_type,
                                      sections, names, names_end,
                                      elf_header->e_shnum);
     if (dwarf_section) {
@@ -593,7 +599,7 @@ bool LoadSymbols(const string& obj_file,
     // Dwarf Call Frame Information (CFI) is actually independent from
     // the other DWARF debugging information, and can be used alone.
     const Shdr* dwarf_cfi_section =
-        FindElfSectionByName<ElfClass>(".debug_frame", SHT_PROGBITS,
+        FindElfSectionByName<ElfClass>(".debug_frame", debug_section_type,
                                        sections, names, names_end,
                                        elf_header->e_shnum);
     if (dwarf_cfi_section) {
@@ -611,7 +617,7 @@ bool LoadSymbols(const string& obj_file,
     // Linux C++ exception handling information can also provide
     // unwinding data.
     const Shdr* eh_frame_section =
-        FindElfSectionByName<ElfClass>(".eh_frame", SHT_PROGBITS,
+        FindElfSectionByName<ElfClass>(".eh_frame", debug_section_type,
                                        sections, names, names_end,
                                        elf_header->e_shnum);
     if (eh_frame_section) {

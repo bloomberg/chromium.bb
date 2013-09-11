@@ -1512,16 +1512,19 @@ bool CallFrameInfo::State::DoInstruction() {
 
     // Change the base register used to compute the CFA.
     case DW_CFA_def_cfa_register: {
+      if (!ParseOperands("r", &ops)) return false;
       Rule *cfa_rule = rules_.CFARule();
       if (!cfa_rule) {
-        reporter_->NoCFARule(entry_->offset, entry_->kind, CursorOffset());
+        if (!DoDefCFA(ops.register_number, ops.offset)) {
+          reporter_->NoCFARule(entry_->offset, entry_->kind, CursorOffset());
+          return false;
+        }
+      } else {
+        cfa_rule->SetBaseRegister(ops.register_number);
+        if (!cfa_rule->Handle(handler_, address_,
+                              Handler::kCFARegister))
         return false;
       }
-      if (!ParseOperands("r", &ops)) return false;
-      cfa_rule->SetBaseRegister(ops.register_number);
-      if (!cfa_rule->Handle(handler_, address_,
-                            Handler::kCFARegister))
-        return false;
       break;
     }
 

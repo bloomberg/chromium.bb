@@ -108,6 +108,9 @@ class DwarfCFIToModule: public CallFrameInfo::Handler {
 
     // ARM.
     static vector<string> ARM();
+    
+    // MIPS.
+    static vector<string> MIPS();
 
    private:
     // Given STRINGS, an array of C strings with SIZE elements, return an

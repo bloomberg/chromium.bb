@@ -266,7 +266,7 @@ TEST_F(LinuxPtraceDumperChildTest, BuildProcPath) {
   EXPECT_FALSE(dumper.BuildProcPath(maps_path, 123, long_node));
 }
 
-#if !defined(__ARM_EABI__)
+#if !defined(__ARM_EABI__) && !defined(__mips__)
 // Ensure that the linux-gate VDSO is included in the mapping list.
 TEST_F(LinuxPtraceDumperChildTest, MappingsIncludeLinuxGate) {
   LinuxPtraceDumper dumper(getppid());
@@ -437,6 +437,9 @@ TEST(LinuxPtraceDumperTest, VerifyStackReadWithMultipleThreads) {
     pid_t* process_tid_location = (pid_t*)(one_thread.regs.ecx);
 #elif defined(__x86_64)
     pid_t* process_tid_location = (pid_t*)(one_thread.regs.rcx);
+#elif defined(__mips__)
+    pid_t* process_tid_location =
+        reinterpret_cast<pid_t*>(one_thread.regs.regs[1]);
 #else
 #error This test has not been ported to this platform.
 #endif

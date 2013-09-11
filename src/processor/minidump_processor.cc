@@ -505,6 +505,11 @@ bool MinidumpProcessor::GetCPUInfo(Minidump *dump, SystemInfo *info) {
       break;
     }
 
+    case MD_CPU_ARCHITECTURE_MIPS: {
+      info->cpu = "mips";
+      break;
+    }
+
     default: {
       // Assign the numeric architecture ID into the CPU string.
       char cpu_string[7];

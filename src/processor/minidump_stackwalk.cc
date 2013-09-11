@@ -72,6 +72,7 @@ using google_breakpad::StackFrameSPARC;
 using google_breakpad::StackFrameX86;
 using google_breakpad::StackFrameAMD64;
 using google_breakpad::StackFrameARM;
+using google_breakpad::StackFrameMIPS;
 
 // Separator character for machine readable output.
 static const char kOutputSeparator = '|';
@@ -271,7 +272,63 @@ static void PrintStack(const CallStack *stack, const string &cpu) {
         sequence = PrintRegister("lr", frame_arm->context.iregs[14], sequence);
       if (frame_arm->context_validity & StackFrameARM::CONTEXT_VALID_PC)
         sequence = PrintRegister("pc", frame_arm->context.iregs[15], sequence);
-    }
+    } else if (cpu == "mips") {
+      const StackFrameMIPS* frame_mips =
+        reinterpret_cast<const StackFrameMIPS*>(frame);
+
+      if (frame_mips->context_validity & StackFrameMIPS::CONTEXT_VALID_GP)
+        sequence = PrintRegister64("gp",
+                     frame_mips->context.iregs[MD_CONTEXT_MIPS_REG_GP],
+                     sequence);
+      if (frame_mips->context_validity & StackFrameMIPS::CONTEXT_VALID_SP)
+        sequence = PrintRegister64("sp",
+                     frame_mips->context.iregs[MD_CONTEXT_MIPS_REG_SP],
+                     sequence);
+      if (frame_mips->context_validity & StackFrameMIPS::CONTEXT_VALID_FP)
+        sequence = PrintRegister64("fp",
+                     frame_mips->context.iregs[MD_CONTEXT_MIPS_REG_FP],
+                     sequence);
+      if (frame_mips->context_validity & StackFrameMIPS::CONTEXT_VALID_RA)
+        sequence = PrintRegister64("ra",
+                     frame_mips->context.iregs[MD_CONTEXT_MIPS_REG_RA],
+                     sequence);
+      if (frame_mips->context_validity & StackFrameMIPS::CONTEXT_VALID_PC)
+        sequence = PrintRegister64("pc", frame_mips->context.epc, sequence);
+
+      // Save registers s0-s7
+      if (frame_mips->context_validity & StackFrameMIPS::CONTEXT_VALID_S0)
+        sequence = PrintRegister64("s0",
+                     frame_mips->context.iregs[MD_CONTEXT_MIPS_REG_S0],
+                     sequence);
+      if (frame_mips->context_validity & StackFrameMIPS::CONTEXT_VALID_S1)
+        sequence = PrintRegister64("s1",
+                     frame_mips->context.iregs[MD_CONTEXT_MIPS_REG_S1],
+                     sequence);
+      if (frame_mips->context_validity & StackFrameMIPS::CONTEXT_VALID_S2)
+        sequence = PrintRegister64("s2",
+                     frame_mips->context.iregs[MD_CONTEXT_MIPS_REG_S2],
+                     sequence);
+      if (frame_mips->context_validity & StackFrameMIPS::CONTEXT_VALID_S3)
+        sequence = PrintRegister64("s3",
+                     frame_mips->context.iregs[MD_CONTEXT_MIPS_REG_S3],
+                     sequence);
+      if (frame_mips->context_validity & StackFrameMIPS::CONTEXT_VALID_S4)
+        sequence = PrintRegister64("s4",
+                     frame_mips->context.iregs[MD_CONTEXT_MIPS_REG_S4],
+                     sequence);
+      if (frame_mips->context_validity & StackFrameMIPS::CONTEXT_VALID_S5)
+        sequence = PrintRegister64("s5",
+                     frame_mips->context.iregs[MD_CONTEXT_MIPS_REG_S5],
+                     sequence);
+      if (frame_mips->context_validity & StackFrameMIPS::CONTEXT_VALID_S6)
+        sequence = PrintRegister64("s6",
+                     frame_mips->context.iregs[MD_CONTEXT_MIPS_REG_S6],
+                     sequence);
+      if (frame_mips->context_validity & StackFrameMIPS::CONTEXT_VALID_S7)
+        sequence = PrintRegister64("s7",
+                     frame_mips->context.iregs[MD_CONTEXT_MIPS_REG_S7],
+                     sequence);
+    } 
     printf("\n    Found by: %s\n", frame->trust_description().c_str());
   }
 }

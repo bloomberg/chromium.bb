@@ -844,6 +844,71 @@ bool MinidumpContext::Read(uint32_t expected_size) {
         break;
       }
 
+      case MD_CONTEXT_MIPS: {
+        if (expected_size != sizeof(MDRawContextMIPS)) {
+          BPLOG(ERROR) << "MinidumpContext MIPS size mismatch, " 
+                       << expected_size 
+                       << " != " 
+                       << sizeof(MDRawContextMIPS);
+          return false;
+        }
+
+        scoped_ptr<MDRawContextMIPS> context_mips(new MDRawContextMIPS());
+
+        // Set the context_flags member, which has already been read, and
+        // read the rest of the structure beginning with the first member
+        // after context_flags.
+        context_mips->context_flags = context_flags;
+
+        size_t flags_size = sizeof(context_mips->context_flags);
+        uint8_t* context_after_flags =
+            reinterpret_cast<uint8_t*>(context_mips.get()) + flags_size;
+        if (!minidump_->ReadBytes(context_after_flags,
+                                  sizeof(MDRawContextMIPS) - flags_size)) {
+          BPLOG(ERROR) << "MinidumpContext could not read MIPS context";
+          return false;
+        }
+
+        // Do this after reading the entire MDRawContext structure because
+        // GetSystemInfo may seek minidump to a new position.
+        if (!CheckAgainstSystemInfo(cpu_type)) {
+          BPLOG(ERROR) << "MinidumpContext MIPS does not match system info";
+          return false;
+        }
+
+        if (minidump_->swap()) {
+          // context_mips->context_flags was already swapped.
+          for (int ireg_index = 0;
+               ireg_index < MD_CONTEXT_MIPS_GPR_COUNT;
+               ++ireg_index) {
+            Swap(&context_mips->iregs[ireg_index]);
+          }
+	  Swap(&context_mips->mdhi);
+	  Swap(&context_mips->mdlo);
+          for (int dsp_index = 0;
+               dsp_index < MD_CONTEXT_MIPS_DSP_COUNT;
+               ++dsp_index) {
+            Swap(&context_mips->hi[dsp_index]);
+            Swap(&context_mips->lo[dsp_index]);
+          }
+	  Swap(&context_mips->dsp_control);
+          Swap(&context_mips->epc);
+          Swap(&context_mips->badvaddr);
+          Swap(&context_mips->status);
+          Swap(&context_mips->cause);
+          for (int fpr_index = 0;
+               fpr_index < MD_FLOATINGSAVEAREA_MIPS_FPR_COUNT;
+               ++fpr_index) {
+            Swap(&context_mips->float_save.regs[fpr_index]);
+          }
+          Swap(&context_mips->float_save.fpcsr);
+          Swap(&context_mips->float_save.fir);
+        }
+        context_.ctx_mips = context_mips.release();
+
+        break;
+      }
+
       default: {
         // Unknown context type - Don't log as an error yet. Let the
         // caller work that out.
@@ -900,6 +965,9 @@ bool MinidumpContext::GetInstructionPointer(uint64_t* ip) const {
     break;
   case MD_CONTEXT_X86:
     *ip = context_.x86->eip;
+    break;
+  case MD_CONTEXT_MIPS:
+    *ip = context_.ctx_mips->epc;
     break;
   default:
     // This should never happen.
@@ -965,6 +1033,15 @@ const MDRawContextARM* MinidumpContext::GetContextARM() const {
   return context_.arm;
 }
 
+const MDRawContextMIPS* MinidumpContext::GetContextMIPS() const {
+  if (GetContextCPU() != MD_CONTEXT_MIPS) {
+    BPLOG(ERROR) << "MinidumpContext cannot get MIPS context";
+    return NULL;
+  }
+
+  return context_.ctx_mips;
+}
+
 void MinidumpContext::FreeContext() {
   switch (GetContextCPU()) {
     case MD_CONTEXT_X86:
@@ -989,6 +1066,10 @@ void MinidumpContext::FreeContext() {
 
     case MD_CONTEXT_ARM:
       delete context_.arm;
+      break;
+
+    case MD_CONTEXT_MIPS:
+      delete context_.ctx_mips;
       break;
 
     default:
@@ -1058,6 +1139,11 @@ bool MinidumpContext::CheckAgainstSystemInfo(uint32_t context_cpu_type) {
 
     case MD_CONTEXT_ARM:
       if (system_info_cpu_type == MD_CPU_ARCHITECTURE_ARM)
+        return_value = true;
+      break;
+
+    case MD_CONTEXT_MIPS:
+      if (system_info_cpu_type == MD_CPU_ARCHITECTURE_MIPS)
         return_value = true;
       break;
   }
@@ -1335,6 +1421,53 @@ void MinidumpContext::Print() {
                fpe_index, context_arm->float_save.extra[fpe_index]);
       }
 
+      break;
+    }
+
+    case MD_CONTEXT_MIPS: {
+      const MDRawContextMIPS* context_mips = GetContextMIPS();
+      printf("MDRawContextMIPS\n");
+      printf("  context_flags        = 0x%x\n",
+             context_mips->context_flags);
+      for (int ireg_index = 0;
+           ireg_index < MD_CONTEXT_MIPS_GPR_COUNT;
+           ++ireg_index) {
+        printf("  iregs[%2d]           = 0x%" PRIx64 "\n",
+               ireg_index, context_mips->iregs[ireg_index]);
+      }
+      printf("  mdhi                 = 0x%" PRIx64 "\n",
+             context_mips->mdhi);
+      printf("  mdlo                 = 0x%" PRIx64 "\n",
+             context_mips->mdhi);
+      for (int dsp_index = 0;
+           dsp_index < MD_CONTEXT_MIPS_DSP_COUNT;
+           ++dsp_index) {
+        printf("  hi[%1d]              = 0x%" PRIx32 "\n",
+               dsp_index, context_mips->hi[dsp_index]);
+        printf("  lo[%1d]              = 0x%" PRIx32 "\n",
+               dsp_index, context_mips->lo[dsp_index]);
+      }
+      printf("  dsp_control          = 0x%" PRIx32 "\n",
+             context_mips->dsp_control);
+      printf("  epc                  = 0x%" PRIx64 "\n",
+             context_mips->epc);
+      printf("  badvaddr             = 0x%" PRIx64 "\n",
+             context_mips->badvaddr);
+      printf("  status               = 0x%" PRIx32 "\n",
+             context_mips->status);
+      printf("  cause                = 0x%" PRIx32 "\n",
+             context_mips->cause);
+
+      for (int fpr_index = 0;
+           fpr_index < MD_FLOATINGSAVEAREA_MIPS_FPR_COUNT;
+           ++fpr_index) {
+        printf("  float_save.regs[%2d] = 0x%" PRIx64 "\n",
+               fpr_index, context_mips->float_save.regs[fpr_index]);
+      }
+      printf("  float_save.fpcsr     = 0x%" PRIx32 "\n",
+             context_mips->float_save.fpcsr);
+      printf("  float_save.fir       = 0x%" PRIx32 "\n",
+             context_mips->float_save.fir);
       break;
     }
 

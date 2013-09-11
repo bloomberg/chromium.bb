@@ -374,6 +374,67 @@ void CPUFillFromUContext(MDRawContextARM* out, const ucontext* uc,
   my_memset(&out->float_save.extra, 0, sizeof(out->float_save.extra));
 }
 
+#elif defined(__mips__)
+typedef MDRawContextMIPS RawContextCPU;
+
+static void CPUFillFromThreadInfo(MDRawContextMIPS* out,
+                                  const google_breakpad::ThreadInfo& info) {
+  out->context_flags = MD_CONTEXT_MIPS_FULL;
+
+  for (int i = 0; i < MD_CONTEXT_MIPS_GPR_COUNT; ++i)
+    out->iregs[i] = info.regs.regs[i];
+
+  out->mdhi = info.regs.hi;
+  out->mdlo = info.regs.lo;
+
+  for (int i = 0; i < MD_CONTEXT_MIPS_DSP_COUNT; ++i) {
+    out->hi[i] = info.hi[i];
+    out->lo[i] = info.lo[i];
+  }
+  out->dsp_control = info.dsp_control;
+
+  out->epc = info.regs.epc;
+  out->badvaddr = info.regs.badvaddr;
+  out->status = info.regs.status;
+  out->cause = info.regs.cause;
+
+  for (int i = 0; i < MD_FLOATINGSAVEAREA_MIPS_FPR_COUNT; ++i)
+    out->float_save.regs[i] = info.fpregs.regs[i];
+
+  out->float_save.fpcsr = info.fpregs.fpcsr;
+  out->float_save.fir = info.fpregs.fir;
+}
+
+static void CPUFillFromUContext(MDRawContextMIPS* out, const ucontext* uc,
+                                const struct _libc_fpstate* fpregs) {
+  out->context_flags = MD_CONTEXT_MIPS_FULL;
+
+  for (int i = 0; i < MD_CONTEXT_MIPS_GPR_COUNT; ++i)
+    out->iregs[i] = uc->uc_mcontext.gregs[i];
+
+  out->mdhi = uc->uc_mcontext.mdhi;
+  out->mdlo = uc->uc_mcontext.mdlo;
+
+  out->hi[0] = uc->uc_mcontext.hi1;
+  out->hi[1] = uc->uc_mcontext.hi2;
+  out->hi[2] = uc->uc_mcontext.hi3;
+  out->lo[0] = uc->uc_mcontext.lo1;
+  out->lo[1] = uc->uc_mcontext.lo2;
+  out->lo[2] = uc->uc_mcontext.lo3;
+  out->dsp_control = uc->uc_mcontext.dsp;
+
+  out->epc = uc->uc_mcontext.pc;
+  out->badvaddr = 0;  // Not reported in signal context.
+  out->status = 0;  // Not reported in signal context.
+  out->cause = 0;  // Not reported in signal context.
+
+  for (int i = 0; i < MD_FLOATINGSAVEAREA_MIPS_FPR_COUNT; ++i)
+    out->float_save.regs[i] = uc->uc_mcontext.fpregs.fp_r.fp_dregs[i];
+
+  out->float_save.fpcsr = uc->uc_mcontext.fpc_csr;
+  out->float_save.fir = uc->uc_mcontext.fpc_eir;  // Unused.
+}
+
 #else
 #error "This code has not been ported to your platform yet."
 #endif
@@ -405,7 +466,7 @@ class MinidumpWriter {
       : fd_(minidump_fd),
         path_(minidump_path),
         ucontext_(context ? &context->context : NULL),
-#if !defined(__ARM_EABI__)
+#if !defined(__ARM_EABI__) && !defined(__mips__)
         float_state_(context ? &context->float_state : NULL),
 #else
         // TODO: fix this after fixing ExceptionHandler
@@ -1206,6 +1267,18 @@ class MinidumpWriter {
   uintptr_t GetInstructionPointer(const ThreadInfo& info) {
     return info.regs.uregs[15];
   }
+#elif defined(__mips__)
+  uintptr_t GetStackPointer() {
+    return ucontext_->uc_mcontext.gregs[MD_CONTEXT_MIPS_REG_SP];
+  }
+
+  uintptr_t GetInstructionPointer() {
+    return ucontext_->uc_mcontext.pc;
+  }
+
+  uintptr_t GetInstructionPointer(const ThreadInfo& info) {
+    return info.regs.epc;
+  }
 #else
 #error "This code has not been ported to your platform yet."
 #endif
@@ -1216,7 +1289,7 @@ class MinidumpWriter {
     dirent->location.rva = 0;
   }
 
-#if defined(__i386__) || defined(__x86_64__)
+#if defined(__i386__) || defined(__x86_64__) || defined(__mips__)
   bool WriteCPUInformation(MDRawSystemInfo* sys_info) {
     char vendor_id[sizeof(sys_info->cpu.x86_cpu_info.vendor_id) + 1] = {0};
     static const char vendor_id_name[] = "vendor_id";
@@ -1227,14 +1300,18 @@ class MinidumpWriter {
       bool found;
     } cpu_info_table[] = {
       { "processor", -1, false },
+#if !defined(__mips__)
       { "model", 0, false },
       { "stepping",  0, false },
       { "cpu family", 0, false },
+#endif
     };
 
     // processor_architecture should always be set, do this first
     sys_info->processor_architecture =
-#if defined(__i386__)
+#if defined(__mips__)
+        MD_CPU_ARCHITECTURE_MIPS;
+#elif defined(__i386__)
         MD_CPU_ARCHITECTURE_X86;
 #else
         MD_CPU_ARCHITECTURE_AMD64;
@@ -1297,9 +1374,11 @@ class MinidumpWriter {
     cpu_info_table[0].value++;
 
     sys_info->number_of_processors = cpu_info_table[0].value;
+#if !defined(__mips__)
     sys_info->processor_level      = cpu_info_table[3].value;
     sys_info->processor_revision   = cpu_info_table[1].value << 8 |
                                      cpu_info_table[2].value;
+#endif
 
     if (vendor_id[0] != '\0') {
       my_memcpy(sys_info->cpu.x86_cpu_info.vendor_id, vendor_id,

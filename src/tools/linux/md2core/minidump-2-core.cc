@@ -202,7 +202,7 @@ struct CrashedProcess {
   struct Thread {
     pid_t tid;
     user_regs_struct regs;
-#if defined(__i386__) || defined(__x86_64__)
+#if defined(__i386__) || defined(__x86_64__) || defined(__mips__)
     user_fpregs_struct fpregs;
 #endif
 #if defined(__i386__)
@@ -357,6 +357,28 @@ ParseThreadRegisters(CrashedProcess::Thread* thread,
   thread->regs.uregs[16] = rawregs->cpsr;
   thread->regs.uregs[17] = 0;  // what is ORIG_r0 exactly?
 }
+#elif defined(__mips__)
+static void
+ParseThreadRegisters(CrashedProcess::Thread* thread,
+                     const MinidumpMemoryRange& range) {
+  const MDRawContextMIPS* rawregs = range.GetData<MDRawContextMIPS>(0);
+
+  for (int i = 0; i < MD_CONTEXT_MIPS_GPR_COUNT; ++i)
+    thread->regs.regs[i] = rawregs->iregs[i];
+  
+  thread->regs.lo = rawregs->mdlo;
+  thread->regs.hi = rawregs->mdhi;
+  thread->regs.epc = rawregs->epc;
+  thread->regs.badvaddr = rawregs->badvaddr;
+  thread->regs.status = rawregs->status;
+  thread->regs.cause = rawregs->cause;
+
+  for (int i = 0; i < MD_FLOATINGSAVEAREA_MIPS_FPR_COUNT; ++i)
+    thread->fpregs.regs[i] = rawregs->float_save.regs[i];
+  
+  thread->fpregs.fpcsr = rawregs->float_save.fpcsr;
+  thread->fpregs.fir = rawregs->float_save.fir;
+}
 #else
 #error "This code has not been ported to your platform yet"
 #endif
@@ -421,6 +443,12 @@ ParseSystemInfo(CrashedProcess* crashinfo, const MinidumpMemoryRange& range,
             "This version of minidump-2-core only supports ARM (32bit).\n");
     _exit(1);
   }
+#elif defined(__mips__)
+  if (sysinfo->processor_architecture != MD_CPU_ARCHITECTURE_MIPS) {
+    fprintf(stderr,
+            "This version of minidump-2-core only supports mips (32bit).\n");
+    _exit(1);
+  }
 #else
 #error "This code has not been ported to your platform yet"
 #endif
@@ -445,6 +473,8 @@ ParseSystemInfo(CrashedProcess* crashinfo, const MinidumpMemoryRange& range,
             ? "x86-64"
             : sysinfo->processor_architecture == MD_CPU_ARCHITECTURE_ARM
             ? "ARM"
+            : sysinfo->processor_architecture == MD_CPU_ARCHITECTURE_MIPS
+            ? "MIPS"
             : "???",
             sysinfo->number_of_processors,
             sysinfo->processor_level,

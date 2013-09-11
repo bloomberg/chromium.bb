@@ -97,7 +97,6 @@ typedef struct {
 #define MD_CONTEXT_IA64  0x00080000  /* CONTEXT_IA64 */
 /* Additional values from winnt.h in the Windows CE 5.0 SDK: */
 #define MD_CONTEXT_SHX   0x000000c0  /* CONTEXT_SH4 (Super-H, includes SH3) */
-#define MD_CONTEXT_MIPS  0x00010000  /* CONTEXT_R4000 (same value as x86?) */
 #define MD_CONTEXT_ALPHA 0x00020000  /* CONTEXT_ALPHA */
 
 /* As of Windows 7 SP1, the number of flag bits has increased to
@@ -115,6 +114,7 @@ typedef struct {
 
 #include "minidump_cpu_amd64.h"
 #include "minidump_cpu_arm.h"
+#include "minidump_cpu_mips.h"
 #include "minidump_cpu_ppc.h"
 #include "minidump_cpu_ppc64.h"
 #include "minidump_cpu_sparc.h"

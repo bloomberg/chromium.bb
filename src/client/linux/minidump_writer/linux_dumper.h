@@ -54,7 +54,7 @@ typedef typeof(((struct user*) 0)->u_debugreg[0]) debugreg_t;
 #endif
 
 // Typedef for our parsing of the auxv variables in /proc/pid/auxv.
-#if defined(__i386) || defined(__ARM_EABI__)
+#if defined(__i386) || defined(__ARM_EABI__) || defined(__mips__)
 typedef Elf32_auxv_t elf_aux_entry;
 #elif defined(__x86_64)
 typedef Elf64_auxv_t elf_aux_entry;
@@ -88,6 +88,12 @@ struct ThreadInfo {
   // Mimicking how strace does this(see syscall.c, search for GETREGS)
   struct user_regs regs;
   struct user_fpregs fpregs;
+#elif defined(__mips__)
+  user_regs_struct regs;
+  user_fpregs_struct fpregs;
+  uint32_t hi[3];
+  uint32_t lo[3];
+  uint32_t dsp_control;
 #endif
 };
 
