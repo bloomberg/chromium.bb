@@ -63,7 +63,11 @@ PassRefPtr<Player> DocumentTimeline::play(TimedItem* child)
 
 void DocumentTimeline::serviceAnimations(double monotonicAnimationStartTime)
 {
-    if (!isNull(m_zeroTimeAsPerfTime)) {
+    // FIXME: The below ASSERT fires on Windows when running chrome.exe.
+    // Does not fire with --single-process, or on Linux, or in
+    // content_shell.exe. The assert condition has been moved up into the
+    // outer 'if' to work around this. http://crbug.com/280439.
+    if (!isNull(m_zeroTimeAsPerfTime) && (m_currentTime <= monotonicAnimationStartTime - m_zeroTimeAsPerfTime)) {
         ASSERT(m_currentTime <= monotonicAnimationStartTime - m_zeroTimeAsPerfTime);
         m_currentTime = monotonicAnimationStartTime - m_zeroTimeAsPerfTime;
     }
