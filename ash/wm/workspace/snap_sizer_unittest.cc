@@ -4,10 +4,12 @@
 
 #include "ash/wm/workspace/snap_sizer.h"
 
+#include "ash/ash_switches.h"
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_util.h"
+#include "base/command_line.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
@@ -95,6 +97,131 @@ TEST_F(SnapSizerTest, MinimumSize) {
   delegate.set_minimum_size(gfx::Size());
   delegate.set_maximum_size(gfx::Size(kWorkAreaBounds.width() - 1, INT_MAX));
   EXPECT_FALSE(ash::wm::CanSnapWindow(window.get()));
+}
+
+// Test that repeadedly calling SnapSizer::SnapWindow() steps through the ideal
+// widths in descending order as well as 90% and 50% of the work area's width.
+TEST_F(SnapSizerTest, StepThroughSizes) {
+  if (!SupportsHostWindowResize())
+    return;
+
+  UpdateDisplay("0+0-1024x800");
+  const gfx::Rect kWorkAreaBounds =
+      ash::Shell::GetScreen()->GetPrimaryDisplay().work_area();
+
+  scoped_ptr<aura::Window> window(
+      CreateTestWindowInShellWithBounds(gfx::Rect(100, 100, 100, 100)));
+
+  // Make sure that the work area is the size we expect it to be.
+  EXPECT_GT(kWorkAreaBounds.width() * 0.9, 768);
+
+  // The first width should be 1024 * 0.9 because the larger ideal widths
+  // (1280, 1024) > 1024 * 0.9.
+  SnapSizer::SnapWindow(window.get(), SnapSizer::LEFT_EDGE);
+  gfx::Rect expected = gfx::Rect(kWorkAreaBounds.x(),
+                                 kWorkAreaBounds.y(),
+                                 kWorkAreaBounds.width() * 0.9,
+                                 kWorkAreaBounds.height());
+  EXPECT_EQ(expected.ToString(), window->GetBoundsInScreen().ToString());
+
+  SnapSizer::SnapWindow(window.get(), SnapSizer::LEFT_EDGE);
+  expected.set_width(768);
+  EXPECT_EQ(expected.ToString(), window->GetBoundsInScreen().ToString());
+
+  SnapSizer::SnapWindow(window.get(), SnapSizer::LEFT_EDGE);
+  expected.set_width(640);
+  EXPECT_EQ(expected.ToString(), window->GetBoundsInScreen().ToString());
+
+  SnapSizer::SnapWindow(window.get(), SnapSizer::LEFT_EDGE);
+  expected.set_width(kWorkAreaBounds.width() * 0.5);
+  EXPECT_EQ(expected.ToString(), window->GetBoundsInScreen().ToString());
+
+  // Wrap around.
+  SnapSizer::SnapWindow(window.get(), SnapSizer::LEFT_EDGE);
+  expected.set_width(kWorkAreaBounds.width() * 0.9);
+  EXPECT_EQ(expected.ToString(), window->GetBoundsInScreen().ToString());
+}
+
+// Tests the SnapSizer's target bounds when resizing is disabled.
+TEST_F(SnapSizerTest, Default) {
+  if (!SupportsHostWindowResize())
+    return;
+
+  scoped_ptr<aura::Window> window(
+      CreateTestWindowInShellWithBounds(gfx::Rect(100, 100, 100, 100)));
+  SnapSizer sizer(window.get(), gfx::Point(), SnapSizer::LEFT_EDGE,
+      SnapSizer::OTHER_INPUT);
+
+  // For small workspace widths, we should snap to 90% of the workspace width
+  // because it is the largest width the window can snap to.
+  UpdateDisplay("0+0-800x600");
+  sizer.SelectDefaultSizeAndDisableResize();
+
+  gfx::Rect work_area =
+      ash::Shell::GetScreen()->GetPrimaryDisplay().work_area();
+  gfx::Rect expected(work_area);
+  expected.set_width(work_area.width() * 0.9);
+  EXPECT_EQ(expected.ToString(),
+            ScreenAsh::ConvertRectToScreen(window->parent(),
+                                           sizer.target_bounds()).ToString());
+
+  // If the largest width the window can snap to is between 1024 and 1280, we
+  // should snap to 1024.
+  UpdateDisplay("0+0-1280x800");
+  sizer.SelectDefaultSizeAndDisableResize();
+  EXPECT_EQ(1024, sizer.target_bounds().width());
+
+  // We should snap to a width of 50% of the work area it is the largest width
+  // the window can snap to.
+  UpdateDisplay("0+0-2560x1080");
+  work_area = ash::Shell::GetScreen()->GetPrimaryDisplay().work_area();
+  sizer.SelectDefaultSizeAndDisableResize();
+  EXPECT_EQ(work_area.width() / 2, sizer.target_bounds().width());
+}
+
+// Test that the window only snaps to 50% of the work area width when using the
+// alternate caption button style.
+TEST_F(SnapSizerTest, AlternateFrameCaptionButtonStyle) {
+  if (!SupportsHostWindowResize())
+    return;
+
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      ash::switches::kAshEnableAlternateFrameCaptionButtonStyle);
+  ASSERT_TRUE(ash::switches::UseAlternateFrameCaptionButtonStyle());
+
+  UpdateDisplay("0+0-800x600");
+  const gfx::Rect kWorkAreaBounds =
+      ash::Shell::GetScreen()->GetPrimaryDisplay().work_area();
+
+  scoped_ptr<aura::Window> window(
+      CreateTestWindowInShellWithBounds(gfx::Rect(100, 100, 100, 100)));
+
+  SnapSizer::SnapWindow(window.get(), SnapSizer::LEFT_EDGE);
+  gfx::Rect expected = gfx::Rect(kWorkAreaBounds.x(),
+                                 kWorkAreaBounds.y(),
+                                 kWorkAreaBounds.width() / 2,
+                                 kWorkAreaBounds.height());
+  EXPECT_EQ(expected.ToString(), window->GetBoundsInScreen().ToString());
+
+  // Because a window can only be snapped to one size when using the alternate
+  // caption button style, a second call to SnapSizer::SnapWindow() should have
+  // no effect.
+  SnapSizer::SnapWindow(window.get(), SnapSizer::LEFT_EDGE);
+  EXPECT_EQ(expected.ToString(), window->GetBoundsInScreen().ToString());
+
+  // It should still be possible to switch a window from being snapped to the
+  // left edge to being snapped to the right edge.
+  SnapSizer::SnapWindow(window.get(), SnapSizer::RIGHT_EDGE);
+  expected.set_x(kWorkAreaBounds.right() - expected.width());
+  EXPECT_EQ(expected.ToString(), window->GetBoundsInScreen().ToString());
+
+  // If resizing is disabled, the window should be snapped to 50% too.
+  SnapSizer sizer(window.get(), gfx::Point(), SnapSizer::RIGHT_EDGE,
+      SnapSizer::OTHER_INPUT);
+  sizer.SelectDefaultSizeAndDisableResize();
+  EXPECT_EQ(expected.ToString(),
+            ScreenAsh::ConvertRectToScreen(window->parent(),
+                                           sizer.target_bounds()).ToString());
 }
 
 }  // namespace ash

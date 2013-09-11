@@ -6,6 +6,7 @@
 
 #include <cmath>
 
+#include "ash/ash_switches.h"
 #include "ash/screen_ash.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_resizer.h"
@@ -62,7 +63,16 @@ int GetMaxWidth(aura::Window* window) {
 // in the SnapSizer.
 int GetDefaultWidth(aura::Window* window) {
   gfx::Rect work_area(ScreenAsh::GetDisplayWorkAreaBoundsInParent(window));
-  int width = std::max(kDefaultWidthSmallScreen, work_area.width() / 2);
+
+  int width = 0;
+  if (ash::switches::UseAlternateFrameCaptionButtonStyle()) {
+    // Only the 'half of screen' width is supported when using the alternate
+    // visual style for the frame caption buttons (minimize, maximize, restore,
+    // and close).
+    width = work_area.width() / 2;
+  } else {
+    width = std::max(kDefaultWidthSmallScreen, work_area.width() / 2);
+  }
 
   width = std::min(width, GetMaxWidth(window));
   return std::max(width, GetMinWidth(window));
@@ -74,6 +84,13 @@ int GetDefaultWidth(aura::Window* window) {
 // add an entry for 90% of the screen size if it is smaller than the biggest
 // value in the |kIdealWidth| list (to get a step between the values).
 std::vector<int> BuildIdealWidthList(aura::Window* window) {
+  if (ash::switches::UseAlternateFrameCaptionButtonStyle()) {
+    // Only the 'half of screen' width is supported when using the alternate
+    // visual style for the frame caption buttons (minimize, maximize,
+    // restore, and close).
+    return std::vector<int>(1u, GetDefaultWidth(window));
+  }
+
   int minimum_width = GetMinWidth(window);
   int maximum_width = GetMaxWidth(window);
 
@@ -193,6 +210,8 @@ gfx::Rect SnapSizer::GetSnapBounds(const gfx::Rect& bounds) {
       }
     }
   }
+  if (current < 0)
+    current = 0;
   return GetTargetBoundsForSize(current % usable_width_.size());
 }
 

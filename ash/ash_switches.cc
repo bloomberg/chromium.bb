@@ -44,6 +44,11 @@ const char kAshDefaultGuestWallpaperSmall[] =
 const char kAshDefaultWallpaperLarge[] = "ash-default-wallpaper-large";
 const char kAshDefaultWallpaperSmall[] = "ash-default-wallpaper-small";
 
+// Use the normal visual style for the caption buttons (minimize, maximize,
+// restore, close).
+const char kAshDisableAlternateFrameCaptionButtonStyle[] =
+    "ash-disable-alternate-caption-button";
+
 // Disable the alternate shelf layout.
 const char kAshDisableAlternateShelfLayout[] =
     "ash-disable-alternate-shelf-layout";
@@ -86,6 +91,15 @@ const char kAshEnableAudioDeviceMenu[] = "ash-enable-audio-device-menu";
 
 // Enable advanced gestures (e.g. for window management).
 const char kAshEnableAdvancedGestures[] = "ash-enable-advanced-gestures";
+
+// Use alternate visual style for the caption buttons (minimize, maximize,
+// restore, close). The alternate style:
+// - Adds a dedicated button for minimize.
+// - Increases the height of the maximized header.
+// - Removes the maximize button's help bubble.
+// - Switches snapping a window left/right to be always 50%.
+const char kAshEnableAlternateFrameCaptionButtonStyle[] =
+    "ash-enable-alternate-caption-button";
 
 // Always enable brightness control. Used by machines that don't report their
 // main monitor as internal.
@@ -183,30 +197,35 @@ const char kAshDisableDragAndDropAppListToLauncher[] =
 // in maximized mode.
 const char kForcedMaximizeMode[] = "forced-maximize-mode";
 
+bool UseAlternateFrameCaptionButtonStyle() {
+  return CommandLine::ForCurrentProcess()->
+      HasSwitch(kAshEnableAlternateFrameCaptionButtonStyle);
+}
+
 bool UseAlternateShelfLayout() {
   return !CommandLine::ForCurrentProcess()->
-      HasSwitch(ash::switches::kAshDisableAlternateShelfLayout);
+      HasSwitch(kAshDisableAlternateShelfLayout);
 }
 
 bool UseDragOffShelf() {
   return !CommandLine::ForCurrentProcess()->
-      HasSwitch(ash::switches::kAshDisableDragOffShelf);
+      HasSwitch(kAshDisableDragOffShelf);
 }
 
 bool ShowShelfAlignmentMenu() {
   return !CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kHideShelfAlignmentMenu);
+      HasSwitch(kHideShelfAlignmentMenu);
 }
 
 #if defined(OS_CHROMEOS)
 bool ShowAudioDeviceMenu() {
   return !CommandLine::ForCurrentProcess()->
-      HasSwitch(ash::switches::kAshDisableAudioDeviceMenu);
+      HasSwitch(kAshDisableAudioDeviceMenu);
 }
 
 bool UseUsbChargerNotification() {
   return !CommandLine::ForCurrentProcess()->
-      HasSwitch(ash::switches::kAshDisableUsbChargerNotification);
+      HasSwitch(kAshDisableUsbChargerNotification);
 }
 #endif
 

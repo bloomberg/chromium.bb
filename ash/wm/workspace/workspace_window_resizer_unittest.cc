@@ -1142,43 +1142,6 @@ TEST_F(WorkspaceWindowResizerTest, CtrlCompleteDragMoveToExactPosition) {
   EXPECT_EQ("106,124 320x160", window_->bounds().ToString());
 }
 
-// Check that only usable sizes get returned by the resizer.
-TEST_F(WorkspaceWindowResizerTest, TestProperSizerResolutions) {
-  // Check that we have the correct work area resolution which fits our
-  // expected test result.
-  gfx::Rect work_area(ScreenAsh::GetDisplayWorkAreaBoundsInParent(
-                          window_.get()));
-  EXPECT_EQ(800, work_area.width());
-
-  window_->SetBounds(gfx::Rect(96, 112, 320, 160));
-  scoped_ptr<SnapSizer> resizer(new SnapSizer(
-      window_.get(),
-      gfx::Point(),
-      SnapSizer::LEFT_EDGE,
-      SnapSizer::OTHER_INPUT));
-  ASSERT_TRUE(resizer.get());
-  shelf_layout_manager()->SetAutoHideBehavior(
-      SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
-
-  // Check that the list is declining and contains elements of the
-  // ideal size list [1280, 1024, 768, 640] as well as 50% and 90% the work
-  // area.
-  gfx::Rect rect = resizer->GetTargetBoundsForSize(0);
-  EXPECT_EQ("0,0 720x597", rect.ToString());
-  rect = resizer->GetTargetBoundsForSize(1);
-  EXPECT_EQ("0,0 640x597", rect.ToString());
-  rect = resizer->GetTargetBoundsForSize(2);
-  EXPECT_EQ("0,0 400x597", rect.ToString());
-  shelf_layout_manager()->SetAutoHideBehavior(
-      SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
-  rect = resizer->GetTargetBoundsForSize(0);
-  EXPECT_EQ("0,0 720x553", rect.ToString());
-  rect = resizer->GetTargetBoundsForSize(1);
-  EXPECT_EQ("0,0 640x553", rect.ToString());
-  rect = resizer->GetTargetBoundsForSize(2);
-  EXPECT_EQ("0,0 400x553", rect.ToString());
-}
-
 // Verifies that a dragged window will restore to its pre-maximized size.
 TEST_F(WorkspaceWindowResizerTest, RestoreToPreMaximizeCoordinates) {
   window_->SetBounds(gfx::Rect(0, 0, 1000, 1000));
