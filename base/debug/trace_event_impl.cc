@@ -816,20 +816,6 @@ TraceLog::ThreadLocalEventBuffer::ThreadLocalEventBuffer(TraceLog* trace_log)
       event_count_(0) {
   logged_events_.reserve(kTraceEventThreadLocalBufferSize);
 
-  if (g_category_group_enabled[g_category_trace_event_overhead]) {
-    int thread_id = static_cast<int>(PlatformThread::CurrentId());
-    logged_events_.push_back(TraceEvent(
-        thread_id,
-        TimeTicks::NowFromSystemTraceTime() - trace_log->time_offset_,
-        ThreadNow(),
-        TRACE_EVENT_PHASE_ASYNC_BEGIN,
-        &g_category_group_enabled[g_category_trace_event_overhead],
-        "thread_trace_event",
-        thread_id,
-        0, NULL, NULL, NULL, NULL,
-        TRACE_EVENT_FLAG_HAS_ID));
-  }
-
   // ThreadLocalEventBuffer is created only if the thread has a message loop, so
   // the following message_loop won't be NULL.
   MessageLoop* message_loop = MessageLoop::current();
@@ -847,8 +833,6 @@ TraceLog::ThreadLocalEventBuffer::~ThreadLocalEventBuffer() {
   // - no event generated for the thread;
   // - the thread has no message loop;
   // - trace_event_overhead is disabled.
-  // The trace-viewer will ignore the TRACE_EVENT_PHASE_ASYNC_BEGIN event
-  // because of no matching TRACE_EVENT_PHASE_ASYNC_END event.
   if (event_count_) {
     const char* arg_names[2] = { "event_count", "average_overhead" };
     unsigned char arg_types[2];
@@ -858,17 +842,13 @@ TraceLog::ThreadLocalEventBuffer::~ThreadLocalEventBuffer() {
     trace_event_internal::SetTraceValue(
         overhead_.InMillisecondsF() / event_count_,
         &arg_types[1], &arg_values[1]);
-    int thread_id = static_cast<int>(PlatformThread::CurrentId());
     logged_events_.push_back(TraceEvent(
-        thread_id,
-        TimeTicks::NowFromSystemTraceTime() - trace_log_->time_offset_,
-        ThreadNow(),
-        TRACE_EVENT_PHASE_ASYNC_END,
-        &g_category_group_enabled[g_category_trace_event_overhead],
-        "thread_trace_event",
-        thread_id,
+        static_cast<int>(PlatformThread::CurrentId()),
+        TimeTicks(), TimeTicks(), TRACE_EVENT_PHASE_METADATA,
+        &g_category_group_enabled[g_category_metadata],
+        "trace_event_overhead", trace_event_internal::kNoEventId,
         2, arg_names, arg_types, arg_values, NULL,
-        TRACE_EVENT_FLAG_HAS_ID));
+        TRACE_EVENT_FLAG_NONE));
   }
 
   NotificationHelper notifier(trace_log_);
