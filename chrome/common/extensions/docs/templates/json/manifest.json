@@ -140,6 +140,10 @@
     "documentation": "autoupdate.html",
     "example": "http://path/to/updateInfo.xml"
   },
+  "url_handlers": {
+    "documentation": "manifest/url_handlers.html",
+    "example": {}
+  },
   "version": {
     "documentation": "manifest/version.html",
     "example": "versionString",
