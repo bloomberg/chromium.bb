@@ -2086,8 +2086,7 @@ AccessibilitySVGRoot* AccessibilityRenderObject::remoteSVGRootElement() const
     if (!image || !image->isSVGImage())
         return 0;
 
-    SVGImage* svgImage = static_cast<SVGImage*>(image);
-    FrameView* frameView = svgImage->frameView();
+    FrameView* frameView = toSVGImage(image)->frameView();
     if (!frameView)
         return 0;
     Document* doc = frameView->frame().document();
