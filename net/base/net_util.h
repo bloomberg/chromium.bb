@@ -370,18 +370,28 @@ NET_EXPORT void AppendFormattedHost(const GURL& url,
 // UTF-8, decodes %-encoding and UTF-8.
 //
 // The last three parameters may be NULL.
+//
 // |new_parsed| will be set to the parsing parameters of the resultant URL.
+//
 // |prefix_end| will be the length before the hostname of the resultant URL.
 //
-// (|offset[s]_for_adjustment|) specifies one or more offsets into the original
-// |url|'s spec(); each offset will be modified to reflect changes this function
-// makes to the output string. For example, if |url| is "http://a:b@c.com/",
-// |omit_username_password| is true, and an offset is 12 (the offset of '.'),
-// then on return the output string will be "http://c.com/" and the offset will
-// be 8.  If an offset cannot be successfully adjusted (e.g. because it points
-// into the middle of a component that was entirely removed, past the end of the
-// string, or into the middle of an encoding sequence), it will be set to
-// base::string16::npos.
+// |offset[s]_for_adjustment| specifies one or more offsets into the original
+// URL, representing insertion or selection points between characters: if the
+// input is "http://foo.com/", offset 0 is before the entire URL, offset 7 is
+// between the scheme and the host, and offset 15 is after the end of the URL.
+// Valid input offsets range from 0 to the length of the input URL string.  On
+// exit, each offset will have been modified to reflect any changes made to the
+// output string.  For example, if |url| is "http://a:b@c.com/",
+// |omit_username_password| is true, and an offset is 12 (pointing between 'c'
+// and '.'), then on return the output string will be "http://c.com/" and the
+// offset will be 8.  If an offset cannot be successfully adjusted (e.g. because
+// it points into the middle of a component that was entirely removed or into
+// the middle of an encoding sequence), it will be set to base::string16::npos.
+// For consistency, if an input offset points between the scheme and the
+// username/password, and both are removed, on output this offset will be 0
+// rather than npos; this means that offsets at the starts and ends of removed
+// components are always transformed the same way regardless of what other
+// components are adjacent.
 NET_EXPORT base::string16 FormatUrl(const GURL& url,
                                     const std::string& languages,
                                     FormatUrlTypes format_types,

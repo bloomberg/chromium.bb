@@ -15,11 +15,15 @@
 namespace base {
 
 // Like the conversions in utf_string_conversions.h, but also takes one or more
-// offsets (|offset[s]_for_adjustment|) into the source strings, each offset
-// will be adjusted to point at the same logical place in the result strings.
-// If this isn't possible because an offset points past the end of the source
-// strings or into the middle of a multibyte sequence, the offending offset will
-// be set to string16::npos. |offset[s]_for_adjustment| may be NULL.
+// |offset[s]_for_adjustment| representing insertion/selection points between
+// characters: if |src| is "abcd", then 0 is before 'a', 2 is between 'b' and
+// 'c', and 4 is at the end of the string.  Valid input offsets range from 0 to
+// |src_len|.  On exit, each offset will have been modified to point at the same
+// logical position in the output string.  If an offset cannot be successfully
+// adjusted (e.g. because it points into the middle of a multibyte sequence), it
+// will be set to string16::npos.
+//
+// |offset[s]_for_adjustment| may be NULL.
 BASE_EXPORT bool UTF8ToUTF16AndAdjustOffset(const char* src,
                                             size_t src_len,
                                             string16* output,
@@ -44,14 +48,16 @@ BASE_EXPORT std::string UTF16ToUTF8AndAdjustOffsets(
     std::vector<size_t>* offsets_for_adjustment);
 
 // Limiting function callable by std::for_each which will replace any value
-// which is equal to or greater than |limit| with npos.
+// which is greater than |limit| with npos.  Typically this is called with a
+// string length to clamp offsets into the string to [0, length] (as opposed to
+// [0, length); see comments above).
 template <typename T>
 struct LimitOffset {
   explicit LimitOffset(size_t limit)
     : limit_(limit) {}
 
   void operator()(size_t& offset) {
-    if (offset >= limit_)
+    if (offset > limit_)
       offset = T::npos;
   }
 

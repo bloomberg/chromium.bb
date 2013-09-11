@@ -1003,6 +1003,11 @@ TEST_F(SearchProviderTest, DefaultFetcherSuggestRelevance) {
         "\"google:verbatimrelevance\":0}]",
       { { "a", true }, { "b.com", false }, kEmptyMatch, kEmptyMatch },
       std::string() },
+    { "[\"a\",[\"https://a/\"],[],[],"
+       "{\"google:suggesttype\":[\"NAVIGATION\"],"
+        "\"google:suggestrelevance\":[9999]}]",
+      { { "https://a", true }, { "a", true }, kEmptyMatch, kEmptyMatch },
+      std::string() },
 
     // Ensure that the top result is ranked as highly as calculated verbatim.
     // Ignore the suggested verbatim relevance if this constraint is violated.
@@ -1661,6 +1666,15 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
         { "k a",    false, true },
         kEmptyMatch },
       std::string() },
+    { "[\"a\",[\"https://a/\"],[],[],"
+       "{\"google:suggesttype\":[\"NAVIGATION\"],"
+        "\"google:suggestrelevance\":[9999]}]",
+      { { "a",         true, true },
+        { "https://a", false, true },
+        { "k a",       false, true },
+        kEmptyMatch,
+        kEmptyMatch },
+      std::string() },
     // Check when navsuggest scores more than verbatim and there is query
     // suggestion but it scores lower.
     { "[\"a\",[\"http://a1.com\", \"http://a2.com\", \"a3\"],[],[],"
@@ -1949,6 +1963,12 @@ TEST_F(SearchProviderTest, DefaultProviderSuggestRelevanceScoringUrlInput) {
       { { "a.com/a", AutocompleteMatchType::NAVSUGGEST,            true },
         { "a.com",   AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED, true },
         kEmptyMatch, kEmptyMatch } },
+    { "a.com", "[\"a.com\",[\"https://a.com\"],[],[],"
+                "{\"google:suggesttype\":[\"NAVIGATION\"],"
+                 "\"google:suggestrelevance\":[9999]}]",
+      { { "https://a.com", AutocompleteMatchType::NAVSUGGEST,            true },
+        { "a.com",         AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED, true },
+        kEmptyMatch, kEmptyMatch } },
 
     // Ensure topmost SUGGEST matches are not allowed for URL input.
     // SearchProvider disregards search and verbatim suggested relevances.
@@ -2124,11 +2144,12 @@ TEST_F(SearchProviderTest, NavigationInline) {
     { "ftp://www.a",          "ftp://a.com",
                               "ftp://a.com",        std::string(), false },
 
-    // Input matching but with nothing to inline will not yield an offset.
+    // Input matching but with nothing to inline will not yield an offset, but
+    // will be allowed to be default.
     { "abc.com",              "http://www.abc.com",
-                                     "www.abc.com", std::string(), false },
+                                     "www.abc.com", std::string(), true },
     { "http://www.abc.com",   "http://www.abc.com",
-                              "http://www.abc.com", std::string(), false },
+                              "http://www.abc.com", std::string(), true },
 
     // Inline matches when the input is a leading substring of the scheme.
     { "h",                    "http://www.abc.com",

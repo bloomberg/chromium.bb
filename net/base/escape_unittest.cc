@@ -337,10 +337,12 @@ TEST(EscapeTest, UnescapeAndDecodeUTF8URLComponent) {
 
 TEST(EscapeTest, AdjustOffset) {
   const AdjustOffsetCase adjust_cases[] = {
-    {"", 0, std::string::npos},
+    {"", 0, 0},
+    {"", 1, std::string::npos},
     {"test", 0, 0},
     {"test", 2, 2},
-    {"test", 4, std::string::npos},
+    {"test", 4, 4},
+    {"test", 5, std::string::npos},
     {"test", std::string::npos, std::string::npos},
     {"%2dtest", 6, 4},
     {"%2dtest", 2, std::string::npos},

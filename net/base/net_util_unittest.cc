@@ -452,26 +452,24 @@ void CheckAdjustedOffsets(const std::string& url_string,
                           const std::string& languages,
                           FormatUrlTypes format_types,
                           UnescapeRule::Type unescape_rules,
-                          const AdjustOffsetCase* cases,
-                          size_t num_cases,
-                          const size_t* all_offsets) {
+                          const size_t* output_offsets) {
   GURL url(url_string);
-  for (size_t i = 0; i < num_cases; ++i) {
-    size_t offset = cases[i].input_offset;
-    base::string16 formatted_url = FormatUrl(url, languages, format_types,
-                                       unescape_rules, NULL, NULL, &offset);
-    VerboseExpect(cases[i].output_offset, offset, url_string, i, formatted_url);
-  }
-
-  size_t url_size = url_string.length();
+  size_t url_length = url_string.length();
   std::vector<size_t> offsets;
-  for (size_t i = 0; i < url_size + 1; ++i)
+  for (size_t i = 0; i <= url_length + 1; ++i)
     offsets.push_back(i);
+  offsets.push_back(500000);  // Something larger than any input length.
+  offsets.push_back(std::string::npos);
   base::string16 formatted_url = FormatUrlWithOffsets(url, languages,
       format_types, unescape_rules, NULL, NULL, &offsets);
-  for (size_t i = 0; i < url_size; ++i)
-    VerboseExpect(all_offsets[i], offsets[i], url_string, i, formatted_url);
-  VerboseExpect(kNpos, offsets[url_size], url_string, url_size, formatted_url);
+  for (size_t i = 0; i < url_length; ++i)
+    VerboseExpect(output_offsets[i], offsets[i], url_string, i, formatted_url);
+  VerboseExpect(formatted_url.length(), offsets[url_length], url_string,
+                url_length, formatted_url);
+  VerboseExpect(base::string16::npos, offsets[url_length + 1], url_string,
+                500000, formatted_url);
+  VerboseExpect(base::string16::npos, offsets[url_length + 2], url_string,
+                std::string::npos, formatted_url);
 }
 
 // Helper to strignize an IP number (used to define expectations).
@@ -2886,217 +2884,115 @@ TEST(NetUtilTest, FormatUrlRoundTripQueryEscaped) {
 }
 
 TEST(NetUtilTest, FormatUrlWithOffsets) {
-  const AdjustOffsetCase null_cases[] = {
-    {0, base::string16::npos},
-  };
   CheckAdjustedOffsets(std::string(), "en", kFormatUrlOmitNothing,
-      UnescapeRule::NORMAL, null_cases, arraysize(null_cases), NULL);
+                       UnescapeRule::NORMAL, NULL);
 
-  const AdjustOffsetCase basic_cases[] = {
-    {0, 0},
-    {3, 3},
-    {5, 5},
-    {6, 6},
-    {13, 13},
-    {21, 21},
-    {22, 22},
-    {23, 23},
-    {25, 25},
-    {26, base::string16::npos},
-    {500000, base::string16::npos},
-    {base::string16::npos, base::string16::npos},
+  const size_t basic_offsets[] = {
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+    21, 22, 23, 24, 25
   };
-  const size_t basic_offsets[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13,
-     14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25};
   CheckAdjustedOffsets("http://www.google.com/foo/", "en",
-                       kFormatUrlOmitNothing, UnescapeRule::NORMAL, basic_cases,
-                       arraysize(basic_cases), basic_offsets);
+                       kFormatUrlOmitNothing, UnescapeRule::NORMAL,
+                       basic_offsets);
 
-  const AdjustOffsetCase omit_auth_cases_1[] = {
-    {6, 6},
-    {7, base::string16::npos},
-    {8, base::string16::npos},
-    {10, base::string16::npos},
-    {12, base::string16::npos},
-    {14, base::string16::npos},
-    {15, 7},
-    {25, 17},
+  const size_t omit_auth_offsets_1[] = {
+    0, 1, 2, 3, 4, 5, 6, 7, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, 7,
+    8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21
   };
-  const size_t omit_auth_offsets_1[] = {0, 1, 2, 3, 4, 5, 6, kNpos, kNpos,
-      kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, 7, 8, 9, 10, 11, 12, 13, 14, 15,
-      16, 17, 18, 19, 20, 21};
   CheckAdjustedOffsets("http://foo:bar@www.google.com/", "en",
-      kFormatUrlOmitUsernamePassword, UnescapeRule::NORMAL, omit_auth_cases_1,
-      arraysize(omit_auth_cases_1), omit_auth_offsets_1);
+                       kFormatUrlOmitUsernamePassword, UnescapeRule::NORMAL,
+                       omit_auth_offsets_1);
 
-  const AdjustOffsetCase omit_auth_cases_2[] = {
-    {9, base::string16::npos},
-    {11, 7},
+  const size_t omit_auth_offsets_2[] = {
+    0, 1, 2, 3, 4, 5, 6, 7, kNpos, kNpos, kNpos, 7, 8, 9, 10, 11, 12, 13, 14,
+    15, 16, 17, 18, 19, 20, 21
   };
-  const size_t omit_auth_offsets_2[] = {0, 1, 2, 3, 4, 5, 6, kNpos, kNpos,
-      kNpos, kNpos, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21};
   CheckAdjustedOffsets("http://foo@www.google.com/", "en",
-      kFormatUrlOmitUsernamePassword, UnescapeRule::NORMAL, omit_auth_cases_2,
-      arraysize(omit_auth_cases_2), omit_auth_offsets_2);
+                       kFormatUrlOmitUsernamePassword, UnescapeRule::NORMAL,
+                       omit_auth_offsets_2);
 
-  // "http://foo\x30B0:\x30B0bar@www.google.com"
-  const AdjustOffsetCase dont_omit_auth_cases[] = {
-    {0, 0},
-    /*{3, base::string16::npos},
-    {7, 0},
-    {11, 4},
-    {12, base::string16::npos},
-    {20, 5},
-    {24, 9},*/
+  const size_t dont_omit_auth_offsets[] = {
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos,
+    kNpos, kNpos, 11, 12, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos,
+    kNpos, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
+    30, 31
   };
-  const size_t dont_omit_auth_offsets[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
-      kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, 11, 12, kNpos,
-      kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, 13, 14, 15, 16, 17, 18,
-      19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31};
+  // Unescape to "http://foo\x30B0:\x30B0bar@www.google.com".
   CheckAdjustedOffsets("http://foo%E3%82%B0:%E3%82%B0bar@www.google.com/", "en",
-      kFormatUrlOmitNothing, UnescapeRule::NORMAL, dont_omit_auth_cases,
-      arraysize(dont_omit_auth_cases), dont_omit_auth_offsets);
+                       kFormatUrlOmitNothing, UnescapeRule::NORMAL,
+                       dont_omit_auth_offsets);
 
-  const AdjustOffsetCase view_source_cases[] = {
-    {0, 0},
-    {3, 3},
-    {11, 11},
-    {12, 12},
-    {13, 13},
-    {18, 18},
-    {19, base::string16::npos},
-    {20, base::string16::npos},
-    {23, 19},
-    {26, 22},
-    {base::string16::npos, base::string16::npos},
+  const size_t view_source_offsets[] = {
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, kNpos,
+    kNpos, kNpos, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33
   };
-  const size_t view_source_offsets[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
-      12, 13, 14, 15, 16, 17, 18, kNpos, kNpos, kNpos, kNpos, 19, 20, 21, 22,
-      23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33};
   CheckAdjustedOffsets("view-source:http://foo@www.google.com/", "en",
-      kFormatUrlOmitUsernamePassword, UnescapeRule::NORMAL, view_source_cases,
-      arraysize(view_source_cases), view_source_offsets);
+                       kFormatUrlOmitUsernamePassword, UnescapeRule::NORMAL,
+                       view_source_offsets);
 
-  // "http://\x671d\x65e5\x3042\x3055\x3072.jp/foo/"
-  const AdjustOffsetCase idn_hostname_cases_1[] = {
-    {8, base::string16::npos},
-    {16, base::string16::npos},
-    {24, base::string16::npos},
-    {25, 12},
-    {30, 17},
+  const size_t idn_hostname_offsets_1[] = {
+    0, 1, 2, 3, 4, 5, 6, 7, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos,
+    kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, 12,
+    13, 14, 15, 16, 17, 18, 19
   };
-  const size_t idn_hostname_offsets_1[] = {0, 1, 2, 3, 4, 5, 6, 7, kNpos, kNpos,
-      kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos,
-      kNpos, kNpos, kNpos, kNpos, kNpos, 12, 13, 14, 15, 16, 17, 18, 19};
+  // Convert punycode to "http://\x671d\x65e5\x3042\x3055\x3072.jp/foo/".
   CheckAdjustedOffsets("http://xn--l8jvb1ey91xtjb.jp/foo/", "ja",
-      kFormatUrlOmitNothing, UnescapeRule::NORMAL, idn_hostname_cases_1,
-      arraysize(idn_hostname_cases_1), idn_hostname_offsets_1);
+                       kFormatUrlOmitNothing, UnescapeRule::NORMAL,
+                       idn_hostname_offsets_1);
 
-  // "http://test.\x89c6\x9891.\x5317\x4eac\x5927\x5b78.test/"
-  const AdjustOffsetCase idn_hostname_cases_2[] = {
-    {7, 7},
-    {9, 9},
-    {11, 11},
-    {12, 12},
-    {13, base::string16::npos},
-    {23, base::string16::npos},
-    {24, 14},
-    {25, 15},
-    {26, base::string16::npos},
-    {32, base::string16::npos},
-    {41, 19},
-    {42, 20},
-    {45, 23},
-    {46, 24},
-    {47, base::string16::npos},
-    {base::string16::npos, base::string16::npos},
+  const size_t idn_hostname_offsets_2[] = {
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, kNpos, kNpos, kNpos, kNpos, kNpos,
+    kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, 14, 15, kNpos, kNpos, kNpos,
+    kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos,
+    kNpos, 19, 20, 21, 22, 23, 24
   };
-  const size_t idn_hostname_offsets_2[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
-      12, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos,
-      kNpos, 14, 15, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos,
-      kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, 19, 20, 21, 22, 23, 24};
+  // Convert punycode to
+  // "http://test.\x89c6\x9891.\x5317\x4eac\x5927\x5b78.test/".
   CheckAdjustedOffsets("http://test.xn--cy2a840a.xn--1lq90ic7f1rc.test/",
                        "zh-CN", kFormatUrlOmitNothing, UnescapeRule::NORMAL,
-                       idn_hostname_cases_2, arraysize(idn_hostname_cases_2),
                        idn_hostname_offsets_2);
 
-  // "http://www.google.com/foo bar/\x30B0\x30FC\x30B0\x30EB"
-  const AdjustOffsetCase unescape_cases[] = {
-    {25, 25},
-    {26, base::string16::npos},
-    {27, base::string16::npos},
-    {28, 26},
-    {35, base::string16::npos},
-    {41, 31},
-    {59, 33},
-    {60, base::string16::npos},
-    {67, base::string16::npos},
-    {68, base::string16::npos},
+  const size_t unescape_offsets[] = {
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+    21, 22, 23, 24, 25, kNpos, kNpos, 26, 27, 28, 29, 30, kNpos, kNpos, kNpos,
+    kNpos, kNpos, kNpos, kNpos, kNpos, 31, kNpos, kNpos, kNpos, kNpos, kNpos,
+    kNpos, kNpos, kNpos, 32, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos,
+    kNpos, 33, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos
   };
-  const size_t unescape_offsets[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
-      13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, kNpos, kNpos, 26, 27,
-      28, 29, 30, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, 31,
-      kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, 32, kNpos, kNpos,
-      kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, 33, kNpos, kNpos, kNpos, kNpos,
-      kNpos, kNpos, kNpos, kNpos};
+  // Unescape to "http://www.google.com/foo bar/\x30B0\x30FC\x30B0\x30EB".
   CheckAdjustedOffsets(
       "http://www.google.com/foo%20bar/%E3%82%B0%E3%83%BC%E3%82%B0%E3%83%AB",
-      "en", kFormatUrlOmitNothing, UnescapeRule::SPACES, unescape_cases,
-      arraysize(unescape_cases), unescape_offsets);
+      "en", kFormatUrlOmitNothing, UnescapeRule::SPACES, unescape_offsets);
 
-  // "http://www.google.com/foo.html#\x30B0\x30B0z"
-  const AdjustOffsetCase ref_cases[] = {
-    {30, 30},
-    {31, 31},
-    {32, base::string16::npos},
-    {34, 32},
-    {35, base::string16::npos},
-    {37, 33},
-    {38, base::string16::npos},
+  const size_t ref_offsets[] = {
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+    21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, kNpos, kNpos, 32, kNpos, kNpos,
+    33
   };
-  const size_t ref_offsets[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13,
-      14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
-      kNpos, kNpos, 32, kNpos, kNpos, 33};
+  // Unescape to "http://www.google.com/foo.html#\x30B0\x30B0z".
   CheckAdjustedOffsets(
       "http://www.google.com/foo.html#\xE3\x82\xB0\xE3\x82\xB0z", "en",
-      kFormatUrlOmitNothing, UnescapeRule::NORMAL, ref_cases,
-      arraysize(ref_cases), ref_offsets);
+      kFormatUrlOmitNothing, UnescapeRule::NORMAL, ref_offsets);
 
-  const AdjustOffsetCase omit_http_cases[] = {
-    {0, base::string16::npos},
-    {3, base::string16::npos},
-    {7, 0},
-    {8, 1},
+  const size_t omit_http_offsets[] = {
+    0, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+    10, 11, 12, 13, 14
   };
-  const size_t omit_http_offsets[] = {kNpos, kNpos, kNpos, kNpos, kNpos, kNpos,
-      kNpos, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14};
-  CheckAdjustedOffsets("http://www.google.com/", "en",
-      kFormatUrlOmitHTTP, UnescapeRule::NORMAL, omit_http_cases,
-      arraysize(omit_http_cases), omit_http_offsets);
+  CheckAdjustedOffsets("http://www.google.com/", "en", kFormatUrlOmitHTTP,
+                       UnescapeRule::NORMAL, omit_http_offsets);
 
-  const AdjustOffsetCase omit_http_start_with_ftp_cases[] = {
-    {0, 0},
-    {3, 3},
-    {8, 8},
+  const size_t omit_http_start_with_ftp_offsets[] = {
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21
   };
-  const size_t omit_http_start_with_ftp_offsets[] = {0, 1, 2, 3, 4, 5, 6, 7, 8,
-      9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21};
   CheckAdjustedOffsets("http://ftp.google.com/", "en", kFormatUrlOmitHTTP,
-                       UnescapeRule::NORMAL, omit_http_start_with_ftp_cases,
-                       arraysize(omit_http_start_with_ftp_cases),
-                       omit_http_start_with_ftp_offsets);
+                       UnescapeRule::NORMAL, omit_http_start_with_ftp_offsets);
 
-  const AdjustOffsetCase omit_all_cases[] = {
-    {12, 0},
-    {13, 1},
-    {0, base::string16::npos},
-    {3, base::string16::npos},
+  const size_t omit_all_offsets[] = {
+    0, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, 0, kNpos, kNpos, kNpos, kNpos,
+    0, 1, 2, 3, 4, 5, 6, 7
   };
-  const size_t omit_all_offsets[] = {kNpos, kNpos, kNpos, kNpos, kNpos, kNpos,
-      kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, 0, 1, 2, 3, 4, 5, 6, kNpos};
   CheckAdjustedOffsets("http://user@foo.com/", "en", kFormatUrlOmitAll,
-                       UnescapeRule::NORMAL, omit_all_cases,
-                       arraysize(omit_all_cases), omit_all_offsets);
+                       UnescapeRule::NORMAL, omit_all_offsets);
 }
 
 TEST(NetUtilTest, SimplifyUrlForRequest) {

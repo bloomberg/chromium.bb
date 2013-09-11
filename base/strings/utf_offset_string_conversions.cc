@@ -148,10 +148,6 @@ void OffsetAdjuster::AdjustOffset(std::vector<size_t>::iterator offset) {
   size_t adjustment = 0;
   for (std::vector<Adjustment>::const_iterator i = adjustments_.begin();
        i != adjustments_.end(); ++i) {
-    if (*offset == i->original_offset && i->output_length == 0) {
-      *offset = string16::npos;
-      return;
-    }
     if (*offset <= i->original_offset)
       break;
     if (*offset < (i->original_offset + i->original_length)) {
