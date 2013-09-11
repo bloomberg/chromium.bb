@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/common/chrome_switches.h"
+#include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -573,12 +574,14 @@ WebContents* TabDragController::OpenURLFromTab(
 
 void TabDragController::NavigationStateChanged(const WebContents* source,
                                                unsigned changed_flags) {
-  if (attached_tabstrip_) {
+  if (attached_tabstrip_ ||
+      changed_flags == content::INVALIDATE_TYPE_PAGE_ACTIONS) {
     for (size_t i = 0; i < drag_data_.size(); ++i) {
       if (drag_data_[i].contents == source) {
         // Pass the NavigationStateChanged call to the original delegate so
         // that the title is updated. Do this only when we are attached as
-        // otherwise the Tab isn't in the TabStrip.
+        // otherwise the Tab isn't in the TabStrip (except for page action
+        // updates).
         drag_data_[i].original_delegate->NavigationStateChanged(source,
                                                                 changed_flags);
         break;
