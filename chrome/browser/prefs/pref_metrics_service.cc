@@ -352,6 +352,13 @@ std::string PrefMetricsService::GetHashedPrefValue(
     const base::Value* value) {
   DCHECK(value);
 
+  // Dictionary values may contain empty lists and sub-dictionaries. Create
+  // a deep copy with those stripped to make the hash more stable.
+  DictionaryValue* dict_value =
+      static_cast<DictionaryValue*>(const_cast<Value*>(value));
+  if (dict_value)
+    value = dict_value->DeepCopyWithoutEmptyChildren();
+
   std::string string_to_hash(device_id_);
   string_to_hash.append(path);
   JSONStringValueSerializer serializer(&string_to_hash);
