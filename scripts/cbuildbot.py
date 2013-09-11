@@ -49,9 +49,8 @@ _DEFAULT_LOG_DIR = 'cbuildbot_logs'
 _BUILDBOT_LOG_FILE = 'cbuildbot.log'
 _DEFAULT_EXT_BUILDROOT = 'trybot'
 _DEFAULT_INT_BUILDROOT = 'trybot-internal'
-_DISTRIBUTED_TYPES = [constants.COMMIT_QUEUE_TYPE, constants.PFQ_TYPE,
-                      constants.CANARY_TYPE, constants.CHROME_PFQ_TYPE,
-                      constants.PALADIN_TYPE]
+_DISTRIBUTED_TYPES = [constants.PFQ_TYPE, constants.CANARY_TYPE,
+                      constants.CHROME_PFQ_TYPE, constants.PALADIN_TYPE]
 _BUILDBOT_REQUIRED_BINARIES = ('pbzip2',)
 _API_VERSION_ATTR = 'api_version'
 

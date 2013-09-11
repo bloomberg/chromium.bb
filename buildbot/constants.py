@@ -172,12 +172,8 @@ INCREMENTAL_TYPE = 'binary'
 # These builds serve as PFQ builders.  This is being deprecated.
 PFQ_TYPE = 'pfq'
 
-# TODO(sosa): Deprecate CQ type.
-# Commit Queue type that is similar to PFQ_TYPE but uses Commit Queue sync
-# logic.
-COMMIT_QUEUE_TYPE = 'commit-queue'
-
-# Hybrid Commit and PFQ type.  Ultimate protection.
+# Hybrid Commit and PFQ type.  Ultimate protection.  Commonly referred to
+# as simply "commit queue" now.
 PALADIN_TYPE = 'paladin'
 
 # A builder that kicks off Pre-CQ builders that bless the purest CLs.

@@ -143,7 +143,7 @@ def IsPFQType(b_type):
 
 def IsCQType(b_type):
   """Returns True if this build type is a Commit Queue."""
-  return b_type in (constants.COMMIT_QUEUE_TYPE, constants.PALADIN_TYPE)
+  return b_type == constants.PALADIN_TYPE
 
 
 # List of usable cbuildbot configs; see add_config method.
