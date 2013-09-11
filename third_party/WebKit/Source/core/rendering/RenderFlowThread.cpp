@@ -207,7 +207,7 @@ void RenderFlowThread::layout()
     m_needsTwoPhasesLayout = !inConstrainedLayoutPhase() && hasAutoLogicalHeightRegions();
 
     CurrentRenderFlowThreadMaintainer currentFlowThreadSetter(this);
-    RenderBlock::layout();
+    RenderBlockFlow::layout();
 
     m_pageLogicalSizeChanged = false;
 

@@ -60,7 +60,7 @@ namespace WebCore {
 using namespace HTMLNames;
 
 RenderMarquee::RenderMarquee(Element* element)
-    : RenderBlock(element)
+    : RenderBlockFlow(element)
     , m_currentLoop(0)
     , m_totalLoops(0)
     , m_timer(this, &RenderMarquee::timerFired)
@@ -273,7 +273,7 @@ void RenderMarquee::styleDidChange(StyleDifference difference, const RenderStyle
 
 void RenderMarquee::layoutBlock(bool relayoutChildren, LayoutUnit pageLogicalHeight)
 {
-    RenderBlock::layoutBlock(relayoutChildren, pageLogicalHeight);
+    RenderBlockFlow::layoutBlock(relayoutChildren, pageLogicalHeight);
 
     updateMarqueePosition();
 }

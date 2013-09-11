@@ -41,7 +41,7 @@ RenderTextTrackCue::RenderTextTrackCue(TextTrackCueBox* element)
 
 void RenderTextTrackCue::layout()
 {
-    RenderBlock::layout();
+    RenderBlockFlow::layout();
 
 #if ENABLE(WEBVTT_REGIONS)
     // If WebVTT Regions are used, the regular WebVTT layout algorithm is no

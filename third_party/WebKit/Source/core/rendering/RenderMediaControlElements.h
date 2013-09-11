@@ -29,12 +29,12 @@
 #define RenderMediaControlElements_h
 
 #include "core/html/shadow/MediaControlElements.h"
-#include "core/rendering/RenderBlock.h"
+#include "core/rendering/RenderBlockFlow.h"
 #include "core/rendering/RenderFlexibleBox.h"
 
 namespace WebCore {
 
-class RenderTextTrackContainerElement FINAL : public RenderBlock {
+class RenderTextTrackContainerElement FINAL : public RenderBlockFlow {
 public:
     RenderTextTrackContainerElement(Element*);
 

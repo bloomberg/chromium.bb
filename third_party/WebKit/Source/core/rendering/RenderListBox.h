@@ -32,13 +32,13 @@
 #define RenderListBox_h
 
 #include "core/platform/ScrollableArea.h"
-#include "core/rendering/RenderBlock.h"
+#include "core/rendering/RenderBlockFlow.h"
 
 namespace WebCore {
 
 class HTMLSelectElement;
 
-class RenderListBox FINAL : public RenderBlock, private ScrollableArea {
+class RenderListBox FINAL : public RenderBlockFlow, private ScrollableArea {
 public:
     explicit RenderListBox(Element*);
     virtual ~RenderListBox();

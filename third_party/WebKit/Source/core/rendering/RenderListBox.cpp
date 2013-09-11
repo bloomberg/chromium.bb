@@ -80,7 +80,7 @@ const int defaultSize = 4;
 const int baselineAdjustment = 7;
 
 RenderListBox::RenderListBox(Element* element)
-    : RenderBlock(element)
+    : RenderBlockFlow(element)
     , m_optionsChanged(true)
     , m_scrollToRevealSelectionAfterLayout(true)
     , m_inAutoscroll(false)
@@ -170,7 +170,7 @@ void RenderListBox::selectionChanged()
 
 void RenderListBox::layout()
 {
-    RenderBlock::layout();
+    RenderBlockFlow::layout();
 
     if (m_vBar) {
         bool enabled = numVisibleItems() < numItems();

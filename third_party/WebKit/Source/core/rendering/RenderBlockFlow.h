@@ -46,6 +46,23 @@ public:
     virtual ~RenderBlockFlow();
 
     virtual bool isRenderBlockFlow() const OVERRIDE FINAL { return true; }
+
+    virtual void layoutBlock(bool relayoutChildren, LayoutUnit pageLogicalHeight = 0) OVERRIDE;
+protected:
+    // Only used by RenderSVGText, which explicitly overrides RenderBlock::layoutBlock(), do NOT use for anything else.
+    void forceLayoutInlineChildren()
+    {
+        LayoutUnit repaintLogicalTop = 0;
+        LayoutUnit repaintLogicalBottom = 0;
+        clearFloats();
+        layoutInlineChildren(true, repaintLogicalTop, repaintLogicalBottom);
+    }
+
+private:
+    void layoutBlockChildren(bool relayoutChildren, LayoutUnit& maxFloatLogicalBottom, SubtreeLayoutScope&);
+    void layoutInlineChildren(bool relayoutChildren, LayoutUnit& repaintLogicalTop, LayoutUnit& repaintLogicalBottom);
+
+    void clearFloats();
 };
 
 inline RenderBlockFlow& toRenderBlockFlow(RenderObject& object)

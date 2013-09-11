@@ -279,7 +279,7 @@ void RenderRegion::styleDidChange(StyleDifference diff, const RenderStyle* oldSt
 
 void RenderRegion::layoutBlock(bool relayoutChildren, LayoutUnit)
 {
-    RenderBlock::layoutBlock(relayoutChildren);
+    RenderBlockFlow::layoutBlock(relayoutChildren);
 
     if (isValid()) {
         LayoutRect oldRegionRect(flowThreadPortionRect());

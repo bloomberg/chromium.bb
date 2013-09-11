@@ -462,6 +462,8 @@ public:
 protected:
     virtual void willBeDestroyed();
 
+    void dirtyForLayoutFromPercentageHeightDescendants(SubtreeLayoutScope&);
+
     LayoutUnit maxPositiveMarginBefore() const { return m_rareData ? m_rareData->m_margins.positiveMarginBefore() : RenderBlockRareData::positiveMarginBeforeDefault(this); }
     LayoutUnit maxNegativeMarginBefore() const { return m_rareData ? m_rareData->m_margins.negativeMarginBefore() : RenderBlockRareData::negativeMarginBeforeDefault(this); }
     LayoutUnit maxPositiveMarginAfter() const { return m_rareData ? m_rareData->m_margins.positiveMarginAfter() : RenderBlockRareData::positiveMarginAfterDefault(this); }
@@ -573,15 +575,6 @@ protected:
 
     virtual void computeSelfHitTestRects(Vector<LayoutRect>&, const LayoutPoint& layerOffset) const OVERRIDE;
 
-    // Only used by RenderSVGText, which explicitly overrides RenderBlock::layoutBlock(), do NOT use for anything else.
-    void forceLayoutInlineChildren()
-    {
-        LayoutUnit repaintLogicalTop = 0;
-        LayoutUnit repaintLogicalBottom = 0;
-        clearFloats();
-        layoutInlineChildren(true, repaintLogicalTop, repaintLogicalBottom);
-    }
-
     bool updateRegionsAndShapesLogicalSize(RenderFlowThread*);
     void computeRegionRangeForBlock(RenderFlowThread*);
 
@@ -628,8 +621,6 @@ private:
 
     virtual void repaintOverhangingFloats(bool paintAllDescendants) OVERRIDE FINAL;
 
-    void layoutBlockChildren(bool relayoutChildren, LayoutUnit& maxFloatLogicalBottom, SubtreeLayoutScope&);
-    void layoutInlineChildren(bool relayoutChildren, LayoutUnit& repaintLogicalTop, LayoutUnit& repaintLogicalBottom);
     BidiRun* handleTrailingSpaces(BidiRunList<BidiRun>&, BidiContext*);
 
     void insertIntoTrackedRendererMaps(RenderBox* descendant, TrackedDescendantsMap*&, TrackedContainerMap*&);
@@ -720,8 +711,6 @@ private:
     // Called from lineWidth, to position the floats added in the last line.
     // Returns true if and only if it has positioned any floats.
     bool positionNewFloats();
-
-    void clearFloats();
 
     LayoutUnit getClearDelta(RenderBox* child, LayoutUnit yPos);
 
@@ -1049,6 +1038,9 @@ protected:
     friend class LineBreaker;
     friend class LineWidth; // Needs to know FloatingObject
 
+    // FIXME: This is temporary as we move code that accesses block flow
+    // member variables out of RenderBlock and into RenderBlockFlow.
+    friend class RenderBlockFlow;
 private:
     // Used to store state between styleWillChange and styleDidChange
     static bool s_canPropagateFloatIntoSibling;

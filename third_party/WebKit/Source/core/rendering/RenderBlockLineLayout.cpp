@@ -2122,7 +2122,7 @@ void RenderBlock::repaintDirtyFloats(Vector<FloatWithRect>& floats)
     }
 }
 
-void RenderBlock::layoutInlineChildren(bool relayoutChildren, LayoutUnit& repaintLogicalTop, LayoutUnit& repaintLogicalBottom)
+void RenderBlockFlow::layoutInlineChildren(bool relayoutChildren, LayoutUnit& repaintLogicalTop, LayoutUnit& repaintLogicalBottom)
 {
     setLogicalHeight(borderBefore() + paddingBefore());
 

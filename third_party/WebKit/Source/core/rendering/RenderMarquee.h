@@ -46,7 +46,7 @@
 
 #include "core/platform/Length.h"
 #include "core/platform/Timer.h"
-#include "core/rendering/RenderBlock.h"
+#include "core/rendering/RenderBlockFlow.h"
 #include "core/rendering/style/RenderStyleConstants.h"
 
 namespace WebCore {
@@ -54,7 +54,7 @@ namespace WebCore {
 class RenderLayer;
 
 // This class handles the auto-scrolling for <marquee>
-class RenderMarquee FINAL : public RenderBlock {
+class RenderMarquee FINAL : public RenderBlockFlow {
 public:
     explicit RenderMarquee(Element*);
     virtual ~RenderMarquee();
