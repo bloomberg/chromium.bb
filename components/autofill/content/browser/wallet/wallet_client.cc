@@ -595,6 +595,8 @@ void WalletClient::OnURLFetchComplete(
   scoped_ptr<base::DictionaryValue> response_dict;
 
   int response_code = source->GetResponseCode();
+  delegate_->GetMetricLogger().LogWalletResponseCode(response_code);
+
   switch (response_code) {
     // HTTP_BAD_REQUEST means the arguments are invalid. No point retrying.
     case net::HTTP_BAD_REQUEST: {
