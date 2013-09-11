@@ -30,6 +30,7 @@
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/shill_property_util.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 using google::protobuf::RepeatedField;
@@ -825,8 +826,8 @@ void DeviceSettingsProvider::ApplyMetricsSetting(bool use_file,
 void DeviceSettingsProvider::ApplyRoamingSetting(bool new_value) {
   // TODO(armansito): Look up the device by explicitly using the device path.
   const DeviceState* cellular =
-      NetworkHandler::Get()->network_state_handler()->
-          GetDeviceStateByType(flimflam::kTypeCellular);
+      NetworkHandler::Get()->network_state_handler()->GetDeviceStateByType(
+          NetworkTypePattern::Cellular());
   if (!cellular) {
     NET_LOG_DEBUG("No cellular device is available",
                   "Roaming is only supported by cellular devices.");

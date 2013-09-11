@@ -11,6 +11,7 @@
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/shill_property_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "url/gurl.h"
@@ -112,8 +113,7 @@ void AuthPrewarmer::DoPrewarm() {
 
 bool AuthPrewarmer::IsNetworkConnected() const {
   NetworkStateHandler* nsh = NetworkHandler::Get()->network_state_handler();
-  return (nsh->ConnectedNetworkByType(NetworkStateHandler::kMatchTypeDefault) !=
-          NULL);
+  return (nsh->ConnectedNetworkByType(NetworkTypePattern::Default()) != NULL);
 }
 
 net::URLRequestContextGetter* AuthPrewarmer::GetRequestContext() const {

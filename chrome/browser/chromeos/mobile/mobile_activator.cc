@@ -35,6 +35,7 @@
 #include "chromeos/network/network_handler_callbacks.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/shill_property_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -404,7 +405,7 @@ void MobileActivator::StartActivation() {
   if (!network) {
     NetworkStateHandler::TechnologyState technology_state =
         NetworkHandler::Get()->network_state_handler()->GetTechnologyState(
-            flimflam::kTypeCellular);
+            NetworkTypePattern::Cellular());
     std::string error;
     if (technology_state == NetworkStateHandler::TECHNOLOGY_UNAVAILABLE) {
       error = kErrorNoDevice;

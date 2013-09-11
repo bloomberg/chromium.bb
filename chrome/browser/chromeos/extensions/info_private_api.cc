@@ -11,6 +11,7 @@
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/shill_property_util.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 using chromeos::NetworkHandler;
@@ -69,7 +70,7 @@ base::Value* ChromeosInfoPrivateGetFunction::GetValue(
   } else if (property_name == kPropertyHomeProvider) {
     const chromeos::DeviceState* cellular_device =
         NetworkHandler::Get()->network_state_handler()->GetDeviceStateByType(
-            flimflam::kTypeCellular);
+            chromeos::NetworkTypePattern::Cellular());
     std::string home_provider_id;
     if (cellular_device)
       home_provider_id = cellular_device->home_provider_id();

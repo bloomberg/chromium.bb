@@ -21,10 +21,11 @@ namespace chromeos {
 class DeviceState;
 class FavoriteState;
 class NetworkState;
+class NetworkTypePattern;
 
 // Base class for states managed by NetworkStateManger which are associated
 // with a Shill path (e.g. service path or device path).
-class ManagedState {
+class CHROMEOS_EXPORT ManagedState {
  public:
   enum ManagedType {
     MANAGED_TYPE_NETWORK,
@@ -73,6 +74,8 @@ class ManagedState {
   void set_update_requested(bool update_requested) {
     update_requested_ = update_requested;
   }
+
+  bool Matches(const NetworkTypePattern& pattern) const;
 
  protected:
   ManagedState(ManagedType type, const std::string& path);

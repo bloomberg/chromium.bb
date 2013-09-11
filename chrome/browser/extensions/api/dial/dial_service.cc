@@ -27,6 +27,7 @@
 #if defined(OS_CHROMEOS)
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/shill_property_util.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #endif
 
@@ -115,6 +116,39 @@ void GetNetworkListOnFileThread(
   loop->PostTask(FROM_HERE, base::Bind(cb, list));
 }
 
+#if defined(OS_CHROMEOS)
+IPAddressNumber GetBestBindAddressByType(
+    const chromeos::NetworkTypePattern& type) {
+  const chromeos::NetworkState* state = chromeos::NetworkHandler::Get()
+      ->network_state_handler()->ConnectedNetworkByType(type);
+  IPAddressNumber bind_ip_address;
+  if (!state ||
+      !net::ParseIPLiteralToNumber(state->ip_address(), &bind_ip_address)) {
+    return IPAddressNumber();
+  }
+  if (bind_ip_address.size() != net::kIPv4AddressSize) {
+    LOG(ERROR) << "Default network is not using IPv4.";
+    return IPAddressNumber();
+  }
+
+  DVLOG(1) << "Found " << state->type() << ", " << state->name() << ":"
+           << state->ip_address();
+  return bind_ip_address;
+}
+
+// Returns the IP address of the preferred interface to bind the socket. This
+// ChromeOS version can prioritize wifi and ethernet interfaces.
+IPAddressNumber GetBestBindAddressChromeOS() {
+  IPAddressNumber bind_ip_address =
+      GetBestBindAddressByType(chromeos::NetworkTypePattern::Ethernet());
+  if (bind_ip_address.empty()) {
+    bind_ip_address =
+        GetBestBindAddressByType(chromeos::NetworkTypePattern::WiFi());
+  }
+  return bind_ip_address;
+}
+#endif
+
 }  // namespace
 
 DialServiceImpl::DialServiceImpl(net::NetLog* net_log)
@@ -186,27 +220,6 @@ void DialServiceImpl::StartDiscovery() {
           &DialServiceImpl::SendNetworkList, AsWeakPtr())));
 #endif
 }
-
-#if defined(OS_CHROMEOS)
-IPAddressNumber DialServiceImpl::GetBestBindAddressChromeOS() {
-  std::string connection_types[] =
-      {flimflam::kTypeWifi, flimflam::kTypeEthernet};
-  for (uint i = 0; i < arraysize(connection_types); ++i) {
-    IPAddressNumber bind_ip_address;
-    const chromeos::NetworkState* state =
-        chromeos::NetworkHandler::Get()->network_state_handler()->
-            ConnectedNetworkByType(connection_types[i]);
-    if (state &&
-        net::ParseIPLiteralToNumber(state->ip_address(), &bind_ip_address)) {
-      DCHECK(bind_ip_address.size() == net::kIPv4AddressSize);
-      DVLOG(1) << "Found " << state->type() << ", " << state->name() << ":"
-               << state->ip_address();
-      return bind_ip_address;
-    }
-  }
-  return IPAddressNumber();
-}
-#endif
 
 bool DialServiceImpl::BindSocketAndSendRequest(
       const IPAddressNumber& bind_ip_address) {

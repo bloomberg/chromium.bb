@@ -19,6 +19,7 @@
 #include "chromeos/dbus/shill_service_client.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler_observer.h"
+#include "chromeos/network/shill_property_util.h"
 #include "dbus/object_path.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -208,13 +209,20 @@ TEST_F(NetworkStateHandlerTest, NetworkStateHandlerStub) {
             test_observer_->default_network());
   EXPECT_EQ(kShillManagerClientStubDefaultService,
             network_state_handler_->ConnectedNetworkByType(
-                NetworkStateHandler::kMatchTypeDefault)->path());
+                NetworkTypePattern::Default())->path());
   EXPECT_EQ(kShillManagerClientStubDefaultService,
             network_state_handler_->ConnectedNetworkByType(
-                flimflam::kTypeEthernet)->path());
+                NetworkTypePattern::Ethernet())->path());
   EXPECT_EQ(kShillManagerClientStubDefaultWireless,
             network_state_handler_->ConnectedNetworkByType(
-                NetworkStateHandler::kMatchTypeWireless)->path());
+                NetworkTypePattern::Wireless())->path());
+  EXPECT_EQ(kShillManagerClientStubCellular,
+            network_state_handler_->FirstNetworkByType(
+                NetworkTypePattern::Mobile())->path());
+  EXPECT_EQ(
+      kShillManagerClientStubCellular,
+      network_state_handler_->FirstNetworkByType(NetworkTypePattern::Cellular())
+          ->path());
   EXPECT_EQ(flimflam::kStateOnline,
             test_observer_->default_network_connection_state());
 }
@@ -224,24 +232,27 @@ TEST_F(NetworkStateHandlerTest, TechnologyChanged) {
   size_t initial_changed_count = test_observer_->manager_changed_count();
   // Disable a technology.
   network_state_handler_->SetTechnologyEnabled(
-      flimflam::kTypeWimax, false, network_handler::ErrorCallback());
-  EXPECT_NE(NetworkStateHandler::TECHNOLOGY_ENABLED,
-            network_state_handler_->GetTechnologyState(flimflam::kTypeWimax));
+      NetworkTypePattern::Wimax(), false, network_handler::ErrorCallback());
+  EXPECT_NE(
+      NetworkStateHandler::TECHNOLOGY_ENABLED,
+      network_state_handler_->GetTechnologyState(NetworkTypePattern::Wimax()));
   EXPECT_EQ(initial_changed_count + 1, test_observer_->manager_changed_count());
   // Enable a technology.
   network_state_handler_->SetTechnologyEnabled(
-      flimflam::kTypeWimax, true, network_handler::ErrorCallback());
+      NetworkTypePattern::Wimax(), true, network_handler::ErrorCallback());
   // The technology state should immediately change to ENABLING and we should
   // receive a manager changed callback.
   EXPECT_EQ(initial_changed_count + 2, test_observer_->manager_changed_count());
-  EXPECT_EQ(NetworkStateHandler::TECHNOLOGY_ENABLING,
-            network_state_handler_->GetTechnologyState(flimflam::kTypeWimax));
+  EXPECT_EQ(
+      NetworkStateHandler::TECHNOLOGY_ENABLING,
+      network_state_handler_->GetTechnologyState(NetworkTypePattern::Wimax()));
   message_loop_.RunUntilIdle();
   // Ensure we receive 2 manager changed callbacks when the technology becomes
   // avalable and enabled.
   EXPECT_EQ(initial_changed_count + 4, test_observer_->manager_changed_count());
-  EXPECT_EQ(NetworkStateHandler::TECHNOLOGY_ENABLED,
-            network_state_handler_->GetTechnologyState(flimflam::kTypeWimax));
+  EXPECT_EQ(
+      NetworkStateHandler::TECHNOLOGY_ENABLED,
+      network_state_handler_->GetTechnologyState(NetworkTypePattern::Wimax()));
 }
 
 TEST_F(NetworkStateHandlerTest, TechnologyState) {
@@ -249,30 +260,35 @@ TEST_F(NetworkStateHandlerTest, TechnologyState) {
       DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface();
   manager_test->RemoveTechnology(flimflam::kTypeWimax);
   message_loop_.RunUntilIdle();
-  EXPECT_EQ(NetworkStateHandler::TECHNOLOGY_UNAVAILABLE,
-            network_state_handler_->GetTechnologyState(flimflam::kTypeWimax));
+  EXPECT_EQ(
+      NetworkStateHandler::TECHNOLOGY_UNAVAILABLE,
+      network_state_handler_->GetTechnologyState(NetworkTypePattern::Wimax()));
 
   manager_test->AddTechnology(flimflam::kTypeWimax, false);
   message_loop_.RunUntilIdle();
-  EXPECT_EQ(NetworkStateHandler::TECHNOLOGY_AVAILABLE,
-            network_state_handler_->GetTechnologyState(flimflam::kTypeWimax));
+  EXPECT_EQ(
+      NetworkStateHandler::TECHNOLOGY_AVAILABLE,
+      network_state_handler_->GetTechnologyState(NetworkTypePattern::Wimax()));
 
   manager_test->SetTechnologyInitializing(flimflam::kTypeWimax, true);
   message_loop_.RunUntilIdle();
-  EXPECT_EQ(NetworkStateHandler::TECHNOLOGY_UNINITIALIZED,
-            network_state_handler_->GetTechnologyState(flimflam::kTypeWimax));
+  EXPECT_EQ(
+      NetworkStateHandler::TECHNOLOGY_UNINITIALIZED,
+      network_state_handler_->GetTechnologyState(NetworkTypePattern::Wimax()));
 
   manager_test->SetTechnologyInitializing(flimflam::kTypeWimax, false);
   network_state_handler_->SetTechnologyEnabled(
-      flimflam::kTypeWimax, true, network_handler::ErrorCallback());
+      NetworkTypePattern::Wimax(), true, network_handler::ErrorCallback());
   message_loop_.RunUntilIdle();
-  EXPECT_EQ(NetworkStateHandler::TECHNOLOGY_ENABLED,
-            network_state_handler_->GetTechnologyState(flimflam::kTypeWimax));
+  EXPECT_EQ(
+      NetworkStateHandler::TECHNOLOGY_ENABLED,
+      network_state_handler_->GetTechnologyState(NetworkTypePattern::Wimax()));
 
   manager_test->RemoveTechnology(flimflam::kTypeWimax);
   message_loop_.RunUntilIdle();
-  EXPECT_EQ(NetworkStateHandler::TECHNOLOGY_UNAVAILABLE,
-            network_state_handler_->GetTechnologyState(flimflam::kTypeWimax));
+  EXPECT_EQ(
+      NetworkStateHandler::TECHNOLOGY_UNAVAILABLE,
+      network_state_handler_->GetTechnologyState(NetworkTypePattern::Wimax()));
 }
 
 TEST_F(NetworkStateHandlerTest, ServicePropertyChanged) {

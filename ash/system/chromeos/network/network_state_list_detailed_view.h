@@ -18,6 +18,10 @@
 #include "base/memory/weak_ptr.h"
 #include "ui/views/controls/button/button.h"
 
+namespace chromeos {
+class NetworkTypePattern;
+}
+
 namespace views {
 class BubbleDelegateView;
 }
@@ -84,7 +88,7 @@ class NetworkStateListDetailedView
   // Update UI components.
   void UpdateHeaderButtons();
   void UpdateTechnologyButton(TrayPopupHeaderButton* button,
-                              const std::string& technology);
+                              const chromeos::NetworkTypePattern& technology);
 
   void UpdateNetworks(
       const chromeos::NetworkStateHandler::NetworkStateList& networks);

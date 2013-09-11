@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/common/url_constants.h"
 #include "chromeos/network/network_state.h"
+#include "chromeos/network/shill_property_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
@@ -63,14 +64,14 @@ ProxySettingsDialog::ProxySettingsDialog(const NetworkState& network,
 
   gfx::Rect screen_bounds(chromeos::CalculateScreenBounds(gfx::Size()));
   SetDialogSize(CalculateSize(screen_bounds.width(),
-                               kProxySettingsDialogReasonableWidth,
-                               kProxySettingsDialogReasonableWidthRatio),
+                              kProxySettingsDialogReasonableWidth,
+                              kProxySettingsDialogReasonableWidthRatio),
                 CalculateSize(screen_bounds.height(),
-                               kProxySettingsDialogReasonableHeight,
-                               kProxySettingsDialogReasonableHeightRatio));
+                              kProxySettingsDialogReasonableHeight,
+                              kProxySettingsDialogReasonableHeightRatio));
 
   std::string network_name = network.name();
-  if (network_name.empty() && network.type() == flimflam::kTypeEthernet) {
+  if (network_name.empty() && network.Matches(NetworkTypePattern::Ethernet())) {
     network_name =
         l10n_util::GetStringUTF8(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET);
   }

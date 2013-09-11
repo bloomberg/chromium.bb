@@ -29,6 +29,7 @@ using chromeos::NetworkConnectionHandler;
 using chromeos::NetworkHandler;
 using chromeos::NetworkState;
 using chromeos::NetworkStateHandler;
+using chromeos::NetworkTypePattern;
 
 namespace {
 
@@ -138,8 +139,7 @@ void NetworkStateNotifier::UpdateCellularOutOfCredits(
   const NetworkState* default_network = handler->DefaultNetwork();
   if (default_network && default_network != cellular)
     return;
-  if (handler->ConnectingNetworkByType(
-          NetworkStateHandler::kMatchTypeNonVirtual) ||
+  if (handler->ConnectingNetworkByType(NetworkTypePattern::NonVirtual()) ||
       NetworkHandler::Get()->network_connection_handler()
           ->HasPendingConnectRequest())
     return;

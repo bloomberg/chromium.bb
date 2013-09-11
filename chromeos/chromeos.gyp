@@ -528,6 +528,7 @@
         'network/onc/onc_utils_unittest.cc',
         'network/onc/onc_validator_unittest.cc',
         'network/shill_property_handler_unittest.cc',
+        'network/shill_property_util_unittest.cc',
         'process_proxy/process_output_watcher_unittest.cc',
         'process_proxy/process_proxy_unittest.cc',
         'system/name_value_pairs_parser_unittest.cc',

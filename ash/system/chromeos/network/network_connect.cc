@@ -24,6 +24,7 @@
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/shill_property_util.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -40,6 +41,7 @@ using chromeos::NetworkProfile;
 using chromeos::NetworkProfileHandler;
 using chromeos::NetworkState;
 using chromeos::NetworkStateHandler;
+using chromeos::NetworkTypePattern;
 
 namespace ash {
 
@@ -281,10 +283,11 @@ void ConnectToNetwork(const std::string& service_path,
   CallConnectToNetwork(service_path, check_error_state, owning_window);
 }
 
-void SetTechnologyEnabled(const std::string& technology, bool enabled_state) {
+void SetTechnologyEnabled(const NetworkTypePattern& technology,
+                          bool enabled_state) {
   std::string log_string =
       base::StringPrintf("technology %s, target state: %s",
-                         technology.c_str(),
+                         technology.ToDebugString().c_str(),
                          (enabled_state ? "ENABLED" : "DISABLED"));
   NET_LOG_USER("SetTechnologyEnabled", log_string);
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
@@ -302,8 +305,7 @@ void SetTechnologyEnabled(const std::string& technology, bool enabled_state) {
   // If we're dealing with a mobile network, then handle SIM lock here.
   // SIM locking only applies to cellular, so the code below won't execute
   // if |technology| has been explicitly set to WiMAX.
-  if (technology == NetworkStateHandler::kMatchTypeMobile ||
-      technology == flimflam::kTypeCellular) {
+  if (technology.MatchesPattern(NetworkTypePattern::Mobile())) {
     const DeviceState* mobile = handler->GetDeviceStateByType(technology);
     if (!mobile) {
       NET_LOG_ERROR("SetTechnologyEnabled with no device", log_string);

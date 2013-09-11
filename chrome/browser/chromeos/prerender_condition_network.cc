@@ -6,6 +6,7 @@
 
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/shill_property_util.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
@@ -19,12 +20,8 @@ PrerenderConditionNetwork::~PrerenderConditionNetwork() {
 bool PrerenderConditionNetwork::CanPrerender() const {
   const NetworkState* default_network =
       NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
-  if (!default_network)
-    return false;
-  const std::string& type = default_network->type();
-  if (type == flimflam::kTypeEthernet || type == flimflam::kTypeWifi)
-    return true;
-  return false;
+  return default_network &&
+         !default_network->Matches(NetworkTypePattern::Mobile());
 }
 
 }  // namespace chromeos

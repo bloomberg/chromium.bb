@@ -14,6 +14,7 @@
 #include "ash/system/tray/tray_popup_label_button.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/shill_property_util.h"
 #include "grit/ash_strings.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -22,6 +23,7 @@
 using chromeos::NetworkHandler;
 using chromeos::NetworkState;
 using chromeos::NetworkStateHandler;
+using chromeos::NetworkTypePattern;
 
 namespace ash {
 namespace internal {
@@ -44,7 +46,8 @@ class VpnDefaultView : public TrayItemMore,
     // Do not show VPN line in uber tray bubble if VPN is not configured.
     NetworkStateHandler* handler =
         NetworkHandler::Get()->network_state_handler();
-    const NetworkState* vpn = handler->FirstNetworkByType(flimflam::kTypeVPN);
+    const NetworkState* vpn =
+        handler->FirstNetworkByType(NetworkTypePattern::VPN());
     return vpn != NULL;
   }
 
@@ -73,8 +76,8 @@ class VpnDefaultView : public TrayItemMore,
                                            bool* animating) {
     NetworkStateHandler* handler =
         NetworkHandler::Get()->network_state_handler();
-    const NetworkState* vpn = handler->FirstNetworkByType(
-        flimflam::kTypeVPN);
+    const NetworkState* vpn =
+        handler->FirstNetworkByType(NetworkTypePattern::VPN());
     if (!vpn || (vpn->connection_state() == flimflam::kStateIdle)) {
       *image = network_icon::GetImageForDisconnectedNetwork(
           network_icon::ICON_TYPE_DEFAULT_VIEW, flimflam::kTypeVPN);

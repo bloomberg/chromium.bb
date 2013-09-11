@@ -20,6 +20,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/shill_property_util.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -35,6 +36,7 @@
 using chromeos::NetworkHandler;
 using chromeos::NetworkState;
 using chromeos::NetworkStateHandler;
+using chromeos::NetworkTypePattern;
 
 namespace ash {
 namespace internal {
@@ -79,8 +81,8 @@ class NetworkTrayView : public TrayItemView,
     else
       network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(this);
     // Update accessibility.
-    const NetworkState* connected_network = handler->ConnectedNetworkByType(
-        NetworkStateHandler::kMatchTypeNonVirtual);
+    const NetworkState* connected_network =
+        handler->ConnectedNetworkByType(NetworkTypePattern::NonVirtual());
     if (connected_network)
       UpdateConnectionStatus(UTF8ToUTF16(connected_network->name()), true);
     else
@@ -220,8 +222,9 @@ class NetworkWifiDetailedView : public NetworkDetailedView {
   }
 
   void Update() {
-    bool wifi_enabled = NetworkHandler::Get()->network_state_handler()->
-        IsTechnologyEnabled(flimflam::kTypeWifi);
+    bool wifi_enabled =
+        NetworkHandler::Get()->network_state_handler()->IsTechnologyEnabled(
+            NetworkTypePattern::WiFi());
     const int image_id = wifi_enabled ?
         IDR_AURA_UBER_TRAY_WIFI_ENABLED : IDR_AURA_UBER_TRAY_WIFI_DISABLED;
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
@@ -319,10 +322,10 @@ void TrayNetwork::RequestToggleWifi() {
     PopupDetailedView(kTrayPopupAutoCloseDelayForTextInSeconds, false);
   }
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
-  bool enabled = handler->IsTechnologyEnabled(flimflam::kTypeWifi);
-  handler->SetTechnologyEnabled(
-      flimflam::kTypeWifi, !enabled,
-      chromeos::network_handler::ErrorCallback());
+  bool enabled = handler->IsTechnologyEnabled(NetworkTypePattern::WiFi());
+  handler->SetTechnologyEnabled(NetworkTypePattern::WiFi(),
+                                !enabled,
+                                chromeos::network_handler::ErrorCallback());
 }
 
 void TrayNetwork::NetworkStateChanged(bool list_changed) {

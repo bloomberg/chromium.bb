@@ -36,6 +36,7 @@ class DeviceState;
 class NetworkState;
 class NetworkStateHandlerObserver;
 class NetworkStateHandlerTest;
+class NetworkTypePattern;
 
 // Class for tracking the list of visible networks and their properties.
 //
@@ -48,11 +49,12 @@ class NetworkStateHandlerTest;
 // It will invoke its own more specific observer methods when the specified
 // changes occur.
 //
-// Most *ByType or *ForType methods will accept any of the following  for
-// |type|. See individual methods for specific notes.
+// Most *ByType or *ForType methods will accept any of the following for |type|.
+// See individual methods for specific notes.
 // * Any type defined in service_constants.h (e.g. flimflam::kTypeWifi)
 // * kMatchTypeDefault returns the default (active) network
 // * kMatchTypeNonVirtual returns the primary non virtual network
+// * kMatchTypeWired returns the primary wired network
 // * kMatchTypeWireless returns the primary wireless network
 // * kMatchTypeMobile returns the primary cellular or wimax network
 
@@ -85,21 +87,21 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // called any time a new service is configured or a Profile is loaded.
   void UpdateManagerProperties();
 
-  // Returns the state for technology |type|. kMatchTypeMobile (only) is
-  // also supported.
-  TechnologyState GetTechnologyState(const std::string& type) const;
-  bool IsTechnologyAvailable(const std::string& type) const {
+  // Returns the state for technology |type|. Only
+  // NetworkTypePattern::Primitive, ::Mobile and ::Ethernet are supported.
+  TechnologyState GetTechnologyState(const NetworkTypePattern& type) const;
+  bool IsTechnologyAvailable(const NetworkTypePattern& type) const {
     return GetTechnologyState(type) != TECHNOLOGY_UNAVAILABLE;
   }
-  bool IsTechnologyEnabled(const std::string& type) const {
+  bool IsTechnologyEnabled(const NetworkTypePattern& type) const {
     return GetTechnologyState(type) == TECHNOLOGY_ENABLED;
   }
 
-  // Asynchronously sets the technology enabled property for |type|.
-  // kMatchTypeMobile (only) is also supported.
+  // Asynchronously sets the technology enabled property for |type|. Only
+  // NetworkTypePattern::Primitive, ::Mobile and ::Ethernet are supported.
   // Note: Modifies Manager state. Calls |error_callback| on failure.
   void SetTechnologyEnabled(
-      const std::string& type,
+      const NetworkTypePattern& type,
       bool enabled,
       const network_handler::ErrorCallback& error_callback);
 
@@ -107,12 +109,10 @@ class CHROMEOS_EXPORT NetworkStateHandler
   const DeviceState* GetDeviceState(const std::string& device_path) const;
 
   // Finds and returns a device state by |type|. Returns NULL if not found.
-  // See note above for valid types.
-  const DeviceState* GetDeviceStateByType(const std::string& type) const;
+  const DeviceState* GetDeviceStateByType(const NetworkTypePattern& type) const;
 
   // Returns true if any device of |type| is scanning.
-  // See note above for valid types.
-  bool GetScanningByType(const std::string& type) const;
+  bool GetScanningByType(const NetworkTypePattern& type) const;
 
   // Finds and returns a network state by |service_path| or NULL if not found.
   // Note: NetworkState is frequently updated asynchronously, i.e. properties
@@ -126,23 +126,24 @@ class CHROMEOS_EXPORT NetworkStateHandler
   const NetworkState* DefaultNetwork() const;
 
   // Returns the primary connected network of matching |type|, otherwise NULL.
-  // See note above for valid types.
-  const NetworkState* ConnectedNetworkByType(const std::string& type) const;
+  const NetworkState* ConnectedNetworkByType(
+      const NetworkTypePattern& type) const;
 
   // Like ConnectedNetworkByType() but returns a connecting network or NULL.
-  const NetworkState* ConnectingNetworkByType(const std::string& type) const;
+  const NetworkState* ConnectingNetworkByType(
+      const NetworkTypePattern& type) const;
 
   // Like ConnectedNetworkByType() but returns any matching network or NULL.
   // Mostly useful for mobile networks where there is generally only one
   // network. Note: O(N).
-  const NetworkState* FirstNetworkByType(const std::string& type) const;
+  const NetworkState* FirstNetworkByType(const NetworkTypePattern& type) const;
 
   // Returns the hardware (MAC) address for the first connected network
-  // matching |type|, or an empty string if none.
-  // See note above for valid types.
-  std::string HardwareAddressForType(const std::string& type) const;
+  // matching |type|, or an empty string if none is connected.
+  std::string HardwareAddressForType(const NetworkTypePattern& type) const;
   // Same as above but in aa:bb format.
-  std::string FormattedHardwareAddressForType(const std::string& type) const;
+  std::string FormattedHardwareAddressForType(
+      const NetworkTypePattern& type) const;
 
   // Sets |list| to contain the list of networks.  The returned list contains
   // a copy of NetworkState pointers which should not be stored or used beyond
@@ -151,7 +152,7 @@ class CHROMEOS_EXPORT NetworkStateHandler
   void GetNetworkList(NetworkStateList* list) const;
 
   // Like GetNetworkList() but only returns networks with matching |type|.
-  void GetNetworkListByType(const std::string& type,
+  void GetNetworkListByType(const NetworkTypePattern& type,
                             NetworkStateList* list) const;
 
   // Sets |list| to contain the list of devices.  The returned list contains
@@ -175,7 +176,7 @@ class CHROMEOS_EXPORT NetworkStateHandler
   void RequestScan() const;
 
   // Request a scan if not scanning and run |callback| when the Scanning state
-  // for any Device matching |type| completes.
+  // for any Device of network type |type| completes.
   void WaitForScan(const std::string& type, const base::Closure& callback);
 
   // Request a network scan then signal Shill to connect to the best available
@@ -208,11 +209,6 @@ class CHROMEOS_EXPORT NetworkStateHandler
 
   // Construct and initialize an instance for testing.
   static NetworkStateHandler* InitializeForTest();
-
-  static const char kMatchTypeDefault[];
-  static const char kMatchTypeWireless[];
-  static const char kMatchTypeMobile[];
-  static const char kMatchTypeNonVirtual[];
 
   // Default set of comma separated interfaces on which to enable
   // portal checking.
@@ -311,7 +307,7 @@ class CHROMEOS_EXPORT NetworkStateHandler
   void ScanCompleted(const std::string& type);
 
   // Returns the technology type for |type|.
-  std::string GetTechnologyForType(const std::string& type) const;
+  std::string GetTechnologyForType(const NetworkTypePattern& type) const;
 
   // Shill property handler instance, owned by this class.
   scoped_ptr<internal::ShillPropertyHandler> shill_property_handler_;

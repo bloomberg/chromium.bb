@@ -10,6 +10,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
+#include "chromeos/network/shill_property_util.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -47,7 +48,7 @@ bool IsUpdateOverCellularAllowed() {
 }
 
 string16 GetConnectionTypeAsUTF16(const std::string& type) {
-  if (type == flimflam::kTypeEthernet)
+  if (chromeos::NetworkTypePattern::Ethernet().MatchesType(type))
     return l10n_util::GetStringUTF16(IDS_NETWORK_TYPE_ETHERNET);
   if (type == flimflam::kTypeWifi)
     return l10n_util::GetStringUTF16(IDS_NETWORK_TYPE_WIFI);

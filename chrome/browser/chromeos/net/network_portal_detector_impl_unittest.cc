@@ -15,6 +15,7 @@
 #include "chromeos/dbus/shill_service_client.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/shill_property_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "dbus/object_path.h"
 #include "net/base/net_errors.h"
@@ -173,7 +174,9 @@ class NetworkPortalDetectorImplTest
 
   void SetNetworkDeviceEnabled(const std::string& type, bool enabled) {
     NetworkHandler::Get()->network_state_handler()->SetTechnologyEnabled(
-        type, enabled, network_handler::ErrorCallback());
+        NetworkTypePattern::Primitive(type),
+        enabled,
+        network_handler::ErrorCallback());
     base::RunLoop().RunUntilIdle();
   }
 

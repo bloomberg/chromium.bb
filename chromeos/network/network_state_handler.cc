@@ -19,39 +19,12 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "chromeos/network/shill_property_handler.h"
+#include "chromeos/network/shill_property_util.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
 
 namespace {
-
-// Returns true if |network->type()| == |match_type|, or it matches one of the
-// following special match types:
-// * kMatchTypeDefault matches any network (i.e. the first instance)
-// * kMatchTypeNonVirtual matches non virtual networks
-// * kMatchTypeWireless matches wireless networks
-// * kMatchTypeMobile matches cellular or wimax networks
-bool ManagedStateMatchesType(const ManagedState* managed,
-                             const std::string& match_type) {
-  const std::string& type = managed->type();
-  if (match_type == NetworkStateHandler::kMatchTypeDefault)
-    return true;
-  if (match_type == type)
-    return true;
-  if (match_type == NetworkStateHandler::kMatchTypeNonVirtual &&
-      type != flimflam::kTypeVPN) {
-    return true;
-  }
-  if (match_type == NetworkStateHandler::kMatchTypeWireless &&
-      type != flimflam::kTypeEthernet && type != flimflam::kTypeVPN) {
-    return true;
-  }
-  if (match_type == NetworkStateHandler::kMatchTypeMobile &&
-      (type == flimflam::kTypeCellular || type == flimflam::kTypeWimax)) {
-    return true;
-  }
-  return false;
-}
 
 bool ConnectionStateChanged(NetworkState* network,
                             const std::string& prev_connection_state) {
@@ -82,10 +55,6 @@ std::string GetManagedStateLogName(const ManagedState* state) {
 
 }  // namespace
 
-const char NetworkStateHandler::kMatchTypeDefault[] = "default";
-const char NetworkStateHandler::kMatchTypeWireless[] = "wireless";
-const char NetworkStateHandler::kMatchTypeMobile[] = "mobile";
-const char NetworkStateHandler::kMatchTypeNonVirtual[] = "non-virtual";
 const char NetworkStateHandler::kDefaultCheckPortalList[] =
     "ethernet,wifi,cellular";
 
@@ -136,7 +105,7 @@ void NetworkStateHandler::UpdateManagerProperties() {
 }
 
 NetworkStateHandler::TechnologyState NetworkStateHandler::GetTechnologyState(
-    const std::string& type) const {
+    const NetworkTypePattern& type) const {
   std::string technology = GetTechnologyForType(type);
   TechnologyState state;
   if (shill_property_handler_->IsTechnologyEnabled(technology))
@@ -149,12 +118,12 @@ NetworkStateHandler::TechnologyState NetworkStateHandler::GetTechnologyState(
     state = TECHNOLOGY_AVAILABLE;
   else
     state = TECHNOLOGY_UNAVAILABLE;
-  VLOG(2) << "GetTechnologyState: " << type << " = " << state;
+  VLOG(2) << "GetTechnologyState: " << type.ToDebugString() << " = " << state;
   return state;
 }
 
 void NetworkStateHandler::SetTechnologyEnabled(
-    const std::string& type,
+    const NetworkTypePattern& type,
     bool enabled,
     const network_handler::ErrorCallback& error_callback) {
   std::string technology = GetTechnologyForType(type);
@@ -174,26 +143,27 @@ const DeviceState* NetworkStateHandler::GetDeviceState(
 }
 
 const DeviceState* NetworkStateHandler::GetDeviceStateByType(
-    const std::string& type) const {
+    const NetworkTypePattern& type) const {
   for (ManagedStateList::const_iterator iter = device_list_.begin();
        iter != device_list_.end(); ++iter) {
     ManagedState* device = *iter;
     if (!device->update_received())
       continue;
-    if (ManagedStateMatchesType(device, type))
+    if (device->Matches(type))
       return device->AsDeviceState();
   }
   return NULL;
 }
 
-bool NetworkStateHandler::GetScanningByType(const std::string& type) const {
+bool NetworkStateHandler::GetScanningByType(
+    const NetworkTypePattern& type) const {
   for (ManagedStateList::const_iterator iter = device_list_.begin();
        iter != device_list_.end(); ++iter) {
     const DeviceState* device = (*iter)->AsDeviceState();
     DCHECK(device);
     if (!device->update_received())
       continue;
-    if (ManagedStateMatchesType(device, type) && device->scanning())
+    if (device->Matches(type) && device->scanning())
       return true;
   }
   return false;
@@ -217,7 +187,7 @@ const NetworkState* NetworkStateHandler::DefaultNetwork() const {
 }
 
 const NetworkState* NetworkStateHandler::ConnectedNetworkByType(
-    const std::string& type) const {
+    const NetworkTypePattern& type) const {
   for (ManagedStateList::const_iterator iter = network_list_.begin();
        iter != network_list_.end(); ++iter) {
     const NetworkState* network = (*iter)->AsNetworkState();
@@ -226,14 +196,14 @@ const NetworkState* NetworkStateHandler::ConnectedNetworkByType(
       continue;
     if (!network->IsConnectedState())
       break;  // Connected networks are listed first.
-    if (ManagedStateMatchesType(network, type))
+    if (network->Matches(type))
       return network;
   }
   return NULL;
 }
 
 const NetworkState* NetworkStateHandler::ConnectingNetworkByType(
-    const std::string& type) const {
+    const NetworkTypePattern& type) const {
   for (ManagedStateList::const_iterator iter = network_list_.begin();
        iter != network_list_.end(); ++iter) {
     const NetworkState* network = (*iter)->AsNetworkState();
@@ -242,28 +212,28 @@ const NetworkState* NetworkStateHandler::ConnectingNetworkByType(
       continue;
     if (!network->IsConnectingState())
       break;  // Connected and connecting networks are listed first.
-    if (ManagedStateMatchesType(network, type))
+    if (network->Matches(type))
       return network;
   }
   return NULL;
 }
 
 const NetworkState* NetworkStateHandler::FirstNetworkByType(
-    const std::string& type) const {
+    const NetworkTypePattern& type) const {
   for (ManagedStateList::const_iterator iter = network_list_.begin();
        iter != network_list_.end(); ++iter) {
     const NetworkState* network = (*iter)->AsNetworkState();
     DCHECK(network);
     if (!network->update_received())
       continue;
-    if (ManagedStateMatchesType(network, type))
+    if (network->Matches(type))
       return network;
   }
   return NULL;
 }
 
 std::string NetworkStateHandler::HardwareAddressForType(
-    const std::string& type) const {
+    const NetworkTypePattern& type) const {
   const NetworkState* network = ConnectedNetworkByType(type);
   if (!network)
     return std::string();
@@ -276,7 +246,7 @@ std::string NetworkStateHandler::HardwareAddressForType(
 }
 
 std::string NetworkStateHandler::FormattedHardwareAddressForType(
-    const std::string& type) const {
+    const NetworkTypePattern& type) const {
   std::string address = HardwareAddressForType(type);
   if (address.size() % 2 != 0)
     return address;
@@ -290,10 +260,10 @@ std::string NetworkStateHandler::FormattedHardwareAddressForType(
 }
 
 void NetworkStateHandler::GetNetworkList(NetworkStateList* list) const {
-  GetNetworkListByType(kMatchTypeDefault, list);
+  GetNetworkListByType(NetworkTypePattern::Default(), list);
 }
 
-void NetworkStateHandler::GetNetworkListByType(const std::string& type,
+void NetworkStateHandler::GetNetworkListByType(const NetworkTypePattern& type,
                                                NetworkStateList* list) const {
   DCHECK(list);
   list->clear();
@@ -303,7 +273,7 @@ void NetworkStateHandler::GetNetworkListByType(const std::string& type,
     DCHECK(network);
     if (!network->update_received())
       continue;
-    if (ManagedStateMatchesType(network, type))
+    if (network->Matches(type))
       list->push_back(network);
   }
 }
@@ -354,7 +324,7 @@ void NetworkStateHandler::RequestScan() const {
 void NetworkStateHandler::WaitForScan(const std::string& type,
                                       const base::Closure& callback) {
   scan_complete_callbacks_[type].push_back(callback);
-  if (!GetScanningByType(type))
+  if (!GetScanningByType(NetworkTypePattern::Primitive(type)))
     RequestScan();
 }
 
@@ -746,19 +716,27 @@ void NetworkStateHandler::ScanCompleted(const std::string& type) {
 }
 
 std::string NetworkStateHandler::GetTechnologyForType(
-    const std::string& type) const {
-  if (type == kMatchTypeMobile) {
-    if (shill_property_handler_->IsTechnologyAvailable(flimflam::kTypeWimax))
-      return flimflam::kTypeWimax;
-    else
-      return flimflam::kTypeCellular;
-  }
-  if (type == kMatchTypeDefault || type == kMatchTypeNonVirtual ||
-      type == kMatchTypeWireless) {
-    NOTREACHED();
+    const NetworkTypePattern& type) const {
+  if (type.MatchesType(flimflam::kTypeEthernet))
+    return flimflam::kTypeEthernet;
+
+  if (type.MatchesType(flimflam::kTypeWifi))
     return flimflam::kTypeWifi;
+
+  if (type.Equals(NetworkTypePattern::Wimax()))
+      return flimflam::kTypeWimax;
+
+  // Prefer Wimax over Cellular only if it's available.
+  if (type.MatchesType(flimflam::kTypeWimax) &&
+      shill_property_handler_->IsTechnologyAvailable(flimflam::kTypeWimax)) {
+      return flimflam::kTypeWimax;
   }
-  return type;
+
+  if (type.MatchesType(flimflam::kTypeCellular))
+      return flimflam::kTypeCellular;
+
+  NOTREACHED();
+  return std::string();
 }
 
 }  // namespace chromeos

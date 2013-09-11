@@ -13,6 +13,7 @@
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/shill_property_util.h"
 #include "net/base/network_change_notifier.h"
 #include "net/dns/dns_config_service_posix.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -196,7 +197,7 @@ void NetworkChangeNotifierChromeos::UpdateState(
 net::NetworkChangeNotifier::ConnectionType
 NetworkChangeNotifierChromeos::ConnectionTypeFromShill(
     const std::string& type, const std::string& technology) {
-  if (type == flimflam::kTypeEthernet)
+  if (NetworkTypePattern::Ethernet().MatchesType(type))
     return CONNECTION_ETHERNET;
   else if (type == flimflam::kTypeWifi)
     return CONNECTION_WIFI;

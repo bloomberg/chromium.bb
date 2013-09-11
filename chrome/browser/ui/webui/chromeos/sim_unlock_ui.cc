@@ -25,6 +25,7 @@
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_handler_observer.h"
+#include "chromeos/network/shill_property_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/url_data_source.h"
@@ -363,8 +364,9 @@ SimUnlockHandler::SimUnlockHandler()
       dialog_mode_(SimDialogDelegate::SIM_DIALOG_UNLOCK),
       pending_pin_operation_(false),
       weak_ptr_factory_(this) {
-  if (GetNetworkStateHandler()->GetTechnologyState(flimflam::kTypeCellular)
-      != NetworkStateHandler::TECHNOLOGY_UNAVAILABLE)
+  if (GetNetworkStateHandler()
+          ->GetTechnologyState(NetworkTypePattern::Cellular()) !=
+      NetworkStateHandler::TECHNOLOGY_UNAVAILABLE)
     GetNetworkStateHandler()->AddObserver(this, FROM_HERE);
 }
 
@@ -706,8 +708,9 @@ void SimUnlockHandler::InitializeSimStatus() {
   // TODO(armansito): For now, we're initializing the device path to the first
   // available cellular device. We should try to obtain a specific device here,
   // as there can be multiple cellular devices present.
-  const DeviceState* cellular_device = GetNetworkStateHandler()->
-      GetDeviceStateByType(flimflam::kTypeCellular);
+  const DeviceState* cellular_device =
+      GetNetworkStateHandler()
+          ->GetDeviceStateByType(NetworkTypePattern::Cellular());
   if (cellular_device) {
     cellular_device_path_ = cellular_device->path();
     sim_lock_type_ = cellular_device->sim_lock_type();

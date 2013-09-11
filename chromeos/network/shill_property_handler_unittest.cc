@@ -248,6 +248,7 @@ class ShillPropertyHandlerTest : public testing::Test {
 
   bool IsValidType(const std::string& type) {
     return (type == flimflam::kTypeEthernet ||
+            type == shill::kTypeEthernetEap ||
             type == flimflam::kTypeWifi ||
             type == flimflam::kTypeWimax ||
             type == flimflam::kTypeBluetooth ||
