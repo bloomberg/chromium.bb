@@ -1958,3 +1958,33 @@ menuitem#thumbnail-view[lead]:not([disabled]) {
 .share-dialog-frame .cr-dialog-buttons {
   display: none;
 }
+
+/* Progress center */
+
+#progress-center {
+  background-color: #ddd;
+  display: -webkit-flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.progress-center-item {
+  border-bottom: 1px solid #ccc;
+  padding: 8px 9px 8px 8px;
+}
+
+.progress-center-item-label {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.progress-center-item-progress-frame {
+  border: 1px solid #aaa;
+  height: 8px;
+  width: 100%;
+}
+
+.progress-center-item-progress-bar {
+  background-color: #aaa;
+  height: 100%;
+}

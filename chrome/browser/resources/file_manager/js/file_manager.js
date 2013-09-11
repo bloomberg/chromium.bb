@@ -865,6 +865,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         this.onPreviewPanelVisibilityChange_.bind(this));
     this.previewPanel_.initialize();
 
+    this.progressCenterPanel_ = new ProgressCenterPanel(
+        dom.querySelector('#progress-center'));
+
     this.document_.addEventListener('keydown', this.onKeyDown_.bind(this));
     this.document_.addEventListener('keyup', this.onKeyUp_.bind(this));
 
