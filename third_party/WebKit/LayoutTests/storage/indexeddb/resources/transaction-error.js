@@ -14,6 +14,7 @@ function prepareDatabase()
     request.onerror = unexpectedErrorCallback;
 }
 
+var nonConvertibleToString = {toString: function() { throw "Exception in toString()"; }};
 function startTest()
 {
     debug("");
@@ -22,6 +23,10 @@ function startTest()
     debug("");
     debug("IDBTransaction.error should be null if transaction is not finished:");
     shouldBeNull("trans.error");
+
+    debug("");
+    debug("transaction() should throw if one of the DOMStringList items cannot be converted to a String:");
+    shouldThrow("db.transaction(['storeName', nonConvertibleToString])", "'Exception in toString()'");
 
     debug("");
     debug("If IDBTransaction.abort() is explicitly called, IDBTransaction.error should be null:");
