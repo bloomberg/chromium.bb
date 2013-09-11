@@ -6,13 +6,16 @@
 #define CHROME_BROWSER_EXTENSIONS_API_BRAILLE_DISPLAY_PRIVATE_BRAILLE_DISPLAY_PRIVATE_API_H_
 
 #include "chrome/browser/extensions/api/api_function.h"
+#include "chrome/browser/extensions/api/braille_display_private/braille_controller.h"
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/common/extensions/api/braille_display_private.h"
 
 namespace extensions {
 
 // Implementation of the chrome.brailleDisplayPrivate API.
-class BrailleDisplayPrivateAPI : public ProfileKeyedAPI {
+class BrailleDisplayPrivateAPI
+    : public ProfileKeyedAPI,
+      api::braille_display_private::BrailleObserver {
  public:
   explicit BrailleDisplayPrivateAPI(Profile* profile);
   virtual ~BrailleDisplayPrivateAPI();
@@ -22,6 +25,10 @@ class BrailleDisplayPrivateAPI : public ProfileKeyedAPI {
 
   // ProfileKeyedAPI implementation.
   static ProfileKeyedAPIFactory<BrailleDisplayPrivateAPI>* GetFactoryInstance();
+
+  // BrailleObserver implementation.
+  virtual void OnKeyEvent(
+      const api::braille_display_private::KeyEvent& keyEvent) OVERRIDE;
 
  private:
   friend class ProfileKeyedAPIFactory<BrailleDisplayPrivateAPI>;

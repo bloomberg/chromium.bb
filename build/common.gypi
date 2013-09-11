@@ -1154,6 +1154,9 @@
     # Use the chromium skia by default.
     'use_system_skia%': '0',
 
+    # Use brlapi from brltty for braille display support.
+    'use_brlapi%': 0,
+
     'conditions': [
       # The version of GCC in use, set later in platforms that use GCC and have
       # not explicitly chosen to build with clang. Currently, this means all

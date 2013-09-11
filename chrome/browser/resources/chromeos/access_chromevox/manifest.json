@@ -13,6 +13,7 @@
     "experimental",
     "tts",
     "systemPrivate",
+    "brailleDisplayPrivate",
     "<all_urls>"
   ],
   "content_scripts": [

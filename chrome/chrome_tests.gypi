@@ -1309,6 +1309,7 @@
         'browser/extensions/api/autotest_private/autotest_private_apitest.cc',
         'browser/extensions/api/bluetooth/bluetooth_apitest.cc',
         'browser/extensions/api/bookmark_manager_private/bookmark_manager_private_apitest.cc',
+        'browser/extensions/api/braille_display_private/braille_display_private_apitest.cc',
         'browser/extensions/api/bookmarks/bookmark_apitest.cc',
         'browser/extensions/api/browsing_data/browsing_data_test.cc',
         'browser/extensions/api/cloud_print_private/cloud_print_private_apitest.cc',
@@ -2147,6 +2148,11 @@
           'sources' : [
             'browser/ui/webui/local_discovery/local_discovery_ui_browsertest.cc',
           ]
+        }],
+        [ 'use_brlapi==0', {
+          'sources!': [
+            'browser/extensions/api/braille_display_private/braille_display_private_apitest.cc'
+            ]
         }],
       ],  # conditions
     },  # target browser_tests

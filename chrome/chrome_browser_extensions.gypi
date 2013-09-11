@@ -139,8 +139,13 @@
         'browser/extensions/api/bookmarks/bookmark_api_helpers.h',
         'browser/extensions/api/bookmarks/bookmarks_api.cc',
         'browser/extensions/api/bookmarks/bookmarks_api.h',
+        'browser/extensions/api/braille_display_private/braille_controller_brlapi.cc',
+        'browser/extensions/api/braille_display_private/braille_controller_stub.cc',
+        'browser/extensions/api/braille_display_private/braille_controller.h',
         'browser/extensions/api/braille_display_private/braille_display_private_api.h',
         'browser/extensions/api/braille_display_private/braille_display_private_api.cc',
+        'browser/extensions/api/braille_display_private/brlapi_connection.cc',
+        'browser/extensions/api/braille_display_private/brlapi_connection.h',
         'browser/extensions/api/browsing_data/browsing_data_api.cc',
         'browser/extensions/api/browsing_data/browsing_data_api.h',
         'browser/extensions/api/cloud_print_private/cloud_print_private_api.cc',
@@ -1057,6 +1062,22 @@
         ['chrome_multiple_dll!=1', {
           'dependencies': [
             '../webkit/support/webkit_support.gyp:glue',
+          ],
+        }],
+        ['use_brlapi==1', {
+          'sources!': [
+            'browser/extensions/api/braille_display_private/braille_controller_stub.cc',
+          ],
+          'dependencies' : [
+            '../build/linux/system.gyp:libbrlapi',
+          ],
+          'defines': [
+            'USE_BRLAPI',
+          ],
+        }, {  # use_brlapi==0
+          'sources!': [
+            'browser/extensions/api/braille_display_private/braille_controller_brlapi.cc',
+            'browser/extensions/api/braille_display_private/brlapi_connection.cc',
           ],
         }],
       ],
