@@ -246,8 +246,6 @@ void ClipboardChromium::clearData(const String& type)
         return;
 
     m_dataObject->clearData(normalizeType(type));
-
-    ASSERT_NOT_REACHED();
 }
 
 void ClipboardChromium::clearAllData()

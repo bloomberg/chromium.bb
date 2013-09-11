@@ -3,15 +3,20 @@
 <head>
 <script src="../js/resources/js-test-pre.js"></script>
 <script>
+var testDataTransfer;
+var nonConvertibleToString = {toString: function() { throw "Exception in toString()"; }};
 function legacyCopyStart(dataTransfer)
 {
+    testDataTransfer = dataTransfer;
     dataTransfer.setData('text', 'sample');
     dataTransfer.setData('url', 'http://www.google.com/');
     dataTransfer.setData('text/html', '<em>Markup</em>');
     dataTransfer.setData('custom-data', 'hello world');
+    shouldBeEqualToString('testDataTransfer.getData("custom-data")', 'hello world');
+    shouldThrow('testDataTransfer.clearData(nonConvertibleToString)', '"Exception in toString()"');
+    shouldBeEqualToString('testDataTransfer.getData("custom-data")', 'hello world');
 }
 
-var testDataTransfer;
 function itemListCopyStart(dataTransfer)
 {
     testDataTransfer = dataTransfer;

@@ -8,6 +8,9 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 Running test with Legacy copy handler and Legacy paste handler
+PASS testDataTransfer.getData("custom-data") is "hello world"
+PASS testDataTransfer.clearData(nonConvertibleToString) threw exception Exception in toString().
+PASS testDataTransfer.getData("custom-data") is "hello world"
 PASS testDataTransfer.types.length is 4
 PASS testDataTransfer.types.indexOf("text/plain") >= 0 is true
 PASS testDataTransfer.types.indexOf("text/uri-list") >= 0 is true
@@ -18,6 +21,9 @@ PASS testDataTransfer.getData("url") is "http://www.google.com/"
 PASS testDataTransfer.getData("text/html") is "<em>Markup</em>"
 PASS testDataTransfer.getData("custom-data") is "hello world"
 Running test with Legacy copy handler and DataTransferItemList paste handler
+PASS testDataTransfer.getData("custom-data") is "hello world"
+PASS testDataTransfer.clearData(nonConvertibleToString) threw exception Exception in toString().
+PASS testDataTransfer.getData("custom-data") is "hello world"
 PASS testDataTransfer.items.length is 4
 PASS JSON.stringify(expectedTypes) is JSON.stringify(types)
 PASS testData is expectedTestData

@@ -76,7 +76,7 @@ void V8Clipboard::clearDataMethodCustom(const v8::FunctionCallbackInfo<v8::Value
         return;
     }
 
-    String type = toWebCoreString(args[0]);
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, type, args[0]);
     clipboard->clearData(type);
 }
 
