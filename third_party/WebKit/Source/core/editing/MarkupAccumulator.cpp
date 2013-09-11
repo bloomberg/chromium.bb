@@ -493,7 +493,7 @@ void MarkupAccumulator::appendStartMarkup(StringBuilder& result, const Node* nod
     case Node::DOCUMENT_FRAGMENT_NODE:
         break;
     case Node::DOCUMENT_TYPE_NODE:
-        appendDocumentType(result, static_cast<const DocumentType*>(node));
+        appendDocumentType(result, toDocumentType(node));
         break;
     case Node::PROCESSING_INSTRUCTION_NODE:
         appendProcessingInstruction(result, toProcessingInstruction(node)->target(), toProcessingInstruction(node)->data());

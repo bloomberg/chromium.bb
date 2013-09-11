@@ -1373,8 +1373,8 @@ bool Node::isEqualNode(Node* other) const
         return false;
 
     if (nodeType == DOCUMENT_TYPE_NODE) {
-        const DocumentType* documentTypeThis = static_cast<const DocumentType*>(this);
-        const DocumentType* documentTypeOther = static_cast<const DocumentType*>(other);
+        const DocumentType* documentTypeThis = toDocumentType(this);
+        const DocumentType* documentTypeOther = toDocumentType(other);
 
         if (documentTypeThis->publicId() != documentTypeOther->publicId())
             return false;

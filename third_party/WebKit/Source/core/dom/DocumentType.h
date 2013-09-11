@@ -64,6 +64,18 @@ private:
     String m_subset;
 };
 
+inline DocumentType* toDocumentType(Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->nodeType() == Node::DOCUMENT_TYPE_NODE);
+    return static_cast<DocumentType*>(node);
+}
+
+inline const DocumentType* toDocumentType(const Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->nodeType() == Node::DOCUMENT_TYPE_NODE);
+    return static_cast<const DocumentType*>(node);
+}
+
 } // namespace WebCore
 
 #endif

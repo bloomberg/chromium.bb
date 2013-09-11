@@ -149,7 +149,7 @@ v8::Handle<v8::Object> wrap(Node* impl, v8::Handle<v8::Object> creationContext, 
     case Node::DOCUMENT_NODE:
         return wrap(toDocument(impl), creationContext, isolate);
     case Node::DOCUMENT_TYPE_NODE:
-        return wrap(static_cast<DocumentType*>(impl), creationContext, isolate);
+        return wrap(toDocumentType(impl), creationContext, isolate);
     case Node::DOCUMENT_FRAGMENT_NODE:
         if (impl->isShadowRoot())
             return wrap(toShadowRoot(impl), creationContext, isolate);
