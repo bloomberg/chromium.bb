@@ -2318,6 +2318,13 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       var filename = util.extractFilePath(urls[0]);
       var extension = PathUtil.extractExtension(filename);
       var mime = props[0].contentMimeType;
+
+      // Returns with failure if the file has neither extension nor mime.
+      if (!extension || !mime) {
+        onFailure();
+        return;
+      }
+
       this.suggestAppsDialog.show(
           extension, mime,
           function(result) {
