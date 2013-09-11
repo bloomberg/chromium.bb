@@ -7,7 +7,6 @@ import multiprocessing
 import signal
 import sys
 
-from chromite.lib import cgroups
 from chromite.lib import cros_build_lib
 from chromite.lib import locking
 
@@ -42,7 +41,6 @@ class EnforcedCleanupSection(cros_build_lib.MasterPidContextManager):
     self._lock = locking.ProcessLock(verbose=False)
     self._forked = False
     self._is_child = False
-    self._cgroups = None
     self._read_pipe, self._write_pipe = multiprocessing.Pipe(duplex=False)
 
   def ForkWatchdog(self):
@@ -58,12 +56,8 @@ class EnforcedCleanupSection(cros_build_lib.MasterPidContextManager):
       return
 
     # Get ourselves a new process group; note that we do not reparent
-    # to init. Similarly, escape from any cgroups that we are in. This
-    # ensures that our cleanup section will run, even if our parents
-    # are trying to kill us.
+    # to init.
     os.setsid()
-    self._cgroups = cgroups.SimpleContainChildren('cleanup', nesting=False)
-    self._cgroups.__enter__()
 
     # Since we share stdin/stdout/whatever, suppress sigint should we somehow
     # become the foreground process in the session group.
@@ -101,8 +95,6 @@ class EnforcedCleanupSection(cros_build_lib.MasterPidContextManager):
     return self
 
   def _exit(self, _exc, _exc_type, _tb):
-    if self._cgroups:
-      self._cgroups.__exit__(None, None, None)
     if self._is_child:
       # All cleanup code that would've run, has ran.
       # Hard exit to bypass any further code execution.
