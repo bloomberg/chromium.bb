@@ -181,6 +181,8 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
         return createFromDouble(style->opacity());
     case CSSPropertyOutlineColor:
         return createFromColor(property, style);
+    case CSSPropertyOutlineOffset:
+        return createFromDouble(style->outlineOffset());
     case CSSPropertyOutlineWidth:
         return createFromDouble(style->outlineWidth());
     case CSSPropertyPaddingBottom:
