@@ -158,7 +158,13 @@ bool MessagePumpX11::HasXInput2() {
   return InitializeXInput2();
 }
 
-#if !defined(TOOLKIT_GTK)
+#if defined(TOOLKIT_GTK)
+// static
+MessagePumpX11* MessagePumpX11::Current() {
+  MessageLoop* loop = MessageLoop::current();
+  return static_cast<MessagePumpX11*>(loop->pump_gpu());
+}
+#else
 // static
 MessagePumpX11* MessagePumpX11::Current() {
   MessageLoopForUI* loop = MessageLoopForUI::current();

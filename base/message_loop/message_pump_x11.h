@@ -43,10 +43,8 @@ class BASE_EXPORT MessagePumpX11 : public MessagePumpGlib,
   // Returns true if the system supports XINPUT2.
   static bool HasXInput2();
 
-#if !defined(TOOLKIT_GTK)
-  // Returns the UI message pump.
+  // Returns the UI or GPU message pump.
   static MessagePumpX11* Current();
-#endif
 
   // Adds/Removes |dispatcher| for the |xid|. This will route all messages from
   // the window |xid| to |dispatcher.
