@@ -37,9 +37,6 @@
 
 namespace WebCore { class CryptoResult; }
 
-// FIXME: delete once chromium side has been updated.
-#define WEBCRYPTO_DIGEST_LENGTH_IS_UINT
-
 #if WEBKIT_IMPLEMENTATION
 namespace WTF { template <typename T> class PassRefPtr; }
 #endif
