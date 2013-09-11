@@ -86,11 +86,8 @@ IN_PROC_BROWSER_TEST_F(MDnsAPITest, MAYBE_RegisterListener) {
 
   ResultCatcher catcher;
   // Dispatch 3 events, one of which should not be sent to the test extension.
-  DnsSdRegistry::DnsSdServiceList services;
-
-  extensions::DnsSdService service;
-  service.service_name = service_type;
-  services.push_back(service);
+  std::vector<std::string> services;
+  services.push_back("test");
 
   dns_sd_registry_->DispatchMDnsEvent(service_type, services);
   dns_sd_registry_->DispatchMDnsEvent("_uninteresting._tcp.local", services);
@@ -128,11 +125,8 @@ IN_PROC_BROWSER_TEST_F(MDnsAPITest, MAYBE_RegisterMultipleListeners) {
       << message_;
 
   ResultCatcher catcher;
-  DnsSdRegistry::DnsSdServiceList services;
-
-  extensions::DnsSdService service;
-  service.service_name = service_type;
-  services.push_back(service);
+  std::vector<std::string> services;
+  services.push_back("test");
 
   dns_sd_registry_->DispatchMDnsEvent(service_type, services);
   dns_sd_registry_->DispatchMDnsEvent(test_service_type, services);
