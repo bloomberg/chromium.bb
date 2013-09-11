@@ -31,7 +31,10 @@ class GpuVideoDecodeAccelerator
   // Each of the arguments to the constructor must outlive this object.
   // |stub->decoder()| will be made current around any operation that touches
   // the underlying VDA so that it can make GL calls safely.
-  GpuVideoDecodeAccelerator(int32 host_route_id, GpuCommandBufferStub* stub);
+  GpuVideoDecodeAccelerator(
+      int32 host_route_id,
+      GpuCommandBufferStub* stub,
+      const scoped_refptr<base::MessageLoopProxy>& io_message_loop);
   virtual ~GpuVideoDecodeAccelerator();
 
   // IPC::Listener implementation.
@@ -60,8 +63,7 @@ class GpuVideoDecodeAccelerator
   // The renderer process handle is valid as long as we have a channel between
   // GPU process and the renderer.
   void Initialize(const media::VideoCodecProfile profile,
-                  IPC::Message* init_done_msg,
-                  const scoped_refptr<base::MessageLoopProxy>& io_message_loop);
+                  IPC::Message* init_done_msg);
 
  private:
   class MessageFilter;
@@ -107,6 +109,12 @@ class GpuVideoDecodeAccelerator
 
   // GPU child message loop.
   scoped_refptr<base::MessageLoopProxy> child_message_loop_;
+
+  // GPU IO message loop.
+  scoped_refptr<base::MessageLoopProxy> io_message_loop_;
+
+  // Weak pointers will be invalidated on IO thread.
+  base::WeakPtrFactory<Client> weak_factory_for_io_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(GpuVideoDecodeAccelerator);
 };

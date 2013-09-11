@@ -61,10 +61,19 @@ class GpuVideoDecodeAccelerator::MessageFilter
   MessageFilter(GpuVideoDecodeAccelerator* owner, int32 host_route_id)
       : owner_(owner), host_route_id_(host_route_id) {}
 
+  virtual void OnChannelError() OVERRIDE { channel_ = NULL; }
+
+  virtual void OnChannelClosing() OVERRIDE { channel_ = NULL; }
+
+  virtual void OnFilterAdded(IPC::Channel* channel) OVERRIDE {
+    channel_ = channel;
+  }
+
   virtual void OnFilterRemoved() OVERRIDE {
     // This will delete |owner_| and |this|.
     owner_->OnFilterRemoved();
   }
+
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE {
     if (msg.routing_id() != host_route_id_)
       return false;
@@ -77,20 +86,35 @@ class GpuVideoDecodeAccelerator::MessageFilter
     return true;
   }
 
+  bool SendOnIOThread(IPC::Message* message) {
+    DCHECK(!message->is_sync());
+    if (!channel_) {
+      delete message;
+      return false;
+    }
+    return channel_->Send(message);
+  }
+
  protected:
   virtual ~MessageFilter() {}
 
  private:
   GpuVideoDecodeAccelerator* owner_;
   int32 host_route_id_;
+  // The channel to which this filter was added.
+  IPC::Channel* channel_;
 };
 
-GpuVideoDecodeAccelerator::GpuVideoDecodeAccelerator(int32 host_route_id,
-                                                     GpuCommandBufferStub* stub)
+GpuVideoDecodeAccelerator::GpuVideoDecodeAccelerator(
+    int32 host_route_id,
+    GpuCommandBufferStub* stub,
+    const scoped_refptr<base::MessageLoopProxy>& io_message_loop)
     : init_done_msg_(NULL),
       host_route_id_(host_route_id),
       stub_(stub),
-      texture_target_(0) {
+      texture_target_(0),
+      io_message_loop_(io_message_loop),
+      weak_factory_for_io_(this) {
   DCHECK(stub_);
   stub_->AddDestructionObserver(this);
   stub_->channel()->AddRoute(host_route_id_, this);
@@ -177,8 +201,7 @@ void GpuVideoDecodeAccelerator::NotifyError(
 
 void GpuVideoDecodeAccelerator::Initialize(
     const media::VideoCodecProfile profile,
-    IPC::Message* init_done_msg,
-    const scoped_refptr<base::MessageLoopProxy>& io_message_loop) {
+    IPC::Message* init_done_msg) {
   DCHECK(stub_);
   DCHECK(!video_decode_accelerator_.get());
   DCHECK(!init_done_msg_);
@@ -208,8 +231,9 @@ void GpuVideoDecodeAccelerator::Initialize(
       gfx::GLSurfaceEGL::GetHardwareDisplay(),
       stub_->decoder()->GetGLContext()->GetHandle(),
       this,
+      weak_factory_for_io_.GetWeakPtr(),
       make_context_current_,
-      io_message_loop));
+      io_message_loop_));
 #elif defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY) && defined(USE_X11)
   gfx::GLContextGLX* glx_context =
       static_cast<gfx::GLContextGLX*>(stub_->decoder()->GetGLContext());
@@ -355,6 +379,8 @@ void GpuVideoDecodeAccelerator::OnDestroy() {
 }
 
 void GpuVideoDecodeAccelerator::OnFilterRemoved() {
+  // We're destroying; cancel all callbacks.
+  weak_factory_for_io_.InvalidateWeakPtrs();
   child_message_loop_->DeleteSoon(FROM_HERE, this);
 }
 
@@ -390,6 +416,9 @@ void GpuVideoDecodeAccelerator::OnWillDestroyStub() { OnDestroy(); }
 
 bool GpuVideoDecodeAccelerator::Send(IPC::Message* message) {
   DCHECK(stub_);
+  if (filter_.get() && io_message_loop_->BelongsToCurrentThread())
+    return filter_->SendOnIOThread(message);
+  DCHECK(child_message_loop_->BelongsToCurrentThread());
   return stub_->channel()->Send(message);
 }
 

@@ -720,9 +720,9 @@ void GpuCommandBufferStub::OnCreateVideoDecoder(
     IPC::Message* reply_message) {
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnCreateVideoDecoder");
   int decoder_route_id = channel_->GenerateRouteID();
-  GpuVideoDecodeAccelerator* decoder =
-      new GpuVideoDecodeAccelerator(decoder_route_id, this);
-  decoder->Initialize(profile, reply_message, channel_->io_message_loop());
+  GpuVideoDecodeAccelerator* decoder = new GpuVideoDecodeAccelerator(
+      decoder_route_id, this, channel_->io_message_loop());
+  decoder->Initialize(profile, reply_message);
   // decoder is registered as a DestructionObserver of this stub and will
   // self-delete during destruction of this stub.
 }

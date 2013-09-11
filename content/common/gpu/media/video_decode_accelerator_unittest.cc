@@ -429,7 +429,9 @@ void ThrottlingVDAClient::NotifyError(VideoDecodeAccelerator::Error error) {
 
 // Client that can accept callbacks from a VideoDecodeAccelerator and is used by
 // the TESTs below.
-class GLRenderingVDAClient : public VideoDecodeAccelerator::Client {
+class GLRenderingVDAClient
+    : public VideoDecodeAccelerator::Client,
+      public base::SupportsWeakPtr<GLRenderingVDAClient> {
  public:
   // Doesn't take ownership of |rendering_helper| or |note|, which must outlive
   // |*this|.
@@ -606,8 +608,11 @@ void GLRenderingVDAClient::CreateDecoder() {
   CHECK(!decoder_.get());
 
   VideoDecodeAccelerator::Client* client = this;
-  if (throttling_client_)
+  base::WeakPtr<VideoDecodeAccelerator::Client> weak_client = AsWeakPtr();
+  if (throttling_client_) {
     client = throttling_client_.get();
+    weak_client = throttling_client_->AsWeakPtr();
+  }
 #if defined(OS_WIN)
   decoder_.reset(
       new DXVAVideoDecodeAccelerator(client, base::Bind(&DoNothingReturnTrue)));
@@ -617,6 +622,7 @@ void GLRenderingVDAClient::CreateDecoder() {
       static_cast<EGLDisplay>(rendering_helper_->GetGLDisplay()),
       static_cast<EGLContext>(rendering_helper_->GetGLContext()),
       client,
+      weak_client,
       base::Bind(&DoNothingReturnTrue),
       base::MessageLoopProxy::current()));
 #elif defined(ARCH_CPU_X86_FAMILY)

@@ -16,8 +16,8 @@ class CONTENT_EXPORT VideoDecodeAcceleratorImpl
   VideoDecodeAcceleratorImpl();
   virtual ~VideoDecodeAcceleratorImpl();
 
-  // Returns true if media::VideoDecodeAccelerator::Decode can run on the IO
-  // thread. Otherwise Decode will run on the GPU child thread. The purpose of
+  // Returns true if VDA::Decode and VDA::Client callbacks can run on the IO
+  // thread. Otherwise they will run on the GPU child thread. The purpose of
   // running Decode on the IO thread is to reduce decode latency. Note Decode
   // should return as soon as possible and not block on the IO thread.
   virtual bool CanDecodeOnIOThread();

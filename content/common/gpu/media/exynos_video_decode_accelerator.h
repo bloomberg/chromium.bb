@@ -61,6 +61,7 @@ class CONTENT_EXPORT ExynosVideoDecodeAccelerator
       EGLDisplay egl_display,
       EGLContext egl_context,
       Client* client,
+      const base::WeakPtr<Client>& io_client_,
       const base::Callback<bool(void)>& make_context_current,
       const scoped_refptr<base::MessageLoopProxy>& io_message_loop_proxy);
   virtual ~ExynosVideoDecodeAccelerator();
@@ -331,6 +332,8 @@ class CONTENT_EXPORT ExynosVideoDecodeAccelerator
   // child_message_loop_proxy_.
   base::WeakPtrFactory<Client> client_ptr_factory_;
   base::WeakPtr<Client> client_;
+  // Callbacks to |io_client_| must be executed on |io_message_loop_proxy_|.
+  base::WeakPtr<Client> io_client_;
 
   //
   // Decoder state, owned and operated by decoder_thread_.

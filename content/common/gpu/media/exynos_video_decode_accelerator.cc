@@ -205,6 +205,7 @@ ExynosVideoDecodeAccelerator::ExynosVideoDecodeAccelerator(
     EGLDisplay egl_display,
     EGLContext egl_context,
     Client* client,
+    const base::WeakPtr<Client>& io_client,
     const base::Callback<bool(void)>& make_context_current,
     const scoped_refptr<base::MessageLoopProxy>& io_message_loop_proxy)
     : child_message_loop_proxy_(base::MessageLoopProxy::current()),
@@ -212,6 +213,7 @@ ExynosVideoDecodeAccelerator::ExynosVideoDecodeAccelerator(
       weak_this_(base::AsWeakPtr(this)),
       client_ptr_factory_(client),
       client_(client_ptr_factory_.GetWeakPtr()),
+      io_client_(io_client),
       decoder_thread_("ExynosDecoderThread"),
       decoder_state_(kUninitialized),
       decoder_delay_bitstream_buffer_id_(-1),
@@ -611,7 +613,7 @@ void ExynosVideoDecodeAccelerator::DecodeTask(
                bitstream_buffer.id());
 
   scoped_ptr<BitstreamBufferRef> bitstream_record(new BitstreamBufferRef(
-      client_, child_message_loop_proxy_,
+      io_client_, io_message_loop_proxy_,
       new base::SharedMemory(bitstream_buffer.handle(), true),
       bitstream_buffer.size(), bitstream_buffer.id()));
   if (!bitstream_record->shm->Map(bitstream_buffer.size())) {
@@ -1418,8 +1420,8 @@ void ExynosVideoDecodeAccelerator::DequeueGsc() {
     gsc_output_buffer_queued_count_--;
     DVLOG(3) << "DequeueGsc(): returning input_id=" << dqbuf.timestamp.tv_sec
              << " as picture_id=" << output_record.picture_id;
-    child_message_loop_proxy_->PostTask(FROM_HERE, base::Bind(
-        &Client::PictureReady, client_, media::Picture(
+    io_message_loop_proxy_->PostTask(FROM_HERE, base::Bind(
+        &Client::PictureReady, io_client_, media::Picture(
             output_record.picture_id, dqbuf.timestamp.tv_sec)));
     decoder_frames_at_client_++;
   }
@@ -1629,7 +1631,7 @@ void ExynosVideoDecodeAccelerator::FlushTask() {
 
   // Queue up an empty buffer -- this triggers the flush.
   decoder_input_queue_.push_back(linked_ptr<BitstreamBufferRef>(
-      new BitstreamBufferRef(client_, child_message_loop_proxy_, NULL, 0,
+      new BitstreamBufferRef(io_client_, io_message_loop_proxy_, NULL, 0,
                              kFlushBufferId)));
   decoder_flushing_ = true;
 
