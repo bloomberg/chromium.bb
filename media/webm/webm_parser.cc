@@ -194,6 +194,7 @@ static const ElementIdInfo kVideoIds[] = {
   {UINT, kWebMIdDisplayUnit},
   {UINT, kWebMIdAspectRatioType},
   {BINARY, kWebMIdColorSpace},
+  {FLOAT, kWebMIdFrameRate},
 };
 
 static const ElementIdInfo kAudioIds[] = {

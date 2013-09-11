@@ -120,6 +120,7 @@ const int kWebMIdFlagEnabled = 0xB9;
 const int kWebMIdFlagForced = 0x55AA;
 const int kWebMIdFlagInterlaced = 0x9A;
 const int kWebMIdFlagLacing = 0x9C;
+const int kWebMIdFrameRate = 0x2383E3;
 const int kWebMIdInfo = 0x1549A966;
 const int kWebMIdJoinBlocks = 0xE9;
 const int kWebMIdLaceNumber = 0xCC;
