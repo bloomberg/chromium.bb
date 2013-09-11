@@ -70,20 +70,6 @@ KeyframeAnimation::~KeyframeAnimation()
         endAnimation();
 }
 
-static const CSSAnimationData* getAnimationFromStyleByName(const RenderStyle* style, const AtomicString& name)
-{
-    if (!style->animations())
-        return 0;
-
-    size_t animationCount = style->animations()->size();
-    for (size_t i = 0; i < animationCount; i++) {
-        if (name == style->animations()->animation(i)->name())
-            return style->animations()->animation(i);
-    }
-
-    return 0;
-}
-
 void KeyframeAnimation::fetchIntervalEndpointsForProperty(CSSPropertyID property, const RenderStyle*& fromStyle, const RenderStyle*& toStyle, double& prog) const
 {
     // Find the first key
@@ -161,10 +147,7 @@ void KeyframeAnimation::fetchIntervalEndpointsForProperty(CSSPropertyID property
     // A scale of infinity is handled in AnimationBase::fractionalTime().
     ASSERT(scale >= 0 && (!std::isinf(scale) || prevIndex == nextIndex));
 
-    const TimingFunction* timingFunction = 0;
-    if (const CSSAnimationData* matchedAnimation = getAnimationFromStyleByName(fromStyle, name()))
-        timingFunction = matchedAnimation->timingFunction();
-
+    const TimingFunction* timingFunction = prevKeyframe.timingFunction(name());
     prog = progress(scale, offset, timingFunction);
 }
 
