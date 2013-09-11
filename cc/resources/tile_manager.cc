@@ -152,6 +152,8 @@ TileManager::TileManager(
       prioritized_tiles_dirty_(false),
       all_tiles_that_need_to_be_rasterized_have_memory_(true),
       all_tiles_required_for_activation_have_memory_(true),
+      memory_required_bytes_(0),
+      memory_nice_to_have_bytes_(0),
       bytes_releasable_(0),
       resources_releasable_(0),
       ever_exceeded_memory_budget_(false),
@@ -283,6 +285,10 @@ void TileManager::DidFinishRunningTasksRequiredForActivation() {
 void TileManager::GetTilesWithAssignedBins(PrioritizedTileSet* tiles) {
   TRACE_EVENT0("cc", "TileManager::GetTilesWithAssignedBins");
 
+  // Compute new stats to be return by GetMemoryStats().
+  memory_required_bytes_ = 0;
+  memory_nice_to_have_bytes_ = 0;
+
   const TileMemoryLimitPolicy memory_policy = global_state_.memory_limit_policy;
   const TreePriority tree_priority = global_state_.tree_priority;
 
@@ -291,7 +297,9 @@ void TileManager::GetTilesWithAssignedBins(PrioritizedTileSet* tiles) {
     Tile* tile = it->second;
     ManagedTileState& mts = tile->managed_state();
 
-    bool tile_is_ready_to_draw = tile->IsReadyToDraw();
+    const ManagedTileState::TileVersion& tile_version =
+        tile->GetTileVersionForDrawing();
+    bool tile_is_ready_to_draw = tile_version.IsReadyToDraw();
     bool tile_is_active =
         tile_is_ready_to_draw ||
         !mts.tile_versions[mts.raster_mode].raster_task_.is_null();
@@ -314,26 +322,37 @@ void TileManager::GetTilesWithAssignedBins(PrioritizedTileSet* tiles) {
                                                       tree_priority,
                                                       tile_is_ready_to_draw,
                                                       tile_is_active);
-    // Note that |gpu_memmgr_stats_bin| does not care about memory_policy, so we
-    // have to save it first.
-    mts.gpu_memmgr_stats_bin = combined_bin;
 
-    combined_bin = kBinPolicyMap[memory_policy][combined_bin];
+    // The bin that the tile would have if the GPU memory manager had
+    // a maximally permissive policy, send to the GPU memory manager
+    // to determine policy.
+    ManagedTileBin gpu_memmgr_stats_bin = NEVER_BIN;
 
     TilePriority* high_priority = NULL;
     switch (tree_priority) {
       case SAME_PRIORITY_FOR_BOTH_TREES:
-        mts.bin = combined_bin;
+        mts.bin = kBinPolicyMap[memory_policy][combined_bin];
+        gpu_memmgr_stats_bin = combined_bin;
         high_priority = &combined_priority;
         break;
       case SMOOTHNESS_TAKES_PRIORITY:
         mts.bin = mts.tree_bin[ACTIVE_TREE];
+        gpu_memmgr_stats_bin = active_bin;
         high_priority = &active_priority;
         break;
       case NEW_CONTENT_TAKES_PRIORITY:
         mts.bin = mts.tree_bin[PENDING_TREE];
+        gpu_memmgr_stats_bin = pending_bin;
         high_priority = &pending_priority;
         break;
+    }
+
+    if (!tile_is_ready_to_draw || tile_version.requires_resource()) {
+      if ((gpu_memmgr_stats_bin == NOW_BIN) ||
+          (gpu_memmgr_stats_bin == NOW_AND_READY_TO_DRAW_BIN))
+        memory_required_bytes_ += tile->bytes_consumed_if_allocated();
+      if (gpu_memmgr_stats_bin != NEVER_BIN)
+        memory_nice_to_have_bytes_ += tile->bytes_consumed_if_allocated();
     }
 
     // Bump up the priority if we determined it's NEVER_BIN on one tree,
@@ -416,29 +435,10 @@ void TileManager::GetMemoryStats(
     size_t* memory_nice_to_have_bytes,
     size_t* memory_allocated_bytes,
     size_t* memory_used_bytes) const {
-  *memory_required_bytes = 0;
-  *memory_nice_to_have_bytes = 0;
+  *memory_required_bytes = memory_required_bytes_;
+  *memory_nice_to_have_bytes = memory_nice_to_have_bytes_;
   *memory_allocated_bytes = resource_pool_->total_memory_usage_bytes();
   *memory_used_bytes = resource_pool_->acquired_memory_usage_bytes();
-  for (TileMap::const_iterator it = tiles_.begin();
-       it != tiles_.end();
-       ++it) {
-    const Tile* tile = it->second;
-    const ManagedTileState& mts = tile->managed_state();
-
-    const ManagedTileState::TileVersion& tile_version =
-        tile->GetTileVersionForDrawing();
-    if (tile_version.IsReadyToDraw() &&
-        !tile_version.requires_resource())
-      continue;
-
-    size_t tile_bytes = tile->bytes_consumed_if_allocated();
-    if ((mts.gpu_memmgr_stats_bin == NOW_BIN) ||
-        (mts.gpu_memmgr_stats_bin == NOW_AND_READY_TO_DRAW_BIN))
-      *memory_required_bytes += tile_bytes;
-    if (mts.gpu_memmgr_stats_bin != NEVER_BIN)
-      *memory_nice_to_have_bytes += tile_bytes;
-  }
 }
 
 scoped_ptr<base::Value> TileManager::BasicStateAsValue() const {

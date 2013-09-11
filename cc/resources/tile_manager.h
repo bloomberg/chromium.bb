@@ -165,6 +165,9 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient {
   bool all_tiles_that_need_to_be_rasterized_have_memory_;
   bool all_tiles_required_for_activation_have_memory_;
 
+  size_t memory_required_bytes_;
+  size_t memory_nice_to_have_bytes_;
+
   size_t bytes_releasable_;
   size_t resources_releasable_;
 

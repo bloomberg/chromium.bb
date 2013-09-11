@@ -48,7 +48,6 @@ scoped_ptr<base::Value> ManagedTileBinAsValue(ManagedTileBin bin) {
 ManagedTileState::ManagedTileState()
     : raster_mode(LOW_QUALITY_RASTER_MODE),
       bin(NEVER_BIN),
-      gpu_memmgr_stats_bin(NEVER_BIN),
       resolution(NON_IDEAL_RESOLUTION),
       required_for_activation(false),
       time_to_needed_in_seconds(std::numeric_limits<float>::infinity()),
@@ -97,8 +96,6 @@ scoped_ptr<base::Value> ManagedTileState::AsValue() const {
              ManagedTileBinAsValue(tree_bin[ACTIVE_TREE]).release());
   state->Set("tree_bin.1",
              ManagedTileBinAsValue(tree_bin[PENDING_TREE]).release());
-  state->Set("gpu_memmgr_stats_bin",
-      ManagedTileBinAsValue(gpu_memmgr_stats_bin).release());
   state->Set("resolution", TileResolutionAsValue(resolution).release());
   state->Set("time_to_needed_in_seconds",
       MathUtil::AsValueSafely(time_to_needed_in_seconds).release());

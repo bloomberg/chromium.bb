@@ -127,10 +127,6 @@ class CC_EXPORT ManagedTileState {
   ManagedTileBin bin;
   ManagedTileBin tree_bin[NUM_TREES];
 
-  // The bin that the tile would have if the GPU memory manager had
-  // a maximally permissive policy, send to the GPU memory manager
-  // to determine policy.
-  ManagedTileBin gpu_memmgr_stats_bin;
   TileResolution resolution;
   bool required_for_activation;
   float time_to_needed_in_seconds;

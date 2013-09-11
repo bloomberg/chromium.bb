@@ -130,18 +130,19 @@ class TileManagerPerfTest : public testing::Test {
 
   void RunManageTilesTest(const std::string& test_name,
                           unsigned tile_count,
-                          unsigned priority_change_percent) {
+                          int priority_change_percent) {
     DCHECK_GE(tile_count, 100u);
-    DCHECK_LE(priority_change_percent, 100u);
+    DCHECK_GE(priority_change_percent, 0);
+    DCHECK_LE(priority_change_percent, 100);
     TileBinVector tiles;
     CreateTiles(tile_count, &tiles);
     timer_.Reset();
     do {
-      if (priority_change_percent) {
+      if (priority_change_percent > 0) {
         for (unsigned i = 0;
              i < tile_count;
              i += 100 / priority_change_percent) {
-          Tile* tile = tiles[i].first;
+          Tile* tile = tiles[i].first.get();
           ManagedTileBin bin = GetNextBin(tiles[i].second);
           tile->SetPriority(ACTIVE_TREE, GetTilePriorityFromBin(bin));
           tile->SetPriority(PENDING_TREE, GetTilePriorityFromBin(bin));
