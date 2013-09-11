@@ -1707,8 +1707,13 @@ void GraphicsContext::setupPaintCommon(SkPaint* paint) const
 #endif
 
     paint->setAntiAlias(m_state->m_shouldAntialias);
-    paint->setXfermode(m_state->m_xferMode.get());
-    paint->setLooper(m_state->m_looper.get());
+
+    if (!SkXfermode::IsMode(m_state->m_xferMode.get(), SkXfermode::kSrcOver_Mode))
+        paint->setXfermode(m_state->m_xferMode.get());
+
+    if (m_state->m_looper)
+        paint->setLooper(m_state->m_looper.get());
+
     paint->setColorFilter(m_state->m_colorFilter.get());
 }
 
@@ -1858,6 +1863,10 @@ void GraphicsContext::setupShader(SkPaint* paint, Gradient* grad, Pattern* pat, 
     }
 
     paint->setColor(m_state->applyAlpha(color));
+
+    if (!shader)
+        return;
+
     paint->setShader(shader.get());
 }
 
