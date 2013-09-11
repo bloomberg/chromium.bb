@@ -923,7 +923,7 @@ static inline IntPoint absoluteLineDirectionPointToLocalPointInBlock(RootInlineB
     return IntPoint(root->blockDirectionPointInLine(), lineDirectionPoint - absoluteBlockPoint.y());
 }
 
-VisiblePosition previousLinePosition(const VisiblePosition &visiblePosition, int lineDirectionPoint, EditableType editableType, EShouldAdvancePosition shouldAdvancePosition)
+VisiblePosition previousLinePosition(const VisiblePosition &visiblePosition, int lineDirectionPoint, EditableType editableType)
 {
     Position p = visiblePosition.deepEquivalent();
     Node* node = p.deprecatedNode();
@@ -959,41 +959,26 @@ VisiblePosition previousLinePosition(const VisiblePosition &visiblePosition, int
         }
     }
 
-    VisiblePosition previousPosition;
     if (root) {
         // FIXME: Can be wrong for multi-column layout and with transforms.
         IntPoint pointInLine = absoluteLineDirectionPointToLocalPointInBlock(root, lineDirectionPoint);
         RenderObject* renderer = root->closestLeafChildForPoint(pointInLine, isEditablePosition(p))->renderer();
         Node* node = renderer->node();
         if (node && editingIgnoresContent(node))
-            previousPosition = positionInParentBeforeNode(node);
-        else
-            previousPosition = VisiblePosition(renderer->positionForPoint(pointInLine));
+            return positionInParentBeforeNode(node);
+        return VisiblePosition(renderer->positionForPoint(pointInLine));
     }
 
-    if (previousPosition.isNull()) {
-        // Could not find a previous line. This means we must already be on the first line.
-        // Move to the start of the content in this block, which effectively moves us
-        // to the start of the line we're on.
-        Element* rootElement = node->rendererIsEditable(editableType) ? node->rootEditableElement(editableType) : node->document().documentElement();
-        if (rootElement)
-            previousPosition = VisiblePosition(firstPositionInNode(rootElement), DOWNSTREAM);
-    }
-
-    if (previousPosition == visiblePosition && shouldAdvancePosition == TryToAdvancePosition) {
-        // If the above code resulted in no backward progress, fall back on a simpler
-        // approach: just move backward until we reach a different line.
-        VisiblePosition last;
-        do {
-            last = previousPosition;
-            previousPosition = previousPosition.previous(CanSkipOverEditingBoundary);
-        } while (previousPosition != last && inSameLine(previousPosition, visiblePosition));
-    }
-
-    return previousPosition;
+    // Could not find a previous line. This means we must already be on the first line.
+    // Move to the start of the content in this block, which effectively moves us
+    // to the start of the line we're on.
+    Element* rootElement = node->rendererIsEditable(editableType) ? node->rootEditableElement(editableType) : node->document().documentElement();
+    if (!rootElement)
+        return VisiblePosition();
+    return VisiblePosition(firstPositionInNode(rootElement), DOWNSTREAM);
 }
 
-VisiblePosition nextLinePosition(const VisiblePosition &visiblePosition, int lineDirectionPoint, EditableType editableType, EShouldAdvancePosition shouldAdvancePosition)
+VisiblePosition nextLinePosition(const VisiblePosition &visiblePosition, int lineDirectionPoint, EditableType editableType)
 {
     Position p = visiblePosition.deepEquivalent();
     Node* node = p.deprecatedNode();
@@ -1032,38 +1017,23 @@ VisiblePosition nextLinePosition(const VisiblePosition &visiblePosition, int lin
         }
     }
 
-    VisiblePosition nextPosition;
     if (root) {
         // FIXME: Can be wrong for multi-column layout and with transforms.
         IntPoint pointInLine = absoluteLineDirectionPointToLocalPointInBlock(root, lineDirectionPoint);
         RenderObject* renderer = root->closestLeafChildForPoint(pointInLine, isEditablePosition(p))->renderer();
         Node* node = renderer->node();
         if (node && editingIgnoresContent(node))
-            nextPosition = positionInParentBeforeNode(node);
-        else
-            nextPosition = VisiblePosition(renderer->positionForPoint(pointInLine));
+            return positionInParentBeforeNode(node);
+        return VisiblePosition(renderer->positionForPoint(pointInLine));
     }
 
-    if (nextPosition.isNull()) {
-        // Could not find a next line. This means we must already be on the last line.
-        // Move to the end of the content in this block, which effectively moves us
-        // to the end of the line we're on.
-        Element* rootElement = node->rendererIsEditable(editableType) ? node->rootEditableElement(editableType) : node->document().documentElement();
-        if (rootElement)
-            nextPosition = VisiblePosition(lastPositionInNode(rootElement), DOWNSTREAM);
-    }
-
-    if (nextPosition == visiblePosition && shouldAdvancePosition == TryToAdvancePosition) {
-        // If the above code resulted in no forward progress, fall back on a simpler
-        // approach: just move forward until we reach a different line.
-        VisiblePosition last;
-        do {
-            last = nextPosition;
-            nextPosition = nextPosition.next(CanSkipOverEditingBoundary);
-        } while (nextPosition != last && inSameLine(nextPosition, visiblePosition));
-    }
-
-    return nextPosition;
+    // Could not find a next line. This means we must already be on the last line.
+    // Move to the end of the content in this block, which effectively moves us
+    // to the end of the line we're on.
+    Element* rootElement = node->rendererIsEditable(editableType) ? node->rootEditableElement(editableType) : node->document().documentElement();
+    if (!rootElement)
+        return VisiblePosition();
+    return VisiblePosition(lastPositionInNode(rootElement), DOWNSTREAM);
 }
 
 // ---------
