@@ -547,18 +547,13 @@ button {
 .waiting {
   background-image: url('spinner.gif');
   background-repeat: no-repeat;
-  background-position-y: 3px;
-  padding-__MSG_@@bidi_start_edge__: 30px;
-  padding-top: 5px;
+  background-position: __MSG_@@bidi_start_edge__ 3px;
+  padding: 5px 30px;
   color: rgb(180, 180, 180);
 }
 
 .prominent {
   color: #222;
-}
-
-.space-before {
-  margin-top: 20px;
 }
 
 #access-code-countdown-container {
