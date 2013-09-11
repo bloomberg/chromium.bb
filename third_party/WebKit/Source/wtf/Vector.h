@@ -342,6 +342,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         ~VectorBuffer()
         {
             deallocateBuffer(buffer());
+            m_buffer = 0;
         }
 
         void swap(VectorBuffer<T, 0>& other)
