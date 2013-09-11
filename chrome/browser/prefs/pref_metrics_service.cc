@@ -354,10 +354,12 @@ std::string PrefMetricsService::GetHashedPrefValue(
 
   // Dictionary values may contain empty lists and sub-dictionaries. Create
   // a deep copy with those stripped to make the hash more stable.
-  DictionaryValue* dict_value =
-      static_cast<DictionaryValue*>(const_cast<Value*>(value));
-  if (dict_value)
-    value = dict_value->DeepCopyWithoutEmptyChildren();
+  scoped_ptr<DictionaryValue> dict_value;
+  if (value->IsType(Value::TYPE_DICTIONARY)) {
+    dict_value.reset(static_cast<const DictionaryValue*>(value)
+                         ->DeepCopyWithoutEmptyChildren());
+    value = dict_value.get();
+  }
 
   std::string string_to_hash(device_id_);
   string_to_hash.append(path);

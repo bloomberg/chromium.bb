@@ -326,7 +326,7 @@ class BASE_EXPORT DictionaryValue : public Value {
 
   // Makes a copy of |this| but doesn't include empty dictionaries and lists in
   // the copy.  This never returns NULL, even if |this| itself is empty.
-  DictionaryValue* DeepCopyWithoutEmptyChildren();
+  DictionaryValue* DeepCopyWithoutEmptyChildren() const;
 
   // Merge |dictionary| into this dictionary. This is done recursively, i.e. any
   // sub-dictionaries will be merged as well. In case of key collisions, the
