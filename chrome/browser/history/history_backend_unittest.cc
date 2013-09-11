@@ -17,11 +17,13 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/bookmarks/bookmark_test_helpers.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_service.h"
@@ -34,7 +36,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/importer/imported_favicon_usage.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/test/test_browser_thread.h"
@@ -2726,7 +2727,7 @@ TEST_F(HistoryBackendTest, RemoveNotification) {
   ASSERT_TRUE(profile->CreateHistoryService(false, false));
   profile->CreateBookmarkModel(true);
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile.get());
-  ui_test_utils::WaitForBookmarkModelToLoad(model);
+  test::WaitForBookmarkModelToLoad(model);
 
   // Add a URL.
   GURL url("http://www.google.com");

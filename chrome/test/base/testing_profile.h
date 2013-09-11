@@ -171,7 +171,7 @@ class TestingProfile : public Profile {
   // recreating the BookmarkModel.
   //
   // NOTE: this does not block until the bookmarks are loaded. For that use
-  // ui_test_utils::WaitForBookmarkModelToLoad.
+  // WaitForBookmarkModelToLoad().
   void CreateBookmarkModel(bool delete_file);
 
   // Creates a WebDataService. If not invoked, the web data service is NULL.

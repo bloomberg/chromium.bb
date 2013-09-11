@@ -19,6 +19,7 @@
 #include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
 #include "chrome/browser/autocomplete/autocomplete_result.h"
 #include "chrome/browser/autocomplete/history_url_provider.h"
+#include "chrome/browser/bookmarks/bookmark_test_helpers.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/history_database.h"
 #include "chrome/browser/history/history_service.h"
@@ -32,7 +33,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/test_browser_thread.h"
 #include "sql/transaction.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -153,7 +153,7 @@ void HistoryQuickProviderTest::SetUp() {
   profile_.reset(new TestingProfile());
   ASSERT_TRUE(profile_->CreateHistoryService(true, false));
   profile_->CreateBookmarkModel(true);
-  ui_test_utils::WaitForBookmarkModelToLoad(profile_.get());
+  test::WaitForBookmarkModelToLoad(profile_.get());
   profile_->BlockUntilHistoryIndexIsRefreshed();
   history_service_ =
       HistoryServiceFactory::GetForProfile(profile_.get(),

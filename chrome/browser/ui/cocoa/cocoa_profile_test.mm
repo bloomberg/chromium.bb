@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
+#include "chrome/browser/bookmarks/bookmark_test_helpers.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -12,7 +13,6 @@
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/test_browser_thread.h"
 
 using content::BrowserThread;
@@ -62,7 +62,7 @@ void CocoaProfileTest::SetUp() {
   ASSERT_TRUE(profile_);
 
   profile_->CreateBookmarkModel(true);
-  ui_test_utils::WaitForBookmarkModelToLoad(profile_);
+  test::WaitForBookmarkModelToLoad(profile_);
 
   // TODO(shess): These are needed in case someone creates a browser
   // window off of browser_.  pkasting indicates that other

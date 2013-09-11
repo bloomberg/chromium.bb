@@ -9,8 +9,8 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
+#include "chrome/browser/bookmarks/bookmark_test_helpers.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
@@ -75,7 +75,7 @@ TEST_F(BookmarkNodeDataTest, URL) {
   profile.SetID(L"id");
   profile.CreateBookmarkModel(false);
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(&profile);
-  ui_test_utils::WaitForBookmarkModelToLoad(model);
+  test::WaitForBookmarkModelToLoad(model);
   const BookmarkNode* root = model->bookmark_bar_node();
   GURL url(GURL("http://foo.com"));
   const string16 title(ASCIIToUTF16("foo.com"));
@@ -124,7 +124,7 @@ TEST_F(BookmarkNodeDataTest, Folder) {
   profile.CreateBookmarkModel(false);
 
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(&profile);
-  ui_test_utils::WaitForBookmarkModelToLoad(model);
+  test::WaitForBookmarkModelToLoad(model);
 
   const BookmarkNode* root = model->bookmark_bar_node();
   const BookmarkNode* g1 = model->AddFolder(root, 0, ASCIIToUTF16("g1"));
@@ -170,7 +170,7 @@ TEST_F(BookmarkNodeDataTest, FolderWithChild) {
   profile.CreateBookmarkModel(false);
 
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(&profile);
-  ui_test_utils::WaitForBookmarkModelToLoad(model);
+  test::WaitForBookmarkModelToLoad(model);
 
   const BookmarkNode* root = model->bookmark_bar_node();
   const BookmarkNode* folder = model->AddFolder(root, 0, ASCIIToUTF16("g1"));
@@ -213,7 +213,7 @@ TEST_F(BookmarkNodeDataTest, MultipleNodes) {
   profile.CreateBookmarkModel(false);
 
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(&profile);
-  ui_test_utils::WaitForBookmarkModelToLoad(model);
+  test::WaitForBookmarkModelToLoad(model);
 
   const BookmarkNode* root = model->bookmark_bar_node();
   const BookmarkNode* folder = model->AddFolder(root, 0, ASCIIToUTF16("g1"));

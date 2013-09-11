@@ -22,9 +22,9 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/bookmarks/bookmark_model_test_utils.h"
+#include "chrome/browser/bookmarks/bookmark_test_helpers.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/tree_node_iterator.h"
@@ -33,7 +33,6 @@
 
 using base::Time;
 using base::TimeDelta;
-using content::BrowserThread;
 
 namespace {
 
@@ -907,7 +906,7 @@ class BookmarkModelTestWithProfile : public testing::Test {
 
   void BlockTillBookmarkModelLoaded() {
     bb_model_ = BookmarkModelFactory::GetForProfile(profile_.get());
-    ui_test_utils::WaitForBookmarkModelToLoad(bb_model_);
+    test::WaitForBookmarkModelToLoad(bb_model_);
   }
 
   // The profile.

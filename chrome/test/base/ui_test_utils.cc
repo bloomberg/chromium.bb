@@ -51,7 +51,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/base/bookmark_load_observer.h"
 #include "chrome/test/base/find_in_page_observer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/dom_operation_notification_details.h"
@@ -351,21 +350,6 @@ void RegisterAndWait(content::NotificationObserver* observer,
   content::NotificationRegistrar registrar;
   registrar.Add(observer, type, source);
   content::RunMessageLoop();
-}
-
-void WaitForBookmarkModelToLoad(BookmarkModel* model) {
-  if (model->loaded())
-    return;
-  base::RunLoop run_loop;
-  BookmarkLoadObserver observer(content::GetQuitTaskForRunLoop(&run_loop));
-  model->AddObserver(&observer);
-  content::RunThisRunLoop(&run_loop);
-  model->RemoveObserver(&observer);
-  ASSERT_TRUE(model->loaded());
-}
-
-void WaitForBookmarkModelToLoad(Profile* profile) {
-  WaitForBookmarkModelToLoad(BookmarkModelFactory::GetForProfile(profile));
 }
 
 void WaitForTemplateURLServiceToLoad(TemplateURLService* service) {

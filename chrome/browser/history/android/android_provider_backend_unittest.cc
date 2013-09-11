@@ -15,6 +15,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_service.h"
+#include "chrome/browser/bookmarks/bookmark_test_helpers.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/favicon/favicon_changed_details.h"
 #include "chrome/browser/history/android/android_time.h"
@@ -24,9 +25,9 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Time;
@@ -127,7 +128,7 @@ class AndroidProviderBackendTest : public testing::Test {
         chrome::kInitialProfile);
     testing_profile->CreateBookmarkModel(true);
     bookmark_model_ = BookmarkModelFactory::GetForProfile(testing_profile);
-    ui_test_utils::WaitForBookmarkModelToLoad(bookmark_model_);
+    test::WaitForBookmarkModelToLoad(bookmark_model_);
     ASSERT_TRUE(bookmark_model_);
 
     // Get the BookmarkModel from LastUsedProfile, this is the same way that

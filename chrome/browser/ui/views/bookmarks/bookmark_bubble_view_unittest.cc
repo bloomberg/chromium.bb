@@ -8,13 +8,13 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/bookmarks/bookmark_test_helpers.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/signin/fake_signin_manager.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bubble_delegate.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
-#include "chrome/test/base/ui_test_utils.h"
 
 namespace {
 const char kTestBookmarkURL[] = "http://www.google.com";
@@ -29,7 +29,7 @@ class BookmarkBubbleViewTest : public BrowserWithTestWindowTest {
     BrowserWithTestWindowTest::SetUp();
 
     profile()->CreateBookmarkModel(true);
-    ui_test_utils::WaitForBookmarkModelToLoad(profile());
+    test::WaitForBookmarkModelToLoad(profile());
 
     bookmark_utils::AddIfNotBookmarked(
         BookmarkModelFactory::GetForProfile(profile()),

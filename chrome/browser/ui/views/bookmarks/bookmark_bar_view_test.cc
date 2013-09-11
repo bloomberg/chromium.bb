@@ -11,6 +11,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/bookmarks/bookmark_test_helpers.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
@@ -122,7 +123,7 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
     profile_.reset(new TestingProfile());
     profile_->CreateBookmarkModel(true);
     model_ = BookmarkModelFactory::GetForProfile(profile_.get());
-    ui_test_utils::WaitForBookmarkModelToLoad(model_);
+    test::WaitForBookmarkModelToLoad(model_);
     profile_->GetPrefs()->SetBoolean(prefs::kShowBookmarkBar, true);
 
     Browser::CreateParams native_params(profile_.get(),

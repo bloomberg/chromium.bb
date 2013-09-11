@@ -11,9 +11,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/bookmarks/bookmark_test_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -38,7 +38,7 @@ class BookmarkEditorViewTest : public testing::Test {
     profile_->CreateBookmarkModel(true);
 
     model_ = BookmarkModelFactory::GetForProfile(profile_.get());
-    ui_test_utils::WaitForBookmarkModelToLoad(model_);
+    test::WaitForBookmarkModelToLoad(model_);
 
     AddTestData();
   }

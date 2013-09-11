@@ -59,6 +59,7 @@ specific_include_rules = {
   # Do not add to the list of temporarily-allowed dependencies below,
   # and please do not introduce more #includes of these files.
   '.*_[a-z]*test\.cc': [
+    "!chrome/browser/bookmarks/bookmark_test_helpers.h",
     "!chrome/browser/bookmarks/bookmark_utils.h",
   ]
 }

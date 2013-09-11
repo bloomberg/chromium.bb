@@ -5,11 +5,12 @@
 #include "chrome/browser/ui/bookmarks/recently_used_folders_combo_model.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/bookmarks/bookmark_test_helpers.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -42,7 +43,7 @@ RecentlyUsedFoldersComboModelTest::RecentlyUsedFoldersComboModelTest()
 void RecentlyUsedFoldersComboModelTest::SetUp() {
   profile_.reset(new TestingProfile());
   profile_->CreateBookmarkModel(true);
-  ui_test_utils::WaitForBookmarkModelToLoad(GetModel());
+  test::WaitForBookmarkModelToLoad(GetModel());
 }
 
 void RecentlyUsedFoldersComboModelTest::TearDown() {

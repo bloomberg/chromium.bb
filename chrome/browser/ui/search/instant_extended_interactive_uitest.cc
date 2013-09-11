@@ -21,6 +21,7 @@
 #include "chrome/browser/autocomplete/autocomplete_result.h"
 #include "chrome/browser/autocomplete/search_provider.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/bookmarks/bookmark_test_helpers.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
@@ -822,7 +823,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, DISABLED_HasBookmarkProvider) {
   BookmarkModel* bookmark_model =
       BookmarkModelFactory::GetForProfile(browser()->profile());
   ASSERT_TRUE(bookmark_model);
-  ui_test_utils::WaitForBookmarkModelToLoad(bookmark_model);
+  test::WaitForBookmarkModelToLoad(bookmark_model);
   bookmark_utils::AddIfNotBookmarked(bookmark_model, GURL("http://angeline/"),
                                      ASCIIToUTF16("angeline"));
 

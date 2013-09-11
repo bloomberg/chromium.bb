@@ -55,7 +55,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/test/base/bookmark_load_observer.h"
 #include "chrome/test/base/history_index_restore_observer.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -475,7 +474,6 @@ static BrowserContextKeyedService* BuildBookmarkModel(
   bookmark_model->Load(profile->GetIOTaskRunner());
   return bookmark_model;
 }
-
 
 void TestingProfile::CreateBookmarkModel(bool delete_file) {
   if (delete_file) {

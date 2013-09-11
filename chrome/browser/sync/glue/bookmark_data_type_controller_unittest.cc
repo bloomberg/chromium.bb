@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/bookmarks/bookmark_test_helpers.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -22,7 +23,6 @@
 #include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/test/base/profile_mock.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "components/browser_context_keyed_service/refcounted_browser_context_keyed_service.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_browser_thread.h"
@@ -104,7 +104,7 @@ class SyncBookmarkDataTypeControllerTest : public testing::Test {
       bookmark_model_ = static_cast<BookmarkModel*>(
           BookmarkModelFactory::GetInstance()->SetTestingFactoryAndUse(
               &profile_, BuildBookmarkModel));
-      ui_test_utils::WaitForBookmarkModelToLoad(bookmark_model_);
+      test::WaitForBookmarkModelToLoad(bookmark_model_);
     } else {
       bookmark_model_ = static_cast<BookmarkModel*>(
           BookmarkModelFactory::GetInstance()->SetTestingFactoryAndUse(
@@ -182,7 +182,7 @@ TEST_F(SyncBookmarkDataTypeControllerTest, StartBookmarkModelNotReady) {
   EXPECT_EQ(DataTypeController::MODEL_STARTING, bookmark_dtc_->state());
 
   bookmark_model_->Load(profile_.GetIOTaskRunner());
-  ui_test_utils::WaitForBookmarkModelToLoad(bookmark_model_);
+  test::WaitForBookmarkModelToLoad(bookmark_model_);
   EXPECT_EQ(DataTypeController::MODEL_LOADED, bookmark_dtc_->state());
 
   bookmark_dtc_->StartAssociating(

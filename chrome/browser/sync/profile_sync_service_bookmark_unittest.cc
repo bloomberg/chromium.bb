@@ -25,13 +25,13 @@
 #include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/bookmarks/bookmark_test_helpers.h"
 #include "chrome/browser/sync/glue/bookmark_change_processor.h"
 #include "chrome/browser/sync/glue/bookmark_model_associator.h"
 #include "chrome/browser/sync/glue/data_type_error_handler.h"
 #include "chrome/browser/sync/glue/data_type_error_handler_mock.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/test_browser_thread.h"
 #include "sync/api/sync_error.h"
 #include "sync/internal_api/public/change_record.h"
@@ -346,7 +346,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
     bool delete_bookmarks = load == DELETE_EXISTING_STORAGE;
     profile_.CreateBookmarkModel(delete_bookmarks);
     model_ = BookmarkModelFactory::GetForProfile(&profile_);
-    ui_test_utils::WaitForBookmarkModelToLoad(model_);
+    test::WaitForBookmarkModelToLoad(model_);
     // This noticeably speeds up the unit tests that request it.
     if (save == DONT_SAVE_TO_STORAGE)
       model_->ClearStore();

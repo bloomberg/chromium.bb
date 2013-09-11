@@ -2,21 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/importer/profile_writer.h"
+
 #include <string>
 
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/bookmarks/bookmark_test_helpers.h"
 #include "chrome/browser/bookmarks/bookmark_title_match.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
+#include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/importer/importer_unittest_utils.h"
-#include "chrome/browser/importer/profile_writer.h"
 #include "chrome/common/importer/imported_bookmark_entry.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -139,7 +141,7 @@ TEST_F(ProfileWriterTest, CheckBookmarksWithMultiProfile) {
 
   BookmarkModel* bookmark_model2 =
       BookmarkModelFactory::GetForProfile(&profile2);
-  ui_test_utils::WaitForBookmarkModelToLoad(bookmark_model2);
+  test::WaitForBookmarkModelToLoad(bookmark_model2);
   bookmark_utils::AddIfNotBookmarked(bookmark_model2,
                                      GURL("http://www.bing.com"),
                                      ASCIIToUTF16("Bing"));
@@ -149,7 +151,7 @@ TEST_F(ProfileWriterTest, CheckBookmarksWithMultiProfile) {
   CreateImportedBookmarksEntries();
   BookmarkModel* bookmark_model1 =
       BookmarkModelFactory::GetForProfile(&profile1);
-  ui_test_utils::WaitForBookmarkModelToLoad(bookmark_model1);
+  test::WaitForBookmarkModelToLoad(bookmark_model1);
 
   scoped_refptr<TestProfileWriter> profile_writer(
       new TestProfileWriter(&profile1));
@@ -173,7 +175,7 @@ TEST_F(ProfileWriterTest, CheckBookmarksAfterWritingDataTwice) {
   CreateImportedBookmarksEntries();
   BookmarkModel* bookmark_model =
       BookmarkModelFactory::GetForProfile(&profile);
-  ui_test_utils::WaitForBookmarkModelToLoad(bookmark_model);
+  test::WaitForBookmarkModelToLoad(bookmark_model);
 
   scoped_refptr<TestProfileWriter> profile_writer(
       new TestProfileWriter(&profile));

@@ -7,14 +7,15 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/bookmarks/bookmark_test_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/test/test_browser_thread.h"
 #include "grit/generated_resources.h"
@@ -56,7 +57,7 @@ class BookmarkContextMenuControllerTest : public testing::Test {
     profile_->CreateBookmarkModel(true);
 
     model_ = BookmarkModelFactory::GetForProfile(profile_.get());
-    ui_test_utils::WaitForBookmarkModelToLoad(model_);
+    test::WaitForBookmarkModelToLoad(model_);
 
     AddTestData();
   }

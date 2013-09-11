@@ -6,6 +6,7 @@
 
 #include "apps/app_launcher.h"
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/bookmarks/bookmark_test_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service.h"
@@ -15,7 +16,6 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "ui/views/controls/button/text_button.h"
 
 typedef BrowserWithTestWindowTest BookmarkBarViewTest;
@@ -24,7 +24,7 @@ typedef BrowserWithTestWindowTest BookmarkBarViewTest;
 TEST_F(BookmarkBarViewTest, NoAppsShortcutWithoutInstantExtended) {
   ScopedTestingLocalState local_state(TestingBrowserProcess::GetGlobal());
   profile()->CreateBookmarkModel(true);
-  ui_test_utils::WaitForBookmarkModelToLoad(profile());
+  test::WaitForBookmarkModelToLoad(profile());
   BookmarkBarView bookmark_bar_view(browser(), NULL);
   bookmark_bar_view.set_owned_by_client();
   EXPECT_FALSE(bookmark_bar_view.apps_page_shortcut_->visible());
@@ -63,7 +63,7 @@ class BookmarkBarViewInstantExtendedTest : public BrowserWithTestWindowTest {
 TEST_F(BookmarkBarViewInstantExtendedTest, AppsShortcutVisibility) {
   ScopedTestingLocalState local_state(TestingBrowserProcess::GetGlobal());
   profile()->CreateBookmarkModel(true);
-  ui_test_utils::WaitForBookmarkModelToLoad(profile());
+  test::WaitForBookmarkModelToLoad(profile());
   BookmarkBarView bookmark_bar_view(browser(), NULL);
   bookmark_bar_view.set_owned_by_client();
   browser()->profile()->GetPrefs()->SetBoolean(

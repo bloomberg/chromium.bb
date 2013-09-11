@@ -15,6 +15,7 @@
 #include "chrome/browser/autocomplete/history_quick_provider.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/bookmarks/bookmark_test_helpers.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/history_service.h"
@@ -308,7 +309,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
     BookmarkModel* bookmark_model =
         BookmarkModelFactory::GetForProfile(profile);
     ASSERT_TRUE(bookmark_model);
-    ui_test_utils::WaitForBookmarkModelToLoad(bookmark_model);
+    test::WaitForBookmarkModelToLoad(bookmark_model);
 
     GURL url(entry.url);
     // Add everything in order of time. We don't want to have a time that

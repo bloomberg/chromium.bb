@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/bookmarks/bookmark_test_helpers.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history_service.h"
@@ -21,7 +22,6 @@
 #include "chrome/common/importer/imported_bookmark_entry.h"
 #include "chrome/common/importer/imported_favicon_usage.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "chrome/utility/importer/bookmark_html_reader.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "grit/generated_resources.h"
@@ -29,8 +29,6 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/codec/png_codec.h"
-
-using content::BrowserThread;
 
 namespace {
 
@@ -154,7 +152,7 @@ TEST_F(BookmarkHTMLWriterTest, Test) {
   profile.CreateBookmarkModel(true);
 
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(&profile);
-  ui_test_utils::WaitForBookmarkModelToLoad(model);
+  test::WaitForBookmarkModelToLoad(model);
 
   // Create test PNG representing favicon for url1.
   SkBitmap bitmap;

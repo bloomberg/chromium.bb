@@ -7,10 +7,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/bookmarks/bookmark_test_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "ui/views/controls/menu/menu_runner.h"
 
 class BookmarkMenuDelegateTest : public BrowserWithTestWindowTest {
@@ -24,7 +24,7 @@ class BookmarkMenuDelegateTest : public BrowserWithTestWindowTest {
     profile()->CreateBookmarkModel(true);
 
     model_ = BookmarkModelFactory::GetForProfile(profile());
-    ui_test_utils::WaitForBookmarkModelToLoad(model_);
+    test::WaitForBookmarkModelToLoad(model_);
 
     AddTestData();
 

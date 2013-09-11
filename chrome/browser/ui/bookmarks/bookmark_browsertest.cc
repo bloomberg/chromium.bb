@@ -8,6 +8,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/bookmarks/bookmark_test_helpers.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -57,7 +58,7 @@ class BookmarkBrowsertest : public InProcessBrowserTest {
   BookmarkModel* WaitForBookmarkModel(Profile* profile) {
     BookmarkModel* bookmark_model =
         BookmarkModelFactory::GetForProfile(profile);
-    ui_test_utils::WaitForBookmarkModelToLoad(bookmark_model);
+    test::WaitForBookmarkModelToLoad(bookmark_model);
     return bookmark_model;
   }
 };
