@@ -284,9 +284,15 @@ class TooltipIcon : public views::ImageView {
 };
 
 // A View for a single notification banner.
-class NotificationView : public views::View {
+class NotificationView : public views::View,
+                         public views::ButtonListener,
+                         public views::StyledLabelListener {
  public:
-  explicit NotificationView(const DialogNotification& data) : checkbox_(NULL) {
+  NotificationView(const DialogNotification& data,
+                   AutofillDialogViewDelegate* delegate)
+      : data_(data),
+        delegate_(delegate),
+        checkbox_(NULL) {
     scoped_ptr<views::View> label_view;
     if (data.HasCheckbox()) {
       scoped_ptr<views::Checkbox> checkbox(
@@ -304,12 +310,29 @@ class NotificationView : public views::View {
       checkbox_ = checkbox.get();
       label_view.reset(checkbox.release());
     } else {
-      scoped_ptr<views::Label> label(new views::Label());
-      label->SetText(data.display_text());
-      label->SetMultiLine(true);
-      label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-      label->SetAutoColorReadabilityEnabled(false);
-      label->SetEnabledColor(data.GetTextColor());
+      scoped_ptr<views::StyledLabel> label(new views::StyledLabel(
+          data.display_text(), this));
+      label->set_auto_color_readability_enabled(false);
+
+      views::StyledLabel::RangeStyleInfo text_style;
+      text_style.color = data.GetTextColor();
+
+      if (!data.link_range().is_empty()) {
+        label->AddStyleRange(gfx::Range(0, data.link_range().start()),
+                             text_style);
+        label->AddStyleRange(
+            gfx::Range(0, data.link_range().start()),
+            views::StyledLabel::RangeStyleInfo::CreateForLink());
+        label->AddStyleRange(gfx::Range(0, data.link_range().start()),
+                             text_style);
+        label->AddStyleRange(
+            gfx::Range(data.link_range().end(), data.display_text().size()),
+            views::StyledLabel::RangeStyleInfo::CreateForLink());
+      } else {
+        label->AddStyleRange(gfx::Range(0, data.display_text().size()),
+                             text_style);
+      }
+
       label_view.reset(label.release());
     }
 
@@ -330,7 +353,7 @@ class NotificationView : public views::View {
     return checkbox_;
   }
 
-  // views::View implementation
+  // views::View implementation.
   virtual gfx::Insets GetInsets() const OVERRIDE {
     int vertical_padding = kNotificationPadding;
     if (checkbox_)
@@ -372,7 +395,27 @@ class NotificationView : public views::View {
                            right_bound - bounds.x(), bounds.height());
   }
 
+  // views::ButtonListener implementation.
+  virtual void ButtonPressed(views::Button* sender,
+                             const ui::Event& event) OVERRIDE {
+    DCHECK_EQ(sender, checkbox_);
+    delegate_->NotificationCheckboxStateChanged(data_.type(),
+                                                checkbox_->checked());
+  }
+
+  // views::StyledLabelListener implementation.
+  virtual void StyledLabelLinkClicked(const gfx::Range& range, int event_flags)
+      OVERRIDE {
+    delegate_->LinkClicked(data_.link_url());
+  }
+
  private:
+  // The model data for this notification.
+  DialogNotification data_;
+
+  // The delegate that handles interaction with |this|.
+  AutofillDialogViewDelegate* delegate_;
+
   // The checkbox associated with this notification, or NULL if there is none.
   views::Checkbox* checkbox_;
 
@@ -796,8 +839,7 @@ gfx::Rect AutofillDialogViews::OverlayView::ContentBoundsSansBubbleBorder() {
 
 AutofillDialogViews::NotificationArea::NotificationArea(
     AutofillDialogViewDelegate* delegate)
-    : delegate_(delegate),
-      checkbox_(NULL) {
+    : delegate_(delegate) {
   // Reserve vertical space for the arrow (regardless of whether one exists).
   // The -1 accounts for the border.
   set_border(views::Border::CreateEmptyBorder(kArrowHeight - 1, 0, 0, 0));
@@ -814,22 +856,17 @@ void AutofillDialogViews::NotificationArea::SetNotifications(
   notifications_ = notifications;
 
   RemoveAllChildViews(true);
-  checkbox_ = NULL;
 
   if (notifications_.empty())
     return;
 
   for (size_t i = 0; i < notifications_.size(); ++i) {
     const DialogNotification& notification = notifications_[i];
-    scoped_ptr<NotificationView> view(new NotificationView(notification));
-    if (view->checkbox())
-      checkbox_ = view->checkbox();
+    scoped_ptr<NotificationView> view(new NotificationView(notification,
+                                                           delegate_));
 
     AddChildView(view.release());
   }
-
-  if (checkbox_)
-    checkbox_->set_listener(this);
 
   PreferredSizeChanged();
 }
@@ -874,13 +911,6 @@ void AutofillDialogViews::OnWidgetBoundsChanged(views::Widget* widget,
       base::TimeDelta::FromMilliseconds(100),
       base::Bind(&AutofillDialogViews::ContentsPreferredSizeChanged,
                  base::Unretained(this)));
-}
-
-void AutofillDialogViews::NotificationArea::ButtonPressed(
-    views::Button* sender, const ui::Event& event) {
-  DCHECK_EQ(sender, checkbox_);
-  delegate_->NotificationCheckboxStateChanged(notifications_.front().type(),
-                                                checkbox_->checked());
 }
 
 bool AutofillDialogViews::NotificationArea::HasArrow() {

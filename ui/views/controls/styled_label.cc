@@ -82,7 +82,8 @@ bool StyledLabel::StyleRange::operator<(
 
 StyledLabel::StyledLabel(const string16& text, StyledLabelListener* listener)
     : listener_(listener),
-      displayed_on_background_color_set_(false) {
+      displayed_on_background_color_set_(false),
+      auto_color_readability_enabled_(true) {
   TrimWhitespace(text, TRIM_TRAILING, &text_);
 }
 
@@ -246,6 +247,7 @@ int StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
 
     if (displayed_on_background_color_set_)
       label->SetBackgroundColor(displayed_on_background_color_);
+    label->SetAutoColorReadabilityEnabled(auto_color_readability_enabled_);
 
     // Lay out the views to overlap by 1 pixel to compensate for their border
     // spacing. Otherwise, "<a>link</a>," will render as "link ,".

@@ -1856,6 +1856,10 @@ std::vector<DialogNotification> AutofillDialogControllerImpl::
   return notifications;
 }
 
+void AutofillDialogControllerImpl::LinkClicked(const GURL& url) {
+  OpenTabWithUrl(url);
+}
+
 void AutofillDialogControllerImpl::SignInLinkClicked() {
   ScopedViewUpdates updates(view_.get());
 

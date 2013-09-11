@@ -76,6 +76,10 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
     return displayed_on_background_color_;
   }
 
+  void set_auto_color_readability_enabled(bool auto_color_readability) {
+    auto_color_readability_enabled_ = auto_color_readability;
+  }
+
   // View implementation:
   virtual gfx::Insets GetInsets() const OVERRIDE;
   virtual int GetHeightForWidth(int w) OVERRIDE;
@@ -130,6 +134,10 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
   // Background color on which the label is drawn, for auto color readability.
   SkColor displayed_on_background_color_;
   bool displayed_on_background_color_set_;
+
+  // Controls whether the text is automatically re-colored to be readable on the
+  // background.
+  bool auto_color_readability_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(StyledLabel);
 };

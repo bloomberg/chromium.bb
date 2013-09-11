@@ -297,8 +297,7 @@ class AutofillDialogViews : public AutofillDialogView,
   };
 
   // An area for notifications. Some notifications point at the account chooser.
-  class NotificationArea : public views::View,
-                           public views::ButtonListener {
+  class NotificationArea : public views::View {
    public:
     explicit NotificationArea(AutofillDialogViewDelegate* delegate);
     virtual ~NotificationArea();
@@ -311,10 +310,6 @@ class AutofillDialogViews : public AutofillDialogView,
     virtual const char* GetClassName() const OVERRIDE;
     virtual void PaintChildren(gfx::Canvas* canvas) OVERRIDE;
     virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-
-    // views::ButtonListener implementation:
-    virtual void ButtonPressed(views::Button* sender,
-                               const ui::Event& event) OVERRIDE;
 
     void set_arrow_centering_anchor(
         const base::WeakPtr<views::View>& arrow_centering_anchor) {
@@ -329,9 +324,6 @@ class AutofillDialogViews : public AutofillDialogView,
     // A reference to the delegate/controller than owns this view.
     // Used to report when checkboxes change their values.
     AutofillDialogViewDelegate* delegate_;  // weak
-
-    // The currently showing checkbox, or NULL if none exists.
-    views::Checkbox* checkbox_;  // weak
 
     // If HasArrow() is true, the arrow should point at this.
     base::WeakPtr<views::View> arrow_centering_anchor_;

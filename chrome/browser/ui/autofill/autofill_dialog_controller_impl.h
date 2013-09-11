@@ -151,6 +151,7 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   virtual gfx::Image SplashPageImage() const OVERRIDE;
   virtual void ViewClosed() OVERRIDE;
   virtual std::vector<DialogNotification> CurrentNotifications() OVERRIDE;
+  virtual void LinkClicked(const GURL& url) OVERRIDE;
   virtual void SignInLinkClicked() OVERRIDE;
   virtual void NotificationCheckboxStateChanged(DialogNotification::Type type,
                                                 bool checked) OVERRIDE;

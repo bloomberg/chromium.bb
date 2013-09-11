@@ -170,6 +170,10 @@ class AutofillDialogViewDelegate {
   // order from top to bottom.
   virtual std::vector<DialogNotification> CurrentNotifications() = 0;
 
+  // Called when a generic link has been clicked in the dialog. Opens the URL
+  // out-of-line.
+  virtual void LinkClicked(const GURL& url) = 0;
+
   // Begins or aborts the flow to sign into Wallet.
   virtual void SignInLinkClicked() = 0;
 
