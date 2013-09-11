@@ -181,7 +181,6 @@ const char kSessionManagerStopSessionService[] = "StopSessionService";
 const char kSessionManagerStartDeviceWipe[] = "StartDeviceWipe";
 const char kSessionManagerLockScreen[] = "LockScreen";
 const char kSessionManagerHandleLockScreenShown[] = "HandleLockScreenShown";
-const char kSessionManagerUnlockScreen[] = "UnlockScreen";
 const char kSessionManagerHandleLockScreenDismissed[] =
     "HandleLockScreenDismissed";
 const char kSessionManagerHandleLivenessConfirmed[] = "HandleLivenessConfirmed";
@@ -216,7 +215,6 @@ namespace chromium {
 const char kChromiumInterface[] = "org.chromium.Chromium";
 // ScreenLock signals.
 const char kLockScreenSignal[] = "LockScreen";
-const char kUnlockScreenSignal[] = "UnlockScreen";
 // Text-to-speech service signals.
 const char kTTSReadySignal[] = "TTSReady";
 const char kTTSFailedSignal[] = "TTSFailed";
