@@ -29,7 +29,7 @@ function ShareDialog(parentNode) {
  * @type {number}
  * @const
  */
-ShareDialog.FAILURE_TIMEOUT = 5000;
+ShareDialog.FAILURE_TIMEOUT = 10000;
 
 /**
  * The result of opening the dialog.
@@ -167,6 +167,9 @@ ShareDialog.prototype.onLoaded = function() {
     this.failureTimeout_ = null;
   }
 
+  // Logs added temporarily to track crbug.com/288783.
+  console.debug('Loaded.');
+
   this.okButton_.hidden = false;
   this.spinnerWrapper_.hidden = true;
   this.webViewWrapper_.classList.add('loaded');
@@ -195,15 +198,18 @@ ShareDialog.prototype.hide = function(opt_onHide) {
 ShareDialog.prototype.hideWithResult = function(result, opt_onHide) {
   if (!this.isShowing())
     return;
+
   if (this.shareClient_) {
     this.shareClient_.dispose();
     this.shareClient_ = null;
   }
+
   this.webViewWrapper_.textContent = '';
   if (this.failureTimeout_) {
     clearTimeout(this.failureTimeout_);
     this.failureTimeout_ = null;
   }
+
   FileManagerDialogBase.prototype.hide.call(
       this,
       function() {
@@ -236,9 +242,12 @@ ShareDialog.prototype.show = function(entry, callback) {
 
   // If the embedded share dialog is not started within some time, then
   // give up and show an error message.
-  this.failureTimeout_ = setTimeout(
-      this.hideWithResult.bind(this, ShareDialog.Result.NETWORK_ERROR),
-      ShareDialog.FAILURE_TIMEOUT);
+  this.failureTimeout_ = setTimeout(function() {
+    this.hideWithResult(ShareDialog.Result.NETWORK_ERROR);
+
+    // Logs added temporarily to track crbug.com/288783.
+    console.debug('Timeout. Web View points at: ' + this.webView_.src);
+  }.bind(this), ShareDialog.FAILURE_TIMEOUT);
 
   // TODO(mtomasz): Move to initDom_() once and reuse <webview> once it gets
   // fixed. See: crbug.com/260622.
@@ -282,7 +291,10 @@ ShareDialog.prototype.show = function(entry, callback) {
   group.run(function() {
     // If the url is not obtained, return the network error.
     if (!shareUrl) {
-      this.hideWithResult(ShareDialog.Result.NETWORK_ERROR);
+       // Logs added temporarily to track crbug.com/288783.
+       console.debug('URL not available.');
+
+       this.hideWithResult(ShareDialog.Result.NETWORK_ERROR);
       return;
     }
     // Already inactive, therefore ignore.

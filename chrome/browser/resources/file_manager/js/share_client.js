@@ -77,10 +77,16 @@ ShareClient.Observer.prototype.onClosed = function() {
  * @private
  */
 ShareClient.prototype.onMessage_ = function(e) {
-  if (e.origin != ShareClient.SHARE_TARGET && !window.IN_TEST)
+  if (e.origin != ShareClient.SHARE_TARGET && !window.IN_TEST) {
+    // Logs added temporarily to track crbug.com/288783.
+    console.debug('Received a message from an illegal origin: ' + e.origin);
     return;
+  }
 
   var data = JSON.parse(e.data);
+  // Logs added temporarily to track crbug.com/288783.
+  console.debug('Received message: ' + data.type);
+
   switch (data.type) {
     case 'resize':
       this.observer_.onResized(data.args.width,
@@ -108,6 +114,9 @@ ShareClient.prototype.onMessage_ = function(e) {
  * @private
  */
 ShareClient.prototype.onLoadStop_ = function(e) {
+  // Logs added temporarily to track crbug.com/288783.
+  console.debug('Web View loaded.');
+
   this.postMessage_('makeBodyVisible');
 };
 
@@ -117,6 +126,10 @@ ShareClient.prototype.onLoadStop_ = function(e) {
  * @private
  */
 ShareClient.prototype.onLoadAbort_ = function(e) {
+  // Logs added temporarily to track crbug.com/288783.
+  console.debug('Web View failed to load with error: ' + e.reason + ', url: ' +
+      e.url + ' while requested: ' + this.url_);
+
   this.observer_.onLoadFailed();
 };
 
@@ -127,6 +140,9 @@ ShareClient.prototype.onLoadAbort_ = function(e) {
  * @private
  */
 ShareClient.prototype.postMessage_ = function(type, opt_args) {
+  // Logs added temporarily to track crbug.com/288783.
+  console.debug('Sending message: ' + type);
+
   var message = {
     type: type,
     args: opt_args
@@ -143,6 +159,9 @@ ShareClient.prototype.load = function() {
   if (this.loading_ || this.loaded_)
     throw new Error('Already loaded.');
   this.loading_ = true;
+
+  // Logs added temporarily to track crbug.com/288783.
+  console.debug('Loading.');
 
   window.addEventListener('message', this.onMessageBound_);
   this.webView_.addEventListener('loadstop', this.onLoadStopBound_);
