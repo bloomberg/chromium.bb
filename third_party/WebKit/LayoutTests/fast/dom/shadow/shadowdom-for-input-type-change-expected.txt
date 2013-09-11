@@ -7,6 +7,8 @@ PASS initialWidth is not 0
 PASS widthWithShadow is not initialWidth
 PASS input1.type = "hidden"; input1.offsetWidth is 0
 PASS input1.type = "datetime-local"; input1.offsetWidth is widthWithShadow
+PASS input1.type = "range"; input1.value is "50"
+PASS eventSender.keyDown("rightArrow"); input1.value is "50"
 PASS successfullyParsed is true
 
 TEST COMPLETE

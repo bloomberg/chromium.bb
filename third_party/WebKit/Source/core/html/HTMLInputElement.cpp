@@ -440,7 +440,10 @@ void HTMLInputElement::updateType()
         detach();
 
     m_inputType = newType.release();
-    m_inputTypeView = m_inputType;
+    if (hasAuthorShadowRoot())
+        m_inputTypeView = InputTypeView::create(this);
+    else
+        m_inputTypeView = m_inputType;
     m_inputType->createShadowSubtree();
 
     bool hasTouchEventHandler = m_inputTypeView->hasTouchEventHandler();
