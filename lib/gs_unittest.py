@@ -93,6 +93,37 @@ class AbstractGSContextTest(cros_test_lib.MockTempDirTestCase):
     self.ctx = gs.GSContext()
 
 
+class VersionTest(AbstractGSContextTest):
+  """Tests GSContext.gsutil_version functionality."""
+
+  LOCAL_PATH = '/tmp/file'
+  GIVEN_REMOTE = EXPECTED_REMOTE = 'gs://test/path/file'
+
+  def testGetVersionStdout(self):
+    """Simple gsutil_version fetch test from stdout."""
+    self.gs_mock.AddCmdResult(partial_mock.In('version'), returncode=0,
+                              output='gsutil version 3.35\n')
+    self.assertEquals('3.35', self.ctx.gsutil_version)
+
+  def testGetVersionStderr(self):
+    """Simple gsutil_version fetch test from stderr."""
+    self.gs_mock.AddCmdResult(partial_mock.In('version'), returncode=0,
+                              error='gsutil version 3.36\n')
+    self.assertEquals('3.36', self.ctx.gsutil_version)
+
+  def testGetVersionCached(self):
+    """Simple gsutil_version fetch test from cache."""
+    self.ctx._gsutil_version = '3.37'
+    self.assertEquals('3.37', self.ctx.gsutil_version)
+
+  def testGetVersionBadOutput(self):
+    """Simple gsutil_version fetch test from cache."""
+    self.gs_mock.AddCmdResult(partial_mock.In('version'), returncode=0,
+                              output='gobblety gook\n')
+    self.assertRaises(gs.GSContextException, getattr, self.ctx,
+                      'gsutil_version')
+
+
 class CopyTest(AbstractGSContextTest):
   """Tests GSContext.Copy() functionality."""
 

@@ -244,6 +244,9 @@ class GSContext(object):
       self._CheckFile('gsutil not found', gsutil_bin)
     self.gsutil_bin = gsutil_bin
 
+    # The version of gsutil is retrieved on demand and cached here.
+    self._gsutil_version = None
+
     # TODO (yjhong): disable parallel composite upload for now because
     # it is not backward compatible (older gsutil versions cannot
     # download files uploaded with this option enabled). Remove this
@@ -286,6 +289,27 @@ class GSContext(object):
 
     if not default_boto:
       self._CheckFile('Boto credentials not found', boto_file)
+
+  @property
+  def gsutil_version(self):
+    """Return the version of the gsutil in this context."""
+    if not self._gsutil_version:
+      cmd = ['-q', 'version']
+
+      # gsutil has been known to return version to stderr in the past, so
+      # use combine_stdout_stderr=True.
+      result = self.DoCommand(cmd, combine_stdout_stderr=True)
+
+      # Expect output like: gsutil version 3.35
+      match = re.search(r'^\s*gsutil\s+version\s+([\d.]+)', result.output,
+                        re.IGNORECASE)
+      if match:
+        self._gsutil_version = match.group(1)
+      else:
+        raise GSContextException('Unexpected output format from "%s":\n%s.' %
+                                 (result.cmdstr, result.output))
+
+    return self._gsutil_version
 
   def _CheckFile(self, errmsg, afile):
     """Pre-flight check for valid inputs.
@@ -466,6 +490,7 @@ class GSContext(object):
 
     return False
 
+  # TODO(mtennant): Make a private method.
   def DoCommand(self, gsutil_cmd, headers=(), retries=None, **kwargs):
     """Run a gsutil command, suppressing output, and setting retry/sleep.
 
