@@ -6131,18 +6131,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_MEMORY_MONITOR_DESCRIPTION" desc="Title for the flag to enable advanced gestures.">
         Enables visual memory monitor in status area.
       </message>
-      <message name="IDS_FLAGS_CHROMEOS_USE_NEW_NETWORK_CONFIGURATION_HANDLERS_NAME" desc="Title for the flag to enable using the new network configuration handlers.">
-        Enable new network configuration handlers
-      </message>
-      <message name="IDS_FLAGS_CHROMEOS_USE_NEW_NETWORK_CONFIGURATION_HANDLERS_DESCRIPTION" desc="Description for the flag to enable using the new network configuration handlers.">
-        Enable the new network configuration handlers which handle Shill connection requests without using NetworkLibrary.
-      </message>
-      <message name="IDS_FLAGS_CHROMEOS_USE_NEW_NETWORK_CONNECTION_HANDLER_NAME" desc="Title for the flag to enable using the new network connection handler.">
-        Enables new network connection handler
-      </message>
-      <message name="IDS_FLAGS_CHROMEOS_USE_NEW_NETWORK_CONNECTION_HANDLER_DESCRIPTION" desc="Description for the flag to enable using the new network connection handler.">
-        Enable the new network connection handler.
-      </message>
       <message name="IDS_FLAGS_ASH_AUDIO_DEVICE_MENU_NAME" desc="Title for a flag for audio switching.">
         Audio input/output menu
       </message>

@@ -12,9 +12,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/chromeos/cros/cert_library.h"
-#include "chrome/browser/chromeos/cros/network_property_ui_data.h"
+#include "chrome/browser/chromeos/options/cert_library.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
+#include "chrome/browser/chromeos/options/network_property_ui_data.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/models/combobox_model.h"
@@ -50,6 +50,9 @@ class WifiConfigView : public ChildNetworkConfigView,
                        public CertLibrary::Observer,
                        public NetworkStateHandlerObserver {
  public:
+  // Configuration dialog for a WiFi network. If |service_path| is not empty
+  // it identifies the network to be configured. Otherwise |show_8021x|
+  // determines whether or not to show the 'advanced' 8021x configuration UI.
   WifiConfigView(NetworkConfigView* parent,
                  const std::string& service_path,
                  bool show_8021x);

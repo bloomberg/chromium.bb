@@ -40,9 +40,6 @@ class MockShillDeviceClient : public ShillDeviceClient {
   MOCK_METHOD3(AddIPConfig, void(const dbus::ObjectPath& device_path,
                                  const std::string& method,
                                  const ObjectPathDBusMethodCallback& callback));
-  MOCK_METHOD2(CallAddIPConfigAndBlock,
-               dbus::ObjectPath(const dbus::ObjectPath& device_path,
-                                const std::string& method));
   MOCK_METHOD5(RequirePin, void(const dbus::ObjectPath& device_path,
                                 const std::string& pin,
                                 bool require,

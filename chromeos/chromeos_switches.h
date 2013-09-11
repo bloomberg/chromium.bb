@@ -71,7 +71,6 @@ CHROMEOS_EXPORT extern const char kOobeSkipPostLogin[];
 CHROMEOS_EXPORT extern const char kSkipHWIDCheck[];
 CHROMEOS_EXPORT extern const char kSmsTestMessages[];
 CHROMEOS_EXPORT extern const char kStubCrosSettings[];
-CHROMEOS_EXPORT extern const char kUseNewNetworkConfigurationHandlers[];
 CHROMEOS_EXPORT extern const char kDisableUserImageSync[];
 CHROMEOS_EXPORT extern const char kEnableFirstRunUI[];
 

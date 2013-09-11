@@ -120,47 +120,6 @@ TEST_F(ShillIPConfigClientTest, GetProperties) {
   message_loop_.RunUntilIdle();
 }
 
-TEST_F(ShillIPConfigClientTest, CallGetPropertiesAndBlock) {
-  const char kAddress[] = "address";
-  const int32 kMtu = 68;
-
-  // Create response.
-  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
-  dbus::MessageWriter writer(response.get());
-  dbus::MessageWriter array_writer(NULL);
-  writer.OpenArray("{sv}", &array_writer);
-  dbus::MessageWriter entry_writer(NULL);
-  // Append address.
-  array_writer.OpenDictEntry(&entry_writer);
-  entry_writer.AppendString(flimflam::kAddressProperty);
-  entry_writer.AppendVariantOfString(kAddress);
-  array_writer.CloseContainer(&entry_writer);
-  // Append MTU.
-  array_writer.OpenDictEntry(&entry_writer);
-  entry_writer.AppendString(flimflam::kMtuProperty);
-  entry_writer.AppendVariantOfInt32(kMtu);
-  array_writer.CloseContainer(&entry_writer);
-  writer.CloseContainer(&array_writer);
-
-  // Create the expected value.
-  base::DictionaryValue value;
-  value.SetWithoutPathExpansion(flimflam::kAddressProperty,
-                                base::Value::CreateStringValue(kAddress));
-  value.SetWithoutPathExpansion(flimflam::kMtuProperty,
-                                base::Value::CreateIntegerValue(kMtu));
-  // Set expectations.
-  PrepareForMethodCall(flimflam::kGetPropertiesFunction,
-                       base::Bind(&ExpectNoArgument),
-                       response.get());
-  // Call method.
-  scoped_ptr<base::DictionaryValue> result(
-      client_->CallGetPropertiesAndBlock(
-          dbus::ObjectPath(kExampleIPConfigPath)));
-
-  ASSERT_TRUE(result.get());
-  EXPECT_TRUE(result->Equals(&value));
-}
-
 TEST_F(ShillIPConfigClientTest, SetProperty) {
   const char kAddress[] = "address";
 

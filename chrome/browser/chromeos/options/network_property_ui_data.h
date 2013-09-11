@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_CROS_NETWORK_PROPERTY_UI_DATA_H_
-#define CHROME_BROWSER_CHROMEOS_CROS_NETWORK_PROPERTY_UI_DATA_H_
+#ifndef CHROME_BROWSER_CHROMEOS_OPTIONS_NETWORK_PROPERTY_UI_DATA_H_
+#define CHROME_BROWSER_CHROMEOS_OPTIONS_NETWORK_PROPERTY_UI_DATA_H_
 
 #include <string>
 
@@ -53,4 +53,4 @@ class NetworkPropertyUIData {
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_CROS_NETWORK_PROPERTY_UI_DATA_H_
+#endif  // CHROME_BROWSER_CHROMEOS_OPTIONS_NETWORK_PROPERTY_UI_DATA_H_

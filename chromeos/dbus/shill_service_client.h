@@ -164,15 +164,6 @@ class CHROMEOS_EXPORT ShillServiceClient : public DBusClient {
       const base::Closure& callback,
       const ErrorCallback& error_callback) = 0;
 
-  // DEPRECATED DO NOT USE: Calls ActivateCellularModem method and blocks until
-  // the method call finishes.
-  //
-  // TODO(hashimoto): Refactor CrosActivateCellularModem and remove this method.
-  // crosbug.com/29902
-  virtual bool CallActivateCellularModemAndBlock(
-      const dbus::ObjectPath& service_path,
-      const std::string& carrier) = 0;
-
   // Calls the GetLoadableProfileEntries method.
   // |callback| is called after the method call succeeds.
   virtual void GetLoadableProfileEntries(

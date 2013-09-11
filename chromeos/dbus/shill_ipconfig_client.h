@@ -64,15 +64,6 @@ class CHROMEOS_EXPORT ShillIPConfigClient : public DBusClient {
   virtual void GetProperties(const dbus::ObjectPath& ipconfig_path,
                              const DictionaryValueCallback& callback) = 0;
 
-  // DEPRECATED DO NOT USE: Calls GetProperties method and blocks until the
-  // method call finishes.  The caller is responsible to delete the result.
-  // Thie method returns NULL when method call fails.
-  //
-  // TODO(hashimoto): Refactor CrosListIPConfigs to remove this method.
-  // crosbug.com/29902
-  virtual base::DictionaryValue* CallGetPropertiesAndBlock(
-      const dbus::ObjectPath& ipconfig_path) = 0;
-
   // Calls SetProperty method.
   // |callback| is called after the method call succeeds.
   virtual void SetProperty(const dbus::ObjectPath& ipconfig_path,

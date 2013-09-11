@@ -74,9 +74,6 @@ class ShillServiceClientStub : public ShillServiceClient,
       const dbus::ObjectPath& service_path,
       const base::Closure& callback,
       const ErrorCallback& error_callback) OVERRIDE;
-  virtual bool CallActivateCellularModemAndBlock(
-      const dbus::ObjectPath& service_path,
-      const std::string& carrier) OVERRIDE;
   virtual void GetLoadableProfileEntries(
       const dbus::ObjectPath& service_path,
       const DictionaryValueCallback& callback) OVERRIDE;

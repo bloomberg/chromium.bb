@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "chrome/browser/chromeos/cros/network_constants.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 

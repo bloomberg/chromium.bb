@@ -9,7 +9,6 @@
       'common/automation_constants.h',
       'common/pref_names.cc',
       'common/pref_names.h',
-      'browser/chromeos/cros/network_constants.h',
       'test/automation/browser_proxy.cc',
       'test/automation/browser_proxy.h',
       'test/automation/tab_proxy.cc',

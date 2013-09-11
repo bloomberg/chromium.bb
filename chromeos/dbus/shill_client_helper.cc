@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/values.h"
-#include "chromeos/dbus/blocking_method_caller.h"
 #include "dbus/message.h"
 #include "dbus/object_proxy.h"
 #include "dbus/values_util.h"
@@ -174,8 +173,7 @@ void OnError(const ShillClientHelper::ErrorCallback& error_callback,
 
 ShillClientHelper::ShillClientHelper(dbus::Bus* bus,
                                      dbus::ObjectProxy* proxy)
-    : blocking_method_caller_(new BlockingMethodCaller(bus, proxy)),
-      proxy_(proxy),
+    : proxy_(proxy),
       weak_ptr_factory_(this) {
 }
 
@@ -340,32 +338,6 @@ void ShillClientHelper::CallListValueMethodWithErrorCallback(
           error_callback),
       base::Bind(&OnError,
                  error_callback));
-}
-
-bool ShillClientHelper::CallVoidMethodAndBlock(
-    dbus::MethodCall* method_call) {
-  scoped_ptr<dbus::Response> response(
-      blocking_method_caller_->CallMethodAndBlock(method_call));
-  if (!response.get())
-    return false;
-  return true;
-}
-
-base::DictionaryValue* ShillClientHelper::CallDictionaryValueMethodAndBlock(
-    dbus::MethodCall* method_call) {
-  scoped_ptr<dbus::Response> response(
-      blocking_method_caller_->CallMethodAndBlock(method_call));
-  if (!response.get())
-    return NULL;
-
-  dbus::MessageReader reader(response.get());
-  base::Value* value = dbus::PopDataAsValue(&reader);
-  base::DictionaryValue* result = NULL;
-  if (!value || !value->GetAsDictionary(&result)) {
-    delete value;
-    return NULL;
-  }
-  return result;
 }
 
 // static

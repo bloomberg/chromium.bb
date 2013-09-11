@@ -30,8 +30,6 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/contacts/contact_manager.h"
-#include "chrome/browser/chromeos/cros/cert_library.h"
-#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/dbus/cros_dbus_service.h"
 #include "chrome/browser/chromeos/display/display_configuration_observer.h"
 #include "chrome/browser/chromeos/extensions/default_app_order.h"
@@ -52,6 +50,7 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/memory/oom_priority_manager.h"
 #include "chrome/browser/chromeos/net/network_portal_detector.h"
+#include "chrome/browser/chromeos/options/cert_library.h"
 #include "chrome/browser/chromeos/power/brightness_observer.h"
 #include "chrome/browser/chromeos/power/idle_action_warning_observer.h"
 #include "chrome/browser/chromeos/power/peripheral_battery_observer.h"
@@ -282,8 +281,6 @@ class DBusServices {
     disks::DiskMountManager::Initialize();
     cryptohome::AsyncMethodCaller::Initialize();
 
-    // Always initialize these handlers which should not conflict with
-    // NetworkLibrary.
     NetworkHandler::Initialize();
     CertLibrary::Initialize();
 
@@ -607,10 +604,9 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
 
   peripheral_battery_observer_.reset(new PeripheralBatteryObserver());
 
-  // Initialize the network portal detector for Chrome OS. The network
-  // portal detector starts to listen for notifications from
-  // NetworkLibrary about changes in the NetworkManager and initiates
-  // captive portal detection for active networks.
+  // Initialize the network portal detector for Chrome OS. The network portal
+  // detector starts to listen for notifications from NetworkStateHandler and
+  // initiates captive portal detection for active networks.
   NetworkPortalDetector* detector = NetworkPortalDetector::GetInstance();
   if (NetworkPortalDetector::IsEnabledInCommandLine() && detector) {
     detector->Init();

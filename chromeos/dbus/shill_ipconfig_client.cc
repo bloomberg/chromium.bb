@@ -43,8 +43,6 @@ class ShillIPConfigClientImpl : public ShillIPConfigClient {
                        const VoidDBusMethodCallback& callback) OVERRIDE;
   virtual void GetProperties(const dbus::ObjectPath& ipconfig_path,
                              const DictionaryValueCallback& callback) OVERRIDE;
-  virtual base::DictionaryValue* CallGetPropertiesAndBlock(
-      const dbus::ObjectPath& ipconfig_path) OVERRIDE;
   virtual void SetProperty(const dbus::ObjectPath& ipconfig_path,
                            const std::string& name,
                            const base::Value& value,
@@ -96,14 +94,6 @@ void ShillIPConfigClientImpl::GetProperties(
   dbus::MethodCall method_call(flimflam::kFlimflamIPConfigInterface,
                                flimflam::kGetPropertiesFunction);
   GetHelper(ipconfig_path)->CallDictionaryValueMethod(&method_call, callback);
-}
-
-base::DictionaryValue* ShillIPConfigClientImpl::CallGetPropertiesAndBlock(
-    const dbus::ObjectPath& ipconfig_path) {
-  dbus::MethodCall method_call(flimflam::kFlimflamIPConfigInterface,
-                               flimflam::kGetPropertiesFunction);
-  return GetHelper(ipconfig_path)->CallDictionaryValueMethodAndBlock(
-      &method_call);
 }
 
 void ShillIPConfigClientImpl::Refresh(

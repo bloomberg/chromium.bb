@@ -301,19 +301,4 @@ TEST_F(ShillServiceClientTest, ActivateCellularModem) {
   message_loop_.RunUntilIdle();
 }
 
-TEST_F(ShillServiceClientTest, CallActivateCellularModemAndBlock) {
-  const char kCarrier[] = "carrier";
-  // Create response.
-  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
-
-  // Set expectations.
-  PrepareForMethodCall(flimflam::kActivateCellularModemFunction,
-                       base::Bind(&ExpectStringArgument, kCarrier),
-                       response.get());
-  // Call method.
-  const bool result = client_->CallActivateCellularModemAndBlock(
-      dbus::ObjectPath(kExampleServicePath), kCarrier);
-  EXPECT_TRUE(result);
-}
-
 }  // namespace chromeos

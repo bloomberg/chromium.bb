@@ -134,11 +134,6 @@ void ShillClientUnittestBase::SetUp() {
       flimflam::kFlimflamServiceName,
       object_path_);
 
-  // Set an expectation so mock_proxy's CallMethodAndBlock() will use
-  // OnCallMethodAndBlock() to return responses.
-  EXPECT_CALL(*mock_proxy_.get(), MockCallMethodAndBlock(_, _)).WillRepeatedly(
-      Invoke(this, &ShillClientUnittestBase::OnCallMethodAndBlock));
-
   // Set an expectation so mock_proxy's CallMethod() will use OnCallMethod()
   // to return responses.
   EXPECT_CALL(*mock_proxy_.get(), CallMethod(_, _, _))
@@ -398,17 +393,6 @@ void ShillClientUnittestBase::OnCallMethodWithErrorCallback(
     const dbus::ObjectProxy::ResponseCallback& response_callback,
     const dbus::ObjectProxy::ErrorCallback& error_callback) {
   OnCallMethod(method_call, timeout_ms, response_callback);
-}
-
-dbus::Response* ShillClientUnittestBase::OnCallMethodAndBlock(
-    dbus::MethodCall* method_call,
-    int timeout_ms) {
-  EXPECT_EQ(interface_name_, method_call->GetInterface());
-  EXPECT_EQ(expected_method_name_, method_call->GetMember());
-  dbus::MessageReader reader(method_call);
-  argument_checker_.Run(&reader);
-  return dbus::Response::FromRawMessage(
-      dbus_message_copy(response_->raw_message())).release();
 }
 
 }  // namespace chromeos

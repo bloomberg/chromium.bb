@@ -212,11 +212,6 @@ class ShillClientUnittestBase : public testing::Test {
       const dbus::ObjectProxy::ResponseCallback& response_callback,
       const dbus::ObjectProxy::ErrorCallback& error_callback);
 
-  // Checks the content of the method call and returns the response.
-  // Used to implement the mock proxy.
-  dbus::Response* OnCallMethodAndBlock(dbus::MethodCall* method_call,
-                                       int timeout_ms);
-
   // The interface name.
   const std::string interface_name_;
   // The object path.

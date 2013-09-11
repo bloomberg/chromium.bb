@@ -13,7 +13,7 @@ namespace chromeos {
 class NetworkState;
 
 // This class handles all notifications about network changes from
-// NetworkLibrary and delegates portal detection for the active
+// NetworkStateHandler and delegates portal detection for the active
 // network to CaptivePortalService.
 class NetworkPortalDetector {
  public:

@@ -55,11 +55,6 @@ void ShillIPConfigClientStub::GetProperties(
                               callback));
 }
 
-base::DictionaryValue* ShillIPConfigClientStub::CallGetPropertiesAndBlock(
-    const dbus::ObjectPath& ipconfig_path) {
-  return new base::DictionaryValue;
-}
-
 void ShillIPConfigClientStub::SetProperty(
     const dbus::ObjectPath& ipconfig_path,
     const std::string& name,

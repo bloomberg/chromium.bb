@@ -38,8 +38,6 @@ class Signal;
 
 namespace chromeos {
 
-class BlockingMethodCaller;
-
 // A class to help implement Shill clients.
 class ShillClientHelper {
  public:
@@ -133,15 +131,6 @@ class ShillClientHelper {
       const ListValueCallback& callback,
       const ErrorCallback& error_callback);
 
-  // DEPRECATED DO NOT USE: Calls a method without results.
-  bool CallVoidMethodAndBlock(dbus::MethodCall* method_call);
-
-  // DEPRECATED DO NOT USE: Calls a method with a dictionary value result.
-  // The caller is responsible to delete the result.
-  // This method returns NULL when method call fails.
-  base::DictionaryValue* CallDictionaryValueMethodAndBlock(
-      dbus::MethodCall* method_call);
-
   // Appends the value (basic types and string-to-string dictionary) to the
   // writer as a variant.
   static void AppendValueDataAsVariant(dbus::MessageWriter* writer,
@@ -164,8 +153,6 @@ class ShillClientHelper {
   // Handles PropertyChanged signal.
   void OnPropertyChanged(dbus::Signal* signal);
 
-  // TODO(hashimoto): Remove this when we no longer need to make blocking calls.
-  scoped_ptr<BlockingMethodCaller> blocking_method_caller_;
   dbus::ObjectProxy* proxy_;
   PropertyChangedHandler property_changed_handler_;
   ObserverList<ShillPropertyChangedObserver, true /* check_empty */>

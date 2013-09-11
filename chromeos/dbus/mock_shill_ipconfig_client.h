@@ -29,8 +29,6 @@ class MockShillIPConfigClient : public ShillIPConfigClient {
                              const VoidDBusMethodCallback& callback));
   MOCK_METHOD2(GetProperties, void(const dbus::ObjectPath& ipconfig_path,
                                    const DictionaryValueCallback& callback));
-  MOCK_METHOD1(CallGetPropertiesAndBlock,
-               base::DictionaryValue*(const dbus::ObjectPath& ipconfig_path));
   MOCK_METHOD4(SetProperty, void(const dbus::ObjectPath& ipconfig_path,
                                  const std::string& name,
                                  const base::Value& value,
@@ -40,7 +38,6 @@ class MockShillIPConfigClient : public ShillIPConfigClient {
                                    const VoidDBusMethodCallback& callback));
   MOCK_METHOD2(Remove, void(const dbus::ObjectPath& ipconfig_path,
                             const VoidDBusMethodCallback& callback));
-  MOCK_METHOD1(CallRemoveAndBlock, bool(const dbus::ObjectPath& ipconfig_path));
 };
 
 }  // namespace chromeos

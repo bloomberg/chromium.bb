@@ -12,7 +12,6 @@
 #include "base/strings/string_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
-#include "chrome/browser/chromeos/cros/cert_library.h"
 #include "chrome/browser/chromeos/login/authentication_notification_details.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
 #include "chrome/browser/chromeos/login/user.h"

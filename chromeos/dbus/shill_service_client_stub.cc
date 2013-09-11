@@ -316,12 +316,6 @@ void ShillServiceClientStub::CompleteCellularActivation(
   base::MessageLoop::current()->PostTask(FROM_HERE, callback);
 }
 
-bool ShillServiceClientStub::CallActivateCellularModemAndBlock(
-    const dbus::ObjectPath& service_path,
-    const std::string& carrier) {
-  return true;
-}
-
 void ShillServiceClientStub::GetLoadableProfileEntries(
     const dbus::ObjectPath& service_path,
     const DictionaryValueCallback& callback) {

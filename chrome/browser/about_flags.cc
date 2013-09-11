@@ -1186,12 +1186,6 @@ const Experiment kExperiments[] = {
 #endif
 #endif
 #if defined(OS_CHROMEOS)
-  { "use-new-network-configuration-handlers",
-    IDS_FLAGS_CHROMEOS_USE_NEW_NETWORK_CONFIGURATION_HANDLERS_NAME,
-    IDS_FLAGS_CHROMEOS_USE_NEW_NETWORK_CONFIGURATION_HANDLERS_DESCRIPTION,
-    kOsCrOS,
-    SINGLE_VALUE_TYPE(chromeos::switches::kUseNewNetworkConfigurationHandlers),
-  },
   {
     "ash-audio-device-menu",
     IDS_FLAGS_ASH_AUDIO_DEVICE_MENU_NAME,
