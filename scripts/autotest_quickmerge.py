@@ -32,6 +32,7 @@ INCLUDE_PATTERNS_FILENAME = 'autotest-quickmerge-includepatterns'
 AUTOTEST_PROJECT_NAME = 'chromiumos/third_party/autotest'
 AUTOTEST_EBUILD = 'chromeos-base/autotest'
 DOWNGRADE_EBUILDS = ['chromeos-base/autotest',
+                     'chromeos-base/autotest-deps',
                      'chromeos-base/autotest-tests',
                      'chromeos-base/autotest-chrome',
                      'chromeos-base/autotest-factory',
