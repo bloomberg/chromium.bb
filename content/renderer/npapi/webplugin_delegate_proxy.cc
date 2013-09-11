@@ -379,7 +379,7 @@ bool WebPluginDelegateProxy::Initialize(
   Send(new PluginMsg_Init(instance_id_, params, &transparent_, &result));
 
   if (!result)
-    LOG(ERROR) << "PluginMsg_Init returned false";
+    LOG(WARNING) << "PluginMsg_Init returned false";
 
   render_view_->RegisterPluginDelegate(this);
 
