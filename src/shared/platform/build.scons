@@ -25,7 +25,7 @@ time_slop_args = []
 # for the time process spent waiting on the futex in thread join. This
 # affects the CLOCK_PROCESS/THREAD_CPUTIME_ID clock test and we therefore
 # disable this test on older kernels.
-cputime_args = []
+cputime_test_enabled = True
 
 if env.Bit('windows'):
   platform_inputs += [
@@ -65,7 +65,7 @@ elif env.Bit('linux'):
     ]
   kernel_version = map(int, platform.release().split('.', 2)[:2])
   if kernel_version < [3, 0]:
-    cputime_args += [ '-c' ]
+    cputime_test_enabled = False
 elif env.Bit('mac'):
   platform_inputs += [
     'osx/nacl_clock.c',
@@ -181,15 +181,16 @@ nacl_clock_test_exe = env.ComponentProgram('nacl_clock_test',
                                            EXTRA_LIBS=['platform'])
 
 node = env.CommandTest('nacl_clock_test.out',
-                       [nacl_clock_test_exe, '-c'] + time_slop_args)
+                       [nacl_clock_test_exe] + time_slop_args)
 
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_nacl_clock_test')
 
 node = env.CommandTest('nacl_clock_cputime_test.out',
-                       [nacl_clock_test_exe] + time_slop_args + cputime_args,
-                       size='large')
+                        [nacl_clock_test_exe, '-c'],
+                        size='large')
 
-env.AddNodeToTestSuite(node, ['large_tests'], 'run_nacl_clock_cputime_test')
+env.AddNodeToTestSuite(node, ['large_tests'], 'run_nacl_clock_cputime_test',
+                       is_broken=not cputime_test_enabled)
 
 
 nacl_sync_test_exe = env.ComponentProgram('nacl_sync_test',

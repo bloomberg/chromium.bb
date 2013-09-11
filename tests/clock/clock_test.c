@@ -33,11 +33,13 @@
 #define DEFAULT_NANOSLEEP_EXTRA_FACTOR    (100.0)
 #define DEFAULT_NANOSLEEP_TIME            (10 * NACL_NANOS_PER_MILLI)
 
+#define THREAD_CYCLES     100000000
+
 /*
  * Global testing parameters -- fuzziness coefficients in determining
  * what is considered accurate.
  */
-static int      g_cputime = 1;
+static int      g_cputime = 0;
 static double   g_fuzzy_factor = DEFAULT_NANOSLEEP_EXTRA_FACTOR;
 static uint64_t g_syscall_overhead = DEFAULT_NANOSLEEP_EXTRA_OVERHEAD;
 static uint64_t g_slop_ms = 0;
@@ -236,7 +238,7 @@ static int ClockCpuTimeAccuracyTest(void) {
 
   for (i = 0; i < NACL_ARRAY_SIZE(thread); i++) {
     memset(&info[i], 0, sizeof info[i]);
-    info[i].cycles = i * 10000000;
+    info[i].cycles = i * THREAD_CYCLES;
     if (0 != (err = pthread_create(&thread[i], NULL,
                                    ThreadFunction, &info[i]))) {
       fprintf(stderr, "clock_test: pthread_create failed, error %d\n",
@@ -323,7 +325,7 @@ int main(int ac, char **av) {
   while (-1 != (opt = getopt(ac, av, "cf:o:s:S:"))) {
     switch (opt) {
       case 'c':
-        g_cputime = 0;
+        g_cputime = 1;
         break;
       case 'f':
         g_fuzzy_factor = strtod(optarg, (char **) NULL);
@@ -341,16 +343,17 @@ int main(int ac, char **av) {
         fprintf(stderr, "clock_test: unrecognized option `%c'.\n",
                 opt);
         fprintf(stderr,
-                "Usage: clock_test [-f fuzz_factor] [-s sleep_nanos]\n"
-                "       [-o syscall_overhead_nanos]\n");
+                "Usage: nacl_clock_test [-c] [-f fuzz_factor]\n"
+                "       [-s sleep_nanos] [-o syscall_overhead_nanos]\n");
         return -1;
     }
   }
 
-  num_failures += ClockMonotonicAccuracyTest(sleep_nanos);
-  num_failures += ClockRealtimeAccuracyTest();
   if (g_cputime) {
     num_failures += ClockCpuTimeAccuracyTest();
+  } else {
+    num_failures += ClockMonotonicAccuracyTest(sleep_nanos);
+    num_failures += ClockRealtimeAccuracyTest();
   }
 
   return num_failures;

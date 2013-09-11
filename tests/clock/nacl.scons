@@ -68,19 +68,27 @@ time_slop_args = []
 # for the time process spent waiting on the futex in thread join. This
 # affects the CLOCK_PROCESS/THREAD_CPUTIME_ID clock test and we therefore
 # disable this test on older kernels.
-cputime_args = []
+cputime_test_enabled = True
 
 if env.Bit('host_windows') or env.Bit('host_mac'):
   time_slop_args += [ '-s', '10' ]
 elif env.Bit('host_linux'):
   kernel_version = map(int, platform.release().split('.', 2)[:2])
   if kernel_version < [3, 0]:
-    cputime_args += [ '-c' ]
+    cputime_test_enabled = False
 
 node = env.CommandSelLdrTestNacl(
     'clock_test.out',
     clock_test_nexe,
-    time_slop_args + cputime_args,
+    time_slop_args)
+
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_clock_test')
+
+node = env.CommandSelLdrTestNacl(
+    'clock_cputime_test.out',
+    clock_test_nexe,
+    ['-c'],
     size='large')
 
-env.AddNodeToTestSuite(node, ['large_tests'], 'run_clock_test')
+env.AddNodeToTestSuite(node, ['large_tests'], 'run_clock_cputime_test',
+                        is_broken=not cputime_test_enabled)

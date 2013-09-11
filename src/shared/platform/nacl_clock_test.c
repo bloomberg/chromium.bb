@@ -41,11 +41,13 @@
 #define DEFAULT_NANOSLEEP_EXTRA_FACTOR    (100.0)
 #define DEFAULT_NANOSLEEP_TIME            (10 * NACL_NANOS_PER_MILLI)
 
+#define THREAD_CYCLES     100000000
+
 /*
  * Global testing parameters -- fuzziness coefficients in determining
  * what is considered accurate.
  */
-int      g_cputime = 1;
+int      g_cputime = 0;
 double   g_fuzzy_factor = DEFAULT_NANOSLEEP_EXTRA_FACTOR;
 uint64_t g_syscall_overhead = DEFAULT_NANOSLEEP_EXTRA_OVERHEAD;
 uint64_t g_slop_ms = 0;
@@ -262,7 +264,7 @@ static int ClockCpuTimeAccuracyTest(void) {
 
   for (i = 0; i < NACL_ARRAY_SIZE(thread); i++) {
     memset(&info[i], 0, sizeof info[i]);
-    info[i].cycles = i * 10000000;
+    info[i].cycles = i * THREAD_CYCLES;
     if (!NaClThreadCreateJoinable(&thread[i], ThreadFunction, &info[i],
                                   65536)) {
       fprintf(stderr,
@@ -356,14 +358,13 @@ int main(int ac, char **av) {
   puts("set of parameters.  On an unloaded i7, a sleep duration (-S) of");
   puts("1000000 ns (one millisecond), with a fuzziness factor (-f) of 1.25,");
   puts("a constant test overhead of 100000 ns (100 us), and a");
-  puts("sleep duration \"slop\" (-s) of 0 is fine. The CPU time tests can");
-  puts("be skipped (-c) if necessary on configurations with imprecise");
-  puts("scheduler accounting.");
+  puts("sleep duration \"slop\" (-s) of 0 is fine. The CPU time tests has to");
+  puts("be explicitly enabled (-c) its run time is significant.");
 
   while (-1 != (opt = getopt(ac, av, "cf:o:s:S:"))) {
     switch (opt) {
       case 'c':
-        g_cputime = 0;
+        g_cputime = 1;
         break;
       case 'f':
         g_fuzzy_factor = strtod(optarg, (char **) NULL);
@@ -381,18 +382,19 @@ int main(int ac, char **av) {
         fprintf(stderr, "nacl_clock_test: unrecognized option `%c'.\n",
                 opt);
         fprintf(stderr,
-                "Usage: nacl_clock_test [-f fuzz_factor] [-s sleep_nanos]\n"
-                "       [-o syscall_overhead_nanos]\n");
+                "Usage: nacl_clock_test [-c] [-f fuzz_factor]\n"
+                "       [-s sleep_nanos] [-o syscall_overhead_nanos]\n");
         return -1;
     }
   }
 
   NaClPlatformInit();
 
-  num_failures += ClockMonotonicAccuracyTest(sleep_nanos);
-  num_failures += ClockRealtimeAccuracyTest();
   if (g_cputime) {
     num_failures += ClockCpuTimeAccuracyTest();
+  } else {
+    num_failures += ClockMonotonicAccuracyTest(sleep_nanos);
+    num_failures += ClockRealtimeAccuracyTest();
   }
 
   NaClPlatformFini();
