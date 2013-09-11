@@ -117,7 +117,6 @@ void LoadFontCallback::notifyError(CSSSegmentedFontFace* face)
 
 FontLoader::FontLoader(Document* document)
     : ActiveDOMObject(document)
-    , m_document(document)
     , m_loadingCount(0)
     , m_timer(this, &FontLoader::timerFired)
 {
@@ -126,6 +125,11 @@ FontLoader::FontLoader(Document* document)
 
 FontLoader::~FontLoader()
 {
+}
+
+Document* FontLoader::document() const
+{
+    return toDocument(scriptExecutionContext());
 }
 
 EventTargetData* FontLoader::eventTargetData()
@@ -150,7 +154,8 @@ ScriptExecutionContext* FontLoader::scriptExecutionContext() const
 
 void FontLoader::didLayout()
 {
-    if (m_document->page() && m_document->page()->mainFrame() == m_document->frame())
+    Document* d = document();
+    if (d->page() && d->page()->mainFrame() == d->frame())
         m_histogram.record();
     if (!RuntimeEnabledFeatures::fontLoadEventsEnabled())
         return;
@@ -261,7 +266,8 @@ void FontLoader::fireDoneEventIfPossible()
     // If the layout was invalidated in between when we thought layout
     // was updated and when we're ready to fire the event, just wait
     // until after the next layout before firing events.
-    if (!m_document->view() || m_document->view()->needsLayout())
+    Document* d = document();
+    if (!d->view() || d->view()->needsLayout())
         return;
 
     if (m_pendingDoneEvent)
@@ -287,10 +293,11 @@ void FontLoader::loadFont(const Dictionary& params)
     RefPtr<LoadFontCallback> callback = LoadFontCallback::createFromParams(params, font.family());
 
     for (const FontFamily* f = &font.family(); f; f = f->next()) {
-        CSSSegmentedFontFace* face = m_document->styleResolver()->fontSelector()->getFontFace(font.fontDescription(), f->family());
+        Document* d = document();
+        CSSSegmentedFontFace* face = d->styleResolver()->fontSelector()->getFontFace(font.fontDescription(), f->family());
         if (!face) {
             if (callback)
-                callback->error(m_document);
+                callback->error(d);
             continue;
         }
         face->loadFont(font.fontDescription(), callback);
@@ -304,7 +311,7 @@ bool FontLoader::checkFont(const String& fontString, const String&)
     if (!resolveFontStyle(fontString, font))
         return false;
     for (const FontFamily* f = &font.family(); f; f = f->next()) {
-        CSSSegmentedFontFace* face = m_document->styleResolver()->fontSelector()->getFontFace(font.fontDescription(), f->family());
+        CSSSegmentedFontFace* face = document()->styleResolver()->fontSelector()->getFontFace(font.fontDescription(), f->family());
         if (!face || !face->checkFont())
             return false;
     }
@@ -346,7 +353,7 @@ bool FontLoader::resolveFontStyle(const String& fontString, Font& font)
         CSSPropertyValue(CSSPropertyFontSize, *parsedStyle),
         CSSPropertyValue(CSSPropertyLineHeight, *parsedStyle),
     };
-    StyleResolver* styleResolver = m_document->styleResolver();
+    StyleResolver* styleResolver = document()->styleResolver();
     styleResolver->applyPropertiesToStyle(properties, WTF_ARRAY_LENGTH(properties), style.get());
 
     font = style->font();

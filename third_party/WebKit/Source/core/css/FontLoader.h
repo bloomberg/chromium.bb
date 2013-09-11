@@ -73,7 +73,7 @@ public:
     using RefCounted<FontLoader>::ref;
     using RefCounted<FontLoader>::deref;
 
-    Document* document() const { return m_document; }
+    Document* document() const;
 
     void didLayout();
     void beginFontLoading(CSSFontFaceRule*);
@@ -108,7 +108,6 @@ private:
     bool resolveFontStyle(const String&, Font&);
     void timerFired(Timer<FontLoader>*);
 
-    Document* m_document;
     EventTargetData m_eventTargetData;
     unsigned m_loadingCount;
     Vector<RefPtr<Event> > m_pendingEvents;
