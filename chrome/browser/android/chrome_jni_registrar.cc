@@ -22,6 +22,7 @@
 #include "chrome/browser/android/signin/signin_manager_android.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/android/uma_utils.h"
+#include "chrome/browser/android/url_utilities.h"
 #include "chrome/browser/autofill/android/personal_data_manager_android.h"
 #include "chrome/browser/history/android/sqlite_cursor.h"
 #include "chrome/browser/invalidation/invalidation_controller_android.h"
@@ -100,6 +101,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
   { "TabAndroid", TabAndroid::RegisterTabAndroid },
   { "TemplateUrlServiceAndroid", TemplateUrlServiceAndroid::Register },
   { "TtsPlatformImpl", TtsPlatformImplAndroid::Register },
+  {"UrlUtilities", RegisterUrlUtilities},
   { "ValidationMessageBubbleAndroid",
       ValidationMessageBubbleAndroid::Register },
   { "WebsiteSettingsPopupAndroid",
