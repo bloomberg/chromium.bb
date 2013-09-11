@@ -35,6 +35,7 @@
 #include "extensions/common/url_pattern_set.h"
 #include "grit/chromium_strings.h"
 #include "grit/theme_resources.h"
+#include "net/base/net_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "url/url_util.h"
 
@@ -96,6 +97,17 @@ class ExtensionConfig {
   // added to this list.
   Extension::ScriptingWhitelist scripting_whitelist_;
 };
+
+bool ContainsReservedCharacters(const base::FilePath& path) {
+  // We should disallow backslash '\\' as file path separator even on Windows,
+  // because the backslash is not regarded as file path separator on Linux/Mac.
+  // Extensions are cross-platform.
+  // Since FilePath uses backslash '\\' as file path separator on Windows, so we
+  // need to check manually.
+  if (path.value().find('\\') != path.value().npos)
+    return true;
+  return !net::IsSafePortableRelativePath(path);
+}
 
 }  // namespace
 
@@ -222,6 +234,8 @@ ExtensionResource Extension::GetResource(
   if (!new_path.empty() && new_path.at(0) == '/')
     new_path.erase(0, 1);
   base::FilePath relative_file_path = base::FilePath::FromUTF8Unsafe(new_path);
+  if (ContainsReservedCharacters(relative_file_path))
+    return ExtensionResource();
   ExtensionResource r(id(), path(), relative_file_path);
   if ((creation_flags() & Extension::FOLLOW_SYMLINKS_ANYWHERE)) {
     r.set_follow_symlinks_anywhere();
@@ -231,6 +245,8 @@ ExtensionResource Extension::GetResource(
 
 ExtensionResource Extension::GetResource(
     const base::FilePath& relative_file_path) const {
+  if (ContainsReservedCharacters(relative_file_path))
+    return ExtensionResource();
   ExtensionResource r(id(), path(), relative_file_path);
   if ((creation_flags() & Extension::FOLLOW_SYMLINKS_ANYWHERE)) {
     r.set_follow_symlinks_anywhere();
