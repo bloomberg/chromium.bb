@@ -1007,7 +1007,7 @@
             "description": "URL of the directory containing the selected files."
           },
           {
-            "name": "selectionURLs",
+            "name": "selectionUrls",
             "type": "array",
             "description": "URLs of the selected files. The files must be under the directory specified by dirURL.",
             "items": { "type": "string" }

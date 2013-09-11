@@ -24,10 +24,8 @@ class FileBrowserPrivateLogoutUserFunction : public SyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.logoutUser",
                              FILEBROWSERPRIVATE_LOGOUTUSER)
 
-  FileBrowserPrivateLogoutUserFunction();
-
  protected:
-  virtual ~FileBrowserPrivateLogoutUserFunction();
+  virtual ~FileBrowserPrivateLogoutUserFunction() {}
 
   // SyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
@@ -40,10 +38,8 @@ class FileBrowserPrivateGetPreferencesFunction : public SyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.getPreferences",
                              FILEBROWSERPRIVATE_GETPREFERENCES)
 
-  FileBrowserPrivateGetPreferencesFunction();
-
  protected:
-  virtual ~FileBrowserPrivateGetPreferencesFunction();
+  virtual ~FileBrowserPrivateGetPreferencesFunction() {}
 
   virtual bool RunImpl() OVERRIDE;
 };
@@ -55,10 +51,8 @@ class FileBrowserPrivateSetPreferencesFunction : public SyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.setPreferences",
                              FILEBROWSERPRIVATE_SETPREFERENCES)
 
-  FileBrowserPrivateSetPreferencesFunction();
-
  protected:
-  virtual ~FileBrowserPrivateSetPreferencesFunction();
+  virtual ~FileBrowserPrivateSetPreferencesFunction() {}
 
   virtual bool RunImpl() OVERRIDE;
 };
@@ -96,10 +90,10 @@ class FileBrowserPrivateZoomFunction : public SyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.zoom",
                              FILEBROWSERPRIVATE_ZOOM);
 
-  FileBrowserPrivateZoomFunction();
-
  protected:
-  virtual ~FileBrowserPrivateZoomFunction();
+  virtual ~FileBrowserPrivateZoomFunction() {}
+
+  // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
 };
 
@@ -110,10 +104,10 @@ class FileBrowserPrivateInstallWebstoreItemFunction
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.installWebstoreItem",
                              FILEBROWSERPRIVATE_INSTALLWEBSTOREITEM);
 
-  FileBrowserPrivateInstallWebstoreItemFunction();
-
  protected:
-  virtual ~FileBrowserPrivateInstallWebstoreItemFunction();
+  virtual ~FileBrowserPrivateInstallWebstoreItemFunction() {}
+
+  // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
   void OnInstallComplete(bool success, const std::string& error);
 
