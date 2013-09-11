@@ -1002,7 +1002,7 @@ weston_wm_handle_property_notify(struct weston_wm *wm, xcb_generic_event_t *even
 
 static void
 weston_wm_window_create(struct weston_wm *wm,
-			xcb_window_t id, int width, int height, int override)
+			xcb_window_t id, int width, int height, int x, int y, int override)
 {
 	struct weston_wm_window *window;
 	uint32_t values[1];
@@ -1026,6 +1026,8 @@ weston_wm_window_create(struct weston_wm *wm,
 	window->override_redirect = override;
 	window->width = width;
 	window->height = height;
+	window->x = x;
+	window->y = y;
 
 	geometry_reply = xcb_get_geometry_reply(wm->conn, geometry_cookie, NULL);
 	/* technically we should use XRender and check the visual format's
@@ -1076,6 +1078,7 @@ weston_wm_handle_create_notify(struct weston_wm *wm, xcb_generic_event_t *event)
 
 	weston_wm_window_create(wm, create_notify->window,
 				create_notify->width, create_notify->height,
+				create_notify->x, create_notify->y,
 				create_notify->override_redirect);
 }
 
@@ -1112,6 +1115,7 @@ weston_wm_handle_reparent_notify(struct weston_wm *wm, xcb_generic_event_t *even
 
 	if (reparent_notify->parent == wm->screen->root) {
 		weston_wm_window_create(wm, reparent_notify->window, 10, 10,
+					reparent_notify->x, reparent_notify->y,
 					reparent_notify->override_redirect);
 	} else if (!our_resource(wm, reparent_notify->parent)) {
 		window = hash_table_lookup(wm->window_hash,
@@ -2037,7 +2041,7 @@ xserver_map_shell_surface(struct weston_wm *wm,
 		shell_interface->set_fullscreen(window->shsurf,
 						WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT,
 						0, output);
-	} else if (!window->override_redirect) {
+	} else if (!window->override_redirect && !window->transient_for) {
 		shell_interface->set_toplevel(window->shsurf);
 		return;
 	} else {
