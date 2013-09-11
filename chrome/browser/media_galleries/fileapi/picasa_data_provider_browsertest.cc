@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "build/build_config.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #include "chrome/browser/media_galleries/fileapi/picasa_data_provider.h"
 #include "chrome/browser/media_galleries/fileapi/safe_picasa_albums_indexer.h"
@@ -522,8 +523,15 @@ class PicasaDataProviderFileWatcherInvalidateTest
   }
 };
 
+// Flaky on the Windows.  See http://crbug.com/289681
+#if defined(OS_WIN)
+#define MAYBE_FileWatcherInvalidateTest DISABLED_FileWatcherInvalidateTest
+#else
+#define MAYBE_FileWatcherInvalidateTest FileWatcherInvalidateTest
+#endif
+
 IN_PROC_BROWSER_TEST_F(PicasaDataProviderFileWatcherInvalidateTest,
-                       FileWatcherInvalidateTest) {
+                       MAYBE_FileWatcherInvalidateTest) {
   RunTest();
 }
 
