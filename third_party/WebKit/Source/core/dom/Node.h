@@ -577,9 +577,9 @@ public:
     // Implementation can determine the type of subtree by seeing insertionPoint->inDocument().
     // For a performance reason, notifications are delivered only to ContainerNode subclasses if the insertionPoint is out of document.
     //
-    // There are another callback named didNotifyDescendantInsertions(), which is called after all the descendant is notified.
-    // Only a few subclasses actually need this. To utilize this, the node should return InsertionShouldCallDidNotifyDescendantInsertions
-    // from insrtedInto().
+    // There are another callback named didNotifySubtreeInsertionsToDocument(), which is called after all the descendant is notified,
+    // if this node was inserted into the document tree. Only a few subclasses actually need this. To utilize this, the node should
+    // return InsertionShouldCallDidNotifySubtreeInsertions from insrtedInto().
     //
     enum InsertionNotificationRequest {
         InsertionDone,
@@ -587,7 +587,7 @@ public:
     };
 
     virtual InsertionNotificationRequest insertedInto(ContainerNode* insertionPoint);
-    virtual void didNotifySubtreeInsertions(ContainerNode*) { }
+    virtual void didNotifySubtreeInsertionsToDocument() { }
 
     // Notifies the node that it is no longer part of the tree.
     //

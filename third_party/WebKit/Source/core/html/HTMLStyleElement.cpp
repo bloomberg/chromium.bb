@@ -176,10 +176,8 @@ Node::InsertionNotificationRequest HTMLStyleElement::insertedInto(ContainerNode*
     if (insertionPoint->inDocument()) {
         if (m_scopedStyleRegistrationState == NotRegistered && (scoped() || isInShadowTree()))
             registerWithScopingNode(scoped());
-        return InsertionShouldCallDidNotifySubtreeInsertions;
     }
-
-    return InsertionDone;
+    return InsertionShouldCallDidNotifySubtreeInsertions;
 }
 
 void HTMLStyleElement::removedFrom(ContainerNode* insertionPoint)
@@ -205,7 +203,7 @@ void HTMLStyleElement::removedFrom(ContainerNode* insertionPoint)
         StyleElement::removedFromDocument(document(), this, scope);
 }
 
-void HTMLStyleElement::didNotifySubtreeInsertions(ContainerNode* insertionPoint)
+void HTMLStyleElement::didNotifySubtreeInsertionsToDocument()
 {
     StyleElement::processStyleSheet(document(), this);
 }

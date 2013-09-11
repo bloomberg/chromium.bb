@@ -145,16 +145,11 @@ void HTMLFrameElementBase::setNameAndOpenURL()
 Node::InsertionNotificationRequest HTMLFrameElementBase::insertedInto(ContainerNode* insertionPoint)
 {
     HTMLFrameOwnerElement::insertedInto(insertionPoint);
-    if (insertionPoint->inDocument())
-        return InsertionShouldCallDidNotifySubtreeInsertions;
-    return InsertionDone;
+    return InsertionShouldCallDidNotifySubtreeInsertions;
 }
 
-void HTMLFrameElementBase::didNotifySubtreeInsertions(ContainerNode*)
+void HTMLFrameElementBase::didNotifySubtreeInsertionsToDocument()
 {
-    if (!inDocument())
-        return;
-
     if (!document().frame())
         return;
 

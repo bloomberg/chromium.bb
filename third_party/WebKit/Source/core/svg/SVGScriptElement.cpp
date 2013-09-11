@@ -121,15 +121,13 @@ void SVGScriptElement::svgAttributeChanged(const QualifiedName& attrName)
 Node::InsertionNotificationRequest SVGScriptElement::insertedInto(ContainerNode* rootParent)
 {
     SVGElement::insertedInto(rootParent);
-    return rootParent->inDocument() ? InsertionShouldCallDidNotifySubtreeInsertions : InsertionDone;
+    return InsertionShouldCallDidNotifySubtreeInsertions;
 }
 
-void SVGScriptElement::didNotifySubtreeInsertions(ContainerNode* insertionPoint)
+void SVGScriptElement::didNotifySubtreeInsertionsToDocument()
 {
-    if (insertionPoint->inDocument()) {
-        m_loader->didNotifySubtreeInsertionsToDocument();
-        SVGExternalResourcesRequired::insertedIntoDocument(this);
-    }
+    m_loader->didNotifySubtreeInsertionsToDocument();
+    SVGExternalResourcesRequired::insertedIntoDocument(this);
 }
 
 void SVGScriptElement::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)

@@ -129,12 +129,10 @@ void SVGStyleElement::finishParsingChildren()
 Node::InsertionNotificationRequest SVGStyleElement::insertedInto(ContainerNode* rootParent)
 {
     SVGElement::insertedInto(rootParent);
-    if (rootParent->inDocument())
-        return InsertionShouldCallDidNotifySubtreeInsertions;
-    return InsertionDone;
+    return InsertionShouldCallDidNotifySubtreeInsertions;
 }
 
-void SVGStyleElement::didNotifySubtreeInsertions(ContainerNode* insertionPoint)
+void SVGStyleElement::didNotifySubtreeInsertionsToDocument()
 {
     StyleElement::processStyleSheet(document(), this);
 }

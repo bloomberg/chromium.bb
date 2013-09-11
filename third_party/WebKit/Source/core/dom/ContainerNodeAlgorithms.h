@@ -231,8 +231,11 @@ inline void ChildNodeInsertionNotifier::notify(Node* node)
     if (!node->attached() && node->parentNode() && node->parentNode()->attached())
         node->lazyAttach();
 
-    for (size_t i = 0; i < m_postInsertionNotificationTargets.size(); ++i)
-        m_postInsertionNotificationTargets[i]->didNotifySubtreeInsertions(m_insertionPoint);
+    for (size_t i = 0; i < m_postInsertionNotificationTargets.size(); ++i) {
+        Node* node = m_postInsertionNotificationTargets[i].get();
+        if (node->inDocument())
+            node->didNotifySubtreeInsertionsToDocument();
+    }
 }
 
 inline void ChildNodeRemovalNotifier::notifyNodeRemovedFromDocument(Node* node)
