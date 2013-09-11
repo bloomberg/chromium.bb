@@ -16,7 +16,8 @@
 #include "printing/print_job_constants.h"
 #include "printing/print_settings.h"
 #include "printing/units.h"
-#include "ui/gfx/font.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/text_elider.h"
 #include "url/gurl.h"
 
@@ -44,7 +45,11 @@ void PrintSettingsInitializer::InitHeaderFooterStrings(
 
   print_settings->date = date;
   print_settings->title = title;
-  print_settings->url = gfx::ElideUrl(GURL(url), gfx::Font(), 0, std::string());
+  const gfx::FontList& default_fonts =
+      ui::ResourceBundle::GetSharedInstance().GetFontList(
+          ui::ResourceBundle::BaseFont);
+  print_settings->url = gfx::ElideUrl(GURL(url), default_fonts, 0,
+                                      std::string());
 }
 
 }  // namespace printing
