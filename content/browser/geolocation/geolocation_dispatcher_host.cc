@@ -20,7 +20,7 @@
 namespace content {
 namespace {
 
-void NotifyArbitratorPermissionGranted() {
+void NotifyGeolocationProviderPermissionGranted() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   GeolocationProviderImpl::GetInstance()->UserDidOptIntoLocationServices();
 }
@@ -30,16 +30,17 @@ void SendGeolocationPermissionResponse(int render_process_id,
                                        int bridge_id,
                                        bool allowed) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  RenderViewHostImpl* r =
+  RenderViewHostImpl* render_view_host =
       RenderViewHostImpl::FromID(render_process_id, render_view_id);
-  if (!r)
+  if (!render_view_host)
     return;
-  r->Send(new GeolocationMsg_PermissionSet(render_view_id, bridge_id, allowed));
+  render_view_host->Send(
+      new GeolocationMsg_PermissionSet(render_view_id, bridge_id, allowed));
 
   if (allowed) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&NotifyArbitratorPermissionGranted));
+        base::Bind(&NotifyGeolocationProviderPermissionGranted));
   }
 }
 
@@ -67,7 +68,7 @@ class GeolocationDispatcherHostImpl : public GeolocationDispatcherHost {
       bool enable_high_accuracy);
   void OnStopUpdating(int render_view_id);
 
-  // Updates the |location_arbitrator_| with the currently required update
+  // Updates the |geolocation_provider_| with the currently required update
   // options, based on |renderer_high_accuracy_|.
   void RefreshHighAccuracy();
 
@@ -81,11 +82,11 @@ class GeolocationDispatcherHostImpl : public GeolocationDispatcherHost {
   // context switches.
   // Only used on the IO thread.
   std::set<int> geolocation_renderer_ids_;
-  // Maps renderer_id to whether high accuracy is requestd for this particular
+  // Maps renderer_id to whether high accuracy is requested for this particular
   // bridge.
   std::map<int, bool> renderer_high_accuracy_;
-  // Only set whilst we are registered with the arbitrator.
-  GeolocationProviderImpl* location_provider_;
+  // Only set whilst we are registered with the geolocation provider.
+  GeolocationProviderImpl* geolocation_provider_;
 
   GeolocationProviderImpl::LocationUpdateCallback callback_;
 
@@ -97,7 +98,7 @@ GeolocationDispatcherHostImpl::GeolocationDispatcherHostImpl(
     GeolocationPermissionContext* geolocation_permission_context)
     : render_process_id_(render_process_id),
       geolocation_permission_context_(geolocation_permission_context),
-      location_provider_(NULL) {
+      geolocation_provider_(NULL) {
   callback_ = base::Bind(
       &GeolocationDispatcherHostImpl::OnLocationUpdate, base::Unretained(this));
   // This is initialized by ResourceMessageFilter. Do not add any non-trivial
@@ -106,8 +107,8 @@ GeolocationDispatcherHostImpl::GeolocationDispatcherHostImpl(
 }
 
 GeolocationDispatcherHostImpl::~GeolocationDispatcherHostImpl() {
-  if (location_provider_)
-    location_provider_->RemoveLocationUpdateCallback(callback_);
+  if (geolocation_provider_)
+    geolocation_provider_->RemoveLocationUpdateCallback(callback_);
 }
 
 bool GeolocationDispatcherHostImpl::OnMessageReceived(
@@ -204,13 +205,13 @@ void GeolocationDispatcherHostImpl::OnStopUpdating(int render_view_id) {
 void GeolocationDispatcherHostImpl::RefreshHighAccuracy() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (renderer_high_accuracy_.empty()) {
-    if (location_provider_) {
-      location_provider_->RemoveLocationUpdateCallback(callback_);
-      location_provider_ = NULL;
+    if (geolocation_provider_) {
+      geolocation_provider_->RemoveLocationUpdateCallback(callback_);
+      geolocation_provider_ = NULL;
     }
   } else {
-    if (!location_provider_)
-      location_provider_ = GeolocationProviderImpl::GetInstance();
+    if (!geolocation_provider_)
+      geolocation_provider_ = GeolocationProviderImpl::GetInstance();
     // Re-add to re-establish our options, in case they changed.
     bool use_high_accuracy = false;
     std::map<int, bool>::iterator i = renderer_high_accuracy_.begin();
@@ -220,7 +221,8 @@ void GeolocationDispatcherHostImpl::RefreshHighAccuracy() {
         break;
       }
     }
-    location_provider_->AddLocationUpdateCallback(callback_, use_high_accuracy);
+    geolocation_provider_->AddLocationUpdateCallback(
+        callback_, use_high_accuracy);
   }
 }
 }  // namespace
