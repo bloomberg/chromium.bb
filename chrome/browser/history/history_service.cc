@@ -986,6 +986,7 @@ bool HistoryService::CanAddURL(const GURL& url) {
   // by a shortcut or menu action.
   if (url.SchemeIs(content::kJavaScriptScheme) ||
       url.SchemeIs(chrome::kChromeDevToolsScheme) ||
+      url.SchemeIs(chrome::kChromeNativeScheme) ||
       url.SchemeIs(chrome::kChromeUIScheme) ||
       url.SchemeIs(content::kViewSourceScheme) ||
       url.SchemeIs(chrome::kChromeInternalScheme))
