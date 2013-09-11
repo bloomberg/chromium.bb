@@ -59,7 +59,8 @@ class CC_EXPORT OutputSurface : public FrameRateControllerClient {
           max_frames_pending(0),
           deferred_gl_initialization(false),
           draw_and_swap_full_viewport_every_frame(false),
-          adjust_deadline_for_parent(true) {}
+          adjust_deadline_for_parent(true),
+          uses_default_gl_framebuffer(true) {}
     bool delegated_rendering;
     int max_frames_pending;
     bool deferred_gl_initialization;
@@ -67,6 +68,9 @@ class CC_EXPORT OutputSurface : public FrameRateControllerClient {
     // This doesn't handle the <webview> case, but once BeginFrame is
     // supported natively, we shouldn't need adjust_deadline_for_parent.
     bool adjust_deadline_for_parent;
+    // Whether this output surface renders to the default OpenGL zero
+    // framebuffer or to an offscreen framebuffer.
+    bool uses_default_gl_framebuffer;
   };
 
   const Capabilities& capabilities() const {

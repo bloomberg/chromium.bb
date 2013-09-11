@@ -3877,7 +3877,32 @@ void GLES2DecoderImpl::DoDiscardFramebufferEXT(GLenum target,
     }
   }
 
-  glDiscardFramebufferEXT(target, numAttachments, attachments);
+  // If the default framebuffer is bound but we are still rendering to an
+  // FBO, translate attachment names that refer to default framebuffer
+  // channels to corresponding framebuffer attachments.
+  scoped_ptr<GLenum[]> translated_attachments(new GLenum[numAttachments]);
+  for (GLsizei i = 0; i < numAttachments; ++i) {
+    GLenum attachment = attachments[i];
+    if (!framebuffer && GetBackbufferServiceId()) {
+      switch (attachment) {
+        case GL_COLOR_EXT:
+          attachment = GL_COLOR_ATTACHMENT0;
+          break;
+        case GL_DEPTH_EXT:
+          attachment = GL_DEPTH_ATTACHMENT;
+          break;
+        case GL_STENCIL_EXT:
+          attachment = GL_STENCIL_ATTACHMENT;
+          break;
+        default:
+          NOTREACHED();
+          return;
+      }
+    }
+    translated_attachments[i] = attachment;
+  }
+
+  glDiscardFramebufferEXT(target, numAttachments, translated_attachments.get());
 }
 
 void GLES2DecoderImpl::DoEnableVertexAttribArray(GLuint index) {

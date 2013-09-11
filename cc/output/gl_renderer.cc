@@ -305,9 +305,11 @@ void GLRenderer::ClearFramebuffer(DrawingFrame* frame) {
   }
 
   if (capabilities_.using_discard_framebuffer) {
-    GLenum attachments[] = {
-        GL_COLOR_EXT
-    };
+    bool using_default_framebuffer =
+        !current_framebuffer_lock_ &&
+        output_surface_->capabilities().uses_default_gl_framebuffer;
+    GLenum attachments[] = {static_cast<GLenum>(
+        using_default_framebuffer ? GL_COLOR_EXT : GL_COLOR_ATTACHMENT0_EXT)};
     context_->discardFramebufferEXT(
         GL_FRAMEBUFFER, arraysize(attachments), attachments);
   }

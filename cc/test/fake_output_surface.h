@@ -80,6 +80,14 @@ class FakeOutputSurface : public OutputSurface {
     return surface.Pass();
   }
 
+  static scoped_ptr<FakeOutputSurface> CreateOffscreen(
+      scoped_ptr<TestWebGraphicsContext3D> context) {
+    scoped_ptr<FakeOutputSurface> surface(new FakeOutputSurface(
+        TestContextProvider::Create(context.Pass()), false));
+    surface->capabilities_.uses_default_gl_framebuffer = false;
+    return surface.Pass();
+  }
+
   CompositorFrame& last_sent_frame() { return last_sent_frame_; }
   size_t num_sent_frames() { return num_sent_frames_; }
 

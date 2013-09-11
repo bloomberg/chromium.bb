@@ -32,6 +32,7 @@ MailboxOutputSurface::MailboxOutputSurface(
       is_backbuffer_discarded_(false) {
   pending_textures_.push_back(TransferableFrame());
   capabilities_.max_frames_pending = 1;
+  capabilities_.uses_default_gl_framebuffer = false;
 }
 
 MailboxOutputSurface::~MailboxOutputSurface() {

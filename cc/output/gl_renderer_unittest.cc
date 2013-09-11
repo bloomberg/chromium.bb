@@ -32,7 +32,9 @@
 
 using testing::_;
 using testing::AnyNumber;
+using testing::Args;
 using testing::AtLeast;
+using testing::ElementsAre;
 using testing::Expectation;
 using testing::InSequence;
 using testing::Mock;
@@ -727,7 +729,8 @@ TEST(GLRendererTest2, OpaqueBackground) {
 
   // On DEBUG builds, render passes with opaque background clear to blue to
   // easily see regions that were not drawn on the screen.
-  EXPECT_CALL(*context, discardFramebufferEXT(GL_FRAMEBUFFER, 1, _))
+  EXPECT_CALL(*context, discardFramebufferEXT(GL_FRAMEBUFFER, _, _))
+      .With(Args<2, 1>(ElementsAre(GL_COLOR_EXT)))
       .Times(1);
 #ifdef NDEBUG
   EXPECT_CALL(*context, clear(_)).Times(0);
@@ -768,6 +771,36 @@ TEST(GLRendererTest2, TransparentBackground) {
   renderer.DrawFrame(
       renderer_client.render_passes_in_draw_order(), NULL, 1.f, true);
 
+  Mock::VerifyAndClearExpectations(context);
+}
+
+TEST(GLRendererTest2, OffscreenOutputSurface) {
+  scoped_ptr<ClearCountingContext> context_owned(new ClearCountingContext);
+  ClearCountingContext* context = context_owned.get();
+
+  FakeOutputSurfaceClient output_surface_client;
+  scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::CreateOffscreen(
+      context_owned.PassAs<TestWebGraphicsContext3D>()));
+  CHECK(output_surface->BindToClient(&output_surface_client));
+
+  scoped_ptr<ResourceProvider> resource_provider(
+      ResourceProvider::Create(output_surface.get(), 0));
+
+  LayerTreeSettings settings;
+  FakeRendererClient renderer_client;
+  FakeRendererGL renderer(&renderer_client,
+                          &settings,
+                          output_surface.get(),
+                          resource_provider.get());
+
+  EXPECT_TRUE(renderer.Initialize());
+
+  EXPECT_CALL(*context, discardFramebufferEXT(GL_FRAMEBUFFER, _, _))
+      .With(Args<2, 1>(ElementsAre(GL_COLOR_ATTACHMENT0)))
+      .Times(1);
+  EXPECT_CALL(*context, clear(_)).Times(AnyNumber());
+  renderer.DrawFrame(
+      renderer_client.render_passes_in_draw_order(), NULL, 1.f, true);
   Mock::VerifyAndClearExpectations(context);
 }
 
