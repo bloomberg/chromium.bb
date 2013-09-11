@@ -161,11 +161,10 @@ SVGTextPositioningElement* SVGTextPositioningElement::elementFromRenderer(Render
     ASSERT(node->isSVGElement());
 
     if (!node->hasTagName(SVGNames::textTag)
-        && !node->hasTagName(SVGNames::tspanTag)
 #if ENABLE(SVG_FONTS)
         && !node->hasTagName(SVGNames::altGlyphTag)
 #endif
-        && !node->hasTagName(SVGNames::trefTag))
+        && !node->hasTagName(SVGNames::tspanTag))
         return 0;
 
     return static_cast<SVGTextPositioningElement*>(node);

@@ -383,7 +383,6 @@ SVGStringList
 SVGStyleElement
 SVGSwitchElement
 SVGSymbolElement
-SVGTRefElement
 SVGTSpanElement
 SVGTextContentElement
 SVGTextElement

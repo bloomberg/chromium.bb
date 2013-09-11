@@ -361,7 +361,6 @@ static bool isDisallowedElement(Node* node)
         allowedElementTags.add(SVGNames::textTag);
         allowedElementTags.add(SVGNames::textPathTag);
         allowedElementTags.add(SVGNames::titleTag);
-        allowedElementTags.add(SVGNames::trefTag);
         allowedElementTags.add(SVGNames::tspanTag);
         allowedElementTags.add(SVGNames::useTag);
     }

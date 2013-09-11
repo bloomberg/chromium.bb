@@ -45,11 +45,8 @@ layer at (0,0) size 450x500
         RenderSVGText {text} at (-43,0) size 86x19 contains 1 chunk(s)
           RenderSVGInlineText {#text} at (0,0) size 86x19
             chunk 1 (middle anchor) text run 1 at (-43.00,15.00) startOffset 0 endOffset 14 width 86.00: "font-size=\"28\""
-      RenderSVGContainer {g} at (23,198) size 154x46 [transform={m=((1.00,0.00)(0.00,1.00)) t=(100.00,225.00)}]
-        RenderSVGText {text} at (-41,-27) size 82x34 contains 1 chunk(s)
-          RenderSVGInline {tref} at (0,0) size 82x34
-            RenderSVGInlineText {#text} at (0,0) size 82x34
-              chunk 1 (middle anchor) text run 1 at (-41.00,0.00) startOffset 0 endOffset 6 width 82.00: "sample"
+      RenderSVGContainer {g} at (23,225) size 154x19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(100.00,225.00)}]
+        RenderSVGText {text}
         RenderSVGText {text} at (-77,0) size 154x19 contains 1 chunk(s)
           RenderSVGInlineText {#text} at (0,0) size 153x19
             chunk 1 (middle anchor) text run 1 at (-76.50,15.00) startOffset 0 endOffset 26 width 153.00: "referenced text via <tref>"

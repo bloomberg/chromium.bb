@@ -237,12 +237,6 @@ bool Text::textRendererIsNeeded(const NodeRenderingContext& context)
     return true;
 }
 
-static bool isSVGShadowText(Text* text)
-{
-    Node* parentNode = text->parentNode();
-    return parentNode->isShadowRoot() && toShadowRoot(parentNode)->host()->hasTagName(SVGNames::trefTag);
-}
-
 static bool isSVGText(Text* text)
 {
     Node* parentOrShadowHostNode = text->parentOrShadowHostNode();
@@ -251,7 +245,7 @@ static bool isSVGText(Text* text)
 
 RenderText* Text::createTextRenderer(RenderStyle* style)
 {
-    if (isSVGText(this) || isSVGShadowText(this))
+    if (isSVGText(this))
         return new RenderSVGInlineText(this, dataImpl());
 
     if (style->hasTextCombine())

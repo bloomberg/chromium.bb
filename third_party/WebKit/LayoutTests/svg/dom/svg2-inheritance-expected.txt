@@ -109,7 +109,6 @@ PASS SVGStringList inherits Object
 PASS SVGStyleElement inherits SVGElement
 PASS SVGSwitchElement inherits SVGGraphicsElement
 PASS SVGSymbolElement inherits SVGElement
-PASS SVGTRefElement inherits SVGTextPositioningElement
 PASS SVGTSpanElement inherits SVGTextPositioningElement
 PASS SVGTextContentElement inherits SVGGraphicsElement
 PASS SVGTextElement inherits SVGTextPositioningElement

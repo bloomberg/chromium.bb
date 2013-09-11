@@ -893,7 +893,6 @@ bool SVGElement::childShouldCreateRenderer(const Node& child) const
 #if ENABLE(SVG_FONTS)
         invalidTextContent.add(SVGNames::altGlyphTag);
 #endif
-        invalidTextContent.add(SVGNames::trefTag);
         invalidTextContent.add(SVGNames::tspanTag);
     }
     if (child.isSVGElement()) {

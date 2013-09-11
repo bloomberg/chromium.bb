@@ -51,7 +51,6 @@ bool SVGTSpanElement::childShouldCreateRenderer(const Node& child) const
 #if ENABLE(SVG_FONTS)
         || child.hasTagName(SVGNames::altGlyphTag)
 #endif
-        || child.hasTagName(SVGNames::trefTag)
         || child.hasTagName(SVGNames::tspanTag))
         return true;
 

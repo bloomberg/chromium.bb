@@ -39,7 +39,6 @@ namespace WebCore {
             ConditionEventListenerType,
             GObjectEventListenerType,
             NativeEventListenerType,
-            SVGTRefTargetEventListenerType
         };
 
         virtual ~EventListener() { }

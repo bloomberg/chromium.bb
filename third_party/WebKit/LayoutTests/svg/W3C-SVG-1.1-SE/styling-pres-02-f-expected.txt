@@ -13,26 +13,23 @@ layer at (0,0) size 480x360
           chunk 1 text run 5 at (232.12,20.00) startOffset 28 endOffset 38 width 70.04: "ation attr"
           chunk 1 text run 6 at (302.18,20.00) startOffset 38 endOffset 42 width 29.02: "ibut"
           chunk 1 text run 7 at (330.94,20.00) startOffset 42 endOffset 44 width 19.01: "es"
-      RenderSVGContainer {g} at (0,0) size 40x10
+      RenderSVGContainer {g} at (0,0) size 30x10
         RenderSVGPath {path} at (0,0) size 0x0 [fill={[type=SOLID] [color=#000000]}] [data="M 0 0"]
         RenderSVGImage {image} at (0,0) size 10x10
         RenderSVGRect {rect} at (0,0) size 10x10 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=10.00] [height=10.00]
         RenderSVGEllipse {circle} at (0,0) size 10x10 [fill={[type=SOLID] [color=#000000]}] [cx=0.00] [cy=0.00] [r=10.00]
         RenderSVGEllipse {ellipse} at (0,0) size 10x5 [fill={[type=SOLID] [color=#000000]}] [cx=0.00] [cy=0.00] [rx=10.00] [ry=5.00]
         RenderSVGPath {polyline} at (0,0) size 10x10 [fill={[type=SOLID] [color=#000000]}] [points="0 0 10 10"]
-        RenderSVGText {text} at (0,-15) size 40x19 contains 1 chunk(s)
+        RenderSVGText {text} at (0,-15) size 30x19 contains 1 chunk(s)
           RenderSVGInlineText {#text} at (0,0) size 11x18
             chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 1 width 10.01: "a"
           RenderSVGTSpan {tspan} at (0,0) size 11x18
             RenderSVGInlineText {#text} at (10,0) size 11x18
               chunk 1 text run 1 at (10.01,0.00) startOffset 0 endOffset 1 width 10.01: "b"
-          RenderSVGInline {tref} at (0,0) size 11x18
-            RenderSVGInlineText {#text} at (20,0) size 11x18
-              chunk 1 text run 1 at (20.02,0.00) startOffset 0 endOffset 1 width 10.01: "b"
           RenderSVGTextPath {textPath} at (0,0) size 0x1
           RenderSVGTSpan {altGlyph} at (0,0) size 10x18
-            RenderSVGInlineText {#text} at (30,0) size 9x18
-              chunk 1 text run 1 at (30.02,0.00) startOffset 0 endOffset 1 width 9.00: "c"
+            RenderSVGInlineText {#text} at (20,0) size 9x18
+              chunk 1 text run 1 at (20.02,0.00) startOffset 0 endOffset 1 width 9.00: "c"
         RenderSVGResourceLinearGradient {linearGradient} [id="linearGradient"] [gradientUnits=objectBoundingBox] [start=(0,0)] [end=(1,0)]
           RenderSVGGradientStop {stop} [offset=0.00] [color=#000000]
         RenderSVGResourceRadialGradient {radialGradient} [id="radialGradient"] [gradientUnits=objectBoundingBox] [center=(0.50,0.50)] [focal=(0.50,0.50)] [radius=0.50] [focalRadius=0.00]

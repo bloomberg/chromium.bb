@@ -77,7 +77,6 @@ static HashSet<AtomicString>& clipperFilterMaskerTags()
         // (Already mailed SVG WG, waiting for a solution)
         s_tagList.add(SVGNames::altGlyphTag.localName());
         s_tagList.add(SVGNames::textPathTag.localName());
-        s_tagList.add(SVGNames::trefTag.localName());
         s_tagList.add(SVGNames::tspanTag.localName());
 
         // Not listed in the definitions is the foreignObject element, but clip-path
@@ -119,7 +118,6 @@ static HashSet<AtomicString>& fillAndStrokeTags()
         s_tagList.add(SVGNames::rectTag.localName());
         s_tagList.add(SVGNames::textTag.localName());
         s_tagList.add(SVGNames::textPathTag.localName());
-        s_tagList.add(SVGNames::trefTag.localName());
         s_tagList.add(SVGNames::tspanTag.localName());
     }
 

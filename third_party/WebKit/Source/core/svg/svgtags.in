@@ -89,7 +89,6 @@ symbol
 text
 textPath
 title
-tref interfaceName=SVGTRefElement
 tspan interfaceName=SVGTSpanElement
 use constructorNeedsCreatedByParser
 view

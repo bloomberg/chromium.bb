@@ -17,7 +17,7 @@ function checkParent(type, expectedParent)
     }
     var parentPrototype = window[type].prototype.__proto__;
     var expectedPrototype = window[expectedParent] ? window[expectedParent].prototype : null;
-    
+
     if (expectedPrototype && parentPrototype === expectedPrototype)
         testPassed(type + " inherits " + expectedParent);
     else
@@ -130,7 +130,6 @@ checkParent("SVGStringList", "Object");
 checkParent("SVGStyleElement", "SVGElement");
 checkParent("SVGSwitchElement", "SVGGraphicsElement");
 checkParent("SVGSymbolElement", "SVGElement");
-checkParent("SVGTRefElement", "SVGTextPositioningElement");
 checkParent("SVGTSpanElement", "SVGTextPositioningElement");
 checkParent("SVGTextContentElement", "SVGGraphicsElement");
 checkParent("SVGTextElement", "SVGTextPositioningElement");

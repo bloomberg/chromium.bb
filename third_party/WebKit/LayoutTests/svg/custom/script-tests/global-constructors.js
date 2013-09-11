@@ -89,7 +89,6 @@ shouldBeDefined("SVGTextContentElement");
 shouldBeDefined("SVGTextPositioningElement");
 shouldBeDefined("SVGTextElement");
 shouldBeDefined("SVGTSpanElement");
-shouldBeDefined("SVGTRefElement");
 shouldBeDefined("SVGTextPathElement");
 shouldBeDefined("SVGAltGlyphElement");
 shouldBeDefined("SVGAltGlyphDefElement");

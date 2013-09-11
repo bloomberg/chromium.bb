@@ -86,7 +86,6 @@ PASS SVGTextContentElement.toString() is 'function SVGTextContentElement() { [na
 PASS SVGTextPositioningElement.toString() is 'function SVGTextPositioningElement() { [native code] }'
 PASS SVGTextElement.toString() is 'function SVGTextElement() { [native code] }'
 PASS SVGTSpanElement.toString() is 'function SVGTSpanElement() { [native code] }'
-PASS SVGTRefElement.toString() is 'function SVGTRefElement() { [native code] }'
 PASS SVGTextPathElement.toString() is 'function SVGTextPathElement() { [native code] }'
 PASS SVGAltGlyphElement.toString() is 'function SVGAltGlyphElement() { [native code] }'
 PASS SVGAltGlyphDefElement.toString() is 'function SVGAltGlyphDefElement() { [native code] }'

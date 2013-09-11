@@ -139,11 +139,8 @@ layer at (0,0) size 450x500
         RenderSVGText {text} at (-23,3) size 46x15 contains 1 chunk(s)
           RenderSVGInlineText {#text} at (0,0) size 45x15
             chunk 1 (middle anchor) text run 1 at (-22.50,15.00) startOffset 0 endOffset 9 width 45.00: "Helvetica"
-      RenderSVGContainer {g} at (52,382) size 96x46 [transform={m=((1.00,0.00)(0.00,1.00)) t=(100.00,410.00)}]
-        RenderSVGText {text} at (-48,-28) size 96x35 contains 1 chunk(s)
-          RenderSVGInline {tref} at (0,0) size 96x35
-            RenderSVGInlineText {#text} at (0,0) size 96x35
-              chunk 1 (middle anchor) text run 1 at (-48.00,0.00) startOffset 0 endOffset 6 width 96.00: "sample"
+      RenderSVGContainer {g} at (57,413) size 86x15 [transform={m=((1.00,0.00)(0.00,1.00)) t=(100.00,410.00)}]
+        RenderSVGText {text}
         RenderSVGText {text} at (-43,3) size 86x15 contains 1 chunk(s)
           RenderSVGInlineText {#text} at (0,0) size 85x15
             chunk 1 (middle anchor) text run 1 at (-42.50,15.00) startOffset 0 endOffset 18 width 85.00: "Arial (underlined)"
@@ -155,11 +152,8 @@ layer at (0,0) size 450x500
         RenderSVGText {text} at (-17,3) size 34x15 contains 1 chunk(s)
           RenderSVGInlineText {#text} at (0,0) size 34x15
             chunk 1 (middle anchor) text run 1 at (-17.00,15.00) startOffset 0 endOffset 6 width 34.00: "Impact"
-      RenderSVGContainer {g} at (286,383) size 128x45 [transform={m=((1.00,0.00)(0.00,1.00)) t=(350.00,410.00)}]
-        RenderSVGText {text} at (-41,-27) size 82x34 contains 1 chunk(s)
-          RenderSVGInline {tref} at (0,0) size 82x34
-            RenderSVGInlineText {#text} at (0,0) size 82x34
-              chunk 1 (middle anchor) text run 1 at (-41.00,0.00) startOffset 0 endOffset 6 width 82.00: "sample"
+      RenderSVGContainer {g} at (286,413) size 128x15 [transform={m=((1.00,0.00)(0.00,1.00)) t=(350.00,410.00)}]
+        RenderSVGText {text}
         RenderSVGText {text} at (-64,3) size 128x15 contains 1 chunk(s)
           RenderSVGInlineText {#text} at (0,0) size 128x15
             chunk 1 (middle anchor) text run 1 at (-64.00,15.00) startOffset 0 endOffset 25 width 128.00: "AvantGarde (line-through)"

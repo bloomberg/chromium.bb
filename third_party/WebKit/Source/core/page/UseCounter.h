@@ -123,7 +123,7 @@ public:
         DeprecatedFlexboxWebContent,
         DeprecatedFlexboxChrome,
         DeprecatedFlexboxChromeExtension,
-        SVGTRefElement,
+        UnusedSlot04,
         UnprefixedPerformanceTimeline,
         PrefixedPerformanceTimeline,
         UnprefixedUserTiming,

@@ -79,7 +79,6 @@ bool SVGTextElement::childShouldCreateRenderer(const Node& child) const
         || child.hasTagName(SVGNames::altGlyphTag)
 #endif
         || child.hasTagName(SVGNames::textPathTag)
-        || child.hasTagName(SVGNames::trefTag)
         || child.hasTagName(SVGNames::tspanTag))
         return true;
 
