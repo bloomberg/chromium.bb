@@ -6,11 +6,8 @@
 
 #include "base/bind.h"
 #include "base/file_util.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/platform_file.h"
-#include "base/prefs/pref_change_registrar.h"
 #include "base/prefs/pref_service.h"
-#include "base/strings/stringprintf.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/drive/change_list_loader.h"
@@ -37,7 +34,6 @@
 #include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
 #include "chrome/browser/chromeos/drive/search_metadata.h"
 #include "chrome/browser/chromeos/drive/sync_client.h"
-#include "chrome/browser/drive/drive_api_util.h"
 #include "chrome/browser/drive/drive_service_interface.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/common/pref_names.h"
@@ -254,7 +250,6 @@ FileSystem::FileSystem(
       scheduler_(scheduler),
       resource_metadata_(resource_metadata),
       last_update_check_error_(FILE_ERROR_OK),
-      hide_hosted_docs_(false),
       blocking_task_runner_(blocking_task_runner),
       temporary_file_directory_(temporary_file_directory),
       weak_ptr_factory_(this) {
@@ -350,10 +345,6 @@ void FileSystem::Initialize() {
                                               resource_metadata_,
                                               cache_,
                                               temporary_file_directory_));
-  hide_hosted_docs_ =
-      pref_service_->GetBoolean(prefs::kDisableDriveHostedFiles);
-
-  InitializePreferenceObserver();
 }
 
 void FileSystem::ReloadAfterReset(FileError error) {
@@ -782,10 +773,12 @@ void FileSystem::ReadDirectoryByPathAfterRead(
   }
   DCHECK(entries.get());  // This is valid for empty directories too.
 
-  // TODO(satorux): Stop handling hide_hosted_docs_ here. crbug.com/256520.
+  // TODO(satorux): Stop handling hide_hosted_docs here. crbug.com/256520.
+  const bool hide_hosted_docs =
+      pref_service_->GetBoolean(prefs::kDisableDriveHostedFiles);
   scoped_ptr<ResourceEntryVector> filtered(new ResourceEntryVector);
   for (size_t i = 0; i < entries->size(); ++i) {
-    if (hide_hosted_docs_ &&
+    if (hide_hosted_docs &&
         entries->at(i).file_specific_info().is_hosted_document()) {
       continue;
     }
@@ -913,7 +906,8 @@ void FileSystem::SearchMetadata(const std::string& query,
                                 const SearchMetadataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (hide_hosted_docs_)
+  // TODO(satorux): Stop handling hide_hosted_docs here. crbug.com/256520.
+  if (pref_service_->GetBoolean(prefs::kDisableDriveHostedFiles))
     options |= SEARCH_METADATA_EXCLUDE_HOSTED_DOCUMENTS;
 
   drive::internal::SearchMetadata(blocking_task_runner_,
@@ -1024,36 +1018,6 @@ void FileSystem::GetCacheEntryByPath(
       base::Bind(&RunGetCacheEntryCallback,
                  callback,
                  base::Owned(cache_entry)));
-}
-
-void FileSystem::OnDisableDriveHostedFilesChanged() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  SetHideHostedDocuments(
-      pref_service_->GetBoolean(prefs::kDisableDriveHostedFiles));
-}
-
-void FileSystem::SetHideHostedDocuments(bool hide) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (hide == hide_hosted_docs_)
-    return;
-
-  hide_hosted_docs_ = hide;
-
-  // Kick off directory refresh when this setting changes.
-  FOR_EACH_OBSERVER(FileSystemObserver, observers_,
-                    OnDirectoryChanged(util::GetDriveGrandRootPath()));
-}
-
-void FileSystem::InitializePreferenceObserver() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  pref_registrar_.reset(new PrefChangeRegistrar());
-  pref_registrar_->Init(pref_service_);
-  pref_registrar_->Add(
-      prefs::kDisableDriveHostedFiles,
-      base::Bind(&FileSystem::OnDisableDriveHostedFilesChanged,
-                 base::Unretained(this)));
 }
 
 void FileSystem::OpenFile(const base::FilePath& file_path,

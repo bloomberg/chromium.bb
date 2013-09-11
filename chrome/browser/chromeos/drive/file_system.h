@@ -16,7 +16,6 @@
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 
-class PrefChangeRegistrar;
 class PrefService;
 
 namespace base {
@@ -179,9 +178,6 @@ class FileSystem : public FileSystemInterface,
   // Sets up ChangeListLoader.
   void SetupChangeListLoader();
 
-  // Called on preference change.
-  void OnDisableDriveHostedFilesChanged();
-
   // Part of CreateDirectory(). Called after ChangeListLoader::LoadIfNeeded()
   // is called and made sure that the resource metadata is loaded.
   void CreateDirectoryAfterLoad(const base::FilePath& directory_path,
@@ -207,12 +203,6 @@ class FileSystem : public FileSystemInterface,
   // Part of CheckForUpdates(). Called when
   // ChangeListLoader::CheckForUpdates() is complete.
   void OnUpdateChecked(FileError error);
-
-  // Changes state of hosted documents visibility, triggers directory refresh.
-  void SetHideHostedDocuments(bool hide);
-
-  // Initializes preference change observer.
-  void InitializePreferenceObserver();
 
   // Part of GetResourceEntryByPath()
   // 1) Called when GetLocallyStoredResourceEntry() is complete.
@@ -284,11 +274,6 @@ class FileSystem : public FileSystemInterface,
 
   // Error of the last update check.
   FileError last_update_check_error_;
-
-  // True if hosted documents should be hidden.
-  bool hide_hosted_docs_;
-
-  scoped_ptr<PrefChangeRegistrar> pref_registrar_;
 
   scoped_ptr<internal::SyncClient> sync_client_;
 
