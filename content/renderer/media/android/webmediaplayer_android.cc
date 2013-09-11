@@ -635,14 +635,14 @@ void WebMediaPlayerAndroid::OnVideoSizeChanged(int width, int height) {
     needs_external_surface_ = true;
     if (!paused() && !manager_->IsInFullscreen(frame_))
       proxy_->RequestExternalSurface(player_id_, last_computed_rect_);
-  } else if (stream_texture_factory_ && !stream_texture_proxy_) {
+  } else if (stream_texture_factory_ && !stream_id_) {
     // Do deferred stream texture creation finally.
+    stream_id_ = stream_texture_factory_->CreateStreamTexture(
+        kGLTextureExternalOES,
+        &texture_id_,
+        &texture_mailbox_,
+        &texture_mailbox_sync_point_);
     if (paused()) {
-      stream_id_ = stream_texture_factory_->CreateStreamTexture(
-          kGLTextureExternalOES,
-          &texture_id_,
-          &texture_mailbox_,
-          &texture_mailbox_sync_point_);
       SetNeedsEstablishPeer(true);
     } else {
       EstablishSurfaceTexturePeer();
