@@ -35,7 +35,6 @@ DOWNGRADE_EBUILDS = ['chromeos-base/autotest',
                      'chromeos-base/autotest-tests',
                      'chromeos-base/autotest-chrome',
                      'chromeos-base/autotest-factory',
-                     'chromeos-base/autotest-telemetry',
                      'chromeos-base/autotest-tests-ltp',
                      'chromeos-base/autotest-tests-ownershipapi']
 
