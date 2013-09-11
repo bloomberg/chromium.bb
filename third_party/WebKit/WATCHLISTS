@@ -15,7 +15,7 @@
                   '|LayoutTests/accessibility',
     },
     'animations': {
-      'filepath': 'animation|transition',
+      'filepath': '[Aa]nimat|[Tt]ransition',
     },
     'bindings': {
       'filepath': 'Source/bindings',
