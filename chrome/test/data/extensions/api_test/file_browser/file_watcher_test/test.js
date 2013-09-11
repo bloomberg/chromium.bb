@@ -181,53 +181,8 @@ TestEventListener.prototype = {
       return;
     }
 
-    // TODO(mtomasz): When http://crbug.com/157834 is fixed add the expected
-    // change type and the received entry's url to |expectedChangedEntries|.
-    // Until the bug is fixed, the events carry an empty list of changed
-    // entries.
-
-    // Array of objects with keys |changeType| and  |fileUrl|.
-    var expectedChangedEntries = [];
-
-    if (!this.verifyChangedEntries_(expectedChangedEntries,
-                                    event.changedEntries)) {
-      this.onError('Unexpected changed entries for directoryUrl: "' +
-                   event.directoryUrl +
-                   '".\n Expected: ' + JSON.stringify(expectedChangedEntries) +
-                   '.\n Got: ' + JSON.stringify(event.changedEntries));
-      return;
-    }
-
     if (Object.keys(this.expectedEvents_).length == 0)
       this.onSuccess_();
-  },
-
-  /**
-   * Checks the list of changedEntries received in directoryChanged event is the
-   * same as the expected one.
-   * It checks that the lists have the same length and that the changed entries
-   * have the same fileUrl and changeType parameters.
-   *
-   * @param {Array.<Object>} expected Expected list of changed entries.
-   * @param {Array.<Object>} expected List of received changed entries.
-   * @private
-   */
-  verifyChangedEntries_: function(expected, received) {
-    if (expected.length != received.length)
-      return false;
-
-    // Until http://crbug.com/157834 is fixed, |expected| will be empty, and
-    // this loop no-op.
-    for (var i = 0; i < expected.length; i++) {
-      if (Object.keys(expected[i]).length != Object.keys(received[i]).length)
-        return false;
-      if (expected[i].fileUrl != received[i].fileUrl)
-        return false;
-      if (expected[i].changeType != received[i].changeType)
-        return false;
-    }
-
-    return true;
   }
 }
 
