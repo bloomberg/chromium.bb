@@ -404,7 +404,7 @@ data_device_start_drag(struct wl_client *client, struct wl_resource *resource,
 		       struct wl_resource *icon_resource, uint32_t serial)
 {
 	struct weston_seat *seat = wl_resource_get_user_data(resource);
-	struct weston_data_source *source;
+	struct weston_data_source *source = NULL;
 	struct weston_surface *icon = NULL;
 
 	if (seat->pointer->button_count == 0 ||
