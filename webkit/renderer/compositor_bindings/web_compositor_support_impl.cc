@@ -82,8 +82,17 @@ WebScrollbarLayer* WebCompositorSupportImpl::createScrollbarLayer(
 }
 
 WebScrollbarLayer* WebCompositorSupportImpl::createSolidColorScrollbarLayer(
-      WebKit::WebScrollbar::Orientation orientation, int thumb_thickness) {
-  return new WebScrollbarLayerImpl(orientation, thumb_thickness);
+      WebScrollbar::Orientation orientation, int thumb_thickness) {
+  // TODO(tony): Remove this after the caller in blink is migrated to
+  // the version which includes |should_place_vertical_scrollbar_on_left|.
+  return new WebScrollbarLayerImpl(orientation, thumb_thickness, false);
+}
+
+WebScrollbarLayer* WebCompositorSupportImpl::createSolidColorScrollbarLayer(
+      WebScrollbar::Orientation orientation, int thumb_thickness,
+      bool is_left_side_vertical_scrollbar) {
+  return new WebScrollbarLayerImpl(orientation, thumb_thickness,
+      is_left_side_vertical_scrollbar);
 }
 
 WebAnimation* WebCompositorSupportImpl::createAnimation(

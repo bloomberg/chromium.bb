@@ -31,6 +31,9 @@ class CC_EXPORT ScrollbarLayerImplBase : public LayerImpl {
   }
 
   ScrollbarOrientation orientation() const { return orientation_; }
+  bool is_left_side_vertical_scrollbar() {
+    return is_left_side_vertical_scrollbar_;
+  }
 
   virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE;
   virtual ScrollbarLayerImplBase* ToScrollbarLayer() OVERRIDE;
@@ -38,10 +41,18 @@ class CC_EXPORT ScrollbarLayerImplBase : public LayerImpl {
   void SetVisibleToTotalLengthRatio(float ratio);
   virtual gfx::Rect ComputeThumbQuadRect() const;
 
+  float thumb_thickness_scale_factor() {
+    return thumb_thickness_scale_factor_;
+  }
+  void set_thumb_thickness_scale_factor(float thumb_thickness_scale_factor) {
+    thumb_thickness_scale_factor_ = thumb_thickness_scale_factor;
+  }
+
  protected:
   ScrollbarLayerImplBase(LayerTreeImpl* tree_impl,
                          int id,
-                         ScrollbarOrientation orientation);
+                         ScrollbarOrientation orientation,
+                         bool is_left_side_vertical_scrollbar);
   virtual ~ScrollbarLayerImplBase() {}
 
   gfx::Rect ScrollbarLayerRectToContentRect(gfx::RectF layer_rect) const;
@@ -60,9 +71,11 @@ class CC_EXPORT ScrollbarLayerImplBase : public LayerImpl {
   int scroll_layer_id_;
   bool is_overlay_scrollbar_;
 
+  float thumb_thickness_scale_factor_;
   float current_pos_;
   int maximum_;
   ScrollbarOrientation orientation_;
+  bool is_left_side_vertical_scrollbar_;
 
   // Difference between the clip layer's height and the visible viewport
   // height (which may differ in the presence of top-controls hiding).

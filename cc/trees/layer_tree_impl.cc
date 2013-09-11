@@ -513,6 +513,10 @@ gfx::Size LayerTreeImpl::DrawViewportSize() const {
   return layer_tree_host_impl_->DrawViewportSize();
 }
 
+void LayerTreeImpl::StartScrollbarAnimation() {
+  layer_tree_host_impl_->StartScrollbarAnimation();
+}
+
 void LayerTreeImpl::SetNeedsRedraw() {
   layer_tree_host_impl_->SetNeedsRedraw();
 }

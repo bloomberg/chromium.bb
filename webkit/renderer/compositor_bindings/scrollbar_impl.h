@@ -26,6 +26,7 @@ class ScrollbarImpl : public cc::Scrollbar {
 
   // cc::Scrollbar implementation.
   virtual cc::ScrollbarOrientation Orientation() const OVERRIDE;
+  virtual bool IsLeftSideVerticalScrollbar() const OVERRIDE;
   virtual bool HasThumb() const OVERRIDE;
   virtual bool IsOverlay() const OVERRIDE;
   virtual gfx::Point Location() const OVERRIDE;

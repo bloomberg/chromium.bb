@@ -10,6 +10,7 @@
       'animation/keyframed_animation_curve_unittest.cc',
       'animation/layer_animation_controller_unittest.cc',
       'animation/scrollbar_animation_controller_linear_fade_unittest.cc',
+      'animation/scrollbar_animation_controller_thinning_unittest.cc',
       'animation/timing_function_unittest.cc',
       'animation/transform_operations_unittest.cc',
       'base/float_quad_unittest.cc',

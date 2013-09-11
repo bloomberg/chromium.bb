@@ -19,6 +19,7 @@ class FakeScrollbar : public Scrollbar {
 
   // Scrollbar implementation.
   virtual ScrollbarOrientation Orientation() const OVERRIDE;
+  virtual bool IsLeftSideVerticalScrollbar() const OVERRIDE;
   virtual gfx::Point Location() const OVERRIDE;
   virtual bool IsOverlay() const OVERRIDE;
   virtual bool HasThumb() const OVERRIDE;

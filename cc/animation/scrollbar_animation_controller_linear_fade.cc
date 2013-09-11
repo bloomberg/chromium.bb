@@ -6,6 +6,7 @@
 
 #include "base/time/time.h"
 #include "cc/layers/layer_impl.h"
+#include "cc/layers/scrollbar_layer_impl_base.h"
 
 namespace cc {
 
@@ -44,7 +45,7 @@ base::TimeDelta ScrollbarAnimationControllerLinearFade::DelayBeforeStart(
 
 bool ScrollbarAnimationControllerLinearFade::Animate(base::TimeTicks now) {
   float opacity = OpacityAtTime(now);
-  scroll_layer_->SetScrollbarOpacity(opacity);
+  ApplyOpacityToScrollbars(opacity);
   if (!opacity)
     last_awaken_time_ = base::TimeTicks();
   return IsAnimating() && DelayBeforeStart(now) == base::TimeDelta();
@@ -64,17 +65,19 @@ void ScrollbarAnimationControllerLinearFade::DidScrollGestureEnd(
   scroll_gesture_in_progress_ = false;
 }
 
-void ScrollbarAnimationControllerLinearFade::DidScrollUpdate(
+bool ScrollbarAnimationControllerLinearFade::DidScrollUpdate(
     base::TimeTicks now) {
-  scroll_layer_->SetScrollbarOpacity(1.0f);
+  ApplyOpacityToScrollbars(1.0f);
   // The animation should only be activated if the scroll updated occurred
   // programatically, outside the scope of a scroll gesture.
   if (scroll_gesture_in_progress_) {
     last_awaken_time_ = base::TimeTicks();
     scroll_gesture_has_scrolled_ = true;
-  } else {
-    last_awaken_time_ = now;
+    return true;
   }
+
+  last_awaken_time_ = now;
+  return false;
 }
 
 float ScrollbarAnimationControllerLinearFade::OpacityAtTime(
@@ -94,6 +97,19 @@ float ScrollbarAnimationControllerLinearFade::OpacityAtTime(
            fadeout_length_.InSecondsF();
   }
   return 0.0f;
+}
+
+void ScrollbarAnimationControllerLinearFade::ApplyOpacityToScrollbars(
+    float opacity) {
+  ScrollbarLayerImplBase* horizontal_scrollbar =
+      scroll_layer_->horizontal_scrollbar_layer();
+  if (horizontal_scrollbar)
+    horizontal_scrollbar->SetOpacity(opacity);
+
+  ScrollbarLayerImplBase* vertical_scrollbar =
+      scroll_layer_->vertical_scrollbar_layer();
+  if (vertical_scrollbar)
+    vertical_scrollbar->SetOpacity(opacity);
 }
 
 }  // namespace cc

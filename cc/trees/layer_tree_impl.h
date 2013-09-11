@@ -79,6 +79,7 @@ class CC_EXPORT LayerTreeImpl {
   base::TimeTicks CurrentPhysicalTimeTicks() const;
   void SetNeedsCommit();
   gfx::Size DrawViewportSize() const;
+  void StartScrollbarAnimation();
 
   // Tree specific methods exposed to layer-impl tree.
   // ---------------------------------------------------------------------------

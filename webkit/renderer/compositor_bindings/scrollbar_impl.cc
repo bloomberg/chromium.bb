@@ -28,6 +28,10 @@ cc::ScrollbarOrientation ScrollbarImpl::Orientation() const {
   return cc::VERTICAL;
 }
 
+bool ScrollbarImpl::IsLeftSideVerticalScrollbar() const {
+  return scrollbar_->isLeftSideVerticalScrollbar();
+}
+
 bool ScrollbarImpl::HasThumb() const {
   return geometry_->hasThumb(scrollbar_.get());
 }

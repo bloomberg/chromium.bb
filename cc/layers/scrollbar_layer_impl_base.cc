@@ -10,15 +10,19 @@
 
 namespace cc {
 
-ScrollbarLayerImplBase::ScrollbarLayerImplBase(LayerTreeImpl* tree_impl,
-                                               int id,
-                                               ScrollbarOrientation orientation)
+ScrollbarLayerImplBase::ScrollbarLayerImplBase(
+    LayerTreeImpl* tree_impl,
+    int id,
+    ScrollbarOrientation orientation,
+    bool is_left_side_vertical_scrollbar)
     : LayerImpl(tree_impl, id),
       scroll_layer_id_(Layer::INVALID_ID),
       is_overlay_scrollbar_(false),
+      thumb_thickness_scale_factor_(1.f),
       current_pos_(0.f),
       maximum_(0),
       orientation_(orientation),
+      is_left_side_vertical_scrollbar_(is_left_side_vertical_scrollbar),
       vertical_adjust_(0.f),
       visible_to_total_length_ratio_(1.f) {}
 
@@ -141,13 +145,23 @@ gfx::Rect ScrollbarLayerImplBase::ComputeThumbQuadRect() const {
   float max_offset = track_length - thumb_length;
   int thumb_offset = static_cast<int>(ratio * max_offset) + TrackStart();
 
+  float thumb_thickness_adjustment =
+      thumb_thickness * (1.f - thumb_thickness_scale_factor_);
+
   gfx::RectF thumb_rect;
-  if (orientation() == HORIZONTAL) {
-    thumb_rect = gfx::RectF(thumb_offset, vertical_adjust_,
-                            thumb_length, thumb_thickness);
+  if (orientation_ == HORIZONTAL) {
+    thumb_rect = gfx::RectF(thumb_offset,
+                            vertical_adjust_ + thumb_thickness_adjustment,
+                            thumb_length,
+                            thumb_thickness - thumb_thickness_adjustment);
   } else {
-    thumb_rect = gfx::RectF(0.f, thumb_offset,
-                            thumb_thickness, thumb_length);
+    thumb_rect = gfx::RectF(
+        is_left_side_vertical_scrollbar_
+            ? bounds().width() - thumb_thickness
+            : thumb_thickness_adjustment,
+        thumb_offset,
+        thumb_thickness - thumb_thickness_adjustment,
+        thumb_length);
   }
 
   return ScrollbarLayerRectToContentRect(thumb_rect);

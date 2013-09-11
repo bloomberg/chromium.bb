@@ -42,8 +42,10 @@ LayerImpl* LayerImplForScrollAreaAndScrollbar(
   scoped_refptr<Layer> child1 = Layer::Create();
   scoped_refptr<Layer> child2;
   if (use_solid_color_scrollbar) {
+    const bool kIsLeftSideVerticalScrollbar = false;
     child2 = SolidColorScrollbarLayer::Create(
-        scrollbar->Orientation(), thumb_thickness, child1->id());
+        scrollbar->Orientation(), thumb_thickness,
+        kIsLeftSideVerticalScrollbar, child1->id());
   } else {
     child2 = PaintedScrollbarLayer::Create(scrollbar.Pass(), child1->id());
   }
@@ -264,7 +266,7 @@ TEST(ScrollbarLayerTest, SolidColorDrawQuads) {
   const int kTrackLength = 100;
 
   LayerTreeSettings layer_tree_settings;
-  layer_tree_settings.solid_color_scrollbar_thickness_dip = 3;
+  layer_tree_settings.solid_color_scrollbar_thickness_dip = kThumbThickness;
   scoped_ptr<FakeLayerTreeHost> host =
       FakeLayerTreeHost::Create(layer_tree_settings);
 
@@ -368,11 +370,14 @@ class ScrollbarLayerSolidColorThumbTest : public testing::Test {
     host_impl_.reset(new FakeLayerTreeHostImpl(layer_tree_settings, &proxy_));
 
     const int kThumbThickness = 3;
+    const bool kIsLeftSideVerticalScrollbar = false;
 
     horizontal_scrollbar_layer_ = SolidColorScrollbarLayerImpl::Create(
-        host_impl_->active_tree(), 1, HORIZONTAL, kThumbThickness);
+        host_impl_->active_tree(), 1, HORIZONTAL, kThumbThickness,
+        kIsLeftSideVerticalScrollbar);
     vertical_scrollbar_layer_ = SolidColorScrollbarLayerImpl::Create(
-        host_impl_->active_tree(), 2, VERTICAL, kThumbThickness);
+        host_impl_->active_tree(), 2, VERTICAL, kThumbThickness,
+        kIsLeftSideVerticalScrollbar);
   }
 
  protected:
@@ -576,9 +581,11 @@ class ScrollbarLayerTestResourceCreation : public testing::Test {
     scoped_refptr<Layer> scrollbar_layer;
     if (use_solid_color_scrollbar) {
       const int kThumbThickness = 3;
+      const bool kIsLeftSideVerticalScrollbar = false;
       scrollbar_layer =
           SolidColorScrollbarLayer::Create(scrollbar->Orientation(),
                                            kThumbThickness,
+                                           kIsLeftSideVerticalScrollbar,
                                            layer_tree_root->id());
     } else {
       scrollbar_layer = PaintedScrollbarLayer::Create(scrollbar.Pass(),

@@ -37,11 +37,14 @@ WebScrollbarLayerImpl::WebScrollbarLayerImpl(
 
 WebScrollbarLayerImpl::WebScrollbarLayerImpl(
     WebKit::WebScrollbar::Orientation orientation,
-    int thumb_thickness)
+    int thumb_thickness,
+    bool is_left_side_vertical_scrollbar)
     : layer_(new WebLayerImpl(
-          SolidColorScrollbarLayer::Create(ConvertOrientation(orientation),
-                                           thumb_thickness,
-                                           0))) {}
+          SolidColorScrollbarLayer::Create(
+              ConvertOrientation(orientation),
+              thumb_thickness,
+              is_left_side_vertical_scrollbar,
+              0))) {}
 
 WebScrollbarLayerImpl::~WebScrollbarLayerImpl() {}
 

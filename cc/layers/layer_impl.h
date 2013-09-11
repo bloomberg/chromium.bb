@@ -452,8 +452,6 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
     return scrollbar_animation_controller_.get();
   }
 
-  void SetScrollbarOpacity(float opacity);
-
   void SetHorizontalScrollbarLayer(ScrollbarLayerImplBase* scrollbar_layer);
   ScrollbarLayerImplBase* horizontal_scrollbar_layer() {
     return horizontal_scrollbar_layer_;

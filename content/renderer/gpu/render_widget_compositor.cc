@@ -279,7 +279,7 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
       widget->UsingSynchronousRendererCompositor();
 #elif !defined(OS_MACOSX)
   if (cmd->HasSwitch(switches::kEnableOverlayScrollbars)) {
-    settings.scrollbar_animator = cc::LayerTreeSettings::LinearFade;
+    settings.scrollbar_animator = cc::LayerTreeSettings::Thinning;
     settings.solid_color_scrollbars = true;
   }
   if (cmd->HasSwitch(cc::switches::kEnablePinchVirtualViewport) ||

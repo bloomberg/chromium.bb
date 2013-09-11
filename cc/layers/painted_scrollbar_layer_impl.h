@@ -36,7 +36,6 @@ class CC_EXPORT PaintedScrollbarLayerImpl : public ScrollbarLayerImplBase {
   virtual void DidLoseOutputSurface() OVERRIDE;
 
   void SetThumbThickness(int thumb_thickness);
-  int thumb_thickness() const { return thumb_thickness_; }
   void SetThumbLength(int thumb_length);
   void SetTrackStart(int track_start);
   void SetTrackLength(int track_length);

@@ -32,6 +32,10 @@ ScrollbarOrientation FakeScrollbar::Orientation() const {
   return HORIZONTAL;
 }
 
+bool FakeScrollbar::IsLeftSideVerticalScrollbar() const {
+  return false;
+}
+
 gfx::Point FakeScrollbar::Location() const { return location_; }
 
 bool FakeScrollbar::IsOverlay() const { return is_overlay_; }

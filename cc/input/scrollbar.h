@@ -24,6 +24,7 @@ class Scrollbar {
   virtual ~Scrollbar() {}
 
   virtual ScrollbarOrientation Orientation() const = 0;
+  virtual bool IsLeftSideVerticalScrollbar() const = 0;
   virtual gfx::Point Location() const = 0;
   virtual bool IsOverlay() const = 0;
   virtual bool HasThumb() const = 0;

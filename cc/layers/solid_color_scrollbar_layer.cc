@@ -13,25 +13,31 @@ namespace cc {
 scoped_ptr<LayerImpl> SolidColorScrollbarLayer::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
   return SolidColorScrollbarLayerImpl::Create(
-      tree_impl, id(), orientation(), thumb_thickness_).PassAs<LayerImpl>();
+      tree_impl, id(), orientation(), thumb_thickness_,
+      is_left_side_vertical_scrollbar_).PassAs<LayerImpl>();
 }
 
 scoped_refptr<SolidColorScrollbarLayer> SolidColorScrollbarLayer::Create(
     ScrollbarOrientation orientation,
     int thumb_thickness,
+    bool is_left_side_vertical_scrollbar,
     int scroll_layer_id) {
-  return make_scoped_refptr(new SolidColorScrollbarLayer(orientation,
-                                                         thumb_thickness,
-                                                         scroll_layer_id));
+  return make_scoped_refptr(new SolidColorScrollbarLayer(
+      orientation,
+      thumb_thickness,
+      is_left_side_vertical_scrollbar,
+      scroll_layer_id));
 }
 
 SolidColorScrollbarLayer::SolidColorScrollbarLayer(
     ScrollbarOrientation orientation,
     int thumb_thickness,
+    bool is_left_side_vertical_scrollbar,
     int scroll_layer_id)
     : scroll_layer_id_(scroll_layer_id),
       orientation_(orientation),
-      thumb_thickness_(thumb_thickness) {}
+      thumb_thickness_(thumb_thickness),
+      is_left_side_vertical_scrollbar_(is_left_side_vertical_scrollbar) {}
 
 SolidColorScrollbarLayer::~SolidColorScrollbarLayer() {}
 

@@ -44,6 +44,8 @@
         'animation/scrollbar_animation_controller.h',
         'animation/scrollbar_animation_controller_linear_fade.cc',
         'animation/scrollbar_animation_controller_linear_fade.h',
+        'animation/scrollbar_animation_controller_thinning.cc',
+        'animation/scrollbar_animation_controller_thinning.h',
         'animation/timing_function.cc',
         'animation/timing_function.h',
         'animation/transform_operation.cc',

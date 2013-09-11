@@ -37,6 +37,7 @@ class CC_EXPORT LayerTreeSettings {
   enum ScrollbarAnimator {
     NoAnimator,
     LinearFade,
+    Thinning,
   };
   ScrollbarAnimator scrollbar_animator;
   int scrollbar_linear_fade_delay_ms;

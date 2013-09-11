@@ -29,7 +29,7 @@ class CC_EXPORT ScrollbarAnimationControllerLinearFade
   virtual bool Animate(base::TimeTicks now) OVERRIDE;
   virtual void DidScrollGestureBegin() OVERRIDE;
   virtual void DidScrollGestureEnd(base::TimeTicks now) OVERRIDE;
-  virtual void DidScrollUpdate(base::TimeTicks now) OVERRIDE;
+  virtual bool DidScrollUpdate(base::TimeTicks now) OVERRIDE;
 
  protected:
   ScrollbarAnimationControllerLinearFade(LayerImpl* scroll_layer,
@@ -38,6 +38,7 @@ class CC_EXPORT ScrollbarAnimationControllerLinearFade
 
  private:
   float OpacityAtTime(base::TimeTicks now);
+  void ApplyOpacityToScrollbars(float opacity);
 
   LayerImpl* scroll_layer_;
 

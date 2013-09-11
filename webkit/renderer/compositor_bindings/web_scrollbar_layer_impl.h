@@ -27,7 +27,8 @@ class WebScrollbarLayerImpl : public WebKit::WebScrollbarLayer {
       WebKit::WebScrollbarThemeGeometry* geometry);
   WEBKIT_COMPOSITOR_BINDINGS_EXPORT WebScrollbarLayerImpl(
       WebKit::WebScrollbar::Orientation orientation,
-      int thumb_thickness);
+      int thumb_thickness,
+      bool is_left_side_vertical_scrollbar);
   virtual ~WebScrollbarLayerImpl();
 
   // WebKit::WebScrollbarLayer implementation.

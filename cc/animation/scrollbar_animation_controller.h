@@ -24,7 +24,9 @@ class CC_EXPORT ScrollbarAnimationController {
   virtual bool Animate(base::TimeTicks now) = 0;
   virtual void DidScrollGestureBegin() = 0;
   virtual void DidScrollGestureEnd(base::TimeTicks now) = 0;
-  virtual void DidScrollUpdate(base::TimeTicks now) = 0;
+
+  // Returns true if we should start an animation.
+  virtual bool DidScrollUpdate(base::TimeTicks now) = 0;
 };
 
 }  // namespace cc
