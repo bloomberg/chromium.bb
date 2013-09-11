@@ -253,6 +253,9 @@ ChromeLauncherController::ChromeLauncherController(
 }
 
 ChromeLauncherController::~ChromeLauncherController() {
+  // Reset the BrowserStatusMonitor as it has a weak pointer to this.
+  browser_status_monitor_.reset();
+
   // Reset the shell window controller here since it has a weak pointer to this.
   shell_window_controller_.reset();
 

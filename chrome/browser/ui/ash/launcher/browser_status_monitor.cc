@@ -27,10 +27,7 @@ BrowserStatusMonitor::BrowserStatusMonitor(
       observed_activation_clients_(this),
       observed_root_windows_(this) {
   DCHECK(launcher_controller_);
-  BrowserList* browser_list =
-      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
-
-  browser_list->AddObserver(this);
+  BrowserList::AddObserver(this);
 
   // This check needs for win7_aura. Without this, all tests in
   // ChromeLauncherController will fail in win7_aura.
@@ -57,10 +54,14 @@ BrowserStatusMonitor::~BrowserStatusMonitor() {
   if (ash::Shell::HasInstance())
     ash::Shell::GetInstance()->GetScreen()->RemoveObserver(this);
 
+  BrowserList::RemoveObserver(this);
+
   BrowserList* browser_list =
       BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
-
-  browser_list->RemoveObserver(this);
+  for (BrowserList::const_iterator i = browser_list->begin();
+       i != browser_list->end(); ++i) {
+    OnBrowserRemoved(*i);
+  }
 }
 
 void BrowserStatusMonitor::OnWindowActivated(aura::Window* gained_active,
@@ -86,6 +87,9 @@ void BrowserStatusMonitor::OnWindowDestroyed(aura::Window* window) {
 }
 
 void BrowserStatusMonitor::OnBrowserAdded(Browser* browser) {
+  if (browser->host_desktop_type() != chrome::HOST_DESKTOP_TYPE_ASH)
+    return;
+
   browser->tab_strip_model()->AddObserver(this);
 
   if (browser->is_type_popup() && browser->is_app()) {
@@ -99,6 +103,9 @@ void BrowserStatusMonitor::OnBrowserAdded(Browser* browser) {
 }
 
 void BrowserStatusMonitor::OnBrowserRemoved(Browser* browser) {
+  if (browser->host_desktop_type() != chrome::HOST_DESKTOP_TYPE_ASH)
+    return;
+
   browser->tab_strip_model()->RemoveObserver(this);
 
   if (browser_to_app_id_map_.find(browser) != browser_to_app_id_map_.end()) {
@@ -140,6 +147,9 @@ void BrowserStatusMonitor::ActiveTabChanged(content::WebContents* old_contents,
   Browser* browser = NULL;
   if (old_contents)
     browser = chrome::FindBrowserWithWebContents(old_contents);
+
+  if (browser && browser->host_desktop_type() != chrome::HOST_DESKTOP_TYPE_ASH)
+    return;
 
   // Update immediately on a tab change.
   if (browser &&
@@ -190,6 +200,9 @@ void BrowserStatusMonitor::UpdateAppAndBrowserState(
         ChromeLauncherController::APP_STATE_INACTIVE;
 
     Browser* browser = chrome::FindBrowserWithWebContents(contents);
+    DCHECK(browser);
+    if (browser->host_desktop_type() != chrome::HOST_DESKTOP_TYPE_ASH)
+      return;
     if (browser->tab_strip_model()->GetActiveWebContents() == contents) {
       if (browser->window()->IsActive())
         app_state = ChromeLauncherController::APP_STATE_WINDOW_ACTIVE;
