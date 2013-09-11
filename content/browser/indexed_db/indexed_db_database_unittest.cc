@@ -102,11 +102,11 @@ TEST(IndexedDBDatabaseTest, ConnectionLifecycle) {
 
   EXPECT_FALSE(backing_store->HasOneRef());  // local and connection
 
-  db->Close(request1->connection());
+  db->Close(request1->connection(), true /* forced */);
 
   EXPECT_FALSE(backing_store->HasOneRef());  // local and connection
 
-  db->Close(request2->connection());
+  db->Close(request2->connection(), true /* forced */);
   EXPECT_TRUE(backing_store->HasOneRef());
   EXPECT_FALSE(db->BackingStore());
 
@@ -215,7 +215,7 @@ TEST(IndexedDBDatabaseTest, PendingDelete) {
   EXPECT_TRUE(request2->blocked_called());
   EXPECT_FALSE(backing_store->HasOneRef());  // local and db
 
-  db->Close(request1->connection());
+  db->Close(request1->connection(), true /* forced */);
 
   EXPECT_FALSE(db->BackingStore());
   EXPECT_TRUE(backing_store->HasOneRef());  // local

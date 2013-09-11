@@ -13,6 +13,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/indexed_db/indexed_db.h"
+#include "content/browser/indexed_db/indexed_db_backing_store.h"
 #include "content/browser/indexed_db/indexed_db_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_metadata.h"
 #include "content/browser/indexed_db/indexed_db_transaction_coordinator.h"
@@ -22,7 +23,6 @@ namespace content {
 
 class IndexedDBConnection;
 class IndexedDBDatabaseCallbacks;
-class IndexedDBBackingStore;
 class IndexedDBFactory;
 class IndexedDBKey;
 class IndexedDBKeyPath;
@@ -56,6 +56,11 @@ class CONTENT_EXPORT IndexedDBDatabase
       IndexedDBFactory* factory,
       const Identifier& unique_identifier);
   scoped_refptr<IndexedDBBackingStore> BackingStore() const;
+
+  const Identifier& identifier() { return identifier_; }
+  scoped_refptr<IndexedDBBackingStore> backing_store() {
+    return backing_store_;
+  }
 
   int64 id() const { return metadata_.id; }
   const base::string16& name() const { return metadata_.name; }
@@ -92,7 +97,7 @@ class CONTENT_EXPORT IndexedDBDatabase
                          IndexedDBConnection* connection,
                          const std::vector<int64>& object_store_ids,
                          uint16 mode);
-  void Close(IndexedDBConnection* connection);
+  void Close(IndexedDBConnection* connection, bool forced);
 
   void Commit(int64 transaction_id);
   void Abort(int64 transaction_id);

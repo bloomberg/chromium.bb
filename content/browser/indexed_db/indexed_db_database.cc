@@ -12,7 +12,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "content/browser/indexed_db/indexed_db_backing_store.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_cursor.h"
 #include "content/browser/indexed_db/indexed_db_factory.h"
@@ -1642,7 +1641,7 @@ void IndexedDBDatabase::DeleteDatabaseFinal(
   callbacks->OnSuccess();
 }
 
-void IndexedDBDatabase::Close(IndexedDBConnection* connection) {
+void IndexedDBDatabase::Close(IndexedDBConnection* connection, bool forced) {
   DCHECK(connections_.has(connection));
 
   // Close outstanding transactions from the closing connection. This
@@ -1687,12 +1686,17 @@ void IndexedDBDatabase::Close(IndexedDBConnection* connection) {
       !pending_delete_calls_.size()) {
     DCHECK(transactions_.empty());
 
-    backing_store_ = NULL;
-
     // factory_ should only be null in unit tests.
     // TODO(jsbell): DCHECK(factory_ || !in_unit_tests) - somehow.
-    if (factory_)
-      factory_->RemoveIDBDatabaseBackend(identifier_);
+    if (factory_) {
+      DCHECK(backing_store_.get());
+      factory_->ReleaseDatabase(identifier_, forced);
+      factory_ = NULL;
+    }
+
+    // Drop reference to backing store after informing factory, so
+    // that factory can do accounting on it.
+    backing_store_ = NULL;
   }
 }
 

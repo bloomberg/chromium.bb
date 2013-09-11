@@ -12,7 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
+#include "base/timer/timer.h"
 #include "content/browser/indexed_db/indexed_db.h"
 #include "content/browser/indexed_db/indexed_db_metadata.h"
 #include "content/browser/indexed_db/leveldb/leveldb_iterator.h"
@@ -45,6 +45,11 @@ class CONTENT_EXPORT IndexedDBBackingStore
  public:
   class CONTENT_EXPORT Transaction;
 
+  const std::string& identifier() { return identifier_; }
+  base::OneShotTimer<IndexedDBBackingStore>* close_timer() {
+    return &close_timer_;
+  }
+
   static scoped_refptr<IndexedDBBackingStore> Open(
       const std::string& origin_identifier,
       const base::FilePath& path_base,
@@ -62,9 +67,6 @@ class CONTENT_EXPORT IndexedDBBackingStore
   static scoped_refptr<IndexedDBBackingStore> OpenInMemory(
       const std::string& file_identifier,
       LevelDBFactory* factory);
-  base::WeakPtr<IndexedDBBackingStore> GetWeakPtr() {
-    return weak_factory_.GetWeakPtr();
-  }
 
   virtual std::vector<string16> GetDatabaseNames();
   virtual bool GetIDBDatabaseMetaData(const string16& name,
@@ -321,7 +323,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
 
   scoped_ptr<LevelDBDatabase> db_;
   scoped_ptr<LevelDBComparator> comparator_;
-  base::WeakPtrFactory<IndexedDBBackingStore> weak_factory_;
+  base::OneShotTimer<IndexedDBBackingStore> close_timer_;
 };
 
 }  // namespace content
