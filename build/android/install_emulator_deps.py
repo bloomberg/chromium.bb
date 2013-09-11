@@ -21,7 +21,7 @@ from pylib.utils import run_tests_helper
 
 # Android x86 system image from the Intel website:
 # http://software.intel.com/en-us/articles/intel-eula-x86-android-4-2-jelly-bean-bin
-X86_IMG_URL = 'http://download-software.intel.com/sites/landingpage/android/sysimg_x86-17_r01.zip'
+X86_IMG_URL = 'http://download-software.intel.com/sites/landingpage/android/sysimg_x86-18_r01.zip'
 
 # Android API level
 API_TARGET = 'android-%s' % constants.ANDROID_SDK_VERSION
