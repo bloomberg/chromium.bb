@@ -6,6 +6,27 @@
       "wait_for_ended": true
     }
   ],
+  "seek_before_and_after_playhead": [
+    { "action": "play",
+      "wait_for_playing": true,
+      "wait_for_ended": false
+    },
+    { "_comment": "Wait for 1 second so that we know the play-head is at ~1s.",
+      "action": "wait", "seconds": 1
+    },
+    { "_comment": "Seek to before the play-head location.",
+      "action": "seek",
+      "wait_for_seeked": true,
+      "seek_time": "0.5",
+      "seek_label": "seek_warm"
+    },
+    { "_comment": "Seek to after the play-head location.",
+      "action": "seek",
+      "wait_for_seeked": true,
+      "seek_time": "9",
+      "seek_label": "seek_cold"
+    }
+  ],
   "pages": [
     {
       "url": "file:///tough_video_cases/video.html?src=crowd.wav&type=audio",
@@ -46,6 +67,26 @@
     {
       "url": "file:///tough_video_cases/video.html?src=tulip2.webm&type=video",
       "media_metrics": {"action": "play-action"}
+    },
+    {
+      "url": "file:///tough_video_cases/video.html?src=tulip2.ogg&type=audio",
+      "skip_basic_metrics": true,
+      "media_metrics": {"action": "seek_before_and_after_playhead"}
+    },
+    {
+      "url": "file:///tough_video_cases/video.html?src=tulip2.wav&type=audio",
+      "skip_basic_metrics": true,
+      "media_metrics": {"action": "seek_before_and_after_playhead"}
+    },
+    {
+      "url": "file:///tough_video_cases/video.html?src=tulip2.ogv&type=video",
+      "skip_basic_metrics": true,
+      "media_metrics": {"action": "seek_before_and_after_playhead"}
+    },
+    {
+      "url": "file:///tough_video_cases/video.html?src=tulip2.webm&type=video",
+      "skip_basic_metrics": true,
+      "media_metrics": {"action": "seek_before_and_after_playhead"}
     }
   ]
 }
