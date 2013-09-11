@@ -267,3 +267,34 @@ TEST_F(ManagedUserSyncServiceTest, MergeExisting) {
     EXPECT_EQ(kAvatar1, managed_user.chrome_avatar());
   }
 }
+
+TEST_F(ManagedUserSyncServiceTest, GetAvatarIndex) {
+  int avatar = 100;
+  EXPECT_TRUE(ManagedUserSyncService::GetAvatarIndex(std::string(), &avatar));
+  EXPECT_EQ(-1, avatar);
+
+  std::string avatar_str = ManagedUserSyncService::BuildAvatarString(24);
+  EXPECT_EQ("chrome-avatar-index:24", avatar_str);
+  EXPECT_TRUE(ManagedUserSyncService::GetAvatarIndex(avatar_str, &avatar));
+  EXPECT_EQ(24, avatar);
+
+  avatar_str = ManagedUserSyncService::BuildAvatarString(0);
+  EXPECT_EQ("chrome-avatar-index:0", avatar_str);
+  EXPECT_TRUE(ManagedUserSyncService::GetAvatarIndex(avatar_str, &avatar));
+  EXPECT_EQ(0, avatar);
+
+  EXPECT_FALSE(ManagedUserSyncService::GetAvatarIndex("wrong-prefix:5",
+                                                      &avatar));
+
+  EXPECT_FALSE(ManagedUserSyncService::GetAvatarIndex("chrome-avatar-indes:2",
+                                                      &avatar));
+
+  EXPECT_FALSE(ManagedUserSyncService::GetAvatarIndex("chrome-avatar-indexxx:2",
+                                                      &avatar));
+
+  EXPECT_FALSE(ManagedUserSyncService::GetAvatarIndex("chrome-avatar-index:",
+                                                      &avatar));
+
+  EXPECT_FALSE(ManagedUserSyncService::GetAvatarIndex("chrome-avatar-index:x",
+                                                      &avatar));
+}

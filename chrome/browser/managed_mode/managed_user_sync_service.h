@@ -33,9 +33,29 @@ class ManagedUserSyncService : public BrowserContextKeyedService,
   typedef base::Callback<void(const base::DictionaryValue*)>
       ManagedUsersCallback;
 
+  static const char kAcknowledged[];
+  static const char kChromeAvatar[];
+  static const char kChromeOsAvatar[];
+  static const char kName[];
+  static const char kMasterKey[];
+
   virtual ~ManagedUserSyncService();
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+
+  // Extracts the avatar index from the input |avatar_str| and set
+  // |avatar_index| to hold the extracted value. Returns true if the
+  // index was extracted successfully and false otherwise.
+  // |avatar_str| should have the format: "chrome-avatar-index:INDEX"
+  // where INDEX is the integer to be extracted. |avatar_str| can be empty
+  // in case there is no avatar synced for a managed user in which case
+  // |avatar_index| is set to -1.
+  static bool GetAvatarIndex(const std::string& avatar_str, int* avatar_index);
+
+  // Given an |avatar_index|, it returns a string of the form:
+  // "chrome-avatar-index:INDEX" where INDEX = |avatar_index|.
+  // It is exposed for testing purposes only.
+  static std::string BuildAvatarString(int avatar_index);
 
   void AddObserver(ManagedUserSyncServiceObserver* observer);
   void RemoveObserver(ManagedUserSyncServiceObserver* observer);

@@ -69,15 +69,23 @@ void ManagedUserImportHandler::RequestExistingManagedUsers(
     bool success = it.value().GetAsDictionary(&value);
     DCHECK(success);
     std::string name;
-    value->GetString("name", &name);
+    value->GetString(ManagedUserSyncService::kName, &name);
+    std::string avatar_str;
+    value->GetString(ManagedUserSyncService::kChromeAvatar, &avatar_str);
 
     DictionaryValue* managed_user = new DictionaryValue;
     managed_user->SetString("id", it.key());
     managed_user->SetString("name", name);
 
-    // TODO(ibraaaa): Update this to use the correct avatar
-    // when avatar syncing is implemented: http://crbug.com/278083
-    std::string avatar_url = ProfileInfoCache::GetDefaultAvatarIconUrl(0);
+    int avatar_index = -1;
+    success = ManagedUserSyncService::GetAvatarIndex(avatar_str, &avatar_index);
+    DCHECK(success);
+
+    // TODO(ibraaaa): When we have an image indicating that this user
+    // has no synced avatar then change this to use it.
+    avatar_index = avatar_index < 0 ? 0 : avatar_index;
+    std::string avatar_url =
+        ProfileInfoCache::GetDefaultAvatarIconUrl(avatar_index);
     managed_user->SetString("iconURL", avatar_url);
     bool on_current_device =
         managed_user_ids.find(it.key()) != managed_user_ids.end();
