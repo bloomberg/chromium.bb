@@ -13,6 +13,7 @@ import atexit
 import errno
 import fcntl
 import getpass
+import grp
 import hashlib
 import json
 import logging
@@ -936,6 +937,15 @@ Web Store: https://chrome.google.com/remotedesktop"""
     return 0
 
   if options.add_user:
+    user = getpass.getuser()
+    try:
+      if user in grp.getgrnam(CHROME_REMOTING_GROUP_NAME).gr_mem:
+        logging.info("User '%s' is already a member of '%s'." %
+                     (user, CHROME_REMOTING_GROUP_NAME))
+        return 0
+    except KeyError:
+      logging.info("Group '%s' not found." % CHROME_REMOTING_GROUP_NAME)
+
     if os.getenv("DISPLAY"):
       sudo_command = "gksudo --description \"Chrome Remote Desktop\""
     else:
@@ -943,7 +953,7 @@ Web Store: https://chrome.google.com/remotedesktop"""
     command = ("sudo -k && exec %(sudo)s -- sh -c "
                "\"groupadd -f %(group)s && gpasswd --add %(user)s %(group)s\"" %
                { 'group': CHROME_REMOTING_GROUP_NAME,
-                 'user': getpass.getuser(),
+                 'user': user,
                  'sudo': sudo_command })
     os.execv("/bin/sh", ["/bin/sh", "-c", command])
     return 1
