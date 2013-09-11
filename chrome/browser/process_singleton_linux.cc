@@ -294,23 +294,26 @@ bool ParseLockPath(const base::FilePath& path,
   return true;
 }
 
-void DisplayProfileInUseError(const std::string& lock_path,
+// Returns true if the user opted to unlock the profile.
+bool DisplayProfileInUseError(const base::FilePath& lock_path,
                               const std::string& hostname,
                               int pid) {
   string16 error = l10n_util::GetStringFUTF16(
       IDS_PROFILE_IN_USE_LINUX,
       base::IntToString16(pid),
-      ASCIIToUTF16(hostname),
-      WideToUTF16(base::SysNativeMBToWide(lock_path)),
-      l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
+      ASCIIToUTF16(hostname));
+  string16 relaunch_button_text = l10n_util::GetStringUTF16(
+      IDS_PROFILE_IN_USE_LINUX_RELAUNCH);
   LOG(ERROR) << base::SysWideToNativeMB(UTF16ToWide(error)).c_str();
   if (!g_disable_prompt) {
 #if defined(TOOLKIT_GTK)
-    ProcessSingletonDialog::ShowAndRun(UTF16ToUTF8(error));
+    return ProcessSingletonDialog::ShowAndRun(
+        UTF16ToUTF8(error), UTF16ToUTF8(relaunch_button_text));
 #else
     NOTIMPLEMENTED();
 #endif
   }
+  return false;
 }
 
 bool IsChromeProcess(pid_t pid) {
@@ -734,9 +737,13 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessWithTimeout(
       return PROCESS_NONE;
     }
 
-    if (hostname != net::GetHostName()) {
-      // Locked by process on another host.
-      DisplayProfileInUseError(lock_path_.value(), hostname, pid);
+    if (hostname != net::GetHostName() && !IsChromeProcess(pid)) {
+      // Locked by process on another host. If the user selected to unlock
+      // the profile, try to continue; otherwise quit.
+      if (DisplayProfileInUseError(lock_path_, hostname, pid)) {
+        UnlinkPath(lock_path_);
+        return PROCESS_NONE;
+      }
       return PROFILE_IN_USE;
     }
 
@@ -958,8 +965,7 @@ bool ProcessSingleton::KillProcessByLockPath() {
   ParseLockPath(lock_path_, &hostname, &pid);
 
   if (!hostname.empty() && hostname != net::GetHostName()) {
-    DisplayProfileInUseError(lock_path_.value(), hostname, pid);
-    return false;
+    return DisplayProfileInUseError(lock_path_, hostname, pid);
   }
   UnlinkPath(lock_path_);
 
