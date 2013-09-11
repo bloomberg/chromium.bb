@@ -85,6 +85,10 @@ enum ResultCode {
   // Returned when the user has not yet accepted the EULA.
   RESULT_CODE_EULA_REFUSED,
 
+  // Failed to migrate user data directory for side-by-side package support
+  // (Linux-only).
+  RESULT_CODE_SXS_MIGRATION_FAILED,
+
   // Last return code (keep this last).
   RESULT_CODE_CHROME_LAST_CODE,
 };

@@ -146,6 +146,7 @@
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 #include "chrome/browser/first_run/upgrade_util_linux.h"
+#include "chrome/browser/sxs_linux.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -1218,6 +1219,11 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
         NOTREACHED();
     }
   }
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  if (sxs_linux::ShouldMigrateUserDataDir())
+    return sxs_linux::MigrateUserDataDir();
+#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
   first_run::CreateSentinelIfNeeded();
 #endif  // !defined(OS_ANDROID)

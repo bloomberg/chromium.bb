@@ -1526,6 +1526,14 @@ const char kPasswordStore[]                 = "password-store";
 #endif
 #endif  // OS_POSIX
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// Triggers migration of user data directory to another directory
+// specified as a parameter. The migration is done under singleton lock,
+// and sanity checks are made to avoid corrupting the profile.
+// The browser exits after migration is complete.
+const char kMigrateDataDirForSxS[]          = "migrate-data-dir-for-sxs";
+#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
+
 #if defined(OS_MACOSX)
 // Forcibly disables Lion-style on newer OSes, to allow developers to test the
 // older, SnowLeopard-style fullscreen.

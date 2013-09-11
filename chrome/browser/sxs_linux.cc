@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
@@ -14,12 +15,16 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_result_codes.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace {
 
-bool DoAddChannelMarkToUserDataDir(const base::FilePath& user_data_dir) {
+const char kChannelsFileName[] = "Channels";
+
+std::string GetChannelMarkForThisExecutable() {
   std::string product_channel_name;
   chrome::VersionInfo::Channel product_channel(
       chrome::VersionInfo::GetChannel());
@@ -51,7 +56,12 @@ bool DoAddChannelMarkToUserDataDir(const base::FilePath& user_data_dir) {
     // Rely on -Wswitch compiler warning to detect unhandled enum values.
   }
 
-  base::FilePath channels_path(user_data_dir.AppendASCII("Channels"));
+  return product_channel_name;
+}
+
+bool DoAddChannelMarkToUserDataDir(const base::FilePath& user_data_dir) {
+  std::string product_channel_name(GetChannelMarkForThisExecutable());
+  base::FilePath channels_path(user_data_dir.AppendASCII(kChannelsFileName));
   std::vector<std::string> user_data_dir_channels;
 
   // Note: failure to read the channels file is not fatal. It's possible
@@ -92,6 +102,56 @@ void AddChannelMarkToUserDataDir() {
                << user_data_dir.value() << "). This profile will not be "
                << "automatically migrated for updated Linux packages.";
   }
+}
+
+bool ShouldMigrateUserDataDir() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kMigrateDataDirForSxS);
+}
+
+int MigrateUserDataDir() {
+  DCHECK(ShouldMigrateUserDataDir());
+
+  base::FilePath source_path;
+  if (!PathService::Get(chrome::DIR_USER_DATA, &source_path)) {
+    LOG(ERROR) << "Failed to get value of chrome::DIR_USER_DATA";
+    return chrome::RESULT_CODE_SXS_MIGRATION_FAILED;
+  }
+
+  base::FilePath channels_path(source_path.AppendASCII(kChannelsFileName));
+
+  std::string channels_contents;
+  if (!base::ReadFileToString(channels_path, &channels_contents)) {
+    LOG(WARNING) << "Failed to read channels file.";
+    return chrome::RESULT_CODE_SXS_MIGRATION_FAILED;
+  }
+
+  std::vector<std::string> user_data_dir_channels;
+  base::SplitString(channels_contents, '\n', &user_data_dir_channels);
+
+  if (user_data_dir_channels.size() != 1) {
+    LOG(WARNING) << "User data dir migration is only possible when the profile "
+                 << "is only used with a single channel.";
+    return chrome::RESULT_CODE_SXS_MIGRATION_FAILED;
+  }
+
+  if (user_data_dir_channels[0] != GetChannelMarkForThisExecutable()) {
+    LOG(WARNING) << "User data dir migration is only possible when the profile "
+                 << "is used with the same channel.";
+    return chrome::RESULT_CODE_SXS_MIGRATION_FAILED;
+  }
+
+  base::FilePath target_path =
+      CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+          switches::kMigrateDataDirForSxS);
+
+  if (!base::Move(source_path, target_path)) {
+    LOG(ERROR) << "Failed to rename '" << source_path.value()
+               << "' to '" << target_path.value() << "'";
+    return chrome::RESULT_CODE_SXS_MIGRATION_FAILED;
+  }
+
+  return content::RESULT_CODE_NORMAL_EXIT;
 }
 
 }  // namespace sxs_linux

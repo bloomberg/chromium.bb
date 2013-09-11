@@ -19,6 +19,13 @@ namespace sxs_linux {
 // Must be run on FILE thread.
 void AddChannelMarkToUserDataDir();
 
+// Returns true if user data dir migration has been requested.
+bool ShouldMigrateUserDataDir() WARN_UNUSED_RESULT;
+
+// Migrates user data dir to a side-by-side-compatible one.
+// Returns exit code - caller should make the process exit with that code.
+int MigrateUserDataDir() WARN_UNUSED_RESULT;
+
 }  // namespace sxs_linux
 
 #endif  // CHROME_BROWSER_SXS_LINUX_H_
