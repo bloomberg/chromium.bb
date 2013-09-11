@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/id_map.h"
+#include "chrome/browser/ui/blocked_content/blocked_window_params.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -34,12 +35,7 @@ class PopupBlockerTabHelper
                        const WebKit::WebWindowFeatures& window_features);
 
   // Adds a popup request to the |blocked_popups_| container.
-  void AddBlockedPopup(const GURL& target_url,
-                       const content::Referrer& referrer,
-                       WindowOpenDisposition disposition,
-                       const WebKit::WebWindowFeatures& features,
-                       bool user_gesture,
-                       bool opener_suppressed);
+  void AddBlockedPopup(const BlockedWindowParams& params);
 
   // Creates the blocked popup with |popup_id|.
   void ShowBlockedPopup(int32 popup_id);

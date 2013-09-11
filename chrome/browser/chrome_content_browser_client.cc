@@ -80,6 +80,7 @@
 #include "chrome/browser/ssl/ssl_tab_helper.h"
 #include "chrome/browser/sync_file_system/local/sync_file_system_backend.h"
 #include "chrome/browser/tab_contents/tab_util.h"
+#include "chrome/browser/ui/blocked_content/blocked_window_params.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
@@ -159,6 +160,7 @@
 #include "chrome/browser/chrome_browser_main_linux.h"
 #elif defined(OS_ANDROID)
 #include "chrome/browser/android/crash_dump_manager.h"
+#include "chrome/browser/android/webapps/single_tab_mode_tab_helper.h"
 #include "chrome/browser/chrome_browser_main_android.h"
 #include "chrome/common/descriptors_android.h"
 #elif defined(OS_POSIX)
@@ -522,38 +524,9 @@ void SetApplicationLocaleOnIOThread(const std::string& locale) {
   g_io_thread_application_locale.Get() = locale;
 }
 
-struct BlockedPopupParams {
-  BlockedPopupParams(const GURL& target_url,
-                     const content::Referrer& referrer,
-                     WindowOpenDisposition disposition,
-                     const WebWindowFeatures& features,
-                     bool user_gesture,
-                     bool opener_suppressed,
-                     int render_process_id,
-                     int opener_id)
-      : target_url(target_url),
-        referrer(referrer),
-        disposition(disposition),
-        features(features),
-        user_gesture(user_gesture),
-        opener_suppressed(opener_suppressed),
-        render_process_id(render_process_id),
-        opener_id(opener_id)
-        {}
-
-  GURL target_url;
-  content::Referrer referrer;
-  WindowOpenDisposition disposition;
-  WebWindowFeatures features;
-  bool user_gesture;
-  bool opener_suppressed;
-  int render_process_id;
-  int opener_id;
-};
-
-void HandleBlockedPopupOnUIThread(const BlockedPopupParams& params) {
-  WebContents* tab =
-      tab_util::GetWebContentsByID(params.render_process_id, params.opener_id);
+void HandleBlockedPopupOnUIThread(const BlockedWindowParams& params) {
+  WebContents* tab = tab_util::GetWebContentsByID(params.render_process_id(),
+                                                  params.opener_id());
   if (!tab)
     return;
 
@@ -561,13 +534,20 @@ void HandleBlockedPopupOnUIThread(const BlockedPopupParams& params) {
       PopupBlockerTabHelper::FromWebContents(tab);
   if (!popup_helper)
     return;
-  popup_helper->AddBlockedPopup(params.target_url,
-                                params.referrer,
-                                params.disposition,
-                                params.features,
-                                params.user_gesture,
-                                params.opener_suppressed);
+  popup_helper->AddBlockedPopup(params);
 }
+
+#if defined(OS_ANDROID)
+void HandleSingleTabModeBlockOnUIThread(const BlockedWindowParams& params) {
+  WebContents* web_contents =
+      tab_util::GetWebContentsByID(params.render_process_id(),
+                                   params.opener_id());
+  if (!web_contents)
+    return;
+
+  SingleTabModeTabHelper::FromWebContents(web_contents)->HandleOpenUrl(params);
+}
+#endif  // defined(OS_ANDROID)
 
 }  // namespace
 
@@ -2018,30 +1998,39 @@ bool ChromeContentBrowserClient::CanCreateWindow(
 
   HostContentSettingsMap* content_settings =
       ProfileIOData::FromResourceContext(context)->GetHostContentSettingsMap();
+  BlockedWindowParams blocked_params(target_url,
+                                    referrer,
+                                    disposition,
+                                    features,
+                                    user_gesture,
+                                    opener_suppressed,
+                                    render_process_id,
+                                    opener_id);
 
   if (!user_gesture && !CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kDisablePopupBlocking)) {
     if (content_settings->GetContentSetting(opener_url,
                                             opener_url,
                                             CONTENT_SETTINGS_TYPE_POPUPS,
-                                            std::string()) ==
+                                            std::string()) !=
         CONTENT_SETTING_ALLOW) {
-      return true;
+      BrowserThread::PostTask(BrowserThread::UI,
+                              FROM_HERE,
+                              base::Bind(&HandleBlockedPopupOnUIThread,
+                                         blocked_params));
+      return false;
     }
+  }
 
+#if defined(OS_ANDROID)
+  if (SingleTabModeTabHelper::IsRegistered(render_process_id, opener_id)) {
     BrowserThread::PostTask(BrowserThread::UI,
                             FROM_HERE,
-                            base::Bind(&HandleBlockedPopupOnUIThread,
-                                       BlockedPopupParams(target_url,
-                                                          referrer,
-                                                          disposition,
-                                                          features,
-                                                          user_gesture,
-                                                          opener_suppressed,
-                                                          render_process_id,
-                                                          opener_id)));
+                            base::Bind(&HandleSingleTabModeBlockOnUIThread,
+                                       blocked_params));
     return false;
   }
+#endif
 
   return true;
 }

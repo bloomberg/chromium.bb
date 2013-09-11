@@ -331,6 +331,8 @@
         'browser/ui/blocked_content/blocked_content_tab_helper.h',
         'browser/ui/blocked_content/blocked_content_tab_helper_delegate.cc',
         'browser/ui/blocked_content/blocked_content_tab_helper_delegate.h',
+        'browser/ui/blocked_content/blocked_window_params.cc',
+        'browser/ui/blocked_content/blocked_window_params.h',
         'browser/ui/blocked_content/popup_blocker_tab_helper.cc',
         'browser/ui/blocked_content/popup_blocker_tab_helper.h',
         'browser/ui/bookmarks/bookmark_bar.h',

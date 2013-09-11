@@ -8,6 +8,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/blocked_content/blocked_window_params.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/render_messages.h"
@@ -101,45 +102,12 @@ bool PopupBlockerTabHelper::MaybeBlockPopup(
   }
 }
 
-void PopupBlockerTabHelper::AddBlockedPopup(
-    const GURL& target_url,
-    const content::Referrer& referrer,
-    WindowOpenDisposition disposition,
-    const WebWindowFeatures& features,
-    bool user_gesture,
-    bool opener_suppressed) {
-  GURL popup_url(target_url);
-  content::RenderViewHost::FilterURL(
-      web_contents()->GetRenderProcessHost(), false, &popup_url);
-  chrome::NavigateParams nav_params(
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext()),
-      popup_url,
-      content::PAGE_TRANSITION_LINK);
-  nav_params.referrer = referrer;
-  nav_params.source_contents = web_contents();
-  nav_params.is_renderer_initiated = true;
-  nav_params.tabstrip_add_types = TabStripModel::ADD_ACTIVE;
-  nav_params.window_action = chrome::NavigateParams::SHOW_WINDOW;
-  nav_params.user_gesture = user_gesture;
-  nav_params.should_set_opener = !opener_suppressed;
-  web_contents()->GetView()->GetContainerBounds(&nav_params.window_bounds);
-  if (features.xSet)
-    nav_params.window_bounds.set_x(features.x);
-  if (features.ySet)
-    nav_params.window_bounds.set_y(features.y);
-  if (features.widthSet)
-    nav_params.window_bounds.set_width(features.width);
-  if (features.heightSet)
-    nav_params.window_bounds.set_height(features.height);
-
-  // Compare RenderViewImpl::show().
-  if (!user_gesture && disposition != NEW_BACKGROUND_TAB)
-    nav_params.disposition = NEW_POPUP;
-  else
-    nav_params.disposition = disposition;
+void PopupBlockerTabHelper::AddBlockedPopup(const BlockedWindowParams& params) {
+  chrome::NavigateParams nav_params =
+      params.CreateNavigateParams(web_contents());
 
   if (blocked_popups_.size() < kMaximumNumberOfPopups) {
-    blocked_popups_.Add(new BlockedRequest(nav_params, features));
+    blocked_popups_.Add(new BlockedRequest(nav_params, params.features()));
     TabSpecificContentSettings::FromWebContents(web_contents())->
         OnContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS, std::string());
   }

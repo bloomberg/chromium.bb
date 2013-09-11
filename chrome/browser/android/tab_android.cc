@@ -6,6 +6,7 @@
 
 #include "base/android/jni_android.h"
 #include "chrome/browser/android/chrome_web_contents_delegate_android.h"
+#include "chrome/browser/android/webapps/single_tab_mode_tab_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
@@ -89,6 +90,7 @@ void BrowserTabContents::AttachTabHelpers(content::WebContents* contents) {
   PrefsTabHelper::CreateForWebContents(contents);
   prerender::PrerenderTabHelper::CreateForWebContentsWithPasswordManager(
       contents, PasswordManager::FromWebContents(contents));
+  SingleTabModeTabHelper::CreateForWebContents(contents);
   SSLTabHelper::CreateForWebContents(contents);
   TabSpecificContentSettings::CreateForWebContents(contents);
   TranslateTabHelper::CreateForWebContents(contents);
