@@ -230,11 +230,9 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
     views::corewm::SetWindowVisibilityAnimationType(
         popup_->GetNativeView(),
         views::corewm::WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL);
-#if defined(OS_CHROMEOS)
     // No animation for autocomplete popup appearance.
     views::corewm::SetWindowVisibilityAnimationTransition(
         popup_->GetNativeView(), views::corewm::ANIMATE_HIDE);
-#endif
 #endif
     popup_->SetContentsView(this);
     popup_->StackAbove(omnibox_view_->GetRelativeWindowForPopup());
