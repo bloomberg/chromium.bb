@@ -9,13 +9,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/safe_browsing/database_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "url/gurl.h"
 
-using content::BrowserThread;
-using content::TestBrowserThread;
+using content::TestBrowserThreadBundle;
 
 namespace {
 
@@ -42,19 +41,14 @@ class SafeBrowsingDatabaseManagerTest : public PlatformTest {
 
   virtual void SetUp() {
     PlatformTest::SetUp();
-    io_thread_.reset(new TestBrowserThread(BrowserThread::IO));
     SafeBrowsingService::RegisterFactory(&factory_);
-  }
-  virtual void TearDown() {
-    io_thread_.reset();
-    PlatformTest::TearDown();
   }
   bool RunSBHashTest(const safe_browsing_util::ListType list_type,
                      const std::vector<SBThreatType>& expected_threats,
                      const std::string& result_list);
 
  private:
-  scoped_ptr<TestBrowserThread> io_thread_;
+  TestBrowserThreadBundle thread_bundle_;
   TestSafeBrowsingServiceFactory factory_;
 };
 
@@ -84,7 +78,10 @@ bool SafeBrowsingDatabaseManagerTest::RunSBHashTest(
   };
 
   std::vector<SBFullHashResult> fake_results(1, full_hash_result);
-  return db_manager_->HandleOneCheck(check, fake_results);
+  bool result = db_manager_->HandleOneCheck(check, fake_results);
+  db_manager_->checks_.erase(check);
+  delete check;
+  return result;
 }
 
 TEST_F(SafeBrowsingDatabaseManagerTest, CheckCorrespondsListType) {
