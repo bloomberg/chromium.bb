@@ -31,6 +31,15 @@ class TemplateUrlServiceAndroid : public content::NotificationObserver {
   jboolean IsSearchProviderManaged(JNIEnv* env, jobject obj);
   jboolean IsSearchByImageAvailable(JNIEnv* env, jobject obj);
   jboolean IsDefaultSearchEngineGoogle(JNIEnv* env, jobject obj);
+  base::android::ScopedJavaLocalRef<jstring> GetUrlForSearchQuery(
+      JNIEnv* env,
+      jobject obj,
+      jstring jquery);
+  base::android::ScopedJavaLocalRef<jstring> ReplaceSearchTermsInUrl(
+      JNIEnv* env,
+      jobject obj,
+      jstring jquery,
+      jstring jcurrent_url);
 
   // NotificationObserver:
   virtual void Observe(int type,

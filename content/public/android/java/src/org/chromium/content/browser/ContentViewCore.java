@@ -5,8 +5,10 @@
 package org.chromium.content.browser;
 
 import android.app.Activity;
+import android.app.SearchManager;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
@@ -21,9 +23,11 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.ResultReceiver;
+import android.provider.Browser;
 import android.provider.Settings;
 import android.provider.Settings.Secure;
 import android.text.Editable;
+import android.text.TextUtils;
 import android.util.Log;
 import android.util.Pair;
 import android.view.ActionMode;
@@ -2095,23 +2099,66 @@ import java.util.Map;
         SelectActionModeCallback.ActionHandler actionHandler =
                 new SelectActionModeCallback.ActionHandler() {
             @Override
-            public boolean selectAll() {
-                return mImeAdapter.selectAll();
+            public void selectAll() {
+                mImeAdapter.selectAll();
             }
 
             @Override
-            public boolean cut() {
-                return mImeAdapter.cut();
+            public void cut() {
+                mImeAdapter.cut();
             }
 
             @Override
-            public boolean copy() {
-                return mImeAdapter.copy();
+            public void copy() {
+                mImeAdapter.copy();
             }
 
             @Override
-            public boolean paste() {
-                return mImeAdapter.paste();
+            public void paste() {
+                mImeAdapter.paste();
+            }
+
+            @Override
+            public void share() {
+                final String query = getSelectedText();
+                if (TextUtils.isEmpty(query)) return;
+
+                Intent send = new Intent(Intent.ACTION_SEND);
+                send.setType("text/plain");
+                send.putExtra(Intent.EXTRA_TEXT, query);
+                try {
+                    Intent i = Intent.createChooser(send, getContext().getString(
+                            R.string.actionbar_share));
+                    i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    getContext().startActivity(i);
+                } catch (android.content.ActivityNotFoundException ex) {
+                    // If no app handles it, do nothing.
+                }
+            }
+
+            @Override
+            public void search() {
+                final String query = getSelectedText();
+                if (TextUtils.isEmpty(query)) return;
+
+                // See if ContentViewClient wants to override
+                if (getContentViewClient().doesPerformWebSearch()) {
+                    getContentViewClient().performWebSearch(query);
+                    return;
+                }
+
+                Intent i = new Intent(Intent.ACTION_WEB_SEARCH);
+                i.putExtra(SearchManager.EXTRA_NEW_SEARCH, true);
+                i.putExtra(SearchManager.QUERY, query);
+                i.putExtra(Browser.EXTRA_APPLICATION_ID, getContext().getPackageName());
+                if (!(getContext() instanceof Activity)) {
+                    i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                }
+                try {
+                    getContext().startActivity(i);
+                } catch (android.content.ActivityNotFoundException ex) {
+                    // If no app handles it, do nothing.
+                }
             }
 
             @Override
@@ -2120,15 +2167,27 @@ import java.util.Map;
             }
 
             @Override
-            public String getSelectedText() {
-                return ContentViewCore.this.getSelectedText();
-            }
-
-            @Override
             public void onDestroyActionMode() {
                 mActionMode = null;
                 if (mUnselectAllOnActionModeDismiss) mImeAdapter.unselect();
                 getContentViewClient().onContextualActionBarHidden();
+            }
+
+            @Override
+            public boolean isShareAvailable() {
+                Intent intent = new Intent(Intent.ACTION_SEND);
+                intent.setType("text/plain");
+                return getContext().getPackageManager().queryIntentActivities(intent,
+                        PackageManager.MATCH_DEFAULT_ONLY).size() > 0;
+            }
+
+            @Override
+            public boolean isWebSearchAvailable() {
+                if (getContentViewClient().doesPerformWebSearch()) return true;
+                Intent intent = new Intent(Intent.ACTION_WEB_SEARCH);
+                intent.putExtra(SearchManager.EXTRA_NEW_SEARCH, true);
+                return getContext().getPackageManager().queryIntentActivities(intent,
+                        PackageManager.MATCH_DEFAULT_ONLY).size() > 0;
             }
         };
         mActionMode = null;

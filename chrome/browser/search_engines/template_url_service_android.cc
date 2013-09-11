@@ -19,7 +19,9 @@
 #include "content/public/browser/notification_source.h"
 #include "jni/TemplateUrlService_jni.h"
 
+using base::android::ConvertJavaStringToUTF16;
 using base::android::ConvertUTF16ToJavaString;
+using base::android::ConvertUTF8ToJavaString;
 
 namespace {
 
@@ -136,6 +138,45 @@ TemplateUrlServiceAndroid::GetPrepopulatedTemplateUrlAt(JNIEnv* env,
 
 bool TemplateUrlServiceAndroid::IsPrepopulatedTemplate(TemplateURL* url) {
   return url->prepopulate_id() > 0;
+}
+
+base::android::ScopedJavaLocalRef<jstring>
+TemplateUrlServiceAndroid::GetUrlForSearchQuery(JNIEnv* env,
+                                                jobject obj,
+                                                jstring jquery) {
+  const TemplateURL* default_provider =
+      template_url_service_->GetDefaultSearchProvider();
+
+  string16 query(ConvertJavaStringToUTF16(env, jquery));
+
+  std::string url;
+  if (default_provider &&
+      default_provider->url_ref().SupportsReplacement() && !query.empty()) {
+    url = default_provider->url_ref().ReplaceSearchTerms(
+        TemplateURLRef::SearchTermsArgs(query));
+  }
+
+  return ConvertUTF8ToJavaString(env, url);
+}
+
+base::android::ScopedJavaLocalRef<jstring>
+TemplateUrlServiceAndroid::ReplaceSearchTermsInUrl(JNIEnv* env,
+                                                   jobject obj,
+                                                   jstring jquery,
+                                                   jstring jcurrent_url) {
+  TemplateURL* default_provider =
+      template_url_service_->GetDefaultSearchProvider();
+
+  string16 query(ConvertJavaStringToUTF16(env, jquery));
+  GURL current_url(ConvertJavaStringToUTF16(env, jcurrent_url));
+  GURL destination_url(current_url);
+  if (default_provider && !query.empty()) {
+    bool refined_query = default_provider->ReplaceSearchTermsInURL(current_url,
+        TemplateURLRef::SearchTermsArgs(query), &destination_url);
+    if (refined_query)
+      return ConvertUTF8ToJavaString(env, destination_url.spec());
+  }
+  return base::android::ScopedJavaLocalRef<jstring>(env, NULL);
 }
 
 static jint Init(JNIEnv* env, jobject obj) {

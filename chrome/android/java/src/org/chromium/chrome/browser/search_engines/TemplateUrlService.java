@@ -178,6 +178,30 @@ public class TemplateUrlService {
         mLoadListeners.removeObserver(listener);
     }
 
+    /**
+     * Finds the default search engine for the default provider and returns the url query
+     * {@link String} for {@code query}.
+     * @param query The {@link String} that represents the text query the search url should
+     *              represent.
+     * @return      A {@link String} that contains the url of the default search engine with
+     *              {@code query} inserted as the search parameter.
+     */
+    public String getUrlForSearchQuery(String query) {
+        return nativeGetUrlForSearchQuery(mNativeTemplateUrlServiceAndroid, query);
+    }
+
+    /**
+     * Replaces the search terms from {@code query} in {@code url}.
+     * @param query The {@link String} that represents the text query that should replace the
+     *              existing query in {@code url}.
+     * @param url   The {@link String} that contains the search url with another search query that
+     *              will be replaced with {@code query}.
+     * @return      A new version of {@code url} with the search term replaced with {@code query}.
+     */
+    public String replaceSearchTermsInUrl(String query, String url) {
+        return nativeReplaceSearchTermsInUrl(mNativeTemplateUrlServiceAndroid, query, url);
+    }
+
     private native int nativeInit();
     private native void nativeLoad(int nativeTemplateUrlServiceAndroid);
     private native boolean nativeIsLoaded(int nativeTemplateUrlServiceAndroid);
@@ -190,4 +214,8 @@ public class TemplateUrlService {
     private native boolean nativeIsSearchProviderManaged(int nativeTemplateUrlServiceAndroid);
     private native boolean nativeIsSearchByImageAvailable(int nativeTemplateUrlServiceAndroid);
     private native boolean nativeIsDefaultSearchEngineGoogle(int nativeTemplateUrlServiceAndroid);
+    private native String nativeGetUrlForSearchQuery(int nativeTemplateUrlServiceAndroid,
+            String query);
+    private native String nativeReplaceSearchTermsInUrl(int nativeTemplateUrlServiceAndroid,
+            String query, String currentUrl);
 }
