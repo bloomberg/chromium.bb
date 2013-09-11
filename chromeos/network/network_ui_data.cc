@@ -99,7 +99,8 @@ NetworkUIData::NetworkUIData(const base::DictionaryValue& dict) {
     if (cert_dict)
       certificate_pattern_.CopyFromDictionary(*cert_dict);
     if (certificate_pattern_.Empty()) {
-      LOG(ERROR) << "Couldn't parse a valid certificate pattern.";
+      // This case may occur if UIData from an older CrOS version is read.
+      LOG(WARNING) << "Couldn't parse a valid certificate pattern.";
       certificate_type_ = CLIENT_CERT_TYPE_NONE;
     }
   }
