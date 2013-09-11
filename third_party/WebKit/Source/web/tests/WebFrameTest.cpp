@@ -34,6 +34,7 @@
 
 #include <gtest/gtest.h>
 #include "FrameTestHelpers.h"
+#include "RuntimeEnabledFeatures.h"
 #include "SkBitmap.h"
 #include "SkCanvas.h"
 #include "URLTestHelpers.h"
@@ -185,6 +186,22 @@ protected:
     OwnPtr<FakeCompositingWebViewClient> m_fakeCompositingWebViewClient;
 
     WebView* m_webView;
+};
+
+class UseMockScrollbarSettings {
+public:
+    UseMockScrollbarSettings()
+    {
+        WebCore::Settings::setMockScrollbarsEnabled(true);
+        WebCore::RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(true);
+        EXPECT_TRUE(WebCore::ScrollbarTheme::theme()->usesOverlayScrollbars());
+    }
+
+    ~UseMockScrollbarSettings()
+    {
+        WebCore::Settings::setMockScrollbarsEnabled(false);
+        WebCore::RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(false);
+    }
 };
 
 TEST_F(WebFrameTest, ContentText)
@@ -419,8 +436,7 @@ TEST_F(WebFrameTest, DeviceScaleFactorUsesDefaultWithoutViewportTag)
 
 TEST_F(WebFrameTest, FixedLayoutInitializeAtMinimumScale)
 {
-    WebCore::Settings::setMockScrollbarsEnabled(true);
-    WebCore::Settings::setUsesOverlayScrollbars(true);
+    UseMockScrollbarSettings mockScrollbarSettings;
 
     registerMockedHttpURLLoad("fixed_layout.html");
 
@@ -459,8 +475,7 @@ TEST_F(WebFrameTest, FixedLayoutInitializeAtMinimumScale)
 
 TEST_F(WebFrameTest, WideDocumentInitializeAtMinimumScale)
 {
-    WebCore::Settings::setMockScrollbarsEnabled(true);
-    WebCore::Settings::setUsesOverlayScrollbars(true);
+    UseMockScrollbarSettings mockScrollbarSettings;
 
     registerMockedHttpURLLoad("wide_document.html");
 
@@ -661,8 +676,7 @@ TEST_F(WebFrameTest, PageViewportInitialScaleOverridesLoadWithOverviewMode)
 
 TEST_F(WebFrameTest, setInitialPageScaleFactorPermanently)
 {
-    WebCore::Settings::setMockScrollbarsEnabled(true);
-    WebCore::Settings::setUsesOverlayScrollbars(true);
+    UseMockScrollbarSettings mockScrollbarSettings;
 
     registerMockedHttpURLLoad("fixed_layout.html");
 
@@ -820,9 +834,7 @@ TEST_F(WebFrameTest, setPageScaleFactorDoesNotLayout)
 
 TEST_F(WebFrameTest, setPageScaleFactorWithOverlayScrollbarsDoesNotLayout)
 {
-    WebCore::Settings::setMockScrollbarsEnabled(true);
-    WebCore::Settings::setUsesOverlayScrollbars(true);
-    EXPECT_TRUE(WebCore::ScrollbarTheme::theme()->usesOverlayScrollbars());
+    UseMockScrollbarSettings mockScrollbarSettings;
 
     registerMockedHttpURLLoad("fixed_layout.html");
 
@@ -842,8 +854,6 @@ TEST_F(WebFrameTest, setPageScaleFactorWithOverlayScrollbarsDoesNotLayout)
     EXPECT_FALSE(webViewImpl()->mainFrameImpl()->frameView()->needsLayout());
     EXPECT_EQ(prevLayoutCount, webViewImpl()->mainFrameImpl()->frameView()->layoutCount());
 
-    WebCore::Settings::setMockScrollbarsEnabled(false);
-    WebCore::Settings::setUsesOverlayScrollbars(false);
 }
 
 TEST_F(WebFrameTest, setPageScaleFactorBeforeFrameHasView)
@@ -940,8 +950,7 @@ TEST_F(WebFrameTest, pageScaleFactorDoesNotApplyCssTransform)
 
 TEST_F(WebFrameTest, targetDensityDpiHigh)
 {
-    WebCore::Settings::setMockScrollbarsEnabled(true);
-    WebCore::Settings::setUsesOverlayScrollbars(true);
+    UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("viewport-target-densitydpi-high.html");
 
     FixedLayoutTestWebViewClient client;
@@ -976,8 +985,7 @@ TEST_F(WebFrameTest, targetDensityDpiHigh)
 
 TEST_F(WebFrameTest, targetDensityDpiDevice)
 {
-    WebCore::Settings::setMockScrollbarsEnabled(true);
-    WebCore::Settings::setUsesOverlayScrollbars(true);
+    UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("viewport-target-densitydpi-device.html");
 
     float deviceScaleFactors[] = { 1.0f, 4.0f / 3.0f, 2.0f };
@@ -1123,6 +1131,7 @@ TEST_F(WebFrameResizeTest, ResizeYieldsCorrectScrollAndScaleForFixedLayout)
 
 TEST_F(WebFrameTest, pageScaleFactorScalesPaintClip)
 {
+    UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("large-div.html");
 
     FixedLayoutTestWebViewClient client;
@@ -1163,6 +1172,7 @@ TEST_F(WebFrameTest, pageScaleFactorScalesPaintClip)
 
 TEST_F(WebFrameTest, pageScaleFactorUpdatesScrollbars)
 {
+    UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("fixed_layout.html");
 
     FixedLayoutTestWebViewClient client;
@@ -1188,8 +1198,7 @@ TEST_F(WebFrameTest, pageScaleFactorUpdatesScrollbars)
 
 TEST_F(WebFrameTest, CanOverrideScaleLimits)
 {
-    WebCore::Settings::setMockScrollbarsEnabled(true);
-    WebCore::Settings::setUsesOverlayScrollbars(true);
+    UseMockScrollbarSettings mockScrollbarSettings;
 
     registerMockedHttpURLLoad("no_scale_for_you.html");
 
@@ -1221,9 +1230,7 @@ TEST_F(WebFrameTest, CanOverrideScaleLimits)
 
 TEST_F(WebFrameTest, updateOverlayScrollbarLayers)
 {
-    WebCore::Settings::setMockScrollbarsEnabled(true);
-    WebCore::Settings::setUsesOverlayScrollbars(true);
-    EXPECT_TRUE(WebCore::ScrollbarTheme::theme()->usesOverlayScrollbars());
+    UseMockScrollbarSettings mockScrollbarSettings;
 
     registerMockedHttpURLLoad("large-div.html");
 

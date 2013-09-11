@@ -195,7 +195,7 @@ void Internals::resetToConsistentState(Page* page)
     page->setPagination(Pagination());
     TextRun::setAllowsRoundingHacks(false);
     WebCore::overrideUserPreferredLanguages(Vector<String>());
-    WebCore::Settings::setUsesOverlayScrollbars(false);
+    WebCore::RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(false);
     delete s_pagePopupDriver;
     s_pagePopupDriver = 0;
     page->chrome().client().resetPagePopupDriver();
@@ -2140,9 +2140,9 @@ PassRefPtr<SerializedScriptValue> Internals::deserializeBuffer(PassRefPtr<ArrayB
     return SerializedScriptValue::createFromWire(value);
 }
 
-void Internals::setUsesOverlayScrollbars(bool enabled)
+void Internals::setOverlayScrollbarsEnabled(bool enabled)
 {
-    WebCore::Settings::setUsesOverlayScrollbars(enabled);
+    RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(enabled);
 }
 
 void Internals::forceReload(bool endToEnd)

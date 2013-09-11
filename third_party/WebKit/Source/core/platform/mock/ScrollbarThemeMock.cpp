@@ -25,7 +25,8 @@
 
 #include "config.h"
 #include "core/platform/mock/ScrollbarThemeMock.h"
-#include "core/page/Settings.h"
+
+#include "RuntimeEnabledFeatures.h"
 #include "core/platform/Scrollbar.h"
 
 namespace WebCore {
@@ -44,7 +45,7 @@ int ScrollbarThemeMock::scrollbarThickness(ScrollbarControlSize controlSize)
 
 bool ScrollbarThemeMock::usesOverlayScrollbars() const
 {
-    return Settings::usesOverlayScrollbars();
+    return RuntimeEnabledFeatures::overlayScrollbarsEnabled();
 }
 
 void ScrollbarThemeMock::paintTrackBackground(GraphicsContext* context, ScrollbarThemeClient* scrollbar, const IntRect& trackRect)

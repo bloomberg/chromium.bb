@@ -77,7 +77,6 @@ static inline const AtomicString& getGenericFontFamilyForScript(const ScriptFont
 }
 
 bool Settings::gMockScrollbarsEnabled = false;
-bool Settings::gUsesOverlayScrollbars = false;
 
 // NOTEs
 //  1) EditingMacBehavior comprises builds on Mac;
@@ -357,16 +356,6 @@ void Settings::setMockScrollbarsEnabled(bool flag)
 bool Settings::mockScrollbarsEnabled()
 {
     return gMockScrollbarsEnabled;
-}
-
-void Settings::setUsesOverlayScrollbars(bool flag)
-{
-    gUsesOverlayScrollbars = flag;
-}
-
-bool Settings::usesOverlayScrollbars()
-{
-    return gUsesOverlayScrollbars;
 }
 
 void Settings::setOpenGLMultisamplingEnabled(bool flag)

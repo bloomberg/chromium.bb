@@ -23,7 +23,7 @@
         testRunner.dumpAsText();
 
     if (window.internals)
-        window.internals.setUsesOverlayScrollbars(true);
+        window.internals.setOverlayScrollbarsEnabled(true);
 
     var test = async_test("Test that partial layout works with overlay scrollbars.");
     setTimeout(function() {

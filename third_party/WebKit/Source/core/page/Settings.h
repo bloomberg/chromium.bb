@@ -142,9 +142,6 @@ public:
     static void setMockScrollbarsEnabled(bool flag);
     static bool mockScrollbarsEnabled();
 
-    static void setUsesOverlayScrollbars(bool flag);
-    static bool usesOverlayScrollbars();
-
     void setTouchEventEmulationEnabled(bool enabled) { m_touchEventEmulationEnabled = enabled; }
     bool isTouchEventEmulationEnabled() const { return m_touchEventEmulationEnabled; }
 
@@ -202,7 +199,6 @@ private:
     void imageLoadingSettingsTimerFired(Timer<Settings>*);
 
     static bool gMockScrollbarsEnabled;
-    static bool gUsesOverlayScrollbars;
 };
 
 } // namespace WebCore

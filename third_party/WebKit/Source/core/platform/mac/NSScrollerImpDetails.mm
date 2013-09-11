@@ -26,6 +26,7 @@
 
 
 #include "config.h"
+#include "RuntimeEnabledFeatures.h"
 #include "core/page/Settings.h"
 #include "core/platform/mac/NSScrollerImpDetails.h"
 
@@ -46,7 +47,7 @@ bool isScrollbarOverlayAPIAvailable()
 }
 
 NSScrollerStyle recommendedScrollerStyle() {
-    if (Settings::usesOverlayScrollbars())
+    if (RuntimeEnabledFeatures::overlayScrollbarsEnabled())
         return NSScrollerStyleOverlay;
     if ([NSScroller respondsToSelector:@selector(preferredScrollerStyle)])
         return [NSScroller preferredScrollerStyle];
