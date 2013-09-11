@@ -774,18 +774,16 @@ void Node::setNeedsStyleRecalc(StyleChangeType changeType, StyleChangeSource sou
         markAncestorsWithChildNeedsStyleRecalc();
 }
 
-void Node::lazyAttach(ShouldSetAttached shouldSetAttached)
+void Node::lazyAttach()
 {
     markAncestorsWithChildNeedsStyleRecalc();
     for (Node* node = this; node; node = NodeTraversal::next(node, this)) {
+        node->setAttached();
         node->setStyleChange(LazyAttachStyleChange);
         if (node->isContainerNode())
             node->setChildNeedsStyleRecalc();
-        // FIXME: This flag is only used by HTMLFrameElementBase and doesn't look needed.
-        if (shouldSetAttached == SetAttached)
-            node->setAttached();
         for (ShadowRoot* root = node->youngestShadowRoot(); root; root = root->olderShadowRoot())
-            root->lazyAttach(shouldSetAttached);
+            root->lazyAttach();
     }
 }
 

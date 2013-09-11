@@ -57,14 +57,6 @@ ChildNodesLazySnapshot* ChildNodesLazySnapshot::latestSnapshot = 0;
 unsigned NoEventDispatchAssertion::s_count = 0;
 #endif
 
-static inline void attachAfterInsertion(Node* node)
-{
-    if (node->attached() || !node->parentNode() || !node->parentNode()->attached())
-        return;
-
-    node->lazyAttach();
-}
-
 static void collectChildrenAndRemoveFromOldParent(Node* node, NodeVector& nodes, ExceptionState& es)
 {
     if (node->nodeType() != Node::DOCUMENT_FRAGMENT_NODE) {
@@ -328,8 +320,6 @@ void ContainerNode::parserInsertBefore(PassRefPtr<Node> newChild, Node* nextChil
     childrenChanged(true, newChild->previousSibling(), nextChild, 1);
 
     ChildNodeInsertionNotifier(this).notify(newChild.get());
-
-    attachAfterInsertion(newChild.get());
 }
 
 void ContainerNode::replaceChild(PassRefPtr<Node> newChild, Node* oldChild, ExceptionState& es)
@@ -668,8 +658,6 @@ void ContainerNode::parserAppendChild(PassRefPtr<Node> newChild)
 
     childrenChanged(true, last, 0, 1);
     ChildNodeInsertionNotifier(this).notify(newChild.get());
-
-    attachAfterInsertion(newChild.get());
 }
 
 void ContainerNode::attach(const AttachContext& context)
@@ -991,9 +979,6 @@ static void updateTreeAfterInsertion(ContainerNode* parent, Node* child)
     parent->childrenChanged(false, child->previousSibling(), child->nextSibling(), 1);
 
     ChildNodeInsertionNotifier(parent).notify(child);
-
-    // FIXME: Decide if it's safe to go through ::insertedInto while aleady attached() and then move this first.
-    attachAfterInsertion(child);
 
     dispatchChildInsertionEvents(child);
 }
