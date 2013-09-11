@@ -10,7 +10,7 @@
 #include "ash/wm/base_layout_manager.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_animations.h"
-#include "ash/wm/window_properties.h"
+#include "ash/wm/window_settings.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/workspace_event_handler.h"
 #include "ash/wm/workspace/workspace_layout_manager.h"
@@ -65,7 +65,7 @@ WorkspaceWindowState WorkspaceController::GetWindowState() const {
   bool has_maximized_window = false;
   for (aura::Window::Windows::const_iterator i = windows.begin();
        i != windows.end(); ++i) {
-    if (GetIgnoredByShelf(*i))
+    if (wm::GetWindowSettings(*i)->ignored_by_shelf())
       continue;
     ui::Layer* layer = (*i)->layer();
     if (!layer->GetTargetVisibility() || layer->GetTargetOpacity() == 0.0f)

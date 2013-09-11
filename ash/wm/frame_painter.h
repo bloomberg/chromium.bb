@@ -6,6 +6,7 @@
 #define ASH_WM_FRAME_PAINTER_H_
 
 #include "ash/ash_export.h"
+#include "ash/wm/window_settings.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"  // OVERRIDE
 #include "base/gtest_prod_util.h"
@@ -41,7 +42,8 @@ class FrameCaptionButtonContainerView;
 // various implementations of views::NonClientFrameView.  Canonical source of
 // layout constants for Ash window frames.
 class ASH_EXPORT FramePainter : public aura::WindowObserver,
-                                public ui::AnimationDelegate {
+                                public ui::AnimationDelegate,
+                                public wm::WindowSettings::Observer {
  public:
   // Opacity values for the window header in various states, from 0 to 255.
   static int kActiveWindowOpacity;
@@ -144,6 +146,10 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
                                      const gfx::Rect& new_bounds) OVERRIDE;
   virtual void OnWindowAddedToRootWindow(aura::Window* window) OVERRIDE;
   virtual void OnWindowRemovingFromRootWindow(aura::Window* window) OVERRIDE;
+
+  // ash::WindowSettings::Observer overrides:
+  virtual void OnTrackedByWorkspaceChanged(aura::Window* window,
+                                           bool old) OVERRIDE;
 
   // Overridden from ui::AnimationDelegate
   virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;

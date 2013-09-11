@@ -44,7 +44,7 @@
 #include "ash/shell.h"
 #include "ash/wm/custom_frame_view_ash.h"
 #include "ash/wm/panels/panel_frame_view.h"
-#include "ash/wm/window_properties.h"
+#include "ash/wm/window_settings.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
@@ -286,7 +286,7 @@ void NativeAppWindowViews::InitializePanelWindow(
                             preferred_size_.width(),
                             preferred_size_.height());
     aura::Window* native_window = GetNativeWindow();
-    native_window->SetProperty(ash::internal::kPanelAttachedKey, false);
+    ash::wm::GetWindowSettings(native_window)->set_panel_attached(false);
     native_window->SetDefaultParentByRootWindow(
         native_window->GetRootWindow(), native_window->GetBoundsInScreen());
     window_->SetBounds(window_bounds);
@@ -413,8 +413,8 @@ bool NativeAppWindowViews::IsAlwaysOnTop() const {
   if (!shell_window_->window_type_is_panel())
     return false;
 #if defined(USE_ASH)
-  return window_->GetNativeWindow()->GetProperty(
-      ash::internal::kPanelAttachedKey);
+  return ash::wm::GetWindowSettings(window_->GetNativeWindow())->
+      panel_attached();
 #else
   return true;
 #endif
@@ -751,8 +751,8 @@ bool NativeAppWindowViews::IsDetached() const {
   if (!shell_window_->window_type_is_panel())
     return false;
 #if defined(USE_ASH)
-  return !window_->GetNativeWindow()->GetProperty(
-      ash::internal::kPanelAttachedKey);
+  return !ash::wm::GetWindowSettings(window_->GetNativeWindow())->
+      panel_attached();
 #else
   return false;
 #endif

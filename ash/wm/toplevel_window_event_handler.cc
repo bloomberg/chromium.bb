@@ -7,8 +7,8 @@
 #include "ash/shell.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/resize_shadow_controller.h"
-#include "ash/wm/window_properties.h"
 #include "ash/wm/window_resizer.h"
+#include "ash/wm/window_settings.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/snap_sizer.h"
 #include "base/message_loop/message_loop.h"
@@ -105,8 +105,9 @@ void ToplevelWindowEventHandler::ScopedWindowResizer::OnWindowHierarchyChanging(
   if (params.receiver != resizer_->GetTarget())
     return;
 
-  if (params.receiver->GetProperty(internal::kContinueDragAfterReparent)) {
-    params.receiver->SetProperty(internal::kContinueDragAfterReparent, false);
+  if (wm::GetWindowSettings(params.receiver)->continue_drag_after_reparent()) {
+    wm::GetWindowSettings(params.receiver)->
+        set_continue_drag_after_reparent(false);
     AddHandlers(params.new_parent);
   } else {
     handler_->CompleteDrag(DRAG_COMPLETE, 0);

@@ -20,8 +20,8 @@
 #include "ash/test/shell_test_api.h"
 #include "ash/test/test_launcher_delegate.h"
 #include "ash/wm/panels/panel_layout_manager.h"
-#include "ash/wm/window_properties.h"
 #include "ash/wm/window_resizer.h"
+#include "ash/wm/window_settings.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "ui/aura/client/aura_constants.h"
@@ -176,7 +176,7 @@ class DockedWindowLayoutManagerTest
 
     if (window_type_ == aura::client::WINDOW_TYPE_PANEL) {
       ASSERT_NO_FATAL_FAILURE(DragStart(window));
-      EXPECT_TRUE(window->GetProperty(kPanelAttachedKey));
+      EXPECT_TRUE(wm::GetWindowSettings(window)->panel_attached());
 
       // Drag enough to detach since our tests assume panels to be initially
       // detached.
@@ -188,7 +188,7 @@ class DockedWindowLayoutManagerTest
       // The panel should be detached when the drag completes.
       DragEnd();
 
-      EXPECT_FALSE(window->GetProperty(kPanelAttachedKey));
+      EXPECT_FALSE(wm::GetWindowSettings(window)->panel_attached());
       EXPECT_EQ(internal::kShellWindowId_DefaultContainer,
                 window->parent()->id());
       EXPECT_EQ(root_window, window->GetRootWindow());

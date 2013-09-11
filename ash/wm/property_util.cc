@@ -37,22 +37,6 @@ void ClearRestoreBounds(aura::Window* window) {
   window->ClearProperty(aura::client::kRestoreBoundsKey);
 }
 
-void SetTrackedByWorkspace(aura::Window* window, bool value) {
-  window->SetProperty(internal::kWindowTrackedByWorkspaceKey, value);
-}
-
-bool GetTrackedByWorkspace(const aura::Window* window) {
-  return window->GetProperty(internal::kWindowTrackedByWorkspaceKey);
-}
-
-void SetIgnoredByShelf(aura::Window* window, bool value) {
-  window->SetProperty(internal::kIgnoredByShelfKey, value);
-}
-
-bool GetIgnoredByShelf(const aura::Window* window) {
-  return window->GetProperty(internal::kIgnoredByShelfKey);
-}
-
 void SetWindowAlwaysRestoresToRestoreBounds(aura::Window* window, bool value) {
   window->SetProperty(internal::kWindowRestoresToRestoreBounds, value);
 }

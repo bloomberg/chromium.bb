@@ -21,7 +21,7 @@
 #include "ash/wm/dock/docked_window_layout_manager.h"
 #include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/panels/panel_layout_manager.h"
-#include "ash/wm/window_properties.h"
+#include "ash/wm/window_settings.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "ui/aura/client/aura_constants.h"
@@ -185,7 +185,7 @@ class DockedWindowResizerTest
 
     if (window_type_ == aura::client::WINDOW_TYPE_PANEL) {
       ASSERT_NO_FATAL_FAILURE(DragStart(window));
-      EXPECT_TRUE(window->GetProperty(kPanelAttachedKey));
+      EXPECT_TRUE(wm::GetWindowSettings(window)->panel_attached());
 
       // Drag enough to detach since our tests assume panels to be initially
       // detached.
@@ -197,7 +197,7 @@ class DockedWindowResizerTest
       // The panel should be detached when the drag completes.
       DragEnd();
 
-      EXPECT_FALSE(window->GetProperty(kPanelAttachedKey));
+      EXPECT_FALSE(wm::GetWindowSettings(window)->panel_attached());
       EXPECT_EQ(internal::kShellWindowId_DefaultContainer,
                 window->parent()->id());
       EXPECT_EQ(root_window, window->GetRootWindow());
@@ -1040,7 +1040,7 @@ TEST_P(DockedWindowResizerTest, DragToShelf)
   if (test_panels()) {
     // The panel should be touching the shelf and attached.
     EXPECT_EQ(shelf_y, w1->bounds().bottom());
-    EXPECT_TRUE(w1->GetProperty(kPanelAttachedKey));
+    EXPECT_TRUE(wm::GetWindowSettings(w1.get())->panel_attached());
   } else {
     // The window should not be touching the shelf.
     EXPECT_EQ(shelf_y - kDistanceFromShelf, w1->bounds().bottom());

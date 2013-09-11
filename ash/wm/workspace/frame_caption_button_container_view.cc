@@ -6,7 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
-#include "ash/wm/property_util.h"
+#include "ash/wm/window_settings.h"
 #include "ash/wm/workspace/frame_maximize_button.h"
 #include "grit/ash_resources.h"
 #include "grit/ui_strings.h"  // Accessibility names
@@ -128,7 +128,8 @@ void FrameCaptionButtonContainerView::Layout() {
     // The new assets only make sense if the window is maximized or fullscreen
     // because we usually use a black header in this case.
     if ((frame_->IsMaximized() || frame_->IsFullscreen()) &&
-        GetTrackedByWorkspace(frame_->GetNativeWindow())) {
+        wm::GetWindowSettings(
+            frame_->GetNativeWindow())->tracked_by_workspace()) {
       SetButtonImages(size_button_,
                       IDR_AURA_WINDOW_MAXIMIZED_RESTORE2,
                       IDR_AURA_WINDOW_MAXIMIZED_RESTORE2_H,
