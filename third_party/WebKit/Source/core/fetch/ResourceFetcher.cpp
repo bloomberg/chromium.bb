@@ -660,7 +660,7 @@ ResourceRequestCachePolicy ResourceFetcher::resourceRequestCachePolicy(const Res
     if (type == Resource::MainResource) {
         FrameLoadType frameLoadType = frame()->loader()->loadType();
         bool isReload = frameLoadType == FrameLoadTypeReload || frameLoadType == FrameLoadTypeReloadFromOrigin;
-        if (request.httpMethod() == "POST" && (isReload || frameLoadType == FrameLoadTypeBackForward))
+        if (request.httpMethod() == "POST" && frameLoadType == FrameLoadTypeBackForward)
             return ReturnCacheDataDontLoad;
         if (!m_documentLoader->overrideEncoding().isEmpty() || frameLoadType == FrameLoadTypeBackForward)
             return ReturnCacheDataElseLoad;

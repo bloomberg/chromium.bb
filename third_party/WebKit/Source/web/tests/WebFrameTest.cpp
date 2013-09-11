@@ -3704,6 +3704,27 @@ TEST_F(WebFrameTest, BackToReload)
     m_webView = 0;
 }
 
+TEST_F(WebFrameTest, ReloadPost)
+{
+    registerMockedHttpURLLoad("reload_post.html");
+    m_webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "reload_post.html", true);
+    WebFrame* frame = m_webView->mainFrame();
+
+    FrameTestHelpers::loadFrame(m_webView->mainFrame(), "javascript:document.forms[0].submit()");
+    runPendingTasks();
+    Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
+    EXPECT_FALSE(frame->previousHistoryItem().isNull());
+    EXPECT_EQ(WebString::fromUTF8("POST"), frame->dataSource()->request().httpMethod());
+
+    frame->reload();
+    Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
+    EXPECT_EQ(WebURLRequest::ReloadIgnoringCacheData, frame->dataSource()->request().cachePolicy());
+    EXPECT_EQ(WebNavigationTypeFormResubmitted, frame->dataSource()->navigationType());
+
+    m_webView->close();
+    m_webView = 0;
+}
+
 class TestSameDocumentWebFrameClient : public WebFrameClient {
 public:
     TestSameDocumentWebFrameClient()
