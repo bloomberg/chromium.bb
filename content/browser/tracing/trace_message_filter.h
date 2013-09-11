@@ -14,7 +14,7 @@
 namespace content {
 
 // This class sends and receives trace messages on the browser process.
-// See also: trace_controller.h
+// See also: tracing_controller.h
 // See also: child_trace_message_filter.h
 class TraceMessageFilter : public BrowserMessageFilter {
  public:

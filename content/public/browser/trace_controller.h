@@ -12,6 +12,9 @@ namespace content {
 
 class TraceSubscriber;
 
+// Note: TraceController is going to be deprecated and replaced with
+// TracingController.
+//
 // TraceController is used on the browser processes to enable/disable
 // trace status and collect trace data. Only the browser UI thread is allowed
 // to interact with the TraceController object. All calls on the TraceSubscriber
