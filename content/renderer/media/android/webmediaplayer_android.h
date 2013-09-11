@@ -16,6 +16,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 #include "cc/layers/video_frame_provider.h"
+#include "content/common/media/media_player_messages_enums_android.h"
 #include "content/renderer/media/android/media_info_loader.h"
 #include "content/renderer/media/android/media_source_delegate.h"
 #include "content/renderer/media/android/stream_texture_factory_android.h"
@@ -398,7 +399,7 @@ class WebMediaPlayerAndroid
   scoped_ptr<MediaSourceDelegate,
              MediaSourceDelegate::Destroyer> media_source_delegate_;
 
-  media::MediaPlayerAndroid::SourceType source_type_;
+  MediaPlayerHostMsg_Initialize_Type player_type_;
 
   // Proxy object that delegates method calls on Render Thread.
   // This object is created on the Render Thread and is only called in the

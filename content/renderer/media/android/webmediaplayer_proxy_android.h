@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/time/time.h"
+#include "content/common/media/media_player_messages_enums_android.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "media/base/android/demuxer_stream_player_params.h"
 #include "media/base/android/media_player_android.h"
@@ -38,7 +39,7 @@ class WebMediaPlayerProxyAndroid : public RenderViewObserver {
   // Initializes a MediaPlayerAndroid object in browser process.
   void Initialize(int player_id,
                   const GURL& url,
-                  media::MediaPlayerAndroid::SourceType source_type,
+                  MediaPlayerHostMsg_Initialize_Type type,
                   const GURL& first_party_for_cookies);
 
   // Starts the player.

@@ -15,10 +15,15 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "media/base/android/media_drm_bridge.h"
+#include "media/base/android/media_player_bridge.h"
+#include "media/base/android/media_source_player.h"
 #include "media/base/media_switches.h"
 
 using media::MediaDrmBridge;
 using media::MediaPlayerAndroid;
+using media::MediaPlayerBridge;
+using media::MediaPlayerManager;
+using media::MediaSourcePlayer;
 
 // Threshold on the number of media players per renderer before we start
 // attempting to release inactive media players.
@@ -40,6 +45,33 @@ BrowserMediaPlayerManager* BrowserMediaPlayerManager::Create(
     return g_factory(rvh);
   return new BrowserMediaPlayerManager(rvh);
 }
+
+#if !defined(GOOGLE_TV)
+// static
+MediaPlayerAndroid* BrowserMediaPlayerManager::CreateMediaPlayer(
+    int player_id,
+    const GURL& url,
+    MediaPlayerHostMsg_Initialize_Type type,
+    const GURL& first_party_for_cookies,
+    bool hide_url_log,
+    MediaPlayerManager* manager) {
+  switch (type) {
+    case MEDIA_PLAYER_TYPE_URL: {
+      MediaPlayerBridge* media_player_bridge = new MediaPlayerBridge(
+          player_id, url, first_party_for_cookies, hide_url_log, manager);
+      media_player_bridge->Initialize();
+      return media_player_bridge;
+    }
+
+    case MEDIA_PLAYER_TYPE_MEDIA_SOURCE: {
+      return new MediaSourcePlayer(player_id, manager);
+    }
+  }
+
+  NOTREACHED();
+  return NULL;
+}
+#endif
 
 BrowserMediaPlayerManager::BrowserMediaPlayerManager(
     RenderViewHost* render_view_host)
@@ -374,13 +406,13 @@ void BrowserMediaPlayerManager::OnExitFullscreen(int player_id) {
 void BrowserMediaPlayerManager::OnInitialize(
     int player_id,
     const GURL& url,
-    media::MediaPlayerAndroid::SourceType source_type,
+    MediaPlayerHostMsg_Initialize_Type type,
     const GURL& first_party_for_cookies) {
   RemovePlayer(player_id);
 
   RenderProcessHost* host = render_view_host()->GetProcess();
-  AddPlayer(media::MediaPlayerAndroid::Create(
-      player_id, url, source_type, first_party_for_cookies,
+  AddPlayer(CreateMediaPlayer(
+      player_id, url, type, first_party_for_cookies,
       host->GetBrowserContext()->IsOffTheRecord(), this));
 }
 

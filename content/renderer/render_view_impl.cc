@@ -2993,9 +2993,11 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
 
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
 #if defined(ENABLE_WEBRTC)
-  EnsureMediaStreamClient();
+  if (!InitializeMediaStreamClient())
+    return NULL;
+
 #if !defined(GOOGLE_TV)
-  if (media_stream_client_ && media_stream_client_->IsMediaStream(url)) {
+  if (media_stream_client_->IsMediaStream(url)) {
 #if defined(OS_ANDROID) && defined(ARCH_CPU_ARMEL)
     bool found_neon =
         (android_getCpuFeatures() & ANDROID_CPU_ARM_FEATURE_NEON) != 0;
@@ -4052,27 +4054,31 @@ BrowserPluginManager* RenderViewImpl::GetBrowserPluginManager() {
   return browser_plugin_manager_.get();
 }
 
-void RenderViewImpl::EnsureMediaStreamClient() {
+bool RenderViewImpl::InitializeMediaStreamClient() {
+  if (media_stream_client_)
+    return true;
+
   if (!RenderThreadImpl::current())  // Will be NULL during unit tests.
-    return;
+    return false;
 
 #if defined(OS_ANDROID)
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableWebRTC))
-    return;
+    return false;
 #endif
 
 #if defined(ENABLE_WEBRTC)
   if (!media_stream_dispatcher_)
     media_stream_dispatcher_ = new MediaStreamDispatcher(this);
 
-  if (!media_stream_client_) {
-    MediaStreamImpl* media_stream_impl = new MediaStreamImpl(
-        this,
-        media_stream_dispatcher_,
-        RenderThreadImpl::current()->GetMediaStreamDependencyFactory());
-    media_stream_client_ = media_stream_impl;
-    web_user_media_client_ = media_stream_impl;
-  }
+  MediaStreamImpl* media_stream_impl = new MediaStreamImpl(
+      this,
+      media_stream_dispatcher_,
+      RenderThreadImpl::current()->GetMediaStreamDependencyFactory());
+  media_stream_client_ = media_stream_impl;
+  web_user_media_client_ = media_stream_impl;
+  return true;
+#else
+  return false;
 #endif
 }
 
@@ -6221,7 +6227,10 @@ WebKit::WebPageVisibilityState RenderViewImpl::visibilityState() const {
 }
 
 WebKit::WebUserMediaClient* RenderViewImpl::userMediaClient() {
-  EnsureMediaStreamClient();
+  // This can happen in tests, in which case it's OK to return NULL.
+  if (!InitializeMediaStreamClient())
+    return NULL;
+
   return web_user_media_client_;
 }
 

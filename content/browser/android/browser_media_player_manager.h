@@ -15,6 +15,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 #include "content/browser/android/content_video_view.h"
+#include "content/common/media/media_player_messages_enums_android.h"
 #include "content/public/browser/render_view_host_observer.h"
 #include "media/base/android/demuxer_stream_player_params.h"
 #include "media/base/android/media_player_android.h"
@@ -114,7 +115,7 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   virtual void OnInitialize(
       int player_id,
       const GURL& url,
-      media::MediaPlayerAndroid::SourceType source_type,
+      MediaPlayerHostMsg_Initialize_Type type,
       const GURL& first_party_for_cookies);
   virtual void OnStart(int player_id);
   virtual void OnSeek(int player_id, base::TimeDelta time);
@@ -157,6 +158,21 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   void RemoveDrmBridge(int media_keys_id);
 
  private:
+  // Constructs a MediaPlayerAndroid object. Declared static to permit embedders
+  // to override functionality.
+  //
+  // Objects must call |manager->RequestMediaResources()| before decoding
+  // and |manager->ReleaseMediaSources()| after finishing. This allows the
+  // manager to track decoding resources across the process and free them as
+  // needed.
+  static media::MediaPlayerAndroid* CreateMediaPlayer(
+      int player_id,
+      const GURL& url,
+      MediaPlayerHostMsg_Initialize_Type type,
+      const GURL& first_party_for_cookies,
+      bool hide_url_log,
+      media::MediaPlayerManager* manager);
+
   // An array of managed players.
   ScopedVector<media::MediaPlayerAndroid> players_;
 

@@ -55,10 +55,10 @@ bool WebMediaPlayerProxyAndroid::OnMessageReceived(const IPC::Message& msg) {
 void WebMediaPlayerProxyAndroid::Initialize(
     int player_id,
     const GURL& url,
-    media::MediaPlayerAndroid::SourceType source_type,
+    MediaPlayerHostMsg_Initialize_Type type,
     const GURL& first_party_for_cookies) {
   Send(new MediaPlayerHostMsg_Initialize(
-      routing_id(), player_id, url, source_type, first_party_for_cookies));
+      routing_id(), player_id, url, type, first_party_for_cookies));
 }
 
 void WebMediaPlayerProxyAndroid::Start(int player_id) {

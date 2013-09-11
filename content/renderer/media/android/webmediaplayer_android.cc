@@ -97,7 +97,7 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
       demuxer_(NULL),
       media_stream_client_(NULL),
 #endif  // defined(GOOGLE_TV)
-      source_type_(MediaPlayerAndroid::SOURCE_TYPE_URL),
+      player_type_(MEDIA_PLAYER_TYPE_URL),
       proxy_(proxy),
       current_time_(0),
       media_log_(media_log) {
@@ -173,7 +173,7 @@ WebMediaPlayerAndroid::~WebMediaPlayerAndroid() {
   if (base::MessageLoop::current())
     base::MessageLoop::current()->RemoveDestructionObserver(this);
 
-  if (source_type_ == MediaPlayerAndroid::SOURCE_TYPE_MSE && delegate_)
+  if (player_type_ == MEDIA_PLAYER_TYPE_MEDIA_SOURCE && delegate_)
     delegate_->PlayerGone(this);
 
 #if defined(GOOGLE_TV)
@@ -198,26 +198,25 @@ WebMediaPlayerAndroid::~WebMediaPlayerAndroid() {
 void WebMediaPlayerAndroid::load(LoadType load_type,
                                  const WebKit::WebURL& url,
                                  CORSMode cors_mode) {
-#if defined(GOOGLE_TV)
-  // TODO(acolwell): Remove this hack once Blink-side changes land.
-  if (load_type == LoadTypeURL && media_stream_client_)
-    load_type = LoadTypeMediaStream;
-#endif
 
   switch (load_type) {
     case LoadTypeURL:
-      source_type_ = MediaPlayerAndroid::SOURCE_TYPE_URL;
+      player_type_ = MEDIA_PLAYER_TYPE_URL;
       break;
+
     case LoadTypeMediaSource:
-      source_type_ = MediaPlayerAndroid::SOURCE_TYPE_MSE;
+      player_type_ = MEDIA_PLAYER_TYPE_MEDIA_SOURCE;
       break;
+
     case LoadTypeMediaStream:
 #if defined(GOOGLE_TV)
-      source_type_ = MediaPlayerAndroid::SOURCE_TYPE_STREAM;
-#else
-      source_type_ = MediaPlayerAndroid::SOURCE_TYPE_URL;
-#endif
+      player_type_ = MEDIA_PLAYER_TYPE_MEDIA_STREAM;
       break;
+#else
+      CHECK(false) << "WebMediaPlayerAndroid doesn't support MediaStream on "
+                      "this platform";
+      return;
+#endif
   }
 
   has_media_metadata_ = false;
@@ -229,12 +228,12 @@ void WebMediaPlayerAndroid::load(LoadType load_type,
                                         base::Unretained(decryptor_.get()));
   }
 
-  if (source_type_ != MediaPlayerAndroid::SOURCE_TYPE_URL) {
+  if (player_type_ != MEDIA_PLAYER_TYPE_URL) {
     has_media_info_ = true;
     media_source_delegate_.reset(
         new MediaSourceDelegate(proxy_, player_id_, media_loop_, media_log_));
     // |media_source_delegate_| is owned, so Unretained() is safe here.
-    if (source_type_ == MediaPlayerAndroid::SOURCE_TYPE_MSE) {
+    if (player_type_ == MEDIA_PLAYER_TYPE_MEDIA_SOURCE) {
       media_source_delegate_->InitializeMediaSource(
           base::Bind(&WebMediaPlayerAndroid::OnMediaSourceOpened,
                      base::Unretained(this)),
@@ -247,7 +246,7 @@ void WebMediaPlayerAndroid::load(LoadType load_type,
 #if defined(GOOGLE_TV)
     // TODO(xhwang): Pass set_decryptor_ready_cb in InitializeMediaStream() to
     // enable ClearKey support for Google TV.
-    if (source_type_ == MediaPlayerAndroid::SOURCE_TYPE_STREAM) {
+    if (player_type_ == MEDIA_PLAYER_TYPE_MEDIA_STREAM) {
       media_source_delegate_->InitializeMediaStream(
           demuxer_,
           base::Bind(&WebMediaPlayerAndroid::UpdateNetworkState,
@@ -273,7 +272,7 @@ void WebMediaPlayerAndroid::load(LoadType load_type,
 void WebMediaPlayerAndroid::InitializeMediaPlayer(const WebURL& url) {
   url_ = url;
   GURL first_party_url = frame_->document().firstPartyForCookies();
-  proxy_->Initialize(player_id_, url, source_type_, first_party_url);
+  proxy_->Initialize(player_id_, url, player_type_, first_party_url);
   if (manager_->IsInFullscreen(frame_))
     proxy_->EnterFullscreen(player_id_);
 
@@ -490,7 +489,7 @@ bool WebMediaPlayerAndroid::hasSingleSecurityOrigin() const {
   if (info_loader_)
     return info_loader_->HasSingleOrigin();
   // The info loader may have failed.
-  if (source_type_ == MediaPlayerAndroid::SOURCE_TYPE_URL)
+  if (player_type_ == MEDIA_PLAYER_TYPE_URL)
     return false;
   return true;
 }
@@ -554,7 +553,7 @@ void WebMediaPlayerAndroid::OnMediaMetadataChanged(
     // Do not ever signal durationchanged on metadata change in MSE case
     // because OnDurationChange() handles this.
     if (ready_state_ > WebMediaPlayer::ReadyStateHaveNothing &&
-        source_type_ != MediaPlayerAndroid::SOURCE_TYPE_MSE) {
+        player_type_ != MEDIA_PLAYER_TYPE_MEDIA_SOURCE) {
       need_to_signal_duration_changed = true;
     }
   }
@@ -714,8 +713,8 @@ void WebMediaPlayerAndroid::OnMediaConfigRequest() {
 }
 
 void WebMediaPlayerAndroid::OnDurationChange(const base::TimeDelta& duration) {
-  // Only MSE |source_type_| registers this callback.
-  DCHECK(source_type_ == MediaPlayerAndroid::SOURCE_TYPE_MSE);
+  // Only MSE |player_type_| registers this callback.
+  DCHECK_EQ(player_type_, MEDIA_PLAYER_TYPE_MEDIA_SOURCE);
 
   // Cache the new duration value and trust it over any subsequent duration
   // values received in OnMediaMetadataChanged().

@@ -11,8 +11,10 @@
 #include "base/basictypes.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
+#include "content/common/media/media_player_messages_enums_android.h"
 #include "ipc/ipc_message_macros.h"
 #include "media/base/android/media_player_android.h"
+#include "media/base/android/demuxer_stream_player_params.h"
 #include "media/base/media_keys.h"
 #include "ui/gfx/rect_f.h"
 #include "url/gurl.h"
@@ -20,8 +22,6 @@
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 #define IPC_MESSAGE_START MediaPlayerMsgStart
-
-#include "media/base/android/demuxer_stream_player_params.h"
 
 IPC_ENUM_TRAITS(media::AudioCodec)
 IPC_ENUM_TRAITS(media::DemuxerStream::Status)
@@ -67,7 +67,7 @@ IPC_STRUCT_TRAITS_BEGIN(media::SubsampleEntry)
   IPC_STRUCT_TRAITS_MEMBER(cypher_bytes)
 IPC_STRUCT_TRAITS_END()
 
-IPC_ENUM_TRAITS(media::MediaPlayerAndroid::SourceType)
+IPC_ENUM_TRAITS(MediaPlayerHostMsg_Initialize_Type)
 
 // Messages for notifying the render process of media playback status -------
 
@@ -158,7 +158,7 @@ IPC_MESSAGE_ROUTED4(
     MediaPlayerHostMsg_Initialize,
     int /* player_id */,
     GURL /* url */,
-    media::MediaPlayerAndroid::SourceType /* source_type */,
+    MediaPlayerHostMsg_Initialize_Type /* type */,
     GURL /* first_party_for_cookies */)
 
 // Pause the player.

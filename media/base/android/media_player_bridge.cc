@@ -12,7 +12,6 @@
 #include "jni/MediaPlayerBridge_jni.h"
 #include "media/base/android/media_player_manager.h"
 #include "media/base/android/media_resource_getter.h"
-#include "media/base/android/media_source_player.h"
 
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ScopedJavaLocalRef;
@@ -21,32 +20,6 @@ using base::android::ScopedJavaLocalRef;
 static const int kTimeUpdateInterval = 250;
 
 namespace media {
-
-#if !defined(GOOGLE_TV)
-// static
-MediaPlayerAndroid* MediaPlayerAndroid::Create(
-    int player_id,
-    const GURL& url,
-    SourceType source_type,
-    const GURL& first_party_for_cookies,
-    bool hide_url_log,
-    MediaPlayerManager* manager) {
-  if (source_type == SOURCE_TYPE_URL) {
-    MediaPlayerBridge* media_player_bridge = new MediaPlayerBridge(
-        player_id,
-        url,
-        first_party_for_cookies,
-        hide_url_log,
-        manager);
-    media_player_bridge->Initialize();
-    return media_player_bridge;
-  } else {
-    return new MediaSourcePlayer(
-        player_id,
-        manager);
-  }
-}
-#endif
 
 MediaPlayerBridge::MediaPlayerBridge(
     int player_id,
