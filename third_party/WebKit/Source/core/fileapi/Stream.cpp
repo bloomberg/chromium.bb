@@ -62,6 +62,11 @@ void Stream::finalize()
     BlobRegistry::finalizeStream(m_internalURL);
 }
 
+void Stream::abort()
+{
+    BlobRegistry::abortStream(m_internalURL);
+}
+
 Stream::~Stream()
 {
     BlobRegistry::unregisterStreamURL(m_internalURL);

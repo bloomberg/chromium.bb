@@ -35,12 +35,14 @@
 #include "V8Document.h"
 #include "V8FormData.h"
 #include "V8HTMLDocument.h"
+#include "V8Stream.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8Utilities.h"
 #include "bindings/v8/custom/V8ArrayBufferCustom.h"
 #include "bindings/v8/custom/V8ArrayBufferViewCustom.h"
 #include "core/dom/Document.h"
+#include "core/fileapi/Stream.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/xml/XMLHttpRequest.h"
@@ -132,6 +134,13 @@ void V8XMLHttpRequest::responseAttributeGetterCustom(v8::Local<v8::String> name,
         {
             Blob* blob = xmlHttpRequest->responseBlob();
             v8SetReturnValueFast(info, blob, xmlHttpRequest);
+            return;
+        }
+
+    case XMLHttpRequest::ResponseTypeStream:
+        {
+            Stream* stream = xmlHttpRequest->responseStream();
+            v8SetReturnValueFast(info, stream, xmlHttpRequest);
             return;
         }
 

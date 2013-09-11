@@ -58,6 +58,9 @@ public:
     // Mark this stream finalized so that a reader of this stream is notified
     // of EOF.
     void finalize();
+    // Mark this stream finalized due to an error so that a reader of this
+    // stream is notified of EOF due to the error.
+    void abort();
 
     // Allow an external reader class to mark this object neutered so that they
     // won't load the corresponding stream again. All stream objects are

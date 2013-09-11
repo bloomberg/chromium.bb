@@ -46,6 +46,7 @@ class ExceptionState;
 class ResourceRequest;
 class SecurityOrigin;
 class SharedBuffer;
+class Stream;
 class TextResourceDecoder;
 class ThreadableLoader;
 
@@ -72,7 +73,8 @@ public:
         ResponseTypeJSON,
         ResponseTypeDocument,
         ResponseTypeBlob,
-        ResponseTypeArrayBuffer
+        ResponseTypeArrayBuffer,
+        ResponseTypeStream
     };
 
     enum DropProtection {
@@ -116,6 +118,7 @@ public:
     ScriptString responseJSONSource();
     Document* responseXML(ExceptionState&);
     Blob* responseBlob();
+    Stream* responseStream();
     unsigned long timeout() const { return m_timeoutMilliseconds; }
     void setTimeout(unsigned long timeout, ExceptionState&);
 
@@ -196,6 +199,7 @@ private:
     bool m_includeCredentials;
     unsigned long m_timeoutMilliseconds;
     RefPtr<Blob> m_responseBlob;
+    RefPtr<Stream> m_responseStream;
 
     RefPtr<ThreadableLoader> m_loader;
     State m_state;

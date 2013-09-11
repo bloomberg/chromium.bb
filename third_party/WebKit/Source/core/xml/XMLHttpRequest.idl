@@ -32,7 +32,8 @@ enum XMLHttpRequestResponseType {
     "blob",
     "document",
     "json",
-    "text"
+    "text",
+    "stream"
 };
 
 [

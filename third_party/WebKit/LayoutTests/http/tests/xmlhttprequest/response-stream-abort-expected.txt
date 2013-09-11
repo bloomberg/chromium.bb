@@ -1,0 +1,4 @@
+
+PASS Test aborting XMLHttpRequest with responseType set to 'stream' in LOADING state. 
+PASS Test aborting XMLHttpRequest with responseType set to 'stream' in DONE state. 
+
