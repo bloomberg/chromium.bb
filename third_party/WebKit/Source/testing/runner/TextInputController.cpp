@@ -85,14 +85,35 @@ void TextInputController::setMarkedText(const CppArgumentList& arguments, CppVar
 {
     result->setNull();
 
-    if (arguments.size() >= 3 && arguments[0].isString()
-        && arguments[1].isNumber() && arguments[2].isNumber()) {
-        WebVector<WebCompositionUnderline> underlines;
-        m_webView->setComposition(WebString::fromUTF8(arguments[0].toString()),
-                                  underlines,
-                                  arguments[1].toInt32(),
-                                  arguments[1].toInt32() + arguments[2].toInt32());
+    if (arguments.size() < 3 || !arguments[0].isString()
+        || !arguments[1].isNumber() || !arguments[2].isNumber())
+        return;
+
+    WebString text(WebString::fromUTF8(arguments[0].toString()));
+    int start = arguments[1].toInt32();
+    int length = arguments[2].toInt32();
+
+    // Split underline into up to 3 elements (before, selection, and after).
+    vector<WebCompositionUnderline> underlines;
+    WebCompositionUnderline underline;
+    if (!start) {
+        underline.endOffset = length;
+    } else {
+        underline.endOffset = start;
+        underlines.push_back(underline);
+        underline.startOffset = start;
+        underline.endOffset = start + length;
     }
+    underline.thick = true;
+    underlines.push_back(underline);
+    if (start + length < static_cast<int>(text.length())) {
+        underline.startOffset = underline.endOffset;
+        underline.endOffset = text.length();
+        underline.thick = false;
+        underlines.push_back(underline);
+    }
+
+    m_webView->setComposition(text, underlines, start, start + length);
 }
 
 void TextInputController::unmarkText(const CppArgumentList&, CppVariant* result)
