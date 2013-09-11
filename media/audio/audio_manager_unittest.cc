@@ -11,6 +11,10 @@
 #include "media/audio/linux/audio_manager_linux.h"
 #endif  // defined(OS_LINUX)
 
+#if defined(OS_WIN)
+#include "media/audio/win/audio_manager_win.h"
+#endif  // defined(OS_WIN)
+
 #if defined(USE_PULSEAUDIO)
 #include "media/audio/pulse/audio_manager_pulse.h"
 #endif  // defined(USE_PULSEAUDIO)
@@ -31,7 +35,30 @@ void GetAudioOutputDeviceNamesImpl(AudioManager* audio_manager) {
   }
 }
 
-TEST(AudioManagerTest, GetAudioOutputDeviceNames) {
+// So that tests herein can be friends of AudioManagerWin.
+//
+// TODO(joi): Make this go away by unifying audio_manager_unittest.cc
+// and audio_input_device_unittest.cc
+class AudioManagerTest : public ::testing::Test {
+ public:
+  bool SetupForSecondTest(AudioManager* amw) {
+#if defined(OS_WIN)
+    AudioManagerWin* audio_manager_win = static_cast<AudioManagerWin*>(amw);
+    if (audio_manager_win->enumeration_type() ==
+        AudioManagerWin::kWaveEnumeration) {
+      // This will be true only if running on Windows XP.
+      VLOG(2) << "AudioManagerWin on WinXP; nothing more to test.";
+    } else {
+      VLOG(2) << "Testing AudioManagerWin in fallback WinXP mode.";
+      audio_manager_win->SetEnumerationType(AudioManagerWin::kWaveEnumeration);
+      return true;
+    }
+#endif  // defined(OS_WIN)
+    return false;
+  }
+};
+
+TEST_F(AudioManagerTest, GetAudioOutputDeviceNames) {
   // On Linux, we may be able to test both the Alsa and Pulseaudio
   // versions of the audio manager.
 #if defined(USE_PULSEAUDIO)
@@ -57,9 +84,24 @@ TEST(AudioManagerTest, GetAudioOutputDeviceNames) {
   scoped_ptr<AudioManager> audio_manager(AudioManager::Create());
   GetAudioOutputDeviceNamesImpl(audio_manager.get());
 #endif  // defined(OS_MACOSX)
+
+#if defined(OS_WIN)
+  {
+    // TODO(joi): Unify the tests in audio_input_device_unittest.cc
+    // with the tests in this file, and reuse the Windows-specific
+    // bits from that file.
+    VLOG(2) << "Testing AudioManagerWin in its default mode.";
+    scoped_ptr<AudioManager> audio_manager_win(AudioManager::Create());
+    GetAudioOutputDeviceNamesImpl(audio_manager_win.get());
+
+    if (SetupForSecondTest(audio_manager_win.get())) {
+      GetAudioOutputDeviceNamesImpl(audio_manager_win.get());
+    }
+  }
+#endif  // defined(OS_WIN)
 }
 
-TEST(AudioManagerTest, GetDefaultOutputStreamParameters) {
+TEST_F(AudioManagerTest, GetDefaultOutputStreamParameters) {
 #if defined(OS_WIN) || defined(OS_MACOSX)
   scoped_ptr<AudioManager> audio_manager(AudioManager::Create());
   ASSERT_TRUE(audio_manager);
@@ -71,7 +113,7 @@ TEST(AudioManagerTest, GetDefaultOutputStreamParameters) {
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 }
 
-TEST(AudioManagerTest, GetAssociatedOutputDeviceID) {
+TEST_F(AudioManagerTest, GetAssociatedOutputDeviceID) {
 #if defined(OS_WIN) || defined(OS_MACOSX)
   scoped_ptr<AudioManager> audio_manager(AudioManager::Create());
   ASSERT_TRUE(audio_manager);
@@ -99,4 +141,5 @@ TEST(AudioManagerTest, GetAssociatedOutputDeviceID) {
   EXPECT_TRUE(found_an_associated_device);
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 }
+
 }  // namespace media

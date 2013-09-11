@@ -164,7 +164,7 @@ TEST_F(AudioInputDeviceTest, WinXPDeviceIdUnchanged) {
   }
 }
 
-TEST_F(AudioInputDeviceTest, ConvertToWinXPDeviceId) {
+TEST_F(AudioInputDeviceTest, ConvertToWinXPInputDeviceId) {
   if (!CanRunAudioTest())
     return;
 
