@@ -9,8 +9,6 @@ PASS fooConstructor.prototype.thisIsPrototype is true
 PASS document.register("x-bad-a", HTMLElement) threw exception NotSupportedError: Failed to call 'register' on 'Document' for type 'x-bad-a': prototype is already in-use as an interface prototype object..
 PASS document.register("x-bad-b", fooConstructor) threw exception NotSupportedError: Failed to call 'register' on 'Document' for type 'x-bad-b': prototype is already in-use as an interface prototype object..
 PASS document.register("x-bad-c", { prototype: proto }) threw exception NotSupportedError: Failed to call 'register' on 'Document' for type 'x-bad-c': prototype constructor property is not configurable..
-PASS document.register("x-bad-d", { prototype: {} }) threw exception InvalidStateError: Failed to call 'register' on 'Document' for type 'x-bad-d': the prototype does not extend an HTML or SVG element..
-PASS document.register("x-bad-e", { prototype: Object.create(Document.prototype) }) threw exception InvalidStateError: Failed to call 'register' on 'Document' for type 'x-bad-e': the prototype does not extend an HTML or SVG element..
 PASS fooConstructor() threw exception TypeError: DOM object constructor cannot be called as a function..
 PASS createdFoo.__proto__ is fooConstructor.prototype
 PASS createdFoo.constructor is fooConstructor

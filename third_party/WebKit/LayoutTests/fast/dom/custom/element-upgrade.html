@@ -26,14 +26,14 @@ var callCount = 0;
 proto.createdCallback = function () {
   callCount++;
 };
-var B = document.register('x-b', {prototype: proto});
+var B = document.register('x-b', {extends: 'span', prototype: proto});
 shouldBeTrue('element instanceof B');
 shouldBe('callCount', '1');
 
 // Scenario C: The candidate is a custom tag but the definition is a
 // type extension. Upgrade should not happen.
 element = document.createElement('x-c');
-var C = document.register('x-c', {prototype: Object.create(HTMLSpanElement.prototype)});
+var C = document.register('x-c', {extends: 'span', prototype: Object.create(HTMLSpanElement.prototype)});
 shouldBeFalse('element instanceof C');
 shouldBe('Object.getPrototypeOf(element)', 'HTMLElement.prototype');
 
@@ -41,7 +41,7 @@ shouldBe('Object.getPrototypeOf(element)', 'HTMLElement.prototype');
 // extends a different tag. Upgrade should not happen.
 document.body.appendChild(host);
 host.innerHTML = '<span is="x-d"></span>';
-var D = document.register('x-d', {prototype: Object.create(HTMLDivElement.prototype)});
+var D = document.register('x-d', {extends: 'div', prototype: Object.create(HTMLDivElement.prototype)});
 shouldBeFalse('host.firstChild instanceof D');
 shouldBe('document.querySelector(":unresolved")', 'host.firstChild');
 

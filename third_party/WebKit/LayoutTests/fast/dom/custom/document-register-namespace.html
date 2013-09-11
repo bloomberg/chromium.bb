@@ -60,12 +60,6 @@ shouldBeFalse('notSVG2 instanceof CustomSVGElement');
 shouldBeFalse('notSVG2 instanceof HTMLUnknownElement');
 shouldBeTrue('notSVG2 instanceof HTMLElement');
 shouldBe('Object.getPrototypeOf(notSVG2)', 'HTMLElement.prototype');
-
-// Trying to extend something outside HTML or SVG should throw a NAMESPACE_ERR
-shouldThrow(
-    'document.register("xml-foo", { prototype: Object.create(Element.prototype) })',
-    '"NamespaceError: Failed to call \'register\' on \'Document\' for type \'xml-foo\': the prototype does not extend an HTML or SVG element."');
-
 </script>
 <script src="../../js/resources/js-test-post.js"></script>
 </body>

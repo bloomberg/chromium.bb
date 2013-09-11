@@ -1,8 +1,9 @@
-Fuzzing document.register() through getters. PASS uless crash.
+Fuzzing document.register() through getters. PASS unless crash.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
+Constructor object isn't created.
 Constructor object isn't created.
 PASS successfullyParsed is true
 

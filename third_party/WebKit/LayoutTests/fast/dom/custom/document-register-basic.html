@@ -32,10 +32,6 @@ var proto = Object.create(HTMLElement.prototype, {
   constructor: {configurable: false, writable: true}
 });
 shouldThrow('document.register("x-bad-c", { prototype: proto })', '"NotSupportedError: Failed to call \'register\' on \'Document\' for type \'x-bad-c\': prototype constructor property is not configurable."');
-// Bad prototype: missing __proto__
-shouldThrow('document.register("x-bad-d", { prototype: {} })', '"InvalidStateError: Failed to call \'register\' on \'Document\' for type \'x-bad-d\': the prototype does not extend an HTML or SVG element."');
-// Bad prototype: wrong __proto__
-shouldThrow('document.register("x-bad-e", { prototype: Object.create(Document.prototype) })', '"InvalidStateError: Failed to call \'register\' on \'Document\' for type \'x-bad-e\': the prototype does not extend an HTML or SVG element."');
 // Call as function
 shouldThrow('fooConstructor()', '"TypeError: DOM object constructor cannot be called as a function."')
 

@@ -78,16 +78,13 @@ CustomElementDefinition* CustomElementRegistry::registerElement(Document* docume
         return 0;
     }
 
-    if (!constructorBuilder->validateOptions(type, es))
+    QualifiedName tagName = nullQName();
+    if (!constructorBuilder->validateOptions(type, tagName, es))
         return 0;
 
-    QualifiedName tagName = nullQName();
-    if (!constructorBuilder->findTagName(type, tagName)) {
-        CustomElementException::throwException(CustomElementException::PrototypeDoesNotExtendHTMLElementSVGElementNamespace, type, es);
-        return 0;
-    }
     ASSERT(tagName.namespaceURI() == HTMLNames::xhtmlNamespaceURI || tagName.namespaceURI() == SVGNames::svgNamespaceURI);
 
+    // FIXME: This should be done earlier in validateOptions.
     if (m_registeredTypeNames.contains(type)) {
         CustomElementException::throwException(CustomElementException::TypeAlreadyRegistered, type, es);
         return 0;

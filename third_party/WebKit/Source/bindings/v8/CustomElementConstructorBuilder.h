@@ -67,8 +67,7 @@ public:
     // (returns false), the calls must stop.
 
     bool isFeatureAllowed() const;
-    bool validateOptions(const AtomicString& type, ExceptionState&);
-    bool findTagName(const AtomicString& customElementType, QualifiedName& tagName);
+    bool validateOptions(const AtomicString& type, QualifiedName& tagName, ExceptionState&);
     PassRefPtr<CustomElementLifecycleCallbacks> createCallbacks();
     bool createConstructor(Document*, CustomElementDefinition*, ExceptionState&);
     bool didRegisterDefinition(CustomElementDefinition*) const;
@@ -79,7 +78,6 @@ public:
     ScriptValue bindingsReturnValue() const;
 
 private:
-    static WrapperTypeInfo* findWrapperType(v8::Handle<v8::Value> chain);
     bool hasValidPrototypeChainFor(WrapperTypeInfo*) const;
     bool prototypeIsValid(const AtomicString& type, ExceptionState&) const;
     v8::Handle<v8::Function> retrieveCallback(v8::Isolate*, const char* name);
@@ -88,7 +86,6 @@ private:
     const Dictionary* m_options;
     v8::Handle<v8::Object> m_prototype;
     WrapperTypeInfo* m_wrapperType;
-    AtomicString m_namespaceURI;
     v8::Handle<v8::Function> m_constructor;
     RefPtr<V8CustomElementLifecycleCallbacks> m_callbacks;
 };

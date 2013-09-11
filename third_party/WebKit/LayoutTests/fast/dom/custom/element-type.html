@@ -25,11 +25,11 @@ function onCreate(msg) {
 
 var protoX = Object.create(HTMLSpanElement.prototype);
 protoX.createdCallback = onCreate('X');
-var X = document.register('x-x', {prototype: protoX});
+var X = document.register('x-x', {extends: 'span', prototype: protoX});
 
 var protoY = Object.create(HTMLSpanElement.prototype);
 protoY.createdCallback = onCreate('Y');
-var Y = document.register('x-y', {prototype: protoY});
+var Y = document.register('x-y', {extends: 'span', prototype: protoY});
 
 var a = document.querySelector('#a');
 shouldBe('a.getAttribute("is")', '"x-y"');

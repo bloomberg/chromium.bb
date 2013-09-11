@@ -69,12 +69,12 @@ bool CustomElementConstructorBuilder::isFeatureAllowed() const
     return !DOMWrapperWorld::isolatedWorld(m_context);
 }
 
-bool CustomElementConstructorBuilder::validateOptions(const AtomicString& type, ExceptionState& es)
+bool CustomElementConstructorBuilder::validateOptions(const AtomicString& type, QualifiedName& tagName, ExceptionState& es)
 {
     ASSERT(m_prototype.IsEmpty());
 
     ScriptValue prototypeScriptValue;
-    if (m_options->get("prototype", prototypeScriptValue)) {
+    if (m_options->get("prototype", prototypeScriptValue) && !prototypeScriptValue.isNull()) {
         m_prototype = prototypeScriptValue.v8Value().As<v8::Object>();
         if (m_prototype.IsEmpty()) {
             CustomElementException::throwException(CustomElementException::PrototypeNotAnObject, type, es);
@@ -82,61 +82,51 @@ bool CustomElementConstructorBuilder::validateOptions(const AtomicString& type, 
         }
     } else {
         m_prototype = v8::Object::New();
-        m_prototype->SetPrototype(V8PerContextData::from(m_context)->prototypeForType(&V8HTMLElement::info));
+        v8::Local<v8::Object> basePrototype = V8PerContextData::from(m_context)->prototypeForType(&V8HTMLElement::info);
+        if (!basePrototype.IsEmpty())
+            m_prototype->SetPrototype(basePrototype);
     }
+
+    String extends;
+    bool extendsProvidedAndNonNull = m_options->get("extends", extends);
 
     if (!V8PerContextData::from(m_context)) {
         // FIXME: This should generate an InvalidContext exception at a later point.
         CustomElementException::throwException(CustomElementException::ContextDestroyedCheckingPrototype, type, es);
         return false;
     }
-    if (hasValidPrototypeChainFor(&V8HTMLElement::info)) {
-        m_namespaceURI = HTMLNames::xhtmlNamespaceURI;
-        return true;
-    }
-    if (hasValidPrototypeChainFor(&V8SVGElement::info)) {
-        m_namespaceURI = SVGNames::svgNamespaceURI;
-        return true;
-    }
-    if (hasValidPrototypeChainFor(&V8Element::info)) {
-        m_namespaceURI = nullAtom;
-        // This generates a different DOM exception, so we feign success for now.
-        return true;
-    }
 
-    CustomElementException::throwException(CustomElementException::PrototypeDoesNotExtendHTMLElementSVGElementPrototype, type, es);
-    return false;
-}
+    AtomicString namespaceURI = HTMLNames::xhtmlNamespaceURI;
+    if (hasValidPrototypeChainFor(&V8SVGElement::info))
+        namespaceURI = SVGNames::svgNamespaceURI;
 
-bool CustomElementConstructorBuilder::findTagName(const AtomicString& customElementType, QualifiedName& tagName)
-{
-    ASSERT(!m_prototype.IsEmpty());
+    AtomicString localName;
 
-    m_wrapperType = findWrapperType(m_prototype);
-    if (!m_wrapperType) {
-        // Invalid prototype.
-        return false;
+    if (extendsProvidedAndNonNull) {
+        localName = extends.lower();
+
+        if (!Document::isValidName(localName)) {
+            CustomElementException::throwException(CustomElementException::ExtendsIsInvalidName, type, es);
+            return false;
+        }
+        if (CustomElement::isValidName(localName)) {
+            CustomElementException::throwException(CustomElementException::ExtendsIsCustomElementName, type, es);
+            return false;
+        }
+    } else {
+        localName = type;
     }
 
-    if (const QualifiedName* htmlName = findHTMLTagNameOfV8Type(m_wrapperType)) {
-        ASSERT(htmlName->namespaceURI() == m_namespaceURI);
-        tagName = *htmlName;
-        return true;
-    }
+    if (!extendsProvidedAndNonNull)
+        m_wrapperType = &V8HTMLElement::info;
+    else if (namespaceURI == HTMLNames::xhtmlNamespaceURI)
+        m_wrapperType = findWrapperTypeForHTMLTagName(localName);
+    else
+        m_wrapperType = findWrapperTypeForSVGTagName(localName);
 
-    if (const QualifiedName* svgName = findSVGTagNameOfV8Type(m_wrapperType)) {
-        ASSERT(svgName->namespaceURI() == m_namespaceURI);
-        tagName = *svgName;
-        return true;
-    }
-
-    if (m_namespaceURI != nullAtom) {
-        // Use the custom element type as the tag's local name.
-        tagName = QualifiedName(nullAtom, customElementType, m_namespaceURI);
-        return true;
-    }
-
-    return false;
+    ASSERT(m_wrapperType);
+    tagName = QualifiedName(nullAtom, localName, namespaceURI);
+    return m_wrapperType;
 }
 
 PassRefPtr<CustomElementLifecycleCallbacks> CustomElementConstructorBuilder::createCallbacks()
@@ -243,22 +233,6 @@ bool CustomElementConstructorBuilder::didRegisterDefinition(CustomElementDefinit
 ScriptValue CustomElementConstructorBuilder::bindingsReturnValue() const
 {
     return ScriptValue(m_constructor);
-}
-
-WrapperTypeInfo* CustomElementConstructorBuilder::findWrapperType(v8::Handle<v8::Value> chain)
-{
-    while (!chain.IsEmpty() && chain->IsObject()) {
-        v8::Handle<v8::Object> chainObject = chain.As<v8::Object>();
-        // Only prototype objects of native-backed types have the extra internal field storing WrapperTypeInfo.
-        if (v8PrototypeInternalFieldcount == chainObject->InternalFieldCount()) {
-            WrapperTypeInfo* wrapperType = reinterpret_cast<WrapperTypeInfo*>(chainObject->GetAlignedPointerFromInternalField(v8PrototypeTypeIndex));
-            ASSERT(wrapperType);
-            return wrapperType;
-        }
-        chain = chainObject->GetPrototype();
-    }
-
-    return 0;
 }
 
 bool CustomElementConstructorBuilder::hasValidPrototypeChainFor(WrapperTypeInfo* type) const

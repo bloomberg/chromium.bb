@@ -11,7 +11,7 @@ function markingReadyCallback() {
 }
 
 document.register("x-foo", { prototype: Object.create(HTMLElement.prototype, { createdCallback: { value: markingReadyCallback } }) });
-document.register("x-bar", { prototype: Object.create(HTMLDivElement.prototype, { createdCallback: { value: markingReadyCallback } }) });
+document.register("x-bar", { extends: "div", prototype: Object.create(HTMLDivElement.prototype, { createdCallback: { value: markingReadyCallback } }) });
 </script>
 </head>
 <body>

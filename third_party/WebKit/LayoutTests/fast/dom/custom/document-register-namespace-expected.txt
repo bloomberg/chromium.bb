@@ -26,7 +26,6 @@ PASS notSVG2 instanceof CustomSVGElement is false
 PASS notSVG2 instanceof HTMLUnknownElement is false
 PASS notSVG2 instanceof HTMLElement is true
 PASS Object.getPrototypeOf(notSVG2) is HTMLElement.prototype
-PASS document.register("xml-foo", { prototype: Object.create(Element.prototype) }) threw exception NamespaceError: Failed to call 'register' on 'Document' for type 'xml-foo': the prototype does not extend an HTML or SVG element..
 PASS successfullyParsed is true
 
 TEST COMPLETE

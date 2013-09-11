@@ -46,10 +46,9 @@ public:
         ContextDestroyedCheckingPrototype,
         ContextDestroyedCreatingCallbacks,
         ContextDestroyedRegisteringDefinition,
+        ExtendsIsInvalidName,
+        ExtendsIsCustomElementName,
         InvalidName,
-        NotYetImplemented,
-        PrototypeDoesNotExtendHTMLElementSVGElementNamespace,
-        PrototypeDoesNotExtendHTMLElementSVGElementPrototype,
         PrototypeInUse,
         PrototypeNotAnObject,
         TypeAlreadyRegistered

@@ -1144,13 +1144,19 @@ END
 END
 ;
     }
+
+    my $fallbackWrapper = $parameters{fallbackInterfaceName};
+    if ($parameters{namespace} eq "SVG") {
+        $fallbackWrapper = "SVGElement";
+    }
+
     print F <<END
 }
 
-const QualifiedName* find$parameters{namespace}TagNameOfV8Type(const WrapperTypeInfo* type)
+WrapperTypeInfo* findWrapperTypeFor$parameters{namespace}TagName(const AtomicString& name)
 {
-    typedef HashMap<const WrapperTypeInfo*, const QualifiedName*> TypeNameMap;
-    DEFINE_STATIC_LOCAL(TypeNameMap, map, ());
+    typedef HashMap<WTF::StringImpl*, WrapperTypeInfo*> NameTypeMap;
+    DEFINE_STATIC_LOCAL(NameTypeMap, map, ());
     if (map.isEmpty()) {
 END
 ;
@@ -1164,7 +1170,7 @@ END
             }
 
             my $JSInterfaceName = $enabledTags{$tagName}{JSInterfaceName};
-            print F "       map.set(WrapperTypeTraits<${JSInterfaceName}>::info(), &${tagName}Tag);\n";
+            print F "       map.set(${tagName}Tag.localName().impl(), WrapperTypeTraits<${JSInterfaceName}>::info());\n";
 
             if ($conditional) {
                 print F "#endif\n";
@@ -1175,7 +1181,10 @@ END
     print F <<END
     }
 
-    return map.get(type);
+    if (WrapperTypeInfo* result = map.get(name.impl()))
+        return result;
+
+    return WrapperTypeTraits<$fallbackWrapper>::info();
 }
 
 END
@@ -1210,7 +1219,8 @@ namespace WebCore {
 
     class $parameters{namespace}Element;
 
-    const QualifiedName* find$parameters{namespace}TagNameOfV8Type(const WrapperTypeInfo*);
+    WrapperTypeInfo* findWrapperTypeFor$parameters{namespace}TagName(const AtomicString& name);
+
     v8::Handle<v8::Object> createV8$parameters{namespace}Wrapper($parameters{namespace}Element*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
     inline v8::Handle<v8::Object> createV8$parameters{namespace}DirectWrapper($parameters{namespace}Element* element, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
     {

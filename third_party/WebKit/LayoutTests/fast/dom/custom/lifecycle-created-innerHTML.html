@@ -13,7 +13,7 @@ function trackingReadyCallback()
 }
 
 document.register("x-foo", { prototype: Object.create(HTMLElement.prototype, { createdCallback: { value: trackingReadyCallback } }) });
-document.register("x-bar", { prototype: Object.create(HTMLDivElement.prototype, { createdCallback: { value: trackingReadyCallback } }) });
+document.register("x-bar", { extends: "div", prototype: Object.create(HTMLDivElement.prototype, { createdCallback: { value: trackingReadyCallback } }) });
 document.register("x-baz", { prototype: Object.create(HTMLElement.prototype, { createdCallback: { value: trackingReadyCallback } }) });
 </script>
 </head>

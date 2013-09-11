@@ -6,7 +6,7 @@
 description("This test ensures that the lifecycle callbacks of editing-originated elements are visible in following script block.")
 window.callbacksCalled = [];
 document.register("x-foo", { prototype: Object.create(HTMLElement.prototype, { createdCallback: { value: function() { window.callbacksCalled.push(this.tagName); } } }) });
-document.register("x-bar", { prototype: Object.create(HTMLDivElement.prototype, { createdCallback: { value: function() { window.callbacksCalled.push(this.tagName); } } }) });
+document.register("x-bar", { extends: "div", prototype: Object.create(HTMLDivElement.prototype, { createdCallback: { value: function() { window.callbacksCalled.push(this.tagName); } } }) });
 </script>
 </head>
 <body>

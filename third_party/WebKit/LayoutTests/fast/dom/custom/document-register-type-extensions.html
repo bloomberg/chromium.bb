@@ -26,9 +26,9 @@ if (window.testRunner)
 //
 
 fooConstructor = document.register('x-foo', { prototype: Object.create(HTMLElement.prototype) });
-barConstructor = document.register('x-bar', { prototype: Object.create(HTMLInputElement.prototype) });
+barConstructor = document.register('x-bar', { extends: 'input', prototype: Object.create(HTMLInputElement.prototype) });
 bazConstructor = document.register('x-baz', { prototype: Object.create(fooConstructor.prototype) });
-quxConstructor = document.register('x-qux', { prototype: Object.create(barConstructor.prototype) });
+quxConstructor = document.register('x-qux', { extends: 'input', prototype: Object.create(barConstructor.prototype) });
 
 // Same name, different local name
 shouldThrow('document.register("x-foo", { prototype: Object.create(HTMLDivElement.prototype) })', '"InvalidStateError: Failed to call \'register\' on \'Document\' for type \'x-foo\': a type with that name is already registered."');

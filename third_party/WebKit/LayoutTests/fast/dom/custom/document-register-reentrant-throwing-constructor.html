@@ -7,7 +7,7 @@
 <body>
 <div id="container"></div>
 <script>
-description("Fuzzing document.register() through getters. PASS uless crash.");
+description("Fuzzing document.register() through getters. PASS unless crash.");
 
 setupObjectHooks({
     prototypeGet: function() { throw "Error"; },

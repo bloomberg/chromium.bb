@@ -140,7 +140,10 @@ v8::Local<v8::Function> V8PerContextData::constructorForTypeSlowCase(WrapperType
 
 v8::Local<v8::Object> V8PerContextData::prototypeForType(WrapperTypeInfo* type)
 {
-    return constructorForType(type)->Get(v8String("prototype", m_isolate)).As<v8::Object>();
+    v8::Local<v8::Object> constructor = constructorForType(type);
+    if (constructor.IsEmpty())
+        return v8::Local<v8::Object>();
+    return constructor->Get(v8String("prototype", m_isolate)).As<v8::Object>();
 }
 
 void V8PerContextData::addCustomElementBinding(CustomElementDefinition* definition, PassOwnPtr<CustomElementBinding> binding)

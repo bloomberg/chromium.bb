@@ -28,7 +28,7 @@ result = testRunner.evaluateScriptInIsolatedWorldAndReturnValue(
     '    console.log(this.id + " entered (isolated)"); ' +
     '  }; ' +
     '  try { ' +
-    '    document.register("x-a", {prototype: proto}); ' +
+    '    document.register("x-a", {extends: "span", prototype: proto}); ' +
     '    return "register succeeded"; ' +
     '  } catch (e) { ' +
     '    return e.code; ' +
@@ -50,7 +50,7 @@ invocations = [];
 proto.enteredDocumentCallback = function () {
     invocations.push(this.id + ' entered (main)');
 };
-document.register('x-a', {prototype: proto});
+document.register('x-a', {extends: 'span', prototype: proto});
 shouldBe('invocations', '["y entered (main)"]',
          'only the element in the document should generate entered events');
 

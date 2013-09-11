@@ -64,20 +64,16 @@ void CustomElementException::throwException(Reason reason, const AtomicString& t
         es.throwDOMException(NotSupportedError);
         return;
 
+    case ExtendsIsInvalidName:
+        es.throwDOMException(InvalidCharacterError, preamble(type) + ": the tag name specified in 'extends' is not a valid tag name.");
+        return;
+
+    case ExtendsIsCustomElementName:
+        es.throwDOMException(InvalidCharacterError, preamble(type) + ": the tag name specified in 'extends' is a custom element name. Use inheritance instead.");
+        return;
+
     case InvalidName:
         es.throwDOMException(InvalidCharacterError, preamble(type) + ": '" + type + "' is not a valid name.");
-        return;
-
-    case NotYetImplemented:
-        es.throwDOMException(InvalidStateError);
-        return;
-
-    case PrototypeDoesNotExtendHTMLElementSVGElementNamespace:
-        es.throwDOMException(NamespaceError, preamble(type) + "the prototype does not extend an HTML or SVG element.");
-        return;
-
-    case PrototypeDoesNotExtendHTMLElementSVGElementPrototype:
-        es.throwDOMException(InvalidStateError, preamble(type) + "the prototype does not extend an HTML or SVG element.");
         return;
 
     case PrototypeInUse:
