@@ -79,12 +79,12 @@ bool ParseScaleFactor(const base::StringPiece& identifier,
                       ui::ScaleFactor* scale_factor) {
   *scale_factor = ui::SCALE_FACTOR_100P;
   if (identifier.empty()) {
-    LOG(ERROR) << "Invalid scale factor format: " << identifier;
+    LOG(WARNING) << "Invalid scale factor format: " << identifier;
     return false;
   }
 
   if (*identifier.rbegin() != 'x') {
-    LOG(ERROR) << "Invalid scale factor format: " << identifier;
+    LOG(WARNING) << "Invalid scale factor format: " << identifier;
     return false;
   }
 
@@ -92,7 +92,7 @@ bool ParseScaleFactor(const base::StringPiece& identifier,
   std::string stripped;
   identifier.substr(0, identifier.length() - 1).CopyToString(&stripped);
   if (!base::StringToDouble(stripped, &scale)) {
-    LOG(ERROR) << "Invalid scale factor format: " << identifier;
+    LOG(WARNING) << "Invalid scale factor format: " << identifier;
     return false;
   }
 
