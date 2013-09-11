@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/search/search_tab_helper.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_service.h"
@@ -11,7 +12,7 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/common/render_messages.h"
+#include "chrome/browser/ui/search/search_ipc_router_policy_impl.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
@@ -43,8 +44,6 @@ bool IsSearchResults(const content::WebContents* contents) {
   return !chrome::GetSearchTerms(contents).empty();
 }
 
-// TODO(kmadhusu): Move this helper from anonymous namespace to chrome
-// namespace and remove InstantPage::IsLocal().
 bool IsLocal(const content::WebContents* contents) {
   return contents &&
       contents->GetURL() == GURL(chrome::kChromeSearchLocalNtpUrl);
@@ -80,7 +79,10 @@ SearchTabHelper::SearchTabHelper(content::WebContents* web_contents)
     : WebContentsObserver(web_contents),
       is_search_enabled_(chrome::IsInstantExtendedAPIEnabled()),
       user_input_in_progress_(false),
-      web_contents_(web_contents) {
+      web_contents_(web_contents),
+      ipc_router_(web_contents, this,
+                  make_scoped_ptr(new SearchIPCRouterPolicyImpl(web_contents))
+                      .PassAs<SearchIPCRouter::Policy>()) {
   if (!is_search_enabled_)
     return;
 
@@ -158,9 +160,7 @@ void SearchTabHelper::Observe(
       Profile::FromBrowserContext(web_contents_->GetBrowserContext());
   if (chrome::ShouldAssignURLToInstantRenderer(web_contents_->GetURL(),
                                                profile)) {
-    Send(new ChromeViewMsg_SearchBoxSetDisplayInstantResults(
-         routing_id(),
-         chrome::ShouldPrefetchSearchResultsOnSRP()));
+    ipc_router_.SetDisplayInstantResults();
   }
 
   UpdateMode(true, false);
@@ -203,8 +203,8 @@ void SearchTabHelper::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
   // Always set the title on the new tab page to be the one from our UI
-  // resources.  Normally, we set the title when we begin a NTP load, but it
-  // can get reset in several places (like when you press Reload). This check
+  // resources. Normally, we set the title when we begin a NTP load, but it can
+  // get reset in several places (like when you press Reload). This check
   // ensures that the title is properly set to the string defined by the Chrome
   // UI language (rather than the server language) in all cases.
   //
@@ -221,18 +221,6 @@ void SearchTabHelper::DidNavigateMainFrame(
   }
 }
 
-bool SearchTabHelper::OnMessageReceived(const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(SearchTabHelper, message)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_InstantSupportDetermined,
-                        OnInstantSupportDetermined)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_SetVoiceSearchSupported,
-                        OnSetVoiceSearchSupported)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
-
 void SearchTabHelper::DidFinishLoad(
     int64 /* frame_id */,
     const GURL&  /* validated_url */,
@@ -240,6 +228,14 @@ void SearchTabHelper::DidFinishLoad(
     content::RenderViewHost* /* render_view_host */) {
   if (is_main_frame)
     DetermineIfPageSupportsInstant();
+}
+
+void SearchTabHelper::OnInstantSupportDetermined(bool supports_instant) {
+  InstantSupportChanged(supports_instant);
+}
+
+void SearchTabHelper::OnSetVoiceSearchSupport(bool supports_voice_search) {
+  model_.SetVoiceSearchSupported(supports_voice_search);
 }
 
 void SearchTabHelper::UpdateMode(bool update_origin, bool is_preloaded_ntp) {
@@ -272,19 +268,6 @@ void SearchTabHelper::DetermineIfPageSupportsInstant() {
     // Local pages always support Instant.
     InstantSupportChanged(true);
   } else {
-    Send(new ChromeViewMsg_DetermineIfPageSupportsInstant(routing_id()));
+    ipc_router_.DetermineIfPageSupportsInstant();
   }
-}
-
-void SearchTabHelper::OnInstantSupportDetermined(int page_id,
-                                                 bool instant_support) {
-  if (!web_contents()->IsActiveEntry(page_id))
-    return;
-
-  InstantSupportChanged(instant_support);
-}
-
-void SearchTabHelper::OnSetVoiceSearchSupported(int page_id, bool supported) {
-  if (web_contents()->IsActiveEntry(page_id))
-    model_.SetVoiceSearchSupported(supported);
 }

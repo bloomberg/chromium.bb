@@ -319,8 +319,7 @@ TEST_F(InstantPageTest, PageSupportsInstant) {
   const content::NavigationEntry* entry =
       web_contents()->GetController().GetActiveEntry();
   EXPECT_TRUE(entry);
-  SearchTabHelper::FromWebContents(web_contents())->
-      OnInstantSupportDetermined(entry->GetPageID(), true);
+  SearchTabHelper::FromWebContents(web_contents())->InstantSupportChanged(true);
   EXPECT_TRUE(page->supports_instant());
 }
 

@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "chrome/browser/ui/search/search_ipc_router.h"
 #include "chrome/browser/ui/search/search_model.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -19,6 +20,7 @@ class WebContents;
 }
 
 class InstantPageTest;
+class SearchIPCRouterTest;
 
 // Per-tab search "helper".  Acts as the owner and controller of the tab's
 // search UI model.
@@ -29,7 +31,8 @@ class InstantPageTest;
 // INSTANT_SUPPORT_UNKNOWN and cause support to be determined again.
 class SearchTabHelper : public content::NotificationObserver,
                         public content::WebContentsObserver,
-                        public content::WebContentsUserData<SearchTabHelper> {
+                        public content::WebContentsUserData<SearchTabHelper>,
+                        public SearchIPCRouter::Delegate {
  public:
   virtual ~SearchTabHelper();
 
@@ -60,6 +63,25 @@ class SearchTabHelper : public content::NotificationObserver,
  private:
   friend class content::WebContentsUserData<SearchTabHelper>;
   friend class InstantPageTest;
+  friend class SearchIPCRouterTest;
+  FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest,
+                           DetermineIfPageSupportsInstant_Local);
+  FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest,
+                           DetermineIfPageSupportsInstant_NonLocal);
+  FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest,
+                           PageURLDoesntBelongToInstantRenderer);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
+                           ProcessVoiceSearchSupportMsg);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
+                           SendSetDisplayInstantResults);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
+                           DoNotSetDisplayInstantResultsForIncognitoPage);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, ProcessVoiceSearchSupportMsg);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, IgnoreVoiceSearchSupportMsg);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest,
+                           SendSetDisplayInstantResultsMsg);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest,
+                           DoNotSendSetDisplayInstantResultsMsg);
   FRIEND_TEST_ALL_PREFIXES(InstantPageTest,
                            DetermineIfPageSupportsInstant_Local);
   FRIEND_TEST_ALL_PREFIXES(InstantPageTest,
@@ -79,12 +101,15 @@ class SearchTabHelper : public content::NotificationObserver,
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void DidFinishLoad(
       int64 frame_id,
       const GURL& validated_url,
       bool is_main_frame,
       content::RenderViewHost* render_view_host) OVERRIDE;
+
+  // Overridden from SearchIPCRouter::Delegate:
+  virtual void OnInstantSupportDetermined(bool supports_instant) OVERRIDE;
+  virtual void OnSetVoiceSearchSupport(bool supports_voice_search) OVERRIDE;
 
   // Sets the mode of the model based on the current URL of web_contents().
   // Only updates the origin part of the mode if |update_origin| is true,
@@ -94,15 +119,12 @@ class SearchTabHelper : public content::NotificationObserver,
   void UpdateMode(bool update_origin, bool is_preloaded_ntp);
 
   // Tells the renderer to determine if the page supports the Instant API, which
-  // results in a call to OnInstantSupportDetermined() when the reply
-  // is received.
+  // results in a call to OnInstantSupportDetermined() when the reply is
+  // received.
   void DetermineIfPageSupportsInstant();
 
-  // Handler for when Instant support has been determined.
-  void OnInstantSupportDetermined(int page_id, bool supports_instant);
-
-  // Sets whether the page supports voice search on the model.
-  void OnSetVoiceSearchSupported(int page_id, bool supported);
+  // Used by unit tests.
+  SearchIPCRouter& ipc_router() { return ipc_router_; }
 
   const bool is_search_enabled_;
 
@@ -115,6 +137,8 @@ class SearchTabHelper : public content::NotificationObserver,
   content::NotificationRegistrar registrar_;
 
   content::WebContents* web_contents_;
+
+  SearchIPCRouter ipc_router_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchTabHelper);
 };
