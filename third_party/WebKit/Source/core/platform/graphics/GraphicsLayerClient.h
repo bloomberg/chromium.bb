@@ -47,14 +47,6 @@ enum GraphicsLayerPaintingPhaseFlags {
 };
 typedef unsigned GraphicsLayerPaintingPhase;
 
-enum AnimatedPropertyID {
-    AnimatedPropertyInvalid,
-    AnimatedPropertyWebkitTransform,
-    AnimatedPropertyOpacity,
-    AnimatedPropertyBackgroundColor,
-    AnimatedPropertyWebkitFilter
-};
-
 enum {
     LayerTreeNormal = 0,
     LayerTreeIncludesDebugInfo = 1 << 0, // Dump extra debugging info like layer addresses.

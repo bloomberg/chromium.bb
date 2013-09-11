@@ -40,6 +40,7 @@
 #include "core/page/Settings.h"
 #include "core/page/animation/AnimationController.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
+#include "core/platform/animation/KeyframeValueList.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/GraphicsLayer.h"

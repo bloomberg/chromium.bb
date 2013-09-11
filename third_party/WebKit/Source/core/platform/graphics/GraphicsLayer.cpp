@@ -79,26 +79,6 @@ static RepaintMap& repaintRectMap()
     return map;
 }
 
-void KeyframeValueList::insert(PassOwnPtr<const AnimationValue> value)
-{
-    for (size_t i = 0; i < m_values.size(); ++i) {
-        const AnimationValue* curValue = m_values[i].get();
-        if (curValue->keyTime() == value->keyTime()) {
-            ASSERT_NOT_REACHED();
-            // insert after
-            m_values.insert(i + 1, value);
-            return;
-        }
-        if (curValue->keyTime() > value->keyTime()) {
-            // insert before
-            m_values.insert(i, value);
-            return;
-        }
-    }
-
-    m_values.append(value);
-}
-
 PassOwnPtr<GraphicsLayer> GraphicsLayer::create(GraphicsLayerFactory* factory, GraphicsLayerClient* client)
 {
     return factory->createGraphicsLayer(client);

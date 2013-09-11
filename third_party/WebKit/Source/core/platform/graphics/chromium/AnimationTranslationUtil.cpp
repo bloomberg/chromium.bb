@@ -27,8 +27,9 @@
 #include "core/platform/graphics/chromium/AnimationTranslationUtil.h"
 
 #include "core/css/LengthFunctions.h"
+#include "core/platform/animation/CSSAnimationData.h"
+#include "core/platform/animation/KeyframeValueList.h"
 #include "core/platform/graphics/FloatSize.h"
-#include "core/platform/graphics/GraphicsLayer.h"
 #include "core/platform/graphics/chromium/TransformSkMatrix44Conversions.h"
 #include "core/platform/graphics/transforms/InterpolatedTransformOperation.h"
 #include "core/platform/graphics/transforms/Matrix3DTransformOperation.h"

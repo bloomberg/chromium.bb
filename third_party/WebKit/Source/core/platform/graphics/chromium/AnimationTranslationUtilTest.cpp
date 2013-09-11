@@ -27,7 +27,7 @@
 #include "core/platform/graphics/chromium/AnimationTranslationUtil.h"
 
 #include "core/platform/animation/CSSAnimationData.h"
-#include "core/platform/graphics/GraphicsLayer.h" // For KeyframeValueList
+#include "core/platform/animation/KeyframeValueList.h"
 #include "core/platform/graphics/IntSize.h"
 #include "core/platform/graphics/transforms/Matrix3DTransformOperation.h"
 #include "core/platform/graphics/transforms/RotateTransformOperation.h"
