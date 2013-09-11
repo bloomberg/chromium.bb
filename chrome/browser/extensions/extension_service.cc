@@ -36,10 +36,10 @@
 #include "chrome/browser/extensions/api/runtime/runtime_api.h"
 #include "chrome/browser/extensions/api/storage/settings_frontend.h"
 #include "chrome/browser/extensions/app_sync_data.h"
-#include "chrome/browser/extensions/browser_event_router.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/data_deleter.h"
+#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_disabled_ui.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_error_ui.h"
@@ -365,7 +365,6 @@ ExtensionService::ExtensionService(Profile* profile,
       ready_(ready),
       toolbar_model_(this),
       menu_manager_(profile),
-      event_routers_initialized_(false),
       update_once_all_providers_are_ready_(false),
       browser_terminating_(false),
       installs_delayed_for_gc_(false),
@@ -497,16 +496,6 @@ ExtensionService::~ExtensionService() {
 void ExtensionService::SetSyncStartFlare(
     const syncer::SyncableService::StartSyncFlare& flare) {
   flare_ = flare;
-}
-
-void ExtensionService::InitEventRouters() {
-  if (event_routers_initialized_)
-    return;
-
-#if defined(ENABLE_EXTENSIONS)
-  browser_event_router_.reset(new extensions::BrowserEventRouter(profile_));
-#endif  // defined(ENABLE_EXTENSIONS)
-  event_routers_initialized_ = true;
 }
 
 void ExtensionService::Shutdown() {

@@ -5,23 +5,49 @@
 #include "chrome/browser/extensions/api/tabs/tabs_windows_api.h"
 
 #include "base/lazy_instance.h"
+#include "chrome/browser/extensions/api/tabs/tabs_event_router.h"
 #include "chrome/browser/extensions/api/tabs/windows_event_router.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/common/extensions/api/tabs.h"
 #include "chrome/common/extensions/api/windows.h"
 
 namespace extensions {
 
-namespace windows = api::windows;
+TabsWindowsAPI::TabsWindowsAPI(Profile* profile) : profile_(profile) {
+  // Tabs API Events.
+  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
+      this, api::tabs::OnCreated::kEventName);
+  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
+      this, api::tabs::OnUpdated::kEventName);
+  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
+      this, api::tabs::OnMoved::kEventName);
+  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
+      this, api::tabs::OnSelectionChanged::kEventName);
+  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
+      this, api::tabs::OnActiveChanged::kEventName);
+  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
+      this, api::tabs::OnActivated::kEventName);
+  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
+      this, api::tabs::OnHighlightChanged::kEventName);
+  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
+      this, api::tabs::OnHighlighted::kEventName);
+  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
+      this, api::tabs::OnDetached::kEventName);
+  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
+      this, api::tabs::OnAttached::kEventName);
+  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
+      this, api::tabs::OnRemoved::kEventName);
+  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
+      this, api::tabs::OnReplaced::kEventName);
 
-TabsWindowsAPI::TabsWindowsAPI(Profile* profile)
-    : profile_(profile) {
+  // Windows API Events.
   ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
-      this, windows::OnCreated::kEventName);
+      this, api::windows::OnCreated::kEventName);
   ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
-      this, windows::OnRemoved::kEventName);
+      this, api::windows::OnRemoved::kEventName);
   ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
-      this, windows::OnFocusChanged::kEventName);
+      this, api::windows::OnFocusChanged::kEventName);
 }
 
 TabsWindowsAPI::~TabsWindowsAPI() {
@@ -30,6 +56,12 @@ TabsWindowsAPI::~TabsWindowsAPI() {
 // static
 TabsWindowsAPI* TabsWindowsAPI::Get(Profile* profile) {
   return ProfileKeyedAPIFactory<TabsWindowsAPI>::GetForProfile(profile);
+}
+
+TabsEventRouter* TabsWindowsAPI::tabs_event_router() {
+  if (!tabs_event_router_.get())
+    tabs_event_router_.reset(new TabsEventRouter(profile_));
+  return tabs_event_router_.get();
 }
 
 WindowsEventRouter* TabsWindowsAPI::windows_event_router() {
@@ -49,8 +81,9 @@ ProfileKeyedAPIFactory<TabsWindowsAPI>* TabsWindowsAPI::GetFactoryInstance() {
   return &g_factory.Get();
 }
 
-void TabsWindowsAPI::OnListenerAdded(
-    const extensions::EventListenerInfo& details) {
+void TabsWindowsAPI::OnListenerAdded(const EventListenerInfo& details) {
+  // Initialize the event routers.
+  tabs_event_router();
   windows_event_router();
   ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
 }

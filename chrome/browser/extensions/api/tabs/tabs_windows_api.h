@@ -11,10 +11,10 @@
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 
 namespace extensions {
+class TabsEventRouter;
 class WindowsEventRouter;
 
-class TabsWindowsAPI : public ProfileKeyedAPI,
-                       public extensions::EventRouter::Observer {
+class TabsWindowsAPI : public ProfileKeyedAPI, public EventRouter::Observer {
  public:
   explicit TabsWindowsAPI(Profile* profile);
   virtual ~TabsWindowsAPI();
@@ -22,6 +22,7 @@ class TabsWindowsAPI : public ProfileKeyedAPI,
   // Convenience method to get the TabsWindowsAPI for a profile.
   static TabsWindowsAPI* Get(Profile* profile);
 
+  TabsEventRouter* tabs_event_router();
   WindowsEventRouter* windows_event_router();
 
   // BrowserContextKeyedService implementation.
@@ -45,6 +46,7 @@ class TabsWindowsAPI : public ProfileKeyedAPI,
   }
   static const bool kServiceIsNULLWhileTesting = true;
 
+  scoped_ptr<TabsEventRouter> tabs_event_router_;
   scoped_ptr<WindowsEventRouter> windows_event_router_;
 };
 

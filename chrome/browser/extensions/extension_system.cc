@@ -206,16 +206,6 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   // Make the chrome://extension-icon/ resource available.
   content::URLDataSource::Add(profile_, new ExtensionIconSource(profile_));
 
-  // Initialize extension event routers. Note that on Chrome OS, this will
-  // not succeed if the user has not logged in yet, in which case the
-  // event routers are initialized in LoginUtilsImpl::CompleteLogin instead.
-  // The InitEventRouters call used to be in BrowserMain, because when bookmark
-  // import happened on first run, the bookmark bar was not being correctly
-  // initialized (see issue 40144). Now that bookmarks aren't imported and
-  // the event routers need to be initialized for every profile individually,
-  // initialize them with the extension service.
-  extension_service_->InitEventRouters();
-
   extension_warning_service_.reset(new ExtensionWarningService(profile_));
   extension_warning_badge_service_.reset(
       new ExtensionWarningBadgeService(profile_));

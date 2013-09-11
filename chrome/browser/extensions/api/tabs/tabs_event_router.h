@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_BROWSER_EVENT_ROUTER_H_
-#define CHROME_BROWSER_EXTENSIONS_BROWSER_EVENT_ROUTER_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_TABS_TABS_EVENT_ROUTER_H_
+#define CHROME_BROWSER_EXTENSIONS_API_TABS_TABS_EVENT_ROUTER_H_
 
 #include <map>
 #include <string>
@@ -22,17 +22,16 @@ class WebContents;
 
 namespace extensions {
 
-// The BrowserEventRouter listens to Browser window & tab events
-// and routes them to listeners inside extension process renderers.
-// BrowserEventRouter listens to *all* events, but will only route
-// events from windows/tabs within a profile to extension processes in the same
-// profile.
-class BrowserEventRouter : public TabStripModelObserver,
-                           public chrome::BrowserListObserver,
-                           public content::NotificationObserver {
+// The TabsEventRouter listens to tab events and routes them to listeners inside
+// extension process renderers.
+// TabsEventRouter will only route events from windows/tabs within a profile to
+// extension processes in the same profile.
+class TabsEventRouter : public TabStripModelObserver,
+                        public chrome::BrowserListObserver,
+                        public content::NotificationObserver {
  public:
-  explicit BrowserEventRouter(Profile* profile);
-  virtual ~BrowserEventRouter();
+  explicit TabsEventRouter(Profile* profile);
+  virtual ~TabsEventRouter();
 
   // chrome::BrowserListObserver
   virtual void OnBrowserAdded(Browser* browser) OVERRIDE;
@@ -66,7 +65,6 @@ class BrowserEventRouter : public TabStripModelObserver,
                              int index) OVERRIDE;
   virtual void TabPinnedStateChanged(content::WebContents* contents,
                                      int index) OVERRIDE;
-  virtual void TabStripEmpty() OVERRIDE;
 
   // content::NotificationObserver.
   virtual void Observe(int type,
@@ -81,11 +79,10 @@ class BrowserEventRouter : public TabStripModelObserver,
   void TabUpdated(content::WebContents* contents, bool did_navigate);
 
   // Triggers a tab updated event if the favicon URL changes.
-  void FaviconUrlUpdated(content::WebContents* contents,
-                         const bool* icon_url_changed);
+  void FaviconUrlUpdated(content::WebContents* contents);
 
   // The DispatchEvent methods forward events to the |profile|'s event router.
-  // The BrowserEventRouter listens to events for all profiles,
+  // The TabsEventRouter listens to events for all profiles,
   // so we avoid duplication by dropping events destined for other profiles.
   void DispatchEvent(Profile* profile,
                      const char* event_name,
@@ -164,9 +161,9 @@ class BrowserEventRouter : public TabStripModelObserver,
   // The main profile that owns this event router.
   Profile* profile_;
 
-  DISALLOW_COPY_AND_ASSIGN(BrowserEventRouter);
+  DISALLOW_COPY_AND_ASSIGN(TabsEventRouter);
 };
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_BROWSER_EVENT_ROUTER_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_API_TABS_TABS_EVENT_ROUTER_H_

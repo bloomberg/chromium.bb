@@ -267,9 +267,6 @@ class ExtensionService
   // Initialize and start all installed extensions.
   void Init();
 
-  // Start up the extension event routers.
-  void InitEventRouters();
-
   // Called when the associated Profile is going to be destroyed.
   void Shutdown();
 
@@ -553,10 +550,6 @@ class ExtensionService
   ExtensionsQuotaService* quota_service() { return &quota_service_; }
 
   extensions::MenuManager* menu_manager() { return &menu_manager_; }
-
-  extensions::BrowserEventRouter* browser_event_router() {
-    return browser_event_router_.get();
-  }
 
   // Notify the frontend that there was an error loading an extension.
   // This method is public because UnpackedInstaller and InstalledLoader
@@ -904,13 +897,6 @@ class ExtensionService
 
   // Keeps track of menu items added by extensions.
   extensions::MenuManager menu_manager_;
-
-  // Flag to make sure event routers are only initialized once.
-  bool event_routers_initialized_;
-
-  // TODO(yoz): None of these should be owned by ExtensionService.
-  // crbug.com/159265
-  scoped_ptr<extensions::BrowserEventRouter> browser_event_router_;
 
   // A collection of external extension providers.  Each provider reads
   // a source of external extension information.  Examples include the
