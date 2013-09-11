@@ -463,9 +463,15 @@ double AnimationBase::fractionalTime(double scale, double elapsedTime, double of
         || m_animation->direction() == CSSAnimationData::AnimationDirectionReverse)
         fractionalTime = 1 - fractionalTime;
 
-    if (scale != 1 || offset)
-        fractionalTime = (fractionalTime - offset) * scale;
+    fractionalTime -= offset;
+    // Note that if fractionalTime == 0 here, scale may be infinity, but in
+    // this case we don't need to apply scale anyway.
+    if (scale != 1.0 && fractionalTime) {
+        ASSERT(scale >= 0 && !std::isinf(scale));
+        fractionalTime *= scale;
+    }
 
+    ASSERT(fractionalTime >= 0 && fractionalTime <= 1);
     return fractionalTime;
 }
 

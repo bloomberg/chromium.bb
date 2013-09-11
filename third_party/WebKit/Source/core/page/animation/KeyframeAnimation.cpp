@@ -158,6 +158,8 @@ void KeyframeAnimation::fetchIntervalEndpointsForProperty(CSSPropertyID property
 
     offset = prevKeyframe.key();
     scale = 1.0 / (nextKeyframe.key() - prevKeyframe.key());
+    // A scale of infinity is handled in AnimationBase::fractionalTime().
+    ASSERT(scale >= 0 && (!std::isinf(scale) || prevIndex == nextIndex));
 
     const TimingFunction* timingFunction = 0;
     if (const CSSAnimationData* matchedAnimation = getAnimationFromStyleByName(fromStyle, name()))
