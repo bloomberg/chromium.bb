@@ -717,15 +717,12 @@ workspace_translate_in(struct workspace *ws, double fraction)
 static void
 broadcast_current_workspace_state(struct desktop_shell *shell)
 {
-	struct wl_list *link;
+	struct wl_resource *resource;
 
-	for (link = shell->workspaces.client_list.next;
-	     link != &shell->workspaces.client_list;
-	     link = link->next) {
-		workspace_manager_send_state(wl_resource_from_link(link),
+	wl_resource_for_each(resource, &shell->workspaces.client_list)
+		workspace_manager_send_state(resource,
 					     shell->workspaces.current,
 					     shell->workspaces.num);
-	}
 }
 
 static void
