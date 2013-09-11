@@ -1239,7 +1239,6 @@
         ['include', '^browser/cert_store_impl\\.cc$'],
         ['include', '^browser/download/download_create_info\\.cc$'],
         ['include', '^browser/notification_service_impl\\.cc$'],
-        ['include', '^browser/storage_partition_impl\\.cc$'],
         ['include', '^browser/user_metrics\\.cc$'],
         ['include', '^browser/web_contents/navigation_entry_impl\\.cc$'],
       ],
