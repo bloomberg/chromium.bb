@@ -17,88 +17,6 @@ using extensions::Extension;
 
 namespace remoting {
 
-// BuildSimpleWebKeyEvent and SimulateKeyPress below are adapted from
-// content/public/test/browser_test_utils.cc.
-// TODO: Move this to browser_test_utils.cc after the support is added for
-// the UIEvent key |code|.
-void BuildSimpleWebKeyEvent(WebKit::WebInputEvent::Type type,
-                            ui::KeyboardCode key,
-                            int nativeKeyCode,
-                            bool control,
-                            bool shift,
-                            bool alt,
-                            bool command,
-                            content::NativeWebKeyboardEvent* event) {
-  event->nativeKeyCode = nativeKeyCode;
-  event->windowsKeyCode = key;
-  event->setKeyIdentifierFromWindowsKeyCode();
-  event->type = type;
-  event->modifiers = 0;
-  event->isSystemKey = false;
-  event->timeStampSeconds = base::Time::Now().ToDoubleT();
-  event->skip_in_browser = true;
-
-  if (type == WebKit::WebInputEvent::Char ||
-      type == WebKit::WebInputEvent::RawKeyDown) {
-    event->text[0] = key;
-    event->unmodifiedText[0] = key;
-  }
-
-  if (control)
-    event->modifiers |= WebKit::WebInputEvent::ControlKey;
-
-  if (shift)
-    event->modifiers |= WebKit::WebInputEvent::ShiftKey;
-
-  if (alt)
-    event->modifiers |= WebKit::WebInputEvent::AltKey;
-
-  if (command)
-    event->modifiers |= WebKit::WebInputEvent::MetaKey;
-}
-
-void SimulateKeyPress(content::WebContents* web_contents,
-                      ui::KeyboardCode key,
-                      int nativeKeyCode,
-                      bool control,
-                      bool shift,
-                      bool alt,
-                      bool command) {
-  content::NativeWebKeyboardEvent event_down;
-  BuildSimpleWebKeyEvent(
-      WebKit::WebInputEvent::RawKeyDown,
-      key, nativeKeyCode,
-      control,
-      shift,
-      alt,
-      command,
-      &event_down);
-  web_contents->GetRenderViewHost()->ForwardKeyboardEvent(event_down);
-
-  content::NativeWebKeyboardEvent char_event;
-  BuildSimpleWebKeyEvent(
-      WebKit::WebInputEvent::Char,
-      key, nativeKeyCode,
-      control,
-      shift,
-      alt,
-      command,
-      &char_event);
-  web_contents->GetRenderViewHost()->ForwardKeyboardEvent(char_event);
-
-  content::NativeWebKeyboardEvent event_up;
-  BuildSimpleWebKeyEvent(
-      WebKit::WebInputEvent::KeyUp,
-      key,
-      nativeKeyCode,
-      control,
-      shift,
-      alt,
-      command,
-      &event_up);
-  web_contents->GetRenderViewHost()->ForwardKeyboardEvent(event_up);
-}
-
 RemoteDesktopBrowserTest::RemoteDesktopBrowserTest() {}
 
 RemoteDesktopBrowserTest::~RemoteDesktopBrowserTest() {}
@@ -282,25 +200,23 @@ void RemoteDesktopBrowserTest::StartMe2Me() {
   EXPECT_FALSE(HtmlElementVisible("me2me-first-run"));
 }
 
-void RemoteDesktopBrowserTest::SimulateKeyPress(
-    ui::KeyboardCode key,
-    int nativeKeyCode) {
-  SimulateKeyPress(key, nativeKeyCode, false, false, false, false);
+void RemoteDesktopBrowserTest::SimulateKeyPressWithCode(
+    ui::KeyboardCode keyCode,
+    const char* code) {
+  SimulateKeyPressWithCode(keyCode, code, false, false, false, false);
 }
 
-void RemoteDesktopBrowserTest::SimulateKeyPress(
-    ui::KeyboardCode key,
-    int nativeKeyCode,
+void RemoteDesktopBrowserTest::SimulateKeyPressWithCode(
+    ui::KeyboardCode keyCode,
+    const char* code,
     bool control,
     bool shift,
     bool alt,
     bool command) {
-  // TODO: Switch to content::SimulateKeyPress when an overload of it is
-  // added to take the UIEvent key |code| string.
-  remoting::SimulateKeyPress(
+  content::SimulateKeyPressWithCode(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      key,
-      nativeKeyCode,
+      keyCode,
+      code,
       control,
       shift,
       alt,

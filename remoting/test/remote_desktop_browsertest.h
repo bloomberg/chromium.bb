@@ -82,14 +82,14 @@ class RemoteDesktopBrowserTest : public ExtensionBrowserTest {
   void StartMe2Me();
 
   // Simulate a key event.
-  void SimulateKeyPress(ui::KeyboardCode key, int nativeKeyCode);
+  void SimulateKeyPressWithCode(ui::KeyboardCode keyCode, const char* code);
 
-  void SimulateKeyPress(ui::KeyboardCode key,
-                        int nativeKeyCode,
-                        bool control,
-                        bool shift,
-                        bool alt,
-                        bool command);
+  void SimulateKeyPressWithCode(ui::KeyboardCode keyCode,
+                                const char* code,
+                                bool control,
+                                bool shift,
+                                bool alt,
+                                bool command);
 
 
   /*                                                      */

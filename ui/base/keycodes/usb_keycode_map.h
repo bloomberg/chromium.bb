@@ -399,6 +399,21 @@ inline const char* NativeKeycodeToCode(uint16_t native_keycode) {
   return InvalidKeyboardEventCode();
 }
 
+inline uint16_t CodeToNativeKeycode(const char* code) {
+  if (!code ||
+      strcmp(code, InvalidKeyboardEventCode()) == 0) {
+    return InvalidNativeKeycode();
+  }
+
+  for (size_t i = 0; i < arraysize(usb_keycode_map); ++i) {
+    if (usb_keycode_map[i].code &&
+        strcmp(usb_keycode_map[i].code, code) == 0) {
+      return usb_keycode_map[i].native_keycode;
+    }
+  }
+  return InvalidNativeKeycode();
+}
+
 // USB keycodes
 // Note that USB keycodes are not part of any web standard.
 // Please don't use USB keycodes in new code.
