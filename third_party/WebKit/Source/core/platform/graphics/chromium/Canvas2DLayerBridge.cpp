@@ -276,7 +276,14 @@ bool Canvas2DLayerBridge::isValid()
 
 bool Canvas2DLayerBridge::prepareMailbox(WebKit::WebExternalTextureMailbox* outMailbox, WebKit::WebExternalBitmap* bitmap)
 {
-    ASSERT(!bitmap);
+    if (bitmap) {
+        // Using accelerated 2d canvas with software renderer, which
+        // should only happen in tests that use fake graphics contexts.
+        // In this case, we do not care about producing any results for
+        // compositing.
+        m_canvas->silentFlush();
+        return false;
+    }
     if (!isValid())
         return false;
     // Release to skia textures that were previouosly released by the
