@@ -11,7 +11,8 @@ using WebKit::WebInputEvent;
 
 namespace content {
 
-WebPluginDelegateImpl::WebPluginDelegateImpl(PluginInstance* instance) {
+WebPluginDelegateImpl::WebPluginDelegateImpl(WebPlugin* plugin,
+                                             PluginInstance* instance) {
 }
 
 WebPluginDelegateImpl::~WebPluginDelegateImpl() {

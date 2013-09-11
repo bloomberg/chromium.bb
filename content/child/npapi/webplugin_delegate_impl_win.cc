@@ -220,10 +220,11 @@ LRESULT CALLBACK WebPluginDelegateImpl::MouseHookProc(
 }
 
 WebPluginDelegateImpl::WebPluginDelegateImpl(
+    WebPlugin* plugin,
     PluginInstance* instance)
     : instance_(instance),
       quirks_(0),
-      plugin_(NULL),
+      plugin_(plugin),
       windowless_(false),
       windowed_handle_(NULL),
       windowed_did_set_window_(false),

@@ -29,11 +29,12 @@ using WebKit::WebMouseEvent;
 namespace content {
 
 WebPluginDelegateImpl::WebPluginDelegateImpl(
+    WebPlugin* plugin,
     PluginInstance* instance)
     : windowed_handle_(0),
       windowed_did_set_window_(false),
       windowless_(false),
-      plugin_(NULL),
+      plugin_(plugin),
       instance_(instance),
       windowless_shm_pixmap_(None),
       pixmap_(NULL),

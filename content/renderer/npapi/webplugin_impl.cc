@@ -5,6 +5,7 @@
 #include "content/renderer/npapi/webplugin_impl.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/debug/crash_logging.h"
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
@@ -20,6 +21,7 @@
 #include "content/child/npapi/webplugin_resource_client.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/content_constants.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/npapi/webplugin_delegate_proxy.h"
 #include "content/renderer/render_process.h"
@@ -256,7 +258,7 @@ bool WebPluginImpl::initialize(WebPluginContainer* container) {
   SetContainer(container);
 
   bool ok = plugin_delegate->Initialize(
-      plugin_url_, arg_names_, arg_values_, this, load_manually_);
+      plugin_url_, arg_names_, arg_values_, load_manually_);
   if (!ok) {
     plugin_delegate->PluginDestroyed();
 
@@ -624,10 +626,6 @@ bool WebPluginImpl::SetPostData(WebURLRequest* request,
   return rv;
 }
 
-WebPluginDelegate* WebPluginImpl::delegate() {
-  return delegate_;
-}
-
 bool WebPluginImpl::IsValidUrl(const GURL& url, Referrer referrer_flag) {
   if (referrer_flag == PLUGIN_SRC &&
       mime_type_ == kFlashPluginSwfMimeType &&
@@ -655,7 +653,7 @@ WebPluginDelegate* WebPluginImpl::CreatePluginDelegate() {
   bool in_process_plugin = RenderProcess::current()->UseInProcessPlugins();
   if (in_process_plugin) {
 #if defined(OS_WIN) && !defined(USE_AURA)
-    return WebPluginDelegateImpl::Create(file_path_, mime_type_);
+    return WebPluginDelegateImpl::Create(this, file_path_, mime_type_);
 #else
     // In-proc plugins aren't supported on non-Windows.
     NOTIMPLEMENTED();
@@ -663,7 +661,7 @@ WebPluginDelegate* WebPluginImpl::CreatePluginDelegate() {
 #endif
   }
 
-  return new WebPluginDelegateProxy(mime_type_, render_view_);
+  return new WebPluginDelegateProxy(this, mime_type_, render_view_);
 }
 
 WebPluginImpl::RoutingStatus WebPluginImpl::RouteToFrame(
@@ -805,6 +803,13 @@ void WebPluginImpl::URLRedirectResponse(bool allow, int resource_id) {
   }
 }
 
+bool WebPluginImpl::CheckIfRunInsecureContent(const GURL& url) {
+  if (!webframe_)
+    return true;
+
+  return webframe_->checkIfRunInsecureContent(url);
+}
+
 #if defined(OS_MACOSX)
 WebPluginAcceleratedSurface* WebPluginImpl::GetAcceleratedSurface(
     gfx::GpuPreference gpu_preference) {
@@ -894,6 +899,8 @@ WebPluginImpl::ClientInfo* WebPluginImpl::GetClientInfoFromLoader(
 void WebPluginImpl::willSendRequest(WebURLLoader* loader,
                                     WebURLRequest& request,
                                     const WebURLResponse& response) {
+  // TODO(jam): THIS LOGIC IS COPIED IN PluginURLFetcher::OnReceivedRedirect
+  // until kDirectNPAPIRequests is the default and we can remove this old path.
   WebPluginImpl::ClientInfo* client_info = GetClientInfoFromLoader(loader);
   if (client_info) {
     // Currently this check is just to catch an https -> http redirect when
@@ -1183,16 +1190,14 @@ void WebPluginImpl::HandleURLRequestInternal(const char* url,
   if (!WebPluginImpl::IsValidUrl(complete_url, referrer_flag))
     return;
 
-  WebPluginResourceClient* resource_client = delegate_->CreateResourceClient(
-      resource_id, complete_url, notify_id);
-  if (!resource_client)
-    return;
-
   // If the RouteToFrame call returned a failure then inform the result
   // back to the plugin asynchronously.
   if ((routing_status == INVALID_URL) ||
       (routing_status == GENERAL_FAILURE)) {
-    resource_client->DidFail(resource_id);
+    WebPluginResourceClient* resource_client = delegate_->CreateResourceClient(
+        resource_id, complete_url, notify_id);
+    if (resource_client)
+      resource_client->DidFail(resource_id);
     return;
   }
 
@@ -1202,9 +1207,37 @@ void WebPluginImpl::HandleURLRequestInternal(const char* url,
   if (!delegate_)
     return;
 
-  InitiateHTTPRequest(resource_id, resource_client, complete_url, method, buf,
-                      len, NULL, referrer_flag, notify_redirects,
-                      is_plugin_src_load);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDirectNPAPIRequests)) {
+    // We got here either because the plugin called GetURL/PostURL, or because
+    // we're fetching the data for an embed tag. If we're in multi-process mode,
+    // we want to fetch the data in the plugin process as the renderer won't be
+    // able to request any origin when site isolation is in place. So bounce
+    // this request back to the plugin process which will use ResourceDispatcher
+    // to fetch the url.
+
+    // TODO(jam): any better way of getting this? Can't find a way to get
+    // frame()->loader()->outgoingReferrer() which
+    // WebFrameImpl::setReferrerForRequest does.
+    WebURLRequest request(complete_url);
+    SetReferrer(&request, referrer_flag);
+    GURL referrer(
+        request.httpHeaderField(WebString::fromUTF8("Referer")).utf8());
+
+    GURL first_party_for_cookies = webframe_->document().firstPartyForCookies();
+    delegate_->FetchURL(resource_id, notify_id, complete_url,
+                        first_party_for_cookies, method, std::string(buf, len),
+                        referrer, notify_redirects, is_plugin_src_load, 0,
+                        render_view_->routing_id());
+  } else {
+    WebPluginResourceClient* resource_client = delegate_->CreateResourceClient(
+        resource_id, complete_url, notify_id);
+    if (!resource_client)
+      return;
+    InitiateHTTPRequest(resource_id, resource_client, complete_url, method, buf,
+                        len, NULL, referrer_flag, notify_redirects,
+                        is_plugin_src_load);
+  }
 }
 
 unsigned long WebPluginImpl::GetNextResourceId() {
@@ -1381,7 +1414,7 @@ bool WebPluginImpl::ReinitializePluginForResponse(
   container_->allowScriptObjects();
 
   bool ok = plugin_delegate && plugin_delegate->Initialize(
-      plugin_url_, arg_names_, arg_values_, this, load_manually_);
+      plugin_url_, arg_names_, arg_values_, load_manually_);
 
   if (!ok) {
     container_->clearScriptObjects();

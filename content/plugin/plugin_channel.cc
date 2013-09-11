@@ -204,6 +204,8 @@ base::WaitableEvent* PluginChannel::GetModalDialogEvent(int render_view_id) {
 }
 
 PluginChannel::~PluginChannel() {
+  PluginThread::current()->Send(new PluginProcessHostMsg_ChannelDestroyed(
+      renderer_id_));
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&PluginReleaseCallback),

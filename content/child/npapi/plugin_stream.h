@@ -29,10 +29,6 @@ class PluginStream : public base::RefCounted<PluginStream> {
                bool need_notify,
                void* notify_data);
 
-  // In case of a redirect, this can be called to update the url.  But it must
-  // be called before Open().
-  void UpdateUrl(const char* url);
-
   // Opens the stream to the Plugin.
   // If the mime-type is not specified, we'll try to find one based on the
   // mime-types table and the extension (if any) in the URL.
@@ -63,7 +59,9 @@ class PluginStream : public base::RefCounted<PluginStream> {
   // Cancels any HTTP requests initiated by the stream.
   virtual void CancelRequest() {}
 
-  const NPStream* stream() const { return &stream_; }
+  NPStream* stream() { return &stream_; }
+
+  PluginInstance* instance() { return instance_.get(); }
 
   // setter/getter for the seekable attribute on the stream.
   bool seekable() const { return seekable_stream_; }
@@ -75,22 +73,13 @@ class PluginStream : public base::RefCounted<PluginStream> {
 
   void* notify_data() const { return notify_data_; }
 
-  std::string pending_redirect_url() const { return pending_redirect_url_; }
-
  protected:
   friend class base::RefCounted<PluginStream>;
 
   virtual ~PluginStream();
 
-  PluginInstance* instance() { return instance_.get(); }
-
   // Check if the stream is open.
   bool open() { return opened_; }
-
-  // If the plugin participates in HTTP URL redirect handling then this member
-  // holds the url being redirected to while we wait for the plugin to make a
-  // decision on whether to allow or deny the redirect.
-  std::string pending_redirect_url_;
 
  private:
   // Per platform method to reset the temporary file handle.

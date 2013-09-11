@@ -45,13 +45,6 @@ PluginStream::~PluginStream() {
   free(const_cast<char*>(stream_.url));
 }
 
-void PluginStream::UpdateUrl(const char* url) {
-  DCHECK(!opened_);
-  free(const_cast<char*>(stream_.url));
-  stream_.url = base::strdup(url);
-  pending_redirect_url_.clear();
-}
-
 bool PluginStream::Open(const std::string& mime_type,
                         const std::string& headers,
                         uint32 length,

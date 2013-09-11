@@ -7,13 +7,14 @@
 
 #include <vector>
 
+#include "base/memory/scoped_ptr.h"
 #include "content/child/npapi/plugin_stream.h"
 #include "content/child/npapi/webplugin_resource_client.h"
 #include "url/gurl.h"
 
 namespace content {
-
 class PluginInstance;
+class PluginURLFetcher;
 
 // A NPAPI Stream based on a URL.
 class PluginStreamUrl : public PluginStream,
@@ -28,6 +29,10 @@ class PluginStreamUrl : public PluginStream,
                   PluginInstance *instance,
                   bool notify_needed,
                   void *notify_data);
+
+  void SetPluginURLFetcher(PluginURLFetcher* fetcher);
+
+  void URLRedirectResponse(bool allow);
 
   // Stop sending the stream to the client.
   // Overrides the base Close so we can cancel our fetching the URL if
@@ -58,11 +63,22 @@ class PluginStreamUrl : public PluginStream,
  private:
   void SetDeferLoading(bool value);
 
+  // In case of a redirect, this can be called to update the url.  But it must
+  // be called before Open().
+  void UpdateUrl(const char* url);
+
   GURL url_;
   unsigned long id_;
   // Ids of additional resources requested via range requests issued on
   // seekable streams.
   std::vector<unsigned long> range_requests_;
+
+  // If the plugin participates in HTTP URL redirect handling then this member
+  // holds the url being redirected to while we wait for the plugin to make a
+  // decision on whether to allow or deny the redirect.
+  std::string pending_redirect_url_;
+
+  scoped_ptr<PluginURLFetcher> plugin_url_fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginStreamUrl);
 };

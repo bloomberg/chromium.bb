@@ -195,6 +195,9 @@ bool ResourceRequestInfoImpl::GetAssociatedRenderView(
       *render_view_id = -1;
       return false;
     }
+  } else if (process_type_ == PROCESS_TYPE_PLUGIN) {
+    *render_process_id = origin_pid_;
+    *render_view_id = route_id_;
   } else {
     *render_process_id = child_id_;
     *render_view_id = route_id_;

@@ -48,6 +48,9 @@ IPC_MESSAGE_CONTROL3(PluginProcessMsg_ClearSiteData,
 IPC_MESSAGE_CONTROL1(PluginProcessHostMsg_ChannelCreated,
                      IPC::ChannelHandle /* channel_handle */)
 
+IPC_MESSAGE_CONTROL1(PluginProcessHostMsg_ChannelDestroyed,
+                     int /* renderer_id */)
+
 IPC_MESSAGE_CONTROL1(PluginProcessHostMsg_ClearSiteDataResult,
                      bool /* success */)
 

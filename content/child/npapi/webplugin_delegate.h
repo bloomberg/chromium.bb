@@ -28,7 +28,6 @@ class Rect;
 
 namespace content {
 
-class WebPlugin;
 class WebPluginResourceClient;
 
 // This is the interface that a plugin implementation needs to provide.
@@ -48,7 +47,6 @@ class WebPluginDelegate {
   virtual bool Initialize(const GURL& url,
                           const std::vector<std::string>& arg_names,
                           const std::vector<std::string>& arg_values,
-                          WebPlugin* plugin,
                           bool load_manually) = 0;
 
   // Called when the WebPlugin is being destroyed.  This is a signal to the
@@ -129,6 +127,22 @@ class WebPluginDelegate {
   // has become seekable.
   virtual WebPluginResourceClient* CreateSeekableResourceClient(
       unsigned long resource_id, int range_request_id) = 0;
+
+  // Tell the plugin that the given URL should be fetched. This is a result of
+  // loading the plugin data or the plugin calling HandleURLRequest which didn't
+  // end up being routed to another frame or being a javscript:// URL.
+  virtual void FetchURL(unsigned long resource_id,
+                        int notify_id,
+                        const GURL& url,
+                        const GURL& first_party_for_cookies,
+                        const std::string& method,
+                        const std::string& post_data,
+                        const GURL& referrer,
+                        bool notify_redirects,
+                        bool is_plugin_src_load,
+                        int origin_pid,
+                        int render_view_id) = 0;
+
 };
 
 }  // namespace content

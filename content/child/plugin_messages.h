@@ -52,6 +52,19 @@ IPC_STRUCT_BEGIN(PluginMsg_DidReceiveResponseParams)
   IPC_STRUCT_MEMBER(bool, request_is_seekable)
 IPC_STRUCT_END()
 
+IPC_STRUCT_BEGIN(PluginMsg_FetchURL_Params)
+  IPC_STRUCT_MEMBER(unsigned long, resource_id)
+  IPC_STRUCT_MEMBER(int, notify_id)
+  IPC_STRUCT_MEMBER(GURL, url)
+  IPC_STRUCT_MEMBER(GURL, first_party_for_cookies)
+  IPC_STRUCT_MEMBER(std::string, method)
+  IPC_STRUCT_MEMBER(std::string, post_data)
+  IPC_STRUCT_MEMBER(GURL, referrer)
+  IPC_STRUCT_MEMBER(bool, notify_redirect)
+  IPC_STRUCT_MEMBER(bool, is_plugin_src_load)
+  IPC_STRUCT_MEMBER(int, render_view_id)
+IPC_STRUCT_END()
+
 IPC_STRUCT_BEGIN(PluginMsg_UpdateGeometry_Param)
   IPC_STRUCT_MEMBER(gfx::Rect, window_rect)
   IPC_STRUCT_MEMBER(gfx::Rect, clip_rect)
@@ -125,36 +138,6 @@ IPC_SYNC_MESSAGE_ROUTED1_2(PluginMsg_HandleInputEvent,
 IPC_MESSAGE_ROUTED1(PluginMsg_SetContentAreaFocus,
                     bool /* has_focus */)
 
-#if defined(OS_WIN)
-IPC_MESSAGE_ROUTED4(PluginMsg_ImeCompositionUpdated,
-                    string16 /* text */,
-                    std::vector<int> /* clauses */,
-                    std::vector<int>, /* target */
-                    int /* cursor_position */)
-
-IPC_MESSAGE_ROUTED1(PluginMsg_ImeCompositionCompleted,
-                    string16 /* text */)
-#endif
-
-#if defined(OS_MACOSX)
-IPC_MESSAGE_ROUTED1(PluginMsg_SetWindowFocus,
-                    bool /* has_focus */)
-
-IPC_MESSAGE_ROUTED0(PluginMsg_ContainerHidden)
-
-IPC_MESSAGE_ROUTED3(PluginMsg_ContainerShown,
-                    gfx::Rect /* window_frame */,
-                    gfx::Rect /* view_frame */,
-                    bool /* has_focus */)
-
-IPC_MESSAGE_ROUTED2(PluginMsg_WindowFrameChanged,
-                    gfx::Rect /* window_frame */,
-                    gfx::Rect /* view_frame */)
-
-IPC_MESSAGE_ROUTED1(PluginMsg_ImeCompositionCompleted,
-                    string16 /* text */)
-#endif
-
 IPC_SYNC_MESSAGE_ROUTED3_0(PluginMsg_WillSendRequest,
                            unsigned long /* id */,
                            GURL /* url */,
@@ -206,7 +189,38 @@ IPC_MESSAGE_CONTROL1(PluginMsg_SignalModalDialogEvent,
 IPC_MESSAGE_CONTROL1(PluginMsg_ResetModalDialogEvent,
                      int /* render_view_id */)
 
+IPC_MESSAGE_ROUTED1(PluginMsg_FetchURL,
+                    PluginMsg_FetchURL_Params)
+
+#if defined(OS_WIN)
+IPC_MESSAGE_ROUTED4(PluginMsg_ImeCompositionUpdated,
+                    string16 /* text */,
+                    std::vector<int> /* clauses */,
+                    std::vector<int>, /* target */
+                    int /* cursor_position */)
+
+IPC_MESSAGE_ROUTED1(PluginMsg_ImeCompositionCompleted,
+                    string16 /* text */)
+#endif
+
 #if defined(OS_MACOSX)
+IPC_MESSAGE_ROUTED1(PluginMsg_SetWindowFocus,
+                    bool /* has_focus */)
+
+IPC_MESSAGE_ROUTED0(PluginMsg_ContainerHidden)
+
+IPC_MESSAGE_ROUTED3(PluginMsg_ContainerShown,
+                    gfx::Rect /* window_frame */,
+                    gfx::Rect /* view_frame */,
+                    bool /* has_focus */)
+
+IPC_MESSAGE_ROUTED2(PluginMsg_WindowFrameChanged,
+                    gfx::Rect /* window_frame */,
+                    gfx::Rect /* view_frame */)
+
+IPC_MESSAGE_ROUTED1(PluginMsg_ImeCompositionCompleted,
+                    string16 /* text */)
+
 // This message, used only on 10.6 and later, transmits the "fake"
 // window handle allocated by the browser on behalf of the renderer
 // to the GPU plugin.
@@ -223,26 +237,6 @@ IPC_MESSAGE_ROUTED1(PluginMsg_SetFakeAcceleratedSurfaceWindowHandle,
 // plugin. It is NULL for windowless plugins.
 IPC_SYNC_MESSAGE_ROUTED1_0(PluginHostMsg_SetWindow,
                            gfx::PluginWindowHandle /* window */)
-
-#if defined(OS_WIN)
-// The modal_loop_pump_messages_event parameter is an event handle which is
-// passed in for windowless plugins and is used to indicate if messages
-// are to be pumped in sync calls to the plugin process. Currently used
-// in HandleEvent calls.
-IPC_SYNC_MESSAGE_ROUTED2_0(PluginHostMsg_SetWindowlessData,
-                           HANDLE /* modal_loop_pump_messages_event */,
-                           gfx::NativeViewId /* dummy_activation_window*/)
-
-// Send the IME status retrieved from a windowless plug-in. A windowless plug-in
-// uses the IME attached to a browser process as a renderer does. A plug-in
-// sends this message to control the IME status of a browser process. I would
-// note that a plug-in sends this message to a renderer process that hosts this
-// plug-in (not directly to a browser process) so the renderer process can
-// update its IME status.
-IPC_MESSAGE_ROUTED2(PluginHostMsg_NotifyIMEStatus,
-                    int /* input_type */,
-                    gfx::Rect /* caret_rect */)
-#endif
 
 IPC_MESSAGE_ROUTED1(PluginHostMsg_URLRequest,
                     PluginHostMsg_URLRequest_Params)
@@ -292,6 +286,34 @@ IPC_SYNC_MESSAGE_CONTROL1_0(PluginHostMsg_SetException,
 
 IPC_MESSAGE_CONTROL0(PluginHostMsg_PluginShuttingDown)
 
+IPC_MESSAGE_ROUTED2(PluginHostMsg_URLRedirectResponse,
+                    bool /* allow */,
+                    int  /* resource_id */)
+
+IPC_SYNC_MESSAGE_ROUTED1_1(PluginHostMsg_CheckIfRunInsecureContent,
+                           GURL /* url */,
+                           bool /* result */)
+
+#if defined(OS_WIN)
+// The modal_loop_pump_messages_event parameter is an event handle which is
+// passed in for windowless plugins and is used to indicate if messages
+// are to be pumped in sync calls to the plugin process. Currently used
+// in HandleEvent calls.
+IPC_SYNC_MESSAGE_ROUTED2_0(PluginHostMsg_SetWindowlessData,
+                           HANDLE /* modal_loop_pump_messages_event */,
+                           gfx::NativeViewId /* dummy_activation_window*/)
+
+// Send the IME status retrieved from a windowless plug-in. A windowless plug-in
+// uses the IME attached to a browser process as a renderer does. A plug-in
+// sends this message to control the IME status of a browser process. I would
+// note that a plug-in sends this message to a renderer process that hosts this
+// plug-in (not directly to a browser process) so the renderer process can
+// update its IME status.
+IPC_MESSAGE_ROUTED2(PluginHostMsg_NotifyIMEStatus,
+                    int /* input_type */,
+                    gfx::Rect /* caret_rect */)
+#endif
+
 #if defined(OS_MACOSX)
 IPC_MESSAGE_ROUTED1(PluginHostMsg_FocusChanged,
                     bool /* focused */)
@@ -321,10 +343,6 @@ IPC_MESSAGE_ROUTED3(PluginHostMsg_AcceleratedPluginAllocatedIOSurface,
 // needs to redraw.
 IPC_MESSAGE_ROUTED0(PluginHostMsg_AcceleratedPluginSwappedIOSurface)
 #endif
-
-IPC_MESSAGE_ROUTED2(PluginHostMsg_URLRedirectResponse,
-                    bool /* allow */,
-                    int  /* resource_id */)
 
 
 //-----------------------------------------------------------------------------

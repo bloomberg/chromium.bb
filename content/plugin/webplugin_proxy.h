@@ -19,6 +19,7 @@
 #include "base/timer/timer.h"
 #include "content/child/npapi/webplugin.h"
 #include "ipc/ipc_message.h"
+#include "ipc/ipc_sender.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "url/gurl.h"
@@ -27,6 +28,8 @@
 #endif
 #include "ui/gl/gpu_preference.h"
 #include "ui/surface/transport_dib.h"
+
+struct PluginMsg_FetchURL_Params;
 
 namespace content {
 class PluginChannel;
@@ -38,7 +41,8 @@ class WebPluginAcceleratedSurfaceProxy;
 
 // This is an implementation of WebPlugin that proxies all calls to the
 // renderer.
-class WebPluginProxy : public WebPlugin {
+class WebPluginProxy : public WebPlugin,
+                       public IPC::Sender {
  public:
   // Creates a new proxy for WebPlugin, using the given sender to send the
   // marshalled WebPlugin calls.
@@ -54,10 +58,6 @@ class WebPluginProxy : public WebPlugin {
   virtual void SetWindow(gfx::PluginWindowHandle window) OVERRIDE;
   virtual void SetAcceptsInputEvents(bool accepts) OVERRIDE;
   virtual void WillDestroyWindow(gfx::PluginWindowHandle window) OVERRIDE;
-#if defined(OS_WIN)
-  void SetWindowlessData(HANDLE pump_messages_event,
-                         gfx::NativeViewId dummy_activation_window);
-#endif
   virtual void CancelResource(unsigned long id) OVERRIDE;
   virtual void Invalidate() OVERRIDE;
   virtual void InvalidateRect(const gfx::Rect& rect) OVERRIDE;
@@ -91,7 +91,12 @@ class WebPluginProxy : public WebPlugin {
   virtual bool IsOffTheRecord() OVERRIDE;
   virtual void ResourceClientDeleted(
       WebPluginResourceClient* resource_client) OVERRIDE;
-
+  virtual void URLRedirectResponse(bool allow, int resource_id) OVERRIDE;
+  virtual bool CheckIfRunInsecureContent(const GURL& url) OVERRIDE;
+#if defined(OS_WIN)
+  void SetWindowlessData(HANDLE pump_messages_event,
+                         gfx::NativeViewId dummy_activation_window);
+#endif
 #if defined(OS_MACOSX)
   virtual void FocusChanged(bool focused) OVERRIDE;
   virtual void StartIme() OVERRIDE;
@@ -103,7 +108,9 @@ class WebPluginProxy : public WebPlugin {
                                                    uint32 surface_id) OVERRIDE;
   virtual void AcceleratedPluginSwappedIOSurface() OVERRIDE;
 #endif
-  virtual void URLRedirectResponse(bool allow, int resource_id) OVERRIDE;
+
+  // IPC::Sender implementation.
+  virtual bool Send(IPC::Message* msg) OVERRIDE;
 
   // class-specific methods
 
@@ -147,8 +154,6 @@ class WebPluginProxy : public WebPlugin {
 
     scoped_ptr<TransportDIB> dib_;
   };
-
-  bool Send(IPC::Message* msg);
 
   // Handler for sending over the paint event to the plugin.
   void OnPaint(const gfx::Rect& damaged_rect);

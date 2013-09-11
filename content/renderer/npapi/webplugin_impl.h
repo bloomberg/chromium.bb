@@ -66,9 +66,9 @@ class WebPluginImpl : public WebPlugin,
                                          const char* buf,
                                          uint32 length);
 
-  virtual WebPluginDelegate* delegate();
+  WebKit::WebFrame* webframe() { return webframe_; }
+  WebPluginDelegate* delegate() { return delegate_; }
 
- private:
   // WebKit::WebPlugin methods:
   virtual bool initialize(
       WebKit::WebPluginContainer* container);
@@ -101,12 +101,6 @@ class WebPluginImpl : public WebPlugin,
   virtual void SetWindow(gfx::PluginWindowHandle window) OVERRIDE;
   virtual void SetAcceptsInputEvents(bool accepts) OVERRIDE;
   virtual void WillDestroyWindow(gfx::PluginWindowHandle window) OVERRIDE;
-#if defined(OS_WIN)
-  void SetWindowlessData(HANDLE pump_messages_event,
-                         gfx::NativeViewId dummy_activation_window) { }
-  void ReparentPluginWindow(HWND window, HWND parent) { }
-  void ReportExecutableMemory(size_t size) { }
-#endif
   virtual void CancelResource(unsigned long id) OVERRIDE;
   virtual void Invalidate() OVERRIDE;
   virtual void InvalidateRect(const gfx::Rect& rect) OVERRIDE;
@@ -119,7 +113,29 @@ class WebPluginImpl : public WebPlugin,
                          const std::string& cookie) OVERRIDE;
   virtual std::string GetCookies(const GURL& url,
                                  const GURL& first_party_for_cookies) OVERRIDE;
+  virtual void HandleURLRequest(const char* url,
+                                const char *method,
+                                const char* target,
+                                const char* buf,
+                                unsigned int len,
+                                int notify_id,
+                                bool popups_allowed,
+                                bool notify_redirects) OVERRIDE;
+  virtual void CancelDocumentLoad() OVERRIDE;
+  virtual void InitiateHTTPRangeRequest(const char* url,
+                                        const char* range_info,
+                                        int pending_request_id) OVERRIDE;
+  virtual bool IsOffTheRecord() OVERRIDE;
+  virtual void SetDeferResourceLoading(unsigned long resource_id,
+                                       bool defer) OVERRIDE;
   virtual void URLRedirectResponse(bool allow, int resource_id) OVERRIDE;
+  virtual bool CheckIfRunInsecureContent(const GURL& url) OVERRIDE;
+#if defined(OS_WIN)
+  void SetWindowlessData(HANDLE pump_messages_event,
+                         gfx::NativeViewId dummy_activation_window) { }
+  void ReparentPluginWindow(HWND window, HWND parent) { }
+  void ReportExecutableMemory(size_t size) { }
+#endif
 #if defined(OS_MACOSX)
   virtual WebPluginAcceleratedSurface* GetAcceleratedSurface(
       gfx::GpuPreference gpu_preference) OVERRIDE;
@@ -130,6 +146,7 @@ class WebPluginImpl : public WebPlugin,
   virtual void AcceleratedPluginSwappedIOSurface() OVERRIDE;
 #endif
 
+ private:
   // Given a (maybe partial) url, completes using the base url.
   GURL CompleteURL(const char* url);
 
@@ -214,27 +231,6 @@ class WebPluginImpl : public WebPlugin,
   // Helper function to remove the stored information about a resource
   // request given a handle.
   void RemoveClient(WebKit::WebURLLoader* loader);
-
-  virtual void HandleURLRequest(const char* url,
-                                const char *method,
-                                const char* target,
-                                const char* buf,
-                                unsigned int len,
-                                int notify_id,
-                                bool popups_allowed,
-                                bool notify_redirects) OVERRIDE;
-
-  virtual void CancelDocumentLoad() OVERRIDE;
-
-  virtual void InitiateHTTPRangeRequest(const char* url,
-                                        const char* range_info,
-                                        int pending_request_id) OVERRIDE;
-
-  virtual void SetDeferResourceLoading(unsigned long resource_id,
-                                       bool defer) OVERRIDE;
-
-  // Ignore in-process plugins mode for this flag.
-  virtual bool IsOffTheRecord() OVERRIDE;
 
   // Handles HTTP multipart responses, i.e. responses received with a HTTP
   // status code of 206.

@@ -148,6 +148,9 @@ IPC_STRUCT_BEGIN(ResourceHostMsg_Request)
 
   // Process ID from which this request originated, or zero if it originated
   // in the renderer itself.
+  // If kDirectNPAPIRequests isn't specified, then plugin requests get routed
+  // through the renderer and and this holds the pid of the plugin process.
+  // Otherwise this holds the render_process_id of the view that has the plugin.
   IPC_STRUCT_MEMBER(int, origin_pid)
 
   // What this resource load is for (main frame, sub-frame, sub-resource,

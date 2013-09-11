@@ -675,13 +675,9 @@ void PluginInstance::URLRedirectResponse(bool allow, void* notify_data) {
           stream_index != open_streams_.end(); ++stream_index) {
     PluginStream* plugin_stream = stream_index->get();
     if (plugin_stream->notify_data() == notify_data) {
-      WebPluginResourceClient* resource_client =
-          plugin_stream->AsResourceClient();
-      webplugin_->URLRedirectResponse(allow, resource_client->ResourceId());
-      if (allow) {
-        plugin_stream->UpdateUrl(
-            plugin_stream->pending_redirect_url().c_str());
-      }
+      PluginStreamUrl* plugin_stream_url =
+          static_cast<PluginStreamUrl*>(plugin_stream);
+      plugin_stream_url->URLRedirectResponse(allow);
       break;
     }
   }

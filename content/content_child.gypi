@@ -89,6 +89,8 @@
     'child/npapi/plugin_stream_win.cc',
     'child/npapi/plugin_string_stream.cc',
     'child/npapi/plugin_string_stream.h',
+    'child/npapi/plugin_url_fetcher.cc',
+    'child/npapi/plugin_url_fetcher.h',
     'child/npapi/plugin_web_event_converter_mac.h',
     'child/npapi/plugin_web_event_converter_mac.mm',
     'child/npapi/webplugin.h',

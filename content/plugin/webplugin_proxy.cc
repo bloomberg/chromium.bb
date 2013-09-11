@@ -14,6 +14,7 @@
 #include "content/child/npapi/npobject_proxy.h"
 #include "content/child/npapi/npobject_util.h"
 #include "content/child/npapi/webplugin_delegate_impl.h"
+#include "content/child/npapi/webplugin_resource_client.h"
 #include "content/child/plugin_messages.h"
 #include "content/plugin/plugin_channel.h"
 #include "content/plugin/plugin_thread.h"
@@ -676,12 +677,14 @@ bool WebPluginProxy::IsOffTheRecord() {
 
 void WebPluginProxy::ResourceClientDeleted(
     WebPluginResourceClient* resource_client) {
+  // resource_client->ResourceId() is 0 at this point, so can't use it as an
+  // index into the map.
   ResourceClientMap::iterator index = resource_clients_.begin();
   while (index != resource_clients_.end()) {
     WebPluginResourceClient* client = (*index).second;
-
     if (client == resource_client) {
-      resource_clients_.erase(index++);
+      resource_clients_.erase(index);
+      return;
     } else {
       index++;
     }
@@ -690,6 +693,13 @@ void WebPluginProxy::ResourceClientDeleted(
 
 void WebPluginProxy::URLRedirectResponse(bool allow, int resource_id) {
   Send(new PluginHostMsg_URLRedirectResponse(route_id_, allow, resource_id));
+}
+
+bool WebPluginProxy::CheckIfRunInsecureContent(const GURL& url) {
+  bool result = true;
+  Send(new PluginHostMsg_CheckIfRunInsecureContent(
+      host_render_view_routing_id_, url, &result));
+  return result;
 }
 
 #if defined(OS_WIN) && !defined(USE_AURA)

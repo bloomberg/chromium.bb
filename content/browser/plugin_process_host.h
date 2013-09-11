@@ -8,6 +8,7 @@
 #include "build/build_config.h"
 
 #include <list>
+#include <map>
 #include <set>
 #include <string>
 #include <vector>
@@ -22,6 +23,9 @@
 #include "content/public/common/webplugininfo.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ui/gfx/native_widget_types.h"
+#include "webkit/common/resource_type.h"
+
+struct ResourceHostMsg_Request;
 
 namespace gfx {
 class Rect;
@@ -29,6 +33,10 @@ class Rect;
 
 namespace IPC {
 struct ChannelHandle;
+}
+
+namespace net {
+class URLRequestContext;
 }
 
 namespace content {
@@ -87,9 +95,6 @@ class CONTENT_EXPORT PluginProcessHost : public BrowserChildProcessHostDelegate,
   // OnChannelOpened in the client is called.
   void OpenChannelToPlugin(Client* client);
 
-  // Cancels all pending channel requests for the given resource context.
-  static void CancelPendingRequestsForResourceContext(ResourceContext* context);
-
   // This function is called to cancel pending requests to open new channels.
   void CancelPendingRequest(Client* client);
 
@@ -125,6 +130,7 @@ class CONTENT_EXPORT PluginProcessHost : public BrowserChildProcessHostDelegate,
 
   // Message handlers.
   void OnChannelCreated(const IPC::ChannelHandle& channel_handle);
+  void OnChannelDestroyed(int renderer_id);
 
 #if defined(OS_WIN)
   void OnPluginWindowDestroyed(HWND window, HWND parent);
@@ -147,6 +153,11 @@ class CONTENT_EXPORT PluginProcessHost : public BrowserChildProcessHostDelegate,
   virtual void OnProcessCrashed(int exit_code) OVERRIDE;
 
   void CancelRequests();
+
+  // Callback for ResourceMessageFilter.
+  void GetContexts(const ResourceHostMsg_Request& request,
+                   ResourceContext** resource_context,
+                   net::URLRequestContext** request_context);
 
   // These are channel requests that we are waiting to send to the
   // plugin process once the channel is opened.
@@ -173,6 +184,10 @@ class CONTENT_EXPORT PluginProcessHost : public BrowserChildProcessHostDelegate,
   // Tracks the current visibility of the cursor.
   bool plugin_cursor_visible_;
 #endif
+
+  // Map from render_process_id to its ResourceContext
+  typedef std::map<int, ResourceContext*> ResourceContextMap;
+  ResourceContextMap resource_context_map_;
 
   scoped_ptr<BrowserChildProcessHostImpl> process_;
 

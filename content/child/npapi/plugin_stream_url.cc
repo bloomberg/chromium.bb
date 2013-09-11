@@ -6,9 +6,11 @@
 
 #include <algorithm>
 
+#include "base/strings/string_util.h"
 #include "content/child/npapi/plugin_host.h"
 #include "content/child/npapi/plugin_instance.h"
 #include "content/child/npapi/plugin_lib.h"
+#include "content/child/npapi/plugin_url_fetcher.h"
 #include "content/child/npapi/webplugin.h"
 #include "net/http/http_response_headers.h"
 
@@ -23,6 +25,21 @@ PluginStreamUrl::PluginStreamUrl(
     : PluginStream(instance, url.spec().c_str(), notify_needed, notify_data),
       url_(url),
       id_(resource_id) {
+}
+
+void PluginStreamUrl::SetPluginURLFetcher(PluginURLFetcher* fetcher) {
+  plugin_url_fetcher_.reset(fetcher);
+}
+
+void PluginStreamUrl::URLRedirectResponse(bool allow) {
+  if (plugin_url_fetcher_.get()) {
+    plugin_url_fetcher_->URLRedirectResponse(allow);
+  } else {
+    instance()->webplugin()->URLRedirectResponse(allow, id_);
+  }
+
+  if (allow)
+    UpdateUrl(pending_redirect_url_.c_str());
 }
 
 bool PluginStreamUrl::Close(NPReason reason) {
@@ -41,8 +58,12 @@ WebPluginResourceClient* PluginStreamUrl::AsResourceClient() {
 
 void PluginStreamUrl::CancelRequest() {
   if (id_ > 0) {
-    if (instance()->webplugin()) {
-      instance()->webplugin()->CancelResource(id_);
+    if (plugin_url_fetcher_.get()) {
+      plugin_url_fetcher_->Cancel();
+    } else {
+      if (instance()->webplugin()) {
+        instance()->webplugin()->CancelResource(id_);
+      }
     }
     id_ = 0;
   }
@@ -141,7 +162,7 @@ int PluginStreamUrl::ResourceId() {
 }
 
 PluginStreamUrl::~PluginStreamUrl() {
-  if (instance() && instance()->webplugin()) {
+  if (!plugin_url_fetcher_.get() && instance() && instance()->webplugin()) {
     instance()->webplugin()->ResourceClientDeleted(AsResourceClient());
   }
 }
@@ -157,6 +178,13 @@ void PluginStreamUrl::SetDeferLoading(bool value) {
   for (size_t i = 0; i < range_requests_.size(); ++i)
     instance()->webplugin()->SetDeferResourceLoading(range_requests_[i],
                                                      value);
+}
+
+void PluginStreamUrl::UpdateUrl(const char* url) {
+  DCHECK(!open());
+  free(const_cast<char*>(stream()->url));
+  stream()->url = base::strdup(url);
+  pending_redirect_url_.clear();
 }
 
 }  // namespace content

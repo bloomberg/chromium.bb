@@ -39,6 +39,7 @@ namespace content {
 class NPObjectStub;
 class PluginChannelHost;
 class RenderViewImpl;
+class WebPluginImpl;
 
 // An implementation of WebPluginDelegate that proxies all calls to
 // the plugin process.
@@ -48,7 +49,8 @@ class WebPluginDelegateProxy
       public IPC::Sender,
       public base::SupportsWeakPtr<WebPluginDelegateProxy> {
  public:
-  WebPluginDelegateProxy(const std::string& mime_type,
+  WebPluginDelegateProxy(WebPluginImpl* plugin,
+                         const std::string& mime_type,
                          const base::WeakPtr<RenderViewImpl>& render_view);
 
   // WebPluginDelegate implementation:
@@ -56,7 +58,6 @@ class WebPluginDelegateProxy
   virtual bool Initialize(const GURL& url,
                           const std::vector<std::string>& arg_names,
                           const std::vector<std::string>& arg_values,
-                          WebPlugin* plugin,
                           bool load_manually) OVERRIDE;
   virtual void UpdateGeometry(const gfx::Rect& window_rect,
                               const gfx::Rect& clip_rect) OVERRIDE;
@@ -122,6 +123,17 @@ class WebPluginDelegateProxy
       unsigned long resource_id, const GURL& url, int notify_id) OVERRIDE;
   virtual WebPluginResourceClient* CreateSeekableResourceClient(
       unsigned long resource_id, int range_request_id) OVERRIDE;
+  virtual void FetchURL(unsigned long resource_id,
+                        int notify_id,
+                        const GURL& url,
+                        const GURL& first_party_for_cookies,
+                        const std::string& method,
+                        const std::string& post_data,
+                        const GURL& referrer,
+                        bool notify_redirects,
+                        bool is_plugin_src_load,
+                        int origin_pid,
+                        int render_view_id) OVERRIDE;
 
   gfx::PluginWindowHandle GetPluginWindowHandle();
 
@@ -141,11 +153,6 @@ class WebPluginDelegateProxy
   // Message handlers for messages that proxy WebPlugin methods, which
   // we translate into calls to the real WebPlugin.
   void OnSetWindow(gfx::PluginWindowHandle window);
-#if defined(OS_WIN)
-  void OnSetWindowlessData(HANDLE modal_loop_pump_messages_event,
-                           gfx::NativeViewId dummy_activation_window);
-  void OnNotifyIMEStatus(const int input_mode, const gfx::Rect& caret_rect);
-#endif
   void OnCompleteURL(const std::string& url_in, std::string* url_out,
                      bool* result);
   void OnHandleURLRequest(const PluginHostMsg_URLRequest_Params& params);
@@ -164,7 +171,8 @@ class WebPluginDelegateProxy
                                   const std::string& range_info,
                                   int range_request_id);
   void OnDeferResourceLoading(unsigned long resource_id, bool defer);
-
+  void OnURLRedirectResponse(bool allow, int resource_id);
+  void OnCheckIfRunInsecureContent(const GURL& url, bool* result);
 #if defined(OS_MACOSX)
   void OnFocusChanged(bool focused);
   void OnStartIme();
@@ -175,9 +183,11 @@ class WebPluginDelegateProxy
                                              uint32 surface_id);
   void OnAcceleratedPluginSwappedIOSurface();
 #endif
-
-  void OnURLRedirectResponse(bool allow, int resource_id);
-
+#if defined(OS_WIN)
+  void OnSetWindowlessData(HANDLE modal_loop_pump_messages_event,
+                           gfx::NativeViewId dummy_activation_window);
+  void OnNotifyIMEStatus(const int input_mode, const gfx::Rect& caret_rect);
+#endif
   // Helper function that sends the UpdateGeometry message.
   void SendUpdateGeometry(bool bitmaps_changed);
 
@@ -238,7 +248,7 @@ class WebPluginDelegateProxy
 #endif
 
   base::WeakPtr<RenderViewImpl> render_view_;
-  WebPlugin* plugin_;
+  WebPluginImpl* plugin_;
   bool uses_shared_bitmaps_;
 #if defined(OS_MACOSX)
   bool uses_compositor_;

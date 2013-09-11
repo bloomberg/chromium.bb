@@ -19,6 +19,7 @@
 
 struct PluginMsg_Init_Params;
 struct PluginMsg_DidReceiveResponseParams;
+struct PluginMsg_FetchURL_Params;
 struct PluginMsg_UpdateGeometry_Param;
 class WebCursor;
 
@@ -107,6 +108,7 @@ class WebPluginDelegateStub : public IPC::Listener,
                                const GURL& url,
                                int notify_id);
   void OnHTTPRangeRequestReply(unsigned long resource_id, int range_request_id);
+  void OnFetchURL(const PluginMsg_FetchURL_Params& params);
 
   std::string mime_type_;
   int instance_id_;

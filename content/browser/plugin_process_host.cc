@@ -22,6 +22,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/browser_child_process_host_impl.h"
+#include "content/browser/loader/resource_message_filter.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/plugin_service_impl.h"
 #include "content/common/child_process_host_impl.h"
@@ -31,9 +32,11 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/plugin_service.h"
+#include "content/public/browser/resource_context.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
 #include "ipc/ipc_switches.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/gl_switches.h"
@@ -253,6 +256,16 @@ bool PluginProcessHost::Init(const WebPluginInfo& info) {
   // been destroyed.
   process_->SetTerminateChildOnShutdown(false);
 
+  ResourceMessageFilter::GetContextsCallback get_contexts_callback(
+      base::Bind(&PluginProcessHost::GetContexts,
+      base::Unretained(this)));
+
+  // TODO(jam): right now we're passing NULL for appcache, blob storage, and
+  // file system. If NPAPI plugins actually use this, we'll have to plumb them.
+  ResourceMessageFilter* resource_message_filter = new ResourceMessageFilter(
+      process_->GetData().id, PROCESS_TYPE_PLUGIN, NULL, NULL, NULL,
+      get_contexts_callback);
+  process_->GetHost()->AddFilter(resource_message_filter);
   return true;
 }
 
@@ -270,6 +283,8 @@ bool PluginProcessHost::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PluginProcessHost, msg)
     IPC_MESSAGE_HANDLER(PluginProcessHostMsg_ChannelCreated, OnChannelCreated)
+    IPC_MESSAGE_HANDLER(PluginProcessHostMsg_ChannelDestroyed,
+                        OnChannelDestroyed)
 #if defined(OS_WIN)
     IPC_MESSAGE_HANDLER(PluginProcessHostMsg_PluginWindowDestroyed,
                         OnPluginWindowDestroyed)
@@ -291,7 +306,6 @@ bool PluginProcessHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
-  DCHECK(handled);
   return handled;
 }
 
@@ -325,21 +339,6 @@ void PluginProcessHost::CancelRequests() {
     if (client)
       client->OnError();
     sent_requests_.pop_front();
-  }
-}
-
-// static
-void PluginProcessHost::CancelPendingRequestsForResourceContext(
-    ResourceContext* context) {
-  for (PluginProcessHostIterator host_it; !host_it.Done(); ++host_it) {
-    PluginProcessHost* host = *host_it;
-    for (size_t i = 0; i < host->pending_requests_.size(); ++i) {
-      if (host->pending_requests_[i]->GetResourceContext() == context) {
-        host->pending_requests_[i]->OnError();
-        host->pending_requests_.erase(host->pending_requests_.begin() + i);
-        --i;
-      }
-    }
   }
 }
 
@@ -408,9 +407,22 @@ void PluginProcessHost::OnChannelCreated(
     const IPC::ChannelHandle& channel_handle) {
   Client* client = sent_requests_.front();
 
-  if (client)
+  if (client) {
+    resource_context_map_[client->ID()] = client->GetResourceContext();
     client->OnChannelOpened(channel_handle);
+  }
   sent_requests_.pop_front();
+}
+
+void PluginProcessHost::OnChannelDestroyed(int renderer_id) {
+  resource_context_map_.erase(renderer_id);
+}
+
+void PluginProcessHost::GetContexts(const ResourceHostMsg_Request& request,
+                                    ResourceContext** resource_context,
+                                    net::URLRequestContext** request_context) {
+  *resource_context = resource_context_map_[request.origin_pid];
+  *request_context = (*resource_context)->GetRequestContext();
 }
 
 }  // namespace content
