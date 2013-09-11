@@ -137,7 +137,6 @@ WallpaperManager::WallpaperManager()
       command_line_for_testing_(NULL),
       should_cache_wallpaper_(false),
       weak_factory_(this) {
-  RestartTimer();
   registrar_.Add(this,
                  chrome::NOTIFICATION_LOGIN_USER_CHANGED,
                  content::NotificationService::AllSources());
@@ -164,8 +163,6 @@ WallpaperManager::~WallpaperManager() {
 }
 
 void WallpaperManager::Shutdown() {
-  DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
-  system::TimezoneSettings::GetInstance()->RemoveObserver(this);
   CrosSettings::Get()->RemoveSettingsObserver(
       kAccountsPrefShowUserNamesOnSignIn, this);
   no_observers_ = true;
@@ -179,8 +176,6 @@ void WallpaperManager::RegisterPrefs(PrefRegistrySimple* registry) {
 }
 
 void WallpaperManager::AddObservers() {
-  DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
-  system::TimezoneSettings::GetInstance()->AddObserver(this);
   CrosSettings::Get()->AddSettingsObserver(kAccountsPrefShowUserNamesOnSignIn,
                                            this);
   no_observers_ = false;
@@ -426,29 +421,6 @@ void WallpaperManager::ResizeAndSaveWallpaper(const UserImage& wallpaper,
   }
 }
 
-void WallpaperManager::RestartTimer() {
-  timer_.Stop();
-  // Determine the next update time as the earliest local midnight after now.
-  // Note that this may be more than kWallpaperUpdateIntervalSec seconds in the
-  // future due to DST.
-  base::Time now = base::Time::Now();
-  base::TimeDelta update_interval = base::TimeDelta::FromSeconds(
-      kWallpaperUpdateIntervalSec);
-  base::Time future = now + update_interval;
-  base::Time next_update = future.LocalMidnight();
-  while (next_update < now) {
-    future += update_interval;
-    next_update = future.LocalMidnight();
-  }
-  int64 remaining_seconds = (next_update - now).InSeconds();
-  DCHECK(remaining_seconds > 0);
-  // Set up a one shot timer which will batch update wallpaper at midnight.
-  timer_.Start(FROM_HERE,
-               base::TimeDelta::FromSeconds(remaining_seconds),
-               this,
-               &WallpaperManager::BatchUpdateWallpaper);
-}
-
 void WallpaperManager::SetCustomWallpaper(const std::string& username,
                                           const std::string& file,
                                           ash::WallpaperLayout layout,
@@ -643,10 +615,6 @@ void WallpaperManager::UpdateWallpaper() {
 }
 
 // WallpaperManager, private: --------------------------------------------------
-
-void WallpaperManager::BatchUpdateWallpaper() {
-  NOTIMPLEMENTED();
-}
 
 void WallpaperManager::CacheUsersWallpapers() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -1128,14 +1096,6 @@ void WallpaperManager::StartLoad(const std::string& email,
                                       email,
                                       info.layout,
                                       update_wallpaper));
-}
-
-void WallpaperManager::SystemResumed(const base::TimeDelta& sleep_duration) {
-  BatchUpdateWallpaper();
-}
-
-void WallpaperManager::TimezoneChanged(const icu::TimeZone& timezone) {
-  RestartTimer();
 }
 
 }  // namespace chromeos

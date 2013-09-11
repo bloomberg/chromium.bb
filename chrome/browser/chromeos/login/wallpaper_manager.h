@@ -13,12 +13,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
-#include "base/timer/timer.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_image.h"
 #include "chrome/browser/chromeos/login/user_image_loader.h"
-#include "chrome/browser/chromeos/system/timezone_settings.h"
-#include "chromeos/dbus/power_manager_client.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
@@ -65,9 +62,7 @@ extern const char kThumbnailWallpaperSubDir[];
 
 // This class maintains wallpapers for users who have logged into this Chrome
 // OS device.
-class WallpaperManager: public system::TimezoneSettings::Observer,
-                        public chromeos::PowerManagerClient::Observer,
-                        public content::NotificationObserver {
+class WallpaperManager: public content::NotificationObserver {
  public:
   // For testing.
   class TestApi {
@@ -163,10 +158,6 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
                               int preferred_width,
                               int preferred_height);
 
-  // Starts a one shot timer which calls BatchUpdateWallpaper at next midnight.
-  // Cancel any previous timer if any.
-  void RestartTimer();
-
   // Saves custom wallpaper to file, post task to generate thumbnail and updates
   // local state preferences.
   void SetCustomWallpaper(const std::string& username,
@@ -209,11 +200,6 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
 
   // The number of wallpapers have loaded. For test only.
   int loaded_wallpapers() const { return loaded_wallpapers_; }
-
-  // Change the wallpapers for users who choose DAILY wallpaper type. Updates
-  // current wallpaper if it changed. This function should be called at exactly
-  // at 0am if chromeos device is on.
-  void BatchUpdateWallpaper();
 
   // Cache some (or all) logged in users' wallpapers to memory at login
   // screen. It should not compete with first wallpaper loading when boot
@@ -337,12 +323,6 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
                  bool update_wallpaper,
                  const base::FilePath& wallpaper_path);
 
-  // Overridden from chromeos::PowerManagerObserver.
-  virtual void SystemResumed(const base::TimeDelta& sleep_duration) OVERRIDE;
-
-  // Overridden from system::TimezoneSettings::Observer.
-  virtual void TimezoneChanged(const icu::TimeZone& timezone) OVERRIDE;
-
   // True if wallpaper manager is not observering other objects.
   bool no_observers_;
 
@@ -378,8 +358,6 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
   base::WeakPtrFactory<WallpaperManager> weak_factory_;
 
   content::NotificationRegistrar registrar_;
-
-  base::OneShotTimer<WallpaperManager> timer_;
 
   DISALLOW_COPY_AND_ASSIGN(WallpaperManager);
 };
