@@ -43,8 +43,8 @@ class CustomElementCallbackScheduler {
 public:
     static void scheduleAttributeChangedCallback(PassRefPtr<CustomElementLifecycleCallbacks>, PassRefPtr<Element>, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue);
     static void scheduleCreatedCallback(PassRefPtr<CustomElementLifecycleCallbacks>, PassRefPtr<Element>);
-    static void scheduleEnteredDocumentCallback(PassRefPtr<CustomElementLifecycleCallbacks>, PassRefPtr<Element>);
-    static void scheduleLeftDocumentCallback(PassRefPtr<CustomElementLifecycleCallbacks>, PassRefPtr<Element>);
+    static void scheduleEnteredViewCallback(PassRefPtr<CustomElementLifecycleCallbacks>, PassRefPtr<Element>);
+    static void scheduleLeftViewCallback(PassRefPtr<CustomElementLifecycleCallbacks>, PassRefPtr<Element>);
 
 private:
     CustomElementCallbackScheduler();

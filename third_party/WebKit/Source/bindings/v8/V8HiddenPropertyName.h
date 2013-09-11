@@ -43,9 +43,9 @@ namespace WebCore {
     V(customElementAttributeChanged) \
     V(customElementCreated) \
     V(customElementDocument) \
-    V(customElementEnteredDocument) \
+    V(customElementEnteredView) \
     V(customElementIsInterfacePrototypeObject) \
-    V(customElementLeftDocument) \
+    V(customElementLeftView) \
     V(customElementNamespaceURI) \
     V(customElementTagName) \
     V(customElementType) \

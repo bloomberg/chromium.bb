@@ -21,8 +21,8 @@ withFrame(t.step_func(function (frame) {
     var proto = Object.create(frame.contentWindow.HTMLElement.prototype);
     proto.createdCallback = log('created');
     proto.attributeChangedCallback = log('attribute changed');
-    proto.enteredDocumentCallback = log('entered');
-    proto.leftDocumentCallback = log('left');
+    proto.enteredViewCallback = log('entered');
+    proto.leftViewCallback = log('left');
 
     // Created, owned by a document without a view
 

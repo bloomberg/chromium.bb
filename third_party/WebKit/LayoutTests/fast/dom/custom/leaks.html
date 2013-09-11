@@ -20,8 +20,8 @@ function step1() {
 
         var proto = Object.create(frame.contentWindow.HTMLElement.prototype);
         proto.createdCallback = function () {};
-        proto.enteredDocumentCallback = function () {};
-        proto.leftDocumentCallback = function () {};
+        proto.enteredViewCallback = function () {};
+        proto.leftViewCallback = function () {};
         proto.attributeChangedCallback = function () {};
 
         var ctor = frame.contentDocument.register('x-x', {prototype: proto});

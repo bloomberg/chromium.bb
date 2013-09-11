@@ -94,8 +94,8 @@ withFrame(t.step_func(function(frame) {
         this.setAttribute('prey', 'gargoyles');
         log('created finished');
     };
-    proto.enteredDocumentCallback = function() { log('entered'); };
-    proto.leftDocumentCallback = function() { log('left'); };
+    proto.enteredViewCallback = function() { log('entered'); };
+    proto.leftViewCallback = function() { log('left'); };
     proto.attributeChangedCallback = function() { log('attribute changed'); };
     var D = frame.contentDocument.register('x-d', {prototype: proto});
 

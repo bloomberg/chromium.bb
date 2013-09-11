@@ -47,7 +47,7 @@ shouldBe('a.__proto__', 'HTMLSpanElement.prototype',
 
 var proto = Object.create(HTMLSpanElement.prototype);
 invocations = [];
-proto.enteredDocumentCallback = function () {
+proto.enteredViewCallback = function () {
     invocations.push(this.id + ' entered (main)');
 };
 document.register('x-a', {extends: 'span', prototype: proto});

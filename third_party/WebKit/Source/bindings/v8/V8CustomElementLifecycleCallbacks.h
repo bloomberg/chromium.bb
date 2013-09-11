@@ -48,18 +48,18 @@ class V8PerContextData;
 
 class V8CustomElementLifecycleCallbacks : public CustomElementLifecycleCallbacks, ActiveDOMCallback {
 public:
-    static PassRefPtr<V8CustomElementLifecycleCallbacks> create(ScriptExecutionContext*, v8::Handle<v8::Object> prototype, v8::Handle<v8::Function> created, v8::Handle<v8::Function> enteredDocument, v8::Handle<v8::Function> leftDocument, v8::Handle<v8::Function> attributeChanged);
+    static PassRefPtr<V8CustomElementLifecycleCallbacks> create(ScriptExecutionContext*, v8::Handle<v8::Object> prototype, v8::Handle<v8::Function> created, v8::Handle<v8::Function> enteredView, v8::Handle<v8::Function> leftView, v8::Handle<v8::Function> attributeChanged);
 
     virtual ~V8CustomElementLifecycleCallbacks();
 
     bool setBinding(CustomElementDefinition* owner, PassOwnPtr<CustomElementBinding>);
 
 private:
-    V8CustomElementLifecycleCallbacks(ScriptExecutionContext*, v8::Handle<v8::Object> prototype, v8::Handle<v8::Function> created, v8::Handle<v8::Function> enteredDocument, v8::Handle<v8::Function> leftDocument, v8::Handle<v8::Function> attributeChanged);
+    V8CustomElementLifecycleCallbacks(ScriptExecutionContext*, v8::Handle<v8::Object> prototype, v8::Handle<v8::Function> created, v8::Handle<v8::Function> enteredView, v8::Handle<v8::Function> leftView, v8::Handle<v8::Function> attributeChanged);
 
     virtual void created(Element*) OVERRIDE;
-    virtual void enteredDocument(Element*) OVERRIDE;
-    virtual void leftDocument(Element*) OVERRIDE;
+    virtual void enteredView(Element*) OVERRIDE;
+    virtual void leftView(Element*) OVERRIDE;
     virtual void attributeChanged(Element*, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue) OVERRIDE;
 
     void call(const ScopedPersistent<v8::Function>& weakCallback, Element*);
@@ -70,8 +70,8 @@ private:
     RefPtr<DOMWrapperWorld> m_world;
     ScopedPersistent<v8::Object> m_prototype;
     ScopedPersistent<v8::Function> m_created;
-    ScopedPersistent<v8::Function> m_enteredDocument;
-    ScopedPersistent<v8::Function> m_leftDocument;
+    ScopedPersistent<v8::Function> m_enteredView;
+    ScopedPersistent<v8::Function> m_leftView;
     ScopedPersistent<v8::Function> m_attributeChanged;
 };
 

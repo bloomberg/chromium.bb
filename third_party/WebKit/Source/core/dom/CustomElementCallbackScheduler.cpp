@@ -56,22 +56,22 @@ void CustomElementCallbackScheduler::scheduleCreatedCallback(PassRefPtr<CustomEl
     queue->append(CustomElementCallbackInvocation::createInvocation(callbacks, CustomElementLifecycleCallbacks::Created));
 }
 
-void CustomElementCallbackScheduler::scheduleEnteredDocumentCallback(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, PassRefPtr<Element> element)
+void CustomElementCallbackScheduler::scheduleEnteredViewCallback(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, PassRefPtr<Element> element)
 {
-    if (!callbacks->hasEnteredDocumentCallback())
+    if (!callbacks->hasEnteredViewCallback())
         return;
 
     CustomElementCallbackQueue* queue = CustomElementCallbackDispatcher::instance().schedule(element);
-    queue->append(CustomElementCallbackInvocation::createInvocation(callbacks, CustomElementLifecycleCallbacks::EnteredDocument));
+    queue->append(CustomElementCallbackInvocation::createInvocation(callbacks, CustomElementLifecycleCallbacks::EnteredView));
 }
 
-void CustomElementCallbackScheduler::scheduleLeftDocumentCallback(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, PassRefPtr<Element> element)
+void CustomElementCallbackScheduler::scheduleLeftViewCallback(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, PassRefPtr<Element> element)
 {
-    if (!callbacks->hasLeftDocumentCallback())
+    if (!callbacks->hasLeftViewCallback())
         return;
 
     CustomElementCallbackQueue* queue = CustomElementCallbackDispatcher::instance().schedule(element);
-    queue->append(CustomElementCallbackInvocation::createInvocation(callbacks, CustomElementLifecycleCallbacks::LeftDocument));
+    queue->append(CustomElementCallbackInvocation::createInvocation(callbacks, CustomElementLifecycleCallbacks::LeftView));
 }
 
 } // namespace WebCore

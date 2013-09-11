@@ -62,7 +62,7 @@ withFrame(function (frame) {
     var script = doc.createElement('script');
     script.textContent =
         'var proto = Object.create(HTMLElement.prototype); ' +
-        'proto.leftDocumentCallback = function () { ' +
+        'proto.leftViewCallback = function () { ' +
         '    window.parent.postMessage(' +
         '        {step: "assert", name: document.name}, "*");' +
         '}; ' +

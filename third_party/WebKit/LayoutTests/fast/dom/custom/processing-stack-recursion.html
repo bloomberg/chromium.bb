@@ -91,7 +91,7 @@ test(function () {
     
     var protoA = Object.create(HTMLElement.prototype);
     var n = 0;
-    protoA.enteredDocumentCallback = function () {
+    protoA.enteredViewCallback = function () {
         log('A entered');
         n++;
         if (n < 3) {
@@ -100,7 +100,7 @@ test(function () {
             unindent();
         }
     };
-    protoA.leftDocumentCallback = function () {
+    protoA.leftViewCallback = function () {
         log('A left');
         indented('A inserting parent node');
         document.body.appendChild(this.parentNode);
@@ -113,7 +113,7 @@ test(function () {
 
     var protoB = Object.create(HTMLElement.prototype);
     var m = 0;
-    protoB.enteredDocumentCallback = function () {
+    protoB.enteredViewCallback = function () {
         log('B entered');
         m++;
         if (m == 2) {
@@ -122,7 +122,7 @@ test(function () {
             unindent();
         }
     };
-    protoB.leftDocumentCallback = function () {
+    protoB.leftViewCallback = function () {
         log('B left');
     };
     protoB.attributeChangedCallback = function (name, oldValue, newValue) {
@@ -134,10 +134,10 @@ test(function () {
     var B = document.register('x-b', {prototype: protoB});
 
     var protoC = Object.create(HTMLElement.prototype);
-    protoC.enteredDocumentCallback = function () {
+    protoC.enteredViewCallback = function () {
         log('C entered');
     };
-    protoC.leftDocumentCallback = function () {
+    protoC.leftViewCallback = function () {
         log('C left');
     };
     protoC.attributeChangedCallback = function (name, oldValue, newValue) {

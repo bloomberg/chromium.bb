@@ -51,13 +51,13 @@ private:
 void CreatedInvocation::dispatch(Element* element)
 {
     if (element->inDocument() && element->document().defaultView())
-        CustomElementCallbackScheduler::scheduleEnteredDocumentCallback(callbacks(), element);
+        CustomElementCallbackScheduler::scheduleEnteredViewCallback(callbacks(), element);
     callbacks()->created(element);
 }
 
-class EnteredLeftDocumentInvocation : public CustomElementCallbackInvocation {
+class EnteredLeftViewInvocation : public CustomElementCallbackInvocation {
 public:
-    EnteredLeftDocumentInvocation(PassRefPtr<CustomElementLifecycleCallbacks>, CustomElementLifecycleCallbacks::CallbackType which);
+    EnteredLeftViewInvocation(PassRefPtr<CustomElementLifecycleCallbacks>, CustomElementLifecycleCallbacks::CallbackType which);
 
 private:
     virtual void dispatch(Element*) OVERRIDE;
@@ -65,21 +65,21 @@ private:
     CustomElementLifecycleCallbacks::CallbackType m_which;
 };
 
-EnteredLeftDocumentInvocation::EnteredLeftDocumentInvocation(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, CustomElementLifecycleCallbacks::CallbackType which)
+EnteredLeftViewInvocation::EnteredLeftViewInvocation(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, CustomElementLifecycleCallbacks::CallbackType which)
     : CustomElementCallbackInvocation(callbacks)
     , m_which(which)
 {
-    ASSERT(m_which == CustomElementLifecycleCallbacks::EnteredDocument || m_which == CustomElementLifecycleCallbacks::LeftDocument);
+    ASSERT(m_which == CustomElementLifecycleCallbacks::EnteredView || m_which == CustomElementLifecycleCallbacks::LeftView);
 }
 
-void EnteredLeftDocumentInvocation::dispatch(Element* element)
+void EnteredLeftViewInvocation::dispatch(Element* element)
 {
     switch (m_which) {
-    case CustomElementLifecycleCallbacks::EnteredDocument:
-        callbacks()->enteredDocument(element);
+    case CustomElementLifecycleCallbacks::EnteredView:
+        callbacks()->enteredView(element);
         break;
-    case CustomElementLifecycleCallbacks::LeftDocument:
-        callbacks()->leftDocument(element);
+    case CustomElementLifecycleCallbacks::LeftView:
+        callbacks()->leftView(element);
         break;
     default:
         ASSERT_NOT_REACHED();
@@ -117,9 +117,9 @@ PassOwnPtr<CustomElementCallbackInvocation> CustomElementCallbackInvocation::cre
     case CustomElementLifecycleCallbacks::Created:
         return adoptPtr(new CreatedInvocation(callbacks));
 
-    case CustomElementLifecycleCallbacks::EnteredDocument:
-    case CustomElementLifecycleCallbacks::LeftDocument:
-        return adoptPtr(new EnteredLeftDocumentInvocation(callbacks, which));
+    case CustomElementLifecycleCallbacks::EnteredView:
+    case CustomElementLifecycleCallbacks::LeftView:
+        return adoptPtr(new EnteredLeftViewInvocation(callbacks, which));
 
     default:
         ASSERT_NOT_REACHED();

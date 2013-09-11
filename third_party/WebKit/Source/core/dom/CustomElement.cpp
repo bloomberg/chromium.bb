@@ -137,7 +137,7 @@ void CustomElement::didEnterDocument(Element* element, const Document& document)
     ASSERT(element->customElementState() == Element::Upgraded);
     if (!document.defaultView())
         return;
-    CustomElementCallbackScheduler::scheduleEnteredDocumentCallback(definitionFor(element)->callbacks(), element);
+    CustomElementCallbackScheduler::scheduleEnteredViewCallback(definitionFor(element)->callbacks(), element);
 }
 
 void CustomElement::didLeaveDocument(Element* element, const Document& document)
@@ -145,7 +145,7 @@ void CustomElement::didLeaveDocument(Element* element, const Document& document)
     ASSERT(element->customElementState() == Element::Upgraded);
     if (!document.defaultView())
         return;
-    CustomElementCallbackScheduler::scheduleLeftDocumentCallback(definitionFor(element)->callbacks(), element);
+    CustomElementCallbackScheduler::scheduleLeftViewCallback(definitionFor(element)->callbacks(), element);
 }
 
 void CustomElement::wasDestroyed(Element* element)
