@@ -44,3 +44,7 @@ per-file chrome_browser_chromeos.gypi=satorux@chromium.org
 per-file chrome_browser_chromeos.gypi=stevenjb@chromium.org
 per-file chrome_browser_chromeos.gypi=xiyuan@chromium.org
 per-file chrome_browser_chromeos.gypi=zelidrag@chromium.org
+
+# Syzygy files.
+per-file chrome_syzygy.gyp*=chrisha@chromium.org
+per-file chrome_syzygy.gyp*=siggi@chromium.org

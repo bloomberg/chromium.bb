@@ -5,3 +5,11 @@ robertshield@chromium.org
 # FILES.cfg OWNERS as in parent owner file.
 per-file FILES.cfg=kerz@chromium.org
 per-file FILES.cfg=mmoss@chromium.org
+
+# Syzygy files.
+per-file syzygy_instrument.py=chrisha@chromium.org
+per-file syzygy_instrument.py=siggi@chromium.org
+per-file syzygy_reorder.py=chrisha@chromium.org
+per-file syzygy_reorder.py=siggi@chromium.org
+per-file win-syzyasan-filter.txt=chrisha@chromium.org
+per-file win-syzyasan-filter.txt=siggi@chromium.org
