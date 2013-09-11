@@ -104,8 +104,10 @@ def ReadHttpResponse(conn, ignore_404=True):
       msg += '\n... will retry %d more times.' % (TRY_LIMIT - idx - 1)
       time.sleep(sleep_time)
       sleep_time = sleep_time * 2
+      host = conn.host
       req_params = conn.req_params
-      conn = httplib.HTTPSConnection(conn.host)
+      conn = httplib.HTTPSConnection(host)
+      conn.host = host
       conn.req_params = req_params
       conn.request(**req_params)
     LOGGER.warn(msg)
