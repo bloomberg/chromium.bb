@@ -33,6 +33,7 @@
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/LayoutRect.h"
 #include "core/platform/graphics/transforms/TransformationMatrix.h"
+#include "core/rendering/LayoutIndicator.h"
 #include "core/rendering/PaintPhase.h"
 #include "core/rendering/RenderObjectChildList.h"
 #include "core/rendering/RenderingNodeProxy.h"
@@ -587,7 +588,11 @@ public:
     bool isRooted(RenderView** = 0) const;
 
     Node* node() const { return isAnonymous() ? 0 : m_nodeProxy.unsafeNode(); }
-    Node* nonPseudoNode() const { return isPseudoElement() ? 0 : node(); }
+    Node* nonPseudoNode() const
+    {
+        ASSERT(!LayoutIndicator::inLayout());
+        return isPseudoElement() ? 0 : node();
+    }
 
     // FIXME: Why does RenderWidget need this?
     void clearNode() { m_nodeProxy.clear(); }

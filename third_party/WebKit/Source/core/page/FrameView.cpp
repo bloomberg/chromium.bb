@@ -59,6 +59,7 @@
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/text/TextStream.h"
+#include "core/rendering/LayoutIndicator.h"
 #include "core/rendering/RenderCounter.h"
 #include "core/rendering/RenderEmbeddedObject.h"
 #include "core/rendering/RenderLayer.h"
@@ -886,6 +887,7 @@ void FrameView::performLayout(RenderObject* rootForThisLayout, bool inSubtreeLay
         LayoutStateDisabler layoutStateDisabler(disableLayoutState ? rootForThisLayout->view() : 0);
 
         m_inLayout = true;
+
         beginDeferredRepaints();
         forceLayoutParentViewIfNeeded();
 
@@ -893,12 +895,15 @@ void FrameView::performLayout(RenderObject* rootForThisLayout, bool inSubtreeLay
         // If enabled, only do partial layout for the second layout.
         // FIXME (crbug.com/256657): Do not do two layouts for text autosizing.
         PartialLayoutDisabler partialLayoutDisabler(partialLayout(), m_frame->settings() && m_frame->settings()->textAutosizingEnabled());
-        rootForThisLayout->layout(); // THIS IS WHERE LAYOUT ACTUALLY HAPPENS.
+
+        LayoutIndicator layoutIndicator;
+        rootForThisLayout->layout();
     }
 
     bool autosized = frame().document()->textAutosizer()->processSubtree(rootForThisLayout);
     if (autosized && rootForThisLayout->needsLayout()) {
         TRACE_EVENT0("webkit", "2nd layout due to Text Autosizing");
+        LayoutIndicator layoutIndicator;
         rootForThisLayout->layout();
     }
 

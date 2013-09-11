@@ -1351,6 +1351,8 @@
             'rendering/LayoutState.cpp',
             'rendering/OrderIterator.cpp',
             'rendering/OrderIterator.h',
+            'rendering/LayoutIndicator.cpp',
+            'rendering/LayoutIndicator.h',
             'rendering/LayoutRepainter.cpp',
             'rendering/PartialLayoutState.h',
             'rendering/Pagination.cpp',
