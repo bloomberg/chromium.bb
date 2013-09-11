@@ -48,8 +48,7 @@ class WebHTTPBodyPrivate;
 class WebHTTPBody {
 public:
     struct Element {
-        // TypeURL is DEPRECATED
-        enum Type { TypeData, TypeFile, TypeBlob, TypeFileSystemURL, TypeURL = TypeFileSystemURL } type;
+        enum Type { TypeData, TypeFile, TypeBlob, TypeFileSystemURL } type;
         WebData data;
         WebString filePath;
         long long fileStart;
