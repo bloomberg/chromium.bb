@@ -730,6 +730,8 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest)
     if (targetFrame && targetFrame != m_frame) {
         request.setFrameName("_self");
         targetFrame->loader()->load(request);
+        if (Page* page = targetFrame->page())
+            page->chrome().focus();
         return;
     }
 

@@ -51,7 +51,9 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/html/HTMLDocument.h"
+#include "core/loader/FrameLoadRequest.h"
 #include "core/page/FrameView.h"
+#include "core/page/Settings.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebSize.h"
 #include "public/platform/WebThread.h"
@@ -1210,6 +1212,68 @@ TEST_F(WebViewTest, HelperPlugin)
 
     webViewImpl->closeHelperPluginSoon(helperPlugin);
 
+    webViewImpl->close();
+}
+
+
+class ViewCreatingWebViewClient : public WebViewClient {
+public:
+    ViewCreatingWebViewClient()
+        : m_createdWebView(0)
+        , m_didFocusCalled(false)
+    {
+    }
+
+    // WebViewClient methods
+    virtual WebView* createView(WebFrame*, const WebURLRequest&, const WebWindowFeatures&, const WebString& name, WebNavigationPolicy) OVERRIDE
+    {
+        m_createdWebView = FrameTestHelpers::createWebView(true, 0, 0);
+        return m_createdWebView;
+    }
+
+    // WebWidgetClient methods
+    virtual void didFocus() OVERRIDE
+    {
+        m_didFocusCalled = true;
+    }
+
+    void close()
+    {
+        if (m_createdWebView)
+            m_createdWebView->close();
+    }
+    bool didFocusCalled() const { return m_didFocusCalled; }
+    WebView* createdWebView() const { return m_createdWebView; }
+
+private:
+    WebView* m_createdWebView;
+    bool m_didFocusCalled;
+};
+
+TEST_F(WebViewTest, FocusExistingFrameOnNavigate)
+{
+    ViewCreatingWebViewClient client;
+    WebViewImpl* webViewImpl = toWebViewImpl(FrameTestHelpers::createWebView(true, 0, &client));
+    webViewImpl->page()->settings().setJavaScriptCanOpenWindowsAutomatically(true);
+    WebFrameImpl* frame = toWebFrameImpl(webViewImpl->mainFrame());
+    frame->setName("_start");
+
+    // Make a request that will open a new window
+    WebURLRequest webURLRequest;
+    webURLRequest.initialize();
+    WebCore::FrameLoadRequest request(0, webURLRequest.toResourceRequest(), WTF::String("_blank"));
+    webViewImpl->page()->mainFrame()->loader()->load(request);
+    ASSERT_TRUE(client.createdWebView());
+    EXPECT_FALSE(client.didFocusCalled());
+
+    // Make a request from the new window that will navigate the original window. The original window should be focused.
+    WebURLRequest webURLRequestWithTargetStart;
+    webURLRequestWithTargetStart.initialize();
+    WebCore::FrameLoadRequest requestWithTargetStart(0, webURLRequestWithTargetStart.toResourceRequest(), WTF::String("_start"));
+    toWebViewImpl(client.createdWebView())->page()->mainFrame()->loader()->load(requestWithTargetStart);
+    EXPECT_TRUE(client.didFocusCalled());
+
+    client.close();
     webViewImpl->close();
 }
 
