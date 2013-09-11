@@ -102,7 +102,7 @@ void OAuth2LoginVerifier::OnUberAuthTokenSuccess(
 void OAuth2LoginVerifier::OnUberAuthTokenFailure(
     const GoogleServiceAuthError& error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  LOG(ERROR) << "OAuthLogin(uber_token) failed,"
+  LOG(WARNING) << "OAuthLogin(uber_token) failed,"
              << " error: " << error.state();
   RetryOnError("OAuthLoginUberToken", error,
                base::Bind(&OAuth2LoginVerifier::StartOAuthLoginForUberToken,
@@ -130,7 +130,7 @@ void OAuth2LoginVerifier::OnClientLoginSuccess(
 void OAuth2LoginVerifier::OnClientLoginFailure(
     const GoogleServiceAuthError& error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  LOG(ERROR) << "OAuthLogin(SID+LSID failed),"
+  LOG(WARNING) << "OAuthLogin(SID+LSID failed),"
              << " error: " << error.state();
   RetryOnError(
       "OAuthLoginGaiaCred", error,
@@ -159,7 +159,7 @@ void OAuth2LoginVerifier::OnMergeSessionSuccess(const std::string& data) {
 
 void OAuth2LoginVerifier::OnMergeSessionFailure(
     const GoogleServiceAuthError& error) {
-  LOG(ERROR) << "Failed MergeSession request,"
+  LOG(WARNING) << "Failed MergeSession request,"
              << " error: " << error.state();
   // If MergeSession from GAIA service token fails, retry the session restore
   // from OAuth2 refresh token. If that failed too, signal the delegate.
@@ -192,7 +192,7 @@ void OAuth2LoginVerifier::OnGetTokenFailure(
   DCHECK_EQ(login_token_request_.get(), request);
   login_token_request_.reset();
 
-  LOG(ERROR) << "Failed to get OAuth2 access token, "
+  LOG(WARNING) << "Failed to get OAuth2 access token, "
              << " error: " << error.state();
   UMA_HISTOGRAM_ENUMERATION(
       base::StringPrintf("OAuth2Login.%sFailure", "GetOAuth2AccessToken"),
@@ -220,7 +220,7 @@ void OAuth2LoginVerifier::RetryOnError(const char* operation_id,
     return;
   }
 
-  LOG(ERROR) << "Unrecoverable error or retry count max reached for "
+  LOG(WARNING) << "Unrecoverable error or retry count max reached for "
              << operation_id;
   UMA_HISTOGRAM_ENUMERATION(
       base::StringPrintf("OAuth2Login.%sFailure", operation_id),
