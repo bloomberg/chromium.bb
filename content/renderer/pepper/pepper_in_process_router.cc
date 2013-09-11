@@ -110,9 +110,24 @@ bool PepperInProcessRouter::SendToHost(IPC::Message* msg) {
   scoped_ptr<IPC::Message> message(msg);
 
   if (!message->is_sync()) {
-    bool result = host_impl_->GetPpapiHost()->OnMessageReceived(*message);
-    DCHECK(result) << "The message was not handled by the host.";
-    return true;
+    // If this is a resource destroyed message, post a task to dispatch it.
+    // Dispatching it synchronously can cause the host to re-enter the proxy
+    // code while we're still in the resource destructor, leading to a crash.
+    // http://crbug.com/276368.
+    // This won't cause message reordering problems because the resource
+    // destroyed message is always the last one sent for a resource.
+    if (message->type() == PpapiHostMsg_ResourceDestroyed::ID) {
+      base::MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(&PepperInProcessRouter::DispatchHostMsg,
+                     weak_factory_.GetWeakPtr(),
+                     base::Owned(message.release())));
+      return true;
+    } else {
+      bool result = host_impl_->GetPpapiHost()->OnMessageReceived(*message);
+      DCHECK(result) << "The message was not handled by the host.";
+      return true;
+    }
   }
 
   pending_message_id_ = IPC::SyncMessage::GetMessageId(*message);
@@ -144,6 +159,11 @@ bool PepperInProcessRouter::SendToPlugin(IPC::Message* msg) {
                    base::Owned(message.release())));
   }
   return true;
+}
+
+void PepperInProcessRouter::DispatchHostMsg(IPC::Message* msg) {
+  bool handled = host_impl_->GetPpapiHost()->OnMessageReceived(*msg);
+  DCHECK(handled);
 }
 
 void PepperInProcessRouter::DispatchPluginMsg(IPC::Message* msg) {

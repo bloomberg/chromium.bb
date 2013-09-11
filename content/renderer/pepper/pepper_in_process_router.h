@@ -71,6 +71,7 @@ class PepperInProcessRouter {
  private:
   bool SendToHost(IPC::Message *msg);
   bool SendToPlugin(IPC::Message *msg);
+  void DispatchHostMsg(IPC::Message* msg);
   void DispatchPluginMsg(IPC::Message* msg);
   bool SendToBrowser(IPC::Message *msg);
 
