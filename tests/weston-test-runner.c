@@ -53,6 +53,16 @@ run_test(const struct weston_test *t)
 	exit(EXIT_SUCCESS);
 }
 
+static void
+list_tests(void)
+{
+	const struct weston_test *t;
+
+	fprintf(stderr, "Available test names:\n");
+	for (t = &__start_test_section; t < &__stop_test_section; t++)
+		fprintf(stderr, "	%s\n", t->name);
+}
+
 int main(int argc, char *argv[])
 {
 	const struct weston_test *t;
@@ -61,6 +71,14 @@ int main(int argc, char *argv[])
 	siginfo_t info;
 
 	if (argc == 2) {
+		const char *testname = argv[1];
+		if (strcmp(testname, "--help") == 0 ||
+		    strcmp(testname, "-h") == 0) {
+			fprintf(stderr, "Usage: %s [test-name]\n", program_invocation_short_name);
+			list_tests();
+			exit(EXIT_SUCCESS);
+		}
+
 		t = find_test(argv[1]);
 		if (t == NULL) {
 			fprintf(stderr, "unknown test: \"%s\"\n", argv[1]);
