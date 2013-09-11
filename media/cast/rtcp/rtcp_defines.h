@@ -15,11 +15,6 @@
 namespace media {
 namespace cast {
 
-const uint16 kRtcpCastAllPacketsLost = 0xffff;
-
-typedef std::set<uint16> PacketIdSet;
-typedef std::map<uint8, PacketIdSet> MissingFramesAndPacketsMap;
-
 class RtcpCastMessage {
  public:
   explicit RtcpCastMessage(uint32 media_ssrc);

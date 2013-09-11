@@ -4,7 +4,7 @@
 
 {
   'includes': [
-#    'audio_sender/audio_sender.gypi',
+    'audio_sender/audio_sender.gypi',
     'congestion_control/congestion_control.gypi',
     'video_sender/video_sender.gypi',
   ],
@@ -18,7 +18,7 @@
 #        'cast_sender_impl.h',
       ], # source
       'dependencies': [
-#       'audio_sender',
+        'audio_sender',
         'congestion_control',
         'pacing/paced_sender.gyp:paced_sender',
         'rtcp/rtcp.gyp:cast_rtcp',

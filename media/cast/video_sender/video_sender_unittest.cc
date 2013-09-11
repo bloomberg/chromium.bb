@@ -17,6 +17,7 @@
 #include "media/cast/video_sender/mock_video_encoder_controller.h"
 #include "media/cast/video_sender/video_sender.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
 namespace cast {

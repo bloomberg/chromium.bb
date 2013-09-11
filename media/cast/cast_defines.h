@@ -5,6 +5,9 @@
 #ifndef MEDIA_CAST_CAST_DEFINES_H_
 #define MEDIA_CAST_CAST_DEFINES_H_
 
+#include <map>
+#include <set>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/time/time.h"
@@ -34,6 +37,13 @@ enum DefaultSettings {
   kDefaultRtpHistoryMs = 1000,
   kDefaultRtpMaxDelayMs = 100,
 };
+
+const uint16 kRtcpCastAllPacketsLost = 0xffff;
+
+// Each uint16 represents one packet id within a cast frame.
+typedef std::set<uint16> PacketIdSet;
+// Each uint8 represents one cast frame.
+typedef std::map<uint8, PacketIdSet> MissingFramesAndPacketsMap;
 
 // TODO(pwestin): Re-factor the functions bellow into a class with static
 // methods.
