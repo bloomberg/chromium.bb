@@ -75,9 +75,6 @@ const int kBundleLeftColumnWidth = 300;
 // this case, so make it wider than normal.
 const int kExternalInstallLeftColumnWidth = 350;
 
-// Maximum height of the retained files view.
-const int kMaxRetainedFilesHeight = 100;
-
 typedef std::vector<string16> PermissionDetails;
 
 void AddResourceIcon(const gfx::ImageSkia* skia_image, void* data) {
@@ -718,13 +715,14 @@ ExpandableContainerView::DetailsView::DetailsView(int horizontal_space,
   // will make the child item (which has no bullet) look like a sibling of its
   // parent. Therefore increase the indentation by one more unit to show that it
   // is in fact a child item (with no missing bullet) and not a sibling.
-  column_set->AddPaddingColumn(
-      0, views::kRelatedControlHorizontalSpacing * (parent_bulleted ? 2 : 1));
+  int padding =
+      views::kRelatedControlHorizontalSpacing * (parent_bulleted ? 2 : 1);
+  column_set->AddPaddingColumn(0, padding);
   column_set->AddColumn(views::GridLayout::LEADING,
                         views::GridLayout::LEADING,
                         0,
                         views::GridLayout::FIXED,
-                        horizontal_space,
+                        horizontal_space - padding,
                         0);
 }
 
