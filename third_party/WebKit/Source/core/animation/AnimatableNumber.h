@@ -34,6 +34,7 @@
 #include "core/animation/AnimatableValue.h"
 #include "core/css/CSSCalculationValue.h"
 #include "core/css/CSSPrimitiveValue.h"
+#include "core/platform/CalculationValue.h"
 
 namespace WebCore {
 
@@ -67,9 +68,9 @@ public:
     {
         return adoptRef(new AnimatableNumber(number, unitType, cssPrimitiveValue));
     }
-    PassRefPtr<CSSValue> toCSSValue() const;
+    PassRefPtr<CSSValue> toCSSValue(CalculationPermittedValueRange = CalculationRangeAll) const;
     double toDouble() const;
-    Length toLength(const RenderStyle* currStyle, const RenderStyle* rootStyle, double zoom) const;
+    Length toLength(const RenderStyle* currStyle, const RenderStyle* rootStyle, double zoom, CalculationPermittedValueRange = CalculationRangeAll) const;
 
 protected:
     virtual PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const OVERRIDE;
@@ -100,10 +101,11 @@ private:
     }
     static PassRefPtr<AnimatableNumber> create(const AnimatableNumber* leftAddend, const AnimatableNumber* rightAddend);
 
-    PassRefPtr<CSSPrimitiveValue> toCSSPrimitiveValue() const;
+    PassRefPtr<CSSPrimitiveValue> toCSSPrimitiveValue(CalculationPermittedValueRange) const;
     PassRefPtr<CSSCalcExpressionNode> toCSSCalcExpressionNode() const;
 
     PassRefPtr<AnimatableNumber> scale(double) const;
+    static bool isCompatibleWithCalcRange(const CSSPrimitiveValue*, CalculationPermittedValueRange&);
     static NumberUnitType primitiveUnitToNumberType(unsigned short primitiveUnit);
     static unsigned short numberTypeToPrimitiveUnit(NumberUnitType numberType);
 
