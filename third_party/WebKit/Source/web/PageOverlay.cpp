@@ -75,8 +75,11 @@ public:
 
     PassOwnPtr<GraphicsLayer> createGraphicsLayer(GraphicsLayerFactory* factory)
     {
-        m_layer = GraphicsLayer::create(factory, this);
-        return m_layer.release();
+        OwnPtr<GraphicsLayer> toReturn = GraphicsLayer::create(factory, this);
+#ifndef NDEBUG
+        m_layer = toReturn.get();
+#endif
+        return toReturn.release();
     }
 
     virtual void notifyAnimationStarted(const GraphicsLayer*, double time) { }
@@ -90,19 +93,25 @@ public:
 
     virtual String debugName(const GraphicsLayer* graphicsLayer) OVERRIDE
     {
-        ASSERT(graphicsLayer == m_layer.get());
+        ASSERT(graphicsLayer == m_layer);
         return String("WebViewImpl Page Overlay Content Layer");
     }
 
 private:
     explicit OverlayGraphicsLayerClientImpl(WebPageOverlay* overlay)
         : m_overlay(overlay)
+#ifndef NDEBUG
+        , m_layer(0)
+#endif
     {
     }
 
     WebPageOverlay* m_overlay;
-
-    OwnPtr<GraphicsLayer> m_layer;
+#ifndef NDEBUG
+    // The client does not retain ownership of m_layer and the pointer should
+    // not be dereferenced. It is only retained for debugging purposes.
+    GraphicsLayer* m_layer;
+#endif
 };
 
 PageOverlay::~PageOverlay()
