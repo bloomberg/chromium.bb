@@ -31,17 +31,49 @@ static const char kClearKeySystem[] = "org.w3.clearkey";
 static const uint8 kOriginalData[] = "Original subsample data.";
 static const int kOriginalDataSize = 24;
 
-static const uint8 kKeyId[] = { 0x00, 0x01, 0x02, 0x03 };
+static const uint8 kKeyId[] = {
+    // base64 equivalent is AAECAw==
+    0x00, 0x01, 0x02, 0x03
+};
 
 static const uint8 kKey[] = {
-  0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b,
-  0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13
+    // base64 equivalent is BAUGBwgJCgsMDQ4PEBESEw==
+    0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b,
+    0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13
 };
 
-static const uint8 kWrongKey[] = {
-  0xee, 0xee, 0xee, 0xee, 0xee, 0xee, 0xee, 0xee,
-  0xee, 0xee, 0xee, 0xee, 0xee, 0xee, 0xee, 0xee
-};
+static const char kKeyAsJWK[] =
+    "{"
+    "  \"keys\": ["
+    "    {"
+    "      \"kty\": \"oct\","
+    "      \"kid\": \"AAECAw==\","
+    "      \"k\": \"BAUGBwgJCgsMDQ4PEBESEw==\""
+    "    }"
+    "  ]"
+    "}";
+
+static const char kWrongKeyAsJWK[] =
+    "{"
+    "  \"keys\": ["
+    "    {"
+    "      \"kty\": \"oct\","
+    "      \"kid\": \"AAECAw==\","
+    "      \"k\": \"7u7u7u7u7u7u7u7u7u7u7g==\""
+    "    }"
+    "  ]"
+    "}";
+
+static const char kWrongSizedKeyAsJWK[] =
+    "{"
+    "  \"keys\": ["
+    "    {"
+    "      \"kty\": \"oct\","
+    "      \"kid\": \"AAECAw==\","
+    "      \"k\": \"AAECAw==\""
+    "    }"
+    "  ]"
+    "}";
 
 static const uint8 kIv[] = {
   0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27,
@@ -72,15 +104,24 @@ static const uint8 kIv2[] = {
 };
 
 static const uint8 kKeyId2[] = {
-  0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
-  0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
-  0x10, 0x11, 0x12, 0x13
+    // base64 equivalent is AAECAwQFBgcICQoLDA0ODxAREhM=
+    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+    0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
+    0x10, 0x11, 0x12, 0x13
 };
 
-static const uint8 kKey2[] = {
-  0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1a, 0x1b,
-  0x1c, 0x1d, 0x1e, 0x1f, 0x20, 0x21, 0x22, 0x23
-};
+static const char kKey2AsJWK[] =
+    "{"
+    "  \"keys\": ["
+    "    {"
+    "      \"kty\": \"oct\","
+    "      \"kid\": \"AAECAwQFBgcICQoLDA0ODxAREhM=\","
+    "      \"k\": \"FBUWFxgZGhscHR4fICEiIw==\""
+    "    }"
+    "  ]"
+    "}";
+
+// 'k' in bytes is x14x15x16x17x18x19x1ax1bx1cx1dx1ex1fx20x21x22x23
 
 static const uint8 kEncryptedData2[] = {
   0x57, 0x66, 0xf4, 0x12, 0x1a, 0xed, 0xb5, 0x79,
@@ -159,7 +200,6 @@ class AesDecryptorTest : public testing::Test {
             kSubsampleEncryptedData,
             kSubsampleEncryptedData + arraysize(kSubsampleEncryptedData)),
         key_id_(kKeyId, kKeyId + arraysize(kKeyId)),
-        key_(kKey, kKey + arraysize(kKey)),
         iv_(kIv, kIv + arraysize(kIv)),
         normal_subsample_entries_(
             kSubsampleEntriesNormal,
@@ -180,9 +220,10 @@ class AesDecryptorTest : public testing::Test {
     KEY_ERROR
   };
 
-  void AddKeyAndExpect(const std::vector<uint8>& key_id,
-                       const std::vector<uint8>& key,
-                       AddKeyExpectation result) {
+  void AddRawKeyAndExpect(const std::vector<uint8>& key_id,
+                          const std::vector<uint8>& key,
+                          AddKeyExpectation result) {
+    // TODO(jrummell): Remove once raw keys no longer supported.
     DCHECK(!key_id.empty());
     DCHECK(!key.empty());
 
@@ -196,6 +237,23 @@ class AesDecryptorTest : public testing::Test {
     }
 
     decryptor_.AddKey(&key[0], key.size(), &key_id[0], key_id.size(),
+                      session_id_string_);
+  }
+
+  void AddKeyAndExpect(const std::string& key, AddKeyExpectation result) {
+    DCHECK(!key.empty());
+
+    if (result == KEY_ADDED) {
+      EXPECT_CALL(*this, KeyAdded(session_id_string_));
+    } else if (result == KEY_ERROR) {
+      EXPECT_CALL(*this,
+                  KeyError(session_id_string_, MediaKeys::kUnknownError, 0));
+    } else {
+      NOTREACHED();
+    }
+
+    decryptor_.AddKey(reinterpret_cast<const uint8*>(key.c_str()), key.length(),
+                      NULL, 0,
                       session_id_string_);
   }
 
@@ -263,7 +321,6 @@ class AesDecryptorTest : public testing::Test {
   const std::vector<uint8> encrypted_data_;
   const std::vector<uint8> subsample_encrypted_data_;
   const std::vector<uint8> key_id_;
-  const std::vector<uint8> key_;
   const std::vector<uint8> iv_;
   const std::vector<SubsampleEntry> normal_subsample_entries_;
   const std::vector<SubsampleEntry> no_subsample_entries_;
@@ -276,7 +333,7 @@ TEST_F(AesDecryptorTest, GenerateKeyRequestWithNullInitData) {
 
 TEST_F(AesDecryptorTest, NormalDecryption) {
   GenerateKeyRequest(key_id_);
-  AddKeyAndExpect(key_id_, key_, KEY_ADDED);
+  AddKeyAndExpect(kKeyAsJWK, KEY_ADDED);
   scoped_refptr<DecoderBuffer> encrypted_buffer = CreateEncryptedBuffer(
       encrypted_data_, key_id_, iv_, 0, no_subsample_entries_);
   DecryptAndExpect(encrypted_buffer, original_data_, SUCCESS);
@@ -284,7 +341,7 @@ TEST_F(AesDecryptorTest, NormalDecryption) {
 
 TEST_F(AesDecryptorTest, DecryptionWithOffset) {
   GenerateKeyRequest(key_id_);
-  AddKeyAndExpect(key_id_, key_, KEY_ADDED);
+  AddKeyAndExpect(kKeyAsJWK, KEY_ADDED);
   scoped_refptr<DecoderBuffer> encrypted_buffer = CreateEncryptedBuffer(
       encrypted_data_, key_id_, iv_, 23, no_subsample_entries_);
   DecryptAndExpect(encrypted_buffer, original_data_, SUCCESS);
@@ -299,8 +356,7 @@ TEST_F(AesDecryptorTest, UnencryptedFrame) {
 
 TEST_F(AesDecryptorTest, WrongKey) {
   GenerateKeyRequest(key_id_);
-  std::vector<uint8> wrong_key(kWrongKey, kWrongKey + arraysize(kWrongKey));
-  AddKeyAndExpect(key_id_, wrong_key, KEY_ADDED);
+  AddKeyAndExpect(kWrongKeyAsJWK, KEY_ADDED);
   scoped_refptr<DecoderBuffer> encrypted_buffer = CreateEncryptedBuffer(
       encrypted_data_, key_id_, iv_, 0, no_subsample_entries_);
   DecryptAndExpect(encrypted_buffer, original_data_, DATA_MISMATCH);
@@ -318,35 +374,33 @@ TEST_F(AesDecryptorTest, KeyReplacement) {
   scoped_refptr<DecoderBuffer> encrypted_buffer = CreateEncryptedBuffer(
       encrypted_data_, key_id_, iv_, 0, no_subsample_entries_);
 
-  std::vector<uint8> wrong_key(kWrongKey, kWrongKey + arraysize(kWrongKey));
-  AddKeyAndExpect(key_id_, wrong_key, KEY_ADDED);
+  AddKeyAndExpect(kWrongKeyAsJWK, KEY_ADDED);
   ASSERT_NO_FATAL_FAILURE(DecryptAndExpect(
       encrypted_buffer, original_data_, DATA_MISMATCH));
 
-  AddKeyAndExpect(key_id_, key_, KEY_ADDED);
+  AddKeyAndExpect(kKeyAsJWK, KEY_ADDED);
   ASSERT_NO_FATAL_FAILURE(
       DecryptAndExpect(encrypted_buffer, original_data_, SUCCESS));
 }
 
 TEST_F(AesDecryptorTest, WrongSizedKey) {
   GenerateKeyRequest(key_id_);
-  // Use "-1" to create a wrong sized key.
+  AddKeyAndExpect(kWrongSizedKeyAsJWK, KEY_ERROR);
+
+  // Repeat for a raw key. Use "-1" to create a wrong sized key.
   std::vector<uint8> wrong_sized_key(kKey, kKey + arraysize(kKey) - 1);
-  AddKeyAndExpect(key_id_, wrong_sized_key, KEY_ERROR);
+  AddRawKeyAndExpect(key_id_, wrong_sized_key, KEY_ERROR);
 }
 
 TEST_F(AesDecryptorTest, MultipleKeysAndFrames) {
   GenerateKeyRequest(key_id_);
-  AddKeyAndExpect(key_id_, key_, KEY_ADDED);
+  AddKeyAndExpect(kKeyAsJWK, KEY_ADDED);
   scoped_refptr<DecoderBuffer> encrypted_buffer = CreateEncryptedBuffer(
       encrypted_data_, key_id_, iv_, 10, no_subsample_entries_);
   ASSERT_NO_FATAL_FAILURE(
       DecryptAndExpect(encrypted_buffer, original_data_, SUCCESS));
 
-  std::vector<uint8> key_id_2 =
-      std::vector<uint8>(kKeyId2, kKeyId2 + arraysize(kKeyId2));
-  AddKeyAndExpect(
-      key_id_2, std::vector<uint8>(kKey2, kKey2 + arraysize(kKey2)), KEY_ADDED);
+  AddKeyAndExpect(kKey2AsJWK, KEY_ADDED);
 
   // The first key is still available after we added a second key.
   ASSERT_NO_FATAL_FAILURE(
@@ -356,7 +410,7 @@ TEST_F(AesDecryptorTest, MultipleKeysAndFrames) {
   encrypted_buffer = CreateEncryptedBuffer(
       std::vector<uint8>(kEncryptedData2,
                          kEncryptedData2 + arraysize(kEncryptedData2)),
-      key_id_2,
+      std::vector<uint8>(kKeyId2, kKeyId2 + arraysize(kKeyId2)),
       std::vector<uint8>(kIv2, kIv2 + arraysize(kIv2)),
       30,
       no_subsample_entries_);
@@ -369,7 +423,7 @@ TEST_F(AesDecryptorTest, MultipleKeysAndFrames) {
 
 TEST_F(AesDecryptorTest, CorruptedIv) {
   GenerateKeyRequest(key_id_);
-  AddKeyAndExpect(key_id_, key_, KEY_ADDED);
+  AddKeyAndExpect(kKeyAsJWK, KEY_ADDED);
 
   std::vector<uint8> bad_iv = iv_;
   bad_iv[1]++;
@@ -382,7 +436,7 @@ TEST_F(AesDecryptorTest, CorruptedIv) {
 
 TEST_F(AesDecryptorTest, CorruptedData) {
   GenerateKeyRequest(key_id_);
-  AddKeyAndExpect(key_id_, key_, KEY_ADDED);
+  AddKeyAndExpect(kKeyAsJWK, KEY_ADDED);
 
   std::vector<uint8> bad_data = encrypted_data_;
   bad_data[1]++;
@@ -394,7 +448,7 @@ TEST_F(AesDecryptorTest, CorruptedData) {
 
 TEST_F(AesDecryptorTest, EncryptedAsUnencryptedFailure) {
   GenerateKeyRequest(key_id_);
-  AddKeyAndExpect(key_id_, key_, KEY_ADDED);
+  AddKeyAndExpect(kKeyAsJWK, KEY_ADDED);
   scoped_refptr<DecoderBuffer> encrypted_buffer = CreateEncryptedBuffer(
       encrypted_data_, key_id_, std::vector<uint8>(), 0, no_subsample_entries_);
   DecryptAndExpect(encrypted_buffer, original_data_, DATA_MISMATCH);
@@ -402,7 +456,7 @@ TEST_F(AesDecryptorTest, EncryptedAsUnencryptedFailure) {
 
 TEST_F(AesDecryptorTest, SubsampleDecryption) {
   GenerateKeyRequest(key_id_);
-  AddKeyAndExpect(key_id_, key_, KEY_ADDED);
+  AddKeyAndExpect(kKeyAsJWK, KEY_ADDED);
   scoped_refptr<DecoderBuffer> encrypted_buffer = CreateEncryptedBuffer(
       subsample_encrypted_data_, key_id_, iv_, 0, normal_subsample_entries_);
   DecryptAndExpect(encrypted_buffer, original_data_, SUCCESS);
@@ -413,7 +467,7 @@ TEST_F(AesDecryptorTest, SubsampleDecryption) {
 // disallow such a configuration, it should be covered.
 TEST_F(AesDecryptorTest, SubsampleDecryptionWithOffset) {
   GenerateKeyRequest(key_id_);
-  AddKeyAndExpect(key_id_, key_, KEY_ADDED);
+  AddKeyAndExpect(kKeyAsJWK, KEY_ADDED);
   scoped_refptr<DecoderBuffer> encrypted_buffer = CreateEncryptedBuffer(
       subsample_encrypted_data_, key_id_, iv_, 23, normal_subsample_entries_);
   DecryptAndExpect(encrypted_buffer, original_data_, SUCCESS);
@@ -421,7 +475,7 @@ TEST_F(AesDecryptorTest, SubsampleDecryptionWithOffset) {
 
 TEST_F(AesDecryptorTest, SubsampleWrongSize) {
   GenerateKeyRequest(key_id_);
-  AddKeyAndExpect(key_id_, key_, KEY_ADDED);
+  AddKeyAndExpect(kKeyAsJWK, KEY_ADDED);
 
   std::vector<SubsampleEntry> subsample_entries_wrong_size(
       kSubsampleEntriesWrongSize,
@@ -434,7 +488,7 @@ TEST_F(AesDecryptorTest, SubsampleWrongSize) {
 
 TEST_F(AesDecryptorTest, SubsampleInvalidTotalSize) {
   GenerateKeyRequest(key_id_);
-  AddKeyAndExpect(key_id_, key_, KEY_ADDED);
+  AddKeyAndExpect(kKeyAsJWK, KEY_ADDED);
 
   std::vector<SubsampleEntry> subsample_entries_invalid_total_size(
       kSubsampleEntriesInvalidTotalSize,
@@ -450,7 +504,7 @@ TEST_F(AesDecryptorTest, SubsampleInvalidTotalSize) {
 // No cypher bytes in any of the subsamples.
 TEST_F(AesDecryptorTest, SubsampleClearBytesOnly) {
   GenerateKeyRequest(key_id_);
-  AddKeyAndExpect(key_id_, key_, KEY_ADDED);
+  AddKeyAndExpect(kKeyAsJWK, KEY_ADDED);
 
   std::vector<SubsampleEntry> clear_only_subsample_entries(
       kSubsampleEntriesClearOnly,
@@ -464,7 +518,7 @@ TEST_F(AesDecryptorTest, SubsampleClearBytesOnly) {
 // No clear bytes in any of the subsamples.
 TEST_F(AesDecryptorTest, SubsampleCypherBytesOnly) {
   GenerateKeyRequest(key_id_);
-  AddKeyAndExpect(key_id_, key_, KEY_ADDED);
+  AddKeyAndExpect(kKeyAsJWK, KEY_ADDED);
 
   std::vector<SubsampleEntry> cypher_only_subsample_entries(
       kSubsampleEntriesCypherOnly,
@@ -472,6 +526,115 @@ TEST_F(AesDecryptorTest, SubsampleCypherBytesOnly) {
 
   scoped_refptr<DecoderBuffer> encrypted_buffer = CreateEncryptedBuffer(
       encrypted_data_, key_id_, iv_, 0, cypher_only_subsample_entries);
+  DecryptAndExpect(encrypted_buffer, original_data_, SUCCESS);
+}
+
+TEST_F(AesDecryptorTest, JWKKey) {
+  // Try a simple JWK key (i.e. not in a set)
+  const std::string key1 =
+      "{"
+      "  \"kty\": \"oct\","
+      "  \"kid\": \"AAECAwQFBgcICQoLDA0ODxAREhM=\","
+      "  \"k\": \"FBUWFxgZGhscHR4fICEiIw==\""
+      "}";
+  AddKeyAndExpect(key1, KEY_ERROR);
+
+  // Try a key list with multiple entries.
+  const std::string key2 =
+      "{"
+      "  \"keys\": ["
+      "    {"
+      "      \"kty\": \"oct\","
+      "      \"kid\": \"AAECAwQFBgcICQoLDA0ODxAREhM=\","
+      "      \"k\": \"FBUWFxgZGhscHR4fICEiIw==\""
+      "    },"
+      "    {"
+      "      \"kty\": \"oct\","
+      "      \"kid\": \"JCUmJygpKissLS4vMA==\","
+      "      \"k\":\"MTIzNDU2Nzg5Ojs8PT4/QA==\""
+      "    }"
+      "  ]"
+      "}";
+  AddKeyAndExpect(key2, KEY_ADDED);
+
+  // Try a key with no spaces and some \n plus additional fields.
+  const std::string key3 =
+      "\n\n{\"something\":1,\"keys\":[{\n\n\"kty\":\"oct\",\"alg\":\"A128KW\","
+      "\"kid\":\"AAECAwQFBgcICQoLDA0ODxAREhM=\",\"k\":\"GawgguFyGrWKav7AX4VKUg="
+      "=\",\"foo\":\"bar\"}]}\n\n";
+  AddKeyAndExpect(key3, KEY_ADDED);
+
+  // Try some non-ASCII characters.
+  AddKeyAndExpect("This is not ASCII due to \xff\xfe\xfd in it.", KEY_ERROR);
+
+  // Try a badly formatted key. Assume that the JSON parser is fully tested,
+  // so we won't try a lot of combinations. However, need a test to ensure
+  // that the code doesn't crash if invalid JSON received.
+  AddKeyAndExpect("This is not a JSON key.", KEY_ERROR);
+
+  // Try passing some valid JSON that is not a dictionary at the top level.
+  AddKeyAndExpect("40", KEY_ERROR);
+
+  // Try an empty dictionary.
+  AddKeyAndExpect("{ }", KEY_ERROR);
+
+  // Try an empty 'keys' dictionary.
+  AddKeyAndExpect("{ \"keys\": [] }", KEY_ERROR);
+
+  // Try with 'keys' not a dictionary.
+  AddKeyAndExpect("{ \"keys\":\"1\" }", KEY_ERROR);
+
+  // Try with 'keys' a list of integers.
+  AddKeyAndExpect("{ \"keys\": [ 1, 2, 3 ] }", KEY_ERROR);
+
+  // Try a key missing padding(=) at end of base64 string.
+  const std::string key4 =
+      "{"
+      "  \"keys\": ["
+      "    {"
+      "      \"kty\": \"oct\","
+      "      \"kid\": \"AAECAw==\","
+      "      \"k\": \"BAUGBwgJCgsMDQ4PEBESEw\""
+      "    }"
+      "  ]"
+      "}";
+  AddKeyAndExpect(key4, KEY_ERROR);
+
+  // Try a key ID missing padding(=) at end of base64 string.
+  const std::string key5 =
+      "{"
+      "  \"keys\": ["
+      "    {"
+      "      \"kty\": \"oct\","
+      "      \"kid\": \"AAECAw\","
+      "      \"k\": \"BAUGBwgJCgsMDQ4PEBESEw==\""
+      "    }"
+      "  ]"
+      "}";
+  AddKeyAndExpect(key5, KEY_ERROR);
+
+  // Try a key with invalid base64 encoding.
+  const std::string key6 =
+      "{"
+      "  \"keys\": ["
+      "    {"
+      "      \"kty\": \"oct\","
+      "      \"kid\": \"!@#$%^&*()==\","
+      "      \"k\": \"BAUGBwgJCgsMDQ4PEBESEw==\""
+      "    }"
+      "  ]"
+      "}";
+  AddKeyAndExpect(key6, KEY_ERROR);
+}
+
+TEST_F(AesDecryptorTest, RawKey) {
+  // Verify that v0.1b keys (raw key) is still supported. Raw keys are
+  // 16 bytes long. Use the undecoded value of |kKey|.
+  GenerateKeyRequest(key_id_);
+  AddRawKeyAndExpect(
+      key_id_, std::vector<uint8>(kKey, kKey + arraysize(kKey)), KEY_ADDED);
+  scoped_refptr<DecoderBuffer> encrypted_buffer = CreateEncryptedBuffer(
+      encrypted_data_, key_id_, iv_, 0, no_subsample_entries_);
   DecryptAndExpect(encrypted_buffer, original_data_, SUCCESS);
 }
 

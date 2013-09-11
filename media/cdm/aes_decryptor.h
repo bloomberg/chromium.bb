@@ -86,8 +86,10 @@ class MEDIA_EXPORT AesDecryptor : public MediaKeys, public Decryptor {
     DISALLOW_COPY_AND_ASSIGN(DecryptionKey);
   };
 
-  // Sets |key| for |key_id|. The AesDecryptor takes the ownership of the |key|.
-  void SetKey(const std::string& key_id, scoped_ptr<DecryptionKey> key);
+  // Creates a DecryptionKey using |key_string| and associates it with |key_id|.
+  // Returns true if successful.
+  bool AddDecryptionKey(const std::string& key_id,
+                        const std::string& key_string);
 
   // Gets a DecryptionKey associated with |key_id|. The AesDecryptor still owns
   // the key. Returns NULL if no key is associated with |key_id|.
