@@ -10,9 +10,6 @@
 void FindBarHost::AudibleAlert() {
 #if defined(OS_WIN)
   MessageBeep(MB_OK);
-#else
-  // TODO(mukai):
-  NOTIMPLEMENTED();
 #endif
 }
 
