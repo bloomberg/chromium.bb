@@ -168,30 +168,24 @@ StyleRecalcChange RenderStyle::comparePseudoStyles(const RenderStyle& oldStyle, 
     return NoChange;
 }
 
-StyleRecalcChange RenderStyle::compare(const RenderStyle* oldStyle, const RenderStyle* newStyle)
+StyleRecalcChange RenderStyle::compareInternal(const RenderStyle& s1, const RenderStyle& s2)
 {
-    if ((!oldStyle && newStyle) || (oldStyle && !newStyle))
+    if (s1.display() != s2.display()
+        || s1.hasPseudoStyle(FIRST_LETTER) != s2.hasPseudoStyle(FIRST_LETTER)
+        || s1.columnSpan() != s2.columnSpan()
+        || s1.specifiesAutoColumns() != s2.specifiesAutoColumns()
+        || !s1.contentDataEquivalent(&s2)
+        || s1.hasTextCombine() != s2.hasTextCombine()
+        || s1.flowThread() != s2.flowThread()
+        || s1.regionThread() != s2.regionThread())
         return Reattach;
 
-    if (!oldStyle && !newStyle)
-        return NoChange;
+    if (s1 == s2)
+        return comparePseudoStyles(s1, s2);
 
-    if (oldStyle->display() != newStyle->display()
-        || oldStyle->hasPseudoStyle(FIRST_LETTER) != newStyle->hasPseudoStyle(FIRST_LETTER)
-        || oldStyle->columnSpan() != newStyle->columnSpan()
-        || oldStyle->specifiesAutoColumns() != newStyle->specifiesAutoColumns()
-        || !oldStyle->contentDataEquivalent(newStyle)
-        || oldStyle->hasTextCombine() != newStyle->hasTextCombine()
-        || oldStyle->flowThread() != newStyle->flowThread()
-        || oldStyle->regionThread() != newStyle->regionThread())
-        return Reattach;
-
-    if (*oldStyle == *newStyle)
-        return comparePseudoStyles(oldStyle, newStyle);
-
-    if (oldStyle->inheritedNotEqual(newStyle)
-        || oldStyle->hasExplicitlyInheritedProperties()
-        || newStyle->hasExplicitlyInheritedProperties())
+    if (s1.inheritedNotEqual(&s2)
+        || s1.hasExplicitlyInheritedProperties()
+        || s2.hasExplicitlyInheritedProperties())
         return Inherit;
 
     return NoInherit;
