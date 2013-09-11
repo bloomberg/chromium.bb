@@ -17,6 +17,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
@@ -323,6 +324,17 @@ void UpdateContentLengthPrefs(int received_content_length,
   prefs->SetInt64(prefs::kHttpOriginalContentLength, total_original);
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
+  // TODO(bengr): Remove this check once the underlying cause of
+  // http://crbug.com/287821 is fixed. For now, only continue if the current
+  // year is reported as being between 1972 and 2970.
+  base::TimeDelta time_since_unix_epoch =
+      base::Time::Now() - base::Time::UnixEpoch();
+  const int kMinDaysSinceUnixEpoch = 365 * 2;  //   2 years.
+  const int kMaxDaysSinceUnixEpoch = 365 * 1000; // 1000 years.
+  if (time_since_unix_epoch.InDays() < kMinDaysSinceUnixEpoch ||
+      time_since_unix_epoch.InDays() > kMaxDaysSinceUnixEpoch)
+    return;
+
   base::Time now = base::Time::Now().LocalMidnight();
   const size_t kNumDaysInHistory = 60;
 
