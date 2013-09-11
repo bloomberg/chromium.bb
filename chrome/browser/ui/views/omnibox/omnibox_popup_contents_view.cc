@@ -41,18 +41,10 @@ class OmniboxPopupContentsView::AutocompletePopupWidget
     : public views::Widget,
       public base::SupportsWeakPtr<AutocompletePopupWidget> {
  public:
-  AutocompletePopupWidget() : crash_if_destroyed_(false) {}
-  virtual ~AutocompletePopupWidget() {
-    CHECK(!crash_if_destroyed_);
-  }
-
-  void set_crash_if_destroyed(bool value) { crash_if_destroyed_ = value; }
+  AutocompletePopupWidget() {}
+  virtual ~AutocompletePopupWidget() {}
 
  private:
-  // For debugging a crash.
-  // TODO(sky): nuke this when we figure out 275794.
-  bool crash_if_destroyed_;
-
   DISALLOW_COPY_AND_ASSIGN(AutocompletePopupWidget);
 };
 
@@ -90,7 +82,8 @@ OmniboxPopupContentsView::OmniboxPopupContentsView(
       size_animation_(this),
       left_margin_(0),
       right_margin_(0),
-      outside_vertical_padding_(0) {
+      outside_vertical_padding_(0),
+      in_popup_init_(false) {
   // The contents is owned by the LocationBarView.
   set_owned_by_client();
 
@@ -113,6 +106,7 @@ OmniboxPopupContentsView::~OmniboxPopupContentsView() {
   // We don't need to do anything with |popup_| here.  The OS either has already
   // closed the window, in which case it's been deleted, or it will soon, in
   // which case there's nothing we need to do.
+  CHECK(!in_popup_init_);
 }
 
 gfx::Rect OmniboxPopupContentsView::GetPopupBounds() const {
@@ -173,6 +167,8 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
     // No matches or the IME is showing a popup window which may overlap
     // the omnibox popup window.  Close any existing popup.
     if (popup_ != NULL) {
+      CHECK(!in_popup_init_);
+
       size_animation_.Stop();
 
       // NOTE: Do NOT use CloseNow() here, as we may be deep in a callstack
@@ -223,9 +219,9 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
     params.parent = popup_parent;
     params.bounds = GetPopupBounds();
     params.context = popup_parent;
-    popup_->set_crash_if_destroyed(true);
+    in_popup_init_ = true;
     popup_->Init(params);
-    popup_->set_crash_if_destroyed(false);
+    in_popup_init_ = false;
 #if defined(USE_AURA)
     views::corewm::SetWindowVisibilityAnimationType(
         popup_->GetNativeView(),

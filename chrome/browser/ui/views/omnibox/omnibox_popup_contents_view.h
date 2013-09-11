@@ -169,6 +169,9 @@ class OmniboxPopupContentsView : public views::View,
   // Amount of extra padding to add to the popup on the top and bottom.
   int outside_vertical_padding_;
 
+  // TODO(sky): nuke. Used for debugging 275794.
+  bool in_popup_init_;
+
   DISALLOW_COPY_AND_ASSIGN(OmniboxPopupContentsView);
 };
 
