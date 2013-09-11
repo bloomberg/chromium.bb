@@ -123,6 +123,11 @@ bool RTCPeerConnectionHandler::addIceCandidate(WebKit::WebRTCICECandidate iceCan
     return m_webHandler->addICECandidate(iceCandidate);
 }
 
+bool RTCPeerConnectionHandler::addIceCandidate(PassRefPtr<RTCVoidRequest> request, WebKit::WebRTCICECandidate iceCandidate)
+{
+    return m_webHandler->addICECandidate(request, iceCandidate);
+}
+
 WebKit::WebRTCSessionDescription RTCPeerConnectionHandler::localDescription()
 {
     return m_webHandler->localDescription();

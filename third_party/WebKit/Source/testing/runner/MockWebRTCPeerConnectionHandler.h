@@ -60,6 +60,7 @@ public:
     virtual WebKit::WebRTCSessionDescription remoteDescription() OVERRIDE;
     virtual bool updateICE(const WebKit::WebRTCConfiguration&, const WebKit::WebMediaConstraints&) OVERRIDE;
     virtual bool addICECandidate(const WebKit::WebRTCICECandidate&) OVERRIDE;
+    virtual bool addICECandidate(const WebKit::WebRTCVoidRequest&, const WebKit::WebRTCICECandidate&) OVERRIDE;
     virtual bool addStream(const WebKit::WebMediaStream&, const WebKit::WebMediaConstraints&) OVERRIDE;
     virtual void removeStream(const WebKit::WebMediaStream&) OVERRIDE;
     virtual void getStats(const WebKit::WebRTCStatsRequest&) OVERRIDE;

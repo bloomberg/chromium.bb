@@ -298,6 +298,25 @@ void RTCPeerConnection::addIceCandidate(RTCIceCandidate* iceCandidate, Exception
         es.throwDOMException(SyntaxError);
 }
 
+void RTCPeerConnection::addIceCandidate(RTCIceCandidate* iceCandidate, PassRefPtr<VoidCallback> successCallback, PassRefPtr<RTCErrorCallback> errorCallback, ExceptionState& es)
+{
+    if (m_signalingState == SignalingStateClosed) {
+        es.throwDOMException(InvalidStateError);
+        return;
+    }
+
+    if (!iceCandidate || !successCallback || !errorCallback) {
+        es.throwDOMException(TypeMismatchError);
+        return;
+    }
+
+    RefPtr<RTCVoidRequestImpl> request = RTCVoidRequestImpl::create(scriptExecutionContext(), successCallback, errorCallback);
+
+    bool implemented = m_peerHandler->addIceCandidate(request.release(), iceCandidate->webCandidate());
+    if (!implemented)
+        es.throwDOMException(NotSupportedError);
+}
+
 String RTCPeerConnection::signalingState() const
 {
     switch (m_signalingState) {

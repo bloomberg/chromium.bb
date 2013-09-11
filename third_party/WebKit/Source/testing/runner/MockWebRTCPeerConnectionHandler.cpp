@@ -252,6 +252,12 @@ bool MockWebRTCPeerConnectionHandler::addICECandidate(const WebRTCICECandidate& 
     return true;
 }
 
+bool MockWebRTCPeerConnectionHandler::addICECandidate(const WebRTCVoidRequest& request, const WebRTCICECandidate& iceCandidate)
+{
+    m_interfaces->delegate()->postTask(new RTCVoidRequestTask(this, request, true));
+    return true;
+}
+
 bool MockWebRTCPeerConnectionHandler::addStream(const WebMediaStream& stream, const WebMediaConstraints&)
 {
     ++m_streamCount;

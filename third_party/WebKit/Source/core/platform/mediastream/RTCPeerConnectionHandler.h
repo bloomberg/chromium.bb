@@ -73,7 +73,11 @@ public:
     WebKit::WebRTCSessionDescription localDescription();
     WebKit::WebRTCSessionDescription remoteDescription();
     bool updateIce(PassRefPtr<RTCConfiguration>, PassRefPtr<MediaConstraints>);
+
+    // DEPRECATED
     bool addIceCandidate(WebKit::WebRTCICECandidate);
+
+    bool addIceCandidate(PassRefPtr<RTCVoidRequest>, WebKit::WebRTCICECandidate);
     bool addStream(PassRefPtr<MediaStreamDescriptor>, PassRefPtr<MediaConstraints>);
     void removeStream(PassRefPtr<MediaStreamDescriptor>);
     void getStats(PassRefPtr<RTCStatsRequest>);

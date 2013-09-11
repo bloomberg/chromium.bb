@@ -75,7 +75,10 @@ public:
 
     void updateIce(const Dictionary& rtcConfiguration, const Dictionary& mediaConstraints, ExceptionState&);
 
+    // DEPRECATED
     void addIceCandidate(RTCIceCandidate*, ExceptionState&);
+
+    void addIceCandidate(RTCIceCandidate*, PassRefPtr<VoidCallback>, PassRefPtr<RTCErrorCallback>, ExceptionState&);
 
     String iceGatheringState() const;
 
