@@ -4,9 +4,9 @@ var actualWheelEventsOccurred = 0;
 var cumulativeScrollX = 0;
 var cumulativeScrollY = 0;
 
-var minimumWheelEventsExpected = "6";
-var minimumScrollXExpected = "10";
-var minimumScrollYExpected = "10";
+var minimumWheelEventsExpected = "40";
+var minimumScrollXExpected = "200";
+var minimumScrollYExpected = "200";
 
 function recordWheelEvent(event)
 {
@@ -24,7 +24,7 @@ function recordWheelEvent(event)
 document.addEventListener("mousewheel", recordWheelEvent);
 
 if (window.testRunner && window.eventSender && window.eventSender.gestureFlingStart) {
-    eventSender.gestureFlingStart(10, 11, 1000, 1000);
+    eventSender.gestureFlingStart(10, 11, 10000, 10000);
     testRunner.display();
     testRunner.display();
     testRunner.display();
