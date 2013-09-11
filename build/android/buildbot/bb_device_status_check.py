@@ -199,7 +199,7 @@ def main():
                     default=os.path.join(constants.DIR_SOURCE_ROOT, 'out'))
   parser.add_option('--no-provisioning-check', action='store_true',
                     help='Will not check if devices are provisioned properly.')
-  parser.add_option('--device-status-dashboard',
+  parser.add_option('--device-status-dashboard', action='store_true',
                     help='Output device status data for dashboard.')
   options, args = parser.parse_args()
   if args:
