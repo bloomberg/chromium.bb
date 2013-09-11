@@ -1,6 +1,7 @@
 /*
  *  Copyright (C) 2003, 2006 Apple Inc. All rights reserved.
  *  Copyright (C) 2006 Samuel Weinig (sam@webkit.org)
+ *  Copyright (C) 2013 Samsung Electronics. All rights reserved.
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -30,8 +31,10 @@ namespace WebCore {
 
 String XMLSerializer::serializeToString(Node* node, ExceptionState& es)
 {
-    if (!node)
+    if (!node) {
+        es.throwDOMException(TypeError, "Invalid node value.");
         return String();
+    }
 
     return createMarkup(node);
 }
