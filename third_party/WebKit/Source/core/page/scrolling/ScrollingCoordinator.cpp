@@ -210,10 +210,10 @@ static PassOwnPtr<WebScrollbarLayer> createScrollbarLayer(Scrollbar* scrollbar)
     return scrollbarLayer.release();
 }
 
-PassOwnPtr<WebScrollbarLayer> ScrollingCoordinator::createSolidColorScrollbarLayer(ScrollbarOrientation orientation, int thumbThickness)
+PassOwnPtr<WebScrollbarLayer> ScrollingCoordinator::createSolidColorScrollbarLayer(ScrollbarOrientation orientation, int thumbThickness, bool isLeftSideVerticalScrollbar)
 {
     WebKit::WebScrollbar::Orientation webOrientation = (orientation == HorizontalScrollbar) ? WebKit::WebScrollbar::Horizontal : WebKit::WebScrollbar::Vertical;
-    OwnPtr<WebScrollbarLayer> scrollbarLayer = adoptPtr(WebKit::Platform::current()->compositorSupport()->createSolidColorScrollbarLayer(webOrientation, thumbThickness));
+    OwnPtr<WebScrollbarLayer> scrollbarLayer = adoptPtr(WebKit::Platform::current()->compositorSupport()->createSolidColorScrollbarLayer(webOrientation, thumbThickness, isLeftSideVerticalScrollbar));
     GraphicsLayer::registerContentsLayer(scrollbarLayer->layer());
     return scrollbarLayer.release();
 }
@@ -287,7 +287,7 @@ void ScrollingCoordinator::scrollableAreaScrollbarLayerDidChange(ScrollableArea*
             OwnPtr<WebScrollbarLayer> webScrollbarLayer;
             if (settings->useSolidColorScrollbars()) {
                 ASSERT(RuntimeEnabledFeatures::overlayScrollbarsEnabled());
-                webScrollbarLayer = createSolidColorScrollbarLayer(orientation, -1);
+                webScrollbarLayer = createSolidColorScrollbarLayer(orientation, -1, scrollableArea->shouldPlaceVerticalScrollbarOnLeft());
             } else {
                 webScrollbarLayer = createScrollbarLayer(scrollbar);
             }
