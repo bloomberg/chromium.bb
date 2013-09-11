@@ -506,11 +506,15 @@ class FakeSafeBrowsingDatabaseManager :  public SafeBrowsingDatabaseManager {
   virtual ~FakeSafeBrowsingDatabaseManager() {}
 
   void OnCheckBrowseURLDone(const GURL& gurl, Client* client) {
+    std::vector<SBThreatType> expected_threats;
+    expected_threats.push_back(SB_THREAT_TYPE_URL_MALWARE);
+    expected_threats.push_back(SB_THREAT_TYPE_URL_PHISHING);
     SafeBrowsingDatabaseManager::SafeBrowsingCheck sb_check(
         std::vector<GURL>(1, gurl),
         std::vector<SBFullHash>(),
         client,
-        safe_browsing_util::MALWARE);
+        safe_browsing_util::MALWARE,
+        expected_threats);
     sb_check.url_results[0] = threat_type_;
     client->OnSafeBrowsingResult(sb_check);
   }

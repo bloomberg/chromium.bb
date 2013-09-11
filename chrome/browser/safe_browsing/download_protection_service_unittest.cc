@@ -140,7 +140,8 @@ ACTION_P(CheckDownloadUrlDone, threat_type) {
           arg0,
           std::vector<SBFullHash>(),
           arg1,
-          safe_browsing_util::BINURL);
+          safe_browsing_util::BINURL,
+          std::vector<SBThreatType>(1, SB_THREAT_TYPE_BINARY_MALWARE_URL));
   for (size_t i = 0; i < check->url_results.size(); ++i)
     check->url_results[i] = threat_type;
   BrowserThread::PostTask(BrowserThread::IO,

@@ -58,7 +58,8 @@ class SafeBrowsingDatabaseManager
     SafeBrowsingCheck(const std::vector<GURL>& urls,
                       const std::vector<SBFullHash>& full_hashes,
                       Client* client,
-                      safe_browsing_util::ListType check_type);
+                      safe_browsing_util::ListType check_type,
+                      const std::vector<SBThreatType>& expected_threats);
     ~SafeBrowsingCheck();
 
     // Either |urls| or |full_hashes| is used to lookup database. |*_results|
@@ -73,6 +74,7 @@ class SafeBrowsingDatabaseManager
     bool need_get_hash;
     base::TimeTicks start;  // When check was sent to SB service.
     safe_browsing_util::ListType check_type;  // See comment in constructor.
+    std::vector<SBThreatType> expected_threats;
     std::vector<SBPrefix> prefix_hits;
     std::vector<SBFullHashResult> full_hits;
 
@@ -213,6 +215,7 @@ class SafeBrowsingDatabaseManager
   friend class SafeBrowsingServerTest;
   friend class SafeBrowsingServiceTest;
   friend class SafeBrowsingServiceTestHelper;
+  friend class SafeBrowsingDatabaseManagerTest;
 
   typedef std::set<SafeBrowsingCheck*> CurrentChecks;
   typedef std::vector<SafeBrowsingCheck*> GetHashRequestors;
@@ -220,9 +223,16 @@ class SafeBrowsingDatabaseManager
 
   // Clients that we've queued up for checking later once the database is ready.
   struct QueuedCheck {
+    QueuedCheck(const safe_browsing_util::ListType check_type,
+                Client* client,
+                const GURL& url,
+                const std::vector<SBThreatType>& expected_threats,
+                const base::TimeTicks& start);
+    ~QueuedCheck();
     safe_browsing_util::ListType check_type;
     Client* client;
     GURL url;
+    std::vector<SBThreatType> expected_threats;
     base::TimeTicks start;  // When check was queued.
   };
 

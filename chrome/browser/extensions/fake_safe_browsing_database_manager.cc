@@ -41,10 +41,12 @@ bool FakeSafeBrowsingDatabaseManager::CheckExtensionIDs(
                  safe_browsing_util::StringToSBFullHash);
 
   scoped_ptr<SafeBrowsingCheck> safe_browsing_check(
-      new SafeBrowsingCheck(std::vector<GURL>(),
-                             extension_id_hashes,
-                             client,
-                             safe_browsing_util::EXTENSIONBLACKLIST));
+      new SafeBrowsingCheck(
+          std::vector<GURL>(),
+          extension_id_hashes,
+          client,
+          safe_browsing_util::EXTENSIONBLACKLIST,
+          std::vector<SBThreatType>(1, SB_THREAT_TYPE_EXTENSION)));
 
   for (size_t i = 0; i < extension_ids_vector.size(); ++i) {
     const std::string& extension_id = extension_ids_vector[i];
