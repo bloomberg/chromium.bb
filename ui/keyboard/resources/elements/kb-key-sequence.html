@@ -4,7 +4,7 @@
   -- found in the LICENSE file.
   -->
 
-<polymer-element name="kb-key-sequence" attributes="keys superscripts keyCodes">
+<polymer-element name="kb-key-sequence" attributes="keys hintTexts keyCodes">
   <template>
     <style>
       @host {
@@ -24,9 +24,9 @@
         var result;
         if (this.keys) {
           var newKeys = this.keys;
-          var newSuperScripts = this.superscripts;
-          if (newSuperScripts && newKeys.length != newSuperScripts.length) {
-            console.error('keys and superscripts do not match');
+          var newHintTexts = this.hintTexts;
+          if (newHintTexts && newKeys.length != newHintTexts.length) {
+            console.error('keys and hintTexts do not match');
             return;
           }
           var keyCodes = this.keyCodes || newKeys;
@@ -39,8 +39,8 @@
             var key = document.createElement('kb-key');
             key.innerText = newKeys[i];
             key.accents = newKeys[i];
-            if (newSuperScripts)
-              key.superscript = newSuperScripts[i];
+            if (newHintTexts)
+              key.hintText = newHintTexts[i];
             var state = this.$.keyCodeMetadata.GetKeyCodeAndModifiers(
                 keyCodes[i]);
             if (state) {

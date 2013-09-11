@@ -41,7 +41,7 @@
 
         var altkeyMetadata = this.$.altkeyMetadata;
         var altkeys = altkeyMetadata.getAltkeys(detail.char,
-                                                !!detail.superscript);
+                                                !!detail.hintText);
         if (!altkeys)
           return;
 
@@ -56,7 +56,7 @@
           activeAltKeySet = altkeyMetadata.createAltkeySet(detail.char,
                                                            maxLeftOffset,
                                                            maxRightOffset,
-                                                           detail.superscript);
+                                                           detail.hintText);
           altkeyContainer.appendChild(activeAltKeySet);
         }
 

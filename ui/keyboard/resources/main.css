@@ -52,7 +52,7 @@ kb-key::x-key {
   top: 0;
 }
 
-kb-key::x-superscript {
+kb-key::x-hinttext {
   color: #7c7c7c;
   font-size: 70%;
   position: absolute;
@@ -64,7 +64,7 @@ kb-key::x-key[inverted] {
   color: #7c7c7c;
 }
 
-kb-key::x-superscript[inverted] {
+kb-key::x-hinttext[inverted] {
   color: #ffffff;
 }
 

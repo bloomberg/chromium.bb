@@ -6,7 +6,7 @@
 
 <polymer-element name="kb-key-base"
     on-pointerdown="down" on-pointerup="up" on-pointerout="out"
-    attributes="accents char invert repeat superscript toKeyset toLayout">
+    attributes="accents char invert repeat hintText toKeyset toLayout">
   <script>
     /**
      * The long-press delay in milliseconds before long-press handler is
@@ -118,7 +118,7 @@
         this.longPressTimer = this.asyncMethod(function() {
           var detail = {
             char: this.charValue,
-            superscript: this.superscript
+            hintText: this.hintText
           };
           if (this.keysetRules && this.keysetRules.long != undefined) {
             detail.toKeyset = this.keysetRules.long[TO_KEYSET - OFFSET];

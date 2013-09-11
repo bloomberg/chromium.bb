@@ -3,21 +3,21 @@
 // found in the LICENSE file.
 
 var symbolAltKeys = {
-  '1': ['\u00B9', // Superscript 1
+  '1': ['\u00B9', // HintText 1
         '\u00BD', // Vulgar fraction 1/2
         '\u2153', // Vulgar fraction 1/3
         '\u00BC', // Vulgar fraction 1/4
         '\u215B'], // Vulgar fraction 1/8
-  '2': ['\u00B2', // Superscript 2
+  '2': ['\u00B2', // HintText 2
         '\u2154'], // Vulgar fraction 2/3
-  '3': ['\u00B3', // Superscript 3
+  '3': ['\u00B3', // HintText 3
         '\u00BE', // Vulgar fraction 3/4
         '\u215C'], // Vulgar fraction 3/8
-  '4': ['\u2074'], // Superscript 4
+  '4': ['\u2074'], // HintText 4
   '5': ['\u215D'], // Vulgar fraction 5/8
   '7': ['\u215E'], // Vulgar fraction 7/8
   '0': ['\u00D8', // Empty set
-        '\u207F'], // Superscript small n
+        '\u207F'], // HintText small n
   '$': ['\u20AC', // Euro sign
         '\u00A5', // Yen sign
         '\u00A3', // Pound sign
