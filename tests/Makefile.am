@@ -29,18 +29,14 @@ clean-local:
 export abs_builddir
 
 noinst_LTLIBRARIES =			\
-	$(weston_test)
+	$(weston_test)			\
+	$(module_tests)
 
 noinst_PROGRAMS =			\
 	$(setbacklight)			\
-	matrix-test
-
-check_LTLIBRARIES =			\
-	$(module_tests)
-
-check_PROGRAMS =			\
 	$(shared_tests)			\
-	$(weston_tests)
+	$(weston_tests)			\
+	matrix-test
 
 AM_CFLAGS = $(GCC_CFLAGS)
 AM_CPPFLAGS =					\
