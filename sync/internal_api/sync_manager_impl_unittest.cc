@@ -735,6 +735,7 @@ class TestHttpPostProviderFactory : public HttpPostProviderFactory {
   virtual void Destroy(HttpPostProviderInterface* http) OVERRIDE {
     delete static_cast<TestHttpPostProviderInterface*>(http);
   }
+  virtual void Shutdown() OVERRIDE {}
 };
 
 class SyncManagerObserverMock : public SyncManager::Observer {

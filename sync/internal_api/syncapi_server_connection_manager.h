@@ -60,6 +60,7 @@ class SYNC_EXPORT_PRIVATE SyncAPIServerConnectionManager
 
   // ServerConnectionManager overrides.
   virtual Connection* MakeConnection() OVERRIDE;
+  virtual void TerminateAllIO() OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SyncAPIServerConnectionManagerTest, EarlyAbortPost);

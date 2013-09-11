@@ -215,11 +215,11 @@ class SYNC_EXPORT_PRIVATE ServerConnectionManager {
   // communication with the server.
   virtual Connection* MakeConnection();
 
-  // Aborts any active HTTP POST request.
+  // Closes any active network connections to the sync server.
   // We expect this to get called on a different thread than the valid
   // ThreadChecker thread, as we want to kill any pending http traffic without
   // having to wait for the request to complete.
-  void TerminateAllIO();
+  virtual void TerminateAllIO();
 
   void set_client_id(const std::string& client_id) {
     DCHECK(thread_checker_.CalledOnValidThread());

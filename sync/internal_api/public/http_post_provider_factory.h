@@ -28,6 +28,10 @@ class SYNC_EXPORT HttpPostProviderFactory {
   // reference counted, which is useful if a particular implementation uses
   // multiple threads to serve network requests.
   virtual void Destroy(HttpPostProviderInterface* http) = 0;
+
+  // Clean up when the factory is no longer needed. Create() must not be
+  // called after Shutdown() is called. Can be called from any thread.
+  virtual void Shutdown() = 0;
 };
 
 }  // namespace syncer

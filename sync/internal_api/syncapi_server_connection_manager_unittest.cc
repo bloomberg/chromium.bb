@@ -63,6 +63,7 @@ class BlockingHttpPostFactory : public HttpPostProviderFactory {
   virtual void Destroy(HttpPostProviderInterface* http) OVERRIDE {
     delete static_cast<BlockingHttpPost*>(http);
   }
+  virtual void Shutdown() OVERRIDE {}
 };
 
 }  // namespace

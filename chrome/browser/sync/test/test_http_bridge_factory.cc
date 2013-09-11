@@ -39,4 +39,6 @@ void TestHttpBridgeFactory::Destroy(syncer::HttpPostProviderInterface* http) {
   delete static_cast<TestHttpBridge*>(http);
 }
 
+void TestHttpBridgeFactory::Shutdown() {}
+
 }  // namespace browser_sync

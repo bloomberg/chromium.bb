@@ -405,4 +405,81 @@ TEST_F(SyncHttpBridgeTest, AbortAndReleaseBeforeFetchComplete) {
   io_thread()->Stop();
 }
 
+void HttpBridgeRunOnSyncThread(
+    net::URLRequestContextGetter* baseline_context_getter,
+    syncer::HttpPostProviderFactory** bridge_factory_out,
+    syncer::HttpPostProviderInterface** bridge_out,
+    base::WaitableEvent* signal_when_created,
+    base::WaitableEvent* wait_for_shutdown) {
+  scoped_ptr<syncer::HttpPostProviderFactory> bridge_factory(
+      new syncer::HttpBridgeFactory(baseline_context_getter,
+                                    "test",
+                                    NetworkTimeUpdateCallback()));
+  *bridge_factory_out = bridge_factory.get();
+
+  HttpPostProviderInterface* bridge = bridge_factory->Create();
+  *bridge_out = bridge;
+
+  signal_when_created->Signal();
+  wait_for_shutdown->Wait();
+
+  bridge_factory->Destroy(bridge);
+}
+
+void WaitOnIOThread(base::WaitableEvent* signal_wait_start,
+                    base::WaitableEvent* wait_done) {
+  signal_wait_start->Signal();
+  wait_done->Wait();
+}
+
+// Tests RequestContextGetter is properly released on IO thread even when
+// IO thread stops before sync thread.
+TEST_F(SyncHttpBridgeTest, RequestContextGetterReleaseOrder) {
+  base::Thread sync_thread("SyncThread");
+  sync_thread.Start();
+
+  syncer::HttpPostProviderFactory* factory = NULL;
+  syncer::HttpPostProviderInterface* bridge = NULL;
+
+  scoped_refptr<net::URLRequestContextGetter> baseline_context_getter(
+      new net::TestURLRequestContextGetter(io_thread()->message_loop_proxy()));
+
+  base::WaitableEvent signal_when_created(false, false);
+  base::WaitableEvent wait_for_shutdown(false, false);
+
+  // Create bridge factory and factory on sync thread and wait for the creation
+  // to finish.
+  sync_thread.message_loop()->PostTask(FROM_HERE,
+      base::Bind(&HttpBridgeRunOnSyncThread,
+                 base::Unretained(baseline_context_getter.get()),
+                 &factory, &bridge, &signal_when_created, &wait_for_shutdown));
+  signal_when_created.Wait();
+
+  // Simulate sync shutdown by aborting bridge and shutting down factory on
+  // frontend.
+  bridge->Abort();
+  factory->Shutdown();
+
+  // Wait for sync's RequestContextGetter to be cleared on IO thread and
+  // check for reference count.
+  base::WaitableEvent signal_wait_start(false, false);
+  base::WaitableEvent wait_done(false, false);
+  io_thread()->message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&WaitOnIOThread, &signal_wait_start, &wait_done));
+  signal_wait_start.Wait();
+  // |baseline_context_getter| should have only one reference from local
+  // variable.
+  EXPECT_TRUE(baseline_context_getter->HasOneRef());
+  baseline_context_getter = NULL;
+
+  // Unblock and stop IO thread before sync thread.
+  wait_done.Signal();
+  io_thread()->Stop();
+
+  // Unblock and stop sync thread.
+  wait_for_shutdown.Signal();
+  sync_thread.Stop();
+}
+
 }  // namespace syncer

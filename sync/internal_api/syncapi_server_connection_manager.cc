@@ -105,4 +105,9 @@ SyncAPIServerConnectionManager::MakeConnection() {
   return new SyncAPIBridgedConnection(this, post_provider_factory_.get());
 }
 
+void SyncAPIServerConnectionManager::TerminateAllIO() {
+  ServerConnectionManager::TerminateAllIO();
+  post_provider_factory_->Shutdown();
+}
+
 }  // namespace syncer

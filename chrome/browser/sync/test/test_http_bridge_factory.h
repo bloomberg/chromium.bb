@@ -44,6 +44,7 @@ class TestHttpBridgeFactory : public syncer::HttpPostProviderFactory {
   // syncer::HttpPostProviderFactory:
   virtual syncer::HttpPostProviderInterface* Create() OVERRIDE;
   virtual void Destroy(syncer::HttpPostProviderInterface* http) OVERRIDE;
+  virtual void Shutdown() OVERRIDE;
 };
 
 }  // namespace browser_sync

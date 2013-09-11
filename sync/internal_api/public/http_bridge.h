@@ -162,12 +162,6 @@ class SYNC_EXPORT_PRIVATE HttpBridge
 
   void UpdateNetworkTime();
 
-  // Gets a customized net::URLRequestContext for bridged requests. See
-  // RequestContext definition for details.
-  const scoped_refptr<RequestContextGetter> context_getter_for_request_;
-
-  const scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
-
   // The message loop of the thread we were created on. This is the thread that
   // will block on MakeSynchronousPost while the IO thread fetches data from
   // the network.
@@ -216,11 +210,18 @@ class SYNC_EXPORT_PRIVATE HttpBridge
   };
 
   // This lock synchronizes use of state involved in the flow to fetch a URL
-  // using URLFetcher.  Because we can Abort() from any thread, for example,
-  // this flow needs to be synchronized to gracefully clean up URLFetcher and
-  // return appropriate values in |error_code|.
+  // using URLFetcher, including |fetch_state_| and
+  // |context_getter_for_request_| on any thread, for example, this flow needs
+  // to be synchronized to gracefully clean up URLFetcher and return
+  // appropriate values in |error_code|.
   mutable base::Lock fetch_state_lock_;
   URLFetchState fetch_state_;
+
+  // Gets a customized net::URLRequestContext for bridged requests. See
+  // RequestContext definition for details.
+  scoped_refptr<RequestContextGetter> context_getter_for_request_;
+
+  const scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
 
   // Callback for updating network time.
   NetworkTimeUpdateCallback network_time_update_callback_;
@@ -239,14 +240,17 @@ class SYNC_EXPORT HttpBridgeFactory : public HttpPostProviderFactory {
   // HttpPostProviderFactory:
   virtual HttpPostProviderInterface* Create() OVERRIDE;
   virtual void Destroy(HttpPostProviderInterface* http) OVERRIDE;
+  virtual void Shutdown() OVERRIDE;
 
  private:
-  // This request context is built on top of the baseline context and shares
-  // common components.
-  HttpBridge::RequestContextGetter* GetRequestContextGetter();
+  // Protects |request_context_getter_|.
+  base::Lock context_getter_lock_;
 
-  const scoped_refptr<HttpBridge::RequestContextGetter>
-      request_context_getter_;
+  // This request context is built on top of the baseline context and shares
+  // common components. It's mostly used on sync thread when creating
+  // connection but is released as soon as possible during shutdown. Protected
+  // by |context_getter_lock_|.
+  scoped_refptr<HttpBridge::RequestContextGetter> request_context_getter_;
 
   NetworkTimeUpdateCallback network_time_update_callback_;
 
