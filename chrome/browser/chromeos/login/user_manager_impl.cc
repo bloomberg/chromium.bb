@@ -832,8 +832,10 @@ bool UserManagerImpl::IsCurrentUserOwner() const {
 
 void UserManagerImpl::SetCurrentUserIsOwner(bool is_current_user_owner) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  base::AutoLock lk(is_current_user_owner_lock_);
-  is_current_user_owner_ = is_current_user_owner;
+  {
+    base::AutoLock lk(is_current_user_owner_lock_);
+    is_current_user_owner_ = is_current_user_owner;
+  }
   UpdateLoginState();
 }
 

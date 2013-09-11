@@ -28,6 +28,7 @@
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray_accessibility.h"
 #include "ash/system/tray_caps_lock.h"
+#include "ash/system/user/login_status.h"
 #include "ash/system/user/update_observer.h"
 #include "ash/system/user/user_observer.h"
 #include "ash/volume_control_delegate.h"
@@ -320,6 +321,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
                            public content::NotificationObserver,
                            public input_method::InputMethodManager::Observer,
                            public system::TimezoneSettings::Observer,
+                           public chromeos::LoginState::Observer,
                            public chromeos::SystemClockClient::Observer,
                            public device::BluetoothAdapter::Observer,
                            public SystemKeyEventListener::CapsLockObserver,
@@ -390,6 +392,9 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
     ash::Shell::GetInstance()->session_state_delegate()->
         AddSessionStateObserver(this);
+
+    if (LoginState::IsInitialized())
+      LoginState::Get()->AddObserver(this);
   }
 
   virtual void Shutdown() OVERRIDE {
@@ -444,6 +449,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     bluetooth_adapter_->RemoveObserver(this);
     ash::Shell::GetInstance()->session_state_delegate()->
         RemoveSessionStateObserver(this);
+    LoginState::Get()->RemoveObserver(this);
 
     // Stop observing Drive operations.
     UnobserveDriveUpdates();
@@ -1071,6 +1077,12 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
       session_length_limit_ = base::TimeDelta();
     }
     GetSystemTrayNotifier()->NotifySessionLengthLimitChanged();
+  }
+
+  // LoginState::Observer overrides.
+  virtual void LoggedInStateChanged(
+      chromeos::LoginState::LoggedInState state) OVERRIDE {
+    UpdateClockType();
   }
 
   // Overridden from PowerManagerClient::Observer.
