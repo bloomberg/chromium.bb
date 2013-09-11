@@ -258,7 +258,6 @@ bool WebPluginImpl::initialize(WebPluginContainer* container) {
   bool ok = plugin_delegate->Initialize(
       plugin_url_, arg_names_, arg_values_, this, load_manually_);
   if (!ok) {
-    LOG(ERROR) << "Couldn't initialize plug-in";
     plugin_delegate->PluginDestroyed();
 
     WebKit::WebPlugin* replacement_plugin =
