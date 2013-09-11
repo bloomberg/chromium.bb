@@ -8,7 +8,7 @@
 
 #include <algorithm>
 
-#include "ui/base/gtk/gtk_compat.h"
+#include "ui/gfx/gtk_compat.h"
 
 namespace {
 

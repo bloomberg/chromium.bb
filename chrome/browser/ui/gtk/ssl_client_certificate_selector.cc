@@ -24,12 +24,12 @@
 #include "grit/generated_resources.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_cert_request_info.h"
-#include "ui/base/gtk/gtk_compat.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/gtk/gtk_signal.h"
-#include "ui/base/gtk/scoped_gobject.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/gtk_compat.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/scoped_gobject.h"
 
 using content::BrowserThread;
 using content::WebContents;

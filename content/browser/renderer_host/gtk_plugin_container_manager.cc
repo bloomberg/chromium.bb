@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "content/browser/renderer_host/gtk_plugin_container.h"
 #include "content/common/webplugin_geometry.h"
-#include "ui/base/gtk/gtk_compat.h"
+#include "ui/gfx/gtk_compat.h"
 #include "ui/gfx/gtk_util.h"
 
 namespace content {

@@ -10,8 +10,8 @@
 
 #include <vector>
 
-#include "ui/base/gtk/gtk_compat.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/gfx/gtk_compat.h"
 #include "ui/gfx/rect.h"
 #include "third_party/WebKit/public/web/WebScreenInfo.h"
 

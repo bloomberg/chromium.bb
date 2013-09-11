@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_GTK_GDK_X_COMPAT_H_
-#define UI_BASE_GTK_GDK_X_COMPAT_H_
+#ifndef UI_GFX_GDK_COMPAT_H_
+#define UI_GFX_GDK_COMPAT_H_
 
 #include <gtk/gtk.h>
 #include <gdk/gdkx.h>
@@ -24,4 +24,4 @@ inline GdkWindow* gdk_x11_window_lookup_for_display(GdkDisplay* display,
 }
 #endif
 
-#endif  // UI_BASE_GTK_GDK_X_COMPAT_H_
+#endif  // UI_GFX_GDK_COMPAT_H_

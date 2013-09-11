@@ -7,7 +7,7 @@
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
 
-#include "ui/base/gtk/gtk_compat.h"
+#include "ui/gfx/gtk_compat.h"
 
 G_BEGIN_DECLS
 

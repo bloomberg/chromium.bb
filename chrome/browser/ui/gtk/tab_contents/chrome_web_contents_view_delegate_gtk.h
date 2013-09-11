@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/web_contents_view_delegate.h"
 #include "ui/base/gtk/gtk_signal.h"
-#include "ui/base/gtk/scoped_gobject.h"
+#include "ui/gfx/scoped_gobject.h"
 
 class RenderViewContextMenuGtk;
 class WebDragBookmarkHandlerGtk;

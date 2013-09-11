@@ -7,8 +7,8 @@
 #include <gdk/gdkx.h>
 
 #include "base/logging.h"
-#include "ui/base/gtk/gtk_compat.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/gfx/gtk_compat.h"
 
 namespace ui {
 

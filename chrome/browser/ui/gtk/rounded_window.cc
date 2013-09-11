@@ -10,8 +10,8 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
-#include "ui/base/gtk/gtk_compat.h"
 #include "ui/base/gtk/gtk_signal_registrar.h"
+#include "ui/gfx/gtk_compat.h"
 
 namespace gtk_util {
 

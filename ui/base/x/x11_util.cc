@@ -62,8 +62,8 @@
 #include <gdk/gdk.h>
 #include <gdk/gdkx.h>
 #include <gtk/gtk.h>
-#include "ui/base/gtk/gdk_x_compat.h"
-#include "ui/base/gtk/gtk_compat.h"
+#include "ui/gfx/gdk_compat.h"
+#include "ui/gfx/gtk_compat.h"
 #else
 // TODO(sad): Use the new way of handling X errors when
 // http://codereview.chromium.org/7889040/ lands.

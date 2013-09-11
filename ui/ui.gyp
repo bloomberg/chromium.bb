@@ -744,10 +744,13 @@
             'gfx/gtk_native_view_id_manager.h',
             'gfx/gtk_preserve_window.cc',
             'gfx/gtk_preserve_window.h',
+            'gfx/gdk_compat.h',
+            'gfx/gtk_compat.h',
             'gfx/gtk_util.cc',
             'gfx/gtk_util.h',
             'gfx/image/cairo_cached_surface.cc',
             'gfx/image/cairo_cached_surface.h',
+            'gfx/scoped_gobject.h',
           ],
         }],
         ['chromeos==1 or (use_aura==1 and OS=="linux" and use_x11==0)', {

@@ -42,12 +42,12 @@
 #include "ui/base/accelerators/menu_label_accelerator_util_linux.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
-#include "ui/base/gtk/gtk_compat.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/gtk_compat.h"
 #include "ui/gfx/skia_utils_gtk.h"
 #include "url/gurl.h"
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_GTK_GTK_COMPAT_H_
-#define UI_BASE_GTK_GTK_COMPAT_H_
+#ifndef UI_GFX_GTK_COMPAT_H_
+#define UI_GFX_GTK_COMPAT_H_
 
 #include <gtk/gtk.h>
 
@@ -94,4 +94,4 @@ inline int gdk_window_get_width(GdkWindow* window) {
 }
 #endif  // !GTK_CHECK_VERSION(2, 24, 0)
 
-#endif  // UI_BASE_GTK_GTK_COMPAT_H_
+#endif  // UI_GFX_GTK_COMPAT_H_

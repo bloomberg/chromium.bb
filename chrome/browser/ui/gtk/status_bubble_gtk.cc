@@ -18,9 +18,9 @@
 #include "chrome/browser/ui/gtk/rounded_window.h"
 #include "content/public/browser/notification_source.h"
 #include "ui/base/animation/slide_animation.h"
-#include "ui/base/gtk/gtk_compat.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/gtk_compat.h"
 #include "ui/gfx/text_elider.h"
 
 namespace {

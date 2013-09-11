@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_GTK_SCOPED_GOBJECT_H_
-#define UI_BASE_GTK_SCOPED_GOBJECT_H_
+#ifndef UI_GFX_SCOPED_GOBJECT_H_
+#define UI_GFX_SCOPED_GOBJECT_H_
 
 #include <glib-object.h>
 
@@ -31,4 +31,4 @@ struct ScopedGObject {
 
 }  // namespace ui
 
-#endif  // UI_BASE_GTK_SCOPED_GOBJECT_H_
+#endif  // UI_GFX_SCOPED_GOBJECT_H_

@@ -6,7 +6,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_button.h"
-#include "ui/base/gtk/gtk_compat.h"
+#include "ui/gfx/gtk_compat.h"
 
 static const gchar* kHoverControllerGtkKey = "__HOVER_CONTROLLER_GTK__";
 
