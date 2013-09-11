@@ -3463,13 +3463,16 @@ void WebContentsImpl::RunJavaScriptMessage(
         &suppress_this_message);
   }
 
+  *did_suppress_message = suppress_this_message;
+
   if (suppress_this_message) {
     // If we are suppressing messages, just reply as if the user immediately
     // pressed "Cancel".
     OnDialogClosed(rvh, reply_msg, false, string16());
   }
 
-  *did_suppress_message = suppress_this_message;
+  // OnDialogClosed (two lines up) may have caused deletion of this object (see
+  // http://crbug.com/288961 ). The only safe thing to do here is return.
 }
 
 void WebContentsImpl::RunBeforeUnloadConfirm(RenderViewHost* rvh,
