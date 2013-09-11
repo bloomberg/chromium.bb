@@ -159,19 +159,22 @@ function test()
                 }
 
                 for (var left = 0, l = array.length - 1; left < l; ++left) {
-                     for (var right = left + 1, r = array.length; right < r; ++right)
-                          for (var count = 1, k = right - left + 1; count <= k; ++count) {
-                              var actual = array.slice(0);
-                              actual.sortRange(comparator, left, right, count);
-                              compareArrays(array.slice(0, left), actual.slice(0, left), "left " + left + " " + right + " " + count);
-                              compareArrays(array.slice(right + 1), actual.slice(right + 1), "right " + left + " " + right + " " + count);
-                              var middle = array.slice(left, right + 1);
-                              middle.sort(comparator);
-                              compareArrays(middle.slice(0, count), actual.slice(left, left + count), "sorted " + left + " " + right + " " + count);
-                              actualRest = actual.slice(left + count, right + 1);
-                              actualRest.sort(comparator);
-                              compareArrays(middle.slice(count), actualRest, "unsorted " + left + " " + right + " " + count);
-                          }
+                    for (var right = left, r = array.length; right < r; ++right) {
+                        for (var first = left; first <= right; ++first) {
+                            for (var count = 1, k = right - first + 1; count <= k; ++count) {
+                                var actual = array.slice(0);
+                                actual.sortRange(comparator, left, right, first, first + count - 1);
+                                compareArrays(array.slice(0, left), actual.slice(0, left), "left " + left + " " + right + " " + count);
+                                compareArrays(array.slice(right + 1), actual.slice(right + 1), "right " + left + " " + right + " " + count);
+                                var middle = array.slice(left, right + 1);
+                                middle.sort(comparator);
+                                compareArrays(middle.slice(first - left, first - left + count), actual.slice(first, first + count), "sorted " + left + " " + right + " " + first + " " + count);
+                                actualRest = actual.slice(first + count, right + 1);
+                                actualRest.sort(comparator);
+                                compareArrays(middle.slice(first - left + count), actualRest, "unsorted " + left + " " + right + " " + first + " " + count);
+                            }
+                        }
+                    }
                 }
             }
 
