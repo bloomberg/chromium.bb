@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/views/controls/combobox/native_combobox_views.h"
+
+#include <set>
+
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/events/event.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/views/controls/combobox/combobox.h"
-#include "ui/views/controls/combobox/native_combobox_views.h"
 #include "ui/views/ime/mock_input_method.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/native_widget_private.h"
@@ -57,15 +60,24 @@ class TestComboboxModel : public ui::ComboboxModel {
   TestComboboxModel() {}
   virtual ~TestComboboxModel() {}
 
-  // Overridden from ui::ComboboxModel:
+  // ui::ComboboxModel:
   virtual int GetItemCount() const OVERRIDE {
-    return 4;
+    return 10;
   }
   virtual string16 GetItemAt(int index) OVERRIDE {
     return string16();
   }
+  virtual bool IsItemSeparatorAt(int index) OVERRIDE {
+    return separators_.find(index) != separators_.end();
+  }
+
+  void SetSeparators(const std::set<int>& separators) {
+    separators_ = separators;
+  }
 
  private:
+  std::set<int> separators_;
+
   DISALLOW_COPY_AND_ASSIGN(TestComboboxModel);
 };
 
@@ -82,11 +94,11 @@ class NativeComboboxViewsTest : public ViewsTestBase {
         input_method_(NULL) {}
 
   // ::testing::Test:
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     ViewsTestBase::SetUp();
   }
 
-  virtual void TearDown() {
+  virtual void TearDown() OVERRIDE {
     if (widget_)
       widget_->Close();
     ViewsTestBase::TearDown();
@@ -189,6 +201,133 @@ TEST_F(NativeComboboxViewsTest, DisabilityTest) {
       combobox_->GetNativeWrapperForTesting());
   ASSERT_TRUE(combobox_view_);
   ASSERT_FALSE(combobox_view_->enabled());
+}
+
+// Verifies that we don't select a separator line in combobox when navigating
+// through keyboard.
+TEST_F(NativeComboboxViewsTest, SkipSeparatorSimple) {
+  InitCombobox();
+  std::set<int> separators;
+  separators.insert(2);
+  model_->SetSeparators(separators);
+  EXPECT_EQ(0, combobox_->selected_index());
+  SendKeyEvent(ui::VKEY_DOWN);
+  EXPECT_EQ(1, combobox_->selected_index());
+  SendKeyEvent(ui::VKEY_DOWN);
+  EXPECT_EQ(3, combobox_->selected_index());
+  SendKeyEvent(ui::VKEY_UP);
+  EXPECT_EQ(1, combobox_->selected_index());
+  SendKeyEvent(ui::VKEY_HOME);
+  EXPECT_EQ(0, combobox_->selected_index());
+  SendKeyEvent(ui::VKEY_PRIOR);
+  EXPECT_EQ(0, combobox_->selected_index());
+  SendKeyEvent(ui::VKEY_END);
+  EXPECT_EQ(9, combobox_->selected_index());
+}
+
+// Verifies that we never select the separator that is in the beginning of the
+// combobox list when navigating through keyboard.
+TEST_F(NativeComboboxViewsTest, SkipSeparatorBeginning) {
+  InitCombobox();
+  std::set<int> separators;
+  separators.insert(0);
+  model_->SetSeparators(separators);
+  EXPECT_EQ(0, combobox_->selected_index());
+  SendKeyEvent(ui::VKEY_DOWN);
+  EXPECT_EQ(1, combobox_->selected_index());
+  SendKeyEvent(ui::VKEY_DOWN);
+  EXPECT_EQ(2, combobox_->selected_index());
+  SendKeyEvent(ui::VKEY_UP);
+  EXPECT_EQ(1, combobox_->selected_index());
+  SendKeyEvent(ui::VKEY_HOME);
+  EXPECT_EQ(1, combobox_->selected_index());
+  SendKeyEvent(ui::VKEY_PRIOR);
+  EXPECT_EQ(1, combobox_->selected_index());
+  SendKeyEvent(ui::VKEY_END);
+  EXPECT_EQ(9, combobox_->selected_index());
+}
+
+// Verifies that we never select the separator that is in the end of the
+// combobox list when navigating through keyboard.
+TEST_F(NativeComboboxViewsTest, SkipSeparatorEnd) {
+  InitCombobox();
+  std::set<int> separators;
+  separators.insert(model_->GetItemCount() - 1);
+  model_->SetSeparators(separators);
+  combobox_->SetSelectedIndex(8);
+  SendKeyEvent(ui::VKEY_DOWN);
+  EXPECT_EQ(8, combobox_->selected_index());
+  SendKeyEvent(ui::VKEY_UP);
+  EXPECT_EQ(7, combobox_->selected_index());
+  SendKeyEvent(ui::VKEY_END);
+  EXPECT_EQ(8, combobox_->selected_index());
+}
+
+// Verifies that we never select any of the adjacent separators (multiple
+// consecutive) that appear in the beginning of the combobox list when
+// navigating through keyboard.
+TEST_F(NativeComboboxViewsTest, SkipMultipleSeparatorsAtBeginning) {
+  InitCombobox();
+  std::set<int> separators;
+  separators.insert(0);
+  separators.insert(1);
+  separators.insert(2);
+  model_->SetSeparators(separators);
+  EXPECT_EQ(0, combobox_->selected_index());
+  SendKeyEvent(ui::VKEY_DOWN);
+  EXPECT_EQ(3, combobox_->selected_index());
+  SendKeyEvent(ui::VKEY_UP);
+  EXPECT_EQ(3, combobox_->selected_index());
+  SendKeyEvent(ui::VKEY_NEXT);
+  EXPECT_EQ(9, combobox_->selected_index());
+  SendKeyEvent(ui::VKEY_HOME);
+  EXPECT_EQ(3, combobox_->selected_index());
+  SendKeyEvent(ui::VKEY_END);
+  EXPECT_EQ(9, combobox_->selected_index());
+  SendKeyEvent(ui::VKEY_PRIOR);
+  EXPECT_EQ(3, combobox_->selected_index());
+}
+
+// Verifies that we never select any of the adjacent separators (multiple
+// consecutive) that appear in the middle of the combobox list when navigating
+// through keyboard.
+TEST_F(NativeComboboxViewsTest, SkipMultipleAdjacentSeparatorsAtMiddle) {
+  InitCombobox();
+  std::set<int> separators;
+  separators.insert(4);
+  separators.insert(5);
+  separators.insert(6);
+  model_->SetSeparators(separators);
+  combobox_->SetSelectedIndex(3);
+  SendKeyEvent(ui::VKEY_DOWN);
+  EXPECT_EQ(7, combobox_->selected_index());
+  SendKeyEvent(ui::VKEY_UP);
+  EXPECT_EQ(3, combobox_->selected_index());
+}
+
+// Verifies that we never select any of the adjacent separators (multiple
+// consecutive) that appear in the end of the combobox list when navigating
+// through keyboard.
+TEST_F(NativeComboboxViewsTest, SkipMultipleSeparatorsAtEnd) {
+  InitCombobox();
+  std::set<int> separators;
+  separators.insert(7);
+  separators.insert(8);
+  separators.insert(9);
+  model_->SetSeparators(separators);
+  combobox_->SetSelectedIndex(6);
+  SendKeyEvent(ui::VKEY_DOWN);
+  EXPECT_EQ(6, combobox_->selected_index());
+  SendKeyEvent(ui::VKEY_UP);
+  EXPECT_EQ(5, combobox_->selected_index());
+  SendKeyEvent(ui::VKEY_HOME);
+  EXPECT_EQ(0, combobox_->selected_index());
+  SendKeyEvent(ui::VKEY_NEXT);
+  EXPECT_EQ(6, combobox_->selected_index());
+  SendKeyEvent(ui::VKEY_PRIOR);
+  EXPECT_EQ(0, combobox_->selected_index());
+  SendKeyEvent(ui::VKEY_END);
+  EXPECT_EQ(6, combobox_->selected_index());
 }
 
 }  // namespace views

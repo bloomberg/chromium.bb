@@ -55,6 +55,9 @@ const int kFirstMenuItemId = 1000;
 
 const SkColor kInvalidTextColor = SK_ColorWHITE;
 
+// Used to indicate that no item is currently selected by the user.
+const int kNoSelection = -1;
+
 // The background to use for invalid comboboxes.
 class InvalidBackground : public Background {
  public:
@@ -73,10 +76,23 @@ class InvalidBackground : public Background {
   DISALLOW_COPY_AND_ASSIGN(InvalidBackground);
 };
 
+// Returns the next or previous valid index (depending on |increment|'s value).
+// Skips separator indices. Returns -1 if there is no valid adjacent index.
+int GetAdjacentIndex(Combobox* combobox, int increment, int index) {
+  DCHECK(increment == -1 || increment == 1);
+
+  index += increment;
+  while (index >= 0 && index < combobox->model()->GetItemCount()) {
+    if (!combobox->model()->IsItemSeparatorAt(index))
+      return index;
+    index += increment;
+  }
+  return kNoSelection;
+}
+
 }  // namespace
 
-const char NativeComboboxViews::kViewClassName[] =
-    "views/NativeComboboxViews";
+const char NativeComboboxViews::kViewClassName[] = "views/NativeComboboxViews";
 
 NativeComboboxViews::NativeComboboxViews(Combobox* combobox)
     : combobox_(combobox),
@@ -84,7 +100,7 @@ NativeComboboxViews::NativeComboboxViews(Combobox* combobox)
       disclosure_arrow_(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
           IDR_MENU_DROPARROW).ToImageSkia()),
       dropdown_open_(false),
-      selected_index_(-1),
+      selected_index_(kNoSelection),
       content_width_(0),
       content_height_(0) {
   set_border(text_border_);
@@ -116,12 +132,8 @@ bool NativeComboboxViews::OnKeyPressed(const ui::KeyEvent& key_event) {
   // TODO(oshima): handle IME.
   DCHECK_EQ(key_event.type(), ui::ET_KEY_PRESSED);
 
-  // Check if we are in the default state (-1) and set to first item.
-  if (selected_index_ == -1)
-    selected_index_ = 0;
-
   bool show_menu = false;
-  int new_index = selected_index_;
+  int new_index = kNoSelection;
   switch (key_event.key_code()) {
     // Show the menu on Space.
     case ui::VKEY_SPACE:
@@ -132,26 +144,26 @@ bool NativeComboboxViews::OnKeyPressed(const ui::KeyEvent& key_event) {
     case ui::VKEY_DOWN:
       if (key_event.IsAltDown())
         show_menu = true;
-      else if (new_index < (combobox_->model()->GetItemCount() - 1))
-        new_index++;
+      else
+        new_index = GetAdjacentIndex(combobox_, 1, selected_index_);
       break;
 
     // Move to the end of the list.
     case ui::VKEY_END:
-    case ui::VKEY_NEXT:
-      new_index = combobox_->model()->GetItemCount() - 1;
+    case ui::VKEY_NEXT:  // Page down.
+      new_index =
+          GetAdjacentIndex(combobox_, -1, combobox_->model()->GetItemCount());
       break;
 
     // Move to the beginning of the list.
-   case ui::VKEY_HOME:
-   case ui::VKEY_PRIOR:
-      new_index = 0;
+    case ui::VKEY_HOME:
+    case ui::VKEY_PRIOR:  // Page up.
+      new_index = GetAdjacentIndex(combobox_, 1, -1);
       break;
 
     // Move to the previous item if any.
     case ui::VKEY_UP:
-      if (new_index > 0)
-        new_index--;
+      new_index = GetAdjacentIndex(combobox_, -1, selected_index_);
       break;
 
     default:
@@ -161,7 +173,8 @@ bool NativeComboboxViews::OnKeyPressed(const ui::KeyEvent& key_event) {
   if (show_menu) {
     UpdateFromModel();
     ShowDropDownMenu(ui::MENU_SOURCE_KEYBOARD);
-  } else if (new_index != selected_index_) {
+  } else if (new_index != selected_index_ && new_index != kNoSelection) {
+    DCHECK(!combobox_->model()->IsItemSeparatorAt(new_index));
     selected_index_ = new_index;
     combobox_->SelectionChanged();
     SchedulePaint();
