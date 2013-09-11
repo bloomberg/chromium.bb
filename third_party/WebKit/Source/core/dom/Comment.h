@@ -42,6 +42,18 @@ private:
     virtual bool childTypeAllowed(NodeType) const;
 };
 
+inline Comment* toComment(Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->nodeType() == Node::COMMENT_NODE);
+    return static_cast<Comment*>(node);
+}
+
+inline const Comment* toComment(const Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->nodeType() == Node::COMMENT_NODE);
+    return static_cast<const Comment*>(node);
+}
+
 } // namespace WebCore
 
 #endif // Comment_h

@@ -145,7 +145,7 @@ v8::Handle<v8::Object> wrap(Node* impl, v8::Handle<v8::Object> creationContext, 
     case Node::PROCESSING_INSTRUCTION_NODE:
         return wrap(toProcessingInstruction(impl), creationContext, isolate);
     case Node::COMMENT_NODE:
-        return wrap(static_cast<Comment*>(impl), creationContext, isolate);
+        return wrap(toComment(impl), creationContext, isolate);
     case Node::DOCUMENT_NODE:
         return wrap(toDocument(impl), creationContext, isolate);
     case Node::DOCUMENT_TYPE_NODE:
