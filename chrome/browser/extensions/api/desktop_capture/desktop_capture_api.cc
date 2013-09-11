@@ -58,7 +58,13 @@ bool DesktopCaptureChooseDesktopMediaFunction::RunImpl() {
         return false;
 
       case api::desktop_capture::DESKTOP_CAPTURE_SOURCE_TYPE_SCREEN:
+#if defined(OS_WIN)
+        // ScreenCapturerWin disables Aero by default.
+        screen_capturer.reset(
+            webrtc::ScreenCapturer::CreateWithDisableAero(false));
+#else
         screen_capturer.reset(webrtc::ScreenCapturer::Create());
+#endif
         break;
 
       case api::desktop_capture::DESKTOP_CAPTURE_SOURCE_TYPE_WINDOW:
