@@ -1640,9 +1640,6 @@ public:
     static const FilterOperations& initialFilter() { DEFINE_STATIC_LOCAL(FilterOperations, ops, ()); return ops; }
     static BlendMode initialBlendMode() { return BlendModeNormal; }
 private:
-    static StyleRecalcChange compareInternal(const RenderStyle& oldStyle, const RenderStyle& newStyle);
-    static StyleRecalcChange comparePseudoStyles(const RenderStyle& oldStyle, const RenderStyle& newStyle);
-
     void setVisitedLinkColor(const Color&);
     void setVisitedLinkBackgroundColor(const Color& v) { SET_VAR(rareNonInheritedData, m_visitedLinkBackgroundColor, v); }
     void setVisitedLinkBorderLeftColor(const Color& v) { SET_VAR(rareNonInheritedData, m_visitedLinkBorderLeftColor, v); }
@@ -1767,15 +1764,6 @@ inline bool RenderStyle::setTextOrientation(TextOrientation textOrientation)
 
     rareInheritedData.access()->m_textOrientation = textOrientation;
     return true;
-}
-
-inline StyleRecalcChange RenderStyle::compare(const RenderStyle* oldStyle, const RenderStyle* newStyle)
-{
-    if ((!oldStyle && newStyle) || (oldStyle && !newStyle))
-        return Reattach;
-    if (!oldStyle && !newStyle)
-        return NoChange;
-    return compareInternal(*oldStyle, *newStyle);
 }
 
 } // namespace WebCore
