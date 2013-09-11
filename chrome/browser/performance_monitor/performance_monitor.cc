@@ -37,6 +37,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
+#include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/web_contents.h"
 #include "net/url_request/url_request.h"
 
@@ -622,15 +623,15 @@ void PerformanceMonitor::AddRendererClosedEvent(
   // render view, extract the url, and append it to the string, comma-separating
   // the entries.
   std::string url_list;
-  content::RenderWidgetHost::List widgets =
-      content::RenderWidgetHost::GetRenderWidgetHosts();
-  for (size_t i = 0; i < widgets.size(); ++i) {
-    if (widgets[i]->GetProcess()->GetID() != host->GetID())
+  scoped_ptr<content::RenderWidgetHostIterator> widgets(
+      content::RenderWidgetHost::GetRenderWidgetHosts());
+  while (content::RenderWidgetHost* widget = widgets->GetNextHost()) {
+    if (widget->GetProcess()->GetID() != host->GetID())
       continue;
-    if (!widgets[i]->IsRenderView())
+    if (!widget->IsRenderView())
       continue;
 
-    content::RenderViewHost* view = content::RenderViewHost::From(widgets[i]);
+    content::RenderViewHost* view = content::RenderViewHost::From(widget);
     std::string url;
     if (!MaybeGetURLFromRenderView(view, &url))
       continue;

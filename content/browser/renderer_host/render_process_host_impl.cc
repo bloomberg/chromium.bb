@@ -112,6 +112,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host_factory.h"
 #include "content/public/browser/render_widget_host.h"
+#include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_constants.h"
@@ -1637,10 +1638,11 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead) {
 
 int RenderProcessHostImpl::GetActiveViewCount() {
   int num_active_views = 0;
-  RenderWidgetHost::List widgets = RenderWidgetHost::GetRenderWidgetHosts();
-  for (size_t i = 0; i < widgets.size(); ++i) {
+  scoped_ptr<RenderWidgetHostIterator> widgets(
+      RenderWidgetHost::GetRenderWidgetHosts());
+  while (RenderWidgetHost* widget = widgets->GetNextHost()) {
     // Count only RenderWidgetHosts in this process.
-    if (widgets[i]->GetProcess()->GetID() == GetID())
+    if (widget->GetProcess()->GetID() == GetID())
       num_active_views++;
   }
   return num_active_views;
@@ -1773,17 +1775,17 @@ void RenderProcessHostImpl::OnCompositorSurfaceBuffersSwappedNoHost(
 
 void RenderProcessHostImpl::OnGpuSwitching() {
   // We are updating all widgets including swapped out ones.
-  RenderWidgetHost::List widgets =
-      RenderWidgetHostImpl::GetAllRenderWidgetHosts();
-  for (size_t i = 0; i < widgets.size(); ++i) {
-    if (!widgets[i]->IsRenderView())
+  scoped_ptr<RenderWidgetHostIterator> widgets(
+      RenderWidgetHostImpl::GetAllRenderWidgetHosts());
+  while (RenderWidgetHost* widget = widgets->GetNextHost()) {
+    if (!widget->IsRenderView())
       continue;
 
     // Skip widgets in other processes.
-    if (widgets[i]->GetProcess()->GetID() != GetID())
+    if (widget->GetProcess()->GetID() != GetID())
       continue;
 
-    RenderViewHost* rvh = RenderViewHost::From(widgets[i]);
+    RenderViewHost* rvh = RenderViewHost::From(widget);
     rvh->UpdateWebkitPreferences(rvh->GetWebkitPreferences());
   }
 }

@@ -21,6 +21,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_widget_host_iterator.h"
 
 namespace content {
 
@@ -101,15 +102,16 @@ bool DevToolsAgentHost::IsDebuggerAttached(WebContents* web_contents) {
 //static
 std::vector<RenderViewHost*> DevToolsAgentHost::GetValidRenderViewHosts() {
   std::vector<RenderViewHost*> result;
-  RenderWidgetHost::List widgets = RenderWidgetHost::GetRenderWidgetHosts();
-  for (size_t i = 0; i < widgets.size(); ++i) {
+  scoped_ptr<RenderWidgetHostIterator> widgets(
+      RenderWidgetHost::GetRenderWidgetHosts());
+  while (RenderWidgetHost* widget = widgets->GetNextHost()) {
     // Ignore processes that don't have a connection, such as crashed contents.
-    if (!widgets[i]->GetProcess()->HasConnection())
+    if (!widget->GetProcess()->HasConnection())
       continue;
-    if (!widgets[i]->IsRenderView())
+    if (!widget->IsRenderView())
       continue;
 
-    RenderViewHost* rvh = RenderViewHost::From(widgets[i]);
+    RenderViewHost* rvh = RenderViewHost::From(widget);
     WebContents* web_contents = WebContents::FromRenderViewHost(rvh);
     // Don't report a RenderViewHost if it is not the current RenderViewHost
     // for some WebContents.

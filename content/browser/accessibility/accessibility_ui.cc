@@ -22,6 +22,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
+#include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/url_constants.h"
@@ -91,15 +92,16 @@ void SendTargetsData(
     const WebUIDataSource::GotDataCallback& callback) {
   scoped_ptr<base::ListValue> rvh_list(new base::ListValue());
 
-  RenderWidgetHost::List widgets = RenderWidgetHost::GetRenderWidgetHosts();
-  for (size_t i = 0; i < widgets.size(); ++i) {
+  scoped_ptr<RenderWidgetHostIterator> widgets(
+      RenderWidgetHost::GetRenderWidgetHosts());
+  while (RenderWidgetHost* widget = widgets->GetNextHost()) {
     // Ignore processes that don't have a connection, such as crashed tabs.
-    if (!widgets[i]->GetProcess()->HasConnection())
+    if (!widget->GetProcess()->HasConnection())
       continue;
-    if (!widgets[i]->IsRenderView())
+    if (!widget->IsRenderView())
         continue;
 
-    RenderViewHost* rvh = RenderViewHost::From(widgets[i]);
+    RenderViewHost* rvh = RenderViewHost::From(widget);
     rvh_list->Append(BuildTargetDescriptor(rvh));
   }
 

@@ -21,6 +21,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
+#include "content/public/browser/render_widget_host_iterator.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
 
 using content::BrowserThread;
@@ -352,11 +353,11 @@ const icu::TimeZone* TimezoneSettingsBaseImpl::GetKnownTimezoneOrNull(
 }
 
 void TimezoneSettingsBaseImpl::NotifyRenderers() {
-  content::RenderWidgetHost::List widgets =
-      content::RenderWidgetHost::GetRenderWidgetHosts();
-  for (size_t i = 0; i < widgets.size(); ++i) {
-    if (widgets[i]->IsRenderView()) {
-      content::RenderViewHost* view = content::RenderViewHost::From(widgets[i]);
+  scoped_ptr<content::RenderWidgetHostIterator> widgets(
+      content::RenderWidgetHost::GetRenderWidgetHosts());
+  while (content::RenderWidgetHost* widget = widgets->GetNextHost()) {
+    if (widget->IsRenderView()) {
+      content::RenderViewHost* view = content::RenderViewHost::From(widget);
       view->NotifyTimezoneChange();
     }
   }

@@ -18,6 +18,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 
@@ -40,13 +41,14 @@ int RenderProcessHostCount() {
 }
 
 RenderViewHost* FindFirstDevToolsHost() {
-  RenderWidgetHost::List widgets = RenderWidgetHost::GetRenderWidgetHosts();
-  for (size_t i = 0; i < widgets.size(); ++i) {
-    if (!widgets[i]->GetProcess()->HasConnection())
+  scoped_ptr<content::RenderWidgetHostIterator> widgets(
+      RenderWidgetHost::GetRenderWidgetHosts());
+  while (content::RenderWidgetHost* widget = widgets->GetNextHost()) {
+    if (!widget->GetProcess()->HasConnection())
       continue;
-    if (!widgets[i]->IsRenderView())
+    if (!widget->IsRenderView())
       continue;
-    RenderViewHost* host = RenderViewHost::From(widgets[i]);
+    RenderViewHost* host = RenderViewHost::From(widget);
     WebContents* contents = WebContents::FromRenderViewHost(host);
     GURL url = contents->GetURL();
     if (url.SchemeIs(chrome::kChromeDevToolsScheme))

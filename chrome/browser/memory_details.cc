@@ -23,6 +23,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/bindings_policy.h"
 #include "extensions/browser/view_type_utils.h"
@@ -218,10 +219,11 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
     ProcessMemoryInformation& process =
         chrome_browser->processes[index];
 
-    RenderWidgetHost::List widgets = RenderWidgetHost::GetRenderWidgetHosts();
-    for (size_t i = 0; i < widgets.size(); ++i) {
+    scoped_ptr<content::RenderWidgetHostIterator> widgets(
+        RenderWidgetHost::GetRenderWidgetHosts());
+    while (content::RenderWidgetHost* widget = widgets->GetNextHost()) {
       content::RenderProcessHost* render_process_host =
-          widgets[i]->GetProcess();
+          widget->GetProcess();
       DCHECK(render_process_host);
       // Ignore processes that don't have a connection, such as crashed tabs.
       if (!render_process_host->HasConnection() ||
@@ -241,10 +243,10 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
       // The RenderProcessHost may host multiple WebContentses.  Any
       // of them which contain diagnostics information make the whole
       // process be considered a diagnostics process.
-      if (!widgets[i]->IsRenderView())
+      if (!widget->IsRenderView())
         continue;
 
-      RenderViewHost* host = RenderViewHost::From(widgets[i]);
+      RenderViewHost* host = RenderViewHost::From(widget);
       WebContents* contents = WebContents::FromRenderViewHost(host);
       GURL url;
       if (contents) {

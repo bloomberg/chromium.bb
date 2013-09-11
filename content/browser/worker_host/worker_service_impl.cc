@@ -21,6 +21,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
+#include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/web_contents.h"
@@ -110,16 +111,17 @@ void WorkerPrioritySetter::GatherVisibleIDsAndUpdateWorkerPriorities() {
       new std::set<std::pair<int, int> >();
 
   // Gather up all the visible renderer process/view pairs
-  RenderWidgetHost::List widgets = RenderWidgetHost::GetRenderWidgetHosts();
-  for (size_t i = 0; i < widgets.size(); ++i) {
-    if (widgets[i]->GetProcess()->VisibleWidgetCount() == 0)
+  scoped_ptr<RenderWidgetHostIterator> widgets(
+      RenderWidgetHost::GetRenderWidgetHosts());
+  while (RenderWidgetHost* widget = widgets->GetNextHost()) {
+    if (widget->GetProcess()->VisibleWidgetCount() == 0)
       continue;
 
-    RenderWidgetHostView* render_view = widgets[i]->GetView();
+    RenderWidgetHostView* render_view = widget->GetView();
     if (render_view && render_view->IsShowing()) {
       visible_renderer_ids->insert(
-          std::pair<int, int>(widgets[i]->GetProcess()->GetID(),
-                              widgets[i]->GetRoutingID()));
+          std::pair<int, int>(widget->GetProcess()->GetID(),
+                              widget->GetRoutingID()));
     }
   }
 

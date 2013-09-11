@@ -44,6 +44,7 @@
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
@@ -91,14 +92,49 @@ const int kPaintMsgTimeoutMS = 50;
 base::LazyInstance<std::vector<RenderWidgetHost::CreatedCallback> >
 g_created_callbacks = LAZY_INSTANCE_INITIALIZER;
 
-}  // namespace
-
-
 typedef std::pair<int32, int32> RenderWidgetHostID;
 typedef base::hash_map<RenderWidgetHostID, RenderWidgetHostImpl*>
     RoutingIDWidgetMap;
-static base::LazyInstance<RoutingIDWidgetMap> g_routing_id_widget_map =
+base::LazyInstance<RoutingIDWidgetMap> g_routing_id_widget_map =
     LAZY_INSTANCE_INITIALIZER;
+
+// Implements the RenderWidgetHostIterator interface. It keeps a list of
+// RenderWidgetHosts, and makes sure it returns a live RenderWidgetHost at each
+// iteration (or NULL if there isn't any left).
+class RenderWidgetHostIteratorImpl : public RenderWidgetHostIterator {
+ public:
+  RenderWidgetHostIteratorImpl()
+      : current_index_(0) {
+  }
+
+  virtual ~RenderWidgetHostIteratorImpl() {
+  }
+
+  void Add(RenderWidgetHost* host) {
+    hosts_.push_back(RenderWidgetHostID(host->GetProcess()->GetID(),
+                                        host->GetRoutingID()));
+  }
+
+  // RenderWidgetHostIterator:
+  virtual RenderWidgetHost* GetNextHost() OVERRIDE {
+    RenderWidgetHost* host = NULL;
+    while (current_index_ < hosts_.size() && !host) {
+      RenderWidgetHostID id = hosts_[current_index_];
+      host = RenderWidgetHost::FromID(id.first, id.second);
+      ++current_index_;
+    }
+    return host;
+  }
+
+ private:
+  std::vector<RenderWidgetHostID> hosts_;
+  size_t current_index_;
+
+  DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostIteratorImpl);
+};
+
+}  // namespace
+
 
 // static
 void RenderWidgetHost::RemoveAllBackingStores() {
@@ -234,8 +270,8 @@ RenderWidgetHostImpl* RenderWidgetHostImpl::FromID(
 }
 
 // static
-std::vector<RenderWidgetHost*> RenderWidgetHost::GetRenderWidgetHosts() {
-  std::vector<RenderWidgetHost*> hosts;
+scoped_ptr<RenderWidgetHostIterator> RenderWidgetHost::GetRenderWidgetHosts() {
+  RenderWidgetHostIteratorImpl* hosts = new RenderWidgetHostIteratorImpl();
   RoutingIDWidgetMap* widgets = g_routing_id_widget_map.Pointer();
   for (RoutingIDWidgetMap::const_iterator it = widgets->begin();
        it != widgets->end();
@@ -243,28 +279,31 @@ std::vector<RenderWidgetHost*> RenderWidgetHost::GetRenderWidgetHosts() {
     RenderWidgetHost* widget = it->second;
 
     if (!widget->IsRenderView()) {
-      hosts.push_back(widget);
+      hosts->Add(widget);
       continue;
     }
 
     // Add only active RenderViewHosts.
     RenderViewHost* rvh = RenderViewHost::From(widget);
     if (!static_cast<RenderViewHostImpl*>(rvh)->is_swapped_out())
-      hosts.push_back(widget);
+      hosts->Add(widget);
   }
-  return hosts;
+
+  return scoped_ptr<RenderWidgetHostIterator>(hosts);
 }
 
 // static
-std::vector<RenderWidgetHost*> RenderWidgetHostImpl::GetAllRenderWidgetHosts() {
-  std::vector<RenderWidgetHost*> hosts;
+scoped_ptr<RenderWidgetHostIterator>
+RenderWidgetHostImpl::GetAllRenderWidgetHosts() {
+  RenderWidgetHostIteratorImpl* hosts = new RenderWidgetHostIteratorImpl();
   RoutingIDWidgetMap* widgets = g_routing_id_widget_map.Pointer();
   for (RoutingIDWidgetMap::const_iterator it = widgets->begin();
        it != widgets->end();
        ++it) {
-    hosts.push_back(it->second);
+    hosts->Add(it->second);
   }
-  return hosts;
+
+  return scoped_ptr<RenderWidgetHostIterator>(hosts);
 }
 
 // static

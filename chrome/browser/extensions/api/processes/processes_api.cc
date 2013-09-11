@@ -31,6 +31,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
+#include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/result_codes.h"
 #include "extensions/common/error_utils.h"
@@ -111,15 +112,15 @@ base::ListValue* GetTabsForProcess(int process_id) {
   int tab_id = -1;
   // We need to loop through all the RVHs to ensure we collect the set of all
   // tabs using this renderer process.
-  content::RenderWidgetHost::List widgets =
-      content::RenderWidgetHost::GetRenderWidgetHosts();
-  for (size_t i = 0; i < widgets.size(); ++i) {
-    if (widgets[i]->GetProcess()->GetID() != process_id)
+  scoped_ptr<content::RenderWidgetHostIterator> widgets(
+      content::RenderWidgetHost::GetRenderWidgetHosts());
+  while (content::RenderWidgetHost* widget = widgets->GetNextHost()) {
+    if (widget->GetProcess()->GetID() != process_id)
       continue;
-    if (!widgets[i]->IsRenderView())
+    if (!widget->IsRenderView())
       continue;
 
-    content::RenderViewHost* host = content::RenderViewHost::From(widgets[i]);
+    content::RenderViewHost* host = content::RenderViewHost::From(widget);
     content::WebContents* contents =
         content::WebContents::FromRenderViewHost(host);
     if (contents) {

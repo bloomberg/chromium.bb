@@ -36,6 +36,7 @@ namespace content {
 
 class RenderProcessHost;
 class RenderWidgetHostImpl;
+class RenderWidgetHostIterator;
 class RenderWidgetHostView;
 
 // A RenderWidgetHost manages the browser side of a browser<->renderer
@@ -121,10 +122,9 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
   // Returns NULL if the IDs do not correspond to a live RenderWidgetHost.
   static RenderWidgetHost* FromID(int32 process_id, int32 routing_id);
 
-  typedef std::vector<RenderWidgetHost*> List;
-
-  // Returns the global list of active render widget hosts.
-  static RenderWidgetHost::List GetRenderWidgetHosts();
+  // Returns an iterator to iterate over the global list of active render widget
+  // hosts.
+  static scoped_ptr<RenderWidgetHostIterator> GetRenderWidgetHosts();
 
   virtual ~RenderWidgetHost() {}
 

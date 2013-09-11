@@ -10,6 +10,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/common/content_switches.h"
 #include "ui/gfx/sys_color_change_listener.h"
 
@@ -131,16 +132,16 @@ void BrowserAccessibilityStateImpl::SetAccessibilityMode(
 
   // Iterate over all RenderWidgetHosts, even swapped out ones in case
   // they become active again.
-  RenderWidgetHost::List widgets =
-      RenderWidgetHostImpl::GetAllRenderWidgetHosts();
-  for (size_t i = 0; i < widgets.size(); ++i) {
+  scoped_ptr<RenderWidgetHostIterator> widgets(
+      RenderWidgetHostImpl::GetAllRenderWidgetHosts());
+  while (RenderWidgetHost* widget = widgets->GetNextHost()) {
     // Ignore processes that don't have a connection, such as crashed tabs.
-    if (!widgets[i]->GetProcess()->HasConnection())
+    if (!widget->GetProcess()->HasConnection())
       continue;
-    if (!widgets[i]->IsRenderView())
+    if (!widget->IsRenderView())
       continue;
 
-    RenderWidgetHostImpl::From(widgets[i])->SetAccessibilityMode(mode);
+    RenderWidgetHostImpl::From(widget)->SetAccessibilityMode(mode);
   }
 }
 

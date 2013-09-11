@@ -51,6 +51,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host_observer.h"
+#include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_constants.h"
@@ -483,9 +484,10 @@ void RenderViewHostImpl::WasSwappedOut() {
 
     // Count the number of active widget hosts for the process, which
     // is equivalent to views using the process as of this writing.
-    RenderWidgetHost::List widgets = RenderWidgetHost::GetRenderWidgetHosts();
-    for (size_t i = 0; i < widgets.size(); ++i) {
-      if (widgets[i]->GetProcess()->GetID() == GetProcess()->GetID())
+    scoped_ptr<RenderWidgetHostIterator> widgets(
+      RenderWidgetHost::GetRenderWidgetHosts());
+    while (RenderWidgetHost* widget = widgets->GetNextHost()) {
+      if (widget->GetProcess()->GetID() == GetProcess()->GetID())
         ++views;
     }
 

@@ -14,6 +14,7 @@
 #include "content/common/child_process_host_impl.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/storage_partition.h"
 
 namespace content {
@@ -206,10 +207,11 @@ IPC::ChannelProxy* MockRenderProcessHost::GetChannel() {
 
 int MockRenderProcessHost::GetActiveViewCount() {
   int num_active_views = 0;
-  RenderWidgetHost::List widgets = RenderWidgetHost::GetRenderWidgetHosts();
-  for (size_t i = 0; i < widgets.size(); ++i) {
+  scoped_ptr<RenderWidgetHostIterator> widgets(
+      RenderWidgetHost::GetRenderWidgetHosts());
+  while (RenderWidgetHost* widget = widgets->GetNextHost()) {
     // Count only RenderWidgetHosts in this process.
-    if (widgets[i]->GetProcess()->GetID() == GetID())
+    if (widget->GetProcess()->GetID() == GetID())
       num_active_views++;
   }
   return num_active_views;

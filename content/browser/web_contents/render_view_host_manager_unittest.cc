@@ -16,6 +16,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host_observer.h"
+#include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/javascript_message_type.h"
@@ -345,12 +346,14 @@ TEST_F(RenderViewHostManagerTest, GetRenderWidgetHostsReturnsActiveViews) {
   TestRenderViewHost* swapped_out_rvh = CreateSwappedOutRenderViewHost();
   EXPECT_TRUE(swapped_out_rvh->is_swapped_out());
 
-  RenderWidgetHost::List widgets = RenderWidgetHost::GetRenderWidgetHosts();
+  scoped_ptr<RenderWidgetHostIterator> widgets(
+      RenderWidgetHost::GetRenderWidgetHosts());
   // We know that there is the only one active widget. Another view is
   // now swapped out, so the swapped out view is not included in the
   // list.
-  EXPECT_TRUE(widgets.size() == 1);
-  RenderViewHost* rvh = RenderViewHost::From(widgets[0]);
+  RenderWidgetHost* widget = widgets->GetNextHost();
+  EXPECT_FALSE(widgets->GetNextHost());
+  RenderViewHost* rvh = RenderViewHost::From(widget);
   EXPECT_FALSE(static_cast<RenderViewHostImpl*>(rvh)->is_swapped_out());
 }
 
@@ -364,14 +367,15 @@ TEST_F(RenderViewHostManagerTest,
   TestRenderViewHost* swapped_out_rvh = CreateSwappedOutRenderViewHost();
   EXPECT_TRUE(swapped_out_rvh->is_swapped_out());
 
-  RenderWidgetHost::List widgets = RenderWidgetHost::GetRenderWidgetHosts();
-  RenderWidgetHost::List all_widgets =
-      RenderWidgetHostImpl::GetAllRenderWidgetHosts();
+  scoped_ptr<RenderWidgetHostIterator> widgets(
+      RenderWidgetHost::GetRenderWidgetHosts());
 
-  for (size_t i = 0; i < widgets.size(); ++i) {
+  while (RenderWidgetHost* w = widgets->GetNextHost()) {
     bool found = false;
-    for (size_t j = 0; j < all_widgets.size(); ++j) {
-      if (widgets[i] == all_widgets[j]) {
+    scoped_ptr<RenderWidgetHostIterator> all_widgets(
+        RenderWidgetHostImpl::GetAllRenderWidgetHosts());
+    while (RenderWidgetHost* widget = all_widgets->GetNextHost()) {
+      if (w == widget) {
         found = true;
         break;
       }
