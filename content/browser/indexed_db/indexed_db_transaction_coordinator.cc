@@ -92,15 +92,42 @@ void IndexedDBTransactionCoordinator::ProcessStartedTransactions() {
          (*started_transactions_.begin())->mode() !=
              indexed_db::TRANSACTION_VERSION_CHANGE);
 
+  // The locked_scope set accumulates the ids of object stores in the scope of
+  // running read/write transactions. Other read-write transactions with
+  // stores in this set may not be started. Read-only transactions may start,
+  // taking a snapshot of the database, which does not include uncommitted
+  // data. ("Version change" transactions are exclusive, but handled by the
+  // connection sequencing in IndexedDBDatabase.)
+  std::set<int64> locked_scope;
+  for (list_set<IndexedDBTransaction*>::const_iterator it =
+           started_transactions_.begin();
+       it != started_transactions_.end();
+       ++it) {
+    IndexedDBTransaction* transaction = *it;
+    if (transaction->mode() == indexed_db::TRANSACTION_READ_WRITE) {
+      // Running read/write transactions have exclusive access to the object
+      // stores within their scopes.
+      locked_scope.insert(transaction->scope().begin(),
+                          transaction->scope().end());
+    }
+  }
+
   list_set<IndexedDBTransaction*>::const_iterator it =
       queued_transactions_.begin();
   while (it != queued_transactions_.end()) {
     IndexedDBTransaction* transaction = *it;
     ++it;
-    if (CanRunTransaction(transaction)) {
+    if (CanRunTransaction(transaction, locked_scope)) {
       queued_transactions_.erase(transaction);
       started_transactions_.insert(transaction);
       transaction->Run();
+    }
+    if (transaction->mode() == indexed_db::TRANSACTION_READ_WRITE) {
+      // Either the transaction started, so it has exclusive access to the
+      // stores in its scope, or per the spec the transaction which was
+      // created first must get access first, so the stores are also locked.
+      locked_scope.insert(transaction->scope().begin(),
+                          transaction->scope().end());
     }
   }
 }
@@ -122,38 +149,20 @@ static bool DoSetsIntersect(const std::set<T>& set1,
 }
 
 bool IndexedDBTransactionCoordinator::CanRunTransaction(
-    IndexedDBTransaction* transaction) {
+    IndexedDBTransaction* transaction, const std::set<int64>& locked_scope) {
   DCHECK(queued_transactions_.has(transaction));
   switch (transaction->mode()) {
     case indexed_db::TRANSACTION_VERSION_CHANGE:
       DCHECK_EQ(static_cast<size_t>(1), queued_transactions_.size());
       DCHECK(started_transactions_.empty());
+      DCHECK(locked_scope.empty());
       return true;
 
     case indexed_db::TRANSACTION_READ_ONLY:
       return true;
 
     case indexed_db::TRANSACTION_READ_WRITE:
-      for (list_set<IndexedDBTransaction*>::const_iterator it =
-               started_transactions_.begin();
-           it != started_transactions_.end();
-           ++it) {
-        IndexedDBTransaction* other = *it;
-        if (other->mode() == indexed_db::TRANSACTION_READ_WRITE &&
-            DoSetsIntersect(transaction->scope(), other->scope()))
-          return false;
-      }
-      for (list_set<IndexedDBTransaction*>::const_iterator it =
-               queued_transactions_.begin();
-           *it != transaction;
-           ++it) {
-        DCHECK(it != queued_transactions_.end());
-        IndexedDBTransaction* other = *it;
-        if (other->mode() == indexed_db::TRANSACTION_READ_WRITE &&
-            DoSetsIntersect(transaction->scope(), other->scope()))
-          return false;
-      }
-      return true;
+      return !DoSetsIntersect(transaction->scope(), locked_scope);
   }
   NOTREACHED();
   return false;

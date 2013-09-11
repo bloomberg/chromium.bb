@@ -37,7 +37,8 @@ class IndexedDBTransactionCoordinator {
 
  private:
   void ProcessStartedTransactions();
-  bool CanRunTransaction(IndexedDBTransaction* transaction);
+  bool CanRunTransaction(IndexedDBTransaction* transaction,
+                         const std::set<int64>& locked_scope);
 
   // This is just an efficient way to keep references to all transactions.
   std::map<IndexedDBTransaction*, scoped_refptr<IndexedDBTransaction> >
