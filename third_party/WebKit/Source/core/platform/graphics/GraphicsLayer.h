@@ -328,16 +328,6 @@ private:
     // needs to notifiy the change to the platform layer as needed.
     void clearFilters() { m_filters.clear(); }
 
-    // Given a KeyframeValueList containing filterOperations, return true if the operations are valid.
-    static int validateFilterOperations(const KeyframeValueList&);
-
-    // Given a list of TransformAnimationValues, see if all the operations for each keyframe match. If so
-    // return the index of the KeyframeValueList entry that has that list of operations (it may not be
-    // the first entry because some keyframes might have an empty transform and those match any list).
-    // If the lists don't match return -1. On return, if hasBigRotation is true, functions contain
-    // rotations of >= 180 degrees
-    static int validateTransformOperations(const KeyframeValueList&, bool& hasBigRotation);
-
     void setReplicatedLayer(GraphicsLayer* layer) { m_replicatedLayer = layer; }
 
     int incrementPaintCount() { return ++m_paintCount; }

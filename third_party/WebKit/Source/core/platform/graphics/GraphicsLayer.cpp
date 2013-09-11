@@ -39,7 +39,6 @@
 #include "core/platform/graphics/chromium/TransformSkMatrix44Conversions.h"
 #include "core/platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "core/platform/graphics/skia/NativeImageSkia.h"
-#include "core/platform/graphics/transforms/RotateTransformOperation.h"
 #include "core/platform/text/TextStream.h"
 
 #include "wtf/CurrentTime.h"
@@ -380,119 +379,6 @@ void GraphicsLayer::distributeOpacity(float accumulatedOpacity)
         for (size_t i = 0; i < numChildren; ++i)
             children()[i]->distributeOpacity(accumulatedOpacity);
     }
-}
-
-static inline const FilterOperations* filterOperationsAt(const KeyframeValueList& valueList, size_t index)
-{
-    return static_cast<const FilterAnimationValue*>(valueList.at(index))->value();
-}
-
-int GraphicsLayer::validateFilterOperations(const KeyframeValueList& valueList)
-{
-    ASSERT(valueList.property() == AnimatedPropertyWebkitFilter);
-
-    if (valueList.size() < 2)
-        return -1;
-
-    // Empty filters match anything, so find the first non-empty entry as the reference
-    size_t firstIndex = 0;
-    for ( ; firstIndex < valueList.size(); ++firstIndex) {
-        if (filterOperationsAt(valueList, firstIndex)->operations().size() > 0)
-            break;
-    }
-
-    if (firstIndex >= valueList.size())
-        return -1;
-
-    const FilterOperations* firstVal = filterOperationsAt(valueList, firstIndex);
-
-    for (size_t i = firstIndex + 1; i < valueList.size(); ++i) {
-        const FilterOperations* val = filterOperationsAt(valueList, i);
-
-        // An emtpy filter list matches anything.
-        if (val->operations().isEmpty())
-            continue;
-
-        if (!firstVal->operationsMatch(*val))
-            return -1;
-    }
-
-    return firstIndex;
-}
-
-// An "invalid" list is one whose functions don't match, and therefore has to be animated as a Matrix
-// The hasBigRotation flag will always return false if isValid is false. Otherwise hasBigRotation is
-// true if the rotation between any two keyframes is >= 180 degrees.
-
-static inline const TransformOperations* operationsAt(const KeyframeValueList& valueList, size_t index)
-{
-    return static_cast<const TransformAnimationValue*>(valueList.at(index))->value();
-}
-
-int GraphicsLayer::validateTransformOperations(const KeyframeValueList& valueList, bool& hasBigRotation)
-{
-    ASSERT(valueList.property() == AnimatedPropertyWebkitTransform);
-
-    hasBigRotation = false;
-
-    if (valueList.size() < 2)
-        return -1;
-
-    // Empty transforms match anything, so find the first non-empty entry as the reference.
-    size_t firstIndex = 0;
-    for ( ; firstIndex < valueList.size(); ++firstIndex) {
-        if (operationsAt(valueList, firstIndex)->operations().size() > 0)
-            break;
-    }
-
-    if (firstIndex >= valueList.size())
-        return -1;
-
-    const TransformOperations* firstVal = operationsAt(valueList, firstIndex);
-
-    // See if the keyframes are valid.
-    for (size_t i = firstIndex + 1; i < valueList.size(); ++i) {
-        const TransformOperations* val = operationsAt(valueList, i);
-
-        // An emtpy transform list matches anything.
-        if (val->operations().isEmpty())
-            continue;
-
-        if (!firstVal->operationsMatch(*val))
-            return -1;
-    }
-
-    // Keyframes are valid, check for big rotations.
-    double lastRotAngle = 0.0;
-    double maxRotAngle = -1.0;
-
-    for (size_t j = 0; j < firstVal->operations().size(); ++j) {
-        TransformOperation::OperationType type = firstVal->operations().at(j)->getOperationType();
-
-        // if this is a rotation entry, we need to see if any angle differences are >= 180 deg
-        if (type == TransformOperation::RotateX
-            || type == TransformOperation::RotateY
-            || type == TransformOperation::RotateZ
-            || type == TransformOperation::Rotate3D) {
-            lastRotAngle = static_cast<RotateTransformOperation*>(firstVal->operations().at(j).get())->angle();
-
-            if (maxRotAngle < 0)
-                maxRotAngle = fabs(lastRotAngle);
-
-            for (size_t i = firstIndex + 1; i < valueList.size(); ++i) {
-                const TransformOperations* val = operationsAt(valueList, i);
-                double rotAngle = val->operations().isEmpty() ? 0 : (static_cast<RotateTransformOperation*>(val->operations().at(j).get())->angle());
-                double diffAngle = fabs(rotAngle - lastRotAngle);
-                if (diffAngle > maxRotAngle)
-                    maxRotAngle = diffAngle;
-                lastRotAngle = rotAngle;
-            }
-        }
-    }
-
-    hasBigRotation = maxRotAngle >= 180.0;
-
-    return firstIndex;
 }
 
 void GraphicsLayer::updateChildList()
