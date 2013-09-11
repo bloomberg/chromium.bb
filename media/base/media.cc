@@ -46,10 +46,8 @@ class MediaInitializer {
     // Perform initialization of libraries which require runtime CPU detection.
     // TODO(dalecurtis): Add initialization of YUV, SincResampler.
     vector_math::Initialize();
-#if !defined(OS_IOS)
     SincResampler::InitializeCPUSpecificFeatures();
     InitializeCPUSpecificYUVConversions();
-#endif
   }
 
   ~MediaInitializer() {

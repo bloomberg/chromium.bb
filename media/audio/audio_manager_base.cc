@@ -233,11 +233,6 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStreamProxy(
     const AudioParameters& params,
     const std::string& device_id,
     const std::string& input_device_id) {
-#if defined(OS_IOS)
-  // IOS implements audio input only.
-  NOTIMPLEMENTED();
-  return NULL;
-#else
   DCHECK(message_loop_->BelongsToCurrentThread());
 
   // If the caller supplied an empty device id to select the default device,
@@ -304,7 +299,6 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStreamProxy(
   dispatcher_params->dispatcher = dispatcher;
   output_dispatchers_.push_back(dispatcher_params);
   return new AudioOutputProxy(dispatcher.get());
-#endif  // defined(OS_IOS)
 }
 
 void AudioManagerBase::ShowAudioInputSettings() {
@@ -362,10 +356,6 @@ void AudioManagerBase::Shutdown() {
 }
 
 void AudioManagerBase::ShutdownOnAudioThread() {
-// IOS implements audio input only.
-#if defined(OS_IOS)
-  return;
-#else
   // This should always be running on the audio thread, but since we've cleared
   // the audio_thread_ member pointer when we get here, we can't verify exactly
   // what thread we're running on.  The method is not public though and only
@@ -386,7 +376,6 @@ void AudioManagerBase::ShutdownOnAudioThread() {
   }
 
   output_dispatchers_.clear();
-#endif  // defined(OS_IOS)
 }
 
 void AudioManagerBase::AddOutputDeviceChangeListener(

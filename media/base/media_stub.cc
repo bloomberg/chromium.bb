@@ -7,7 +7,7 @@
 #include "base/files/file_path.h"
 
 // This file is intended for platforms that don't need to load any media
-// libraries (e.g., iOS).
+// libraries (e.g., Android).
 namespace media {
 namespace internal {
 

@@ -5,10 +5,10 @@
 {
   'variables': {
     'conditions': [
-      ['OS == "android" or OS == "ios"', {
-        # Android and iOS don't use ffmpeg.
+      ['OS == "android"', {
+        # Android doesn't use ffmpeg.
         'use_ffmpeg%': 0,
-      }, {  # 'OS != "android" and OS != "ios"'
+      }, {  # 'OS != "android"'
         'use_ffmpeg%': 1,
       }],
     ],

@@ -19,16 +19,10 @@ const int kMaxInputChannels = 2;
 // breakage (very hard to repro bugs!) on other platforms: See
 // http://crbug.com/226327 and http://crbug.com/230972.
 const int kTimerResetIntervalSeconds = 1;
-#if defined(OS_IOS)
-// The first callback on iOS is received after the current background
-// audio has faded away.
-const int kTimerInitialIntervalSeconds = 4;
-#else
 // We have received reports that the timer can be too trigger happy on some
 // Mac devices and the initial timer interval has therefore been increased
 // from 1 second to 5 seconds.
 const int kTimerInitialIntervalSeconds = 5;
-#endif  // defined(OS_IOS)
 }
 
 namespace media {
@@ -179,7 +173,7 @@ void AudioInputController::DoCreate(AudioManager* audio_manager,
   SCOPED_UMA_HISTOGRAM_TIMER("Media.AudioInputController.CreateTime");
   // TODO(miu): See TODO at top of file.  Until that's resolved, assume all
   // platform audio input requires the |no_data_timer_| be used to auto-detect
-  // errors.  In reality, probably only Windows and IOS need to be treated as
+  // errors.  In reality, probably only Windows needs to be treated as
   // unreliable here.
   DoCreateForStream(audio_manager->MakeAudioInputStream(params, device_id),
                     true);

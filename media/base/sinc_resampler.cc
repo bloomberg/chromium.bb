@@ -108,9 +108,8 @@ static double SincScaleFactor(double io_ratio) {
 
 // If we know the minimum architecture at compile time, avoid CPU detection.
 // Force NaCl code to use C routines since (at present) nothing there uses these
-// methods and plumbing the -msse built library is non-trivial.  iOS lies
-// about its architecture, so we also need to exclude it here.
-#if defined(ARCH_CPU_X86_FAMILY) && !defined(OS_NACL) && !defined(OS_IOS)
+// methods and plumbing the -msse built library is non-trivial.
+#if defined(ARCH_CPU_X86_FAMILY) && !defined(OS_NACL)
 #if defined(__SSE__)
 #define CONVOLVE_FUNC Convolve_SSE
 void SincResampler::InitializeCPUSpecificFeatures() {}

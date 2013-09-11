@@ -4,15 +4,14 @@
 
 #include "media/audio/mac/audio_input_mac.h"
 
+#include <CoreServices/CoreServices.h>
+
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
 #include "media/audio/audio_manager_base.h"
 #include "media/audio/audio_util.h"
 
-#if !defined(OS_IOS)
-#include <CoreServices/CoreServices.h>
-#endif
 
 namespace media {
 
