@@ -118,15 +118,16 @@ class CONTENT_EXPORT MediaStreamImpl
   // Structure for storing information about a WebKit request to create a
   // MediaStream.
   struct UserMediaRequestInfo {
-    UserMediaRequestInfo();
     UserMediaRequestInfo(int request_id,
                          WebKit::WebFrame* frame,
-                         const WebKit::WebUserMediaRequest& request);
+                         const WebKit::WebUserMediaRequest& request,
+                         bool enable_automatic_output_device_selection);
     ~UserMediaRequestInfo();
     int request_id;
     // True if MediaStreamDispatcher has generated the stream, see
     // OnStreamGenerated.
     bool generated;
+    const bool enable_automatic_output_device_selection;
     WebKit::WebFrame* frame;  // WebFrame that requested the MediaStream.
     WebKit::WebMediaStream web_stream;
     WebKit::WebUserMediaRequest request;

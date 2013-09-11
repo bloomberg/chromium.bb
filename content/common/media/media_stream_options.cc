@@ -15,6 +15,8 @@ const char kMediaStreamSourceTab[] = "tab";
 const char kMediaStreamSourceScreen[] = "screen";
 const char kMediaStreamSourceDesktop[] = "desktop";
 const char kMediaStreamSourceSystem[] = "system";
+const char kMediaStreamRenderToAssociatedSink[] =
+    "chromeRenderToAssociatedSink";
 
 StreamOptions::StreamOptions()
     : audio_type(MEDIA_NO_SERVICE),

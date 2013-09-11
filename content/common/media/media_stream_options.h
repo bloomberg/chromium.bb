@@ -22,6 +22,12 @@ CONTENT_EXPORT extern const char kMediaStreamSourceScreen[];
 CONTENT_EXPORT extern const char kMediaStreamSourceDesktop[];
 CONTENT_EXPORT extern const char kMediaStreamSourceSystem[];
 
+// Experimental constraint to do device matching.  When this optional constraint
+// is set, WebRTC audio renderer will render audio from media streams to an
+// output device that belongs to the same hardware as the requested source
+// device belongs to.
+CONTENT_EXPORT extern const char kMediaStreamRenderToAssociatedSink[];
+
 // StreamOptions is a Chromium representation of WebKit's
 // WebUserMediaRequest Options. It describes the components
 // in a request for a new media stream.

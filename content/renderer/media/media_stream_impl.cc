@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/common/desktop_media_id.h"
@@ -171,6 +172,7 @@ void MediaStreamImpl::requestUserMedia(
   StreamOptions options(MEDIA_NO_SERVICE, MEDIA_NO_SERVICE);
   WebKit::WebFrame* frame = NULL;
   GURL security_origin;
+  bool enable_automatic_output_device_selection = false;
 
   // |user_media_request| can't be mocked. So in order to test at all we check
   // if it isNull.
@@ -184,6 +186,13 @@ void MediaStreamImpl::requestUserMedia(
       options.audio_device_id = GetStreamConstraint(
           user_media_request.audioConstraints(),
           kMediaStreamSourceInfoId, false);
+      // Check if this input device should be used to select a matching output
+      // device for audio rendering.
+      std::string enable = GetStreamConstraint(
+          user_media_request.audioConstraints(),
+          kMediaStreamRenderToAssociatedSink, false);
+      if (LowerCaseEqualsASCII(enable, "true"))
+        enable_automatic_output_device_selection = true;
     }
     if (user_media_request.video()) {
       options.video_type = MEDIA_DEVICE_VIDEO_CAPTURE;
@@ -204,11 +213,14 @@ void MediaStreamImpl::requestUserMedia(
 
   DVLOG(1) << "MediaStreamImpl::requestUserMedia(" << request_id << ", [ "
            << "audio=" << (options.audio_type)
+           << " select associated sink: "
+           << enable_automatic_output_device_selection
            << ", video=" << (options.video_type) << " ], "
            << security_origin.spec() << ")";
 
   user_media_requests_.push_back(
-      new UserMediaRequestInfo(request_id, frame, user_media_request));
+      new UserMediaRequestInfo(request_id, frame, user_media_request,
+          enable_automatic_output_device_selection));
 
   media_stream_dispatcher_->GenerateStream(
       request_id,
@@ -590,6 +602,8 @@ scoped_refptr<WebRtcAudioRenderer> MediaStreamImpl::CreateRemoteAudioRenderer(
   DVLOG(1) << "MediaStreamImpl::CreateRemoteAudioRenderer label:"
            << stream->label();
 
+  // TODO(tommi): Change the default value of session_id to be
+  // StreamDeviceInfo::kNoId.  Also update AudioOutputDevice etc.
   int session_id = 0, sample_rate = 0, buffer_size = 0;
   if (!GetAuthorizedDeviceInfoForAudioRenderer(&session_id,
                                                &sample_rate,
@@ -671,6 +685,11 @@ bool MediaStreamImpl::GetAuthorizedDeviceInfoForAudioRenderer(
       if (source.readyState() == WebKit::WebMediaStreamSource::ReadyStateEnded)
         continue;
 
+      // Check if this request explicitly turned on the automatic output
+      // device selection constraint.
+      if (!request->enable_automatic_output_device_selection)
+        continue;
+
       if (!session_id_str.isEmpty() &&
           !session_id_str.equals(source.deviceId())) {
         DVLOG(1) << "Multiple capture devices are open so we can't pick a "
@@ -733,15 +752,16 @@ void MediaStreamExtraData::OnLocalStreamStop() {
     stream_stop_callback_.Run(stream_->label());
 }
 
-MediaStreamImpl::UserMediaRequestInfo::UserMediaRequestInfo()
-    : request_id(0), generated(false), frame(NULL), request() {
-}
-
 MediaStreamImpl::UserMediaRequestInfo::UserMediaRequestInfo(
     int request_id,
     WebKit::WebFrame* frame,
-    const WebKit::WebUserMediaRequest& request)
-    : request_id(request_id), generated(false), frame(frame),
+    const WebKit::WebUserMediaRequest& request,
+    bool enable_automatic_output_device_selection)
+    : request_id(request_id),
+      generated(false),
+      enable_automatic_output_device_selection(
+          enable_automatic_output_device_selection),
+      frame(frame),
       request(request) {
 }
 
