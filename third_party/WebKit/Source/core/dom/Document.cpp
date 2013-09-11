@@ -896,7 +896,7 @@ PassRefPtr<Node> Document::importNode(Node* importedNode, bool deep, ExceptionSt
             // Either they are imported along with their host node, or created implicitly.
             break;
         }
-        DocumentFragment* oldFragment = static_cast<DocumentFragment*>(importedNode);
+        DocumentFragment* oldFragment = toDocumentFragment(importedNode);
         RefPtr<DocumentFragment> newFragment = createDocumentFragment();
         if (deep) {
             for (Node* oldChild = oldFragment->firstChild(); oldChild; oldChild = oldChild->nextSibling()) {

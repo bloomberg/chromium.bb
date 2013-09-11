@@ -962,7 +962,7 @@ bool Node::containsIncludingHostElements(const Node* node) const
     while (node) {
         if (node == this)
             return true;
-        if (node->isDocumentFragment() && static_cast<const DocumentFragment*>(node)->isTemplateContent())
+        if (node->isDocumentFragment() && toDocumentFragment(node)->isTemplateContent())
             node = static_cast<const TemplateContentDocumentFragment*>(node)->host();
         else
             node = node->parentOrShadowHostNode();
