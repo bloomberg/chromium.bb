@@ -310,10 +310,6 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   void MoveCursorToInternal(const gfx::Point& root_location,
                             const gfx::Point& host_location);
 
-  // Called whenever the mouse moves, tracks the current |mouse_moved_handler_|,
-  // sending exited and entered events as its value changes.
-  void HandleMouseMoved(const ui::MouseEvent& event, Window* target);
-
   // Dispatches the specified event type (intended for enter/exit) to the
   // |mouse_moved_handler_|.
   void DispatchMouseEnterOrExit(const ui::MouseEvent& event,
@@ -420,7 +416,6 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
 
   Window* mouse_pressed_handler_;
   Window* mouse_moved_handler_;
-  Window* mouse_event_dispatch_target_;
   Window* event_dispatch_target_;
 
   // The gesture_recognizer_ for this.
