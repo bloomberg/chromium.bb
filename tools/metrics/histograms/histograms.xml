@@ -16696,6 +16696,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Tab.PerceivedRestoreTime" units="ms">
+  <summary>
+    User-perceived load time for a successful tab restore, measured from the
+    first time the user sees the tab being restored until the load completes.
+  </summary>
+</histogram>
+
 <histogram name="Tab.RestoreResult" enum="BooleanSuccess">
   <summary>
     When the browser restores a tab, whether the load was successful. Loads can
