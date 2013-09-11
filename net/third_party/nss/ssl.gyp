@@ -108,6 +108,13 @@
             '-Wno-header-guard',
           ],
         }],
+        [ 'OS == "linux"', {
+          'link_settings': {
+            'libraries': [
+              '-ldl',
+            ],
+          },
+        }],
         [ 'OS == "mac" or OS == "ios"', {
           'defines': [
             'XP_UNIX',

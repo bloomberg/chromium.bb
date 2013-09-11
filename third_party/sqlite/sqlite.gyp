@@ -127,6 +127,13 @@
                 ],
               },
             }],
+            ['OS == "mac" or OS == "ios"', {
+              'link_settings': {
+                'libraries': [
+                  '$(SDKROOT)/System/Library/Frameworks/CoreFoundation.framework',
+                ],
+              },
+            }],
             ['OS == "android"', {
               'defines': [
                 'HAVE_USLEEP=1',

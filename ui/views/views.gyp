@@ -570,6 +570,10 @@
             '../../third_party/wtl/include',
           ],
           'link_settings': {
+            'libraries': [
+              '-limm32.lib',
+              '-loleacc.lib',
+            ],
             'msvs_settings': {
               'VCLinkerTool': {
                 'DelayLoadDLLs': [
