@@ -18,7 +18,7 @@ namespace content {
 
 class TestBrowserThreadImpl;
 
-// Deprecated: use TestBrowserThreadBundle instead. See http://crbug.com/272091
+// DEPRECATED: use TestBrowserThreadBundle instead. See http://crbug.com/272091
 // A BrowserThread for unit tests; this lets unit tests in chrome/ create
 // BrowserThread instances.
 class TestBrowserThread {
