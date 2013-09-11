@@ -296,6 +296,11 @@ void RenderListItem::updateMarkerLocation()
             // If markerParent is an anonymous block that has lost all its children, destroy it.
             if (markerParent && markerParent->isAnonymousBlock() && !markerParent->firstChild() && !toRenderBlock(markerParent)->continuation())
                 markerParent->destroy();
+
+            // If the marker is inside we need to redo the preferred width calculations
+            // as the size of the item now includes the size of the list marker.
+            if (m_marker->isInside())
+                containingBlock()->updateLogicalWidth();
         }
     }
 }
