@@ -130,6 +130,33 @@ void SendLocalDomainResolved(uint64 id, bool success,
           id, success, address_ipv4, address_ipv6));
 }
 
+
+std::string WatcherUpdateToString(ServiceWatcher::UpdateType update) {
+  switch (update) {
+    case ServiceWatcher::UPDATE_ADDED:
+      return "UPDATE_ADDED";
+    case ServiceWatcher::UPDATE_CHANGED:
+      return "UPDATE_CHANGED";
+    case ServiceWatcher::UPDATE_REMOVED:
+      return "UPDATE_REMOVED";
+    case ServiceWatcher::UPDATE_INVALIDATED:
+      return "UPDATE_INVALIDATED";
+  }
+  return "Unknown Update";
+}
+
+std::string ResolverStatusToString(ServiceResolver::RequestStatus status) {
+  switch (status) {
+    case ServiceResolver::STATUS_SUCCESS:
+      return "STATUS_SUCESS";
+    case ServiceResolver::STATUS_REQUEST_TIMEOUT:
+      return "STATUS_REQUEST_TIMEOUT";
+    case ServiceResolver::STATUS_KNOWN_NONEXISTENT:
+      return "STATUS_KNOWN_NONEXISTENT";
+  }
+  return "Unknown Status";
+}
+
 }  // namespace
 
 ServiceDiscoveryMessageHandler::ServiceDiscoveryMessageHandler() {
@@ -268,6 +295,7 @@ void ServiceDiscoveryMessageHandler::OnDestroyLocalDomainResolver(uint64 id) {
 void ServiceDiscoveryMessageHandler::StartWatcher(
     uint64 id,
     const std::string& service_type) {
+  VLOG(1) << "StartWatcher with id " << id;
   if (!service_discovery_client_)
     return;
   DCHECK(!ContainsKey(service_watchers_, id));
@@ -282,6 +310,7 @@ void ServiceDiscoveryMessageHandler::StartWatcher(
 
 void ServiceDiscoveryMessageHandler::DiscoverServices(uint64 id,
                                                       bool force_update) {
+  VLOG(1) << "DiscoverServices with id " << id;
   if (!service_discovery_client_)
     return;
   DCHECK(ContainsKey(service_watchers_, id));
@@ -289,6 +318,7 @@ void ServiceDiscoveryMessageHandler::DiscoverServices(uint64 id,
 }
 
 void ServiceDiscoveryMessageHandler::DestroyWatcher(uint64 id) {
+  VLOG(1) << "DestoryWatcher with id " << id;
   if (!service_discovery_client_)
     return;
   service_watchers_.erase(id);
@@ -297,6 +327,7 @@ void ServiceDiscoveryMessageHandler::DestroyWatcher(uint64 id) {
 void ServiceDiscoveryMessageHandler::ResolveService(
     uint64 id,
     const std::string& service_name) {
+  VLOG(1) << "ResolveService with id " << id;
   if (!service_discovery_client_)
     return;
   DCHECK(!ContainsKey(service_resolvers_, id));
@@ -310,6 +341,7 @@ void ServiceDiscoveryMessageHandler::ResolveService(
 }
 
 void ServiceDiscoveryMessageHandler::DestroyResolver(uint64 id) {
+  VLOG(1) << "DestroyResolver with id " << id;
   if (!service_discovery_client_)
     return;
   service_resolvers_.erase(id);
@@ -319,6 +351,7 @@ void ServiceDiscoveryMessageHandler::ResolveLocalDomain(
     uint64 id,
     const std::string& domain,
     net::AddressFamily address_family) {
+  VLOG(1) << "ResolveLocalDomain with id " << id;
   if (!service_discovery_client_)
     return;
   DCHECK(!ContainsKey(local_domain_resolvers_, id));
@@ -332,12 +365,14 @@ void ServiceDiscoveryMessageHandler::ResolveLocalDomain(
 }
 
 void ServiceDiscoveryMessageHandler::DestroyLocalDomainResolver(uint64 id) {
+  VLOG(1) << "DestroyLocalDomainResolver with id " << id;
   if (!service_discovery_client_)
     return;
   local_domain_resolvers_.erase(id);
 }
 
 void ServiceDiscoveryMessageHandler::ShutdownLocalDiscovery() {
+  VLOG(1) << "ShutdownLocalDiscovery";
   discovery_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&ServiceDiscoveryMessageHandler::ShutdownOnIOThread,
@@ -361,6 +396,8 @@ void ServiceDiscoveryMessageHandler::OnServiceUpdated(
     uint64 id,
     ServiceWatcher::UpdateType update,
     const std::string& name) {
+  VLOG(1) << "OnServiceUpdated with id " << id
+          << WatcherUpdateToString(update);
   DCHECK(service_discovery_client_);
   utility_task_runner_->PostTask(FROM_HERE,
       base::Bind(&SendServiceUpdated, id, update, name));
@@ -370,6 +407,9 @@ void ServiceDiscoveryMessageHandler::OnServiceResolved(
     uint64 id,
     ServiceResolver::RequestStatus status,
     const ServiceDescription& description) {
+  VLOG(1) << "OnServiceResolved with id " << id << " and status "
+          << ResolverStatusToString(status);
+
   DCHECK(service_discovery_client_);
   utility_task_runner_->PostTask(FROM_HERE,
       base::Bind(&SendServiceResolved, id, status, description));
@@ -380,6 +420,13 @@ void ServiceDiscoveryMessageHandler::OnLocalDomainResolved(
     bool success,
     const net::IPAddressNumber& address_ipv4,
     const net::IPAddressNumber& address_ipv6) {
+  VLOG(1) << "OnLocalDomainResolved with id " << id;
+
+  if (!address_ipv4.empty())
+    VLOG(1) << "Local comain callback has valid ipv4 address with id " << id;
+  if (!address_ipv6.empty())
+    VLOG(1) << "Local comain callback has valid ipv6 address with id " << id;
+
   DCHECK(service_discovery_client_);
   utility_task_runner_->PostTask(FROM_HERE, base::Bind(&SendLocalDomainResolved,
                                                        id, success,

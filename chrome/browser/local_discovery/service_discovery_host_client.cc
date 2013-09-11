@@ -30,18 +30,22 @@ class ServiceDiscoveryHostClient::ServiceWatcherProxy : public ServiceWatcher {
   }
 
   virtual ~ServiceWatcherProxy() {
+    DVLOG(1) << "~ServiceWatcherProxy with id " << id_;
     host_->UnregisterWatcherCallback(id_);
     if (started_)
       host_->Send(new LocalDiscoveryMsg_DestroyWatcher(id_));
   }
 
   virtual void Start() OVERRIDE {
+    DVLOG(1) << "ServiceWatcher::Start with id " << id_;
     DCHECK(!started_);
     host_->Send(new LocalDiscoveryMsg_StartWatcher(id_, service_type_));
     started_ = true;
   }
 
   virtual void DiscoverNewServices(bool force_update) OVERRIDE {
+    DVLOG(1) << "ServiceWatcher::DiscoverNewServices with id "
+            << id_;
     DCHECK(started_);
     host_->Send(new LocalDiscoveryMsg_DiscoverServices(id_, force_update));
   }
@@ -70,12 +74,16 @@ class ServiceDiscoveryHostClient::ServiceResolverProxy
   }
 
   virtual ~ServiceResolverProxy() {
+    DVLOG(1) << "~ServiceResolverProxy with id " << id_;
     host_->UnregisterResolverCallback(id_);
     if (started_)
       host_->Send(new LocalDiscoveryMsg_DestroyResolver(id_));
   }
 
   virtual void StartResolving() OVERRIDE {
+    DVLOG(1)
+        << "ServiceResolverProxy::StartResolving with id "
+        << id_;
     DCHECK(!started_);
     host_->Send(new LocalDiscoveryMsg_ResolveService(id_, service_name_));
     started_ = true;
@@ -107,12 +115,16 @@ class ServiceDiscoveryHostClient::LocalDomainResolverProxy
   }
 
   virtual ~LocalDomainResolverProxy() {
+    DVLOG(1) << "~LocalDomainResolverProxy with id "
+            << id_;
     host_->UnregisterLocalDomainResolverCallback(id_);
     if (started_)
       host_->Send(new LocalDiscoveryMsg_DestroyLocalDomainResolver(id_));
   }
 
   virtual void Start() OVERRIDE {
+    DVLOG(1) << "LocalDomainResolverProxy::Start with id "
+            << id_;
     DCHECK(!started_);
     host_->Send(new LocalDiscoveryMsg_ResolveLocalDomain(id_, domain_,
                                                          address_family_));
