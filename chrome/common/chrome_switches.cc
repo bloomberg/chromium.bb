@@ -1489,6 +1489,9 @@ const char kFakeCloudPolicyType[]           = "fake-cloud-policy-type";
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
 #if defined(OS_ANDROID)
+// Disables the new NTP.
+const char kDisableNewNTP[]                  = "disable-new-ntp";
+
 // Enable the accessibility tab switcher.
 const char kEnableAccessibilityTabSwitcher[] =
     "enable-accessibility-tab-switcher";

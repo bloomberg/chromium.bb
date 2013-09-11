@@ -628,7 +628,8 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_NEW_NTP,
     IDS_FLAGS_ENABLE_NEW_NTP_DESCRIPTION,
     kOsAndroid,
-    SINGLE_VALUE_TYPE(switches::kEnableNewNTP)
+    ENABLE_DISABLE_VALUE_TYPE(switches::kEnableNewNTP,
+                              switches::kDisableNewNTP)
   },
 #endif
   {
