@@ -419,7 +419,7 @@ bool RenderBox::requiresLayoutToDetermineWidth() const
         || style->resize() != RESIZE_NONE
         || style->boxSizing() == BORDER_BOX
         || !isRenderBlock()
-        || !isBlockFlow()
+        || !isRenderBlockFlow()
         || isFlexItemIncludingDeprecated();
 }
 
@@ -1989,7 +1989,7 @@ void RenderBox::computeRectForRepaint(const RenderLayerModelObject* repaintConta
         topLeft += layer()->offsetForInFlowPosition();
     }
 
-    if (position != AbsolutePosition && position != FixedPosition && o->hasColumns() && o->isBlockFlow()) {
+    if (position != AbsolutePosition && position != FixedPosition && o->hasColumns() && o->isRenderBlockFlow()) {
         LayoutRect repaintRect(topLeft, rect.size());
         toRenderBlock(o)->adjustRectForColumns(repaintRect);
         topLeft = repaintRect.location();
@@ -4105,7 +4105,7 @@ PositionWithAffinity RenderBox::positionForPoint(const LayoutPoint& point)
         adjustedPoint.moveBy(location());
 
     for (RenderObject* renderObject = firstChild(); renderObject; renderObject = renderObject->nextSibling()) {
-        if ((!renderObject->firstChild() && !renderObject->isInline() && !renderObject->isBlockFlow() )
+        if ((!renderObject->firstChild() && !renderObject->isInline() && !renderObject->isRenderBlockFlow() )
             || renderObject->style()->visibility() != VISIBLE)
             continue;
 

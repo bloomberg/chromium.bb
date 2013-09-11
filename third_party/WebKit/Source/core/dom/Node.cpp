@@ -1201,7 +1201,7 @@ Element* Node::parentOrShadowHostElement() const
 
 bool Node::isBlockFlowElement() const
 {
-    return isElementNode() && renderer() && renderer()->isBlockFlow();
+    return isElementNode() && renderer() && renderer()->isRenderBlockFlow();
 }
 
 Element *Node::enclosingBlockFlowElement() const

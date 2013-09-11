@@ -437,7 +437,7 @@ AccessibilityRole AccessibilityRenderObject::determineAccessibilityRole()
     if (node && node->hasTagName(aTag) && isClickable())
         return LinkRole;
 
-    if (m_renderer->isBlockFlow())
+    if (m_renderer->isRenderBlockFlow())
         return GroupRole;
 
     // If the element does not have role, but it has ARIA attributes, accessibility should fallback to exposing it as a group.
@@ -720,7 +720,7 @@ bool AccessibilityRenderObject::computeAccessibilityIsIgnored() const
     if (node && node->hasTagName(spanTag))
         return true;
 
-    if (m_renderer->isBlockFlow() && m_renderer->childrenInline() && !canSetFocusAttribute())
+    if (m_renderer->isRenderBlockFlow() && m_renderer->childrenInline() && !canSetFocusAttribute())
         return !toRenderBlock(m_renderer)->firstLineBox() && !mouseButtonListener();
 
     // ignore images seemingly used as spacers

@@ -817,7 +817,7 @@ PassRefPtr<Node> CompositeEditCommand::appendBlockPlaceholder(PassRefPtr<Element
 
     document().updateLayoutIgnorePendingStylesheets();
 
-    // Should assert isBlockFlow || isInlineFlow when deletion improves. See 4244964.
+    // Should assert isRenderBlockFlow || isInlineFlow when deletion improves. See 4244964.
     ASSERT(container->renderer());
 
     RefPtr<Node> placeholder = createBlockPlaceholderElement(document());
@@ -830,7 +830,7 @@ PassRefPtr<Node> CompositeEditCommand::insertBlockPlaceholder(const Position& po
     if (pos.isNull())
         return 0;
 
-    // Should assert isBlockFlow || isInlineFlow when deletion improves.  See 4244964.
+    // Should assert isRenderBlockFlow || isInlineFlow when deletion improves. See 4244964.
     ASSERT(pos.deprecatedNode()->renderer());
 
     RefPtr<Node> placeholder = createBlockPlaceholderElement(document());
@@ -846,7 +846,7 @@ PassRefPtr<Node> CompositeEditCommand::addBlockPlaceholderIfNeeded(Element* cont
     document().updateLayoutIgnorePendingStylesheets();
 
     RenderObject* renderer = container->renderer();
-    if (!renderer || !renderer->isBlockFlow())
+    if (!renderer || !renderer->isRenderBlockFlow())
         return 0;
 
     // append the placeholder to make sure it follows

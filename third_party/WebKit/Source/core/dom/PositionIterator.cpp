@@ -160,7 +160,7 @@ bool PositionIterator::isCandidate() const
     if (isTableElement(m_anchorNode) || editingIgnoresContent(m_anchorNode))
         return (atStartOfNode() || atEndOfNode()) && !Position::nodeIsUserSelectNone(m_anchorNode->parentNode());
 
-    if (!isHTMLHtmlElement(m_anchorNode) && renderer->isBlockFlow()) {
+    if (!isHTMLHtmlElement(m_anchorNode) && renderer->isRenderBlockFlow()) {
         if (toRenderBlock(renderer)->logicalHeight() || m_anchorNode->hasTagName(bodyTag)) {
             if (!Position::hasRenderedNonAnonymousDescendantsWithHeight(renderer))
                 return atStartOfNode() && !Position::nodeIsUserSelectNone(m_anchorNode);

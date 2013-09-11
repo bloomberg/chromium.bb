@@ -895,7 +895,7 @@ bool Position::isCandidate() const
     if (isHTMLHtmlElement(m_anchorNode.get()))
         return false;
 
-    if (renderer->isBlockFlow()) {
+    if (renderer->isRenderBlockFlow()) {
         if (toRenderBlock(renderer)->logicalHeight() || m_anchorNode->hasTagName(bodyTag)) {
             if (!Position::hasRenderedNonAnonymousDescendantsWithHeight(renderer))
                 return atFirstEditingPositionForNode() && !Position::nodeIsUserSelectNone(deprecatedNode());
@@ -1153,7 +1153,7 @@ void Position::getInlineBoxAndOffset(EAffinity affinity, TextDirection primaryDi
 
     if (!renderer->isText()) {
         inlineBox = 0;
-        if (canHaveChildrenForEditing(deprecatedNode()) && renderer->isBlockFlow() && hasRenderedNonAnonymousDescendantsWithHeight(renderer)) {
+        if (canHaveChildrenForEditing(deprecatedNode()) && renderer->isRenderBlockFlow() && hasRenderedNonAnonymousDescendantsWithHeight(renderer)) {
             // Try a visually equivalent position with possibly opposite editability. This helps in case |this| is in
             // an editable block but surrounded by non-editable positions. It acts to negate the logic at the beginning
             // of RenderObject::createVisiblePosition().
@@ -1301,7 +1301,7 @@ TextDirection Position::primaryDirection() const
 {
     TextDirection primaryDirection = LTR;
     for (const RenderObject* r = m_anchorNode->renderer(); r; r = r->parent()) {
-        if (r->isBlockFlow()) {
+        if (r->isRenderBlockFlow()) {
             primaryDirection = r->style()->direction();
             break;
         }

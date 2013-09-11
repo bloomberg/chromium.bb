@@ -378,10 +378,6 @@ public:
 
     bool isTablePart() const { return isTableCell() || isRenderTableCol() || isTableCaption() || isTableRow() || isTableSection(); }
 
-    // FIXME: This method should be changed to isRenderBlockFlow, and return false for blocks with other layout methods
-    // such as flexible boxes and grids. Currently callers rely on this behavior.
-    bool isBlockFlow() const { return isRenderBlockFlow() || isFlexibleBoxIncludingDeprecated() || isRenderGrid(); }
-
     inline bool isBeforeContent() const;
     inline bool isAfterContent() const;
     inline bool isBeforeOrAfterContent() const;

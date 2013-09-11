@@ -275,7 +275,7 @@ bool RenderLineBoxList::hitTest(RenderBoxModelObject* renderer, const HitTestReq
 
 void RenderLineBoxList::dirtyLinesFromChangedChild(RenderObject* container, RenderObject* child)
 {
-    if (!container->parent() || (container->isRenderBlock() && (container->selfNeedsLayout() || !container->isBlockFlow())))
+    if (!container->parent() || (container->isRenderBlock() && (container->selfNeedsLayout() || !container->isRenderBlockFlow())))
         return;
 
     RenderInline* inlineContainer = container->isRenderInline() ? toRenderInline(container) : 0;

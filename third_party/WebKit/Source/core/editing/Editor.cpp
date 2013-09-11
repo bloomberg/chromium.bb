@@ -1159,7 +1159,7 @@ WritingDirection Editor::baseWritingDirectionForSelectionStart() const
     if (!renderer)
         return result;
 
-    if (!renderer->isBlockFlow()) {
+    if (!renderer->isRenderBlockFlow()) {
         renderer = renderer->containingBlock();
         if (!renderer)
             return result;

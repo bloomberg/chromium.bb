@@ -146,7 +146,7 @@ void RenderBlockFlow::layoutBlock(bool relayoutChildren, LayoutUnit pageLogicalH
         if (oldHeight > newHeight && maxFloatLogicalBottom > newHeight && !childrenInline()) {
             // One of our children's floats may have become an overhanging float for us. We need to look for it.
             for (RenderObject* child = firstChild(); child; child = child->nextSibling()) {
-                if (child->isBlockFlow() && !child->isFloatingOrOutOfFlowPositioned()) {
+                if (child->isRenderBlockFlow() && !child->isFloatingOrOutOfFlowPositioned()) {
                     RenderBlock* block = toRenderBlock(child);
                     if (block->lowestFloatLogicalBottom() + block->logicalTop() > newHeight)
                         addOverhangingFloats(block, false);

@@ -133,7 +133,7 @@ RenderObject* CaretBase::caretRenderer(Node* node)
         return 0;
 
     // if caretNode is a block and caret is inside it then caret should be painted by that block
-    bool paintedByBlock = renderer->isBlockFlow() && caretRendersInsideNode(node);
+    bool paintedByBlock = renderer->isRenderBlock() && caretRendersInsideNode(node);
     return paintedByBlock ? renderer : renderer->containingBlock();
 }
 

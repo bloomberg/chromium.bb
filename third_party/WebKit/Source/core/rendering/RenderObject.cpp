@@ -1565,7 +1565,7 @@ void RenderObject::computeRectForRepaint(const RenderLayerModelObject* repaintCo
         return;
 
     if (RenderObject* o = parent()) {
-        if (o->isBlockFlow()) {
+        if (o->isRenderBlockFlow()) {
             RenderBlock* cb = toRenderBlock(o);
             if (cb->hasColumns())
                 cb->adjustRectForColumns(rect);
@@ -1946,7 +1946,7 @@ void RenderObject::styleWillChange(StyleDifference diff, const RenderStyle* newS
 
         s_affectsParentBlock = isFloatingOrOutOfFlowPositioned()
             && (!newStyle->isFloating() && !newStyle->hasOutOfFlowPosition())
-            && parent() && (parent()->isBlockFlow() || parent()->isRenderInline());
+            && parent() && (parent()->isRenderBlockFlow() || parent()->isRenderInline());
 
         // reset style flags
         if (diff == StyleDifferenceLayout || diff == StyleDifferenceLayoutPositionedMovementOnly) {
@@ -2826,7 +2826,7 @@ static PassRefPtr<RenderStyle> firstLineStyleForCachedUncachedType(StyleCacheSta
     if (renderer->isBeforeOrAfterContent())
         rendererForFirstLineStyle = renderer->parent();
 
-    if (rendererForFirstLineStyle->isBlockFlow()) {
+    if (rendererForFirstLineStyle->isRenderBlockFlow() || rendererForFirstLineStyle->isRenderButton()) {
         if (RenderBlock* firstLineBlock = rendererForFirstLineStyle->firstLineBlock()) {
             if (type == Cached)
                 return firstLineBlock->getCachedPseudoStyle(FIRST_LINE, style);
