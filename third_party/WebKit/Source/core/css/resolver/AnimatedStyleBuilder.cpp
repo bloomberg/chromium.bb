@@ -45,6 +45,7 @@
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "wtf/MathExtras.h"
+#include "wtf/TypeTraits.h"
 
 namespace WebCore {
 
@@ -73,6 +74,12 @@ unsigned short animatableValueToUnsignedShort(const AnimatableValue* value)
 int animatableValueToInt(const AnimatableValue* value)
 {
     return clampTo<int>(round(toAnimatableNumber(value)->toDouble()));
+}
+
+template<typename T> T animatableValueRoundClampTo(const AnimatableValue* value)
+{
+    COMPILE_ASSERT(WTF::IsInteger<T>::value, ShouldUseIntegralTypeTWhenRoundingValues);
+    return clampTo<T>(round(toAnimatableNumber(value)->toDouble()));
 }
 
 LengthBox animatableValueToLengthBox(const AnimatableValue* value, const StyleResolverState& state)
@@ -105,7 +112,7 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setVisitedLinkBorderBottomColor(toAnimatableColor(value)->visitedLinkColor());
         return;
     case CSSPropertyBorderBottomWidth:
-        style->setBorderBottomWidth(animatableValueToUnsigned(value));
+        style->setBorderBottomWidth(animatableValueRoundClampTo<unsigned>(value));
         return;
     case CSSPropertyBorderImageOutset:
         style->setBorderImageOutset(animatableValueToLengthBox(value, state));
@@ -124,21 +131,21 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setVisitedLinkBorderLeftColor(toAnimatableColor(value)->visitedLinkColor());
         return;
     case CSSPropertyBorderLeftWidth:
-        style->setBorderLeftWidth(animatableValueToUnsigned(value));
+        style->setBorderLeftWidth(animatableValueRoundClampTo<unsigned>(value));
         return;
     case CSSPropertyBorderRightColor:
         style->setBorderRightColor(toAnimatableColor(value)->color());
         style->setVisitedLinkBorderRightColor(toAnimatableColor(value)->visitedLinkColor());
         return;
     case CSSPropertyBorderRightWidth:
-        style->setBorderRightWidth(animatableValueToUnsigned(value));
+        style->setBorderRightWidth(animatableValueRoundClampTo<unsigned>(value));
         return;
     case CSSPropertyBorderTopColor:
         style->setBorderTopColor(toAnimatableColor(value)->color());
         style->setVisitedLinkBorderTopColor(toAnimatableColor(value)->visitedLinkColor());
         return;
     case CSSPropertyBorderTopWidth:
-        style->setBorderTopWidth(animatableValueToUnsigned(value));
+        style->setBorderTopWidth(animatableValueRoundClampTo<unsigned>(value));
         return;
     case CSSPropertyBottom:
         style->setBottom(animatableValueToLength(value, state));
@@ -194,7 +201,7 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setOutlineOffset(animatableValueToInt(value));
         return;
     case CSSPropertyOutlineWidth:
-        style->setOutlineWidth(animatableValueToUnsignedShort(value));
+        style->setOutlineWidth(animatableValueRoundClampTo<unsigned short>(value));
         return;
     case CSSPropertyPaddingBottom:
         style->setPaddingBottom(animatableValueToLength(value, state));
