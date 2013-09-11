@@ -1282,7 +1282,3 @@ crbug.com/276769 http/tests/security/contentSecurityPolicy/source-list-parsing-n
 crbug.com/286081 inspector/debugger/long-resume-vs-reload.html [ Failure Pass Timeout ]
 crbug.com/285703 [ Debug ] fast/table/table-rowspan-crash-with-huge-rowspan-cells.html [ Crash Pass ]
 crbug.com/286287 http/tests/inspector/network/network-initiator.html [ Failure Pass ]
-
-crbug.com/288561 animations/keyframe-multiple-timing-functions-transform.html [ NeedsRebaseline ]
-crbug.com/288561 virtual/threaded/animations/keyframe-multiple-timing-functions-transform.html [ NeedsRebaseline ]
-crbug.com/288561 virtual/web-animations-css/animations/keyframe-multiple-timing-functions-transform.html [ NeedsRebaseline ]
