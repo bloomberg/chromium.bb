@@ -4664,13 +4664,29 @@
     # This block adds *project-wide* configuration settings to each project
     # file.  It's almost always wrong to put things here.  Specify your
     # custom |configurations| in target_defaults to add them to targets instead.
-    'Debug': {
-      'xcode_settings': {
-        # Enable 'Build Active Architecture Only' for Debug. This
-        # avoids a project-level warning in Xcode.
-        'ONLY_ACTIVE_ARCH': 'YES',
-      },
-    },
+    'conditions': [
+      ['OS=="ios"', {
+        'Debug': {
+          'xcode_settings': {
+            # Enable 'Build Active Architecture Only' for Debug. This
+            # avoids a project-level warning in Xcode.
+            # Note that this configuration uses the default VALID_ARCHS value
+            # because if there is a device connected Xcode sets the active arch
+            # to the arch of the device. In cases where the device's arch is not
+            # in VALID_ARCHS (e.g. iPhone5 is armv7s) Xcode complains because it
+            # can't determine what arch to compile for.
+            'ONLY_ACTIVE_ARCH': 'YES',
+          },
+        },
+        'Release': {
+          'xcode_settings': {
+            # Override VALID_ARCHS and omit armv7s. Otherwise Xcode compiles for
+            # both armv7 and armv7s, doubling the binary size.
+            'VALID_ARCHS': 'armv7 i386',
+          },
+        },
+      }],
+    ],
   },
   'xcode_settings': {
     # DON'T ADD ANYTHING NEW TO THIS BLOCK UNLESS YOU REALLY REALLY NEED IT!
@@ -4709,8 +4725,6 @@
         ],
       }],
       ['OS=="ios"', {
-        # Just build armv7, until armv7s is correctly tested.
-        'VALID_ARCHS': 'armv7 i386',
         # Target both iPhone and iPad.
         'TARGETED_DEVICE_FAMILY': '1,2',
       }],
