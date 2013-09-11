@@ -59,7 +59,6 @@ PassOwnPtr<PageOverlay> PageOverlay::create(WebViewImpl* viewImpl, WebPageOverla
 PageOverlay::PageOverlay(WebViewImpl* viewImpl, WebPageOverlay* overlay)
     : m_viewImpl(viewImpl)
     , m_overlay(overlay)
-    , m_layerClient(0)
     , m_zOrder(0)
 {
 }
@@ -73,15 +72,6 @@ public:
 
     virtual ~OverlayGraphicsLayerClientImpl() { }
 
-    PassOwnPtr<GraphicsLayer> createGraphicsLayer(GraphicsLayerFactory* factory)
-    {
-        OwnPtr<GraphicsLayer> toReturn = GraphicsLayer::create(factory, this);
-#ifndef NDEBUG
-        m_layer = toReturn.get();
-#endif
-        return toReturn.release();
-    }
-
     virtual void notifyAnimationStarted(const GraphicsLayer*, double time) { }
 
     virtual void paintContents(const GraphicsLayer*, GraphicsContext& gc, GraphicsLayerPaintingPhase, const IntRect& inClip)
@@ -93,34 +83,17 @@ public:
 
     virtual String debugName(const GraphicsLayer* graphicsLayer) OVERRIDE
     {
-        ASSERT(graphicsLayer == m_layer);
         return String("WebViewImpl Page Overlay Content Layer");
     }
 
 private:
     explicit OverlayGraphicsLayerClientImpl(WebPageOverlay* overlay)
         : m_overlay(overlay)
-#ifndef NDEBUG
-        , m_layer(0)
-#endif
     {
     }
 
     WebPageOverlay* m_overlay;
-#ifndef NDEBUG
-    // The client does not retain ownership of m_layer and the pointer should
-    // not be dereferenced. It is only retained for debugging purposes.
-    GraphicsLayer* m_layer;
-#endif
 };
-
-PageOverlay::~PageOverlay()
-{
-    if (m_layerClient) {
-        delete m_layerClient;
-        m_layerClient = 0;
-    }
-}
 
 void PageOverlay::clear()
 {
@@ -129,7 +102,7 @@ void PageOverlay::clear()
     if (m_layer) {
         m_layer->removeFromParent();
         m_layer = nullptr;
-        m_layerClient = 0;
+        m_layerClient = nullptr;
     }
 }
 
@@ -138,8 +111,8 @@ void PageOverlay::update()
     invalidateWebFrame();
 
     if (!m_layer) {
-        m_layerClient = OverlayGraphicsLayerClientImpl::create(m_overlay).leakPtr();
-        m_layer = m_layerClient->createGraphicsLayer(m_viewImpl->graphicsLayerFactory());
+        m_layerClient = OverlayGraphicsLayerClientImpl::create(m_overlay);
+        m_layer = GraphicsLayer::create(m_viewImpl->graphicsLayerFactory(), m_layerClient.get());
         m_layer->setDrawsContent(true);
 
         // Compositor hit-testing does not know how to deal with layers that may be
