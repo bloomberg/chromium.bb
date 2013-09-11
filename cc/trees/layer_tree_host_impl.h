@@ -6,6 +6,7 @@
 #define CC_TREES_LAYER_TREE_HOST_IMPL_H_
 
 #include <list>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -401,7 +402,8 @@ class CC_EXPORT LayerTreeHostImpl
                         scoped_refptr<UIResourceBitmap> bitmap);
   // Deletes a UI resource.  May safely be called more than once.
   void DeleteUIResource(UIResourceId uid);
-  void DeleteAllUIResources();
+  void EvictAllUIResources();
+  bool EvictedUIResourcesExist() const;
 
   ResourceProvider::ResourceId ResourceIdForUIResource(UIResourceId uid) const;
 
@@ -480,9 +482,16 @@ class CC_EXPORT LayerTreeHostImpl
 
   void DidInitializeVisibleTile();
 
+  void MarkUIResourceNotEvicted(UIResourceId uid);
+
   typedef base::hash_map<UIResourceId, ResourceProvider::ResourceId>
       UIResourceMap;
   UIResourceMap ui_resource_map_;
+
+  // Resources that were evicted by EvictAllUIResources. Resources are removed
+  // from this when they are touched by a create or destroy from the UI resource
+  // request queue.
+  std::set<UIResourceId> evicted_ui_resources_;
 
   scoped_ptr<OutputSurface> output_surface_;
   scoped_refptr<ContextProvider> offscreen_context_provider_;

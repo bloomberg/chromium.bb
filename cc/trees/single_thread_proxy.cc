@@ -210,6 +210,9 @@ void SingleThreadProxy::DoCommit(scoped_ptr<ResourceUpdateQueue> queue) {
             layer_tree_host_impl_->resource_provider());
     update_controller->Finalize();
 
+    if (layer_tree_host_impl_->EvictedUIResourcesExist())
+      layer_tree_host_->RecreateUIResources();
+
     layer_tree_host_->FinishCommitOnImplThread(layer_tree_host_impl_.get());
 
     layer_tree_host_impl_->CommitComplete();

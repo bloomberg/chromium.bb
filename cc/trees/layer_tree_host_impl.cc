@@ -335,6 +335,12 @@ bool LayerTreeHostImpl::CanDraw() const {
         TRACE_EVENT_SCOPE_THREAD);
     return false;
   }
+  if (EvictedUIResourcesExist()) {
+    TRACE_EVENT_INSTANT0(
+        "cc", "LayerTreeHostImpl::CanDraw UI resources evicted not recreated",
+        TRACE_EVENT_SCOPE_THREAD);
+    return false;
+  }
   return true;
 }
 
@@ -1563,6 +1569,9 @@ void LayerTreeHostImpl::SetVisible(bool visible) {
   DidVisibilityChange(this, visible_);
   EnforceManagedMemoryPolicy(ActualManagedMemoryPolicy());
 
+  if (!visible_)
+    EvictAllUIResources();
+
   // Evict tiles immediately if invisible since this tab may never get another
   // draw or timer tick.
   if (!visible_)
@@ -1603,7 +1612,7 @@ void LayerTreeHostImpl::ReleaseTreeResources() {
   if (recycle_tree_ && recycle_tree_->root_layer())
     SendReleaseResourcesRecursive(recycle_tree_->root_layer());
 
-  DeleteAllUIResources();
+  EvictAllUIResources();
 }
 
 void LayerTreeHostImpl::CreateAndSetRenderer(
@@ -2641,6 +2650,7 @@ void LayerTreeHostImpl::CreateUIResource(
                                 gfx::Rect(bitmap->GetSize()),
                                 gfx::Rect(bitmap->GetSize()),
                                 gfx::Vector2d(0, 0));
+  MarkUIResourceNotEvicted(uid);
 }
 
 void LayerTreeHostImpl::DeleteUIResource(UIResourceId uid) {
@@ -2649,15 +2659,24 @@ void LayerTreeHostImpl::DeleteUIResource(UIResourceId uid) {
     resource_provider_->DeleteResource(id);
     ui_resource_map_.erase(uid);
   }
+  MarkUIResourceNotEvicted(uid);
 }
 
-void LayerTreeHostImpl::DeleteAllUIResources() {
+void LayerTreeHostImpl::EvictAllUIResources() {
+  if (ui_resource_map_.empty())
+    return;
+
   for (UIResourceMap::const_iterator iter = ui_resource_map_.begin();
       iter != ui_resource_map_.end();
       ++iter) {
+    evicted_ui_resources_.insert(iter->first);
     resource_provider_->DeleteResource(iter->second);
   }
   ui_resource_map_.clear();
+
+  client_->SetNeedsCommitOnImplThread();
+  client_->OnCanDrawStateChanged(CanDraw());
+  client_->RenewTreePriority();
 }
 
 ResourceProvider::ResourceId LayerTreeHostImpl::ResourceIdForUIResource(
@@ -2666,6 +2685,20 @@ ResourceProvider::ResourceId LayerTreeHostImpl::ResourceIdForUIResource(
   if (iter != ui_resource_map_.end())
     return iter->second;
   return 0;
+}
+
+bool LayerTreeHostImpl::EvictedUIResourcesExist() const {
+  return !evicted_ui_resources_.empty();
+}
+
+void LayerTreeHostImpl::MarkUIResourceNotEvicted(UIResourceId uid) {
+  std::set<UIResourceId>::iterator found_in_evicted =
+      evicted_ui_resources_.find(uid);
+  if (found_in_evicted == evicted_ui_resources_.end())
+    return;
+  evicted_ui_resources_.erase(found_in_evicted);
+  if (evicted_ui_resources_.empty())
+    client_->OnCanDrawStateChanged(CanDraw());
 }
 
 }  // namespace cc

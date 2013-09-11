@@ -1735,6 +1735,12 @@ class ScrollbarLayerLostContext : public LayerTreeHostContextTest {
         EXPECT_EQ(2, scrollbar_layer_->update_count());
         EndTest();
         break;
+      case 3:
+        // Single thread proxy issues extra commits after context lost.
+        // http://crbug.com/287250
+        if (HasImplThread())
+          NOTREACHED();
+        break;
       default:
         NOTREACHED();
     }
@@ -1911,7 +1917,12 @@ class UIResourceLostAfterCommit : public UIResourceLostTestSimple {
         EndTest();
         break;
       case 5:
-        // Make sure no extra commits happened.
+        // Single thread proxy issues extra commits after context lost.
+        // http://crbug.com/287250
+        if (HasImplThread())
+          NOTREACHED();
+        break;
+      case 6:
         NOTREACHED();
     }
   }
@@ -2017,44 +2028,31 @@ class UIResourceLostBeforeCommit : public UIResourceLostTestSimple {
     switch (time_step_) {
       case 1:
         // Sequence 1 (continued):
-        if (HasImplThread()) {
-          // The resources should have been recreated.
-          EXPECT_EQ(2, ui_resource_->resource_create_count);
-          // The "resource lost" callback was called once for the resource in
-          // the resource map.
-          EXPECT_EQ(1, ui_resource_->lost_resource_count);
-        } else {
-          // The extra commit that happens at context lost in the single thread
-          // proxy changes the timing so that the resource recreation callback
-          // is skipped.
-          // http://crbug.com/287250
-          EXPECT_EQ(1, ui_resource_->resource_create_count);
-          EXPECT_EQ(0, ui_resource_->lost_resource_count);
-        }
-        // Resource Id on the impl-side have been recreated as well. Note
-        // that the same UIResourceId persists after the context lost.
-        EXPECT_NE(0u, impl->ResourceIdForUIResource(ui_resource_->id()));
+        // The first context lost happens before the resources were created,
+        // and because it resulted in no resources being destroyed, it does not
+        // trigger resource re-creation.
+        EXPECT_EQ(1, ui_resource_->resource_create_count);
+        EXPECT_EQ(0, ui_resource_->lost_resource_count);
+        // Resource Id on the impl-side has been created.
         PostSetNeedsCommitToMainThread();
         break;
       case 3:
         // Sequence 2 (continued):
         // The previous resource should have been deleted.
         EXPECT_EQ(0u, impl->ResourceIdForUIResource(test_id0_));
-        // The second resource should have been created.
-        EXPECT_NE(0u, impl->ResourceIdForUIResource(test_id1_));
         if (HasImplThread()) {
-          // The second resource called the resource callback once and since the
-          // context is lost, a "resource lost" callback was also issued.
-          EXPECT_EQ(2, ui_resource_->resource_create_count);
-          EXPECT_EQ(1, ui_resource_->lost_resource_count);
+          // The second resource should have been created.
+          EXPECT_NE(0u, impl->ResourceIdForUIResource(test_id1_));
         } else {
           // The extra commit that happens at context lost in the single thread
-          // proxy changes the timing so that the resource recreation callback
-          // is skipped.
+          // proxy changes the timing so that the resource has been destroyed.
           // http://crbug.com/287250
-          EXPECT_EQ(1, ui_resource_->resource_create_count);
-          EXPECT_EQ(0, ui_resource_->lost_resource_count);
+          EXPECT_EQ(0u, impl->ResourceIdForUIResource(test_id1_));
         }
+        // The second resource called the resource callback once and since the
+        // context is lost, a "resource lost" callback was also issued.
+        EXPECT_EQ(2, ui_resource_->resource_create_count);
+        EXPECT_EQ(1, ui_resource_->lost_resource_count);
         break;
       case 5:
         // Sequence 3 (continued):
@@ -2165,6 +2163,92 @@ TEST_F(UIResourceLostBeforeActivateTree,
        RunMultiThread_DelegatingRenderer_ImplSidePaint) {
   RunTest(true, true, true);
 }
+
+// Resources evicted explicitly and by visibility changes.
+class UIResourceLostEviction : public UIResourceLostTestSimple {
+ public:
+  virtual void StepCompleteOnMainThread(int step) OVERRIDE {
+    EXPECT_TRUE(layer_tree_host()->proxy()->IsMainThread());
+    switch (step) {
+      case 0:
+        ui_resource_ = FakeScopedUIResource::Create(layer_tree_host());
+        EXPECT_NE(0, ui_resource_->id());
+        PostSetNeedsCommitToMainThread();
+        break;
+      case 2:
+        // Make the tree not visible.
+        PostSetVisibleToMainThread(false);
+        break;
+      case 3:
+        // Release resource before ending the test.
+        ui_resource_.reset();
+        EndTest();
+        break;
+      case 4:
+        NOTREACHED();
+    }
+  }
+
+  virtual void DidSetVisibleOnImplTree(LayerTreeHostImpl* impl,
+                                       bool visible) OVERRIDE {
+    TestWebGraphicsContext3D* context = static_cast<TestWebGraphicsContext3D*>(
+        impl->output_surface()->context_provider()->Context3d());
+    if (!visible) {
+      // All resources should have been evicted.
+      ASSERT_EQ(0u, context->NumTextures());
+      EXPECT_EQ(0u, impl->ResourceIdForUIResource(ui_resource_->id()));
+      EXPECT_EQ(2, ui_resource_->resource_create_count);
+      EXPECT_EQ(1, ui_resource_->lost_resource_count);
+      // Drawing is disabled both because of the evicted resources and
+      // because the renderer is not visible.
+      EXPECT_FALSE(impl->CanDraw());
+      // Make the renderer visible again.
+      PostSetVisibleToMainThread(true);
+    }
+  }
+
+  virtual void StepCompleteOnImplThread(LayerTreeHostImpl* impl) OVERRIDE {
+    TestWebGraphicsContext3D* context = static_cast<TestWebGraphicsContext3D*>(
+        impl->output_surface()->context_provider()->Context3d());
+    LayerTreeHostContextTest::CommitCompleteOnThread(impl);
+    switch (time_step_) {
+      case 1:
+        // The resource should have been created on LTHI after the commit.
+        ASSERT_EQ(1u, context->NumTextures());
+        EXPECT_NE(0u, impl->ResourceIdForUIResource(ui_resource_->id()));
+        EXPECT_EQ(1, ui_resource_->resource_create_count);
+        EXPECT_EQ(0, ui_resource_->lost_resource_count);
+        EXPECT_TRUE(impl->CanDraw());
+        // Evict all UI resources. This will trigger a commit.
+        impl->EvictAllUIResources();
+        ASSERT_EQ(0u, context->NumTextures());
+        EXPECT_EQ(0u, impl->ResourceIdForUIResource(ui_resource_->id()));
+        EXPECT_EQ(1, ui_resource_->resource_create_count);
+        EXPECT_EQ(0, ui_resource_->lost_resource_count);
+        EXPECT_FALSE(impl->CanDraw());
+        break;
+      case 2:
+        // The resource should have been recreated.
+        ASSERT_EQ(1u, context->NumTextures());
+        EXPECT_NE(0u, impl->ResourceIdForUIResource(ui_resource_->id()));
+        EXPECT_EQ(2, ui_resource_->resource_create_count);
+        EXPECT_EQ(1, ui_resource_->lost_resource_count);
+        EXPECT_TRUE(impl->CanDraw());
+        break;
+      case 3:
+        // The resource should have been recreated after visibility was
+        // restored.
+        ASSERT_EQ(1u, context->NumTextures());
+        EXPECT_NE(0u, impl->ResourceIdForUIResource(ui_resource_->id()));
+        EXPECT_EQ(3, ui_resource_->resource_create_count);
+        EXPECT_EQ(2, ui_resource_->lost_resource_count);
+        EXPECT_TRUE(impl->CanDraw());
+        break;
+    }
+  }
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(UIResourceLostEviction);
 
 }  // namespace
 }  // namespace cc

@@ -444,9 +444,6 @@ void LayerTreeHost::DidLoseOutputSurface() {
   if (output_surface_lost_)
     return;
 
-  bool resource_lost = true;
-  RecreateUIResources(resource_lost);
-
   num_failed_recreate_attempts_ = 0;
   output_surface_lost_ = true;
   SetNeedsCommit();
@@ -1176,7 +1173,7 @@ void LayerTreeHost::DeleteUIResource(UIResourceId uid) {
   ui_resource_client_map_.erase(uid);
 }
 
-void LayerTreeHost::RecreateUIResources(bool resource_lost) {
+void LayerTreeHost::RecreateUIResources() {
   for (UIResourceClientMap::iterator iter = ui_resource_client_map_.begin();
        iter != ui_resource_client_map_.end();
        ++iter) {
@@ -1184,6 +1181,7 @@ void LayerTreeHost::RecreateUIResources(bool resource_lost) {
     UIResourceRequest request;
     request.type = UIResourceRequest::UIResourceCreate;
     request.id = uid;
+    bool resource_lost = true;
     request.bitmap = iter->second->GetBitmap(uid, resource_lost);
     DCHECK(request.bitmap.get());
     ui_resource_request_queue_.push_back(request);

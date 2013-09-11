@@ -121,6 +121,7 @@ class ThreadProxy : public Proxy,
     base::TimeTicks monotonic_frame_begin_time;
     scoped_ptr<ScrollAndScaleSet> scroll_info;
     size_t memory_allocation_limit_bytes;
+    bool evicted_ui_resources;
   };
 
   // Called on main thread.

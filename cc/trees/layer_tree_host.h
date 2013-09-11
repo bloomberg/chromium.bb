@@ -286,6 +286,9 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
   virtual UIResourceId CreateUIResource(UIResourceClient* client);
   // Deletes a UI resource.  May safely be called more than once.
   virtual void DeleteUIResource(UIResourceId id);
+  // Put the recreation of all UI resources into the resource queue after they
+  // were evicted on the impl thread.
+  void RecreateUIResources();
 
   bool UsingSharedMemoryResources();
   int id() const { return tree_id_; }
@@ -322,8 +325,6 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
       const RenderSurfaceLayerList& update_list);
 
   bool AnimateLayersRecursive(Layer* current, base::TimeTicks time);
-
-  void RecreateUIResources(bool resource_lost);
 
   typedef base::hash_map<UIResourceId, UIResourceClient*> UIResourceClientMap;
   UIResourceClientMap ui_resource_client_map_;

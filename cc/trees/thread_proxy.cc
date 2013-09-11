@@ -693,6 +693,8 @@ void ThreadProxy::ScheduledActionSendBeginFrameToMainThread() {
   }
   begin_frame_state->memory_allocation_limit_bytes =
       layer_tree_host_impl_->memory_allocation_limit_bytes();
+  begin_frame_state->evicted_ui_resources =
+      layer_tree_host_impl_->EvictedUIResourcesExist();
   Proxy::MainThreadTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&ThreadProxy::BeginFrameOnMainThread,
@@ -767,6 +769,13 @@ void ThreadProxy::BeginFrameOnMainThread(
         UnlinkAndClearEvictedBackings();
   }
 
+  // Recreate all UI resources if there were evicted UI resources when the impl
+  // thread initiated the commit.
+  bool evicted_ui_resources =
+      begin_frame_state ? begin_frame_state->evicted_ui_resources : false;
+  if (evicted_ui_resources)
+      layer_tree_host_->RecreateUIResources();
+
   layer_tree_host_->Layout();
 
   // Clear the commit flag after updating animations and layout here --- objects
@@ -775,7 +784,9 @@ void ThreadProxy::BeginFrameOnMainThread(
   commit_requested_ = false;
   commit_request_sent_to_impl_thread_ = false;
   bool can_cancel_this_commit =
-      can_cancel_commit_ && !in_composite_and_readback_;
+      can_cancel_commit_ &&
+      !in_composite_and_readback_ &&
+      !evicted_ui_resources;
   can_cancel_commit_ = true;
 
   scoped_ptr<ResourceUpdateQueue> queue =
@@ -1382,7 +1393,7 @@ size_t ThreadProxy::MaxPartialTextureUpdates() const {
 }
 
 ThreadProxy::BeginFrameAndCommitState::BeginFrameAndCommitState()
-    : memory_allocation_limit_bytes(0) {}
+    : memory_allocation_limit_bytes(0), evicted_ui_resources(false) {}
 
 ThreadProxy::BeginFrameAndCommitState::~BeginFrameAndCommitState() {}
 
@@ -1487,6 +1498,7 @@ void ThreadProxy::RenewTreePriority() {
   // evicted resources or there is an invalid viewport size.
   if (layer_tree_host_impl_->active_tree()->ContentsTexturesPurged() ||
       layer_tree_host_impl_->active_tree()->ViewportSizeInvalid() ||
+      layer_tree_host_impl_->EvictedUIResourcesExist() ||
       input_throttled_until_commit_)
     priority = NEW_CONTENT_TAKES_PRIORITY;
 

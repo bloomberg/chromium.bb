@@ -629,6 +629,11 @@ void LayerTreeImpl::ProcessUIResourceRequestQueue() {
         break;
     }
   }
+
+  // If all UI resource evictions were not recreated by processing this queue,
+  // then another commit is required.
+  if (layer_tree_host_impl_->EvictedUIResourcesExist())
+    layer_tree_host_impl_->SetNeedsCommit();
 }
 
 void LayerTreeImpl::AddLayerWithCopyOutputRequest(LayerImpl* layer) {
