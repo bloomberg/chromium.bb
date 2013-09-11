@@ -1592,13 +1592,19 @@ shell_surface_pong(struct wl_client *client, struct wl_resource *resource,
 }
 
 static void
+set_title(struct shell_surface *shsurf, const char *title)
+{
+	free(shsurf->title);
+	shsurf->title = strdup(title);
+}
+
+static void
 shell_surface_set_title(struct wl_client *client,
 			struct wl_resource *resource, const char *title)
 {
 	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
 
-	free(shsurf->title);
-	shsurf->title = strdup(title);
+	set_title(shsurf, title);
 }
 
 static void
@@ -4580,6 +4586,7 @@ module_init(struct weston_compositor *ec,
 	ec->shell_interface.set_xwayland = set_xwayland;
 	ec->shell_interface.move = surface_move;
 	ec->shell_interface.resize = surface_resize;
+	ec->shell_interface.set_title = set_title;
 
 	wl_list_init(&shell->input_panel.surfaces);
 

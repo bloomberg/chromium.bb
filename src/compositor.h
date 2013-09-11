@@ -107,6 +107,8 @@ struct weston_shell_interface {
 	int (*move)(struct shell_surface *shsurf, struct weston_seat *ws);
 	int (*resize)(struct shell_surface *shsurf,
 		      struct weston_seat *ws, uint32_t edges);
+	void (*set_title)(struct shell_surface *shsurf,
+	                  const char *title);
 
 };
 

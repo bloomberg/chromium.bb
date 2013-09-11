@@ -363,6 +363,8 @@ static void
 weston_wm_window_read_properties(struct weston_wm_window *window)
 {
 	struct weston_wm *wm = window->wm;
+	struct weston_shell_interface *shell_interface =
+		&wm->server->compositor->shell_interface;
 
 #define F(field) offsetof(struct weston_wm_window, field)
 	const struct {
@@ -468,6 +470,9 @@ weston_wm_window_read_properties(struct weston_wm_window *window)
 		}
 		free(reply);
 	}
+
+	if (window->shsurf && window->name)
+		shell_interface->set_title(window->shsurf, window->name);
 }
 
 static void
@@ -1875,6 +1880,9 @@ surface_destroy(struct wl_listener *listener, void *data)
 
 	wm_log("surface for xid %d destroyed\n", window->id);
 
+	/* This should have been freed by the shell.
+       Don't try to use it later. */
+	window->shsurf = NULL;
 	window->surface = NULL;
 }
 
@@ -2028,6 +2036,9 @@ xserver_map_shell_surface(struct weston_wm *wm,
 		shell_interface->create_shell_surface(shell_interface->shell,
 						      window->surface,
 						      &shell_client);
+
+	if (window->name)
+		shell_interface->set_title(window->shsurf, window->name);
 
 	if (window->fullscreen) {
 		window->saved_width = window->width;
