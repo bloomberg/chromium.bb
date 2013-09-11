@@ -88,7 +88,6 @@ TEST_F(ContentSettingBubbleControllerTest, Init) {
         i == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC ||
         i == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA ||
         i == CONTENT_SETTINGS_TYPE_PPAPI_BROKER ||
-        i == CONTENT_SETTINGS_TYPE_SAVE_PASSWORD ||
         i == CONTENT_SETTINGS_TYPE_MIDI_SYSEX) {
       // These types have no bubble.
       continue;
