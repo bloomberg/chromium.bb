@@ -993,7 +993,11 @@ def main(args):
   if not testpkg:
     for extra_pkg in [
         ['x11-base', 'X.Org', '1.9.3', ['http://www.x.org/'], ['X']],
-        ['sys-kernel', 'Linux', '2.6', ['http://www.kernel.org/'], ['GPL-2']]
+        ['sys-kernel', 'Linux', '2.6', ['http://www.kernel.org/'], ['GPL-2']],
+        ['sys-boot', 'u-boot', '2013.06', ['http://www.denx.de/wiki/U-Boot'],
+         ['GPL-2+']],
+        ['sys-boot', 'coreboot', '2013.04', ['http://www.coreboot.org/'],
+         ['GPL-2']],
     ]:
       licensing.AddExtraPkg(extra_pkg)
   licensing.GenerateHTMLLicenseOutput(output_file)
