@@ -55,6 +55,7 @@ public:
     bool isNeutral() const { return m_type == TypeNeutral; }
     bool isTransform() const { return m_type == TypeTransform; }
     bool isUnknown() const { return m_type == TypeUnknown; }
+    bool isVisibility() const { return m_type == TypeVisibility; }
 
 protected:
     enum AnimatableType {
@@ -65,6 +66,7 @@ protected:
         TypeNumber,
         TypeTransform,
         TypeUnknown,
+        TypeVisibility,
     };
 
     AnimatableValue(AnimatableType type) : m_type(type) { }
@@ -79,7 +81,7 @@ protected:
     static PassRefPtr<AnimatableValue> defaultInterpolateTo(const AnimatableValue* left, const AnimatableValue* right, double fraction) { return takeConstRef((fraction < 0.5) ? left : right); }
 
     // For noncommutative values read A->addWith(B) to mean the value A with B composed onto it.
-    virtual PassRefPtr<AnimatableValue> addWith(const AnimatableValue*) const = 0;
+    virtual PassRefPtr<AnimatableValue> addWith(const AnimatableValue*) const;
     static PassRefPtr<AnimatableValue> defaultAddWith(const AnimatableValue* left, const AnimatableValue* right) { return takeConstRef(right); }
 
     template <class T>

@@ -70,4 +70,9 @@ PassRefPtr<AnimatableValue> AnimatableValue::add(const AnimatableValue* left, co
     return defaultAddWith(left, right);
 }
 
+PassRefPtr<AnimatableValue> AnimatableValue::addWith(const AnimatableValue* value) const
+{
+    return defaultAddWith(this, value);
+}
+
 } // namespace WebCore

@@ -541,6 +541,8 @@
             'animation/AnimatableUnknown.h',
             'animation/AnimatableValue.cpp',
             'animation/AnimatableValue.h',
+            'animation/AnimatableVisibility.cpp',
+            'animation/AnimatableVisibility.h',
             'animation/Animation.cpp',
             'animation/Animation.h',
             'animation/AnimationEffect.h',

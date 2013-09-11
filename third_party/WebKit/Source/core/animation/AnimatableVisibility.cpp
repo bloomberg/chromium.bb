@@ -28,47 +28,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AnimatableUnknown_h
-#define AnimatableUnknown_h
-
-#include "core/animation/AnimatableValue.h"
+#include "config.h"
+#include "core/animation/AnimatableVisibility.h"
 
 namespace WebCore {
 
-class AnimatableUnknown : public AnimatableValue {
-public:
-    virtual ~AnimatableUnknown() { }
-
-    static PassRefPtr<AnimatableUnknown> create(PassRefPtr<CSSValue> value)
-    {
-        return adoptRef(new AnimatableUnknown(value));
-    }
-
-    PassRefPtr<CSSValue> toCSSValue() const { return m_value; }
-
-protected:
-    virtual PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue* value, double fraction) const OVERRIDE
-    {
-        return defaultInterpolateTo(this, value, fraction);
-    }
-
-private:
-    explicit AnimatableUnknown(PassRefPtr<CSSValue> value)
-        : AnimatableValue(TypeUnknown)
-        , m_value(value)
-    {
-        ASSERT(m_value);
-    }
-
-    const RefPtr<CSSValue> m_value;
-};
-
-inline const AnimatableUnknown* toAnimatableUnknown(const AnimatableValue* value)
+PassRefPtr<AnimatableValue> AnimatableVisibility::interpolateTo(const AnimatableValue* value, double fraction) const
 {
-    ASSERT_WITH_SECURITY_IMPLICATION(value && value->isUnknown());
-    return static_cast<const AnimatableUnknown*>(value);
+    EVisibility from = m_visibility;
+    EVisibility to = toAnimatableVisibility(value)->m_visibility;
+    if (from != VISIBLE && to != VISIBLE)
+        return defaultInterpolateTo(this, value, fraction);
+    if (fraction <= 0)
+        return takeConstRef(this);
+    if (fraction >= 1)
+        return takeConstRef(value);
+    return takeConstRef(from == VISIBLE ? this : value);
 }
 
 } // namespace WebCore
-
-#endif // AnimatableUnknown_h

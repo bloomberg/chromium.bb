@@ -48,8 +48,6 @@ protected:
         return 0;
     }
 
-    virtual PassRefPtr<AnimatableValue> addWith(const AnimatableValue* value) const OVERRIDE { return defaultAddWith(this, value); }
-
 private:
     AnimatableNeutral() : AnimatableValue(TypeNeutral) { }
 

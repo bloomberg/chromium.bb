@@ -28,47 +28,42 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AnimatableUnknown_h
-#define AnimatableUnknown_h
+#ifndef AnimatableVisibility_h
+#define AnimatableVisibility_h
 
 #include "core/animation/AnimatableValue.h"
+#include "core/rendering/style/RenderStyleConstants.h"
 
 namespace WebCore {
 
-class AnimatableUnknown : public AnimatableValue {
+class AnimatableVisibility : public AnimatableValue {
 public:
-    virtual ~AnimatableUnknown() { }
-
-    static PassRefPtr<AnimatableUnknown> create(PassRefPtr<CSSValue> value)
+    virtual ~AnimatableVisibility() { }
+    static PassRefPtr<AnimatableVisibility> create(EVisibility visibility)
     {
-        return adoptRef(new AnimatableUnknown(value));
+        return adoptRef(new AnimatableVisibility(visibility));
     }
 
-    PassRefPtr<CSSValue> toCSSValue() const { return m_value; }
+    EVisibility visibility() const { return m_visibility; }
 
 protected:
-    virtual PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue* value, double fraction) const OVERRIDE
-    {
-        return defaultInterpolateTo(this, value, fraction);
-    }
+    virtual PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const OVERRIDE;
 
 private:
-    explicit AnimatableUnknown(PassRefPtr<CSSValue> value)
-        : AnimatableValue(TypeUnknown)
-        , m_value(value)
+    explicit AnimatableVisibility(EVisibility visibility)
+        : AnimatableValue(TypeVisibility)
+        , m_visibility(visibility)
     {
-        ASSERT(m_value);
     }
-
-    const RefPtr<CSSValue> m_value;
+    const EVisibility m_visibility;
 };
 
-inline const AnimatableUnknown* toAnimatableUnknown(const AnimatableValue* value)
+inline const AnimatableVisibility* toAnimatableVisibility(const AnimatableValue* value)
 {
-    ASSERT_WITH_SECURITY_IMPLICATION(value && value->isUnknown());
-    return static_cast<const AnimatableUnknown*>(value);
+    ASSERT_WITH_SECURITY_IMPLICATION(value && value->isVisibility());
+    return static_cast<const AnimatableVisibility*>(value);
 }
 
 } // namespace WebCore
 
-#endif // AnimatableUnknown_h
+#endif // AnimatableVisibility_h

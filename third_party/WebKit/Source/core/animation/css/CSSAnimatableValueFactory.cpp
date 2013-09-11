@@ -38,6 +38,7 @@
 #include "core/animation/AnimatableNumber.h"
 #include "core/animation/AnimatableTransform.h"
 #include "core/animation/AnimatableUnknown.h"
+#include "core/animation/AnimatableVisibility.h"
 #include "core/animation/css/CSSAnimations.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/platform/Length.h"
@@ -223,6 +224,8 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
         return createFromLength(style->transformOriginY(), style);
     case CSSPropertyWidth:
         return createFromLength(style->width(), style);
+    case CSSPropertyVisibility:
+        return AnimatableVisibility::create(style->visibility());
     default:
         RELEASE_ASSERT_WITH_MESSAGE(!CSSAnimations::isAnimatableProperty(property), "Web Animations not yet implemented: Create AnimatableValue from render style: %s", getPropertyNameString(property).utf8().data());
         ASSERT_NOT_REACHED();

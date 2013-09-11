@@ -38,6 +38,7 @@
 #include "core/animation/AnimatableTransform.h"
 #include "core/animation/AnimatableUnknown.h"
 #include "core/animation/AnimatableValue.h"
+#include "core/animation/AnimatableVisibility.h"
 #include "core/animation/css/CSSAnimations.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/resolver/StyleBuilder.h"
@@ -256,6 +257,9 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         return;
     case CSSPropertyWidth:
         style->setWidth(animatableValueToLength(value, state));
+        return;
+    case CSSPropertyVisibility:
+        style->setVisibility(toAnimatableVisibility(value)->visibility());
         return;
     default:
         RELEASE_ASSERT_WITH_MESSAGE(!CSSAnimations::isAnimatableProperty(property), "Web Animations not yet implemented: Unable to apply AnimatableValue to RenderStyle: %s", getPropertyNameString(property).utf8().data());
