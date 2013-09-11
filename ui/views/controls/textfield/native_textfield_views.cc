@@ -84,6 +84,7 @@ NativeTextfieldViews::NativeTextfieldViews(Textfield* parent)
   GetRenderText()->SetFontList(textfield_->font_list());
   UpdateColorsFromTheme(GetNativeTheme());
   set_context_menu_controller(this);
+  parent->set_context_menu_controller(this);
   set_drag_controller(this);
 }
 
