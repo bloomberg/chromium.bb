@@ -21,6 +21,7 @@
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_observer.h"
 #include "ui/message_center/message_center_tray_delegate.h"
+#include "ui/message_center/message_center_types.h"
 
 class MessageCenterSettingsController;
 class Notification;
@@ -31,7 +32,6 @@ class Profile;
 // of notifications to MessageCenter, doing necessary conversions.
 class MessageCenterNotificationManager
     : public NotificationUIManagerImpl,
-      public message_center::MessageCenter::Delegate,
       public message_center::MessageCenterObserver {
  public:
   MessageCenterNotificationManager(
@@ -57,13 +57,10 @@ class MessageCenterNotificationManager
   virtual bool UpdateNotification(const Notification& notification,
                                   Profile* profile) OVERRIDE;
 
-  // MessageCenter::Delegate
-  virtual void ShowSettings(const std::string& notification_id) OVERRIDE;
-
   // MessageCenterObserver
   virtual void OnNotificationRemoved(const std::string& notification_id,
                                      bool by_user) OVERRIDE;
-  virtual void OnNotificationCenterClosed() OVERRIDE;
+  virtual void OnCenterVisibilityChanged(message_center::Visibility) OVERRIDE;
   virtual void OnNotificationUpdated(const std::string& notification_id)
       OVERRIDE;
 

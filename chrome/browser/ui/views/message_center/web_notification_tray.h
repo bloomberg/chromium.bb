@@ -85,11 +85,6 @@ class WebNotificationTray : public message_center::MessageCenterTrayDelegate,
                            ManyMessageCenterNotifications);
   FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayTest, ManyPopupNotifications);
 
-  // The actual process to show the message center. Set |show_settings| to true
-  // if the message center should be initialized with the settings visible.
-  // Returns true if the center is successfully created.
-  bool ShowMessageCenterInternal(bool show_settings);
-
   PositionInfo GetPositionInfo();
 
   void CreateStatusIcon(const gfx::ImageSkia& image, const string16& tool_tip);

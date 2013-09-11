@@ -13,6 +13,7 @@
 #include "base/timer/timer.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_observer.h"
+#include "ui/message_center/message_center_types.h"
 
 namespace message_center {
 class NotificationDelegate;
@@ -135,10 +136,9 @@ class MessageCenterImpl : public MessageCenter {
   virtual ~MessageCenterImpl();
 
   // MessageCenter overrides:
-  virtual void SetDelegate(Delegate* delegate) OVERRIDE;
   virtual void AddObserver(MessageCenterObserver* observer) OVERRIDE;
   virtual void RemoveObserver(MessageCenterObserver* observer) OVERRIDE;
-  virtual void SetMessageCenterVisible(bool visible) OVERRIDE;
+  virtual void SetVisibility(Visibility visible) OVERRIDE;
   virtual bool IsMessageCenterVisible() OVERRIDE;
   virtual size_t NotificationCount() const OVERRIDE;
   virtual size_t UnreadNotificationCount() const OVERRIDE;
@@ -163,7 +163,6 @@ class MessageCenterImpl : public MessageCenter {
                                          const gfx::Image& image) OVERRIDE;
   virtual void DisableNotificationsByNotifier(
       const NotifierId& notifier_id) OVERRIDE;
-  virtual void ShowNotificationSettings(const std::string& id) OVERRIDE;
   virtual void ExpandNotification(const std::string& id) OVERRIDE;
   virtual void ClickOnNotification(const std::string& id) OVERRIDE;
   virtual void ClickOnNotificationButton(const std::string& id,
@@ -188,7 +187,6 @@ class MessageCenterImpl : public MessageCenter {
   ObserverList<MessageCenterObserver> observer_list_;
   scoped_ptr<internal::PopupTimersController> popup_timers_controller_;
   scoped_ptr<base::OneShotTimer<MessageCenterImpl> > quiet_mode_timer_;
-  Delegate* delegate_;
   NotifierSettingsProvider* settings_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageCenterImpl);

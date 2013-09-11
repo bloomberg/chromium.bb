@@ -11,11 +11,6 @@ namespace message_center {
 
 //------------------------------------------------------------------------------
 
-MessageCenter::Delegate::~Delegate() {
-}
-
-//------------------------------------------------------------------------------
-
 namespace {
 static MessageCenter* g_message_center;
 }

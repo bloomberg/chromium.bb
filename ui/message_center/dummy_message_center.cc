@@ -39,7 +39,4 @@ MessageCenter::MessageCenter() {
 MessageCenter::~MessageCenter() {
 }
 
-MessageCenter::Delegate::~Delegate() {
-}
-
 }  // namespace message_center

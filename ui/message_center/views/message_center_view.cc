@@ -20,6 +20,7 @@
 #include "ui/gfx/size.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_style.h"
+#include "ui/message_center/message_center_types.h"
 #include "ui/message_center/views/message_center_button_bar.h"
 #include "ui/message_center/views/message_view.h"
 #include "ui/message_center/views/notification_view.h"
@@ -933,6 +934,11 @@ void MessageCenterView::OnNotificationUpdated(const std::string& id) {
 
 void MessageCenterView::AnimationEnded(const ui::Animation* animation) {
   DCHECK_EQ(animation, settings_transition_animation_.get());
+
+  Visibility visibility = target_view_ == settings_view_
+                              ? VISIBILITY_SETTINGS
+                              : VISIBILITY_MESSAGE_CENTER;
+  message_center_->SetVisibility(visibility);
 
   source_view_->SetVisible(false);
   target_view_->SetVisible(true);

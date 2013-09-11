@@ -6,6 +6,7 @@
 
 #include "base/observer_list.h"
 #include "ui/message_center/message_center_style.h"
+#include "ui/message_center/message_center_types.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_list.h"
 #include "ui/message_center/notification_types.h"
@@ -194,7 +195,6 @@ void PopupTimersController::OnNotificationRemoved(const std::string& id,
 MessageCenterImpl::MessageCenterImpl()
     : MessageCenter(),
       popup_timers_controller_(new internal::PopupTimersController(this)),
-      delegate_(NULL),
       settings_provider_(NULL) {
   notification_list_.reset(new NotificationList());
 }
@@ -211,13 +211,11 @@ void MessageCenterImpl::RemoveObserver(MessageCenterObserver* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-void MessageCenterImpl::SetDelegate(Delegate* delegate) {
-  delegate_ = delegate;
-}
-
-void MessageCenterImpl::SetMessageCenterVisible(bool visible) {
+void MessageCenterImpl::SetVisibility(Visibility visibility) {
   std::set<std::string> updated_ids;
-  notification_list_->SetMessageCenterVisible(visible, &updated_ids);
+  notification_list_->SetMessageCenterVisible(
+      (visibility == VISIBILITY_MESSAGE_CENTER), &updated_ids);
+
   for (std::set<std::string>::const_iterator iter = updated_ids.begin();
        iter != updated_ids.end();
        ++iter) {
@@ -225,10 +223,9 @@ void MessageCenterImpl::SetMessageCenterVisible(bool visible) {
         MessageCenterObserver, observer_list_, OnNotificationUpdated(*iter));
   }
 
-  if (!visible) {
-    FOR_EACH_OBSERVER(
-        MessageCenterObserver, observer_list_, OnNotificationCenterClosed());
-  }
+  FOR_EACH_OBSERVER(MessageCenterObserver,
+                    observer_list_,
+                    OnCenterVisibilityChanged(visibility));
 }
 
 bool MessageCenterImpl::IsMessageCenterVisible() {
@@ -393,11 +390,6 @@ void MessageCenterImpl::DisableNotificationsByNotifier(
     iter++;
     RemoveNotification(id, false);
   }
-}
-
-void MessageCenterImpl::ShowNotificationSettings(const std::string& id) {
-  if (delegate_)
-    delegate_->ShowSettings(id);
 }
 
 void MessageCenterImpl::ExpandNotification(const std::string& id) {

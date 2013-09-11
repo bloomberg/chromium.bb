@@ -80,6 +80,7 @@ class MESSAGE_CENTER_EXPORT MessageCenterTray : public MessageCenterObserver {
  private:
   void OnMessageCenterChanged();
   void NotifyMessageCenterTrayChanged();
+  void HidePopupBubbleInternal();
 
   // |message_center_| is a weak pointer that must live longer than
   // MessageCenterTray.

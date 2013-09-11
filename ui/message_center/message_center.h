@@ -11,6 +11,7 @@
 #include "base/observer_list.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/message_center/message_center_export.h"
+#include "ui/message_center/message_center_types.h"
 #include "ui/message_center/notification_list.h"
 #include "ui/message_center/notification_types.h"
 
@@ -24,8 +25,6 @@ class DictionaryValue;
 // [Add|Remove|Update]Notification to create and update notifications in the
 // list. It also sends those changes to its observers when a notification
 // is shown, closed, or clicked on.
-// It can also implement Delegate to ask platform-dependent features like
-// disabling extensions or opening settings.
 
 namespace message_center {
 
@@ -44,20 +43,6 @@ class MESSAGE_CENTER_EXPORT MessageCenter {
 
   // Destroys the global message_center object.
   static void Shutdown();
-
-  class MESSAGE_CENTER_EXPORT Delegate {
-   public:
-    virtual ~Delegate();
-
-    // Request to show the notification settings (|notification_id| is used
-    // to identify the requesting browser context).
-    virtual void ShowSettings(const std::string& notification_id) = 0;
-  };
-
-  // Called to set the delegate.  Generally called only once, except in tests.
-  // Changing the delegate does not affect notifications in its
-  // NotificationList.
-  virtual void SetDelegate(Delegate* delegate) = 0;
 
   // Management of the observer list.
   virtual void AddObserver(MessageCenterObserver* observer) = 0;
@@ -111,11 +96,6 @@ class MESSAGE_CENTER_EXPORT MessageCenter {
   virtual void DisableNotificationsByNotifier(
       const NotifierId& notifier_id) = 0;
 
-  // TODO(mukai): settings can be in another class?
-  // Shows the settings for a web notification (profile is identified by the
-  // given notification id).
-  virtual void ShowNotificationSettings(const std::string& id) = 0;
-
   // Reformat a notification to show its entire text content.
   virtual void ExpandNotification(const std::string& id) = 0;
 
@@ -157,7 +137,7 @@ class MESSAGE_CENTER_EXPORT MessageCenter {
 
   // Informs the notification list whether the message center is visible.
   // This affects whether or not a message has been "read".
-  virtual void SetMessageCenterVisible(bool visible) = 0;
+  virtual void SetVisibility(Visibility visible) = 0;
 
   // Allows querying the visibility of the center.
   virtual bool IsMessageCenterVisible() = 0;

@@ -240,8 +240,6 @@ void MenuModel::ExecuteCommand(int command_id, int event_flags) {
       // |tray_| may be NULL in tests.
       if (tray_)
         tray_->ShowNotifierSettingsBubble();
-      else
-        message_center_->ShowNotificationSettings(notification_id_);
       break;
     default:
       NOTREACHED();

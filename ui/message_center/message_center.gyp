@@ -54,6 +54,7 @@
         'message_center_tray.cc',
         'message_center_tray.h',
         'message_center_tray_delegate.h',
+        'message_center_types.h',
         'message_center_util.cc',
         'message_center_util.h',
         'notification.cc',

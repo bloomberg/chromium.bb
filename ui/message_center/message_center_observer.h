@@ -8,6 +8,7 @@
 #include <string>
 
 #include "ui/message_center/message_center_export.h"
+#include "ui/message_center/message_center_types.h"
 
 namespace message_center {
 
@@ -42,9 +43,8 @@ class MESSAGE_CENTER_EXPORT MessageCenterObserver {
   // displayed.
   virtual void OnNotificationDisplayed(const std::string& notification_id) {}
 
-  // Called when the notification list is no longer being displayed as a
-  // notification center.
-  virtual void OnNotificationCenterClosed() {}
+  // Called when the notification center is shown or hidden.
+  virtual void OnCenterVisibilityChanged(Visibility visibility) {}
 
   // Called whenever the quiet mode changes as a result of user action or when
   // quiet mode expires.

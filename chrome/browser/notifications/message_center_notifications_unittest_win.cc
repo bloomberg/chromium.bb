@@ -21,6 +21,7 @@
 #include "ui/message_center/message_center_impl.h"
 #include "ui/message_center/message_center_tray.h"
 #include "ui/message_center/message_center_tray_delegate.h"
+#include "ui/message_center/message_center_types.h"
 #include "ui/message_center/notifier_settings.h"
 
 namespace message_center {
@@ -158,7 +159,7 @@ TEST_F(MessageCenterNotificationManagerTest,
        FirstRunNotShownWithMessageCenter) {
   TestingProfile profile;
   notification_manager()->Add(GetANotification("test"), &profile);
-  message_center()->SetMessageCenterVisible(true);
+  message_center()->SetVisibility(message_center::VISIBILITY_MESSAGE_CENTER);
   run_loop()->RunUntilIdle();
   EXPECT_FALSE(notification_manager()->FirstRunTimerIsActive());
   EXPECT_FALSE(DidFirstRunPref());

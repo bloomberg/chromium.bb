@@ -27,6 +27,7 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/message_center_tray.h"
+#include "ui/message_center/message_center_types.h"
 #include "ui/message_center/notifier_settings.h"
 
 namespace {
@@ -50,7 +51,6 @@ MessageCenterNotificationManager::MessageCenterNotificationManager(
   first_run_pref_.Init(prefs::kMessageCenterShowedFirstRunBalloon, local_state);
 #endif
 
-  message_center_->SetDelegate(this);
   message_center_->AddObserver(this);
   message_center_->SetNotifierSettingsProvider(settings_provider_.get());
 
@@ -230,31 +230,6 @@ bool MessageCenterNotificationManager::UpdateNotification(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// MessageCenter::Delegate
-
-void MessageCenterNotificationManager::ShowSettings(
-    const std::string& notification_id) {
-  // The per-message-center Settings button passes an empty string.
-  if (notification_id.empty()) {
-    NOTIMPLEMENTED();
-    return;
-  }
-
-  ProfileNotification* profile_notification =
-      FindProfileNotification(notification_id);
-  if (!profile_notification)
-    return;
-
-  Browser* browser =
-      chrome::FindOrCreateTabbedBrowser(profile_notification->profile(),
-                                        chrome::HOST_DESKTOP_TYPE_NATIVE);
-  if (profile_notification->GetExtensionId().empty())
-    chrome::ShowContentSettings(browser, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
-  else
-    chrome::ShowExtensions(browser, std::string());
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // MessageCenter::Observer
 void MessageCenterNotificationManager::OnNotificationRemoved(
     const std::string& notification_id,
@@ -272,13 +247,26 @@ void MessageCenterNotificationManager::OnNotificationRemoved(
 #endif
 }
 
-void MessageCenterNotificationManager::OnNotificationCenterClosed() {
-  // When the center is open it halts all notifications, so we need to listen
-  // for events indicating it's been closed.
-  CheckAndShowNotifications();
+void MessageCenterNotificationManager::OnCenterVisibilityChanged(
+    message_center::Visibility visibility) {
+  switch (visibility) {
+    case message_center::VISIBILITY_TRANSIENT:
+      // When the center is open it halts all notifications, so we need to
+      // listen for events indicating it's been closed.
+      CheckAndShowNotifications();
 #if defined(OS_WIN)
-  CheckFirstRunTimer();
+      CheckFirstRunTimer();
 #endif
+      break;
+    case message_center::VISIBILITY_MESSAGE_CENTER:
+      content::RecordAction(
+          content::UserMetricsAction("Notifications.ShowMessageCenter"));
+      break;
+    case message_center::VISIBILITY_SETTINGS:
+      content::RecordAction(
+          content::UserMetricsAction("Notifications.ShowSettings"));
+      break;
+  }
 }
 
 void MessageCenterNotificationManager::OnNotificationUpdated(

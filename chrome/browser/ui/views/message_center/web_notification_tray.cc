@@ -12,7 +12,6 @@
 #include "chrome/browser/status_icons/status_icon_menu_model.h"
 #include "chrome/browser/status_icons/status_tray.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/user_metrics.h"
 #include "grit/chromium_strings.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_strings.h"
@@ -62,8 +61,6 @@ gfx::ImageSkia* GetIcon(int unread_count, bool is_quiet_mode) {
 }
 
 }  // namespace
-
-using content::UserMetricsAction;
 
 namespace message_center {
 
@@ -161,23 +158,14 @@ bool WebNotificationTray::ShowPopups() {
 
 void WebNotificationTray::HidePopups() { popup_collection_.reset(); }
 
-bool WebNotificationTray::ShowMessageCenterInternal(bool show_settings) {
-  content::RecordAction(UserMetricsAction("Notifications.ShowMessageCenter"));
-
-  // Message center delegate will be set to NULL when the message center
-  // widget's Close method is called so we don't need to worry about
-  // use-after-free issues.
-  message_center_delegate_ = new MessageCenterWidgetDelegate(
-      this,
-      message_center_tray_.get(),
-      show_settings,  // settings initally invisible
-      GetPositionInfo());
+bool WebNotificationTray::ShowMessageCenter() {
+  message_center_delegate_ =
+      new MessageCenterWidgetDelegate(this,
+                                      message_center_tray_.get(),
+                                      false,  // settings initally invisible
+                                      GetPositionInfo());
 
   return true;
-}
-
-bool WebNotificationTray::ShowMessageCenter() {
-  return ShowMessageCenterInternal(/*show_settings =*/false);
 }
 
 void WebNotificationTray::HideMessageCenter() {
@@ -193,7 +181,13 @@ bool WebNotificationTray::ShowNotifierSettings() {
     message_center_delegate_->SetSettingsVisible(true);
     return true;
   }
-  return ShowMessageCenterInternal(/*show_settings =*/true);
+  message_center_delegate_ =
+      new MessageCenterWidgetDelegate(this,
+                                      message_center_tray_.get(),
+                                      true,  // settings initally visible
+                                      GetPositionInfo());
+
+  return true;
 }
 
 void WebNotificationTray::OnMessageCenterTrayChanged() {

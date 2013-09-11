@@ -6,6 +6,7 @@
 #define UI_MESSAGE_CENTER_FAKE_MESSAGE_CENTER_H_
 
 #include "ui/message_center/message_center.h"
+#include "ui/message_center/message_center_types.h"
 
 namespace message_center {
 
@@ -18,7 +19,6 @@ class FakeMessageCenter : public MessageCenter {
   virtual ~FakeMessageCenter();
 
   // Overridden from FakeMessageCenter.
-  virtual void SetDelegate(Delegate* delegate) OVERRIDE;
   virtual void AddObserver(MessageCenterObserver* observer) OVERRIDE;
   virtual void RemoveObserver(MessageCenterObserver* observer) OVERRIDE;
   virtual size_t NotificationCount() const OVERRIDE;
@@ -47,7 +47,6 @@ class FakeMessageCenter : public MessageCenter {
                                          const gfx::Image& image) OVERRIDE;
   virtual void DisableNotificationsByNotifier(
       const NotifierId& notifier_id) OVERRIDE;
-  virtual void ShowNotificationSettings(const std::string& id) OVERRIDE;
   virtual void ExpandNotification(const std::string& id) OVERRIDE;
   virtual void ClickOnNotification(const std::string& id) OVERRIDE;
   virtual void ClickOnNotificationButton(const std::string& id,
@@ -61,7 +60,7 @@ class FakeMessageCenter : public MessageCenter {
   virtual void SetQuietMode(bool in_quiet_mode) OVERRIDE;
   virtual void EnterQuietModeWithExpire(
       const base::TimeDelta& expires_in) OVERRIDE;
-  virtual void SetMessageCenterVisible(bool visible) OVERRIDE;
+  virtual void SetVisibility(Visibility visible) OVERRIDE;
   virtual bool IsMessageCenterVisible() OVERRIDE;
   virtual void RestartPopupTimers() OVERRIDE;
   virtual void PausePopupTimers() OVERRIDE;

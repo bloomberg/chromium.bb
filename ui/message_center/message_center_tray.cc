@@ -10,6 +10,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_tray_delegate.h"
+#include "ui/message_center/message_center_types.h"
 
 namespace message_center {
 
@@ -31,10 +32,11 @@ bool MessageCenterTray::ShowMessageCenterBubble() {
   if (message_center_visible_)
     return true;
 
-  HidePopupBubble();
+  HidePopupBubbleInternal();
 
   message_center_visible_ = delegate_->ShowMessageCenter();
-  message_center_->SetMessageCenterVisible(message_center_visible_);
+  message_center_->SetVisibility(message_center::VISIBILITY_MESSAGE_CENTER);
+  NotifyMessageCenterTrayChanged();
   return message_center_visible_;
 }
 
@@ -50,11 +52,16 @@ void MessageCenterTray::MarkMessageCenterHidden() {
   if (!message_center_visible_)
     return;
   message_center_visible_ = false;
-  message_center_->SetMessageCenterVisible(false);
+
   // Some notifications (like system ones) should appear as popups again
   // after the message center is closed.
-  if (message_center_->HasPopupNotifications())
+  if (message_center_->HasPopupNotifications()) {
     ShowPopupBubble();
+    return;
+  }
+
+  message_center_->SetVisibility(message_center::VISIBILITY_TRANSIENT);
+
   NotifyMessageCenterTrayChanged();
 }
 
@@ -78,25 +85,35 @@ void MessageCenterTray::ShowPopupBubble() {
     return;
 
   popups_visible_ = delegate_->ShowPopups();
+
   NotifyMessageCenterTrayChanged();
 }
 
 bool MessageCenterTray::HidePopupBubble() {
   if (!popups_visible_)
     return false;
-
-  delegate_->HidePopups();
-  popups_visible_ = false;
+  HidePopupBubbleInternal();
   NotifyMessageCenterTrayChanged();
 
   return true;
 }
 
+void MessageCenterTray::HidePopupBubbleInternal() {
+  if (!popups_visible_)
+    return;
+
+  delegate_->HidePopups();
+  popups_visible_ = false;
+}
+
 void MessageCenterTray::ShowNotifierSettingsBubble() {
   if (popups_visible_)
-    HidePopupBubble();
+    HidePopupBubbleInternal();
 
   message_center_visible_ = delegate_->ShowNotifierSettings();
+  message_center_->SetVisibility(message_center::VISIBILITY_SETTINGS);
+
+  NotifyMessageCenterTrayChanged();
 }
 
 void MessageCenterTray::OnNotificationAdded(
@@ -138,14 +155,12 @@ void MessageCenterTray::OnQuietModeChanged(bool in_quiet_mode) {
 }
 
 void MessageCenterTray::OnMessageCenterChanged() {
-  if (message_center_visible_) {
-    if (message_center_->NotificationCount() == 0)
-      HideMessageCenterBubble();
-  }
+  if (message_center_visible_ && message_center_->NotificationCount() == 0)
+    HideMessageCenterBubble();
 
   if (popups_visible_ && !message_center_->HasPopupNotifications())
-    HidePopupBubble();
-  else if (message_center_->HasPopupNotifications())
+    HidePopupBubbleInternal();
+  else if (!popups_visible_ && message_center_->HasPopupNotifications())
     ShowPopupBubble();
 
   NotifyMessageCenterTrayChanged();
