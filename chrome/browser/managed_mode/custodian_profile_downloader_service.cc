@@ -18,6 +18,12 @@ CustodianProfileDownloaderService::~CustodianProfileDownloaderService() {}
 
 void CustodianProfileDownloaderService::DownloadProfile(
     const DownloadProfileCallback& callback) {
+  // The user must be logged in.
+  std::string username = custodian_profile_->GetPrefs()->GetString(
+      prefs::kGoogleServicesUsername);
+  if (username.empty())
+    return;
+
   download_callback_ = callback;
   std::string current_email = custodian_profile_->GetProfileName();
   if (gaia::AreEmailsSame(last_downloaded_profile_email_, current_email)) {
