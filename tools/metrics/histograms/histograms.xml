@@ -12579,14 +12579,42 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Profile.CreateTime" units="milliseconds">
-  <summary>Back-end time elapsed while creating a new profile.</summary>
+  <obsolete>
+    Deprecated as of 8/2013.
+  </obsolete>
+  <summary>
+    Back-end time elapsed while creating a new profile. The max is 30 seconds,
+    when an external timeout was applied.
+  </summary>
 </histogram>
 
 <histogram name="Profile.CreateTimeCanceled" units="milliseconds">
+  <obsolete>
+    Deprecated as of 8/2013.
+  </obsolete>
   <summary>
     Time elapsed before the user decided to cancel creation of a new profile.
     Since only managed-user profile creation can be canceled, this time comes
-    from managed-user registration.
+    from managed-user registration. The max is 30 seconds, when an external
+    timeout was applied.
+  </summary>
+</histogram>
+
+<histogram name="Profile.CreateTimeCanceledNoTimeout" units="milliseconds">
+  <summary>
+    Time elapsed from when the handler received the message that a user clicked
+    'Create' until the user decided to cancel creation of a new profile. Since
+    only managed-user profile creation can be canceled, this time comes from
+    managed-user registration.
+  </summary>
+</histogram>
+
+<histogram name="Profile.CreateTimeNoTimeout" units="milliseconds">
+  <summary>
+    Time elapsed from when the handler received the message that a user clicked
+    'Create' until the creation either failed with a local error (see
+    Profile.CreateResult), was canceled (also recorded in
+    Profile.CreateTimeCanceledNoTimeout), or completed successfully.
   </summary>
 </histogram>
 
