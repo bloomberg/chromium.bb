@@ -159,6 +159,8 @@ kb-altkey::x-key {
 
 .microphone {
   background-image: url('images/microphone.svg');
+  background-position: 4%;
+  background-size: 25%;
 }
 
 .audio .microphone {
