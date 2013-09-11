@@ -14013,6 +14013,26 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="SBClientMalware.IPBlacklistRequestNetError"
+    enum="NetErrorCodes">
+  <summary>
+    The net error code for all ClientMalwareRequest URLFetchers.
+  </summary>
+</histogram>
+
+<histogram name="SBClientMalware.IPBlacklistRequestPayloadSize" units="bytes">
+  <summary>
+    The size of the upload data for ClientMalwareRequest URLFetchers.
+  </summary>
+</histogram>
+
+<histogram name="SBClientMalware.IPBlacklistRequestResponseCode">
+  <summary>
+    For ClientMalwareRequest URLFetchers with successful status, the HTTP
+    response code that was received.
+  </summary>
+</histogram>
+
 <histogram name="SBClientMalware.SentReports" enum="SBClientMalwareSentReports">
   <summary>
     Measures the success rate of sending malware reports.  Sending a report can

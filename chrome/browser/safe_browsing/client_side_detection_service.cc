@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -433,6 +434,9 @@ void ClientSideDetectionService::StartClientReportMalwareRequest(
   UMA_HISTOGRAM_ENUMERATION("SBClientMalware.SentReports",
                             REPORT_SENT, REPORT_RESULT_MAX);
 
+  UMA_HISTOGRAM_COUNTS("SBClientMalware.IPBlacklistRequestPayloadSize",
+                       request_data.size());
+
   // Record that we made a malware request
   malware_report_times_.push(base::Time::Now());
 }
@@ -512,6 +516,14 @@ void ClientSideDetectionService::HandleMalwareVerdict(
     int response_code,
     const net::ResponseCookies& cookies,
     const std::string& data) {
+  if (status.is_success()) {
+    UMA_HISTOGRAM_SPARSE_SLOWLY(
+        "SBClientMalware.IPBlacklistRequestResponseCode", response_code);
+  }
+  // status error is negative, so we put - in front of it.
+  UMA_HISTOGRAM_SPARSE_SLOWLY(
+      "SBClientMalware.IPBlacklistRequestNetError", -status.error());
+
   ClientMalwareResponse response;
   scoped_ptr<ClientMalwareReportInfo> info(client_malware_reports_[source]);
   bool should_blacklist = false;
