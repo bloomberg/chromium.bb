@@ -50,13 +50,17 @@ SET TO=\%OUTPUT%\%BUILDTYPE%
 
 REM Figure out what files to copy based on the component type (shared/static).
 IF EXIST "%FROM%\base.dll" (
-SET TOCOPY=*.pdb setup.exe setup.exe.manifest chrome.7z *.dll
+SET TOCOPY=setup.exe setup.exe.manifest chrome.7z *.dll
 SET ARCHIVETODELETE=chrome.packed.7z
 SET INSTALLER=setup.exe
 ) ELSE (
-SET TOCOPY=*.pdb mini_installer.exe
+SET TOCOPY=mini_installer.exe mini_installer.exe.pdb
 SET INSTALLER=mini_installer.exe
 )
+
+SET TOCOPY=%TOCOPY% *.dll.pdb chrome.exe.pdb setup.exe.pdb^
+           chrome_frame_helper.exe.pdb chrome_launcher.exe.pdb^
+           delegate_execute.exe.pdb
 
 CALL :_copyfiles
 
