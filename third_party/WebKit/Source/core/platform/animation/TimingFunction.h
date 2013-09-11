@@ -25,6 +25,7 @@
 #ifndef TimingFunction_h
 #define TimingFunction_h
 
+#include "RuntimeEnabledFeatures.h"
 #include "core/platform/graphics/UnitBezier.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
@@ -56,6 +57,7 @@ protected:
     {
     }
 
+private:
     Type m_type;
 };
 
@@ -70,6 +72,8 @@ public:
 
     virtual double evaluate(double fraction, double) const
     {
+        ASSERT(RuntimeEnabledFeatures::webAnimationsEnabled() || (fraction >= 0 && fraction <= 1));
+        RELEASE_ASSERT_WITH_MESSAGE(!RuntimeEnabledFeatures::webAnimationsEnabled() || (fraction >= 0 && fraction <= 1), "Web Animations not yet implemented: Timing function behavior outside the range [0, 1] is not yet specified");
         return fraction;
     }
 
@@ -133,6 +137,8 @@ public:
 
     virtual double evaluate(double fraction, double accuracy) const
     {
+        ASSERT(RuntimeEnabledFeatures::webAnimationsEnabled() || (fraction >= 0 && fraction <= 1));
+        RELEASE_ASSERT_WITH_MESSAGE(!RuntimeEnabledFeatures::webAnimationsEnabled() || (fraction >= 0 && fraction <= 1), "Web Animations not yet implemented: Timing function behavior outside the range [0, 1] is not yet specified");
         if (!m_bezier)
             m_bezier = adoptPtr(new UnitBezier(m_x1, m_y1, m_x2, m_y2));
         return m_bezier->solve(fraction, accuracy);
@@ -213,6 +219,8 @@ public:
 
     virtual double evaluate(double fraction, double) const
     {
+        ASSERT(RuntimeEnabledFeatures::webAnimationsEnabled() || (fraction >= 0 && fraction <= 1));
+        RELEASE_ASSERT_WITH_MESSAGE(!RuntimeEnabledFeatures::webAnimationsEnabled() || (fraction >= 0 && fraction <= 1), "Web Animations not yet implemented: Timing function behavior outside the range [0, 1] is not yet specified");
         return std::min(1.0, (floor(m_steps * fraction) + m_stepAtStart) / m_steps);
     }
 
