@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,13 +6,14 @@
 #define CHROME_BROWSER_EXTENSIONS_API_RECOVERY_PRIVATE_RECOVERY_OPERATION_MANAGER_H_
 
 #include <map>
-
+#include <string>
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
+#include "chrome/browser/extensions/api/recovery_private/recovery_operation.h"
 #include "chrome/browser/extensions/api/recovery_private/recovery_private_api.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/recovery_private.h"
@@ -34,30 +35,31 @@ class RecoveryOperationManager
       public content::NotificationObserver,
       public base::SupportsWeakPtr<RecoveryOperationManager> {
  public:
-  typedef base::Callback<void(bool)> StartWriteCallback;
-  typedef base::Callback<void(bool)> CancelWriteCallback;
   typedef std::string ExtensionId;
 
   explicit RecoveryOperationManager(Profile* profile);
+  virtual ~RecoveryOperationManager();
 
   virtual void Shutdown() OVERRIDE;
 
   // Starts a WriteFromUrl operation.
   void StartWriteFromUrl(const ExtensionId& extension_id,
-                         const GURL& url,
-                         scoped_ptr<std::string> hash,
+                         GURL url,
+                         content::RenderViewHost* rvh,
+                         const std::string& hash,
                          bool saveImageAsDownload,
-                         const std::string& storage_unit,
-                         const StartWriteCallback& callback);
+                         const std::string& storage_unit_id,
+                         const RecoveryOperation::StartWriteCallback& callback);
 
   // Starts a WriteFromFile operation.
-  void StartWriteFromFile(const ExtensionId& extension_id,
-                          const std::string& storage_unit_id,
-                          const StartWriteCallback& callback);
+  void StartWriteFromFile(
+    const ExtensionId& extension_id,
+    const std::string& storage_unit_id,
+    const RecoveryOperation::StartWriteCallback& callback);
 
   // Cancels the extensions current operation if any.
   void CancelWrite(const ExtensionId& extension_id,
-                   const CancelWriteCallback& callback);
+                   const RecoveryOperation::CancelWriteCallback& callback);
 
   // Callback for progress events.
   void OnProgress(const ExtensionId& extension_id,
@@ -67,36 +69,38 @@ class RecoveryOperationManager
   void OnComplete(const ExtensionId& extension_id);
 
   // Callback for error events.
-  // TODO: Add error codes.
+  // TODO (haven): Add error codes.
   void OnError(const ExtensionId& extension_id,
                recovery_api::Stage stage,
-               int progress);
+               int progress,
+               const std::string& error_message);
 
   // ProfileKeyedAPI
   static ProfileKeyedAPIFactory<RecoveryOperationManager>* GetFactoryInstance();
   static RecoveryOperationManager* Get(Profile* profile);
 
- private:
-  friend class ProfileKeyedAPIFactory<RecoveryOperationManager>;
-  typedef std::map<ExtensionId, linked_ptr<RecoveryOperation> > OperationMap;
+  Profile* profile() { return profile_; }
 
-  Profile* profile_;
-  OperationMap operations_;
-  content::NotificationRegistrar registrar_;
+ private:
+
+  static const char* service_name() {
+    return "RecoveryOperationManager";
+  }
 
   // NotificationObserver
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  virtual ~RecoveryOperationManager();
-
-  static const char* service_name() {
-    return "RecoveryOperationManager";
-  }
-
   RecoveryOperation* GetOperation(const ExtensionId& extension_id);
   void DeleteOperation(const ExtensionId& extension_id);
+
+  friend class ProfileKeyedAPIFactory<RecoveryOperationManager>;
+  typedef std::map<ExtensionId, scoped_refptr<RecoveryOperation> > OperationMap;
+
+  Profile* profile_;
+  OperationMap operations_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(RecoveryOperationManager);
 };

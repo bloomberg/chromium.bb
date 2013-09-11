@@ -1,9 +1,10 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #ifndef CHROME_BROWSER_EXTENSIONS_API_RECOVERY_PRIVATE_RECOVERY_PRIVATE_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_RECOVERY_PRIVATE_RECOVERY_PRIVATE_API_H_
 
+#include "chrome/browser/extensions/api/recovery_private/removable_storage_provider.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/common/extensions/api/recovery_private.h"
 
@@ -18,7 +19,7 @@ class RecoveryPrivateWriteFromUrlFunction : public AsyncExtensionFunction {
  private:
   virtual ~RecoveryPrivateWriteFromUrlFunction();
   virtual bool RunImpl() OVERRIDE;
-  void OnWriteStarted(bool success);
+  void OnWriteStarted(bool success, const std::string& error);
 };
 
 class RecoveryPrivateWriteFromFileFunction : public AsyncExtensionFunction {
@@ -30,7 +31,7 @@ class RecoveryPrivateWriteFromFileFunction : public AsyncExtensionFunction {
  private:
   virtual ~RecoveryPrivateWriteFromFileFunction();
   virtual bool RunImpl() OVERRIDE;
-  void OnWriteStarted(bool success);
+  void OnWriteStarted(bool success, const std::string& error);
 };
 
 class RecoveryPrivateCancelWriteFunction : public AsyncExtensionFunction {
@@ -42,7 +43,7 @@ class RecoveryPrivateCancelWriteFunction : public AsyncExtensionFunction {
  private:
   virtual ~RecoveryPrivateCancelWriteFunction();
   virtual bool RunImpl() OVERRIDE;
-  void OnWriteCancelled(bool success);
+  void OnWriteCancelled(bool success, const std::string& error);
 };
 
 class RecoveryPrivateDestroyPartitionsFunction : public AsyncExtensionFunction {
@@ -54,6 +55,20 @@ class RecoveryPrivateDestroyPartitionsFunction : public AsyncExtensionFunction {
  private:
   virtual ~RecoveryPrivateDestroyPartitionsFunction();
   virtual bool RunImpl() OVERRIDE;
+};
+
+class RecoveryPrivateListRemovableStorageDevicesFunction
+  : public AsyncExtensionFunction {
+  public:
+    DECLARE_EXTENSION_FUNCTION("recoveryPrivate.listRemovableStorageDevices",
+                               RECOVERYPRIVATE_LISTREMOVABLESTORAGEDEVICES);
+  RecoveryPrivateListRemovableStorageDevicesFunction();
+
+ private:
+  virtual ~RecoveryPrivateListRemovableStorageDevicesFunction();
+  virtual bool RunImpl() OVERRIDE;
+  void OnDeviceListReady(scoped_refptr<StorageDeviceList> device_list,
+                         bool success);
 };
 
 }  // namespace extensions

@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,8 @@
   //    <dt>verifyDownload</dt>
   //    <dd>The download is being verified to match the image hash, if
   //    provided</dd>
+  //    <dt>unzip</dt>
+  //    <dd>The image is being extracted from the downloaded zip file</dd>
   //    <dt>write</dt>
   //    <dd>The image is being written to disk.</dd>
   //    <dt>verifyWrite</dt>
@@ -26,6 +28,7 @@
     confirmation,
     download,
     verifyDownload,
+    unzip,
     write,
     verifyWrite
   };
@@ -46,8 +49,16 @@
     long percentComplete;
   };
 
+  dictionary RemovableStorageDevice {
+    DOMString storageUnitId;
+    double capacity;
+    DOMString vendor;
+    DOMString model;
+  };
+
   callback WriteImageCallback = void ();
   callback WriteCancelCallback = void ();
+  callback ListRemovableStorageDevicesCallback = void (RemovableStorageDevice[] devices);
   callback DestroyPartitionsCallback = void ();
 
   interface Functions {
@@ -55,11 +66,12 @@
     // callback will be called when the entire operation completes, either
     // successfully or on error.
     //
-    // |storageUnitId|: The identifier for the storage unit, as provided by
-    // experimental.system_info.storage.
-    // |options|: If present the imageUrl of the options will be used to
-    // download the image.  Otherwise the user will be prompted for a local
-    // image to burn.
+    // |storageUnitId|: The identifier for the storage unit
+    // |imageUrl|: The url of the image to download which will be written
+    // to the storage unit identified by |storageUnitId|
+    // |options|: Optional parameters if comparing the download with a given
+    // hash or saving the download to the users Downloads folder instead of a
+    // temporary directory is desired
     // |callback|: The callback which signifies that the write operation has
     // been started by the system and provides a unique ID for this operation.
     static void writeFromUrl(DOMString storageUnitId,
@@ -71,8 +83,7 @@
     // a local file.  The callback will be called when the entire operation
     // completes, either successfully or on error.
     //
-    // |storageUnitId|: The identifier for the storage unit, as provided by
-    // experimental.system_info.storage.
+    // |storageUnitId|: The identifier for the storage unit
     // |options|: If present the imageUrl of the options will be used to
     // download the image.  Otherwise the user will be prompted for a local
     // image to burn.
@@ -93,11 +104,15 @@
     // progress information.  However, it can fail and call the callback with
     // an error.
     //
-    // |storageUnitId|: The identifier of the storage unit to wipe, as provided
-    // by experimental.system_info.storage.
+    // |storageUnitId|: The identifier of the storage unit to wipe
     // |callback|: A callback which is called when the operation is complete.
     static void destroyPartitions(DOMString storageUnitId,
                                   DestroyPartitionsCallback callback);
+
+    // List all the removable block devices currently attached to the system.
+    // |callback|: A callback called with a list of removable storage devices
+    static void listRemovableStorageDevices(
+        ListRemovableStorageDevicesCallback callback);
   };
 
   interface Events {
@@ -109,9 +124,7 @@
     static void onWriteComplete();
     // Fires when an error occured during writing, passing the $ref:ProgressInfo
     // of the operation at the time the error occured.
-    static void onWriteError(ProgressInfo info);
-    // Fires when an error occured while destroying partitions.
-    static void onDestroyPartitionsError();
+    static void onWriteError(ProgressInfo info, DOMString error);
   };
 
 };

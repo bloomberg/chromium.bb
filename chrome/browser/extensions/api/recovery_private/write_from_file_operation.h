@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,15 +14,15 @@ namespace recovery {
 class WriteFromFileOperation : public RecoveryOperation {
  public:
   WriteFromFileOperation(RecoveryOperationManager* manager,
-                        const ExtensionId& extension_id,
-                        const std::string& path,
-                        const std::string& storage_unit_id);
-  virtual ~WriteFromFileOperation();
- private:
-  const std::string path_;
-  const std::string storage_unit_id_;
-};
+                         const ExtensionId& extension_id,
+                         const base::FilePath& path,
+                         const std::string& storage_unit_id);
+  virtual void Start() OVERRIDE;
 
+ private:
+  virtual ~WriteFromFileOperation();
+  const base::FilePath path_;
+};
 
 } // namespace recovery
 } // namespace extensions

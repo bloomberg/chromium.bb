@@ -548,7 +548,9 @@
     "channel": "dev",
     "extension_types": ["platform_app"],
     "whitelist": [
-      "nmedaodmkamdcnmfceajookiaicfnkhd"
+      "nmedaodmkamdcnmfceajookiaicfnkhd", // Recovery API Dev App
+      "jdnamgpmgjhphalijaakigbpccepfllk", // Chrome OS Recovery Tool local
+      "jobolcahaebjkjhdedcfcnfkgpjcmkcg" // Chrome OS Recovery Tool CWS
     ]
   },
   "rtcPrivate": {
