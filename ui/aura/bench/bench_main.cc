@@ -300,6 +300,10 @@ int main(int argc, char** argv) {
 
   base::AtExitManager exit_manager;
 
+  // The ContextFactory must exist before any Compositors are created.
+  bool allow_test_contexts = false;
+  ui::Compositor::InitializeContextFactoryForTests(allow_test_contexts);
+
   ui::RegisterPathProvider();
   base::i18n::InitializeICU();
   ResourceBundle::InitSharedInstanceWithLocale("en-US", NULL);
