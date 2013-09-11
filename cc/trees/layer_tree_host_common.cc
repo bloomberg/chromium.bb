@@ -1895,8 +1895,10 @@ static void CalculateDrawPropertiesInternal(
   SavePaintPropertiesLayer(layer);
 
   // If neither this layer nor any of its children were added, early out.
-  if (sorting_start_index == descendants.size())
+  if (sorting_start_index == descendants.size()) {
+    DCHECK(!layer->render_surface() || IsRootLayer(layer));
     return;
+  }
 
   // If preserves-3d then sort all the descendants in 3D so that they can be
   // drawn from back to front. If the preserves-3d property is also set on the
