@@ -61,19 +61,18 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   cl->AppendSwitch(switches::kHideScrollbars);
   cl->AppendSwitch(switches::kDisableOverscrollEdgeEffect);
 
-  // Not yet secure in single-process mode.
+  // Not yet supported in single-process mode.
   cl->AppendSwitch(switches::kDisableExperimentalWebGL);
+  cl->AppendSwitch(switches::kDisableSharedWorkers);
 
   // Ganesh backed 2D-Canvas is not yet working and causes crashes.
   cl->AppendSwitch(switches::kDisableAccelerated2dCanvas);
 
   // File system API not supported (requires some new API; internal bug 6930981)
-  // TODO(joth): export and use switches::kDisableFileSystem
-  cl->AppendSwitch("disable-file-system");
+  cl->AppendSwitch(switches::kDisableFileSystem);
 
   // Enable D-PAD navigation for application compatibility.
-  // TODO(joth): export and use switches::EnableSpatialNavigation.
-  cl->AppendSwitch("enable-spatial-navigation");
+  cl->AppendSwitch(switches::kEnableSpatialNavigation);
 
   return false;
 }
