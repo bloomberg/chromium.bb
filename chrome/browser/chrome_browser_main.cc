@@ -273,7 +273,6 @@ PrefService* InitializeLocalState(
             parent_profile,
             local_state_task_runner,
             g_browser_process->policy_service(),
-            NULL,
             registry,
             false));
     registry->RegisterStringPref(prefs::kApplicationLocale, std::string());

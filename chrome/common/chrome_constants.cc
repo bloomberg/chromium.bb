@@ -169,7 +169,7 @@ const base::FilePath::CharType kJumpListIconDirname[] = FPL("JumpListIcons");
 const base::FilePath::CharType kLocalStateFilename[] = FPL("Local State");
 const base::FilePath::CharType kLocalStorePoolName[] = FPL("LocalStorePool");
 const base::FilePath::CharType kLoginDataFileName[] = FPL("Login Data");
-const base::FilePath::CharType kManagedModePolicyFilename[] =
+const base::FilePath::CharType kManagedUserSettingsFilename[] =
     FPL("Managed Mode Settings");
 const base::FilePath::CharType kMediaCacheDirname[] = FPL("Media Cache");
 const base::FilePath::CharType kNewTabThumbnailsFilename[] =

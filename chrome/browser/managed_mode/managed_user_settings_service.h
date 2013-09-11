@@ -15,6 +15,7 @@
 #include "base/values.h"
 #include "chrome/browser/managed_mode/managed_users.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "sync/api/syncable_service.h"
 
 class PersistentPrefStore;
 class Profile;
@@ -24,7 +25,6 @@ class FilePath;
 class SequencedTaskRunner;
 }
 
-// TODO(bauerb): This class is not yet fully functional.
 // This class syncs managed user settings from a server, which are mapped to
 // preferences. The downloaded settings are persisted in a PrefStore (which is
 // not directly hooked up to the PrefService; it's just used internally).
@@ -50,6 +50,7 @@ class SequencedTaskRunner;
 // would be encoded as two sync items, one with key "Moose:foo" and value "bar",
 // and one with key "Moose:baz" and value "blurp".
 class ManagedUserSettingsService : public BrowserContextKeyedService,
+                                   public syncer::SyncableService,
                                    public PrefStore::Observer {
  public:
   // A callback whose first parameter is a dictionary containing all managed
@@ -59,6 +60,14 @@ class ManagedUserSettingsService : public BrowserContextKeyedService,
 
   ManagedUserSettingsService();
   virtual ~ManagedUserSettingsService();
+
+  // Initializes the service by loading its settings from a file underneath the
+  // |profile_path|. File I/O will be serialized via the
+  // |sequenced_task_runner|. If |load_synchronously| is true, the settings will
+  // be loaded synchronously, otherwise asynchronously.
+  void Init(base::FilePath profile_path,
+            base::SequencedTaskRunner* sequenced_task_runner,
+            bool load_synchronously);
 
   // Initializes the service by loading its settings from the |pref_store|.
   // Use this method in tests to inject a different PrefStore than the
@@ -78,12 +87,41 @@ class ManagedUserSettingsService : public BrowserContextKeyedService,
   // Clears all managed user settings and items.
   void Clear();
 
+  // Constructs a key for a split managed user setting from a prefix and a
+  // variable key.
+  static std::string MakeSplitSettingKey(const std::string& prefix,
+                                         const std::string& key);
+
+  // Uploads an item to the Sync server. Items are the same data structure as
+  // managed user settings (i.e. key-value pairs, as described at the top of
+  // the file), but they are only uploaded (whereas managed user settings are
+  // only downloaded), and never passed to the preference system.
+  // An example of an uploaded item is an access request to a blocked URL.
+  void UploadItem(const std::string& key, scoped_ptr<base::Value> value);
+
   // Sets the setting with the given |key| to a copy of the given |value|.
   void SetLocalSettingForTesting(const std::string& key,
                                  scoped_ptr<base::Value> value);
 
+  // Public for testing.
+  static syncer::SyncData CreateSyncDataForSetting(const std::string& name,
+                                                   const base::Value& value);
+
   // BrowserContextKeyedService implementation:
   virtual void Shutdown() OVERRIDE;
+
+  // SyncableService implementation:
+  virtual syncer::SyncMergeResult MergeDataAndStartSyncing(
+      syncer::ModelType type,
+      const syncer::SyncDataList& initial_sync_data,
+      scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
+      scoped_ptr<syncer::SyncErrorFactory> error_handler) OVERRIDE;
+  virtual void StopSyncing(syncer::ModelType type) OVERRIDE;
+  virtual syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const
+      OVERRIDE;
+  virtual syncer::SyncError ProcessSyncChanges(
+      const tracked_objects::Location& from_here,
+      const syncer::SyncChangeList& change_list) OVERRIDE;
 
   // PrefStore::Observer implementation:
   virtual void OnPrefValueChanged(const std::string& key) OVERRIDE;
@@ -94,6 +132,12 @@ class ManagedUserSettingsService : public BrowserContextKeyedService,
   base::DictionaryValue* GetAtomicSettings() const;
   base::DictionaryValue* GetSplitSettings() const;
   base::DictionaryValue* GetQueuedItems() const;
+
+  // Returns the dictionary where a given Sync item should be stored, depending
+  // on whether the managed user setting is atomic or split. In case of a split
+  // setting, the split setting prefix of |key| is removed, so that |key| can
+  // be used to update the returned dictionary.
+  base::DictionaryValue* GetDictionaryAndSplitKey(std::string* key) const;
 
   // Returns a dictionary with all managed user settings if the service is
   // active, or NULL otherwise.
@@ -113,6 +157,9 @@ class ManagedUserSettingsService : public BrowserContextKeyedService,
   scoped_ptr<base::DictionaryValue> local_settings_;
 
   std::vector<SettingsCallback> subscribers_;
+
+  scoped_ptr<syncer::SyncChangeProcessor> sync_processor_;
+  scoped_ptr<syncer::SyncErrorFactory> error_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagedUserSettingsService);
 };

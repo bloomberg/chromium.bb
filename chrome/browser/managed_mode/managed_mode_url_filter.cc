@@ -13,6 +13,7 @@
 #include "base/strings/string_util.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "chrome/browser/policy/url_blacklist_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/matcher/url_matcher.h"
 #include "url/gurl.h"

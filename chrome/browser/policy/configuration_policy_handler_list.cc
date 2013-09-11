@@ -337,21 +337,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kVariationsRestrictParameter,
     prefs::kVariationsRestrictParameter,
     Value::TYPE_STRING },
-  { key::kContentPackDefaultFilteringBehavior,
-    prefs::kDefaultManagedModeFilteringBehavior,
-    Value::TYPE_INTEGER },
-  { key::kContentPackManualBehaviorHosts,
-    prefs::kManagedModeManualHosts,
-    Value::TYPE_DICTIONARY },
-  { key::kContentPackManualBehaviorURLs,
-    prefs::kManagedModeManualURLs,
-    Value::TYPE_DICTIONARY },
-  // TODO(ibraaaa): Remove this when we finish moving
-  // managed user settings out of the policy code.
-  // http://crbug.com/280674
-  { key::kUserDisplayName,
-    prefs::kProfileName,
-    Value::TYPE_STRING },
   { key::kSupervisedUserCreationEnabled,
     prefs::kManagedUserCreationAllowed,
     Value::TYPE_BOOLEAN },

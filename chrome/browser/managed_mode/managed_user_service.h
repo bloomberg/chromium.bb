@@ -27,11 +27,8 @@ class GoogleServiceAuthError;
 class ManagedModeURLFilter;
 class ManagedModeSiteList;
 class ManagedUserRegistrationUtility;
+class ManagedUserSettingsService;
 class Profile;
-
-namespace policy {
-class ManagedModePolicyProvider;
-}
 
 namespace user_prefs {
 class PrefRegistrySyncable;
@@ -230,7 +227,7 @@ class ManagedUserService : public BrowserContextKeyedService,
   // managed profile.
   ScopedVector<ManagedModeSiteList> GetActiveSiteLists();
 
-  policy::ManagedModePolicyProvider* GetPolicyProvider();
+  ManagedUserSettingsService* GetSettingsService();
 
   void OnDefaultFilteringBehaviorChanged();
 

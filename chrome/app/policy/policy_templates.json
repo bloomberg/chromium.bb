@@ -5377,6 +5377,7 @@
         {
           'name': 'ContentPackDefaultFilteringBehavior',
           'future': True,
+          'deprecated': True,
           'type': 'int-enum',
           'schema': {
             'type': 'integer',
@@ -5414,6 +5415,7 @@
         {
           'name': 'ContentPackManualBehaviorHosts',
           'future': True,
+          'deprecated': True,
           'type': 'dict',
           'schema': {
             'type': 'object',
@@ -5439,6 +5441,7 @@
         {
           'name': 'ContentPackManualBehaviorURLs',
           'future': True,
+          'deprecated': True,
           'type': 'dict',
           'schema': {
             'type': 'object',

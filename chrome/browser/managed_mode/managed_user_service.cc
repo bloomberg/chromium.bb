@@ -17,12 +17,12 @@
 #include "chrome/browser/managed_mode/custodian_profile_downloader_service.h"
 #include "chrome/browser/managed_mode/custodian_profile_downloader_service_factory.h"
 #include "chrome/browser/managed_mode/managed_mode_site_list.h"
+#include "chrome/browser/managed_mode/managed_user_constants.h"
 #include "chrome/browser/managed_mode/managed_user_registration_utility.h"
+#include "chrome/browser/managed_mode/managed_user_settings_service.h"
+#include "chrome/browser/managed_mode/managed_user_settings_service_factory.h"
 #include "chrome/browser/managed_mode/managed_user_sync_service.h"
 #include "chrome/browser/managed_mode/managed_user_sync_service_factory.h"
-#include "chrome/browser/policy/managed_mode_policy_provider.h"
-#include "chrome/browser/policy/profile_policy_connector.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager.h"
@@ -48,7 +48,6 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
-#include "policy/policy_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
@@ -58,7 +57,6 @@
 using base::DictionaryValue;
 using base::Value;
 using content::BrowserThread;
-using policy::ManagedModePolicyProvider;
 
 namespace {
 
@@ -449,10 +447,8 @@ ScopedVector<ManagedModeSiteList> ManagedUserService::GetActiveSiteLists() {
   return site_lists.Pass();
 }
 
-ManagedModePolicyProvider* ManagedUserService::GetPolicyProvider() {
-  policy::ProfilePolicyConnector* connector =
-      policy::ProfilePolicyConnectorFactory::GetForProfile(profile_);
-  return connector->managed_mode_policy_provider();
+ManagedUserSettingsService* ManagedUserService::GetSettingsService() {
+  return ManagedUserSettingsServiceFactory::GetForProfile(profile_);
 }
 
 void ManagedUserService::OnDefaultFilteringBehaviorChanged() {
@@ -487,7 +483,7 @@ void ManagedUserService::AddAccessRequest(const GURL& url) {
   std::string output(net::EscapeQueryParamValue(normalized_url.spec(), true));
 
   // Add the prefix.
-  std::string key = ManagedModePolicyProvider::MakeSplitSettingKey(
+  std::string key = ManagedUserSettingsService::MakeSplitSettingKey(
       kManagedUserAccessRequestKeyPrefix, output);
 
   scoped_ptr<DictionaryValue> dict(new DictionaryValue);
@@ -495,7 +491,7 @@ void ManagedUserService::AddAccessRequest(const GURL& url) {
   // TODO(sergiu): Use sane time here when it's ready.
   dict->SetDouble(kManagedUserAccessRequestTime, base::Time::Now().ToJsTime());
 
-  GetPolicyProvider()->UploadItem(key, dict.PassAs<Value>());
+  GetSettingsService()->UploadItem(key, dict.PassAs<Value>());
 }
 
 ManagedUserService::ManualBehavior ManagedUserService::GetManualBehaviorForHost(
@@ -564,13 +560,14 @@ const char* ManagedUserService::GetManagedUserPseudoEmail() {
 }
 
 void ManagedUserService::Init() {
-  ManagedModePolicyProvider* policy_provider = GetPolicyProvider();
+  ManagedUserSettingsService* settings_service = GetSettingsService();
+  DCHECK(settings_service->IsReady());
   if (!ProfileIsManaged()) {
-    if (policy_provider)
-      policy_provider->Clear();
-
+    settings_service->Clear();
     return;
   }
+
+  settings_service->Activate();
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kManagedUserSyncToken)) {
@@ -608,9 +605,6 @@ void ManagedUserService::Init() {
                  base::Unretained(this)));
 
   BrowserList::AddObserver(this);
-
-  if (policy_provider)
-    policy_provider->InitLocalPolicies();
 
   // Initialize the filter.
   OnDefaultFilteringBehaviorChanged();
@@ -720,7 +714,8 @@ void ManagedUserService::OnBrowserSetLastActive(Browser* browser) {
 
 void ManagedUserService::RecordProfileAndBrowserEventsHelper(
     const char* key_prefix) {
-  std::string key = ManagedModePolicyProvider::MakeSplitSettingKey(key_prefix,
+  std::string key = ManagedUserSettingsService::MakeSplitSettingKey(
+      key_prefix,
       base::Int64ToString(base::TimeTicks::Now().ToInternalValue()));
 
   scoped_ptr<DictionaryValue> dict(new DictionaryValue);
@@ -728,8 +723,5 @@ void ManagedUserService::RecordProfileAndBrowserEventsHelper(
   // TODO(bauerb): Use sane time when ready.
   dict->SetDouble(kEventTimestamp, base::Time::Now().ToJsTime());
 
-  ManagedModePolicyProvider* provider = GetPolicyProvider();
-  // It is NULL in tests.
-  if (provider)
-    provider->UploadItem(key, dict.PassAs<Value>());
+  GetSettingsService()->UploadItem(key, dict.PassAs<Value>());
 }

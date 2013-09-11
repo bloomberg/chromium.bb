@@ -849,7 +849,6 @@ void BrowserProcessImpl::CreateLocalState() {
       chrome_prefs::CreateLocalState(local_state_path,
                                      local_state_task_runner_.get(),
                                      policy_service(),
-                                     NULL,
                                      pref_registry,
                                      false));
 

@@ -62,11 +62,10 @@
 
 #if defined(ENABLE_MANAGED_USERS)
 #include "chrome/browser/managed_mode/managed_user_service.h"
+#include "chrome/browser/managed_mode/managed_user_settings_service.h"
+#include "chrome/browser/managed_mode/managed_user_settings_service_factory.h"
 #include "chrome/browser/managed_mode/managed_user_sync_service.h"
 #include "chrome/browser/managed_mode/managed_user_sync_service_factory.h"
-#include "chrome/browser/policy/managed_mode_policy_provider.h"
-#include "chrome/browser/policy/profile_policy_connector.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #endif
 
 #if !defined(OS_ANDROID)
@@ -392,8 +391,8 @@ base::WeakPtr<syncer::SyncableService> ProfileSyncComponentsFactoryImpl::
     }
 #if defined(ENABLE_MANAGED_USERS)
     case syncer::MANAGED_USER_SETTINGS:
-      return policy::ProfilePolicyConnectorFactory::GetForProfile(profile_)->
-          managed_mode_policy_provider()->AsWeakPtr();
+      return ManagedUserSettingsServiceFactory::GetForProfile(profile_)->
+          AsWeakPtr();
     case syncer::MANAGED_USERS:
       return ManagedUserSyncServiceFactory::GetForProfile(profile_)->
           AsWeakPtr();

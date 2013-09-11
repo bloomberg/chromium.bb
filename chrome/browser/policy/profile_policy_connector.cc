@@ -12,10 +12,6 @@
 #include "chrome/browser/policy/configuration_policy_provider.h"
 #include "chrome/browser/policy/policy_service_impl.h"
 
-#if defined(ENABLE_MANAGED_USERS)
-#include "chrome/browser/policy/managed_mode_policy_provider.h"
-#endif
-
 #if defined(OS_CHROMEOS)
 #include "base/bind.h"
 #include "base/prefs/pref_service.h"
@@ -97,13 +93,6 @@ void ProfilePolicyConnector::Init(
     providers.push_back(cloud_policy_manager);
 #endif
 
-#if defined(ENABLE_MANAGED_USERS)
-  managed_mode_policy_provider_ = ManagedModePolicyProvider::Create(
-      profile_, sequenced_task_runner, force_immediate_load);
-  managed_mode_policy_provider_->Init();
-  providers.push_back(managed_mode_policy_provider_.get());
-#endif
-
   policy_service_ = connector->CreatePolicyService(providers);
 
 #if defined(OS_CHROMEOS)
@@ -139,11 +128,6 @@ void ProfilePolicyConnector::Shutdown() {
   network_configuration_updater_.reset();
   if (special_user_policy_provider_)
     special_user_policy_provider_->Shutdown();
-#endif
-
-#if defined(ENABLE_MANAGED_USERS)
-  if (managed_mode_policy_provider_)
-    managed_mode_policy_provider_->Shutdown();
 #endif
 }
 

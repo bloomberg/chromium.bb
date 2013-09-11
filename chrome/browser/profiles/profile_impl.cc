@@ -97,6 +97,21 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if defined(ENABLE_CONFIGURATION_POLICY)
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
+#include "chrome/browser/chromeos/policy/user_cloud_policy_manager_factory_chromeos.h"
+#else
+#include "chrome/browser/policy/cloud/user_cloud_policy_manager.h"
+#include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
+#endif
+#endif
+
+#if defined(ENABLE_MANAGED_USERS)
+#include "chrome/browser/managed_mode/managed_user_settings_service.h"
+#include "chrome/browser/managed_mode/managed_user_settings_service_factory.h"
+#endif
+
 #if defined(OS_WIN)
 #include "chrome/installer/util/install_util.h"
 #endif
@@ -107,16 +122,6 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/preferences.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#endif
-
-#if defined(ENABLE_CONFIGURATION_POLICY)
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
-#include "chrome/browser/chromeos/policy/user_cloud_policy_manager_factory_chromeos.h"
-#else
-#include "chrome/browser/policy/cloud/user_cloud_policy_manager.h"
-#include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
-#endif
 #endif
 
 using base::Time;
@@ -407,7 +412,15 @@ ProfileImpl::ProfileImpl(
     chrome::RegisterLoginProfilePrefs(pref_registry_.get());
   else
 #endif
-    chrome::RegisterUserProfilePrefs(pref_registry_.get());
+  chrome::RegisterUserProfilePrefs(pref_registry_.get());
+
+  ManagedUserSettingsService* managed_user_settings = NULL;
+#if defined(ENABLE_MANAGED_USERS)
+  managed_user_settings =
+      ManagedUserSettingsServiceFactory::GetForProfile(this);
+  managed_user_settings->Init(
+      path_, sequenced_task_runner, create_mode == CREATE_MODE_SYNCHRONOUS);
+#endif
 
   {
     // On startup, preference loading is always synchronous so a scoped timer
@@ -418,6 +431,7 @@ ProfileImpl::ProfileImpl(
         GetPrefFilePath(),
         sequenced_task_runner,
         profile_policy_connector_->policy_service(),
+        managed_user_settings,
         new ExtensionPrefStore(
             ExtensionPrefValueMapFactory::GetForProfile(this), false),
         pref_registry_,

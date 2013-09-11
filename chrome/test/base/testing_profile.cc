@@ -81,6 +81,11 @@
 #include "chrome/browser/policy/policy_service_stub.h"
 #endif  // defined(ENABLE_CONFIGURATION_POLICY)
 
+#if defined(ENABLE_MANAGED_USERS)
+#include "chrome/browser/managed_mode/managed_user_settings_service.h"
+#include "chrome/browser/managed_mode/managed_user_settings_service_factory.h"
+#endif
+
 using base::Time;
 using content::BrowserThread;
 using content::DownloadManagerDelegate;
@@ -331,6 +336,14 @@ void TestingProfile::Init() {
   // Install profile keyed service factory hooks for dummy/test services
   DesktopNotificationServiceFactory::GetInstance()->SetTestingFactory(
       this, CreateTestDesktopNotificationService);
+#endif
+
+#if defined(ENABLE_MANAGED_USERS)
+  ManagedUserSettingsService* settings_service =
+      ManagedUserSettingsServiceFactory::GetForProfile(this);
+  TestingPrefStore* store = new TestingPrefStore();
+  settings_service->Init(store);
+  store->SetInitializationCompleted();
 #endif
 }
 

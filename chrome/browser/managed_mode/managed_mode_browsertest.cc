@@ -14,11 +14,11 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/managed_mode/managed_mode_interstitial.h"
 #include "chrome/browser/managed_mode/managed_mode_navigation_observer.h"
+#include "chrome/browser/managed_mode/managed_user_constants.h"
 #include "chrome/browser/managed_mode/managed_user_service.h"
 #include "chrome/browser/managed_mode/managed_user_service_factory.h"
-#include "chrome/browser/policy/managed_mode_policy_provider.h"
-#include "chrome/browser/policy/profile_policy_connector.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
+#include "chrome/browser/managed_mode/managed_user_settings_service.h"
+#include "chrome/browser/managed_mode/managed_user_settings_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -36,7 +36,6 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/browser_test_utils.h"
 #include "grit/generated_resources.h"
-#include "policy/policy_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using content::InterstitialPage;
@@ -109,15 +108,12 @@ class ManagedModeBlockModeTest : public InProcessBrowserTest {
     Profile* profile = browser()->profile();
     managed_user_service_ = ManagedUserServiceFactory::GetForProfile(profile);
     managed_user_service_->InitForTesting();
-    policy::ProfilePolicyConnector* connector =
-        policy::ProfilePolicyConnectorFactory::GetForProfile(profile);
-    policy::ManagedModePolicyProvider* policy_provider =
-        connector->managed_mode_policy_provider();
-    policy_provider->SetLocalPolicyForTesting(
-        policy::key::kContentPackDefaultFilteringBehavior,
+    ManagedUserSettingsService* managed_user_settings_service =
+        ManagedUserSettingsServiceFactory::GetForProfile(profile);
+    managed_user_settings_service->SetLocalSettingForTesting(
+        managed_users::kContentPackDefaultFilteringBehavior,
         scoped_ptr<base::Value>(
             new base::FundamentalValue(ManagedModeURLFilter::BLOCK)));
-    base::RunLoop().RunUntilIdle();
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
@@ -187,14 +183,11 @@ IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest,
   // Set the host as allowed.
   scoped_ptr<DictionaryValue> dict(new DictionaryValue);
   dict->SetBooleanWithoutPathExpansion(allowed_url.host(), true);
-  policy::ProfilePolicyConnector* connector =
-      policy::ProfilePolicyConnectorFactory::GetForProfile(
+  ManagedUserSettingsService* managed_user_settings_service =
+      ManagedUserSettingsServiceFactory::GetForProfile(
           browser()->profile());
-  policy::ManagedModePolicyProvider* policy_provider =
-      connector->managed_mode_policy_provider();
-  policy_provider->SetLocalPolicyForTesting(
-      policy::key::kContentPackManualBehaviorHosts, dict.PassAs<Value>());
-  base::RunLoop().RunUntilIdle();
+  managed_user_settings_service->SetLocalSettingForTesting(
+      managed_users::kContentPackManualBehaviorHosts, dict.PassAs<Value>());
   EXPECT_EQ(
       ManagedUserService::MANUAL_ALLOW,
       managed_user_service_->GetManualBehaviorForHost(allowed_url.host()));
@@ -254,14 +247,11 @@ IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest, Unblock) {
   // Set the host as allowed.
   scoped_ptr<DictionaryValue> dict(new DictionaryValue);
   dict->SetBooleanWithoutPathExpansion(test_url.host(), true);
-  policy::ProfilePolicyConnector* connector =
-      policy::ProfilePolicyConnectorFactory::GetForProfile(
+  ManagedUserSettingsService* managed_user_settings_service =
+      ManagedUserSettingsServiceFactory::GetForProfile(
           browser()->profile());
-  policy::ManagedModePolicyProvider* policy_provider =
-      connector->managed_mode_policy_provider();
-  policy_provider->SetLocalPolicyForTesting(
-      policy::key::kContentPackManualBehaviorHosts, dict.PassAs<Value>());
-  base::RunLoop().RunUntilIdle();
+  managed_user_settings_service->SetLocalSettingForTesting(
+      managed_users::kContentPackManualBehaviorHosts, dict.PassAs<Value>());
   EXPECT_EQ(
       ManagedUserService::MANUAL_ALLOW,
       managed_user_service_->GetManualBehaviorForHost(test_url.host()));

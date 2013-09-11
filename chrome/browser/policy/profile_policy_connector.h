@@ -37,7 +37,6 @@ typedef std::vector<scoped_refptr<X509Certificate> > CertificateList;
 namespace policy {
 
 class ConfigurationPolicyProvider;
-class ManagedModePolicyProvider;
 class UserNetworkConfigurationUpdater;
 class PolicyService;
 class PolicyCertVerifier;
@@ -60,12 +59,6 @@ class ProfilePolicyConnector : public BrowserContextKeyedService {
 
   // This is never NULL.
   PolicyService* policy_service() const { return policy_service_.get(); }
-
-#if defined(ENABLE_MANAGED_USERS) && defined(ENABLE_CONFIGURATION_POLICY)
-  ManagedModePolicyProvider* managed_mode_policy_provider() const {
-    return managed_mode_policy_provider_.get();
-  }
-#endif
 
 #if defined(OS_CHROMEOS)
   // Sets the CertVerifier on which the current list of Web trusted server and
@@ -114,10 +107,6 @@ class ProfilePolicyConnector : public BrowserContextKeyedService {
 #endif
 
   Profile* profile_;
-
-#if defined(ENABLE_MANAGED_USERS) && defined(ENABLE_CONFIGURATION_POLICY)
-  scoped_ptr<ManagedModePolicyProvider> managed_mode_policy_provider_;
-#endif
 
 #endif  // ENABLE_CONFIGURATION_POLICY
 

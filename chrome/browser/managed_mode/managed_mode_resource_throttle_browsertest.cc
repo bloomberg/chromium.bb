@@ -6,11 +6,11 @@
 
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
+#include "chrome/browser/managed_mode/managed_user_constants.h"
 #include "chrome/browser/managed_mode/managed_user_service.h"
 #include "chrome/browser/managed_mode/managed_user_service_factory.h"
-#include "chrome/browser/policy/managed_mode_policy_provider.h"
-#include "chrome/browser/policy/profile_policy_connector.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
+#include "chrome/browser/managed_mode/managed_user_settings_service.h"
+#include "chrome/browser/managed_mode/managed_user_settings_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -21,7 +21,6 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/public/test/test_utils.h"
-#include "policy/policy_constants.h"
 
 using content::MessageLoopRunner;
 using content::NavigationController;
@@ -49,15 +48,12 @@ void ManagedModeResourceThrottleTest::SetUpOnMainThread() {
 IN_PROC_BROWSER_TEST_F(ManagedModeResourceThrottleTest,
                        NoNavigationObserverBlock) {
   Profile* profile = browser()->profile();
-  policy::ProfilePolicyConnector* connector =
-      policy::ProfilePolicyConnectorFactory::GetForProfile(profile);
-  policy::ManagedModePolicyProvider* policy_provider =
-      connector->managed_mode_policy_provider();
-  policy_provider->SetLocalPolicyForTesting(
-      policy::key::kContentPackDefaultFilteringBehavior,
+  ManagedUserSettingsService* managed_user_settings_service =
+      ManagedUserSettingsServiceFactory::GetForProfile(profile);
+  managed_user_settings_service->SetLocalSettingForTesting(
+      managed_users::kContentPackDefaultFilteringBehavior,
       scoped_ptr<base::Value>(
           new base::FundamentalValue(ManagedModeURLFilter::BLOCK)));
-  base::RunLoop().RunUntilIdle();
 
   scoped_ptr<WebContents> web_contents(
       WebContents::Create(WebContents::CreateParams(profile)));

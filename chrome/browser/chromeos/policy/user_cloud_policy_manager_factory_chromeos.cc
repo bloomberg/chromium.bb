@@ -104,12 +104,11 @@ scoped_ptr<UserCloudPolicyManagerChromeOS>
   CHECK(user);
 
   // Only USER_TYPE_REGULAR users have user cloud policy.
-  // USER_TYPE_RETAIL_MODE, USER_TYPE_KIOSK_APP and USER_TYPE_GUEST are not
-  // signed in and can't authenticate the policy registration.
+  // USER_TYPE_RETAIL_MODE, USER_TYPE_KIOSK_APP, USER_TYPE_GUEST and
+  // USER_TYPE_LOCALLY_MANAGED are not signed in and can't authenticate the
+  // policy registration.
   // USER_TYPE_PUBLIC_ACCOUNT gets its policy from the
   // DeviceLocalAccountPolicyService.
-  // USER_TYPE_LOCALLY_MANAGED gets its policy from the
-  // ManagedModePolicyProvider.
   const std::string& username = user->email();
   if (user->GetType() != chromeos::User::USER_TYPE_REGULAR ||
       BrowserPolicyConnector::IsNonEnterpriseUser(username)) {
