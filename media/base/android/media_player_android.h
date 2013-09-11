@@ -10,7 +10,6 @@
 
 #include "base/callback.h"
 #include "base/time/time.h"
-#include "media/base/android/demuxer_stream_player_params.h"
 #include "media/base/media_export.h"
 #include "ui/gl/android/scoped_java_surface.h"
 #include "url/gurl.h"
@@ -66,19 +65,6 @@ class MEDIA_EXPORT MediaPlayerAndroid {
   virtual bool CanSeekBackward() = 0;
   virtual GURL GetUrl();
   virtual GURL GetFirstPartyForCookies();
-
-  // Methods for DemuxerStreamPlayer.
-  // Informs DemuxerStreamPlayer that the demuxer is ready.
-  virtual void DemuxerReady(const DemuxerConfigs& configs);
-
-  // Called when the requested data is received from the demuxer.
-  virtual void ReadFromDemuxerAck(const DemuxerData& data);
-
-  // Called when a seek request is acked by the render process.
-  virtual void OnSeekRequestAck(unsigned seek_request_id);
-
-  // Called when the demuxer has changed the duration.
-  virtual void DurationChanged(const base::TimeDelta& duration);
 
   // Pass a drm bridge to a player.
   virtual void SetDrmBridge(MediaDrmBridge* drm_bridge);

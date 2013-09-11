@@ -11,12 +11,14 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/id_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 #include "content/browser/android/content_video_view.h"
 #include "content/common/media/media_player_messages_enums_android.h"
 #include "content/public/browser/render_view_host_observer.h"
+#include "media/base/android/demuxer_android.h"
 #include "media/base/android/demuxer_stream_player_params.h"
 #include "media/base/android/media_player_android.h"
 #include "media/base/android/media_player_manager.h"
@@ -38,7 +40,8 @@ class WebContents;
 // render process.
 class CONTENT_EXPORT BrowserMediaPlayerManager
     : public RenderViewHostObserver,
-      public media::MediaPlayerManager {
+      public media::MediaPlayerManager,
+      public media::DemuxerAndroid {
  public:
   // Permits embedders to provide an extended version of the class.
   typedef BrowserMediaPlayerManager* (*Factory)(RenderViewHost*);
@@ -76,8 +79,6 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   virtual void OnError(int player_id, int error) OVERRIDE;
   virtual void OnVideoSizeChanged(
       int player_id, int width, int height) OVERRIDE;
-  virtual void OnReadFromDemuxer(int player_id,
-                                 media::DemuxerStream::Type type) OVERRIDE;
   virtual void RequestMediaResources(int player_id) OVERRIDE;
   virtual void ReleaseMediaResources(int player_id) OVERRIDE;
   virtual media::MediaResourceGetter* GetMediaResourceGetter() OVERRIDE;
@@ -85,9 +86,6 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   virtual media::MediaPlayerAndroid* GetPlayer(int player_id) OVERRIDE;
   virtual media::MediaDrmBridge* GetDrmBridge(int media_keys_id) OVERRIDE;
   virtual void DestroyAllMediaPlayers() OVERRIDE;
-  virtual void OnMediaSeekRequest(int player_id, base::TimeDelta time_to_seek,
-                                  unsigned seek_request_id) OVERRIDE;
-  virtual void OnMediaConfigRequest(int player_id) OVERRIDE;
   virtual void OnProtectedSurfaceRequested(int player_id) OVERRIDE;
   virtual void OnKeyAdded(int media_keys_id,
                           const std::string& session_id) OVERRIDE;
@@ -99,6 +97,17 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
                             const std::string& session_id,
                             const std::vector<uint8>& message,
                             const std::string& destination_url) OVERRIDE;
+
+  // media::DemuxerAndroid implementation.
+  virtual void AddDemuxerClient(int demuxer_client_id,
+                                media::DemuxerAndroidClient* client) OVERRIDE;
+  virtual void RemoveDemuxerClient(int demuxer_client_id) OVERRIDE;
+  virtual void RequestDemuxerConfigs(int demuxer_client_id) OVERRIDE;
+  virtual void RequestDemuxerData(int demuxer_client_id,
+                                  media::DemuxerStream::Type type) OVERRIDE;
+  virtual void RequestDemuxerSeek(int demuxer_client_id,
+                                  base::TimeDelta time_to_seek,
+                                  unsigned seek_request_id) OVERRIDE;
 
 #if defined(GOOGLE_TV)
   void AttachExternalVideoSurface(int player_id, jobject surface);
@@ -171,13 +180,16 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
       MediaPlayerHostMsg_Initialize_Type type,
       const GURL& first_party_for_cookies,
       bool hide_url_log,
-      media::MediaPlayerManager* manager);
+      media::MediaPlayerManager* manager,
+      media::DemuxerAndroid* demuxer);
 
   // An array of managed players.
   ScopedVector<media::MediaPlayerAndroid> players_;
 
   // An array of managed media DRM bridges.
   ScopedVector<media::MediaDrmBridge> drm_bridges_;
+
+  IDMap<media::DemuxerAndroidClient> demuxer_clients_;
 
   // The fullscreen video view object or NULL if video is not played in
   // fullscreen.

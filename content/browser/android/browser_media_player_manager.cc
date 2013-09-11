@@ -54,7 +54,8 @@ MediaPlayerAndroid* BrowserMediaPlayerManager::CreateMediaPlayer(
     MediaPlayerHostMsg_Initialize_Type type,
     const GURL& first_party_for_cookies,
     bool hide_url_log,
-    MediaPlayerManager* manager) {
+    MediaPlayerManager* manager,
+    media::DemuxerAndroid* demuxer) {
   switch (type) {
     case MEDIA_PLAYER_TYPE_URL: {
       MediaPlayerBridge* media_player_bridge = new MediaPlayerBridge(
@@ -64,7 +65,9 @@ MediaPlayerAndroid* BrowserMediaPlayerManager::CreateMediaPlayer(
     }
 
     case MEDIA_PLAYER_TYPE_MEDIA_SOURCE: {
-      return new MediaSourcePlayer(player_id, manager);
+      // TODO(scherkus): Use a real ID for |demuxer_client_id| after splitting
+      // demuxer IPC messages into their own group. For now use |player_id|.
+      return new MediaSourcePlayer(player_id, manager, player_id, demuxer);
     }
   }
 
@@ -222,9 +225,21 @@ void BrowserMediaPlayerManager::OnVideoSizeChanged(
     video_view_->OnVideoSizeChanged(width, height);
 }
 
-void BrowserMediaPlayerManager::OnReadFromDemuxer(
-    int player_id, media::DemuxerStream::Type type) {
-  Send(new MediaPlayerMsg_ReadFromDemuxer(routing_id(), player_id, type));
+void BrowserMediaPlayerManager::AddDemuxerClient(
+    int demuxer_client_id,
+    media::DemuxerAndroidClient* client) {
+  demuxer_clients_.AddWithID(client, demuxer_client_id);
+}
+
+void BrowserMediaPlayerManager::RemoveDemuxerClient(int demuxer_client_id) {
+  demuxer_clients_.Remove(demuxer_client_id);
+}
+
+void BrowserMediaPlayerManager::RequestDemuxerData(
+    int demuxer_client_id, media::DemuxerStream::Type type) {
+  DCHECK(demuxer_clients_.Lookup(demuxer_client_id)) << demuxer_client_id;
+  Send(new MediaPlayerMsg_ReadFromDemuxer(
+      routing_id(), demuxer_client_id, type));
 }
 
 void BrowserMediaPlayerManager::RequestMediaResources(int player_id) {
@@ -303,14 +318,17 @@ void BrowserMediaPlayerManager::DestroyAllMediaPlayers() {
   }
 }
 
-void BrowserMediaPlayerManager::OnMediaSeekRequest(
-    int player_id, base::TimeDelta time_to_seek, unsigned seek_request_id) {
+void BrowserMediaPlayerManager::RequestDemuxerSeek(int demuxer_client_id,
+                                                   base::TimeDelta time_to_seek,
+                                                   unsigned seek_request_id) {
+  DCHECK(demuxer_clients_.Lookup(demuxer_client_id)) << demuxer_client_id;
   Send(new MediaPlayerMsg_MediaSeekRequest(
-      routing_id(), player_id, time_to_seek, seek_request_id));
+      routing_id(), demuxer_client_id, time_to_seek, seek_request_id));
 }
 
-void BrowserMediaPlayerManager::OnMediaConfigRequest(int player_id) {
-  Send(new MediaPlayerMsg_MediaConfigRequest(routing_id(), player_id));
+void BrowserMediaPlayerManager::RequestDemuxerConfigs(int demuxer_client_id) {
+  DCHECK(demuxer_clients_.Lookup(demuxer_client_id)) << demuxer_client_id;
+  Send(new MediaPlayerMsg_MediaConfigRequest(routing_id(), demuxer_client_id));
 }
 
 void BrowserMediaPlayerManager::OnProtectedSurfaceRequested(int player_id) {
@@ -413,7 +431,7 @@ void BrowserMediaPlayerManager::OnInitialize(
   RenderProcessHost* host = render_view_host()->GetProcess();
   AddPlayer(CreateMediaPlayer(
       player_id, url, type, first_party_for_cookies,
-      host->GetBrowserContext()->IsOffTheRecord(), this));
+      host->GetBrowserContext()->IsOffTheRecord(), this, this));
 }
 
 void BrowserMediaPlayerManager::OnStart(int player_id) {
@@ -465,24 +483,30 @@ void BrowserMediaPlayerManager::OnDestroyPlayer(int player_id) {
 void BrowserMediaPlayerManager::OnDemuxerReady(
     int player_id,
     const media::DemuxerConfigs& configs) {
-  MediaPlayerAndroid* player = GetPlayer(player_id);
-  if (player)
-    player->DemuxerReady(configs);
+  // TODO(scherkus): Rename |player_id| to |demuxer_client_id| after splitting
+  // demuxer IPC messages into their own group.
+  media::DemuxerAndroidClient* client = demuxer_clients_.Lookup(player_id);
+  if (client)
+    client->OnDemuxerConfigsAvailable(configs);
 }
 
 void BrowserMediaPlayerManager::OnReadFromDemuxerAck(
     int player_id,
     const media::DemuxerData& data) {
-  MediaPlayerAndroid* player = GetPlayer(player_id);
-  if (player)
-    player->ReadFromDemuxerAck(data);
+  // TODO(scherkus): Rename |player_id| to |demuxer_client_id| after splitting
+  // demuxer IPC messages into their own group.
+  media::DemuxerAndroidClient* client = demuxer_clients_.Lookup(player_id);
+  if (client)
+    client->OnDemuxerDataAvailable(data);
 }
 
 void BrowserMediaPlayerManager::OnMediaSeekRequestAck(
     int player_id, unsigned seek_request_id) {
-  MediaPlayerAndroid* player = GetPlayer(player_id);
-  if (player)
-    player->OnSeekRequestAck(seek_request_id);
+  // TODO(scherkus): Rename |player_id| to |demuxer_client_id| after splitting
+  // demuxer IPC messages into their own group.
+  media::DemuxerAndroidClient* client = demuxer_clients_.Lookup(player_id);
+  if (client)
+    client->OnDemuxerSeeked(seek_request_id);
 }
 
 void BrowserMediaPlayerManager::OnInitializeCDM(
@@ -531,9 +555,11 @@ void BrowserMediaPlayerManager::OnCancelKeyRequest(
 
 void BrowserMediaPlayerManager::OnDurationChanged(
     int player_id, const base::TimeDelta& duration) {
-  MediaPlayerAndroid* player = GetPlayer(player_id);
-  if (player)
-    player->DurationChanged(duration);
+  // TODO(scherkus): Rename |player_id| to |demuxer_client_id| after splitting
+  // demuxer IPC messages into their own group.
+  media::DemuxerAndroidClient* client = demuxer_clients_.Lookup(player_id);
+  if (client)
+    client->OnDemuxerDurationChanged(duration);
 }
 
 void BrowserMediaPlayerManager::AddPlayer(MediaPlayerAndroid* player) {
