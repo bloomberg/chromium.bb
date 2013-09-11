@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<script src="../../fast/js/resources/js-test-pre.js"></script>
+<style>
+.test {
+    border: 2px solid;
+    width: 100px;
+    height: 100px;
+}
+#control {
+    border-top-left-radius: 25px;
+    border-top-right-radius: 25%;
+    border-bottom-left-radius: 36px;
+    border-bottom-right-radius: 36px 46px;
+}
+#calc {
+    border-top-left-radius: calc(25px);
+    border-top-right-radius: calc(25%);
+    border-bottom-left-radius: calc(10px + 25%);
+    border-bottom-right-radius: calc(10px + 25%) calc(20px + 25%);
+}
+</style>
+<div class="test" id="control"></div>
+<div class="test" id="calc"></div>
+<script>
+function test(prop) {
+    shouldEvaluateTo(
+        "getComputedStyle(document.getElementById('calc'), null).getPropertyValue('" + prop + "')",
+        "getComputedStyle(document.getElementById('control', null)).getPropertyValue('" + prop + "')");
+}
+
+description("Tests calling getPropertyValue on computed border radii involving CSS calc");
+
+test('border-top-left-radius');
+test('border-top-right-radius');
+test('border-bottom-left-radius');
+test('border-bottom-right-radius');
+test('border-radius');
+</script>
+<script src="../../fast/js/resources/js-test-post.js"></script>
