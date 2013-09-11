@@ -35,6 +35,10 @@ html.apps-v2 .apps-v1-only {
   display: none !important;
 }
 
+html:not(.apps-v2) .apps-v2-only {
+  display: none !important;
+}
+
 a {
   text-decoration: none;
   color: #15c;
@@ -258,11 +262,11 @@ h2 {
   display: none;
 }
 
-#host-list-reload > img {
+.icon-black > img {
   opacity: 0.3;
 }
 
-#host-list-reload:hover > img {
+.icon-black:hover > img {
   opacity: 0.4;
 }
 
