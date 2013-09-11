@@ -460,6 +460,7 @@
         'bits_unittest.cc',
         'build_time_unittest.cc',
         'callback_helpers_unittest.cc',
+        'callback_registry_unittest.cc',
         'callback_unittest.cc',
         'callback_unittest.nc',
         'cancelable_callback_unittest.cc',

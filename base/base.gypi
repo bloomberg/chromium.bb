@@ -108,6 +108,7 @@
           'callback_helpers.h',
           'callback_internal.cc',
           'callback_internal.h',
+          'callback_registry.h',
           'cancelable_callback.h',
           'chromeos/chromeos_version.cc',
           'chromeos/chromeos_version.h',
