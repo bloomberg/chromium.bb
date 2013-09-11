@@ -125,9 +125,11 @@ class CallbackRegistryBase {
       while ((list_iter_ != list_->callbacks_.end()) && list_iter_->is_null())
         ++list_iter_;
 
-      CallbackType* cb =
-          list_iter_ != list_->callbacks_.end() ? &(*list_iter_) : NULL;
-      ++list_iter_;
+      CallbackType* cb = NULL;
+      if (list_iter_ != list_->callbacks_.end()) {
+        cb = &(*list_iter_);
+        ++list_iter_;
+      }
       return cb;
     }
 
