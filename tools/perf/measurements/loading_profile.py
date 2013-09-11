@@ -14,7 +14,7 @@ class LoadingProfile(page_measurement.PageMeasurement):
   def __init__(self):
     super(LoadingProfile, self).__init__(discard_first_result=True)
 
-    if not perf_profiler.PerfProfiler.is_supported(None):
+    if not perf_profiler.PerfProfiler.is_supported(browser_type='any'):
       raise Exception('This measurement is not supported on this platform')
 
   @property
