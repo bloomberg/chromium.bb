@@ -407,7 +407,7 @@ class AndroidCommands(object):
                                  retry_count=0)
 
   def ManagedInstall(self, apk_path, keep_data=False, package_name=None,
-                     reboots_on_failure=2):
+                     reboots_on_timeout=2):
     """Installs specified package and reboots device on timeouts.
 
     If package_name is supplied, checks if the package is already installed and
@@ -418,7 +418,7 @@ class AndroidCommands(object):
       keep_data: Reinstalls instead of uninstalling first, preserving the
         application data.
       package_name: Package name (only needed if keep_data=False).
-      reboots_on_failure: number of time to reboot if package manager is frozen.
+      reboots_on_timeout: number of time to reboot if package manager is frozen.
     """
     # Check if package is already installed and up to date.
     if package_name:
@@ -430,7 +430,7 @@ class AndroidCommands(object):
             package_name)
         return
     # Install.
-    reboots_left = reboots_on_failure
+    reboots_left = reboots_on_timeout
     while True:
       try:
         if not keep_data:
@@ -439,17 +439,19 @@ class AndroidCommands(object):
         install_status = self.Install(apk_path, reinstall=keep_data)
         if 'Success' in install_status:
           return
+        else:
+          raise Exception('Install failure: %s' % install_status)
       except errors.WaitForResponseTimedOutError:
         print '@@@STEP_WARNINGS@@@'
         logging.info('Timeout on installing %s on device %s', apk_path,
                      self._device)
 
-      if reboots_left <= 0:
-        raise Exception('Install failure')
+        if reboots_left <= 0:
+          raise Exception('Install timed out')
 
-      # Force a hard reboot on last attempt
-      self.Reboot(full_reboot=(reboots_left == 1))
-      reboots_left -= 1
+        # Force a hard reboot on last attempt
+        self.Reboot(full_reboot=(reboots_left == 1))
+        reboots_left -= 1
 
   def MakeSystemFolderWritable(self):
     """Remounts the /system folder rw."""
