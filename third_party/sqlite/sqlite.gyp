@@ -185,6 +185,8 @@
           'sources': [
             'src/src/shell.c',
             'src/src/shell_icu_linux.c',
+            # Include a dummy c++ file to force linking of libstdc++.
+            'build_as_cpp.cc',
           ],
         },
       ],
