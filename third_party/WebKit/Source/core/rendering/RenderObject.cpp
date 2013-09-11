@@ -225,7 +225,7 @@ DEFINE_DEBUG_ONLY_GLOBAL(WTF::RefCountedLeakCounter, renderObjectCounter, ("Rend
 RenderObject::RenderObject(Node* node)
     : ImageResourceClient()
     , m_style(0)
-    , m_node(node)
+    , m_nodeProxy(node)
     , m_parent(0)
     , m_previous(0)
     , m_next(0)

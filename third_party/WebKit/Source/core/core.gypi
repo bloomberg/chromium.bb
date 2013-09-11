@@ -1521,6 +1521,8 @@
             'rendering/RenderWidget.cpp',
             'rendering/RenderWordBreak.cpp',
             'rendering/RenderWordBreak.h',
+            'rendering/RenderingNodeProxy.cpp',
+            'rendering/RenderingNodeProxy.h',
             'rendering/RootInlineBox.cpp',
             'rendering/ScrollBehavior.cpp',
             'rendering/SubtreeLayoutScope.cpp',
