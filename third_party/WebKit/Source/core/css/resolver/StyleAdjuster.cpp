@@ -159,6 +159,11 @@ static bool isDisplayGridBox(EDisplay display)
     return display == GRID || display == INLINE_GRID;
 }
 
+static bool parentStyleForcesZIndexToCreateStackingContext(const RenderStyle* parentStyle)
+{
+    return isDisplayFlexibleBox(parentStyle->display()) || isDisplayGridBox(parentStyle->display());
+}
+
 void StyleAdjuster::adjustRenderStyle(RenderStyle* style, RenderStyle* parentStyle, Element *e)
 {
     ASSERT(parentStyle);
@@ -258,7 +263,7 @@ void StyleAdjuster::adjustRenderStyle(RenderStyle* style, RenderStyle* parentSty
     }
 
     // Make sure our z-index value is only applied if the object is positioned.
-    if (style->position() == StaticPosition && !isDisplayFlexibleBox(parentStyle->display()))
+    if (style->position() == StaticPosition && !parentStyleForcesZIndexToCreateStackingContext(parentStyle))
         style->setHasAutoZIndex();
 
     // Auto z-index becomes 0 for the root element and transparent objects. This prevents
