@@ -360,14 +360,16 @@ bool NetworkStats::ReadComplete(int result) {
                << probe_packet.header().type();
   }
 
-  if (current_test_complete) {
-    TestPhaseComplete(SUCCESS, net::OK);
-    // Read only completes if all tests are done.
-    // current_test_index_ is incremented in TestPhaseComplete().
-    return current_test_index_ >= test_sequence_.size();
+  if (!current_test_complete) {
+    // All packets have not been received for the current test.
+    return false;
   }
-  // All packets have not been received.
-  return false;
+  // All packets are received for the current test.
+  // Read completes if all tests are done.
+  bool all_tests_done = current_test_index_ >= maximum_tests_ ||
+      current_test_index_ + 1 >= test_sequence_.size();
+  TestPhaseComplete(SUCCESS, net::OK);
+  return all_tests_done;
 }
 
 bool NetworkStats::UpdateReception(const ProbePacket& probe_packet) {
@@ -520,7 +522,7 @@ void NetworkStats::TestPhaseComplete(Status status, int result) {
 
   DVLOG(1) << "NetworkStat: schedule delete self at test index "
            << current_test_index_;
-  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  delete this;
 }
 
 NetworkStats::TestType NetworkStats::GetNextTest() {
@@ -792,17 +794,17 @@ void CollectNetworkStats(const std::string& network_stats_server,
     const base::FieldTrial::Probability kDivisor = 1000;
 
     // Enable the connectivity testing for 0.5% of the users in stable channel.
-    base::FieldTrial::Probability probability_per_group = 5;
+    base::FieldTrial::Probability probability_per_group = kDivisor / 200;
 
     chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
     if (channel == chrome::VersionInfo::CHANNEL_CANARY)
-      probability_per_group = kDivisor;
+      probability_per_group = kDivisor / 2;
     else if (channel == chrome::VersionInfo::CHANNEL_DEV)
-      // Enable the connectivity testing for 50% of the users in dev channel.
-      probability_per_group = 500;
+      // Enable the connectivity testing for 10% of the users in dev channel.
+      probability_per_group = kDivisor / 10;
     else if (channel == chrome::VersionInfo::CHANNEL_BETA)
-      // Enable the connectivity testing for 5% of the users in beta channel.
-      probability_per_group = 50;
+      // Enable the connectivity testing for 1% of the users in beta channel.
+      probability_per_group = kDivisor / 100;
 
     // After July 31, 2014 builds, it will always be in default group
     // (disable_network_stats).
