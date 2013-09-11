@@ -42,7 +42,10 @@ def _Process(path, renderer):
     return Page(200, (), (), ())
 
   links, anchors = parser.links, parser.anchors
-  base, _ = path.rsplit('/', 1)
+  if '/' in path:
+    base, _ = path.rsplit('/', 1)
+  else:
+    base = ''
   edges = []
   anchor_refs = []
 

@@ -111,7 +111,7 @@ class IntegrationTest(unittest.TestCase):
 
         # Make sure that leaving out the .html will temporarily redirect to the
         # path with the .html.
-        if path != '/404.html':
+        if path.startswith(('apps/', 'extensions/')):
           redirect_result = Handler(
               Request.ForTest(posixpath.splitext(path)[0])).Get()
           self.assertEqual((path, False), redirect_result.GetRedirect())
