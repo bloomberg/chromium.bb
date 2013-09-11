@@ -123,7 +123,7 @@ class MetadataDatabase {
   ~MetadataDatabase();
 
   int64 GetLargestChangeID() const;
-
+  int64 GetSyncRootTrackerID() const;
   bool HasSyncRoot() const;
 
   // Populates empty database with initial data.

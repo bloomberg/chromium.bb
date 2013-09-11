@@ -565,6 +565,10 @@ int64 MetadataDatabase::GetLargestChangeID() const {
   return service_metadata_->largest_change_id();
 }
 
+int64 MetadataDatabase::GetSyncRootTrackerID() const {
+  return service_metadata_->sync_root_tracker_id();
+}
+
 bool MetadataDatabase::HasSyncRoot() const {
   return service_metadata_->has_sync_root_tracker_id() &&
       !!service_metadata_->sync_root_tracker_id();
