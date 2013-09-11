@@ -57,7 +57,6 @@ void RtcVideoCaptureDelegate::OnStopped(media::VideoCapture* capture) {
 }
 
 void RtcVideoCaptureDelegate::OnPaused(media::VideoCapture* capture) {
-  NOTIMPLEMENTED();
 }
 
 void RtcVideoCaptureDelegate::OnError(media::VideoCapture* capture,
@@ -94,13 +93,11 @@ void RtcVideoCaptureDelegate::OnBufferReady(
 void RtcVideoCaptureDelegate::OnDeviceInfoReceived(
     media::VideoCapture* capture,
     const media::VideoCaptureParams& device_info) {
-  NOTIMPLEMENTED();
 }
 
 void RtcVideoCaptureDelegate::OnDeviceInfoChanged(
     media::VideoCapture* capture,
     const media::VideoCaptureParams& device_info) {
-  NOTIMPLEMENTED();
 }
 
 void RtcVideoCaptureDelegate::OnBufferReadyOnCaptureThread(
