@@ -106,6 +106,7 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
     { APIPermission::kHistory, "history", APIPermissionInfo::kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_BROWSING_HISTORY,
       PermissionMessage::kBrowsingHistory },
+    { APIPermission::kIdltest, "idltest" },
     { APIPermission::kIdle, "idle" },
     { APIPermission::kInfobars, "infobars" },
     { APIPermission::kInput, "input", APIPermissionInfo::kFlagNone,

@@ -91,6 +91,7 @@ class APIPermission {
     kHistory,
     kIdentity,
     kIdentityPrivate,
+    kIdltest,
     kIdle,
     kInfobars,
     kInput,

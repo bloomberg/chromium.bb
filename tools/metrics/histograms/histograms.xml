@@ -19911,7 +19911,7 @@ other types of suffix sets.
   <int value="55" label="FILEBROWSERPRIVATE_GETFILETASKS"/>
   <int value="56" label="WEBSTOREPRIVATE_GETSTORELOGIN"/>
   <int value="57" label="SYSTEMPRIVATE_GETINCOGNITOMODEAVAILABILITY"/>
-  <int value="58" label="EXPERIMENTAL_IDLTEST_SENDARRAYBUFFERVIEW"/>
+  <int value="58" label="IDLTEST_SENDARRAYBUFFERVIEW"/>
   <int value="59" label="SOCKET_SETNODELAY"/>
   <int value="60" label="APP_CURRENTWINDOWINTERNAL_SHOW"/>
   <int value="61" label="WEBSTOREPRIVATE_GETBROWSERLOGIN"/>
@@ -20075,7 +20075,7 @@ other types of suffix sets.
   <int value="218" label="USB_INTERRUPTTRANSFER"/>
   <int value="219" label="TYPES_CHROMESETTING_CLEAR"/>
   <int value="220" label="INPUT_IME_COMMITTEXT"/>
-  <int value="221" label="EXPERIMENTAL_IDLTEST_SENDARRAYBUFFER"/>
+  <int value="221" label="IDLTEST_SENDARRAYBUFFER"/>
   <int value="222" label="WALLPAPERPRIVATE_SETWALLPAPERIFEXISTS"/>
   <int value="223" label="SOCKET_ACCEPT"/>
   <int value="224" label="WEBNAVIGATION_GETFRAME"/>
@@ -20105,7 +20105,7 @@ other types of suffix sets.
   <int value="248" label="INPUT_IME_SETCANDIDATES"/>
   <int value="249" label="TERMINALPRIVATE_CLOSETERMINALPROCESS"/>
   <int value="250" label="HISTORY_DELETERANGE"/>
-  <int value="251" label="EXPERIMENTAL_IDLTEST_GETARRAYBUFFER"/>
+  <int value="251" label="IDLTEST_GETARRAYBUFFER"/>
   <int value="252" label="TERMINALPRIVATE_SENDINPUT"/>
   <int value="253" label="TABS_HIGHLIGHT"/>
   <int value="254" label="BLUETOOTH_STARTDISCOVERY"/>

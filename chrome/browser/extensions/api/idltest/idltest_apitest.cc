@@ -3,18 +3,17 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/common/extensions/features/feature_channel.h"
 #include "extensions/common/switches.h"
 
 class ExtensionIdltestApiTest : public ExtensionApiTest {
  public:
-  ExtensionIdltestApiTest() {}
+  // Set the channel to "trunk" since idltest is restricted to trunk.
+  ExtensionIdltestApiTest() : trunk_(chrome::VersionInfo::CHANNEL_UNKNOWN) {}
   virtual ~ExtensionIdltestApiTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    ExtensionApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(
-        extensions::switches::kEnableExperimentalExtensionApis);
-  }
+ private:
+  extensions::ScopedCurrentChannel trunk_;
 };
 
 IN_PROC_BROWSER_TEST_F(ExtensionIdltestApiTest, IdlCompiler) {

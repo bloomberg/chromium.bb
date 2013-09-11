@@ -209,10 +209,6 @@
     "dependencies": ["permission:experimental"],
     "contexts": ["blessed_extension"]
   },
-  "experimental.idltest": {
-    "dependencies": ["permission:experimental"],
-    "contexts": ["blessed_extension"]
-  },
   "experimental.rlz": {
     "dependencies": ["permission:experimental"],
     "contexts": ["blessed_extension"]
@@ -284,6 +280,10 @@
   },
   "identityPrivate": {
     "dependencies": ["permission:identityPrivate"],
+    "contexts": ["blessed_extension"]
+  },
+  "idltest": {
+    "dependencies": ["permission:idltest"],
     "contexts": ["blessed_extension"]
   },
   "idle": {
