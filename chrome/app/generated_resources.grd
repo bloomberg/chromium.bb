@@ -5957,6 +5957,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DISABLE_WEBRTC_HW_ENCODING_DESCRIPTION" desc="Description of chrome:flags option to turn off WebRTC hardware video encoding support.">
         This option disables support in WebRTC for encoding video streams using platform hardware.
       </message>
+      <message name="IDS_FLAGS_ENABLE_WEBRTC_HW_DECODING_NAME" desc="Name of about:flags option to enable WebRTC HW decoding.">
+        Enable HW decode acceleration for WebRTC
+      </message>
+      <message name="IDS_FLAGS_ENABLE_WEBRTC_HW_DECODING_DESCRIPTION" desc="Description of about:flags to enable WebRTC HW decoding.">
+        When enabled, WebRTC will use HW decoding if HW supports it.
+      </message>
       <message name="IDS_FLAGS_DISABLE_WEBAUDIO_NAME" desc="Name of the 'Disable WebAudio' lab.">
         Disable WebAudio
       </message>

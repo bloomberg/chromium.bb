@@ -466,6 +466,13 @@ const Experiment kExperiments[] = {
     kOsCrOS,
     SINGLE_VALUE_TYPE(switches::kDisableWebRtcHWEncoding)
   },
+  {
+    "enable-webrtc-hw-decoding",
+    IDS_FLAGS_ENABLE_WEBRTC_HW_DECODING_NAME,
+    IDS_FLAGS_ENABLE_WEBRTC_HW_DECODING_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kEnableWebRtcHWDecoding)
+  },
 #endif
 #if defined(OS_ANDROID)
   {

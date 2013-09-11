@@ -256,7 +256,7 @@ CONTENT_EXPORT extern const char kDisableDeviceEnumeration[];
 extern const char kDisableWebRtcHWEncoding[];
 CONTENT_EXPORT extern const char kDisableSCTPDataChannels[];
 extern const char kEnableWebRtcAecRecordings[];
-extern const char kEnableWebRtcHWDecoding[];
+CONTENT_EXPORT extern const char kEnableWebRtcHWDecoding[];
 #endif
 
 #if defined(OS_ANDROID)
