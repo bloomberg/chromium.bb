@@ -10,6 +10,7 @@ from __future__ import print_function
 import collections
 import cStringIO
 import exceptions
+import functools
 import logging
 import mox
 import os
@@ -35,6 +36,29 @@ import mock
 
 
 Directory = collections.namedtuple('Directory', ['name', 'contents'])
+
+
+class GlobalTestConfig(object):
+  """Global configuration for tests."""
+
+  # By default, disable all network tests.
+  NETWORK_TESTS_DISABLED = True
+
+
+def NetworkTest(reason='Skipping network test'):
+  """Decorator for unit tests. Skip the test if --network is not specified."""
+  def Decorator(test_item):
+    @functools.wraps(test_item)
+    def NetworkWrapper(*args, **kwargs):
+      if GlobalTestConfig.NETWORK_TESTS_DISABLED:
+        raise unittest.SkipTest(reason)
+      test_item(*args, **kwargs)
+
+    if not (isinstance(test_item, type) and issubclass(test_item, TestCase)):
+      return NetworkWrapper
+    return test_item
+
+  return Decorator
 
 
 def _FlattenStructure(base_path, dir_struct):
@@ -931,6 +955,9 @@ def main(**kwds):
   # available in 2.7- as such, handle it ourselves.
   allow_exit = kwds.pop('exit', True)
   cros_build_lib.SetupBasicLogging(kwds.pop('level', logging.DEBUG))
+  if '--network' in sys.argv:
+    sys.argv.remove('--network')
+    GlobalTestConfig.NETWORK_TESTS_DISABLED = False
   try:
     unittest.main(**kwds)
     raise SystemExit(0)

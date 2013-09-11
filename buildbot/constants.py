@@ -119,6 +119,7 @@ GIT_REMOTES = {
 MANIFEST_VERSIONS_SUFFIX = '/chromiumos/manifest-versions'
 MANIFEST_VERSIONS_INT_SUFFIX = '/chromeos/manifest-versions'
 MANIFEST_VERSIONS_GS_URL = 'gs://chromeos-manifest-versions'
+TRASH_BUCKET = 'gs://chromeos-throw-away-bucket'
 
 PATCH_BRANCH = 'patch_branch'
 STABLE_EBUILD_BRANCH = 'stabilizing_branch'

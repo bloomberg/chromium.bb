@@ -32,10 +32,10 @@ def PatchGS(*args, **kwargs):
 class GSContextMock(partial_mock.PartialCmdMock):
   """Used to mock out the GSContext class."""
   TARGET = 'chromite.lib.gs.GSContext'
-  ATTRS = ('__init__', '_DoCommand', 'DEFAULT_SLEEP_TIME',
+  ATTRS = ('__init__', 'DoCommand', 'DEFAULT_SLEEP_TIME',
            'DEFAULT_RETRIES', 'DEFAULT_BOTO_FILE', 'DEFAULT_GSUTIL_BIN',
            'DEFAULT_GSUTIL_BUILDER_BIN', 'GSUTIL_URL')
-  DEFAULT_ATTR = '_DoCommand'
+  DEFAULT_ATTR = 'DoCommand'
 
   GSResponsePreconditionFailed = """
 [Setting Content-Type=text/x-python]
@@ -71,8 +71,8 @@ class GSContextMock(partial_mock.PartialCmdMock):
     with PatchGS('_CheckFile', return_value=True):
       self.backup['__init__'](*args, **kwargs)
 
-  def _DoCommand(self, inst, gsutil_cmd, **kwargs):
-    result = self._results['_DoCommand'].LookupResult(
+  def DoCommand(self, inst, gsutil_cmd, **kwargs):
+    result = self._results['DoCommand'].LookupResult(
         (gsutil_cmd,), hook_args=(inst, gsutil_cmd,), hook_kwargs=kwargs)
 
     rc_mock = cros_build_lib_unittest.RunCommandMock()
@@ -81,7 +81,7 @@ class GSContextMock(partial_mock.PartialCmdMock):
         result.error)
 
     with rc_mock:
-      return self.backup['_DoCommand'](inst, gsutil_cmd, **kwargs)
+      return self.backup['DoCommand'](inst, gsutil_cmd, **kwargs)
 
 
 class AbstractGSContextTest(cros_test_lib.MockTempDirTestCase):
@@ -256,6 +256,17 @@ class GSContextTest(AbstractGSContextTest):
     self.gs_mock.assertCommandContains(['setacl', '/my/file/acl',
                                         'gs://abc/1'])
 
+  def testIncrement(self):
+    """Test ability to atomically increment a counter."""
+    ctx = gs.GSContext()
+    ctx.Counter('gs://abc/1').Increment()
+    self.gs_mock.assertCommandContains(['cp', '-', 'gs://abc/1'])
+
+  def testGetGeneration(self):
+    """Test ability to get the generation of a file."""
+    ctx = gs.GSContext()
+    ctx.GetGeneration('gs://abc/1')
+    self.gs_mock.assertCommandContains(['getacl', 'gs://abc/1'])
 
   def testCreateCached(self):
     """Test that the function runs through."""
@@ -266,6 +277,20 @@ class GSContextTest(AbstractGSContextTest):
     gs.GSContext.Cached(self.tempdir)
     gs.GSUTIL_URL = None
     gs.GSContext.Cached(self.tempdir)
+
+
+class NetworkGSContextTest(cros_test_lib.TempDirTestCase):
+  """Tests for GSContext that go over the network."""
+
+  @cros_test_lib.NetworkTest()
+  def testIncrement(self):
+    ctx = gs.GSContext()
+    with gs.TemporaryURL('testIncrement') as url:
+      counter = ctx.Counter(url)
+      self.assertEqual(0, counter.Get())
+      for i in xrange(1, 4):
+        self.assertEqual(i, counter.Increment())
+        self.assertEqual(i, counter.Get())
 
 
 class InitBotoTest(AbstractGSContextTest):

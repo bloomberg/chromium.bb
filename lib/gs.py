@@ -5,8 +5,12 @@
 """Library to make common google storage operations more reliable.
 """
 
+import contextlib
+import getpass
 import logging
 import os
+import re
+import uuid
 
 from chromite.buildbot import constants
 from chromite.lib import cache
@@ -67,8 +71,48 @@ class GSContextException(Exception):
 class GSContextPreconditionFailed(GSContextException):
   """Thrown when google storage returns code=PreconditionFailed."""
 
+
 class GSNoSuchKey(GSContextException):
   """Thrown when google storage returns code=NoSuchKey."""
+
+
+class GSCounter(object):
+  """A counter class for Google Storage."""
+
+  def __init__(self, ctx, path):
+    """Create a counter object.
+
+    Arguments:
+      ctx: A GSContext object.
+      path: The path to the counter in Google Storage.
+    """
+    self.ctx = ctx
+    self.path = path
+
+  def Get(self):
+    """Get the current value of a counter."""
+    try:
+      return int(self.ctx.Cat(self.path).output)
+    except GSNoSuchKey:
+      return 0
+
+  def Increment(self):
+    """Atomically increment the counter."""
+    generation, _ = self.ctx.GetGeneration(self.path)
+    for _ in xrange(self.ctx.retries + 1):
+      try:
+        value = 1 if generation == 0 else self.Get() + 1
+        self.ctx.Copy('-', self.path, input=str(value), version=generation)
+        return value
+      except (GSContextPreconditionFailed, GSNoSuchKey):
+        # GSContextPreconditionFailed is thrown if another builder is also
+        # trying to update the counter and we lost the race. GSNoSuchKey is
+        # thrown if another builder deleted the counter. In either case, fetch
+        # the generation again, and, if it has changed, try the copy again.
+        new_generation, _ = self.ctx.GetGeneration(self.path)
+        if new_generation == generation:
+          raise
+        generation = new_generation
 
 
 class GSContext(object):
@@ -171,7 +215,7 @@ class GSContext(object):
     self.acl_file = acl_file
 
     self.dry_run = dry_run
-    self._retries = self.DEFAULT_RETRIES if retries is None else int(retries)
+    self.retries = self.DEFAULT_RETRIES if retries is None else int(retries)
     self._sleep_time = self.DEFAULT_SLEEP_TIME if sleep is None else int(sleep)
 
     if init_boto:
@@ -192,8 +236,8 @@ class GSContext(object):
 
   def _TestGSLs(self):
     """Quick test of gsutil functionality."""
-    result = self._DoCommand(['ls'], retries=0, debug_level=logging.DEBUG,
-                             redirect_stderr=True, error_code_ok=True)
+    result = self.DoCommand(['ls'], retries=0, debug_level=logging.DEBUG,
+                            redirect_stderr=True, error_code_ok=True)
     return not (result.returncode == 1 and
                 any(e in result.error for e in self.AUTHORIZATION_ERRORS))
 
@@ -201,8 +245,8 @@ class GSContext(object):
     """Make sure we can access protected bits in GS."""
     print 'Configuring gsutil. **Please use your @google.com account.**'
     try:
-      self._DoCommand(['config'], retries=0, debug_level=logging.CRITICAL,
-                      print_cmd=False)
+      self.DoCommand(['config'], retries=0, debug_level=logging.CRITICAL,
+                     print_cmd=False)
     finally:
       if (os.path.exists(self.boto_file) and not
           os.path.getsize(self.boto_file)):
@@ -222,7 +266,7 @@ class GSContext(object):
       kwargs.pop('retries', None)
       kwargs.pop('headers', None)
       return cros_build_lib.RunCommand(['cat', path], **kwargs)
-    return self._DoCommand(['cat', path], **kwargs)
+    return self.DoCommand(['cat', path], **kwargs)
 
   def CopyInto(self, local_path, remote_dir, filename=None, acl=None,
                version=None):
@@ -269,8 +313,7 @@ class GSContext(object):
           raise GSNoSuchKey(e)
       raise
 
-
-  def _DoCommand(self, gsutil_cmd, headers=(), retries=None, **kwargs):
+  def DoCommand(self, gsutil_cmd, headers=(), retries=None, **kwargs):
     """Run a gsutil command, suppressing output, and setting retry/sleep.
 
     Returns:
@@ -282,7 +325,7 @@ class GSContext(object):
     cmd.extend(gsutil_cmd)
 
     if retries is None:
-      retries = self._retries
+      retries = self.retries
 
     extra_env = kwargs.pop('extra_env', {})
     extra_env.setdefault('BOTO_CONFIG', self.boto_file)
@@ -324,7 +367,7 @@ class GSContext(object):
     cmd, headers = [], []
 
     if version is not None:
-      headers = ['x-goog-if-generation-match:%d' % version]
+      headers = ['x-goog-if-generation-match:%d' % int(version)]
 
     cmd.append('cp')
 
@@ -341,7 +384,7 @@ class GSContext(object):
             dest_path.startswith(BASE_GS_URL)):
       # Don't retry on local copies.
       kwargs.setdefault('retries', 0)
-    return self._DoCommand(cmd, **kwargs)
+    return self.DoCommand(cmd, **kwargs)
 
   def LS(self, path, **kwargs):
     """Does a directory listing of the given gs path."""
@@ -351,7 +394,7 @@ class GSContext(object):
       kwargs.pop('retries', None)
       kwargs.pop('headers', None)
       return cros_build_lib.RunCommand(['ls', path], **kwargs)
-    return self._DoCommand(['ls', '--', path], **kwargs)
+    return self.DoCommand(['ls', '--', path], **kwargs)
 
   def SetACL(self, upload_url, acl=None):
     """Set access on a file already in google storage.
@@ -366,7 +409,7 @@ class GSContext(object):
             "SetAcl invoked w/out a specified acl, nor a default acl.")
       acl = self.acl_file
 
-    self._DoCommand(['setacl', acl, upload_url])
+    self.DoCommand(['setacl', acl, upload_url])
 
   def Exists(self, path):
     """Checks whether the given object exists.
@@ -378,10 +421,72 @@ class GSContext(object):
       True if the path exists; otherwise returns False.
     """
     try:
-      self._DoCommand(['getacl', path], redirect_stdout=True)
+      self.DoCommand(['getacl', path], redirect_stdout=True)
     except GSNoSuchKey:
       return False
     return True
+
+  def Remove(self, path, ignore_missing=False):
+    """Remove the specified file.
+
+    Args:
+      path: Full gs:// url of the file to delete.
+      ignore_missing: Whether to suppress errors about missing files.
+    """
+    try:
+      self.DoCommand(['rm', path])
+    except GSNoSuchKey:
+      if not ignore_missing:
+        raise
+
+  def GetGeneration(self, path):
+    """Get the generation and metageneration of the given |path|.
+
+    Returns a tuple of the generation and metageneration.
+    """
+    def _Header(name):
+      if res and res.returncode == 0 and res.output is not None:
+        # Search for a header that looks like this:
+        # header: x-goog-generation: 1378856506589000
+        m = re.search(r'header: %s: (\d+)' % name, res.output)
+        if m:
+          return int(m.group(1))
+      return 0
+
+    try:
+      res = self.DoCommand(['-d', 'getacl', path],
+                           error_code_ok=True, redirect_stdout=True)
+    except GSNoSuchKey:
+      # If a DoCommand throws an error, 'res' will be None, so _Header(...)
+      # will return 0 in both of the cases below.
+      pass
+
+    return (_Header('x-goog-generation'), _Header('x-goog-metageneration'))
+
+  def Counter(self, path):
+    """Return a GSCounter object pointing at a |path| in Google Storage.
+
+    Arguments:
+      path: The path to the counter in Google Storage.
+    """
+    return GSCounter(self, path)
+
+
+@contextlib.contextmanager
+def TemporaryURL(prefix):
+  """Context manager to generate a random URL.
+
+  At the end, the URL will be deleted.
+  """
+  url = '%s/chromite-temp/%s/%s/%s' % (constants.TRASH_BUCKET, prefix,
+                                       getpass.getuser(), uuid.uuid1())
+  ctx = GSContext()
+  ctx.Remove(url, ignore_missing=True)
+  try:
+    yield url
+  finally:
+    ctx.Remove(url, ignore_missing=True)
+
 
 # Set GSUTIL_BIN now.
 GSUTIL_BIN = GSContext.GetDefaultGSUtilBin()
