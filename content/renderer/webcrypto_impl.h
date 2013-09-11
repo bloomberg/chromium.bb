@@ -19,11 +19,7 @@ class CONTENT_EXPORT WebCryptoImpl
   virtual void digest(
       const WebKit::WebCryptoAlgorithm& algorithm,
       const unsigned char* data,
-#ifdef WEBCRYPTO_DIGEST_LENGTH_IS_UINT
       unsigned data_size,
-#else
-      size_t data_size,
-#endif
       WebKit::WebCryptoResult result);
 
  protected:
