@@ -10,7 +10,7 @@
 #include "chrome/browser/profiles/avatar_menu_model.h"
 #include "chrome/browser/profiles/profile_info_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/singleton_tabs.h"
+#include "chrome/browser/ui/views/user_manager_view.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -120,7 +120,7 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
   if (sender == guest_button_view_) {
     avatar_menu_model_->SwitchToGuestProfileWindow(browser_);
   } else if (sender == users_button_view_) {
-    chrome::ShowSingletonTab(browser_, GURL(chrome::kChromeUIUserManagerURL));
+    UserManagerView::Show(browser_);
   } else {
     DCHECK_EQ(sender, signout_current_profile_view_);
     avatar_menu_model_->BeginSignOut();

@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 namespace base {
@@ -42,6 +43,9 @@ class UserManagerScreenHandler : public content::WebUIMessageHandler {
   // Observes the ProfileInfoCache and gets notified when a profile has been
   // modified, so that the displayed user pods can be updated.
   scoped_ptr<ProfileUpdateObserver> profileInfoCacheObserver_;
+
+  // The host desktop type this user manager belongs to.
+  chrome::HostDesktopType desktop_type_;
 
   DISALLOW_COPY_AND_ASSIGN(UserManagerScreenHandler);
 };

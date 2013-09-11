@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
@@ -154,7 +155,8 @@ class UserManagerScreenHandler::ProfileUpdateObserver
 
 // UserManagerScreenHandler ---------------------------------------------------
 
-UserManagerScreenHandler::UserManagerScreenHandler() {
+UserManagerScreenHandler::UserManagerScreenHandler()
+    : desktop_type_(chrome::GetActiveDesktop()) {
   profileInfoCacheObserver_.reset(
       new UserManagerScreenHandler::ProfileUpdateObserver(
           g_browser_process->profile_manager(), this));
@@ -166,13 +168,21 @@ UserManagerScreenHandler::~UserManagerScreenHandler() {
 void UserManagerScreenHandler::HandleInitialize(const base::ListValue* args) {
   SendUserList();
   web_ui()->CallJavascriptFunction("cr.ui.Oobe.showUserManagerScreen");
+  desktop_type_ = chrome::GetHostDesktopTypeForNativeView(
+      web_ui()->GetWebContents()->GetView()->GetNativeView());
 }
 
 void UserManagerScreenHandler::HandleAddUser(const base::ListValue* args) {
-  // TODO(noms): Should redirect to a sign in page.
-  chrome::ShowSingletonTab(chrome::FindBrowserWithWebContents(
-      web_ui()->GetWebContents()),
-      GURL("chrome://settings/createProfile"));
+  // TODO(noms): Should display the addUser page here, not do a redirect.
+  Browser* browser = chrome::FindOrCreateTabbedBrowser(
+      ProfileManager::GetLastUsedProfileAllowedByPolicy(), desktop_type_);
+  DCHECK(browser);
+  chrome::NavigateParams params(browser,
+                                GURL("chrome://settings/createProfile"),
+                                content::PAGE_TRANSITION_LINK);
+  params.disposition = NEW_FOREGROUND_TAB;
+  params.window_action = chrome::NavigateParams::SHOW_WINDOW;
+  chrome::Navigate(&params);
 }
 
 void UserManagerScreenHandler::HandleRemoveUser(const base::ListValue* args) {
@@ -193,19 +203,15 @@ void UserManagerScreenHandler::HandleRemoveUser(const base::ListValue* args) {
   if (!profiles::IsMultipleProfilesEnabled())
     return;
 
-  Browser* browser =
-      chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
-  DCHECK(browser);
-
-  chrome::HostDesktopType desktop_type = browser->host_desktop_type();
   g_browser_process->profile_manager()->ScheduleProfileForDeletion(
       profile_path,
-      base::Bind(&OpenNewWindowForProfile, desktop_type));
+      base::Bind(&OpenNewWindowForProfile, desktop_type_));
 }
 
 void UserManagerScreenHandler::HandleLaunchGuest(const base::ListValue* args) {
-  AvatarMenuModel::SwitchToGuestProfileWindow(
-      chrome::FindBrowserWithWebContents(web_ui()->GetWebContents()));
+  Browser* browser = chrome::FindOrCreateTabbedBrowser(
+      ProfileManager::GetLastUsedProfileAllowedByPolicy(), desktop_type_);
+  AvatarMenuModel::SwitchToGuestProfileWindow(browser);
 }
 
 void UserManagerScreenHandler::HandleLaunchUser(const base::ListValue* args) {
@@ -220,13 +226,12 @@ void UserManagerScreenHandler::HandleLaunchUser(const base::ListValue* args) {
 
   ProfileInfoCache& info_cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
-  chrome::HostDesktopType desktop_type = chrome::GetActiveDesktop();
 
   for (size_t i = 0; i < info_cache.GetNumberOfProfiles(); ++i) {
     if (info_cache.GetUserNameOfProfileAtIndex(i) == emailAddress &&
         info_cache.GetNameOfProfileAtIndex(i) == displayName) {
       base::FilePath path = info_cache.GetPathOfProfileAtIndex(i);
-      profiles::SwitchToProfile(path, desktop_type, true);
+      profiles::SwitchToProfile(path, desktop_type_, true);
       break;
     }
   }

@@ -12,7 +12,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/avatar_menu_model_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
@@ -62,16 +61,6 @@ void OnProfileCreated(bool always_create,
         desktop_type,
         always_create);
   }
-}
-
-void OnGuestProfileCreated(bool always_create,
-                           chrome::HostDesktopType desktop_type,
-                           Profile* profile,
-                           Profile::CreateStatus status) {
-  IncognitoModePrefs::SetAvailability(
-      profile->GetPrefs(),
-      IncognitoModePrefs::FORCED);
-  OnProfileCreated(always_create, desktop_type, profile, status);
 }
 
 // Constants for the show profile switcher experiment
@@ -202,7 +191,7 @@ base::FilePath AvatarMenuModel::GetProfilePath(size_t index) {
 void AvatarMenuModel::SwitchToGuestProfileWindow(Browser* browser) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   profile_manager->CreateProfileAsync(ProfileManager::GetGuestProfilePath(),
-                                      base::Bind(&OnGuestProfileCreated,
+                                      base::Bind(&OnProfileCreated,
                                                  false,
                                                  browser->host_desktop_type()),
                                       string16(),

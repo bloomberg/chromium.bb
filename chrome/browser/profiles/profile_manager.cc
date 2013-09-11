@@ -164,6 +164,11 @@ bool IsProfileMarkedForDeletion(const base::FilePath& profile_path) {
       profile_path) != ProfilesToDelete().end();
 }
 
+void ForceIncognitoModeOnProfile(Profile* profile) {
+  IncognitoModePrefs::SetAvailability(profile->GetPrefs(),
+                                      IncognitoModePrefs::FORCED);
+}
+
 #if defined(OS_CHROMEOS)
 void CheckCryptohomeIsMounted(chromeos::DBusMethodCallStatus call_status,
                               bool is_mounted) {
@@ -514,8 +519,12 @@ void ProfileManager::CreateProfileAsync(
   // Call or enqueue the callback.
   if (!callback.is_null()) {
     if (iter != profiles_info_.end() && info->created) {
-        // Profile has already been created. Run callback immediately.
-        callback.Run(info->profile.get(), Profile::CREATE_STATUS_INITIALIZED);
+      Profile* profile = info->profile.get();
+      // If this was the guest profile, finish setting its incognito status.
+      if (profile->GetPath() == ProfileManager::GetGuestProfilePath())
+        ForceIncognitoModeOnProfile(profile);
+      // Profile has already been created. Run callback immediately.
+      callback.Run(profile, Profile::CREATE_STATUS_INITIALIZED);
     } else {
       // Profile is either already in the process of being created, or new.
       // Add callback to the list.
@@ -837,6 +846,10 @@ void ProfileManager::OnProfileCreated(Profile* profile,
     profile = NULL;
     profiles_info_.erase(iter);
   }
+
+  // If this was the guest profile, finish setting its incognito status.
+  if (profile->GetPath() == ProfileManager::GetGuestProfilePath())
+    ForceIncognitoModeOnProfile(profile);
 
   // Invoke CREATED callback for incognito profiles.
   if (profile && go_off_the_record)

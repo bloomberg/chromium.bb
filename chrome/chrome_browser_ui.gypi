@@ -1901,6 +1901,8 @@
         'browser/ui/views/password_generation_bubble_view.h',
         'browser/ui/views/profile_chooser_view.cc',
         'browser/ui/views/profile_chooser_view.h',
+        'browser/ui/views/user_manager_view.cc',
+        'browser/ui/views/user_manager_view.h',
         'browser/ui/views/reload_button.cc',
         'browser/ui/views/reload_button.h',
         'browser/ui/views/sad_tab_view.cc',
