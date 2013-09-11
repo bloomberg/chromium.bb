@@ -125,6 +125,18 @@ void TargetGenerator::FillSources() {
   target_->swap_in_sources(&dest_sources);
 }
 
+void TargetGenerator::FillSourcePrereqs() {
+  const Value* value = scope_->GetValue(variables::kSourcePrereqs, true);
+  if (!value)
+    return;
+
+  Target::FileList dest_reqs;
+  if (!ExtractListOfRelativeFiles(scope_->settings()->build_settings(), *value,
+                                  scope_->GetSourceDir(), &dest_reqs, err_))
+    return;
+  target_->swap_in_source_prereqs(&dest_reqs);
+}
+
 void TargetGenerator::FillConfigs() {
   FillGenericConfigs(variables::kConfigs, &Target::swap_in_configs);
 }
@@ -139,7 +151,7 @@ void TargetGenerator::FillDependentConfigs() {
 void TargetGenerator::FillData() {
   // TODO(brettW) hook this up to the constant when we have cleaned up
   // how data files are used.
-  const Value* value = scope_->GetValue("data", true);
+  const Value* value = scope_->GetValue(variables::kData, true);
   if (!value)
     return;
 
@@ -157,6 +169,17 @@ void TargetGenerator::FillDependencies() {
   // This is a list of dependent targets to have their configs fowarded, so
   // it goes here rather than in FillConfigs.
   FillForwardDependentConfigs();
+
+  FillHardDep();
+}
+
+void TargetGenerator::FillHardDep() {
+  const Value* hard_dep_value = scope_->GetValue(variables::kHardDep, true);
+  if (!hard_dep_value)
+    return;
+  if (!hard_dep_value->VerifyTypeIs(Value::BOOLEAN, err_))
+    return;
+  target_->set_hard_dep(hard_dep_value->boolean_value());
 }
 
 void TargetGenerator::FillExternal() {

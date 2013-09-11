@@ -27,6 +27,7 @@ void BinaryTargetGenerator::DoRun() {
   FillOutputName();
   FillExternal();
   FillSources();
+  FillSourcePrereqs();
   FillConfigs();
 
   // Config values (compiler flags, etc.) set directly on this target.

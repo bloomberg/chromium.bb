@@ -34,7 +34,7 @@ template("grit") {
   grit_custom_target = target_name + "_grit"
   custom(grit_custom_target) {
     script = "$relative_source_root_dir/tools/grit/grit.py"
-    data = grit_inputs  # TODO(brettw) this should be inputs or something
+    source_prereqs = grit_inputs
     outputs = grit_outputs
 
     # TODO(brettw) grit_defines.
@@ -48,6 +48,10 @@ template("grit") {
   # This is the thing that people actually link with, it must be named the
   # same as the argument the template was invoked with.
   static_library(target_name) {
+    # Since we generate a file, we need to be run before the targets that
+    # depend on us.
+    hard_dep = true
+
     sources = grit_outputs
     deps = [ ":$grit_custom_target" ]
     direct_dependent_configs = [ ":$grit_config" ]

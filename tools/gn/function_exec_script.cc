@@ -356,9 +356,10 @@ Value RunExecScript(Scope* scope,
 
   // TODO(brettw) maybe we need stderr also for reasonable stack dumps.
   if (exit_code != 0) {
-    std::string msg =
-        std::string("I was running \"") + FilePathToUTF8(script_path) + "\"\n"
-        "and it returned " + base::IntToString(exit_code);
+    std::string msg = "Current dir: " +
+        FilePathToUTF8(build_settings->GetFullPath(cur_dir)) + "\nCommand: " +
+        cmdline.GetCommandLineString() +
+        "\nReturned " + base::IntToString(exit_code);
     if (!output.empty())
       msg += " and printed out:\n\n" + output;
     else

@@ -25,6 +25,7 @@ void ScriptTargetGenerator::DoRun() {
 
   FillExternal();
   FillSources();
+  FillSourcePrereqs();
   FillScript();
   FillScriptArgs();
   FillOutputs();

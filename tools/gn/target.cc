@@ -62,6 +62,7 @@ Target::Target(const Settings* settings, const Label& label)
     : Item(label),
       settings_(settings),
       output_type_(UNKNOWN),
+      hard_dep_(false),
       external_(false),
       generated_(false),
       generator_function_(NULL) {

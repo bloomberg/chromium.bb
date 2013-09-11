@@ -71,9 +71,19 @@ class Target : public Item {
   FileList& sources() { return sources_; }
   void swap_in_sources(FileList* s) { sources_.swap(*s); }
 
+  // Compile-time extra dependencies.
+  const FileList& source_prereqs() const { return source_prereqs_; }
+  FileList& source_prereqs() { return source_prereqs_; }
+  void swap_in_source_prereqs(FileList* i) { source_prereqs_.swap(*i); }
+
+  // Runtime dependencies.
   const FileList& data() const { return data_; }
   FileList& data() { return data_; }
   void swap_in_data(FileList* d) { data_.swap(*d); }
+
+  // Targets depending on this one should have an order dependency.
+  bool hard_dep() const { return hard_dep_; }
+  void set_hard_dep(bool hd) { hard_dep_ = hd; }
 
   // Linked dependencies.
   const std::vector<const Target*>& deps() const { return deps_; }
@@ -156,7 +166,10 @@ class Target : public Item {
   std::string output_name_;
 
   FileList sources_;
+  FileList source_prereqs_;
   FileList data_;
+
+  bool hard_dep_;
 
   // Note that if there are any groups in the deps, once the target is resolved
   // these vectors will list *both* the groups as well as the groups' deps.

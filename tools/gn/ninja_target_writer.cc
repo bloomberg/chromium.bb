@@ -92,3 +92,30 @@ void NinjaTargetWriter::WriteEnvironment() {
 const Toolchain* NinjaTargetWriter::GetToolchain() const {
   return target_->settings()->toolchain();
 }
+
+std::string NinjaTargetWriter::GetSourcesImplicitDeps() const {
+  std::ostringstream ret;
+  ret << " |";
+
+  // Input files are order-only deps.
+  const Target::FileList& prereqs = target_->source_prereqs();
+  bool has_files = !prereqs.empty();
+  for (size_t i = 0; i < prereqs.size(); i++) {
+    ret << " ";
+    path_output_.WriteFile(ret, prereqs[i]);
+  }
+
+  // Add on any direct deps marked as "hard".
+  const std::vector<const Target*>& deps = target_->deps();
+  for (size_t i = 0; i < deps.size(); i++) {
+    if (deps[i]->hard_dep()) {
+      has_files = true;
+      ret << " ";
+      path_output_.WriteFile(ret, helper_.GetTargetOutputFile(deps[i]));
+    }
+  }
+
+  if (has_files)
+    return ret.str();
+  return std::string();  // No files added.
+}

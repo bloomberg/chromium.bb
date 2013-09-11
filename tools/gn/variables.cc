@@ -324,6 +324,24 @@ const char kConfigs_Help[] =
     "    configs += \":mysettings\"      # Add some of our own settings.\n"
     "  }\n";
 
+const char kData[] = "data";
+const char kData_HelpShort[] =
+    "data: [file list] Runtime data file dependencies.";
+const char kData_Help[] =
+    "data: Runtime data file dependencies.\n"
+    "\n"
+    "  Lists files required to run the given target. These are typically\n"
+    "  data files.\n"
+    "\n"
+    "  Appearing in the \"data\" section does not imply any special handling\n"
+    "  such as copying them to the output directory. This is just used for\n"
+    "  declaring runtime dependencies. There currently isn't a good use for\n"
+    "  these but it is envisioned that test data can be listed here for use\n"
+    "  running automated tests.\n"
+    "\n"
+    "  See also \"gn help source_prereqs\" and \"gn help datadeps\", both of\n"
+    "  which actually affect the build in concrete ways.\n";
+
 const char kDatadeps[] = "datadeps";
 const char kDatadeps_HelpShort[] =
     "datadeps: [label list] Non-linked dependencies.";
@@ -339,7 +357,13 @@ const char kDatadeps_Help[] =
     "  This is normally used for things like plugins or helper programs that\n"
     "  a target needs at runtime.\n"
     "\n"
-    "  See also \"deps\".\n";
+    "  See also \"gn help deps\" and \"gn help data\".\n"
+    "\n"
+    "Example:\n"
+    "  executable(\"foo\") {\n"
+    "    deps = [ \"//base\" ]\n"
+    "    datadeps = [ \"//plugins:my_runtime_plugin\" ]\n"
+    "  }\n";
 
 const char kDefines[] = "defines";
 const char kDefines_HelpShort[] =
@@ -450,6 +474,42 @@ const char kForwardDependentConfigsFrom_Help[] =
     "      forward_dependent_configs_from = deps\n"
     "    }\n";
 
+const char kHardDep[] = "hard_dep";
+const char kHardDep_HelpShort[] =
+    "hard_dep: [boolean] Indicates a target should be built before dependees.";
+const char kHardDep_Help[] =
+    "hard_dep: Indicates a target should be built before dependees.\n"
+    "\n"
+    "  Ninja's default is to assume that targets can be compiled\n"
+    "  independently. This breaks down for generated files that are included\n"
+    "  in other targets because Ninja doesn't know to run the generator\n"
+    "  before compiling the source file.\n"
+    "\n"
+    "  Setting \"hard_dep\" to true on a target means that no sources in\n"
+    "  targets depending directly on this one will be compiled until this\n"
+    "  target is complete. It will introduce a Ninja implicit dependency\n"
+    "  from those sources to this target. This flag is not transitive so\n"
+    "  it will only affect direct dependents, which will cause problems if\n"
+    "  a direct dependent uses this generated file in a public header that a\n"
+    "  third target consumes. Try not to do this.\n"
+    "\n"
+    "  See also \"gn help source_prereqs\" which allows you to specify the\n"
+    "  exact generated file dependency on the target consuming it.\n"
+    "\n"
+    "Example:\n"
+    "  executable(\"foo\") {\n"
+    "    # myresource will be run before any of the sources in this target\n"
+    "    # are compiled.\n"
+    "    deps = [ \":myresource\" ]\n"
+    "    ...\n"
+    "  }\n"
+    "\n"
+    "  custom(\"myresource\") {\n"
+    "    hard_dep = true\n"
+    "    script = \"my_generator.py\"\n"
+    "    outputs = \"$target_gen_dir/myresource.h\"\n"
+    "  }\n";
+
 const char kLdflags[] = "ldflags";
 const char kLdflags_HelpShort[] =
     "ldflags: [string list] Flags passed to the linker.";
@@ -497,6 +557,53 @@ extern const char kOutputName_Help[] =
     "Example:\n"
     "  static_library(\"doom_melon\") {\n"
     "    output_name = \"fluffy_bunny\"\n"
+    "  }\n";
+
+const char kSourcePrereqs[] = "source_prereqs";
+const char kSourcePrereqs_HelpShort[] =
+    "source_prereqs: [file list] Additional compile-time dependencies.";
+const char kSourcePrereqs_Help[] =
+    "source_prereqs: Additional compile-time dependencies.\n"
+    "\n"
+    "  Inputs are compile-time dependencies of the current target. This means\n"
+    "  that all source prerequisites must be available before compiling any\n"
+    "  of the sources.\n"
+    "\n"
+    "  If one of your sources #includes a generated file, that file must be\n"
+    "  available before that source file is compiled. For subsequent builds,\n"
+    "  the \".d\" files will list the include dependencies of each source\n"
+    "  and Ninja can know about that dependency to make sure it's generated\n"
+    "  before compiling your source file. However, for the first run it's\n"
+    "  not possible for Ninja to know about this dependency.\n"
+    "\n"
+    "  Source prerequisites solves this problem by declaring such\n"
+    "  dependencies. It will introduce a Ninja \"implicit\" dependency for\n"
+    "  each source file in the target on the listed files.\n"
+    "\n"
+    "  For binary targets, the files in the \"source_prereqs\" should all be\n"
+    "  listed in the \"outputs\" section of another target. There is no\n"
+    "  reason to declare static source files as source prerequisites since\n"
+    "  the normal include file dependency management will handle them more\n"
+    "  efficiently anwyay.\n"
+    "\n"
+    "  For custom script targets that don't generate \".d\" files, the\n"
+    "  \"source_prereqs\" section is how you can list known compile-time\n"
+    "  dependencies your script may have.\n"
+    "\n"
+    "  See also \"gn help data\" and \"gn help datadeps\" (which declare\n"
+    "  run-time rather than compile-time dependencies), and\n"
+    "  \"gn help hard_dep\" which allows you to declare the source dependency\n"
+    "  on the target generating a file rather than the target consuming it.\n"
+    "\n"
+    "Examples:\n"
+    "  executable(\"foo\") {\n"
+    "    sources = [ \"foo.cc\" ]\n"
+    "    source_prereqs = [ \"$root_gen_dir/something/generated_data.h\" ]\n"
+    "  }\n"
+    "\n"
+    "  custom(\"myscript\") {\n"
+    "    script = \"domything.py\"\n"
+    "    source_prereqs = [ \"input.data\" ]\n"
     "  }\n";
 
 const char kSources[] = "sources";
@@ -554,13 +661,16 @@ const VariableInfoMap& GetTargetVariables() {
     INSERT_VARIABLE(CflagsObjC)
     INSERT_VARIABLE(CflagsObjCC)
     INSERT_VARIABLE(Configs)
+    INSERT_VARIABLE(Data)
     INSERT_VARIABLE(Datadeps)
     INSERT_VARIABLE(Deps)
     INSERT_VARIABLE(DirectDependentConfigs)
     INSERT_VARIABLE(External)
     INSERT_VARIABLE(ForwardDependentConfigsFrom)
+    INSERT_VARIABLE(HardDep)
     INSERT_VARIABLE(Ldflags)
     INSERT_VARIABLE(OutputName)
+    INSERT_VARIABLE(SourcePrereqs)
     INSERT_VARIABLE(Sources)
   }
   return info_map;

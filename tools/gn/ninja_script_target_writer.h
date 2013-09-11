@@ -29,10 +29,10 @@ class NinjaScriptTargetWriter : public NinjaTargetWriter {
   // Writes the rules for compiling each source, writing all output files
   // to the given vector.
   //
-  // common_deps is a precomputed string of all ninja files that are common
-  // to each build step. This is added to each one.
+  // implicit_deps is a precomputed string of all ninja files that are common
+  // to each build step, it starts with a "|" if it's nonempty.
   void WriteSourceRules(const std::string& custom_rule_name,
-                        const std::string& common_deps,
+                        const std::string& implicit_deps,
                         const SourceDir& script_cd,
                         const std::string& script_cd_to_root,
                         std::vector<OutputFile>* output_files);

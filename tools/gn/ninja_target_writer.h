@@ -31,6 +31,12 @@ class NinjaTargetWriter {
   // Returns the toolchain associated with the target.
   const Toolchain* GetToolchain() const;
 
+  // Returns the string to be appended to source rules that encodes the
+  // order-only dependencies for the current target. This will include the
+  // "|" character so can just be appended to the source rules. If there are no
+  // implicit dependencies, returns the empty string.
+  std::string GetSourcesImplicitDeps() const;
+
   const Settings* settings_;  // Non-owning.
   const Target* target_;  // Non-owning.
   std::ostream& out_;

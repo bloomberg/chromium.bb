@@ -41,34 +41,14 @@ void NinjaScriptTargetWriter::Run() {
   script_relative_to_cd.append(&script_string[1], script_string.size() - 1);
 
   std::string custom_rule_name = WriteRuleDefinition(script_relative_to_cd);
-
-  // Precompute the common dependencies for each step. This includes the
-  // script itself (changing the script should force a rebuild) and any data
-  // files.
-  //
-  // TODO(brettw) this needs to be re-thought. "data" is supposed to be runtime
-  // data (i.e. for tests and such) rather than compile-time dependencies for
-  // each target. If we really need this, we need to have a different way to
-  // express it.
-  //
-  // One idea: add an "inputs" variable to specify this kind of thing. We
-  // should probably make it an error to specify data but no inputs for a
-  // script as a way to catch people doing the wrong way.
-  std::ostringstream common_deps_stream;
-  path_output_.WriteFile(common_deps_stream, target_->script_values().script());
-  const Target::FileList& datas = target_->data();
-  for (size_t i = 0; i < datas.size(); i++) {
-    common_deps_stream << " ";
-    path_output_.WriteFile(common_deps_stream, datas[i]);
-  }
-  const std::string& common_deps = common_deps_stream.str();
+  std::string implicit_deps = GetSourcesImplicitDeps();
 
   // Collects all output files for writing below.
   std::vector<OutputFile> output_files;
 
   if (has_sources()) {
     // Write separate rules for each input source file.
-    WriteSourceRules(custom_rule_name, common_deps, script_cd,
+    WriteSourceRules(custom_rule_name, implicit_deps, script_cd,
                      script_cd_to_root, &output_files);
   } else {
     // No sources, write a rule that invokes the script once with the
@@ -83,7 +63,7 @@ void NinjaScriptTargetWriter::Run() {
       out_ << " ";
       path_output_.WriteFile(out_, output_path);
     }
-    out_ << ": " << custom_rule_name << " " << common_deps << std::endl;
+    out_ << ": " << custom_rule_name << implicit_deps << std::endl;
   }
   out_ << std::endl;
 
@@ -164,7 +144,7 @@ void NinjaScriptTargetWriter::WriteArg(const std::string& arg) {
 
 void NinjaScriptTargetWriter::WriteSourceRules(
     const std::string& custom_rule_name,
-    const std::string& common_deps,
+    const std::string& implicit_deps,
     const SourceDir& script_cd,
     const std::string& script_cd_to_root,
     std::vector<OutputFile>* output_files) {
@@ -197,11 +177,9 @@ void NinjaScriptTargetWriter::WriteSourceRules(
       path_output_.WriteFile(out_, output_path);
     }
 
-    out_ << ": " << custom_rule_name
-         << " " << common_deps
-         << " ";
+    out_ << ": " << custom_rule_name;
     path_output_.WriteFile(out_, sources[i]);
-    out_ << std::endl;
+    out_ << implicit_deps << std::endl;
 
     out_ << "  unique_name = " << i << std::endl;
 

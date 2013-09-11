@@ -103,6 +103,10 @@ extern const char kConfigs[];
 extern const char kConfigs_HelpShort[];
 extern const char kConfigs_Help[];
 
+extern const char kData[];
+extern const char kData_HelpShort[];
+extern const char kData_Help[];
+
 extern const char kDatadeps[];
 extern const char kDatadeps_HelpShort[];
 extern const char kDatadeps_Help[];
@@ -127,6 +131,10 @@ extern const char kForwardDependentConfigsFrom[];
 extern const char kForwardDependentConfigsFrom_HelpShort[];
 extern const char kForwardDependentConfigsFrom_Help[];
 
+extern const char kHardDep[];
+extern const char kHardDep_HelpShort[];
+extern const char kHardDep_Help[];
+
 extern const char kLdflags[];
 extern const char kLdflags_HelpShort[];
 extern const char kLdflags_Help[];
@@ -134,6 +142,10 @@ extern const char kLdflags_Help[];
 extern const char kOutputName[];
 extern const char kOutputName_HelpShort[];
 extern const char kOutputName_Help[];
+
+extern const char kSourcePrereqs[];
+extern const char kSourcePrereqs_HelpShort[];
+extern const char kSourcePrereqs_Help[];
 
 extern const char kSources[];
 extern const char kSources_HelpShort[];

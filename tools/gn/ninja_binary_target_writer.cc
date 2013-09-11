@@ -130,6 +130,8 @@ void NinjaBinaryTargetWriter::WriteSources(
   object_files->reserve(sources.size());
 
   const Toolchain* toolchain = GetToolchain();
+  std::string implicit_deps = GetSourcesImplicitDeps();
+
   for (size_t i = 0; i < sources.size(); i++) {
     const SourceFile& input_file = sources[i];
 
@@ -150,7 +152,7 @@ void NinjaBinaryTargetWriter::WriteSources(
     path_output_.WriteFile(out_, output_file);
     out_ << ": " << command << " ";
     path_output_.WriteFile(out_, input_file);
-    out_ << std::endl;
+    out_ << implicit_deps << std::endl;
   }
   out_ << std::endl;
 }
@@ -274,7 +276,7 @@ void NinjaBinaryTargetWriter::WriteLinkCommand(
   // Static libraries since they're just a collection of the object files so
   // don't need libraries linked with them, but we still need to go through
   // the list and find non-linkable data deps in the "deps" section. We'll
-  // collect all non-linkable deps and put it in the order-only deps below.
+  // collect all non-linkable deps and put it in the implicit deps below.
   std::vector<const Target*> extra_data_deps;
   const std::vector<const Target*>& deps = target_->deps();
   const std::set<const Target*>& inherited = target_->inherited_libraries();
@@ -310,7 +312,7 @@ void NinjaBinaryTargetWriter::WriteLinkCommand(
     path_output_.WriteFile(out_, i->second);
   }
 
-  // Append data dependencies as order-only dependencies.
+  // Append data dependencies as implicit dependencies.
   const std::vector<const Target*>& datadeps = target_->datadeps();
   const std::vector<SourceFile>& data = target_->data();
   if (!extra_data_deps.empty() || !datadeps.empty() || !data.empty()) {
