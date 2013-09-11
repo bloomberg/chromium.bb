@@ -931,7 +931,8 @@ PassRefPtr<RenderStyle> StyleResolver::styleForPage(int pageIndex)
     StyleResolverState state(document(), document().documentElement()); // m_rootElementStyle will be set to the document style.
 
     state.setStyle(RenderStyle::create());
-    state.style()->inheritFrom(state.rootElementStyle());
+    if (state.rootElementStyle())
+        state.style()->inheritFrom(state.rootElementStyle());
 
     state.fontBuilder().initForStyleResolve(state.document(), state.style(), state.useSVGZoomRules());
 
