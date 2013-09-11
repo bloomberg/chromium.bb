@@ -74,6 +74,8 @@ class StorageBlock : public FileBlock {
   // Loads and store the data.
   bool Load();
   bool Store();
+  bool Load(FileIOCallback* callback, bool* completed);
+  bool Store(FileIOCallback* callback, bool* completed);
 
  private:
   void AllocateData();

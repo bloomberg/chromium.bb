@@ -360,6 +360,7 @@
         'disk_cache/in_flight_backend_io.h',
         'disk_cache/in_flight_io.cc',
         'disk_cache/in_flight_io.h',
+        'disk_cache/mapped_file.cc',
         'disk_cache/mapped_file.h',
         'disk_cache/mapped_file_posix.cc',
         'disk_cache/mapped_file_avoid_mmap_posix.cc',

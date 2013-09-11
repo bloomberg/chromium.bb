@@ -143,6 +143,36 @@ template<typename T> bool StorageBlock<T>::Store() {
   return false;
 }
 
+template<typename T> bool StorageBlock<T>::Load(FileIOCallback* callback,
+                                                bool* completed) {
+  if (file_) {
+    if (!data_)
+      AllocateData();
+
+    if (file_->Load(this, callback, completed)) {
+      modified_ = false;
+      return true;
+    }
+  }
+  LOG(WARNING) << "Failed data load.";
+  Trace("Failed data load.");
+  return false;
+}
+
+template<typename T> bool StorageBlock<T>::Store(FileIOCallback* callback,
+                                                 bool* completed) {
+  if (file_ && data_) {
+    data_->self_hash = CalculateHash();
+    if (file_->Store(this, callback, completed)) {
+      modified_ = false;
+      return true;
+    }
+  }
+  LOG(ERROR) << "Failed data store.";
+  Trace("Failed data store.");
+  return false;
+}
+
 template<typename T> void StorageBlock<T>::AllocateData() {
   DCHECK(!data_);
   if (!extended_) {

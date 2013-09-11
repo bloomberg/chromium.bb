@@ -34,16 +34,6 @@ void* MappedFile::Init(const base::FilePath& name, size_t size) {
   return buffer_;
 }
 
-bool MappedFile::Load(const FileBlock* block) {
-  size_t offset = block->offset() + view_size_;
-  return Read(block->buffer(), block->size(), offset);
-}
-
-bool MappedFile::Store(const FileBlock* block) {
-  size_t offset = block->offset() + view_size_;
-  return Write(block->buffer(), block->size(), offset);
-}
-
 void MappedFile::Flush() {
   DCHECK(buffer_);
   DCHECK(snapshot_);

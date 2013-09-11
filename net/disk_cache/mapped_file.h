@@ -38,6 +38,11 @@ class NET_EXPORT_PRIVATE MappedFile : public File {
   bool Load(const FileBlock* block);
   bool Store(const FileBlock* block);
 
+  // Asynchronous versions of Load/Store, following the semantics of File::Read
+  // and File::Write.
+  bool Load(const FileBlock* block, FileIOCallback* callback, bool* completed);
+  bool Store(const FileBlock* block, FileIOCallback* callback, bool* completed);
+
   // Flush the memory-mapped section to disk (synchronously).
   void Flush();
 
