@@ -20,7 +20,7 @@ def pop_known_arguments(args):
   for arg in args:
     if arg.startswith(('--gtest_filter=', '--gtest_output=', '--clusters=')):
       run_test_cases_extra_args.append(arg)
-    elif arg == '--run-manual':
+    elif arg in ('--run-manual', '--verbose'):
       run_test_cases_extra_args.append(arg)
     elif arg == '--gtest_print_time':
       # Ignore.
