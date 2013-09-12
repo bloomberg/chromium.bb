@@ -10,7 +10,6 @@
 #include "remoting/base/capabilities.h"
 #include "remoting/codec/audio_encoder.h"
 #include "remoting/codec/audio_encoder_opus.h"
-#include "remoting/codec/audio_encoder_speex.h"
 #include "remoting/codec/audio_encoder_verbatim.h"
 #include "remoting/codec/video_encoder.h"
 #include "remoting/codec/video_encoder_verbatim.h"
@@ -433,7 +432,7 @@ scoped_ptr<VideoEncoder> ClientSession::CreateVideoEncoder(
     return scoped_ptr<VideoEncoder>(new remoting::VideoEncoderVp8());
   }
 
-  NOTIMPLEMENTED();
+  NOTREACHED();
   return scoped_ptr<VideoEncoder>();
 }
 
@@ -444,13 +443,11 @@ scoped_ptr<AudioEncoder> ClientSession::CreateAudioEncoder(
 
   if (audio_config.codec == protocol::ChannelConfig::CODEC_VERBATIM) {
     return scoped_ptr<AudioEncoder>(new AudioEncoderVerbatim());
-  } else if (audio_config.codec == protocol::ChannelConfig::CODEC_SPEEX) {
-    return scoped_ptr<AudioEncoder>(new AudioEncoderSpeex());
   } else if (audio_config.codec == protocol::ChannelConfig::CODEC_OPUS) {
     return scoped_ptr<AudioEncoder>(new AudioEncoderOpus());
   }
 
-  NOTIMPLEMENTED();
+  NOTREACHED();
   return scoped_ptr<AudioEncoder>();
 }
 
