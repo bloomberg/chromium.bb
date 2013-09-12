@@ -32,14 +32,13 @@
 #include "V8Clipboard.h"
 
 #include "HTMLNames.h"
+#include "V8Node.h"
+#include "bindings/v8/V8Binding.h"
 #include "core/dom/Clipboard.h"
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/platform/graphics/IntPoint.h"
-
-#include "V8Node.h"
-#include "bindings/v8/V8Binding.h"
 
 namespace WebCore {
 

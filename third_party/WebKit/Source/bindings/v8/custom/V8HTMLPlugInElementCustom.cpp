@@ -29,7 +29,6 @@
 */
 
 #include "config.h"
-#include "core/html/HTMLPlugInElement.h"
 
 #include "V8HTMLAppletElement.h"
 #include "V8HTMLEmbedElement.h"

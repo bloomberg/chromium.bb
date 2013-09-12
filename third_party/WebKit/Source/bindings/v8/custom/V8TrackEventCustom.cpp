@@ -29,7 +29,6 @@
  */
 
 #include "config.h"
-
 #include "V8TrackEvent.h"
 
 #include "V8TextTrack.h"

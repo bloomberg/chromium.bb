@@ -29,7 +29,6 @@
  */
 
 #include "config.h"
-
 #include "V8SQLStatementErrorCallback.h"
 
 #include "V8SQLError.h"

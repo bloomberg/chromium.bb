@@ -29,11 +29,10 @@
  */
 
 #include "config.h"
-#include "core/dom/EventTarget.h"
+#include "V8EventTarget.h"
 
 #include "EventTargetHeaders.h"
 #include "EventTargetInterfaces.h"
-#include "V8EventTarget.h"
 
 namespace WebCore {
 

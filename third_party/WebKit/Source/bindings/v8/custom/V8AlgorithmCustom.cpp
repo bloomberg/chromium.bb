@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "modules/crypto/Algorithm.h"
+#include "V8Algorithm.h"
 
 #include "V8AesCbcParams.h"
 #include "V8AesKeyGenParams.h"
@@ -37,7 +37,6 @@
 #include "V8HmacParams.h"
 #include "V8RsaKeyGenParams.h"
 #include "V8RsaSsaParams.h"
-#include "bindings/v8/V8Binding.h"
 
 namespace WebCore {
 

@@ -74,8 +74,8 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/html/canvas/WebGLRenderingContext.h"
 #include "core/platform/NotImplemented.h"
-#include <limits>
 #include "wtf/FastMalloc.h"
+#include <limits>
 
 namespace WebCore {
 

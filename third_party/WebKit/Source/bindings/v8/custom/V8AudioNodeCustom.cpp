@@ -23,9 +23,7 @@
  */
 
 #include "config.h"
-
 #if ENABLE(WEB_AUDIO)
-
 #include "V8AudioNode.h"
 
 #include "V8AnalyserNode.h"

@@ -23,9 +23,7 @@
  */
 
 #include "config.h"
-
 #if ENABLE(WEB_AUDIO)
-
 #include "V8BiquadFilterNode.h"
 
 #include "bindings/v8/V8Binding.h"

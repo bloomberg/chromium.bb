@@ -34,7 +34,6 @@
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMWrapper.h"
 #include "bindings/v8/WrapperTypeInfo.h"
-
 #include "wtf/MathExtras.h"
 
 namespace WebCore {

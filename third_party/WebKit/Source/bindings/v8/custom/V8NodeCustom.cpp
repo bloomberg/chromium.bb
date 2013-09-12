@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/dom/Node.h"
+#include "V8Node.h"
 
 #include "V8Attr.h"
 #include "V8CDATASection.h"
@@ -40,7 +40,6 @@
 #include "V8Element.h"
 #include "V8Entity.h"
 #include "V8HTMLElement.h"
-#include "V8Node.h"
 #include "V8Notation.h"
 #include "V8ProcessingInstruction.h"
 #include "V8SVGElement.h"

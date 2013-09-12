@@ -26,7 +26,6 @@
  */
 
 #include "config.h"
-
 #include "V8IDBAny.h"
 
 #include "V8DOMStringList.h"

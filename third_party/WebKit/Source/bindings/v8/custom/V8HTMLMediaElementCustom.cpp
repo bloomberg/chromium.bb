@@ -24,7 +24,6 @@
  */
 
 #include "config.h"
-
 #include "V8HTMLMediaElement.h"
 
 #include "V8MediaController.h"

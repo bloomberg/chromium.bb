@@ -37,7 +37,6 @@
 #include "bindings/v8/V8Utilities.h"
 #include "core/dom/MessageChannel.h"
 #include "core/workers/WorkerGlobalScope.h"
-
 #include "wtf/RefPtr.h"
 
 namespace WebCore {

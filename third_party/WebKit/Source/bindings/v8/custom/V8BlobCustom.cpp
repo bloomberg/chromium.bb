@@ -29,9 +29,8 @@
  */
 
 #include "config.h"
-#include "core/fileapi/Blob.h"
-
 #include "V8Blob.h"
+
 #include "V8File.h"
 #include "bindings/v8/Dictionary.h"
 #include "bindings/v8/V8Binding.h"

@@ -32,7 +32,6 @@
 #define V8HTMLImageElementConstructor_h
 
 #include "bindings/v8/WrapperTypeInfo.h"
-
 #include <v8.h>
 
 namespace WebCore {

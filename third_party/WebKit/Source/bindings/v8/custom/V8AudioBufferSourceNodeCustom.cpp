@@ -23,9 +23,7 @@
  */
 
 #include "config.h"
-
 #if ENABLE(WEB_AUDIO)
-
 #include "V8AudioBufferSourceNode.h"
 
 #include "V8AudioBuffer.h"

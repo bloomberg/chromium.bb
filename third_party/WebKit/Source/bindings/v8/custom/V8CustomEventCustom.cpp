@@ -31,6 +31,7 @@
 #include "config.h"
 #include "V8CustomEvent.h"
 
+#include "RuntimeEnabledFeatures.h"
 #include "V8Event.h"
 #include "bindings/v8/Dictionary.h"
 #include "bindings/v8/ScriptState.h"
@@ -39,7 +40,6 @@
 #include "bindings/v8/V8DOMWrapper.h"
 #include "bindings/v8/V8HiddenPropertyName.h"
 #include "core/dom/ContextFeatures.h"
-#include "RuntimeEnabledFeatures.h"
 
 namespace WebCore {
 

@@ -29,8 +29,8 @@
  */
 
 #include "config.h"
-
 #include "V8SVGElement.h"
+
 #include "V8SVGElementWrapperFactory.h"
 
 namespace WebCore {

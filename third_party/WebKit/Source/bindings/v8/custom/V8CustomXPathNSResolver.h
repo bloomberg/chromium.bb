@@ -33,9 +33,9 @@
 #define V8CustomXPathNSResolver_h
 
 #include "core/xml/XPathNSResolver.h"
-#include <v8.h>
 #include "wtf/Forward.h"
 #include "wtf/RefPtr.h"
+#include <v8.h>
 
 namespace WebCore {
 

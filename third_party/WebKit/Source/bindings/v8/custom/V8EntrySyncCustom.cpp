@@ -29,11 +29,10 @@
  */
 
 #include "config.h"
-#include "modules/filesystem/EntrySync.h"
+#include "V8EntrySync.h"
 
 #include "V8Attr.h"
 #include "V8DirectoryEntrySync.h"
-#include "V8EntrySync.h"
 #include "V8FileEntrySync.h"
 #include "bindings/v8/V8Binding.h"
 #include "wtf/RefPtr.h"

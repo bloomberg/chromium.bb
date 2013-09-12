@@ -36,7 +36,6 @@
 #include "bindings/v8/V8GCController.h"
 #include "core/dom/LiveNodeList.h"
 #include "core/dom/NodeList.h"
-
 #include "wtf/RefPtr.h"
 #include "wtf/StdLibExtras.h"
 

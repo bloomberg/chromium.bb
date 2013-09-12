@@ -29,7 +29,6 @@
  */
 
 #include "config.h"
-
 #include "V8SVGDocument.h"
 
 #include "bindings/v8/ScriptController.h"

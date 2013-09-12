@@ -29,19 +29,16 @@
  */
 
 #include "config.h"
-
 #include "V8XSLTProcessor.h"
-
-#include "core/dom/Document.h"
-#include "core/dom/DocumentFragment.h"
-#include "core/dom/Node.h"
 
 #include "V8Document.h"
 #include "V8DocumentFragment.h"
 #include "V8Node.h"
 #include "bindings/v8/V8Binding.h"
+#include "core/dom/Document.h"
+#include "core/dom/DocumentFragment.h"
+#include "core/dom/Node.h"
 #include "core/xml/XSLTProcessor.h"
-
 #include "wtf/RefPtr.h"
 
 namespace WebCore {

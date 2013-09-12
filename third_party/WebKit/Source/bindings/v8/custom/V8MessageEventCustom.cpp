@@ -31,15 +31,14 @@
 #include "config.h"
 #include "V8MessageEvent.h"
 
-#include "bindings/v8/SerializedScriptValue.h"
-#include "bindings/v8/V8HiddenPropertyName.h"
-#include "bindings/v8/custom/V8ArrayBufferCustom.h"
-#include "core/dom/MessageEvent.h"
-
 #include "V8Blob.h"
 #include "V8MessagePort.h"
 #include "V8Window.h"
+#include "bindings/v8/SerializedScriptValue.h"
 #include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8HiddenPropertyName.h"
+#include "bindings/v8/custom/V8ArrayBufferCustom.h"
+#include "core/dom/MessageEvent.h"
 
 namespace WebCore {
 

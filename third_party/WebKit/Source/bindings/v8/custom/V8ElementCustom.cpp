@@ -29,9 +29,8 @@
  */
 
 #include "config.h"
-#include "core/dom/Element.h"
-
 #include "V8Element.h"
+
 #include "V8HTMLElement.h"
 #include "V8SVGElement.h"
 

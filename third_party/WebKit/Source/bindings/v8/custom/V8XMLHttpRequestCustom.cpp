@@ -47,7 +47,6 @@
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/xml/XMLHttpRequest.h"
 #include "wtf/ArrayBuffer.h"
-
 #include <v8.h>
 
 namespace WebCore {

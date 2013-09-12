@@ -29,7 +29,6 @@
  */
 
 #include "config.h"
-
 #include "V8SVGPathSeg.h"
 
 #include "V8SVGPathSegArcAbs.h"
