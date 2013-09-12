@@ -753,6 +753,10 @@ void SchedulerStateMachine::DidLeaveBeginFrame() {
   inside_begin_frame_ = false;
 }
 
+void SchedulerStateMachine::PollForAnticipatedDrawTriggers() {
+  current_frame_number_++;
+}
+
 void SchedulerStateMachine::SetVisible(bool visible) { visible_ = visible; }
 
 void SchedulerStateMachine::SetNeedsRedraw() { needs_redraw_ = true; }

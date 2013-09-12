@@ -157,7 +157,23 @@ void Scheduler::SetupNextBeginFrameIfNeeded() {
   if (state_machine_.inside_begin_frame() && has_pending_begin_frame_) {
     has_pending_begin_frame_ = false;
     client_->SetNeedsBeginFrameOnImplThread(true);
-    return;
+  }
+
+  // Setup PollForAnticipatedDrawTriggers for cases where we want a proactive
+  // BeginFrame but aren't requesting one.
+  if (!needs_begin_frame &&
+      state_machine_.ProactiveBeginFrameWantedByImplThread()) {
+    if (poll_for_draw_triggers_closure_.IsCancelled()) {
+      poll_for_draw_triggers_closure_.Reset(
+          base::Bind(&Scheduler::PollForAnticipatedDrawTriggers,
+                     weak_factory_.GetWeakPtr()));
+      base::MessageLoop::current()->PostDelayedTask(
+          FROM_HERE,
+          poll_for_draw_triggers_closure_.callback(),
+          last_begin_frame_args_.interval);
+    }
+  } else {
+    poll_for_draw_triggers_closure_.Cancel();
   }
 }
 
@@ -170,6 +186,12 @@ void Scheduler::BeginFrame(const BeginFrameArgs& args) {
   state_machine_.DidEnterBeginFrame(args);
   ProcessScheduledActions();
   state_machine_.DidLeaveBeginFrame();
+}
+
+void Scheduler::PollForAnticipatedDrawTriggers() {
+  TRACE_EVENT0("cc", "Scheduler::PollForAnticipatedDrawTriggers");
+  state_machine_.PollForAnticipatedDrawTriggers();
+  ProcessScheduledActions();
 }
 
 void Scheduler::DrawAndSwapIfPossible() {

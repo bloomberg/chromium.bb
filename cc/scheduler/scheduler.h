@@ -98,6 +98,7 @@ class CC_EXPORT Scheduler {
   base::TimeTicks LastBeginFrameOnImplThreadTime();
 
   void BeginFrame(const BeginFrameArgs& args);
+  void PollForAnticipatedDrawTriggers();
 
   scoped_ptr<base::Value> StateAsValue() {
     return state_machine_.AsValue().Pass();
@@ -123,6 +124,7 @@ class CC_EXPORT Scheduler {
   // workaround.
   bool safe_to_expect_begin_frame_;
   BeginFrameArgs last_begin_frame_args_;
+  base::CancelableClosure poll_for_draw_triggers_closure_;
 
   SchedulerStateMachine state_machine_;
   bool inside_process_scheduled_actions_;

@@ -121,6 +121,11 @@ class CC_EXPORT SchedulerStateMachine {
   void DidLeaveBeginFrame();
   bool inside_begin_frame() const { return inside_begin_frame_; }
 
+  // PollForAnticipatedDrawTriggers is used by the synchronous compositor to
+  // avoid requesting BeginImplFrames when we won't actually draw but still
+  // need to advance our state at vsync intervals.
+  void PollForAnticipatedDrawTriggers();
+
   // Indicates whether the LayerTreeHostImpl is visible.
   void SetVisible(bool visible);
 
