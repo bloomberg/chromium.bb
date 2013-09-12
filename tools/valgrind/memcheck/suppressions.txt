@@ -3693,7 +3693,7 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN7WebCore23v8StringToWebCoreStringIN3WTF6StringEEET_N2v86HandleINS4_6StringEEENS_12ExternalModeE
-   fun:_ZN7WebCore16V8StringResourceILNS_20V8StringResourceMode*
+   fun:_ZN*WebCore16V8StringResourceILNS_20V8StringResourceMode*
 }
 {
    bug_101145c
@@ -4970,9 +4970,9 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN7WebCore23v8StringToWebCoreStringIN3WTF12AtomicStringEEET_N2v86HandleINS4_6StringEEENS_12ExternalModeE
-   fun:_ZN7WebCore*V8StringResourceILNS_20V8StringResourceMode*
+   fun:_ZN*WebCore*V8StringResourceILNS_20V8StringResourceMode*
    ...
-   fun:_ZN7WebCore23WorkerContextV8InternalL22addEventListenerMethodERKN2v89ArgumentsE
+   fun:_ZN7WebCore21EventTargetV8InternalL22addEventListenerMethodERKN2v820FunctionCallbackInfoINS1_5ValueEEE
 }
 {
    bug_138712
@@ -5602,7 +5602,7 @@
    fun:_ZNKSt4lessIN3gpu5gles221ShaderTranslatorCache26ShaderTranslatorInitParamsEEclERKS3_S6_
    ...
    fun:_ZNSt3mapIN3gpu5gles221ShaderTranslatorCache26ShaderTranslatorInitParamsEPNS1_16ShaderTranslatorESt4lessIS3_ESaISt4pairIKS3_S5_EEE4findERS9_
-   fun:_ZN3gpu5gles221ShaderTranslatorCache13GetTranslatorE12ShShaderType12ShShaderSpecPK18ShBuiltInResourcesNS0_25ShaderTranslatorInterface22GlslImplementationTypeENS7_27GlslBuiltInFunctionBehaviorE
+   ...
    fun:_ZN3gpu5gles216GLES2DecoderImpl26InitializeShaderTranslatorEv
 }
 {
@@ -7262,18 +7262,45 @@
    fun:_ZN7WebCore19DOMWindowV8InternalL30openDatabaseMethodForMainWorldERKN2v820FunctionCallbackInfoINS1_5ValueEEE
    fun:_ZN7WebCore19DOMWindowV8InternalL38openDatabaseMethodCallbackForMainWorldERKN2v820FunctionCallbackInfoINS1_5ValueEEE
    fun:_ZN2v88internal25FunctionCallbackArguments4CallEPFvRKNS_20FunctionCallbackInfoINS_5ValueEEEE
-   fun:_ZN2v88internalL19HandleApiCallHelperILb0EEEPNS0_11MaybeObjectENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
-   fun:_ZN2v88internalL25Builtin_implHandleApiCallENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
-   fun:_ZN2v88internalL21Builtin_HandleApiCallEiPPNS0_6ObjectEPNS0_7IsolateE
-   obj:*
-   obj:*
-   obj:*
-   obj:*
-   fun:_ZN2v88internalL6InvokeEbNS0_6HandleINS0_10JSFunctionEEENS1_INS0_6ObjectEEEiPS5_Pb
-   fun:_ZN2v88internal9Execution4CallEPNS0_7IsolateENS0_6HandleINS0_6ObjectEEES6_iPS6_Pbb
-   fun:_ZN2v86Script3RunEv
-   fun:_ZN7WebCore14V8ScriptRunner17runCompiledScriptEN2v86HandleINS1_6ScriptEEEPNS_22ScriptExecutionContextEPNS1_7IsolateE
-   fun:_ZN7WebCore16ScriptController19compileAndRunScriptERKNS_16ScriptSourceCodeENS_19AccessControlStatusE
-   fun:_ZN7WebCore16ScriptController24executeScriptInMainWorldERKNS_16ScriptSourceCodeENS_19AccessControlStatusE
-   fun:_ZN7WebCore12ScriptLoader13executeScriptERKNS_16ScriptSourceCodeE
+}
+{
+   bug_290364
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base13WaitableEventC1Ebb
+   fun:_ZN4base12_GLOBAL__N_112ThreadParamsC1Ev
+   fun:_ZN4base12_GLOBAL__N_112CreateThreadEmbPNS_14PlatformThread8DelegateEPNS_20PlatformThreadHandleENS_14ThreadPriorityE
+   fun:_ZN4base14PlatformThread6CreateEmPNS0_8DelegateEPNS_20PlatformThreadHandleE
+   fun:_ZN4base12SimpleThread5StartEv
+   fun:_ZN4base19SequencedWorkerPool6WorkerC1ERK13scoped_refptrIS0_EiRKSs
+   fun:_ZN4base19SequencedWorkerPool5Inner30FinishStartingAdditionalThreadEi
+   fun:_ZN4base19SequencedWorkerPool5Inner10ThreadLoopEPNS0_6WorkerE
+   fun:_ZN4base19SequencedWorkerPool6Worker3RunEv
+   fun:_ZN4base12SimpleThread10ThreadMainEv
+   fun:_ZN4base12_GLOBAL__N_110ThreadFuncEPv
+}
+{
+   bug_290405
+   Memcheck:Uninitialized
+   fun:_ZNK16GrGradientEffect9onIsEqualERK8GrEffect
+   fun:_ZNK8GrEffect7isEqualERKS_
+   fun:_ZNK13GrEffectStage13DeferredStage7isEqualERKS_b
+   fun:_ZNK11GrDrawState13DeferredState7isEqualERKS_
+   fun:_ZNK19GrInOrderDrawBuffer13needsNewStateEv
+   fun:_ZN19GrInOrderDrawBuffer6onDrawERKN12GrDrawTarget8DrawInfoE
+   fun:_ZN12GrDrawTarget20drawIndexedInstancesE15GrPrimitiveTypeiiiPK6SkRect
+   fun:_ZN13GrTextContext11flushGlyphsEv
+}
+{
+   bug_290407
+   Memcheck:Leak
+   fun:calloc
+   fun:_swrast_new_soft_renderbuffer
+   fun:_mesa_BindRenderbufferEXT
+   fun:shared_dispatch_stub_939
+   fun:_ZN3gfx9GLApiBase23glBindRenderbufferEXTFnEjj
+   fun:_ZN3gpu5gles216GLES2DecoderImpl18DoBindRenderbufferEjj
+   fun:_ZN3gpu5gles216GLES2DecoderImpl22HandleBindRenderbufferEjRKNS0_4cmds16BindRenderbufferE
+   fun:_ZN3gpu5gles216GLES2DecoderImpl9DoCommandEjjPKv
+   fun:_ZN3gpu13CommandParser14ProcessCommandEv
 }
