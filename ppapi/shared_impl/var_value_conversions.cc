@@ -131,6 +131,9 @@ bool CreateValueFromVarHelper(const std::set<int64_t>& parent_ids,
       value->reset(binary_value);
       return true;
     }
+    case PP_VARTYPE_RESOURCE: {
+      return false;
+    }
   }
   NOTREACHED();
   return false;

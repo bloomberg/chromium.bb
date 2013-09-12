@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From pp_var.idl modified Wed Sep  4 10:11:31 2013. */
+/* From pp_var.idl modified Thu Sep 12 16:41:36 2013. */
 
 #ifndef PPAPI_C_PP_VAR_H_
 #define PPAPI_C_PP_VAR_H_
@@ -86,7 +86,13 @@ typedef enum {
    * ArrayBuffer vars. These objects are reference counted, so AddRef and
    * Release must be used properly to avoid memory leaks.
    */
-  PP_VARTYPE_ARRAY_BUFFER = 9
+  PP_VARTYPE_ARRAY_BUFFER = 9,
+  /**
+   * Resources are not currently supported but will be added in the future
+   * These objects are reference counted, so AddRef and Release must be used
+   * properly to avoid memory leaks.
+   */
+  PP_VARTYPE_RESOURCE = 10
 } PP_VarType;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_VarType, 4);
 /**
@@ -122,12 +128,12 @@ union PP_VarValue {
   double as_double;
   /**
    * If <code>type</code> is <code>PP_VARTYPE_STRING</code>,
-   * <code>PP_VARTYPE_OBJECT</code>, <code>PP_VARTYPE_ARRAY</code>, or
-   * <code>PP_VARTYPE_DICTIONARY</code>,
-   * <code>as_id</code> represents the value of this <code>PP_Var</code> as
-   * an opaque handle assigned by the browser. This handle is guaranteed
-   * never to be 0, so a module can initialize this ID to 0 to indicate a
-   * "NULL handle."
+   * <code>PP_VARTYPE_OBJECT</code>, <code>PP_VARTYPE_ARRAY</code>,
+   * <code>PP_VARTYPE_DICTIONARY</code>, <code>PP_VARTYPE_ARRAY_BUFFER</code>,
+   * or <code>PP_VARTYPE_RESOURCE</code>, <code>as_id</code> represents the
+   * value of this <code>PP_Var</code> as an opaque handle assigned by the
+   * browser. This handle is guaranteed never to be 0, so a module can
+   * initialize this ID to 0 to indicate a "NULL handle."
    */
   int64_t as_id;
 };

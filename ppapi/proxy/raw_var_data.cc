@@ -240,6 +240,11 @@ RawVarData* RawVarData::Create(PP_VarType type) {
       return new ArrayRawVarData();
     case PP_VARTYPE_DICTIONARY:
       return new DictionaryRawVarData();
+    case PP_VARTYPE_RESOURCE:
+      // TODO(mgiuca): Add ResourceRawVarData. (http://crbug.com/177017)
+      // This path will be reached if a NaCl module attempts to pass a
+      // PP_VARTYPE_RESOURCE in a message.
+      break;
   }
   NOTREACHED();
   return NULL;

@@ -104,7 +104,8 @@ PP_Var CopyPPVar(const PP_Var& var) {
     case PP_VARTYPE_OBJECT:
     case PP_VARTYPE_ARRAY:
     case PP_VARTYPE_DICTIONARY:
-      // Objects/Arrays/Dictionaries not supported by PostMessage in-process.
+    case PP_VARTYPE_RESOURCE:
+      // These types are not supported by PostMessage in-process.
       NOTREACHED();
       return PP_MakeUndefined();
   }

@@ -81,7 +81,14 @@ enum PP_VarType {
    * ArrayBuffer vars. These objects are reference counted, so AddRef and
    * Release must be used properly to avoid memory leaks.
    */
-  PP_VARTYPE_ARRAY_BUFFER = 9
+  PP_VARTYPE_ARRAY_BUFFER = 9,
+
+  /**
+   * Resources are not currently supported but will be added in the future
+   * These objects are reference counted, so AddRef and Release must be used
+   * properly to avoid memory leaks.
+   */
+  PP_VARTYPE_RESOURCE = 10
 };
 
 
@@ -113,12 +120,12 @@ enum PP_VarType {
 
   /**
    * If <code>type</code> is <code>PP_VARTYPE_STRING</code>,
-   * <code>PP_VARTYPE_OBJECT</code>, <code>PP_VARTYPE_ARRAY</code>, or
-   * <code>PP_VARTYPE_DICTIONARY</code>,
-   * <code>as_id</code> represents the value of this <code>PP_Var</code> as
-   * an opaque handle assigned by the browser. This handle is guaranteed
-   * never to be 0, so a module can initialize this ID to 0 to indicate a
-   * "NULL handle."
+   * <code>PP_VARTYPE_OBJECT</code>, <code>PP_VARTYPE_ARRAY</code>,
+   * <code>PP_VARTYPE_DICTIONARY</code>, <code>PP_VARTYPE_ARRAY_BUFFER</code>,
+   * or <code>PP_VARTYPE_RESOURCE</code>, <code>as_id</code> represents the
+   * value of this <code>PP_Var</code> as an opaque handle assigned by the
+   * browser. This handle is guaranteed never to be 0, so a module can
+   * initialize this ID to 0 to indicate a "NULL handle."
    */
   int64_t as_id;
 };
