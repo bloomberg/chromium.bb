@@ -396,9 +396,9 @@ class NinjaWriter:
       if len(self.archs) > 1:
         self.arch_subninjas = dict(
             (arch, ninja_syntax.Writer(
-                open(os.path.join(self.toplevel_build,
-                                  self._SubninjaNameForArch(arch)),
-                     'w')))
+                OpenOutput(os.path.join(self.toplevel_build,
+                                        self._SubninjaNameForArch(arch)),
+                           'w')))
             for arch in self.archs)
 
     # Compute predepends for all rules.
