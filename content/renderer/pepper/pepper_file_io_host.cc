@@ -530,12 +530,15 @@ void PepperFileIOHost::ExecutePlatformOpenFileCallback(
     if (!(file_for_transit == IPC::InvalidPlatformFileForTransit())) {
       // Send the file descriptor to the plugin process. This is used in the
       // plugin for any file operations that can be done there.
-      // IMPORTANT: Clear PP_FILEOPENFLAG_WRITE and PP_FILEOPENFLAG_APPEND so
-      // the plugin can't write and so bypass our quota checks.
-      int32_t no_write_flags =
-          open_flags_ & ~(PP_FILEOPENFLAG_WRITE | PP_FILEOPENFLAG_APPEND);
+      int32_t flags_to_send = open_flags_;
+      if (!host()->permissions().HasPermission(ppapi::PERMISSION_DEV)) {
+        // IMPORTANT: Clear PP_FILEOPENFLAG_WRITE and PP_FILEOPENFLAG_APPEND so
+        // the plugin can't write and so bypass our quota checks.
+        flags_to_send =
+            open_flags_ & ~(PP_FILEOPENFLAG_WRITE | PP_FILEOPENFLAG_APPEND);
+      }
       ppapi::proxy::SerializedHandle file_handle;
-      file_handle.set_file_handle(file_for_transit, no_write_flags);
+      file_handle.set_file_handle(file_for_transit, flags_to_send);
       reply_context.params.AppendHandle(file_handle);
     }
   }
