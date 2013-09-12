@@ -36,14 +36,6 @@ int32_t NaClSysBrk(struct NaClAppThread *natp,
 
 int NaClHighResolutionTimerEnabled(void);
 
-int32_t NaClOpenAclCheck(struct NaClApp *nap,
-                         char const     *path,
-                         int            flags,
-                         int            mode);
-
-int32_t NaClStatAclCheck(struct NaClApp *nap,
-                         char const     *path);
-
 int32_t NaClSysGetpid(struct NaClAppThread *natp);
 
 int32_t NaClSysExit(struct NaClAppThread  *natp,
@@ -65,11 +57,6 @@ int32_t NaClSysDup(struct NaClAppThread *natp,
 int32_t NaClSysDup2(struct NaClAppThread  *natp,
                     int                   oldfd,
                     int                   newfd);
-
-int32_t NaClSysOpen(struct NaClAppThread  *natp,
-                    char                  *pathname,
-                    int                   flags,
-                    int                   mode);
 
 int32_t NaClSysClose(struct NaClAppThread *natp,
                      int                  d);
@@ -97,27 +84,6 @@ int32_t NaClSysIoctl(struct NaClAppThread *natp,
 int32_t NaClSysFstat(struct NaClAppThread *natp,
                      int                  d,
                      struct nacl_abi_stat *nasp);
-
-int32_t NaClSysStat(struct NaClAppThread *natp,
-                    const char           *path,
-                    struct nacl_abi_stat *nasp);
-
-int32_t NaClSysMkdir(struct NaClAppThread *natp,
-                     uint32_t             path,
-                     int                  mode);
-
-int32_t NaClSysRmdir(struct NaClAppThread *natp,
-                     uint32_t             path);
-
-int32_t NaClSysChdir(struct NaClAppThread *natp,
-                     uint32_t             path);
-
-int32_t NaClSysGetcwd(struct NaClAppThread *natp,
-                      uint32_t             buffer,
-                      int                  len);
-
-int32_t NaClSysUnlink(struct NaClAppThread *natp,
-                      uint32_t             path);
 
 /* bool */
 int NaClSysCommonAddrRangeContainsExecutablePages(struct NaClApp *nap,

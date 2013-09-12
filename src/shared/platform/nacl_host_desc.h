@@ -12,6 +12,8 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_NACL_HOST_DESC_H__
 #define NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_NACL_HOST_DESC_H__
 
+#include <sys/stat.h>
+
 #include "native_client/src/include/nacl_compiler_annotations.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/platform/nacl_sync.h"

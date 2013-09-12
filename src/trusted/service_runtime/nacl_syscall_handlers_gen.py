@@ -32,6 +32,7 @@ AUTOGEN_HEADER = """\
 
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
 #include "native_client/src/trusted/service_runtime/sys_exception.h"
+#include "native_client/src/trusted/service_runtime/sys_filename.h"
 #include "native_client/src/trusted/service_runtime/sys_imc.h"
 #include "native_client/src/trusted/service_runtime/sys_list_mappings.h"
 """
