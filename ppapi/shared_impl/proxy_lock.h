@@ -16,6 +16,10 @@ namespace base {
 class Lock;
 }
 
+namespace content {
+class HostGlobals;
+}
+
 namespace ppapi {
 
 // This is the one lock to rule them all for the ppapi proxy. All PPB interface
@@ -28,6 +32,12 @@ namespace ppapi {
 // tracker, etc.
 class PPAPI_SHARED_EXPORT ProxyLock {
  public:
+  // Return the global ProxyLock. Normally, you should not access this
+  // directly but instead use ProxyAutoLock or ProxyAutoUnlock. But sometimes
+  // you need access to the ProxyLock, for example to create a condition
+  // variable.
+  static base::Lock* Get();
+
   // Acquire the proxy lock. If it is currently held by another thread, block
   // until it is available. If the lock has not been set using the 'Set' method,
   // this operation does nothing. That is the normal case for the host side;
@@ -41,7 +51,23 @@ class PPAPI_SHARED_EXPORT ProxyLock {
   // process). Does nothing when running in-process (or in the host process).
   static void AssertAcquired();
 
+  // We have some unit tests where one thread pretends to be the host and one
+  // pretends to be the plugin. This allows the lock to do nothing on only one
+  // thread to support these tests. See TwoWayTest for more information.
+  static void DisableLockingOnThreadForTest();
+
+  // Enables locking on the current thread. Although locking is enabled by
+  // default, unit tests that rely on the lock being enabled should *still*
+  // call this, since a previous test may have disabled locking.
+  static void EnableLockingOnThreadForTest();
+
  private:
+  friend class content::HostGlobals;
+  // On the host side, we do not lock. This must be called at most once at
+  // startup, before other threads that may access the ProxyLock have had a
+  // chance to run.
+  static void DisableLocking();
+
   DISALLOW_IMPLICIT_CONSTRUCTORS(ProxyLock);
 };
 
@@ -164,6 +190,35 @@ class RunWhileLockedHelper<void ()> {
     }
   }
 
+  ~RunWhileLockedHelper() {
+    // Check that the Callback is destroyed on the same thread as where
+    // CallWhileLocked happened (if CallWhileLocked happened).
+    DCHECK(thread_checker_.CalledOnValidThread());
+    // Here we read callback_ without the lock. This is why the callback must be
+    // destroyed on the same thread where it runs. There are 2 cases where
+    // callback_ will be NULL:
+    //   1) This is the original RunWhileLockedHelper that RunWhileLocked
+    //      created. When it was copied somewhere else (e.g., to a MessageLoop
+    //      queue), callback_ was passed to the new copy, and the original
+    //      RunWhileLockedHelper's callback_ was set to NULL (since scoped_ptrs
+    //      only ever have 1 owner). In this case, we don't want to acquire the
+    //      lock, because we already have it.
+    //   2) callback_ has already been run via CallWhileLocked. In this case,
+    //      there's no need to acquire the lock, because we don't touch any
+    //      shared data.
+    if (callback_) {
+      // If the callback was not run, we still need to have the lock when we
+      // destroy the callback in case it had a Resource bound to it. This
+      // ensures that the Resource's destructor is invoked only with the lock
+      // held.
+      //
+      // Also: Resource and Var inherit RefCounted (not ThreadSafeRefCounted),
+      // and these callbacks need to be usable on any thread. So we need to lock
+      // when releasing the callback to avoid ref counting races.
+      ProxyAutoLock lock;
+      callback_.reset();
+    }
+  }
  private:
   scoped_ptr<CallbackType> callback_;
 
@@ -188,7 +243,13 @@ class RunWhileLockedHelper<void (P1)> {
       temp_callback->Run(p1);
     }
   }
-
+  ~RunWhileLockedHelper() {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    if (callback_) {
+      ProxyAutoLock lock;
+      callback_.reset();
+    }
+  }
  private:
   scoped_ptr<CallbackType> callback_;
   base::ThreadChecker thread_checker_;
@@ -211,7 +272,13 @@ class RunWhileLockedHelper<void (P1, P2)> {
       temp_callback->Run(p1, p2);
     }
   }
-
+  ~RunWhileLockedHelper() {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    if (callback_) {
+      ProxyAutoLock lock;
+      callback_.reset();
+    }
+  }
  private:
   scoped_ptr<CallbackType> callback_;
   base::ThreadChecker thread_checker_;
@@ -234,7 +301,13 @@ class RunWhileLockedHelper<void (P1, P2, P3)> {
       temp_callback->Run(p1, p2, p3);
     }
   }
-
+  ~RunWhileLockedHelper() {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    if (callback_) {
+      ProxyAutoLock lock;
+      callback_.reset();
+    }
+  }
  private:
   scoped_ptr<CallbackType> callback_;
   base::ThreadChecker thread_checker_;
@@ -270,8 +343,6 @@ class RunWhileLockedHelper<void (P1, P2, P3)> {
 // and run there). The callback must be destroyed on the same thread where it
 // was run (but can be destroyed with or without the proxy lock acquired). Or
 // (3) destroyed without the proxy lock acquired.
-// TODO(dmichael): This won't actually fail until
-//                 https://codereview.chromium.org/19492014/ lands.
 template <class FunctionType>
 inline base::Callback<FunctionType>
 RunWhileLocked(const base::Callback<FunctionType>& callback) {

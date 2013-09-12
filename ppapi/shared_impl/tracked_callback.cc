@@ -62,7 +62,7 @@ TrackedCallback::TrackedCallback(
     tracker_->Add(make_scoped_refptr(this));
   }
 
-  base::Lock* proxy_lock = PpapiGlobals::Get()->GetProxyLock();
+  base::Lock* proxy_lock = ProxyLock::Get();
   if (proxy_lock) {
     // If the proxy_lock is valid, we're running out-of-process, and locking
     // is enabled.

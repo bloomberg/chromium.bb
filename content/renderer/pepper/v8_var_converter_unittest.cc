@@ -159,7 +159,7 @@ class V8VarConverterTest : public testing::Test {
 
   // testing::Test implementation.
   virtual void SetUp() {
-    ProxyLock::Acquire();
+    ppapi::ProxyLock::DisableLockingOnThreadForTest();
     v8::HandleScope handle_scope(isolate_);
     v8::Handle<v8::ObjectTemplate> global = v8::ObjectTemplate::New();
     context_.Reset(isolate_, v8::Context::New(isolate_, NULL, global));

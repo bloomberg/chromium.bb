@@ -19,6 +19,7 @@
 #include "ppapi/proxy/resource_message_test_sink.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
 #include "ppapi/shared_impl/ppb_file_ref_shared.h"
+#include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/shared_impl/resource_tracker.h"
 #include "ppapi/shared_impl/test_globals.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -36,6 +37,7 @@ class PepperFileChooserHostTest : public RenderViewTest {
   virtual void SetUp() {
     SetContentClient(&client_);
     RenderViewTest::SetUp();
+    ppapi::ProxyLock::DisableLockingOnThreadForTest();
 
     globals_.GetResourceTracker()->DidCreateInstance(pp_instance_);
   }

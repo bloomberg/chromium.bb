@@ -9,7 +9,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/synchronization/lock.h"
 #include "base/threading/thread_local_storage.h"
 #include "ppapi/proxy/connection.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
@@ -64,7 +63,6 @@ class PPAPI_PROXY_EXPORT PluginGlobals : public PpapiGlobals {
   virtual PP_Module GetModuleForInstance(PP_Instance instance) OVERRIDE;
   virtual std::string GetCmdLine() OVERRIDE;
   virtual void PreCacheFontForFlash(const void* logfontw) OVERRIDE;
-  virtual base::Lock* GetProxyLock() OVERRIDE;
   virtual void LogWithSource(PP_Instance instance,
                              PP_LogLevel level,
                              const std::string& source,
@@ -142,8 +140,6 @@ class PPAPI_PROXY_EXPORT PluginGlobals : public PpapiGlobals {
   PluginResourceTracker plugin_resource_tracker_;
   PluginVarTracker plugin_var_tracker_;
   scoped_refptr<CallbackTracker> callback_tracker_;
-
-  base::Lock proxy_lock_;
 
   scoped_ptr<base::ThreadLocalStorage::Slot> msg_loop_slot_;
   // Note that loop_for_main_thread's constructor sets msg_loop_slot_, so it

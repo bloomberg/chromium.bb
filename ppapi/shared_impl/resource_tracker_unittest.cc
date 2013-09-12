@@ -5,6 +5,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include "base/compiler_specific.h"
+#include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/shared_impl/resource_tracker.h"
 #include "ppapi/shared_impl/test_globals.h"
@@ -59,6 +60,7 @@ class ResourceTrackerTest : public testing::Test {
 // deleted but the object lives on.
 TEST_F(ResourceTrackerTest, LastPluginRef) {
   PP_Instance instance = 0x1234567;
+  ProxyAutoLock lock;
   resource_tracker().DidCreateInstance(instance);
 
   scoped_refptr<MyMockResource> resource(new MyMockResource(instance));
@@ -81,6 +83,7 @@ TEST_F(ResourceTrackerTest, LastPluginRef) {
 TEST_F(ResourceTrackerTest, InstanceDeletedWithPluginRef) {
   // Make a resource with one ref held by the plugin, and delete the instance.
   PP_Instance instance = 0x2345678;
+  ProxyAutoLock lock;
   resource_tracker().DidCreateInstance(instance);
   MyMockResource* resource = new MyMockResource(instance);
   resource->GetReference();
@@ -99,6 +102,7 @@ TEST_F(ResourceTrackerTest, InstanceDeletedWithPluginRef) {
 TEST_F(ResourceTrackerTest, InstanceDeletedWithBothRefed) {
   // Create a new instance.
   PP_Instance instance = 0x3456789;
+  ProxyAutoLock lock;
 
   // Make a resource with one ref held by the plugin and one ref held by us
   // (outlives the plugin), and delete the instance.
