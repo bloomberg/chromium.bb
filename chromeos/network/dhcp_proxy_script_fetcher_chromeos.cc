@@ -49,6 +49,7 @@ int DhcpProxyScriptFetcherChromeos::Fetch(
     const net::CompletionCallback& callback) {
   if (!network_handler_message_loop_.get())
     return net::ERR_PAC_NOT_IN_DHCP;
+  CHECK(!callback.is_null());
   base::PostTaskAndReplyWithResult(
       network_handler_message_loop_.get(),
       FROM_HERE,
@@ -60,6 +61,8 @@ int DhcpProxyScriptFetcherChromeos::Fetch(
 
 void DhcpProxyScriptFetcherChromeos::Cancel() {
   proxy_script_fetcher_->Cancel();
+  // Invalidate any pending callbacks (i.e. calls to ContinueFetch).
+  weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
 const GURL& DhcpProxyScriptFetcherChromeos::GetPacURL() const {
@@ -72,7 +75,7 @@ std::string DhcpProxyScriptFetcherChromeos::GetFetcherName() const {
 
 void DhcpProxyScriptFetcherChromeos::ContinueFetch(
     base::string16* utf16_text,
-    const net::CompletionCallback& callback,
+    net::CompletionCallback callback,
     std::string pac_url) {
   NET_LOG_EVENT("DhcpProxyScriptFetcher", pac_url);
   pac_url_ = GURL(pac_url);

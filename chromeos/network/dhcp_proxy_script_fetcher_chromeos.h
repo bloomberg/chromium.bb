@@ -38,7 +38,7 @@ class CHROMEOS_EXPORT DhcpProxyScriptFetcherChromeos
 
  private:
   void ContinueFetch(base::string16* utf16_text,
-                     const net::CompletionCallback& callback,
+                     net::CompletionCallback callback,
                      std::string pac_url);
 
   net::URLRequestContext* url_request_context_;  // Weak ptr
