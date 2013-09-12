@@ -45,11 +45,7 @@ class MemoryMetric(Metric):
         # rendering this page and no other pages. For this test, we need to
         # disable histogram customizing, so that we get the same generic
         # histograms produced for all pages.
-        '--disable-histogram-customizer',
-
-        # Old commandline flags used for reference builds.
-        '--dom-automation',
-        '--reduce-security-for-dom-automation-tests',
+        '--disable-histogram-customizer'
     ])
 
   def Start(self, page, tab):
@@ -58,7 +54,7 @@ class MemoryMetric(Metric):
     Here, this consists of recording the start value of all the histograms.
     """
     for h in _HISTOGRAMS:
-      histogram_data = histogram_util.GetHistogramFromDomAutomation(
+      histogram_data = histogram_util.GetHistogram(
           h['type'], h['name'], tab)
       # Histogram data may not be available
       if not histogram_data:
@@ -76,7 +72,7 @@ class MemoryMetric(Metric):
       # Histogram data may not be available
       if h['name'] not in self._histogram_start:
         continue
-      histogram_data = histogram_util.GetHistogramFromDomAutomation(
+      histogram_data = histogram_util.GetHistogram(
           h['type'], h['name'], tab)
       self._histogram_delta[h['name']] = histogram_util.SubtractHistogram(
           histogram_data, self._histogram_start[h['name']])

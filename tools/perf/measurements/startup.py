@@ -42,20 +42,11 @@ class Startup(page_measurement.PageMeasurement):
       self.discard_first_result = True
 
     options.AppendExtraBrowserArgs([
-        '--enable-stats-collection-bindings',
-
-        # Old commandline flags used for reference builds.
-        '--dom-automation',
-        '--reduce-security-for-dom-automation-tests'
+        '--enable-stats-collection-bindings'
     ])
 
   def MeasurePage(self, page, tab, results):
-    # TODO(jeremy): Remove references to
-    # domAutomationController.getBrowserHistogram when we update the reference
-    # builds.
-    get_histogram_js = ('(window.statsCollectionController ?'
-        'statsCollectionController :'
-        'domAutomationController).getBrowserHistogram("%s")')
+    get_histogram_js = 'statsCollectionController.getBrowserHistogram("%s")'
 
     for display_name, histogram_name in self.HISTOGRAMS_TO_RECORD.iteritems():
       result = tab.EvaluateJavaScript(get_histogram_js % histogram_name)

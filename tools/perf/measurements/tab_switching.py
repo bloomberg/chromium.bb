@@ -26,9 +26,7 @@ class TabSwitching(page_measurement.PageMeasurement):
 
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs([
-        '--enable-stats-collection-bindings',
-        '--dom-automation',
-        '--reduce-security-for-dom-automation-tests'
+        '--enable-stats-collection-bindings'
     ])
 
   def DidStartBrowser(self, browser):
@@ -63,7 +61,7 @@ class TabSwitching(page_measurement.PageMeasurement):
 
     histogram_name = 'MPArch.RWH_TabSwitchPaintDuration'
     histogram_type = histogram_util.BROWSER_HISTOGRAM
-    first_histogram = histogram_util.GetHistogramFromDomAutomation(
+    first_histogram = histogram_util.GetHistogram(
         histogram_type, histogram_name, tab)
     prev_histogram = first_histogram
 
@@ -71,16 +69,16 @@ class TabSwitching(page_measurement.PageMeasurement):
       t = tab.browser.tabs[i]
       t.Activate()
       def _IsDone():
-        cur_histogram = histogram_util.GetHistogramFromDomAutomation(
+        cur_histogram = histogram_util.GetHistogram(
             histogram_type, histogram_name, tab)
         diff_histogram = histogram_util.SubtractHistogram(
             cur_histogram, prev_histogram)
         return diff_histogram
       util.WaitFor(_IsDone, 30)
-      prev_histogram = histogram_util.GetHistogramFromDomAutomation(
+      prev_histogram = histogram_util.GetHistogram(
           histogram_type, histogram_name, tab)
 
-    last_histogram = histogram_util.GetHistogramFromDomAutomation(
+    last_histogram = histogram_util.GetHistogram(
         histogram_type, histogram_name, tab)
     diff_histogram = histogram_util.SubtractHistogram(last_histogram,
         first_histogram)

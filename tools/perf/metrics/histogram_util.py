@@ -6,9 +6,6 @@
 
 The histogram data is the same data as is visible from "chrome://histograms".
 More information can be found at: chromium/src/base/metrics/histogram.h
-
-Histogram data is collected with either the window.statsCollectionController
-object or the window.domAutomationController object.
 """
 
 import json
@@ -56,18 +53,14 @@ def SubtractHistogram(histogram_json, start_histogram_json):
   return json.dumps(histogram)
 
 
-def GetHistogramFromDomAutomation(histogram_type, histogram_name, tab):
+def GetHistogram(histogram_type, histogram_name, tab):
   """Get a json serialization of a histogram."""
   assert histogram_type in [BROWSER_HISTOGRAM, RENDERER_HISTOGRAM]
   function = 'getHistogram'
   if histogram_type == BROWSER_HISTOGRAM:
     function = 'getBrowserHistogram'
-  # TODO(jeremy): Remove references to
-  # domAutomationController when we update the reference builds.
   histogram_json = tab.EvaluateJavaScript(
-      '(window.statsCollectionController ? '
-      'statsCollectionController : '
-      'domAutomationController).%s("%s")' %
+      'statsCollectionController.%s("%s")' %
       (function, histogram_name))
   if histogram_json:
     return histogram_json
