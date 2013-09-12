@@ -4,6 +4,8 @@
 
 #include "ui/message_center/message_center_style.h"
 
+#include <algorithm>
+
 namespace message_center {
 
 // Exported values /////////////////////////////////////////////////////////////
