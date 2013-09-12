@@ -32,13 +32,11 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
                void(RemoteFileSyncService::Observer* observer));
   MOCK_METHOD1(AddFileStatusObserver,
                void(FileStatusObserver* observer));
-  MOCK_METHOD2(RegisterOriginForTrackingChanges,
+  MOCK_METHOD2(RegisterOrigin,
                void(const GURL& origin, const SyncStatusCallback& callback));
-  MOCK_METHOD2(UnregisterOriginForTrackingChanges,
+  MOCK_METHOD2(EnableOrigin,
                void(const GURL& origin, const SyncStatusCallback& callback));
-  MOCK_METHOD2(EnableOriginForTrackingChanges,
-               void(const GURL& origin, const SyncStatusCallback& callback));
-  MOCK_METHOD2(DisableOriginForTrackingChanges,
+  MOCK_METHOD2(DisableOrigin,
                void(const GURL& origin, const SyncStatusCallback& callback));
   MOCK_METHOD2(UninstallOrigin,
                void(const GURL& origin, const SyncStatusCallback& callback));
@@ -84,9 +82,7 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
  private:
   void AddServiceObserverStub(Observer* observer);
   void AddFileStatusObserverStub(FileStatusObserver* observer);
-  void RegisterOriginForTrackingChangesStub(
-      const GURL& origin, const SyncStatusCallback& callback);
-  void UnregisterOriginForTrackingChangesStub(
+  void RegisterOriginStub(
       const GURL& origin, const SyncStatusCallback& callback);
   void DeleteOriginDirectoryStub(
       const GURL& origin, const SyncStatusCallback& callback);

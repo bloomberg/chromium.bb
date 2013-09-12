@@ -51,16 +51,13 @@ class SyncEngine : public RemoteFileSyncService,
   // RemoteFileSyncService overrides.
   virtual void AddServiceObserver(SyncServiceObserver* observer) OVERRIDE;
   virtual void AddFileStatusObserver(FileStatusObserver* observer) OVERRIDE;
-  virtual void RegisterOriginForTrackingChanges(
+  virtual void RegisterOrigin(
       const GURL& origin,
       const SyncStatusCallback& callback) OVERRIDE;
-  virtual void UnregisterOriginForTrackingChanges(
+  virtual void EnableOrigin(
       const GURL& origin,
       const SyncStatusCallback& callback) OVERRIDE;
-  virtual void EnableOriginForTrackingChanges(
-      const GURL& origin,
-      const SyncStatusCallback& callback) OVERRIDE;
-  virtual void DisableOriginForTrackingChanges(
+  virtual void DisableOrigin(
       const GURL& origin,
       const SyncStatusCallback& callback) OVERRIDE;
   virtual void UninstallOrigin(
@@ -105,8 +102,6 @@ class SyncEngine : public RemoteFileSyncService,
  private:
   void DoRegisterApp(const std::string& app_id,
                      const SyncStatusCallback& callback);
-  void DoUnregisterApp(const std::string& app_id,
-                       const SyncStatusCallback& callback);
   void DoDisableApp(const std::string& app_id,
                     const SyncStatusCallback& callback);
   void DoEnableApp(const std::string& app_id,

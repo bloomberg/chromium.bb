@@ -146,7 +146,7 @@ IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, GetUsageAndQuota) {
 IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, OnFileStatusChanged) {
   // Mock a pending remote change to be synced.
   GURL origin;
-  EXPECT_CALL(*mock_remote_service(), RegisterOriginForTrackingChanges(_, _))
+  EXPECT_CALL(*mock_remote_service(), RegisterOrigin(_, _))
       .WillOnce(UpdateRemoteChangeQueue(&origin, mock_remote_service()));
   EXPECT_CALL(*mock_remote_service(), ProcessRemoteChange(_))
       .WillOnce(ReturnWithFakeFileAddedStatus(
@@ -162,7 +162,7 @@ IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, OnFileStatusChanged) {
 IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, OnFileStatusChangedDeleted) {
   // Mock a pending remote change to be synced.
   GURL origin;
-  EXPECT_CALL(*mock_remote_service(), RegisterOriginForTrackingChanges(_, _))
+  EXPECT_CALL(*mock_remote_service(), RegisterOrigin(_, _))
       .WillOnce(UpdateRemoteChangeQueue(&origin, mock_remote_service()));
   EXPECT_CALL(*mock_remote_service(), ProcessRemoteChange(_))
       .WillOnce(ReturnWithFakeFileAddedStatus(
@@ -177,15 +177,14 @@ IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, OnFileStatusChangedDeleted) {
 }
 
 IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, OnServiceStatusChanged) {
-  EXPECT_CALL(*mock_remote_service(), RegisterOriginForTrackingChanges(_, _))
+  EXPECT_CALL(*mock_remote_service(), RegisterOrigin(_, _))
       .WillOnce(NotifyOkStateAndCallback(mock_remote_service()));
   ASSERT_TRUE(RunPlatformAppTest("sync_file_system/on_service_status_changed"))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, RequestFileSystem) {
-  EXPECT_CALL(*mock_remote_service(),
-              RegisterOriginForTrackingChanges(_, _)).Times(1);
+  EXPECT_CALL(*mock_remote_service(), RegisterOrigin(_, _)).Times(1);
   ASSERT_TRUE(RunPlatformAppTest("sync_file_system/request_file_system"))
       << message_;
 }

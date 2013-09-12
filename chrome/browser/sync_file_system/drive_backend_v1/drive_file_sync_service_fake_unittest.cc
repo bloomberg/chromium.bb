@@ -444,7 +444,7 @@ class DriveFileSyncServiceFakeTest : public testing::Test {
   void TestRegisterNewOrigin();
   void TestRegisterExistingOrigin();
   void TestRegisterOriginWithSyncDisabled();
-  void TestUnregisterOrigin();
+  void TestUninstallOrigin();
   void TestUpdateRegisteredOrigins();
   void TestRemoteChange_NoChange();
   void TestRemoteChange_Busy();
@@ -489,7 +489,7 @@ class DriveFileSyncServiceFakeTest : public testing::Test {
 void DriveFileSyncServiceFakeTest::TestRegisterNewOrigin() {
   SetUpDriveSyncService(true);
   bool done = false;
-  sync_service()->RegisterOriginForTrackingChanges(
+  sync_service()->RegisterOrigin(
       ExtensionNameToGURL(kExtensionName1),
       base::Bind(&ExpectEqStatus, &done, SYNC_STATUS_OK));
   base::RunLoop().RunUntilIdle();
@@ -517,7 +517,7 @@ void DriveFileSyncServiceFakeTest::TestRegisterExistingOrigin() {
   SetUpDriveSyncService(true);
 
   bool done = false;
-  sync_service()->RegisterOriginForTrackingChanges(
+  sync_service()->RegisterOrigin(
       ExtensionNameToGURL(kExtensionName1),
       base::Bind(&ExpectEqStatus, &done, SYNC_STATUS_OK));
   base::RunLoop().RunUntilIdle();
@@ -537,7 +537,7 @@ void DriveFileSyncServiceFakeTest::TestRegisterOriginWithSyncDisabled() {
   SetUpDriveSyncService(false);
 
   bool done = false;
-  sync_service()->RegisterOriginForTrackingChanges(
+  sync_service()->RegisterOrigin(
       ExtensionNameToGURL(kExtensionName1),
       base::Bind(&ExpectEqStatus, &done, SYNC_STATUS_OK));
   base::RunLoop().RunUntilIdle();
@@ -549,7 +549,7 @@ void DriveFileSyncServiceFakeTest::TestRegisterOriginWithSyncDisabled() {
   EXPECT_TRUE(!remote_change_handler().HasChanges());
 }
 
-void DriveFileSyncServiceFakeTest::TestUnregisterOrigin() {
+void DriveFileSyncServiceFakeTest::TestUninstallOrigin() {
   SetUpOriginRootDirectory(kExtensionName1);
   SetUpOriginRootDirectory(kExtensionName2);
 
@@ -559,7 +559,7 @@ void DriveFileSyncServiceFakeTest::TestUnregisterOrigin() {
   EXPECT_EQ(0u, remote_change_handler().ChangesSize());
 
   bool done = false;
-  sync_service()->UnregisterOriginForTrackingChanges(
+  sync_service()->UninstallOrigin(
       ExtensionNameToGURL(kExtensionName1),
       base::Bind(&ExpectEqStatus, &done, SYNC_STATUS_OK));
   base::RunLoop().RunUntilIdle();
@@ -847,14 +847,14 @@ TEST_F(DriveFileSyncServiceFakeTest, RegisterOriginWithSyncDisabled_WAPI) {
   TestRegisterOriginWithSyncDisabled();
 }
 
-TEST_F(DriveFileSyncServiceFakeTest, UnregisterOrigin) {
+TEST_F(DriveFileSyncServiceFakeTest, UninstallOrigin) {
   ASSERT_FALSE(IsDriveAPIDisabled());
-  TestUnregisterOrigin();
+  TestUninstallOrigin();
 }
 
-TEST_F(DriveFileSyncServiceFakeTest, UnregisterOrigin_WAPI) {
+TEST_F(DriveFileSyncServiceFakeTest, UninstallOrigin_WAPI) {
   ScopedDisableDriveAPI disable_drive_api;
-  TestUnregisterOrigin();
+  TestUninstallOrigin();
 }
 
 TEST_F(DriveFileSyncServiceFakeTest, UpdateRegisteredOrigins) {

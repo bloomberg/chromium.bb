@@ -139,42 +139,29 @@ void DriveFileSyncService::AddFileStatusObserver(
   file_status_observers_.AddObserver(observer);
 }
 
-void DriveFileSyncService::RegisterOriginForTrackingChanges(
+void DriveFileSyncService::RegisterOrigin(
     const GURL& origin,
     const SyncStatusCallback& callback) {
   task_manager_->ScheduleTaskAtPriority(
-      base::Bind(&DriveFileSyncService::DoRegisterOriginForTrackingChanges,
-                 AsWeakPtr(), origin),
+      base::Bind(&DriveFileSyncService::DoRegisterOrigin, AsWeakPtr(), origin),
       SyncTaskManager::PRIORITY_HIGH,
       callback);
 }
 
-void DriveFileSyncService::UnregisterOriginForTrackingChanges(
+void DriveFileSyncService::EnableOrigin(
     const GURL& origin,
     const SyncStatusCallback& callback) {
   task_manager_->ScheduleTaskAtPriority(
-      base::Bind(&DriveFileSyncService::DoUnregisterOriginForTrackingChanges,
-                 AsWeakPtr(), origin),
+      base::Bind(&DriveFileSyncService::DoEnableOrigin, AsWeakPtr(), origin),
       SyncTaskManager::PRIORITY_HIGH,
       callback);
 }
 
-void DriveFileSyncService::EnableOriginForTrackingChanges(
+void DriveFileSyncService::DisableOrigin(
     const GURL& origin,
     const SyncStatusCallback& callback) {
   task_manager_->ScheduleTaskAtPriority(
-      base::Bind(&DriveFileSyncService::DoEnableOriginForTrackingChanges,
-                 AsWeakPtr(), origin),
-      SyncTaskManager::PRIORITY_HIGH,
-      callback);
-}
-
-void DriveFileSyncService::DisableOriginForTrackingChanges(
-    const GURL& origin,
-    const SyncStatusCallback& callback) {
-  task_manager_->ScheduleTaskAtPriority(
-      base::Bind(&DriveFileSyncService::DoDisableOriginForTrackingChanges,
-                 AsWeakPtr(), origin),
+      base::Bind(&DriveFileSyncService::DoDisableOrigin, AsWeakPtr(), origin),
       SyncTaskManager::PRIORITY_HIGH,
       callback);
 }
@@ -496,7 +483,7 @@ void DriveFileSyncService::UpdateServiceState(RemoteServiceState state,
   }
 }
 
-void DriveFileSyncService::DoRegisterOriginForTrackingChanges(
+void DriveFileSyncService::DoRegisterOrigin(
     const GURL& origin,
     const SyncStatusCallback& callback) {
   DCHECK(origin.SchemeIs(extensions::kExtensionScheme));
@@ -512,15 +499,7 @@ void DriveFileSyncService::DoRegisterOriginForTrackingChanges(
                          AsWeakPtr(), origin, callback));
 }
 
-void DriveFileSyncService::DoUnregisterOriginForTrackingChanges(
-    const GURL& origin,
-    const SyncStatusCallback& callback) {
-  remote_change_handler_.RemoveChangesForOrigin(origin);
-  pending_batch_sync_origins_.erase(origin);
-  metadata_store_->RemoveOrigin(origin, callback);
-}
-
-void DriveFileSyncService::DoEnableOriginForTrackingChanges(
+void DriveFileSyncService::DoEnableOrigin(
     const GURL& origin,
     const SyncStatusCallback& callback) {
   // If origin cannot be found in disabled list, then it's not a SyncFS app
@@ -535,7 +514,7 @@ void DriveFileSyncService::DoEnableOriginForTrackingChanges(
   metadata_store_->EnableOrigin(origin, callback);
 }
 
-void DriveFileSyncService::DoDisableOriginForTrackingChanges(
+void DriveFileSyncService::DoDisableOrigin(
     const GURL& origin,
     const SyncStatusCallback& callback) {
   pending_batch_sync_origins_.erase(origin);
@@ -819,7 +798,9 @@ void DriveFileSyncService::DidUninstallOrigin(
 
   // Origin directory has been removed so it's now safe to remove the origin
   // from the metadata store.
-  DoUnregisterOriginForTrackingChanges(origin, callback);
+  remote_change_handler_.RemoveChangesForOrigin(origin);
+  pending_batch_sync_origins_.erase(origin);
+  metadata_store_->RemoveOrigin(origin, callback);
 }
 
 void DriveFileSyncService::DidGetLargestChangeStampForBatchSync(

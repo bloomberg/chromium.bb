@@ -26,11 +26,8 @@ MockRemoteFileSyncService::MockRemoteFileSyncService()
       .WillByDefault(Invoke(this, &self::AddServiceObserverStub));
   ON_CALL(*this, AddFileStatusObserver(_))
       .WillByDefault(Invoke(this, &self::AddFileStatusObserverStub));
-  ON_CALL(*this, RegisterOriginForTrackingChanges(_, _))
-      .WillByDefault(Invoke(this, &self::RegisterOriginForTrackingChangesStub));
-  ON_CALL(*this, UnregisterOriginForTrackingChanges(_, _))
-      .WillByDefault(
-          Invoke(this, &self::UnregisterOriginForTrackingChangesStub));
+  ON_CALL(*this, RegisterOrigin(_, _))
+      .WillByDefault(Invoke(this, &self::RegisterOriginStub));
   ON_CALL(*this, UninstallOrigin(_, _))
       .WillByDefault(
           Invoke(this, &self::DeleteOriginDirectoryStub));
@@ -92,15 +89,7 @@ void MockRemoteFileSyncService::AddFileStatusObserverStub(
   file_status_observers_.AddObserver(observer);
 }
 
-void MockRemoteFileSyncService::RegisterOriginForTrackingChangesStub(
-    const GURL& origin,
-    const SyncStatusCallback& callback) {
-  base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE,
-      base::Bind(callback, SYNC_STATUS_OK));
-}
-
-void MockRemoteFileSyncService::UnregisterOriginForTrackingChangesStub(
+void MockRemoteFileSyncService::RegisterOriginStub(
     const GURL& origin,
     const SyncStatusCallback& callback) {
   base::MessageLoopProxy::current()->PostTask(

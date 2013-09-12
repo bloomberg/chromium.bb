@@ -62,7 +62,7 @@ void SyncEngine::AddFileStatusObserver(FileStatusObserver* observer) {
   file_status_observers_.AddObserver(observer);
 }
 
-void SyncEngine::RegisterOriginForTrackingChanges(
+void SyncEngine::RegisterOrigin(
     const GURL& origin,
     const SyncStatusCallback& callback) {
   task_manager_.ScheduleTask(
@@ -72,17 +72,7 @@ void SyncEngine::RegisterOriginForTrackingChanges(
       callback);
 }
 
-void SyncEngine::UnregisterOriginForTrackingChanges(
-    const GURL& origin,
-    const SyncStatusCallback& callback) {
-  task_manager_.ScheduleTask(
-      base::Bind(&SyncEngine::DoUnregisterApp,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 origin.host()),
-      callback);
-}
-
-void SyncEngine::EnableOriginForTrackingChanges(
+void SyncEngine::EnableOrigin(
     const GURL& origin,
     const SyncStatusCallback& callback) {
   task_manager_.ScheduleTask(
@@ -92,7 +82,7 @@ void SyncEngine::EnableOriginForTrackingChanges(
       callback);
 }
 
-void SyncEngine::DisableOriginForTrackingChanges(
+void SyncEngine::DisableOrigin(
     const GURL& origin,
     const SyncStatusCallback& callback) {
   task_manager_.ScheduleTask(
@@ -213,11 +203,6 @@ void SyncEngine::OnPushNotificationEnabled(bool enabled) {
 
 void SyncEngine::DoRegisterApp(const std::string& app_id,
                                const SyncStatusCallback& callback) {
-  NOTIMPLEMENTED();
-}
-
-void SyncEngine::DoUnregisterApp(const std::string& app_id,
-                                 const SyncStatusCallback& callback) {
   NOTIMPLEMENTED();
 }
 

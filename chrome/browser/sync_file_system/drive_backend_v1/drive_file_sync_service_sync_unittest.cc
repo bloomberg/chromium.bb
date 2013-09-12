@@ -179,7 +179,7 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
 
     bool done = false;
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
-    remote_sync_service_->RegisterOriginForTrackingChanges(
+    remote_sync_service_->RegisterOrigin(
         origin, base::Bind(&SyncStatusResultCallback, &done, &status));
     FlushMessageLoop();
     EXPECT_TRUE(done);

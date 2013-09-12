@@ -164,7 +164,7 @@ class SyncFileSystemServiceTest : public testing::Test {
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
 
     EXPECT_CALL(*mock_remote_service(),
-                RegisterOriginForTrackingChanges(GURL(kOrigin), _)).Times(1);
+                RegisterOrigin(GURL(kOrigin), _)).Times(1);
 
     sync_service_->InitializeForApp(
         file_system_->file_system_context(),
@@ -177,7 +177,7 @@ class SyncFileSystemServiceTest : public testing::Test {
   }
 
   // Calls InitializeForApp after setting up the mock remote service to
-  // perform following when RegisterOriginForTrackingChanges is called:
+  // perform following when RegisterOrigin is called:
   //  1. Notify RemoteFileSyncService's observers of |state_to_notify|
   //  2. Run the given callback with |status_to_return|.
   //
@@ -198,7 +198,7 @@ class SyncFileSystemServiceTest : public testing::Test {
     EnableSync();
 
     EXPECT_CALL(*mock_remote_service(),
-                RegisterOriginForTrackingChanges(GURL(kOrigin), _))
+                RegisterOrigin(GURL(kOrigin), _))
         .WillOnce(NotifyStateAndCallback(mock_remote_service(),
                                          state_to_notify,
                                          status_to_return));

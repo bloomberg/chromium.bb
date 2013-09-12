@@ -204,7 +204,7 @@ TEST_F(DriveFileSyncServiceTest, UninstallOriginWithoutOriginDirectory) {
               remote_resources.end());
 }
 
-TEST_F(DriveFileSyncServiceTest, DisableOriginForTrackingChangesPendingOrigin) {
+TEST_F(DriveFileSyncServiceTest, DisableOriginPendingOrigin) {
   // Disable a pending origin after DriveFileSystemService has already started.
   const GURL origin("chrome-extension://app");
   std::string origin_resource_id = "app_resource_id";
@@ -213,27 +213,25 @@ TEST_F(DriveFileSyncServiceTest, DisableOriginForTrackingChangesPendingOrigin) {
   ASSERT_TRUE(VerifyOriginStatusCount(1u, 0u, 0u));
 
   // Pending origins that are disabled are dropped and do not go to disabled.
-  sync_service()->DisableOriginForTrackingChanges(origin,
-                                                  base::Bind(&ExpectOkStatus));
+  sync_service()->DisableOrigin(origin, base::Bind(&ExpectOkStatus));
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(VerifyOriginStatusCount(0u, 0u, 0u));
 }
 
 TEST_F(DriveFileSyncServiceTest,
-       DisableOriginForTrackingChangesIncrementalOrigin) {
+       DisableOriginIncrementalOrigin) {
   // Disable a pending origin after DriveFileSystemService has already started.
   const GURL origin("chrome-extension://app");
   std::string origin_resource_id = "app_resource_id";
   metadata_store()->AddIncrementalSyncOrigin(origin, origin_resource_id);
   ASSERT_TRUE(VerifyOriginStatusCount(0u, 1u, 0u));
 
-  sync_service()->DisableOriginForTrackingChanges(origin,
-                                                  base::Bind(&ExpectOkStatus));
+  sync_service()->DisableOrigin(origin, base::Bind(&ExpectOkStatus));
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(VerifyOriginStatusCount(0u, 0u, 1u));
 }
 
-TEST_F(DriveFileSyncServiceTest, EnableOriginForTrackingChanges) {
+TEST_F(DriveFileSyncServiceTest, EnableOrigin) {
   const GURL origin("chrome-extension://app");
   std::string origin_resource_id = "app_resource_id";
   metadata_store()->AddIncrementalSyncOrigin(origin, origin_resource_id);
@@ -244,8 +242,7 @@ TEST_F(DriveFileSyncServiceTest, EnableOriginForTrackingChanges) {
   // status and then to enabled (incremental) again when NotifyTasksDone() in
   // SyncTaskManager invokes MaybeStartFetchChanges() and pending
   // origins > 0.
-  sync_service()->EnableOriginForTrackingChanges(origin,
-                                                 base::Bind(&ExpectOkStatus));
+  sync_service()->EnableOrigin(origin, base::Bind(&ExpectOkStatus));
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(VerifyOriginStatusCount(0u, 1u, 0u));
 }

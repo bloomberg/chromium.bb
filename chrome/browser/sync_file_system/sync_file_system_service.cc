@@ -299,7 +299,7 @@ void SyncFileSystemService::DidInitializeFileSystem(
 
   // Local side of initialization for the app is done.
   // Continue on initializing the remote side.
-  remote_file_service_->RegisterOriginForTrackingChanges(
+  remote_file_service_->RegisterOrigin(
       app_origin,
       base::Bind(&SyncFileSystemService::DidRegisterOrigin,
                  AsWeakPtr(), app_origin, callback));
@@ -613,7 +613,7 @@ void SyncFileSystemService::HandleExtensionUnloaded(
     return;
   DVLOG(1) << "Handle extension notification for UNLOAD(DISABLE): "
            << app_origin;
-  remote_file_service_->DisableOriginForTrackingChanges(
+  remote_file_service_->DisableOrigin(
       app_origin,
       base::Bind(&DidHandleOriginForExtensionUnloadedEvent,
                  type, app_origin));
@@ -644,7 +644,7 @@ void SyncFileSystemService::HandleExtensionEnabled(
   GURL app_origin =
       extensions::Extension::GetBaseURLFromExtensionId(extension_id);
   DVLOG(1) << "Handle extension notification for ENABLED: " << app_origin;
-  remote_file_service_->EnableOriginForTrackingChanges(
+  remote_file_service_->EnableOrigin(
       app_origin,
       base::Bind(&DidHandleOriginForExtensionEnabledEvent, type, app_origin));
   local_file_service_->SetOriginEnabled(app_origin, true);

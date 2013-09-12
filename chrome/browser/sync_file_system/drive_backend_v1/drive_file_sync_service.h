@@ -87,21 +87,14 @@ class DriveFileSyncService : public RemoteFileSyncService,
   // RemoteFileSyncService overrides.
   virtual void AddServiceObserver(Observer* observer) OVERRIDE;
   virtual void AddFileStatusObserver(FileStatusObserver* observer) OVERRIDE;
-  virtual void RegisterOriginForTrackingChanges(
-      const GURL& origin,
-      const SyncStatusCallback& callback) OVERRIDE;
-  virtual void UnregisterOriginForTrackingChanges(
-      const GURL& origin,
-      const SyncStatusCallback& callback) OVERRIDE;
-  virtual void EnableOriginForTrackingChanges(
-      const GURL& origin,
-      const SyncStatusCallback& callback) OVERRIDE;
-  virtual void DisableOriginForTrackingChanges(
-      const GURL& origin,
-      const SyncStatusCallback& callback) OVERRIDE;
-  virtual void UninstallOrigin(
-      const GURL& origin,
-      const SyncStatusCallback& callback) OVERRIDE;
+  virtual void RegisterOrigin(const GURL& origin,
+                              const SyncStatusCallback& callback) OVERRIDE;
+  virtual void EnableOrigin(const GURL& origin,
+                            const SyncStatusCallback& callback) OVERRIDE;
+  virtual void DisableOrigin(const GURL& origin,
+                             const SyncStatusCallback& callback) OVERRIDE;
+  virtual void UninstallOrigin(const GURL& origin,
+                               const SyncStatusCallback& callback) OVERRIDE;
   virtual void ProcessRemoteChange(const SyncFileCallback& callback) OVERRIDE;
   virtual void SetRemoteChangeProcessor(
       RemoteChangeProcessor* processor) OVERRIDE;
@@ -191,16 +184,13 @@ class DriveFileSyncService : public RemoteFileSyncService,
   void UpdateServiceState(RemoteServiceState state,
                           const std::string& description);
 
-  void DoRegisterOriginForTrackingChanges(
+  void DoRegisterOrigin(
       const GURL& origin,
       const SyncStatusCallback& callback);
-  void DoUnregisterOriginForTrackingChanges(
+  void DoEnableOrigin(
       const GURL& origin,
       const SyncStatusCallback& callback);
-  void DoEnableOriginForTrackingChanges(
-      const GURL& origin,
-      const SyncStatusCallback& callback);
-  void DoDisableOriginForTrackingChanges(
+  void DoDisableOrigin(
       const GURL& origin,
       const SyncStatusCallback& callback);
   void DoUninstallOrigin(

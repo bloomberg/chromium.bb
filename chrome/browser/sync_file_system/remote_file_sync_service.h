@@ -114,26 +114,17 @@ class RemoteFileSyncService {
   // The caller may call this method again when the remote service state
   // migrates to REMOTE_SERVICE_OK state if the error code returned via
   // |callback| was retriable ones.
-  virtual void RegisterOriginForTrackingChanges(
-      const GURL& origin,
-      const SyncStatusCallback& callback) = 0;
-
-  // Unregisters |origin| to track remote side changes for the |origin|.
-  // Upon completion, invokes |callback|.
-  // The caller may call this method again when the remote service state
-  // migrates to REMOTE_SERVICE_OK state if the error code returned via
-  // |callback| was retriable ones.
-  virtual void UnregisterOriginForTrackingChanges(
+  virtual void RegisterOrigin(
       const GURL& origin,
       const SyncStatusCallback& callback) = 0;
 
   // Re-enables |origin| that was previously disabled. If |origin| is not a
   // SyncFS app, then the origin is effectively ignored.
-  virtual void EnableOriginForTrackingChanges(
+  virtual void EnableOrigin(
       const GURL& origin,
       const SyncStatusCallback& callback) = 0;
 
-  virtual void DisableOriginForTrackingChanges(
+  virtual void DisableOrigin(
       const GURL& origin,
       const SyncStatusCallback& callback) = 0;
 
