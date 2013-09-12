@@ -34,7 +34,7 @@ class WebUIResourceBrowserTest : public ContentBrowserTest {
 
   void RunMediaInternalsTest(const base::FilePath::CharType* file) {
     AddLibrary(IDR_WEBUI_JS_CR);
-    AddLibrary(IDR_MEDIA_INTERNALS_NEW_JS);
+    AddLibrary(IDR_MEDIA_INTERNALS_JS);
 
     base::FilePath path;
     PathService::Get(DIR_TEST_DATA, &path);

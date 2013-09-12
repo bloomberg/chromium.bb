@@ -135,7 +135,6 @@ extern const char kEnableInputModeAttribute[];
 CONTENT_EXPORT extern const char kEnableLogging[];
 extern const char kEnableMemoryBenchmarking[];
 extern const char kEnableMonitorProfile[];
-extern const char kEnableNewMediaInternals[];
 CONTENT_EXPORT extern const char kEnableOfflineCacheAccess[];
 extern const char kEnableOverlayScrollbars[];
 CONTENT_EXPORT extern const char kEnableOverscrollNotifications[];

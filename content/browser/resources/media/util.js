@@ -1,74 +1,47 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('media', function() {
-  'use strict';
+/**
+ * @fileoverview Some utility functions that don't belong anywhere else in the
+ * code.
+ */
 
+var util = (function() {
+  var util = {};
+  util.object = {};
   /**
-   * The width and height of a bar drawn on a file canvas in pixels.
+   * Calls a function for each element in an object/map/hash.
+   *
+   * @param obj The object to iterate over.
+   * @param f The function to call on every value in the object.  F should have
+   * the following arguments: f(value, key, object) where value is the value
+   * of the property, key is the corresponding key, and obj is the object that
+   * was passed in originally.
+   * @param optObj The object use as 'this' within f.
    */
-  var BAR_WIDTH = 500;
-  var BAR_HEIGHT = 16;
-
-  /**
-   * Draws a 1px white horizontal line across |context|.
-   */
-  function drawLine(context, top) {
-    context.moveTo(0, top);
-    context.lineTo(BAR_WIDTH, top);
-    context.strokeStyle = '#fff';
-    context.stroke();
-  }
-
-  /**
-   * Creates an HTMLElement of type |type| with textContent |content|.
-   * @param {string} type The type of element to create.
-   * @param {string} content The content to place in the element.
-   * @return {HTMLElement} A newly initialized element.
-   */
-  function makeElement(type, content) {
-    var element = document.createElement(type);
-    element.textContent = content;
-    return element;
-  }
-
-  /**
-   * Creates a new <li> containing a <details> with a <summary> and sets
-   * properties to reference them.
-   * @return {Object} The new <li>.
-   */
-  function createDetailsLi() {
-    var li = document.createElement('li');
-    li.details = document.createElement('details');
-    li.summary = document.createElement('summary');
-    li.appendChild(li.details);
-    li.details.appendChild(li.summary);
-    return li
-  }
-
-  /**
-   * Appends each key-value pair in a dictionary to a row in a table.
-   * @param {Object} dict The dictionary to append.
-   * @param {HTMLElement} table The <table> element to append to.
-   */
-  function appendDictionaryToTable(dict, table) {
-    table.textContent = '';
-    for (var key in dict) {
-      var tr = document.createElement('tr');
-      tr.appendChild(makeElement('td', key + ':'));
-      tr.appendChild(makeElement('td', dict[key]));
-      table.appendChild(tr);
+  util.object.forEach = function(obj, f, optObj) {
+    'use strict';
+    var key;
+    for (key in obj) {
+      if (obj.hasOwnProperty(key)) {
+        f.call(optObj, obj[key], key, obj);
+      }
     }
-    return table;
-  }
-
-  return {
-    BAR_WIDTH: BAR_WIDTH,
-    BAR_HEIGHT: BAR_HEIGHT,
-    drawLine: drawLine,
-    makeElement: makeElement,
-    createDetailsLi: createDetailsLi,
-    appendDictionaryToTable: appendDictionaryToTable
   };
-});
+  util.millisecondsToString = function(timeMillis) {
+    function pad(num) {
+      num = num.toString();
+      if (num.length < 2) {
+        return '0' + num;
+      }
+      return num;
+    }
+
+    var date = new Date(timeMillis);
+    return pad(date.getUTCHours()) + ':' + pad(date.getUTCMinutes()) + ':' +
+        pad(date.getUTCSeconds()) + ' ' + pad((date.getMilliseconds()) % 1000);
+  };
+
+  return util;
+}());

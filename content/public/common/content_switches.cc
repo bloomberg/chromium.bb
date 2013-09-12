@@ -439,10 +439,6 @@ const char kEnableMemoryBenchmarking[]      = "enable-memory-benchmarking";
 // assumed to be sRGB.
 const char kEnableMonitorProfile[]          = "enable-monitor-profile";
 
-// Enables the new chrome://media-internals page.
-// http://crbug.com/260005
-const char kEnableNewMediaInternals[]       = "enable-new-media-internals";
-
 // Enables use of cache if offline, even if it's stale
 const char kEnableOfflineCacheAccess[]      = "enable-offline-cache-access";
 

@@ -1,71 +1,95 @@
-/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+/* Copyright 2013 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-body {
-  font-family: sans-serif;
+html,
+body,
+#container {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+
+  font-family: 'Lucida Grande', sans-serif;
 }
 
-h2 {
-  margin: 15px 0 5px 0;
+table {
+  border-collapse: collapse;
+}
+td {
+  border: 1px solid black;
+  word-wrap: break-word;
+  max-width: 200px;
+}
+thead {
+  color: rgb(50,50,50);
+  font-size: 1.1em;
 }
 
-ul,
-p,
-canvas {
+h1,
+h2,
+h3 {
+  color: rgb(50,50,50);
+}
+
+#container {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  align-content: stretch;
+}
+
+#container > * {
+  padding: 0;
+  padding-left: 25px;
   margin: 0;
 }
 
-[hidden] {
-  display: none !important;
+#list-wrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  align-content: stretch;
 }
 
-#media-players td,
-#media-players th {
-  padding: 0 10px;
+#player-list-wrapper,
+#audio-stream-list-wrapper {
+  flex-grow: 1;
+  align-self: stretch;
+  min-width: 200px;
+  max-width: 200px;
+  overflow: auto;
 }
 
-#cache-entries ul,
-#media-players ul,
-#media-players {
+#player-list-wrapper ul,
+#player-list-wrapper li,
+#audio-stream-list-wrapper ul,
+#audio-stream-list-wrapper li {
+  margin: 0;
+  padding: 0;
   list-style-type: none;
 }
-
-.cache-entry {
-  margin: 0 0 5px 0;
+#list-wrapper button {
+  margin: 0;
+  padding: 0;
+  width: 170px;
 }
 
-.cache-entry-controls {
-  font-size: smaller;
+#property-wrapper,
+#log-wrapper {
+  display:block;
+  flex-grow: 0.5;
+  align-self: stretch;
+  overflow: auto;
 }
 
-.cache-table {
-  table-layout: fixed;
-  width: 500px;
+#log-wrapper > thead {
+  position: fixed;
 }
 
-thead {
-  text-align: left;
-}
-
-tfoot {
-  text-align: right;
-}
-
-.buffered {
-  display: table;
-}
-
-.buffered > div {
-  display: table-row;
-}
-
-.buffered > div > div {
-  display: table-cell;
-  vertical-align: bottom;
-}
-
-.buffered > div > div:first-child {
-  font-weight: bold;
-  padding-right: 2px;
+#graphs li {
+  list-style-type: none;
 }

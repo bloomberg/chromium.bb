@@ -21,12 +21,6 @@ WebUIDataSource* CreateMediaInternalsHTMLSource() {
       WebUIDataSource::Create(kChromeUIMediaInternalsHost);
 
   source->SetJsonPath("strings.js");
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableNewMediaInternals)) {
-    source->AddResourcePath("media_internals.js", IDR_MEDIA_INTERNALS_NEW_JS);
-    source->SetDefaultResource(IDR_MEDIA_INTERNALS_NEW_HTML);
-    return source;
-  }
 
   source->AddResourcePath("media_internals.js", IDR_MEDIA_INTERNALS_JS);
   source->SetDefaultResource(IDR_MEDIA_INTERNALS_HTML);
