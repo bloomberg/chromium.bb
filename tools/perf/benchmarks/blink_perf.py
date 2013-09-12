@@ -10,7 +10,7 @@ from telemetry.core import util
 from measurements import blink_perf
 
 
-class BlinkPerfAll(test.Test):
+class BlinkPerf(test.Test):
   test = blink_perf.BlinkPerf
 
   def CreatePageSet(self, options):

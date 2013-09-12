@@ -7,6 +7,7 @@ from measurements import startup
 
 
 class StartupColdBlankPage(test.Test):
+  tag = 'cold'
   test = startup.Startup
   page_set = 'page_sets/blank_page.json'
   options = {'cold': True,
@@ -14,6 +15,7 @@ class StartupColdBlankPage(test.Test):
 
 
 class StartupWarmBlankPage(test.Test):
+  tag = 'warm'
   test = startup.Startup
   page_set = 'page_sets/blank_page.json'
   options = {'warm': True,

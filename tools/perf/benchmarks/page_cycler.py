@@ -68,9 +68,11 @@ class PageCyclerMoz(test.Test):
 
 class PageCyclerNetsimTop10(test.Test):
   """Measures load time of the top 10 sites under simulated cable network."""
+  tag = 'netsim'
   test = page_cycler.PageCycler
   page_set = 'page_sets/top_10.json'
   options = {
+    'cold_load_percent': 100,
     'extra_wpr_args': [
       '--shaping_type=proxy',
       '--net=cable'
@@ -83,6 +85,12 @@ class PageCyclerNetsimTop10(test.Test):
     # TODO: This isn't quite right.
     # This option will still apply to page cyclers that run after this one.
     self.test.clear_cache_before_each_run = True
+
+
+class PageCyclerToughLayoutCases(test.Test):
+  test = page_cycler.PageCycler
+  page_set = 'page_sets/tough_layout_cases.json'
+  options = {'pageset_repeat_iters': 10}
 
 
 class PageCyclerTypical25(test.Test):
