@@ -219,7 +219,7 @@ uint64 GetTaskTraceID(const SequencedTask& task,
 }
 
 base::LazyInstance<base::ThreadLocalPointer<
-    SequencedWorkerPool::SequenceToken> > g_lazy_tls_ptr =
+    SequencedWorkerPool::SequenceToken> >::Leaky g_lazy_tls_ptr =
         LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
