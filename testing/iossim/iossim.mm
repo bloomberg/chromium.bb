@@ -128,6 +128,7 @@ void LogWarning(NSString* format, ...) {
  @private
   NSString* stdioPath_;
   NSString* developerDir_;
+  NSString* simulatorHome_;
   NSThread* outputThread_;
   NSBundle* simulatorBundle_;
   BOOL appRunning_;
@@ -147,11 +148,13 @@ void LogWarning(NSString* format, ...) {
 
 // Specifies the file locations of the simulated app's stdout and stderr.
 - (SimulatorDelegate*)initWithStdioPath:(NSString*)stdioPath
-                           developerDir:(NSString*)developerDir {
+                           developerDir:(NSString*)developerDir
+                          simulatorHome:(NSString*)simulatorHome {
   self = [super init];
   if (self) {
     stdioPath_ = [stdioPath copy];
     developerDir_ = [developerDir copy];
+    simulatorHome_ = [simulatorHome copy];
   }
 
   return self;
@@ -280,29 +283,70 @@ void LogWarning(NSString* format, ...) {
     }
   }
 
-  // Check if the simulated app exited abnormally by looking for system log
-  // messages from launchd that refer to the simulated app's PID. Limit query
-  // to messages in the last minute since PIDs are cyclical.
-  aslmsg query = asl_new(ASL_TYPE_QUERY);
-  asl_set_query(query, ASL_KEY_SENDER, "launchd",
-                ASL_QUERY_OP_EQUAL | ASL_QUERY_OP_SUBSTRING);
-  asl_set_query(query, ASL_KEY_REF_PID,
-                [[[session simulatedApplicationPID] stringValue] UTF8String],
-                ASL_QUERY_OP_EQUAL);
-  asl_set_query(query, ASL_KEY_TIME, "-1m", ASL_QUERY_OP_GREATER_EQUAL);
-
-  // Log any messages found, and take note of any messages that may indicate the
-  // app crashed or did not exit cleanly.
-  aslresponse response = asl_search(NULL, query);
+  // Try to determine if the simulated app crashed or quit with a non-zero
+  // status code. iOS Simluator handles things a bit differently depending on
+  // the version, so first determine the iOS version being used.
   BOOL badEntryFound = NO;
-  aslmsg entry;
-  while ((entry = aslresponse_next(response)) != NULL) {
-    const char* message = asl_get(entry, ASL_KEY_MSG);
-    LogWarning(@"Console message: %s", message);
-    // Some messages are harmless, so don't trigger a failure for them.
-    if (strstr(message, "The following job tried to hijack the service"))
-      continue;
-    badEntryFound = YES;
+  NSString* versionString =
+      [[[session sessionConfig] simulatedSystemRoot] sdkVersion];
+  NSInteger majorVersion = [[[versionString componentsSeparatedByString:@"."]
+      objectAtIndex:0] intValue];
+  if (majorVersion <= 6) {
+    // In iOS 6 and before, logging from the simulated apps went to the main
+    // system logs, so use ASL to check if the simulated app exited abnormally
+    // by looking for system log messages from launchd that refer to the
+    // simulated app's PID. Limit query to messages in the last minute since
+    // PIDs are cyclical.
+    aslmsg query = asl_new(ASL_TYPE_QUERY);
+    asl_set_query(query, ASL_KEY_SENDER, "launchd",
+                  ASL_QUERY_OP_EQUAL | ASL_QUERY_OP_SUBSTRING);
+    asl_set_query(query, ASL_KEY_REF_PID,
+                  [[[session simulatedApplicationPID] stringValue] UTF8String],
+                  ASL_QUERY_OP_EQUAL);
+    asl_set_query(query, ASL_KEY_TIME, "-1m", ASL_QUERY_OP_GREATER_EQUAL);
+
+    // Log any messages found, and take note of any messages that may indicate
+    // the app crashed or did not exit cleanly.
+    aslresponse response = asl_search(NULL, query);
+    aslmsg entry;
+    while ((entry = aslresponse_next(response)) != NULL) {
+      const char* message = asl_get(entry, ASL_KEY_MSG);
+      LogWarning(@"Console message: %s", message);
+      // Some messages are harmless, so don't trigger a failure for them.
+      if (strstr(message, "The following job tried to hijack the service"))
+        continue;
+      badEntryFound = YES;
+    }
+  } else {
+    // Otherwise, the iOS Simulator's system logging is sandboxed, so parse the
+    // sandboxed system.log file for known errors.
+    NSString* relativePathToSystemLog =
+        [NSString stringWithFormat:
+            @"Library/Logs/iOS Simulator/%@/system.log", versionString];
+    NSString* path =
+        [simulatorHome_ stringByAppendingPathComponent:relativePathToSystemLog];
+    NSFileManager* fileManager = [NSFileManager defaultManager];
+    if ([fileManager fileExistsAtPath:path]) {
+      NSString* content =
+          [NSString stringWithContentsOfFile:path
+                                    encoding:NSUTF8StringEncoding
+                                       error:NULL];
+      NSArray* lines = [content componentsSeparatedByCharactersInSet:
+          [NSCharacterSet newlineCharacterSet]];
+      for (NSString* line in lines) {
+        NSString* const kErrorString = @"Service exited with abnormal code:";
+        if ([line rangeOfString:kErrorString].location != NSNotFound) {
+          LogWarning(@"Console message: %@", line);
+          badEntryFound = YES;
+          break;
+        }
+      }
+      // Remove the log file so subsequent invocations of iossim won't be
+      // looking at stale logs.
+      remove([path fileSystemRepresentation]);
+    } else {
+        LogWarning(@"Unable to find sandboxed system log.");
+    }
   }
 
   // If the query returned any nasty-looking results, iossim should exit with
@@ -700,7 +744,8 @@ int main(int argc, char* const argv[]) {
                                                               deviceFamily);
   SimulatorDelegate* delegate =
       [[[SimulatorDelegate alloc] initWithStdioPath:stdioPath
-                                       developerDir:developerDir] autorelease];
+                                       developerDir:developerDir
+                                      simulatorHome:simHomePath] autorelease];
   DTiPhoneSimulatorSession* session = BuildSession(delegate);
 
   // Start the simulator session.
