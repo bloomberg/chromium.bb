@@ -9,18 +9,23 @@
 #include <SLES/OpenSLES_Android.h>
 
 #include "base/compiler_specific.h"
+#include "base/synchronization/lock.h"
+#include "base/threading/thread_checker.h"
+#include "media/audio/android/opensles_util.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_parameters.h"
-#include "media/audio/android/opensles_util.h"
 
 namespace media {
 
 class AudioManagerAndroid;
 
 // Implements PCM audio input support for Android using the OpenSLES API.
+// This class is created and lives on the Audio Manager thread but recorded
+// audio buffers are given to us from an internal OpenSLES audio thread.
+// All public methods should be called on the Audio Manager thread.
 class OpenSLESInputStream : public AudioInputStream {
  public:
-  static const int kNumOfQueuesInBuffer = 2;
+  static const int kMaxNumOfBuffersInQueue = 2;
 
   OpenSLESInputStream(AudioManagerAndroid* manager,
                       const AudioParameters& params);
@@ -41,9 +46,12 @@ class OpenSLESInputStream : public AudioInputStream {
  private:
   bool CreateRecorder();
 
+  // Called from OpenSLES specific audio worker thread.
   static void SimpleBufferQueueCallback(
-      SLAndroidSimpleBufferQueueItf buffer_queue, void* instance);
+      SLAndroidSimpleBufferQueueItf buffer_queue,
+      void* instance);
 
+  // Called from OpenSLES specific audio worker thread.
   void ReadBufferQueue();
 
   // Called in Open();
@@ -55,6 +63,12 @@ class OpenSLESInputStream : public AudioInputStream {
   // If OpenSLES reports an error this function handles it and passes it to
   // the attached AudioInputCallback::OnError().
   void HandleError(SLresult error);
+
+  base::ThreadChecker thread_checker_;
+
+  // Protects |callback_|, |active_buffer_index_|, |audio_data_|,
+  // |buffer_size_bytes_| and |simple_buffer_queue_|.
+  base::Lock lock_;
 
   AudioManagerAndroid* audio_manager_;
 
@@ -73,9 +87,9 @@ class OpenSLESInputStream : public AudioInputStream {
 
   // Audio buffers that are allocated in the constructor based on
   // info from audio parameters.
-  uint8* audio_data_[kNumOfQueuesInBuffer];
+  uint8* audio_data_[kMaxNumOfBuffersInQueue];
 
-  int active_queue_;
+  int active_buffer_index_;
   int buffer_size_bytes_;
 
   bool started_;

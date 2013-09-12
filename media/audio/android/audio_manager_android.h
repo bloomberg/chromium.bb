@@ -6,6 +6,7 @@
 #define MEDIA_AUDIO_ANDROID_AUDIO_MANAGER_ANDROID_H_
 
 #include "base/android/jni_android.h"
+#include "base/gtest_prod_util.h"
 #include "media/audio/audio_manager_base.h"
 
 namespace media {
@@ -18,8 +19,8 @@ class MEDIA_EXPORT AudioManagerAndroid : public AudioManagerBase {
   // Implementation of AudioManager.
   virtual bool HasAudioOutputDevices() OVERRIDE;
   virtual bool HasAudioInputDevices() OVERRIDE;
-  virtual void GetAudioInputDeviceNames(media::AudioDeviceNames* device_names)
-      OVERRIDE;
+  virtual void GetAudioInputDeviceNames(
+      media::AudioDeviceNames* device_names) OVERRIDE;
   virtual AudioParameters GetInputStreamParameters(
       const std::string& device_id) OVERRIDE;
 
@@ -28,7 +29,8 @@ class MEDIA_EXPORT AudioManagerAndroid : public AudioManagerBase {
       const std::string& device_id,
       const std::string& input_device_id) OVERRIDE;
   virtual AudioInputStream* MakeAudioInputStream(
-      const AudioParameters& params, const std::string& device_id) OVERRIDE;
+      const AudioParameters& params,
+      const std::string& device_id) OVERRIDE;
   virtual void ReleaseOutputStream(AudioOutputStream* stream) OVERRIDE;
   virtual void ReleaseInputStream(AudioInputStream* stream) OVERRIDE;
 
@@ -40,9 +42,11 @@ class MEDIA_EXPORT AudioManagerAndroid : public AudioManagerBase {
       const std::string& device_id,
       const std::string& input_device_id) OVERRIDE;
   virtual AudioInputStream* MakeLinearInputStream(
-      const AudioParameters& params, const std::string& device_id) OVERRIDE;
+      const AudioParameters& params,
+      const std::string& device_id) OVERRIDE;
   virtual AudioInputStream* MakeLowLatencyInputStream(
-      const AudioParameters& params, const std::string& device_id) OVERRIDE;
+      const AudioParameters& params,
+      const std::string& device_id) OVERRIDE;
 
   static bool RegisterAudioManager(JNIEnv* env);
 
@@ -61,6 +65,9 @@ class MEDIA_EXPORT AudioManagerAndroid : public AudioManagerBase {
   bool IsAudioLowLatencySupported();
   int GetAudioLowLatencyOutputFrameSize();
   int GetOptimalOutputFrameSize(int sample_rate, int channels);
+
+  // Allow the AudioAndroidTest to access private methods.
+  FRIEND_TEST_ALL_PREFIXES(AudioAndroidTest, IsAudioLowLatencySupported);
 
   // Java AudioManager instance.
   base::android::ScopedJavaGlobalRef<jobject> j_audio_manager_;

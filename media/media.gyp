@@ -849,6 +849,7 @@
         '../ui/ui.gyp:ui',
       ],
       'sources': [
+        'audio/android/audio_android_unittest.cc',
         'audio/audio_input_controller_unittest.cc',
         'audio/audio_input_device_unittest.cc',
         'audio/audio_input_unittest.cc',
