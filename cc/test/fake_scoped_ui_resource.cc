@@ -8,34 +8,25 @@
 
 namespace cc {
 
-namespace {
-
-UIResourceBitmap CreateMockUIResourceBitmap() {
-  SkBitmap skbitmap;
-  skbitmap.setConfig(SkBitmap::kARGB_8888_Config, 1, 1);
-  skbitmap.allocPixels();
-  skbitmap.setImmutable();
-  return UIResourceBitmap(skbitmap);
-}
-
-}  // anonymous namespace
-
 scoped_ptr<FakeScopedUIResource> FakeScopedUIResource::Create(
     LayerTreeHost* host) {
   return make_scoped_ptr(new FakeScopedUIResource(host));
 }
 
-FakeScopedUIResource::FakeScopedUIResource(LayerTreeHost* host)
-    : ScopedUIResource(host, CreateMockUIResourceBitmap()) {
-  // The constructor of ScopedUIResource already created a resource so we need
-  // to delete the created resource to wipe the state clean.
-  host_->DeleteUIResource(id_);
+FakeScopedUIResource::FakeScopedUIResource(LayerTreeHost* host) {
   ResetCounters();
+  bitmap_ = UIResourceBitmap::Create(
+      new uint8_t[1],
+      UIResourceBitmap::RGBA8,
+      UIResourceBitmap::CLAMP_TO_EDGE,
+      gfx::Size(1, 1));
+  host_ = host;
   id_ = host_->CreateUIResource(this);
 }
 
-UIResourceBitmap FakeScopedUIResource::GetBitmap(UIResourceId uid,
-                                                 bool resource_lost) {
+scoped_refptr<UIResourceBitmap> FakeScopedUIResource::GetBitmap(
+    UIResourceId uid,
+    bool resource_lost) {
   resource_create_count++;
   if (resource_lost)
     lost_resource_count++;

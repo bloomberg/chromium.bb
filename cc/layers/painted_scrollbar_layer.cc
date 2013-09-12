@@ -210,14 +210,20 @@ bool PaintedScrollbarLayer::Update(ResourceUpdateQueue* queue,
   return true;
 }
 
-UIResourceBitmap PaintedScrollbarLayer::RasterizeScrollbarPart(
+scoped_refptr<UIResourceBitmap> PaintedScrollbarLayer::RasterizeScrollbarPart(
     gfx::Rect rect,
     ScrollbarPart part) {
   DCHECK(!rect.size().IsEmpty());
 
+  scoped_refptr<UIResourceBitmap> bitmap =
+      UIResourceBitmap::Create(new uint8_t[rect.width() * rect.height() * 4],
+                               UIResourceBitmap::RGBA8,
+                               UIResourceBitmap::CLAMP_TO_EDGE,
+                               rect.size());
+
   SkBitmap skbitmap;
   skbitmap.setConfig(SkBitmap::kARGB_8888_Config, rect.width(), rect.height());
-  skbitmap.allocPixels();
+  skbitmap.setPixels(bitmap->GetPixels());
 
   SkCanvas skcanvas(skbitmap);
   skcanvas.translate(SkFloatToScalar(-rect.x()), SkFloatToScalar(-rect.y()));
@@ -234,11 +240,8 @@ UIResourceBitmap PaintedScrollbarLayer::RasterizeScrollbarPart(
   skcanvas.clipRect(layer_skrect);
 
   scrollbar_->PaintPart(&skcanvas, part, layer_rect);
-  // Make sure that the pixels are no longer mutable to unavoid unnecessary
-  // allocation and copying.
-  skbitmap.setImmutable();
 
-  return UIResourceBitmap(skbitmap);
+  return bitmap;
 }
 
 }  // namespace cc

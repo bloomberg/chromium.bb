@@ -2618,13 +2618,14 @@ void LayerTreeHostImpl::SetDebugState(
   SetFullRootLayerDamage();
 }
 
-void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
-                                         const UIResourceBitmap& bitmap) {
+void LayerTreeHostImpl::CreateUIResource(
+    UIResourceId uid,
+    scoped_refptr<UIResourceBitmap> bitmap) {
   DCHECK_GT(uid, 0);
-  DCHECK_EQ(bitmap.GetFormat(), UIResourceBitmap::RGBA8);
+  DCHECK_EQ(bitmap->GetFormat(), UIResourceBitmap::RGBA8);
 
   GLint wrap_mode = 0;
-  switch (bitmap.GetWrapMode()) {
+  switch (bitmap->GetWrapMode()) {
     case UIResourceBitmap::CLAMP_TO_EDGE:
       wrap_mode = GL_CLAMP_TO_EDGE;
       break;
@@ -2639,16 +2640,16 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
   if (id)
     DeleteUIResource(uid);
   id = resource_provider_->CreateResource(
-      bitmap.GetSize(),
+      bitmap->GetSize(),
       resource_provider_->best_texture_format(),
       wrap_mode,
       ResourceProvider::TextureUsageAny);
 
   ui_resource_map_[uid] = id;
   resource_provider_->SetPixels(id,
-                                bitmap.GetPixels(),
-                                gfx::Rect(bitmap.GetSize()),
-                                gfx::Rect(bitmap.GetSize()),
+                                reinterpret_cast<uint8_t*>(bitmap->GetPixels()),
+                                gfx::Rect(bitmap->GetSize()),
+                                gfx::Rect(bitmap->GetSize()),
                                 gfx::Vector2d(0, 0));
   MarkUIResourceNotEvicted(uid);
 }

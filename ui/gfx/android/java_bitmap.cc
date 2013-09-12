@@ -61,20 +61,32 @@ ScopedJavaLocalRef<jobject> ConvertToJavaBitmap(const SkBitmap* skbitmap) {
   return jbitmap;
 }
 
-SkBitmap CreateSkBitmapFromJavaBitmap(JavaBitmap& jbitmap) {
-  DCHECK_EQ(jbitmap.format(), ANDROID_BITMAP_FORMAT_RGBA_8888);
+static ScopedJavaLocalRef<jobject> CreateJavaBitmapFromResource(
+    const char* name, gfx::Size requested_size) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> jname(env, env->NewStringUTF(name));
+  return ui::Java_BitmapHelper_decodeDrawableResource(env,
+                                                      jname.obj(),
+                                                      requested_size.width(),
+                                                      requested_size.height());
+}
 
-  gfx::Size src_size = jbitmap.size();
+static SkBitmap ConvertToSkBitmap(ScopedJavaLocalRef<jobject> jbitmap) {
+  if (jbitmap.is_null())
+    return SkBitmap();
+
+  JavaBitmap src_lock(jbitmap.obj());
+  DCHECK_EQ(src_lock.format(), ANDROID_BITMAP_FORMAT_RGBA_8888);
+
+  gfx::Size src_size = src_lock.size();
 
   SkBitmap skbitmap;
   skbitmap.setConfig(SkBitmap::kARGB_8888_Config,
-                     src_size.width(),
-                     src_size.height(),
-                     jbitmap.stride());
+      src_size.width(), src_size.height(), src_lock.stride());
   skbitmap.allocPixels();
   SkAutoLockPixels dst_lock(skbitmap);
 
-  void* src_pixels = jbitmap.pixels();
+  void* src_pixels = src_lock.pixels();
   void* dst_pixels = skbitmap.getPixels();
 
   memcpy(dst_pixels, src_pixels, skbitmap.getSize());
@@ -84,17 +96,14 @@ SkBitmap CreateSkBitmapFromJavaBitmap(JavaBitmap& jbitmap) {
 
 SkBitmap CreateSkBitmapFromResource(const char* name, gfx::Size size) {
   DCHECK(!size.IsEmpty());
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jstring> jname(env, env->NewStringUTF(name));
-  ScopedJavaLocalRef<jobject> jobj(ui::Java_BitmapHelper_decodeDrawableResource(
-      env, jname.obj(), size.width(), size.height()));
-  if (jobj.is_null())
-    return SkBitmap();
-
-  JavaBitmap jbitmap(jobj.obj());
-  SkBitmap bitmap = CreateSkBitmapFromJavaBitmap(jbitmap);
-  return skia::ImageOperations::Resize(
-      bitmap, skia::ImageOperations::RESIZE_BOX, size.width(), size.height());
+  SkBitmap bitmap =
+      ConvertToSkBitmap(CreateJavaBitmapFromResource(name, size));
+  if (bitmap.isNull())
+    return bitmap;
+  // RESIZE_BOX has sufficient downsampling quality with minimal runtime cost.
+  return skia::ImageOperations::Resize(bitmap,
+                                       skia::ImageOperations::RESIZE_BOX,
+                                       size.width(), size.height());
 }
 
 }  //  namespace gfx

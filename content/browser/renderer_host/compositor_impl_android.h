@@ -7,10 +7,8 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "cc/resources/ui_resource_client.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "content/browser/renderer_host/image_transport_factory_android.h"
 #include "content/common/content_export.h"
@@ -23,7 +21,6 @@ namespace cc {
 class InputHandlerClient;
 class Layer;
 class LayerTreeHost;
-class ScopedUIResource;
 }
 
 namespace content {
@@ -63,9 +60,6 @@ class CONTENT_EXPORT CompositorImpl
       void *pixels, const gfx::Rect& rect) OVERRIDE;
   virtual void SetNeedsRedraw() OVERRIDE;
   virtual void Composite() OVERRIDE;
-  virtual cc::UIResourceId GenerateUIResource(
-      const cc::UIResourceBitmap& bitmap) OVERRIDE;
-  virtual void DeleteUIResource(cc::UIResourceId resource_id) OVERRIDE;
   virtual WebKit::WebGLId GenerateTexture(gfx::JavaBitmap& bitmap) OVERRIDE;
   virtual WebKit::WebGLId GenerateCompressedTexture(
       gfx::Size& size, int data_size, void* data) OVERRIDE;
@@ -122,10 +116,6 @@ class CONTENT_EXPORT CompositorImpl
   base::WeakPtrFactory<CompositorImpl> weak_factory_;
 
   scoped_refptr<cc::ContextProvider> null_offscreen_context_provider_;
-
-  typedef base::ScopedPtrHashMap<cc::UIResourceId, cc::ScopedUIResource>
-        UIResourceMap;
-  UIResourceMap ui_resource_map_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositorImpl);
 };

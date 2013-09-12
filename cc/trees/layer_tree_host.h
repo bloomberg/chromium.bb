@@ -86,35 +86,18 @@ struct CC_EXPORT RendererCapabilities {
   bool using_discard_framebuffer;
 };
 
-class CC_EXPORT UIResourceRequest {
- public:
+struct CC_EXPORT UIResourceRequest {
   enum UIResourceRequestType {
     UIResourceCreate,
     UIResourceDelete,
     UIResourceInvalidRequest
   };
 
-  UIResourceRequest(UIResourceRequestType type, UIResourceId id);
-  UIResourceRequest(UIResourceRequestType type,
-                    UIResourceId id,
-                    const UIResourceBitmap& bitmap);
-  UIResourceRequest(const UIResourceRequest& request);
-
+  UIResourceRequest();
   ~UIResourceRequest();
-
-  UIResourceRequestType GetType() const { return type_; }
-  UIResourceId GetId() const { return id_; }
-  UIResourceBitmap GetBitmap() const {
-    DCHECK(bitmap_);
-    return *bitmap_.get();
-  }
-
-  UIResourceRequest& operator=(const UIResourceRequest& request);
-
- private:
-  UIResourceRequestType type_;
-  UIResourceId id_;
-  scoped_ptr<UIResourceBitmap> bitmap_;
+  UIResourceRequestType type;
+  UIResourceId id;
+  scoped_refptr<UIResourceBitmap> bitmap;
 };
 
 class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
@@ -307,8 +290,6 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
   // were evicted on the impl thread.
   void RecreateUIResources();
 
-  virtual gfx::Size GetUIResourceSize(UIResourceId id) const;
-
   bool UsingSharedMemoryResources();
   int id() const { return tree_id_; }
 
@@ -345,13 +326,7 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
 
   bool AnimateLayersRecursive(Layer* current, base::TimeTicks time);
 
-  struct UIResourceClientData {
-    UIResourceClient* client;
-    gfx::Size size;
-  };
-
-  typedef base::hash_map<UIResourceId, UIResourceClientData>
-      UIResourceClientMap;
+  typedef base::hash_map<UIResourceId, UIResourceClient*> UIResourceClientMap;
   UIResourceClientMap ui_resource_client_map_;
   int next_ui_resource_id_;
 
