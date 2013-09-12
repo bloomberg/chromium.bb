@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "content/common/content_export.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
@@ -44,12 +45,16 @@ class ImageTransportFactoryObserver {
 // cross-process image transport, both for creating the shared surface handle
 // (destination surface for the GPU process) and the transport client (logic for
 // using that surface as a texture). The factory is a process-wide singleton.
-class ImageTransportFactory {
+class CONTENT_EXPORT ImageTransportFactory {
  public:
   virtual ~ImageTransportFactory() {}
 
-  // Initialize the global transport factory.
+  // Initializes the global transport factory.
   static void Initialize();
+
+  // Initializes the global transport factory for unit tests, using a test
+  // context.
+  static void InitializeForUnitTests();
 
   // Terminates the global transport factory.
   static void Terminate();

@@ -1441,10 +1441,14 @@ void RenderWidgetHostViewAura::SwapDelegatedFrame(
     float frame_device_scale_factor,
     const ui::LatencyInfo& latency_info) {
   gfx::Size frame_size_in_dip;
+  gfx::Rect damage_rect_in_dip;
   if (!frame_data->render_pass_list.empty()) {
-    frame_size_in_dip = gfx::ToFlooredSize(gfx::ScaleSize(
-        frame_data->render_pass_list.back()->output_rect.size(),
-        1.f/frame_device_scale_factor));
+    cc::RenderPass* root_pass = frame_data->render_pass_list.back();
+    frame_size_in_dip = ConvertSizeToDIP(frame_device_scale_factor,
+                                         root_pass->output_rect.size());
+    damage_rect_in_dip = ConvertRectToDIP(
+        frame_device_scale_factor,
+        gfx::ToEnclosingRect(root_pass->damage_rect));
   }
   framebuffer_holder_ = NULL;
   if (ShouldSkipFrame(frame_size_in_dip)) {
@@ -1474,6 +1478,7 @@ void RenderWidgetHostViewAura::SwapDelegatedFrame(
 
   if (paint_observer_)
     paint_observer_->OnUpdateCompositorContent();
+  window_->SchedulePaintInRect(damage_rect_in_dip);
 
   ui::Compositor* compositor = GetCompositor();
   if (!compositor) {

@@ -440,7 +440,10 @@ Compositor::~Compositor() {
 
 // static
 void Compositor::InitializeContextFactoryForTests(bool allow_test_contexts) {
-  DCHECK(!g_context_factory) << "ContextFactory already initialized.";
+  // The factory may already have been initialized by the content layer, in
+  // which case, use that one.
+  if (g_context_factory)
+    return;
   DCHECK(!g_implicit_factory) <<
       "ContextFactory for tests already initialized.";
 

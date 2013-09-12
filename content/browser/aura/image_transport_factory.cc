@@ -44,12 +44,19 @@ static bool UseTestContextAndTransportFactory() {
 
 // static
 void ImageTransportFactory::Initialize() {
+  DCHECK(!g_factory);
   if (UseTestContextAndTransportFactory()) {
     g_factory =
         new NoTransportImageTransportFactory(new ui::TestContextFactory);
   } else {
     g_factory = new GpuProcessTransportFactory;
   }
+  ui::ContextFactory::SetInstance(g_factory->AsContextFactory());
+}
+
+void ImageTransportFactory::InitializeForUnitTests() {
+  DCHECK(!g_factory);
+  g_factory = new NoTransportImageTransportFactory(new ui::TestContextFactory);
   ui::ContextFactory::SetInstance(g_factory->AsContextFactory());
 }
 
