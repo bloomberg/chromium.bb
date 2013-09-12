@@ -10,11 +10,29 @@
 #include "net/base/file_stream.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
-#include "webkit/browser/blob/local_file_stream_reader.h"
+#include "webkit/browser/blob/file_stream_reader.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
 
-using webkit_blob::LocalFileStreamReader;
+using webkit_blob::FileStreamReader;
+
+// TODO(kinuko): Remove this temporary namespace hack after we move both
+// blob and fileapi into content namespace.
+namespace webkit_blob {
+
+FileStreamReader* FileStreamReader::CreateForFileSystemFile(
+    fileapi::FileSystemContext* file_system_context,
+    const fileapi::FileSystemURL& url,
+    int64 initial_offset,
+    const base::Time& expected_modification_time) {
+  return new fileapi::FileSystemFileStreamReader(
+      file_system_context,
+      url,
+      initial_offset,
+      expected_modification_time);
+}
+
+}  // webkit_blob
 
 namespace fileapi {
 
@@ -46,19 +64,6 @@ void Int64CallbackAdapter(const net::Int64CompletionCallback& callback,
 
 }  // namespace
 
-FileSystemFileStreamReader::FileSystemFileStreamReader(
-    FileSystemContext* file_system_context,
-    const FileSystemURL& url,
-    int64 initial_offset,
-    const base::Time& expected_modification_time)
-    : file_system_context_(file_system_context),
-      url_(url),
-      initial_offset_(initial_offset),
-      expected_modification_time_(expected_modification_time),
-      has_pending_create_snapshot_(false),
-      weak_factory_(this) {
-}
-
 FileSystemFileStreamReader::~FileSystemFileStreamReader() {
 }
 
@@ -80,6 +85,19 @@ int64 FileSystemFileStreamReader::GetLength(
   return CreateSnapshot(
       base::Bind(&GetLengthAdapter, weak_factory_.GetWeakPtr(), callback),
       base::Bind(&Int64CallbackAdapter, callback));
+}
+
+FileSystemFileStreamReader::FileSystemFileStreamReader(
+    FileSystemContext* file_system_context,
+    const FileSystemURL& url,
+    int64 initial_offset,
+    const base::Time& expected_modification_time)
+    : file_system_context_(file_system_context),
+      url_(url),
+      initial_offset_(initial_offset),
+      expected_modification_time_(expected_modification_time),
+      has_pending_create_snapshot_(false),
+      weak_factory_(this) {
 }
 
 int FileSystemFileStreamReader::CreateSnapshot(
@@ -116,7 +134,7 @@ void FileSystemFileStreamReader::DidCreateSnapshot(
   snapshot_ref_ = file_ref;
 
   local_file_reader_.reset(
-      new LocalFileStreamReader(
+      FileStreamReader::CreateForLocalFile(
           file_system_context_->default_file_task_runner(),
           platform_path, initial_offset_, expected_modification_time_));
 

@@ -10,9 +10,9 @@
 #include "base/stl_util.h"
 #include "base/task_runner_util.h"
 #include "net/base/net_util.h"
+#include "webkit/browser/blob/file_stream_reader.h"
 #include "webkit/browser/fileapi/async_file_util_adapter.h"
 #include "webkit/browser/fileapi/file_system_context.h"
-#include "webkit/browser/fileapi/file_system_file_stream_reader.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/file_system_usage_cache.h"
@@ -281,7 +281,7 @@ SandboxFileSystemBackendDelegate::CreateFileStreamReader(
   if (!IsAccessValid(url))
     return scoped_ptr<webkit_blob::FileStreamReader>();
   return scoped_ptr<webkit_blob::FileStreamReader>(
-      new FileSystemFileStreamReader(
+      webkit_blob::FileStreamReader::CreateForFileSystemFile(
           context, url, offset, expected_modification_time));
 }
 

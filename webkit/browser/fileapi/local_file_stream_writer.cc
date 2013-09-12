@@ -20,14 +20,12 @@ const int kOpenFlagsForWrite = base::PLATFORM_FILE_OPEN |
 
 }  // namespace
 
-LocalFileStreamWriter::LocalFileStreamWriter(base::TaskRunner* task_runner,
-                                             const base::FilePath& file_path,
-                                             int64 initial_offset)
-    : file_path_(file_path),
-      initial_offset_(initial_offset),
-      has_pending_operation_(false),
-      weak_factory_(this),
-      task_runner_(task_runner) {}
+FileStreamWriter* FileStreamWriter::CreateForLocalFile(
+    base::TaskRunner* task_runner,
+    const base::FilePath& file_path,
+    int64 initial_offset) {
+  return new LocalFileStreamWriter(task_runner, file_path, initial_offset);
+}
 
 LocalFileStreamWriter::~LocalFileStreamWriter() {
   // Invalidate weak pointers so that we won't receive any callbacks from
@@ -80,6 +78,15 @@ int LocalFileStreamWriter::Flush(const net::CompletionCallback& callback) {
     has_pending_operation_ = false;
   return result;
 }
+
+LocalFileStreamWriter::LocalFileStreamWriter(base::TaskRunner* task_runner,
+                                             const base::FilePath& file_path,
+                                             int64 initial_offset)
+    : file_path_(file_path),
+      initial_offset_(initial_offset),
+      has_pending_operation_(false),
+      weak_factory_(this),
+      task_runner_(task_runner) {}
 
 int LocalFileStreamWriter::InitiateOpen(
     const net::CompletionCallback& error_callback,

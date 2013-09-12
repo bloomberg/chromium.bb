@@ -10,15 +10,52 @@
 #include "net/base/completion_callback.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
 
+namespace base {
+class FilePath;
+class TaskRunner;
+class Time;
+}
+
 namespace net {
 class IOBuffer;
+}
+
+namespace fileapi {
+class FileSystemContext;
+class FileSystemURL;
 }
 
 namespace webkit_blob {
 
 // A generic interface for reading a file-like object.
-class WEBKIT_STORAGE_BROWSER_EXPORT FileStreamReader {
+class FileStreamReader {
  public:
+  // Creates a new FileReader for a local file |file_path|.
+  // |initial_offset| specifies the offset in the file where the first read
+  // should start.  If the given offset is out of the file range any
+  // read operation may error out with net::ERR_REQUEST_RANGE_NOT_SATISFIABLE.
+  // |expected_modification_time| specifies the expected last modification
+  // If the value is non-null, the reader will check the underlying file's
+  // actual modification time to see if the file has been modified, and if
+  // it does any succeeding read operations should fail with
+  // ERR_UPLOAD_FILE_CHANGED error.
+  WEBKIT_STORAGE_BROWSER_EXPORT static FileStreamReader*
+      CreateForLocalFile(base::TaskRunner* task_runner,
+                         const base::FilePath& file_path,
+                         int64 initial_offset,
+                         const base::Time& expected_modification_time);
+
+  // Creates a new reader for a filesystem URL |url| form |initial_offset|.
+  // |expected_modification_time| specifies the expected last modification if
+  // the value is non-null, the reader will check the underlying file's actual
+  // modification time to see if the file has been modified, and if it does any
+  // succeeding read operations should fail with ERR_UPLOAD_FILE_CHANGED error.
+  WEBKIT_STORAGE_BROWSER_EXPORT static FileStreamReader*
+      CreateForFileSystemFile(fileapi::FileSystemContext* context,
+                              const fileapi::FileSystemURL& url,
+                              int64 initial_offset,
+                              const base::Time& expected_modification_time);
+
   // It is valid to delete the reader at any time.  If the stream is deleted
   // while it has a pending read, its callback will not be called.
   virtual ~FileStreamReader() {}

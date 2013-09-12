@@ -17,14 +17,13 @@
 #include "webkit/browser/blob/file_stream_reader.h"
 #include "webkit/browser/fileapi/async_file_util_adapter.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
+#include "webkit/browser/fileapi/file_stream_writer.h"
 #include "webkit/browser/fileapi/file_system_context.h"
-#include "webkit/browser/fileapi/file_system_file_stream_reader.h"
 #include "webkit/browser/fileapi/file_system_operation.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/isolated_context.h"
 #include "webkit/browser/fileapi/isolated_file_util.h"
-#include "webkit/browser/fileapi/local_file_stream_writer.h"
 
 namespace {
 
@@ -268,7 +267,7 @@ FileSystemBackend::CreateFileStreamReader(
   }
 
   return scoped_ptr<webkit_blob::FileStreamReader>(
-      new fileapi::FileSystemFileStreamReader(
+      webkit_blob::FileStreamReader::CreateForFileSystemFile(
           context, url, offset, expected_modification_time));
 }
 
@@ -290,7 +289,7 @@ FileSystemBackend::CreateFileStreamWriter(
 
   DCHECK(url.type() == fileapi::kFileSystemTypeNativeLocal);
   return scoped_ptr<fileapi::FileStreamWriter>(
-      new fileapi::LocalFileStreamWriter(
+      fileapi::FileStreamWriter::CreateForLocalFile(
           context->default_file_task_runner(), url.path(), offset));
 }
 

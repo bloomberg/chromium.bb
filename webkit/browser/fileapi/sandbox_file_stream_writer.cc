@@ -9,11 +9,11 @@
 #include "base/sequenced_task_runner.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
-#include "webkit/browser/blob/local_file_stream_reader.h"
+#include "webkit/browser/blob/file_stream_reader.h"
 #include "webkit/browser/fileapi/file_observers.h"
+#include "webkit/browser/fileapi/file_stream_writer.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
-#include "webkit/browser/fileapi/local_file_stream_writer.h"
 #include "webkit/browser/quota/quota_manager.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
@@ -137,7 +137,7 @@ void SandboxFileStreamWriter::DidCreateSnapshotFile(
     initial_offset_ = file_size_;
   }
   DCHECK(!local_file_writer_.get());
-  local_file_writer_.reset(new LocalFileStreamWriter(
+  local_file_writer_.reset(FileStreamWriter::CreateForLocalFile(
       file_system_context_->default_file_task_runner(), platform_path,
       initial_offset_));
 

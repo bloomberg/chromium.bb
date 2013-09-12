@@ -12,7 +12,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
-#include "webkit/browser/fileapi/local_file_stream_writer.h"
+#include "webkit/browser/fileapi/file_stream_writer.h"
 
 using content::BrowserThread;
 
@@ -167,7 +167,7 @@ void WebkitFileStreamWriterImpl::WriteAfterCreateWritableSnapshotFile(
   // Keep |close_callback| to close the file when the stream is destructed.
   DCHECK(!close_callback_on_ui_thread.is_null());
   close_callback_on_ui_thread_ = close_callback_on_ui_thread;
-  local_file_writer_.reset(new fileapi::LocalFileStreamWriter(
+  local_file_writer_.reset(fileapi::FileStreamWriter::CreateForLocalFile(
       file_task_runner_.get(), local_path, offset_));
   int result = local_file_writer_->Write(buf, buf_len, callback);
   if (result != net::ERR_IO_PENDING)

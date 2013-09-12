@@ -24,7 +24,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_error_job.h"
 #include "net/url_request/url_request_status.h"
-#include "webkit/browser/blob/local_file_stream_reader.h"
+#include "webkit/browser/blob/file_stream_reader.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 
@@ -551,10 +551,11 @@ void BlobURLRequestJob::CreateFileStreamReader(size_t index,
   FileStreamReader* reader = NULL;
   switch (item.type()) {
     case BlobData::Item::TYPE_FILE:
-      reader = new LocalFileStreamReader(file_thread_proxy_.get(),
-                                         item.path(),
-                                         item.offset() + additional_offset,
-                                         item.expected_modification_time());
+      reader = FileStreamReader::CreateForLocalFile(
+          file_thread_proxy_.get(),
+          item.path(),
+          item.offset() + additional_offset,
+          item.expected_modification_time());
       break;
     case BlobData::Item::TYPE_FILE_FILESYSTEM:
       reader = file_system_context_->CreateFileStreamReader(

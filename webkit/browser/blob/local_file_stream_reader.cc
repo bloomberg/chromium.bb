@@ -32,17 +32,14 @@ bool VerifySnapshotTime(const base::Time& expected_modification_time,
 
 }  // namespace
 
-LocalFileStreamReader::LocalFileStreamReader(
+FileStreamReader* FileStreamReader::CreateForLocalFile(
     base::TaskRunner* task_runner,
     const base::FilePath& file_path,
     int64 initial_offset,
-    const base::Time& expected_modification_time)
-    : task_runner_(task_runner),
-      file_path_(file_path),
-      initial_offset_(initial_offset),
-      expected_modification_time_(expected_modification_time),
-      has_pending_open_(false),
-      weak_factory_(this) {}
+    const base::Time& expected_modification_time) {
+  return new LocalFileStreamReader(task_runner, file_path, initial_offset,
+                                   expected_modification_time);
+}
 
 LocalFileStreamReader::~LocalFileStreamReader() {
 }
@@ -68,6 +65,18 @@ int64 LocalFileStreamReader::GetLength(
   DCHECK(posted);
   return net::ERR_IO_PENDING;
 }
+
+LocalFileStreamReader::LocalFileStreamReader(
+    base::TaskRunner* task_runner,
+    const base::FilePath& file_path,
+    int64 initial_offset,
+    const base::Time& expected_modification_time)
+    : task_runner_(task_runner),
+      file_path_(file_path),
+      initial_offset_(initial_offset),
+      expected_modification_time_(expected_modification_time),
+      has_pending_open_(false),
+      weak_factory_(this) {}
 
 int LocalFileStreamReader::Open(const net::CompletionCallback& callback) {
   DCHECK(!has_pending_open_);

@@ -10,9 +10,9 @@
 
 #include "base/file_util.h"
 #include "base/sequenced_task_runner.h"
+#include "webkit/browser/blob/file_stream_reader.h"
 #include "webkit/browser/fileapi/copy_or_move_file_validator.h"
 #include "webkit/browser/fileapi/file_observers.h"
-#include "webkit/browser/fileapi/file_system_file_stream_reader.h"
 #include "webkit/browser/fileapi/file_system_operation.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/file_system_quota_util.h"
@@ -215,7 +215,7 @@ TestFileSystemBackend::CreateFileStreamReader(
     const base::Time& expected_modification_time,
     FileSystemContext* context) const {
   return scoped_ptr<webkit_blob::FileStreamReader>(
-      new FileSystemFileStreamReader(
+      webkit_blob::FileStreamReader::CreateForFileSystemFile(
           context, url, offset, expected_modification_time));
 }
 
