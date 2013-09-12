@@ -72,6 +72,7 @@
           'sel_qualify.c',
           'sel_validate_image.c',
           'sys_exception.c',
+          'sys_imc.c',
           'sys_list_mappings.c',
           'thread_suspension_common.c',
           'thread_suspension_unwind.c',

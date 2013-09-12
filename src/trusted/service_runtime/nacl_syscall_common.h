@@ -19,12 +19,10 @@
 
 EXTERN_C_BEGIN
 
-struct NaClAbiNaClImcMsgHdr;
 struct NaClApp;
 struct NaClAppThread;
 struct NaClSocketAddress;
 struct NaClDesc;
-struct NaClImcMsgHdr;
 struct nacl_abi_stat;
 
 int32_t NaClSysNotImplementedDecoder(struct NaClAppThread *natp);
@@ -186,28 +184,6 @@ int32_t NaClSysClockGetTime(struct NaClAppThread  *natp,
                             int                   clk_id,
                             uint32_t              tsp);
 
-int32_t NaClSysImcMakeBoundSock(struct NaClAppThread *natp,
-                                int32_t              *sap);
-
-int32_t NaClSysImcAccept(struct NaClAppThread  *natp,
-                         int                   d);
-
-int32_t NaClSysImcConnect(struct NaClAppThread *natp,
-                          int                  d);
-
-int32_t NaClSysImcSendmsg(struct NaClAppThread         *natp,
-                          int                          d,
-                          struct NaClAbiNaClImcMsgHdr  *nanimhp,
-                          int                          flags);
-
-int32_t NaClSysImcRecvmsg(struct NaClAppThread         *natp,
-                          int                          d,
-                          struct NaClAbiNaClImcMsgHdr  *nanimhp,
-                          int                          flags);
-
-int32_t NaClSysImcMemObjCreate(struct NaClAppThread  *natp,
-                               size_t                size);
-
 int32_t NaClSysTlsInit(struct NaClAppThread  *natp,
                        uint32_t              thread_ptr);
 
@@ -264,10 +240,6 @@ int32_t NaClSysCondTimedWaitAbs(struct NaClAppThread     *natp,
                                 int32_t                  mutex_handle,
                                 struct nacl_abi_timespec *ts);
 
-int32_t NaClCommonDescSocketPair(struct NaClDesc      **pair);
-
-int32_t NaClSysImcSocketPair(struct NaClAppThread *natp,
-                             uint32_t             descs_out);
 /* Semaphores */
 int32_t NaClSysSemCreate(struct NaClAppThread *natp,
                          int32_t              init_value);
