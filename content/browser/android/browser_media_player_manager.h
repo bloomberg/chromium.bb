@@ -141,6 +141,13 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   // Removes the player with the specified id.
   void RemovePlayer(int player_id);
 
+  // Replaces a player with the specified id with a given MediaPlayerAndroid
+  // object. This will also return the original MediaPlayerAndroid object that
+  // was replaced.
+  scoped_ptr<media::MediaPlayerAndroid> SwapPlayer(
+      int player_id,
+      media::MediaPlayerAndroid* player);
+
   // Add a new MediaDrmBridge for the given |uuid| and |media_keys_id|.
   void AddDrmBridge(int media_keys_id, const std::vector<uint8>& uuid);
 

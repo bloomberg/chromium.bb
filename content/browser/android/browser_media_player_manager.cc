@@ -504,6 +504,21 @@ void BrowserMediaPlayerManager::RemovePlayer(int player_id) {
   }
 }
 
+scoped_ptr<media::MediaPlayerAndroid> BrowserMediaPlayerManager::SwapPlayer(
+      int player_id, media::MediaPlayerAndroid* player) {
+  media::MediaPlayerAndroid* previous_player = NULL;
+  for (ScopedVector<MediaPlayerAndroid>::iterator it = players_.begin();
+      it != players_.end(); ++it) {
+    if ((*it)->player_id() == player_id) {
+      previous_player = *it;
+      players_.weak_erase(it);
+      players_.push_back(player);
+      break;
+    }
+  }
+  return scoped_ptr<media::MediaPlayerAndroid>(previous_player);
+}
+
 void BrowserMediaPlayerManager::AddDrmBridge(int media_keys_id,
                                              const std::vector<uint8>& uuid) {
   DCHECK(!GetDrmBridge(media_keys_id));
