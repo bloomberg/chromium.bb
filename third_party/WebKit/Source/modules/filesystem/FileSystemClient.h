@@ -54,10 +54,6 @@ public:
     virtual ~FileSystemClient() { }
 
     virtual bool allowFileSystem(ScriptExecutionContext*) = 0;
-
-    // FIXME: move these methods to platform.
-    virtual void openFileSystem(ScriptExecutionContext*, FileSystemType, PassOwnPtr<AsyncFileSystemCallbacks>, long long size, OpenFileSystemMode) = 0;
-    virtual void deleteFileSystem(ScriptExecutionContext*, FileSystemType, PassOwnPtr<AsyncFileSystemCallbacks>) = 0;
 };
 
 void provideLocalFileSystemTo(Page*, PassOwnPtr<FileSystemClient>);
