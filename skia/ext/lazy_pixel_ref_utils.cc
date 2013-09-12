@@ -4,6 +4,8 @@
 
 #include "skia/ext/lazy_pixel_ref_utils.h"
 
+#include <algorithm>
+
 #include "skia/ext/lazy_pixel_ref.h"
 #include "third_party/skia/include/core/SkBitmapDevice.h"
 #include "third_party/skia/include/core/SkCanvas.h"
