@@ -375,6 +375,10 @@ void ContentViewCoreImpl::UpdateFrameInfo(
     const gfx::Vector2dF& controls_offset,
     const gfx::Vector2dF& content_offset,
     float overdraw_bottom_height) {
+  if (window_android_)
+      window_android_->set_content_offset(
+          gfx::ScaleVector2d(content_offset, dpi_scale_));
+
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())

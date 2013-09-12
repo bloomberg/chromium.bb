@@ -5,6 +5,7 @@
 #include "ui/android/window_android.h"
 
 #include "base/android/jni_android.h"
+#include "base/android/jni_array.h"
 #include "base/android/jni_helper.h"
 #include "base/android/scoped_java_ref.h"
 #include "jni/WindowAndroid_jni.h"
@@ -31,6 +32,22 @@ bool WindowAndroid::RegisterWindowAndroid(JNIEnv* env) {
 }
 
 WindowAndroid::~WindowAndroid() {
+}
+
+bool WindowAndroid::GrabSnapshot(
+    int content_x, int content_y, int width, int height,
+    std::vector<unsigned char>* png_representation) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jbyteArray> result =
+      Java_WindowAndroid_grabSnapshot(env, GetJavaObject().obj(),
+                                      content_x + content_offset_.x(),
+                                      content_y + content_offset_.y(),
+                                      width, height);
+  if (result.is_null())
+    return false;
+  base::android::JavaByteArrayToByteVector(
+      env, result.obj(), png_representation);
+  return true;
 }
 
 // ----------------------------------------------------------------------------
