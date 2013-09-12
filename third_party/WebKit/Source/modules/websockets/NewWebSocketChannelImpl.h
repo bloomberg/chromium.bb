@@ -87,12 +87,19 @@ public:
     virtual void suspend() OVERRIDE;
     virtual void resume() OVERRIDE;
 
+    void handleDidConnect();
+    void handleTextMessage(Vector<char>*);
+    void handleBinaryMessage(Vector<char>*);
+    void handleDidReceiveMessageError();
+    void handleDidClose(unsigned short code, const String& reason);
+
 private:
     enum MessageType {
         MessageTypeText,
         MessageTypeBlob,
         MessageTypeArrayBuffer,
     };
+
     struct Message {
         explicit Message(const String&);
         explicit Message(const Blob&);
@@ -107,7 +114,9 @@ private:
         bool isMessageText;
         Vector<char> data;
     };
+
     class BlobLoader;
+    class Resumer;
 
     NewWebSocketChannelImpl(ScriptExecutionContext*, WebSocketChannelClient*, const String&, unsigned);
     void sendInternal();
@@ -120,10 +129,6 @@ private:
     virtual void didReceiveData(WebKit::WebSocketHandle*, WebKit::WebSocketHandle::MessageType, const char* data, size_t /* size */, bool fin) OVERRIDE;
     virtual void didClose(WebKit::WebSocketHandle*, unsigned short code, const WebKit::WebString& reason) OVERRIDE;
     virtual void didReceiveFlowControl(WebKit::WebSocketHandle*, int64_t quota) OVERRIDE { m_sendingQuota += quota; }
-
-    void handleTextMessage(Vector<char>*);
-    void handleBinaryMessage(Vector<char>*);
-    void handleDidClose(unsigned short code, const String& reason);
 
     // Methods for BlobLoader.
     void didFinishLoadingBlob(PassRefPtr<ArrayBuffer>);
@@ -146,6 +151,8 @@ private:
     WebSocketChannelClient* m_client;
     KURL m_url;
     OwnPtr<BlobLoader> m_blobLoader;
+    OwnPtr<Resumer> m_resumer;
+    bool m_isSuspended;
     Deque<Message> m_messages;
     Vector<char> m_receivingMessageData;
 
