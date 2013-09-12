@@ -21,18 +21,6 @@
 
 namespace chromeos {
 
-// Struct to represent a SMS.
-struct CHROMEOS_EXPORT SMS {
-  SMS();
-  ~SMS();
-  base::Time timestamp;
-  std::string number;
-  std::string text;
-  std::string smsc;  // optional; empty if not present in message.
-  int32 validity;  // optional; -1 if not present in message.
-  int32 msgclass;  // optional; -1 if not present in message.
-};
-
 // Struct for passing wifi access point data.
 struct CHROMEOS_EXPORT WifiAccessPoint {
   WifiAccessPoint();

@@ -10,12 +10,6 @@
 
 namespace chromeos {
 
-SMS::SMS() : validity(0), msgclass(0) {
-}
-
-SMS::~SMS() {
-}
-
 WifiAccessPoint::WifiAccessPoint()
     : signal_strength(0),
       signal_to_noise(0),
