@@ -50,7 +50,7 @@
 #if _MSC_VER <= 1600 || defined __BORLANDC__ /* @@@ [2G limit] */
 #define fseeko fseek
 #define ftello ftell
-#elif _MSC_VER <= 1700
+#else
 #define fseeko _fseeki64
 #define ftello _ftelli64
 #endif
