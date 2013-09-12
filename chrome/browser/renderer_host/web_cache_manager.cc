@@ -23,6 +23,10 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/sys_utils.h"
+#endif
+
 using base::Time;
 using base::TimeDelta;
 using WebKit::WebCache;
@@ -322,6 +326,10 @@ void WebCacheManager::EnactStrategy(const AllocationStrategy& strategy) {
 
       // We allow the dead objects to consume up to half of the cache capacity.
       size_t max_dead_capacity = capacity / 2;
+#if defined(OS_ANDROID)
+      if (base::android::SysUtils::IsLowEndDevice())
+        max_dead_capacity = std::min(512 * 1024U, max_dead_capacity);
+#endif
 
       host->Send(new ChromeViewMsg_SetCacheCapacities(min_dead_capacity,
                                                       max_dead_capacity,
