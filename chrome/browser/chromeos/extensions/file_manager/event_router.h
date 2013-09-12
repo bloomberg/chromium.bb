@@ -118,10 +118,6 @@ class EventRouter
  private:
   typedef std::map<base::FilePath, FileWatcher*> WatcherMap;
 
-  // Called on change to kExternalStorageDisabled pref.
-  // TODO(hidehiko): Move this to VolumeManager.
-  void OnExternalStorageDisabledChanged();
-
   // Called when prefs related to file manager change.
   void OnFileManagerPrefsChanged();
 

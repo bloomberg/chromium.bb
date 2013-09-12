@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#include "base/prefs/pref_change_registrar.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 
@@ -126,10 +127,14 @@ class VolumeManager : public BrowserContextKeyedService,
       chromeos::FormatError error_code,
       const std::string& device_path) OVERRIDE;
 
+  // Called on change to kExternalStorageDisabled pref.
+  void OnExternalStorageDisabledChanged();
+
  private:
   Profile* profile_;
   chromeos::disks::DiskMountManager* disk_mount_manager_;
   scoped_ptr<MountedDiskMonitor> mounted_disk_monitor_;
+  PrefChangeRegistrar pref_change_registrar_;
   ObserverList<VolumeManagerObserver> observers_;
   DISALLOW_COPY_AND_ASSIGN(VolumeManager);
 };

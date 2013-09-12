@@ -372,12 +372,6 @@ void EventRouter::ObserveFileSystemEvents() {
   }
 
   pref_change_registrar_->Init(profile_->GetPrefs());
-
-  pref_change_registrar_->Add(
-      prefs::kExternalStorageDisabled,
-      base::Bind(&EventRouter::OnExternalStorageDisabledChanged,
-                 weak_factory_.GetWeakPtr()));
-
   base::Closure callback =
       base::Bind(&EventRouter::OnFileManagerPrefsChanged,
                  weak_factory_.GetWeakPtr());
@@ -496,24 +490,6 @@ void EventRouter::NetworkManagerChanged() {
 
 void EventRouter::DefaultNetworkChanged(const chromeos::NetworkState* network) {
   NetworkManagerChanged();
-}
-
-void EventRouter::OnExternalStorageDisabledChanged() {
-  // If the policy just got disabled we have to unmount every device currently
-  // mounted. The opposite is fine - we can let the user re-plug her device to
-  // make it available.
-  if (profile_->GetPrefs()->GetBoolean(prefs::kExternalStorageDisabled)) {
-    DiskMountManager* manager = DiskMountManager::GetInstance();
-    DiskMountManager::MountPointMap mounts(manager->mount_points());
-    for (DiskMountManager::MountPointMap::const_iterator it = mounts.begin();
-         it != mounts.end(); ++it) {
-      LOG(INFO) << "Unmounting " << it->second.mount_path
-                << " because of policy.";
-      manager->UnmountPath(it->second.mount_path,
-                           chromeos::UNMOUNT_OPTIONS_NONE,
-                           DiskMountManager::UnmountPathCallback());
-    }
-  }
 }
 
 void EventRouter::OnFileManagerPrefsChanged() {

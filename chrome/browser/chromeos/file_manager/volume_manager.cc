@@ -5,6 +5,8 @@
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
 
 #include "base/basictypes.h"
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
@@ -114,11 +116,20 @@ VolumeManager* VolumeManager::Get(content::BrowserContext* context) {
 }
 
 void VolumeManager::Initialize() {
+  // Subscribe to DiskMountManager.
   disk_mount_manager_->AddObserver(this);
   disk_mount_manager_->RequestMountInfoRefresh();
+
+  // Subscribe to Profile Preference change.
+  pref_change_registrar_.Init(profile_->GetPrefs());
+  pref_change_registrar_.Add(
+      prefs::kExternalStorageDisabled,
+      base::Bind(&VolumeManager::OnExternalStorageDisabledChanged,
+                 base::Unretained(this)));
 }
 
 void VolumeManager::Shutdown() {
+  pref_change_registrar_.RemoveAll();
   disk_mount_manager_->RemoveObserver(this);
 }
 
@@ -325,6 +336,26 @@ void VolumeManager::OnFormatEvent(
       return;
   }
   NOTREACHED();
+}
+
+void VolumeManager::OnExternalStorageDisabledChanged() {
+  // If the policy just got disabled we have to unmount every device currently
+  // mounted. The opposite is fine - we can let the user re-plug her device to
+  // make it available.
+  if (profile_->GetPrefs()->GetBoolean(prefs::kExternalStorageDisabled)) {
+    // We do not iterate on mount_points directly, because mount_points can
+    // be changed by UnmountPath().
+    // TODO(hidehiko): Is it necessary to unmount mounted archives, too, here?
+    while (!disk_mount_manager_->mount_points().empty()) {
+      std::string mount_path =
+          disk_mount_manager_->mount_points().begin()->second.mount_path;
+      LOG(INFO) << "Unmounting " << mount_path << " because of preference.";
+      disk_mount_manager_->UnmountPath(
+          mount_path,
+          chromeos::UNMOUNT_OPTIONS_NONE,
+          chromeos::disks::DiskMountManager::UnmountPathCallback());
+    }
+  }
 }
 
 }  // namespace file_manager
