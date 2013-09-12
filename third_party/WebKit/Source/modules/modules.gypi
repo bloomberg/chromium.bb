@@ -439,6 +439,7 @@
       'mediastream/MediaStreamTrackSourcesRequest.h',
       'mediastream/NavigatorMediaStream.cpp',
       'mediastream/NavigatorMediaStream.h',
+      'mediastream/NavigatorUserMediaError.cpp',
       'mediastream/NavigatorUserMediaError.h',
       'mediastream/NavigatorUserMediaErrorCallback.h',
       'mediastream/NavigatorUserMediaSuccessCallback.h',

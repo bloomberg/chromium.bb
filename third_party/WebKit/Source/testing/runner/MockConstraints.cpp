@@ -31,6 +31,7 @@
 #include "MockConstraints.h"
 
 #include "public/platform/WebMediaConstraints.h"
+#include "public/platform/WebString.h"
 
 using namespace WebKit;
 
@@ -50,15 +51,18 @@ bool isValid(const WebString& constraint)
 
 }
 
-bool MockConstraints::verifyConstraints(const WebMediaConstraints& constraints)
+bool MockConstraints::verifyConstraints(const WebMediaConstraints& constraints, WebString* failedConstraint)
 {
     WebVector<WebMediaConstraint> mandatoryConstraints;
     constraints.getMandatoryConstraints(mandatoryConstraints);
     if (mandatoryConstraints.size()) {
         for (size_t i = 0; i < mandatoryConstraints.size(); ++i) {
             const WebMediaConstraint& curr = mandatoryConstraints[i];
-            if (!isSupported(curr.m_name) || curr.m_value != "1")
+            if (!isSupported(curr.m_name) || curr.m_value != "1") {
+                if (failedConstraint)
+                    *failedConstraint = curr.m_name;
                 return false;
+            }
         }
     }
 
@@ -67,8 +71,11 @@ bool MockConstraints::verifyConstraints(const WebMediaConstraints& constraints)
     if (optionalConstraints.size()) {
         for (size_t i = 0; i < optionalConstraints.size(); ++i) {
             const WebMediaConstraint& curr = optionalConstraints[i];
-            if (!isValid(curr.m_name) || curr.m_value != "0")
+            if (!isValid(curr.m_name) || curr.m_value != "0") {
+                if (failedConstraint)
+                    *failedConstraint = curr.m_name;
                 return false;
+            }
         }
     }
 

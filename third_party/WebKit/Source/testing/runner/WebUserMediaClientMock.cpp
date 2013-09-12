@@ -52,19 +52,53 @@ public:
         , m_request(request)
         , m_result(result)
     {
+        WEBKIT_ASSERT(!m_result.isNull());
     }
 
     virtual void runIfValid() OVERRIDE
     {
-        if (m_result.isNull())
-            m_request.requestFailed();
-        else
-            m_request.requestSucceeded(m_result);
+        m_request.requestSucceeded(m_result);
     }
 
 private:
     WebUserMediaRequest m_request;
     WebMediaStream m_result;
+};
+
+class UserMediaRequestConstraintFailedTask : public WebMethodTask<WebUserMediaClientMock> {
+public:
+    UserMediaRequestConstraintFailedTask(WebUserMediaClientMock* object, const WebUserMediaRequest& request, const WebString& constraint)
+        : WebMethodTask<WebUserMediaClientMock>(object)
+        , m_request(request)
+        , m_constraint(constraint)
+    {
+    }
+
+    virtual void runIfValid() OVERRIDE
+    {
+        m_request.requestFailedConstraint(m_constraint);
+    }
+
+private:
+    WebUserMediaRequest m_request;
+    WebString m_constraint;
+};
+
+class UserMediaRequestPermissionDeniedTask : public WebMethodTask<WebUserMediaClientMock> {
+public:
+    UserMediaRequestPermissionDeniedTask(WebUserMediaClientMock* object, const WebUserMediaRequest& request)
+        : WebMethodTask<WebUserMediaClientMock>(object)
+        , m_request(request)
+    {
+    }
+
+    virtual void runIfValid() OVERRIDE
+    {
+        m_request.requestFailed();
+    }
+
+private:
+    WebUserMediaRequest m_request;
 };
 
 ////////////////////////////////
@@ -85,18 +119,19 @@ void WebUserMediaClientMock::requestUserMedia(const WebUserMediaRequest& streamR
     WebUserMediaRequest request = streamRequest;
 
     if (request.ownerDocument().isNull() || !request.ownerDocument().frame()) {
-        m_delegate->postTask(new UserMediaRequestTask(this, request, WebMediaStream()));
+        m_delegate->postTask(new UserMediaRequestPermissionDeniedTask(this, request));
         return;
     }
 
     WebMediaConstraints constraints = request.audioConstraints();
-    if (!constraints.isNull() && !MockConstraints::verifyConstraints(constraints)) {
-        m_delegate->postTask(new UserMediaRequestTask(this, request, WebMediaStream()));
+    WebString failedConstraint;
+    if (!constraints.isNull() && !MockConstraints::verifyConstraints(constraints, &failedConstraint)) {
+        m_delegate->postTask(new UserMediaRequestConstraintFailedTask(this, request, failedConstraint));
         return;
     }
     constraints = request.videoConstraints();
-    if (!constraints.isNull() && !MockConstraints::verifyConstraints(constraints)) {
-        m_delegate->postTask(new UserMediaRequestTask(this, request, WebMediaStream()));
+    if (!constraints.isNull() && !MockConstraints::verifyConstraints(constraints, &failedConstraint)) {
+        m_delegate->postTask(new UserMediaRequestConstraintFailedTask(this, request, failedConstraint));
         return;
     }
 

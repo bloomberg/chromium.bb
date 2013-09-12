@@ -154,7 +154,7 @@ void UserMediaRequest::fail(const String& description)
         return;
 
     if (m_errorCallback) {
-        RefPtr<NavigatorUserMediaError> error = NavigatorUserMediaError::create("PERMISSION_DENIED", description, String());
+        RefPtr<NavigatorUserMediaError> error = NavigatorUserMediaError::create(NavigatorUserMediaError::NamePermissionDenied, description, String());
         m_errorCallback->handleEvent(error.get());
     }
 }
@@ -166,7 +166,7 @@ void UserMediaRequest::failConstraint(const String& constraintName, const String
         return;
 
     if (m_errorCallback) {
-        RefPtr<NavigatorUserMediaError> error = NavigatorUserMediaError::create("CONSTRAINT_NOT_SATISFIED", description, constraintName);
+        RefPtr<NavigatorUserMediaError> error = NavigatorUserMediaError::create(NavigatorUserMediaError::NameConstraintNotSatisfied, description, constraintName);
         m_errorCallback->handleEvent(error.get());
     }
 }
