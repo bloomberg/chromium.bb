@@ -146,6 +146,8 @@ int GpuMain(const MainFunctionParams& parameters) {
           gfx::kGLImplementationDesktopName) {
     message_loop_type = base::MessageLoop::TYPE_UI;
   }
+#elif defined(TOOLKIT_GTK)
+  message_loop_type = base::MessageLoop::TYPE_GPU;
 #elif defined(OS_LINUX)
   message_loop_type = base::MessageLoop::TYPE_DEFAULT;
 #endif
