@@ -8,6 +8,10 @@
 
 namespace content {
 
+WebCryptoImpl::WebCryptoImpl() {
+  Init();
+}
+
 void WebCryptoImpl::digest(
     const WebKit::WebCryptoAlgorithm& algorithm,
     const unsigned char* data,

@@ -6,6 +6,9 @@
 
 namespace content {
 
+void WebCryptoImpl::Init() {
+}
+
 bool WebCryptoImpl::DigestInternal(
     const WebKit::WebCryptoAlgorithm& algorithm,
     const unsigned char* data,

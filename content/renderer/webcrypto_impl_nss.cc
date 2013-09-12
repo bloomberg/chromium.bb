@@ -13,6 +13,10 @@
 
 namespace content {
 
+void WebCryptoImpl::Init() {
+  crypto::EnsureNSSInit();
+}
+
 bool WebCryptoImpl::DigestInternal(
     const WebKit::WebCryptoAlgorithm& algorithm,
     const unsigned char* data,
@@ -40,8 +44,6 @@ bool WebCryptoImpl::DigestInternal(
       // Not a digest algorithm.
       return false;
   }
-
-  crypto::EnsureNSSInit();
 
   HASHContext* context = HASH_Create(hash_type);
   if (!context) {
