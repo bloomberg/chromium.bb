@@ -2251,6 +2251,8 @@
         'browser/sync_file_system/drive_backend_v1/local_sync_delegate.h',
         'browser/sync_file_system/drive_backend_v1/local_sync_operation_resolver.cc',
         'browser/sync_file_system/drive_backend_v1/local_sync_operation_resolver.h',
+        'browser/sync_file_system/drive_backend_v1/origin_operation_queue.cc',
+        'browser/sync_file_system/drive_backend_v1/origin_operation_queue.h',
         'browser/sync_file_system/drive_backend_v1/remote_change_handler.cc',
         'browser/sync_file_system/drive_backend_v1/remote_change_handler.h',
         'browser/sync_file_system/drive_backend_v1/remote_sync_delegate.cc',

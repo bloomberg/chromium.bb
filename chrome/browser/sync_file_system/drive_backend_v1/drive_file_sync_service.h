@@ -21,6 +21,7 @@
 #include "chrome/browser/sync_file_system/drive_backend_v1/api_util_interface.h"
 #include "chrome/browser/sync_file_system/drive_backend_v1/drive_metadata_store.h"
 #include "chrome/browser/sync_file_system/drive_backend_v1/local_sync_operation_resolver.h"
+#include "chrome/browser/sync_file_system/drive_backend_v1/origin_operation_queue.h"
 #include "chrome/browser/sync_file_system/drive_backend_v1/remote_change_handler.h"
 #include "chrome/browser/sync_file_system/file_change.h"
 #include "chrome/browser/sync_file_system/local_change_processor.h"
@@ -391,6 +392,8 @@ class DriveFileSyncService : public RemoteFileSyncService,
   google_apis::GDataErrorCode last_gdata_error_;
 
   ConflictResolutionResolver conflict_resolution_resolver_;
+
+  OriginOperationQueue pending_origin_operations_;
 
   DISALLOW_COPY_AND_ASSIGN(DriveFileSyncService);
 };
