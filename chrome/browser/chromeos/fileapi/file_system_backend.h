@@ -132,8 +132,6 @@ class FileSystemBackend : public fileapi::ExternalFileSystemBackend {
                               base::FilePath* virtual_path) OVERRIDE;
 
  private:
-  base::FilePath GetFileSystemRootPath(const fileapi::FileSystemURL& url) const;
-
   scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
   scoped_ptr<FileAccessPermissions> file_access_permissions_;
   scoped_ptr<fileapi::AsyncFileUtilAdapter> local_file_util_;

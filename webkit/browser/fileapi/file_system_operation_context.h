@@ -52,7 +52,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE FileSystemOperationContext
   int64 allowed_bytes_growth() const { return allowed_bytes_growth_; }
   quota::QuotaLimitType quota_limit_type() const { return quota_limit_type_; }
   base::SequencedTaskRunner* task_runner() const { return task_runner_.get(); }
-  const base::FilePath& root_path() const { return root_path_; }
 
   ChangeObserverList* change_observers() { return &change_observers_; }
   UpdateObserverList* update_observers() { return &update_observers_; }
@@ -72,10 +71,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE FileSystemOperationContext
     DCHECK(setter_thread_checker_.CalledOnValidThread());
     quota_limit_type_ = limit_type;
   }
-  void set_root_path(const base::FilePath& root_path) {
-    DCHECK(setter_thread_checker_.CalledOnValidThread());
-    root_path_ = root_path;
-  }
 
  private:
   scoped_refptr<FileSystemContext> file_system_context_;
@@ -90,9 +85,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE FileSystemOperationContext
   // Observers attached to this context.
   ChangeObserverList change_observers_;
   UpdateObserverList update_observers_;
-
-  // Root path for the operation, used by LocalFileUtil.
-  base::FilePath root_path_;
 
   // Used to check its setters are not called on arbitrary thread.
   base::ThreadChecker setter_thread_checker_;

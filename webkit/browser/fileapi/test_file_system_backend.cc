@@ -24,6 +24,29 @@
 
 namespace fileapi {
 
+namespace {
+
+class TestFileUtil : public LocalFileUtil {
+ public:
+  explicit TestFileUtil(const base::FilePath& base_path)
+      : base_path_(base_path) {}
+  virtual ~TestFileUtil() {}
+
+  // LocalFileUtil overrides.
+  virtual base::PlatformFileError GetLocalFilePath(
+      FileSystemOperationContext* context,
+      const FileSystemURL& file_system_url,
+      base::FilePath* local_file_path) OVERRIDE {
+    *local_file_path = base_path_.Append(file_system_url.path());
+    return base::PLATFORM_FILE_OK;
+  }
+
+ private:
+  base::FilePath base_path_;
+};
+
+}  // namespace
+
 // This only supports single origin.
 class TestFileSystemBackend::QuotaUtil
     : public FileSystemQuotaUtil,
@@ -125,7 +148,7 @@ TestFileSystemBackend::TestFileSystemBackend(
     base::SequencedTaskRunner* task_runner,
     const base::FilePath& base_path)
     : base_path_(base_path),
-      local_file_util_(new AsyncFileUtilAdapter(new LocalFileUtil())),
+      file_util_(new AsyncFileUtilAdapter(new TestFileUtil(base_path))),
       quota_util_(new QuotaUtil(task_runner)),
       require_copy_or_move_validator_(false) {
 }
@@ -151,7 +174,7 @@ void TestFileSystemBackend::OpenFileSystem(
 }
 
 AsyncFileUtil* TestFileSystemBackend::GetAsyncFileUtil(FileSystemType type) {
-  return local_file_util_.get();
+  return file_util_.get();
 }
 
 CopyOrMoveFileValidatorFactory*
@@ -182,7 +205,6 @@ FileSystemOperation* TestFileSystemBackend::CreateFileSystemOperation(
   operation_context->set_update_observers(*GetUpdateObservers(url.type()));
   operation_context->set_change_observers(
       *quota_util_->GetChangeObservers(url.type()));
-  operation_context->set_root_path(base_path_);
   return FileSystemOperation::Create(url, context, operation_context.Pass());
 }
 

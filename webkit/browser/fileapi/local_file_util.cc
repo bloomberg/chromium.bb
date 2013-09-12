@@ -69,11 +69,9 @@ bool LocalFileEnumerator::IsDirectory() {
   return file_util_info_.IsDirectory();
 }
 
-LocalFileUtil::LocalFileUtil() {
-}
+LocalFileUtil::LocalFileUtil() {}
 
-LocalFileUtil::~LocalFileUtil() {
-}
+LocalFileUtil::~LocalFileUtil() {}
 
 PlatformFileError LocalFileUtil::CreateOrOpen(
     FileSystemOperationContext* context,
@@ -151,17 +149,6 @@ scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> LocalFileUtil::
       file_path, root_url.path(),
       base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES))
       .PassAs<FileSystemFileUtil::AbstractFileEnumerator>();
-}
-
-PlatformFileError LocalFileUtil::GetLocalFilePath(
-    FileSystemOperationContext* context,
-    const FileSystemURL& url,
-    base::FilePath* local_file_path) {
-  base::FilePath root = context->root_path();
-  if (root.empty())
-    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
-  *local_file_path = root.Append(url.path());
-  return base::PLATFORM_FILE_OK;
 }
 
 PlatformFileError LocalFileUtil::Touch(

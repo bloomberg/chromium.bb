@@ -6,13 +6,13 @@
 #define WEBKIT_BROWSER_FILEAPI_LOCAL_FILE_UTIL_H_
 
 #include "base/compiler_specific.h"
+#include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
 #include "webkit/browser/fileapi/file_system_file_util.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
 
 namespace base {
-class FilePath;
 class Time;
 }
 
@@ -55,10 +55,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE LocalFileUtil
   virtual scoped_ptr<AbstractFileEnumerator> CreateFileEnumerator(
       FileSystemOperationContext* context,
       const FileSystemURL& root_url) OVERRIDE;
-  virtual base::PlatformFileError GetLocalFilePath(
-      FileSystemOperationContext* context,
-      const FileSystemURL& file_system_url,
-      base::FilePath* local_file_path) OVERRIDE;
   virtual base::PlatformFileError Touch(
       FileSystemOperationContext* context,
       const FileSystemURL& url,

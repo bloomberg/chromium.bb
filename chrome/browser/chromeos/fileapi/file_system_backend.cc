@@ -246,11 +246,9 @@ fileapi::FileSystemOperation* FileSystemBackend::CreateFileSystemOperation(
   DCHECK(url.type() == fileapi::kFileSystemTypeNativeLocal ||
          url.type() == fileapi::kFileSystemTypeRestrictedNativeLocal ||
          url.type() == fileapi::kFileSystemTypeDrive);
-  scoped_ptr<fileapi::FileSystemOperationContext> operation_context(
-      new fileapi::FileSystemOperationContext(context));
-  operation_context->set_root_path(GetFileSystemRootPath(url));
   return fileapi::FileSystemOperation::Create(
-      url, context, operation_context.Pass());
+      url, context,
+      make_scoped_ptr(new fileapi::FileSystemOperationContext(context)));
 }
 
 scoped_ptr<webkit_blob::FileStreamReader>
@@ -301,22 +299,6 @@ bool FileSystemBackend::GetVirtualPath(
     base::FilePath* virtual_path) {
   return mount_points_->GetVirtualPath(filesystem_path, virtual_path) ||
          system_mount_points_->GetVirtualPath(filesystem_path, virtual_path);
-}
-
-base::FilePath FileSystemBackend::GetFileSystemRootPath(
-    const fileapi::FileSystemURL& url) const {
-  DCHECK(fileapi::IsolatedContext::IsIsolatedType(url.mount_type()));
-  if (!url.is_valid())
-    return base::FilePath();
-
-  base::FilePath root_path;
-  std::string mount_name = url.filesystem_id();
-  if (!mount_points_->GetRegisteredPath(mount_name, &root_path) &&
-      !system_mount_points_->GetRegisteredPath(mount_name, &root_path)) {
-    return base::FilePath();
-  }
-
-  return root_path.DirName();
 }
 
 }  // namespace chromeos

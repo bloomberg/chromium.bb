@@ -13,6 +13,8 @@ namespace fileapi {
 
 class FileSystemOperationContext;
 
+// TODO(kinuko): Deprecate this (merge into LocalFileUtil) and
+// rename this file to dragged_file_util.h.
 class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE IsolatedFileUtil
     : public LocalFileUtil {
  public:
