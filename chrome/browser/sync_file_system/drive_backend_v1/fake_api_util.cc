@@ -130,7 +130,7 @@ void FakeAPIUtil::ListChanges(int64 start_changestamp,
 
   std::sort(entries.begin(), entries.end(), ChangeStampComparator());
 
-  change_feed->set_entries(&entries);
+  change_feed->set_entries(entries.Pass());
   change_feed->set_largest_changestamp(largest_changestamp_);
 
   base::MessageLoopProxy::current()->PostTask(
@@ -251,7 +251,7 @@ scoped_ptr<google_apis::ResourceEntry> FakeAPIUtil::CreateResourceEntry(
   link->set_title(resource.parent_title);
   parent_links.push_back(link.release());
 
-  entry->set_links(&parent_links);
+  entry->set_links(parent_links.Pass());
   entry->set_title(resource.title);
   entry->set_resource_id(resource.resource_id);
   entry->set_file_md5(resource.md5_checksum);

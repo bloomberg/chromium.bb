@@ -16,7 +16,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/time_util.h"
 
 using base::Value;
@@ -695,97 +694,6 @@ scoped_ptr<ResourceEntry> ResourceEntry::CreateFrom(const base::Value& value) {
 }
 
 // static
-scoped_ptr<ResourceEntry> ResourceEntry::CreateFromFileResource(
-    const FileResource& file) {
-  scoped_ptr<ResourceEntry> entry(new ResourceEntry());
-
-  // ResourceEntry
-  entry->resource_id_ = file.file_id();
-  entry->id_ = file.file_id();
-  entry->kind_ = file.GetKind();
-  entry->title_ = file.title();
-  entry->published_time_ = file.created_date();
-  // TODO(kochi): entry->labels_
-  if (!file.shared_with_me_date().is_null()) {
-    entry->labels_.push_back("shared-with-me");
-  }
-
-  // This should be the url to download the file.
-  entry->content_.url_ = file.download_url();
-  entry->content_.mime_type_ = file.mime_type();
-  // TODO(kochi): entry->resource_links_
-
-  // For file entries
-  entry->filename_ = file.title();
-  entry->suggested_filename_ = file.title();
-  entry->file_md5_ = file.md5_checksum();
-  entry->file_size_ = file.file_size();
-
-  // If file is removed completely, that information is only available in
-  // ChangeResource, and is reflected in |removed_|. If file is trashed, the
-  // file entry still exists but with its "trashed" label true.
-  entry->deleted_ = file.labels().is_trashed();
-
-  // CommonMetadata
-  entry->etag_ = file.etag();
-  // entry->authors_
-  // entry->links_.
-  if (!file.parents().empty()) {
-    Link* link = new Link();
-    link->type_ = Link::LINK_PARENT;
-    link->href_ = file.parents()[0]->parent_link();
-    entry->links_.push_back(link);
-  }
-  if (!file.self_link().is_empty()) {
-    Link* link = new Link();
-    link->type_ = Link::LINK_EDIT;
-    link->href_ = file.self_link();
-    entry->links_.push_back(link);
-  }
-  if (!file.thumbnail_link().is_empty()) {
-    Link* link = new Link();
-    link->type_ = Link::LINK_THUMBNAIL;
-    link->href_ = file.thumbnail_link();
-    entry->links_.push_back(link);
-  }
-  if (!file.alternate_link().is_empty()) {
-    Link* link = new Link();
-    link->type_ = Link::LINK_ALTERNATE;
-    link->href_ = file.alternate_link();
-    entry->links_.push_back(link);
-  }
-  if (!file.embed_link().is_empty()) {
-    Link* link = new Link();
-    link->type_ = Link::LINK_EMBED;
-    link->href_ = file.embed_link();
-    entry->links_.push_back(link);
-  }
-  // entry->categories_
-  entry->updated_time_ = file.modified_date();
-  entry->last_viewed_time_ = file.last_viewed_by_me_date();
-
-  entry->FillRemainingFields();
-  return entry.Pass();
-}
-
-// static
-scoped_ptr<ResourceEntry> ResourceEntry::CreateFromChangeResource(
-    const ChangeResource& change) {
-  scoped_ptr<ResourceEntry> entry;
-  if (change.file())
-    entry = CreateFromFileResource(*change.file()).Pass();
-  else
-    entry.reset(new ResourceEntry);
-
-  entry->resource_id_ = change.file_id();
-  // If |is_deleted()| returns true, the file is removed from Drive.
-  entry->removed_ = change.is_deleted();
-  entry->changestamp_ = change.change_id();
-
-  return entry.Pass();
-}
-
-// static
 std::string ResourceEntry::GetEntryNodeName() {
   return kEntryNode;
 }
@@ -854,52 +762,6 @@ scoped_ptr<ResourceList> ResourceList::CreateFrom(const base::Value& value) {
   if (!feed->Parse(value)) {
     DVLOG(1) << "Invalid resource list!";
     return scoped_ptr<ResourceList>();
-  }
-
-  return feed.Pass();
-}
-
-// static
-scoped_ptr<ResourceList> ResourceList::CreateFromChangeList(
-    const ChangeList& changelist) {
-  scoped_ptr<ResourceList> feed(new ResourceList());
-  int64 largest_changestamp = 0;
-  ScopedVector<ChangeResource>::const_iterator iter =
-      changelist.items().begin();
-  while (iter != changelist.items().end()) {
-    const ChangeResource& change = **iter;
-    largest_changestamp = std::max(largest_changestamp, change.change_id());
-    feed->entries_.push_back(
-        ResourceEntry::CreateFromChangeResource(change).release());
-    ++iter;
-  }
-  feed->largest_changestamp_ = largest_changestamp;
-
-  if (!changelist.next_link().is_empty()) {
-    Link* link = new Link();
-    link->set_type(Link::LINK_NEXT);
-    link->set_href(changelist.next_link());
-    feed->links_.push_back(link);
-  }
-
-  return feed.Pass();
-}
-
-// static
-scoped_ptr<ResourceList> ResourceList::CreateFromFileList(
-    const FileList& file_list) {
-  scoped_ptr<ResourceList> feed(new ResourceList);
-  const ScopedVector<FileResource>& items = file_list.items();
-  for (size_t i = 0; i < items.size(); ++i) {
-    feed->entries_.push_back(
-        ResourceEntry::CreateFromFileResource(*items[i]).release());
-  }
-
-  if (!file_list.next_link().is_empty()) {
-    Link* link = new Link();
-    link->set_type(Link::LINK_NEXT);
-    link->set_href(file_list.next_link());
-    feed->links_.push_back(link);
   }
 
   return feed.Pass();

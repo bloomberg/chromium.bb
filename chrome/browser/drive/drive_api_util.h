@@ -18,8 +18,12 @@ class Value;
 }  // namespace base
 
 namespace google_apis {
+class ChangeList;
+class ChangeResource;
+class FileList;
 class FileResource;
 class ResourceEntry;
+class ResourceList;
 }  // namespace google_apis
 
 namespace drive {
@@ -70,6 +74,24 @@ void ParseShareUrlAndRun(const google_apis::GetShareUrlCallback& callback,
 // Converts ResourceEntry to FileResource.
 scoped_ptr<google_apis::FileResource>
 ConvertResourceEntryToFileResource(const google_apis::ResourceEntry& entry);
+
+// Converts FileResource to ResourceEntry.
+scoped_ptr<google_apis::ResourceEntry>
+ConvertFileResourceToResourceEntry(
+    const google_apis::FileResource& file_resource);
+
+// Converts ChangeResource to ResourceEntry.
+scoped_ptr<google_apis::ResourceEntry>
+ConvertChangeResourceToResourceEntry(
+    const google_apis::ChangeResource& change_resource);
+
+// Converts FileList to ResourceList.
+scoped_ptr<google_apis::ResourceList>
+ConvertFileListToResourceList(const google_apis::FileList& file_list);
+
+// Converts ChangeList to ResourceList.
+scoped_ptr<google_apis::ResourceList>
+ConvertChangeListToResourceList(const google_apis::ChangeList& change_list);
 
 // The resource ID for the root directory for WAPI is defined in the spec:
 // https://developers.google.com/google-apps/documents-list/

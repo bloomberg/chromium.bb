@@ -36,13 +36,6 @@ class RepeatedMessageConverter;
 // http://code.google.com/apis/documents/.
 namespace google_apis {
 
-// TODO(kochi): These forward declarations will be unnecessary once
-// http://crbug.com/142293 is resolved.
-class ChangeList;
-class ChangeResource;
-class FileList;
-class FileResource;
-
 // Defines link (URL) of an entity (document, file, feed...). Each entity could
 // have more than one link representing it.
 class Link {
@@ -297,7 +290,7 @@ class AppIcon {
   void set_icon_side_length(int icon_side_length) {
     icon_side_length_ = icon_side_length;
   }
-  void set_links(ScopedVector<Link>* links) { links_.swap(*links); }
+  void set_links(ScopedVector<Link> links) { links_ = links.Pass(); }
 
  private:
   // Extracts the icon category from the given string. Returns false and does
@@ -340,14 +333,14 @@ class CommonMetadata {
   const ScopedVector<Category>& categories() const { return categories_; }
 
   void set_etag(const std::string& etag) { etag_ = etag; }
-  void set_authors(ScopedVector<Author>* authors) {
-    authors_.swap(*authors);
+  void set_authors(ScopedVector<Author> authors) {
+    authors_ = authors.Pass();
   }
-  void set_links(ScopedVector<Link>* links) {
-    links_.swap(*links);
+  void set_links(ScopedVector<Link> links) {
+    links_ = links.Pass();
   }
-  void set_categories(ScopedVector<Category>* categories) {
-    categories_.swap(*categories);
+  void set_categories(ScopedVector<Category> categories) {
+    categories_ = categories.Pass();
   }
   void set_updated_time(const base::Time& updated_time) {
     updated_time_ = updated_time;
@@ -394,16 +387,6 @@ class ResourceEntry : public CommonMetadata {
   // because this method does some post-process for some fields.  See
   // FillRemainingFields comment and implementation for the details.
   static scoped_ptr<ResourceEntry> CreateFrom(const base::Value& value);
-
-  // Creates resource entry from FileResource.
-  // TODO(kochi): This should go away soon. http://crbug.com/142293
-  static scoped_ptr<ResourceEntry> CreateFromFileResource(
-      const FileResource& file);
-
-  // Creates resource entry from ChangeResource.
-  // Todo(Kochi): This should go away soon. http://crbug.com/142293
-  static scoped_ptr<ResourceEntry> CreateFromChangeResource(
-      const ChangeResource& change);
 
   // Returns name of entry node.
   static std::string GetEntryNodeName();
@@ -542,8 +525,8 @@ class ResourceEntry : public CommonMetadata {
   void set_content(const Content& content) {
     content_ = content;
   }
-  void set_resource_links(ScopedVector<ResourceLink>* resource_links) {
-    resource_links_.swap(*resource_links);
+  void set_resource_links(ScopedVector<ResourceLink> resource_links) {
+    resource_links_ = resource_links.Pass();
   }
   void set_filename(const std::string& filename) { filename_ = filename; }
   void set_suggested_filename(const std::string& suggested_filename) {
@@ -555,13 +538,15 @@ class ResourceEntry : public CommonMetadata {
   void set_removed(bool removed) { removed_ = removed; }
   void set_changestamp(int64 changestamp) { changestamp_ = changestamp; }
 
+  // Fills the remaining fields where JSONValueConverter cannot catch.
+  // Currently, sets |kind_| and |labels_| based on the |categories_| in the
+  // class.
+  void FillRemainingFields();
+
  private:
   friend class base::internal::RepeatedMessageConverter<ResourceEntry>;
   friend class ResourceList;
   friend class ResumeUploadRequest;
-
-  // Fills the remaining fields where JSONValueConverter cannot catch.
-  void FillRemainingFields();
 
   // Converts categories.term into DriveEntryKind enum.
   static DriveEntryKind GetEntryKindFromTerm(const std::string& term);
@@ -616,14 +601,6 @@ class ResourceList : public CommonMetadata {
   // FillRemainingFields comment and implementation in ResourceEntry
   // class for the details.
   static scoped_ptr<ResourceList> CreateFrom(const base::Value& value);
-  // Variant of CreateFrom() above, creates feed from parsed ChangeList.
-  // TODO(hidehiko): This should go away soon. http://crbug.com/142293
-  static scoped_ptr<ResourceList> CreateFromChangeList(
-      const ChangeList& changelist);
-  // Variant of CreateFrom() above, creates feed from parsed FileList.
-  // TODO(hidehiko): This should go away soon. http://crbug.com/142293
-  static scoped_ptr<ResourceList> CreateFromFileList(
-      const FileList& file_list);
 
   // Registers the mapping between JSON field names and the members in
   // this class.
@@ -655,8 +632,8 @@ class ResourceList : public CommonMetadata {
   // Resource entry list title.
   const std::string& title() { return title_; }
 
-  void set_entries(ScopedVector<ResourceEntry>* entries) {
-    entries_.swap(*entries);
+  void set_entries(ScopedVector<ResourceEntry> entries) {
+    entries_ = entries.Pass();
   }
   void set_start_index(int start_index) {
     start_index_ = start_index;
@@ -762,26 +739,26 @@ class InstalledApp {
     supports_create_ = supports_create;
   }
   void set_primary_mimetypes(
-      ScopedVector<std::string>* primary_mimetypes) {
-    primary_mimetypes_.swap(*primary_mimetypes);
+      ScopedVector<std::string> primary_mimetypes) {
+    primary_mimetypes_ = primary_mimetypes.Pass();
   }
   void set_secondary_mimetypes(
-      ScopedVector<std::string>* secondary_mimetypes) {
-    secondary_mimetypes_.swap(*secondary_mimetypes);
+      ScopedVector<std::string> secondary_mimetypes) {
+    secondary_mimetypes_ = secondary_mimetypes.Pass();
   }
   void set_primary_extensions(
-      ScopedVector<std::string>* primary_extensions) {
-    primary_extensions_.swap(*primary_extensions);
+      ScopedVector<std::string> primary_extensions) {
+    primary_extensions_ = primary_extensions.Pass();
   }
   void set_secondary_extensions(
-      ScopedVector<std::string>* secondary_extensions) {
-    secondary_extensions_.swap(*secondary_extensions);
+      ScopedVector<std::string> secondary_extensions) {
+    secondary_extensions_ = secondary_extensions.Pass();
   }
-  void set_links(ScopedVector<Link>* links) {
-    links_.swap(*links);
+  void set_links(ScopedVector<Link> links) {
+    links_ = links.Pass();
   }
-  void set_app_icons(ScopedVector<AppIcon>* app_icons) {
-    app_icons_.swap(*app_icons);
+  void set_app_icons(ScopedVector<AppIcon> app_icons) {
+    app_icons_ = app_icons.Pass();
   }
 
  private:
@@ -841,8 +818,8 @@ class AccountMetadata {
   void set_largest_changestamp(int64 largest_changestamp) {
     largest_changestamp_ = largest_changestamp;
   }
-  void set_installed_apps(ScopedVector<InstalledApp>* installed_apps) {
-    installed_apps_.swap(*installed_apps);
+  void set_installed_apps(ScopedVector<InstalledApp> installed_apps) {
+    installed_apps_ = installed_apps.Pass();
   }
 
   // Registers the mapping between JSON field names and the members in

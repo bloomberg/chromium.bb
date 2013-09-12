@@ -222,6 +222,154 @@ scoped_ptr<google_apis::FileResource> ConvertResourceEntryToFileResource(
   return file.Pass();
 }
 
+scoped_ptr<google_apis::ResourceEntry>
+ConvertFileResourceToResourceEntry(
+    const google_apis::FileResource& file_resource) {
+  scoped_ptr<google_apis::ResourceEntry> entry(new google_apis::ResourceEntry);
+
+  // ResourceEntry
+  entry->set_resource_id(file_resource.file_id());
+  entry->set_id(file_resource.file_id());
+  entry->set_kind(file_resource.GetKind());
+  entry->set_title(file_resource.title());
+  entry->set_published_time(file_resource.created_date());
+  // TODO(kochi): entry->labels_
+  if (!file_resource.shared_with_me_date().is_null()) {
+    std::vector<std::string> labels;
+    labels.push_back("shared-with-me");
+    entry->set_labels(labels);
+  }
+
+  // This should be the url to download the file_resource.
+  {
+    google_apis::Content content;
+    content.set_url(file_resource.download_url());
+    content.set_mime_type(file_resource.mime_type());
+    entry->set_content(content);
+  }
+  // TODO(kochi): entry->resource_links_
+
+  // For file entries
+  entry->set_filename(file_resource.title());
+  entry->set_suggested_filename(file_resource.title());
+  entry->set_file_md5(file_resource.md5_checksum());
+  entry->set_file_size(file_resource.file_size());
+
+  // If file is removed completely, that information is only available in
+  // ChangeResource, and is reflected in |removed_|. If file is trashed, the
+  // file entry still exists but with its "trashed" label true.
+  entry->set_deleted(file_resource.labels().is_trashed());
+
+  // CommonMetadata
+  entry->set_etag(file_resource.etag());
+  // entry->authors_
+  // entry->links_.
+  ScopedVector<google_apis::Link> links;
+  if (!file_resource.parents().empty()) {
+    google_apis::Link* link = new google_apis::Link;
+    link->set_type(google_apis::Link::LINK_PARENT);
+    link->set_href(file_resource.parents()[0]->parent_link());
+    links.push_back(link);
+  }
+  if (!file_resource.self_link().is_empty()) {
+    google_apis::Link* link = new google_apis::Link;
+    link->set_type(google_apis::Link::LINK_EDIT);
+    link->set_href(file_resource.self_link());
+    links.push_back(link);
+  }
+  if (!file_resource.thumbnail_link().is_empty()) {
+    google_apis::Link* link = new google_apis::Link;
+    link->set_type(google_apis::Link::LINK_THUMBNAIL);
+    link->set_href(file_resource.thumbnail_link());
+    links.push_back(link);
+  }
+  if (!file_resource.alternate_link().is_empty()) {
+    google_apis::Link* link = new google_apis::Link;
+    link->set_type(google_apis::Link::LINK_ALTERNATE);
+    link->set_href(file_resource.alternate_link());
+    links.push_back(link);
+  }
+  if (!file_resource.embed_link().is_empty()) {
+    google_apis::Link* link = new google_apis::Link;
+    link->set_type(google_apis::Link::LINK_EMBED);
+    link->set_href(file_resource.embed_link());
+    links.push_back(link);
+  }
+  entry->set_links(links.Pass());
+
+  // entry->categories_
+  entry->set_updated_time(file_resource.modified_date());
+  entry->set_last_viewed_time(file_resource.last_viewed_by_me_date());
+
+  entry->FillRemainingFields();
+  return entry.Pass();
+}
+
+scoped_ptr<google_apis::ResourceEntry>
+ConvertChangeResourceToResourceEntry(
+    const google_apis::ChangeResource& change_resource) {
+  scoped_ptr<google_apis::ResourceEntry> entry;
+  if (change_resource.file())
+    entry = ConvertFileResourceToResourceEntry(*change_resource.file()).Pass();
+  else
+    entry.reset(new google_apis::ResourceEntry);
+
+  entry->set_resource_id(change_resource.file_id());
+  // If |is_deleted()| returns true, the file is removed from Drive.
+  entry->set_removed(change_resource.is_deleted());
+  entry->set_changestamp(change_resource.change_id());
+
+  return entry.Pass();
+}
+
+scoped_ptr<google_apis::ResourceList>
+ConvertFileListToResourceList(const google_apis::FileList& file_list) {
+  scoped_ptr<google_apis::ResourceList> feed(new google_apis::ResourceList);
+
+  const ScopedVector<google_apis::FileResource>& items = file_list.items();
+  ScopedVector<google_apis::ResourceEntry> entries;
+  for (size_t i = 0; i < items.size(); ++i)
+    entries.push_back(ConvertFileResourceToResourceEntry(*items[i]).release());
+  feed->set_entries(entries.Pass());
+
+  ScopedVector<google_apis::Link> links;
+  if (!file_list.next_link().is_empty()) {
+    google_apis::Link* link = new google_apis::Link;
+    link->set_type(google_apis::Link::LINK_NEXT);
+    link->set_href(file_list.next_link());
+    links.push_back(link);
+  }
+  feed->set_links(links.Pass());
+
+  return feed.Pass();
+}
+
+scoped_ptr<google_apis::ResourceList>
+ConvertChangeListToResourceList(const google_apis::ChangeList& change_list) {
+  scoped_ptr<google_apis::ResourceList> feed(new google_apis::ResourceList);
+
+  const ScopedVector<google_apis::ChangeResource>& items = change_list.items();
+  ScopedVector<google_apis::ResourceEntry> entries;
+  for (size_t i = 0; i < items.size(); ++i) {
+    entries.push_back(
+        ConvertChangeResourceToResourceEntry(*items[i]).release());
+  }
+  feed->set_entries(entries.Pass());
+
+  feed->set_largest_changestamp(change_list.largest_change_id());
+
+  ScopedVector<google_apis::Link> links;
+  if (!change_list.next_link().is_empty()) {
+    google_apis::Link* link = new google_apis::Link;
+    link->set_type(google_apis::Link::LINK_NEXT);
+    link->set_href(change_list.next_link());
+    links.push_back(link);
+  }
+  feed->set_links(links.Pass());
+
+  return feed.Pass();
+}
+
 const char kWapiRootDirectoryResourceId[] = "folder:root";
 
 }  // namespace util

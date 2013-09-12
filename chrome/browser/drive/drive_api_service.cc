@@ -115,7 +115,7 @@ void ConvertFileEntryToResourceEntryAndRun(
 
   // Converting to ResourceEntry is cheap enough to do on UI thread.
   scoped_ptr<ResourceEntry> entry =
-      ResourceEntry::CreateFromFileResource(*value);
+      util::ConvertFileResourceToResourceEntry(*value);
   if (!entry) {
     callback.Run(GDATA_PARSE_ERROR, scoped_ptr<ResourceEntry>());
     return;
@@ -124,10 +124,10 @@ void ConvertFileEntryToResourceEntryAndRun(
   callback.Run(error, entry.Pass());
 }
 
-// Thin adapter of CreateFromFileList.
+// Thin adapter of ConvertFileListToResourceList.
 scoped_ptr<ResourceList> ConvertFileListToResourceList(
     scoped_ptr<FileList> file_list) {
-  return ResourceList::CreateFromFileList(*file_list);
+  return util::ConvertFileListToResourceList(*file_list);
 }
 
 // Converts the FileList value to ResourceList on blocking pool and runs
@@ -153,10 +153,10 @@ void ConvertFileListToResourceListOnBlockingPoolAndRun(
       base::Bind(&DidConvertToResourceListOnBlockingPool, callback));
 }
 
-// Thin adapter of CreateFromChangeList.
+// Thin adapter of ConvertChangeListToResourceList.
 scoped_ptr<ResourceList> ConvertChangeListToResourceList(
     scoped_ptr<ChangeList> change_list) {
-  return ResourceList::CreateFromChangeList(*change_list);
+  return util::ConvertChangeListToResourceList(*change_list);
 }
 
 // Converts the FileList value to ResourceList on blocking pool and runs
@@ -198,7 +198,7 @@ void ConvertFileResourceToResourceEntryForUploadRangeAndRun(
 
   // Converting to ResourceEntry is cheap enough to do on UI thread.
   scoped_ptr<ResourceEntry> entry =
-      ResourceEntry::CreateFromFileResource(*value);
+      util::ConvertFileResourceToResourceEntry(*value);
   if (!entry) {
     callback.Run(UploadRangeResponse(GDATA_PARSE_ERROR,
                                      response.start_position_received,
