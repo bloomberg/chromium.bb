@@ -35,8 +35,6 @@ enum DBInitStatus {
 
 const base::FilePath::CharType kResourceMapDBName[] =
     FILE_PATH_LITERAL("resource_metadata_resource_map.db");
-const base::FilePath::CharType kChildMapDBName[] =
-    FILE_PATH_LITERAL("resource_metadata_child_map.db");
 
 // Meant to be a character which never happen to be in real IDs.
 const char kDBKeyDelimeter = '\0';
@@ -274,10 +272,6 @@ void ResourceMetadataStorage::Destroy() {
 
 bool ResourceMetadataStorage::Initialize() {
   base::ThreadRestrictions::AssertIOAllowed();
-
-  // Remove unused child map DB.
-  const base::FilePath child_map_path = directory_path_.Append(kChildMapDBName);
-  base::DeleteFile(child_map_path, true /* recursive */);
 
   resource_map_.reset();
 
