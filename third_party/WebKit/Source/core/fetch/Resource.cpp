@@ -278,6 +278,9 @@ double Resource::currentAge() const
 
 double Resource::freshnessLifetime() const
 {
+    if (m_response.url().isLocalFile())
+        return 0;
+
     // Cache non-http resources liberally
     if (!m_response.url().protocolIsInHTTPFamily())
         return std::numeric_limits<double>::max();
