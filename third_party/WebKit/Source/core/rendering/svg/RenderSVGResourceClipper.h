@@ -73,6 +73,12 @@ private:
     bool m_inClipExpansion;
 };
 
+inline RenderSVGResourceClipper* toRenderSVGResourceClipper(RenderSVGResource* resource)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!resource || resource->resourceType() == ClipperResourceType);
+    return static_cast<RenderSVGResourceClipper*>(resource);
+}
+
 }
 
 #endif

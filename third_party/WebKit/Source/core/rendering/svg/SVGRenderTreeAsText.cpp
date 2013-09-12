@@ -504,8 +504,7 @@ void writeSVGResourceContainer(TextStream& ts, const RenderObject& object, int i
                 lastEffect->externalRepresentation(ts, indent + 1);
         }
     } else if (resource->resourceType() == ClipperResourceType) {
-        RenderSVGResourceClipper* clipper = static_cast<RenderSVGResourceClipper*>(resource);
-        writeNameValuePair(ts, "clipPathUnits", clipper->clipPathUnits());
+        writeNameValuePair(ts, "clipPathUnits", toRenderSVGResourceClipper(resource)->clipPathUnits());
         ts << "\n";
     } else if (resource->resourceType() == MarkerResourceType) {
         RenderSVGResourceMarker* marker = static_cast<RenderSVGResourceMarker*>(resource);

@@ -3574,8 +3574,7 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
                     rootRelativeBoundsComputed = true;
                 }
 
-                // FIXME: This should use a safer cast such as toRenderSVGResourceContainer().
-                resourceClipper = static_cast<RenderSVGResourceClipper*>(element->renderer());
+                resourceClipper = toRenderSVGResourceClipper(element->renderer()->toRenderSVGResourceContainer());
                 if (!resourceClipper->applyClippingToContext(renderer(), rootRelativeBounds, paintingInfo.paintDirtyRect, context)) {
                     // No need to post-apply the clipper if this failed.
                     resourceClipper = 0;
