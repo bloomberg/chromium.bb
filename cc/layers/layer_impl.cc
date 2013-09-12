@@ -1289,6 +1289,20 @@ void LayerImpl::AsValueInto(base::DictionaryValue* state) const {
       &clipped);
   state->Set("layer_quad", MathUtil::AsValue(layer_quad).release());
 
+  if (!touch_event_handler_region_.IsEmpty()) {
+    state->Set("touch_event_handler_region",
+               touch_event_handler_region_.AsValue().release());
+  }
+  if (have_wheel_event_handlers_) {
+    gfx::Rect wheel_rect(content_bounds());
+    Region wheel_region(wheel_rect);
+    state->Set("wheel_event_handler_region",
+               wheel_region.AsValue().release());
+  }
+  if (!non_fast_scrollable_region_.IsEmpty()) {
+    state->Set("non_fast_scrollable_region",
+               non_fast_scrollable_region_.AsValue().release());
+  }
 
   scoped_ptr<base::ListValue> children_list(new base::ListValue());
   for (size_t i = 0; i < children_.size(); ++i)
