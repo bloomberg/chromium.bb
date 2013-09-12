@@ -36,6 +36,7 @@
 #if WEBKIT_IMPLEMENTATION
 #include "core/platform/graphics/IntSize.h"
 #else
+#include <algorithm>
 #include <cmath>
 #include <ui/gfx/size.h>
 #include <ui/gfx/vector2d.h>

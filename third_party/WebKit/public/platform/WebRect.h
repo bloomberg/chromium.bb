@@ -36,6 +36,7 @@
 #if WEBKIT_IMPLEMENTATION
 #include "core/platform/graphics/IntRect.h"
 #else
+#include <algorithm>
 #include <cmath>
 #include <ui/gfx/rect.h>
 #endif
