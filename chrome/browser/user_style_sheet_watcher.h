@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_USER_STYLE_SHEET_WATCHER_H_
 #define CHROME_BROWSER_USER_STYLE_SHEET_WATCHER_H_
 
-#include "base/callback_forward.h"
+#include "base/callback_registry.h"
 #include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
 #include "base/memory/ref_counted.h"
@@ -32,7 +32,8 @@ class UserStyleSheetWatcher
   GURL user_style_sheet() const;
 
   // Register a callback to be called whenever the stylesheet gets updated.
-  void RegisterOnStyleSheetUpdatedCallback(const base::Closure& callback);
+  scoped_ptr<base::CallbackRegistry<void>::Subscription>
+  RegisterOnStyleSheetUpdatedCallback(const base::Closure& callback);
 
   // content::NotificationObserver interface
   virtual void Observe(int type,

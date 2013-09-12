@@ -57,7 +57,8 @@ class UserStyleSheetLoader
   void LoadStyleSheet(const base::FilePath& style_sheet_file);
 
   // Register a callback to be called whenever the stylesheet gets updated.
-  void RegisterOnStyleSheetUpdatedCallback(const base::Closure& callback);
+  scoped_ptr<base::CallbackRegistry<void>::Subscription>
+  RegisterOnStyleSheetUpdatedCallback(const base::Closure& callback);
 
   // Send out a notification if the stylesheet has already been loaded.
   void NotifyLoaded();
@@ -78,7 +79,7 @@ class UserStyleSheetLoader
   // Whether the stylesheet has been loaded.
   bool has_loaded_;
 
-  std::vector<base::Closure> on_loaded_callbacks_;
+  base::CallbackRegistry<void> style_sheet_updated_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(UserStyleSheetLoader);
 };
@@ -87,17 +88,18 @@ UserStyleSheetLoader::UserStyleSheetLoader()
     : has_loaded_(false) {
 }
 
-void UserStyleSheetLoader::RegisterOnStyleSheetUpdatedCallback(
+UserStyleSheetLoader::~UserStyleSheetLoader() {
+}
+
+scoped_ptr<base::CallbackRegistry<void>::Subscription>
+UserStyleSheetLoader::RegisterOnStyleSheetUpdatedCallback(
     const base::Closure& callback) {
-  on_loaded_callbacks_.push_back(callback);
+  return style_sheet_updated_callbacks_.Add(callback);
 }
 
 void UserStyleSheetLoader::NotifyLoaded() {
   if (has_loaded_) {
-    for (size_t i = 0; i < on_loaded_callbacks_.size(); ++i) {
-      if (!on_loaded_callbacks_[i].is_null())
-        on_loaded_callbacks_[i].Run();
-    }
+    style_sheet_updated_callbacks_.Notify();
   }
 }
 
@@ -136,10 +138,6 @@ void UserStyleSheetLoader::LoadStyleSheet(
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           base::Bind(&UserStyleSheetLoader::SetStyleSheet, this,
                                      style_sheet_url));
-}
-
-UserStyleSheetLoader::~UserStyleSheetLoader() {
-  on_loaded_callbacks_.clear();
 }
 
 void UserStyleSheetLoader::SetStyleSheet(const GURL& url) {
@@ -194,9 +192,10 @@ GURL UserStyleSheetWatcher::user_style_sheet() const {
   return loader_->user_style_sheet();
 }
 
-void UserStyleSheetWatcher::RegisterOnStyleSheetUpdatedCallback(
+scoped_ptr<base::CallbackRegistry<void>::Subscription>
+UserStyleSheetWatcher::RegisterOnStyleSheetUpdatedCallback(
     const base::Closure& callback) {
-  loader_->RegisterOnStyleSheetUpdatedCallback(callback);
+  return loader_->RegisterOnStyleSheetUpdatedCallback(callback);
 }
 
 void UserStyleSheetWatcher::Observe(int type,

@@ -465,7 +465,7 @@ PrefsTabHelper::PrefsTabHelper(WebContents* contents)
   UserStyleSheetWatcher* uss =
       UserStyleSheetWatcherFactory::GetForProfile(GetProfile());
   if (uss) {
-    uss->RegisterOnStyleSheetUpdatedCallback(
+    style_sheet_subscription_ = uss->RegisterOnStyleSheetUpdatedCallback(
         base::Bind(&PrefsTabHelper::UpdateWebPreferences,
                    weak_ptr_factory_.GetWeakPtr()));
   }
