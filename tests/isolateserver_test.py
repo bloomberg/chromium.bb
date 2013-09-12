@@ -44,6 +44,8 @@ class IsolateServerTest(auto_stub.TestCase):
     with self._lock:
       if not self._requests:
         return None
+      # Ignore 'stream' argument, it's not important for these tests.
+      kwargs.pop('stream')
       for i, n in enumerate(self._requests):
         if n[0] == url:
           _, expected_kwargs, result = self._requests.pop(i)

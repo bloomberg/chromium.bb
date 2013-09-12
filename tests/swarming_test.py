@@ -154,6 +154,8 @@ class TestCase(auto_stub.TestCase):
   def _url_open(self, url, **kwargs):
     logging.info('url_open(%s)', url)
     with self._lock:
+      # Ignore 'stream' argument, it's not important for these tests.
+      kwargs.pop('stream')
       # Since the client is multi-threaded, requests can be processed out of
       # order.
       for index, r in enumerate(self.requests):

@@ -24,6 +24,11 @@ from utils import net
 class SleepingServer(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
   """Multithreaded server that serves requests that block at various stages."""
 
+  # Lingering keep-alive HTTP connections keep (not very smart) HTTPServer
+  # threads alive as well. Convert them to deamon threads so that they don't
+  # block process exit.
+  daemon_threads = True
+
   def __init__(self):
     BaseHTTPServer.HTTPServer.__init__(self, ('127.0.0.1', 0), SleepingHandler)
     self.dying = False

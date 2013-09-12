@@ -20,13 +20,21 @@ import urllib
 import urllib2
 import urlparse
 
+from third_party import requests
+from third_party.requests import adapters
 from third_party.rietveld import upload
+
+from utils import zip_package
 
 # Hack out upload logging.info()
 upload.logging = logging.getLogger('upload')
 # Mac pylint choke on this line.
 upload.logging.setLevel(logging.WARNING)  # pylint: disable=E1103
 
+
+# Big switch that controls what API to use to make HTTP requests.
+# It's temporary here to simplify benchmarking of old vs new implementation.
+USE_REQUESTS_LIB = True
 
 # The name of the key to store the count of url attempts.
 COUNT_KEY = 'UrlOpenAttempt'
@@ -51,6 +59,7 @@ CONTENT_ENCODERS = {
 # File to use to store all auth cookies.
 COOKIE_FILE = os.path.join(os.path.expanduser('~'), '.isolated_cookies')
 
+
 # Global (for now) map: server URL (http://example.com) -> HttpService instance.
 # Used by get_http_service to cache HttpService instances.
 _http_services = {}
@@ -59,6 +68,10 @@ _http_services_lock = threading.Lock()
 # CookieJar reused by all services + lock that protects its instantiation.
 _cookie_jar = None
 _cookie_jar_lock = threading.Lock()
+
+# Path to cacert.pem bundle file reused by all services.
+_ca_certs = None
+_ca_certs_lock = threading.Lock()
 
 
 class NetError(IOError):
@@ -72,14 +85,22 @@ class NetError(IOError):
     """Human readable description with detailed information about the error."""
     out = ['Exception: %s' % (self.inner_exc,)]
     if verbose:
+      headers = None
+      body = None
       if isinstance(self.inner_exc, urllib2.HTTPError):
+        headers = self.inner_exc.hdrs.items()
+        body = self.inner_exc.read()
+      elif isinstance(self.inner_exc, requests.HTTPError):
+        headers = self.inner_exc.response.headers.items()
+        body = self.inner_exc.response.content
+      if headers or body:
         out.append('----------')
-        if self.inner_exc.hdrs:
-          for header, value in self.inner_exc.hdrs.iteritems():
+        if headers:
+          for header, value in headers:
             if not header.startswith('x-'):
               out.append('%s: %s' % (header.capitalize(), value))
           out.append('')
-        out.append(self.inner_exc.read() or '<empty body>')
+        out.append(body or '<empty body>')
         out.append('----------')
     return '\n'.join(out)
 
@@ -126,6 +147,7 @@ def url_read(url, **kwargs):
 
   Returns all data read or None if it was unable to connect or read the data.
   """
+  kwargs['stream'] = False
   response = url_open(url, **kwargs)
   if not response:
     return None
@@ -153,9 +175,11 @@ def get_http_service(urlhost):
     service = _http_services.get(urlhost)
     if not service:
       cookie_jar = get_cookie_jar()
-      service = HttpService(
-          urlhost,
-          engine=Urllib2Engine(cookie_jar),
+      if USE_REQUESTS_LIB:
+        engine = RequestsLibEngine(cookie_jar, get_cacerts_bundle())
+      else:
+        engine = Urllib2Engine(cookie_jar)
+      service = HttpService(urlhost, engine=engine,
           authenticator=AppEngineAuthenticator(urlhost, cookie_jar))
       _http_services[urlhost] = service
     return service
@@ -171,6 +195,16 @@ def get_cookie_jar():
     jar.load()
     _cookie_jar = jar
     return jar
+
+
+def get_cacerts_bundle():
+  """Returns path to a file with CA root certificates bundle."""
+  global _ca_certs
+  with _ca_certs_lock:
+    if _ca_certs is not None and os.path.exists(_ca_certs):
+      return _ca_certs
+    _ca_certs = zip_package.extract_resource(requests, 'cacert.pem')
+    return _ca_certs
 
 
 class HttpService(object):
@@ -206,7 +240,8 @@ class HttpService(object):
       retry_404=False,
       retry_50x=True,
       timeout=URL_OPEN_TIMEOUT,
-      read_timeout=None):
+      read_timeout=None,
+      stream=True):
     """Attempts to open the given url multiple times.
 
     |urlpath| is relative to the server root, i.e. '/some/request?param=1'.
@@ -232,7 +267,9 @@ class HttpService(object):
     these exceptions in subsequent reads from the stream.
 
     Returns a file-like object, where the response may be read from, or None
-    if it was unable to connect.
+    if it was unable to connect. If |stream| is False will read whole response
+    into memory buffer before returning file-like object that reads from this
+    memory buffer.
     """
     assert urlpath and urlpath[0] == '/'
 
@@ -250,6 +287,13 @@ class HttpService(object):
     resource_url = urlparse.urljoin(self.urlhost, parsed.path)
     query_params = urlparse.parse_qsl(parsed.query)
 
+    # Prepare headers.
+    headers = {}
+    if body is not None:
+      headers['Content-Length'] = len(body)
+      if content_type:
+        headers['Content-Type'] = content_type
+
     last_error = None
     auth_attempted = False
 
@@ -263,7 +307,7 @@ class HttpService(object):
       try:
         # Prepare and send a new request.
         request = HttpRequest(method, resource_url, query_params, body,
-            content_type, read_timeout)
+            headers, read_timeout, stream)
         self.prepare_request(request, attempt.attempt)
         response = self.engine.perform_request(request)
         logging.debug('Request %s succeeded', request.get_full_url())
@@ -329,21 +373,23 @@ class HttpService(object):
 class HttpRequest(object):
   """Request to HttpService."""
 
-  def __init__(self, method, url, params, body, content_type, timeout):
+  def __init__(self, method, url, params, body, headers, timeout, stream):
     """Arguments:
       |method| - HTTP method to use
       |url| - relative URL to the resource, without query parameters
       |params| - list of (key, value) pairs to put into GET parameters
       |body| - encoded body of the request (None or str)
-      |content_type| - body content type or None if no body
+      |headers| - dict with request headers
       |timeout| - socket read timeout (None to disable)
+      |stream| - True to stream response from socket
     """
     self.method = method
     self.url = url
     self.params = params[:]
     self.body = body
-    self.content_type = content_type
+    self.headers = headers.copy()
     self.timeout = timeout
+    self.stream = stream
 
   def get_full_url(self):
     """Resource URL with url-encoded GET parameters."""
@@ -384,7 +430,7 @@ class HttpResponse(object):
       data = self._stream.read() if size is None else self._stream.read(size)
       self._read += len(data)
       return data
-    except (socket.timeout, ssl.SSLError) as e:
+    except (socket.timeout, ssl.SSLError, requests.Timeout) as e:
       logging.error('Timeout while reading from %s, read %d of %s: %s',
           self._url, self._read, self.content_length, e)
       raise TimeoutError(e)
@@ -445,11 +491,58 @@ class Urllib2Engine(RequestEngine):
   def make_urllib2_request(request):
     """Converts HttpRequest to urllib2.Request."""
     result = urllib2.Request(request.get_full_url(), data=request.body)
-    if request.body is not None:
-      result.add_header('Content-Length', len(request.body))
-      if request.content_type:
-        result.add_header('Content-Type', request.content_type)
+    for header, value in request.headers.iteritems():
+      result.add_header(header, value)
     return result
+
+
+class RequestsLibEngine(RequestEngine):
+  """Class that knows how to execute HttpRequests via requests library."""
+
+  # Preferred number of connections in a connection pool.
+  CONNECTION_POOL_SIZE = 64
+  # If True will not open more than CONNECTION_POOL_SIZE connections.
+  CONNECTION_POOL_BLOCK = False
+  # Maximum number of internal connection retries in a connection pool.
+  CONNECTION_RETRIES = 0
+
+  def __init__(self, cookie_jar, ca_certs):
+    super(RequestsLibEngine, self).__init__()
+    self.session = requests.Session()
+    # Configure session.
+    self.session.trust_env = False
+    self.session.cookies = cookie_jar
+    self.verify = ca_certs
+    # Configure connection pools.
+    for protocol in ('https://', 'http://'):
+      self.session.mount(protocol, adapters.HTTPAdapter(
+          pool_connections=self.CONNECTION_POOL_SIZE,
+          pool_maxsize=self.CONNECTION_POOL_SIZE,
+          max_retries=self.CONNECTION_RETRIES,
+          pool_block=self.CONNECTION_POOL_BLOCK))
+
+  def perform_request(self, request):
+    try:
+      response = self.session.request(
+          method=request.method,
+          url=request.url,
+          params=request.params,
+          data=request.body,
+          headers=request.headers,
+          timeout=request.timeout,
+          stream=request.stream)
+      response.raise_for_status()
+      if request.stream:
+        stream = response.raw
+      else:
+        stream = StringIO.StringIO(response.content)
+      return HttpResponse(stream, request.get_full_url(), response.headers)
+    except requests.Timeout as e:
+      raise TimeoutError(e)
+    except requests.HTTPError as e:
+      raise HttpError(e.response.status_code, e)
+    except (requests.ConnectionError, socket.timeout, ssl.SSLError) as e:
+      raise ConnectionError(e)
 
 
 class AppEngineAuthenticator(Authenticator):
@@ -528,9 +621,8 @@ class ThreadSafeCookieJar(cookielib.MozillaCookieJar):
     with self._cookies_lock:
       if os.path.exists(filename):
         try:
-          cookielib.MozillaCookieJar.load(self, filename,
-                                          ignore_discard,
-                                          ignore_expires)
+          cookielib.MozillaCookieJar.load(
+              self, filename, ignore_discard, ignore_expires)
           logging.debug('Loaded cookies from %s', filename)
         except (cookielib.LoadError, IOError):
           pass
@@ -539,20 +631,19 @@ class ThreadSafeCookieJar(cookielib.MozillaCookieJar):
           fd = os.open(filename, os.O_CREAT, 0600)
           os.close(fd)
         except OSError:
-          logging.error('Failed to create %s', filename)
+          logging.debug('Failed to create %s', filename)
       try:
         os.chmod(filename, 0600)
       except OSError:
-        logging.error('Failed to fix mode for %s', filename)
+        logging.debug('Failed to fix mode for %s', filename)
 
   def save(self, filename=None, ignore_discard=False, ignore_expires=False):
     """Saves cookies to the file, completely overwriting it."""
     logging.debug('Saving cookies to %s', filename or self.filename)
     with self._cookies_lock:
       try:
-        cookielib.MozillaCookieJar.save(self, filename,
-                                        ignore_discard,
-                                        ignore_expires)
+        cookielib.MozillaCookieJar.save(
+            self, filename, ignore_discard, ignore_expires)
       except OSError:
         logging.error('Failed to save %s', filename)
 

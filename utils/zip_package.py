@@ -4,12 +4,15 @@
 
 """Utilities to work with importable python zip packages."""
 
+import atexit
 import collections
 import cStringIO as StringIO
 import os
 import pkgutil
 import re
 import sys
+import tempfile
+import threading
 import zipfile
 import zipimport
 
@@ -24,6 +27,11 @@ EXCLUDE_LIST = (
   r'.*\.pyc$',
   r'.*\.pyo$',
 )
+
+
+# Temporary files extracted by extract_resource. Removed in atexit hook.
+_extracted_files = []
+_extracted_files_lock = threading.Lock()
 
 
 class ZipPackageError(RuntimeError):
@@ -230,3 +238,55 @@ def get_main_script_path():
   # If running from interactive console __file__ is not defined.
   main = sys.modules['__main__']
   return get_module_zip_archive(main) or getattr(main, '__file__')
+
+
+def extract_resource(package, resource):
+  """Returns real file system path to a |resource| file from a |package|.
+
+  If it's inside a zip package, will extract it first into temp file created
+  with tempfile.mkstemp. Such file is readable and writable only by the creating
+  user ID.
+
+  |package| is a python module object that represents a package.
+  |resource| should be a relative filename, using '/'' as the path separator.
+
+  Raises ValueError if no such resource.
+  """
+  # For regular non-zip packages just construct an absolute path.
+  if not is_zipped_module(package):
+    # Package's __file__ attribute is always an absolute path.
+    path = os.path.join(os.path.dirname(package.__file__),
+        resource.replace('/', os.sep))
+    if not os.path.exists(path):
+      raise ValueError('No such resource in %s: %s' % (package, resource))
+    return path
+
+  # For zipped packages extract the resource into a temp file.
+  data = pkgutil.get_data(package.__name__, resource)
+  if data is None:
+    raise ValueError('No such resource in zipped %s: %s' % (package, resource))
+  fd, path = tempfile.mkstemp()
+  with os.fdopen(fd, 'w') as stream:
+    stream.write(data)
+
+  # Register it for removal when process dies.
+  with _extracted_files_lock:
+    _extracted_files.append(path)
+    # First extracted file -> register atexit hook that cleans them all.
+    if len(_extracted_files) == 1:
+      atexit.register(cleanup_extracted_resources)
+
+  return path
+
+
+def cleanup_extracted_resources():
+  """Removes all temporary files created by extract_resource.
+
+  Executed as atexit hook.
+  """
+  with _extracted_files_lock:
+    while _extracted_files:
+      try:
+        os.remove(_extracted_files.pop())
+      except OSError:
+        pass
