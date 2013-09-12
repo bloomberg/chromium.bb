@@ -935,6 +935,9 @@ class DrMemory(BaseTool):
 
     proc += ["-callstack_max_frames", "40"]
 
+    # disable leak scan for now
+    proc += ["-no_count_leaks", "-no_leak_scan"]
+
     # make callstacks easier to read
     proc += ["-callstack_srcfile_prefix",
              "build\\src,chromium\\src,crt_build\\self_x86"]
