@@ -10,7 +10,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_delegate.h"
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/layer_animation_sequence.h"
@@ -2374,33 +2373,6 @@ TEST(LayerAnimatorTest, TestSetterRespectEnqueueStrategy) {
   animator->SetOpacity(magic_opacity);
 
   EXPECT_EQ(start_opacity, delegate.GetOpacityForAnimation());
-}
-
-TEST(LayerAnimatorTest, TestScopedCounterAnimation) {
-  Layer parent, child;
-  parent.Add(&child);
-
-  gfx::Transform parent_begin, parent_end;
-
-  parent_end.Scale3d(2.0, 0.5, 1.0);
-
-  // Parent animates from identity to the end value. The counter animation will
-  // start at the end value and animate back to identity.
-  gfx::Transform child_begin(parent_end);
-
-  child.SetTransform(child_begin);
-  parent.SetTransform(parent_begin);
-
-  ScopedLayerAnimationSettings settings(parent.GetAnimator());
-  settings.SetInverselyAnimatedBaseLayer(&parent);
-  settings.AddInverselyAnimatedLayer(&child);
-
-  parent.SetTransform(parent_end);
-
-  EXPECT_TRUE(child.GetTargetTransform().IsIdentity())
-    << child.GetTargetTransform().ToString();
-  EXPECT_TRUE(child.GetAnimator()->is_animating());
-
 }
 
 }  // namespace ui

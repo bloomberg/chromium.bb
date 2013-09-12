@@ -74,11 +74,6 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
       const gfx::Transform& base_transform,
       const LayerAnimationElement* uninverted_transition);
 
-
-  // Duplicates elements as created by CreateInverseTransformElement.
-  static LayerAnimationElement* CloneInverseTransformElement(
-      const LayerAnimationElement* other);
-
   // Creates an element that transitions to another in a way determined by an
   // interpolated transform. The element accepts ownership of the interpolated
   // transform. NB: at every step, the interpolated transform clobbers the

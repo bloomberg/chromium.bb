@@ -575,18 +575,9 @@ class InverseTransformTransition : public ThreadedLayerAnimationElement {
                              const LayerAnimationElement* uninverted_transition)
       : ThreadedLayerAnimationElement(*uninverted_transition),
         base_transform_(base_transform),
-        uninverted_transition_(
-            CheckAndCast<const ThreadedTransformTransition*>(
-              uninverted_transition)) {
+        uninverted_transition_(CheckAndCast(uninverted_transition)) {
   }
   virtual ~InverseTransformTransition() {}
-
-  static InverseTransformTransition* Clone(const LayerAnimationElement* other) {
-    const InverseTransformTransition* other_inverse =
-      CheckAndCast<const InverseTransformTransition*>(other);
-    return new InverseTransformTransition(
-        other_inverse->base_transform_, other_inverse->uninverted_transition_);
-  }
 
  protected:
   virtual void OnStart(LayerAnimationDelegate* delegate) OVERRIDE {
@@ -667,11 +658,11 @@ class InverseTransformTransition : public ThreadedLayerAnimationElement {
     return properties;
   }
 
-  template <typename T>
-  static T CheckAndCast(const LayerAnimationElement* element) {
+  static const ThreadedTransformTransition* CheckAndCast(
+      const LayerAnimationElement* element) {
     const AnimatableProperties& properties = element->properties();
     DCHECK(properties.find(TRANSFORM) != properties.end());
-    return static_cast<T>(element);
+    return static_cast<const ThreadedTransformTransition*>(element);
   }
 
   gfx::Transform effective_start_;
@@ -868,12 +859,6 @@ LayerAnimationElement* LayerAnimationElement::CreateInverseTransformElement(
     const gfx::Transform& base_transform,
     const LayerAnimationElement* uninverted_transition) {
   return new InverseTransformTransition(base_transform, uninverted_transition);
-}
-
-// static
-LayerAnimationElement* LayerAnimationElement::CloneInverseTransformElement(
-    const LayerAnimationElement* other) {
-  return InverseTransformTransition::Clone(other);
 }
 
 // static
