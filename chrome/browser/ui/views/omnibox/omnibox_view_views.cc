@@ -202,7 +202,7 @@ void OmniboxViewViews::OnMouseReleased(const ui::MouseEvent& event) {
   // query is common enough that we do click-to-place-cursor).
   if ((event.IsOnlyLeftMouseButton() || event.IsOnlyRightMouseButton()) &&
       select_all_on_mouse_release_ &&
-      !controller()->GetToolbarModel()->WouldReplaceSearchURLWithSearchTerms(
+      !controller()->GetToolbarModel()->WouldPerformSearchTermReplacement(
           false)) {
     // Select all in the reverse direction so as not to scroll the caret
     // into view and shift the contents jarringly.
@@ -381,6 +381,10 @@ void OmniboxViewViews::Update() {
   const ToolbarModel::SecurityLevel old_security_level = security_level_;
   security_level_ = controller()->GetToolbarModel()->GetSecurityLevel(false);
   if (model()->UpdatePermanentText()) {
+    // Something visibly changed.  Re-enable search term replacement.
+    controller()->GetToolbarModel()->set_search_term_replacement_enabled(true);
+    model()->UpdatePermanentText();
+
     // Tweak: if the user had all the text selected, select all the new text.
     // This makes one particular case better: the user clicks in the box to
     // change it right before the permanent URL is changed.  Since the new URL
@@ -774,7 +778,7 @@ bool OmniboxViewViews::IsCommandIdEnabled(int command_id) const {
     return model()->CanPasteAndGo(GetClipboardText());
   if (command_id != IDC_COPY_URL)
     return command_updater()->IsCommandEnabled(command_id);
-  return controller()->GetToolbarModel()->WouldReplaceSearchURLWithSearchTerms(
+  return controller()->GetToolbarModel()->WouldPerformSearchTermReplacement(
       false);
 }
 

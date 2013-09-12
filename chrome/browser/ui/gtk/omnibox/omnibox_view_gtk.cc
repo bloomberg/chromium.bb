@@ -470,10 +470,15 @@ void OmniboxViewGtk::OnTabChanged(const WebContents* web_contents) {
 void OmniboxViewGtk::Update() {
   const ToolbarModel::SecurityLevel old_security_level = security_level_;
   security_level_ = controller()->GetToolbarModel()->GetSecurityLevel(false);
-  if (model()->UpdatePermanentText())
+  if (model()->UpdatePermanentText()) {
+    // Something visibly changed.  Re-enable search term replacement.
+    controller()->GetToolbarModel()->set_search_term_replacement_enabled(true);
+    model()->UpdatePermanentText();
+
     RevertAll();
-  else if (old_security_level != security_level_)
+  } else if (old_security_level != security_level_) {
     EmphasizeURLComponents();
+  }
 }
 
 string16 OmniboxViewGtk::GetText() const {
@@ -1256,7 +1261,7 @@ void OmniboxViewGtk::HandlePopulatePopup(GtkWidget* sender, GtkMenu* menu) {
                      G_CALLBACK(HandleCopyURLClipboardThunk), this);
     gtk_widget_set_sensitive(
         copy_url_menuitem,
-        controller()->GetToolbarModel()->WouldReplaceSearchURLWithSearchTerms(
+        controller()->GetToolbarModel()->WouldPerformSearchTermReplacement(
             false));
     gtk_widget_show(copy_url_menuitem);
   }

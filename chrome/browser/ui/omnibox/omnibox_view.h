@@ -135,9 +135,13 @@ class OmniboxView {
   // avoid selecting the "phantom newline" at the end of the edit.
   virtual void SelectAll(bool reversed) = 0;
 
-  // Reverts the edit and popup back to their unedited state (permanent text
-  // showing, popup closed, no user input in progress).
+  // Re-enables search term replacement on the ToolbarModel, and reverts the
+  // edit and popup back to their unedited state (permanent text showing, popup
+  // closed, no user input in progress).
   virtual void RevertAll();
+
+  // Like RevertAll(), but does not touch the search term replacement state.
+  void RevertWithoutResettingSearchTermReplacement();
 
   // Updates the autocomplete popup and other state after the text has been
   // changed by the user.
@@ -253,6 +257,9 @@ class OmniboxView {
   // Internally invoked whenever the text changes in some way.
   virtual void TextChanged();
 
+  // Disables search term replacement, reverts the omnibox, and selects all.
+  void ShowURL();
+
   // Return the number of characters in the current buffer. The name
   // |GetTextLength| can't be used as the Windows override of this class
   // inherits from a class that defines a method with that name.
@@ -266,6 +273,7 @@ class OmniboxView {
 
  private:
   friend class OmniboxViewMacTest;
+  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, ShowURL);
 
   // |model_| can be NULL in tests.
   scoped_ptr<OmniboxEditModel> model_;

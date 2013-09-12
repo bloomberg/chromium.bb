@@ -57,6 +57,7 @@ class OmniboxEditModel {
           const string16& gray_text,
           const string16& keyword,
           bool is_keyword_hint,
+          bool search_term_replacement_enabled,
           OmniboxFocusState focus_state,
           FocusSource focus_source);
     ~State();
@@ -66,6 +67,7 @@ class OmniboxEditModel {
     const string16 gray_text;
     const string16 keyword;
     const bool is_keyword_hint;
+    bool search_term_replacement_enabled;
     OmniboxFocusState focus_state;
     FocusSource focus_source;
   };
@@ -139,8 +141,9 @@ class OmniboxEditModel {
   void SetInputInProgress(bool in_progress);
 
   // Updates permanent_text_ to the current permanent text from the toolbar
-  // model.  Returns true if this change should be immediately user-visible,
-  // because either the user is not editing or the edit does not have focus.
+  // model.  Returns true if the permanent text changed and the change should be
+  // immediately user-visible, because either the user is not editing or the
+  // edit does not have focus.
   bool UpdatePermanentText();
 
   // Returns the URL corresponding to the permanent text.

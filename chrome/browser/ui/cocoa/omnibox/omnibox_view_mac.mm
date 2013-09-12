@@ -203,6 +203,10 @@ void OmniboxViewMac::OnTabChanged(const WebContents* web_contents) {
 
 void OmniboxViewMac::Update() {
   if (model()->UpdatePermanentText()) {
+    // Something visibly changed.  Re-enable search term replacement.
+    controller()->GetToolbarModel()->set_search_term_replacement_enabled(true);
+    model()->UpdatePermanentText();
+
     // Restore everything to the baseline look.
     RevertAll();
 
@@ -854,7 +858,7 @@ void OmniboxViewMac::OnPaste() {
 // platforms. Some refactor might be necessary to simplify this. Or at least
 // this method could call the OmniboxView version.
 bool OmniboxViewMac::ShouldEnableCopyURL() {
-  return controller()->GetToolbarModel()->WouldReplaceSearchURLWithSearchTerms(
+  return controller()->GetToolbarModel()->WouldPerformSearchTermReplacement(
       false);
 }
 

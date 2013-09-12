@@ -38,8 +38,8 @@ struct TestItem {
   string16 expected_replace_text_inactive;
   // The expected text to display when query extraction is active.
   string16 expected_replace_text_active;
-  bool would_replace;
-  bool should_display;
+  bool would_perform_search_term_replacement;
+  bool should_display_url;
 } test_items[] = {
   {
     GURL("view-source:http://www.google.com"),
@@ -157,15 +157,15 @@ class ToolbarModelTest : public BrowserWithTestWindowTest {
   void NavigateAndCheckText(const GURL& url,
                             const string16& expected_text,
                             const string16& expected_replace_text,
-                            bool would_replace,
-                            bool should_display);
+                            bool would_perform_search_term_replacement,
+                            bool should_display_url);
 
  private:
   void ResetTemplateURLForInstant(const GURL& instant_url);
   void NavigateAndCheckTextImpl(const GURL& url,
-                                bool can_replace,
+                                bool allow_search_term_replacement,
                                 const string16 expected_text,
-                                bool would_replace,
+                                bool would_perform_search_term_replacement,
                                 bool should_display);
 
   DISALLOW_COPY_AND_ASSIGN(ToolbarModelTest);
@@ -194,12 +194,14 @@ void ToolbarModelTest::NavigateAndCheckText(
     const GURL& url,
     const string16& expected_text,
     const string16& expected_replace_text,
-    bool would_replace,
-    bool should_display) {
-  NavigateAndCheckTextImpl(url, false, expected_text, would_replace,
-                           should_display);
-  NavigateAndCheckTextImpl(url, true, expected_replace_text, would_replace,
-                           should_display);
+    bool would_perform_search_term_replacement,
+    bool should_display_url) {
+  NavigateAndCheckTextImpl(url, false, expected_text,
+                           would_perform_search_term_replacement,
+                           should_display_url);
+  NavigateAndCheckTextImpl(url, true, expected_replace_text,
+                           would_perform_search_term_replacement,
+                           should_display_url);
 }
 
 void ToolbarModelTest::ResetTemplateURLForInstant(const GURL& instant_url) {
@@ -217,11 +219,12 @@ void ToolbarModelTest::ResetTemplateURLForInstant(const GURL& instant_url) {
   template_url_service->Load();
 }
 
-void ToolbarModelTest::NavigateAndCheckTextImpl(const GURL& url,
-                                                bool can_replace,
-                                                const string16 expected_text,
-                                                bool would_replace,
-                                                bool should_display) {
+void ToolbarModelTest::NavigateAndCheckTextImpl(
+    const GURL& url,
+    bool allow_search_term_replacement,
+    const string16 expected_text,
+    bool would_perform_search_term_replacement,
+    bool should_display_url) {
   // The URL being navigated to should be treated as the Instant URL. Else
   // there will be no search term extraction.
   ResetTemplateURLForInstant(url);
@@ -232,10 +235,11 @@ void ToolbarModelTest::NavigateAndCheckTextImpl(const GURL& url,
   controller->LoadURL(url, content::Referrer(), content::PAGE_TRANSITION_LINK,
                       std::string());
   ToolbarModel* toolbar_model = browser()->toolbar_model();
-  EXPECT_EQ(should_display, toolbar_model->ShouldDisplayURL());
-  EXPECT_EQ(expected_text, toolbar_model->GetText(can_replace));
-  EXPECT_EQ(would_replace,
-            toolbar_model->WouldReplaceSearchURLWithSearchTerms(false));
+  EXPECT_EQ(should_display_url, toolbar_model->ShouldDisplayURL());
+  EXPECT_EQ(expected_text,
+            toolbar_model->GetText(allow_search_term_replacement));
+  EXPECT_EQ(would_perform_search_term_replacement,
+            toolbar_model->WouldPerformSearchTermReplacement(false));
 
   // Check after commit.
   CommitPendingLoad(controller);
@@ -245,16 +249,17 @@ void ToolbarModelTest::NavigateAndCheckTextImpl(const GURL& url,
     controller->GetVisibleEntry()->GetSSL().security_style =
         content::SECURITY_STYLE_AUTHENTICATED;
   }
-  EXPECT_EQ(should_display, toolbar_model->ShouldDisplayURL());
-  EXPECT_EQ(expected_text, toolbar_model->GetText(can_replace));
-  EXPECT_EQ(would_replace,
-            toolbar_model->WouldReplaceSearchURLWithSearchTerms(false));
+  EXPECT_EQ(should_display_url, toolbar_model->ShouldDisplayURL());
+  EXPECT_EQ(expected_text,
+            toolbar_model->GetText(allow_search_term_replacement));
+  EXPECT_EQ(would_perform_search_term_replacement,
+            toolbar_model->WouldPerformSearchTermReplacement(false));
 
   // Now pretend the user started modifying the omnibox.
   toolbar_model->set_input_in_progress(true);
-  EXPECT_FALSE(toolbar_model->WouldReplaceSearchURLWithSearchTerms(false));
-  EXPECT_EQ(would_replace,
-            toolbar_model->WouldReplaceSearchURLWithSearchTerms(true));
+  EXPECT_FALSE(toolbar_model->WouldPerformSearchTermReplacement(false));
+  EXPECT_EQ(would_perform_search_term_replacement,
+            toolbar_model->WouldPerformSearchTermReplacement(true));
 
   // Tell the ToolbarModel that the user has stopped editing.  This prevents
   // this function from having side effects.
@@ -264,29 +269,40 @@ void ToolbarModelTest::NavigateAndCheckTextImpl(const GURL& url,
 
 // Actual tests ---------------------------------------------------------------
 
-// Test that we don't replace any URLs when the query extraction is disabled.
-TEST_F(ToolbarModelTest, ShouldDisplayURLQueryExtractionDisabled) {
-  ASSERT_FALSE(chrome::IsQueryExtractionEnabled())
+// Test that we only replace URLs when query extraction and search term
+// replacement are enabled.
+TEST_F(ToolbarModelTest, ShouldDisplayURL) {
+  // Before we enable instant extended, query extraction is disabled.
+  EXPECT_FALSE(chrome::IsQueryExtractionEnabled())
       << "This test expects query extraction to be disabled.";
   AddTab(browser(), GURL(content::kAboutBlankURL));
   for (size_t i = 0; i < arraysize(test_items); ++i) {
     const TestItem& test_item = test_items[i];
     NavigateAndCheckText(test_item.url, test_item.expected_text,
                          test_item.expected_replace_text_inactive, false,
-                         test_item.should_display);
+                         test_item.should_display_url);
   }
-}
 
-// Test that we replace URLs when the query extraction API is enabled.
-TEST_F(ToolbarModelTest, ShouldDisplayURLQueryExtractionEnabled) {
+  // Once we enable it, query extraction and search term replacement are
+  // enabled by default.
   chrome::EnableInstantExtendedAPIForTesting();
-  AddTab(browser(), GURL(content::kAboutBlankURL));
+  EXPECT_TRUE(chrome::IsQueryExtractionEnabled());
+  EXPECT_TRUE(browser()->toolbar_model()->search_term_replacement_enabled());
   for (size_t i = 0; i < arraysize(test_items); ++i) {
     const TestItem& test_item = test_items[i];
     NavigateAndCheckText(test_item.url, test_item.expected_text,
                          test_item.expected_replace_text_active,
-                         test_item.would_replace,
-                         test_item.should_display);
+                         test_item.would_perform_search_term_replacement,
+                         test_item.should_display_url);
+  }
+
+  // Disabling search term replacement should reset to only showing URLs.
+  browser()->toolbar_model()->set_search_term_replacement_enabled(false);
+  for (size_t i = 0; i < arraysize(test_items); ++i) {
+    const TestItem& test_item = test_items[i];
+    NavigateAndCheckText(test_item.url, test_item.expected_text,
+                         test_item.expected_replace_text_inactive, false,
+                         test_item.should_display_url);
   }
 }
 
@@ -305,14 +321,14 @@ TEST_F(ToolbarModelTest, SearchTermsWhileLoading) {
   ToolbarModel* toolbar_model = browser()->toolbar_model();
   controller->GetVisibleEntry()->GetSSL().security_style =
       content::SECURITY_STYLE_UNKNOWN;
-  EXPECT_TRUE(toolbar_model->WouldReplaceSearchURLWithSearchTerms(false));
+  EXPECT_TRUE(toolbar_model->WouldPerformSearchTermReplacement(false));
 
   // When done loading, we shouldn't extract search terms if we didn't get an
   // authenticated connection.
   CommitPendingLoad(controller);
   controller->GetVisibleEntry()->GetSSL().security_style =
       content::SECURITY_STYLE_UNKNOWN;
-  EXPECT_FALSE(toolbar_model->WouldReplaceSearchURLWithSearchTerms(false));
+  EXPECT_FALSE(toolbar_model->WouldPerformSearchTermReplacement(false));
 }
 
 // When the Google base URL is overridden on the command line, we should extract

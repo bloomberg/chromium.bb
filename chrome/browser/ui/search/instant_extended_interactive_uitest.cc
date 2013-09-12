@@ -911,8 +911,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, AcceptingURLSearchDoesNotNavigate) {
 
   // Accept the omnibox input.
   EXPECT_FALSE(omnibox()->model()->user_input_in_progress());
-  EXPECT_TRUE(
-      browser()->toolbar_model()->WouldReplaceSearchURLWithSearchTerms());
+  EXPECT_TRUE(browser()->toolbar_model()->WouldPerformSearchTermReplacement());
   GURL instant_tab_url = instant_tab->GetURL();
   browser()->window()->GetLocationBar()->AcceptInput();
   EXPECT_EQ(instant_tab_url, instant_tab->GetURL());
@@ -949,8 +948,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
 
   // Accept the omnibox input.
   EXPECT_FALSE(omnibox()->model()->user_input_in_progress());
-  EXPECT_TRUE(
-      browser()->toolbar_model()->WouldReplaceSearchURLWithSearchTerms());
+  EXPECT_TRUE(browser()->toolbar_model()->WouldPerformSearchTermReplacement());
   browser()->window()->GetLocationBar()->AcceptInput();
   // Force some Javascript to run in the renderer so the inline javascript:
   // would be forced to run if it's going to.
@@ -1776,4 +1774,32 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedPrefetchTest, ClearPrefetchedResults) {
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(UpdateSearchState(active_tab));
   ASSERT_EQ("", prefetch_query_value_);
+}
+
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, ShowURL) {
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  FocusOmnibox();
+
+  // Create an observer to wait for the instant tab to support Instant.
+  content::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_INSTANT_TAB_SUPPORT_DETERMINED,
+      content::NotificationService::AllSources());
+
+  // Do a search and commit it.  The omnibox should show the search terms.
+  SetOmniboxText("foo");
+  EXPECT_EQ(ASCIIToUTF16("foo"), omnibox()->GetText());
+  browser()->window()->GetLocationBar()->AcceptInput();
+  observer.Wait();
+  EXPECT_FALSE(omnibox()->model()->user_input_in_progress());
+  EXPECT_TRUE(browser()->toolbar_model()->WouldPerformSearchTermReplacement(
+      false));
+  EXPECT_EQ(ASCIIToUTF16("foo"), omnibox()->GetText());
+
+  // Calling ShowURL() should disable search term replacement and show the URL.
+  omnibox()->ShowURL();
+  EXPECT_FALSE(browser()->toolbar_model()->WouldPerformSearchTermReplacement(
+      false));
+  // Don't bother looking for a specific URL; ensuring we're no longer showing
+  // the search terms is sufficient.
+  EXPECT_NE(ASCIIToUTF16("foo"), omnibox()->GetText());
 }

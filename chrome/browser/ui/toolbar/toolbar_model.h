@@ -35,10 +35,10 @@ class ToolbarModel {
   // for display to the user:
   //   - Some characters may be unescaped.
   //   - The scheme and/or trailing slash may be dropped.
-  //   - if |display_search_urls_as_search_terms| is true, the query will be
-  //   extracted from search URLs for the user's default search engine and those
-  //   will be displayed in place of the URL.
-  virtual string16 GetText(bool display_search_urls_as_search_terms) const = 0;
+  //   - if |allow_search_term_replacement| is true, the query will be extracted
+  //     from search URLs for the user's default search engine and will be
+  //     displayed in place of the URL.
+  virtual string16 GetText(bool allow_search_term_replacement) const = 0;
 
   // Some search URLs bundle a special "corpus" param that we can extract and
   // display next to users' search terms in cases where we'd show the search
@@ -54,8 +54,7 @@ class ToolbarModel {
   // with search terms.  If |ignore_editing| is true, the result reflects the
   // underlying state of the page without regard to any user edits that may be
   // in progress in the omnibox.
-  virtual bool WouldReplaceSearchURLWithSearchTerms(bool ignore_editing)
-      const = 0;
+  virtual bool WouldPerformSearchTermReplacement(bool ignore_editing) const = 0;
 
   // Returns the security level that the toolbar should display.  If
   // |ignore_editing| is true, the result reflects the underlying state of the
@@ -82,11 +81,22 @@ class ToolbarModel {
   }
   bool input_in_progress() const { return input_in_progress_; }
 
+  // Whether search term replacement should be enabled.
+  void set_search_term_replacement_enabled(bool enabled) {
+    search_term_replacement_enabled_ = enabled;
+  }
+  bool search_term_replacement_enabled() const {
+    return search_term_replacement_enabled_;
+  }
+
  protected:
-  ToolbarModel() : input_in_progress_(false) {}
+  ToolbarModel()
+      : input_in_progress_(false),
+        search_term_replacement_enabled_(true) {}
 
  private:
   bool input_in_progress_;
+  bool search_term_replacement_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(ToolbarModel);
 };

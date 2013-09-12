@@ -89,9 +89,8 @@ ToolbarModel::SecurityLevel ToolbarModelImpl::GetSecurityLevelForWebContents(
 }
 
 // ToolbarModelImpl Implementation.
-string16 ToolbarModelImpl::GetText(
-    bool display_search_urls_as_search_terms) const {
-  if (display_search_urls_as_search_terms) {
+string16 ToolbarModelImpl::GetText(bool allow_search_term_replacement) const {
+  if (allow_search_term_replacement) {
     string16 search_terms(GetSearchTerms(false));
     if (!search_terms.empty())
       return search_terms;
@@ -113,7 +112,7 @@ string16 ToolbarModelImpl::GetText(
 }
 
 string16 ToolbarModelImpl::GetCorpusNameForMobile() const {
-  if (!WouldReplaceSearchURLWithSearchTerms(false))
+  if (!WouldPerformSearchTermReplacement(false))
     return string16();
   GURL url(GetURL());
   // If there is a query in the url fragment look for the corpus name there,
@@ -144,7 +143,7 @@ GURL ToolbarModelImpl::GetURL() const {
   return GURL(content::kAboutBlankURL);
 }
 
-bool ToolbarModelImpl::WouldReplaceSearchURLWithSearchTerms(
+bool ToolbarModelImpl::WouldPerformSearchTermReplacement(
     bool ignore_editing) const {
   return !GetSearchTerms(ignore_editing).empty();
 }
@@ -189,7 +188,7 @@ ToolbarModel::SecurityLevel ToolbarModelImpl::GetSecurityLevel(
 }
 
 int ToolbarModelImpl::GetIcon() const {
-  if (WouldReplaceSearchURLWithSearchTerms(false))
+  if (WouldPerformSearchTermReplacement(false))
     return IDR_OMNIBOX_SEARCH_SECURED;
 
   static int icon_ids[NUM_SECURITY_LEVELS] = {
@@ -245,7 +244,8 @@ Profile* ToolbarModelImpl::GetProfile() const {
 }
 
 string16 ToolbarModelImpl::GetSearchTerms(bool ignore_editing) const {
-  if (input_in_progress() && !ignore_editing)
+  if (!search_term_replacement_enabled() ||
+      (input_in_progress() && !ignore_editing))
     return string16();
 
   const WebContents* web_contents = delegate_->GetActiveWebContents();

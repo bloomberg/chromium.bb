@@ -16,11 +16,10 @@ class TestToolbarModel : public ToolbarModel {
  public:
   TestToolbarModel();
   virtual ~TestToolbarModel();
-  virtual string16 GetText(
-      bool display_search_urls_as_search_terms) const OVERRIDE;
+  virtual string16 GetText(bool allow_search_term_replacement) const OVERRIDE;
   virtual string16 GetCorpusNameForMobile() const OVERRIDE;
   virtual GURL GetURL() const OVERRIDE;
-  virtual bool WouldReplaceSearchURLWithSearchTerms(
+  virtual bool WouldPerformSearchTermReplacement(
       bool ignore_editing) const OVERRIDE;
   virtual SecurityLevel GetSecurityLevel(bool ignore_editing) const OVERRIDE;
   virtual int GetIcon() const OVERRIDE;

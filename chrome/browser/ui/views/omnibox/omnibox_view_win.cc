@@ -609,6 +609,10 @@ void OmniboxViewWin::Update() {
   if (model()->UpdatePermanentText()) {
     ScopedFreeze freeze(this, GetTextObjectModel());
 
+    // Something visibly changed.  Re-enable search term replacement.
+    controller()->GetToolbarModel()->set_search_term_replacement_enabled(true);
+    model()->UpdatePermanentText();
+
     // Tweak: if the user had all the text selected, select all the new text.
     // This makes one particular case better: the user clicks in the box to
     // change it right before the permanent URL is changed.  Since the new URL
@@ -1141,7 +1145,7 @@ bool OmniboxViewWin::IsCommandIdEnabled(int command_id) const {
       return !!CanCopy();
     case IDC_COPY_URL:
       return !!CanCopy() &&
-          controller()->GetToolbarModel()->WouldReplaceSearchURLWithSearchTerms(
+          controller()->GetToolbarModel()->WouldPerformSearchTermReplacement(
               false);
     case IDC_PASTE:
       return !!CanPaste();
@@ -2774,7 +2778,7 @@ void OmniboxViewWin::SelectAllIfNecessary(MouseButton button,
   // we're doing search term replacement (in which case refining the existing
   // query is common enough that we do click-to-place-cursor).
   if (tracking_click_[button] && !IsDrag(click_point_[button], point) &&
-      !controller()->GetToolbarModel()->WouldReplaceSearchURLWithSearchTerms(
+      !controller()->GetToolbarModel()->WouldPerformSearchTermReplacement(
           false)) {
     // Select all in the reverse direction so as not to scroll the caret
     // into view and shift the contents jarringly.

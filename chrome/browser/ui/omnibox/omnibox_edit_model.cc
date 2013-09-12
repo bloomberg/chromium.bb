@@ -147,6 +147,7 @@ OmniboxEditModel::State::State(bool user_input_in_progress,
                                const string16& gray_text,
                                const string16& keyword,
                                bool is_keyword_hint,
+                               bool search_term_replacement_enabled,
                                OmniboxFocusState focus_state,
                                FocusSource focus_source)
     : user_input_in_progress(user_input_in_progress),
@@ -154,6 +155,7 @@ OmniboxEditModel::State::State(bool user_input_in_progress,
       gray_text(gray_text),
       keyword(keyword),
       is_keyword_hint(is_keyword_hint),
+      search_term_replacement_enabled(search_term_replacement_enabled),
       focus_state(focus_state),
       focus_source(focus_source) {
 }
@@ -206,20 +208,22 @@ const OmniboxEditModel::State OmniboxEditModel::GetStateForTabSwitch() {
     }
   }
 
-  return State(user_input_in_progress_,
-               user_text_,
-               view_->GetGrayTextAutocompletion(),
-               keyword_,
-               is_keyword_hint_,
-               focus_state_,
-               focus_source_);
+  return State(
+      user_input_in_progress_, user_text_, view_->GetGrayTextAutocompletion(),
+      keyword_, is_keyword_hint_,
+      controller_->GetToolbarModel()->search_term_replacement_enabled(),
+      focus_state_, focus_source_);
 }
 
 void OmniboxEditModel::RestoreState(const State* state) {
   // We need to update the permanent text correctly and revert the view
   // regardless of whether there is saved state.
+  controller_->GetToolbarModel()->set_search_term_replacement_enabled(
+      !state || state->search_term_replacement_enabled);
   permanent_text_ = controller_->GetToolbarModel()->GetText(true);
-  view_->RevertAll();
+  // Don't muck with the search term replacement state, as we've just set it
+  // correctly.
+  view_->RevertWithoutResettingSearchTermReplacement();
   if (!state)
     return;
 
@@ -252,10 +256,18 @@ AutocompleteMatch OmniboxEditModel::CurrentMatch(
 }
 
 bool OmniboxEditModel::UpdatePermanentText() {
-  // When there's a new URL, and the user is not editing anything or the edit
-  // doesn't have focus, we want to revert the edit to show the new URL.  (The
-  // common case where the edit doesn't have focus is when the user has started
-  // an edit and then abandoned it and clicked a link on the page.)
+  // When there's new permanent text, and the user isn't interacting with the
+  // omnibox, we want to revert the edit to show the new text.  We could simply
+  // define "interacting" as "the omnibox has focus", but we still allow updates
+  // when the omnibox has focus as long as the user hasn't begun editing, isn't
+  // seeing zerosuggestions (because changing this text would require changing
+  // or hiding those suggestions), and hasn't toggled on "Show URL" (because
+  // this update will re-enable search term replacement, which will be annoying
+  // if the user is trying to copy the URL).  When the omnibox doesn't have
+  // focus, we assume the user may have abandoned their interaction and it's
+  // always safe to change the text; this also prevents someone toggling "Show
+  // URL" (which sounds as if it might be persistent) from seeing just that URL
+  // forever afterwards.
   //
   // If the page is auto-committing gray text, however, we generally don't want
   // to make any change to the edit.  While auto-commits modify the underlying
@@ -268,7 +280,8 @@ bool OmniboxEditModel::UpdatePermanentText() {
   const bool visibly_changed_permanent_text =
       (permanent_text_ != new_permanent_text) &&
       (!has_focus() ||
-       (!user_input_in_progress_ && !popup_model()->IsOpen())) &&
+       (!user_input_in_progress_ && !popup_model()->IsOpen() &&
+        controller_->GetToolbarModel()->search_term_replacement_enabled())) &&
       (gray_text.empty() ||
        new_permanent_text != user_text_ + gray_text);
 
@@ -366,8 +379,7 @@ void OmniboxEditModel::GetDataForURLExport(GURL* url,
 }
 
 bool OmniboxEditModel::CurrentTextIsURL() const {
-  if (controller_->GetToolbarModel()->WouldReplaceSearchURLWithSearchTerms(
-      false))
+  if (controller_->GetToolbarModel()->WouldPerformSearchTermReplacement(false))
     return false;
 
   // If current text is not composed of replaced search terms and
@@ -395,8 +407,7 @@ void OmniboxEditModel::AdjustTextForCopy(int sel_min,
   // Do not adjust if selection did not start at the beginning of the field, or
   // if the URL was replaced by search terms.
   if ((sel_min != 0) ||
-      controller_->GetToolbarModel()->WouldReplaceSearchURLWithSearchTerms(
-          false))
+      controller_->GetToolbarModel()->WouldPerformSearchTermReplacement(false))
     return;
 
   if (!user_input_in_progress_ && is_all_selected) {
@@ -450,6 +461,10 @@ void OmniboxEditModel::SetInputInProgress(bool in_progress) {
     time_user_first_modified_omnibox_ = base::TimeTicks::Now();
     content::RecordAction(content::UserMetricsAction("OmniboxInputInProgress"));
     autocomplete_controller()->ResetSession();
+    // Once the user starts editing, re-enable search term replacement, so that
+    // it will kick in if applicable once the edit is committed or reverted.
+    // (While the edit is in progress, this won't have a visible effect.)
+    controller_->GetToolbarModel()->set_search_term_replacement_enabled(true);
   }
   controller_->OnInputInProgress(in_progress);
 
@@ -738,7 +753,7 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
 
     RecordPercentageMatchHistogram(
         permanent_text_, current_text,
-        controller_->GetToolbarModel()->WouldReplaceSearchURLWithSearchTerms(
+        controller_->GetToolbarModel()->WouldPerformSearchTermReplacement(
             false),
         match.transition);
 
@@ -1199,7 +1214,7 @@ void OmniboxEditModel::GetInfoForCurrentText(AutocompleteMatch* match,
                                              GURL* alternate_nav_url) const {
   DCHECK(match != NULL);
 
-  if (controller_->GetToolbarModel()->WouldReplaceSearchURLWithSearchTerms(
+  if (controller_->GetToolbarModel()->WouldPerformSearchTermReplacement(
       false)) {
     // Any time the user hits enter on the unchanged omnibox, we should reload.
     // When we're not extracting search terms, AcceptInput() will take care of
@@ -1322,8 +1337,7 @@ AutocompleteInput::PageClassification OmniboxEditModel::ClassifyPage() const {
     return AutocompleteInput::BLANK;
   if (url == profile()->GetPrefs()->GetString(prefs::kHomePage))
     return AutocompleteInput::HOME_PAGE;
-  if (controller_->GetToolbarModel()->WouldReplaceSearchURLWithSearchTerms(
-      true))
+  if (controller_->GetToolbarModel()->WouldPerformSearchTermReplacement(true))
     return AutocompleteInput::SEARCH_RESULT_PAGE_DOING_SEARCH_TERM_REPLACEMENT;
   if (delegate_->IsSearchResultsPage())
     return AutocompleteInput::SEARCH_RESULT_PAGE_NO_SEARCH_TERM_REPLACEMENT;

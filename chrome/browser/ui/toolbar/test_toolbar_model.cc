@@ -15,8 +15,7 @@ TestToolbarModel::TestToolbarModel()
 
 TestToolbarModel::~TestToolbarModel() {}
 
-string16 TestToolbarModel::GetText(
-    bool display_search_urls_as_search_terms) const {
+string16 TestToolbarModel::GetText(bool allow_search_term_replacement) const {
   return text_;
 }
 
@@ -28,7 +27,7 @@ GURL TestToolbarModel::GetURL() const {
   return url_;
 }
 
-bool TestToolbarModel::WouldReplaceSearchURLWithSearchTerms(
+bool TestToolbarModel::WouldPerformSearchTermReplacement(
     bool ignore_editing) const {
   return should_replace_url_;
 }
