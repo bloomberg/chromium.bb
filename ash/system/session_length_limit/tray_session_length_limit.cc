@@ -102,7 +102,8 @@ void CreateOrUpdateNotification(const base::TimeDelta& remaining_time,
       base::string16() /* message */,
       bundle.GetImageNamed(IDR_AURA_UBER_TRAY_SESSION_LENGTH_LIMIT_TIMER),
       base::string16() /* display_source */,
-      message_center::NotifierId(NOTIFIER_SESSION_LENGTH_TIMEOUT),
+      message_center::NotifierId(
+          system_notifier::NOTIFIER_SESSION_LENGTH_TIMEOUT),
       data,
       NULL /* delegate */));
   notification->SetSystemPriority();

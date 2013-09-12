@@ -73,7 +73,7 @@ void ScreenShareTrayItem::CreateOrUpdateNotification() {
       base::string16() /* body is blank */,
       resource_bundle.GetImageNamed(IDR_AURA_UBER_TRAY_DISPLAY),
       base::string16() /* display_source */,
-      message_center::NotifierId(NOTIFIER_SCREEN_SHARE),
+      message_center::NotifierId(system_notifier::NOTIFIER_SCREEN_SHARE),
       data,
       new tray::ScreenNotificationDelegate(this)));
   notification->SetSystemPriority();

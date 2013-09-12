@@ -29,6 +29,7 @@ class DictionaryValue;
 namespace message_center {
 
 class MessageCenterObserver;
+class NotificationBlocker;
 class NotificationList;
 class NotifierSettingsDelegate;
 class NotifierSettingsProvider;
@@ -38,7 +39,8 @@ class MESSAGE_CENTER_EXPORT MessageCenter {
   // Creates the global message center object.
   static void Initialize();
 
-  // Returns the global message center object. Initialize must be called first.
+  // Returns the global message center object. Returns NULL if Initialize is not
+  // called.
   static MessageCenter* Get();
 
   // Destroys the global message_center object.
@@ -60,6 +62,10 @@ class MESSAGE_CENTER_EXPORT MessageCenter {
   virtual const NotificationList::Notifications& GetNotifications() = 0;
   // Gets all notifications being shown as popups.
   virtual NotificationList::PopupNotifications GetPopupNotifications() = 0;
+
+  // Management of NotificaitonBlockers.
+  virtual void AddNotificationBlocker(NotificationBlocker* blocker) = 0;
+  virtual void RemoveNotificationBlocker(NotificationBlocker* blocker) = 0;
 
   // Basic operations of notification: add/remove/update.
 

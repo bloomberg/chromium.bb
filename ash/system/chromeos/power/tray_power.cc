@@ -208,7 +208,7 @@ bool TrayPower::MaybeShowUsbChargerNotification() {
         rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_LOW_POWER_CHARGER_MESSAGE),
         rb.GetImageNamed(IDR_AURA_NOTIFICATION_LOW_POWER_CHARGER),
         base::string16(),
-        message_center::NotifierId(NOTIFIER_POWER),
+        message_center::NotifierId(system_notifier::NOTIFIER_POWER),
         message_center::RichNotificationData(),
         NULL));
     message_center_->AddNotification(notification.Pass());

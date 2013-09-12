@@ -6,6 +6,7 @@
 #define UI_MESSAGE_CENTER_MESSAGE_CENTER_IMPL_H_
 
 #include <string>
+#include <vector>
 
 #include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
@@ -14,6 +15,7 @@
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_observer.h"
 #include "ui/message_center/message_center_types.h"
+#include "ui/message_center/notification_blocker.h"
 
 namespace message_center {
 class NotificationDelegate;
@@ -130,7 +132,8 @@ class MESSAGE_CENTER_EXPORT PopupTimersController
 }  // namespace internal
 
 // The default implementation of MessageCenter.
-class MessageCenterImpl : public MessageCenter {
+class MessageCenterImpl : public MessageCenter,
+                          public NotificationBlocker::Observer {
  public:
   MessageCenterImpl();
   virtual ~MessageCenterImpl();
@@ -138,6 +141,8 @@ class MessageCenterImpl : public MessageCenter {
   // MessageCenter overrides:
   virtual void AddObserver(MessageCenterObserver* observer) OVERRIDE;
   virtual void RemoveObserver(MessageCenterObserver* observer) OVERRIDE;
+  virtual void AddNotificationBlocker(NotificationBlocker* blocker) OVERRIDE;
+  virtual void RemoveNotificationBlocker(NotificationBlocker* blocker) OVERRIDE;
   virtual void SetVisibility(Visibility visible) OVERRIDE;
   virtual bool IsMessageCenterVisible() OVERRIDE;
   virtual size_t NotificationCount() const OVERRIDE;
@@ -179,6 +184,9 @@ class MessageCenterImpl : public MessageCenter {
   virtual void RestartPopupTimers() OVERRIDE;
   virtual void PausePopupTimers() OVERRIDE;
 
+  // NotificationBlocker::Observer overrides:
+  virtual void OnBlockingStateChanged() OVERRIDE;
+
  protected:
   virtual void DisableTimersForTest() OVERRIDE;
 
@@ -188,6 +196,11 @@ class MessageCenterImpl : public MessageCenter {
   scoped_ptr<internal::PopupTimersController> popup_timers_controller_;
   scoped_ptr<base::OneShotTimer<MessageCenterImpl> > quiet_mode_timer_;
   NotifierSettingsProvider* settings_provider_;
+  std::vector<NotificationBlocker*> blockers_;
+
+  // queue for the notifications to delay the addition/updates when the message
+  // center is visible.
+  std::list<Notification*> notification_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageCenterImpl);
 };

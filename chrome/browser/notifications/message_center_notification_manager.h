@@ -9,13 +9,14 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_member.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/notifications/notification.h"
+#include "chrome/browser/notifications/notification_system_observer.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
-#include "chrome/browser/notifications/notification_ui_manager_impl.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/message_center/message_center.h"
@@ -28,11 +29,16 @@ class Notification;
 class PrefService;
 class Profile;
 
+namespace message_center {
+class NotificationBlocker;
+}
+
 // This class extends NotificationUIManagerImpl and delegates actual display
 // of notifications to MessageCenter, doing necessary conversions.
 class MessageCenterNotificationManager
-    : public NotificationUIManagerImpl,
-      public message_center::MessageCenterObserver {
+    : public NotificationUIManager,
+      public message_center::MessageCenterObserver,
+      public content::NotificationObserver {
  public:
   MessageCenterNotificationManager(
       message_center::MessageCenter* message_center,
@@ -41,6 +47,10 @@ class MessageCenterNotificationManager
   virtual ~MessageCenterNotificationManager();
 
   // NotificationUIManager
+  virtual void Add(const Notification& notification,
+                   Profile* profile) OVERRIDE;
+  virtual bool Update(const Notification& notification,
+                      Profile* profile) OVERRIDE;
   virtual const Notification* FindById(
       const std::string& notification_id) const OVERRIDE;
   virtual bool CancelById(const std::string& notification_id) OVERRIDE;
@@ -50,12 +60,6 @@ class MessageCenterNotificationManager
   virtual bool CancelAllBySourceOrigin(const GURL& source_origin) OVERRIDE;
   virtual bool CancelAllByProfile(Profile* profile) OVERRIDE;
   virtual void CancelAll() OVERRIDE;
-
-  // NotificationUIManagerImpl
-  virtual bool ShowNotification(const Notification& notification,
-                                Profile* profile) OVERRIDE;
-  virtual bool UpdateNotification(const Notification& notification,
-                                  Profile* profile) OVERRIDE;
 
   // MessageCenterObserver
   virtual void OnNotificationRemoved(const std::string& notification_id,
@@ -216,8 +220,13 @@ class MessageCenterNotificationManager
 
   scoped_ptr<message_center::NotifierSettingsProvider> settings_provider_;
 
+  // To own the blockers.
+  ScopedVector<message_center::NotificationBlocker> blockers_;
+
   // Registrar for the other kind of notifications (event signaling).
   content::NotificationRegistrar registrar_;
+
+  NotificationSystemObserver system_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageCenterNotificationManager);
 };

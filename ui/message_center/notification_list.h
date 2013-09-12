@@ -5,6 +5,7 @@
 #ifndef UI_MESSAGE_CENTER_NOTIFICATION_LIST_H_
 #define UI_MESSAGE_CENTER_NOTIFICATION_LIST_H_
 
+#include <list>
 #include <set>
 #include <string>
 
@@ -23,6 +24,7 @@ class DictionaryValue;
 
 namespace message_center {
 
+class NotificationBlocker;
 class NotificationDelegate;
 
 namespace test {
@@ -86,17 +88,17 @@ class MESSAGE_CENTER_EXPORT NotificationList {
 
   // Returns false if the first notification has been shown as a popup (which
   // means that all notifications have been shown).
-  bool HasPopupNotifications();
+  bool HasPopupNotifications(const std::vector<NotificationBlocker*>& blockers);
 
   // Returns the recent notifications of the priority higher then LOW,
   // that have not been shown as a popup. kMaxVisiblePopupNotifications are
   // used to limit the number of notifications for the DEFAULT priority.
-  // The returned list is sorted by timestamp, newer first.
-  PopupNotifications GetPopupNotifications();
-  Notification* GetPopup(const std::string& id);
-
-  // Marks the popups for the |priority| as shown.
-  void MarkPopupsAsShown(int priority);
+  // It also stores the list of notification ids which is blocked by |blockers|
+  // to |blocked_ids|. |blocked_ids| can be NULL if the caller doesn't care
+  // which notifications are blocked.
+  PopupNotifications GetPopupNotifications(
+      const std::vector<NotificationBlocker*>& blockers,
+      std::list<std::string>* blocked_ids);
 
   // Marks a specific popup item as shown. Set |mark_notification_as_read| to
   // true in case marking the notification as read too.

@@ -572,8 +572,8 @@ bool DesktopNotificationService::IsNotifierEnabled(
     case NotifierId::SYSTEM_COMPONENT:
 #if defined(OS_CHROMEOS)
       return disabled_system_component_ids_.find(
-          ash::SystemComponentTypeToString(
-              static_cast<ash::AshSystemComponentNotifierType>(
+          ash::system_notifier::SystemComponentTypeToString(
+              static_cast<ash::system_notifier::AshSystemComponentNotifierType>(
                   notifier_id.system_component_type)))
           == disabled_system_component_ids_.end();
 #else
@@ -606,9 +606,10 @@ void DesktopNotificationService::SetNotifierEnabled(
 #if defined(OS_CHROMEOS)
       pref_name = prefs::kMessageCenterDisabledSystemComponentIds;
       add_new_item = !enabled;
-      id.reset(new base::StringValue(ash::SystemComponentTypeToString(
-          static_cast<ash::AshSystemComponentNotifierType>(
-              notifier_id.system_component_type))));
+      id.reset(new base::StringValue(
+          ash::system_notifier::SystemComponentTypeToString(
+              static_cast<ash::system_notifier::AshSystemComponentNotifierType>(
+                  notifier_id.system_component_type))));
 #else
       return;
 #endif

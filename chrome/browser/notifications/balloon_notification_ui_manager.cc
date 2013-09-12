@@ -18,9 +18,39 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 
+// A class which represents a notification waiting to be shown.
+class QueuedNotification {
+ public:
+  QueuedNotification(const Notification& notification, Profile* profile)
+      : notification_(notification),
+        profile_(profile) {
+  }
+
+  const Notification& notification() const { return notification_; }
+  Profile* profile() const { return profile_; }
+
+  void Replace(const Notification& new_notification) {
+    notification_ = new_notification;
+  }
+
+ private:
+  // The notification to be shown.
+  Notification notification_;
+
+  // Non owned pointer to the user's profile.
+  Profile* profile_;
+
+  DISALLOW_COPY_AND_ASSIGN(QueuedNotification);
+};
+
 BalloonNotificationUIManager::BalloonNotificationUIManager(
     PrefService* local_state)
-    : NotificationUIManagerImpl(), NotificationPrefsManager(local_state) {
+    : NotificationPrefsManager(local_state),
+      // Passes NULL to blockers since |message_center| is not used from balloon
+      // notifications.
+      screen_lock_blocker_(NULL),
+      fullscreen_blocker_(NULL),
+      system_observer_(this) {
   position_pref_.Init(
       prefs::kDesktopNotificationPosition,
       local_state,
@@ -44,18 +74,62 @@ void BalloonNotificationUIManager::SetBalloonCollection(
   balloon_collection_->set_space_change_listener(this);
 }
 
+void BalloonNotificationUIManager::Add(const Notification& notification,
+                                       Profile* profile) {
+  if (Update(notification, profile)) {
+    return;
+  }
+
+  VLOG(1) << "Added notification. URL: "
+          << notification.content_url().spec();
+  show_queue_.push_back(linked_ptr<QueuedNotification>(
+      new QueuedNotification(notification, profile)));
+  CheckAndShowNotifications();
+}
+
+bool BalloonNotificationUIManager::Update(const Notification& notification,
+                                          Profile* profile) {
+  const GURL& origin = notification.origin_url();
+  const string16& replace_id = notification.replace_id();
+
+  if (replace_id.empty())
+    return false;
+
+  // First check the queue of pending notifications for replacement.
+  // Then check the list of notifications already being shown.
+  for (NotificationDeque::const_iterator iter = show_queue_.begin();
+       iter != show_queue_.end(); ++iter) {
+    if (profile == (*iter)->profile() &&
+        origin == (*iter)->notification().origin_url() &&
+        replace_id == (*iter)->notification().replace_id()) {
+      (*iter)->Replace(notification);
+      return true;
+    }
+  }
+
+  return UpdateNotification(notification, profile);
+}
+
 const Notification* BalloonNotificationUIManager::FindById(
     const std::string& id) const {
-  const Notification* notification = NotificationUIManagerImpl::FindById(id);
-  if (notification)
-    return notification;
+  for (NotificationDeque::const_iterator iter = show_queue_.begin();
+       iter != show_queue_.end(); ++iter) {
+    if ((*iter)->notification().notification_id() == id) {
+      return &((*iter)->notification());
+    }
+  }
   return balloon_collection_->FindById(id);
 }
 
 bool BalloonNotificationUIManager::CancelById(const std::string& id) {
   // See if this ID hasn't been shown yet.
-  if (NotificationUIManagerImpl::CancelById(id))
-    return true;
+  for (NotificationDeque::iterator iter = show_queue_.begin();
+       iter != show_queue_.end(); ++iter) {
+    if ((*iter)->notification().notification_id() == id) {
+      show_queue_.erase(iter);
+      return true;
+    }
+  }
   // If it has been shown, remove it from the balloon collections.
   return balloon_collection_->RemoveById(id);
 }
@@ -64,9 +138,14 @@ std::set<std::string>
 BalloonNotificationUIManager::GetAllIdsByProfileAndSourceOrigin(
     Profile* profile,
     const GURL& source) {
-  std::set<std::string> notification_ids =
-      NotificationUIManagerImpl::GetAllIdsByProfileAndSourceOrigin(profile,
-                                                                   source);
+  std::set<std::string> notification_ids;
+  for (NotificationDeque::iterator iter = show_queue_.begin();
+       iter != show_queue_.end(); iter++) {
+    if ((*iter)->notification().origin_url() == source &&
+        profile->IsSameProfile((*iter)->profile())) {
+      notification_ids.insert((*iter)->notification().notification_id());
+    }
+  }
 
   const BalloonCollection::Balloons& balloons =
       balloon_collection_->GetActiveBalloons();
@@ -83,18 +162,37 @@ BalloonNotificationUIManager::GetAllIdsByProfileAndSourceOrigin(
 bool BalloonNotificationUIManager::CancelAllBySourceOrigin(const GURL& source) {
   // Same pattern as CancelById, but more complicated than the above
   // because there may be multiple notifications from the same source.
-  bool removed = NotificationUIManagerImpl::CancelAllBySourceOrigin(source);
+  bool removed = false;
+  for (NotificationDeque::iterator loopiter = show_queue_.begin();
+       loopiter != show_queue_.end(); ) {
+    if ((*loopiter)->notification().origin_url() != source) {
+      ++loopiter;
+      continue;
+    }
+
+    loopiter = show_queue_.erase(loopiter);
+    removed = true;
+  }
   return balloon_collection_->RemoveBySourceOrigin(source) || removed;
 }
 
 bool BalloonNotificationUIManager::CancelAllByProfile(Profile* profile) {
   // Same pattern as CancelAllBySourceOrigin.
-  bool removed = NotificationUIManagerImpl::CancelAllByProfile(profile);
+  bool removed = false;
+  for (NotificationDeque::iterator loopiter = show_queue_.begin();
+       loopiter != show_queue_.end(); ) {
+    if ((*loopiter)->profile() != profile) {
+      ++loopiter;
+      continue;
+    }
+
+    loopiter = show_queue_.erase(loopiter);
+    removed = true;
+  }
   return balloon_collection_->RemoveByProfile(profile) || removed;
 }
 
 void BalloonNotificationUIManager::CancelAll() {
-  NotificationUIManagerImpl::CancelAll();
   balloon_collection_->RemoveAll();
 }
 
@@ -116,6 +214,10 @@ bool BalloonNotificationUIManager::ShowNotification(
 }
 
 void BalloonNotificationUIManager::OnBalloonSpaceChanged() {
+  CheckAndShowNotifications();
+}
+
+void BalloonNotificationUIManager::OnBlockingStateChanged() {
   CheckAndShowNotifications();
 }
 
@@ -157,10 +259,32 @@ void BalloonNotificationUIManager::SetPositionPreference(
   balloon_collection_->SetPositionPreference(preference);
 }
 
+void BalloonNotificationUIManager::CheckAndShowNotifications() {
+  screen_lock_blocker_.CheckState();
+  fullscreen_blocker_.CheckState();
+  if (screen_lock_blocker_.is_locked() ||
+      fullscreen_blocker_.is_fullscreen_mode()) {
+    return;
+  }
+  ShowNotifications();
+}
+
 void BalloonNotificationUIManager::OnDesktopNotificationPositionChanged() {
   balloon_collection_->SetPositionPreference(
       static_cast<BalloonCollection::PositionPreference>(
           position_pref_.GetValue()));
+}
+
+void BalloonNotificationUIManager::ShowNotifications() {
+  while (!show_queue_.empty()) {
+    linked_ptr<QueuedNotification> queued_notification(show_queue_.front());
+    show_queue_.pop_front();
+    if (!ShowNotification(queued_notification->notification(),
+                          queued_notification->profile())) {
+      show_queue_.push_front(queued_notification);
+      return;
+    }
+  }
 }
 
 // static
@@ -174,4 +298,12 @@ BalloonNotificationUIManager*
   }
   return static_cast<BalloonNotificationUIManager*>(
       g_browser_process->notification_ui_manager());
+}
+
+void BalloonNotificationUIManager::GetQueuedNotificationsForTesting(
+    std::vector<const Notification*>* notifications) {
+  for (NotificationDeque::const_iterator iter = show_queue_.begin();
+       iter != show_queue_.end(); ++iter) {
+    notifications->push_back(&(*iter)->notification());
+  }
 }

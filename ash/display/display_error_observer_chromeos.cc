@@ -49,7 +49,7 @@ void DisplayErrorObserver::OnDisplayModeChangeFailed(
       base::string16(),  // message
       bundle.GetImageNamed(IDR_AURA_UBER_TRAY_DISPLAY),
       base::string16(),  // display_source
-      message_center::NotifierId(NOTIFIER_DISPLAY_ERROR),
+      message_center::NotifierId(system_notifier::NOTIFIER_DISPLAY_ERROR),
       message_center::RichNotificationData(),
       NULL));
   message_center::MessageCenter::Get()->AddNotification(notification.Pass());

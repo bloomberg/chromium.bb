@@ -401,10 +401,8 @@ void WebNotificationTray::SetSystemTrayHeight(int height) {
 }
 
 bool WebNotificationTray::ShowPopups() {
-  if (status_area_widget()->login_status() == user::LOGGED_IN_LOCKED ||
-      message_center_bubble()) {
+  if (message_center_bubble())
     return false;
-  }
 
   popup_collection_.reset(new message_center::MessagePopupCollection(
       ash::Shell::GetContainer(
@@ -429,22 +427,6 @@ bool WebNotificationTray::ShouldShowMessageCenter() {
   return status_area_widget()->login_status() != user::LOGGED_IN_LOCKED &&
       !(status_area_widget()->system_tray() &&
         status_area_widget()->system_tray()->HasNotificationBubble());
-}
-
-void WebNotificationTray::UpdateAfterLoginStatusChange(
-    user::LoginStatus login_status) {
-  if (login_status == user::LOGGED_IN_LOCKED) {
-    show_message_center_on_unlock_ =
-        message_center_tray_->HideMessageCenterBubble();
-    message_center_tray_->HidePopupBubble();
-  } else {
-    // Only try once to show the message center bubble on login status change,
-    // so always set |show_message_center_on_unlock_| to false.
-    if (show_message_center_on_unlock_)
-      message_center_tray_->ShowMessageCenterBubble();
-    show_message_center_on_unlock_ = false;
-  }
-  OnMessageCenterTrayChanged();
 }
 
 bool WebNotificationTray::ShouldBlockLauncherAutoHide() const {

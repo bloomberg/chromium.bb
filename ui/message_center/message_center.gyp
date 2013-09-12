@@ -59,6 +59,8 @@
         'message_center_util.h',
         'notification.cc',
         'notification.h',
+        'notification_blocker.cc',
+        'notification_blocker.h',
         'notification_list.cc',
         'notification_list.h',
         'notification_types.cc',

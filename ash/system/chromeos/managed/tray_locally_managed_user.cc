@@ -83,7 +83,8 @@ void TrayLocallyManagedUser::CreateOrUpdateNotification(
       base::string16() /* body is empty */,
       bundle.GetImageNamed(IDR_AURA_UBER_TRAY_MANAGED_USER),
       base::string16() /* display_source */,
-      message_center::NotifierId(NOTIFIER_LOCALLY_MANAGED_USER),
+      message_center::NotifierId(
+          system_notifier::NOTIFIER_LOCALLY_MANAGED_USER),
       message_center::RichNotificationData(),
       NULL /* no delegate */));
   notification->SetSystemPriority();

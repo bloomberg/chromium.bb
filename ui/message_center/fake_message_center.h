@@ -21,6 +21,8 @@ class FakeMessageCenter : public MessageCenter {
   // Overridden from FakeMessageCenter.
   virtual void AddObserver(MessageCenterObserver* observer) OVERRIDE;
   virtual void RemoveObserver(MessageCenterObserver* observer) OVERRIDE;
+  virtual void AddNotificationBlocker(NotificationBlocker* blocker) OVERRIDE;
+  virtual void RemoveNotificationBlocker(NotificationBlocker* blocker) OVERRIDE;
   virtual size_t NotificationCount() const OVERRIDE;
   virtual size_t UnreadNotificationCount() const OVERRIDE;
   virtual bool HasPopupNotifications() const OVERRIDE;

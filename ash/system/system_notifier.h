@@ -8,8 +8,10 @@
 #include <string>
 
 #include "ash/ash_export.h"
+#include "ui/message_center/notifier_settings.h"
 
 namespace ash {
+namespace system_notifier {
 
 enum AshSystemComponentNotifierType {
   NOTIFIER_NO_SYSTEM_COMPONENT = -1,
@@ -33,6 +35,13 @@ enum AshSystemComponentNotifierType {
 ASH_EXPORT std::string SystemComponentTypeToString(
     AshSystemComponentNotifierType type);
 
+// Returns true if notifications from |notifier_id| should always appear as
+// popups. "Always appear" means the popups should appear even in login screen,
+// lock screen, or fullscreen state.
+ASH_EXPORT bool ShouldAlwaysShowPopups(
+    const message_center::NotifierId& notifier_id);
+
+}  // namespace system_notifier
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_SYSTEM_NOTIFIER_H_

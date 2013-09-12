@@ -19,6 +19,13 @@ void FakeMessageCenter::AddObserver(MessageCenterObserver* observer) {
 void FakeMessageCenter::RemoveObserver(MessageCenterObserver* observer) {
 }
 
+void FakeMessageCenter::AddNotificationBlocker(NotificationBlocker* blocker) {
+}
+
+void FakeMessageCenter::RemoveNotificationBlocker(
+    NotificationBlocker* blocker) {
+}
+
 size_t FakeMessageCenter::NotificationCount() const {
   return 0u;
 }
