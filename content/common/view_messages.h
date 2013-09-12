@@ -1644,13 +1644,23 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_DidActivateAcceleratedCompositing,
 
 IPC_STRUCT_BEGIN(ViewHostMsg_BeginSmoothScroll_Params)
   IPC_STRUCT_MEMBER(bool, scroll_down)
-  IPC_STRUCT_MEMBER(int, pixels_to_scroll)
-  IPC_STRUCT_MEMBER(int, mouse_event_x)
-  IPC_STRUCT_MEMBER(int, mouse_event_y)
+  IPC_STRUCT_MEMBER(int32, pixels_to_scroll)
+  IPC_STRUCT_MEMBER(int32, mouse_event_x)
+  IPC_STRUCT_MEMBER(int32, mouse_event_y)
 IPC_STRUCT_END()
 
 IPC_MESSAGE_ROUTED1(ViewHostMsg_BeginSmoothScroll,
                     ViewHostMsg_BeginSmoothScroll_Params /* params */)
+
+IPC_STRUCT_BEGIN(ViewHostMsg_BeginPinch_Params)
+  IPC_STRUCT_MEMBER(bool, zoom_in)
+  IPC_STRUCT_MEMBER(int32, pixels_to_move)
+  IPC_STRUCT_MEMBER(int32, anchor_x)
+  IPC_STRUCT_MEMBER(int32, anchor_y)
+IPC_STRUCT_END()
+
+IPC_MESSAGE_ROUTED1(ViewHostMsg_BeginPinch,
+                    ViewHostMsg_BeginPinch_Params /* params */)
 
 IPC_MESSAGE_ROUTED0(ViewHostMsg_Focus)
 IPC_MESSAGE_ROUTED0(ViewHostMsg_Blur)

@@ -44,6 +44,23 @@ void SyntheticGestureController::BeginSmoothScroll(
                &SyntheticGestureController::OnTimer);
 }
 
+void SyntheticGestureController::BeginPinch(
+    RenderWidgetHostViewPort* view,
+    const ViewHostMsg_BeginPinch_Params& params) {
+  if (pending_synthetic_gesture_.get())
+    return;
+
+  rwh_ = view->GetRenderWidgetHost();
+  pending_synthetic_gesture_ = view->CreatePinchGesture(
+      params.zoom_in,
+      params.pixels_to_move,
+      params.anchor_x,
+      params.anchor_y);
+
+  timer_.Start(FROM_HERE, GetSyntheticGestureMessageInterval(), this,
+               &SyntheticGestureController::OnTimer);
+}
+
 base::TimeDelta
     SyntheticGestureController::GetSyntheticGestureMessageInterval() const {
   return base::TimeDelta::FromMilliseconds(kSyntheticGestureMessageIntervalMs);

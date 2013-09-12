@@ -189,6 +189,16 @@ class CONTENT_EXPORT RenderWidget
                          int mouse_event_x,
                          int mouse_event_y);
 
+  // Directs the host to begin a pinch gesture. This gesture should have the
+  // same performance characteristics as a user-initiated pinch.
+  // |pixels_to_move|, |anchor_x| and |anchor_y| are expected to be in local
+  // DIP coordinates.
+  void BeginPinch(bool zoom_in,
+                  int pixels_to_move,
+                  int anchor_x,
+                  int anchor_y,
+                  const SyntheticGestureCompletionCallback& callback);
+
   // Close the underlying WebWidget.
   virtual void Close();
 

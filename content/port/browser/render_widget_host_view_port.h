@@ -269,6 +269,11 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView,
       bool scroll_down, int pixels_to_scroll, int mouse_event_x,
       int mouse_event_y) = 0;
 
+  // Asks the view to create a synthetic gesture that will be used to
+  // simulate a user-initiated pinch-to-zoom.
+  virtual SyntheticGesture* CreatePinchGesture(
+      bool zoom_in, int pixels_to_move, int anchor_x, int anchor_y) = 0;
+
   virtual void SetHasHorizontalScrollbar(bool has_horizontal_scrollbar) = 0;
   virtual void SetScrollOffsetPinning(
       bool is_pinned_to_left, bool is_pinned_to_right) = 0;

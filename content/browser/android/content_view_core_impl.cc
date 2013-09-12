@@ -577,15 +577,28 @@ void ContentViewCoreImpl::ShowDisambiguationPopup(
                                                java_bitmap.obj());
 }
 
-ScopedJavaLocalRef<jobject> ContentViewCoreImpl::CreateGenericTouchGesture(
-    int start_x, int start_y, int delta_x, int delta_y) {
+ScopedJavaLocalRef<jobject> ContentViewCoreImpl::CreateOnePointTouchGesture(
+    int32 start_x, int32 start_y, int32 delta_x, int32 delta_y) {
   JNIEnv* env = AttachCurrentThread();
 
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
     return ScopedJavaLocalRef<jobject>();
-  return Java_ContentViewCore_createGenericTouchGesture(
+  return Java_ContentViewCore_createOnePointTouchGesture(
       env, obj.obj(), start_x, start_y, delta_x, delta_y);
+}
+
+ScopedJavaLocalRef<jobject> ContentViewCoreImpl::CreateTwoPointTouchGesture(
+    int32 start_x0, int32 start_y0, int32 delta_x0, int32 delta_y0,
+    int32 start_x1, int32 start_y1, int32 delta_x1, int32 delta_y1) {
+  JNIEnv* env = AttachCurrentThread();
+
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return ScopedJavaLocalRef<jobject>();
+  return Java_ContentViewCore_createTwoPointTouchGesture(
+      env, obj.obj(), start_x0, start_y0, delta_x0, delta_y0,
+      start_x1, start_y1, delta_x1, delta_y1);
 }
 
 void ContentViewCoreImpl::NotifyExternalSurface(

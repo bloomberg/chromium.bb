@@ -2489,6 +2489,24 @@ void RenderWidget::BeginSmoothScroll(
   pending_synthetic_gesture_ = callback;
 }
 
+void RenderWidget::BeginPinch(
+    bool zoom_in,
+    int pixels_to_move,
+    int anchor_x,
+    int anchor_y,
+    const SyntheticGestureCompletionCallback& callback) {
+  DCHECK(!callback.is_null());
+
+  ViewHostMsg_BeginPinch_Params params;
+  params.zoom_in = zoom_in;
+  params.pixels_to_move = pixels_to_move;
+  params.anchor_x = anchor_x;
+  params.anchor_y = anchor_y;
+
+  Send(new ViewHostMsg_BeginPinch(routing_id_, params));
+  pending_synthetic_gesture_ = callback;
+}
+
 bool RenderWidget::WillHandleMouseEvent(const WebKit::WebMouseEvent& event) {
   return false;
 }

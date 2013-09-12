@@ -653,6 +653,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   void OnUpdateIsDelayed();
   void OnBeginSmoothScroll(
       const ViewHostMsg_BeginSmoothScroll_Params& params);
+  void OnBeginPinch(
+      const ViewHostMsg_BeginPinch_Params& params);
   virtual void OnFocus();
   virtual void OnBlur();
   void OnSetCursor(const WebCursor& cursor);

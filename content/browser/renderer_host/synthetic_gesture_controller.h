@@ -12,6 +12,7 @@
 #include "base/timer/timer.h"
 #include "content/common/content_export.h"
 
+struct ViewHostMsg_BeginPinch_Params;
 struct ViewHostMsg_BeginSmoothScroll_Params;
 
 namespace content {
@@ -27,9 +28,13 @@ class CONTENT_EXPORT SyntheticGestureController {
   SyntheticGestureController();
   ~SyntheticGestureController();
 
-  // Initiates a synthetic event stream.
+  // Initiates a synthetic event stream to simulate a smooth scroll.
   void BeginSmoothScroll(RenderWidgetHostViewPort* view,
                          const ViewHostMsg_BeginSmoothScroll_Params& params);
+
+  // Initiates a synthetic event stream to simulate a pinch-to-zoom.
+  void BeginPinch(RenderWidgetHostViewPort* view,
+                  const ViewHostMsg_BeginPinch_Params& params);
 
   base::TimeDelta GetSyntheticGestureMessageInterval() const;
 

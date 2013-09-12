@@ -215,6 +215,14 @@ class GpuBenchmarkingWrapper : public v8::Extension {
           "  native function SmoothScrollSendsTouch();"
           "  return SmoothScrollSendsTouch();"
           "};"
+          "chrome.gpuBenchmarking.pinchBy = "
+          "    function(zoom_in, pixels_to_move, anchor_x, anchor_y,"
+          "             opt_callback) {"
+          "  callback = opt_callback || function() { };"
+          "  native function BeginPinch();"
+          "  return BeginPinch(zoom_in, pixels_to_move,"
+          "                    anchor_x, anchor_y, callback);"
+          "};"
           "chrome.gpuBenchmarking.beginWindowSnapshotPNG = function(callback) {"
           "  native function BeginWindowSnapshotPNG();"
           "  BeginWindowSnapshotPNG(callback);"
@@ -238,6 +246,8 @@ class GpuBenchmarkingWrapper : public v8::Extension {
       return v8::FunctionTemplate::New(BeginSmoothScroll);
     if (name->Equals(v8::String::New("SmoothScrollSendsTouch")))
       return v8::FunctionTemplate::New(SmoothScrollSendsTouch);
+    if (name->Equals(v8::String::New("BeginPinch")))
+      return v8::FunctionTemplate::New(BeginPinch);
     if (name->Equals(v8::String::New("BeginWindowSnapshotPNG")))
       return v8::FunctionTemplate::New(BeginWindowSnapshotPNG);
     if (name->Equals(v8::String::New("ClearImageCache")))
@@ -450,6 +460,59 @@ class GpuBenchmarkingWrapper : public v8::Extension {
         pixels_to_scroll,
         mouse_event_x,
         mouse_event_y);
+
+    args.GetReturnValue().Set(true);
+  }
+
+  static void BeginPinch(
+      const v8::FunctionCallbackInfo<v8::Value>& args) {
+    WebFrame* web_frame = WebFrame::frameForCurrentContext();
+    if (!web_frame)
+      return;
+
+    WebView* web_view = web_frame->view();
+    if (!web_view)
+      return;
+
+    RenderViewImpl* render_view_impl = RenderViewImpl::FromWebView(web_view);
+    if (!render_view_impl)
+      return;
+
+    int arglen = args.Length();
+    if (arglen < 5 ||
+        !args[0]->IsBoolean() ||
+        !args[1]->IsNumber() ||
+        !args[2]->IsNumber() ||
+        !args[3]->IsNumber() ||
+        !args[4]->IsFunction()) {
+      args.GetReturnValue().Set(false);
+      return;
+    }
+
+    bool zoom_in = args[0]->BooleanValue();
+    int pixels_to_move = args[1]->IntegerValue();
+    int anchor_x = args[2]->IntegerValue();
+    int anchor_y = args[3]->IntegerValue();
+
+    v8::Local<v8::Function> callback_local =
+        v8::Local<v8::Function>::Cast(args[4]);
+
+    scoped_refptr<CallbackAndContext> callback_and_context =
+        new CallbackAndContext(args.GetIsolate(),
+                               callback_local,
+                               web_frame->mainWorldScriptContext());
+
+
+    // TODO(nduca): If the render_view_impl is destroyed while the gesture is in
+    // progress, we will leak the callback and context. This needs to be fixed,
+    // somehow.
+    render_view_impl->BeginPinch(
+        zoom_in,
+        pixels_to_move,
+        anchor_x,
+        anchor_y,
+        base::Bind(&OnSmoothScrollCompleted,
+                   callback_and_context));
 
     args.GetReturnValue().Set(true);
   }

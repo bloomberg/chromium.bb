@@ -508,6 +508,14 @@ SyntheticGesture* RenderWidgetHostViewBase::CreateSmoothScrollGesture(
                                                 mouse_event_x, mouse_event_y);
 }
 
+SyntheticGesture* RenderWidgetHostViewBase::CreatePinchGesture(
+    bool zoom_in, int pixels_to_move, int anchor_x,
+    int anchor_y) {
+  // There is no generic implementation for pinch gestures.
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
 void RenderWidgetHostViewBase::ProcessAckedTouchEvent(
     const TouchEventWithLatencyInfo& touch, InputEventAckState ack_result) {
 }

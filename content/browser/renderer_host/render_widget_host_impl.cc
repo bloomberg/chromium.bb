@@ -476,6 +476,7 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateRect, OnUpdateRect)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateIsDelayed, OnUpdateIsDelayed)
     IPC_MESSAGE_HANDLER(ViewHostMsg_BeginSmoothScroll, OnBeginSmoothScroll)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_BeginPinch, OnBeginPinch)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Focus, OnFocus)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Blur, OnBlur)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetCursor, OnSetCursor)
@@ -1745,6 +1746,13 @@ void RenderWidgetHostImpl::OnBeginSmoothScroll(
   if (!view_)
     return;
   synthetic_gesture_controller_.BeginSmoothScroll(view_, params);
+}
+
+void RenderWidgetHostImpl::OnBeginPinch(
+    const ViewHostMsg_BeginPinch_Params& params) {
+  if (!view_)
+    return;
+  synthetic_gesture_controller_.BeginPinch(view_, params);
 }
 
 void RenderWidgetHostImpl::OnFocus() {
