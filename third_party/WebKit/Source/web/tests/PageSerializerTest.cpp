@@ -216,4 +216,16 @@ TEST_F(PageSerializerTest, DTD)
     EXPECT_TRUE(getSerializedData("dtd.html").startsWith(expectedStart));
 }
 
+TEST_F(PageSerializerTest, Font)
+{
+    setBaseFolder("pageserializer/font/");
+
+    registerURL("font.html", "text/html");
+    registerURL("font.ttf", "application/octet-stream");
+
+    serialize("font.html");
+
+    EXPECT_TRUE(isSerialized("font.ttf", "application/octet-stream"));
+}
+
 }

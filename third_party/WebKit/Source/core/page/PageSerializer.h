@@ -39,14 +39,19 @@
 
 namespace WebCore {
 
+class FontResource;
 class ImageResource;
 class CSSStyleSheet;
+class CSSValue;
 class Document;
 class Frame;
 class Page;
 class RenderObject;
+class Resource;
+class SharedBuffer;
 class StylePropertySet;
 class StyleRule;
+class StyleRuleFontFace;
 
 struct SerializedResource;
 
@@ -70,9 +75,14 @@ private:
     // It also adds any resources included in that stylesheet (including any imported stylesheets and their own resources).
     void serializeCSSStyleSheet(CSSStyleSheet*, const KURL&);
 
+    bool shouldAddURL(const KURL&);
+
+    void addToResources(Resource *, PassRefPtr<SharedBuffer>, const KURL&);
     void addImageToResources(ImageResource*, RenderObject*, const KURL&);
+    void addFontToResources(FontResource*);
+
     void retrieveResourcesForProperties(const StylePropertySet*, Document*);
-    void retrieveResourcesForRule(StyleRule*, Document*);
+    void retrieveResourcesForCSSValue(CSSValue*, Document*);
 
     Vector<SerializedResource>* m_resources;
     ListHashSet<KURL> m_resourceURLs;

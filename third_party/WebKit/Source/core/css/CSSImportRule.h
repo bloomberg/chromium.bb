@@ -53,6 +53,12 @@ private:
     mutable RefPtr<CSSStyleSheet> m_styleSheetCSSOMWrapper;
 };
 
+inline CSSImportRule* toCSSImportRule(CSSRule* rule)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(rule->type() == CSSRule::IMPORT_RULE);
+    return static_cast<CSSImportRule*>(rule);
+}
+
 } // namespace WebCore
 
 #endif // CSSImportRule_h

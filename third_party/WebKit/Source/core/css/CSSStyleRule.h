@@ -57,6 +57,12 @@ private:
     mutable RefPtr<StyleRuleCSSStyleDeclaration> m_propertiesCSSOMWrapper;
 };
 
+inline CSSStyleRule* toCSSStyleRule(CSSRule* rule)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(rule->type() == CSSRule::STYLE_RULE);
+    return static_cast<CSSStyleRule*>(rule);
+}
+
 } // namespace WebCore
 
 #endif // CSSStyleRule_h

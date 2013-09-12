@@ -32,9 +32,13 @@
 #include "core/page/PageSerializer.h"
 
 #include "HTMLNames.h"
+#include "core/css/CSSFontFaceRule.h"
+#include "core/css/CSSFontFaceSrcValue.h"
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSImportRule.h"
+#include "core/css/CSSStyleDeclaration.h"
 #include "core/css/CSSStyleRule.h"
+#include "core/css/CSSValueList.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
 #include "core/css/StyleSheetContents.h"
@@ -42,6 +46,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/Text.h"
 #include "core/editing/MarkupAccumulator.h"
+#include "core/fetch/FontResource.h"
 #include "core/fetch/ImageResource.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLImageElement.h"
@@ -261,16 +266,15 @@ void PageSerializer::serializeCSSStyleSheet(CSSStyleSheet* styleSheet, const KUR
         Document* document = styleSheet->ownerDocument();
         // Some rules have resources associated with them that we need to retrieve.
         if (rule->type() == CSSRule::IMPORT_RULE) {
-            CSSImportRule* importRule = static_cast<CSSImportRule*>(rule);
+            CSSImportRule* importRule = toCSSImportRule(rule);
             KURL importURL = document->completeURL(importRule->href());
             if (m_resourceURLs.contains(importURL))
                 continue;
             serializeCSSStyleSheet(importRule->styleSheet(), importURL);
         } else if (rule->type() == CSSRule::FONT_FACE_RULE) {
-            // FIXME: Add support for font face rule. It is not clear to me at this point if the actual otf/eot file can
-            // be retrieved from the CSSFontFaceRule object.
+            retrieveResourcesForProperties(toCSSFontFaceRule(rule)->styleRule()->properties(), document);
         } else if (rule->type() == CSSRule::STYLE_RULE) {
-            retrieveResourcesForRule(static_cast<CSSStyleRule*>(rule)->styleRule(), document);
+            retrieveResourcesForProperties(toCSSStyleRule(rule)->styleRule()->properties(), document);
         }
     }
 
@@ -285,9 +289,26 @@ void PageSerializer::serializeCSSStyleSheet(CSSStyleSheet* styleSheet, const KUR
     }
 }
 
+bool PageSerializer::shouldAddURL(const KURL& url)
+{
+    return url.isValid() && !m_resourceURLs.contains(url) && !url.protocolIsData();
+}
+
+void PageSerializer::addToResources(Resource* resource, PassRefPtr<SharedBuffer> data, const KURL& url)
+{
+    if (!data) {
+        LOG_ERROR("No data for resource %s", url.string().utf8().data());
+        return;
+    }
+
+    String mimeType = resource->response().mimeType();
+    m_resources->append(SerializedResource(url, mimeType, data));
+    m_resourceURLs.add(url);
+}
+
 void PageSerializer::addImageToResources(ImageResource* image, RenderObject* imageRenderer, const KURL& url)
 {
-    if (!url.isValid() || m_resourceURLs.contains(url) || url.protocolIsData())
+    if (!shouldAddURL(url))
         return;
 
     if (!image || image->image() == Image::nullImage())
@@ -297,19 +318,17 @@ void PageSerializer::addImageToResources(ImageResource* image, RenderObject* ima
     if (!data)
         data = image->image()->data();
 
-    if (!data) {
-        LOG_ERROR("No data for image %s", url.string().utf8().data());
-        return;
-    }
-
-    String mimeType = image->response().mimeType();
-    m_resources->append(SerializedResource(url, mimeType, data));
-    m_resourceURLs.add(url);
+    addToResources(image, data, url);
 }
 
-void PageSerializer::retrieveResourcesForRule(StyleRule* rule, Document* document)
+void PageSerializer::addFontToResources(FontResource* font)
 {
-    retrieveResourcesForProperties(rule->properties(), document);
+    if (!font || !shouldAddURL(font->url()) || !font->isLoaded() || !font->resourceBuffer()) {
+        return;
+    }
+    RefPtr<SharedBuffer> data(font->resourceBuffer());
+
+    addToResources(font, data, font->url());
 }
 
 void PageSerializer::retrieveResourcesForProperties(const StylePropertySet* styleDeclaration, Document* document)
@@ -323,17 +342,31 @@ void PageSerializer::retrieveResourcesForProperties(const StylePropertySet* styl
     unsigned propertyCount = styleDeclaration->propertyCount();
     for (unsigned i = 0; i < propertyCount; ++i) {
         RefPtr<CSSValue> cssValue = styleDeclaration->propertyAt(i).value();
-        if (!cssValue->isImageValue())
-            continue;
+        retrieveResourcesForCSSValue(cssValue.get(), document);
+    }
+}
 
-        CSSImageValue* imageValue = toCSSImageValue(cssValue.get());
+void PageSerializer::retrieveResourcesForCSSValue(CSSValue* cssValue, Document* document)
+{
+    if (cssValue->isImageValue()) {
+        CSSImageValue* imageValue = toCSSImageValue(cssValue);
         StyleImage* styleImage = imageValue->cachedOrPendingImage();
         // Non cached-images are just place-holders and do not contain data.
         if (!styleImage || !styleImage->isImageResource())
-            continue;
+            return;
 
-        ImageResource* image = static_cast<StyleFetchedImage*>(styleImage)->cachedImage();
-        addImageToResources(image, 0, image->url());
+        addImageToResources(styleImage->cachedImage(), 0, styleImage->cachedImage()->url());
+    } else if (cssValue->isFontFaceSrcValue()) {
+        CSSFontFaceSrcValue* fontFaceSrcValue = toCSSFontFaceSrcValue(cssValue);
+        if (fontFaceSrcValue->isLocal()) {
+            return;
+        }
+
+        addFontToResources(fontFaceSrcValue->fetch(document));
+    } else if (cssValue->isValueList()) {
+        CSSValueList* cssValueList = toCSSValueList(cssValue);
+        for (unsigned i = 0; i < cssValueList->length(); i++)
+            retrieveResourcesForCSSValue(cssValueList->item(i), document);
     }
 }
 
