@@ -74,7 +74,7 @@ void V8PerIsolateData::ensureInitialized(v8::Isolate* isolate)
 v8::Persistent<v8::Value>& V8PerIsolateData::ensureLiveRoot()
 {
     if (m_liveRoot.isEmpty())
-        m_liveRoot.set(m_isolate, v8::Null());
+        m_liveRoot.set(m_isolate, v8::Null(m_isolate));
     return m_liveRoot.getUnsafe();
 }
 

@@ -330,7 +330,7 @@ ScriptValue ScriptDebugServer::currentCallFrame()
     v8::HandleScope handleScope(m_isolate);
     RefPtr<JavaScriptCallFrame> currentCallFrame = wrapCallFrames(m_executionState.newLocal(m_isolate), -1);
     if (!currentCallFrame)
-        return ScriptValue(v8::Null());
+        return ScriptValue(v8::Null(m_isolate));
     v8::Context::Scope contextScope(m_pausedContext);
     return ScriptValue(toV8(currentCallFrame.release(), v8::Handle<v8::Object>(), m_pausedContext->GetIsolate()));
 }

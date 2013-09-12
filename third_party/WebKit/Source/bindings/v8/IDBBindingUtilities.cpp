@@ -253,7 +253,7 @@ ScriptValue deserializeIDBValue(DOMRequestState* state, PassRefPtr<SerializedScr
     RefPtr<SerializedScriptValue> serializedValue = prpValue;
     if (serializedValue)
         return ScriptValue(serializedValue->deserialize());
-    return ScriptValue(v8::Null());
+    return ScriptValue(v8::Null(isolate));
 }
 
 ScriptValue deserializeIDBValueBuffer(DOMRequestState* state, PassRefPtr<SharedBuffer> prpBuffer)
@@ -269,7 +269,7 @@ ScriptValue deserializeIDBValueBuffer(DOMRequestState* state, PassRefPtr<SharedB
         RefPtr<SerializedScriptValue> serializedValue = SerializedScriptValue::createFromWireBytes(value);
         return ScriptValue(serializedValue->deserialize());
     }
-    return ScriptValue(v8::Null());
+    return ScriptValue(v8::Null(isolate));
 }
 
 bool injectIDBKeyIntoScriptValue(DOMRequestState* state, PassRefPtr<IDBKey> key, ScriptValue& value, const IDBKeyPath& keyPath)
