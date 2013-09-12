@@ -1,0 +1,12 @@
+Name: requests
+Short Name: requests
+URL: https://github.com/kennethreitz/requests.git
+Version: 1.2.3
+Revision: 3bb13f8fbb9d4ed1a20bd33495cdc087eb062ca0
+License: Apache License, Version 2.0
+
+Description:
+Python HTTP for Humans.
+
+Local Modifications:
+None.
