@@ -127,7 +127,9 @@ String CSSValueList::customCssText(CssTextFormattingFlags formattingFlag) const
 
 bool CSSValueList::equals(const CSSValueList& other) const
 {
-    return m_valueListSeparator == other.m_valueListSeparator && compareCSSValueVector<CSSValue>(m_values, other.m_values);
+    // FIXME: the explicit Vector conversion copies into a temporary and is
+    // wasteful.
+    return m_valueListSeparator == other.m_valueListSeparator && compareCSSValueVector<CSSValue>(Vector<RefPtr<CSSValue> >(m_values), Vector<RefPtr<CSSValue> >(other.m_values));
 }
 
 bool CSSValueList::equals(const CSSValue& other) const

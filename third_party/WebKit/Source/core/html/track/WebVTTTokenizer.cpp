@@ -83,8 +83,10 @@ bool WebVTTTokenizer::nextToken(SegmentedString& source, WebVTTToken& token)
             m_buffer.append(static_cast<LChar>(cc));
             WEBVTT_ADVANCE_TO(EscapeState);
         } else if (cc == '<') {
+            // FIXME: the explicit Vector conversion copies into a temporary
+            // and is wasteful.
             if (m_token->type() == WebVTTTokenTypes::Uninitialized
-                || vectorEqualsString<UChar>(m_token->characters(), emptyString()))
+                || vectorEqualsString<UChar>(Vector<UChar, 32>(m_token->characters()), emptyString()))
                 WEBVTT_ADVANCE_TO(TagState);
             else
                 return emitAndResumeIn(source, WebVTTTokenizerState::TagState);

@@ -74,7 +74,9 @@ const Vector<StylePropertyShorthand> matchingShorthandsForLonghand(CSSPropertyID
         {% for shorthand in shorthands -%}
             {{ longhand_id }}Shorthands.uncheckedAppend({{ shorthand.camel_case_name }}Shorthand());
         {% endfor -%}
-        map.set({{ longhand_id }}, {{ longhand_id }}Shorthands);
+        // FIXME: the explicit Vector conversion copies into a temporary and is
+        // wasteful.
+        map.set({{ longhand_id }}, Vector<StylePropertyShorthand>({{ longhand_id }}Shorthands));
 {%- endfor %}
     }
     return map.get(propertyID);

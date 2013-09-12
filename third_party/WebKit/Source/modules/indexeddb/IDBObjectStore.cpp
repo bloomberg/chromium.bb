@@ -326,7 +326,7 @@ private:
         if (cursorAny->type() == IDBAny::IDBCursorWithValueType)
             cursor = cursorAny->idbCursorWithValue();
 
-        Vector<int64_t, 1> indexIds;
+        Vector<int64_t> indexIds;
         indexIds.append(m_indexMetadata.id);
         if (cursor) {
             cursor->continueFunction(static_cast<IDBKey*>(0), ASSERT_NO_EXCEPTION);
@@ -337,7 +337,7 @@ private:
             IDBObjectStore::IndexKeys indexKeys;
             generateIndexKeysForValue(request->requestState(), m_indexMetadata, value, &indexKeys);
 
-            Vector<IDBObjectStore::IndexKeys, 1> indexKeysList;
+            Vector<IDBObjectStore::IndexKeys> indexKeysList;
             indexKeysList.append(indexKeys);
 
             m_databaseBackend->setIndexKeys(m_transactionId, m_objectStoreId, primaryKey, indexIds, indexKeysList);

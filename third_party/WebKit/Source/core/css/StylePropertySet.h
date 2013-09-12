@@ -177,7 +177,7 @@ public:
     unsigned propertyCount() const { return m_propertyVector.size(); }
     PropertySetCSSStyleDeclaration* cssStyleDeclaration();
 
-    void addParsedProperties(const Vector<CSSProperty>&);
+    void addParsedProperties(const Vector<CSSProperty, 256>&);
     void addParsedProperty(const CSSProperty&);
 
     // These expand shorthand properties into multiple properties.

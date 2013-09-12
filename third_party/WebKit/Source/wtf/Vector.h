@@ -504,7 +504,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
 
         Vector(const Vector&);
         template<size_t otherCapacity>
-        Vector(const Vector<T, otherCapacity>&);
+        explicit Vector(const Vector<T, otherCapacity>&);
 
         Vector& operator=(const Vector&);
         template<size_t otherCapacity>
