@@ -299,6 +299,11 @@ AudioParameters AudioManagerWin::GetInputStreamParameters(
 
 std::string AudioManagerWin::GetAssociatedOutputDeviceID(
     const std::string& input_device_id) {
+  if (!CoreAudioUtil::IsSupported()) {
+    NOTIMPLEMENTED()
+        << "GetAssociatedOutputDeviceID is not supported on this OS";
+    return std::string();
+  }
   return CoreAudioUtil::GetMatchingOutputDeviceID(input_device_id);
 }
 
