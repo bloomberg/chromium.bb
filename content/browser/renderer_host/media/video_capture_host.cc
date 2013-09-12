@@ -32,14 +32,13 @@ VideoCaptureHost::~VideoCaptureHost() {}
 void VideoCaptureHost::OnChannelClosing() {
   BrowserMessageFilter::OnChannelClosing();
 
-  // Since the IPC channel is gone, close all requested VideCaptureDevices.
+  // Since the IPC channel is gone, close all requested VideoCaptureDevices.
   for (EntryMap::iterator it = entries_.begin(); it != entries_.end(); it++) {
     VideoCaptureController* controller = it->second->controller.get();
     if (controller) {
       VideoCaptureControllerID controller_id(it->first);
-      controller->StopCapture(controller_id, this);
-      media_stream_manager_->video_capture_manager()->RemoveController(
-          controller, this);
+      media_stream_manager_->video_capture_manager()->StopCaptureForClient(
+          controller, controller_id, this);
     }
   }
   STLDeleteValues(&entries_);
@@ -224,9 +223,9 @@ void VideoCaptureHost::OnStartCapture(int device_id,
   DCHECK(entries_.find(controller_id) == entries_.end());
 
   entries_[controller_id] = new Entry(NULL);
-  media_stream_manager_->video_capture_manager()->AddController(
-      params, this, base::Bind(&VideoCaptureHost::OnControllerAdded, this,
-                               device_id, params));
+  media_stream_manager_->video_capture_manager()->StartCaptureForClient(
+      params, PeerHandle(), controller_id, this, base::Bind(
+          &VideoCaptureHost::OnControllerAdded, this, device_id, params));
 }
 
 void VideoCaptureHost::OnControllerAdded(
@@ -246,8 +245,8 @@ void VideoCaptureHost::DoControllerAddedOnIOThread(
   EntryMap::iterator it = entries_.find(controller_id);
   if (it == entries_.end()) {
     if (controller) {
-      media_stream_manager_->video_capture_manager()->RemoveController(
-          controller, this);
+      media_stream_manager_->video_capture_manager()->StopCaptureForClient(
+          controller, controller_id, this);
     }
     return;
   }
@@ -261,7 +260,6 @@ void VideoCaptureHost::DoControllerAddedOnIOThread(
   }
 
   it->second->controller = controller;
-  controller->StartCapture(controller_id, this, PeerHandle(), params);
 }
 
 void VideoCaptureHost::OnStopCapture(int device_id) {
@@ -304,9 +302,8 @@ void VideoCaptureHost::DeleteVideoCaptureControllerOnIOThread(
 
   VideoCaptureController* controller = it->second->controller.get();
   if (controller) {
-    controller->StopCapture(controller_id, this);
-    media_stream_manager_->video_capture_manager()->RemoveController(
-        controller, this);
+    media_stream_manager_->video_capture_manager()->StopCaptureForClient(
+        controller, controller_id, this);
   }
   delete it->second;
   entries_.erase(controller_id);

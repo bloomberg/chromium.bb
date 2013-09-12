@@ -90,7 +90,7 @@ class MEDIA_EXPORT VideoCaptureDevice {
 #if defined(OS_WIN)
     // This class wraps the CaptureApiType, so it has a by default value if not
     // inititalized, and I (mcasas) do a DCHECK on reading its value.
-    class CaptureApiClass{
+    class CaptureApiClass {
      public:
       CaptureApiClass():  capture_api_type_(API_TYPE_UNKNOWN) {}
       CaptureApiClass(const CaptureApiType api_type)

@@ -274,16 +274,6 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateThreeStreams) {
   EXPECT_EQ(host_->NumberOfStreams(), 0u);
 }
 
-TEST_F(MediaStreamDispatcherHostTest, FailOpenVideoDevice) {
-  StreamOptions options(MEDIA_NO_SERVICE, MEDIA_DEVICE_VIDEO_CAPTURE);
-
-  media::FakeVideoCaptureDevice::SetFailNextCreate();
-  SetupFakeUI(false);
-  EXPECT_CALL(*host_.get(),
-              OnStreamGenerationFailed(kRenderId, kPageRequestId));
-  GenerateStreamAndWaitForResult(kPageRequestId, options);
-}
-
 TEST_F(MediaStreamDispatcherHostTest, CancelPendingStreamsOnChannelClosing) {
   StreamOptions options(MEDIA_NO_SERVICE, MEDIA_DEVICE_VIDEO_CAPTURE);
 

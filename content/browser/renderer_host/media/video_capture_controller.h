@@ -1,17 +1,49 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
-// VideoCaptureController is the glue between VideoCaptureHost,
-// VideoCaptureManager and VideoCaptureDevice.
-// It provides functions for VideoCaptureHost to start a VideoCaptureDevice and
-// is responsible for keeping track of shared DIBs and filling them with I420
-// video frames for IPC communication between VideoCaptureHost and
-// VideoCaptureMessageFilter.
-// It implements media::VideoCaptureDevice::EventHandler to get video frames
-// from a VideoCaptureDevice object and do color conversion straight into the
-// shared DIBs to avoid a memory copy.
-// It serves multiple VideoCaptureControllerEventHandlers.
+//
+// VideoCaptureController is the glue between a VideoCaptureDevice and all
+// VideoCaptureHosts that have connected to it. A controller exists on behalf of
+// one (and only one) VideoCaptureDevice; both are owned by the
+// VideoCaptureManager.
+//
+// The VideoCaptureController is responsible for:
+//
+//   * Allocating and keeping track of shared memory buffers, and filling them
+//     with I420 video frames for IPC communication between VideoCaptureHost (in
+//     the browser process) and VideoCaptureMessageFilter (in the renderer
+//     process).
+//   * Conveying events from the device thread (where capture devices live) to
+//     the IO thread (where the clients can be reached).
+//   * Broadcasting the events from a single VideoCaptureDevice, fanning them
+//     out to multiple clients.
+//   * Keeping track of the clients on behalf of the VideoCaptureManager, making
+//     it possible for the Manager to delete the Controller and its Device when
+//     there are no clients left.
+//   * Performing some image transformations on the output of the Device;
+//     specifically, colorspace conversion and rotation.
+//
+// Interactions between VideoCaptureController and other classes:
+//
+//   * VideoCaptureController receives events from its VideoCaptureDevice
+//     entirely through the VideoCaptureDevice::EventHandler interface, which
+//     VCC implements.
+//   * A VideoCaptureController interacts with its clients (VideoCaptureHosts)
+//     via the VideoCaptureControllerEventHandler interface.
+//   * Conversely, a VideoCaptureControllerEventHandler (typically,
+//     VideoCaptureHost) will interact directly with VideoCaptureController to
+//     return leased buffers by means of the ReturnBuffer() public method of
+//     VCC.
+//   * VideoCaptureManager (which owns the VCC) interacts directly with
+//     VideoCaptureController through its public methods, to add and remove
+//     clients.
+//
+// Thread safety:
+//
+//   The public methods implementing the VCD::EventHandler interface are safe to
+//   call from any thread -- in practice, this is the thread on which the Device
+//   is running. For this reason, it is RefCountedThreadSafe. ALL OTHER METHODS
+//   are only safe to run on the IO browser thread.
 
 #ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_VIDEO_CAPTURE_CONTROLLER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_MEDIA_VIDEO_CAPTURE_CONTROLLER_H_
@@ -32,30 +64,31 @@
 #include "media/video/capture/video_capture_types.h"
 
 namespace content {
-class VideoCaptureManager;
 class VideoCaptureBufferPool;
 
 class CONTENT_EXPORT VideoCaptureController
     : public base::RefCountedThreadSafe<VideoCaptureController>,
       public media::VideoCaptureDevice::EventHandler {
  public:
-  VideoCaptureController(VideoCaptureManager* video_capture_manager);
+  VideoCaptureController();
 
   // Start video capturing and try to use the resolution specified in
   // |params|.
-  // When capturing has started, the |event_handler| receives a call OnFrameInfo
-  // with resolution that best matches the requested that the video
-  // capture device support.
-  void StartCapture(const VideoCaptureControllerID& id,
-                    VideoCaptureControllerEventHandler* event_handler,
-                    base::ProcessHandle render_process,
-                    const media::VideoCaptureParams& params);
+  // When capturing starts, the |event_handler| will receive an OnFrameInfo()
+  // call informing it of the resolution that was actually picked by the device.
+  void AddClient(const VideoCaptureControllerID& id,
+                 VideoCaptureControllerEventHandler* event_handler,
+                 base::ProcessHandle render_process,
+                 const media::VideoCaptureParams& params);
 
-  // Stop video capture.
-  // This will take back all buffers held by by |event_handler|, and
-  // |event_handler| shouldn't use those buffers any more.
-  void StopCapture(const VideoCaptureControllerID& id,
+  // Stop video capture. This will take back all buffers held by by
+  // |event_handler|, and |event_handler| shouldn't use those buffers any more.
+  // Returns the session_id of the stopped client, or
+  // kInvalidMediaCaptureSessionId if the indicated client was not registered.
+  int RemoveClient(const VideoCaptureControllerID& id,
                    VideoCaptureControllerEventHandler* event_handler);
+
+  int GetClientCount();
 
   // API called directly by VideoCaptureManager in case the device is
   // prematurely closed.
@@ -92,9 +125,6 @@ class CONTENT_EXPORT VideoCaptureController
   struct ControllerClient;
   typedef std::list<ControllerClient*> ControllerClients;
 
-  // Callback when manager has stopped device.
-  void OnDeviceStopped();
-
   // Worker functions on IO thread.
   void DoIncomingCapturedFrameOnIOThread(
       const scoped_refptr<media::VideoFrame>& captured_frame,
@@ -118,10 +148,6 @@ class CONTENT_EXPORT VideoCaptureController
       int session_id,
       const ControllerClients& clients);
 
-  // Decide what to do after kStopping state. Dependent on events, controller
-  // can stay in kStopping state, or go to kStopped, or restart capture.
-  void PostStopping();
-
   // Protects access to the |buffer_pool_| pointer on non-IO threads.  IO thread
   // must hold this lock when modifying the |buffer_pool_| pointer itself.
   // TODO(nick): Make it so that this lock isn't required.
@@ -133,9 +159,6 @@ class CONTENT_EXPORT VideoCaptureController
   // All clients served by this controller.
   ControllerClients controller_clients_;
 
-  // All clients waiting for service.
-  ControllerClients pending_clients_;
-
   // The parameter that currently used for the capturing.
   media::VideoCaptureParams current_params_;
 
@@ -144,19 +167,18 @@ class CONTENT_EXPORT VideoCaptureController
   media::VideoCaptureCapability frame_info_;
 
   // Chopped pixels in width/height in case video capture device has odd numbers
-  // for width/height.
+  // for width/height. Accessed only on the device thread.
   int chopped_width_;
   int chopped_height_;
 
   // It's accessed only on IO thread.
   bool frame_info_available_;
 
-  VideoCaptureManager* video_capture_manager_;
-
-  bool device_in_use_;
+  // Takes on only the states 'STARTED' and 'ERROR'. 'ERROR' is an absorbing
+  // state which stops the flow of data to clients. Accessed only on IO thread.
   VideoCaptureState state_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(VideoCaptureController);
+  DISALLOW_COPY_AND_ASSIGN(VideoCaptureController);
 };
 
 }  // namespace content
