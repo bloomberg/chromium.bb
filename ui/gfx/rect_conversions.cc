@@ -4,6 +4,7 @@
 
 #include "ui/gfx/rect_conversions.h"
 
+#include <algorithm>
 #include <cmath>
 
 #include "base/logging.h"

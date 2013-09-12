@@ -5,6 +5,7 @@
 #ifndef UI_GFX_QUAD_F_H_
 #define UI_GFX_QUAD_F_H_
 
+#include <algorithm>
 #include <cmath>
 #include <string>
 

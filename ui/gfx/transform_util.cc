@@ -4,6 +4,7 @@
 
 #include "ui/gfx/transform_util.h"
 
+#include <algorithm>
 #include <cmath>
 
 #include "ui/gfx/point.h"

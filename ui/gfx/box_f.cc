@@ -4,6 +4,8 @@
 
 #include "ui/gfx/box_f.h"
 
+#include <algorithm>
+
 #include "base/strings/stringprintf.h"
 
 namespace gfx {

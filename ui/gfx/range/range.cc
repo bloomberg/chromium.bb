@@ -4,6 +4,7 @@
 
 #include "ui/gfx/range/range.h"
 
+#include <algorithm>
 #include <limits>
 
 #include "base/format_macros.h"
