@@ -34,11 +34,6 @@ void RecordFileErrorTypeCount(FileErrorSource source) {
 }  // namespace
 
 void RecordFileError(int error, FileErrorSource source, bool record) {
-  LOG(ERROR) << " " << __FUNCTION__ << "()"
-             << " error = " << error
-             << " source = " << source
-             << " record = " << record;
-
   if (!record)
     return;
 
