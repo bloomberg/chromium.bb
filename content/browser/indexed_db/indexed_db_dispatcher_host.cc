@@ -158,6 +158,19 @@ int64 IndexedDBDispatcherHost::RendererTransactionId(
   return host_transaction_id & 0xffffffff;
 }
 
+// static
+uint32 IndexedDBDispatcherHost::TransactionIdToRendererTransactionId(
+    int64 host_transaction_id) {
+  return host_transaction_id & 0xffffffff;
+}
+
+// static
+uint32 IndexedDBDispatcherHost::TransactionIdToProcessId(
+    int64 host_transaction_id) {
+  return (host_transaction_id >> 32) & 0xffffffff;
+}
+
+
 IndexedDBCursor* IndexedDBDispatcherHost::GetCursorFromId(int32 ipc_cursor_id) {
   DCHECK(indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
   return cursor_dispatcher_host_->map_.Lookup(ipc_cursor_id);

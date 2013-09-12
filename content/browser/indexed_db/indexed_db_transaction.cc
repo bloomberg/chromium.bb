@@ -63,7 +63,11 @@ IndexedDBTransaction::IndexedDBTransaction(
       database_(database),
       transaction_(database->BackingStore().get()),
       should_process_queue_(false),
-      pending_preemptive_events_(0) {
+      pending_preemptive_events_(0),
+      queue_status_(CREATED),
+      creation_time_(base::Time::Now()),
+      tasks_scheduled_(0),
+      tasks_completed_(0) {
   database_->transaction_coordinator().DidCreateTransaction(this);
 }
 
@@ -80,6 +84,7 @@ void IndexedDBTransaction::ScheduleTask(Operation task, Operation abort_task) {
   if (state_ == FINISHED)
     return;
   task_queue_.push(task);
+  ++tasks_scheduled_;
   abort_task_stack_.push(abort_task);
   EnsureTasksRunning();
 }
@@ -89,10 +94,12 @@ void IndexedDBTransaction::ScheduleTask(IndexedDBDatabase::TaskType type,
   if (state_ == FINISHED)
     return;
 
-  if (type == IndexedDBDatabase::NORMAL_TASK)
+  if (type == IndexedDBDatabase::NORMAL_TASK) {
     task_queue_.push(task);
-  else
+    ++tasks_scheduled_;
+  } else {
     preemptive_task_queue_.push(task);
+  }
   EnsureTasksRunning();
 }
 
@@ -182,6 +189,7 @@ void IndexedDBTransaction::Run() {
   DCHECK(state_ == START_PENDING || state_ == RUNNING);
   DCHECK(!should_process_queue_);
 
+  start_time_ = base::Time::Now();
   should_process_queue_ = true;
   base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(&IndexedDBTransaction::ProcessTaskQueue, this));
@@ -279,6 +287,10 @@ void IndexedDBTransaction::ProcessTaskQueue() {
     DCHECK_EQ(state_, RUNNING);
     Operation task(task_queue->pop());
     task.Run(this);
+    if (!pending_preemptive_events_) {
+      DCHECK(tasks_completed_ < tasks_scheduled_);
+      ++tasks_completed_;
+    }
 
     // Event itself may change which queue should be processed next.
     task_queue =

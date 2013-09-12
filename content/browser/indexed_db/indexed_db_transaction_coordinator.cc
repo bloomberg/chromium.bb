@@ -21,6 +21,7 @@ IndexedDBTransactionCoordinator::~IndexedDBTransactionCoordinator() {
 void IndexedDBTransactionCoordinator::DidCreateTransaction(
     IndexedDBTransaction* transaction) {
   DCHECK(transactions_.find(transaction) == transactions_.end());
+  DCHECK(transaction->queue_status() == IndexedDBTransaction::CREATED);
   transactions_[transaction] = transaction;
 }
 
@@ -118,9 +119,12 @@ void IndexedDBTransactionCoordinator::ProcessStartedTransactions() {
     IndexedDBTransaction* transaction = *it;
     ++it;
     if (CanRunTransaction(transaction, locked_scope)) {
+      transaction->set_queue_status(IndexedDBTransaction::UNBLOCKED);
       queued_transactions_.erase(transaction);
       started_transactions_.insert(transaction);
       transaction->Run();
+    } else {
+      transaction->set_queue_status(IndexedDBTransaction::BLOCKED);
     }
     if (transaction->mode() == indexed_db::TRANSACTION_READ_WRITE) {
       // Either the transaction started, so it has exclusive access to the
@@ -149,7 +153,8 @@ static bool DoSetsIntersect(const std::set<T>& set1,
 }
 
 bool IndexedDBTransactionCoordinator::CanRunTransaction(
-    IndexedDBTransaction* transaction, const std::set<int64>& locked_scope) {
+    IndexedDBTransaction* const transaction,
+    const std::set<int64>& locked_scope) const {
   DCHECK(queued_transactions_.has(transaction));
   switch (transaction->mode()) {
     case indexed_db::TRANSACTION_VERSION_CHANGE:

@@ -71,8 +71,15 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
 
   IndexedDBCursor* GetCursorFromId(int32 ipc_cursor_id);
 
+  // These are called to map a 32-bit front-end (renderer-specific) transaction
+  // id to and from a back-end ("host") transaction id that encodes the process
+  // id in the high 32 bits. The mapping is host-specific and ids are validated.
   int64 HostTransactionId(int64 transaction_id);
   int64 RendererTransactionId(int64 host_transaction_id);
+
+  // These are called to decode a host transaction ID, for diagnostic purposes.
+  static uint32 TransactionIdToRendererTransactionId(int64 host_transaction_id);
+  static uint32 TransactionIdToProcessId(int64 host_transaction_id);
 
  private:
   // Friends to enable OnDestruct() delegation.

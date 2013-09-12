@@ -84,16 +84,85 @@
                     </span>
 
                   </div>
-                  <div class="indexeddb-transaction"
-                       jsselect="$this.transactions"
-                       jseval="this.classList.add($this.running ? 'running' : 'waiting')">
-                    <span>Transaction:</span>
-                    <span class="indexeddb-transaction-mode" jscontent="mode"></span>
-                    <span class="indexeddb-transaction-scope" jsdisplay="scope">
-                      <span>scope:</span> <span jscontent="'[ ' + scope.join(', ') + ' ]'"></span>
-                    </span>
-                    <span class="indexeddb-transaction-state"
-                          jscontent="running ? '(running)' : '(blocked)'"></span>
+                  <div jsdisplay="$this.transactions &amp;&amp;
+                                  $this.transactions.length">
+                    <span>Transactions:</span>
+
+                    <table class="indexeddb-transaction-list">
+                      <tbody>
+                        <tr>
+                          <th title="Process ID of the tab or SharedWorker that created the transaction">
+                            Process ID
+                          </th>
+                          <th title="Transaction ID (unique within Process)">
+                            ID
+                          </th>
+                          <th title="Type of transaction">
+                            Mode
+                          </th>
+                          <th title="Names of object stores used by the transaction">
+                            Scope
+                          </th>
+                          <th title="Number of requests that have been executed">
+                            Completed Requests
+                          </th>
+                          <th title="Number of requests that have not yet been executed">
+                            Pending Requests
+                          </th>
+                          <th title="Time since transaction creation">
+                            Age (ms)
+                          </th>
+                          <th title="Time since transaction started">
+                            Runtime (ms)
+                          </th>
+                          <th title="Status in the transaction queue">
+                            Status
+                          </th>
+                        </tr>
+                        <tr class="indexeddb-transaction"
+                            jsselect="$this.transactions"
+                            jseval="this.classList.add($this.status)">
+
+                          <td class="indexeddb-transaction-pid"
+                              jscontent="pid">
+                          </td>
+
+                          <td class="indexeddb-transaction-tid"
+                              jscontent="tid">
+                          </td>
+
+                          <td class="indexeddb-transaction-mode"
+                              jscontent="mode">
+                          </td>
+
+                          <td class="indexeddb-transaction-scope"
+                              jscontent="'[ ' + scope.join(', ') + ' ]'">
+                          </td>
+
+                          <td class="indexeddb-transaction-requests-complete"
+                              jscontent="tasks_completed">
+                          </td>
+
+                          <td class="indexeddb-transaction-requests-pending"
+                              jscontent="tasks_scheduled - tasks_completed">
+                          </td>
+
+                          <td class="indexeddb-transaction-age"
+                              jscontent="Math.round(age)">
+                          </td>
+
+                          <td class="indexeddb-transaction-age">
+                            <span jsdisplay="status == 'started' || status == 'running'"
+                                  jscontent="Math.round(runtime)">
+                            </span>
+                          </td>
+
+                          <td class="indexeddb-transaction-state"
+                              jscontent="status">
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
                   </div>
                 </div>
             </div>

@@ -48,22 +48,55 @@
     font-weight: bold;
 }
 
-.indexeddb-transaction {
-    background-color: rgb(235, 239, 249);
-    margin: 4px 0;
-    border-radius: 4px;
-    padding: 2px;
-    position: relative;
+.indexeddb-transaction-list {
+    margin-left: 10px;
+    border-collapse: collapse;
 }
 
+.indexeddb-transaction-list th,
+.indexeddb-transaction-list td {
+    padding: 2px 10px;
+    min-width: 50px;
+    max-width: 75px;
+}
+
+td.indexeddb-transaction-scope {
+    min-width: 200px;
+    max-width: 500px;
+}
+
+.indexeddb-transaction-list th {
+    background-color: rgb(249, 249, 249);
+    border: 1px solid rgb(156, 194, 239);
+    font-weight: normal;
+    text-align: left;
+}
+
+.indexeddb-transaction {
+    background-color: rgb(235, 239, 249);
+    border-bottom: 2px solid white;
+}
+
+.indexeddb-transaction.created {
+    font-weight: italic;
+}
+.indexeddb-transaction.started {
+    font-weight: bold;
+}
 .indexeddb-transaction.running {
     font-weight: bold;
 }
+.indexeddb-transaction.blocked {
+}
 
-.indexeddb-transaction-mode,
-.indexeddb-transaction-scope,
-.indexeddb-transaction-state {
-    margin: 0 8px;
+.indexeddb-transaction.started .indexeddb-transaction-state {
+    background-color: rgb(249, 249, 235);
+}
+.indexeddb-transaction.running .indexeddb-transaction-state {
+    background-color: rgb(235, 249, 235);
+}
+.indexeddb-transaction.blocked .indexeddb-transaction-state {
+    background-color: rgb(249, 235, 235);
 }
 
 .controls a {

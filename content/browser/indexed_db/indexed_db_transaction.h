@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time/time.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
 #include "content/browser/indexed_db/indexed_db_database.h"
 #include "content/browser/indexed_db/indexed_db_database_error.h"
@@ -59,6 +60,20 @@ class IndexedDBTransaction : public base::RefCounted<IndexedDBTransaction> {
   IndexedDBDatabase* database() const { return database_; }
   IndexedDBDatabaseCallbacks* connection() const { return callbacks_; }
   bool IsRunning() const { return state_ == RUNNING; }
+
+  // The following types/accessors are for diagnostics only.
+  enum QueueStatus {
+    CREATED,
+    BLOCKED,
+    UNBLOCKED,
+  };
+
+  QueueStatus queue_status() const { return queue_status_; }
+  void set_queue_status(QueueStatus status) { queue_status_ = status; }
+  base::Time creation_time() const { return creation_time_; }
+  base::Time start_time() const { return start_time_; }
+  int tasks_scheduled() const { return tasks_scheduled_; }
+  int tasks_completed() const { return tasks_completed_; }
 
  protected:
   virtual ~IndexedDBTransaction();
@@ -127,6 +142,13 @@ class IndexedDBTransaction : public base::RefCounted<IndexedDBTransaction> {
   int pending_preemptive_events_;
 
   std::set<IndexedDBCursor*> open_cursors_;
+
+  // The following members are for diagnostics only.
+  QueueStatus queue_status_;
+  base::Time creation_time_;
+  base::Time start_time_;
+  int tasks_scheduled_;
+  int tasks_completed_;
 };
 
 }  // namespace content

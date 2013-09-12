@@ -15,10 +15,12 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_database.h"
+#include "content/browser/indexed_db/indexed_db_dispatcher_host.h"
 #include "content/browser/indexed_db/indexed_db_factory.h"
 #include "content/browser/indexed_db/indexed_db_quota_client.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
@@ -218,7 +220,41 @@ ListValue* IndexedDBContextImpl::GetAllOriginsDetails() {
 
           const char* kModes[] = { "readonly", "readwrite", "versionchange" };
           transaction_info->SetString("mode", kModes[transaction->mode()]);
-          transaction_info->SetBoolean("running", transaction->IsRunning());
+          switch (transaction->queue_status()) {
+            case IndexedDBTransaction::CREATED:
+              transaction_info->SetString("status", "created");
+              break;
+            case IndexedDBTransaction::BLOCKED:
+              transaction_info->SetString("status", "blocked");
+              break;
+            case IndexedDBTransaction::UNBLOCKED:
+              if (transaction->IsRunning())
+                transaction_info->SetString("status", "running");
+              else
+                transaction_info->SetString("status", "started");
+              break;
+          }
+
+          transaction_info->SetDouble(
+              "pid",
+              IndexedDBDispatcherHost::TransactionIdToProcessId(
+                  transaction->id()));
+          transaction_info->SetDouble(
+              "tid",
+              IndexedDBDispatcherHost::TransactionIdToRendererTransactionId(
+                  transaction->id()));
+          transaction_info->SetDouble(
+              "age",
+              (base::Time::Now() - transaction->creation_time())
+                  .InMillisecondsF());
+          transaction_info->SetDouble(
+              "runtime",
+              (base::Time::Now() - transaction->start_time())
+                  .InMillisecondsF());
+          transaction_info->SetDouble("tasks_scheduled",
+                                      transaction->tasks_scheduled());
+          transaction_info->SetDouble("tasks_completed",
+                                      transaction->tasks_completed());
 
           scoped_ptr<ListValue> scope(new ListValue());
           for (std::set<int64>::const_iterator scope_it =
