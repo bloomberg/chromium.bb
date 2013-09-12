@@ -54,11 +54,6 @@
             "optional": true,
             "description": "True if the file is present in Drive cache."
           },
-          "isDirty": {
-            "type": "boolean",
-            "optional": true,
-            "description": "True if the file is awaiting upload in Drive cache."
-          },
           "isHosted": {
             "type": "boolean",
             "optional": true,

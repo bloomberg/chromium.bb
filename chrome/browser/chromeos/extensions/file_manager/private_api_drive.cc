@@ -175,7 +175,6 @@ void FileBrowserPrivateGetDriveEntryPropertiesFunction::CacheStateReceived(
   // returns false.
   properties_->SetBoolean("isPinned", cache_entry.is_pinned());
   properties_->SetBoolean("isPresent", cache_entry.is_present());
-  properties_->SetBoolean("isDirty", cache_entry.is_dirty());
 
   CompleteGetFileProperties(drive::FILE_ERROR_OK);
 }
