@@ -46,10 +46,10 @@ PictureLayerImpl::PictureLayerImpl(LayerTreeImpl* tree_impl, int id)
       low_res_raster_contents_scale_(0.f),
       raster_source_scale_was_animating_(false),
       is_using_lcd_text_(tree_impl->settings().can_use_lcd_text),
-      needs_post_commit_initialization_(true) {}
+      needs_post_commit_initialization_(true),
+      should_update_tile_priorities_(false) {}
 
-PictureLayerImpl::~PictureLayerImpl() {
-}
+PictureLayerImpl::~PictureLayerImpl() {}
 
 const char* PictureLayerImpl::LayerTypeAsString() const {
   return "cc::PictureLayerImpl";
@@ -293,6 +293,8 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
 
 void PictureLayerImpl::UpdateTilePriorities() {
   DCHECK(!needs_post_commit_initialization_);
+  CHECK(should_update_tile_priorities_);
+
   if (!layer_tree_impl()->device_viewport_valid_for_tile_management()) {
     for (size_t i = 0; i < tilings_->num_tilings(); ++i)
       DCHECK(tilings_->tiling_at(i)->has_ever_been_updated());
@@ -385,6 +387,11 @@ void PictureLayerImpl::CalculateContentsScale(
     float* contents_scale_y,
     gfx::Size* content_bounds) {
   DoPostCommitInitializationIfNeeded();
+
+  // This function sets valid raster scales and manages tilings, so tile
+  // priorities can now be updated.
+  should_update_tile_priorities_ = true;
+
   if (!CanHaveTilings()) {
     ideal_page_scale_ = page_scale_factor;
     ideal_device_scale_ = device_scale_factor;
@@ -1002,6 +1009,10 @@ void PictureLayerImpl::ResetRasterScale() {
   raster_source_scale_ = 0.f;
   raster_contents_scale_ = 0.f;
   low_res_raster_contents_scale_ = 0.f;
+
+  // When raster scales aren't valid, don't update tile priorities until
+  // this layer has been updated via UpdateDrawProperties.
+  should_update_tile_priorities_ = false;
 }
 
 bool PictureLayerImpl::CanHaveTilings() const {

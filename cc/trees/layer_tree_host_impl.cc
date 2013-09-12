@@ -1639,6 +1639,13 @@ void LayerTreeHostImpl::CreateAndSetRenderer(
   if (renderer_) {
     renderer_->SetVisible(visible_);
     SetFullRootLayerDamage();
+
+    // See note in LayerTreeImpl::UpdateDrawProperties.  Renderer needs to be
+    // initialized to get max texture size.  Also, after releasing resources,
+    // trees need another update to generate new ones.
+    active_tree_->set_needs_update_draw_properties();
+    if (pending_tree_)
+      pending_tree_->set_needs_update_draw_properties();
   }
 }
 
@@ -1726,12 +1733,6 @@ bool LayerTreeHostImpl::InitializeRenderer(
   output_surface_ = output_surface.Pass();
 
   client_->OnCanDrawStateChanged(CanDraw());
-
-  // See note in LayerTreeImpl::UpdateDrawProperties.  Renderer needs
-  // to be initialized to get max texture size.
-  active_tree_->set_needs_update_draw_properties();
-  if (pending_tree_)
-    pending_tree_->set_needs_update_draw_properties();
 
   return true;
 }

@@ -127,6 +127,9 @@ class CC_EXPORT PictureLayerImpl
   bool raster_source_scale_was_animating_;
   bool is_using_lcd_text_;
   bool needs_post_commit_initialization_;
+  // A sanity state check to make sure UpdateTilePriorities only gets called
+  // after a CalculateContentsScale/ManageTilings.
+  bool should_update_tile_priorities_;
 
   friend class PictureLayer;
   DISALLOW_COPY_AND_ASSIGN(PictureLayerImpl);

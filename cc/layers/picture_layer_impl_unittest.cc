@@ -41,12 +41,20 @@ class MockCanvas : public SkCanvas {
 class PictureLayerImplTest : public testing::Test {
  public:
   PictureLayerImplTest()
-      : host_impl_(ImplSidePaintingSettings(), &proxy_),
-        id_(7) {
-    host_impl_.InitializeRenderer(CreateFakeOutputSurface());
-  }
+      : host_impl_(ImplSidePaintingSettings(), &proxy_), id_(7) {}
+
+  explicit PictureLayerImplTest(const LayerTreeSettings& settings)
+      : host_impl_(settings, &proxy_), id_(7) {}
 
   virtual ~PictureLayerImplTest() {
+  }
+
+  virtual void SetUp() OVERRIDE {
+    InitializeRenderer();
+  }
+
+  virtual void InitializeRenderer() {
+    host_impl_.InitializeRenderer(CreateFakeOutputSurface());
   }
 
   void SetupDefaultTrees(gfx::Size layer_bounds) {
@@ -257,6 +265,17 @@ TEST_F(PictureLayerImplTest, SuppressUpdateTilePriorities) {
 
   Region invalidation;
   AddDefaultTilingsWithInvalidation(invalidation);
+  float dummy_contents_scale_x;
+  float dummy_contents_scale_y;
+  gfx::Size dummy_content_bounds;
+  active_layer_->CalculateContentsScale(1.f,
+                                        1.f,
+                                        1.f,
+                                        false,
+                                        &dummy_contents_scale_x,
+                                        &dummy_contents_scale_y,
+                                        &dummy_content_bounds);
+
   EXPECT_TRUE(host_impl_.manage_tiles_needed());
   active_layer_->UpdateTilePriorities();
   host_impl_.ManageTiles();
@@ -1085,6 +1104,64 @@ TEST_F(PictureLayerImplTest, ActivateUninitializedLayer) {
   EXPECT_EQ(0u, active_layer_->num_tilings());
   EXPECT_EQ(!default_lcd_text_setting, active_layer_->is_using_lcd_text());
   EXPECT_FALSE(active_layer_->needs_post_commit_initialization());
+}
+
+// Solid color scrollbar setting is required for deferred initialization.
+class ImplSidePaintingSolidColorScrollbarSettings
+    : public ImplSidePaintingSettings {
+ public:
+  ImplSidePaintingSolidColorScrollbarSettings() {
+    solid_color_scrollbars = true;
+  }
+};
+
+class DeferredInitPictureLayerImplTest : public PictureLayerImplTest {
+ public:
+  DeferredInitPictureLayerImplTest()
+      : PictureLayerImplTest(ImplSidePaintingSolidColorScrollbarSettings()) {}
+
+  virtual void InitializeRenderer() OVERRIDE {
+    host_impl_.InitializeRenderer(FakeOutputSurface::CreateDeferredGL(
+        scoped_ptr<SoftwareOutputDevice>(new SoftwareOutputDevice))
+                                      .PassAs<OutputSurface>());
+  }
+
+  virtual void SetUp() OVERRIDE {
+    PictureLayerImplTest::SetUp();
+
+    // Create some default active and pending trees.
+    gfx::Size tile_size(100, 100);
+    gfx::Size layer_bounds(400, 400);
+
+    scoped_refptr<FakePicturePileImpl> pending_pile =
+        FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+    scoped_refptr<FakePicturePileImpl> active_pile =
+        FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+
+    SetupTrees(pending_pile, active_pile);
+  }
+};
+
+// This test is really a LayerTreeHostImpl test, in that it makes sure
+// that trees need update draw properties after deferred initialization.
+// However, this is also a regression test for PictureLayerImpl in that
+// not having this update will cause a crash.
+TEST_F(DeferredInitPictureLayerImplTest,
+       PreventUpdateTilePrioritiesDuringLostContext) {
+  host_impl_.pending_tree()->UpdateDrawProperties();
+  host_impl_.active_tree()->UpdateDrawProperties();
+  EXPECT_FALSE(host_impl_.pending_tree()->needs_update_draw_properties());
+  EXPECT_FALSE(host_impl_.active_tree()->needs_update_draw_properties());
+
+  FakeOutputSurface* fake_output_surface =
+      static_cast<FakeOutputSurface*>(host_impl_.output_surface());
+  ASSERT_TRUE(fake_output_surface->InitializeAndSetContext3d(
+      TestContextProvider::Create(), NULL));
+
+  // These will crash PictureLayerImpl if this is not true.
+  ASSERT_TRUE(host_impl_.pending_tree()->needs_update_draw_properties());
+  ASSERT_TRUE(host_impl_.active_tree()->needs_update_draw_properties());
+  host_impl_.active_tree()->UpdateDrawProperties();
 }
 
 }  // namespace
