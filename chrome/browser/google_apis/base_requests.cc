@@ -48,8 +48,19 @@ scoped_ptr<base::Value> ParseJsonOnBlockingPool(const std::string& json) {
       json, base::JSON_PARSE_RFC, &error_code, &error_message));
 
   if (!value.get()) {
-    LOG(ERROR) << "Error while parsing entry response: " << error_message
-               << ", code: " << error_code << ", json:\n" << json;
+    std::string trimmed_json;
+    if (json.size() < 80) {
+      trimmed_json  = json;
+    } else {
+      // Take the first 50 and the last 10 bytes.
+      trimmed_json = base::StringPrintf(
+          "%s [%s bytes] %s",
+          json.substr(0, 50).c_str(),
+          base::Uint64ToString(json.size() - 60).c_str(),
+          json.substr(json.size() - 10).c_str());
+    }
+    LOG(WARNING) << "Error while parsing entry response: " << error_message
+                 << ", code: " << error_code << ", json:\n" << trimmed_json;
   }
   return value.Pass();
 }
