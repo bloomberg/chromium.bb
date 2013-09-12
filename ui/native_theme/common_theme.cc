@@ -21,8 +21,7 @@ namespace {
 
 // MenuItem:
 const SkColor kMenuBackgroundColor = SK_ColorWHITE;
-const SkColor kMenuHighlightBackgroundColor = SkColorSetARGB(15, 0, 0, 0);
-const SkColor kMenuHighlightBackgroundColor2 = SkColorSetRGB(0x42, 0x81, 0xF4);
+const SkColor kMenuHighlightBackgroundColor = SkColorSetRGB(0x42, 0x81, 0xF4);
 const SkColor kMenuInvertedSchemeHighlightBackgroundColor =
     SkColorSetRGB(48, 48, 48);
 const SkColor kMenuBorderColor = SkColorSetRGB(0xBA, 0xBA, 0xBA);
@@ -73,7 +72,7 @@ bool CommonThemeGetSystemColor(NativeTheme::ColorId color_id, SkColor* color) {
       *color = kDisabledMenuItemForegroundColor;
       break;
     case NativeTheme::kColorId_SelectedMenuItemForegroundColor:
-      *color = kEnabledMenuItemForegroundColor;
+      *color = SK_ColorWHITE;
       break;
     case NativeTheme::kColorId_ButtonDisabledColor:
       *color = kDisabledMenuItemForegroundColor;
@@ -81,8 +80,6 @@ bool CommonThemeGetSystemColor(NativeTheme::ColorId color_id, SkColor* color) {
     default:
       return false;
   }
-
-  *color = AdjustColorForMenuVariations(color_id, *color);
 
   if (gfx::IsInvertedColorScheme()) {
     switch (color_id) {
@@ -166,21 +163,6 @@ void CommonThemePaintMenuItemBackground(SkCanvas* canvas,
       break;
   }
   canvas->drawRect(gfx::RectToSkRect(rect), paint);
-}
-
-SkColor AdjustColorForMenuVariations(NativeTheme::ColorId color_id,
-                                     SkColor color) {
-  if (NativeTheme::GetMenuVariation() != NativeTheme::MENU_VARIATION_CONTRAST)
-    return color;
-
-  switch(color_id) {
-    case NativeTheme::kColorId_FocusedMenuItemBackgroundColor:
-      return kMenuHighlightBackgroundColor2;
-    case NativeTheme::kColorId_SelectedMenuItemForegroundColor:
-      return SK_ColorWHITE;
-    default:
-      return color;
-  }
 }
 
 }  // namespace ui

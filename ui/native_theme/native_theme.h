@@ -85,13 +85,6 @@ class NATIVE_THEME_EXPORT NativeTheme {
     kMaxState,
   };
 
-  enum MenuVariation {
-    MENU_VARIATION_NORMAL,
-    MENU_VARIATION_COMPACT_1,
-    MENU_VARIATION_COMPACT_2,
-    MENU_VARIATION_CONTRAST
-  };
-
   // Each structure below holds extra information needed when painting a given
   // part.
 
@@ -295,8 +288,6 @@ class NATIVE_THEME_EXPORT NativeTheme {
   // Each port of NativeTheme should provide its own implementation of this
   // function, returning the port's subclass.
   static NativeTheme* instance();
-
-  static MenuVariation GetMenuVariation();
 
  protected:
   NativeTheme();

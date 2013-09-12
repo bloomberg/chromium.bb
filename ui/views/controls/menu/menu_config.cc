@@ -13,13 +13,13 @@ namespace views {
 MenuConfig::MenuConfig(const ui::NativeTheme* theme)
     : text_color(SK_ColorBLACK),
       arrow_color(SK_ColorBLACK),
-      menu_vertical_border_size(7),
+      menu_vertical_border_size(3),
       menu_horizontal_border_size(0),
       submenu_horizontal_inset(3),
-      item_top_margin(7),
-      item_bottom_margin(6),
-      item_no_icon_top_margin(7),
-      item_no_icon_bottom_margin(7),
+      item_top_margin(4),
+      item_bottom_margin(3),
+      item_no_icon_top_margin(4),
+      item_no_icon_bottom_margin(4),
       item_left_margin(10),
       label_to_arrow_padding(10),
       arrow_to_edge_padding(5),
@@ -32,7 +32,7 @@ MenuConfig::MenuConfig(const ui::NativeTheme* theme)
       arrow_height(9),
       arrow_width(9),
       gutter_width(0),
-      separator_height(15),
+      separator_height(11),
       separator_upper_height(3),
       separator_lower_height(4),
       separator_spacing_height(3),
@@ -48,7 +48,6 @@ MenuConfig::MenuConfig(const ui::NativeTheme* theme)
       native_theme(theme),
       show_delay(400),
       corner_radius(0) {
-  AdjustForMenuVariations();
   // Use 40px tall menu items when running in touch optimized mode.
   // For Windows use 40px tall menu items when running in touch optimized mode.
   if (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH) {
@@ -59,29 +58,5 @@ MenuConfig::MenuConfig(const ui::NativeTheme* theme)
 }
 
 MenuConfig::~MenuConfig() {}
-
-void MenuConfig::AdjustForMenuVariations() {
-  switch (ui::NativeTheme::GetMenuVariation()) {
-    case ui::NativeTheme::MENU_VARIATION_COMPACT_1:
-    case ui::NativeTheme::MENU_VARIATION_CONTRAST:
-      item_top_margin = 5;
-      item_bottom_margin = 4;
-      item_no_icon_top_margin = 5;
-      item_no_icon_bottom_margin = 5;
-      separator_height = 11;
-      menu_vertical_border_size = 5;
-      break;
-    case ui::NativeTheme::MENU_VARIATION_COMPACT_2:
-      item_top_margin = 4;
-      item_bottom_margin = 3;
-      item_no_icon_top_margin = 4;
-      item_no_icon_bottom_margin = 4;
-      separator_height = 11;
-      menu_vertical_border_size = 3;
-      break;
-    default:
-      break;
-  }
-}
 
 }  // namespace views
