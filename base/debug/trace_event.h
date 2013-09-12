@@ -967,7 +967,7 @@ class TraceID {
  public:
   class DontMangle {
    public:
-    explicit DontMangle(void* id)
+    explicit DontMangle(const void* id)
         : data_(static_cast<unsigned long long>(
               reinterpret_cast<unsigned long>(id))) {}
     explicit DontMangle(unsigned long long id) : data_(id) {}

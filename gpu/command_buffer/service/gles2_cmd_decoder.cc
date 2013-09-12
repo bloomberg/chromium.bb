@@ -42,6 +42,7 @@
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/gles2_cmd_copy_texture_chromium.h"
 #include "gpu/command_buffer/service/gles2_cmd_validation.h"
+#include "gpu/command_buffer/service/gpu_state_tracer.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/gpu_tracer.h"
 #include "gpu/command_buffer/service/image_manager.h"
@@ -1664,6 +1665,7 @@ class GLES2DecoderImpl : public GLES2Decoder {
   DecoderFramebufferState framebuffer_state_;
 
   scoped_ptr<GPUTracer> gpu_tracer_;
+  scoped_ptr<GPUStateTracer> gpu_state_tracer_;
 
   std::queue<linked_ptr<FenceCallback> > pending_readpixel_fences_;
 
@@ -2127,6 +2129,7 @@ bool GLES2DecoderImpl::Initialize(
 
   set_initialized();
   gpu_tracer_ = GPUTracer::Create();
+  gpu_state_tracer_ = GPUStateTracer::Create(&state_);
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableGPUDebugging)) {
@@ -7011,6 +7014,15 @@ error::Error GLES2DecoderImpl::HandlePostSubBufferCHROMIUM(
         "glPostSubBufferCHROMIUM", "command not supported by surface");
     return error::kNoError;
   }
+  bool is_tracing;
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("gpu.debug"),
+                                     &is_tracing);
+  if (is_tracing) {
+    bool is_offscreen = !!offscreen_target_frame_buffer_.get();
+    ScopedFrameBufferBinder binder(this, GetBackbufferServiceId());
+    gpu_state_tracer_->TakeSnapshotWithCurrentFramebuffer(
+        is_offscreen ? offscreen_size_ : surface_->GetSize());
+  }
   if (surface_->PostSubBuffer(c.x, c.y, c.width, c.height)) {
     return error::kNoError;
   } else {
@@ -8603,6 +8615,15 @@ void GLES2DecoderImpl::DoSwapBuffers() {
   TRACE_EVENT2("gpu", "GLES2DecoderImpl::DoSwapBuffers",
                "offscreen", is_offscreen,
                "frame", this_frame_number);
+  bool is_tracing;
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("gpu.debug"),
+                                     &is_tracing);
+  if (is_tracing) {
+    ScopedFrameBufferBinder binder(this, GetBackbufferServiceId());
+    gpu_state_tracer_->TakeSnapshotWithCurrentFramebuffer(
+        is_offscreen ? offscreen_size_ : surface_->GetSize());
+  }
+
   // If offscreen then don't actually SwapBuffers to the display. Just copy
   // the rendered frame to another frame buffer.
   if (is_offscreen) {

@@ -81,6 +81,8 @@
     'command_buffer/service/gpu_scheduler.cc',
     'command_buffer/service/gpu_scheduler.h',
     'command_buffer/service/gpu_scheduler_mock.h',
+    'command_buffer/service/gpu_state_tracer.cc',
+    'command_buffer/service/gpu_state_tracer.h',
     'command_buffer/service/gpu_switches.cc',
     'command_buffer/service/gpu_switches.h',
     'command_buffer/service/gpu_tracer.cc',
