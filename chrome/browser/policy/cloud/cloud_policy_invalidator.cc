@@ -45,8 +45,7 @@ CloudPolicyInvalidator::CloudPolicyInvalidator(
       ack_handle_(syncer::AckHandle::InvalidAckHandle()),
       weak_factory_(this),
       max_fetch_delay_(kMaxFetchDelayDefault),
-      policy_hash_value_(0),
-      policy_refresh_count_(0) {
+      policy_hash_value_(0) {
   DCHECK(core);
   DCHECK(task_runner.get());
 }
@@ -312,7 +311,6 @@ void CloudPolicyInvalidator::RefreshPolicy(bool is_missing_payload) {
   if (is_missing_payload)
     core_->client()->SetInvalidationInfo(invalidation_version_, std::string());
   core_->refresh_scheduler()->RefreshSoon();
-  policy_refresh_count_++;
 }
 
 void CloudPolicyInvalidator::AcknowledgeInvalidation() {

@@ -79,12 +79,6 @@ class CloudPolicyInvalidator : public syncer::InvalidationHandler,
   virtual void OnStoreLoaded(CloudPolicyStore* store) OVERRIDE;
   virtual void OnStoreError(CloudPolicyStore* store) OVERRIDE;
 
-  // Expose the number of times the invalidator has refreshed the policy. For
-  // testing only.
-  int policy_refresh_count() {
-    return policy_refresh_count_;
-  }
-
  private:
   // Handle an invalidation to the policy.
   void HandleInvalidation(const syncer::Invalidation& invalidation);
@@ -188,9 +182,6 @@ class CloudPolicyInvalidator : public syncer::InvalidationHandler,
   // A thread checker to make sure that callbacks are invoked on the correct
   // thread.
   base::ThreadChecker thread_checker_;
-
-  // Policy refresh counter used for testing.
-  int policy_refresh_count_;
 
   DISALLOW_COPY_AND_ASSIGN(CloudPolicyInvalidator);
 };

@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/sample_map.h"
 #include "base/metrics/statistics_recorder.h"
+#include "base/run_loop.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -151,6 +152,9 @@ class CloudPolicyInvalidatorTest : public testing::Test {
   // base delay.
   bool CheckPolicyRefreshed(base::TimeDelta delay);
 
+  // Checks that the policy was refreshed the given number of times.
+  bool CheckPolicyRefreshCount(int count);
+
   // Returns the object id of the given policy object.
   const invalidation::ObjectId& GetPolicyObjectId(PolicyObject object) const;
 
@@ -162,6 +166,7 @@ class CloudPolicyInvalidatorTest : public testing::Test {
   invalidation::FakeInvalidationService invalidation_service_;
   MockCloudPolicyStore store_;
   CloudPolicyCore core_;
+  MockCloudPolicyClient* client_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
 
   // The invalidator which will be tested.
@@ -196,6 +201,7 @@ CloudPolicyInvalidatorTest::CloudPolicyInvalidatorTest()
     : core_(PolicyNamespaceKey(dm_protocol::kChromeUserPolicyType,
                                std::string()),
             &store_),
+      client_(NULL),
       task_runner_(new base::TestSimpleTaskRunner()),
       object_id_a_(135, "asdf"),
       object_id_b_(246, "zxcv"),
@@ -242,7 +248,9 @@ void CloudPolicyInvalidatorTest::DestroyInvalidator() {
 }
 
 void CloudPolicyInvalidatorTest::ConnectCore() {
-  core_.Connect(scoped_ptr<CloudPolicyClient>(new MockCloudPolicyClient()));
+  client_ = new MockCloudPolicyClient();
+  client_->SetDMToken("dm");
+  core_.Connect(scoped_ptr<CloudPolicyClient>(client_));
 }
 
 void CloudPolicyInvalidatorTest::StartRefreshScheduler() {
@@ -250,6 +258,7 @@ void CloudPolicyInvalidatorTest::StartRefreshScheduler() {
 }
 
 void CloudPolicyInvalidatorTest::DisconnectCore() {
+  client_ = NULL;
   core_.Disconnect();
 }
 
@@ -320,9 +329,7 @@ bool CloudPolicyInvalidatorTest::CheckInvalidationInfo(
 }
 
 bool CloudPolicyInvalidatorTest::CheckPolicyNotRefreshed() {
-  const int start_count = invalidator_->policy_refresh_count();
-  task_runner_->RunUntilIdle();
-  return invalidator_->policy_refresh_count() == start_count;
+  return CheckPolicyRefreshCount(0);
 }
 
 bool CloudPolicyInvalidatorTest::CheckPolicyRefreshed() {
@@ -371,9 +378,25 @@ bool CloudPolicyInvalidatorTest::CheckPolicyRefreshed(base::TimeDelta delay) {
   EXPECT_GE(actual_delay, delay);
   EXPECT_LE(actual_delay, max_delay);
 
-  const int start_count = invalidator_->policy_refresh_count();
+  return CheckPolicyRefreshCount(1);
+}
+
+bool CloudPolicyInvalidatorTest::CheckPolicyRefreshCount(int count) {
+  if (!client_) {
+    task_runner_->RunUntilIdle();
+    return count == 0;
+  }
+
+  // Clear any non-invalidation refreshes which may be pending.
+  EXPECT_CALL(*client_, FetchPolicy()).Times(testing::AnyNumber());
+  base::RunLoop().RunUntilIdle();
+  testing::Mock::VerifyAndClearExpectations(client_);
+
+  // Run the invalidator tasks then check for invalidation refreshes.
+  EXPECT_CALL(*client_, FetchPolicy()).Times(count);
   task_runner_->RunUntilIdle();
-  return invalidator_->policy_refresh_count() == start_count + 1;
+  base::RunLoop().RunUntilIdle();
+  return testing::Mock::VerifyAndClearExpectations(client_);
 }
 
 const invalidation::ObjectId& CloudPolicyInvalidatorTest::GetPolicyObjectId(
