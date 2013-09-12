@@ -95,17 +95,16 @@ void MDnsAPI::UpdateMDnsListeners(const EventListenerInfo& details) {
     filter->GetStringASCII(kEventFilterServiceTypeKey, &filter_value);
     if (filter_value.empty())
       continue;
-
     new_service_types.insert(filter_value);
   }
 
   // Find all the added and removed service types since last update.
   std::set<std::string> added_service_types =
       base::STLSetDifference<std::set<std::string> >(
-          service_types_, new_service_types);
+          new_service_types, service_types_);
   std::set<std::string> removed_service_types =
       base::STLSetDifference<std::set<std::string> >(
-          new_service_types, service_types_);
+          service_types_, new_service_types);
 
   // Update the registry.
   DnsSdRegistry* registry = dns_sd_registry();
@@ -134,8 +133,10 @@ void MDnsAPI::OnDnsSdEvent(const std::string& service_type,
        it != services.end(); ++it) {
     linked_ptr<mdns::MDnsService> mdns_service =
         make_linked_ptr(new mdns::MDnsService);
-    // TODO(justinlin, mfoltz): Copy data from service list.
-    mdns_service->service_name = service_type;
+    mdns_service->service_name = (*it).service_name;
+    mdns_service->service_host_port = (*it).service_host_port;
+    mdns_service->ip_address = (*it).ip_address;
+    mdns_service->service_data = (*it).service_data;
     args.push_back(mdns_service);
   }
 
