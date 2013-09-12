@@ -28,11 +28,7 @@ layer at (0,0) size 800x600
           RenderSVGTSpan {tspan} at (0,0) size 163x34
             RenderSVGInlineText {#text} at (154,0) size 162x34
               chunk 1 (middle anchor) text run 1 at (216.10,180.00) startOffset 0 endOffset 11 width 162.00: " bold tspan"
-        RenderSVGText {text} at (60,192) size 160x35 contains 1 chunk(s)
-          RenderSVGInline {tref} at (0,0) size 160x34
-            RenderSVGInlineText {#text} at (0,0) size 160x34
-              chunk 1 (end anchor) text run 1 at (60.40,220.00) startOffset 0 endOffset 13 width 159.60: "end text tref"
-          RenderSVGInlineText {#text} at (0,0) size 0x0
+        RenderSVGText {text}
         RenderSVGText {text} at (-5,232) size 225x35 contains 1 chunk(s)
           RenderSVGTextPath {textPath} at (0,0) size 225x34
             RenderSVGInlineText {#text} at (0,0) size 225x34
