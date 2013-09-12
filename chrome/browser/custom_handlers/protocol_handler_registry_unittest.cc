@@ -286,9 +286,6 @@ class TestMessageLoop : public base::MessageLoop {
   virtual ~TestMessageLoop() {}
   virtual bool IsType(base::MessageLoop::Type type) const OVERRIDE {
     switch (type) {
-#if defined(TOOLKIT_GTK)
-      case base::MessageLoop::TYPE_GPU:
-#endif
       case base::MessageLoop::TYPE_UI:
         return BrowserThread::CurrentlyOn(BrowserThread::UI);
       case base::MessageLoop::TYPE_IO:

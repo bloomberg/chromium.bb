@@ -24,7 +24,6 @@ libxcomposite1 (>= 1:0.3-1)
 libxdamage1 (>= 1:1.1)
 libxext6
 libxfixes3
-libxi6 (>= 2:1.2.99.4)
 libxrender1
 libxss1
 libxtst6
