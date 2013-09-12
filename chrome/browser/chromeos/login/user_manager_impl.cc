@@ -30,6 +30,7 @@
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/remove_user_delegate.h"
 #include "chrome/browser/chromeos/login/user_image_manager_impl.h"
+#include "chrome/browser/chromeos/login/user_policy_status_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/session_length_limiter.h"
@@ -210,6 +211,7 @@ void UserManager::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(kManagedUserManagerDisplayEmails);
 
   SessionLengthLimiter::RegisterPrefs(registry);
+  UserPolicyStatusManager::RegisterPrefs(registry);
 }
 
 UserManagerImpl::UserManagerImpl()
@@ -271,6 +273,7 @@ void UserManagerImpl::Shutdown() {
   if (observed_sync_service_)
     observed_sync_service_->RemoveObserver(this);
   user_image_manager_->Shutdown();
+  user_policy_status_manager_.reset();
 }
 
 UserImageManager* UserManagerImpl::GetUserImageManager() {
@@ -286,8 +289,15 @@ UserList UserManagerImpl::GetUsersAdmittedForMultiProfile() const {
   UserList result;
   const UserList& users = GetUsers();
   for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
-    if ((*it)->GetType() == User::USER_TYPE_REGULAR && !(*it)->is_logged_in())
+    // Only allow users that are regular users, not signed-in, not owner
+    // and not a corp user with a policy.
+    if ((*it)->GetType() == User::USER_TYPE_REGULAR &&
+        !(*it)->is_logged_in() &&
+        (*it)->email() != owner_email_ &&
+        UserPolicyStatusManager::Get((*it)->email()) !=
+            UserPolicyStatusManager::USER_POLICY_STATUS_MANAGED) {
       result.push_back(*it);
+    }
   }
   return result;
 }
@@ -774,6 +784,11 @@ void UserManagerImpl::Observe(int type,
             if (observed_sync_service_)
               observed_sync_service_->AddObserver(this);
           }
+
+          if (!user_policy_status_manager_)
+            user_policy_status_manager_.reset(new UserPolicyStatusManager);
+          user_policy_status_manager_->StartObserving(active_user_->email(),
+                                                      profile);
         }
       }
       break;

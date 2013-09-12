@@ -38,6 +38,7 @@ namespace chromeos {
 
 class RemoveUserDelegate;
 class SessionLengthLimiter;
+class UserPolicyStatusManager;
 
 // Implementation of the UserManager.
 class UserManagerImpl
@@ -405,6 +406,8 @@ class UserManagerImpl
 
   // Time at which this object was created.
   base::TimeTicks manager_creation_time_;
+
+  scoped_ptr<UserPolicyStatusManager> user_policy_status_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(UserManagerImpl);
 };
