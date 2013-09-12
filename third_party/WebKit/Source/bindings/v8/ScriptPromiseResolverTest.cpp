@@ -106,7 +106,7 @@ TEST_F(ScriptPromiseResolverTest, fulfill)
     EXPECT_EQ(V8PromiseCustom::Pending, state());
     EXPECT_TRUE(result()->IsUndefined());
 
-    m_resolver->fulfill(ScriptValue(v8::Integer::New(3)));
+    m_resolver->fulfill(ScriptValue(v8::Integer::New(3, m_isolate)));
 
     EXPECT_FALSE(m_resolver->isPending());
     EXPECT_EQ(V8PromiseCustom::Fulfilled, state());
@@ -120,7 +120,7 @@ TEST_F(ScriptPromiseResolverTest, resolve)
     EXPECT_EQ(V8PromiseCustom::Pending, state());
     EXPECT_TRUE(result()->IsUndefined());
 
-    m_resolver->resolve(ScriptValue(v8::Integer::New(3)));
+    m_resolver->resolve(ScriptValue(v8::Integer::New(3, m_isolate)));
 
     EXPECT_FALSE(m_resolver->isPending());
     EXPECT_EQ(V8PromiseCustom::Fulfilled, state());
@@ -134,7 +134,7 @@ TEST_F(ScriptPromiseResolverTest, reject)
     EXPECT_EQ(V8PromiseCustom::Pending, state());
     EXPECT_TRUE(result()->IsUndefined());
 
-    m_resolver->reject(ScriptValue(v8::Integer::New(3)));
+    m_resolver->reject(ScriptValue(v8::Integer::New(3, m_isolate)));
 
     EXPECT_FALSE(m_resolver->isPending());
     EXPECT_EQ(V8PromiseCustom::Rejected, state());
@@ -148,14 +148,14 @@ TEST_F(ScriptPromiseResolverTest, fulfillOverFulfill)
     EXPECT_EQ(V8PromiseCustom::Pending, state());
     EXPECT_TRUE(result()->IsUndefined());
 
-    m_resolver->fulfill(ScriptValue(v8::Integer::New(3)));
+    m_resolver->fulfill(ScriptValue(v8::Integer::New(3, m_isolate)));
 
     EXPECT_FALSE(m_resolver->isPending());
     EXPECT_EQ(V8PromiseCustom::Fulfilled, state());
     ASSERT_TRUE(result()->IsNumber());
     EXPECT_EQ(3, result().As<v8::Integer>()->Value());
 
-    m_resolver->fulfill(ScriptValue(v8::Integer::New(4)));
+    m_resolver->fulfill(ScriptValue(v8::Integer::New(4, m_isolate)));
     EXPECT_FALSE(m_resolver->isPending());
     EXPECT_EQ(V8PromiseCustom::Fulfilled, state());
     ASSERT_TRUE(result()->IsNumber());
@@ -168,14 +168,14 @@ TEST_F(ScriptPromiseResolverTest, rejectOverFulfill)
     EXPECT_EQ(V8PromiseCustom::Pending, state());
     EXPECT_TRUE(result()->IsUndefined());
 
-    m_resolver->fulfill(ScriptValue(v8::Integer::New(3)));
+    m_resolver->fulfill(ScriptValue(v8::Integer::New(3, m_isolate)));
 
     EXPECT_FALSE(m_resolver->isPending());
     EXPECT_EQ(V8PromiseCustom::Fulfilled, state());
     ASSERT_TRUE(result()->IsNumber());
     EXPECT_EQ(3, result().As<v8::Integer>()->Value());
 
-    m_resolver->reject(ScriptValue(v8::Integer::New(4)));
+    m_resolver->reject(ScriptValue(v8::Integer::New(4, m_isolate)));
     EXPECT_FALSE(m_resolver->isPending());
     EXPECT_EQ(V8PromiseCustom::Fulfilled, state());
     ASSERT_TRUE(result()->IsNumber());

@@ -247,7 +247,7 @@ void promiseEveryFulfillCallback(const v8::FunctionCallbackInfo<v8::Value>& args
         V8PromiseCustom::resolveResolver(resolver, results, V8PromiseCustom::Synchronous, isolate);
         return;
     }
-    countdownWrapper->SetInternalField(V8PromiseCustom::PrimitiveWrapperPrimitiveIndex, v8::Integer::New(countdown->Value() - 1));
+    countdownWrapper->SetInternalField(V8PromiseCustom::PrimitiveWrapperPrimitiveIndex, v8::Integer::New(countdown->Value() - 1, isolate));
 }
 
 void promiseSomeRejectCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -272,7 +272,7 @@ void promiseSomeRejectCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
         V8PromiseCustom::rejectResolver(resolver, results, V8PromiseCustom::Synchronous, isolate);
         return;
     }
-    countdownWrapper->SetInternalField(V8PromiseCustom::PrimitiveWrapperPrimitiveIndex, v8::Integer::New(countdown->Value() - 1));
+    countdownWrapper->SetInternalField(V8PromiseCustom::PrimitiveWrapperPrimitiveIndex, v8::Integer::New(countdown->Value() - 1, isolate));
 }
 
 v8::Local<v8::Object> promiseEveryEnvironment(v8::Handle<v8::Object> resolver, v8::Handle<v8::Object> countdownWrapper, int index, v8::Handle<v8::Array> results, v8::Isolate* isolate)
@@ -282,7 +282,7 @@ v8::Local<v8::Object> promiseEveryEnvironment(v8::Handle<v8::Object> resolver, v
 
     environment->SetInternalField(V8PromiseCustom::PromiseEveryEnvironmentPromiseResolverIndex, resolver);
     environment->SetInternalField(V8PromiseCustom::PromiseEveryEnvironmentCountdownIndex, countdownWrapper);
-    environment->SetInternalField(V8PromiseCustom::PromiseEveryEnvironmentIndexIndex, v8::Integer::New(index));
+    environment->SetInternalField(V8PromiseCustom::PromiseEveryEnvironmentIndexIndex, v8::Integer::New(index, isolate));
     environment->SetInternalField(V8PromiseCustom::PromiseEveryEnvironmentResultsIndex, results);
     return environment;
 }
@@ -439,7 +439,7 @@ void V8Promise::everyMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& arg
 
     v8::Local<v8::ObjectTemplate> objectTemplate = primitiveWrapperObjectTemplate(isolate);
     v8::Local<v8::Object> countdownWrapper = objectTemplate->NewInstance();
-    countdownWrapper->SetInternalField(V8PromiseCustom::PrimitiveWrapperPrimitiveIndex, v8::Integer::New(args.Length()));
+    countdownWrapper->SetInternalField(V8PromiseCustom::PrimitiveWrapperPrimitiveIndex, v8::Integer::New(args.Length(), isolate));
     v8::Local<v8::Array> results = v8::Array::New();
 
     v8::Local<v8::Function> rejectCallback = createClosure(promiseRejectCallback, resolver);
@@ -469,7 +469,7 @@ void V8Promise::someMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args
     // Promise.some also uses PromiseEveryEnvironment.
     v8::Local<v8::ObjectTemplate> objectTemplate = primitiveWrapperObjectTemplate(isolate);
     v8::Local<v8::Object> countdownWrapper = objectTemplate->NewInstance();
-    countdownWrapper->SetInternalField(V8PromiseCustom::PrimitiveWrapperPrimitiveIndex, v8::Integer::New(args.Length()));
+    countdownWrapper->SetInternalField(V8PromiseCustom::PrimitiveWrapperPrimitiveIndex, v8::Integer::New(args.Length(), isolate));
     v8::Local<v8::Array> results = v8::Array::New();
 
     v8::Local<v8::Function> fulfillCallback = createClosure(promiseResolveCallback, resolver);
@@ -493,7 +493,7 @@ void V8PromiseCustom::createPromise(v8::Handle<v8::Object> creationContext, v8::
     *promise = V8DOMWrapper::createWrapper(creationContext, &V8Promise::info, 0, isolate);
     *resolver = V8DOMWrapper::createWrapper(creationContext, &V8PromiseResolver::info, 0, isolate);
 
-    clearInternal(internal, V8PromiseCustom::Pending, v8::Undefined(isolate));
+    clearInternal(internal, V8PromiseCustom::Pending, v8::Undefined(isolate), isolate);
 
     (*promise)->SetInternalField(v8DOMWrapperObjectIndex, internal);
     (*resolver)->SetInternalField(v8DOMWrapperObjectIndex, internal);
@@ -506,7 +506,7 @@ void V8PromiseCustom::fulfillResolver(v8::Handle<v8::Object> resolver, v8::Handl
     v8::Local<v8::Object> internal = getInternal(resolver);
     ASSERT(getState(internal) == Pending || getState(internal) == PendingWithResolvedFlagSet);
     v8::Local<v8::Array> callbacks = internal->GetInternalField(V8PromiseCustom::InternalFulfillCallbackIndex).As<v8::Array>();
-    clearInternal(internal, Fulfilled, result);
+    clearInternal(internal, Fulfilled, result, isolate);
     detachInternal(resolver, isolate);
 
     callCallbacks(callbacks, result, mode, isolate);
@@ -548,7 +548,7 @@ void V8PromiseCustom::rejectResolver(v8::Handle<v8::Object> resolver, v8::Handle
     v8::Local<v8::Object> internal = getInternal(resolver);
     ASSERT(getState(internal) == Pending || getState(internal) == PendingWithResolvedFlagSet);
     v8::Local<v8::Array> callbacks = internal->GetInternalField(V8PromiseCustom::InternalRejectCallbackIndex).As<v8::Array>();
-    clearInternal(internal, Rejected, result);
+    clearInternal(internal, Rejected, result, isolate);
     detachInternal(resolver, isolate);
 
     callCallbacks(callbacks, result, mode, isolate);
@@ -607,9 +607,9 @@ void V8PromiseCustom::detachInternal(v8::Handle<v8::Object> resolver, v8::Isolat
     resolver->SetInternalField(v8DOMWrapperObjectIndex, v8::Undefined(isolate));
 }
 
-void V8PromiseCustom::clearInternal(v8::Handle<v8::Object> internal, PromiseState state, v8::Handle<v8::Value> value)
+void V8PromiseCustom::clearInternal(v8::Handle<v8::Object> internal, PromiseState state, v8::Handle<v8::Value> value, v8::Isolate* isolate)
 {
-    setState(internal, state);
+    setState(internal, state, isolate);
     internal->SetInternalField(V8PromiseCustom::InternalResultIndex, value);
     internal->SetInternalField(V8PromiseCustom::InternalFulfillCallbackIndex, v8::Array::New());
     internal->SetInternalField(V8PromiseCustom::InternalRejectCallbackIndex, v8::Array::New());
@@ -624,10 +624,10 @@ V8PromiseCustom::PromiseState V8PromiseCustom::getState(v8::Handle<v8::Object> i
     return static_cast<PromiseState>(number);
 }
 
-void V8PromiseCustom::setState(v8::Handle<v8::Object> internal, PromiseState state)
+void V8PromiseCustom::setState(v8::Handle<v8::Object> internal, PromiseState state, v8::Isolate* isolate)
 {
     ASSERT(state == Pending || state == Fulfilled || state == Rejected || state == PendingWithResolvedFlagSet);
-    internal->SetInternalField(V8PromiseCustom::InternalStateIndex, v8::Integer::New(state));
+    internal->SetInternalField(V8PromiseCustom::InternalStateIndex, v8::Integer::New(state, isolate));
 }
 
 void V8PromiseCustom::call(v8::Handle<v8::Function> function, v8::Handle<v8::Object> receiver, v8::Handle<v8::Value> result, SynchronousMode mode, v8::Isolate* isolate)

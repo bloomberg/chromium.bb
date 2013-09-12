@@ -161,7 +161,7 @@ void ScriptDebugServer::setPauseOnExceptionsState(PauseOnExceptionsState pauseOn
     v8::HandleScope scope(m_isolate);
     v8::Context::Scope contextScope(v8::Debug::GetDebugContext());
 
-    v8::Handle<v8::Value> argv[] = { v8::Int32::New(pauseOnExceptionsState) };
+    v8::Handle<v8::Value> argv[] = { v8::Int32::New(pauseOnExceptionsState, m_isolate) };
     callDebuggerMethod("setPauseOnExceptionsState", 1, argv);
 }
 
@@ -315,7 +315,7 @@ void ScriptDebugServer::updateCallStack(ScriptValue* callFrame)
 
 PassRefPtr<JavaScriptCallFrame> ScriptDebugServer::wrapCallFrames(v8::Handle<v8::Object> executionState, int maximumLimit)
 {
-    v8::Handle<v8::Value> argv[] = { executionState, v8::Integer::New(maximumLimit) };
+    v8::Handle<v8::Value> argv[] = { executionState, v8::Integer::New(maximumLimit, m_isolate) };
     v8::Handle<v8::Value> currentCallFrameV8 = callDebuggerMethod("currentCallFrame", 2, argv);
 
     ASSERT(!currentCallFrameV8.IsEmpty());
@@ -540,7 +540,7 @@ v8::Handle<v8::Value> ScriptDebugServer::setFunctionVariableValue(v8::Handle<v8:
 
     v8::Handle<v8::Value> argv[] = {
         functionValue,
-        v8::Handle<v8::Value>(v8::Integer::New(scopeNumber)),
+        v8::Handle<v8::Value>(v8::Integer::New(scopeNumber, debuggerContext->GetIsolate())),
         v8String(variableName, debuggerContext->GetIsolate()),
         newValue
     };

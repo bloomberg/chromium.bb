@@ -100,12 +100,12 @@ public:
 
     // Clear the Promise / PromiseResolver internal object with the given state and result.
     // This function clears callbacks in the object.
-    static void clearInternal(v8::Handle<v8::Object> internal, PromiseState, v8::Handle<v8::Value> result);
+    static void clearInternal(v8::Handle<v8::Object> internal, PromiseState, v8::Handle<v8::Value> result, v8::Isolate*);
 
     // |internal| must be an Promise / PromiseResolver internal object.
     static PromiseState getState(v8::Handle<v8::Object> internal);
     // |internal| must be an Promise / PromiseResolver internal object.
-    static void setState(v8::Handle<v8::Object> internal, PromiseState);
+    static void setState(v8::Handle<v8::Object> internal, PromiseState, v8::Isolate*);
 
     // Call |function| synchronously or asynchronously, depending on |mode|.
     // If |function| throws an exception, this function catches it and does not rethrow.

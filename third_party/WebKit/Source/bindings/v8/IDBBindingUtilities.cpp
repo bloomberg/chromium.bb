@@ -74,7 +74,7 @@ static v8::Handle<v8::Value> idbKeyToV8Value(IDBKey* key, v8::Isolate* isolate)
 
 static const size_t maximumDepth = 2000;
 
-static PassRefPtr<IDBKey> createIDBKeyFromValue(v8::Handle<v8::Value> value, Vector<v8::Handle<v8::Array> >& stack)
+static PassRefPtr<IDBKey> createIDBKeyFromValue(v8::Handle<v8::Value> value, Vector<v8::Handle<v8::Array> >& stack, v8::Isolate* isolate)
 {
     if (value->IsNumber() && !std::isnan(value->NumberValue()))
         return IDBKey::createNumber(value->NumberValue());
@@ -94,8 +94,8 @@ static PassRefPtr<IDBKey> createIDBKeyFromValue(v8::Handle<v8::Value> value, Vec
         IDBKey::KeyArray subkeys;
         uint32_t length = array->Length();
         for (uint32_t i = 0; i < length; ++i) {
-            v8::Local<v8::Value> item = array->Get(v8::Int32::New(i));
-            RefPtr<IDBKey> subkey = createIDBKeyFromValue(item, stack);
+            v8::Local<v8::Value> item = array->Get(v8::Int32::New(i, isolate));
+            RefPtr<IDBKey> subkey = createIDBKeyFromValue(item, stack, isolate);
             if (!subkey)
                 subkeys.append(IDBKey::createInvalid());
             else
@@ -108,10 +108,10 @@ static PassRefPtr<IDBKey> createIDBKeyFromValue(v8::Handle<v8::Value> value, Vec
     return 0;
 }
 
-PassRefPtr<IDBKey> createIDBKeyFromValue(v8::Handle<v8::Value> value)
+static PassRefPtr<IDBKey> createIDBKeyFromValue(v8::Handle<v8::Value> value, v8::Isolate* isolate)
 {
     Vector<v8::Handle<v8::Array> > stack;
-    RefPtr<IDBKey> key = createIDBKeyFromValue(value, stack);
+    RefPtr<IDBKey> key = createIDBKeyFromValue(value, stack, isolate);
     if (key)
         return key;
     return IDBKey::createInvalid();
@@ -217,7 +217,7 @@ static PassRefPtr<IDBKey> createIDBKeyFromScriptValueAndKeyPath(const ScriptValu
     v8::Handle<v8::Value> v8Key(getNthValueOnKeyPath(v8Value, keyPathElements, keyPathElements.size(), isolate));
     if (v8Key.IsEmpty())
         return 0;
-    return createIDBKeyFromValue(v8Key);
+    return createIDBKeyFromValue(v8Key, isolate);
 }
 
 PassRefPtr<IDBKey> createIDBKeyFromScriptValueAndKeyPath(DOMRequestState* state, const ScriptValue& value, const IDBKeyPath& keyPath)
@@ -330,7 +330,7 @@ PassRefPtr<IDBKey> scriptValueToIDBKey(DOMRequestState* state, const ScriptValue
     v8::Isolate* isolate = state ? state->context()->GetIsolate() : v8::Isolate::GetCurrent();
     v8::HandleScope handleScope(isolate);
     v8::Handle<v8::Value> v8Value(scriptValue.v8Value());
-    return createIDBKeyFromValue(v8Value);
+    return createIDBKeyFromValue(v8Value, isolate);
 }
 
 PassRefPtr<IDBKeyRange> scriptValueToIDBKeyRange(DOMRequestState* state, const ScriptValue& scriptValue)

@@ -150,7 +150,7 @@ v8::Handle<v8::Value> JavaScriptCallFrame::setVariableValue(int scopeNumber, con
     v8::Handle<v8::Object> callFrame = m_callFrame.newLocal(m_isolate);
     v8::Handle<v8::Function> setVariableValueFunction = v8::Handle<v8::Function>::Cast(callFrame->Get(v8::String::NewSymbol("setVariableValue")));
     v8::Handle<v8::Value> argv[] = {
-        v8::Handle<v8::Value>(v8::Integer::New(scopeNumber)),
+        v8::Handle<v8::Value>(v8::Integer::New(scopeNumber, m_isolate)),
         v8String(variableName, m_isolate),
         newValue
     };
