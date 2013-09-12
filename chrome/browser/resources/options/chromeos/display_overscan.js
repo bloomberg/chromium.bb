@@ -97,7 +97,8 @@ cr.define('options', function() {
      * @private
      */
     onOverscanCanceled_: function() {
-      OptionsPage.cancelOverlay();
+      if (OptionsPage.getTopmostVisiblePage() == this)
+        OptionsPage.cancelOverlay();
     },
 
     /**
