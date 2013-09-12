@@ -156,8 +156,10 @@ void V8AbstractEventListener::invokeEventHandler(ScriptExecutionContext* context
     if (returnValue.IsEmpty())
         return;
 
-    if (!returnValue->IsNull() && !returnValue->IsUndefined() && event->isBeforeUnloadEvent())
-        toBeforeUnloadEvent(event)->setReturnValue(toWebCoreString(returnValue));
+    if (!returnValue->IsNull() && !returnValue->IsUndefined() && event->isBeforeUnloadEvent()) {
+        V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, stringReturnValue, returnValue);
+        toBeforeUnloadEvent(event)->setReturnValue(stringReturnValue);
+    }
 
     if (m_isAttribute && shouldPreventDefault(returnValue))
         event->preventDefault();
