@@ -46,6 +46,10 @@ static const char kSPKIHash_ThawteSGCCA[] =
     "\x87\x31\xea\x0e\x3d\xf5\xe8\x70\x3e\x83"
     "\x72\x57\x77\xa9\x65\x3b\x3b\xfa\x5e\x14";
 
+static const char kSPKIHash_VeriSignClass3SSPIntermediateCA[] =
+    "\x99\x6a\x20\x6a\x85\x57\x62\xcb\x9a\xf2"
+    "\x02\x37\xb3\xc0\x69\x5d\xa9\x1e\xc2\x22";
+
 static const char kSPKIHash_EquifaxSecureCA[] =
     "\x48\xe6\x68\xf9\x2b\xd2\xb2\x95\xd7\x47"
     "\xd8\x23\x20\x10\x4f\x33\x98\x90\x9f\xd4";
@@ -277,6 +281,7 @@ static const char* const kGoogleRejectedCerts[] = {
   kSPKIHash_TCTrustCenter,
   kSPKIHash_Vodafone,
   kSPKIHash_ThawteSGCCA,
+  kSPKIHash_VeriSignClass3SSPIntermediateCA,
   NULL,
 };
 #define kGooglePins { \
