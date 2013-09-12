@@ -2374,10 +2374,15 @@ LayoutRect RenderLayer::getRectToExpose(const LayoutRect &visibleRect, const Lay
         scrollX = ScrollAlignment::getPartialBehavior(alignX);
     else
         scrollX = ScrollAlignment::getHiddenBehavior(alignX);
-    // If we're trying to align to the closest edge, and the exposeRect is further right
-    // than the visibleRect, and not bigger than the visible area, then align with the right.
-    if (scrollX == alignToClosestEdge && exposeRect.maxX() > visibleRect.maxX() && exposeRect.width() < visibleRect.width())
-        scrollX = alignRight;
+    if (scrollX == alignToClosestEdge) {
+        // Closest edge is the right in two cases:
+        // (1) exposeRect to the right of and smaller than visibleRect
+        // (2) exposeRect to the left of and larger than visibleRect
+        if ((exposeRect.maxX() > visibleRect.maxX() && exposeRect.width() < visibleRect.width())
+            || (exposeRect.maxX() < visibleRect.maxX() && exposeRect.width() > visibleRect.width())) {
+            scrollX = alignRight;
+        }
+    }
 
     // Given the X behavior, compute the X coordinate.
     LayoutUnit x;
@@ -2407,10 +2412,15 @@ LayoutRect RenderLayer::getRectToExpose(const LayoutRect &visibleRect, const Lay
         scrollY = ScrollAlignment::getPartialBehavior(alignY);
     else
         scrollY = ScrollAlignment::getHiddenBehavior(alignY);
-    // If we're trying to align to the closest edge, and the exposeRect is further down
-    // than the visibleRect, and not bigger than the visible area, then align with the bottom.
-    if (scrollY == alignToClosestEdge && exposeRect.maxY() > visibleRect.maxY() && exposeRect.height() < visibleRect.height())
-        scrollY = alignBottom;
+    if (scrollY == alignToClosestEdge) {
+        // Closest edge is the bottom in two cases:
+        // (1) exposeRect below and smaller than visibleRect
+        // (2) exposeRect above and larger than visibleRect
+        if ((exposeRect.maxY() > visibleRect.maxY() && exposeRect.height() < visibleRect.height())
+            || (exposeRect.maxY() < visibleRect.maxY() && exposeRect.height() > visibleRect.height())) {
+            scrollY = alignBottom;
+        }
+    }
 
     // Given the Y behavior, compute the Y coordinate.
     LayoutUnit y;
