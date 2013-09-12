@@ -19,7 +19,8 @@ const char* FileErrorSourceStrings[] = {
   "SEEK",
   "FLUSH",
   "SET_EOF",
-  "GET_SIZE"
+  "GET_SIZE",
+  "CLOSE"
 };
 
 COMPILE_ASSERT(ARRAYSIZE_UNSAFE(FileErrorSourceStrings) ==
@@ -80,6 +81,12 @@ void RecordFileError(int error, FileErrorSource source, bool record) {
     case FILE_ERROR_SOURCE_GET_SIZE:
       UMA_HISTOGRAM_ENUMERATION("Net.FileError_GetSize", error, max_error);
       UMA_HISTOGRAM_ENUMERATION("Net.FileErrorRange_GetSize", bucket,
+                                max_bucket);
+      break;
+
+    case FILE_ERROR_SOURCE_CLOSE:
+      UMA_HISTOGRAM_ENUMERATION("Net.FileError_Close", error, max_error);
+      UMA_HISTOGRAM_ENUMERATION("Net.FileErrorRange_Close", bucket,
                                 max_bucket);
       break;
 

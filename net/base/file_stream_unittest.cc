@@ -78,6 +78,66 @@ TEST_F(FileStreamTest, BasicOpenClose) {
   EXPECT_FALSE(base::GetPlatformFileInfo(file, &info));
 }
 
+TEST_F(FileStreamTest, BasicOpenExplicitClose) {
+  base::PlatformFile file = base::kInvalidPlatformFileValue;
+  FileStream stream(NULL);
+  int rv = stream.OpenSync(temp_file_path(),
+      base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ);
+  EXPECT_EQ(OK, rv);
+  EXPECT_TRUE(stream.IsOpen());
+  file = stream.GetPlatformFileForTesting();
+  EXPECT_NE(base::kInvalidPlatformFileValue, file);
+  EXPECT_EQ(OK, stream.CloseSync());
+  EXPECT_FALSE(stream.IsOpen());
+  base::PlatformFileInfo info;
+  // The file should be closed.
+  EXPECT_FALSE(base::GetPlatformFileInfo(file, &info));
+}
+
+TEST_F(FileStreamTest, AsyncOpenExplicitClose) {
+  base::PlatformFile file = base::kInvalidPlatformFileValue;
+  TestCompletionCallback callback;
+  FileStream stream(NULL);
+  int flags = base::PLATFORM_FILE_OPEN |
+              base::PLATFORM_FILE_READ |
+              base::PLATFORM_FILE_ASYNC;
+  int rv = stream.Open(temp_file_path(), flags, callback.callback());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_TRUE(stream.IsOpen());
+  file = stream.GetPlatformFileForTesting();
+  EXPECT_EQ(ERR_IO_PENDING, stream.Close(callback.callback()));
+  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_FALSE(stream.IsOpen());
+  base::PlatformFileInfo info;
+  // The file should be closed.
+  EXPECT_FALSE(base::GetPlatformFileInfo(file, &info));
+}
+
+TEST_F(FileStreamTest, AsyncOpenExplicitCloseOrphaned) {
+  base::PlatformFile file = base::kInvalidPlatformFileValue;
+  TestCompletionCallback callback;
+  base::PlatformFileInfo info;
+  scoped_ptr<FileStream> stream(new FileStream(
+      NULL, base::MessageLoopProxy::current()));
+  int flags = base::PLATFORM_FILE_OPEN |
+              base::PLATFORM_FILE_READ |
+              base::PLATFORM_FILE_ASYNC;
+  int rv = stream->Open(temp_file_path(), flags, callback.callback());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_TRUE(stream->IsOpen());
+  file = stream->GetPlatformFileForTesting();
+  EXPECT_EQ(ERR_IO_PENDING, stream->Close(callback.callback()));
+  stream.reset();
+  // File isn't actually closed yet.
+  EXPECT_TRUE(base::GetPlatformFileInfo(file, &info));
+  base::RunLoop runloop;
+  runloop.RunUntilIdle();
+  // The file should now be closed, though the callback has not been called.
+  EXPECT_FALSE(base::GetPlatformFileInfo(file, &info));
+}
+
 TEST_F(FileStreamTest, FileHandleNotLeftOpen) {
   bool created = false;
   ASSERT_EQ(kTestDataSize,

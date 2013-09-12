@@ -105,6 +105,21 @@ void FileStream::Context::CloseSync() {
   }
 }
 
+void FileStream::Context::CloseAsync(const CompletionCallback& callback) {
+  DCHECK(!async_in_progress_);
+  const bool posted = base::PostTaskAndReplyWithResult(
+      task_runner_.get(),
+      FROM_HERE,
+      base::Bind(&Context::CloseFileImpl, base::Unretained(this)),
+      base::Bind(&Context::ProcessAsyncResult,
+                 base::Unretained(this),
+                 IntToInt64(callback),
+                 FILE_ERROR_SOURCE_CLOSE));
+  DCHECK(posted);
+
+  async_in_progress_ = true;
+}
+
 void FileStream::Context::SeekAsync(Whence whence,
                                     int64 offset,
                                     const Int64CompletionCallback& callback) {

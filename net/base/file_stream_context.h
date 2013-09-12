@@ -109,6 +109,8 @@ class FileStream::Context {
 
   void CloseSync();
 
+  void CloseAsync(const CompletionCallback& callback);
+
   void SeekAsync(Whence whence,
                  int64 offset,
                  const Int64CompletionCallback& callback);
@@ -190,6 +192,9 @@ class FileStream::Context {
 
   // Flushes all data written to the stream.
   IOResult FlushFileImpl();
+
+  // Closes the file.
+  IOResult CloseFileImpl();
 
 #if defined(OS_WIN)
   void IOCompletionIsPending(const CompletionCallback& callback, IOBuffer* buf);

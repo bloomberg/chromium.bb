@@ -93,6 +93,19 @@ int FileStream::OpenSync(const base::FilePath& path, int open_flags) {
   return context_->OpenSync(path, open_flags_);
 }
 
+int FileStream::Close(const CompletionCallback& callback) {
+  DCHECK(is_async());
+  context_->CloseAsync(callback);
+  return ERR_IO_PENDING;
+}
+
+int FileStream::CloseSync() {
+  DCHECK(!is_async());
+  base::ThreadRestrictions::AssertIOAllowed();
+  context_->CloseSync();
+  return OK;
+}
+
 bool FileStream::IsOpen() const {
   return context_->file() != base::kInvalidPlatformFileValue;
 }

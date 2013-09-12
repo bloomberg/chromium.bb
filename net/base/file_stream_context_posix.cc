@@ -184,4 +184,13 @@ FileStream::Context::IOResult FileStream::Context::WriteFileImpl(
   return IOResult(res, 0);
 }
 
+FileStream::Context::IOResult FileStream::Context::CloseFileImpl() {
+  bool success = base::ClosePlatformFile(file_);
+  file_ = base::kInvalidPlatformFileValue;
+  if (!success)
+    return IOResult::FromOSError(errno);
+
+  return IOResult(OK, 0);
+}
+
 }  // namespace net

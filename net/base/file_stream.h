@@ -81,6 +81,16 @@ class NET_EXPORT FileStream {
   // automatically closed when FileStream is destructed.
   virtual int OpenSync(const base::FilePath& path, int open_flags);
 
+  // Returns ERR_IO_PENDING and closes the file asynchronously, calling
+  // |callback| when done.
+  // It is invalid to request any asynchronous operations while there is an
+  // in-flight asynchronous operation.
+  virtual int Close(const CompletionCallback& callback);
+
+  // Closes the file immediately and returns OK. If the file is open
+  // asynchronously, Close(const CompletionCallback&) should be used instead.
+  virtual int CloseSync();
+
   // Returns true if Open succeeded and Close has not been called.
   virtual bool IsOpen() const;
 

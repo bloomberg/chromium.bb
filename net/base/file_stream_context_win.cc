@@ -196,6 +196,15 @@ FileStream::Context::IOResult FileStream::Context::FlushFileImpl() {
   return IOResult::FromOSError(GetLastError());
 }
 
+FileStream::Context::IOResult FileStream::Context::CloseFileImpl() {
+  bool success = base::ClosePlatformFile(file_);
+  file_ = base::kInvalidPlatformFileValue;
+  if (success)
+    return IOResult(OK, 0);
+
+  return IOResult::FromOSError(GetLastError());
+}
+
 void FileStream::Context::IOCompletionIsPending(
     const CompletionCallback& callback,
     IOBuffer* buf) {

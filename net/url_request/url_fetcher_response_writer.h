@@ -112,6 +112,9 @@ class URLFetcherFileWriter : public URLFetcherResponseWriter {
   void DidOpenFile(const CompletionCallback& callback,
                    int result);
 
+  // Callback which gets the result of closing a file.
+  void CloseComplete(const CompletionCallback& callback, int result);
+
   // The last error encountered on a file operation.  OK if no error occurred.
   int error_code_;
 
