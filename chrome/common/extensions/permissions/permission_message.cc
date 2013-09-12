@@ -45,7 +45,6 @@ PermissionMessage PermissionMessage::CreateFromHostList(
     default:
       message_id = kHosts4OrMore;
 
-#if defined(TOOLKIT_VIEWS) || defined(OS_MACOSX)
     message = l10n_util::GetStringFUTF16(
         IDS_EXTENSION_PROMPT_WARNING_HOSTS,
         base::IntToString16(host_list.size()));
@@ -57,15 +56,6 @@ PermissionMessage PermissionMessage::CreateFromHostList(
           IDS_EXTENSION_PROMPT_WARNING_HOST_LIST_ENTRY,
           UTF8ToUTF16(host_list[i]));
     }
-#else
-    // TODO(finnur): Remove once all platforms support expandible sections.
-    message = l10n_util::GetStringFUTF16(
-        IDS_EXTENSION_PROMPT_WARNING_4_OR_MORE_HOSTS,
-        UTF8ToUTF16(host_list[0]),
-        UTF8ToUTF16(host_list[1]),
-        base::IntToString16(hosts.size() - 2));
-    break;
-#endif
   }
 
   return PermissionMessage(message_id, message, details);

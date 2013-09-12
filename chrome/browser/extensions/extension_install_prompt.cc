@@ -347,15 +347,8 @@ string16 ExtensionInstallPrompt::Prompt::GetOAuthHeading() const {
 }
 
 string16 ExtensionInstallPrompt::Prompt::GetRetainedFilesHeading() const {
-  // TODO(finnur): Remove this once all platforms are using
-  // GetRetainedFilesHeadingWithCount().
-  return l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_RETAINED_FILES);
-}
-
-string16
-ExtensionInstallPrompt::Prompt::GetRetainedFilesHeadingWithCount() const {
   return l10n_util::GetStringFUTF16(
-      IDS_EXTENSION_PROMPT_RETAINED_FILES_WITH_COUNT,
+      IDS_EXTENSION_PROMPT_RETAINED_FILES,
       base::IntToString16(GetRetainedFileCount()));
 }
 

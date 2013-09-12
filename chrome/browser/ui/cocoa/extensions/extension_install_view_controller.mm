@@ -690,7 +690,7 @@ bool HasAttribute(id item, CellAttributesMask attributeMask) {
 
     [warnings addObject:
         [self buildItemWithTitle:SysUTF16ToNSString(
-            prompt.GetRetainedFilesHeadingWithCount())
+            prompt.GetRetainedFilesHeading())
                   cellAttributes:kBoldText | kAutoExpandCell | kNoExpandMarker
                         children:children]];
 

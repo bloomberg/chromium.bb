@@ -4052,10 +4052,7 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXTENSION_PROMPT_OAUTH_PERMISSIONS_HEADER" desc="A line of explanatory text that precedes all GAIA account permissions that an extension might request. This is shown when an app requests permissions which are optional.">
         On your <ph name="ACCOUNT_EMAIL">$1<ex>user@example.com</ex></ph> account, it could:
       </message>
-      <message name="IDS_EXTENSION_PROMPT_RETAINED_FILES" desc="A line of explanatory text that precedes the list of files the app has permanent access to. This is shown when an app has persistent access to files.">
-        It has permanent access to:
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_RETAINED_FILES_WITH_COUNT" desc="A line of explanatory text that precedes the list of files the app has permanent access to, showing how the number of files. This is shown when an app has persistent access to files.">
+      <message name="IDS_EXTENSION_PROMPT_RETAINED_FILES" desc="A line of explanatory text that precedes the list of files the app has permanent access to, showing how the number of files. This is shown when an app has persistent access to files.">
         It has permanent access to <ph name="NUMBER_OF_FILES">$1<ex>5</ex></ph> files.
       </message>
 
@@ -4080,9 +4077,6 @@ Make sure you do not expose any sensitive information.
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_3_HOSTS" desc="Permission string for access to data on three websites.">
         Access your data on <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph>, <ph name="WEBSITE_2">$2<ex>www.reddit.com</ex></ph>, and <ph name="WEBSITE_3">$3<ex>news.ycombinator.com</ex></ph>
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_4_OR_MORE_HOSTS" desc="Permission string for access to data on four or more websites.">
-        Access your data on <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph>, <ph name="WEBSITE_2">$2<ex>www.yahoo.com</ex></ph>, and <ph name="NUMBER_OF_OTHER_WEBSITES">$3<ex>3</ex></ph> other websites
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_HOSTS" desc="Permission string for access to data on four or more websites.">
         Access your data on <ph name="NUMBER_OF_OTHER_WEBSITES">$1<ex>5</ex></ph> website(s)
@@ -4844,6 +4838,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_EXTENSIONS_HIDE_DETAILS" desc="Tooltip for the button next to an extension that hides details">
         Hide Details
+      </message>
+      <message name="IDS_EXTENSIONS_DETAILS" desc="Tooltip for the button next to an extension that toggles showing details">
+        Details
       </message>
 
       <!-- chrome://extension-info bubble -->

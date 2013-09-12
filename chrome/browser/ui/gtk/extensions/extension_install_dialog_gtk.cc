@@ -34,7 +34,6 @@ const int kLeftColumnMinWidth = 250;
 const int kExternalInstallLeftColumnWidth = 350;
 const int kImageSize = 69;
 const int kDetailIndent = 20;
-const int kMaxRetainedFilesHeight = 100;
 
 // Additional padding (beyond on ui::kControlSpacing) all sides of each
 // permission in the permissions list.
@@ -52,30 +51,29 @@ void AddResourceIcon(const gfx::ImageSkia* icon, void* data) {
   gtk_box_pack_start(GTK_BOX(container), icon_widget, FALSE, FALSE, 0);
 }
 
-void OnZippyButtonRealize(GtkWidget* event_box, gpointer unused) {
-  gdk_window_set_cursor(event_box->window, gfx::GetCursor(GDK_HAND2));
-}
+// Returns an expander with the lines in |details|.
+GtkWidget* CreateDetailsWidget(const std::vector<string16>& details,
+                               int width,
+                               bool show_bullets) {
+  GtkWidget* expander = gtk_expander_new(
+      l10n_util::GetStringUTF8(IDS_EXTENSIONS_DETAILS).c_str());
+  GtkWidget* align = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
+  gtk_container_add(GTK_CONTAINER(expander), align);
+  GtkWidget* details_vbox = gtk_vbox_new(FALSE, kPermissionsPadding);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(align), 0, 0, kDetailIndent, 0);
+  gtk_container_add(GTK_CONTAINER(align), details_vbox);
 
-gboolean OnZippyButtonRelease(GtkWidget* event_box,
-                              GdkEvent* event,
-                              GtkWidget* detail_box) {
-  if (event->button.button != 1)
-    return FALSE;
-
-  GtkWidget* arrow =
-      GTK_WIDGET(gtk_object_get_data(GTK_OBJECT(event_box), "arrow"));
-
-  if (gtk_widget_get_visible(detail_box)) {
-    gtk_widget_hide(detail_box);
-    gtk_arrow_set(GTK_ARROW(arrow), GTK_ARROW_RIGHT, GTK_SHADOW_OUT);
-  } else {
-    gtk_widget_set_no_show_all(detail_box, FALSE);
-    gtk_widget_show_all(detail_box);
-    gtk_widget_set_no_show_all(detail_box, TRUE);
-    gtk_arrow_set(GTK_ARROW(arrow), GTK_ARROW_DOWN, GTK_SHADOW_OUT);
+  for (size_t i = 0; i < details.size(); ++i) {
+    std::string detail = show_bullets ?
+        l10n_util::GetStringFUTF8(IDS_EXTENSION_PERMISSION_LINE, details[0]) :
+        base::UTF16ToUTF8(details[i]);
+    GtkWidget* detail_label = gtk_label_new(detail.c_str());
+    gtk_label_set_line_wrap(GTK_LABEL(detail_label), true);
+    gtk_util::SetLabelWidth(detail_label, width - kDetailIndent);
+    gtk_box_pack_start(
+        GTK_BOX(details_vbox), detail_label, FALSE, FALSE, kPermissionsPadding);
   }
-
-  return TRUE;
+  return expander;
 }
 
 }  // namespace
@@ -147,13 +145,23 @@ ExtensionInstallDialog::ExtensionInstallDialog(
   gtk_dialog_set_has_separator(GTK_DIALOG(dialog_), FALSE);
 #endif
 
+  GtkWidget* scrolled_window = gtk_scrolled_window_new(NULL, NULL);
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window),
+                                 GTK_POLICY_NEVER,
+                                 GTK_POLICY_AUTOMATIC);
   GtkWidget* content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog_));
   gtk_box_set_spacing(GTK_BOX(content_area), ui::kContentAreaSpacing);
 
   // Divide the dialog vertically (item data and icon on the top, permissions
   // on the bottom).
   GtkWidget* content_vbox = gtk_vbox_new(FALSE, ui::kControlSpacing);
-  gtk_box_pack_start(GTK_BOX(content_area), content_vbox, TRUE, TRUE, 0);
+  gtk_container_set_border_width(GTK_CONTAINER(content_vbox),
+                                 ui::kContentAreaBorder);
+  gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(scrolled_window),
+                                        content_vbox);
+  GtkWidget* viewport = gtk_bin_get_child(GTK_BIN(scrolled_window));
+  gtk_viewport_set_shadow_type(GTK_VIEWPORT(viewport), GTK_SHADOW_NONE);
+  gtk_box_pack_start(GTK_BOX(content_area), scrolled_window, TRUE, TRUE, 0);
 
   // Create a two column layout for the top (item data on the left, icon on
   // the right).
@@ -274,11 +282,24 @@ ExtensionInstallDialog::ExtensionInstallDialog(
                          FALSE, FALSE, 0);
 
       for (size_t i = 0; i < prompt.GetPermissionCount(); ++i) {
+        GtkWidget* permission_vbox = gtk_vbox_new(FALSE, 0);
         std::string permission = l10n_util::GetStringFUTF8(
             IDS_EXTENSION_PERMISSION_LINE, prompt.GetPermission(i));
         GtkWidget* permission_label = gtk_label_new(permission.c_str());
         gtk_util::SetLabelWidth(permission_label, left_column_min_width);
-        gtk_box_pack_start(GTK_BOX(permissions_container), permission_label,
+        gtk_box_pack_start(GTK_BOX(permission_vbox), permission_label,
+                           FALSE, FALSE, 0);
+        if (!prompt.GetPermissionsDetails(i).empty()) {
+          std::vector<string16> details;
+          details.push_back(prompt.GetPermissionsDetails(i));
+          gtk_box_pack_start(
+              GTK_BOX(permission_vbox),
+              CreateDetailsWidget(details, left_column_min_width, false),
+              FALSE,
+              FALSE,
+              0);
+        }
+        gtk_box_pack_start(GTK_BOX(permissions_container), permission_vbox,
                            FALSE, FALSE, kPermissionsPadding);
       }
     } else {
@@ -327,20 +348,15 @@ ExtensionInstallDialog::ExtensionInstallDialog(
     gtk_box_pack_start(GTK_BOX(retained_files_container), retained_files_header,
                        FALSE, FALSE, 0);
 
-    GtkWidget* paths_vbox = gtk_vbox_new(FALSE, kPermissionsPadding);
+    std::vector<string16> paths;
     for (size_t i = 0; i < prompt.GetRetainedFileCount(); ++i) {
-      std::string path = base::UTF16ToUTF8(prompt.GetRetainedFile(i));
-      GtkWidget* path_label = gtk_label_new(path.c_str());
-      gtk_util::LeftAlignMisc(path_label);
-      gtk_box_pack_start(GTK_BOX(paths_vbox), path_label, FALSE, FALSE, 0);
+      paths.push_back(prompt.GetRetainedFile(i));
     }
-    GtkWidget* paths_scrolled_window = gtk_scrolled_window_new(NULL, NULL);
-    gtk_widget_set_size_request(
-        paths_scrolled_window, pixel_width, kMaxRetainedFilesHeight);
-    gtk_scrolled_window_add_with_viewport(
-        GTK_SCROLLED_WINDOW(paths_scrolled_window), paths_vbox);
-    gtk_box_pack_start(GTK_BOX(retained_files_container), paths_scrolled_window,
-                       FALSE, FALSE, kPermissionsPadding);
+    gtk_box_pack_start(GTK_BOX(retained_files_container),
+                       CreateDetailsWidget(paths, pixel_width, false),
+                       FALSE,
+                       FALSE,
+                       kPermissionsPadding);
   }
 
   g_signal_connect(dialog_, "response", G_CALLBACK(OnResponseThunk), this);
@@ -348,6 +364,16 @@ ExtensionInstallDialog::ExtensionInstallDialog(
 
   gtk_dialog_set_default_response(GTK_DIALOG(dialog_), GTK_RESPONSE_CLOSE);
   gtk_widget_show_all(dialog_);
+
+  gtk_container_set_border_width(GTK_CONTAINER(content_area), 0);
+  gtk_container_set_border_width(
+      GTK_CONTAINER(gtk_dialog_get_action_area(GTK_DIALOG(dialog_))),
+      ui::kContentAreaBorder);
+  gtk_box_set_spacing(GTK_BOX(gtk_bin_get_child(GTK_BIN(dialog_))), 0);
+  GtkRequisition requisition;
+  gtk_widget_size_request(content_vbox, &requisition);
+  gtk_widget_set_size_request(
+      scrolled_window, requisition.width, requisition.height);
   gtk_widget_grab_focus(close_button);
 }
 
@@ -376,58 +402,20 @@ void ExtensionInstallDialog::OnStoreLinkClick(GtkWidget* sender) {
 
 GtkWidget* ExtensionInstallDialog::CreateWidgetForIssueAdvice(
     const IssueAdviceInfoEntry& issue_advice, int pixel_width) {
-  GtkWidget* box = gtk_vbox_new(FALSE, ui::kControlSpacing);
-  GtkWidget* header = gtk_hbox_new(FALSE, 0);
-  GtkWidget* event_box = gtk_event_box_new();
-  gtk_container_add(GTK_CONTAINER(event_box), header);
-  gtk_box_pack_start(GTK_BOX(box), event_box, FALSE, FALSE,
-                     kPermissionsPadding);
+  GtkWidget* box = gtk_vbox_new(FALSE, 0);
+  GtkWidget* label = gtk_label_new(l10n_util::GetStringFUTF8(
+      IDS_EXTENSION_PERMISSION_LINE, issue_advice.description).c_str());
+  gtk_util::SetLabelWidth(label, pixel_width);
+  gtk_box_pack_start(GTK_BOX(box), label, TRUE, TRUE, 0);
 
-  GtkWidget* arrow = NULL;
-  GtkWidget* label = NULL;
-  int label_pixel_width = pixel_width;
-
-  if (issue_advice.details.empty()) {
-    label = gtk_label_new(l10n_util::GetStringFUTF8(
-        IDS_EXTENSION_PERMISSION_LINE,
-        issue_advice.description).c_str());
-  } else {
-    arrow = gtk_arrow_new(GTK_ARROW_RIGHT, GTK_SHADOW_OUT);
-    GtkRequisition req;
-    gtk_widget_size_request(arrow, &req);
-    label_pixel_width -= req.width;
-
-    label = gtk_label_new(UTF16ToUTF8(issue_advice.description).c_str());
-
-    GtkWidget* detail_box = gtk_vbox_new(FALSE, ui::kControlSpacing);
-    gtk_box_pack_start(GTK_BOX(box), detail_box, FALSE, FALSE, 0);
-    gtk_widget_set_no_show_all(detail_box, TRUE);
-    gtk_object_set_data(GTK_OBJECT(event_box), "arrow", arrow);
-
-    for (size_t i = 0; i < issue_advice.details.size(); ++i) {
-      std::string text = l10n_util::GetStringFUTF8(
-          IDS_EXTENSION_PERMISSION_LINE, issue_advice.details[i]);
-      GtkWidget* label = gtk_label_new(text.c_str());
-      gtk_util::SetLabelWidth(label, pixel_width - kDetailIndent);
-
-      GtkWidget* align = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
-      gtk_alignment_set_padding(GTK_ALIGNMENT(align), 0, 0, kDetailIndent, 0);
-      gtk_container_add(GTK_CONTAINER(align), label);
-      gtk_box_pack_start(GTK_BOX(detail_box), align, FALSE, FALSE,
-                         kPermissionsPadding);
-    }
-
-    g_signal_connect(event_box, "realize",
-                     G_CALLBACK(OnZippyButtonRealize), NULL);
-    g_signal_connect(event_box, "button-release-event",
-                     G_CALLBACK(OnZippyButtonRelease), detail_box);
+  if (!issue_advice.details.empty()) {
+    gtk_box_pack_start(
+        GTK_BOX(box),
+        CreateDetailsWidget(issue_advice.details, pixel_width, true),
+        TRUE,
+        TRUE,
+        0);
   }
-
-  gtk_util::SetLabelWidth(label, label_pixel_width);
-  if (arrow)
-    gtk_box_pack_start(GTK_BOX(header), arrow, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(header), label, TRUE, TRUE, 0);
-
   return box;
 }
 

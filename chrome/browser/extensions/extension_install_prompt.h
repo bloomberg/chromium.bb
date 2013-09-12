@@ -106,7 +106,6 @@ class ExtensionInstallPrompt
     string16 GetPermissionsHeading() const;
     string16 GetOAuthHeading() const;
     string16 GetRetainedFilesHeading() const;
-    string16 GetRetainedFilesHeadingWithCount() const;
 
     bool ShouldShowPermissions() const;
 

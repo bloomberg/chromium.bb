@@ -602,7 +602,7 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
     layout->StartRow(0, column_set_id);
     views::Label* retained_files_header = NULL;
     retained_files_header =
-        new views::Label(prompt.GetRetainedFilesHeadingWithCount());
+        new views::Label(prompt.GetRetainedFilesHeading());
     retained_files_header->SetMultiLine(true);
     retained_files_header->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     retained_files_header->SizeToFit(space_for_files);
