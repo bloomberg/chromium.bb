@@ -13,6 +13,7 @@ cr.define('network.config', function() {
       this.activeArea_ = null;
       this.userArea_ = null;
       this.managedArea_ = null;
+      this.stateArea_ = null;
       this.updateDom_();
       this.fetchProperties_();
     },
@@ -24,6 +25,9 @@ cr.define('network.config', function() {
       chrome.networkingPrivate.getManagedProperties(
           this.networkId_,
           this.updateManagedSettings_.bind(this));
+      chrome.networkingPrivate.getState(
+          this.networkId_,
+          this.updateState_.bind(this));
     },
 
     stringifyJSON_: function(properties) {
@@ -44,6 +48,10 @@ cr.define('network.config', function() {
         this.userArea_.value = this.stringifyJSON_(
             this.extractUserSettings_(properties));
       }
+    },
+
+    updateState_: function(properties) {
+      this.stateArea_.value = this.stringifyJSON_(properties);
     },
 
     extractUserSettings_: function(properties) {
@@ -92,6 +100,15 @@ cr.define('network.config', function() {
       this.managedArea_ = function() {
         var label = document.createElement('h4');
         label.textContent = 'Managed Settings (getManagedProperties)';
+        div.appendChild(label);
+        var area = document.createElement('textarea');
+        div.appendChild(area);
+        return area;
+      }();
+
+      this.stateArea_ = function() {
+        var label = document.createElement('h4');
+        label.textContent = 'State (getState)';
         div.appendChild(label);
         var area = document.createElement('textarea');
         div.appendChild(area);
