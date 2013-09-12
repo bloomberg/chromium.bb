@@ -33,7 +33,7 @@
     EnabledAtRuntime=FontLoadEvents,
     ActiveDOMObject,
     GenerateIsReachable=document
-] interface FontLoader : EventTarget {
+] interface FontFaceSet : EventTarget {
 
     attribute EventHandler onloading;
     attribute EventHandler onloadingdone;

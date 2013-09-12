@@ -1,4 +1,4 @@
-Checks that adding CSS in callback of fontloader.loadFont() does not cause a crash.
+Checks that adding CSS in callback of fonts.loadFont() does not cause a crash.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 

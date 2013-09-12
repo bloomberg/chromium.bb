@@ -8,7 +8,7 @@
 }
 </style>
 <script>
-description('Checks that adding CSS in callback of fontloader.loadFont() does not cause a crash.');
+description('Checks that adding CSS in callback of fonts.loadFont() does not cause a crash.');
 
 window.jsTestIsAsync = true;
 
@@ -23,10 +23,10 @@ function addCss() {
     finishJSTest();
 }
 
-if (document.fontloader)
-    document.fontloader.loadFont({font:"12px ahem", onsuccess:addCss})
+if (document.fonts)
+    document.fonts.loadFont({font:"12px ahem", onsuccess:addCss})
 else {
-    testFailed('document.fontloader does not exist');
+    testFailed('document.fonts does not exist');
     finishJSTest();
 }
 </script>

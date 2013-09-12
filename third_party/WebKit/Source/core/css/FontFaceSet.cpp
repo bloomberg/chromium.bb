@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "core/css/FontLoader.h"
+#include "core/css/FontFaceSet.h"
 
 #include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/Dictionary.h"
@@ -92,10 +92,10 @@ void LoadFontCallback::loaded(Document* document)
 
     if (m_errorOccured) {
         if (m_errorCallback)
-            document->fontloader()->scheduleCallback(m_errorCallback.release());
+            document->fonts()->scheduleCallback(m_errorCallback.release());
     } else {
         if (m_loadCallback)
-            document->fontloader()->scheduleCallback(m_loadCallback.release());
+            document->fonts()->scheduleCallback(m_loadCallback.release());
     }
 }
 
@@ -115,44 +115,44 @@ void LoadFontCallback::notifyError(CSSSegmentedFontFace* face)
     error(face->fontSelector()->document());
 }
 
-FontLoader::FontLoader(Document* document)
+FontFaceSet::FontFaceSet(Document* document)
     : ActiveDOMObject(document)
     , m_loadingCount(0)
-    , m_timer(this, &FontLoader::timerFired)
+    , m_timer(this, &FontFaceSet::timerFired)
 {
     suspendIfNeeded();
 }
 
-FontLoader::~FontLoader()
+FontFaceSet::~FontFaceSet()
 {
 }
 
-Document* FontLoader::document() const
+Document* FontFaceSet::document() const
 {
     return toDocument(scriptExecutionContext());
 }
 
-EventTargetData* FontLoader::eventTargetData()
+EventTargetData* FontFaceSet::eventTargetData()
 {
     return &m_eventTargetData;
 }
 
-EventTargetData* FontLoader::ensureEventTargetData()
+EventTargetData* FontFaceSet::ensureEventTargetData()
 {
     return &m_eventTargetData;
 }
 
-const AtomicString& FontLoader::interfaceName() const
+const AtomicString& FontFaceSet::interfaceName() const
 {
-    return eventNames().interfaceForFontLoader;
+    return eventNames().interfaceForFontFaceSet;
 }
 
-ScriptExecutionContext* FontLoader::scriptExecutionContext() const
+ScriptExecutionContext* FontFaceSet::scriptExecutionContext() const
 {
     return ActiveDOMObject::scriptExecutionContext();
 }
 
-void FontLoader::didLayout()
+void FontFaceSet::didLayout()
 {
     Document* d = document();
     if (d->page() && d->page()->mainFrame() == d->frame())
@@ -165,21 +165,21 @@ void FontLoader::didLayout()
         m_timer.startOneShot(0);
 }
 
-void FontLoader::timerFired(Timer<FontLoader>*)
+void FontFaceSet::timerFired(Timer<FontFaceSet>*)
 {
     firePendingEvents();
     firePendingCallbacks();
     fireDoneEventIfPossible();
 }
 
-void FontLoader::scheduleEvent(PassRefPtr<Event> event)
+void FontFaceSet::scheduleEvent(PassRefPtr<Event> event)
 {
     m_pendingEvents.append(event);
     if (!m_timer.isActive())
         m_timer.startOneShot(0);
 }
 
-void FontLoader::firePendingEvents()
+void FontFaceSet::firePendingEvents()
 {
     if (m_pendingEvents.isEmpty())
         return;
@@ -190,14 +190,14 @@ void FontLoader::firePendingEvents()
         dispatchEvent(pendingEvents[index].release());
 }
 
-void FontLoader::scheduleCallback(PassRefPtr<VoidCallback> callback)
+void FontFaceSet::scheduleCallback(PassRefPtr<VoidCallback> callback)
 {
     m_pendingCallbacks.append(callback);
     if (!m_timer.isActive())
         m_timer.startOneShot(0);
 }
 
-void FontLoader::firePendingCallbacks()
+void FontFaceSet::firePendingCallbacks()
 {
     if (m_pendingCallbacks.isEmpty())
         return;
@@ -208,7 +208,7 @@ void FontLoader::firePendingCallbacks()
         pendingCallbacks[index]->handleEvent();
 }
 
-void FontLoader::beginFontLoading(CSSFontFaceRule* rule)
+void FontFaceSet::beginFontLoading(CSSFontFaceRule* rule)
 {
     m_histogram.incrementCount();
     if (!RuntimeEnabledFeatures::fontLoadEventsEnabled())
@@ -221,7 +221,7 @@ void FontLoader::beginFontLoading(CSSFontFaceRule* rule)
     m_pendingDoneEvent.clear();
 }
 
-void FontLoader::fontLoaded(CSSFontFaceRule* rule)
+void FontFaceSet::fontLoaded(CSSFontFaceRule* rule)
 {
     if (!RuntimeEnabledFeatures::fontLoadEventsEnabled())
         return;
@@ -229,7 +229,7 @@ void FontLoader::fontLoaded(CSSFontFaceRule* rule)
     queueDoneEvent(rule);
 }
 
-void FontLoader::loadError(CSSFontFaceRule* rule, CSSFontFaceSource* source)
+void FontFaceSet::loadError(CSSFontFaceRule* rule, CSSFontFaceSource* source)
 {
     if (!RuntimeEnabledFeatures::fontLoadEventsEnabled())
         return;
@@ -239,7 +239,7 @@ void FontLoader::loadError(CSSFontFaceRule* rule, CSSFontFaceSource* source)
     queueDoneEvent(rule);
 }
 
-void FontLoader::queueDoneEvent(CSSFontFaceRule* rule)
+void FontFaceSet::queueDoneEvent(CSSFontFaceRule* rule)
 {
     ASSERT(m_loadingCount > 0);
     --m_loadingCount;
@@ -249,14 +249,14 @@ void FontLoader::queueDoneEvent(CSSFontFaceRule* rule)
     }
 }
 
-void FontLoader::notifyWhenFontsReady(PassRefPtr<VoidCallback> callback)
+void FontFaceSet::notifyWhenFontsReady(PassRefPtr<VoidCallback> callback)
 {
     m_fontsReadyCallbacks.append(callback);
     if (!m_timer.isActive())
         m_timer.startOneShot(0);
 }
 
-void FontLoader::fireDoneEventIfPossible()
+void FontFaceSet::fireDoneEventIfPossible()
 {
     if (!m_pendingEvents.isEmpty() || !m_pendingCallbacks.isEmpty())
         return;
@@ -281,7 +281,7 @@ void FontLoader::fireDoneEventIfPossible()
     }
 }
 
-void FontLoader::loadFont(const Dictionary& params)
+void FontFaceSet::loadFont(const Dictionary& params)
 {
     // FIXME: The text member of params is ignored.
     String fontString;
@@ -304,7 +304,7 @@ void FontLoader::loadFont(const Dictionary& params)
     }
 }
 
-bool FontLoader::checkFont(const String& fontString, const String&)
+bool FontFaceSet::checkFont(const String& fontString, const String&)
 {
     // FIXME: The second parameter (text) is ignored.
     Font font;
@@ -318,7 +318,7 @@ bool FontLoader::checkFont(const String& fontString, const String&)
     return true;
 }
 
-bool FontLoader::resolveFontStyle(const String& fontString, Font& font)
+bool FontFaceSet::resolveFontStyle(const String& fontString, Font& font)
 {
     // Interpret fontString in the same way as the 'font' attribute of CanvasRenderingContext2D.
     RefPtr<MutableStylePropertySet> parsedStyle = MutableStylePropertySet::create();
@@ -361,7 +361,7 @@ bool FontLoader::resolveFontStyle(const String& fontString, Font& font)
     return true;
 }
 
-void FontLoader::FontLoadHistogram::record()
+void FontFaceSet::FontLoadHistogram::record()
 {
     if (m_recorded)
         return;

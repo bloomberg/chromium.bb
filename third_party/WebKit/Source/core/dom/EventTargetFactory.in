@@ -1,6 +1,6 @@
 namespace="EventTarget"
 
-core/css/FontLoader
+core/css/FontFaceSet
 core/dom/MessagePort
 core/dom/Node
 core/dom/WebKitNamedFlow ImplementedAs=NamedFlow

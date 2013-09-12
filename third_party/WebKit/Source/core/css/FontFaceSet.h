@@ -23,8 +23,8 @@
  * DAMAGE.
  */
 
-#ifndef FontLoader_h
-#define FontLoader_h
+#ifndef FontFaceSet_h
+#define FontFaceSet_h
 
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/EventListener.h"
@@ -47,13 +47,13 @@ class Event;
 class Font;
 class ScriptExecutionContext;
 
-class FontLoader : public RefCounted<FontLoader>, public ActiveDOMObject, public EventTarget {
+class FontFaceSet : public RefCounted<FontFaceSet>, public ActiveDOMObject, public EventTarget {
 public:
-    static PassRefPtr<FontLoader> create(Document* document)
+    static PassRefPtr<FontFaceSet> create(Document* document)
     {
-        return adoptRef<FontLoader>(new FontLoader(document));
+        return adoptRef<FontFaceSet>(new FontFaceSet(document));
     }
-    virtual ~FontLoader();
+    virtual ~FontFaceSet();
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(loading);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(loadingdone);
@@ -70,8 +70,8 @@ public:
     virtual ScriptExecutionContext* scriptExecutionContext() const;
     virtual const AtomicString& interfaceName() const;
 
-    using RefCounted<FontLoader>::ref;
-    using RefCounted<FontLoader>::deref;
+    using RefCounted<FontFaceSet>::ref;
+    using RefCounted<FontFaceSet>::deref;
 
     Document* document() const;
 
@@ -93,7 +93,7 @@ private:
         bool m_recorded;
     };
 
-    FontLoader(Document*);
+    FontFaceSet(Document*);
 
     virtual void refEventTarget() { ref(); }
     virtual void derefEventTarget() { deref(); }
@@ -101,12 +101,12 @@ private:
     virtual EventTargetData* ensureEventTargetData();
 
     void scheduleEvent(PassRefPtr<Event>);
-    void queueDoneEvent(CSSFontFaceRule* rule);
+    void queueDoneEvent(CSSFontFaceRule*);
     void firePendingEvents();
     void firePendingCallbacks();
     void fireDoneEventIfPossible();
     bool resolveFontStyle(const String&, Font&);
-    void timerFired(Timer<FontLoader>*);
+    void timerFired(Timer<FontFaceSet>*);
 
     EventTargetData m_eventTargetData;
     unsigned m_loadingCount;
@@ -114,10 +114,10 @@ private:
     Vector<RefPtr<VoidCallback> > m_pendingCallbacks;
     Vector<RefPtr<VoidCallback> > m_fontsReadyCallbacks;
     RefPtr<Event> m_pendingDoneEvent;
-    Timer<FontLoader> m_timer;
+    Timer<FontFaceSet> m_timer;
     FontLoadHistogram m_histogram;
 };
 
 } // namespace WebCore
 
-#endif // FontLoader_h
+#endif // FontFaceSet_h

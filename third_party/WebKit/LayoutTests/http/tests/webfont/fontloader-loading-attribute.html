@@ -8,32 +8,32 @@
   }
 </style>
 <script>
-description('Test for FontLoader.loading attribute');
+description('Test for FontFaceSet.loading attribute');
 
 window.jsTestIsAsync = true;
 
 function runTests() {
-    shouldBe("document.fontloader.checkFont('10px TestFont')", "false");
-    shouldBe("document.fontloader.loading", "false");
-    document.fontloader.loadFont({ font: '10px TestFont', onsuccess: onsuccess });
-    shouldBe("document.fontloader.loading", "true");
+    shouldBe("document.fonts.checkFont('10px TestFont')", "false");
+    shouldBe("document.fonts.loading", "false");
+    document.fonts.loadFont({ font: '10px TestFont', onsuccess: onsuccess });
+    shouldBe("document.fonts.loading", "true");
 }
 
 function onsuccess() {
-    shouldBe("document.fontloader.checkFont('10px TestFont')", "true");
-    shouldBe("document.fontloader.loading", "true");
-    document.fontloader.notifyWhenFontsReady(onFontsReady);
+    shouldBe("document.fonts.checkFont('10px TestFont')", "true");
+    shouldBe("document.fonts.loading", "true");
+    document.fonts.notifyWhenFontsReady(onFontsReady);
 }
 
 function onFontsReady() {
-    shouldBe("document.fontloader.loading", "false");
+    shouldBe("document.fonts.loading", "false");
     finishJSTest();
 }
 
-if (document.fontloader)
+if (document.fonts)
     runTests();
 else {
-    testFailed('document.fontloader does not exist');
+    testFailed('document.fonts does not exist');
     finishJSTest();
 }
 </script>

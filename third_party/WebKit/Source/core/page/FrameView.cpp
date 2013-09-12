@@ -31,7 +31,7 @@
 #include "RuntimeEnabledFeatures.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/animation/DocumentTimeline.h"
-#include "core/css/FontLoader.h"
+#include "core/css/FontFaceSet.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/DocumentMarkerController.h"
 #include "core/dom/OverflowEvent.h"
@@ -2233,7 +2233,7 @@ void FrameView::performPostLayoutTasks()
     }
 
     m_frame->loader()->didLayout(milestonesAchieved);
-    m_frame->document()->fontloader()->didLayout();
+    m_frame->document()->fonts()->didLayout();
 
     RenderView* renderView = this->renderView();
     if (renderView)

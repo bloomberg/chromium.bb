@@ -161,7 +161,7 @@ class XMLHttpRequest;
 
 struct AnnotatedRegionValue;
 
-class FontLoader;
+class FontFaceSet;
 
 typedef int ExceptionCode;
 
@@ -1063,7 +1063,7 @@ public:
     virtual DOMWindow* executingWindow() OVERRIDE { return domWindow(); }
     virtual void userEventWasHandled() OVERRIDE { resetLastHandledUserGestureTimestamp(); }
 
-    PassRefPtr<FontLoader> fontloader();
+    PassRefPtr<FontFaceSet> fonts();
     DocumentLifecycleNotifier* lifecycleNotifier();
 
     enum HttpRefreshType {
@@ -1385,7 +1385,7 @@ private:
     RefPtr<Document> m_templateDocument;
     Document* m_templateDocumentHost; // Manually managed weakref (backpointer from m_templateDocument).
 
-    RefPtr<FontLoader> m_fontloader;
+    RefPtr<FontFaceSet> m_fonts;
 
     Timer<Document> m_didAssociateFormControlsTimer;
     HashSet<RefPtr<Element> > m_associatedFormControls;

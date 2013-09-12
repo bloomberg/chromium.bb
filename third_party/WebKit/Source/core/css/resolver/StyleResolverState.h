@@ -46,7 +46,7 @@ public:
     StyleResolverState(Document&, Element*, RenderStyle* parentStyle = 0, RenderRegion* regionForStyling = 0);
     ~StyleResolverState();
 
-    // In FontLoader and CanvasRenderingContext2D, we don't have an element to grab the document from.
+    // In FontFaceSet and CanvasRenderingContext2D, we don't have an element to grab the document from.
     // This is why we have to store the document separately.
     Document& document() const { return m_document; }
     // These are all just pass-through methods to ElementResolveContext.

@@ -29,7 +29,7 @@
 #include "core/css/CSSFontFaceSource.h"
 #include "core/css/CSSFontSelector.h"
 #include "core/css/CSSSegmentedFontFace.h"
-#include "core/css/FontLoader.h"
+#include "core/css/FontFaceSet.h"
 #include "core/dom/Document.h"
 #include "core/platform/graphics/SimpleFontData.h"
 
@@ -146,13 +146,13 @@ void CSSFontFace::setLoadState(LoadState newState)
 
     switch (newState) {
     case Loading:
-        document->fontloader()->beginFontLoading(m_rule.get());
+        document->fonts()->beginFontLoading(m_rule.get());
         break;
     case Loaded:
-        document->fontloader()->fontLoaded(m_rule.get());
+        document->fonts()->fontLoaded(m_rule.get());
         break;
     case Error:
-        document->fontloader()->loadError(m_rule.get(), m_activeSource);
+        document->fonts()->loadError(m_rule.get(), m_activeSource);
         break;
     default:
         break;
