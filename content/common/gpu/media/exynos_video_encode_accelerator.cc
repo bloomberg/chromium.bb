@@ -1328,20 +1328,22 @@ bool ExynosVideoEncodeAccelerator::SetMfcFormats() {
   format.fmt.pix_mp.num_planes  = 1;
   IOCTL_OR_ERROR_RETURN_FALSE(mfc_fd_, VIDIOC_S_FMT, &format);
 
-  struct v4l2_ext_control ctrls[6];
+  struct v4l2_ext_control ctrls[7];
   struct v4l2_ext_controls control;
   memset(&ctrls, 0, sizeof(ctrls));
   memset(&control, 0, sizeof(control));
   // No B-frames, for lowest decoding latency.
   ctrls[0].id    = V4L2_CID_MPEG_VIDEO_B_FRAMES;
   ctrls[0].value = 0;
-  // Enable variable bitrate control.
+  // Enable frame-level bitrate control.
   ctrls[1].id    = V4L2_CID_MPEG_VIDEO_FRAME_RC_ENABLE;
   ctrls[1].value = 1;
-  // Enable "loose" variable bitrate.
+  // Enable "tight" bitrate mode. For this to work properly, frame- and mb-level
+  // bitrate controls have to be enabled as well.
   ctrls[2].id    = V4L2_CID_MPEG_MFC51_VIDEO_RC_REACTION_COEFF;
-  ctrls[2].value = 10;
-  // Force bitrate control to average over a GOP (for tight bitrate tolerance).
+  ctrls[2].value = 1;
+  // Force bitrate control to average over a GOP (for tight bitrate
+  // tolerance).
   ctrls[3].id    = V4L2_CID_MPEG_MFC51_VIDEO_RC_FIXED_TARGET_BIT;
   ctrls[3].value = 1;
   // Quantization parameter maximum value (for variable bitrate control).
@@ -1350,6 +1352,9 @@ bool ExynosVideoEncodeAccelerator::SetMfcFormats() {
   // Separate stream header so we can cache it and insert into the stream.
   ctrls[5].id    = V4L2_CID_MPEG_VIDEO_HEADER_MODE;
   ctrls[5].value = V4L2_MPEG_VIDEO_HEADER_MODE_SEPARATE;
+  // Enable macroblock-level bitrate control.
+  ctrls[6].id    = V4L2_CID_MPEG_VIDEO_MB_RC_ENABLE;
+  ctrls[6].value = 1;
   control.ctrl_class = V4L2_CTRL_CLASS_MPEG;
   control.count = arraysize(ctrls);
   control.controls = ctrls;
