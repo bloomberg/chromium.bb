@@ -106,6 +106,7 @@ void GAIAInfoUpdateService::OnProfileDownloadSuccess(
   ScheduleNextUpdate();
 
   string16 full_name = downloader->GetProfileFullName();
+  string16 given_name = downloader->GetProfileGivenName();
   SkBitmap bitmap = downloader->GetProfilePicture();
   ProfileDownloader::PictureStatus picture_status =
       downloader->GetProfilePictureStatus();
@@ -118,6 +119,8 @@ void GAIAInfoUpdateService::OnProfileDownloadSuccess(
     return;
 
   cache.SetGAIANameOfProfileAtIndex(profile_index, full_name);
+  cache.SetGAIAGivenNameOfProfileAtIndex(profile_index, given_name);
+
   // The profile index may have changed.
   profile_index = cache.GetIndexOfProfileWithPath(profile_->GetPath());
   if (profile_index == std::string::npos)

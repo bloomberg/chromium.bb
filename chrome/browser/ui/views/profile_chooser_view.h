@@ -12,13 +12,16 @@
 #include "chrome/browser/profiles/avatar_menu_model_observer.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/controls/link_listener.h"
+#include "ui/views/controls/styled_label_listener.h"
 
 namespace gfx {
 class Image;
 }
 
 namespace views {
-class LabelButton;
+class Link;
+class TextButton;
 }
 
 class Browser;
@@ -28,6 +31,7 @@ class ProfileItemView;
 // It displays a list of profiles and allows users to switch between profiles.
 class ProfileChooserView : public views::BubbleDelegateView,
                            public views::ButtonListener,
+                           public views::LinkListener,
                            public AvatarMenuModelObserver {
  public:
   // Shows the bubble if one is not already showing.  This allows us to easily
@@ -56,7 +60,13 @@ class ProfileChooserView : public views::BubbleDelegateView,
   FRIEND_TEST_ALL_PREFIXES(AvatarMenuButtonTest, LaunchUserManagerScreen);
 
   typedef std::vector<size_t> Indexes;
-  typedef std::map<views::View*, int> ViewIndexes;
+  typedef std::map<views::Button*, int> ButtonIndexes;
+
+  // Different views that can be displayed in the bubble.
+  enum BubbleViewMode{
+    PROFILE_CHOOSER_VIEW,    // Displays a "fast profile switcher" view.
+    ACCOUNT_MANAGEMENT_VIEW  // Displays a list of accounts for the active user.
+  };
 
   ProfileChooserView(views::View* anchor_view,
                      views::BubbleBorder::Arrow arrow,
@@ -67,12 +77,13 @@ class ProfileChooserView : public views::BubbleDelegateView,
   // BubbleDelegateView:
   virtual void Init() OVERRIDE;
   virtual void WindowClosing() OVERRIDE;
-  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
 
   // ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
+
+  // LinkListener:
+  virtual void LinkClicked(views::Link* sender, int event_flags) OVERRIDE;
 
   // AvatarMenuModelObserver:
   virtual void OnAvatarMenuModelChanged(
@@ -81,21 +92,44 @@ class ProfileChooserView : public views::BubbleDelegateView,
   static ProfileChooserView* profile_bubble_;
   static bool close_on_deactivate_;
 
-  views::View* CreateProfileImageView(const gfx::Image& icon, int side);
-  views::View* CreateProfileCardView(const AvatarMenuModel::Item& avatar_item);
-  views::View* CreateCurrentProfileView(size_t avatars_to_show);
+  void ResetLinksAndButtons();
+
+  // Shows either the profile chooser or the account management views.
+  void ShowView(BubbleViewMode view_to_display,
+                AvatarMenuModel* avatar_menu_model);
+
+  // Creates the main profile card for the profile |avatar_item|. |is_guest|
+  // is used to determine whether to show any Sign in/Sign out/Manage accounts
+  // links.
+  views::View* CreateCurrentProfileView(
+      const AvatarMenuModel::Item& avatar_item,
+      bool is_guest);
   views::View* CreateGuestProfileView();
   views::View* CreateOtherProfilesView(const Indexes& avatars_to_show);
-  views::View* CreateOptionsView();
+  views::View* CreateOptionsView(bool is_guest_view);
+
+  // Account Management view for the profile |avatar_item|.
+  views::View* CreateCurrentProfileEditableView(
+      const AvatarMenuModel::Item& avatar_item);
+  views::View* CreateCurrentProfileAccountsView(
+      const AvatarMenuModel::Item& avatar_item);
 
   scoped_ptr<AvatarMenuModel> avatar_menu_model_;
   Browser* browser_;
-  views::View* current_profile_view_;
-  views::LabelButton* guest_button_view_;
-  views::LabelButton* users_button_view_;
-  ViewIndexes open_other_profile_indexes_map_;
-  views::View* other_profiles_view_;
-  views::View* signout_current_profile_view_;
+
+  // Other profiles used in the "fast profile switcher" view.
+  ButtonIndexes open_other_profile_indexes_map_;
+
+  // Links displayed in the active profile card.
+  views::Link* manage_accounts_link_;
+  views::Link* signout_current_profile_link_;
+  views::Link* signin_current_profile_link_;
+  views::Link* change_photo_link_;
+
+  // Action buttons.
+  views::TextButton* guest_button_;
+  views::TextButton* end_guest_button_;
+  views::TextButton* users_button_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileChooserView);
 };

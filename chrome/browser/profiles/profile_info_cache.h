@@ -66,6 +66,8 @@ class ProfileInfoCache : public ProfileInfoInterface,
   virtual bool GetBackgroundStatusOfProfileAtIndex(
       size_t index) const OVERRIDE;
   virtual string16 GetGAIANameOfProfileAtIndex(size_t index) const OVERRIDE;
+  virtual string16 GetGAIAGivenNameOfProfileAtIndex(
+      size_t index) const OVERRIDE;
   virtual bool IsUsingGAIANameOfProfileAtIndex(size_t index) const OVERRIDE;
   // Returns the GAIA picture for the given profile. This may return NULL
   // if the profile does not have a GAIA picture or if the picture must be
@@ -89,6 +91,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
   void SetBackgroundStatusOfProfileAtIndex(size_t index,
                                            bool running_background_apps);
   void SetGAIANameOfProfileAtIndex(size_t index, const string16& name);
+  void SetGAIAGivenNameOfProfileAtIndex(size_t index, const string16& name);
   void SetIsUsingGAIANameOfProfileAtIndex(size_t index, bool value);
   void SetGAIAPictureOfProfileAtIndex(size_t index, const gfx::Image* image);
   void SetIsUsingGAIAPictureOfProfileAtIndex(size_t index, bool value);

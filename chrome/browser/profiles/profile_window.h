@@ -34,6 +34,9 @@ void SwitchToProfile(
     chrome::HostDesktopType desktop_type,
     bool always_create);
 
+// Closes all browser windows that belong to the guest profile.
+void CloseGuestProfileWindows();
+
 }  // namespace profiles
 
 #endif  // CHROME_BROWSER_PROFILES_PROFILE_WINDOW_H_

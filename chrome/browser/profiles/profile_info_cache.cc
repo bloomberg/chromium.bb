@@ -40,6 +40,7 @@ namespace {
 const char kNameKey[] = "name";
 const char kShortcutNameKey[] = "shortcut_name";
 const char kGAIANameKey[] = "gaia_name";
+const char kGAIAGivenNameKey[] = "gaia_given_name";
 const char kUseGAIANameKey[] = "use_gaia_name";
 const char kUserNameKey[] = "user_name";
 const char kAvatarIconKey[] = "avatar_icon";
@@ -284,8 +285,11 @@ size_t ProfileInfoCache::GetIndexOfProfileWithPath(
 
 string16 ProfileInfoCache::GetNameOfProfileAtIndex(size_t index) const {
   string16 name;
-  if (IsUsingGAIANameOfProfileAtIndex(index))
-    name = GetGAIANameOfProfileAtIndex(index);
+  if (IsUsingGAIANameOfProfileAtIndex(index)) {
+    string16 given_name = GetGAIAGivenNameOfProfileAtIndex(index);
+    name = given_name.empty() ? GetGAIANameOfProfileAtIndex(index) : given_name;
+  }
+
   if (name.empty())
     GetInfoForProfileAtIndex(index)->GetString(kNameKey, &name);
   return name;
@@ -335,6 +339,13 @@ bool ProfileInfoCache::GetBackgroundStatusOfProfileAtIndex(
 string16 ProfileInfoCache::GetGAIANameOfProfileAtIndex(size_t index) const {
   string16 name;
   GetInfoForProfileAtIndex(index)->GetString(kGAIANameKey, &name);
+  return name;
+}
+
+string16 ProfileInfoCache::GetGAIAGivenNameOfProfileAtIndex(
+    size_t index) const {
+  string16 name;
+  GetInfoForProfileAtIndex(index)->GetString(kGAIAGivenNameKey, &name);
   return name;
 }
 
@@ -542,6 +553,18 @@ void ProfileInfoCache::SetGAIANameOfProfileAtIndex(size_t index,
                       observer_list_,
                       OnProfileNameChanged(profile_path, old_display_name));
   }
+}
+
+void ProfileInfoCache::SetGAIAGivenNameOfProfileAtIndex(
+    size_t index,
+    const string16& name) {
+  if (name == GetGAIAGivenNameOfProfileAtIndex(index))
+    return;
+
+  scoped_ptr<DictionaryValue> info(GetInfoForProfileAtIndex(index)->DeepCopy());
+  info->SetString(kGAIAGivenNameKey, name);
+  // This takes ownership of |info|.
+  SetInfoForProfileAtIndex(index, info.release());
 }
 
 void ProfileInfoCache::SetIsUsingGAIANameOfProfileAtIndex(size_t index,

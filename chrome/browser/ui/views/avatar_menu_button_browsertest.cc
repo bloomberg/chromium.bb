@@ -73,6 +73,10 @@ void AvatarMenuButtonTest::CreateTestingProfile() {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   EXPECT_EQ(1u, profile_manager->GetNumberOfProfiles());
 
+  // Sign in the default profile
+  ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
+  cache.SetUserNameOfProfileAtIndex(0, UTF8ToUTF16("user_name"));
+
   base::FilePath path;
   PathService::Get(chrome::DIR_USER_DATA, &path);
   path = path.AppendASCII("test_profile");
@@ -81,7 +85,6 @@ void AvatarMenuButtonTest::CreateTestingProfile() {
   Profile* profile =
       Profile::CreateProfile(path, NULL, Profile::CREATE_MODE_SYNCHRONOUS);
   profile_manager->RegisterTestingProfile(profile, true, false);
-
   EXPECT_EQ(2u, profile_manager->GetNumberOfProfiles());
 }
 
@@ -155,10 +158,11 @@ IN_PROC_BROWSER_TEST_P(AvatarMenuButtonTest, NewSignOut) {
 
   ui::MouseEvent mouse_ev(ui::ET_MOUSE_RELEASED, gfx::Point(), gfx::Point(), 0);
   model->SetLogoutURL("about:blank");
-  ProfileChooserView::profile_bubble_->ButtonPressed(
-      static_cast<views::Button*>(
-          ProfileChooserView::profile_bubble_->signout_current_profile_view_),
-      mouse_ev);
+
+  ProfileChooserView::profile_bubble_->LinkClicked(
+      static_cast<views::Link*>(
+          ProfileChooserView::profile_bubble_->signout_current_profile_link_),
+      0);
 
   EXPECT_TRUE(model->GetItemAt(model->GetActiveProfileIndex()).signin_required);
 

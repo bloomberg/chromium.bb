@@ -15,6 +15,7 @@
 
 #if !defined(OS_IOS)
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #endif  // !defined (OS_IOS)
@@ -84,6 +85,16 @@ void SwitchToProfile(
       string16(),
       string16(),
       std::string());
+}
+
+void CloseGuestProfileWindows() {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  Profile* profile = profile_manager->GetProfileByPath(
+      ProfileManager::GetGuestProfilePath());
+
+  if (profile) {
+    BrowserList::CloseAllBrowsersWithProfile(profile);
+  }
 }
 
 }  // namespace profiles
