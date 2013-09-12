@@ -34,6 +34,7 @@
 #include "WebCommon.h"
 #include "WebFileError.h"
 #include "WebFileSystemEntry.h"
+#include "WebFileSystemType.h"
 #include "WebPrivatePtr.h"
 #include "WebVector.h"
 
@@ -89,6 +90,11 @@ public:
     // Callback for WebFileSystem::openFileSystem. Called with a name and
     // root URL for the FileSystem when the request is accepted.
     WEBKIT_EXPORT void didOpenFileSystem(const WebString& name, const WebURL& rootURL);
+
+    // Callback for WebFileSystem::resolveURL. Called with a name, root URL and
+    // file path for the FileSystem when the request is accepted. |isDirectory|
+    // must be true when an entry to be resolved is a directory.
+    WEBKIT_EXPORT void didResolveURL(const WebString& name, const WebURL& rootURL, WebFileSystemType, const WebString& filePath, bool isDirectory);
 
     // Callback for WebFileSystem::createFileWriter. Called with an instance
     // of WebFileWriter and the target file length. The writer's ownership

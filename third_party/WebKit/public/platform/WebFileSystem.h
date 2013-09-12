@@ -65,6 +65,13 @@ public:
     // create root path for file systems if it do not exist.
     virtual void openFileSystem(const WebURL& storagePartition, const WebFileSystemType, bool create, WebFileSystemCallbacks) { WEBKIT_ASSERT_NOT_REACHED(); }
 
+    // Resolves a filesystem URL.
+    // WebFileSystemCallbacks::didSucceed() must be called with filesystem
+    // information (name, root path and type) and file metadata (file path and
+    // file type) when the operation is completed successfully.
+    // WebFileSystemCallbacks::didFail() must be called otherwise.
+    virtual void resolveURL(const WebURL& fileSystemURL, WebFileSystemCallbacks) { WEBKIT_ASSERT_NOT_REACHED(); }
+
     // Deletes FileSystem.
     // WebFileSystemCallbacks::didSucceed() must be called when the operation
     // is completed successfully. WebFileSystemCallbacks::didFail() must be
