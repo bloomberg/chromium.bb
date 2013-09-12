@@ -28,44 +28,29 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RenderingNodeProxy_h
-#define RenderingNodeProxy_h
+#include "config.h"
+#include "core/rendering/RenderingConfiguration.h"
 
-#include "core/rendering/LayoutIndicator.h"
-#include "wtf/Noncopyable.h"
+#include "core/dom/Document.h"
 
 namespace WebCore {
 
-class QualifiedName;
-class Node;
-
-#define STRICT_LAYOUT_THREADING 0
-
-class RenderingNodeProxy {
-    WTF_MAKE_NONCOPYABLE(RenderingNodeProxy);
-public:
-    explicit RenderingNodeProxy(Node*);
-    ~RenderingNodeProxy();
-
-    bool hasTagName(const QualifiedName&) const;
-
-    Node* unsafeNode() const
-    {
-#if STRICT_LAYOUT_THREADING
-        ASSERT(!LayoutIndicator::inLayout());
-#endif
-        return m_node;
-    }
-
-    void clear() { m_node = 0; }
-    void set(Node* node) { m_node = node; }
-
-private:
-    Node* m_node;
-};
-
-#undef STRICT_LAYOUT_THREADING
-
+RenderingConfiguration::RenderingConfiguration()
+    : m_inQuirksMode(false)
+    , m_paginated(false)
+    , m_printing(false)
+{
 }
 
-#endif // RenderingNodeProxy_h
+RenderingConfiguration::~RenderingConfiguration()
+{
+}
+
+void RenderingConfiguration::update(Document& document)
+{
+    m_inQuirksMode = document.inQuirksMode();
+    m_paginated = document.paginated();
+    m_printing = document.printing();
+}
+
+}

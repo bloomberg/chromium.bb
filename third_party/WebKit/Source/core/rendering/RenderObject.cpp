@@ -1390,7 +1390,7 @@ void RenderObject::repaint() const
     if (!isRooted(&view))
         return;
 
-    if (view->printing())
+    if (view->document().printing())
         return; // Don't repaint if we're printing.
 
     RenderLayerModelObject* repaintContainer = containerForRepaint();
@@ -1404,7 +1404,7 @@ void RenderObject::repaintRectangle(const LayoutRect& r) const
     if (!isRooted(&view))
         return;
 
-    if (view->printing())
+    if (view->document().printing())
         return; // Don't repaint if we're printing.
 
     LayoutRect dirtyRect(r);
@@ -1426,7 +1426,7 @@ IntRect RenderObject::pixelSnappedAbsoluteClippedOverflowRect() const
 bool RenderObject::repaintAfterLayoutIfNeeded(const RenderLayerModelObject* repaintContainer, const LayoutRect& oldBounds, const LayoutRect& oldOutlineBox, const LayoutRect* newBoundsPtr, const LayoutRect* newOutlineBoxRectPtr)
 {
     RenderView* v = view();
-    if (v->printing())
+    if (v->document().printing())
         return false; // Don't repaint if we're printing.
 
     // This ASSERT fails due to animations.  See https://bugs.webkit.org/show_bug.cgi?id=37048

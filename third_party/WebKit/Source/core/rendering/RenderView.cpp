@@ -251,7 +251,7 @@ void RenderView::layoutContentInAutoLogicalHeightRegions(const LayoutState& stat
 
 void RenderView::layout()
 {
-    if (!document().paginated())
+    if (!configuration().paginated())
         setPageLogicalHeight(0);
 
     if (shouldUsePrintingLayout())
@@ -522,7 +522,7 @@ void RenderView::paintBoxDecorations(PaintInfo& paintInfo, const LayoutPoint&)
 
 bool RenderView::shouldRepaint(const LayoutRect& r) const
 {
-    if (printing() || r.width() == 0 || r.height() == 0)
+    if (document().printing() || r.width() == 0 || r.height() == 0)
         return false;
 
     if (!m_frameView)
@@ -585,7 +585,7 @@ void RenderView::computeRectForRepaint(const RenderLayerModelObject* repaintCont
     // then we should have found it by now.
     ASSERT_ARG(repaintContainer, !repaintContainer || repaintContainer == this);
 
-    if (printing())
+    if (document().printing())
         return;
 
     if (style()->isFlippedBlocksWritingMode()) {
@@ -879,14 +879,14 @@ void RenderView::selectionStartEnd(int& startPos, int& endPos) const
     endPos = m_selectionEndPos;
 }
 
-bool RenderView::printing() const
+void RenderView::updateConfiguration()
 {
-    return document().printing();
+    m_configuration.update(document());
 }
 
 bool RenderView::shouldUsePrintingLayout() const
 {
-    if (!printing() || !m_frameView)
+    if (!document().printing() || !m_frameView)
         return false;
     return m_frameView->frame().shouldUsePrintingLayout();
 }

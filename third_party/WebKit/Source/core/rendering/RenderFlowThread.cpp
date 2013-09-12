@@ -346,7 +346,7 @@ bool RenderFlowThread::hitTestFlowThreadPortionInRegion(RenderRegion* region, co
 
 bool RenderFlowThread::shouldRepaint(const LayoutRect& r) const
 {
-    if (view()->printing() || r.isEmpty())
+    if (view()->document().printing() || r.isEmpty())
         return false;
 
     return true;

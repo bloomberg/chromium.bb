@@ -891,6 +891,7 @@ void FrameView::performLayout(RenderObject* rootForThisLayout, bool inSubtreeLay
 
         beginDeferredRepaints();
         forceLayoutParentViewIfNeeded();
+        renderView()->updateConfiguration();
 
         // Text Autosizing requires two-pass layout which is incompatible with partial layout.
         // If enabled, only do partial layout for the second layout.
@@ -1019,7 +1020,7 @@ void FrameView::layout(bool allowSubtree)
         ScrollbarMode vMode;
         calculateScrollbarModesForLayout(hMode, vMode);
 
-        m_doFullRepaint = !inSubtreeLayout && !isPartialLayout && (m_firstLayout || toRenderView(rootForThisLayout)->printing());
+        m_doFullRepaint = !inSubtreeLayout && !isPartialLayout && (m_firstLayout || toRenderView(rootForThisLayout)->document().printing());
 
         if (!inSubtreeLayout && !isPartialLayout) {
             // Now set our scrollbar state for the layout.
@@ -1075,7 +1076,7 @@ void FrameView::layout(bool allowSubtree)
 
     bool neededFullRepaint = m_doFullRepaint;
 
-    if (!inSubtreeLayout && !isPartialLayout && !toRenderView(rootForThisLayout)->printing())
+    if (!inSubtreeLayout && !isPartialLayout && !toRenderView(rootForThisLayout)->document().printing())
         adjustViewSize();
 
     m_doFullRepaint = neededFullRepaint;
@@ -2260,7 +2261,7 @@ void FrameView::sendResizeEventIfNeeded()
     ASSERT(m_frame);
 
     RenderView* renderView = this->renderView();
-    if (!renderView || renderView->printing())
+    if (!renderView || renderView->document().printing())
         return;
 
     IntSize currentSize = layoutSize(IncludeScrollbars);

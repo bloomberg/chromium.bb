@@ -28,44 +28,33 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RenderingNodeProxy_h
-#define RenderingNodeProxy_h
+#ifndef RenderingConfiguration_h
+#define RenderingConfiguration_h
 
-#include "core/rendering/LayoutIndicator.h"
 #include "wtf/Noncopyable.h"
 
 namespace WebCore {
 
-class QualifiedName;
-class Node;
+class Document;
 
-#define STRICT_LAYOUT_THREADING 0
-
-class RenderingNodeProxy {
-    WTF_MAKE_NONCOPYABLE(RenderingNodeProxy);
+class RenderingConfiguration {
+    WTF_MAKE_NONCOPYABLE(RenderingConfiguration);
 public:
-    explicit RenderingNodeProxy(Node*);
-    ~RenderingNodeProxy();
+    RenderingConfiguration();
+    ~RenderingConfiguration();
 
-    bool hasTagName(const QualifiedName&) const;
+    void update(Document&);
 
-    Node* unsafeNode() const
-    {
-#if STRICT_LAYOUT_THREADING
-        ASSERT(!LayoutIndicator::inLayout());
-#endif
-        return m_node;
-    }
-
-    void clear() { m_node = 0; }
-    void set(Node* node) { m_node = node; }
+    bool inQuirksMode() const { return m_inQuirksMode; }
+    bool paginated() const { return m_paginated; }
+    bool printing() const { return m_printing; }
 
 private:
-    Node* m_node;
+    bool m_inQuirksMode;
+    bool m_paginated;
+    bool m_printing;
 };
-
-#undef STRICT_LAYOUT_THREADING
 
 }
 
-#endif // RenderingNodeProxy_h
+#endif // RenderingConfiguration_h

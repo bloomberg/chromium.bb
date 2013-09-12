@@ -24,8 +24,10 @@
 
 #include "core/page/FrameView.h"
 #include "core/platform/PODFreeListArena.h"
+#include "core/rendering/LayoutIndicator.h"
 #include "core/rendering/LayoutState.h"
 #include "core/rendering/RenderBlockFlow.h"
+#include "core/rendering/RenderingConfiguration.h"
 #include "wtf/OwnPtr.h"
 
 namespace WebCore {
@@ -93,7 +95,13 @@ public:
     void selectionStartEnd(int& startPos, int& endPos) const;
     void repaintSelection() const;
 
-    bool printing() const;
+    void updateConfiguration();
+    const RenderingConfiguration& configuration()
+    {
+        // If we're not inLayout(), then the configuration might be out of date.
+        ASSERT(LayoutIndicator::inLayout());
+        return m_configuration;
+    }
 
     virtual void absoluteRects(Vector<IntRect>&, const LayoutPoint& accumulatedOffset) const;
     virtual void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const;
@@ -198,14 +206,13 @@ public:
 
     virtual bool backgroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect) const OVERRIDE FINAL;
 
-protected:
+private:
     virtual void mapLocalToContainer(const RenderLayerModelObject* repaintContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = 0) const OVERRIDE;
     virtual const RenderObject* pushMappingToContainer(const RenderLayerModelObject* ancestorToStopAt, RenderGeometryMap&) const OVERRIDE;
     virtual void mapAbsoluteToLocalPoint(MapCoordinatesFlags, TransformState&) const;
     virtual bool requiresColumns(int desiredColumnCount) const OVERRIDE;
     virtual void computeSelfHitTestRects(Vector<LayoutRect>&, const LayoutPoint& layerOffset) const OVERRIDE;
 
-private:
     bool initializeLayoutState(LayoutState&);
 
     virtual void calcColumnWidth() OVERRIDE;
@@ -260,11 +267,16 @@ private:
     friend class LayoutStateMaintainer;
     friend class LayoutStateDisabler;
 
-protected:
+    bool shouldUsePrintingLayout() const;
+
     FrameView* m_frameView;
 
     RenderObject* m_selectionStart;
     RenderObject* m_selectionEnd;
+
+    // Please use the configuration() accessor instead of accessing this member directly.
+    RenderingConfiguration m_configuration;
+
     int m_selectionStartPos;
     int m_selectionEndPos;
 
@@ -272,9 +284,6 @@ protected:
 
     typedef HashSet<RenderWidget*> RenderWidgetSet;
     RenderWidgetSet m_widgets;
-
-private:
-    bool shouldUsePrintingLayout() const;
 
     LayoutUnit m_pageLogicalHeight;
     bool m_pageLogicalHeightChanged;
