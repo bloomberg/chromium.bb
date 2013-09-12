@@ -5,7 +5,7 @@
 
 """Archives a set of files to a server."""
 
-__version__ = '0.1'
+__version__ = '0.1.1'
 
 import binascii
 import cStringIO
@@ -13,6 +13,7 @@ import hashlib
 import itertools
 import logging
 import os
+import Queue
 import sys
 import time
 import urllib
@@ -21,8 +22,6 @@ import zlib
 from third_party import colorama
 from third_party.depot_tools import fix_encoding
 from third_party.depot_tools import subcommand
-
-import run_isolated
 
 from utils import net
 from utils import threading_utils
@@ -56,6 +55,25 @@ ALREADY_COMPRESSED_TYPES = [
     '7z', 'avi', 'cur', 'gif', 'h264', 'jar', 'jpeg', 'jpg', 'pdf', 'png',
     'wav', 'zip'
 ]
+
+
+# The file size to be used when we don't know the correct file size,
+# generally used for .isolated files.
+UNKNOWN_FILE_SIZE = None
+
+
+# The size of each chunk to read when downloading and unzipping files.
+ZIPPED_FILE_CHUNK = 16 * 1024
+
+
+class ConfigError(ValueError):
+  """Generic failure to load a .isolated file."""
+  pass
+
+
+class MappingError(OSError):
+  """Failed to recreate the tree."""
+  pass
 
 
 def randomness():
@@ -128,12 +146,28 @@ def sha1_file(filepath):
   return digest.hexdigest()
 
 
+def valid_file(filepath, size):
+  """Determines if the given files appears valid.
+
+  Currently it just checks the file's size.
+  """
+  if size == UNKNOWN_FILE_SIZE:
+    return True
+  actual_size = os.stat(filepath).st_size
+  if size != actual_size:
+    logging.warning(
+        'Found invalid item %s; %d != %d',
+        os.path.basename(filepath), actual_size, size)
+    return False
+  return True
+
+
 def url_read(url, **kwargs):
   result = net.url_read(url, **kwargs)
   if result is None:
     # If we get no response from the server, assume it is down and raise an
     # exception.
-    raise run_isolated.MappingError('Unable to connect to server %s' % url)
+    raise MappingError('Unable to connect to server %s' % url)
   return result
 
 
@@ -158,7 +192,7 @@ def upload_hash_content_to_blobstore(
     # Retry HTTP 50x here.
     upload_url = net.url_read(generate_upload_url, data=data)
     if not upload_url:
-      raise run_isolated.MappingError(
+      raise MappingError(
           'Unable to connect to server %s' % generate_upload_url)
 
     # Do not retry this request on HTTP 50x. Regenerate an upload url each time
@@ -167,7 +201,7 @@ def upload_hash_content_to_blobstore(
         upload_url, data=body, content_type=content_type, retry_50x=False)
     if result is not None:
       return result
-  raise run_isolated.MappingError(
+  raise MappingError(
       'Unable to connect to server %s' % generate_upload_url)
 
 
@@ -214,7 +248,7 @@ def check_files_exist_on_server(query_url, queries):
   response = url_read(
       query_url, data=body, content_type='application/octet-stream')
   if len(queries) != len(response):
-    raise run_isolated.MappingError(
+    raise MappingError(
         'Got an incorrect number of responses from the server. Expected %d, '
         'but got %d' % (len(queries), len(response)))
 
@@ -224,6 +258,82 @@ def check_files_exist_on_server(query_url, queries):
   logging.info('Queried %d files, %d cache hit',
                len(queries), len(queries) - len(missing_files))
   return missing_files
+
+
+class RemoteOperation(object):
+  """Priority based worker queue to operate on action items.
+
+  It execute a function with the given task items. It is specialized to download
+  files.
+
+  When the priority of items is equals, works in strict FIFO mode.
+  """
+  # Initial and maximum number of worker threads.
+  INITIAL_WORKERS = 2
+  MAX_WORKERS = 16
+  # Priorities.
+  LOW, MED, HIGH = (1<<8, 2<<8, 3<<8)
+  INTERNAL_PRIORITY_BITS = (1<<8) - 1
+  RETRIES = 5
+
+  def __init__(self, do_item):
+    # Function to fetch a remote object or upload to a remote location.
+    self._do_item = do_item
+    # Contains tuple(priority, obj).
+    self._done = Queue.PriorityQueue()
+    self._pool = threading_utils.ThreadPool(
+        self.INITIAL_WORKERS, self.MAX_WORKERS, 0, 'remote')
+
+  def join(self):
+    """Blocks until the queue is empty."""
+    return self._pool.join()
+
+  def close(self):
+    """Terminates all worker threads."""
+    self._pool.close()
+
+  def add_item(self, priority, obj, dest, size):
+    """Retrieves an object from the remote data store.
+
+    The smaller |priority| gets fetched first.
+
+    Thread-safe.
+    """
+    assert (priority & self.INTERNAL_PRIORITY_BITS) == 0
+    return self._add_item(priority, obj, dest, size)
+
+  def _add_item(self, priority, obj, dest, size):
+    assert isinstance(obj, basestring), obj
+    assert isinstance(dest, basestring), dest
+    assert size is None or isinstance(size, int), size
+    return self._pool.add_task(
+        priority, self._task_executer, priority, obj, dest, size)
+
+  def get_one_result(self):
+    return self._pool.get_one_result()
+
+  def _task_executer(self, priority, obj, dest, size):
+    """Wraps self._do_item to trap and retry on IOError exceptions."""
+    try:
+      self._do_item(obj, dest)
+      if size and not valid_file(dest, size):
+        download_size = os.stat(dest).st_size
+        os.remove(dest)
+        raise IOError('File incorrect size after download of %s. Got %s and '
+                      'expected %s' % (obj, download_size, size))
+      # TODO(maruel): Technically, we'd want to have an output queue to be a
+      # PriorityQueue.
+      return obj
+    except IOError as e:
+      logging.debug('Caught IOError: %s', e)
+      # Remove unfinished download.
+      if os.path.exists(dest):
+        os.remove(dest)
+      # Retry a few times, lowering the priority.
+      if (priority & self.INTERNAL_PRIORITY_BITS) < self.RETRIES:
+        self._add_item(priority + 1, obj, dest, size)
+        return
+      raise
 
 
 def compression_level(filename):
@@ -239,7 +349,7 @@ def read_and_compress(filepath, level):
   compressed_data = cStringIO.StringIO()
   with open(filepath, 'rb') as f:
     while True:
-      chunk = f.read(run_isolated.ZIPPED_FILE_CHUNK)
+      chunk = f.read(ZIPPED_FILE_CHUNK)
       if not chunk:
         break
       compressed_data.write(compressor.compress(chunk))
@@ -254,8 +364,8 @@ def zip_and_trigger_upload(infile, metadata, upload_function):
   # if not metadata['T']:
   compressed_data = read_and_compress(infile, compression_level(infile))
   priority = (
-      run_isolated.RemoteOperation.HIGH if metadata.get('priority', '1') == '0'
-      else run_isolated.RemoteOperation.MED)
+      RemoteOperation.HIGH if metadata.get('priority', '1') == '0'
+      else RemoteOperation.MED)
   return upload_function(priority, compressed_data, metadata['h'], None)
 
 
@@ -312,7 +422,7 @@ def upload_sha1_tree(base_url, indir, infiles, namespace):
   zipping_pool = threading_utils.ThreadPool(min(2, num_threads),
                                             num_threads, 0, 'zip')
   remote = IsolateServer(base_url, namespace)
-  remote_uploader = run_isolated.RemoteOperation(remote.store)
+  remote_uploader = RemoteOperation(remote.store)
 
   # Starts the zip and upload process for files that are missing
   # from the server.
@@ -428,9 +538,7 @@ def main(args):
   try:
     return dispatcher.execute(
         OptionParserIsolateServer(version=__version__), args)
-  except (
-      run_isolated.MappingError,
-      run_isolated.ConfigError) as e:
+  except (ConfigError, MappingError) as e:
     sys.stderr.write('\nError: ')
     sys.stderr.write(str(e))
     sys.stderr.write('\n')

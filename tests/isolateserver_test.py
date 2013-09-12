@@ -10,6 +10,7 @@ import logging
 import os
 import sys
 import threading
+import time
 import unittest
 import zlib
 
@@ -257,6 +258,41 @@ class IsolateServerTest(auto_stub.TestCase):
     result = isolateserver.upload_hash_content_to_blobstore(
         path + 'gen_url?foo#bar', data[:], s, content)
     self.assertEqual('ok42', result)
+
+
+def upload_file(item, _dest):
+  if type(item) == type(Exception) and issubclass(item, Exception):
+    raise item()
+  elif isinstance(item, int):
+    time.sleep(int(item) / 100)
+
+
+class RemoteOperationTest(auto_stub.TestCase):
+  def test_remote_no_errors(self):
+    files_to_handle = 50
+    remote = isolateserver.RemoteOperation(upload_file)
+
+    for i in range(files_to_handle):
+      remote.add_item(
+          isolateserver.RemoteOperation.MED,
+          'obj%d' % i,
+          'dest%d' % i,
+          isolateserver.UNKNOWN_FILE_SIZE)
+
+    items = sorted(remote.join())
+    expected = sorted('obj%d' % i for i in range(files_to_handle))
+    self.assertEqual(expected, items)
+
+  def test_remote_with_errors(self):
+    remote = isolateserver.RemoteOperation(upload_file)
+
+    def RaiseIOError(*_):
+      raise IOError()
+    remote._do_item = RaiseIOError
+    remote.add_item(isolateserver.RemoteOperation.MED, 'ignored', '',
+                    isolateserver.UNKNOWN_FILE_SIZE)
+    self.assertRaises(IOError, remote.join)
+    self.assertEqual([], remote.join())
 
 
 if __name__ == '__main__':

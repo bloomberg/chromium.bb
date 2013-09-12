@@ -8,6 +8,8 @@
 Keeps a local cache.
 """
 
+__version__ = '0.1.1'
+
 import ctypes
 import hashlib
 import httplib
@@ -15,7 +17,6 @@ import json
 import logging
 import optparse
 import os
-import Queue
 import random
 import re
 import shutil
@@ -34,6 +35,9 @@ from utils import threading_utils
 from utils import tools
 from utils import zip_package
 
+import isolateserver
+from isolateserver import ConfigError, MappingError
+
 
 # Absolute path to this file (can be None if running from zip on Mac).
 THIS_FILE_PATH = os.path.abspath(__file__) if __file__ else None
@@ -48,13 +52,6 @@ MAIN_DIR = os.path.dirname(os.path.abspath(zip_package.get_main_script_path()))
 HARDLINK, HARDLINK_WITH_FALLBACK, SYMLINK, COPY = range(1, 5)
 
 RE_IS_SHA1 = re.compile(r'^[a-fA-F0-9]{40}$')
-
-# The file size to be used when we don't know the correct file size,
-# generally used for .isolated files.
-UNKNOWN_FILE_SIZE = None
-
-# The size of each chunk to read when downloading and unzipping files.
-ZIPPED_FILE_CHUNK = 16 * 1024
 
 # The name of the log file to use.
 RUN_ISOLATED_LOG_FILE = 'run_isolated.log'
@@ -88,16 +85,6 @@ FLAVOR_MAPPING = {
 }
 
 
-class ConfigError(ValueError):
-  """Generic failure to load a .isolated file."""
-  pass
-
-
-class MappingError(OSError):
-  """Failed to recreate the tree."""
-  pass
-
-
 def get_as_zip_package(executable=True):
   """Returns ZipPackage with this module and all its dependencies.
 
@@ -111,6 +98,7 @@ def get_as_zip_package(executable=True):
   assert BASE_DIR
   package = zip_package.ZipPackage(root=BASE_DIR)
   package.add_python_file(THIS_FILE_PATH, '__main__.py' if executable else None)
+  package.add_python_file(os.path.join(BASE_DIR, 'isolateserver.py'))
   package.add_directory(os.path.join(BASE_DIR, 'third_party'))
   package.add_directory(os.path.join(BASE_DIR, 'utils'))
   return package
@@ -335,20 +323,6 @@ def load_isolated(content, os_flavor=None):
   return data
 
 
-def valid_file(filepath, size):
-  """Determines if the given files appears valid (currently it just checks
-  the file's size)."""
-  if size == UNKNOWN_FILE_SIZE:
-    return True
-  actual_size = os.stat(filepath).st_size
-  if size != actual_size:
-    logging.warning(
-        'Found invalid item %s; %d != %d',
-        os.path.basename(filepath), actual_size, size)
-    return False
-  return True
-
-
 class IsolateServer(object):
   """Client class to download or upload to Isolate Server."""
   def __init__(self, base_url):
@@ -375,7 +349,7 @@ class IsolateServer(object):
       size = 0
       with open(dest, 'wb') as f:
         while True:
-          chunk = connection.read(ZIPPED_FILE_CHUNK)
+          chunk = connection.read(isolateserver.ZIPPED_FILE_CHUNK)
           if not chunk:
             break
           size += len(chunk)
@@ -433,82 +407,6 @@ def get_storage_api(file_or_url):
     return FileSystem(file_or_url)
 
 
-class RemoteOperation(object):
-  """Priority based worker queue to operate on action items.
-
-  It execute a function with the given task items. It is specialized to download
-  files.
-
-  When the priority of items is equals, works in strict FIFO mode.
-  """
-  # Initial and maximum number of worker threads.
-  INITIAL_WORKERS = 2
-  MAX_WORKERS = 16
-  # Priorities.
-  LOW, MED, HIGH = (1<<8, 2<<8, 3<<8)
-  INTERNAL_PRIORITY_BITS = (1<<8) - 1
-  RETRIES = 5
-
-  def __init__(self, do_item):
-    # Function to fetch a remote object or upload to a remote location.
-    self._do_item = do_item
-    # Contains tuple(priority, obj).
-    self._done = Queue.PriorityQueue()
-    self._pool = threading_utils.ThreadPool(
-        self.INITIAL_WORKERS, self.MAX_WORKERS, 0, 'remote')
-
-  def join(self):
-    """Blocks until the queue is empty."""
-    return self._pool.join()
-
-  def close(self):
-    """Terminates all worker threads."""
-    self._pool.close()
-
-  def add_item(self, priority, obj, dest, size):
-    """Retrieves an object from the remote data store.
-
-    The smaller |priority| gets fetched first.
-
-    Thread-safe.
-    """
-    assert (priority & self.INTERNAL_PRIORITY_BITS) == 0
-    return self._add_item(priority, obj, dest, size)
-
-  def _add_item(self, priority, obj, dest, size):
-    assert isinstance(obj, basestring), obj
-    assert isinstance(dest, basestring), dest
-    assert size is None or isinstance(size, int), size
-    return self._pool.add_task(
-        priority, self._task_executer, priority, obj, dest, size)
-
-  def get_one_result(self):
-    return self._pool.get_one_result()
-
-  def _task_executer(self, priority, obj, dest, size):
-    """Wraps self._do_item to trap and retry on IOError exceptions."""
-    try:
-      self._do_item(obj, dest)
-      if size and not valid_file(dest, size):
-        download_size = os.stat(dest).st_size
-        os.remove(dest)
-        raise IOError('File incorrect size after download of %s. Got %s and '
-                      'expected %s' % (obj, download_size, size))
-      # TODO(maruel): Technically, we'd want to have an output queue to be a
-      # PriorityQueue.
-      return obj
-    except IOError as e:
-      logging.debug('Caught IOError: %s', e)
-      # Remove unfinished download.
-      if os.path.exists(dest):
-        os.remove(dest)
-      # Retry a few times, lowering the priority.
-      if (priority & self.INTERNAL_PRIORITY_BITS) < self.RETRIES:
-        self._add_item(priority + 1, obj, dest, size)
-        return
-      raise
-
-
 class CachePolicies(object):
   def __init__(self, max_cache_size, min_free_space, max_items):
     """
@@ -536,7 +434,7 @@ class Cache(object):
     """
     Arguments:
     - cache_dir: Directory where to place the cache.
-    - remote_fetcher: RemoteOperation where to fetch items from.
+    - remote_fetcher: isolateserver.RemoteOperation where to fetch items from.
     - policies: cache retention policies.
     """
     self.cache_dir = cache_dir
@@ -666,7 +564,7 @@ class Cache(object):
     found = False
 
     if item in self.lru:
-      if not valid_file(self.path(item), size):
+      if not isolateserver.valid_file(self.path(item), size):
         self.lru.pop(item)
         self._delete_file(item, size)
       else:
@@ -802,7 +700,10 @@ class IsolatedFile(object):
         if 'h' in properties:
           # Preemptively request files.
           logging.debug('fetching %s' % filepath)
-          cache.retrieve(RemoteOperation.MED, properties['h'], properties['s'])
+          cache.retrieve(
+              isolateserver.RemoteOperation.MED,
+              properties['h'],
+              properties['s'])
     self.files_fetched = True
 
 
@@ -848,7 +749,10 @@ class Settings(object):
       assert h not in pending
       seen.add(h)
       pending[h] = isolated_file
-      cache.retrieve(RemoteOperation.HIGH, h, UNKNOWN_FILE_SIZE)
+      cache.retrieve(
+          isolateserver.RemoteOperation.HIGH,
+          h,
+          isolateserver.UNKNOWN_FILE_SIZE)
 
     retrieve(self.root)
 
@@ -964,7 +868,8 @@ def run_tha_test(isolated_hash, cache_dir, retriever, policies):
   directory and runs the executable.
   """
   settings = Settings()
-  with Cache(cache_dir, RemoteOperation(retriever), policies) as cache:
+  with Cache(
+      cache_dir, isolateserver.RemoteOperation(retriever), policies) as cache:
     outdir = make_temp_dir('run_tha_test', cache_dir)
     try:
       # Initiate all the files download.
@@ -1035,7 +940,9 @@ def run_tha_test(isolated_hash, cache_dir, retriever, policies):
 def main():
   tools.disable_buffering()
   parser = tools.OptionParserWithLogging(
-      usage='%prog <options>', log_file=RUN_ISOLATED_LOG_FILE)
+      usage='%prog <options>',
+      version=__version__,
+      log_file=RUN_ISOLATED_LOG_FILE)
 
   group = optparse.OptionGroup(parser, 'Data source')
   group.add_option(
