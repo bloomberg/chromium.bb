@@ -862,6 +862,7 @@ static const struct HSTSPreload kPreloadedSTS[] = {
   {12, false, "\006bcrook\003com", true, kNoPins, DOMAIN_NOT_PINNED },
   {17, true, "\004wiki\006python\003org", true, kNoPins, DOMAIN_NOT_PINNED },
   {9, false, "\004lumi\002do", true, kNoPins, DOMAIN_NOT_PINNED },
+  {22, true, "\020appseccalifornia\003org", true, kNoPins, DOMAIN_NOT_PINNED },
 };
 static const size_t kNumPreloadedSTS = ARRAYSIZE_UNSAFE(kPreloadedSTS);
 
