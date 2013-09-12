@@ -32,6 +32,8 @@
 
 namespace {
 
+// Observer that waits for navigation to complete and for the password infobar
+// to be shown.
 class NavigationObserver : public content::NotificationObserver,
                            public content::WebContentsObserver {
  public:
@@ -47,6 +49,13 @@ class NavigationObserver : public content::NotificationObserver,
 
   virtual ~NavigationObserver() {}
 
+  // Normally Wait() will not return until a main frame navigation occurs.
+  // If a path is set, Wait() will return after this path has been seen,
+  // regardless of the frame that navigated. Useful for multi-frame pages.
+  void SetPathToWaitFor(const std::string& path) {
+    wait_for_path_ = path;
+  }
+
   // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
@@ -61,7 +70,12 @@ class NavigationObserver : public content::NotificationObserver,
       const GURL& validated_url,
       bool is_main_frame,
       content::RenderViewHost* render_view_host) OVERRIDE {
-    message_loop_runner_->Quit();
+    if (!wait_for_path_.empty()) {
+      if (validated_url.path() == wait_for_path_)
+        message_loop_runner_->Quit();
+    } else if (is_main_frame) {
+      message_loop_runner_->Quit();
+    }
   }
 
   bool infobar_shown() const { return infobar_shown_; }
@@ -71,6 +85,7 @@ class NavigationObserver : public content::NotificationObserver,
   }
 
  private:
+  std::string wait_for_path_;
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
   bool infobar_shown_;
   content::NotificationRegistrar registrar_;
@@ -179,6 +194,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   // If you are filling out a password form in one frame and a different frame
   // navigates, this should not trigger the infobar.
   NavigationObserver observer(WebContents());
+  observer.SetPathToWaitFor("/password/done.html");
   std::string fill =
       "var first_frame = document.getElementById('first_frame');"
       "var frame_doc = first_frame.contentDocument;"
@@ -201,9 +217,10 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   // Make sure that we prompt to save password even if a sub-frame navigation
   // happens first.
   NavigationObserver observer(WebContents());
+  observer.SetPathToWaitFor("/password/done.html");
   std::string navigate_frame =
       "var second_iframe = document.getElementById('second_frame');"
-      "second_iframe.contentWindow.location.href = 'done.html';";
+      "second_iframe.contentWindow.location.href = 'other.html';";
   std::string fill_and_submit =
       "var first_frame = document.getElementById('first_frame');"
       "var frame_doc = first_frame.contentDocument;"
