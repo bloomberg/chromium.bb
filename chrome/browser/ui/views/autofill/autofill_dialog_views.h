@@ -81,6 +81,7 @@ class AutofillDialogViews : public AutofillDialogView,
   virtual void UpdatesFinished() OVERRIDE;
   virtual void UpdateAccountChooser() OVERRIDE;
   virtual void UpdateButtonStrip() OVERRIDE;
+  virtual void UpdateOverlay() OVERRIDE;
   virtual void UpdateDetailArea() OVERRIDE;
   virtual void UpdateForErrors() OVERRIDE;
   virtual void UpdateNotificationArea() OVERRIDE;
@@ -289,9 +290,6 @@ class AutofillDialogViews : public AutofillDialogView,
     // overlay, then fade out the background of the overlay (revealing the
     // dialog behind the overlay). This avoids cross-fade.
     scoped_ptr<ui::MultiAnimation> fade_out_;
-
-    // A timer that tells |this| when it's time to refresh the overlay.
-    base::Timer refresh_timer_;
 
     DISALLOW_COPY_AND_ASSIGN(OverlayView);
   };

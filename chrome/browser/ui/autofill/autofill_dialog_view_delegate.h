@@ -85,7 +85,7 @@ class AutofillDialogViewDelegate {
 
   // Returns a struct full of data concerning what overlay, if any, should be
   // displayed on top of the dialog.
-  virtual DialogOverlayState GetDialogOverlay() const = 0;
+  virtual DialogOverlayState GetDialogOverlay() = 0;
 
   // Returns ranges to linkify in the text returned by |LegalDocumentsText()|.
   virtual const std::vector<gfx::Range>& LegalDocumentLinks() = 0;

@@ -150,6 +150,10 @@ class TestAutofillDialogView : public AutofillDialogView {
     EXPECT_GE(updates_started_, 1);
   }
 
+  virtual void UpdateOverlay() OVERRIDE {
+    EXPECT_GE(updates_started_, 1);
+  }
+
   virtual void UpdateDetailArea() OVERRIDE {
     EXPECT_GE(updates_started_, 1);
   }

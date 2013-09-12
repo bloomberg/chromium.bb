@@ -633,8 +633,7 @@ AutofillDialogViews::OverlayView::OverlayView(
     AutofillDialogViewDelegate* delegate)
     : delegate_(delegate),
       image_view_(new views::ImageView()),
-      message_stack_(new views::View()),
-      refresh_timer_(false, false) {
+      message_stack_(new views::View()) {
   set_background(views::Background::CreateSolidBackground(GetNativeTheme()->
       GetSystemColor(ui::NativeTheme::kColorId_DialogBackground)));
 
@@ -695,15 +694,6 @@ void AutofillDialogViews::OverlayView::SetState(
   InvalidateLayout();
   if (parent())
     parent()->Layout();
-
-  if (state.expiry != base::TimeDelta()) {
-    refresh_timer_.Start(FROM_HERE,
-                         state.expiry,
-                         base::Bind(&OverlayView::UpdateState,
-                                    base::Unretained(this)));
-  } else {
-    refresh_timer_.Stop();
-  }
 }
 
 void AutofillDialogViews::OverlayView::BeginFadeOut() {
@@ -1378,10 +1368,12 @@ void AutofillDialogViews::UpdateButtonStrip() {
   UpdateButtonStripExtraView();
   GetDialogClientView()->UpdateDialogButtons();
 
+  ContentsPreferredSizeChanged();
+}
+
+void AutofillDialogViews::UpdateOverlay() {
   DialogOverlayState overlay_state = delegate_->GetDialogOverlay();
   overlay_view_->UpdateState();
-
-  ContentsPreferredSizeChanged();
 }
 
 void AutofillDialogViews::UpdateDetailArea() {

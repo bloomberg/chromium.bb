@@ -35,7 +35,7 @@ class MockAutofillDialogViewDelegate : public AutofillDialogViewDelegate {
   MOCK_CONST_METHOD0(ButtonStripImage, gfx::Image());
   MOCK_CONST_METHOD0(GetDialogButtons, int());
   MOCK_CONST_METHOD1(IsDialogButtonEnabled, bool(ui::DialogButton button));
-  MOCK_CONST_METHOD0(GetDialogOverlay, DialogOverlayState());
+  MOCK_METHOD0(GetDialogOverlay, DialogOverlayState());
   MOCK_METHOD0(LegalDocumentLinks, const std::vector<gfx::Range>&());
   MOCK_CONST_METHOD1(SectionIsActive, bool(DialogSection));
   MOCK_CONST_METHOD1(RequestedFieldsForSection,

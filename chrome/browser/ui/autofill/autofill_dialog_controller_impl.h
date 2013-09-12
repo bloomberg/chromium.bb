@@ -35,6 +35,8 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/ssl_status.h"
+#include "ui/base/animation/animation_delegate.h"
+#include "ui/base/animation/linear_animation.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/ui_base_types.h"
 #include "url/gurl.h"
@@ -76,7 +78,8 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
                                      public wallet::WalletClientDelegate,
                                      public wallet::WalletSigninHelperDelegate,
                                      public PersonalDataManagerObserver,
-                                     public AccountChooserModelDelegate {
+                                     public AccountChooserModelDelegate,
+                                     public ui::AnimationDelegate {
  public:
   virtual ~AutofillDialogControllerImpl();
 
@@ -118,7 +121,7 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   virtual gfx::Image ButtonStripImage() const OVERRIDE;
   virtual int GetDialogButtons() const OVERRIDE;
   virtual bool IsDialogButtonEnabled(ui::DialogButton button) const OVERRIDE;
-  virtual DialogOverlayState GetDialogOverlay() const OVERRIDE;
+  virtual DialogOverlayState GetDialogOverlay() OVERRIDE;
   virtual const std::vector<gfx::Range>& LegalDocumentLinks() OVERRIDE;
   virtual bool SectionIsActive(DialogSection section) const OVERRIDE;
   virtual const DetailInputs& RequestedFieldsForSection(DialogSection section)
@@ -218,6 +221,10 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
       const GoogleServiceAuthError& error) OVERRIDE;
   virtual void OnDidFetchWalletCookieValue(
       const std::string& cookie_value) OVERRIDE;
+
+  // ui::AnimationDelegate implementation.
+  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
+  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
 
  protected:
   // Exposed for testing.
@@ -360,6 +367,15 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   // invalid suggestions, so if no sections are based on existing data,
   // |view_->UpdateForErrors()| is not called.
   void UpdateForErrors();
+
+  // Kicks off |card_scrambling_refresher_|.
+  void StartCardScramblingRefresher();
+
+  // Changes |scrambled_card_number_| and pushes an update to the view.
+  void RefreshCardScramblingOverlay();
+
+  // Tells the view to update the overlay.
+  void PushOverlayUpdate();
 
   // Creates a DataModelWrapper item for the item that's checked in the
   // suggestion model for |section|. This may represent Autofill
@@ -712,6 +728,23 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   // The timer that delays enabling submit button for a short period of time on
   // startup.
   base::OneShotTimer<AutofillDialogControllerImpl> submit_button_delay_timer_;
+
+  // The card scrambling animation displays a random number in place of an
+  // actual credit card number. This is that random number.
+  base::string16 scrambled_card_number_;
+
+  // Two timers to deal with the card scrambling animation. The first provides
+  // a one second delay before the numbers start scrambling. The second controls
+  // the rate of refresh for the number scrambling.
+  base::OneShotTimer<AutofillDialogControllerImpl> card_scrambling_delay_;
+  base::RepeatingTimer<AutofillDialogControllerImpl> card_scrambling_refresher_;
+
+  // An animation which controls the background fade when the card is done
+  // scrambling.
+  ui::LinearAnimation card_generated_animation_;
+
+  // A username string we display in the card scrambling/generated overlay.
+  base::string16 submitted_cardholder_name_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillDialogControllerImpl);
 };

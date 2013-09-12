@@ -22,7 +22,6 @@ class MultiAnimation;
 }  // ui
 
 class AnimationDelegateBridge;
-class OverlayTimerBridge;
 
 @class AutofillMessageStackView;
 
@@ -45,9 +44,6 @@ class OverlayTimerBridge;
 
   scoped_ptr<ui::MultiAnimation> fadeOutAnimation_;  // Animation rules.
   scoped_ptr<AnimationDelegateBridge> animationDelegate_;
-
-  // Timer to control refresh rate of the overlay's state.
-  scoped_ptr<OverlayTimerBridge> refreshTimer_;
 
   autofill::AutofillDialogViewDelegate* delegate_;  // not owned, owns dialog.
 }

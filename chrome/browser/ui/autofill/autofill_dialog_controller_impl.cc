@@ -84,6 +84,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia_operations.h"
+#include "ui/gfx/skia_util.h"
 
 namespace autofill {
 
@@ -462,22 +463,27 @@ scoped_ptr<DialogNotification> GetWalletError(
 }
 
 gfx::Image GetGeneratedCardImage(const base::string16& card_number,
-                                 const base::string16& name) {
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  const gfx::ImageSkia* card =
-      rb.GetImageSkiaNamed(IDR_AUTOFILL_GENERATED_CARD);
-  gfx::Canvas canvas(card->size(), ui::SCALE_FACTOR_100P, false);
-  canvas.DrawImageInt(*card, 0, 0);
+                                 const base::string16& name,
+                                 const SkColor& gradient_top,
+                                 const SkColor& gradient_bottom) {
+  const int kCardWidthPx = 300;
+  const int kCardHeightPx = 190;
+  const gfx::Size size(kCardWidthPx, kCardHeightPx);
+  gfx::Canvas canvas(size, ui::SCALE_FACTOR_100P, false);
 
-  // TODO(estade): space the text out a bit better. We might need a larger
-  // card image.
-  gfx::Rect display_rect(gfx::Point(), card->size());
-  display_rect.Inset(8, 0, 14, 0);
-  gfx::Font monospace("monospace", 12);
+  gfx::Rect display_rect(size);
+
+  skia::RefPtr<SkShader> shader = gfx::CreateGradientShader(
+      0, size.height(), gradient_top, gradient_bottom);
+  SkPaint paint;
+  paint.setShader(shader.get());
+  canvas.DrawRoundRect(display_rect, 8, paint);
+
+  display_rect.Inset(20, 0, 0, 0);
+  gfx::Font monospace("monospace", 18);
   gfx::ShadowValues shadows;
-  shadows.push_back(gfx::ShadowValue(gfx::Point(0, 1),
-                    0.0,
-                    SkColorSetARGB(85, 0, 0, 0)));
+  shadows.push_back(gfx::ShadowValue(gfx::Point(0, 1), 1.0, SK_ColorBLACK));
+  // TODO(estade): use DrawStringRectWithShadows().
   canvas.DrawStringWithShadows(
       card_number,
       monospace,
@@ -485,7 +491,7 @@ gfx::Image GetGeneratedCardImage(const base::string16& card_number,
       display_rect, 0, 0, shadows);
 
   base::string16 capitalized_name = base::i18n::ToUpper(name);
-  display_rect.set_y(24);
+  display_rect.Inset(0, size.height() / 2, 0, 0);
   canvas.DrawStringWithShadows(
       capitalized_name,
       monospace,
@@ -514,7 +520,15 @@ std::string GetIdToSelect(const std::string& default_id,
   return !previously_selected_id.empty() ? previously_selected_id : default_id;
 }
 
-
+// Generate a random card number in a user displayable format.
+base::string16 GenerateRandomCardNumber() {
+  std::string card_number;
+  for (size_t i = 0; i < 4; ++i) {
+    int part = base::RandInt(0, 10000);
+    base::StringAppendF(&card_number, "%04d ", part);
+  }
+  return ASCIIToUTF16(card_number);
+}
 
 }  // namespace
 
@@ -794,11 +808,14 @@ bool AutofillDialogControllerImpl::IsDialogButtonEnabled(
   return !is_submitting_ || IsSubmitPausedOn(wallet::VERIFY_CVV);
 }
 
-DialogOverlayState AutofillDialogControllerImpl::GetDialogOverlay() const {
+DialogOverlayState AutofillDialogControllerImpl::GetDialogOverlay() {
   bool show_wallet_interstitial = IsPayingWithWallet() && is_submitting_ &&
-      !IsSubmitPausedOn(wallet::VERIFY_CVV);
-  if (!show_wallet_interstitial)
+      !(full_wallet_ && !full_wallet_->required_actions().empty());
+  if (!show_wallet_interstitial) {
+    card_scrambling_delay_.Stop();
+    card_scrambling_refresher_.Stop();
     return DialogOverlayState();
+  }
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   DialogOverlayState state;
@@ -809,31 +826,54 @@ DialogOverlayState AutofillDialogControllerImpl::GetDialogOverlay() const {
   string.alignment = gfx::ALIGN_CENTER;
   string.text_color = SK_ColorBLACK;
 
+  const SkColor start_top_color = SkColorSetRGB(0xD6, 0xD6, 0xD6);
+  const SkColor start_bottom_color = SkColorSetRGB(0x98, 0x98, 0x98);
+  const SkColor final_top_color = SkColorSetRGB(0x52, 0x9F, 0xF8);
+  const SkColor final_bottom_color = SkColorSetRGB(0x22, 0x75, 0xE5);
+
   // First-run, post-submit, Wallet expository page.
   if (full_wallet_ && full_wallet_->required_actions().empty()) {
+    card_scrambling_delay_.Stop();
+    card_scrambling_refresher_.Stop();
+
     string16 cc_number =
         full_wallet_->GetInfo(AutofillType(CREDIT_CARD_NUMBER));
     DCHECK_EQ(16U, cc_number.size());
     state.image = GetGeneratedCardImage(
         ASCIIToUTF16("XXXX XXXX XXXX ") +
             cc_number.substr(cc_number.size() - 4),
-        full_wallet_->billing_address()->recipient_name());
+        full_wallet_->billing_address()->recipient_name(),
+        color_utils::AlphaBlend(
+            final_top_color,
+            start_top_color,
+            255 * card_generated_animation_.GetCurrentValue()),
+        color_utils::AlphaBlend(
+            final_bottom_color,
+            start_bottom_color,
+            255 * card_generated_animation_.GetCurrentValue()));
 
     string.text = l10n_util::GetStringUTF16(
         IDS_AUTOFILL_DIALOG_CARD_GENERATION_DONE);
     state.strings.push_back(DialogOverlayString());
   } else {
-    // Generate a random card number. Tell the view to update it 100ms from now
-    // (at which point we'll generate another random card number).
-    std::string card_number;
-    for (size_t i = 0; i < 4; ++i) {
-      int part = base::RandInt(0, 10000);
-      base::StringAppendF(&card_number, "%04d ", part);
+    // Start the refresher if it isn't running. Wait one second before pumping
+    // updates to the view.
+    if (!card_scrambling_delay_.IsRunning() &&
+        !card_scrambling_refresher_.IsRunning()) {
+      scrambled_card_number_ = GenerateRandomCardNumber();
+      card_scrambling_delay_.Start(
+          FROM_HERE,
+          base::TimeDelta::FromSeconds(1),
+          this,
+          &AutofillDialogControllerImpl::StartCardScramblingRefresher);
     }
+
+    DCHECK(!scrambled_card_number_.empty());
     state.image = GetGeneratedCardImage(
-        ASCIIToUTF16(card_number),
-        ActiveInstrument()->address().recipient_name());
-    state.expiry = base::TimeDelta::FromMilliseconds(100);
+        scrambled_card_number_,
+        submitted_cardholder_name_,
+        start_top_color,
+        start_bottom_color);
 
     // "Submitting" waiting page.
     string.text = l10n_util::GetStringUTF16(
@@ -966,8 +1006,10 @@ void AutofillDialogControllerImpl::OnWalletOrSigninUpdate() {
   SuggestionsUpdated();
   UpdateAccountChooserView();
 
-  if (view_)
+  if (view_) {
     view_->UpdateButtonStrip();
+    view_->UpdateOverlay();
+  }
 
   // On the first successful response, compute the initial user state metric.
   if (initial_user_state_ == AutofillMetrics::DIALOG_USER_STATE_UNKNOWN)
@@ -1160,6 +1202,27 @@ void AutofillDialogControllerImpl::UpdateForErrors() {
 
   if (should_update)
     view_->UpdateForErrors();
+}
+
+void AutofillDialogControllerImpl::StartCardScramblingRefresher() {
+  RefreshCardScramblingOverlay();
+  card_scrambling_refresher_.Start(
+      FROM_HERE,
+      base::TimeDelta::FromMilliseconds(75),
+      this,
+      &AutofillDialogControllerImpl::RefreshCardScramblingOverlay);
+}
+
+void AutofillDialogControllerImpl::RefreshCardScramblingOverlay() {
+  scrambled_card_number_ = GenerateRandomCardNumber();
+  PushOverlayUpdate();
+}
+
+void AutofillDialogControllerImpl::PushOverlayUpdate() {
+  if (view_) {
+    ScopedViewUpdates updates(view_.get());
+    view_->UpdateOverlay();
+  }
 }
 
 const DetailInputs& AutofillDialogControllerImpl::RequestedFieldsForSection(
@@ -1914,15 +1977,20 @@ bool AutofillDialogControllerImpl::OnAccept() {
   wallet_server_validation_recoverable_ = true;
   HidePopup();
 
+  // This must come before SetIsSubmitting().
+  if (IsPayingWithWallet()) {
+    submitted_cardholder_name_ =
+        GetValueFromSection(SECTION_CC_BILLING, NAME_FULL);
+  }
+
   SetIsSubmitting(true);
+
   if (IsSubmitPausedOn(wallet::VERIFY_CVV)) {
     DCHECK(!active_instrument_id_.empty());
     GetWalletClient()->AuthenticateInstrument(
         active_instrument_id_,
         UTF16ToUTF8(view_->GetCvc()));
   } else if (IsPayingWithWallet()) {
-    // TODO(dbeam): disallow interacting with the dialog while submitting.
-    // http://crbug.com/230932
     AcceptLegalDocuments();
   } else {
     FinishSubmit();
@@ -2109,6 +2177,7 @@ void AutofillDialogControllerImpl::OnDidGetFullWallet(
       GetWalletItems();
       view_->UpdateNotificationArea();
       view_->UpdateButtonStrip();
+      view_->UpdateOverlay();
       break;
 
     case wallet::VERIFY_CVV:
@@ -2305,7 +2374,8 @@ AutofillDialogControllerImpl::AutofillDialogControllerImpl(
       choose_another_instrument_or_address_(false),
       wallet_server_validation_recoverable_(true),
       data_was_passed_back_(false),
-      was_ui_latency_logged_(false) {
+      was_ui_latency_logged_(false),
+      card_generated_animation_(2000, 60, this) {
   // TODO(estade): remove duplicates from |form_structure|?
   DCHECK(!callback_.is_null());
 }
@@ -2882,6 +2952,7 @@ void AutofillDialogControllerImpl::SetIsSubmitting(bool submitting) {
   if (view_) {
     ScopedViewUpdates updates(view_.get());
     view_->UpdateButtonStrip();
+    view_->UpdateOverlay();
     view_->UpdateNotificationArea();
   }
 }
@@ -3041,17 +3112,25 @@ void AutofillDialogControllerImpl::FinishSubmit() {
   if (IsPayingWithWallet()) {
     // To get past this point, the view must call back OverlayButtonPressed.
     ScopedViewUpdates updates(view_.get());
-    view_->UpdateButtonStrip();
+    view_->UpdateOverlay();
 
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&AutofillDialogControllerImpl::DoFinishSubmit,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::TimeDelta::FromSeconds(2));
+    card_generated_animation_.Start();
     return;
   }
 #endif
 
+  DoFinishSubmit();
+}
+
+void AutofillDialogControllerImpl::AnimationProgressed(
+    const ui::Animation* animation) {
+  DCHECK_EQ(animation, &card_generated_animation_);
+  PushOverlayUpdate();
+}
+
+void AutofillDialogControllerImpl::AnimationEnded(
+    const ui::Animation* animation) {
+  DCHECK_EQ(animation, &card_generated_animation_);
   DoFinishSubmit();
 }
 

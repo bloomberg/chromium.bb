@@ -199,9 +199,6 @@ struct DialogOverlayState {
   // TODO(estade): make this a single string, no longer need to support multiple
   // messages.
   std::vector<DialogOverlayString> strings;
-  // The amount of time this dialog is valid for. After this time has elapsed,
-  // the view should update the overlay.
-  base::TimeDelta expiry;
 };
 
 enum ValidationType {

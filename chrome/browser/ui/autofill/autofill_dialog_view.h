@@ -52,6 +52,10 @@ class AutofillDialogView {
   // Updates the button strip based on the current controller state.
   virtual void UpdateButtonStrip() = 0;
 
+  // Updates the dialog overlay in response to a change of state or animation
+  // progression.
+  virtual void UpdateOverlay() = 0;
+
   // Updates the container for the detail inputs.
   virtual void UpdateDetailArea() = 0;
 

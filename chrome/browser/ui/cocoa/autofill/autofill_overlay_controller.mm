@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/timer/timer.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view_delegate.h"
 #include "chrome/browser/ui/cocoa/autofill/autofill_dialog_constants.h"
@@ -62,42 +61,6 @@ void AnimationDelegateBridge::AnimationProgressed(
 void AnimationDelegateBridge::AnimationEnded(
     const ui::Animation* animation) {
   [delegate_ animationEnded:animation];
-}
-
-class OverlayTimerBridge {
- public:
-  OverlayTimerBridge(AutofillOverlayController* controller);
-  void SetExpiry(const base::TimeDelta& delta);
-
- private:
-  void UpdateOverlayState();
-
-  // Controls when the overlay should request a status update.
-  base::OneShotTimer<OverlayTimerBridge> refresh_timer_;
-
-  // not owned, |overlay_view_controller_| owns |this|.
-  AutofillOverlayController* overlay_view_controller_;
-
-  DISALLOW_COPY_AND_ASSIGN(OverlayTimerBridge);
-};
-
-OverlayTimerBridge::OverlayTimerBridge(AutofillOverlayController* controller)
-    : overlay_view_controller_(controller) {
-}
-
-void OverlayTimerBridge::SetExpiry(const base::TimeDelta& expiry) {
-  if (expiry != base::TimeDelta()) {
-    refresh_timer_.Start(FROM_HERE,
-                         expiry,
-                         this,
-                         &OverlayTimerBridge::UpdateOverlayState);
-  } else {
-    refresh_timer_.Stop();
-  }
-}
-
-void OverlayTimerBridge::UpdateOverlayState() {
-  [overlay_view_controller_ updateState];
 }
 
 // An NSView encapsulating the message stack and its custom drawn elements.
@@ -202,7 +165,6 @@ void OverlayTimerBridge::UpdateOverlayState() {
 - (id)initWithDelegate:(autofill::AutofillDialogViewDelegate*)delegate {
   if (self = [super initWithNibName:nil bundle:nil]) {
     delegate_ = delegate;
-    refreshTimer_.reset(new OverlayTimerBridge(self));
 
     base::scoped_nsobject<NSBox> view(
         [[NSBox alloc] initWithFrame:NSZeroRect]);
@@ -250,8 +212,6 @@ void OverlayTimerBridge::UpdateOverlayState() {
   NSWindowController* delegate = [[[self view] window] windowController];
   if ([delegate respondsToSelector:@selector(requestRelayout)])
     [delegate performSelector:@selector(requestRelayout)];
-
-  refreshTimer_->SetExpiry(state.expiry);
 }
 
 - (void)beginFadeOut {

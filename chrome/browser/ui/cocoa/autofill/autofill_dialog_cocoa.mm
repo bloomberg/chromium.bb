@@ -100,6 +100,11 @@ void AutofillDialogCocoa::UpdateButtonStrip() {
   [sheet_delegate_ updateButtonStrip];
 }
 
+void AutofillDialogCocoa::UpdateOverlay() {
+  // TODO(estade): only update the overlay.
+  UpdateButtonStrip();
+}
+
 void AutofillDialogCocoa::UpdateDetailArea() {
 }
 
