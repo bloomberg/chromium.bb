@@ -1211,13 +1211,6 @@ crbug.com/278318 [ Win7 Lion Debug Release SnowLeopard Debug Release Linux ] edi
 
 crbug.com/278497 [ Linux SnowLeopard Debug ] http/tests/security/contentSecurityPolicy/1.1/plugintypes-invalid.html [ Failure Pass  ]
 
-crbug.com/280203 [ Mac ] compositing/overflow/nested-scrolling.html [ ImageOnlyFailure ]
-crbug.com/280203 [ Mac ] virtual/gpu/compositedscrolling/overflow/nested-scrolling.html [ ImageOnlyFailure ]
-crbug.com/280203 [ Mac ] virtual/gpu/compositedscrolling/overflow/overflow-scroll.html [ ImageOnlyFailure ]
-crbug.com/280203 [ Mac ] virtual/gpu/compositedscrolling/overflow/remove-overflow-crash2.html [ ImageOnlyFailure ]
-crbug.com/280203 [ Mac ] virtual/gpu/compositedscrolling/overflow/scroll-ancestor-update.html [ ImageOnlyFailure ]
-crbug.com/280203 [ Mac ] virtual/gpu/compositedscrolling/scrollbars/scrollbars-on-positioned-content.html [ ImageOnlyFailure ]
-
 crbug.com/280554 [ Linux SnowLeopard Lion ] css3/filters/custom/custom-filter-a-tex-coord-optional.html [ ImageOnlyFailure Timeout Pass ]
 crbug.com/280554 [ Linux SnowLeopard Lion ] css3/filters/custom/custom-filter-array-uniform-indirect-index.html [ ImageOnlyFailure Timeout Pass ]
 crbug.com/280554 [ Linux SnowLeopard Lion ] css3/filters/custom/custom-filter-array.html [ ImageOnlyFailure Timeout Pass ]
