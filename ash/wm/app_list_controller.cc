@@ -149,6 +149,13 @@ void AppListController::SetVisible(bool visible, aura::Window* window) {
       UpdateAutoHideState();
 
   if (view_) {
+    // Our widget is currently active. When the animation completes we'll hide
+    // the widget, changing activation. If a menu is shown before the animation
+    // completes then the activation change triggers the menu to close. By
+    // deactivating now we ensure there is no activation change when the
+    // animation completes and any menus stay open.
+    if (!visible)
+      view_->GetWidget()->Deactivate();
     ScheduleAnimation();
   } else if (is_visible_) {
     // AppListModel and AppListViewDelegate are owned by AppListView. They
