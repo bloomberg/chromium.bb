@@ -94,6 +94,7 @@ LDPatterns = [
   ( ('(-Ttext-segment=.*)'),      PassThrough),
   ( ('(-Trodata-segment=.*)'),    PassThrough),
   ( ('(--section-start)', '(.+)'),PassThrough),
+  ( ('(--section-start=.*)'),     PassThrough),
   ( ('(-e)','(.*)'),              PassThrough),
   ( '(--entry=.*)',               PassThrough),
   ( '(-M)',                       PassThrough),

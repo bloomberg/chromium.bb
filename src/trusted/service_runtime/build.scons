@@ -845,9 +845,9 @@ if env.Bit('target_mips32'):
       unaligned_data_objs,
       LINKFLAGS=['-nostdlib',
                  '--pnacl-allow-native', '-arch', 'mips32',
-                 '-Wn,--section-start,.text=0x%x' % (text_region_start),
-                 '-Wn,--section-start,.rodata=0x%x' % (rodata_region_start),
-                 '-Wn,--section-start,.data=0x%x' % (data_region_start)],
+                 '-Wn,--section-start=.text=0x%x' % (text_region_start),
+                 '-Wn,--section-start=.rodata=0x%x' % (rodata_region_start),
+                 '-Wn,--section-start=.data=0x%x' % (data_region_start)],
       ASFLAGS=['--pnacl-allow-native', '-arch', 'mips32'])
 
   rodata_region_start_irt = 0x3eef0000
