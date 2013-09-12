@@ -141,7 +141,6 @@ bool Combobox::OnKeyReleased(const ui::KeyEvent& e) {
 }
 
 void Combobox::OnFocus() {
-  GetInputMethod()->OnFocus();
   // Forward the focus to the wrapper.
   if (native_wrapper_) {
     native_wrapper_->SetFocus();
@@ -153,7 +152,6 @@ void Combobox::OnFocus() {
 }
 
 void Combobox::OnBlur() {
-  GetInputMethod()->OnBlur();
   if (selector_)
     selector_->OnViewBlur();
   if (native_wrapper_)
