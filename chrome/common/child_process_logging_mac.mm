@@ -7,7 +7,6 @@
 #import <Foundation/Foundation.h>
 
 #include "base/command_line.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -24,7 +23,6 @@ using base::debug::SetCrashKeyValue;
 using base::debug::ClearCrashKey;
 
 const char* kGuidParamName = "guid";
-const char* kNumberOfViews = "num-views";
 const char* kPrinterInfoNameFormat = "prn-info-%zu";
 
 // Account for the terminating null character.
@@ -63,16 +61,6 @@ void SetPrinterInfo(const char* printer_info) {
       ClearCrashKey(key);
     }
   }
-}
-
-void SetNumberOfViewsImpl(int number_of_views,
-                          SetCrashKeyValueFuncT set_key_func) {
-  std::string value = base::IntToString(number_of_views);
-  set_key_func(kNumberOfViews, value);
-}
-
-void SetNumberOfViews(int number_of_views) {
-  SetNumberOfViewsImpl(number_of_views, SetCrashKeyValue);
 }
 
 void SetCommandLine(const CommandLine* command_line) {

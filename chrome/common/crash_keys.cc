@@ -53,6 +53,8 @@ const char kActiveURL[] = "url-chunk";
 const char kExtensionID[] = "extension-%" PRIuS;
 const char kNumExtensionsCount[] = "num-extensions";
 
+const char kNumberOfViews[] = "num-views";
+
 #if !defined(OS_ANDROID)
 const char kGPUVendorID[] = "gpu-venid";
 const char kGPUDeviceID[] = "gpu-devid";
@@ -93,6 +95,7 @@ size_t RegisterChromeCrashKeys() {
   base::debug::CrashKey fixed_keys[] = {
     { kActiveURL, kLargeSize },
     { kNumExtensionsCount, kSmallSize },
+    { kNumberOfViews, kSmallSize },
 #if !defined(OS_ANDROID)
     { kGPUVendorID, kSmallSize },
     { kGPUDeviceID, kSmallSize },

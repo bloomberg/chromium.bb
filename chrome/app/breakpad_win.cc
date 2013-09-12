@@ -104,7 +104,6 @@ char* g_real_terminate_process_stub = NULL;
 
 static size_t g_client_id_offset = 0;
 static size_t g_printer_info_offset = 0;
-static size_t g_num_of_views_offset = 0;
 static size_t g_num_switches_offset = 0;
 static size_t g_switches_offset = 0;
 static size_t g_dynamic_keys_offset = 0;
@@ -477,21 +476,11 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& exe_path,
       CommandLine::ForCurrentProcess()->argv(), &switches);
   SetCommandLine2(&switches[0], switches.size());
 
-  if (type == L"renderer" || type == L"plugin" || type == L"ppapi" ||
-      type == L"gpu-process") {
-    g_num_of_views_offset = g_custom_entries->size();
-    g_custom_entries->push_back(
-        google_breakpad::CustomInfoEntry(L"num-views", L""));
-
-    if (type == L"plugin" || type == L"ppapi") {
-      std::wstring plugin_path =
-          CommandLine::ForCurrentProcess()->GetSwitchValueNative("plugin-path");
-      if (!plugin_path.empty())
-        SetPluginPath(plugin_path);
-    }
-  } else {
-    g_custom_entries->push_back(
-        google_breakpad::CustomInfoEntry(L"num-views", L"N/A"));
+  if (type == L"plugin" || type == L"ppapi") {
+    std::wstring plugin_path =
+        CommandLine::ForCurrentProcess()->GetSwitchValueNative("plugin-path");
+    if (!plugin_path.empty())
+      SetPluginPath(plugin_path);
   }
 
   // Check whether configuration management controls crash reporting.
@@ -653,11 +642,6 @@ extern "C" void __declspec(dllexport) __cdecl SetPrinterInfo(
                 info[i].c_str(),
                 google_breakpad::CustomInfoEntry::kValueMaxLength);
   }
-}
-
-extern "C" void __declspec(dllexport) __cdecl SetNumberOfViews(
-    int number_of_views) {
-  SetIntegerValue(g_num_of_views_offset, number_of_views);
 }
 
 // NOTE: This function is used by SyzyASAN to annotate crash reports. If you

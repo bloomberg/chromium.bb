@@ -1162,11 +1162,6 @@ void HandleCrashDump(const BreakpadInfo& info) {
   //   beta \r\n
   //   BOUNDARY \r\n
   //
-  //   zero or one:
-  //   Content-Disposition: form-data; name="num-views" \r\n \r\n
-  //   3 \r\n
-  //   BOUNDARY \r\n
-  //
   //   zero to 4:
   //   Content-Disposition: form-data; name="prn-info-1" \r\n \r\n
   //   abcdefghijklmnopqrstuvwxyzabcdef \r\n
@@ -1291,12 +1286,6 @@ void HandleCrashDump(const BreakpadInfo& info) {
 
   if (*child_process_logging::g_channel) {
     writer.AddPairString("channel", child_process_logging::g_channel);
-    writer.AddBoundary();
-    writer.Flush();
-  }
-
-  if (*child_process_logging::g_num_views) {
-    writer.AddPairString("num-views", child_process_logging::g_num_views);
     writer.AddBoundary();
     writer.Flush();
   }

@@ -38,6 +38,9 @@ extern const char kExtensionID[];
 // a common->app dependency.
 extern const char kNumExtensionsCount[];
 
+// The number of render views/tabs open in a renderer process.
+extern const char kNumberOfViews[];
+
 // GPU information.
 #if !defined(OS_ANDROID)
 extern const char kGPUVendorID[];

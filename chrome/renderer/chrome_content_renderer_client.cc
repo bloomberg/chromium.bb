@@ -5,6 +5,7 @@
 #include "chrome/renderer/chrome_content_renderer_client.h"
 
 #include "base/command_line.h"
+#include "base/debug/crash_logging.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
@@ -12,11 +13,11 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_settings_pattern.h"
+#include "chrome/common/crash_keys.h"
 #include "chrome/common/extensions/chrome_extensions_client.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -392,7 +393,8 @@ void ChromeContentRendererClient::RenderViewCreated(
 }
 
 void ChromeContentRendererClient::SetNumberOfViews(int number_of_views) {
-  child_process_logging::SetNumberOfViews(number_of_views);
+  base::debug::SetCrashKeyValue(crash_keys::kNumberOfViews,
+                                base::IntToString(number_of_views));
 }
 
 SkBitmap* ChromeContentRendererClient::GetSadPluginBitmap() {

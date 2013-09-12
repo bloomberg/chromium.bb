@@ -27,10 +27,6 @@ typedef void (__cdecl *MainSetClientId)(const wchar_t*);
 typedef void (__cdecl *MainSetPrinterInfo)(const wchar_t*);
 
 // exported in breakpad_win.cc:
-//   void __declspec(dllexport) __cdecl SetNumberOfViews.
-typedef void (__cdecl *MainSetNumberOfViews)(int);
-
-// exported in breakpad_win.cc:
 //   void __declspec(dllexport) __cdecl SetCommandLine2
 typedef void (__cdecl *MainSetCommandLine)(const wchar_t**, size_t);
 
@@ -156,21 +152,6 @@ void SetExperimentList(const std::vector<string16>& experiments) {
   std::vector<const wchar_t*> cstrings;
   StringVectorToCStringVector(chunks, &cstrings);
   (set_experiment_list)(&cstrings[0], cstrings.size(), experiments.size());
-}
-
-void SetNumberOfViews(int number_of_views) {
-  static MainSetNumberOfViews set_number_of_views = NULL;
-  // note: benign race condition on set_number_of_views.
-  if (!set_number_of_views) {
-    HMODULE exe_module = GetModuleHandle(chrome::kBrowserProcessExecutableName);
-    if (!exe_module)
-      return;
-    set_number_of_views = reinterpret_cast<MainSetNumberOfViews>(
-        GetProcAddress(exe_module, "SetNumberOfViews"));
-    if (!set_number_of_views)
-      return;
-  }
-  (set_number_of_views)(number_of_views);
 }
 
 namespace {

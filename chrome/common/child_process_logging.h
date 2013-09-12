@@ -44,7 +44,6 @@ extern char g_channel[];
 extern char g_client_id[];
 extern char g_num_switches[];
 extern char g_num_variations[];
-extern char g_num_views[];
 extern char g_printer_info[];
 extern char g_switches[];
 extern char g_variation_chunks[];
@@ -62,9 +61,6 @@ void SetClientId(const std::string& client_id);
 // Gets the Client ID to be used as GUID for crash reporting. Returns the client
 // id in |client_id| if it's known, an empty string otherwise.
 std::string GetClientId();
-
-// Sets a number of views/tabs opened in this process.
-void SetNumberOfViews(int number_of_views);
 
 // Sets the data on the printer to send along with crash reports. Data may be
 // separated by ';' up to kMaxReportedPrinterRecords strings. Each substring

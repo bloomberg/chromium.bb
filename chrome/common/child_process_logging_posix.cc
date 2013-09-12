@@ -31,7 +31,6 @@ char g_printer_info[kPrinterInfoStrLen * kMaxReportedPrinterRecords + 1] = "";
 static const size_t kNumSize = 32;
 char g_num_switches[kNumSize] = "";
 char g_num_variations[kNumSize] = "";
-char g_num_views[kNumSize] = "";
 
 // Assume command line switches are less than 64 chars.
 static const size_t kMaxSwitchesSize = kSwitchLen * kMaxSwitches + 1;
@@ -69,10 +68,6 @@ void SetPrinterInfo(const char* printer_info) {
   }
   base::strlcpy(g_printer_info, printer_info_str.c_str(),
                 arraysize(g_printer_info));
-}
-
-void SetNumberOfViews(int number_of_views) {
-  snprintf(g_num_views, arraysize(g_num_views), "%d", number_of_views);
 }
 
 void SetCommandLine(const CommandLine* command_line) {
