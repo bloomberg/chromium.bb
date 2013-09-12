@@ -257,6 +257,24 @@ struct PlatformChallengeResponse {
   int32_t platform_key_certificate_length;
 };
 
+// Supported output protection methods for use with EnableOutputProtection() and
+// returned by OnQueryOutputProtectionStatus().
+enum OutputProtectionMethods {
+  kProtectionNone = 0,
+  kProtectionHDCP = 1 << 0
+};
+
+// Connected output link types returned by OnQueryOutputProtectionStatus().
+enum OutputLinkTypes {
+  kLinkTypeNone = 0,
+  kLinkTypeUnknown = 1 << 0,
+  kLinkTypeInternal = 1 << 1,
+  kLinkTypeVGA = 1 << 2,
+  kLinkTypeHDMI = 1 << 3,
+  kLinkTypeDVI = 1 << 4,
+  kLinkTypeDisplayPort = 1 << 5
+};
+
 // ContentDecryptionModule interface that all CDMs need to implement.
 // The interface is versioned for backward compatibility.
 // Note: ContentDecryptionModule implementations must use the allocator
@@ -396,12 +414,19 @@ class ContentDecryptionModule_2 : public ContentDecryptionModule_1 {
   virtual void OnPlatformChallengeResponse(
       const PlatformChallengeResponse& response) = 0;
 
+  // Called by the host after a call to Host::QueryOutputProtectionStatus(). The
+  // |link_mask| is a bit mask of OutputLinkTypes and |output_protection_mask|
+  // is a bit mask of OutputProtectionMethods.
+  virtual void OnQueryOutputProtectionStatus(
+      uint32_t link_mask, uint32_t output_protection_mask) = 0;
+
  protected:
   ContentDecryptionModule_2() {}
   virtual ~ContentDecryptionModule_2() {}
 };
 
 const int kCdmInterfaceVersion_1 = 1;
+const int kCdmInterfaceVersion_2 = 2;
 
 typedef ContentDecryptionModule_1 ContentDecryptionModule;
 const int kCdmInterfaceVersion = kCdmInterfaceVersion_1;
@@ -510,6 +535,16 @@ class Host_2 {
   virtual void SendPlatformChallenge(
       const char* service_id, int32_t service_id_length,
       const char* challenge, int32_t challenge_length) = 0;
+
+  // Attempts to enable output protection (e.g. HDCP) on the display link. The
+  // |desired_protection_mask| is a bit mask of OutputProtectionMethods. No
+  // status callback is issued, the CDM must call QueryOutputProtectionStatus()
+  // periodically to ensure the desired protections are applied.
+  virtual void EnableOutputProtection(uint32_t desired_protection_mask) = 0;
+
+  // Requests the current output protection status. Once the host has the status
+  // it will call ContentDecryptionModule::OnQueryOutputProtectionStatus().
+  virtual void QueryOutputProtectionStatus() = 0;
 
  protected:
   Host_2() {}
