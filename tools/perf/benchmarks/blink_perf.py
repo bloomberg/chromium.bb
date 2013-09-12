@@ -10,7 +10,8 @@ from telemetry.core import util
 from measurements import blink_perf
 
 
-class BlinkPerf(test.Test):
+class BlinkPerfAll(test.Test):
+  tag = 'all'
   test = blink_perf.BlinkPerf
 
   def CreatePageSet(self, options):
