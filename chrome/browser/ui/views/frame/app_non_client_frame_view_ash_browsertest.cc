@@ -97,7 +97,8 @@ class AppNonClientFrameViewAshTest : public InProcessBrowserTest {
 // Ensure that restoring the app window replaces the frame with a normal one,
 // and maximizing again brings back the app frame. This has been the source of
 // some crash bugs like crbug.com/155634
-IN_PROC_BROWSER_TEST_F(AppNonClientFrameViewAshTest, SwitchFrames) {
+// Disabled because it's failing flakily: crbug.com/290240
+IN_PROC_BROWSER_TEST_F(AppNonClientFrameViewAshTest, DISABLED_SwitchFrames) {
   // Convert to std::string so Windows can match EXPECT_EQ.
   const std::string kAppFrameClassName =
       AppNonClientFrameViewAsh::kViewClassName;
