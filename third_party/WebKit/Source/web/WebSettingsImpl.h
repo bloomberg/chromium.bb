@@ -115,6 +115,7 @@ public:
     virtual void setLoadWithOverviewMode(bool);
     virtual void setLocalStorageEnabled(bool);
     virtual void setMediaPlaybackRequiresUserGesture(bool);
+    virtual void setMediaFullscreenRequiresUserGesture(bool);
     virtual void setMemoryInfoEnabled(bool);
     virtual void setMinimumAccelerated2dCanvasSize(int);
     virtual void setMinimumFontSize(int);

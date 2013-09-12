@@ -122,6 +122,7 @@ public:
     virtual void setLoadWithOverviewMode(bool) = 0;
     virtual void setLocalStorageEnabled(bool) = 0;
     virtual void setMediaPlaybackRequiresUserGesture(bool) = 0;
+    virtual void setMediaFullscreenRequiresUserGesture(bool) = 0;
     virtual void setMemoryInfoEnabled(bool) = 0;
     virtual void setMinimumAccelerated2dCanvasSize(int) = 0;
     virtual void setMinimumFontSize(int) = 0;

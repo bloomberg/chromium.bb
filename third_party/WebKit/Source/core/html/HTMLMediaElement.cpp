@@ -258,7 +258,7 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     , m_lastTimeUpdateEventWallTime(0)
     , m_lastTimeUpdateEventMovieTime(numeric_limits<double>::max())
     , m_loadState(WaitingForSource)
-    , m_restrictions(RequireUserGestureForFullscreenRestriction | RequirePageConsentToLoadMediaRestriction)
+    , m_restrictions(RequirePageConsentToLoadMediaRestriction)
     , m_preload(MediaPlayer::Auto)
     , m_displayMode(Unknown)
     , m_cachedTime(MediaPlayer::invalidTime())
@@ -300,9 +300,14 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     LOG(Media, "HTMLMediaElement::HTMLMediaElement");
     ScriptWrappable::init(this);
 
-    if (document.settings() && document.settings()->mediaPlaybackRequiresUserGesture()) {
-        addBehaviorRestriction(RequireUserGestureForRateChangeRestriction);
-        addBehaviorRestriction(RequireUserGestureForLoadRestriction);
+    if (document.settings()) {
+        if (document.settings()->mediaPlaybackRequiresUserGesture()) {
+            addBehaviorRestriction(RequireUserGestureForRateChangeRestriction);
+            addBehaviorRestriction(RequireUserGestureForLoadRestriction);
+        }
+        if (document.settings()->mediaFullscreenRequiresUserGesture()) {
+            addBehaviorRestriction(RequireUserGestureForFullscreenRestriction);
+        }
     }
 
     setHasCustomStyleCallbacks();

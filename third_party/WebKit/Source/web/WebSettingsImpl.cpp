@@ -655,6 +655,11 @@ void WebSettingsImpl::setMediaPlaybackRequiresUserGesture(bool required)
     m_settings->setMediaPlaybackRequiresUserGesture(required);
 }
 
+void WebSettingsImpl::setMediaFullscreenRequiresUserGesture(bool required)
+{
+    m_settings->setMediaFullscreenRequiresUserGesture(required);
+}
+
 void WebSettingsImpl::setFixedPositionCreatesStackingContext(bool creates)
 {
     m_settings->setFixedPositionCreatesStackingContext(creates);

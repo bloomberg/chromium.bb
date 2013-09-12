@@ -89,6 +89,7 @@ forceCompositingMode initial=false
 allowDisplayOfInsecureContent initial=true
 allowRunningOfInsecureContent initial=true
 mediaPlaybackRequiresUserGesture initial=false
+mediaFullscreenRequiresUserGesture initial=true
 passwordEchoEnabled initial=false
 visualWordMovementEnabled initial=false
 shouldDisplaySubtitles initial=false

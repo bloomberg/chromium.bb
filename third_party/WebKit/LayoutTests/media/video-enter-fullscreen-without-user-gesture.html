@@ -1,0 +1,40 @@
+<html>
+    <head>
+        <title>Test that video webkitEnterFullScreen() works without any user gesture if the requirement is removed.</title>
+        <script src=media-controls.js></script>
+        <script src=media-file.js></script>
+        <script src=video-test.js></script>
+        <script>
+            if (window.internals)
+                window.internals.settings.setMediaFullscreenRequiresUserGesture(false);
+
+            function canplaythrough()
+            {
+                consoleWrite("");
+                consoleWrite("* No user gesture initiated");
+                testExpected("video.paused", true);
+                // Now video.webkitEnterFullScreen() should no longer throw any exception.
+                // However, the video element may not always enter fullscreen. For example,
+                // chromium uses fullscreen API which still requires user gesture
+                try {
+                    run("video.webkitEnterFullScreen()");
+                } catch(ex) {
+                    failTest("video.webkitEnterFullScreen() still requires user gesture.");
+                }
+                endTest();
+            }
+
+            function start()
+            {
+                 findMediaElement();
+                 waitForEvent('canplaythrough', canplaythrough);
+                 video.src = findMediaFile("video", "content/test");
+            }
+        </script>
+    </head>
+
+    <body onload="start()">
+    <p>Test that video webkitEnterFullScreen() works without any user gesture if the requirement is removed.</p>
+    <video controls></video>
+    </body>
+</html>

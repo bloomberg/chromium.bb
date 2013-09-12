@@ -1,0 +1,9 @@
+Test that video webkitEnterFullScreen() works without any user gesture if the requirement is removed.
+
+EVENT(canplaythrough)
+
+* No user gesture initiated
+EXPECTED (video.paused == 'true') OK
+RUN(video.webkitEnterFullScreen())
+END OF TEST
+
