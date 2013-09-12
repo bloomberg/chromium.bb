@@ -44,6 +44,18 @@ function onFileSelected(fileSelectedEvent) {
 }
 
 /**
+ * Clears the file that was attached to the report with the initial request.
+ * Instead we will now show the attach file button in case the user wants to
+ * attach another file.
+ */
+function clearAttachedFile() {
+  $('custom-file-container').hidden = true;
+  attachedFileBlob = null;
+  feedbackInfo.attachedFile = null;
+  $('attach-file').hidden = false;
+}
+
+/**
  * Opens a new tab with chrome://system, showing the current system info.
  */
 function openSystemTab() {
@@ -65,7 +77,7 @@ function sendReport() {
   }
 
   console.log('Feedback: Sending report');
-  if (attachedFileBlob) {
+  if (!feedbackInfo.attachedFile && attachedFileBlob) {
     feedbackInfo.attachedFile = { name: $('attach-file').value,
                                   data: attachedFileBlob };
   }
@@ -136,7 +148,8 @@ function initialize() {
     if (request.sentFromEventPage) {
       feedbackInfo = request.data;
       $('description-text').textContent = feedbackInfo.description;
-      $('page-url-text').value = feedbackInfo.pageUrl;
+      if (feedbackInfo.pageUrl)
+        $('page-url-text').value = feedbackInfo.pageUrl;
 
       takeScreenshot(function(screenshotDataUrl) {
         $('screenshot-image').src = screenshotDataUrl;
@@ -151,6 +164,15 @@ function initialize() {
       chrome.feedbackPrivate.getSystemInformation(function(sysInfo) {
         systemInfo = sysInfo;
       });
+
+      // An extension called us with an attached file.
+      if (feedbackInfo.attachedFile) {
+        $('attached-filename-text').textContent =
+            feedbackInfo.attachedFile.name;
+        attachedFileBlob = feedbackInfo.attachedFile.data;
+        $('custom-file-container').hidden = false;
+        $('attach-file').hidden = true;
+      }
 
       chrome.feedbackPrivate.getStrings(function(strings) {
         loadTimeData.data = strings;
@@ -167,6 +189,7 @@ function initialize() {
     $('attach-file').addEventListener('change', onFileSelected);
     $('send-report-button').onclick = sendReport;
     $('cancel-button').onclick = cancel;
+    $('remove-attached-file').onclick = clearAttachedFile;
     if ($('sysinfo-url')) {
       $('sysinfo-url').onclick = openSystemTab;
     }

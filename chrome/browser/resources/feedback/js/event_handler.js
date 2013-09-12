@@ -22,11 +22,23 @@ var initialFeedbackInfo = null;
  * @param {Object} sender The sender of the message.
  * @param {function(Object)} sendResponse Callback for sending a response.
  */
-function feedbackReady(request, sender, sendResponse) {
+function feedbackReadyHandler(request, sender, sendResponse) {
   if (request.ready) {
     chrome.runtime.sendMessage(
         {sentFromEventPage: true, data: initialFeedbackInfo});
   }
+}
+
+
+/**
+ * Callback which gets notified if another extension is requesting feedback.
+ * @param {Object} request The message request object.
+ * @param {Object} sender The sender of the message.
+ * @param {function(Object)} sendResponse Callback for sending a response.
+ */
+function requestFeedbackHandler(request, sender, sendResponse) {
+  if (request.requestFeedback)
+    startFeedbackUI(request.feedbackInfo);
 }
 
 /**
@@ -45,5 +57,6 @@ function startFeedbackUI(feedbackInfo) {
       function(appWindow) {});
 }
 
-chrome.runtime.onMessage.addListener(feedbackReady);
+chrome.runtime.onMessage.addListener(feedbackReadyHandler);
+chrome.runtime.onMessageExternal.addListener(requestFeedbackHandler);
 chrome.feedbackPrivate.onFeedbackRequested.addListener(startFeedbackUI);

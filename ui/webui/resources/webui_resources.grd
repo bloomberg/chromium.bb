@@ -49,15 +49,6 @@ without changes to the corresponding grd file. -->
                file="../../resources/default_100_percent/common/blue_button_focused_pressed.png" type="BINDATA" />
       <include name="IDR_WEBUI_IMAGES_APPS_BLUE_BUTTON_FOCUSED_HOVER"
                file="../../resources/default_100_percent/common/blue_button_focused_hover.png" type="BINDATA" />
-      <!-- Topbar buttons -->
-      <include name="IDR_WEBUI_IMAGES_APPS_TOPBAR_BUTTON_CLOSE"
-               file="images/apps/topbar_button_close.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_TOPBAR_BUTTON_MAXIMIZE"
-               file="images/apps/topbar_button_maximize.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_TOPBAR_BUTTON_MINIMIZE"
-               file="images/apps/topbar_button_minimize.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_TOPBAR_BUTTON_SETTINGS"
-               file="images/apps/topbar_button_settings.png" type="BINDATA" />
       <!-- Checkbox (unchecked) -->
       <include name="IDR_WEBUI_IMAGES_APPS_CHECKBOX"
                file="../../resources/default_100_percent/common/checkbox.png" type="BINDATA" />
@@ -88,6 +79,21 @@ without changes to the corresponding grd file. -->
                file="../../resources/default_100_percent/common/checkbox_focused_checked_pressed.png" type="BINDATA" />
       <include name="IDR_WEBUI_IMAGES_APPS_CHECKBOX_CHECKED_INACTIVE"
                file="../../resources/default_100_percent/common/checkbox_checked_inactive.png" type="BINDATA" />
+      <!-- Misc buttons -->
+      <include name="IDR_WEBUI_IMAGES_APPS_TOPBAR_BUTTON_CLOSE"
+               file="images/apps/topbar_button_close.png" type="BINDATA" />
+      <include name="IDR_WEBUI_IMAGES_APPS_TOPBAR_BUTTON_MAXIMIZE"
+               file="images/apps/topbar_button_maximize.png" type="BINDATA" />
+      <include name="IDR_WEBUI_IMAGES_APPS_TOPBAR_BUTTON_MINIMIZE"
+               file="images/apps/topbar_button_minimize.png" type="BINDATA" />
+      <include name="IDR_WEBUI_IMAGES_APPS_TOPBAR_BUTTON_SETTINGS"
+               file="images/apps/topbar_button_settings.png" type="BINDATA" />
+      <include name="IDR_WEBUI_IMAGES_APPS_BUTTON_BUTTER_BAR_CLOSE"
+               file="images/apps/button_butter_bar_close.png" type="BINDATA" />
+      <include name="IDR_WEBUI_IMAGES_APPS_BUTTON_BUTTER_BAR_CLOSE_HOVER"
+               file="images/apps/button_butter_bar_close_hover.png" type="BINDATA" />
+      <include name="IDR_WEBUI_IMAGES_APPS_BUTTON_BUTTER_BAR_CLOSE_PRESSED"
+               file="images/apps/button_butter_bar_close_pressed.png" type="BINDATA" />
 
       <!-- Component apps common image resources - 2x -->
       <!-- White button -->
@@ -120,15 +126,6 @@ without changes to the corresponding grd file. -->
                file="../../resources/default_200_percent/common/blue_button_focused_pressed.png" type="BINDATA" />
       <include name="IDR_WEBUI_IMAGES_APPS_BLUE_BUTTON_2X_FOCUSED_HOVER"
                file="../../resources/default_200_percent/common/blue_button_focused_hover.png" type="BINDATA" />
-      <!-- Topbar buttons -->
-      <include name="IDR_WEBUI_IMAGES_APPS_TOPBAR_BUTTON_2X_CLOSE"
-               file="images/apps/topbar_button_close.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_TOPBAR_BUTTON_2X_MAXIMIZE"
-               file="images/apps/topbar_button_maximize.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_TOPBAR_BUTTON_2X_MINIMIZE"
-               file="images/apps/topbar_button_minimize.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_TOPBAR_BUTTON_2X_SETTINGS"
-               file="images/apps/topbar_button_settings.png" type="BINDATA" />
       <!-- Checkbox (unchecked) -->
       <include name="IDR_WEBUI_IMAGES_APPS_CHECKBOX_2X"
                file="../../resources/default_200_percent/common/checkbox.png" type="BINDATA" />
@@ -159,6 +156,21 @@ without changes to the corresponding grd file. -->
                file="../../resources/default_200_percent/common/checkbox_focused_checked_pressed.png" type="BINDATA" />
       <include name="IDR_WEBUI_IMAGES_APPS_CHECKBOX_CHECKED_INACTIVE_2X"
                file="../../resources/default_200_percent/common/checkbox_checked_inactive.png" type="BINDATA" />
+      <!-- Misc buttons -->
+      <include name="IDR_WEBUI_IMAGES_APPS_TOPBAR_BUTTON_2X_CLOSE"
+               file="images/2x/apps/topbar_button_close.png" type="BINDATA" />
+      <include name="IDR_WEBUI_IMAGES_APPS_TOPBAR_BUTTON_2X_MAXIMIZE"
+               file="images/2x/apps/topbar_button_maximize.png" type="BINDATA" />
+      <include name="IDR_WEBUI_IMAGES_APPS_TOPBAR_BUTTON_2X_MINIMIZE"
+               file="images/2x/apps/topbar_button_minimize.png" type="BINDATA" />
+      <include name="IDR_WEBUI_IMAGES_APPS_TOPBAR_BUTTON_2X_SETTINGS"
+               file="images/2x/apps/topbar_button_settings.png" type="BINDATA" />
+      <include name="IDR_WEBUI_IMAGES_APPS_BUTTON_BUTTER_BAR_CLOSE_2X"
+               file="images/2x/apps/button_butter_bar_close.png" type="BINDATA" />
+      <include name="IDR_WEBUI_IMAGES_APPS_BUTTON_BUTTER_BAR_CLOSE_HOVER_2X"
+               file="images/2x/apps/button_butter_bar_close_hover.png" type="BINDATA" />
+      <include name="IDR_WEBUI_IMAGES_APPS_BUTTON_BUTTER_BAR_CLOSE_PRESSED_2X"
+               file="images/2x/apps/button_butter_bar_close_pressed.png" type="BINDATA" />
 
       <!-- Non-apps images -->
       <include name="IDR_WEBUI_IMAGES_CHECK"
