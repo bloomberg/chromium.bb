@@ -93,8 +93,8 @@ bool ImageWindowDelegate::HasHitTestMask() const {
 void ImageWindowDelegate::GetHitTestMask(gfx::Path* mask) const {
 }
 
-scoped_refptr<ui::Texture> ImageWindowDelegate::CopyTexture() {
-  return scoped_refptr<ui::Texture>();
+void ImageWindowDelegate::DidRecreateLayer(ui::Layer *old_layer,
+                                           ui::Layer *new_layer) {
 }
 
 }  // namespace content

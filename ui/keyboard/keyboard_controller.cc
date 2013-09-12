@@ -71,7 +71,8 @@ class KeyboardWindowDelegate : public aura::WindowDelegate {
     gfx::Rect keyboard_bounds = KeyboardBoundsFromWindowBounds(bounds_);
     mask->addRect(RectToSkRect(keyboard_bounds));
   }
-  virtual scoped_refptr<ui::Texture> CopyTexture() OVERRIDE { return NULL; }
+  virtual void DidRecreateLayer(ui::Layer* old_layer,
+                                ui::Layer* new_layer) OVERRIDE {}
 
   gfx::Rect bounds_;
   DISALLOW_COPY_AND_ASSIGN(KeyboardWindowDelegate);

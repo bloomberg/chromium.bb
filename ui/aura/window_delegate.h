@@ -23,6 +23,7 @@ class Size;
 namespace ui {
 class GestureEvent;
 class KeyEvent;
+class Layer;
 class MouseEvent;
 class Texture;
 class TouchEvent;
@@ -95,9 +96,12 @@ class AURA_EXPORT WindowDelegate : public ui::EventHandler {
   // above returns true.
   virtual void GetHitTestMask(gfx::Path* mask) const = 0;
 
-  // Called from RecreateLayer() if the layer the window is associated with has
-  // an external texture.
-  virtual scoped_refptr<ui::Texture> CopyTexture() = 0;
+  // Called from RecreateLayer() after the new layer was created. old_layer is
+  // the layer that will be returned to the caller of RecreateLayer, new_layer
+  // will be the layer now used on the Window. The implementation only has to do
+  // anything if the layer has external content (SetExternalTexture /
+  // SetTextureMailbox / SetDelegatedFrame was called).
+  virtual void DidRecreateLayer(ui::Layer* old_layer, ui::Layer* new_layer) = 0;
 
  protected:
   virtual ~WindowDelegate() {}

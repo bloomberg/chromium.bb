@@ -119,6 +119,11 @@ class MemoryHolder : public base::RefCounted<MemoryHolder> {
 
 namespace {
 
+void MailboxReleaseCallback(scoped_ptr<base::SharedMemory> shared_memory,
+                            unsigned sync_point, bool lost_resource) {
+  // NOTE: shared_memory will get released when we go out of scope.
+}
+
 // In mouse lock mode, we need to prevent the (invisible) cursor from hitting
 // the border of the view, in order to get valid movement information. However,
 // forcing the cursor back to the center of the view after each mouse move
@@ -2491,28 +2496,51 @@ bool RenderWidgetHostViewAura::HasHitTestMask() const {
 void RenderWidgetHostViewAura::GetHitTestMask(gfx::Path* mask) const {
 }
 
-scoped_refptr<ui::Texture> RenderWidgetHostViewAura::CopyTexture() {
-  if (!host_->is_accelerated_compositing_active())
-    return scoped_refptr<ui::Texture>();
-
-  ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-  GLHelper* gl_helper = factory->GetGLHelper();
-  if (!gl_helper)
-    return scoped_refptr<ui::Texture>();
-
-  if (!current_surface_.get())
-    return scoped_refptr<ui::Texture>();
-
-  WebKit::WebGLId texture_id =
-      gl_helper->CopyTexture(current_surface_->PrepareTexture(),
-                             current_surface_->size());
-  if (!texture_id)
-    return scoped_refptr<ui::Texture>();
-
-  return scoped_refptr<ui::Texture>(
-      factory->CreateOwnedTexture(
+void RenderWidgetHostViewAura::DidRecreateLayer(ui::Layer *old_layer,
+                                                ui::Layer *new_layer) {
+  float mailbox_scale_factor;
+  cc::TextureMailbox old_mailbox =
+      old_layer->GetTextureMailbox(&mailbox_scale_factor);
+  scoped_refptr<ui::Texture> old_texture = old_layer->external_texture();
+  // The new_layer is the one that will be used by our Window, so that's the one
+  // that should keep our texture. old_layer will be returned to the
+  // RecreateLayer caller, and should have a copy.
+  if (old_texture.get()) {
+    ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
+    GLHelper* gl_helper = factory->GetGLHelper();
+    scoped_refptr<ui::Texture> new_texture;
+    if (host_->is_accelerated_compositing_active() &&
+        gl_helper && current_surface_.get()) {
+      WebKit::WebGLId texture_id =
+          gl_helper->CopyTexture(current_surface_->PrepareTexture(),
+                                 current_surface_->size());
+      if (texture_id) {
+        new_texture = factory->CreateOwnedTexture(
           current_surface_->size(),
-          current_surface_->device_scale_factor(), texture_id));
+          current_surface_->device_scale_factor(), texture_id);
+      }
+    }
+    old_layer->SetExternalTexture(new_texture);
+    new_layer->SetExternalTexture(old_texture);
+  } else if (old_mailbox.IsSharedMemory()) {
+    base::SharedMemory* old_buffer = old_mailbox.shared_memory();
+    const size_t size = old_mailbox.shared_memory_size_in_bytes();
+
+    scoped_ptr<base::SharedMemory> new_buffer(new base::SharedMemory);
+    new_buffer->CreateAndMapAnonymous(size);
+
+    if (old_buffer->memory() && new_buffer->memory()) {
+      memcpy(new_buffer->memory(), old_buffer->memory(), size);
+      base::SharedMemory* new_buffer_raw_ptr = new_buffer.get();
+      cc::TextureMailbox::ReleaseCallback callback =
+          base::Bind(MailboxReleaseCallback, Passed(&new_buffer));
+      cc::TextureMailbox new_mailbox(new_buffer_raw_ptr,
+                                     old_mailbox.shared_memory_size(),
+                                     callback);
+      new_layer->SetTextureMailbox(new_mailbox, mailbox_scale_factor);
+    }
+  }
+  // TODO(piman): handle delegated frames.
 }
 
 ////////////////////////////////////////////////////////////////////////////////

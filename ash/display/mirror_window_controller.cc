@@ -116,10 +116,8 @@ class CursorWindowDelegate : public aura::WindowDelegate {
     return false;
   }
   virtual void GetHitTestMask(gfx::Path* mask) const OVERRIDE {}
-  virtual scoped_refptr<ui::Texture> CopyTexture() OVERRIDE {
-    NOTREACHED();
-    return scoped_refptr<ui::Texture>();
-  }
+  virtual void DidRecreateLayer(ui::Layer* old_layer,
+                                ui::Layer* new_layer) OVERRIDE {}
 
   // Set the cursor image for the |display|'s scale factor.  Note that
   // mirror window's scale factor is always 1.0f, therefore we need to

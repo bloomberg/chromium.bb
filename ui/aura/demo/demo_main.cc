@@ -68,9 +68,8 @@ class DemoWindowDelegate : public aura::WindowDelegate {
   virtual void OnWindowTargetVisibilityChanged(bool visible) OVERRIDE {}
   virtual bool HasHitTestMask() const OVERRIDE { return false; }
   virtual void GetHitTestMask(gfx::Path* mask) const OVERRIDE {}
-  virtual scoped_refptr<ui::Texture> CopyTexture() OVERRIDE {
-    return scoped_refptr<ui::Texture>();
-  }
+  virtual void DidRecreateLayer(ui::Layer* old_layer,
+                                ui::Layer* new_layer) OVERRIDE {}
 
  private:
   SkColor color_;

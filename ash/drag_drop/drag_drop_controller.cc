@@ -125,9 +125,8 @@ class DragDropTrackerDelegate : public aura::WindowDelegate {
   virtual void GetHitTestMask(gfx::Path* mask) const OVERRIDE {
     DCHECK(mask->isEmpty());
   }
-  virtual scoped_refptr<ui::Texture> CopyTexture() OVERRIDE {
-    return scoped_refptr<ui::Texture>();
-  }
+  virtual void DidRecreateLayer(ui::Layer* old_layer,
+                                ui::Layer* new_layer) OVERRIDE {}
 
  private:
   DragDropController* drag_drop_controller_;

@@ -34,15 +34,6 @@
 
 namespace aura {
 
-namespace {
-
-void MailboxReleaseCallback(scoped_ptr<base::SharedMemory> shared_memory,
-                            unsigned sync_point, bool lost_resource) {
-  // NOTE: shared_memory will get released when we go out of scope.
-}
-
-}  // namespace
-
 Window::Window(WindowDelegate* delegate)
     : type_(client::WINDOW_TYPE_UNKNOWN),
       owned_by_parent_(true),
@@ -154,12 +145,6 @@ ui::Layer* Window::RecreateLayer() {
     return NULL;
 
   old_layer->set_delegate(NULL);
-  float mailbox_scale_factor;
-  cc::TextureMailbox old_mailbox =
-      old_layer->GetTextureMailbox(&mailbox_scale_factor);
-  scoped_refptr<ui::Texture> old_texture = old_layer->external_texture();
-  if (delegate_ && old_texture.get())
-    old_layer->SetExternalTexture(delegate_->CopyTexture().get());
 
   layer_ = new ui::Layer(old_layer->type());
   layer_owner_.reset(layer_);
@@ -167,29 +152,9 @@ ui::Layer* Window::RecreateLayer() {
   layer_->set_scale_content(old_layer->scale_content());
   layer_->set_delegate(this);
   layer_->SetMasksToBounds(old_layer->GetMasksToBounds());
-  // Move the original texture to the new layer if the old layer has a
-  // texture and we could copy it into the old layer,
-  // crbug.com/175211.
-  if (delegate_ && old_texture.get()) {
-    layer_->SetExternalTexture(old_texture.get());
-  } else if (old_mailbox.IsSharedMemory()) {
-    base::SharedMemory* old_buffer = old_mailbox.shared_memory();
-    const size_t size = old_mailbox.shared_memory_size_in_bytes();
 
-    scoped_ptr<base::SharedMemory> new_buffer(new base::SharedMemory);
-    new_buffer->CreateAndMapAnonymous(size);
-
-    if (old_buffer->memory() && new_buffer->memory()) {
-      memcpy(new_buffer->memory(), old_buffer->memory(), size);
-      base::SharedMemory* new_buffer_raw_ptr = new_buffer.get();
-      cc::TextureMailbox::ReleaseCallback callback =
-          base::Bind(MailboxReleaseCallback, Passed(&new_buffer));
-      cc::TextureMailbox new_mailbox(new_buffer_raw_ptr,
-                                     old_mailbox.shared_memory_size(),
-                                     callback);
-      layer_->SetTextureMailbox(new_mailbox, mailbox_scale_factor);
-    }
-  }
+  if (delegate_)
+    delegate_->DidRecreateLayer(old_layer, layer_);
 
   UpdateLayerName(name_);
   layer_->SetFillsBoundsOpaquely(!transparent_);
