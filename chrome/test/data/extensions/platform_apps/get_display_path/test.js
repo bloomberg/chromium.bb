@@ -3,11 +3,14 @@
 // found in the LICENSE file.
 
 chrome.app.runtime.onLaunched.addListener(function (launchData) {
-  // Test that there is launchData, it is set up properly, and that the
-  // FileEntry in launchData.items[0].entry can have its display path gotten.
+  // Test that the isKioskSession field is |false| and the items field is
+  // populated correctly in the launch data and that the FileEntry in
+  // launchData.items[0].entry can have its display path gotten.
   chrome.test.runTests([
     function testGetDisplayPath() {
       chrome.test.assertFalse(!launchData, "No launchData");
+      chrome.test.assertFalse(launchData.isKioskSession,
+          "launchData.isKioskSession incorrect");
       chrome.test.assertFalse(!launchData.items[0], "No launchData.items[0]");
       chrome.test.assertFalse(!launchData.items[0].entry,
                               "No launchData.items[0].entry");

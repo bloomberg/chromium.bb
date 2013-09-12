@@ -18,17 +18,9 @@ var entryIdManager = require('entryIdManager');
 eventBindings.registerArgumentMassager('app.runtime.onLaunched',
     function(args, dispatch) {
   var launchData = args[0];
-
-  if (!launchData) {
-    // An onLaunched corresponding to launching directly or from
-    // the app launcher or browser.
-    dispatch([]);
-    return;
-  }
-
   if (launchData.items) {
     // An onLaunched corresponding to file_handlers in the app's manifest.
-    var items = []
+    var items = [];
     var numItems = launchData.items.length;
     var itemLoaded = function(err, item) {
       if (err) {
@@ -37,12 +29,12 @@ eventBindings.registerArgumentMassager('app.runtime.onLaunched',
         $Array.push(items, item);
       }
       if (--numItems === 0) {
-        if (items.length === 0) {
-          dispatch([]);
-        } else {
-          var data = { id: launchData.id, items: items };
-          dispatch([data]);
+        var data = { isKioskSession: launchData.isKioskSession };
+        if (items.length !== 0) {
+          data.id = launchData.id;
+          data.items = items;
         }
+        dispatch([data]);
       }
     };
     $Array.forEach(launchData.items, function(item) {

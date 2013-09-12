@@ -35,6 +35,11 @@ namespace app.runtime {
     // The referrer URL for the <code>onLaunched</code> event triggered by a
     // matching URL handler in the <code>url_handlers</code> manifest key.
     DOMString? referrerUrl;
+
+    // Whether the app is being launched in a <a
+    // href="https://support.google.com/chromebook/answer/3134673">Chrome OS
+    // kiosk session</a>.
+    boolean? isKioskSession;
   };
 
   interface Events {

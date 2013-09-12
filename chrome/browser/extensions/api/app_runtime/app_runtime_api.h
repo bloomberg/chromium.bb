@@ -24,8 +24,7 @@ struct GrantedFileEntry;
 
 class AppEventRouter {
  public:
-  // Dispatches the onLaunched event to the given app, providing no launch
-  // data.
+  // Dispatches the onLaunched event to the given app.
   static void DispatchOnLaunchedEvent(Profile* profile,
                                       const Extension* extension);
 

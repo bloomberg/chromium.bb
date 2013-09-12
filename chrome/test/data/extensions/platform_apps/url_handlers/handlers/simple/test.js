@@ -3,10 +3,13 @@
 // found in the LICENSE file.
 
 chrome.app.runtime.onLaunched.addListener(function (launchData) {
-  // Test that the id and items fields in FileEntry can be read.
+  // Test that the isKioskSession field is |false| and the id and items fields
+  // can be read in the launch data.
   chrome.test.runTests([
     function testUrlHandler() {
       chrome.test.assertTrue(typeof launchData != 'undefined', "No launchData");
+      chrome.test.assertFalse(launchData.isKioskSession,
+          "launchData.isKioskSession incorrect");
       chrome.test.assertEq(launchData.id, "my_doc_url",
           "launchData.id incorrect");
       chrome.test.assertTrue(typeof launchData.items == 'undefined',

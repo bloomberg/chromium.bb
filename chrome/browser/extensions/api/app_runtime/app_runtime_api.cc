@@ -18,6 +18,10 @@
 #include "content/public/browser/web_contents.h"
 #include "url/gurl.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/user_manager.h"
+#endif
+
 namespace extensions {
 
 namespace app_runtime = api::app_runtime;
@@ -25,8 +29,16 @@ namespace app_runtime = api::app_runtime;
 namespace {
 
 void DispatchOnLaunchedEventImpl(const std::string& extension_id,
-                                 scoped_ptr<base::ListValue> args,
+                                 scoped_ptr<base::DictionaryValue> launch_data,
                                  Profile* profile) {
+#if defined(OS_CHROMEOS)
+  launch_data->SetBoolean("isKioskSession",
+                          chromeos::UserManager::Get()->IsLoggedInAsKioskApp());
+#else
+  launch_data->SetBoolean("isKioskSession", false);
+#endif
+  scoped_ptr<base::ListValue> args(new base::ListValue());
+  args->Append(launch_data.release());
   extensions::ExtensionSystem* system =
       extensions::ExtensionSystem::Get(profile);
   scoped_ptr<Event> event(new Event(app_runtime::OnLaunched::kEventName,
@@ -41,8 +53,8 @@ void DispatchOnLaunchedEventImpl(const std::string& extension_id,
 // static.
 void AppEventRouter::DispatchOnLaunchedEvent(
     Profile* profile, const Extension* extension) {
-  scoped_ptr<base::ListValue> arguments(new base::ListValue());
-  DispatchOnLaunchedEventImpl(extension->id(), arguments.Pass(), profile);
+  scoped_ptr<base::DictionaryValue> launch_data(new base::DictionaryValue());
+  DispatchOnLaunchedEventImpl(extension->id(), launch_data.Pass(), profile);
 }
 
 // static.
@@ -63,19 +75,17 @@ void AppEventRouter::DispatchOnLaunchedEventWithFileEntry(
     const extensions::app_file_handler_util::GrantedFileEntry& file_entry) {
   // TODO(sergeygs): Use the same way of creating an event (using the generated
   // boilerplate) as below in DispatchOnLaunchedEventWithUrl.
-  scoped_ptr<base::ListValue> args(new base::ListValue());
-  base::DictionaryValue* launch_data = new base::DictionaryValue();
+  scoped_ptr<base::DictionaryValue> launch_data(new base::DictionaryValue);
   launch_data->SetString("id", handler_id);
-  base::DictionaryValue* launch_item = new base::DictionaryValue;
+  scoped_ptr<base::DictionaryValue> launch_item(new base::DictionaryValue);
   launch_item->SetString("fileSystemId", file_entry.filesystem_id);
   launch_item->SetString("baseName", file_entry.registered_name);
   launch_item->SetString("mimeType", mime_type);
   launch_item->SetString("entryId", file_entry.id);
-  base::ListValue* items = new base::ListValue;
-  items->Append(launch_item);
-  launch_data->Set("items", items);
-  args->Append(launch_data);
-  DispatchOnLaunchedEventImpl(extension->id(), args.Pass(), profile);
+  scoped_ptr<base::ListValue> items(new base::ListValue);
+  items->Append(launch_item.release());
+  launch_data->Set("items", items.release());
+  DispatchOnLaunchedEventImpl(extension->id(), launch_data.Pass(), profile);
 }
 
 // static.
@@ -89,9 +99,8 @@ void AppEventRouter::DispatchOnLaunchedEventWithUrl(
   launch_data.id.reset(new std::string(handler_id));
   launch_data.url.reset(new std::string(url.spec()));
   launch_data.referrer_url.reset(new std::string(referrer_url.spec()));
-  scoped_ptr<ListValue> args(new ListValue());
-  args->Append(launch_data.ToValue().release());
-  DispatchOnLaunchedEventImpl(extension->id(), args.Pass(), profile);
+  DispatchOnLaunchedEventImpl(
+      extension->id(), launch_data.ToValue().Pass(), profile);
 }
 
 }  // namespace extensions

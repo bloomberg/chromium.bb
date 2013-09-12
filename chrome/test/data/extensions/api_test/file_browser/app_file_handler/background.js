@@ -83,6 +83,11 @@ function launchedListener(launchData) {
     return;
   }
 
+  if (launchData.isKioskSession) {
+    onError('launchData.isKioskSession incorrect.');
+    return;
+  }
+
   if (!launchData.items || launchData.items.length != 1) {
     onError('Invalid launch data items.');
     return;
