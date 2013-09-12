@@ -952,7 +952,7 @@ int HttpCache::Transaction::DoSuccessfulSendRequest() {
     mode_ = NONE;
   }
 
-  if (mode_ != NONE && request_->method == "POST" &&
+  if (request_->method == "POST" &&
       NonErrorResponse(new_response->headers->response_code())) {
     cache_->DoomMainEntryForUrl(request_->url);
   }
