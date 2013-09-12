@@ -85,7 +85,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "2.10",
+  "version": "2.11",
   "entries": [
     {
       "id": 1,
@@ -574,6 +574,21 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       "vendor_id": "0x10de",
       "features": [
         "init_gl_position_in_vertex_shader"
+      ]
+    },
+    {
+      "id": 38,
+      "cr_bugs": [289461],
+      "description": "Non-virtual contexts on Qualcomm sometimes cause out-of-order frames",
+      "os": {
+        "type": "android"
+      },
+      "gl_vendor": {
+        "op": "beginwith",
+        "value": "Qualcomm"
+      },
+      "features": [
+        "use_virtualized_gl_contexts"
       ]
     }
   ]
