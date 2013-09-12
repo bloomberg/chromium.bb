@@ -624,6 +624,29 @@ TEST_F(SearchTest, InstantNTPCustomNavigationEntry) {
   }
 }
 
+TEST_F(SearchTest, InstantCacheableNTPNavigationEntry) {
+  EnableInstantExtendedAPIForTesting();
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("InstantExtended",
+      "Group1 use_cacheable_ntp:1"));
+
+  AddTab(browser(), GURL("chrome://blank"));
+  content::WebContents* contents =
+        browser()->tab_strip_model()->GetWebContentsAt(0);
+  content::NavigationController& controller = contents->GetController();
+  // Local NTP.
+  NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
+  EXPECT_TRUE(NavEntryIsInstantNTP(contents,
+                                   controller.GetLastCommittedEntry()));
+  // Instant page is not cacheable NTP.
+  NavigateAndCommitActiveTab(GetInstantURL(profile(), kDisableStartMargin));
+  EXPECT_FALSE(NavEntryIsInstantNTP(contents,
+                                    controller.GetLastCommittedEntry()));
+  // Test Cacheable NTP
+  NavigateAndCommitActiveTab(chrome::GetNewTabPageURL(profile()));
+  EXPECT_TRUE(NavEntryIsInstantNTP(contents,
+                                   controller.GetLastCommittedEntry()));
+}
+
 TEST_F(SearchTest, GetInstantURLExtendedEnabled) {
   // Instant is disabled, so no Instant URL.
   EXPECT_EQ(GURL(), GetInstantURL(profile(), kDisableStartMargin));

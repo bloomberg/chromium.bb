@@ -123,21 +123,6 @@ GURL TemplateURLRefToGURL(const TemplateURLRef& ref,
   return GURL(ref.ReplaceSearchTerms(search_terms_args));
 }
 
-GURL GetNewTabPageURL(Profile* profile) {
-  if (!ShouldUseCacheableNTP())
-    return GURL();
-
-  if (!profile)
-    return GURL();
-
-  TemplateURL* template_url = GetDefaultSearchProviderTemplateURL(profile);
-  if (!template_url)
-    return GURL();
-
-  return TemplateURLRefToGURL(template_url->new_tab_url_ref(),
-                              kDisableStartMargin, false);
-}
-
 bool MatchesOrigin(const GURL& my_url, const GURL& other_url) {
   return my_url.host() == other_url.host() &&
          my_url.port() == other_url.port() &&
@@ -392,22 +377,24 @@ bool IsInstantNTP(const content::WebContents* contents) {
 
 bool NavEntryIsInstantNTP(const content::WebContents* contents,
                           const content::NavigationEntry* entry) {
-  if (!contents || !entry)
+  if (!contents || !entry || !IsInstantExtendedAPIEnabled())
     return false;
 
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
-  if (!IsInstantExtendedAPIEnabled() ||
-      !IsRenderedInInstantProcess(contents, profile))
+  if (!IsRenderedInInstantProcess(contents, profile))
     return false;
 
-  if (IsInstantURL(entry->GetVirtualURL(), profile) ||
-      entry->GetVirtualURL() == GetLocalInstantURL(profile))
-    return GetSearchTermsImpl(contents, entry).empty();
+  if (entry->GetVirtualURL() == GetLocalInstantURL(profile))
+    return true;
 
-  GURL new_tab_url(GetNewTabPageURL(profile));
-  return entry->GetVirtualURL() == GURL(chrome::kChromeUINewTabURL) &&
-      new_tab_url.is_valid() &&
-      MatchesOriginAndPath(entry->GetURL(), new_tab_url);
+  if (ShouldUseCacheableNTP()) {
+    GURL new_tab_url(GetNewTabPageURL(profile));
+    return new_tab_url.is_valid() &&
+        MatchesOriginAndPath(entry->GetURL(), new_tab_url);
+  }
+
+  return IsInstantURL(entry->GetVirtualURL(), profile) &&
+      GetSearchTermsImpl(contents, entry).empty();
 }
 
 bool IsSuggestPrefEnabled(Profile* profile) {
@@ -750,6 +737,21 @@ bool GetBoolValueForFlagWithDefault(const std::string& flag,
                                     bool default_value,
                                     const FieldTrialFlags& flags) {
   return !!GetUInt64ValueForFlagWithDefault(flag, default_value ? 1 : 0, flags);
+}
+
+GURL GetNewTabPageURL(Profile* profile) {
+  if (!ShouldUseCacheableNTP())
+    return GURL();
+
+  if (!profile)
+    return GURL();
+
+  TemplateURL* template_url = GetDefaultSearchProviderTemplateURL(profile);
+  if (!template_url)
+    return GURL();
+
+  return TemplateURLRefToGURL(template_url->new_tab_url_ref(),
+                              kDisableStartMargin, false);
 }
 
 void ResetInstantExtendedOptInStateGateForTest() {

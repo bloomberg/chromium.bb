@@ -101,6 +101,13 @@ class SearchTabHelper : public content::NotificationObserver,
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) OVERRIDE;
+  virtual void DidFailProvisionalLoad(
+      int64 frame_id,
+      bool is_main_frame,
+      const GURL& validated_url,
+      int error_code,
+      const string16& error_description,
+      content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void DidFinishLoad(
       int64 frame_id,
       const GURL& validated_url,
@@ -125,6 +132,10 @@ class SearchTabHelper : public content::NotificationObserver,
 
   // Used by unit tests.
   SearchIPCRouter& ipc_router() { return ipc_router_; }
+
+  // Helper function to navigate the given contents to the local fallback
+  // Instant URL and trim the history correctly.
+  void RedirectToLocalNTP();
 
   const bool is_search_enabled_;
 

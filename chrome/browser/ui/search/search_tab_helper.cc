@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/search/search_tab_helper.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/histogram.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_service.h"
@@ -22,12 +23,35 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/page_transition_types.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(SearchTabHelper);
 
 namespace {
+
+// For reporting Cacheable NTP navigations.
+enum CacheableNTPLoad {
+  CACHEABLE_NTP_LOAD_FAILED = 0,
+  CACHEABLE_NTP_LOAD_SUCCEEDED = 1,
+  CACHEABLE_NTP_LOAD_MAX = 2
+};
+
+void RecordCacheableNTPLoadHistogram(bool succeeded) {
+  UMA_HISTOGRAM_ENUMERATION("InstantExtended.CacheableNTPLoad",
+                            succeeded ? CACHEABLE_NTP_LOAD_SUCCEEDED :
+                                CACHEABLE_NTP_LOAD_FAILED,
+                            CACHEABLE_NTP_LOAD_MAX);
+}
+
+bool IsCacheableNTP(const content::WebContents* contents) {
+  const content::NavigationEntry* entry =
+      contents->GetController().GetActiveEntry();
+  return chrome::ShouldUseCacheableNTP() &&
+      chrome::NavEntryIsInstantNTP(contents, entry) &&
+      entry->GetURL() != GURL(chrome::kChromeSearchLocalNtpUrl);
+}
 
 bool IsNTP(const content::WebContents* contents) {
   // We can't use WebContents::GetURL() because that uses the active entry,
@@ -202,6 +226,15 @@ void SearchTabHelper::Observe(
 void SearchTabHelper::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
+  if (IsCacheableNTP(web_contents_)) {
+    if (details.http_status_code == 204 || details.http_status_code >= 400) {
+      RedirectToLocalNTP();
+      RecordCacheableNTPLoadHistogram(false);
+      return;
+    }
+    RecordCacheableNTPLoadHistogram(true);
+  }
+
   // Always set the title on the new tab page to be the one from our UI
   // resources. Normally, we set the title when we begin a NTP load, but it can
   // get reset in several places (like when you press Reload). This check
@@ -218,6 +251,19 @@ void SearchTabHelper::DidNavigateMainFrame(
       (entry->GetVirtualURL() == GURL(chrome::kChromeUINewTabURL) ||
        chrome::NavEntryIsInstantNTP(web_contents_, entry))) {
     entry->SetTitle(l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE));
+  }
+}
+
+void SearchTabHelper::DidFailProvisionalLoad(
+    int64 /* frame_id */,
+    bool is_main_frame,
+    const GURL& /* validated_url */,
+    int /* error_code */,
+    const string16& /* error_description */,
+    content::RenderViewHost* /* render_view_host */) {
+  if (is_main_frame && IsCacheableNTP(web_contents_)) {
+    RedirectToLocalNTP();
+    RecordCacheableNTPLoadHistogram(false);
   }
 }
 
@@ -270,4 +316,15 @@ void SearchTabHelper::DetermineIfPageSupportsInstant() {
   } else {
     ipc_router_.DetermineIfPageSupportsInstant();
   }
+}
+
+void SearchTabHelper::RedirectToLocalNTP() {
+  // Extra parentheses to declare a variable.
+  content::NavigationController::LoadURLParams load_params(
+      (GURL(chrome::kChromeSearchLocalNtpUrl)));
+  load_params.referrer = content::Referrer();
+  load_params.transition_type = content::PAGE_TRANSITION_SERVER_REDIRECT;
+  // Don't push a history entry.
+  load_params.should_replace_current_entry = true;
+  web_contents_->GetController().LoadURLWithParams(load_params);
 }

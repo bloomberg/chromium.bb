@@ -238,6 +238,10 @@ bool GetBoolValueForFlagWithDefault(const std::string& flag,
                                     bool default_value,
                                     const FieldTrialFlags& flags);
 
+// Returns the Cacheable New Tab Page URL for the given |profile|.
+// Exposed for testing only.
+GURL GetNewTabPageURL(Profile* profile);
+
 // Let tests reset the gate that prevents metrics from being sent more than
 // once.
 void ResetInstantExtendedOptInStateGateForTest();
