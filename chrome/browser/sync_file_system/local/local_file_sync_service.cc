@@ -375,39 +375,46 @@ void LocalFileSyncService::DidGetFileForLocalSync(
     return;
   }
 
+  FileChange next_change = sync_file_info.changes.front();
   DVLOG(1) << "ProcessLocalChange: " << sync_file_info.url.DebugString()
-           << " change:" << sync_file_info.changes.front().DebugString();
+           << " change:" << next_change.DebugString();
 
   local_change_processor_->ApplyLocalChange(
-      sync_file_info.changes.front(),
+      next_change,
       sync_file_info.local_file_path,
       sync_file_info.metadata,
       sync_file_info.url,
       base::Bind(&LocalFileSyncService::ProcessNextChangeForURL,
-                 AsWeakPtr(),
-                 sync_file_info,
-                 sync_file_info.changes.front(),
-                 sync_file_info.changes.PopAndGetNewList()));
+                 AsWeakPtr(), sync_file_info,
+                 next_change, sync_file_info.changes.PopAndGetNewList()));
 }
 
 void LocalFileSyncService::ProcessNextChangeForURL(
     const LocalFileSyncInfo& sync_file_info,
-    const FileChange& last_change,
+    const FileChange& processed_change,
     const FileChangeList& changes,
     SyncStatusCode status) {
   DVLOG(1) << "Processed one local change: "
            << sync_file_info.url.DebugString()
-           << " change:" << last_change.DebugString()
+           << " change:" << processed_change.DebugString()
            << " status:" << status;
 
+  if (status == SYNC_STATUS_RETRY) {
+    local_change_processor_->ApplyLocalChange(
+        processed_change,
+        sync_file_info.local_file_path,
+        sync_file_info.metadata,
+        sync_file_info.url,
+        base::Bind(&LocalFileSyncService::ProcessNextChangeForURL,
+                   AsWeakPtr(), sync_file_info, processed_change, changes));
+    return;
+  }
+
   if (status == SYNC_FILE_ERROR_NOT_FOUND &&
-      last_change.change() == FileChange::FILE_CHANGE_DELETE) {
+      processed_change.change() == FileChange::FILE_CHANGE_DELETE) {
     // This must be ok (and could happen).
     status = SYNC_STATUS_OK;
   }
-
-  // TODO(kinuko,tzik): Handle other errors that should not be considered
-  // a sync error.
 
   const FileSystemURL& url = sync_file_info.url;
   if (status != SYNC_STATUS_OK || changes.empty()) {
@@ -426,6 +433,7 @@ void LocalFileSyncService::ProcessNextChangeForURL(
     return;
   }
 
+  FileChange next_change = changes.front();
   local_change_processor_->ApplyLocalChange(
       changes.front(),
       sync_file_info.local_file_path,
@@ -433,7 +441,7 @@ void LocalFileSyncService::ProcessNextChangeForURL(
       url,
       base::Bind(&LocalFileSyncService::ProcessNextChangeForURL,
                  AsWeakPtr(), sync_file_info,
-                 changes.front(), changes.PopAndGetNewList()));
+                 next_change, changes.PopAndGetNewList()));
 }
 
 }  // namespace sync_file_system

@@ -556,14 +556,16 @@ void LocalSyncDelegate::HandleRemoteWinCase(
 }
 
 void LocalSyncDelegate::StartOver(const SyncStatusCallback& callback,
-                                             SyncStatusCode status) {
+                                  SyncStatusCode status) {
   if (status != SYNC_STATUS_OK) {
     callback.Run(status);
     return;
   }
 
   remote_change_handler()->RemoveChangeForURL(url_);
-  Run(callback);
+
+  // Return the control back to the sync service once.
+  callback.Run(SYNC_STATUS_RETRY);
 }
 
 SyncStatusCode
