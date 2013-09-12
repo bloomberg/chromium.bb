@@ -670,7 +670,8 @@ void FrameView::calculateScrollbarModesForLayout(ScrollbarMode& hMode, Scrollbar
                 // It's sufficient to just check the X overflow,
                 // since it's illegal to have visible in only one direction.
                 RenderObject* o = rootRenderer->style()->overflowX() == OVISIBLE && isHTMLHtmlElement(document->documentElement()) ? body->renderer() : rootRenderer;
-                applyOverflowToViewport(o, hMode, vMode);
+                if (o->style())
+                    applyOverflowToViewport(o, hMode, vMode);
             }
         } else if (rootRenderer)
             applyOverflowToViewport(rootRenderer, hMode, vMode);
