@@ -1514,7 +1514,13 @@ def GetDefaultConcurrentLinks():
     stat.dwLength = ctypes.sizeof(stat)
     ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(stat))
 
-    return max(1, stat.ullTotalPhys / (4 * (2 ** 30)))  # total / 4GB
+    mem_limit = max(1, stat.ullTotalPhys / (4 * (2 ** 30)))  # total / 4GB
+    cpu_limit = 1
+    try:
+      cpu_limit = multiprocessing.cpu_count()
+    except NotImplementedError:
+      pass
+    return min(mem_limit, cpu_limit)
   elif sys.platform.startswith('linux'):
     with open("/proc/meminfo") as meminfo:
       memtotal_re = re.compile(r'^MemTotal:\s*(\d*)\s*kB')
