@@ -1157,6 +1157,9 @@
     # Use brlapi from brltty for braille display support.
     'use_brlapi%': 0,
 
+    # Relative path to icu.gyp from this file.
+    'icu_gyp_path': '../third_party/icu/icu.gyp',
+
     'conditions': [
       # The version of GCC in use, set later in platforms that use GCC and have
       # not explicitly chosen to build with clang. Currently, this means all
