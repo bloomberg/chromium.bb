@@ -43,6 +43,7 @@ def WriteSource(base_name,
       '\n'.join(externs),
       '',
       '#endif  // ' + define])
+  header += '\n'
 
   with open(os.path.join(output_dir, base_name + '.h'), 'w') as f:
     f.write(header)
@@ -67,6 +68,7 @@ def WriteSource(base_name,
       '#include "%s"' % (dir_from_src + '/' + base_name + '.h'),
       '',
       '\n'.join(definitions)])
+  cc += '\n'
 
   with open(os.path.join(output_dir, base_name + '.cc'), 'w') as f:
     f.write(cc)
