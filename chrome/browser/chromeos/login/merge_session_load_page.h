@@ -9,7 +9,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/login/oauth2_login_manager.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "url/gurl.h"
 
@@ -34,7 +34,7 @@ namespace chromeos {
 // It deletes itself when the interstitial page is closed.
 class MergeSessionLoadPage
     : public content::InterstitialPageDelegate,
-      public UserManager::Observer {
+      public OAuth2LoginManager::Observer {
  public:
   // Passed a boolean indicating whether or not it is OK to proceed with the
   // page load.
@@ -62,11 +62,15 @@ class MergeSessionLoadPage
   virtual void OnProceed() OVERRIDE;
   virtual void OnDontProceed() OVERRIDE;
 
-  // UserManager::Observer overrides.
-  virtual void MergeSessionStateChanged(
-      UserManager::MergeSessionState state) OVERRIDE;
+  // OAuth2LoginManager::Observer overrides.
+  virtual void OnSessionRestoreStateChanged(
+      Profile* user_profile,
+      OAuth2LoginManager::SessionRestoreState state) OVERRIDE;
 
   void NotifyBlockingPageComplete();
+
+  // Helper function to get OAuth2LoginManager out of |web_contents_|.
+  OAuth2LoginManager* GetOAuth2LoginManager();
 
   CompletionCallback callback_;
 

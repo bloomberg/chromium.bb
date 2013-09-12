@@ -291,7 +291,10 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
     // Add interstitial page while merge session process (cookie
     // reconstruction from OAuth2 refresh token in ChromeOS login) is still in
     // progress while we are attempting to load a google property.
-    throttles->push_back(new MergeSessionThrottle(request));
+    if (!MergeSessionThrottle::AreAllSessionMergedAlready() &&
+        request->url().SchemeIsHTTPOrHTTPS()) {
+      throttles->push_back(new MergeSessionThrottle(request));
+    }
   }
 #endif
 

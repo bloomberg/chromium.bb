@@ -42,7 +42,4 @@ scoped_refptr<Authenticator> TestLoginUtils::CreateAuthenticator(
 void TestLoginUtils::InitRlzDelayed(Profile* user_profile) {
 }
 
-void TestLoginUtils::StopBackgroundFetchers() {
-}
-
 }  // namespace chromeos

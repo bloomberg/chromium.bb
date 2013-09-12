@@ -9,7 +9,6 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -21,37 +20,39 @@
 
 namespace chromeos {
 
-OAuth2LoginManager::OAuth2LoginManager(OAuthLoginManager::Delegate* delegate)
-    : OAuthLoginManager(delegate),
+OAuth2LoginManager::OAuth2LoginManager(Profile* user_profile)
+    : user_profile_(user_profile),
+      restore_strategy_(RESTORE_FROM_COOKIE_JAR),
+      state_(SESSION_RESTORE_NOT_STARTED),
       loading_reported_(false) {
+  ProfileOAuth2TokenServiceFactory::GetForProfile(user_profile_)->
+      AddObserver(this);
 }
 
 OAuth2LoginManager::~OAuth2LoginManager() {
-  StopObservingRefreshToken();
+}
+
+void OAuth2LoginManager::AddObserver(OAuth2LoginManager::Observer* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void OAuth2LoginManager::RemoveObserver(
+    OAuth2LoginManager::Observer* observer) {
+  observer_list_.RemoveObserver(observer);
 }
 
 void OAuth2LoginManager::RestoreSession(
-    Profile* user_profile,
     net::URLRequestContextGetter* auth_request_context,
     SessionRestoreStrategy restore_strategy,
     const std::string& oauth2_refresh_token,
     const std::string& auth_code) {
-  StopObservingRefreshToken();
-  user_profile_ = user_profile;
+  DCHECK(user_profile_);
   auth_request_context_ = auth_request_context;
-  state_ = OAuthLoginManager::SESSION_RESTORE_IN_PROGRESS;
   restore_strategy_ = restore_strategy;
   refresh_token_ = oauth2_refresh_token;
   auth_code_ = auth_code;
-
-  // TODO(nkostylev): drop the previous fetchers if RestoreSession() is invoked
-  // for a second Profile, when using multi-profiles. This avoids the DCHECKs
-  // below until OAuthLoginManager fully supports multi-profiles.
-  Stop();
-
-  ProfileOAuth2TokenServiceFactory::GetForProfile(user_profile_)->
-      AddObserver(this);
-
+  session_restore_start_ = base::Time::Now();
+  SetSessionRestoreState(OAuth2LoginManager::SESSION_RESTORE_PREPARING);
   ContinueSessionRestore();
 }
 
@@ -81,10 +82,19 @@ void OAuth2LoginManager::Stop() {
   login_verifier_.reset();
 }
 
+bool OAuth2LoginManager::ShouldBlockTabLoading() {
+  return state_ == SESSION_RESTORE_PREPARING ||
+         state_ == SESSION_RESTORE_IN_PROGRESS;
+}
+
 void OAuth2LoginManager::OnRefreshTokenAvailable(
     const std::string& account_id) {
+  if (state_ == SESSION_RESTORE_NOT_STARTED)
+    return;
+
   // TODO(fgorski): Once ProfileOAuth2TokenService supports multi-login, make
   // sure to restore session cookies in the context of the correct account_id.
+  LOG(INFO) << "OnRefreshTokenAvailable";
   RestoreSessionCookies();
 }
 
@@ -123,6 +133,7 @@ void OAuth2LoginManager::FetchOAuth2Tokens() {
     oauth2_token_fetcher_->StartExchangeFromAuthCode(auth_code_);
   } else {
     NOTREACHED();
+    SetSessionRestoreState(OAuth2LoginManager::SESSION_RESTORE_FAILED);
   }
 }
 
@@ -134,22 +145,27 @@ void OAuth2LoginManager::OnOAuth2TokensAvailable(
 
 void OAuth2LoginManager::OnOAuth2TokensFetchFailed() {
   LOG(ERROR) << "OAuth2 tokens fetch failed!";
-  state_ = OAuthLoginManager::SESSION_RESTORE_DONE;
-  UserManager::Get()->SaveUserOAuthStatus(
-      UserManager::Get()->GetLoggedInUser()->email(),
-      User::OAUTH2_TOKEN_STATUS_INVALID);
   UMA_HISTOGRAM_ENUMERATION("OAuth2Login.SessionRestore",
                             SESSION_RESTORE_TOKEN_FETCH_FAILED,
                             SESSION_RESTORE_COUNT);
+  SetSessionRestoreState(OAuth2LoginManager::SESSION_RESTORE_FAILED);
 }
 
 void OAuth2LoginManager::RestoreSessionCookies() {
   DCHECK(!login_verifier_.get());
+  SetSessionRestoreState(SESSION_RESTORE_IN_PROGRESS);
   login_verifier_.reset(
       new OAuth2LoginVerifier(this,
                               g_browser_process->system_request_context(),
                               user_profile_->GetRequestContext()));
   login_verifier_->VerifyProfileTokens(user_profile_);
+}
+
+void OAuth2LoginManager::Shutdown() {
+  ProfileOAuth2TokenServiceFactory::GetForProfile(user_profile_)->
+      RemoveObserver(this);
+  login_verifier_.reset();
+  oauth2_token_fetcher_.reset();
 }
 
 void OAuth2LoginManager::OnOAuthLoginSuccess(
@@ -160,52 +176,53 @@ void OAuth2LoginManager::OnOAuthLoginSuccess(
 
 void OAuth2LoginManager::OnOAuthLoginFailure() {
   LOG(ERROR) << "OAuth2 refresh token verification failed!";
-  state_ = OAuthLoginManager::SESSION_RESTORE_DONE;
-  UserManager::Get()->SaveUserOAuthStatus(
-      UserManager::Get()->GetLoggedInUser()->email(),
-      User::OAUTH2_TOKEN_STATUS_INVALID);
   UMA_HISTOGRAM_ENUMERATION("OAuth2Login.SessionRestore",
                             SESSION_RESTORE_OAUTHLOGIN_FAILED,
                             SESSION_RESTORE_COUNT);
-  delegate_->OnCompletedMergeSession();
+  SetSessionRestoreState(OAuth2LoginManager::SESSION_RESTORE_FAILED);
 }
 
 void OAuth2LoginManager::OnSessionMergeSuccess() {
   LOG(INFO) << "OAuth2 refresh and/or GAIA token verification succeeded.";
-  state_ = OAuthLoginManager::SESSION_RESTORE_DONE;
-  UserManager::Get()->SaveUserOAuthStatus(
-      UserManager::Get()->GetLoggedInUser()->email(),
-      User::OAUTH2_TOKEN_STATUS_VALID);
   UMA_HISTOGRAM_ENUMERATION("OAuth2Login.SessionRestore",
                             SESSION_RESTORE_SUCCESS,
                             SESSION_RESTORE_COUNT);
-  delegate_->OnCompletedMergeSession();
+  SetSessionRestoreState(OAuth2LoginManager::SESSION_RESTORE_DONE);
 }
 
 void OAuth2LoginManager::OnSessionMergeFailure() {
   LOG(ERROR) << "OAuth2 refresh and GAIA token verification failed!";
-  state_ = OAuthLoginManager::SESSION_RESTORE_DONE;
-  UserManager::Get()->SaveUserOAuthStatus(
-      UserManager::Get()->GetLoggedInUser()->email(),
-      User::OAUTH2_TOKEN_STATUS_INVALID);
   UMA_HISTOGRAM_ENUMERATION("OAuth2Login.SessionRestore",
                             SESSION_RESTORE_MERGE_SESSION_FAILED,
                             SESSION_RESTORE_COUNT);
-  delegate_->OnCompletedMergeSession();
+  SetSessionRestoreState(OAuth2LoginManager::SESSION_RESTORE_FAILED);
 }
 
 void OAuth2LoginManager::StartTokenService(
     const GaiaAuthConsumer::ClientLoginResult& gaia_credentials) {
   TokenService* token_service = SetupTokenService();
   token_service->UpdateCredentials(gaia_credentials);
-  CompleteAuthentication();
+
+  FOR_EACH_OBSERVER(Observer, observer_list_,
+                    OnSessionAuthenticated(user_profile_));
+
+  if (token_service->AreCredentialsValid())
+    token_service->StartFetchingTokens();
 }
 
-void OAuth2LoginManager::StopObservingRefreshToken() {
-  if (user_profile_) {
-    ProfileOAuth2TokenServiceFactory::GetForProfile(user_profile_)->
-        RemoveObserver(this);
-  }
+void OAuth2LoginManager::SetSessionRestoreState(
+    OAuth2LoginManager::SessionRestoreState state) {
+  if (state_ == state)
+    return;
+
+  state_ = state;
+  FOR_EACH_OBSERVER(Observer, observer_list_,
+                    OnSessionRestoreStateChanged(user_profile_, state_));
+}
+
+void OAuth2LoginManager::SetSessionRestoreStartForTesting(
+    const base::Time& time) {
+  session_restore_start_ = time;
 }
 
 }  // namespace chromeos

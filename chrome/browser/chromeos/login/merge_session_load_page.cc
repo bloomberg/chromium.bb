@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/login/oauth2_login_manager_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
@@ -57,13 +58,15 @@ MergeSessionLoadPage::MergeSessionLoadPage(WebContents* web_contents,
       proceeded_(false),
       web_contents_(web_contents),
       url_(url) {
-  UserManager::Get()->AddObserver(this);
+  OAuth2LoginManager* manager = GetOAuth2LoginManager();
+  manager->AddObserver(this);
   interstitial_page_ = InterstitialPage::Create(web_contents, true, url, this);
 }
 
 MergeSessionLoadPage::~MergeSessionLoadPage() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  UserManager::Get()->RemoveObserver(this);
+  OAuth2LoginManager* manager = GetOAuth2LoginManager();
+  manager->RemoveObserver(this);
 }
 
 void MergeSessionLoadPage::Show() {
@@ -131,16 +134,30 @@ void MergeSessionLoadPage::NotifyBlockingPageComplete() {
   }
 }
 
-void MergeSessionLoadPage::MergeSessionStateChanged(
-    UserManager::MergeSessionState state) {
+OAuth2LoginManager* MergeSessionLoadPage::GetOAuth2LoginManager() {
+  content::BrowserContext* browser_context = web_contents_->GetBrowserContext();
+  if (!browser_context)
+    return NULL;
+
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  if (!profile)
+    return NULL;
+
+  return OAuth2LoginManagerFactory::GetInstance()->GetForProfile(profile);
+}
+
+void MergeSessionLoadPage::OnSessionRestoreStateChanged(
+    Profile* user_profile, OAuth2LoginManager::SessionRestoreState state) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DVLOG(1) << "Merge session is "
-           << (state !=  UserManager:: MERGE_STATUS_IN_PROCESS ?
+
+  OAuth2LoginManager* manager = GetOAuth2LoginManager();
+  DVLOG(1) << "Merge session should "
+           << (!manager->ShouldBlockTabLoading() ?
                   " NOT " : "")
-           << " in progress, "
+           << " be blocking now, "
            << state;
-  if (state !=  UserManager:: MERGE_STATUS_IN_PROCESS) {
-    UserManager::Get()->RemoveObserver(this);
+  if (!manager->ShouldBlockTabLoading()) {
+    manager->RemoveObserver(this);
     interstitial_page_->Proceed();
   }
 }

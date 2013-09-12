@@ -682,11 +682,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
 
   swap_metrics_.reset();
 
-  // Stops LoginUtils background fetchers. This is needed because IO thread is
-  // going to stop soon after this function. The pending background jobs could
-  // cause it to crash during shutdown.
-  LoginUtils::Get()->StopBackgroundFetchers();
-
   // Stops all in-flight OAuth2 token fetchers before the IO thread stops.
   DeviceOAuth2TokenServiceFactory::Shutdown();
 

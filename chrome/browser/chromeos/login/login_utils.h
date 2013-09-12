@@ -102,9 +102,6 @@ class LoginUtils {
   // Restores authentication session after crash.
   virtual void RestoreAuthenticationSession(Profile* profile) = 0;
 
-  // Stops background fetchers.
-  virtual void StopBackgroundFetchers() = 0;
-
   // Initialize RLZ.
   virtual void InitRlzDelayed(Profile* user_profile) = 0;
 };

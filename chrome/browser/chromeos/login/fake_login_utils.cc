@@ -98,10 +98,6 @@ void FakeLoginUtils::RestoreAuthenticationSession(Profile* profile) {
   NOTREACHED() << "Method not implemented.";
 }
 
-void FakeLoginUtils::StopBackgroundFetchers() {
-  NOTREACHED() << "Method not implemented.";
-}
-
 void FakeLoginUtils::InitRlzDelayed(Profile* user_profile) {
   NOTREACHED() << "Method not implemented.";
 }

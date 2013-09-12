@@ -34,7 +34,6 @@ class FakeLoginUtils : public LoginUtils {
   virtual scoped_refptr<Authenticator> CreateAuthenticator(
       LoginStatusConsumer* consumer) OVERRIDE;
   virtual void RestoreAuthenticationSession(Profile* profile) OVERRIDE;
-  virtual void StopBackgroundFetchers() OVERRIDE;
   virtual void InitRlzDelayed(Profile* user_profile) OVERRIDE;
 
   void SetExpectedCredentials(const std::string& username,

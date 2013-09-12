@@ -69,8 +69,6 @@ class MockUserManager : public UserManager {
   MOCK_METHOD1(RemoveSessionStateObserver,
                void(UserManager::UserSessionStateObserver*));
   MOCK_METHOD0(NotifyLocalStateChanged, void(void));
-  MOCK_CONST_METHOD0(GetMergeSessionState, MergeSessionState(void));
-  MOCK_METHOD1(SetMergeSessionState, void(MergeSessionState));
   MOCK_METHOD2(SetUserFlow, void(const std::string&, UserFlow*));
   MOCK_METHOD1(ResetUserFlow, void(const std::string&));
   MOCK_METHOD4(CreateLocallyManagedUserRecord, const User*(

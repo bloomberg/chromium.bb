@@ -37,7 +37,8 @@
 #include "chrome/browser/chromeos/login/chrome_restart_request.h"
 #include "chrome/browser/chromeos/login/language_switch_menu.h"
 #include "chrome/browser/chromeos/login/login_display_host.h"
-#include "chrome/browser/chromeos/login/oauth_login_manager.h"
+#include "chrome/browser/chromeos/login/oauth2_login_manager.h"
+#include "chrome/browser/chromeos/login/oauth2_login_manager_factory.h"
 #include "chrome/browser/chromeos/login/parallel_authenticator.h"
 #include "chrome/browser/chromeos/login/profile_auth_data.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
@@ -96,18 +97,17 @@ base::FilePath GetRlzDisabledFlagPath() {
 
 class LoginUtilsImpl
     : public LoginUtils,
-      public OAuthLoginManager::Delegate,
+      public OAuth2LoginManager::Observer,
       public net::NetworkChangeNotifier::ConnectionTypeObserver,
       public base::SupportsWeakPtr<LoginUtilsImpl> {
  public:
   LoginUtilsImpl()
       : using_oauth_(false),
         has_web_auth_cookies_(false),
-        login_manager_(OAuthLoginManager::Create(this)),
         delegate_(NULL),
         should_restore_auth_session_(false),
         session_restore_strategy_(
-            OAuthLoginManager::RESTORE_FROM_SAVED_OAUTH2_REFRESH_TOKEN) {
+            OAuth2LoginManager::RESTORE_FROM_SAVED_OAUTH2_REFRESH_TOKEN) {
     net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
   }
 
@@ -131,13 +131,13 @@ class LoginUtilsImpl
   virtual scoped_refptr<Authenticator> CreateAuthenticator(
       LoginStatusConsumer* consumer) OVERRIDE;
   virtual void RestoreAuthenticationSession(Profile* profile) OVERRIDE;
-  virtual void StopBackgroundFetchers() OVERRIDE;
   virtual void InitRlzDelayed(Profile* user_profile) OVERRIDE;
 
-  // OAuthLoginManager::Delegate overrides.
-  virtual void OnCompletedMergeSession() OVERRIDE;
-  virtual void OnCompletedAuthentication(Profile* user_profile) OVERRIDE;
-  virtual void OnFoundStoredTokens() OVERRIDE;
+  // OAuth2LoginManager::Delegate overrides.
+  virtual void OnSessionRestoreStateChanged(
+      Profile* user_profile,
+      OAuth2LoginManager::SessionRestoreState state) OVERRIDE;
+  virtual void OnSessionAuthenticated(Profile* user_profile) OVERRIDE;
 
   // net::NetworkChangeNotifier::ConnectionTypeObserver overrides.
   virtual void OnConnectionTypeChanged(
@@ -187,12 +187,12 @@ class LoginUtilsImpl
 
   UserContext user_context_;
   bool using_oauth_;
+
   // True if the authentication profile's cookie jar should contain
   // authentication cookies from the authentication extension log in flow.
   bool has_web_auth_cookies_;
   // Has to be scoped_refptr, see comment for CreateAuthenticator(...).
   scoped_refptr<Authenticator> authenticator_;
-  scoped_ptr<OAuthLoginManager> login_manager_;
 
   // Delegate to be fired when the profile will be prepared.
   LoginUtils::Delegate* delegate_;
@@ -202,7 +202,7 @@ class LoginUtilsImpl
   bool should_restore_auth_session_;
 
   // Sesion restore strategy.
-  OAuthLoginManager::SessionRestoreStrategy session_restore_strategy_;
+  OAuth2LoginManager::SessionRestoreStrategy session_restore_strategy_;
   // OAuth2 refresh token for session restore.
   std::string oauth2_refresh_token_;
 
@@ -394,24 +394,24 @@ void LoginUtilsImpl::InitSessionRestoreStrategy() {
 
     DCHECK(!has_web_auth_cookies_);
     if (!user_context_.auth_code.empty()) {
-      session_restore_strategy_ = OAuthLoginManager::RESTORE_FROM_AUTH_CODE;
+      session_restore_strategy_ = OAuth2LoginManager::RESTORE_FROM_AUTH_CODE;
     } else if (!oauth2_refresh_token_.empty()) {
       session_restore_strategy_ =
-          OAuthLoginManager::RESTORE_FROM_PASSED_OAUTH2_REFRESH_TOKEN;
+          OAuth2LoginManager::RESTORE_FROM_PASSED_OAUTH2_REFRESH_TOKEN;
     } else {
       session_restore_strategy_ =
-          OAuthLoginManager::RESTORE_FROM_SAVED_OAUTH2_REFRESH_TOKEN;
+          OAuth2LoginManager::RESTORE_FROM_SAVED_OAUTH2_REFRESH_TOKEN;
     }
     return;
   }
 
   if (has_web_auth_cookies_) {
-    session_restore_strategy_ = OAuthLoginManager::RESTORE_FROM_COOKIE_JAR;
+    session_restore_strategy_ = OAuth2LoginManager::RESTORE_FROM_COOKIE_JAR;
   } else if (!user_context_.auth_code.empty()) {
-    session_restore_strategy_ = OAuthLoginManager::RESTORE_FROM_AUTH_CODE;
+    session_restore_strategy_ = OAuth2LoginManager::RESTORE_FROM_AUTH_CODE;
   } else {
     session_restore_strategy_ =
-        OAuthLoginManager::RESTORE_FROM_SAVED_OAUTH2_REFRESH_TOKEN;
+        OAuth2LoginManager::RESTORE_FROM_SAVED_OAUTH2_REFRESH_TOKEN;
   }
 }
 
@@ -469,22 +469,19 @@ void LoginUtilsImpl::RestoreAuthSession(Profile* user_profile,
                                         bool restore_from_auth_cookies) {
   CHECK((authenticator_.get() && authenticator_->authentication_profile()) ||
         !restore_from_auth_cookies);
-  if (!login_manager_.get())
-    return;
 
   if (chrome::IsRunningInForcedAppMode() ||
       CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kOobeSkipPostLogin))
     return;
 
-  UserManager::Get()->SetMergeSessionState(
-      UserManager::MERGE_STATUS_IN_PROCESS);
-
   // Remove legacy OAuth1 token if we have one. If it's valid, we should already
   // have OAuth2 refresh token in TokenService that could be used to retrieve
   // all other tokens and user_context.
-  login_manager_->RestoreSession(
-      user_profile,
+  OAuth2LoginManager* login_manager =
+      OAuth2LoginManagerFactory::GetInstance()->GetForProfile(user_profile);
+  login_manager->AddObserver(this);
+  login_manager->RestoreSession(
       authenticator_.get() && authenticator_->authentication_profile()
           ? authenticator_->authentication_profile()->GetRequestContext()
           : NULL,
@@ -723,46 +720,58 @@ void LoginUtilsImpl::RestoreAuthenticationSession(Profile* user_profile) {
   } else {
     // Even if we're online we should wait till initial
     // OnConnectionTypeChanged() call. Otherwise starting fetchers too early may
-    // end up cancelling all request when initial network connection type is
+    // end up canceling all request when initial network connection type is
     // processed. See http://crbug.com/121643.
     should_restore_auth_session_ = true;
   }
 }
 
-void LoginUtilsImpl::StopBackgroundFetchers() {
-  login_manager_.reset();
+void LoginUtilsImpl::OnSessionRestoreStateChanged(
+    Profile* user_profile,
+    OAuth2LoginManager::SessionRestoreState state) {
+  OAuth2LoginManager* login_manager =
+      OAuth2LoginManagerFactory::GetInstance()->GetForProfile(user_profile);
+  switch (state) {
+    case OAuth2LoginManager::SESSION_RESTORE_NOT_STARTED:
+      break;
+    case OAuth2LoginManager::SESSION_RESTORE_PREPARING:
+      break;
+    case OAuth2LoginManager::SESSION_RESTORE_IN_PROGRESS:
+      break;
+    case OAuth2LoginManager::SESSION_RESTORE_DONE:
+      UserManager::Get()->SaveUserOAuthStatus(
+          UserManager::Get()->GetLoggedInUser()->email(),
+          User::OAUTH2_TOKEN_STATUS_VALID);
+      login_manager->RemoveObserver(this);
+      break;
+    case OAuth2LoginManager::SESSION_RESTORE_FAILED:
+      UserManager::Get()->SaveUserOAuthStatus(
+          UserManager::Get()->GetLoggedInUser()->email(),
+          User::OAUTH2_TOKEN_STATUS_INVALID);
+      login_manager->RemoveObserver(this);
+      break;
+  }
 }
 
-void LoginUtilsImpl::OnCompletedAuthentication(Profile* user_profile) {
+void LoginUtilsImpl::OnSessionAuthenticated(Profile* user_profile) {
   StartSignedInServices(user_profile);
-}
-
-void LoginUtilsImpl::OnCompletedMergeSession() {
-  UserManager::Get()->SetMergeSessionState(UserManager::MERGE_STATUS_DONE);
-}
-
-void LoginUtilsImpl::OnFoundStoredTokens() {
-  // We don't need authenticator instance any more since its cookie jar
-  // is not going to needed to mint OAuth tokens. Reset it so that
-  // ScreenLocker would create a separate instance.
-  authenticator_ = NULL;
 }
 
 void LoginUtilsImpl::OnConnectionTypeChanged(
     net::NetworkChangeNotifier::ConnectionType type) {
-  if (!login_manager_.get())
-    return;
+  Profile* user_profile = ProfileManager::GetDefaultProfile();
+  OAuth2LoginManager* login_manager =
+      OAuth2LoginManagerFactory::GetInstance()->GetForProfile(user_profile);
 
   if (type != net::NetworkChangeNotifier::CONNECTION_NONE &&
       UserManager::Get()->IsUserLoggedIn()) {
-    if (login_manager_->state() ==
-            OAuthLoginManager::SESSION_RESTORE_IN_PROGRESS) {
+    if (login_manager->state() ==
+            OAuth2LoginManager::SESSION_RESTORE_IN_PROGRESS) {
       // If we come online for the first time after successful offline login,
       // we need to kick off OAuth token verification process again.
-      login_manager_->ContinueSessionRestore();
+      login_manager->ContinueSessionRestore();
     } else if (should_restore_auth_session_) {
       should_restore_auth_session_ = false;
-      Profile* user_profile = ProfileManager::GetDefaultProfile();
       RestoreAuthSession(user_profile, has_web_auth_cookies_);
     }
   }
