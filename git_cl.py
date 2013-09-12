@@ -849,80 +849,108 @@ def GetCodereviewSettingsInteractively():
 class ChangeDescription(object):
   """Contains a parsed form of the change description."""
   R_LINE = r'^[ \t]*(TBR|R)[ \t]*=[ \t]*(.*?)[ \t]*$'
+  BUG_LINE = r'^[ \t]*(BUG)[ \t]*=[ \t]*(.*?)[ \t]*$'
 
   def __init__(self, description):
-    self._description = (description or '').strip()
+    self._description_lines = (description or '').strip().splitlines()
 
-  @property
-  def description(self):
-    return self._description
+  @property               # www.logilab.org/ticket/89786
+  def description(self):  # pylint: disable=E0202
+    return '\n'.join(self._description_lines)
+
+  def set_description(self, desc):
+    if isinstance(desc, basestring):
+      lines = desc.splitlines()
+    else:
+      lines = [line.rstrip() for line in desc]
+    while lines and not lines[0]:
+      lines.pop(0)
+    while lines and not lines[-1]:
+      lines.pop(-1)
+    self._description_lines = lines
 
   def update_reviewers(self, reviewers):
-    """Rewrites the R=/TBR= line(s) as a single line."""
+    """Rewrites the R=/TBR= line(s) as a single line each."""
     assert isinstance(reviewers, list), reviewers
     if not reviewers:
       return
-    regexp = re.compile(self.R_LINE, re.MULTILINE)
-    matches = list(regexp.finditer(self._description))
-    is_tbr = any(m.group(1) == 'TBR' for m in matches)
-    if len(matches) > 1:
-      # Erase all except the first one.
-      for i in xrange(len(matches) - 1, 0, -1):
-        self._description = (
-            self._description[:matches[i].start()] +
-            self._description[matches[i].end():])
+    reviewers = reviewers[:]
 
-    if is_tbr:
-      new_r_line = 'TBR=' + ', '.join(reviewers)
-    else:
-      new_r_line = 'R=' + ', '.join(reviewers)
+    # Get the set of R= and TBR= lines and remove them from the desciption.
+    regexp = re.compile(self.R_LINE)
+    matches = [regexp.match(line) for line in self._description_lines]
+    new_desc = [l for i, l in enumerate(self._description_lines)
+                if not matches[i]]
+    self.set_description(new_desc)
 
-    if matches:
-      self._description = (
-        self._description[:matches[0].start()] + new_r_line +
-        self._description[matches[0].end():]).strip()
+    # Construct new unified R= and TBR= lines.
+    r_names = []
+    tbr_names = []
+    for match in matches:
+      if not match:
+        continue
+      people = cleanup_list([match.group(2).strip()])
+      if match.group(1) == 'TBR':
+        tbr_names.extend(people)
+      else:
+        r_names.extend(people)
+    for name in r_names:
+      if name not in reviewers:
+        reviewers.append(name)
+    new_r_line = 'R=' + ', '.join(reviewers) if reviewers else None
+    new_tbr_line = 'TBR=' + ', '.join(tbr_names) if tbr_names else None
+
+    # Put the new lines in the description where the old first R= line was.
+    line_loc = next((i for i, match in enumerate(matches) if match), -1)
+    if 0 <= line_loc < len(self._description_lines):
+      if new_tbr_line:
+        self._description_lines.insert(line_loc, new_tbr_line)
+      if new_r_line:
+        self._description_lines.insert(line_loc, new_r_line)
     else:
-      self.append_footer(new_r_line)
+      if new_r_line:
+        self.append_footer(new_r_line)
+      if new_tbr_line:
+        self.append_footer(new_tbr_line)
 
   def prompt(self):
     """Asks the user to update the description."""
-    self._description = (
-      '# Enter a description of the change.\n'
-      '# This will be displayed on the codereview site.\n'
-      '# The first line will also be used as the subject of the review.\n'
+    self.set_description([
+      '# Enter a description of the change.',
+      '# This will be displayed on the codereview site.',
+      '# The first line will also be used as the subject of the review.',
       '#--------------------This line is 72 characters long'
-      '--------------------\n'
-    ) + self._description
+      '--------------------',
+    ] + self._description_lines)
 
-    if '\nBUG=' not in self._description:
+    regexp = re.compile(self.BUG_LINE)
+    if not any((regexp.match(line) for line in self._description_lines)):
       self.append_footer('BUG=')
-    content = gclient_utils.RunEditor(self._description, True,
+    content = gclient_utils.RunEditor(self.description, True,
                                       git_editor=settings.GetGitEditor())
     if not content:
       DieWithError('Running editor failed')
+    lines = content.splitlines()
 
     # Strip off comments.
-    content = re.compile(r'^#.*$', re.MULTILINE).sub('', content).strip()
-    if not content:
+    clean_lines = [line.rstrip() for line in lines if not line.startswith('#')]
+    if not clean_lines:
       DieWithError('No CL description, aborting')
-    self._description = content
+    self.set_description(clean_lines)
 
   def append_footer(self, line):
-    # Adds a LF if the last line did not have 'FOO=BAR' or if the new one isn't.
-    if self._description:
-      if '\n' not in self._description:
-        self._description += '\n'
-      else:
-        last_line = self._description.rsplit('\n', 1)[1]
-        if (not presubmit_support.Change.TAG_LINE_RE.match(last_line) or
-            not presubmit_support.Change.TAG_LINE_RE.match(line)):
-          self._description += '\n'
-    self._description += '\n' + line
+    if self._description_lines:
+      # Add an empty line if either the last line or the new line isn't a tag.
+      last_line = self._description_lines[-1]
+      if (not presubmit_support.Change.TAG_LINE_RE.match(last_line) or
+          not presubmit_support.Change.TAG_LINE_RE.match(line)):
+        self._description_lines.append('')
+    self._description_lines.append(line)
 
   def get_reviewers(self):
     """Retrieves the list of reviewers."""
-    regexp = re.compile(self.R_LINE, re.MULTILINE)
-    reviewers = [i.group(2).strip() for i in regexp.finditer(self._description)]
+    matches = [re.match(self.R_LINE, line) for line in self._description_lines]
+    reviewers = [match.group(2).strip() for match in matches if match]
     return cleanup_list(reviewers)
 
 

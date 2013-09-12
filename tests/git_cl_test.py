@@ -692,9 +692,14 @@ class TestGitCl(TestCase):
   def test_update_reviewers(self):
     data = [
       ('foo', [], 'foo'),
+      ('foo\nR=xx', [], 'foo\nR=xx'),
+      ('foo\nTBR=xx', [], 'foo\nTBR=xx'),
       ('foo', ['a@c'], 'foo\n\nR=a@c'),
+      ('foo\nR=xx', ['a@c'], 'foo\n\nR=a@c, xx'),
+      ('foo\nTBR=xx', ['a@c'], 'foo\n\nR=a@c\nTBR=xx'),
+      ('foo\nTBR=xx\nR=yy', ['a@c'], 'foo\n\nR=a@c, yy\nTBR=xx'),
       ('foo\nBUG=', ['a@c'], 'foo\nBUG=\nR=a@c'),
-      ('foo\nR=xx\nTBR=yy\nR=bar', ['a@c'], 'foo\nTBR=a@c'),
+      ('foo\nR=xx\nTBR=yy\nR=bar', ['a@c'], 'foo\n\nR=a@c, xx, bar\nTBR=yy'),
       ('foo', ['a@c', 'b@c'], 'foo\n\nR=a@c, b@c'),
       ('foo\nBar\n\nR=\nBUG=', ['c@c'], 'foo\nBar\n\nR=c@c\nBUG='),
       ('foo\nBar\n\nR=\nBUG=\nR=', ['c@c'], 'foo\nBar\n\nR=c@c\nBUG='),
