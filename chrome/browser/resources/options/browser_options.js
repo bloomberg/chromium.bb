@@ -786,7 +786,14 @@ cr.define('options', function() {
       else
         $('sync-status').classList.remove('sync-error');
 
-      customizeSyncButton.disabled = syncData.hasUnrecoverableError;
+      // Disable the "customize / set up sync" button if sync has an
+      // unrecoverable error. Also disable the button if sync has not been set
+      // up and the user is being presented with a link to re-auth.
+      // See crbug.com/289791.
+      customizeSyncButton.disabled =
+          syncData.hasUnrecoverableError ||
+          (!syncData.setupCompleted && !$('sync-action-link').hidden);
+
       // Move #enable-auto-login-checkbox to a different location on CrOS.
       if (cr.isChromeOs) {
         $('sync-general').insertBefore($('sync-status').nextSibling,
