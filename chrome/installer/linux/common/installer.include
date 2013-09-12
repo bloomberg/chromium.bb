@@ -76,6 +76,7 @@ process_template() (
     -e "s#@@SHORTDESC@@#${SHORTDESC}#g" \
     -e "s#@@FULLDESC@@#${FULLDESC}#g" \
     -e "s#@@DEFAULT_FLAGS@@#${DEFAULT_FLAGS:-}#g" \
+    -e "s#@@SXS_USER_DATA_DIR@@#${SXS_USER_DATA_DIR:-}#g" \
     > "$TMPLOUT" <<< "$TMPLINCL"
 )
 

@@ -39,4 +39,13 @@ export CHROME_VERSION_EXTRA="@@CHANNEL@@"
 # We don't want bug-buddy intercepting our crashes. http://crbug.com/24120
 export GNOME_DISABLE_CRASH_DIALOG=SET_BY_GOOGLE_CHROME
 
+# Automagically migrate user data directory.
+# TODO(phajdan.jr): Remove along with migration code in the browser for M33.
+if [[ -n "@@SXS_USER_DATA_DIR@@" ]]; then
+  if [[ ! -d "@@SXS_USER_DATA_DIR@@" ]]; then
+    "$HERE/@@PROGNAME@@" "--migrate-data-dir-for-sxs=@@SXS_USER_DATA_DIR@@" \
+      --enable-logging=stderr --log-level=0
+  fi
+fi
+
 exec -a "$0" "$HERE/@@PROGNAME@@" @@DEFAULT_FLAGS@@ "$@"

@@ -23,13 +23,7 @@ gen_changelog() {
   process_template "${SCRIPTDIR}/changelog.template" "${DEB_CHANGELOG}"
   debchange -a --nomultimaint -m --changelog "${DEB_CHANGELOG}" \
     "Release Notes: ${RELEASENOTES}"
-  # Trunk packages need to install to a custom path and with custom filenames
-  # (e.g. not /usr/bin/google-chrome) so they don't conflict with release
-  # channel packages.
-  if [ "$CHANNEL" = "trunk" ] || [ "$CHANNEL" = "asan" ]; then
-    local PACKAGE="${PACKAGE}-${CHANNEL}"
-  fi
-  GZLOG="${STAGEDIR}/usr/share/doc/${PACKAGE}/changelog.gz"
+  GZLOG="${STAGEDIR}/usr/share/doc/${PACKAGE}-${CHANNEL}/changelog.gz"
   mkdir -p "$(dirname "${GZLOG}")"
   gzip -9 -c "${DEB_CHANGELOG}" > "${GZLOG}"
   chmod 644 "${GZLOG}"
@@ -54,19 +48,22 @@ prep_staging_debian() {
 
 # Put the package contents in the staging area.
 stage_install_debian() {
-  # Trunk packages need to install to a custom path and with custom filenames
-  # (e.g. not /usr/bin/google-chrome) so they don't conflict with release
-  # channel packages.
-  if [ "$CHANNEL" = "trunk" ] || [ "$CHANNEL" = "asan" ]; then
+  if [ "$CHANNEL" != "stable" ]; then
+    # Avoid file collisions between channels.
     local PACKAGE="${PACKAGE}-${CHANNEL}"
     local INSTALLDIR="${INSTALLDIR}-${CHANNEL}"
+
+    # Make it possible to distinguish between menu entries
+    # for different channels.
+    local MENUNAME="${MENUNAME} (${CHANNEL})"
+
     # This would ideally be compiled into the app, but that's a bit too
     # intrusive of a change for these limited use channels, so we'll just hack
     # it into the wrapper script. The user can still override since it seems to
     # work to specify --user-data-dir multiple times on the command line, with
     # the last occurrence winning.
-    local DEFAULT_FLAGS="--user-data-dir=\"\${HOME}/.config/${PACKAGE}\""
-    local MENUNAME="${MENUNAME} (${CHANNEL})"
+    local SXS_USER_DATA_DIR="\${XDG_CONFIG_HOME:-\${HOME}/.config}/${PACKAGE}"
+    local DEFAULT_FLAGS="--user-data-dir=\"${SXS_USER_DATA_DIR}\""
   fi
   prep_staging_debian
   stage_install_common
@@ -97,13 +94,9 @@ do_package() {
   echo "Packaging ${ARCHITECTURE}..."
   PREDEPENDS="$COMMON_PREDEPS"
   DEPENDS="${COMMON_DEPS}"
-  # Trunk is a special package, mostly for development testing, so don't make
-  # it replace any installed release packages.
-  if [ "$CHANNEL" != "trunk" ] && [ "$CHANNEL" != "asan" ]; then
-    REPLACES="${PACKAGE}"
-    CONFLICTS="${PACKAGE}"
-    PROVIDES="${PACKAGE}, www-browser"
-  fi
+  REPLACES=""
+  CONFLICTS=""
+  PROVIDES="www-browser"
   gen_changelog
   process_template "${SCRIPTDIR}/control.template" "${DEB_CONTROL}"
   export DEB_HOST_ARCH="${ARCHITECTURE}"
@@ -234,7 +227,7 @@ fi
 eval $(sed -e "s/^\([^=]\+\)=\(.*\)$/export \1='\2'/" \
   "${BUILDDIR}/installer/theme/BRANDING")
 
-REPOCONFIG="deb http://dl.google.com/linux/${PACKAGE#google-}/deb/ stable main"
+REPOCONFIG="deb http://dl.google.com/linux/chrome/deb/ stable main"
 verify_channel
 
 # Some Debian packaging tools want these set.
