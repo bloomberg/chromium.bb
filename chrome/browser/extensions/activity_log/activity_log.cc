@@ -101,10 +101,23 @@ static const ApiInfo kApiInfoTable[] = {
   {Action::ACTION_API_EVENT, "tabs.onReplaced", 0, LOOKUP_TAB_ID, NULL},
 
   // Other APIs that accept URLs as strings
+  {Action::ACTION_API_CALL, "bookmarks.create", 0, DICT_LOOKUP, "url"},
+  {Action::ACTION_API_CALL, "bookmarks.update", 1, DICT_LOOKUP, "url"},
+  {Action::ACTION_API_CALL, "cookies.get", 0, DICT_LOOKUP, "url"},
+  {Action::ACTION_API_CALL, "cookies.getAll", 0, DICT_LOOKUP, "url"},
+  {Action::ACTION_API_CALL, "cookies.remove", 0, DICT_LOOKUP, "url"},
+  {Action::ACTION_API_CALL, "cookies.set", 0, DICT_LOOKUP, "url"},
+  {Action::ACTION_API_CALL, "downloads.download", 0, DICT_LOOKUP, "url"},
+  {Action::ACTION_API_CALL, "history.addUrl", 0, DICT_LOOKUP, "url"},
+  {Action::ACTION_API_CALL, "history.deleteUrl", 0, DICT_LOOKUP, "url"},
+  {Action::ACTION_API_CALL, "history.getVisits", 0, DICT_LOOKUP, "url"},
+  {Action::ACTION_API_CALL, "webstore.install", 0, NONE, NULL},
   {Action::ACTION_API_CALL, "windows.create", 0, DICT_LOOKUP, "url"},
 
+  {Action::ACTION_DOM_ACCESS, "Document.location", 0, NONE, NULL},
   {Action::ACTION_DOM_ACCESS, "Location.assign", 0, NONE, NULL},
   {Action::ACTION_DOM_ACCESS, "Location.replace", 0, NONE, NULL},
+  {Action::ACTION_DOM_ACCESS, "Window.location", 0, NONE, NULL},
   {Action::ACTION_DOM_ACCESS, "XMLHttpRequest.open", 1, NONE, NULL},
 };
 

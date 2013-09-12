@@ -64,11 +64,22 @@ struct ApiList {
 };
 
 const ApiList kAlwaysLog[] = {
+    {Action::ACTION_API_CALL, "bookmarks.create"},
+    {Action::ACTION_API_CALL, "bookmarks.update"},
+    {Action::ACTION_API_CALL, "cookies.get"},
+    {Action::ACTION_API_CALL, "cookies.getAll"},
     {Action::ACTION_API_CALL, "extension.connect"},
     {Action::ACTION_API_CALL, "extension.sendMessage"},
+    {Action::ACTION_API_CALL, "fileSystem.chooseEntry"},
+    {Action::ACTION_API_CALL, "socket.bind"},
+    {Action::ACTION_API_CALL, "socket.connect"},
+    {Action::ACTION_API_CALL, "socket.create"},
+    {Action::ACTION_API_CALL, "socket.listen"},
     {Action::ACTION_API_CALL, "tabs.executeScript"},
     {Action::ACTION_API_CALL, "tabs.insertCSS"},
     {Action::ACTION_CONTENT_SCRIPT, ""},
+    {Action::ACTION_DOM_ACCESS, "Document.createElement"},
+    {Action::ACTION_DOM_ACCESS, "Document.createElementNS"},
     {Action::ACTION_DOM_ACCESS, "XMLHttpRequest.open"},
 };
 
