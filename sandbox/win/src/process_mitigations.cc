@@ -4,6 +4,8 @@
 
 #include "sandbox/win/src/process_mitigations.h"
 
+#include <algorithm>
+
 #include "base/win/windows_version.h"
 #include "sandbox/win/src/nt_internals.h"
 #include "sandbox/win/src/sandbox_utils.h"
