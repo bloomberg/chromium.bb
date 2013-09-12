@@ -7,6 +7,8 @@
 #include <algorithm>
 
 #include "base/basictypes.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -14,12 +16,12 @@
 #include "chrome/browser/chromeos/input_method/mock_candidate_window_controller.h"
 #include "chrome/browser/chromeos/input_method/mock_ibus_controller.h"
 #include "chromeos/dbus/ibus/mock_ibus_client.h"
-#include "chromeos/dbus/ibus/mock_ibus_input_context_client.h"
 #include "chromeos/dbus/mock_dbus_thread_manager_without_gmock.h"
 #include "chromeos/ime/extension_ime_util.h"
 #include "chromeos/ime/fake_input_method_delegate.h"
 #include "chromeos/ime/mock_component_extension_ime_manager_delegate.h"
 #include "chromeos/ime/mock_ibus_daemon_controller.h"
+#include "chromeos/ime/mock_ime_engine_handler.h"
 #include "chromeos/ime/mock_xkeyboard.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -73,6 +75,9 @@ class InputMethodManagerImplTest :  public testing::Test {
         candidate_window_controller_);
     xkeyboard_ = new MockXKeyboard;
     manager_->SetXKeyboardForTesting(xkeyboard_);
+    mock_engine_handler_.reset(new MockIMEEngineHandler());
+    IBusBridge::Initialize();
+    IBusBridge::Get()->SetEngineHandler(mock_engine_handler_.get());
 
     ime_list_.clear();
 
@@ -128,6 +133,8 @@ class InputMethodManagerImplTest :  public testing::Test {
     candidate_window_controller_ = NULL;
     xkeyboard_ = NULL;
     manager_.reset();
+    IBusBridge::Get()->SetEngineHandler(NULL);
+    IBusBridge::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
     chromeos::IBusDaemonController::Shutdown();
   }
@@ -147,8 +154,6 @@ class InputMethodManagerImplTest :  public testing::Test {
     mock_dbus_thread_manager_->InitIBusBus("dummy address",
                                            base::Bind(&base::DoNothing));
     mock_ibus_client_ = mock_dbus_thread_manager_->mock_ibus_client();
-    mock_ibus_input_context_client_ =
-        mock_dbus_thread_manager_->mock_ibus_input_context_client();
     mock_ibus_daemon_controller_->EmulateConnect();
   }
 
@@ -157,7 +162,7 @@ class InputMethodManagerImplTest :  public testing::Test {
   MockIBusController* controller_;
   MockCandidateWindowController* candidate_window_controller_;
   MockIBusDaemonController* mock_ibus_daemon_controller_;
-  MockIBusInputContextClient* mock_ibus_input_context_client_;
+  scoped_ptr<MockIMEEngineHandler> mock_engine_handler_;
   MockIBusClient* mock_ibus_client_;
   MockDBusThreadManagerWithoutGMock* mock_dbus_thread_manager_;
   MockXKeyboard* xkeyboard_;
@@ -1106,15 +1111,15 @@ TEST_F(InputMethodManagerImplTest, TestReset) {
   ids.push_back(nacl_mozc_us_id);
   EXPECT_TRUE(manager_->EnableInputMethods(ids));
   EXPECT_EQ(2U, manager_->GetNumActiveInputMethods());
-  EXPECT_EQ(1, mock_ibus_input_context_client_->reset_call_count());
+  EXPECT_EQ(1, mock_engine_handler_->reset_call_count());
   manager_->ChangeInputMethod(nacl_mozc_us_id);
   EXPECT_EQ(1, mock_ibus_client_->set_global_engine_call_count());
   EXPECT_EQ(nacl_mozc_us_id, mock_ibus_client_->latest_global_engine_name());
-  EXPECT_EQ(1, mock_ibus_input_context_client_->reset_call_count());
+  EXPECT_EQ(1, mock_engine_handler_->reset_call_count());
   manager_->ChangeInputMethod("xkb:us::eng");
   EXPECT_EQ(2, mock_ibus_client_->set_global_engine_call_count());
   EXPECT_EQ(nacl_mozc_us_id, mock_ibus_client_->latest_global_engine_name());
-  EXPECT_EQ(1, mock_ibus_input_context_client_->reset_call_count());
+  EXPECT_EQ(1, mock_engine_handler_->reset_call_count());
 }
 
 TEST_F(InputMethodManagerImplTest,

@@ -61,10 +61,7 @@ void Shutdown() {
 
   InputMethodManager::Shutdown();
 
-  if (IBusBridge::Get()) {
-    // TODO(nona): Remove this condition when ibus-daemon is gone.
-    IBusBridge::Shutdown();
-  }
+  IBusBridge::Shutdown();
   IBusDaemonController::Shutdown();
 
   DVLOG(1) << "InputMethodManager shutdown";

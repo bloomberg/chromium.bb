@@ -221,6 +221,7 @@ class IBusClientDaemonlessImpl : public IBusClient {
     IBusBridge::Get()->CreateEngine(engine_name);
     IBusEngineHandlerInterface* next_engine =
         IBusBridge::Get()->GetEngineHandler();
+    IBusBridge::Get()->SetEngineHandler(next_engine);
     if (next_engine)
       next_engine->Enable();
   }

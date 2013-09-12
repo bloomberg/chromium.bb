@@ -20,7 +20,6 @@
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/ibus/ibus_client.h"
-#include "chromeos/dbus/ibus/ibus_input_context_client.h"
 #include "chromeos/ime/component_extension_ime_manager.h"
 #include "chromeos/ime/extension_ime_util.h"
 #include "chromeos/ime/input_method_delegate.h"
@@ -421,8 +420,7 @@ bool InputMethodManagerImpl::ChangeInputMethodInternal(
   }
 
   pending_input_method_.clear();
-  IBusInputContextClient* input_context =
-      chromeos::DBusThreadManager::Get()->GetIBusInputContextClient();
+  IBusEngineHandlerInterface* engine = IBusBridge::Get()->GetEngineHandler();
   const std::string current_input_method_id = current_input_method_.id();
   IBusClient* client = DBusThreadManager::Get()->GetIBusClient();
   if (InputMethodUtil::IsKeyboardLayout(input_method_id_to_switch)) {
@@ -435,21 +433,18 @@ bool InputMethodManagerImpl::ChangeInputMethodInternal(
     // itself if the next engine is XKB layout.
     if (current_input_method_id.empty() ||
         InputMethodUtil::IsKeyboardLayout(current_input_method_id)) {
-      if (input_context)
-        input_context->Reset();
+      if (engine)
+        engine->Reset();
     } else {
       if (client)
         client->SetGlobalEngine(current_input_method_id,
                                 base::Bind(&base::DoNothing));
     }
-    if (input_context)
-      input_context->SetIsXKBLayout(true);
+    IBusBridge::Get()->SetEngineHandler(NULL);
   } else {
     DCHECK(client);
     client->SetGlobalEngine(input_method_id_to_switch,
                             base::Bind(&base::DoNothing));
-    if (input_context)
-      input_context->SetIsXKBLayout(false);
   }
 
   if (current_input_method_id != input_method_id_to_switch) {

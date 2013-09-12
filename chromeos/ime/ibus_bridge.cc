@@ -117,13 +117,12 @@ IBusBridge::~IBusBridge() {
 
 // static.
 void IBusBridge::Initialize() {
-  CHECK(!g_ibus_bridge) << "Already initialized.";
-  g_ibus_bridge = new IBusBridgeImpl();
+  if (!g_ibus_bridge)
+    g_ibus_bridge = new IBusBridgeImpl();
 }
 
 // static.
 void IBusBridge::Shutdown() {
-  CHECK(g_ibus_bridge) << "Shutdown called before Initialize().";
   delete g_ibus_bridge;
   g_ibus_bridge = NULL;
 }
