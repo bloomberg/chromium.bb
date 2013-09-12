@@ -110,10 +110,6 @@ public:
     // or a control becomes disabled.
     virtual bool stateChanged(RenderObject*, ControlState) const;
 
-    // This method is called whenever the theme changes on the system in order to flush cached resources from the
-    // old theme.
-    virtual void themeChanged() { }
-
     bool shouldDrawDefaultFocusRing(RenderObject*) const;
 
     // A method asking if the theme's controls actually care about redrawing when hovered.

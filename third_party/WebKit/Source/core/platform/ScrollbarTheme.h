@@ -59,8 +59,6 @@ public:
     virtual bool usesOverlayScrollbars() const { return false; }
     virtual void updateScrollbarOverlayStyle(ScrollbarThemeClient*) { }
 
-    virtual void themeChanged() { }
-
     virtual bool invalidateOnMouseEnterExit() { return false; }
 
     void invalidateParts(ScrollbarThemeClient* scrollbar, ScrollbarControlPartMask mask)

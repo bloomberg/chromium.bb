@@ -75,9 +75,6 @@ public:
     // How fast the caret blinks in text fields.
     virtual double caretBlinkInterval() const { return 0.5; }
 
-    // Notification when the theme has changed
-    virtual void themeChanged() { }
-
     // Methods used to adjust the RenderStyles of controls.
 
     // The font description result should have a zoomed font size.
@@ -104,10 +101,6 @@ public:
     // The rect passed in is in zoomed coordinates, so the inflation should take that into account and make sure the inflation
     // amount is also scaled by the zoomFactor.
     virtual void inflateControlPaintRect(ControlPart, ControlStates, IntRect& /*zoomedRect*/, float /*zoomFactor*/) const { }
-
-    // This method is called once, from RenderTheme::adjustDefaultStyleSheet(), to let each platform adjust
-    // the default CSS rules in html.css.
-    static String defaultStyleSheet();
 
 private:
     mutable Color m_activeSelectionColor;
