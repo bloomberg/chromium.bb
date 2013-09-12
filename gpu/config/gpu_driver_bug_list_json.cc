@@ -85,7 +85,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "2.12",
+  "version": "2.13",
   "entries": [
     {
       "id": 1,
@@ -137,8 +137,13 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 6,
+      "cr_bugs": [165493, 222018],
       "os": {
-        "type": "android"
+        "type": "android",
+        "version": {
+          "op": "<",
+          "number": "4.3"
+        }
       },
       "gl_vendor": {
         "op": "beginwith",
