@@ -5,4 +5,5 @@ yfriedman@chromium.org
 sievers@chromium.org
 
 # per-file rules:
+per-file *demuxer*=qinmin@chromium.org
 per-file *media*=qinmin@chromium.org

@@ -236,6 +236,8 @@
     'browser/accessibility/browser_accessibility_win.h',
     'browser/android/browser_jni_registrar.cc',
     'browser/android/browser_jni_registrar.h',
+    'browser/android/browser_demuxer_android.cc',
+    'browser/android/browser_demuxer_android.h',
     'browser/android/browser_media_player_manager.cc',
     'browser/android/browser_media_player_manager.h',
     'browser/android/browser_startup_controller.cc',

@@ -5,6 +5,7 @@
 #include "content/browser/android/browser_media_player_manager.h"
 
 #include "base/command_line.h"
+#include "content/browser/android/browser_demuxer_android.h"
 #include "content/browser/android/content_view_core_impl.h"
 #include "content/browser/android/media_resource_getter_impl.h"
 #include "content/browser/web_contents/web_contents_view_android.h"
@@ -79,6 +80,7 @@ MediaPlayerAndroid* BrowserMediaPlayerManager::CreateMediaPlayer(
 BrowserMediaPlayerManager::BrowserMediaPlayerManager(
     RenderViewHost* render_view_host)
     : RenderViewHostObserver(render_view_host),
+      browser_demuxer_(new BrowserDemuxerAndroid(render_view_host)),
       fullscreen_player_id_(-1),
       web_contents_(WebContents::FromRenderViewHost(render_view_host)) {
 }
@@ -99,13 +101,6 @@ bool BrowserMediaPlayerManager::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_DestroyMediaPlayer, OnDestroyPlayer)
     IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_DestroyAllMediaPlayers,
                         DestroyAllMediaPlayers)
-    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_DemuxerReady, OnDemuxerReady)
-    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_ReadFromDemuxerAck,
-                        OnReadFromDemuxerAck)
-    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_DurationChanged,
-                        OnDurationChanged)
-    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_MediaSeekRequestAck,
-                        OnMediaSeekRequestAck)
     IPC_MESSAGE_HANDLER(MediaKeysHostMsg_InitializeCDM,
                         OnInitializeCDM)
     IPC_MESSAGE_HANDLER(MediaKeysHostMsg_GenerateKeyRequest,
@@ -225,23 +220,6 @@ void BrowserMediaPlayerManager::OnVideoSizeChanged(
     video_view_->OnVideoSizeChanged(width, height);
 }
 
-void BrowserMediaPlayerManager::AddDemuxerClient(
-    int demuxer_client_id,
-    media::DemuxerAndroidClient* client) {
-  demuxer_clients_.AddWithID(client, demuxer_client_id);
-}
-
-void BrowserMediaPlayerManager::RemoveDemuxerClient(int demuxer_client_id) {
-  demuxer_clients_.Remove(demuxer_client_id);
-}
-
-void BrowserMediaPlayerManager::RequestDemuxerData(
-    int demuxer_client_id, media::DemuxerStream::Type type) {
-  DCHECK(demuxer_clients_.Lookup(demuxer_client_id)) << demuxer_client_id;
-  Send(new MediaPlayerMsg_ReadFromDemuxer(
-      routing_id(), demuxer_client_id, type));
-}
-
 void BrowserMediaPlayerManager::RequestMediaResources(int player_id) {
   int num_active_player = 0;
   ScopedVector<MediaPlayerAndroid>::iterator it;
@@ -316,19 +294,6 @@ void BrowserMediaPlayerManager::DestroyAllMediaPlayers() {
     video_view_.reset();
     fullscreen_player_id_ = -1;
   }
-}
-
-void BrowserMediaPlayerManager::RequestDemuxerSeek(int demuxer_client_id,
-                                                   base::TimeDelta time_to_seek,
-                                                   unsigned seek_request_id) {
-  DCHECK(demuxer_clients_.Lookup(demuxer_client_id)) << demuxer_client_id;
-  Send(new MediaPlayerMsg_MediaSeekRequest(
-      routing_id(), demuxer_client_id, time_to_seek, seek_request_id));
-}
-
-void BrowserMediaPlayerManager::RequestDemuxerConfigs(int demuxer_client_id) {
-  DCHECK(demuxer_clients_.Lookup(demuxer_client_id)) << demuxer_client_id;
-  Send(new MediaPlayerMsg_MediaConfigRequest(routing_id(), demuxer_client_id));
 }
 
 void BrowserMediaPlayerManager::OnProtectedSurfaceRequested(int player_id) {
@@ -431,7 +396,7 @@ void BrowserMediaPlayerManager::OnInitialize(
   RenderProcessHost* host = render_view_host()->GetProcess();
   AddPlayer(CreateMediaPlayer(
       player_id, url, type, first_party_for_cookies,
-      host->GetBrowserContext()->IsOffTheRecord(), this, this));
+      host->GetBrowserContext()->IsOffTheRecord(), this, browser_demuxer_));
 }
 
 void BrowserMediaPlayerManager::OnStart(int player_id) {
@@ -480,35 +445,6 @@ void BrowserMediaPlayerManager::OnDestroyPlayer(int player_id) {
     fullscreen_player_id_ = -1;
 }
 
-void BrowserMediaPlayerManager::OnDemuxerReady(
-    int player_id,
-    const media::DemuxerConfigs& configs) {
-  // TODO(scherkus): Rename |player_id| to |demuxer_client_id| after splitting
-  // demuxer IPC messages into their own group.
-  media::DemuxerAndroidClient* client = demuxer_clients_.Lookup(player_id);
-  if (client)
-    client->OnDemuxerConfigsAvailable(configs);
-}
-
-void BrowserMediaPlayerManager::OnReadFromDemuxerAck(
-    int player_id,
-    const media::DemuxerData& data) {
-  // TODO(scherkus): Rename |player_id| to |demuxer_client_id| after splitting
-  // demuxer IPC messages into their own group.
-  media::DemuxerAndroidClient* client = demuxer_clients_.Lookup(player_id);
-  if (client)
-    client->OnDemuxerDataAvailable(data);
-}
-
-void BrowserMediaPlayerManager::OnMediaSeekRequestAck(
-    int player_id, unsigned seek_request_id) {
-  // TODO(scherkus): Rename |player_id| to |demuxer_client_id| after splitting
-  // demuxer IPC messages into their own group.
-  media::DemuxerAndroidClient* client = demuxer_clients_.Lookup(player_id);
-  if (client)
-    client->OnDemuxerSeeked(seek_request_id);
-}
-
 void BrowserMediaPlayerManager::OnInitializeCDM(
     int media_keys_id,
     const std::vector<uint8>& uuid) {
@@ -551,15 +487,6 @@ void BrowserMediaPlayerManager::OnCancelKeyRequest(
   MediaDrmBridge* drm_bridge = GetDrmBridge(media_keys_id);
   if (drm_bridge)
     drm_bridge->CancelKeyRequest(session_id);
-}
-
-void BrowserMediaPlayerManager::OnDurationChanged(
-    int player_id, const base::TimeDelta& duration) {
-  // TODO(scherkus): Rename |player_id| to |demuxer_client_id| after splitting
-  // demuxer IPC messages into their own group.
-  media::DemuxerAndroidClient* client = demuxer_clients_.Lookup(player_id);
-  if (client)
-    client->OnDemuxerDurationChanged(duration);
 }
 
 void BrowserMediaPlayerManager::AddPlayer(MediaPlayerAndroid* player) {
