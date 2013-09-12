@@ -952,6 +952,10 @@ EGL_FUNCTIONS = [
       'EGLDisplay dpy, EGLSurface surface, '
       'EGLuint64CHROMIUM* ust, EGLuint64CHROMIUM* msc, '
       'EGLuint64CHROMIUM* sbc', },
+{ 'return_type': 'EGLint',
+  'names': ['eglWaitSyncKHR'],
+  'arguments': 'EGLDisplay dpy, EGLSyncKHR sync, EGLint flags',
+  'other_extensions': ['EGL_KHR_wait_sync'] },
 ]
 
 WGL_FUNCTIONS = [

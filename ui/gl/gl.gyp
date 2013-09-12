@@ -133,7 +133,8 @@
           'action_name': 'generate_gl_bindings',
           'variables': {
             'generator_path': 'generate_bindings.py',
-            'header_paths': '../../third_party/mesa/src/include:../../third_party/khronos',
+            # Prefer khronos EGL/GLES headers by listing that path first.
+            'header_paths': '../../third_party/khronos:../../third_party/mesa/src/include',
           },
           'inputs': [
             '<(generator_path)',
