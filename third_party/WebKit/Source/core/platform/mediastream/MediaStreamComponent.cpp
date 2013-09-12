@@ -34,9 +34,7 @@
 #include "core/platform/mediastream/MediaStreamComponent.h"
 
 #include "core/platform/UUID.h"
-#include "core/platform/audio/AudioBus.h"
 #include "core/platform/mediastream/MediaStreamSource.h"
-#include "public/web/WebAudioSourceProvider.h"
 
 namespace WebCore {
 
@@ -63,34 +61,6 @@ MediaStreamComponent::MediaStreamComponent(const String& id, MediaStreamDescript
 {
     ASSERT(m_id.length());
 }
-
-void MediaStreamComponent::AudioSourceProviderImpl::wrap(WebKit::WebAudioSourceProvider* provider)
-{
-    MutexLocker locker(m_provideInputLock);
-    m_webAudioSourceProvider = provider;
-}
-
-void MediaStreamComponent::AudioSourceProviderImpl::provideInput(AudioBus* bus, size_t framesToProcess)
-{
-    ASSERT(bus);
-    if (!bus)
-        return;
-
-    MutexTryLocker tryLocker(m_provideInputLock);
-    if (!tryLocker.locked() || !m_webAudioSourceProvider) {
-        bus->zero();
-        return;
-    }
-
-    // Wrap the AudioBus channel data using WebVector.
-    size_t n = bus->numberOfChannels();
-    WebKit::WebVector<float*> webAudioData(n);
-    for (size_t i = 0; i < n; ++i)
-        webAudioData[i] = bus->channel(i)->mutableData();
-
-    m_webAudioSourceProvider->provideInput(webAudioData, framesToProcess);
-}
-
 
 } // namespace WebCore
 

@@ -382,8 +382,10 @@ PassRefPtr<MediaStreamAudioSourceNode> AudioContext::createMediaStreamSource(Med
     // FIXME: get a provider for non-local MediaStreams (like from a remote peer).
     for (size_t i = 0; i < audioTracks.size(); ++i) {
         RefPtr<MediaStreamTrack> localAudio = audioTracks[i];
-        if (localAudio->component()->audioSourceProvider()) {
-            provider = localAudio->component()->audioSourceProvider();
+        MediaStreamSource* source = localAudio->component()->source();
+        if (!source->deviceId().isEmpty()) {
+            destination()->enableInput(source->deviceId());
+            provider = destination()->localAudioInputProvider();
             break;
         }
     }
