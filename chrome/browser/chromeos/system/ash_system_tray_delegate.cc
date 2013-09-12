@@ -795,13 +795,12 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
       ash::IMEPropertyInfoList* list) OVERRIDE {
     input_method::InputMethodManager* manager =
         input_method::InputMethodManager::Get();
-    input_method::InputMethodUtil* util = manager->GetInputMethodUtil();
     input_method::InputMethodPropertyList properties =
         manager->GetCurrentInputMethodProperties();
     for (size_t i = 0; i < properties.size(); ++i) {
       ash::IMEPropertyInfo property;
       property.key = properties[i].key;
-      property.name = util->TranslateString(properties[i].label);
+      property.name = base::UTF8ToUTF16(properties[i].label);
       property.selected = properties[i].is_selection_item_checked;
       list->push_back(property);
     }
