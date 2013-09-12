@@ -418,8 +418,13 @@ TSFBridgeDelegate::TSFDocument* TSFBridgeDelegate::GetAssociatedDocument() {
     return NULL;
   TSFDocumentMap::iterator it =
       tsf_document_map_.find(client_->GetTextInputType());
-  if (it == tsf_document_map_.end())
-    return &tsf_document_map_[TEXT_INPUT_TYPE_TEXT];
+  if (it == tsf_document_map_.end()) {
+    it = tsf_document_map_.find(TEXT_INPUT_TYPE_TEXT);
+    // This check is necessary because it's possible that we failed to
+    // initialize |tsf_document_map_| and it has no TEXT_INPUT_TYPE_TEXT.
+    if (it == tsf_document_map_.end())
+      return NULL;
+  }
   return &it->second;
 }
 
