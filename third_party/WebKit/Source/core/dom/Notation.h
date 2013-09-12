@@ -26,26 +26,15 @@
 
 namespace WebCore {
 
-// FIXME: This class is never instantiated. Maybe it should be removed.
-
-class Notation FINAL : public ContainerNode {
-public:
-    const String& publicId() const { return m_publicId; }
-    const String& systemId() const { return m_systemId; }
-
+class Notation : public ContainerNode {
 private:
-    Notation(TreeScope*, const String& name, const String& publicId, const String& systemId);
-
-    virtual String nodeName() const;
-    virtual NodeType nodeType() const;
-    virtual PassRefPtr<Node> cloneNode(bool deep = true);
-    virtual bool childTypeAllowed(NodeType) const;
-
-    String m_name;
-    String m_publicId;
-    String m_systemId;
+    Notation(TreeScope* treeScope) : ContainerNode(treeScope)
+    {
+        ASSERT_NOT_REACHED();
+        ScriptWrappable::init(this);
+    }
 };
 
-} //namespace
+} // namespace WebCore
 
 #endif

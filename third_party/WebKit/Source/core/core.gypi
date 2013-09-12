@@ -1944,7 +1944,6 @@
             'dom/NodeTraversal.cpp',
             'dom/NodeTraversal.h',
             'dom/NodeWithIndex.h',
-            'dom/Notation.cpp',
             'dom/Notation.h',
             'dom/OverflowEvent.cpp',
             'dom/OverflowEvent.h',

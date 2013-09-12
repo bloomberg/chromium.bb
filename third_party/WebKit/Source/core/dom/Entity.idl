@@ -16,10 +16,10 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  */
-[
-] interface Entity : Node {
-    [TreatReturnedNullStringAs=Null] readonly attribute DOMString publicId;
-    [TreatReturnedNullStringAs=Null] readonly attribute DOMString systemId;
-    [TreatReturnedNullStringAs=Null] readonly attribute DOMString notationName;
+
+// FIXME: Remove Entity interface. We never create Entity objects. We have this
+// interface to provide window.Entity.
+interface Entity : Node {
+    // We don't need to provide any attributes.
 };
 

@@ -17,8 +17,9 @@
  * Boston, MA 02110-1301, USA.
  */
 
+// FIXME: Remove Notation interface. We never create Notation objects. We have
+// this interface to provide window.Notation.
 interface Notation : Node {
-    [TreatReturnedNullStringAs=Null] readonly attribute DOMString publicId;
-    [TreatReturnedNullStringAs=Null] readonly attribute DOMString systemId;
+    // We don't need to provide any attributes.
 };
 
