@@ -1773,6 +1773,28 @@ String Internals::elementLayerTreeAsText(Element* element, unsigned flags, Excep
     return layer->backing()->graphicsLayer()->layerTreeAsText(flags);
 }
 
+static RenderLayer* getRenderLayerForElement(Element* element, ExceptionState& es)
+{
+    if (!element) {
+        es.throwDOMException(InvalidAccessError);
+        return 0;
+    }
+
+    RenderObject* renderer = element->renderer();
+    if (!renderer || !renderer->isBox()) {
+        es.throwDOMException(InvalidAccessError);
+        return 0;
+    }
+
+    RenderLayer* layer = toRenderBox(renderer)->layer();
+    if (!layer) {
+        es.throwDOMException(InvalidAccessError);
+        return 0;
+    }
+
+    return layer;
+}
+
 void Internals::setNeedsCompositedScrolling(Element* element, unsigned needsCompositedScrolling, ExceptionState& es)
 {
     if (!element) {
@@ -1782,19 +1804,46 @@ void Internals::setNeedsCompositedScrolling(Element* element, unsigned needsComp
 
     element->document().updateLayout();
 
-    RenderObject* renderer = element->renderer();
-    if (!renderer || !renderer->isBox()) {
-        es.throwDOMException(InvalidAccessError);
-        return;
-    }
+    if (RenderLayer* layer = getRenderLayerForElement(element, es))
+        layer->setForceNeedsCompositedScrolling(static_cast<RenderLayer::ForceNeedsCompositedScrollingMode>(needsCompositedScrolling));
+}
 
-    RenderLayer* layer = toRenderBox(renderer)->layer();
-    if (!layer) {
-        es.throwDOMException(InvalidAccessError);
-        return;
-    }
+bool Internals::isScrollParent(Element* child, Element* parent, ExceptionState& es)
+{
+    RenderLayer* childLayer = getRenderLayerForElement(child, es);
+    RenderLayer* parentLayer = getRenderLayerForElement(parent, es);
+    return childLayer && parentLayer && childLayer->scrollParent() == parentLayer;
+}
 
-    layer->setForceNeedsCompositedScrolling(static_cast<RenderLayer::ForceNeedsCompositedScrollingMode>(needsCompositedScrolling));
+bool Internals::isClipParent(Element* child, Element* parent, ExceptionState& es)
+{
+    RenderLayer* childLayer = getRenderLayerForElement(child, es);
+    RenderLayer* parentLayer = getRenderLayerForElement(parent, es);
+    return childLayer && parentLayer && childLayer->clipParent() == parentLayer;
+}
+
+PassRefPtr<ClientRect> Internals::scrollClip(Element* element, ExceptionState& es)
+{
+    RenderLayer* layer = getRenderLayerForElement(element, es);
+    if (!layer || !layer->backing() || !layer->backing()->scrollingLayer())
+        return ClientRect::create();
+
+    return ClientRect::create(
+        FloatRect(
+            layer->backing()->scrollingLayer()->boundsOrigin(),
+            layer->backing()->scrollingLayer()->size()));
+}
+
+PassRefPtr<ClientRect> Internals::ancestorScrollClip(Element* element, ExceptionState& es)
+{
+    RenderLayer* layer = getRenderLayerForElement(element, es);
+    if (!layer || !layer->backing() || !layer->backing()->ancestorScrollClippingLayer())
+        return ClientRect::create();
+
+    return ClientRect::create(
+        FloatRect(
+            layer->backing()->ancestorScrollClippingLayer()->boundsOrigin(),
+            layer->backing()->ancestorScrollClippingLayer()->size()));
 }
 
 String Internals::repaintRectsAsText(Document* document, ExceptionState& es) const

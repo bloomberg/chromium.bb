@@ -2067,6 +2067,51 @@ bool RenderLayer::needsToBeStackingContainer() const
     return m_needsCompositedScrolling;
 }
 
+RenderLayer* RenderLayer::scrollParent() const
+{
+    if (!compositorDrivenAcceleratedScrollingEnabled())
+        return 0;
+
+    // A layer scrolls with its containing block. So to find the overflow scrolling layer
+    // that we scroll with respect to, we must ascend the layer tree until we reach the
+    // first overflow scrolling div at or above our containing block. I will refer to this
+    // layer as our 'scrolling ancestor'.
+    //
+    // Now, if we reside in a normal flow list, then we will naturally scroll with our scrolling
+    // ancestor, and we need not be composited. If, on the other hand, we reside in a z-order
+    // list, and on our walk upwards to our scrolling ancestor we find no layer that is a stacking
+    // context, then we know that in the stacking tree, we will not be in the subtree rooted at
+    // our scrolling ancestor, and we will therefore not scroll with it. In this case, we must
+    // be a composited layer since the compositor will need to take special measures to ensure
+    // that we scroll with our scrolling ancestor and it cannot do this if we do not promote.
+    RenderLayer* scrollParent = ancestorScrollingLayer();
+
+    if (!scrollParent || scrollParent->isStackingContext())
+        return 0;
+
+    // If we hit a stacking context on our way up to the ancestor scrolling layer, it will already
+    // be composited due to an overflow scrolling parent, so we don't need to.
+    for (RenderLayer* ancestor = parent(); ancestor && ancestor != scrollParent; ancestor = ancestor->parent()) {
+        if (ancestor->isStackingContext())
+            return 0;
+    }
+
+    return scrollParent;
+}
+
+RenderLayer* RenderLayer::clipParent() const
+{
+    const bool needsAncestorClip = compositor()->clippedByAncestor(this);
+
+    RenderLayer* clipParent = 0;
+    if ((compositingReasons() & CompositingReasonOutOfFlowClipping) && !needsAncestorClip) {
+        if (RenderObject* containingBlock = renderer()->containingBlock())
+            clipParent = containingBlock->enclosingLayer()->enclosingCompositingLayer(true);
+    }
+
+    return clipParent;
+}
+
 void RenderLayer::updateNeedsCompositedScrolling()
 {
     TRACE_EVENT0("comp-scroll", "RenderLayer::updateNeedsCompositedScrolling");
@@ -5333,6 +5378,29 @@ GraphicsLayer* RenderLayer::layerForScrolling() const
     return m_backing ? m_backing->scrollingContentsLayer() : 0;
 }
 
+GraphicsLayer* RenderLayer::layerForScrollChild() const
+{
+    // If we have an ancestor clipping layer because of our scroll parent, we do not want to
+    // scroll that clip layer -- we need it to stay put and we will slide within it. If, on
+    // the other hand, we have an ancestor clipping layer due to some other clipping layer, we
+    // want to scroll the root of the layer's associated graphics layer subtree. I.e., we want it
+    // and its clip to move in concert.
+
+    if (!backing())
+        return 0;
+
+    if (backing()->hasAncestorScrollClippingLayer()) {
+        return backing()->hasAncestorClippingLayer()
+            ? backing()->ancestorClippingLayer()
+            : backing()->graphicsLayer();
+    }
+
+    if (renderer()->containingBlock()->enclosingLayer() == ancestorScrollingLayer())
+        return backing()->graphicsLayer();
+
+    return backing()->childForSuperlayers();
+}
+
 GraphicsLayer* RenderLayer::layerForHorizontalScrollbar() const
 {
     return m_backing ? m_backing->layerForHorizontalScrollbar() : 0;
@@ -6069,19 +6137,32 @@ void RenderLayer::updateScrollableAreaSet(bool hasOverflow)
     if (HTMLFrameOwnerElement* owner = frame->ownerElement())
         isVisibleToHitTest &= owner->renderer() && owner->renderer()->visibleToHitTesting();
 
-    if (hasOverflow && isVisibleToHitTest) {
-        if (frameView->addScrollableArea(scrollableArea())) {
-            compositor()->setNeedsUpdateCompositingRequirementsState();
-
-            // Count the total number of RenderLayers that are scrollable areas for
-            // any period. We only want to record this at most once per RenderLayer.
-            if (!m_isScrollableAreaHasBeenRecorded) {
-                HistogramSupport::histogramEnumeration("Renderer.CompositedScrolling", IsScrollableAreaBucket, CompositedScrollingHistogramMax);
-                m_isScrollableAreaHasBeenRecorded = true;
-            }
-        }
+    bool requiresScrollableArea = hasOverflow && isVisibleToHitTest;
+    bool updatedScrollableAreaSet = false;
+    if (requiresScrollableArea) {
+        if (frameView->addScrollableArea(scrollableArea()))
+            updatedScrollableAreaSet = true;
     } else {
         if (frameView->removeScrollableArea(scrollableArea()))
+            updatedScrollableAreaSet = true;
+    }
+
+    if (updatedScrollableAreaSet) {
+        // Count the total number of RenderLayers that are scrollable areas for
+        // any period. We only want to record this at most once per RenderLayer.
+        if (requiresScrollableArea && !m_isScrollableAreaHasBeenRecorded) {
+            HistogramSupport::histogramEnumeration("Renderer.CompositedScrolling", IsScrollableAreaBucket, CompositedScrollingHistogramMax);
+            m_isScrollableAreaHasBeenRecorded = true;
+        }
+
+        // We always want composited scrolling if compositor driven accelerated
+        // scrolling is enabled. Since we will not update needs composited scrolling
+        // in this case, we must force our state to update.
+        if (compositorDrivenAcceleratedScrollingEnabled())
+            didUpdateNeedsCompositedScrolling();
+        else if (requiresScrollableArea)
+            compositor()->setNeedsUpdateCompositingRequirementsState();
+        else
             setNeedsCompositedScrolling(false);
     }
 }

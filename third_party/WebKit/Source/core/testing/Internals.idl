@@ -186,6 +186,12 @@
     const unsigned short COMPOSITED_SCROLLING_ALWAYS_OFF = 2;
     [RaisesException] void setNeedsCompositedScrolling(Element element, unsigned short value);
 
+    [RaisesException] boolean isScrollParent(Element child, Element parent);
+    [RaisesException] boolean isClipParent(Element child, Element parent);
+
+    [RaisesException] ClientRect scrollClip(Element element);
+    [RaisesException] ClientRect ancestorScrollClip(Element element);
+
     [RaisesException] DOMString scrollingStateTreeAsText(Document document);
     [RaisesException] DOMString mainThreadScrollingReasons(Document document);
     [RaisesException] ClientRectList nonFastScrollableRects(Document document);

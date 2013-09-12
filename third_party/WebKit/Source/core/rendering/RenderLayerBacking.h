@@ -94,8 +94,11 @@ public:
     GraphicsLayer* clippingLayer() const { return m_childContainmentLayer.get(); }
 
     // Layer to get clipped by ancestor
-    bool hasAncestorClippingLayer() const { return m_ancestorClippingLayer != 0; }
+    bool hasAncestorClippingLayer() const { return m_ancestorClippingLayer; }
     GraphicsLayer* ancestorClippingLayer() const { return m_ancestorClippingLayer.get(); }
+
+    bool hasAncestorScrollClippingLayer() const { return m_ancestorScrollClippingLayer; }
+    GraphicsLayer* ancestorScrollClippingLayer() const { return m_ancestorScrollClippingLayer.get(); }
 
     bool hasContentsLayer() const { return m_foregroundLayer != 0; }
     GraphicsLayer* foregroundLayer() const { return m_foregroundLayer.get(); }
@@ -189,7 +192,7 @@ private:
     RenderLayerCompositor* compositor() const { return m_owningLayer->compositor(); }
 
     void updateInternalHierarchy();
-    bool updateClippingLayers(bool needsAncestorClip, bool needsDescendantClip);
+    bool updateClippingLayers(bool needsAncestorClip, bool needsDescendantClip, bool needsScrollClip);
     bool updateOverflowControlsLayers(bool needsHorizontalScrollbarLayer, bool needsVerticalScrollbarLayer, bool needsScrollCornerLayer);
     bool updateForegroundLayer(bool needsForegroundLayer);
     bool updateBackgroundLayer(bool needsBackgroundLayer);
@@ -198,6 +201,8 @@ private:
     bool requiresVerticalScrollbarLayer() const { return m_owningLayer->verticalScrollbar(); }
     bool requiresScrollCornerLayer() const { return !m_owningLayer->scrollCornerAndResizerRect().isEmpty(); }
     bool updateScrollingLayers(bool scrollingLayers);
+    void updateScrollParent(RenderLayer*);
+    void updateClipParent(RenderLayer*);
     void updateDrawsContent(bool isSimpleContainer);
     void registerScrollingLayers();
 
@@ -247,21 +252,90 @@ private:
 
     RenderLayer* m_owningLayer;
 
+    // The hierarchy of layers that is maintained by the RenderLayerBacking looks like this:
+    //
+    // m_ancestorScrollClippingLayer [OPTIONAL]
+    //  + m_ancestorClippingLayer [OPTIONAL]
+    //     + m_graphicsLayer
+    //        + m_childContainmentLayer [OPTIONAL] <-OR-> m_scrollingLayer [OPTIONAL]
+    //                                                     + m_scrollingContentsLayer [OPTIONAL]
+    //
+    // We need an ancestor scroll clipping layer if we have a "scroll parent". That is, if
+    // our scrolling ancestor is not our ancestor in the stacking tree. Similarly, we need
+    // an ancestor clipping layer if our clipping ancestor is not our ancestor in the clipping
+    // tree. Here's what that might look like.
+    //
+    // Let A = the scrolling ancestor,
+    //     B = the clipping ancestor,
+    //     C = the scroll/clip descendant, and
+    //     SC = the stacking context that is the ancestor of A, B and C in the stacking tree.
+    //
+    // SC
+    //  + A = m_graphicsLayer
+    //  |      + m_scrollingLayer [*]
+    //  |         + m_scrollingContentsLayer [+]
+    //  |            + ...
+    //  ...
+    //  |
+    //  + B = m_graphicsLayer
+    //  |      + m_childContainmentLayer
+    //  |         + ...
+    //  ...
+    //  |
+    //  + C = m_ancestorScrollClippingLayer [**]
+    //         + m_ancestorClippingLayer [++]
+    //            + m_graphicsLayer
+    //               + ...
+    //
+    // Note that [*] and [**] exist for the same reason: to clip scrolling content. That is,
+    // when we scroll A, in fact [+] and [++] are moved and are clipped to [*] and [**],
+    // respectively.
+    //
+    // Now, it may also be the case that C is also clipped by another layer that doesn't happen
+    // to be its scrolling ancestor. B, in this case. When this happens, we create an
+    // ancestor clipping layer for C, [++]. Unlike the scroll clipping layer, [**], which must
+    // stay put during a scroll to do its job, the ancestor clipping layer [++] does move with
+    // the content it clips.
+    OwnPtr<GraphicsLayer> m_ancestorScrollClippingLayer; // Used if and only if we have a scroll parent.
     OwnPtr<GraphicsLayer> m_ancestorClippingLayer; // Only used if we are clipped by an ancestor which is not a stacking context.
     OwnPtr<GraphicsLayer> m_graphicsLayer;
+    OwnPtr<GraphicsLayer> m_childContainmentLayer; // Only used if we have clipping on a stacking context with compositing children.
+    OwnPtr<GraphicsLayer> m_scrollingLayer; // Only used if the layer is using composited scrolling.
+    OwnPtr<GraphicsLayer> m_scrollingContentsLayer; // Only used if the layer is using composited scrolling.
+
+    // This layer is also added to the hierarchy by the RLB, but in a different way than
+    // the layers above. It's added to m_graphicsLayer as its mask layer (naturally) if
+    // we have a mask, and isn't part of the typical hierarchy (it has no children).
+    OwnPtr<GraphicsLayer> m_maskLayer; // Only used if we have a mask.
+
+    // There are two other (optional) layers whose painting is managed by the RenderLayerBacking,
+    // but whose position in the hierarchy is maintained by the RenderLayerCompositor. These
+    // are the foreground and background layers. The foreground layer exists if we have composited
+    // descendants with negative z-order. We need the extra layer in this case because the layer
+    // needs to draw both below (for the background, say) and above (for the normal flow content, say)
+    // the negative z-order descendants and this is impossible with a single layer. The RLC handles
+    // inserting m_foregroundLayer in the correct position in our descendant list for us (right after
+    // the neg z-order dsecendants).
+    //
+    // The background layer is only created if this is the root layer and our background is entirely
+    // fixed. In this case we want to put the background in a separate composited layer so that when
+    // we scroll, we don't have to re-raster the background into position. This layer is also inserted
+    // into the tree by the RLC as it gets a special home. This layer becomes a descendant of the
+    // frame clipping layer. That is:
+    //   ...
+    //     + frame clipping layer
+    //       + m_backgroundLayer
+    //       + frame scrolling layer
+    //         + root content layer
+    //
+    // With the hierarchy set up like this, the root content layer is able to scroll without affecting
+    // the background layer (or repainting).
     OwnPtr<GraphicsLayer> m_foregroundLayer; // Only used in cases where we need to draw the foreground separately.
     OwnPtr<GraphicsLayer> m_backgroundLayer; // Only used in cases where we need to draw the background separately.
-    OwnPtr<GraphicsLayer> m_childContainmentLayer; // Only used if we have clipping on a stacking context with compositing children, or if the layer has a tile cache.
-    OwnPtr<GraphicsLayer> m_maskLayer; // Only used if we have a mask.
 
     OwnPtr<GraphicsLayer> m_layerForHorizontalScrollbar;
     OwnPtr<GraphicsLayer> m_layerForVerticalScrollbar;
     OwnPtr<GraphicsLayer> m_layerForScrollCorner;
-
-    OwnPtr<GraphicsLayer> m_scrollingLayer; // Only used if the layer is using composited scrolling.
-    OwnPtr<GraphicsLayer> m_scrollingContentsLayer; // Only used if the layer is using composited scrolling.
-
-    uint64_t m_scrollLayerID;
 
     IntRect m_compositedBounds;
 

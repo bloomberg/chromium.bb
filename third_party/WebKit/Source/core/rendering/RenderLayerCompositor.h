@@ -99,10 +99,13 @@ public:
     bool updateLayerCompositingState(RenderLayer*, CompositingChangeRepaint = CompositingChangeRepaintNow);
 
     // Update the geometry for compositing children of compositingAncestor.
-    void updateCompositingDescendantGeometry(RenderLayer* compositingAncestor, RenderLayer*, bool compositedChildrenOnly);
+    void updateCompositingDescendantGeometry(RenderLayer* compositingAncestor, RenderLayer*, HashSet<RenderLayer*>& visited, bool compositedChildrenOnly);
+
+    // Ensures that scroll parents have been processed before recurring into updateCompositedDescendantGeometry for the current layer.
+    void updateCompositingDescendantGeometryForLayerAndScrollParents(RenderLayer* compositingAncestor, RenderLayer*, HashSet<RenderLayer*>& visited, bool compositedChildrenOnly);
 
     // Whether layer's backing needs a graphics layer to do clipping by an ancestor (non-stacking-context parent with overflow).
-    bool clippedByAncestor(RenderLayer*) const;
+    bool clippedByAncestor(const RenderLayer*) const;
     // Whether layer's backing needs a graphics layer to clip z-order children of the given layer.
     bool clipsCompositingDescendants(const RenderLayer*) const;
 
@@ -241,10 +244,16 @@ private:
     void computeCompositingRequirements(RenderLayer* ancestorLayer, RenderLayer*, OverlapMap*, struct CompositingState&, bool& layersChanged, bool& descendantHas3DTransform, Vector<RenderLayer*>& unclippedDescendants);
 
     // Recurses down the tree, parenting descendant compositing layers and collecting an array of child layers for the current compositing layer.
-    void rebuildCompositingLayerTree(RenderLayer*, Vector<GraphicsLayer*>& childGraphicsLayersOfEnclosingLayer, int depth);
+    void rebuildCompositingLayerTree(RenderLayer*, Vector<GraphicsLayer*>& childGraphicsLayersOfEnclosingLayer, HashSet<RenderLayer*>& visited, int depth);
+
+    // Ensures that scroll parents have been processed before recurring into rebuildCompositingLayerTree for the current layer.
+    void rebuildCompositingLayerTreeForLayerAndScrollParents(RenderLayer*, Vector<GraphicsLayer*>& childGraphicsLayersOfEnclosingLayer, HashSet<RenderLayer*>& visited, HashMap<RenderLayer*, Vector<GraphicsLayer*> >& childGraphicsLayersOfScrollParents, int depth);
 
     // Recurses down the tree, updating layer geometry only.
-    void updateLayerTreeGeometry(RenderLayer*, int depth);
+    void updateLayerTreeGeometry(RenderLayer*, HashSet<RenderLayer*>& visited, int depth);
+
+    // Ensures that scroll parents have been processed before recurring into updateLayerTree for the current layer.
+    void updateLayerTreeGeometryForLayerAndScrollParents(RenderLayer*, HashSet<RenderLayer*>& visited, int depth);
 
     // Hook compositing layers together
     void setCompositingParent(RenderLayer* childLayer, RenderLayer* parentLayer);

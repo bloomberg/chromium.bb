@@ -715,6 +715,10 @@ public:
     void clearBacking(bool layerBeingDestroyed = false);
     bool needsCompositedScrolling() const;
     bool needsToBeStackingContainer() const;
+
+    RenderLayer* scrollParent() const;
+    RenderLayer* clipParent() const;
+
     bool needsCompositingLayersRebuiltForClip(const RenderStyle* oldStyle, const RenderStyle* newStyle) const;
     bool needsCompositingLayersRebuiltForOverflow(const RenderStyle* oldStyle, const RenderStyle* newStyle) const;
     bool needsCompositingLayersRebuiltForFilters(const RenderStyle* oldStyle, const RenderStyle* newStyle, bool didPaintWithFilters) const;
@@ -982,6 +986,7 @@ private:
 
 public:
     GraphicsLayer* layerForScrolling() const;
+    GraphicsLayer* layerForScrollChild() const;
     GraphicsLayer* layerForHorizontalScrollbar() const;
     GraphicsLayer* layerForVerticalScrollbar() const;
     GraphicsLayer* layerForScrollCorner() const;

@@ -101,6 +101,9 @@ public:
     void touchEventTargetRectsDidChange(const Document*);
     void willDestroyRenderLayer(RenderLayer*);
 
+    void updateScrollParentForLayer(RenderLayer* child, RenderLayer* parent);
+    void updateClipParentForLayer(RenderLayer* child, RenderLayer* parent);
+
     static String mainThreadScrollingReasonsAsText(MainThreadScrollingReasons);
     String mainThreadScrollingReasonsAsText() const;
     Region computeShouldHandleScrollGestureOnMainThreadRegion(const Frame*, const IntPoint& frameLocation) const;

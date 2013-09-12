@@ -162,6 +162,16 @@ public:
     // Returns true if this layer has any active animations - useful for tests.
     virtual bool hasActiveAnimation() = 0;
 
+    // If a scroll parent is set, this layer will inherit its parent's scroll
+    // delta and offset even though it will not be a descendant of the scroll
+    // in the layer hierarchy.
+    virtual void setScrollParent(WebLayer*) = 0;
+
+    // A layer will not respect any clips established by layers between it and
+    // its nearest clipping ancestor. Note, the clip parent must be an ancestor.
+    // This is not a requirement of the scroll parent.
+    virtual void setClipParent(WebLayer*) = 0;
+
     // Scrolling
     virtual void setScrollPosition(WebPoint) = 0;
     virtual WebPoint scrollPosition() const = 0;
