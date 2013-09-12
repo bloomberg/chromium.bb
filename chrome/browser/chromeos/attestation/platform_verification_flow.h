@@ -89,15 +89,16 @@ class PlatformVerificationFlow {
   };
 
   // This callback will be called when a challenge operation completes.  If
-  // |result| is SUCCESS then |challenge_response| holds the challenge response
-  // as specified by the protocol.  The |platform_key_certificate| is for the
-  // key which was used to create the challenge response.  This key may be
-  // generated on demand and is not guaranteed to persist across multiple calls
-  // to this method.  Both the response and the certificate are opaque to
-  // the browser; they are intended for validation by an external application or
-  // service.
+  // |result| is SUCCESS then |signed_data| holds the data which was signed
+  // by the platform key (this is the original challenge appended with a random
+  // nonce) and |signature| holds the RSA-PKCS1-v1.5 signature.  The
+  // |platform_key_certificate| certifies the key used to generate the
+  // signature.  This key may be generated on demand and is not guaranteed to
+  // persist across multiple calls to this method.  The browser does not check
+  // the validity of |signature| or |platform_key_certificate|.
   typedef base::Callback<void(Result result,
-                              const std::string& challenge_response,
+                              const std::string& signed_data,
+                              const std::string& signature,
                               const std::string& platform_key_certificate)>
       ChallengeCallback;
 
@@ -185,11 +186,12 @@ class PlatformVerificationFlow {
 
   // A callback called when a challenge signing request has completed.  The
   // |certificate| is the platform certificate for the key which signed the
-  // challenge.  |callback| is the same as in ChallengePlatformKey.
+  // |challenge|.  |callback| is the same as in ChallengePlatformKey.
   // |operation_success| is true iff the challenge signing operation was
   // successful.  If it was successful, |response_data| holds the challenge
   // response and the method will invoke |callback|.
   void OnChallengeReady(const std::string& certificate,
+                        const std::string& challenge,
                         const ChallengeCallback& callback,
                         bool operation_success,
                         const std::string& response_data);

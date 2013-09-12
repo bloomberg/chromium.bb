@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/chromeos/attestation/attestation_ca_client.h"
+#include "chrome/browser/chromeos/attestation/attestation_signed_data.pb.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
@@ -39,6 +40,14 @@ void DBusCallback(const base::Callback<void(bool)>& on_success,
     LOG(ERROR) << "PlatformVerificationFlow: DBus call failed!";
     on_failure.Run();
   }
+}
+
+// A helper to call a ChallengeCallback with an error result.
+void ReportError(
+    const chromeos::attestation::PlatformVerificationFlow::ChallengeCallback&
+        callback,
+    chromeos::attestation::PlatformVerificationFlow::Result error) {
+  callback.Run(error, std::string(), std::string(), std::string());
 }
 }  // namespace
 
@@ -116,7 +125,7 @@ void PlatformVerificationFlow::ChallengePlatformKey(
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   if (!IsAttestationEnabled(web_contents)) {
     LOG(INFO) << "PlatformVerificationFlow: Feature disabled.";
-    callback.Run(POLICY_REJECTED, std::string(), std::string());
+    ReportError(callback, POLICY_REJECTED);
     return;
   }
   BoolDBusMethodCallback dbus_callback = base::Bind(
@@ -127,7 +136,7 @@ void PlatformVerificationFlow::ChallengePlatformKey(
                  service_id,
                  challenge,
                  callback),
-      base::Bind(callback, INTERNAL_ERROR, std::string(), std::string()));
+      base::Bind(&ReportError, callback, INTERNAL_ERROR));
   cryptohome_client_->TpmAttestationIsEnrolled(dbus_callback);
 }
 
@@ -205,16 +214,16 @@ void PlatformVerificationFlow::OnConsentResponse(
     if (consent_response == CONSENT_RESPONSE_NONE) {
       // No user response - do not proceed and do not modify any settings.
       LOG(WARNING) << "PlatformVerificationFlow: No response from user.";
-      callback.Run(USER_REJECTED, std::string(), std::string());
+      ReportError(callback, USER_REJECTED);
       return;
     }
     if (!UpdateSettings(web_contents, consent_type, consent_response)) {
-      callback.Run(INTERNAL_ERROR, std::string(), std::string());
+      ReportError(callback, INTERNAL_ERROR);
       return;
     }
     if (consent_response == CONSENT_RESPONSE_DENY) {
       LOG(INFO) << "PlatformVerificationFlow: User rejected request.";
-      callback.Run(USER_REJECTED, std::string(), std::string());
+      ReportError(callback, USER_REJECTED);
       return;
     }
   }
@@ -243,13 +252,14 @@ void PlatformVerificationFlow::OnCertificateReady(
     const std::string& certificate) {
   if (!operation_success) {
     LOG(WARNING) << "PlatformVerificationFlow: Failed to certify platform.";
-    callback.Run(PLATFORM_NOT_VERIFIED, std::string(), std::string());
+    ReportError(callback, PLATFORM_NOT_VERIFIED);
     return;
   }
   cryptohome::AsyncMethodCaller::DataCallback cryptohome_callback = base::Bind(
       &PlatformVerificationFlow::OnChallengeReady,
       weak_factory_.GetWeakPtr(),
       certificate,
+      challenge,
       callback);
   std::string key_name = kContentProtectionKeyPrefix;
   key_name += service_id;
@@ -261,16 +271,26 @@ void PlatformVerificationFlow::OnCertificateReady(
 
 void PlatformVerificationFlow::OnChallengeReady(
     const std::string& certificate,
+    const std::string& challenge,
     const ChallengeCallback& callback,
     bool operation_success,
     const std::string& response_data) {
   if (!operation_success) {
     LOG(ERROR) << "PlatformVerificationFlow: Failed to sign challenge.";
-    callback.Run(INTERNAL_ERROR, std::string(), std::string());
+    ReportError(callback, INTERNAL_ERROR);
     return;
   }
+  SignedData signed_data_pb;
+  if (response_data.empty() || !signed_data_pb.ParseFromString(response_data)) {
+    LOG(ERROR) << "PlatformVerificationFlow: Failed to parse response data.";
+    ReportError(callback, INTERNAL_ERROR);
+    return;
+  }
+  callback.Run(SUCCESS,
+               signed_data_pb.data(),
+               signed_data_pb.signature(),
+               certificate);
   LOG(INFO) << "PlatformVerificationFlow: Platform successfully verified.";
-  callback.Run(SUCCESS, response_data, certificate);
 }
 
 PrefService* PlatformVerificationFlow::GetPrefs(

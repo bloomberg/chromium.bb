@@ -9,6 +9,7 @@
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
+#include "chrome/browser/chromeos/attestation/attestation_signed_data.pb.h"
 #include "chrome/browser/chromeos/attestation/platform_verification_flow.h"
 #include "chrome/browser/chromeos/login/mock_user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -38,7 +39,8 @@ namespace {
 
 const char kTestID[] = "test_id";
 const char kTestChallenge[] = "test_challenge";
-const char kTestResponse[] = "test_challenge_response";
+const char kTestSignedData[] = "test_challenge_with_salt";
+const char kTestSignature[] = "test_signature";
 const char kTestCertificate[] = "test_certificate";
 const char kTestEmail[] = "test_email@chromium.org";
 const char kTestURL[] = "http://mytestdomain/test";
@@ -211,22 +213,34 @@ class PlatformVerificationFlowTest : public ::testing::Test {
 
   void FakeSignChallenge(
       const cryptohome::AsyncMethodCaller::DataCallback& callback) {
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-                                           base::Bind(callback,
-                                                      sign_challenge_success_,
-                                                      kTestResponse));
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback,
+                   sign_challenge_success_,
+                   CreateFakeResponseProto()));
   }
 
   void FakeChallengeCallback(PlatformVerificationFlow::Result result,
-                             const std::string& response,
+                             const std::string& salt,
+                             const std::string& signature,
                              const std::string& certificate) {
     result_ = result;
-    challenge_response_ = response;
+    challenge_salt_ = salt;
+    challenge_signature_ = signature;
     certificate_ = certificate;
   }
 
   void FakeCheckStateCallback(bool result) {
     check_state_result_ = result;
+  }
+
+  std::string CreateFakeResponseProto() {
+    SignedData pb;
+    pb.set_data(kTestSignedData);
+    pb.set_signature(kTestSignature);
+    std::string serial;
+    CHECK(pb.SerializeToString(&serial));
+    return serial;
   }
 
  protected:
@@ -254,7 +268,8 @@ class PlatformVerificationFlowTest : public ::testing::Test {
   // Callback functions and data.
   PlatformVerificationFlow::ChallengeCallback callback_;
   PlatformVerificationFlow::Result result_;
-  std::string challenge_response_;
+  std::string challenge_salt_;
+  std::string challenge_signature_;
   std::string certificate_;
   base::Callback<void(bool result)> check_state_callback_;
   bool check_state_result_;
@@ -267,7 +282,8 @@ TEST_F(PlatformVerificationFlowTest, SuccessNoConsent) {
   verifier_->ChallengePlatformKey(NULL, kTestID, kTestChallenge, callback_);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(PlatformVerificationFlow::SUCCESS, result_);
-  EXPECT_EQ(kTestResponse, challenge_response_);
+  EXPECT_EQ(kTestSignedData, challenge_salt_);
+  EXPECT_EQ(kTestSignature, challenge_signature_);
   EXPECT_EQ(kTestCertificate, certificate_);
   EXPECT_EQ(0, fake_delegate_.num_consent_calls());
 }
@@ -279,7 +295,8 @@ TEST_F(PlatformVerificationFlowTest, SuccessWithAlwaysAskConsent) {
   verifier_->ChallengePlatformKey(NULL, kTestID, kTestChallenge, callback_);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(PlatformVerificationFlow::SUCCESS, result_);
-  EXPECT_EQ(kTestResponse, challenge_response_);
+  EXPECT_EQ(kTestSignedData, challenge_salt_);
+  EXPECT_EQ(kTestSignature, challenge_signature_);
   EXPECT_EQ(kTestCertificate, certificate_);
   EXPECT_EQ(1, fake_delegate_.num_consent_calls());
 }
@@ -290,7 +307,8 @@ TEST_F(PlatformVerificationFlowTest, SuccessWithAttestationConsent) {
   verifier_->ChallengePlatformKey(NULL, kTestID, kTestChallenge, callback_);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(PlatformVerificationFlow::SUCCESS, result_);
-  EXPECT_EQ(kTestResponse, challenge_response_);
+  EXPECT_EQ(kTestSignedData, challenge_salt_);
+  EXPECT_EQ(kTestSignature, challenge_signature_);
   EXPECT_EQ(kTestCertificate, certificate_);
   EXPECT_EQ(1, fake_delegate_.num_consent_calls());
 }
@@ -302,7 +320,8 @@ TEST_F(PlatformVerificationFlowTest, SuccessWithFirstTimeConsent) {
   verifier_->ChallengePlatformKey(NULL, kTestID, kTestChallenge, callback_);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(PlatformVerificationFlow::SUCCESS, result_);
-  EXPECT_EQ(kTestResponse, challenge_response_);
+  EXPECT_EQ(kTestSignedData, challenge_salt_);
+  EXPECT_EQ(kTestSignature, challenge_signature_);
   EXPECT_EQ(kTestCertificate, certificate_);
   EXPECT_EQ(1, fake_delegate_.num_consent_calls());
 }

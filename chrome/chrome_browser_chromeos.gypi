@@ -955,6 +955,7 @@
       'type': 'static_library',
       'sources': [
         'browser/chromeos/attestation/attestation_key_payload.proto',
+        'browser/chromeos/attestation/attestation_signed_data.proto',
       ],
       'variables': {
         'proto_in_dir': 'browser/chromeos/attestation',
