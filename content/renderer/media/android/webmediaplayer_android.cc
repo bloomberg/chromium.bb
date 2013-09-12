@@ -97,6 +97,7 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
       demuxer_(NULL),
       media_stream_client_(NULL),
 #endif  // defined(GOOGLE_TV)
+      pending_playback_(false),
       player_type_(MEDIA_PLAYER_TYPE_URL),
       proxy_(proxy),
       current_time_(0),
@@ -587,6 +588,15 @@ void WebMediaPlayerAndroid::OnPlaybackComplete() {
   // current time to media duration when OnPlaybackComplete() get called.
   OnTimeUpdate(duration_);
   client_->timeChanged();
+
+  // if the loop attribute is set, timeChanged() will update the current time
+  // to 0. It will perform a seek to 0. As the requests to the renderer
+  // process are sequential, the OnSeekCompelete() will only occur
+  // once OnPlaybackComplete() is done. As the playback can only be executed
+  // upon completion of OnSeekComplete(), the request needs to be saved.
+  is_playing_ = false;
+  if (seeking_ && pending_seek_ == 0)
+    pending_playback_ = true;
 }
 
 void WebMediaPlayerAndroid::OnBufferingUpdate(int percentage) {
@@ -602,6 +612,11 @@ void WebMediaPlayerAndroid::OnSeekComplete(base::TimeDelta current_time) {
   UpdateReadyState(WebMediaPlayer::ReadyStateHaveEnoughData);
 
   client_->timeChanged();
+
+  if (pending_playback_) {
+    play();
+    pending_playback_ = false;
+  }
 }
 
 void WebMediaPlayerAndroid::OnMediaError(int error_type) {

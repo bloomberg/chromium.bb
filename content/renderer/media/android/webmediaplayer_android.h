@@ -399,6 +399,10 @@ class WebMediaPlayerAndroid
   scoped_ptr<MediaSourceDelegate,
              MediaSourceDelegate::Destroyer> media_source_delegate_;
 
+  // Internal pending playback state.
+  // Store a playback request that cannot be started immediately.
+  bool pending_playback_;
+
   MediaPlayerHostMsg_Initialize_Type player_type_;
 
   // Proxy object that delegates method calls on Render Thread.
