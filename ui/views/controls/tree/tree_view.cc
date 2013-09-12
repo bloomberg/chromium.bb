@@ -598,6 +598,7 @@ void TreeView::OnPaint(gfx::Canvas* canvas) {
 }
 
 void TreeView::OnFocus() {
+  GetInputMethod()->OnFocus();
   View::OnFocus();
   SchedulePaintForNode(selected_node_);
 
@@ -607,6 +608,7 @@ void TreeView::OnFocus() {
 }
 
 void TreeView::OnBlur() {
+  GetInputMethod()->OnBlur();
   SchedulePaintForNode(selected_node_);
   if (selector_)
     selector_->OnViewBlur();
