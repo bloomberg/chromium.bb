@@ -48,6 +48,18 @@ class MEDIA_EXPORT MediaCodecBridge {
   // decode |codec| type.
   static bool CanDecode(const std::string& codec, bool is_secure);
 
+  // Represents supported codecs on android. |secure_decoder_supported| is true
+  // if secure decoder is available for the codec type.
+  // TODO(qinmin): Curretly the codecs string only contains one codec, do we
+  // need more specific codecs separated by comma. (e.g. "vp8" -> "vp8, vp8.0")
+  struct CodecsInfo {
+    std::string codecs;
+    bool secure_decoder_supported;
+  };
+
+  // Get a list of supported codecs.
+  static void GetCodecsInfo(std::vector<CodecsInfo>* codecs_info);
+
   virtual ~MediaCodecBridge();
 
   // Resets both input and output, all indices previously returned in calls to

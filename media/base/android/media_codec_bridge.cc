@@ -21,6 +21,7 @@
 #include "media/base/decrypt_config.h"
 
 using base::android::AttachCurrentThread;
+using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ScopedJavaLocalRef;
 
@@ -28,7 +29,7 @@ namespace media {
 
 enum { kBufferFlagEndOfStream = 4 };
 
-static const std::string AudioCodecToMimeType(const AudioCodec codec) {
+static const std::string AudioCodecToAndroidMimeType(const AudioCodec codec) {
   switch (codec) {
     case kCodecMP3:
       return "audio/mpeg";
@@ -41,7 +42,7 @@ static const std::string AudioCodecToMimeType(const AudioCodec codec) {
   }
 }
 
-static const std::string VideoCodecToMimeType(const VideoCodec codec) {
+static const std::string VideoCodecToAndroidMimeType(const VideoCodec codec) {
   switch (codec) {
     case kCodecH264:
       return "video/avc";
@@ -52,7 +53,7 @@ static const std::string VideoCodecToMimeType(const VideoCodec codec) {
   }
 }
 
-static const std::string CodecTypeToMimeType(const std::string& codec) {
+static const std::string CodecTypeToAndroidMimeType(const std::string& codec) {
   // TODO(xhwang): Shall we handle more detailed strings like "mp4a.40.2"?
   if (codec == "avc1")
     return "video/avc";
@@ -62,6 +63,25 @@ static const std::string CodecTypeToMimeType(const std::string& codec) {
     return "video/x-vnd.on2.vp8";
   if (codec == "vorbis")
     return "audio/vorbis";
+  return std::string();
+}
+
+// TODO(qinmin): using a map to help all the conversions in this class.
+static const std::string AndroidMimeTypeToCodecType(const std::string& mime) {
+  if (mime == "video/mp4v-es")
+    return "mp4v";
+  if (mime == "video/avc")
+    return "avc1";
+  if (mime == "video/x-vnd.on2.vp8")
+    return "vp8";
+  if (mime == "video/x-vnd.on2.vp9")
+    return "vp9";
+  if (mime == "audio/mp4a-latm")
+    return "mp4a";
+  if (mime == "audio/mpeg")
+    return "mp3";
+  if (mime == "audio/vorbis")
+    return "vorbis";
   return std::string();
 }
 
@@ -79,9 +99,34 @@ bool MediaCodecBridge::IsAvailable() {
 }
 
 // static
+void MediaCodecBridge::GetCodecsInfo(
+    std::vector<CodecsInfo>* codecs_info) {
+  JNIEnv* env = AttachCurrentThread();
+  if (!IsAvailable())
+    return;
+
+  std::string mime_type;
+  ScopedJavaLocalRef<jobjectArray> j_codec_info_array =
+      Java_MediaCodecBridge_getCodecsInfo(env);
+  jsize len = env->GetArrayLength(j_codec_info_array.obj());
+  for (jsize i = 0; i < len; ++i) {
+    ScopedJavaLocalRef<jobject> j_info(
+        env, env->GetObjectArrayElement(j_codec_info_array.obj(), i));
+    ScopedJavaLocalRef<jstring> j_codec_type =
+        Java_CodecInfo_codecType(env, j_info.obj());
+    ConvertJavaStringToUTF8(env, j_codec_type.obj(), &mime_type);
+    CodecsInfo info;
+    info.codecs = AndroidMimeTypeToCodecType(mime_type);
+    info.secure_decoder_supported =
+        Java_CodecInfo_isSecureDecoderSupported(env, j_info.obj());
+    codecs_info->push_back(info);
+  }
+}
+
+// static
 bool MediaCodecBridge::CanDecode(const std::string& codec, bool is_secure) {
   JNIEnv* env = AttachCurrentThread();
-  std::string mime = CodecTypeToMimeType(codec);
+  std::string mime = CodecTypeToAndroidMimeType(codec);
   if (mime.empty())
     return false;
   ScopedJavaLocalRef<jstring> j_mime = ConvertUTF8ToJavaString(env, mime);
@@ -91,7 +136,6 @@ bool MediaCodecBridge::CanDecode(const std::string& codec, bool is_secure) {
 MediaCodecBridge::MediaCodecBridge(const std::string& mime, bool is_secure) {
   JNIEnv* env = AttachCurrentThread();
   CHECK(env);
-
   DCHECK(!mime.empty());
   ScopedJavaLocalRef<jstring> j_mime = ConvertUTF8ToJavaString(env, mime);
   j_media_codec_.Reset(
@@ -256,7 +300,7 @@ bool AudioCodecBridge::Start(
   if (!media_codec())
     return false;
 
-  std::string codec_string = AudioCodecToMimeType(codec);
+  std::string codec_string = AudioCodecToAndroidMimeType(codec);
   if (codec_string.empty())
     return false;
 
@@ -377,7 +421,7 @@ bool AudioCodecBridge::ConfigureMediaFormat(
     }
     default:
       LOG(ERROR) << "Invalid header encountered for codec: "
-                 << AudioCodecToMimeType(codec);
+                 << AudioCodecToAndroidMimeType(codec);
       return false;
   }
   return true;
@@ -414,7 +458,7 @@ bool VideoCodecBridge::Start(
   if (!media_codec())
     return false;
 
-  std::string codec_string = VideoCodecToMimeType(codec);
+  std::string codec_string = VideoCodecToAndroidMimeType(codec);
   if (codec_string.empty())
     return false;
 
@@ -433,13 +477,13 @@ bool VideoCodecBridge::Start(
 }
 
 AudioCodecBridge* AudioCodecBridge::Create(const AudioCodec codec) {
-  const std::string mime = AudioCodecToMimeType(codec);
+  const std::string mime = AudioCodecToAndroidMimeType(codec);
   return mime.empty() ? NULL : new AudioCodecBridge(mime);
 }
 
 VideoCodecBridge* VideoCodecBridge::Create(const VideoCodec codec,
                                            bool is_secure) {
-  const std::string mime = VideoCodecToMimeType(codec);
+  const std::string mime = VideoCodecToAndroidMimeType(codec);
   return mime.empty() ? NULL : new VideoCodecBridge(mime, is_secure);
 }
 
