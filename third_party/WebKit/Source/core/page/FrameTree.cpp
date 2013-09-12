@@ -51,46 +51,15 @@ void FrameTree::setName(const AtomicString& name)
     m_uniqueName = parent()->tree()->uniqueChildName(name);
 }
 
-void FrameTree::clearName()
-{
-    m_name = AtomicString();
-    m_uniqueName = AtomicString();
-}
-
 Frame* FrameTree::parent() const
 {
     return m_parent;
-}
-
-bool FrameTree::transferChild(PassRefPtr<Frame> child)
-{
-    Frame* oldParent = child->tree()->parent();
-    if (oldParent == m_thisFrame)
-        return false; // |child| is already a child of m_thisFrame.
-
-    if (oldParent)
-        oldParent->tree()->removeChild(child.get());
-
-    ASSERT(child->page() == m_thisFrame->page());
-    child->tree()->m_parent = m_thisFrame;
-
-    // We need to ensure that the child still has a unique frame name with respect to its new parent.
-    child->tree()->setName(child->tree()->m_name);
-
-    actuallyAppendChild(child); // Note, on return |child| is null.
-    return true;
 }
 
 void FrameTree::appendChild(PassRefPtr<Frame> child)
 {
     ASSERT(child->page() == m_thisFrame->page());
     child->tree()->m_parent = m_thisFrame;
-    actuallyAppendChild(child); // Note, on return |child| is null.
-}
-
-void FrameTree::actuallyAppendChild(PassRefPtr<Frame> child)
-{
-    ASSERT(child->tree()->m_parent == m_thisFrame);
     Frame* oldLast = m_lastChild;
     m_lastChild = child.get();
 
@@ -168,8 +137,9 @@ AtomicString FrameTree::uniqueChildName(const AtomicString& requestedName) const
     return name.toAtomicString();
 }
 
-inline Frame* FrameTree::scopedChild(unsigned index, TreeScope* scope) const
+Frame* FrameTree::scopedChild(unsigned index) const
 {
+    TreeScope* scope = m_thisFrame->document();
     if (!scope)
         return 0;
 
@@ -185,8 +155,9 @@ inline Frame* FrameTree::scopedChild(unsigned index, TreeScope* scope) const
     return 0;
 }
 
-inline Frame* FrameTree::scopedChild(const AtomicString& name, TreeScope* scope) const
+Frame* FrameTree::scopedChild(const AtomicString& name) const
 {
+    TreeScope* scope = m_thisFrame->document();
     if (!scope)
         return 0;
 
@@ -210,16 +181,6 @@ inline unsigned FrameTree::scopedChildCount(TreeScope* scope) const
     return scopedCount;
 }
 
-Frame* FrameTree::scopedChild(unsigned index) const
-{
-    return scopedChild(index, m_thisFrame->document());
-}
-
-Frame* FrameTree::scopedChild(const AtomicString& name) const
-{
-    return scopedChild(name, m_thisFrame->document());
-}
-
 unsigned FrameTree::scopedChildCount() const
 {
     if (m_scopedChildCount == invalidCount)
@@ -233,14 +194,6 @@ unsigned FrameTree::childCount() const
     for (Frame* result = firstChild(); result; result = result->tree()->nextSibling())
         ++count;
     return count;
-}
-
-Frame* FrameTree::child(unsigned index) const
-{
-    Frame* result = firstChild();
-    for (unsigned i = 0; result && i != index; ++i)
-        result = result->tree()->nextSibling();
-    return result;
 }
 
 Frame* FrameTree::child(const AtomicString& name) const

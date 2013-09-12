@@ -46,7 +46,6 @@ namespace WebCore {
         const AtomicString& name() const { return m_name; }
         const AtomicString& uniqueName() const { return m_uniqueName; }
         void setName(const AtomicString&);
-        void clearName();
         Frame* parent() const;
         void setParent(Frame* parent) { m_parent = parent; }
 
@@ -61,16 +60,12 @@ namespace WebCore {
         Frame* traversePreviousWithWrap(bool) const;
 
         void appendChild(PassRefPtr<Frame>);
-        bool transferChild(PassRefPtr<Frame>);
         void detachFromParent() { m_parent = 0; }
         void removeChild(Frame*);
 
-        Frame* child(unsigned index) const;
         Frame* child(const AtomicString& name) const;
         Frame* find(const AtomicString& name) const;
         unsigned childCount() const;
-
-        AtomicString uniqueChildName(const AtomicString& requestedName) const;
 
         Frame* top() const;
 
@@ -80,11 +75,7 @@ namespace WebCore {
 
     private:
         Frame* deepLastChild() const;
-        void actuallyAppendChild(PassRefPtr<Frame>);
-
-        bool scopedBy(TreeScope*) const;
-        Frame* scopedChild(unsigned index, TreeScope*) const;
-        Frame* scopedChild(const AtomicString& name, TreeScope*) const;
+        AtomicString uniqueChildName(const AtomicString& requestedName) const;
         unsigned scopedChildCount(TreeScope*) const;
 
         Frame* m_thisFrame;
