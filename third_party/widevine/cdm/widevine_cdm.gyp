@@ -39,9 +39,9 @@
             ],
           }],
           # TODO(xhwang): Enable this for non-Chrome build if necessary.
-          [ 'OS == "android"', {
+          [ 'OS == "android" and google_tv != 1', {
             'widevine_cdm_version_h_file%':
-            'android/widevine_cdm_version.h',
+                'android/widevine_cdm_version.h',
           }],
         ],
       }],
