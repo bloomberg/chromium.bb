@@ -2908,7 +2908,9 @@ TEST_F(DiskCacheEntryTest, SimpleCacheOptimistic5) {
       static_cast<disk_cache::SimpleEntryImpl*>(entry)->HasOneRef());
 }
 
-TEST_F(DiskCacheEntryTest, SimpleCacheOptimistic6) {
+// TODO(gavinp): Fix this, perhaps by landing
+// https://codereview.chromium.org/23823002/
+TEST_F(DiskCacheEntryTest, DISABLED_SimpleCacheOptimistic6) {
   // Test sequence:
   // Create, Write, Doom, Doom, Read, Doom, Close.
   SetSimpleCacheMode();
@@ -2999,7 +3001,7 @@ TEST_F(DiskCacheEntryTest, SimpleCacheCreateDoomRace) {
             cache_->CreateEntry(key, &entry, net::CompletionCallback()));
   EXPECT_NE(null, entry);
 
-  cache_->DoomEntry(key, cb.callback());
+  EXPECT_EQ(net::ERR_IO_PENDING, cache_->DoomEntry(key, cb.callback()));
   EXPECT_EQ(net::OK, cb.GetResult(net::ERR_IO_PENDING));
 
   EXPECT_EQ(
@@ -3018,6 +3020,37 @@ TEST_F(DiskCacheEntryTest, SimpleCacheCreateDoomRace) {
     base::PlatformFileInfo info;
     EXPECT_FALSE(file_util::GetFileInfo(entry_file_path, &info));
   }
+}
+
+TEST_F(DiskCacheEntryTest, SimpleCacheDoomCreateRace) {
+  // This test runs as APP_CACHE to make operations more synchronous. Test
+  // sequence:
+  // Create, Doom, Create.
+  SetCacheType(net::APP_CACHE);
+  SetSimpleCacheMode();
+  InitCache();
+  disk_cache::Entry* null = NULL;
+  const char key[] = "the first key";
+
+  net::TestCompletionCallback create_callback;
+
+  disk_cache::Entry* entry1 = NULL;
+  ASSERT_EQ(net::OK,
+            create_callback.GetResult(
+                cache_->CreateEntry(key, &entry1, create_callback.callback())));
+  ScopedEntryPtr entry1_closer(entry1);
+  EXPECT_NE(null, entry1);
+
+  net::TestCompletionCallback doom_callback;
+  EXPECT_EQ(net::ERR_IO_PENDING,
+            cache_->DoomEntry(key, doom_callback.callback()));
+
+  disk_cache::Entry* entry2 = NULL;
+  ASSERT_EQ(net::OK,
+            create_callback.GetResult(
+                cache_->CreateEntry(key, &entry2, create_callback.callback())));
+  ScopedEntryPtr entry2_closer(entry2);
+  EXPECT_EQ(net::OK, doom_callback.GetResult(net::ERR_IO_PENDING));
 }
 
 // Checks that an optimistic Create would fail later on a racing Open.

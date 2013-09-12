@@ -161,6 +161,7 @@ SimpleEntryImpl::SimpleEntryImpl(net::CacheType cache_type,
       last_used_(Time::Now()),
       last_modified_(last_used_),
       open_count_(0),
+      doomed_(false),
       state_(STATE_UNINITIALIZED),
       synchronous_entry_(NULL),
       net_log_(net::BoundNetLog::Make(
@@ -525,12 +526,12 @@ void SimpleEntryImpl::RemoveSelfFromBackend() {
   if (!backend_.get())
     return;
   backend_->OnDeactivated(this);
-  backend_.reset();
 }
 
 void SimpleEntryImpl::MarkAsDoomed() {
   if (!backend_.get())
     return;
+  doomed_ = true;
   backend_->index()->Remove(entry_hash_);
   RemoveSelfFromBackend();
 }
@@ -781,7 +782,7 @@ void SimpleEntryImpl::ReadDataInternal(int stream_index,
   buf_len = std::min(buf_len, GetDataSize(stream_index) - offset);
 
   state_ = STATE_IO_PENDING;
-  if (backend_.get())
+  if (!doomed_ && backend_.get())
     backend_->index()->UseIfExists(entry_hash_);
 
   scoped_ptr<uint32> read_crc32(new uint32());
@@ -841,7 +842,7 @@ void SimpleEntryImpl::WriteDataInternal(int stream_index,
 
   DCHECK_EQ(STATE_READY, state_);
   state_ = STATE_IO_PENDING;
-  if (backend_.get())
+  if (!doomed_ && backend_.get())
     backend_->index()->UseIfExists(entry_hash_);
   // It is easy to incrementally compute the CRC from [0 .. |offset + buf_len|)
   // if |offset == 0| or we have already computed the CRC for [0 .. offset).
@@ -893,6 +894,8 @@ void SimpleEntryImpl::WriteDataInternal(int stream_index,
 }
 
 void SimpleEntryImpl::DoomEntryInternal(const CompletionCallback& callback) {
+  if (backend_)
+    backend_->OnDoomStart(entry_hash_);
   PostTaskAndReplyWithResult(
       worker_pool_, FROM_HERE,
       base::Bind(&SimpleSynchronousEntry::DoomEntry, path_, key_, entry_hash_),
@@ -1073,13 +1076,16 @@ void SimpleEntryImpl::WriteOperationComplete(
       stream_index, completion_callback, *entry_stat, result.Pass());
 }
 
-void SimpleEntryImpl::DoomOperationComplete(const CompletionCallback& callback,
-                                            State state_to_restore,
-                                            int result) {
+void SimpleEntryImpl::DoomOperationComplete(
+    const CompletionCallback& callback,
+    State state_to_restore,
+    int result) {
   state_ = state_to_restore;
   if (!callback.is_null())
     callback.Run(result);
   RunNextOperationIfNeeded();
+  if (backend_)
+    backend_->OnDoomComplete(entry_hash_);
 }
 
 void SimpleEntryImpl::ChecksumOperationComplete(
@@ -1141,7 +1147,7 @@ void SimpleEntryImpl::UpdateDataFromEntryStat(
   for (int i = 0; i < kSimpleEntryFileCount; ++i) {
     data_size_[i] = entry_stat.data_size[i];
   }
-  if (backend_.get())
+  if (!doomed_ && backend_.get())
     backend_->index()->UpdateEntrySize(entry_hash_, GetDiskUsage());
 }
 
