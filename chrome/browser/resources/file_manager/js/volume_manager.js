@@ -72,6 +72,37 @@ volumeManagerUtil.validateMountPath = function(mountPath) {
 };
 
 /**
+ * Returns the root entry of a volume mounted at mountPath.
+ *
+ * @param {string} mountPath The mounted path of the volume.
+ * @param {function(DirectoryEntry)} successCallback Called when the root entry
+ *     is found.
+ * @param {function(FileError)} errorCallback Called when an error is found.
+ * @private
+ */
+volumeManagerUtil.getRootEntry_ = function(
+    mountPath, successCallback, errorCallback) {
+  // We always request FileSystem here, because requestFileSystem() grants
+  // permissions if necessary, especially for Drive File System at first mount
+  // time.
+  // Note that we actually need to request FileSystem after multi file system
+  // support, so this will be more natural code then.
+  chrome.fileBrowserPrivate.requestFileSystem(
+      'compatible',
+      function(fileSystem) {
+        // TODO(hidehiko): chrome.runtime.lastError should have error reason.
+        if (!fileSystem) {
+          errorCallback(util.createFileError(FileError.NOT_FOUND_ERR));
+          return;
+        }
+
+        fileSystem.root.getDirectory(
+            mountPath.substring(1),  // Strip leading '/'.
+            {create: false}, successCallback, errorCallback);
+      });
+};
+
+/**
  * Builds the VolumeInfo data for mountPath.
  * @param {string} mountPath Path to the volume.
  * @param {VolumeManager.Error} error The error string if available.
@@ -92,6 +123,8 @@ volumeManagerUtil.createVolumeInfo = function(mountPath, error, callback) {
         if (chrome.runtime.lastError && !error)
           error = VolumeManager.Error.UNKNOWN;
 
+        // TODO(hidehiko): These values should be merged into the result of
+        // onMountCompleted's event object. crbug.com/284975.
         var deviceType = null;
         var isReadOnly = false;
         if (metadata) {
@@ -99,20 +132,35 @@ volumeManagerUtil.createVolumeInfo = function(mountPath, error, callback) {
           isReadOnly = metadata.isReadOnly;
         }
 
-        // TODO(hidehiko): After multi-filesystem is supported,
-        // FileSystem object holds its root entry. So, we won't need this
-        // resolving.
-        webkitResolveLocalFileSystemURL(
-            util.makeFilesystemUrl(mountPath),
+        volumeManagerUtil.getRootEntry_(
+            mountPath,
             function(entry) {
+              if (mountPath == RootDirectory.DRIVE) {
+                // After file system is mounted, we "read" drive grand root
+                // entry at first. This triggers full feed fetch on background.
+                // Note: we don't need to handle errors here, because even if
+                // it fails, accessing to some path later will just become
+                // a fast-fetch and it re-triggers full-feed fetch.
+                entry.createReader().readEntries(
+                    function() { /* do nothing */ },
+                    function(error) {
+                      console.error(
+                          'Triggering full feed fetch is failed: ' +
+                              util.getFileErrorMnemonic(error.code));
+                    });
+              }
               callback(new VolumeInfo(
                   mountPath, entry, error, deviceType, isReadOnly));
             },
-            function(error) {
+            function(fileError) {
+              console.error('Root entry is not found: ' +
+                  mountPath + ', ' + util.getFileErrorMnemonic(fileError.code));
+              if (!error)
+                error = VolumeManager.Error.UNKNOWN;
               callback(new VolumeInfo(
                   mountPath, null, error, deviceType, isReadOnly));
             });
-      });
+    });
 };
 
 /**
@@ -256,19 +304,10 @@ VolumeInfoList.prototype.item = function(index) {
 /**
  * VolumeManager is responsible for tracking list of mounted volumes.
  *
- * @param {Entry} root The root of file system.
  * @constructor
  * @extends {cr.EventTarget}
  */
-function VolumeManager(root) {
-  /**
-   * Root enty of the whole file system.
-   * TODO(hidehiko): Remove this when multi-file system is supported.
-   * @type {Entry}
-   * @private
-   */
-  this.root_ = root;
-
+function VolumeManager() {
   /**
    * The list of archives requested to mount. We will show contents once
    * archive is mounted, but only for mounts from within this filebrowser tab.
@@ -413,34 +452,14 @@ VolumeManager.MOUNTING_DELAY = 500;
 VolumeManager.instance_ = null;
 
 /**
- * The queue of pending getInstance invocations.
- * @type {AsyncUtil.Queue}
- * @private
- */
-VolumeManager.getInstanceQueue_ = new AsyncUtil.Queue();
-
-/**
  * @param {function(VolumeManager)} callback Callback to obtain VolumeManager
  *     instance.
  */
 VolumeManager.getInstance = function(callback) {
-  VolumeManager.getInstanceQueue_.run(function(completionCallback) {
-    if (VolumeManager.instance_) {
-      callback(VolumeManager.instance_);
-      completionCallback();
-      return;
-    }
-
-    chrome.fileBrowserPrivate.requestFileSystem(
-      'compatible',
-      function(filesystem) {
-        VolumeManager.instance_ = new VolumeManager(filesystem.root);
-        callback(VolumeManager.instance_);
-        completionCallback();
-      });
-  });
+  if (!VolumeManager.instance_)
+    VolumeManager.instance_ = new VolumeManager();
+  callback(VolumeManager.instance_);
 };
-
 
 /**
  * Enables/disables Drive file system. Dispatches
@@ -449,7 +468,6 @@ VolumeManager.getInstance = function(callback) {
  * @param {boolean} enabled True if Drive file system is enabled.
  */
 VolumeManager.prototype.setDriveEnabled = function(enabled) {
-  console.error('VolumeManager: setDriveEnabled: ' + enabled);
   if (this.driveEnabled == enabled)
     return;
   this.driveEnabled = enabled;
@@ -526,6 +544,13 @@ VolumeManager.prototype.initMountPoints_ = function() {
             '/' + mountPoint.mountPath, error,
             function(volumeInfo) {
               this.volumeInfoList.add(volumeInfo);
+              if (mountPoint.volumeType == 'drive') {
+                // Set Drive status here.
+                this.setDriveStatus_(
+                    volumeInfo.error ? VolumeManager.DriveStatus.ERROR :
+                                       VolumeManager.DriveStatus.MOUNTED);
+                this.onDriveConnectionStatusChanged_();
+              }
               callback();
             }.bind(this));
       }.bind(this, mountPoint, error));
@@ -566,15 +591,43 @@ VolumeManager.prototype.onMountCompleted_ = function(event) {
       var requestKey = this.makeRequestKey_(
           'mount', event.volumeType, event.sourcePath);
       var error = event.status == 'success' ? '' : event.status;
+
+      var timeout = null;
+      if (event.volumeType == 'drive') {
+        timeout = setTimeout(function() {
+          if (this.getDriveStatus() == VolumeManager.DriveStatus.UNMOUNTED)
+            this.setDriveStatus_(VolumeManager.DriveStatus.MOUNTING);
+          timeout = null;
+        }.bind(this), VolumeManager.MOUNTING_DELAY);
+      }
+
       volumeManagerUtil.createVolumeInfo(
           event.mountPath, error, function(volume) {
             this.volumeInfoList.add(volume);
             this.finishRequest_(requestKey, event.status, event.mountPath);
             cr.dispatchSimpleEvent(this, 'change');
+
+            // For mounting Drive File System, we need to update some
+            // VolumeManager's state.
+            if (event.volumeType == 'drive') {
+              if (timeout != null)
+                clearTimeout(timeout);
+              // Set Drive status here.
+              this.setDriveStatus_(
+                  volume.error ? VolumeManager.DriveStatus.ERROR :
+                                 VolumeManager.DriveStatus.MOUNTED);
+              // Also update the network connection status, because until the
+              // drive is initialized, the status is set to not ready.
+              // TODO(hidehiko): The connection status should be migrated into
+              // VolumeMetadata.
+              this.onDriveConnectionStatusChanged_();
+            }
           }.bind(this));
     } else {
       console.warn('No mount path.');
       this.finishRequest_(requestKey, event.status);
+      if (event.volumeType == 'drive')
+        this.setDriveStatus_(VolumeManager.DriveStatus.ERROR);
     }
   } else if (event.eventType == 'unmount') {
     var mountPath = event.mountPath;
@@ -598,62 +651,14 @@ VolumeManager.prototype.onMountCompleted_ = function(event) {
     if (event.status == 'success') {
       this.volumeInfoList.remove(mountPath);
       cr.dispatchSimpleEvent(this, 'change');
-    }
-  }
 
-  if (event.volumeType == 'drive') {
-    if (event.status == 'success') {
-      if (event.eventType == 'mount') {
-        // If the mount is not requested, the mount status will not be changed
-        // at mountDrive(). Sets it here in such a case.
-        var self = this;
-        var timeout = setTimeout(function() {
-          if (self.getDriveStatus() == VolumeManager.DriveStatus.UNMOUNTED)
-            self.setDriveStatus_(VolumeManager.DriveStatus.MOUNTING);
-          timeout = null;
-        }, VolumeManager.MOUNTING_DELAY);
-
-        this.waitDriveLoaded_(event.mountPath, function(success) {
-          if (timeout != null)
-            clearTimeout(timeout);
-          this.setDriveStatus_(success ? VolumeManager.DriveStatus.MOUNTED :
-                                         VolumeManager.DriveStatus.ERROR);
-        }.bind(this));
-      } else if (event.eventType == 'unmount') {
+      if (event.volumeType == 'drive')
         this.setDriveStatus_(VolumeManager.DriveStatus.UNMOUNTED);
-      }
     } else {
-      this.setDriveStatus_(VolumeManager.DriveStatus.ERROR);
+      if (event.volumeType == 'drive')
+        this.setDriveStatus_(VolumeManager.DriveStatus.ERROR);
     }
   }
-};
-
-/**
- * First access to Drive takes time (to fetch data from the cloud).
- * We want to change state to MOUNTED (likely from MOUNTING) when the
- * drive ready to operate.
- *
- * @param {string} mountPath Drive mount path.
- * @param {function(boolean, FileError=)} callback To be called when waiting
- *     finishes. If the case of error, there may be a FileError parameter.
- * @private
- */
-VolumeManager.prototype.waitDriveLoaded_ = function(mountPath, callback) {
-  this.root_.getDirectory(
-      mountPath, {},
-      function(entry) {
-        // After file system is mounted, we need to "read" drive grand root
-        // entry at first. It loads mydrive root entry as a part of
-        // 'fast-fetch' quickly, and starts full feed fetch in parallel.
-        // Without this read, accessing mydrive root will be 'full-fetch'
-        // rather than 'fast-fetch' on the current architecture.
-        // Just "getting" the grand root entry doesn't trigger it. Rather,
-        // it starts when the entry is "read".
-        entry.createReader().readEntries(
-            callback.bind(null, true),
-            callback.bind(null, false));
-      },
-      callback.bind(null, false));
 };
 
 /**
@@ -682,19 +687,14 @@ VolumeManager.prototype.mountDrive = function(successCallback, errorCallback) {
   }
   this.setDriveStatus_(VolumeManager.DriveStatus.MOUNTING);
   var self = this;
-  this.mount_('', 'drive', function(mountPath) {
-    this.waitDriveLoaded_(mountPath, function(success, error) {
-      if (success) {
-        successCallback(mountPath);
-      } else {
+  this.mount_(
+      '', 'drive',
+      successCallback,
+      function(error) {
+        if (self.getDriveStatus() != VolumeManager.DriveStatus.MOUNTED)
+          self.setDriveStatus_(VolumeManager.DriveStatus.ERROR);
         errorCallback(error);
-      }
-    });
-  }, function(error) {
-    if (self.getDriveStatus() != VolumeManager.DriveStatus.MOUNTED)
-      self.setDriveStatus_(VolumeManager.DriveStatus.ERROR);
-    errorCallback(error);
-  });
+      });
 };
 
 /**
