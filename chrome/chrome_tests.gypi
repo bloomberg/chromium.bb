@@ -2885,9 +2885,6 @@
         {
           'target_name': 'perf_tests',
           'type': 'executable',
-          'include_dirs': [
-            '<(SHARED_INTERMEDIATE_DIR)',  # Needed by key_systems.cc.
-          ],
           'dependencies': [
             'browser',
             'chrome_resources.gyp:chrome_resources',
@@ -2902,7 +2899,6 @@
             '../skia/skia.gyp:skia',
             '../testing/gtest.gyp:gtest',
             '../webkit/support/webkit_support.gyp:glue',
-            '../third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
           ],
           'sources': [
             'test/perf/perftests.cc',
