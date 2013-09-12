@@ -415,8 +415,8 @@ base::Value* V8ValueConverterImpl::FromV8Object(
     v8::Handle<v8::Value> child_v8 = val->Get(key);
 
     if (try_catch.HasCaught()) {
-      LOG(ERROR) << "Getter for property " << *name_utf8
-                 << " threw an exception.";
+      LOG(WARNING) << "Getter for property " << *name_utf8
+                   << " threw an exception.";
       child_v8 = v8::Null();
     }
 
