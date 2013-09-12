@@ -273,6 +273,13 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemOperationRunner
       const base::FilePath& platform_path,
       const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref);
 
+  void OnCopyProgress(
+      const OperationHandle& handle,
+      const CopyProgressCallback& callback,
+      FileSystemOperation::CopyProgressType type,
+      const FileSystemURL& url,
+      int64 size);
+
   void PrepareForWrite(OperationID id, const FileSystemURL& url);
   void PrepareForRead(OperationID id, const FileSystemURL& url);
 
