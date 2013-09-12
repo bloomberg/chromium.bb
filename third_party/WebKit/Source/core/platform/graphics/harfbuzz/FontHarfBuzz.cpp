@@ -140,12 +140,6 @@ void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
     }
 }
 
-static void setupForTextPainting(SkPaint* paint, SkColor color)
-{
-    paint->setTextEncoding(SkPaint::kGlyphID_TextEncoding);
-    paint->setColor(color);
-}
-
 void Font::drawComplexText(GraphicsContext* gc, const TextRunPaintInfo& runInfo, const FloatPoint& point) const
 {
     if (!runInfo.run.length())
@@ -159,16 +153,6 @@ void Font::drawComplexText(GraphicsContext* gc, const TextRunPaintInfo& runInfo,
 
     if (!fill && !stroke)
         return;
-
-    SkPaint strokePaint, fillPaint;
-    if (fill) {
-        gc->setupPaintForFilling(&fillPaint);
-        setupForTextPainting(&fillPaint, gc->fillColor().rgb());
-    }
-    if (stroke) {
-        gc->setupPaintForStroking(&strokePaint);
-        setupForTextPainting(&strokePaint, gc->strokeColor().rgb());
-    }
 
     GlyphBuffer glyphBuffer;
     HarfBuzzShaper shaper(this, runInfo.run);
