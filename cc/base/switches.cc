@@ -14,6 +14,9 @@ namespace switches {
 const char kBackgroundColorInsteadOfCheckerboard[] =
     "background-color-instead-of-checkerboard";
 
+// Disables LCD text.
+const char kDisableLCDText[] = "disable-lcd-text";
+
 const char kDisableThreadedAnimation[] = "disable-threaded-animation";
 
 // Disables layer-edge anti-aliasing in the compositor.
@@ -23,6 +26,9 @@ const char kDisableCompositedAntialiasing[] =
 // Paint content on the main thread instead of the compositor thread.
 // Overrides the kEnableImplSidePainting flag.
 const char kDisableImplSidePainting[] = "disable-impl-side-painting";
+
+// Enables LCD text.
+const char kEnableLCDText[] = "enable-lcd-text";
 
 // Paint content on the compositor thread instead of the main thread.
 const char kEnableImplSidePainting[] = "enable-impl-side-painting";
@@ -134,6 +140,20 @@ const char kDisableMapImage[] = "disable-map-image";
 
 // Prevents the layer tree unit tests from timing out.
 const char kCCLayerTreeTestNoTimeout[] = "cc-layer-tree-test-no-timeout";
+
+bool IsLCDTextEnabled() {
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(cc::switches::kDisableLCDText))
+    return false;
+  else if (command_line->HasSwitch(cc::switches::kEnableLCDText))
+    return true;
+
+#if defined(OS_ANDROID)
+  return false;
+#else
+  return true;
+#endif
+}
 
 bool IsImplSidePaintingEnabled() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();

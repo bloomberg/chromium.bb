@@ -178,6 +178,7 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
       cmd->HasSwitch(cc::switches::kBackgroundColorInsteadOfCheckerboard);
   settings.show_overdraw_in_tracing =
       cmd->HasSwitch(cc::switches::kTraceOverdraw);
+  settings.can_use_lcd_text = cc::switches::IsLCDTextEnabled();
   settings.use_pinch_virtual_viewport =
       cmd->HasSwitch(cc::switches::kEnablePinchVirtualViewport);
   settings.allow_antialiasing &=
@@ -264,7 +265,6 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
 
 #if defined(OS_ANDROID)
   // TODO(danakj): Move these to the android code.
-  settings.can_use_lcd_text = false;
   settings.max_partial_texture_updates = 0;
   settings.scrollbar_animator = cc::LayerTreeSettings::LinearFade;
   settings.solid_color_scrollbars = true;
