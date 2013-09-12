@@ -40,10 +40,10 @@
       'filepath': 'Source/core/dom/'
     },
     'events': {
-      'filepath': '|Source/core/page/*Event*.*' \
-                  '|Source/core/dom/*Event.*' \
-                  '|Source/core/css/*Event.*' \
-                  '|Source/core/platform/*Event*.*'
+      'filepath': 'Source/core/page/.*Event.*' \
+                  '|Source/core/dom/.*Event.*' \
+                  '|Source/core/css/.*Event.*' \
+                  '|Source/core/platform/.*Event.*'
     },
     'html': {
       'filepath': 'Source/core/html/'
