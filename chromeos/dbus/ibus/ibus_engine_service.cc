@@ -35,15 +35,6 @@ class IBusEngineServiceDaemonlessImpl : public IBusEngineService {
   }
 
   // IBusEngineService override.
-  virtual void RegisterProperties(
-      const IBusPropertyList& property_list) OVERRIDE {
-    IBusPanelPropertyHandlerInterface* property =
-        IBusBridge::Get()->GetPropertyHandler();
-    if (property)
-      property->RegisterProperties(property_list);
-  }
-
-  // IBusEngineService override.
   virtual void UpdatePreedit(const IBusText& ibus_text,
                              uint32 cursor_pos,
                              bool is_visible,

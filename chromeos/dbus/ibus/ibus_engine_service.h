@@ -44,9 +44,6 @@ class CHROMEOS_EXPORT IBusEngineService {
   // handler.
   virtual void UnsetEngine(IBusEngineHandlerInterface* handler) = 0;
 
-  // Emits RegisterProperties signal.
-  virtual void RegisterProperties(
-      const IBusPropertyList& property_list) = 0;
   // Emits UpdatePreedit signal.
   virtual void UpdatePreedit(const IBusText& ibus_text,
                              uint32 cursor_pos,

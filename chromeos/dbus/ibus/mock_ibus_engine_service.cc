@@ -37,16 +37,6 @@ void MockIBusEngineService::UnsetEngine(IBusEngineHandlerInterface* handler) {
   current_engine_ = NULL;
 }
 
-void MockIBusEngineService::RegisterProperties(
-      const IBusPropertyList& property_list) {
-  ++register_properties_call_count_;
-  last_registered_properties_->resize(property_list.size());
-  for (size_t i = 0; i < property_list.size(); ++i) {
-    (*last_registered_properties_)[i] = new IBusProperty();
-    (*last_registered_properties_)[i]->CopyFrom(*property_list[i]);
-  }
-}
-
 void MockIBusEngineService::UpdatePreedit(const IBusText& ibus_text,
                                           uint32 cursor_pos,
                                           bool is_visible,

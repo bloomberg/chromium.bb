@@ -359,7 +359,12 @@ bool InputMethodEngineIBus::SetMenuItems(const std::vector<MenuItem>& items) {
     }
     properties.push_back(property);
   }
-  GetCurrentService()->RegisterProperties(properties);
+
+  IBusPanelPropertyHandlerInterface* handler =
+      IBusBridge::Get()->GetPropertyHandler();
+  if (handler)
+    handler->RegisterProperties(properties);
+
   return true;
 }
 
@@ -379,7 +384,12 @@ bool InputMethodEngineIBus::UpdateMenuItems(
     }
     properties.push_back(property);
   }
-  GetCurrentService()->RegisterProperties(properties);
+
+  IBusPanelPropertyHandlerInterface* handler =
+      IBusBridge::Get()->GetPropertyHandler();
+  if (handler)
+    handler->RegisterProperties(properties);
+
   return true;
 }
 
