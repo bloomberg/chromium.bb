@@ -3,21 +3,30 @@ Series of tests to ensure correct behaviour of canvas.setTransform()
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
+Reset the CTM to the initial matrix
 PASS imgdata[4] is 0
 PASS imgdata[5] is 128
 PASS imgdata[6] is 0
+setTransform should not affect the current path
 PASS imgdata[4] is 0
 PASS imgdata[5] is 128
 PASS imgdata[6] is 0
+setTransform should not affect the CTM outside of save() and restore()
 PASS imgdata[4] is 0
 PASS imgdata[5] is 128
 PASS imgdata[6] is 0
+stop drawing on not-invertible CTM
 PASS imgdata[4] is 0
 PASS imgdata[5] is 128
 PASS imgdata[6] is 0
+setTransform with a not-invertible matrix should only stop the drawing up to the next restore()
 PASS imgdata[4] is 0
-PASS imgdata[5] is 128
-PASS imgdata[6] is 0
+PASS imgdata[5] is 0
+PASS imgdata[6] is 255
+setTransform should set transform although CTM is not-invertible
+PASS imgdata[4] is 0
+PASS imgdata[5] is 0
+PASS imgdata[6] is 255
 PASS successfullyParsed is true
 
 TEST COMPLETE

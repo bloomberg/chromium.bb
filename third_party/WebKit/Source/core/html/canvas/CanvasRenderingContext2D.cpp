@@ -742,17 +742,7 @@ void CanvasRenderingContext2D::setTransform(float m11, float m12, float m21, flo
     if (!std::isfinite(m11) | !std::isfinite(m21) | !std::isfinite(dx) | !std::isfinite(m12) | !std::isfinite(m22) | !std::isfinite(dy))
         return;
 
-    AffineTransform ctm = state().m_transform;
-    if (!ctm.isInvertible())
-        return;
-
-    realizeSaves();
-
-    c->setCTM(canvas()->baseTransform());
-    modifiableState().m_transform = AffineTransform();
-    m_path.transform(ctm);
-
-    modifiableState().m_invertibleCTM = true;
+    resetTransform();
     transform(m11, m12, m21, m22, dx, dy);
 }
 
