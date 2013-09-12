@@ -1233,6 +1233,12 @@ internal_paladin.add_config('fox-wtm2-paladin',
   vm_tests=None,
 )
 
+internal_paladin.add_config('leon-paladin',
+  boards=['leon'],
+  paladin_builder_name='leon paladin',
+  important=False,
+)
+
 internal_paladin.add_config('link-paladin',
   boards=['link'],
   paladin_builder_name='link paladin',
@@ -1500,6 +1506,13 @@ _release.add_config('fox-wtm2-release',
   hw_tests=[],
 )
 
+_release.add_config('leon-release',
+  boards=['leon'],
+  hw_tests=[],
+  vm_tests=None,
+  important=False,
+)
+
 _release.add_config('link-release',
   boards=['link'],
   useflags=_release['useflags'] + ['highdpi'],
@@ -1626,6 +1639,7 @@ _x86_firmware_boards = (
   'bayleybay',
   'butterfly',
   'falco',
+  'leon',
   'link',
   'lumpy',
   'parrot',
@@ -1641,6 +1655,7 @@ _x86_firmware_boards = (
 
 _x86_depthcharge_firmware_boards = (
   'bayleybay',
+  'leon',
   'link',
   'samus',
 )
