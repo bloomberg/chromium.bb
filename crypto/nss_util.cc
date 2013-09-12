@@ -89,15 +89,17 @@ base::FilePath GetDefaultConfigDirectory() {
   return dir;
 }
 
-// On non-chromeos platforms, return the default config directory.
-// On chromeos, return a read-only directory with fake root CA certs for testing
-// (which will not exist on non-testing images).  These root CA certs are used
-// by the local Google Accounts server mock we use when testing our login code.
-// If this directory is not present, NSS_Init() will fail.  It is up to the
-// caller to failover to NSS_NoDB_Init() at that point.
+// On non-Chrome OS platforms, return the default config directory. On Chrome OS
+// test images, return a read-only directory with fake root CA certs (which are
+// used by the local Google Accounts server mock we use when testing our login
+// code). On Chrome OS non-test images (where the read-only directory doesn't
+// exist), return an empty path.
 base::FilePath GetInitialConfigDirectory() {
 #if defined(OS_CHROMEOS)
-  return base::FilePath(kReadOnlyCertDB);
+  base::FilePath database_dir = base::FilePath(kReadOnlyCertDB);
+  if (!base::PathExists(database_dir))
+    database_dir.clear();
+  return database_dir;
 #else
   return GetDefaultConfigDirectory();
 #endif  // defined(OS_CHROMEOS)
