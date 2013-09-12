@@ -180,13 +180,6 @@ input {
   margin: 0;
 }
 
-<if expr="is_ios">
-/* Add extra spacing caused by the missing search bar on iOS. */
-h3:first-of-type {
-  margin-top: 16px;
-}
-</if>
-
 /* Fade out the entry-box, rather than its parent node, so that the dividing
    line between entries doesn't fade out. */
 .entry.fade-out .entry-box {
@@ -298,3 +291,25 @@ h1,
 }
 
 } /* @media only screen and (max-width:720px) */
+
+<if expr="is_ios">
+/* Ensure that the Clear Browsing Data button is hidden when the keyboard is
+   visible. The cutoff values are chosen to be compatible with all known device
+   aspect ratios. */
+
+#clear-browsing-data {
+  display: none;
+}
+
+@media only screen and (orientation: portrait) and (max-aspect-ratio: 1/1) {
+#clear-browsing-data {
+  display: block;
+}
+}
+
+@media only screen and (orientation: landscape) and (max-aspect-ratio: 5/2) {
+#clear-browsing-data {
+  display: block;
+}
+}
+</if> /* is_ios */
