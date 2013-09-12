@@ -329,8 +329,16 @@ void UserManagerImpl::UserLoggedIn(const std::string& email,
   if (!CommandLine::ForCurrentProcess()->HasSwitch(::switches::kMultiProfiles))
     DCHECK(!IsUserLoggedIn());
 
-  if (active_user_)
-    active_user_->set_is_active(false);
+  User* user = FindUserInListAndModify(email);
+  if (active_user_ && user) {
+    user->set_is_logged_in(true);
+    user->set_username_hash(username_hash);
+    logged_in_users_.push_back(user);
+    lru_logged_in_users_.push_back(user);
+    // Set active user wallpaper back.
+    WallpaperManager::Get()->SetUserWallpaper(active_user_->email());
+    return;
+  }
 
   if (email == UserManager::kGuestUserName) {
     GuestUserLoggedIn();
@@ -341,7 +349,6 @@ void UserManagerImpl::UserLoggedIn(const std::string& email,
   } else {
     EnsureUsersLoaded();
 
-    User* user = FindUserInListAndModify(email);
     if (user && user->GetType() == User::USER_TYPE_PUBLIC_ACCOUNT) {
       PublicAccountUserLoggedIn(user);
     } else if ((user && user->GetType() == User::USER_TYPE_LOCALLY_MANAGED) ||
@@ -1326,9 +1333,13 @@ void UserManagerImpl::NotifyOnLogin() {
       content::Source<UserManager>(this),
       content::Details<const User>(active_user_));
 
-  // Indicate to DeviceSettingsService that the owner key may have become
-  // available.
-  DeviceSettingsService::Get()->SetUsername(active_user_->email());
+  // Owner must be first user in session. DeviceSettingsService can't deal with
+  // multiple user and will mix up ownership, crbug.com/230018.
+  if (GetLoggedInUsers().size() == 1) {
+    // Indicate to DeviceSettingsService that the owner key may have become
+    // available.
+    DeviceSettingsService::Get()->SetUsername(active_user_->email());
+  }
 }
 
 void UserManagerImpl::UpdateOwnership() {

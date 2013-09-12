@@ -99,7 +99,7 @@ IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, AddingSeveralUsers) {
     UserAddingScreen::Get()->Start();
     content::RunAllPendingInMessageLoop();
     EXPECT_EQ(user_adding_started(), i);
-    LoginUser(kTestUsers[i]);
+    AddUser(kTestUsers[i]);
     EXPECT_EQ(user_adding_finished(), i);
     EXPECT_TRUE(LoginDisplayHostImpl::default_host() == NULL);
     EXPECT_EQ(UserManager::Get()->GetLoggedInUsers().size(), unsigned(i + 1));

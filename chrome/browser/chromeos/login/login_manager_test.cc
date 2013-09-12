@@ -67,6 +67,15 @@ void LoginManagerTest::SetExpectedCredentials(const std::string& username,
 
 bool LoginManagerTest::TryToLogin(const std::string& username,
                                   const std::string& password) {
+  if (!AddUserTosession(username, password))
+    return false;
+  if (const User* active_user = UserManager::Get()->GetActiveUser())
+    return active_user->email() == username;
+  return false;
+}
+
+bool LoginManagerTest::AddUserTosession(const std::string& username,
+                                        const std::string& password) {
   ExistingUserController* controller =
       ExistingUserController::current_controller();
   EXPECT_TRUE(controller != NULL);
@@ -74,14 +83,23 @@ bool LoginManagerTest::TryToLogin(const std::string& username,
   content::WindowedNotificationObserver(
       chrome::NOTIFICATION_SESSION_STARTED,
       content::NotificationService::AllSources()).Wait();
-  if (const User* active_user = UserManager::Get()->GetActiveUser())
-    return active_user->email() == username;
+  const UserList& logged_users = UserManager::Get()->GetLoggedInUsers();
+  for (UserList::const_iterator it = logged_users.begin();
+       it != logged_users.end(); ++it) {
+    if ((*it)->email() == username)
+      return true;
+  }
   return false;
 }
 
 void LoginManagerTest::LoginUser(const std::string& username) {
   SetExpectedCredentials(username, "password");
   EXPECT_TRUE(TryToLogin(username, "password"));
+}
+
+void LoginManagerTest::AddUser(const std::string& username) {
+  SetExpectedCredentials(username, "password");
+  EXPECT_TRUE(AddUserTosession(username, "password"));
 }
 
 void LoginManagerTest::JSExpect(const std::string& expression) {
