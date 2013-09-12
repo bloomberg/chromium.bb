@@ -380,10 +380,12 @@ drive::DriveIntegrationService*
 DriveInternalsWebUIHandler::GetIntegrationService() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // TODO(hidehiko): GetForProfile will return the instance always even if it
-  // is disabled. Needs to check the mounting state then. crbug.com/284972.
   Profile* profile = Profile::FromWebUI(web_ui());
-  return drive::DriveIntegrationServiceFactory::GetForProfile(profile);
+  drive::DriveIntegrationService* service =
+      drive::DriveIntegrationServiceFactory::FindForProfile(profile);
+  if (!service || !service->is_enabled())
+    return NULL;
+  return service;
 }
 
 drive::DriveServiceInterface* DriveInternalsWebUIHandler::GetDriveService() {

@@ -29,7 +29,7 @@ class DriveIntegrationServiceTest : public testing::Test {
 };
 
 TEST_F(DriveIntegrationServiceTest, InitializeAndShutdown) {
-  integration_service_->Initialize();
+  integration_service_->SetEnabled(true);
   test_util::RunBlockingPoolTask();
   integration_service_->Shutdown();
 }

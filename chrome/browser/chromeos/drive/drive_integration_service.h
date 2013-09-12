@@ -81,17 +81,13 @@ class DriveIntegrationService
       FileSystemInterface* test_file_system);
   virtual ~DriveIntegrationService();
 
-  // Initializes the object. This function should be called before any
-  // other functions.
-  void Initialize();
-
   // BrowserContextKeyedService override:
   virtual void Shutdown() OVERRIDE;
 
   void SetEnabled(bool enabled);
-
   bool is_enabled() const { return enabled_; }
-  bool is_mounted() const { return mounted_; }
+
+  bool IsMounted() const;
 
   // Adds and removes the observer.
   void AddObserver(DriveIntegrationServiceObserver* observer);
@@ -142,6 +138,10 @@ class DriveIntegrationService
   void AddBackDriveMountPoint(const base::Callback<void(bool)>& callback,
                               bool success);
 
+  // Initializes the object. This function should be called before any
+  // other functions.
+  void Initialize();
+
   // Called when metadata initialization is done. Continues initialization if
   // the metadata initialization is successful.
   void InitializeAfterMetadataInitialized(FileError error);
@@ -151,7 +151,6 @@ class DriveIntegrationService
   Profile* profile_;
   State state_;
   bool enabled_;
-  bool mounted_;
 
   base::FilePath cache_root_directory_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
@@ -187,27 +186,17 @@ class DriveIntegrationServiceFactory
 
   // Returns the DriveIntegrationService for |profile|, creating it if it is
   // not yet created.
-  //
-  // This function starts returning NULL if Drive is disabled, even if this
-  // function previously returns a non-NULL object. In other words, clients
-  // can assume that Drive is enabled if this function returns a non-NULL
-  // object.
   static DriveIntegrationService* GetForProfile(Profile* profile);
 
-  // Similar to GetForProfile(), but returns the instance regardless of if
-  // Drive is enabled/disabled.
+  // Same as GetForProfile. TODO(hidehiko): Remove this.
   static DriveIntegrationService* GetForProfileRegardlessOfStates(
       Profile* profile);
 
   // Returns the DriveIntegrationService that is already associated with
   // |profile|, if it is not yet created it will return NULL.
-  //
-  // This function starts returning NULL if Drive is disabled. See also the
-  // comment at GetForProfile().
   static DriveIntegrationService* FindForProfile(Profile* profile);
 
-  // Similar to FindForProfile(), but returns the instance regardless of if
-  // Drive is enabled/disabled.
+  // Same as FindForProfile. TODO(hidehiko): Remove this.
   static DriveIntegrationService* FindForProfileRegardlessOfStates(
       Profile* profile);
 

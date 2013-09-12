@@ -202,9 +202,12 @@ base::FilePath DownloadPrefs::DownloadPath() const {
   // If the download path is under /drive, and DriveIntegrationService isn't
   // available (which it isn't for incognito mode, for instance), use the
   // default download directory (/Downloads).
-  if (drive::util::IsUnderDriveMountPoint(*download_path_) &&
-      !drive::DriveIntegrationServiceFactory::GetForProfile(profile_))
-    return GetDefaultDownloadDirectory();
+  if (drive::util::IsUnderDriveMountPoint(*download_path_)) {
+    drive::DriveIntegrationService* integration_service =
+        drive::DriveIntegrationServiceFactory::FindForProfile(profile_);
+    if (!integration_service || !integration_service->is_enabled())
+      return GetDefaultDownloadDirectory();
+  }
 #endif
   return *download_path_;
 }

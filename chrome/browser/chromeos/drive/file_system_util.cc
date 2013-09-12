@@ -117,10 +117,11 @@ void MoveAllFilesFromDirectory(const base::FilePath& directory_from,
 // Returns DriveIntegrationService instance, if Drive is enabled.
 // Otherwise, NULL.
 DriveIntegrationService* GetIntegrationServiceByProfile(Profile* profile) {
-  // TODO(hidehiko): GetForProfile will return DriveIntegrationService
-  // regardless of mounting state. Needs to check the mounting state
-  // later. crbug.com/284972.
-  return DriveIntegrationServiceFactory::GetForProfile(profile);
+  DriveIntegrationService* service =
+      DriveIntegrationServiceFactory::FindForProfile(profile);
+  if (!service || !service->IsMounted())
+    return NULL;
+  return service;
 }
 
 }  // namespace

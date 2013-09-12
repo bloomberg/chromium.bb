@@ -63,13 +63,9 @@ void WaitUntilDriveMountPointIsAdded(Profile* profile) {
       drive::DriveIntegrationServiceFactory::FindForProfileRegardlessOfStates(
           profile);
   DCHECK(integration_service);
+  DCHECK(integration_service->is_enabled());
 
-  const std::string drive_mount_point_name =
-      drive::util::GetDriveMountPointPath().BaseName().AsUTF8Unsafe();
-  base::FilePath ignored;
-  // GetRegisteredPath succeeds iff the mount point exists.
-  if (content::BrowserContext::GetMountPoints(profile)->
-      GetRegisteredPath(drive_mount_point_name, &ignored))
+  if (integration_service->IsMounted())
     return;
 
   DriveMountPointWaiter mount_point_waiter(integration_service);

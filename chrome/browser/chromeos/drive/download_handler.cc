@@ -105,11 +105,11 @@ DownloadHandler::~DownloadHandler() {
 
 // static
 DownloadHandler* DownloadHandler::GetForProfile(Profile* profile) {
-  DriveIntegrationService* integration_service =
+  DriveIntegrationService* service =
       DriveIntegrationServiceFactory::FindForProfile(profile);
-  // TODO(hidehiko): FindForProfile will return the instance even if Drive is
-  // disabled. Needs to check the state. crbug.com/284972.
-  return integration_service ? integration_service->download_handler() : NULL;
+  if (!service || !service->IsMounted())
+    return NULL;
+  return service->download_handler();
 }
 
 void DownloadHandler::Initialize(

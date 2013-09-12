@@ -30,19 +30,19 @@ IN_PROC_BROWSER_TEST_F(DriveIntegrationServiceBrowserTest,
   browser()->profile()->GetPrefs()->SetBoolean(prefs::kDisableDrive, false);
 
   drive::DriveIntegrationService* integration_service =
-      drive::DriveIntegrationServiceFactory::GetForProfile(
+      drive::DriveIntegrationServiceFactory::FindForProfile(
           browser()->profile());
 
   EXPECT_TRUE(integration_service);
+  EXPECT_TRUE(integration_service->is_enabled());
 
   // ...next try to disable drive.
   browser()->profile()->GetPrefs()->SetBoolean(prefs::kDisableDrive, true);
 
-  integration_service =
-      drive::DriveIntegrationServiceFactory::GetForProfile(
-          browser()->profile());
-
-  EXPECT_FALSE(integration_service);
+  EXPECT_EQ(integration_service,
+            drive::DriveIntegrationServiceFactory::FindForProfile(
+                browser()->profile()));
+  EXPECT_FALSE(integration_service->is_enabled());
 }
 
 }  // namespace drive

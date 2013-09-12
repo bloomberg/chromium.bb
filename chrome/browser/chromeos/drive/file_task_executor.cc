@@ -96,14 +96,10 @@ void FileTaskExecutor::OnAppAuthorized(const std::string& resource_id,
                                        const GURL& open_link) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  // TODO(hidehiko): GetForProfile will return the instance always even if
-  // Drive is disabled. Need to check the mounting state then.
-  // crbug.com/284972
-  DriveIntegrationService* integration_service =
-      DriveIntegrationServiceFactory::GetForProfile(profile_);
-
-  if (!integration_service || error != google_apis::HTTP_SUCCESS ||
-      open_link.is_empty()) {
+  DriveIntegrationService* service =
+      DriveIntegrationServiceFactory::FindForProfile(profile_);
+  if (!service || !service->IsMounted() ||
+      error != google_apis::HTTP_SUCCESS || open_link.is_empty()) {
     Done(false);
     return;
   }

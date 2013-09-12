@@ -331,11 +331,8 @@ bool FileBrowserPrivateCancelFileTransfersFunction::RunImpl() {
     return false;
 
   drive::DriveIntegrationService* integration_service =
-      drive::DriveIntegrationServiceFactory::GetForProfile(profile_);
-  // |integration_service| is NULL if Drive is disabled.
-  // TODO(hidehiko): GetForProfile will return the instance regardless of
-  // preference. Will need to check the mounting state. crbug.com/284972.
-  if (!integration_service)
+      drive::DriveIntegrationServiceFactory::FindForProfile(profile_);
+  if (!integration_service || !integration_service->IsMounted())
     return false;
 
   // Create the mapping from file path to job ID.
@@ -566,10 +563,8 @@ FileBrowserPrivateClearDriveCacheFunction::
 
 bool FileBrowserPrivateClearDriveCacheFunction::RunImpl() {
   drive::DriveIntegrationService* integration_service =
-      drive::DriveIntegrationServiceFactory::GetForProfile(profile_);
-  // TODO(hidehiko): GetForProfile will return the instance even if it is
-  // disabled. Needs to check the mounting state. crbug.com/284972.
-  if (!integration_service || !integration_service->file_system())
+      drive::DriveIntegrationServiceFactory::FindForProfile(profile_);
+  if (!integration_service || !integration_service->IsMounted())
     return false;
 
   // TODO(yoshiki): Receive a callback from JS-side and pass it to
