@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/win/hwnd_util.h"
+#include "ui/gfx/win/hwnd_util.h"
 
 #include "base/i18n/rtl.h"
 #include "base/strings/string_util.h"
@@ -12,7 +12,7 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
-namespace ui {
+namespace gfx {
 
 namespace {
 
@@ -25,9 +25,9 @@ void AdjustWindowToFit(HWND hwnd, const RECT& bounds, bool fit_to_monitor) {
       MONITORINFO mi;
       mi.cbSize = sizeof(mi);
       base::win::GetMonitorInfoWrapper(hmon, &mi);
-      gfx::Rect window_rect(bounds);
-      gfx::Rect monitor_rect(mi.rcWork);
-      gfx::Rect new_window_rect = window_rect;
+      Rect window_rect(bounds);
+      Rect monitor_rect(mi.rcWork);
+      Rect new_window_rect = window_rect;
       new_window_rect.AdjustToFit(monitor_rect);
       if (new_window_rect != window_rect) {
         // Window doesn't fit on monitor, move and possibly resize.
@@ -115,7 +115,7 @@ bool DoesWindowBelongToActiveWindow(HWND window) {
 
 void CenterAndSizeWindow(HWND parent,
                          HWND window,
-                         const gfx::Size& pref) {
+                         const Size& pref) {
   DCHECK(window && pref.width() > 0 && pref.height() > 0);
 
   // Calculate the ideal bounds.
@@ -177,13 +177,13 @@ void CheckWindowCreated(HWND hwnd) {
 void ShowSystemMenu(HWND window) {
   RECT rect;
   GetWindowRect(window, &rect);
-  gfx::Point point = gfx::Point(rect.left, rect.top);
+  Point point = Point(rect.left, rect.top);
   static const int kSystemMenuOffset = 10;
   point.Offset(kSystemMenuOffset, kSystemMenuOffset);
   ShowSystemMenuAtPoint(window, point);
 }
 
-void ShowSystemMenuAtPoint(HWND window, const gfx::Point& point) {
+void ShowSystemMenuAtPoint(HWND window, const Point& point) {
   // In the Metro process, we never want to show the system menu.
   if (base::win::IsMetroProcess())
     return;
@@ -211,4 +211,4 @@ HWND GetWindowToParentTo(bool get_real_hwnd) {
   return root_window();
 }
 
-}  // namespace ui
+}  // namespace gfx

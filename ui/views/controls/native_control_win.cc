@@ -10,7 +10,7 @@
 #include "ui/base/accessibility/accessibility_types.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/base/view_prop.h"
-#include "ui/base/win/hwnd_util.h"
+#include "ui/gfx/win/hwnd_util.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/widget/widget.h"
@@ -139,7 +139,7 @@ void NativeControlWin::NativeControlCreated(HWND native_control) {
   props_.push_back(ChildWindowMessageProcessor::Register(native_control, this));
 
   // Subclass so we get WM_KEYDOWN and WM_SETFOCUS messages.
-  original_wndproc_ = ui::SetWindowProc(
+  original_wndproc_ = gfx::SetWindowProc(
       native_control, &NativeControlWin::NativeControlWndProc);
 
   Attach(native_control);
@@ -216,7 +216,7 @@ LRESULT NativeControlWin::NativeControlWndProc(HWND window,
     }
   } else if (message == WM_DESTROY) {
     native_control->props_.clear();
-    ui::SetWindowProc(window, native_control->original_wndproc_);
+    gfx::SetWindowProc(window, native_control->original_wndproc_);
   }
 
   return CallWindowProc(native_control->original_wndproc_, window, message,

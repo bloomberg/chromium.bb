@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/text/utf16_indexing.h"
+#include "ui/gfx/utf16_indexing.h"
 
-namespace ui {
+namespace gfx {
 
 TEST(UTF16IndexingTest, IndexOffsetConversions) {
   // Valid surrogate pair surrounded by unpaired surrogates
@@ -29,4 +29,4 @@ TEST(UTF16IndexingTest, IndexOffsetConversions) {
   }
 }
 
-}  // namespace ui
+}  // namespace gfx

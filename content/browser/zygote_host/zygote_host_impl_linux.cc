@@ -37,6 +37,7 @@
 #include "sandbox/linux/suid/client/setuid_sandbox_client.h"
 #include "sandbox/linux/suid/common/sandbox.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/gfx/switches.h"
 
 #if defined(USE_TCMALLOC)
 #include "third_party/tcmalloc/chromium/src/gperftools/heap-profiler.h"

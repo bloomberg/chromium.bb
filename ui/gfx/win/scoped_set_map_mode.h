@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_WIN_SCOPED_SET_MAP_MODE_H_
-#define UI_BASE_WIN_SCOPED_SET_MAP_MODE_H_
+#ifndef UI_GFX_WIN_SCOPED_SET_MAP_MODE_H_
+#define UI_GFX_WIN_SCOPED_SET_MAP_MODE_H_
 
 #include <windows.h>
 
 #include "base/basictypes.h"
 #include "base/logging.h"
 
-namespace ui {
+namespace gfx {
 
 // Helper class for setting and restore the map mode on a DC.
 class ScopedSetMapMode {
@@ -35,6 +35,6 @@ class ScopedSetMapMode {
   DISALLOW_COPY_AND_ASSIGN(ScopedSetMapMode);
 };
 
-}  // namespace ui
+}  // namespace gfx
 
-#endif  // UI_BASE_WIN_SCOPED_SET_MAP_MODE_H_
+#endif  // UI_GFX_WIN_SCOPED_SET_MAP_MODE_H_

@@ -10,7 +10,7 @@
 #include "skia/ext/platform_canvas.h"
 #include "skia/ext/skia_utils_win.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
-#include "ui/gfx/dpi_win.h"
+#include "ui/gfx/win/dpi.h"
 #include "ui/native_theme/native_theme.h"
 
 using WebKit::WebCanvas;

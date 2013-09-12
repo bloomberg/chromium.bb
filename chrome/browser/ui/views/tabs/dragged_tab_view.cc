@@ -13,7 +13,7 @@
 #if defined(USE_AURA)
 #include "ui/views/widget/native_widget_aura.h"
 #elif defined(OS_WIN)
-#include "ui/gfx/dpi_win.h"
+#include "ui/gfx/win/dpi.h"
 #include "ui/views/widget/native_widget_win.h"
 #endif
 

@@ -8,8 +8,8 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "ui/gfx/display.h"
-#include "ui/gfx/dpi_win.h"
 #include "ui/gfx/size.h"
+#include "ui/gfx/win/dpi.h"
 
 namespace extensions {
 

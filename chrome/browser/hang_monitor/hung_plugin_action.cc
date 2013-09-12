@@ -14,7 +14,7 @@
 #include "content/public/common/webplugininfo.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/win/hwnd_util.h"
+#include "ui/gfx/win/hwnd_util.h"
 
 namespace {
 
@@ -186,7 +186,7 @@ bool HungPluginAction::GetPluginNameAndVersion(HWND plugin_window,
 
 // static
 BOOL CALLBACK HungPluginAction::DismissMessageBox(HWND window, LPARAM ignore) {
-  string16 class_name = ui::GetClassName(window);
+  string16 class_name = gfx::GetClassName(window);
   // #32770 is the dialog window class which is the window class of
   // the message box being displayed.
   if (class_name == L"#32770") {

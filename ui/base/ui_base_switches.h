@@ -21,7 +21,6 @@ UI_EXPORT extern const char kEnableScrollPrediction[];
 UI_EXPORT extern const char kEnableTouchDragDrop[];
 UI_EXPORT extern const char kEnableTouchEditing[];
 UI_EXPORT extern const char kEnableViewsTextfield[];
-UI_EXPORT extern const char kForceDeviceScaleFactor[];
 UI_EXPORT extern const char kHighlightMissingScaledResources[];
 UI_EXPORT extern const char kLang[];
 UI_EXPORT extern const char kLocalePak[];

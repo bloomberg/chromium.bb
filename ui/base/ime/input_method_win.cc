@@ -10,7 +10,7 @@
 #include "ui/base/events/event_utils.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/keycodes/keyboard_codes.h"
-#include "ui/base/win/hwnd_util.h"
+#include "ui/gfx/win/hwnd_util.h"
 
 namespace ui {
 namespace {
@@ -158,7 +158,7 @@ LRESULT InputMethodWin::OnChar(HWND window_handle,
   // Note: Setting |handled| to FALSE for DefWindowProc triggering of the system
   //       menu causes undesirable titlebar artifacts in the classic theme.
   if (message == WM_SYSCHAR && wparam == VK_SPACE)
-    ui::ShowSystemMenu(window_handle);
+    gfx::ShowSystemMenu(window_handle);
 
   return 0;
 }

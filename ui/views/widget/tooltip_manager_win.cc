@@ -16,11 +16,11 @@
 #include "base/win/scoped_hdc.h"
 #include "base/win/scoped_select_object.h"
 #include "ui/base/l10n/l10n_util_win.h"
-#include "ui/base/win/hwnd_util.h"
-#include "ui/base/win/scoped_set_map_mode.h"
-#include "ui/gfx/dpi_win.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/screen.h"
+#include "ui/gfx/win/dpi.h"
+#include "ui/gfx/win/hwnd_util.h"
+#include "ui/gfx/win/scoped_set_map_mode.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/monitor_win.h"
 #include "ui/views/widget/widget.h"
@@ -257,7 +257,7 @@ int TooltipManagerWin::CalcTooltipHeight() {
   if (hfont != NULL) {
     base::win::ScopedGetDC dc(tooltip_hwnd_);
     base::win::ScopedSelectObject font(dc, hfont);
-    ui::ScopedSetMapMode mode(dc, MM_TEXT);
+    gfx::ScopedSetMapMode mode(dc, MM_TEXT);
     TEXTMETRIC font_metrics;
     GetTextMetrics(dc, &font_metrics);
     height = font_metrics.tmHeight;

@@ -10,7 +10,7 @@
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/resource/resource_data_dll_win.h"
-#include "ui/gfx/dpi_win.h"
+#include "ui/gfx/win/dpi.h"
 
 namespace ui {
 

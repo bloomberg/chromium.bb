@@ -2,20 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_WIN_HWND_UTIL_H_
-#define UI_BASE_WIN_HWND_UTIL_H_
+#ifndef UI_GFX_WIN_HWND_UTIL_H_
+#define UI_GFX_WIN_HWND_UTIL_H_
 
 #include <windows.h>
 
 #include "base/strings/string16.h"
-#include "ui/base/ui_export.h"
+#include "ui/gfx/gfx_export.h"
 
 namespace gfx {
 class Point;
 class Size;
-}
-
-namespace ui {
 
 // A version of the GetClassNameW API that returns the class name in an
 // string16. An empty result indicates a failure to get the class name.
@@ -52,6 +49,6 @@ UI_EXPORT void ShowSystemMenuAtPoint(HWND window, const gfx::Point& point);
 // container so in those cases you should pass true in |get_real_hwnd|.
 UI_EXPORT HWND GetWindowToParentTo(bool get_real_hwnd);
 
-}  // namespace ui
+}  // namespace gfx
 
-#endif  // UI_BASE_WIN_HWND_UTIL_H_
+#endif  // UI_GFX_WIN_HWND_UTIL_H_

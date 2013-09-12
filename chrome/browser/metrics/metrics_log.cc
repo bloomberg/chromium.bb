@@ -58,7 +58,7 @@
 
 #if defined(OS_WIN)
 #include "base/win/metro.h"
-#include "ui/gfx/dpi_win.h"
+#include "ui/gfx/win/dpi.h"
 
 // http://blogs.msdn.com/oldnewthing/archive/2004/10/25/247180.aspx
 extern "C" IMAGE_DOS_HEADER __ImageBase;

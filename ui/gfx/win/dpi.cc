@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/dpi_win.h"
+#include "ui/gfx/win/dpi.h"
 
 #include <windows.h>
 #include "base/command_line.h"
@@ -25,9 +25,9 @@ int kDefaultDPIY = 96;
 bool IsHighDPIEnabled() {
   // Default is disabled.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-      gfx::switches::kHighDPISupport)) {
+      switches::kHighDPISupport)) {
     return CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-        gfx::switches::kHighDPISupport).compare("1") == 0;
+        switches::kHighDPISupport).compare("1") == 0;
   }
   return false;
 }

@@ -52,7 +52,7 @@
 #include "ui/views/window/non_client_view.h"
 
 #if defined(OS_WIN)
-#include "ui/base/win/hwnd_util.h"
+#include "ui/gfx/win/hwnd_util.h"
 #include "ui/views/widget/monitor_win.h"
 #include "win8/util/win8_util.h"
 #endif
@@ -380,7 +380,7 @@ void NewTabButton::OnMouseReleased(const ui::MouseEvent& event) {
     views::View::ConvertPointToScreen(this, &point);
     bool destroyed = false;
     destroyed_ = &destroyed;
-    ui::ShowSystemMenuAtPoint(GetWidget()->GetNativeView(), point);
+    gfx::ShowSystemMenuAtPoint(GetWidget()->GetNativeView(), point);
     if (destroyed)
       return;
 

@@ -15,7 +15,7 @@
 #include "base/win/windows_version.h"
 #include "grit/app_locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/dpi_win.h"
+#include "ui/gfx/win/dpi.h"
 
 namespace {
 

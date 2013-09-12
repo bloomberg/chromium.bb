@@ -9,8 +9,8 @@
 #include "base/logging.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/singleton.h"
-#include "ui/base/win/hwnd_util.h"
-#include "ui/gfx/dpi_win.h"
+#include "ui/gfx/win/dpi.h"
+#include "ui/gfx/win/hwnd_util.h"
 
 namespace {
 const char kHWNDSubclassKey[] = "__UI_BASE_WIN_HWND_SUBCLASS_PROC__";
@@ -123,7 +123,7 @@ HWNDSubclass::HWNDSubclass(HWND target)
     : target_(target),
       original_wnd_proc_(GetCurrentWndProc(target)),
       prop_(target, kHWNDSubclassKey, this) {
-  ui::SetWindowProc(target_, &WndProc);
+  gfx::SetWindowProc(target_, &WndProc);
 }
 
 HWNDSubclass::~HWNDSubclass() {

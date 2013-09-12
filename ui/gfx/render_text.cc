@@ -13,12 +13,12 @@
 #include "third_party/icu/source/common/unicode/utf16.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
-#include "ui/base/text/utf16_indexing.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/gfx/text_elider.h"
+#include "ui/gfx/utf16_indexing.h"
 
 namespace gfx {
 
@@ -952,7 +952,7 @@ void RenderText::UpdateLayoutText() {
 
   if (obscured_) {
     size_t obscured_text_length =
-        static_cast<size_t>(ui::UTF16IndexToOffset(text_, 0, text_.length()));
+        static_cast<size_t>(gfx::UTF16IndexToOffset(text_, 0, text_.length()));
     layout_text_.assign(obscured_text_length, kPasswordReplacementChar);
 
     if (obscured_reveal_index_ >= 0 &&
@@ -966,7 +966,7 @@ void RenderText::UpdateLayoutText() {
 
       // Gets the index in |layout_text_| to be replaced.
       const size_t cp_start =
-          static_cast<size_t>(ui::UTF16IndexToOffset(text_, 0, start));
+          static_cast<size_t>(gfx::UTF16IndexToOffset(text_, 0, start));
       if (layout_text_.length() > cp_start)
         layout_text_.replace(cp_start, 1, text_.substr(start, end - start));
     }

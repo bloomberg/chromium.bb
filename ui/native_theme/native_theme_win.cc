@@ -24,11 +24,11 @@
 #include "third_party/skia/include/core/SkColorPriv.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/gfx/dpi_win.h"
 #include "ui/gfx/gdi_util.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/sys_color_change_listener.h"
+#include "ui/gfx/win/dpi.h"
 #include "ui/native_theme/common_theme.h"
 
 // This was removed from Winvers.h but is still used.

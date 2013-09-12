@@ -9,8 +9,8 @@
 #include "ui/base/events/event.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/win/hwnd_util.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/win/hwnd_util.h"
 #include "ui/native_theme/native_theme_win.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/combobox/native_combobox_views.h"
@@ -188,7 +188,7 @@ void NativeComboboxWin::CreateNativeControl() {
                                        flags, 0, 0, width(), height(),
                                        GetWidget()->GetNativeView(), NULL, NULL,
                                        NULL);
-  ui::CheckWindowCreated(control_hwnd);
+  gfx::CheckWindowCreated(control_hwnd);
   NativeControlCreated(control_hwnd);
 }
 

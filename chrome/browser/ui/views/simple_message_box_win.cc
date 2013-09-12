@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/simple_message_box.h"
 
 #include "components/startup_metric_utils/startup_metric_utils.h"
-#include "ui/base/win/hwnd_util.h"
 #include "ui/base/win/message_box_win.h"
+#include "ui/gfx/win/hwnd_util.h"
 
 namespace chrome {
 
@@ -37,7 +37,7 @@ MessageBoxResult ShowMessageBox(gfx::NativeWindow parent,
   startup_metric_utils::SetNonBrowserUIDisplayed();
 
   if (!parent)
-    parent = ui::GetWindowToParentTo(true);
+    parent = gfx::GetWindowToParentTo(true);
 
   return NativeShowMessageBox(parent, title, message, type);
 }

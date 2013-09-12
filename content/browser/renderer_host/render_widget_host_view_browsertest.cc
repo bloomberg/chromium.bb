@@ -37,7 +37,7 @@
 #endif
 
 #if defined(OS_WIN)
-#include "ui/gfx/dpi_win.h"
+#include "ui/gfx/win/dpi.h"
 #endif
 
 namespace content {
@@ -835,7 +835,7 @@ class CompositingRenderWidgetHostViewTabCaptureHighDPI
     cmd->AppendSwitchASCII(switches::kForceDeviceScaleFactor,
                            base::StringPrintf("%f", scale()));
 #if defined(OS_WIN)
-    cmd->AppendSwitchASCII(gfx::switches::kHighDPISupport, "1");
+    cmd->AppendSwitchASCII(switches::kHighDPISupport, "1");
     gfx::EnableHighDPISupport();
 #endif
   }

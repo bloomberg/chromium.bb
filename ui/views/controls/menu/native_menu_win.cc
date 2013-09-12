@@ -17,12 +17,12 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/base/models/menu_model.h"
-#include "ui/base/win/hwnd_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/win/hwnd_util.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/native_theme/native_theme_win.h"
 #include "ui/views/controls/menu/menu_2.h"
@@ -81,8 +81,8 @@ class NativeMenuWin::MenuHostWindow {
     RegisterClass();
     hwnd_ = CreateWindowEx(l10n_util::GetExtendedStyles(), kWindowClassName,
                            L"", 0, 0, 0, 0, 0, HWND_MESSAGE, NULL, NULL, NULL);
-    ui::CheckWindowCreated(hwnd_);
-    ui::SetWindowUserData(hwnd_, this);
+    gfx::CheckWindowCreated(hwnd_);
+    gfx::SetWindowUserData(hwnd_, this);
   }
 
   ~MenuHostWindow() {
@@ -350,7 +350,7 @@ class NativeMenuWin::MenuHostWindow {
                                              WPARAM w_param,
                                              LPARAM l_param) {
     MenuHostWindow* host =
-        reinterpret_cast<MenuHostWindow*>(ui::GetWindowUserData(window));
+        reinterpret_cast<MenuHostWindow*>(gfx::GetWindowUserData(window));
     // host is null during initial construction.
     LRESULT l_result = 0;
     if (!host || !host->ProcessWindowMessage(window, message, w_param, l_param,

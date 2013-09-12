@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_WIN_WINDOW_IMPL_H_
-#define UI_BASE_WIN_WINDOW_IMPL_H_
+#ifndef UI_GFX_WIN_WINDOW_IMPL_H_
+#define UI_GFX_WIN_WINDOW_IMPL_H_
 
 #include <atlbase.h>
 #include <atlapp.h>
@@ -13,11 +13,11 @@
 #include <string>
 
 #include "base/logging.h"
-#include "ui/base/ui_export.h"
+#include "ui/gfx/gfx_export.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 
-namespace ui {
+namespace gfx {
 
 // An interface implemented by classes that use message maps.
 // ProcessWindowMessage is implemented by the BEGIN_MESSAGE_MAP_EX macro.
@@ -118,6 +118,6 @@ class UI_EXPORT WindowImpl : public MessageMapInterface {
   DISALLOW_COPY_AND_ASSIGN(WindowImpl);
 };
 
-}  // namespace ui
+}  // namespace gfx
 
-#endif  // UI_BASE_WIN_WINDOW_IMPL_H_
+#endif  // UI_GFX_WIN_WINDOW_IMPL_H_

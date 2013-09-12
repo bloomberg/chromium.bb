@@ -22,9 +22,9 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_win.h"
-#include "ui/base/win/hwnd_util.h"
 #include "ui/base/win/mouse_wheel_util.h"
 #include "ui/gfx/range/range.h"
+#include "ui/gfx/win/hwnd_util.h"
 #include "ui/native_theme/native_theme_win.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/menu/menu_item_view.h"
@@ -1103,7 +1103,7 @@ void NativeTextfieldWin::OnSysChar(TCHAR ch, UINT repeat_count, UINT flags) {
   // something useful, so discard those. Note that [Ctrl]+[Alt]+<xxx> generates
   // WM_CHAR instead of WM_SYSCHAR, so it is not handled here.
   if (ch == VK_SPACE) {
-    ui::ShowSystemMenu(
+    gfx::ShowSystemMenu(
         container_view_->GetWidget()->GetTopLevelWidget()->GetNativeWindow());
   }
 }

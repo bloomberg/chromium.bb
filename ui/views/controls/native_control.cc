@@ -17,7 +17,7 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/base/view_prop.h"
-#include "ui/base/win/hwnd_util.h"
+#include "ui/gfx/win/hwnd_util.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/focus/focus_manager.h"
@@ -88,7 +88,7 @@ class NativeControlContainer : public CWindowImpl<NativeControlContainer,
     control_ = parent_->CreateNativeControl(m_hWnd);
 
     // We subclass the control hwnd so we get the WM_KEYDOWN messages.
-    original_handler_ = ui::SetWindowProc(
+    original_handler_ = gfx::SetWindowProc(
         control_, &NativeControl::NativeControlWndProc);
     prop_.reset(new ViewProp(control_, kNativeControlKey , parent_));
 
@@ -378,7 +378,7 @@ LRESULT CALLBACK NativeControl::NativeControlWndProc(HWND window,
       NOTREACHED();
     }
   } else if (message == WM_DESTROY) {
-    ui::SetWindowProc(window, reinterpret_cast<WNDPROC>(original_handler));
+    gfx::SetWindowProc(window, reinterpret_cast<WNDPROC>(original_handler));
     native_control->container_->prop_.reset();
   }
 

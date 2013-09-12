@@ -62,11 +62,11 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/base/touch/touch_enabled.h"
-#include "ui/base/win/hwnd_util.h"
 #include "ui/base/win/mouse_wheel_util.h"
 #include "ui/base/win/touch_input.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/win/hwnd_util.h"
 #include "ui/views/button_drag_utils.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_runner.h"
@@ -2037,7 +2037,7 @@ void OmniboxViewWin::OnSysChar(TCHAR ch,
   // something useful, so discard those. Note that [Ctrl]+[Alt]+<xxx> generates
   // WM_CHAR instead of WM_SYSCHAR, so it is not handled here.
   if (ch == VK_SPACE) {
-    ui::ShowSystemMenu(
+    gfx::ShowSystemMenu(
       native_view_host_->GetWidget()->GetTopLevelWidget()->GetNativeWindow());
   }
 }

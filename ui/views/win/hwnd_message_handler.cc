@@ -16,18 +16,18 @@
 #include "ui/base/gestures/gesture_sequence.h"
 #include "ui/base/keycodes/keyboard_code_conversion_win.h"
 #include "ui/base/touch/touch_enabled.h"
-#include "ui/base/win/hwnd_util.h"
 #include "ui/base/win/mouse_wheel_util.h"
 #include "ui/base/win/shell.h"
 #include "ui/base/win/touch_input.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia_paint.h"
-#include "ui/gfx/dpi_win.h"
 #include "ui/gfx/icon_util.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/path_win.h"
 #include "ui/gfx/screen.h"
+#include "ui/gfx/win/dpi.h"
+#include "ui/gfx/win/hwnd_util.h"
 #include "ui/native_theme/native_theme_win.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/monitor_win.h"
@@ -543,7 +543,7 @@ void HWNDMessageHandler::CenterWindow(const gfx::Size& size) {
   HWND parent = GetParent(hwnd());
   if (!IsWindow(hwnd()))
     parent = ::GetWindow(hwnd(), GW_OWNER);
-  ui::CenterAndSizeWindow(parent, hwnd(), size);
+  gfx::CenterAndSizeWindow(parent, hwnd(), size);
 }
 
 void HWNDMessageHandler::SetRegion(HRGN region) {
@@ -844,7 +844,7 @@ void HWNDMessageHandler::DispatchKeyEventPostIME(const ui::KeyEvent& key) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// HWNDMessageHandler, ui::WindowImpl overrides:
+// HWNDMessageHandler, gfx::WindowImpl overrides:
 
 HICON HWNDMessageHandler::GetDefaultWindowIcon() const {
   if (use_system_default_icon_)
@@ -1526,7 +1526,7 @@ LRESULT HWNDMessageHandler::OnMouseRange(UINT message,
     w_param = SendMessage(hwnd(), WM_NCHITTEST, 0,
                           MAKELPARAM(screen_point.x, screen_point.y));
     if (w_param == HTCAPTION || w_param == HTSYSMENU) {
-      ui::ShowSystemMenuAtPoint(hwnd(), gfx::Point(screen_point));
+      gfx::ShowSystemMenuAtPoint(hwnd(), gfx::Point(screen_point));
       return 0;
     }
   } else if (message == WM_NCLBUTTONDOWN && delegate_->IsUsingCustomFrame()) {

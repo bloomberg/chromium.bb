@@ -67,15 +67,15 @@
 #include "ui/base/touch/touch_enabled.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/view_prop.h"
-#include "ui/base/win/hwnd_util.h"
 #include "ui/base/win/mouse_wheel_util.h"
 #include "ui/base/win/touch_input.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/dpi_win.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/text_elider.h"
+#include "ui/gfx/win/dpi.h"
+#include "ui/gfx/win/hwnd_util.h"
 #include "webkit/common/cursors/webcursor.h"
 #include "win8/util/win8_util.h"
 
@@ -451,7 +451,7 @@ void RenderWidgetHostViewWin::InitAsFullscreen(
   gfx::Rect pos = gfx::Screen::GetNativeScreen()->GetDisplayNearestWindow(
       reference_host_view->GetNativeView()).bounds();
   is_fullscreen_ = true;
-  DoPopupOrFullscreenInit(ui::GetWindowToParentTo(true), pos, 0);
+  DoPopupOrFullscreenInit(gfx::GetWindowToParentTo(true), pos, 0);
 }
 
 RenderWidgetHost* RenderWidgetHostViewWin::GetRenderWidgetHost() const {
@@ -575,7 +575,7 @@ void RenderWidgetHostViewWin::CleanupCompositorWindow() {
   if (!compositor_host_window_)
     return;
 
-  ui::SetWindowUserData(compositor_host_window_, NULL);
+  gfx::SetWindowUserData(compositor_host_window_, NULL);
 
   // Hide the compositor and parent it to the desktop rather than destroying
   // it immediately. The GPU process has a grace period to stop accessing the
@@ -626,7 +626,7 @@ void RenderWidgetHostViewWin::Show() {
 }
 
 void RenderWidgetHostViewWin::Hide() {
-  if (!is_fullscreen_ && GetParent() == ui::GetWindowToParentTo(true)) {
+  if (!is_fullscreen_ && GetParent() == gfx::GetWindowToParentTo(true)) {
     LOG(WARNING) << "Hide() called twice in a row: " << this << ":"
         << GetParent();
     return;
@@ -2318,7 +2318,7 @@ LRESULT RenderWidgetHostViewWin::OnMouseActivate(UINT message,
     ::ScreenToClient(m_hWnd, &cursor_pos);
     HWND child_window = ::RealChildWindowFromPoint(m_hWnd, cursor_pos);
     if (::IsWindow(child_window) && child_window != m_hWnd) {
-      if (ui::GetClassName(child_window) == kWrapperNativeWindowClassName)
+      if (gfx::GetClassName(child_window) == kWrapperNativeWindowClassName)
         child_window = ::GetWindow(child_window, GW_CHILD);
 
       ::SetFocus(child_window);
@@ -2464,7 +2464,7 @@ static void PaintCompositorHostWindow(HWND hWnd) {
   BeginPaint(hWnd, &paint);
 
   RenderWidgetHostViewWin* win = static_cast<RenderWidgetHostViewWin*>(
-      ui::GetWindowUserData(hWnd));
+      gfx::GetWindowUserData(hWnd));
   // Trigger composite to rerender window.
   if (win)
     win->AcceleratedPaint(paint.hdc);
@@ -2563,9 +2563,9 @@ gfx::GLSurfaceHandle RenderWidgetHostViewWin::GetCompositingSurface() {
       MAKEINTATOM(atom), 0,
       WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_DISABLED,
       0, 0, width, height, m_hWnd, 0, instance, 0);
-  ui::CheckWindowCreated(compositor_host_window_);
+  gfx::CheckWindowCreated(compositor_host_window_);
 
-  ui::SetWindowUserData(compositor_host_window_, this);
+  gfx::SetWindowUserData(compositor_host_window_, this);
 
   gfx::GLSurfaceHandle surface_handle(compositor_host_window_,
                                       gfx::NATIVE_TRANSPORT);

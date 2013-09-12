@@ -23,8 +23,8 @@
 #include "ui/base/accessibility/accessibility_types.h"
 #include "ui/base/events/event.h"
 #include "ui/base/ui_base_types.h"
-#include "ui/base/win/window_impl.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/win/window_impl.h"
 #include "ui/views/ime/input_method_delegate.h"
 #include "ui/views/views_export.h"
 
@@ -58,7 +58,7 @@ const int WM_NCUAHDRAWFRAME = 0xAF;
 // implementation.
 // TODO(beng): This object should eventually *become* the WindowImpl.
 class VIEWS_EXPORT HWNDMessageHandler :
-    public ui::WindowImpl,
+    public gfx::WindowImpl,
     public internal::InputMethodDelegate,
     public base::MessageLoopForUI::Observer {
  public:

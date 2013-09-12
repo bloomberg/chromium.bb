@@ -5,12 +5,12 @@
 #ifndef TOOLS_MEMORY_WATCHER_HOTKEY_H_
 #define TOOLS_MEMORY_WATCHER_HOTKEY_H_
 
-#include "ui/base/win/window_impl.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/win/window_impl.h"
 
 // HotKey handler.
 // Programs wishing to register a hotkey can use this.
-class HotKeyHandler : public ui::WindowImpl {
+class HotKeyHandler : public gfx::WindowImpl {
  public:
   HotKeyHandler(UINT modifiers, UINT vk)
     : modifiers_(modifiers),

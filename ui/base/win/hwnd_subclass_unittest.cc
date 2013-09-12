@@ -6,13 +6,13 @@
 
 #include "base/basictypes.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/win/window_impl.h"
+#include "ui/gfx/win/window_impl.h"
 
 namespace ui {
 
 namespace {
 
-class TestWindow : public ui::WindowImpl {
+class TestWindow : public gfx::WindowImpl {
  public:
   TestWindow() : saw_message(false) {}
   virtual ~TestWindow() {}
@@ -20,7 +20,7 @@ class TestWindow : public ui::WindowImpl {
   bool saw_message;
 
  private:
-   // Overridden from ui::WindowImpl:
+   // Overridden from gfx::WindowImpl:
   virtual BOOL ProcessWindowMessage(HWND window,
                                     UINT message,
                                     WPARAM w_param,

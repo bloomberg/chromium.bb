@@ -14,11 +14,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/windows_version.h"
 #include "third_party/icu/source/common/unicode/uchar.h"
-#include "ui/base/text/utf16_indexing.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_fallback_win.h"
 #include "ui/gfx/font_smoothing_win.h"
 #include "ui/gfx/platform_font_win.h"
+#include "ui/gfx/utf16_indexing.h"
 
 namespace gfx {
 
@@ -413,7 +413,7 @@ std::vector<Rect> RenderTextWin::GetSubstringBounds(const gfx::Range& range) {
 
 size_t RenderTextWin::TextIndexToLayoutIndex(size_t index) const {
   DCHECK_LE(index, text().length());
-  ptrdiff_t i = obscured() ? ui::UTF16IndexToOffset(text(), 0, index) : index;
+  ptrdiff_t i = obscured() ? gfx::UTF16IndexToOffset(text(), 0, index) : index;
   CHECK_GE(i, 0);
   // Clamp layout indices to the length of the text actually used for layout.
   return std::min<size_t>(GetLayoutText().length(), i);
@@ -424,7 +424,7 @@ size_t RenderTextWin::LayoutIndexToTextIndex(size_t index) const {
     return index;
 
   DCHECK_LE(index, GetLayoutText().length());
-  const size_t text_index = ui::UTF16OffsetToIndex(text(), 0, index);
+  const size_t text_index = gfx::UTF16OffsetToIndex(text(), 0, index);
   DCHECK_LE(text_index, text().length());
   return text_index;
 }
@@ -439,7 +439,7 @@ bool RenderTextWin::IsCursorablePosition(size_t position) {
   // and that its glyph has distinct bounds (not mid-multi-character-grapheme).
   // An example of a multi-character-grapheme that is not a surrogate-pair is:
   // \x0915\x093f - (ki) - one of many Devanagari biconsonantal conjuncts.
-  return ui::IsValidCodePointIndex(text(), position) &&
+  return gfx::IsValidCodePointIndex(text(), position) &&
          position < LayoutIndexToTextIndex(GetLayoutText().length()) &&
          GetGlyphBounds(position) != GetGlyphBounds(position - 1);
 }
@@ -599,7 +599,7 @@ void RenderTextWin::ItemizeLogicalText() {
     // Clamp run lengths to avoid exceeding the maximum supported glyph count.
     if ((run_break - run->range.start()) > max_run_length) {
       run_break = run->range.start() + max_run_length;
-      if (!ui::IsValidCodePointIndex(layout_text, run_break))
+      if (!gfx::IsValidCodePointIndex(layout_text, run_break))
         --run_break;
     }
 
@@ -619,7 +619,7 @@ void RenderTextWin::ItemizeLogicalText() {
       }
     }
 
-    DCHECK(ui::IsValidCodePointIndex(layout_text, run_break));
+    DCHECK(gfx::IsValidCodePointIndex(layout_text, run_break));
 
     style.UpdatePosition(LayoutIndexToTextIndex(run_break));
     if (script_item_break == run_break)

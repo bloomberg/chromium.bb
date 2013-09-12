@@ -6,13 +6,13 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/base/win/window_impl.h"
 #include "ui/compositor/compositor.h"
+#include "ui/gfx/win/window_impl.h"
 
 namespace ui {
 
 class TestCompositorHostWin : public TestCompositorHost,
-                              public WindowImpl,
+                              public gfx::WindowImpl,
                               public CompositorDelegate {
  public:
   TestCompositorHostWin(const gfx::Rect& bounds) {

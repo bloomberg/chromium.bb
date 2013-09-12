@@ -4,7 +4,6 @@
 
 #include "ui/gfx/switches.h"
 
-namespace gfx {
 namespace switches {
 
 // Let text glyphs have X-positions that aren't snapped to the pixel grid in
@@ -17,8 +16,10 @@ const char kEnableBrowserTextSubpixelPositioning[] =
 const char kEnableWebkitTextSubpixelPositioning[] =
     "enable-webkit-text-subpixel-positioning";
 
+// Overrides the device scale factor for the browser UI and the contents.
+const char kForceDeviceScaleFactor[] = "force-device-scale-factor";
+
 // Enables/Disables High DPI support (windows)
 const char kHighDPISupport[] = "high-dpi-support";
 
 }  // namespace switches
-}  // namespace gfx

@@ -17,9 +17,9 @@
 #include "base/win/scoped_hdc.h"
 #include "base/win/scoped_select_object.h"
 #include "base/win/win_util.h"
-#include "ui/base/win/scoped_set_map_mode.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/win/scoped_set_map_mode.h"
 
 namespace {
 
@@ -229,7 +229,7 @@ PlatformFontWin::HFontRef* PlatformFontWin::CreateHFontRef(HFONT font) {
   {
     base::win::ScopedGetDC screen_dc(NULL);
     base::win::ScopedSelectObject scoped_font(screen_dc, font);
-    ui::ScopedSetMapMode mode(screen_dc, MM_TEXT);
+    gfx::ScopedSetMapMode mode(screen_dc, MM_TEXT);
     GetTextMetrics(screen_dc, &font_metrics);
   }
 
@@ -284,7 +284,7 @@ int PlatformFontWin::HFontRef::GetDluBaseX() {
 
   base::win::ScopedGetDC screen_dc(NULL);
   base::win::ScopedSelectObject font(screen_dc, hfont_);
-  ui::ScopedSetMapMode mode(screen_dc, MM_TEXT);
+  gfx::ScopedSetMapMode mode(screen_dc, MM_TEXT);
 
   // Yes, this is how Microsoft recommends calculating the dialog unit
   // conversions. See: http://support.microsoft.com/kb/125681

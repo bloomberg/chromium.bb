@@ -11,7 +11,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/win_util.h"
-#include "ui/base/win/window_impl.h"
+#include "ui/gfx/win/window_impl.h"
 #include "ui/views/widget/native_widget_private.h"
 #include "ui/views/win/hwnd_message_handler_delegate.h"
 

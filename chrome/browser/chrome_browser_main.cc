@@ -175,7 +175,7 @@
 #include "net/base/net_util.h"
 #include "printing/printed_document.h"
 #include "ui/base/l10n/l10n_util_win.h"
-#include "ui/gfx/dpi_win.h"
+#include "ui/gfx/win/dpi.h"
 #endif  // defined(OS_WIN)
 
 #if defined(OS_MACOSX)

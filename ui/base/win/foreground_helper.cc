@@ -5,7 +5,7 @@
 #include "ui/base/win/foreground_helper.h"
 
 #include "base/logging.h"
-#include "ui/base/win/window_impl.h"
+#include "ui/gfx/win/window_impl.h"
 
 namespace ui {
 

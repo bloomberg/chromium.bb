@@ -23,7 +23,7 @@
 
 #if defined(OS_WIN)
 #include "base/win/metro.h"
-#include "ui/gfx/dpi_win.h"
+#include "ui/gfx/win/dpi.h"
 #include <Windows.h>
 #endif  // defined(OS_WIN)
 

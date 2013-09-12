@@ -5,13 +5,13 @@
 #include "ui/gfx/font_smoothing_win.h"
 
 #include "base/memory/singleton.h"
-#include "ui/base/win/singleton_hwnd.h"
+#include "ui/gfx/win/singleton_hwnd.h"
 
 namespace {
 
 // Helper class to cache font smoothing settings and listen for notifications
 // to re-query them from the system.
-class CachedFontSmoothingSettings : public ui::SingletonHwnd::Observer {
+class CachedFontSmoothingSettings : public gfx::SingletonHwnd::Observer {
  public:
   static CachedFontSmoothingSettings* GetInstance();
 
@@ -66,7 +66,7 @@ void CachedFontSmoothingSettings::GetFontSmoothingSettings(
     need_to_query_settings_ = false;
   }
   if (!observer_added_) {
-    ui::SingletonHwnd::GetInstance()->AddObserver(this);
+    gfx::SingletonHwnd::GetInstance()->AddObserver(this);
     observer_added_ = true;
   }
   *smoothing_enabled = smoothing_enabled_;

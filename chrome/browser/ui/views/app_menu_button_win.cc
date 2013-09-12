@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/views/app_menu_button_win.h"
 
 #include "ui/base/events/event.h"
-#include "ui/base/win/hwnd_util.h"
+#include "ui/gfx/win/hwnd_util.h"
 #include "ui/views/widget/widget.h"
 
 AppMenuButtonWin::AppMenuButtonWin(views::MenuButtonListener* listener)
@@ -15,7 +15,7 @@ AppMenuButtonWin::AppMenuButtonWin(views::MenuButtonListener* listener)
 bool AppMenuButtonWin::OnKeyPressed(const ui::KeyEvent& event) {
   if (event.key_code() == ui::VKEY_SPACE) {
     // Explicitly show the system menu at a good location on [Alt]+[Space].
-    ui::ShowSystemMenu(GetWidget()->GetNativeView());
+    gfx::ShowSystemMenu(GetWidget()->GetNativeView());
     return false;
   }
   return views::MenuButton::OnKeyPressed(event);

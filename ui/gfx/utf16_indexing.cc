@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/text/utf16_indexing.h"
+#include "ui/gfx/utf16_indexing.h"
 
 #include "base/logging.h"
 #include "base/third_party/icu/icu_utf.h"
 
-namespace ui {
+namespace gfx {
 
 bool IsValidCodePointIndex(const string16& s, size_t index) {
   return index == 0 || index == s.length() ||
@@ -52,4 +52,4 @@ size_t UTF16OffsetToIndex(const string16& s, size_t base, ptrdiff_t offset) {
   return pos;
 }
 
-}  // namespace ui
+}  // namespace gfx

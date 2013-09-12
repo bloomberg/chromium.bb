@@ -31,8 +31,8 @@
 #include "content/public/common/content_constants.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
-#include "ui/base/win/hwnd_util.h"
-#include "ui/gfx/dpi_win.h"
+#include "ui/gfx/win/dpi.h"
+#include "ui/gfx/win/hwnd_util.h"
 #include "webkit/common/cursors/webcursor.h"
 
 using WebKit::WebKeyboardEvent;
@@ -1462,7 +1462,7 @@ FARPROC WINAPI WebPluginDelegateImpl::GetProcAddressPatch(HMODULE module,
 
 void WebPluginDelegateImpl::HandleCaptureForMessage(HWND window,
                                                     UINT message) {
-  if (ui::GetClassName(window) != base::string16(kNativeWindowClassName))
+  if (gfx::GetClassName(window) != base::string16(kNativeWindowClassName))
     return;
 
   switch (message) {

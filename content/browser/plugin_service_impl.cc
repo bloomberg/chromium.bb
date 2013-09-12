@@ -33,7 +33,7 @@
 
 #if defined(OS_WIN)
 #include "content/common/plugin_constants_win.h"
-#include "ui/base/win/hwnd_util.h"
+#include "ui/gfx/win/hwnd_util.h"
 #endif
 
 #if defined(OS_POSIX)
@@ -837,7 +837,7 @@ bool PluginServiceImpl::GetPluginInfoFromWindow(
 }
 
 bool PluginServiceImpl::IsPluginWindow(HWND window) {
-  return ui::GetClassName(window) == base::string16(kNativeWindowClassName);
+  return gfx::GetClassName(window) == base::string16(kNativeWindowClassName);
 }
 #endif
 

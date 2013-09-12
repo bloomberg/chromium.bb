@@ -11,9 +11,9 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "ui/base/l10n/l10n_util_win.h"
-#include "ui/base/win/hwnd_util.h"
-#include "ui/gfx/dpi_win.h"
 #include "ui/gfx/point.h"
+#include "ui/gfx/win/dpi.h"
+#include "ui/gfx/win/hwnd_util.h"
 
 namespace views {
 

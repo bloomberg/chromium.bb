@@ -9,10 +9,10 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/public/common/content_switches.h"
 #include "skia/ext/platform_canvas.h"
-#include "ui/gfx/dpi_win.h"
 #include "ui/gfx/gdi_util.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/size_conversions.h"
+#include "ui/gfx/win/dpi.h"
 #include "ui/surface/transport_dib.h"
 
 namespace content {

@@ -14,7 +14,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/shell/app/resource.h"
-#include "ui/base/win/hwnd_util.h"
+#include "ui/gfx/win/hwnd_util.h"
 
 namespace {
 
@@ -52,8 +52,8 @@ void Shell::PlatformExit() {
 void Shell::PlatformCleanUp() {
   // When the window is destroyed, tell the Edit field to forget about us,
   // otherwise we will crash.
-  ui::SetWindowProc(url_edit_view_, default_edit_wnd_proc_);
-  ui::SetWindowUserData(url_edit_view_, NULL);
+  gfx::SetWindowProc(url_edit_view_, default_edit_wnd_proc_);
+  gfx::SetWindowUserData(url_edit_view_, NULL);
 }
 
 void Shell::PlatformEnableUIControl(UIControl control, bool is_enabled) {
@@ -89,7 +89,7 @@ void Shell::PlatformCreateWindow(int width, int height) {
                          WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN,
                          CW_USEDEFAULT, 0, CW_USEDEFAULT, 0,
                          NULL, NULL, instance_handle_, NULL);
-  ui::SetWindowUserData(window_, this);
+  gfx::SetWindowUserData(window_, this);
 
   HWND hwnd;
   int x = 0;
@@ -124,9 +124,9 @@ void Shell::PlatformCreateWindow(int width, int height) {
                                 ES_AUTOVSCROLL | ES_AUTOHSCROLL,
                                 x, 0, 0, 0, window_, 0, instance_handle_, 0);
 
-  default_edit_wnd_proc_ = ui::SetWindowProc(url_edit_view_,
+  default_edit_wnd_proc_ = gfx::SetWindowProc(url_edit_view_,
                                              Shell::EditWndProc);
-  ui::SetWindowUserData(url_edit_view_, this);
+  gfx::SetWindowUserData(url_edit_view_, this);
 
   ShowWindow(window_, SW_SHOW);
 
@@ -192,7 +192,7 @@ ATOM Shell::RegisterWindowClass() {
 
 LRESULT CALLBACK Shell::WndProc(HWND hwnd, UINT message, WPARAM wParam,
                                 LPARAM lParam) {
-  Shell* shell = static_cast<Shell*>(ui::GetWindowUserData(hwnd));
+  Shell* shell = static_cast<Shell*>(gfx::GetWindowUserData(hwnd));
 
   switch (message) {
     case WM_COMMAND: {
@@ -254,7 +254,7 @@ LRESULT CALLBACK Shell::WndProc(HWND hwnd, UINT message, WPARAM wParam,
 
 LRESULT CALLBACK Shell::EditWndProc(HWND hwnd, UINT message,
                                     WPARAM wParam, LPARAM lParam) {
-  Shell* shell = static_cast<Shell*>(ui::GetWindowUserData(hwnd));
+  Shell* shell = static_cast<Shell*>(gfx::GetWindowUserData(hwnd));
 
   switch (message) {
     case WM_CHAR:

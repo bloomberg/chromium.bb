@@ -11,8 +11,8 @@
 #include "base/win/win_util.h"
 #include "ui/base/events/event_utils.h"
 #include "ui/base/keycodes/keyboard_code_conversion_win.h"
-#include "ui/gfx/dpi_win.h"
 #include "ui/gfx/point.h"
+#include "ui/gfx/win/dpi.h"
 
 namespace ui {
 

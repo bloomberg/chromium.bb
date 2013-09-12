@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/i18n/rtl.h"
-#include "ui/gfx/dpi_win.h"
+#include "ui/gfx/win/dpi.h"
 
 namespace {
 

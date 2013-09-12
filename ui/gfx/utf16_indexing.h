@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_TEXT_UTF16_INDEXING_H_
-#define UI_BASE_TEXT_UTF16_INDEXING_H_
+#ifndef UI_GFX_UTF16_INDEXING_H_
+#define UI_GFX_UTF16_INDEXING_H_
 
 #include "base/strings/string16.h"
-#include "ui/base/ui_export.h"
+#include "ui/gfx/gfx_export.h"
 
-namespace ui {
+namespace gfx {
 
 // Returns false if s[index-1] is a high surrogate and s[index] is a low
 // surrogate, true otherwise.
@@ -44,6 +44,6 @@ UI_EXPORT size_t UTF16OffsetToIndex(const string16& s,
                                     size_t base,
                                     ptrdiff_t offset);
 
-}  // namespace ui
+}  // namespace gfx
 
-#endif  // UI_BASE_TEXT_UTF16_INDEXING_H_
+#endif  // UI_GFX_UTF16_INDEXING_H_

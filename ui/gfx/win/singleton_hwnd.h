@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_WIN_SINGLETON_HWND_H_
-#define UI_BASE_WIN_SINGLETON_HWND_H_
+#ifndef UI_GFX_WIN_SINGLETON_HWND_H_
+#define UI_GFX_WIN_SINGLETON_HWND_H_
 
 #include <windows.h>
 #include <vector>
@@ -11,11 +11,11 @@
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/observer_list.h"
-#include "ui/base/win/window_impl.h"
+#include "ui/gfx/win/window_impl.h"
 
 template<typename T> struct DefaultSingletonTraits;
 
-namespace ui {
+namespace gfx {
 
 // Singleton message-only HWND that allows interested clients to receive WM_*
 // notifications.
@@ -56,6 +56,6 @@ class SingletonHwnd : public WindowImpl {
   DISALLOW_COPY_AND_ASSIGN(SingletonHwnd);
 };
 
-}  // namespace ui
+}  // namespace gfx
 
-#endif  // UI_BASE_WIN_SINGLETON_HWND_H_
+#endif  // UI_GFX_WIN_SINGLETON_HWND_H_

@@ -8,9 +8,9 @@
 
 #include "base/logging.h"
 #include "ui/base/win/hidden_window.h"
-#include "ui/base/win/window_impl.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/dpi_win.h"
+#include "ui/gfx/win/dpi.h"
+#include "ui/gfx/win/window_impl.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/widget/native_widget.h"

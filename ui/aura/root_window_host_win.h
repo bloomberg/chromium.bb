@@ -8,11 +8,11 @@
 #include "base/compiler_specific.h"
 #include "ui/aura/root_window_host.h"
 #include "ui/base/ui_export.h"
-#include "ui/base/win/window_impl.h"
+#include "ui/gfx/win/window_impl.h"
 
 namespace aura {
 
-class RootWindowHostWin : public RootWindowHost, public ui::WindowImpl {
+class RootWindowHostWin : public RootWindowHost, public gfx::WindowImpl {
  public:
   RootWindowHostWin(const gfx::Rect& bounds);
   virtual ~RootWindowHostWin();

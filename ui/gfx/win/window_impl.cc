@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/win/window_impl.h"
+#include "ui/gfx/win/window_impl.h"
 
 #include <list>
 
@@ -11,9 +11,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/win/wrapped_window_proc.h"
-#include "ui/base/win/hwnd_util.h"
+#include "ui/gfx/win/hwnd_util.h"
 
-namespace ui {
+namespace gfx {
 
 static const DWORD kWindowDefaultChildStyle =
     WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
@@ -149,7 +149,7 @@ WindowImpl::~WindowImpl() {
   ClearUserData();
 }
 
-void WindowImpl::Init(HWND parent, const gfx::Rect& bounds) {
+void WindowImpl::Init(HWND parent, const Rect& bounds) {
   if (window_style_ == 0)
     window_style_ = parent ? kWindowDefaultChildStyle : kWindowDefaultStyle;
 
@@ -216,7 +216,7 @@ void WindowImpl::Init(HWND parent, const gfx::Rect& bounds) {
   CheckWindowCreated(hwnd_);
 
   // The window procedure should have set the data for us.
-  CHECK_EQ(this, ui::GetWindowUserData(hwnd));
+  CHECK_EQ(this, GetWindowUserData(hwnd));
 }
 
 HICON WindowImpl::GetDefaultWindowIcon() const {
@@ -236,7 +236,7 @@ LRESULT WindowImpl::OnWndProc(UINT message, WPARAM w_param, LPARAM l_param) {
 
 void WindowImpl::ClearUserData() {
   if (::IsWindow(hwnd_))
-    ui::SetWindowUserData(hwnd_, NULL);
+    gfx::SetWindowUserData(hwnd_, NULL);
 }
 
 // static
@@ -248,7 +248,7 @@ LRESULT CALLBACK WindowImpl::WndProc(HWND hwnd,
     CREATESTRUCT* cs = reinterpret_cast<CREATESTRUCT*>(l_param);
     WindowImpl* window = reinterpret_cast<WindowImpl*>(cs->lpCreateParams);
     DCHECK(window);
-    ui::SetWindowUserData(hwnd, window);
+    gfx::SetWindowUserData(hwnd, window);
     window->hwnd_ = hwnd;
     window->got_create_ = true;
     if (hwnd)
@@ -256,8 +256,7 @@ LRESULT CALLBACK WindowImpl::WndProc(HWND hwnd,
     return TRUE;
   }
 
-  WindowImpl* window = reinterpret_cast<WindowImpl*>(
-      ui::GetWindowUserData(hwnd));
+  WindowImpl* window = reinterpret_cast<WindowImpl*>(GetWindowUserData(hwnd));
   if (!window)
     return 0;
 
@@ -270,4 +269,4 @@ ATOM WindowImpl::GetWindowClassAtom() {
   return ClassRegistrar::GetInstance()->RetrieveClassAtom(class_info);
 }
 
-}  // namespace ui
+}  // namespace gfx

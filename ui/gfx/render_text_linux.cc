@@ -12,11 +12,11 @@
 #include "base/i18n/break_iterator.h"
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkTypeface.h"
-#include "ui/base/text/utf16_indexing.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/font_render_params_linux.h"
 #include "ui/gfx/pango_util.h"
+#include "ui/gfx/utf16_indexing.h"
 
 namespace gfx {
 
@@ -252,7 +252,7 @@ std::vector<Rect> RenderTextLinux::GetSubstringBounds(const gfx::Range& range) {
 
 size_t RenderTextLinux::TextIndexToLayoutIndex(size_t index) const {
   DCHECK(layout_);
-  ptrdiff_t offset = ui::UTF16IndexToOffset(text(), 0, index);
+  ptrdiff_t offset = gfx::UTF16IndexToOffset(text(), 0, index);
   // Clamp layout indices to the length of the text actually used for layout.
   offset = std::min<size_t>(offset, g_utf8_strlen(layout_text_, -1));
   const char* layout_pointer = g_utf8_offset_to_pointer(layout_text_, offset);
@@ -263,7 +263,7 @@ size_t RenderTextLinux::LayoutIndexToTextIndex(size_t index) const {
   DCHECK(layout_);
   const char* layout_pointer = layout_text_ + index;
   const long offset = g_utf8_pointer_to_offset(layout_text_, layout_pointer);
-  return ui::UTF16OffsetToIndex(text(), 0, offset);
+  return gfx::UTF16OffsetToIndex(text(), 0, offset);
 }
 
 bool RenderTextLinux::IsCursorablePosition(size_t position) {
@@ -271,11 +271,11 @@ bool RenderTextLinux::IsCursorablePosition(size_t position) {
     return true;
   if (position >= text().length())
     return position == text().length();
-  if (!ui::IsValidCodePointIndex(text(), position))
+  if (!gfx::IsValidCodePointIndex(text(), position))
     return false;
 
   EnsureLayout();
-  ptrdiff_t offset = ui::UTF16IndexToOffset(text(), 0, position);
+  ptrdiff_t offset = gfx::UTF16IndexToOffset(text(), 0, position);
   // Check that the index corresponds with a valid text code point, that it is
   // marked as a legitimate cursor position by Pango, and that it is not
   // truncated from layout text (its glyph is shown on screen).

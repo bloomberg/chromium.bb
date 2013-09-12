@@ -17,7 +17,7 @@
 #include "chrome/browser/ui/views/theme_image_mapper.h"
 #include "grit/theme_resources.h"
 #include "ui/base/theme_provider.h"
-#include "ui/gfx/dpi_win.h"
+#include "ui/gfx/win/dpi.h"
 #include "ui/views/controls/menu/native_menu_win.h"
 
 #pragma comment(lib, "dwmapi.lib")

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/win/singleton_hwnd.h"
+#include "ui/gfx/win/singleton_hwnd.h"
 
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_loop.h"
 
-namespace ui {
+namespace gfx {
 
 // static
 SingletonHwnd* SingletonHwnd::GetInstance() {
@@ -23,7 +23,7 @@ void SingletonHwnd::AddObserver(Observer* observer) {
       DLOG(ERROR) << "Cannot create windows on non-UI thread!";
       return;
     }
-    WindowImpl::Init(NULL, gfx::Rect());
+    WindowImpl::Init(NULL, Rect());
   }
   observer_list_.AddObserver(observer);
 }
@@ -52,4 +52,4 @@ SingletonHwnd::SingletonHwnd() {
 SingletonHwnd::~SingletonHwnd() {
 }
 
-}  // namespace ui
+}  // namespace gfx

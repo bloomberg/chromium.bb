@@ -6,7 +6,7 @@
 #define UI_BASE_WIN_FOREGROUND_HELPER_H_
 
 #include "base/logging.h"
-#include "ui/base/win/window_impl.h"
+#include "ui/gfx/win/window_impl.h"
 
 namespace ui {
 
@@ -17,7 +17,7 @@ namespace ui {
 // to be capable of moving to the foreground.
 //
 // This is probably leveraging a windows bug.
-class UI_EXPORT ForegroundHelper : public WindowImpl {
+class UI_EXPORT ForegroundHelper : public gfx::WindowImpl {
  public:
   ForegroundHelper() : window_(NULL) { }
 

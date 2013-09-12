@@ -29,9 +29,9 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/common/content_switches.h"
-#include "ui/base/win/hwnd_util.h"
-#include "ui/gfx/dpi_win.h"
 #include "ui/gfx/gdi_util.h"
+#include "ui/gfx/win/dpi.h"
+#include "ui/gfx/win/hwnd_util.h"
 #endif
 
 #if defined(TOOLKIT_GTK)
@@ -118,7 +118,7 @@ LRESULT CALLBACK PluginWrapperWindowProc(HWND window, unsigned int message,
 }
 
 bool IsPluginWrapperWindow(HWND window) {
-  return ui::GetClassNameW(window) ==
+  return gfx::GetClassNameW(window) ==
       string16(kWrapperNativeWindowClassName);
 }
 
@@ -151,7 +151,7 @@ HWND ReparentWindow(HWND window, HWND parent) {
       MAKEINTATOM(atom), 0,
       WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
       0, 0, 0, 0, parent, 0, instance, 0);
-  ui::CheckWindowCreated(new_parent);
+  gfx::CheckWindowCreated(new_parent);
   ::SetParent(window, new_parent);
   // How many times we try to find a PluginProcessHost whose process matches
   // the HWND.

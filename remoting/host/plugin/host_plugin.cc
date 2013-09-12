@@ -21,7 +21,7 @@
 #include "remoting/host/plugin/host_plugin_utils.h"
 #include "remoting/host/plugin/host_script_object.h"
 #if defined(OS_WIN)
-#include "ui/gfx/dpi_win.h"
+#include "ui/gfx/win/dpi.h"
 #endif
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npfunctions.h"

@@ -12,12 +12,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
-#include "ui/base/text/utf16_indexing.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/range/range.h"
 #include "ui/gfx/render_text.h"
 #include "ui/gfx/text_constants.h"
+#include "ui/gfx/utf16_indexing.h"
 #include "ui/views/controls/textfield/textfield.h"
 
 namespace views {
@@ -384,7 +384,7 @@ bool TextfieldViewsModel::Backspace() {
   if (cursor_position > 0) {
     // Delete one code point, which may be two UTF-16 words.
     size_t previous_char =
-        ui::UTF16OffsetToIndex(GetText(), cursor_position, -1);
+        gfx::UTF16OffsetToIndex(GetText(), cursor_position, -1);
     ExecuteAndRecordDelete(gfx::Range(cursor_position, previous_char), true);
     return true;
   }
