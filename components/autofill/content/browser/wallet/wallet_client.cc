@@ -653,7 +653,7 @@ void WalletClient::OnURLFetchComplete(
   request_type_ = NO_PENDING_REQUEST;
 
   if (type != ACCEPT_LEGAL_DOCUMENTS && !response_dict) {
-    HandleMalformedResponse(scoped_request.get());
+    HandleMalformedResponse(type, scoped_request.get());
     return;
   }
 
@@ -672,7 +672,7 @@ void WalletClient::OnURLFetchComplete(
         delegate_->OnDidAuthenticateInstrument(
             LowerCaseEqualsASCII(trimmed, "success"));
       } else {
-        HandleMalformedResponse(scoped_request.get());
+        HandleMalformedResponse(type, scoped_request.get());
       }
       break;
     }
@@ -685,7 +685,7 @@ void WalletClient::OnURLFetchComplete(
         LogRequiredActions(full_wallet->required_actions());
         delegate_->OnDidGetFullWallet(full_wallet.Pass());
       } else {
-        HandleMalformedResponse(scoped_request.get());
+        HandleMalformedResponse(type, scoped_request.get());
       }
       break;
     }
@@ -697,7 +697,7 @@ void WalletClient::OnURLFetchComplete(
         LogRequiredActions(wallet_items->required_actions());
         delegate_->OnDidGetWalletItems(wallet_items.Pass());
       } else {
-        HandleMalformedResponse(scoped_request.get());
+        HandleMalformedResponse(type, scoped_request.get());
       }
       break;
     }
@@ -714,7 +714,7 @@ void WalletClient::OnURLFetchComplete(
       GetFormFieldErrors(*response_dict, &form_errors);
       if (instrument_id.empty() && shipping_address_id.empty() &&
           required_actions.empty()) {
-        HandleMalformedResponse(scoped_request.get());
+        HandleMalformedResponse(type, scoped_request.get());
       } else {
         LogRequiredActions(required_actions);
         delegate_->OnDidSaveToWallet(instrument_id,
@@ -739,9 +739,13 @@ void WalletClient::StartNextPendingRequest() {
   next_request.Run();
 }
 
-void WalletClient::HandleMalformedResponse(net::URLFetcher* request) {
+void WalletClient::HandleMalformedResponse(RequestType request_type,
+                                           net::URLFetcher* request) {
   // Called to inform exponential backoff logic of the error.
   request->ReceivedContentWasMalformed();
+  // Record failed API call in metrics.
+  delegate_->GetMetricLogger().LogWalletMalformedResponseMetric(
+    RequestTypeToUmaMetric(request_type));
   HandleWalletError(MALFORMED_RESPONSE);
 }
 

@@ -205,7 +205,8 @@ class WalletClient : public net::URLFetcherDelegate {
                          const std::string& mime_type);
 
   // Performs bookkeeping tasks for any invalid requests.
-  void HandleMalformedResponse(net::URLFetcher* request);
+  void HandleMalformedResponse(RequestType request_type,
+                               net::URLFetcher* request);
   void HandleNetworkError(int response_code);
   void HandleWalletError(ErrorType error_type);
 

@@ -173,6 +173,7 @@ std::string WalletApiMetricToString(
     case AutofillMetrics::SAVE_TO_WALLET:
       return "SaveToWallet";
     case AutofillMetrics::UNKNOWN_API_CALL:
+    case AutofillMetrics::NUM_WALLET_API_CALLS:
       NOTREACHED();
       return "UnknownApiCall";
   }
@@ -379,6 +380,12 @@ void AutofillMetrics::LogWalletApiCallDuration(
     const base::TimeDelta& duration) const {
   LogUMAHistogramTimes("Wallet.ApiCallDuration." +
                        WalletApiMetricToString(metric), duration);
+}
+
+void AutofillMetrics::LogWalletMalformedResponseMetric(
+    WalletApiCallMetric metric) const {
+  UMA_HISTOGRAM_ENUMERATION("Wallet.MalformedResponse", metric,
+                            NUM_WALLET_API_CALLS);
 }
 
 void AutofillMetrics::LogWalletRequiredActionMetric(

@@ -17559,6 +17559,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Wallet.MalformedResponse" enum="WalletApiCall">
+  <summary>
+    Counts the number of times each Wallet API failed due to being unable to
+    parse the response.
+  </summary>
+</histogram>
+
 <histogram name="Wallet.ResponseCode" enum="HttpResponseCode">
   <summary>HTTP response codes seen by Wallet client.</summary>
 </histogram>
@@ -25705,6 +25712,15 @@ other types of suffix sets.
   <int value="4" label="L2TP/IPSec None"/>
   <int value="5" label="L2TP/IPSec Certificate"/>
   <int value="6" label="L2TP/IPSec Username/Password"/>
+</enum>
+
+<enum name="WalletApiCall" type="int">
+  <int value="0" label="Unknown API call"/>
+  <int value="1" label="Accept Legal Documents"/>
+  <int value="2" label="Authenticate Instrument"/>
+  <int value="3" label="Get Full Wallet"/>
+  <int value="4" label="Get Wallet Items"/>
+  <int value="5" label="Save to Wallet"/>
 </enum>
 
 <enum name="WalletErrors" type="int">

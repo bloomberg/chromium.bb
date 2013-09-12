@@ -584,6 +584,8 @@ class MockAutofillMetrics : public AutofillMetrics {
   MOCK_CONST_METHOD1(LogWalletErrorMetric, void(WalletErrorMetric metric));
   MOCK_CONST_METHOD1(LogWalletRequiredActionMetric,
                      void(WalletRequiredActionMetric action));
+  MOCK_CONST_METHOD1(LogWalletMalformedResponseMetric,
+                     void(WalletApiCallMetric metric));
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAutofillMetrics);
 };
@@ -621,6 +623,12 @@ class MockWalletClientDelegate : public WalletClientDelegate {
       size_t times) {
     EXPECT_CALL(metric_logger_,
                 LogWalletApiCallDuration(metric, testing::_)).Times(times);
+  }
+
+  void ExpectLogWalletMalformedResponse(
+      AutofillMetrics::WalletApiCallMetric metric) {
+    EXPECT_CALL(metric_logger_,
+                LogWalletMalformedResponseMetric(metric)).Times(1);
   }
 
   void ExpectWalletErrorMetric(AutofillMetrics::WalletErrorMetric metric) {
@@ -1055,6 +1063,7 @@ TEST_F(WalletClientTest, GetFullWalletMalformedResponse) {
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::GET_FULL_WALLET, 1);
   delegate_.ExpectBaselineMetrics();
   delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_MALFORMED_RESPONSE);
+  delegate_.ExpectLogWalletMalformedResponse(AutofillMetrics::GET_FULL_WALLET);
 
   WalletClient::FullWalletRequest full_wallet_request(
       "instrument_id",
@@ -1137,6 +1146,8 @@ TEST_F(WalletClientTest, AuthenticateInstrumentFailedMalformedResponse) {
       1);
   delegate_.ExpectBaselineMetrics();
   delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_MALFORMED_RESPONSE);
+  delegate_.ExpectLogWalletMalformedResponse(
+      AutofillMetrics::AUTHENTICATE_INSTRUMENT);
 
   wallet_client_->AuthenticateInstrument("instrument_id", "123");
 
@@ -1230,6 +1241,7 @@ TEST_F(WalletClientTest, SaveAddressFailedInvalidRequiredAction) {
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::SAVE_TO_WALLET, 1);
   delegate_.ExpectBaselineMetrics();
   delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_MALFORMED_RESPONSE);
+  delegate_.ExpectLogWalletMalformedResponse(AutofillMetrics::SAVE_TO_WALLET);
 
   scoped_ptr<Address> address = GetTestSaveableAddress();
   wallet_client_->SaveToWallet(scoped_ptr<Instrument>(),
@@ -1246,6 +1258,7 @@ TEST_F(WalletClientTest, SaveAddressFailedMalformedResponse) {
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::SAVE_TO_WALLET, 1);
   delegate_.ExpectBaselineMetrics();
   delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_MALFORMED_RESPONSE);
+  delegate_.ExpectLogWalletMalformedResponse(AutofillMetrics::SAVE_TO_WALLET);
 
   scoped_ptr<Address> address = GetTestSaveableAddress();
   wallet_client_->SaveToWallet(scoped_ptr<Instrument>(),
@@ -1314,6 +1327,7 @@ TEST_F(WalletClientTest, SaveInstrumentFailedInvalidRequiredActions) {
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::SAVE_TO_WALLET, 1);
   delegate_.ExpectBaselineMetrics();
   delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_MALFORMED_RESPONSE);
+  delegate_.ExpectLogWalletMalformedResponse(AutofillMetrics::SAVE_TO_WALLET);
 
   EXPECT_CALL(delegate_,
               OnWalletError(WalletClient::MALFORMED_RESPONSE));
@@ -1335,6 +1349,7 @@ TEST_F(WalletClientTest, SaveInstrumentFailedMalformedResponse) {
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::SAVE_TO_WALLET, 1);
   delegate_.ExpectBaselineMetrics();
   delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_MALFORMED_RESPONSE);
+  delegate_.ExpectLogWalletMalformedResponse(AutofillMetrics::SAVE_TO_WALLET);
 
   scoped_ptr<Instrument> instrument = GetTestInstrument();
   wallet_client_->SaveToWallet(instrument.Pass(),
@@ -1415,6 +1430,7 @@ TEST_F(WalletClientTest, SaveInstrumentAndAddressFailedInvalidRequiredAction) {
       1);
   delegate_.ExpectBaselineMetrics();
   delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_MALFORMED_RESPONSE);
+  delegate_.ExpectLogWalletMalformedResponse(AutofillMetrics::SAVE_TO_WALLET);
 
   scoped_ptr<Instrument> instrument = GetTestInstrument();
   scoped_ptr<Address> address = GetTestSaveableAddress();
@@ -1486,6 +1502,7 @@ TEST_F(WalletClientTest, UpdateAddressFailedInvalidRequiredAction) {
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::SAVE_TO_WALLET, 1);
   delegate_.ExpectBaselineMetrics();
   delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_MALFORMED_RESPONSE);
+  delegate_.ExpectLogWalletMalformedResponse(AutofillMetrics::SAVE_TO_WALLET);
 
   scoped_ptr<Address> address = GetTestShippingAddress();
   address->set_object_id("shipping_address_id");
@@ -1504,6 +1521,7 @@ TEST_F(WalletClientTest, UpdateAddressMalformedResponse) {
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::SAVE_TO_WALLET, 1);
   delegate_.ExpectBaselineMetrics();
   delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_MALFORMED_RESPONSE);
+  delegate_.ExpectLogWalletMalformedResponse(AutofillMetrics::SAVE_TO_WALLET);
 
   scoped_ptr<Address> address = GetTestShippingAddress();
   address->set_object_id("shipping_address_id");
@@ -1615,6 +1633,7 @@ TEST_F(WalletClientTest, UpdateInstrumentFailedInvalidRequiredAction) {
                                            1);
   delegate_.ExpectBaselineMetrics();
   delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_MALFORMED_RESPONSE);
+  delegate_.ExpectLogWalletMalformedResponse(AutofillMetrics::SAVE_TO_WALLET);
 
   wallet_client_->SaveToWallet(GetTestAddressUpgradeInstrument(),
                                scoped_ptr<Address>(),
@@ -1632,6 +1651,7 @@ TEST_F(WalletClientTest, UpdateInstrumentMalformedResponse) {
                                            1);
   delegate_.ExpectBaselineMetrics();
   delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_MALFORMED_RESPONSE);
+  delegate_.ExpectLogWalletMalformedResponse(AutofillMetrics::SAVE_TO_WALLET);
 
   wallet_client_->SaveToWallet(GetTestAddressUpgradeInstrument(),
                                scoped_ptr<Address>(),

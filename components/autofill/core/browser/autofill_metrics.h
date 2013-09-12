@@ -256,6 +256,7 @@ class AutofillMetrics {
     GET_FULL_WALLET,
     GET_WALLET_ITEMS,
     SAVE_TO_WALLET,
+    NUM_WALLET_API_CALLS
   };
 
   // For measuring the frequency of errors while communicating with the Wallet
@@ -384,6 +385,10 @@ class AutofillMetrics {
   virtual void LogWalletApiCallDuration(
       WalletApiCallMetric metric,
       const base::TimeDelta& duration) const;
+
+  // Logs that the Wallet API call corresponding to |metric| was malformed.
+  virtual void LogWalletMalformedResponseMetric(
+      WalletApiCallMetric metric) const;
 
   // Logs |required_action| to the required actions histogram.
   virtual void LogWalletRequiredActionMetric(
