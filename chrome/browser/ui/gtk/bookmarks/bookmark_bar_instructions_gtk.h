@@ -12,16 +12,13 @@
 #include "ui/base/gtk/gtk_signal.h"
 
 typedef struct _GtkWidget GtkWidget;
+class BookmarkBarInstructionsDelegate;
 class GtkThemeService;
 class Profile;
 
-namespace chrome {
-class BookmarkBarInstructionsDelegate;
-}
-
 class BookmarkBarInstructionsGtk : public content::NotificationObserver {
  public:
-  BookmarkBarInstructionsGtk(chrome::BookmarkBarInstructionsDelegate* delegate,
+  BookmarkBarInstructionsGtk(BookmarkBarInstructionsDelegate* delegate,
                              Profile* profile);
 
   // Get the native widget.
@@ -38,7 +35,7 @@ class BookmarkBarInstructionsGtk : public content::NotificationObserver {
   // Sets the correct color for |instructions_label_| and |instructions_link_|.
   void UpdateColors();
 
-  chrome::BookmarkBarInstructionsDelegate* delegate_;
+  BookmarkBarInstructionsDelegate* delegate_;
 
   Profile* profile_;
 

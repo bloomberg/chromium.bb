@@ -17,7 +17,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 BookmarkBarInstructionsGtk::BookmarkBarInstructionsGtk(
-    chrome::BookmarkBarInstructionsDelegate* delegate,
+    BookmarkBarInstructionsDelegate* delegate,
     Profile* profile)
     : delegate_(delegate),
       profile_(profile),

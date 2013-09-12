@@ -61,7 +61,7 @@ class BookmarkBarView : public DetachableToolbarView,
                         public views::DragController,
                         public ui::AnimationDelegate,
                         public BookmarkMenuControllerObserver,
-                        public chrome::BookmarkBarInstructionsDelegate,
+                        public BookmarkBarInstructionsDelegate,
                         public BookmarkBubbleViewObserver {
  public:
   // The internal view class name.
@@ -192,7 +192,7 @@ class BookmarkBarView : public DetachableToolbarView,
   virtual void BookmarkMenuControllerDeleted(
       BookmarkMenuController* controller) OVERRIDE;
 
-  // chrome::BookmarkBarInstructionsDelegate:
+  // BookmarkBarInstructionsDelegate:
   virtual void ShowImportDialog() OVERRIDE;
 
   // BookmarkBubbleViewObserver:

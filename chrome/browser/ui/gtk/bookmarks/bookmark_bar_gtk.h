@@ -46,7 +46,7 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
                        public BookmarkModelObserver,
                        public MenuBarHelper::Delegate,
                        public content::NotificationObserver,
-                       public chrome::BookmarkBarInstructionsDelegate,
+                       public BookmarkBarInstructionsDelegate,
                        public BookmarkContextMenuControllerDelegate {
  public:
   BookmarkBarGtk(BrowserWindowGtk* window,
@@ -299,7 +299,7 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
   // |throbbing_widget_| callback.
   CHROMEGTK_CALLBACK_0(BookmarkBarGtk, void, OnThrobbingWidgetDestroy);
 
-  // Overriden from chrome::BookmarkBarInstructionsDelegate:
+  // Overriden from BookmarkBarInstructionsDelegate:
   virtual void ShowImportDialog() OVERRIDE;
 
   // Updates the visibility of the apps shortcut button |apps_shortcut_visible_|

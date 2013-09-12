@@ -25,7 +25,7 @@ const int kViewPadding = 6;
 }  // namespace
 
 BookmarkBarInstructionsView::BookmarkBarInstructionsView(
-    chrome::BookmarkBarInstructionsDelegate* delegate)
+    BookmarkBarInstructionsDelegate* delegate)
     : delegate_(delegate),
       instructions_(NULL),
       import_link_(NULL),

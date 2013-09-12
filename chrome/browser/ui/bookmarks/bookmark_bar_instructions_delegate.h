@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_BAR_INSTRUCTIONS_DELEGATE_H_
 #define CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_BAR_INSTRUCTIONS_DELEGATE_H_
 
-namespace chrome {
-
 // The delegate is notified once the user clicks on the link to import
 // bookmarks.
 class BookmarkBarInstructionsDelegate {
@@ -16,7 +14,5 @@ class BookmarkBarInstructionsDelegate {
  protected:
   virtual ~BookmarkBarInstructionsDelegate() {}
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_BAR_INSTRUCTIONS_DELEGATE_H_
