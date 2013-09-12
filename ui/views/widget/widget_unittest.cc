@@ -1206,6 +1206,8 @@ TEST_F(WidgetTest, DesktopAuraFullscreenWindowOwnerDestroyed) {
   RunPendingMessages();
 }
 
+// TODO(erg): Disabled on desktop linux until http://crbug.com/288988 is fixed.
+#if !defined(OS_LINUX)
 TEST_F(WidgetTest, DesktopAuraTopLevelOwnedPopupTest) {
   ViewsDelegate::views_delegate = NULL;
   DesktopAuraTopLevelWindowTest popup_window;
@@ -1216,6 +1218,7 @@ TEST_F(WidgetTest, DesktopAuraTopLevelOwnedPopupTest) {
   ASSERT_NO_FATAL_FAILURE(popup_window.DestroyOwnedWindow());
   RunPendingMessages();
 }
+#endif
 
 // Test to ensure that the aura Window's visiblity state is set to visible if
 // the underlying widget is hidden and then shown.
