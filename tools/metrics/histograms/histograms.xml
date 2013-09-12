@@ -20429,6 +20429,7 @@ other types of suffix sets.
   <int value="516" label="INFOBARS_SHOW"/>
   <int value="517" label="VIRTUALKEYBOARDPRIVATE_MOVECURSOR"/>
   <int value="518" label="AUTOTESTPRIVATE_SIMULATEASANMEMORYBUG"/>
+  <int value="519" label="WALLPAPER_SETWALLPAPER"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

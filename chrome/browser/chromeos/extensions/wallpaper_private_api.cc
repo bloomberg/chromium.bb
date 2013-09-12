@@ -11,13 +11,10 @@
 #include "ash/wm/window_util.h"
 #include "base/file_util.h"
 #include "base/files/file_enumerator.h"
-#include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "base/synchronization/cancellation_flag.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/worker_pool.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/user.h"
@@ -25,17 +22,11 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wallpaper_manager.h"
 #include "chrome/browser/extensions/event_router.h"
-#include "chrome/browser/image_decoder.h"
 #include "chrome/common/chrome_paths.h"
-#include "chromeos/login/login_state.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/app_locale_settings.h"
 #include "grit/generated_resources.h"
 #include "grit/platform_locale_settings.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_request_status.h"
-#include "ui/aura/window_observer.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/webui/web_ui_util.h"
 #include "url/gurl.h"
@@ -45,14 +36,6 @@ using content::BrowserThread;
 
 namespace {
 
-// Keeps in sync (same order) with WallpaperLayout enum in header file.
-const char* kWallpaperLayoutArrays[] = {
-    "CENTER",
-    "CENTER_CROPPED",
-    "STRETCH",
-    "TILE"
-};
-
 const char kOnlineSource[] = "ONLINE";
 const char kCustomSource[] = "CUSTOM";
 
@@ -60,17 +43,6 @@ const char kCustomSource[] = "CUSTOM";
 const char kWallpaperManifestBaseURL[] = "https://commondatastorage.googleapis."
     "com/chromeos-wallpaper-public/manifest_";
 #endif
-
-const int kWallpaperLayoutCount = arraysize(kWallpaperLayoutArrays);
-
-ash::WallpaperLayout GetLayoutEnum(const std::string& layout) {
-  for (int i = 0; i < kWallpaperLayoutCount; i++) {
-    if (layout.compare(kWallpaperLayoutArrays[i]) == 0)
-      return static_cast<ash::WallpaperLayout>(i);
-  }
-  // Default to use CENTER layout.
-  return ash::WALLPAPER_LAYOUT_CENTER;
-}
 
 // Saves |data| as |file_name| to directory with |key|. Return false if the
 // directory can not be found/created or failed to write file.
@@ -229,86 +201,6 @@ bool WallpaperPrivateGetStringsFunction::RunImpl() {
   return true;
 }
 
-class WallpaperFunctionBase::WallpaperDecoder : public ImageDecoder::Delegate {
- public:
-  explicit WallpaperDecoder(scoped_refptr<WallpaperFunctionBase> function)
-      : function_(function) {
-  }
-
-  void Start(const std::string& image_data) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-    // This function can only be called after user login. It is fine to use
-    // unsafe image decoder here. Before user login, a robust jpeg decoder will
-    // be used.
-    CHECK(chromeos::LoginState::Get()->IsUserLoggedIn());
-    unsafe_image_decoder_ = new ImageDecoder(this, image_data,
-                                             ImageDecoder::DEFAULT_CODEC);
-    scoped_refptr<base::MessageLoopProxy> task_runner =
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI);
-    unsafe_image_decoder_->Start(task_runner);
-  }
-
-  void Cancel() {
-    cancel_flag_.Set();
-  }
-
-  virtual void OnImageDecoded(const ImageDecoder* decoder,
-                              const SkBitmap& decoded_image) OVERRIDE {
-    // Make the SkBitmap immutable as we won't modify it. This is important
-    // because otherwise it gets duplicated during painting, wasting memory.
-    SkBitmap immutable(decoded_image);
-    immutable.setImmutable();
-    gfx::ImageSkia final_image =
-        gfx::ImageSkia::CreateFrom1xBitmap(immutable);
-    final_image.MakeThreadSafe();
-    if (cancel_flag_.IsSet()) {
-      function_->OnFailureOrCancel("");
-      delete this;
-      return;
-    }
-    function_->OnWallpaperDecoded(final_image);
-    delete this;
-  }
-
-  virtual void OnDecodeImageFailed(const ImageDecoder* decoder) OVERRIDE {
-    function_->OnFailureOrCancel(
-        l10n_util::GetStringUTF8(IDS_WALLPAPER_MANAGER_INVALID_WALLPAPER));
-    delete this;
-  }
-
- private:
-  scoped_refptr<WallpaperFunctionBase> function_;
-  scoped_refptr<ImageDecoder> unsafe_image_decoder_;
-  base::CancellationFlag cancel_flag_;
-
-  DISALLOW_COPY_AND_ASSIGN(WallpaperDecoder);
-};
-
-WallpaperFunctionBase::WallpaperDecoder*
-    WallpaperFunctionBase::wallpaper_decoder_;
-
-WallpaperFunctionBase::WallpaperFunctionBase() {
-}
-
-WallpaperFunctionBase::~WallpaperFunctionBase() {
-}
-
-void WallpaperFunctionBase::StartDecode(const std::string& data) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (wallpaper_decoder_)
-    wallpaper_decoder_->Cancel();
-  wallpaper_decoder_ = new WallpaperDecoder(this);
-  wallpaper_decoder_->Start(data);
-}
-
-void WallpaperFunctionBase::OnFailureOrCancel(const std::string& error) {
-  wallpaper_decoder_ = NULL;
-  if (!error.empty())
-    SetError(error);
-  SendResponse(false);
-}
-
 WallpaperPrivateSetWallpaperIfExistsFunction::
     WallpaperPrivateSetWallpaperIfExistsFunction() {}
 
@@ -322,7 +214,7 @@ bool WallpaperPrivateSetWallpaperIfExistsFunction::RunImpl() {
   std::string layout_string;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(1, &layout_string));
   EXTENSION_FUNCTION_VALIDATE(!layout_string.empty());
-  layout_ = GetLayoutEnum(layout_string);
+  layout_ = wallpaper_api_util::GetLayoutEnum(layout_string);
 
   std::string source;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(2, &source));
@@ -403,8 +295,8 @@ void WallpaperPrivateSetWallpaperIfExistsFunction::
 
 void WallpaperPrivateSetWallpaperIfExistsFunction::OnWallpaperDecoded(
     const gfx::ImageSkia& wallpaper) {
-  // Set wallpaper_decoder_ to null since the decoding already finished.
-  wallpaper_decoder_ = NULL;
+  // Set unsafe_wallpaper_decoder_ to null since the decoding already finished.
+  unsafe_wallpaper_decoder_ = NULL;
 
   chromeos::WallpaperManager* wallpaper_manager =
       chromeos::WallpaperManager::Get();
@@ -426,7 +318,7 @@ void WallpaperPrivateSetWallpaperIfExistsFunction::OnWallpaperDecoded(
 void WallpaperPrivateSetWallpaperIfExistsFunction::OnFileNotExists(
     const std::string& error) {
   SetResult(base::Value::CreateBooleanValue(false));
-  OnFailureOrCancel(error);
+  OnFailure(error);
 };
 
 WallpaperPrivateSetWallpaperFunction::WallpaperPrivateSetWallpaperFunction() {
@@ -442,7 +334,7 @@ bool WallpaperPrivateSetWallpaperFunction::RunImpl() {
   std::string layout_string;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(1, &layout_string));
   EXTENSION_FUNCTION_VALIDATE(!layout_string.empty());
-  layout_ = GetLayoutEnum(layout_string);
+  layout_ = wallpaper_api_util::GetLayoutEnum(layout_string);
 
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(2, &url_));
   EXTENSION_FUNCTION_VALIDATE(!url_.empty());
@@ -459,8 +351,8 @@ bool WallpaperPrivateSetWallpaperFunction::RunImpl() {
 void WallpaperPrivateSetWallpaperFunction::OnWallpaperDecoded(
     const gfx::ImageSkia& wallpaper) {
   wallpaper_ = wallpaper;
-  // Set wallpaper_decoder_ to null since the decoding already finished.
-  wallpaper_decoder_ = NULL;
+  // Set unsafe_wallpaper_decoder_ to null since the decoding already finished.
+  unsafe_wallpaper_decoder_ = NULL;
 
   sequence_token_ = BrowserThread::GetBlockingPool()->
       GetNamedSequenceToken(chromeos::kWallpaperSequenceTokenName);
@@ -507,7 +399,7 @@ void WallpaperPrivateSetWallpaperFunction::SaveToFile() {
         "Failed to create/write wallpaper to %s.", file_name.c_str());
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&WallpaperPrivateSetWallpaperFunction::OnFailureOrCancel,
+        base::Bind(&WallpaperPrivateSetWallpaperFunction::OnFailure,
                    this, error));
   }
 }
@@ -569,7 +461,7 @@ bool WallpaperPrivateSetCustomWallpaperFunction::RunImpl() {
   std::string layout_string;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(1, &layout_string));
   EXTENSION_FUNCTION_VALIDATE(!layout_string.empty());
-  layout_ = GetLayoutEnum(layout_string);
+  layout_ = wallpaper_api_util::GetLayoutEnum(layout_string);
 
   EXTENSION_FUNCTION_VALIDATE(args_->GetBoolean(2, &generate_thumbnail_));
 
@@ -607,7 +499,7 @@ void WallpaperPrivateSetCustomWallpaperFunction::OnWallpaperDecoded(
   wallpaper_manager->SetCustomWallpaper(email_, file_name_, layout_,
                                         chromeos::User::CUSTOMIZED,
                                         image);
-  wallpaper_decoder_ = NULL;
+  unsafe_wallpaper_decoder_ = NULL;
 
   if (generate_thumbnail_) {
     wallpaper.EnsureRepsForSupportedScaleFactors();
@@ -673,7 +565,7 @@ bool WallpaperPrivateSetCustomWallpaperLayoutFunction::RunImpl() {
     SendResponse(false);
     return false;
   }
-  info.layout = GetLayoutEnum(layout_string);
+  info.layout = wallpaper_api_util::GetLayoutEnum(layout_string);
 
   std::string email = chromeos::UserManager::Get()->GetLoggedInUser()->email();
   bool is_persistent =

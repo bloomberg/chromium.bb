@@ -7,10 +7,9 @@
 
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "chrome/browser/chromeos/extensions/wallpaper_function_base.h"
 #include "chrome/browser/chromeos/login/user.h"
-#include "chrome/browser/extensions/extension_function.h"
 #include "net/url_request/url_fetcher_delegate.h"
-#include "ui/gfx/image/image_skia.h"
 
 namespace chromeos {
 class UserImage;
@@ -27,31 +26,6 @@ class WallpaperPrivateGetStringsFunction : public SyncExtensionFunction {
 
   // SyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
-};
-
-// Wallpaper manager function base. It contains a JPEG decoder to decode
-// wallpaper data.
-class WallpaperFunctionBase : public AsyncExtensionFunction {
- public:
-  WallpaperFunctionBase();
-
- protected:
-  virtual ~WallpaperFunctionBase();
-
-  // A class to decode JPEG file.
-  class WallpaperDecoder;
-
-  // Holds an instance of WallpaperDecoder.
-  static WallpaperDecoder* wallpaper_decoder_;
-
-  // Starts to decode |data|. Must run on UI thread.
-  void StartDecode(const std::string& data);
-
-  // Handles failure or cancel cases. Passes error message to Javascript side.
-  void OnFailureOrCancel(const std::string& error);
-
- private:
-  virtual void OnWallpaperDecoded(const gfx::ImageSkia& wallpaper) = 0;
 };
 
 class WallpaperPrivateSetWallpaperIfExistsFunction
@@ -91,7 +65,6 @@ class WallpaperPrivateSetWallpaperIfExistsFunction
   // Sequence token associated with wallpaper operations. Shared with
   // WallpaperManager.
   base::SequencedWorkerPool::SequenceToken sequence_token_;
-
 };
 
 class WallpaperPrivateSetWallpaperFunction : public WallpaperFunctionBase {

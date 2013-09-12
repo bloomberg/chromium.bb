@@ -576,6 +576,11 @@
     "dependencies": ["permission:virtualKeyboardPrivate"],
     "contexts": ["blessed_extension"]
   },
+  "wallpaper": {
+    "platform": "chromeos",
+    "dependencies": ["permission:wallpaper"],
+    "contexts": ["blessed_extension"]
+  },
   "wallpaperPrivate": {
     "platform": "chromeos",
     "dependencies": ["permission:wallpaperPrivate"],

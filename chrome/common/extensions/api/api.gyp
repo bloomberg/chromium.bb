@@ -107,6 +107,7 @@
           'test.json',
           'top_sites.json',
           'usb.idl',
+          'wallpaper.json',
           'wallpaper_private.json',
           'web_navigation.json',
           'web_request.json',

@@ -92,7 +92,6 @@ base::FilePath GetCustomWallpaperDir(const char* sub_dir,
   return custom_wallpaper_dir.Append(sub_dir).Append(email);
 }
 
-
 }  // namespace
 
 namespace chromeos {

@@ -43,7 +43,7 @@
           {
             "type": "string",
             "name": "layout",
-            "enum": [ "STRETCH", "CENTER", "CENTER_CROPPED"]
+            "enum": [ "STRETCH", "CENTER", "CENTER_CROPPED" ]
           },
           {
             "type": "string",
@@ -75,7 +75,7 @@
           {
             "type": "string",
             "name": "layout",
-            "enum": [ "STRETCH", "CENTER", "CENTER_CROPPED"]
+            "enum": [ "STRETCH", "CENTER", "CENTER_CROPPED" ]
           },
           {
             "type": "string",
