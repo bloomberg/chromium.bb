@@ -1372,29 +1372,25 @@ TEST_F(LayerTreeHostCommonTest, TransformsForRenderSurfaceHierarchy) {
   // Sanity check. If these fail there is probably a bug in the test itself.  It
   // is expected that we correctly set up transforms so that the y-component of
   // the screen-space transform encodes the "depth" of the layer in the tree.
-  EXPECT_FLOAT_EQ(1.0,
-                  parent->screen_space_transform().matrix().getDouble(1, 3));
+  EXPECT_FLOAT_EQ(1.0, parent->screen_space_transform().matrix().get(1, 3));
+  EXPECT_FLOAT_EQ(2.0,
+                  child_of_root->screen_space_transform().matrix().get(1, 3));
   EXPECT_FLOAT_EQ(
-      2.0, child_of_root->screen_space_transform().matrix().getDouble(1, 3));
-  EXPECT_FLOAT_EQ(
-      3.0,
-      grand_child_of_root->screen_space_transform().matrix().getDouble(1, 3));
+      3.0, grand_child_of_root->screen_space_transform().matrix().get(1, 3));
 
+  EXPECT_FLOAT_EQ(2.0,
+                  render_surface1->screen_space_transform().matrix().get(1, 3));
+  EXPECT_FLOAT_EQ(3.0,
+                  child_of_rs1->screen_space_transform().matrix().get(1, 3));
   EXPECT_FLOAT_EQ(
-      2.0, render_surface1->screen_space_transform().matrix().getDouble(1, 3));
-  EXPECT_FLOAT_EQ(
-      3.0, child_of_rs1->screen_space_transform().matrix().getDouble(1, 3));
-  EXPECT_FLOAT_EQ(
-      4.0,
-      grand_child_of_rs1->screen_space_transform().matrix().getDouble(1, 3));
+      4.0, grand_child_of_rs1->screen_space_transform().matrix().get(1, 3));
 
+  EXPECT_FLOAT_EQ(3.0,
+                  render_surface2->screen_space_transform().matrix().get(1, 3));
+  EXPECT_FLOAT_EQ(4.0,
+                  child_of_rs2->screen_space_transform().matrix().get(1, 3));
   EXPECT_FLOAT_EQ(
-      3.0, render_surface2->screen_space_transform().matrix().getDouble(1, 3));
-  EXPECT_FLOAT_EQ(
-      4.0, child_of_rs2->screen_space_transform().matrix().getDouble(1, 3));
-  EXPECT_FLOAT_EQ(
-      5.0,
-      grand_child_of_rs2->screen_space_transform().matrix().getDouble(1, 3));
+      5.0, grand_child_of_rs2->screen_space_transform().matrix().get(1, 3));
 }
 
 TEST_F(LayerTreeHostCommonTest, TransformsForFlatteningLayer) {
@@ -1664,8 +1660,10 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
     compositeSquared.ConcatTransform(composite);
     gfx::Transform compositeCubed = compositeSquared;
     compositeCubed.ConcatTransform(composite);
-    EXPECT_EQ(compositeSquared, root->draw_properties().target_space_transform);
-    EXPECT_EQ(compositeCubed, child->draw_properties().target_space_transform);
+    EXPECT_TRANSFORMATION_MATRIX_EQ(
+        compositeSquared, root->draw_properties().target_space_transform);
+    EXPECT_TRANSFORMATION_MATRIX_EQ(
+        compositeCubed, child->draw_properties().target_space_transform);
     EXPECT_EQ(identity_matrix, root->render_surface()->draw_transform());
   }
 }
@@ -2638,29 +2636,25 @@ TEST_F(LayerTreeHostCommonTest, AnimationsForRenderSurfaceHierarchy) {
   // Sanity check. If these fail there is probably a bug in the test itself.
   // It is expected that we correctly set up transforms so that the y-component
   // of the screen-space transform encodes the "depth" of the layer in the tree.
-  EXPECT_FLOAT_EQ(1.0,
-                  parent->screen_space_transform().matrix().getDouble(1, 3));
+  EXPECT_FLOAT_EQ(1.0, parent->screen_space_transform().matrix().get(1, 3));
+  EXPECT_FLOAT_EQ(2.0,
+                  child_of_root->screen_space_transform().matrix().get(1, 3));
   EXPECT_FLOAT_EQ(
-      2.0, child_of_root->screen_space_transform().matrix().getDouble(1, 3));
-  EXPECT_FLOAT_EQ(
-      3.0,
-      grand_child_of_root->screen_space_transform().matrix().getDouble(1, 3));
+      3.0, grand_child_of_root->screen_space_transform().matrix().get(1, 3));
 
+  EXPECT_FLOAT_EQ(2.0,
+                  render_surface1->screen_space_transform().matrix().get(1, 3));
+  EXPECT_FLOAT_EQ(3.0,
+                  child_of_rs1->screen_space_transform().matrix().get(1, 3));
   EXPECT_FLOAT_EQ(
-      2.0, render_surface1->screen_space_transform().matrix().getDouble(1, 3));
-  EXPECT_FLOAT_EQ(
-      3.0, child_of_rs1->screen_space_transform().matrix().getDouble(1, 3));
-  EXPECT_FLOAT_EQ(
-      4.0,
-      grand_child_of_rs1->screen_space_transform().matrix().getDouble(1, 3));
+      4.0, grand_child_of_rs1->screen_space_transform().matrix().get(1, 3));
 
+  EXPECT_FLOAT_EQ(3.0,
+                  render_surface2->screen_space_transform().matrix().get(1, 3));
+  EXPECT_FLOAT_EQ(4.0,
+                  child_of_rs2->screen_space_transform().matrix().get(1, 3));
   EXPECT_FLOAT_EQ(
-      3.0, render_surface2->screen_space_transform().matrix().getDouble(1, 3));
-  EXPECT_FLOAT_EQ(
-      4.0, child_of_rs2->screen_space_transform().matrix().getDouble(1, 3));
-  EXPECT_FLOAT_EQ(
-      5.0,
-      grand_child_of_rs2->screen_space_transform().matrix().getDouble(1, 3));
+      5.0, grand_child_of_rs2->screen_space_transform().matrix().get(1, 3));
 }
 
 TEST_F(LayerTreeHostCommonTest, VisibleRectForIdentityTransform) {
@@ -2796,7 +2790,8 @@ TEST_F(LayerTreeHostCommonTest, VisibleRectFor3dOrthographicTransform) {
   // degrees, but shifted to the side so only the right-half the layer would be
   // visible on the surface.
   // 100 is the un-rotated layer width; divided by sqrt(2) is the rotated width.
-  double half_width_of_rotated_layer = (100.0 / sqrt(2.0)) * 0.5;
+  SkMScalar half_width_of_rotated_layer =
+      SkDoubleToMScalar((100.0 / sqrt(2.0)) * 0.5);
   layer_to_surface_transform.MakeIdentity();
   layer_to_surface_transform.Translate(-half_width_of_rotated_layer, 0.0);
   layer_to_surface_transform.RotateAboutYAxis(45.0);  // Rotates about the left
@@ -3219,7 +3214,7 @@ TEST_F(LayerTreeHostCommonTest,
   // bounds are visible since there is no way to inverse-project the surface
   // bounds to intersect.
   uninvertible_matrix.MakeIdentity();
-  uninvertible_matrix.matrix().setDouble(2, 2, 0.0);
+  uninvertible_matrix.matrix().set(2, 2, 0.0);
   ASSERT_FALSE(uninvertible_matrix.IsInvertible());
 
   SetLayerPropertiesForTesting(child.get(),
@@ -3240,7 +3235,7 @@ TEST_F(LayerTreeHostCommonTest,
   // assume that the whole layer is visible.
   uninvertible_matrix.MakeIdentity();
   uninvertible_matrix.Translate(500.0, 0.0);
-  uninvertible_matrix.matrix().setDouble(2, 2, 0.0);
+  uninvertible_matrix.matrix().set(2, 2, 0.0);
   ASSERT_FALSE(uninvertible_matrix.IsInvertible());
 
   SetLayerPropertiesForTesting(child.get(),
@@ -3508,10 +3503,10 @@ TEST_F(LayerTreeHostCommonTest,
   // regions of the subtree.
   int diagonal_radius = ceil(sqrt(2.0) * 25.0);
   gfx::Rect expected_surface_drawable_content =
-      gfx::Rect(50.0 - diagonal_radius,
-                50.0 - diagonal_radius,
-                diagonal_radius * 2.0,
-                diagonal_radius * 2.0);
+      gfx::Rect(50 - diagonal_radius,
+                50 - diagonal_radius,
+                diagonal_radius * 2,
+                diagonal_radius * 2);
   EXPECT_RECT_EQ(expected_surface_drawable_content,
                  render_surface1->render_surface()->DrawableContentRect());
 
@@ -3570,10 +3565,10 @@ TEST_F(LayerTreeHostCommonTest,
   // The clipped surface clamps the DrawableContentRect that encloses the
   // rotated layer.
   int diagonal_radius = ceil(sqrt(2.0) * 25.0);
-  gfx::Rect unclipped_surface_content = gfx::Rect(50.0 - diagonal_radius,
-                                                  50.0 - diagonal_radius,
-                                                  diagonal_radius * 2.0,
-                                                  diagonal_radius * 2.0);
+  gfx::Rect unclipped_surface_content = gfx::Rect(50 - diagonal_radius,
+                                                  50 - diagonal_radius,
+                                                  diagonal_radius * 2,
+                                                  diagonal_radius * 2);
   gfx::Rect expected_surface_drawable_content =
       gfx::IntersectRects(unclipped_surface_content, gfx::Rect(0, 0, 50, 50));
   EXPECT_RECT_EQ(expected_surface_drawable_content,
@@ -3582,6 +3577,8 @@ TEST_F(LayerTreeHostCommonTest,
   // On the clipped surface, only a quarter  of the child1 is visible, but when
   // rotating it back to  child1's content space, the actual enclosing rect ends
   // up covering the full left half of child1.
+  //
+  // Given the floating point math, this number is a little bit fuzzy.
   EXPECT_RECT_EQ(gfx::Rect(0, 0, 26, 50), child1->visible_content_rect());
 
   // The child's DrawableContentRect is unclipped.
@@ -4468,10 +4465,10 @@ TEST_F(LayerTreeHostCommonTest, HitTestingForUninvertibleTransform) {
       LayerImpl::Create(host_impl.active_tree(), 12345);
 
   gfx::Transform uninvertible_transform;
-  uninvertible_transform.matrix().setDouble(0, 0, 0.0);
-  uninvertible_transform.matrix().setDouble(1, 1, 0.0);
-  uninvertible_transform.matrix().setDouble(2, 2, 0.0);
-  uninvertible_transform.matrix().setDouble(3, 3, 0.0);
+  uninvertible_transform.matrix().set(0, 0, 0.0);
+  uninvertible_transform.matrix().set(1, 1, 0.0);
+  uninvertible_transform.matrix().set(2, 2, 0.0);
+  uninvertible_transform.matrix().set(3, 3, 0.0);
   ASSERT_FALSE(uninvertible_transform.IsInvertible());
 
   gfx::Transform identity_matrix;
@@ -5054,7 +5051,7 @@ TEST_F(LayerTreeHostCommonTest, HitTestingForMultiClippedRotatedLayer) {
 
   // Around the middle, just to the right and up, would have hit the layer
   // except that that area should be clipped away by the parent.
-  test_point = gfx::Point(51, 51);
+  test_point = gfx::Point(51, 49);
   result_layer = LayerTreeHostCommon::FindLayerThatIsHitByPoint(
       test_point, render_surface_layer_list);
   EXPECT_FALSE(result_layer);
@@ -5567,10 +5564,10 @@ TEST_F(LayerTreeHostCommonTest,
       LayerImpl::Create(host_impl.active_tree(), 12345);
 
   gfx::Transform uninvertible_transform;
-  uninvertible_transform.matrix().setDouble(0, 0, 0.0);
-  uninvertible_transform.matrix().setDouble(1, 1, 0.0);
-  uninvertible_transform.matrix().setDouble(2, 2, 0.0);
-  uninvertible_transform.matrix().setDouble(3, 3, 0.0);
+  uninvertible_transform.matrix().set(0, 0, 0.0);
+  uninvertible_transform.matrix().set(1, 1, 0.0);
+  uninvertible_transform.matrix().set(2, 2, 0.0);
+  uninvertible_transform.matrix().set(3, 3, 0.0);
   ASSERT_FALSE(uninvertible_transform.IsInvertible());
 
   gfx::Transform identity_matrix;
@@ -6470,11 +6467,11 @@ TEST_F(LayerTreeHostCommonTest, ContentsScale) {
   gfx::Transform identity_matrix;
 
   gfx::Transform parent_scale_matrix;
-  double initial_parent_scale = 1.75;
+  SkMScalar initial_parent_scale = 1.75;
   parent_scale_matrix.Scale(initial_parent_scale, initial_parent_scale);
 
   gfx::Transform child_scale_matrix;
-  double initial_child_scale = 1.25;
+  SkMScalar initial_child_scale = 1.25;
   child_scale_matrix.Scale(initial_child_scale, initial_child_scale);
 
   scoped_refptr<Layer> root = Layer::Create();
@@ -6555,22 +6552,18 @@ TEST_F(LayerTreeHostCommonTest, ContentsScale) {
     // child that can scale its contents should also not need to scale during
     // draw. This shouldn't change if the child has empty bounds. The other
     // children should.
-    EXPECT_FLOAT_EQ(1.0, parent->draw_transform().matrix().getDouble(0, 0));
-    EXPECT_FLOAT_EQ(1.0, parent->draw_transform().matrix().getDouble(1, 1));
-    EXPECT_FLOAT_EQ(1.0,
-                    child_scale->draw_transform().matrix().getDouble(0, 0));
-    EXPECT_FLOAT_EQ(1.0,
-                    child_scale->draw_transform().matrix().getDouble(1, 1));
-    EXPECT_FLOAT_EQ(1.0,
-                    child_empty->draw_transform().matrix().getDouble(0, 0));
-    EXPECT_FLOAT_EQ(1.0,
-                    child_empty->draw_transform().matrix().getDouble(1, 1));
+    EXPECT_FLOAT_EQ(1.0, parent->draw_transform().matrix().get(0, 0));
+    EXPECT_FLOAT_EQ(1.0, parent->draw_transform().matrix().get(1, 1));
+    EXPECT_FLOAT_EQ(1.0, child_scale->draw_transform().matrix().get(0, 0));
+    EXPECT_FLOAT_EQ(1.0, child_scale->draw_transform().matrix().get(1, 1));
+    EXPECT_FLOAT_EQ(1.0, child_empty->draw_transform().matrix().get(0, 0));
+    EXPECT_FLOAT_EQ(1.0, child_empty->draw_transform().matrix().get(1, 1));
     EXPECT_FLOAT_EQ(device_scale_factor * page_scale_factor *
                         initial_parent_scale * initial_child_scale,
-                    child_no_scale->draw_transform().matrix().getDouble(0, 0));
+                    child_no_scale->draw_transform().matrix().get(0, 0));
     EXPECT_FLOAT_EQ(device_scale_factor * page_scale_factor *
-                    initial_parent_scale * initial_child_scale,
-                    child_no_scale->draw_transform().matrix().getDouble(1, 1));
+                        initial_parent_scale * initial_child_scale,
+                    child_no_scale->draw_transform().matrix().get(1, 1));
   }
 
   // If the device_scale_factor or page_scale_factor changes, then it should be
@@ -6600,7 +6593,7 @@ TEST_F(LayerTreeHostCommonTest, ContentsScale) {
   }
 
   // If the transform changes, we expect the raster scale to be reset to 1.0.
-  double second_child_scale = 1.75;
+  SkMScalar second_child_scale = 1.75;
   child_scale_matrix.Scale(second_child_scale / initial_child_scale,
                            second_child_scale / initial_child_scale);
   child_scale->SetTransform(child_scale_matrix);
@@ -6658,11 +6651,11 @@ TEST_F(LayerTreeHostCommonTest,
   gfx::Transform identity_matrix;
 
   gfx::Transform parent_scale_matrix;
-  double initial_parent_scale = 1.75;
+  SkMScalar initial_parent_scale = 1.75;
   parent_scale_matrix.Scale(initial_parent_scale, initial_parent_scale);
 
   gfx::Transform child_scale_matrix;
-  double initial_child_scale = 1.25;
+  SkMScalar initial_child_scale = 1.25;
   child_scale_matrix.Scale(initial_child_scale, initial_child_scale);
 
   scoped_refptr<Layer> root = Layer::Create();
@@ -6738,23 +6731,23 @@ TEST_F(LayerTreeHostCommonTest,
   // Since the transform scale does not affect contents scale, it should affect
   // the draw transform instead.
   EXPECT_FLOAT_EQ(initial_parent_scale,
-                  parent->draw_transform().matrix().getDouble(0, 0));
+                  parent->draw_transform().matrix().get(0, 0));
   EXPECT_FLOAT_EQ(initial_parent_scale,
-                  parent->draw_transform().matrix().getDouble(1, 1));
+                  parent->draw_transform().matrix().get(1, 1));
   EXPECT_FLOAT_EQ(initial_parent_scale * initial_child_scale,
-                  child_scale->draw_transform().matrix().getDouble(0, 0));
+                  child_scale->draw_transform().matrix().get(0, 0));
   EXPECT_FLOAT_EQ(initial_parent_scale * initial_child_scale,
-                  child_scale->draw_transform().matrix().getDouble(1, 1));
+                  child_scale->draw_transform().matrix().get(1, 1));
   EXPECT_FLOAT_EQ(initial_parent_scale * initial_child_scale,
-                  child_empty->draw_transform().matrix().getDouble(0, 0));
+                  child_empty->draw_transform().matrix().get(0, 0));
   EXPECT_FLOAT_EQ(initial_parent_scale * initial_child_scale,
-                  child_empty->draw_transform().matrix().getDouble(1, 1));
+                  child_empty->draw_transform().matrix().get(1, 1));
   EXPECT_FLOAT_EQ(device_scale_factor * page_scale_factor *
-                  initial_parent_scale * initial_child_scale,
-                  child_no_scale->draw_transform().matrix().getDouble(0, 0));
+                      initial_parent_scale * initial_child_scale,
+                  child_no_scale->draw_transform().matrix().get(0, 0));
   EXPECT_FLOAT_EQ(device_scale_factor * page_scale_factor *
-                  initial_parent_scale * initial_child_scale,
-                  child_no_scale->draw_transform().matrix().getDouble(1, 1));
+                      initial_parent_scale * initial_child_scale,
+                  child_no_scale->draw_transform().matrix().get(1, 1));
 }
 
 TEST_F(LayerTreeHostCommonTest, SmallContentsScale) {
@@ -6762,11 +6755,11 @@ TEST_F(LayerTreeHostCommonTest, SmallContentsScale) {
   gfx::Transform identity_matrix;
 
   gfx::Transform parent_scale_matrix;
-  double initial_parent_scale = 1.75;
+  SkMScalar initial_parent_scale = 1.75;
   parent_scale_matrix.Scale(initial_parent_scale, initial_parent_scale);
 
   gfx::Transform child_scale_matrix;
-  double initial_child_scale = 0.25;
+  SkMScalar initial_child_scale = 0.25;
   child_scale_matrix.Scale(initial_child_scale, initial_child_scale);
 
   scoped_refptr<Layer> root = Layer::Create();
@@ -6823,7 +6816,7 @@ TEST_F(LayerTreeHostCommonTest, SmallContentsScale) {
   // When chilld's total scale becomes >= 1, we should save and use that scale
   // factor.
   child_scale_matrix.MakeIdentity();
-  double final_child_scale = 0.75;
+  SkMScalar final_child_scale = 0.75;
   child_scale_matrix.Scale(final_child_scale, final_child_scale);
   child_scale->SetTransform(child_scale_matrix);
 
@@ -6851,11 +6844,11 @@ TEST_F(LayerTreeHostCommonTest, ContentsScaleForSurfaces) {
   gfx::Transform identity_matrix;
 
   gfx::Transform parent_scale_matrix;
-  double initial_parent_scale = 2.0;
+  SkMScalar initial_parent_scale = 2.0;
   parent_scale_matrix.Scale(initial_parent_scale, initial_parent_scale);
 
   gfx::Transform child_scale_matrix;
-  double initial_child_scale = 3.0;
+  SkMScalar initial_child_scale = 3.0;
   child_scale_matrix.Scale(initial_child_scale, initial_child_scale);
 
   scoped_refptr<Layer> root = Layer::Create();
@@ -6946,8 +6939,8 @@ TEST_F(LayerTreeHostCommonTest, ContentsScaleForSurfaces) {
   scoped_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create();
   host->SetRootLayer(root);
 
-  double device_scale_factor = 5;
-  double page_scale_factor = 7;
+  SkMScalar device_scale_factor = 5;
+  SkMScalar page_scale_factor = 7;
 
   RenderSurfaceLayerList render_surface_layer_list;
   LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
@@ -6976,86 +6969,74 @@ TEST_F(LayerTreeHostCommonTest, ContentsScaleForSurfaces) {
   EXPECT_CONTENTS_SCALE_EQ(1, surface_no_scale_child_no_scale);
 
   // The parent is scaled up and shouldn't need to scale during draw.
-  EXPECT_FLOAT_EQ(1.0, parent->draw_transform().matrix().getDouble(0, 0));
-  EXPECT_FLOAT_EQ(1.0, parent->draw_transform().matrix().getDouble(1, 1));
+  EXPECT_FLOAT_EQ(1.0, parent->draw_transform().matrix().get(0, 0));
+  EXPECT_FLOAT_EQ(1.0, parent->draw_transform().matrix().get(1, 1));
 
   // RenderSurfaces should always be 1:1 with their target.
   EXPECT_FLOAT_EQ(
       1.0,
-      surface_scale->render_surface()->draw_transform().matrix().getDouble(0,
-                                                                           0));
+      surface_scale->render_surface()->draw_transform().matrix().get(0, 0));
   EXPECT_FLOAT_EQ(
       1.0,
-      surface_scale->render_surface()->draw_transform().matrix().getDouble(1,
-                                                                           1));
+      surface_scale->render_surface()->draw_transform().matrix().get(1, 1));
 
   // The surface_scale can apply contents scale so the layer shouldn't need to
   // scale during draw.
-  EXPECT_FLOAT_EQ(1.0,
-                  surface_scale->draw_transform().matrix().getDouble(0, 0));
-  EXPECT_FLOAT_EQ(1.0,
-                  surface_scale->draw_transform().matrix().getDouble(1, 1));
+  EXPECT_FLOAT_EQ(1.0, surface_scale->draw_transform().matrix().get(0, 0));
+  EXPECT_FLOAT_EQ(1.0, surface_scale->draw_transform().matrix().get(1, 1));
 
   // The surface_scale_child_scale can apply contents scale so it shouldn't need
   // to scale during draw.
   EXPECT_FLOAT_EQ(
-      1.0,
-      surface_scale_child_scale->draw_transform().matrix().getDouble(0, 0));
+      1.0, surface_scale_child_scale->draw_transform().matrix().get(0, 0));
   EXPECT_FLOAT_EQ(
-      1.0,
-      surface_scale_child_scale->draw_transform().matrix().getDouble(1, 1));
+      1.0, surface_scale_child_scale->draw_transform().matrix().get(1, 1));
 
   // The surface_scale_child_no_scale can not apply contents scale, so it needs
   // to be scaled during draw.
   EXPECT_FLOAT_EQ(
       device_scale_factor * page_scale_factor * initial_parent_scale *
-      initial_child_scale * initial_child_scale,
-      surface_scale_child_no_scale->draw_transform().matrix().getDouble(0, 0));
+          initial_child_scale * initial_child_scale,
+      surface_scale_child_no_scale->draw_transform().matrix().get(0, 0));
   EXPECT_FLOAT_EQ(
       device_scale_factor * page_scale_factor * initial_parent_scale *
-      initial_child_scale * initial_child_scale,
-      surface_scale_child_no_scale->draw_transform().matrix().getDouble(1, 1));
+          initial_child_scale * initial_child_scale,
+      surface_scale_child_no_scale->draw_transform().matrix().get(1, 1));
 
   // RenderSurfaces should always be 1:1 with their target.
   EXPECT_FLOAT_EQ(
       1.0,
-      surface_no_scale->render_surface()->draw_transform().matrix().getDouble(
-          0, 0));
+      surface_no_scale->render_surface()->draw_transform().matrix().get(0, 0));
   EXPECT_FLOAT_EQ(
       1.0,
-      surface_no_scale->render_surface()->draw_transform().matrix().getDouble(
-          1, 1));
+      surface_no_scale->render_surface()->draw_transform().matrix().get(1, 1));
 
   // The surface_no_scale layer can not apply contents scale, so it needs to be
   // scaled during draw.
   EXPECT_FLOAT_EQ(device_scale_factor * page_scale_factor *
-                  initial_parent_scale * initial_child_scale,
-                  surface_no_scale->draw_transform().matrix().getDouble(0, 0));
+                      initial_parent_scale * initial_child_scale,
+                  surface_no_scale->draw_transform().matrix().get(0, 0));
   EXPECT_FLOAT_EQ(device_scale_factor * page_scale_factor *
-                  initial_parent_scale * initial_child_scale,
-                  surface_no_scale->draw_transform().matrix().getDouble(1, 1));
+                      initial_parent_scale * initial_child_scale,
+                  surface_no_scale->draw_transform().matrix().get(1, 1));
 
   // The surface_scale_child_scale can apply contents scale so it shouldn't need
   // to scale during draw.
   EXPECT_FLOAT_EQ(
-      1.0,
-      surface_no_scale_child_scale->draw_transform().matrix().getDouble(0, 0));
+      1.0, surface_no_scale_child_scale->draw_transform().matrix().get(0, 0));
   EXPECT_FLOAT_EQ(
-      1.0,
-      surface_no_scale_child_scale->draw_transform().matrix().getDouble(1, 1));
+      1.0, surface_no_scale_child_scale->draw_transform().matrix().get(1, 1));
 
   // The surface_scale_child_no_scale can not apply contents scale, so it needs
   // to be scaled during draw.
   EXPECT_FLOAT_EQ(
       device_scale_factor * page_scale_factor * initial_parent_scale *
-      initial_child_scale * initial_child_scale,
-      surface_no_scale_child_no_scale->draw_transform().matrix().getDouble(0,
-                                                                           0));
+          initial_child_scale * initial_child_scale,
+      surface_no_scale_child_no_scale->draw_transform().matrix().get(0, 0));
   EXPECT_FLOAT_EQ(
       device_scale_factor * page_scale_factor * initial_parent_scale *
-      initial_child_scale * initial_child_scale,
-      surface_no_scale_child_no_scale->draw_transform().matrix().getDouble(1,
-                                                                           1));
+          initial_child_scale * initial_child_scale,
+      surface_no_scale_child_no_scale->draw_transform().matrix().get(1, 1));
 }
 
 TEST_F(LayerTreeHostCommonTest,
@@ -7064,11 +7045,11 @@ TEST_F(LayerTreeHostCommonTest,
   gfx::Transform identity_matrix;
 
   gfx::Transform parent_scale_matrix;
-  double initial_parent_scale = 2.0;
+  SkMScalar initial_parent_scale = 2.0;
   parent_scale_matrix.Scale(initial_parent_scale, initial_parent_scale);
 
   gfx::Transform child_scale_matrix;
-  double initial_child_scale = 3.0;
+  SkMScalar initial_child_scale = 3.0;
   child_scale_matrix.Scale(initial_child_scale, initial_child_scale);
 
   scoped_refptr<Layer> root = Layer::Create();
@@ -7161,8 +7142,8 @@ TEST_F(LayerTreeHostCommonTest,
 
   RenderSurfaceLayerList render_surface_layer_list;
 
-  double device_scale_factor = 5.0;
-  double page_scale_factor = 7.0;
+  SkMScalar device_scale_factor = 5.0;
+  SkMScalar page_scale_factor = 7.0;
   LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
       root.get(), root->bounds(), &render_surface_layer_list);
   inputs.device_scale_factor = device_scale_factor;
@@ -7185,88 +7166,80 @@ TEST_F(LayerTreeHostCommonTest,
   // The parent is scaled up during draw, since its contents are not scaled by
   // the transform hierarchy.
   EXPECT_FLOAT_EQ(initial_parent_scale,
-                  parent->draw_transform().matrix().getDouble(0, 0));
+                  parent->draw_transform().matrix().get(0, 0));
   EXPECT_FLOAT_EQ(initial_parent_scale,
-                  parent->draw_transform().matrix().getDouble(1, 1));
+                  parent->draw_transform().matrix().get(1, 1));
 
   // The child surface is scaled up during draw since its subtree is not scaled
   // by the transform hierarchy.
   EXPECT_FLOAT_EQ(
       initial_parent_scale * initial_child_scale,
-      surface_scale->render_surface()->draw_transform().matrix().getDouble(0,
-                                                                           0));
+      surface_scale->render_surface()->draw_transform().matrix().get(0, 0));
   EXPECT_FLOAT_EQ(
       initial_parent_scale * initial_child_scale,
-      surface_scale->render_surface()->draw_transform().matrix().getDouble(1,
-                                                                           1));
+      surface_scale->render_surface()->draw_transform().matrix().get(1, 1));
 
   // The surface_scale's RenderSurface is scaled during draw, so the layer does
   // not need to be scaled when drawing into its surface.
-  EXPECT_FLOAT_EQ(1.0,
-                  surface_scale->draw_transform().matrix().getDouble(0, 0));
-  EXPECT_FLOAT_EQ(1.0,
-                  surface_scale->draw_transform().matrix().getDouble(1, 1));
+  EXPECT_FLOAT_EQ(1.0, surface_scale->draw_transform().matrix().get(0, 0));
+  EXPECT_FLOAT_EQ(1.0, surface_scale->draw_transform().matrix().get(1, 1));
 
   // The surface_scale_child_scale is scaled when drawing into its surface,
   // since its content bounds are not scaled by the transform hierarchy.
   EXPECT_FLOAT_EQ(
       initial_child_scale,
-      surface_scale_child_scale->draw_transform().matrix().getDouble(0, 0));
+      surface_scale_child_scale->draw_transform().matrix().get(0, 0));
   EXPECT_FLOAT_EQ(
       initial_child_scale,
-      surface_scale_child_scale->draw_transform().matrix().getDouble(1, 1));
+      surface_scale_child_scale->draw_transform().matrix().get(1, 1));
 
   // The surface_scale_child_no_scale has a fixed contents scale of 1, so it
   // needs to be scaled by the device and page scale factors, along with the
   // transform hierarchy.
   EXPECT_FLOAT_EQ(
       device_scale_factor * page_scale_factor * initial_child_scale,
-      surface_scale_child_no_scale->draw_transform().matrix().getDouble(0, 0));
+      surface_scale_child_no_scale->draw_transform().matrix().get(0, 0));
   EXPECT_FLOAT_EQ(
       device_scale_factor * page_scale_factor * initial_child_scale,
-      surface_scale_child_no_scale->draw_transform().matrix().getDouble(1, 1));
+      surface_scale_child_no_scale->draw_transform().matrix().get(1, 1));
 
   // The child surface is scaled up during draw since its subtree is not scaled
   // by the transform hierarchy.
   EXPECT_FLOAT_EQ(
       initial_parent_scale * initial_child_scale,
-      surface_no_scale->render_surface()->draw_transform().matrix().getDouble(
-          0, 0));
+      surface_no_scale->render_surface()->draw_transform().matrix().get(0, 0));
   EXPECT_FLOAT_EQ(
       initial_parent_scale * initial_child_scale,
-      surface_no_scale->render_surface()->draw_transform().matrix().getDouble(
-          1, 1));
+      surface_no_scale->render_surface()->draw_transform().matrix().get(1, 1));
 
   // The surface_no_scale layer has a fixed contents scale of 1, so it needs to
   // be scaled by the device and page scale factors. Its surface is already
   // scaled by the transform hierarchy so those don't need to scale the layer's
   // drawing.
   EXPECT_FLOAT_EQ(device_scale_factor * page_scale_factor,
-                  surface_no_scale->draw_transform().matrix().getDouble(0, 0));
+                  surface_no_scale->draw_transform().matrix().get(0, 0));
   EXPECT_FLOAT_EQ(device_scale_factor * page_scale_factor,
-                  surface_no_scale->draw_transform().matrix().getDouble(1, 1));
+                  surface_no_scale->draw_transform().matrix().get(1, 1));
 
   // The surface_no_scale_child_scale has its contents scaled by the page and
   // device scale factors, but needs to be scaled by the transform hierarchy
   // when drawing.
   EXPECT_FLOAT_EQ(
       initial_child_scale,
-      surface_no_scale_child_scale->draw_transform().matrix().getDouble(0, 0));
+      surface_no_scale_child_scale->draw_transform().matrix().get(0, 0));
   EXPECT_FLOAT_EQ(
       initial_child_scale,
-      surface_no_scale_child_scale->draw_transform().matrix().getDouble(1, 1));
+      surface_no_scale_child_scale->draw_transform().matrix().get(1, 1));
 
   // The surface_no_scale_child_no_scale has a fixed contents scale of 1, so it
   // needs to be scaled by the device and page scale factors. It also needs to
   // be scaled by any transform heirarchy below its target surface.
   EXPECT_FLOAT_EQ(
       device_scale_factor * page_scale_factor * initial_child_scale,
-      surface_no_scale_child_no_scale->draw_transform().matrix().getDouble(0,
-                                                                           0));
+      surface_no_scale_child_no_scale->draw_transform().matrix().get(0, 0));
   EXPECT_FLOAT_EQ(
       device_scale_factor * page_scale_factor * initial_child_scale,
-      surface_no_scale_child_no_scale->draw_transform().matrix().getDouble(1,
-                                                                           1));
+      surface_no_scale_child_no_scale->draw_transform().matrix().get(1, 1));
 }
 
 TEST_F(LayerTreeHostCommonTest, ContentsScaleForAnimatingLayer) {
@@ -7274,11 +7247,11 @@ TEST_F(LayerTreeHostCommonTest, ContentsScaleForAnimatingLayer) {
   gfx::Transform identity_matrix;
 
   gfx::Transform parent_scale_matrix;
-  double initial_parent_scale = 1.75;
+  SkMScalar initial_parent_scale = 1.75;
   parent_scale_matrix.Scale(initial_parent_scale, initial_parent_scale);
 
   gfx::Transform child_scale_matrix;
-  double initial_child_scale = 1.25;
+  SkMScalar initial_child_scale = 1.25;
   child_scale_matrix.Scale(initial_child_scale, initial_child_scale);
 
   scoped_refptr<Layer> root = Layer::Create();
@@ -7460,17 +7433,17 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceTransformsInHighDPI) {
       child->render_surface()->screen_space_transform());
 
   gfx::Transform expected_replica_draw_transform;
-  expected_replica_draw_transform.matrix().setDouble(1, 1, -1.0);
-  expected_replica_draw_transform.matrix().setDouble(0, 3, 6.0);
-  expected_replica_draw_transform.matrix().setDouble(1, 3, 6.0);
+  expected_replica_draw_transform.matrix().set(1, 1, -1.0);
+  expected_replica_draw_transform.matrix().set(0, 3, 6.0);
+  expected_replica_draw_transform.matrix().set(1, 3, 6.0);
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       expected_replica_draw_transform,
       child->render_surface()->replica_draw_transform());
 
   gfx::Transform expected_replica_screen_space_transform;
-  expected_replica_screen_space_transform.matrix().setDouble(1, 1, -1.0);
-  expected_replica_screen_space_transform.matrix().setDouble(0, 3, 6.0);
-  expected_replica_screen_space_transform.matrix().setDouble(1, 3, 6.0);
+  expected_replica_screen_space_transform.matrix().set(1, 1, -1.0);
+  expected_replica_screen_space_transform.matrix().set(0, 3, 6.0);
+  expected_replica_screen_space_transform.matrix().set(1, 3, 6.0);
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       expected_replica_screen_space_transform,
       child->render_surface()->replica_screen_space_transform());
@@ -7570,13 +7543,13 @@ TEST_F(LayerTreeHostCommonTest,
       identity_transform, child->render_surface()->screen_space_transform());
 
   gfx::Transform expected_replica_draw_transform;
-  expected_replica_draw_transform.matrix().setDouble(1, 1, -1.0);
+  expected_replica_draw_transform.matrix().set(1, 1, -1.0);
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       expected_replica_draw_transform,
       child->render_surface()->replica_draw_transform());
 
   gfx::Transform expected_replica_screen_space_transform;
-  expected_replica_screen_space_transform.matrix().setDouble(1, 1, -1.0);
+  expected_replica_screen_space_transform.matrix().set(1, 1, -1.0);
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       expected_replica_screen_space_transform,
       child->render_surface()->replica_screen_space_transform());

@@ -340,14 +340,12 @@ TEST_F(DamageTrackerTest, VerifyDamageForTransformedLayer) {
   // should increase the size of the expected rect by sqrt(2), centered around
   // (100, 100). The old exposed region should be fully contained in the new
   // region.
-  double expected_width = 30.0 * sqrt(2.0);
-  double expected_position = 100.0 - 0.5 * expected_width;
-  gfx::RectF expected_rect(expected_position,
-                           expected_position,
-                           expected_width,
-                           expected_width);
+  float expected_width = 30.f * sqrt(2.f);
+  float expected_position = 100.f - 0.5f * expected_width;
+  gfx::RectF expected_rect(
+      expected_position, expected_position, expected_width, expected_width);
   root_damage_rect =
-          root->render_surface()->damage_tracker()->current_damage_rect();
+      root->render_surface()->damage_tracker()->current_damage_rect();
   EXPECT_FLOAT_RECT_EQ(expected_rect, root_damage_rect);
 }
 

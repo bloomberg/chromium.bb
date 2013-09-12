@@ -22,11 +22,11 @@ struct UI_EXPORT DecomposedTransform {
   // if used with Compose below, will produce the identity transform.
   DecomposedTransform();
 
-  double translate[3];
-  double scale[3];
-  double skew[3];
-  double perspective[4];
-  double quaternion[4];
+  SkMScalar translate[3];
+  SkMScalar scale[3];
+  SkMScalar skew[3];
+  SkMScalar perspective[4];
+  SkMScalar quaternion[4];
 
   // Copy and assign are allowed.
 };
@@ -38,7 +38,7 @@ struct UI_EXPORT DecomposedTransform {
 UI_EXPORT bool BlendDecomposedTransforms(DecomposedTransform* out,
                                          const DecomposedTransform& to,
                                          const DecomposedTransform& from,
-                                         double progress);
+                                         SkMScalar progress);
 
 // Decomposes this transform into its translation, scale, skew, perspective,
 // and rotation components following the routines detailed in this spec:

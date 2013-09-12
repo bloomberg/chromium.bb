@@ -18,9 +18,6 @@
 namespace cc {
 namespace {
 
-void ExpectTranslateX(double translate_x, const gfx::Transform& matrix) {
-  EXPECT_FLOAT_EQ(translate_x, matrix.matrix().getDouble(0, 3)); }
-
 scoped_ptr<Animation> CreateAnimation(scoped_ptr<AnimationCurve> curve,
                                       int id,
                                       Animation::TargetProperty property) {

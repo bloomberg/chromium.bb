@@ -467,8 +467,8 @@ class DelegatedRendererLayerImplTestTransform
     root_layer->SetBounds(gfx::Size(100, 100));
 
     delegated_renderer_layer->SetPosition(gfx::Point(20, 20));
-    delegated_renderer_layer->SetBounds(gfx::Size(30, 30));
-    delegated_renderer_layer->SetContentBounds(gfx::Size(30, 30));
+    delegated_renderer_layer->SetBounds(gfx::Size(75, 75));
+    delegated_renderer_layer->SetContentBounds(gfx::Size(75, 75));
     delegated_renderer_layer->SetDrawsContent(true);
     gfx::Transform transform;
     transform.Scale(2.0, 2.0);
@@ -513,8 +513,8 @@ class DelegatedRendererLayerImplTestTransform
       quad_sink.Append(color_quad.PassAs<DrawQuad>(), &data);
     }
 
-    gfx::Size root_pass_content_bounds(50, 50);
-    gfx::Rect root_pass_rect(0, 0, 50, 50);
+    gfx::Size root_pass_content_bounds(100, 100);
+    gfx::Rect root_pass_rect(0, 0, 100, 100);
     gfx::Transform root_pass_transform;
     root_pass_transform.Scale(1.5, 1.5);
     root_pass_transform.Translate(7.0, 7.0);
@@ -648,7 +648,7 @@ TEST_F(DelegatedRendererLayerImplTestTransform, QuadsUnclipped_NoSurface) {
 
   // When the quads don't have a clip of their own, the clip rect is set to
   // the drawable_content_rect of the delegated renderer layer.
-  EXPECT_EQ(gfx::Rect(42, 42, 120, 120).ToString(),
+  EXPECT_EQ(delegated_renderer_layer_->drawable_content_rect().ToString(),
             root_delegated_shared_quad_state->clip_rect.ToString());
 
   // Even though the quads in the root pass have no clip of their own, they
@@ -660,12 +660,12 @@ TEST_F(DelegatedRendererLayerImplTestTransform, QuadsUnclipped_NoSurface) {
   // Device scale factor is 2.
   expected.Scale(2.0, 2.0);
   // This is the transform from the layer's space to its target.
-  // The position (20) - the width / scale (30 / 2) = 20 - 15 = 5
-  expected.Translate(5.0, 5.0);
+  // The position (20) - the width / scale (75 / 2) = 20 - 37.5 = -17.5
+  expected.Translate(-17.5, -17.5);
   expected.Scale(2.0, 2.0);
   expected.Translate(8.0, 8.0);
-  // The frame has size 50x50 but the layer's bounds are 30x30.
-  expected.Scale(30.0 / 50.0, 30.0 / 50.0);
+  // The frame has size 100x100 but the layer's bounds are 75x75.
+  expected.Scale(75.0 / 100.0, 75.0 / 100.0);
   // This is the transform within the source frame.
   expected.Scale(1.5, 1.5);
   expected.Translate(7.0, 7.0);
@@ -705,15 +705,15 @@ TEST_F(DelegatedRendererLayerImplTestTransform, QuadsClipped_NoSurface) {
   // Since the quads have a clip_rect it should be modified by delegated
   // renderer layer's draw_transform.
   // The position of the resulting clip_rect is:
-  // (clip rect position (10) * scale to layer (30/50) + translate (8)) *
-  //     layer scale (2) + layer position (20) = 48
-  // But the layer is centered, so: 48 - (width / 2) = 48 - 30 / 2 = 33
-  // The device scale is 2, so everything gets doubled, giving 66.
+  // (clip rect position (10) * scale to layer (75/100) + translate (8)) *
+  //     layer scale (2) + layer position (20) = 51
+  // But the layer is centered, so: 51 - (75 / 2) = 51 - 75 / 2 = 13.5
+  // The device scale is 2, so everything gets doubled, giving 27.
   //
-  // The size is 35x35 scaled to fit inside the layer's bounds at 30x30 from
-  // a frame at 50x50: 35 * 2 (device scale) * 30 / 50 = 42. The device scale
-  // doubles this to 84.
-  EXPECT_EQ(gfx::Rect(66, 66, 84, 84).ToString(),
+  // The size is 35x35 scaled to fit inside the layer's bounds at 75x75 from
+  // a frame at 100x100: 35 * 2 (device scale) * 75 / 100 = 52.5. The device
+  // scale doubles this to 105.
+  EXPECT_EQ(gfx::Rect(27, 27, 105, 105).ToString(),
             root_delegated_shared_quad_state->clip_rect.ToString());
 
   // The quads had a clip and it should be preserved.
@@ -723,12 +723,12 @@ TEST_F(DelegatedRendererLayerImplTestTransform, QuadsClipped_NoSurface) {
   // Device scale factor is 2.
   expected.Scale(2.0, 2.0);
   // This is the transform from the layer's space to its target.
-  // The position (20) - the width / scale (30 / 2) = 20 - 15 = 5
-  expected.Translate(5.0, 5.0);
+  // The position (20) - the width / scale (75 / 2) = 20 - 37.5 = -17.5
+  expected.Translate(-17.5, -17.5);
   expected.Scale(2.0, 2.0);
   expected.Translate(8.0, 8.0);
-  // The frame has size 50x50 but the layer's bounds are 30x30.
-  expected.Scale(30.0 / 50.0, 30.0 / 50.0);
+  // The frame has size 100x100 but the layer's bounds are 75x75.
+  expected.Scale(75.0 / 100.0, 75.0 / 100.0);
   // This is the transform within the source frame.
   expected.Scale(1.5, 1.5);
   expected.Translate(7.0, 7.0);
@@ -770,10 +770,10 @@ TEST_F(DelegatedRendererLayerImplTestTransform, QuadsUnclipped_Surface) {
   // When the layer owns a surface, then its position and translation are not
   // a part of its draw transform.
   // The position of the resulting clip_rect is:
-  // (clip rect position (10) * scale to layer (30/50)) * device scale (2) = 12
-  // The size is 35x35 scaled to fit inside the layer's bounds at 30x30 from
-  // a frame at 50x50: 35 * 2 (device scale) * 30 / 50 = 42.
-  EXPECT_EQ(gfx::Rect(12, 12, 42, 42).ToString(),
+  // (clip rect position (10) * scale to layer (75/100)) * device scale (2) = 15
+  // The size is 35x35 scaled to fit inside the layer's bounds at 75x75 from
+  // a frame at 100x100: 35 * 2 (device scale) * 75 / 100 = 52.5.
+  EXPECT_EQ(gfx::Rect(15, 15, 53, 53).ToString(),
             root_delegated_shared_quad_state->clip_rect.ToString());
 
   // Since the layer owns a surface it doesn't need to clip its quads, so
@@ -783,8 +783,8 @@ TEST_F(DelegatedRendererLayerImplTestTransform, QuadsUnclipped_Surface) {
   gfx::Transform expected;
   // Device scale factor is 2.
   expected.Scale(2.0, 2.0);
-  // The frame has size 50x50 but the layer's bounds are 30x30.
-  expected.Scale(30.0 / 50.0, 30.0 / 50.0);
+  // The frame has size 100x100 but the layer's bounds are 75x75.
+  expected.Scale(75.0 / 100.0, 75.0 / 100.0);
   // This is the transform within the source frame.
   expected.Scale(1.5, 1.5);
   expected.Translate(7.0, 7.0);
@@ -826,10 +826,10 @@ TEST_F(DelegatedRendererLayerImplTestTransform, QuadsClipped_Surface) {
   // When the layer owns a surface, then its position and translation are not
   // a part of its draw transform.
   // The position of the resulting clip_rect is:
-  // (clip rect position (10) * scale to layer (30/50)) * device scale (2) = 12
-  // The size is 35x35 scaled to fit inside the layer's bounds at 30x30 from
-  // a frame at 50x50: 35 * 2 (device scale) * 30 / 50 = 42.
-  EXPECT_EQ(gfx::Rect(12, 12, 42, 42).ToString(),
+  // (clip rect position (10) * scale to layer (75/100)) * device scale (2) = 15
+  // The size is 35x35 scaled to fit inside the layer's bounds at 75x75 from
+  // a frame at 100x100: 35 * 2 (device scale) * 75 / 100 = 52.5.
+  EXPECT_EQ(gfx::Rect(15, 15, 53, 53).ToString(),
             root_delegated_shared_quad_state->clip_rect.ToString());
 
   // The quads had a clip and it should be preserved.
@@ -838,8 +838,8 @@ TEST_F(DelegatedRendererLayerImplTestTransform, QuadsClipped_Surface) {
   gfx::Transform expected;
   // Device scale factor is 2.
   expected.Scale(2.0, 2.0);
-  // The frame has size 50x50 but the layer's bounds are 30x30.
-  expected.Scale(30.0 / 50.0, 30.0 / 50.0);
+  // The frame has size 100x100 but the layer's bounds are 75x75.
+  expected.Scale(75.0 / 100.0, 75.0 / 100.0);
   // This is the transform within the source frame.
   expected.Scale(1.5, 1.5);
   expected.Translate(7.0, 7.0);

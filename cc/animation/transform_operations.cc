@@ -35,8 +35,8 @@ gfx::Transform TransformOperations::Apply() const {
   return to_return;
 }
 
-gfx::Transform TransformOperations::Blend(
-    const TransformOperations& from, double progress) const {
+gfx::Transform TransformOperations::Blend(const TransformOperations& from,
+                                          SkMScalar progress) const {
   gfx::Transform to_return;
   BlendInternal(from, progress, &to_return);
   return to_return;
@@ -44,8 +44,8 @@ gfx::Transform TransformOperations::Blend(
 
 bool TransformOperations::BlendedBoundsForBox(const gfx::BoxF& box,
                                               const TransformOperations& from,
-                                              double min_progress,
-                                              double max_progress,
+                                              SkMScalar min_progress,
+                                              SkMScalar max_progress,
                                               gfx::BoxF* bounds) const {
   *bounds = box;
 
@@ -101,7 +101,9 @@ bool TransformOperations::CanBlendWith(
   return BlendInternal(other, 0.5, &dummy);
 }
 
-void TransformOperations::AppendTranslate(double x, double y, double z) {
+void TransformOperations::AppendTranslate(SkMScalar x,
+                                          SkMScalar y,
+                                          SkMScalar z) {
   TransformOperation to_add;
   to_add.matrix.Translate3d(x, y, z);
   to_add.type = TransformOperation::TransformOperationTranslate;
@@ -112,8 +114,10 @@ void TransformOperations::AppendTranslate(double x, double y, double z) {
   decomposed_transform_dirty_ = true;
 }
 
-void TransformOperations::AppendRotate(double x, double y, double z,
-                                       double degrees) {
+void TransformOperations::AppendRotate(SkMScalar x,
+                                       SkMScalar y,
+                                       SkMScalar z,
+                                       SkMScalar degrees) {
   TransformOperation to_add;
   to_add.matrix.RotateAbout(gfx::Vector3dF(x, y, z), degrees);
   to_add.type = TransformOperation::TransformOperationRotate;
@@ -125,7 +129,7 @@ void TransformOperations::AppendRotate(double x, double y, double z,
   decomposed_transform_dirty_ = true;
 }
 
-void TransformOperations::AppendScale(double x, double y, double z) {
+void TransformOperations::AppendScale(SkMScalar x, SkMScalar y, SkMScalar z) {
   TransformOperation to_add;
   to_add.matrix.Scale3d(x, y, z);
   to_add.type = TransformOperation::TransformOperationScale;
@@ -136,7 +140,7 @@ void TransformOperations::AppendScale(double x, double y, double z) {
   decomposed_transform_dirty_ = true;
 }
 
-void TransformOperations::AppendSkew(double x, double y) {
+void TransformOperations::AppendSkew(SkMScalar x, SkMScalar y) {
   TransformOperation to_add;
   to_add.matrix.SkewX(x);
   to_add.matrix.SkewY(y);
@@ -147,7 +151,7 @@ void TransformOperations::AppendSkew(double x, double y) {
   decomposed_transform_dirty_ = true;
 }
 
-void TransformOperations::AppendPerspective(double depth) {
+void TransformOperations::AppendPerspective(SkMScalar depth) {
   TransformOperation to_add;
   to_add.matrix.ApplyPerspectiveDepth(depth);
   to_add.type = TransformOperation::TransformOperationPerspective;
@@ -177,7 +181,7 @@ bool TransformOperations::IsIdentity() const {
 }
 
 bool TransformOperations::BlendInternal(const TransformOperations& from,
-                                        double progress,
+                                        SkMScalar progress,
                                         gfx::Transform* result) const {
   bool from_identity = from.IsIdentity();
   bool to_identity = IsIdentity();

@@ -25,15 +25,15 @@ TEST(FloatQuadTest, IsRectilinearTest) {
   rectilinear_trans[7].Scale(100000, 100000);
   rectilinear_trans[7].Rotate(180.0);
 
+  gfx::QuadF original(
+      gfx::RectF(0.01010101f, 0.01010101f, 100.01010101f, 100.01010101f));
+
   for (int i = 0; i < kNumRectilinear; ++i) {
     bool clipped = false;
-    gfx::QuadF quad = MathUtil::MapQuad(
-        rectilinear_trans[i],
-        gfx::QuadF(
-            gfx::RectF(0.01010101f, 0.01010101f, 100.01010101f, 100.01010101f)),
-        &clipped);
-    ASSERT_TRUE(!clipped);
-    EXPECT_TRUE(quad.IsRectilinear());
+    gfx::QuadF quad =
+        MathUtil::MapQuad(rectilinear_trans[i], original, &clipped);
+    ASSERT_TRUE(!clipped) << "case " << i;
+    EXPECT_TRUE(quad.IsRectilinear()) << "case " << i;
   }
 
   const int kNumNonRectilinear = 10;
@@ -51,13 +51,10 @@ TEST(FloatQuadTest, IsRectilinearTest) {
 
   for (int i = 0; i < kNumNonRectilinear; ++i) {
     bool clipped = false;
-    gfx::QuadF quad = MathUtil::MapQuad(
-        non_rectilinear_trans[i],
-        gfx::QuadF(
-            gfx::RectF(0.01010101f, 0.01010101f, 100.01010101f, 100.01010101f)),
-        &clipped);
-    ASSERT_TRUE(!clipped);
-    EXPECT_FALSE(quad.IsRectilinear());
+    gfx::QuadF quad =
+        MathUtil::MapQuad(non_rectilinear_trans[i], original, &clipped);
+    ASSERT_TRUE(!clipped) << "case " << i;
+    EXPECT_FALSE(quad.IsRectilinear()) << "case " << i;
   }
 }
 

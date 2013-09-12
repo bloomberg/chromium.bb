@@ -108,15 +108,15 @@ gfx::Rect MathUtil::MapClippedRect(const gfx::Transform& transform,
 
 gfx::RectF MathUtil::MapClippedRect(const gfx::Transform& transform,
                                     const gfx::RectF& src_rect) {
-  if (transform.IsIdentityOrTranslation())
+  if (transform.IsIdentityOrTranslation()) {
     return src_rect +
-           gfx::Vector2dF(
-               static_cast<float>(transform.matrix().getDouble(0, 3)),
-               static_cast<float>(transform.matrix().getDouble(1, 3)));
+           gfx::Vector2dF(SkMScalarToFloat(transform.matrix().get(0, 3)),
+                          SkMScalarToFloat(transform.matrix().get(1, 3)));
+  }
 
   // Apply the transform, but retain the result in homogeneous coordinates.
 
-  double quad[4 * 2];  // input: 4 x 2D points
+  SkMScalar quad[4 * 2];  // input: 4 x 2D points
   quad[0] = src_rect.x();
   quad[1] = src_rect.y();
   quad[2] = src_rect.right();
@@ -126,7 +126,7 @@ gfx::RectF MathUtil::MapClippedRect(const gfx::Transform& transform,
   quad[6] = src_rect.x();
   quad[7] = src_rect.bottom();
 
-  double result[4 * 4];  // output: 4 x 4D homogeneous points
+  SkMScalar result[4 * 4];  // output: 4 x 4D homogeneous points
   transform.matrix().map2(quad, 4, result);
 
   HomogeneousCoordinate hc0(result[0], result[1], result[2], result[3]);
@@ -140,9 +140,8 @@ gfx::RectF MathUtil::ProjectClippedRect(const gfx::Transform& transform,
                                         const gfx::RectF& src_rect) {
   if (transform.IsIdentityOrTranslation()) {
     return src_rect +
-           gfx::Vector2dF(
-               static_cast<float>(transform.matrix().getDouble(0, 3)),
-               static_cast<float>(transform.matrix().getDouble(1, 3)));
+           gfx::Vector2dF(SkMScalarToFloat(transform.matrix().get(0, 3)),
+                          SkMScalarToFloat(transform.matrix().get(1, 3)));
   }
 
   // Perform the projection, but retain the result in homogeneous coordinates.
@@ -330,8 +329,8 @@ gfx::QuadF MathUtil::MapQuad(const gfx::Transform& transform,
   if (transform.IsIdentityOrTranslation()) {
     gfx::QuadF mapped_quad(q);
     mapped_quad +=
-        gfx::Vector2dF(static_cast<float>(transform.matrix().getDouble(0, 3)),
-                       static_cast<float>(transform.matrix().getDouble(1, 3)));
+        gfx::Vector2dF(SkMScalarToFloat(transform.matrix().get(0, 3)),
+                       SkMScalarToFloat(transform.matrix().get(1, 3)));
     *clipped = false;
     return mapped_quad;
   }
@@ -467,7 +466,8 @@ gfx::RectF MathUtil::ScaleRectProportional(const gfx::RectF& input_outer_rect,
 }
 
 static inline float ScaleOnAxis(double a, double b, double c) {
-  return std::sqrt(a * a + b * b + c * c);
+  // Do the sqrt as a double to not lose precision.
+  return static_cast<float>(std::sqrt(a * a + b * b + c * c));
 }
 
 gfx::Vector2dF MathUtil::ComputeTransform2dScaleComponents(

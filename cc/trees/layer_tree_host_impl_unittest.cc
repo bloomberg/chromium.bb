@@ -2223,7 +2223,7 @@ TEST_F(LayerTreeHostImplTest, ScrollNonAxisAlignedRotatedLayer) {
     // Scroll down in screen coordinates with a gesture.
     gfx::Vector2d gesture_scroll_delta(0, 10);
     EXPECT_EQ(InputHandler::ScrollStarted,
-              host_impl_->ScrollBegin(gfx::Point(),
+              host_impl_->ScrollBegin(gfx::Point(1, 1),
                                       InputHandler::Gesture));
     host_impl_->ScrollBy(gfx::Point(), gesture_scroll_delta);
     host_impl_->ScrollEnd();
@@ -2248,7 +2248,7 @@ TEST_F(LayerTreeHostImplTest, ScrollNonAxisAlignedRotatedLayer) {
         gfx::Vector2dF());
     gfx::Vector2d gesture_scroll_delta(10, 0);
     EXPECT_EQ(InputHandler::ScrollStarted,
-              host_impl_->ScrollBegin(gfx::Point(),
+              host_impl_->ScrollBegin(gfx::Point(1, 1),
                                       InputHandler::Gesture));
     host_impl_->ScrollBy(gfx::Point(), gesture_scroll_delta);
     host_impl_->ScrollEnd();

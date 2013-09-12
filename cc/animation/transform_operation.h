@@ -32,40 +32,40 @@ struct TransformOperation {
   gfx::Transform matrix;
 
   union {
-    double perspective_depth;
+    SkMScalar perspective_depth;
 
     struct {
-      double x, y;
+      SkMScalar x, y;
     } skew;
 
     struct {
-      double x, y, z;
+      SkMScalar x, y, z;
     } scale;
 
     struct {
-      double x, y, z;
+      SkMScalar x, y, z;
     } translate;
 
     struct {
       struct {
-        double x, y, z;
+        SkMScalar x, y, z;
       } axis;
 
-      double angle;
+      SkMScalar angle;
     } rotate;
   };
 
   bool IsIdentity() const;
   static bool BlendTransformOperations(const TransformOperation* from,
                                        const TransformOperation* to,
-                                       double progress,
+                                       SkMScalar progress,
                                        gfx::Transform* result);
 
   static bool BlendedBoundsForBox(const gfx::BoxF& box,
                                   const TransformOperation* from,
                                   const TransformOperation* to,
-                                  double min_progress,
-                                  double max_progress,
+                                  SkMScalar min_progress,
+                                  SkMScalar max_progress,
                                   gfx::BoxF* bounds);
 };
 
