@@ -370,7 +370,9 @@ class CC_EXPORT ResourceProvider {
     gfx::Size size;
     GLenum format;
     // TODO(skyostil): Use a separate sampler object for filter state.
+    GLenum original_filter;
     GLenum filter;
+    GLenum target;
     unsigned image_id;
     GLenum texture_pool;
     GLint wrap_mode;

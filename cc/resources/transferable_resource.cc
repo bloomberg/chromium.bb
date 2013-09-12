@@ -22,7 +22,6 @@ ReturnedResource TransferableResource::ToReturnedResource() const {
   ReturnedResource returned;
   returned.id = id;
   returned.sync_point = sync_point;
-  returned.filter = filter;
   returned.count = 1;
   return returned;
 }

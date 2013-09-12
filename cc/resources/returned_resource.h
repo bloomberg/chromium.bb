@@ -13,10 +13,9 @@
 namespace cc {
 
 struct CC_EXPORT ReturnedResource {
-  ReturnedResource() : id(0), sync_point(0), filter(0), count(0) {}
+  ReturnedResource() : id(0), sync_point(0), count(0) {}
   unsigned id;
   unsigned sync_point;
-  uint32 filter;
   int count;
 };
 

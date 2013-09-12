@@ -96,7 +96,9 @@ ResourceProvider::Resource::Resource()
       read_lock_fence(NULL),
       size(),
       format(0),
+      original_filter(0),
       filter(0),
+      target(0),
       image_id(0),
       texture_pool(0),
       wrap_mode(0),
@@ -131,7 +133,9 @@ ResourceProvider::Resource::Resource(
       read_lock_fence(NULL),
       size(size),
       format(format),
+      original_filter(filter),
       filter(filter),
+      target(0),
       image_id(0),
       texture_pool(texture_pool),
       wrap_mode(wrap_mode),
@@ -164,7 +168,9 @@ ResourceProvider::Resource::Resource(
       read_lock_fence(NULL),
       size(size),
       format(format),
+      original_filter(filter),
       filter(filter),
+      target(0),
       image_id(0),
       texture_pool(0),
       wrap_mode(wrap_mode),
@@ -854,9 +860,21 @@ void ResourceProvider::PrepareSendReturnsToChild(
     DCHECK(child_info.parent_to_child_map.find(*it) !=
            child_info.parent_to_child_map.end());
 
+    if (resource->filter != resource->original_filter) {
+      DCHECK(resource->target);
+      DCHECK(resource->gl_id);
+
+      GLC(context3d, context3d->bindTexture(resource->target, resource->gl_id));
+      GLC(context3d, context3d->texParameteri(resource->target,
+                                              GL_TEXTURE_MIN_FILTER,
+                                              resource->original_filter));
+      GLC(context3d, context3d->texParameteri(resource->target,
+                                              GL_TEXTURE_MAG_FILTER,
+                                              resource->original_filter));
+    }
+
     ReturnedResource returned;
     returned.id = child_info.parent_to_child_map[*it];
-    returned.filter = resource->filter;
     returned.sync_point = resource->mailbox.sync_point();
     if (!returned.sync_point)
       need_sync_point = true;
@@ -941,7 +959,6 @@ void ResourceProvider::ReceiveReturnsFromParent(
     resource->exported_count -= it->count;
     if (resource->exported_count)
       continue;
-    resource->filter = it->filter;
     if (resource->gl_id) {
       if (it->sync_point)
         GLC(context3d, context3d->waitSyncPoint(it->sync_point));
@@ -1129,6 +1146,10 @@ void ResourceProvider::BindForSampling(ResourceProvider::ResourceId resource_id,
                                             GL_TEXTURE_MAG_FILTER,
                                             filter));
     resource->filter = filter;
+    if (resource->target == 0)
+      resource->target = target;
+    else
+      DCHECK_EQ(resource->target, target);
   }
 
   if (resource->image_id)
