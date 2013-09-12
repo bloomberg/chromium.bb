@@ -487,7 +487,7 @@ void writeSVGResourceContainer(TextStream& ts, const RenderObject& object, int i
     ASSERT(resource);
 
     if (resource->resourceType() == MaskerResourceType) {
-        RenderSVGResourceMasker* masker = static_cast<RenderSVGResourceMasker*>(resource);
+        RenderSVGResourceMasker* masker = toRenderSVGResourceMasker(resource);
         writeNameValuePair(ts, "maskUnits", masker->maskUnits());
         writeNameValuePair(ts, "maskContentUnits", masker->maskContentUnits());
         ts << "\n";
