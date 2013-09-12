@@ -142,7 +142,8 @@ if [ ! -e "$gerrit_exe" ]; then
 fi
 
 # By default, gerrit only accepts https connections, which is a good thing.  But
-# for testing, it's convenient to enable plain http.
+# for testing, it's convenient to enable plain http.  Also, turn off all email
+# notifications.
 mkdir -p "${rundir}/etc"
 cat <<EOF > "${rundir}/etc/gerrit.config"
 [auth]
@@ -154,6 +155,8 @@ cat <<EOF > "${rundir}/etc/gerrit.config"
 	listenUrl = http://*:${http_port}/
 [sshd]
 	listenAddress = *:${ssh_port}
+[sendemail]
+	enable = false
 EOF
 
 # Initialize the gerrit instance.
