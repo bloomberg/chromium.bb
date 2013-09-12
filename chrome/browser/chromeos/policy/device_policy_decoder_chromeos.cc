@@ -466,6 +466,14 @@ void DecodeAutoUpdatePolicies(const em::ChromeDeviceSettingsProto& policy,
                     Value::CreateBooleanValue(container.reboot_after_update()),
                     NULL);
     }
+
+    if (container.has_p2p_enabled()) {
+      policies->Set(key::kDeviceAutoUpdateP2PEnabled,
+                    POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE,
+                    Value::CreateBooleanValue(container.p2p_enabled()),
+                    NULL);
+    }
   }
 }
 

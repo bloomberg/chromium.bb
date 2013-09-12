@@ -214,6 +214,10 @@ message AutoUpdateSettingsProto {
   // the future and the policy will always apply, regardless of whether a
   // session of any particular type is in progress or not.
   optional bool reboot_after_update = 8;
+
+  // True if AU payloads may be shared with and consumed from other devices
+  // on the LAN, using p2p. False otherwise.
+  optional bool p2p_enabled = 9 [default = false];
 }
 
 message StartUpUrlsProto {
