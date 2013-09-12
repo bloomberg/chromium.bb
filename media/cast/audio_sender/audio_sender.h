@@ -54,7 +54,8 @@ class AudioSender : public base::NonThreadSafe,
                              const base::Closure callback);
 
   // Only called from the main cast thread.
-  void IncomingRtcpPacket(const uint8* packet, int length);
+  void IncomingRtcpPacket(const uint8* packet, int length,
+                          const base::Closure callback);
 
   // Only used for testing.
   void set_clock(base::TickClock* clock) {

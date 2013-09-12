@@ -1,0 +1,176 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+#include "media/cast/cast_sender_impl.h"
+
+#include "base/bind.h"
+#include "base/callback.h"
+#include "base/logging.h"
+#include "base/message_loop/message_loop.h"
+
+namespace media {
+namespace cast {
+
+// The LocalFrameInput class posts all incoming frames; audio and video to the
+// main cast thread for processing.
+// This make the cast sender interface thread safe.
+class LocalFrameInput : public FrameInput {
+ public:
+  LocalFrameInput(scoped_refptr<CastThread> cast_thread,
+                  base::WeakPtr<AudioSender> audio_sender,
+                  base::WeakPtr<VideoSender> video_sender)
+     : cast_thread_(cast_thread),
+       audio_sender_(audio_sender),
+       video_sender_(video_sender) {}
+
+  virtual void InsertRawVideoFrame(const I420VideoFrame* video_frame,
+                                   const base::TimeTicks& capture_time,
+                                   const base::Closure callback) OVERRIDE {
+    cast_thread_->PostTask(CastThread::MAIN, FROM_HERE,
+        base::Bind(&VideoSender::InsertRawVideoFrame, video_sender_,
+            video_frame, capture_time, callback));
+  }
+
+  virtual void InsertCodedVideoFrame(const EncodedVideoFrame* video_frame,
+                                     const base::TimeTicks& capture_time,
+                                     const base::Closure callback) OVERRIDE {
+    cast_thread_->PostTask(CastThread::MAIN, FROM_HERE,
+        base::Bind(&VideoSender::InsertCodedVideoFrame, video_sender_,
+            video_frame, capture_time, callback));
+  }
+
+  virtual void InsertRawAudioFrame(const PcmAudioFrame* audio_frame,
+                                   const base::TimeTicks& recorded_time,
+                                   const base::Closure callback) OVERRIDE {
+    cast_thread_->PostTask(CastThread::MAIN, FROM_HERE,
+        base::Bind(&AudioSender::InsertRawAudioFrame, audio_sender_,
+            audio_frame, recorded_time, callback));
+  }
+
+  virtual void InsertCodedAudioFrame(const EncodedAudioFrame* audio_frame,
+                                     const base::TimeTicks& recorded_time,
+                                     const base::Closure callback) OVERRIDE {
+    cast_thread_->PostTask(CastThread::MAIN, FROM_HERE,
+        base::Bind(&AudioSender::InsertCodedAudioFrame, audio_sender_,
+            audio_frame, recorded_time, callback));
+  }
+
+ private:
+  scoped_refptr<CastThread> cast_thread_;
+  base::WeakPtr<AudioSender> audio_sender_;
+  base::WeakPtr<VideoSender> video_sender_;
+};
+
+// LocalCastSenderPacketReceiver handle the incoming packets to the cast sender
+// it's only expected to receive RTCP feedback packets from the remote cast
+// receiver. The class verifies that that it is a RTCP packet and based on the
+// SSRC of the incoming packet route the packet to the correct sender; audio or
+// video.
+//
+// Definition of SSRC as defined in RFC 3550.
+// Synchronization source (SSRC): The source of a stream of RTP
+//    packets, identified by a 32-bit numeric SSRC identifier carried in
+//    the RTP header so as not to be dependent upon the network address.
+//    All packets from a synchronization source form part of the same
+//    timing and sequence number space, so a receiver groups packets by
+//    synchronization source for playback.  Examples of synchronization
+//    sources include the sender of a stream of packets derived from a
+//    signal source such as a microphone or a camera, or an RTP mixer
+//    (see below).  A synchronization source may change its data format,
+//    e.g., audio encoding, over time.  The SSRC identifier is a
+//    randomly chosen value meant to be globally unique within a
+//    particular RTP session (see Section 8).  A participant need not
+//    use the same SSRC identifier for all the RTP sessions in a
+//    multimedia session; the binding of the SSRC identifiers is
+//    provided through RTCP (see Section 6.5.1).  If a participant
+//    generates multiple streams in one RTP session, for example from
+//    separate video cameras, each MUST be identified as a different
+//    SSRC.
+
+class LocalCastSenderPacketReceiver : public PacketReceiver {
+ public:
+  LocalCastSenderPacketReceiver(scoped_refptr<CastThread> cast_thread,
+                                base::WeakPtr<AudioSender> audio_sender,
+                                base::WeakPtr<VideoSender> video_sender,
+                                uint32 ssrc_of_audio_sender,
+                                uint32 ssrc_of_video_sender)
+     : cast_thread_(cast_thread),
+       audio_sender_(audio_sender),
+       video_sender_(video_sender),
+       ssrc_of_audio_sender_(ssrc_of_audio_sender),
+       ssrc_of_video_sender_(ssrc_of_video_sender) {}
+
+  virtual ~LocalCastSenderPacketReceiver() {}
+
+  virtual void ReceivedPacket(const uint8* packet,
+                              int length,
+                              const base::Closure callback) OVERRIDE {
+    if (!Rtcp::IsRtcpPacket(packet, length)) {
+      // We should have no incoming RTP packets.
+      // No action; just log and call the callback informing that we are done
+      // with the packet.
+      VLOG(1) << "Unexpectedly received a RTP packet in the cast sender";
+      cast_thread_->PostTask(CastThread::MAIN, FROM_HERE, callback);
+      return;
+    }
+    uint32 ssrc_of_sender = Rtcp::GetSsrcOfSender(packet, length);
+    if (ssrc_of_sender == ssrc_of_audio_sender_) {
+      cast_thread_->PostTask(CastThread::MAIN, FROM_HERE,
+          base::Bind(&AudioSender::IncomingRtcpPacket, audio_sender_,
+              packet, length, callback));
+    } else if (ssrc_of_sender == ssrc_of_video_sender_) {
+      cast_thread_->PostTask(CastThread::MAIN, FROM_HERE,
+          base::Bind(&VideoSender::IncomingRtcpPacket, video_sender_,
+              packet, length, callback));
+    } else {
+      // No action; just log and call the callback informing that we are done
+      // with the packet.
+      VLOG(1) << "Received a RTCP packet with a non matching sender SSRC "
+              << ssrc_of_sender;
+
+      cast_thread_->PostTask(CastThread::MAIN, FROM_HERE, callback);
+    }
+  }
+
+ private:
+  scoped_refptr<CastThread> cast_thread_;
+  base::WeakPtr<AudioSender> audio_sender_;
+  base::WeakPtr<VideoSender> video_sender_;
+  uint32 ssrc_of_audio_sender_;
+  uint32 ssrc_of_video_sender_;
+};
+
+CastSender* CastSender::CreateCastSender(
+    scoped_refptr<CastThread> cast_thread,
+    const AudioSenderConfig& audio_config,
+    const VideoSenderConfig& video_config,
+    VideoEncoderController* const video_encoder_controller,
+    PacketSender* const packet_sender) {
+  return new CastSenderImpl(cast_thread,
+                            audio_config,
+                            video_config,
+                            video_encoder_controller,
+                            packet_sender);
+}
+
+CastSenderImpl::CastSenderImpl(
+    scoped_refptr<CastThread> cast_thread,
+    const AudioSenderConfig& audio_config,
+    const VideoSenderConfig& video_config,
+    VideoEncoderController* const video_encoder_controller,
+    PacketSender* const packet_sender)
+    : pacer_(cast_thread, packet_sender),
+      audio_sender_(cast_thread, audio_config, &pacer_),
+      video_sender_(cast_thread, video_config, video_encoder_controller,
+                    &pacer_),
+      frame_input_(new LocalFrameInput(cast_thread, audio_sender_.AsWeakPtr(),
+                                       video_sender_.AsWeakPtr())),
+      packet_receiver_(new LocalCastSenderPacketReceiver(cast_thread,
+          audio_sender_.AsWeakPtr(), video_sender_.AsWeakPtr(),
+          audio_config.incoming_feedback_ssrc,
+          video_config.incoming_feedback_ssrc)) {}
+
+CastSenderImpl::~CastSenderImpl() {}
+
+}  // namespace cast
+}  // namespace media

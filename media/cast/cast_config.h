@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
+#include "base/memory/ref_counted.h"
 #include "media/cast/cast_defines.h"
 
 namespace media {
@@ -175,17 +177,16 @@ class PacketSender {
   // All packets to be sent to the network will be delivered via this function.
   virtual bool SendPacket(const uint8* packet, int length) = 0;
 
- protected:
   virtual ~PacketSender() {}
 };
 
-class PacketReceiver {
+class PacketReceiver : public base::RefCountedThreadSafe<PacketReceiver> {
  public:
   // All packets received from the network should be delivered via this
   // function.
-  virtual void ReceivedPacket(const uint8* packet, int length) = 0;
+  virtual void ReceivedPacket(const uint8* packet, int length,
+                              const base::Closure callback) = 0;
 
- protected:
   virtual ~PacketReceiver() {}
 };
 

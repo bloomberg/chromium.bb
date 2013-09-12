@@ -12,10 +12,15 @@
     {
       'target_name': 'cast_sender_impl',
       'type': 'static_library',
+      'include_dirs': [
+        '<(DEPTH)/',
+        '<(DEPTH)/third_party/',
+        '<(DEPTH)/third_party/webrtc/',
+      ],
       'sources': [
         'cast_sender.h',
-#        'cast_sender_impl.cc',
-#        'cast_sender_impl.h',
+        'cast_sender_impl.cc',
+        'cast_sender_impl.h',
       ], # source
       'dependencies': [
         'audio_sender',

@@ -22,7 +22,7 @@ namespace media {
 namespace cast {
 
 // This Class is thread safe.
-class FrameInput {
+class FrameInput : public base::RefCountedThreadSafe<PacketReceiver> {
  public:
   // The video_frame must be valid until the callback is called.
   // The callback is called from the main cast thread as soon as
@@ -56,11 +56,12 @@ class FrameInput {
                                      const base::TimeTicks& recorded_time,
                                      const base::Closure callback) = 0;
 
- protected:
   virtual ~FrameInput() {}
 };
 
 // This Class is thread safe.
+// The provided PacketSender object will always be called form the main cast
+// thread.
 class CastSender {
  public:
   static CastSender* CreateCastSender(

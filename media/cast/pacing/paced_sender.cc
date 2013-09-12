@@ -4,19 +4,25 @@
 
 #include "media/cast/pacing/paced_sender.h"
 
+#include "base/bind.h"
+#include "base/logging.h"
+#include "base/message_loop/message_loop.h"
+
 namespace media {
 namespace cast {
 
 static const int64 kPacingIntervalMs = 10;
-static const int64 kPacingMinIntervalMs = 7;
 static const int kPacingMaxBurstsPerFrame = 3;
 
-PacedSender::PacedSender(PacketSender* transport)
-    : burst_size_(1),
+PacedSender::PacedSender(scoped_refptr<CastThread> cast_thread,
+                         PacketSender* transport)
+    : cast_thread_(cast_thread),
+      burst_size_(1),
       packets_sent_in_burst_(0),
       transport_(transport),
-      default_tick_clock_(new base::DefaultTickClock()),
-      clock_(default_tick_clock_.get()) {
+      clock_(&default_tick_clock_),
+      weak_factory_(this) {
+  ScheduleNextSend();
 }
 
 PacedSender::~PacedSender() {}
@@ -62,31 +68,29 @@ bool PacedSender::SendRtcpPacket(const std::vector<uint8>& packet) {
   return transport_->SendPacket(&(packet[0]), packet.size());
 }
 
-base::TimeTicks PacedSender::TimeNextProcess() {
-  return time_last_process_ +
+void PacedSender::ScheduleNextSend() {
+  base::TimeDelta time_to_next = time_last_process_ - clock_->NowTicks() +
       base::TimeDelta::FromMilliseconds(kPacingIntervalMs);
+
+  time_to_next = std::max(time_to_next,
+      base::TimeDelta::FromMilliseconds(0));
+
+  cast_thread_->PostDelayedTask(CastThread::MAIN, FROM_HERE,
+      base::Bind(&PacedSender::SendNextPacketBurst, weak_factory_.GetWeakPtr()),
+                 time_to_next);
 }
 
-void PacedSender::Process() {
-  int packets_to_send = 0;
-  base::TimeTicks now = clock_->NowTicks();
-
-  base::TimeDelta min_pacing_interval =
-    base::TimeDelta::FromMilliseconds(kPacingMinIntervalMs);
-
-  // Have enough time have passed?
-  if (now - time_last_process_ < min_pacing_interval)  return;
-
-  time_last_process_ = now;
-  packets_to_send = burst_size_;
-  // Allow new packets to be inserted while we loop over our packets to send.
+void PacedSender::SendNextPacketBurst() {
+  int packets_to_send = burst_size_;
+  time_last_process_ = clock_->NowTicks();
   for (int i = 0; i < packets_to_send; ++i) {
     SendStoredPacket();
   }
+  ScheduleNextSend();
 }
 
 void PacedSender::SendStoredPacket() {
-  if (packet_list_.empty() && resend_packet_list_.empty())  return;
+  if (packet_list_.empty() && resend_packet_list_.empty()) return;
 
   if (!resend_packet_list_.empty()) {
     // Send our re-send packets first.

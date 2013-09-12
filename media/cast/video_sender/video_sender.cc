@@ -179,8 +179,10 @@ void VideoSender::OnReceivedIntraFrameRequest() {
   last_sent_frame_id_ = -1;
 }
 
-void VideoSender::IncomingRtcpPacket(const uint8* packet, int length) {
+void VideoSender::IncomingRtcpPacket(const uint8* packet, int length,
+                                     const base::Closure callback) {
   rtcp_->IncomingRtcpPacket(packet, length);
+  cast_thread_->PostTask(CastThread::MAIN, FROM_HERE, callback);
 }
 
 void VideoSender::ScheduleNextRtcpReport() {

@@ -80,6 +80,8 @@ class Rtcp {
 
   static bool IsRtcpPacket(const uint8* rtcp_buffer, int length);
 
+  static uint32 GetSsrcOfSender(const uint8* rtcp_buffer, int length);
+
   base::TimeTicks TimeToSendNextRtcpReport();
   void SendRtcpReport(uint32 media_ssrc);
   void SendRtcpPli(uint32 media_ssrc);

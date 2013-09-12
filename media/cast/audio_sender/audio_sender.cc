@@ -141,8 +141,10 @@ void AudioSender::ResendPackets(
   rtp_sender_.ResendPackets(missing_frames_and_packets);
 }
 
-void AudioSender::IncomingRtcpPacket(const uint8* packet, int length) {
+void AudioSender::IncomingRtcpPacket(const uint8* packet, int length,
+                                     const base::Closure callback) {
   rtcp_.IncomingRtcpPacket(packet, length);
+  cast_thread_->PostTask(CastThread::MAIN, FROM_HERE, callback);
 }
 
 void AudioSender::ScheduleNextRtcpReport() {

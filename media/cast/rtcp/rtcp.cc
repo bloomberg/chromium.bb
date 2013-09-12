@@ -12,6 +12,7 @@
 #include "media/cast/rtcp/rtcp_receiver.h"
 #include "media/cast/rtcp/rtcp_sender.h"
 #include "media/cast/rtcp/rtcp_utility.h"
+#include "net/base/big_endian.h"
 
 namespace media {
 namespace cast {
@@ -117,17 +118,7 @@ Rtcp::Rtcp(RtcpSenderFeedback* sender_feedback,
 
 Rtcp::~Rtcp() {}
 
-base::TimeTicks Rtcp::TimeToSendNextRtcpReport() {
-  if (next_time_to_send_rtcp_.is_null()) {
-    UpdateNextTimeToSendRtcp();
-  }
-  return next_time_to_send_rtcp_;
-}
-
-void Rtcp::SetRemoteSSRC(uint32 ssrc) {
-  rtcp_receiver_->SetRemoteSSRC(ssrc);
-}
-
+// static
 bool Rtcp::IsRtcpPacket(const uint8* packet, int length) {
   DCHECK_GE(length, 8) << "Invalid RTCP packet";
   if (length < 8) return false;
@@ -137,6 +128,26 @@ bool Rtcp::IsRtcpPacket(const uint8* packet, int length) {
     return true;
   }
   return false;
+}
+
+// static
+uint32 Rtcp::GetSsrcOfSender(const uint8* rtcp_buffer, int length) {
+  uint32 ssrc_of_sender;
+  net::BigEndianReader big_endian_reader(rtcp_buffer, length);
+  big_endian_reader.Skip(4);  // Skip header
+  big_endian_reader.ReadU32(&ssrc_of_sender);
+  return ssrc_of_sender;
+}
+
+base::TimeTicks Rtcp::TimeToSendNextRtcpReport() {
+  if (next_time_to_send_rtcp_.is_null()) {
+    UpdateNextTimeToSendRtcp();
+  }
+  return next_time_to_send_rtcp_;
+}
+
+void Rtcp::SetRemoteSSRC(uint32 ssrc) {
+  rtcp_receiver_->SetRemoteSSRC(ssrc);
 }
 
 void Rtcp::IncomingRtcpPacket(const uint8* rtcp_buffer, int length) {

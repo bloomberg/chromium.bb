@@ -10,10 +10,13 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
+#include "base/threading/non_thread_safe.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "media/cast/cast_config.h"
+#include "media/cast/cast_thread.h"
 
 namespace media {
 namespace cast {
@@ -29,20 +32,15 @@ class PacedPacketSender {
 
   virtual bool SendRtcpPacket(const std::vector<uint8>& packet) = 0;
 
- protected:
   virtual ~PacedPacketSender() {}
 };
 
-class PacedSender : public PacedPacketSender {
+class PacedSender : public PacedPacketSender,
+                    public base::NonThreadSafe,
+                    public base::SupportsWeakPtr<PacedSender> {
  public:
-  explicit PacedSender(PacketSender* transport);
+  PacedSender(scoped_refptr<CastThread> cast_thread, PacketSender* transport);
   virtual ~PacedSender();
-
-  // Returns the time when the pacer want a worker thread to call Process.
-  base::TimeTicks TimeNextProcess();
-
-  // Process any pending packets in the queue(s).
-  void Process();
 
   virtual bool SendPacket(const std::vector<uint8>& packet,
                           int num_of_packets) OVERRIDE;
@@ -56,12 +54,21 @@ class PacedSender : public PacedPacketSender {
     clock_ = clock;
   }
 
+ protected:
+  // Schedule a delayed task on the main cast thread when it's time to send the
+  // next packet burst.
+  void ScheduleNextSend();
+
+  // Process any pending packets in the queue(s).
+  void SendNextPacketBurst();
+
  private:
   void SendStoredPacket();
   void UpdateBurstSize(int num_of_packets);
 
   typedef std::list<std::vector<uint8> > PacketList;
 
+  scoped_refptr<CastThread> cast_thread_;
   int burst_size_;
   int packets_sent_in_burst_;
   base::TimeTicks time_last_process_;
@@ -69,8 +76,10 @@ class PacedSender : public PacedPacketSender {
   PacketList resend_packet_list_;
   PacketSender* transport_;
 
-  scoped_ptr<base::TickClock> default_tick_clock_;
+  base::DefaultTickClock default_tick_clock_;
   base::TickClock* clock_;
+
+  base::WeakPtrFactory<PacedSender> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PacedSender);
 };

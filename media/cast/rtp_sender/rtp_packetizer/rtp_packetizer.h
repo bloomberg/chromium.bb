@@ -20,6 +20,8 @@ namespace cast {
 class PacedPacketSender;
 
 // This object is only called from the main cast thread.
+// This class break encoded audio and video frames into packets and add an RTP
+// header to each packet.
 class RtpPacketizer {
  public:
   RtpPacketizer(PacedPacketSender* transport,
