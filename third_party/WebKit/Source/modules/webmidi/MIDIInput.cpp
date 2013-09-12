@@ -30,6 +30,8 @@
 
 #include "config.h"
 #include "modules/webmidi/MIDIInput.h"
+
+#include "modules/webmidi/MIDIAccess.h"
 #include "modules/webmidi/MIDIMessageEvent.h"
 
 namespace WebCore {
@@ -59,8 +61,8 @@ void MIDIInput::didReceiveMIDIData(unsigned portIndex, const unsigned char* data
         unsigned char status = data[i];
         unsigned char strippedStatus = status & 0xf0;
 
-        // FIXME: support System Exclusive.
-        if (strippedStatus >= 0xf0)
+        // FIXME: integrate sending side filtering and implement more extensive filtering.
+        if (strippedStatus >= 0xf0 && !m_access->sysExEnabled())
             break;
 
         // All non System Exclusive messages have a total size of 3 except for Program Change and Channel Pressure.
