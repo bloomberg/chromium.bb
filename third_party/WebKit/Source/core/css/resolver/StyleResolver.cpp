@@ -241,6 +241,60 @@ void StyleResolver::collectFeatures()
     m_uncommonAttributeRuleSet = makeRuleSet(m_features.uncommonAttributeRules);
 }
 
+bool StyleResolver::supportsStyleSharing(Element* element)
+{
+    if (!element || !element->isStyledElement() || !element->parentElement())
+        return false;
+
+    // If the element has inline style it is probably unique.
+    if (element->inlineStyle())
+        return false;
+    if (element->isSVGElement() && toSVGElement(element)->animatedSMILStyleProperties())
+        return false;
+    // Ids stop style sharing if they show up in the stylesheets.
+    if (element->hasID() && m_features.idsInRules.contains(element->idForStyleResolution().impl()))
+        return false;
+    // Active and hovered elements always make a chain towards the document node
+    // and no siblings or cousins will have the same state.
+    if (element->hovered())
+        return false;
+    if (element->active())
+        return false;
+    // There is always only one focused element.
+    if (element->focused())
+        return false;
+    if (element->parentElement()->hasFlagsSetDuringStylingOfChildren())
+        return false;
+    if (element->hasScopedHTMLStyleChild())
+        return false;
+    if (element == m_document.cssTarget())
+        return false;
+    if (element->isHTMLElement() && toHTMLElement(element)->hasDirectionAuto())
+        return false;
+    if (element->hasActiveAnimations())
+        return false;
+    // When a dialog is first shown, its style is mutated to center it in the
+    // viewport. So the styles can't be shared since the viewport position and
+    // size may be different each time a dialog is opened.
+    if (element->hasTagName(dialogTag))
+        return false;
+    if (isShadowHost(element) && element->shadow()->containsActiveStyles())
+        return false;
+    return true;
+}
+
+void StyleResolver::addToStyleSharingList(Element* element)
+{
+    if (m_styleSharingList.size() >= styleSharingListSize)
+        m_styleSharingList.remove(--m_styleSharingList.end());
+    m_styleSharingList.prepend(element);
+}
+
+void StyleResolver::clearStyleSharingList()
+{
+    m_styleSharingList.clear();
+}
+
 void StyleResolver::pushParentElement(Element* parent)
 {
     ASSERT(parent);

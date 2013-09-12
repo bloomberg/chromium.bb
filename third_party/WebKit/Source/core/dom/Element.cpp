@@ -1563,6 +1563,8 @@ void Element::recalcChildStyle(StyleRecalcChange change)
             if (shouldRecalcStyle(change, element)) {
                 parentPusher.push();
                 didReattach = element->recalcStyle(change);
+            } else if (document().styleResolver()->supportsStyleSharing(element)) {
+                document().styleResolver()->addToStyleSharingList(element);
             }
         }
 
