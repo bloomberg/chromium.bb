@@ -32,9 +32,15 @@
 #ifndef MediaStreamComponent_h
 #define MediaStreamComponent_h
 
+#include "core/platform/audio/AudioSourceProvider.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
+#include "wtf/ThreadingPrimitives.h"
 #include "wtf/text/WTFString.h"
+
+namespace WebKit {
+class WebAudioSourceProvider;
+}
 
 namespace WebCore {
 
@@ -56,13 +62,40 @@ public:
     bool enabled() const { return m_enabled; }
     void setEnabled(bool enabled) { m_enabled = enabled; }
 
+    AudioSourceProvider* audioSourceProvider() { return &m_sourceProvider; }
+    void setSourceProvider(WebKit::WebAudioSourceProvider* provider) { m_sourceProvider.wrap(provider); }
+
 private:
     MediaStreamComponent(const String& id, MediaStreamDescriptor*, PassRefPtr<MediaStreamSource>);
+
+    // AudioSourceProviderImpl wraps a WebAudioSourceProvider::provideInput()
+    // calls into chromium to get a rendered audio stream.
+
+    class AudioSourceProviderImpl : public AudioSourceProvider {
+    public:
+        AudioSourceProviderImpl()
+            : m_webAudioSourceProvider(0)
+        {
+        }
+
+        virtual ~AudioSourceProviderImpl() { }
+
+        // Wraps the given WebKit::WebAudioSourceProvider to WebCore::AudioSourceProvider.
+        void wrap(WebKit::WebAudioSourceProvider*);
+
+        // WebCore::AudioSourceProvider
+        virtual void provideInput(WebCore::AudioBus*, size_t framesToProcess);
+
+    private:
+        WebKit::WebAudioSourceProvider* m_webAudioSourceProvider;
+        Mutex m_provideInputLock;
+    };
 
     MediaStreamDescriptor* m_stream;
     RefPtr<MediaStreamSource> m_source;
     String m_id;
     bool m_enabled;
+    AudioSourceProviderImpl m_sourceProvider;
 };
 
 typedef Vector<RefPtr<MediaStreamComponent> > MediaStreamComponentVector;

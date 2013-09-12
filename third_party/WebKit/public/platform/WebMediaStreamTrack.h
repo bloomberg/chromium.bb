@@ -34,6 +34,7 @@ class MediaStreamComponent;
 }
 
 namespace WebKit {
+class WebAudioSourceProvider;
 class WebMediaStream;
 class WebMediaStreamSource;
 class WebString;
@@ -62,6 +63,11 @@ public:
     WEBKIT_EXPORT WebMediaStream stream() const;
     WEBKIT_EXPORT WebMediaStreamSource source() const;
     WEBKIT_EXPORT bool isEnabled() const;
+
+    // The lifetime of the WebAudioSourceProvider should outlive the
+    // WebMediaStreamTrack, and clients are responsible for calling
+    // setSourceProvider(0) before the WebMediaStreamTrack is going away.
+    WEBKIT_EXPORT void setSourceProvider(WebAudioSourceProvider*);
 
 #if WEBKIT_IMPLEMENTATION
     WebMediaStreamTrack(PassRefPtr<WebCore::MediaStreamComponent>);
