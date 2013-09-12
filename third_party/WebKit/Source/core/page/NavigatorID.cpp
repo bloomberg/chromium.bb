@@ -40,6 +40,10 @@
 #include <sys/utsname.h>
 #endif
 
+#ifndef WEBCORE_NAVIGATOR_PRODUCT
+#define WEBCORE_NAVIGATOR_PRODUCT "Gecko"
+#endif // ifndef WEBCORE_NAVIGATOR_PRODUCT
+
 namespace WebCore {
 
 String NavigatorID::appName(const NavigatorBase*)
@@ -72,6 +76,16 @@ String NavigatorID::platform(const NavigatorBase*)
 #error Non-Linux ports must define WEBCORE_NAVIGATOR_PLATFORM.
 #endif
 #endif
+}
+
+String NavigatorID::appCodeName(const NavigatorBase*)
+{
+    return "Mozilla";
+}
+
+String NavigatorID::product(const NavigatorBase*)
+{
+    return WEBCORE_NAVIGATOR_PRODUCT;
 }
 
 } // namespace WebCore

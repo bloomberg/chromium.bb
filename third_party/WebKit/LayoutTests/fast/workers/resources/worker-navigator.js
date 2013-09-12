@@ -16,6 +16,8 @@ worker.postMessage("eval navigator.appVersion.indexOf('WebKit') != 0");
 worker.postMessage("eval typeof navigator.platform");
 worker.postMessage("eval navigator.userAgent.indexOf('WebKit') != 0");
 worker.postMessage("eval typeof navigator.onLine");
+worker.postMessage("eval navigator.appCodeName === 'Mozilla'");
+worker.postMessage("eval navigator.product === 'Gecko'");
 worker.postMessage("eval foo//bar");
 
 worker.onmessage = function(evt) {

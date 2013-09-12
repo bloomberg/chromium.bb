@@ -18,11 +18,9 @@
 */
 
 interface Navigator {
-    readonly attribute DOMString appCodeName;
     readonly attribute DOMString language;
     readonly attribute PluginArray plugins;
     readonly attribute MimeTypeArray mimeTypes;
-    readonly attribute DOMString product;
     readonly attribute boolean cookieEnabled;
     boolean javaEnabled();
 

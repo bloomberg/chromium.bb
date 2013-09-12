@@ -1215,7 +1215,6 @@
             'page/MouseEventWithHitTestResults.h',
             'page/Navigator.cpp',
             'page/Navigator.h',
-            'page/NavigatorBase.cpp',
             'page/NavigatorBase.h',
             'page/NavigatorID.cpp',
             'page/NavigatorID.h',
