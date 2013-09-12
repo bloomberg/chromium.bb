@@ -103,7 +103,7 @@ void ScriptCallArgumentHandler::appendArgument(int argument)
 
 void ScriptCallArgumentHandler::appendArgument(bool argument)
 {
-    m_arguments.append(v8Boolean(argument));
+    m_arguments.append(v8Boolean(argument, m_scriptState->isolate()));
 }
 
 ScriptFunctionCall::ScriptFunctionCall(const ScriptObject& thisObject, const String& name)

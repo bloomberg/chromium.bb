@@ -202,7 +202,7 @@ bool CustomElementConstructorBuilder::createConstructor(Document* document, Cust
     // property.
     m_constructor->ForceSet(prototypeKey, m_prototype, v8::PropertyAttribute(v8::ReadOnly | v8::DontEnum | v8::DontDelete));
 
-    V8HiddenPropertyName::setNamedHiddenReference(m_prototype, "customElementIsInterfacePrototypeObject", v8::True());
+    V8HiddenPropertyName::setNamedHiddenReference(m_prototype, "customElementIsInterfacePrototypeObject", v8::True(isolate));
     m_prototype->ForceSet(v8String("constructor", isolate), m_constructor, v8::DontEnum);
 
     return true;
