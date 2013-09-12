@@ -94,6 +94,10 @@ class LocationBarViewGtk : public OmniboxEditController,
   // that the tab holds.
   void Update(const content::WebContents* contents);
 
+  // Performs any updates which depend on the image having already been laid out
+  // by the owning LocationBarViewGtk.
+  void UpdatePostLayout();
+
   // Show the bookmark bubble.
   void ShowStarBubble(const GURL& url, bool newly_boomkarked);
 
@@ -169,7 +173,13 @@ class LocationBarViewGtk : public OmniboxEditController,
     GtkWidget* widget();
 
     bool IsVisible();
-    virtual void Update(content::WebContents* web_contents) = 0;
+
+    // Updates the decoration from the shown WebContents.
+    virtual void UpdatePreLayout(content::WebContents* web_contents) = 0;
+
+    // Performs any updates which depend on the image having already been laid
+    // out by the owning LocationBarView.
+    virtual void UpdatePostLayout(content::WebContents* web_contents) = 0;
 
     // Overridden from ui::AnimationDelegate:
     virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
