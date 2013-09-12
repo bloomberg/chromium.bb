@@ -10,6 +10,10 @@
 #include "base/memory/singleton.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/chromeos/drive/file_errors.h"
+#include "chrome/browser/chromeos/drive/file_system_interface.h"
+#include "chrome/browser/chromeos/drive/file_system_util.h"
+#include "chrome/browser/chromeos/file_manager/mounted_disk_monitor.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager_factory.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager_observer.h"
 #include "chrome/browser/profiles/profile.h"
@@ -20,6 +24,11 @@
 
 namespace file_manager {
 namespace {
+
+// Called on completion of MarkCacheFileAsUnmounted.
+void OnMarkCacheFileAsUnmounted(drive::FileError error) {
+  // Do nothing.
+}
 
 VolumeType MountTypeToVolumeType(
     chromeos::MountType type) {
@@ -42,26 +51,58 @@ VolumeInfo CreateDownloadsVolumeInfo(
   // Keep source_path empty.
   volume_info.mount_path = downloads_path;
   volume_info.mount_condition = chromeos::disks::MOUNT_CONDITION_NONE;
+  volume_info.is_parent = false;
   return volume_info;
 }
 
 VolumeInfo CreateVolumeInfoFromMountPointInfo(
-    const chromeos::disks::DiskMountManager::MountPointInfo& mount_point) {
+    const chromeos::disks::DiskMountManager::MountPointInfo& mount_point,
+    const chromeos::disks::DiskMountManager::Disk* disk) {
   VolumeInfo volume_info;
   volume_info.type = MountTypeToVolumeType(mount_point.mount_type);
   volume_info.source_path = base::FilePath(mount_point.source_path);
   volume_info.mount_path = base::FilePath(mount_point.mount_path);
   volume_info.mount_condition = mount_point.mount_condition;
+  if (disk) {
+    volume_info.system_path_prefix =
+        base::FilePath(disk->system_path_prefix());
+    volume_info.drive_label = disk->drive_label();
+    volume_info.is_parent = disk->is_parent();
+  } else {
+    volume_info.is_parent = false;
+  }
+
   return volume_info;
 }
 
 }  // namespace
 
+VolumeInfo::VolumeInfo() {
+}
+
+VolumeInfo::~VolumeInfo() {
+}
+
+VolumeInfo CreateDriveVolumeInfo() {
+  const base::FilePath& drive_path = drive::util::GetDriveMountPointPath();
+
+  VolumeInfo volume_info;
+  volume_info.type = VOLUME_TYPE_GOOGLE_DRIVE;
+  volume_info.source_path = drive_path;
+  volume_info.mount_path = drive_path;
+  volume_info.mount_condition = chromeos::disks::MOUNT_CONDITION_NONE;
+  volume_info.is_parent = false;
+  return volume_info;
+}
+
 VolumeManager::VolumeManager(
     Profile* profile,
+    chromeos::PowerManagerClient* power_manager_client,
     chromeos::disks::DiskMountManager* disk_mount_manager)
     : profile_(profile),
-      disk_mount_manager_(disk_mount_manager) {
+      disk_mount_manager_(disk_mount_manager),
+      mounted_disk_monitor_(
+          new MountedDiskMonitor(power_manager_client, disk_mount_manager)) {
   DCHECK(disk_mount_manager);
 }
 
@@ -115,7 +156,9 @@ std::vector<VolumeInfo> VolumeManager::GetVolumeInfoList() const {
        it != mount_points.end(); ++it) {
     if (it->second.mount_type == chromeos::MOUNT_TYPE_DEVICE ||
         it->second.mount_type == chromeos::MOUNT_TYPE_ARCHIVE)
-      result.push_back(CreateVolumeInfoFromMountPointInfo(it->second));
+      result.push_back(CreateVolumeInfoFromMountPointInfo(
+          it->second,
+          disk_mount_manager_->FindDiskBySourcePath(it->second.source_path)));
   }
 
   return result;
@@ -204,7 +247,48 @@ void VolumeManager::OnMountEvent(
     chromeos::disks::DiskMountManager::MountEvent event,
     chromeos::MountError error_code,
     const chromeos::disks::DiskMountManager::MountPointInfo& mount_info) {
-  // TODO(hidehiko): Move the implementation from EventRouter.
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(mount_info.mount_type != chromeos::MOUNT_TYPE_INVALID);
+
+  if (mount_info.mount_type == chromeos::MOUNT_TYPE_ARCHIVE) {
+    // If the file is not mounted now, tell it to drive file system so that
+    // it can handle file caching correctly.
+    // Note that drive file system knows if the file is managed by drive file
+    // system or not, so here we report all paths.
+    if ((event == chromeos::disks::DiskMountManager::MOUNTING &&
+         error_code != chromeos::MOUNT_ERROR_NONE) ||
+        (event == chromeos::disks::DiskMountManager::UNMOUNTING &&
+         error_code == chromeos::MOUNT_ERROR_NONE)) {
+      drive::FileSystemInterface* file_system =
+          drive::util::GetFileSystemByProfile(profile_);
+      if (file_system) {
+        file_system->MarkCacheFileAsUnmounted(
+            base::FilePath(mount_info.source_path),
+            base::Bind(&OnMarkCacheFileAsUnmounted));
+      }
+    }
+  }
+
+  // Notify a mounting/unmounting event to observers.
+  const chromeos::disks::DiskMountManager::Disk* disk =
+      disk_mount_manager_->FindDiskBySourcePath(mount_info.source_path);
+  VolumeInfo volume_info =
+      CreateVolumeInfoFromMountPointInfo(mount_info, disk);
+  switch (event) {
+    case chromeos::disks::DiskMountManager::MOUNTING: {
+      bool is_remounting =
+          disk && mounted_disk_monitor_->DiskIsRemounting(*disk);
+      FOR_EACH_OBSERVER(
+          VolumeManagerObserver, observers_,
+          OnVolumeMounted(error_code, volume_info, is_remounting));
+      return;
+    }
+    case chromeos::disks::DiskMountManager::UNMOUNTING:
+      FOR_EACH_OBSERVER(VolumeManagerObserver, observers_,
+                        OnVolumeUnmounted(error_code, volume_info));
+      return;
+  }
+  NOTREACHED();
 }
 
 void VolumeManager::OnFormatEvent(

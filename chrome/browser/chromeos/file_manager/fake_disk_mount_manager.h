@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/observer_list.h"
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
 
@@ -72,6 +73,8 @@ class FakeDiskMountManager : public chromeos::disks::DiskMountManager {
       const MountPointInfo& mount_point) OVERRIDE;
 
  private:
+  ObserverList<Observer> observers_;
+
   DiskMap disks_;
   MountPointMap mount_points_;
 

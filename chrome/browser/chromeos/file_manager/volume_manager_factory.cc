@@ -9,6 +9,7 @@
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 
@@ -39,9 +40,10 @@ bool VolumeManagerFactory::ServiceIsNULLWhileTesting() const {
 
 BrowserContextKeyedService* VolumeManagerFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
-  VolumeManager* instance =
-      new VolumeManager(Profile::FromBrowserContext(profile),
-                        chromeos::disks::DiskMountManager::GetInstance());
+  VolumeManager* instance = new VolumeManager(
+      Profile::FromBrowserContext(profile),
+      chromeos::DBusThreadManager::Get()->GetPowerManagerClient(),
+      chromeos::disks::DiskMountManager::GetInstance());
   instance->Initialize();
   return instance;
 }

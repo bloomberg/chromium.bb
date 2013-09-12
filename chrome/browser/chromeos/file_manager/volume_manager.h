@@ -13,12 +13,17 @@
 
 class Profile;
 
+namespace chromeos {
+class PowerManagerClient;
+}  // namespace chromeos
+
 namespace content {
 class BrowserContext;
 }  // namespace content
 
 namespace file_manager {
 
+class MountedDiskMonitor;
 class VolumeManagerObserver;
 
 // This manager manages "Drive" and "Downloads" in addition to disks managed
@@ -31,6 +36,9 @@ enum VolumeType {
 };
 
 struct VolumeInfo {
+  VolumeInfo();
+  ~VolumeInfo();
+
   // The type of mounted volume.
   VolumeType type;
 
@@ -48,7 +56,24 @@ struct VolumeInfo {
 
   // The mounting condition. See the enum for the details.
   chromeos::disks::MountCondition mount_condition;
+
+  // Path of the system device this device's block is a part of.
+  // (e.g. /sys/devices/pci0000:00/.../8:0:0:0/)
+  base::FilePath system_path_prefix;
+
+  // If disk is a parent, then its label, else parents label.
+  // (e.g. "TransMemory")
+  std::string drive_label;
+
+  // Is the device is a parent device (i.e. sdb rather than sdb1).
+  bool is_parent;
 };
+
+// Returns the VolumeInfo for Drive file system.
+// This is temporarily exposed for EventRouter's FileSystem mounting event
+// handling.
+// TODO(hidehiko): Hide this when the observing code is moved to VolumeManager.
+VolumeInfo CreateDriveVolumeInfo();
 
 // Manages "Volume"s for file manager. Here are "Volume"s.
 // - Drive File System (not yet supported).
@@ -60,6 +85,7 @@ class VolumeManager : public BrowserContextKeyedService,
                       public chromeos::disks::DiskMountManager::Observer {
  public:
   VolumeManager(Profile* profile,
+                chromeos::PowerManagerClient* power_manager_client,
                 chromeos::disks::DiskMountManager* disk_mount_manager);
   virtual ~VolumeManager();
 
@@ -102,6 +128,7 @@ class VolumeManager : public BrowserContextKeyedService,
  private:
   Profile* profile_;
   chromeos::disks::DiskMountManager* disk_mount_manager_;
+  scoped_ptr<MountedDiskMonitor> mounted_disk_monitor_;
   ObserverList<VolumeManagerObserver> observers_;
   DISALLOW_COPY_AND_ASSIGN(VolumeManager);
 };

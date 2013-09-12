@@ -20,7 +20,6 @@
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/desktop_notifications.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
-#include "chrome/browser/chromeos/file_manager/mounted_disk_monitor.h"
 #include "chrome/browser/chromeos/file_manager/open_util.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
@@ -33,7 +32,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/file_browser_private.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/login/login_state.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler.h"
@@ -243,56 +241,40 @@ MountErrorToMountCompletedStatus(chromeos::MountError error) {
 }
 
 file_browser_private::MountCompletedEvent::VolumeType
-MountTypeToMountCompletedVolumeType(chromeos::MountType mount_type) {
+VolumeTypeToMountCompletedVolumeType(VolumeType volume_type) {
   using file_browser_private::MountCompletedEvent;
 
-  switch (mount_type) {
-    case chromeos::MOUNT_TYPE_INVALID:
-      return MountCompletedEvent::VOLUME_TYPE_NONE;
-    case chromeos::MOUNT_TYPE_DEVICE:
-      return MountCompletedEvent::VOLUME_TYPE_REMOVABLE;
-    case chromeos::MOUNT_TYPE_ARCHIVE:
-      return MountCompletedEvent::VOLUME_TYPE_ARCHIVE;
-    case chromeos::MOUNT_TYPE_GOOGLE_DRIVE:
+  switch (volume_type) {
+    case VOLUME_TYPE_GOOGLE_DRIVE:
       return MountCompletedEvent::VOLUME_TYPE_DRIVE;
+    case VOLUME_TYPE_DOWNLOADS_DIRECTORY:
+      return MountCompletedEvent::VOLUME_TYPE_DOWNLOADS;
+    case VOLUME_TYPE_REMOVABLE_DISK_PARTITION:
+      return MountCompletedEvent::VOLUME_TYPE_REMOVABLE;
+    case VOLUME_TYPE_MOUNTED_ARCHIVE_FILE:
+      return MountCompletedEvent::VOLUME_TYPE_ARCHIVE;
   }
   NOTREACHED();
   return MountCompletedEvent::VOLUME_TYPE_NONE;
 }
 
-file_browser_private::MountCompletedEvent::EventType
-MountEventToMountCompletedEventType(
-    chromeos::disks::DiskMountManager::MountEvent event) {
-  using file_browser_private::MountCompletedEvent;
-
-  switch (event) {
-    case chromeos::disks::DiskMountManager::MOUNTING:
-      return MountCompletedEvent::EVENT_TYPE_MOUNT;
-    case chromeos::disks::DiskMountManager::UNMOUNTING:
-      return MountCompletedEvent::EVENT_TYPE_UNMOUNT;
-  }
-  NOTREACHED();
-  return MountCompletedEvent::EVENT_TYPE_NONE;
-}
-
 void BroadcastMountCompletedEvent(
     Profile* profile,
-    DiskMountManager::MountEvent event_type,
+    file_browser_private::MountCompletedEvent::EventType event_type,
     chromeos::MountError error,
-    const DiskMountManager::MountPointInfo& mount_info) {
+    const VolumeInfo& volume_info) {
   file_browser_private::MountCompletedEvent event;
-  event.event_type = MountEventToMountCompletedEventType(event_type);
+  event.event_type = event_type;
   event.status = MountErrorToMountCompletedStatus(error);
-  event.source_path = mount_info.source_path;
-  event.volume_type =
-      MountTypeToMountCompletedVolumeType(mount_info.mount_type);
+  event.source_path = volume_info.source_path.AsUTF8Unsafe();
+  event.volume_type = VolumeTypeToMountCompletedVolumeType(volume_info.type);
 
-  if (!mount_info.mount_path.empty()) {
+  if (!volume_info.mount_path.empty()) {
     // Convert mount point path to relative path with the external file system
     // exposed within File API.
     base::FilePath relative_mount_path;
     if (util::ConvertAbsoluteFilePathToRelativeFileSystemPath(
-            profile, kFileManagerAppId, base::FilePath(mount_info.mount_path),
+            profile, kFileManagerAppId, base::FilePath(volume_info.mount_path),
             &relative_mount_path)) {
       event.mount_path.reset(
           new std::string("/" + relative_mount_path.AsUTF8Unsafe()));
@@ -347,10 +329,6 @@ void EventRouter::Shutdown() {
   if (volume_manager)
     volume_manager->RemoveObserver(this);
 
-  DiskMountManager* disk_mount_manager = DiskMountManager::GetInstance();
-  if (disk_mount_manager)
-    disk_mount_manager->RemoveObserver(this);
-
   DriveIntegrationService* integration_service =
       DriveIntegrationServiceFactory::FindForProfileRegardlessOfStates(
           profile_);
@@ -378,13 +356,6 @@ void EventRouter::ObserveFileSystemEvents() {
     return;
   }
 
-  DiskMountManager* disk_mount_manager = DiskMountManager::GetInstance();
-  if (disk_mount_manager) {
-    disk_mount_manager->RemoveObserver(this);
-    disk_mount_manager->AddObserver(this);
-    disk_mount_manager->RequestMountInfoRefresh();
-  }
-
   DriveIntegrationService* integration_service =
       DriveIntegrationServiceFactory::GetForProfileRegardlessOfStates(
           profile_);
@@ -399,10 +370,6 @@ void EventRouter::ObserveFileSystemEvents() {
     NetworkHandler::Get()->network_state_handler()->AddObserver(this,
                                                                 FROM_HERE);
   }
-
-  mounted_disk_monitor_.reset(new MountedDiskMonitor(
-      chromeos::DBusThreadManager::Get()->GetPowerManagerClient(),
-      disk_mount_manager));
 
   pref_change_registrar_->Init(profile_->GetPrefs());
 
@@ -512,73 +479,6 @@ void EventRouter::OnCopyCompleted(
       profile_,
       extensions::event_names::kOnFileBrowserCopyProgress,
       OnCopyProgress::Create(copy_id, status));
-}
-
-void EventRouter::OnDiskEvent(DiskMountManager::DiskEvent event,
-                              const DiskMountManager::Disk* disk) {
-  // Disk event is dispatched by VolumeManager now. Do nothing.
-}
-
-void EventRouter::OnDeviceEvent(DiskMountManager::DeviceEvent event,
-                                const std::string& device_path) {
-  // Device event is dispatched by VolumeManager now. Do nothing.
-}
-
-void EventRouter::OnMountEvent(
-    DiskMountManager::MountEvent event,
-    chromeos::MountError error_code,
-    const DiskMountManager::MountPointInfo& mount_info) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // profile_ is NULL if ShutdownOnUIThread() is called earlier. This can
-  // happen at shutdown.
-  if (!profile_)
-    return;
-
-  DCHECK(mount_info.mount_type != chromeos::MOUNT_TYPE_INVALID);
-
-  BroadcastMountCompletedEvent(profile_, event, error_code, mount_info);
-
-  if (mount_info.mount_type == chromeos::MOUNT_TYPE_DEVICE &&
-      event == DiskMountManager::MOUNTING) {
-    DiskMountManager* disk_mount_manager = DiskMountManager::GetInstance();
-    const DiskMountManager::Disk* disk =
-        disk_mount_manager->FindDiskBySourcePath(mount_info.source_path);
-    if (!disk || mounted_disk_monitor_->DiskIsRemounting(*disk))
-      return;
-
-    notifications_->ManageNotificationsOnMountCompleted(
-        disk->system_path_prefix(), disk->drive_label(), disk->is_parent(),
-        error_code == chromeos::MOUNT_ERROR_NONE,
-        error_code == chromeos::MOUNT_ERROR_UNSUPPORTED_FILESYSTEM);
-
-    // If a new device was mounted, a new File manager window may need to be
-    // opened.
-    if (error_code == chromeos::MOUNT_ERROR_NONE)
-      ShowRemovableDeviceInFileManager(
-          *disk,
-          base::FilePath::FromUTF8Unsafe(mount_info.mount_path));
-  } else if (mount_info.mount_type == chromeos::MOUNT_TYPE_ARCHIVE) {
-    // Clear the "mounted" state for archive files in drive cache
-    // when mounting failed or unmounting succeeded.
-    if ((event == DiskMountManager::MOUNTING) !=
-        (error_code == chromeos::MOUNT_ERROR_NONE)) {
-      DriveIntegrationService* integration_service =
-          DriveIntegrationServiceFactory::GetForProfile(profile_);
-      drive::FileSystemInterface* file_system =
-          integration_service ? integration_service->file_system() : NULL;
-      if (file_system) {
-        file_system->MarkCacheFileAsUnmounted(
-            base::FilePath(mount_info.source_path),
-            base::Bind(&OnMarkAsUnmounted));
-      }
-    }
-  }
-}
-
-void EventRouter::OnFormatEvent(DiskMountManager::FormatEvent event,
-                                chromeos::FormatError error_code,
-                                const std::string& device_path) {
-  // Format event is dispatched by VolumeManager now. Do nothing.
 }
 
 void EventRouter::NetworkManagerChanged() {
@@ -716,32 +616,17 @@ void EventRouter::OnDirectoryChanged(const base::FilePath& directory_path) {
 void EventRouter::OnFileSystemMounted() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  const std::string& drive_path = drive::util::GetDriveMountPointPathAsString();
-  DiskMountManager::MountPointInfo mount_info(
-      drive_path,
-      drive_path,
-      chromeos::MOUNT_TYPE_GOOGLE_DRIVE,
-      chromeos::disks::MOUNT_CONDITION_NONE);
-
   // Raise mount event.
   // We can pass chromeos::MOUNT_ERROR_NONE even when authentication is failed
   // or network is unreachable. These two errors will be handled later.
-  OnMountEvent(DiskMountManager::MOUNTING, chromeos::MOUNT_ERROR_NONE,
-               mount_info);
+  OnVolumeMounted(chromeos::MOUNT_ERROR_NONE,
+                  CreateDriveVolumeInfo(),
+                  false);  // Not remounting.
 }
 
 void EventRouter::OnFileSystemBeingUnmounted() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // Raise a mount event to notify the File Manager.
-  const std::string& drive_path = drive::util::GetDriveMountPointPathAsString();
-  DiskMountManager::MountPointInfo mount_info(
-      drive_path,
-      drive_path,
-      chromeos::MOUNT_TYPE_GOOGLE_DRIVE,
-      chromeos::disks::MOUNT_CONDITION_NONE);
-  OnMountEvent(DiskMountManager::UNMOUNTING, chromeos::MOUNT_ERROR_NONE,
-               mount_info);
+  OnVolumeUnmounted(chromeos::MOUNT_ERROR_NONE, CreateDriveVolumeInfo());
 }
 
 void EventRouter::OnRefreshTokenInvalid() {
@@ -799,7 +684,6 @@ void EventRouter::DispatchDirectoryChangeEvent(
 }
 
 void EventRouter::ShowRemovableDeviceInFileManager(
-    const DiskMountManager::Disk& disk,
     const base::FilePath& mount_path) {
   // Do not attempt to open File Manager while the login is in progress or
   // the screen is locked.
@@ -865,6 +749,47 @@ void EventRouter::OnDeviceRemoved(const std::string& device_path) {
   notifications_->HideNotification(DesktopNotifications::DEVICE_FAIL,
                                    device_path);
   notifications_->UnregisterDevice(device_path);
+}
+
+void EventRouter::OnVolumeMounted(chromeos::MountError error_code,
+                                  const VolumeInfo& volume_info,
+                                  bool is_remounting) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // profile_ is NULL if ShutdownOnUIThread() is called earlier. This can
+  // happen at shutdown. This should be removed after removing Drive mounting
+  // code in addMount. (addMount -> OnFileSystemMounted -> OnVolumeMounted is
+  // the only path to come here after Shutdown is called).
+  if (!profile_)
+    return;
+
+  BroadcastMountCompletedEvent(
+      profile_,
+      file_browser_private::MountCompletedEvent::EVENT_TYPE_MOUNT,
+      error_code, volume_info);
+
+  if (volume_info.type == VOLUME_TYPE_REMOVABLE_DISK_PARTITION &&
+      !is_remounting) {
+    notifications_->ManageNotificationsOnMountCompleted(
+        volume_info.system_path_prefix.AsUTF8Unsafe(),
+        volume_info.drive_label,
+        volume_info.is_parent,
+        error_code == chromeos::MOUNT_ERROR_NONE,
+        error_code == chromeos::MOUNT_ERROR_UNSUPPORTED_FILESYSTEM);
+
+    // If a new device was mounted, a new File manager window may need to be
+    // opened.
+    if (error_code == chromeos::MOUNT_ERROR_NONE)
+      ShowRemovableDeviceInFileManager(volume_info.mount_path);
+  }
+}
+
+void EventRouter::OnVolumeUnmounted(chromeos::MountError error_code,
+                                    const VolumeInfo& volume_info) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  BroadcastMountCompletedEvent(
+      profile_,
+      file_browser_private::MountCompletedEvent::EVENT_TYPE_UNMOUNT,
+      error_code, volume_info);
 }
 
 void EventRouter::OnFormatStarted(const std::string& device_path,

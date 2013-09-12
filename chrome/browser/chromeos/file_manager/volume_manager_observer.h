@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
 
 namespace file_manager {
@@ -31,6 +32,15 @@ class VolumeManagerObserver {
 
   // Fired when a device is removed.
   virtual void OnDeviceRemoved(const std::string& device_path) = 0;
+
+  // Fired when a volume is mounted.
+  virtual void OnVolumeMounted(chromeos::MountError error_code,
+                               const VolumeInfo& volume_info,
+                               bool is_remounting) = 0;
+
+  // Fired when a volume is unmounted.
+  virtual void OnVolumeUnmounted(chromeos::MountError error_code,
+                                 const VolumeInfo& volume_info) = 0;
 
   // Fired when formatting a device is started (or failed to start).
   virtual void OnFormatStarted(

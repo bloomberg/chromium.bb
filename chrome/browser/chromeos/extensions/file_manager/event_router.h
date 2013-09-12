@@ -8,6 +8,8 @@
 #include <map>
 #include <string>
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/files/file_path_watcher.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
@@ -33,13 +35,11 @@ class NetworkState;
 namespace file_manager {
 
 class DesktopNotifications;
-class MountedDiskMonitor;
 
 // Monitors changes in disk mounts, network connection state and preferences
 // affecting File Manager. Dispatches appropriate File Browser events.
 class EventRouter
-    : public chromeos::disks::DiskMountManager::Observer,
-      public chromeos::NetworkStateHandlerObserver,
+    : public chromeos::NetworkStateHandlerObserver,
       public drive::DriveIntegrationServiceObserver,
       public drive::FileSystemObserver,
       public drive::JobListObserver,
@@ -74,23 +74,6 @@ class EventRouter
   void OnCopyCompleted(
       int copy_id, const GURL& url, base::PlatformFileError error);
 
-  // DiskMountManager::Observer overrides.
-  virtual void OnDiskEvent(
-      chromeos::disks::DiskMountManager::DiskEvent event,
-      const chromeos::disks::DiskMountManager::Disk* disk) OVERRIDE;
-  virtual void OnDeviceEvent(
-      chromeos::disks::DiskMountManager::DeviceEvent event,
-      const std::string& device_path) OVERRIDE;
-  virtual void OnMountEvent(
-      chromeos::disks::DiskMountManager::MountEvent event,
-      chromeos::MountError error_code,
-      const chromeos::disks::DiskMountManager::MountPointInfo& mount_info)
-      OVERRIDE;
-  virtual void OnFormatEvent(
-      chromeos::disks::DiskMountManager::FormatEvent event,
-      chromeos::FormatError error_code,
-      const std::string& device_path) OVERRIDE;
-
   // chromeos::NetworkStateHandlerObserver overrides.
   virtual void NetworkManagerChanged() OVERRIDE;
   virtual void DefaultNetworkChanged(
@@ -110,6 +93,7 @@ class EventRouter
       const base::FilePath& directory_path) OVERRIDE;
 
   // drive::DriveIntegrationServiceObserver overrides.
+  // TODO(hidehiko): Move these to VolumeManager.
   virtual void OnFileSystemMounted() OVERRIDE;
   virtual void OnFileSystemBeingUnmounted() OVERRIDE;
 
@@ -121,6 +105,11 @@ class EventRouter
       const chromeos::disks::DiskMountManager::Disk& disk) OVERRIDE;
   virtual void OnDeviceAdded(const std::string& device_path) OVERRIDE;
   virtual void OnDeviceRemoved(const std::string& device_path) OVERRIDE;
+  virtual void OnVolumeMounted(chromeos::MountError error_code,
+                               const VolumeInfo& volume_info,
+                               bool is_remounting) OVERRIDE;
+  virtual void OnVolumeUnmounted(chromeos::MountError error_code,
+                                 const VolumeInfo& volume_info) OVERRIDE;
   virtual void OnFormatStarted(
       const std::string& device_path, bool success) OVERRIDE;
   virtual void OnFormatCompleted(
@@ -130,6 +119,7 @@ class EventRouter
   typedef std::map<base::FilePath, FileWatcher*> WatcherMap;
 
   // Called on change to kExternalStorageDisabled pref.
+  // TODO(hidehiko): Move this to VolumeManager.
   void OnExternalStorageDisabledChanged();
 
   // Called when prefs related to file manager change.
@@ -148,9 +138,7 @@ class EventRouter
   // If needed, opens a file manager window for the removable device mounted at
   // |mount_path|. Disk.mount_path() is empty, since it is being filled out
   // after calling notifying observers by DiskMountManager.
-  void ShowRemovableDeviceInFileManager(
-      const chromeos::disks::DiskMountManager::Disk& disk,
-      const base::FilePath& mount_path);
+  void ShowRemovableDeviceInFileManager(const base::FilePath& mount_path);
 
   // Sends onFileTranferUpdated to extensions if needed. If |always| is true,
   // it sends the event always. Otherwise, it sends the event if enough time has
@@ -171,7 +159,6 @@ class EventRouter
   WatcherMap file_watchers_;
   scoped_ptr<DesktopNotifications> notifications_;
   scoped_ptr<PrefChangeRegistrar> pref_change_registrar_;
-  scoped_ptr<MountedDiskMonitor> mounted_disk_monitor_;
   Profile* profile_;
 
   // Note: This should remain the last member so it'll be destroyed and

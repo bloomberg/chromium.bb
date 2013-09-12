@@ -34,9 +34,13 @@ FakeDiskMountManager::~FakeDiskMountManager() {
 }
 
 void FakeDiskMountManager::AddObserver(Observer* observer) {
+  DCHECK(observer);
+  observers_.AddObserver(observer);
 }
 
 void FakeDiskMountManager::RemoveObserver(Observer* observer) {
+  DCHECK(observer);
+  observers_.RemoveObserver(observer);
 }
 
 const chromeos::disks::DiskMountManager::DiskMap&
@@ -67,12 +71,33 @@ void FakeDiskMountManager::MountPath(const std::string& source_path,
                                      chromeos::MountType type) {
   mount_requests_.push_back(
       MountRequest(source_path, source_format, mount_label, type));
+
+  const MountPointInfo mount_point(
+      source_path,
+      source_path,
+      type,
+      chromeos::disks::MOUNT_CONDITION_NONE);
+  mount_points_.insert(make_pair(source_path, mount_point));
+  FOR_EACH_OBSERVER(DiskMountManager::Observer, observers_,
+                    OnMountEvent(DiskMountManager::MOUNTING,
+                                 chromeos::MOUNT_ERROR_NONE,
+                                 mount_point));
 }
 
 void FakeDiskMountManager::UnmountPath(const std::string& mount_path,
                                        chromeos::UnmountOptions options,
                                        const UnmountPathCallback& callback) {
   unmount_requests_.push_back(UnmountRequest(mount_path, options));
+
+  MountPointMap::iterator iter = mount_points_.find(mount_path);
+  if (iter == mount_points_.end())
+    return;
+  const MountPointInfo mount_point = iter->second;
+  mount_points_.erase(iter);
+  FOR_EACH_OBSERVER(DiskMountManager::Observer, observers_,
+                    OnMountEvent(DiskMountManager::UNMOUNTING,
+                                 chromeos::MOUNT_ERROR_NONE,
+                                 mount_point));
   // Currently |callback| is just ignored.
 }
 
