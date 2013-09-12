@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view_ash.h"
 
+#include "ash/ash_switches.h"
 #include "ash/wm/frame_painter.h"
 #include "ash/wm/workspace/frame_caption_button_container_view.h"
 #include "chrome/browser/themes/theme_properties.h"
@@ -60,6 +61,13 @@ const int kTabstripTopSpacingShort = 0;
 // area still drag restored windows.  This keeps the clickable area large enough
 // to hit easily.
 const int kTabShadowHeight = 4;
+
+// Space between right edge of tabstrip and caption buttons when using the
+// alternate caption button style.
+const int kTabstripRightSpacingAlternateCaptionButtonStyle = 0;
+// Space between top of window and top of tabstrip for short headers when using
+// the alternate caption button style.
+const int kTabstripTopSpacingShortAlternateCaptionButtonStyle = 4;
 
 }  // namespace
 
@@ -125,7 +133,10 @@ BrowserNonClientFrameViewAsh::GetTabStripInsets(bool force_restored) const {
   int left = avatar_button() ? kAvatarSideSpacing +
       browser_view()->GetOTRAvatarIcon().width() + kAvatarSideSpacing :
       kTabstripLeftSpacing;
-  int right = frame_painter_->GetRightInset() + kTabstripRightSpacing;
+  int extra_right = ash::switches::UseAlternateFrameCaptionButtonStyle() ?
+      kTabstripRightSpacingAlternateCaptionButtonStyle :
+      kTabstripRightSpacing;
+  int right = frame_painter_->GetRightInset() + extra_right;
   return TabStripInsets(NonClientTopBorderHeight(force_restored), left, right);
 }
 
@@ -347,8 +358,11 @@ int BrowserNonClientFrameViewAsh::NonClientTopBorderHeight(
     return 0;
   // Windows with tab strips need a smaller non-client area.
   if (browser_view()->IsTabStripVisible()) {
-    if (UseShortHeader())
+    if (UseShortHeader()) {
+      if (ash::switches::UseAlternateFrameCaptionButtonStyle())
+        return kTabstripTopSpacingShortAlternateCaptionButtonStyle;
       return kTabstripTopSpacingShort;
+    }
     return kTabstripTopSpacingTall;
   }
   // For windows without a tab strip (popups, etc.) ensure we have enough space

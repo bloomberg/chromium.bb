@@ -11,6 +11,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/button/custom_button.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -18,42 +19,6 @@
 namespace ash {
 
 namespace {
-
-// Returns true if the images for |button|'s states match the passed in ids.
-bool ImagesMatch(views::ImageButton* button,
-                 int normal_image_id,
-                 int hovered_image_id,
-                 int pressed_image_id) {
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  gfx::ImageSkia* normal = rb.GetImageSkiaNamed(normal_image_id);
-  gfx::ImageSkia* hovered = rb.GetImageSkiaNamed(hovered_image_id);
-  gfx::ImageSkia* pressed = rb.GetImageSkiaNamed(pressed_image_id);
-  using views::Button;
-  return button->GetImage(Button::STATE_NORMAL).BackedBySameObjectAs(*normal) &&
-      button->GetImage(Button::STATE_HOVERED).BackedBySameObjectAs(*hovered) &&
-      button->GetImage(Button::STATE_PRESSED).BackedBySameObjectAs(*pressed);
-}
-
-// Returns true if |leftmost| and |rightmost| are flush with |container|'s
-// edges.
-bool CheckButtonsAtEdges(FrameCaptionButtonContainerView* container,
-                         const views::ImageButton& leftmost,
-                         const views::ImageButton& rightmost) {
-  gfx::Rect container_size(container->GetPreferredSize());
-  if (leftmost.y() == rightmost.y() &&
-      leftmost.height() == rightmost.height() &&
-      leftmost.x() == 0 &&
-      leftmost.y() == 0 &&
-      leftmost.height() == container_size.height() &&
-      rightmost.bounds().right() == container_size.width()) {
-    return true;
-  }
-
-  LOG(ERROR) << "Buttons " << leftmost.bounds().ToString() << " "
-             << rightmost.bounds().ToString() << " not at edges of "
-             << gfx::Rect(container_size).ToString();
-  return false;
-}
 
 class TestWidgetDelegate : public views::WidgetDelegateView {
  public:
@@ -101,12 +66,74 @@ class FrameCaptionButtonContainerViewTest : public ash::test::AshTestBase {
     return widget;
   }
 
+  // Tests that |leftmost| and |rightmost| are at |container|'s edges.
+  bool CheckButtonsAtEdges(FrameCaptionButtonContainerView* container,
+                           const views::CustomButton& leftmost,
+                           const views::CustomButton& rightmost) {
+    gfx::Rect expected(container->GetPreferredSize());
+    expected.Inset(container->GetLeftInset(), 0, container->GetRightInset(), 0);
+
+    gfx::Rect container_size(container->GetPreferredSize());
+    if (leftmost.y() == rightmost.y() &&
+        leftmost.height() == rightmost.height() &&
+        leftmost.x() == expected.x() &&
+        leftmost.y() == expected.y() &&
+        leftmost.height() == expected.height() &&
+        rightmost.bounds().right() == expected.right()) {
+      return true;
+    }
+
+    LOG(ERROR) << "Buttons " << leftmost.bounds().ToString() << " "
+               << rightmost.bounds().ToString() << " not at edges of "
+               << expected.ToString();
+    return false;
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(FrameCaptionButtonContainerViewTest);
 };
 
+class FrameCaptionButtonContainerViewTestOldStyle
+    : public FrameCaptionButtonContainerViewTest {
+ public:
+  FrameCaptionButtonContainerViewTestOldStyle() {
+  }
+
+  virtual ~FrameCaptionButtonContainerViewTestOldStyle() {
+  }
+
+  // Returns true if the images for |button|'s states match the passed in ids.
+  bool ImagesMatch(views::CustomButton* custom_button,
+                   int normal_image_id,
+                   int hovered_image_id,
+                   int pressed_image_id) {
+    views::ImageButton* button =
+        static_cast<views::ImageButton*>(custom_button);
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    gfx::ImageSkia* normal = rb.GetImageSkiaNamed(normal_image_id);
+    gfx::ImageSkia* hovered = rb.GetImageSkiaNamed(hovered_image_id);
+    gfx::ImageSkia* pressed = rb.GetImageSkiaNamed(pressed_image_id);
+    using views::Button;
+    gfx::ImageSkia actual_normal = button->GetImage(Button::STATE_NORMAL);
+    gfx::ImageSkia actual_hovered = button->GetImage(Button::STATE_HOVERED);
+    gfx::ImageSkia actual_pressed = button->GetImage(Button::STATE_PRESSED);
+    return actual_normal.BackedBySameObjectAs(*normal) &&
+        actual_hovered.BackedBySameObjectAs(*hovered) &&
+        actual_pressed.BackedBySameObjectAs(*pressed);
+  }
+
+  virtual void SetUp() OVERRIDE {
+    FrameCaptionButtonContainerViewTest::SetUp();
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kAshDisableAlternateFrameCaptionButtonStyle);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FrameCaptionButtonContainerViewTestOldStyle);
+};
+
 // Test how the allowed actions affect which caption buttons are visible.
-TEST_F(FrameCaptionButtonContainerViewTest, ButtonVisibility) {
+TEST_F(FrameCaptionButtonContainerViewTestOldStyle, ButtonVisibility) {
   // The minimize button should be hidden when both minimizing and maximizing
   // are allowed because the size button can do both.
   scoped_ptr<views::Widget> widget_can_maximize(
@@ -162,7 +189,7 @@ TEST_F(FrameCaptionButtonContainerViewTest, ButtonVisibility) {
 }
 
 // Test the layout when a border is set on the container.
-TEST_F(FrameCaptionButtonContainerViewTest, LayoutBorder) {
+TEST_F(FrameCaptionButtonContainerViewTestOldStyle, LayoutBorder) {
   const int kTopInset = 1;
   const int kLeftInset = 2;
   const int kBottomInset = 3;
@@ -185,7 +212,7 @@ TEST_F(FrameCaptionButtonContainerViewTest, LayoutBorder) {
 }
 
 // Test how the header style affects which images are used for the buttons.
-TEST_F(FrameCaptionButtonContainerViewTest, HeaderStyle) {
+TEST_F(FrameCaptionButtonContainerViewTestOldStyle, HeaderStyle) {
   scoped_ptr<views::Widget> widget(CreateTestWidget(MAXIMIZE_ALLOWED));
   FrameCaptionButtonContainerView container(NULL, widget.get(),
       FrameCaptionButtonContainerView::MINIMIZE_ALLOWED);
@@ -254,6 +281,45 @@ TEST_F(FrameCaptionButtonContainerViewTest, HeaderStyle) {
                           IDR_AURA_WINDOW_FULLSCREEN_CLOSE,
                           IDR_AURA_WINDOW_FULLSCREEN_CLOSE_H,
                           IDR_AURA_WINDOW_FULLSCREEN_CLOSE_P));
+}
+
+class FrameCaptionButtonContainerViewTestAlternateStyle
+    : public FrameCaptionButtonContainerViewTest {
+ public:
+  FrameCaptionButtonContainerViewTestAlternateStyle() {
+  }
+
+  virtual ~FrameCaptionButtonContainerViewTestAlternateStyle() {
+  }
+
+  virtual void SetUp() OVERRIDE {
+    FrameCaptionButtonContainerViewTest::SetUp();
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kAshEnableAlternateFrameCaptionButtonStyle);
+    ASSERT_TRUE(switches::UseAlternateFrameCaptionButtonStyle());
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FrameCaptionButtonContainerViewTestAlternateStyle);
+};
+
+// Test how the alternate button style affects which buttons are visible in the
+// default case.
+TEST_F(FrameCaptionButtonContainerViewTestAlternateStyle, ButtonVisibility) {
+  // Both the minimize button and the maximize button should be visible when
+  // both minimizing and maximizing are allowed when using the alternate
+  // button style.
+  scoped_ptr<views::Widget> widget_can_maximize(
+      CreateTestWidget(MAXIMIZE_ALLOWED));
+  FrameCaptionButtonContainerView container(NULL, widget_can_maximize.get(),
+      FrameCaptionButtonContainerView::MINIMIZE_ALLOWED);
+  container.Layout();
+  FrameCaptionButtonContainerView::TestApi t(&container);
+  EXPECT_TRUE(t.minimize_button()->visible());
+  EXPECT_TRUE(t.size_button()->visible());
+  EXPECT_TRUE(t.close_button()->visible());
+  EXPECT_TRUE(CheckButtonsAtEdges(
+      &container, *t.minimize_button(), *t.close_button()));
 }
 
 }  // namespace ash

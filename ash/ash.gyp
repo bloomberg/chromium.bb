@@ -503,6 +503,8 @@
         'wm/window_util.h',
         'wm/workspace_controller.cc',
         'wm/workspace_controller.h',
+        'wm/workspace/alternate_frame_caption_button.cc',
+        'wm/workspace/alternate_frame_caption_button.h',
         'wm/workspace/auto_window_management.cc',
         'wm/workspace/auto_window_management.h',
         'wm/workspace/colored_window_controller.cc',
