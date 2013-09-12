@@ -121,13 +121,11 @@ def GetManifestVersionsRepoUrl(internal_build, read_only=False, test=False):
     test: Whether we should use the corresponding test repositories. These
       should be used when staging experimental features.
   """
+  # pylint: disable=W0613
   if internal_build:
-    url = (constants.GERRIT_INT_SSH_URL +
-            constants.MANIFEST_VERSIONS_INT_SUFFIX)
-  elif read_only:
-    url = constants.GIT_HTTP_URL + constants.MANIFEST_VERSIONS_SUFFIX
+    url = constants.INTERNAL_GOB_URL + constants.MANIFEST_VERSIONS_INT_SUFFIX
   else:
-    url = constants.GERRIT_SSH_URL + constants.MANIFEST_VERSIONS_SUFFIX
+    url = constants.PUBLIC_GOB_URL + constants.MANIFEST_VERSIONS_SUFFIX
 
   if test:
     url += '-test'
