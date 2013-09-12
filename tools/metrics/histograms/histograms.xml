@@ -16744,7 +16744,7 @@ other types of suffix sets.
   </summary>
 </histogram>
 
-<histogram name="Tab.RestoreResult" enum="BooleanSuccess">
+<histogram name="Tab.RestoreResult" enum="TabRestoreResult">
   <summary>
     When the browser restores a tab, whether the load was successful. Loads can
     fail for instance when there is no connectivity.
@@ -25302,6 +25302,12 @@ other types of suffix sets.
   <int value="1" label="Failure"/>
   <int value="2" label="Cancelled"/>
   <int value="3" label="Attempted"/>
+</enum>
+
+<enum name="TabRestoreResult" type="int">
+  <int value="0" label="Failure (other)"/>
+  <int value="1" label="Success"/>
+  <int value="2" label="Failure due to network connectivity"/>
 </enum>
 
 <enum name="TabRestoreUserAction" type="int">
