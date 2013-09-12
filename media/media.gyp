@@ -67,6 +67,7 @@
         'audio/android/opensles_input.h',
         'audio/android/opensles_output.cc',
         'audio/android/opensles_output.h',
+        'audio/android/opensles_wrapper.cc',
         'audio/audio_buffers_state.cc',
         'audio/audio_buffers_state.h',
         'audio/audio_device_name.cc',
@@ -511,11 +512,6 @@
           ],
         }],
         ['OS=="android"', {
-          'link_settings': {
-            'libraries': [
-              '-lOpenSLES',
-            ],
-          },
           'include_dirs': [
             '<(SHARED_INTERMEDIATE_DIR)/media',
           ],
