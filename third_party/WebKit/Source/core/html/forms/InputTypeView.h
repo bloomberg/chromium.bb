@@ -78,7 +78,6 @@ public:
     virtual void handleMouseDownEvent(MouseEvent*);
     virtual PassOwnPtr<ClickHandlingState> willDispatchClick();
     virtual void didDispatchClick(Event*, const ClickHandlingState&);
-    virtual void handleDOMActivateEvent(Event*);
     virtual void handleKeydownEvent(KeyboardEvent*);
     virtual void handleKeypressEvent(KeyboardEvent*);
     virtual void handleKeyupEvent(KeyboardEvent*);

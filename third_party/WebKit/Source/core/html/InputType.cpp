@@ -780,6 +780,10 @@ Decimal InputType::findClosestTickMarkValue(const Decimal&)
     return Decimal::nan();
 }
 
+void InputType::handleDOMActivateEvent(Event*)
+{
+}
+
 bool InputType::supportsIndeterminateAppearance() const
 {
     return false;

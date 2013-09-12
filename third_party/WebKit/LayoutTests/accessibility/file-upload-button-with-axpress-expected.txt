@@ -1,3 +1,4 @@
+Mock: Opening a file chooser.
 
 This tests that when AXPress is used DOMActivate will be handled by the input file type.
 

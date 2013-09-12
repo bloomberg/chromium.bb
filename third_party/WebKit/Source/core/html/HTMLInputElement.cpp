@@ -1162,7 +1162,7 @@ void HTMLInputElement::defaultEventHandler(Event* evt)
     // on the element, or presses enter while it is the active element. JavaScript code wishing to activate the element
     // must dispatch a DOMActivate event - a click event will not do the job.
     if (evt->type() == eventNames().DOMActivateEvent) {
-        m_inputTypeView->handleDOMActivateEvent(evt);
+        m_inputType->handleDOMActivateEvent(evt);
         if (evt->defaultHandled())
             return;
     }

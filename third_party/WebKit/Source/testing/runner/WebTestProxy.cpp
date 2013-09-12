@@ -538,6 +538,13 @@ WebColorChooser* WebTestProxyBase::createColorChooser(WebColorChooserClient* cli
     return new MockColorChooser(client, m_delegate, this);
 }
 
+bool WebTestProxyBase::runFileChooser(const WebKit::WebFileChooserParams&, WebKit::WebFileChooserCompletion*)
+{
+    m_delegate->printMessage("Mock: Opening a file chooser.\n");
+    // FIXME: Add ability to set file names to a file upload control.
+    return false;
+}
+
 string WebTestProxyBase::captureTree(bool debugRenderTree)
 {
     WebScriptController::flushConsoleMessages();

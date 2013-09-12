@@ -61,6 +61,7 @@ class WebDataSource;
 class WebDeviceOrientationClient;
 class WebDeviceOrientationClientMock;
 class WebDragData;
+class WebFileChooserCompletion;
 class WebFrame;
 class WebGeolocationClient;
 class WebGeolocationClientMock;
@@ -87,6 +88,7 @@ class WebView;
 class WebWidget;
 struct WebConsoleMessage;
 struct WebContextMenuData;
+struct WebFileChooserParams;
 struct WebPluginParams;
 struct WebPoint;
 struct WebSize;
@@ -119,6 +121,7 @@ public:
     WebKit::WebSpellCheckClient *spellCheckClient() const;
     WebKit::WebValidationMessageClient* validationMessageClient();
     WebKit::WebColorChooser* createColorChooser(WebKit::WebColorChooserClient*, const WebKit::WebColor&);
+    bool runFileChooser(const WebKit::WebFileChooserParams&, WebKit::WebFileChooserCompletion*);
 
     std::string captureTree(bool debugRenderTree);
     SkCanvas* capturePixels();
@@ -586,6 +589,10 @@ public:
     virtual WebKit::WebColorChooser* createColorChooser(WebKit::WebColorChooserClient* client, const WebKit::WebColor& color)
     {
         return WebTestProxyBase::createColorChooser(client, color);
+    }
+    virtual bool runFileChooser(const WebKit::WebFileChooserParams& params, WebKit::WebFileChooserCompletion* completion)
+    {
+        return WebTestProxyBase::runFileChooser(params, completion);
     }
 };
 

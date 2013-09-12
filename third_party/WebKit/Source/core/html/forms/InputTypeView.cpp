@@ -57,10 +57,6 @@ void InputTypeView::handleMouseDownEvent(MouseEvent*)
 {
 }
 
-void InputTypeView::handleDOMActivateEvent(Event*)
-{
-}
-
 void InputTypeView::handleKeydownEvent(KeyboardEvent*)
 {
 }
