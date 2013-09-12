@@ -445,13 +445,13 @@ void RootWindow::ConvertPointFromNativeScreen(gfx::Point* point) const {
 
 void RootWindow::ConvertPointToHost(gfx::Point* point) const {
   gfx::Point3F point_3f(*point);
-  GetRootTransform().TransformPoint(point_3f);
+  GetRootTransform().TransformPoint(&point_3f);
   *point = gfx::ToFlooredPoint(point_3f.AsPointF());
 }
 
 void RootWindow::ConvertPointFromHost(gfx::Point* point) const {
   gfx::Point3F point_3f(*point);
-  GetInverseRootTransform().TransformPoint(point_3f);
+  GetInverseRootTransform().TransformPoint(&point_3f);
   *point = gfx::ToFlooredPoint(point_3f.AsPointF());
 }
 

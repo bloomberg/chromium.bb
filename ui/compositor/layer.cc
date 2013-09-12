@@ -714,7 +714,7 @@ bool Layer::ConvertPointForAncestor(const Layer* ancestor,
   gfx::Transform transform;
   bool result = GetTargetTransformRelativeTo(ancestor, &transform);
   gfx::Point3F p(*point);
-  transform.TransformPoint(p);
+  transform.TransformPoint(&p);
   *point = gfx::ToFlooredPoint(p.AsPointF());
   return result;
 }
@@ -724,7 +724,7 @@ bool Layer::ConvertPointFromAncestor(const Layer* ancestor,
   gfx::Transform transform;
   bool result = GetTargetTransformRelativeTo(ancestor, &transform);
   gfx::Point3F p(*point);
-  transform.TransformPointReverse(p);
+  transform.TransformPointReverse(&p);
   *point = gfx::ToFlooredPoint(p.AsPointF());
   return result;
 }

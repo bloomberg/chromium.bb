@@ -182,19 +182,19 @@ class UI_EXPORT Transform {
 
   // Applies the transformation on the point. Returns true if the point is
   // transformed successfully.
-  void TransformPoint(Point3F& point) const;
+  void TransformPoint(Point3F* point) const;
 
   // Applies the transformation on the point. Returns true if the point is
   // transformed successfully. Rounds the result to the nearest point.
-  void TransformPoint(Point& point) const;
+  void TransformPoint(Point* point) const;
 
   // Applies the reverse transformation on the point. Returns true if the
   // transformation can be inverted.
-  bool TransformPointReverse(Point3F& point) const;
+  bool TransformPointReverse(Point3F* point) const;
 
   // Applies the reverse transformation on the point. Returns true if the
   // transformation can be inverted. Rounds the result to the nearest point.
-  bool TransformPointReverse(Point& point) const;
+  bool TransformPointReverse(Point* point) const;
 
   // Applies transformation on the rectangle. Returns true if the transformed
   // rectangle was axis aligned. If it returns false, rect will be the
@@ -237,10 +237,10 @@ class UI_EXPORT Transform {
 
  private:
   void TransformPointInternal(const SkMatrix44& xform,
-                              Point& point) const;
+                              Point* point) const;
 
   void TransformPointInternal(const SkMatrix44& xform,
-                              Point3F& point) const;
+                              Point3F* point) const;
 
   SkMatrix44 matrix_;
 

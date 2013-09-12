@@ -891,12 +891,12 @@ TEST_F(DisplayControllerTest, OverscanInsets) {
   UpdateDisplay("400x300*2,600x400/o");
   root_windows = Shell::GetAllRootWindows();
   gfx::Point point;
-  Shell::GetAllRootWindows()[1]->GetRootTransform().TransformPoint(point);
+  Shell::GetAllRootWindows()[1]->GetRootTransform().TransformPoint(&point);
   EXPECT_EQ("15,10", point.ToString());
 
   display_controller->SwapPrimaryDisplay();
   point.SetPoint(0, 0);
-  Shell::GetAllRootWindows()[1]->GetRootTransform().TransformPoint(point);
+  Shell::GetAllRootWindows()[1]->GetRootTransform().TransformPoint(&point);
   EXPECT_EQ("15,10", point.ToString());
 
   Shell::GetInstance()->RemovePreTargetHandler(&event_handler);

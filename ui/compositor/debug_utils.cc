@@ -29,7 +29,7 @@ void PrintLayerHierarchyImp(const Layer* layer,
                             std::wostringstream* out) {
   std::string indent_str(indent, ' ');
 
-  layer->transform().TransformPointReverse(mouse_location);
+  layer->transform().TransformPointReverse(&mouse_location);
   bool mouse_inside_layer_bounds = layer->bounds().Contains(mouse_location);
   mouse_location.Offset(-layer->bounds().x(), -layer->bounds().y());
 

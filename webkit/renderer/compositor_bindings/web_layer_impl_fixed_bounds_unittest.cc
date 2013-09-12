@@ -33,7 +33,7 @@ TEST(WebLayerImplFixedBoundsTest, IdentityBounds) {
 gfx::Point3F TransformPoint(const gfx::Transform& transform,
                             const gfx::Point3F& point) {
   gfx::Point3F result = point;
-  transform.TransformPoint(result);
+  transform.TransformPoint(&result);
   return result;
 }
 

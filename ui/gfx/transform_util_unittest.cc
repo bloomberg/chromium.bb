@@ -21,7 +21,7 @@ TEST(TransformUtilTest, GetScaleTransform) {
     for (int sign_y = -1; sign_y <= 1; ++sign_y) {
       Point test(kAnchor.x() + sign_x * kOffset,
                  kAnchor.y() + sign_y * kOffset);
-      scale.TransformPoint(test);
+      scale.TransformPoint(&test);
 
       EXPECT_EQ(Point(kAnchor.x() + sign_x * kOffset * kScale,
                       kAnchor.y() + sign_y * kOffset * kScale),

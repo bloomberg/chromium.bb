@@ -284,7 +284,7 @@ void LocatedEvent::UpdateForRootTransform(
     const gfx::Transform& reversed_root_transform) {
   // Transform has to be done at root level.
   gfx::Point3F p(location_);
-  reversed_root_transform.TransformPoint(p);
+  reversed_root_transform.TransformPoint(&p);
   root_location_ = location_ = gfx::ToFlooredPoint(p.AsPointF());
 }
 

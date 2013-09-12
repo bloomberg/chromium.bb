@@ -207,7 +207,7 @@ TEST(XFormTest, ConcatTranslate) {
     xform = translation * xform;
     Point3F p1(value.x1, value.y1, 0);
     Point3F p2(value.x2, value.y2, 0);
-    xform.TransformPoint(p1);
+    xform.TransformPoint(&p1);
     if (value.tx == value.tx &&
         value.ty == value.ty) {
       EXPECT_TRUE(PointsAreNearlyEqual(p1, p2));
@@ -236,7 +236,7 @@ TEST(XFormTest, ConcatScale) {
     xform = scale * xform;
     Point3F p1(value.before, value.before, 0);
     Point3F p2(value.after, value.after, 0);
-    xform.TransformPoint(p1);
+    xform.TransformPoint(&p1);
     if (value.scale == value.scale) {
       EXPECT_TRUE(PointsAreNearlyEqual(p1, p2));
     }
@@ -267,7 +267,7 @@ TEST(XFormTest, ConcatRotate) {
     xform = rotation * xform;
     Point3F p1(value.x1, value.y1, 0);
     Point3F p2(value.x2, value.y2, 0);
-    xform.TransformPoint(p1);
+    xform.TransformPoint(&p1);
     if (value.degrees == value.degrees) {
       EXPECT_TRUE(PointsAreNearlyEqual(p1, p2));
     }
@@ -312,11 +312,11 @@ TEST(XFormTest, SetTranslate) {
         break;
       }
       p0 = p1;
-      xform.TransformPoint(p1);
+      xform.TransformPoint(&p1);
       if (value.tx == value.tx &&
           value.ty == value.ty) {
         EXPECT_TRUE(PointsAreNearlyEqual(p1, p2));
-        xform.TransformPointReverse(p1);
+        xform.TransformPointReverse(&p1);
         EXPECT_TRUE(PointsAreNearlyEqual(p1, p0));
       }
     }
@@ -359,11 +359,11 @@ TEST(XFormTest, SetScale) {
         break;
       }
       p0 = p1;
-      xform.TransformPoint(p1);
+      xform.TransformPoint(&p1);
       if (value.s == value.s) {
         EXPECT_TRUE(PointsAreNearlyEqual(p1, p2));
         if (value.s != 0.0f) {
-          xform.TransformPointReverse(p1);
+          xform.TransformPointReverse(&p1);
           EXPECT_TRUE(PointsAreNearlyEqual(p1, p0));
         }
       }
@@ -399,9 +399,9 @@ TEST(XFormTest, SetRotate) {
     xform.Rotate(value.degree);
     // just want to make sure that we don't crash in the case of NaN.
     if (value.degree == value.degree) {
-      xform.TransformPoint(p1);
+      xform.TransformPoint(&p1);
       EXPECT_TRUE(PointsAreNearlyEqual(p1, p2));
-      xform.TransformPointReverse(p1);
+      xform.TransformPointReverse(&p1);
       EXPECT_TRUE(PointsAreNearlyEqual(p1, p0));
     }
   }
@@ -434,7 +434,7 @@ TEST(XFormTest, ConcatTranslate2D) {
     xform = translation * xform;
     Point p1(value.x1, value.y1);
     Point p2(value.x2, value.y2);
-    xform.TransformPoint(p1);
+    xform.TransformPoint(&p1);
     if (value.tx == value.tx &&
         value.ty == value.ty) {
       EXPECT_EQ(p1.x(), p2.x());
@@ -464,7 +464,7 @@ TEST(XFormTest, ConcatScale2D) {
     xform = scale * xform;
     Point p1(value.before, value.before);
     Point p2(value.after, value.after);
-    xform.TransformPoint(p1);
+    xform.TransformPoint(&p1);
     if (value.scale == value.scale) {
       EXPECT_EQ(p1.x(), p2.x());
       EXPECT_EQ(p1.y(), p2.y());
@@ -496,7 +496,7 @@ TEST(XFormTest, ConcatRotate2D) {
     xform = rotation * xform;
     Point p1(value.x1, value.y1);
     Point p2(value.x2, value.y2);
-    xform.TransformPoint(p1);
+    xform.TransformPoint(&p1);
     if (value.degrees == value.degrees) {
       EXPECT_EQ(p1.x(), p2.x());
       EXPECT_EQ(p1.y(), p2.y());
@@ -545,12 +545,12 @@ TEST(XFormTest, SetTranslate2D) {
           break;
         }
         p0 = p1;
-        xform.TransformPoint(p1);
+        xform.TransformPoint(&p1);
         if (value.tx == value.tx &&
             value.ty == value.ty) {
           EXPECT_EQ(p1.x(), p2.x());
           EXPECT_EQ(p1.y(), p2.y());
-          xform.TransformPointReverse(p1);
+          xform.TransformPointReverse(&p1);
           EXPECT_EQ(p1.x(), p0.x());
           EXPECT_EQ(p1.y(), p0.y());
         }
@@ -600,12 +600,12 @@ TEST(XFormTest, SetScale2D) {
           break;
         }
         p0 = p1;
-        xform.TransformPoint(p1);
+        xform.TransformPoint(&p1);
         if (value.s == value.s) {
           EXPECT_EQ(p1.x(), p2.x());
           EXPECT_EQ(p1.y(), p2.y());
           if (value.s != 0.0f) {
-            xform.TransformPointReverse(p1);
+            xform.TransformPointReverse(&p1);
             EXPECT_EQ(p1.x(), p0.x());
             EXPECT_EQ(p1.y(), p0.y());
           }
@@ -643,10 +643,10 @@ TEST(XFormTest, SetRotate2D) {
       xform.Rotate(value.degree + j * epsilon);
       // just want to make sure that we don't crash in the case of NaN.
       if (value.degree == value.degree) {
-        xform.TransformPoint(pt);
+        xform.TransformPoint(&pt);
         EXPECT_EQ(value.xprime, pt.x());
         EXPECT_EQ(value.yprime, pt.y());
-        xform.TransformPointReverse(pt);
+        xform.TransformPointReverse(&pt);
         EXPECT_EQ(pt.x(), value.x);
         EXPECT_EQ(pt.y(), value.y);
       }
@@ -2293,10 +2293,10 @@ static bool EmpiricallyPreserves2dAxisAlignment(const Transform& transform) {
                  PointF(p4.x(), p4.y()));
   EXPECT_TRUE(test_quad.IsRectilinear());
 
-  transform.TransformPoint(p1);
-  transform.TransformPoint(p2);
-  transform.TransformPoint(p3);
-  transform.TransformPoint(p4);
+  transform.TransformPoint(&p1);
+  transform.TransformPoint(&p2);
+  transform.TransformPoint(&p3);
+  transform.TransformPoint(&p4);
 
   QuadF transformedQuad(PointF(p1.x(), p1.y()),
                         PointF(p2.x(), p2.y()),

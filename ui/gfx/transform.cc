@@ -369,15 +369,19 @@ Vector2dF Transform::To2dTranslation() const {
                         SkMScalarToFloat(matrix_.get(1, 3)));
 }
 
-void Transform::TransformPoint(Point& point) const {
+void Transform::TransformPoint(Point* point) const {
+  DCHECK(point);
   TransformPointInternal(matrix_, point);
 }
 
-void Transform::TransformPoint(Point3F& point) const {
+void Transform::TransformPoint(Point3F* point) const {
+  DCHECK(point);
   TransformPointInternal(matrix_, point);
 }
 
-bool Transform::TransformPointReverse(Point& point) const {
+bool Transform::TransformPointReverse(Point* point) const {
+  DCHECK(point);
+
   // TODO(sad): Try to avoid trying to invert the matrix.
   SkMatrix44 inverse(SkMatrix44::kUninitialized_Constructor);
   if (!matrix_.invert(&inverse))
@@ -387,7 +391,9 @@ bool Transform::TransformPointReverse(Point& point) const {
   return true;
 }
 
-bool Transform::TransformPointReverse(Point3F& point) const {
+bool Transform::TransformPointReverse(Point3F* point) const {
+  DCHECK(point);
+
   // TODO(sad): Try to avoid trying to invert the matrix.
   SkMatrix44 inverse(SkMatrix44::kUninitialized_Constructor);
   if (!matrix_.invert(&inverse))
@@ -437,33 +443,33 @@ bool Transform::Blend(const Transform& from, SkMScalar progress) {
 }
 
 void Transform::TransformPointInternal(const SkMatrix44& xform,
-                                       Point3F& point) const {
+                                       Point3F* point) const {
   if (xform.isIdentity())
     return;
 
-  SkMScalar p[4] = {SkFloatToMScalar(point.x()), SkFloatToMScalar(point.y()),
-                    SkFloatToMScalar(point.z()), 1};
+  SkMScalar p[4] = {SkFloatToMScalar(point->x()), SkFloatToMScalar(point->y()),
+                    SkFloatToMScalar(point->z()), 1};
 
   xform.mapMScalars(p);
 
   if (p[3] != 1 && abs(p[3]) > 0) {
-    point.SetPoint(p[0] / p[3], p[1] / p[3], p[2]/ p[3]);
+    point->SetPoint(p[0] / p[3], p[1] / p[3], p[2]/ p[3]);
   } else {
-    point.SetPoint(p[0], p[1], p[2]);
+    point->SetPoint(p[0], p[1], p[2]);
   }
 }
 
 void Transform::TransformPointInternal(const SkMatrix44& xform,
-                                       Point& point) const {
+                                       Point* point) const {
   if (xform.isIdentity())
     return;
 
-  SkMScalar p[4] = {SkFloatToMScalar(point.x()), SkFloatToMScalar(point.y()), 0,
-                    1};
+  SkMScalar p[4] = {SkFloatToMScalar(point->x()), SkFloatToMScalar(point->y()),
+                    0, 1};
 
   xform.mapMScalars(p);
 
-  point.SetPoint(ToRoundedInt(p[0]), ToRoundedInt(p[1]));
+  point->SetPoint(ToRoundedInt(p[0]), ToRoundedInt(p[1]));
 }
 
 std::string Transform::ToString() const {

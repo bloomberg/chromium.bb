@@ -73,9 +73,9 @@ void ScreenRotation::InitTransform(ui::Layer* layer) {
   }
 
   // Convert points to world space.
-  current_transform.TransformPoint(old_pivot);
-  current_transform.TransformPoint(new_pivot);
-  current_transform.TransformPoint(new_origin_);
+  current_transform.TransformPoint(&old_pivot);
+  current_transform.TransformPoint(&new_pivot);
+  current_transform.TransformPoint(&new_origin_);
 
   scoped_ptr<ui::InterpolatedTransform> rotation(
       new ui::InterpolatedTransformAboutPivot(
