@@ -84,6 +84,8 @@ TEST(FileSystemURLTest, UnescapePath) {
 TEST(FileSystemURLTest, RejectBadType) {
   EXPECT_FALSE(CreateFileSystemURL(
       "filesystem:http://c.org/foobar/file").is_valid());
+  EXPECT_FALSE(CreateFileSystemURL(
+      "filesystem:http://c.org/temporaryfoo/file").is_valid());
 }
 
 TEST(FileSystemURLTest, RejectMalformedURL) {
