@@ -135,17 +135,17 @@ UserGestureIndicator::UserGestureIndicator(PassRefPtr<UserGestureToken> token)
 {
     if (token) {
         static_cast<GestureToken*>(token.get())->resetTimestamp();
-        if (static_cast<GestureToken*>(token.get())->hasGestures()) {
-            if (!s_topmostIndicator) {
-                s_topmostIndicator = this;
-                m_token = token;
-            } else {
-                m_token = s_topmostIndicator->currentToken();
+        if (!s_topmostIndicator) {
+            s_topmostIndicator = this;
+            m_token = token;
+        } else {
+            m_token = s_topmostIndicator->currentToken();
+            if (static_cast<GestureToken*>(token.get())->hasGestures()) {
                 static_cast<GestureToken*>(m_token.get())->addGesture();
                 static_cast<GestureToken*>(token.get())->consumeGesture();
             }
-            s_state = DefinitelyProcessingUserGesture;
         }
+        s_state = DefinitelyProcessingUserGesture;
     }
 
     ASSERT(isDefinite(s_state));
