@@ -1,6 +1,7 @@
 apatrick@chromium.org
 kbr@chromium.org
 piman@chromium.org
+sievers@chromium.org
 
 # For security review of IPC message files.
 per-file *_messages*.h=set noparent
