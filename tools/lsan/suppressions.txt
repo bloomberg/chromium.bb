@@ -44,6 +44,10 @@ leak:base::WeakPtrTest_MoveOwnershipAfterInvalidate_Test::TestBody
 leak:gpu::gles2::GLES2DecoderImpl::DoBindRenderbuffer
 leak:gpu::gles2::GLES2DecoderImpl::DoRenderbufferStorage
 
+# Leak in unit_tests. http://crbug.com/282646
+leak:DeclarativeContentActionTest_ShowPageAction_Test::TestBody
+leak:DeclarativeContentRulesRegistryTest_ActiveRulesDoesntGrow_Test::TestBody
+
 # GTK leaks. GTK is deprecated, so we won't be fixing these.
 # Most of them should apply to the full browser process only.
 leak:StatusIconGtk::UpdatePlatformContextMenu
