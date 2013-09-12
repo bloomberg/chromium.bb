@@ -81,16 +81,6 @@ void FillOutputForSectionWithComparator(
     const InputFieldComparator& compare,
     FormStructure& form_structure, wallet::FullWallet* full_wallet,
     const base::string16& email_address) {
-
-  // Email is hidden while using Wallet, special case it.
-  if (section == SECTION_CC_BILLING) {
-    AutofillProfile profile;
-    profile.SetRawInfo(EMAIL_ADDRESS, email_address);
-    AutofillProfileWrapper profile_wrapper(&profile, 0);
-    profile_wrapper.FillFormStructure(inputs, compare, &form_structure);
-    return;
-  }
-
   scoped_ptr<DataModelWrapper> wrapper = CreateWrapper(section, full_wallet);
   if (wrapper)
     wrapper->FillFormStructure(inputs, compare, &form_structure);
@@ -108,6 +98,15 @@ void FillOutputForSection(
       section, inputs,
       base::Bind(common::DetailInputMatchesField, section),
       form_structure, full_wallet, email_address);
+
+  if (section == SECTION_CC_BILLING) {
+    // Email is hidden while using Wallet, special case it.
+    for (size_t i = 0; i < form_structure.field_count(); ++i) {
+      AutofillField* field = form_structure.field(i);
+      if (field->Type().GetStorableType() == EMAIL_ADDRESS)
+        field->value = email_address;
+    }
+  }
 }
 
 // Returns true if |input_type| in |section| is needed for |form_structure|.
