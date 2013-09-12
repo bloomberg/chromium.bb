@@ -36,10 +36,11 @@ public:
 private:
     Entity() : ContainerNode(0)
     {
+        ASSERT_NOT_REACHED();
         ScriptWrappable::init(this);
     }
 };
 
-} //namespace
+} // namespace WebCore
 
 #endif

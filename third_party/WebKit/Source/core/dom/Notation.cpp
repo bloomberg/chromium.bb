@@ -29,6 +29,7 @@ Notation::Notation(TreeScope* treeScope, const String& name, const String& publi
     , m_publicId(publicId)
     , m_systemId(systemId)
 {
+    ASSERT_NOT_REACHED();
     ScriptWrappable::init(this);
 }
 
