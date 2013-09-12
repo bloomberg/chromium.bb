@@ -85,7 +85,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "2.11",
+  "version": "2.12",
   "entries": [
     {
       "id": 1,
@@ -145,8 +145,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
         "value": "Qualcomm"
       },
       "features": [
-        "restore_scissor_on_fbo_change",
-        "delete_instead_of_resize_fbo"  // Only need this on the ICS driver.
+        "restore_scissor_on_fbo_change"
       ]
     },
     {

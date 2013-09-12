@@ -14,8 +14,6 @@
          clear_alpha_in_readpixels)                          \
   GPU_OP(CLEAR_UNIFORMS_BEFORE_PROGRAM_USE,                  \
          clear_uniforms_before_program_use)                  \
-  GPU_OP(DELETE_INSTEAD_OF_RESIZE_FBO,                       \
-         delete_instead_of_resize_fbo)                       \
   GPU_OP(DISABLE_ANGLE_FRAMEBUFFER_MULTISAMPLE,              \
          disable_angle_framebuffer_multisample)              \
   GPU_OP(DISABLE_ANGLE_INSTANCED_ARRAYS,                     \
