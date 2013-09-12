@@ -554,7 +554,6 @@ public:
 
     DOMStringMap* dataset();
 
-    static bool isMathMLElement() { return false; }
     virtual bool isMediaElement() const { return false; }
 
 #if ENABLE(INPUT_SPEECH)

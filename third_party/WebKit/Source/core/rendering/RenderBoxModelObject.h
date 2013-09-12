@@ -100,8 +100,8 @@ public:
     LayoutUnit computedCSSPaddingStart() const { return computedCSSPadding(style()->paddingStart()); }
     LayoutUnit computedCSSPaddingEnd() const { return computedCSSPadding(style()->paddingEnd()); }
 
-    // These functions are used during layout. Table cells and the MathML
-    // code override them to include some extra intrinsic padding.
+    // These functions are used during layout. Table cells
+    // override them to include some extra intrinsic padding.
     virtual LayoutUnit paddingTop() const { return computedCSSPaddingTop(); }
     virtual LayoutUnit paddingBottom() const { return computedCSSPaddingBottom(); }
     virtual LayoutUnit paddingLeft() const { return computedCSSPaddingLeft(); }

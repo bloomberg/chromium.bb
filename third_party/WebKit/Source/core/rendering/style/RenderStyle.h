@@ -1038,7 +1038,7 @@ public:
     void setTableLayout(ETableLayout v) { noninherited_flags._table_layout = v; }
 
     bool setFontDescription(const FontDescription&);
-    // Only used for blending font sizes when animating, for MathML anonymous blocks, and for text autosizing.
+    // Only used for blending font sizes when animating and for text autosizing.
     void setFontSize(float);
 
     void setTextAutosizingMultiplier(float v)

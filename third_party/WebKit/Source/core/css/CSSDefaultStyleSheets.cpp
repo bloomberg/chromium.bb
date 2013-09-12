@@ -53,7 +53,6 @@ StyleSheetContents* CSSDefaultStyleSheets::simpleDefaultStyleSheet;
 StyleSheetContents* CSSDefaultStyleSheets::defaultStyleSheet;
 StyleSheetContents* CSSDefaultStyleSheets::quirksStyleSheet;
 StyleSheetContents* CSSDefaultStyleSheets::svgStyleSheet;
-StyleSheetContents* CSSDefaultStyleSheets::mathMLStyleSheet;
 StyleSheetContents* CSSDefaultStyleSheets::mediaControlsStyleSheet;
 StyleSheetContents* CSSDefaultStyleSheets::fullscreenStyleSheet;
 
@@ -197,7 +196,7 @@ void CSSDefaultStyleSheets::ensureDefaultStyleSheetsForElement(Element* element,
     }
 
     ASSERT(defaultStyle->features().idsInRules.isEmpty());
-    ASSERT(mathMLStyleSheet || defaultStyle->features().siblingRules.isEmpty());
+    ASSERT(defaultStyle->features().siblingRules.isEmpty());
 }
 
 } // namespace WebCore

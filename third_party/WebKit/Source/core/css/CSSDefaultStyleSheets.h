@@ -41,7 +41,6 @@ public:
     static StyleSheetContents* defaultStyleSheet;
     static StyleSheetContents* quirksStyleSheet;
     static StyleSheetContents* svgStyleSheet;
-    static StyleSheetContents* mathMLStyleSheet;
     static StyleSheetContents* mediaControlsStyleSheet;
     static StyleSheetContents* fullscreenStyleSheet;
 
