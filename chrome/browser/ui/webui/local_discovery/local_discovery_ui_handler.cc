@@ -19,6 +19,7 @@
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_base.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "content/public/browser/web_ui.h"
@@ -90,6 +91,9 @@ void LocalDiscoveryUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("openCloudPrintURL", base::Bind(
       &LocalDiscoveryUIHandler::HandleOpenCloudPrintURL,
       base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("showSyncUI", base::Bind(
+      &LocalDiscoveryUIHandler::HandleShowSyncUI,
+      base::Unretained(this)));
 }
 
 void LocalDiscoveryUIHandler::HandleStart(const base::ListValue* args) {
@@ -108,6 +112,8 @@ void LocalDiscoveryUIHandler::HandleStart(const base::ListValue* args) {
 
   privet_lister_->Start();
   privet_lister_->DiscoverNewDevices(false);
+
+  CheckUserLoggedIn();
 }
 
 void LocalDiscoveryUIHandler::HandleIsVisible(const base::ListValue* args) {
@@ -166,6 +172,22 @@ void LocalDiscoveryUIHandler::HandleOpenCloudPrintURL(
   chrome::AddSelectedTabWithURL(browser,
                                 url_full,
                                 content::PAGE_TRANSITION_FROM_API);
+}
+
+void LocalDiscoveryUIHandler::HandleShowSyncUI(
+    const base::ListValue* args) {
+  Browser* browser = chrome::FindBrowserWithWebContents(
+      web_ui()->GetWebContents());
+  DCHECK(browser);
+
+  // We use SOURCE_SETTINGS because the URL for SOURCE_SETTINGS is detected on
+  // redirect.
+  GURL url(signin::GetPromoURL(signin::SOURCE_SETTINGS,
+                               true));  // auto close after success.
+
+  browser->OpenURL(
+      content::OpenURLParams(url, content::Referrer(), SINGLETON_TAB,
+                             content::PAGE_TRANSITION_AUTO_BOOKMARK, false));
 }
 
 void LocalDiscoveryUIHandler::StartRegisterHTTP(
@@ -348,6 +370,8 @@ void LocalDiscoveryUIHandler::OnCloudPrintPrinterListReady() {
 }
 
 void LocalDiscoveryUIHandler::OnCloudPrintPrinterListUnavailable() {
+  web_ui()->CallJavascriptFunction(
+      "local_discovery.onCloudDeviceListUnavailable");
 }
 
 
@@ -405,6 +429,12 @@ scoped_ptr<base::DictionaryValue> LocalDiscoveryUIHandler::CreatePrinterInfo(
   return_value->SetString("description", description.description);
 
   return return_value.Pass();
+}
+
+void LocalDiscoveryUIHandler::CheckUserLoggedIn() {
+  base::FundamentalValue logged_in_value(!GetSyncAccount().empty());
+  web_ui()->CallJavascriptFunction("local_discovery.setUserLoggedIn",
+                                   logged_in_value);
 }
 
 }  // namespace local_discovery

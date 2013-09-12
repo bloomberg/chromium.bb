@@ -17,7 +17,8 @@ function checkOneDevice() {
   assertEquals('Sample device description', deviceDescription);
 
   var button = firstDevice.querySelector('button');
-  assertEquals(false, button.disabled);
+  // Button should be disabled since there is no logged in user.
+  assertEquals(true, button.disabled);
 }
 
 function checkNoDevices() {

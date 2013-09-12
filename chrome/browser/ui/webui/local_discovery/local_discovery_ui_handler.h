@@ -107,6 +107,9 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
   // tab.
   void HandleOpenCloudPrintURL(const base::ListValue* args);
 
+  // For showing sync login UI.
+  void HandleShowSyncUI(const base::ListValue* args);
+
   // For when the IP address of the printer has been resolved for registration.
   void StartRegisterHTTP(
       scoped_ptr<PrivetHTTPClient> http_client);
@@ -140,6 +143,8 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
   // finished. Consider it failed.
   // TODO(noamsml): Re-resolve service first.
   void OnAnnouncementTimeoutReached();
+
+  void CheckUserLoggedIn();
 
   // The current HTTP client (used for the current operation).
   scoped_ptr<PrivetHTTPClient> current_http_client_;

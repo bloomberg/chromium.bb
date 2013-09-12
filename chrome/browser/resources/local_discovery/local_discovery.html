@@ -29,6 +29,11 @@
           <div id="register-message"
                i18n-content="noPrintersOnNetworkExplanation">
           </div>
+          <div id="register-login-promo" class="login-promo" hidden>
+            <span i18n-content="registerNeedLogin"></span>
+            <button class="link-button" id="register-login-button"
+                    i18n-content="cloudDevicesLogin"></button>
+          </div>
           <div id="register-device-picker">
             <div class="devices" id="register-device-list">
             </div>
@@ -77,13 +82,22 @@
       </span>
     </div>
 
-    <div id="cloud-devices-loading">
+    <div id="cloud-devices-loading" hidden>
       <div class="inline-spinner"> </div> <span i18n-content="loading"></span>
+    </div>
+    <div id="cloud-devices-login-promo" class="login-promo" hidden>
+      <span i18n-content="cloudDevicesNeedLogin"></span>
+      <button class="link-button" id="cloud-devices-login-button"
+              i18n-content="cloudDevicesLogin"></button>
+    </div>
+    <div id="cloud-devices-unavailable" hidden>
+      <span i18n-content="cloudDevicesUnavailable"></span>
+      <button class="link-button" id="cloud-devices-retry-button"
+              i18n-content="retryLoadCloudDevices"></button>
     </div>
     <div id="cloud-devices">
 
     </div>
-
   </div>
 
   <script src="chrome://resources/js/i18n_template2.js"></script>

@@ -556,13 +556,15 @@ def AddDevicesPageActions(actions):
   Arguments
     actions: set of actions to add to.
   """
-  actions.add('DevicesPage_Opened')
   actions.add('DevicesPage_AddPrintersClicked')
-  actions.add('DevicesPage_RegisterClicked')
+  actions.add('DevicesPage_LogInStartedFromDeviceListPromo')
+  actions.add('DevicesPage_LogInStartedFromRegisterPromo')
+  actions.add('DevicesPage_ManageClicked')
+  actions.add('DevicesPage_Opened')
   actions.add('DevicesPage_RegisterCancel')
+  actions.add('DevicesPage_RegisterClicked')
   actions.add('DevicesPage_RegisterFailure')
   actions.add('DevicesPage_RegisterSuccess')
-  actions.add('DevicesPage_ManageClicked')
 
 def main(argv):
   if '--hash' in argv:
