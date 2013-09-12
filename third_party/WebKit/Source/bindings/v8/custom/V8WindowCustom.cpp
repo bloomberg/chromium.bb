@@ -480,7 +480,7 @@ bool V8Window::namedSecurityCheckCustom(v8::Local<v8::Object> host, v8::Local<v8
         // We need to explicitly compare against nameOfProtoProperty because
         // V8's JSObject::LocalLookup finds __proto__ before
         // interceptors and even when __proto__ isn't a "real named property".
-        v8::Handle<v8::String> keyString = key->ToString();
+        v8::Handle<v8::String> keyString = key.As<v8::String>();
         if (type == v8::ACCESS_GET
             && childFrame
             && !host->HasRealNamedProperty(keyString)

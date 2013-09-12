@@ -61,7 +61,7 @@ void convertV8ObjectToNPVariant(v8::Local<v8::Value> object, NPObject* owner, NP
     else if (object->IsUndefined())
         VOID_TO_NPVARIANT(*result);
     else if (object->IsString()) {
-        v8::Handle<v8::String> str = object->ToString();
+        v8::Handle<v8::String> str = object.As<v8::String>();
         int length = str->Utf8Length() + 1;
         char* utf8Chars = reinterpret_cast<char*>(malloc(length));
         str->WriteUtf8(utf8Chars, length, 0, v8::String::HINT_MANY_WRITES_EXPECTED);
