@@ -83,6 +83,13 @@ class VisualStudioVersion(object):
       # vcvars32, which it can only find if VS??COMNTOOLS is set, which it
       # isn't always.
       if target_arch == 'x86':
+        if self.short_name == '2013' and (
+            os.environ.get('PROCESSOR_ARCHITECTURE') == 'AMD64' or
+            os.environ.get('PROCESSOR_ARCHITEW6432') == 'AMD64'):
+          # VS2013 non-Express has a x64-x86 cross that we want to prefer.
+          return [os.path.normpath(
+             os.path.join(self.path, 'VC/vcvarsall.bat')), 'amd64_x86']
+        # Otherwise, the standard x86 compiler.
         return [os.path.normpath(
           os.path.join(self.path, 'Common7/Tools/vsvars32.bat'))]
       else:
