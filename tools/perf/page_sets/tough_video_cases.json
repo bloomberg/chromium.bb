@@ -27,6 +27,23 @@
       "seek_label": "seek_cold"
     }
   ],
+  "loop_single_audio" : [
+    { "action": "loop",
+      "selector": "#single_audio",
+       "loop_count": 50
+    }
+  ],
+  "loop_mixed_audio" : [
+    { "action": "play",
+      "selector": "#background_audio",
+      "wait_for_playing": true,
+      "wait_for_ended": false
+    },
+    { "action": "loop",
+      "selector": "#mixed_audio",
+      "loop_count": 50
+    }
+  ],
   "pages": [
     {
       "url": "file:///tough_video_cases/video.html?src=crowd.wav&type=audio",
@@ -87,6 +104,16 @@
       "url": "file:///tough_video_cases/video.html?src=tulip2.webm&type=video",
       "skip_basic_metrics": true,
       "media_metrics": {"action": "seek_before_and_after_playhead"}
+    },
+    {
+      "skip_basic_metrics": true,
+      "url": "file:///tough_video_cases/audio_playback.html?id=single_audio",
+      "media_metrics": {"action": "loop_single_audio"}
+    },
+    {
+      "skip_basic_metrics": true,
+      "url": "file:///tough_video_cases/audio_playback.html?id=mixed_audio",
+      "media_metrics": {"action": "loop_mixed_audio"}
     }
   ]
 }
