@@ -704,8 +704,11 @@ void DeleteSelectionCommand::removePreviouslySelectedEmptyTableRows()
 
 void DeleteSelectionCommand::calculateTypingStyleAfterDelete()
 {
-    if (!m_typingStyle)
+    // Clearing any previously set typing style and doing an early return.
+    if (!m_typingStyle) {
+        document().frame()->selection().clearTypingStyle();
         return;
+    }
 
     // Compute the difference between the style before the delete and the style now
     // after the delete has been done. Set this style on the frame, so other editing
