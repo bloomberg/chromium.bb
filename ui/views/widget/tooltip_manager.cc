@@ -4,6 +4,7 @@
 
 #include "ui/views/widget/tooltip_manager.h"
 
+#include <algorithm>
 #include <vector>
 
 #include "base/strings/string_split.h"
