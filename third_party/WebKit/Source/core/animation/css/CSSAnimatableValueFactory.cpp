@@ -226,6 +226,8 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
         return createFromLength(style->width(), style);
     case CSSPropertyVisibility:
         return AnimatableVisibility::create(style->visibility());
+    case CSSPropertyZIndex:
+        return createFromDouble(style->zIndex());
     default:
         RELEASE_ASSERT_WITH_MESSAGE(!CSSAnimations::isAnimatableProperty(property), "Web Animations not yet implemented: Create AnimatableValue from render style: %s", getPropertyNameString(property).utf8().data());
         ASSERT_NOT_REACHED();

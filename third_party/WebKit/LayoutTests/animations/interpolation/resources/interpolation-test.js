@@ -65,6 +65,7 @@
   var cssText = '';
   var fragment = document.createDocumentFragment();
   var style = document.createElement('style');
+  var afterTestCallback = null;
   fragment.appendChild(style);
 
   var updateScheduled = false;
@@ -111,6 +112,10 @@
     var html = document.documentElement.outerHTML;
     document.documentElement.style.whiteSpace = 'pre';
     document.documentElement.textContent = html;
+  }
+
+  function afterTest(callback) {
+    afterTestCallback = callback;
   }
 
   function runAsRefTest() {
@@ -221,6 +226,9 @@
   function finishTest() {
     finished = true;
     dumpResults();
+    if (afterTestCallback) {
+      afterTestCallback();
+    }
     if (window.testRunner) {
       if (!isRefTest) {
         testRunner.dumpAsText();
@@ -270,4 +278,5 @@
   window.testInterpolationAt = testInterpolationAt;
   window.assertInterpolation = assertInterpolation;
   window.convertToReference = convertToReference;
+  window.afterTest = afterTest;
 })();

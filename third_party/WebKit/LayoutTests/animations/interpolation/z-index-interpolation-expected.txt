@@ -1,0 +1,8 @@
+Z -8Z -5Z -2Z 1Z 5Z 10Z 12
+PASS: z-index from [-5] to [5] was [-8] at -0.3
+PASS: z-index from [-5] to [5] was [-5] at 0
+PASS: z-index from [-5] to [5] was [-2] at 0.3
+PASS: z-index from [-5] to [5] was [1] at 0.6
+PASS: z-index from [-5] to [5] was [5] at 1
+PASS: z-index from [-5] to [5] was [10] at 1.5
+

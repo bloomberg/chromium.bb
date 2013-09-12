@@ -268,6 +268,9 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
     case CSSPropertyVisibility:
         style->setVisibility(toAnimatableVisibility(value)->visibility());
         return;
+    case CSSPropertyZIndex:
+        style->setZIndex(animatableValueRoundClampTo<int>(value));
+        return;
     default:
         RELEASE_ASSERT_WITH_MESSAGE(!CSSAnimations::isAnimatableProperty(property), "Web Animations not yet implemented: Unable to apply AnimatableValue to RenderStyle: %s", getPropertyNameString(property).utf8().data());
         ASSERT_NOT_REACHED();
