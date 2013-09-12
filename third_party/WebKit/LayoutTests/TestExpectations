@@ -1232,9 +1232,6 @@ crbug.com/280554 [ Linux SnowLeopard Lion ] css3/filters/custom/custom-filter-cl
 # This test becomes flaky when lazy attaching from the parser is enabled.
 Bug(ojan) fast/forms/select/menulist-type-ahead-find.html [ Failure Pass ]
 
-Bug(ojan) [ Win7 Mac Linux ] svg/batik/text/textProperties.svg [ NeedsManualRebaseline ]
-Bug(ojan) [ Win7 Mac Linux ] svg/batik/text/textStyles.svg [ NeedsManualRebaseline ]
-
 crbug.com/280658  [ Win7 ] inspector-protocol/layers/get-layers.html [ Pass Failure ]
 crbug.com/280342 [ Win Release ] http/tests/media/progress-events-generated-correctly.html [ Failure Pass ]
 crbug.com/280698 inspector/styles/multiple-imports-edit-crash.html [ Pass Failure ]
