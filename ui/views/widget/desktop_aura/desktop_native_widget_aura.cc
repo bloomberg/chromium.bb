@@ -145,7 +145,14 @@ class DesktopNativeWidgetAuraStackingClient :
                                          const gfx::Rect& bounds) OVERRIDE {
     bool full_screen = window->GetProperty(aura::client::kShowStateKey) ==
         ui::SHOW_STATE_FULLSCREEN;
-    if (full_screen || window->type() == aura::client::WINDOW_TYPE_MENU) {
+    bool is_menu = false;
+    // TODO(erg): We need to be able to spawn and deal with toplevel windows if
+    // we want the popups to extend past our window
+    // bounds. http://crbug.com/288988
+#if !defined(OS_LINUX)
+    is_menu = window->type() == aura::client::WINDOW_TYPE_MENU;
+#endif
+    if (full_screen || is_menu) {
       return DesktopNativeWidgetTopLevelHandler::CreateParentWindow(
           window, bounds, full_screen);
     }
