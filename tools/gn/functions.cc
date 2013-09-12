@@ -61,10 +61,8 @@ bool EnsureNotProcessingImport(const ParseNode* node,
                                Err* err) {
   if (scope->IsProcessingImport()) {
     *err = Err(node, "Not valid from an import.",
-        "We need to talk about this thing you are doing here. Doing this\n"
-        "kind of thing from an imported file makes me feel like you are\n"
-        "abusing me. Imports are for defining defaults, variables, and rules.\n"
-        "The appropriate place for this kind of thing is really in a normal\n"
+        "Imports are for defining defaults, variables, and rules. The\n"
+        "appropriate place for this kind of thing is really in a normal\n"
         "BUILD file.");
     return false;
   }
