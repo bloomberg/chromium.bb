@@ -47,7 +47,6 @@ class ChromeJavaScriptDialogManager : public JavaScriptDialogManager,
       content::JavaScriptMessageType message_type,
       const string16& message_text,
       const string16& default_prompt_text,
-      bool user_gesture,
       const DialogClosedCallback& callback,
       bool* did_suppress_message) OVERRIDE;
 
@@ -131,7 +130,6 @@ void ChromeJavaScriptDialogManager::RunJavaScriptDialog(
     content::JavaScriptMessageType message_type,
     const string16& message_text,
     const string16& default_prompt_text,
-    bool user_gesture,
     const DialogClosedCallback& callback,
     bool* did_suppress_message)  {
   *did_suppress_message = false;
@@ -148,11 +146,10 @@ void ChromeJavaScriptDialogManager::RunJavaScriptDialog(
       extra_data->last_javascript_message_dismissal_;
   bool display_suppress_checkbox = false;
   // Show a checkbox offering to suppress further messages if this message is
-  // being displayed within kJavaScriptMessageExpectedDelay of the last one and
-  // the dialog was not requested via an explicit user gesture.
+  // being displayed within kJavaScriptMessageExpectedDelay of the last one.
   if (time_since_last_message <
       base::TimeDelta::FromMilliseconds(
-          chrome::kJavaScriptMessageExpectedDelay) && !user_gesture) {
+          chrome::kJavaScriptMessageExpectedDelay)) {
     display_suppress_checkbox = true;
   } else {
     display_suppress_checkbox = false;

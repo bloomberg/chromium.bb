@@ -229,9 +229,8 @@ public class ModalDialogTest extends ChromiumTestShellTestBase {
      * Verifies that repeated dialogs give the option to disable dialogs
      * altogether and then that disabling them works.
      */
-    //@MediumTest
-    //@Feature({"Browser", "Main"})
-    @DisabledTest //crbug/280693
+    @MediumTest
+    @Feature({"Browser", "Main"})
     public void testDisableRepeatedDialogs()
             throws InterruptedException, TimeoutException, ExecutionException {
         OnEvaluateJavaScriptResultHelper scriptEvent =
