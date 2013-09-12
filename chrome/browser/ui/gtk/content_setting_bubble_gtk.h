@@ -88,6 +88,8 @@ class ContentSettingBubbleGtk : public BubbleDelegateGtk,
   CHROMEGTK_CALLBACK_0(ContentSettingBubbleGtk, void, OnRadioToggled);
   CHROMEGTK_CALLBACK_0(ContentSettingBubbleGtk, void, OnCustomLinkClicked);
   CHROMEGTK_CALLBACK_0(ContentSettingBubbleGtk, void, OnManageLinkClicked);
+  CHROMEGTK_CALLBACK_0(ContentSettingBubbleGtk, void, OnSaveButtonClicked);
+  CHROMEGTK_CALLBACK_0(ContentSettingBubbleGtk, void, OnCancelButtonClicked);
   CHROMEGTK_CALLBACK_0(ContentSettingBubbleGtk, void, OnCloseButtonClicked);
   CHROMEGTK_CALLBACK_0(ContentSettingBubbleGtk, void, OnMenuButtonClicked);
 

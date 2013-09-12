@@ -292,6 +292,27 @@ void ContentSettingBubbleGtk::BuildBubble() {
     gtk_box_pack_start(GTK_BOX(bubble_content), table, FALSE, FALSE, 0);
   }
 
+  if (content_setting_bubble_model_->content_type() ==
+      CONTENT_SETTINGS_TYPE_SAVE_PASSWORD) {
+    GtkWidget* button_content = gtk_hbox_new(FALSE, 0);
+    GtkWidget* never_button =
+        gtk_button_new_with_label(l10n_util::GetStringUTF8(
+            IDS_PASSWORD_MANAGER_BLACKLIST_BUTTON).c_str());
+    g_signal_connect(never_button, "clicked",
+                     G_CALLBACK(OnCancelButtonClickedThunk), this);
+    GtkWidget* save_button = gtk_button_new_with_label(
+        l10n_util::GetStringUTF8(IDS_PASSWORD_MANAGER_SAVE_BUTTON).c_str());
+    g_signal_connect(save_button, "clicked",
+                     G_CALLBACK(OnSaveButtonClickedThunk), this);
+
+    gtk_box_pack_start(GTK_BOX(button_content), never_button, FALSE, FALSE, 4);
+    gtk_box_pack_start(GTK_BOX(button_content), save_button, FALSE, FALSE, 0);
+
+    gtk_box_pack_start(GTK_BOX(bubble_content), button_content, FALSE, FALSE,
+                       0);
+    gtk_widget_grab_focus(save_button);
+  }
+
   for (std::vector<ContentSettingBubbleModel::DomainList>::const_iterator i =
        content.domain_lists.begin();
        i != content.domain_lists.end(); ++i) {
@@ -343,15 +364,16 @@ void ContentSettingBubbleGtk::BuildBubble() {
   g_signal_connect(manage_link, "clicked", G_CALLBACK(OnManageLinkClickedThunk),
                    this);
   gtk_box_pack_start(GTK_BOX(bottom_box), manage_link, FALSE, FALSE, 0);
-
-  GtkWidget* button = gtk_button_new_with_label(
-      l10n_util::GetStringUTF8(IDS_DONE).c_str());
-  g_signal_connect(button, "clicked", G_CALLBACK(OnCloseButtonClickedThunk),
-                   this);
-  gtk_box_pack_end(GTK_BOX(bottom_box), button, FALSE, FALSE, 0);
+  if (content_setting_bubble_model_->content_type() !=
+      CONTENT_SETTINGS_TYPE_SAVE_PASSWORD) {
+    GtkWidget* button = gtk_button_new_with_label(
+        l10n_util::GetStringUTF8(IDS_DONE).c_str());
+    g_signal_connect(button, "clicked", G_CALLBACK(OnCloseButtonClickedThunk),
+                     this);
+    gtk_box_pack_end(GTK_BOX(bottom_box), button, FALSE, FALSE, 0);
+    gtk_widget_grab_focus(button);
+  }
   gtk_box_pack_start(GTK_BOX(bubble_content), bottom_box, FALSE, FALSE, 0);
-  gtk_widget_grab_focus(bottom_box);
-  gtk_widget_grab_focus(button);
 
   bubble_ = BubbleGtk::Show(anchor_,
                             NULL,
@@ -397,8 +419,18 @@ void ContentSettingBubbleGtk::OnRadioToggled(GtkWidget* widget) {
   NOTREACHED() << "unknown radio toggled";
 }
 
-void ContentSettingBubbleGtk::OnCloseButtonClicked(GtkWidget *button) {
+void ContentSettingBubbleGtk::OnCloseButtonClicked(GtkWidget* button) {
   content_setting_bubble_model_->OnDoneClicked();
+  Close();
+}
+
+void ContentSettingBubbleGtk::OnSaveButtonClicked(GtkWidget* button) {
+  content_setting_bubble_model_->OnSaveClicked();
+  Close();
+}
+
+void ContentSettingBubbleGtk::OnCancelButtonClicked(GtkWidget* button) {
+  content_setting_bubble_model_->OnCancelClicked();
   Close();
 }
 
