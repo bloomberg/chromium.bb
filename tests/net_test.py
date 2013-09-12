@@ -6,10 +6,8 @@
 import logging
 import math
 import os
-import StringIO
 import sys
 import unittest
-import urllib2
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
@@ -17,233 +15,240 @@ sys.path.insert(0, ROOT_DIR)
 import auto_stub
 from utils import net
 
-# Number of times self._now() is called per loop in HttpService._retry_loop().
-NOW_CALLS_PER_OPEN = 2
+
+class RetryLoopMockedTest(auto_stub.TestCase):
+  """Base class for test cases that mock retry loop."""
+
+  def setUp(self):
+    super(RetryLoopMockedTest, self).setUp()
+    self._retry_attemps_cls = net.RetryAttempt
+    self.mock(net, 'sleep_before_retry', self.mocked_sleep_before_retry)
+    self.mock(net, 'current_time', self.mocked_current_time)
+    self.mock(net, 'RetryAttempt', self.mocked_retry_attempt)
+    self.sleeps = []
+    self.attempts = []
+
+  def mocked_sleep_before_retry(self, attempt, max_wait):
+    self.sleeps.append((attempt, max_wait))
+
+  def mocked_current_time(self):
+    # One attempt is one virtual second.
+    return float(len(self.attempts))
+
+  def mocked_retry_attempt(self, *args, **kwargs):
+    attempt = self._retry_attemps_cls(*args, **kwargs)
+    self.attempts.append(attempt)
+    return attempt
+
+  def assertAttempts(self, attempts, max_timeout):
+    """Asserts that retry loop executed given number of |attempts|."""
+    expected = [(i, max_timeout - i) for i in xrange(attempts)]
+    actual = [(x.attempt, x.remaining) for x in self.attempts]
+    self.assertEqual(expected, actual)
+
+  def assertSleeps(self, sleeps):
+    """Asserts that retry loop slept given number of times."""
+    self.assertEqual(sleeps, len(self.sleeps))
 
 
-class HttpServiceTest(auto_stub.TestCase):
+class RetryLoopTest(RetryLoopMockedTest):
+  """Test for retry_loop implementation."""
 
-  # HttpService that doesn't sleep in retries and doesn't write cookie files.
-  class HttpServiceNoSideEffects(net.HttpService):
-    def __init__(self, *args, **kwargs):
-      super(HttpServiceTest.HttpServiceNoSideEffects, self).__init__(
-          *args, **kwargs)
-      self.sleeps = []
-      self._count = 0.
+  def test_sleep_before_retry(self):
+    # Verifies bounds. Because it's using a pseudo-random number generator and
+    # not a read random source, it's basically guaranteed to never return the
+    # same value twice consecutively.
+    a = net.calculate_sleep_before_retry(0, 0)
+    b = net.calculate_sleep_before_retry(0, 0)
+    self.assertTrue(a >= math.pow(1.5, -1), a)
+    self.assertTrue(b >= math.pow(1.5, -1), b)
+    self.assertTrue(a < 1.5 + math.pow(1.5, -1), a)
+    self.assertTrue(b < 1.5 + math.pow(1.5, -1), b)
+    self.assertNotEqual(a, b)
 
-    def _now(self):  # pylint: disable=W0221
-      x = self._count
-      self._count += 1
-      return x
 
-    def sleep_before_retry(self, attempt, max_wait):
-      self.sleeps.append((attempt, max_wait))
+class HttpServiceTest(RetryLoopMockedTest):
+  """Tests for HttpService class."""
 
-    def load_cookie_jar(self):  # pylint: disable=W0221
-      pass
+  @staticmethod
+  def mocked_http_service(url='http://example.com', perform_request=None,
+                          authenticate=None):  # pylint: disable=R0201
+    class MockedAuthenticator(net.Authenticator):
+      def authenticate(self):
+        return authenticate() if authenticate else None
 
-    def save_cookie_jar(self):  # pylint: disable=W0221
-      pass
+    class MockedRequestEngine(net.RequestEngine):
+      def perform_request(self, request):
+        return perform_request(request) if perform_request else None
 
-  def mocked_http_service(self, url='http://example.com', **kwargs):
-    service = HttpServiceTest.HttpServiceNoSideEffects(url)
-    for name, fn in kwargs.iteritems():
-      self.assertTrue(getattr(service, name))
-      setattr(service, name, fn)
-    return service
+    return net.HttpService(
+        url,
+        authenticator=MockedAuthenticator(),
+        engine=MockedRequestEngine())
 
   def test_request_GET_success(self):
     service_url = 'http://example.com'
     request_url = '/some_request'
     response = 'True'
 
-    def mock_url_open(request, **_kwargs):
-      self.assertTrue(request.get_full_url().startswith(service_url +
-                                                        request_url))
-      return StringIO.StringIO(response)
+    def mock_perform_request(request):
+      self.assertTrue(
+          request.get_full_url().startswith(service_url + request_url))
+      return request.make_fake_response(response)
 
-    service = self.mocked_http_service(url=service_url, _url_open=mock_url_open)
+    service = self.mocked_http_service(url=service_url,
+        perform_request=mock_perform_request)
     self.assertEqual(service.request(request_url).read(), response)
-    self.assertEqual([], service.sleeps)
+    self.assertAttempts(1, net.URL_OPEN_TIMEOUT)
 
   def test_request_POST_success(self):
     service_url = 'http://example.com'
     request_url = '/some_request'
     response = 'True'
 
-    def mock_url_open(request, **_kwargs):
-      self.assertTrue(request.get_full_url().startswith(service_url +
-                                                        request_url))
-      self.assertEqual('', request.get_data())
-      return StringIO.StringIO(response)
+    def mock_perform_request(request):
+      self.assertTrue(
+          request.get_full_url().startswith(service_url + request_url))
+      self.assertEqual('', request.body)
+      return request.make_fake_response(response)
 
-    service = self.mocked_http_service(url=service_url, _url_open=mock_url_open)
+    service = self.mocked_http_service(url=service_url,
+        perform_request=mock_perform_request)
     self.assertEqual(service.request(request_url, data={}).read(), response)
-    self.assertEqual([], service.sleeps)
+    self.assertAttempts(1, net.URL_OPEN_TIMEOUT)
 
   def test_request_success_after_failure(self):
     response = 'True'
 
-    def mock_url_open(request, **_kwargs):
-      if net.COUNT_KEY + '=1' not in request.get_data():
-        raise urllib2.URLError('url')
-      return StringIO.StringIO(response)
+    def mock_perform_request(request):
+      params = dict(request.params)
+      if params.get(net.COUNT_KEY) != 1:
+        raise net.ConnectionError()
+      return request.make_fake_response(response)
 
-    service = self.mocked_http_service(_url_open=mock_url_open)
+    service = self.mocked_http_service(perform_request=mock_perform_request)
     self.assertEqual(service.request('/', data={}).read(), response)
-    self.assertEqual(
-        [(0, net.URL_OPEN_TIMEOUT - NOW_CALLS_PER_OPEN)],
-        service.sleeps)
+    self.assertAttempts(2, net.URL_OPEN_TIMEOUT)
 
   def test_request_failure_max_attempts_default(self):
-    def mock_url_open(_request, **_kwargs):
-      raise urllib2.URLError('url')
-    service = self.mocked_http_service(_url_open=mock_url_open)
+    def mock_perform_request(_request):
+      raise net.ConnectionError()
+    service = self.mocked_http_service(perform_request=mock_perform_request)
     self.assertEqual(service.request('/'), None)
-    retries = [
-      (i, net.URL_OPEN_TIMEOUT - NOW_CALLS_PER_OPEN * (i + 1))
-      for i in xrange(net.URL_OPEN_MAX_ATTEMPTS)
-    ]
-    self.assertEqual(retries, service.sleeps)
+    self.assertAttempts(net.URL_OPEN_MAX_ATTEMPTS, net.URL_OPEN_TIMEOUT)
 
   def test_request_failure_max_attempts(self):
-    def mock_url_open(_request, **_kwargs):
-      raise urllib2.URLError('url')
-    service = self.mocked_http_service(_url_open=mock_url_open)
+    def mock_perform_request(_request):
+      raise net.ConnectionError()
+    service = self.mocked_http_service(perform_request=mock_perform_request)
     self.assertEqual(service.request('/', max_attempts=23), None)
-    retries = [
-      (i, net.URL_OPEN_TIMEOUT - NOW_CALLS_PER_OPEN * (i + 1))
-      for i in xrange(23)
-    ]
-    self.assertEqual(retries, service.sleeps)
+    self.assertAttempts(23, net.URL_OPEN_TIMEOUT)
 
   def test_request_failure_timeout(self):
-    def mock_url_open(_request, **_kwargs):
-      raise urllib2.URLError('url')
-    service = self.mocked_http_service(_url_open=mock_url_open)
+    def mock_perform_request(_request):
+      raise net.ConnectionError()
+    service = self.mocked_http_service(perform_request=mock_perform_request)
     self.assertEqual(service.request('/', max_attempts=10000), None)
-    retries = [
-      (i, net.URL_OPEN_TIMEOUT - NOW_CALLS_PER_OPEN * (i + 1))
-      # Currently 179 for timeout == 360.
-      for i in xrange(
-          int(net.URL_OPEN_TIMEOUT) / NOW_CALLS_PER_OPEN - 1)
-    ]
-    self.assertEqual(retries, service.sleeps)
+    self.assertAttempts(int(net.URL_OPEN_TIMEOUT) + 1, net.URL_OPEN_TIMEOUT)
 
   def test_request_failure_timeout_default(self):
-    def mock_url_open(_request, **_kwargs):
-      raise urllib2.URLError('url')
-    service = self.mocked_http_service(_url_open=mock_url_open)
+    def mock_perform_request(_request):
+      raise net.ConnectionError()
+    service = self.mocked_http_service(perform_request=mock_perform_request)
     self.assertEqual(service.request('/', timeout=10.), None)
-    retries = [(i, 8. - (NOW_CALLS_PER_OPEN * i)) for i in xrange(4)]
-    self.assertEqual(retries, service.sleeps)
+    self.assertAttempts(11, 10.0)
 
   def test_request_HTTP_error_no_retry(self):
     count = []
-    def mock_url_open(request, **_kwargs):
+    def mock_perform_request(request):
       count.append(request)
-      raise urllib2.HTTPError(
-          'url', 400, 'error message', None, StringIO.StringIO())
+      raise net.HttpError(400)
 
-    service = self.mocked_http_service(_url_open=mock_url_open)
+    service = self.mocked_http_service(perform_request=mock_perform_request)
     self.assertEqual(service.request('/', data={}), None)
     self.assertEqual(1, len(count))
-    self.assertEqual([], service.sleeps)
+    self.assertAttempts(1, net.URL_OPEN_TIMEOUT)
 
   def test_request_HTTP_error_retry_404(self):
     response = 'data'
-    def mock_url_open(request, **_kwargs):
-      if net.COUNT_KEY + '=1' in request.get_data():
-        return StringIO.StringIO(response)
-      raise urllib2.HTTPError(
-          'url', 404, 'error message', None, StringIO.StringIO())
 
-    service = self.mocked_http_service(_url_open=mock_url_open)
+    def mock_perform_request(request):
+      params = dict(request.params)
+      if params.get(net.COUNT_KEY) == 1:
+        return request.make_fake_response(response)
+      raise net.HttpError(404)
+
+    service = self.mocked_http_service(perform_request=mock_perform_request)
     result = service.request('/', data={}, retry_404=True)
     self.assertEqual(result.read(), response)
-    self.assertEqual(
-        [(0, net.URL_OPEN_TIMEOUT - NOW_CALLS_PER_OPEN)],
-        service.sleeps)
+    self.assertAttempts(2, net.URL_OPEN_TIMEOUT)
 
   def test_request_HTTP_error_with_retry(self):
     response = 'response'
 
-    def mock_url_open(request, **_kwargs):
-      if net.COUNT_KEY + '=1' not in request.get_data():
-        raise urllib2.HTTPError(
-            'url', 500, 'error message', None, StringIO.StringIO())
-      return StringIO.StringIO(response)
+    def mock_perform_request(request):
+      params = dict(request.params)
+      if params.get(net.COUNT_KEY) != 1:
+        raise net.HttpError(500)
+      return request.make_fake_response(response)
 
-    service = self.mocked_http_service(_url_open=mock_url_open)
+    service = self.mocked_http_service(perform_request=mock_perform_request)
     self.assertTrue(service.request('/', data={}).read(), response)
-    self.assertEqual(
-        [(0, net.URL_OPEN_TIMEOUT - NOW_CALLS_PER_OPEN)],
-        service.sleeps)
-
-  def test_count_key_in_data_failure(self):
-    data = {net.COUNT_KEY: 1}
-    service = self.mocked_http_service()
-    self.assertEqual(service.request('/', data=data), None)
-    self.assertEqual([], service.sleeps)
+    self.assertAttempts(2, net.URL_OPEN_TIMEOUT)
 
   def test_auth_success(self):
     count = []
     response = 'response'
-    def mock_url_open(_request, **_kwargs):
+
+    def mock_perform_request(request):
       if not count:
-        raise urllib2.HTTPError(
-          'url', 403, 'error message', None, StringIO.StringIO())
-      return StringIO.StringIO(response)
+        raise net.HttpError(403)
+      return request.make_fake_response(response)
+
     def mock_authenticate():
       self.assertEqual(len(count), 0)
       count.append(1)
       return True
-    service = self.mocked_http_service(_url_open=mock_url_open,
-                                       authenticate=mock_authenticate)
+
+    service = self.mocked_http_service(perform_request=mock_perform_request,
+        authenticate=mock_authenticate)
     self.assertEqual(service.request('/').read(), response)
     self.assertEqual(len(count), 1)
-    self.assertEqual([], service.sleeps)
+    self.assertAttempts(2, net.URL_OPEN_TIMEOUT)
+    self.assertSleeps(0)
 
   def test_auth_failure(self):
     count = []
-    def mock_url_open(_request, **_kwargs):
-      raise urllib2.HTTPError(
-          'url', 403, 'error message', None, StringIO.StringIO())
+
+    def mock_perform_request(_request):
+      raise net.HttpError(403)
+
     def mock_authenticate():
       count.append(1)
       return False
-    service = self.mocked_http_service(_url_open=mock_url_open,
-                                       authenticate=mock_authenticate)
+
+    service = self.mocked_http_service(perform_request=mock_perform_request,
+        authenticate=mock_authenticate)
     self.assertEqual(service.request('/'), None)
-    self.assertEqual(len(count), 1) # single attempt only
-    self.assertEqual([], service.sleeps)
+    self.assertEqual(len(count), 1)
+    self.assertAttempts(1, net.URL_OPEN_TIMEOUT)
 
   def test_request_attempted_before_auth(self):
     calls = []
-    def mock_url_open(_request, **_kwargs):
-      calls.append('url_open')
-      raise urllib2.HTTPError(
-          'url', 403, 'error message', None, StringIO.StringIO())
+
+    def mock_perform_request(_request):
+      calls.append('perform_request')
+      raise net.HttpError(403)
+
     def mock_authenticate():
       calls.append('authenticate')
       return False
-    service = self.mocked_http_service(_url_open=mock_url_open,
-                                       authenticate=mock_authenticate)
-    self.assertEqual(service.request('/'), None)
-    self.assertEqual(calls, ['url_open', 'authenticate'])
-    self.assertEqual([], service.sleeps)
 
-  def test_sleep_before_retry(self):
-    # Verifies bounds. Because it's using a pseudo-random number generator and
-    # not a read random source, it's basically guaranteed to never return the
-    # same value twice consecutively.
-    a = net.HttpService.calculate_sleep_before_retry(0, 0)
-    b = net.HttpService.calculate_sleep_before_retry(0, 0)
-    self.assertTrue(a >= math.pow(1.5, -1), a)
-    self.assertTrue(b >= math.pow(1.5, -1), b)
-    self.assertTrue(a < 1.5 + math.pow(1.5, -1), a)
-    self.assertTrue(b < 1.5 + math.pow(1.5, -1), b)
-    self.assertNotEqual(a, b)
+    service = self.mocked_http_service(perform_request=mock_perform_request,
+        authenticate=mock_authenticate)
+    self.assertEqual(service.request('/'), None)
+    self.assertEqual(calls, ['perform_request', 'authenticate'])
+    self.assertAttempts(1, net.URL_OPEN_TIMEOUT)
 
   def test_url_read(self):
     # Successfully reads the data.
@@ -259,8 +264,7 @@ class HttpServiceTest(auto_stub.TestCase):
     def timeouting_http_response(url):
       def read_mock(_size=None):
         raise net.TimeoutError()
-      response = net.HttpResponse(StringIO.StringIO(''),
-          url, {'content-length': 0})
+      response = net.HttpResponse.get_fake_response('', url)
       self.mock(response, 'read', read_mock)
       return response
 

@@ -10,7 +10,6 @@ import StringIO
 import sys
 import threading
 import unittest
-import urllib2
 
 import auto_stub
 
@@ -125,13 +124,8 @@ def gen_yielded_data(index, shard_output, exit_codes):
 
 
 def generate_url_response(index, shard_output, exit_codes):
-  url_response = urllib2.addinfourl(
-      StringIO.StringIO(json.dumps(gen_data(index, shard_output, exit_codes))),
-      'mock message',
-      'host')
-  url_response.code = 200
-  url_response.msg = 'OK'
-  return url_response
+  return net.HttpResponse.get_fake_response(
+      json.dumps(gen_data(index, shard_output, exit_codes)), 'mocked_url')
 
 
 def get_swarm_results(keys):
@@ -272,10 +266,7 @@ class TestGetSwarmResults(TestCase):
       t = threading.current_thread()
       with lock:
         return now.setdefault(t, range(12)).pop(0)
-    self.mock(
-        swarming.net.HttpService,
-        'sleep_before_retry',
-        staticmethod(lambda _x, _y: None))
+    self.mock(swarming.net, 'sleep_before_retry', lambda _x, _y: None)
     self.mock(swarming, 'now', get_now)
     # The actual number of requests here depends on 'now' progressing to 10
     # seconds. It's called twice per loop.

@@ -13,6 +13,8 @@ import threading
 import time
 import unittest
 
+import auto_stub
+
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
 
@@ -108,7 +110,7 @@ class SleepingHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       actions[action]()
 
 
-class UrlOpenTimeoutTest(unittest.TestCase):
+class UrlOpenTimeoutTest(auto_stub.TestCase):
   def setUp(self):
     super(UrlOpenTimeoutTest, self).setUp()
     self.server = SleepingServer()
@@ -136,12 +138,8 @@ class UrlOpenTimeoutTest(unittest.TestCase):
 
   def test_urlopen_retry(self):
     # This should trigger retry logic and eventually return None.
-    prev_sleep_before_retry = net.HttpService.sleep_before_retry
-    try:
-      net.HttpService.sleep_before_retry = lambda *_args: None
-      stream = self.call('sleep_before_response', 0.25, read_timeout=0.1)
-    finally:
-      net.HttpService.sleep_before_retry = prev_sleep_before_retry
+    self.mock(net, 'sleep_before_retry', lambda *_: None)
+    stream = self.call('sleep_before_response', 0.25, read_timeout=0.1)
     self.assertIsNone(stream)
 
   def test_urlopen_keeping_connection(self):

@@ -8,7 +8,6 @@ import random
 import hashlib
 import logging
 import os
-import StringIO
 import sys
 import threading
 import unittest
@@ -21,11 +20,14 @@ sys.path.insert(0, ROOT_DIR)
 import auto_stub
 import isolateserver
 
+from utils import net
+
 
 class IsolateServerTest(auto_stub.TestCase):
   def setUp(self):
     super(IsolateServerTest, self).setUp()
     self.mock(isolateserver.net, 'url_open', self._url_open)
+    self.mock(isolateserver.net, 'sleep_before_retry', lambda *_: None)
     self.mock(isolateserver, 'randomness', lambda: 'not_really_random')
     self._lock = threading.Lock()
     self._requests = []
@@ -45,7 +47,9 @@ class IsolateServerTest(auto_stub.TestCase):
         if n[0] == url:
           _, expected_kwargs, result = self._requests.pop(i)
           self.assertEqual(expected_kwargs, kwargs)
-          return result
+          if result is not None:
+            return net.HttpResponse.get_fake_response(result, url)
+          return None
     self.fail('Unknown request %s' % url)
 
   def test_present(self):
@@ -57,11 +61,11 @@ class IsolateServerTest(auto_stub.TestCase):
         binascii.unhexlify(isolateserver.sha1_file(f)) for f in files)
     path = 'http://random/'
     self._requests = [
-      (path + 'content/get_token', {}, StringIO.StringIO('foo bar')),
+      (path + 'content/get_token', {}, 'foo bar'),
       (
         path + 'content/contains/default-gzip?token=foo%20bar',
         {'data': sha1encoded, 'content_type': 'application/octet-stream'},
-        StringIO.StringIO('\1\1'),
+        '\1\1',
       ),
     ]
     result = isolateserver.main(['archive', '--isolate-server', path] + files)
@@ -82,21 +86,21 @@ class IsolateServerTest(auto_stub.TestCase):
     ]
     path = 'http://random/'
     self._requests = [
-      (path + 'content/get_token', {}, StringIO.StringIO('foo bar')),
+      (path + 'content/get_token', {}, 'foo bar'),
       (
         path + 'content/contains/default-gzip?token=foo%20bar',
         {'data': sha1encoded, 'content_type': 'application/octet-stream'},
-        StringIO.StringIO('\0\0'),
+        '\0\0',
       ),
       (
         path + 'content/store/default-gzip/%s?token=foo%%20bar' % sha1s[0],
         {'data': compressed[0], 'content_type': 'application/octet-stream'},
-        StringIO.StringIO('ok'),
+        'ok',
       ),
       (
         path + 'content/store/default-gzip/%s?token=foo%%20bar' % sha1s[1],
         {'data': compressed[1], 'content_type': 'application/octet-stream'},
-        StringIO.StringIO('ok'),
+        'ok',
       ),
     ]
     result = isolateserver.main(['archive', '--isolate-server', path] + files)
@@ -126,21 +130,21 @@ class IsolateServerTest(auto_stub.TestCase):
                 [('token', 'foo bar')], [('content', s, compressed)])
 
     self._requests = [
-      (path + 'content/get_token', {}, StringIO.StringIO('foo bar')),
+      (path + 'content/get_token', {}, 'foo bar'),
       (
         path + 'content/contains/default-gzip?token=foo%20bar',
         {'data': sha1encoded, 'content_type': 'application/octet-stream'},
-        StringIO.StringIO('\0'),
+        '\0',
       ),
       (
         path + 'content/generate_blobstore_url/default-gzip/%s' % s,
         {'data': [('token', 'foo bar')]},
-        StringIO.StringIO('an_url/'),
+        'an_url/',
       ),
       (
         'an_url/',
         {'data': body, 'content_type': content_type, 'retry_50x': False},
-        StringIO.StringIO('ok'),
+        'ok',
       ),
     ]
 
@@ -206,12 +210,12 @@ class IsolateServerTest(auto_stub.TestCase):
       (
         path + 'gen_url?foo#bar',
         {'data': data[:]},
-        StringIO.StringIO('an_url/'),
+        'an_url/',
       ),
       (
         'an_url/',
         {'data': body, 'content_type': content_type, 'retry_50x': False},
-        StringIO.StringIO('ok42'),
+        'ok42',
       ),
     ]
     result = isolateserver.upload_hash_content_to_blobstore(
@@ -229,7 +233,7 @@ class IsolateServerTest(auto_stub.TestCase):
       (
         path + 'gen_url?foo#bar',
         {'data': data[:]},
-        StringIO.StringIO('an_url/'),
+        'an_url/',
       ),
       (
         'an_url/',
@@ -242,12 +246,12 @@ class IsolateServerTest(auto_stub.TestCase):
       (
         path + 'gen_url?foo#bar',
         {'data': data[:]},
-        StringIO.StringIO('an_url/'),
+        'an_url/',
       ),
       (
         'an_url/',
         {'data': body, 'content_type': content_type, 'retry_50x': False},
-        StringIO.StringIO('ok42'),
+        'ok42',
       ),
     ]
     result = isolateserver.upload_hash_content_to_blobstore(

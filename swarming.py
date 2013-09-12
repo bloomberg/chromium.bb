@@ -213,20 +213,17 @@ def get_test_keys(swarm_base_url, test_name):
   key_data = urllib.urlencode([('name', test_name)])
   url = '%s/get_matching_test_cases?%s' % (swarm_base_url, key_data)
 
-  for i in range(net.URL_OPEN_MAX_ATTEMPTS):
-    response = net.url_open(url, retry_404=True)
-    if response is None:
+  for _ in net.retry_loop(max_attempts=net.URL_OPEN_MAX_ATTEMPTS):
+    result = net.url_read(url, retry_404=True)
+    if result is None:
       raise Failure(
           'Error: Unable to find any tests with the name, %s, on swarm server'
           % test_name)
 
-    result = response.read()
     # TODO(maruel): Compare exact string.
     if 'No matching' in result:
       logging.warning('Unable to find any tests with the name, %s, on swarm '
                       'server' % test_name)
-      if i != net.URL_OPEN_MAX_ATTEMPTS:
-        net.HttpService.sleep_before_retry(i, None)
       continue
     return json.loads(result)
 
@@ -246,16 +243,16 @@ def retrieve_results(base_url, test_key, timeout, should_stop):
       logging.error('retrieve_results(%s) timed out', base_url)
       return {}
     # Do retries ourselves.
-    response = net.url_open(result_url, retry_404=False, retry_50x=False)
+    response = net.url_read(result_url, retry_404=False, retry_50x=False)
     if response is None:
       # Aggressively poll for results. Do not use retry_404 so
       # should_stop is polled more often.
       remaining = min(5, timeout - (now() - start)) if timeout else 5
       if remaining > 0:
-        net.HttpService.sleep_before_retry(1, remaining)
+        net.sleep_before_retry(1, remaining)
     else:
       try:
-        data = json.load(response) or {}
+        data = json.loads(response) or {}
       except (ValueError, TypeError):
         logging.warning(
             'Received corrupted data for test_key %s. Retrying.', test_key)
