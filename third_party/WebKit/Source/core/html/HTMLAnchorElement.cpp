@@ -163,6 +163,9 @@ bool HTMLAnchorElement::isMouseFocusable() const
 
 bool HTMLAnchorElement::isKeyboardFocusable() const
 {
+    if (isFocusable() && Element::supportsFocus())
+        return HTMLElement::isKeyboardFocusable();
+
     if (isLink()) {
         Page* page = document().page();
         if (!page)
