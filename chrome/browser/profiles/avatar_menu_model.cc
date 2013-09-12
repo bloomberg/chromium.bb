@@ -268,9 +268,17 @@ bool AvatarMenuModel::ShouldShowAvatarMenu() {
     return true;
   }
   if (profiles::IsMultipleProfilesEnabled()) {
+#if defined(OS_CHROMEOS)
+    // On ChromeOS we can always show this menu.
+    // TODO(skuhne):  For now show this menu even if there is a single profile.
+    // This will have to change once we work out the right way to determine if
+    // the multi profile UX should be displayed.
+    return true;
+#else
     return profiles::IsNewProfileManagementEnabled() ||
            (g_browser_process->profile_manager() &&
             g_browser_process->profile_manager()->GetNumberOfProfiles() > 1);
+#endif
   }
   return false;
 }
