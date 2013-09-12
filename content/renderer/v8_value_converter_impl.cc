@@ -17,8 +17,11 @@
 namespace content {
 
 namespace {
-const int kMaxRecursionDepth = 10;
-}
+
+// For the sake of the storage API, make this quite large.
+const int kMaxRecursionDepth = 100;
+
+}  // namespace
 
 // The state of a call to FromV8Value.
 class V8ValueConverterImpl::FromV8ValueState {

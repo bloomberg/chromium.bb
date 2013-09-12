@@ -634,7 +634,7 @@ TEST_F(V8ValueConverterImplTest, MaxRecursionDepth) {
       v8::Local<v8::Context>::New(isolate_, context_);
 
   // Must larger than kMaxRecursionDepth in v8_value_converter_impl.cc.
-  int kDepth = 100;
+  int kDepth = 1000;
   const char kKey[] = "key";
 
   v8::Local<v8::Object> deep_object = v8::Object::New();
@@ -651,7 +651,7 @@ TEST_F(V8ValueConverterImplTest, MaxRecursionDepth) {
   ASSERT_TRUE(value);
 
   // Expected depth is kMaxRecursionDepth in v8_value_converter_impl.cc.
-  int kExpectedDepth = 10;
+  int kExpectedDepth = 100;
 
   base::Value* current = value.get();
   for (int i = 1; i < kExpectedDepth; ++i) {
