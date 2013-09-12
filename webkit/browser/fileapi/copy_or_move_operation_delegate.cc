@@ -37,11 +37,14 @@ class CopyOrMoveOnSameFileSystemImpl
       FileSystemOperationRunner* operation_runner,
       CopyOrMoveOperationDelegate::OperationType operation_type,
       const FileSystemURL& src_url,
-      const FileSystemURL& dest_url)
+      const FileSystemURL& dest_url,
+      const FileSystemOperation::CopyFileProgressCallback&
+          file_progress_callback)
       : operation_runner_(operation_runner),
         operation_type_(operation_type),
         src_url_(src_url),
-        dest_url_(dest_url) {
+        dest_url_(dest_url),
+        file_progress_callback_(file_progress_callback) {
   }
 
   virtual void Run(
@@ -49,10 +52,8 @@ class CopyOrMoveOnSameFileSystemImpl
     if (operation_type_ == CopyOrMoveOperationDelegate::OPERATION_MOVE) {
       operation_runner_->MoveFileLocal(src_url_, dest_url_, callback);
     } else {
-      // TODO(hidehiko): Support progress callback.
       operation_runner_->CopyFileLocal(
-          src_url_, dest_url_,
-          FileSystemOperationRunner::CopyFileProgressCallback(), callback);
+          src_url_, dest_url_, file_progress_callback_, callback);
     }
   }
 
@@ -61,6 +62,7 @@ class CopyOrMoveOnSameFileSystemImpl
   CopyOrMoveOperationDelegate::OperationType operation_type_;
   FileSystemURL src_url_;
   FileSystemURL dest_url_;
+  FileSystemOperation::CopyFileProgressCallback file_progress_callback_;
   DISALLOW_COPY_AND_ASSIGN(CopyOrMoveOnSameFileSystemImpl);
 };
 
@@ -76,17 +78,21 @@ class SnapshotCopyOrMoveImpl
       CopyOrMoveOperationDelegate::OperationType operation_type,
       const FileSystemURL& src_url,
       const FileSystemURL& dest_url,
-      CopyOrMoveFileValidatorFactory* validator_factory)
+      CopyOrMoveFileValidatorFactory* validator_factory,
+      const FileSystemOperation::CopyFileProgressCallback&
+          file_progress_callback)
       : operation_runner_(operation_runner),
         operation_type_(operation_type),
         src_url_(src_url),
         dest_url_(dest_url),
         validator_factory_(validator_factory),
+        file_progress_callback_(file_progress_callback),
         weak_factory_(this) {
   }
 
   virtual void Run(
       const CopyOrMoveOperationDelegate::StatusCallback& callback) OVERRIDE {
+    file_progress_callback_.Run(0);
     operation_runner_->CreateSnapshotFile(
         src_url_,
         base::Bind(&SnapshotCopyOrMoveImpl::RunAfterCreateSnapshot,
@@ -111,8 +117,8 @@ class SnapshotCopyOrMoveImpl
 
     if (!validator_factory_) {
       // No validation is needed.
-      RunAfterPreWriteValidation(
-          platform_path, file_ref, callback, base::PLATFORM_FILE_OK);
+      RunAfterPreWriteValidation(platform_path, file_info, file_ref, callback,
+                                 base::PLATFORM_FILE_OK);
       return;
     }
 
@@ -121,11 +127,12 @@ class SnapshotCopyOrMoveImpl
         platform_path,
         base::Bind(&SnapshotCopyOrMoveImpl::RunAfterPreWriteValidation,
                    weak_factory_.GetWeakPtr(),
-                   platform_path, file_ref, callback));
+                   platform_path, file_info, file_ref, callback));
   }
 
   void RunAfterPreWriteValidation(
       const base::FilePath& platform_path,
+      const base::PlatformFileInfo& file_info,
       const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref,
       const CopyOrMoveOperationDelegate::StatusCallback& callback,
       base::PlatformFileError error) {
@@ -139,10 +146,11 @@ class SnapshotCopyOrMoveImpl
     operation_runner_->CopyInForeignFile(
         platform_path, dest_url_,
         base::Bind(&SnapshotCopyOrMoveImpl::RunAfterCopyInForeignFile,
-                   weak_factory_.GetWeakPtr(), file_ref, callback));
+                   weak_factory_.GetWeakPtr(), file_info, file_ref, callback));
   }
 
   void RunAfterCopyInForeignFile(
+      const base::PlatformFileInfo& file_info,
       const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref,
       const CopyOrMoveOperationDelegate::StatusCallback& callback,
       base::PlatformFileError error) {
@@ -150,6 +158,8 @@ class SnapshotCopyOrMoveImpl
       callback.Run(error);
       return;
     }
+
+    file_progress_callback_.Run(file_info.size);
 
     // |validator_| is NULL when the destination filesystem does not do
     // validation.
@@ -265,6 +275,7 @@ class SnapshotCopyOrMoveImpl
   FileSystemURL dest_url_;
   CopyOrMoveFileValidatorFactory* validator_factory_;
   scoped_ptr<CopyOrMoveFileValidator> validator_;
+  FileSystemOperation::CopyFileProgressCallback file_progress_callback_;
 
   base::WeakPtrFactory<SnapshotCopyOrMoveImpl> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(SnapshotCopyOrMoveImpl);
@@ -278,11 +289,13 @@ CopyOrMoveOperationDelegate::CopyOrMoveOperationDelegate(
     const FileSystemURL& src_root,
     const FileSystemURL& dest_root,
     OperationType operation_type,
+    const CopyProgressCallback& progress_callback,
     const StatusCallback& callback)
     : RecursiveOperationDelegate(file_system_context),
       src_root_(src_root),
       dest_root_(dest_root),
       operation_type_(operation_type),
+      progress_callback_(progress_callback),
       callback_(callback),
       weak_factory_(this) {
   same_file_system_ = src_root_.IsInSameFileSystem(dest_root_);
@@ -312,33 +325,57 @@ void CopyOrMoveOperationDelegate::RunRecursively() {
     return;
   }
 
+  if (!progress_callback_.is_null()) {
+    progress_callback_.Run(
+        FileSystemOperation::BEGIN_COPY_ENTRY, src_root_, 0);
+  }
+
   // First try to copy/move it as a file.
   CopyOrMoveFile(src_root_, dest_root_,
                  base::Bind(&CopyOrMoveOperationDelegate::DidTryCopyOrMoveFile,
                             weak_factory_.GetWeakPtr()));
 }
 
-void CopyOrMoveOperationDelegate::ProcessFile(const FileSystemURL& src_url,
-                                         const StatusCallback& callback) {
-  CopyOrMoveFile(src_url, CreateDestURL(src_url), callback);
+void CopyOrMoveOperationDelegate::ProcessFile(
+    const FileSystemURL& src_url,
+    const StatusCallback& callback) {
+  if (!progress_callback_.is_null())
+    progress_callback_.Run(FileSystemOperation::BEGIN_COPY_ENTRY, src_url, 0);
+
+  CopyOrMoveFile(src_url, CreateDestURL(src_url),
+                 base::Bind(&CopyOrMoveOperationDelegate::DidCopyEntry,
+                            weak_factory_.GetWeakPtr(), src_url, callback));
 }
 
-void CopyOrMoveOperationDelegate::ProcessDirectory(const FileSystemURL& src_url,
-                                              const StatusCallback& callback) {
+void CopyOrMoveOperationDelegate::ProcessDirectory(
+    const FileSystemURL& src_url,
+    const StatusCallback& callback) {
   FileSystemURL dest_url = CreateDestURL(src_url);
+
+  if (!progress_callback_.is_null() && src_url != src_root_) {
+    // We do not invoke |progress_callback_| for source root, because it is
+    // already called in RunRecursively().
+    progress_callback_.Run(FileSystemOperation::BEGIN_COPY_ENTRY, src_url, 0);
+  }
 
   // If operation_type == Move we may need to record directories and
   // restore directory timestamps in the end, though it may have
   // negative performance impact.
   // See http://crbug.com/171284 for more details.
   operation_runner()->CreateDirectory(
-      dest_url, false /* exclusive */, false /* recursive */, callback);
+      dest_url, false /* exclusive */, false /* recursive */,
+      base::Bind(&CopyOrMoveOperationDelegate::DidCopyEntry,
+                 weak_factory_.GetWeakPtr(), src_url, callback));
 }
 
 void CopyOrMoveOperationDelegate::DidTryCopyOrMoveFile(
     base::PlatformFileError error) {
-  if (error == base::PLATFORM_FILE_OK ||
-      error != base::PLATFORM_FILE_ERROR_NOT_A_FILE) {
+  if (error != base::PLATFORM_FILE_ERROR_NOT_A_FILE) {
+    if (error == base::PLATFORM_FILE_OK && !progress_callback_.is_null()) {
+      progress_callback_.Run(
+          FileSystemOperation::END_COPY_ENTRY, src_root_, 0);
+    }
+
     callback_.Run(error);
     return;
   }
@@ -408,7 +445,9 @@ void CopyOrMoveOperationDelegate::CopyOrMoveFile(
   CopyOrMoveImpl* impl = NULL;
   if (same_file_system_) {
     impl = new CopyOrMoveOnSameFileSystemImpl(
-        operation_runner(), operation_type_, src_url, dest_url);
+        operation_runner(), operation_type_, src_url, dest_url,
+        base::Bind(&CopyOrMoveOperationDelegate::OnCopyFileProgress,
+                   weak_factory_.GetWeakPtr(), src_url));
   } else {
     // Cross filesystem case.
     // TODO(hidehiko): Support stream based copy. crbug.com/279287.
@@ -423,13 +462,25 @@ void CopyOrMoveOperationDelegate::CopyOrMoveFile(
 
     impl = new SnapshotCopyOrMoveImpl(
         operation_runner(), operation_type_, src_url, dest_url,
-        validator_factory);
+        validator_factory,
+        base::Bind(&CopyOrMoveOperationDelegate::OnCopyFileProgress,
+                   weak_factory_.GetWeakPtr(), src_url));
   }
 
   // Register the running task.
   running_copy_set_.insert(impl);
   impl->Run(base::Bind(&CopyOrMoveOperationDelegate::DidCopyOrMoveFile,
                        weak_factory_.GetWeakPtr(), impl, callback));
+}
+
+void CopyOrMoveOperationDelegate::DidCopyEntry(
+    const FileSystemURL& src_url,
+    const StatusCallback& callback,
+    base::PlatformFileError error) {
+  if (!progress_callback_.is_null() && error == base::PLATFORM_FILE_OK)
+    progress_callback_.Run(FileSystemOperation::END_COPY_ENTRY, src_url, 0);
+
+  callback.Run(error);
 }
 
 void CopyOrMoveOperationDelegate::DidCopyOrMoveFile(
@@ -439,6 +490,12 @@ void CopyOrMoveOperationDelegate::DidCopyOrMoveFile(
   running_copy_set_.erase(impl);
   delete impl;
   callback.Run(error);
+}
+
+void CopyOrMoveOperationDelegate::OnCopyFileProgress(
+    const FileSystemURL& src_url, int64 size) {
+  if (!progress_callback_.is_null())
+    progress_callback_.Run(FileSystemOperation::PROGRESS, src_url, size);
 }
 
 FileSystemURL CopyOrMoveOperationDelegate::CreateDestURL(

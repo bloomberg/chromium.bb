@@ -80,6 +80,7 @@ void FileSystemOperationImpl::Copy(
           file_system_context(),
           src_url, dest_url,
           CopyOrMoveOperationDelegate::OPERATION_COPY,
+          progress_callback,
           base::Bind(&FileSystemOperationImpl::DidFinishOperation,
                      weak_factory_.GetWeakPtr(), callback)));
   recursive_operation_delegate_->RunRecursively();
@@ -95,6 +96,7 @@ void FileSystemOperationImpl::Move(const FileSystemURL& src_url,
           file_system_context(),
           src_url, dest_url,
           CopyOrMoveOperationDelegate::OPERATION_MOVE,
+          FileSystemOperation::CopyProgressCallback(),
           base::Bind(&FileSystemOperationImpl::DidFinishOperation,
                      weak_factory_.GetWeakPtr(), callback)));
   recursive_operation_delegate_->RunRecursively();
@@ -284,7 +286,6 @@ void FileSystemOperationImpl::CopyFileLocal(
   DCHECK(SetPendingOperationType(kOperationCopy));
   DCHECK(src_url.IsInSameFileSystem(dest_url));
 
-  // TODO(hidehiko): Support progress_callback.
   GetUsageAndQuotaThenRunTask(
       dest_url,
       base::Bind(&FileSystemOperationImpl::DoCopyFileLocal,

@@ -24,6 +24,7 @@ class CopyOrMoveOperationDelegate
     : public RecursiveOperationDelegate {
  public:
   class CopyOrMoveImpl;
+  typedef FileSystemOperation::CopyProgressCallback CopyProgressCallback;
 
   enum OperationType {
     OPERATION_COPY,
@@ -35,6 +36,7 @@ class CopyOrMoveOperationDelegate
       const FileSystemURL& src_root,
       const FileSystemURL& dest_root,
       OperationType operation_type,
+      const CopyProgressCallback& progress_callback,
       const StatusCallback& callback);
   virtual ~CopyOrMoveOperationDelegate();
 
@@ -55,6 +57,11 @@ class CopyOrMoveOperationDelegate
   void DidRemoveSourceForMove(const StatusCallback& callback,
                               base::PlatformFileError error);
 
+  void DidCopyEntry(const FileSystemURL& src_url,
+                    const StatusCallback& callback,
+                    base::PlatformFileError error);
+  void OnCopyFileProgress(const FileSystemURL& src_url, int64 size);
+
   // Starts Copy (or Move based on |operation_type_|) from |src_url| to
   // |dest_url|. Upon completion |callback| is invoked.
   // This can be run for multiple files in parallel.
@@ -71,6 +78,7 @@ class CopyOrMoveOperationDelegate
   FileSystemURL dest_root_;
   bool same_file_system_;
   OperationType operation_type_;
+  CopyProgressCallback progress_callback_;
   StatusCallback callback_;
 
   std::set<CopyOrMoveImpl*> running_copy_set_;

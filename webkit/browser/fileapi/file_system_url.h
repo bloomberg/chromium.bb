@@ -130,6 +130,10 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemURL {
 
   bool operator==(const FileSystemURL& that) const;
 
+  bool operator!=(const FileSystemURL& that) const {
+    return !(*this == that);
+  }
+
   struct WEBKIT_STORAGE_BROWSER_EXPORT Comparator {
     bool operator() (const FileSystemURL& lhs, const FileSystemURL& rhs) const;
   };
