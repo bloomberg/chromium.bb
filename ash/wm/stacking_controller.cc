@@ -25,7 +25,7 @@ namespace {
 // return the active root window.
 aura::RootWindow* FindContainerRoot(const gfx::Rect& bounds) {
   if (bounds.x() == 0 && bounds.y() == 0 && bounds.IsEmpty())
-    return Shell::GetActiveRootWindow();
+    return Shell::GetTargetRootWindow();
   return wm::GetRootWindowMatching(bounds);
 }
 

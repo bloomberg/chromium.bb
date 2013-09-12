@@ -592,7 +592,7 @@ bool AcceleratorController::PerformAction(int action,
       return true;
     case TOUCH_HUD_CLEAR: {
       internal::RootWindowController* controller =
-          internal::RootWindowController::ForActiveRootWindow();
+          internal::RootWindowController::ForTargetRootWindow();
       if (controller->touch_hud_debug()) {
         controller->touch_hud_debug()->Clear();
         return true;
@@ -601,7 +601,7 @@ bool AcceleratorController::PerformAction(int action,
     }
     case TOUCH_HUD_MODE_CHANGE: {
       internal::RootWindowController* controller =
-          internal::RootWindowController::ForActiveRootWindow();
+          internal::RootWindowController::ForTargetRootWindow();
       if (controller->touch_hud_debug()) {
         controller->touch_hud_debug()->ChangeToNextMode();
         return true;
@@ -743,7 +743,7 @@ bool AcceleratorController::PerformAction(int action,
       break;
     case SHOW_SYSTEM_TRAY_BUBBLE: {
       internal::RootWindowController* controller =
-          internal::RootWindowController::ForActiveRootWindow();
+          internal::RootWindowController::ForTargetRootWindow();
       if (!controller->GetSystemTray()->HasSystemBubble()) {
         controller->GetSystemTray()->ShowDefaultView(BUBBLE_CREATE_NEW);
         return true;
@@ -752,7 +752,7 @@ bool AcceleratorController::PerformAction(int action,
     }
     case SHOW_MESSAGE_CENTER_BUBBLE: {
       internal::RootWindowController* controller =
-          internal::RootWindowController::ForActiveRootWindow();
+          internal::RootWindowController::ForTargetRootWindow();
       internal::StatusAreaWidget* status_area_widget =
           controller->shelf()->status_area_widget();
       if (status_area_widget) {

@@ -92,7 +92,7 @@ class WindowSelectorTest : public test::AshTestBase {
 
   aura::Window* GetFocusedWindow() {
     return aura::client::GetFocusClient(
-        Shell::GetActiveRootWindow())->GetFocusedWindow();
+        Shell::GetPrimaryRootWindow())->GetFocusedWindow();
   }
 
  private:

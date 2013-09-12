@@ -385,7 +385,7 @@ aura::RootWindow* Shell::GetPrimaryRootWindow() {
 }
 
 // static
-aura::RootWindow* Shell::GetActiveRootWindow() {
+aura::RootWindow* Shell::GetTargetRootWindow() {
   Shell* shell = GetInstance();
   if (shell->scoped_target_root_window_)
     return shell->scoped_target_root_window_;
@@ -656,9 +656,9 @@ void Shell::ShowContextMenu(const gfx::Point& location_in_screen,
 }
 
 void Shell::ToggleAppList(aura::Window* window) {
-  // If the context window is not given, show it on the active root window.
+  // If the context window is not given, show it on the target root window.
   if (!window)
-    window = GetActiveRootWindow();
+    window = GetTargetRootWindow();
   if (!app_list_controller_)
     app_list_controller_.reset(new internal::AppListController);
   app_list_controller_->SetVisible(!app_list_controller_->IsVisible(), window);

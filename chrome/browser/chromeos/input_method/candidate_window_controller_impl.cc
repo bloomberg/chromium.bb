@@ -53,7 +53,7 @@ void CandidateWindowControllerImpl::CreateView() {
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   // Show the candidate window always on top
   params.parent = ash::Shell::GetContainer(
-      ash::Shell::GetActiveRootWindow(),
+      ash::Shell::GetTargetRootWindow(),
       ash::internal::kShellWindowId_InputMethodContainer);
   frame_->Init(params);
 

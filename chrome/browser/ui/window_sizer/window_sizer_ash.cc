@@ -106,14 +106,14 @@ void WindowSizer::GetTabbedBrowserBoundsAsh(
     GetDefaultWindowBoundsAsh(bounds_in_screen);
   }
 
-  aura::RootWindow* active = ash::Shell::GetActiveRootWindow();
+  aura::RootWindow* target = ash::Shell::GetTargetRootWindow();
   // Always open new window in the active display.
   gfx::Rect work_area =
-      screen_->GetDisplayMatching(active->GetBoundsInScreen()).work_area();
+      screen_->GetDisplayMatching(target->GetBoundsInScreen()).work_area();
 
   // This is a window / app. See if there is no window and try to place it.
   int count = GetNumberOfValidTopLevelBrowserWindows(work_area);
-  aura::Window* top_window = ash::GetTopWindowForNewWindow(active);
+  aura::Window* top_window = ash::GetTopWindowForNewWindow(target);
   // Our window should not have any impact if we are already on top.
   if (browser_->window() &&
       top_window == browser_->window()->GetNativeWindow())

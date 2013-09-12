@@ -7,7 +7,9 @@
 #include "ash/root_window_controller.h"
 
 bool IsFullScreenMode() {
+  // TODO(oshima): Fullscreen is per display state. Investigate
+  // and fix if necessary.
   ash::internal::RootWindowController* controller =
-      ash::internal::RootWindowController::ForActiveRootWindow();
+      ash::internal::RootWindowController::ForTargetRootWindow();
   return controller && controller->GetTopmostFullscreenWindow();
 }

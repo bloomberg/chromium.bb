@@ -24,8 +24,7 @@ bool DoesFullscreenModeBlockNotifications() {
 #if defined(USE_ASH)
   if (ash::Shell::HasInstance()) {
     ash::internal::RootWindowController* controller =
-        ash::internal::RootWindowController::ForWindow(
-            ash::Shell::GetActiveRootWindow());
+        ash::internal::RootWindowController::ForTargetRootWindow();
     const aura::Window* fullscreen_window =
         controller->GetTopmostFullscreenWindow();
 

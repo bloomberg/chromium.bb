@@ -236,14 +236,14 @@ void WindowSelector::OnAttemptToReactivateWindow(aura::Window* request_active,
 void WindowSelector::StartOverview() {
   DCHECK(!window_overview_);
   window_overview_.reset(new WindowOverview(this, &windows_,
-      mode_ == CYCLE ? Shell::GetActiveRootWindow() : NULL));
+      mode_ == CYCLE ? Shell::GetTargetRootWindow() : NULL));
   if (mode_ == CYCLE)
     window_overview_->SetSelection(selected_window_);
 }
 
 void WindowSelector::RemoveFocusAndSetRestoreWindow() {
   aura::client::FocusClient* focus_client = aura::client::GetFocusClient(
-      Shell::GetActiveRootWindow());
+      Shell::GetPrimaryRootWindow());
   DCHECK(!restore_focus_window_);
   restore_focus_window_ = focus_client->GetFocusedWindow();
   if (restore_focus_window_) {

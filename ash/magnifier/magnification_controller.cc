@@ -456,14 +456,14 @@ void MagnificationControllerImpl::OnWindowDestroying(
     // destroyed before the root windows get destroyed.
     DCHECK(root_window);
 
-    aura::RootWindow* active_root_window = Shell::GetActiveRootWindow();
-    CHECK(active_root_window);
+    aura::RootWindow* target_root_window = Shell::GetTargetRootWindow();
+    CHECK(target_root_window);
 
-    // The destroyed root window must not be active.
-    CHECK_NE(active_root_window, root_window);
+    // The destroyed root window must not be target.
+    CHECK_NE(target_root_window, root_window);
     // Don't redraw the old root window as it's being destroyed.
-    SwitchTargetRootWindow(active_root_window, false);
-    point_of_interest_ = active_root_window->bounds().CenterPoint();
+    SwitchTargetRootWindow(target_root_window, false);
+    point_of_interest_ = target_root_window->bounds().CenterPoint();
   }
 }
 

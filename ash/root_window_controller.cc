@@ -244,8 +244,8 @@ RootWindowController* RootWindowController::ForWindow(
 }
 
 // static
-RootWindowController* RootWindowController::ForActiveRootWindow() {
-  return internal::GetRootWindowController(Shell::GetActiveRootWindow());
+RootWindowController* RootWindowController::ForTargetRootWindow() {
+  return internal::GetRootWindowController(Shell::GetTargetRootWindow());
 }
 
 void RootWindowController::SetWallpaperController(
@@ -268,12 +268,12 @@ void RootWindowController::Shutdown() {
   wallpaper_controller_.reset();
   animating_wallpaper_controller_.reset();
 
-  // Change the active root window before closing child windows. If any child
+  // Change the target root window before closing child windows. If any child
   // being removed triggers a relayout of the shelf it will try to build a
-  // window list adding windows from the active root window's containers which
+  // window list adding windows from the target root window's containers which
   // may have already gone away.
-  if (Shell::GetActiveRootWindow() == root_window_) {
-    Shell::GetInstance()->set_active_root_window(
+  if (Shell::GetTargetRootWindow() == root_window_) {
+    Shell::GetInstance()->set_target_root_window(
         Shell::GetPrimaryRootWindow() == root_window_.get() ?
         NULL : Shell::GetPrimaryRootWindow());
   }

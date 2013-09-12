@@ -262,8 +262,10 @@ void NetworkConfigView::ShowDialog(gfx::NativeWindow parent) {
   if (parent == NULL)
     parent = GetDialogParent();
   // Failed connections may result in a pop-up with no natural parent window,
-  // so provide a fallback context on the active display.
-  gfx::NativeWindow context = parent ? NULL : ash::Shell::GetActiveRootWindow();
+  // so provide a fallback context on the primary display. This is necessary
+  // becase one of parent or context must be non NULL.
+  gfx::NativeWindow context =
+      parent ? NULL : ash::Shell::GetPrimaryRootWindow();
   Widget* window = DialogDelegate::CreateDialogWidget(this, context, parent);
   window->SetAlwaysOnTop(true);
   window->Show();

@@ -328,7 +328,7 @@ TEST_F(WindowCycleControllerTest, AlwaysOnTopMultipleRootWindows) {
   WindowCycleController* controller =
       Shell::GetInstance()->window_cycle_controller();
 
-  Shell::GetInstance()->set_active_root_window(root_windows[0]);
+  Shell::GetInstance()->set_target_root_window(root_windows[0]);
 
   // Create two windows in the primary root.
   scoped_ptr<Window> window0(CreateTestWindowInShellWithId(0));
@@ -341,7 +341,7 @@ TEST_F(WindowCycleControllerTest, AlwaysOnTopMultipleRootWindows) {
   EXPECT_EQ(root_windows[0], window1->GetRootWindow());
 
   // And two on the secondary root.
-  Shell::GetInstance()->set_active_root_window(root_windows[1]);
+  Shell::GetInstance()->set_target_root_window(root_windows[1]);
   scoped_ptr<Window> window2(CreateTestWindowInShellWithId(2));
   EXPECT_EQ(root_windows[1], window2->GetRootWindow());
 
@@ -353,7 +353,7 @@ TEST_F(WindowCycleControllerTest, AlwaysOnTopMultipleRootWindows) {
   EXPECT_EQ(root_windows[1], window3->GetRootWindow());
 
   // Move the active root window to the secondary.
-  Shell::GetInstance()->set_active_root_window(root_windows[1]);
+  Shell::GetInstance()->set_target_root_window(root_windows[1]);
 
   wm::ActivateWindow(window2.get());
 

@@ -47,7 +47,7 @@ views::Widget* PanelWindow::CreateWidget() {
   if (params().bounds.height() == 0)
     params().bounds.set_height(kDefaultHeight);
   params().bounds = ScreenAsh::ConvertRectToScreen(
-      Shell::GetActiveRootWindow(),
+      Shell::GetTargetRootWindow(),
       params().bounds);
 
   widget->Init(params());

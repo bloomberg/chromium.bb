@@ -77,7 +77,7 @@ TEST_F(DragDropTrackerTest, MAYBE_GetTarget) {
   EXPECT_EQ("300,100 100x100", window1->GetBoundsInScreen().ToString());
 
   // Make RootWindow0 active so that capture window is parented to it.
-  Shell::GetInstance()->set_active_root_window(root_windows[0]);
+  Shell::GetInstance()->set_target_root_window(root_windows[0]);
 
   // Start tracking from the RootWindow1 and check the point on RootWindow0 that
   // |window0| covers.
@@ -98,7 +98,7 @@ TEST_F(DragDropTrackerTest, MAYBE_GetTarget) {
   EXPECT_NE(window1.get(), GetTarget(gfx::Point(50, 250)));
 
   // Make RootWindow1 active so that capture window is parented to it.
-  Shell::GetInstance()->set_active_root_window(root_windows[1]);
+  Shell::GetInstance()->set_target_root_window(root_windows[1]);
 
   // Start tracking from the RootWindow1 and check the point on RootWindow0 that
   // |window0| covers.
@@ -140,7 +140,7 @@ TEST_F(DragDropTrackerTest, MAYBE_ConvertEvent) {
   window1->Show();
 
   // Make RootWindow0 active so that capture window is parented to it.
-  Shell::GetInstance()->set_active_root_window(root_windows[0]);
+  Shell::GetInstance()->set_target_root_window(root_windows[0]);
 
   // Start tracking from the RootWindow0 and converts the mouse event into
   // |window0|'s coodinates.
@@ -169,7 +169,7 @@ TEST_F(DragDropTrackerTest, MAYBE_ConvertEvent) {
   EXPECT_EQ(original01.flags(), converted01->flags());
 
   // Make RootWindow1 active so that capture window is parented to it.
-  Shell::GetInstance()->set_active_root_window(root_windows[1]);
+  Shell::GetInstance()->set_target_root_window(root_windows[1]);
 
   // Start tracking from the RootWindow1 and converts the mouse event into
   // |window0|'s coodinates.

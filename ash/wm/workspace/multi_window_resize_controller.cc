@@ -387,7 +387,7 @@ void MultiWindowResizeController::ShowNow() {
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.parent = Shell::GetContainer(
-      Shell::GetActiveRootWindow(),
+      Shell::GetTargetRootWindow(),
       internal::kShellWindowId_AlwaysOnTopContainer);
   params.can_activate = false;
   ResizeView* view = new ResizeView(this, windows_.direction);

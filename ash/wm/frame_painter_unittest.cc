@@ -208,7 +208,7 @@ class FramePainterTest : public ash::test::AshTestBase {
 TEST_F(FramePainterTest, CreateAndDeleteSingleWindow) {
   // Ensure that creating/deleting a window works well and doesn't cause
   // crashes.  See crbug.com/155634
-  aura::RootWindow* root = Shell::GetActiveRootWindow();
+  aura::RootWindow* root = Shell::GetTargetRootWindow();
 
   scoped_ptr<Widget> widget(CreateTestWidget());
   scoped_ptr<FramePainter> painter(CreateTestPainter(widget.get()));

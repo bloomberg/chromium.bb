@@ -262,11 +262,10 @@ void NativeAppWindowViews::InitializePanelWindow(
     preferred_size_.set_height(kMinPanelHeight);
 #if defined(USE_ASH)
   if (ash::Shell::HasInstance()) {
-    // Open a new panel on the active root window where
-    // a current active/focused window is on.
-    aura::RootWindow* active = ash::Shell::GetActiveRootWindow();
+    // Open a new panel on the target root.
+    aura::RootWindow* target = ash::Shell::GetTargetRootWindow();
     params.bounds = ash::ScreenAsh::ConvertRectToScreen(
-        active, gfx::Rect(preferred_size_));
+        target, gfx::Rect(preferred_size_));
   } else {
     params.bounds = gfx::Rect(preferred_size_);
   }

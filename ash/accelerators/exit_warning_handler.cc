@@ -165,7 +165,7 @@ void ExitWarningHandler::CancelTimer() {
 void ExitWarningHandler::Show() {
   if (widget_)
     return;
-  aura::RootWindow* root_window = Shell::GetActiveRootWindow();
+  aura::RootWindow* root_window = Shell::GetTargetRootWindow();
   ExitWarningWidgetDelegateView* delegate = new ExitWarningWidgetDelegateView;
   gfx::Size rs = root_window->bounds().size();
   gfx::Size ps = delegate->GetPreferredSize();

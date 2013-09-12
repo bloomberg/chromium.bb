@@ -598,7 +598,7 @@ TEST_F(WindowSizerAshTest, MAYBE_PlaceNewWindowsOnMultipleDisplays) {
       GetPrimaryDisplay().bounds();
   gfx::Rect secondary_bounds = ash::ScreenAsh::GetSecondaryDisplay().bounds();
 
-  ash::Shell::GetInstance()->set_active_root_window(
+  ash::Shell::GetInstance()->set_target_root_window(
       ash::Shell::GetPrimaryRootWindow());
 
   scoped_ptr<TestingProfile> profile(new TestingProfile());
@@ -610,7 +610,7 @@ TEST_F(WindowSizerAshTest, MAYBE_PlaceNewWindowsOnMultipleDisplays) {
       Browser::CreateParams(profile.get(), chrome::HOST_DESKTOP_TYPE_ASH)));
   browser_window->Show();
   EXPECT_EQ(browser_window->GetNativeWindow()->GetRootWindow(),
-            ash::Shell::GetActiveRootWindow());
+            ash::Shell::GetTargetRootWindow());
 
   scoped_ptr<BrowserWindow> another_browser_window(CreateTestBrowserWindow(
       CreateTestWindowInShellWithId(1),
@@ -627,7 +627,7 @@ TEST_F(WindowSizerAshTest, MAYBE_PlaceNewWindowsOnMultipleDisplays) {
 
   // Make sure the primary root is active.
   ASSERT_EQ(ash::Shell::GetPrimaryRootWindow(),
-            ash::Shell::GetActiveRootWindow());
+            ash::Shell::GetTargetRootWindow());
 
   // First new window should be in the primary.
   {
@@ -652,7 +652,7 @@ TEST_F(WindowSizerAshTest, MAYBE_PlaceNewWindowsOnMultipleDisplays) {
         second_display);
     browser_window->Activate();
     EXPECT_NE(ash::Shell::GetPrimaryRootWindow(),
-              ash::Shell::GetActiveRootWindow());
+              ash::Shell::GetTargetRootWindow());
     gfx::Rect window_bounds;
     GetWindowBounds(p1600x1200, p1600x1200, secondary_bounds,
                     gfx::Rect(), secondary_bounds,
@@ -669,7 +669,7 @@ TEST_F(WindowSizerAshTest, MAYBE_PlaceNewWindowsOnMultipleDisplays) {
   {
     another_browser_window->Activate();
     EXPECT_EQ(ash::Shell::GetPrimaryRootWindow(),
-              ash::Shell::GetActiveRootWindow());
+              ash::Shell::GetTargetRootWindow());
 
     gfx::Rect window_bounds;
     GetWindowBounds(p1600x1200, p1600x1200, secondary_bounds,

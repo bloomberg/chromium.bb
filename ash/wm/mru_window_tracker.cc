@@ -41,7 +41,7 @@ MruWindowTracker::WindowList BuildWindowListInternal(
   MruWindowTracker::WindowList windows;
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
 
-  aura::RootWindow* active_root = Shell::GetActiveRootWindow();
+  aura::RootWindow* active_root = Shell::GetTargetRootWindow();
   for (Shell::RootWindowList::const_iterator iter = root_windows.begin();
        iter != root_windows.end(); ++iter) {
     if (*iter == active_root)

@@ -184,8 +184,7 @@ class ASH_EXPORT Shell
   // be overridden by using ScopedTargetRootWindow().
   // If you want to get a RootWindow of the active window, just use
   // |wm::GetActiveWindow()->GetRootWindow()|.
-  // TODO(oshima): Rename to GetTargetRootWindow() crbug.com/266378.
-  static aura::RootWindow* GetActiveRootWindow();
+  static aura::RootWindow* GetTargetRootWindow();
 
   // Returns the global Screen object that's always active in ash.
   static gfx::Screen* GetScreen();
@@ -209,7 +208,7 @@ class ASH_EXPORT Shell
   // application windows to be maximized only.
   static bool IsForcedMaximizeMode();
 
-  void set_active_root_window(aura::RootWindow* target_root_window) {
+  void set_target_root_window(aura::RootWindow* target_root_window) {
     target_root_window_ = target_root_window;
   }
 

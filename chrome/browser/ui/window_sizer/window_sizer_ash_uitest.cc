@@ -88,7 +88,7 @@ IN_PROC_BROWSER_TEST_F(WindowSizerTest,
   // Close the browser window so that clicking icon will create a new window.
   CloseBrowser(browser_list->get(0));
   EXPECT_EQ(0u, browser_list->size());
-  EXPECT_EQ(root_windows[0], ash::Shell::GetActiveRootWindow());
+  EXPECT_EQ(root_windows[0], ash::Shell::GetTargetRootWindow());
 
   OpenBrowserUsingShelfOnRootWindow(root_windows[1]);
 
@@ -96,7 +96,7 @@ IN_PROC_BROWSER_TEST_F(WindowSizerTest,
   EXPECT_EQ(1u, browser_list->size());
   EXPECT_EQ(root_windows[1],
             browser_list->get(0)->window()->GetNativeWindow()->GetRootWindow());
-  EXPECT_EQ(root_windows[1], ash::Shell::GetActiveRootWindow());
+  EXPECT_EQ(root_windows[1], ash::Shell::GetTargetRootWindow());
 
   // Close the browser window so that clicking icon will create a new window.
   CloseBrowser(browser_list->get(0));
@@ -108,7 +108,7 @@ IN_PROC_BROWSER_TEST_F(WindowSizerTest,
   EXPECT_EQ(1u, browser_list->size());
   EXPECT_EQ(root_windows[0],
             browser_list->get(0)->window()->GetNativeWindow()->GetRootWindow());
-  EXPECT_EQ(root_windows[0], ash::Shell::GetActiveRootWindow());
+  EXPECT_EQ(root_windows[0], ash::Shell::GetTargetRootWindow());
 
   // Balanced with the chrome::StartKeepAlive above.
   chrome::EndKeepAlive();
@@ -175,7 +175,7 @@ IN_PROC_BROWSER_TEST_F(WindowSizerContextMenuTest,
       BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
 
   EXPECT_EQ(1u, browser_list->size());
-  EXPECT_EQ(root_windows[0], ash::Shell::GetActiveRootWindow());
+  EXPECT_EQ(root_windows[0], ash::Shell::GetTargetRootWindow());
   CloseBrowser(browser_list->get(0));
 
   OpenBrowserUsingContextMenuOnRootWindow(root_windows[1]);
@@ -184,7 +184,7 @@ IN_PROC_BROWSER_TEST_F(WindowSizerContextMenuTest,
   EXPECT_EQ(1u, browser_list->size());
   EXPECT_EQ(root_windows[1],
             browser_list->get(0)->window()->GetNativeWindow()->GetRootWindow());
-  EXPECT_EQ(root_windows[1], ash::Shell::GetActiveRootWindow());
+  EXPECT_EQ(root_windows[1], ash::Shell::GetTargetRootWindow());
 
   OpenBrowserUsingContextMenuOnRootWindow(root_windows[0]);
 
@@ -192,7 +192,7 @@ IN_PROC_BROWSER_TEST_F(WindowSizerContextMenuTest,
   EXPECT_EQ(2u, browser_list->size());
   EXPECT_EQ(root_windows[0],
             browser_list->get(1)->window()->GetNativeWindow()->GetRootWindow());
-  EXPECT_EQ(root_windows[0], ash::Shell::GetActiveRootWindow());
+  EXPECT_EQ(root_windows[0], ash::Shell::GetTargetRootWindow());
 
   // Balanced with the chrome::StartKeepAlive above.
   chrome::EndKeepAlive();

@@ -390,7 +390,7 @@ MaximizeBubbleController::Bubble::Bubble(
   // The window needs to be owned by the root so that the SnapSizer does not
   // cover it upon animation.
   aura::Window* parent = Shell::GetContainer(
-      Shell::GetActiveRootWindow(),
+      Shell::GetTargetRootWindow(),
       internal::kShellWindowId_ShelfContainer);
   set_parent_window(parent);
 

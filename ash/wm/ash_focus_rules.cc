@@ -107,7 +107,7 @@ aura::Window* AshFocusRules::GetNextActivatableWindow(
   // container.
   aura::RootWindow* root = ignore->GetRootWindow();
   if (!root)
-    root = Shell::GetActiveRootWindow();
+    root = Shell::GetTargetRootWindow();
   int container_count = static_cast<int>(arraysize(kWindowContainerIds));
   for (int i = 0; ignore && i < container_count; i++) {
     aura::Window* container = Shell::GetContainer(root, kWindowContainerIds[i]);
