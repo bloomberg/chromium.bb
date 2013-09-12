@@ -6,15 +6,18 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "cc/base/math_util.h"
 #include "cc/layers/quad_sink.h"
 #include "cc/quads/texture_draw_quad.h"
+#include "cc/trees/layer_tree_impl.h"
 #include "ui/gfx/rect_f.h"
 
 namespace cc {
 
 NinePatchLayerImpl::NinePatchLayerImpl(LayerTreeImpl* tree_impl, int id)
     : LayerImpl(tree_impl, id),
-      resource_id_(0) {}
+      fill_center_(false),
+      ui_resource_id_(0) {}
 
 NinePatchLayerImpl::~NinePatchLayerImpl() {}
 
@@ -31,11 +34,8 @@ void NinePatchLayerImpl::PushPropertiesTo(LayerImpl* layer) {
   LayerImpl::PushPropertiesTo(layer);
   NinePatchLayerImpl* layer_impl = static_cast<NinePatchLayerImpl*>(layer);
 
-  if (!resource_id_)
-    return;
-
-  layer_impl->SetResourceId(resource_id_);
-  layer_impl->SetLayout(image_bounds_, image_aperture_);
+  layer_impl->SetUIResourceId(ui_resource_id_);
+  layer_impl->SetLayout(image_bounds_, image_aperture_, border_, fill_center_);
 }
 
 static gfx::RectF NormalizedRect(float x,
@@ -50,14 +50,59 @@ static gfx::RectF NormalizedRect(float x,
                     height / total_height);
 }
 
-void NinePatchLayerImpl::SetLayout(gfx::Size image_bounds, gfx::Rect aperture) {
+void NinePatchLayerImpl::SetUIResourceId(UIResourceId uid) {
+  if (uid == ui_resource_id_)
+    return;
+  ui_resource_id_ = uid;
+  NoteLayerPropertyChanged();
+}
+
+void NinePatchLayerImpl::SetLayout(gfx::Size image_bounds,
+                                   gfx::Rect aperture,
+                                   gfx::Rect border,
+                                   bool fill_center) {
+  // This check imposes an ordering on the call sequence.  An UIResource must
+  // exist before SetLayout can be called.
+  DCHECK(ui_resource_id_);
+
+  // |border| is in layer space.  It cannot exceed the bounds of the layer.
+  DCHECK(!border.size().IsEmpty());
+  DCHECK_GT(bounds().width(), border.width());
+  DCHECK_GT(bounds().height(), border.height());
+
+  // Sanity Check on |border|
+  DCHECK_LT(border.x(), border.width());
+  DCHECK_LT(border.y(), border.height());
+  DCHECK_GT(border.x(), 0);
+  DCHECK_GT(border.y(), 0);
+
+  // |aperture| is in image space.  It cannot exceed the bounds of the bitmap.
+  DCHECK(!aperture.size().IsEmpty());
+  DCHECK(gfx::Rect(image_bounds.width(), image_bounds.height())
+             .Contains(aperture));
+
+  // Avoid the degenerate cases where the aperture touches the edge of the
+  // image.
+  DCHECK_LT(aperture.width(), image_bounds.width() - 1);
+  DCHECK_LT(aperture.height(), image_bounds.height()-1);
+  DCHECK_GT(aperture.x(), 0);
+  DCHECK_GT(aperture.y(), 0);
+
+  if (image_bounds_ == image_bounds && image_aperture_ != aperture &&
+      border_ != border && fill_center_ != fill_center)
+    return;
+
   image_bounds_ = image_bounds;
   image_aperture_ = aperture;
+  border_ = border;
+  fill_center_ = fill_center;
+
+  NoteLayerPropertyChanged();
 }
 
 bool NinePatchLayerImpl::WillDraw(DrawMode draw_mode,
                                   ResourceProvider* resource_provider) {
-  if (!resource_id_ || draw_mode == DRAW_MODE_RESOURCELESS_SOFTWARE)
+  if (!ui_resource_id_ || draw_mode == DRAW_MODE_RESOURCELESS_SOFTWARE)
     return false;
   return LayerImpl::WillDraw(draw_mode, resource_provider);
 }
@@ -68,7 +113,13 @@ void NinePatchLayerImpl::AppendQuads(QuadSink* quad_sink,
       quad_sink->UseSharedQuadState(CreateSharedQuadState());
   AppendDebugBorderQuad(quad_sink, shared_quad_state, append_quads_data);
 
-  if (!resource_id_)
+  if (!ui_resource_id_)
+    return;
+
+  ResourceProvider::ResourceId resource =
+      layer_tree_impl()->ResourceIdForUIResource(ui_resource_id_);
+
+  if (!resource)
     return;
 
   static const bool flipped = false;
@@ -76,95 +127,106 @@ void NinePatchLayerImpl::AppendQuads(QuadSink* quad_sink,
 
   DCHECK(!bounds().IsEmpty());
 
-  // NinePatch border widths in bitmap pixel space
-  int left_width = image_aperture_.x();
-  int top_height = image_aperture_.y();
-  int right_width = image_bounds_.width() - image_aperture_.right();
-  int bottom_height = image_bounds_.height() - image_aperture_.bottom();
+  // NinePatch border widths in layer space.
+  int layer_left_width = border_.x();
+  int layer_top_height = border_.y();
+  int layer_right_width = border_.width() - layer_left_width;
+  int layer_bottom_height = border_.height() - layer_top_height;
 
-  // If layer can't fit the corners, clip to show the outer edges of the
-  // image.
-  int corner_total_width = left_width + right_width;
-  int middle_width = bounds().width() - corner_total_width;
-  if (middle_width < 0) {
-    float left_width_proportion =
-        static_cast<float>(left_width) / corner_total_width;
-    int left_width_crop = middle_width * left_width_proportion;
-    left_width += left_width_crop;
-    right_width = bounds().width() - left_width;
-    middle_width = 0;
-  }
-  int corner_total_height = top_height + bottom_height;
-  int middle_height = bounds().height() - corner_total_height;
-  if (middle_height < 0) {
-    float top_height_proportion =
-        static_cast<float>(top_height) / corner_total_height;
-    int top_height_crop = middle_height * top_height_proportion;
-    top_height += top_height_crop;
-    bottom_height = bounds().height() - top_height;
-    middle_height = 0;
-  }
+  int layer_middle_width = bounds().width() - border_.width();
+  int layer_middle_height = bounds().height() - border_.height();
 
   // Patch positions in layer space
-  gfx::Rect top_left(0, 0, left_width, top_height);
-  gfx::Rect top_right(
-      bounds().width() - right_width, 0, right_width, top_height);
-  gfx::Rect bottom_left(
-      0, bounds().height() - bottom_height, left_width, bottom_height);
-  gfx::Rect bottom_right(
-      top_right.x(), bottom_left.y(), right_width, bottom_height);
-  gfx::Rect top(top_left.right(), 0, middle_width, top_height);
-  gfx::Rect left(0, top_left.bottom(), left_width, middle_height);
-  gfx::Rect right(top_right.x(),
-                  top_right.bottom(),
-                  right_width,
-                  left.height());
-  gfx::Rect bottom(top.x(), bottom_left.y(), top.width(), bottom_height);
+  gfx::Rect layer_top_left(0, 0, layer_left_width, layer_top_height);
+  gfx::Rect layer_top_right(bounds().width() - layer_right_width,
+                            0,
+                            layer_right_width,
+                            layer_top_height);
+  gfx::Rect layer_bottom_left(0,
+                              bounds().height() - layer_bottom_height,
+                              layer_left_width,
+                              layer_bottom_height);
+  gfx::Rect layer_bottom_right(layer_top_right.x(),
+                               layer_bottom_left.y(),
+                               layer_right_width,
+                               layer_bottom_height);
+  gfx::Rect layer_top(
+      layer_top_left.right(), 0, layer_middle_width, layer_top_height);
+  gfx::Rect layer_left(
+      0, layer_top_left.bottom(), layer_left_width, layer_middle_height);
+  gfx::Rect layer_right(layer_top_right.x(),
+                        layer_top_right.bottom(),
+                        layer_right_width,
+                        layer_left.height());
+  gfx::Rect layer_bottom(layer_top.x(),
+                         layer_bottom_left.y(),
+                         layer_top.width(),
+                         layer_bottom_height);
+  gfx::Rect layer_center(layer_left_width,
+                         layer_top_height,
+                         layer_middle_width,
+                         layer_middle_height);
 
-  float img_width = image_bounds_.width();
-  float img_height = image_bounds_.height();
+  // Note the following values are in image (bitmap) space.
+  float image_width = image_bounds_.width();
+  float image_height = image_bounds_.height();
 
+  int image_aperture_left_width = image_aperture_.x();
+  int image_aperture_top_height = image_aperture_.y();
+  int image_aperture_right_width = image_width - image_aperture_.right();
+  int image_aperture_bottom_height = image_height - image_aperture_.bottom();
   // Patch positions in bitmap UV space (from zero to one)
   gfx::RectF uv_top_left = NormalizedRect(0,
                                           0,
-                                          left_width,
-                                          top_height,
-                                          img_width,
-                                          img_height);
-  gfx::RectF uv_top_right = NormalizedRect(img_width - right_width,
-                                           0,
-                                           right_width,
-                                           top_height,
-                                           img_width,
-                                           img_height);
-  gfx::RectF uv_bottom_left = NormalizedRect(0,
-                                             img_height - bottom_height,
-                                             left_width,
-                                             bottom_height,
-                                             img_width,
-                                             img_height);
-  gfx::RectF uv_bottom_right = NormalizedRect(img_width - right_width,
-                                              img_height - bottom_height,
-                                              right_width,
-                                              bottom_height,
-                                              img_width,
-                                              img_height);
-  gfx::RectF uv_top(uv_top_left.right(),
-                   0,
-                   (img_width - left_width - right_width) / img_width,
-                   (top_height) / img_height);
+                                          image_aperture_left_width,
+                                          image_aperture_top_height,
+                                          image_width,
+                                          image_height);
+  gfx::RectF uv_top_right =
+      NormalizedRect(image_width - image_aperture_right_width,
+                     0,
+                     image_aperture_right_width,
+                     image_aperture_top_height,
+                     image_width,
+                     image_height);
+  gfx::RectF uv_bottom_left =
+      NormalizedRect(0,
+                     image_height - image_aperture_bottom_height,
+                     image_aperture_left_width,
+                     image_aperture_bottom_height,
+                     image_width,
+                     image_height);
+  gfx::RectF uv_bottom_right =
+      NormalizedRect(image_width - image_aperture_right_width,
+                     image_height - image_aperture_bottom_height,
+                     image_aperture_right_width,
+                     image_aperture_bottom_height,
+                     image_width,
+                     image_height);
+  gfx::RectF uv_top(
+      uv_top_left.right(),
+      0,
+      (image_width - image_aperture_left_width - image_aperture_right_width) /
+          image_width,
+      (image_aperture_top_height) / image_height);
   gfx::RectF uv_left(0,
-                    uv_top_left.bottom(),
-                    left_width / img_width,
-                    (img_height - top_height - bottom_height) / img_height);
+                     uv_top_left.bottom(),
+                     image_aperture_left_width / image_width,
+                     (image_height - image_aperture_top_height -
+                      image_aperture_bottom_height) /
+                         image_height);
   gfx::RectF uv_right(uv_top_right.x(),
-                     uv_top_right.bottom(),
-                     right_width / img_width,
-                     uv_left.height());
+                      uv_top_right.bottom(),
+                      image_aperture_right_width / image_width,
+                      uv_left.height());
   gfx::RectF uv_bottom(uv_top.x(),
-                      uv_bottom_left.y(),
-                      uv_top.width(),
-                      bottom_height / img_height);
+                       uv_bottom_left.y(),
+                       uv_top.width(),
+                       image_aperture_bottom_height / image_height);
+  gfx::RectF uv_center(uv_top_left.right(),
+                       uv_top_left.bottom(),
+                       uv_top.width(),
+                       uv_left.height());
 
   // Nothing is opaque here.
   // TODO(danakj): Should we look at the SkBitmaps to determine opaqueness?
@@ -174,9 +236,9 @@ void NinePatchLayerImpl::AppendQuads(QuadSink* quad_sink,
 
   quad = TextureDrawQuad::Create();
   quad->SetNew(shared_quad_state,
-               top_left,
+               layer_top_left,
                opaque_rect,
-               resource_id_,
+               resource,
                premultiplied_alpha,
                uv_top_left.origin(),
                uv_top_left.bottom_right(),
@@ -187,9 +249,9 @@ void NinePatchLayerImpl::AppendQuads(QuadSink* quad_sink,
 
   quad = TextureDrawQuad::Create();
   quad->SetNew(shared_quad_state,
-               top_right,
+               layer_top_right,
                opaque_rect,
-               resource_id_,
+               resource,
                premultiplied_alpha,
                uv_top_right.origin(),
                uv_top_right.bottom_right(),
@@ -200,9 +262,9 @@ void NinePatchLayerImpl::AppendQuads(QuadSink* quad_sink,
 
   quad = TextureDrawQuad::Create();
   quad->SetNew(shared_quad_state,
-               bottom_left,
+               layer_bottom_left,
                opaque_rect,
-               resource_id_,
+               resource,
                premultiplied_alpha,
                uv_bottom_left.origin(),
                uv_bottom_left.bottom_right(),
@@ -213,9 +275,9 @@ void NinePatchLayerImpl::AppendQuads(QuadSink* quad_sink,
 
   quad = TextureDrawQuad::Create();
   quad->SetNew(shared_quad_state,
-               bottom_right,
+               layer_bottom_right,
                opaque_rect,
-               resource_id_,
+               resource,
                premultiplied_alpha,
                uv_bottom_right.origin(),
                uv_bottom_right.bottom_right(),
@@ -226,9 +288,9 @@ void NinePatchLayerImpl::AppendQuads(QuadSink* quad_sink,
 
   quad = TextureDrawQuad::Create();
   quad->SetNew(shared_quad_state,
-               top,
+               layer_top,
                opaque_rect,
-               resource_id_,
+               resource,
                premultiplied_alpha,
                uv_top.origin(),
                uv_top.bottom_right(),
@@ -239,9 +301,9 @@ void NinePatchLayerImpl::AppendQuads(QuadSink* quad_sink,
 
   quad = TextureDrawQuad::Create();
   quad->SetNew(shared_quad_state,
-               left,
+               layer_left,
                opaque_rect,
-               resource_id_,
+               resource,
                premultiplied_alpha,
                uv_left.origin(),
                uv_left.bottom_right(),
@@ -252,9 +314,9 @@ void NinePatchLayerImpl::AppendQuads(QuadSink* quad_sink,
 
   quad = TextureDrawQuad::Create();
   quad->SetNew(shared_quad_state,
-               right,
+               layer_right,
                opaque_rect,
-               resource_id_,
+               resource,
                premultiplied_alpha,
                uv_right.origin(),
                uv_right.bottom_right(),
@@ -265,9 +327,9 @@ void NinePatchLayerImpl::AppendQuads(QuadSink* quad_sink,
 
   quad = TextureDrawQuad::Create();
   quad->SetNew(shared_quad_state,
-               bottom,
+               layer_bottom,
                opaque_rect,
-               resource_id_,
+               resource,
                premultiplied_alpha,
                uv_bottom.origin(),
                uv_bottom.bottom_right(),
@@ -275,10 +337,21 @@ void NinePatchLayerImpl::AppendQuads(QuadSink* quad_sink,
                vertex_opacity,
                flipped);
   quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data);
-}
 
-void NinePatchLayerImpl::DidLoseOutputSurface() {
-  resource_id_ = 0;
+  if (fill_center_) {
+    quad = TextureDrawQuad::Create();
+    quad->SetNew(shared_quad_state,
+                 layer_center,
+                 opaque_rect,
+                 resource,
+                 premultiplied_alpha,
+                 uv_center.origin(),
+                 uv_center.bottom_right(),
+                 SK_ColorTRANSPARENT,
+                 vertex_opacity,
+                 flipped);
+    quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data);
+  }
 }
 
 const char* NinePatchLayerImpl::LayerTypeAsString() const {
@@ -295,10 +368,12 @@ base::DictionaryValue* NinePatchLayerImpl::LayerTreeAsJson() const {
   list->AppendInteger(image_aperture_.size().height());
   result->Set("ImageAperture", list);
 
-  list = new base::ListValue;
-  list->AppendInteger(image_bounds_.width());
-  list->AppendInteger(image_bounds_.height());
-  result->Set("ImageBounds", list);
+  result->Set("ImageBounds", MathUtil::AsValue(image_bounds_).release());
+  result->Set("Border", MathUtil::AsValue(border_).release());
+
+  base::FundamentalValue* fill_center =
+      base::Value::CreateBooleanValue(fill_center_);
+  result->Set("FillCenter", fill_center);
 
   return result;
 }

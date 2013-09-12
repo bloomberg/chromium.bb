@@ -23,6 +23,12 @@ class CONTENT_EXPORT CompositorClient {
   // Tells the client that GL resources were lost and need to be reinitialized.
   virtual void DidLoseResources() {}
 
+  // Tells the client that UI resources were lost and need to be reinitialized.
+  virtual void DidLoseUIResources() {}
+
+  // Mark the UI Resources as being invalid for use.
+  virtual void UIResourcesAreInvalid() {}
+
  protected:
   CompositorClient() {}
   virtual ~CompositorClient() {}

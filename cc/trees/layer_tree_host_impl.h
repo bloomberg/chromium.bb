@@ -50,8 +50,8 @@ class RenderPassDrawQuad;
 class TextureMailboxDeleter;
 class TopControlsManager;
 class UIResourceBitmap;
+class UIResourceRequest;
 struct RendererCapabilities;
-struct UIResourceRequest;
 
 // LayerTreeHost->Proxy callback interface.
 class LayerTreeHostImplClient {
@@ -398,14 +398,15 @@ class CC_EXPORT LayerTreeHostImpl
 
   bool page_scale_animation_active() const { return !!page_scale_animation_; }
 
-  void CreateUIResource(UIResourceId uid,
-                        scoped_refptr<UIResourceBitmap> bitmap);
+  virtual void CreateUIResource(UIResourceId uid,
+                                const UIResourceBitmap& bitmap);
   // Deletes a UI resource.  May safely be called more than once.
-  void DeleteUIResource(UIResourceId uid);
+  virtual void DeleteUIResource(UIResourceId uid);
   void EvictAllUIResources();
   bool EvictedUIResourcesExist() const;
 
-  ResourceProvider::ResourceId ResourceIdForUIResource(UIResourceId uid) const;
+  virtual ResourceProvider::ResourceId ResourceIdForUIResource(
+      UIResourceId uid) const;
 
   void DidInitializeVisibleTileForTesting() { DidInitializeVisibleTile(); }
 

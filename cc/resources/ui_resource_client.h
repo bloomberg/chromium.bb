@@ -24,8 +24,8 @@ class CC_EXPORT UIResourceClient {
   // delete a UIResourceClient object after DeleteUIResource has been called for
   // all IDs associated with it.  A valid bitmap always must be returned but it
   // doesn't need to be the same size or format as the original.
-  virtual scoped_refptr<UIResourceBitmap> GetBitmap(UIResourceId uid,
-                                                    bool resource_lost) = 0;
+  virtual UIResourceBitmap GetBitmap(UIResourceId uid,
+                                     bool resource_lost) = 0;
   virtual ~UIResourceClient() {}
 };
 

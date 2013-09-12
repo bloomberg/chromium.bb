@@ -15,28 +15,27 @@ namespace cc {
 
 class LayerTreeHost;
 
+// ScopedUIResource creates an UIResource from a bitmap and a LayerTreeHost.
+// This class holds a pointer to the host so that when the instance goes out of
+// scope, the created resource is deleted.  On a GetBitmap call from the
+// UIResource manager, ScopeUIResource always returns the reference to the
+// initially given bitmap regardless of whether the request was due to lost
+// resource or not.
 class CC_EXPORT ScopedUIResource : public UIResourceClient {
  public:
-  static scoped_ptr<ScopedUIResource> Create(
-      LayerTreeHost* host,
-      scoped_refptr<UIResourceBitmap> bitmap);
+  static scoped_ptr<ScopedUIResource> Create(LayerTreeHost* host,
+                                             const UIResourceBitmap& bitmap);
   virtual ~ScopedUIResource();
 
-  gfx::Size GetSize() const;
-
   // UIResourceClient implementation.
-  virtual scoped_refptr<UIResourceBitmap> GetBitmap(
-      UIResourceId uid,
-      bool resource_lost) OVERRIDE;
+  virtual UIResourceBitmap GetBitmap(UIResourceId uid,
+                                     bool resource_lost) OVERRIDE;
   UIResourceId id() { return id_; }
 
  protected:
-  ScopedUIResource(LayerTreeHost* host, scoped_refptr<UIResourceBitmap> bitmap);
+  ScopedUIResource(LayerTreeHost* host, const UIResourceBitmap& bitmap);
 
-  // An empty default contructor for testing.
-  ScopedUIResource();
-
-  scoped_refptr<UIResourceBitmap> bitmap_;
+  UIResourceBitmap bitmap_;
   LayerTreeHost* host_;
   UIResourceId id_;
 

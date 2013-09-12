@@ -621,12 +621,12 @@ void LayerTreeImpl::ProcessUIResourceRequestQueue() {
     UIResourceRequest req = ui_resource_request_queue_.front();
     ui_resource_request_queue_.pop_front();
 
-    switch (req.type) {
+    switch (req.GetType()) {
       case UIResourceRequest::UIResourceCreate:
-        layer_tree_host_impl_->CreateUIResource(req.id, req.bitmap);
+        layer_tree_host_impl_->CreateUIResource(req.GetId(), req.GetBitmap());
         break;
       case UIResourceRequest::UIResourceDelete:
-        layer_tree_host_impl_->DeleteUIResource(req.id);
+        layer_tree_host_impl_->DeleteUIResource(req.GetId());
         break;
       case UIResourceRequest::UIResourceInvalidRequest:
         NOTREACHED();

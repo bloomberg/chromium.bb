@@ -6,6 +6,8 @@
 #define CONTENT_PUBLIC_BROWSER_ANDROID_COMPOSITOR_H_
 
 #include "base/callback.h"
+#include "cc/resources/ui_resource_bitmap.h"
+#include "cc/resources/ui_resource_client.h"
 #include "content/common/content_export.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
@@ -83,6 +85,13 @@ class CONTENT_EXPORT Compositor {
 
   // Composite immediately. Used in single-threaded mode.
   virtual void Composite() = 0;
+
+  // Generates a UIResource and returns a UIResourceId.  May return 0.
+  virtual cc::UIResourceId GenerateUIResource(
+      const cc::UIResourceBitmap& bitmap) = 0;
+
+  // Deletes a UIResource.
+  virtual void DeleteUIResource(cc::UIResourceId resource_id) = 0;
 
   // Generates an OpenGL texture and returns a texture handle.  May return 0
   // if the current context is lost.
