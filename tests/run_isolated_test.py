@@ -21,14 +21,11 @@ import run_isolated
 from utils import net
 
 
-class RemoteTest(run_isolated.Remote):
-  def get_file_handler(self, _):  # pylint: disable=R0201
-    def upload_file(item, _dest):
-      if type(item) == type(Exception) and issubclass(item, Exception):
-        raise item()
-      elif isinstance(item, int):
-        time.sleep(int(item) / 100)
-    return upload_file
+def upload_file(item, _dest):
+  if type(item) == type(Exception) and issubclass(item, Exception):
+    raise item()
+  elif isinstance(item, int):
+    time.sleep(int(item) / 100)
 
 
 class RunIsolatedTest(auto_stub.TestCase):
@@ -101,11 +98,11 @@ class RunIsolatedTest(auto_stub.TestCase):
 
   def test_remote_no_errors(self):
     files_to_handle = 50
-    remote = RemoteTest('')
+    remote = run_isolated.RemoteOperation(upload_file)
 
     for i in range(files_to_handle):
       remote.add_item(
-          run_isolated.Remote.MED,
+          run_isolated.RemoteOperation.MED,
           'obj%d' % i,
           'dest%d' % i,
           run_isolated.UNKNOWN_FILE_SIZE)
@@ -115,12 +112,12 @@ class RunIsolatedTest(auto_stub.TestCase):
     self.assertEqual(expected, items)
 
   def test_remote_with_errors(self):
-    remote = RemoteTest('')
+    remote = run_isolated.RemoteOperation(upload_file)
 
     def RaiseIOError(*_):
       raise IOError()
     remote._do_item = RaiseIOError
-    remote.add_item(run_isolated.Remote.MED, 'ignored', '',
+    remote.add_item(run_isolated.RemoteOperation.MED, 'ignored', '',
                     run_isolated.UNKNOWN_FILE_SIZE)
     self.assertRaises(IOError, remote.join)
     self.assertEqual([], remote.join())
@@ -130,13 +127,14 @@ class RunIsolatedTest(auto_stub.TestCase):
         lambda url, **_kwargs: net.HttpResponse.get_fake_response('111', url))
     self.mock(run_isolated.time, 'sleep', lambda _x: None)
 
-    remote = run_isolated.Remote('https://fake-CAD.com/')
+    retriever = run_isolated.get_storage_api('https://fake-CAD.com/')
+    remote = run_isolated.RemoteOperation(retriever.retrieve)
 
     # Both files will fail to be unzipped due to incorrect headers,
     # ensure that we don't accept the files (even if the size is unknown)}.
-    remote.add_item(run_isolated.Remote.MED, 'zipped_A', 'A',
+    remote.add_item(run_isolated.RemoteOperation.MED, 'zipped_A', 'A',
                     run_isolated.UNKNOWN_FILE_SIZE)
-    remote.add_item(run_isolated.Remote.MED, 'zipped_B', 'B', 5)
+    remote.add_item(run_isolated.RemoteOperation.MED, 'zipped_B', 'B', 5)
     self.assertRaises(IOError, remote.get_one_result)
     self.assertRaises(IOError, remote.get_one_result)
     # Need to use join here, since get_one_result will hang.

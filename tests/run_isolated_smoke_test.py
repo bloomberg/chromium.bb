@@ -179,50 +179,6 @@ class RunSwarmStep(unittest.TestCase):
     actual = list_files_tree(self.cache)
     self.assertEqual(sorted(set(expected)), actual)
 
-  def test_download_isolated(self):
-    out_dir = None
-    try:
-      out_dir = run_isolated.make_temp_dir('run_isolated_smoke_test', ROOT_DIR)
-
-      # Store the required files.
-      self._store('file1.txt')
-      self._store('repeated_files.py')
-
-      # Loads an arbitrary .isolated on the file system.
-      isolated = os.path.join(self.data_dir, 'download.isolated')
-      out, err, returncode = self._run(
-          self._generate_args_with_isolated(isolated) +
-          ['--download', out_dir])
-
-      expected_output = ('.isolated files successfully downloaded and setup in '
-                         '%s\nTo run this test please run the command %s from '
-                         'the directory %s\n' %
-                         (out_dir, [sys.executable, u'repeated_files.py'],
-                          out_dir + os.path.sep))
-      if not VERBOSE:
-        # On Windows, it'll warn that a symlink is ignored to stderr.
-        if sys.platform != 'win32':
-          self.assertEqual('', err)
-        self.assertEqual(expected_output, out)
-      self.assertEqual(0, returncode)
-
-      # Ensure the correct files have been placed in the temp directory.
-      expected = [
-        'file1.txt',
-        os.path.join('new_folder', 'file1.txt'),
-        'repeated_files.py',
-      ]
-      if sys.platform != 'win32':
-        expected.append('file1_symlink.txt')
-      actual = list_files_tree(out_dir)
-      self.assertEqual(sorted(expected), sorted(actual))
-      if sys.platform != 'win32':
-        self.assertTrue(
-            os.path.lexists(os.path.join(out_dir, 'file1_symlink.txt')))
-    finally:
-      if out_dir:
-        run_isolated.rmtree(out_dir)
-
   def test_fail_empty_isolated(self):
     result_sha1 = self._store_result({})
     expected = [

@@ -9,7 +9,6 @@ __version__ = '0.1'
 
 import binascii
 import cStringIO
-import functools
 import hashlib
 import itertools
 import logging
@@ -172,33 +171,30 @@ def upload_hash_content_to_blobstore(
       'Unable to connect to server %s' % generate_upload_url)
 
 
-def upload_file(base_url, namespace, content, hash_key, token):
-  # TODO(maruel): Detect failures.
-  hash_key = str(hash_key)
-  content_url = base_url.rstrip('/') + '/content/'
-  if len(content) > MIN_SIZE_FOR_DIRECT_BLOBSTORE:
-    url = '%sgenerate_blobstore_url/%s/%s' % (
-        content_url, namespace, hash_key)
-    # token is guaranteed to be already quoted but it is unnecessary here, and
-    # only here.
-    data = [('token', urllib.unquote(token))]
-    return upload_hash_content_to_blobstore(url, data, hash_key, content)
-  else:
-    url = '%sstore/%s/%s?token=%s' % (
-        content_url, namespace, hash_key, token)
-    return url_read(url, data=content, content_type='application/octet-stream')
+class IsolateServer(object):
+  def __init__(self, base_url, namespace):
+    assert base_url.startswith('http'), base_url
+    self.content_url = base_url.rstrip('/') + '/content/'
+    self.namespace = namespace
+    # TODO(maruel): Make this request much earlier asynchronously while the
+    # files are being enumerated.
+    self.token = urllib.quote(url_read(self.content_url + 'get_token'))
 
-
-class UploadRemote(run_isolated.Remote):
-  def __init__(self, namespace, base_url, token):
-    self.namespace = str(namespace)
-    self._token = token
-    super(UploadRemote, self).__init__(base_url)
-
-  def get_file_handler(self, base_url):
-    base_url = str(base_url)
-    return functools.partial(
-        upload_file, base_url, self.namespace, token=self._token)
+  def store(self, content, hash_key):
+    # TODO(maruel): Detect failures.
+    hash_key = str(hash_key)
+    if len(content) > MIN_SIZE_FOR_DIRECT_BLOBSTORE:
+      url = '%sgenerate_blobstore_url/%s/%s' % (
+          self.content_url, self.namespace, hash_key)
+      # token is guaranteed to be already quoted but it is unnecessary here, and
+      # only here.
+      data = [('token', urllib.unquote(self.token))]
+      return upload_hash_content_to_blobstore(url, data, hash_key, content)
+    else:
+      url = '%sstore/%s/%s?token=%s' % (
+          self.content_url, self.namespace, hash_key, self.token)
+      return url_read(
+          url, data=content, content_type='application/octet-stream')
 
 
 def check_files_exist_on_server(query_url, queries):
@@ -209,6 +205,7 @@ def check_files_exist_on_server(query_url, queries):
   Returns:
     missing_files: list of files that are missing on the server.
   """
+  # TODO(maruel): Move inside IsolateServer.
   logging.info('Checking existence of %d files...', len(queries))
   body = ''.join(
       (binascii.unhexlify(meta_data['h']) for (_, meta_data) in queries))
@@ -257,8 +254,8 @@ def zip_and_trigger_upload(infile, metadata, upload_function):
   # if not metadata['T']:
   compressed_data = read_and_compress(infile, compression_level(infile))
   priority = (
-      run_isolated.Remote.HIGH if metadata.get('priority', '1') == '0'
-      else run_isolated.Remote.MED)
+      run_isolated.RemoteOperation.HIGH if metadata.get('priority', '1') == '0'
+      else run_isolated.RemoteOperation.MED)
   return upload_function(priority, compressed_data, metadata['h'], None)
 
 
@@ -308,24 +305,19 @@ def upload_sha1_tree(base_url, indir, infiles, namespace):
   """
   logging.info('upload tree(base_url=%s, indir=%s, files=%d)' %
                (base_url, indir, len(infiles)))
-  assert base_url.startswith('http'), base_url
-  base_url = base_url.rstrip('/')
-
-  # TODO(maruel): Make this request much earlier asynchronously while the files
-  # are being enumerated.
-  token = urllib.quote(url_read(base_url + '/content/get_token'))
 
   # Create a pool of workers to zip and upload any files missing from
   # the server.
   num_threads = threading_utils.num_processors()
   zipping_pool = threading_utils.ThreadPool(min(2, num_threads),
                                             num_threads, 0, 'zip')
-  remote_uploader = UploadRemote(namespace, base_url, token)
+  remote = IsolateServer(base_url, namespace)
+  remote_uploader = run_isolated.RemoteOperation(remote.store)
 
   # Starts the zip and upload process for files that are missing
   # from the server.
-  contains_hash_url = '%s/content/contains/%s?token=%s' % (
-      base_url, namespace, token)
+  contains_hash_url = '%scontains/%s?token=%s' % (
+      remote.content_url, namespace, remote.token)
   uploaded = []
   for relfile, metadata in get_files_to_upload(contains_hash_url, infiles):
     infile = os.path.join(indir, relfile)

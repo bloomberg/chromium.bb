@@ -9,7 +9,6 @@ Keeps a local cache.
 """
 
 import ctypes
-import functools
 import hashlib
 import httplib
 import json
@@ -350,13 +349,95 @@ def valid_file(filepath, size):
   return True
 
 
-class Remote(object):
-  """Priority based worker queue to fetch or upload files from a
-  content-address server. Any function may be given as the fetcher/upload,
-  as long as it takes two inputs (the item contents, and their relative
-  destination).
+class IsolateServer(object):
+  """Client class to download or upload to Isolate Server."""
+  def __init__(self, base_url):
+    self.base_url = base_url
 
-  Supports local file system, CIFS or http remotes.
+  def retrieve(self, item, dest):
+    # TODO(maruel): Reuse HTTP connections. The stdlib doesn't make this
+    # easy.
+    try:
+      zipped_source = self.base_url + item
+      logging.debug('download_file(%s)', zipped_source)
+
+      # Because the app engine DB is only eventually consistent, retry
+      # 404 errors because the file might just not be visible yet (even
+      # though it has been uploaded).
+      connection = net.url_open(
+          zipped_source, retry_404=True,
+          read_timeout=DOWNLOAD_READ_TIMEOUT)
+      if not connection:
+        raise IOError('Unable to open connection to %s' % zipped_source)
+
+      content_length = connection.content_length
+      decompressor = zlib.decompressobj()
+      size = 0
+      with open(dest, 'wb') as f:
+        while True:
+          chunk = connection.read(ZIPPED_FILE_CHUNK)
+          if not chunk:
+            break
+          size += len(chunk)
+          f.write(decompressor.decompress(chunk))
+      # Ensure that all the data was properly decompressed.
+      uncompressed_data = decompressor.flush()
+      assert not uncompressed_data
+    except IOError as e:
+      logging.error('Failed to download %s at %s.\n%s', item, dest, e)
+      raise
+    except httplib.HTTPException as e:
+      msg = 'HTTPException while retrieving %s at %s.\n%s' % (item, dest, e)
+      logging.error(msg)
+      raise IOError(msg)
+    except zlib.error as e:
+      msg = 'Corrupted zlib for item %s. Processed %d of %s bytes.\n%s' % (
+          item, size, content_length, e)
+      logging.error(msg)
+
+      # Testing seems to show that if a few machines are trying to download
+      # the same blob, they can cause each other to fail. So if we hit a
+      # zip error, this is the most likely cause (it only downloads some of
+      # the data). Randomly sleep for between 5 and 25 seconds to try and
+      # spread out the downloads.
+      # TODO(csharp): Switch from blobstorage to cloud storage and see if
+      # that solves the issue.
+      sleep_duration = (random.random() * 20) + 5
+      time.sleep(sleep_duration)
+      raise IOError(msg)
+
+
+class FileSystem(object):
+  """Fetches data from the file system.
+
+  The common use case is a NFS/CIFS file server that is mounted locally that is
+  used to fetch the file on a local partition.
+  """
+  def __init__(self, base_path):
+    self.base_path = base_path
+
+  def retrieve(self, item, dest):
+    source = os.path.join(self.base_path, item)
+    if source == dest:
+      logging.info('Source and destination are the same, no action required')
+      return
+    logging.debug('copy_file(%s, %s)', source, dest)
+    shutil.copy(source, dest)
+
+
+def get_storage_api(file_or_url):
+  """Returns an object that implements .retrieve()."""
+  if re.match(r'^https?://.+$', file_or_url):
+    return IsolateServer(file_or_url)
+  else:
+    return FileSystem(file_or_url)
+
+
+class RemoteOperation(object):
+  """Priority based worker queue to operate on action items.
+
+  It execute a function with the given task items. It is specialized to download
+  files.
 
   When the priority of items is equals, works in strict FIFO mode.
   """
@@ -368,9 +449,9 @@ class Remote(object):
   INTERNAL_PRIORITY_BITS = (1<<8) - 1
   RETRIES = 5
 
-  def __init__(self, destination_root):
-    # Function to fetch a remote object or upload to a remote location..
-    self._do_item = self.get_file_handler(destination_root)
+  def __init__(self, do_item):
+    # Function to fetch a remote object or upload to a remote location.
+    self._do_item = do_item
     # Contains tuple(priority, obj).
     self._done = Queue.PriorityQueue()
     self._pool = threading_utils.ThreadPool(
@@ -427,75 +508,6 @@ class Remote(object):
         return
       raise
 
-  def get_file_handler(self, file_or_url):  # pylint: disable=R0201
-    """Returns a object to retrieve objects from a remote."""
-    if re.match(r'^https?://.+$', file_or_url):
-      return functools.partial(self._download_file, file_or_url)
-    else:
-      return functools.partial(self._copy_file, file_or_url)
-
-  @staticmethod
-  def _download_file(base_url, item, dest):
-    # TODO(maruel): Reuse HTTP connections. The stdlib doesn't make this
-    # easy.
-    try:
-      zipped_source = base_url + item
-      logging.debug('download_file(%s)', zipped_source)
-
-      # Because the app engine DB is only eventually consistent, retry
-      # 404 errors because the file might just not be visible yet (even
-      # though it has been uploaded).
-      connection = net.url_open(zipped_source, retry_404=True,
-          read_timeout=DOWNLOAD_READ_TIMEOUT)
-      if not connection:
-        raise IOError('Unable to open connection to %s' % zipped_source)
-
-      content_length = connection.content_length
-      decompressor = zlib.decompressobj()
-      size = 0
-      with open(dest, 'wb') as f:
-        while True:
-          chunk = connection.read(ZIPPED_FILE_CHUNK)
-          if not chunk:
-            break
-          size += len(chunk)
-          f.write(decompressor.decompress(chunk))
-      # Ensure that all the data was properly decompressed.
-      uncompressed_data = decompressor.flush()
-      assert not uncompressed_data
-    except IOError as e:
-      logging.error('Failed to download %s at %s.\n%s', item, dest, e)
-      raise
-    except httplib.HTTPException as e:
-      msg = 'HTTPException while retrieving %s at %s.\n%s' % (item, dest, e)
-      logging.error(msg)
-      raise IOError(msg)
-    except zlib.error as e:
-      msg = 'Corrupted zlib for item %s. Processed %d of %s bytes.\n%s' % (
-          item, size, content_length, e)
-      logging.error(msg)
-
-      # Testing seems to show that if a few machines are trying to download
-      # the same blob, they can cause each other to fail. So if we hit a
-      # zip error, this is the most likely cause (it only downloads some of
-      # the data). Randomly sleep for between 5 and 25 seconds to try and
-      # spread out the downloads.
-      # TODO(csharp): Switch from blobstorage to cloud storage and see if
-      # that solves the issue.
-      sleep_duration = (random.random() * 20) + 5
-      time.sleep(sleep_duration)
-
-      raise IOError(msg)
-
-  @staticmethod
-  def _copy_file(base_path, item, dest):
-    source = os.path.join(base_path, item)
-    if source == dest:
-      logging.info('Source and destination are the same, no action required')
-      return
-    logging.debug('copy_file(%s, %s)', source, dest)
-    shutil.copy(source, dest)
-
 
 class CachePolicies(object):
   def __init__(self, max_cache_size, min_free_space, max_items):
@@ -513,36 +525,6 @@ class CachePolicies(object):
     self.max_items = max_items
 
 
-class NoCache(object):
-  """This class is intended to be usable everywhere the Cache class is.
-  Instead of downloading to a cache, all files are downloaded to the target
-  directory and then moved to where they are needed.
-  """
-
-  def __init__(self, target_directory, remote):
-    self.target_directory = target_directory
-    self.remote = remote
-
-  def retrieve(self, priority, item, size):
-    """Get the request file."""
-    self.remote.add_item(priority, item, self.path(item), size)
-    self.remote.get_one_result()
-
-  def wait_for(self, items):
-    """Download the first item of the given list if it is missing."""
-    item = items.iterkeys().next()
-
-    if not os.path.exists(self.path(item)):
-      self.remote.add_item(Remote.MED, item, self.path(item), UNKNOWN_FILE_SIZE)
-      downloaded = self.remote.get_one_result()
-      assert downloaded == item
-
-    return item
-
-  def path(self, item):
-    return os.path.join(self.target_directory, item)
-
-
 class Cache(object):
   """Stateful LRU cache.
 
@@ -550,15 +532,15 @@ class Cache(object):
   """
   STATE_FILE = 'state.json'
 
-  def __init__(self, cache_dir, remote, policies):
+  def __init__(self, cache_dir, remote_fetcher, policies):
     """
     Arguments:
     - cache_dir: Directory where to place the cache.
-    - remote: Remote where to fetch items from.
+    - remote_fetcher: RemoteOperation where to fetch items from.
     - policies: cache retention policies.
     """
     self.cache_dir = cache_dir
-    self.remote = remote
+    self.remote_fetcher = remote_fetcher
     self.policies = policies
     self.state_file = os.path.join(cache_dir, self.STATE_FILE)
     self.lru = lru.LRUDict()
@@ -703,7 +685,7 @@ class Cache(object):
       #   space, it'll crash.
       # - Make sure there's enough free disk space to fit all dependencies of
       #   this run! If not, abort early.
-      self.remote.add_item(priority, item, path, size)
+      self.remote_fetcher.add_item(priority, item, path, size)
       self._pending_queue.add(item)
 
   def add(self, filepath, obj):
@@ -734,11 +716,11 @@ class Cache(object):
         items, self._pending_queue)
     # Note that:
     #   len(self._pending_queue) ==
-    #   ( len(self.remote._workers) - self.remote._ready +
+    #   ( len(self.remote_fetcher._workers) - self.remote_fetcher._ready +
     #     len(self._remote._queue) + len(self._remote.done))
     # There is no lock-free way to verify that.
     while self._pending_queue:
-      item = self.remote.get_one_result()
+      item = self.remote_fetcher.get_one_result()
       self._pending_queue.remove(item)
       self._add(item)
       if item in items:
@@ -820,7 +802,7 @@ class IsolatedFile(object):
         if 'h' in properties:
           # Preemptively request files.
           logging.debug('fetching %s' % filepath)
-          cache.retrieve(Remote.MED, properties['h'], properties['s'])
+          cache.retrieve(RemoteOperation.MED, properties['h'], properties['s'])
     self.files_fetched = True
 
 
@@ -866,7 +848,7 @@ class Settings(object):
       assert h not in pending
       seen.add(h)
       pending[h] = isolated_file
-      cache.retrieve(Remote.HIGH, h, UNKNOWN_FILE_SIZE)
+      cache.retrieve(RemoteOperation.HIGH, h, UNKNOWN_FILE_SIZE)
 
     retrieve(self.root)
 
@@ -977,73 +959,12 @@ def generate_remaining_files(files):
   return remaining
 
 
-def download_test_data(isolated_hash, target_directory, remote):
-  """Downloads the dependencies to the given directory."""
-  if not os.path.exists(target_directory):
-    os.makedirs(target_directory)
-
-  settings = Settings()
-  no_cache = NoCache(target_directory, Remote(remote))
-
-  # Download all the isolated files.
-  with tools.Profiler('GetIsolateds'):
-    settings.load(no_cache, isolated_hash)
-
-  if not settings.command:
-    print >> sys.stderr, 'No command to run'
-    return 1
-
-  with tools.Profiler('GetRest'):
-    create_directories(target_directory, settings.files)
-    create_links(target_directory, settings.files.iteritems())
-
-    cwd, cmd = setup_commands(target_directory, settings.relative_cwd,
-                              settings.command[:])
-
-    remaining = generate_remaining_files(settings.files.iteritems())
-
-    # Now block on the remaining files to be downloaded and mapped.
-    logging.info('Retrieving remaining files')
-    last_update = time.time()
-    while remaining:
-      obj = no_cache.wait_for(remaining)
-      files = remaining.pop(obj)
-
-      for i, (filepath, properties) in enumerate(files):
-        outfile = os.path.join(target_directory, filepath)
-        logging.info(no_cache.path(obj))
-
-        if i + 1 == len(files):
-          os.rename(no_cache.path(obj), outfile)
-        else:
-          shutil.copyfile(no_cache.path(obj), outfile)
-
-        if 'm' in properties and not sys.platform == 'win32':
-          # It's not set on Windows. It could be set only in the case of
-          # downloading content generated from another OS. Do not crash in that
-          # case.
-          os.chmod(outfile, properties['m'])
-
-      if time.time() - last_update > DELAY_BETWEEN_UPDATES_IN_SECS:
-        msg = '%d files remaining...' % len(remaining)
-        print msg
-        logging.info(msg)
-        last_update = time.time()
-
-  print('.isolated files successfully downloaded and setup in %s' %
-        target_directory)
-  print('To run this test please run the command %s from the directory %s' %
-        (cmd, cwd))
-
-  return 0
-
-
-def run_tha_test(isolated_hash, cache_dir, remote, policies):
+def run_tha_test(isolated_hash, cache_dir, retriever, policies):
   """Downloads the dependencies in the cache, hardlinks them into a temporary
   directory and runs the executable.
   """
   settings = Settings()
-  with Cache(cache_dir, Remote(remote), policies) as cache:
+  with Cache(cache_dir, RemoteOperation(retriever), policies) as cache:
     outdir = make_temp_dir('run_tha_test', cache_dir)
     try:
       # Initiate all the files download.
@@ -1116,13 +1037,6 @@ def main():
   parser = tools.OptionParserWithLogging(
       usage='%prog <options>', log_file=RUN_ISOLATED_LOG_FILE)
 
-  group = optparse.OptionGroup(parser, 'Download')
-  group.add_option(
-      '--download', metavar='DEST',
-      help='Downloads files to DEST and returns without running, instead of '
-           'downloading and then running from a temporary directory.')
-  parser.add_option_group(group)
-
   group = optparse.OptionGroup(parser, 'Data source')
   group.add_option(
       '-s', '--isolated',
@@ -1179,20 +1093,17 @@ def main():
   policies = CachePolicies(
       options.max_cache_size, options.min_free_space, options.max_items)
 
-  if options.download:
-    return download_test_data(options.isolated or options.hash,
-                              options.download, options.remote)
-  else:
-    try:
-      return run_tha_test(
-          options.isolated or options.hash,
-          options.cache,
-          options.remote,
-          policies)
-    except Exception, e:
-      # Make sure any exception is logged.
-      logging.exception(e)
-      return 1
+  retriever = get_storage_api(options.remote)
+  try:
+    return run_tha_test(
+        options.isolated or options.hash,
+        options.cache,
+        retriever.retrieve,
+        policies)
+  except Exception, e:
+    # Make sure any exception is logged.
+    logging.exception(e)
+    return 1
 
 
 if __name__ == '__main__':
