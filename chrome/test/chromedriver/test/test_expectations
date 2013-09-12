@@ -180,6 +180,13 @@ _OS_NEGATIVE_FILTER['android'] = [
 
     # Flaky: https://code.google.com/p/chromedriver/issues/detail?id=441
     'PageLoadingTest.testShouldBeAbleToNavigateBackInTheBrowserHistory',
+
+    # https://code.google.com/p/chromedriver/issues/detail?id=526
+    'ElementFindingTest.testShouldNotBeAbleToLocateASingleElementOnABlankPage',
+    'ElementFindingTest.testShouldBeAbleToFindAnElementByBooleanAttributeUsingShortCssSelector',
+
+    # https://code.google.com/p/chromedriver/issues/detail?id=527
+    'ClickTest.testCanClickOnALinkThatContainsEmbeddedBlockElements',
 ]
 
 
