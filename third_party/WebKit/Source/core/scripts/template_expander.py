@@ -38,7 +38,7 @@ import jinja2
 def apply_template(path_to_template, params):
     dirname, basename = os.path.split(path_to_template)
     path_to_templates = os.path.join(_current_dir, "templates")
-    jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader([dirname, path_to_templates]))
+    jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader([dirname, path_to_templates]), keep_trailing_newline=True)
     template = jinja_env.get_template(basename)
     return template.render(params)
 
