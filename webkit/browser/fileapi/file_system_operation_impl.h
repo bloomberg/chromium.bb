@@ -131,6 +131,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemOperationImpl
                          bool recursive);
   void DoCopyFileLocal(const FileSystemURL& src,
                        const FileSystemURL& dest,
+                       const CopyFileProgressCallback& progress_callback,
                        const StatusCallback& callback);
   void DoMoveFileLocal(const FileSystemURL& src,
                        const FileSystemURL& dest,

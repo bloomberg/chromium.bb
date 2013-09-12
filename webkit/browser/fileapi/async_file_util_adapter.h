@@ -76,6 +76,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE AsyncFileUtilAdapter
       scoped_ptr<FileSystemOperationContext> context,
       const FileSystemURL& src_url,
       const FileSystemURL& dest_url,
+      const CopyFileProgressCallback& progress_callback,
       const StatusCallback& callback) OVERRIDE;
   virtual void MoveFileLocal(
       scoped_ptr<FileSystemOperationContext> context,

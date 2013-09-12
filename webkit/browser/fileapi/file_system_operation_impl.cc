@@ -288,7 +288,8 @@ void FileSystemOperationImpl::CopyFileLocal(
   GetUsageAndQuotaThenRunTask(
       dest_url,
       base::Bind(&FileSystemOperationImpl::DoCopyFileLocal,
-                 weak_factory_.GetWeakPtr(), src_url, dest_url, callback),
+                 weak_factory_.GetWeakPtr(), src_url, dest_url,
+                 progress_callback, callback),
       base::Bind(callback, base::PLATFORM_FILE_ERROR_FAILED));
 }
 
@@ -399,9 +400,10 @@ void FileSystemOperationImpl::DoCreateDirectory(
 void FileSystemOperationImpl::DoCopyFileLocal(
     const FileSystemURL& src_url,
     const FileSystemURL& dest_url,
+    const CopyFileProgressCallback& progress_callback,
     const StatusCallback& callback) {
   async_file_util_->CopyFileLocal(
-      operation_context_.Pass(), src_url, dest_url,
+      operation_context_.Pass(), src_url, dest_url, progress_callback,
       base::Bind(&FileSystemOperationImpl::DidFinishOperation,
                  weak_factory_.GetWeakPtr(), callback));
 }

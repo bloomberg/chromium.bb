@@ -171,7 +171,8 @@ class FileSystemOperation {
   // END_COPY_ENTRY a/b/d.txt (copy "d.txt" is finished).
   //
   // Note that event sequence of a/b/c.txt and a/b/d.txt can be interlaced,
-  // because they can be done in parallel.
+  // because they can be done in parallel. Also PROGRESS events are optional,
+  // so they may not be appeared.
   // All the progress callback invocation should be done before StatusCallback
   // given to the Copy is called. Especially if an error is found before first
   // progres callback invocation, the progress callback may NOT invoked for the
