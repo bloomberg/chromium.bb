@@ -478,7 +478,6 @@ gfx::Size NotifierSettingsView::GetMinimumSize() {
 
 gfx::Size NotifierSettingsView::GetPreferredSize() {
   gfx::Size preferred_size;
-  std::vector<gfx::Size> child_sizes;
   gfx::Size title_size = title_label_->GetPreferredSize();
   gfx::Size content_size = scroller_->contents()->GetPreferredSize();
   return gfx::Size(std::max(title_size.width(), content_size.width()),
