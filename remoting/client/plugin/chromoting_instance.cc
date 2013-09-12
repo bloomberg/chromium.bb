@@ -491,39 +491,16 @@ void ChromotingInstance::SetCursorShape(
     const protocol::CursorShapeInfo& cursor_shape) {
   COMPILE_ASSERT(sizeof(uint32_t) == kBytesPerPixel, rgba_pixels_are_32bit);
 
-  if (!cursor_shape.has_data() ||
-      !cursor_shape.has_width() ||
-      !cursor_shape.has_height() ||
-      !cursor_shape.has_hotspot_x() ||
-      !cursor_shape.has_hotspot_y()) {
+  // pp::MouseCursor requires image to be in the native format.
+  if (pp::ImageData::GetNativeImageDataFormat() !=
+      PP_IMAGEDATAFORMAT_BGRA_PREMUL) {
+    LOG(WARNING) << "Unable to set cursor shape - native image format is not"
+                    " premultiplied BGRA";
     return;
   }
 
   int width = cursor_shape.width();
   int height = cursor_shape.height();
-
-  // Verify that |width| and |height| are within sane limits. Otherwise integer
-  // overflow can occur while calculating |cursor_total_bytes| below.
-  if (width <= 0 || width > (SHRT_MAX / 2) ||
-      height <= 0 || height > (SHRT_MAX / 2)) {
-    VLOG(2) << "Cursor dimensions are out of bounds for SetCursor: "
-            << width << "x" << height;
-    return;
-  }
-
-  uint32 cursor_total_bytes = width * height * kBytesPerPixel;
-  if (cursor_shape.data().size() < cursor_total_bytes) {
-    VLOG(2) << "Expected " << cursor_total_bytes << " bytes for a "
-            << width << "x" << height << " cursor. Only received "
-            << cursor_shape.data().size() << " bytes";
-    return;
-  }
-
-  if (pp::ImageData::GetNativeImageDataFormat() !=
-      PP_IMAGEDATAFORMAT_BGRA_PREMUL) {
-    VLOG(2) << "Unable to set cursor shape - non-native image format";
-    return;
-  }
 
   int hotspot_x = cursor_shape.hotspot_x();
   int hotspot_y = cursor_shape.hotspot_y();
