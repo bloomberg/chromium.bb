@@ -388,11 +388,10 @@ scoped_ptr<media::VideoCaptureDevice> DesktopCaptureDevice::Create(
     case DesktopMediaID::TYPE_SCREEN: {
       scoped_ptr<webrtc::DesktopCapturer> capturer;
 
-#if defined(OS_CHROMEOS) && !defined(ARCH_CPU_ARMEL) && defined(USE_X11)
+#if defined(OS_CHROMEOS) && defined(USE_X11)
       // ScreenCapturerX11 polls by default, due to poor driver support for
       // DAMAGE. ChromeOS' drivers [can be patched to] support DAMAGE properly,
-      // so use it. However ARM driver seems to not support this properly, so
-      // disable it for ARM. See http://crbug.com/230105 .
+      // so use it.
       capturer.reset(webrtc::ScreenCapturer::CreateWithXDamage(true));
 #elif defined(OS_WIN)
       // ScreenCapturerWin disables Aero by default. We don't want it disabled
