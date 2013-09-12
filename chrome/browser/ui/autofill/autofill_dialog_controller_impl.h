@@ -132,7 +132,6 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   virtual string16 LabelForSection(DialogSection section) const OVERRIDE;
   virtual SuggestionState SuggestionStateForSection(
       DialogSection section) OVERRIDE;
-  virtual void EditClickedForSection(DialogSection section) OVERRIDE;
   virtual gfx::Image IconForField(ServerFieldType type,
                                   const string16& user_input) const OVERRIDE;
   virtual string16 InputValidityMessage(DialogSection section,

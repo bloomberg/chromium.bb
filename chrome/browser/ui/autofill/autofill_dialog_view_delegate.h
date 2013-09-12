@@ -116,9 +116,6 @@ class AutofillDialogViewDelegate {
   // Returns the current state of suggestions for |section|.
   virtual SuggestionState SuggestionStateForSection(DialogSection section) = 0;
 
-  // Should be called when the user starts editing of the section.
-  virtual void EditClickedForSection(DialogSection section) = 0;
-
   // Returns an icon to be displayed along with the input for the given type.
   // |user_input| is the current text in the textfield.
   virtual gfx::Image IconForField(ServerFieldType type,

@@ -525,11 +525,13 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, WalletCreditCardDisabled) {
   controller()->OnUserNameFetchSuccess("user@example.com");
 
   scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
-  wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
+  // An expired card will be forced into edit mode.
+  wallet_items->AddInstrument(wallet::GetTestMaskedInstrumentWithDetails(
+      "instrument_id",
+      wallet::GetTestAddress(),
+      wallet::WalletItems::MaskedInstrument::VISA,
+      wallet::WalletItems::MaskedInstrument::EXPIRED));
   controller()->OnDidGetWalletItems(wallet_items.Pass());
-
-  // Click "Edit" in the billing section (while using Wallet).
-  controller()->EditClickedForSection(SECTION_CC_BILLING);
 
   const DetailInputs& edit_inputs =
       controller()->RequestedFieldsForSection(SECTION_CC_BILLING);

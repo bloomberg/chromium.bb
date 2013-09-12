@@ -136,26 +136,6 @@ void BuildInputsForSection(DialogSection dialog_section,
   }
 }
 
-AutofillMetrics::DialogUiEvent DialogSectionToUiEditEvent(
-    DialogSection section) {
-  switch (section) {
-    case SECTION_BILLING:
-      return AutofillMetrics::DIALOG_UI_BILLING_EDIT_UI_SHOWN;
-
-    case SECTION_CC_BILLING:
-      return AutofillMetrics::DIALOG_UI_CC_BILLING_EDIT_UI_SHOWN;
-
-    case SECTION_SHIPPING:
-      return AutofillMetrics::DIALOG_UI_SHIPPING_EDIT_UI_SHOWN;
-
-    case SECTION_CC:
-      return AutofillMetrics::DIALOG_UI_CC_EDIT_UI_SHOWN;
-  }
-
-  NOTREACHED();
-  return AutofillMetrics::NUM_DIALOG_UI_EVENTS;
-}
-
 AutofillMetrics::DialogUiEvent DialogSectionToUiItemAddedEvent(
     DialogSection section) {
   switch (section) {

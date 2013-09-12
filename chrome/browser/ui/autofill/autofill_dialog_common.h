@@ -36,11 +36,6 @@ bool IsCreditCardType(ServerFieldType type);
 // Constructs |inputs| from template data for a given |dialog_section|.
 void BuildInputsForSection(DialogSection dialog_section, DetailInputs* inputs);
 
-// Returns the AutofillMetrics::DIALOG_UI_*_EDIT_UI_SHOWN metric corresponding
-// to the |section|.
-AutofillMetrics::DialogUiEvent DialogSectionToUiEditEvent(
-    DialogSection section);
-
 // Returns the AutofillMetrics::DIALOG_UI_*_ITEM_ADDED metric corresponding
 // to the |section|.
 AutofillMetrics::DialogUiEvent DialogSectionToUiItemAddedEvent(

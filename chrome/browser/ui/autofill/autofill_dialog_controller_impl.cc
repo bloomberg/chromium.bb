@@ -1514,24 +1514,6 @@ gfx::Image AutofillDialogControllerImpl::ExtraSuggestionIconForSection(
   return gfx::Image();
 }
 
-void AutofillDialogControllerImpl::EditClickedForSection(
-    DialogSection section) {
-  ScopedViewUpdates updates(view_.get());
-  scoped_ptr<DataModelWrapper> model = CreateWrapper(section);
-  SetEditingExistingData(section, true);
-
-  DetailInputs* inputs = MutableRequestedFieldsForSection(section);
-  for (DetailInputs::iterator it = inputs->begin(); it != inputs->end(); ++it) {
-    it->editable = InputIsEditable(*it, section);
-  }
-  model->FillInputs(inputs);
-
-  UpdateSection(section);
-
-  GetMetricLogger().LogDialogUiEvent(
-      common::DialogSectionToUiEditEvent(section));
-}
-
 gfx::Image AutofillDialogControllerImpl::IconForField(
     ServerFieldType type, const string16& user_input) const {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
@@ -2182,6 +2164,8 @@ void AutofillDialogControllerImpl::OnDidGetFullWallet(
 
     case wallet::VERIFY_CVV:
       SuggestionsUpdated();
+      view_->UpdateButtonStrip();
+      view_->UpdateNotificationArea();
       break;
 
     default:
