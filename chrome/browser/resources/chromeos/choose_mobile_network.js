@@ -54,6 +54,11 @@ cr.define('mobile', function() {
           return;
         }
       }
+    },
+    showScanning_: function() {
+      $('scanning').hidden = false;
+      $('choose').hidden = true;
+      $('no-mobile-networks').hidden = true;
     }
   };
 
@@ -68,6 +73,10 @@ cr.define('mobile', function() {
 
   ChooseNetwork.connect = function() {
     ChooseNetwork.getInstance().connect_();
+  };
+
+  ChooseNetwork.showScanning = function() {
+    ChooseNetwork.getInstance().showScanning_();
   };
 
   ChooseNetwork.initialize = function() {

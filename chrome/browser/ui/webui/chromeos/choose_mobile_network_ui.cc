@@ -46,6 +46,7 @@ const char kJsApiPageReady[] = "pageReady";
 
 // Page JS API function names.
 const char kJsApiShowNetworks[] = "mobile.ChooseNetwork.showNetworks";
+const char kJsApiShowScanning[] = "mobile.ChooseNetwork.showScanning";
 
 // Network properties.
 const char kNetworkIdProperty[] = "networkId";
@@ -165,6 +166,11 @@ void ChooseMobileNetworkHandler::DeviceListChanged() {
   if (!cellular) {
     LOG(WARNING) << "Cellular device with path '" << device_path_
                  << "' disappeared.";
+    return;
+  }
+  if (cellular->scanning()) {
+    NET_LOG_EVENT("ChooseMobileNetwork", "Device is scanning for networks.");
+    web_ui()->CallJavascriptFunction(kJsApiShowScanning);
     return;
   }
   const DeviceState::CellularScanResults& scan_results =
