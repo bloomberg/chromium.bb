@@ -34,6 +34,9 @@
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/fileapi/Blob.h"
+#include "core/fileapi/FileError.h"
+#include "core/fileapi/FileReaderLoader.h"
+#include "core/fileapi/FileReaderLoaderClient.h"
 #include "core/platform/NotImplemented.h"
 #include "modules/websockets/WebSocketChannel.h"
 #include "modules/websockets/WebSocketChannelClient.h"
@@ -47,7 +50,6 @@
 #include "wtf/text/WTFString.h"
 
 // FIXME: We should implement Inspector notification.
-// FIXME: We should implement send(Blob).
 // FIXME: We should implement suspend / resume.
 // FIXME: We should add log messages.
 
@@ -66,6 +68,50 @@ bool isClean(int code)
 
 } // namespace
 
+class NewWebSocketChannelImpl::BlobLoader : public FileReaderLoaderClient {
+public:
+    BlobLoader(const Blob&, NewWebSocketChannelImpl*);
+    virtual ~BlobLoader() { }
+
+    void cancel();
+
+    // FileReaderLoaderClient functions.
+    virtual void didStartLoading() OVERRIDE { }
+    virtual void didReceiveData() OVERRIDE { }
+    virtual void didFinishLoading() OVERRIDE;
+    virtual void didFail(FileError::ErrorCode) OVERRIDE;
+
+private:
+    NewWebSocketChannelImpl* m_channel;
+    FileReaderLoader m_loader;
+};
+
+NewWebSocketChannelImpl::BlobLoader::BlobLoader(const Blob& blob, NewWebSocketChannelImpl* channel)
+    : m_channel(channel)
+    , m_loader(FileReaderLoader::ReadAsArrayBuffer, this)
+{
+    m_loader.start(channel->scriptExecutionContext(), blob);
+}
+
+void NewWebSocketChannelImpl::BlobLoader::cancel()
+{
+    m_loader.cancel();
+    // didFail will be called immediately.
+    // |this| is deleted here.
+}
+
+void NewWebSocketChannelImpl::BlobLoader::didFinishLoading()
+{
+    m_channel->didFinishLoadingBlob(m_loader.arrayBufferResult());
+    // |this| is deleted here.
+}
+
+void NewWebSocketChannelImpl::BlobLoader::didFail(FileError::ErrorCode errorCode)
+{
+    m_channel->didFailLoadingBlob(errorCode);
+    // |this| is deleted here.
+}
+
 NewWebSocketChannelImpl::NewWebSocketChannelImpl(ScriptExecutionContext* context, WebSocketChannelClient* client, const String& sourceURL, unsigned lineNumber)
     : ContextLifecycleObserver(context)
     , m_handle(adoptPtr(WebKit::Platform::current()->createWebSocketHandle()))
@@ -75,6 +121,11 @@ NewWebSocketChannelImpl::NewWebSocketChannelImpl(ScriptExecutionContext* context
     , m_bufferedAmount(0)
     , m_sentSizeOfTopMessage(0)
 {
+}
+
+NewWebSocketChannelImpl::~NewWebSocketChannelImpl()
+{
+    abortAsyncOperations();
 }
 
 void NewWebSocketChannelImpl::connect(const KURL& url, const String& protocol)
@@ -148,6 +199,7 @@ void NewWebSocketChannelImpl::fail(const String& reason, MessageLevel level, con
 
 void NewWebSocketChannelImpl::disconnect()
 {
+    abortAsyncOperations();
     if (m_handle)
         m_handle->close(CloseEventCodeAbnormalClosure, "");
     m_handle.clear();
@@ -178,11 +230,9 @@ NewWebSocketChannelImpl::Message::Message(PassRefPtr<ArrayBuffer> arrayBuffer)
 
 void NewWebSocketChannelImpl::sendInternal()
 {
-    if (!m_handle || !m_sendingQuota) {
-        return;
-    }
+    ASSERT(m_handle);
     unsigned long bufferedAmount = m_bufferedAmount;
-    while (!m_messages.isEmpty() && m_sendingQuota > 0) {
+    while (!m_messages.isEmpty() && m_sendingQuota > 0 && !m_blobLoader) {
         bool final = false;
         const Message& message = m_messages.first();
         switch (message.type) {
@@ -197,8 +247,8 @@ void NewWebSocketChannelImpl::sendInternal()
             break;
         }
         case MessageTypeBlob:
-            notImplemented();
-            final = true;
+            ASSERT(!m_blobLoader);
+            m_blobLoader = adoptPtr(new BlobLoader(*message.blob, this));
             break;
         case MessageTypeArrayBuffer: {
             WebSocketHandle::MessageType type =
@@ -228,6 +278,14 @@ void NewWebSocketChannelImpl::flowControlIfNecessary()
     }
     m_handle->flowControl(m_receivedDataSizeForFlowControl);
     m_receivedDataSizeForFlowControl = 0;
+}
+
+void NewWebSocketChannelImpl::abortAsyncOperations()
+{
+    if (m_blobLoader) {
+        m_blobLoader->cancel();
+        m_blobLoader.clear();
+    }
 }
 
 void NewWebSocketChannelImpl::didConnect(WebSocketHandle* handle, bool succeed, const WebKit::WebString& selectedProtocol, const WebKit::WebString& extensions)
@@ -323,6 +381,7 @@ void NewWebSocketChannelImpl::handleBinaryMessage(Vector<char>* messageData)
 void NewWebSocketChannelImpl::handleDidClose(unsigned short code, const String& reason)
 {
     m_handle.clear();
+    abortAsyncOperations();
     if (!m_client) {
         return;
     }
@@ -332,6 +391,29 @@ void NewWebSocketChannelImpl::handleDidClose(unsigned short code, const String& 
         isClean(code) ? WebSocketChannelClient::ClosingHandshakeComplete : WebSocketChannelClient::ClosingHandshakeIncomplete;
     client->didClose(m_bufferedAmount, status, code, reason);
     // client->didClose may delete this object.
+}
+
+void NewWebSocketChannelImpl::didFinishLoadingBlob(PassRefPtr<ArrayBuffer> buffer)
+{
+    m_blobLoader.clear();
+    ASSERT(m_handle);
+    // The loaded blob is always placed on m_messages[0].
+    ASSERT(m_messages.size() > 0 && m_messages.first().type == MessageTypeBlob);
+    // We replace it with the loaded blob.
+    m_messages.first() = Message(buffer);
+    sendInternal();
+}
+
+void NewWebSocketChannelImpl::didFailLoadingBlob(FileError::ErrorCode errorCode)
+{
+    m_blobLoader.clear();
+    if (errorCode == FileError::ABORT_ERR) {
+        // The error is caused by cancel().
+        return;
+    }
+    // FIXME: Generate human-friendly reason message.
+    failAsError("Failed to load Blob: error code = " + String::number(errorCode));
+    // |this| can be deleted here.
 }
 
 } // namespace WebCore
