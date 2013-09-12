@@ -102,7 +102,7 @@ TEST(SelectFaviconFramesTest, _16From15) {
   bitmaps.push_back(MakeBitmap(SK_ColorRED, 14, 14));
   bitmaps.push_back(MakeBitmap(SK_ColorGREEN, 15, 15));
 
-  // If nothing else is available, should resample form the next smaller
+  // If nothing else is available, should resample from the next smaller
   // candidate.
   gfx::ImageSkia image = SelectFaviconFrames(bitmaps, Scale1x(), 16, NULL);
   EXPECT_EQ(1u, image.image_reps().size());
@@ -141,67 +141,10 @@ TEST(SelectFaviconFramesTest, _16From16_Scale2x_32_From_32) {
   EXPECT_EQ(SK_ColorBLUE, GetColor2x(image));
 }
 
-TEST(SelectFaviconFramesTest, _24_48) {
-  vector<SkBitmap> bitmaps;
-  bitmaps.push_back(MakeBitmap(SK_ColorRED, 25, 25));
-  bitmaps.push_back(MakeBitmap(SK_ColorGREEN, 16, 16));
-  bitmaps.push_back(MakeBitmap(SK_ColorBLUE, 32, 32));
-  bitmaps.push_back(MakeBitmap(SK_ColorYELLOW, 49, 49));
-
-  gfx::ImageSkia image = SelectFaviconFrames(bitmaps, Scale1x2x(), 24, NULL);
-  EXPECT_EQ(2u, image.image_reps().size());
-  ASSERT_TRUE(image.HasRepresentation(ui::SCALE_FACTOR_100P));
-  ASSERT_TRUE(image.HasRepresentation(ui::SCALE_FACTOR_200P));
-  EXPECT_EQ(24, image.width());
-  EXPECT_EQ(24, image.height());
-  EXPECT_EQ(SK_ColorGREEN, GetColor1x(image));
-  EXPECT_EQ(0u, SkColorGetA(GetColor(image, ui::SCALE_FACTOR_100P, 0, 0)));
-  EXPECT_EQ(0u, SkColorGetA(GetColor(image, ui::SCALE_FACTOR_100P, 3, 4)));
-  EXPECT_EQ(255u, SkColorGetA(GetColor(image, ui::SCALE_FACTOR_100P, 4, 4)));
-  EXPECT_EQ(255u, SkColorGetA(GetColor(image, ui::SCALE_FACTOR_100P, 19, 19)));
-  EXPECT_EQ(0u, SkColorGetA(GetColor(image, ui::SCALE_FACTOR_100P, 20, 19)));
-  EXPECT_EQ(0u, SkColorGetA(GetColor(image, ui::SCALE_FACTOR_100P, 23, 23)));
-
-  EXPECT_EQ(SK_ColorBLUE, GetColor2x(image));
-  EXPECT_EQ(0u, SkColorGetA(GetColor(image, ui::SCALE_FACTOR_200P, 0, 0)));
-  EXPECT_EQ(0u, SkColorGetA(GetColor(image, ui::SCALE_FACTOR_200P, 7, 8)));
-  EXPECT_EQ(255u, SkColorGetA(GetColor(image, ui::SCALE_FACTOR_200P, 8, 8)));
-  EXPECT_EQ(255u, SkColorGetA(GetColor(image, ui::SCALE_FACTOR_200P, 39, 39)));
-  EXPECT_EQ(0u, SkColorGetA(GetColor(image, ui::SCALE_FACTOR_200P, 40, 39)));
-  EXPECT_EQ(0u, SkColorGetA(GetColor(image, ui::SCALE_FACTOR_200P, 47, 47)));
-}
-
-TEST(SelectFaviconFramesTest, _48_From_16) {
-  vector<SkBitmap> bitmaps;
-  bitmaps.push_back(MakeBitmap(SK_ColorGREEN, 16, 16));
-
-  gfx::ImageSkia image = SelectFaviconFrames(bitmaps, Scale1x2x(), 24, NULL);
-  EXPECT_EQ(2u, image.image_reps().size());
-  ASSERT_TRUE(image.HasRepresentation(ui::SCALE_FACTOR_100P));
-  ASSERT_TRUE(image.HasRepresentation(ui::SCALE_FACTOR_200P));
-  EXPECT_EQ(24, image.width());
-  EXPECT_EQ(24, image.height());
-  EXPECT_EQ(SK_ColorGREEN, GetColor1x(image));
-  EXPECT_EQ(0u, SkColorGetA(GetColor(image, ui::SCALE_FACTOR_100P, 0, 0)));
-  EXPECT_EQ(0u, SkColorGetA(GetColor(image, ui::SCALE_FACTOR_100P, 3, 4)));
-  EXPECT_EQ(255u, SkColorGetA(GetColor(image, ui::SCALE_FACTOR_100P, 4, 4)));
-  EXPECT_EQ(255u, SkColorGetA(GetColor(image, ui::SCALE_FACTOR_100P, 19, 19)));
-  EXPECT_EQ(0u, SkColorGetA(GetColor(image, ui::SCALE_FACTOR_100P, 20, 19)));
-  EXPECT_EQ(0u, SkColorGetA(GetColor(image, ui::SCALE_FACTOR_100P, 23, 23)));
-
-  EXPECT_EQ(SK_ColorGREEN, GetColor2x(image));
-  EXPECT_EQ(0u, SkColorGetA(GetColor(image, ui::SCALE_FACTOR_200P, 0, 0)));
-  EXPECT_EQ(0u, SkColorGetA(GetColor(image, ui::SCALE_FACTOR_200P, 7, 8)));
-  EXPECT_EQ(255u, SkColorGetA(GetColor(image, ui::SCALE_FACTOR_200P, 8, 8)));
-  EXPECT_EQ(255u, SkColorGetA(GetColor(image, ui::SCALE_FACTOR_200P, 39, 39)));
-  EXPECT_EQ(0u, SkColorGetA(GetColor(image, ui::SCALE_FACTOR_200P, 40, 39)));
-  EXPECT_EQ(0u, SkColorGetA(GetColor(image, ui::SCALE_FACTOR_200P, 47, 47)));
-}
-
-TEST(SelectFaviconFramesTest, ExactMatchBetterThanHugeBitmap) {
+TEST(SelectFaviconFramesTest, ExactMatchBetterThanLargeBitmap) {
   float score1;
   vector<SkBitmap> bitmaps1;
-  bitmaps1.push_back(MakeBitmap(SK_ColorGREEN, 255, 255));
+  bitmaps1.push_back(MakeBitmap(SK_ColorGREEN, 48, 48));
   SelectFaviconFrames(bitmaps1, Scale1x2x(), 16, &score1);
 
   float score2;
@@ -211,6 +154,32 @@ TEST(SelectFaviconFramesTest, ExactMatchBetterThanHugeBitmap) {
   SelectFaviconFrames(bitmaps2, Scale1x2x(), 16, &score2);
 
   EXPECT_GT(score2, score1);
+}
+
+TEST(SelectFaviconFramesTest, UpsampleABitBetterThanHugeBitmap) {
+  float score1;
+  vector<SkBitmap> bitmaps1;
+  bitmaps1.push_back(MakeBitmap(SK_ColorGREEN, 128, 128));
+  SelectFaviconFrames(bitmaps1, Scale1x2x(), 16, &score1);
+
+  float score2;
+  vector<SkBitmap> bitmaps2;
+  bitmaps2.push_back(MakeBitmap(SK_ColorGREEN, 24, 24));
+  SelectFaviconFrames(bitmaps2, Scale1x2x(), 16, &score2);
+
+  float score3;
+  vector<SkBitmap> bitmaps3;
+  bitmaps3.push_back(MakeBitmap(SK_ColorGREEN, 16, 16));
+  SelectFaviconFrames(bitmaps3, Scale1x2x(), 16, &score3);
+
+  float score4;
+  vector<SkBitmap> bitmaps4;
+  bitmaps4.push_back(MakeBitmap(SK_ColorGREEN, 15, 15));
+  SelectFaviconFrames(bitmaps4, Scale1x2x(), 16, &score4);
+
+  EXPECT_GT(score2, score1);
+  EXPECT_GT(score3, score1);
+  EXPECT_GT(score4, score1);
 }
 
 TEST(SelectFaviconFramesTest, DownsamplingBetterThanUpsampling) {
@@ -227,4 +196,32 @@ TEST(SelectFaviconFramesTest, DownsamplingBetterThanUpsampling) {
   EXPECT_GT(score2, score1);
 }
 
+TEST(SelectFaviconFramesTest, DownsamplingLessIsBetter) {
+  float score1;
+  vector<SkBitmap> bitmaps1;
+  bitmaps1.push_back(MakeBitmap(SK_ColorGREEN, 34, 34));
+  SelectFaviconFrames(bitmaps1, Scale1x2x(), 16, &score1);
+
+  float score2;
+  vector<SkBitmap> bitmaps2;
+  bitmaps2.push_back(MakeBitmap(SK_ColorGREEN, 33, 33));
+  SelectFaviconFrames(bitmaps2, Scale1x2x(), 16, &score2);
+
+  EXPECT_GT(score2, score1);
 }
+
+TEST(SelectFaviconFramesTest, UpsamplingLessIsBetter) {
+  float score1;
+  vector<SkBitmap> bitmaps1;
+  bitmaps1.push_back(MakeBitmap(SK_ColorGREEN, 8, 8));
+  SelectFaviconFrames(bitmaps1, Scale1x2x(), 16, &score1);
+
+  float score2;
+  vector<SkBitmap> bitmaps2;
+  bitmaps2.push_back(MakeBitmap(SK_ColorGREEN, 9, 9));
+  SelectFaviconFrames(bitmaps2, Scale1x2x(), 16, &score2);
+
+  EXPECT_GT(score2, score1);
+}
+
+}  // namespace

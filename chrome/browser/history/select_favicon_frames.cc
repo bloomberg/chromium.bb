@@ -34,25 +34,6 @@ size_t BiggestCandidate(const std::vector<gfx::Size>& candidate_sizes) {
   return max_index;
 }
 
-SkBitmap PadWithBorder(const SkBitmap& contents,
-                       int desired_size,
-                       int source_size) {
-  SkBitmap bitmap;
-  bitmap.setConfig(
-      SkBitmap::kARGB_8888_Config, desired_size, desired_size);
-  bitmap.allocPixels();
-  bitmap.eraseARGB(0, 0, 0, 0);
-
-  {
-    SkCanvas canvas(bitmap);
-    int shift = (desired_size - source_size) / 2;
-    SkRect dest(SkRect::MakeXYWH(shift, shift, source_size, source_size));
-    canvas.drawBitmapRect(contents, NULL, dest);
-  }
-
-  return bitmap;
-}
-
 SkBitmap SampleNearestNeighbor(const SkBitmap& contents, int desired_size) {
   SkBitmap bitmap;
   bitmap.setConfig(
@@ -72,80 +53,75 @@ SkBitmap SampleNearestNeighbor(const SkBitmap& contents, int desired_size) {
 
 enum ResizeMethod {
 NONE,
-PAD_WITH_BORDER,
 SAMPLE_NEAREST_NEIGHBOUR,
 LANCZOS
 };
 
 size_t GetCandidateIndexWithBestScore(
-    const std::vector<gfx::Size>& candidate_sizes,
+    const std::vector<gfx::Size>& candidate_sizes_in_pixel,
     ui::ScaleFactor scale_factor,
-    int desired_size,
+    int desired_size_in_dip,
     float* score,
     ResizeMethod* resize_method) {
+  DCHECK_NE(desired_size_in_dip, 0);
+
   float scale = ui::GetScaleFactorScale(scale_factor);
-  desired_size = static_cast<int>(desired_size * scale + 0.5f);
+  int desired_size_in_pixel =
+      static_cast<int>(desired_size_in_dip * scale + 0.5f);
 
   // Try to find an exact match.
-  for (size_t i = 0; i < candidate_sizes.size(); ++i) {
-    if (candidate_sizes[i].width() == desired_size &&
-        candidate_sizes[i].height() == desired_size) {
+  for (size_t i = 0; i < candidate_sizes_in_pixel.size(); ++i) {
+    if (candidate_sizes_in_pixel[i].width() == desired_size_in_pixel &&
+        candidate_sizes_in_pixel[i].height() == desired_size_in_pixel) {
       *score = 1;
       *resize_method = NONE;
       return i;
     }
   }
 
-  // If that failed, the following special rules apply:
-  // 1. 17px-24px images are built from 16px images by adding
-  //    a transparent border.
-  if (desired_size > 16 * scale && desired_size <= 24 * scale) {
-    int source_size = static_cast<int>(16 * scale + 0.5f);
-    for (size_t i = 0; i < candidate_sizes.size(); ++i) {
-      if (candidate_sizes[i].width() == source_size &&
-          candidate_sizes[i].height() == source_size) {
-        *score = 0.2f;
-        *resize_method = PAD_WITH_BORDER;
-        return i;
-      }
-    }
-    // Try again, with upsizing the base variant.
-    for (size_t i = 0; i < candidate_sizes.size(); ++i) {
-      if (candidate_sizes[i].width() * scale == source_size &&
-          candidate_sizes[i].height() * scale == source_size) {
-        *score = 0.15f;
-        *resize_method = PAD_WITH_BORDER;
-        return i;
-      }
-    }
-  }
+  // Huge favicon bitmaps often have a completely different visual style from
+  // smaller favicon bitmaps. Avoid these favicon bitmaps when a favicon of
+  // gfx::kFaviconSize DIP is requested.
+  const int kHugeEdgeSizeInPixel = desired_size_in_pixel * 8;
 
-  // 2. Integer multiples are built using nearest neighbor sampling.
-  // 3. Else, use Lancosz scaling:
-  //    a) If available, from the next bigger variant.
+  // Order of preference:
+  // 1) Bitmaps with width and height smaller than |kHugeEdgeSizeInPixel|.
+  // 2) Bitmaps which need to be scaled down instead of up.
+  // 3) Bitmaps which do not need to be scaled as much.
   int candidate_index = -1;
-  int min_area = INT_MAX;
-  for (size_t i = 0; i < candidate_sizes.size(); ++i) {
-    int area = candidate_sizes[i].GetArea();
-    if (candidate_sizes[i].width() > desired_size &&
-        candidate_sizes[i].height() > desired_size &&
-        (candidate_index == -1 || area < min_area)) {
+  float candidate_score = 0;
+  for (size_t i = 0; i < candidate_sizes_in_pixel.size(); ++i) {
+    float average_edge_in_pixel = (candidate_sizes_in_pixel[i].width() +
+        candidate_sizes_in_pixel[i].height()) / 2.0f;
+
+    float score = 0;
+    if (candidate_sizes_in_pixel[i].width() >= kHugeEdgeSizeInPixel ||
+        candidate_sizes_in_pixel[i].height() >= kHugeEdgeSizeInPixel) {
+      score = std::min(1.0f, desired_size_in_pixel / average_edge_in_pixel) *
+          0.01f;
+    } else if (candidate_sizes_in_pixel[i].width() >= desired_size_in_pixel &&
+               candidate_sizes_in_pixel[i].height() >= desired_size_in_pixel) {
+      score = desired_size_in_pixel / average_edge_in_pixel * 0.01f + 0.15f;
+    } else {
+      score = std::min(1.0f, average_edge_in_pixel / desired_size_in_pixel) *
+          0.01f + 0.1f;
+    }
+
+    if (candidate_index == -1 || score > candidate_score) {
       candidate_index = i;
-      min_area = area;
+      candidate_score = score;
     }
   }
-  *score = 0.1f;
-  //    b) Else, from the biggest smaller variant.
-  if (candidate_index == -1) {
-    *score = 0;
-    candidate_index = BiggestCandidate(candidate_sizes);
-  }
+  *score = candidate_score;
 
-  const gfx::Size& candidate_size = candidate_sizes[candidate_index];
-  if (candidate_size.IsEmpty()) {
+  // Integer multiples are built using nearest neighbor sampling. Otherwise,
+  // Lanczos scaling is used.
+  const gfx::Size& candidate_size_in_pixel =
+      candidate_sizes_in_pixel[candidate_index];
+  if (candidate_size_in_pixel.IsEmpty()) {
     *resize_method = NONE;
-  } else if (desired_size % candidate_size.width() == 0 &&
-             desired_size % candidate_size.height() == 0) {
+  } else if (desired_size_in_pixel % candidate_size_in_pixel.width() == 0 &&
+             desired_size_in_pixel % candidate_size_in_pixel.height() == 0) {
     *resize_method = SAMPLE_NEAREST_NEIGHBOUR;
   } else {
     *resize_method = LANCZOS;
@@ -186,7 +162,7 @@ void GetCandidateIndicesWithBestScores(
     result.resize_method = NONE;
     results->push_back(result);
     if (match_score)
-      *match_score = 0.8f;
+      *match_score = 1.0f;
     return;
   }
 
@@ -214,14 +190,9 @@ SkBitmap GetResizedBitmap(const SkBitmap& source_bitmap,
   int desired_size_in_pixel = static_cast<int>(
       desired_size_in_dip * scale + 0.5f);
 
-  switch(resize_method) {
+  switch (resize_method) {
     case NONE:
       return source_bitmap;
-    case PAD_WITH_BORDER: {
-      int inner_border_in_pixel = static_cast<int>(16 * scale + 0.5f);
-      return PadWithBorder(source_bitmap, desired_size_in_pixel,
-                           inner_border_in_pixel);
-    }
     case SAMPLE_NEAREST_NEIGHBOUR:
       return SampleNearestNeighbor(source_bitmap, desired_size_in_pixel);
     case LANCZOS:
