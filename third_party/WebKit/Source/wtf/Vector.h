@@ -780,7 +780,22 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
     template<typename T, size_t inlineCapacity>
     void Vector<T, inlineCapacity>::expandCapacity(size_t newMinCapacity)
     {
-        reserveCapacity(std::max(newMinCapacity, std::max(static_cast<size_t>(kInitialVectorSize), capacity() + capacity() / 4 + 1)));
+        size_t oldCapacity = capacity();
+        size_t expandedCapacity = oldCapacity;
+        if (inlineCapacity) {
+            expandedCapacity *= 2;
+            // Check for integer overflow, which could happen in the 32-bit
+            // build.
+            RELEASE_ASSERT(expandedCapacity > oldCapacity);
+        } else {
+            // This cannot integer overflow. On 64-bit, the "expanded" integer
+            // is 32-bit, and any encroachment above 2^32 will fail allocation
+            // in allocateBuffer().
+            // On 32-bit, there's not enough address space to hold the old and
+            // new buffers.
+            expandedCapacity += (expandedCapacity / 4) + 1;
+        }
+        reserveCapacity(std::max(newMinCapacity, std::max(static_cast<size_t>(kInitialVectorSize), expandedCapacity)));
     }
 
     template<typename T, size_t inlineCapacity>
