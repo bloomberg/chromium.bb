@@ -633,7 +633,7 @@ Page* InspectorOverlay::overlayPage()
     DocumentWriter* writer = loader->activeDocumentLoader()->beginWriting("text/html", "UTF-8");
     writer->addData(reinterpret_cast<const char*>(InspectorOverlayPage_html), sizeof(InspectorOverlayPage_html));
     loader->activeDocumentLoader()->endWriting(writer);
-    v8::Isolate* isolate = frame->script()->isolate();
+    v8::Isolate* isolate = isolateForFrame(frame.get());
     v8::HandleScope handleScope(isolate);
     v8::Handle<v8::Context> frameContext = frame->script()->currentWorldContext();
     v8::Context::Scope contextScope(frameContext);

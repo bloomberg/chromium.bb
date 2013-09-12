@@ -120,7 +120,7 @@ void V8LazyEventListener::prepareListenerObject(ScriptExecutionContext* context)
 
     ASSERT(context->isDocument());
 
-    v8::Isolate* isolate = getIsolateFromScriptExecutionContext(context);
+    v8::Isolate* isolate = isolateForScriptExecutionContext(context);
     v8::HandleScope handleScope(isolate);
 
     // Use the outer scope to hold context.
