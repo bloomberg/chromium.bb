@@ -111,13 +111,12 @@ void V8Blob::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
             ArrayBufferView* arrayBufferView = V8ArrayBufferView::toNative(v8::Handle<v8::Object>::Cast(item));
             ASSERT(arrayBufferView);
             blobBuilder.append(arrayBufferView);
-        } else
-        if (V8Blob::HasInstance(item, args.GetIsolate(), worldType(args.GetIsolate()))) {
+        } else if (V8Blob::HasInstance(item, args.GetIsolate(), worldType(args.GetIsolate()))) {
             Blob* blob = V8Blob::toNative(v8::Handle<v8::Object>::Cast(item));
             ASSERT(blob);
             blobBuilder.append(blob);
         } else {
-            V8TRYCATCH_VOID(String, stringValue, toWebCoreString(item));
+            V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, stringValue, item);
             blobBuilder.append(stringValue, endings);
         }
     }
