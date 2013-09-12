@@ -18,7 +18,6 @@ Scheduler::Scheduler(SchedulerClient* client,
       weak_factory_(this),
       last_set_needs_begin_frame_(false),
       has_pending_begin_frame_(false),
-      safe_to_expect_begin_frame_(false),
       state_machine_(scheduler_settings),
       inside_process_scheduled_actions_(false) {
   DCHECK(client_);
@@ -98,7 +97,6 @@ void Scheduler::DidCreateAndInitializeOutputSurface() {
   state_machine_.DidCreateAndInitializeOutputSurface();
   has_pending_begin_frame_ = false;
   last_set_needs_begin_frame_ = false;
-  safe_to_expect_begin_frame_ = false;
   ProcessScheduledActions();
 }
 
@@ -135,9 +133,6 @@ void Scheduler::SetupNextBeginFrameIfNeeded() {
   bool immediate_disables_needed =
       settings_.using_synchronous_renderer_compositor;
 
-  if (needs_begin_frame_to_draw)
-    safe_to_expect_begin_frame_ = true;
-
   // Determine if we need BeginFrame notifications.
   // If we do, always request the BeginFrame immediately.
   // If not, only disable on the next BeginFrame to avoid unnecessary toggles.
@@ -148,8 +143,7 @@ void Scheduler::SetupNextBeginFrameIfNeeded() {
       (needs_begin_frame != last_set_needs_begin_frame_)) {
     has_pending_begin_frame_ = false;
     client_->SetNeedsBeginFrameOnImplThread(needs_begin_frame);
-    if (safe_to_expect_begin_frame_)
-      last_set_needs_begin_frame_ = needs_begin_frame;
+    last_set_needs_begin_frame_ = needs_begin_frame;
   }
 
   // Request another BeginFrame if we haven't drawn for now until we have
@@ -181,7 +175,6 @@ void Scheduler::BeginFrame(const BeginFrameArgs& args) {
   TRACE_EVENT0("cc", "Scheduler::BeginFrame");
   DCHECK(!has_pending_begin_frame_);
   has_pending_begin_frame_ = true;
-  safe_to_expect_begin_frame_ = true;
   last_begin_frame_args_ = args;
   state_machine_.DidEnterBeginFrame(args);
   ProcessScheduledActions();
