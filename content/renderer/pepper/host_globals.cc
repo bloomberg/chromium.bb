@@ -17,7 +17,6 @@
 #include "content/renderer/render_thread_impl.h"
 #include "ppapi/shared_impl/api_id.h"
 #include "ppapi/shared_impl/id_assignment.h"
-#include "ppapi/shared_impl/proxy_lock.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -82,9 +81,13 @@ HostGlobals::HostGlobals()
       resource_tracker_(ResourceTracker::SINGLE_THREADED) {
   DCHECK(!host_globals_);
   host_globals_ = this;
-  // We do not support calls off of the main thread on the host side, and thus
-  // do not lock.
-  ppapi::ProxyLock::DisableLocking();
+}
+
+HostGlobals::HostGlobals(
+    ppapi::PpapiGlobals::PerThreadForTest per_thread_for_test)
+    : ppapi::PpapiGlobals(per_thread_for_test),
+      resource_tracker_(ResourceTracker::SINGLE_THREADED) {
+  DCHECK(!host_globals_);
 }
 
 HostGlobals::~HostGlobals() {
@@ -136,6 +139,11 @@ std::string HostGlobals::GetCmdLine() {
 
 void HostGlobals::PreCacheFontForFlash(const void* logfontw) {
   // Not implemented in-process.
+}
+
+base::Lock* HostGlobals::GetProxyLock() {
+  // We do not lock on the host side.
+  return NULL;
 }
 
 void HostGlobals::LogWithSource(PP_Instance instance,

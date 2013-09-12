@@ -55,6 +55,10 @@ std::string TestGlobals::GetCmdLine() {
 void TestGlobals::PreCacheFontForFlash(const void* /* logfontw */) {
 }
 
+base::Lock* TestGlobals::GetProxyLock() {
+  return NULL;
+}
+
 void TestGlobals::LogWithSource(PP_Instance instance,
                                 PP_LogLevel level,
                                 const std::string& source,

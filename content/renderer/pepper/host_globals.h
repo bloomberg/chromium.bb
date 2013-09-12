@@ -20,6 +20,7 @@ class PluginModule;
 class HostGlobals : public ppapi::PpapiGlobals {
  public:
   HostGlobals();
+  explicit HostGlobals(ppapi::PpapiGlobals::PerThreadForTest);
   virtual ~HostGlobals();
 
   // Getter for the global singleton. Generally, you should use
@@ -42,6 +43,7 @@ class HostGlobals : public ppapi::PpapiGlobals {
   virtual PP_Module GetModuleForInstance(PP_Instance instance) OVERRIDE;
   virtual std::string GetCmdLine() OVERRIDE;
   virtual void PreCacheFontForFlash(const void* logfontw) OVERRIDE;
+  virtual base::Lock* GetProxyLock() OVERRIDE;
   virtual void LogWithSource(PP_Instance instance,
                              PP_LogLevel level,
                              const std::string& source,

@@ -8,7 +8,6 @@
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/shared_impl/callback_tracker.h"
-#include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/shared_impl/resource_tracker.h"
 #include "ppapi/shared_impl/test_globals.h"
@@ -27,12 +26,9 @@ class TrackedCallbackTest : public testing::Test {
   PP_Instance pp_instance() const { return pp_instance_; }
 
   virtual void SetUp() OVERRIDE {
-    ProxyLock::EnableLockingOnThreadForTest();
-    ProxyAutoLock lock;
     globals_.GetResourceTracker()->DidCreateInstance(pp_instance_);
   }
   virtual void TearDown() OVERRIDE {
-    ProxyAutoLock lock;
     globals_.GetResourceTracker()->DidDeleteInstance(pp_instance_);
   }
 
@@ -93,7 +89,6 @@ class CallbackShutdownTest : public TrackedCallbackTest {
 
 // Tests that callbacks are properly aborted on module shutdown.
 TEST_F(CallbackShutdownTest, AbortOnShutdown) {
-  ProxyAutoLock lock;
   scoped_refptr<Resource> resource(new Resource(OBJECT_IS_IMPL, pp_instance()));
 
   // Set up case (1) (see above).
@@ -255,7 +250,6 @@ class CallbackMockResource : public Resource {
 
 // Test that callbacks get aborted on the last resource unref.
 TEST_F(CallbackResourceTest, AbortOnNoRef) {
-  ProxyAutoLock lock;
   ResourceTracker* resource_tracker =
       PpapiGlobals::Get()->GetResourceTracker();
 
@@ -279,33 +273,23 @@ TEST_F(CallbackResourceTest, AbortOnNoRef) {
   // Kill resource #1, spin the message loop to run posted calls, and check that
   // things are in the expected states.
   resource_tracker->ReleaseResource(resource_1_id);
-  {
-    ProxyAutoUnlock unlock;
-    base::MessageLoop::current()->RunUntilIdle();
-  }
+  base::MessageLoop::current()->RunUntilIdle();
   resource_1->CheckFinalState();
   resource_2->CheckIntermediateState();
 
   // Kill resource #2.
   resource_tracker->ReleaseResource(resource_2_id);
-  {
-    ProxyAutoUnlock unlock;
-    base::MessageLoop::current()->RunUntilIdle();
-  }
+  base::MessageLoop::current()->RunUntilIdle();
   resource_1->CheckFinalState();
   resource_2->CheckFinalState();
 
   // This shouldn't be needed, but make sure there are no stranded tasks.
-  {
-    ProxyAutoUnlock unlock;
-    base::MessageLoop::current()->RunUntilIdle();
-  }
+  base::MessageLoop::current()->RunUntilIdle();
 }
 
 // Test that "resurrecting" a resource (getting a new ID for a |Resource|)
 // doesn't resurrect callbacks.
 TEST_F(CallbackResourceTest, Resurrection) {
-  ProxyAutoLock lock;
   ResourceTracker* resource_tracker =
       PpapiGlobals::Get()->GetResourceTracker();
 
@@ -316,33 +300,21 @@ TEST_F(CallbackResourceTest, Resurrection) {
   // Unref it, spin the message loop to run posted calls, and check that things
   // are in the expected states.
   resource_tracker->ReleaseResource(resource_id);
-  {
-    ProxyAutoUnlock unlock;
-    base::MessageLoop::current()->RunUntilIdle();
-  }
+  base::MessageLoop::current()->RunUntilIdle();
   resource->CheckFinalState();
 
   // "Resurrect" it and check that the callbacks are still dead.
   PP_Resource new_resource_id = resource->GetReference();
-  {
-    ProxyAutoUnlock unlock;
-    base::MessageLoop::current()->RunUntilIdle();
-  }
+  base::MessageLoop::current()->RunUntilIdle();
   resource->CheckFinalState();
 
   // Unref it again and do the same.
   resource_tracker->ReleaseResource(new_resource_id);
-  {
-    ProxyAutoUnlock unlock;
-    base::MessageLoop::current()->RunUntilIdle();
-  }
+  base::MessageLoop::current()->RunUntilIdle();
   resource->CheckFinalState();
 
   // This shouldn't be needed, but make sure there are no stranded tasks.
-  {
-    ProxyAutoUnlock unlock;
-    base::MessageLoop::current()->RunUntilIdle();
-  }
+  base::MessageLoop::current()->RunUntilIdle();
 }
 
 }  // namespace ppapi

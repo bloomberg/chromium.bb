@@ -11,32 +11,14 @@
 
 namespace ppapi {
 
-base::LazyInstance<base::Lock>::Leaky
-    g_proxy_lock = LAZY_INSTANCE_INITIALIZER;
-
-bool g_disable_locking = false;
-base::ThreadLocalBoolean g_disable_locking_for_thread;
-
 // Simple single-thread deadlock detector for the proxy lock.
 // |true| when the current thread has the lock.
 base::LazyInstance<base::ThreadLocalBoolean>::Leaky
     g_proxy_locked_on_thread = LAZY_INSTANCE_INITIALIZER;
 
 // static
-base::Lock* ProxyLock::Get() {
-  if (g_disable_locking || g_disable_locking_for_thread.Get())
-    return NULL;
-  return &g_proxy_lock.Get();
-}
-
-// Functions below should only access the lock via Get to ensure that they don't
-// try to use the lock on the host side of the proxy, where locking is
-// unnecessary and wrong (because we haven't coded the host side to account for
-// locking).
-
-// static
 void ProxyLock::Acquire() {
-  base::Lock* lock = Get();
+  base::Lock* lock(PpapiGlobals::Get()->GetProxyLock());
   if (lock) {
     // This thread does not already hold the lock.
     const bool deadlock = g_proxy_locked_on_thread.Get().Get();
@@ -49,7 +31,7 @@ void ProxyLock::Acquire() {
 
 // static
 void ProxyLock::Release() {
-  base::Lock* lock = Get();
+  base::Lock* lock(PpapiGlobals::Get()->GetProxyLock());
   if (lock) {
     // This thread currently holds the lock.
     const bool locked = g_proxy_locked_on_thread.Get().Get();
@@ -62,7 +44,7 @@ void ProxyLock::Release() {
 
 // static
 void ProxyLock::AssertAcquired() {
-  base::Lock* lock = Get();
+  base::Lock* lock(PpapiGlobals::Get()->GetProxyLock());
   if (lock) {
     // This thread currently holds the lock.
     const bool locked = g_proxy_locked_on_thread.Get().Get();
@@ -70,25 +52,6 @@ void ProxyLock::AssertAcquired() {
 
     lock->AssertAcquired();
   }
-}
-
-// static
-void ProxyLock::DisableLocking() {
-  // Note, we don't DCHECK that this flag isn't already set, because multiple
-  // unit tests may run in succession and all set it.
-  g_disable_locking = true;
-}
-
-// static
-void ProxyLock::DisableLockingOnThreadForTest() {
-  // Note, we don't DCHECK that this flag isn't already set, because multiple
-  // unit tests may run in succession and all set it.
-  g_disable_locking_for_thread.Set(true);
-}
-
-// static
-void ProxyLock::EnableLockingOnThreadForTest() {
-  g_disable_locking_for_thread.Set(false);
 }
 
 void CallWhileUnlocked(const base::Closure& closure) {

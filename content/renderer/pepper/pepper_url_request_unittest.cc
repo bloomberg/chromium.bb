@@ -7,7 +7,6 @@
 #include "content/renderer/pepper/url_request_info_util.h"
 #include "ppapi/proxy/connection.h"
 #include "ppapi/proxy/url_request_info_resource.h"
-#include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/shared_impl/test_globals.h"
 #include "ppapi/shared_impl/url_request_info_data.h"
 #include "ppapi/thunk/thunk.h"
@@ -61,7 +60,6 @@ class URLRequestInfoTest : public RenderViewTest {
 
   virtual void SetUp() OVERRIDE {
     RenderViewTest::SetUp();
-    ppapi::ProxyLock::DisableLockingOnThreadForTest();
 
     test_globals_.GetResourceTracker()->DidCreateInstance(pp_instance_);
 
