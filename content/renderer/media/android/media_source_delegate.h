@@ -123,30 +123,25 @@ class MediaSourceDelegate : public media::DemuxerHost {
   void OnAudioDecryptingDemuxerStreamInitDone(media::PipelineStatus status);
   void OnVideoDecryptingDemuxerStreamInitDone(media::PipelineStatus status);
 
-  // Callback for Demuxer seek. It will call ResetAudioDecryptingDemuxerStream()
-  // as part of the reset callback chain.
+  // Callback for ChunkDemuxer::Seek() and callback chain for resetting
+  // decrypted audio/video streams if present.
+  //
+  // Runs on the media thread.
   void OnDemuxerSeekDone(unsigned seek_request_id,
                          media::PipelineStatus status);
-
-  // Resets AudioDecryptingDemuxerStream if it exists. Then it will call
-  // ResetVideoDecryptingDemuxerStream() as part of the reset callback chain.
   void ResetAudioDecryptingDemuxerStream();
-
-  // Resets VideoDecryptingDemuxerStream if it exists. Then it will call
-  // SendSeekRequestAck() as part of the reset callback chain.
   void ResetVideoDecryptingDemuxerStream();
+  void FinishResettingDecryptingDemuxerStreams();
 
-  // Sends SeekRequestAck to the browser.
+  // Completes seeking operation by notifying the browser.
+  //
+  // Runs on the main thread.
   void SendSeekRequestAck();
 
   void OnDemuxerStopDone();
   void OnDemuxerOpened();
   void OnNeedKey(const std::string& type,
-                 const std::string& session_id,
                  const std::vector<uint8>& init_data);
-  scoped_ptr<media::TextTrack> OnAddTextTrack(media::TextKind kind,
-                                              const std::string& label,
-                                              const std::string& language);
   void NotifyDemuxerReady();
   bool CanNotifyDemuxerReady();
   void SendDemuxerReady(scoped_ptr<media::DemuxerConfigs> configs);
@@ -176,23 +171,14 @@ class MediaSourceDelegate : public media::DemuxerHost {
   void SetSeeking(bool seeking);
   bool IsSeeking() const;
 
-  // Weak pointer must be dereferenced and invalidated on the same thread.
-  base::WeakPtrFactory<MediaSourceDelegate> main_weak_this_;
-  base::WeakPtrFactory<MediaSourceDelegate> media_weak_this_;
-
-  // Message loop for main renderer thread.
+  // Message loop for main renderer thread and corresponding weak pointer.
   const scoped_refptr<base::MessageLoopProxy> main_loop_;
-#if defined(GOOGLE_TV)
-  // Message loop for the media thread.
-  // When there is high load in the render thread, the reading from |demuxer_|
-  // and its read-callback loops run very slowly.  To improve the response time
-  // of the readings, we run tasks related to |demuxer_| in the media thread.
-  const scoped_refptr<base::MessageLoopProxy> media_loop_;
+  base::WeakPtrFactory<MediaSourceDelegate> main_weak_factory_;
+  base::WeakPtr<MediaSourceDelegate> main_weak_this_;
 
-  ReadFromDemuxerAckCB send_read_from_demuxer_ack_cb_;
-  base::Closure send_seek_request_ack_cb_;
-  DemuxerReadyCB send_demuxer_ready_cb_;
-#endif
+  // Message loop for media thread and corresponding weak pointer.
+  const scoped_refptr<base::MessageLoopProxy> media_loop_;
+  base::WeakPtrFactory<MediaSourceDelegate> media_weak_factory_;
 
   WebMediaPlayerProxyAndroid* proxy_;
   int player_id_;

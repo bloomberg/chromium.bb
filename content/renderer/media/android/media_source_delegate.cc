@@ -40,21 +40,12 @@ const uint8 kVorbisPadding[] = { 0xff, 0xff, 0xff, 0xff };
 
 namespace content {
 
-#define BIND_TO_RENDER_LOOP(function) \
-  media::BindToLoop(main_loop_, \
-                    base::Bind(function, main_weak_this_.GetWeakPtr()))
-
-#define BIND_TO_RENDER_LOOP_1(function, arg1) \
-  media::BindToLoop(main_loop_, \
-                    base::Bind(function, main_weak_this_.GetWeakPtr(), arg1))
-
-#if defined(GOOGLE_TV)
-#define DCHECK_BELONG_TO_MEDIA_LOOP() \
-    DCHECK(media_loop_->BelongsToCurrentThread())
-#else
-#define DCHECK_BELONG_TO_MEDIA_LOOP() \
-    DCHECK(main_loop_->BelongsToCurrentThread())
-#endif
+static scoped_ptr<media::TextTrack> ReturnNullTextTrack(
+    media::TextKind kind,
+    const std::string& label,
+    const std::string& language) {
+  return scoped_ptr<media::TextTrack>();
+}
 
 static void LogMediaSourceError(const scoped_refptr<media::MediaLog>& media_log,
                                 const std::string& error) {
@@ -66,18 +57,11 @@ MediaSourceDelegate::MediaSourceDelegate(
     int player_id,
     const scoped_refptr<base::MessageLoopProxy>& media_loop,
     media::MediaLog* media_log)
-    : main_weak_this_(this),
-      media_weak_this_(this),
-      main_loop_(base::MessageLoopProxy::current()),
-#if defined(GOOGLE_TV)
+    : main_loop_(base::MessageLoopProxy::current()),
+      main_weak_factory_(this),
+      main_weak_this_(main_weak_factory_.GetWeakPtr()),
       media_loop_(media_loop),
-      send_read_from_demuxer_ack_cb_(
-          BIND_TO_RENDER_LOOP(&MediaSourceDelegate::SendReadFromDemuxerAck)),
-      send_seek_request_ack_cb_(
-          BIND_TO_RENDER_LOOP(&MediaSourceDelegate::SendSeekRequestAck)),
-      send_demuxer_ready_cb_(
-          BIND_TO_RENDER_LOOP(&MediaSourceDelegate::SendDemuxerReady)),
-#endif
+      media_weak_factory_(this),
       proxy_(proxy),
       player_id_(player_id),
       media_log_(media_log),
@@ -91,6 +75,7 @@ MediaSourceDelegate::MediaSourceDelegate(
       key_added_(false),
 #endif
       access_unit_size_(0) {
+  DCHECK(main_loop_->BelongsToCurrentThread());
 }
 
 MediaSourceDelegate::~MediaSourceDelegate() {
@@ -117,25 +102,22 @@ void MediaSourceDelegate::Destroy() {
   media_source_opened_cb_.Reset();
   proxy_ = NULL;
 
-  main_weak_this_.InvalidateWeakPtrs();
-  DCHECK(!main_weak_this_.HasWeakPtrs());
+  main_weak_factory_.InvalidateWeakPtrs();
+  DCHECK(!main_weak_factory_.HasWeakPtrs());
 
   if (chunk_demuxer_)
     chunk_demuxer_->Shutdown();
-#if defined(GOOGLE_TV)
-  // |this| will be transfered to the callback StopDemuxer() and
-  // OnDemuxerStopDone(). they own |this| and OnDemuxerStopDone() will delete
-  // it when called. Hence using base::Unretained(this) is safe here.
+
+  // |this| will be transferred to the callback StopDemuxer() and
+  // OnDemuxerStopDone(). They own |this| and OnDemuxerStopDone() will delete
+  // it when called, hence using base::Unretained(this) is safe here.
   media_loop_->PostTask(FROM_HERE,
                         base::Bind(&MediaSourceDelegate::StopDemuxer,
                         base::Unretained(this)));
-#else
-  StopDemuxer();
-#endif
 }
 
 void MediaSourceDelegate::StopDemuxer() {
-  DCHECK_BELONG_TO_MEDIA_LOOP();
+  DCHECK(media_loop_->BelongsToCurrentThread());
   DCHECK(demuxer_);
 
   audio_stream_ = NULL;
@@ -145,8 +127,8 @@ void MediaSourceDelegate::StopDemuxer() {
   audio_decrypting_demuxer_stream_.reset();
   video_decrypting_demuxer_stream_.reset();
 
-  media_weak_this_.InvalidateWeakPtrs();
-  DCHECK(!media_weak_this_.HasWeakPtrs());
+  media_weak_factory_.InvalidateWeakPtrs();
+  DCHECK(!media_weak_factory_.HasWeakPtrs());
 
   // The callback OnDemuxerStopDone() owns |this| and will delete it when
   // called. Hence using base::Unretained(this) is safe here.
@@ -171,28 +153,25 @@ void MediaSourceDelegate::InitializeMediaSource(
   access_unit_size_ = kAccessUnitSizeForMediaSource;
 
   chunk_demuxer_.reset(new media::ChunkDemuxer(
-      BIND_TO_RENDER_LOOP(&MediaSourceDelegate::OnDemuxerOpened),
-      BIND_TO_RENDER_LOOP_1(&MediaSourceDelegate::OnNeedKey, ""),
-      // WeakPtrs can only bind to methods without return values.
-      base::Bind(&MediaSourceDelegate::OnAddTextTrack, base::Unretained(this)),
+      media::BindToCurrentLoop(base::Bind(
+          &MediaSourceDelegate::OnDemuxerOpened, main_weak_this_)),
+      media::BindToCurrentLoop(base::Bind(
+          &MediaSourceDelegate::OnNeedKey, main_weak_this_)),
+      base::Bind(&ReturnNullTextTrack),
       base::Bind(&LogMediaSourceError, media_log_)));
   demuxer_ = chunk_demuxer_.get();
 
-#if defined(GOOGLE_TV)
   // |this| will be retained until StopDemuxer() is posted, so Unretained() is
   // safe here.
   media_loop_->PostTask(FROM_HERE,
                         base::Bind(&MediaSourceDelegate::InitializeDemuxer,
                         base::Unretained(this)));
-#else
-  InitializeDemuxer();
-#endif
 }
 
 void MediaSourceDelegate::InitializeDemuxer() {
-  DCHECK_BELONG_TO_MEDIA_LOOP();
+  DCHECK(media_loop_->BelongsToCurrentThread());
   demuxer_->Initialize(this, base::Bind(&MediaSourceDelegate::OnDemuxerInitDone,
-                                        media_weak_this_.GetWeakPtr()));
+                                        media_weak_factory_.GetWeakPtr()));
 }
 
 #if defined(GOOGLE_TV)
@@ -254,21 +233,19 @@ void MediaSourceDelegate::Seek(base::TimeDelta time, unsigned seek_request_id) {
   }
 
   SetSeeking(true);
-#if defined(GOOGLE_TV)
+
   media_loop_->PostTask(FROM_HERE,
                         base::Bind(&MediaSourceDelegate::SeekInternal,
                                    base::Unretained(this),
                                    time, seek_request_id));
-#else
-  SeekInternal(time, seek_request_id);
-#endif
 }
 
 void MediaSourceDelegate::SeekInternal(base::TimeDelta time,
                                        unsigned request_id) {
-  DCHECK_BELONG_TO_MEDIA_LOOP();
-  demuxer_->Seek(time, base::Bind(&MediaSourceDelegate::OnDemuxerSeekDone,
-                                  media_weak_this_.GetWeakPtr(), request_id));
+  DCHECK(media_loop_->BelongsToCurrentThread());
+  demuxer_->Seek(time, base::Bind(
+      &MediaSourceDelegate::OnDemuxerSeekDone, media_weak_factory_.GetWeakPtr(),
+      request_id));
 }
 
 void MediaSourceDelegate::SetTotalBytes(int64 total_bytes) {
@@ -294,19 +271,15 @@ void MediaSourceDelegate::SetDuration(base::TimeDelta duration) {
 
 void MediaSourceDelegate::OnReadFromDemuxer(media::DemuxerStream::Type type) {
   DCHECK(main_loop_->BelongsToCurrentThread());
-#if defined(GOOGLE_TV)
   media_loop_->PostTask(
       FROM_HERE,
       base::Bind(&MediaSourceDelegate::OnReadFromDemuxerInternal,
                  base::Unretained(this), type));
-#else
-  OnReadFromDemuxerInternal(type);
-#endif
 }
 
 void MediaSourceDelegate::OnReadFromDemuxerInternal(
     media::DemuxerStream::Type type) {
-  DCHECK_BELONG_TO_MEDIA_LOOP();
+  DCHECK(media_loop_->BelongsToCurrentThread());
   DVLOG(1) << "OnReadFromDemuxer(" << type << ") : " << player_id_;
   if (IsSeeking())
     return;  // Drop the request during seeking.
@@ -323,13 +296,13 @@ void MediaSourceDelegate::OnReadFromDemuxerInternal(
 void MediaSourceDelegate::ReadFromDemuxerStream(media::DemuxerStream::Type type,
                                                 scoped_ptr<DemuxerData> data,
                                                 size_t index) {
-  DCHECK_BELONG_TO_MEDIA_LOOP();
+  DCHECK(media_loop_->BelongsToCurrentThread());
   // DemuxerStream::Read() always returns the read callback asynchronously.
   DemuxerStream* stream =
       (type == DemuxerStream::AUDIO) ? audio_stream_ : video_stream_;
   stream->Read(base::Bind(
       &MediaSourceDelegate::OnBufferReady,
-      media_weak_this_.GetWeakPtr(), type, base::Passed(&data), index));
+      media_weak_factory_.GetWeakPtr(), type, base::Passed(&data), index));
 }
 
 void MediaSourceDelegate::OnBufferReady(
@@ -338,7 +311,7 @@ void MediaSourceDelegate::OnBufferReady(
     size_t index,
     DemuxerStream::Status status,
     const scoped_refptr<media::DecoderBuffer>& buffer) {
-  DCHECK_BELONG_TO_MEDIA_LOOP();
+  DCHECK(media_loop_->BelongsToCurrentThread());
   DVLOG(1) << "OnBufferReady(" << index << ", " << status << ", "
            << ((!buffer || buffer->end_of_stream()) ?
                -1 : buffer->timestamp().InMilliseconds())
@@ -436,11 +409,9 @@ void MediaSourceDelegate::OnBufferReady(
       NOTREACHED();
   }
 
-#if defined(GOOGLE_TV)
-  send_read_from_demuxer_ack_cb_.Run(data.Pass());
-#else
-  SendReadFromDemuxerAck(data.Pass());
-#endif
+  main_loop_->PostTask(FROM_HERE, base::Bind(
+      &MediaSourceDelegate::SendReadFromDemuxerAck, main_weak_this_,
+      base::Passed(&data)));
 }
 
 void MediaSourceDelegate::SendReadFromDemuxerAck(scoped_ptr<DemuxerData> data) {
@@ -457,7 +428,7 @@ void MediaSourceDelegate::OnDemuxerError(media::PipelineStatus status) {
 }
 
 void MediaSourceDelegate::OnDemuxerInitDone(media::PipelineStatus status) {
-  DCHECK_BELONG_TO_MEDIA_LOOP();
+  DCHECK(media_loop_->BelongsToCurrentThread());
   DVLOG(1) << "OnDemuxerInitDone(" << status << ") : " << player_id_;
   DCHECK(demuxer_);
 
@@ -490,7 +461,7 @@ void MediaSourceDelegate::OnDemuxerInitDone(media::PipelineStatus status) {
 }
 
 void MediaSourceDelegate::InitAudioDecryptingDemuxerStream() {
-  DCHECK_BELONG_TO_MEDIA_LOOP();
+  DCHECK(media_loop_->BelongsToCurrentThread());
   DVLOG(1) << "InitAudioDecryptingDemuxerStream() : " << player_id_;
   DCHECK(!set_decryptor_ready_cb_.is_null());
 
@@ -499,11 +470,11 @@ void MediaSourceDelegate::InitAudioDecryptingDemuxerStream() {
   audio_decrypting_demuxer_stream_->Initialize(
       audio_stream_,
       base::Bind(&MediaSourceDelegate::OnAudioDecryptingDemuxerStreamInitDone,
-                 media_weak_this_.GetWeakPtr()));
+                 media_weak_factory_.GetWeakPtr()));
 }
 
 void MediaSourceDelegate::InitVideoDecryptingDemuxerStream() {
-  DCHECK_BELONG_TO_MEDIA_LOOP();
+  DCHECK(media_loop_->BelongsToCurrentThread());
   DVLOG(1) << "InitVideoDecryptingDemuxerStream() : " << player_id_;
   DCHECK(!set_decryptor_ready_cb_.is_null());
 
@@ -512,12 +483,12 @@ void MediaSourceDelegate::InitVideoDecryptingDemuxerStream() {
   video_decrypting_demuxer_stream_->Initialize(
       video_stream_,
       base::Bind(&MediaSourceDelegate::OnVideoDecryptingDemuxerStreamInitDone,
-                 media_weak_this_.GetWeakPtr()));
+                 media_weak_factory_.GetWeakPtr()));
 }
 
 void MediaSourceDelegate::OnAudioDecryptingDemuxerStreamInitDone(
     media::PipelineStatus status) {
-  DCHECK_BELONG_TO_MEDIA_LOOP();
+  DCHECK(media_loop_->BelongsToCurrentThread());
   DVLOG(1) << "OnAudioDecryptingDemuxerStreamInitDone(" << status
            << ") : " << player_id_;
   DCHECK(demuxer_);
@@ -541,7 +512,7 @@ void MediaSourceDelegate::OnAudioDecryptingDemuxerStreamInitDone(
 
 void MediaSourceDelegate::OnVideoDecryptingDemuxerStreamInitDone(
     media::PipelineStatus status) {
-  DCHECK_BELONG_TO_MEDIA_LOOP();
+  DCHECK(media_loop_->BelongsToCurrentThread());
   DVLOG(1) << "OnVideoDecryptingDemuxerStreamInitDone(" << status
            << ") : " << player_id_;
   DCHECK(demuxer_);
@@ -559,7 +530,7 @@ void MediaSourceDelegate::OnVideoDecryptingDemuxerStreamInitDone(
 
 void MediaSourceDelegate::OnDemuxerSeekDone(unsigned seek_request_id,
                                             media::PipelineStatus status) {
-  DCHECK_BELONG_TO_MEDIA_LOOP();
+  DCHECK(media_loop_->BelongsToCurrentThread());
   DVLOG(1) << "OnDemuxerSeekDone(" << status << ") : " << player_id_;
   DCHECK(IsSeeking());
 
@@ -580,37 +551,40 @@ void MediaSourceDelegate::OnDemuxerSeekDone(unsigned seek_request_id,
 }
 
 void MediaSourceDelegate::ResetAudioDecryptingDemuxerStream() {
-  DCHECK_BELONG_TO_MEDIA_LOOP();
+  DCHECK(media_loop_->BelongsToCurrentThread());
   DVLOG(1) << "ResetAudioDecryptingDemuxerStream() : " << player_id_;
   if (audio_decrypting_demuxer_stream_) {
     audio_decrypting_demuxer_stream_->Reset(
         base::Bind(&MediaSourceDelegate::ResetVideoDecryptingDemuxerStream,
-                   media_weak_this_.GetWeakPtr()));
-  } else {
-    ResetVideoDecryptingDemuxerStream();
+                   media_weak_factory_.GetWeakPtr()));
+    return;
   }
+
+  ResetVideoDecryptingDemuxerStream();
 }
 
 void MediaSourceDelegate::ResetVideoDecryptingDemuxerStream() {
-  DCHECK_BELONG_TO_MEDIA_LOOP();
+  DCHECK(media_loop_->BelongsToCurrentThread());
   DVLOG(1) << "ResetVideoDecryptingDemuxerStream()";
-#if defined(GOOGLE_TV)
-  if (video_decrypting_demuxer_stream_)
-    video_decrypting_demuxer_stream_->Reset(send_seek_request_ack_cb_);
-  else
-    send_seek_request_ack_cb_.Run();
-#else
   if (video_decrypting_demuxer_stream_) {
-    video_decrypting_demuxer_stream_->Reset(
-        base::Bind(&MediaSourceDelegate::SendSeekRequestAck,
-                   main_weak_this_.GetWeakPtr()));
-  } else {
-    SendSeekRequestAck();
+    video_decrypting_demuxer_stream_->Reset(base::Bind(
+        &MediaSourceDelegate::FinishResettingDecryptingDemuxerStreams,
+        media_weak_factory_.GetWeakPtr()));
+    return;
   }
-#endif
+
+  FinishResettingDecryptingDemuxerStreams();
+}
+
+void MediaSourceDelegate::FinishResettingDecryptingDemuxerStreams() {
+  DCHECK(media_loop_->BelongsToCurrentThread());
+  DVLOG(1) << "FinishResettingDecryptingDemuxerStreams()";
+  main_loop_->PostTask(FROM_HERE, base::Bind(
+      &MediaSourceDelegate::SendSeekRequestAck, main_weak_this_));
 }
 
 void MediaSourceDelegate::SendSeekRequestAck() {
+  DCHECK(main_loop_->BelongsToCurrentThread());
   DVLOG(1) << "SendSeekRequestAck() : " << player_id_;
   SetSeeking(false);
   proxy_->SeekRequestAck(player_id_, last_seek_request_id_);
@@ -626,14 +600,13 @@ void MediaSourceDelegate::OnDemuxerStopDone() {
 }
 
 void MediaSourceDelegate::OnMediaConfigRequest() {
-#if defined(GOOGLE_TV)
   if (!media_loop_->BelongsToCurrentThread()) {
     media_loop_->PostTask(FROM_HERE,
         base::Bind(&MediaSourceDelegate::OnMediaConfigRequest,
                    base::Unretained(this)));
     return;
   }
-#endif
+
   if (CanNotifyDemuxerReady())
     NotifyDemuxerReady();
 }
@@ -661,7 +634,7 @@ void MediaSourceDelegate::NotifyKeyAdded(const std::string& key_system) {
 #endif  // defined(GOOGLE_TV)
 
 bool MediaSourceDelegate::CanNotifyDemuxerReady() {
-  DCHECK_BELONG_TO_MEDIA_LOOP();
+  DCHECK(media_loop_->BelongsToCurrentThread());
   // This can happen when a key is added before the demuxer is initialized.
   // See NotifyKeyAdded().
   // TODO(kjyoun): Remove NotifyDemxuerReady() call from NotifyKeyAdded() so
@@ -677,7 +650,7 @@ bool MediaSourceDelegate::CanNotifyDemuxerReady() {
 }
 
 void MediaSourceDelegate::NotifyDemuxerReady() {
-  DCHECK_BELONG_TO_MEDIA_LOOP();
+  DCHECK(media_loop_->BelongsToCurrentThread());
   DVLOG(1) << "NotifyDemuxerReady() : " << player_id_;
   DCHECK(CanNotifyDemuxerReady());
 
@@ -704,10 +677,11 @@ void MediaSourceDelegate::NotifyDemuxerReady() {
 
 #if defined(GOOGLE_TV)
   configs->key_system = HasEncryptedStream() ? key_system_ : "";
-  send_demuxer_ready_cb_.Run(configs.Pass());
-#else
-  SendDemuxerReady(configs.Pass());
 #endif
+
+  main_loop_->PostTask(FROM_HERE, base::Bind(
+      &MediaSourceDelegate::SendDemuxerReady, main_weak_this_,
+      base::Passed(&configs)));
 }
 
 void MediaSourceDelegate::SendDemuxerReady(scoped_ptr<DemuxerConfigs> configs) {
@@ -717,7 +691,7 @@ void MediaSourceDelegate::SendDemuxerReady(scoped_ptr<DemuxerConfigs> configs) {
 }
 
 int MediaSourceDelegate::GetDurationMs() {
-  DCHECK_BELONG_TO_MEDIA_LOOP();
+  DCHECK(media_loop_->BelongsToCurrentThread());
   if (!chunk_demuxer_)
     return -1;
 
@@ -739,25 +713,18 @@ void MediaSourceDelegate::OnDemuxerOpened() {
       chunk_demuxer_.get(), base::Bind(&LogMediaSourceError, media_log_)));
 }
 
-void MediaSourceDelegate::OnNeedKey(const std::string& session_id,
-                                    const std::string& type,
+void MediaSourceDelegate::OnNeedKey(const std::string& type,
                                     const std::vector<uint8>& init_data) {
   DCHECK(main_loop_->BelongsToCurrentThread());
   if (need_key_cb_.is_null())
     return;
 
-  need_key_cb_.Run(session_id, type, init_data);
-}
-
-scoped_ptr<media::TextTrack> MediaSourceDelegate::OnAddTextTrack(
-    media::TextKind kind,
-    const std::string& label,
-    const std::string& language) {
-  return scoped_ptr<media::TextTrack>();
+  // TODO(xhwang): Remove |session_id| from media::NeedKeyCB.
+  need_key_cb_.Run("", type, init_data);
 }
 
 bool MediaSourceDelegate::HasEncryptedStream() {
-  DCHECK_BELONG_TO_MEDIA_LOOP();
+  DCHECK(media_loop_->BelongsToCurrentThread());
   return (audio_stream_ &&
           audio_stream_->audio_decoder_config().is_encrypted()) ||
          (video_stream_ &&
