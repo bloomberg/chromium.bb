@@ -153,18 +153,8 @@ found in the LICENSE file.
       </section> <!-- Remote Assistance -->
 
       <section id="host-list-div" class="host-list-container">
-        <h2>
-          <span i18n-content="MODE_ME2ME"></span>
-          <span class="h2-secondary" id="host-list-loading-indicator">
-            <a href="#" id="host-list-reload"
-               class="icon-black"
-               i18n-title="TOOLTIP_REFRESH">
-              <img src="reload.webp">
-            </a>
-            <img src="spinner.gif" id="host-list-loading">
-          </span>
-        </h2>
         <div id="me2me-first-run">
+          <h2 i18n-content="MODE_ME2ME"></h2>
           <div>
             <p class="infographic-description"
                i18n-content="ME2ME_FIRST_RUN"></p>
@@ -177,6 +167,17 @@ found in the LICENSE file.
           </div>
         </div>
         <div id="me2me-content">
+          <h2>
+            <span i18n-content="MODE_ME2ME"></span>
+            <span class="h2-secondary" id="host-list-loading-indicator">
+              <a href="#" id="host-list-reload"
+                 class="icon-black"
+                 i18n-title="TOOLTIP_REFRESH">
+                <img src="reload.webp">
+              </a>
+              <img src="spinner.gif" id="host-list-loading">
+            </span>
+          </h2>
           <div id="host-list" hidden></div>
           <div id="host-list-error" class="box" hidden>
             <div id="host-list-error-message" class="error-state"></div>

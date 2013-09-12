@@ -270,7 +270,7 @@ h2 {
   opacity: 0.4;
 }
 
-section > h2 {
+section h2 {
   color: #666;
 }
 
