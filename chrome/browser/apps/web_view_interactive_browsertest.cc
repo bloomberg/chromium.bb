@@ -202,7 +202,7 @@ class WebViewInteractiveTest
 
     const testing::TestInfo* const test_info =
             testing::UnitTest::GetInstance()->current_test_info();
-    const std::string& prefix = "FLAKY_DragDropWithinWebView";
+    const std::string& prefix = "DragDropWithinWebView";
     if (!strncmp(test_info->name(), prefix.c_str(), prefix.size())) {
       // In the drag drop test we add 20px padding to the page body because on
       // windows if we get too close to the edge of the window the resize cursor
@@ -620,7 +620,7 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, DISABLED_PopupPositioningMoved) {
 // of simulating mouse drag code's dependency on platforms.
 #if defined(OS_CHROMEOS)
 // http://crbug.com/281001
-IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, DISABLED_DragDropWithinWebView) {
+IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, DragDropWithinWebView) {
   SetupTest(
       "web_view/dnd_within_webview",
       "/extensions/platform_apps/web_view/dnd_within_webview/guest.html");
@@ -630,11 +630,10 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, DISABLED_DragDropWithinWebView) {
   content::RunAllPendingInMessageLoop();
   base::RunLoop run_loop;
   quit_closure_ = run_loop.QuitClosure();
-  base::MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&WebViewInteractiveTest::DragTestStep1,
-                 base::Unretained(this)),
-      base::TimeDelta::FromMilliseconds(1000));
+                 base::Unretained(this)));
   run_loop.Run();
 }
 #endif  // (defined(OS_CHROMEOS))

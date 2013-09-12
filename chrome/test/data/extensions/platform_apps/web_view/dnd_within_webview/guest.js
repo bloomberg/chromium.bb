@@ -20,6 +20,14 @@ window.pingEmbedder = function() {
   }
 };
 
+window.addEventListener('resize', function(e) {
+  if (!embedder) {
+    return;
+  }
+  resized = true;
+  embedder.postMessage(JSON.stringify(['resized']), '*');
+});
+
 window.addEventListener('message', function(e) {
   embedder = e.source;
   var data = JSON.parse(e.data)[0];

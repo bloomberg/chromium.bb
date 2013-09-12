@@ -24,6 +24,11 @@ var onPostMessageReceived = function(e) {
   window.console.log('data: ' + data);
   switch (data[0]) {
     case 'connected':
+      // Trigger a resize event on the guest so that we make sure
+      // we are painted before we attempt to start drag/drop test.
+      document.getElementById('webview').style.height = '200px';
+      break;
+    case 'resized':
       chrome.test.sendMessage('connected');
       break;
     case 'guest-got-drop':
