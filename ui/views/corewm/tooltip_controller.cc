@@ -102,10 +102,7 @@ class TooltipController::Tooltip : public views::WidgetObserver {
   }
 
   virtual ~Tooltip() {
-    if (widget_) {
-      widget_->RemoveObserver(this);
-      widget_->Close();
-    }
+    DestroyWidget();
   }
 
   // Updates the text on the tooltip and resizes to fit.
@@ -126,7 +123,7 @@ class TooltipController::Tooltip : public views::WidgetObserver {
       width += 2 * kTooltipBorderWidth;
       height += 2 * kTooltipBorderWidth;
     }
-    CreateWidgetIfNecessary(window);
+    GetWidgetForWindow(window);
     SetTooltipBounds(location, width, height);
   }
 
@@ -180,12 +177,28 @@ class TooltipController::Tooltip : public views::WidgetObserver {
     widget_->SetBounds(tooltip_rect);
   }
 
-  void CreateWidgetIfNecessary(aura::Window* tooltip_window) {
-    if (widget_)
-      return;
+  void GetWidgetForWindow(aura::Window* tooltip_window) {
+    if (widget_) {
+      // If the window for which the tooltip is being displayed changes and if
+      // the tooltip window and the tooltip widget belong to different
+      // rootwindows then we need to recreate the tooltip widget under the
+      // active root window hierarchy to get it to display.
+      if (widget_->GetNativeWindow()->GetRootWindow() ==
+          tooltip_window->GetRootWindow())
+        return;
+      DestroyWidget();
+    }
     widget_ = CreateTooltip(tooltip_window);
     widget_->SetContentsView(&label_);
     widget_->AddObserver(this);
+  }
+
+  void DestroyWidget() {
+    if (widget_) {
+      widget_->RemoveObserver(this);
+      widget_->Close();
+      widget_ = NULL;
+    }
   }
 
   views::Label label_;
