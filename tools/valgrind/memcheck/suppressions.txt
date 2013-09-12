@@ -4499,6 +4499,15 @@
    fun:_ZN7WebCore7Element16styleForRendererE*
 }
 {
+   bug_121729b
+   Memcheck:Leak
+   ...
+   fun:_ZN7WebCoreL12parseUASheetERKN3WTF6StringE
+   fun:_ZN7WebCoreL12parseUASheetEPKcj
+   ...
+   fun:_ZN7WebCore8Document13styleResolverEv
+}
+{
    bug_122177
    Memcheck:Leak
    ...
@@ -5512,26 +5521,6 @@
    fun:_ZN2v88internal21StoreCallbackPropertyENS0_9ArgumentsEPNS0_7IsolateE
    ...
    fun:_ZN2v88internalL6InvokeEbNS0_6HandleINS0_10JSFunctionEEENS1_INS0_6ObjectEEEiPS5_Pb
-}
-{
-   bug_151017
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN19GrTextureStripAtlas8GetAtlasERKNS_4DescE
-   fun:_ZN16GrGradientEffectC2EP9GrContextRK20SkGradientShaderBaseN8SkShader8TileModeE
-   ...
-   fun:_ZN12_GLOBAL__N_121skPaint2GrPaintShaderEP11SkGpuDeviceRK7SkPaintbPNS0_19SkAutoCachedTextureEP7GrPaint
-   fun:_ZN11SkGpuDevice8drawRectERK6SkDrawRK6SkRectRK7SkPaint
-   fun:_ZN8SkCanvas8drawRectERK6SkRectRK7SkPaint
-   fun:_ZN7WebCore15GraphicsContext8fillRectERKNS_9FloatRectE
-   fun:_ZN7WebCore24CanvasRenderingContext2D8fillRectEffff
-   fun:_ZN7WebCore34CanvasRenderingContext2DV8InternalL16fillRectCallbackERKN2v89ArgumentsE
-   fun:_ZN2v88internalL19HandleApiCallHelperILb0EEEPNS0_11MaybeObjectENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
-   fun:_ZN2v88internalL21Builtin_HandleApiCallENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
-   ...
-   fun:_ZN2v88internalL6InvokeEbNS0_6HandleINS0_10JSFunctionEEENS1_INS0_6ObjectEEEiPS5_Pb
-   fun:_ZN2v88internal9Execution4CallENS0_6HandleINS0_6ObjectEEES4_iPS4_Pbb
-   fun:_ZN2v88Function4CallENS_6HandleINS_6ObjectEEEiPNS1_INS_5ValueEEE
 }
 {
    bug_151908
@@ -7100,6 +7089,17 @@
    fun:_ZN15webkit_database12_GLOBAL__N_120GetOriginsOnDBThreadEPNS_15DatabaseTrackerEPSt3setI4GURLSt4lessIS4_ESaIS4_EE
 }
 {
+   bug_262934
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7GrGpuGL12ProgramCache10getProgramERK15GrGLProgramDescPPK13GrEffectStageS7_
+   fun:_ZN7GrGpuGL18flushGraphicsStateEN5GrGpu8DrawTypeEPK20GrDeviceCoordTexture
+   fun:_ZN5GrGpu22setupClipAndFlushStateENS_8DrawTypeEPK20GrDeviceCoordTexturePN11GrDrawState18AutoRestoreEffectsE
+   fun:_ZN5GrGpu6onDrawERKN12GrDrawTarget8DrawInfoE
+   ...
+   fun:_ZN9GrContext22readRenderTargetPixelsEP14GrRenderTargetiiii13GrPixelConfigPvmj
+}
+{
    bug_268258
    Memcheck:Leak
    fun:malloc
@@ -7303,4 +7303,38 @@
    fun:_ZN3gpu5gles216GLES2DecoderImpl22HandleBindRenderbufferEjRKNS0_4cmds16BindRenderbufferE
    fun:_ZN3gpu5gles216GLES2DecoderImpl9DoCommandEjjPKv
    fun:_ZN3gpu13CommandParser14ProcessCommandEv
+}
+{
+   bug_290435
+   Memcheck:Uninitialized
+   fun:_ZN7WebCore12AudioContext20scheduleNodeDeletionEv
+   fun:_ZN7WebCore12AudioContext21handlePostRenderTasksEv
+   fun:_ZN7WebCore20AudioDestinationNode6renderEPNS_8AudioBusES2_m
+   fun:_ZN7WebCore27OfflineAudioDestinationNode13offlineRenderEv
+   fun:_ZN7WebCore27OfflineAudioDestinationNode18offlineRenderEntryEPv
+}
+{
+   bug_290440
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7WebCore11ScriptState10forContextEN2v86HandleINS1_7ContextEEE
+   fun:_ZN7WebCore32scriptStateFromWorkerGlobalScopeEPNS_17WorkerGlobalScopeE
+   fun:_ZN7WebCore12_GLOBAL__N_111PromiseTask11performTaskEPNS_22ScriptExecutionContextE
+   fun:_ZN7WebCore13WorkerRunLoop4Task11performTaskERKS0_PNS_22ScriptExecutionContextE
+   fun:_ZN7WebCore13WorkerRunLoop9runInModeEPNS_17WorkerGlobalScopeERKNS_13ModePredicateENS0_8WaitModeE
+   fun:_ZN7WebCore13WorkerRunLoop3runEPNS_17WorkerGlobalScopeE
+   fun:_ZN7WebCore12WorkerThread12runEventLoopEv
+}
+{
+   bug_290443
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7WebCore11ScriptState10forContextEN2v86HandleINS1_7ContextEEE
+   fun:_ZN7WebCore11ScriptState7currentEv
+   fun:_ZN7WebCore20ImageBitmapFactories17ImageBitmapLoaderC1EPS0_N3WTF10PassRefPtrINS_21ScriptPromiseResolverEEERKNS_7IntRectE
+   fun:_ZN7WebCore20ImageBitmapFactories17ImageBitmapLoader6createEPS0_N3WTF10PassRefPtrINS_21ScriptPromiseResolverEEERKNS_7IntRectE
+   fun:_ZN7WebCore20ImageBitmapFactories17createImageBitmapEPNS_11EventTargetEPNS_4BlobERNS_14ExceptionStateE
+   fun:_ZN7WebCore27WorkerGlobalScopeV8InternalL24createImageBitmap1MethodERKN2v820FunctionCallbackInfoINS1_5ValueEEE
+   fun:_ZN7WebCore27WorkerGlobalScopeV8InternalL23createImageBitmapMethodERKN2v820FunctionCallbackInfoINS1_5ValueEEE
+   fun:_ZN7WebCore27WorkerGlobalScopeV8InternalL31createImageBitmapMethodCallbackERKN2v820FunctionCallbackInfoINS1_5ValueEEE
 }
