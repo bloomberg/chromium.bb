@@ -446,23 +446,23 @@ class GitCheckout(GitBaseTest):
       commit_user=self.usr,
       post_processors=post_processors)
 
-  def disabled_testAll(self):
+  def testAll(self):
     root = os.path.join(self.root_dir, self.name)
     self._check_base(self._get_co(None), root, None)
 
-  def disabled_testException(self):
+  def testException(self):
     self._check_exception(
         self._get_co(None),
         'While running git apply --index -p1;\n  fatal: corrupt patch at line '
         '12\n')
 
-  def disabled_testProcess(self):
+  def testProcess(self):
     self._test_process(self._get_co)
 
   def _testPrepare(self):
     self._test_prepare(self._get_co(None))
 
-  def disabled_testMove(self):
+  def testMove(self):
     co = self._get_co(None)
     self._check_move(co)
     out = subprocess2.check_output(

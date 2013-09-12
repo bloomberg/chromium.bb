@@ -242,7 +242,7 @@ class FakeReposBase(object):
       logging.debug('Killing svnserve pid %s' % self.svnserve.pid)
       try:
         self.svnserve.kill()
-      except OSError, e:
+      except OSError as e:
         if e.errno != errno.ESRCH:   # no such process
           raise
       wait_for_port_to_free(self.host, self.svn_port)
@@ -267,7 +267,11 @@ class FakeReposBase(object):
         pid = int(self.git_pid_file.read())
         self.git_pid_file.close()
         logging.debug('Killing git daemon pid %s' % pid)
-        subprocess2.kill_pid(pid)
+        try:
+          subprocess2.kill_pid(pid)
+        except OSError as e:
+          if e.errno != errno.ESRCH:  # no such process
+            raise
         self.git_pid_file = None
       wait_for_port_to_free(self.host, self.git_port)
       self.git_port = None
