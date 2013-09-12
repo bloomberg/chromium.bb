@@ -32,9 +32,8 @@ namespace WTF {
 
     template <typename T> inline void deleteOwnedPtr(T* ptr)
     {
-        typedef char known[sizeof(T) ? 1 : -1];
-        if (sizeof(known))
-            delete ptr;
+        COMPILE_ASSERT(sizeof(T) > 0, TypeMustBeComplete);
+        delete ptr;
     }
 
 } // namespace WTF

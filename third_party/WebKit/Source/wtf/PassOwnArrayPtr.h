@@ -140,9 +140,8 @@ template<typename T> inline PassOwnArrayPtr<T> adoptArrayPtr(T* ptr)
 
 template<typename T> inline void deleteOwnedArrayPtr(T* ptr)
 {
-    typedef char known[sizeof(T) ? 1 : -1];
-    if (sizeof(known))
-        delete [] ptr;
+    COMPILE_ASSERT(sizeof(T) > 0, TypeMustBeComplete);
+    delete [] ptr;
 }
 
 template<typename T, typename U> inline PassOwnArrayPtr<T> static_pointer_cast(const PassOwnArrayPtr<U>& p)
