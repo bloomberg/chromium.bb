@@ -125,6 +125,10 @@ class COMPOSITOR_EXPORT LayerAnimationSequence
   // by this sequence. Returns 0.0 if no elements have been progressed.
   double last_progressed_fraction() const { return last_progressed_fraction_; }
 
+  size_t size() const;
+
+  LayerAnimationElement* FirstElement() const;
+
  private:
   friend class LayerAnimatorTestController;
 
@@ -143,7 +147,7 @@ class COMPOSITOR_EXPORT LayerAnimationSequence
   void NotifyAborted();
 
   // The currently animating element.
-  LayerAnimationElement* CurrentElement();
+  LayerAnimationElement* CurrentElement() const;
 
   // The union of all the properties modified by all elements in the sequence.
   LayerAnimationElement::AnimatableProperties properties_;
