@@ -420,16 +420,20 @@ void PromiseWriterHelper(const DropData& drop_data,
       // does not work. kPasteboardTypeFilePromiseContent is thoroughly broken:
       // * API: There is no good way to get the location for the drop.
       //   <http://lists.apple.com/archives/cocoa-dev/2012/Feb/msg00706.html>
+      //   <rdar://14943849> <http://openradar.me/14943849>
       // * Behavior: A file dropped in the Finder is not selected. This can be
       //   worked around by selecting the file in the Finder using AppleEvents,
       //   but the drop target window will come to the front of the Finder's
       //   window list (unlike the previous behavior). <http://crbug.com/278515>
+      //   <rdar://14943865> <http://openradar.me/14943865>
       // * Behavior: Files dragged over app icons in the dock do not highlight
       //   the dock icons, and the dock icons do not accept the drop.
-      //   <http://crbug.com/282916>
+      //   <http://crbug.com/282916> <rdar://14943872>
+      //   <http://openradar.me/14943872>
       // * Behavior: A file dropped onto the desktop is positioned at the upper
       //   right of the desktop rather than at the position at which it was
-      //   dropped. <http://crbug.com/284942>
+      //   dropped. <http://crbug.com/284942> <rdar://14943881>
+      //   <http://openradar.me/14943881>
       NSArray* fileUTIList = @[ base::mac::CFToNSCast(fileUTI_.get()) ];
       [pasteboard_ addTypes:@[ NSFilesPromisePboardType ] owner:contentsView_];
       [pasteboard_ setPropertyList:fileUTIList
