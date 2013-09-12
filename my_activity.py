@@ -116,14 +116,22 @@ rietveld_instances = [
 
 gerrit_instances = [
   {
-    'url': 'gerrit.chromium.org',
-    'port': 29418,
+    'url': 'chromium-review.googlesource.com',
     'shorturl': 'crosreview.com',
   },
+  # TODO(deymo): chrome-internal-review requires login credentials. Enable once
+  # login support is added to this client. See crbug.com/281695.
+  #{
+  #  'url': 'chrome-internal-review.googlesource.com',
+  #  'shorturl': 'crosreview.com/i',
+  #},
   {
-    'url': 'gerrit-int.chromium.org',
+    'host': 'gerrit.chromium.org',
+    'port': 29418,
+  },
+  {
+    'host': 'gerrit-int.chromium.org',
     'port': 29419,
-    'shorturl': 'crosreview.com/i',
   },
 ]
 
@@ -237,6 +245,10 @@ def get_yes_or_no(msg):
       return True
     elif not response or response == 'n' or response == 'no':
       return False
+
+
+def datetime_from_gerrit(date_string):
+  return datetime.strptime(date_string, '%Y-%m-%d %H:%M:%S.%f000')
 
 
 def datetime_from_rietveld(date_string):
@@ -376,33 +388,70 @@ class MyActivity(object):
       ret.append(r)
     return ret
 
-  def gerrit_search(self, instance, owner=None, reviewer=None):
-    max_age = datetime.today() - self.modified_after
-    max_age = max_age.days * 24 * 3600 + max_age.seconds
-
+  @staticmethod
+  def gerrit_changes_over_ssh(instance, filters):
     # See https://review.openstack.org/Documentation/cmd-query.html
     # Gerrit doesn't allow filtering by created time, only modified time.
-    user_filter = 'owner:%s' % owner if owner else 'reviewer:%s' % reviewer
-    gquery_cmd = ['ssh', '-p', str(instance['port']), instance['url'],
+    gquery_cmd = ['ssh', '-p', str(instance['port']), instance['host'],
                   'gerrit', 'query',
                   '--format', 'JSON',
                   '--comments',
-                  '--',
-                  '-age:%ss' % str(max_age),
-                  user_filter]
-    [stdout, _] = subprocess.Popen(gquery_cmd, stdout=subprocess.PIPE,
+                  '--'] + filters
+    (stdout, _) = subprocess.Popen(gquery_cmd, stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE).communicate()
-    issues = str(stdout).split('\n')[:-2]
-    issues = map(json.loads, issues)
+    # Drop the last line of the output with the stats.
+    issues = stdout.splitlines()[:-1]
+    return map(json.loads, issues)
+
+  @staticmethod
+  def gerrit_changes_over_rest(instance, filters):
+    # See https://gerrit-review.googlesource.com/Documentation/rest-api.html
+    # Gerrit doesn't allow filtering by created time, only modified time.
+    args = urllib.urlencode([
+        ('q', ' '.join(filters)),
+        ('o', 'MESSAGES'),
+        ('o', 'LABELS')])
+    rest_url = 'https://%s/changes/?%s' % (instance['url'], args)
+
+    req = urllib2.Request(rest_url, headers={'Accept': 'text/plain'})
+    try:
+      response = urllib2.urlopen(req)
+      stdout = response.read()
+    except urllib2.HTTPError, e:
+      print 'ERROR: Looking up %r: %s' % (rest_url, e)
+      return []
+
+    # Check that the returned JSON starts with the right marker.
+    if stdout[:5] != ")]}'\n":
+      print 'ERROR: Marker not found on REST API response: %r' % stdout[:5]
+      return []
+    return json.loads(stdout[5:])
+
+  def gerrit_search(self, instance, owner=None, reviewer=None):
+    max_age = datetime.today() - self.modified_after
+    max_age = max_age.days * 24 * 3600 + max_age.seconds
+    user_filter = 'owner:%s' % owner if owner else 'reviewer:%s' % reviewer
+    filters = ['-age:%ss' % max_age, user_filter]
+
+    # Determine the gerrit interface to use: SSH or REST API:
+    if 'host' in instance:
+      issues = self.gerrit_changes_over_ssh(instance, filters)
+      issues = [self.process_gerrit_ssh_issue(instance, issue)
+                for issue in issues]
+    elif 'url' in instance:
+      issues = self.gerrit_changes_over_rest(instance, filters)
+      issues = [self.process_gerrit_rest_issue(instance, issue)
+                for issue in issues]
+    else:
+      raise Exception('Invalid gerrit_instances configuration.')
 
     # TODO(cjhopman): should we filter abandoned changes?
-    issues = [self.process_gerrit_issue(instance, issue) for issue in issues]
     issues = filter(self.filter_issue, issues)
     issues = sorted(issues, key=lambda i: i['modified'], reverse=True)
 
     return issues
 
-  def process_gerrit_issue(self, instance, issue):
+  def process_gerrit_ssh_issue(self, instance, issue):
     ret = {}
     ret['review_url'] = issue['url']
     if 'shorturl' in instance:
@@ -414,25 +463,56 @@ class MyActivity(object):
     ret['created'] = datetime.fromtimestamp(issue['createdOn'])
     ret['modified'] = datetime.fromtimestamp(issue['lastUpdated'])
     if 'comments' in issue:
-      ret['replies'] = self.process_gerrit_issue_replies(issue['comments'])
+      ret['replies'] = self.process_gerrit_ssh_issue_replies(issue['comments'])
     else:
       ret['replies'] = []
-    ret['reviewers'] = set()
-    for reply in ret['replies']:
-      if reply['author'] != ret['author']:
-        ret['reviewers'].add(reply['author'])
+    ret['reviewers'] = set(r['author'] for r in ret['replies'])
+    ret['reviewers'].discard(ret['author'])
     return ret
 
   @staticmethod
-  def process_gerrit_issue_replies(replies):
+  def process_gerrit_ssh_issue_replies(replies):
     ret = []
     replies = filter(lambda r: 'email' in r['reviewer'], replies)
     for reply in replies:
-      r = {}
-      r['author'] = reply['reviewer']['email']
-      r['created'] = datetime.fromtimestamp(reply['timestamp'])
-      r['content'] = ''
-      ret.append(r)
+      ret.append({
+        'author': reply['reviewer']['email'],
+        'created': datetime.fromtimestamp(reply['timestamp']),
+        'content': '',
+      })
+    return ret
+
+  def process_gerrit_rest_issue(self, instance, issue):
+    ret = {}
+    ret['review_url'] = 'https://%s/%s' % (instance['url'], issue['_number'])
+    if 'shorturl' in instance:
+      # TODO(deymo): Move this short link to https once crosreview.com supports
+      # it.
+      ret['review_url'] = 'http://%s/%s' % (instance['shorturl'],
+                                            issue['_number'])
+    ret['header'] = issue['subject']
+    ret['owner'] = issue['owner']['email']
+    ret['author'] = ret['owner']
+    ret['created'] = datetime_from_gerrit(issue['created'])
+    ret['modified'] = datetime_from_gerrit(issue['updated'])
+    if 'messages' in issue:
+      ret['replies'] = self.process_gerrit_rest_issue_replies(issue['messages'])
+    else:
+      ret['replies'] = []
+    ret['reviewers'] = set(r['author'] for r in ret['replies'])
+    ret['reviewers'].discard(ret['author'])
+    return ret
+
+  @staticmethod
+  def process_gerrit_rest_issue_replies(replies):
+    ret = []
+    replies = filter(lambda r: 'email' in r['author'], replies)
+    for reply in replies:
+      ret.append({
+        'author': reply['author']['email'],
+        'created': datetime_from_gerrit(reply['date']),
+        'content': reply['message'],
+      })
     return ret
 
   def google_code_issue_search(self, instance):
