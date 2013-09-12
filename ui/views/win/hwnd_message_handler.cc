@@ -393,6 +393,7 @@ HWNDMessageHandler::HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate)
       can_update_layered_window_(true),
       is_first_nccalc_(true),
       autohide_factory_(this),
+      id_generator_(0),
       did_gdi_clear_(false) {
 }
 
@@ -2105,9 +2106,11 @@ LRESULT HWNDMessageHandler::OnTouchEvent(UINT message,
         ui::TouchEvent event(
             touch_event_type,
             gfx::Point(point.x, point.y),
-            input[i].dwID % ui::GestureSequence::kMaxGesturePoints,
+            id_generator_.GetGeneratedID(input[i].dwID),
             base::TimeDelta::FromMilliseconds(input[i].dwTime));
         touch_events.push_back(event);
+        if (touch_event_type == ui::ET_TOUCH_RELEASED)
+          id_generator_.ReleaseNumber(input[i].dwID);
       }
     }
     // Handle the touch events asynchronously. We need this because touch

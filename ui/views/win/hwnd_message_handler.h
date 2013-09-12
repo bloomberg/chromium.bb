@@ -22,6 +22,7 @@
 #include "base/win/win_util.h"
 #include "ui/base/accessibility/accessibility_types.h"
 #include "ui/base/events/event.h"
+#include "ui/base/sequential_id_generator.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/win/window_impl.h"
@@ -471,6 +472,9 @@ class VIEWS_EXPORT HWNDMessageHandler :
 
   // A factory used to lookup appbar autohide edges.
   base::WeakPtrFactory<HWNDMessageHandler> autohide_factory_;
+
+  // Generates touch-ids for touch-events.
+  ui::SequentialIDGenerator id_generator_;
 
   // Necessary to avoid corruption on NC paint in Aero mode.
   bool did_gdi_clear_;

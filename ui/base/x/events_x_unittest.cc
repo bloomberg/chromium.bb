@@ -248,6 +248,7 @@ TEST(EventsXTest, TouchEventBasic) {
   valuators.push_back(Valuator(DeviceDataManager::DT_TOUCH_ORIENTATION, 0.3f));
   valuators.push_back(Valuator(DeviceDataManager::DT_TOUCH_PRESSURE, 100));
   event = CreateTouchEvent(0, XI_TouchBegin, 5, gfx::Point(10, 10), valuators);
+  EXPECT_EQ(ui::ET_TOUCH_PRESSED, ui::EventTypeFromNative(event));
   EXPECT_EQ("10,10", ui::EventLocationFromNative(event).ToString());
   EXPECT_EQ(GetTouchId(event), 0);
   EXPECT_EQ(GetTouchRadiusX(event), 10);
@@ -259,6 +260,7 @@ TEST(EventsXTest, TouchEventBasic) {
   valuators.clear();
   valuators.push_back(Valuator(DeviceDataManager::DT_TOUCH_ORIENTATION, 0.5f));
   event = CreateTouchEvent(0, XI_TouchUpdate, 5, gfx::Point(20, 20), valuators);
+  EXPECT_EQ(ui::ET_TOUCH_MOVED, ui::EventTypeFromNative(event));
   EXPECT_EQ("20,20", ui::EventLocationFromNative(event).ToString());
   EXPECT_EQ(GetTouchId(event), 0);
   EXPECT_EQ(GetTouchRadiusX(event), 10);
@@ -273,6 +275,7 @@ TEST(EventsXTest, TouchEventBasic) {
   valuators.push_back(Valuator(DeviceDataManager::DT_TOUCH_PRESSURE, 500));
   event = CreateTouchEvent(
       0, XI_TouchBegin, 6, gfx::Point(200, 200), valuators);
+  EXPECT_EQ(ui::ET_TOUCH_PRESSED, ui::EventTypeFromNative(event));
   EXPECT_EQ("200,200", ui::EventLocationFromNative(event).ToString());
   EXPECT_EQ(GetTouchId(event), 1);
   EXPECT_EQ(GetTouchRadiusX(event), 50);
@@ -285,6 +288,7 @@ TEST(EventsXTest, TouchEventBasic) {
   valuators.clear();
   valuators.push_back(Valuator(DeviceDataManager::DT_TOUCH_PRESSURE, 50));
   event = CreateTouchEvent(0, XI_TouchEnd, 5, gfx::Point(30, 30), valuators);
+  EXPECT_EQ(ui::ET_TOUCH_RELEASED, ui::EventTypeFromNative(event));
   EXPECT_EQ("30,30", ui::EventLocationFromNative(event).ToString());
   EXPECT_EQ(GetTouchId(event), 0);
   EXPECT_EQ(GetTouchRadiusX(event), 10);
@@ -297,6 +301,7 @@ TEST(EventsXTest, TouchEventBasic) {
   valuators.clear();
   valuators.push_back(Valuator(DeviceDataManager::DT_TOUCH_MAJOR, 50));
   event = CreateTouchEvent(0, XI_TouchEnd, 6, gfx::Point(200, 200), valuators);
+  EXPECT_EQ(ui::ET_TOUCH_RELEASED, ui::EventTypeFromNative(event));
   EXPECT_EQ("200,200", ui::EventLocationFromNative(event).ToString());
   EXPECT_EQ(GetTouchId(event), 1);
   EXPECT_EQ(GetTouchRadiusX(event), 25);

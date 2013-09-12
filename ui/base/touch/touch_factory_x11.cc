@@ -29,7 +29,7 @@ TouchFactory::TouchFactory()
       touch_events_disabled_(false),
       touch_device_list_(),
 #if defined(USE_XI2_MT)
-      min_available_slot_(0),
+      id_generator_(0),
 #endif
       slots_used_() {
 #if defined(USE_AURA)
@@ -225,46 +225,18 @@ bool TouchFactory::IsMultiTouchDevice(unsigned int deviceid) const {
 
 #if defined(USE_XI2_MT)
 bool TouchFactory::QuerySlotForTrackingID(uint32 tracking_id, int* slot) {
-  TrackingIdMap::iterator itr = tracking_id_map_.find(tracking_id);
-  if (itr != tracking_id_map_.end()) {
-    *slot = itr->second;
-    return true;
-  }
-  return false;
+  if (!id_generator_.HasGeneratedIDFor(tracking_id))
+    return false;
+  *slot = static_cast<int>(id_generator_.GetGeneratedID(tracking_id));
+  return true;
 }
 
 int TouchFactory::GetSlotForTrackingID(uint32 tracking_id) {
-  TrackingIdMap::iterator itr = tracking_id_map_.find(tracking_id);
-  if (itr != tracking_id_map_.end())
-    return itr->second;
-
-  int slot = min_available_slot_;
-  if (slot == kMaxTouchPoints) {
-    LOG(ERROR) << "Could not find available slot for touch point";
-    return 0;
-  }
-  SetSlotUsed(slot, true);
-  tracking_id_map_.insert(std::make_pair(tracking_id, slot));
-
-  // Updates the minium available slot ID
-  while (++min_available_slot_ < kMaxTouchPoints &&
-         IsSlotUsed(min_available_slot_))
-    continue;
-
-  return slot;
+  return id_generator_.GetGeneratedID(tracking_id);
 }
 
 void TouchFactory::ReleaseSlotForTrackingID(uint32 tracking_id) {
-  TrackingIdMap::iterator itr = tracking_id_map_.find(tracking_id);
-  if (itr != tracking_id_map_.end()) {
-    int slot = itr->second;
-    SetSlotUsed(slot, false);
-    tracking_id_map_.erase(itr);
-    if (slot < min_available_slot_)
-      min_available_slot_ = slot;
-  } else {
-    NOTREACHED() << "Cannot find slot mapping to tracking ID " << tracking_id;
-  }
+  id_generator_.ReleaseNumber(tracking_id);
 }
 #endif
 

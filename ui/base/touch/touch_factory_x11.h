@@ -9,8 +9,8 @@
 #include <map>
 #include <vector>
 
-#include "base/containers/hash_tables.h"
 #include "base/timer/timer.h"
+#include "ui/base/sequential_id_generator.h"
 #include "ui/base/ui_export.h"
 
 template <typename T> struct DefaultSingletonTraits;
@@ -122,14 +122,7 @@ class UI_EXPORT TouchFactory {
   static const int kMaxTouchPoints = 32;
 
 #if defined(USE_XI2_MT)
-  // Stores the minimum available slot ID which helps get slot ID from
-  // tracking ID. When it equals to kMaxTouchPoints, there is no available
-  // slot.
-  int min_available_slot_;
-
-  // A hash table to map tracking ID to slot.
-  typedef base::hash_map<uint32, int> TrackingIdMap;
-  TrackingIdMap tracking_id_map_;
+  SequentialIDGenerator id_generator_;
 #endif
 
   // A lookup table for slots in use for a touch event.

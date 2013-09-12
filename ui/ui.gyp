@@ -313,6 +313,8 @@
         'base/resource/resource_data_dll_win.cc',
         'base/resource/resource_data_dll_win.h',
         'base/resource/resource_handle.h',
+        'base/sequential_id_generator.cc',
+        'base/sequential_id_generator.h',
         'base/text/bytes_formatting.cc',
         'base/text/bytes_formatting.h',
         'base/theme_provider.cc',
