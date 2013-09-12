@@ -507,7 +507,7 @@ void writeSVGResourceContainer(TextStream& ts, const RenderObject& object, int i
         writeNameValuePair(ts, "clipPathUnits", toRenderSVGResourceClipper(resource)->clipPathUnits());
         ts << "\n";
     } else if (resource->resourceType() == MarkerResourceType) {
-        RenderSVGResourceMarker* marker = static_cast<RenderSVGResourceMarker*>(resource);
+        RenderSVGResourceMarker* marker = toRenderSVGResourceMarker(resource);
         writeNameValuePair(ts, "markerUnits", marker->markerUnits());
         ts << " [ref at " << marker->referencePoint() << "]";
         ts << " [angle=";
