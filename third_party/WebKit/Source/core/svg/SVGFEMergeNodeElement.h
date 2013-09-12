@@ -21,6 +21,7 @@
 #ifndef SVGFEMergeNodeElement_h
 #define SVGFEMergeNodeElement_h
 
+#include "SVGNames.h"
 #include "core/svg/SVGAnimatedString.h"
 #include "core/svg/SVGElement.h"
 
@@ -43,6 +44,12 @@ private:
         DECLARE_ANIMATED_STRING(In1, in1)
     END_DECLARE_ANIMATED_PROPERTIES
 };
+
+inline SVGFEMergeNodeElement* toSVGFEMergeNodeElement(Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(SVGNames::feMergeNodeTag));
+    return static_cast<SVGFEMergeNodeElement*>(node);
+}
 
 } // namespace WebCore
 
