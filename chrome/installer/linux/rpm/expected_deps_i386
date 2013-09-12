@@ -68,6 +68,7 @@ libXcomposite.so.1
 libXdamage.so.1
 libXext.so.6
 libXfixes.so.3
+libXi.so.6
 libXrender.so.1
 libXss.so.1
 libXtst.so.6

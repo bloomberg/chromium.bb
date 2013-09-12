@@ -42,6 +42,9 @@
 #else
 #define USE_GTK_MESSAGE_PUMP
 #include "base/message_loop/message_pump_gtk.h"
+#if defined(TOOLKIT_GTK)
+#include "base/message_loop/message_pump_x11.h"
+#endif
 #endif
 
 #endif
@@ -110,6 +113,11 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
   //   This type of ML also supports native UI events (e.g., Windows messages).
   //   See also MessageLoopForUI.
   //
+  // TYPE_GPU
+  //   This type of ML also supports native UI events for use in the GPU
+  //   process. On Linux this will always be an X11 ML (as compared with the
+  //   sometimes-GTK ML in the browser process).
+  //
   // TYPE_IO
   //   This type of ML also supports asynchronous IO.  See also
   //   MessageLoopForIO.
@@ -123,6 +131,9 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
   enum Type {
     TYPE_DEFAULT,
     TYPE_UI,
+#if defined(TOOLKIT_GTK)
+    TYPE_GPU,
+#endif
     TYPE_IO,
 #if defined(OS_ANDROID)
     TYPE_JAVA,
@@ -416,6 +427,13 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
   MessagePumpLibevent* pump_libevent() {
     return static_cast<MessagePumpLibevent*>(pump_.get());
   }
+#if defined(TOOLKIT_GTK)
+  friend class MessagePumpX11;
+  MessagePumpX11* pump_gpu() {
+    DCHECK_EQ(TYPE_GPU, type());
+    return static_cast<MessagePumpX11*>(pump_.get());
+  }
+#endif
 #endif
 
   scoped_ptr<MessagePump> pump_;
@@ -599,7 +617,7 @@ class BASE_EXPORT MessageLoopForUI : public MessageLoop {
 #endif
 
  protected:
-#if defined(USE_AURA) && defined(USE_X11) && !defined(OS_NACL)
+#if defined(USE_X11)
   friend class MessagePumpX11;
 #endif
 #if defined(USE_OZONE) && !defined(OS_NACL)

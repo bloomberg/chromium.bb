@@ -184,6 +184,10 @@ MessageLoop::MessageLoop(Type type)
       pump_.reset(MESSAGE_PUMP_UI);
   } else if (type_ == TYPE_IO) {
     pump_.reset(MESSAGE_PUMP_IO);
+#if defined(TOOLKIT_GTK)
+  } else if (type_ == TYPE_GPU) {
+    pump_.reset(new MessagePumpX11());
+#endif
 #if defined(OS_ANDROID)
   } else if (type_ == TYPE_JAVA) {
     pump_.reset(MESSAGE_PUMP_UI);
