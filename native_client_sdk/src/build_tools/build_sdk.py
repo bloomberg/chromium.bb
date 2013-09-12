@@ -82,7 +82,7 @@ def GetPNaClToolchain():
 def GetToolchainNaClInclude(tcname, tcpath, arch):
   if arch == 'x86':
     if tcname == 'pnacl':
-      return os.path.join(tcpath, 'newlib', 'sdk', 'include')
+      return os.path.join(tcpath, 'sdk', 'include')
     return os.path.join(tcpath, 'x86_64-nacl', 'include')
   elif arch == 'arm':
     return os.path.join(tcpath, 'arm-nacl', 'include')
@@ -108,7 +108,7 @@ def GetGypBuiltLib(tcname, xarch=None):
 
 def GetToolchainNaClLib(tcname, tcpath, xarch):
   if tcname == 'pnacl':
-    return os.path.join(tcpath, 'newlib', 'sdk', 'lib')
+    return os.path.join(tcpath, 'sdk', 'lib')
   elif xarch == '32':
     return os.path.join(tcpath, 'x86_64-nacl', 'lib32')
   elif xarch == '64':
@@ -191,11 +191,11 @@ def BuildStepCopyTextFiles(pepperdir, pepper_ver, chrome_revision,
 
 def PrunePNaClToolchain(root):
   dirs_to_prune = [
-    'newlib/lib-bc-x86-64',
-    'newlib/usr-bc-x86-64'
+    'lib-bc-x86-64',
+    'usr-bc-x86-64'
     # TODO(sbc): remove this once its really not needed.
     # Currently we seem to rely on it at least for <bits/stat.h>
-    #'newlib/sysroot',
+    #'sysroot',
   ]
   for dirname in dirs_to_prune:
     buildbot_common.RemoveDir(os.path.join(root, dirname))

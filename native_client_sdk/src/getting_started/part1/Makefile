@@ -28,8 +28,8 @@ OSNAME := $(shell $(GETOS))
 RM := $(OSHELPERS) rm
 
 PNACL_TC_PATH := $(abspath $(NACL_SDK_ROOT)/toolchain/$(OSNAME)_pnacl)
-PNACL_CXX := $(PNACL_TC_PATH)/newlib/bin/pnacl-clang++
-PNACL_FINALIZE := $(PNACL_TC_PATH)/newlib/bin/pnacl-finalize
+PNACL_CXX := $(PNACL_TC_PATH)/bin/pnacl-clang++
+PNACL_FINALIZE := $(PNACL_TC_PATH)/bin/pnacl-finalize
 CXXFLAGS := -I$(NACL_SDK_ROOT)/include
 LDFLAGS := -L$(NACL_SDK_ROOT)/lib/pnacl/Release -lppapi_cpp -lppapi
 
