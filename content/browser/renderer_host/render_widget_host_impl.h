@@ -23,6 +23,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
+#include "content/browser/renderer_host/input/input_ack_handler.h"
 #include "content/browser/renderer_host/input/input_router_client.h"
 #include "content/browser/renderer_host/synthetic_gesture_controller.h"
 #include "content/common/browser_rendering_stats.h"
@@ -88,6 +89,7 @@ struct EditCommand;
 // embedders of content, and adds things only visible to content.
 class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
                                             public InputRouterClient,
+                                            public InputAckHandler,
                                             public IPC::Listener {
  public:
   // routing_id can be MSG_ROUTING_NONE, in which case the next available
@@ -732,6 +734,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
       const TouchEventWithLatencyInfo& touch_event) OVERRIDE;
   virtual bool OnSendGestureEventImmediately(
       const GestureEventWithLatencyInfo& gesture_event) OVERRIDE;
+  virtual void SetNeedsFlush() OVERRIDE;
+  virtual void DidFlush() OVERRIDE;
+
+  // InputAckHandler
   virtual void OnKeyboardEventAck(const NativeWebKeyboardEvent& event,
                                   InputEventAckState ack_result) OVERRIDE;
   virtual void OnWheelEventAck(const WebKit::WebMouseWheelEvent& event,
@@ -740,14 +746,13 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
                                InputEventAckState ack_result) OVERRIDE;
   virtual void OnGestureEventAck(const WebKit::WebGestureEvent& event,
                                  InputEventAckState ack_result) OVERRIDE;
-  virtual void OnUnexpectedEventAck(bool bad_message) OVERRIDE;
+  virtual void OnUnexpectedEventAck(UnexpectedEventAckType type) OVERRIDE;
 
   void SimulateTouchGestureWithMouse(const WebKit::WebMouseEvent& mouse_event);
 
   // Called when there is a new auto resize (using a post to avoid a stack
   // which may get in recursive loops).
   void DelayedAutoResized();
-
 
   // Our delegate, which wants to know mainly about keyboard events.
   // It will remain non-NULL until DetachDelegate() is called.

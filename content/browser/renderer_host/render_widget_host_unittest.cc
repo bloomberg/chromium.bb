@@ -122,12 +122,11 @@ class MockInputRouter : public InputRouter {
   virtual ~MockInputRouter() {}
 
   // InputRouter
-  virtual bool SendInput(IPC::Message* message) OVERRIDE {
+  virtual void Flush() OVERRIDE {
+    flush_called_ = true;
+  }
+  virtual bool SendInput(scoped_ptr<IPC::Message> message) OVERRIDE {
     send_event_called_ = true;
-
-    // SendInput takes ownership of message
-    delete message;
-
     return true;
   }
   virtual void SendMouseEvent(
@@ -180,6 +179,7 @@ class MockInputRouter : public InputRouter {
     return false;
   }
 
+  bool flush_called_;
   bool send_event_called_;
   bool sent_mouse_event_;
   bool sent_wheel_event_;

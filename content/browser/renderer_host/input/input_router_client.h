@@ -61,16 +61,15 @@ class CONTENT_EXPORT InputRouterClient {
   virtual bool OnSendGestureEventImmediately(
       const GestureEventWithLatencyInfo& gesture_event) = 0;
 
-  // Called upon event ack receipt from the renderer.
-  virtual void OnKeyboardEventAck(const NativeWebKeyboardEvent& event,
-                                  InputEventAckState ack_result) = 0;
-  virtual void OnWheelEventAck(const WebKit::WebMouseWheelEvent& event,
-                               InputEventAckState ack_result) = 0;
-  virtual void OnTouchEventAck(const TouchEventWithLatencyInfo& event,
-                               InputEventAckState ack_result) = 0;
-  virtual void OnGestureEventAck(const WebKit::WebGestureEvent& event,
-                                 InputEventAckState ack_result) = 0;
-  virtual void OnUnexpectedEventAck(bool bad_message) = 0;
+  // Certain router implementations require periodic flushing of queued events.
+  // When this method is called, the client should ensure a timely call, either
+  // synchronous or asynchronous, of |Flush| on the InputRouter.
+  virtual void SetNeedsFlush() = 0;
+
+  // Called when the router has finished flushing all events queued at the time
+  // of the call to Flush.  The call will typically be asynchronous with
+  // respect to the call to |Flush| on the InputRouter.
+  virtual void DidFlush() = 0;
 };
 
 } // namespace content

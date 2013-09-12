@@ -21,6 +21,7 @@ struct LatencyInfo;
 namespace content {
 
 class GestureEventFilter;
+class InputAckHandler;
 class InputRouterClient;
 class RenderProcessHost;
 class RenderWidgetHostImpl;
@@ -33,11 +34,13 @@ class CONTENT_EXPORT ImmediateInputRouter
  public:
   ImmediateInputRouter(RenderProcessHost* process,
                        InputRouterClient* client,
+                       InputAckHandler* ack_handler,
                        int routing_id);
   virtual ~ImmediateInputRouter();
 
   // InputRouter
-  virtual bool SendInput(IPC::Message* message) OVERRIDE;
+  virtual void Flush() OVERRIDE;
+  virtual bool SendInput(scoped_ptr<IPC::Message> message) OVERRIDE;
   virtual void SendMouseEvent(
       const MouseEventWithLatencyInfo& mouse_event) OVERRIDE;
   virtual void SendWheelEvent(
@@ -79,8 +82,8 @@ private:
   virtual void OnTouchEventAck(const TouchEventWithLatencyInfo& event,
                                InputEventAckState ack_result) OVERRIDE;
 
-  bool SendMoveCaret(IPC::Message* message);
-  bool SendSelectRange(IPC::Message* message);
+  bool SendMoveCaret(scoped_ptr<IPC::Message> message);
+  bool SendSelectRange(scoped_ptr<IPC::Message> message);
   bool Send(IPC::Message* message);
 
   // Transmits the given input event an as an IPC::Message. This is an internal
@@ -137,6 +140,7 @@ private:
 
   RenderProcessHost* process_;
   InputRouterClient* client_;
+  InputAckHandler* ack_handler_;
   int routing_id_;
 
   // (Similar to |mouse_move_pending_|.) True while waiting for SelectRange_ACK.

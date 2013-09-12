@@ -29,6 +29,7 @@
 #include "content/browser/renderer_host/backing_store.h"
 #include "content/browser/renderer_host/backing_store_manager.h"
 #include "content/browser/renderer_host/dip_util.h"
+#include "content/browser/renderer_host/input/buffered_input_router.h"
 #include "content/browser/renderer_host/input/immediate_input_router.h"
 #include "content/browser/renderer_host/overscroll_controller.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -225,7 +226,8 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
   for (size_t i = 0; i < g_created_callbacks.Get().size(); i++)
     g_created_callbacks.Get().at(i).Run(this);
 
-  input_router_.reset(new ImmediateInputRouter(process, this, routing_id_));
+  input_router_.reset(
+      new ImmediateInputRouter(process_, this, this, routing_id_));
 
 #if defined(USE_AURA)
   bool overscroll_enabled = CommandLine::ForCurrentProcess()->
@@ -517,7 +519,7 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
 
 bool RenderWidgetHostImpl::Send(IPC::Message* msg) {
   if (IPC_MESSAGE_ID_CLASS(msg->type()) == InputMsgStart)
-    return input_router_->SendInput(msg);
+    return input_router_->SendInput(make_scoped_ptr(msg));
 
   return process_->Send(msg);
 }
@@ -1274,7 +1276,8 @@ void RenderWidgetHostImpl::RendererExited(base::TerminationStatus status,
   waiting_for_screen_rects_ack_ = false;
 
   // Reset to ensure that input routing works with a new renderer.
-  input_router_.reset(new ImmediateInputRouter(process_, this, routing_id_));
+  input_router_.reset(
+      new ImmediateInputRouter(process_, this, this, routing_id_));
 
   if (overscroll_controller_)
     overscroll_controller_->Reset();
@@ -2141,6 +2144,12 @@ bool RenderWidgetHostImpl::OnSendGestureEventImmediately(
   return !IgnoreInputEvents();
 }
 
+void RenderWidgetHostImpl::SetNeedsFlush() {
+}
+
+void RenderWidgetHostImpl::DidFlush() {
+}
+
 void RenderWidgetHostImpl::OnKeyboardEventAck(
       const NativeWebKeyboardEvent& event,
       InputEventAckState ack_result) {
@@ -2192,13 +2201,13 @@ void RenderWidgetHostImpl::OnTouchEventAck(
     view_->ProcessAckedTouchEvent(event, ack_result);
 }
 
-void RenderWidgetHostImpl::OnUnexpectedEventAck(bool bad_message) {
-  if (bad_message) {
+void RenderWidgetHostImpl::OnUnexpectedEventAck(UnexpectedEventAckType type) {
+  if (type == BAD_ACK_MESSAGE) {
     RecordAction(UserMetricsAction("BadMessageTerminate_RWH2"));
     process_->ReceivedBadMessage();
+  } else if (type == UNEXPECTED_EVENT_TYPE) {
+    suppress_next_char_events_ = false;
   }
-
-  suppress_next_char_events_ = false;
 }
 
 const gfx::Vector2d& RenderWidgetHostImpl::GetLastScrollOffset() const {

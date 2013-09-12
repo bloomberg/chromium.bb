@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "content/browser/renderer_host/input/gesture_event_filter.h"
+#include "content/browser/renderer_host/input/input_ack_handler.h"
 #include "content/browser/renderer_host/input/input_router_client.h"
 #include "content/browser/renderer_host/input/touch_event_queue.h"
 #include "content/browser/renderer_host/input/touchpad_tap_suppression_controller.h"
@@ -71,12 +72,13 @@ const char* GetEventAckName(InputEventAckState ack_result) {
 
 } // namespace
 
-ImmediateInputRouter::ImmediateInputRouter(
-    RenderProcessHost* process,
-    InputRouterClient* client,
-    int routing_id)
+ImmediateInputRouter::ImmediateInputRouter(RenderProcessHost* process,
+                                           InputRouterClient* client,
+                                           InputAckHandler* ack_handler,
+                                           int routing_id)
     : process_(process),
       client_(client),
+      ack_handler_(ack_handler),
       routing_id_(routing_id),
       select_range_pending_(false),
       move_caret_pending_(false),
@@ -86,8 +88,8 @@ ImmediateInputRouter::ImmediateInputRouter(
       touch_event_queue_(new TouchEventQueue(this)),
       gesture_event_filter_(new GestureEventFilter(this)) {
   enable_no_touch_to_renderer_while_scrolling_ =
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kNoTouchToRendererWhileScrolling) == "1";
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kNoTouchToRendererWhileScrolling);
   DCHECK(process);
   DCHECK(client);
 }
@@ -95,20 +97,23 @@ ImmediateInputRouter::ImmediateInputRouter(
 ImmediateInputRouter::~ImmediateInputRouter() {
 }
 
-bool ImmediateInputRouter::SendInput(IPC::Message* message) {
+void ImmediateInputRouter::Flush() {
+  NOTREACHED() << "ImmediateInputRouter will never request a flush.";
+}
+
+bool ImmediateInputRouter::SendInput(scoped_ptr<IPC::Message> message) {
   DCHECK(IPC_MESSAGE_ID_CLASS(message->type()) == InputMsgStart);
-  scoped_ptr<IPC::Message> scoped_message(message);
-  switch (scoped_message->type()) {
+  switch (message->type()) {
     // Check for types that require an ACK.
     case InputMsg_SelectRange::ID:
-      return SendSelectRange(scoped_message.release());
+      return SendSelectRange(message.Pass());
     case InputMsg_MoveCaret::ID:
-      return SendMoveCaret(scoped_message.release());
+      return SendMoveCaret(message.Pass());
     case InputMsg_HandleInputEvent::ID:
       NOTREACHED() << "WebInputEvents should never be sent via SendInput.";
       return false;
     default:
-      return Send(scoped_message.release());
+      return Send(message.release());
   }
 }
 
@@ -299,7 +304,7 @@ bool ImmediateInputRouter::OnMessageReceived(const IPC::Message& message) {
   IPC_END_MESSAGE_MAP()
 
   if (!message_is_ok)
-    client_->OnUnexpectedEventAck(true);
+    ack_handler_->OnUnexpectedEventAck(InputAckHandler::BAD_ACK_MESSAGE);
 
   return handled;
 }
@@ -307,29 +312,29 @@ bool ImmediateInputRouter::OnMessageReceived(const IPC::Message& message) {
 void ImmediateInputRouter::OnTouchEventAck(
     const TouchEventWithLatencyInfo& event,
     InputEventAckState ack_result) {
-  client_->OnTouchEventAck(event, ack_result);
+  ack_handler_->OnTouchEventAck(event, ack_result);
 }
 
-bool ImmediateInputRouter::SendSelectRange(IPC::Message* message) {
+bool ImmediateInputRouter::SendSelectRange(scoped_ptr<IPC::Message> message) {
   DCHECK(message->type() == InputMsg_SelectRange::ID);
   if (select_range_pending_) {
-    next_selection_range_.reset(message);
+    next_selection_range_ = message.Pass();
     return true;
   }
 
   select_range_pending_ = true;
-  return Send(message);
+  return Send(message.release());
 }
 
-bool ImmediateInputRouter::SendMoveCaret(IPC::Message* message) {
+bool ImmediateInputRouter::SendMoveCaret(scoped_ptr<IPC::Message> message) {
   DCHECK(message->type() == InputMsg_MoveCaret::ID);
   if (move_caret_pending_) {
-    next_move_caret_.reset(message);
+    next_move_caret_ = message.Pass();
     return true;
   }
 
   move_caret_pending_ = true;
-  return Send(message);
+  return Send(message.release());
 }
 
 bool ImmediateInputRouter::Send(IPC::Message* message) {
@@ -403,7 +408,7 @@ void ImmediateInputRouter::FilterAndSendWebInputEvent(
     // Proceed as normal.
     case INPUT_EVENT_ACK_STATE_NOT_CONSUMED:
       break;
-  };
+  }
 
   // Transmit any pending wheel events on a non-wheel event. This ensures that
   // the renderer receives the final PhaseEnded wheel event, which is necessary
@@ -439,13 +444,13 @@ void ImmediateInputRouter::OnInputEventAck(
 void ImmediateInputRouter::OnMsgMoveCaretAck() {
   move_caret_pending_ = false;
   if (next_move_caret_)
-    SendMoveCaret(next_move_caret_.release());
+    SendMoveCaret(next_move_caret_.Pass());
 }
 
 void ImmediateInputRouter::OnSelectRangeAck() {
   select_range_pending_ = false;
   if (next_selection_range_)
-    SendSelectRange(next_selection_range_.release());
+    SendSelectRange(next_selection_range_.Pass());
 }
 
 void ImmediateInputRouter::OnHasTouchEventHandlers(bool has_handlers) {
@@ -466,7 +471,7 @@ void ImmediateInputRouter::ProcessInputEventAck(
 
   int type = static_cast<int>(event_type);
   if (type < WebInputEvent::Undefined) {
-    client_->OnUnexpectedEventAck(true);
+    ack_handler_->OnUnexpectedEventAck(InputAckHandler::BAD_ACK_MESSAGE);
   } else if (type == WebInputEvent::MouseMove) {
     mouse_move_pending_ = false;
 
@@ -506,23 +511,17 @@ void ImmediateInputRouter::ProcessKeyboardAck(
     int type,
     InputEventAckState ack_result) {
   if (key_queue_.empty()) {
-    LOG(ERROR) << "Got a KeyEvent back from the renderer but we "
-               << "don't seem to have sent it to the renderer!";
+    ack_handler_->OnUnexpectedEventAck(InputAckHandler::UNEXPECTED_ACK);
   } else if (key_queue_.front().type != type) {
-    LOG(ERROR) << "We seem to have a different key type sent from "
-               << "the renderer. (" << key_queue_.front().type << " vs. "
-               << type << "). Ignoring event.";
-
     // Something must be wrong. Clear the |key_queue_| and char event
     // suppression so that we can resume from the error.
     key_queue_.clear();
-    client_->OnUnexpectedEventAck(false);
+    ack_handler_->OnUnexpectedEventAck(InputAckHandler::UNEXPECTED_EVENT_TYPE);
   } else {
     NativeWebKeyboardEvent front_item = key_queue_.front();
     key_queue_.pop_front();
 
-    client_->OnKeyboardEventAck(front_item, ack_result);
-
+    ack_handler_->OnKeyboardEventAck(front_item, ack_result);
     // WARNING: This ImmediateInputRouter can be deallocated at this point
     // (i.e.  in the case of Ctrl+W, where the call to
     // HandleKeyboardEvent destroys this ImmediateInputRouter).
@@ -535,7 +534,7 @@ void ImmediateInputRouter::ProcessWheelAck(InputEventAckState ack_result) {
   // Process the unhandled wheel event here before calling
   // ForwardWheelEventWithLatencyInfo() since it will mutate
   // current_wheel_event_.
-  client_->OnWheelEventAck(current_wheel_event_.event, ack_result);
+  ack_handler_->OnWheelEventAck(current_wheel_event_.event, ack_result);
 
   // Now send the next (coalesced) mouse wheel event.
   if (!coalesced_mouse_wheel_events_.empty()) {
@@ -549,7 +548,7 @@ void ImmediateInputRouter::ProcessWheelAck(InputEventAckState ack_result) {
 void ImmediateInputRouter::ProcessGestureAck(int type,
                                              InputEventAckState ack_result) {
   const bool processed = (INPUT_EVENT_ACK_STATE_CONSUMED == ack_result);
-  client_->OnGestureEventAck(
+  ack_handler_->OnGestureEventAck(
       gesture_event_filter_->GetGestureEventAwaitingAck(), ack_result);
   gesture_event_filter_->ProcessGestureAck(processed, type);
 }
