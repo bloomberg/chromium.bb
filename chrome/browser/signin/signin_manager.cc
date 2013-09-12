@@ -554,8 +554,12 @@ void SigninManager::CompletePendingSignin() {
   token_service->StartFetchingTokens();
 
   // If we have oauth2 tokens, tell token service about them so it does not
-  // need to fetch them again.
+  // need to fetch them again.  Its important that the authenticated name has
+  // already been set before sending the oauth2 token to the token service.
+  // Some token service listeners will query the authenticated name when they
+  // receive the token available notification.
   if (!temp_oauth_login_tokens_.refresh_token.empty()) {
+    DCHECK(!GetAuthenticatedUsername().empty());
     token_service->UpdateCredentialsWithOAuth2(temp_oauth_login_tokens_);
     temp_oauth_login_tokens_ = ClientOAuthResult();
   }

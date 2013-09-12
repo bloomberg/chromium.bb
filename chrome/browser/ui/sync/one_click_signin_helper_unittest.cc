@@ -5,6 +5,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
@@ -12,7 +13,10 @@
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 #include "chrome/browser/signin/fake_signin_manager.h"
+#include "chrome/browser/signin/profile_oauth2_token_service.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_names_io_thread.h"
@@ -21,6 +25,8 @@
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
 #include "chrome/browser/ui/sync/one_click_signin_helper.h"
+#include "chrome/browser/ui/webui/signin/login_ui_service.h"
+#include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -61,6 +67,11 @@ class SigninManagerMock : public FakeSigninManager {
   }
   MOCK_CONST_METHOD1(IsAllowedUsername, bool(const std::string& username));
 };
+
+static BrowserContextKeyedService* BuildSigninManagerMock(
+    content::BrowserContext* profile) {
+  return new SigninManagerMock(static_cast<Profile*>(profile));
+}
 
 class TestProfileIOData : public ProfileIOData {
  public:
@@ -191,11 +202,6 @@ class OneClickTestProfileSyncService : public TestProfileSyncService {
    bool first_setup_in_progress_;
 };
 
-static BrowserContextKeyedService* BuildSigninManagerMock(
-    content::BrowserContext* profile) {
-  return new SigninManagerMock(static_cast<Profile*>(profile));
-}
-
 }  // namespace
 
 class OneClickSigninHelperTest : public ChromeRenderViewHostTestHarness {
@@ -220,14 +226,17 @@ class OneClickSigninHelperTest : public ChromeRenderViewHostTestHarness {
   void SetAllowedUsernamePattern(const std::string& pattern);
   ProfileSyncServiceMock* CreateProfileSyncServiceMock();
   void SubmitGAIAPassword(OneClickSigninHelper* helper);
-  OneClickSigninHelper* SetupHelperForSignin();
 
   SigninManagerMock* signin_manager_;
+  FakeProfileOAuth2TokenService* fake_oauth2_token_service_;
 
  protected:
   GoogleServiceAuthError no_error_;
 
  private:
+  // ChromeRenderViewHostTestHarness overrides:
+  virtual content::BrowserContext* CreateBrowserContext() OVERRIDE;
+
   // The ID of the signin process the test will assume to be trusted.
   // By default, set to the test RenderProcessHost's process ID, but
   // overridden by SetTrustedSigninProcessID.
@@ -237,7 +246,9 @@ class OneClickSigninHelperTest : public ChromeRenderViewHostTestHarness {
 };
 
 OneClickSigninHelperTest::OneClickSigninHelperTest()
-    : no_error_(GoogleServiceAuthError::NONE),
+    : signin_manager_(NULL),
+      fake_oauth2_token_service_(NULL),
+      no_error_(GoogleServiceAuthError::NONE),
       trusted_signin_process_id_(-1) {
 }
 
@@ -319,6 +330,19 @@ void OneClickSigninHelperTest::SubmitGAIAPassword(
   password_form.signon_realm = "https://accounts.google.com";
   password_form.password_value = UTF8ToUTF16("password");
   helper->PasswordSubmitted(password_form);
+}
+
+content::BrowserContext* OneClickSigninHelperTest::CreateBrowserContext() {
+  TestingProfile::Builder builder;
+  builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
+                            FakeProfileOAuth2TokenService::Build);
+  scoped_ptr<TestingProfile> profile = builder.Build();
+
+  fake_oauth2_token_service_ =
+      static_cast<FakeProfileOAuth2TokenService*>(
+          ProfileOAuth2TokenServiceFactory::GetForProfile(profile.get()));
+
+  return profile.release();
 }
 
 class OneClickSigninHelperIOTest : public OneClickSigninHelperTest {
@@ -654,7 +678,6 @@ TEST_F(OneClickSigninHelperTest, SigninFromWebstoreWithConfigSyncfirst) {
       .WillRepeatedly(Return(true));
 
   ProfileSyncServiceMock* sync_service = CreateProfileSyncServiceMock();
-  EXPECT_CALL(*sync_service, SetSetupInProgress(true));
   EXPECT_CALL(*sync_service, AddObserver(_)).Times(AtLeast(1));
   EXPECT_CALL(*sync_service, RemoveObserver(_)).Times(AtLeast(1));
   EXPECT_CALL(*sync_service, sync_initialized()).WillRepeatedly(Return(true));
@@ -665,6 +688,7 @@ TEST_F(OneClickSigninHelperTest, SigninFromWebstoreWithConfigSyncfirst) {
   OneClickSigninHelper* helper =
       OneClickSigninHelper::FromWebContents(contents);
   helper->SetDoNotClearPendingEmailForTesting();
+  helper->set_do_not_start_sync_for_testing();
 
   GURL continueUrl("https://chrome.google.com/webstore?source=5");
   OneClickSigninHelper::ShowInfoBarUIThread(
@@ -677,10 +701,8 @@ TEST_F(OneClickSigninHelperTest, SigninFromWebstoreWithConfigSyncfirst) {
 
   NavigateAndCommit(GURL("https://chrome.google.com/webstore?source=3"));
   helper->DidStopLoading(rvh());
-
   helper->OnStateChanged();
   EXPECT_EQ(GURL(continueUrl), contents->GetURL());
-  EXPECT_EQ("user@gmail.com", signin_manager_->GetAuthenticatedUsername());
 }
 
 // Checks that the state of OneClickSigninHelper is cleaned when there is a

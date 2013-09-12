@@ -584,6 +584,7 @@ OneClickSigninHelper::OneClickSigninHelper(content::WebContents* web_contents,
       untrusted_navigations_since_signin_visit_(0),
       untrusted_confirmation_required_(false),
       do_not_clear_pending_email_(false),
+      do_not_start_sync_for_testing_(false),
       weak_pointer_factory_(this) {
   // May be NULL during testing.
   if (password_manager) {
@@ -1037,6 +1038,10 @@ void OneClickSigninHelper::SetDoNotClearPendingEmailForTesting() {
   do_not_clear_pending_email_ = true;
 }
 
+void OneClickSigninHelper::set_do_not_start_sync_for_testing() {
+  do_not_start_sync_for_testing_ = true;
+}
+
 void OneClickSigninHelper::NavigateToPendingEntry(
     const GURL& url,
     content::NavigationController::ReloadType reload_type) {
@@ -1212,13 +1217,15 @@ void OneClickSigninHelper::DidStopLoading(
       SigninManager::DisableOneClickSignIn(profile);
       // Start syncing with the default settings - prompt the user to sign in
       // first.
-      StartSync(
-          StartSyncArgs(profile, browser, auto_accept_,
-                        session_index_, email_, password_,
-                        NULL /* don't force to show sync setup in same tab */,
-                        true /* confirmation_required */, source_,
-                        CreateSyncStarterCallback()),
-          OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS);
+      if (!do_not_start_sync_for_testing_) {
+        StartSync(
+            StartSyncArgs(profile, browser, auto_accept_,
+                          session_index_, email_, password_,
+                          NULL /* don't force to show sync setup in same tab */,
+                          true /* confirmation_required */, source_,
+                          CreateSyncStarterCallback()),
+            OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS);
+      }
       break;
     case AUTO_ACCEPT_CONFIGURE:
       LogOneClickHistogramValue(one_click_signin::HISTOGRAM_ACCEPTED);
@@ -1226,13 +1233,15 @@ void OneClickSigninHelper::DidStopLoading(
       SigninManager::DisableOneClickSignIn(profile);
       // Display the extra confirmation (even in the SAML case) in case this
       // was an untrusted renderer.
-      StartSync(
-          StartSyncArgs(profile, browser, auto_accept_,
-                        session_index_, email_, password_,
-                        NULL  /* don't force to show sync setup in same tab */,
-                        true /* confirmation_required */, source_,
-                        CreateSyncStarterCallback()),
-          OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST);
+      if (!do_not_start_sync_for_testing_) {
+        StartSync(
+            StartSyncArgs(profile, browser, auto_accept_,
+                          session_index_, email_, password_,
+                          NULL  /* don't force sync setup in same tab */,
+                          true  /* confirmation_required */, source_,
+                          CreateSyncStarterCallback()),
+            OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST);
+      }
       break;
     case AUTO_ACCEPT_EXPLICIT: {
       signin::Source original_source =
@@ -1287,12 +1296,14 @@ void OneClickSigninHelper::DidStopLoading(
                 contents,
                 start_mode));
       } else {
-        StartSync(
-            StartSyncArgs(profile, browser, auto_accept_,
-                          session_index_, email_, password_, contents,
-                          untrusted_confirmation_required_, source_,
-                          CreateSyncStarterCallback()),
-            start_mode);
+        if (!do_not_start_sync_for_testing_) {
+          StartSync(
+              StartSyncArgs(profile, browser, auto_accept_,
+                            session_index_, email_, password_, contents,
+                            untrusted_confirmation_required_, source_,
+                            CreateSyncStarterCallback()),
+              start_mode);
+        }
 
         // If this explicit sign in is not from settings page/webstore, show
         // the NTP/Apps page after sign in completes. In the case of the

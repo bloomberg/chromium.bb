@@ -388,10 +388,7 @@ void FirstRunBubbleLauncher::Observe(
           Profile::FromBrowserContext(contents->GetBrowserContext());
       SigninManagerBase* manager =
           SigninManagerFactory::GetForProfile(profile);
-      bool signin_in_progress = manager &&
-          (!manager->GetAuthenticatedUsername().empty() &&
-              SigninTracker::GetSigninState(profile, NULL) !=
-                  SigninTracker::SIGNIN_COMPLETE);
+      bool signin_in_progress = manager && manager->AuthInProgress();
       bool is_promo_bubble_visible =
           profile->GetPrefs()->GetBoolean(prefs::kSignInPromoShowNTPBubble);
 

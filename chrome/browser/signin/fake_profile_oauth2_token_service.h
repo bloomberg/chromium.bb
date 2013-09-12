@@ -5,13 +5,17 @@
 #ifndef CHROME_BROWSER_SIGNIN_FAKE_PROFILE_OAUTH2_TOKEN_SERVICE_H_
 #define CHROME_BROWSER_SIGNIN_FAKE_PROFILE_OAUTH2_TOKEN_SERVICE_H_
 
-#include "chrome/browser/signin/profile_oauth2_token_service.h"
-
 #include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
+
+#if defined(OS_ANDROID)
+#include "chrome/browser/signin/android_profile_oauth2_token_service.h"
+#else
+#include "chrome/browser/signin/profile_oauth2_token_service.h"
+#endif
 
 namespace content {
 class BrowserContext;
@@ -37,7 +41,12 @@ class BrowserContext;
 // // ...or make them fail...
 // IssueErrorForScope(scopes, GoogleServiceAuthError(INVALID_GAIA_CREDENTIALS));
 //
-class FakeProfileOAuth2TokenService : public ProfileOAuth2TokenService {
+class FakeProfileOAuth2TokenService
+#if defined(OS_ANDROID)
+  : public AndroidProfileOAuth2TokenService {
+#else
+  : public ProfileOAuth2TokenService {
+#endif
  public:
   struct PendingRequest {
     PendingRequest();
@@ -73,8 +82,6 @@ class FakeProfileOAuth2TokenService : public ProfileOAuth2TokenService {
                                        const base::Time& expiration);
 
   void IssueErrorForAllPendingRequests(const GoogleServiceAuthError& error);
-
-  virtual void Shutdown() OVERRIDE;
 
   // Helper function to be used with
   // BrowserContextKeyedService::SetTestingFactory().

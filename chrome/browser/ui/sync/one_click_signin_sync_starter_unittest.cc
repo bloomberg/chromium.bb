@@ -13,6 +13,7 @@
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -66,6 +67,8 @@ class OneClickSigninSyncStarterTest : public testing::Test {
       callback
     );
   }
+
+  content::TestBrowserThreadBundle thread_bundle_;
 
   scoped_ptr<TestingProfile> profile_;
 

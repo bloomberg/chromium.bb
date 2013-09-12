@@ -13,18 +13,15 @@ FakeProfileOAuth2TokenService::PendingRequest::~PendingRequest() {
 // static
 BrowserContextKeyedService* FakeProfileOAuth2TokenService::Build(
     content::BrowserContext* profile) {
-  return new FakeProfileOAuth2TokenService();
+  FakeProfileOAuth2TokenService* service = new FakeProfileOAuth2TokenService();
+  service->Initialize(reinterpret_cast<Profile*>(profile));
+  return service;
 }
 
 FakeProfileOAuth2TokenService::FakeProfileOAuth2TokenService() {
 }
 
 FakeProfileOAuth2TokenService::~FakeProfileOAuth2TokenService() {
-}
-
-void FakeProfileOAuth2TokenService::Shutdown() {
-  // Do not call the base class handler because it assumes that Initialize()
-  // is always called before Shutdown() and that's not the case for this mock.
 }
 
 void FakeProfileOAuth2TokenService::IssueRefreshToken(

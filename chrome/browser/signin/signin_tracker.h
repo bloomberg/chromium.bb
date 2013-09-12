@@ -9,6 +9,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "google_apis/gaia/oauth2_token_service.h"
 
 class Profile;
 
@@ -16,11 +17,11 @@ class Profile;
 // responsibilities:
 //
 // SigninTracker (this class) - This class listens to notifications from various
-// services (SigninManager, tokenService, etc) and coalesces them into
+// services (SigninManager, OAuth2TokenService) and coalesces them into
 // notifications for the UI layer. This is the class that encapsulates the logic
 // that determines whether a user is fully logged in or not, and exposes
-// callbacks so various pieces of the UI (OneClickSyncStarter, SyncSetupHandler)
-// can track the current startup state.
+// callbacks so various pieces of the UI (OneClickSyncStarter) can track the
+// current startup state.
 //
 // SyncSetupHandler - This class is primarily responsible for interacting with
 // the web UI for performing system login and sync configuration. Receives
@@ -41,11 +42,15 @@ class Profile;
 // TokenService - Uses credentials provided by SigninManager to generate tokens
 // for all signed-in services in Chrome.
 //
+// OAuth2TokenService - Maintains and manages OAuth2 tokens for the accounts
+// connected to this profile.
+//
 // ProfileSyncService - Provides the external API for interacting with the
 // sync framework. Listens for notifications from the TokenService to know
 // when to startup sync, and provides an Observer interface to notify the UI
 // layer of changes in sync state so they can be reflected in the UI.
-class SigninTracker : public content::NotificationObserver {
+class SigninTracker : public content::NotificationObserver,
+                      public OAuth2TokenService::Observer {
  public:
   class Observer {
    public:
@@ -54,13 +59,6 @@ class SigninTracker : public content::NotificationObserver {
 
     // The signin attempt succeeded.
     virtual void SigninSuccess() = 0;
-  };
-
-  // The various states the login process can be in.
-  enum LoginState {
-    WAITING_FOR_GAIA_VALIDATION,
-    SERVICES_INITIALIZING,
-    SIGNIN_COMPLETE
   };
 
   // Creates a SigninTracker that tracks the signin status on the passed
@@ -74,35 +72,19 @@ class SigninTracker : public content::NotificationObserver {
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // Returns true if the tokens are loaded for all signed-in services.
-  static bool AreServiceTokensLoaded(Profile* profile);
-
-  // Returns the sign in state for |profile|.  If the profile is not signed in,
-  // or is authenticating with GAIA, WAITING_FOR_GAIA_VALIDATION is returned.
-  // If SigninManager in has completed but TokenService is not ready,
-  // SERVICES_INITIALIZING is returned. Otherwise SIGNIN_COMPLETE is returned.
-  static LoginState GetSigninState(Profile* profile,
-                                   GoogleServiceAuthError* error);
+  // OAuth2TokenService::Observer implementation.
+  virtual void OnRefreshTokenAvailable(const std::string& account_id) OVERRIDE;
+  virtual void OnRefreshTokenRevoked(const std::string& account_id) OVERRIDE;
 
  private:
   // Initializes this by adding notifications and observers.
   void Initialize();
-
-  // Invoked when one of the services potentially changed its signin status so
-  // we can check to see whether we need to notify our observer.
-  void HandleServiceStateChange();
-
-  // The current state of the login process.
-  LoginState state_;
 
   // The profile whose signin status we are tracking.
   Profile* profile_;
 
   // Weak pointer to the observer we call when the signin state changes.
   Observer* observer_;
-
-  // Set to true when SigninManager has validated our credentials.
-  bool credentials_valid_;
 
   // Used to listen to notifications from the SigninManager.
   content::NotificationRegistrar registrar_;
