@@ -162,8 +162,21 @@ class ScreenGtk : public gfx::Screen {
   // Returns the display that most closely intersects the provided bounds.
   virtual gfx::Display GetDisplayMatching(
       const gfx::Rect& match_rect) const OVERRIDE {
-    // TODO(thestig) Implement multi-monitor support.
-    return GetPrimaryDisplay();
+    std::vector<gfx::Display> displays = GetAllDisplays();
+    gfx::Display maxIntersectDisplay;
+    gfx::Rect maxIntersection;
+    for (std::vector<gfx::Display>::iterator it = displays.begin();
+         it != displays.end(); ++it) {
+      gfx::Rect displayIntersection = it->bounds();
+      displayIntersection.Intersect(match_rect);
+      if (displayIntersection.size().GetArea() >
+          maxIntersection.size().GetArea()) {
+        maxIntersectDisplay = *it;
+        maxIntersection = displayIntersection;
+      }
+    }
+    return maxIntersectDisplay.is_valid() ?
+        maxIntersectDisplay : GetPrimaryDisplay();
   }
 
   // Returns the primary display.
