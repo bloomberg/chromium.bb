@@ -1,0 +1,21 @@
+<body onload=runTest()>
+Test that we don't crash when submitting a form to a different frame, then detaching that frame in the beforeload event.
+<form target=test id=form1></form>
+<script>
+if (window.testRunner)
+    testRunner.dumpAsText();
+
+function runTest() {
+    document.getElementById('form1').submit();
+}
+
+count = 0;
+document.addEventListener("beforeload", function(event) {
+    event.preventDefault();
+    count++;
+    if (count == 2)
+        document.body.removeChild(document.getElementById('test'));
+}, true);
+</script>
+<iframe id=test></iframe>
+</body>

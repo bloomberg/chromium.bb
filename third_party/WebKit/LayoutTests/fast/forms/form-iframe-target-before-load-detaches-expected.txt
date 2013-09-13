@@ -1,0 +1,2 @@
+Test that we don't crash when submitting a form to a different frame, then detaching that frame in the beforeload event.
+
