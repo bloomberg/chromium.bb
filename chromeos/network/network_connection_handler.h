@@ -126,7 +126,7 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
   virtual void NetworkPropertiesUpdated(const NetworkState* network) OVERRIDE;
 
   // LoginState::Observer
-  virtual void LoggedInStateChanged(LoginState::LoggedInState state) OVERRIDE;
+  virtual void LoggedInStateChanged() OVERRIDE;
 
   // CertLoader::Observer
   virtual void OnCertificatesLoaded(const net::CertificateList& cert_list,

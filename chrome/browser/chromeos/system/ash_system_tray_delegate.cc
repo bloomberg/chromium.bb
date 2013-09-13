@@ -471,12 +471,11 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   virtual ash::user::LoginStatus GetUserLoginStatus() const OVERRIDE {
-    // Map ChromeOS specific LOGGED_IN states to Ash LOGGED_IN states.
-    LoginState::LoggedInState state = LoginState::Get()->GetLoggedInState();
-    if (state == LoginState::LOGGED_IN_OOBE ||
-        state == LoginState::LOGGED_IN_NONE) {
+    // All non-logged in ChromeOS specific LOGGED_IN states map to the same
+    // Ash specific LOGGED_IN state.
+    if (!LoginState::Get()->IsUserLoggedIn())
       return ash::user::LOGGED_IN_NONE;
-    }
+
     if (screen_locked_)
       return ash::user::LOGGED_IN_LOCKED;
 
@@ -506,7 +505,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   virtual bool IsOobeCompleted() const OVERRIDE {
     if (!base::chromeos::IsRunningOnChromeOS() &&
-        LoginState::Get()->GetLoggedInState() == LoginState::LOGGED_IN_ACTIVE)
+        LoginState::Get()->IsUserLoggedIn())
       return true;
     return StartupUtils::IsOobeCompleted();
   }
@@ -1082,8 +1081,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   // LoginState::Observer overrides.
-  virtual void LoggedInStateChanged(
-      chromeos::LoginState::LoggedInState state) OVERRIDE {
+  virtual void LoggedInStateChanged() OVERRIDE {
     UpdateClockType();
   }
 

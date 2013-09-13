@@ -157,8 +157,7 @@ void NetworkConnectionHandler::Init(
     NetworkConfigurationHandler* network_configuration_handler) {
   if (LoginState::IsInitialized()) {
     LoginState::Get()->AddObserver(this);
-    logged_in_ =
-        LoginState::Get()->GetLoggedInState() == LoginState::LOGGED_IN_ACTIVE;
+    logged_in_ = LoginState::Get()->IsUserLoggedIn();
   }
   if (CertLoader::IsInitialized()) {
     cert_loader_ = CertLoader::Get();
@@ -175,9 +174,8 @@ void NetworkConnectionHandler::Init(
   network_configuration_handler_ = network_configuration_handler;
 }
 
-void NetworkConnectionHandler::LoggedInStateChanged(
-    LoginState::LoggedInState state) {
-  if (state == LoginState::LOGGED_IN_ACTIVE) {
+void NetworkConnectionHandler::LoggedInStateChanged() {
+  if (LoginState::Get()->IsUserLoggedIn()) {
     logged_in_ = true;
     NET_LOG_EVENT("Logged In", "");
   }

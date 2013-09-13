@@ -15,9 +15,10 @@ namespace chromeos {
 class CHROMEOS_EXPORT LoginState {
  public:
   enum LoggedInState {
-    LOGGED_IN_OOBE,    // Out of box experience not completed
-    LOGGED_IN_NONE,    // Not logged in
-    LOGGED_IN_ACTIVE   // A user has logged in
+    LOGGED_IN_OOBE,       // Out of box experience not completed
+    LOGGED_IN_NONE,       // Not logged in
+    LOGGED_IN_SAFE_MODE,  // Not logged in and login not allowed for non-owners
+    LOGGED_IN_ACTIVE      // A user has logged in
   };
 
   enum LoggedInUserType {
@@ -34,7 +35,7 @@ class CHROMEOS_EXPORT LoginState {
   class Observer {
    public:
     // Called when either the login state or the logged in user type changes.
-    virtual void LoggedInStateChanged(LoggedInState state) = 0;
+    virtual void LoggedInStateChanged() = 0;
 
    protected:
     virtual ~Observer() {}
@@ -53,12 +54,15 @@ class CHROMEOS_EXPORT LoginState {
   // Set the logged in state and user type.
   void SetLoggedInState(LoggedInState state, LoggedInUserType type);
 
-  // Get the logged in state / user type.
-  LoggedInState GetLoggedInState() const;
+  // Get the logged in user type.
   LoggedInUserType GetLoggedInUserType() const;
 
-  // Returns true if |logged_in_state_| is active.
+  // Returns true if a user is considered to be logged in.
   bool IsUserLoggedIn() const;
+
+  // Returns true if |logged_in_state_| is safe mode (i.e. the user is not yet
+  // logged in, and only the owner will be allowed to log in).
+  bool IsInSafeMode() const;
 
   // Returns true if logged in and is a guest, retail, public, or kiosk user.
   bool IsGuestUser() const;

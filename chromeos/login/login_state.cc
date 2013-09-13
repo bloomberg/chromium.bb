@@ -67,22 +67,23 @@ void LoginState::SetLoggedInState(LoggedInState state,
   NotifyObservers();
 }
 
-LoginState::LoggedInState LoginState::GetLoggedInState() const {
-  if (AlwaysLoggedIn())
-    return LOGGED_IN_ACTIVE;
-  return logged_in_state_;
-}
-
 LoginState::LoggedInUserType LoginState::GetLoggedInUserType() const {
   return logged_in_user_type_;
 }
 
 bool LoginState::IsUserLoggedIn() const {
-  return GetLoggedInState() == LOGGED_IN_ACTIVE;
+  if (AlwaysLoggedIn())
+    return true;
+  return logged_in_state_ == LOGGED_IN_ACTIVE;
+}
+
+bool LoginState::IsInSafeMode() const {
+  DCHECK(!AlwaysLoggedIn() || logged_in_state_ != LOGGED_IN_SAFE_MODE);
+  return logged_in_state_ == LOGGED_IN_SAFE_MODE;
 }
 
 bool LoginState::IsGuestUser() const {
-  if (GetLoggedInState() != LOGGED_IN_ACTIVE)
+  if (!IsUserLoggedIn())
     return false;
   switch (logged_in_user_type_) {
     case LOGGED_IN_USER_NONE:
@@ -124,7 +125,7 @@ LoginState::~LoginState() {
 
 void LoginState::NotifyObservers() {
   FOR_EACH_OBSERVER(LoginState::Observer, observer_list_,
-                    LoggedInStateChanged(GetLoggedInState()));
+                    LoggedInStateChanged());
 }
 
 }  // namespace chromeos

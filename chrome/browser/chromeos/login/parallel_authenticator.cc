@@ -22,6 +22,7 @@
 #include "chromeos/cryptohome/cryptohome_library.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/login/login_state.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "crypto/sha2.h"
@@ -517,17 +518,20 @@ bool ParallelAuthenticator::VerifyOwner() {
   // Now we can continue reading the private key.
   DeviceSettingsService::Get()->SetUsername(
       current_state_->user_context.username);
-  DeviceSettingsService::Get()->GetOwnershipStatusAsync(
+  // This should trigger certificate loading, which is needed in order to
+  // correctly determine if the current user is the owner.
+  if (LoginState::IsInitialized()) {
+    LoginState::Get()->SetLoggedInState(LoginState::LOGGED_IN_SAFE_MODE,
+                                        LoginState::LOGGED_IN_USER_NONE);
+  }
+  DeviceSettingsService::Get()->IsCurrentUserOwnerAsync(
       base::Bind(&ParallelAuthenticator::OnOwnershipChecked, this));
   return false;
 }
 
-void ParallelAuthenticator::OnOwnershipChecked(
-    DeviceSettingsService::OwnershipStatus status) {
+void ParallelAuthenticator::OnOwnershipChecked(bool is_owner) {
   // Now we can check if this user is the owner.
-  // TODO(tbarzic): This is broken. At this point, DeviceSettingsService will
-  // never have private key loaded (http://crbug.com/285450).
-  user_can_login_ = DeviceSettingsService::Get()->HasPrivateOwnerKey();
+  user_can_login_ = is_owner;
   owner_is_verified_ = true;
   Resolve();
 }

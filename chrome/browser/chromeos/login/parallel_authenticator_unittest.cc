@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
@@ -22,6 +23,7 @@
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/mock_async_method_caller.h"
 #include "chromeos/cryptohome/mock_cryptohome_library.h"
 #include "chromeos/dbus/fake_cryptohome_client.h"
@@ -55,7 +57,8 @@ class ParallelAuthenticatorTest : public testing::Test {
       : username_("me@nowhere.org"),
         password_("fakepass"),
         hash_ascii_("0a010000000000a0" + std::string(16, '0')),
-        user_manager_enabler_(new MockUserManager) {
+        user_manager_enabler_(new MockUserManager),
+        mock_caller_(NULL) {
   }
 
   virtual ~ParallelAuthenticatorTest() {
@@ -63,6 +66,8 @@ class ParallelAuthenticatorTest : public testing::Test {
   }
 
   virtual void SetUp() {
+    CommandLine::ForCurrentProcess()->AppendSwitch(switches::kLoginManager);
+
     mock_caller_ = new cryptohome::MockAsyncMethodCaller;
     cryptohome::AsyncMethodCaller::InitializeForTesting(mock_caller_);
 
@@ -327,9 +332,21 @@ TEST_F(ParallelAuthenticatorTest, ResolveOwnerNeededFailedMount) {
   CrosSettings::Get()->AddSettingsProvider(&stub_settings_provider);
   CrosSettings::Get()->SetBoolean(kPolicyMissingMitigationMode, true);
 
+  // Initialize login state for this test to verify the login state is changed
+  // to SAFE_MODE.
+  LoginState::Initialize();
+
   EXPECT_EQ(ParallelAuthenticator::CONTINUE,
             SetAndResolveState(auth_.get(), state_.release()));
-  // Let the owner verification run.
+  EXPECT_TRUE(LoginState::Get()->IsInSafeMode());
+
+  // Simulate certificates load event. The exact certificates loaded are not
+  // actually used by the DeviceSettingsService, so it is OK to pass an empty
+  // list.
+  DeviceSettingsService::Get()->OnCertificatesLoaded(net::CertificateList(),
+                                                     true);
+  // Flush all the pending operations. The operations should induce an owner
+  // verification.
   device_settings_test_helper_.Flush();
   // and test that the mount has succeeded.
   state_.reset(new TestAttemptState(UserContext(username_,
@@ -344,6 +361,8 @@ TEST_F(ParallelAuthenticatorTest, ResolveOwnerNeededFailedMount) {
   EXPECT_EQ(ParallelAuthenticator::OWNER_REQUIRED,
             SetAndResolveState(auth_.get(), state_.release()));
 
+  // Unset global objects used by this test.
+  LoginState::Shutdown();
   EXPECT_TRUE(
       CrosSettings::Get()->RemoveSettingsProvider(&stub_settings_provider));
   CrosSettings::Get()->AddSettingsProvider(device_settings_provider);

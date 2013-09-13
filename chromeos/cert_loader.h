@@ -147,7 +147,7 @@ class CHROMEOS_EXPORT CertLoader : public net::CertDatabase::Observer,
   virtual void OnCertRemoved(const net::X509Certificate* cert) OVERRIDE;
 
   // LoginState::Observer
-  virtual void LoggedInStateChanged(LoginState::LoggedInState state) OVERRIDE;
+  virtual void LoggedInStateChanged() OVERRIDE;
 
   bool initialize_tpm_for_test_;
 

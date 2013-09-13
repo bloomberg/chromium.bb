@@ -95,8 +95,7 @@ class InternetOptionsHandler
       const chromeos::NetworkState* network) OVERRIDE;
 
   // chromeos::LoginState::Observer
-  virtual void LoggedInStateChanged(
-      chromeos::LoginState::LoggedInState) OVERRIDE;
+  virtual void LoggedInStateChanged() OVERRIDE;
 
   // Updates the logged in user type.
   void UpdateLoggedInUserType();

@@ -1346,8 +1346,7 @@ void InternetOptionsHandler::NetworkPropertiesUpdated(
   UpdateConnectionData(network->path());
 }
 
-void InternetOptionsHandler::LoggedInStateChanged(
-    LoginState::LoggedInState state) {
+void InternetOptionsHandler::LoggedInStateChanged() {
   UpdateLoggedInUserType();
 }
 

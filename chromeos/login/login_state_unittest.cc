@@ -16,9 +16,8 @@ namespace chromeos {
 class LoginStateTest : public testing::Test,
                        public LoginState::Observer {
  public:
-  LoginStateTest()
-      : logged_in_state_(LoginState::LOGGED_IN_OOBE),
-        logged_in_user_type_(LoginState::LOGGED_IN_USER_NONE) {
+  LoginStateTest() : logged_in_user_type_(LoginState::LOGGED_IN_USER_NONE),
+                     login_state_changes_count_(0) {
   }
   virtual ~LoginStateTest() {
   }
@@ -39,38 +38,81 @@ class LoginStateTest : public testing::Test,
   }
 
   // LoginState::Observer
-  virtual void LoggedInStateChanged(LoginState::LoggedInState state) OVERRIDE {
-    logged_in_state_ = state;
+  virtual void LoggedInStateChanged() OVERRIDE {
+    ++login_state_changes_count_;
     logged_in_user_type_ = LoginState::Get()->GetLoggedInUserType();
   }
 
  protected:
+  // Returns number of times the login state changed since the last call to
+  // this method.
+  unsigned int GetNewLoginStateChangesCount() {
+    unsigned int result = login_state_changes_count_;
+    login_state_changes_count_ = 0;
+    return result;
+  }
+
   base::MessageLoopForUI message_loop_;
-  LoginState::LoggedInState logged_in_state_;
   LoginState::LoggedInUserType logged_in_user_type_;
 
  private:
+  unsigned int login_state_changes_count_;
+
   DISALLOW_COPY_AND_ASSIGN(LoginStateTest);
 };
 
 TEST_F(LoginStateTest, TestLoginState) {
-  EXPECT_EQ(LoginState::LOGGED_IN_OOBE, logged_in_state_);
-  EXPECT_EQ(LoginState::LOGGED_IN_OOBE, LoginState::Get()->GetLoggedInState());
+  EXPECT_FALSE(LoginState::Get()->IsUserLoggedIn());
+  EXPECT_FALSE(LoginState::Get()->IsInSafeMode());
   EXPECT_EQ(LoginState::LOGGED_IN_USER_NONE, logged_in_user_type_);
   EXPECT_EQ(LoginState::LOGGED_IN_USER_NONE,
             LoginState::Get()->GetLoggedInUserType());
+
   // Setting login state to ACTIVE.
   LoginState::Get()->SetLoggedInState(LoginState::LOGGED_IN_ACTIVE,
                                       LoginState::LOGGED_IN_USER_REGULAR);
-  EXPECT_EQ(LoginState::LOGGED_IN_ACTIVE,
-            LoginState::Get()->GetLoggedInState());
   EXPECT_EQ(LoginState::LOGGED_IN_USER_REGULAR,
             LoginState::Get()->GetLoggedInUserType());
   EXPECT_TRUE(LoginState::Get()->IsUserLoggedIn());
+  EXPECT_FALSE(LoginState::Get()->IsInSafeMode());
+
   // Run the message loop, observer should update members.
   message_loop_.RunUntilIdle();
-  EXPECT_EQ(LoginState::LOGGED_IN_ACTIVE, logged_in_state_);
+  EXPECT_EQ(1U, GetNewLoginStateChangesCount());
   EXPECT_EQ(LoginState::LOGGED_IN_USER_REGULAR, logged_in_user_type_);
 }
 
-}  // namespace
+TEST_F(LoginStateTest, TestSafeModeLoginState) {
+  EXPECT_FALSE(LoginState::Get()->IsUserLoggedIn());
+  EXPECT_FALSE(LoginState::Get()->IsInSafeMode());
+  EXPECT_EQ(LoginState::LOGGED_IN_USER_NONE, logged_in_user_type_);
+  EXPECT_EQ(LoginState::LOGGED_IN_USER_NONE,
+            LoginState::Get()->GetLoggedInUserType());
+  // Setting login state to SAFE MODE.
+  LoginState::Get()->SetLoggedInState(LoginState::LOGGED_IN_SAFE_MODE,
+                                      LoginState::LOGGED_IN_USER_NONE);
+  EXPECT_EQ(LoginState::LOGGED_IN_USER_NONE,
+            LoginState::Get()->GetLoggedInUserType());
+  EXPECT_FALSE(LoginState::Get()->IsUserLoggedIn());
+  EXPECT_TRUE(LoginState::Get()->IsInSafeMode());
+
+  // Run the message loop, observer should update members.
+  message_loop_.RunUntilIdle();
+  EXPECT_EQ(1U, GetNewLoginStateChangesCount());
+  EXPECT_EQ(LoginState::LOGGED_IN_USER_NONE, logged_in_user_type_);
+
+  // Setting login state to ACTIVE.
+  LoginState::Get()->SetLoggedInState(LoginState::LOGGED_IN_ACTIVE,
+                                      LoginState::LOGGED_IN_USER_OWNER);
+  EXPECT_EQ(LoginState::LOGGED_IN_USER_OWNER,
+            LoginState::Get()->GetLoggedInUserType());
+  EXPECT_TRUE(LoginState::Get()->IsUserLoggedIn());
+  EXPECT_FALSE(LoginState::Get()->IsInSafeMode());
+
+  // Run the message loop, observer should update members.
+  message_loop_.RunUntilIdle();
+  EXPECT_EQ(1U, GetNewLoginStateChangesCount());
+  EXPECT_EQ(LoginState::LOGGED_IN_USER_OWNER, logged_in_user_type_);
+}
+
+}  // namespace chromeos

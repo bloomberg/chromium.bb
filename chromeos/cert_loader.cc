@@ -145,10 +145,14 @@ void CertLoader::MaybeRequestCertificates() {
   if (certificates_requested_ || !crypto_task_runner_.get())
     return;
 
-  const bool logged_in = LoginState::IsInitialized() ?
-      LoginState::Get()->IsUserLoggedIn() : false;
-  VLOG(1) << "RequestCertificates: " << logged_in;
-  if (!logged_in)
+  if (!LoginState::IsInitialized())
+    return;
+
+  bool request_certificates = LoginState::Get()->IsUserLoggedIn() ||
+      LoginState::Get()->IsInSafeMode();
+
+  VLOG(1) << "RequestCertificates: " << request_certificates;
+  if (!request_certificates)
     return;
 
   certificates_requested_ = true;
@@ -159,7 +163,7 @@ void CertLoader::MaybeRequestCertificates() {
     tpm_token_state_ = TPM_DISABLED;
 
   // Treat TPM as disabled for guest users since they do not store certs.
-  if (LoginState::IsInitialized() && LoginState::Get()->IsGuestUser())
+  if (LoginState::Get()->IsGuestUser())
     tpm_token_state_ = TPM_DISABLED;
 
   InitializeTokenAndLoadCertificates();
@@ -387,8 +391,8 @@ void CertLoader::OnCertRemoved(const net::X509Certificate* cert) {
   LoadCertificates();
 }
 
-void CertLoader::LoggedInStateChanged(LoginState::LoggedInState state) {
-  VLOG(1) << "LoggedInStateChanged: " << state;
+void CertLoader::LoggedInStateChanged() {
+  VLOG(1) << "LoggedInStateChanged";
   MaybeRequestCertificates();
 }
 
