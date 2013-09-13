@@ -189,9 +189,12 @@ function resultsDirectoryURL(platform, builderName)
     return layoutTestResultsURL(platform) + '/' + results.directoryForBuilder(builderName) + '/results/layout-test-results/';
 }
 
-function resultsPrefixListingURL(platform, builderName)
+function resultsPrefixListingURL(platform, builderName, marker)
 {
-    return layoutTestResultsURL(platform) + '/?prefix=' + results.directoryForBuilder(builderName) + '/&delimiter=/';
+    var url =  layoutTestResultsURL(platform) + '/?prefix=' + results.directoryForBuilder(builderName) + '/&delimiter=/';
+    if (marker)
+        return url + '&marker=' + marker;
+    return url;
 }
 
 function resultsDirectoryURLForBuildNumber(platform, builderName, buildNumber)
@@ -329,9 +332,9 @@ results.collectUnexpectedResults = function(dictionaryOfResultNodes)
 // Callback data is [{ buildNumber:, url: }]
 function historicalResultsLocations(platform, builderName, callback)
 {
-    var listingURL = resultsPrefixListingURL(platform, builderName);
-    net.get(listingURL, function(prefixListingDocument) {
-        var historicalResultsData = [];
+    var historicalResultsData = [];
+
+    function parseListingDocument(prefixListingDocument) {
         $(prefixListingDocument).find("Prefix").each(function() {
             var buildString = this.textContent.replace(results.directoryForBuilder(builderName) + '/', '');
             if (buildString.match(/\d+\//)) {
@@ -343,7 +346,19 @@ function historicalResultsLocations(platform, builderName, callback)
                 historicalResultsData.unshift(resultsData);
            }
         });
-        callback(historicalResultsData);
+        var nextMarker = $(prefixListingDocument).find('NextMarker').get();
+        if (nextMarker.length) {
+            var nextListingURL = resultsPrefixListingURL(platform, builderName, nextMarker[0].textContent);
+            net.get(nextListingURL, parseListingDocument);
+        } else {
+            callback(historicalResultsData);
+        }
+    }
+
+    builders.mostRecentBuildForBuilder(platform, builderName, function (mostRecentBuildNumber) {
+        var marker = results.directoryForBuilder(builderName) + "/" + (mostRecentBuildNumber - 100) + "/";
+        var listingURL = resultsPrefixListingURL(platform, builderName, marker);
+        net.get(listingURL, parseListingDocument);
     });
 }
 

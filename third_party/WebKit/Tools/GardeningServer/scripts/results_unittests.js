@@ -256,7 +256,8 @@ test("walkHistory", 5, function() {
                     "userscripts": {
                         "another-test.html": {
                             "expected": "PASS",
-                            "actual": "TEXT"
+                            "actual": "TEXT",
+                            "is_unexpected": true
                         }
                     },
                 },
@@ -268,10 +269,12 @@ test("walkHistory", 5, function() {
                         "user-script-video-document.html": {
                             "expected": "FAIL",
                             "actual": "TEXT"
+                            "is_unexpected": false
                         },
                         "another-test.html": {
                             "expected": "PASS",
-                            "actual": "TEXT"
+                            "actual": "TEXT",
+                            "is_unexpected": true
                         }
                     },
                 },
@@ -282,7 +285,8 @@ test("walkHistory", 5, function() {
                     "userscripts": {
                         "another-test.html": {
                             "expected": "PASS",
-                            "actual": "TEXT"
+                            "actual": "TEXT",
+                            "is_unexpected": true
                         }
                     },
                 },
@@ -294,6 +298,7 @@ test("walkHistory", 5, function() {
                         "user-script-video-document.html": {
                             "expected": "FAIL",
                             "actual": "TEXT"
+                            "is_unexpected": false
                         },
                     },
                 },
@@ -306,7 +311,8 @@ test("walkHistory", 5, function() {
                     "userscripts": {
                         "another-test.html": {
                             "expected": "PASS",
-                            "actual": "TEXT"
+                            "actual": "TEXT",
+                            "is_unexpected": true
                         }
                     },
                 },
@@ -330,17 +336,25 @@ test("walkHistory", 5, function() {
     simulator.get = function(url, callback) {
         simulator.scheduleCallback(function() {
             if (/Mock_Builder/.test(url))
-                callback('<Prefix>Mock_Builder/11101/</Prefix>' +
+                callback('<ListBucketResult>' +
+                         '<Prefix>Mock_Builder/11101/</Prefix>' +
                          '<Prefix>Mock_Builder/11102/</Prefix>' +
                          '<Prefix>Mock_Builder/11103/</Prefix>' +
                          '<Prefix>Mock_Builder/11104/</Prefix>' +
                          '<Prefix>Mock_Builder/11105/</Prefix>' +
                          '<Prefix>Mock_Builder/11106/</Prefix>' +
                          '<Prefix>Mock_Builder/11107/</Prefix>' +
-                         '<Prefix>Mock_Builder/11108/</Prefix>');
+                         '<Prefix>Mock_Builder/11108/</Prefix>' +
+                         '</ListBucketResult>');
             else if (/Another_Builder/.test(url))
-                callback('<Prefix>Another_Builder/22201/</Prefix>' +
-                         '<Prefix>Another_Builder/22202/</Prefix>');
+                callback('<ListBucketResult>' +
+                         '<Prefix>Another_Builder/22201/</Prefix>' +
+                         '<Prefix>Another_Builder/22202/</Prefix>' +
+                         '</ListBucketResult>');
+            else if (/Mock Builder/.test(url))
+                callback({cachedBuilds: [11101, 11102, 11103, 11104, 11105, 11106, 11107, 11108]});
+            else if (/Another Builder/.test(url))
+                callback({cachedBuilds: [22201, 22202]});
             else
                 ok(false, 'Unexpected URL: ' + url);
         });

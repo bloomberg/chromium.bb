@@ -149,4 +149,12 @@ builders.perfBuilders = function(callback)
     });
 }
 
+builders.mostRecentBuildForBuilder = function(platform, builderName, callback) {
+    net.get(buildBotURL(platform) + '/json/builders/' + builderName, function(builderStatus) {
+        var cachedBuilds = builderStatus.cachedBuilds;
+        var mostRecentBuild = Math.max.apply(Math, cachedBuilds);
+        callback(mostRecentBuild);
+    });
+};
+
 })();
