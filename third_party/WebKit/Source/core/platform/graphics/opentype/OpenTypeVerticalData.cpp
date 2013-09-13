@@ -137,9 +137,19 @@ struct SubstitutionSubTable : TableBase {
     const CoverageTable* coverage(const SharedBuffer& buffer) const { return validateOffset<CoverageTable>(buffer, coverageOffset); }
 };
 
+struct SingleSubstitution1SubTable : SubstitutionSubTable {
+    OpenType::Int16 deltaGlyphID;
+};
+
 struct SingleSubstitution2SubTable : SubstitutionSubTable {
     OpenType::UInt16 glyphCount;
     OpenType::GlyphID substitute[1];
+};
+
+struct ExtensionSubstitutionSubTable : TableBase {
+    OpenType::UInt16 substFormat;
+    OpenType::UInt16 extensionLookupType;
+    OpenType::UInt32 extensionOffset;
 };
 
 struct LookupTable : TableBase {
@@ -149,62 +159,151 @@ struct LookupTable : TableBase {
     OpenType::Offset subTableOffsets[1];
     // OpenType::UInt16 markFilteringSet; this field comes after variable length, so offset is determined dynamically.
 
+    enum LookupType {
+        LookupTypeSingle = 1,
+        LookupTypeExtension = 7,
+    };
+
     bool getSubstitutions(HashMap<Glyph, Glyph>* map, const SharedBuffer& buffer) const
     {
-        uint16_t countSubTable = subTableCount;
-        if (!isValidEnd(buffer, &subTableOffsets[countSubTable]))
+        uint16_t subTableCount = this->subTableCount;
+        if (!isValidEnd(buffer, &subTableOffsets[subTableCount]))
             return false;
-        if (lookupType != 1) // "Single Substitution Subtable" is all what we support
-            return false;
-        for (uint16_t i = 0; i < countSubTable; ++i) {
-            const SubstitutionSubTable* substitution = validateOffset<SubstitutionSubTable>(buffer, subTableOffsets[i]);
-            if (!substitution)
+
+        uint16_t lookupType = this->lookupType;
+        for (uint16_t i = 0; i < subTableCount; ++i) {
+            if (!getSubstitutionsFromSubTable(map, buffer, lookupType, subTableOffsets[i]))
                 return false;
-            const CoverageTable* coverage = substitution->coverage(buffer);
-            if (!coverage)
-                return false;
-            if (substitution->substFormat != 2) // "Single Substitution Format 2" is all what we support
-                return false;
-            const SingleSubstitution2SubTable* singleSubstitution2 = validatePtr<SingleSubstitution2SubTable>(buffer, substitution);
-            if (!singleSubstitution2)
-                return false;
-            uint16_t countTo = singleSubstitution2->glyphCount;
-            if (!isValidEnd(buffer, &singleSubstitution2->substitute[countTo]))
-                return false;
-            switch (coverage->coverageFormat) {
-            case 1: { // Coverage Format 1 (e.g., MS Gothic)
-                const Coverage1Table* coverage1 = validatePtr<Coverage1Table>(buffer, coverage);
-                if (!coverage1)
-                    return false;
-                uint16_t countFrom = coverage1->glyphCount;
-                if (!isValidEnd(buffer, &coverage1->glyphArray[countFrom]) || countTo != countFrom)
-                    return false;
-                for (uint16_t i = 0; i < countTo; ++i)
-                    map->set(coverage1->glyphArray[i], singleSubstitution2->substitute[i]);
-                break;
-            }
-            case 2: { // Coverage Format 2 (e.g., Adobe Kozuka Gothic)
-                const Coverage2Table* coverage2 = validatePtr<Coverage2Table>(buffer, coverage);
-                if (!coverage2)
-                    return false;
-                uint16_t countRange = coverage2->rangeCount;
-                if (!isValidEnd(buffer, &coverage2->ranges[countRange]))
-                    return false;
-                for (uint16_t i = 0, indexTo = 0; i < countRange; ++i) {
-                    uint16_t from = coverage2->ranges[i].start;
-                    uint16_t fromEnd = coverage2->ranges[i].end + 1; // OpenType "end" is inclusive
-                    if (indexTo + (fromEnd - from) > countTo)
-                        return false;
-                    for (; from != fromEnd; ++from, ++indexTo)
-                        map->set(from, singleSubstitution2->substitute[indexTo]);
-                }
-                break;
-            }
-            default:
-                return false;
-            }
         }
         return true;
+    }
+
+private:
+    // Note: The offset in the extension table is 32-bit.
+    bool getSubstitutionsFromSubTable(HashMap<Glyph, Glyph>* map, const SharedBuffer& buffer, uint16_t lookupType, uint32_t offset) const
+    {
+        switch (lookupType) {
+        case LookupTypeSingle:
+            return getSubstitutionsFromSingleTable(map, buffer, offset);
+        case LookupTypeExtension:
+            return getSubstitutionsFromExtension(map, buffer, offset);
+        default:
+            return false;
+        }
+    }
+
+    bool getSubstitutionsFromSingleTable(HashMap<Glyph, Glyph>* map, const SharedBuffer& buffer, uint32_t offset) const
+    {
+        const SubstitutionSubTable* substitution = validateOffset<SubstitutionSubTable>(buffer, offset);
+        if (!substitution)
+            return false;
+        switch (substitution->substFormat) {
+        case 1:
+            return getSubstitutionsSubstFormat1(map, buffer, substitution);
+        case 2:
+            return getSubstitutionsSubstFormat2(map, buffer, substitution);
+        default:
+            return false;
+        }
+    }
+
+    bool getSubstitutionsSubstFormat1(HashMap<Glyph, Glyph>* map, const SharedBuffer& buffer, const SubstitutionSubTable* substitution) const
+    {
+        const CoverageTable* coverage = substitution->coverage(buffer);
+        if (!coverage)
+            return false;
+        const SingleSubstitution1SubTable* singleSubstitution1 = validatePtr<SingleSubstitution1SubTable>(buffer, substitution);
+        if (!singleSubstitution1)
+            return false;
+        int16_t deltaGlyphID = singleSubstitution1->deltaGlyphID;
+        switch (coverage->coverageFormat) {
+        case 1: { // Coverage Format 1 (e.g., MS Gothic)
+            const Coverage1Table* coverage1 = validatePtr<Coverage1Table>(buffer, coverage);
+            if (!coverage1)
+                return false;
+            uint16_t glyphCount = coverage1->glyphCount;
+            if (!isValidEnd(buffer, &coverage1->glyphArray[glyphCount]))
+                return false;
+            for (uint16_t i = 0; i < glyphCount; ++i) {
+                Glyph glyph = coverage1->glyphArray[i];
+                map->set(glyph, glyph + deltaGlyphID);
+            }
+            break;
+        }
+        case 2: { // Coverage Format 2 (e.g., Adobe Kozuka Gothic)
+            const Coverage2Table* coverage2 = validatePtr<Coverage2Table>(buffer, coverage);
+            if (!coverage2)
+                return false;
+            uint16_t countRange = coverage2->rangeCount;
+            if (!isValidEnd(buffer, &coverage2->ranges[countRange]))
+                return false;
+            for (uint16_t i = 0; i < countRange; ++i) {
+                Glyph end = coverage2->ranges[i].end + 1; // OpenType "end" is inclusive
+                for (Glyph glyph = coverage2->ranges[i].start; glyph != end; ++glyph)
+                    map->set(glyph, glyph + deltaGlyphID);
+            }
+            break;
+        }
+        default:
+            return false;
+        }
+        return true;
+    }
+
+    bool getSubstitutionsSubstFormat2(HashMap<Glyph, Glyph>* map, const SharedBuffer& buffer, const SubstitutionSubTable* substitution) const
+    {
+        const CoverageTable* coverage = substitution->coverage(buffer);
+        if (!coverage)
+            return false;
+        const SingleSubstitution2SubTable* singleSubstitution2 = validatePtr<SingleSubstitution2SubTable>(buffer, substitution);
+        if (!singleSubstitution2)
+            return false;
+        uint16_t countTo = singleSubstitution2->glyphCount;
+        if (!isValidEnd(buffer, &singleSubstitution2->substitute[countTo]))
+            return false;
+        switch (coverage->coverageFormat) {
+        case 1: { // Coverage Format 1 (e.g., MS Gothic)
+            const Coverage1Table* coverage1 = validatePtr<Coverage1Table>(buffer, coverage);
+            if (!coverage1)
+                return false;
+            uint16_t countFrom = coverage1->glyphCount;
+            if (!isValidEnd(buffer, &coverage1->glyphArray[countFrom]) || countTo != countFrom)
+                return false;
+            for (uint16_t i = 0; i < countTo; ++i)
+                map->set(coverage1->glyphArray[i], singleSubstitution2->substitute[i]);
+            break;
+        }
+        case 2: { // Coverage Format 2 (e.g., Adobe Kozuka Gothic)
+            const Coverage2Table* coverage2 = validatePtr<Coverage2Table>(buffer, coverage);
+            if (!coverage2)
+                return false;
+            uint16_t countRange = coverage2->rangeCount;
+            if (!isValidEnd(buffer, &coverage2->ranges[countRange]))
+                return false;
+            for (uint16_t i = 0, indexTo = 0; i < countRange; ++i) {
+                uint16_t from = coverage2->ranges[i].start;
+                uint16_t fromEnd = coverage2->ranges[i].end + 1; // OpenType "end" is inclusive
+                if (indexTo + (fromEnd - from) > countTo)
+                    return false;
+                for (; from != fromEnd; ++from, ++indexTo)
+                    map->set(from, singleSubstitution2->substitute[indexTo]);
+            }
+            break;
+        }
+        default:
+            return false;
+        }
+        return true;
+    }
+
+    bool getSubstitutionsFromExtension(HashMap<Glyph, Glyph>* map, const SharedBuffer& buffer, uint32_t offset) const
+    {
+        const ExtensionSubstitutionSubTable* extension = validateOffset<ExtensionSubstitutionSubTable>(buffer, offset);
+        if (!extension)
+            return false;
+        if (extension->substFormat != 1) // 1 is the only substFormat for Extension Substitution.
+            return false;
+        return getSubstitutionsFromSubTable(map, buffer, extension->extensionLookupType, extension->extensionOffset);
     }
 };
 
