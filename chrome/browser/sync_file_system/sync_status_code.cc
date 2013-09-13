@@ -74,8 +74,8 @@ const char* SyncStatusCodeToString(SyncStatusCode status) {
       return "Sync: operation aborted.";
     case SYNC_STATUS_NO_CHANGE_TO_SYNC:
       return "Sync: no change to synchronize.";
-    case SYNC_STATUS_RETRY:
-      return "Sync: retry to synchronize.";
+    case SYNC_STATUS_SERVICE_TEMPORARILY_UNAVAILABLE:
+      return "Sync: service is temporarily unavailable.";
     case SYNC_STATUS_NETWORK_ERROR:
       return "Sync: network error.";
     case SYNC_STATUS_AUTHENTICATION_FAILED:
@@ -88,6 +88,8 @@ const char* SyncStatusCodeToString(SyncStatusCode status) {
       return "Sync: sync is disabled.";
     case SYNC_STATUS_ACCESS_FORBIDDEN:
       return "Sync: service access forbidden.";
+    case SYNC_STATUS_RETRY:
+      return "Sync: retry the operation.";
   }
   NOTREACHED();
   return "Unknown error.";

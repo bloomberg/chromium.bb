@@ -464,7 +464,7 @@ void DriveFileSyncService::UpdateServiceStateFromLastOperationStatus(
       break;
 
     // Errors which could make the service temporarily unavailable.
-    case SYNC_STATUS_RETRY:
+    case SYNC_STATUS_SERVICE_TEMPORARILY_UNAVAILABLE:
     case SYNC_STATUS_NETWORK_ERROR:
     case SYNC_STATUS_ABORT:
     case SYNC_STATUS_FAILED:
