@@ -28,6 +28,7 @@
 using base::android::AttachCurrentThread;
 using base::android::ClearException;
 using base::android::ConvertJavaStringToUTF8;
+using base::android::ConvertUTF8ToJavaString;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
 
@@ -96,8 +97,8 @@ void ClipboardMap::Set(const std::string& format, const std::string& data) {
 
   map_[format] = data;
   if (format == kPlainTextFormat) {
-    ScopedJavaLocalRef<jstring> str(
-        env, env->NewStringUTF(data.c_str()));
+    ScopedJavaLocalRef<jstring> str = ConvertUTF8ToJavaString(
+        env, data.c_str());
     DCHECK(str.obj() && !ClearException(env));
     Java_Clipboard_setText(env, clipboard_manager_.obj(), str.obj());
   }
