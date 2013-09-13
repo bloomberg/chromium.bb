@@ -35,11 +35,14 @@
 #include "WebViewImpl.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
+#include "core/page/scrolling/ScrollingCoordinator.h"
+#include "core/platform/Scrollbar.h"
 #include "core/platform/graphics/FloatSize.h"
 #include "core/platform/graphics/GraphicsLayer.h"
 #include "core/rendering/RenderLayerCompositor.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
+#include "public/platform/WebLayer.h"
 #include "public/platform/WebLayerTreeView.h"
 #include "public/platform/WebScrollbarLayer.h"
 
@@ -67,7 +70,6 @@ PinchViewports::PinchViewports(WebViewImpl* owner)
     m_innerViewportContainerLayer->setMasksToBounds(false);
 
     m_innerViewportScrollLayer->platformLayer()->setScrollable(true);
-
 
     m_innerViewportContainerLayer->addChild(m_pageScaleLayer.get());
     m_pageScaleLayer->addChild(m_innerViewportScrollLayer.get());
@@ -136,8 +138,21 @@ void PinchViewports::setupScrollbar(WebScrollbar::Orientation orientation)
     bool isHorizontal = orientation == WebScrollbar::Horizontal;
     GraphicsLayer* scrollbarGraphicsLayer = isHorizontal ?
         m_overlayScrollbarHorizontal.get() : m_overlayScrollbarVertical.get();
+    OwnPtr<WebScrollbarLayer>& webScrollbarLayer = isHorizontal ?
+        m_webOverlayScrollbarHorizontal : m_webOverlayScrollbarVertical;
 
     const int overlayScrollbarThickness = m_owner->settingsImpl()->pinchOverlayScrollbarThickness();
+
+    if (!webScrollbarLayer) {
+        WebCore::ScrollingCoordinator* coordinator = m_owner->page()->scrollingCoordinator();
+        ASSERT(coordinator);
+        WebCore::ScrollbarOrientation webcoreOrientation = isHorizontal ? WebCore::HorizontalScrollbar : WebCore::VerticalScrollbar;
+        webScrollbarLayer = coordinator->createSolidColorScrollbarLayer(webcoreOrientation, overlayScrollbarThickness, false);
+
+        webScrollbarLayer->setScrollLayer(m_innerViewportScrollLayer->platformLayer());
+        scrollbarGraphicsLayer->setContentsToPlatformLayer(webScrollbarLayer->layer());
+        scrollbarGraphicsLayer->setDrawsContent(false);
+    }
 
     int xPosition = isHorizontal ? 0 : m_innerViewportContainerLayer->size().width() - overlayScrollbarThickness;
     int yPosition = isHorizontal ? m_innerViewportContainerLayer->size().height() - overlayScrollbarThickness : 0;
@@ -150,26 +165,23 @@ void PinchViewports::setupScrollbar(WebScrollbar::Orientation orientation)
 
 void PinchViewports::registerViewportLayersWithTreeView(WebLayerTreeView* layerTreeView) const
 {
-    if (!layerTreeView)
-        return;
+    ASSERT(layerTreeView);
 
     WebCore::RenderLayerCompositor* compositor = m_owner->compositor();
+    GraphicsLayer* scrollLayer = compositor->scrollLayer();
+
     ASSERT(compositor);
-    layerTreeView->registerPinchViewportLayers(
-        m_innerViewportContainerLayer->platformLayer(),
+    layerTreeView->registerViewportLayers(
         m_pageScaleLayer->platformLayer(),
         m_innerViewportScrollLayer->platformLayer(),
-        compositor->scrollLayer()->platformLayer(),
-        m_overlayScrollbarHorizontal->platformLayer(),
-        m_overlayScrollbarVertical->platformLayer());
+        scrollLayer->platformLayer());
 }
 
 void PinchViewports::clearViewportLayersForTreeView(WebLayerTreeView* layerTreeView) const
 {
-    if (!layerTreeView)
-        return;
+    ASSERT(layerTreeView);
 
-    layerTreeView->clearPinchViewportLayers();
+    layerTreeView->clearViewportLayers();
 }
 
 void PinchViewports::notifyAnimationStarted(const GraphicsLayer*, double time)

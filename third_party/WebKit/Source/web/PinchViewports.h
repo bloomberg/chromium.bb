@@ -83,6 +83,8 @@ private:
     OwnPtr<WebCore::GraphicsLayer> m_innerViewportScrollLayer;
     OwnPtr<WebCore::GraphicsLayer> m_overlayScrollbarHorizontal;
     OwnPtr<WebCore::GraphicsLayer> m_overlayScrollbarVertical;
+    OwnPtr<WebScrollbarLayer> m_webOverlayScrollbarHorizontal;
+    OwnPtr<WebScrollbarLayer> m_webOverlayScrollbarVertical;
 };
 
 } // namespace WebKit

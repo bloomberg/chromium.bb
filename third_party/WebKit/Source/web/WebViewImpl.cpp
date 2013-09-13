@@ -155,6 +155,7 @@
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/chromium/LayerPainterChromium.h"
 #include "core/platform/graphics/gpu/SharedGraphicsContext3D.h"
+#include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/RenderWidget.h"
 #include "core/rendering/TextAutosizer.h"
@@ -3803,11 +3804,9 @@ void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* layer)
         if (layer) {
             m_rootGraphicsLayer = m_pinchViewports->rootGraphicsLayer();
             m_rootLayer = m_pinchViewports->rootGraphicsLayer()->platformLayer();
-            m_pinchViewports->registerViewportLayersWithTreeView(m_layerTreeView);
         } else {
             m_rootGraphicsLayer = 0;
             m_rootLayer = 0;
-            m_pinchViewports->clearViewportLayersForTreeView(m_layerTreeView);
         }
     } else {
         m_rootGraphicsLayer = layer;
@@ -3817,10 +3816,23 @@ void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* layer)
     setIsAcceleratedCompositingActive(layer);
 
     if (m_layerTreeView) {
-        if (m_rootLayer)
+        if (m_rootLayer) {
             m_layerTreeView->setRootLayer(*m_rootLayer);
-        else
+            // We register viewport layers here since there may not be a layer
+            // tree view prior to this point.
+            if (m_pinchViewports) {
+                m_pinchViewports->registerViewportLayersWithTreeView(m_layerTreeView);
+            } else {
+                GraphicsLayer* rootScrollLayer = compositor()->scrollLayer();
+                m_layerTreeView->registerViewportLayers(m_rootLayer, rootScrollLayer->platformLayer(), 0);
+            }
+        } else {
             m_layerTreeView->clearRootLayer();
+            if (m_pinchViewports)
+                m_pinchViewports->clearViewportLayersForTreeView(m_layerTreeView);
+            else
+                m_layerTreeView->clearViewportLayers();
+        }
     }
 
     suppressInvalidations(false);
