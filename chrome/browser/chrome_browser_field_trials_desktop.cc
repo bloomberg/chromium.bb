@@ -9,6 +9,7 @@
 #include "apps/field_trial_names.h"
 #include "apps/pref_names.h"
 #include "base/command_line.h"
+#include "base/environment.h"
 #include "base/metrics/field_trial.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
 #include "chrome/browser/ui/sync/one_click_signin_helper.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/metrics/variations/variations_util.h"
@@ -91,6 +93,50 @@ void SetupLowLatencyFlashAudioFieldTrial() {
     trial->AppendGroup(content::kLowLatencyFlashAudioFieldTrialEnabledName, 25);
 }
 
+void SetupPreReadFieldTrial() {
+  // The chrome executable will have set (or not) an environment variable with
+  // the group name into which this client belongs.
+  std::string group;
+  scoped_ptr<base::Environment> env(base::Environment::Create());
+  if (!env->GetVar(chrome::kPreReadEnvironmentVariable, &group) ||
+      group.empty()) {
+    return;
+  }
+
+  // Initialize the field trial. We declare all of the groups here (so that
+  // the dashboard creation tools can find them) but force the probability
+  // of being assigned to the group already chosen by the executable, if any,
+  // to 100%.
+  scoped_refptr<base::FieldTrial> trial(
+      base::FieldTrialList::FactoryGetFieldTrial(
+          "BrowserPreReadExperiment", 100, "100-pct-default",
+          2014, 7, 1, base::FieldTrial::SESSION_RANDOMIZED, NULL));
+  trial->AppendGroup("100-pct-control", group == "100-pct-control" ? 100 : 0);
+  trial->AppendGroup("95-pct", group == "95-pct" ? 100 : 0);
+  trial->AppendGroup("90-pct", group == "90-pct" ? 100 : 0);
+  trial->AppendGroup("85-pct", group == "85-pct" ? 100 : 0);
+  trial->AppendGroup("80-pct", group == "80-pct" ? 100 : 0);
+  trial->AppendGroup("75-pct", group == "75-pct" ? 100 : 0);
+  trial->AppendGroup("70-pct", group == "70-pct" ? 100 : 0);
+  trial->AppendGroup("65-pct", group == "65-pct" ? 100 : 0);
+  trial->AppendGroup("60-pct", group == "60-pct" ? 100 : 0);
+  trial->AppendGroup("55-pct", group == "55-pct" ? 100 : 0);
+  trial->AppendGroup("50-pct", group == "50-pct" ? 100 : 0);
+  trial->AppendGroup("45-pct", group == "45-pct" ? 100 : 0);
+  trial->AppendGroup("40-pct", group == "40-pct" ? 100 : 0);
+  trial->AppendGroup("35-pct", group == "35-pct" ? 100 : 0);
+  trial->AppendGroup("30-pct", group == "30-pct" ? 100 : 0);
+  trial->AppendGroup("25-pct", group == "25-pct" ? 100 : 0);
+  trial->AppendGroup("20-pct", group == "20-pct" ? 100 : 0);
+  trial->AppendGroup("15-pct", group == "15-pct" ? 100 : 0);
+  trial->AppendGroup("10-pct", group == "10-pct" ? 100 : 0);
+  trial->AppendGroup("5-pct", group == "5-pct" ? 100 : 0);
+  trial->AppendGroup("0-pct", group == "0-pct" ? 100 : 0);
+
+  // We have to call group in order to mark the experiment as active.
+  trial->group();
+}
+
 }  // namespace
 
 void SetupDesktopFieldTrials(const CommandLine& parsed_command_line,
@@ -104,6 +150,7 @@ void SetupDesktopFieldTrials(const CommandLine& parsed_command_line,
   DisableShowProfileSwitcherTrialIfNecessary();
   SetupAppLauncherFieldTrial(local_state);
   SetupLowLatencyFlashAudioFieldTrial();
+  SetupPreReadFieldTrial();
 }
 
 }  // namespace chrome

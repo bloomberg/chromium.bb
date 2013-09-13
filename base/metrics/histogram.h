@@ -307,6 +307,12 @@ class Lock;
     name, sample, base::TimeDelta::FromMilliseconds(1), \
     base::TimeDelta::FromHours(1), 50)
 
+// Use this macro when times can routinely be much longer than 10 seconds and
+// you want 100 buckets.
+#define UMA_HISTOGRAM_LONG_TIMES_100(name, sample) UMA_HISTOGRAM_CUSTOM_TIMES( \
+    name, sample, base::TimeDelta::FromMilliseconds(1), \
+    base::TimeDelta::FromHours(1), 100)
+
 #define UMA_HISTOGRAM_CUSTOM_TIMES(name, sample, min, max, bucket_count) \
     STATIC_HISTOGRAM_POINTER_BLOCK(name, AddTime(sample), \
         base::Histogram::FactoryTimeGet(name, min, max, bucket_count, \

@@ -26,7 +26,7 @@ namespace {
 const size_t kMinHeaderBufferSize = 0x400;
 
 // A handy symbolic constant.
-const uint8 kOneHundredPercent = 100;
+const size_t kOneHundredPercent = 100;
 
 void StaticAssertions() {
   COMPILE_ASSERT(kMinHeaderBufferSize >= sizeof(IMAGE_DOS_HEADER),
@@ -105,9 +105,9 @@ bool ReadMissingBytes(HANDLE file_handle,
 // in (very quickly) as needed, so we don't need to include it in the returned
 // length.
 size_t GetPercentageOfSectionLength(const IMAGE_SECTION_HEADER* section,
-                                    uint8 percentage) {
+                                    size_t percentage) {
   DCHECK(section != NULL);
-  DCHECK_GT(percentage, 0);
+  DCHECK_GT(percentage, 0u);
   DCHECK_LE(percentage, kOneHundredPercent);
 
   size_t initialized_length = std::min(section->SizeOfRawData,
@@ -127,7 +127,7 @@ size_t GetPercentageOfSectionLength(const IMAGE_SECTION_HEADER* section,
 // |temp_buffer_size| bytes.
 bool ReadThroughSection(HANDLE file_handle,
                         const IMAGE_SECTION_HEADER* section,
-                        uint8 percentage,
+                        size_t percentage,
                         void* temp_buffer,
                         size_t temp_buffer_size) {
   DCHECK(file_handle != INVALID_HANDLE_VALUE);
@@ -189,7 +189,7 @@ void TouchPagesInRange(void* base_addr, size_t length) {
 }  // namespace
 
 bool ImagePreReader::PartialPreReadImageOnDisk(const wchar_t* file_path,
-                                               uint8 percentage,
+                                               size_t percentage,
                                                size_t max_chunk_size) {
   // TODO(rogerm): change this to have the number of bytes pre-read per
   //     section be driven by a static table within the PE file (defaulting to
@@ -273,7 +273,7 @@ bool ImagePreReader::PartialPreReadImageOnDisk(const wchar_t* file_path,
 }
 
 bool ImagePreReader::PartialPreReadImageInMemory(const wchar_t* file_path,
-                                                 uint8 percentage) {
+                                                 size_t percentage) {
   // TODO(rogerm): change this to have the number of bytes pre-read per
   //     section be driven by a static table within the PE file (defaulting to
   //     full read if it's not there?) that's initialized by the optimization
@@ -396,7 +396,7 @@ bool ImagePreReader::PreReadImage(const wchar_t* file_path,
 }
 
 bool ImagePreReader::PartialPreReadImage(const wchar_t* file_path,
-                                         uint8 percentage,
+                                         size_t percentage,
                                          size_t max_chunk_size) {
   base::ThreadRestrictions::AssertIOAllowed();
 

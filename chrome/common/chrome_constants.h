@@ -111,6 +111,9 @@ extern const bool kEnableTouchIcon;
 // installed.
 extern const float kMaxShareOfExtensionProcesses;
 
+// This is used by the PreRead experiment.
+extern const char kPreReadEnvironmentVariable[];
+
 #if defined(OS_LINUX)
 // The highest and lowest assigned OOM score adjustment
 // (oom_score_adj) used by the OomPriority Manager.
@@ -119,8 +122,6 @@ extern const int kHighestRendererOomScore;
 #endif
 
 #if defined(OS_WIN)
-// This is used by the PreRead experiment.
-extern const char kPreReadEnvironmentVariable[];
 // Used by Metro Chrome to create the profile under a custom subdirectory.
 extern const wchar_t kMetroChromeUserDataSubDir[];
 // Used by Metro Chrome to initiate navigation and search requests.

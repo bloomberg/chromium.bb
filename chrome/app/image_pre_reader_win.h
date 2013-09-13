@@ -53,21 +53,21 @@ class ImagePreReader {
   // with the data and code most needed for startup moved to the front.
   // See also: http://code.google.com/p/chromium/issues/detail?id=98508
   static bool PartialPreReadImage(const wchar_t* file_path,
-                                  uint8 percentage,
+                                  size_t percentage,
                                   size_t max_chunk_size);
 
   // Helper function used by PartialPreReadImage on Windows versions (Vista+)
   // where reading through the file on disk serves to warm up the page cache.
   // Exported for unit-testing purposes.
   static bool PartialPreReadImageOnDisk(const wchar_t* file_path,
-                                        uint8 percentage,
+                                        size_t percentage,
                                         size_t max_chunk_size);
 
   // Helper function used by PartialPreReadImage on Windows versions (XP) where
   // cheaply loading the image then stepping through its address space serves
   // to warm up the page cache. Exported for unit-testing purposes.
   static bool PartialPreReadImageInMemory(const wchar_t* file_path,
-                                          uint8 percentage);
+                                          size_t percentage);
 };  // namespace internal
 
 #endif  // CHROME_APP_IMAGE_PRE_READER_WIN_H_
