@@ -117,3 +117,6 @@ race:base::g_top_manager
 
 # http://crbug.com/273047
 race:base::*::g_lazy_tls_ptr
+
+# http://crbug.com/280466
+race:content::WebRtcAudioCapturer::SetCapturerSource
