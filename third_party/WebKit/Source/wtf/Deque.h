@@ -253,6 +253,7 @@ namespace WTF {
     inline Deque<T, inlineCapacity>::~Deque()
     {
         destroyAll();
+        m_buffer.destruct();
     }
 
     template<typename T, size_t inlineCapacity>
@@ -270,6 +271,7 @@ namespace WTF {
         m_start = 0;
         m_end = 0;
         m_buffer.deallocateBuffer(m_buffer.buffer());
+        m_buffer.clearBufferPointer();
     }
 
     template<typename T, size_t inlineCapacity>

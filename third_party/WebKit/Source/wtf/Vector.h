@@ -279,19 +279,6 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
             m_buffer = static_cast<T*>(fastRealloc(m_buffer, sizeToAllocate));
         }
 
-        void deallocateBuffer(T* bufferToDeallocate)
-        {
-            if (!bufferToDeallocate)
-                return;
-
-            if (m_buffer == bufferToDeallocate) {
-                m_buffer = 0;
-                m_capacity = 0;
-            }
-
-            fastFree(bufferToDeallocate);
-        }
-
         T* buffer() { return m_buffer; }
         const T* buffer() const { return m_buffer; }
         size_t capacity() const { return m_capacity; }
@@ -311,7 +298,6 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
 
         ~VectorBufferBase()
         {
-            // FIXME: It would be nice to find a way to ASSERT that m_buffer hasn't leaked here.
         }
 
         T* m_buffer;
@@ -341,8 +327,23 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
 
         ~VectorBuffer()
         {
-            deallocateBuffer(buffer());
+        }
+
+        void destruct()
+        {
+            deallocateBuffer(m_buffer);
             m_buffer = 0;
+        }
+
+        void deallocateBuffer(T* bufferToDeallocate)
+        {
+            fastFree(bufferToDeallocate);
+        }
+
+        void clearBufferPointer()
+        {
+            m_buffer = 0;
+            m_capacity = 0;
         }
 
         void swap(VectorBuffer<T, 0>& other)
@@ -356,7 +357,6 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         using Base::allocateBuffer;
         using Base::shouldReallocateBuffer;
         using Base::reallocateBuffer;
-        using Base::deallocateBuffer;
 
         using Base::buffer;
         using Base::capacity;
@@ -389,8 +389,25 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
 
         ~VectorBuffer()
         {
-            deallocateBuffer(buffer());
+        }
+
+        void destruct()
+        {
+            deallocateBuffer(m_buffer);
             m_buffer = 0;
+        }
+
+        void deallocateBuffer(T* bufferToDeallocate)
+        {
+            if (LIKELY(bufferToDeallocate == inlineBuffer()))
+                return;
+            fastFree(bufferToDeallocate);
+        }
+
+        void clearBufferPointer()
+        {
+            m_buffer = 0;
+            m_capacity = 0;
         }
 
         void allocateBuffer(size_t newCapacity)
@@ -402,13 +419,6 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
                 m_buffer = inlineBuffer();
                 m_capacity = inlineCapacity;
             }
-        }
-
-        void deallocateBuffer(T* bufferToDeallocate)
-        {
-            if (LIKELY(bufferToDeallocate == inlineBuffer()))
-                return;
-            Base::deallocateBuffer(bufferToDeallocate);
         }
 
         bool shouldReallocateBuffer(size_t newCapacity) const
@@ -498,8 +508,14 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
 
         ~Vector()
         {
-            if (m_size)
+            if (!inlineCapacity) {
+                if (LIKELY(!Base::buffer()))
+                    return;
+            }
+            if (LIKELY(m_size))
                 shrink(0);
+
+            Base::destruct();
         }
 
         Vector(const Vector&);
@@ -560,7 +576,6 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         void resize(size_t size);
         void reserveCapacity(size_t newCapacity);
         void reserveInitialCapacity(size_t initialCapacity);
-        void shrinkCapacity(size_t newCapacity);
         void shrinkToFit() { shrinkCapacity(size()); }
 
         void clear() { shrinkCapacity(0); }
@@ -612,6 +627,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         void expandCapacity(size_t newMinCapacity);
         const T* expandCapacity(size_t newMinCapacity, const T*);
         template<typename U> U* expandCapacity(size_t newMinCapacity, U*);
+        void shrinkCapacity(size_t newCapacity);
         template<typename U> void appendSlowCase(const U&);
 
         using Base::m_size;
@@ -619,7 +635,6 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         using Base::capacity;
         using Base::swap;
         using Base::allocateBuffer;
-        using Base::deallocateBuffer;
         using Base::shouldReallocateBuffer;
         using Base::reallocateBuffer;
         using Base::restoreInlineBufferIfNeeded;
@@ -890,6 +905,8 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
             Base::allocateBuffer(newCapacity);
             if (begin() != oldBuffer)
                 TypeOperations::move(oldBuffer, oldEnd, begin());
+        } else {
+            Base::clearBufferPointer();
         }
 
         Base::deallocateBuffer(oldBuffer);
@@ -928,7 +945,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
     }
 
     template<typename T, size_t inlineCapacity> template<typename U>
-    void Vector<T, inlineCapacity>::appendSlowCase(const U& val)
+    NEVER_INLINE void Vector<T, inlineCapacity>::appendSlowCase(const U& val)
     {
         ASSERT(size() == capacity());
 
