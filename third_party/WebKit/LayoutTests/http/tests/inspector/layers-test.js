@@ -33,6 +33,29 @@ function initialize_LayerTreeTests()
         root.children().forEach(InspectorTest.dumpLayerTree.bind(InspectorTest, prefix + "    "));
     }
 
+    InspectorTest.dumpLayerTreeOutline = function(prefix, root)
+    {
+        if (!prefix)
+            prefix = "";
+        if (!root)
+            root = WebInspector.panel("layers")._layerTree._treeOutline;
+        if (root.representedObject)
+            InspectorTest.addResult(prefix + InspectorTest.labelForLayer(root.representedObject));
+        root.children.forEach(InspectorTest.dumpLayerTreeOutline.bind(InspectorTest, prefix + "    "));
+    }
+
+    InspectorTest.dumpLayers3DView = function(prefix, root)
+    {
+        if (!prefix)
+            prefix = "";
+        if (!root)
+            root = WebInspector.panel("layers")._layers3DView._rotatingContainerElement;
+        if (root.__layer)
+            InspectorTest.addResult(prefix + InspectorTest.labelForLayer(root.__layer));
+        for (var element = root.firstElementChild; element; element = element.nextSibling)
+            InspectorTest.dumpLayers3DView(prefix + "    ", element);
+    }
+
     InspectorTest.evaluateAndRunWhenTreeChanges = function(expression, callback)
     {
         function eventHandler()

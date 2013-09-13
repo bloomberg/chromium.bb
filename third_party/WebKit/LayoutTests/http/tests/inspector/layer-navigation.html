@@ -1,0 +1,72 @@
+<html>
+<head>
+<style>
+.layer {
+    -webkit-transform: translateZ(10px);
+    opacity: 0.8;
+}
+</style>
+<script src="inspector-test.js"></script>
+<script src="layers-test.js"></script>
+<script>
+
+function test()
+{
+    function dumpAll()
+    {
+        InspectorTest.addResult("Model:");
+        InspectorTest.dumpLayerTree();
+        InspectorTest.addResult("Tree outline:");
+        InspectorTest.dumpLayerTreeOutline();
+        InspectorTest.addResult("Layers 3D view:");
+        InspectorTest.dumpLayers3DView();
+    }
+
+    function step1()
+    {
+        WebInspector.showPanel("layers");
+        InspectorTest._layerTreeModel.requestLayers(step2);
+    }
+
+    function step2()
+    {
+         dumpAll();
+         InspectorTest.navigate("http://127.0.0.1:8000/inspector/resources/layer-navigation-target.html", step3);
+    }
+
+    function step3()
+    {
+         InspectorTest._layerTreeModel.requestLayers(step4);
+    }
+
+    function step4()
+    {
+         dumpAll();
+         InspectorTest.navigate("http://127.0.0.1:8000/inspector/layer-navigation.html", step5);
+    }
+
+    function step5()
+    {
+         InspectorTest._layerTreeModel.requestLayers(step6);
+    }
+
+    function step6()
+    {
+         dumpAll();
+         InspectorTest.completeTest();
+    }
+
+    setTimeout(InspectorTest.completeTest.bind(InspectorTest), 3000);
+    step1();
+
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<div id="a" style="width: 200px; height: 200px" class="layer">
+    <div class="layer" id="b1" style="width: 150; height: 100"></div>
+    <div id="b2" class="layer" style="width: 140; height: 110"></div>
+</div>
+</body>
+</html>
