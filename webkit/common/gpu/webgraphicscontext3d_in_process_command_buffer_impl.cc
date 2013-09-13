@@ -13,6 +13,7 @@
 
 #include <string>
 
+#include "base/atomicops.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -43,6 +44,14 @@ const size_t kMaxTransferBufferSize = 16 * 1024 * 1024;
 void OnSignalSyncPoint(
     WebKit::WebGraphicsContext3D::WebGraphicsSyncPointCallback* callback) {
   callback->onSyncPointReached();
+}
+
+uint32_t GenFlushID() {
+  static base::subtle::Atomic32 flush_id = 0;
+
+  base::subtle::Atomic32 my_id = base::subtle::Barrier_AtomicIncrement(
+      &flush_id, 1);
+  return static_cast<uint32_t>(my_id);
 }
 
 // Singleton used to initialize and terminate the gles2 library.
@@ -119,7 +128,8 @@ WebGraphicsContext3DInProcessCommandBufferImpl::
       context_lost_reason_(GL_NO_ERROR),
       attributes_(attributes),
       cached_width_(0),
-      cached_height_(0) {
+      cached_height_(0),
+      flush_id_(0) {
 }
 
 WebGraphicsContext3DInProcessCommandBufferImpl::
@@ -207,6 +217,10 @@ bool WebGraphicsContext3DInProcessCommandBufferImpl::makeContextCurrent() {
     return false;
   ::gles2::SetGLContext(gl_);
   return context_ && !isContextLost();
+}
+
+uint32_t WebGraphicsContext3DInProcessCommandBufferImpl::getLastFlushID() {
+  return flush_id_;
 }
 
 void WebGraphicsContext3DInProcessCommandBufferImpl::ClearContext() {
@@ -572,9 +586,15 @@ DELEGATE_TO_GL_1(enable, Enable, WGC3Denum)
 DELEGATE_TO_GL_1(enableVertexAttribArray, EnableVertexAttribArray,
                  WGC3Duint)
 
-DELEGATE_TO_GL(finish, Finish)
+void WebGraphicsContext3DInProcessCommandBufferImpl::finish() {
+  flush_id_ = GenFlushID();
+  gl_->Finish();
+}
 
-DELEGATE_TO_GL(flush, Flush)
+void WebGraphicsContext3DInProcessCommandBufferImpl::flush() {
+  flush_id_ = GenFlushID();
+  gl_->Flush();
+}
 
 DELEGATE_TO_GL_4(framebufferRenderbuffer, FramebufferRenderbuffer,
                  WGC3Denum, WGC3Denum, WGC3Denum, WebGLId)
@@ -1160,8 +1180,15 @@ DELEGATE_TO_GL_1(unmapImageCHROMIUM, UnmapImageCHROMIUM, WGC3Duint);
 DELEGATE_TO_GL_3(bindUniformLocationCHROMIUM, BindUniformLocationCHROMIUM,
                  WebGLId, WGC3Dint, const WGC3Dchar*)
 
-DELEGATE_TO_GL(shallowFlushCHROMIUM, ShallowFlushCHROMIUM)
-DELEGATE_TO_GL(shallowFinishCHROMIUM, ShallowFinishCHROMIUM)
+void WebGraphicsContext3DInProcessCommandBufferImpl::shallowFlushCHROMIUM() {
+  flush_id_ = GenFlushID();
+  gl_->ShallowFlushCHROMIUM();
+}
+
+void WebGraphicsContext3DInProcessCommandBufferImpl::shallowFinishCHROMIUM() {
+  flush_id_ = GenFlushID();
+  gl_->ShallowFinishCHROMIUM();
+}
 
 DELEGATE_TO_GL_1(genMailboxCHROMIUM, GenMailboxCHROMIUM, WGC3Dbyte*)
 DELEGATE_TO_GL_2(produceTextureCHROMIUM, ProduceTextureCHROMIUM,

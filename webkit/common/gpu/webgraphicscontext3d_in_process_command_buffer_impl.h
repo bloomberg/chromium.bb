@@ -74,6 +74,8 @@ class WEBKIT_GPU_EXPORT WebGraphicsContext3DInProcessCommandBufferImpl
   // WebGraphicsContext3D methods
   virtual bool makeContextCurrent();
 
+  virtual uint32_t getLastFlushID();
+
   virtual int width();
   virtual int height();
 
@@ -568,7 +570,6 @@ class WEBKIT_GPU_EXPORT WebGraphicsContext3DInProcessCommandBufferImpl
   // instead of going through WebGraphicsContext3D.
   void ClearContext();
 
-
   bool is_offscreen_;
   // Only used when not offscreen.
   gfx::AcceleratedWidget window_;
@@ -589,6 +590,8 @@ class WEBKIT_GPU_EXPORT WebGraphicsContext3DInProcessCommandBufferImpl
 
   // Errors raised by synthesizeGLError().
   std::vector<WGC3Denum> synthetic_errors_;
+
+  uint32_t flush_id_;
 };
 
 }  // namespace gpu

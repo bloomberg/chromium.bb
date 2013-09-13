@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <set>
 
+#include "base/atomicops.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
@@ -71,6 +72,14 @@ size_t ClampUint64ToSizeT(uint64 value) {
   value = std::min(value,
                    static_cast<uint64>(std::numeric_limits<size_t>::max()));
   return static_cast<size_t>(value);
+}
+
+uint32_t GenFlushID() {
+  static base::subtle::Atomic32 flush_id = 0;
+
+  base::subtle::Atomic32 my_id = base::subtle::Barrier_AtomicIncrement(
+      &flush_id, 1);
+  return static_cast<uint32_t>(my_id);
 }
 
 // Singleton used to initialize and terminate the gles2 library.
@@ -235,7 +244,8 @@ WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl(
       start_transfer_buffer_size_(0),
       min_transfer_buffer_size_(0),
       max_transfer_buffer_size_(0),
-      mapped_memory_limit_(gpu::gles2::GLES2Implementation::kNoLimit) {
+      mapped_memory_limit_(gpu::gles2::GLES2Implementation::kNoLimit),
+      flush_id_(0) {
 #if (defined(OS_MACOSX) || defined(OS_WIN)) && !defined(USE_AURA)
   // Get ViewMsg_SwapBuffers_ACK from browser for single-threaded path.
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
@@ -495,6 +505,10 @@ bool WebGraphicsContext3DCommandBufferImpl::makeContextCurrent() {
     return false;
 
   return true;
+}
+
+uint32_t WebGraphicsContext3DCommandBufferImpl::getLastFlushID() {
+  return flush_id_;
 }
 
 int WebGraphicsContext3DCommandBufferImpl::width() {
@@ -813,12 +827,14 @@ DELEGATE_TO_GL_1(enableVertexAttribArray, EnableVertexAttribArray,
                  WGC3Duint)
 
 void WebGraphicsContext3DCommandBufferImpl::finish() {
+  flush_id_ = GenFlushID();
   gl_->Finish();
   if (!visible_ && free_command_buffer_when_invisible_)
     real_gl_->FreeEverything();
 }
 
 void WebGraphicsContext3DCommandBufferImpl::flush() {
+  flush_id_ = GenFlushID();
   gl_->Flush();
   if (!visible_ && free_command_buffer_when_invisible_)
     real_gl_->FreeEverything();
@@ -1424,8 +1440,15 @@ DELEGATE_TO_GL_6(copyTextureCHROMIUM, CopyTextureCHROMIUM,  WGC3Denum,
 DELEGATE_TO_GL_3(bindUniformLocationCHROMIUM, BindUniformLocationCHROMIUM,
                  WebGLId, WGC3Dint, const WGC3Dchar*)
 
-DELEGATE_TO_GL(shallowFlushCHROMIUM, ShallowFlushCHROMIUM);
-DELEGATE_TO_GL(shallowFinishCHROMIUM, ShallowFinishCHROMIUM);
+void WebGraphicsContext3DCommandBufferImpl::shallowFlushCHROMIUM() {
+  flush_id_ = GenFlushID();
+  gl_->ShallowFlushCHROMIUM();
+}
+
+void WebGraphicsContext3DCommandBufferImpl::shallowFinishCHROMIUM() {
+  flush_id_ = GenFlushID();
+  gl_->ShallowFinishCHROMIUM();
+}
 
 DELEGATE_TO_GL_1(waitSyncPoint, WaitSyncPointCHROMIUM, GLuint)
 

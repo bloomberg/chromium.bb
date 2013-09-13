@@ -143,6 +143,8 @@ class WebGraphicsContext3DCommandBufferImpl
   // graphics context fails to create. Do not call from more than one thread.
   virtual bool makeContextCurrent();
 
+  virtual uint32_t getLastFlushID();
+
   virtual int width();
   virtual int height();
 
@@ -764,6 +766,8 @@ class WebGraphicsContext3DCommandBufferImpl
   size_t min_transfer_buffer_size_;
   size_t max_transfer_buffer_size_;
   size_t mapped_memory_limit_;
+
+  uint32_t flush_id_;
 };
 
 }  // namespace content
