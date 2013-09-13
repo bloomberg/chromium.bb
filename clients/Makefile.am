@@ -2,20 +2,17 @@ bin_PROGRAMS =					\
 	weston-info				\
 	$(terminal)
 
+demo_clients = \
+	$(clients_programs)			\
+	$(pango_programs)			\
+	$(poppler_programs)			\
+	$(simple_clients_programs)		\
+	$(simple_egl_clients_programs)
+
 if ENABLE_DEMO_CLIENTS
-bin_PROGRAMS +=					\
-	$(clients_programs)			\
-	$(pango_programs)			\
-	$(poppler_programs)			\
-	$(simple_clients_programs)		\
-	$(simple_egl_clients_programs)
+bin_PROGRAMS += $(demo_clients)
 else
-noinst_PROGRAMS =				\
-	$(clients_programs)			\
-	$(pango_programs)			\
-	$(poppler_programs)			\
-	$(simple_clients_programs)		\
-	$(simple_egl_clients_programs)
+noinst_PROGRAMS = $(demo_clients)
 endif
 
 libexec_PROGRAMS =				\
