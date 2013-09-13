@@ -42,18 +42,14 @@
 #endif  // defined(ENABLE_PEPPER_CDMS)
 
 // Expectations for Widevine.
-#if defined(WIDEVINE_CDM_AVAILABLE)
+#if defined(WIDEVINE_CDM_AVAILABLE) && \
+    !defined(DISABLE_WIDEVINE_CDM_CANPLAYTYPE)  // See http://crbug.com/237627
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 // TODO(ddorwin): Remove after bots switch to Precise.
 #define EXPECT_WV(a) \
     EXPECT_EQ((std::string(gnu_get_libc_version()) != "2.11.1"), (a))
 #else
-// See http://crbug.com/237627.
-#if defined(DISABLE_WIDEVINE_CDM_CANPLAYTYPE)
-#define EXPECT_WV EXPECT_FALSE
-#else
 #define EXPECT_WV EXPECT_TRUE
-#endif  // defined(DISABLE_WIDEVINE_CDM_CANPLAYTYPE)
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
 #if defined(WIDEVINE_CDM_CENC_SUPPORT_AVAILABLE)
@@ -84,13 +80,15 @@
 #define EXPECT_WVAAC EXPECT_FALSE
 #endif  // defined(WIDEVINE_CDM_CENC_SUPPORT_AVAILABLE)
 
-#else  // !defined(WIDEVINE_CDM_AVAILABLE)
+#else  // defined(WIDEVINE_CDM_AVAILABLE) &&
+       // !defined(DISABLE_WIDEVINE_CDM_CANPLAYTYPE)
 #define EXPECT_WV EXPECT_FALSE
 #define EXPECT_WVCENC EXPECT_FALSE
 #define EXPECT_WVAVC1 EXPECT_FALSE
 #define EXPECT_WVAVC1AAC EXPECT_FALSE
 #define EXPECT_WVAAC EXPECT_FALSE
-#endif  // defined(WIDEVINE_CDM_AVAILABLE)
+#endif  // defined(WIDEVINE_CDM_AVAILABLE) &&
+        // !defined(DISABLE_WIDEVINE_CDM_CANPLAYTYPE)
 
 namespace chrome {
 
