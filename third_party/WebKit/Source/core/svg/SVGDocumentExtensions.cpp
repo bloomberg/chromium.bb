@@ -65,7 +65,7 @@ void SVGDocumentExtensions::addResource(const AtomicString& id, RenderSVGResourc
 
 void SVGDocumentExtensions::removeResource(const AtomicString& id)
 {
-    if (id.isEmpty() || !m_resources.contains(id))
+    if (id.isEmpty())
         return;
 
     m_resources.remove(id);
