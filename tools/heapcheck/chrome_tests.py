@@ -11,6 +11,7 @@ TODO(glider): put common functions to a standalone module.
 
 import glob
 import logging
+import multiprocessing
 import optparse
 import os
 import stat
@@ -375,8 +376,18 @@ class ChromeTests(object):
 
     script = os.path.join(self._source_dir, "webkit", "tools", "layout_tests",
                           "run_webkit_tests.py")
-    script_cmd = ["python", script, "--run-singly", "-v",
-                  "--noshow-results", "--time-out-ms=200000",
+    # While Heapcheck is not memory bound like Valgrind for running layout tests
+    # in parallel, it is still CPU bound. Many machines have hyper-threading
+    # turned on, so the real number of cores is actually half.
+    jobs = int(multiprocessing.cpu_count() * 0.5)
+    script_cmd = ["python", script, "-v",
+                  "--run-singly",  # run a separate DumpRenderTree for each test
+                  "--fully-parallel",
+                  "--child-processes=%d" % jobs,
+                  "--time-out-ms=200000",
+                  "--no-retry-failures",  # retrying takes too much time
+                  # http://crbug.com/176908: Don't launch a browser when done.
+                  "--no-show-results",
                   "--nocheck-sys-deps"]
 
     # Pass build mode to run_webkit_tests.py.  We aren't passed it directly,
