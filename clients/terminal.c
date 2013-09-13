@@ -762,6 +762,11 @@ terminal_resize_cells(struct terminal *terminal, int width, int height)
 
 		if (terminal->height > height) {
 			total_rows = height;
+			i = 1 + terminal->row - height;
+			if (i > 0) {
+			    terminal->start = (terminal->start + i) % terminal->height;
+			    terminal->row = terminal->row - i;
+			}
 		} else {
 			total_rows = terminal->height;
 		}
@@ -789,6 +794,7 @@ terminal_resize_cells(struct terminal *terminal, int width, int height)
 	terminal->data = data;
 	terminal->data_attr = data_attr;
 	terminal->tab_ruler = tab_ruler;
+	terminal->start = 0;
 	terminal_init_tabs(terminal);
 
 	/* Update the window size */
