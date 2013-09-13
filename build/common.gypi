@@ -69,10 +69,15 @@
           'branding%': 'Chromium',
 
           'conditions': [
-            # ChromeOS implies ash.
+            # ChromeOS implies ash and Windows implies Ash and Aura.
+            # However, we only default use_ash to 1 on Windows if
+            # use_aura==1, so that disabling Aura automatically
+            # disables Ash. See comments below, as well.
+            ['chromeos==1 or OS=="win"', {
+              'use_aura%': 1,
+            }],
             ['chromeos==1', {
               'use_ash%': 1,
-              'use_aura%': 1,
             }],
 
             # For now, Windows builds that |use_aura| should also imply using
