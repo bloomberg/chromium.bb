@@ -34,6 +34,7 @@ EXTERNAL_GERRIT_SSH_REMOTE = 'gerrit'
 # messages. It's all observed 'bad' GoB responses so far.
 GIT_TRANSIENT_ERRORS = (
     r'! \[remote rejected\].* -> .* \(error in hook\)',
+    r'! \[remote rejected\].* -> .* \(failed to lock\)',
     r'remote error: Internal Server Error',
 )
 
@@ -937,7 +938,8 @@ def GitPush(git_repo, refspec, push_to, dryrun=False, force=False, retry=True):
     return any(re.search(msg, exc.result.error) for msg in GIT_TRANSIENT_ERRORS)
 
   if retry:
-    cros_build_lib.GenericRetry(_ShouldRetry, 5, RunGit, git_repo, cmd, sleep=2)
+    cros_build_lib.GenericRetry(_ShouldRetry, 10, RunGit, git_repo,
+                                cmd, sleep=3)
   else:
     RunGit(git_repo, cmd)
 

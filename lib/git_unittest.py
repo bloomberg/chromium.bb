@@ -48,13 +48,19 @@ class GitPushTest(cros_test_lib.MockTestCase):
 
   # List of possible GoB transient errors.
   TRANSIENT_ERRORS = (
-      # Error when creating a new branch from SHA1 ref.
+      # Hook error when creating a new branch from SHA1 ref.
       ('remote: Processing changes: (-)To https://localhost/repo.git\n'
        '! [remote rejected] 6c78ca083c3a9d64068c945fd9998eb1e0a3e739 -> '
        'stabilize-4636.B (error in hook)\n'
        'error: failed to push some refs to \'https://localhost/repo.git\'\n'),
 
-      # Error when pushing branch.
+      # 'failed to lock' error when creating a new branch from SHA1 ref.
+      ('remote: Processing changes: done\nTo https://localhost/repo.git\n'
+       '! [remote rejected] 4ea09c129b5fedb261bae2431ce2511e35ac3923 -> '
+       'stabilize-daisy-4319.96.B (failed to lock)\n'
+       'error: failed to push some refs to \'https://localhost/repo.git\'\n'),
+
+      # Hook error when pushing branch.
       ('remote: Processing changes: (\)To https://localhost/repo.git\n'
        '! [remote rejected] temp_auto_checkin_branch -> '
        'master (error in hook)\n'
