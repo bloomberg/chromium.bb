@@ -121,6 +121,8 @@ GURL GetSignInUrl() {
   GURL url(GaiaUrls::GetInstance()->service_login_url());
   url = net::AppendQueryParameter(url, "service", "toolbar");
   url = net::AppendQueryParameter(url, "nui", "1");
+  // Prevents promos from showing (see http://crbug.com/235227).
+  url = net::AppendQueryParameter(url, "sarp", "1");
   url = net::AppendQueryParameter(url,
                                   "continue",
                                   GetSignInContinueUrl().spec());
