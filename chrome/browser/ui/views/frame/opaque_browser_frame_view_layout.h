@@ -7,6 +7,7 @@
 
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view.h"
 #include "ui/views/layout/layout_manager.h"
+#include "ui/views/window/frame_buttons.h"
 
 class OpaqueBrowserFrameViewLayoutDelegate;
 
@@ -21,12 +22,6 @@ class Label;
 // dependencies with Browser and classes that depend on Browser.
 class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
  public:
-  enum ButtonID {
-    BUTTON_MINIMIZE,
-    BUTTON_MAXIMIZE,
-    BUTTON_CLOSE
-  };
-
   explicit OpaqueBrowserFrameViewLayout(
       OpaqueBrowserFrameViewLayoutDelegate* delegate);
   virtual ~OpaqueBrowserFrameViewLayout();
@@ -34,6 +29,11 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
   // Whether we should add the (minimize,maximize,close) buttons. Can be false
   // on Windows 8 in metro mode.
   static bool ShouldAddDefaultCaptionButtons();
+
+  // Configures the button ordering in the frame.
+  void SetButtonOrdering(
+      const std::vector<views::FrameButton>& leading_buttons,
+      const std::vector<views::FrameButton>& trailing_buttons);
 
   gfx::Rect GetBoundsForTabStrip(
       const gfx::Size& tabstrip_preferred_size,
@@ -102,12 +102,12 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
   void LayoutAvatar();
 
   void ConfigureButton(views::View* host,
-                       ButtonID button_id,
+                       views::FrameButton button_id,
                        ButtonAlignment align,
                        int caption_y);
 
   // Sets the visibility of all buttons associated with |button_id| to false.
-  void HideButton(ButtonID button_id);
+  void HideButton(views::FrameButton button_id);
 
   // Adds a window caption button to either the leading or trailing side.
   void SetBoundsForButton(views::View* host,
@@ -168,8 +168,8 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
   views::View* avatar_label_;
   views::View* avatar_button_;
 
-  std::vector<ButtonID> leading_buttons_;
-  std::vector<ButtonID> trailing_buttons_;
+  std::vector<views::FrameButton> leading_buttons_;
+  std::vector<views::FrameButton> trailing_buttons_;
 
   DISALLOW_COPY_AND_ASSIGN(OpaqueBrowserFrameViewLayout);
 };

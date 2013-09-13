@@ -22,6 +22,7 @@ class NativeTheme;
 }
 
 namespace views {
+class WindowButtonOrderObserver;
 
 // Adapter class with targets to render like different toolkits. Set by any
 // project that wants to do linux desktop native rendering.
@@ -42,7 +43,7 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxShellDialog {
   //
   // Can return NULL, in case no toolkit has been set. (For example, if we're
   // running with the "--ash" flag.)
-  static const LinuxUI* instance();
+  static LinuxUI* instance();
 
   // Returns an themed image per theme_provider.h
   virtual bool UseNativeTheme() const = 0;
@@ -70,6 +71,16 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxShellDialog {
   virtual scoped_ptr<StatusIconLinux> CreateLinuxStatusIcon(
       const gfx::ImageSkia& image,
       const string16& tool_tip) const = 0;
+
+  // Notifies the observer about changes about how window buttons should be
+  // laid out. If the order is anything other than the default min,max,close on
+  // the right, will immediately send a button change event to the observer.
+  virtual void AddWindowButtonOrderObserver(
+      WindowButtonOrderObserver* observer) = 0;
+
+  // Removes the observer from the LinuxUI's list.
+  virtual void RemoveWindowButtonOrderObserver(
+      WindowButtonOrderObserver* observer) = 0;
 };
 
 }  // namespace views

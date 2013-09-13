@@ -21,7 +21,7 @@ void LinuxUI::SetInstance(LinuxUI* instance) {
   LinuxShellDialog::SetInstance(instance);
 }
 
-const LinuxUI* LinuxUI::instance() {
+LinuxUI* LinuxUI::instance() {
   return g_linux_ui;
 }
 

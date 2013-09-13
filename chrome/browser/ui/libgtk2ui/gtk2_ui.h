@@ -6,13 +6,16 @@
 #define CHROME_BROWSER_UI_LIBGTK2UI_GTK2_UI_H_
 
 #include <map>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/observer_list.h"
 #include "chrome/browser/ui/libgtk2ui/libgtk2ui_export.h"
 #include "chrome/browser/ui/libgtk2ui/owned_widget_gtk2.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/views/linux_ui/linux_ui.h"
+#include "ui/views/window/frame_buttons.h"
 
 typedef struct _GdkColor GdkColor;
 typedef struct _GtkStyle GtkStyle;
@@ -25,6 +28,7 @@ class Image;
 }
 
 namespace libgtk2ui {
+class GConfTitlebarListener;
 
 // Interface to GTK2 desktop features.
 //
@@ -32,6 +36,10 @@ class Gtk2UI : public views::LinuxUI {
  public:
   Gtk2UI();
   virtual ~Gtk2UI();
+
+  void SetWindowButtonOrdering(
+    const std::vector<views::FrameButton>& leading_buttons,
+    const std::vector<views::FrameButton>& trailing_buttons);
 
   // ui::LinuxShellDialog:
   virtual ui::SelectFileDialog* CreateSelectFileDialog(
@@ -51,6 +59,10 @@ class Gtk2UI : public views::LinuxUI {
   virtual scoped_ptr<views::StatusIconLinux> CreateLinuxStatusIcon(
       const gfx::ImageSkia& image,
       const string16& tool_tip) const OVERRIDE;
+  virtual void AddWindowButtonOrderObserver(
+      views::WindowButtonOrderObserver* observer) OVERRIDE;
+  virtual void RemoveWindowButtonOrderObserver(
+      views::WindowButtonOrderObserver* observer) OVERRIDE;
 
  private:
   typedef std::map<int, SkColor> ColorMap;
@@ -156,6 +168,18 @@ class Gtk2UI : public views::LinuxUI {
   SkColor active_selection_fg_color_;
   SkColor inactive_selection_bg_color_;
   SkColor inactive_selection_fg_color_;
+
+  // Currently, the only source of window button configuration. This will
+  // change if we ever have to support XFCE's configuration system or KDE's.
+  scoped_ptr<GConfTitlebarListener> titlebar_listener_;
+
+  // If either of these vectors are non-empty, they represent the current
+  // window button configuration.
+  std::vector<views::FrameButton> leading_buttons_;
+  std::vector<views::FrameButton> trailing_buttons_;
+
+  // Objects to notify when the window frame button order changes.
+  ObserverList<views::WindowButtonOrderObserver> observer_list_;
 
   // Image cache of lazily created images.
   mutable ImageCache gtk_images_;

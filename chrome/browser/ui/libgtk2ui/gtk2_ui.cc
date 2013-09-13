@@ -16,6 +16,7 @@
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/libgtk2ui/app_indicator_icon.h"
 #include "chrome/browser/ui/libgtk2ui/chrome_gtk_frame.h"
+#include "chrome/browser/ui/libgtk2ui/gconf_titlebar_listener.h"
 #include "chrome/browser/ui/libgtk2ui/gtk2_util.h"
 #include "chrome/browser/ui/libgtk2ui/native_theme_gtk2.h"
 #include "chrome/browser/ui/libgtk2ui/select_file_dialog_impl.h"
@@ -34,6 +35,7 @@
 #include "ui/gfx/size.h"
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/views/linux_ui/window_button_order_observer.h"
 
 // A minimized port of GtkThemeService into something that can provide colors
 // and images for aura.
@@ -313,6 +315,9 @@ Gtk2UI::Gtk2UI() {
   LoadGtkValues();
   SetXDGIconTheme();
 
+  // We must build this after GTK gets initialized.
+  titlebar_listener_.reset(new GConfTitlebarListener(this));
+
   indicators_count = 0;
 }
 
@@ -407,6 +412,32 @@ scoped_ptr<views::StatusIconLinux> Gtk2UI::CreateLinuxStatusIcon(
   } else {
     return scoped_ptr<views::StatusIconLinux>();
   }
+}
+
+void Gtk2UI::AddWindowButtonOrderObserver(
+    views::WindowButtonOrderObserver* observer) {
+  if (!leading_buttons_.empty() || !trailing_buttons_.empty()) {
+    observer->OnWindowButtonOrderingChange(leading_buttons_,
+                                           trailing_buttons_);
+  }
+
+  observer_list_.AddObserver(observer);
+}
+
+void Gtk2UI::RemoveWindowButtonOrderObserver(
+    views::WindowButtonOrderObserver* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
+void Gtk2UI::SetWindowButtonOrdering(
+    const std::vector<views::FrameButton>& leading_buttons,
+    const std::vector<views::FrameButton>& trailing_buttons) {
+  leading_buttons_ = leading_buttons;
+  trailing_buttons_ = trailing_buttons;
+
+  FOR_EACH_OBSERVER(views::WindowButtonOrderObserver, observer_list_,
+                    OnWindowButtonOrderingChange(leading_buttons_,
+                                                 trailing_buttons_));
 }
 
 ui::SelectFileDialog* Gtk2UI::CreateSelectFileDialog(

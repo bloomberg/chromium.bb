@@ -13,6 +13,7 @@
       'dependencies': [
         '../../../../base/base.gyp:base',
         '../../../../base/base.gyp:base_i18n',
+        '../../../../build/linux/system.gyp:gconf',
         '../../../../build/linux/system.gyp:gtk',
         '../../../../skia/skia.gyp:skia',
         '../../../../ui/base/strings/ui_strings.gyp:ui_strings',
@@ -37,6 +38,8 @@
         'app_indicator_icon.h',
         'chrome_gtk_frame.cc',
         'chrome_gtk_frame.h',
+        'gconf_titlebar_listener.cc',
+        'gconf_titlebar_listener.h',
         'gtk2_ui.cc',
         'gtk2_ui.h',
         'gtk2_util.cc',

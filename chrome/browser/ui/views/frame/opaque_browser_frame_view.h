@@ -18,6 +18,7 @@
 
 class BrowserView;
 class OpaqueBrowserFrameViewLayout;
+class OpaqueBrowserFrameViewPlatformSpecific;
 class TabIconView;
 
 namespace views {
@@ -156,6 +157,9 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
 
   // Background painter for the window frame.
   scoped_ptr<views::FrameBackground> frame_background_;
+
+  // Observer that handles platform dependent configuration.
+  scoped_ptr<OpaqueBrowserFrameViewPlatformSpecific> platform_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(OpaqueBrowserFrameView);
 };

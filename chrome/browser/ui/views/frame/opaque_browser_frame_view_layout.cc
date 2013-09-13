@@ -102,9 +102,9 @@ OpaqueBrowserFrameViewLayout::OpaqueBrowserFrameViewLayout(
       window_title_(NULL),
       avatar_label_(NULL),
       avatar_button_(NULL) {
-  trailing_buttons_.push_back(BUTTON_MINIMIZE);
-  trailing_buttons_.push_back(BUTTON_MAXIMIZE);
-  trailing_buttons_.push_back(BUTTON_CLOSE);
+  trailing_buttons_.push_back(views::FRAME_BUTTON_MINIMIZE);
+  trailing_buttons_.push_back(views::FRAME_BUTTON_MAXIMIZE);
+  trailing_buttons_.push_back(views::FRAME_BUTTON_CLOSE);
 }
 
 OpaqueBrowserFrameViewLayout::~OpaqueBrowserFrameViewLayout() {}
@@ -115,6 +115,13 @@ bool OpaqueBrowserFrameViewLayout::ShouldAddDefaultCaptionButtons() {
   return !win8::IsSingleWindowMetroMode();
 #endif  // OS_WIN
   return true;
+}
+
+void OpaqueBrowserFrameViewLayout::SetButtonOrdering(
+    const std::vector<views::FrameButton>& leading_buttons,
+    const std::vector<views::FrameButton>& trailing_buttons) {
+  leading_buttons_ = leading_buttons;
+  trailing_buttons_ = trailing_buttons;
 }
 
 gfx::Rect OpaqueBrowserFrameViewLayout::GetBoundsForTabStrip(
@@ -252,20 +259,20 @@ void OpaqueBrowserFrameViewLayout::LayoutWindowControls(views::View* host) {
   int caption_y = CaptionButtonY(false);
 
   // Keep a list of all buttons that we don't show.
-  std::vector<ButtonID> buttons_not_shown;
-  buttons_not_shown.push_back(BUTTON_MAXIMIZE);
-  buttons_not_shown.push_back(BUTTON_MINIMIZE);
-  buttons_not_shown.push_back(BUTTON_CLOSE);
+  std::vector<views::FrameButton> buttons_not_shown;
+  buttons_not_shown.push_back(views::FRAME_BUTTON_MAXIMIZE);
+  buttons_not_shown.push_back(views::FRAME_BUTTON_MINIMIZE);
+  buttons_not_shown.push_back(views::FRAME_BUTTON_CLOSE);
 
-  for (std::vector<ButtonID>::const_iterator it = leading_buttons_.begin();
-       it != leading_buttons_.end(); ++it) {
+  for (std::vector<views::FrameButton>::const_iterator it =
+           leading_buttons_.begin(); it != leading_buttons_.end(); ++it) {
     ConfigureButton(host, *it, ALIGN_LEADING, caption_y);
     buttons_not_shown.erase(
         std::remove(buttons_not_shown.begin(), buttons_not_shown.end(), *it),
         buttons_not_shown.end());
   }
 
-  for (std::vector<ButtonID>::const_reverse_iterator it =
+  for (std::vector<views::FrameButton>::const_reverse_iterator it =
            trailing_buttons_.rbegin(); it != trailing_buttons_.rend(); ++it) {
     ConfigureButton(host, *it, ALIGN_TRAILING, caption_y);
     buttons_not_shown.erase(
@@ -273,8 +280,8 @@ void OpaqueBrowserFrameViewLayout::LayoutWindowControls(views::View* host) {
         buttons_not_shown.end());
   }
 
-  for (std::vector<ButtonID>::const_iterator it = buttons_not_shown.begin();
-       it != buttons_not_shown.end(); ++it) {
+  for (std::vector<views::FrameButton>::const_iterator it =
+           buttons_not_shown.begin(); it != buttons_not_shown.end(); ++it) {
     HideButton(*it);
   }
 }
@@ -388,16 +395,16 @@ void OpaqueBrowserFrameViewLayout::LayoutAvatar() {
 
 void OpaqueBrowserFrameViewLayout::ConfigureButton(
     views::View* host,
-    ButtonID button_id,
+    views::FrameButton button_id,
     ButtonAlignment alignment,
     int caption_y) {
   switch (button_id) {
-    case BUTTON_MINIMIZE: {
+    case views::FRAME_BUTTON_MINIMIZE: {
       minimize_button_->SetVisible(true);
       SetBoundsForButton(host, minimize_button_, alignment, caption_y);
       break;
     }
-    case BUTTON_MAXIMIZE: {
+    case views::FRAME_BUTTON_MAXIMIZE: {
       // When the window is restored, we show a maximized button; otherwise, we
       // show a restore button.
       bool is_restored = !delegate_->IsMaximized() && !delegate_->IsMinimized();
@@ -411,7 +418,7 @@ void OpaqueBrowserFrameViewLayout::ConfigureButton(
       SetBoundsForButton(host, visible_button, alignment, caption_y);
       break;
     }
-    case BUTTON_CLOSE: {
+    case views::FRAME_BUTTON_CLOSE: {
       close_button_->SetVisible(true);
       SetBoundsForButton(host, close_button_, alignment, caption_y);
       break;
@@ -419,16 +426,16 @@ void OpaqueBrowserFrameViewLayout::ConfigureButton(
   }
 }
 
-void OpaqueBrowserFrameViewLayout::HideButton(ButtonID button_id) {
+void OpaqueBrowserFrameViewLayout::HideButton(views::FrameButton button_id) {
   switch (button_id) {
-    case BUTTON_MINIMIZE:
+    case views::FRAME_BUTTON_MINIMIZE:
       minimize_button_->SetVisible(false);
       break;
-    case BUTTON_MAXIMIZE:
+    case views::FRAME_BUTTON_MAXIMIZE:
       restore_button_->SetVisible(false);
       maximize_button_->SetVisible(false);
       break;
-    case BUTTON_CLOSE:
+    case views::FRAME_BUTTON_CLOSE:
       close_button_->SetVisible(false);
       break;
   }
