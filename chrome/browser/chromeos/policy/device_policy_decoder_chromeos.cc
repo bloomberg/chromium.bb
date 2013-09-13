@@ -144,11 +144,6 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
               chromeos::kAccountsPrefDeviceLocalAccountsKeyKioskAppId,
               entry->kiosk_app().app_id());
         }
-        if (entry->kiosk_app().has_update_url()) {
-          entry_dict->SetStringWithoutPathExpansion(
-              chromeos::kAccountsPrefDeviceLocalAccountsKeyKioskAppUpdateURL,
-              entry->kiosk_app().update_url());
-        }
       } else if (entry->has_deprecated_public_session_id()) {
         // Deprecated public session specification.
         entry_dict->SetStringWithoutPathExpansion(
@@ -457,6 +452,15 @@ void DecodeAutoUpdatePolicies(const em::ChromeDeviceSettingsProto& policy,
                     POLICY_SCOPE_MACHINE,
                     allowed_connection_types,
                     NULL);
+    }
+
+    if (container.has_http_downloads_enabled()) {
+      policies->Set(
+          key::kDeviceUpdateHttpDownloadsEnabled,
+          POLICY_LEVEL_MANDATORY,
+          POLICY_SCOPE_MACHINE,
+          Value::CreateBooleanValue(container.http_downloads_enabled()),
+          NULL);
     }
 
     if (container.has_reboot_after_update()) {

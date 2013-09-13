@@ -64,6 +64,9 @@ message DeviceProxySettingsProto {
   optional string proxy_bypass_list = 4;
 }
 
+// This was added to the protobuf definition but never implemented. Chrome can
+// meanwhile lock down access to media devices via a user policy, so the
+// device-level setting is deprecated for good.
 message CameraEnabledProto {
   optional bool camera_enabled = 1;
 }
@@ -107,7 +110,10 @@ message EphemeralUsersEnabledProto {
 message AppPackEntryProto {
   optional string extension_id = 1;
   optional string update_url = 2;
-  optional bool online_only = 3;
+
+  // This field was added but never used and there are no plans to support it
+  // eventually either.
+  optional bool OBSOLETE_online_only = 3 [deprecated = true];
 }
 
 message AppPackProto {
@@ -257,10 +263,8 @@ message KioskAppInfoProto {
   // specifies the Kiosk App to download and run.
   optional string app_id = 1;
 
-  // Optional extension update URL to download the Kiosk App package from. If
-  // not specified, the app will be downloaded from the standard Chrome Web
-  // Store update URL.
-  optional string update_url = 2;
+  // Obsolete: Kiosk Apps can only be installed from the Chrome Web Store.
+  optional string OBSOLETE_update_url = 2 [deprecated = true];
 }
 
 // Describes a single device-local account.
@@ -535,7 +539,7 @@ message ChromeDeviceSettingsProto {
   optional UserWhitelistProto user_whitelist = 2;
   optional GuestModeEnabledProto guest_mode_enabled = 3;
   optional DeviceProxySettingsProto device_proxy_settings = 4;
-  optional CameraEnabledProto camera_enabled = 5;
+  optional CameraEnabledProto OBSOLETE_camera_enabled = 5 [deprecated = true];
   optional ShowUserNamesOnSigninProto show_user_names = 6;
   optional DataRoamingEnabledProto data_roaming_enabled = 7;
   optional AllowNewUsersProto allow_new_users = 8;

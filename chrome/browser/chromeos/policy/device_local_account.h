@@ -28,15 +28,13 @@ struct DeviceLocalAccount {
 
   DeviceLocalAccount(Type type,
                      const std::string& account_id,
-                     const std::string& kiosk_app_id,
-                     const std::string& kiosk_app_update_url);
+                     const std::string& kiosk_app_id);
   ~DeviceLocalAccount();
 
   Type type;
   std::string account_id;
   std::string user_id;
   std::string kiosk_app_id;
-  std::string kiosk_app_update_url;
 };
 
 std::string GenerateDeviceLocalAccountUserId(const std::string& account_id,

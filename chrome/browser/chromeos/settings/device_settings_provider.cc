@@ -269,12 +269,6 @@ void DeviceSettingsProvider::SetInPolicy() {
                   &kiosk_app_id)) {
             account->mutable_kiosk_app()->set_app_id(kiosk_app_id);
           }
-          std::string kiosk_app_update_url;
-          if (entry_dict->GetStringWithoutPathExpansion(
-                  kAccountsPrefDeviceLocalAccountsKeyKioskAppUpdateURL,
-                  &kiosk_app_update_url)) {
-            account->mutable_kiosk_app()->set_update_url(kiosk_app_update_url);
-          }
         } else {
           NOTREACHED();
         }
@@ -520,11 +514,6 @@ void DeviceSettingsProvider::DecodeLoginPolicies(
           entry_dict->SetStringWithoutPathExpansion(
               kAccountsPrefDeviceLocalAccountsKeyKioskAppId,
               entry->kiosk_app().app_id());
-        }
-        if (entry->kiosk_app().has_update_url()) {
-          entry_dict->SetStringWithoutPathExpansion(
-              kAccountsPrefDeviceLocalAccountsKeyKioskAppUpdateURL,
-              entry->kiosk_app().update_url());
         }
       } else if (entry->has_deprecated_public_session_id()) {
         // Deprecated public session specification.

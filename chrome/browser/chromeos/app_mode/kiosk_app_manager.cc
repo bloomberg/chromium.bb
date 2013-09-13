@@ -241,8 +241,7 @@ void KioskAppManager::AddApp(const std::string& app_id) {
   device_local_accounts.push_back(policy::DeviceLocalAccount(
       policy::DeviceLocalAccount::TYPE_KIOSK_APP,
       GenerateKioskAppAccountId(app_id),
-      app_id,
-      std::string()));
+      app_id));
 
   policy::SetDeviceLocalAccounts(CrosSettings::Get(), device_local_accounts);
 }

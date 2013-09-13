@@ -18,7 +18,6 @@ extern const char kAccountsPrefDeviceLocalAccounts[];
 extern const char kAccountsPrefDeviceLocalAccountsKeyId[];
 extern const char kAccountsPrefDeviceLocalAccountsKeyType[];
 extern const char kAccountsPrefDeviceLocalAccountsKeyKioskAppId[];
-extern const char kAccountsPrefDeviceLocalAccountsKeyKioskAppUpdateURL[];
 extern const char kAccountsPrefDeviceLocalAccountAutoLoginId[];
 extern const char kAccountsPrefDeviceLocalAccountAutoLoginDelay[];
 extern const char kAccountsPrefDeviceLocalAccountAutoLoginBailoutEnabled[];

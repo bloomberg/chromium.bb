@@ -2024,6 +2024,9 @@
   "DeviceUpdateAllowedConnectionTypes": {
   },
 
+  "DeviceUpdateHttpDownloadsEnabled": {
+  },
+
   "ReportDeviceLocation": {
   },
 

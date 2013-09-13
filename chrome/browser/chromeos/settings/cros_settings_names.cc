@@ -24,8 +24,6 @@ const char kAccountsPrefDeviceLocalAccountsKeyType[] =
     "type";
 const char kAccountsPrefDeviceLocalAccountsKeyKioskAppId[] =
     "kiosk_app_id";
-const char kAccountsPrefDeviceLocalAccountsKeyKioskAppUpdateURL[] =
-    "kiosk_app_id_update_url";
 const char kAccountsPrefDeviceLocalAccountAutoLoginId[] =
     "cros.accounts.deviceLocalAccountAutoLoginId";
 const char kAccountsPrefDeviceLocalAccountAutoLoginDelay[] =

@@ -27,13 +27,11 @@ const char kDeviceLocalAccountDomainSuffix[] = ".device-local.localhost";
 
 DeviceLocalAccount::DeviceLocalAccount(Type type,
                                        const std::string& account_id,
-                                       const std::string& kiosk_app_id,
-                                       const std::string& kiosk_app_update_url)
+                                       const std::string& kiosk_app_id)
     : type(type),
       account_id(account_id),
       user_id(GenerateDeviceLocalAccountUserId(account_id, type)),
-      kiosk_app_id(kiosk_app_id),
-      kiosk_app_update_url(kiosk_app_update_url) {
+      kiosk_app_id(kiosk_app_id) {
 }
 
 DeviceLocalAccount::~DeviceLocalAccount() {
@@ -87,11 +85,6 @@ void SetDeviceLocalAccounts(
       entry->SetStringWithoutPathExpansion(
           chromeos::kAccountsPrefDeviceLocalAccountsKeyKioskAppId,
           it->kiosk_app_id);
-      if (!it->kiosk_app_update_url.empty()) {
-        entry->SetStringWithoutPathExpansion(
-            chromeos::kAccountsPrefDeviceLocalAccountsKeyKioskAppUpdateURL,
-            it->kiosk_app_update_url);
-      }
     }
     list.Append(entry.release());
   }
@@ -136,7 +129,6 @@ std::vector<DeviceLocalAccount> GetDeviceLocalAccounts(
     }
 
     std::string kiosk_app_id;
-    std::string kiosk_app_update_url;
     if (type == DeviceLocalAccount::TYPE_KIOSK_APP) {
       if (!entry->GetStringWithoutPathExpansion(
               chromeos::kAccountsPrefDeviceLocalAccountsKeyKioskAppId,
@@ -145,9 +137,6 @@ std::vector<DeviceLocalAccount> GetDeviceLocalAccounts(
                    << i << ".";
         continue;
       }
-      entry->GetStringWithoutPathExpansion(
-          chromeos::kAccountsPrefDeviceLocalAccountsKeyKioskAppUpdateURL,
-          &kiosk_app_update_url);
     }
 
     if (!account_ids.insert(account_id).second) {
@@ -157,8 +146,7 @@ std::vector<DeviceLocalAccount> GetDeviceLocalAccounts(
     }
 
     accounts.push_back(DeviceLocalAccount(
-        static_cast<DeviceLocalAccount::Type>(type),
-        account_id, kiosk_app_id, kiosk_app_update_url));
+        static_cast<DeviceLocalAccount::Type>(type), account_id, kiosk_app_id));
   }
   return accounts;
 }
