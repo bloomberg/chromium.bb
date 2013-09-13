@@ -2,10 +2,6 @@
 
 webkit.org/b/109400 [ Win ] http/tests/css/css-image-loading.html [ Pass Timeout ]
 
-crbug.com/165711 virtual/gpu/fast/canvas/DrawImageSinglePixelStretch.html [ NeedsRebaseline ]
-crbug.com/165711 virtual/gpu/fast/canvas/canvasDrawingIntoSelf.html [ NeedsRebaseline ]
-crbug.com/165711 virtual/gpu/fast/canvas/drawImage.html [ NeedsRebaseline ]
-
 # This test can't just be rebaselined because it has absolute file paths in the output.
 crbug.com/257132 http/tests/inspector/network/network-xhr-replay.html [ Failure ]
 
