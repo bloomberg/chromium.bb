@@ -52,6 +52,8 @@
         'app_shim/extension_app_shim_handler_mac.h',
         'app_window_contents.cc',
         'app_window_contents.h',
+        'apps_client.cc',
+        'apps_client.h',
         'field_trial_names.cc',
         'field_trial_names.h',
         'launcher.cc',

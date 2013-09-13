@@ -15,9 +15,8 @@
 #include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
 #include "ui/gfx/native_widget_types.h"
 
-class Profile;
-
 namespace content {
+class BrowserContext;
 class DevToolsAgentHost;
 class RenderViewHost;
 }
@@ -27,12 +26,7 @@ namespace apps {
 class ShellWindow;
 
 // The ShellWindowRegistry tracks the ShellWindows for all platform apps for a
-// particular profile.
-// This class is planned to evolve into tracking all PlatformApps for a
-// particular profile, with a PlatformApp encapsulating all views (background
-// page, shell windows, tray view, panels etc.) and other app level behaviour
-// (e.g. notifications the app is interested in, lifetime of the background
-// page).
+// particular browser context.
 class ShellWindowRegistry : public BrowserContextKeyedService {
  public:
   class Observer {
@@ -52,12 +46,13 @@ class ShellWindowRegistry : public BrowserContextKeyedService {
   typedef ShellWindowList::const_iterator const_iterator;
   typedef std::set<std::string> InspectedWindowSet;
 
-  explicit ShellWindowRegistry(Profile* profile);
+  explicit ShellWindowRegistry(content::BrowserContext* context);
   virtual ~ShellWindowRegistry();
 
-  // Returns the instance for the given profile, or NULL if none. This is
-  // a convenience wrapper around ShellWindowRegistry::Factory::GetForProfile.
-  static ShellWindowRegistry* Get(Profile* profile);
+  // Returns the instance for the given browser context, or NULL if none. This
+  // is a convenience wrapper around
+  // ShellWindowRegistry::Factory::GetForBrowserContext().
+  static ShellWindowRegistry* Get(content::BrowserContext* context);
 
   void AddShellWindow(apps::ShellWindow* shell_window);
   void ShellWindowIconChanged(apps::ShellWindow* shell_window);
@@ -98,18 +93,19 @@ class ShellWindowRegistry : public BrowserContextKeyedService {
   // newly created |render_view_host|.
   bool HadDevToolsAttached(content::RenderViewHost* render_view_host) const;
 
-  // Returns the shell window for |window|, looking in all profiles.
+  // Returns the shell window for |window|, looking in all browser contexts.
   static apps::ShellWindow* GetShellWindowForNativeWindowAnyProfile(
       gfx::NativeWindow window);
 
-  // Returns true if the number of shell windows registered across all profiles
-  // is non-zero. |window_type_mask| is a bitwise OR filter of
+  // Returns true if the number of shell windows registered across all browser
+  // contexts is non-zero. |window_type_mask| is a bitwise OR filter of
   // ShellWindow::WindowType, or 0 for any window type.
   static bool IsShellWindowRegisteredInAnyProfile(int window_type_mask);
 
   class Factory : public BrowserContextKeyedServiceFactory {
    public:
-    static ShellWindowRegistry* GetForProfile(Profile* profile, bool create);
+    static ShellWindowRegistry* GetForBrowserContext(
+        content::BrowserContext* context, bool create);
 
     static Factory* GetInstance();
    private:
@@ -120,7 +116,7 @@ class ShellWindowRegistry : public BrowserContextKeyedService {
 
     // BrowserContextKeyedServiceFactory
     virtual BrowserContextKeyedService* BuildServiceInstanceFor(
-        content::BrowserContext* profile) const OVERRIDE;
+        content::BrowserContext* context) const OVERRIDE;
     virtual bool ServiceIsCreatedWithBrowserContext() const OVERRIDE;
     virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
     virtual content::BrowserContext* GetBrowserContextToUse(
@@ -139,7 +135,7 @@ class ShellWindowRegistry : public BrowserContextKeyedService {
   // list, add it first.
   void BringToFront(apps::ShellWindow* shell_window);
 
-  Profile* profile_;
+  content::BrowserContext* context_;
   ShellWindowList shell_windows_;
   InspectedWindowSet inspected_windows_;
   ObserverList<Observer> observers_;

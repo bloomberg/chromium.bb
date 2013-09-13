@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "apps/apps_client.h"
 #include "apps/native_app_window.h"
 #include "apps/shell_window.h"
 #include "apps/shell_window_registry.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/extensions/extension.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/render_process_host.h"
@@ -45,8 +45,8 @@ std::string GetWindowKeyForRenderViewHost(
 
 namespace apps {
 
-ShellWindowRegistry::ShellWindowRegistry(Profile* profile)
-    : profile_(profile),
+ShellWindowRegistry::ShellWindowRegistry(content::BrowserContext* context)
+    : context_(context),
       devtools_callback_(base::Bind(
           &ShellWindowRegistry::OnDevToolsStateChanged,
           base::Unretained(this))) {
@@ -60,8 +60,9 @@ ShellWindowRegistry::~ShellWindowRegistry() {
 }
 
 // static
-ShellWindowRegistry* ShellWindowRegistry::Get(Profile* profile) {
-  return Factory::GetForProfile(profile, true /* create */);
+ShellWindowRegistry* ShellWindowRegistry::Get(
+    content::BrowserContext* context) {
+  return Factory::GetForBrowserContext(context, true /* create */);
 }
 
 void ShellWindowRegistry::AddShellWindow(ShellWindow* shell_window) {
@@ -178,12 +179,13 @@ bool ShellWindowRegistry::HadDevToolsAttached(
 // static
 ShellWindow* ShellWindowRegistry::GetShellWindowForNativeWindowAnyProfile(
     gfx::NativeWindow window) {
-  std::vector<Profile*> profiles =
-      g_browser_process->profile_manager()->GetLoadedProfiles();
-  for (std::vector<Profile*>::const_iterator i = profiles.begin();
-       i != profiles.end(); ++i) {
-    ShellWindowRegistry* registry = Factory::GetForProfile(*i,
-                                                           false /* create */);
+  std::vector<content::BrowserContext*> contexts =
+      AppsClient::Get()->GetLoadedBrowserContexts();
+  for (std::vector<content::BrowserContext*>::const_iterator i =
+           contexts.begin();
+       i != contexts.end(); ++i) {
+    ShellWindowRegistry* registry = Factory::GetForBrowserContext(
+        *i, false /* create */);
     if (!registry)
       continue;
 
@@ -198,12 +200,13 @@ ShellWindow* ShellWindowRegistry::GetShellWindowForNativeWindowAnyProfile(
 // static
 bool ShellWindowRegistry::IsShellWindowRegisteredInAnyProfile(
     int window_type_mask) {
-  std::vector<Profile*> profiles =
-      g_browser_process->profile_manager()->GetLoadedProfiles();
-  for (std::vector<Profile*>::const_iterator i = profiles.begin();
-       i != profiles.end(); ++i) {
-    ShellWindowRegistry* registry = Factory::GetForProfile(*i,
-                                                           false /* create */);
+  std::vector<content::BrowserContext*> contexts =
+      AppsClient::Get()->GetLoadedBrowserContexts();
+  for (std::vector<content::BrowserContext*>::const_iterator i =
+           contexts.begin();
+       i != contexts.end(); ++i) {
+    ShellWindowRegistry* registry = Factory::GetForBrowserContext(
+        *i, false /* create */);
     if (!registry)
       continue;
 
@@ -229,8 +232,9 @@ void ShellWindowRegistry::OnDevToolsStateChanged(
   content::RenderViewHost* rvh = agent_host->GetRenderViewHost();
   // Ignore unrelated notifications.
   if (!rvh ||
-      rvh->GetSiteInstance()->GetProcess()->GetBrowserContext() != profile_)
+      rvh->GetSiteInstance()->GetProcess()->GetBrowserContext() != context_)
     return;
+
   std::string key = GetWindowKeyForRenderViewHost(this, rvh);
   if (key.empty())
     return;
@@ -263,10 +267,10 @@ void ShellWindowRegistry::BringToFront(ShellWindow* shell_window) {
 // Factory boilerplate
 
 // static
-ShellWindowRegistry* ShellWindowRegistry::Factory::GetForProfile(
-    Profile* profile, bool create) {
+ShellWindowRegistry* ShellWindowRegistry::Factory::GetForBrowserContext(
+    content::BrowserContext* context, bool create) {
   return static_cast<ShellWindowRegistry*>(
-      GetInstance()->GetServiceForBrowserContext(profile, create));
+      GetInstance()->GetServiceForBrowserContext(context, create));
 }
 
 ShellWindowRegistry::Factory* ShellWindowRegistry::Factory::GetInstance() {
@@ -284,8 +288,8 @@ ShellWindowRegistry::Factory::~Factory() {
 
 BrowserContextKeyedService*
 ShellWindowRegistry::Factory::BuildServiceInstanceFor(
-    content::BrowserContext* profile) const {
-  return new ShellWindowRegistry(static_cast<Profile*>(profile));
+    content::BrowserContext* context) const {
+  return new ShellWindowRegistry(context);
 }
 
 bool ShellWindowRegistry::Factory::ServiceIsCreatedWithBrowserContext() const {

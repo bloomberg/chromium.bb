@@ -7,6 +7,7 @@
 #include "apps/shell_window.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_host.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -29,7 +30,7 @@ AppLifetimeMonitor::AppLifetimeMonitor(Profile* profile)
       content::NotificationService::AllSources());
 
   ShellWindowRegistry* shell_window_registry =
-      ShellWindowRegistry::Factory::GetForProfile(
+      ShellWindowRegistry::Factory::GetForBrowserContext(
           profile_, false /* create */);
   DCHECK(shell_window_registry);
   shell_window_registry->AddObserver(this);
@@ -99,7 +100,7 @@ void AppLifetimeMonitor::OnShellWindowRemoved(ShellWindow* shell_window) {
 
 void AppLifetimeMonitor::Shutdown() {
   ShellWindowRegistry* shell_window_registry =
-      ShellWindowRegistry::Factory::GetForProfile(
+      ShellWindowRegistry::Factory::GetForBrowserContext(
           profile_, false /* create */);
   if (shell_window_registry)
     shell_window_registry->RemoveObserver(this);

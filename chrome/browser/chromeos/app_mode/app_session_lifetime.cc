@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_update_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 
 using apps::ShellWindowRegistry;
