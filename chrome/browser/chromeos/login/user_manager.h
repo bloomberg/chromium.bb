@@ -131,7 +131,9 @@ class UserManager {
   // Called when browser session is started i.e. after
   // browser_creator.LaunchBrowser(...) was called after user sign in.
   // When user is at the image screen IsUserLoggedIn() will return true
-  // but SessionStarted() will return false.
+  // but IsSessionStarted() will return false. During the kiosk splash screen,
+  // we perform additional initialization after the user is logged in but
+  // before the session has been started.
   // Fires NOTIFICATION_SESSION_STARTED.
   virtual void SessionStarted() = 0;
 

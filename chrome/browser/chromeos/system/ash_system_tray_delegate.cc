@@ -143,9 +143,11 @@ void ExtractIMEInfo(const input_method::InputMethodDescriptor& ime,
 }
 
 gfx::NativeWindow GetNativeWindowByStatus(
-    ash::user::LoginStatus login_status) {
+    ash::user::LoginStatus login_status,
+    bool session_started) {
   int container_id =
-      (login_status == ash::user::LOGGED_IN_NONE ||
+      (!session_started ||
+       login_status == ash::user::LOGGED_IN_NONE ||
        login_status == ash::user::LOGGED_IN_LOCKED) ?
            ash::internal::kShellWindowId_LockSystemModalContainer :
            ash::internal::kShellWindowId_SystemModalContainer;
@@ -1112,7 +1114,9 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   // TODO(sad): Override more from PowerManagerClient::Observer here.
 
   gfx::NativeWindow GetNativeWindow() const {
-    return GetNativeWindowByStatus(GetUserLoginStatus());
+    bool session_started = ash::Shell::GetInstance()->session_state_delegate()
+        ->IsActiveUserSessionStarted();
+    return GetNativeWindowByStatus(GetUserLoginStatus(), session_started);
   }
 
   // content::NotificationObserver implementation.
