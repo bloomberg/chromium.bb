@@ -166,7 +166,7 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver,
   virtual void CreateOrUpdateMirrorWindow(
       const internal::DisplayInfo& info) OVERRIDE;
   virtual void CloseMirrorWindow() OVERRIDE;
-  virtual void PreDisplayConfigurationChange() OVERRIDE;
+  virtual void PreDisplayConfigurationChange(bool dispay_removed) OVERRIDE;
   virtual void PostDisplayConfigurationChange() OVERRIDE;
 
  private:

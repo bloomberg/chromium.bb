@@ -141,7 +141,7 @@ class FocusActivationStore {
         active_(NULL) {
   }
 
-  void Store() {
+  void Store(bool display_removed) {
     if (!activation_client_) {
       aura::RootWindow* root = Shell::GetPrimaryRootWindow();
       activation_client_ = aura::client::GetActivationClient(root);
@@ -156,14 +156,17 @@ class FocusActivationStore {
       tracker_.Add(active_);
 
     // Deactivate the window to close menu / bubble windows.
-    activation_client_->DeactivateWindow(active_);
+    if (display_removed)
+      activation_client_->DeactivateWindow(active_);
+
     // Release capture if any.
     capture_client_->SetCapture(NULL);
     // Clear the focused window if any. This is necessary because a
     // window may be deleted when losing focus (fullscreen flash for
     // example).  If the focused window is still alive after move, it'll
     // be re-focused below.
-    focus_client_->FocusWindow(NULL);
+    if (display_removed)
+      focus_client_->FocusWindow(NULL);
   }
 
   void Restore() {
@@ -386,7 +389,7 @@ void DisplayController::SetLayoutForCurrentDisplays(
     to_set.primary_id = primary.id();
     layout_store->RegisterLayoutForDisplayIdPair(
         pair.first, pair.second, to_set);
-    PreDisplayConfigurationChange();
+    PreDisplayConfigurationChange(false);
     // TODO(oshima): Call UpdateDisplays instead.
     UpdateDisplayBoundsForLayout();
     // Primary's bounds stay the same. Just notify bounds change
@@ -711,9 +714,9 @@ void DisplayController::CloseMirrorWindow() {
   mirror_window_controller_->Close();
 }
 
-void DisplayController::PreDisplayConfigurationChange() {
+void DisplayController::PreDisplayConfigurationChange(bool display_removed) {
   FOR_EACH_OBSERVER(Observer, observers_, OnDisplayConfigurationChanging());
-  focus_activation_store_->Store();
+  focus_activation_store_->Store(display_removed);
 
   gfx::Point point_in_screen = Shell::GetScreen()->GetCursorScreenPoint();
   gfx::Display display =

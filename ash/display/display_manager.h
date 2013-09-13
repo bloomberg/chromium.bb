@@ -59,7 +59,7 @@ class ASH_EXPORT DisplayManager
     virtual void CloseMirrorWindow() = 0;
 
     // Called before and after the display configuration changes.
-    virtual void PreDisplayConfigurationChange() = 0;
+    virtual void PreDisplayConfigurationChange(bool display_removed) = 0;
     virtual void PostDisplayConfigurationChange() = 0;
   };
 

@@ -636,7 +636,7 @@ void DisplayManager::UpdateDisplays(
     return;
   }
   if (delegate_)
-    delegate_->PreDisplayConfigurationChange();
+    delegate_->PreDisplayConfigurationChange(!removed_displays.empty());
 
   size_t updated_index;
   if (UpdateSecondaryDisplayBoundsForLayout(&new_displays, &updated_index) &&
