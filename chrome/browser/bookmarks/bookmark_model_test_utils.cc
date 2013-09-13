@@ -11,29 +11,6 @@
 
 namespace {
 
-// Helper to verify the two given bookmark nodes.
-// The IDs of the bookmark nodes are compared only if check_ids is true.
-void AssertNodesEqual(const BookmarkNode* expected,
-                      const BookmarkNode* actual,
-                      bool check_ids) {
-  ASSERT_TRUE(expected);
-  ASSERT_TRUE(actual);
-  if (check_ids)
-    EXPECT_EQ(expected->id(), actual->id());
-  EXPECT_EQ(expected->GetTitle(), actual->GetTitle());
-  EXPECT_EQ(expected->type(), actual->type());
-  EXPECT_TRUE(expected->date_added() == actual->date_added());
-  if (expected->is_url()) {
-    EXPECT_EQ(expected->url(), actual->url());
-  } else {
-    EXPECT_TRUE(expected->date_folder_modified() ==
-                actual->date_folder_modified());
-    ASSERT_EQ(expected->child_count(), actual->child_count());
-    for (int i = 0; i < expected->child_count(); ++i)
-      AssertNodesEqual(expected->GetChild(i), actual->GetChild(i), check_ids);
-  }
-}
-
 // Helper function which does the actual work of creating the nodes for
 // a particular level in the hierarchy.
 std::string::size_type AddNodesFromString(BookmarkModel* model,
@@ -78,17 +55,6 @@ std::string::size_type AddNodesFromString(BookmarkModel* model,
 }
 
 }  // namespace
-
-// static
-void BookmarkModelTestUtils::AssertModelsEqual(BookmarkModel* expected,
-                                               BookmarkModel* actual,
-                                               bool check_ids) {
-  AssertNodesEqual(expected->bookmark_bar_node(),
-                   actual->bookmark_bar_node(),
-                   check_ids);
-  AssertNodesEqual(expected->other_node(), actual->other_node(), check_ids);
-  AssertNodesEqual(expected->mobile_node(), actual->mobile_node(), check_ids);
-}
 
 // static
 std::string BookmarkModelTestUtils::ModelStringFromNode(

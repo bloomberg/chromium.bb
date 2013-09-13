@@ -15,12 +15,6 @@ class BookmarkNode;
 // Contains utilities for bookmark model related tests.
 class BookmarkModelTestUtils {
  public:
-  // Verifies that the two given bookmark models are the same.
-  // The IDs of the bookmark nodes are compared only if check_ids is true.
-  static void AssertModelsEqual(BookmarkModel* expected,
-                                BookmarkModel* actual,
-                                bool check_ids);
-
   // Return the descendants of |node| as a string useful for verifying node
   // modifications. The format of the resulting string is:
   //

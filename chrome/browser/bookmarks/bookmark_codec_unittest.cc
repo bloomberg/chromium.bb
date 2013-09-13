@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/bookmarks/bookmark_codec.h"
+
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/json/json_file_value_serializer.h"
@@ -10,9 +12,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/bookmarks/bookmark_codec.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
-#include "chrome/browser/bookmarks/bookmark_model_test_utils.h"
 #include "chrome/common/chrome_paths.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -32,6 +32,36 @@ const char kFolder2Title[] = "folder2";
 // Helper to get a mutable bookmark node.
 BookmarkNode* AsMutable(const BookmarkNode* node) {
   return const_cast<BookmarkNode*>(node);
+}
+
+// Helper to verify the two given bookmark nodes.
+void AssertNodesEqual(const BookmarkNode* expected,
+                      const BookmarkNode* actual) {
+  ASSERT_TRUE(expected);
+  ASSERT_TRUE(actual);
+  EXPECT_EQ(expected->id(), actual->id());
+  EXPECT_EQ(expected->GetTitle(), actual->GetTitle());
+  EXPECT_EQ(expected->type(), actual->type());
+  EXPECT_TRUE(expected->date_added() == actual->date_added());
+  if (expected->is_url()) {
+    EXPECT_EQ(expected->url(), actual->url());
+  } else {
+    EXPECT_TRUE(expected->date_folder_modified() ==
+                actual->date_folder_modified());
+    ASSERT_EQ(expected->child_count(), actual->child_count());
+    for (int i = 0; i < expected->child_count(); ++i)
+      AssertNodesEqual(expected->GetChild(i), actual->GetChild(i));
+  }
+}
+
+// Verifies that the two given bookmark models are the same.
+void AssertModelsEqual(BookmarkModel* expected, BookmarkModel* actual) {
+  ASSERT_NO_FATAL_FAILURE(AssertNodesEqual(expected->bookmark_bar_node(),
+                                           actual->bookmark_bar_node()));
+  ASSERT_NO_FATAL_FAILURE(
+      AssertNodesEqual(expected->other_node(), actual->other_node()));
+  ASSERT_NO_FATAL_FAILURE(
+      AssertNodesEqual(expected->mobile_node(), actual->mobile_node()));
 }
 
 }  // namespace
@@ -269,9 +299,8 @@ TEST_F(BookmarkCodecTest, PersistIDsTest) {
   BookmarkModel decoded_model(NULL);
   BookmarkCodec decoder;
   ASSERT_TRUE(Decode(&decoder, &decoded_model, *model_value.get()));
-  BookmarkModelTestUtils::AssertModelsEqual(model_to_encode.get(),
-                                            &decoded_model,
-                                            true);
+  ASSERT_NO_FATAL_FAILURE(
+      AssertModelsEqual(model_to_encode.get(), &decoded_model));
 
   // Add a couple of more items to the decoded bookmark model and make sure
   // ID persistence is working properly.
@@ -290,9 +319,7 @@ TEST_F(BookmarkCodecTest, PersistIDsTest) {
   BookmarkModel decoded_model2(NULL);
   BookmarkCodec decoder2;
   ASSERT_TRUE(Decode(&decoder2, &decoded_model2, *model_value2.get()));
-  BookmarkModelTestUtils::AssertModelsEqual(&decoded_model,
-                                            &decoded_model2,
-                                            true);
+  ASSERT_NO_FATAL_FAILURE(AssertModelsEqual(&decoded_model, &decoded_model2));
 }
 
 TEST_F(BookmarkCodecTest, CanDecodeModelWithoutMobileBookmarks) {
