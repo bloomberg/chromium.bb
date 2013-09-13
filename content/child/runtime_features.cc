@@ -83,11 +83,8 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
     WebRuntimeFeatures::enablePeerConnection(false);
   }
 
-  if (!command_line.HasSwitch(switches::kEnableSpeechRecognition) ||
-      !command_line.HasSwitch(
-          switches::kEnableExperimentalWebPlatformFeatures)) {
+  if (!command_line.HasSwitch(switches::kEnableSpeechRecognition))
     WebRuntimeFeatures::enableScriptedSpeech(false);
-  }
 #endif
 
   if (command_line.HasSwitch(switches::kDisableWebAudio))
