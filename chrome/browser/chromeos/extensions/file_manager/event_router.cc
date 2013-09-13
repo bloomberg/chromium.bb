@@ -342,24 +342,26 @@ void EventRouter::Shutdown() {
     return;
   }
 
-  VolumeManager* volume_manager = VolumeManager::Get(profile_);
-  if (volume_manager)
-    volume_manager->RemoveObserver(this);
-
-  DriveIntegrationService* integration_service =
-      DriveIntegrationServiceFactory::FindForProfileRegardlessOfStates(
-          profile_);
-  if (integration_service) {
-    integration_service->RemoveObserver(this);
-    integration_service->file_system()->RemoveObserver(this);
-    integration_service->drive_service()->RemoveObserver(this);
-    integration_service->job_list()->RemoveObserver(this);
-  }
+  pref_change_registrar_->RemoveAll();
 
   if (NetworkHandler::IsInitialized()) {
     NetworkHandler::Get()->network_state_handler()->RemoveObserver(this,
                                                                    FROM_HERE);
   }
+
+  DriveIntegrationService* integration_service =
+      DriveIntegrationServiceFactory::FindForProfileRegardlessOfStates(
+          profile_);
+  if (integration_service) {
+    integration_service->file_system()->RemoveObserver(this);
+    integration_service->drive_service()->RemoveObserver(this);
+    integration_service->job_list()->RemoveObserver(this);
+  }
+
+  VolumeManager* volume_manager = VolumeManager::Get(profile_);
+  if (volume_manager)
+    volume_manager->RemoveObserver(this);
+
   profile_ = NULL;
 }
 
@@ -373,11 +375,17 @@ void EventRouter::ObserveFileSystemEvents() {
     return;
   }
 
+  // VolumeManager's construction triggers DriveIntegrationService's
+  // construction, so it is necessary to call VolumeManager's Get before
+  // accessing DriveIntegrationService.
+  VolumeManager* volume_manager = VolumeManager::Get(profile_);
+  if (volume_manager)
+    volume_manager->AddObserver(this);
+
   DriveIntegrationService* integration_service =
-      DriveIntegrationServiceFactory::GetForProfileRegardlessOfStates(
+      DriveIntegrationServiceFactory::FindForProfileRegardlessOfStates(
           profile_);
   if (integration_service) {
-    integration_service->AddObserver(this);
     integration_service->drive_service()->AddObserver(this);
     integration_service->file_system()->AddObserver(this);
     integration_service->job_list()->AddObserver(this);
@@ -396,10 +404,6 @@ void EventRouter::ObserveFileSystemEvents() {
   pref_change_registrar_->Add(prefs::kDisableDriveHostedFiles, callback);
   pref_change_registrar_->Add(prefs::kDisableDrive, callback);
   pref_change_registrar_->Add(prefs::kUse24HourClock, callback);
-
-  VolumeManager* volume_manager = VolumeManager::Get(profile_);
-  if (volume_manager)
-    volume_manager->AddObserver(this);
 }
 
 // File watch setup routines.
@@ -619,22 +623,6 @@ void EventRouter::SendDriveFileTransferEvent(bool always) {
 
 void EventRouter::OnDirectoryChanged(const base::FilePath& directory_path) {
   HandleFileWatchNotification(directory_path, false);
-}
-
-void EventRouter::OnFileSystemMounted() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // Raise mount event.
-  // We can pass chromeos::MOUNT_ERROR_NONE even when authentication is failed
-  // or network is unreachable. These two errors will be handled later.
-  OnVolumeMounted(chromeos::MOUNT_ERROR_NONE,
-                  CreateDriveVolumeInfo(),
-                  false);  // Not remounting.
-}
-
-void EventRouter::OnFileSystemBeingUnmounted() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  OnVolumeUnmounted(chromeos::MOUNT_ERROR_NONE, CreateDriveVolumeInfo());
 }
 
 void EventRouter::OnRefreshTokenInvalid() {

@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/singleton.h"
+#include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -42,6 +43,8 @@ BrowserContextKeyedService* VolumeManagerFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   VolumeManager* instance = new VolumeManager(
       Profile::FromBrowserContext(profile),
+      drive::DriveIntegrationServiceFactory::
+          GetForProfileRegardlessOfStates(Profile::FromBrowserContext(profile)),
       chromeos::DBusThreadManager::Get()->GetPowerManagerClient(),
       chromeos::disks::DiskMountManager::GetInstance());
   instance->Initialize();
@@ -52,6 +55,7 @@ VolumeManagerFactory::VolumeManagerFactory()
     : BrowserContextKeyedServiceFactory(
           "VolumeManagerFactory",
           BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(drive::DriveIntegrationServiceFactory::GetInstance());
 }
 
 VolumeManagerFactory::~VolumeManagerFactory() {

@@ -147,6 +147,7 @@ class VolumeManagerTest : public testing::Test {
     disk_mount_manager_.reset(new FakeDiskMountManager);
     profile_.reset(new TestingProfile);
     volume_manager_.reset(new VolumeManager(profile_.get(),
+                                            NULL,  // DriveIntegrationService
                                             power_manager_client_.get(),
                                             disk_mount_manager_.get()));
   }
@@ -157,6 +158,39 @@ class VolumeManagerTest : public testing::Test {
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<VolumeManager> volume_manager_;
 };
+
+TEST_F(VolumeManagerTest, OnFileSystemMounted) {
+  LoggingObserver observer;
+  volume_manager_->AddObserver(&observer);
+
+  volume_manager_->OnFileSystemMounted();
+
+  ASSERT_EQ(1U, observer.events().size());
+  const LoggingObserver::Event& event = observer.events()[0];
+  EXPECT_EQ(LoggingObserver::Event::VOLUME_MOUNTED, event.type);
+  EXPECT_EQ(drive::util::GetDriveMountPointPath().AsUTF8Unsafe(),
+            event.device_path);
+  EXPECT_EQ(chromeos::MOUNT_ERROR_NONE, event.mount_error);
+  EXPECT_FALSE(event.is_remounting);
+
+  volume_manager_->RemoveObserver(&observer);
+}
+
+TEST_F(VolumeManagerTest, OnFileSystemBeingUnmounted) {
+  LoggingObserver observer;
+  volume_manager_->AddObserver(&observer);
+
+  volume_manager_->OnFileSystemBeingUnmounted();
+
+  ASSERT_EQ(1U, observer.events().size());
+  const LoggingObserver::Event& event = observer.events()[0];
+  EXPECT_EQ(LoggingObserver::Event::VOLUME_UNMOUNTED, event.type);
+  EXPECT_EQ(drive::util::GetDriveMountPointPath().AsUTF8Unsafe(),
+            event.device_path);
+  EXPECT_EQ(chromeos::MOUNT_ERROR_NONE, event.mount_error);
+
+  volume_manager_->RemoveObserver(&observer);
+}
 
 TEST_F(VolumeManagerTest, OnDiskEvent_Hidden) {
   LoggingObserver observer;

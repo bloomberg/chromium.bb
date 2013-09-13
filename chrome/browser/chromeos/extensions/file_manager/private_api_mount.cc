@@ -86,8 +86,7 @@ bool FileBrowserPrivateAddMountFunction::RunImpl() {
   if (mount_type == "drive") {
     // Dispatch fake 'mounted' event because JS code depends on it.
     // TODO(hashimoto): Remove this redanduncy.
-    file_manager::FileBrowserPrivateAPI::Get(profile_)->event_router()->
-        OnFileSystemMounted();
+    file_manager::VolumeManager::Get(profile_)->OnFileSystemMounted();
 
     // Pass back the drive mount point path as source path.
     const std::string& drive_path =

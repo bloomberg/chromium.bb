@@ -41,7 +41,6 @@ class DesktopNotifications;
 // affecting File Manager. Dispatches appropriate File Browser events.
 class EventRouter
     : public chromeos::NetworkStateHandlerObserver,
-      public drive::DriveIntegrationServiceObserver,
       public drive::FileSystemObserver,
       public drive::JobListObserver,
       public drive::DriveServiceObserver,
@@ -98,11 +97,6 @@ class EventRouter
   // drive::FileSystemObserver overrides.
   virtual void OnDirectoryChanged(
       const base::FilePath& directory_path) OVERRIDE;
-
-  // drive::DriveIntegrationServiceObserver overrides.
-  // TODO(hidehiko): Move these to VolumeManager.
-  virtual void OnFileSystemMounted() OVERRIDE;
-  virtual void OnFileSystemBeingUnmounted() OVERRIDE;
 
   // VolumeManagerObserver overrides.
   virtual void OnDiskAdded(
