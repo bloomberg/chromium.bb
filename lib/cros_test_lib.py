@@ -27,8 +27,10 @@ import unittest
 import urllib
 
 from chromite.buildbot import constants
+from chromite.buildbot import repository
 import cros_build_lib
 import git
+import gs
 import gob_util
 import osutils
 import terminal
@@ -956,6 +958,7 @@ class GerritTestCase(TempDirTestCase):
   """
 
   TEST_USERNAME = 'test-username'
+  TEST_EMAIL = 'test-username@test.org'
 
   # To help when debugging test code; setting this to 'False' (which happens if
   # you provide the '-d' flag at the shell prompt) will leave the test gerrit
@@ -1042,6 +1045,25 @@ class GerritTestCase(TempDirTestCase):
         'chromite.lib.gob_util.GERRIT_PROTOCOL', 'http')
     cls.protocol_patcher.start()
 
+    # Some of the chromite code requires read access to refs/meta/config.  Typically,
+    # that access should require http authentication.  However, because we use plain
+    # http to communicate with the test server, libcurl (and by extension git commands
+    # that use it) will not add the Authorization header to git transactions.  So, we
+    # just allow anonymous read access to refs/meta/config for the test code.
+    clone_path = os.path.join(gi.gerrit_dir, 'tmp', 'All-Projects')
+    cls._CloneProject('All-Projects', clone_path)
+    project_config = os.path.join(clone_path, 'project.config')
+    cros_build_lib.RunCommandQuietly(
+        ['git', 'config', '--file', project_config, '--add',
+         'access.refs/meta/config.read', 'group Anonymous Users'])
+    cros_build_lib.RunCommandQuietly(
+        ['git', 'add', project_config], cwd=clone_path)
+    cros_build_lib.RunCommandQuietly(
+        ['git', 'commit', '-m', 'Anonyous read for refs/meta/config'],
+        cwd=clone_path)
+    cros_build_lib.RunCommandQuietly(
+        ['git', 'push', 'origin', 'HEAD:refs/meta/config'], cwd=clone_path)
+
     # Make all chromite code point to the test server.
     cls.constants_patcher = mock.patch.dict(constants.__dict__, {
         'PUBLIC_GOB_HOST': gi.git_host,
@@ -1094,7 +1116,8 @@ class GerritTestCase(TempDirTestCase):
         'chromite.lib.gob_util.GetChangeDetail', _GetChangeDetail)
     cls.get_change_detail_patcher.start()
 
-  def createProject(self, name, description='Test project', owners=None,
+  @classmethod
+  def createProject(cls, name, description='Test project', owners=None,
                     submit_type='CHERRY_PICK'):
     """Create a project on the test gerrit server."""
     if owners is None:
@@ -1104,15 +1127,37 @@ class GerritTestCase(TempDirTestCase):
         'submit_type': submit_type,
         'owners': owners,
     }
-    path = 'projects/%s' % name
+    path = 'projects/%s' % urllib.quote(name, '')
     conn = gob_util.CreateHttpConn(
-        self.gerrit_instance.gerrit_host, path, reqtype='PUT', body=body)
+        cls.gerrit_instance.gerrit_host, path, reqtype='PUT', body=body)
     response = conn.getresponse()
-    self.assertEqual(response.status, 201, response.reason)
+    assert response.status == 201
     s = cStringIO.StringIO(response.read())
-    self.assertEqual(s.readline().rstrip(), ")]}'")
+    assert s.readline().rstrip() == ")]}'"
     jmsg = json.load(s)
-    self.assertEqual(jmsg['name'], name)
+    assert jmsg['name'] == name
+
+  @classmethod
+  def _CloneProject(cls, name, path):
+    """Clone a project from the test gerrit server."""
+    osutils.SafeMakedirs(os.path.dirname(path))
+    url = 'http://%s/%s' % (cls.gerrit_instance.gerrit_host, name)
+    cros_build_lib.RunCommandQuietly(['git', 'clone', url, path])
+    # Install commit-msg hook.
+    hook_path = os.path.join(path, '.git', 'hooks', 'commit-msg')
+    cros_build_lib.RunCommandQuietly(
+        ['curl', '-o', hook_path,
+         'http://%s/tools/hooks/commit-msg' % cls.gerrit_instance.gerrit_host])
+    os.chmod(hook_path, stat.S_IRWXU)
+    # Set git identity to test account
+    cros_build_lib.RunCommandQuietly(
+        ['git', 'config', 'user.email', cls.TEST_EMAIL], cwd=path)
+    # Configure non-interactive credentials for git operations.
+    config_path = os.path.join(path, '.git', 'config')
+    cros_build_lib.RunCommandQuietly(
+        ['git', 'config', '--file', config_path, 'credential.helper',
+         'store --file=%s' % cls.gerrit_instance.credential_file])
+    return path
 
   def cloneProject(self, name, path=None):
     """Clone a project from the test gerrit server."""
@@ -1121,38 +1166,33 @@ class GerritTestCase(TempDirTestCase):
       if path.endswith('.git'):
         path = path[:-4]
     path = os.path.join(self.tempdir, path)
-    osutils.SafeMakedirs(os.path.dirname(path))
-    url = 'http://%s/%s' % (self.gerrit_instance.gerrit_host, name)
-    git.RunGit(os.getcwd(), ['clone', url, path])
-    # Install commit-msg hook.
-    hook_path = os.path.join(path, '.git', 'hooks', 'commit-msg')
-    cros_build_lib.RunCommandQuietly(
-        ['curl', '-o', hook_path,
-         'http://%s/tools/hooks/commit-msg' % self.gerrit_instance.gerrit_host])
-    os.chmod(hook_path, stat.S_IRWXU)
-    # Configure non-interactive credentials for git operations.
-    config_path = os.path.join(path, '.git', 'config')
-    cros_build_lib.RunCommandQuietly(
-        ['git', 'config', '--file', config_path, 'credential.helper',
-         'store --file=%s' % self.gerrit_instance.credential_file])
-    return path
+    return self._CloneProject(name, path)
 
-  def createCommit(self, clone_path, fn='test-file.txt',
-                   msg='Test message.'):
+  @classmethod
+  def _CreateCommit(cls, clone_path, fn=None, msg=None, text=None):
     """Create a commit in the given git checkout."""
-    clone_path = os.path.join(self.tempdir, clone_path)
+    if not fn:
+      fn = 'test-file.txt'
+    if not msg:
+      msg = 'Test Message'
+    if not text:
+      text = 'Another day, another dollar.'
     fpath = os.path.join(clone_path, fn)
-    osutils.WriteFile(fpath, 'Another day, another dollar.\n', mode='a')
+    osutils.WriteFile(fpath, '%s\n' % text, mode='a')
     cros_build_lib.RunCommandQuietly(['git', 'add', fn], cwd=clone_path)
     cros_build_lib.RunCommandQuietly(
         ['git', 'commit', '-m', msg], cwd=clone_path)
-    return self.getHeadCommit(clone_path)
+    return cls._GetCommit(clone_path)
 
-  def getHeadCommit(self, clone_path):
-    """Get the sha1 and change-id for the head commit in a git checkout."""
+  def createCommit(self, clone_path, fn=None, msg=None, text=None):
+    """Create a commit in the given git checkout."""
     clone_path = os.path.join(self.tempdir, clone_path)
+    return self._CreateCommit(clone_path, fn, msg, text)
+
+  @staticmethod
+  def _GetCommit(clone_path, ref='HEAD'):
     log_proc = cros_build_lib.RunCommandCaptureOutput(
-        ['git', 'log', '-n', '1'], cwd=clone_path, print_cmd=False)
+        ['git', 'log', '-n', '1', ref], cwd=clone_path, print_cmd=False)
     sha1 = None
     change_id = None
     for line in log_proc.output.splitlines():
@@ -1164,34 +1204,49 @@ class GerritTestCase(TempDirTestCase):
       if match:
         change_id = match.group(1)
         continue
+    return (sha1, change_id)
+
+  def getCommit(self, clone_path, ref='HEAD'):
+    """Get the sha1 and change-id for the head commit in a git checkout."""
+    clone_path = os.path.join(self.tempdir, clone_path)
+    (sha1, change_id) = self._GetCommit(clone_path, ref)
     self.assertTrue(sha1)
     self.assertTrue(change_id)
     return (sha1, change_id)
 
-  def uploadChange(self, clone_path, branch='master'):
+  @staticmethod
+  def _UploadChange(clone_path, branch='master', remote='origin'):
+    cros_build_lib.RunCommandQuietly(
+        ['git', 'push', remote, 'HEAD:refs/for/%s' % branch], cwd=clone_path)
+
+  def uploadChange(self, clone_path, branch='master', remote='origin'):
     """Create a gerrit CL from the HEAD of a git checkout."""
     clone_path = os.path.join(self.tempdir, clone_path)
-    cros_build_lib.RunCommandQuietly(
-        ['git', 'push', 'origin', 'HEAD:refs/for/%s' % branch], cwd=clone_path)
+    self._UploadChange(clone_path, branch, remote)
 
-  def pushBranch(self, clone_path, branch='master'):
-    """Push a branch directly to gerrit, bypassing code review."""
-    clone_path = os.path.join(self.tempdir, clone_path)
+  @staticmethod
+  def _PushBranch(clone_path, branch='master'):
     cros_build_lib.RunCommandQuietly(
         ['git', 'push', 'origin', 'HEAD:refs/heads/%s' % branch],
         cwd=clone_path)
 
-  def createAccount(self, name='Test User', email='test-user@test.org',
+  def pushBranch(self, clone_path, branch='master'):
+    """Push a branch directly to gerrit, bypassing code review."""
+    clone_path = os.path.join(self.tempdir, clone_path)
+    self._PushBranch(clone_path, branch)
+
+  @classmethod
+  def createAccount(cls, name='Test User', email='test-user@test.org',
                     password=None, groups=None):
     """Create a new user account on gerrit."""
     username = email.partition('@')[0]
     gerrit_cmd = 'gerrit create-account %s --full-name "%s" --email %s' % (
         username, name, email)
-    cmd = ['ssh', '-p', self.gerrit_instance.ssh_port,
-           '-i', self.gerrit_instance.ssh_ident,
+    cmd = ['ssh', '-p', cls.gerrit_instance.ssh_port,
+           '-i', cls.gerrit_instance.ssh_ident,
            '-o', 'NoHostAuthenticationForLocalhost=yes',
            '-o', 'StrictHostKeyChecking=no',
-           '%s@localhost' % self.TEST_USERNAME, gerrit_cmd]
+           '%s@localhost' % cls.TEST_USERNAME, gerrit_cmd]
     if password:
       cmd.extend(['--http-password', password])
     if groups:
@@ -1233,7 +1288,6 @@ class GerritTestCase(TempDirTestCase):
 
   @classmethod
   def tearDownClass(cls):
-    cls.netrc_patcher.stop()
     cls.httplib_patcher.stop()
     cls.protocol_patcher.stop()
     cls.constants_patcher.stop()
@@ -1251,6 +1305,7 @@ class GerritInternalTestCase(GerritTestCase):
 
   @classmethod
   def setUpClass(cls):
+    GerritTestCase.setUpClass()
     cls.int_gerritdir_obj = osutils.TempDir(set_global=False)
     pgi = cls.gerrit_instance
     igi = cls.int_gerrit_instance = cls._create_gerrit_instance(
@@ -1281,6 +1336,147 @@ class GerritInternalTestCase(GerritTestCase):
     else:
       # Prevent gerrit dir from getting cleaned up on interpreter exit.
       cls.int_gerritdir_obj.tempdir = None
+    GerritTestCase.tearDownClass()
+
+
+class RepoTestCase(GerritTestCase):
+  """Test class which runs in a repo checkout."""
+
+  MANIFEST_TEMPLATE = """<?xml version="1.0" encoding="UTF-8"?>
+<manifest>
+  <remote name="%(EXTERNAL_REMOTE)s"
+          fetch="%(PUBLIC_GOB_URL)s"
+          review="%(PUBLIC_GERRIT_HOST)s" />
+  <remote name="%(INTERNAL_REMOTE)s"
+          fetch="%(INTERNAL_GOB_URL)s"
+          review="%(INTERNAL_GERRIT_HOST)s" />
+  <default revision="refs/heads/master" remote="%(EXTERNAL_REMOTE)s" sync-j="1" />
+  <project remote="%(EXTERNAL_REMOTE)s" path="localpath/testproj1" name="remotepath/testproj1" />
+  <project remote="%(EXTERNAL_REMOTE)s" path="localpath/testproj2" name="remotepath/testproj2" />
+  <project remote="%(INTERNAL_REMOTE)s" path="localpath/testproj3" name="remotepath/testproj3" />
+  <project remote="%(INTERNAL_REMOTE)s" path="localpath/testproj4" name="remotepath/testproj4" />
+</manifest>
+"""
+
+  @classmethod
+  def setUpClass(cls):
+    GerritTestCase.setUpClass()
+
+    # Patch in repo url on the gerrit test server.
+    external_repo_url = constants.REPO_URL
+    cls.repo_patcher = mock.patch.dict(constants.__dict__, {
+        'REPO_URL': '%s/%s' % (
+            cls.gerrit_instance.git_url, constants.REPO_PROJECT),
+    })
+    cls.repo_patcher.start()
+
+    # Download and use the canonical version of gsutil.
+    cache_dir = os.path.join(
+        cros_build_lib.FindDepotTools(), 'testing_support')
+    cls.gs_patcher = mock.patch(
+        'chromite.lib.gs.GSContext.DEFAULT_GSUTIL_BIN',
+        gs.GSContext.Cached(cache_dir).gsutil_bin)
+    cls.gs_patcher.start()
+
+    # Create local mirror of repo tool repository.
+    mirror_path = '%s.git' % (
+        os.path.join(cls.gerrit_instance.git_dir, constants.REPO_PROJECT))
+    cros_build_lib.RunCommandQuietly(
+        ['git', 'clone', '--mirror', external_repo_url, mirror_path])
+
+    # Check out the top-level repo script; it will be used for invocation.
+    repo_clone_path = os.path.join(
+        cls.gerrit_instance.gerrit_dir, 'tmp', 'repo')
+    cros_build_lib.RunCommandQuietly(
+        ['git', 'clone', '-n', constants.REPO_URL, repo_clone_path])
+    cros_build_lib.RunCommandQuietly(
+        ['git', 'checkout', 'origin/stable', 'repo'], cwd=repo_clone_path)
+    osutils.RmDir(os.path.join(repo_clone_path, '.git'))
+    cls.repo_exe = os.path.join(repo_clone_path, 'repo')
+
+    # Create manifest repository.
+    clone_path = os.path.join(cls.gerrit_instance.gerrit_dir, 'tmp', 'manifest')
+    osutils.SafeMakedirs(clone_path)
+    cros_build_lib.RunCommandQuietly(['git', 'init'], cwd=clone_path)
+    manifest_path = os.path.join(clone_path, 'default.xml')
+    osutils.WriteFile(manifest_path, cls.MANIFEST_TEMPLATE % constants.__dict__)
+    cros_build_lib.RunCommandQuietly(
+        ['git', 'add', 'default.xml'], cwd=clone_path)
+    cros_build_lib.RunCommandQuietly(
+        ['git', 'commit', '-m', 'Test manifest.'], cwd=clone_path)
+    cls.createProject(constants.MANIFEST_PROJECT)
+    cros_build_lib.RunCommandQuietly(
+        ['git', 'push', constants.MANIFEST_URL, 'HEAD:refs/heads/master'],
+        cwd=clone_path)
+    cls.createProject(constants.MANIFEST_INT_PROJECT)
+    cros_build_lib.RunCommandQuietly(
+        ['git', 'push', constants.MANIFEST_INT_URL, 'HEAD:refs/heads/master'],
+         cwd=clone_path)
+
+    # Create project repositories.
+    for i in xrange(1, 5):
+      proj = 'testproj%d' % i
+      cls.createProject('remotepath/%s' % proj)
+      clone_path = os.path.join(cls.gerrit_instance.gerrit_dir, 'tmp', proj)
+      cls._CloneProject('remotepath/%s' % proj, clone_path)
+      cls._CreateCommit(clone_path)
+      cls._PushBranch(clone_path, 'master')
+
+  @classmethod
+  def runRepo(cls, *args, **kwargs):
+    # Unfortunately, munging $HOME appears to be the only way to control the
+    # netrc file used by repo.
+    munged_home = os.path.join(cls.gerrit_instance.gerrit_dir, 'tmp')
+    if 'env' not in kwargs:
+      env = kwargs['env'] = os.environ.copy()
+      env['HOME'] = munged_home
+    else:
+      env.setdefault('HOME', munged_home)
+    args[0].insert(0, cls.repo_exe)
+    return cros_build_lib.RunCommandQuietly(*args, **kwargs)
+
+  @classmethod
+  def tearDownClass(cls):
+    cls.repo_patcher.stop()
+    cls.gs_patcher.stop()
+    GerritTestCase.tearDownClass()
+
+  def uploadChange(self, clone_path, branch='master', remote='origin'):
+    review_host = cros_build_lib.RunCommandCaptureOutput(
+        ['git', 'config', 'remote.%s.review' % remote],
+        print_cmd=False, cwd=clone_path).output.strip()
+    assert(review_host)
+    projectname = cros_build_lib.RunCommandCaptureOutput(
+        ['git', 'config', 'remote.%s.projectname' % remote],
+        print_cmd=False, cwd=clone_path).output.strip()
+    assert(projectname)
+    GerritTestCase._UploadChange(
+        clone_path, branch=branch, remote='%s://%s/%s' % (
+            gob_util.GERRIT_PROTOCOL, review_host, projectname))
+
+  def setUp(self):
+    cros_build_lib.RunCommandQuietly(
+        [self.repo_exe, 'init', '-u', constants.MANIFEST_URL, '--repo-url',
+         constants.REPO_URL, '--no-repo-verify'], cwd=self.tempdir)
+    self.repo = repository.RepoRepository(constants.MANIFEST_URL, self.tempdir)
+    self.repo.Sync()
+    self.manifest = git.ManifestCheckout(self.tempdir)
+    for i in xrange(1, 5):
+      # Configure non-interactive credentials for git operations.
+      proj = 'testproj%d' % i
+      config_path = os.path.join(
+          self.tempdir, 'localpath', proj, '.git', 'config')
+      cros_build_lib.RunCommandQuietly(
+          ['git', 'config', '--file', config_path, 'credential.helper',
+           'store --file=%s' % self.gerrit_instance.credential_file])
+      cros_build_lib.RunCommandQuietly(
+          ['git', 'config', '--file', config_path, 'review.%s.upload' %
+           self.gerrit_instance.gerrit_host, 'true'])
+
+    # Make all google storage URL's point to the local filesystem.
+    self.gs_url_patcher = mock.patch(
+        'lib.chromite.gs.BASE_GS_URL',
+        'file://%s' % os.path.join(self.tempdir, '.gs'))
 
 
 class _RunCommandMock(mox.MockObject):

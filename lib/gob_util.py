@@ -193,7 +193,7 @@ def MultiQueryChanges(host, param_dict, change_list, limit=None, o_params=None,
 
 def GetGerritFetchUrl(host):
   """Given a gerrit host name returns URL of a gerrit instance to fetch from."""
-  return '%s://%s/a/' % (GERRIT_PROTOCOL, host)
+  return '%s://%s/' % (GERRIT_PROTOCOL, host)
 
 
 def GetChangePageUrl(host, change_number):
