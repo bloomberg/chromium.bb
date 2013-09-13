@@ -200,9 +200,9 @@ void ChildProcessHostImpl::AllocateSharedMemory(
       size_t buffer_size, base::ProcessHandle child_process_handle,
       base::SharedMemoryHandle* shared_memory_handle) {
   base::SharedMemory shared_buf;
-  if (!shared_buf.CreateAndMapAnonymous(buffer_size)) {
+  if (!shared_buf.CreateAnonymous(buffer_size)) {
     *shared_memory_handle = base::SharedMemory::NULLHandle();
-    NOTREACHED() << "Cannot map shared memory buffer";
+    NOTREACHED() << "Cannot create shared memory buffer";
     return;
   }
   shared_buf.GiveToProcess(child_process_handle, shared_memory_handle);
