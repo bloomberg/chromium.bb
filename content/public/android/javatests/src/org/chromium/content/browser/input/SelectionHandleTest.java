@@ -7,9 +7,10 @@ package org.chromium.content.browser.input;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.SystemClock;
+import android.test.suitebuilder.annotation.MediumTest;
+import android.test.FlakyTest;
 import android.text.Editable;
 import android.text.Selection;
-import android.test.suitebuilder.annotation.MediumTest;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -130,9 +131,12 @@ public class SelectionHandleTest extends ContentShellTestBase {
      * selection. Does not check exact handle position as this will depend on
      * screen size; instead, position is expected to be correct within
      * HANDLE_POSITION_TOLERANCE_PIX.
+     *
+     * Test is flaky: crbug.com/290375
+     * @MediumTest
+     * @Feature({ "TextSelection", "Main" })
      */
-    @MediumTest
-    @Feature({ "TextSelection", "Main" })
+    @FlakyTest
     public void testNoneditableSelectionHandles() throws Throwable {
         doSelectionHandleTest(TestPageType.NONEDITABLE);
     }
