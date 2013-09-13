@@ -26,6 +26,7 @@
 #ifndef Pasteboard_h
 #define Pasteboard_h
 
+#include "public/platform/WebClipboard.h"
 #include "wtf/Forward.h"
 #include "wtf/HashSet.h"
 #include "wtf/Noncopyable.h"
@@ -72,7 +73,7 @@ public:
 private:
     Pasteboard();
 
-    bool m_selectionMode;
+    WebKit::WebClipboard::Buffer m_buffer;
 };
 
 } // namespace WebCore

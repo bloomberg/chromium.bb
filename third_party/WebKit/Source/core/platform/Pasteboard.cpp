@@ -63,18 +63,18 @@ Pasteboard* Pasteboard::generalPasteboard()
 }
 
 Pasteboard::Pasteboard()
-    : m_selectionMode(false)
+    : m_buffer(WebKit::WebClipboard::BufferStandard)
 {
 }
 
 bool Pasteboard::isSelectionMode() const
 {
-    return m_selectionMode;
+    return m_buffer == WebKit::WebClipboard::BufferSelection;
 }
 
 void Pasteboard::setSelectionMode(bool selectionMode)
 {
-    m_selectionMode = selectionMode;
+    m_buffer = selectionMode ? WebKit::WebClipboard::BufferSelection : WebKit::WebClipboard::BufferStandard;
 }
 
 void Pasteboard::writeSelection(Range* selectedRange, bool canSmartCopyOrDelete, const String& text)
@@ -155,24 +155,23 @@ void Pasteboard::writeDataObject(PassRefPtr<ChromiumDataObject> dataObject)
 
 bool Pasteboard::canSmartReplace()
 {
-    return WebKit::Platform::current()->clipboard()->isFormatAvailable(WebKit::WebClipboard::FormatSmartPaste, m_selectionMode ? WebKit::WebClipboard::BufferSelection : WebKit::WebClipboard::BufferStandard);
+    return WebKit::Platform::current()->clipboard()->isFormatAvailable(WebKit::WebClipboard::FormatSmartPaste, m_buffer);
 }
 
 String Pasteboard::plainText()
 {
-    return WebKit::Platform::current()->clipboard()->readPlainText(m_selectionMode ? WebKit::WebClipboard::BufferSelection : WebKit::WebClipboard::BufferStandard);
+    return WebKit::Platform::current()->clipboard()->readPlainText(m_buffer);
 }
 
 PassRefPtr<DocumentFragment> Pasteboard::documentFragment(Frame* frame, PassRefPtr<Range> context, bool allowPlainText, bool& chosePlainText)
 {
     chosePlainText = false;
-    WebKit::WebClipboard::Buffer buffer = m_selectionMode ? WebKit::WebClipboard::BufferSelection : WebKit::WebClipboard::BufferStandard;
 
-    if (WebKit::Platform::current()->clipboard()->isFormatAvailable(WebKit::WebClipboard::FormatHTML, buffer)) {
+    if (WebKit::Platform::current()->clipboard()->isFormatAvailable(WebKit::WebClipboard::FormatHTML, m_buffer)) {
         unsigned fragmentStart = 0;
         unsigned fragmentEnd = 0;
         WebKit::WebURL url;
-        WebKit::WebString markup = WebKit::Platform::current()->clipboard()->readHTML(buffer, &url, &fragmentStart, &fragmentEnd);
+        WebKit::WebString markup = WebKit::Platform::current()->clipboard()->readHTML(m_buffer, &url, &fragmentStart, &fragmentEnd);
         if (!markup.isEmpty()) {
             ASSERT(frame->document());
             if (RefPtr<DocumentFragment> fragment = createFragmentFromMarkupWithContext(*frame->document(), markup, fragmentStart, fragmentEnd, KURL(url), DisallowScriptingAndPluginContent))
@@ -181,7 +180,7 @@ PassRefPtr<DocumentFragment> Pasteboard::documentFragment(Frame* frame, PassRefP
     }
 
     if (allowPlainText) {
-        String markup = WebKit::Platform::current()->clipboard()->readPlainText(buffer);
+        String markup = WebKit::Platform::current()->clipboard()->readPlainText(m_buffer);
         if (!markup.isEmpty()) {
             chosePlainText = true;
             if (RefPtr<DocumentFragment> fragment = createFragmentFromText(context.get(), markup))
