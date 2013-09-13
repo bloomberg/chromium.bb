@@ -646,7 +646,8 @@ class InverseTransformTransition : public ThreadedLayerAnimationElement {
   gfx::Transform ComputeWithBaseTransform(gfx::Transform start,
                                           gfx::Transform target) const {
     gfx::Transform to_return(gfx::Transform::kSkipInitialization);
-    DCHECK(target.GetInverse(&to_return));
+    bool success = target.GetInverse(&to_return);
+    DCHECK(success) << "Target transform must be invertible.";
 
     to_return.PreconcatTransform(start);
     return to_return;
