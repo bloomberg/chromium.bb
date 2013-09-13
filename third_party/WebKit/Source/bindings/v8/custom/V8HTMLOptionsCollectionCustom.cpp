@@ -65,8 +65,9 @@ static void getNamedItems(HTMLOptionsCollection* collection, const AtomicString&
 
 void V8HTMLOptionsCollection::namedItemMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, name, args[0]);
     HTMLOptionsCollection* imp = V8HTMLOptionsCollection::toNative(args.Holder());
-    getNamedItems(imp, toWebCoreString(args[0]), args);
+    getNamedItems(imp, name, args);
 }
 
 void V8HTMLOptionsCollection::addMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)

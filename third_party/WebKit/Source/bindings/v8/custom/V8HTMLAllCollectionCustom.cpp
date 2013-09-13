@@ -61,7 +61,8 @@ static v8::Handle<v8::Value> getItem(HTMLAllCollection* collection, v8::Handle<v
 {
     v8::Local<v8::Uint32> index = argument->ToArrayIndex();
     if (index.IsEmpty()) {
-        v8::Handle<v8::Value> result = getNamedItems(collection, toWebCoreString(argument->ToString()), callbackInfo);
+        V8TRYCATCH_FOR_V8STRINGRESOURCE_RETURN(V8StringResource<>, name, argument, v8::Undefined(callbackInfo.GetIsolate()));
+        v8::Handle<v8::Value> result = getNamedItems(collection, name, callbackInfo);
 
         if (result.IsEmpty())
             return v8::Undefined();
@@ -81,8 +82,10 @@ void V8HTMLAllCollection::itemMethodCustom(const v8::FunctionCallbackInfo<v8::Va
 
 void V8HTMLAllCollection::namedItemMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, name, args[0]);
+
     HTMLAllCollection* imp = V8HTMLAllCollection::toNative(args.Holder());
-    v8::Handle<v8::Value> result = getNamedItems(imp, toWebCoreString(args[0]), args);
+    v8::Handle<v8::Value> result = getNamedItems(imp, name, args);
 
     if (result.IsEmpty()) {
         v8SetReturnValueNull(args);
@@ -105,7 +108,7 @@ void V8HTMLAllCollection::legacyCallCustom(const v8::FunctionCallbackInfo<v8::Va
     }
 
     // If there is a second argument it is the index of the item we want.
-    String name = toWebCoreString(args[0]);
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, name, args[0]);
     v8::Local<v8::Uint32> index = args[1]->ToArrayIndex();
     if (index.IsEmpty())
         return;

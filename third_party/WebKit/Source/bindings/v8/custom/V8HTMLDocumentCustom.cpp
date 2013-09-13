@@ -60,8 +60,10 @@ namespace WebCore {
 static String writeHelperGetString(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     StringBuilder builder;
-    for (int i = 0; i < args.Length(); ++i)
-        builder.append(toWebCoreString(args[i]));
+    for (int i = 0; i < args.Length(); ++i) {
+        V8TRYCATCH_FOR_V8STRINGRESOURCE_RETURN(V8StringResource<>, stringArgument, args[i], String());
+        builder.append(stringArgument);
+    }
     return builder.toString();
 }
 

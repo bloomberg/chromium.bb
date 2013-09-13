@@ -213,8 +213,10 @@ void V8Window::locationAttributeSetterCustom(v8::Local<v8::String> name, v8::Loc
     if (!first)
         return;
 
-    if (Location* location = imp->location())
-        location->setHref(active, first, toWebCoreString(value));
+    if (Location* location = imp->location()) {
+        V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, href, value);
+        location->setHref(active, first, href);
+    }
 }
 
 void V8Window::openerAttributeSetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
@@ -381,7 +383,7 @@ void V8Window::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 
     // FIXME: Handle exceptions properly.
     String urlString = toWebCoreStringWithUndefinedOrNullCheck(args[0]);
-    AtomicString frameName = (args[1]->IsUndefined() || args[1]->IsNull()) ? "_blank" : AtomicString(toWebCoreString(args[1]));
+    AtomicString frameName = (args[1]->IsUndefined() || args[1]->IsNull()) ? "_blank" : toWebCoreAtomicString(args[1]);
     String windowFeaturesString = toWebCoreStringWithUndefinedOrNullCheck(args[2]);
 
     RefPtr<DOMWindow> openedWindow = impl->open(urlString, frameName, windowFeaturesString, activeDOMWindow(), firstDOMWindow());

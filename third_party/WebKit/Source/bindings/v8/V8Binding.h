@@ -391,7 +391,8 @@ namespace WebCore {
     struct NativeValueTraits<String> {
         static inline String nativeValue(const v8::Handle<v8::Value>& value)
         {
-            return toWebCoreString(value);
+            V8TRYCATCH_FOR_V8STRINGRESOURCE_RETURN(V8StringResource<>, stringValue, value, String());
+            return stringValue;
         }
     };
 

@@ -51,7 +51,8 @@ void V8HTMLCanvasElement::getContextMethodCustom(const v8::FunctionCallbackInfo<
 {
     v8::Handle<v8::Object> holder = args.Holder();
     HTMLCanvasElement* imp = V8HTMLCanvasElement::toNative(holder);
-    String contextId = toWebCoreString(args[0]);
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, contextIdResource, args[0]);
+    String contextId = contextIdResource;
     RefPtr<CanvasContextAttributes> attributes;
     if (contextId == "webgl" || contextId == "experimental-webgl" || contextId == "webkit-3d") {
         RefPtr<WebGLContextAttributes> webGLAttributes = WebGLContextAttributes::create();
@@ -130,7 +131,7 @@ void V8HTMLCanvasElement::toDataURLMethodCustom(const v8::FunctionCallbackInfo<v
     HTMLCanvasElement* canvas = V8HTMLCanvasElement::toNative(holder);
     ExceptionState es(args.GetIsolate());
 
-    String type = toWebCoreString(args[0]);
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, type, args[0]);
     double quality;
     double* qualityPtr = 0;
     if (args.Length() > 1 && args[1]->IsNumber()) {

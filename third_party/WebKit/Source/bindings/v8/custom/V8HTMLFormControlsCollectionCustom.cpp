@@ -56,8 +56,9 @@ static v8::Handle<v8::Value> getNamedItems(HTMLFormControlsCollection* collectio
 
 void V8HTMLFormControlsCollection::namedItemMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, name, args[0]);
     HTMLFormControlsCollection* imp = V8HTMLFormControlsCollection::toNative(args.Holder());
-    v8::Handle<v8::Value> result = getNamedItems(imp, toWebCoreString(args[0]), args);
+    v8::Handle<v8::Value> result = getNamedItems(imp, name, args);
 
     if (result.IsEmpty()) {
         v8SetReturnValueNull(args);

@@ -64,7 +64,7 @@ void V8Document::evaluateMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&
 {
     RefPtr<Document> document = V8Document::toNative(args.Holder());
     ExceptionState es(args.GetIsolate());
-    String expression = toWebCoreString(args[0]);
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, expression, args[0]);
     RefPtr<Node> contextNode;
     if (V8Node::HasInstance(args[1], args.GetIsolate(), worldType(args.GetIsolate())))
         contextNode = V8Node::toNative(v8::Handle<v8::Object>::Cast(args[1]));
