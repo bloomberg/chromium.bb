@@ -438,17 +438,17 @@ void SyncFileSystemService::DidProcessRemoteChange(
   DCHECK(remote_sync_running_);
   remote_sync_running_ = false;
 
-  if (status != SYNC_STATUS_NO_CHANGE_TO_SYNC &&
-      remote_file_service_->GetCurrentState() != REMOTE_SERVICE_DISABLED) {
-    DCHECK(url.is_valid());
-    local_file_service_->ClearSyncFlagForURL(url);
-  }
-
   if (status == SYNC_STATUS_NO_CHANGE_TO_SYNC) {
     // We seem to have no changes to work on for now.
     // TODO(kinuko): Might be better setting a timer to call MaybeStartSync.
     return;
   }
+
+  if (remote_file_service_->GetCurrentState() != REMOTE_SERVICE_DISABLED) {
+    DCHECK(url.is_valid());
+    local_file_service_->ClearSyncFlagForURL(url);
+  }
+
   if (status == SYNC_STATUS_FILE_BUSY) {
     is_waiting_remote_sync_enabled_ = true;
     local_file_service_->RegisterURLForWaitingSync(

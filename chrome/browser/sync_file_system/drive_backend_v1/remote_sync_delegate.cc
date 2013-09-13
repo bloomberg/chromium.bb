@@ -214,6 +214,14 @@ void RemoteSyncDelegate::DidDownloadFile(
     return;
   }
 
+  // File may be deleted. If this was for new file it's ok, if this was
+  // for existing file we'll process the delete change later.
+  if (error == google_apis::HTTP_NOT_FOUND) {
+    sync_action_ = SYNC_ACTION_NONE;
+    DidApplyRemoteChange(callback, SYNC_STATUS_OK);
+    return;
+  }
+
   SyncStatusCode status = GDataErrorCodeToSyncStatusCodeWrapper(error);
   if (status != SYNC_STATUS_OK) {
     AbortSync(callback, status);
