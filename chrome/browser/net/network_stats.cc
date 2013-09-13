@@ -798,13 +798,13 @@ void CollectNetworkStats(const std::string& network_stats_server,
 
     chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
     if (channel == chrome::VersionInfo::CHANNEL_CANARY)
-      probability_per_group = kDivisor / 2;
+      probability_per_group = kDivisor;
     else if (channel == chrome::VersionInfo::CHANNEL_DEV)
-      // Enable the connectivity testing for 10% of the users in dev channel.
-      probability_per_group = kDivisor / 10;
+      // Enable the connectivity testing for 50% of the users in dev channel.
+      probability_per_group = kDivisor / 2;
     else if (channel == chrome::VersionInfo::CHANNEL_BETA)
-      // Enable the connectivity testing for 1% of the users in beta channel.
-      probability_per_group = kDivisor / 100;
+      // Enable the connectivity testing for 5% of the users in beta channel.
+      probability_per_group = kDivisor / 20;
 
     // After July 31, 2014 builds, it will always be in default group
     // (disable_network_stats).
