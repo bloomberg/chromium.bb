@@ -62,7 +62,6 @@ class CONTENT_EXPORT ImmediateInputRouter
   virtual bool ShouldForwardTouchEvent() const OVERRIDE;
   virtual bool ShouldForwardGestureEvent(
       const GestureEventWithLatencyInfo& gesture_event) const OVERRIDE;
-  virtual bool HasQueuedGestureEvents() const OVERRIDE;
 
   // IPC::Listener
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

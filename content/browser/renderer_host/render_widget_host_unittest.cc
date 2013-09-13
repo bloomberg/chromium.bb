@@ -171,7 +171,6 @@ class MockInputRouter : public InputRouter {
       const GestureEventWithLatencyInfo& gesture_event) const OVERRIDE {
     return true;
   }
-  virtual bool HasQueuedGestureEvents() const OVERRIDE { return true; }
 
   // IPC::Listener
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
@@ -1385,6 +1384,7 @@ TEST_F(RenderWidgetHostTest, WheelScrollEventOverscrolls) {
   SimulateMouseMove(5, 10, 0);
   EXPECT_EQ(OVERSCROLL_NONE, host_->overscroll_mode());
   EXPECT_EQ(OVERSCROLL_NONE, host_->overscroll_delegate()->current_mode());
+  EXPECT_EQ(1U, process_->sink().message_count());
 }
 
 // Tests that if some scroll events are consumed towards the start, then
@@ -1606,10 +1606,10 @@ TEST_F(RenderWidgetHostTest, ScrollEventsOverscrollWithZeroFling) {
   // Send a fling start, but with a small velocity, so that the overscroll is
   // aborted. The fling should proceed to the renderer, through the gesture
   // event filter.
-  SimulateGestureFlingStartEvent(0.f, 0.f, WebGestureEvent::Touchpad);
+  SimulateGestureFlingStartEvent(10.f, 0.f, WebGestureEvent::Touchpad);
   EXPECT_EQ(OVERSCROLL_NONE, host_->overscroll_mode());
-  EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
-  EXPECT_EQ(0U, process_->sink().message_count());
+  EXPECT_EQ(1U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(1U, process_->sink().message_count());
 }
 
 // Tests that a fling in the opposite direction of the overscroll cancels the
@@ -1634,11 +1634,13 @@ TEST_F(RenderWidgetHostTest, ReverseFlingCancelsOverscroll) {
                       INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
     EXPECT_EQ(OVERSCROLL_EAST, host_->overscroll_mode());
     EXPECT_EQ(OVERSCROLL_EAST, host_->overscroll_delegate()->current_mode());
+    process_->sink().ClearMessages();
 
     SimulateGestureEvent(WebInputEvent::GestureScrollEnd,
                          WebGestureEvent::Touchscreen);
     EXPECT_EQ(OVERSCROLL_EAST, host_->overscroll_delegate()->completed_mode());
     EXPECT_EQ(OVERSCROLL_NONE, host_->overscroll_delegate()->current_mode());
+    EXPECT_EQ(1U, process_->sink().message_count());
     SendInputEventACK(WebInputEvent::GestureScrollEnd,
                       INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   }
@@ -1658,9 +1660,12 @@ TEST_F(RenderWidgetHostTest, ReverseFlingCancelsOverscroll) {
                       INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
     EXPECT_EQ(OVERSCROLL_WEST, host_->overscroll_mode());
     EXPECT_EQ(OVERSCROLL_WEST, host_->overscroll_delegate()->current_mode());
+    process_->sink().ClearMessages();
+
     SimulateGestureFlingStartEvent(100, 0, WebGestureEvent::Touchscreen);
     EXPECT_EQ(OVERSCROLL_NONE, host_->overscroll_delegate()->completed_mode());
     EXPECT_EQ(OVERSCROLL_NONE, host_->overscroll_delegate()->current_mode());
+    EXPECT_EQ(1U, process_->sink().message_count());
   }
 }
 
@@ -1738,11 +1743,14 @@ TEST_F(RenderWidgetHostTest, GestureScrollConsumedHorizontal) {
                     INPUT_EVENT_ACK_STATE_CONSUMED);
   EXPECT_EQ(OVERSCROLL_NONE, host_->overscroll_mode());
   EXPECT_EQ(OVERSCROLL_NONE, host_->overscroll_delegate()->current_mode());
+  process_->sink().ClearMessages();
 
   // Send another gesture event and ACK as not being processed. This should
   // not initiate overscroll because the beginning of the scroll event did
-  // scroll some content on the page.
+  // scroll some content on the page. Since there was no overscroll, the event
+  // should reach the renderer.
   SimulateGestureScrollUpdateEvent(55, 0, 0);
+  EXPECT_EQ(1U, process_->sink().message_count());
   SendInputEventACK(WebInputEvent::GestureScrollUpdate,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(OVERSCROLL_NONE, host_->overscroll_mode());
@@ -2289,12 +2297,15 @@ TEST_F(RenderWidgetHostTest, OverscrollMouseMoveCompletion) {
 
   // Overscroll gesture is in progress. Send a mouse-move now. This should
   // complete the gesture (because the amount overscrolled is above the
-  // threshold), and consume the event.
+  // threshold).
   SimulateMouseMove(5, 10, 0);
   EXPECT_EQ(OVERSCROLL_EAST, host_->overscroll_delegate()->completed_mode());
   EXPECT_EQ(OVERSCROLL_NONE, host_->overscroll_mode());
   EXPECT_EQ(OVERSCROLL_NONE, host_->overscroll_delegate()->current_mode());
-  EXPECT_EQ(0U, process_->sink().message_count());
+  EXPECT_EQ(1U, process_->sink().message_count());
+  process_->sink().ClearMessages();
+  SendInputEventACK(WebInputEvent::MouseMove,
+                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
 
   SimulateGestureEvent(WebInputEvent::GestureScrollEnd,
                        WebGestureEvent::Touchscreen);

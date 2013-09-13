@@ -67,7 +67,6 @@ class CONTENT_EXPORT BufferedInputRouter
   virtual bool ShouldForwardTouchEvent() const OVERRIDE;
   virtual bool ShouldForwardGestureEvent(
       const GestureEventWithLatencyInfo& gesture_event) const OVERRIDE;
-  virtual bool HasQueuedGestureEvents() const OVERRIDE;
 
   // InputQueueClient
   virtual void Deliver(const EventPacket& packet) OVERRIDE;
@@ -123,9 +122,6 @@ class CONTENT_EXPORT BufferedInputRouter
   // Alternatively, attach WebInputEvents to InputEvents but don't serialize.
   typedef std::map<int64, NativeWebKeyboardEvent> KeyMap;
   KeyMap queued_key_map_;
-
-  // Necessary for |HasQueuedGestureEvents()|.
-  int queued_gesture_count_;
 
   // Necessary for |ShouldForwardTouchEvent()|.
   bool has_touch_handler_;

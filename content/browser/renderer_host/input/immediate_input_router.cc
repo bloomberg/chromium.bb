@@ -287,10 +287,6 @@ bool ImmediateInputRouter::ShouldForwardGestureEvent(
   return gesture_event_filter_->ShouldForward(touch_event);
 }
 
-bool ImmediateInputRouter::HasQueuedGestureEvents() const {
-  return gesture_event_filter_->HasQueuedGestureEvents();
-}
-
 bool ImmediateInputRouter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   bool message_is_ok = true;

@@ -64,23 +64,25 @@ bool OverscrollController::WillDispatchEvent(
     // touch-scrolls maintain state in the renderer side (in the compositor, for
     // example), and the event that completes this action needs to be sent to
     // the renderer so that those states can be updated/reset appropriately.
-    // Send the event through the host when appropriate.
-    if (ShouldForwardToHost(event)) {
+    if (WebKit::WebInputEvent::isGestureEventType(event.type)) {
+      // A gesture-event isn't sent to the GestureEventFilter when overscroll is
+      // in progress. So dispatch the event through the RenderWidgetHost so that
+      // it can reach the GestureEventFilter.
       const WebKit::WebGestureEvent& gevent =
           static_cast<const WebKit::WebGestureEvent&>(event);
       return render_widget_host_->ShouldForwardGestureEvent(
           GestureEventWithLatencyInfo(gevent, latency_info));
     }
 
-    return false;
+    return true;
   }
 
   if (overscroll_mode_ != OVERSCROLL_NONE && DispatchEventResetsState(event)) {
     SetOverscrollMode(OVERSCROLL_NONE);
-    // The overscroll gesture status is being reset. If the event is a
-    // gesture event (from either touchscreen or trackpad), then make sure the
-    // host gets the event first (if it didn't already process it).
-    if (ShouldForwardToHost(event)) {
+    if (WebKit::WebInputEvent::isGestureEventType(event.type)) {
+      // A gesture-event isn't sent to the GestureEventFilter when overscroll is
+      // in progress. So dispatch the event through the RenderWidgetHost so that
+      // it can reach the GestureEventFilter.
       const WebKit::WebGestureEvent& gevent =
           static_cast<const WebKit::WebGestureEvent&>(event);
       return render_widget_host_->ShouldForwardGestureEvent(
@@ -92,16 +94,9 @@ bool OverscrollController::WillDispatchEvent(
   }
 
   if (overscroll_mode_ != OVERSCROLL_NONE) {
-    // Consume the event and update overscroll state when in the middle of the
-    // overscroll gesture.
-    ProcessEventForOverscroll(event);
-
-    if (event.type == WebKit::WebInputEvent::TouchEnd ||
-        event.type == WebKit::WebInputEvent::TouchCancel ||
-        event.type == WebKit::WebInputEvent::TouchMove) {
-      return true;
-    }
-    return false;
+    // Consume the event only if it updates the overscroll state.
+    if (ProcessEventForOverscroll(event))
+      return false;
   }
 
   return true;
@@ -226,18 +221,20 @@ bool OverscrollController::DispatchEventResetsState(
   }
 }
 
-void OverscrollController::ProcessEventForOverscroll(
+bool OverscrollController::ProcessEventForOverscroll(
     const WebKit::WebInputEvent& event) {
+  bool event_processed = false;
   switch (event.type) {
     case WebKit::WebInputEvent::MouseWheel: {
       const WebKit::WebMouseWheelEvent& wheel =
           static_cast<const WebKit::WebMouseWheelEvent&>(event);
       if (!wheel.hasPreciseScrollingDeltas)
-        return;
+        break;
 
       ProcessOverscroll(wheel.deltaX * wheel.accelerationRatioX,
                         wheel.deltaY * wheel.accelerationRatioY,
                         wheel.type);
+      event_processed = true;
       break;
     }
     case WebKit::WebInputEvent::GestureScrollUpdate: {
@@ -246,6 +243,7 @@ void OverscrollController::ProcessEventForOverscroll(
       ProcessOverscroll(gesture.data.scrollUpdate.deltaX,
                         gesture.data.scrollUpdate.deltaY,
                         gesture.type);
+      event_processed = true;
       break;
     }
     case WebKit::WebInputEvent::GestureFlingStart: {
@@ -258,12 +256,14 @@ void OverscrollController::ProcessEventForOverscroll(
         if ((overscroll_mode_ == OVERSCROLL_WEST && velocity_x < 0) ||
             (overscroll_mode_ == OVERSCROLL_EAST && velocity_x > 0)) {
           CompleteAction();
+          event_processed = true;
           break;
         }
       } else if (fabs(velocity_y) > kFlingVelocityThreshold) {
         if ((overscroll_mode_ == OVERSCROLL_NORTH && velocity_y < 0) ||
             (overscroll_mode_ == OVERSCROLL_SOUTH && velocity_y > 0)) {
           CompleteAction();
+          event_processed = true;
           break;
         }
       }
@@ -278,6 +278,7 @@ void OverscrollController::ProcessEventForOverscroll(
              WebKit::WebInputEvent::isTouchEventType(event.type))
           << "Received unexpected event: " << event.type;
   }
+  return event_processed;
 }
 
 void OverscrollController::ProcessOverscroll(float delta_x,
@@ -365,16 +366,6 @@ void OverscrollController::SetOverscrollMode(OverscrollMode mode) {
     scroll_state_ = STATE_OVERSCROLLING;
   if (delegate_)
     delegate_->OnOverscrollModeChange(old_mode, overscroll_mode_);
-}
-
-bool OverscrollController::ShouldForwardToHost(
-    const WebKit::WebInputEvent& event) const {
-  if (!WebKit::WebInputEvent::isGestureEventType(event.type))
-    return false;
-
-  // If the RenderWidgetHost already processed this event, then the event must
-  // not be sent again.
-  return !render_widget_host_->HasQueuedGestureEvents();
 }
 
 }  // namespace content

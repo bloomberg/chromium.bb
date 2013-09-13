@@ -267,21 +267,6 @@ TEST_F(BufferedInputRouterTest, FlushRequestedOnQueue) {
   SCOPED_EXPECT(client_->ExpectNeedsFlushCalled(false), "SetNeedsFlushCalled");
 }
 
-TEST_F(BufferedInputRouterTest, HasQueuedGestureEvents) {
-  EXPECT_FALSE(input_router_->HasQueuedGestureEvents());
-  SimulateGestureEvent(WebInputEvent::GestureScrollBegin,
-                       WebGestureEvent::Touchpad);
-  EXPECT_TRUE(input_router_->HasQueuedGestureEvents());
-
-  // Only an ack'ed gesture should clear it from the queue.
-  input_router_->Flush();
-  ASSERT_TRUE(FinishFlush(INPUT_EVENT_COULD_NOT_DELIVER));
-  EXPECT_TRUE(input_router_->HasQueuedGestureEvents());
-
-  ASSERT_TRUE(FinishFlush(INPUT_EVENT_IMPL_THREAD_CONSUMED));
-  EXPECT_FALSE(input_router_->HasQueuedGestureEvents());
-}
-
 TEST_F(BufferedInputRouterTest, GetLastKeyboardEvent) {
   EXPECT_EQ(NULL, input_router_->GetLastKeyboardEvent());
 

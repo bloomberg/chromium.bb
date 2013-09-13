@@ -31,7 +31,6 @@ BufferedInputRouter::BufferedInputRouter(IPC::Sender* sender,
       ack_handler_(ack_handler),
       sender_(sender),
       routing_id_(routing_id),
-      queued_gesture_count_(0),
       has_touch_handler_(false),
       queued_touch_count_(0),
       input_queue_override_(NULL),
@@ -89,8 +88,7 @@ void BufferedInputRouter::SendGestureEvent(
     const GestureEventWithLatencyInfo& gesture_event) {
   if (!client_->OnSendGestureEvent(gesture_event))
     return;
-  if (QueueWebEvent(gesture_event.event, gesture_event.latency, false))
-    ++queued_gesture_count_;
+  QueueWebEvent(gesture_event.event, gesture_event.latency, false);
 }
 
 void BufferedInputRouter::SendTouchEvent(
@@ -207,10 +205,6 @@ bool BufferedInputRouter::ShouldForwardGestureEvent(
   return true;
 }
 
-bool BufferedInputRouter::HasQueuedGestureEvents() const {
-  return queued_gesture_count_ > 0;
-}
-
 void BufferedInputRouter::OnWebInputEventAck(
     int64 event_id,
     const WebKit::WebInputEvent& web_event,
@@ -245,10 +239,6 @@ void BufferedInputRouter::OnWebInputEventAck(
                                   latency_info),
         acked_result);
   } else if (WebInputEvent::isGestureEventType(web_event.type)) {
-    if (ack_from_input_queue) {
-      DCHECK_GT(queued_gesture_count_, 0);
-      --queued_gesture_count_;
-    }
     ack_handler_->OnGestureEventAck(
         static_cast<const WebGestureEvent&>(web_event), acked_result);
   } else

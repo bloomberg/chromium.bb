@@ -2235,10 +2235,6 @@ bool RenderWidgetHostImpl::ShouldForwardGestureEvent(
   return input_router_->ShouldForwardGestureEvent(gesture_event);
 }
 
-bool RenderWidgetHostImpl::HasQueuedGestureEvents() const {
-  return input_router_->HasQueuedGestureEvents();
-}
-
 void RenderWidgetHostImpl::StartUserGesture() {
   OnUserGesture();
 }

@@ -64,9 +64,6 @@ class InputRouter : public IPC::Listener {
   // |gesture_event| to the router.
   virtual bool ShouldForwardGestureEvent(
       const GestureEventWithLatencyInfo& gesture_event) const = 0;
-
-  // Returns |true| if the router has any queued or in-flight gesture events.
-  virtual bool HasQueuedGestureEvents() const = 0;
 };
 
 }  // namespace content

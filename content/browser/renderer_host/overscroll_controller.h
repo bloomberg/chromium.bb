@@ -89,8 +89,9 @@ class OverscrollController {
   // overscroll gesture status.
   bool DispatchEventResetsState(const WebKit::WebInputEvent& event) const;
 
-  // Processes an event and updates internal state for overscroll.
-  void ProcessEventForOverscroll(const WebKit::WebInputEvent& event);
+  // Processes an event to update the internal state for overscroll. Returns
+  // true if the state is updated, false otherwise.
+  bool ProcessEventForOverscroll(const WebKit::WebInputEvent& event);
 
   // Processes horizontal overscroll. This can update both the overscroll mode
   // and the over scroll amount (i.e. |overscroll_mode_|, |overscroll_delta_x_|
@@ -105,10 +106,6 @@ class OverscrollController {
   // Sets the overscroll mode (and triggers callback in the delegate when
   // appropriate).
   void SetOverscrollMode(OverscrollMode new_mode);
-
-  // Returns whether the input event should be forwarded to the
-  // RenderWidgetHost.
-  bool ShouldForwardToHost(const WebKit::WebInputEvent& event) const;
 
   // The RenderWidgetHost that owns this overscroll controller.
   RenderWidgetHostImpl* render_widget_host_;

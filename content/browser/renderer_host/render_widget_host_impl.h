@@ -370,7 +370,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   bool ShouldForwardTouchEvent() const;
   bool ShouldForwardGestureEvent(
       const GestureEventWithLatencyInfo& gesture_event) const;
-  bool HasQueuedGestureEvents() const;
 
   bool has_touch_handler() const { return has_touch_handler_; }
 
