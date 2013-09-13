@@ -396,6 +396,36 @@ TEST_F(GeolocationPermissionContextTests, QueuedPermission) {
                 CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string()));
 }
 
+TEST_F(GeolocationPermissionContextTests, HashIsIgnored) {
+  GURL url_a("http://www.example.com/geolocation#a");
+  GURL url_b("http://www.example.com/geolocation#b");
+
+  // Navigate to the first url and check permission is requested.
+  NavigateAndCommit(url_a);
+  EXPECT_EQ(0U, infobar_service()->infobar_count());
+  RequestGeolocationPermission(RequestID(0), url_a);
+  ASSERT_EQ(1U, infobar_service()->infobar_count());
+  ConfirmInfoBarDelegate* infobar_delegate =
+      infobar_service()->infobar_at(0)->AsConfirmInfoBarDelegate();
+  ASSERT_TRUE(infobar_delegate);
+
+  // Change the hash, we'll still be on the same page.
+  NavigateAndCommit(url_b);
+
+  // Accept.
+  infobar_delegate->Accept();
+  CheckTabContentsState(url_a, CONTENT_SETTING_ALLOW);
+  CheckTabContentsState(url_b, CONTENT_SETTING_ALLOW);
+  CheckPermissionMessageSent(0, true);
+
+  // Cleanup.
+  infobar_service()->RemoveInfoBar(infobar_delegate);
+  EXPECT_EQ(1U, closed_infobar_tracker_.size());
+  EXPECT_TRUE(closed_infobar_tracker_.Contains(infobar_delegate));
+  closed_infobar_tracker_.Clear();
+  delete infobar_delegate;
+}
+
 TEST_F(GeolocationPermissionContextTests, PermissionForFileScheme) {
   GURL requesting_frame("file://example/geolocation.html");
   NavigateAndCommit(requesting_frame);

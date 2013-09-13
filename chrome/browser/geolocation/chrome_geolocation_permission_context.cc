@@ -45,13 +45,14 @@ void ChromeGeolocationPermissionContext::RequestGeolocationPermission(
     int bridge_id,
     const GURL& requesting_frame,
     base::Callback<void(bool)> callback) {
+  GURL requesting_frame_origin = requesting_frame.GetOrigin();
   if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
         base::Bind(
             &ChromeGeolocationPermissionContext::RequestGeolocationPermission,
             this, render_process_id, render_view_id, bridge_id,
-            requesting_frame, callback));
+            requesting_frame_origin, callback));
     return;
   }
 
@@ -68,14 +69,14 @@ void ChromeGeolocationPermissionContext::RequestGeolocationPermission(
   if (extension_service) {
     const extensions::Extension* extension =
         extension_service->extensions()->GetExtensionOrAppByURL(
-            requesting_frame);
+            requesting_frame_origin);
     if (IsExtensionWithPermissionOrSuggestInConsole(APIPermission::kGeolocation,
                                                     extension,
                                                     profile_)) {
       // Make sure the extension is in the calling process.
       if (extension_service->process_map()->Contains(extension->id(),
                                                      id.render_process_id())) {
-        NotifyPermissionSet(id, requesting_frame, callback, true);
+        NotifyPermissionSet(id, requesting_frame_origin, callback, true);
         return;
       }
     }
@@ -90,20 +91,20 @@ void ChromeGeolocationPermissionContext::RequestGeolocationPermission(
     LOG(WARNING) << "Attempt to use geolocation tabless renderer: "
                  << id.ToString()
                  << " (can't prompt user without a visible tab)";
-    NotifyPermissionSet(id, requesting_frame, callback, false);
+    NotifyPermissionSet(id, requesting_frame_origin, callback, false);
     return;
   }
 
-  GURL embedder = web_contents->GetURL();
-  if (!requesting_frame.is_valid() || !embedder.is_valid()) {
+  GURL embedder = web_contents->GetLastCommittedURL().GetOrigin();
+  if (!requesting_frame_origin.is_valid() || !embedder.is_valid()) {
     LOG(WARNING) << "Attempt to use geolocation from an invalid URL: "
-                 << requesting_frame << "," << embedder
+                 << requesting_frame_origin << "," << embedder
                  << " (geolocation is not supported in popups)";
-    NotifyPermissionSet(id, requesting_frame, callback, false);
+    NotifyPermissionSet(id, requesting_frame_origin, callback, false);
     return;
   }
 
-  DecidePermission(id, requesting_frame, embedder, callback);
+  DecidePermission(id, requesting_frame_origin, embedder, callback);
 }
 
 void ChromeGeolocationPermissionContext::CancelGeolocationPermissionRequest(

@@ -49,7 +49,7 @@ GeolocationInfoBarDelegate::GeolocationInfoBarDelegate(
     : ConfirmInfoBarDelegate(infobar_service),
       controller_(controller),
       id_(id),
-      requesting_frame_(requesting_frame),
+      requesting_frame_(requesting_frame.GetOrigin()),
       contents_unique_id_(contents_unique_id),
       display_languages_(display_languages) {
 }
@@ -65,8 +65,8 @@ bool GeolocationInfoBarDelegate::Accept() {
 void GeolocationInfoBarDelegate::SetPermission(bool update_content_setting,
                                                bool allowed) {
   if (web_contents()) {
-    controller_->OnPermissionSet(id_, requesting_frame_,
-                                 web_contents()->GetURL(),
+    GURL embedder = web_contents()->GetLastCommittedURL().GetOrigin();
+    controller_->OnPermissionSet(id_, requesting_frame_, embedder,
                                  update_content_setting, allowed);
   }
 }
@@ -96,7 +96,7 @@ bool GeolocationInfoBarDelegate::ShouldExpireInternal(
 
 string16 GeolocationInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringFUTF16(IDS_GEOLOCATION_INFOBAR_QUESTION,
-      net::FormatUrl(requesting_frame_.GetOrigin(), display_languages_));
+      net::FormatUrl(requesting_frame_, display_languages_));
 }
 
 string16 GeolocationInfoBarDelegate::GetButtonLabel(
