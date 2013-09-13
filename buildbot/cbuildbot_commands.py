@@ -1142,7 +1142,7 @@ def UpdateUploadedList(last_uploaded, archive_path, upload_url, debug):
 
 
 def UploadArchivedFile(archive_path, upload_url, filename, debug,
-                       update_list=False, timeout=30 * 60, acl=None):
+                       update_list=False, timeout=60 * 60, acl=None):
   """Upload the specified tarball from the archive dir to Google Storage.
 
   Args:
