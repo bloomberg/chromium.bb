@@ -13,6 +13,7 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
+#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/events/event.h"
 #include "ui/gfx/insets.h"
@@ -284,8 +285,12 @@ void OverflowBubble::Hide() {
 }
 
 void OverflowBubble::ProcessPressedEvent(ui::LocatedEvent* event) {
-  if (!bubble_->GetBoundsInScreen().Contains(event->root_location()) &&
-      !anchor_->GetBoundsInScreen().Contains(event->root_location())) {
+  aura::Window* target = static_cast<aura::Window*>(event->target());
+  gfx::Point event_location_in_screen = event->location();
+  aura::client::GetScreenPositionClient(target->GetRootWindow())->
+      ConvertPointToScreen(target, &event_location_in_screen);
+  if (!bubble_->GetBoundsInScreen().Contains(event_location_in_screen) &&
+      !anchor_->GetBoundsInScreen().Contains(event_location_in_screen)) {
     views::View* anchor = anchor_;
     Hide();
     // Update overflow button (|anchor|) status when overflow bubble is hidden
