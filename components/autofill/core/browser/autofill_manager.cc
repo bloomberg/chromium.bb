@@ -146,16 +146,21 @@ void DeterminePossibleFieldTypesForUpload(
   // profile or credit card, identify any stored types that match the value.
   for (size_t i = 0; i < submitted_form->field_count(); ++i) {
     AutofillField* field = submitted_form->field(i);
-    base::string16 value = CollapseWhitespace(field->value, false);
-
     ServerFieldTypeSet matching_types;
-    for (std::vector<AutofillProfile>::const_iterator it = profiles.begin();
-         it != profiles.end(); ++it) {
-      it->GetMatchingTypes(value, app_locale, &matching_types);
-    }
-    for (std::vector<CreditCard>::const_iterator it = credit_cards.begin();
-          it != credit_cards.end(); ++it) {
-      it->GetMatchingTypes(value, app_locale, &matching_types);
+
+    // If it's a password field, set the type directly.
+    if (field->form_control_type == "password") {
+      matching_types.insert(autofill::PASSWORD);
+    } else {
+      base::string16 value = CollapseWhitespace(field->value, false);
+      for (std::vector<AutofillProfile>::const_iterator it = profiles.begin();
+           it != profiles.end(); ++it) {
+        it->GetMatchingTypes(value, app_locale, &matching_types);
+      }
+      for (std::vector<CreditCard>::const_iterator it = credit_cards.begin();
+            it != credit_cards.end(); ++it) {
+        it->GetMatchingTypes(value, app_locale, &matching_types);
+      }
     }
 
     if (matching_types.empty())
@@ -774,9 +779,14 @@ void AutofillManager::UploadFormData(const FormStructure& submitted_form) {
 
   ServerFieldTypeSet non_empty_types;
   personal_data_->GetNonEmptyTypes(&non_empty_types);
+  // Always add PASSWORD to |non_empty_types| so that if |submitted_form|
+  // contains a password field it will be uploaded to the server. If
+  // |submitted_form| doesn't contain a password field, there is no side
+  // effect from adding PASSWORD to |non_empty_types|.
+  non_empty_types.insert(autofill::PASSWORD);
 
   download_manager_->StartUploadRequest(submitted_form, was_autofilled,
-                                       non_empty_types);
+                                        non_empty_types);
 }
 
 void AutofillManager::Reset() {

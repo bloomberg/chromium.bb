@@ -2897,6 +2897,12 @@ TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesForUpload) {
   form.fields.push_back(field);
   expected_types.push_back(types);
 
+  test::CreateTestFormField("", "40", "mypassword", "password", &field);
+  types.clear();
+  types.insert(PASSWORD);
+  form.fields.push_back(field);
+  expected_types.push_back(types);
+
   autofill_manager_->set_expected_submitted_field_types(expected_types);
   FormSubmitted(form);
 }
