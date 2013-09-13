@@ -3305,8 +3305,8 @@ def check_identifier_name_in_declaration(filename, line_number, line, file_state
                   the state of things in the file.
       error: The function to call with any errors found.
     """
-    # We don't check a return statement.
-    if match(r'\s*(return|delete)\b', line):
+    # We don't check return and delete statements and conversion operator declarations.
+    if match(r'\s*(return|delete|operator)\b', line):
         return
 
     # Basically, a declaration is a type name followed by whitespaces

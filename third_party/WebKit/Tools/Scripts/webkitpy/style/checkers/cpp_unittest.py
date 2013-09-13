@@ -4999,6 +4999,9 @@ class WebKitStyleTest(CppStyleTestBase):
         self.assert_lint('OwnPtr<uint32_t> under_score(new uint32_t);',
                          'under_score' + name_underscore_error_message)
 
+        # Conversion operator declaration.
+        self.assert_lint('operator int64_t();', '')
+
     def test_parameter_names(self):
         # Leave meaningless variable names out of function declarations.
         meaningless_variable_name_error_message = 'The parameter name "%s" adds no information, so it should be removed.  [readability/parameter_name] [5]'
