@@ -53,7 +53,6 @@
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
 #if defined(WIDEVINE_CDM_CENC_SUPPORT_AVAILABLE)
-#define EXPECT_WVCENC EXPECT_TRUE
 
 #if defined(WIDEVINE_CDM_AVC1_SUPPORT_AVAILABLE)
 #define EXPECT_WVAVC1 EXPECT_TRUE
@@ -74,7 +73,6 @@
 #endif
 
 #else  // !defined(WIDEVINE_CDM_CENC_SUPPORT_AVAILABLE)
-#define EXPECT_WVCENC EXPECT_FALSE
 #define EXPECT_WVAVC1 EXPECT_FALSE
 #define EXPECT_WVAVC1AAC EXPECT_FALSE
 #define EXPECT_WVAAC EXPECT_FALSE
@@ -83,7 +81,6 @@
 #else  // defined(WIDEVINE_CDM_AVAILABLE) &&
        // !defined(DISABLE_WIDEVINE_CDM_CANPLAYTYPE)
 #define EXPECT_WV EXPECT_FALSE
-#define EXPECT_WVCENC EXPECT_FALSE
 #define EXPECT_WVAVC1 EXPECT_FALSE
 #define EXPECT_WVAVC1AAC EXPECT_FALSE
 #define EXPECT_WVAAC EXPECT_FALSE
@@ -772,23 +769,23 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedWidevineTest,
 IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedWidevineTest,
                        IsSupportedKeySystemWithMediaMimeType_Widevine_MP4) {
   // Valid video types.
-  EXPECT_WVCENC(IsSupportedKeySystemWithMediaMimeType(
+  EXPECT_WVAVC1(IsSupportedKeySystemWithMediaMimeType(
       "video/mp4", no_codecs(), kWidevineAlpha));
   EXPECT_WVAVC1(IsSupportedKeySystemWithMediaMimeType(
       "video/mp4", avc1_codec(), kWidevineAlpha));
   EXPECT_WVAVC1AAC(IsSupportedKeySystemWithMediaMimeType(
       "video/mp4", avc1_and_aac_codecs(), kWidevineAlpha));
-  EXPECT_WVAAC(IsSupportedKeySystemWithMediaMimeType(
+  EXPECT_WVAVC1AAC(IsSupportedKeySystemWithMediaMimeType(
       "video/mp4", aac_codec(), kWidevineAlpha));
 
   // Valid video types - parent key system.
-  EXPECT_WVCENC(IsSupportedKeySystemWithMediaMimeType(
+  EXPECT_WVAVC1(IsSupportedKeySystemWithMediaMimeType(
       "video/mp4", no_codecs(), kWidevine));
   EXPECT_WVAVC1(IsSupportedKeySystemWithMediaMimeType(
       "video/mp4", avc1_codec(), kWidevine));
   EXPECT_WVAVC1AAC(IsSupportedKeySystemWithMediaMimeType(
       "video/mp4", avc1_and_aac_codecs(), kWidevine));
-  EXPECT_WVAAC(IsSupportedKeySystemWithMediaMimeType(
+  EXPECT_WVAVC1AAC(IsSupportedKeySystemWithMediaMimeType(
       "video/mp4", aac_codec(), kWidevine));
 
   // Extended codecs.
@@ -810,13 +807,13 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedWidevineTest,
       "video/mp4", mixed_codecs(), kWidevineAlpha));
 
   // Valid audio types.
-  EXPECT_WVCENC(IsSupportedKeySystemWithMediaMimeType(
+  EXPECT_WVAAC(IsSupportedKeySystemWithMediaMimeType(
       "audio/mp4", no_codecs(), kWidevineAlpha));
   EXPECT_WVAAC(IsSupportedKeySystemWithMediaMimeType(
       "audio/mp4", aac_codec(), kWidevineAlpha));
 
   // Valid audio types - parent key system.
-  EXPECT_WVCENC(IsSupportedKeySystemWithMediaMimeType(
+  EXPECT_WVAAC(IsSupportedKeySystemWithMediaMimeType(
       "audio/mp4", no_codecs(), kWidevine));
   EXPECT_WVAAC(IsSupportedKeySystemWithMediaMimeType(
       "audio/mp4", aac_codec(), kWidevine));

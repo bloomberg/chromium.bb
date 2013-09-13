@@ -5,7 +5,10 @@
 #include <string>
 #include <vector>
 
+#include "content/public/common/content_client.h"
+#include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/media/crypto/key_systems.h"
+#include "content/test/test_content_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 
@@ -63,7 +66,6 @@ using WebKit::WebString;
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
 #if defined(WIDEVINE_CDM_CENC_SUPPORT_AVAILABLE)
-#define EXPECT_WVCENC EXPECT_TRUE
 
 #if defined(WIDEVINE_CDM_AVC1_SUPPORT_AVAILABLE)
 #define EXPECT_WVAVC1 EXPECT_TRUE
@@ -84,7 +86,6 @@ using WebKit::WebString;
 #endif
 
 #else  // !defined(WIDEVINE_CDM_CENC_SUPPORT_AVAILABLE)
-#define EXPECT_WVCENC EXPECT_FALSE
 #define EXPECT_WVAVC1 EXPECT_FALSE
 #define EXPECT_WVAVC1AAC EXPECT_FALSE
 #define EXPECT_WVAAC EXPECT_FALSE
@@ -93,7 +94,6 @@ using WebKit::WebString;
 #else  // defined(WIDEVINE_CDM_AVAILABLE) &&
        // !defined(DISABLE_WIDEVINE_CDM_CANPLAYTYPE)
 #define EXPECT_WV EXPECT_FALSE
-#define EXPECT_WVCENC EXPECT_FALSE
 #define EXPECT_WVAVC1 EXPECT_FALSE
 #define EXPECT_WVAVC1AAC EXPECT_FALSE
 #define EXPECT_WVAAC EXPECT_FALSE
@@ -136,6 +136,21 @@ class KeySystemsTest : public testing::Test {
 
     mixed_codecs_.push_back("vorbis");
     mixed_codecs_.push_back("avc1");
+
+    // KeySystems requires a valid ContentRendererClient and thus ContentClient.
+    // The TestContentClient is not available inside Death Tests on some
+    // platforms (see below). Therefore, always provide a TestContentClient.
+    // Explanation: When Death Tests fork, there is a valid ContentClient.
+    // However, when they launch a new process instead of forking, the global
+    // variable is not copied and for some reason TestContentClientInitializer
+    // does not get created to set the global variable in the new process.
+    SetContentClient(&test_content_client_);
+    SetRendererClientForTesting(&content_renderer_client_);
+  }
+
+  virtual ~KeySystemsTest() {
+    // Clear the use of content_client_, which was set in SetUp().
+    SetContentClient(NULL);
   }
 
   typedef std::vector<std::string> CodecVector;
@@ -183,6 +198,8 @@ class KeySystemsTest : public testing::Test {
 
   CodecVector mixed_codecs_;
 
+  TestContentClient test_content_client_;
+  ContentRendererClient content_renderer_client_;
 };
 
 TEST_F(KeySystemsTest, ClearKey_Basic) {
@@ -753,7 +770,7 @@ TEST_F(KeySystemsTest, IsSupportedKeySystemWithMediaMimeType_Widevine_WebM) {
 
 TEST_F(KeySystemsTest, IsSupportedKeySystemWithMediaMimeType_Widevine_MP4) {
   // Valid video types.
-  EXPECT_WVCENC(IsSupportedKeySystemWithMediaMimeType(
+  EXPECT_WVAVC1(IsSupportedKeySystemWithMediaMimeType(
       "video/mp4", no_codecs(), kWidevineAlpha));
   EXPECT_WVAVC1(IsSupportedKeySystemWithMediaMimeType(
       "video/mp4", avc1_codec(), kWidevineAlpha));
@@ -763,7 +780,7 @@ TEST_F(KeySystemsTest, IsSupportedKeySystemWithMediaMimeType_Widevine_MP4) {
       "video/mp4", aac_codec(), kWidevineAlpha));
 
   // Valid video types - parent key system.
-  EXPECT_WVCENC(IsSupportedKeySystemWithMediaMimeType(
+  EXPECT_WVAVC1(IsSupportedKeySystemWithMediaMimeType(
       "video/mp4", no_codecs(), kWidevine));
   EXPECT_WVAVC1(IsSupportedKeySystemWithMediaMimeType(
       "video/mp4", avc1_codec(), kWidevine));
@@ -792,13 +809,13 @@ TEST_F(KeySystemsTest, IsSupportedKeySystemWithMediaMimeType_Widevine_MP4) {
       "video/mp4", mixed_codecs(), kWidevineAlpha));
 
   // Valid audio types.
-  EXPECT_WVCENC(IsSupportedKeySystemWithMediaMimeType(
+  EXPECT_WVAAC(IsSupportedKeySystemWithMediaMimeType(
       "audio/mp4", no_codecs(), kWidevineAlpha));
   EXPECT_WVAAC(IsSupportedKeySystemWithMediaMimeType(
       "audio/mp4", aac_codec(), kWidevineAlpha));
 
   // Valid audio types - parent key system.
-  EXPECT_WVCENC(IsSupportedKeySystemWithMediaMimeType(
+  EXPECT_WVAAC(IsSupportedKeySystemWithMediaMimeType(
       "audio/mp4", no_codecs(), kWidevine));
   EXPECT_WVAAC(IsSupportedKeySystemWithMediaMimeType(
       "audio/mp4", aac_codec(), kWidevine));

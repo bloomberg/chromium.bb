@@ -6,6 +6,7 @@
 #define CONTENT_PUBLIC_RENDERER_CONTENT_RENDERER_CLIENT_H_
 
 #include <string>
+#include <vector>
 
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
@@ -51,6 +52,7 @@ namespace content {
 
 class RenderView;
 class SynchronousCompositor;
+struct KeySystemInfo;
 struct WebPluginInfo;
 
 // Embedder API for participating in renderer logic.
@@ -243,6 +245,10 @@ class CONTENT_EXPORT ContentRendererClient {
 
   // Returns true if the page at |url| can use Pepper MediaStream APIs.
   virtual bool AllowPepperMediaStreamAPI(const GURL& url);
+
+  // Gives the embedder a chance to register the key system(s) it supports by
+  // populating |key_systems|.
+  virtual void AddKeySystems(std::vector<KeySystemInfo>* key_systems);
 
   // Returns true if we should report a detailed message (including a stack
   // trace) for console [logs|errors|exceptions]. |source| is the WebKit-
