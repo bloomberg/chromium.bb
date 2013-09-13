@@ -97,6 +97,10 @@ class DraggedTabControllerGtk : public content::NotificationObserver,
   virtual void LoadingStateChanged(content::WebContents* source) OVERRIDE;
   virtual content::JavaScriptDialogManager*
       GetJavaScriptDialogManager() OVERRIDE;
+  virtual void RequestMediaAccessPermission(
+      content::WebContents* web_contents,
+      const content::MediaStreamRequest& request,
+      const content::MediaResponseCallback& callback) OVERRIDE;
 
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,

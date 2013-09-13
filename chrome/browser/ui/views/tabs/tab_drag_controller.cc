@@ -16,6 +16,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_modal_dialogs/javascript_dialog_manager.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/media_utils.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -620,6 +621,17 @@ bool TabDragController::ShouldSuppressDialogs() {
 content::JavaScriptDialogManager*
 TabDragController::GetJavaScriptDialogManager() {
   return GetJavaScriptDialogManagerInstance();
+}
+
+void TabDragController::RequestMediaAccessPermission(
+    content::WebContents* web_contents,
+    const content::MediaStreamRequest& request,
+    const content::MediaResponseCallback& callback) {
+  ::RequestMediaAccessPermission(
+      web_contents,
+      Profile::FromBrowserContext(web_contents->GetBrowserContext()),
+      request,
+      callback);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

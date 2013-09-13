@@ -1316,6 +1316,8 @@
         'browser/ui/login/login_model.h',
         'browser/ui/login/login_prompt.cc',
         'browser/ui/login/login_prompt.h',
+        'browser/ui/media_utils.cc',
+        'browser/ui/media_utils.h',
         'browser/ui/metro_pin_tab_helper_win.cc',
         'browser/ui/metro_pin_tab_helper_win.h',
         'browser/ui/native_focus_tracker.h',

@@ -62,7 +62,6 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/infobars/simple_alert_infobar_delegate.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/pepper_broker_infobar_delegate.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
@@ -117,6 +116,7 @@
 #include "chrome/browser/ui/global_error/global_error.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
+#include "chrome/browser/ui/media_utils.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/search/search_delegate.h"
 #include "chrome/browser/ui/search/search_model.h"
@@ -1663,17 +1663,7 @@ void Browser::RequestMediaAccessPermission(
     content::WebContents* web_contents,
     const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback) {
-  const extensions::Extension* extension = NULL;
-  GURL origin(request.security_origin);
-  if (origin.SchemeIs(extensions::kExtensionScheme)) {
-    ExtensionService* extensions_service =
-        extensions::ExtensionSystem::Get(profile_)->extension_service();
-    extension = extensions_service->extensions()->GetByID(origin.host());
-    DCHECK(extension);
-  }
-
-  MediaCaptureDevicesDispatcher::GetInstance()->ProcessMediaAccessRequest(
-      web_contents, request, callback, extension);
+  ::RequestMediaAccessPermission(web_contents, profile_, request, callback);
 }
 
 bool Browser::RequestPpapiBrokerPermission(

@@ -246,6 +246,10 @@ class TabDragController : public content::WebContentsDelegate,
   virtual bool ShouldSuppressDialogs() OVERRIDE;
   virtual content::JavaScriptDialogManager*
       GetJavaScriptDialogManager() OVERRIDE;
+  virtual void RequestMediaAccessPermission(
+      content::WebContents* web_contents,
+      const content::MediaStreamRequest& request,
+      const content::MediaResponseCallback& callback) OVERRIDE;
 
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,

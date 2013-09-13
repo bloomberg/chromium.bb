@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/tabs/dragged_view_gtk.h"
 #include "chrome/browser/ui/gtk/tabs/tab_strip_gtk.h"
+#include "chrome/browser/ui/media_utils.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "content/public/browser/notification_source.h"
@@ -242,6 +243,17 @@ void DraggedTabControllerGtk::Observe(
   }
   // If we get here it means we got notification for a tab we don't know about.
   NOTREACHED();
+}
+
+void DraggedTabControllerGtk::RequestMediaAccessPermission(
+    content::WebContents* web_contents,
+    const content::MediaStreamRequest& request,
+    const content::MediaResponseCallback& callback) {
+  ::RequestMediaAccessPermission(
+      web_contents,
+      Profile::FromBrowserContext(web_contents->GetBrowserContext()),
+      request,
+      callback);
 }
 
 gfx::Point DraggedTabControllerGtk::GetWindowCreatePoint() const {
