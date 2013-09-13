@@ -768,19 +768,9 @@ void ChromeContentBrowserClient::GuestWebContentsCreated(
       return;
     }
 
-    switch (guest->GetViewType()) {
-      case GuestView::WEBVIEW: {
-        *guest_delegate = new WebViewGuest(guest_web_contents);
-        break;
-      }
-      case GuestView::ADVIEW: {
-        *guest_delegate = new AdViewGuest(guest_web_contents);
-        break;
-      }
-      default:
-        NOTREACHED();
-        break;
-    }
+    // Create a new GuestView of the same type as the opener.
+    *guest_delegate =
+        GuestView::Create(guest_web_contents, guest->GetViewType());
     return;
   }
 
@@ -791,13 +781,9 @@ void ChromeContentBrowserClient::GuestWebContentsCreated(
   std::string api_type;
   extra_params->GetString(guestview::kParameterApi, &api_type);
 
-  if (api_type == "adview") {
-    *guest_delegate  = new AdViewGuest(guest_web_contents);
-  } else if (api_type == "webview") {
-    *guest_delegate = new WebViewGuest(guest_web_contents);
-  } else {
-    NOTREACHED();
-  }
+  *guest_delegate =
+      GuestView::Create(guest_web_contents,
+                        GuestView::GetViewTypeFromString(api_type));
 }
 
 void ChromeContentBrowserClient::GuestWebContentsAttached(

@@ -6,7 +6,9 @@
 
 #include "base/lazy_instance.h"
 #include "chrome/browser/extensions/event_router.h"
+#include "chrome/browser/guestview/adview/adview_guest.h"
 #include "chrome/browser/guestview/guestview_constants.h"
+#include "chrome/browser/guestview/webview/webview_guest.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
@@ -49,6 +51,30 @@ GuestView::GuestView(WebContents* guest_web_contents)
       view_instance_id_(guestview::kInstanceIDNone) {
   webcontents_guestview_map.Get().insert(
       std::make_pair(guest_web_contents, this));
+}
+
+// static
+GuestView::Type GuestView::GetViewTypeFromString(const std::string& api_type) {
+  if (api_type == "adview") {
+    return GuestView::ADVIEW;
+  } else if (api_type == "webview") {
+    return GuestView::WEBVIEW;
+  }
+  return GuestView::UNKNOWN;
+}
+
+// static
+GuestView* GuestView::Create(WebContents* guest_web_contents,
+                             GuestView::Type view_type) {
+  switch (view_type) {
+    case GuestView::WEBVIEW:
+      return new WebViewGuest(guest_web_contents);
+    case GuestView::ADVIEW:
+      return new AdViewGuest(guest_web_contents);
+    default:
+      NOTREACHED();
+      return NULL;
+  }
 }
 
 // static
