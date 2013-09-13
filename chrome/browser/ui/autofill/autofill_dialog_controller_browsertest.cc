@@ -396,7 +396,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, FillInputFromAutofill) {
   controller()->DidAcceptSuggestion(string16(), 0);
 
   // All inputs should be filled.
-  AutofillProfileWrapper wrapper(&full_profile, 0);
+  AutofillProfileWrapper wrapper(&full_profile);
   for (size_t i = 0; i < inputs.size(); ++i) {
     EXPECT_EQ(wrapper.GetInfo(AutofillType(inputs[i].type)),
               view->GetTextContentsOfInput(inputs[i]));
@@ -424,6 +424,49 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, FillInputFromAutofill) {
   for (size_t i = 0; i < inputs.size(); ++i) {
     EXPECT_EQ(expectations[i], view->GetTextContentsOfInput(inputs[i]));
   }
+}
+
+// This test makes sure that picking a profile variant in the Autofill
+// popup works as expected.
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
+                       FillInputFromAutofillVariant) {
+  AutofillProfile full_profile(test::GetFullProfile());
+
+  // Set up some variant data.
+  std::vector<string16> names;
+  names.push_back(ASCIIToUTF16("John Doe"));
+  names.push_back(ASCIIToUTF16("Jane Doe"));
+  full_profile.SetRawMultiInfo(NAME_FULL, names);
+  std::vector<string16> emails;
+  emails.push_back(ASCIIToUTF16("user@example.com"));
+  emails.push_back(ASCIIToUTF16("admin@example.com"));
+  full_profile.SetRawMultiInfo(EMAIL_ADDRESS, emails);
+  controller()->GetTestingManager()->AddTestingProfile(&full_profile);
+
+  const DetailInputs& inputs =
+      controller()->RequestedFieldsForSection(SECTION_BILLING);
+  const DetailInput& triggering_input = inputs[0];
+  EXPECT_EQ(NAME_BILLING_FULL, triggering_input.type);
+  TestableAutofillDialogView* view = controller()->GetTestableView();
+  view->ActivateInput(triggering_input);
+
+  ASSERT_EQ(&triggering_input, controller()->input_showing_popup());
+
+  // Choose the variant suggestion.
+  controller()->DidAcceptSuggestion(string16(), 1);
+
+  // All inputs should be filled.
+  AutofillProfileWrapper wrapper(
+      &full_profile, AutofillType(NAME_BILLING_FULL), 1);
+  for (size_t i = 0; i < inputs.size(); ++i) {
+    EXPECT_EQ(wrapper.GetInfo(AutofillType(inputs[i].type)),
+              view->GetTextContentsOfInput(inputs[i]));
+  }
+
+  // Make sure the wrapper applies the variant index to the right group.
+  EXPECT_EQ(names[1], wrapper.GetInfo(AutofillType(NAME_BILLING_FULL)));
+  // Make sure the wrapper doesn't apply the variant index to the wrong group.
+  EXPECT_EQ(emails[0], wrapper.GetInfo(AutofillType(EMAIL_ADDRESS)));
 }
 
 // Tests that changing the value of a CC expiration date combobox works as

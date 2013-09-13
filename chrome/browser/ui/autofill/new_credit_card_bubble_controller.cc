@@ -111,7 +111,7 @@ void NewCreditCardBubbleController::SetupAndShow(
       CreditCard::IconResourceId(CreditCard::GetCreditCardType(card_number)));
   card_desc_.name = new_card_->TypeAndLastFourDigits();
 
-  AutofillProfileWrapper wrapper(billing_profile_.get(), 0);
+  AutofillProfileWrapper wrapper(billing_profile_.get());
   base::string16 unused;
   wrapper.GetDisplayText(&card_desc_.description, &unused);
 

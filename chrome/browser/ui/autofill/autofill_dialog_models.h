@@ -72,12 +72,6 @@ class SuggestionsMenuModel : public ui::SimpleMenuModel,
   void SetCheckedItem(const std::string& item_key);
   void SetCheckedIndex(size_t index);
 
-  // Sets the item to be checked to the |n|th item that has key |item_key|.
-  // If there are fewer than |n| items that share |item_key|, the last one
-  // becomes checked. If there is no item with |item_key|, nothing happens.
-  // |n| is 1-indexed.
-  void SetCheckedItemNthWithKey(const std::string& item_key, size_t n);
-
   int checked_item() const { return checked_item_; }
 
   // Enable/disable an item by key.

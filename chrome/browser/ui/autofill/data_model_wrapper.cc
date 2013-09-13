@@ -24,14 +24,14 @@ namespace autofill {
 
 DataModelWrapper::~DataModelWrapper() {}
 
-gfx::Image DataModelWrapper::GetIcon() {
-  return gfx::Image();
-}
-
 void DataModelWrapper::FillInputs(DetailInputs* inputs) {
   for (size_t i = 0; i < inputs->size(); ++i) {
     (*inputs)[i].initial_value = GetInfo(AutofillType((*inputs)[i].type));
   }
+}
+
+gfx::Image DataModelWrapper::GetIcon() {
+  return gfx::Image();
 }
 
 bool DataModelWrapper::GetDisplayText(
@@ -103,43 +103,29 @@ base::string16 EmptyDataModelWrapper::GetInfo(const AutofillType& type) const {
 
 void EmptyDataModelWrapper::FillFormField(AutofillField* field) const {}
 
-// AutofillDataModelWrapper
-
-AutofillDataModelWrapper::AutofillDataModelWrapper(
-    const AutofillDataModel* data_model,
-    size_t variant)
-    : data_model_(data_model),
-      variant_(variant) {}
-
-AutofillDataModelWrapper::~AutofillDataModelWrapper() {}
-
-base::string16 AutofillDataModelWrapper::GetInfo(const AutofillType& type)
-    const {
-  return data_model_->GetInfo(type, g_browser_process->GetApplicationLocale());
-}
-
-void AutofillDataModelWrapper::FillFormField(AutofillField* field) const {
-  data_model_->FillFormField(
-      *field, variant_, g_browser_process->GetApplicationLocale(), field);
-}
-
 // AutofillProfileWrapper
 
+AutofillProfileWrapper::AutofillProfileWrapper(const AutofillProfile* profile)
+    : profile_(profile),
+      variant_group_(NO_GROUP),
+      variant_(0) {}
+
 AutofillProfileWrapper::AutofillProfileWrapper(
-    const AutofillProfile* profile, size_t variant)
-    : AutofillDataModelWrapper(profile, variant),
-      profile_(profile) {}
+    const AutofillProfile* profile,
+    const AutofillType& type,
+    size_t variant)
+    : profile_(profile),
+      variant_group_(type.group()),
+      variant_(variant) {}
 
 AutofillProfileWrapper::~AutofillProfileWrapper() {}
 
-void AutofillProfileWrapper::FillInputs(DetailInputs* inputs) {
-  const std::string app_locale = g_browser_process->GetApplicationLocale();
-  for (size_t j = 0; j < inputs->size(); ++j) {
-    std::vector<base::string16> values;
-    profile_->GetMultiInfo(
-        AutofillType((*inputs)[j].type), app_locale, &values);
-    (*inputs)[j].initial_value = values[variant()];
-  }
+base::string16 AutofillProfileWrapper::GetInfo(const AutofillType& type)
+    const {
+  const std::string& app_locale = g_browser_process->GetApplicationLocale();
+  std::vector<base::string16> values;
+  profile_->GetMultiInfo(type, app_locale, &values);
+  return values[GetVariantForType(type)];
 }
 
 void AutofillProfileWrapper::FillFormField(AutofillField* field) const {
@@ -151,18 +137,33 @@ void AutofillProfileWrapper::FillFormField(AutofillField* field) const {
     // but the AutofillProfile class doesn't know how to fill credit card
     // fields. So, temporarily set the type to the corresponding profile type.
     field->SetHtmlType(HTML_TYPE_NAME, field->html_mode());
-    AutofillDataModelWrapper::FillFormField(field);
+
+    profile_->FillFormField(
+        *field, GetVariantForType(field->Type()),
+        g_browser_process->GetApplicationLocale(), field);
 
     // Restore the field's true type.
     field->SetHtmlType(original_type, field->html_mode());
   } else {
-    AutofillDataModelWrapper::FillFormField(field);
+    profile_->FillFormField(
+        *field, GetVariantForType(field->Type()),
+        g_browser_process->GetApplicationLocale(), field);
   }
 }
 
+size_t AutofillProfileWrapper::GetVariantForType(const AutofillType& type)
+    const {
+  if (type.group() == variant_group_)
+    return variant_;
+
+  return 0;
+}
+
+// AutofillShippingAddressWrapper
+
 AutofillShippingAddressWrapper::AutofillShippingAddressWrapper(
-    const AutofillProfile* profile, size_t variant)
-    : AutofillProfileWrapper(profile, variant) {}
+    const AutofillProfile* profile)
+    : AutofillProfileWrapper(profile) {}
 
 AutofillShippingAddressWrapper::~AutofillShippingAddressWrapper() {}
 
@@ -178,8 +179,7 @@ base::string16 AutofillShippingAddressWrapper::GetInfo(
 // AutofillCreditCardWrapper
 
 AutofillCreditCardWrapper::AutofillCreditCardWrapper(const CreditCard* card)
-    : AutofillDataModelWrapper(card, 0),
-      card_(card) {}
+    : card_(card) {}
 
 AutofillCreditCardWrapper::~AutofillCreditCardWrapper() {}
 
@@ -191,7 +191,7 @@ base::string16 AutofillCreditCardWrapper::GetInfo(const AutofillType& type)
   if (type.GetStorableType() == CREDIT_CARD_EXP_MONTH)
     return MonthComboboxModel::FormatMonth(card_->expiration_month());
 
-  return AutofillDataModelWrapper::GetInfo(type);
+  return card_->GetInfo(type, g_browser_process->GetApplicationLocale());
 }
 
 gfx::Image AutofillCreditCardWrapper::GetIcon() {
@@ -207,6 +207,11 @@ bool AutofillCreditCardWrapper::GetDisplayText(
 
   *vertically_compact = *horizontally_compact = card_->TypeAndLastFourDigits();
   return true;
+}
+
+void AutofillCreditCardWrapper::FillFormField(AutofillField* field) const {
+  card_->FillFormField(
+      *field, 0, g_browser_process->GetApplicationLocale(), field);
 }
 
 // WalletAddressWrapper

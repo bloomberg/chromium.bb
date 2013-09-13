@@ -958,7 +958,7 @@ TEST_F(AutofillDialogControllerTest, AutofillProfileVariants) {
   std::vector<string16> names;
   names.push_back(ASCIIToUTF16("John Doe"));
   names.push_back(ASCIIToUTF16("Jane Doe"));
-  full_profile.SetRawMultiInfo(EMAIL_ADDRESS, names);
+  full_profile.SetRawMultiInfo(NAME_FULL, names);
   std::vector<string16> emails;
   emails.push_back(ASCIIToUTF16(kFakeEmail));
   emails.push_back(ASCIIToUTF16("admin@example.com"));

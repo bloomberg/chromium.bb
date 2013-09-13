@@ -102,7 +102,6 @@ const char kKnowYourCustomerStatusUrl[] = "https://wallet.google.com/kyc";
 // Keys for the kAutofillDialogAutofillDefault pref dictionary (do not change
 // these values).
 const char kGuidPrefKey[] = "guid";
-const char kVariantPrefKey[] = "variant";
 
 // This string is stored along with saved addresses and credit cards in the
 // WebDB, and hence should not be modified, so that it remains consistent over
@@ -1487,14 +1486,13 @@ scoped_ptr<DataModelWrapper> AutofillDialogControllerImpl::CreateWrapper(
 
   AutofillProfile* profile = GetManager()->GetProfileByGUID(item_key);
   DCHECK(profile);
-  size_t variant = GetSelectedVariantForModel(*model);
   if (section == SECTION_SHIPPING) {
     return scoped_ptr<DataModelWrapper>(
-        new AutofillShippingAddressWrapper(profile, variant));
+        new AutofillShippingAddressWrapper(profile));
   }
   DCHECK_EQ(SECTION_BILLING, section);
   return scoped_ptr<DataModelWrapper>(
-      new AutofillProfileWrapper(profile, variant));
+      new AutofillProfileWrapper(profile));
 }
 
 gfx::Image AutofillDialogControllerImpl::SuggestionIconForSection(
@@ -1761,9 +1759,9 @@ void AutofillDialogControllerImpl::UserEditedOrActivatedInput(
                                            &popup_guids_);
   } else {
     std::vector<ServerFieldType> field_types;
-    field_types.push_back(EMAIL_ADDRESS);
-    for (DetailInputs::const_iterator iter = requested_shipping_fields_.begin();
-         iter != requested_shipping_fields_.end(); ++iter) {
+    const DetailInputs& inputs = RequestedFieldsForSection(section);
+    for (DetailInputs::const_iterator iter = inputs.begin();
+         iter != inputs.end(); ++iter) {
       field_types.push_back(iter->type);
     }
     GetManager()->GetProfileSuggestions(AutofillType(input->type),
@@ -2021,7 +2019,9 @@ void AutofillDialogControllerImpl::DidAcceptSuggestion(const string16& value,
         GetManager()->GetCreditCardByGUID(pair.first)));
   } else {
     wrapper.reset(new AutofillProfileWrapper(
-        GetManager()->GetProfileByGUID(pair.first), pair.second));
+        GetManager()->GetProfileByGUID(pair.first),
+        AutofillType(input_showing_popup_->type),
+        pair.second));
   }
 
   for (size_t i = SECTION_MIN; i <= SECTION_MAX; ++i) {
@@ -2616,12 +2616,11 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
       // Set the starting choice for the menu. First set to the default in case
       // the GUID saved in prefs refers to a profile that no longer exists.
       std::string guid;
-      int variant;
-      GetDefaultAutofillChoice(section, &guid, &variant);
+      GetDefaultAutofillChoice(section, &guid);
       SuggestionsMenuModel* model = SuggestionsMenuModelForSection(section);
-      model->SetCheckedItemNthWithKey(guid, variant + 1);
-      if (GetAutofillChoice(section, &guid, &variant))
-        model->SetCheckedItemNthWithKey(guid, variant + 1);
+      model->SetCheckedItem(guid);
+      if (GetAutofillChoice(section, &guid))
+        model->SetCheckedItem(guid);
     }
   }
 
@@ -2706,7 +2705,7 @@ void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(
       if (ShouldSaveDetailsLocally())
         SaveProfileGleanedFromSection(profile, section);
 
-      AutofillProfileWrapper profile_wrapper(&profile, 0);
+      AutofillProfileWrapper profile_wrapper(&profile);
       profile_wrapper.FillFormStructure(inputs, compare, &form_structure_);
     }
   }
@@ -3151,10 +3150,8 @@ void AutofillDialogControllerImpl::DoFinishSubmit() {
 
       SuggestionsMenuModel* model = SuggestionsMenuModelForSection(section);
       std::string item_key = model->GetItemKeyForCheckedItem();
-      if (IsASuggestionItemKey(item_key) || item_key == kSameAsBillingKey) {
-        int variant = GetSelectedVariantForModel(*model);
-        PersistAutofillChoice(section, item_key, variant);
-      }
+      if (IsASuggestionItemKey(item_key) || item_key == kSameAsBillingKey)
+        PersistAutofillChoice(section, item_key);
     }
 
     profile_->GetPrefs()->SetBoolean(::prefs::kAutofillDialogSaveData,
@@ -3185,12 +3182,10 @@ void AutofillDialogControllerImpl::DoFinishSubmit() {
 
 void AutofillDialogControllerImpl::PersistAutofillChoice(
     DialogSection section,
-    const std::string& guid,
-    int variant) {
+    const std::string& guid) {
   DCHECK(!IsPayingWithWallet());
   scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
   value->SetString(kGuidPrefKey, guid);
-  value->SetInteger(kVariantPrefKey, variant);
 
   DictionaryPrefUpdate updater(profile()->GetPrefs(),
                                ::prefs::kAutofillDialogAutofillDefault);
@@ -3200,12 +3195,10 @@ void AutofillDialogControllerImpl::PersistAutofillChoice(
 
 void AutofillDialogControllerImpl::GetDefaultAutofillChoice(
     DialogSection section,
-    std::string* guid,
-    int* variant) {
+    std::string* guid) {
   DCHECK(!IsPayingWithWallet());
   // The default choice is the first thing in the menu that is a suggestion
   // item.
-  *variant = 0;
   SuggestionsMenuModel* model = SuggestionsMenuModelForSection(section);
   for (int i = 0; i < model->GetItemCount(); ++i) {
     if (IsASuggestionItemKey(model->GetItemKeyAt(i))) {
@@ -3216,8 +3209,7 @@ void AutofillDialogControllerImpl::GetDefaultAutofillChoice(
 }
 
 bool AutofillDialogControllerImpl::GetAutofillChoice(DialogSection section,
-                                                     std::string* guid,
-                                                     int* variant) {
+                                                     std::string* guid) {
   DCHECK(!IsPayingWithWallet());
   const base::DictionaryValue* choices = profile()->GetPrefs()->GetDictionary(
       ::prefs::kAutofillDialogAutofillDefault);
@@ -3229,22 +3221,7 @@ bool AutofillDialogControllerImpl::GetAutofillChoice(DialogSection section,
     return false;
 
   choice->GetString(kGuidPrefKey, guid);
-  choice->GetInteger(kVariantPrefKey, variant);
   return true;
-}
-
-size_t AutofillDialogControllerImpl::GetSelectedVariantForModel(
-    const SuggestionsMenuModel& model) {
-  size_t variant = 0;
-  // Calculate the variant by looking at how many items come from the same
-  // data model.
-  for (int i = model.checked_item() - 1; i >= 0; --i) {
-    if (model.GetItemKeyAt(i) == model.GetItemKeyForCheckedItem())
-      variant++;
-    else
-      break;
-  }
-  return variant;
 }
 
 void AutofillDialogControllerImpl::LogOnFinishSubmitMetrics() {
