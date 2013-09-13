@@ -77,10 +77,11 @@ DEPOT_DEPS_NAME = {
   },
   'angle' : {
     "src" : "src/third_party/angle_dx11",
+    "src_old" : "src/third_party/angle",
     "recurse" : True,
     "depends" : None,
     "from" : 'chromium',
-    "platform": 'nt'
+    "platform": 'nt',
   },
   'v8' : {
     "src" : "src/v8",
@@ -889,8 +890,17 @@ class BisectPerformanceMetrics(object):
 
         if DEPOT_DEPS_NAME[d]['recurse'] and\
            DEPOT_DEPS_NAME[d]['from'] == depot:
-          if locals['deps'].has_key(DEPOT_DEPS_NAME[d]['src']):
-            re_results = rxp.search(locals['deps'][DEPOT_DEPS_NAME[d]['src']])
+          if (locals['deps'].has_key(DEPOT_DEPS_NAME[d]['src']) or
+              locals['deps'].has_key(DEPOT_DEPS_NAME[d]['src_old'])):
+            if locals['deps'].has_key(DEPOT_DEPS_NAME[d]['src']):
+              re_results = rxp.search(locals['deps'][DEPOT_DEPS_NAME[d]['src']])
+              self.depot_cwd[d] =\
+                  os.path.join(self.src_cwd, DEPOT_DEPS_NAME[d]['src'][4:])
+            elif locals['deps'].has_key(DEPOT_DEPS_NAME[d]['src_old']):
+              re_results =\
+                  rxp.search(locals['deps'][DEPOT_DEPS_NAME[d]['src_old']])
+              self.depot_cwd[d] =\
+                  os.path.join(self.src_cwd, DEPOT_DEPS_NAME[d]['src_old'][4:])
 
             if re_results:
               results[d] = re_results.group('revision')
