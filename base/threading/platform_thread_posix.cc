@@ -225,7 +225,7 @@ void PlatformThread::Join(PlatformThreadHandle thread_handle) {
   // the thread referred to by |thread_handle| may still be running long-lived /
   // blocking tasks.
   base::ThreadRestrictions::AssertIOAllowed();
-  pthread_join(thread_handle.handle_, NULL);
+  CHECK_EQ(0, pthread_join(thread_handle.handle_, NULL));
 }
 
 }  // namespace base
