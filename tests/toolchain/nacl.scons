@@ -30,7 +30,7 @@ cpp11_libs = ['libstdc++']# TODO(jfb) Disabled until toolchain rolls:, 'libc++']
 cpp11_envs = {}
 for lib in cpp11_libs:
   cpp11_envs[lib] = env.Clone()
-  cpp11_envs[lib].Append(CCFLAGS=['-std=c++11']# TODO(jfb), '-stdlib=' + lib])
+  cpp11_envs[lib].Append(CCFLAGS=['-std=c++11'])# TODO(jfb), '-stdlib=' + lib])
   # TODO(jfb)cpp11_envs[lib].Append(LINKFLAGS=['-stdlib=' + lib])
 
 # All the libraries were already included via -l switches in LINKFLAGS.
