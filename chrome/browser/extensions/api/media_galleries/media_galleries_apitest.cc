@@ -44,14 +44,13 @@ const char kTestGalleries[] = "testGalleries(%d)";
 // testing platforms with no default media galleries, such as CHROMEOS.
 void MakeFakeMediaGalleryForTest(Profile* profile, const base::FilePath& path) {
   base::RunLoop runloop;
-  chrome::StorageMonitor::GetInstance()->EnsureInitialized(
-      runloop.QuitClosure());
+  StorageMonitor::GetInstance()->EnsureInitialized(runloop.QuitClosure());
   runloop.Run();
 
-  chrome::MediaGalleriesPreferences* preferences =
+  MediaGalleriesPreferences* preferences =
       g_browser_process->media_file_system_registry()->GetPreferences(profile);
 
-  chrome::MediaGalleryPrefInfo gallery_info;
+  MediaGalleryPrefInfo gallery_info;
   ASSERT_FALSE(preferences->LookUpGalleryByPath(path, &gallery_info));
   preferences->AddGallery(gallery_info.device_id,
                           gallery_info.path,
@@ -82,19 +81,17 @@ class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
   }
 
   void AttachFakeDevice() {
-    device_id_ = chrome::StorageInfo::MakeDeviceId(
-        chrome::StorageInfo::REMOVABLE_MASS_STORAGE_WITH_DCIM, kDeviceId);
+    device_id_ = StorageInfo::MakeDeviceId(
+        StorageInfo::REMOVABLE_MASS_STORAGE_WITH_DCIM, kDeviceId);
 
-    chrome::StorageMonitor::GetInstance()->receiver()->ProcessAttach(
-        chrome::StorageInfo(device_id_, string16(), kDevicePath,
-                            ASCIIToUTF16(kDeviceName),
-                            string16(), string16(), 0));
+    StorageMonitor::GetInstance()->receiver()->ProcessAttach(
+        StorageInfo(device_id_, string16(), kDevicePath,
+                    ASCIIToUTF16(kDeviceName), string16(), string16(), 0));
     content::RunAllPendingInMessageLoop();
   }
 
   void DetachFakeDevice() {
-    chrome::StorageMonitor::GetInstance()->receiver()->ProcessDetach(
-        device_id_);
+    StorageMonitor::GetInstance()->receiver()->ProcessDetach(device_id_);
     content::RunAllPendingInMessageLoop();
   }
 
@@ -104,7 +101,7 @@ class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
                        MediaGalleriesNoAccess) {
-  chrome::EnsureMediaDirectoriesExists media_directories;
+  EnsureMediaDirectoriesExists media_directories;
   ASSERT_TRUE(RunPlatformAppTest("api_test/media_galleries/no_access"))
       << message_;
   RunSecondTestPhase(base::UTF8ToUTF16(base::StringPrintf(
@@ -112,21 +109,21 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest, NoGalleriesRead) {
-  chrome::EnsureMediaDirectoriesExists media_directories;
+  EnsureMediaDirectoriesExists media_directories;
   ASSERT_TRUE(RunPlatformAppTest("api_test/media_galleries/no_galleries"))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
                        NoGalleriesCopyTo) {
-  chrome::EnsureMediaDirectoriesExists media_directories;
+  EnsureMediaDirectoriesExists media_directories;
   ASSERT_TRUE(RunPlatformAppTest(
       "api_test/media_galleries/no_galleries_copy_to")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
                        MediaGalleriesRead) {
-  chrome::EnsureMediaDirectoriesExists media_directories;
+  EnsureMediaDirectoriesExists media_directories;
   ASSERT_TRUE(RunPlatformAppTest("api_test/media_galleries/read_access"))
       << message_;
   RunSecondTestPhase(base::UTF8ToUTF16(base::StringPrintf(
@@ -135,7 +132,7 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
                        MediaGalleriesCopyTo) {
-  chrome::EnsureMediaDirectoriesExists media_directories;
+  EnsureMediaDirectoriesExists media_directories;
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   MakeFakeMediaGalleryForTest(browser()->profile(), temp_dir.path());
@@ -145,7 +142,7 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
                        MediaGalleriesCopyToNoAccess) {
-  chrome::EnsureMediaDirectoriesExists media_directories;
+  EnsureMediaDirectoriesExists media_directories;
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   MakeFakeMediaGalleryForTest(browser()->profile(), temp_dir.path());
@@ -156,7 +153,7 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
                        MediaGalleriesAccessAttached) {
-  chrome::EnsureMediaDirectoriesExists media_directories;
+  EnsureMediaDirectoriesExists media_directories;
 
   AttachFakeDevice();
 
@@ -172,7 +169,7 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
                        GetFilesystemMetadata) {
-  chrome::EnsureMediaDirectoriesExists media_directories;
+  EnsureMediaDirectoriesExists media_directories;
   ASSERT_TRUE(RunPlatformAppTest("api_test/media_galleries/metadata"))
       << message_;
 }

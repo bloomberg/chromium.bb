@@ -4,8 +4,6 @@
 
 #include "chrome/browser/media_galleries/scoped_mtp_device_map_entry.h"
 
-namespace chrome {
-
 ScopedMTPDeviceMapEntry::ScopedMTPDeviceMapEntry(
     const base::FilePath::StringType& device_location,
     const base::Closure& on_destruction_callback)
@@ -16,5 +14,3 @@ ScopedMTPDeviceMapEntry::ScopedMTPDeviceMapEntry(
 ScopedMTPDeviceMapEntry::~ScopedMTPDeviceMapEntry() {
   on_destruction_callback_.Run();
 }
-
-}  // namespace chrome

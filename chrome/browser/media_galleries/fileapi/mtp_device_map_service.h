@@ -11,8 +11,6 @@
 #include "base/lazy_instance.h"
 #include "base/threading/thread_checker.h"
 
-namespace chrome {
-
 class MTPDeviceAsyncDelegate;
 
 // This class provides media transfer protocol (MTP) device delegate to
@@ -61,7 +59,5 @@ class MTPDeviceMapService {
 
   DISALLOW_COPY_AND_ASSIGN(MTPDeviceMapService);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_MTP_DEVICE_MAP_SERVICE_H_

@@ -9,8 +9,6 @@
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 
-namespace chrome {
-
 // Prefix constants used in device unique id.
 extern const char kFSUniqueIdPrefix[];
 extern const char kVendorModelSerialPrefix[];
@@ -25,7 +23,5 @@ extern const char16 kWPDDevInterfaceGUID[];
 #endif
 
 extern const base::FilePath::CharType kDCIMDirectoryName[];
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_STORAGE_MONITOR_REMOVABLE_DEVICE_CONSTANTS_H_

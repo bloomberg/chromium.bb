@@ -26,8 +26,6 @@
 using extensions::APIPermission;
 using extensions::Extension;
 
-namespace chrome {
-
 namespace {
 
 // Comparator for sorting GalleryPermissionsVector -- sorts
@@ -81,7 +79,7 @@ MediaGalleriesDialogController::MediaGalleriesDialogController(
       preferences_(NULL) {}
 
 MediaGalleriesDialogController::~MediaGalleriesDialogController() {
-  if (chrome::StorageMonitor::GetInstance())
+  if (StorageMonitor::GetInstance())
     StorageMonitor::GetInstance()->RemoveObserver(this);
 
   if (select_folder_dialog_.get())
@@ -410,5 +408,3 @@ void MediaGalleriesDialogController::UpdateGalleriesOnDeviceEvent(
 // MediaGalleries dialog -------------------------------------------------------
 
 MediaGalleriesDialog::~MediaGalleriesDialog() {}
-
-}  // namespace chrome

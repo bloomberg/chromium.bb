@@ -125,7 +125,7 @@ class MediaGalleriesPrivateGalleryWatchApiTest : public ExtensionApiTest {
 #if defined(OS_WIN)
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPrivateGalleryWatchApiTest,
                        BasicGalleryWatch) {
-  chrome::EnsureMediaDirectoriesExists media_directories;
+  EnsureMediaDirectoriesExists media_directories;
   content::RenderViewHost* host = GetBackgroundHostForTestExtension();
   ASSERT_TRUE(host);
 
@@ -173,7 +173,7 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPrivateGalleryWatchApiTest,
 
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPrivateGalleryWatchApiTest,
                        RemoveListenerAndModifyGallery) {
-  chrome::EnsureMediaDirectoriesExists media_directories;
+  EnsureMediaDirectoriesExists media_directories;
   content::RenderViewHost* host = GetBackgroundHostForTestExtension();
   ASSERT_TRUE(host);
 
@@ -213,7 +213,7 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPrivateGalleryWatchApiTest,
 
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPrivateGalleryWatchApiTest,
                        SetupGalleryWatchWithoutListeners) {
-  chrome::EnsureMediaDirectoriesExists media_directories;
+  EnsureMediaDirectoriesExists media_directories;
   content::RenderViewHost* host = GetBackgroundHostForTestExtension();
   ASSERT_TRUE(host);
 
@@ -239,7 +239,7 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPrivateGalleryWatchApiTest,
 
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPrivateGalleryWatchApiTest,
                        SetupGalleryChangedListenerWithoutWatchers) {
-  chrome::EnsureMediaDirectoriesExists media_directories;
+  EnsureMediaDirectoriesExists media_directories;
   content::RenderViewHost* host = GetBackgroundHostForTestExtension();
   ASSERT_TRUE(host);
 
@@ -280,7 +280,7 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPrivateGalleryWatchApiTest,
 
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPrivateGalleryWatchApiTest,
                        GetAllGalleryWatch) {
-  chrome::EnsureMediaDirectoriesExists media_directories;
+  EnsureMediaDirectoriesExists media_directories;
   content::RenderViewHost* host = GetBackgroundHostForTestExtension();
   ASSERT_TRUE(host);
 
@@ -330,7 +330,7 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPrivateGalleryWatchApiTest,
 
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPrivateGalleryWatchApiTest,
                        RemoveAllGalleryWatch) {
-  chrome::EnsureMediaDirectoriesExists media_directories;
+  EnsureMediaDirectoriesExists media_directories;
   content::RenderViewHost* host = GetBackgroundHostForTestExtension();
   ASSERT_TRUE(host);
 
@@ -375,7 +375,7 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPrivateGalleryWatchApiTest,
 // Please refer to crbug.com/144491.
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPrivateGalleryWatchApiTest,
                        SetupGalleryWatch) {
-  chrome::EnsureMediaDirectoriesExists media_directories;
+  EnsureMediaDirectoriesExists media_directories;
   content::RenderViewHost* host = GetBackgroundHostForTestExtension();
   ASSERT_TRUE(host);
 
@@ -399,7 +399,7 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPrivateGalleryWatchApiTest,
 // Please refer to crbug.com/144491.
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPrivateGalleryWatchApiTest,
                        GetAllGalleryWatch) {
-  chrome::EnsureMediaDirectoriesExists media_directories;
+  EnsureMediaDirectoriesExists media_directories;
   content::RenderViewHost* host = GetBackgroundHostForTestExtension();
   ASSERT_TRUE(host);
 

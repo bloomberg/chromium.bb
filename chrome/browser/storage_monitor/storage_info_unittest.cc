@@ -11,8 +11,6 @@ const char kMtpDeviceId[] = "mtp:VendorModelSerial:ABC:1233:1237912873";
 const char kUniqueId[] = "VendorModelSerial:ABC:1233:1237912873";
 const char kImageCaptureDeviceId[] = "ic:xyz";
 
-namespace chrome {
-
 // Test to verify |MakeDeviceId| functionality using a sample
 // mtp device unique id.
 TEST(StorageInfoTest, MakeMtpDeviceId) {
@@ -32,11 +30,9 @@ TEST(StorageInfoTest, CrackMtpDeviceId) {
 }
 
 TEST(StorageInfoTest, TestImageCaptureDeviceId) {
-  chrome::StorageInfo::Type type;
+  StorageInfo::Type type;
   std::string id;
   ASSERT_TRUE(StorageInfo::CrackDeviceId(kImageCaptureDeviceId, &type, &id));
   EXPECT_EQ(StorageInfo::MAC_IMAGE_CAPTURE, type);
   EXPECT_EQ("xyz", id);
 }
-
-}  // namespace chrome

@@ -13,8 +13,6 @@
 #include "base/platform_file.h"
 #include "chrome/browser/media_galleries/fileapi/mtp_device_async_delegate.h"
 
-namespace chrome {
-
 // Used to represent snapshot file request params.
 struct SnapshotRequestInfo {
   SnapshotRequestInfo(
@@ -110,7 +108,5 @@ class SnapshotFileDetails {
 
   DISALLOW_COPY_AND_ASSIGN(SnapshotFileDetails);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_MEDIA_GALLERIES_LINUX_SNAPSHOT_FILE_DETAILS_H_

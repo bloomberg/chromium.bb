@@ -10,7 +10,6 @@
 #include "content/public/browser/child_process_data.h"
 #include "ipc/ipc_platform_file.h"
 
-using chrome::MediaFileSystemBackend;
 using content::BrowserThread;
 using content::UtilityProcessHost;
 

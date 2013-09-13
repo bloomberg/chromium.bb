@@ -38,8 +38,6 @@
 using fileapi::FileSystemContext;
 using fileapi::FileSystemURL;
 
-namespace chrome {
-
 const char MediaFileSystemBackend::kMediaTaskRunnerName[] =
     "media-task-runner";
 
@@ -193,5 +191,3 @@ MediaFileSystemBackend::GetQuotaUtil() {
   // No quota support.
   return NULL;
 }
-
-}  // namespace chrome

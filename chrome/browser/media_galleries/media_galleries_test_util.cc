@@ -18,8 +18,6 @@
 #include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chrome {
-
 scoped_refptr<extensions::Extension> AddMediaGalleriesApp(
     const std::string& name,
     const std::vector<std::string>& media_galleries_permissions,
@@ -100,5 +98,3 @@ void EnsureMediaDirectoriesExists::Init() {
   num_galleries_ = 3;
 #endif
 }
-
-}  // namespace chrome

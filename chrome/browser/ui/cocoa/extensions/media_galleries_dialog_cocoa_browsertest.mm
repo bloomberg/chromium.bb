@@ -20,8 +20,6 @@ using ::testing::Return;
 using ::testing::ReturnRef;
 using web_modal::WebContentsModalDialogManager;
 
-namespace chrome {
-
 class MediaGalleriesDialogBrowserTest : public InProcessBrowserTest {
 };
 
@@ -58,5 +56,3 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesDialogBrowserTest, Close) {
   test_api.CloseAllDialogs();
   EXPECT_FALSE([window isVisible]);
 }
-
-}  // namespace chrome

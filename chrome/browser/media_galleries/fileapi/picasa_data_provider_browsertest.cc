@@ -18,8 +18,6 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/test/test_browser_thread.h"
 
-using chrome::MediaFileSystemBackend;
-
 namespace picasa {
 
 namespace {

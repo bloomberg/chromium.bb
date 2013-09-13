@@ -6,8 +6,6 @@
 
 using ::testing::Return;
 
-namespace chrome {
-
 MediaGalleriesDialogControllerMock::MediaGalleriesDialogControllerMock(
     const extensions::Extension& extension)
     : MediaGalleriesDialogController(extension) {
@@ -19,5 +17,3 @@ MediaGalleriesDialogControllerMock::MediaGalleriesDialogControllerMock(
 
 MediaGalleriesDialogControllerMock::~MediaGalleriesDialogControllerMock() {
 }
-
-}  // namespace chrome

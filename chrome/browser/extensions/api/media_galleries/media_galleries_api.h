@@ -34,28 +34,25 @@ class MediaGalleriesGetMediaFileSystemsFunction
     MediaGalleries::GetMediaFileSystemsInteractivity interactive);
 
   // Always show the dialog.
-  void AlwaysShowDialog(
-      const std::vector<chrome::MediaFileSystemInfo>& filesystems);
+  void AlwaysShowDialog(const std::vector<MediaFileSystemInfo>& filesystems);
 
   // If no galleries are found, show the dialog, otherwise return them.
   void ShowDialogIfNoGalleries(
-      const std::vector<chrome::MediaFileSystemInfo>& filesystems);
+      const std::vector<MediaFileSystemInfo>& filesystems);
 
   // Grabs galleries from the media file system registry and passes them to
   // |ReturnGalleries|.
   void GetAndReturnGalleries();
 
   // Returns galleries to the caller.
-  void ReturnGalleries(
-      const std::vector<chrome::MediaFileSystemInfo>& filesystems);
+  void ReturnGalleries(const std::vector<MediaFileSystemInfo>& filesystems);
 
   // Shows the configuration dialog to edit gallery preferences.
   void ShowDialog();
 
   // A helper method that calls
   // MediaFileSystemRegistry::GetMediaFileSystemsForExtension().
-  void GetMediaFileSystemsForExtension(
-      const chrome::MediaFileSystemsCallback& cb);
+  void GetMediaFileSystemsForExtension(const MediaFileSystemsCallback& cb);
 };
 
 }  // namespace extensions

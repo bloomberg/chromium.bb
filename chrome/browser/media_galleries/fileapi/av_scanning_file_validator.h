@@ -12,8 +12,6 @@ namespace base {
 class FilePath;
 }  // namespace base
 
-namespace chrome {
-
 // This class supports AV scanning on post write validation.
 class AVScanningFileValidator : public fileapi::CopyOrMoveFileValidator {
  public:
@@ -31,7 +29,5 @@ class AVScanningFileValidator : public fileapi::CopyOrMoveFileValidator {
  private:
   DISALLOW_COPY_AND_ASSIGN(AVScanningFileValidator);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_AV_SCANNING_FILE_VALIDATOR_H_

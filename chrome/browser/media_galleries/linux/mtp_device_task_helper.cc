@@ -15,8 +15,6 @@
 #include "webkit/browser/fileapi/async_file_util.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
-namespace chrome {
-
 namespace {
 
 // Does nothing.
@@ -182,5 +180,3 @@ void MTPDeviceTaskHelper::HandleDeviceError(
                                    FROM_HERE,
                                    base::Bind(error_callback, error));
 }
-
-}  // namespace chrome

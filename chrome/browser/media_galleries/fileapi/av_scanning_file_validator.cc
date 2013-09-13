@@ -23,8 +23,6 @@
 
 using content::BrowserThread;
 
-namespace chrome {
-
 namespace {
 
 #if defined(OS_WIN)
@@ -77,5 +75,3 @@ void AVScanningFileValidator::StartPostWriteValidation(
 
 AVScanningFileValidator::AVScanningFileValidator() {
 }
-
-}  // namespace chrome

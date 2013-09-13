@@ -7,8 +7,6 @@
 
 #include "chrome/browser/storage_monitor/storage_info.h"
 
-namespace chrome {
-
 // Clients use this class to register for event-based notifications of
 // removable storage devices attached to or removed from the system.
 class RemovableStorageObserver {
@@ -24,7 +22,5 @@ class RemovableStorageObserver {
  protected:
   virtual ~RemovableStorageObserver() {}
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_STORAGE_MONITOR_REMOVABLE_STORAGE_OBSERVER_H_

@@ -38,8 +38,6 @@ using base::DictionaryValue;
 using base::ListValue;
 using extensions::ExtensionPrefs;
 
-namespace chrome {
-
 namespace {
 
 // Pref key for the list of media gallery permissions.
@@ -367,9 +365,9 @@ void MediaGalleriesPreferences::AddDefaultGalleriesIfFreshProfile() {
 
   // Fresh profile case.
   const int kDirectoryKeys[] = {
-    DIR_USER_MUSIC,
-    DIR_USER_PICTURES,
-    DIR_USER_VIDEOS,
+    chrome::DIR_USER_MUSIC,
+    chrome::DIR_USER_PICTURES,
+    chrome::DIR_USER_VIDEOS,
   };
 
   for (size_t i = 0; i < arraysize(kDirectoryKeys); ++i) {
@@ -947,5 +945,3 @@ void MediaGalleriesPreferences::SetExtensionPrefsForTesting(
     extensions::ExtensionPrefs* extension_prefs) {
   extension_prefs_for_testing_ = extension_prefs;
 }
-
-}  // namespace chrome

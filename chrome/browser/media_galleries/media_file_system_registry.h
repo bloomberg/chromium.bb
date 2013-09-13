@@ -21,7 +21,12 @@
 #include "chrome/browser/media_galleries/mtp_device_delegate_impl.h"
 #include "chrome/browser/storage_monitor/removable_storage_observer.h"
 
+class ExtensionGalleriesHost;
+class MediaFileSystemContext;
+class MediaGalleriesPreferences;
 class Profile;
+class ScopedMTPDeviceMapEntry;
+
 
 namespace content {
 class RenderViewHost;
@@ -34,13 +39,6 @@ class Extension;
 namespace fileapi {
 class IsolatedContext;
 }
-
-namespace chrome {
-
-class ExtensionGalleriesHost;
-class MediaFileSystemContext;
-class MediaGalleriesPreferences;
-class ScopedMTPDeviceMapEntry;
 
 struct MediaFileSystemInfo {
   MediaFileSystemInfo(const string16& fs_name,
@@ -135,7 +133,5 @@ class MediaFileSystemRegistry : public RemovableStorageObserver {
 
   DISALLOW_COPY_AND_ASSIGN(MediaFileSystemRegistry);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_MEDIA_GALLERIES_MEDIA_FILE_SYSTEM_REGISTRY_H_

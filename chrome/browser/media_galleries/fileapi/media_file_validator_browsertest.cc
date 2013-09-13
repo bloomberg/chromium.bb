@@ -65,8 +65,6 @@ base::FilePath GetMediaTestDir() {
 
 }  // namespace
 
-namespace chrome {
-
 class MediaFileValidatorTest : public InProcessBrowserTest {
  public:
   MediaFileValidatorTest() : test_file_size_(0) {}
@@ -279,5 +277,3 @@ IN_PROC_BROWSER_TEST_F(MediaFileValidatorTest, ValidVideo) {
   test_file = test_file.AppendASCII("bear-320x240-multitrack.webm");
   MoveTestFromFile("multitrack.webm", test_file, true);
 }
-
-}  // namespace chrome

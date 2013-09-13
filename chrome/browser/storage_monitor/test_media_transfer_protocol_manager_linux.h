@@ -7,8 +7,6 @@
 
 #include "device/media_transfer_protocol/media_transfer_protocol_manager.h"
 
-namespace chrome {
-
 // A dummy MediaTransferProtocolManager implementation.
 class TestMediaTransferProtocolManagerLinux
     : public device::MediaTransferProtocolManager {
@@ -55,7 +53,5 @@ class TestMediaTransferProtocolManagerLinux
 
   DISALLOW_COPY_AND_ASSIGN(TestMediaTransferProtocolManagerLinux);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_STORAGE_MONITOR_TEST_MEDIA_TRANSFER_PROTOCOL_MANAGER_LINUX_H_

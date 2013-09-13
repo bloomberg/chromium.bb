@@ -19,8 +19,6 @@
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 
-using chrome::MediaFileSystemBackend;
-
 namespace picasa {
 
 namespace {
@@ -42,7 +40,7 @@ PicasaDataProvider::PicasaDataProvider(const base::FilePath& database_path)
       weak_factory_(this) {
   DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
 
-  chrome::StartFilePathWatchOnMediaTaskRunner(
+  StartFilePathWatchOnMediaTaskRunner(
       database_path_.DirName().AppendASCII(kPicasaTempDirName),
       base::Bind(&PicasaDataProvider::OnTempDirWatchStarted,
                  weak_factory_.GetWeakPtr()),

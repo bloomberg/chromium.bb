@@ -28,8 +28,6 @@
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chrome {
-
 namespace {
 
 const char kValidFS[] = "vfat";
@@ -183,7 +181,7 @@ class StorageMonitorLinuxTest : public testing::Test {
                 arraysize(initial_test_data),
                 true  /* overwrite */);
 
-    test::TestStorageMonitor::RemoveSingleton();
+    TestStorageMonitor::RemoveSingleton();
     monitor_ = new TestStorageMonitorLinux(mtab_file_, &message_loop_);
     scoped_ptr<StorageMonitor> pass_monitor(monitor_);
     TestingBrowserProcess* browser_process = TestingBrowserProcess::GetGlobal();
@@ -203,7 +201,7 @@ class StorageMonitorLinuxTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
 
     // Linux storage monitor must be destroyed on the UI thread, so do it here.
-    test::TestStorageMonitor::RemoveSingleton();
+    TestStorageMonitor::RemoveSingleton();
     base::RunLoop().RunUntilIdle();
   }
 
@@ -699,5 +697,3 @@ TEST_F(StorageMonitorLinuxTest, DevicePartitionSize) {
 }
 
 }  // namespace
-
-}  // namespace chrome

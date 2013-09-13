@@ -17,8 +17,6 @@ using ::testing::Return;
 using ::testing::ReturnPointee;
 using ::testing::ReturnRef;
 
-namespace chrome {
-
 namespace {
 
 MediaGalleryPrefInfo MakePrefInfoForTesting(MediaGalleryPrefId id) {
@@ -184,5 +182,3 @@ TEST_F(MediaGalleriesDialogTest, ForgetDeletes) {
   attached_permissions.pop_back();
   EXPECT_EQ(1U, dialog.checkbox_map_.size());
 }
-
-}  // namespace chrome

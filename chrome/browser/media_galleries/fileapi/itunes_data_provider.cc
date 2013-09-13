@@ -24,8 +24,6 @@
 #include "third_party/icu/source/common/unicode/locid.h"
 #include "webkit/browser/fileapi/native_file_util.h"
 
-using chrome::MediaFileSystemBackend;
-
 namespace itunes {
 
 namespace {
@@ -188,7 +186,7 @@ ITunesDataProvider::ITunesDataProvider(const base::FilePath& library_path)
   DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
   DCHECK(!library_path_.empty());
 
-  chrome::StartFilePathWatchOnMediaTaskRunner(
+  StartFilePathWatchOnMediaTaskRunner(
       library_path_,
       base::Bind(&ITunesDataProvider::OnLibraryWatchStarted,
                  weak_factory_.GetWeakPtr()),

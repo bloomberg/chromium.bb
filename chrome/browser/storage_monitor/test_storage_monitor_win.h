@@ -13,9 +13,6 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/storage_monitor/storage_monitor_win.h"
 
-namespace chrome {
-namespace test {
-
 class TestPortableDeviceWatcherWin;
 class TestVolumeMountWatcherWin;
 
@@ -36,8 +33,5 @@ class TestStorageMonitorWin: public StorageMonitorWin {
  private:
   DISALLOW_COPY_AND_ASSIGN(TestStorageMonitorWin);
 };
-
-}  // namespace test
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_STORAGE_MONITOR_TEST_STORAGE_MONITOR_WIN_H_

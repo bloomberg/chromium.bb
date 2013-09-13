@@ -12,15 +12,13 @@
 #include "chrome/browser/storage_monitor/test_storage_monitor.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chrome {
-
 std::string GalleryName(const MediaGalleryPrefInfo& gallery) {
   string16 name = gallery.GetGalleryDisplayName();
   return UTF16ToASCII(name);
 }
 
 TEST(MediaGalleriesDialogControllerTest, TestNameGeneration) {
-  ASSERT_TRUE(test::TestStorageMonitor::CreateAndInstall());
+  ASSERT_TRUE(TestStorageMonitor::CreateAndInstall());
   MediaGalleryPrefInfo gallery;
   gallery.pref_id = 1;
   gallery.device_id = StorageInfo::MakeDeviceId(
@@ -61,7 +59,5 @@ TEST(MediaGalleriesDialogControllerTest, TestNameGeneration) {
 
   gallery.path = base::FilePath(FILE_PATH_LITERAL("sub/path"));
   EXPECT_EQ("path - 977 KB vendor, model", GalleryName(gallery));
-  test::TestStorageMonitor::RemoveSingleton();
+  TestStorageMonitor::RemoveSingleton();
 }
-
-}  // namespace chrome

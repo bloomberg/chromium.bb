@@ -16,8 +16,6 @@
 #include "device/media_transfer_protocol/mtp_file_entry.pb.h"
 #include "webkit/browser/fileapi/async_file_util.h"
 
-namespace chrome {
-
 class MTPReadFileWorker;
 struct SnapshotRequestInfo;
 
@@ -150,7 +148,5 @@ class MTPDeviceTaskHelper {
 
   DISALLOW_COPY_AND_ASSIGN(MTPDeviceTaskHelper);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_MEDIA_GALLERIES_LINUX_MTP_DEVICE_TASK_HELPER_H_

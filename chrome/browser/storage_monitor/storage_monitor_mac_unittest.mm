@@ -19,8 +19,6 @@
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chrome {
-
 uint64 kTestSize = 1000000ULL;
 
 namespace {
@@ -46,7 +44,7 @@ class StorageMonitorMacTest : public testing::Test {
   }
 
   virtual void SetUp() OVERRIDE {
-    test::TestStorageMonitor::RemoveSingleton();
+    TestStorageMonitor::RemoveSingleton();
     monitor_ = new StorageMonitorMac;
     scoped_ptr<StorageMonitor> pass_monitor(monitor_);
     TestingBrowserProcess* browser_process = TestingBrowserProcess::GetGlobal();
@@ -184,5 +182,3 @@ TEST_F(StorageMonitorMacTest, DMG) {
   UpdateDisk(info, StorageMonitorMac::UPDATE_DEVICE_ADDED);
   EXPECT_EQ(0, mock_storage_observer_->attach_calls());
 }
-
-}  // namespace chrome

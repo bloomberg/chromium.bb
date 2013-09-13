@@ -18,8 +18,6 @@
 
 using content::BrowserThread;
 
-namespace chrome {
-
 namespace {
 
 // MediaDeviceNotification.DeviceInfo histogram values.
@@ -251,5 +249,3 @@ bool MediaStorageUtil::IsRemovableStorageAttached(const std::string& id) {
   }
   return false;
 }
-
-}  // namespace chrome

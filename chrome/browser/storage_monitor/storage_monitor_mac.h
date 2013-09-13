@@ -12,8 +12,6 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/storage_monitor/storage_monitor.h"
 
-namespace chrome {
-
 class ImageCaptureDeviceManager;
 
 // This class posts notifications to listeners when a new disk
@@ -66,11 +64,9 @@ class StorageMonitorMac : public StorageMonitor,
 
   int pending_disk_updates_;
 
-  scoped_ptr<chrome::ImageCaptureDeviceManager> image_capture_device_manager_;
+  scoped_ptr<ImageCaptureDeviceManager> image_capture_device_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(StorageMonitorMac);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_STORAGE_MONITOR_STORAGE_MONITOR_MAC_H_

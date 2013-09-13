@@ -11,8 +11,6 @@
 #include "base/stl_util.h"
 #include "chrome/browser/storage_monitor/storage_info.h"
 
-namespace chrome {
-
 TransientDeviceIds::TransientDeviceIds() {}
 
 TransientDeviceIds::~TransientDeviceIds() {}
@@ -41,5 +39,3 @@ std::string TransientDeviceIds::DeviceIdFromTransientId(
     return std::string();
   return it->second;
 }
-
-}  // namespace chrome

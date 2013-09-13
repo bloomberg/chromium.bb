@@ -21,8 +21,6 @@ using fileapi::FileSystemOperationContext;
 using fileapi::FileSystemURL;
 using webkit_blob::ShareableFileReference;
 
-namespace chrome {
-
 namespace {
 
 const char kDeviceMediaAsyncFileUtilTempDir[] = "DeviceMediaFileSystem";
@@ -340,5 +338,3 @@ void DeviceMediaAsyncFileUtil::OnSnapshotFileCreatedRunTask(
                  weak_ptr_factory_.GetWeakPtr(),
                  callback));
 }
-
-}  // namespace chrome

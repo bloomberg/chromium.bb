@@ -20,8 +20,6 @@
 #include "base/files/file_path_watcher.h"
 #include "base/memory/weak_ptr.h"
 
-namespace chrome {
-
 class MtabWatcherLinux {
  public:
   // (mount point, mount device)
@@ -60,7 +58,5 @@ class MtabWatcherLinux {
 
   DISALLOW_COPY_AND_ASSIGN(MtabWatcherLinux);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_STORAGE_MONITOR_MTAB_WATCHER_LINUX_H_

@@ -22,8 +22,6 @@
 #include "device/media_transfer_protocol/media_transfer_protocol_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chrome {
-
 namespace {
 
 // Sample mtp device storage information.
@@ -98,8 +96,7 @@ class MediaTransferProtocolDeviceObserverLinuxTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
     mock_storage_observer_.reset(new MockRemovableStorageObserver);
-    chrome::test::TestStorageMonitor* monitor =
-        chrome::test::TestStorageMonitor::CreateAndInstall();
+    TestStorageMonitor* monitor = TestStorageMonitor::CreateAndInstall();
     mtp_device_observer_.reset(
         new TestMediaTransferProtocolDeviceObserverLinux(
             monitor->receiver(), monitor->media_transfer_protocol_manager()));
@@ -110,7 +107,7 @@ class MediaTransferProtocolDeviceObserverLinuxTest : public testing::Test {
     StorageMonitor* monitor = g_browser_process->storage_monitor();
     monitor->RemoveObserver(mock_storage_observer_.get());
     mtp_device_observer_.reset();
-    chrome::test::TestStorageMonitor::RemoveSingleton();
+    TestStorageMonitor::RemoveSingleton();
   }
 
   // Returns the device changed observer object.
@@ -166,5 +163,3 @@ TEST_F(MediaTransferProtocolDeviceObserverLinuxTest, StorageWithInvalidInfo) {
   EXPECT_EQ(0, observer().attach_calls());
   EXPECT_EQ(0, observer().detach_calls());
 }
-
-}  // namespace chrome

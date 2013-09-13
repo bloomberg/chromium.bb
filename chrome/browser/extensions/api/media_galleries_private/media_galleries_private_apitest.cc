@@ -60,8 +60,8 @@ class MediaGalleriesPrivateApiTest : public ExtensionApiTest {
 
   // ExtensionApiTest overrides.
   virtual void SetUp() OVERRIDE {
-    device_id_ = chrome::StorageInfo::MakeDeviceId(
-        chrome::StorageInfo::REMOVABLE_MASS_STORAGE_WITH_DCIM, kDeviceId);
+    device_id_ = StorageInfo::MakeDeviceId(
+        StorageInfo::REMOVABLE_MASS_STORAGE_WITH_DCIM, kDeviceId);
     ExtensionApiTest::SetUp();
   }
 
@@ -87,17 +87,16 @@ class MediaGalleriesPrivateApiTest : public ExtensionApiTest {
   }
 
   void Attach() {
-    DCHECK(chrome::StorageMonitor::GetInstance()->IsInitialized());
-    chrome::StorageInfo info(device_id_, ASCIIToUTF16(kDeviceName), kDevicePath,
-                             string16(), string16(), string16(), 0);
-    chrome::StorageMonitor::GetInstance()->receiver()->ProcessAttach(info);
+    DCHECK(StorageMonitor::GetInstance()->IsInitialized());
+    StorageInfo info(device_id_, ASCIIToUTF16(kDeviceName), kDevicePath,
+                     string16(), string16(), string16(), 0);
+    StorageMonitor::GetInstance()->receiver()->ProcessAttach(info);
     content::RunAllPendingInMessageLoop();
   }
 
   void Detach() {
-    DCHECK(chrome::StorageMonitor::GetInstance()->IsInitialized());
-    chrome::StorageMonitor::GetInstance()->receiver()->ProcessDetach(
-        device_id_);
+    DCHECK(StorageMonitor::GetInstance()->IsInitialized());
+    StorageMonitor::GetInstance()->receiver()->ProcessDetach(device_id_);
     content::RunAllPendingInMessageLoop();
   }
 
@@ -109,7 +108,7 @@ class MediaGalleriesPrivateApiTest : public ExtensionApiTest {
 
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPrivateApiTest, DeviceAttachDetachEvents) {
   // Setup.
-  chrome::test::TestStorageMonitor::SyncInitialize();
+  TestStorageMonitor::SyncInitialize();
   const extensions::Extension* extension =
       LoadExtension(test_data_dir_.AppendASCII(kTestExtensionPath));
   ASSERT_TRUE(extension);

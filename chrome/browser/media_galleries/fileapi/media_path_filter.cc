@@ -10,8 +10,6 @@
 #include "base/strings/string_util.h"
 #include "net/base/mime_util.h"
 
-namespace chrome {
-
 namespace {
 
 const base::FilePath::CharType* const kExtraSupportedExtensions[] = {
@@ -121,5 +119,3 @@ void MediaPathFilter::EnsureInitialized() {
 
   initialized_ = true;
 }
-
-}  // namespace chrome

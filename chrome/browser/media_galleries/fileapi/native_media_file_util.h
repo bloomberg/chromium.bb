@@ -9,8 +9,6 @@
 #include "base/memory/weak_ptr.h"
 #include "webkit/browser/fileapi/async_file_util.h"
 
-namespace chrome {
-
 class MediaPathFilter;
 
 // This class handles native file system operations with media type filtering.
@@ -173,7 +171,7 @@ class NativeMediaFileUtil : public fileapi::AsyncFileUtil {
       scoped_refptr<webkit_blob::ShareableFileReference>* file_ref);
 
  protected:
-  chrome::MediaPathFilter* media_path_filter() {
+  MediaPathFilter* media_path_filter() {
     return media_path_filter_;
   }
 
@@ -202,11 +200,9 @@ class NativeMediaFileUtil : public fileapi::AsyncFileUtil {
   base::WeakPtrFactory<NativeMediaFileUtil> weak_factory_;
 
   // Not owned, owned by the backend which owns this.
-  chrome::MediaPathFilter* media_path_filter_;
+  MediaPathFilter* media_path_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeMediaFileUtil);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_NATIVE_MEDIA_FILE_UTIL_H_

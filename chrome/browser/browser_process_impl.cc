@@ -622,7 +622,7 @@ BookmarkPromptController* BrowserProcessImpl::bookmark_prompt_controller() {
 #endif
 }
 
-chrome::StorageMonitor* BrowserProcessImpl::storage_monitor() {
+StorageMonitor* BrowserProcessImpl::storage_monitor() {
 #if defined(OS_ANDROID) || defined(OS_IOS)
   return NULL;
 #else
@@ -631,19 +631,18 @@ chrome::StorageMonitor* BrowserProcessImpl::storage_monitor() {
 }
 
 void BrowserProcessImpl::set_storage_monitor_for_test(
-    scoped_ptr<chrome::StorageMonitor> monitor) {
+    scoped_ptr<StorageMonitor> monitor) {
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   storage_monitor_ = monitor.Pass();
 #endif
 }
 
-chrome::MediaFileSystemRegistry*
-BrowserProcessImpl::media_file_system_registry() {
+MediaFileSystemRegistry* BrowserProcessImpl::media_file_system_registry() {
 #if defined(OS_ANDROID) || defined(OS_IOS)
     return NULL;
 #else
   if (!media_file_system_registry_)
-    media_file_system_registry_.reset(new chrome::MediaFileSystemRegistry());
+    media_file_system_registry_.reset(new MediaFileSystemRegistry());
   return media_file_system_registry_.get();
 #endif
 }
@@ -928,7 +927,7 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
 #endif
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-  storage_monitor_.reset(chrome::StorageMonitor::Create());
+  storage_monitor_.reset(StorageMonitor::Create());
 #endif
 
   platform_part_->PreMainMessageLoopRun();

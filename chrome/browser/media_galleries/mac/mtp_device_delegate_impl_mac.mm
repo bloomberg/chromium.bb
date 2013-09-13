@@ -14,8 +14,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "webkit/browser/fileapi/async_file_util.h"
 
-namespace chrome {
-
 namespace {
 
 int kReadDirectoryTimeLimitSeconds = 20;
@@ -478,6 +476,3 @@ void CreateMTPDeviceAsyncDelegate(
 
   cb.Run(new MTPDeviceDelegateImplMac(device_id, device_location));
 }
-
-}  // namespace chrome
-

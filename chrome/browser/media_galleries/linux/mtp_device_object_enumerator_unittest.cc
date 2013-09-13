@@ -5,8 +5,6 @@
 #include "chrome/browser/media_galleries/linux/mtp_device_object_enumerator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chrome {
-
 namespace {
 
 struct MtpFileEntryData {
@@ -73,5 +71,3 @@ TEST_F(MTPDeviceObjectEnumeratorTest, Traversal) {
 }
 
 }  // namespace
-
-}  // namespace chrome

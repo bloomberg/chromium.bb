@@ -12,8 +12,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chrome {
-
 namespace {
 
 void AddGalleryPermission(MediaGalleryPrefId gallery,
@@ -48,13 +46,13 @@ class MediaGalleriesPermissionsTest : public extensions::ExtensionPrefsTest {
     prefs_.pref_service()->CommitPendingWrite();
     message_loop_.RunUntilIdle();
 
-    test::TestStorageMonitor::RemoveSingleton();
+    TestStorageMonitor::RemoveSingleton();
 
     testing::Test::TearDown();
   }
 
   virtual void Initialize() OVERRIDE {
-    ASSERT_TRUE(test::TestStorageMonitor::CreateAndInstall());
+    ASSERT_TRUE(TestStorageMonitor::CreateAndInstall());
     profile_.reset(new TestingProfile);
     gallery_prefs_.reset(new MediaGalleriesPreferences(profile_.get()));
     gallery_prefs_->SetExtensionPrefsForTesting(prefs());
@@ -139,6 +137,5 @@ class MediaGalleriesPermissionsTest : public extensions::ExtensionPrefsTest {
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<MediaGalleriesPreferences> gallery_prefs_;
 };
-TEST_F(MediaGalleriesPermissionsTest, MediaGalleries) {}
 
-}  // namespace chrome
+TEST_F(MediaGalleriesPermissionsTest, MediaGalleries) {}

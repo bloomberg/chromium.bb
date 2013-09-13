@@ -10,8 +10,6 @@
 
 #include "base/lazy_instance.h"
 
-namespace chrome {
-
 class MTPDeviceTaskHelper;
 
 // MTPDeviceTaskHelperMapService manages MTPDeviceTaskHelper objects.
@@ -52,7 +50,5 @@ class MTPDeviceTaskHelperMapService {
 
   DISALLOW_COPY_AND_ASSIGN(MTPDeviceTaskHelperMapService);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_MEDIA_GALLERIES_LINUX_MTP_DEVICE_TASK_HELPER_MAP_SERVICE_H_

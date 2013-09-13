@@ -10,8 +10,6 @@
 #include "base/win/scoped_comptr.h"
 #include "chrome/browser/media_galleries/fileapi/mtp_device_async_delegate.h"
 
-namespace chrome {
-
 // Structure used to represent snapshot file request params.
 struct SnapshotRequestInfo {
   SnapshotRequestInfo(
@@ -91,7 +89,5 @@ class SnapshotFileDetails {
   // Total number of bytes written into the snapshot file.
   DWORD bytes_written_;
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_MEDIA_GALLERIES_WIN_SNAPSHOT_FILE_DETAILS_H_

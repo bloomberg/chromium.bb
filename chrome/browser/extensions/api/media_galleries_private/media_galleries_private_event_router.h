@@ -28,22 +28,20 @@ class ListValue;
 namespace extensions {
 
 class MediaGalleriesPrivateEventRouter
-    : public chrome::RemovableStorageObserver,
+    : public RemovableStorageObserver,
       public base::SupportsWeakPtr<MediaGalleriesPrivateEventRouter> {
  public:
   explicit MediaGalleriesPrivateEventRouter(Profile* profile);
   virtual ~MediaGalleriesPrivateEventRouter();
 
   // Gallery changed event handler.
-  void OnGalleryChanged(chrome::MediaGalleryPrefId gallery_id,
+  void OnGalleryChanged(MediaGalleryPrefId gallery_id,
                         const std::set<std::string>& extension_ids);
 
  private:
   // RemovableStorageObserver implementation.
-  virtual void OnRemovableStorageAttached(
-      const chrome::StorageInfo& info) OVERRIDE;
-  virtual void OnRemovableStorageDetached(
-      const chrome::StorageInfo& info) OVERRIDE;
+  virtual void OnRemovableStorageAttached(const StorageInfo& info) OVERRIDE;
+  virtual void OnRemovableStorageDetached(const StorageInfo& info) OVERRIDE;
 
   void DispatchEvent(const std::string& event_name,
                      scoped_ptr<base::ListValue> event_args);

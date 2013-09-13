@@ -14,7 +14,6 @@
 #include "chrome/browser/media_galleries/win/mtp_device_object_entry.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chrome {
 namespace {
 
 struct MTPDeviceObjectEntryData {
@@ -91,4 +90,3 @@ TEST_F(MTPDeviceObjectEnumeratorWinTest, Traversal) {
 }
 
 }  // namespace
-}  // namespace chrome

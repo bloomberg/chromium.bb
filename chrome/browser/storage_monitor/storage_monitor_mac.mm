@@ -13,8 +13,6 @@
 #include "chrome/browser/storage_monitor/storage_info.h"
 #include "content/public/browser/browser_thread.h"
 
-namespace chrome {
-
 namespace {
 
 const char kDiskImageModelName[] = "Disk Image";
@@ -198,7 +196,7 @@ void StorageMonitorMac::Init() {
       session_, CFRunLoopGetCurrent(), kCFRunLoopCommonModes);
 
   if (base::mac::IsOSLionOrLater()) {
-    image_capture_device_manager_.reset(new chrome::ImageCaptureDeviceManager);
+    image_capture_device_manager_.reset(new ImageCaptureDeviceManager);
     image_capture_device_manager_->SetNotifications(receiver());
   }
 }
@@ -385,5 +383,3 @@ bool StorageMonitorMac::FindDiskWithMountPoint(
 StorageMonitor* StorageMonitor::Create() {
   return new StorageMonitorMac();
 }
-
-}  // namespace chrome

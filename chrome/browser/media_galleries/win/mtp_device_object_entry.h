@@ -11,8 +11,6 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 
-namespace chrome {
-
 // MTPDeviceObjectEntry contains the media transfer protocol device object
 // property values that are obtained using
 // IPortableDeviceProperties::GetValues().
@@ -42,7 +40,5 @@ struct MTPDeviceObjectEntry {
 };
 
 typedef std::vector<MTPDeviceObjectEntry> MTPDeviceObjectEntries;
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_MEDIA_GALLERIES_WIN_MTP_DEVICE_OBJECT_ENTRY_H_

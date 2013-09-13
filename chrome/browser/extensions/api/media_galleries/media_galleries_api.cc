@@ -39,9 +39,6 @@
 #endif
 
 using apps::ShellWindow;
-using chrome::MediaFileSystemInfo;
-using chrome::MediaFileSystemRegistry;
-using chrome::MediaFileSystemsCallback;
 using content::ChildProcessSecurityPolicy;
 using content::WebContents;
 using web_modal::WebContentsModalDialogManager;
@@ -93,7 +90,7 @@ bool MediaGalleriesGetMediaFileSystemsFunction::RunImpl() {
     interactive = params->details->interactive;
   }
 
-  chrome::StorageMonitor::GetInstance()->EnsureInitialized(base::Bind(
+  StorageMonitor::GetInstance()->EnsureInitialized(base::Bind(
       &MediaGalleriesGetMediaFileSystemsFunction::OnStorageMonitorInit,
       this,
       interactive));
@@ -228,17 +225,17 @@ void MediaGalleriesGetMediaFileSystemsFunction::ShowDialog() {
   // Controller will delete itself.
   base::Closure cb = base::Bind(
       &MediaGalleriesGetMediaFileSystemsFunction::GetAndReturnGalleries, this);
-  new chrome::MediaGalleriesDialogController(contents, *GetExtension(), cb);
+  new MediaGalleriesDialogController(contents, *GetExtension(), cb);
 }
 
 void MediaGalleriesGetMediaFileSystemsFunction::GetMediaFileSystemsForExtension(
-    const chrome::MediaFileSystemsCallback& cb) {
+    const MediaFileSystemsCallback& cb) {
   if (!render_view_host()) {
     cb.Run(std::vector<MediaFileSystemInfo>());
     return;
   }
 
-  DCHECK(chrome::StorageMonitor::GetInstance()->IsInitialized());
+  DCHECK(StorageMonitor::GetInstance()->IsInitialized());
   MediaFileSystemRegistry* registry =
       g_browser_process->media_file_system_registry();
   registry->GetMediaFileSystemsForExtension(

@@ -20,8 +20,6 @@
 #include "base/win/scoped_comptr.h"
 #include "chrome/browser/media_galleries/win/mtp_device_object_entry.h"
 
-namespace chrome {
-
 namespace media_transfer_protocol {
 
 // Opens the device for communication. |pnp_device_id| specifies the plug and
@@ -80,7 +78,5 @@ string16 GetObjectIdFromName(IPortableDevice* device,
                              const string16& object_name);
 
 }  // namespace media_transfer_protocol
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_MEDIA_GALLERIES_WIN_MTP_DEVICE_OPERATIONS_UTIL_H_

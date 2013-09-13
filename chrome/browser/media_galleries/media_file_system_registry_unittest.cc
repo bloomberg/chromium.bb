@@ -56,8 +56,6 @@
 
 using content::BrowserThread;
 
-namespace chrome {
-
 // Not anonymous so it can be friends with MediaFileSystemRegistry.
 class TestMediaFileSystemContext : public MediaFileSystemContext {
  public:
@@ -745,7 +743,7 @@ size_t MediaFileSystemRegistryTest::GetExtensionGalleriesHostCount(
 
 void MediaFileSystemRegistryTest::SetUp() {
   ChromeRenderViewHostTestHarness::SetUp();
-  ASSERT_TRUE(test::TestStorageMonitor::CreateAndInstall());
+  ASSERT_TRUE(TestStorageMonitor::CreateAndInstall());
 
   DeleteContents();
   SetRenderProcessHostFactory(&rph_factory_);
@@ -770,7 +768,7 @@ void MediaFileSystemRegistryTest::TearDown() {
   MediaFileSystemRegistry* registry =
       g_browser_process->media_file_system_registry();
   EXPECT_EQ(0U, GetExtensionGalleriesHostCount(registry));
-  test::TestStorageMonitor::RemoveSingleton();
+  TestStorageMonitor::RemoveSingleton();
 #if defined(OS_CHROMEOS)
   test_user_manager_.reset();
 #endif
@@ -1030,5 +1028,3 @@ TEST_F(MediaFileSystemRegistryTest, TestNameConstruction) {
     profile_state->CheckGalleries("names", one_expectation, one_expectation);
   }
 }
-
-}  // namespace chrome

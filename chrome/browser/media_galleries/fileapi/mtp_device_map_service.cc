@@ -11,8 +11,6 @@
 #include "chrome/browser/media_galleries/fileapi/mtp_device_async_delegate.h"
 #include "webkit/browser/fileapi/isolated_context.h"
 
-namespace chrome {
-
 namespace {
 
 base::LazyInstance<MTPDeviceMapService> g_mtp_device_map_service =
@@ -68,6 +66,5 @@ MTPDeviceAsyncDelegate* MTPDeviceMapService::GetMTPDeviceAsyncDelegate(
 MTPDeviceMapService::MTPDeviceMapService() {
 }
 
-MTPDeviceMapService::~MTPDeviceMapService() {}
-
-}  // namespace chrome
+MTPDeviceMapService::~MTPDeviceMapService() {
+}

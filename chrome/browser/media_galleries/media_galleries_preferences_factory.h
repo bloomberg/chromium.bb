@@ -9,11 +9,8 @@
 #include "base/memory/singleton.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
 
-class Profile;
-
-namespace chrome {
 class MediaGalleriesPreferences;
-}
+class Profile;
 
 // Singleton that owns all MediaGalleriesPreferences and associates them with
 // Profiles.
@@ -22,7 +19,7 @@ class MediaGalleriesPreferencesFactory
  public:
   // Use MediaFileSystemRegistry::GetPreferences() to get
   // MediaGalleriesPreferences.
-  static chrome::MediaGalleriesPreferences* GetForProfile(Profile* profile);
+  static MediaGalleriesPreferences* GetForProfile(Profile* profile);
 
   static MediaGalleriesPreferencesFactory* GetInstance();
 

@@ -6,8 +6,6 @@
 
 #include "device/media_transfer_protocol/mtp_file_entry.pb.h"
 
-namespace chrome {
-
 TestMediaTransferProtocolManagerLinux::
 TestMediaTransferProtocolManagerLinux() {}
 
@@ -86,5 +84,3 @@ void TestMediaTransferProtocolManagerLinux::GetFileInfoById(
     const GetFileInfoCallback& callback) {
   callback.Run(MtpFileEntry(), true);
 }
-
-}  // namespace chrome

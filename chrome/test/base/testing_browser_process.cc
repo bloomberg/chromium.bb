@@ -327,7 +327,7 @@ BookmarkPromptController* TestingBrowserProcess::bookmark_prompt_controller() {
 #endif
 }
 
-chrome::StorageMonitor* TestingBrowserProcess::storage_monitor() {
+StorageMonitor* TestingBrowserProcess::storage_monitor() {
 #if defined(OS_IOS) || defined(OS_ANDROID)
   NOTIMPLEMENTED();
   return NULL;
@@ -336,14 +336,13 @@ chrome::StorageMonitor* TestingBrowserProcess::storage_monitor() {
 #endif
 }
 
-chrome::MediaFileSystemRegistry*
-TestingBrowserProcess::media_file_system_registry() {
+MediaFileSystemRegistry* TestingBrowserProcess::media_file_system_registry() {
 #if defined(OS_IOS) || defined(OS_ANDROID)
   NOTIMPLEMENTED();
   return NULL;
 #else
   if (!media_file_system_registry_)
-    media_file_system_registry_.reset(new chrome::MediaFileSystemRegistry());
+    media_file_system_registry_.reset(new MediaFileSystemRegistry());
   return media_file_system_registry_.get();
 #endif
 }
@@ -416,7 +415,7 @@ void TestingBrowserProcess::SetSafeBrowsingService(
 }
 
 void TestingBrowserProcess::SetStorageMonitor(
-    scoped_ptr<chrome::StorageMonitor> storage_monitor) {
+    scoped_ptr<StorageMonitor> storage_monitor) {
 #if !defined(OS_IOS) && !defined(OS_ANDROID)
   storage_monitor_ = storage_monitor.Pass();
 #endif

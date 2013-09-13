@@ -36,7 +36,7 @@ WatchManagerMap* g_gallery_watch_managers = NULL;
 // Dispatches the gallery changed event on the UI thread.
 void SendGalleryChangedEventOnUIThread(
     base::WeakPtr<MediaGalleriesPrivateEventRouter> event_router,
-    chrome::MediaGalleryPrefId gallery_id,
+    MediaGalleryPrefId gallery_id,
     const std::set<std::string>& extension_ids) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (event_router.get())
@@ -60,7 +60,7 @@ class GalleryWatchManager::GalleryFilePathWatcher
   // reference goes away.
   GalleryFilePathWatcher(
       base::WeakPtr<MediaGalleriesPrivateEventRouter> event_router,
-      chrome::MediaGalleryPrefId gallery_id,
+      MediaGalleryPrefId gallery_id,
       const base::FilePath& path,
       const std::string& extension_id,
       const base::Closure& on_destroyed_callback);
@@ -104,7 +104,7 @@ class GalleryWatchManager::GalleryFilePathWatcher
   base::WeakPtr<MediaGalleriesPrivateEventRouter> event_router_;
 
   // The gallery identifier, e.g "1".
-  chrome::MediaGalleryPrefId gallery_id_;
+  MediaGalleryPrefId gallery_id_;
 
   // The gallery file path watcher.
   base::FilePathWatcher file_watcher_;
@@ -126,7 +126,7 @@ class GalleryWatchManager::GalleryFilePathWatcher
 
 GalleryWatchManager::GalleryFilePathWatcher::GalleryFilePathWatcher(
     base::WeakPtr<MediaGalleriesPrivateEventRouter> event_router,
-    chrome::MediaGalleryPrefId gallery_id,
+    MediaGalleryPrefId gallery_id,
     const base::FilePath& path,
     const std::string& extension_id,
     const base::Closure& on_destroyed_callback)
@@ -276,7 +276,7 @@ void GalleryWatchManager::OnProfileShutdown(void* profile_id) {
 // static
 bool GalleryWatchManager::SetupGalleryWatch(
     void* profile_id,
-    chrome::MediaGalleryPrefId gallery_id,
+    MediaGalleryPrefId gallery_id,
     const base::FilePath& watch_path,
     const std::string& extension_id,
     base::WeakPtr<MediaGalleriesPrivateEventRouter> event_router) {
@@ -315,7 +315,7 @@ GalleryWatchManager::~GalleryWatchManager() {
 }
 
 bool GalleryWatchManager::StartGalleryWatch(
-    chrome::MediaGalleryPrefId gallery_id,
+    MediaGalleryPrefId gallery_id,
     const base::FilePath& watch_path,
     const std::string& extension_id,
     base::WeakPtr<MediaGalleriesPrivateEventRouter> event_router) {

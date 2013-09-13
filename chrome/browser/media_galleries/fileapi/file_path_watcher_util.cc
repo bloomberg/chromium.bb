@@ -11,8 +11,6 @@
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #include "content/public/browser/browser_thread.h"
 
-namespace chrome {
-
 namespace {
 
 // Bounces |path| and |error| to |callback| from the FILE thread to the media
@@ -60,5 +58,3 @@ void StartFilePathWatchOnMediaTaskRunner(
                                               watch_started_callback,
                                               path_changed_callback));
 }
-
-}  // namespace chrome

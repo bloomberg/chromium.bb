@@ -22,10 +22,10 @@ namespace extensions {
 
 namespace systeminfo {
 
-// Build StorageUnitInfo struct from chrome::StorageInfo instance. The |unit|
+// Build StorageUnitInfo struct from StorageInfo instance. The |unit|
 // parameter is the output value.
-void BuildStorageUnitInfo(const chrome::StorageInfo& info,
-    api::system_storage::StorageUnitInfo* unit);
+void BuildStorageUnitInfo(const StorageInfo& info,
+                          api::system_storage::StorageUnitInfo* unit);
 
 }  // namespace systeminfo
 

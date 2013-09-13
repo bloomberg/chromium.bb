@@ -50,8 +50,6 @@ using content::RenderProcessHost;
 using content::WebContents;
 using fileapi::IsolatedContext;
 
-namespace chrome {
-
 namespace {
 
 struct InvalidatedGalleriesInfo {
@@ -742,5 +740,3 @@ void MediaFileSystemRegistry::OnExtensionGalleriesHostEmpty(
     pref_change_registrar_map_.erase(pref_it);
   }
 }
-
-}  // namespace chrome

@@ -25,9 +25,9 @@ extern const char kPicasaDirFolders[];
 //   - /folders/
 //   - /folders/My Pictures 2013-08-21/flower.jpg
 //   - /folders/Photos 2013-08-21/
-class PicasaFileUtil : public chrome::NativeMediaFileUtil {
+class PicasaFileUtil : public NativeMediaFileUtil {
  public:
-  explicit PicasaFileUtil(chrome::MediaPathFilter* media_path_filter);
+  explicit PicasaFileUtil(MediaPathFilter* media_path_filter);
   virtual ~PicasaFileUtil();
 
  protected:

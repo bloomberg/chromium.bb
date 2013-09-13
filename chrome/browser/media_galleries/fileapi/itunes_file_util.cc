@@ -43,8 +43,8 @@ const char kITunesMediaDir[] = "iTunes Media";
 const char kITunesMusicDir[] = "Music";
 const char kITunesAutoAddDir[] = "Automatically Add to iTunes";
 
-ITunesFileUtil::ITunesFileUtil(chrome::MediaPathFilter* media_path_filter)
-    : chrome::NativeMediaFileUtil(media_path_filter),
+ITunesFileUtil::ITunesFileUtil(MediaPathFilter* media_path_filter)
+    : NativeMediaFileUtil(media_path_filter),
       weak_factory_(this),
       imported_registry_(NULL) {
 }
@@ -372,7 +372,7 @@ void ITunesFileUtil::CreateSnapshotFileWithFreshDataProvider(
 
 ITunesDataProvider* ITunesFileUtil::GetDataProvider() {
   if (!imported_registry_)
-    imported_registry_ = chrome::ImportedMediaGalleryRegistry::GetInstance();
+    imported_registry_ = ImportedMediaGalleryRegistry::GetInstance();
   return imported_registry_->ITunesDataProvider();
 }
 

@@ -61,10 +61,8 @@ void ITunesFinder::FinishOnUIThread(const std::string& unique_id) const {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   std::string device_id;
-  if (!unique_id.empty()) {
-    device_id = chrome::StorageInfo::MakeDeviceId(chrome::StorageInfo::ITUNES,
-                                                  unique_id);
-  }
+  if (!unique_id.empty())
+    device_id = StorageInfo::MakeDeviceId(StorageInfo::ITUNES, unique_id);
   callback_.Run(device_id);
 }
 

@@ -11,7 +11,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 
-using chrome::MediaFileSystemBackend;
 using content::BrowserThread;
 
 namespace picasa {

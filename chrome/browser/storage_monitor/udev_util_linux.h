@@ -15,8 +15,6 @@ namespace base {
 class FilePath;
 }
 
-namespace chrome {
-
 // Deleter for ScopedUdevObject.
 struct UdevDeleter {
   void operator()(struct udev* udev);
@@ -40,7 +38,5 @@ std::string GetUdevDevicePropertyValue(struct udev_device* udev_device,
 bool GetUdevDevicePropertyValueByPath(const base::FilePath& device_path,
                                       const char* key,
                                       std::string* result);
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_STORAGE_MONITOR_UDEV_UTIL_LINUX_H_

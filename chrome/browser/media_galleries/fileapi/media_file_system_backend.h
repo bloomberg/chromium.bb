@@ -13,8 +13,6 @@ namespace base {
 class SequencedTaskRunner;
 }
 
-namespace chrome {
-
 class MediaPathFilter;
 
 class DeviceMediaAsyncFileUtil;
@@ -79,7 +77,5 @@ class MediaFileSystemBackend : public fileapi::FileSystemBackend {
 
   DISALLOW_COPY_AND_ASSIGN(MediaFileSystemBackend);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_MEDIA_FILE_SYSTEM_BACKEND_H_

@@ -159,7 +159,7 @@ void ReadDirectoryTestHelper(fileapi::FileSystemOperationRunner* runner,
 
 void SynchronouslyRunOnMediaTaskRunner(const base::Closure& closure) {
   base::RunLoop loop;
-  chrome::MediaFileSystemBackend::MediaTaskRunner()->PostTaskAndReply(
+  MediaFileSystemBackend::MediaTaskRunner()->PostTaskAndReply(
       FROM_HERE,
       closure,
       loop.QuitClosure());
@@ -187,7 +187,7 @@ void CreateSnapshotFileTestHelperCallback(
 
 class TestPicasaFileUtil : public PicasaFileUtil {
  public:
-  TestPicasaFileUtil(chrome::MediaPathFilter* media_path_filter,
+  TestPicasaFileUtil(MediaPathFilter* media_path_filter,
                      PicasaDataProvider* data_provider)
       : PicasaFileUtil(media_path_filter),
         data_provider_(data_provider) {
@@ -201,14 +201,12 @@ class TestPicasaFileUtil : public PicasaFileUtil {
   PicasaDataProvider* data_provider_;
 };
 
-class TestMediaFileSystemBackend
-    : public chrome::MediaFileSystemBackend {
+class TestMediaFileSystemBackend : public MediaFileSystemBackend {
  public:
   TestMediaFileSystemBackend(const base::FilePath& profile_path,
                              PicasaFileUtil* picasa_file_util)
-      : chrome::MediaFileSystemBackend(
-            profile_path,
-            chrome::MediaFileSystemBackend::MediaTaskRunner().get()),
+      : MediaFileSystemBackend(profile_path,
+                               MediaFileSystemBackend::MediaTaskRunner().get()),
         test_file_util_(picasa_file_util) {}
 
   virtual fileapi::AsyncFileUtil*
@@ -239,7 +237,7 @@ class PicasaFileUtilTest : public testing::Test {
     SynchronouslyRunOnMediaTaskRunner(base::Bind(
         &PicasaFileUtilTest::SetUpOnMediaTaskRunner, base::Unretained(this)));
 
-    media_path_filter_.reset(new chrome::MediaPathFilter());
+    media_path_filter_.reset(new MediaPathFilter());
 
     ScopedVector<fileapi::FileSystemBackend> additional_providers;
     additional_providers.push_back(new TestMediaFileSystemBackend(
@@ -381,7 +379,7 @@ class PicasaFileUtilTest : public testing::Test {
 
   scoped_refptr<fileapi::FileSystemContext> file_system_context_;
   scoped_ptr<PicasaDataProvider> picasa_data_provider_;
-  scoped_ptr<chrome::MediaPathFilter> media_path_filter_;
+  scoped_ptr<MediaPathFilter> media_path_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(PicasaFileUtilTest);
 };

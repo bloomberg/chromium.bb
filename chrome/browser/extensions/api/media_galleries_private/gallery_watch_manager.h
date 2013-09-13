@@ -41,7 +41,7 @@ class GalleryWatchManager {
   // Returns true, if the watch setup operation was successful.
   static bool SetupGalleryWatch(
       void* profile_id,
-      chrome::MediaGalleryPrefId gallery_id,
+      MediaGalleryPrefId gallery_id,
       const base::FilePath& watch_path,
       const std::string& extension_id,
       base::WeakPtr<MediaGalleriesPrivateEventRouter> event_router);
@@ -70,7 +70,7 @@ class GalleryWatchManager {
   // |watch_path| specifies the absolute path of the gallery. Returns true,
   // if the watch was set successfully.
   bool StartGalleryWatch(
-      chrome::MediaGalleryPrefId gallery_id,
+      MediaGalleryPrefId gallery_id,
       const base::FilePath& watch_path,
       const std::string& extension_id,
       base::WeakPtr<MediaGalleriesPrivateEventRouter> event_router);

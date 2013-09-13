@@ -11,8 +11,6 @@
 #include "base/sequenced_task_runner_helpers.h"
 #include "content/public/browser/browser_thread.h"
 
-namespace chrome {
-
 class MTPDeviceAsyncDelegate;
 
 // ScopedMTPDeviceMapEntry manages the reference count on a particular
@@ -54,7 +52,5 @@ class ScopedMTPDeviceMapEntry
 
   DISALLOW_COPY_AND_ASSIGN(ScopedMTPDeviceMapEntry);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_MEDIA_GALLERIES_SCOPED_MTP_DEVICE_MAP_ENTRY_H_

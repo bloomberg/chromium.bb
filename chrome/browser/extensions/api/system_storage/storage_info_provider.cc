@@ -14,20 +14,19 @@
 namespace extensions {
 
 using content::BrowserThread;
-using chrome::StorageMonitor;
 using api::system_storage::StorageUnitInfo;
 using api::system_storage::STORAGE_UNIT_TYPE_FIXED;
 using api::system_storage::STORAGE_UNIT_TYPE_REMOVABLE;
 
 namespace systeminfo {
 
-void BuildStorageUnitInfo(const chrome::StorageInfo& info,
+void BuildStorageUnitInfo(const StorageInfo& info,
                           StorageUnitInfo* unit) {
   unit->id = StorageMonitor::GetInstance()->GetTransientIdForDeviceId(
                  info.device_id());
   unit->name = UTF16ToUTF8(info.name());
   // TODO(hmin): Might need to take MTP device into consideration.
-  unit->type = chrome::StorageInfo::IsRemovableDevice(info.device_id()) ?
+  unit->type = StorageInfo::IsRemovableDevice(info.device_id()) ?
       STORAGE_UNIT_TYPE_REMOVABLE : STORAGE_UNIT_TYPE_FIXED;
   unit->capacity = static_cast<double>(info.total_size_in_bytes());
 }
@@ -77,11 +76,11 @@ bool StorageInfoProvider::QueryInfo() {
 
 void StorageInfoProvider::GetAllStoragesIntoInfoList() {
   info_.clear();
-  std::vector<chrome::StorageInfo> storage_list =
+  std::vector<StorageInfo> storage_list =
       StorageMonitor::GetInstance()->GetAllAvailableStorages();
 
-  std::vector<chrome::StorageInfo>::const_iterator it = storage_list.begin();
-  for (; it != storage_list.end(); ++it) {
+  for (std::vector<StorageInfo>::const_iterator it = storage_list.begin();
+       it != storage_list.end(); ++it) {
     linked_ptr<StorageUnitInfo> unit(new StorageUnitInfo());
     systeminfo::BuildStorageUnitInfo(*it, unit.get());
     info_.push_back(unit);

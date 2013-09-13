@@ -22,8 +22,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "content/public/browser/browser_thread.h"
 
-namespace chrome {
-
 namespace media_transfer_protocol {
 
 namespace {
@@ -410,5 +408,3 @@ string16 GetObjectIdFromName(IPortableDevice* device,
 }
 
 }  // namespace media_transfer_protocol
-
-}  // namespace chrome

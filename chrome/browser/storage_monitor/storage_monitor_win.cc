@@ -14,8 +14,6 @@
 #include "chrome/browser/storage_monitor/storage_info.h"
 #include "chrome/browser/storage_monitor/volume_mount_watcher_win.h"
 
-namespace chrome {
-
 // StorageMonitorWin -------------------------------------------------------
 
 StorageMonitorWin::StorageMonitorWin(
@@ -164,5 +162,3 @@ StorageMonitor* StorageMonitor::Create() {
   return new StorageMonitorWin(new VolumeMountWatcherWin(),
                                new PortableDeviceWatcherWin());
 }
-
-}  // namespace chrome

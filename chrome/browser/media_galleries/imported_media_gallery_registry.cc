@@ -16,8 +16,6 @@
 using base::Bind;
 using fileapi::IsolatedContext;
 
-namespace chrome {
-
 namespace {
 
 static base::LazyInstance<ImportedMediaGalleryRegistry>::Leaky
@@ -181,5 +179,3 @@ void ImportedMediaGalleryRegistry::RevokeITunesFileSystem() {
   itunes_data_provider_.reset();
 }
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
-
-}  // namespace chrome

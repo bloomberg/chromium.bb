@@ -23,8 +23,6 @@ class FilePath;
 class SequencedTaskRunner;
 }
 
-namespace chrome {
-
 class SnapshotFileDetails;
 struct SnapshotRequestInfo;
 
@@ -215,7 +213,5 @@ class MTPDeviceDelegateImplWin : public MTPDeviceAsyncDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(MTPDeviceDelegateImplWin);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_MEDIA_GALLERIES_WIN_MTP_DEVICE_DELEGATE_IMPL_WIN_H_

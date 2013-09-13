@@ -25,8 +25,6 @@
 #include "chrome/browser/storage_monitor/storage_info.h"
 #include "content/public/browser/browser_thread.h"
 
-namespace chrome {
-
 namespace {
 
 // Name of the client application that communicates with the MTP device.
@@ -562,12 +560,12 @@ void PortableDeviceWatcherWin::EjectDevice(
   string16 storage_object_id;
   if (!GetMTPStorageInfoFromDeviceId(device_id,
                                      &device_location, &storage_object_id)) {
-    callback.Run(chrome::StorageMonitor::EJECT_NO_SUCH_DEVICE);
+    callback.Run(StorageMonitor::EJECT_NO_SUCH_DEVICE);
     return;
   }
   HandleDeviceDetachEvent(device_location);
 
-  callback.Run(chrome::StorageMonitor::EJECT_OK);
+  callback.Run(StorageMonitor::EJECT_OK);
 }
 
 void PortableDeviceWatcherWin::EnumerateAttachedDevices() {
@@ -667,5 +665,3 @@ void PortableDeviceWatcherWin::HandleDeviceDetachEvent(
   }
   device_map_.erase(device_iter);
 }
-
-}  // namespace chrome

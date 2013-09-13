@@ -12,8 +12,6 @@
 #include "device/media_transfer_protocol/mtp_file_entry.pb.h"
 #include "webkit/browser/fileapi/file_system_file_util.h"
 
-namespace chrome {
-
 // Used to enumerate top-level files of an media file system.
 class MTPDeviceObjectEnumerator
     : public fileapi::FileSystemFileUtil::AbstractFileEnumerator {
@@ -53,7 +51,5 @@ class MTPDeviceObjectEnumerator
 
   DISALLOW_COPY_AND_ASSIGN(MTPDeviceObjectEnumerator);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_MEDIA_GALLERIES_LINUX_MTP_DEVICE_OBJECT_ENUMERATOR_H_

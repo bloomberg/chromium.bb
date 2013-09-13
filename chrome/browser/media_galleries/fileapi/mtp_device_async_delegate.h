@@ -14,8 +14,6 @@ namespace base {
 class FilePath;
 }
 
-namespace chrome {
-
 // Asynchronous delegate for media transfer protocol (MTP) device to perform
 // media device isolated file system operations. Class that implements this
 // delegate does the actual communication with the MTP device.
@@ -79,7 +77,5 @@ class MTPDeviceAsyncDelegate {
   // Always destruct this object via CancelPendingTasksAndDeleteDelegate().
   virtual ~MTPDeviceAsyncDelegate() {}
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_MTP_DEVICE_ASYNC_DELEGATE_H_

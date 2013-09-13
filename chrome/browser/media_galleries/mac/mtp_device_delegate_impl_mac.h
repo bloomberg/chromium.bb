@@ -15,8 +15,6 @@
 #include "base/platform_file.h"
 #include "chrome/browser/media_galleries/fileapi/mtp_device_async_delegate.h"
 
-namespace chrome {
-
 // Delegate for presenting an Image Capture device through the filesystem
 // API. The synthetic filesystem will be rooted at the constructed location,
 // and names of all files notified through the ItemAdded call will be
@@ -152,7 +150,5 @@ class MTPDeviceDelegateImplMac : public MTPDeviceAsyncDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(MTPDeviceDelegateImplMac);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_MEDIA_GALLERIES_MAC_MTP_DEVICE_DELEGATE_IMPL_MAC_H_

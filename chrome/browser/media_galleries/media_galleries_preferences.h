@@ -33,8 +33,6 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
-namespace chrome {
-
 typedef uint64 MediaGalleryPrefId;
 const MediaGalleryPrefId kInvalidMediaGalleryPrefId = 0;
 
@@ -303,7 +301,5 @@ class MediaGalleriesPreferences : public BrowserContextKeyedService,
 
   DISALLOW_COPY_AND_ASSIGN(MediaGalleriesPreferences);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_MEDIA_GALLERIES_MEDIA_GALLERIES_PREFERENCES_H_

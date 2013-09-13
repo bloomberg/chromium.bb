@@ -17,22 +17,17 @@
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/storage_monitor/storage_info.h"
 
-class ChromeBrowserMainPartsLinux;
-class ChromeBrowserMainPartsMac;
+class MediaFileSystemRegistryTest;
 class MediaGalleriesPlatformAppBrowserTest;
 class MediaGalleriesPrivateApiTest;
+class RemovableStorageObserver;
 class SystemStorageApiTest;
 class SystemStorageEjectApiTest;
+class TransientDeviceIds;
 
 namespace device {
 class MediaTransferProtocolManager;
 }
-
-namespace chrome {
-
-class MediaFileSystemRegistryTest;
-class RemovableStorageObserver;
-class TransientDeviceIds;
 
 // Base class for platform-specific instances watching for removable storage
 // attachments/detachments.
@@ -134,9 +129,9 @@ class StorageMonitor {
       base::Callback<void(EjectStatus)> callback);
 
  protected:
+  friend class ::MediaFileSystemRegistryTest;
   friend class ::MediaGalleriesPlatformAppBrowserTest;
   friend class ::MediaGalleriesPrivateApiTest;
-  friend class MediaFileSystemRegistryTest;
   friend class ::SystemStorageApiTest;
   friend class ::SystemStorageEjectApiTest;
 
@@ -181,7 +176,5 @@ class StorageMonitor {
 
   scoped_ptr<TransientDeviceIds> transient_device_ids_;
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_STORAGE_MONITOR_STORAGE_MONITOR_H_

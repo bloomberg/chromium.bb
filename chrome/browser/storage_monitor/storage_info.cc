@@ -6,8 +6,6 @@
 
 #include "base/logging.h"
 
-namespace chrome {
-
 namespace {
 
 // Prefix constants for different device id spaces.
@@ -141,5 +139,3 @@ bool StorageInfo::IsPicasaDevice(const std::string& device_id) {
   Type type;
   return CrackDeviceId(device_id, &type, NULL) && type == PICASA;
 }
-
-}  // namespace chrome

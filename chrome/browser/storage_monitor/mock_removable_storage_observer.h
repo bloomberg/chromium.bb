@@ -8,8 +8,6 @@
 #include "chrome/browser/storage_monitor/removable_storage_observer.h"
 #include "chrome/browser/storage_monitor/storage_info.h"
 
-namespace chrome {
-
 class MockRemovableStorageObserver : public RemovableStorageObserver {
  public:
   MockRemovableStorageObserver();
@@ -37,7 +35,5 @@ class MockRemovableStorageObserver : public RemovableStorageObserver {
   StorageInfo last_attached_;
   StorageInfo last_detached_;
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_STORAGE_MONITOR_MOCK_REMOVABLE_STORAGE_OBSERVER_H_

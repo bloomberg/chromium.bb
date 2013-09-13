@@ -27,9 +27,6 @@
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chrome {
-namespace test {
-
 using content::BrowserThread;
 
 typedef std::vector<int> DeviceIndices;
@@ -88,7 +85,7 @@ StorageMonitorWinTest::~StorageMonitorWinTest() {
 
 void StorageMonitorWinTest::SetUp() {
   ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  test::TestStorageMonitor::RemoveSingleton();
+  TestStorageMonitor::RemoveSingleton();
   volume_mount_watcher_ = new TestVolumeMountWatcherWin;
   monitor_ = new TestStorageMonitorWin(volume_mount_watcher_,
                                        new TestPortableDeviceWatcherWin);
@@ -110,11 +107,11 @@ void StorageMonitorWinTest::TearDown() {
 
   // Windows storage monitor must be destroyed on the same thread
   // as construction.
-  test::TestStorageMonitor::RemoveSingleton();
+  TestStorageMonitor::RemoveSingleton();
 }
 
 void StorageMonitorWinTest::PreAttachDevices() {
-  test::TestStorageMonitor::RemoveSingleton();
+  TestStorageMonitor::RemoveSingleton();
   monitor_ = NULL;
   volume_mount_watcher_ = new TestVolumeMountWatcherWin;
   volume_mount_watcher_->SetAttachedDevicesFake();
@@ -559,6 +556,3 @@ TEST_F(StorageMonitorWinTest, GetMTPStorageInfoFromDeviceId) {
   }
   DoMTPDeviceTest(TestPortableDeviceWatcherWin::kMTPDeviceWithValidInfo, false);
 }
-
-}  // namespace test
-}  // namespace chrome

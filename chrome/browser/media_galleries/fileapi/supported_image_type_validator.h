@@ -13,8 +13,6 @@
 
 class ImageDecoder;
 
-namespace chrome {
-
 class MediaFileValidatorFactory;
 
 // Use ImageDecoder to determine if the file decodes without error. Handles
@@ -42,7 +40,5 @@ class SupportedImageTypeValidator : public AVScanningFileValidator {
 
   DISALLOW_COPY_AND_ASSIGN(SupportedImageTypeValidator);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_SUPPORTED_IMAGE_TYPE_VALIDATOR_H_

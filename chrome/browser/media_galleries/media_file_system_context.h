@@ -16,8 +16,6 @@ namespace base {
 class FilePath;
 }
 
-namespace chrome {
-
 class MediaFileSystemRegistry;
 
 class MediaFileSystemContext {
@@ -39,7 +37,5 @@ class MediaFileSystemContext {
   // Revoke the passed |fsid|.
   virtual void RevokeFileSystem(const std::string& fsid) = 0;
 };
-
-}  // namespace
 
 #endif  // CHROME_BROWSER_MEDIA_GALLERIES_MEDIA_FILE_SYSTEM_CONTEXT_H_

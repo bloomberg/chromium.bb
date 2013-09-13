@@ -44,7 +44,7 @@ bool IsDisplayChangedEvent(const std::string& event_name) {
 // Event router for systemInfo API. It is a singleton instance shared by
 // multiple profiles.
 class SystemInfoEventRouter : public gfx::DisplayObserver,
-                              public chrome::RemovableStorageObserver {
+                              public RemovableStorageObserver {
  public:
   static SystemInfoEventRouter* GetInstance();
 
@@ -61,11 +61,9 @@ class SystemInfoEventRouter : public gfx::DisplayObserver,
   virtual void OnDisplayAdded(const gfx::Display& new_display) OVERRIDE;
   virtual void OnDisplayRemoved(const gfx::Display& old_display) OVERRIDE;
 
-  // chrome::RemovableStorageObserver implementation.
-  virtual void OnRemovableStorageAttached(
-      const chrome::StorageInfo& info) OVERRIDE;
-  virtual void OnRemovableStorageDetached(
-      const chrome::StorageInfo& info) OVERRIDE;
+  // RemovableStorageObserver implementation.
+  virtual void OnRemovableStorageAttached(const StorageInfo& info) OVERRIDE;
+  virtual void OnRemovableStorageDetached(const StorageInfo& info) OVERRIDE;
 
   // Called from any thread to dispatch the systemInfo event to all extension
   // processes cross multiple profiles.
@@ -90,12 +88,11 @@ SystemInfoEventRouter* SystemInfoEventRouter::GetInstance() {
 }
 
 SystemInfoEventRouter::SystemInfoEventRouter() {
-  chrome::StorageMonitor::GetInstance()->AddObserver(this);
+  StorageMonitor::GetInstance()->AddObserver(this);
 }
 
 SystemInfoEventRouter::~SystemInfoEventRouter() {
-  if (chrome::StorageMonitor* storage_monitor =
-          chrome::StorageMonitor::GetInstance())
+  if (StorageMonitor* storage_monitor = StorageMonitor::GetInstance())
     storage_monitor->RemoveObserver(this);
 }
 
@@ -134,7 +131,7 @@ void SystemInfoEventRouter::RemoveEventListener(
 }
 
 void SystemInfoEventRouter::OnRemovableStorageAttached(
-    const chrome::StorageInfo& info) {
+    const StorageInfo& info) {
   StorageUnitInfo unit;
   systeminfo::BuildStorageUnitInfo(info, &unit);
   scoped_ptr<base::ListValue> args(new base::ListValue);
@@ -143,9 +140,9 @@ void SystemInfoEventRouter::OnRemovableStorageAttached(
 }
 
 void SystemInfoEventRouter::OnRemovableStorageDetached(
-    const chrome::StorageInfo& info) {
+    const StorageInfo& info) {
   scoped_ptr<base::ListValue> args(new base::ListValue);
-  args->Append(new base::StringValue(chrome::StorageMonitor::GetInstance()->
+  args->Append(new base::StringValue(StorageMonitor::GetInstance()->
                    GetTransientIdForDeviceId(info.device_id())));
 
   DispatchEvent(system_storage::OnDetached::kEventName, args.Pass());

@@ -17,8 +17,6 @@ using ::testing::Return;
 using ::testing::ReturnPointee;
 using ::testing::ReturnRef;
 
-namespace chrome {
-
 MediaGalleryPrefInfo MakePrefInfoForTesting(MediaGalleryPrefId pref_id) {
   MediaGalleryPrefInfo gallery;
   gallery.pref_id = pref_id;
@@ -208,5 +206,3 @@ TEST_F(MediaGalleriesDialogTest, ForgetDeletes) {
   CGFloat new_container_height = NSHeight([dialog->checkbox_container_ frame]);
   EXPECT_LT(new_container_height, old_container_height);
 }
-
-}  // namespace chrome

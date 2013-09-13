@@ -13,8 +13,6 @@
 #include "base/synchronization/lock.h"
 #include "base/win/scoped_comptr.h"
 
-namespace chrome {
-
 // PortableDeviceMapService keeps track of initialized portable device
 // interfaces. PortableDeviceMapService owns the portable device interfaces.
 class PortableDeviceMapService {
@@ -74,7 +72,5 @@ class PortableDeviceMapService {
 
   DISALLOW_COPY_AND_ASSIGN(PortableDeviceMapService);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_MEDIA_GALLERIES_WIN_PORTABLE_DEVICE_MAP_SERVICE_H_

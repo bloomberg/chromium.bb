@@ -14,8 +14,6 @@
 #include "chrome/browser/media_galleries/win/mtp_device_object_entry.h"
 #include "webkit/browser/fileapi/file_system_file_util.h"
 
-namespace chrome {
-
 // MTPDeviceObjectEnumerator is used to enumerate the media transfer protocol
 // (MTP) device objects from a given object entry list.
 // MTPDeviceObjectEnumerator supports MTP device file operations.
@@ -59,7 +57,5 @@ class MTPDeviceObjectEnumerator
 
   DISALLOW_COPY_AND_ASSIGN(MTPDeviceObjectEnumerator);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_MEDIA_GALLERIES_WIN_MTP_DEVICE_OBJECT_ENUMERATOR_H_

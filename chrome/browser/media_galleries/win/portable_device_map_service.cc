@@ -9,8 +9,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "content/public/browser/browser_thread.h"
 
-namespace chrome {
-
 namespace {
 
 base::LazyInstance<PortableDeviceMapService> g_portable_device_map_service =
@@ -78,5 +76,3 @@ PortableDeviceMapService::PortableDeviceMapService() {
 
 PortableDeviceMapService::~PortableDeviceMapService() {
 }
-
-}  // namespace chrome

@@ -12,8 +12,6 @@
 #include "base/bind.h"
 #include "content/public/browser/browser_thread.h"
 
-namespace chrome {
-
 namespace {
 
 // List of file systems we care about.
@@ -101,5 +99,3 @@ void MtabWatcherLinux::OnFilePathChanged(
 
   ReadMtab();
 }
-
-}  // namespace chrome

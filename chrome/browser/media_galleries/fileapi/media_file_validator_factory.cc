@@ -11,8 +11,6 @@
 #include "webkit/browser/fileapi/copy_or_move_file_validator.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 
-namespace chrome {
-
 namespace {
 
 class InvalidFileValidator : public fileapi::CopyOrMoveFileValidator {
@@ -32,7 +30,7 @@ class InvalidFileValidator : public fileapi::CopyOrMoveFileValidator {
   }
 
  private:
-  friend class chrome::MediaFileValidatorFactory;
+  friend class ::MediaFileValidatorFactory;
 
   InvalidFileValidator() {}
 
@@ -56,5 +54,3 @@ MediaFileValidatorFactory::CreateCopyOrMoveFileValidator(
 
   return new InvalidFileValidator();
 }
-
-}  // namespace chrome

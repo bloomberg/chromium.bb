@@ -9,8 +9,6 @@
 #include "chrome/browser/media_galleries/linux/mtp_device_task_helper.h"
 #include "content/public/browser/browser_thread.h"
 
-namespace chrome {
-
 namespace {
 
 base::LazyInstance<MTPDeviceTaskHelperMapService>
@@ -56,5 +54,3 @@ MTPDeviceTaskHelperMapService::MTPDeviceTaskHelperMapService() {
 
 MTPDeviceTaskHelperMapService::~MTPDeviceTaskHelperMapService() {
 }
-
-}  // namespace chrome

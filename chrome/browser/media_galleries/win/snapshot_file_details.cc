@@ -6,8 +6,6 @@
 
 #include "base/basictypes.h"
 
-namespace chrome {
-
 ///////////////////////////////////////////////////////////////////////////////
 //                       SnapshotRequestInfo                                 //
 ///////////////////////////////////////////////////////////////////////////////
@@ -67,5 +65,3 @@ bool SnapshotFileDetails::AddBytesWritten(DWORD bytes_written) {
   bytes_written_ += bytes_written;
   return true;
 }
-
-}  // namespace chrome

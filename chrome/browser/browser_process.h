@@ -30,6 +30,7 @@ class GpuModeManager;
 class IconManager;
 class IntranetRedirectDetector;
 class IOThread;
+class MediaFileSystemRegistry;
 class MetricsService;
 class NotificationUIManager;
 class PnaclComponentInstaller;
@@ -40,15 +41,11 @@ class ProfileManager;
 class RenderWidgetSnapshotTaker;
 class SafeBrowsingService;
 class StatusTray;
+class StorageMonitor;
 class WatchDogThread;
 #if defined(ENABLE_WEBRTC)
 class WebRtcLogUploader;
 #endif
-
-namespace chrome {
-class MediaFileSystemRegistry;
-class StorageMonitor;
-}
 
 namespace chrome_variations {
 class VariationsService;
@@ -216,9 +213,9 @@ class BrowserProcess {
 
   virtual BookmarkPromptController* bookmark_prompt_controller() = 0;
 
-  virtual chrome::MediaFileSystemRegistry* media_file_system_registry() = 0;
+  virtual MediaFileSystemRegistry* media_file_system_registry() = 0;
 
-  virtual chrome::StorageMonitor* storage_monitor() = 0;
+  virtual StorageMonitor* storage_monitor() = 0;
 
   virtual bool created_local_state() const = 0;
 

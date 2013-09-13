@@ -11,7 +11,6 @@
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/utility_process_host.h"
 
-using chrome::MediaFileSystemBackend;
 using content::BrowserThread;
 using content::UtilityProcessHost;
 

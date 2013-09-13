@@ -89,8 +89,7 @@ class MediaGalleriesPrivateAddGalleryWatchFunction
   void OnStorageMonitorInit(const std::string& pref_id);
 
   // Gallery watch request handler.
-  void HandleResponse(chrome::MediaGalleryPrefId gallery_id,
-                      bool success);
+  void HandleResponse(MediaGalleryPrefId gallery_id, bool success);
 };
 
 // Implements the chrome.mediaGalleriesPrivate.removeGalleryWatch method.

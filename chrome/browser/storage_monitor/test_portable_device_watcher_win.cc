@@ -10,8 +10,6 @@
 
 #include "base/strings/utf_string_conversions.h"
 
-namespace chrome {
-namespace test {
 namespace {
 
 // Sample MTP device storage information.
@@ -144,6 +142,3 @@ bool TestPortableDeviceWatcherWin::GetMTPStorageInfoFromDeviceId(
   return PortableDeviceWatcherWin::GetMTPStorageInfoFromDeviceId(
       storage_device_id, device_location, storage_object_id);
 }
-
-}  // namespace test
-}  // namespace chrome

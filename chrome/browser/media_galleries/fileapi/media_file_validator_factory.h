@@ -16,8 +16,6 @@ namespace fileapi {
 class FileSystemURL;
 }
 
-namespace chrome {
-
 // A factory for media file validators. A media file validator will use various
 // strategies (depending on the file type) to attempt to verify that the file
 // is a valid media file.
@@ -34,7 +32,5 @@ class MediaFileValidatorFactory
  private:
   DISALLOW_COPY_AND_ASSIGN(MediaFileValidatorFactory);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_MEDIA_FILE_VALIDATOR_FACTORY_H_

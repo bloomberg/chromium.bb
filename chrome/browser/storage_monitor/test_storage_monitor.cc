@@ -16,9 +16,6 @@
 #include "device/media_transfer_protocol/media_transfer_protocol_manager.h"
 #endif
 
-namespace chrome {
-namespace test {
-
 TestStorageMonitor::TestStorageMonitor()
     : StorageMonitor(),
       init_called_(false) {
@@ -131,6 +128,3 @@ void TestStorageMonitor::EjectDevice(
   ejected_device_ = device_id;
   callback.Run(EJECT_OK);
 }
-
-}  // namespace test
-}  // namespace chrome

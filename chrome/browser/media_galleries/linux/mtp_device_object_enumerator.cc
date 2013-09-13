@@ -6,8 +6,6 @@
 
 #include "base/logging.h"
 
-namespace chrome {
-
 MTPDeviceObjectEnumerator::MTPDeviceObjectEnumerator(
     const std::vector<MtpFileEntry>& entries)
     : file_entries_(entries),
@@ -63,5 +61,3 @@ bool MTPDeviceObjectEnumerator::HasMoreEntries() const {
 bool MTPDeviceObjectEnumerator::IsIndexReadyAndInRange() const {
   return is_index_ready_ && HasMoreEntries();
 }
-
-}  // namespace chrome

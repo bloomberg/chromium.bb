@@ -184,15 +184,14 @@ class MTPDeviceDelegateImplMacTest : public testing::Test {
         content::BrowserThread::IO));
     ASSERT_TRUE(io_thread_->Start());
 
-    chrome::test::TestStorageMonitor* monitor =
-        chrome::test::TestStorageMonitor::CreateAndInstall();
+    TestStorageMonitor* monitor = TestStorageMonitor::CreateAndInstall();
     manager_.SetNotifications(monitor->receiver());
 
     camera_ = [MockMTPICCameraDevice alloc];
     id<ICDeviceBrowserDelegate> delegate = manager_.device_browser();
     [delegate deviceBrowser:nil didAddDevice:camera_ moreComing:NO];
 
-    delegate_ = new chrome::MTPDeviceDelegateImplMac(kDeviceId, kDevicePath);
+    delegate_ = new MTPDeviceDelegateImplMac(kDeviceId, kDevicePath);
   }
 
   virtual void TearDown() OVERRIDE {
@@ -201,7 +200,7 @@ class MTPDeviceDelegateImplMacTest : public testing::Test {
 
     delegate_->CancelPendingTasksAndDeleteDelegate();
 
-    chrome::test::TestStorageMonitor::RemoveSingleton();
+    TestStorageMonitor::RemoveSingleton();
 
     io_thread_->Stop();
   }
@@ -308,11 +307,11 @@ class MTPDeviceDelegateImplMacTest : public testing::Test {
   scoped_ptr<content::TestBrowserThread> file_thread_;
   scoped_ptr<content::TestBrowserThread> io_thread_;
   base::ScopedTempDir temp_dir_;
-  chrome::ImageCaptureDeviceManager manager_;
+  ImageCaptureDeviceManager manager_;
   MockMTPICCameraDevice* camera_;
 
   // This object needs special deletion inside the above |task_runner_|.
-  chrome::MTPDeviceDelegateImplMac* delegate_;
+  MTPDeviceDelegateImplMac* delegate_;
 
   base::PlatformFileError error_;
   base::PlatformFileInfo info_;

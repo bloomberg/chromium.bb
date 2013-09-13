@@ -32,8 +32,6 @@
 using fileapi::FileSystemOperation;
 using fileapi::FileSystemURL;
 
-namespace chrome {
-
 namespace {
 
 typedef FileSystemOperation::FileEntryList FileEntryList;
@@ -538,5 +536,3 @@ TEST_F(NativeMediaFileUtilTest, CreateSnapshot) {
     ASSERT_EQ(expected_error, error);
   }
 }
-
-}  // namespace chrome

@@ -11,9 +11,9 @@
 #include "components/user_prefs/pref_registry_syncable.h"
 
 // static
-chrome::MediaGalleriesPreferences*
+MediaGalleriesPreferences*
 MediaGalleriesPreferencesFactory::GetForProfile(Profile* profile) {
-  return static_cast<chrome::MediaGalleriesPreferences*>(
+  return static_cast<MediaGalleriesPreferences*>(
       GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
@@ -33,12 +33,12 @@ MediaGalleriesPreferencesFactory::~MediaGalleriesPreferencesFactory() {}
 BrowserContextKeyedService*
 MediaGalleriesPreferencesFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
-  return new chrome::MediaGalleriesPreferences(static_cast<Profile*>(profile));
+  return new MediaGalleriesPreferences(static_cast<Profile*>(profile));
 }
 
 void MediaGalleriesPreferencesFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* prefs) {
-  chrome::MediaGalleriesPreferences::RegisterProfilePrefs(prefs);
+  MediaGalleriesPreferences::RegisterProfilePrefs(prefs);
 }
 
 content::BrowserContext*

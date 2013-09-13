@@ -16,8 +16,6 @@ namespace base {
 class FilePath;
 }
 
-namespace chrome {
-
 class SnapshotFileDetails;
 struct SnapshotRequestInfo;
 
@@ -87,7 +85,5 @@ class MTPReadFileWorker {
 
   DISALLOW_COPY_AND_ASSIGN(MTPReadFileWorker);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_MEDIA_GALLERIES_LINUX_MTP_READ_FILE_WORKER_H_

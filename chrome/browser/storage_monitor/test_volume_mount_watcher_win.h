@@ -19,9 +19,6 @@ namespace base {
 class FilePath;
 }
 
-namespace chrome {
-namespace test {
-
 class TestVolumeMountWatcherWin : public VolumeMountWatcherWin {
  public:
   TestVolumeMountWatcherWin();
@@ -66,8 +63,5 @@ class TestVolumeMountWatcherWin : public VolumeMountWatcherWin {
 
   DISALLOW_COPY_AND_ASSIGN(TestVolumeMountWatcherWin);
 };
-
-}  // namespace test
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_STORAGE_MONITOR_TEST_VOLUME_MOUNT_WATCHER_WIN_H_

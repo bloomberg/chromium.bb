@@ -22,8 +22,6 @@
 #include "webkit/browser/fileapi/native_file_util.h"
 #include "webkit/common/blob/shareable_file_reference.h"
 
-namespace chrome {
-
 namespace {
 
 // Used to skip the hidden folders and files. Returns true if the file specified
@@ -626,5 +624,3 @@ NativeMediaFileUtil::GetFilteredLocalFilePathForExistingFileOrDirectory(
   *local_file_path = file_path;
   return base::PLATFORM_FILE_OK;
 }
-
-}  // namespace chrome

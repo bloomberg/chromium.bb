@@ -18,8 +18,6 @@
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chrome {
-
 namespace {
 
 const char kImageCaptureDeviceId[] = "ic:xyz";
@@ -63,14 +61,14 @@ class MediaStorageUtilTest : public testing::Test {
   }
 
   virtual void SetUp() OVERRIDE {
-    monitor_ = chrome::test::TestStorageMonitor::CreateAndInstall();
+    monitor_ = TestStorageMonitor::CreateAndInstall();
     ASSERT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
     file_thread_.Start();
   }
 
   virtual void TearDown() OVERRIDE {
     WaitForFileThread();
-    chrome::test::TestStorageMonitor::RemoveSingleton();
+    TestStorageMonitor::RemoveSingleton();
   }
 
   static void PostQuitToUIThread() {
@@ -89,7 +87,7 @@ class MediaStorageUtilTest : public testing::Test {
   base::MessageLoop message_loop_;
 
  private:
-  chrome::test::TestStorageMonitor* monitor_;
+  TestStorageMonitor* monitor_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
   base::ScopedTempDir scoped_temp_dir_;
@@ -155,5 +153,3 @@ TEST_F(MediaStorageUtilTest, DetectDeviceFiltered) {
 
   EXPECT_TRUE(devices.find(kImageCaptureDeviceId) != devices.end());
 }
-
-}  // namespace chrome

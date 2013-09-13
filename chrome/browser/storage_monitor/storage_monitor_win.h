@@ -14,13 +14,8 @@ namespace base {
 class FilePath;
 }
 
-namespace chrome {
-
-namespace test {
-class TestStorageMonitorWin;
-}
-
 class PortableDeviceWatcherWin;
+class TestStorageMonitorWin;
 class VolumeMountWatcherWin;
 
 class StorageMonitorWin : public StorageMonitor {
@@ -44,7 +39,7 @@ class StorageMonitorWin : public StorageMonitor {
 
  private:
   class PortableDeviceNotifications;
-  friend class test::TestStorageMonitorWin;
+  friend class TestStorageMonitorWin;
   friend StorageMonitor* StorageMonitor::Create();
 
   // To support unit tests, this constructor takes |volume_mount_watcher| and
@@ -82,7 +77,5 @@ class StorageMonitorWin : public StorageMonitor {
 
   DISALLOW_COPY_AND_ASSIGN(StorageMonitorWin);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_STORAGE_MONITOR_STORAGE_MONITOR_WIN_H_

@@ -14,8 +14,6 @@ namespace base {
 class FilePath;
 }
 
-namespace chrome {
-
 // This class holds the list of file path extensions that we should expose on
 // media filesystem.
 class MediaPathFilter {
@@ -35,7 +33,5 @@ class MediaPathFilter {
 
   DISALLOW_COPY_AND_ASSIGN(MediaPathFilter);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_MEDIA_PATH_FILTER_H_

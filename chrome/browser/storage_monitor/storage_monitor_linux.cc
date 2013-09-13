@@ -27,8 +27,6 @@
 #include "chrome/browser/storage_monitor/udev_util_linux.h"
 #include "device/media_transfer_protocol/media_transfer_protocol_manager.h"
 
-namespace chrome {
-
 using content::BrowserThread;
 typedef MtabWatcherLinux::MountPointDeviceMap MountPointDeviceMap;
 
@@ -519,5 +517,3 @@ StorageMonitor* StorageMonitor::Create() {
   const base::FilePath kDefaultMtabPath("/etc/mtab");
   return new StorageMonitorLinux(kDefaultMtabPath);
 }
-
-}  // namespace chrome

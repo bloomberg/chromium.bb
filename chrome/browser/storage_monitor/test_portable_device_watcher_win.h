@@ -13,9 +13,6 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/storage_monitor/portable_device_watcher_win.h"
 
-namespace chrome {
-namespace test {
-
 class TestPortableDeviceWatcherWin : public PortableDeviceWatcherWin {
  public:
   // MTP device PnP identifiers.
@@ -73,8 +70,5 @@ class TestPortableDeviceWatcherWin : public PortableDeviceWatcherWin {
 
   DISALLOW_COPY_AND_ASSIGN(TestPortableDeviceWatcherWin);
 };
-
-}  // namespace test
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_STORAGE_MONITOR_TEST_PORTABLE_DEVICE_WATCHER_WIN_H_

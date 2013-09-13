@@ -31,8 +31,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
-namespace chrome {
-
 namespace {
 
 // Gets the details of the MTP partition storage specified by the
@@ -610,5 +608,3 @@ void MTPDeviceDelegateImplWin::OnWroteDataChunkIntoSnapshotFile(
   current_snapshot_details_.reset();
   ProcessNextPendingRequest();
 }
-
-}  // namespace chrome

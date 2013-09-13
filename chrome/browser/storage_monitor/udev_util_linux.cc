@@ -6,8 +6,6 @@
 
 #include "base/files/file_path.h"
 
-namespace chrome {
-
 void UdevDeleter::operator()(struct udev* udev) {
   udev_unref(udev);
 }
@@ -35,5 +33,3 @@ bool GetUdevDevicePropertyValueByPath(const base::FilePath& device_path,
   *result = GetUdevDevicePropertyValue(device.get(), key);
   return true;
 }
-
-}  // namespace chrome

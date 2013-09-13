@@ -4,8 +4,6 @@
 
 #include "chrome/browser/storage_monitor/mock_removable_storage_observer.h"
 
-namespace chrome {
-
 MockRemovableStorageObserver::MockRemovableStorageObserver()
     : attach_calls_(0), detach_calls_(0) {
 }
@@ -24,5 +22,3 @@ void MockRemovableStorageObserver::OnRemovableStorageDetached(
   detach_calls_++;
   last_detached_ = info;
 }
-
-}  // namespace chrome

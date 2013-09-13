@@ -13,9 +13,9 @@ const struct TestStorageUnitInfo kRemovableStorageData = {
     "dcim:device:001", "/media/usb1", 4098, 1000
 };
 
-chrome::StorageInfo BuildStorageInfoFromTestStorageUnitInfo(
+StorageInfo BuildStorageInfoFromTestStorageUnitInfo(
     const TestStorageUnitInfo& unit) {
-  return chrome::StorageInfo(
+  return StorageInfo(
       unit.device_id,
       UTF8ToUTF16(unit.name),
       base::FilePath::StringType(), /* no location */

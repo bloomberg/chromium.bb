@@ -20,11 +20,7 @@
 #include "chrome/browser/storage_monitor/storage_info.h"
 #include "chrome/browser/storage_monitor/storage_monitor.h"
 
-namespace chrome {
-
-namespace test {
 class TestVolumeMountWatcherWin;
-}
 
 // This class watches the volume mount points and sends notifications to
 // StorageMonitor about the device attach/detach events.
@@ -96,7 +92,7 @@ class VolumeMountWatcherWin {
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
  private:
-  friend class test::TestVolumeMountWatcherWin;
+  friend class TestVolumeMountWatcherWin;
 
   // Key: Mass storage device mount point.
   // Value: Mass storage device metadata.
@@ -119,7 +115,5 @@ class VolumeMountWatcherWin {
 
   DISALLOW_COPY_AND_ASSIGN(VolumeMountWatcherWin);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_STORAGE_MONITOR_VOLUME_MOUNT_WATCHER_WIN_H_

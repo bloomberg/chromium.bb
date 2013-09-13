@@ -6,8 +6,6 @@
 
 #include "base/safe_numerics.h"
 
-namespace chrome {
-
 ////////////////////////////////////////////////////////////////////////////////
 //                             SnapshotRequestInfo                            //
 ////////////////////////////////////////////////////////////////////////////////
@@ -68,5 +66,3 @@ uint32 SnapshotFileDetails::BytesToRead() const {
       kReadChunkSize,
       base::checked_numeric_cast<uint32>(file_info_.size) - bytes_written_);
 }
-
-}  // namespace chrome

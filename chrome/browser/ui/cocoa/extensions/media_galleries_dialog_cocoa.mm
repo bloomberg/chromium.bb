@@ -19,10 +19,10 @@
 
 @interface MediaGalleriesCocoaController : NSObject {
  @private
-  chrome::MediaGalleriesDialogCocoa* dialog_;
+  MediaGalleriesDialogCocoa* dialog_;
 }
 
-@property(nonatomic, assign) chrome::MediaGalleriesDialogCocoa* dialog;
+@property(nonatomic, assign) MediaGalleriesDialogCocoa* dialog;
 
 @end
 
@@ -49,8 +49,6 @@
 }
 
 @end
-
-namespace chrome {
 
 namespace {
 
@@ -359,5 +357,3 @@ MediaGalleriesDialog* MediaGalleriesDialog::Create(
       [[MediaGalleriesCocoaController alloc] init]);
   return new MediaGalleriesDialogCocoa(controller, cocoa_controller);
 }
-
-}  // namespace chrome

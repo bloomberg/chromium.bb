@@ -18,11 +18,9 @@ void SetLatch(bool* called) {
 
 }  // namespace
 
-namespace chrome {
-
 TEST(StorageMonitorTest, TestInitialize) {
-  test::TestStorageMonitor::RemoveSingleton();
-  test::TestStorageMonitor monitor;
+  TestStorageMonitor::RemoveSingleton();
+  TestStorageMonitor monitor;
   EXPECT_FALSE(monitor.init_called());
 
   bool initialized = false;
@@ -34,14 +32,14 @@ TEST(StorageMonitorTest, TestInitialize) {
 }
 
 TEST(StorageMonitorTest, DeviceAttachDetachNotifications) {
-  test::TestStorageMonitor::RemoveSingleton();
+  TestStorageMonitor::RemoveSingleton();
   base::MessageLoop message_loop;
   const string16 kDeviceName = ASCIIToUTF16("media device");
   const std::string kDeviceId1 = "dcim:UUID:FFF0-0001";
   const std::string kDeviceId2 = "dcim:UUID:FFF0-0002";
   MockRemovableStorageObserver observer1;
   MockRemovableStorageObserver observer2;
-  test::TestStorageMonitor monitor;
+  TestStorageMonitor monitor;
   monitor.AddObserver(&observer1);
   monitor.AddObserver(&observer2);
 
@@ -82,17 +80,17 @@ TEST(StorageMonitorTest, DeviceAttachDetachNotifications) {
 }
 
 TEST(StorageMonitorTest, GetAllAvailableStoragesEmpty) {
-  test::TestStorageMonitor::RemoveSingleton();
+  TestStorageMonitor::RemoveSingleton();
   base::MessageLoop message_loop;
-  test::TestStorageMonitor monitor;
+  TestStorageMonitor monitor;
   std::vector<StorageInfo> devices = monitor.GetAllAvailableStorages();
   EXPECT_EQ(0U, devices.size());
 }
 
 TEST(StorageMonitorTest, GetAllAvailableStorageAttachDetach) {
-  test::TestStorageMonitor::RemoveSingleton();
+  TestStorageMonitor::RemoveSingleton();
   base::MessageLoop message_loop;
-  test::TestStorageMonitor monitor;
+  TestStorageMonitor monitor;
   const std::string kDeviceId1 = "dcim:UUID:FFF0-0042";
   const string16 kDeviceName1 = ASCIIToUTF16("test");
   const base::FilePath kDevicePath1(FILE_PATH_LITERAL("/testfoo"));
@@ -135,5 +133,3 @@ TEST(StorageMonitorTest, GetAllAvailableStorageAttachDetach) {
   devices = monitor.GetAllAvailableStorages();
   EXPECT_EQ(0U, devices.size());
 }
-
-}  // namespace chrome

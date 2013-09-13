@@ -259,15 +259,14 @@ class ImageCaptureDeviceManagerTest : public testing::Test {
     ui_thread_.reset(new content::TestBrowserThread(
         content::BrowserThread::UI, &message_loop_));
 
-    monitor_ = chrome::test::TestStorageMonitor::CreateAndInstall();
+    monitor_ = TestStorageMonitor::CreateAndInstall();
   }
 
   virtual void TearDown() OVERRIDE {
-    chrome::test::TestStorageMonitor::RemoveSingleton();
+    TestStorageMonitor::RemoveSingleton();
   }
 
-  MockICCameraDevice* AttachDevice(
-      chrome::ImageCaptureDeviceManager* manager) {
+  MockICCameraDevice* AttachDevice(ImageCaptureDeviceManager* manager) {
     // Ownership will be passed to the device browser delegate.
     base::scoped_nsobject<MockICCameraDevice> device(
         [[MockICCameraDevice alloc] init]);
@@ -276,7 +275,7 @@ class ImageCaptureDeviceManagerTest : public testing::Test {
     return device.autorelease();
   }
 
-  void DetachDevice(chrome::ImageCaptureDeviceManager* manager,
+  void DetachDevice(ImageCaptureDeviceManager* manager,
                     ICCameraDevice* device) {
     id<ICDeviceBrowserDelegate> delegate = manager->device_browser();
     [delegate deviceBrowser:nil didRemoveDevice:device moreGoing:NO];
@@ -286,16 +285,15 @@ class ImageCaptureDeviceManagerTest : public testing::Test {
   base::MessageLoopForUI message_loop_;
   scoped_ptr<content::TestBrowserThread> ui_thread_;
 
-  chrome::test::TestStorageMonitor* monitor_;
+  TestStorageMonitor* monitor_;
   TestCameraListener listener_;
 };
 
 TEST_F(ImageCaptureDeviceManagerTest, TestAttachDetach) {
-  chrome::ImageCaptureDeviceManager manager;
+  ImageCaptureDeviceManager manager;
   manager.SetNotifications(monitor_->receiver());
   ICCameraDevice* device = AttachDevice(&manager);
-  std::vector<chrome::StorageInfo> devices =
-      monitor_->GetAllAvailableStorages();
+  std::vector<StorageInfo> devices = monitor_->GetAllAvailableStorages();
 
   ASSERT_EQ(1U, devices.size());
   EXPECT_EQ(std::string("ic:") + kDeviceId, devices[0].device_id());
@@ -306,15 +304,15 @@ TEST_F(ImageCaptureDeviceManagerTest, TestAttachDetach) {
 };
 
 TEST_F(ImageCaptureDeviceManagerTest, OpenCamera) {
-  chrome::ImageCaptureDeviceManager manager;
+  ImageCaptureDeviceManager manager;
   manager.SetNotifications(monitor_->receiver());
   ICCameraDevice* device = AttachDevice(&manager);
 
-  EXPECT_FALSE(chrome::ImageCaptureDeviceManager::deviceForUUID(
+  EXPECT_FALSE(ImageCaptureDeviceManager::deviceForUUID(
       "nonexistent"));
 
   base::scoped_nsobject<ImageCaptureDevice> camera(
-      [chrome::ImageCaptureDeviceManager::deviceForUUID(kDeviceId) retain]);
+      [ImageCaptureDeviceManager::deviceForUUID(kDeviceId) retain]);
 
   [camera setListener:listener_.AsWeakPtr()];
   [camera open];
@@ -337,17 +335,16 @@ TEST_F(ImageCaptureDeviceManagerTest, OpenCamera) {
 
   [camera close];
   DetachDevice(&manager, device);
-  EXPECT_FALSE(chrome::ImageCaptureDeviceManager::deviceForUUID(
-      kDeviceId));
+  EXPECT_FALSE(ImageCaptureDeviceManager::deviceForUUID(kDeviceId));
 }
 
 TEST_F(ImageCaptureDeviceManagerTest, RemoveCamera) {
-  chrome::ImageCaptureDeviceManager manager;
+  ImageCaptureDeviceManager manager;
   manager.SetNotifications(monitor_->receiver());
   ICCameraDevice* device = AttachDevice(&manager);
 
   base::scoped_nsobject<ImageCaptureDevice> camera(
-      [chrome::ImageCaptureDeviceManager::deviceForUUID(kDeviceId) retain]);
+      [ImageCaptureDeviceManager::deviceForUUID(kDeviceId) retain]);
 
   [camera setListener:listener_.AsWeakPtr()];
   [camera open];
@@ -361,12 +358,12 @@ TEST_F(ImageCaptureDeviceManagerTest, DownloadFile) {
       new content::TestBrowserThread(
           content::BrowserThread::FILE, &message_loop_));
 
-  chrome::ImageCaptureDeviceManager manager;
+  ImageCaptureDeviceManager manager;
   manager.SetNotifications(monitor_->receiver());
   MockICCameraDevice* device = AttachDevice(&manager);
 
   base::scoped_nsobject<ImageCaptureDevice> camera(
-      [chrome::ImageCaptureDeviceManager::deviceForUUID(kDeviceId) retain]);
+      [ImageCaptureDeviceManager::deviceForUUID(kDeviceId) retain]);
 
   [camera setListener:listener_.AsWeakPtr()];
   [camera open];
@@ -417,12 +414,12 @@ TEST_F(ImageCaptureDeviceManagerTest, TestSubdirectories) {
       new content::TestBrowserThread(
           content::BrowserThread::FILE, &message_loop_));
 
-  chrome::ImageCaptureDeviceManager manager;
+  ImageCaptureDeviceManager manager;
   manager.SetNotifications(monitor_->receiver());
   MockICCameraDevice* device = AttachDevice(&manager);
 
   base::scoped_nsobject<ImageCaptureDevice> camera(
-      [chrome::ImageCaptureDeviceManager::deviceForUUID(kDeviceId) retain]);
+      [ImageCaptureDeviceManager::deviceForUUID(kDeviceId) retain]);
 
   [camera setListener:listener_.AsWeakPtr()];
   [camera open];

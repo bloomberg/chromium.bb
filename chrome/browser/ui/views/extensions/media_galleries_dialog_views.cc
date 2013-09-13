@@ -66,8 +66,6 @@ void ScrollableView::Layout() {
 
 }  // namespace
 
-namespace chrome {
-
 typedef MediaGalleriesDialogController::GalleryPermissionsVector
     GalleryPermissionsVector;
 
@@ -368,5 +366,3 @@ MediaGalleriesDialog* MediaGalleriesDialog::Create(
     MediaGalleriesDialogController* controller) {
   return new MediaGalleriesDialogViews(controller);
 }
-
-}  // namespace chrome

@@ -18,8 +18,6 @@
 
 using content::BrowserThread;
 
-namespace chrome {
-
 namespace {
 
 // Arbitrary limit to sanity check the file size.
@@ -137,5 +135,3 @@ void SupportedImageTypeValidator::OnFileOpen(scoped_ptr<std::string> data) {
   decoder_->Start(content::BrowserThread::GetMessageLoopProxyForThread(
       BrowserThread::IO));
 }
-
-}  // namespace chrome

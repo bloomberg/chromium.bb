@@ -17,8 +17,6 @@ class Extension;
 
 class Profile;
 
-namespace chrome {
-
 scoped_refptr<extensions::Extension> AddMediaGalleriesApp(
     const std::string& name,
     const std::vector<std::string>& media_galleries_permissions,
@@ -45,7 +43,5 @@ class EnsureMediaDirectoriesExists {
 
   DISALLOW_COPY_AND_ASSIGN(EnsureMediaDirectoriesExists);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_MEDIA_GALLERIES_MEDIA_GALLERIES_TEST_UTIL_H_

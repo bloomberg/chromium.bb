@@ -8,8 +8,6 @@
 #include "chrome/browser/media_galleries/media_galleries_dialog_controller.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace chrome {
-
 class MediaGalleriesDialogControllerMock
     : public MediaGalleriesDialogController {
  public:
@@ -29,7 +27,5 @@ class MediaGalleriesDialogControllerMock
                                         bool enabled));
   MOCK_METHOD1(DialogFinished, void(bool));
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_MEDIA_GALLERIES_MEDIA_GALLERIES_DIALOG_CONTROLLER_MOCK_H_

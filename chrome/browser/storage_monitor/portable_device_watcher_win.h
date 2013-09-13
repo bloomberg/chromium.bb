@@ -20,11 +20,7 @@ namespace base {
 class SequencedTaskRunner;
 }
 
-namespace chrome {
-
-namespace test {
 class TestPortableDeviceWatcherWin;
-}
 
 // This class watches the portable device mount points and sends notifications
 // about the attached/detached media transfer protocol (MTP) devices.
@@ -98,7 +94,7 @@ class PortableDeviceWatcherWin {
                    base::Callback<void(StorageMonitor::EjectStatus)> callback);
 
  private:
-  friend class test::TestPortableDeviceWatcherWin;
+  friend class TestPortableDeviceWatcherWin;
 
   // Key: MTP device storage unique id.
   // Value: Metadata for the given storage.
@@ -142,7 +138,5 @@ class PortableDeviceWatcherWin {
 
   DISALLOW_COPY_AND_ASSIGN(PortableDeviceWatcherWin);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_STORAGE_MONITOR_PORTABLE_DEVICE_WATCHER_WIN_H_

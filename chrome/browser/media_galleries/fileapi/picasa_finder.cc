@@ -47,9 +47,8 @@ base::FilePath FindPicasaDatabaseOnFileThread() {
 void FinishOnOriginalThread(const PicasaFinder::DeviceIDCallback& callback,
                             const base::FilePath& database_path) {
   if (!database_path.empty())
-    callback.Run(chrome::StorageInfo::MakeDeviceId(
-        chrome::StorageInfo::PICASA,
-        database_path.AsUTF8Unsafe()));
+    callback.Run(StorageInfo::MakeDeviceId(StorageInfo::PICASA,
+                                           database_path.AsUTF8Unsafe()));
 }
 
 }  // namespace

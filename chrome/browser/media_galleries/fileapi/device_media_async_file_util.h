@@ -22,8 +22,6 @@ class FileSystemOperationContext;
 class FileSystemURL;
 }
 
-namespace chrome {
-
 class DeviceMediaAsyncFileUtil : public fileapi::AsyncFileUtil {
  public:
   virtual ~DeviceMediaAsyncFileUtil();
@@ -185,7 +183,5 @@ class DeviceMediaAsyncFileUtil : public fileapi::AsyncFileUtil {
 
   DISALLOW_COPY_AND_ASSIGN(DeviceMediaAsyncFileUtil);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_DEVICE_MEDIA_ASYNC_FILE_UTIL_H_

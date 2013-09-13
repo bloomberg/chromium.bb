@@ -105,9 +105,8 @@ class TestingBrowserProcess : public BrowserProcess {
   virtual CRLSetFetcher* crl_set_fetcher() OVERRIDE;
   virtual PnaclComponentInstaller* pnacl_component_installer() OVERRIDE;
   virtual BookmarkPromptController* bookmark_prompt_controller() OVERRIDE;
-  virtual chrome::StorageMonitor* storage_monitor() OVERRIDE;
-  virtual chrome::MediaFileSystemRegistry*
-      media_file_system_registry() OVERRIDE;
+  virtual StorageMonitor* storage_monitor() OVERRIDE;
+  virtual MediaFileSystemRegistry* media_file_system_registry() OVERRIDE;
   virtual bool created_local_state() const OVERRIDE;
 
 #if defined(ENABLE_WEBRTC)
@@ -123,7 +122,7 @@ class TestingBrowserProcess : public BrowserProcess {
   void SetSafeBrowsingService(SafeBrowsingService* sb_service);
   void SetBookmarkPromptController(BookmarkPromptController* controller);
   void SetSystemRequestContext(net::URLRequestContextGetter* context_getter);
-  void SetStorageMonitor(scoped_ptr<chrome::StorageMonitor> storage_monitor);
+  void SetStorageMonitor(scoped_ptr<StorageMonitor> storage_monitor);
 
  private:
   scoped_ptr<content::NotificationService> notification_service_;
@@ -153,8 +152,8 @@ class TestingBrowserProcess : public BrowserProcess {
 #endif  // !defined(OS_IOS)
 
 #if !defined(OS_IOS) && !defined(OS_ANDROID)
-  scoped_ptr<chrome::StorageMonitor> storage_monitor_;
-  scoped_ptr<chrome::MediaFileSystemRegistry> media_file_system_registry_;
+  scoped_ptr<StorageMonitor> storage_monitor_;
+  scoped_ptr<MediaFileSystemRegistry> media_file_system_registry_;
 #endif
 
   // The following objects are not owned by TestingBrowserProcess:

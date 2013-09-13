@@ -24,8 +24,6 @@ namespace extensions {
 class Extension;
 }
 
-namespace chrome {
-
 class MediaGalleriesDialogController;
 
 // The view.
@@ -189,7 +187,5 @@ class MediaGalleriesDialogController
 
   DISALLOW_COPY_AND_ASSIGN(MediaGalleriesDialogController);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_MEDIA_GALLERIES_MEDIA_GALLERIES_DIALOG_CONTROLLER_H_

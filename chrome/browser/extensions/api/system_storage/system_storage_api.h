@@ -41,7 +41,7 @@ class SystemStorageEjectDeviceFunction
   void OnStorageMonitorInit(const std::string& transient_device_id);
 
   // Eject device request handler.
-  void HandleResponse(chrome::StorageMonitor::EjectStatus status);
+  void HandleResponse(StorageMonitor::EjectStatus status);
 };
 
 }  // namespace extensions

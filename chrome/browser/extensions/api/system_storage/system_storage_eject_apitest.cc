@@ -34,7 +34,7 @@ class SystemStorageEjectApiTest : public ExtensionApiTest {
 
  protected:
   virtual void SetUpOnMainThread() OVERRIDE {
-    monitor_ = chrome::test::TestStorageMonitor::CreateForBrowserTests();
+    monitor_ = TestStorageMonitor::CreateForBrowserTests();
     ExtensionApiTest::SetUpOnMainThread();
   }
 
@@ -55,22 +55,22 @@ class SystemStorageEjectApiTest : public ExtensionApiTest {
   }
 
   void Attach() {
-    DCHECK(chrome::StorageMonitor::GetInstance()->IsInitialized());
-    chrome::StorageMonitor::GetInstance()->receiver()->ProcessAttach(
+    DCHECK(StorageMonitor::GetInstance()->IsInitialized());
+    StorageMonitor::GetInstance()->receiver()->ProcessAttach(
         extensions::test::BuildStorageInfoFromTestStorageUnitInfo(
             kRemovableStorageData));
     content::RunAllPendingInMessageLoop();
   }
 
   void Detach() {
-    DCHECK(chrome::StorageMonitor::GetInstance()->IsInitialized());
-    chrome::StorageMonitor::GetInstance()->receiver()->ProcessDetach(
+    DCHECK(StorageMonitor::GetInstance()->IsInitialized());
+    StorageMonitor::GetInstance()->receiver()->ProcessDetach(
         kRemovableStorageData.device_id);
     content::RunAllPendingInMessageLoop();
   }
 
  protected:
-  chrome::test::TestStorageMonitor* monitor_;
+  TestStorageMonitor* monitor_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SystemStorageEjectApiTest);

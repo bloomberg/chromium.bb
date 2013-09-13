@@ -12,17 +12,14 @@
 #include "base/platform_file.h"
 #include "chrome/browser/media_galleries/fileapi/av_scanning_file_validator.h"
 
-class SafeAudioVideoChecker;
-
-namespace chrome {
 class MediaFileValidatorFactory;
-}
+class SafeAudioVideoChecker;
 
 // Uses SafeAudioVideoChecker to validate supported audio and video files in
 // the utility process and then uses AVScanningFileValidator to ask the OS to
 // virus scan them. The entire file is not decoded so a positive result from
 // this class does not make the file safe to use in the browser process.
-class SupportedAudioVideoChecker : public chrome::AVScanningFileValidator {
+class SupportedAudioVideoChecker : public AVScanningFileValidator {
  public:
   virtual ~SupportedAudioVideoChecker();
 
@@ -32,7 +29,7 @@ class SupportedAudioVideoChecker : public chrome::AVScanningFileValidator {
       const ResultCallback& result_callback) OVERRIDE;
 
  private:
-  friend class chrome::MediaFileValidatorFactory;
+  friend class MediaFileValidatorFactory;
 
   explicit SupportedAudioVideoChecker(const base::FilePath& file);
 

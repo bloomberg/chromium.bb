@@ -73,7 +73,7 @@ bool CameraDetector::CheckPresence() {
   for (base::FilePath path = file_enum.Next(); !path.empty();
        path = file_enum.Next()) {
     std::string v4l_capabilities;
-    if (chrome::GetUdevDevicePropertyValueByPath(
+    if (GetUdevDevicePropertyValueByPath(
             path, kV4LCapabilities, &v4l_capabilities)) {
       std::vector<std::string> caps;
       base::SplitString(v4l_capabilities, kV4LCapabilitiesDelim, &caps);

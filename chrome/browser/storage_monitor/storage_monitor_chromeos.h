@@ -23,13 +23,11 @@
 #include "chrome/browser/storage_monitor/storage_monitor.h"
 #include "chromeos/disks/disk_mount_manager.h"
 
-namespace chrome {
 class MediaTransferProtocolDeviceObserverLinux;
-}
 
 namespace chromeos {
 
-class StorageMonitorCros : public chrome::StorageMonitor,
+class StorageMonitorCros : public StorageMonitor,
                            public disks::DiskMountManager::Observer {
  public:
   // Should only be called by browser start up code.
@@ -59,9 +57,8 @@ class StorageMonitorCros : public chrome::StorageMonitor,
                              const std::string& device_path) OVERRIDE;
 
   // StorageMonitor implementation.
-  virtual bool GetStorageInfoForPath(
-      const base::FilePath& path,
-      chrome::StorageInfo* device_info) const OVERRIDE;
+  virtual bool GetStorageInfoForPath(const base::FilePath& path,
+                                     StorageInfo* device_info) const OVERRIDE;
   virtual void EjectDevice(
       const std::string& device_id,
       base::Callback<void(EjectStatus)> callback) OVERRIDE;
@@ -70,7 +67,7 @@ class StorageMonitorCros : public chrome::StorageMonitor,
 
  private:
   // Mapping of mount path to removable mass storage info.
-  typedef std::map<std::string, chrome::StorageInfo> MountMap;
+  typedef std::map<std::string, StorageInfo> MountMap;
 
   // Helper method that checks existing mount points to see if they are media
   // devices. Eventually calls AddMountedPath for all mount points.
@@ -87,7 +84,7 @@ class StorageMonitorCros : public chrome::StorageMonitor,
 
   scoped_ptr<device::MediaTransferProtocolManager>
       media_transfer_protocol_manager_;
-  scoped_ptr<chrome::MediaTransferProtocolDeviceObserverLinux>
+  scoped_ptr<MediaTransferProtocolDeviceObserverLinux>
       media_transfer_protocol_device_observer_;
 
   base::WeakPtrFactory<StorageMonitorCros> weak_ptr_factory_;

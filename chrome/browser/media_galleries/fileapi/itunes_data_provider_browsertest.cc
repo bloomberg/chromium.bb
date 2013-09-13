@@ -22,8 +22,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
 
-using chrome::MediaFileSystemBackend;
-
 namespace itunes {
 
 namespace {
@@ -76,7 +74,7 @@ class ITunesDataProviderTest : public InProcessBrowserTest {
     // GetInstance() first.  It shouldn't matter what thread creates, however
     // in practice it is always created on the UI thread, so this calls
     // GetInstance here to mirror those real conditions.
-    chrome::ImportedMediaGalleryRegistry::GetInstance();
+    ImportedMediaGalleryRegistry::GetInstance();
     InProcessBrowserTest::SetUp();
   }
 
@@ -103,7 +101,7 @@ class ITunesDataProviderTest : public InProcessBrowserTest {
   }
 
   ITunesDataProvider* data_provider() const {
-    return chrome::ImportedMediaGalleryRegistry::ITunesDataProvider();
+    return ImportedMediaGalleryRegistry::ITunesDataProvider();
   }
 
   const base::FilePath& library_dir() const {
@@ -142,8 +140,8 @@ class ITunesDataProviderTest : public InProcessBrowserTest {
 
   void TestDone() {
     DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
-    chrome::ImportedMediaGalleryRegistry* imported_registry =
-        chrome::ImportedMediaGalleryRegistry::GetInstance();
+    ImportedMediaGalleryRegistry* imported_registry =
+        ImportedMediaGalleryRegistry::GetInstance();
     imported_registry->itunes_data_provider_.reset();
     content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
                                      quit_closure_);
@@ -152,8 +150,8 @@ class ITunesDataProviderTest : public InProcessBrowserTest {
  private:
   void StartTestOnMediaTaskRunner() {
     DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
-    chrome::ImportedMediaGalleryRegistry* imported_registry =
-        chrome::ImportedMediaGalleryRegistry::GetInstance();
+    ImportedMediaGalleryRegistry* imported_registry =
+        ImportedMediaGalleryRegistry::GetInstance();
     imported_registry->itunes_data_provider_.reset(
         new TestITunesDataProvider(
             XmlFile(),

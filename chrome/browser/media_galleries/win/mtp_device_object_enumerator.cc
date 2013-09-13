@@ -9,8 +9,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "content/public/browser/browser_thread.h"
 
-namespace chrome {
-
 MTPDeviceObjectEnumerator::MTPDeviceObjectEnumerator(
     const MTPDeviceObjectEntries& entries)
     : object_entries_(entries),
@@ -70,5 +68,3 @@ bool MTPDeviceObjectEnumerator::HasMoreEntries() const {
 bool MTPDeviceObjectEnumerator::IsIndexReadyAndInRange() const {
   return is_index_ready_ && HasMoreEntries();
 }
-
-}  // namespace chrome

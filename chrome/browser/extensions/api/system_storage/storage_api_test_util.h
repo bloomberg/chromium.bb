@@ -24,7 +24,7 @@ struct TestStorageUnitInfo {
 
 extern const struct TestStorageUnitInfo kRemovableStorageData;
 
-chrome::StorageInfo BuildStorageInfoFromTestStorageUnitInfo(
+StorageInfo BuildStorageInfoFromTestStorageUnitInfo(
     const TestStorageUnitInfo& unit);
 
 }  // namespace test

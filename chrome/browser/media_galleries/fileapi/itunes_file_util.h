@@ -9,9 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/media_galleries/fileapi/native_media_file_util.h"
 
-namespace chrome {
 class ImportedMediaGalleryRegistry;
-}
 
 namespace itunes {
 
@@ -22,9 +20,9 @@ extern const char kITunesMediaDir[];
 extern const char kITunesMusicDir[];
 extern const char kITunesAutoAddDir[];
 
-class ITunesFileUtil : public chrome::NativeMediaFileUtil {
+class ITunesFileUtil : public NativeMediaFileUtil {
  public:
-  explicit ITunesFileUtil(chrome::MediaPathFilter* media_path_filter);
+  explicit ITunesFileUtil(MediaPathFilter* media_path_filter);
   virtual ~ITunesFileUtil();
 
  protected:
@@ -82,7 +80,7 @@ class ITunesFileUtil : public chrome::NativeMediaFileUtil {
 
   base::WeakPtrFactory<ITunesFileUtil> weak_factory_;
 
-  chrome::ImportedMediaGalleryRegistry* imported_registry_;
+  ImportedMediaGalleryRegistry* imported_registry_;
 
   DISALLOW_COPY_AND_ASSIGN(ITunesFileUtil);
 };

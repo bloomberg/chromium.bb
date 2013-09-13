@@ -16,7 +16,6 @@
 
 namespace {
 
-using chrome::StorageMonitor;
 using extensions::StorageUnitInfoList;
 using extensions::test::TestStorageUnitInfo;
 using extensions::test::kRemovableStorageData;
@@ -35,7 +34,7 @@ class SystemStorageApiTest : public ExtensionApiTest {
   virtual ~SystemStorageApiTest() {}
 
   virtual void SetUpOnMainThread() OVERRIDE {
-    chrome::test::TestStorageMonitor::CreateForBrowserTests();
+    TestStorageMonitor::CreateForBrowserTests();
   }
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {

@@ -16,8 +16,6 @@
 
 using content::BrowserThread;
 
-namespace chrome {
-
 namespace {
 
 // Appends |data| to the snapshot file specified by the |snapshot_file_path| on
@@ -140,5 +138,3 @@ void MTPReadFileWorker::OnDidWriteIntoSnapshotFile(
                  snapshot_file_details->file_info(),
                  snapshot_file_details->snapshot_file_path()));
 }
-
-}  // namespace chrome

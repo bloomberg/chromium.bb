@@ -20,8 +20,6 @@ namespace base {
 class FilePath;
 }
 
-namespace chrome {
-
 struct SnapshotRequestInfo;
 
 // MTPDeviceDelegateImplLinux communicates with the media transfer protocol
@@ -194,7 +192,5 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(MTPDeviceDelegateImplLinux);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_MEDIA_GALLERIES_LINUX_MTP_DEVICE_DELEGATE_IMPL_LINUX_H_

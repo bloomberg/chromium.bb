@@ -13,15 +13,11 @@ namespace base {
 class SequencedTaskRunner;
 }
 
-namespace chrome {
-
 typedef base::Callback<void(MTPDeviceAsyncDelegate*)>
     CreateMTPDeviceAsyncDelegateCallback;
 
 void CreateMTPDeviceAsyncDelegate(
     const base::FilePath::StringType& device_location,
     const CreateMTPDeviceAsyncDelegateCallback& callback);
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_MEDIA_GALLERIES_MTP_DEVICE_DELEGATE_IMPL_H_

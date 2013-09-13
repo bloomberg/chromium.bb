@@ -8,8 +8,6 @@
 #include "base/files/file_path.h"
 #include "base/strings/string16.h"
 
-namespace chrome {
-
 struct StorageInfo {
  public:
   enum Type {
@@ -109,7 +107,5 @@ struct StorageInfo {
   // Zero if not collected or unknown.
   uint64 total_size_in_bytes_;
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_STORAGE_MONITOR_STORAGE_INFO_H_

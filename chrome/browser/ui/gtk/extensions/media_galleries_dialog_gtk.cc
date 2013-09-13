@@ -15,8 +15,6 @@
 
 using web_modal::WebContentsModalDialogManager;
 
-namespace chrome {
-
 namespace {
 
 // Color used for additional attachment detail text for galleries.
@@ -246,5 +244,3 @@ MediaGalleriesDialog* MediaGalleriesDialog::Create(
     MediaGalleriesDialogController* controller) {
   return new MediaGalleriesDialogGtk(controller);
 }
-
-}  // namespace chrome

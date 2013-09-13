@@ -18,8 +18,6 @@ class LabelButton;
 class Widget;
 }
 
-namespace chrome {
-
 // The media galleries configuration view for Views. It will immediately show
 // upon construction.
 class MediaGalleriesDialogViews : public MediaGalleriesDialog,
@@ -92,7 +90,5 @@ class MediaGalleriesDialogViews : public MediaGalleriesDialog,
 
   DISALLOW_COPY_AND_ASSIGN(MediaGalleriesDialogViews);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_VIEWS_EXTENSIONS_MEDIA_GALLERIES_DIALOG_VIEWS_H_

@@ -54,9 +54,9 @@ uint64 kDevice2SizeInBytes = 212312;
 uint64 kSDCardSizeInBytes = 9000000;
 
 std::string GetDCIMDeviceId(const std::string& unique_id) {
-  return chrome::StorageInfo::MakeDeviceId(
-      chrome::StorageInfo::REMOVABLE_MASS_STORAGE_WITH_DCIM,
-      chrome::kFSUniqueIdPrefix + unique_id);
+  return StorageInfo::MakeDeviceId(
+      StorageInfo::REMOVABLE_MASS_STORAGE_WITH_DCIM,
+      kFSUniqueIdPrefix + unique_id);
 }
 
 // A test version of StorageMonitorCros that exposes protected methods to tests.
@@ -68,7 +68,7 @@ class TestStorageMonitorCros : public StorageMonitorCros {
 
   virtual void Init() OVERRIDE {
     SetMediaTransferProtocolManagerForTest(
-        new chrome::TestMediaTransferProtocolManagerLinux());
+        new TestMediaTransferProtocolManagerLinux());
     StorageMonitorCros::Init();
   }
 
@@ -79,9 +79,8 @@ class TestStorageMonitorCros : public StorageMonitorCros {
     StorageMonitorCros::OnMountEvent(event, error_code, mount_info);
   }
 
-  virtual bool GetStorageInfoForPath(
-      const base::FilePath& path,
-      chrome::StorageInfo* device_info) const OVERRIDE {
+  virtual bool GetStorageInfoForPath(const base::FilePath& path,
+                                     StorageInfo* device_info) const OVERRIDE {
     return StorageMonitorCros::GetStorageInfoForPath(path, device_info);
   }
   virtual void EjectDevice(
@@ -100,7 +99,7 @@ class StorageMonitorCrosTest : public testing::Test {
   StorageMonitorCrosTest();
   virtual ~StorageMonitorCrosTest();
 
-  void EjectNotify(chrome::StorageMonitor::EjectStatus status);
+  void EjectNotify(StorageMonitor::EjectStatus status);
 
  protected:
   // testing::Test:
@@ -131,7 +130,7 @@ class StorageMonitorCrosTest : public testing::Test {
   static void PostQuitToUIThread();
   static void WaitForFileThread();
 
-  chrome::MockRemovableStorageObserver& observer() {
+  MockRemovableStorageObserver& observer() {
     return *mock_storage_observer_;
   }
 
@@ -142,7 +141,7 @@ class StorageMonitorCrosTest : public testing::Test {
   // Owned by DiskMountManager.
   disks::MockDiskMountManager* disk_mount_manager_mock_;
 
-  chrome::StorageMonitor::EjectStatus status_;
+  StorageMonitor::EjectStatus status_;
 
  private:
   content::TestBrowserThread ui_thread_;
@@ -152,14 +151,14 @@ class StorageMonitorCrosTest : public testing::Test {
   base::ScopedTempDir scoped_temp_dir_;
 
   // Objects that talks with StorageMonitorCros.
-  scoped_ptr<chrome::MockRemovableStorageObserver> mock_storage_observer_;
+  scoped_ptr<MockRemovableStorageObserver> mock_storage_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(StorageMonitorCrosTest);
 };
 
 StorageMonitorCrosTest::StorageMonitorCrosTest()
     : disk_mount_manager_mock_(NULL),
-      status_(chrome::StorageMonitor::EJECT_FAILURE),
+      status_(StorageMonitor::EJECT_FAILURE),
       ui_thread_(BrowserThread::UI, &ui_loop_),
       file_thread_(BrowserThread::FILE) {
 }
@@ -175,12 +174,12 @@ void StorageMonitorCrosTest::SetUp() {
   DiskMountManager::InitializeForTesting(disk_mount_manager_mock_);
   disk_mount_manager_mock_->SetupDefaultReplies();
 
-  mock_storage_observer_.reset(new chrome::MockRemovableStorageObserver);
+  mock_storage_observer_.reset(new MockRemovableStorageObserver);
 
   // Initialize the test subject.
-  chrome::test::TestStorageMonitor::RemoveSingleton();
+  TestStorageMonitor::RemoveSingleton();
   monitor_ = new TestStorageMonitorCros();
-  scoped_ptr<chrome::StorageMonitor> pass_monitor(monitor_);
+  scoped_ptr<StorageMonitor> pass_monitor(monitor_);
   TestingBrowserProcess* browser_process = TestingBrowserProcess::GetGlobal();
   DCHECK(browser_process);
   browser_process->SetStorageMonitor(pass_monitor.Pass());
@@ -229,7 +228,7 @@ void StorageMonitorCrosTest::UnmountDevice(
 
 uint64 StorageMonitorCrosTest::GetDeviceStorageSize(
     const std::string& device_location) {
-  chrome::StorageInfo info;
+  StorageInfo info;
   if (!monitor_->GetStorageInfoForPath(base::FilePath(device_location), &info))
     return 0;
 
@@ -242,7 +241,7 @@ base::FilePath StorageMonitorCrosTest::CreateMountPoint(
   return_path = return_path.AppendASCII(dir);
   base::FilePath path(return_path);
   if (with_dcim_dir)
-    path = path.Append(chrome::kDCIMDirectoryName);
+    path = path.Append(kDCIMDirectoryName);
   if (!file_util::CreateDirectory(path))
     return base::FilePath();
   return return_path;
@@ -261,8 +260,7 @@ void StorageMonitorCrosTest::WaitForFileThread() {
   base::MessageLoop::current()->Run();
 }
 
-void StorageMonitorCrosTest::EjectNotify(
-    chrome::StorageMonitor::EjectStatus status) {
+void StorageMonitorCrosTest::EjectNotify(StorageMonitor::EjectStatus status) {
   status_ = status;
 }
 
@@ -321,9 +319,9 @@ TEST_F(StorageMonitorCrosTest, NoDCIM) {
                                               mount_path.value(),
                                               MOUNT_TYPE_DEVICE,
                                               disks::MOUNT_CONDITION_NONE);
-  const std::string device_id = chrome::StorageInfo::MakeDeviceId(
-      chrome::StorageInfo::REMOVABLE_MASS_STORAGE_NO_DCIM,
-      chrome::kFSUniqueIdPrefix + kUniqueId);
+  const std::string device_id = StorageInfo::MakeDeviceId(
+      StorageInfo::REMOVABLE_MASS_STORAGE_NO_DCIM,
+      kFSUniqueIdPrefix + kUniqueId);
   MountDevice(MOUNT_ERROR_NONE, mount_info, kUniqueId, kDevice1Name,
               kVendorName, kProductName, DEVICE_TYPE_USB, kDevice1SizeInBytes);
   EXPECT_EQ(1, observer().attach_calls());
@@ -484,7 +482,7 @@ TEST_F(StorageMonitorCrosTest, EjectTest) {
                                    base::Unretained(this)));
   ui_loop_.RunUntilIdle();
 
-  EXPECT_EQ(chrome::StorageMonitor::EJECT_OK, status_);
+  EXPECT_EQ(StorageMonitor::EJECT_OK, status_);
 }
 
 }  // namespace

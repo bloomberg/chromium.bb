@@ -28,7 +28,7 @@ namespace {
 std::string MakeDeviceUniqueId(const disks::DiskMountManager::Disk& disk) {
   std::string uuid = disk.fs_uuid();
   if (!uuid.empty())
-    return chrome::kFSUniqueIdPrefix + uuid;
+    return kFSUniqueIdPrefix + uuid;
 
   // If one of the vendor or product information is missing, its value in the
   // string is empty.
@@ -39,14 +39,14 @@ std::string MakeDeviceUniqueId(const disks::DiskMountManager::Disk& disk) {
   const std::string& product = disk.product_id();
   if (vendor.empty() && product.empty())
     return std::string();
-  return chrome::kVendorModelSerialPrefix + vendor + ":" + product + ":";
+  return kVendorModelSerialPrefix + vendor + ":" + product + ":";
 }
 
 // Returns true if the requested device is valid, else false. On success, fills
 // in |info|.
 bool GetDeviceInfo(const disks::DiskMountManager::MountPointInfo& mount_info,
                    bool has_dcim,
-                   chrome::StorageInfo* info) {
+                   StorageInfo* info) {
   DCHECK(info);
   std::string source_path = mount_info.source_path;
 
@@ -59,23 +59,21 @@ bool GetDeviceInfo(const disks::DiskMountManager::MountPointInfo& mount_info,
   // Keep track of device uuid and label, to see how often we receive empty
   // values.
   string16 device_label = UTF8ToUTF16(disk->device_label());
-  chrome::MediaStorageUtil::RecordDeviceInfoHistogram(true, unique_id,
-                                                      device_label);
+  MediaStorageUtil::RecordDeviceInfoHistogram(true, unique_id, device_label);
   if (unique_id.empty())
     return false;
 
-  chrome::StorageInfo::Type type = has_dcim ?
-      chrome::StorageInfo::REMOVABLE_MASS_STORAGE_WITH_DCIM :
-      chrome::StorageInfo::REMOVABLE_MASS_STORAGE_NO_DCIM;
+  StorageInfo::Type type = has_dcim ?
+      StorageInfo::REMOVABLE_MASS_STORAGE_WITH_DCIM :
+      StorageInfo::REMOVABLE_MASS_STORAGE_NO_DCIM;
 
-  *info = chrome::StorageInfo(
-      chrome::StorageInfo::MakeDeviceId(type, unique_id),
-      string16(),
-      mount_info.mount_path,
-      device_label,
-      UTF8ToUTF16(disk->vendor_name()),
-      UTF8ToUTF16(disk->product_name()),
-      disk->total_size_in_bytes());
+  *info = StorageInfo(StorageInfo::MakeDeviceId(type, unique_id),
+                      string16(),
+                      mount_info.mount_path,
+                      device_label,
+                      UTF8ToUTF16(disk->vendor_name()),
+                      UTF8ToUTF16(disk->product_name()),
+                      disk->total_size_in_bytes());
   return true;
 }
 
@@ -83,14 +81,12 @@ bool GetDeviceInfo(const disks::DiskMountManager::MountPointInfo& mount_info,
 bool CheckMountedPathOnFileThread(
     const disks::DiskMountManager::MountPointInfo& mount_info) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
-  return chrome::MediaStorageUtil::HasDcim(
-      base::FilePath(mount_info.mount_path));
+  return MediaStorageUtil::HasDcim(base::FilePath(mount_info.mount_path));
 }
 
 }  // namespace
 
 using content::BrowserThread;
-using chrome::StorageInfo;
 
 StorageMonitorCros::StorageMonitorCros()
     : weak_ptr_factory_(this) {
@@ -115,7 +111,7 @@ void StorageMonitorCros::Init() {
   }
 
   media_transfer_protocol_device_observer_.reset(
-      new chrome::MediaTransferProtocolDeviceObserverLinux(
+      new MediaTransferProtocolDeviceObserverLinux(
           receiver(), media_transfer_protocol_manager_.get()));
 }
 
@@ -236,12 +232,12 @@ bool StorageMonitorCros::GetStorageInfoForPath(
 // Callback executed when the unmount call is run by DiskMountManager.
 // Forwards result to |EjectDevice| caller.
 void NotifyUnmountResult(
-    base::Callback<void(chrome::StorageMonitor::EjectStatus)> callback,
+    base::Callback<void(StorageMonitor::EjectStatus)> callback,
     chromeos::MountError error_code) {
   if (error_code == MOUNT_ERROR_NONE)
-    callback.Run(chrome::StorageMonitor::EJECT_OK);
+    callback.Run(StorageMonitor::EJECT_OK);
   else
-    callback.Run(chrome::StorageMonitor::EJECT_FAILURE);
+    callback.Run(StorageMonitor::EJECT_FAILURE);
 }
 
 void StorageMonitorCros::EjectDevice(
@@ -297,7 +293,7 @@ void StorageMonitorCros::AddMountedPath(
   }
 
   // Get the media device uuid and label if exists.
-  chrome::StorageInfo info;
+  StorageInfo info;
   if (!GetDeviceInfo(mount_info, has_dcim, &info))
     return;
 
@@ -311,10 +307,6 @@ void StorageMonitorCros::AddMountedPath(
 
 }  // namespace chromeos
 
-namespace chrome {
-
 StorageMonitor* StorageMonitor::Create() {
   return new chromeos::StorageMonitorCros();
 }
-
-}  // namespace chrome
