@@ -21,6 +21,7 @@
 #ifndef SVGStyleElement_h
 #define SVGStyleElement_h
 
+#include "SVGNames.h"
 #include "core/dom/StyleElement.h"
 #include "core/svg/SVGElement.h"
 
@@ -66,6 +67,12 @@ private:
 
     Timer<SVGElement> m_svgLoadEventTimer;
 };
+
+inline SVGStyleElement* toSVGStyleElement(Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(SVGNames::styleTag));
+    return static_cast<SVGStyleElement*>(node);
+}
 
 } // namespace WebCore
 

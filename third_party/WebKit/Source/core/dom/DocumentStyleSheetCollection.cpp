@@ -100,7 +100,7 @@ void DocumentStyleSheetCollection::collectStyleSheets(StyleSheetCollections* col
                 if (!sheet)
                     title = nullAtom;
             } else if (n->isSVGElement() && n->hasTagName(SVGNames::styleTag)) {
-                sheet = static_cast<SVGStyleElement*>(n)->sheet();
+                sheet = toSVGStyleElement(n)->sheet();
             } else {
                 sheet = toHTMLStyleElement(n)->sheet();
             }
