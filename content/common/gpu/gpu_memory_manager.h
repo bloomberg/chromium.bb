@@ -28,7 +28,7 @@ class GpuMemoryTrackingGroup;
 class CONTENT_EXPORT GpuMemoryManager :
     public base::SupportsWeakPtr<GpuMemoryManager> {
  public:
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   enum { kDefaultMaxSurfacesWithFrontbufferSoftLimit = 1 };
 #else
   enum { kDefaultMaxSurfacesWithFrontbufferSoftLimit = 8 };
