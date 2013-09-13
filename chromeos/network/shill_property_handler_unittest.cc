@@ -36,7 +36,8 @@ void ErrorCallbackFunction(const std::string& error_name,
 
 class TestListener : public internal::ShillPropertyHandler::Listener {
  public:
-  TestListener() : manager_updates_(0), errors_(0) {
+  TestListener() : technology_list_updates_(0),
+                   errors_(0) {
   }
 
   virtual void UpdateManagedList(ManagedState::ManagedType type,
@@ -68,8 +69,8 @@ class TestListener : public internal::ShillPropertyHandler::Listener {
     AddPropertyUpdate(flimflam::kDevicesProperty, device_path);
   }
 
-  virtual void NotifyManagerPropertyChanged() OVERRIDE {
-    ++manager_updates_;
+  virtual void TechnologyListChanged() OVERRIDE {
+    ++technology_list_updates_;
   }
 
   virtual void CheckPortalListChanged(
@@ -92,7 +93,7 @@ class TestListener : public internal::ShillPropertyHandler::Listener {
     return initial_property_updates_[type];
   }
   int list_updates(const std::string& type) { return list_updates_[type]; }
-  int manager_updates() { return manager_updates_; }
+  int technology_list_updates() { return technology_list_updates_; }
   int errors() { return errors_; }
 
  private:
@@ -147,7 +148,7 @@ class TestListener : public internal::ShillPropertyHandler::Listener {
   std::map<std::string, std::map<std::string, int> > initial_property_updates_;
   // Map of list-type -> list update counts
   std::map<std::string, int > list_updates_;
-  int manager_updates_;
+  int technology_list_updates_;
   int errors_;
 };
 
@@ -287,7 +288,6 @@ class ShillPropertyHandlerTest : public testing::Test {
 };
 
 TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerStub) {
-  EXPECT_EQ(1, listener_->manager_updates());
   EXPECT_TRUE(shill_property_handler_->IsTechnologyAvailable(
       flimflam::kTypeWifi));
   EXPECT_TRUE(shill_property_handler_->IsTechnologyEnabled(
@@ -303,17 +303,20 @@ TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerStub) {
 }
 
 TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerTechnologyChanged) {
-  EXPECT_EQ(1, listener_->manager_updates());
+  const int initial_technology_updates = 2;  // Available and Enabled lists
+  EXPECT_EQ(initial_technology_updates, listener_->technology_list_updates());
 
   // Remove a technology. Updates both the Available and Enabled lists.
   manager_test_->RemoveTechnology(flimflam::kTypeWimax);
   message_loop_.RunUntilIdle();
-  EXPECT_EQ(3, listener_->manager_updates());
+  EXPECT_EQ(initial_technology_updates + 2,
+            listener_->technology_list_updates());
 
   // Add a disabled technology.
   manager_test_->AddTechnology(flimflam::kTypeWimax, false);
   message_loop_.RunUntilIdle();
-  EXPECT_EQ(4, listener_->manager_updates());
+  EXPECT_EQ(initial_technology_updates + 3,
+            listener_->technology_list_updates());
   EXPECT_TRUE(shill_property_handler_->IsTechnologyAvailable(
       flimflam::kTypeWimax));
   EXPECT_FALSE(shill_property_handler_->IsTechnologyEnabled(
@@ -324,7 +327,8 @@ TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerTechnologyChanged) {
       flimflam::kTypeWimax,
       base::Bind(&base::DoNothing), base::Bind(&ErrorCallbackFunction));
   message_loop_.RunUntilIdle();
-  EXPECT_EQ(5, listener_->manager_updates());
+  EXPECT_EQ(initial_technology_updates + 4,
+            listener_->technology_list_updates());
   EXPECT_TRUE(shill_property_handler_->IsTechnologyEnabled(
       flimflam::kTypeWimax));
 
@@ -332,7 +336,6 @@ TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerTechnologyChanged) {
 }
 
 TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerDevicePropertyChanged) {
-  EXPECT_EQ(1, listener_->manager_updates());
   EXPECT_EQ(1, listener_->list_updates(flimflam::kDevicesProperty));
   const size_t kNumShillManagerClientStubImplDevices = 2;
   EXPECT_EQ(kNumShillManagerClientStubImplDevices,
@@ -341,7 +344,6 @@ TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerDevicePropertyChanged) {
   const std::string kTestDevicePath("test_wifi_device1");
   AddDevice(flimflam::kTypeWifi, kTestDevicePath);
   message_loop_.RunUntilIdle();
-  EXPECT_EQ(1, listener_->manager_updates());  // No new manager updates.
   EXPECT_EQ(2, listener_->list_updates(flimflam::kDevicesProperty));
   EXPECT_EQ(kNumShillManagerClientStubImplDevices + 1,
             listener_->entries(flimflam::kDevicesProperty).size());
@@ -357,7 +359,6 @@ TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerDevicePropertyChanged) {
 }
 
 TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerServicePropertyChanged) {
-  EXPECT_EQ(1, listener_->manager_updates());
   EXPECT_EQ(1, listener_->list_updates(flimflam::kServicesProperty));
   const size_t kNumShillManagerClientStubImplServices = 4;
   EXPECT_EQ(kNumShillManagerClientStubImplServices,
@@ -368,7 +369,6 @@ TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerServicePropertyChanged) {
   AddService(flimflam::kTypeWifi, kTestServicePath,
              flimflam::kStateIdle, false);
   message_loop_.RunUntilIdle();
-  EXPECT_EQ(1, listener_->manager_updates());  // No new manager updates.
   // Watched and unwatched services trigger a service list update.
   EXPECT_EQ(2, listener_->list_updates(flimflam::kServicesProperty));
   EXPECT_EQ(kNumShillManagerClientStubImplServices + 1,

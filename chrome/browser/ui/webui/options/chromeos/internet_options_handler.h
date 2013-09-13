@@ -87,7 +87,7 @@ class InternetOptionsHandler
   void UpdateCarrier();
 
   // NetworkStateHandlerObserver
-  virtual void NetworkManagerChanged() OVERRIDE;
+  virtual void DeviceListChanged() OVERRIDE;
   virtual void NetworkListChanged() OVERRIDE;
   virtual void NetworkConnectionStateChanged(
       const chromeos::NetworkState* network) OVERRIDE;

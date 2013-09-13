@@ -75,9 +75,8 @@ class CHROMEOS_EXPORT ShillPropertyHandler
     virtual void CheckPortalListChanged(
          const std::string& check_portal_list) = 0;
 
-    // Called when one or more manager properties (e.g. a technology list)
-    // changes.
-    virtual void NotifyManagerPropertyChanged() = 0;
+    // Called when a technology list changes.
+    virtual void TechnologyListChanged() = 0;
 
     // Called when a managed state list has changed, after properties for any
     // new entries in the list have been received and
@@ -143,8 +142,7 @@ class CHROMEOS_EXPORT ShillPropertyHandler
   void CheckPendingStateListUpdates(const std::string& key);
 
   // Called form OnPropertyChanged() and ManagerPropertiesCallback().
-  // Returns true if observers should be notified.
-  bool ManagerPropertyChanged(const std::string& key,
+  void ManagerPropertyChanged(const std::string& key,
                               const base::Value& value);
 
   // Requests properties for new entries in the list for |type| as follows:

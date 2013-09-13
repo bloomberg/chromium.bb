@@ -1316,7 +1316,7 @@ void InternetOptionsHandler::UpdateCarrier() {
   web_ui()->CallJavascriptFunction(kUpdateCarrierFunction);
 }
 
-void InternetOptionsHandler::NetworkManagerChanged() {
+void InternetOptionsHandler::DeviceListChanged() {
   if (!web_ui())
     return;
   RefreshNetworkData();

@@ -78,12 +78,12 @@ std::string NetworkScreen::GetName() const {
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkScreen, NetworkStateHandlerObserver implementation:
 
-void NetworkScreen::NetworkManagerChanged() {
+void NetworkScreen::NetworkConnectionStateChanged(const NetworkState* network) {
   UpdateStatus();
 }
 
 void NetworkScreen::DefaultNetworkChanged(const NetworkState* network) {
-  NetworkManagerChanged();
+  UpdateStatus();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -91,7 +91,7 @@ void NetworkScreen::DefaultNetworkChanged(const NetworkState* network) {
 
 void NetworkScreen::Refresh() {
   SubscribeNetworkNotification();
-  NetworkManagerChanged();
+  UpdateStatus();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

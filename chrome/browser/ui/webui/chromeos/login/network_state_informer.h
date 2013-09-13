@@ -64,7 +64,6 @@ class NetworkStateInformer
   void RemoveObserver(NetworkStateInformerObserver* observer);
 
   // NetworkStateHandlerObserver implementation:
-  virtual void NetworkManagerChanged() OVERRIDE;
   virtual void DefaultNetworkChanged(const NetworkState* network) OVERRIDE;
 
   // NetworkPortalDetector::Observer implementation:

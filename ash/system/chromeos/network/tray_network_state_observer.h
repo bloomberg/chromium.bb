@@ -34,7 +34,6 @@ class TrayNetworkStateObserver : public chromeos::NetworkStateHandlerObserver {
   virtual ~TrayNetworkStateObserver();
 
   // NetworkStateHandlerObserver overrides.
-  virtual void NetworkManagerChanged() OVERRIDE;
   virtual void NetworkListChanged() OVERRIDE;
   virtual void DeviceListChanged() OVERRIDE;
   virtual void DefaultNetworkChanged(

@@ -224,12 +224,7 @@ void ShillPropertyHandler::RequestProperties(ManagedState::ManagedType type,
 
 void ShillPropertyHandler::OnPropertyChanged(const std::string& key,
                                              const base::Value& value) {
-  if (ManagerPropertyChanged(key, value)) {
-    std::string detail = key;
-    detail += " = " + network_event_log::ValueAsString(value);
-    NET_LOG_DEBUG("ManagerPropertyChanged", detail);
-    listener_->NotifyManagerPropertyChanged();
-  }
+  ManagerPropertyChanged(key, value);
   CheckPendingStateListUpdates(key);
 }
 
@@ -245,7 +240,6 @@ void ShillPropertyHandler::ManagerPropertiesCallback(
     return;
   }
   NET_LOG_EVENT("ManagerPropertiesCallback", "Success");
-  bool notify = false;
   const base::Value* update_service_value = NULL;
   const base::Value* update_service_complete_value = NULL;
   for (base::DictionaryValue::Iterator iter(properties);
@@ -256,22 +250,18 @@ void ShillPropertyHandler::ManagerPropertiesCallback(
     else if (iter.key() == shill::kServiceCompleteListProperty)
       update_service_complete_value = &iter.value();
     else
-      notify |= ManagerPropertyChanged(iter.key(), iter.value());
+      ManagerPropertyChanged(iter.key(), iter.value());
   }
   // Update Services which can safely assume other properties have been set.
-  if (update_service_value) {
-    notify |= ManagerPropertyChanged(flimflam::kServicesProperty,
-                                     *update_service_value);
-  }
+  if (update_service_value)
+    ManagerPropertyChanged(flimflam::kServicesProperty, *update_service_value);
   // Update ServiceCompleteList which skips entries that have already been
   // requested for Services.
   if (update_service_complete_value) {
-    notify |= ManagerPropertyChanged(shill::kServiceCompleteListProperty,
-                                     *update_service_complete_value);
+    ManagerPropertyChanged(shill::kServiceCompleteListProperty,
+                           *update_service_complete_value);
   }
 
-  if (notify)
-    listener_->NotifyManagerPropertyChanged();
   CheckPendingStateListUpdates("");
 }
 
@@ -295,9 +285,8 @@ void ShillPropertyHandler::CheckPendingStateListUpdates(
   }
 }
 
-bool ShillPropertyHandler::ManagerPropertyChanged(const std::string& key,
+void ShillPropertyHandler::ManagerPropertyChanged(const std::string& key,
                                                   const base::Value& value) {
-  bool notify_manager_changed = false;
   if (key == flimflam::kServicesProperty) {
     const base::ListValue* vlist = GetListValue(key, value);
     if (vlist) {
@@ -324,34 +313,25 @@ bool ShillPropertyHandler::ManagerPropertyChanged(const std::string& key,
     }
   } else if (key == flimflam::kAvailableTechnologiesProperty) {
     const base::ListValue* vlist = GetListValue(key, value);
-    if (vlist) {
+    if (vlist)
       UpdateAvailableTechnologies(*vlist);
-      notify_manager_changed = true;
-    }
   } else if (key == flimflam::kEnabledTechnologiesProperty) {
     const base::ListValue* vlist = GetListValue(key, value);
-    if (vlist) {
+    if (vlist)
       UpdateEnabledTechnologies(*vlist);
-      notify_manager_changed = true;
-    }
   } else if (key == shill::kUninitializedTechnologiesProperty) {
     const base::ListValue* vlist = GetListValue(key, value);
-    if (vlist) {
+    if (vlist)
       UpdateUninitializedTechnologies(*vlist);
-      notify_manager_changed = true;
-    }
   } else if (key == flimflam::kProfilesProperty) {
     listener_->ProfileListChanged();
   } else if (key == flimflam::kCheckPortalListProperty) {
     std::string check_portal_list;
-    if (value.GetAsString(&check_portal_list)) {
+    if (value.GetAsString(&check_portal_list))
       listener_->CheckPortalListChanged(check_portal_list);
-      notify_manager_changed = true;
-    }
   } else {
     VLOG(2) << "Ignored Manager Property: " << key;
   }
-  return notify_manager_changed;
 }
 
 void ShillPropertyHandler::UpdateProperties(ManagedState::ManagedType type,
@@ -425,6 +405,7 @@ void ShillPropertyHandler::UpdateAvailableTechnologies(
     DCHECK(!technology.empty());
     available_technologies_.insert(technology);
   }
+  listener_->TechnologyListChanged();
 }
 
 void ShillPropertyHandler::UpdateEnabledTechnologies(
@@ -440,6 +421,7 @@ void ShillPropertyHandler::UpdateEnabledTechnologies(
     enabled_technologies_.insert(technology);
     enabling_technologies_.erase(technology);
   }
+  listener_->TechnologyListChanged();
 }
 
 void ShillPropertyHandler::UpdateUninitializedTechnologies(
@@ -454,6 +436,7 @@ void ShillPropertyHandler::UpdateUninitializedTechnologies(
     DCHECK(!technology.empty());
     uninitialized_technologies_.insert(technology);
   }
+  listener_->TechnologyListChanged();
 }
 
 void ShillPropertyHandler::EnableTechnologyFailed(

@@ -33,10 +33,6 @@ TrayNetworkStateObserver::~TrayNetworkStateObserver() {
   }
 }
 
-void TrayNetworkStateObserver::NetworkManagerChanged() {
-  delegate_->NetworkStateChanged(false);
-}
-
 void TrayNetworkStateObserver::NetworkListChanged() {
   delegate_->NetworkStateChanged(true);
   network_icon::PurgeNetworkIconCache();

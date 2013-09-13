@@ -63,10 +63,6 @@ void NetworkStateInformer::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
-void NetworkStateInformer::NetworkManagerChanged() {
-  UpdateStateAndNotify();
-}
-
 void NetworkStateInformer::DefaultNetworkChanged(const NetworkState* network) {
   UpdateStateAndNotify();
 }

@@ -511,7 +511,7 @@ void EventRouter::OnCopyProgress(
       file_browser_private::OnCopyProgress::Create(copy_id, status));
 }
 
-void EventRouter::NetworkManagerChanged() {
+void EventRouter::DefaultNetworkChanged(const chromeos::NetworkState* network) {
   if (!profile_ ||
       !extensions::ExtensionSystem::Get(profile_)->event_router()) {
     NOTREACHED();
@@ -522,10 +522,6 @@ void EventRouter::NetworkManagerChanged() {
       profile_,
       extensions::event_names::kOnFileBrowserDriveConnectionStatusChanged,
       make_scoped_ptr(new ListValue));
-}
-
-void EventRouter::DefaultNetworkChanged(const chromeos::NetworkState* network) {
-  NetworkManagerChanged();
 }
 
 void EventRouter::OnFileManagerPrefsChanged() {

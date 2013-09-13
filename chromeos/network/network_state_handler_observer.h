@@ -22,9 +22,6 @@ class CHROMEOS_EXPORT NetworkStateHandlerObserver {
   NetworkStateHandlerObserver();
   virtual ~NetworkStateHandlerObserver();
 
-  // Called when one or more network manager properties changes.
-  virtual void NetworkManagerChanged();
-
   // The list of networks changed.
   virtual void NetworkListChanged();
 

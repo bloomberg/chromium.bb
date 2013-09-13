@@ -206,10 +206,9 @@ void NetworkPortalDetectorImpl::DisableLazyDetection() {
   VLOG(1) << "Lazy detection mode disabled.";
 }
 
-void NetworkPortalDetectorImpl::NetworkManagerChanged() {
+void NetworkPortalDetectorImpl::DefaultNetworkChanged(
+    const NetworkState* default_network) {
   DCHECK(CalledOnValidThread());
-  const NetworkState* default_network =
-      NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
   if (!default_network) {
     default_network_id_.clear();
     return;
@@ -241,11 +240,6 @@ void NetworkPortalDetectorImpl::NetworkManagerChanged() {
       DetectCaptivePortal(base::TimeDelta());
     }
   }
-}
-
-void NetworkPortalDetectorImpl::DefaultNetworkChanged(
-    const NetworkState* network) {
-  NetworkManagerChanged();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

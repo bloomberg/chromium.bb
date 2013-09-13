@@ -81,7 +81,6 @@ class EventRouter
                       int64 size);
 
   // chromeos::NetworkStateHandlerObserver overrides.
-  virtual void NetworkManagerChanged() OVERRIDE;
   virtual void DefaultNetworkChanged(
       const chromeos::NetworkState* network) OVERRIDE;
 

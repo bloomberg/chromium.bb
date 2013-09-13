@@ -268,7 +268,8 @@ class MobileSetupHandler
   void HandleGetDeviceInfo(const ListValue* args);
 
   // NetworkStateHandlerObserver implementation.
-  virtual void NetworkManagerChanged() OVERRIDE;
+  virtual void NetworkConnectionStateChanged(
+      const NetworkState* network) OVERRIDE;
   virtual void DefaultNetworkChanged(
       const NetworkState* default_network) OVERRIDE;
 
@@ -594,30 +595,36 @@ void MobileSetupHandler::GetPropertiesFailure(
   web_ui()->CallJavascriptFunction(callback_name, device_dict);
 }
 
-void MobileSetupHandler::NetworkManagerChanged() {
+void MobileSetupHandler::DefaultNetworkChanged(
+    const NetworkState* default_network) {
   if (!web_ui())
     return;
 
-  std::string path = web_ui()->GetWebContents()->GetURL().path();
+  std::string path = web_ui()->GetWebContents()->GetURL().path().substr(1);
   if (path.empty())
     return;
 
   const NetworkState* network =
-      NetworkHandler::Get()->network_state_handler()->GetNetworkState(
-          path.substr(1));
+      NetworkHandler::Get()->network_state_handler()->GetNetworkState(path);
   if (!network) {
     LOG(ERROR) << "Service path lost";
     web_ui()->GetWebContents()->Close();
     return;
   }
 
-  UpdatePortalReachability(network,
-                           false /* do not force notification */);
+  UpdatePortalReachability(network, false /* do not force notification */);
 }
 
-void MobileSetupHandler::DefaultNetworkChanged(
-    const NetworkState* default_network) {
-  NetworkManagerChanged();
+void MobileSetupHandler::NetworkConnectionStateChanged(
+    const NetworkState* network) {
+  if (!web_ui())
+    return;
+
+  std::string path = web_ui()->GetWebContents()->GetURL().path().substr(1);
+  if (path.empty() || path != network->path())
+    return;
+
+  UpdatePortalReachability(network, false /* do not force notification */);
 }
 
 void MobileSetupHandler::UpdatePortalReachability(

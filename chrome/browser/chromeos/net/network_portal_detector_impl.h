@@ -61,7 +61,6 @@ class NetworkPortalDetectorImpl
   virtual void DisableLazyDetection() OVERRIDE;
 
   // NetworkStateHandlerObserver implementation:
-  virtual void NetworkManagerChanged() OVERRIDE;
   virtual void DefaultNetworkChanged(const NetworkState* network) OVERRIDE;
 
  private:

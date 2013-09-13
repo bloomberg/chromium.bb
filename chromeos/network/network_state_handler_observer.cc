@@ -12,9 +12,6 @@ NetworkStateHandlerObserver::NetworkStateHandlerObserver() {
 NetworkStateHandlerObserver::~NetworkStateHandlerObserver() {
 }
 
-void NetworkStateHandlerObserver::NetworkManagerChanged() {
-}
-
 void NetworkStateHandlerObserver::NetworkListChanged() {
 }
 

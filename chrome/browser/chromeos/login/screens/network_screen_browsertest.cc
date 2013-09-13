@@ -117,7 +117,7 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, CanConnect) {
   EXPECT_CALL(*mock_network_state_helper_, IsConnecting())
       .WillOnce((Return(true)));
   // EXPECT_FALSE(actor_->IsContinueEnabled());
-  network_screen_->NetworkManagerChanged();
+  network_screen_->UpdateStatus();
 
   EXPECT_CALL(*mock_network_state_helper_, IsConnected())
       .Times(2)
@@ -125,7 +125,7 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, CanConnect) {
   // TODO(nkostylev): Add integration with WebUI actor http://crosbug.com/22570
   // EXPECT_FALSE(actor_->IsContinueEnabled());
   // EXPECT_FALSE(actor_->IsConnecting());
-  network_screen_->NetworkManagerChanged();
+  network_screen_->UpdateStatus();
 
   // EXPECT_TRUE(actor_->IsContinueEnabled());
   EmulateContinueButtonExit(network_screen_);
@@ -137,7 +137,7 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, Timeout) {
   EXPECT_CALL(*mock_network_state_helper_, IsConnecting())
       .WillOnce((Return(true)));
   // EXPECT_FALSE(actor_->IsContinueEnabled());
-  network_screen_->NetworkManagerChanged();
+  network_screen_->UpdateStatus();
 
   EXPECT_CALL(*mock_network_state_helper_, IsConnected())
       .Times(2)

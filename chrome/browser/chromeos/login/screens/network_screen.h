@@ -34,7 +34,8 @@ class NetworkScreen : public WizardScreen,
   virtual std::string GetName() const OVERRIDE;
 
   // NetworkStateHandlerObserver implementation:
-  virtual void NetworkManagerChanged() OVERRIDE;
+  virtual void NetworkConnectionStateChanged(
+      const NetworkState* network) OVERRIDE;
   virtual void DefaultNetworkChanged(const NetworkState* network) OVERRIDE;
 
   // NetworkScreenActor::Delegate implementation:

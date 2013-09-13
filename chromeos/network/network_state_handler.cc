@@ -131,8 +131,8 @@ void NetworkStateHandler::SetTechnologyEnabled(
                base::StringPrintf("%s:%d", technology.c_str(), enabled));
   shill_property_handler_->SetTechnologyEnabled(
       technology, enabled, error_callback);
-  // Signal Technology state changed -> ENABLING
-  NotifyManagerPropertyChanged();
+  // Signal Device/Technology state changed.
+  NotifyDeviceListChanged();
 }
 
 const DeviceState* NetworkStateHandler::GetDeviceState(
@@ -557,8 +557,7 @@ void NetworkStateHandler::UpdateDeviceProperty(const std::string& device_path,
   detail += " = " + network_event_log::ValueAsString(value);
   NET_LOG_EVENT("DevicePropertyUpdated", detail);
 
-  FOR_EACH_OBSERVER(NetworkStateHandlerObserver, observers_,
-                    DeviceListChanged());
+  NotifyDeviceListChanged();
 
   if (key == flimflam::kScanningProperty && device->scanning() == false)
     ScanCompleted(device->type());
@@ -569,10 +568,10 @@ void NetworkStateHandler::CheckPortalListChanged(
   check_portal_list_ = check_portal_list;
 }
 
-void NetworkStateHandler::NotifyManagerPropertyChanged() {
-  NET_LOG_DEBUG("NotifyManagerPropertyChanged", "");
-  FOR_EACH_OBSERVER(NetworkStateHandlerObserver, observers_,
-                    NetworkManagerChanged());
+void NetworkStateHandler::TechnologyListChanged() {
+  // Eventually we would like to replace Technology state with Device state.
+  // For now, treat technology state changes as device list changes.
+  NotifyDeviceListChanged();
 }
 
 void NetworkStateHandler::ManagedStateListChanged(
@@ -609,10 +608,7 @@ void NetworkStateHandler::ManagedStateListChanged(
     UMA_HISTOGRAM_COUNTS_100("Networks.RememberedShared", shared);
     UMA_HISTOGRAM_COUNTS_100("Networks.RememberedUnshared", unshared);
   } else if (type == ManagedState::MANAGED_TYPE_DEVICE) {
-    NET_LOG_DEBUG("DeviceListChanged",
-                  base::StringPrintf("Size:%" PRIuS, device_list_.size()));
-    FOR_EACH_OBSERVER(NetworkStateHandlerObserver, observers_,
-                      DeviceListChanged());
+    NotifyDeviceListChanged();
   } else {
     NOTREACHED();
   }
@@ -620,6 +616,13 @@ void NetworkStateHandler::ManagedStateListChanged(
 
 //------------------------------------------------------------------------------
 // Private methods
+
+void NetworkStateHandler::NotifyDeviceListChanged() {
+  NET_LOG_DEBUG("NotifyDeviceListChanged",
+                base::StringPrintf("Size:%" PRIuS, device_list_.size()));
+  FOR_EACH_OBSERVER(NetworkStateHandlerObserver, observers_,
+                    DeviceListChanged());
+}
 
 DeviceState* NetworkStateHandler::GetModifiableDeviceState(
     const std::string& device_path) const {

@@ -200,7 +200,9 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // Set the list of devices on which portal check is enabled.
   void SetCheckPortalList(const std::string& check_portal_list);
 
-  const std::string& check_portal_list() const { return check_portal_list_; }
+  const std::string& GetCheckPortalListForTest() const {
+    return check_portal_list_;
+  }
 
   // Generates a DictionaryValue of all NetworkState properties. Currently
   // provided for debugging purposes only.
@@ -253,8 +255,8 @@ class CHROMEOS_EXPORT NetworkStateHandler
   virtual void CheckPortalListChanged(
       const std::string& check_portal_list) OVERRIDE;
 
-  // Sends NetworkManagerChanged() to observers and logs an event.
-  virtual void NotifyManagerPropertyChanged() OVERRIDE;
+  // Called by ShillPropertyHandler when a technology list changes.
+  virtual void TechnologyListChanged() OVERRIDE;
 
   // Called by |shill_property_handler_| when the service or device list has
   // changed and all entries have been updated. This updates the list and
@@ -277,6 +279,9 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // notifies observers.
   void UpdateNetworkStateProperties(NetworkState* network,
                                     const base::DictionaryValue& properties);
+
+  // Sends DeviceListChanged() to observers and logs an event.
+  void NotifyDeviceListChanged();
 
   // Non-const getters for managed entries. These are const so that they can
   // be called by Get[Network|Device]State, even though they return non-const

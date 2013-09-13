@@ -215,9 +215,9 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowMain) {
   OnExit(ScreenObserver::UPDATE_INSTALLED);
 
   EXPECT_FALSE(ExistingUserController::current_controller() == NULL);
-  EXPECT_EQ(
-      "ethernet,wifi,cellular",
-      NetworkHandler::Get()->network_state_handler()->check_portal_list());
+  EXPECT_EQ("ethernet,wifi,cellular",
+            NetworkHandler::Get()->network_state_handler()
+            ->GetCheckPortalListForTest());
 }
 
 IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowErrorUpdate) {
@@ -277,9 +277,9 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowSkipUpdateEnroll) {
   EXPECT_EQ(WizardController::default_controller()->GetEnrollmentScreen(),
             WizardController::default_controller()->current_screen());
   EXPECT_TRUE(ExistingUserController::current_controller() == NULL);
-  EXPECT_EQ(
-      "ethernet,wifi,cellular",
-      NetworkHandler::Get()->network_state_handler()->check_portal_list());
+  EXPECT_EQ("ethernet,wifi,cellular",
+            NetworkHandler::Get()->network_state_handler()
+            ->GetCheckPortalListForTest());
 }
 
 IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowEulaDeclined) {

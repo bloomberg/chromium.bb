@@ -30,7 +30,6 @@ class AuthPrewarmer : public NetworkStateHandlerObserver,
 
  private:
   // chromeos::NetworkStateHandlerObserver overrides.
-  virtual void NetworkManagerChanged() OVERRIDE;
   virtual void DefaultNetworkChanged(const NetworkState* network) OVERRIDE;
 
   // content::NotificationObserver overrides.
@@ -52,4 +51,3 @@ class AuthPrewarmer : public NetworkStateHandlerObserver,
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_AUTH_PREWARMER_H_
-

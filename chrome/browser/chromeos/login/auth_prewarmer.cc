@@ -48,9 +48,11 @@ void AuthPrewarmer::PrewarmAuthentication(
     DoPrewarm();
     return;
   }
-  if (!IsNetworkConnected())
-    NetworkHandler::Get()->network_state_handler()->AddObserver(this,
-                                                                FROM_HERE);
+  if (!IsNetworkConnected()) {
+    // DefaultNetworkChanged will get called when a network becomes connected.
+    NetworkHandler::Get()->network_state_handler()
+        ->AddObserver(this, FROM_HERE);
+  }
   if (!GetRequestContext()) {
     registrar_.Add(
         this,
@@ -59,17 +61,14 @@ void AuthPrewarmer::PrewarmAuthentication(
   }
 }
 
-void AuthPrewarmer::NetworkManagerChanged() {
-  if (IsNetworkConnected()) {
-    NetworkHandler::Get()->network_state_handler()->RemoveObserver(this,
-                                                                   FROM_HERE);
-    if (GetRequestContext())
-      DoPrewarm();
-  }
-}
-
 void AuthPrewarmer::DefaultNetworkChanged(const NetworkState* network) {
-  NetworkManagerChanged();
+  if (!network)
+    return;  // Still no default (connected) network.
+
+  NetworkHandler::Get()->network_state_handler()
+      ->RemoveObserver(this, FROM_HERE);
+  if (GetRequestContext())
+    DoPrewarm();
 }
 
 void AuthPrewarmer::Observe(int type,
@@ -121,4 +120,3 @@ net::URLRequestContextGetter* AuthPrewarmer::GetRequestContext() const {
 }
 
 }  // namespace chromeos
-
