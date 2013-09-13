@@ -108,8 +108,8 @@ void MediaDecoderJob::Flush() {
 
   // Do nothing, flush when the next Decode() happens.
   needs_flush_ = true;
-
   received_data_ = DemuxerData();
+  input_eos_encountered_ = false;
   access_unit_index_ = 0;
   on_data_received_cb_.Reset();
 }
@@ -182,11 +182,14 @@ MediaCodecStatus MediaDecoderJob::QueueInputBuffer(const AccessUnit& unit) {
 
 bool MediaDecoderJob::HasData() const {
   DCHECK(ui_loop_->BelongsToCurrentThread());
+  // When |input_eos_encountered_| is set, |access_units| must not be empty and
+  // |access_unit_index_| must be pointing to an EOS unit. We'll reuse this
+  // unit to flush the decoder until we hit output EOS.
   DCHECK(!input_eos_encountered_ ||
          (received_data_.access_units.size() > 0 &&
           access_unit_index_ < received_data_.access_units.size()))
-      << "access_unit_index_.size() " << received_data_.access_units.size()
-      << " access_unit_index_ " << access_unit_index_;
+      << " (access_units.size(): " << received_data_.access_units.size()
+      << ", access_unit_index_: " << access_unit_index_ << ")";
   return access_unit_index_ < received_data_.access_units.size() ||
       input_eos_encountered_;
 }

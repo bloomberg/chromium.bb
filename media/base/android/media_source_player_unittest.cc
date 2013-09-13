@@ -535,6 +535,37 @@ TEST_F(MediaSourcePlayerTest, NoRequestForDataAfterInputEOS) {
   EXPECT_EQ(2, demuxer_.num_requests());
 }
 
+TEST_F(MediaSourcePlayerTest, ReplayAfterInputEOS) {
+  if (!MediaCodecBridge::IsAvailable())
+    return;
+
+  // Test MediaSourcePlayer can replay after input EOS is
+  // reached.
+  scoped_refptr<gfx::SurfaceTexture> surface_texture(
+      new gfx::SurfaceTexture(0));
+  gfx::ScopedJavaSurface surface(surface_texture.get());
+  player_.SetVideoSurface(surface.Pass());
+  StartVideoDecoderJob();
+  player_.OnDemuxerSeeked(demuxer_.last_seek_request_id());
+  EXPECT_EQ(1, demuxer_.num_requests());
+  // Send the first input chunk.
+  player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckForVideo());
+  message_loop_.Run();
+  EXPECT_EQ(2, demuxer_.num_requests());
+
+  // Send EOS.
+  player_.OnDemuxerDataAvailable(CreateEOSAck(false));
+  message_loop_.Run();
+  // No more request for data should be made.
+  EXPECT_EQ(2, demuxer_.num_requests());
+
+  player_.SeekTo(base::TimeDelta());
+  StartVideoDecoderJob();
+  player_.OnDemuxerSeeked(demuxer_.last_seek_request_id());
+  // Seek/Play after EOS should request more data.
+  EXPECT_EQ(3, demuxer_.num_requests());
+}
+
 // TODO(xhwang): Enable this test when the test devices are updated.
 TEST_F(MediaSourcePlayerTest, DISABLED_IsTypeSupported_Widevine) {
   if (!MediaCodecBridge::IsAvailable() || !MediaDrmBridge::IsAvailable()) {

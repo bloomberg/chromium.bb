@@ -391,10 +391,11 @@ void MediaSourcePlayer::ProcessPendingEvents() {
   }
 
   if (IsEventPending(SEEK_EVENT_PENDING)) {
-    DVLOG(1) << __FUNCTION__ << " : Handling SEEK_EVENT.";
+    int seek_request_id = ++seek_request_id_;
+    DVLOG(1) << __FUNCTION__ << " : Handling SEEK_EVENT: " << seek_request_id;
     ClearDecodingData();
     demuxer_->RequestDemuxerSeek(
-        demuxer_client_id_, GetCurrentTime(), ++seek_request_id_);
+        demuxer_client_id_, GetCurrentTime(), seek_request_id);
     return;
   }
 
@@ -730,7 +731,7 @@ void MediaSourcePlayer::SetPendingEvent(PendingEventFlags event) {
 void MediaSourcePlayer::ClearPendingEvent(PendingEventFlags event) {
   DVLOG(1) << __FUNCTION__ << "(" << GetEventName(event) << ")";
   DCHECK_NE(event, NO_EVENT_PENDING);
-  DCHECK(IsEventPending(event));
+  DCHECK(IsEventPending(event)) << GetEventName(event);
 
   pending_event_ &= ~event;
 }
