@@ -91,5 +91,34 @@ TEST_F(NativeViewAcccessibilityWinTest, UnattachedWebView) {
   NativeViewAccessibility::UnregisterWebView(web_view);
 }
 
+#if defined(USE_AURA)
+TEST_F(NativeViewAcccessibilityWinTest, AuraOwnedWidgets) {
+  Widget widget;
+  Widget::InitParams init_params =
+      CreateParams(Widget::InitParams::TYPE_WINDOW);
+  init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  widget.Init(init_params);
+
+  base::win::ScopedComPtr<IAccessible> root_view_accessible(
+      widget.GetRootView()->GetNativeViewAccessible());
+
+  LONG child_count = 0;
+  ASSERT_EQ(S_OK, root_view_accessible->get_accChildCount(&child_count));
+  ASSERT_EQ(1L, child_count);
+
+  Widget owned_widget;
+  Widget::InitParams owned_init_params =
+      CreateParams(Widget::InitParams::TYPE_POPUP);
+  owned_init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  owned_init_params.child = false;
+  owned_init_params.parent = widget.GetNativeView();
+  owned_widget.Init(owned_init_params);
+  owned_widget.Show();
+
+  ASSERT_EQ(S_OK, root_view_accessible->get_accChildCount(&child_count));
+  ASSERT_EQ(2L, child_count);
+}
+#endif
+
 }  // namespace test
 }  // namespace views

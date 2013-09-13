@@ -61,9 +61,10 @@ namespace views {
 
 namespace {
 
-// Enumeration callback for NativeWidget::GetAllChildWidgets(). Called for each
-// child HWND beneath the original HWND.
-BOOL CALLBACK EnumerateChildWindowsForNativeWidgets(HWND hwnd, LPARAM l_param) {
+// Enumeration callback for NativeWidget::GetAllChildWidgets() and
+// NativeWidget::GetAllOwnedWidgets. Adds any HWNDs that correspond to
+// Widgets to a set.
+BOOL CALLBACK EnumerateNativeWidgets(HWND hwnd, LPARAM l_param) {
   Widget* widget = Widget::GetWidgetForNativeView(hwnd);
   if (widget) {
     Widget::Widgets* widgets = reinterpret_cast<Widget::Widgets*>(l_param);
@@ -990,8 +991,23 @@ void NativeWidgetPrivate::GetAllChildWidgets(gfx::NativeView native_view,
   Widget* widget = Widget::GetWidgetForNativeView(native_view);
   if (widget)
     children->insert(widget);
-  EnumChildWindows(native_view, EnumerateChildWindowsForNativeWidgets,
+  EnumChildWindows(native_view, EnumerateNativeWidgets,
                    reinterpret_cast<LPARAM>(children));
+}
+
+// static
+void NativeWidgetPrivate::GetAllOwnedWidgets(gfx::NativeView native_view,
+                                             Widget::Widgets* owned) {
+  if (!native_view)
+    return;
+
+  Widget::Widgets all;
+  EnumWindows(EnumerateNativeWidgets, reinterpret_cast<LPARAM>(&all));
+  for (Widget::Widgets::const_iterator iter = all.begin();
+           iter != all.end(); ++iter) {
+    if (native_view == GetWindow((*iter)->GetNativeView(), GW_OWNER))
+      owned->insert(*iter);
+  }
 }
 
 // static

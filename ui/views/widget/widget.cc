@@ -303,6 +303,12 @@ void Widget::GetAllChildWidgets(gfx::NativeView native_view,
 }
 
 // static
+void Widget::GetAllOwnedWidgets(gfx::NativeView native_view,
+                                Widgets* owned) {
+  internal::NativeWidgetPrivate::GetAllOwnedWidgets(native_view, owned);
+}
+
+// static
 void Widget::ReparentNativeView(gfx::NativeView native_view,
                                 gfx::NativeView new_parent) {
   internal::NativeWidgetPrivate::ReparentNativeView(native_view, new_parent);

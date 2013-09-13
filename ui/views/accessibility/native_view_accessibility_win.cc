@@ -22,6 +22,7 @@
 #include "ui/views/controls/button/custom_button.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/focus/view_storage.h"
+#include "ui/views/widget/widget.h"
 #include "ui/views/win/hwnd_util.h"
 
 using ui::AccessibilityTypes;
@@ -209,6 +210,21 @@ STDMETHODIMP NativeViewAccessibilityWin::accHitTest(
 
   if (!view_)
     return E_FAIL;
+
+  // If this is a root view, our widget might have child widgets.
+  // Search child widgets first, since they're on top in the z-order.
+  if (view_->GetWidget()->GetRootView() == view_) {
+    std::vector<Widget*> child_widgets;
+    PopulateChildWidgetVector(&child_widgets);
+    for (size_t i = 0; i < child_widgets.size(); ++i) {
+      Widget* child_widget = child_widgets[i];
+      IAccessible* child_accessible =
+          child_widget->GetRootView()->GetNativeViewAccessible();
+      HRESULT result = child_accessible->accHitTest(x_left, y_top, child);
+      if (result == S_OK)
+        return result;
+    }
+  }
 
   gfx::Point point(x_left, y_top);
   View::ConvertPointToTarget(NULL, view_, &point);
@@ -410,16 +426,37 @@ STDMETHODIMP NativeViewAccessibilityWin::get_accChild(VARIANT var_child,
     return S_OK;
   }
 
+  // If this is a root view, our widget might have child widgets. Include
+  std::vector<Widget*> child_widgets;
+  if (view_->GetWidget()->GetRootView() == view_)
+    PopulateChildWidgetVector(&child_widgets);
+  int child_widget_count = static_cast<int>(child_widgets.size());
+
   View* child_view = NULL;
   if (child_id > 0) {
     // Positive child ids are a 1-based child index, used by clients
     // that want to enumerate all immediate children.
     int child_id_as_index = child_id - 1;
-    if (child_id_as_index < view_->child_count())
+    if (child_id_as_index < view_->child_count()) {
       child_view = view_->child_at(child_id_as_index);
+    } else if (child_id_as_index < view_->child_count() + child_widget_count) {
+      Widget* child_widget =
+          child_widgets[child_id_as_index - view_->child_count()];
+      child_view = child_widget->GetRootView();
+    }
   } else {
-    // Negative child ids can be used to map to any descendant;
-    // we map child ids to a view storage id that can refer to a
+    // Negative child ids can be used to map to any descendant.
+    // Check child widget first.
+    for (int i = 0; i < child_widget_count; i++) {
+      Widget* child_widget = child_widgets[i];
+      IAccessible* child_accessible =
+          child_widget->GetRootView()->GetNativeViewAccessible();
+      HRESULT result = child_accessible->get_accChild(var_child, disp_child);
+      if (result == S_OK)
+        return result;
+    }
+
+    // We map child ids to a view storage id that can refer to a
     // specific view (if that view still exists).
     int view_storage_id_index =
         base::win::kFirstViewsAccessibilityId - child_id;
@@ -455,6 +492,15 @@ STDMETHODIMP NativeViewAccessibilityWin::get_accChildCount(LONG* child_count) {
     return E_FAIL;
 
   *child_count = view_->child_count();
+
+  // If this is a root view, our widget might have child widgets. Include
+  // them, too.
+  if (view_->GetWidget()->GetRootView() == view_) {
+    std::vector<Widget*> child_widgets;
+    PopulateChildWidgetVector(&child_widgets);
+    *child_count += child_widgets.size();
+  }
+
   return S_OK;
 }
 
@@ -1293,6 +1339,28 @@ LONG NativeViewAccessibilityWin::FindBoundary(
   std::vector<int32> line_breaks;
   return ui::FindAccessibleTextBoundary(
       text, line_breaks, boundary, start_offset, direction);
+}
+
+void NativeViewAccessibilityWin::PopulateChildWidgetVector(
+    std::vector<Widget*>* result_child_widgets) {
+  const Widget* widget = view()->GetWidget();
+  std::set<Widget*> child_widgets;
+  Widget::GetAllChildWidgets(widget->GetNativeView(), &child_widgets);
+  Widget::GetAllOwnedWidgets(widget->GetNativeView(), &child_widgets);
+  for (std::set<Widget*>::const_iterator iter = child_widgets.begin();
+           iter != child_widgets.end(); ++iter) {
+    Widget* child_widget = *iter;
+    if (child_widget == widget)
+      continue;
+
+    if (!child_widget->IsVisible())
+      continue;
+
+    if (widget->GetNativeWindowProperty(kWidgetNativeViewHostKey))
+      continue;
+
+    result_child_widgets->push_back(child_widget);
+  }
 }
 
 }  // namespace views

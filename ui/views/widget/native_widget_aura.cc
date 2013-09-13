@@ -1079,6 +1079,21 @@ void NativeWidgetPrivate::GetAllChildWidgets(gfx::NativeView native_view,
 }
 
 // static
+void NativeWidgetPrivate::GetAllOwnedWidgets(gfx::NativeView native_view,
+                                             Widget::Widgets* owned) {
+  const aura::Window::Windows& transient_children =
+      native_view->transient_children();
+  for (aura::Window::Windows::const_iterator i = transient_children.begin();
+       i != transient_children.end(); ++i) {
+    NativeWidgetPrivate* native_widget = static_cast<NativeWidgetPrivate*>(
+        GetNativeWidgetForNativeView(*i));
+    if (native_widget && native_widget->GetWidget())
+      owned->insert(native_widget->GetWidget());
+    GetAllOwnedWidgets((*i), owned);
+  }
+}
+
+// static
 void NativeWidgetPrivate::ReparentNativeView(gfx::NativeView native_view,
                                              gfx::NativeView new_parent) {
   DCHECK(native_view != new_parent);

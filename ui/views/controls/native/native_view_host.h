@@ -15,6 +15,10 @@ namespace views {
 class NativeViewHostAuraTest;
 class NativeViewHostWrapper;
 
+// If a NativeViewHost's native view is a Widget, this native window
+// property is set on the widget, pointing to the owning NativeViewHost.
+extern const char kWidgetNativeViewHostKey[];
+
 // A View type that hosts a gfx::NativeView. The bounds of the native view are
 // kept in sync with the bounds of this view as it is moved and sized.
 // Under the hood, a platform-specific NativeViewHostWrapper implementation does

@@ -69,7 +69,7 @@ NativeViewAccessibilityWin
   // Supported IAccessible methods.
 
   // Retrieves the child element or child object at a given point on the screen.
-  STDMETHODIMP accHitTest(LONG x_left, LONG y_top, VARIANT* child);
+  virtual STDMETHODIMP accHitTest(LONG x_left, LONG y_top, VARIANT* child);
 
   // Performs the object's default action.
   STDMETHODIMP accDoDefaultAction(VARIANT var_id);
@@ -85,10 +85,10 @@ NativeViewAccessibilityWin
   STDMETHODIMP accNavigate(LONG nav_dir, VARIANT start, VARIANT* end);
 
   // Retrieves an IDispatch interface pointer for the specified child.
-  STDMETHODIMP get_accChild(VARIANT var_child, IDispatch** disp_child);
+  virtual STDMETHODIMP get_accChild(VARIANT var_child, IDispatch** disp_child);
 
   // Retrieves the number of accessible children.
-  STDMETHODIMP get_accChildCount(LONG* child_count);
+  virtual STDMETHODIMP get_accChildCount(LONG* child_count);
 
   // Retrieves a string that describes the object's default action.
   STDMETHODIMP get_accDefaultAction(VARIANT var_id, BSTR* default_action);
@@ -349,9 +349,12 @@ NativeViewAccessibilityWin
   // to MSAA states set.
   static int32 MSAAState(ui::AccessibilityTypes::State state);
 
- private:
+ protected:
   NativeViewAccessibilityWin();
 
+  const View* view() const { return view_; }
+
+ private:
   // Determines navigation direction for accNavigate, based on left, up and
   // previous being mapped all to previous and right, down, next being mapped
   // to next. Returns true if navigation direction is next, false otherwise.
@@ -388,7 +391,10 @@ NativeViewAccessibilityWin
                     LONG start_offset,
                     ui::TextBoundaryDirection direction);
 
-  IAccessible* GetAccessibleFromWebView(long child_id);
+  // Populates the given vector with all widgets that are either a child
+  // or are owned by this view's widget, and who are not contained in a
+  // NativeViewHost.
+  void PopulateChildWidgetVector(std::vector<Widget*>* child_widgets);
 
   // Give CComObject access to the class constructor.
   template <class Base> friend class CComObject;
