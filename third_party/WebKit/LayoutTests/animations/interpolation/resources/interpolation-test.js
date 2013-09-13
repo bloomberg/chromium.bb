@@ -183,6 +183,13 @@
 
   function makeInterpolationTest(fraction, keyframeId, testId, params, expectation) {
     console.assert(expectation === undefined || !isRefTest);
+    // If the prefixed property is not supported, try to unprefix it.
+    if (/^-[^-]+-/.test(params.property) && !CSS.supports(params.property, expectation)) {
+      var unprefixed = params.property.replace(/^-[^-]+-/, '');
+      if (CSS.supports(unprefixed, expectation)) {
+        params.property = unprefixed;
+      }
+    }
     var id = keyframeId + '-' + testId;
     var target = createTarget(id);
     target.classList.add('active');
@@ -193,6 +200,9 @@
       replica.style.setProperty(params.property, expectation);
     }
     target.getResultString = function() {
+      if (!CSS.supports(params.property, expectation)) {
+        return 'FAIL: [' + params.property + ': ' + expectation + '] is not supported';
+      }
       var value = getComputedStyle(this).getPropertyValue(params.property);
       var result = '';
       var reason = '';
