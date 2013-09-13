@@ -31,6 +31,6 @@ TEST_F(BMPImageDecoderTest, DecodingFast) {
 #else
 #define MAYBE_DecodingSlow DecodingSlow
 #endif
-TEST_F(BMPImageDecoderTest, DecodingSlow) {
+TEST_F(BMPImageDecoderTest, MAYBE_DecodingSlow) {
   TestDecoding(TEST_BIGGER, kThresholdSize);
 }
