@@ -19,8 +19,7 @@ import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
 public class ShortcutHelperTest extends ChromiumTestShellTestBase {
-    private static final String WEBAPP_PACKAGE_NAME = "packageName";
-    private static final String WEBAPP_CLASS_NAME = "className";
+    private static final String WEBAPP_ACTION_NAME = "WEBAPP_ACTION";
 
     private static final String WEBAPP_TITLE = "Webapp shortcut";
     private static final String WEBAPP_HTML = UrlUtils.encodeHtmlDataUri(
@@ -67,7 +66,7 @@ public class ShortcutHelperTest extends ChromiumTestShellTestBase {
 
     @Override
     public void setUp() throws Exception {
-        ShortcutHelper.setWebappActivityInfo(WEBAPP_PACKAGE_NAME, WEBAPP_CLASS_NAME);
+        ShortcutHelper.setFullScreenAction(WEBAPP_ACTION_NAME);
         mActivity = launchChromiumTestShellWithBlankPage();
 
         // Set up the observer.
@@ -89,8 +88,8 @@ public class ShortcutHelperTest extends ChromiumTestShellTestBase {
 
         Intent launchIntent = firedIntent.getParcelableExtra(Intent.EXTRA_SHORTCUT_INTENT);
         assertEquals(WEBAPP_HTML, launchIntent.getStringExtra(ShortcutHelper.EXTRA_URL));
-        assertEquals(WEBAPP_PACKAGE_NAME, launchIntent.getComponent().getPackageName());
-        assertEquals(WEBAPP_CLASS_NAME, launchIntent.getComponent().getClassName());
+        assertEquals(WEBAPP_ACTION_NAME, launchIntent.getAction());
+        assertEquals(mActivity.getPackageName(), launchIntent.getPackage());
 
         // Add a second shortcut and make sure it matches the second webapp's parameters.
         mTestObserver.reset();
@@ -101,8 +100,8 @@ public class ShortcutHelperTest extends ChromiumTestShellTestBase {
 
         Intent newLaunchIntent = newFiredIntent.getParcelableExtra(Intent.EXTRA_SHORTCUT_INTENT);
         assertEquals(SECOND_WEBAPP_HTML, newLaunchIntent.getStringExtra(ShortcutHelper.EXTRA_URL));
-        assertEquals(WEBAPP_PACKAGE_NAME, newLaunchIntent.getComponent().getPackageName());
-        assertEquals(WEBAPP_CLASS_NAME, newLaunchIntent.getComponent().getClassName());
+        assertEquals(WEBAPP_ACTION_NAME, newLaunchIntent.getAction());
+        assertEquals(mActivity.getPackageName(), newLaunchIntent.getPackage());
     }
 
     @MediumTest
@@ -115,9 +114,9 @@ public class ShortcutHelperTest extends ChromiumTestShellTestBase {
         assertEquals(NORMAL_TITLE, firedIntent.getStringExtra(Intent.EXTRA_SHORTCUT_NAME));
 
         Intent launchIntent = firedIntent.getParcelableExtra(Intent.EXTRA_SHORTCUT_INTENT);
+        assertEquals(mActivity.getPackageName(), launchIntent.getPackage());
         assertEquals(Intent.ACTION_VIEW, launchIntent.getAction());
         assertEquals(NORMAL_HTML, launchIntent.getDataString());
-        assertNull(launchIntent.getComponent());
     }
 
     @MediumTest

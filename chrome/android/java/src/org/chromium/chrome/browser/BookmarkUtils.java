@@ -86,7 +86,7 @@ public class BookmarkUtils {
      * @param url Url of the bookmark.
      * @return Intent for onclick action of the shortcut.
      */
-    private static Intent createShortcutIntent(Context context, String url) {
+    public static Intent createShortcutIntent(Context context, String url) {
         Intent shortcutIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
         shortcutIntent.putExtra(REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB, true);
         return shortcutIntent;
