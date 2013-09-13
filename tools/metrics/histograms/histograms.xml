@@ -17228,6 +17228,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="UMA.ProtoGzipped" enum="Boolean">
+  <obsolete>
+    Deprecated as of Sep, 2013. Gzipping protobufs is now the default.
+  </obsolete>
   <summary>Was the UMA protobuf uploaded earlier compressed or not.</summary>
 </histogram>
 

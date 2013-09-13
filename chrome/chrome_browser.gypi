@@ -1112,8 +1112,6 @@
         'browser/metrics/compression_utils.h',
         'browser/metrics/field_trial_synchronizer.cc',
         'browser/metrics/field_trial_synchronizer.h',
-        'browser/metrics/gzipped_protobufs_field_trial.cc',
-        'browser/metrics/gzipped_protobufs_field_trial.h',
         'browser/metrics/metric_event_duration_details.h',
         'browser/metrics/metrics_log.cc',
         'browser/metrics/metrics_log.h',

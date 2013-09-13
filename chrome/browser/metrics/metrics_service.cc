@@ -177,7 +177,6 @@
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/memory_details.h"
 #include "chrome/browser/metrics/compression_utils.h"
-#include "chrome/browser/metrics/gzipped_protobufs_field_trial.h"
 #include "chrome/browser/metrics/metrics_log.h"
 #include "chrome/browser/metrics/metrics_log_serializer.h"
 #include "chrome/browser/metrics/metrics_reporting_scheduler.h"
@@ -1409,34 +1408,23 @@ void MetricsService::PrepareFetchWithStagedLog() {
     current_fetch_->SetRequestContext(
         g_browser_process->system_request_context());
 
-    // Compress the protobufs 50% of the time. This can be used to see if
-    // compressed protobufs are being mishandled by machines between the
-    // client/server or monitoring programs/firewalls on the client.
-    bool gzip_protobuf_before_uploading =
-        metrics::ShouldGzipProtobufsBeforeUploading();
-    if (gzip_protobuf_before_uploading) {
-      std::string log_text = log_manager_.staged_log_text();
-      std::string compressed_log_text;
-      bool compression_successful = chrome::GzipCompress(log_text,
-                                                         &compressed_log_text);
-      DCHECK(compression_successful);
-      if (compression_successful) {
-        current_fetch_->SetUploadData(kMimeType, compressed_log_text);
-        // Tell the server that we're uploading gzipped protobufs.
-        current_fetch_->SetExtraRequestHeaders("content-encoding: gzip");
-        UMA_HISTOGRAM_PERCENTAGE(
-            "UMA.ProtoCompressionRatio",
-            100 * compressed_log_text.size() / log_text.size());
-        UMA_HISTOGRAM_CUSTOM_COUNTS(
-            "UMA.ProtoGzippedKBSaved",
-            (log_text.size() - compressed_log_text.size()) / 1024,
-            1, 2000, 50);
-      }
-    } else {
-      current_fetch_->SetUploadData(kMimeType, log_manager_.staged_log_text());
+    std::string log_text = log_manager_.staged_log_text();
+    std::string compressed_log_text;
+    bool compression_successful = chrome::GzipCompress(log_text,
+                                                       &compressed_log_text);
+    DCHECK(compression_successful);
+    if (compression_successful) {
+      current_fetch_->SetUploadData(kMimeType, compressed_log_text);
+      // Tell the server that we're uploading gzipped protobufs.
+      current_fetch_->SetExtraRequestHeaders("content-encoding: gzip");
+      UMA_HISTOGRAM_PERCENTAGE(
+          "UMA.ProtoCompressionRatio",
+          100 * compressed_log_text.size() / log_text.size());
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "UMA.ProtoGzippedKBSaved",
+          (log_text.size() - compressed_log_text.size()) / 1024,
+          1, 2000, 50);
     }
-    UMA_HISTOGRAM_BOOLEAN("UMA.ProtoGzipped",
-                          gzip_protobuf_before_uploading);
 
     // We already drop cookies server-side, but we might as well strip them out
     // client-side as well.
