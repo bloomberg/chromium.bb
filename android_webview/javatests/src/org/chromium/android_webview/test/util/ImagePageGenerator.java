@@ -4,6 +4,8 @@
 
 package org.chromium.android_webview.test.util;
 
+import org.chromium.net.test.util.TestWebServer;
+
 // The purpose of the generator is to provide a sequence of distinct images
 // to avoid caching side-effects.  As we don't need too many images, I've
 // found it easier to hardcode image samples. It is possible to generate
@@ -47,5 +49,14 @@ public class ImagePageGenerator {
                 getPageTemplateSource("data:image/png;base64," + getImageSourceNoAdvance());
         if (mAdvance) mIndex += 2;
         return result;
+    }
+
+    public String getPageUrl(TestWebServer webServer) {
+        final String imagePath = "/image_" + mIndex + ".png";
+        final String pagePath = "/html_image_" + mIndex + ".html";
+        webServer.setResponseBase64(imagePath, getImageSourceNoAdvance(),
+                CommonResources.getImagePngHeaders(false));
+        if (mAdvance) mIndex += 2;
+        return webServer.setResponse(pagePath, getPageTemplateSource(imagePath), null);
     }
 }
