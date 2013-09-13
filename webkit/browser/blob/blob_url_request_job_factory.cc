@@ -10,6 +10,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job_factory.h"
 #include "webkit/browser/blob/blob_data_handle.h"
+#include "webkit/browser/blob/blob_storage_context.h"
 #include "webkit/browser/blob/blob_url_request_job.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 
@@ -45,10 +46,13 @@ void BlobProtocolHandler::SetRequestedBlobDataHandle(
 }
 
 BlobProtocolHandler::BlobProtocolHandler(
+    BlobStorageContext* context,
     fileapi::FileSystemContext* file_system_context,
     base::MessageLoopProxy* loop_proxy)
     : file_system_context_(file_system_context),
       file_loop_proxy_(loop_proxy) {
+  if (context)
+    context_ = context->AsWeakPtr();
 }
 
 BlobProtocolHandler::~BlobProtocolHandler() {
@@ -66,7 +70,14 @@ BlobProtocolHandler::LookupBlobData(net::URLRequest* request) const {
   BlobDataHandle* blob_data_handle = GetRequestedBlobDataHandle(request);
   if (blob_data_handle)
     return blob_data_handle->data();
-  return NULL;
+  if (!context_.get())
+    return NULL;
+
+  // Retain support for looking up based on deprecated blob urls for now.
+  // The FeedbackExtensionAPI relies on this.
+  scoped_ptr<BlobDataHandle> handle = context_->GetBlobDataFromUUID(
+      context_->LookupUuidFromDeprecatedURL(request->url()));
+  return handle.get() ? handle->data() : NULL;
 }
 
 }  // namespace webkit_blob

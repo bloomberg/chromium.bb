@@ -28,6 +28,7 @@ namespace webkit_blob {
 
 class BlobData;
 class BlobDataHandle;
+class BlobStorageContext;
 
 class WEBKIT_STORAGE_BROWSER_EXPORT BlobProtocolHandler
     : public net::URLRequestJobFactory::ProtocolHandler {
@@ -44,7 +45,8 @@ class WEBKIT_STORAGE_BROWSER_EXPORT BlobProtocolHandler
       net::URLRequest* request,
       scoped_ptr<BlobDataHandle> blob_data_handle);
 
-  BlobProtocolHandler(fileapi::FileSystemContext* file_system_context,
+  BlobProtocolHandler(BlobStorageContext* context,
+                      fileapi::FileSystemContext* file_system_context,
                       base::MessageLoopProxy* file_loop_proxy);
   virtual ~BlobProtocolHandler();
 
@@ -56,6 +58,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT BlobProtocolHandler
   scoped_refptr<BlobData> LookupBlobData(
       net::URLRequest* request) const;
 
+  base::WeakPtr<BlobStorageContext> context_;
   const scoped_refptr<fileapi::FileSystemContext> file_system_context_;
   const scoped_refptr<base::MessageLoopProxy> file_loop_proxy_;
 

@@ -48,16 +48,12 @@ namespace content {
 namespace {
 
 // A derivative that knows about Streams too.
-class BlobProtocolHandler : public webkit_blob::BlobProtocolHandler {
+class BlobProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
  public:
   BlobProtocolHandler(ChromeBlobStorageContext* blob_storage_context,
                       StreamContext* stream_context,
                       fileapi::FileSystemContext* file_system_context)
-      : webkit_blob::BlobProtocolHandler(
-            file_system_context,
-            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)
-                .get()),
-        blob_storage_context_(blob_storage_context),
+      : blob_storage_context_(blob_storage_context),
         stream_context_(stream_context),
         file_system_context_(file_system_context) {
   }
@@ -72,14 +68,26 @@ class BlobProtocolHandler : public webkit_blob::BlobProtocolHandler {
         stream_context_->registry()->GetStream(request->url());
     if (stream.get())
       return new StreamURLRequestJob(request, network_delegate, stream);
-    return webkit_blob::BlobProtocolHandler::MaybeCreateJob(
-        request, network_delegate);
+
+    if (!blob_protocol_handler_) {
+      // Construction is deferred because 'this' is constructed on
+      // the main thread but we want blob_protocol_handler_ constructed
+      // on the IO thread.
+      blob_protocol_handler_.reset(
+          new webkit_blob::BlobProtocolHandler(
+              blob_storage_context_->context(),
+              file_system_context_,
+              BrowserThread::GetMessageLoopProxyForThread(
+                  BrowserThread::FILE).get()));
+    }
+    return blob_protocol_handler_->MaybeCreateJob(request, network_delegate);
   }
 
  private:
   const scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
   const scoped_refptr<StreamContext> stream_context_;
   const scoped_refptr<fileapi::FileSystemContext> file_system_context_;
+  mutable scoped_ptr<webkit_blob::BlobProtocolHandler> blob_protocol_handler_;
   DISALLOW_COPY_AND_ASSIGN(BlobProtocolHandler);
 };
 
