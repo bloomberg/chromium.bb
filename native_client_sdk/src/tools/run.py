@@ -46,7 +46,7 @@ def main(args):
       dest='test_mode', action='store_true')
   parser.add_option('-p', '--port',
       help='Port to run server on. Default is 5103, ephemeral is 0.',
-      default=5103)
+      type='int', default=5103)
   options, args = parser.parse_args(args)
   if not args:
     parser.error('No executable given.')
