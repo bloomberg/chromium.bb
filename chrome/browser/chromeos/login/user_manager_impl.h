@@ -22,7 +22,6 @@
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
-#include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -44,7 +43,6 @@ class UserPolicyStatusManager;
 class UserManagerImpl
     : public UserManager,
       public LoginUtils::Delegate,
-      public ProfileSyncServiceObserver,
       public content::NotificationObserver,
       public policy::DeviceLocalAccountPolicyService::Observer {
  public:
@@ -146,9 +144,6 @@ class UserManagerImpl
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
-
-  // ProfileSyncServiceObserver implementation.
-  virtual void OnStateChanged() OVERRIDE;
 
   // policy::DeviceLocalAccountPolicyService::Observer implementation.
   virtual void OnPolicyUpdated(const std::string& user_id) OVERRIDE;
@@ -373,11 +368,6 @@ class UserManagerImpl
   std::string chrome_client_secret_;
 
   content::NotificationRegistrar registrar_;
-
-  // Profile sync service which is observed to take actions after sync
-  // errors appear. NOTE: there is no guarantee that it is the current sync
-  // service, so do NOT use it outside |OnStateChanged| method.
-  ProfileSyncService* observed_sync_service_;
 
   ObserverList<UserManager::Observer> observer_list_;
 

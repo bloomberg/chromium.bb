@@ -25,6 +25,8 @@
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/login/auth_sync_observer.h"
+#include "chrome/browser/chromeos/login/auth_sync_observer_factory.h"
 #include "chrome/browser/chromeos/login/default_pinned_apps_field_trial.h"
 #include "chrome/browser/chromeos/login/login_display.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
@@ -225,7 +227,6 @@ UserManagerImpl::UserManagerImpl()
       is_current_user_new_(false),
       is_current_user_ephemeral_regular_user_(false),
       ephemeral_users_enabled_(false),
-      observed_sync_service_(NULL),
       user_image_manager_(new UserImageManagerImpl),
       manager_creation_time_(base::TimeTicks::Now()) {
   // UserManager instance should be used only on UI thread.
@@ -270,8 +271,6 @@ void UserManagerImpl::Shutdown() {
   if (device_local_account_policy_service_)
     device_local_account_policy_service_->RemoveObserver(this);
 
-  if (observed_sync_service_)
-    observed_sync_service_->RemoveObserver(this);
   user_image_manager_->Shutdown();
   user_policy_status_manager_.reset();
 }
@@ -779,23 +778,16 @@ void UserManagerImpl::Observe(int type,
           !IsLoggedInAsGuest() &&
           !IsLoggedInAsKioskApp()) {
         Profile* profile = content::Details<Profile>(details).ptr();
-        if (!profile->IsOffTheRecord() &&
-            profile == ProfileManager::GetDefaultProfile()) {
-          // TODO(nkostylev): We should observe all logged in user's profiles.
-          // http://crbug.com/230860
-          if (!CommandLine::ForCurrentProcess()->
-                  HasSwitch(::switches::kMultiProfiles)) {
-            DCHECK(NULL == observed_sync_service_);
-            observed_sync_service_ =
-                ProfileSyncServiceFactory::GetForProfile(profile);
-            if (observed_sync_service_)
-              observed_sync_service_->AddObserver(this);
+        if (!profile->IsOffTheRecord()) {
+          AuthSyncObserver* sync_observer =
+              AuthSyncObserverFactory::GetInstance()->GetForProfile(profile);
+          sync_observer->StartObserving();
+          if (profile == ProfileManager::GetDefaultProfile()) {
+            if (!user_policy_status_manager_)
+              user_policy_status_manager_.reset(new UserPolicyStatusManager);
+            user_policy_status_manager_->StartObserving(active_user_->email(),
+                                                        profile);
           }
-
-          if (!user_policy_status_manager_)
-            user_policy_status_manager_.reset(new UserPolicyStatusManager);
-          user_policy_status_manager_->StartObserving(active_user_->email(),
-                                                      profile);
         }
       }
       break;
@@ -809,28 +801,6 @@ void UserManagerImpl::Observe(int type,
     }
     default:
       NOTREACHED();
-  }
-}
-
-void UserManagerImpl::OnStateChanged() {
-  DCHECK(IsLoggedInAsRegularUser() || IsLoggedInAsLocallyManagedUser());
-  GoogleServiceAuthError::State state =
-      observed_sync_service_->GetAuthError().state();
-  if (state != GoogleServiceAuthError::NONE &&
-      state != GoogleServiceAuthError::CONNECTION_FAILED &&
-      state != GoogleServiceAuthError::SERVICE_UNAVAILABLE &&
-      state != GoogleServiceAuthError::REQUEST_CANCELED) {
-    // Invalidate OAuth token to force Gaia sign-in flow. This is needed
-    // because sign-out/sign-in solution is suggested to the user.
-    // TODO(nkostylev): Remove after crosbug.com/25978 is implemented.
-    LOG(ERROR) << "Invalidate OAuth token because of a sync error: "
-               << observed_sync_service_->GetAuthError().ToString();
-    // http://crbug.com/230860
-    // TODO(nkostylev): Figure out whether we want to have observers
-    // for each logged in user.
-    // TODO(nkostyelv): Change observer after active user has changed.
-    SaveUserOAuthStatus(active_user_->email(),
-                        User::OAUTH2_TOKEN_STATUS_INVALID);
   }
 }
 
