@@ -58,6 +58,8 @@ public:
     AccessibilityObjectInclusion getIgnored(AXID) const;
     void setIgnored(AXID, AccessibilityObjectInclusion);
 
+    void clear();
+
 private:
     AXComputedObjectAttributeCache() { }
 

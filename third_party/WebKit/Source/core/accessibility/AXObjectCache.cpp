@@ -99,12 +99,18 @@ void AXComputedObjectAttributeCache::setIgnored(AXID id, AccessibilityObjectIncl
     }
 }
 
+void AXComputedObjectAttributeCache::clear()
+{
+    m_idMapping.clear();
+}
+
 bool AXObjectCache::gAccessibilityEnabled = false;
 
 AXObjectCache::AXObjectCache(const Document* doc)
     : m_notificationPostTimer(this, &AXObjectCache::notificationPostTimerFired)
 {
     m_document = const_cast<Document*>(doc);
+    m_computedObjectAttributeCache = AXComputedObjectAttributeCache::create();
 }
 
 AXObjectCache::~AXObjectCache()
@@ -651,7 +657,7 @@ void AXObjectCache::postNotification(RenderObject* renderer, AXNotification noti
     if (!renderer)
         return;
 
-    stopCachingComputedObjectAttributes();
+    m_computedObjectAttributeCache->clear();
 
     // Get an accessibility object that already exists. One should not be created here
     // because a render update may be in progress and creating an AX object can re-trigger a layout
@@ -672,7 +678,7 @@ void AXObjectCache::postNotification(Node* node, AXNotification notification, bo
     if (!node)
         return;
 
-    stopCachingComputedObjectAttributes();
+    m_computedObjectAttributeCache->clear();
 
     // Get an accessibility object that already exists. One should not be created here
     // because a render update may be in progress and creating an AX object can re-trigger a layout
@@ -690,7 +696,7 @@ void AXObjectCache::postNotification(Node* node, AXNotification notification, bo
 
 void AXObjectCache::postNotification(AccessibilityObject* object, Document* document, AXNotification notification, bool postToElement, PostType postType)
 {
-    stopCachingComputedObjectAttributes();
+    m_computedObjectAttributeCache->clear();
 
     if (object && !postToElement)
         object = object->observableObject();
@@ -735,7 +741,7 @@ void AXObjectCache::handleScrollbarUpdate(ScrollView* view)
 
     // We don't want to create a scroll view from this method, only update an existing one.
     if (AccessibilityObject* scrollViewObject = get(view)) {
-        stopCachingComputedObjectAttributes();
+        m_computedObjectAttributeCache->clear();
         scrollViewObject->updateChildrenIfNecessary();
     }
 }
@@ -754,10 +760,9 @@ void AXObjectCache::handleActiveDescendantChanged(Node* node)
 
 void AXObjectCache::handleAriaRoleChanged(Node* node)
 {
-    stopCachingComputedObjectAttributes();
-
     if (AccessibilityObject* obj = getOrCreate(node)) {
         obj->updateAccessibilityRole();
+        m_computedObjectAttributeCache->clear();
         obj->notifyIfIgnoredValueChanged();
     }
 }
@@ -807,14 +812,14 @@ void AXObjectCache::recomputeIsIgnored(RenderObject* renderer)
 
 void AXObjectCache::startCachingComputedObjectAttributesUntilTreeMutates()
 {
-    if (!m_computedObjectAttributeCache)
-        m_computedObjectAttributeCache = AXComputedObjectAttributeCache::create();
+    // FIXME: no longer needed. When Chromium no longer calls
+    // WebAXObject::startCachingComputedObjectAttributesUntilTreeMutates,
+    // delete this function and the WebAXObject interfaces.
 }
 
 void AXObjectCache::stopCachingComputedObjectAttributes()
 {
-    if (m_computedObjectAttributeCache)
-        m_computedObjectAttributeCache.clear();
+    // FIXME: no longer needed (see above).
 }
 
 VisiblePosition AXObjectCache::visiblePositionForTextMarkerData(TextMarkerData& textMarkerData)
