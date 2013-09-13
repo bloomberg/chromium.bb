@@ -4,10 +4,6 @@
 
 #include <libudev.h>
 
-#include <cstdio>
-#include <fstream>
-#include <sstream>
-
 #include "base/file_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/extensions/api/recovery_private/removable_storage_provider.h"
