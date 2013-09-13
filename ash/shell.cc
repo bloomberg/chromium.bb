@@ -597,7 +597,8 @@ void Shell::Init() {
 
   // Initialize system_tray_delegate_ before initializing StatusAreaWidget.
   system_tray_delegate_.reset(delegate()->CreateSystemTrayDelegate());
-  DCHECK(system_tray_delegate_.get());
+  if (!system_tray_delegate_)
+    system_tray_delegate_.reset(SystemTrayDelegate::CreateDummyDelegate());
 
   internal::RootWindowController* root_window_controller =
       new internal::RootWindowController(root_window);

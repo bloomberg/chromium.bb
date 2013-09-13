@@ -5,9 +5,9 @@
 #include "ash/system/chromeos/managed/tray_locally_managed_user.h"
 
 #include "ash/shell.h"
+#include "ash/system/tray/test_system_tray_delegate.h"
 #include "ash/system/user/login_status.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/test_system_tray_delegate.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_list.h"

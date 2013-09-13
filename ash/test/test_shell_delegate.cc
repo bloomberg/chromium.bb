@@ -14,7 +14,6 @@
 #include "ash/shell_window_ids.h"
 #include "ash/test/test_launcher_delegate.h"
 #include "ash/test/test_session_state_delegate.h"
-#include "ash/test/test_system_tray_delegate.h"
 #include "ash/wm/window_util.h"
 #include "base/logging.h"
 #include "content/public/test/test_browser_context.h"
@@ -158,7 +157,7 @@ LauncherDelegate* TestShellDelegate::CreateLauncherDelegate(
 }
 
 SystemTrayDelegate* TestShellDelegate::CreateSystemTrayDelegate() {
-  return new TestSystemTrayDelegate;
+  return NULL;
 }
 
 UserWallpaperDelegate* TestShellDelegate::CreateUserWallpaperDelegate() {

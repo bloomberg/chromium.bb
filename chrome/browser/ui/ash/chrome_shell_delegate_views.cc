@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "ash/magnifier/magnifier_constants.h"
-#include "ash/system/tray/default_system_tray_delegate.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -104,8 +103,7 @@ void ChromeShellDelegate::SilenceSpokenFeedback() const {
 }
 
 ash::SystemTrayDelegate* ChromeShellDelegate::CreateSystemTrayDelegate() {
-  // TODO(sky): need to subclass and override Shutdown() in a meaningful way.
-  return new ash::DefaultSystemTrayDelegate;
+  return NULL;
 }
 
 ash::UserWallpaperDelegate* ChromeShellDelegate::CreateUserWallpaperDelegate() {
