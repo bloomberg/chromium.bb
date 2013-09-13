@@ -88,6 +88,11 @@
 #define WTF_OS_POSIX 1
 #endif
 
+/* There is an assumption in the project that either OS(WIN) or OS(POSIX) is set. */
+#if !OS(WIN) && !OS(POSIX)
+#error Either OS(WIN) or OS(POSIX) needs to be set.
+#endif
+
 /* Operating environments */
 
 #if OS(ANDROID)
