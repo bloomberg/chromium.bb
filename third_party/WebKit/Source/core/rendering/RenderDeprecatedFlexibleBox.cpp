@@ -281,8 +281,6 @@ void RenderDeprecatedFlexibleBox::layoutBlock(bool relayoutChildren, LayoutUnit)
 
     m_stretchingChildren = false;
 
-    initMaxMarginValues();
-
     if (isHorizontal())
         layoutHorizontalBox(relayoutChildren);
     else
@@ -297,24 +295,6 @@ void RenderDeprecatedFlexibleBox::layoutBlock(bool relayoutChildren, LayoutUnit)
     layoutPositionedObjects(relayoutChildren || isRoot());
 
     computeRegionRangeForBlock(flowThread);
-
-    if (!isFloatingOrOutOfFlowPositioned() && height() == 0) {
-        // We are a block with no border and padding and a computed height
-        // of 0.  The CSS spec states that zero-height blocks collapse their margins
-        // together.
-        // When blocks are self-collapsing, we just use the top margin values and set the
-        // bottom margin max values to 0.  This way we don't factor in the values
-        // twice when we collapse with our previous vertically adjacent and
-        // following vertically adjacent blocks.
-        LayoutUnit pos = maxPositiveMarginBefore();
-        LayoutUnit neg = maxNegativeMarginBefore();
-        if (maxPositiveMarginAfter() > pos)
-            pos = maxPositiveMarginAfter();
-        if (maxNegativeMarginAfter() > neg)
-            neg = maxNegativeMarginAfter();
-        setMaxMarginBeforeValues(pos, neg);
-        setMaxMarginAfterValues(0, 0);
-    }
 
     computeOverflow(oldClientAfterEdge);
 

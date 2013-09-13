@@ -417,8 +417,6 @@ void RenderTable::layout()
 
     setLogicalHeight(0);
 
-    initMaxMarginValues();
-
     LayoutUnit oldLogicalWidth = logicalWidth();
     updateLogicalWidth();
 
