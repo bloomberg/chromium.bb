@@ -26,51 +26,31 @@
 #include "config.h"
 #include "NumberOfCores.h"
 
-#if OS(MACOSX) || OS(OPENBSD) || OS(FREEBSD)
-#include <sys/param.h>
-// sys/types.h must come before sys/sysctl.h because the latter uses
-// data types defined in the former. See sysctl(3) and style(9).
-#include <sys/types.h>
-#include <sys/sysctl.h>
-#elif OS(LINUX)
-#include <unistd.h>
-#elif OS(WIN)
-#include "wtf/UnusedParam.h"
+#if OS(WIN)
 #include <windows.h>
+#else
+#include <unistd.h>
 #endif
 
 namespace WTF {
 
 int numberOfProcessorCores()
 {
-    const int defaultIfUnavailable = 1;
     static int s_numberOfCores = -1;
 
     if (s_numberOfCores > 0)
         return s_numberOfCores;
 
-#if OS(MACOSX) || OS(OPENBSD) || OS(NETBSD) || OS(FREEBSD)
-    unsigned result;
-    size_t length = sizeof(result);
-    int name[] = {
-            CTL_HW,
-            HW_NCPU
-    };
-    int sysctlResult = sysctl(name, sizeof(name) / sizeof(int), &result, &length, 0, 0);
-
-    s_numberOfCores = sysctlResult < 0 ? defaultIfUnavailable : result;
-#elif OS(LINUX)
-    long sysconfResult = sysconf(_SC_NPROCESSORS_ONLN);
-
-    s_numberOfCores = sysconfResult < 0 ? defaultIfUnavailable : static_cast<int>(sysconfResult);
-#elif OS(WIN)
-    UNUSED_PARAM(defaultIfUnavailable);
+#if OS(WIN)
     SYSTEM_INFO sysInfo;
     GetSystemInfo(&sysInfo);
 
     s_numberOfCores = sysInfo.dwNumberOfProcessors;
 #else
-    s_numberOfCores = defaultIfUnavailable;
+    const int defaultIfUnavailable = 1;
+    long sysconfResult = sysconf(_SC_NPROCESSORS_ONLN);
+
+    s_numberOfCores = sysconfResult < 0 ? defaultIfUnavailable : static_cast<int>(sysconfResult);
 #endif
     return s_numberOfCores;
 }
