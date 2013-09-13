@@ -139,8 +139,8 @@ StackFrameMIPS* StackwalkerMIPS::GetCallerByCFIFrameInfo(
       // value from caller_registers.
       frame->context.iregs[i] = caller_entry->second;
       frame->context_validity |= StackFrameMIPS::RegisterValidFlag(i);
-    } else if ((i >= INDEX_MIPS_REG_S0 && i <= INDEX_MIPS_REG_S7 ||
-                i > INDEX_MIPS_REG_GP && i < INDEX_MIPS_REG_RA) &&
+    } else if (((i >= INDEX_MIPS_REG_S0 && i <= INDEX_MIPS_REG_S7) ||
+                (i > INDEX_MIPS_REG_GP && i < INDEX_MIPS_REG_RA)) &&
                (last_frame->context_validity &
                 StackFrameMIPS::RegisterValidFlag(i))) {
       // If the STACK CFI data doesn't mention some callee-save register, and
