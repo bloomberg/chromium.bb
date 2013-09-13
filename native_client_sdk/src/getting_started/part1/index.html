@@ -2,7 +2,7 @@
 <html>
 
   <!--
-  Copyright (c) 2012 The Native Client Authors. All rights reserved.
+  Copyright (c) 2013 The Native Client Authors. All rights reserved.
   Use of this source code is governed by a BSD-style license that can be
   found in the LICENSE file.
   -->
@@ -52,7 +52,7 @@
     function updateStatus(opt_message) {
       if (opt_message)
         statusText = opt_message;
-      var statusField = document.getElementById('status_field');
+      var statusField = document.getElementById('statusField');
       if (statusField) {
         statusField.innerHTML = statusText;
       }
@@ -61,42 +61,35 @@
 </head>
 <body onload="pageDidLoad()">
 
-<h1>Native Client Module HelloTutorial</h1>
-<p>
-  <!-- TODO(eliben): PNaCl-ize:
-  Load the published .nexe.  This includes the 'nacl' attribute which
-  shows how to load multi-architecture modules.  Each entry in the "nexes"
-  object in the .nmf manifest file is a key-value pair: the key is the
-  instruction set architecture ('x86-32', 'x86-64', etc.); the value is a URL
-  for the desired NaCl module.
+  <h1>NaCl C++ Tutorial: Getting Started</h1>
+  <p>
+    <!--
+    Load the published pexe.
+    Note: Since this module does not use any real-estate in the browser, its
+    width and height are set to 0.
 
-  Note: Since this NaCl module does not use any real-estate in the browser,
-  it's width and height are set to 0.
+    Note: The <embed> element is wrapped inside a <div>, which has both a 'load'
+    and a 'message' event listener attached.  This wrapping method is used
+    instead of attaching the event listeners directly to the <embed> element to
+    ensure that the listeners are active before the NaCl module 'load' event
+    fires.  This also allows you to use PPB_Messaging.PostMessage() (in C) or
+    pp::Instance.PostMessage() (in C++) from within the initialization code in
+    your module.
+    -->
+    <div id="listener">
+      <script type="text/javascript">
+        var listener = document.getElementById('listener');
+        listener.addEventListener('load', moduleDidLoad, true);
+        listener.addEventListener('message', handleMessage, true);
+      </script>
 
-  Note: The <EMBED> element is wrapped inside a <DIV>, which has both a 'load'
-  and a 'message' event listener attached.  This wrapping method is used
-  instead of attaching the event listeners directly to the <EMBED> element to
-  ensure that the listeners are active before the NaCl module 'load' event
-  fires.  This also allows you to use PPB_Messaging.PostMessage() (in C) or
-  pp::Instance.PostMessage() (in C++) from within the initialization code in
-  your NaCl module.
-  -->
-  <div id="listener">
-    <script type="text/javascript">
-      var listener = document.getElementById('listener');
-      listener.addEventListener('load', moduleDidLoad, true);
-      listener.addEventListener('message', handleMessage, true);
-    </script>
+      <embed id="hello_tutorial"
+             width=0 height=0
+             src="hello_tutorial.nmf"
+             type="application/x-pnacl" />
+    </div>
+  </p>
 
-    <embed
-       id="hello_tutorial"
-       width=0 height=0
-       src="hello_tutorial.nmf"
-       type="application/x-pnacl" />
-  </div>
-</p>
-
-<h2>Status</h2>
-<div id="status_field">NO-STATUS</div>
+  <h2>Status <code id="statusField">NO-STATUS</code></h2>
 </body>
 </html>

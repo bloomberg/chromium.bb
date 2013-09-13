@@ -9,7 +9,7 @@
 /// CreateModule() once to load the module code.  After the code is loaded,
 /// CreateModule() is not called again.
 ///
-/// Once the code is loaded, the browser than calls the CreateInstance()
+/// Once the code is loaded, the browser calls the CreateInstance()
 /// method on the object returned by CreateModule().  It calls CreateInstance()
 /// each time it encounters an <embed> tag that references your NaCl module.
 ///
@@ -32,8 +32,8 @@
 /// module on the web page.  The browser will ask the Module object to create
 /// a new Instance for each occurrence of the <embed> tag that has these
 /// attributes:
-///     type="application/x-pnacl"
 ///     src="hello_tutorial.nmf"
+///     type="application/x-pnacl"
 /// To communicate with the browser, you must override HandleMessage() to
 /// receive messages from the browser, and use PostMessage() to send messages
 /// back to the browser.  Note that this interface is asynchronous.
@@ -46,15 +46,8 @@ class HelloTutorialInstance : public pp::Instance {
   virtual ~HelloTutorialInstance() {}
 
   /// Handler for messages coming in from the browser via postMessage().  The
-  /// @a var_message can contain anything: a JSON string; a string that encodes
-  /// method names and arguments; etc.  For example, you could use
-  /// JSON.stringify in the browser to create a message that contains a method
-  /// name and some parameters, something like this:
-  ///   var json_message = JSON.stringify({ "myMethod" : "3.14159" });
-  ///   nacl_module.postMessage(json_message);
-  /// On receipt of this message in @a var_message, you could parse the JSON to
-  /// retrieve the method name, match it to a function call, and then call it
-  /// with the parameter.
+  /// @a var_message can contain be any pp:Var type; for example int, string
+  /// Array or Dictinary. Please see the pp:Var documentation for more details.
   /// @param[in] var_message The message posted by the browser.
   virtual void HandleMessage(const pp::Var& var_message) {
     // TODO(sdk_user): 1. Make this function handle the incoming message.
@@ -63,7 +56,7 @@ class HelloTutorialInstance : public pp::Instance {
 
 /// The Module class.  The browser calls the CreateInstance() method to create
 /// an instance of your NaCl module on the web page.  The browser creates a new
-/// instance for each <embed> tag with type="application/x-nacl".
+/// instance for each <embed> tag with type="application/x-pnacl".
 class HelloTutorialModule : public pp::Module {
  public:
   HelloTutorialModule() : pp::Module() {}
