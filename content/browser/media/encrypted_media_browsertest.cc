@@ -184,6 +184,7 @@ class WVEncryptedMediaTest : public EncryptedMediaTest {
 };
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
 
+#if 0  // TODO(shadi): Figure out what to do with these tests.
 INSTANTIATE_TEST_CASE_P(ClearKey, EncryptedMediaTest,
     ::testing::Combine(
         ::testing::Values(kClearKeyKeySystem), ::testing::Values(SRC, MSE)));
@@ -203,6 +204,7 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaTest, ConfigChangeVideo_ExternalClearKey) {
 IN_PROC_BROWSER_TEST_F(EncryptedMediaTest, ConfigChangeVideo_ClearKey) {
   TestConfigChange(kClearKeyKeySystem, kEnded);
 }
+#endif  // 0
 
 IN_PROC_BROWSER_TEST_F(EncryptedMediaTest, InvalidKeySystem) {
   TestMSESimplePlayback("bear-320x240-av-enc_av.webm", kWebMAudioVideo,
@@ -210,6 +212,7 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaTest, InvalidKeySystem) {
                         "GENERATE_KEY_REQUEST_EXCEPTION");
 }
 
+#if 0  // TODO(shadi): Figure out what to do with these tests.
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_WebM) {
   TestSimplePlayback("bear-a-enc_a.webm", kWebMAudioOnly, GetParam(), kEnded);
 }
@@ -266,7 +269,9 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_MP4) {
                         std::tr1::get<0>(test_params), kEnded);
 }
 #endif  // defined(USE_PROPRIETARY_CODECS)
+#endif  // 0
 
+// TODO(shadi): Do we need both this and InvalidKeySystem?
 IN_PROC_BROWSER_TEST_F(EncryptedMediaTest, UnknownKeySystemThrowsException) {
   RunEncryptedMediaTest("encrypted_media_player.html", "bear-a-enc_a.webm",
                         kWebMAudioOnly, "com.example.foo", SRC,
@@ -282,6 +287,7 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaTest, WVParentThrowsException) {
                         "GENERATE_KEY_REQUEST_EXCEPTION");
 }
 
+#if 0  // TODO(shadi): Figure out what to do with these tests.
 IN_PROC_BROWSER_TEST_F(WVEncryptedMediaTest, Playback_AudioOnly_WebM) {
   TestMSESimplePlayback("bear-a-enc_a.webm", kWebMAudioOnly,
                         kWidevineKeySystem);
@@ -318,6 +324,7 @@ IN_PROC_BROWSER_TEST_F(WVEncryptedMediaTest, Playback_AudioOnly_MP4) {
                         kWidevineKeySystem);
 }
 #endif  // defined(USE_PROPRIETARY_CODECS)
+#endif  // 0
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
 
 }  // namespace content

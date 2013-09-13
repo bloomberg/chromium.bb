@@ -89,10 +89,14 @@
 
 namespace chrome {
 
-static const char* const kClearKey = "webkit-org.w3.clearkey";
-static const char* const kExternalClearKey = "org.chromium.externalclearkey";
-static const char* const kWidevine = "com.widevine";
-static const char* const kWidevineAlpha = "com.widevine.alpha";
+static const char kPrefixedClearKey[] = "webkit-org.w3.clearkey";
+static const char kPrefixedClearKeyParent[] = "webkit-org.w3";
+// TODO(ddorwin): Duplicate prefixed tests for unprefixed.
+static const char kUnprefixedClearKey[] = "org.w3.clearkey";
+static const char kUnprefixedClearKeyParent[] = "org.w3";
+static const char kExternalClearKey[] = "org.chromium.externalclearkey";
+static const char kWidevineAlpha[] = "com.widevine.alpha";
+static const char kWidevine[] = "com.widevine";
 
 class EncryptedMediaIsTypeSupportedTest : public InProcessBrowserTest {
  protected:
@@ -296,23 +300,21 @@ class EncryptedMediaIsTypeSupportedWidevineTest
 };
 
 IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedTest, ClearKey_Basic) {
-  EXPECT_TRUE(IsConcreteSupportedKeySystem(kClearKey));
+  EXPECT_TRUE(IsConcreteSupportedKeySystem(kPrefixedClearKey));
   EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(
-      "video/webm", no_codecs(), kClearKey));
+      "video/webm", no_codecs(), kPrefixedClearKey));
 
   // Not yet out from behind the vendor prefix.
-  EXPECT_FALSE(IsConcreteSupportedKeySystem("org.w3.clearkey"));
+  EXPECT_FALSE(IsConcreteSupportedKeySystem(kUnprefixedClearKey));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
-      "video/webm", no_codecs(), "org.w3.clearkey"));
+      "video/webm", no_codecs(), kUnprefixedClearKey));
 }
 
 IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedTest, ClearKey_Parent) {
-  const char* const kClearKeyParent = "webkit-org.w3";
-
   // The parent should be supported but is not. See http://crbug.com/164303.
-  EXPECT_FALSE(IsConcreteSupportedKeySystem(kClearKeyParent));
+  EXPECT_FALSE(IsConcreteSupportedKeySystem(kPrefixedClearKeyParent));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
-      "video/webm", no_codecs(), kClearKeyParent));
+      "video/webm", no_codecs(), kPrefixedClearKeyParent));
 }
 
 IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedTest,
@@ -363,9 +365,9 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedTest,
                        IsSupportedKeySystemWithMediaMimeType_ClearKey_NoType) {
   // These two should be true. See http://crbug.com/164303.
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
-      std::string(), no_codecs(), kClearKey));
+      std::string(), no_codecs(), kPrefixedClearKey));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
-      std::string(), no_codecs(), "webkit-org.w3"));
+      std::string(), no_codecs(), kPrefixedClearKeyParent));
 
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       std::string(), no_codecs(), "webkit-org.w3.foo"));
@@ -377,92 +379,92 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedTest,
                        IsSupportedKeySystemWithMediaMimeType_ClearKey_WebM) {
   // Valid video types.
   EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(
-      "video/webm", no_codecs(), kClearKey));
+      "video/webm", no_codecs(), kPrefixedClearKey));
   // The parent should be supported but is not. See http://crbug.com/164303.
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
-      "video/webm", no_codecs(), "webkit-org.w3"));
+      "video/webm", no_codecs(), kPrefixedClearKeyParent));
   EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(
-      "video/webm", vp8_codec(), kClearKey));
+      "video/webm", vp8_codec(), kPrefixedClearKey));
   EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(
-      "video/webm", vp80_codec(), kClearKey));
+      "video/webm", vp80_codec(), kPrefixedClearKey));
   EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(
-      "video/webm", vp8_and_vorbis_codecs(), kClearKey));
+      "video/webm", vp8_and_vorbis_codecs(), kPrefixedClearKey));
   EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(
-      "video/webm", vorbis_codec(), kClearKey));
+      "video/webm", vorbis_codec(), kPrefixedClearKey));
 
   // Non-Webm codecs.
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
-      "video/webm", avc1_codec(), kClearKey));
+      "video/webm", avc1_codec(), kPrefixedClearKey));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
-      "video/webm", unknown_codec(), kClearKey));
+      "video/webm", unknown_codec(), kPrefixedClearKey));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
-      "video/webm", mixed_codecs(), kClearKey));
+      "video/webm", mixed_codecs(), kPrefixedClearKey));
 
   // Valid audio types.
   EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(
-      "audio/webm", no_codecs(), kClearKey));
+      "audio/webm", no_codecs(), kPrefixedClearKey));
   EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(
-      "audio/webm", vorbis_codec(), kClearKey));
+      "audio/webm", vorbis_codec(), kPrefixedClearKey));
 
   // Non-audio codecs.
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
-      "audio/webm", vp8_codec(), kClearKey));
+      "audio/webm", vp8_codec(), kPrefixedClearKey));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
-      "audio/webm", vp8_and_vorbis_codecs(), kClearKey));
+      "audio/webm", vp8_and_vorbis_codecs(), kPrefixedClearKey));
 
   // Non-Webm codec.
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
-      "audio/webm", aac_codec(), kClearKey));
+      "audio/webm", aac_codec(), kPrefixedClearKey));
 }
 
 IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedTest,
                        IsSupportedKeySystemWithMediaMimeType_ClearKey_MP4) {
   // Valid video types.
   EXPECT_PROPRIETARY(IsSupportedKeySystemWithMediaMimeType(
-      "video/mp4", no_codecs(), kClearKey));
+      "video/mp4", no_codecs(), kPrefixedClearKey));
   // The parent should be supported but is not. See http://crbug.com/164303.
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
-      "video/mp4", no_codecs(), "webkit-org.w3"));
+      "video/mp4", no_codecs(), kPrefixedClearKeyParent));
   EXPECT_PROPRIETARY(IsSupportedKeySystemWithMediaMimeType(
-      "video/mp4", avc1_codec(), kClearKey));
+      "video/mp4", avc1_codec(), kPrefixedClearKey));
   EXPECT_PROPRIETARY(IsSupportedKeySystemWithMediaMimeType(
-      "video/mp4", avc1_and_aac_codecs(), kClearKey));
+      "video/mp4", avc1_and_aac_codecs(), kPrefixedClearKey));
   EXPECT_PROPRIETARY(IsSupportedKeySystemWithMediaMimeType(
-      "video/mp4", aac_codec(), kClearKey));
+      "video/mp4", aac_codec(), kPrefixedClearKey));
 
   // Extended codecs.
   EXPECT_PROPRIETARY(IsSupportedKeySystemWithMediaMimeType(
-      "video/mp4", avc1_extended_codec(), kClearKey));
+      "video/mp4", avc1_extended_codec(), kPrefixedClearKey));
 
   // Invalid codec format, but canPlayType() strips away the period.
   EXPECT_PROPRIETARY(IsSupportedKeySystemWithMediaMimeType(
-      "video/mp4", avc1_dot_codec(), kClearKey));
+      "video/mp4", avc1_dot_codec(), kPrefixedClearKey));
 
   // Non-MP4 codecs.
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
-      "video/mp4", avc2_codec(), kClearKey));
+      "video/mp4", avc2_codec(), kPrefixedClearKey));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
-      "video/mp4", vp8_codec(), kClearKey));
+      "video/mp4", vp8_codec(), kPrefixedClearKey));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
-      "video/mp4", unknown_codec(), kClearKey));
+      "video/mp4", unknown_codec(), kPrefixedClearKey));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
-      "video/mp4", mixed_codecs(), kClearKey));
+      "video/mp4", mixed_codecs(), kPrefixedClearKey));
 
   // Valid audio types.
   EXPECT_PROPRIETARY(IsSupportedKeySystemWithMediaMimeType(
-      "audio/mp4", no_codecs(), kClearKey));
+      "audio/mp4", no_codecs(), kPrefixedClearKey));
   EXPECT_PROPRIETARY(IsSupportedKeySystemWithMediaMimeType(
-      "audio/mp4", aac_codec(), kClearKey));
+      "audio/mp4", aac_codec(), kPrefixedClearKey));
 
   // Non-audio codecs.
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
-      "audio/mp4", avc1_codec(), kClearKey));
+      "audio/mp4", avc1_codec(), kPrefixedClearKey));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
-      "audio/mp4", avc1_and_aac_codecs(), kClearKey));
+      "audio/mp4", avc1_and_aac_codecs(), kPrefixedClearKey));
 
   // Non-MP4 codec.
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
-      "audio/mp4", vorbis_codec(), kClearKey));
+      "audio/mp4", vorbis_codec(), kPrefixedClearKey));
 }
 
 //

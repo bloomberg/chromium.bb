@@ -41,6 +41,7 @@
 #include "chrome/renderer/extensions/resource_request_policy.h"
 #include "chrome/renderer/external_extension.h"
 #include "chrome/renderer/loadtimes_extension_bindings.h"
+#include "chrome/renderer/media/chrome_key_systems.h"
 #include "chrome/renderer/net/net_error_helper.h"
 #include "chrome/renderer/net/prescient_networking_dispatcher.h"
 #include "chrome/renderer/net/renderer_net_predictor.h"
@@ -1304,9 +1305,7 @@ bool ChromeContentRendererClient::AllowPepperMediaStreamAPI(
 
 void ChromeContentRendererClient::AddKeySystems(
     std::vector<content::KeySystemInfo>* key_systems) {
-  // TODO(ddorwin): In the next CL, move code from
-  // content/renderer/media/crypto/key_systems_info.cc to chrome_key_systems.cc
-  // and call AddKeySystems.
+  AddChromeKeySystems(key_systems);
 }
 
 bool ChromeContentRendererClient::ShouldReportDetailedMessageForSource(

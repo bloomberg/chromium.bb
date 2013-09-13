@@ -114,9 +114,6 @@ KeySystems& KeySystems::GetInstance() {
 KeySystems::KeySystems() {
   std::vector<KeySystemInfo> key_systems_info;
   GetContentClient()->renderer()->AddKeySystems(&key_systems_info);
-  // TODO(ddorwin): Remove in next CL after moving info to
-  // ChromeContentRendererClient.
-  AddKeySystems(&key_systems_info);
   AddConcreteSupportedKeySystems(key_systems_info);
 }
 
