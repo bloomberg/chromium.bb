@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,10 +17,10 @@
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/fileapi/async_file_test_helper.h"
+#include "webkit/browser/fileapi/dragged_file_util.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/isolated_context.h"
-#include "webkit/browser/fileapi/isolated_file_util.h"
 #include "webkit/browser/fileapi/local_file_util.h"
 #include "webkit/browser/fileapi/mock_file_system_context.h"
 #include "webkit/browser/fileapi/native_file_util.h"
@@ -32,7 +32,7 @@ namespace {
 
 typedef AsyncFileTestHelper::FileEntryList FileEntryList;
 
-// Used in IsolatedFileUtilTest::SimulateDropFiles().
+// Used in DraggedFileUtilTest::SimulateDropFiles().
 // Random root paths in which we create each file/directory of the
 // RegularTestCases (so that we can simulate a drop with files/directories
 // from multiple directories).
@@ -87,11 +87,9 @@ FileSystemURL GetOtherURL(FileSystemContext* file_system_context,
 
 }  // namespace
 
-// TODO(kinuko): we should have separate tests for DraggedFileUtil and
-// IsolatedFileUtil.
-class IsolatedFileUtilTest : public testing::Test {
+class DraggedFileUtilTest : public testing::Test {
  public:
-  IsolatedFileUtilTest() {}
+  DraggedFileUtilTest() {}
 
   virtual void SetUp() {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
@@ -281,11 +279,11 @@ class IsolatedFileUtilTest : public testing::Test {
   std::string filesystem_id_;
   scoped_refptr<FileSystemContext> file_system_context_;
   std::map<base::FilePath, base::FilePath> toplevel_root_map_;
-  scoped_ptr<IsolatedFileUtil> file_util_;
-  DISALLOW_COPY_AND_ASSIGN(IsolatedFileUtilTest);
+  scoped_ptr<DraggedFileUtil> file_util_;
+  DISALLOW_COPY_AND_ASSIGN(DraggedFileUtilTest);
 };
 
-TEST_F(IsolatedFileUtilTest, BasicTest) {
+TEST_F(DraggedFileUtilTest, BasicTest) {
   for (size_t i = 0; i < test::kRegularTestCaseSize; ++i) {
     SCOPED_TRACE(testing::Message() << "Testing RegularTestCases " << i);
     const test::TestCaseRecord& test_case = test::kRegularTestCases[i];
@@ -310,7 +308,7 @@ TEST_F(IsolatedFileUtilTest, BasicTest) {
   }
 }
 
-TEST_F(IsolatedFileUtilTest, UnregisteredPathsTest) {
+TEST_F(DraggedFileUtilTest, UnregisteredPathsTest) {
   static const fileapi::test::TestCaseRecord kUnregisteredCases[] = {
     {true, FILE_PATH_LITERAL("nonexistent"), 0},
     {true, FILE_PATH_LITERAL("nonexistent/dir foo"), 0},
@@ -345,7 +343,7 @@ TEST_F(IsolatedFileUtilTest, UnregisteredPathsTest) {
   }
 }
 
-TEST_F(IsolatedFileUtilTest, ReadDirectoryTest) {
+TEST_F(DraggedFileUtilTest, ReadDirectoryTest) {
   for (size_t i = 0; i < test::kRegularTestCaseSize; ++i) {
     const test::TestCaseRecord& test_case = test::kRegularTestCases[i];
     if (!test_case.is_directory)
@@ -404,7 +402,7 @@ TEST_F(IsolatedFileUtilTest, ReadDirectoryTest) {
   }
 }
 
-TEST_F(IsolatedFileUtilTest, GetLocalFilePathTest) {
+TEST_F(DraggedFileUtilTest, GetLocalFilePathTest) {
   for (size_t i = 0; i < test::kRegularTestCaseSize; ++i) {
     const test::TestCaseRecord& test_case = test::kRegularTestCases[i];
     FileSystemURL url = GetFileSystemURL(base::FilePath(test_case.path));
@@ -419,7 +417,7 @@ TEST_F(IsolatedFileUtilTest, GetLocalFilePathTest) {
   }
 }
 
-TEST_F(IsolatedFileUtilTest, CopyOutFileTest) {
+TEST_F(DraggedFileUtilTest, CopyOutFileTest) {
   FileSystemURL src_root = GetFileSystemURL(base::FilePath());
   FileSystemURL dest_root = GetOtherFileSystemURL(base::FilePath());
 
@@ -460,7 +458,7 @@ TEST_F(IsolatedFileUtilTest, CopyOutFileTest) {
   }
 }
 
-TEST_F(IsolatedFileUtilTest, CopyOutDirectoryTest) {
+TEST_F(DraggedFileUtilTest, CopyOutDirectoryTest) {
   FileSystemURL src_root = GetFileSystemURL(base::FilePath());
   FileSystemURL dest_root = GetOtherFileSystemURL(base::FilePath());
 
@@ -488,7 +486,7 @@ TEST_F(IsolatedFileUtilTest, CopyOutDirectoryTest) {
   }
 }
 
-TEST_F(IsolatedFileUtilTest, TouchTest) {
+TEST_F(DraggedFileUtilTest, TouchTest) {
   for (size_t i = 0; i < test::kRegularTestCaseSize; ++i) {
     const test::TestCaseRecord& test_case = test::kRegularTestCases[i];
     if (test_case.is_directory)
@@ -515,7 +513,7 @@ TEST_F(IsolatedFileUtilTest, TouchTest) {
   }
 }
 
-TEST_F(IsolatedFileUtilTest, TruncateTest) {
+TEST_F(DraggedFileUtilTest, TruncateTest) {
   for (size_t i = 0; i < test::kRegularTestCaseSize; ++i) {
     const test::TestCaseRecord& test_case = test::kRegularTestCases[i];
     if (test_case.is_directory)

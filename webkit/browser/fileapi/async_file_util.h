@@ -42,7 +42,7 @@ class FileSystemURL;
 // It is NOT valid to give null callback to this class, and implementors
 // can assume that they don't get any null callbacks.
 //
-class WEBKIT_STORAGE_BROWSER_EXPORT AsyncFileUtil {
+class AsyncFileUtil {
  public:
   typedef base::Callback<
       void(base::PlatformFileError result)> StatusCallback;
@@ -76,7 +76,14 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AsyncFileUtil {
            const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref
            )> CreateSnapshotFileCallback;
 
+
   typedef base::Callback<void(int64 size)> CopyFileProgressCallback;
+
+  // Creates an AsyncFileUtil instance which performs file operations on
+  // local native file system. The created instance assumes
+  // FileSystemURL::path() has the target platform path.
+  WEBKIT_STORAGE_BROWSER_EXPORT static AsyncFileUtil*
+      CreateForLocalFileSystem();
 
   AsyncFileUtil() {}
   virtual ~AsyncFileUtil() {}

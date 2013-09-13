@@ -15,7 +15,7 @@
 #include "chrome/browser/chromeos/fileapi/file_system_backend_delegate.h"
 #include "chromeos/dbus/cros_disks_client.h"
 #include "webkit/browser/blob/file_stream_reader.h"
-#include "webkit/browser/fileapi/async_file_util_adapter.h"
+#include "webkit/browser/fileapi/async_file_util.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
 #include "webkit/browser/fileapi/file_stream_writer.h"
 #include "webkit/browser/fileapi/file_system_context.h"
@@ -23,7 +23,6 @@
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/isolated_context.h"
-#include "webkit/browser/fileapi/isolated_file_util.h"
 
 namespace {
 
@@ -49,8 +48,7 @@ FileSystemBackend::FileSystemBackend(
     fileapi::ExternalMountPoints* system_mount_points)
     : special_storage_policy_(special_storage_policy),
       file_access_permissions_(new FileAccessPermissions()),
-      local_file_util_(new fileapi::AsyncFileUtilAdapter(
-          new fileapi::IsolatedFileUtil())),
+      local_file_util_(fileapi::AsyncFileUtil::CreateForLocalFileSystem()),
       drive_delegate_(drive_delegate),
       mount_points_(mount_points),
       system_mount_points_(system_mount_points) {

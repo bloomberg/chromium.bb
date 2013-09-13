@@ -16,12 +16,12 @@
 #include "webkit/browser/blob/file_stream_reader.h"
 #include "webkit/browser/fileapi/async_file_util_adapter.h"
 #include "webkit/browser/fileapi/copy_or_move_file_validator.h"
+#include "webkit/browser/fileapi/dragged_file_util.h"
 #include "webkit/browser/fileapi/file_stream_writer.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_operation.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/isolated_context.h"
-#include "webkit/browser/fileapi/isolated_file_util.h"
 #include "webkit/browser/fileapi/native_file_util.h"
 #include "webkit/browser/fileapi/transient_file_util.h"
 #include "webkit/common/fileapi/file_system_types.h"
@@ -30,7 +30,7 @@
 namespace fileapi {
 
 IsolatedFileSystemBackend::IsolatedFileSystemBackend()
-    : isolated_file_util_(new AsyncFileUtilAdapter(new IsolatedFileUtil())),
+    : isolated_file_util_(new AsyncFileUtilAdapter(new LocalFileUtil())),
       dragged_file_util_(new AsyncFileUtilAdapter(new DraggedFileUtil())),
       transient_file_util_(new AsyncFileUtilAdapter(new TransientFileUtil())) {
 }

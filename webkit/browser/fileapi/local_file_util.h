@@ -24,7 +24,7 @@ class FileSystemOperationContext;
 class FileSystemURL;
 
 // An instance of this class is created and owned by *FileSystemBackend.
-class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE LocalFileUtil
+class WEBKIT_STORAGE_BROWSER_EXPORT LocalFileUtil
     : public FileSystemFileUtil {
  public:
   LocalFileUtil();
@@ -55,6 +55,10 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE LocalFileUtil
   virtual scoped_ptr<AbstractFileEnumerator> CreateFileEnumerator(
       FileSystemOperationContext* context,
       const FileSystemURL& root_url) OVERRIDE;
+  virtual base::PlatformFileError GetLocalFilePath(
+      FileSystemOperationContext* context,
+      const FileSystemURL& file_system_url,
+      base::FilePath* local_file_path) OVERRIDE;
   virtual base::PlatformFileError Touch(
       FileSystemOperationContext* context,
       const FileSystemURL& url,

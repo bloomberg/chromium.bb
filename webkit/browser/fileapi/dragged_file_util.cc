@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/browser/fileapi/isolated_file_util.h"
+#include "webkit/browser/fileapi/dragged_file_util.h"
 
 #include <string>
 #include <vector>
@@ -55,24 +55,6 @@ class SetFileEnumerator : public FileSystemFileUtil::AbstractFileEnumerator {
 };
 
 }  // namespace
-
-//-------------------------------------------------------------------------
-
-IsolatedFileUtil::IsolatedFileUtil() {}
-
-PlatformFileError IsolatedFileUtil::GetLocalFilePath(
-    FileSystemOperationContext* context,
-    const FileSystemURL& url,
-    base::FilePath* local_file_path) {
-  DCHECK(local_file_path);
-  DCHECK(url.is_valid());
-  if (url.path().empty()) {
-    // Root direcory case, which should not be accessed.
-    return base::PLATFORM_FILE_ERROR_ACCESS_DENIED;
-  }
-  *local_file_path = url.path();
-  return base::PLATFORM_FILE_OK;
-}
 
 //-------------------------------------------------------------------------
 
