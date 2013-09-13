@@ -15,6 +15,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner_util.h"
+#include "chrome/browser/sync_file_system/file_change.h"
 #include "chrome/browser/sync_file_system/local/local_file_change_tracker.h"
 #include "chrome/browser/sync_file_system/local/local_file_sync_context.h"
 #include "chrome/browser/sync_file_system/local/sync_file_system_backend.h"
@@ -498,7 +499,7 @@ quota::QuotaStatusCode CannedSyncableFileSystem::GetUsageAndQuota(
 
 void CannedSyncableFileSystem::GetChangedURLsInTracker(
     FileSystemURLSet* urls) {
-  return RunOnThread(
+  RunOnThread(
       file_task_runner_.get(),
       FROM_HERE,
       base::Bind(&LocalFileChangeTracker::GetAllChangedURLs,
@@ -508,12 +509,23 @@ void CannedSyncableFileSystem::GetChangedURLsInTracker(
 
 void CannedSyncableFileSystem::ClearChangeForURLInTracker(
     const FileSystemURL& url) {
-  return RunOnThread(
+  RunOnThread(
       file_task_runner_.get(),
       FROM_HERE,
       base::Bind(&LocalFileChangeTracker::ClearChangesForURL,
                  base::Unretained(backend()->change_tracker()),
                  url));
+}
+
+void CannedSyncableFileSystem::GetChangesForURLInTracker(
+    const FileSystemURL& url,
+    FileChangeList* changes) {
+  RunOnThread(
+      file_task_runner_.get(),
+      FROM_HERE,
+      base::Bind(&LocalFileChangeTracker::GetChangesForURL,
+                 base::Unretained(backend()->change_tracker()),
+                 url, changes));
 }
 
 SyncFileSystemBackend* CannedSyncableFileSystem::backend() {

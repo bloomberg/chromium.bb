@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/message_loop/message_loop.h"
@@ -85,6 +86,7 @@ class LocalFileSyncContextTest : public testing::Test {
     sync_context_->PrepareForSync(
         file_system_context,
         url,
+        LocalFileSyncContext::SYNC_EXCLUSIVE,
         base::Bind(&LocalFileSyncContextTest::DidPrepareForSync,
                    base::Unretained(this), metadata, changes));
   }
@@ -186,6 +188,68 @@ class LocalFileSyncContextTest : public testing::Test {
     ASSERT_TRUE(ui_task_runner_->RunsTasksOnCurrentThread());
     file_error_ = error;
     async_modify_finished_ = true;
+  }
+
+  void SimulateFinishSync(FileSystemContext* file_system_context,
+                          const FileSystemURL& url,
+                          SyncStatusCode status) {
+    sync_context_->CommitChangeStatusForURL(
+        file_system_context,
+        url,
+        status,
+        base::Bind(&LocalFileSyncContext::ClearSyncFlagForURL,
+                   sync_context_, url));
+    base::MessageLoop::current()->RunUntilIdle();
+  }
+
+  void PrepareForSync_Basic(LocalFileSyncContext::SyncMode sync_mode,
+                            SyncStatusCode simulate_sync_finish_status) {
+    CannedSyncableFileSystem file_system(GURL(kOrigin1),
+                                         io_task_runner_.get(),
+                                         file_task_runner_.get());
+    file_system.SetUp();
+    sync_context_ = new LocalFileSyncContext(
+        ui_task_runner_.get(), io_task_runner_.get());
+    ASSERT_EQ(SYNC_STATUS_OK,
+              file_system.MaybeInitializeFileSystemContext(
+                  sync_context_.get()));
+    ASSERT_EQ(base::PLATFORM_FILE_OK, file_system.OpenFileSystem());
+
+    const FileSystemURL kFile(file_system.URL("file"));
+    EXPECT_EQ(base::PLATFORM_FILE_OK, file_system.CreateFile(kFile));
+
+    SyncFileMetadata metadata;
+    FileChangeList changes;
+    EXPECT_EQ(SYNC_STATUS_OK,
+              PrepareForSync(file_system.file_system_context(), kFile,
+                             &metadata, &changes));
+    EXPECT_EQ(1U, changes.size());
+    EXPECT_TRUE(changes.list().back().IsFile());
+    EXPECT_TRUE(changes.list().back().IsAddOrUpdate());
+
+    // We should see the same set of changes.
+    file_system.GetChangesForURLInTracker(kFile, &changes);
+    EXPECT_EQ(1U, changes.size());
+    EXPECT_TRUE(changes.list().back().IsFile());
+    EXPECT_TRUE(changes.list().back().IsAddOrUpdate());
+
+    SimulateFinishSync(file_system.file_system_context(), kFile,
+                       simulate_sync_finish_status);
+
+    file_system.GetChangesForURLInTracker(kFile, &changes);
+    if (simulate_sync_finish_status == SYNC_STATUS_OK) {
+      // The change's cleared.
+      EXPECT_TRUE(changes.empty());
+    } else {
+      EXPECT_EQ(1U, changes.size());
+      EXPECT_TRUE(changes.list().back().IsFile());
+      EXPECT_TRUE(changes.list().back().IsAddOrUpdate());
+    }
+
+    sync_context_->ShutdownOnUIThread();
+    sync_context_ = NULL;
+
+    file_system.TearDown();
   }
 
   ScopedEnableSyncFSDirectoryOperation enable_directory_operation_;
@@ -334,6 +398,26 @@ TEST_F(LocalFileSyncContextTest, MultipleFileSystemContexts) {
 
   file_system1.TearDown();
   file_system2.TearDown();
+}
+
+TEST_F(LocalFileSyncContextTest, PrepareSync_SyncSuccess_Exclusive) {
+  PrepareForSync_Basic(LocalFileSyncContext::SYNC_EXCLUSIVE,
+                       SYNC_STATUS_OK);
+}
+
+TEST_F(LocalFileSyncContextTest, PrepareSync_SyncSuccess_Snapshot) {
+  PrepareForSync_Basic(LocalFileSyncContext::SYNC_SNAPSHOT,
+                       SYNC_STATUS_OK);
+}
+
+TEST_F(LocalFileSyncContextTest, PrepareSync_SyncFailure_Exclusive) {
+  PrepareForSync_Basic(LocalFileSyncContext::SYNC_EXCLUSIVE,
+                       SYNC_STATUS_FAILED);
+}
+
+TEST_F(LocalFileSyncContextTest, PrepareSync_SyncFailure_Snapshot) {
+  PrepareForSync_Basic(LocalFileSyncContext::SYNC_SNAPSHOT,
+                       SYNC_STATUS_FAILED);
 }
 
 // LocalFileSyncContextTest.PrepareSyncWhileWriting is flaky on android.

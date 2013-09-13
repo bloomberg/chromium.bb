@@ -75,6 +75,17 @@ class LocalFileChangeTracker
   // Clears the pending changes recorded in this tracker for |url|.
   void ClearChangesForURL(const fileapi::FileSystemURL& url);
 
+  // Creates a fresh (empty) in-memory record for |url|.
+  // Note that new changes are recorded to the mirror too.
+  void CreateFreshMirrorForURL(const fileapi::FileSystemURL& url);
+
+  // Removes a mirror for |url|, and commits the change status to database.
+  void RemoveMirrorAndCommitChangesForURL(const fileapi::FileSystemURL& url);
+
+  // Resets the changes to the ones recorded in mirror for |url|, and
+  // commits the updated change status to database.
+  void ResetToMirrorAndCommitChangesForURL(const fileapi::FileSystemURL& url);
+
   // Called by FileSyncService at the startup time to restore last dirty changes
   // left after the last shutdown (if any).
   SyncStatusCode Initialize(fileapi::FileSystemContext* file_system_context);
@@ -123,12 +134,21 @@ class LocalFileChangeTracker
   void RecordChange(const fileapi::FileSystemURL& url,
                     const FileChange& change);
 
+  static void RecordChangeToChangeMaps(const fileapi::FileSystemURL& url,
+                                       const FileChange& change,
+                                       int change_seq,
+                                       FileChangeMap* changes,
+                                       ChangeSeqMap* change_seqs);
+
   bool initialized_;
 
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
 
   FileChangeMap changes_;
   ChangeSeqMap change_seqs_;
+
+  // For mirrors.
+  FileChangeMap mirror_changes_;
 
   scoped_ptr<TrackerDB> tracker_db_;
 

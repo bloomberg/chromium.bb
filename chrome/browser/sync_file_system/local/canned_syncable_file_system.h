@@ -45,6 +45,7 @@ class QuotaManager;
 
 namespace sync_file_system {
 
+class FileChangeList;
 class LocalFileSyncContext;
 class SyncFileSystemBackend;
 
@@ -140,6 +141,8 @@ class CannedSyncableFileSystem
   // ChangeTracker related methods. They run on file task runner.
   void GetChangedURLsInTracker(fileapi::FileSystemURLSet* urls);
   void ClearChangeForURLInTracker(const fileapi::FileSystemURL& url);
+  void GetChangesForURLInTracker(const fileapi::FileSystemURL& url,
+                                 FileChangeList* changes);
 
   SyncFileSystemBackend* backend();
   fileapi::FileSystemOperationRunner* operation_runner();

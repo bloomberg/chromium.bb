@@ -129,17 +129,52 @@ void LocalFileSyncContext::ClearChangesForURL(
   ui_task_runner_->PostTask(FROM_HERE, done_callback);
 }
 
+void LocalFileSyncContext::CommitChangeStatusForURL(
+    fileapi::FileSystemContext* file_system_context,
+    const fileapi::FileSystemURL& url,
+    SyncStatusCode sync_finish_status,
+    const base::Closure& done_callback) {
+  DCHECK(file_system_context);
+  if (!file_system_context->default_file_task_runner()->
+          RunsTasksOnCurrentThread()) {
+    file_system_context->default_file_task_runner()->PostTask(
+        FROM_HERE,
+        base::Bind(&LocalFileSyncContext::CommitChangeStatusForURL,
+                   this, make_scoped_refptr(file_system_context),
+                   url, sync_finish_status, done_callback));
+    return;
+  }
+
+  SyncFileSystemBackend* backend =
+      SyncFileSystemBackend::GetBackend(file_system_context);
+  DCHECK(backend);
+  DCHECK(backend->change_tracker());
+
+  if (sync_finish_status == SYNC_STATUS_OK ||
+      sync_finish_status == SYNC_STATUS_HAS_CONFLICT) {
+    // Commit the in-memory mirror change.
+    backend->change_tracker()->ResetToMirrorAndCommitChangesForURL(url);
+  } else {
+    // Abort in-memory mirror change.
+    backend->change_tracker()->RemoveMirrorAndCommitChangesForURL(url);
+  }
+
+  // Call the completion callback on UI thread.
+  ui_task_runner_->PostTask(FROM_HERE, done_callback);
+}
+
 void LocalFileSyncContext::ClearSyncFlagForURL(const FileSystemURL& url) {
   // This is initially called on UI thread and to be relayed to IO thread.
   io_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&LocalFileSyncContext::EnableWritingOnIOThread,
-                 this, url));
+                 this, url, true /* may_have_updates */));
 }
 
 void LocalFileSyncContext::PrepareForSync(
     FileSystemContext* file_system_context,
     const FileSystemURL& url,
+    SyncMode sync_mode,
     const LocalFileSyncInfoCallback& callback) {
   // This is initially called on UI thread and to be relayed to IO thread.
   if (!io_task_runner_->RunsTasksOnCurrentThread()) {
@@ -147,7 +182,8 @@ void LocalFileSyncContext::PrepareForSync(
     io_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&LocalFileSyncContext::PrepareForSync, this,
-                   make_scoped_refptr(file_system_context), url, callback));
+                   make_scoped_refptr(file_system_context), url,
+                   sync_mode, callback));
     return;
   }
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
@@ -161,7 +197,7 @@ void LocalFileSyncContext::PrepareForSync(
                  this, make_scoped_refptr(file_system_context),
                  syncable ? SYNC_STATUS_OK :
                             SYNC_STATUS_FILE_BUSY,
-                 url, callback));
+                 url, sync_mode, callback));
 }
 
 void LocalFileSyncContext::RegisterURLForWaitingSync(
@@ -614,8 +650,9 @@ void LocalFileSyncContext::TryPrepareForLocalSync(
   std::deque<FileSystemURL>* remaining = new std::deque<FileSystemURL>;
   remaining->swap(*urls);
 
+  // TODO(kinuko): Call PrepareForSync with SYNC_SNAPSHOT when it becomes ready.
   PrepareForSync(
-      file_system_context, url,
+      file_system_context, url, SYNC_EXCLUSIVE,
       base::Bind(&LocalFileSyncContext::DidTryPrepareForLocalSync,
                  this, make_scoped_refptr(file_system_context),
                  base::Owned(remaining), callback));
@@ -640,6 +677,7 @@ void LocalFileSyncContext::DidGetWritingStatusForSync(
     FileSystemContext* file_system_context,
     SyncStatusCode status,
     const FileSystemURL& url,
+    SyncMode sync_mode,
     const LocalFileSyncInfoCallback& callback) {
   // This gets called on UI thread and relays the task on FILE thread.
   DCHECK(file_system_context);
@@ -654,7 +692,7 @@ void LocalFileSyncContext::DidGetWritingStatusForSync(
         FROM_HERE,
         base::Bind(&LocalFileSyncContext::DidGetWritingStatusForSync,
                    this, make_scoped_refptr(file_system_context),
-                   status, url, callback));
+                   status, url, sync_mode, callback));
     return;
   }
 
@@ -670,12 +708,16 @@ void LocalFileSyncContext::DidGetWritingStatusForSync(
   FileSystemFileUtil* file_util =
       file_system_context->sandbox_delegate()->sync_file_util();
   DCHECK(file_util);
+
   base::PlatformFileError file_error = file_util->GetFileInfo(
       make_scoped_ptr(
           new FileSystemOperationContext(file_system_context)).get(),
       url,
       &file_info,
       &platform_path);
+  if (file_error == base::PLATFORM_FILE_OK && sync_mode == SYNC_SNAPSHOT) {
+    // TODO(kinuko): creates a snapshot file.
+  }
   if (status == SYNC_STATUS_OK &&
       file_error != base::PLATFORM_FILE_OK &&
       file_error != base::PLATFORM_FILE_ERROR_NOT_FOUND)
@@ -689,6 +731,7 @@ void LocalFileSyncContext::DidGetWritingStatusForSync(
   else if (file_info.is_directory)
     file_type = SYNC_FILE_TYPE_DIRECTORY;
 
+  // TODO(kinuko): returns the snapshot file path if snapshot is available.
   LocalFileSyncInfo sync_file_info;
   sync_file_info.url = url;
   sync_file_info.local_file_path = platform_path;
@@ -697,18 +740,40 @@ void LocalFileSyncContext::DidGetWritingStatusForSync(
   sync_file_info.metadata.last_modified = file_info.last_modified;
   sync_file_info.changes = changes;
 
+  if (status == SYNC_STATUS_OK) {
+    if (!changes.empty()) {
+      // Now we create an empty mirror change record for URL (and we record
+      // changes to both mirror and original records during sync), so that
+      // we can reset to the mirror when the sync succeeds.
+      backend->change_tracker()->CreateFreshMirrorForURL(url);
+    }
+
+    // 'Unlock' the file if sync_mode is not SYNC_EXCLUSIVE.
+    if (sync_mode != SYNC_EXCLUSIVE) {
+      io_task_runner_->PostTask(
+          FROM_HERE,
+          base::Bind(&LocalFileSyncContext::EnableWritingOnIOThread,
+                    this, url, false /* may_have_updates */));
+    }
+  }
+
   ui_task_runner_->PostTask(FROM_HERE,
                             base::Bind(callback, status, sync_file_info));
 }
 
 void LocalFileSyncContext::EnableWritingOnIOThread(
-    const FileSystemURL& url) {
+    const FileSystemURL& url,
+    bool may_have_updates) {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
   if (!sync_status()) {
     // The service might have been shut down.
     return;
   }
   sync_status()->EndSyncing(url);
+
+  if (!may_have_updates)
+    return;
+
   // Since a sync has finished the number of changes must have been updated.
   origins_with_pending_changes_.insert(url.origin());
   ScheduleNotifyChangesUpdatedOnIOThread();
@@ -723,7 +788,7 @@ void LocalFileSyncContext::DidApplyRemoteChange(
       FROM_HERE,
       base::Bind(callback_on_ui,
                  PlatformFileErrorToSyncStatusCode(file_error)));
-  EnableWritingOnIOThread(url);
+  EnableWritingOnIOThread(url, true /* may_have_updates */);
 }
 
 void LocalFileSyncContext::DidGetFileMetadata(

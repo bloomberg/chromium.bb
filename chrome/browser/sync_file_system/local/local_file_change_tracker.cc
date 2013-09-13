@@ -150,15 +150,47 @@ void LocalFileChangeTracker::GetChangesForURL(
 
 void LocalFileChangeTracker::ClearChangesForURL(const FileSystemURL& url) {
   DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
-  // TODO(nhiroki): propagate the error code (see http://crbug.com/152127).
   ClearDirtyOnDatabase(url);
-
+  mirror_changes_.erase(url);
   FileChangeMap::iterator found = changes_.find(url);
   if (found == changes_.end())
     return;
   change_seqs_.erase(found->second.change_seq);
   changes_.erase(found);
   UpdateNumChanges();
+}
+
+void LocalFileChangeTracker::CreateFreshMirrorForURL(
+    const fileapi::FileSystemURL& url) {
+  DCHECK(!ContainsKey(mirror_changes_, url));
+  mirror_changes_[url] = ChangeInfo();
+}
+
+void LocalFileChangeTracker::RemoveMirrorAndCommitChangesForURL(
+    const fileapi::FileSystemURL& url) {
+  FileChangeMap::iterator found = mirror_changes_.find(url);
+  if (found == mirror_changes_.end())
+    return;
+  mirror_changes_.erase(found);
+
+  if (ContainsKey(changes_, url))
+    MarkDirtyOnDatabase(url);
+  else
+    ClearDirtyOnDatabase(url);
+  UpdateNumChanges();
+}
+
+void LocalFileChangeTracker::ResetToMirrorAndCommitChangesForURL(
+    const fileapi::FileSystemURL& url) {
+  FileChangeMap::iterator found = mirror_changes_.find(url);
+  if (found == mirror_changes_.end() || found->second.change_list.empty()) {
+    ClearChangesForURL(url);
+    return;
+  }
+  const ChangeInfo& info = found->second;
+  change_seqs_[info.change_seq] = url;
+  changes_[url] = info;
+  RemoveMirrorAndCommitChangesForURL(url);
 }
 
 SyncStatusCode LocalFileChangeTracker::Initialize(
@@ -188,6 +220,7 @@ void LocalFileChangeTracker::GetAllChangedURLs(FileSystemURLSet* urls) {
 void LocalFileChangeTracker::DropAllChanges() {
   changes_.clear();
   change_seqs_.clear();
+  mirror_changes_.clear();
 }
 
 SyncStatusCode LocalFileChangeTracker::MarkDirtyOnDatabase(
@@ -278,18 +311,30 @@ SyncStatusCode LocalFileChangeTracker::CollectLastDirtyChanges(
 void LocalFileChangeTracker::RecordChange(
     const FileSystemURL& url, const FileChange& change) {
   DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
-  ChangeInfo& info = changes_[url];
-  if (info.change_seq >= 0)
-    change_seqs_.erase(info.change_seq);
+  int change_seq = current_change_seq_++;
+  RecordChangeToChangeMaps(url, change, change_seq, &changes_, &change_seqs_);
+  if (ContainsKey(mirror_changes_, url))
+    RecordChangeToChangeMaps(url, change, change_seq, &mirror_changes_, NULL);
+  UpdateNumChanges();
+}
+
+void LocalFileChangeTracker::RecordChangeToChangeMaps(
+    const FileSystemURL& url,
+    const FileChange& change,
+    int new_change_seq,
+    FileChangeMap* changes,
+    ChangeSeqMap* change_seqs) {
+  ChangeInfo& info = (*changes)[url];
+  if (info.change_seq >= 0 && change_seqs)
+    change_seqs->erase(info.change_seq);
   info.change_list.Update(change);
   if (info.change_list.empty()) {
-    changes_.erase(url);
-    UpdateNumChanges();
+    changes->erase(url);
     return;
   }
-  info.change_seq = current_change_seq_++;
-  change_seqs_[info.change_seq] = url;
-  UpdateNumChanges();
+  info.change_seq = new_change_seq;
+  if (change_seqs)
+    (*change_seqs)[info.change_seq] = url;
 }
 
 // TrackerDB -------------------------------------------------------------------

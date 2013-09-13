@@ -236,6 +236,7 @@ void LocalFileSyncService::PrepareForProcessRemoteChange(
   DCHECK(ContainsKey(origin_to_contexts_, url.origin()));
   sync_context_->PrepareForSync(
       origin_to_contexts_[url.origin()], url,
+      LocalFileSyncContext::SYNC_EXCLUSIVE,
       base::Bind(&PrepareForProcessRemoteChangeCallbackAdapter, callback));
 }
 
@@ -418,18 +419,11 @@ void LocalFileSyncService::ProcessNextChangeForURL(
 
   const FileSystemURL& url = sync_file_info.url;
   if (status != SYNC_STATUS_OK || changes.empty()) {
-    if (status == SYNC_STATUS_OK || status == SYNC_STATUS_HAS_CONFLICT) {
-      // Clear the recorded changes for the URL if the sync was successfull
-      // OR has failed due to conflict (so that we won't stick to the same
-      // conflicting file again and again).
-      DCHECK(ContainsKey(origin_to_contexts_, url.origin()));
-      sync_context_->ClearChangesForURL(
-          origin_to_contexts_[url.origin()], url,
-          base::Bind(&LocalFileSyncService::RunLocalSyncCallback,
-                     AsWeakPtr(), status, url));
-      return;
-    }
-    RunLocalSyncCallback(status, url);
+    DCHECK(ContainsKey(origin_to_contexts_, url.origin()));
+    sync_context_->CommitChangeStatusForURL(
+        origin_to_contexts_[url.origin()], url, status,
+        base::Bind(&LocalFileSyncService::RunLocalSyncCallback,
+                  AsWeakPtr(), status, url));
     return;
   }
 

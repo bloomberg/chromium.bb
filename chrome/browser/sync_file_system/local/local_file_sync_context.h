@@ -50,6 +50,11 @@ class LocalFileSyncContext
     : public base::RefCountedThreadSafe<LocalFileSyncContext>,
       public LocalFileSyncStatus::Observer {
  public:
+  enum SyncMode {
+    SYNC_EXCLUSIVE,
+    SYNC_SNAPSHOT,
+  };
+
   typedef base::Callback<void(
       SyncStatusCode status, const LocalFileSyncInfo& sync_file_info)>
           LocalFileSyncInfoCallback;
@@ -87,6 +92,16 @@ class LocalFileSyncContext
                           const fileapi::FileSystemURL& url,
                           const base::Closure& done_callback);
 
+  // Updates the on-disk dirty flag for |url| in the tracker DB.
+  // This will clear the dirty flag if |sync_finish_status| is SYNC_STATUS_OK
+  // or SYNC_STATUS_HAS_CONFLICT.
+  // |done_callback| is called when the changes are committed.
+  void CommitChangeStatusForURL(
+      fileapi::FileSystemContext* file_system_context,
+      const fileapi::FileSystemURL& url,
+      SyncStatusCode sync_finish_status,
+      const base::Closure& done_callback);
+
   // A local or remote sync has been finished (either successfully or
   // with an error). Clears the internal sync flag and enable writing for |url|.
   // This method must be called on UI thread.
@@ -95,11 +110,16 @@ class LocalFileSyncContext
   // Prepares for sync |url| by disabling writes on |url|.
   // If the target |url| is being written and cannot start sync it
   // returns SYNC_STATUS_WRITING status code via |callback|.
-  // Otherwise it disables writes, marks the |url| syncing and returns
-  // the current change set made on |url|.
+  // Otherwise returns the current change sets made on |url|.
+  //
+  // If |sync_mode| is SYNC_EXCLUSIVE this leaves the target file.
+  // If |sync_mode| is SYNC_SNAPSHOT this creates a snapshot (if the
+  // target file is not deleted) and unlocks the file before returning.
+  //
   // This method must be called on UI thread.
   void PrepareForSync(fileapi::FileSystemContext* file_system_context,
                       const fileapi::FileSystemURL& url,
+                      SyncMode sync_mode,
                       const LocalFileSyncInfoCallback& callback);
 
   // Registers |url| to wait until sync is enabled for |url|.
@@ -224,10 +244,12 @@ class LocalFileSyncContext
       fileapi::FileSystemContext* file_system_context,
       SyncStatusCode status,
       const fileapi::FileSystemURL& url,
+      SyncMode sync_mode,
       const LocalFileSyncInfoCallback& callback);
 
   // Helper routine for ClearSyncFlagForURL.
-  void EnableWritingOnIOThread(const fileapi::FileSystemURL& url);
+  void EnableWritingOnIOThread(const fileapi::FileSystemURL& url,
+                               bool may_have_updates);
 
   void DidRemoveExistingEntryForApplyRemoteChange(
       fileapi::FileSystemContext* file_system_context,
