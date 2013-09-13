@@ -255,36 +255,28 @@ void RectangleUpdateDecoder::ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
   }
 
   // Measure the latency between the last packet being received and presented.
-  bool last_packet = (packet->flags() & VideoPacket::LAST_PACKET) != 0;
-  base::Time decode_start;
-  if (last_packet)
-    decode_start = base::Time::Now();
+  base::Time decode_start = base::Time::Now();
 
-  base::Closure decode_done =
-      base::Bind(&RectangleUpdateDecoder::OnPacketDone, this,
-                 last_packet, decode_start, done);
+  base::Closure decode_done = base::Bind(
+      &RectangleUpdateDecoder::OnPacketDone, this, decode_start, done);
 
   decode_task_runner_->PostTask(FROM_HERE, base::Bind(
       &RectangleUpdateDecoder::DecodePacket, this,
       base::Passed(&packet), decode_done));
 }
 
-void RectangleUpdateDecoder::OnPacketDone(bool last_packet,
-                                          base::Time decode_start,
+void RectangleUpdateDecoder::OnPacketDone(base::Time decode_start,
                                           const base::Closure& done) {
   if (!main_task_runner_->BelongsToCurrentThread()) {
     main_task_runner_->PostTask(FROM_HERE, base::Bind(
         &RectangleUpdateDecoder::OnPacketDone, this,
-        last_packet, decode_start, done));
+        decode_start, done));
     return;
   }
 
-  // Record the latency between the final packet being received and
-  // presented.
-  if (last_packet) {
-    stats_.video_decode_ms()->Record(
-        (base::Time::Now() - decode_start).InMilliseconds());
-  }
+  // Record the latency between the packet being received and presented.
+  stats_.video_decode_ms()->Record(
+      (base::Time::Now() - decode_start).InMilliseconds());
 
   done.Run();
 }

@@ -426,9 +426,7 @@ scoped_ptr<VideoEncoder> ClientSession::CreateVideoEncoder(
     const protocol::SessionConfig& config) {
   const protocol::ChannelConfig& video_config = config.video_config();
 
-  if (video_config.codec == protocol::ChannelConfig::CODEC_VERBATIM) {
-    return scoped_ptr<VideoEncoder>(new remoting::VideoEncoderVerbatim());
-  } else if (video_config.codec == protocol::ChannelConfig::CODEC_VP8) {
+  if (video_config.codec == protocol::ChannelConfig::CODEC_VP8) {
     return scoped_ptr<VideoEncoder>(new remoting::VideoEncoderVp8());
   }
 

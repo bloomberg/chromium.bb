@@ -249,11 +249,8 @@ void VideoScheduler::SendVideoPacket(scoped_ptr<VideoPacket> packet) {
   if (!video_stub_)
     return;
 
-  base::Closure callback;
-  if ((packet->flags() & VideoPacket::LAST_PARTITION) != 0)
-    callback = base::Bind(&VideoScheduler::VideoFrameSentCallback, this);
-
-  video_stub_->ProcessVideoPacket(packet.Pass(), callback);
+  video_stub_->ProcessVideoPacket(
+      packet.Pass(), base::Bind(&VideoScheduler::VideoFrameSentCallback, this));
 }
 
 void VideoScheduler::VideoFrameSentCallback() {
@@ -286,7 +283,6 @@ void VideoScheduler::EncodeFrame(
   // If there is nothing to encode then send an empty keep-alive packet.
   if (!frame || frame->updated_region().is_empty()) {
     scoped_ptr<VideoPacket> packet(new VideoPacket());
-    packet->set_flags(VideoPacket::LAST_PARTITION);
     packet->set_client_sequence_number(sequence_number);
     network_task_runner_->PostTask(
         FROM_HERE, base::Bind(&VideoScheduler::SendVideoPacket, this,
@@ -295,25 +291,16 @@ void VideoScheduler::EncodeFrame(
     return;
   }
 
-  encoder_->Encode(
-      frame.get(), base::Bind(&VideoScheduler::EncodedDataAvailableCallback,
-                              this, sequence_number));
-  capture_task_runner_->DeleteSoon(FROM_HERE, frame.release());
-}
-
-void VideoScheduler::EncodedDataAvailableCallback(
-    int64 sequence_number,
-    scoped_ptr<VideoPacket> packet) {
-  DCHECK(encode_task_runner_->BelongsToCurrentThread());
-
+  scoped_ptr<VideoPacket> packet = encoder_->Encode(*frame);
   packet->set_client_sequence_number(sequence_number);
 
-  bool last = (packet->flags() & VideoPacket::LAST_PACKET) != 0;
-  if (last) {
-    scheduler_.RecordEncodeTime(
-        base::TimeDelta::FromMilliseconds(packet->encode_time_ms()));
-  }
+  // Destroy the frame before sending |packet| because SendVideoPacket() may
+  // trigger another frame to be captured, and the screen capturer expects the
+  // old frame to be freed by then.
+  frame.reset();
 
+  scheduler_.RecordEncodeTime(
+      base::TimeDelta::FromMilliseconds(packet->encode_time_ms()));
   network_task_runner_->PostTask(
       FROM_HERE, base::Bind(&VideoScheduler::SendVideoPacket, this,
                             base::Passed(&packet)));

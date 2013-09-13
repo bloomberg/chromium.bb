@@ -15,18 +15,14 @@ namespace remoting {
 
 // Interface for a decoder that takes a stream of bytes from the network and
 // outputs frames of data.
-//
-// TODO(ajwong): Beef up this documentation once the API stablizes.
 class VideoDecoder {
  public:
   // DecodeResult is returned from DecodePacket() and indicates current state
   // of the decoder. DECODE_DONE means that last packet for the frame was
-  // processed, and the frame can be displayed now. DECODE_IN_PROGRESS
-  // indicates that the decoder must receive more data before the frame can be
-  // displayed. DECODE_ERROR is returned if there was an error in the stream.
+  // processed, and the frame can be displayed now. DECODE_ERROR is returned if
+  // there was an error in the stream.
   enum DecodeResult {
-    DECODE_ERROR = -1,
-    DECODE_IN_PROGRESS,
+    DECODE_ERROR,
     DECODE_DONE,
   };
 

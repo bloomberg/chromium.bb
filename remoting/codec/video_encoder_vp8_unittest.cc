@@ -7,8 +7,6 @@
 #include <limits>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "remoting/codec/codec_test.h"
 #include "remoting/proto/video.pb.h"
@@ -28,12 +26,6 @@ TEST(VideoEncoderVp8Test, TestVideoEncoder) {
   TestVideoEncoder(&encoder, false);
 }
 
-class VideoEncoderCallback {
- public:
-  void DataAvailable(scoped_ptr<VideoPacket> packet) {
-  }
-};
-
 // Test that calling Encode with a differently-sized media::ScreenCaptureData
 // does not leak memory.
 TEST(VideoEncoderVp8Test, TestSizeChangeNoLeak) {
@@ -41,28 +33,19 @@ TEST(VideoEncoderVp8Test, TestSizeChangeNoLeak) {
   int width = 1000;
 
   VideoEncoderVp8 encoder;
-  VideoEncoderCallback callback;
 
   scoped_ptr<webrtc::DesktopFrame> frame(new webrtc::BasicDesktopFrame(
       webrtc::DesktopSize(width, height)));
 
-  encoder.Encode(frame.get(), base::Bind(&VideoEncoderCallback::DataAvailable,
-                                         base::Unretained(&callback)));
+  scoped_ptr<VideoPacket> packet = encoder.Encode(*frame);
+  EXPECT_TRUE(packet);
 
   height /= 2;
   frame.reset(new webrtc::BasicDesktopFrame(
       webrtc::DesktopSize(width, height)));
-  encoder.Encode(frame.get(), base::Bind(&VideoEncoderCallback::DataAvailable,
-                                         base::Unretained(&callback)));
+  packet = encoder.Encode(*frame);
+  EXPECT_TRUE(packet);
 }
-
-class VideoEncoderDpiCallback {
- public:
-  void DataAvailable(scoped_ptr<VideoPacket> packet) {
-    EXPECT_EQ(packet->format().x_dpi(), 96);
-    EXPECT_EQ(packet->format().y_dpi(), 97);
-  }
-};
 
 // Test that the DPI information is correctly propagated from the
 // media::ScreenCaptureData to the VideoPacket.
@@ -71,14 +54,13 @@ TEST(VideoEncoderVp8Test, TestDpiPropagation) {
   int width = 32;
 
   VideoEncoderVp8 encoder;
-  VideoEncoderDpiCallback callback;
 
   scoped_ptr<webrtc::DesktopFrame> frame(new webrtc::BasicDesktopFrame(
       webrtc::DesktopSize(width, height)));
   frame->set_dpi(webrtc::DesktopVector(96, 97));
-  encoder.Encode(frame.get(),
-                 base::Bind(&VideoEncoderDpiCallback::DataAvailable,
-                            base::Unretained(&callback)));
+  scoped_ptr<VideoPacket> packet = encoder.Encode(*frame);
+  EXPECT_EQ(packet->format().x_dpi(), 96);
+  EXPECT_EQ(packet->format().y_dpi(), 97);
 }
 
 }  // namespace remoting

@@ -37,8 +37,7 @@ namespace {
 
 ACTION(FinishEncode) {
   scoped_ptr<VideoPacket> packet(new VideoPacket());
-  packet->set_flags(VideoPacket::LAST_PACKET | VideoPacket::LAST_PARTITION);
-  arg1.Run(packet.Pass());
+  return packet.release();
 }
 
 ACTION(FinishSend) {
@@ -55,9 +54,11 @@ class MockVideoEncoder : public VideoEncoder {
   MockVideoEncoder();
   virtual ~MockVideoEncoder();
 
-  MOCK_METHOD2(Encode, void(
-      const webrtc::DesktopFrame* frame,
-      const DataAvailableCallback& data_available_callback));
+  scoped_ptr<VideoPacket> Encode(
+      const webrtc::DesktopFrame& frame) {
+    return scoped_ptr<VideoPacket>(EncodePtr(frame));
+  }
+  MOCK_METHOD1(EncodePtr, VideoPacket*(const webrtc::DesktopFrame& frame));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockVideoEncoder);
@@ -158,7 +159,6 @@ TEST_F(VideoSchedulerTest, StartAndStop) {
 
   frame_.reset(new webrtc::BasicDesktopFrame(
       webrtc::DesktopSize(kWidth, kHeight)));
-  webrtc::DesktopFrame* frame_ptr = frame_.get();
 
   // First the capturer is called.
   Expectation capturer_capture = EXPECT_CALL(*capturer, Capture(_))
@@ -166,7 +166,7 @@ TEST_F(VideoSchedulerTest, StartAndStop) {
       .WillRepeatedly(Invoke(this, &VideoSchedulerTest::OnCaptureFrame));
 
   // Expect the encoder be called.
-  EXPECT_CALL(*encoder_, Encode(frame_ptr, _))
+  EXPECT_CALL(*encoder_, EncodePtr(_))
       .WillRepeatedly(FinishEncode());
 
   // By default delete the arguments when ProcessVideoPacket is received.

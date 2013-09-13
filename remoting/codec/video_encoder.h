@@ -5,10 +5,7 @@
 #ifndef REMOTING_CODEC_VIDEO_ENCODER_H_
 #define REMOTING_CODEC_VIDEO_ENCODER_H_
 
-#include "base/basictypes.h"
-#include "base/callback.h"
-
-class SkRegion;
+#include "base/memory/scoped_ptr.h"
 
 namespace webrtc {
 class DesktopFrame;
@@ -22,18 +19,10 @@ class VideoPacket;
 // interface is asynchronous to enable maximum throughput.
 class VideoEncoder {
  public:
-
-  // DataAvailableCallback is called one or more times, for each chunk the
-  // underlying video encoder generates.
-  typedef base::Callback<void(scoped_ptr<VideoPacket>)> DataAvailableCallback;
-
   virtual ~VideoEncoder() {}
 
-  // Encode an image stored in |frame|. Doesn't take ownership of |frame|. When
-  // encoded data is available, partial or full |data_available_callback| is
-  // called.
-  virtual void Encode(const webrtc::DesktopFrame* frame,
-                      const DataAvailableCallback& data_available_callback) = 0;
+  // Encode an image stored in |frame|.
+  virtual scoped_ptr<VideoPacket> Encode(const webrtc::DesktopFrame& frame) = 0;
 };
 
 }  // namespace remoting

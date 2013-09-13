@@ -144,9 +144,9 @@ bool VideoEncoderVp8::Init(const webrtc::DesktopSize& size) {
   return true;
 }
 
-void VideoEncoderVp8::PrepareImage(const webrtc::DesktopFrame* frame,
+void VideoEncoderVp8::PrepareImage(const webrtc::DesktopFrame& frame,
                                    SkRegion* updated_region) {
-  if (frame->updated_region().is_empty()) {
+  if (frame.updated_region().is_empty()) {
     updated_region->setEmpty();
     return;
   }
@@ -155,7 +155,7 @@ void VideoEncoderVp8::PrepareImage(const webrtc::DesktopFrame* frame,
   // This also ensures that all rectangles have even-aligned top-left, which
   // is required for ConvertRGBToYUVWithRect() to work.
   std::vector<SkIRect> aligned_rects;
-  for (webrtc::DesktopRegion::Iterator r(frame->updated_region());
+  for (webrtc::DesktopRegion::Iterator r(frame.updated_region());
        !r.IsAtEnd(); r.Advance()) {
     const webrtc::DesktopRect& rect = r.rect();
     aligned_rects.push_back(AlignRect(
@@ -171,8 +171,8 @@ void VideoEncoderVp8::PrepareImage(const webrtc::DesktopFrame* frame,
                      SkRegion::kIntersect_Op);
 
   // Convert the updated region to YUV ready for encoding.
-  const uint8* rgb_data = frame->data();
-  const int rgb_stride = frame->stride();
+  const uint8* rgb_data = frame.data();
+  const int rgb_stride = frame.stride();
   const int y_stride = image_->stride[0];
   DCHECK_EQ(image_->stride[1], image_->stride[2]);
   const int uv_stride = image_->stride[1];
@@ -211,17 +211,16 @@ void VideoEncoderVp8::PrepareActiveMap(const SkRegion& updated_region) {
   }
 }
 
-void VideoEncoderVp8::Encode(
-    const webrtc::DesktopFrame* frame,
-    const DataAvailableCallback& data_available_callback) {
-  DCHECK_LE(32, frame->size().width());
-  DCHECK_LE(32, frame->size().height());
+scoped_ptr<VideoPacket> VideoEncoderVp8::Encode(
+    const webrtc::DesktopFrame& frame) {
+  DCHECK_LE(32, frame.size().width());
+  DCHECK_LE(32, frame.size().height());
 
   base::Time encode_start_time = base::Time::Now();
 
   if (!initialized_ ||
-      !frame->size().equals(webrtc::DesktopSize(image_->w, image_->h))) {
-    bool ret = Init(frame->size());
+      !frame.size().equals(webrtc::DesktopSize(image_->w, image_->h))) {
+    bool ret = Init(frame.size());
     // TODO(hclam): Handle error better.
     CHECK(ret) << "Initialization of encoder failed";
     initialized_ = ret;
@@ -282,16 +281,14 @@ void VideoEncoderVp8::Encode(
 
   // Construct the VideoPacket message.
   packet->mutable_format()->set_encoding(VideoPacketFormat::ENCODING_VP8);
-  packet->set_flags(VideoPacket::FIRST_PACKET | VideoPacket::LAST_PACKET |
-                     VideoPacket::LAST_PARTITION);
-  packet->mutable_format()->set_screen_width(frame->size().width());
-  packet->mutable_format()->set_screen_height(frame->size().height());
-  packet->set_capture_time_ms(frame->capture_time_ms());
+  packet->mutable_format()->set_screen_width(frame.size().width());
+  packet->mutable_format()->set_screen_height(frame.size().height());
+  packet->set_capture_time_ms(frame.capture_time_ms());
   packet->set_encode_time_ms(
       (base::Time::Now() - encode_start_time).InMillisecondsRoundedUp());
-  if (!frame->dpi().is_zero()) {
-    packet->mutable_format()->set_x_dpi(frame->dpi().x());
-    packet->mutable_format()->set_y_dpi(frame->dpi().y());
+  if (!frame.dpi().is_zero()) {
+    packet->mutable_format()->set_x_dpi(frame.dpi().x());
+    packet->mutable_format()->set_y_dpi(frame.dpi().y());
   }
   for (SkRegion::Iterator r(updated_region); !r.done(); r.next()) {
     Rect* rect = packet->add_dirty_rects();
@@ -301,7 +298,7 @@ void VideoEncoderVp8::Encode(
     rect->set_height(r.rect().height());
   }
 
-  data_available_callback.Run(packet.Pass());
+  return packet.Pass();
 }
 
 }  // namespace remoting

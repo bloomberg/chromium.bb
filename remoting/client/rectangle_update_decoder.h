@@ -79,12 +79,9 @@ class RectangleUpdateDecoder
   // executed.
   void DecodePacket(scoped_ptr<VideoPacket> packet, const base::Closure& done);
 
-  // Callback method when a VideoPacket is processed.
-  // If |last_packet| is true then |decode_start| contains the timestamp when
-  // the packet will start to be processed.
-  void OnPacketDone(bool last_packet,
-                    base::Time decode_start,
-                    const base::Closure& done);
+  // Callback method when a VideoPacket is processed. |decode_start| contains
+  // the timestamp when the packet will start to be processed.
+  void OnPacketDone(base::Time decode_start, const base::Closure& done);
 
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> decode_task_runner_;

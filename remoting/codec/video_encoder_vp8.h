@@ -25,9 +25,8 @@ class VideoEncoderVp8 : public VideoEncoder {
   virtual ~VideoEncoderVp8();
 
   // VideoEncoder interface.
-  virtual void Encode(
-      const webrtc::DesktopFrame* frame,
-      const DataAvailableCallback& data_available_callback) OVERRIDE;
+  virtual scoped_ptr<VideoPacket> Encode(
+      const webrtc::DesktopFrame& frame) OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(VideoEncoderVp8Test, AlignAndClipRect);
@@ -42,7 +41,7 @@ class VideoEncoderVp8 : public VideoEncoder {
   // |updated_region|.
   //
   // TODO(sergeyu): Update this code to use webrtc::DesktopRegion.
-  void PrepareImage(const webrtc::DesktopFrame* frame,
+  void PrepareImage(const webrtc::DesktopFrame& frame,
                     SkRegion* updated_region);
 
   // Update the active map according to |updated_region|. Active map is then

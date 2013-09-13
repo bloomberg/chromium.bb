@@ -15,23 +15,10 @@ TEST(VideoEncoderVerbatimTest, TestVideoEncoder) {
   TestVideoEncoder(encoder.get(), true);
 }
 
-TEST(VideoEncoderVerbatimTest, TestVideoEncoderSmallOutputBuffer) {
-  scoped_ptr<VideoEncoderVerbatim> encoder(new VideoEncoderVerbatim());
-  encoder->SetMaxPacketSize(16);
-  TestVideoEncoder(encoder.get(), true);
-}
-
 TEST(VideoEncoderVerbatimTest, EncodeAndDecode) {
   scoped_ptr<VideoEncoderVerbatim> encoder(new VideoEncoderVerbatim());
   scoped_ptr<VideoDecoderVerbatim> decoder(new VideoDecoderVerbatim());
-  TestVideoEncoderDecoder(encoder.get(), decoder.get(), false);
-}
-
-TEST(VideoEncoderVerbatimTest, EncodeAndDecodeSmallOutputBuffer) {
-  scoped_ptr<VideoEncoderVerbatim> encoder(new VideoEncoderVerbatim());
-  encoder->SetMaxPacketSize(16);
-  scoped_ptr<VideoDecoderVerbatim> decoder(new VideoDecoderVerbatim());
-  TestVideoEncoderDecoder(encoder.get(), decoder.get(), false);
+  TestVideoEncoderDecoder(encoder.get(), decoder.get(), true);
 }
 
 }  // namespace remoting
