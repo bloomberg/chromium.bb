@@ -8,8 +8,27 @@ Import('env')
 nexe = env.ComponentProgram('longjmp', 'longjmp.c',
                             EXTRA_LIBS=['${NONIRT_LIBS}'])
 
-longjmp = env.CommandSelLdrTestNacl(
+node = env.CommandSelLdrTestNacl(
     'longjmp.out',
     nexe)
 
-env.AddNodeToTestSuite(longjmp, ['small_tests'], 'run_longjmp_test')
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_longjmp_test')
+
+# Test that ARM setjmp/longjmp saves and restores floating point regs.
+if env.Bit('target_arm') and not env.Bit('pnacl_generate_pexe'):
+  native_env = env.Clone()
+  # PNaCl needs ARM-target-flags to understand ARM inline ASM.
+  if native_env.Bit('bitcode'):
+    native_env.AddBiasForPNaCl()
+    native_env.PNaClForceNative()
+    native_env.Append(CCFLAGS=['--target=armv7a-none-nacl-gnueabi',
+                               '-mfloat-abi=hard'])
+  nexe = native_env.ComponentProgram('longjmp_float', 'longjmp_float.c',
+                                     EXTRA_LIBS=['${NONIRT_LIBS}', 'm'])
+  node = native_env.CommandSelLdrTestNacl(
+        'longjmp_float.out',
+        nexe)
+  native_env.AddNodeToTestSuite(
+      node, ['small_tests', 'nonpexe_tests'], 'run_longjmp_float_test',
+      # http://code.google.com/p/nativeclient/issues/detail?id=3677
+      is_broken=True)
