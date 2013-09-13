@@ -116,11 +116,6 @@ const int MinimumWidthWhileResizing = 100;
 const int MinimumHeightWhileResizing = 40;
 const int ResizerControlExpandRatioForTouch = 2;
 
-bool ClipRect::intersects(const HitTestLocation& hitTestLocation) const
-{
-    return hitTestLocation.intersects(m_rect);
-}
-
 RenderLayer::RenderLayer(RenderLayerModelObject* renderer)
     : m_inResizeMode(false)
     , m_normalFlowListDirty(true)
