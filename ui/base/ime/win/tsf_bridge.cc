@@ -72,6 +72,24 @@ class TSFBridgeDelegate : public TSFBridge {
   // Returns true if already initialized.
   bool IsInitialized();
 
+  // Updates or clears the association maintained in the TSF runtime between
+  // |attached_window_handle_| and the current document manager. Keeping this
+  // association updated solves some tricky event ordering issues between
+  // logical text input focus managed by Chrome and native text input focus
+  // managed by the OS.
+  // Background:
+  //   TSF runtime monitors some Win32 messages such as WM_ACTIVATE to
+  //   change the focused document manager. This is problematic when
+  //   TSFBridge::SetFocusedClient is called first then the target window
+  //   receives WM_ACTIVATE. This actually occurs in Aura environment where
+  //   WM_NCACTIVATE is used as a trigger to restore text input focus.
+  // Caveats:
+  //   TSF runtime does not increment the reference count of the attached
+  //   document manager. See the comment inside the method body for
+  //   details.
+  void UpdateAssociateFocus();
+  void ClearAssociateFocus();
+
   // A triple of document manager, text store and binding cookie between
   // a context owned by the document manager and the text store. This is a
   // minimum working set of an editable document in TSF.
@@ -110,12 +128,16 @@ class TSFBridgeDelegate : public TSFBridge {
   // Current focused text input client. Do not free |client_|.
   TextInputClient* client_;
 
+  // Represents the window that is currently owns text input focus.
+  HWND attached_window_handle_;
+
   DISALLOW_COPY_AND_ASSIGN(TSFBridgeDelegate);
 };
 
 TSFBridgeDelegate::TSFBridgeDelegate()
     : client_id_(TF_CLIENTID_NULL),
-      client_(NULL) {
+      client_(NULL),
+      attached_window_handle_(NULL) {
 }
 
 TSFBridgeDelegate::~TSFBridgeDelegate() {
@@ -194,6 +216,8 @@ void TSFBridgeDelegate::OnTextInputTypeChanged(const TextInputClient* client) {
     return;
   }
 
+  UpdateAssociateFocus();
+
   TSFDocument* document = GetAssociatedDocument();
   if (!document)
     return;
@@ -241,7 +265,10 @@ void TSFBridgeDelegate::SetFocusedClient(HWND focused_window,
   DCHECK_EQ(base::MessageLoop::TYPE_UI, base::MessageLoop::current()->type());
   DCHECK(client);
   DCHECK(IsInitialized());
+  if (attached_window_handle_ != focused_window)
+    ClearAssociateFocus();
   client_ = client;
+  attached_window_handle_ = focused_window;
 
   for (TSFDocumentMap::iterator it = tsf_document_map_.begin();
        it != tsf_document_map_.end(); ++it) {
@@ -260,7 +287,9 @@ void TSFBridgeDelegate::RemoveFocusedClient(TextInputClient* client) {
   DCHECK(IsInitialized());
   if (client_ != client)
     return;
+  ClearAssociateFocus();
   client_ = NULL;
+  attached_window_handle_ = NULL;
   for (TSFDocumentMap::iterator it = tsf_document_map_.begin();
        it != tsf_document_map_.end(); ++it) {
     if (it->second.text_store.get() == NULL)
@@ -411,6 +440,33 @@ bool TSFBridgeDelegate::IsFocused(ITfDocumentMgr* document_manager) {
 
 bool TSFBridgeDelegate::IsInitialized() {
   return client_id_ != TF_CLIENTID_NULL;
+}
+
+void TSFBridgeDelegate::UpdateAssociateFocus() {
+  if (attached_window_handle_ == NULL)
+    return;
+  TSFDocument* document = GetAssociatedDocument();
+  if (document == NULL) {
+    ClearAssociateFocus();
+    return;
+  }
+  // NOTE: ITfThreadMgr::AssociateFocus does not increment the ref count of
+  // the document manager to be attached. It is our responsibility to make sure
+  // the attached document manager will not be destroyed while it is attached.
+  // This should be true as long as TSFBridge::Shutdown() is called late phase
+  // of UI thread shutdown.
+  base::win::ScopedComPtr<ITfDocumentMgr> previous_focus;
+  thread_manager_->AssociateFocus(
+      attached_window_handle_, document->document_manager.get(),
+      previous_focus.Receive());
+}
+
+void TSFBridgeDelegate::ClearAssociateFocus() {
+  if (attached_window_handle_ == NULL)
+    return;
+  base::win::ScopedComPtr<ITfDocumentMgr> previous_focus;
+  thread_manager_->AssociateFocus(
+      attached_window_handle_, NULL, previous_focus.Receive());
 }
 
 TSFBridgeDelegate::TSFDocument* TSFBridgeDelegate::GetAssociatedDocument() {
