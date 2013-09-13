@@ -531,15 +531,9 @@ VolumeManager.prototype.initMountPoints_ = function() {
     // Create VolumeInfo for each mount point.
     var group = new AsyncUtil.Group();
     for (var i = 0; i < mountPointList.length; i++) {
-      var mountPoint = mountPointList[i];
-
-      // TODO(hidehiko): It should be ok that the drive is mounted already.
-      if (mountPoint.volumeType == 'drive')
-        console.error('Drive is not expected initially mounted');
-
-      var error = mountPoint.mountCondition ?
-          'error_' + mountPoint.mountCondition : '';
-      group.add(function(mountPoint, error, callback) {
+      group.add(function(mountPoint, callback) {
+        var error = mountPoint.mountCondition ?
+            'error_' + mountPoint.mountCondition : '';
         volumeManagerUtil.createVolumeInfo(
             '/' + mountPoint.mountPath, error,
             function(volumeInfo) {
@@ -553,7 +547,7 @@ VolumeManager.prototype.initMountPoints_ = function() {
               }
               callback();
             }.bind(this));
-      }.bind(this, mountPoint, error));
+      }.bind(this, mountPointList[i]));
     }
 
     // Then, finalize the initialization.
