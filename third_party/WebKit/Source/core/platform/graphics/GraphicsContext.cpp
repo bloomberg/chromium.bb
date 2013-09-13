@@ -1119,7 +1119,9 @@ void GraphicsContext::drawBitmapRect(const SkBitmap& bitmap, const SkRect* src,
     if (paintingDisabled())
         return;
 
-    m_canvas->drawBitmapRectToRect(bitmap, src, dst, paint);
+    SkCanvas::DrawBitmapRectFlags flags = m_state->m_shouldClampToSourceRect ? SkCanvas::kNone_DrawBitmapRectFlag : SkCanvas::kBleed_DrawBitmapRectFlag;
+
+    m_canvas->drawBitmapRectToRect(bitmap, src, dst, paint, flags);
 
     if (m_trackOpaqueRegion)
         m_opaqueRegion.didDrawRect(this, dst, *paint, &bitmap);

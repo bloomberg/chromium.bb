@@ -141,6 +141,9 @@ public:
     void setShouldAntialias(bool antialias) { m_state->m_shouldAntialias = antialias; }
     bool shouldAntialias() const { return m_state->m_shouldAntialias; }
 
+    void setShouldClampToSourceRect(bool clampToSourceRect) { m_state->m_shouldClampToSourceRect = clampToSourceRect; }
+    bool shouldClampToSourceRect() const { return m_state->m_shouldClampToSourceRect; }
+
     void setShouldSmoothFonts(bool smoothFonts) { m_state->m_shouldSmoothFonts = smoothFonts; }
     bool shouldSmoothFonts() const { return m_state->m_shouldSmoothFonts; }
 

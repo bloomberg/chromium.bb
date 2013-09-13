@@ -502,6 +502,7 @@ void HTMLCanvasElement::createImageBuffer()
     if (!m_imageBuffer)
         return;
     setExternallyAllocatedMemory(4 * width() * height());
+    m_imageBuffer->context()->setShouldClampToSourceRect(false);
     m_imageBuffer->context()->setImageInterpolationQuality(DefaultInterpolationQuality);
     if (document().settings() && !document().settings()->antialiased2dCanvasEnabled())
         m_imageBuffer->context()->setShouldAntialias(false);
