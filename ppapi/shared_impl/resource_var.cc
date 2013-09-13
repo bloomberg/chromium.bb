@@ -19,6 +19,10 @@ ResourceVar::ResourceVar(const IPC::Message& creation_message)
 
 ResourceVar::~ResourceVar() {}
 
+bool ResourceVar::IsPending() const {
+  return pp_resource_ == 0 && creation_message_.type() != 0;
+}
+
 ResourceVar* ResourceVar::AsResourceVar() {
   return this;
 }

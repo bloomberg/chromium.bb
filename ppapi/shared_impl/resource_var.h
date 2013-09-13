@@ -37,6 +37,11 @@ class PPAPI_SHARED_EXPORT ResourceVar : public Var {
   // May be an empty message.
   const IPC::Message& creation_message() const { return creation_message_; }
 
+  // Determines whether this is a pending resource.
+  // This is true if the pp_resource is 0 and there is a non-empty
+  // creation_message.
+  bool IsPending() const;
+
   // Var override.
   virtual ResourceVar* AsResourceVar() OVERRIDE;
   virtual PP_VarType GetType() const OVERRIDE;

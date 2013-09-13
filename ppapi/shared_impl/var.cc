@@ -69,10 +69,10 @@ std::string Var::PPVarToLogString(PP_Var var) {
       if (!resource)
         return "[Invalid resource]";
 
-      if (resource->pp_resource()) {
-        return base::StringPrintf("[Resource %d]", resource->pp_resource());
-      } else if (resource->creation_message().type() != 0) {
+      if (resource->IsPending()) {
         return base::StringPrintf("[Pending resource]");
+      } else if (resource->pp_resource()) {
+        return base::StringPrintf("[Resource %d]", resource->pp_resource());
       } else {
         return "[Null resource]";
       }
