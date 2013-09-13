@@ -28,36 +28,29 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
-#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
 class NavigatorUserMediaError : public RefCounted<NavigatorUserMediaError>, public ScriptWrappable {
 public:
-    enum Name {
-        NamePermissionDenied,
-        NameConstraintNotSatisfied
-    };
-
-    static PassRefPtr<NavigatorUserMediaError> create(Name name, const String& message, const String& constraintName)
+    static PassRefPtr<NavigatorUserMediaError> create(const String& name, const String& message, const String& constraintName)
     {
         return adoptRef(new NavigatorUserMediaError(name, message, constraintName));
     }
 
     virtual ~NavigatorUserMediaError() { }
 
-    String name() const;
+    const String& name() const { return m_name; }
     const String& message() const { return m_message; }
     const String& constraintName() const { return m_constraintName; }
 
 private:
-    NavigatorUserMediaError(Name name, const String& message, const String& constraintName)
-        : m_name(name), m_message(message), m_constraintName(constraintName)
+    NavigatorUserMediaError(const String& name, const String& message, const String& constraintName) : m_name(name), m_message(message), m_constraintName(constraintName)
     {
         ScriptWrappable::init(this);
     }
 
-    Name m_name;
+    String m_name;
     String m_message;
     String m_constraintName;
 };
