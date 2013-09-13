@@ -93,3 +93,16 @@ h3 {
 #graphs li {
   list-style-type: none;
 }
+
+#clipboard-textarea {
+  position: absolute;
+  width: 50%;
+  height: 50%;
+
+  left: 25%;
+  top: 25%;
+}
+
+.hidden {
+  display: none;
+}

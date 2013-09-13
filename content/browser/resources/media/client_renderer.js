@@ -22,6 +22,10 @@ var ClientRenderer = (function() {
     this.bufferCanvas = document.createElement('canvas');
     this.bufferCanvas.width = media.BAR_WIDTH;
     this.bufferCanvas.height = media.BAR_HEIGHT;
+
+    this.clipboardTextarea = document.getElementById('clipboard-textarea');
+    this.clipboardButton = document.getElementById('copy-button');
+    this.clipboardButton.onclick = this.copyToClipboard_.bind(this);
   };
 
   function removeChildren(element) {
@@ -173,7 +177,7 @@ var ClientRenderer = (function() {
     },
 
     drawGraphs_: function() {
-      function addToGraphs (name, graph, graphElement) {
+      function addToGraphs(name, graph, graphElement) {
         var li = document.createElement('li');
         li.appendChild(graph);
         li.appendChild(document.createTextNode(name));
@@ -205,7 +209,7 @@ var ClientRenderer = (function() {
       }
 
       if (cache) {
-        if(player.properties['total_bytes']) {
+        if (player.properties['total_bytes']) {
           cache.size = Number(player.properties['total_bytes']);
         }
         cache.generateDetails();
@@ -240,6 +244,39 @@ var ClientRenderer = (function() {
       ctx.fillRect(left, 0, middle - left, height);
       ctx.fillStyle = '#aa0';
       ctx.fillRect(middle, 0, right - middle, height);
+    },
+
+    copyToClipboard_: function() {
+      var properties = this.selectedStream ||
+          this.selectedPlayer.properties || false;
+      if (!properties) {
+        return;
+      }
+      var stringBuffer = [];
+
+      for (var key in properties) {
+        var value = properties[key];
+        stringBuffer.push(key.toString());
+        stringBuffer.push(': ');
+        stringBuffer.push(value.toString());
+        stringBuffer.push('\n');
+      }
+
+      this.clipboardTextarea.value = stringBuffer.join('');
+      this.clipboardTextarea.classList.remove('hidden');
+      this.clipboardTextarea.focus();
+      this.clipboardTextarea.select();
+
+      // The act of copying anything from the textarea gets canceled
+      // if the element in question gets the class 'hidden' (which contains the
+      // css property display:none) before the event is finished. For this, it
+      // is necessary put the property setting on the event loop to be executed
+      // after the copy has taken place.
+      this.clipboardTextarea.oncopy = function(event) {
+        setTimeout(function(element) {
+          event.target.classList.add('hidden');
+        }, 0);
+      };
     },
 
     onTextChange_: function(event) {
