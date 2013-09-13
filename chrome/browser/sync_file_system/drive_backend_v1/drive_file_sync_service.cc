@@ -913,12 +913,20 @@ void DriveFileSyncService::DidGetDirectoryContentForBatchSync(
     else
       continue;
 
+    DCHECK(file_type == SYNC_FILE_TYPE_FILE ||
+           file_type == SYNC_FILE_TYPE_DIRECTORY);
+
     // Save to be fetched file to DB for restore in case of crash.
     DriveMetadata metadata;
     metadata.set_resource_id(entry.resource_id());
     metadata.set_md5_checksum(std::string());
     metadata.set_conflicted(false);
     metadata.set_to_be_fetched(true);
+
+    if (file_type == SYNC_FILE_TYPE_FILE)
+      metadata.set_type(DriveMetadata::RESOURCE_TYPE_FILE);
+    else
+      metadata.set_type(DriveMetadata::RESOURCE_TYPE_FOLDER);
 
     base::FilePath path = TitleToPath(entry.title());
     fileapi::FileSystemURL url(CreateSyncableFileSystemURL(
