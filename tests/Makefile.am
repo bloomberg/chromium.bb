@@ -7,6 +7,8 @@ module_tests =				\
 	surface-test.la			\
 	surface-global-test.la
 
+weston_test = weston-test.la
+
 weston_tests =				\
 	keyboard.weston			\
 	event.weston			\
@@ -45,7 +47,7 @@ AM_CPPFLAGS =					\
 	-I$(top_builddir)/src			\
 	-DUNIT_TEST				\
 	$(COMPOSITOR_CFLAGS)
-AM_LDFLAGS = -module -avoid-version -rpath $(libdir)
+
 
 config_parser_test_LDADD =	\
 	../shared/libshared.la	\
@@ -54,11 +56,13 @@ config_parser_test_SOURCES =	\
 	config-parser-test.c
 
 surface_global_test_la_SOURCES = surface-global-test.c
+surface_global_test_la_LDFLAGS = -module -avoid-version -rpath $(libdir)
 surface_test_la_SOURCES = surface-test.c
+surface_test_la_LDFLAGS = -module -avoid-version -rpath $(libdir)
 
-weston_test = weston-test.la
 weston_test_la_LIBADD = $(COMPOSITOR_LIBS)	\
 	../shared/libshared.la
+weston_test_la_LDFLAGS = -module -avoid-version -rpath $(libdir)
 weston_test_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
 weston_test_la_SOURCES =		\
 	weston-test.c			\
