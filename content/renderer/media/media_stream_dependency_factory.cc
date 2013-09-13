@@ -495,7 +495,7 @@ bool MediaStreamDependencyFactory::CreatePeerConnectionFactory() {
     scoped_refptr<RendererGpuVideoAcceleratorFactories> gpu_factories =
         RenderThreadImpl::current()->GetGpuFactories(media_loop_proxy);
 #if !defined(GOOGLE_TV)
-    if (cmd_line->HasSwitch(switches::kEnableWebRtcHWDecoding)) {
+    if (!cmd_line->HasSwitch(switches::kDisableWebRtcHWDecoding)) {
       if (gpu_factories)
         decoder_factory.reset(new RTCVideoDecoderFactory(gpu_factories));
     }

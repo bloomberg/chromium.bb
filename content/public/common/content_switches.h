@@ -163,7 +163,6 @@ extern const char kEnableWebAnimationsCSS[];
 extern const char kEnableWebAnimationsSVG[];
 CONTENT_EXPORT extern const char kEnableWebGLDraftExtensions[];
 extern const char kEnableWebMIDI[];
-extern const char kEnableWebRtcTcpServerSocket[];
 CONTENT_EXPORT extern const char kExtraPluginDir[];
 CONTENT_EXPORT extern const char kForceCompositingMode[];
 extern const char kForceFieldTrials[];
@@ -252,10 +251,11 @@ CONTENT_EXPORT extern const char kZygoteProcess[];
 
 #if defined(ENABLE_WEBRTC)
 CONTENT_EXPORT extern const char kDisableDeviceEnumeration[];
-extern const char kDisableWebRtcHWEncoding[];
 CONTENT_EXPORT extern const char kDisableSCTPDataChannels[];
+CONTENT_EXPORT extern const char kDisableWebRtcHWDecoding[];
+extern const char kDisableWebRtcHWEncoding[];
 extern const char kEnableWebRtcAecRecordings[];
-CONTENT_EXPORT extern const char kEnableWebRtcHWDecoding[];
+extern const char kEnableWebRtcTcpServerSocket[];
 #endif
 
 #if defined(OS_ANDROID)

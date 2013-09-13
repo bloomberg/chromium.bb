@@ -542,9 +542,6 @@ const char kEnableWebGLDraftExtensions[] = "enable-webgl-draft-extensions";
 // Enables Web MIDI API.
 const char kEnableWebMIDI[]                 = "enable-web-midi";
 
-// Enable WebRTC to open TCP server sockets.
-const char kEnableWebRtcTcpServerSocket[]   = "enable-webrtc-tcp-server-socket";
-
 // Load NPAPI plugins from the specified directory.
 const char kExtraPluginDir[]                = "extra-plugin-dir";
 
@@ -890,18 +887,20 @@ const char kZygoteProcess[]                 = "zygote";
 // Disable WebRTC device enumeration.
 const char kDisableDeviceEnumeration[]      = "disable-device-enumeration";
 
+// Disable WebRTC DataChannels SCTP wire protocol support.
+const char kDisableSCTPDataChannels[]       = "disable-sctp-data-channels";
+
+// Disables HW decode acceleration for WebRTC.
+const char kDisableWebRtcHWDecoding[]       = "disable-webrtc-hw-decoding";
+
 // Disables HW encode acceleration for WebRTC.
 const char kDisableWebRtcHWEncoding[]       = "disable-webrtc-hw-encoding";
-
-// Disable WebRTC DataChannels SCTP wire protocol support.
-const char kDisableSCTPDataChannels[]        = "disable-sctp-data-channels";
 
 // Enables WebRTC AEC recordings.
 const char kEnableWebRtcAecRecordings[]     = "enable-webrtc-aec-recordings";
 
-// Enables HW decode acceleration for WebRTC.
-const char kEnableWebRtcHWDecoding[]        = "enable-webrtc-hw-decoding";
-
+// Enable WebRTC to open TCP server sockets.
+const char kEnableWebRtcTcpServerSocket[]   = "enable-webrtc-tcp-server-socket";
 #endif
 
 #if defined(OS_ANDROID)

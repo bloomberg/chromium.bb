@@ -452,13 +452,6 @@ const Experiment kExperiments[] = {
   },
 #if defined(ENABLE_WEBRTC)
   {
-    "disable-sctp-data-channels",
-    IDS_FLAGS_DISABLE_SCTP_DATA_CHANNELS_NAME,
-    IDS_FLAGS_DISABLE_SCTP_DATA_CHANNELS_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kDisableSCTPDataChannels)
-  },
-  {
     "disable-device-enumeration",
     IDS_FLAGS_DISABLE_DEVICE_ENUMERATION_NAME,
     IDS_FLAGS_DISABLE_DEVICE_ENUMERATION_DESCRIPTION,
@@ -466,18 +459,25 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kDisableDeviceEnumeration)
   },
   {
+    "disable-sctp-data-channels",
+    IDS_FLAGS_DISABLE_SCTP_DATA_CHANNELS_NAME,
+    IDS_FLAGS_DISABLE_SCTP_DATA_CHANNELS_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kDisableSCTPDataChannels)
+  },
+  {
+    "disable-webrtc-hw-decoding",
+    IDS_FLAGS_DISABLE_WEBRTC_HW_DECODING_NAME,
+    IDS_FLAGS_DISABLE_WEBRTC_HW_DECODING_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kDisableWebRtcHWDecoding)
+  },
+  {
     "disable-webrtc-hw-encoding",
     IDS_FLAGS_DISABLE_WEBRTC_HW_ENCODING_NAME,
     IDS_FLAGS_DISABLE_WEBRTC_HW_ENCODING_DESCRIPTION,
     kOsCrOS,
     SINGLE_VALUE_TYPE(switches::kDisableWebRtcHWEncoding)
-  },
-  {
-    "enable-webrtc-hw-decoding",
-    IDS_FLAGS_ENABLE_WEBRTC_HW_DECODING_NAME,
-    IDS_FLAGS_ENABLE_WEBRTC_HW_DECODING_DESCRIPTION,
-    kOsCrOS,
-    SINGLE_VALUE_TYPE(switches::kEnableWebRtcHWDecoding)
   },
 #endif
 #if defined(OS_ANDROID)
