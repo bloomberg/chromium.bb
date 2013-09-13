@@ -2065,7 +2065,7 @@ static float getMaxWidthListMarker(const RenderBox* renderer)
             if (!itemChild->isListMarker())
                 continue;
             RenderBox* itemMarker = toRenderBox(itemChild);
-            if (itemMarker->requiresLayoutToDetermineWidth()) {
+            if (itemMarker->requiresLayoutToDetermineWidth() && itemMarker->needsLayout()) {
                 // Make sure to compute the autosized width.
                 itemMarker->layout();
             }
