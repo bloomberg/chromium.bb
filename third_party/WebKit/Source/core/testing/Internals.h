@@ -284,8 +284,6 @@ public:
     PassRefPtr<ArrayBuffer> serializeObject(PassRefPtr<SerializedScriptValue>) const;
     PassRefPtr<SerializedScriptValue> deserializeBuffer(PassRefPtr<ArrayBuffer>) const;
 
-    void setOverlayScrollbarsEnabled(bool);
-
     String getCurrentCursorInfo(Document*, ExceptionState&);
 
     String markerTextForListItem(Element*, ExceptionState&);

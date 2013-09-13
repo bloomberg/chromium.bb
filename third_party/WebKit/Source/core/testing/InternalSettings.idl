@@ -57,5 +57,6 @@
     void setCSSExclusionsEnabled(boolean enabled);
     void setExperimentalWebSocketEnabled(boolean enabled);
     void setLangAttributeAwareFormControlUIEnabled(boolean enabled);
+    void setOverlayScrollbarsEnabled(boolean enabled);
     void setStyleScopedEnabled(boolean enabled);
 };

@@ -61,6 +61,7 @@ InternalSettings::Backup::Backup(Settings* settings)
     , m_originalAuthorShadowDOMForAnyElementEnabled(RuntimeEnabledFeatures::authorShadowDOMForAnyElementEnabled())
     , m_originalExperimentalWebSocketEnabled(settings->experimentalWebSocketEnabled())
     , m_originalStyleScoped(RuntimeEnabledFeatures::styleScopedEnabled())
+    , m_originalOverlayScrollbarsEnabled(RuntimeEnabledFeatures::overlayScrollbarsEnabled())
     , m_originalEditingBehavior(settings->editingBehaviorType())
     , m_originalTextAutosizingEnabled(settings->textAutosizingEnabled())
     , m_originalTextAutosizingWindowSizeOverride(settings->textAutosizingWindowSizeOverride())
@@ -83,6 +84,7 @@ void InternalSettings::Backup::restoreTo(Settings* settings)
     RuntimeEnabledFeatures::setAuthorShadowDOMForAnyElementEnabled(m_originalAuthorShadowDOMForAnyElementEnabled);
     settings->setExperimentalWebSocketEnabled(m_originalExperimentalWebSocketEnabled);
     RuntimeEnabledFeatures::setStyleScopedEnabled(m_originalStyleScoped);
+    RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(m_originalOverlayScrollbarsEnabled);
     settings->setEditingBehaviorType(m_originalEditingBehavior);
     settings->setTextAutosizingEnabled(m_originalTextAutosizingEnabled);
     settings->setTextAutosizingWindowSizeOverride(m_originalTextAutosizingWindowSizeOverride);
@@ -174,6 +176,11 @@ void InternalSettings::setExperimentalWebSocketEnabled(bool isEnabled)
 void InternalSettings::setStyleScopedEnabled(bool enabled)
 {
     RuntimeEnabledFeatures::setStyleScopedEnabled(enabled);
+}
+
+void InternalSettings::setOverlayScrollbarsEnabled(bool enabled)
+{
+    RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(enabled);
 }
 
 void InternalSettings::setTouchEventEmulationEnabled(bool enabled, ExceptionState& es)

@@ -28,7 +28,7 @@
         testRunner.dumpAsText();
 
     if (window.internals)
-        window.internals.setOverlayScrollbarsEnabled(true); // Note: We force non-overlay scrollbars with CSS.
+        window.internals.settings.setOverlayScrollbarsEnabled(true); // Note: We force non-overlay scrollbars with CSS.
 
     var test = async_test("Test that partial layout works with non-overlay scrollbars.");
     setTimeout(function() {
