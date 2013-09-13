@@ -57,6 +57,10 @@ class AudioServiceImpl : public AudioService,
                   const chromeos::AudioNodeList& audio_nodes,
                   bool success);
 
+  // ErrorCallback for CrasAudioClient::GetNodes().
+  void OnGetNodesError(const std::string& error_name,
+                       const std::string& error_msg);
+
   bool FindDevice(uint64 id, chromeos::AudioDevice* device);
   uint64 GetIdFromStr(const std::string& id_str);
 
@@ -105,10 +109,14 @@ void AudioServiceImpl::RemoveObserver(AudioService::Observer* observer) {
 void AudioServiceImpl::StartGetInfo(const GetInfoCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(cras_audio_client_);
+  // TODO(jennyz,rkc): Replace cras_audio_client_ call with CrasAudioHandler
+  // Api call.
   if (cras_audio_client_)
     cras_audio_client_->GetNodes(base::Bind(&AudioServiceImpl::OnGetNodes,
                                             weak_ptr_factory_.GetWeakPtr(),
-                                            callback));
+                                            callback),
+                                 base::Bind(&AudioServiceImpl::OnGetNodesError,
+                                            weak_ptr_factory_.GetWeakPtr()));
 }
 
 void AudioServiceImpl::SetActiveDevices(const DeviceIdList& device_list) {
@@ -193,6 +201,10 @@ void AudioServiceImpl::OnGetNodes(const GetInfoCallback& callback,
   DCHECK(!callback.is_null());
   if (!callback.is_null())
     callback.Run(output_info, input_info, success);
+}
+
+void AudioServiceImpl::OnGetNodesError(const std::string& error_name,
+                                       const std::string& error_msg) {
 }
 
 bool AudioServiceImpl::FindDevice(uint64 id, chromeos::AudioDevice* device) {

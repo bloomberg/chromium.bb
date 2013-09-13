@@ -288,6 +288,10 @@ void CrasAudioHandler::SetMuteForDevice(uint64 device_id, bool mute_on) {
     audio_pref_handler_->SetMuteValue(*device, mute_on);
 }
 
+void CrasAudioHandler::LogErrors() {
+  log_errors_ = true;
+}
+
 CrasAudioHandler::CrasAudioHandler(
     scoped_refptr<AudioDevicesPrefHandler> audio_pref_handler)
     : audio_pref_handler_(audio_pref_handler),
@@ -301,7 +305,8 @@ CrasAudioHandler::CrasAudioHandler(
       has_alternative_input_(false),
       has_alternative_output_(false),
       output_mute_locked_(false),
-      input_mute_locked_(false) {
+      input_mute_locked_(false),
+      log_errors_(false) {
   if (!audio_pref_handler.get())
     return;
   // If the DBusThreadManager or the CrasAudioClient aren't available, there
@@ -312,6 +317,10 @@ CrasAudioHandler::CrasAudioHandler(
     return;
   chromeos::DBusThreadManager::Get()->GetCrasAudioClient()->AddObserver(this);
   audio_pref_handler_->AddAudioPrefObserver(this);
+  if (chromeos::DBusThreadManager::Get()->GetSessionManagerClient()) {
+    chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->
+        AddObserver(this);
+  }
   InitializeAudioState();
 }
 
@@ -322,12 +331,17 @@ CrasAudioHandler::~CrasAudioHandler() {
     return;
   chromeos::DBusThreadManager::Get()->GetCrasAudioClient()->
       RemoveObserver(this);
+  chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->
+      RemoveObserver(this);
   if (audio_pref_handler_.get())
     audio_pref_handler_->RemoveAudioPrefObserver(this);
   audio_pref_handler_ = NULL;
 }
 
 void CrasAudioHandler::AudioClientRestarted() {
+  // Make sure the logging is enabled in case cras server
+  // restarts after crashing.
+  LogErrors();
   InitializeAudioState();
 }
 
@@ -341,8 +355,13 @@ void CrasAudioHandler::ActiveOutputNodeChanged(uint64 node_id) {
     return;
 
   // Active audio output device should always be changed by chrome.
-  LOG(WARNING) << "Active output node changed unexpectedly by system node_id="
-      << "0x" << std::hex << node_id;
+  // During system boot, cras may change active input to unknown device 0x1,
+  // we don't need to log it, since it is not an valid device.
+  if (GetDeviceFromId(node_id)) {
+    LOG_IF(WARNING, log_errors_)
+        << "Active output node changed unexpectedly by system node_id="
+        << "0x" << std::hex << node_id;
+  }
 }
 
 void CrasAudioHandler::ActiveInputNodeChanged(uint64 node_id) {
@@ -350,12 +369,23 @@ void CrasAudioHandler::ActiveInputNodeChanged(uint64 node_id) {
     return;
 
   // Active audio input device should always be changed by chrome.
-  LOG(WARNING) << "Active input node changed unexpectedly by system node_id="
-      << "0x" << std::hex << node_id;
+  // During system boot, cras may change active input to unknown device 0x2,
+  // we don't need to log it, since it is not an valid device.
+  if (GetDeviceFromId(node_id)) {
+    LOG_IF(WARNING, log_errors_)
+        << "Active input node changed unexpectedly by system node_id="
+        << "0x" << std::hex << node_id;
+  }
 }
 
 void CrasAudioHandler::OnAudioPolicyPrefChanged() {
   ApplyAudioPolicy();
+}
+
+void CrasAudioHandler::EmitLoginPromptVisibleCalled() {
+  // Enable logging after cras server is started, which will be after
+  // EmitLoginPromptVisible.
+  LogErrors();
 }
 
 const AudioDevice* CrasAudioHandler::GetDeviceFromId(uint64 device_id) const {
@@ -370,7 +400,8 @@ void CrasAudioHandler::SetupAudioInputState() {
   // Set the initial audio state to the ones read from audio prefs.
   const AudioDevice* device = GetDeviceFromId(active_input_node_id_);
   if (!device) {
-    LOG(ERROR) << "Can't set up audio state for unknow input device id ="
+    LOG_IF(ERROR, log_errors_)
+        << "Can't set up audio state for unknown input device id ="
         << "0x" << std::hex << active_input_node_id_;
     return;
   }
@@ -384,8 +415,9 @@ void CrasAudioHandler::SetupAudioInputState() {
 void CrasAudioHandler::SetupAudioOutputState() {
   const AudioDevice* device = GetDeviceFromId(active_output_node_id_);
   if (!device) {
-    LOG(ERROR) << "Can't set up audio state for unknow output device id ="
-               << "0x" << std::hex << active_output_node_id_;
+    LOG_IF(ERROR, log_errors_)
+        << "Can't set up audio state for unknown output device id ="
+        << "0x" << std::hex << active_output_node_id_;
     return;
   }
   output_mute_on_ = audio_pref_handler_->GetMuteValue(*device);
@@ -415,7 +447,10 @@ void CrasAudioHandler::ApplyAudioPolicy() {
 
   input_mute_locked_ = false;
   if (audio_pref_handler_->GetAudioCaptureAllowedValue()) {
-    SetInputMute(false);
+    // Set input mute if we have discovered active input device.
+    const AudioDevice* device = GetDeviceFromId(active_input_node_id_);
+    if (device)
+      SetInputMuteInternal(false);
   } else {
     SetInputMute(true);
     input_mute_locked_ = true;
@@ -455,6 +490,8 @@ bool CrasAudioHandler::SetInputMuteInternal(bool mute_on) {
 void CrasAudioHandler::GetNodes() {
   chromeos::DBusThreadManager::Get()->GetCrasAudioClient()->GetNodes(
       base::Bind(&CrasAudioHandler::HandleGetNodes,
+                 weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&CrasAudioHandler::HandleGetNodesError,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -586,7 +623,7 @@ void CrasAudioHandler::UpdateDevicesAndSwitchActive(
 void CrasAudioHandler::HandleGetNodes(const chromeos::AudioNodeList& node_list,
                                       bool success) {
   if (!success) {
-    LOG(ERROR) << "Failed to retrieve audio nodes data";
+    LOG_IF(ERROR, log_errors_) << "Failed to retrieve audio nodes data";
     return;
   }
 
@@ -594,4 +631,9 @@ void CrasAudioHandler::HandleGetNodes(const chromeos::AudioNodeList& node_list,
   FOR_EACH_OBSERVER(AudioObserver, observers_, OnAudioNodesChanged());
 }
 
+void CrasAudioHandler::HandleGetNodesError(const std::string& error_name,
+                                           const std::string& error_msg) {
+  LOG_IF(ERROR, log_errors_) << "Failed to call GetNodes: "
+      << error_name  << ": " << error_msg;
+}
 }  // namespace chromeos

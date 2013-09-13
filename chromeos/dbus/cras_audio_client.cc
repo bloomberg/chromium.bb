@@ -16,6 +16,10 @@
 
 namespace chromeos {
 
+// Error name if cras dbus call fails with empty ErrorResponse.
+const char kNoResponseError[] =
+    "org.chromium.cras.Error.NoResponse";
+
 // The CrasAudioClient implementation used in production.
 class CrasAudioClientImpl : public CrasAudioClient {
  public:
@@ -47,14 +51,17 @@ class CrasAudioClientImpl : public CrasAudioClient {
                    weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
-  virtual void GetNodes(const GetNodesCallback& callback) OVERRIDE {
+  virtual void GetNodes(const GetNodesCallback& callback,
+                        const ErrorCallback& error_callback) OVERRIDE {
     dbus::MethodCall method_call(cras::kCrasControlInterface,
                                  cras::kGetNodes);
-    cras_proxy_->CallMethod(
+    cras_proxy_->CallMethodWithErrorCallback(
         &method_call,
         dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::Bind(&CrasAudioClientImpl::OnGetNodes,
-                   weak_ptr_factory_.GetWeakPtr(), callback));
+                   weak_ptr_factory_.GetWeakPtr(), callback),
+        base::Bind(&CrasAudioClientImpl::OnError,
+                   weak_ptr_factory_.GetWeakPtr(), error_callback));
   }
 
   virtual void SetOutputNodeVolume(uint64 node_id, int32 volume) OVERRIDE {
@@ -293,12 +300,26 @@ class CrasAudioClientImpl : public CrasAudioClient {
       }
     }
 
-    if (node_list.size() == 0) {
-      success = false;
-      LOG(ERROR) << "Error calling " << cras::kGetNodes;
-    }
+    if (node_list.empty())
+      return;
 
     callback.Run(node_list, success);
+  }
+
+  void OnError(const ErrorCallback& error_callback,
+               dbus::ErrorResponse* response) {
+    // Error response has optional error message argument.
+    std::string error_name;
+    std::string error_message;
+    if (response) {
+      dbus::MessageReader reader(response);
+      error_name = response->GetErrorName();
+      reader.PopString(&error_message);
+    } else {
+      error_name = kNoResponseError;
+      error_message = "";
+    }
+    error_callback.Run(error_name, error_message);
   }
 
   bool GetAudioNode(dbus::Response* response,

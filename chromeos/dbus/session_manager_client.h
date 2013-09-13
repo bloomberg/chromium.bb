@@ -42,6 +42,9 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
     // unlocked successfully (i.e. after NotifyLockScreenDismissed() has
     // been called).
     virtual void ScreenIsUnlocked() {}
+
+    // Called after EmitLoginPromptVisible is called.
+    virtual void EmitLoginPromptVisibleCalled() {}
   };
 
   // Adds and removes the observer.

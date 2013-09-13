@@ -82,7 +82,8 @@ void CrasAudioClientStubImpl::GetVolumeState(
   callback.Run(volume_state_, true);
 }
 
-void CrasAudioClientStubImpl::GetNodes(const GetNodesCallback& callback) {
+void CrasAudioClientStubImpl::GetNodes(const GetNodesCallback& callback,
+                                       const ErrorCallback& error_callback) {
   callback.Run(node_list_, true);
 }
 

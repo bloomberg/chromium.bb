@@ -56,6 +56,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
   virtual void EmitLoginPromptVisible() OVERRIDE {
     SimpleMethodCallToSessionManager(
         login_manager::kSessionManagerEmitLoginPromptVisible);
+    FOR_EACH_OBSERVER(Observer, observers_, EmitLoginPromptVisibleCalled());
   }
 
   virtual void RestartJob(int pid, const std::string& command_line) OVERRIDE {
