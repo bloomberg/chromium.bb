@@ -20,6 +20,7 @@
 #include "chrome/browser/drive/drive_service_interface.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/network/network_state_handler_observer.h"
+#include "webkit/browser/fileapi/file_system_operation.h"
 
 class PrefChangeRegistrar;
 class Profile;
@@ -73,6 +74,12 @@ class EventRouter
   // Called when a copy task is completed.
   void OnCopyCompleted(
       int copy_id, const GURL& url, base::PlatformFileError error);
+
+  // Called when a copy task progress is updated.
+  void OnCopyProgress(int copy_id,
+                      fileapi::FileSystemOperation::CopyProgressType type,
+                      const GURL& url,
+                      int64 size);
 
   // chromeos::NetworkStateHandlerObserver overrides.
   virtual void NetworkManagerChanged() OVERRIDE;

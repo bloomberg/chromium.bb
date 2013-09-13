@@ -180,6 +180,51 @@ bool SetLastModifiedOnBlockingPool(const base::FilePath& local_path,
   return utime(local_path.value().c_str(), &times) == 0;
 }
 
+// Returns EventRouter for the |profile_id| if available.
+file_manager::EventRouter* GetEventRouterByProfileId(void* profile_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // |profile_id| needs to be checked with ProfileManager::IsValidProfile
+  // before using it.
+  Profile* profile = reinterpret_cast<Profile*>(profile_id);
+  if (!g_browser_process->profile_manager()->IsValidProfile(profile))
+    return NULL;
+
+  return file_manager::FileBrowserPrivateAPI::Get(profile)->event_router();
+}
+
+// Notifies the copy progress to extensions via event router.
+void NotifyCopyProgress(
+    void* profile_id,
+    fileapi::FileSystemOperationRunner::OperationID operation_id,
+    fileapi::FileSystemOperation::CopyProgressType type,
+    const FileSystemURL& url,
+    int64 size) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  file_manager::EventRouter* event_router =
+      GetEventRouterByProfileId(profile_id);
+  if (event_router) {
+    event_router->OnCopyProgress(
+        operation_id, type, url.ToGURL(), size);
+  }
+}
+
+// Callback invoked periodically on progress update of Copy().
+void OnCopyProgress(
+    void* profile_id,
+    fileapi::FileSystemOperationRunner::OperationID* operation_id,
+    fileapi::FileSystemOperation::CopyProgressType type,
+    const FileSystemURL& url,
+    int64 size) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&NotifyCopyProgress,
+                 profile_id, *operation_id, type, url, size));
+}
+
 // Notifies the copy completion to extensions via event router.
 void NotifyCopyCompletion(
     void* profile_id,
@@ -188,15 +233,10 @@ void NotifyCopyCompletion(
     base::PlatformFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // |profile_id| needs to be checked with ProfileManager::IsValidProfile
-  // before using it.
-  Profile* profile = reinterpret_cast<Profile*>(profile_id);
-  if (!g_browser_process->profile_manager()->IsValidProfile(profile))
-    return;
-
   file_manager::EventRouter* event_router =
-      file_manager::FileBrowserPrivateAPI::Get(profile)->event_router();
-  event_router->OnCopyCompleted(operation_id, dest_url.ToGURL(), error);
+      GetEventRouterByProfileId(profile_id);
+  if (event_router)
+    event_router->OnCopyCompleted(operation_id, dest_url.ToGURL(), error);
 }
 
 // Callback invoked upon completion of Copy() (regardless of succeeded or
@@ -229,7 +269,8 @@ fileapi::FileSystemOperationRunner::OperationID StartCopyOnIOThread(
       new fileapi::FileSystemOperationRunner::OperationID;
   *operation_id = file_system_context->operation_runner()->Copy(
       source_url, dest_url,
-      fileapi::FileSystemOperationRunner::CopyProgressCallback(),
+      base::Bind(&OnCopyProgress,
+                 profile_id, base::Unretained(operation_id)),
       base::Bind(&OnCopyCompleted,
                  profile_id, base::Owned(operation_id), dest_url));
   return *operation_id;

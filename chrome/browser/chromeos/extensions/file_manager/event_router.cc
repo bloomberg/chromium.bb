@@ -290,6 +290,23 @@ void BroadcastMountCompletedEvent(
       file_browser_private::OnMountCompleted::Create(event));
 }
 
+file_browser_private::CopyProgressStatus::Type
+CopyProgressTypeToCopyProgressStatusType(
+    fileapi::FileSystemOperation::CopyProgressType type) {
+  using file_browser_private::CopyProgressStatus;
+
+  switch (type) {
+    case fileapi::FileSystemOperation::BEGIN_COPY_ENTRY:
+      return CopyProgressStatus::TYPE_BEGIN_ENTRY_COPY;
+    case fileapi::FileSystemOperation::END_COPY_ENTRY:
+      return CopyProgressStatus::TYPE_END_ENTRY_COPY;
+    case fileapi::FileSystemOperation::PROGRESS:
+      return CopyProgressStatus::TYPE_PROGRESS;
+  }
+  NOTREACHED();
+  return CopyProgressStatus::TYPE_NONE;
+}
+
 }  // namespace
 
 // Pass dummy value to JobInfo's constructor for make it default constructible.
@@ -453,18 +470,14 @@ void EventRouter::OnCopyCompleted(
     int copy_id, const GURL& url, base::PlatformFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  using extensions::api::file_browser_private::CopyProgressStatus;
-  namespace OnCopyProgress =
-      extensions::api::file_browser_private::OnCopyProgress;
-
-  CopyProgressStatus status;
+  file_browser_private::CopyProgressStatus status;
   if (error == base::PLATFORM_FILE_OK) {
     // Send success event.
-    status.type = CopyProgressStatus::TYPE_SUCCESS;
+    status.type = file_browser_private::CopyProgressStatus::TYPE_SUCCESS;
     status.url.reset(new std::string(url.spec()));
   } else {
     // Send error event.
-    status.type = CopyProgressStatus::TYPE_ERROR;
+    status.type = file_browser_private::CopyProgressStatus::TYPE_ERROR;
     status.error.reset(
         new int(fileapi::PlatformFileErrorToWebFileError(error)));
   }
@@ -472,7 +485,26 @@ void EventRouter::OnCopyCompleted(
   BroadcastEvent(
       profile_,
       extensions::event_names::kOnFileBrowserCopyProgress,
-      OnCopyProgress::Create(copy_id, status));
+      file_browser_private::OnCopyProgress::Create(copy_id, status));
+}
+
+void EventRouter::OnCopyProgress(
+    int copy_id,
+    fileapi::FileSystemOperation::CopyProgressType type,
+    const GURL& url,
+    int64 size) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  file_browser_private::CopyProgressStatus status;
+  status.type = CopyProgressTypeToCopyProgressStatusType(type);
+  status.url.reset(new std::string(url.spec()));
+  if (type == fileapi::FileSystemOperation::PROGRESS)
+    status.size.reset(new double(size));
+
+  BroadcastEvent(
+      profile_,
+      extensions::event_names::kOnFileBrowserCopyProgress,
+      file_browser_private::OnCopyProgress::Create(copy_id, status));
 }
 
 void EventRouter::NetworkManagerChanged() {
