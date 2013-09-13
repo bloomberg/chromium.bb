@@ -39,6 +39,10 @@ namespace feedbackPrivate {
     // Screenshot to send with this feedback.
     [instanceOf=Blob] object? screenshot;
 
+    // Optional id for performance trace data that can be included in this
+    // report.
+    long? traceId;
+
     // An array of key/value pairs providing system information for this
     // feedback report.
     SystemInformation[]? systemInformation;
