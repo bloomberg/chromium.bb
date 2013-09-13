@@ -40,6 +40,8 @@ namespace WebCore {
 
 class ContentDistribution {
 public:
+    ContentDistribution() { m_nodes.reserveInitialCapacity(32); }
+
     PassRefPtr<Node> first() const { return m_nodes.first(); }
     PassRefPtr<Node> last() const { return m_nodes.last(); }
     PassRefPtr<Node> at(size_t index) const { return m_nodes.at(index); }
@@ -49,6 +51,7 @@ public:
 
     void append(PassRefPtr<Node>);
     void clear() { m_nodes.clear(); m_indices.clear(); }
+    void shrinkToFit() { m_nodes.shrinkToFit(); }
 
     bool contains(const Node* node) const { return m_indices.contains(node); }
     size_t find(const Node*) const;

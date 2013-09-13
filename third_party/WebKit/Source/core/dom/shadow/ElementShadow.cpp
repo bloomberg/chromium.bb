@@ -194,15 +194,16 @@ void ElementShadow::populate(Node* node, Vector<Node*>& pool)
 void ElementShadow::distribute()
 {
     Vector<Node*> pool;
+    pool.reserveInitialCapacity(32);
     for (Node* node = host()->firstChild(); node; node = node->nextSibling())
         populate(node, pool);
 
     host()->setNeedsStyleRecalc();
 
-    Vector<bool> distributed(pool.size());
-    distributed.fill(false);
+    Vector<bool> distributed;
+    distributed.fill(false, pool.size());
 
-    Vector<HTMLShadowElement*, 8> activeShadowInsertionPoints;
+    Vector<HTMLShadowElement*, 32> activeShadowInsertionPoints;
     for (ShadowRoot* root = youngestShadowRoot(); root; root = root->olderShadowRoot()) {
         HTMLShadowElement* firstActiveShadowInsertionPoint = 0;
 
@@ -282,8 +283,9 @@ void ElementShadow::distributeNodeChildrenTo(InsertionPoint* insertionPoint, Con
             InsertionPoint* innerInsertionPoint = toInsertionPoint(node);
             if (innerInsertionPoint->hasDistribution()) {
                 for (size_t i = 0; i < innerInsertionPoint->size(); ++i) {
-                    distribution.append(innerInsertionPoint->at(i));
-                    m_nodeToInsertionPoint.add(innerInsertionPoint->at(i), insertionPoint);
+                    Node* nodeToAdd = innerInsertionPoint->at(i);
+                    distribution.append(nodeToAdd);
+                    m_nodeToInsertionPoint.add(nodeToAdd, insertionPoint);
                 }
             } else {
                 for (Node* child = innerInsertionPoint->firstChild(); child; child = child->nextSibling()) {

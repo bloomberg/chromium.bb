@@ -29,8 +29,8 @@
 #include "wtf/StdLibExtras.h"
 #include "wtf/UnusedParam.h"
 #include "wtf/VectorTraits.h"
-#include <utility>
 #include <string.h>
+#include <utility>
 
 namespace WTF {
 
@@ -944,7 +944,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
     // vector's capacity is large enough for the append to succeed.
 
     template<typename T, size_t inlineCapacity> template<typename U>
-    inline void Vector<T, inlineCapacity>::uncheckedAppend(const U& val)
+    ALWAYS_INLINE void Vector<T, inlineCapacity>::uncheckedAppend(const U& val)
     {
         ASSERT(size() < capacity());
         const U* ptr = &val;

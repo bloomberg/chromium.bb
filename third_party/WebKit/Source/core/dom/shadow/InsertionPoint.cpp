@@ -92,6 +92,7 @@ void InsertionPoint::setDistribution(ContentDistribution& distribution)
         distribution.at(j)->lazyReattachIfAttached();
 
     m_distribution.swap(distribution);
+    m_distribution.shrinkToFit();
 }
 
 void InsertionPoint::attach(const AttachContext& context)
@@ -146,8 +147,9 @@ PassRefPtr<NodeList> InsertionPoint::getDistributedNodes()
     document().updateDistributionForNodeIfNeeded(this);
 
     Vector<RefPtr<Node> > nodes;
+    nodes.reserveInitialCapacity(m_distribution.size());
     for (size_t i = 0; i < m_distribution.size(); ++i)
-        nodes.append(m_distribution.at(i));
+        nodes.uncheckedAppend(m_distribution.at(i));
 
     return StaticNodeList::adopt(nodes);
 }
