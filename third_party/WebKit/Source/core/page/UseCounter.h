@@ -202,6 +202,12 @@ public:
         InsertAdjacentText,
         InsertAdjacentElement,
         HasAttributes, // Removed from DOM4.
+        DOMSubtreeModifiedEvent,
+        DOMNodeInsertedEvent,
+        DOMNodeRemovedEvent,
+        DOMNodeRemovedFromDocumentEvent,
+        DOMNodeInsertedIntoDocumentEvent,
+        DOMCharacterDataModifiedEvent,
         // Add new features immediately above this line. Don't change assigned
         // numbers of each items, and don't reuse unused slots.
         NumberOfFeatures, // This enum value must be last.
