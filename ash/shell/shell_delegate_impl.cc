@@ -16,6 +16,7 @@
 #include "ash/shell/launcher_delegate_impl.h"
 #include "ash/shell/toplevel_window.h"
 #include "ash/shell_window_ids.h"
+#include "ash/system/tray/default_system_tray_delegate.h"
 #include "ash/wm/window_util.h"
 #include "base/message_loop/message_loop.h"
 #include "ui/aura/window.h"
@@ -168,7 +169,7 @@ ash::LauncherDelegate* ShellDelegateImpl::CreateLauncherDelegate(
 }
 
 ash::SystemTrayDelegate* ShellDelegateImpl::CreateSystemTrayDelegate() {
-  return NULL;
+  return new DefaultSystemTrayDelegate;
 }
 
 ash::UserWallpaperDelegate* ShellDelegateImpl::CreateUserWallpaperDelegate() {

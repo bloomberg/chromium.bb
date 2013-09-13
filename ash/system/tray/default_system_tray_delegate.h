@@ -1,45 +1,26 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_TEST_TEST_SYSTEM_TRAY_DELEGATE_H_
-#define ASH_TEST_TEST_SYSTEM_TRAY_DELEGATE_H_
+#ifndef ASH_SYSTEM_TRAY_DEFAULT_SYSTEM_TRAY_DELEGATE_H_
+#define ASH_SYSTEM_TRAY_DEFAULT_SYSTEM_TRAY_DELEGATE_H_
 
 #include "ash/ash_export.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 
-// TODO(oshima/stevenjb): Move this to ash/test. crbug.com/159693.
-
 namespace ash {
-namespace test {
 
-class ASH_EXPORT TestSystemTrayDelegate : public SystemTrayDelegate {
+class ASH_EXPORT DefaultSystemTrayDelegate : public SystemTrayDelegate {
  public:
-  // Changes the login status when initially the delegate is created. This will
-  // be called before AshTestBase::SetUp() to test the case when chrome is
-  // restarted right after the login (such like a flag is set).
-  // This value will be reset in AshTestHelper::TearDown,  most test fixtures
-  // don't need to care its lifecycle.
-  static void SetInitialLoginStatus(user::LoginStatus login_status);
+  DefaultSystemTrayDelegate();
+  virtual ~DefaultSystemTrayDelegate();
 
-  TestSystemTrayDelegate();
-
-  virtual ~TestSystemTrayDelegate();
-
-  // Changes the current login status in the test. This also invokes
-  // UpdateAfterLoginStatusChange(). Usually this is called in the test code to
-  // set up a login status. This will fit to most of the test cases, but this
-  // cannot be set during the initialization. To test the initialization,
-  // consider using SetInitialLoginStatus() instead.
-  void SetLoginStatus(user::LoginStatus login_status);
-
+  // Overridden from SystemTrayDelegate:
   virtual void Initialize() OVERRIDE;
   virtual void Shutdown() OVERRIDE;
   virtual bool GetTrayVisibilityOnStartup() OVERRIDE;
-
-  // Overridden from SystemTrayDelegate:
   virtual user::LoginStatus GetUserLoginStatus() const OVERRIDE;
   virtual bool IsOobeCompleted() const OVERRIDE;
   virtual void ChangeProfilePicture() OVERRIDE;
@@ -109,21 +90,13 @@ class ASH_EXPORT TestSystemTrayDelegate : public SystemTrayDelegate {
   virtual int GetSystemTrayMenuWidth() OVERRIDE;
   virtual void MaybeSpeak(const std::string& utterance) const OVERRIDE;
 
-  void set_should_show_display_notification(bool should_show) {
-    should_show_display_notification_ = should_show;
-  }
-
  private:
   bool bluetooth_enabled_;
-  bool caps_lock_enabled_;
-  bool should_show_display_notification_;
-  user::LoginStatus login_status_;
   scoped_ptr<VolumeControlDelegate> volume_control_delegate_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestSystemTrayDelegate);
+  DISALLOW_COPY_AND_ASSIGN(DefaultSystemTrayDelegate);
 };
 
-}  // namespace test
 }  // namespace ash
 
-#endif  // ASH_TEST_TEST_SYSTEM_TRAY_DELEGATE_H_
+#endif  // ASH_SYSTEM_TRAY_DEFAULT_SYSTEM_TRAY_DELEGATE_H_

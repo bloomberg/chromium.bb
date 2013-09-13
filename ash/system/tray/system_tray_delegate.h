@@ -313,9 +313,6 @@ class ASH_EXPORT SystemTrayDelegate {
 
   // Speaks the given text if spoken feedback is enabled.
   virtual void MaybeSpeak(const std::string& utterance) const = 0;
-
-  // Creates a dummy delegate for testing.
-  static SystemTrayDelegate* CreateDummyDelegate();
 };
 
 }  // namespace ash

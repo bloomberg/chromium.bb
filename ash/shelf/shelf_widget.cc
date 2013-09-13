@@ -16,7 +16,7 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
-#include "ash/system/tray/test_system_tray_delegate.h"
+#include "ash/system/tray/system_tray_delegate.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/status_area_layout_manager.h"
 #include "ash/wm/window_properties.h"
