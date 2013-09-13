@@ -180,10 +180,6 @@ void WebSettingsImpl::setJavaScriptCanOpenWindowsAutomatically(bool canOpenWindo
 void WebSettingsImpl::setSupportDeprecatedTargetDensityDPI(bool supportDeprecatedTargetDensityDPI)
 {
     m_supportDeprecatedTargetDensityDPI = supportDeprecatedTargetDensityDPI;
-    // TODO(mnaganov): This is to avoid breaking Chromium Android WebView tests upstream.
-    // Will be removed once setWideViewportQuirkEnabled will be wired up in Chromium.
-    // See http://crbug.com/288037.
-    m_settings->setWideViewportQuirkEnabled(supportDeprecatedTargetDensityDPI);
 }
 
 void WebSettingsImpl::setViewportMetaLayoutSizeQuirk(bool viewportMetaLayoutSizeQuirk)
