@@ -9,7 +9,7 @@ import sys
 import unittest
 
 from fake_url_fetcher import FakeUrlFetcher
-from file_system import FileNotFoundError, StatInfo
+from file_system import FileSystemError, StatInfo
 from future import Future
 from subversion_file_system import SubversionFileSystem
 import test_util
@@ -68,7 +68,7 @@ class SubversionFileSystemTest(unittest.TestCase):
 
       def FetchAsync(self, path):
         class ThrowsValueError(object):
-          def Get(): raise ValueError()
+          def Get(self): raise ValueError()
         self.last_fetched = path
         return ThrowsValueError()
 
@@ -85,15 +85,15 @@ class SubversionFileSystemTest(unittest.TestCase):
                                            svn_path,
                                            revision=42)
 
-    self.assertRaises(FileNotFoundError, svn_file_system.ReadSingle, 'dir/file')
+    self.assertRaises(FileSystemError, svn_file_system.ReadSingle, 'dir/file')
     self.assertEqual('dir/file?p=42', file_fetcher.last_fetched)
     # Stat() will always stat directories.
-    self.assertRaises(FileNotFoundError, svn_file_system.Stat, 'dir/file')
+    self.assertRaises(FileSystemError, svn_file_system.Stat, 'dir/file')
     self.assertEqual('dir/?pathrev=42', stat_fetcher.last_fetched)
 
-    self.assertRaises(FileNotFoundError, svn_file_system.ReadSingle, 'dir/')
+    self.assertRaises(FileSystemError, svn_file_system.ReadSingle, 'dir/')
     self.assertEqual('dir/?p=42', file_fetcher.last_fetched)
-    self.assertRaises(FileNotFoundError, svn_file_system.Stat, 'dir/')
+    self.assertRaises(FileSystemError, svn_file_system.Stat, 'dir/')
     self.assertEqual('dir/?pathrev=42', stat_fetcher.last_fetched)
 
   def testDirectoryVersionOnDeletion(self):

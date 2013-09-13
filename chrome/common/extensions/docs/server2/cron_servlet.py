@@ -198,10 +198,11 @@ class CronServlet(Servlet):
 
       run_cron(server_instance.redirector)
 
-    except Exception:
+    except:
       results.append(False)
       # This should never actually happen (each cron step does its own
       # conservative error checking), so re-raise no matter what it is.
+      _cronlog.error('uncaught error: %s' % traceback.format_exc())
       raise
     finally:
       success = all(results)

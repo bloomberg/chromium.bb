@@ -8,7 +8,6 @@ import logging
 import re
 
 from compiled_file_system import CompiledFileSystem
-from file_system import FileNotFoundError
 import third_party.json_schema_compiler.json_comment_eater as json_comment_eater
 import third_party.json_schema_compiler.model as model
 import url_constants

@@ -11,7 +11,6 @@ import re
 import sys
 
 import appengine_wrappers
-from file_system import FileNotFoundError
 import url_constants
 
 class _FakeFetcher(object):
@@ -66,11 +65,11 @@ class FakeSubversionServer(_FakeFetcher):
         html.append('</html>')
         return '\n'.join(html)
       except OSError as e:
-        raise FileNotFoundError('Listing %s failed: %s' (path, e))
+        return None
     try:
       return self._ReadFile(path)
     except IOError as e:
-      raise FileNotFoundError('Reading %s failed: %s' % (path, e))
+      return None
 
 class FakeViewvcServer(_FakeFetcher):
   def __init__(self, base_path):
@@ -104,7 +103,7 @@ class FakeViewvcServer(_FakeFetcher):
     try:
       return self._ReadFile(path)
     except IOError as e:
-      raise FileNotFoundError('Reading %s failed: %s' % (path, e))
+      return None
 
 class FakeGithubStat(_FakeFetcher):
   def fetch(self, url):

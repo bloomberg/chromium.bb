@@ -10,7 +10,8 @@ from xml.parsers.expat import ExpatError
 
 from appengine_url_fetcher import AppEngineUrlFetcher
 from docs_server_utils import StringIdentity
-from file_system import FileSystem, FileNotFoundError, StatInfo, ToUnicode
+from file_system import (
+    FileNotFoundError, FileSystem, FileSystemError, StatInfo, ToUnicode)
 from future import Future
 import svn_constants
 import url_constants
@@ -64,15 +65,15 @@ def _CreateStatInfo(html):
       if len(cells) == 2 and _InnerText(cells[0]) == 'Directory revision:':
         links = cells[1].getElementsByTagName('a')
         if len(links) != 2:
-          raise ValueError('ViewVC assumption invalid: directory revision ' +
-                           'content did not have 2 <a> elements, instead %s' %
-                           _InnerText(cells[1]))
+          raise FileSystemError('ViewVC assumption invalid: directory ' +
+                                'revision content did not have 2 <a> ' +
+                                ' elements, instead %s' % _InnerText(cells[1]))
         this_parent_version = _InnerText(links[0])
         int(this_parent_version)  # sanity check
         if parent_version is not None:
-          raise ValueError('There was already a parent version %s, and we ' +
-                           'just found a second at %s' % (parent_version,
-                                                          this_parent_version))
+          raise FileSystemError('There was already a parent version %s, and ' +
+                                ' we just found a second at %s' %
+                                (parent_version, this_parent_version))
         parent_version = this_parent_version
 
       # The version of each file is a list of rows with 5 cells: name, version,
@@ -117,11 +118,17 @@ class _AsyncFetchFuture(object):
       try:
         result = future.Get()
       except Exception as e:
-        raise FileNotFoundError(
-            '%s fetching %s for Get: %s' % (e.__class__.__name__, path, e))
+        raise FileSystemError('Error fetching %s for Get: %s' %
+            (path, traceback.format_exc()))
+
       if result.status_code == 404:
-        raise FileNotFoundError('Got 404 when fetching %s for Get' % path)
-      elif path.endswith('/'):
+        raise FileNotFoundError('Got 404 when fetching %s for Get, content %s' %
+            (path, result.content))
+      if result.status_code != 200:
+        raise FileSystemError('Got %s when fetching %s for Get, content %s' %
+            (result.status_code, path, result.content))
+
+      if path.endswith('/'):
         self._value[path] = self._ListDir(result.content)
       elif not self._binary:
         self._value[path] = ToUnicode(result.content)
@@ -172,19 +179,19 @@ class SubversionFileSystem(FileSystem):
     try:
       result = self._stat_fetcher.Fetch(directory)
     except Exception as e:
-      # Convert all errors (typically some sort of DeadlineExceededError but
-      # explicitly catching that seems not to work) to a FileNotFoundError to
-      # reduce the exception-catching surface area of this class.
-      raise FileNotFoundError(
-          '%s fetching %s for Stat: %s' % (e.__class__.__name__, path, e))
+      raise FileSystemError('Error fetching %s for Stat: %s' %
+          (path, traceback.format_exc()))
 
+    if result.status_code == 404:
+      raise FileNotFoundError('Got 404 when fetching %s for Stat, content %s' %
+          (path, result.content))
     if result.status_code != 200:
-      raise FileNotFoundError('Got %s when fetching %s for Stat' % (
-          result.status_code, path))
+      raise FileNotFoundError('Got %s when fetching %s for Stat, content %s' %
+          (result.status_code, path, result.content))
 
     stat_info = _CreateStatInfo(result.content)
     if stat_info.version is None:
-      raise ValueError('Failed to find version of dir %s' % directory)
+      raise FileSystemError('Failed to find version of dir %s' % directory)
     if path.endswith('/'):
       return stat_info
     if filename not in stat_info.child_versions:

@@ -3,6 +3,15 @@
 # found in the LICENSE file.
 
 class FileNotFoundError(Exception):
+  '''Raised when a file isn't found for read or stat.
+  '''
+  def __init__(self, filename):
+    Exception.__init__(self, filename)
+
+class FileSystemError(Exception):
+  '''Raised on when there are errors reading or statting files, such as a
+  network timeout.
+  '''
   def __init__(self, filename):
     Exception.__init__(self, filename)
 
@@ -48,6 +57,9 @@ class FileSystem(object):
     If binary=False, the contents of each file will be unicode parsed as utf-8,
     and failing that as latin-1 (some extension docs use latin-1). If
     binary=True then the contents will be a str.
+
+    If any path cannot be found, raises a FileNotFoundError.
+    For any other failure, raises a FileSystemError.
     '''
     raise NotImplementedError(self.__class__)
 
@@ -61,6 +73,9 @@ class FileSystem(object):
     '''Returns a |StatInfo| object containing the version of |path|. If |path|
     is a directory, |StatInfo| will have the versions of all the children of
     the directory in |StatInfo.child_versions|.
+
+    If the path cannot be found, raises a FileNotFoundError.
+    For any other failure, raises a FileSystemError.
     '''
     raise NotImplementedError(self.__class__)
 
@@ -76,6 +91,9 @@ class FileSystem(object):
   def Walk(self, root):
     '''Recursively walk the directories in a file system, starting with root.
     Emulates os.walk from the standard os module.
+
+    If the root cannot be found, raises a FileNotFoundError.
+    For any other failure, raises a FileSystemError.
     '''
     basepath = root.rstrip('/') + '/'
 
