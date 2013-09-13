@@ -355,7 +355,7 @@ class ChromeSDKCommand(cros.CrosCommand):
   environment, starting a bash session if no command is specified.
 
   The bash session environment is set up by a user-configurable rc file located
-  at ~/chromite/chrome_sdk.bashrc.
+  at ~/.chromite/chrome_sdk.bashrc.
   """
 
   # Note, this URL is not accessible outside of corp.
