@@ -25,37 +25,43 @@ void TruncateString(std::string* data) {
   }
 }
 
-base::Value* TruncateContainedStrings(base::Value* value) {
-  base::ListValue* list = NULL;
-  base::DictionaryValue* dict = NULL;
+scoped_ptr<base::Value> SmartDeepCopy(const base::Value* value) {
+  const size_t kMaxChildren = 20;
+  const base::ListValue* list = NULL;
+  const base::DictionaryValue* dict = NULL;
+  std::string data;
   if (value->GetAsDictionary(&dict)) {
+    scoped_ptr<base::DictionaryValue> dict_copy(new base::DictionaryValue());
     for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd();
          it.Advance()) {
-      std::string data;
-      if (it.value().GetAsString(&data)) {
-        TruncateString(&data);
-        dict->SetWithoutPathExpansion(it.key(), new base::StringValue(data));
-      } else {
-        base::Value* child = NULL;
-        dict->GetWithoutPathExpansion(it.key(), &child);
-        TruncateContainedStrings(child);
+      if (dict_copy->size() >= kMaxChildren - 1) {
+        dict_copy->SetStringWithoutPathExpansion("~~~", "...");
+        break;
       }
+      const base::Value* child = NULL;
+      dict->GetWithoutPathExpansion(it.key(), &child);
+      dict_copy->SetWithoutPathExpansion(it.key(),
+                                         SmartDeepCopy(child).release());
     }
+    return dict_copy.PassAs<base::Value>();
   } else if (value->GetAsList(&list)) {
+    scoped_ptr<base::ListValue> list_copy(new base::ListValue());
     for (size_t i = 0; i < list->GetSize(); ++i) {
-      base::Value* child = NULL;
+      const base::Value* child = NULL;
       if (!list->Get(i, &child))
         continue;
-      std::string data;
-      if (child->GetAsString(&data)) {
-        TruncateString(&data);
-        list->Set(i, new base::StringValue(data));
-      } else {
-        TruncateContainedStrings(child);
+      if (list_copy->GetSize() >= kMaxChildren - 1) {
+        list_copy->AppendString("...");
+        break;
       }
+      list_copy->Append(SmartDeepCopy(child).release());
     }
+    return list_copy.PassAs<base::Value>();
+  } else if (value->GetAsString(&data)) {
+    TruncateString(&data);
+    return scoped_ptr<base::Value>(new base::StringValue(data));
   }
-  return value;
+  return scoped_ptr<base::Value>(value->DeepCopy());
 }
 
 }  // namespace
@@ -84,16 +90,13 @@ std::string PrettyPrintValue(const base::Value& value) {
 }
 
 std::string FormatValueForDisplay(const base::Value& value) {
-  scoped_ptr<base::Value> truncated(TruncateContainedStrings(value.DeepCopy()));
-  return PrettyPrintValue(*truncated);
+  scoped_ptr<base::Value> copy(SmartDeepCopy(&value));
+  return PrettyPrintValue(*copy);
 }
 
 std::string FormatJsonForDisplay(const std::string& json) {
   scoped_ptr<base::Value> value(base::JSONReader::Read(json));
-  if (!value) {
-    std::string truncated = json;
-    TruncateString(&truncated);
-    return truncated;
-  }
-  return PrettyPrintValue(*TruncateContainedStrings(value.get()));
+  if (!value)
+    value.reset(new base::StringValue(json));
+  return FormatValueForDisplay(*value);
 }
