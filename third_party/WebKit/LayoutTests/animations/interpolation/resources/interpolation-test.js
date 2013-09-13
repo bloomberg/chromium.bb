@@ -172,11 +172,23 @@
 
   function createTarget(id) {
     var target = document.createElement('div');
-    target.classList.add(id);
     var template = document.querySelector('#target-template');
     if (template) {
       target.appendChild(template.content.cloneNode(true));
+      // Remove whitespace text nodes at start / end.
+      while (target.firstChild.nodeType != Node.ELEMENT_NODE && !/\S/.test(target.firstChild.nodeValue)) {
+        target.removeChild(target.firstChild);
+      }
+      while (target.lastChild.nodeType != Node.ELEMENT_NODE && !/\S/.test(target.lastChild.nodeValue)) {
+        target.removeChild(target.lastChild);
+      }
+      // If the template contains just one element, use that rather than a wrapper div.
+      if (target.children.length == 1 && target.childNodes.length == 1) {
+        target = target.firstChild;
+        target.remove();
+      }
     }
+    target.classList.add(id);
     target.classList.add('target');
     return target;
   }
