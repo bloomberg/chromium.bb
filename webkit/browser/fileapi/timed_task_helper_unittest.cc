@@ -6,8 +6,8 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/run_loop.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/fileapi/timed_task_helper.h"
@@ -51,7 +51,7 @@ TEST(TimedTaskHelper, FireTimerWhenAlive) {
   embedder.timer()->Reset();
   ASSERT_TRUE(embedder.timer()->IsRunning());
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(embedder.timer_fired());
 }
@@ -77,7 +77,7 @@ TEST(TimedTaskHelper, FireTimerWhenAlreadyDeleted) {
 
   // At this point the callback is still in the message queue but
   // embedder is gone.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace fileapi

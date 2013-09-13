@@ -5,7 +5,7 @@
 #include "webkit/browser/fileapi/upload_file_system_file_element_reader.h"
 
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "net/base/io_buffer.h"
 #include "net/base/test_completion_callback.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -43,7 +43,7 @@ class UploadFileSystemFileElementReaderTest : public testing::Test {
         OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
         base::Bind(&UploadFileSystemFileElementReaderTest::OnOpenFileSystem,
                    base::Unretained(this)));
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     ASSERT_TRUE(file_system_root_url_.is_valid());
 
     // Prepare a file on file system.
@@ -71,7 +71,7 @@ class UploadFileSystemFileElementReaderTest : public testing::Test {
 
  virtual void TearDown() OVERRIDE {
     reader_.reset();
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
  }
 
  protected:

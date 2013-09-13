@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/message_loop/message_loop.h"
 #include "base/pickle.h"
+#include "base/run_loop.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/http/http_response_headers.h"
@@ -184,7 +184,7 @@ TEST_F(AppCacheServiceTest, DeleteAppCachesForOrigin) {
   // Without giving mock storage simiulated info, should fail.
   service_->DeleteAppCachesForOrigin(kOrigin, deletion_callback_);
   EXPECT_EQ(0, delete_completion_count_);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, delete_completion_count_);
   EXPECT_EQ(net::ERR_FAILED, delete_result_);
   delete_completion_count_ = 0;
@@ -193,7 +193,7 @@ TEST_F(AppCacheServiceTest, DeleteAppCachesForOrigin) {
   mock_storage()->SimulateGetAllInfo(new AppCacheInfoCollection);
   service_->DeleteAppCachesForOrigin(kOrigin, deletion_callback_);
   EXPECT_EQ(0, delete_completion_count_);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, delete_completion_count_);
   EXPECT_EQ(net::OK, delete_result_);
   delete_completion_count_ = 0;
@@ -215,7 +215,7 @@ TEST_F(AppCacheServiceTest, DeleteAppCachesForOrigin) {
   mock_storage()->SimulateGetAllInfo(info.get());
   service_->DeleteAppCachesForOrigin(kOrigin, deletion_callback_);
   EXPECT_EQ(0, delete_completion_count_);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, delete_completion_count_);
   EXPECT_EQ(net::OK, delete_result_);
   delete_completion_count_ = 0;
@@ -226,7 +226,7 @@ TEST_F(AppCacheServiceTest, DeleteAppCachesForOrigin) {
   mock_storage()->SimulateMakeGroupObsoleteFailure();
   service_->DeleteAppCachesForOrigin(kOrigin, deletion_callback_);
   EXPECT_EQ(0, delete_completion_count_);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, delete_completion_count_);
   EXPECT_EQ(net::ERR_FAILED, delete_result_);
   delete_completion_count_ = 0;
@@ -242,7 +242,7 @@ TEST_F(AppCacheServiceTest, DeleteAppCachesForOrigin) {
 
   // Let any tasks lingering from the sudden deletion run and verify
   // no other completion calls occur.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, delete_completion_count_);
 }
 
@@ -250,7 +250,7 @@ TEST_F(AppCacheServiceTest, CheckAppCacheResponse) {
   // Check a non-existing manifest.
   EXPECT_FALSE(IsGroupStored(kManifestUrl));
   service_->CheckAppCacheResponse(kManifestUrl, 1, 1);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, CountPendingHelpers());
   EXPECT_FALSE(IsGroupStored(kManifestUrl));
   ResetStorage();
@@ -261,7 +261,7 @@ TEST_F(AppCacheServiceTest, CheckAppCacheResponse) {
   EXPECT_TRUE(IsGroupStored(kManifestUrl));
   SetupMockReader(true, true, true);
   service_->CheckAppCacheResponse(kManifestUrl, kMockCacheId, kMockResponseId);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, CountPendingHelpers());
   EXPECT_TRUE(IsGroupStored(kManifestUrl));
   ResetStorage();
@@ -271,7 +271,7 @@ TEST_F(AppCacheServiceTest, CheckAppCacheResponse) {
   SetupMockGroup();
   service_->CheckAppCacheResponse(kManifestUrl, kMockCacheId,
                                   kMissingResponseId);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, CountPendingHelpers());
   EXPECT_FALSE(IsGroupStored(kManifestUrl));
   ResetStorage();
@@ -281,7 +281,7 @@ TEST_F(AppCacheServiceTest, CheckAppCacheResponse) {
   SetupMockGroup();
   service_->CheckAppCacheResponse(kManifestUrl, kMissingCacheId,
                                   kMissingResponseId);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, CountPendingHelpers());
   EXPECT_TRUE(IsGroupStored(kManifestUrl));
   ResetStorage();
@@ -290,7 +290,7 @@ TEST_F(AppCacheServiceTest, CheckAppCacheResponse) {
   SetupMockGroup();
   service_->CheckAppCacheResponse(kManifestUrl, kMockCacheId, kMockResponseId);
   SetupMockReader(false, true, true);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, CountPendingHelpers());
   EXPECT_FALSE(IsGroupStored(kManifestUrl));
   ResetStorage();
@@ -299,7 +299,7 @@ TEST_F(AppCacheServiceTest, CheckAppCacheResponse) {
   SetupMockGroup();
   service_->CheckAppCacheResponse(kManifestUrl, kMockCacheId, kMockResponseId);
   SetupMockReader(true, false, true);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, CountPendingHelpers());
   EXPECT_FALSE(IsGroupStored(kManifestUrl));
   ResetStorage();
@@ -308,13 +308,13 @@ TEST_F(AppCacheServiceTest, CheckAppCacheResponse) {
   SetupMockGroup();
   service_->CheckAppCacheResponse(kManifestUrl, kMockCacheId, kMockResponseId);
   SetupMockReader(true, true, false);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, CountPendingHelpers());
   EXPECT_FALSE(IsGroupStored(kManifestUrl));
   ResetStorage();
 
   service_.reset();  // Clean up.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace appcache

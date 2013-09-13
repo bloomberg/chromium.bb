@@ -5,8 +5,8 @@
 #include "webkit/browser/fileapi/sandbox_file_system_test_helper.h"
 
 #include "base/file_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/run_loop.h"
 #include "url/gurl.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_file_util.h"
@@ -57,7 +57,7 @@ void SandboxFileSystemTestHelper::SetUp(
 
 void SandboxFileSystemTestHelper::TearDown() {
   file_system_context_ = NULL;
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 base::FilePath SandboxFileSystemTestHelper::GetOriginRootPath() {

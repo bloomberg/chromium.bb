@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/platform_file.h"
+#include "base/run_loop.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/net_errors.h"
@@ -57,7 +58,7 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
         OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
         base::Bind(&FileSystemDirURLRequestJobTest::OnOpenFileSystem,
                    weak_factory_.GetWeakPtr()));
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 
     net::URLRequest::Deprecated::RegisterProtocolFactory(
         "filesystem", &FileSystemDirURLRequestJobFactory);
@@ -288,7 +289,7 @@ TEST_F(FileSystemDirURLRequestJobTest, Cancel) {
   TestRequestNoRun(CreateFileSystemURL("foo/"));
   // Run StartAsync() and only StartAsync().
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, request_.release());
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   // If we get here, success! we didn't crash!
 }
 

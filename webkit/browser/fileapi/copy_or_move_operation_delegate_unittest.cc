@@ -128,7 +128,7 @@ class CopyOrMoveOperationTestHelper {
     quota_manager_proxy_->SimulateQuotaManagerDestroyed();
     quota_manager_ = NULL;
     quota_manager_proxy_ = NULL;
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void SetUp() {
@@ -174,7 +174,7 @@ class CopyOrMoveOperationTestHelper {
     backend->OpenFileSystem(origin_, dest_type_,
                             OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
                             base::Bind(&ExpectOk));
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 
     // Grant relatively big quota initially.
     quota_manager_->SetQuota(origin_,

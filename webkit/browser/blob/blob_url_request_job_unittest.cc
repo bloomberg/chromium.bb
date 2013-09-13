@@ -8,7 +8,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/time/time.h"
 #include "net/base/io_buffer.h"
 #include "net/http/http_request_headers.h"
@@ -175,7 +175,7 @@ class BlobURLRequestJobTest : public testing::Test {
         fileapi::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
         base::Bind(&BlobURLRequestJobTest::OnValidateFileSystem,
                    base::Unretained(this)));
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     ASSERT_TRUE(file_system_root_url_.is_valid());
 
     // Prepare files on file system.

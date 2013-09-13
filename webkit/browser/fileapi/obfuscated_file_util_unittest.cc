@@ -11,8 +11,8 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/platform_file.h"
+#include "base/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/fileapi/async_file_test_helper.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
@@ -248,7 +248,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
   }
 
   int64 SizeInUsageFile() {
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     int64 usage = 0;
     return usage_cache()->GetUsage(
         sandbox_file_system_.GetUsageCachePath(), &usage) ? usage : -1;
@@ -375,7 +375,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
           expected_usage_(expected_usage) {}
 
     ~UsageVerifyHelper() {
-      base::MessageLoop::current()->RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
       Check();
     }
 
@@ -2269,7 +2269,7 @@ TEST_F(ObfuscatedFileUtilTest, MaybeDropDatabasesAliveCase) {
   // Callback to Drop DB is called while ObfuscatedFileUtilTest is still alive.
   file_util.db_flush_delay_seconds_ = 0;
   file_util.MarkUsed();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(file_util.origin_database_ == NULL);
 }
@@ -2287,7 +2287,7 @@ TEST_F(ObfuscatedFileUtilTest, MaybeDropDatabasesAlreadyDeletedCase) {
   }
 
   // At this point the callback is still in the message queue but OFU is gone.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ObfuscatedFileUtilTest, DestroyDirectoryDatabase_Isolated) {

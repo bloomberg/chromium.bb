@@ -7,8 +7,8 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/run_loop.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job.h"
@@ -88,7 +88,7 @@ class FileSystemOperationImplWriteTest
   virtual void TearDown() {
     quota_manager_ = NULL;
     file_system_context_ = NULL;
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   base::PlatformFileError status() const { return status_; }
@@ -288,7 +288,7 @@ TEST_F(FileSystemOperationImplWriteTest, TestImmediateCancelSuccessfulWrite) {
   // We use RunAllPendings() instead of Run() here, because we won't dispatch
   // callbacks after Cancel() is issued (so no chance to Quit) nor do we need
   // to run another write cycle.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Issued Cancel() before receiving any response from Write(),
   // so nothing should have happen.
@@ -312,7 +312,7 @@ TEST_F(FileSystemOperationImplWriteTest, TestImmediateCancelFailingWrite) {
   // We use RunAllPendings() instead of Run() here, because we won't dispatch
   // callbacks after Cancel() is issued (so no chance to Quit) nor do we need
   // to run another write cycle.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Issued Cancel() before receiving any response from Write(),
   // so nothing should have happen.

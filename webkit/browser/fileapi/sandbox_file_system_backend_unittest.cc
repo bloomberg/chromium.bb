@@ -10,8 +10,8 @@
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "webkit/browser/fileapi/file_system_backend.h"
@@ -123,7 +123,7 @@ class SandboxFileSystemBackendTest : public testing::Test {
     backend_->OpenFileSystem(
         origin_url, type, mode,
         base::Bind(&DidOpenFileSystem, &error));
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     if (error != base::PLATFORM_FILE_OK)
       return false;
     base::FilePath returned_root_path =

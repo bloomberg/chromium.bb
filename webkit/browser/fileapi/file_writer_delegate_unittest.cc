@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "net/base/io_buffer.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
@@ -89,7 +89,7 @@ class FileWriterDelegateTest : public PlatformTest {
     // There might be in-flight flush/write.
     base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(&base::DoNothing));
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 
     FileSystemURL url = GetFileSystemURL(test_file_path);
     base::PlatformFileInfo file_info;
@@ -225,7 +225,7 @@ void FileWriterDelegateTest::SetUp() {
 void FileWriterDelegateTest::TearDown() {
   net::URLRequest::Deprecated::RegisterProtocolFactory("blob", NULL);
   file_system_context_ = NULL;
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(FileWriterDelegateTest, WriteSuccessWithoutQuotaLimit) {

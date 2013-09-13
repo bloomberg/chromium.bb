@@ -6,7 +6,7 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/fileapi/async_file_test_helper.h"
 #include "webkit/browser/fileapi/copy_or_move_file_validator.h"
@@ -46,7 +46,7 @@ class CopyOrMoveFileValidatorTestHelper {
 
   ~CopyOrMoveFileValidatorTestHelper() {
     file_system_context_ = NULL;
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void SetUp() {
@@ -68,7 +68,7 @@ class CopyOrMoveFileValidatorTestHelper {
         origin_, src_type_,
         OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
         base::Bind(&ExpectOk));
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     ASSERT_EQ(base::PLATFORM_FILE_OK, CreateDirectory(SourceURL("")));
 
     // Sets up dest.

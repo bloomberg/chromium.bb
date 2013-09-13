@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
-#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
@@ -142,7 +142,7 @@ class DatabaseQuotaClientTest : public testing::Test {
         origin, type,
         base::Bind(&DatabaseQuotaClientTest::OnGetOriginUsageComplete,
                    weak_factory_.GetWeakPtr()));
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     return usage_;
   }
 
@@ -154,7 +154,7 @@ class DatabaseQuotaClientTest : public testing::Test {
         type,
         base::Bind(&DatabaseQuotaClientTest::OnGetOriginsComplete,
                    weak_factory_.GetWeakPtr()));
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     return origins_;
   }
 
@@ -167,7 +167,7 @@ class DatabaseQuotaClientTest : public testing::Test {
         type, host,
         base::Bind(&DatabaseQuotaClientTest::OnGetOriginsComplete,
                    weak_factory_.GetWeakPtr()));
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     return origins_;
   }
 
@@ -180,7 +180,7 @@ class DatabaseQuotaClientTest : public testing::Test {
         origin, type,
         base::Bind(&DatabaseQuotaClientTest::OnDeleteOriginDataComplete,
                    weak_factory_.GetWeakPtr()));
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     return delete_status_ == quota::kQuotaStatusOk;
   }
 

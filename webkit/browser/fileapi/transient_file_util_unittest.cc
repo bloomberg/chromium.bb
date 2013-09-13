@@ -7,8 +7,8 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/platform_file.h"
+#include "base/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
@@ -34,7 +34,7 @@ class TransientFileUtilTest : public testing::Test {
 
   virtual void TearDown() OVERRIDE {
     file_system_context_ = NULL;
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void CreateAndRegisterTemporaryFile(
@@ -110,7 +110,7 @@ TEST_F(TransientFileUtilTest, TransientFile) {
   }
 
   // The file's now scoped out.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Now the temporary file and the transient filesystem must be gone too.
   ASSERT_FALSE(base::PathExists(temp_path));

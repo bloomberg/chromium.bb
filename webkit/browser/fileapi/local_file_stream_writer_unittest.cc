@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/threading/thread.h"
 #include "net/base/io_buffer.h"
 #include "net/base/test_completion_callback.h"
@@ -32,9 +33,9 @@ class LocalFileStreamWriterTest : public testing::Test {
 
   virtual void TearDown() OVERRIDE {
     // Give another chance for deleted streams to perform Close.
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     file_thread_.Stop();
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
  protected:
@@ -99,7 +100,7 @@ TEST_F(LocalFileStreamWriterTest, Write) {
   EXPECT_EQ(net::OK, WriteStringToWriter(writer.get(), "foo"));
   EXPECT_EQ(net::OK, WriteStringToWriter(writer.get(), "bar"));
   writer.reset();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(base::PathExists(path));
   EXPECT_EQ("foobar", GetFileContent(path));
 }
@@ -109,7 +110,7 @@ TEST_F(LocalFileStreamWriterTest, WriteMiddle) {
   scoped_ptr<LocalFileStreamWriter> writer(CreateWriter(path, 2));
   EXPECT_EQ(net::OK, WriteStringToWriter(writer.get(), "xxx"));
   writer.reset();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(base::PathExists(path));
   EXPECT_EQ("foxxxr", GetFileContent(path));
 }
@@ -119,7 +120,7 @@ TEST_F(LocalFileStreamWriterTest, WriteEnd) {
   scoped_ptr<LocalFileStreamWriter> writer(CreateWriter(path, 6));
   EXPECT_EQ(net::OK, WriteStringToWriter(writer.get(), "xxx"));
   writer.reset();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(base::PathExists(path));
   EXPECT_EQ("foobarxxx", GetFileContent(path));
 }
@@ -130,7 +131,7 @@ TEST_F(LocalFileStreamWriterTest, WriteFailForNonexistingFile) {
   scoped_ptr<LocalFileStreamWriter> writer(CreateWriter(path, 0));
   EXPECT_EQ(net::ERR_FILE_NOT_FOUND, WriteStringToWriter(writer.get(), "foo"));
   writer.reset();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(base::PathExists(path));
 }
 
@@ -152,7 +153,7 @@ TEST_F(LocalFileStreamWriterTest, CancelAfterFinishedOperation) {
   EXPECT_EQ(net::ERR_UNEXPECTED, cancel_result);
 
   writer.reset();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   // Write operation is already completed.
   EXPECT_TRUE(base::PathExists(path));
   EXPECT_EQ("foo", GetFileContent(path));

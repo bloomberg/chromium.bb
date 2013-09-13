@@ -9,8 +9,8 @@
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/platform_file.h"
+#include "base/run_loop.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
@@ -73,14 +73,14 @@ class FileSystemFileStreamReaderTest : public testing::Test {
         GURL(kURLOrigin), kFileSystemTypeTemporary,
         OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
         base::Bind(&OnOpenFileSystem));
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 
     WriteFile(kTestFileName, kTestData, kTestDataSize,
               &test_file_modification_time_);
   }
 
   virtual void TearDown() OVERRIDE {
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
  protected:

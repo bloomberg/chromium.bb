@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/quota/mock_special_storage_policy.h"
@@ -133,7 +133,7 @@ class UsageTrackerTest : public testing::Test {
   void UpdateUsage(const GURL& origin, int64 delta) {
     quota_client_.UpdateUsage(origin, delta);
     usage_tracker_.UpdateUsageCache(quota_client_.id(), origin, delta);
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void UpdateUsageWithoutNotification(const GURL& origin, int64 delta) {
@@ -144,7 +144,7 @@ class UsageTrackerTest : public testing::Test {
     bool done = false;
     usage_tracker_.GetGlobalLimitedUsage(base::Bind(
         &DidGetUsage, &done, limited_usage));
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 
     EXPECT_TRUE(done);
   }
@@ -154,7 +154,7 @@ class UsageTrackerTest : public testing::Test {
     usage_tracker_.GetGlobalUsage(base::Bind(
         &DidGetGlobalUsage,
         &done, usage, unlimited_usage));
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 
     EXPECT_TRUE(done);
   }
@@ -162,7 +162,7 @@ class UsageTrackerTest : public testing::Test {
   void GetHostUsage(const std::string& host, int64* usage) {
     bool done = false;
     usage_tracker_.GetHostUsage(host, base::Bind(&DidGetUsage, &done, usage));
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 
     EXPECT_TRUE(done);
   }

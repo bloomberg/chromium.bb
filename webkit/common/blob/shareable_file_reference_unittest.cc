@@ -6,8 +6,8 @@
 
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace webkit_blob {
@@ -44,13 +44,13 @@ TEST(ShareableFileReferenceTest, TestReferences) {
   // Drop the first reference, the file and reference should still be there.
   reference1 = NULL;
   EXPECT_TRUE(ShareableFileReference::Get(file).get());
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(base::PathExists(file));
 
   // Drop the second reference, the file and reference should get deleted.
   reference2 = NULL;
   EXPECT_FALSE(ShareableFileReference::Get(file).get());
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(base::PathExists(file));
 
   // TODO(michaeln): add a test for files that aren't deletable behavior.

@@ -6,8 +6,8 @@
 #include <set>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/run_loop.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/appcache/appcache_quota_client.h"
@@ -44,7 +44,7 @@ class AppCacheQuotaClientTest : public testing::Test {
       quota::StorageType type) {
     usage_ = -1;
     AsyncGetOriginUsage(client, origin, type);
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     return usage_;
   }
 
@@ -53,7 +53,7 @@ class AppCacheQuotaClientTest : public testing::Test {
       quota::StorageType type) {
     origins_.clear();
     AsyncGetOriginsForType(client, type);
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     return origins_;
   }
 
@@ -63,7 +63,7 @@ class AppCacheQuotaClientTest : public testing::Test {
       const std::string& host) {
     origins_.clear();
     AsyncGetOriginsForHost(client, type, host);
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     return origins_;
   }
 
@@ -73,7 +73,7 @@ class AppCacheQuotaClientTest : public testing::Test {
       const GURL& origin) {
     delete_status_ = quota::kQuotaStatusUnknown;
     AsyncDeleteOriginData(client, type, origin);
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     return delete_status_;
   }
 
@@ -315,7 +315,7 @@ TEST_F(AppCacheQuotaClientTest, PendingRequests) {
   EXPECT_EQ(0, num_get_origin_usage_completions_);
   EXPECT_EQ(0, num_get_origins_completions_);
   EXPECT_EQ(0, num_delete_origins_completions_);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, num_get_origin_usage_completions_);
   EXPECT_EQ(0, num_get_origins_completions_);
   EXPECT_EQ(0, num_delete_origins_completions_);
@@ -325,7 +325,7 @@ TEST_F(AppCacheQuotaClientTest, PendingRequests) {
   EXPECT_EQ(2, num_get_origin_usage_completions_);
   EXPECT_EQ(4, num_get_origins_completions_);
   EXPECT_EQ(0, num_delete_origins_completions_);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(3, num_delete_origins_completions_);  // deletes are really async
 
   // They should be serviced in order requested.
@@ -354,7 +354,7 @@ TEST_F(AppCacheQuotaClientTest, DestroyServiceWithPending) {
   AsyncDeleteOriginData(client, kTemp, kOriginA);
   AsyncDeleteOriginData(client, kPerm, kOriginA);
   AsyncDeleteOriginData(client, kTemp, kOriginB);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, num_get_origin_usage_completions_);
   EXPECT_EQ(0, num_get_origins_completions_);
   EXPECT_EQ(0, num_delete_origins_completions_);
@@ -390,7 +390,7 @@ TEST_F(AppCacheQuotaClientTest, DestroyQuotaManagerWithPending) {
   AsyncDeleteOriginData(client, kTemp, kOriginA);
   AsyncDeleteOriginData(client, kPerm, kOriginA);
   AsyncDeleteOriginData(client, kTemp, kOriginB);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, num_get_origin_usage_completions_);
   EXPECT_EQ(0, num_get_origins_completions_);
   EXPECT_EQ(0, num_delete_origins_completions_);
@@ -400,7 +400,7 @@ TEST_F(AppCacheQuotaClientTest, DestroyQuotaManagerWithPending) {
   Call_NotifyAppCacheReady(client);
 
   // Callbacks should be deleted and not called.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, num_get_origin_usage_completions_);
   EXPECT_EQ(0, num_get_origins_completions_);
   EXPECT_EQ(0, num_delete_origins_completions_);
@@ -425,7 +425,7 @@ TEST_F(AppCacheQuotaClientTest, DestroyWithDeleteInProgress) {
 
   // A real completion callback from the service should
   // be dropped if it comes in after NotifyAppCacheDestroyed.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, num_delete_origins_completions_);
   EXPECT_EQ(quota::kQuotaErrorAbort, delete_status_);
 

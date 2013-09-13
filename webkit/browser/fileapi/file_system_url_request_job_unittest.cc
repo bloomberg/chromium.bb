@@ -16,6 +16,7 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/platform_file.h"
 #include "base/rand_util.h"
+#include "base/run_loop.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -67,7 +68,7 @@ class FileSystemURLRequestJobTest : public testing::Test {
         OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
         base::Bind(&FileSystemURLRequestJobTest::OnOpenFileSystem,
                    weak_factory_.GetWeakPtr()));
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 
     net::URLRequest::Deprecated::RegisterProtocolFactory(
         "filesystem", &FileSystemURLRequestJobFactory);
@@ -81,7 +82,7 @@ class FileSystemURLRequestJobTest : public testing::Test {
       pending_job_ = NULL;
     }
     // FileReader posts a task to close the file in destructor.
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void OnOpenFileSystem(base::PlatformFileError result,
@@ -317,7 +318,7 @@ TEST_F(FileSystemURLRequestJobTest, Cancel) {
 
   // Run StartAsync() and only StartAsync().
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, request_.release());
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   // If we get here, success! we didn't crash!
 }
 
