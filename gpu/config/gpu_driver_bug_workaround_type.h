@@ -68,6 +68,8 @@
          use_non_zero_size_for_client_side_stream_buffers)   \
   GPU_OP(USE_VIRTUALIZED_GL_CONTEXTS,                        \
          use_virtualized_gl_contexts)                        \
+  GPU_OP(VALIDATE_MULTISAMPLE_BUFFER_ALLOCATION,             \
+         validate_multisample_buffer_allocation)             \
 
 namespace gpu {
 

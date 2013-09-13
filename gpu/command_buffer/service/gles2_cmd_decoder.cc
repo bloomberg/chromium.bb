@@ -1291,6 +1291,12 @@ class GLES2DecoderImpl : public GLES2Decoder {
       GLenum target, GLsizei samples, GLenum internalformat,
       GLsizei width, GLsizei height);
 
+  // Verifies that the currently bound multisample renderbuffer is valid
+  // Very slow! Only done on platforms with driver bugs that return invalid
+  // buffers under memory pressure
+  bool VerifyMultisampleRenderbufferIntegrity(
+      GLuint renderbuffer, GLenum format);
+
   // Wrapper for glReleaseShaderCompiler.
   void DoReleaseShaderCompiler() { }
 
@@ -1668,6 +1674,11 @@ class GLES2DecoderImpl : public GLES2Decoder {
   scoped_ptr<GPUStateTracer> gpu_state_tracer_;
 
   std::queue<linked_ptr<FenceCallback> > pending_readpixel_fences_;
+
+  // Used to validate multisample renderbuffers if needed
+  GLuint validation_texture_;
+  GLuint validation_fbo_multisample_;
+  GLuint validation_fbo_;
 
   DISALLOW_COPY_AND_ASSIGN(GLES2DecoderImpl);
 };
@@ -2088,7 +2099,10 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       service_logging_(CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableGPUServiceLoggingGPU)),
       viewport_max_width_(0),
-      viewport_max_height_(0) {
+      viewport_max_height_(0),
+      validation_texture_(0),
+      validation_fbo_multisample_(0),
+      validation_fbo_(0) {
   DCHECK(group);
 
   attrib_0_value_.v[0] = 0.0f;
@@ -3094,6 +3108,12 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
     }
     if (fixed_attrib_buffer_id_) {
       glDeleteBuffersARB(1, &fixed_attrib_buffer_id_);
+    }
+
+    if (validation_texture_) {
+      glDeleteTextures(1, &validation_texture_);
+      glDeleteFramebuffersEXT(1, &validation_fbo_multisample_);
+      glDeleteFramebuffersEXT(1, &validation_fbo_);
     }
 
     if (offscreen_target_frame_buffer_.get())
@@ -5032,12 +5052,123 @@ void GLES2DecoderImpl::DoRenderbufferStorageMultisample(
   }
   GLenum error = LOCAL_PEEK_GL_ERROR("glRenderbufferStorageMultisample");
   if (error == GL_NO_ERROR) {
+
+    if (workarounds().validate_multisample_buffer_allocation) {
+      if (!VerifyMultisampleRenderbufferIntegrity(
+          renderbuffer->service_id(), impl_format)) {
+        LOCAL_SET_GL_ERROR(
+            GL_OUT_OF_MEMORY,
+            "glRenderbufferStorageMultisample", "out of memory");
+        return;
+      }
+    }
+
     // TODO(gman): If renderbuffers tracked which framebuffers they were
     // attached to we could just mark those framebuffers as not complete.
     framebuffer_manager()->IncFramebufferStateChangeCount();
     renderbuffer_manager()->SetInfo(
         renderbuffer, samples, internalformat, width, height);
   }
+}
+
+// This function validates the allocation of a multisampled renderbuffer
+// by clearing it to a key color, blitting the contents to a texture, and
+// reading back the color to ensure it matches the key.
+bool GLES2DecoderImpl::VerifyMultisampleRenderbufferIntegrity(
+    GLuint renderbuffer, GLenum format) {
+
+  // Only validate color buffers.
+  // These formats have been selected because they are very common or are known
+  // to be used by the WebGL backbuffer. If problems are observed with other
+  // color formats they can be added here.
+  switch(format) {
+    case GL_RGB:
+    case GL_RGB8:
+    case GL_RGBA:
+    case GL_RGBA8:
+      break;
+    default:
+      return true;
+  }
+
+  GLint draw_framebuffer, read_framebuffer;
+
+  // Cache framebuffer and texture bindings.
+  glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &draw_framebuffer);
+  glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &read_framebuffer);
+
+  if (!validation_texture_) {
+    GLint bound_texture;
+    glGetIntegerv(GL_TEXTURE_BINDING_2D, &bound_texture);
+
+    // Create additional resources needed for the verification.
+    glGenTextures(1, &validation_texture_);
+    glGenFramebuffersEXT(1, &validation_fbo_multisample_);
+    glGenFramebuffersEXT(1, &validation_fbo_);
+
+    // Texture only needs to be 1x1.
+    glBindTexture(GL_TEXTURE_2D, validation_texture_);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 1, 1, 0, GL_RGB,
+        GL_UNSIGNED_BYTE, NULL);
+
+    glBindFramebufferEXT(GL_FRAMEBUFFER, validation_fbo_);
+    glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+        GL_TEXTURE_2D, validation_texture_, 0);
+
+    glBindTexture(GL_TEXTURE_2D, bound_texture);
+  }
+
+  glBindFramebufferEXT(GL_FRAMEBUFFER, validation_fbo_multisample_);
+  glFramebufferRenderbufferEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+      GL_RENDERBUFFER, renderbuffer);
+
+  // Cache current state and reset it to the values we require.
+  GLboolean scissor_enabled = false;
+  glGetBooleanv(GL_SCISSOR_TEST, &scissor_enabled);
+  if (scissor_enabled)
+    glDisable(GL_SCISSOR_TEST);
+
+  GLboolean color_mask[4] = {true, true, true, true};
+  glGetBooleanv(GL_COLOR_WRITEMASK, color_mask);
+  glColorMask(true, true, true, true);
+
+  GLfloat clear_color[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+  glGetFloatv(GL_COLOR_CLEAR_VALUE, clear_color);
+  glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
+
+  // Clear the buffer to the desired key color.
+  glClear(GL_COLOR_BUFFER_BIT);
+
+  // Blit from the multisample buffer to a standard texture.
+  glBindFramebufferEXT(GL_READ_FRAMEBUFFER, validation_fbo_multisample_);
+  glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER, validation_fbo_);
+
+  glBlitFramebufferEXT(0, 0, 1, 1, 0, 0, 1, 1, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+  // Read a pixel from the buffer.
+  glBindFramebufferEXT(GL_FRAMEBUFFER, validation_fbo_);
+
+  unsigned char pixel[3] = {0, 0, 0};
+  glReadPixels(0, 0, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, &pixel);
+
+  // Detach the renderbuffer.
+  glBindFramebufferEXT(GL_FRAMEBUFFER, validation_fbo_multisample_);
+  glFramebufferRenderbufferEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+      GL_RENDERBUFFER, 0);
+
+  // Restore cached state.
+  if (scissor_enabled)
+    glEnable(GL_SCISSOR_TEST);
+
+  glColorMask(color_mask[0], color_mask[1], color_mask[2], color_mask[3]);
+  glClearColor(clear_color[0], clear_color[1], clear_color[2], clear_color[3]);
+  glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER, draw_framebuffer);
+  glBindFramebufferEXT(GL_READ_FRAMEBUFFER, read_framebuffer);
+
+  // Return true if the pixel matched the desired key color.
+  return (pixel[0] == 0xFF &&
+      pixel[1] == 0x00 &&
+      pixel[2] == 0xFF);
 }
 
 void GLES2DecoderImpl::DoRenderbufferStorage(
