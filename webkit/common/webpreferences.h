@@ -168,6 +168,7 @@ struct WEBKIT_COMMON_EXPORT WebPreferences {
   bool force_enable_zoom;
   bool double_tap_to_zoom_enabled;
   bool user_gesture_required_for_media_playback;
+  bool user_gesture_required_for_media_fullscreen;
   GURL default_video_poster_url;
   bool support_deprecated_target_density_dpi;
   bool use_legacy_background_size_shorthand_behavior;

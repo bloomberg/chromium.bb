@@ -907,6 +907,10 @@ const char kEnableWebRtcTcpServerSocket[]   = "enable-webrtc-tcp-server-socket";
 // Disables device motion events.
 const char kDisableDeviceMotion[]           = "disable-device-motion";
 
+// Disable user gesture requirement for the media element to enter fullscreen.
+const char kDisableGestureRequirementForMediaFullscreen[] =
+    "disable-gesture-requirement-for-media-fullscreen";
+
 // Disable user gesture requirement for media playback.
 const char kDisableGestureRequirementForMediaPlayback[] =
     "disable-gesture-requirement-for-media-playback";

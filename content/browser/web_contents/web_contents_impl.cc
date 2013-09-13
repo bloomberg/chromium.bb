@@ -568,6 +568,8 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
   prefs.use_solid_color_scrollbars = true;
   prefs.user_gesture_required_for_media_playback = !command_line.HasSwitch(
       switches::kDisableGestureRequirementForMediaPlayback);
+  prefs.user_gesture_required_for_media_fullscreen = !command_line.HasSwitch(
+      switches::kDisableGestureRequirementForMediaFullscreen);
 #endif
 
   prefs.touch_enabled = ui::AreTouchEventsEnabled();

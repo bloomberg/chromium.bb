@@ -260,6 +260,7 @@ extern const char kEnableWebRtcTcpServerSocket[];
 
 #if defined(OS_ANDROID)
 CONTENT_EXPORT extern const char kDisableDeviceMotion[];
+CONTENT_EXPORT extern const char kDisableGestureRequirementForMediaFullscreen[];
 CONTENT_EXPORT extern const char kDisableGestureRequirementForMediaPlayback[];
 extern const char kDisableMediaHistoryLogging[];
 CONTENT_EXPORT extern const char kDisableOverscrollEdgeEffect[];
