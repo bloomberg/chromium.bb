@@ -52,7 +52,9 @@ weston_SOURCES =				\
 
 if ENABLE_EGL
 weston_SOURCES +=				\
-	gl-renderer.c
+	gl-renderer.c				\
+	vertex-clipping.c			\
+	vertex-clipping.h
 endif
 
 git-version.h : .FORCE
