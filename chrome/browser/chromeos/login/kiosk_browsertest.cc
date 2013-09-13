@@ -25,6 +25,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -337,6 +338,9 @@ class KioskTest : public InProcessBrowserTest,
   void WaitForAppLaunchSuccess() {
     SimulateNetworkOnline();
 
+    ExtensionTestMessageListener
+        launch_data_check_listener("launchData.isKioskSession = true", false);
+
     // Wait for the Kiosk App to launch.
     content::WindowedNotificationObserver(
         chrome::NOTIFICATION_KIOSK_APP_LAUNCHED,
@@ -355,6 +359,10 @@ class KioskTest : public InProcessBrowserTest,
 
     // Wait until the app terminates.
     content::RunMessageLoop();
+
+    // Check that the app had been informed that it is running in a kiosk
+    // session.
+    EXPECT_TRUE(launch_data_check_listener.was_satisfied());
   }
 
   void SimulateNetworkOffline() {

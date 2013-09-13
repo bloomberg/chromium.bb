@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-chrome.app.runtime.onLaunched.addListener(function() {
+chrome.app.runtime.onLaunched.addListener(function(launchData) {
+  if (launchData.isKioskSession)
+    chrome.test.sendMessage('launchData.isKioskSession = true');
   if (chrome.power)
     chrome.power.requestKeepAwake('display');
   else
@@ -15,4 +17,3 @@ chrome.app.runtime.onLaunched.addListener(function() {
         window.close();
   });
 });
-
