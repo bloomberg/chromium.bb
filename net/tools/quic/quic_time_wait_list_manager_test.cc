@@ -87,14 +87,17 @@ class QuicTimeWaitListManagerTest : public testing::Test {
       QuicPacketSequenceNumber sequence_number) {
     QuicPacketHeader header;
     header.public_header.guid = guid;
+    header.public_header.guid_length = PACKET_8BYTE_GUID;
     header.public_header.version_flag = false;
     header.public_header.reset_flag = false;
+    header.public_header.sequence_number_length = PACKET_6BYTE_SEQUENCE_NUMBER;
     header.packet_sequence_number = sequence_number;
     header.entropy_flag = false;
     header.entropy_hash = 0;
     header.fec_flag = false;
+    header.is_in_fec_group = NOT_IN_FEC_GROUP;
     header.fec_group = 0;
-    QuicStreamFrame stream_frame;
+    QuicStreamFrame stream_frame(1, false, 0, "data");
     QuicFrame frame(&stream_frame);
     QuicFrames frames;
     frames.push_back(frame);
