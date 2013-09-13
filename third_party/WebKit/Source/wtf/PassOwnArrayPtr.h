@@ -49,7 +49,6 @@ public:
     // a const PassOwnArrayPtr. However, it makes it much easier to work with PassOwnArrayPtr
     // temporaries, and we don't have a need to use real const PassOwnArrayPtrs anyway.
     PassOwnArrayPtr(const PassOwnArrayPtr& o) : m_ptr(o.leakPtr()) { }
-    template<typename U> PassOwnArrayPtr(const PassOwnArrayPtr<U>& o, EnsurePtrConvertibleArgDecl(U, T)) : m_ptr(o.leakPtr()) { }
 
     ~PassOwnArrayPtr() { deleteOwnedArrayPtr(m_ptr); }
 

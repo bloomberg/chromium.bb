@@ -39,7 +39,7 @@ public:
     OwnArrayPtr() : m_ptr(0) { }
 
     // See comment in PassOwnArrayPtr.h for why this takes a const reference.
-    template<typename U> OwnArrayPtr(const PassOwnArrayPtr<U>&, EnsurePtrConvertibleArgDecl(U, T));
+    OwnArrayPtr(const PassOwnArrayPtr<T>&);
 
     // This copy constructor is used implicitly by gcc when it generates
     // transients for assigning a PassOwnArrayPtr<T> object to a stack-allocated
@@ -68,7 +68,6 @@ public:
 
     OwnArrayPtr& operator=(const PassOwnArrayPtr<T>&);
     OwnArrayPtr& operator=(std::nullptr_t) { clear(); return *this; }
-    template<typename U> OwnArrayPtr& operator=(const PassOwnArrayPtr<U>&);
 
     void swap(OwnArrayPtr& o) { std::swap(m_ptr, o.m_ptr); }
 
@@ -76,7 +75,7 @@ private:
     PtrType m_ptr;
 };
 
-template<typename T> template<typename U> inline OwnArrayPtr<T>::OwnArrayPtr(const PassOwnArrayPtr<U>& o, EnsurePtrConvertibleArgDefn(U, T))
+template<typename T> inline OwnArrayPtr<T>::OwnArrayPtr(const PassOwnArrayPtr<T>& o)
     : m_ptr(o.leakPtr())
 {
 }
@@ -103,15 +102,6 @@ template<typename T> inline typename OwnArrayPtr<T>::PtrType OwnArrayPtr<T>::lea
 }
 
 template<typename T> inline OwnArrayPtr<T>& OwnArrayPtr<T>::operator=(const PassOwnArrayPtr<T>& o)
-{
-    PtrType ptr = m_ptr;
-    m_ptr = o.leakPtr();
-    ASSERT(!ptr || m_ptr != ptr);
-    deleteOwnedArrayPtr(ptr);
-    return *this;
-}
-
-template<typename T> template<typename U> inline OwnArrayPtr<T>& OwnArrayPtr<T>::operator=(const PassOwnArrayPtr<U>& o)
 {
     PtrType ptr = m_ptr;
     m_ptr = o.leakPtr();
