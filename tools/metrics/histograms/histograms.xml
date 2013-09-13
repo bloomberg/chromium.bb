@@ -16818,6 +16818,48 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Tabs.SpeculativeRestoreApplicability"
+    enum="SpeculativeRestoreApplicability">
+  <summary>
+    Applicability of speculative tab restore, recorded every time a tab is
+    switched. This allows to estimate the fraction of tab restores experienced
+    on mobile that can be mitigated using speculative restore. Options higher in
+    the enum take precedence over the lower ones (i.e. low-memory tablet will be
+    accounted as tablet).
+  </summary>
+</histogram>
+
+<histogram name="Tabs.SpeculativeRestorePredictionAccuracy.SideSwipe"
+    enum="SpeculativeRestorePredictionAccuracy">
+  <summary>
+    Accuracy of the tab switch predictions made when the user begins the side
+    swipe gesture.
+  </summary>
+</histogram>
+
+<histogram name="Tabs.SpeculativeRestorePredictionAccuracy.TabSwitcher"
+    enum="SpeculativeRestorePredictionAccuracy">
+  <summary>
+    Accuracy of the tab switch predictions made when the user enters the tab
+    switcher.
+  </summary>
+</histogram>
+
+<histogram name="Tabs.SpeculativeRestoreTimeAhead.SideSwipe" units="ms">
+  <summary>
+    Time between starting the speculative load and actual tab switch for correct
+    speculative load predictions made when the user begins the side swipe
+    gesture.
+  </summary>
+</histogram>
+
+<histogram name="Tabs.SpeculativeRestoreTimeAhead.TabSwitcher" units="ms">
+  <summary>
+    Time between starting the speculative load and actual tab switch for correct
+    speculative load predictions made when the user enters the tab switcher.
+  </summary>
+</histogram>
+
 <histogram name="TopSites.NumberOfApplyBlacklist">
   <summary>The number of times TopSitesImpl::ApplyBlacklist is called.</summary>
 </histogram>
@@ -24807,6 +24849,19 @@ other types of suffix sets.
   <int value="1026" label="Invalid path / unknown"/>
   <int value="65536" label="Unspecified destination error"/>
   <int value="65652" label="Destination root"/>
+</enum>
+
+<enum name="SpeculativeRestoreApplicability" type="int">
+  <int value="0" label="Applicable"/>
+  <int value="1" label="Not applicable (tablet)"/>
+  <int value="2" label="Not applicable (low-memory device)"/>
+  <int value="3" label="Not applicable (bandwidth management)"/>
+</enum>
+
+<enum name="SpeculativeRestorePredictionAccuracy" type="int">
+  <int value="0" label="Hit"/>
+  <int value="1" label="Miss (different tab)"/>
+  <int value="2" label="Miss (tab not switched)"/>
 </enum>
 
 <enum name="SqliteErrorCode" type="int">
