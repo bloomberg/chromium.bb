@@ -7525,7 +7525,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         Selected file is too big (max size: 3mb).
       </message>
       <message name="IDS_FEEDBACK_PRIVACY_NOTE" desc="Text for the privacy note included with Chrome OS">
-        Your Chrome and Operating system version will be submitted in addition
+        Your Chrome and operating system version will be submitted in addition
         to any information you choose to include above. This feedback is used to
         diagnose problems and help improve Chrome. Any personal information you
         submit, whether explicitly or incidentally will be protected in
