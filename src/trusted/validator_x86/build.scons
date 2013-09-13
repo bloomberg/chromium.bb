@@ -26,13 +26,6 @@ STANDARD_TESTS = ['small_tests', 'validator_tests']
 # TODO(bradchen): eliminate need for the following line
 env.FilterOut(CCFLAGS=['-Wextra', '-Wswitch-enum', '-Wsign-compare'])
 
-#
-#
-# force_cpp_o
-#
-# This object file is used to mark a library/executable as containing C++.
-force_cpp_o = env.ComponentObject('force_cpp.cc')
-
 # Defines the source directory where validator generated files should be added.
 val_src_dir = '$MAIN_DIR/src/trusted/validator_x86'
 
@@ -120,7 +113,6 @@ if test_env.Bit('target_x86_32'):
 ncdis = test_env.ComponentProgram(
   'ncdis', [
     'ncdis.c',
-    force_cpp_o,
   ],
   EXTRA_LIBS=[test_env.NaClTargetArchSuffix('ncdis_util'),
               test_env.NaClTargetArchSuffix('ncfileutils'),
@@ -207,7 +199,6 @@ for validator_decoder in [False, True]:
 ncval = test_env.ComponentProgram(
   'ncval', [
     'ncval.c',
-    force_cpp_o,
   ],
   EXTRA_LIBS=[test_env.NaClTargetArchSuffix('ncdis_util'),
               test_env.NaClTargetArchSuffix('ncval_seg_sfi'),

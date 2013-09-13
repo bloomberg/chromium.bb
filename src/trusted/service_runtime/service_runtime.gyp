@@ -315,6 +315,7 @@
       ],
       'sources': [
         'nacl_test_injection_main.c',
+        'force_cpp.cc',
       ],
       'conditions': [
         ['OS=="linux"', {

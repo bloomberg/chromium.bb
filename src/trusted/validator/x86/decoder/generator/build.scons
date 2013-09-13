@@ -27,13 +27,6 @@ MODELING_TESTS = STANDARD_TESTS + ['validator_modeling']
 # TODO(bradchen): eliminate need for the following line
 env.FilterOut(CCFLAGS=['-Wextra', '-Wswitch-enum', '-Wsign-compare'])
 
-#
-#
-# force_cpp_o
-#
-# This object file is used to mark a library/executable as containing C++.
-force_cpp_o = env.ComponentObject('force_cpp.cc')
-
 # Defines this source directory.
 src_dir = '$MAIN_DIR/src/trusted/validator/x86/decoder/generator'
 
@@ -166,7 +159,6 @@ ncdecode_tablegen = gen_env.ComponentProgram(
      'ncdecodeX87.c',
      'nacl_regsgen.c',
      'modeled_nacl_inst.c',
-     force_cpp_o,
     ],
     EXTRA_LIBS=[gen_env.NaClTargetArchSuffix('nc_opcode_modeling_verbose'),
                 'utils'])
