@@ -32,6 +32,8 @@
 #ifndef NotificationCenter_h
 #define NotificationCenter_h
 
+#if ENABLE(LEGACY_NOTIFICATIONS)
+
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ExceptionCode.h"
@@ -97,5 +99,7 @@ private:
 };
 
 } // namespace WebCore
+
+#endif // ENABLE(LEGACY_NOTIFICATIONS)
 
 #endif // NotificationCenter_h

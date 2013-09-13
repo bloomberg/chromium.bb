@@ -31,6 +31,8 @@
 
 #include "config.h"
 
+#if ENABLE(LEGACY_NOTIFICATIONS)
+
 #include "modules/notifications/NotificationCenter.h"
 
 #include "core/dom/Document.h"
@@ -134,3 +136,5 @@ void NotificationCenter::NotificationRequestCallback::timerFired(Timer<Notificat
 }
 
 } // namespace WebCore
+
+#endif // ENABLE(LEGACY_NOTIFICATIONS)
