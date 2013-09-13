@@ -21,6 +21,7 @@
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/win/extra_sdk_defines.h"
 #include "ui/gfx/insets.h"
+#include "ui/gfx/point.h"
 #include "ui/views/controls/textfield/native_textfield_wrapper.h"
 
 namespace views {
@@ -103,6 +104,7 @@ class NativeTextfieldWin
   virtual int GetWidthNeededForText() const OVERRIDE;
   virtual void ExecuteTextCommand(int command_id) OVERRIDE;
   virtual bool HasTextBeingDragged() OVERRIDE;
+  virtual gfx::Point GetContextMenuLocation() OVERRIDE;
 
   // ui::SimpleMenuModel::Delegate:
   virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;

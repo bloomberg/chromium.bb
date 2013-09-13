@@ -441,6 +441,11 @@ bool NativeTextfieldWin::HasTextBeingDragged() {
   return false;
 }
 
+gfx::Point NativeTextfieldWin::GetContextMenuLocation() {
+  NOTIMPLEMENTED();
+  return gfx::Point();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NativeTextfieldWin, ui::SimpleMenuModel::Delegate implementation:
 

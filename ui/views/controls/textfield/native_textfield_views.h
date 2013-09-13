@@ -154,6 +154,7 @@ class VIEWS_EXPORT NativeTextfieldViews : public View,
   virtual int GetWidthNeededForText() const OVERRIDE;
   virtual void ExecuteTextCommand(int command_id) OVERRIDE;
   virtual bool HasTextBeingDragged() OVERRIDE;
+  virtual gfx::Point GetContextMenuLocation() OVERRIDE;
 
   // ui::SimpleMenuModel::Delegate overrides
   virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;

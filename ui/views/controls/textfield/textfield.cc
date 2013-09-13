@@ -516,6 +516,11 @@ ui::TextInputClient* Textfield::GetTextInputClient() {
   return native_wrapper_ ? native_wrapper_->GetTextInputClient() : NULL;
 }
 
+gfx::Point Textfield::GetKeyboardContextMenuLocation() {
+  return native_wrapper_ ? native_wrapper_->GetContextMenuLocation() :
+                           View::GetKeyboardContextMenuLocation();
+}
+
 void Textfield::OnEnabledChanged() {
   View::OnEnabledChanged();
   if (native_wrapper_)

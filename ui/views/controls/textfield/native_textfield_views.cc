@@ -734,6 +734,10 @@ bool NativeTextfieldViews::HasTextBeingDragged() {
   return initiating_drag_;
 }
 
+gfx::Point NativeTextfieldViews::GetContextMenuLocation() {
+  return GetCaretBounds().bottom_right();
+}
+
 /////////////////////////////////////////////////////////////////
 // NativeTextfieldViews, ui::SimpleMenuModel::Delegate overrides:
 

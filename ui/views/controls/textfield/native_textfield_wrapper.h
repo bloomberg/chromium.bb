@@ -15,6 +15,7 @@
 
 namespace gfx {
 class Insets;
+class Point;
 }  // namespace gfx
 
 namespace ui {
@@ -177,6 +178,9 @@ class VIEWS_EXPORT NativeTextfieldWrapper {
 
   // Returns whether there is a drag operation originating from the textfield.
   virtual bool HasTextBeingDragged() = 0;
+
+  // Returns the location for keyboard-triggered context menus.
+  virtual gfx::Point GetContextMenuLocation() = 0;
 
   // Creates an appropriate NativeTextfieldWrapper for the platform.
   static NativeTextfieldWrapper* CreateWrapper(Textfield* field);

@@ -273,6 +273,7 @@ class VIEWS_EXPORT Textfield : public View {
   virtual void OnBlur() OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
   virtual ui::TextInputClient* GetTextInputClient() OVERRIDE;
+  virtual gfx::Point GetKeyboardContextMenuLocation() OVERRIDE;
 
  protected:
   virtual void ViewHierarchyChanged(
