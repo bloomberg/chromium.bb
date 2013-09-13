@@ -2475,7 +2475,8 @@ cr.define('ntp', function() {
             [ContextMenuItemIds.BOOKMARK_DELETE, templateData.bookmarkdelete]);
       }
       if (contextMenuUrl.search('chrome://') == -1 &&
-          contextMenuUrl.search('about://') == -1) {
+          contextMenuUrl.search('about://') == -1 &&
+          document.body.getAttribute('shortcut_item_enabled') == 'true') {
         menuOptions.push([
           ContextMenuItemIds.BOOKMARK_SHORTCUT,
           templateData.bookmarkshortcut

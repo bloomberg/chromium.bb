@@ -13,6 +13,7 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
@@ -23,6 +24,7 @@
 #include "ui/webui/jstemplate_builder.h"
 #include "ui/webui/web_ui_util.h"
 
+using chrome::VersionInfo;
 using content::BrowserThread;
 
 namespace {
@@ -132,6 +134,22 @@ void NTPResourceCache::CreateNewTabHTML() {
       "device",
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kTabletUI) ?
           "tablet" : "phone");
+
+  bool bookmark_shortcuts_allowed = false;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableAddToHomescreen)) {
+    bookmark_shortcuts_allowed = true;
+  } else if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableAddToHomescreen)) {
+    bookmark_shortcuts_allowed = false;
+  } else if (VersionInfo::GetChannel() == VersionInfo::CHANNEL_BETA ||
+      VersionInfo::GetChannel() == VersionInfo::CHANNEL_STABLE) {
+    bookmark_shortcuts_allowed = true;
+  }
+  localized_strings.SetString(
+      "shortcut_item_enabled",
+      bookmark_shortcuts_allowed ? "true" : "false");
+
   const char* new_tab_link = kLearnMoreIncognitoUrl;
   string16 learnMoreLink = ASCIIToUTF16(
       google_util::AppendGoogleLocaleParam(GURL(new_tab_link)).spec());
