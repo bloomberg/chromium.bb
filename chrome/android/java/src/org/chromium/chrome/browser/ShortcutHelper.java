@@ -37,19 +37,21 @@ public class ShortcutHelper {
     /**
      * Adds a shortcut for the current Tab.
      * @param tab Tab to create a shortcut for.
+     * @param userRequestedTitle Updated title for the shortcut.
      */
-    public static void addShortcut(TabBase tab) {
+    public static void addShortcut(TabBase tab, String userRequestedTitle) {
         if (sWebappActivityPackageName == null || sWebappActivityClassName == null) {
             Log.e("ShortcutHelper", "ShortcutHelper is uninitialized.  Aborting.");
             return;
         }
-        nativeAddShortcut(tab.getNativePtr());
+        nativeAddShortcut(tab.getNativePtr(), userRequestedTitle);
     }
 
     /**
      * Called when we have to fire an Intent to add a shortcut to the homescreen.
      * If the webpage indicated that it was capable of functioning as a webapp, it is added as a
-     * shortcut to a webapp Activity rather than as a general bookmark.
+     * shortcut to a webapp Activity rather than as a general bookmark. User is sent to the
+     * homescreen as soon as the shortcut is created.
      */
     @SuppressWarnings("unused")
     @CalledByNative
@@ -74,7 +76,12 @@ public class ShortcutHelper {
                             green, blue);
         }
         context.sendBroadcast(addIntent);
+        // User is sent to the homescreen as soon as the shortcut is created.
+        Intent homeIntent = new Intent(Intent.ACTION_MAIN);
+        homeIntent.addCategory(Intent.CATEGORY_HOME);
+        homeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(homeIntent);
     }
 
-    private static native void nativeAddShortcut(int tabAndroidPtr);
+    private static native void nativeAddShortcut(int tabAndroidPtr, String userRequestedTitle);
 }

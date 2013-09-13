@@ -28,6 +28,7 @@ public class ShortcutHelperTest extends ChromiumTestShellTestBase {
             + "<meta name=\"mobile-web-app-capable\" content=\"yes\" />"
             + "<title>" + WEBAPP_TITLE + "</title>"
             + "</head><body>Webapp capable</body></html>");
+    private static final String EDITED_WEBAPP_TITLE = "Webapp shortcut edited";
 
     private static final String SECOND_WEBAPP_TITLE = "Webapp shortcut #2";
     private static final String SECOND_WEBAPP_HTML = UrlUtils.encodeHtmlDataUri(
@@ -82,7 +83,7 @@ public class ShortcutHelperTest extends ChromiumTestShellTestBase {
     @Feature("{Webapp}")
     public void testAddWebappShortcuts() throws InterruptedException {
         // Add a webapp shortcut and make sure the intent's parameters make sense.
-        addShortcutToURL(WEBAPP_HTML);
+        addShortcutToURL(WEBAPP_HTML, "");
         Intent firedIntent = mTestObserver.firedIntent;
         assertEquals(WEBAPP_TITLE, firedIntent.getStringExtra(Intent.EXTRA_SHORTCUT_NAME));
 
@@ -93,7 +94,7 @@ public class ShortcutHelperTest extends ChromiumTestShellTestBase {
 
         // Add a second shortcut and make sure it matches the second webapp's parameters.
         mTestObserver.reset();
-        addShortcutToURL(SECOND_WEBAPP_HTML);
+        addShortcutToURL(SECOND_WEBAPP_HTML, "");
         Intent newFiredIntent = mTestObserver.firedIntent;
         assertEquals(SECOND_WEBAPP_TITLE,
                 newFiredIntent.getStringExtra(Intent.EXTRA_SHORTCUT_NAME));
@@ -107,7 +108,7 @@ public class ShortcutHelperTest extends ChromiumTestShellTestBase {
     @MediumTest
     @Feature("{Webapp}")
     public void testAddBookmarkShortcut() throws InterruptedException {
-        addShortcutToURL(NORMAL_HTML);
+        addShortcutToURL(NORMAL_HTML, "");
 
         // Make sure the intent's parameters make sense.
         Intent firedIntent = mTestObserver.firedIntent;
@@ -119,7 +120,25 @@ public class ShortcutHelperTest extends ChromiumTestShellTestBase {
         assertNull(launchIntent.getComponent());
     }
 
-    private void addShortcutToURL(String url) throws InterruptedException {
+    @MediumTest
+    @Feature("{Webapp}")
+    public void testAddWebappShortcutsWithoutTitleEdit() throws InterruptedException {
+        // Add a webapp shortcut to check unedited title.
+        addShortcutToURL(WEBAPP_HTML, "");
+        Intent firedIntent = mTestObserver.firedIntent;
+        assertEquals(WEBAPP_TITLE, firedIntent.getStringExtra(Intent.EXTRA_SHORTCUT_NAME));
+    }
+
+    @MediumTest
+    @Feature("{Webapp}")
+    public void testAddWebappShortcutsWithTitleEdit() throws InterruptedException {
+        // Add a webapp shortcut to check edited title.
+        addShortcutToURL(WEBAPP_HTML, EDITED_WEBAPP_TITLE);
+        Intent firedIntent = mTestObserver.firedIntent;
+        assertEquals(EDITED_WEBAPP_TITLE , firedIntent.getStringExtra(Intent.EXTRA_SHORTCUT_NAME));
+    }
+
+    private void addShortcutToURL(String url, final String title) throws InterruptedException {
         loadUrlWithSanitization(url);
         assertTrue(waitForActiveShellToBeDoneLoading());
 
@@ -127,7 +146,7 @@ public class ShortcutHelperTest extends ChromiumTestShellTestBase {
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                ShortcutHelper.addShortcut(mActivity.getActiveTab());
+                ShortcutHelper.addShortcut(mActivity.getActiveTab(), title);
             }
         });
 

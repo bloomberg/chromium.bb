@@ -26,11 +26,15 @@
 #include "ui/gfx/color_analysis.h"
 #include "url/gurl.h"
 
-ShortcutBuilder::ShortcutBuilder(content::WebContents* web_contents)
+ShortcutBuilder::ShortcutBuilder(content::WebContents* web_contents,
+                                 const string16& title)
     : is_webapp_capable_(false) {
   Observe(web_contents);
   url_ = web_contents->GetURL();
-  title_ = web_contents->GetTitle();
+  if (title.length() > 0)
+    title_ = title;
+  else
+    title_ = web_contents->GetTitle();
 
   // Send a message to the renderer to retrieve information about the page.
   Send(new ChromeViewMsg_RetrieveWebappInformation(routing_id(), url_));
@@ -108,9 +112,10 @@ void ShortcutBuilder::Destroy() {
   delete this;
 }
 
-void ShortcutHelper::AddShortcut(content::WebContents* web_contents) {
+void ShortcutHelper::AddShortcut(content::WebContents* web_contents,
+                                 const string16& title) {
   // The ShortcutBuilder deletes itself when it's done.
-  new ShortcutBuilder(web_contents);
+  new ShortcutBuilder(web_contents, title);
 }
 
 bool ShortcutHelper::RegisterShortcutHelper(JNIEnv* env) {
@@ -167,7 +172,12 @@ void ShortcutHelper::AddShortcutInBackground(
 // background tasks to pull all the data required.
 // Note that we don't actually care about the tab here -- we just want
 // its otherwise inaccessible WebContents.
-static void AddShortcut(JNIEnv* env, jclass clazz, jint tab_android_ptr) {
+static void AddShortcut(JNIEnv* env,
+                        jclass clazz,
+                        jint tab_android_ptr,
+                        jstring title) {
   TabAndroid* tab = reinterpret_cast<TabAndroid*>(tab_android_ptr);
-  ShortcutHelper::AddShortcut(tab->web_contents());
+  ShortcutHelper::AddShortcut(
+      tab->web_contents(),
+      base::android::ConvertJavaStringToUTF16(env, title));
 }
