@@ -7,7 +7,6 @@
 
 #include <string>
 
-extern const char kChromeDriverVersion[];
 extern const int kMinimumSupportedChromeBuildNo;
 
 std::string GetMinimumSupportedChromeVersion();

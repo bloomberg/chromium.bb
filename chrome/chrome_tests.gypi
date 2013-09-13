@@ -954,11 +954,13 @@
     {
       'target_name': 'chromedriver2_lib',
       'type': 'static_library',
+      'hard_dependency': 1,
       'dependencies': [
         'chrome_devtools_lib',
         '../base/base.gyp:base',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../crypto/crypto.gyp:crypto',
+        '../net/net.gyp:http_server',
         '../net/net.gyp:net',
         '../ui/ui.gyp:ui',
       ],
@@ -966,6 +968,8 @@
         '..',
       ],
       'sources': [
+        '<(SHARED_INTERMEDIATE_DIR)/chrome/test/chromedriver/version.cc',
+        '<(SHARED_INTERMEDIATE_DIR)/chrome/test/chromedriver/version.h',
         '../third_party/webdriver/atoms.cc',
         '../third_party/webdriver/atoms.h',
         'test/chromedriver/alert_commands.cc',
@@ -991,6 +995,8 @@
         'test/chromedriver/keycode_text_conversion_x.cc',
         'test/chromedriver/logging.cc',
         'test/chromedriver/logging.h',
+        'test/chromedriver/server/http_handler.cc',
+        'test/chromedriver/server/http_handler.h',
         'test/chromedriver/session.cc',
         'test/chromedriver/session.h',
         'test/chromedriver/session_commands.cc',
@@ -1001,25 +1007,33 @@
         'test/chromedriver/window_commands.cc',
         'test/chromedriver/window_commands.h',
       ],
-      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-      'msvs_disabled_warnings': [ 4267, ],
-    },
-    {
-      'target_name': 'chromedriver2_server_lib',
-      'type': 'static_library',
-      'dependencies': [
-        'chromedriver2_lib',
-        '../base/base.gyp:base',
-        '../net/net.gyp:http_server',
-        '../net/net.gyp:net',
+      'actions': [
+        {
+          'action_name': 'embed_version_in_cpp',
+          'inputs': [
+            'test/chromedriver/cpp_source.py',
+            'test/chromedriver/embed_version_in_cpp.py',
+            'test/chromedriver/VERSION',
+          ],
+          'outputs': [
+            '<(SHARED_INTERMEDIATE_DIR)/chrome/test/chromedriver/version.cc',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome/test/chromedriver/version.h',
+          ],
+          'action': [ 'python',
+                      'test/chromedriver/embed_version_in_cpp.py',
+                      '--version-file',
+                      'test/chromedriver/VERSION',
+                      '--directory',
+                      '<(SHARED_INTERMEDIATE_DIR)/chrome/test/chromedriver',
+          ],
+          'message': 'Generating version info',
+        },
       ],
-      'include_dirs': [
-        '..',
-      ],
-      'sources': [
-        'test/chromedriver/server/http_handler.cc',
-        'test/chromedriver/server/http_handler.h',
-      ],
+      'direct_dependent_settings': {
+        'include_dirs': [
+          '<(SHARED_INTERMEDIATE_DIR)',
+        ],
+      },
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],
     },
@@ -1027,7 +1041,7 @@
       'target_name': 'chromedriver2_server',
       'type': 'executable',
       'dependencies': [
-        'chromedriver2_server_lib',
+        'chromedriver2_lib',
       ],
       'include_dirs': [
         '..',
@@ -1043,7 +1057,6 @@
       'type': 'executable',
       'dependencies': [
         'chromedriver2_lib',
-        'chromedriver2_server_lib',
         '../base/base.gyp:base',
         '../base/base.gyp:run_all_unittests',
         '../net/net.gyp:http_server',

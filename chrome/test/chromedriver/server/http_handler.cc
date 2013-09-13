@@ -21,11 +21,11 @@
 #include "chrome/test/chromedriver/chrome/adb_impl.h"
 #include "chrome/test/chromedriver/chrome/device_manager.h"
 #include "chrome/test/chromedriver/chrome/status.h"
-#include "chrome/test/chromedriver/chrome/version.h"
 #include "chrome/test/chromedriver/net/url_request_context_getter.h"
 #include "chrome/test/chromedriver/session.h"
 #include "chrome/test/chromedriver/session_thread_map.h"
 #include "chrome/test/chromedriver/util.h"
+#include "chrome/test/chromedriver/version.h"
 #include "net/server/http_server_request_info.h"
 #include "net/server/http_server_response_info.h"
 
