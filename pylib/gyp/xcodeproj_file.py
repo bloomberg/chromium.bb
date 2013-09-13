@@ -169,7 +169,7 @@ _quoted = re.compile('___')
 
 # This pattern should match any character that needs to be escaped by
 # XCObject._EncodeString.  See that function.
-_escaped = re.compile('[\\\\"]|[^ -~]')
+_escaped = re.compile('[\\\\"]|[\x00-\x1f]')
 
 
 # Used by SourceTreeAndPathFromPath
@@ -557,9 +557,9 @@ class XCObject(object):
     #    10 ^J NL  is encoded as "\n"
     #    13 ^M CR  is encoded as "\n" rendering it indistinguishable from
     #              10 ^J NL
-    # All other nonprintable characters within the ASCII range (0 through 127
-    # inclusive) are encoded as "\U001f" referring to the Unicode code point in
-    # hexadecimal.  For example, character 14 (^N SO) is encoded as "\U000e".
+    # All other characters within the ASCII control character range (0 through
+    # 31 inclusive) are encoded as "\U001f" referring to the Unicode code point
+    # in hexadecimal.  For example, character 14 (^N SO) is encoded as "\U000e".
     # Characters above the ASCII range are passed through to the output encoded
     # as UTF-8 without any escaping.  These mappings are contained in the
     # class' _encode_transforms list.
