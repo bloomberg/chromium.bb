@@ -19,7 +19,6 @@
 #include "cc/resources/texture_mailbox.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
-#include "content/browser/aura/compositor_resize_lock.h"
 #include "content/browser/renderer_host/backing_store_aura.h"
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/overscroll_controller.h"
@@ -574,6 +573,73 @@ class RenderWidgetHostViewAura::TransientWindowObserver
 
 #endif
 
+class RenderWidgetHostViewAura::ResizeLock {
+ public:
+  ResizeLock(aura::RootWindow* root_window,
+             const gfx::Size new_size,
+             bool defer_compositor_lock)
+      : root_window_(root_window),
+        new_size_(new_size),
+        compositor_lock_(defer_compositor_lock ?
+                         NULL :
+                         root_window_->compositor()->GetCompositorLock()),
+        weak_ptr_factory_(this),
+        defer_compositor_lock_(defer_compositor_lock) {
+    TRACE_EVENT_ASYNC_BEGIN2("ui", "ResizeLock", this,
+                             "width", new_size_.width(),
+                             "height", new_size_.height());
+    root_window_->HoldPointerMoves();
+
+    BrowserThread::PostDelayedTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&RenderWidgetHostViewAura::ResizeLock::CancelLock,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::TimeDelta::FromMilliseconds(kResizeLockTimeoutMs));
+  }
+
+  ~ResizeLock() {
+    CancelLock();
+    TRACE_EVENT_ASYNC_END2("ui", "ResizeLock", this,
+                           "width", new_size_.width(),
+                           "height", new_size_.height());
+  }
+
+  void UnlockCompositor() {
+    defer_compositor_lock_ = false;
+    compositor_lock_ = NULL;
+  }
+
+  void CancelLock() {
+    if (!root_window_)
+      return;
+    UnlockCompositor();
+    root_window_->ReleasePointerMoves();
+    root_window_ = NULL;
+  }
+
+  const gfx::Size& expected_size() const {
+    return new_size_;
+  }
+
+  bool GrabDeferredLock() {
+    if (root_window_ && defer_compositor_lock_) {
+      compositor_lock_ = root_window_->compositor()->GetCompositorLock();
+      defer_compositor_lock_ = false;
+      return true;
+    }
+    return false;
+  }
+
+ private:
+  aura::RootWindow* root_window_;
+  gfx::Size new_size_;
+  scoped_refptr<ui::CompositorLock> compositor_lock_;
+  base::WeakPtrFactory<ResizeLock> weak_ptr_factory_;
+  bool defer_compositor_lock_;
+
+  DISALLOW_COPY_AND_ASSIGN(ResizeLock);
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewAura, public:
 
@@ -590,7 +656,6 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
       can_compose_inline_(true),
       has_composition_text_(false),
       last_output_surface_id_(0),
-      skipped_frames_(false),
       last_swapped_surface_scale_factor_(1.f),
       paint_canvas_(NULL),
       synthetic_move_sent_(false),
@@ -746,69 +811,39 @@ void RenderWidgetHostViewAura::SetBounds(const gfx::Rect& rect) {
 }
 
 void RenderWidgetHostViewAura::MaybeCreateResizeLock() {
-  if (!ShouldCreateResizeLock())
-    return;
-  DCHECK(window_->GetRootWindow());
-  DCHECK(window_->GetRootWindow()->compositor());
+  gfx::Size desired_size = window_->bounds().size();
+  if (!host_->should_auto_resize() &&
+      !resize_lock_.get() &&
+      desired_size != current_frame_size_ &&
+      host_->is_accelerated_compositing_active()) {
+    aura::RootWindow* root_window = window_->GetRootWindow();
+    ui::Compositor* compositor = root_window ?
+        root_window->compositor() : NULL;
+    if (root_window && compositor) {
+      // Listen to changes in the compositor lock state.
+      if (!compositor->HasObserver(this))
+        compositor->AddObserver(this);
 
-  // Listen to changes in the compositor lock state.
-  ui::Compositor* compositor = window_->GetRootWindow()->compositor();
-  if (!compositor->HasObserver(this))
-    compositor->AddObserver(this);
+// On Windows while resizing, the the resize locks makes us mis-paint a white
+// vertical strip (including the non-client area) if the content composition is
+// lagging the UI composition. So here we disable the throttling so that the UI
+// bits can draw ahead of the content thereby reducing the amount of whiteout.
+// Because this causes the content to be drawn at wrong sizes while resizing
+// we compensate by blocking the UI thread in Compositor::Draw() by issuing a
+// FinishAllRendering() if we are resizing.
+#if !defined (OS_WIN)
+      bool defer_compositor_lock =
+         can_lock_compositor_ == NO_PENDING_RENDERER_FRAME ||
+         can_lock_compositor_ == NO_PENDING_COMMIT;
 
-  bool defer_compositor_lock =
-      can_lock_compositor_ == NO_PENDING_RENDERER_FRAME ||
-      can_lock_compositor_ == NO_PENDING_COMMIT;
+      if (can_lock_compositor_ == YES)
+        can_lock_compositor_ = YES_DID_LOCK;
 
-  if (can_lock_compositor_ == YES)
-    can_lock_compositor_ = YES_DID_LOCK;
-
-  resize_lock_ = CreateResizeLock(defer_compositor_lock);
-}
-
-bool RenderWidgetHostViewAura::ShouldCreateResizeLock() {
-  // On Windows while resizing, the the resize locks makes us mis-paint a white
-  // vertical strip (including the non-client area) if the content composition
-  // is lagging the UI composition. So here we disable the throttling so that
-  // the UI bits can draw ahead of the content thereby reducing the amount of
-  // whiteout. Because this causes the content to be drawn at wrong sizes while
-  // resizing we compensate by blocking the UI thread in Compositor::Draw() by
-  // issuing a FinishAllRendering() if we are resizing.
-#if defined (OS_WIN)
-  return false;
+      resize_lock_.reset(new ResizeLock(root_window, desired_size,
+                                        defer_compositor_lock));
 #endif
-
-  if (resize_lock_)
-    return false;
-
-  if (host_->should_auto_resize())
-    return false;
-  if (!host_->is_accelerated_compositing_active())
-    return false;
-
-  gfx::Size desired_size = window_->bounds().size();
-  if (desired_size == current_frame_size_)
-    return false;
-
-  aura::RootWindow* root_window = window_->GetRootWindow();
-  if (!root_window)
-    return false;
-
-  ui::Compositor* compositor = root_window->compositor();
-  if (!compositor)
-    return false;
-
-  return true;
-}
-
-scoped_ptr<ResizeLock> RenderWidgetHostViewAura::CreateResizeLock(
-    bool defer_compositor_lock) {
-  gfx::Size desired_size = window_->bounds().size();
-  return scoped_ptr<ResizeLock>(new CompositorResizeLock(
-      window_->GetRootWindow(),
-      desired_size,
-      defer_compositor_lock,
-      base::TimeDelta::FromMilliseconds(kResizeLockTimeoutMs)));
+    }
+  }
 }
 
 gfx::NativeView RenderWidgetHostViewAura::GetNativeView() const {
@@ -1405,25 +1440,17 @@ void RenderWidgetHostViewAura::SwapDelegatedFrame(
     scoped_ptr<cc::DelegatedFrameData> frame_data,
     float frame_device_scale_factor,
     const ui::LatencyInfo& latency_info) {
-  gfx::Size frame_size;
   gfx::Size frame_size_in_dip;
-  gfx::Rect damage_rect;
   gfx::Rect damage_rect_in_dip;
-
   if (!frame_data->render_pass_list.empty()) {
     cc::RenderPass* root_pass = frame_data->render_pass_list.back();
-
-    frame_size = root_pass->output_rect.size();
-    frame_size_in_dip = ConvertSizeToDIP(frame_device_scale_factor, frame_size);
-
-    damage_rect = gfx::ToEnclosingRect(root_pass->damage_rect);
-    damage_rect.Intersect(gfx::Rect(frame_size));
-    damage_rect_in_dip = ConvertRectToDIP(frame_device_scale_factor,
-                                          damage_rect);
+    frame_size_in_dip = ConvertSizeToDIP(frame_device_scale_factor,
+                                         root_pass->output_rect.size());
+    damage_rect_in_dip = ConvertRectToDIP(
+        frame_device_scale_factor,
+        gfx::ToEnclosingRect(root_pass->damage_rect));
   }
-
   framebuffer_holder_ = NULL;
-
   if (ShouldSkipFrame(frame_size_in_dip)) {
     cc::CompositorFrameAck ack;
     cc::TransferableResource::ReturnResources(frame_data->resource_list,
@@ -1431,20 +1458,8 @@ void RenderWidgetHostViewAura::SwapDelegatedFrame(
     RenderWidgetHostImpl::SendSwapCompositorFrameAck(
         host_->GetRoutingID(), output_surface_id,
         host_->GetProcess()->GetID(), ack);
-    skipped_frames_ = true;
     return;
   }
-
-  if (skipped_frames_) {
-    skipped_frames_ = false;
-    damage_rect = gfx::Rect(frame_size);
-    damage_rect_in_dip = gfx::Rect(frame_size_in_dip);
-
-    // Give the same damage rect to the compositor.
-    cc::RenderPass* root_pass = frame_data->render_pass_list.back();
-    root_pass->damage_rect = damage_rect;
-  }
-
   if (output_surface_id != last_output_surface_id_) {
     // Resource ids are scoped by the output surface.
     // If the originating output surface doesn't match the last one, it
