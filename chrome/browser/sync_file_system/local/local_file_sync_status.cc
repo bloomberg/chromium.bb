@@ -40,6 +40,7 @@ void LocalFileSyncStatus::StartSyncing(const FileSystemURL& url) {
 void LocalFileSyncStatus::EndSyncing(const FileSystemURL& url) {
   DCHECK(CalledOnValidThread());
   syncing_.erase(url);
+  FOR_EACH_OBSERVER(Observer, observer_list_, OnSyncEnabled(url));
   FOR_EACH_OBSERVER(Observer, observer_list_, OnWriteEnabled(url));
 }
 
