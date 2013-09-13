@@ -6356,6 +6356,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_ENABLE_STICKY_KEYS_DESCRIPTION" desc="Description for the flag to enable sticky keys.">
           StickyKeys allows the user to press and release a modifier key, such as Shift, Ctrl, or Alt, and have it remain active until any other key is pressed.
         </message>
+        <message name="IDS_FLAGS_ENABLE_SAML_SIGNIN_NAME" desc="Name for the flag to enable SAML signin support.">
+          Enable SAML signin.
+        </message>
+        <message name="IDS_FLAGS_ENABLE_SAML_SIGNIN_DESCRIPTION" desc="Description for the flag to enable SAML signin support.">
+          Enables SAML signin support for ChromeOS login.
+        </message>
       </if>
       <message name="IDS_FLAGS_FULL_HISTORY_SYNC_NAME" desc="Name of the flag to disable full history sync.">
         Disable full history sync

@@ -75,8 +75,14 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     /** @override */
     decorate: function() {
       this.gaiaAuthHost_ = new cr.login.GaiaAuthHost($('signin-frame'));
-      this.gaiaAuthHost_.addEventListener('ready',
-                                          this.onAuthReady_.bind(this));
+      this.gaiaAuthHost_.addEventListener(
+          'ready', this.onAuthReady_.bind(this));
+      this.gaiaAuthHost_.confirmPasswordCallback =
+          this.onAuthConfirmPassword_.bind(this);
+      this.gaiaAuthHost_.noPasswordCallback =
+          this.onAuthNoPassword_.bind(this);
+      this.gaiaAuthHost_.authPageLoadedCallback =
+          this.onAuthPageLoaded_.bind(this);
 
       this.updateLocalizedContent();
     },
@@ -218,6 +224,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       this.silentLoad_ = data.silentLoad;
       this.isLocal = data.isLocal;
       this.email = '';
+      this.classList.toggle('saml', false);
 
       this.updateAuthExtension(data);
 
@@ -287,6 +294,16 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     },
 
     /**
+     * Invoked when the auth host notifies about an auth page is loaded.
+     * @param {boolean} isSAML True if the loaded auth page is SAML.
+     */
+    onAuthPageLoaded_: function(isSAML) {
+      this.classList.toggle('saml', isSAML);
+      if (Oobe.getInstance().currentScreen === this)
+        Oobe.getInstance().updateScreenSize(this);
+    },
+
+    /**
      * Invoked when the auth host emits 'ready' event.
      * @private
      */
@@ -305,6 +322,41 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
 
       // Warm up the user images screen.
       Oobe.getInstance().preloadScreen({id: SCREEN_USER_IMAGE_PICKER});
+    },
+
+    /**
+     * Invoked when the auth host needs the user to confirm password.
+     * @private
+     */
+    onAuthConfirmPassword_: function() {
+      this.loading = true;
+      Oobe.getInstance().headerHidden = false;
+
+      login.ConfirmPasswordScreen.show(
+          this.onConfirmPasswordCollected_.bind(this));
+    },
+
+    /**
+     * Invoked when the confirm password screen is dismissed.
+     * @private
+     */
+    onConfirmPasswordCollected_: function(password) {
+      this.gaiaAuthHost_.verifyConfirmedPassword(password);
+
+      // Shows signin UI again without changing states.
+      Oobe.showScreen({id: SCREEN_GAIA_SIGNIN});
+    },
+
+    /**
+     * Inovked when the auth flow completes but no password is available.
+     * @param {string} email The authenticated user email.
+     */
+    onAuthNoPassword_: function(email) {
+      login.MessageBoxScreen.show(
+          loadTimeData.getString('noPasswordWarningTitle'),
+          loadTimeData.getString('noPasswordWarningBody'),
+          loadTimeData.getString('noPasswordWarningOkButton'),
+          Oobe.showSigninUI);
     },
 
     /**

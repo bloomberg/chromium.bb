@@ -38,18 +38,17 @@ void LoadGaiaAuthExtension(Profile* profile) {
     return;
   }
 
-  bool force_keyboard_oobe = false;
+  int manifest_resource_id = IDR_GAIA_AUTH_MANIFEST;
+
 #if defined(OS_CHROMEOS)
-  force_keyboard_oobe =
-      chromeos::system::keyboard_settings::ForceKeyboardDrivenUINavigation();
-#endif // OS_CHROMEOS
-  if (force_keyboard_oobe) {
-    component_loader->Add(IDR_GAIA_AUTH_KEYBOARD_MANIFEST,
-                          base::FilePath(FILE_PATH_LITERAL("gaia_auth")));
-  } else {
-    component_loader->Add(IDR_GAIA_AUTH_MANIFEST,
-                          base::FilePath(FILE_PATH_LITERAL("gaia_auth")));
-  }
+  if (chromeos::system::keyboard_settings::ForceKeyboardDrivenUINavigation())
+    manifest_resource_id = IDR_GAIA_AUTH_KEYBOARD_MANIFEST;
+  else if (command_line->HasSwitch(chromeos::switches::kEnableSamlSignin))
+    manifest_resource_id = IDR_GAIA_AUTH_SAML_MANIFEST;
+#endif  // OS_CHROMEOS
+
+  component_loader->Add(manifest_resource_id,
+                        base::FilePath(FILE_PATH_LITERAL("gaia_auth")));
 }
 
 void UnloadGaiaAuthExtension(Profile* profile) {

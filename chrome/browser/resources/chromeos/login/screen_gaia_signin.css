@@ -13,6 +13,11 @@
   width: 522px;
 }
 
+#gaia-signin.saml {
+  padding: 70px 10px 10px;
+  width: 1000px;
+}
+
 #signin-right {
   -webkit-margin-before: 80px;
   -webkit-margin-start: 30px;
@@ -32,7 +37,8 @@
   }
 }
 
-.no-right-panel #signin-right {
+.no-right-panel #signin-right,
+.saml #signin-right {
   display: none;
 }
 
@@ -58,6 +64,11 @@
   height: 100%;
 }
 
+.saml #gaia-signin-form-container,
+.saml #signin-frame {
+  width: 100%;
+}
+
 #gaia-signin-divider {
   background: -webkit-gradient(
                    linear, left top, left bottom,
@@ -68,7 +79,8 @@
   width: 1px;
 }
 
-.no-right-panel #gaia-signin-divider {
+.no-right-panel #gaia-signin-divider,
+.saml #gaia-signin-divider {
   display: none;
 }
 

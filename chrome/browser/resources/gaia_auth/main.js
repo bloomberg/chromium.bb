@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/**
+ * Authenticator class wraps the communications between Gaia and its host.
+ */
 function Authenticator() {
 }
 
@@ -25,6 +28,9 @@ Authenticator.prototype = {
   inputLang_: undefined,
   intputEmail_: undefined,
 
+  samlPageLoaded_: false,
+  samlSupportChannel_: null,
+
   GAIA_URL: 'https://accounts.google.com/',
   GAIA_PAGE_PATH: 'ServiceLogin?service=chromeoslogin' +
       '&skipvpage=true&sarp=1&rm=hide' +
@@ -41,6 +47,7 @@ Authenticator.prototype = {
     this.inputEmail_ = params['email'];
 
     document.addEventListener('DOMContentLoaded', this.onPageLoad.bind(this));
+    document.addEventListener('enableSAML', this.onEnableSAML_.bind(this));
   },
 
   isGaiaMessage_: function(msg) {
@@ -51,6 +58,10 @@ Authenticator.prototype = {
 
   isInternalMessage_: function(msg) {
     return msg.origin == this.THIS_EXTENSION_ORIGIN;
+  },
+
+  isParentMessage_: function(msg) {
+    return msg.origin == this.parentPage_;
   },
 
   getFrameUrl_: function() {
@@ -69,9 +80,48 @@ Authenticator.prototype = {
     $('gaia-frame').src = this.getFrameUrl_();
   },
 
+  completeLogin: function(username, password) {
+    var msg = {
+      'method': 'completeLogin',
+      'email': username,
+      'password': password
+    };
+    window.parent.postMessage(msg, this.parentPage_);
+    if (this.samlSupportChannel_)
+      this.samlSupportChannel_.send({name: 'resetAuth'});
+  },
+
   onPageLoad: function(e) {
     window.addEventListener('message', this.onMessage.bind(this), false);
     this.loadFrame_();
+  },
+
+  /**
+   * Invoked when 'enableSAML' event is received to initialize SAML support.
+   */
+  onEnableSAML_: function() {
+    this.samlPageLoaded_ = false;
+
+    this.samlSupportChannel_ = new Channel();
+    this.samlSupportChannel_.connect('authMain');
+    this.samlSupportChannel_.registerMessage(
+        'onAuthPageLoaded', this.onAuthPageLoaded_.bind(this));
+    this.samlSupportChannel_.send({
+      name: 'setGaiaUrl',
+      gaiaUrl: this.gaiaUrl_
+    });
+  },
+
+  /**
+   * Invoked when the background page sends 'onHostedPageLoaded' message.
+   * @param {!Object} msg Details sent with the message.
+   */
+  onAuthPageLoaded_: function(msg) {
+    this.samlPageLoaded_ = msg.url.indexOf(this.gaiaUrl_) != 0;
+    window.parent.postMessage({
+      'method': 'authPageLoaded',
+      'isSAML': this.samlPageLoaded_
+    }, this.parentPage_);
   },
 
   onLoginUILoaded: function() {
@@ -81,30 +131,68 @@ Authenticator.prototype = {
     window.parent.postMessage(msg, this.parentPage_);
   },
 
+  onConfirmLogin_: function() {
+    if (!this.samlPageLoaded_) {
+      this.completeLogin(this.email_, this.password_);
+      return;
+    }
+
+    this.samlSupportChannel_.sendWithCallback(
+        {name: 'getScrapedPasswords'},
+        function(passwords) {
+          if (passwords.length == 0) {
+            window.parent.postMessage(
+                {method: 'noPassword', email: this.email_},
+                this.parentPage_);
+          } else {
+            window.parent.postMessage({method: 'confirmPassword'},
+                                      this.parentPage_);
+          }
+        }.bind(this));
+  },
+
+  onVerifyConfirmedPassword_: function(password) {
+    this.samlSupportChannel_.sendWithCallback(
+        {name: 'getScrapedPasswords'},
+        function(passwords) {
+          for (var i = 0; i < passwords.length; ++i) {
+            if (passwords[i] == password) {
+              this.completeLogin(this.email_, passwords[i]);
+              return;
+            }
+          }
+          window.parent.postMessage({method: 'confirmPassword'},
+                                    this.parentPage_);
+        }.bind(this));
+  },
+
   onMessage: function(e) {
     var msg = e.data;
     if (msg.method == 'attemptLogin' && this.isGaiaMessage_(e)) {
       this.email_ = msg.email;
       this.password_ = msg.password;
       this.attemptToken_ = msg.attemptToken;
+      this.samlPageLoaded_ = false;
+      if (this.samlSupportChannel_)
+        this.samlSupportChannel_.send({name: 'startAuth'});
     } else if (msg.method == 'clearOldAttempts' && this.isGaiaMessage_(e)) {
       this.email_ = null;
       this.password_ = null;
       this.attemptToken_ = null;
+      this.samlPageLoaded_ = false;
       this.onLoginUILoaded();
+      if (this.samlSupportChannel_)
+        this.samlSupportChannel_.send({name: 'resetAuth'});
     } else if (msg.method == 'confirmLogin' && this.isInternalMessage_(e)) {
-      if (this.attemptToken_ == msg.attemptToken) {
-        var msg = {
-          'method': 'completeLogin',
-          'email': this.email_,
-          'password': this.password_
-        };
-        window.parent.postMessage(msg, this.parentPage_);
-      } else {
-        console.log('#### Authenticator.onMessage: unexpected attemptToken!?');
-      }
+      if (this.attemptToken_ == msg.attemptToken)
+        this.onConfirmLogin_();
+      else
+        console.error('Authenticator.onMessage: unexpected attemptToken!?');
+    } else if (msg.method == 'verifyConfirmedPassword' &&
+               this.isParentMessage_(e)) {
+      this.onVerifyConfirmedPassword_(msg.password);
     } else {
-      console.log('#### Authenticator.onMessage: unknown message + origin!?');
+      console.error('Authenticator.onMessage: unknown message + origin!?');
     }
   }
 };

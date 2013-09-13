@@ -37,6 +37,9 @@
       <include name="IDR_GAIA_AUTH_SUCCESS" file="gaia_auth/success.html" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_GAIA_AUTH_SUCCESS_JS" file="gaia_auth/success.js" type="BINDATA" />
       <include name="IDR_GAIA_AUTH_UTIL_JS" file="gaia_auth/util.js" type="BINDATA" />
+      <include name="IDR_GAIA_AUTH_BACKGROUND_JS" file="gaia_auth/background.js" type="BINDATA" />
+      <include name="IDR_GAIA_AUTH_SAML_INJECTED_JS" file="gaia_auth/saml_injected.js" type="BINDATA" />
+      <include name="IDR_GAIA_AUTH_CHANNEL_JS" file="gaia_auth/channel.js" type="BINDATA" />
       <if expr="pp_ifdef('chromeos')">
         <!-- Background page loader  -->
         <include name="IDR_BACKLOADER_BACKGROUND_HTML" file="backloader/background.html" type="BINDATA" />

@@ -1125,6 +1125,13 @@ const Experiment kExperiments[] = {
     kOsCrOS,
     SINGLE_VALUE_TYPE(chromeos::switches::kDisableQuickofficeComponentApp),
   },
+  {
+    "enable-saml-signin",
+    IDS_FLAGS_ENABLE_SAML_SIGNIN_NAME,
+    IDS_FLAGS_ENABLE_SAML_SIGNIN_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(chromeos::switches::kEnableSamlSignin),
+  },
 #endif  // defined(OS_CHROMEOS)
   {
     "views-textfield",

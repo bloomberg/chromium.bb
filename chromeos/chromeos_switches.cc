@@ -183,7 +183,7 @@ const char kOobeSkipPostLogin[]             = "oobe-skip-postlogin";
 const char kSkipHWIDCheck[]                 = "skip-hwid-check";
 
 // Sends test messages on first call to RequestUpdate (stub only).
-const char kSmsTestMessages[] = "sms-test-messages";
+const char kSmsTestMessages[]               = "sms-test-messages";
 
 // Indicates that a stub implementation of CrosSettings that stores settings in
 // memory without signing should be used, treating current user as the owner.
@@ -191,7 +191,10 @@ const char kSmsTestMessages[] = "sms-test-messages";
 const char kStubCrosSettings[]              = "stub-cros-settings";
 
 // Disables user image sync.
-const char kDisableUserImageSync[] = "disable-user-image-sync";
+const char kDisableUserImageSync[]          = "disable-user-image-sync";
+
+// Enables SAML sigin support.
+const char kEnableSamlSignin[]              = "enable-saml-signin";
 
 // Enables new first-run overlay UI.
 const char kEnableFirstRunUI[] = "enable-first-run-ui";

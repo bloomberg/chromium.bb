@@ -20,19 +20,19 @@ cr.define('cr.login', function() {
    * Base URL of gaia auth extension.
    * @const
    */
-  var AUTH_URL_BASE = 'chrome-extension://mfffpogegjflfpflabcdkioaeobkgjik/';
+  var AUTH_URL_BASE = 'chrome-extension://mfffpogegjflfpflabcdkioaeobkgjik';
 
   /**
    * Auth URL to use for online flow.
    * @const
    */
-  var AUTH_URL = AUTH_URL_BASE + 'main.html';
+  var AUTH_URL = AUTH_URL_BASE + '/main.html';
 
   /**
    * Auth URL to use for offline flow.
    * @const
    */
-  var OFFLINE_AUTH_URL = AUTH_URL_BASE + 'offline.html';
+  var OFFLINE_AUTH_URL = AUTH_URL_BASE + '/offline.html';
 
   /**
    * Supported params of auth extension. For a complete list, check out the
@@ -104,11 +104,63 @@ cr.define('cr.login', function() {
     successCallback_: null,
 
     /**
+     * Invoked when the auth flow needs a user to confirm his/her passwords.
+     * This could happen when there are more than one passwords scraped during
+     * SAML flow. The embedder of GaiaAuthHost should show an UI to collect a
+     * password from user then call GaiaAuthHost.verifyConfirmedPassword to
+     * verify. If the password is good, the auth flow continues with success
+     * path. Otherwise, confirmPasswordCallback_ is invoked again.
+     * @type {function()}
+     */
+    confirmPasswordCallback_: null,
+
+    /**
+     * Similar to confirmPasswordCallback_ but is used when there is no
+     * password scraped after a success authentication. The authenticated user
+     * account is passed to the callback. The embedder should take over the
+     * flow and decide what to do next.
+     * @type {function(string)}
+     */
+    noPasswordCallback_: null,
+
+    /**
+     * Invoked when the auth page hosted inside the extension is loaded.
+     * Param {@code saml} is true when the auth page is a SAML page (out of
+     * Gaia domain.
+     * @type {function{boolean)}
+     */
+    authPageLoadedCallback_: null,
+
+    /**
      * The iframe container.
      * @type {HTMLIFrameElement}
      */
     get frame() {
       return this.frame_;
+    },
+
+    /**
+     * Sets confirmPasswordCallback_.
+     * @type {function()}
+     */
+    set confirmPasswordCallback(callback) {
+      this.confirmPasswordCallback_ = callback;
+    },
+
+    /**
+     * Sets noPasswordCallback_.
+     * @type {function()}
+     */
+    set noPasswordCallback(callback) {
+      this.noPasswordCallback_ = callback;
+    },
+
+    /**
+     * Sets authPageLoadedCallback_.
+     * @type {function(boolean)}
+     */
+    set authPageLoadedCallback(callback) {
+      this.authPageLoadedCallback_ = callback;
     },
 
     /**
@@ -154,6 +206,19 @@ cr.define('cr.login', function() {
     },
 
     /**
+     * Verifies the supplied password by sending it to the auth extension,
+     * which will then check if it matches the scraped passwords.
+     * @param {string} password The confirmed password that needs verification.
+     */
+    verifyConfirmedPassword: function(password) {
+      var msg = {
+        method: 'verifyConfirmedPassword',
+        password: password
+      };
+      this.frame_.contentWindow.postMessage(msg, AUTH_URL_BASE);
+    },
+
+    /**
      * Invoked to process authentication success.
      * @param {Object} credentials Credential object to pass to success
      *     callback.
@@ -191,13 +256,37 @@ cr.define('cr.login', function() {
         return;
       }
 
-      if (!/^complete(Login|Authentication)$|^offlineLogin$/.test(msg.method))
+      if (/^complete(Login|Authentication)$|^offlineLogin$/.test(msg.method)) {
+        this.onAuthSuccess_({email: msg.email,
+                             password: msg.password,
+                             authCode: msg.authCode,
+                             useOffline: msg.method == 'offlineLogin'});
         return;
+      }
 
-      this.onAuthSuccess_({email: msg.email,
-                           password: msg.password,
-                           authCode: msg.authCode,
-                           useOffline: msg.method == 'offlineLogin'});
+      if (msg.method == 'confirmPassword') {
+        if (this.confirmPasswordCallback_)
+          this.confirmPasswordCallback_();
+        else
+          console.error('GaiaAuthHost: Invalid confirmPasswordCallback_.');
+        return;
+      }
+
+      if (msg.method == 'noPassword') {
+        if (this.noPasswordCallback_)
+          this.noPasswordCallback_(msg.email);
+        else
+          console.error('GaiaAuthHost: Invalid noPasswordCallback_.');
+        return;
+      }
+
+      if (msg.method == 'authPageLoaded') {
+        if (this.authPageLoadedCallback_)
+          this.authPageLoadedCallback_(msg.isSAML);
+        return;
+      }
+
+      console.error('Unknown message method=' + msg.method);
     }
   };
 

@@ -502,6 +502,18 @@ void SigninScreenHandler::DeclareLocalizedValues(
   builder->Add("removeUserWarningButtonTitle",
                IDS_LOGIN_POD_USER_REMOVE_WARNING_BUTTON);
 
+  // Strings used by confirm password dialog.
+  builder->Add("confirmPasswordTitle", IDS_LOGIN_CONFIRM_PASSWORD_TITLE);
+  builder->Add("confirmPasswordHint", IDS_LOGIN_CONFIRM_PASSWORD_HINT);
+  builder->Add("confirmPasswordConfirmButton",
+               IDS_LOGIN_CONFIRM_PASSWORD_CONFIRM_BUTTON);
+
+  // Strings used by no password warning dialog.
+  builder->Add("noPasswordWarningTitle", IDS_LOGIN_NO_PASSWORD_WARNING_TITLE);
+  builder->Add("noPasswordWarningBody", IDS_LOGIN_NO_PASSWORD_WARNING);
+  builder->Add("noPasswordWarningOkButton",
+               IDS_LOGIN_NO_PASSWORD_WARNING_DISMISS_BUTTON);
+
   if (chromeos::KioskModeSettings::Get()->IsKioskModeEnabled())
     builder->Add("demoLoginMessage", IDS_KIOSK_MODE_LOGIN_MESSAGE);
 }

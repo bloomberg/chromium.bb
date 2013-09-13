@@ -40,7 +40,9 @@
 #oobe.managed-user-creation #inner-container,
 #oobe.password-changed #inner-container,
 #oobe.terms-of-service #inner-container,
-#oobe.wrong-hwid #inner-container {
+#oobe.wrong-hwid #inner-container,
+#oobe.confirm-password #inner-container,
+#oobe.message-box #inner-container {
   background: -webkit-linear-gradient(rgba(255,255,255,0.99),
                                       rgba(255,255,255,0.95));
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3),
@@ -107,7 +109,9 @@
 #managed-user-creation-dot,
 #managed-user-creation-dialog-dot,
 #terms-of-service-dot,
-#wrong-hwid-dot {
+#wrong-hwid-dot,
+#confirm-password-dot,
+#message-box-dot {
   display: none;
 }
 

@@ -21,6 +21,8 @@
 /** @const */ var SCREEN_CREATE_MANAGED_USER_FLOW =
     'managed-user-creation';
 /** @const */ var SCREEN_APP_LAUNCH_SPLASH = 'app-launch-splash';
+/** @const */ var SCREEN_CONFIRM_PASSWORD = 'confirm-password';
+/** @const */ var SCREEN_MESSAGE_BOX = 'message-box';
 
 /* Accelerator identifiers. Must be kept in sync with webui_login_view.cc. */
 /** @const */ var ACCELERATOR_CANCEL = 'cancel';
