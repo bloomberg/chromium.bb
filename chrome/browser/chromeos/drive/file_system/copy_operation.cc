@@ -46,7 +46,7 @@ FileError PrepareCopy(internal::ResourceMetadata* metadata,
 
   // Drive File System doesn't support recursive copy.
   if (src_entry->file_info().is_directory())
-    return FILE_ERROR_INVALID_OPERATION;
+    return FILE_ERROR_NOT_A_FILE;
 
   *parent_resource_id = parent_entry.resource_id();
   return FILE_ERROR_OK;

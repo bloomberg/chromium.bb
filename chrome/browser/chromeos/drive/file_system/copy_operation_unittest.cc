@@ -217,5 +217,23 @@ TEST_F(CopyOperationTest, CopyFileToInvalidPath) {
   EXPECT_TRUE(observer()->get_changed_paths().empty());
 }
 
+TEST_F(CopyOperationTest, CopyDirectory) {
+  base::FilePath src_path(FILE_PATH_LITERAL("drive/root/Directory 1"));
+  base::FilePath dest_path(FILE_PATH_LITERAL("drive/root/New Directory"));
+
+  ResourceEntry entry;
+  ASSERT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(src_path, &entry));
+  ASSERT_TRUE(entry.file_info().is_directory());
+  ASSERT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(dest_path.DirName(), &entry));
+  ASSERT_TRUE(entry.file_info().is_directory());
+
+  FileError error = FILE_ERROR_OK;
+  operation_->Copy(src_path,
+                   dest_path,
+                   google_apis::test_util::CreateCopyResultCallback(&error));
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(FILE_ERROR_NOT_A_FILE, error);
+}
+
 }  // namespace file_system
 }  // namespace drive
