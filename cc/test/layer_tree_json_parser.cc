@@ -54,28 +54,13 @@ scoped_refptr<Layer> ParseTreeFromValue(base::Value* val,
     success &= list->GetInteger(0, &image_width);
     success &= list->GetInteger(1, &image_height);
 
-    success &= dict->GetList("Border", &list);
-    int border_x, border_y, border_width, border_height;
-    success &= list->GetInteger(0, &border_x);
-    success &= list->GetInteger(1, &border_y);
-    success &= list->GetInteger(2, &border_width);
-    success &= list->GetInteger(3, &border_height);
-
-    bool fill_center;
-    success &= dict->GetBoolean("FillCenter", &fill_center);
-
     scoped_refptr<NinePatchLayer> nine_patch_layer = NinePatchLayer::Create();
 
     SkBitmap bitmap;
     bitmap.setConfig(SkBitmap::kARGB_8888_Config, image_width, image_height);
     bitmap.allocPixels(NULL, NULL);
-    bitmap.setImmutable();
     nine_patch_layer->SetBitmap(bitmap,
         gfx::Rect(aperture_x, aperture_y, aperture_width, aperture_height));
-
-    nine_patch_layer->SetBorder(
-        gfx::Rect(border_x, border_y, border_width, border_height));
-    nine_patch_layer->SetFillCenter(fill_center);
 
     new_layer = nine_patch_layer;
   } else if (layer_type == "PictureLayer") {

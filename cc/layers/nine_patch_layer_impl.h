@@ -10,7 +10,6 @@
 #include "cc/base/cc_export.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/resources/resource_provider.h"
-#include "cc/resources/ui_resource_client.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
@@ -28,37 +27,8 @@ class CC_EXPORT NinePatchLayerImpl : public LayerImpl {
   }
   virtual ~NinePatchLayerImpl();
 
-
-  void SetUIResourceId(UIResourceId uid);
-
-  // The bitmap stretches out the bounds of the layer.  The following picture
-  // illustrates the parameters associated with the dimensions.
-  //
-  // Layer space layout              Bitmap space layout
-  //
-  // ------------------------       ~~~~~~~~~~ W ~~~~~~~~~~
-  // |          :           |       :     :                |
-  // |          C           |       :     Y                |
-  // |          :           |       :     :                |
-  // |     ------------     |       :~~X~~------------     |
-  // |     |          |     |       :     |          :     |
-  // |     |          |     |       :     |          :     |
-  // |~~A~~|          |~~B~~|       H     |          Q     |
-  // |     |          |     |       :     |          :     |
-  // |     ------------     |       :     ~~~~~P~~~~~      |
-  // |          :           |       :                      |
-  // |          D           |       :                      |
-  // |          :           |       :                      |
-  // ------------------------       ------------------------
-  //
-  // |image_bounds| = (W, H)
-  // |image_aperture| = (X, Y, P, Q)
-  // |border| = (A, C, A + B, C + D)
-  // |fill_center| indicates whether to draw the center quad or not.
-  void SetLayout(gfx::Size image_bounds,
-                 gfx::Rect image_aperture,
-                 gfx::Rect border,
-                 bool fill_center);
+  void SetResourceId(unsigned id) { resource_id_ = id; }
+  void SetLayout(gfx::Size image_bounds, gfx::Rect aperture);
 
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
       OVERRIDE;
@@ -69,6 +39,7 @@ class CC_EXPORT NinePatchLayerImpl : public LayerImpl {
   virtual void AppendQuads(QuadSink* quad_sink,
                            AppendQuadsData* append_quads_data) OVERRIDE;
   virtual ResourceProvider::ResourceId ContentsResourceId() const OVERRIDE;
+  virtual void DidLoseOutputSurface() OVERRIDE;
 
   virtual base::DictionaryValue* LayerTreeAsJson() const OVERRIDE;
 
@@ -85,12 +56,7 @@ class CC_EXPORT NinePatchLayerImpl : public LayerImpl {
   // image space.
   gfx::Rect image_aperture_;
 
-  // An inset border that the patches will be mapped to.
-  gfx::Rect border_;
-
-  bool fill_center_;
-
-  UIResourceId ui_resource_id_;
+  ResourceProvider::ResourceId resource_id_;
 
   DISALLOW_COPY_AND_ASSIGN(NinePatchLayerImpl);
 };

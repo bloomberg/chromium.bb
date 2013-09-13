@@ -12,12 +12,12 @@ namespace cc {
 
 scoped_ptr<ScopedUIResource> ScopedUIResource::Create(
     LayerTreeHost* host,
-    const UIResourceBitmap& bitmap) {
+    scoped_refptr<UIResourceBitmap> bitmap) {
   return make_scoped_ptr(new ScopedUIResource(host, bitmap));
 }
 
 ScopedUIResource::ScopedUIResource(LayerTreeHost* host,
-                                   const UIResourceBitmap& bitmap)
+                                   scoped_refptr<UIResourceBitmap> bitmap)
     : bitmap_(bitmap), host_(host) {
   DCHECK(host_);
   id_ = host_->CreateUIResource(this);
@@ -32,9 +32,16 @@ ScopedUIResource::~ScopedUIResource() {
   }
 }
 
-UIResourceBitmap ScopedUIResource::GetBitmap(UIResourceId uid,
-                                             bool resource_lost) {
+gfx::Size ScopedUIResource::GetSize() const {
+  return bitmap_->GetSize();
+}
+
+scoped_refptr<UIResourceBitmap> ScopedUIResource::GetBitmap(
+    UIResourceId uid,
+    bool resource_lost) {
   return bitmap_;
 }
+
+ScopedUIResource::ScopedUIResource() {}
 
 }  // namespace cc

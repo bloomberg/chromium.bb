@@ -4,45 +4,25 @@
 
 #include "cc/resources/ui_resource_bitmap.h"
 
-#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace cc {
 
-uint8_t* UIResourceBitmap::GetPixels() const {
-  if (!pixel_ref_)
-    return NULL;
-  return static_cast<uint8_t*>(pixel_ref_->pixels());
+scoped_refptr<UIResourceBitmap>
+UIResourceBitmap::Create(uint8_t* pixels,
+                         UIResourceFormat format,
+                         UIResourceWrapMode wrap_mode,
+                         gfx::Size size) {
+  scoped_refptr<UIResourceBitmap> ret = new UIResourceBitmap();
+  ret->pixels_ = scoped_ptr<uint8_t[]>(pixels);
+  ret->format_ = format;
+  ret->wrap_mode_ = wrap_mode;
+  ret->size_ = size;
+
+  return ret;
 }
 
-void UIResourceBitmap::Create(const skia::RefPtr<SkPixelRef>& pixel_ref,
-                              UIResourceFormat format,
-                              UIResourceWrapMode wrap_mode,
-                              gfx::Size size) {
-  DCHECK(size.width());
-  DCHECK(size.height());
-  DCHECK(pixel_ref);
-  DCHECK(pixel_ref->isImmutable());
-  format_ = format;
-  wrap_mode_ = wrap_mode;
-  size_ = size;
-  pixel_ref_ = pixel_ref;
-}
-
-UIResourceBitmap::UIResourceBitmap(const SkBitmap& skbitmap,
-                                   UIResourceWrapMode wrap_mode) {
-  DCHECK_EQ(skbitmap.config(), SkBitmap::kARGB_8888_Config);
-  DCHECK_EQ(skbitmap.width(), skbitmap.rowBytesAsPixels());
-  DCHECK(skbitmap.isImmutable());
-
-  skia::RefPtr<SkPixelRef> pixel_ref = skia::SharePtr(skbitmap.pixelRef());
-  Create(pixel_ref,
-         UIResourceBitmap::RGBA8,
-         wrap_mode,
-         gfx::Size(skbitmap.width(), skbitmap.height()));
-}
-
+UIResourceBitmap::UIResourceBitmap() {}
 UIResourceBitmap::~UIResourceBitmap() {}
 
 }  // namespace cc
