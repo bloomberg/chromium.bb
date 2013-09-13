@@ -738,30 +738,6 @@ TEST_F(FileCacheTestOnUIThread, Iterate) {
   ASSERT_EQ(6U, cache_entries.size());
 }
 
-TEST_F(FileCacheTestOnUIThread, ClearAll) {
-  std::string id("pdf:1a2b");
-  std::string md5("abcdef0123456789");
-
-  // Store an existing file.
-  TestStoreToCache(id, md5, dummy_file_path_,
-                   FILE_ERROR_OK, TEST_CACHE_STATE_PRESENT);
-
-  // Verify that there's only one cached file.
-  EXPECT_EQ(1U, CountCacheFiles(id, md5));
-
-  // Clear cache.
-  bool success = false;
-  cache_->ClearAllOnUIThread(
-      google_apis::test_util::CreateCopyResultCallback(&success));
-  test_util::RunBlockingPoolTask();
-  EXPECT_TRUE(success);
-
-  // Verify that all the cache is removed.
-  expected_error_ = FILE_ERROR_OK;
-  VerifyRemoveFromCache(FILE_ERROR_OK, id);
-  EXPECT_EQ(0U, CountCacheFiles(id, md5));
-}
-
 TEST_F(FileCacheTestOnUIThread, StoreToCacheNoSpace) {
   fake_free_disk_space_getter_->set_default_value(0);
 
@@ -801,10 +777,10 @@ class FileCacheTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     const base::FilePath metadata_dir = temp_dir_.path().AppendASCII("meta");
-    const base::FilePath cache_dir = temp_dir_.path().AppendASCII("files");
+    cache_files_dir_ = temp_dir_.path().AppendASCII("files");
 
     ASSERT_TRUE(file_util::CreateDirectory(metadata_dir));
-    ASSERT_TRUE(file_util::CreateDirectory(cache_dir));
+    ASSERT_TRUE(file_util::CreateDirectory(cache_files_dir_));
 
     fake_free_disk_space_getter_.reset(new FakeFreeDiskSpaceGetter);
 
@@ -815,7 +791,7 @@ class FileCacheTest : public testing::Test {
 
     cache_.reset(new FileCache(
         metadata_storage_.get(),
-        cache_dir,
+        cache_files_dir_,
         base::MessageLoopProxy::current().get(),
         fake_free_disk_space_getter_.get()));
     ASSERT_TRUE(cache_->Initialize());
@@ -827,6 +803,7 @@ class FileCacheTest : public testing::Test {
 
   content::TestBrowserThreadBundle thread_bundle_;
   base::ScopedTempDir temp_dir_;
+  base::FilePath cache_files_dir_;
 
   scoped_ptr<ResourceMetadataStorage, test_util::DestroyHelperForTests>
       metadata_storage_;
@@ -939,6 +916,28 @@ TEST_F(FileCacheTest, RenameCacheFilesToNewFormat) {
   EXPECT_TRUE(base::ReadFileToString(file_directory.AppendASCII("id_kyu"),
                                           &contents));
   EXPECT_EQ("kyu", contents);
+}
+
+TEST_F(FileCacheTest, ClearAll) {
+  const std::string id("pdf:1a2b");
+  const std::string md5("abcdef0123456789");
+
+  // Store an existing file.
+  base::FilePath src_file;
+  ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir_.path(), &src_file));
+  ASSERT_EQ(FILE_ERROR_OK,
+            cache_->Store(id, md5, src_file, FileCache::FILE_OPERATION_COPY));
+
+  // Verify that the cache entry is created.
+  FileCacheEntry cache_entry;
+  ASSERT_TRUE(cache_->GetCacheEntry(id, &cache_entry));
+
+  // Clear cache.
+  EXPECT_TRUE(cache_->ClearAll());
+
+  // Verify that the cache is removed.
+  EXPECT_FALSE(cache_->GetCacheEntry(id, &cache_entry));
+  EXPECT_TRUE(file_util::IsDirectoryEmpty(cache_files_dir_));
 }
 
 }  // namespace internal

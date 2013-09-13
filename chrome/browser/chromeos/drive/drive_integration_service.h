@@ -136,7 +136,7 @@ class DriveIntegrationService
   // Adds back the drive mount point.
   // Used to implement ClearCacheAndRemountFileSystem().
   void AddBackDriveMountPoint(const base::Callback<void(bool)>& callback,
-                              bool success);
+                              FileError error);
 
   // Initializes the object. This function should be called before any
   // other functions.

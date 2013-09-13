@@ -348,12 +348,10 @@ void DriveIntegrationService::ClearCacheAndRemountFileSystem(
   RemoveDriveMountPoint();
 
   state_ = REMOUNTING;
-  // Reloading the file system will clear the resource metadata.
-  file_system_->Reload();
-  // Reload the Drive app registry too.
+  // Reloads the Drive app registry.
   drive_app_registry_->Update();
-
-  cache_->ClearAllOnUIThread(base::Bind(
+  // Reloading the file system clears resource metadata and cache.
+  file_system_->Reload(base::Bind(
       &DriveIntegrationService::AddBackDriveMountPoint,
       weak_ptr_factory_.GetWeakPtr(),
       callback));
@@ -361,17 +359,14 @@ void DriveIntegrationService::ClearCacheAndRemountFileSystem(
 
 void DriveIntegrationService::AddBackDriveMountPoint(
     const base::Callback<void(bool)>& callback,
-    bool success) {
+    FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  file_system_->Initialize();
+  state_ = error == FILE_ERROR_OK ? INITIALIZED : NOT_INITIALIZED;
 
-  state_ = success ? INITIALIZED : NOT_INITIALIZED;
-
-  if (!success || !enabled_) {
-    // Failed to clean the cache, or Drive file system is disabled during the
-    // cache clean up.
+  if (error != FILE_ERROR_OK || !enabled_) {
+    // Failed to reload, or Drive was disabled during the reloading.
     callback.Run(false);
     return;
   }

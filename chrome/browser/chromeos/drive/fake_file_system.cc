@@ -228,7 +228,7 @@ void FakeFileSystem::GetCacheEntryByPath(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void FakeFileSystem::Reload() {
+void FakeFileSystem::Reload(const FileOperationCallback& callback) {
 }
 
 // Implementation of GetFileContentByPath.

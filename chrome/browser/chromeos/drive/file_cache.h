@@ -43,11 +43,6 @@ typedef base::Callback<void(FileError error,
                             const base::FilePath& cache_file_path)>
     GetFileFromCacheCallback;
 
-// Callback for ClearAllOnUIThread.
-// |success| indicates if the operation was successful.
-// TODO(satorux): Change this to FileError when it becomes necessary.
-typedef base::Callback<void(bool success)> ClearAllCallback;
-
 // Interface class used for getting the free disk space. Tests can inject an
 // implementation that reports fake free disk space.
 class FreeDiskSpaceGetterInterface {
@@ -206,12 +201,8 @@ class FileCache {
   // Synchronous version of RemoveOnUIThread().
   FileError Remove(const std::string& id);
 
-  // Does the following:
-  // - remove all the files in the cache directory.
-  // - re-create the |metadata_| instance.
-  // |callback| must not be null.
-  // Must be called on the UI thread.
-  void ClearAllOnUIThread(const ClearAllCallback& callback);
+  // Removes all the files in the cache directory and cache entries in DB.
+  bool ClearAll();
 
   // Initializes the cache. Returns true on success.
   bool Initialize();
@@ -249,9 +240,6 @@ class FileCache {
 
   // Used to implement MarkAsUnmountedOnUIThread.
   FileError MarkAsUnmounted(const base::FilePath& file_path);
-
-  // Used to implement ClearAllOnUIThread.
-  bool ClearAll();
 
   // Returns true if we have sufficient space to store the given number of
   // bytes, while keeping kMinFreeSpace bytes on the disk.

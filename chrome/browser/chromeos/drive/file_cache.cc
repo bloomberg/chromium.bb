@@ -475,15 +475,29 @@ FileError FileCache::Remove(const std::string& id) {
   return storage_->RemoveCacheEntry(id) ? FILE_ERROR_OK : FILE_ERROR_FAILED;
 }
 
-void FileCache::ClearAllOnUIThread(const ClearAllCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
+bool FileCache::ClearAll() {
+  AssertOnSequencedWorkerPool();
 
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner_.get(),
-      FROM_HERE,
-      base::Bind(&FileCache::ClearAll, base::Unretained(this)),
-      callback);
+  // Remove entries on the metadata.
+  scoped_ptr<ResourceMetadataStorage::CacheEntryIterator> it =
+      storage_->GetCacheEntryIterator();
+  for (; !it->IsAtEnd(); it->Advance()) {
+    if (!storage_->RemoveCacheEntry(it->GetID()))
+      return false;
+  }
+
+  if (it->HasError())
+    return false;
+
+  // Remove files.
+  base::FileEnumerator enumerator(cache_file_directory_,
+                                  false,  // not recursive
+                                  base::FileEnumerator::FILES);
+  for (base::FilePath file = enumerator.Next(); !file.empty();
+       file = enumerator.Next())
+    base::DeleteFile(file, false /* recursive */);
+
+  return true;
 }
 
 bool FileCache::Initialize() {
@@ -590,31 +604,6 @@ FileError FileCache::MarkAsUnmounted(const base::FilePath& file_path) {
 
   mounted_files_.erase(it);
   return FILE_ERROR_OK;
-}
-
-bool FileCache::ClearAll() {
-  AssertOnSequencedWorkerPool();
-
-  // Remove entries on the metadata.
-  scoped_ptr<ResourceMetadataStorage::CacheEntryIterator> it =
-      storage_->GetCacheEntryIterator();
-  for (; !it->IsAtEnd(); it->Advance()) {
-    if (!storage_->RemoveCacheEntry(it->GetID()))
-      return false;
-  }
-
-  if (it->HasError())
-    return false;
-
-  // Remove files.
-  base::FileEnumerator enumerator(cache_file_directory_,
-                                  false,  // not recursive
-                                  base::FileEnumerator::FILES);
-  for (base::FilePath file = enumerator.Next(); !file.empty();
-       file = enumerator.Next())
-    base::DeleteFile(file, false /* recursive */);
-
-  return true;
 }
 
 bool FileCache::HasEnoughSpaceFor(int64 num_bytes,

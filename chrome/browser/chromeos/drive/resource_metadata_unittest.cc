@@ -359,49 +359,6 @@ TEST_F(ResourceMetadataTestOnUIThread, ReadDirectoryByPath) {
   EXPECT_FALSE(entries.get());
 }
 
-TEST_F(ResourceMetadataTestOnUIThread, Reset) {
-  // The grand root has "root" which is not empty.
-  scoped_ptr<ResourceEntryVector> entries;
-  entries = ReadDirectoryByPathSync(
-      base::FilePath::FromUTF8Unsafe("drive/root"));
-  ASSERT_TRUE(entries.get());
-  ASSERT_FALSE(entries->empty());
-
-  // Reset.
-  FileError error = FILE_ERROR_FAILED;
-  resource_metadata_->ResetOnUIThread(
-      google_apis::test_util::CreateCopyResultCallback(&error));
-  test_util::RunBlockingPoolTask();
-  EXPECT_EQ(FILE_ERROR_OK, error);
-
-  base::FilePath drive_file_path;
-  scoped_ptr<ResourceEntry> entry;
-
-  // change stamp should be reset.
-  int64 changestamp = -1;
-  resource_metadata_->GetLargestChangestampOnUIThread(
-      google_apis::test_util::CreateCopyResultCallback(&changestamp));
-  test_util::RunBlockingPoolTask();
-  EXPECT_EQ(0, changestamp);
-
-  // root should continue to exist.
-  entry = GetResourceEntryByPathSync(base::FilePath::FromUTF8Unsafe("drive"));
-  ASSERT_TRUE(entry.get());
-  EXPECT_EQ("drive", entry->base_name());
-  ASSERT_TRUE(entry->file_info().is_directory());
-  EXPECT_EQ(util::kDriveGrandRootSpecialResourceId, entry->resource_id());
-
-  // There is "other", which are both empty.
-  entries = ReadDirectoryByPathSync(base::FilePath::FromUTF8Unsafe("drive"));
-  ASSERT_TRUE(entries.get());
-  EXPECT_EQ(1U, entries->size());
-
-  scoped_ptr<ResourceEntryVector> entries_in_other =
-      ReadDirectoryByPathSync(base::FilePath::FromUTF8Unsafe("drive/other"));
-  ASSERT_TRUE(entries_in_other.get());
-  EXPECT_TRUE(entries_in_other->empty());
-}
-
 // Tests for methods running on the blocking task runner.
 class ResourceMetadataTest : public testing::Test {
  protected:
@@ -760,6 +717,42 @@ TEST_F(ResourceMetadataTest, EncodedNames) {
           "drive/root/\\(^o^)\xE2\x88\x95/Slash \xE2\x88\x95.txt"),
       &entry));
   EXPECT_EQ("myfile", entry.resource_id());
+}
+
+TEST_F(ResourceMetadataTest, Reset) {
+  // The grand root has "root" which is not empty.
+  std::vector<ResourceEntry> entries;
+  ASSERT_EQ(FILE_ERROR_OK,
+            resource_metadata_->ReadDirectoryByPath(
+                base::FilePath::FromUTF8Unsafe("drive/root"), &entries));
+  ASSERT_FALSE(entries.empty());
+
+  // Reset.
+  EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->Reset());
+
+  // change stamp should be reset.
+  EXPECT_EQ(0, resource_metadata_->GetLargestChangestamp());
+
+  // root should continue to exist.
+  ResourceEntry entry;
+  ASSERT_EQ(FILE_ERROR_OK,
+            resource_metadata_->GetResourceEntryByPath(
+                base::FilePath::FromUTF8Unsafe("drive"), &entry));
+  EXPECT_EQ("drive", entry.base_name());
+  ASSERT_TRUE(entry.file_info().is_directory());
+  EXPECT_EQ(util::kDriveGrandRootSpecialResourceId, entry.resource_id());
+
+  // There is "other" under "drive".
+  ASSERT_EQ(FILE_ERROR_OK,
+            resource_metadata_->ReadDirectoryByPath(
+                base::FilePath::FromUTF8Unsafe("drive"), &entries));
+  EXPECT_EQ(1U, entries.size());
+
+  // The "other" directory should be empty.
+  ASSERT_EQ(FILE_ERROR_OK,
+            resource_metadata_->ReadDirectoryByPath(
+                base::FilePath::FromUTF8Unsafe("drive/other"), &entries));
+  EXPECT_TRUE(entries.empty());
 }
 
 }  // namespace internal

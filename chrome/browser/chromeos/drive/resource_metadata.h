@@ -60,10 +60,6 @@ class ResourceMetadata {
   void Destroy();
 
   // Resets this object.
-  // Must be called on the UI thread.
-  void ResetOnUIThread(const FileOperationCallback& callback);
-
-  // Synchronous version of ResetOnUIThread.
   FileError Reset();
 
   // Largest change timestamp that was the source of content for the current

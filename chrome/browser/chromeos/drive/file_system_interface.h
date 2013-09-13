@@ -422,7 +422,7 @@ class FileSystemInterface {
                                    const GetCacheEntryCallback& callback) = 0;
 
   // Reloads the resource metadata from the server.
-  virtual void Reload() = 0;
+  virtual void Reload(const FileOperationCallback& callback) = 0;
 };
 
 }  // namespace drive

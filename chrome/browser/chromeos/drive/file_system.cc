@@ -234,6 +234,15 @@ void CheckStaleThumbnailURL(ResourceEntryVector* entries,
   }
 }
 
+// Clears |resource_metadata| and |cache|.
+FileError ResetOnBlockingPool(internal::ResourceMetadata* resource_metadata,
+                              internal::FileCache* cache) {
+  FileError error = resource_metadata->Reset();
+  if (error != FILE_ERROR_OK)
+    return error;
+ return cache->ClearAll() ? FILE_ERROR_OK : FILE_ERROR_FAILED;
+}
+
 }  // namespace
 
 FileSystem::FileSystem(
@@ -253,25 +262,54 @@ FileSystem::FileSystem(
       blocking_task_runner_(blocking_task_runner),
       temporary_file_directory_(temporary_file_directory),
       weak_ptr_factory_(this) {
-  // Should be created from the file browser extension API on UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  ResetComponents();
 }
 
-void FileSystem::Reload() {
-  // Discard the current loader and renew. This is to avoid that change lists
-  // requested before the metadata reset is applied after the reset.
-  SetupChangeListLoader();
+FileSystem::~FileSystem() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  resource_metadata_->ResetOnUIThread(base::Bind(
-      &FileSystem::ReloadAfterReset,
-      weak_ptr_factory_.GetWeakPtr()));
+  change_list_loader_->RemoveObserver(this);
 }
 
 void FileSystem::Initialize() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+}
 
-  SetupChangeListLoader();
+void FileSystem::Reload(const FileOperationCallback& callback) {
+  // Discard the current loader and operation objects and renew them. This is to
+  // avoid that changes initiated before the metadata reset is applied after the
+  // reset, which may cause an inconsistent state.
+  // TODO(kinaba): callbacks held in the subcomponents are discarded. We might
+  // want to have a way to abort and flush callbacks in in-flight operations.
+  ResetComponents();
 
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_,
+      FROM_HERE,
+      base::Bind(&ResetOnBlockingPool, resource_metadata_, cache_),
+      base::Bind(&FileSystem::ReloadAfterReset,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback));
+}
+
+void FileSystem::ReloadAfterReset(const FileOperationCallback& callback,
+                                  FileError error) {
+  if (error != FILE_ERROR_OK) {
+    LOG(ERROR) << "Failed to reload Drive file system: "
+               << FileErrorToString(error);
+    callback.Run(error);
+    return;
+  }
+
+  change_list_loader_->LoadIfNeeded(
+      internal::DirectoryFetchInfo(),
+      base::Bind(&FileSystem::OnUpdateChecked, weak_ptr_factory_.GetWeakPtr()));
+  callback.Run(error);
+}
+
+void FileSystem::ResetComponents() {
   file_system::OperationObserver* observer = this;
   copy_operation_.reset(
       new file_system::CopyOperation(blocking_task_runner_.get(),
@@ -345,22 +383,7 @@ void FileSystem::Initialize() {
                                               resource_metadata_,
                                               cache_,
                                               temporary_file_directory_));
-}
 
-void FileSystem::ReloadAfterReset(FileError error) {
-  if (error != FILE_ERROR_OK) {
-    LOG(ERROR) << "Failed to reset the resource metadata: "
-               << FileErrorToString(error);
-    return;
-  }
-
-  change_list_loader_->LoadIfNeeded(
-      internal::DirectoryFetchInfo(),
-      base::Bind(&FileSystem::OnUpdateChecked,
-                 weak_ptr_factory_.GetWeakPtr()));
-}
-
-void FileSystem::SetupChangeListLoader() {
   change_list_loader_.reset(new internal::ChangeListLoader(
       blocking_task_runner_.get(),
       resource_metadata_,
@@ -373,11 +396,8 @@ void FileSystem::CheckForUpdates() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DVLOG(1) << "CheckForUpdates";
 
-  if (change_list_loader_) {
-    change_list_loader_->CheckForUpdates(
-        base::Bind(&FileSystem::OnUpdateChecked,
-                   weak_ptr_factory_.GetWeakPtr()));
-  }
+  change_list_loader_->CheckForUpdates(
+      base::Bind(&FileSystem::OnUpdateChecked, weak_ptr_factory_.GetWeakPtr()));
 }
 
 void FileSystem::OnUpdateChecked(FileError error) {
@@ -385,15 +405,6 @@ void FileSystem::OnUpdateChecked(FileError error) {
   DVLOG(1) << "CheckForUpdates finished: " << FileErrorToString(error);
   last_update_check_time_ = base::Time::Now();
   last_update_check_error_ = error;
-}
-
-FileSystem::~FileSystem() {
-  // This should be called from UI thread, from DriveIntegrationService
-  // shutdown.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (change_list_loader_)
-    change_list_loader_->RemoveObserver(this);
 }
 
 void FileSystem::AddObserver(FileSystemObserver* observer) {
@@ -514,11 +525,7 @@ void FileSystem::Pin(const base::FilePath& file_path,
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_,
       FROM_HERE,
-      base::Bind(&PinInternal,
-                 resource_metadata_,
-                 cache_,
-                 file_path,
-                 local_id),
+      base::Bind(&PinInternal, resource_metadata_, cache_, file_path, local_id),
       base::Bind(&FileSystem::FinishPin,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback,

@@ -92,17 +92,6 @@ void ResourceMetadata::Destroy() {
                  base::Unretained(this)));
 }
 
-void ResourceMetadata::ResetOnUIThread(const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner_.get(),
-      FROM_HERE,
-      base::Bind(&ResourceMetadata::Reset, base::Unretained(this)),
-      callback);
-}
-
 FileError ResourceMetadata::Reset() {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
