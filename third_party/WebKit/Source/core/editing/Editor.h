@@ -59,8 +59,9 @@ class SpellCheckRequester;
 class StylePropertySet;
 class Text;
 class TextCheckerClient;
-class TextEvent;
+class TextCheckingParagraph;
 struct TextCheckingResult;
+class TextEvent;
 
 enum EditorCommandSource { CommandFromMenuOrKeyBinding, CommandFromDOM, CommandFromDOMWithUserInterface };
 enum EditorParagraphSeparator { EditorParagraphSeparatorIsDiv, EditorParagraphSeparatorIsP };
@@ -339,7 +340,8 @@ private:
 
     bool unifiedTextCheckerEnabled() const;
 
-    void markAllMisspellingsAndBadGrammarInRanges(TextCheckingTypeMask textCheckingMask, Range* checkingRange, Range* paragraphRange, bool asynchronous, int requestNumber, int* checkingLength = 0);
+    void chunkAndMarkAllMisspellingsAndBadGrammar(TextCheckingTypeMask textCheckingOptions, const TextCheckingParagraph& fullParagraphToCheck, bool asynchronous);
+    void markAllMisspellingsAndBadGrammarInRanges(TextCheckingTypeMask textCheckingOptions, Range* checkingRange, Range* paragraphRange, bool asynchronous, int requestNumber, int* checkingLength = 0);
 };
 
 inline void Editor::setStartNewKillRingSequence(bool flag)

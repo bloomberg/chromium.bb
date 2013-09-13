@@ -1,0 +1,124 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<script src="../../LayoutTests/editing/editing.js"></script>
+<script src="../../LayoutTests/editing/spelling/resources/util.js"></script>
+<script src="../resources/runner.js"></script>
+</head>
+<body onload="start()">
+<textarea style="border:2px solid red;" id="huge_text">
+</textarea><br/>
+<textarea id="destination">
+</textarea>
+<p id="helper" contenteditable spellcheck="false"></p>
+<script>
+var srcNode = null;
+var dstNode = null;
+var auxNode = null;
+var startTime = 0;
+
+function start()
+{
+    if (window.internals) {
+        internals.settings.setUnifiedTextCheckerEnabled(true);
+        internals.settings.setAsynchronousSpellCheckingEnabled(true);
+        internals.setContinuousSpellCheckingEnabled(true);
+        internals.settings.setJavaScriptCanAccessClipboard(true);
+        internals.settings.setDOMPasteAllowed(true);
+    }
+    
+    var testText = "";
+    for (var i = 0; i < 260; i++)
+        testText += "zz zz zz zz zz zz zz zz zz zz zz zz zz zz zz zz zz zz zz zz zz zz zz zz.\n";
+
+    srcNode = document.getElementById('huge_text');
+    srcNode.innerText = testText;
+
+    PerfTestRunner.prepareToMeasureValuesAsync({ unit: "ms", done:done });
+
+    test();
+}
+
+function test()
+{
+    startTime = PerfTestRunner.now();
+    stepSelectAllInSrc();
+}
+
+function stepSelectAllInSrc()
+{
+    srcNode.focus();
+    document.execCommand('SelectAll');
+    waitUntilSelectedAndSpellchecked();
+}
+
+function waitUntilSelectedAndSpellchecked()
+{
+    if (!window.getSelection().toString().length) {
+        setTimeout(waitUntilSelectedAndSpellchecked, 0);
+        return;
+    } else {
+        if (window.internals) {
+            if (!internals.markerCountForNode(findFirstTextNode(srcNode), "spelling")) {
+                setTimeout(waitUntilSelectedAndSpellchecked, 0);
+                return;
+            }
+        }
+    }
+    document.execCommand("Copy");
+    stepHelper();
+}
+
+function stepHelper()
+{
+    auxNode = document.getElementById('helper');
+    var textToType = 'good';
+    typeText(auxNode, textToType);
+    var textNode = findFirstTextNode(auxNode);
+    if (!textNode || textNode.textContent != textToType) {
+        setTimeout(stepHelper, 0);
+        return;
+    }
+    stepPaste();
+}
+
+function stepPaste()
+{
+    dstNode = document.getElementById('destination');
+    dstNode.focus();
+    document.execCommand("Paste");
+    check();
+}
+
+function check()
+{
+    if (window.internals) {
+        if (!internals.markerCountForNode(findFirstTextNode(dstNode), "spelling")) {
+            setTimeout(check, 0);
+            return;
+        }
+    } else {
+        if (dstNode.scrollTop > 0) {
+            dstNode.scrollTop = dstNode.scrollTop - 1;
+            setTimeout(check, 0);
+            return;
+        }
+    }
+
+    PerfTestRunner.measureValueAsync(PerfTestRunner.now() - startTime);
+    PerfTestRunner.gc();
+    dstNode.innerText = "";
+    auxNode.innerText = "";
+    setTimeout(test, 0);
+}
+
+function done()
+{
+    srcNode.innerText = "";
+    dstNode.innerText = "";
+    auxNode.innerText = "";
+}
+
+</script>
+</body>
+</html>

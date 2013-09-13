@@ -427,7 +427,9 @@ void Editor::replaceSelectionWithFragment(PassRefPtr<DocumentFragment> fragment,
         return;
 
     RefPtr<Range> rangeToCheck = Range::create(*m_frame->document(), firstPositionInNode(nodeToCheck), lastPositionInNode(nodeToCheck));
-    m_spellCheckRequester->requestCheckingFor(SpellCheckRequest::create(resolveTextCheckingTypeMask(TextCheckingTypeSpelling | TextCheckingTypeGrammar), TextCheckingProcessBatch, rangeToCheck, rangeToCheck));
+    TextCheckingParagraph textToCheck(rangeToCheck, rangeToCheck);
+    bool asynchronous = true;
+    chunkAndMarkAllMisspellingsAndBadGrammar(resolveTextCheckingTypeMask(TextCheckingTypeSpelling | TextCheckingTypeGrammar), textToCheck, asynchronous);
 }
 
 void Editor::replaceSelectionWithText(const String& text, bool selectReplacement, bool smartReplace)
@@ -1535,6 +1537,13 @@ void Editor::markAllMisspellingsAndBadGrammarInRanges(TextCheckingTypeMask textC
 
     Range* rangeToCheck = shouldMarkGrammar ? grammarRange : spellingRange;
     TextCheckingParagraph fullParagraphToCheck(rangeToCheck);
+
+    bool asynchronous = m_frame && m_frame->settings() && m_frame->settings()->asynchronousSpellCheckingEnabled();
+    chunkAndMarkAllMisspellingsAndBadGrammar(textCheckingOptions, fullParagraphToCheck, asynchronous);
+}
+
+void Editor::chunkAndMarkAllMisspellingsAndBadGrammar(TextCheckingTypeMask textCheckingOptions, const TextCheckingParagraph& fullParagraphToCheck, bool asynchronous)
+{
     if (fullParagraphToCheck.isRangeEmpty() || fullParagraphToCheck.isEmpty())
         return;
 
@@ -1544,13 +1553,11 @@ void Editor::markAllMisspellingsAndBadGrammarInRanges(TextCheckingTypeMask textC
     int end = fullParagraphToCheck.checkingEnd();
     start = std::min(start, end);
     end = std::max(start, end);
-    bool asynchronous = m_frame && m_frame->settings() && m_frame->settings()->asynchronousSpellCheckingEnabled();
     const int kNumChunksToCheck = asynchronous ? (end - start + kChunkSize - 1) / (kChunkSize) : 1;
     int currentChunkStart = start;
-    RefPtr<Range> checkRange = asynchronous ? fullParagraphToCheck.paragraphRange() : rangeToCheck;
-    RefPtr<Range> paragraphRange = fullParagraphToCheck.paragraphRange();
+    RefPtr<Range> checkRange = fullParagraphToCheck.checkingRange();
     if (kNumChunksToCheck == 1 && asynchronous) {
-        markAllMisspellingsAndBadGrammarInRanges(textCheckingOptions, checkRange.get(), paragraphRange.get(), asynchronous, 0);
+        markAllMisspellingsAndBadGrammarInRanges(textCheckingOptions, checkRange.get(), checkRange.get(), asynchronous, 0);
         return;
     }
 
@@ -1558,10 +1565,9 @@ void Editor::markAllMisspellingsAndBadGrammarInRanges(TextCheckingTypeMask textC
         checkRange = fullParagraphToCheck.subrange(currentChunkStart, kChunkSize);
         setStart(checkRange.get(), startOfSentence(checkRange->startPosition()));
         setEnd(checkRange.get(), endOfSentence(checkRange->endPosition()));
-        paragraphRange = checkRange;
 
         int checkingLength = 0;
-        markAllMisspellingsAndBadGrammarInRanges(textCheckingOptions, checkRange.get(), paragraphRange.get(), asynchronous, iter, &checkingLength);
+        markAllMisspellingsAndBadGrammarInRanges(textCheckingOptions, checkRange.get(), checkRange.get(), asynchronous, iter, &checkingLength);
         currentChunkStart += checkingLength;
     }
 }
