@@ -1505,6 +1505,7 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kSyncfsEnableDirectoryOperation),
   },
+#if defined(ENABLE_MDNS)
   {
     "disable-device-discovery",
     IDS_FLAGS_DISABLE_DEVICE_DISCOVERY_NAME,
@@ -1512,6 +1513,14 @@ const Experiment kExperiments[] = {
     kOsWin | kOsLinux | kOsCrOS,
     SINGLE_VALUE_TYPE(switches::kDisableDeviceDiscovery)
   },
+  {
+    "disable-device-discovery-notifications",
+    IDS_FLAGS_DISABLE_DEVICE_DISCOVERY_NOTIFICATIONS_NAME,
+    IDS_FLAGS_DISABLE_DEVICE_DISCOVERY_NOTIFICATIONS_DESCRIPTION,
+    kOsWin | kOsLinux | kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kDisableDeviceDiscoveryNotifications)
+  },
+#endif  // ENABLE_MDNS
 #if defined(OS_MACOSX)
   {
     "enable-app-list-shim",
