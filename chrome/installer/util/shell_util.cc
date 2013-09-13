@@ -2055,17 +2055,16 @@ bool ShellUtil::RemoveShortcuts(ShellUtil::ShortcutLocation location,
 }
 
 // static
-bool ShellUtil::UpdateShortcuts(
+bool ShellUtil::UpdateShortcutsWithArgs(
     ShellUtil::ShortcutLocation location,
     BrowserDistribution* dist,
     ShellChange level,
     const base::FilePath& target_exe,
-    bool require_args,
     const ShellUtil::ShortcutProperties& properties) {
   if (!ShellUtil::ShortcutLocationIsSupported(location))
     return true;  // Vacuous success.
 
-  FilterTargetEq shortcut_filter(target_exe, require_args);
+  FilterTargetEq shortcut_filter(target_exe, true);
   ShortcutOperationCallback shortcut_operation(
       base::Bind(&ShortcutOpUpdate, TranslateShortcutProperties(properties)));
   return BatchShortcutAction(shortcut_filter.AsShortcutFilterCallback(),

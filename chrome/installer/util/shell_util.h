@@ -519,18 +519,17 @@ class ShellUtil {
                               ShellChange level,
                               const base::FilePath& target_exe);
 
-  // Applies the updates in |shortcut_properties| to all matching shortcuts
-  // in |location|, i.e.:
+  // Applies the updates in |properties| to all matching shortcuts in
+  // |location|, i.e.:
   // - the shortcut's original target is |target_exe|,
-  // - if |require_args| is set, the original arguments are non-empty.
+  // - the original arguments are non-empty.
   // Returns true if all updates to matching shortcuts are successful, including
   // the vacuous case where no matching shortcuts are found.
-  static bool UpdateShortcuts(
+  static bool UpdateShortcutsWithArgs(
       ShellUtil::ShortcutLocation location,
       BrowserDistribution* dist,
       ShellChange level,
       const base::FilePath& target_exe,
-      bool require_args,
       const ShellUtil::ShortcutProperties& properties);
 
   // Sets |suffix| to the base 32 encoding of the md5 hash of this user's sid
