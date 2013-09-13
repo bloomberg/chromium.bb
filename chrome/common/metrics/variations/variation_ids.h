@@ -234,10 +234,17 @@ enum ReservedVariationID {
   QUIC_FIELD_TRIAL_ID_MIN = 3311871,
   QUIC_FIELD_TRIAL_ID_MAX = 3311920,
 
+  // Android Native NTP trial.
+  // Range: 3311921 - 3311930
+  ANDROID_NATIVE_NTP_CONTROL_0 = 3311921,
+  ANDROID_NATIVE_NTP_CONTROL_1 = 3311922,
+  ANDROID_NATIVE_NTP_TWO_URL_BARS = 3311923,
+  ANDROID_NATIVE_NTP_ONE_URL_BAR = 3311924,
+
   // NEXT ID: When adding new IDs, please add them above this section, starting
   // with the value of NEXT_ID, and updating NEXT_ID to (end of your reserved
   // range) + 1.
-  NEXT_ID = 3311921,
+  NEXT_ID = 3311931,
 
   // USABLE IDs END HERE.
   //
