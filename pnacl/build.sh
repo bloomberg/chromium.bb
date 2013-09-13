@@ -53,6 +53,15 @@ if ${BUILD_PLATFORM_MAC} || ${BUILD_PLATFORM_WIN}; then
   PNACL_BUILD_MIPS=false
 fi
 
+# PNaCl builds libc++/libc++abi as well as libstdc++, allowing users to
+# choose which to use through the -stdlib=XXX command-line argument.
+#
+# The following strings are used for banner names as well as file and
+# folder names. These names are created by the libraries themselves, and
+# expected by their dependents. Changing them would be ill-advised.
+readonly LIB_CXX_NAME="libc++"
+readonly LIB_STDCPP_NAME="libstdc++"
+
 # TODO(pdox): Decide what the target should really permanently be
 readonly CROSS_TARGET_ARM=arm-none-linux-gnueabi
 readonly BINUTILS_TARGET=arm-pc-nacl
@@ -92,9 +101,10 @@ readonly TC_SRC_LLVM="${PNACL_GIT_ROOT}/llvm"
 readonly TC_SRC_GCC="${PNACL_GIT_ROOT}/gcc"
 readonly TC_SRC_GLIBC="${PNACL_GIT_ROOT}/glibc"
 readonly TC_SRC_NEWLIB="${PNACL_GIT_ROOT}/nacl-newlib"
-readonly TC_SRC_LIBSTDCPP="${TC_SRC_GCC}/libstdc++-v3"
+readonly TC_SRC_LIBSTDCPP="${TC_SRC_GCC}/${LIB_STDCPP_NAME}-v3"
 readonly TC_SRC_COMPILER_RT="${PNACL_GIT_ROOT}/compiler-rt"
 readonly TC_SRC_CLANG="${PNACL_GIT_ROOT}/clang"
+readonly TC_SRC_LIBCXX="${PNACL_GIT_ROOT}/libcxx"
 
 readonly SERVICE_RUNTIME_SRC="${NACL_ROOT}/src/trusted/service_runtime"
 readonly EXPORT_HEADER_SCRIPT="${SERVICE_RUNTIME_SRC}/export_header.py"
@@ -280,8 +290,8 @@ setup-biased-bitcode-env() {
       NEWLIB_TARGET=${REAL_CROSS_TARGET}
       TC_BUILD_NEWLIB="${TC_BUILD}/newlib-portable"
       INSTALL_LIB_NEWLIB="${INSTALL_NEWLIB}/lib"
-      LIBSTDCPP_BUILD="${TC_BUILD}/libstdcpp-${LIBSTDCPP_LIBMODE:-newlib}-portable"
-      LIBSTDCPP_INSTALL_DIR="$(GetInstallDir ${LIBSTDCPP_LIBMODE:-newlib})/usr"
+      LIB_CPP_BUILD="${TC_BUILD}/c++-stdlib-${LIB_CPP_LIBMODE:-newlib}-portable"
+      LIB_CPP_INSTALL_DIR="$(GetInstallDir ${LIB_CPP_LIBMODE:-newlib})/usr"
       ;;
     x86-64)
       BIASED_BC_CFLAGS="--target=x86_64-nacl"
@@ -290,8 +300,8 @@ setup-biased-bitcode-env() {
       NEWLIB_TARGET="${REAL_CROSS_TARGET}"
       TC_BUILD_NEWLIB="${TC_BUILD}/newlib-${arch}"
       INSTALL_LIB_NEWLIB="${INSTALL_NEWLIB}/lib-bc-${arch}"
-      LIBSTDCPP_BUILD="${TC_BUILD}/libstdcpp-${LIBSTDCPP_LIBMODE:-newlib}-${arch}"
-      LIBSTDCPP_INSTALL_DIR="$(GetInstallDir ${LIBSTDCPP_LIBMODE:-newlib})/usr-bc-${arch}"
+      LIB_CPP_BUILD="${TC_BUILD}/c++-stdlib-${LIB_CPP_LIBMODE:-newlib}-${arch}"
+      LIB_CPP_INSTALL_DIR="$(GetInstallDir ${LIB_CPP_LIBMODE:-newlib})/usr-bc-${arch}"
       ;;
     *)
       echo "Newlib architectures other than portable and x86-64 not implemented yet"
@@ -299,13 +309,13 @@ setup-biased-bitcode-env() {
   esac
 }
 
-setup-libstdcpp-env() {
+setup-lib-cpp-env() {
   # NOTE: we do not expect the assembler or linker to be used for libs
   #       hence the use of ILLEGAL_TOOL.
-  local pnacl_cc=$(GetTool cc ${LIBSTDCPP_LIBMODE})
-  local pnacl_cxx=$(GetTool cxx ${LIBSTDCPP_LIBMODE})
+  local pnacl_cc=$(GetTool cc ${LIB_CPP_LIBMODE})
+  local pnacl_cxx=$(GetTool cxx ${LIB_CPP_LIBMODE})
 
-  STD_ENV_FOR_LIBSTDCPP=(
+  STD_ENV_FOR_LIB_CPP=(
     CC_FOR_BUILD="${CC}"
     CC="${pnacl_cc}"
     CXX="${pnacl_cxx}"
@@ -505,8 +515,14 @@ libs() {
   done
   compiler-rt-all
   libgcc_eh-newlib
-  libstdcpp newlib portable
-  libstdcpp newlib x86-64
+  lib-cpp ${LIB_CXX_NAME} newlib portable
+  # Note: The libc++ build with biased bitcode is disabled because
+  # biased bitcode builds of the C++ standard library are only used to
+  # build the IRT, and the default is currently libstdc++ so the biased
+  # version of libc++ isn't used.
+  # lib-cpp ${LIB_CXX_NAME} newlib x86-64
+  lib-cpp ${LIB_STDCPP_NAME} newlib portable
+  lib-cpp ${LIB_STDCPP_NAME} newlib x86-64
 }
 
 #@ everything            - Build and install untrusted SDK. no translator
@@ -717,7 +733,7 @@ glibc() {
 }
 
 glibc-copy() {
-  StepBanner "GLIBC" "Copying glibc from NNaCl toolchain"
+  StepBanner "GLIBC" "Copying glibc from Native NaCl toolchain"
 
   mkdir -p "${INSTALL_LIB_X8632}"
   mkdir -p "${INSTALL_LIB_X8664}"
@@ -736,7 +752,7 @@ glibc-copy() {
   # Set up libs for native linking.
 
   # Files to copy from ${naclgcc_base} into the translator library directories
-  local LIBS_TO_COPY="libstdc++.so.6 \
+  local LIBS_TO_COPY="${LIB_STDCPP_NAME}.so.6 \
                       libc_nonshared.a \
                       libc.so.${ver} \
                       libm.so.${ver} \
@@ -784,8 +800,8 @@ glibc-copy() {
     make-glibc-pso-stubs ${lib}.so.${ver} ${lib}.pso
     make-glibc-pso-stubs ${lib}.so.${ver} ${lib}-2.9.pso
   done
-  make-glibc-pso-stubs libstdc++.so.6 libstdc++.pso
-  make-glibc-pso-stubs libstdc++.so.6 libstdc++.pso.6.0.13
+  make-glibc-pso-stubs ${LIB_STDCPP_NAME}.so.6 ${LIB_STDCPP_NAME}.pso
+  make-glibc-pso-stubs ${LIB_STDCPP_NAME}.so.6 ${LIB_STDCPP_NAME}.pso.6.0.13
   make-glibc-pso-stubs libmemusage.so libmemusage.pso
 
   # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2615
@@ -844,12 +860,11 @@ status() {
   # TODO(robertm): this is currently broken
   StepBanner "BUILD STATUS"
 
-  status-helper "BINUTILS"          binutils
-  status-helper "LLVM"              llvm
+  status-helper "BINUTILS"             binutils
+  status-helper "LLVM"                 llvm
 
-  status-helper "NEWLIB"            newlib
-  status-helper "LIBSTDCPP"         libstdcpp
-
+  status-helper "NEWLIB"               newlib
+  status-helper "C++ Standard Library" lib-cpp
 }
 
 status-helper() {
@@ -1488,156 +1503,221 @@ compiler-rt() {
 
 #########################################################################
 #########################################################################
-#                          < LIBSTDCPP >
+#                          < LIBSTDC++/LIBC++ >
 #########################################################################
 #########################################################################
 
-check-libmode() {
-  local libmode=$1
-  if [ ${libmode} != "newlib" ] && [ ${libmode} != "glibc" ]; then
-    echo "ERROR: Unsupported library mode. Choose one of: newlib, glibc"
+check-lib-cpp() {
+  local lib=$1
+  if [ ${lib} != ${LIB_CXX_NAME} ] && [ ${lib} != ${LIB_STDCPP_NAME} ]; then
+    echo "ERROR: Unsupported C++ Standard Library '${lib}'. Choose one of: ${LIB_CXX_NAME}, ${LIB_STDCPP_NAME}"
     exit -1
   fi
 }
 
-LIBSTDCPP_IS_SETUP=false
-libstdcpp-setup() {
-  if ${LIBSTDCPP_IS_SETUP} && [ $# -eq 0 ]; then
+check-libmode() {
+  local libmode=$1
+  if [ ${libmode} != "newlib" ] && [ ${libmode} != "glibc" ]; then
+    echo "ERROR: Unsupported library mode '${libmode}'. Choose one of: newlib, glibc"
+    exit -1
+  fi
+}
+
+LIB_CPP_IS_SETUP=false
+lib-cpp-setup() {
+  if ${LIB_CPP_IS_SETUP} && [ $# -eq 0 ]; then
     return 0
   fi
-  if [ $# -ne 2 ]; then
-    Fatal "Please specify library mode: newlib or glibc"
+  if [ $# -ne 3 ]; then
+    Fatal "Please specify C++ Standard Library (${LIB_CXX_NAME} or ${LIB_STDCPP_NAME}) and library mode (newlib or glibc)"
   fi
-  check-libmode "$1"
-  LIBSTDCPP_LIBMODE=$1
-  local arch=$2
+  check-libmode "$2"
+  LIB_CPP_LIBMODE=$2
+  local arch=$3
   setup-biased-bitcode-env ${arch}
-  LIBSTDCPP_IS_SETUP=true
+  LIB_CPP_IS_SETUP=true
 }
 
-libstdcpp() {
-  libstdcpp-setup "$@"
-  StepBanner "LIBSTDCPP 4.6 (BITCODE $*)"
+lib-cpp() {
+  local lib=$1
+  check-lib-cpp "$@"
+  lib-cpp-setup "$@"
+  StepBanner "C++ Standard Library" "(BITCODE $*)"
 
-  if libstdcpp-needs-configure; then
-    libstdcpp-clean
-    libstdcpp-configure "$@"
+  if lib-cpp-needs-configure "$@"; then
+    lib-cpp-clean "$@"
+    lib-cpp-configure "$@"
   else
-    SkipBanner "LIBSTDCPP" "configure"
+    StepBanner "${lib}" "configure"
   fi
 
-  if libstdcpp-needs-make; then
-    libstdcpp-make "$@"
+  if lib-cpp-needs-make "$@"; then
+    lib-cpp-make "$@"
   else
-    SkipBanner "LIBSTDCPP" "make"
+    SkipBanner "${lib}" "make"
   fi
 
-  libstdcpp-install "$@"
-  LIBSTDCPP_IS_SETUP=false
+  lib-cpp-install "$@"
+  LIB_CPP_IS_SETUP=false
 }
 
-#+ libstdcpp-clean - clean libstdcpp in bitcode
-libstdcpp-clean() {
-  StepBanner "LIBSTDCPP" "Clean"
-  rm -rf "${TC_BUILD}/libstdcpp-*"
+#+ lib-cpp-clean - clean libc++/libstdc++ in bitcode
+lib-cpp-clean() {
+  local lib=$1
+  StepBanner "${lib}" "Clean"
+  rm -rf ${TC_BUILD}/${lib}*
 }
 
-libstdcpp-needs-configure() {
-  libstdcpp-setup "$@"
-  ts-newer-than "${TC_BUILD_LLVM}" \
-                "${LIBSTDCPP_BUILD}" && return 0
-  [ ! -f "${LIBSTDCPP_BUILD}/config.status" ]
-  return #?
+lib-cpp-needs-configure() {
+  local lib=$1
+  lib-cpp-setup "$@"
+  local objdir="${LIB_CPP_BUILD}-${lib}"
+  ts-newer-than "${TC_BUILD_LLVM}" "${objdir}" && return 0
+  [ ! -f "${objdir}/config.status" ]
+  return $?
 }
 
-libstdcpp-configure() {
-  libstdcpp-setup "$@"
-  StepBanner "LIBSTDCPP" "Configure"
-  local srcdir="${TC_SRC_LIBSTDCPP}"
-  local objdir="${LIBSTDCPP_BUILD}"
-  local subdir="${LIBSTDCPP_BUILD}/pnacl-target"
-
+lib-cpp-configure() {
+  local lib=$1
+  lib-cpp-setup "$@"
+  StepBanner "${lib}" "Configure"
+  local objdir="${LIB_CPP_BUILD}-${lib}"
+  local subdir="${objdir}/pnacl-target"
+  local flags=""
   mkdir -p "${subdir}"
   spushd "${subdir}"
 
-  local flags=""
-  if [ ${LIBSTDCPP_LIBMODE} == "newlib" ]; then
+  if [ ${LIB_CPP_LIBMODE} == "newlib" ]; then
     flags+="--with-newlib --disable-shared --disable-rpath"
-  elif [ ${LIBSTDCPP_LIBMODE} == "glibc" ]; then
-    Fatal "libstdcpp glibc not yet supported"
+  elif [ ${LIB_CPP_LIBMODE} == "glibc" ]; then
+    Fatal "C++ Standard Library glibc not yet supported"
   else
     Fatal "Unknown library mode"
   fi
 
-  setup-libstdcpp-env
-  RunWithLog libstdcpp.configure \
+  setup-lib-cpp-env
+
+  if [ ${lib} == ${LIB_CXX_NAME} ]; then
+    local srcdir="${TC_SRC_LIBCXX}"
+    local cflags="-g -O2 -mllvm -inline-threshold=5"
+    # TODO(jfb) CMAKE_???_COMPILER_WORKS can be removed once the PNaCl
+    #           driver scripts stop confusing cmake for libc++. See:
+    #           https://code.google.com/p/nativeclient/issues/detail?id=3661
+    RunWithLog libcxx.configure \
+      env \
+      cmake -G "Unix Makefiles" \
+      -DCMAKE_CXX_COMPILER_WORKS=1 \
+      -DCMAKE_C_COMPILER_WORKS=1 \
+      -DCMAKE_INSTALL_PREFIX="${LIB_CPP_INSTALL_DIR}" \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_C_COMPILER="$(GetTool cc ${LIB_CPP_LIBMODE})" \
+      -DCMAKE_CXX_COMPILER="$(GetTool cxx ${LIB_CPP_LIBMODE})" \
+      -DCMAKE_AR="${PNACL_AR}" \
+      -DCMAKE_NM="${PNACL_NM}" \
+      -DCMAKE_RANLIB="${PNACL_RANLIB}" \
+      -DCMAKE_LD="${ILLEGAL_TOOL}" \
+      -DCMAKE_AS="${ILLEGAL_TOOL}" \
+      -DCMAKE_OBJDUMP="${ILLEGAL_TOOL}" \
+      -DCMAKE_C_FLAGS="-std=gnu11 ${cflags}" \
+      -DCMAKE_CXX_FLAGS="-std=gnu++11 ${cflags}" \
+      -DLIBCXX_ENABLE_CXX0X=0 \
+      -DLIBCXX_ENABLE_SHARED=0 \
+      -DLIBCXX_CXX_ABI=libcxxabi \
+      -DLIBCXX_LIBCXXABI_INCLUDE_PATHS="${TC_SRC_LIBCXX}/../libcxxabi/include" \
+      ${flags} \
+      ${srcdir}
+  else
+    local srcdir="${TC_SRC_LIBSTDCPP}"
+    RunWithLog libstdcpp.configure \
       env -i PATH=/usr/bin/:/bin \
-        "${STD_ENV_FOR_LIBSTDCPP[@]}" \
-        "${srcdir}"/configure \
-          --host="${CROSS_TARGET_ARM}" \
-          --prefix="${LIBSTDCPP_INSTALL_DIR}" \
-          --enable-cxx-flags="-D__SIZE_MAX__=4294967295" \
-          --disable-multilib \
-          --disable-linux-futex \
-          --disable-libstdcxx-time \
-          --disable-sjlj-exceptions \
-          --disable-libstdcxx-pch \
-          ${flags}
+      "${STD_ENV_FOR_LIB_CPP[@]}" \
+      "${srcdir}"/configure \
+      --host="${CROSS_TARGET_ARM}" \
+      --prefix="${LIB_CPP_INSTALL_DIR}" \
+      --enable-cxx-flags="-D__SIZE_MAX__=4294967295" \
+      --disable-multilib \
+      --disable-linux-futex \
+      --disable-libstdcxx-time \
+      --disable-sjlj-exceptions \
+      --disable-libstdcxx-pch \
+      ${flags}
+  fi
   spopd
 }
 
-libstdcpp-needs-make() {
-  libstdcpp-setup "$@"
-  local srcdir="${TC_SRC_LIBSTDCPP}"
-  local objdir="${LIBSTDCPP_BUILD}"
+lib-cpp-needs-make() {
+  lib-cpp-setup "$@"
+  local lib=$1
+  local srcdir="${TC_SRC_LIBSTDCPP}" && \
+    [ ${lib} == ${LIB_CXX_NAME} ] && srcdir="${TC_SRC_LIBCXX}"
+  local objdir="${LIB_CPP_BUILD}-${lib}"
 
   ts-modified "${srcdir}" "${objdir}"
   return $?
 }
 
-libstdcpp-make() {
-  libstdcpp-setup "$@"
-  StepBanner "LIBSTDCPP" "Make"
-  local srcdir="${TC_SRC_LIBSTDCPP}"
-  local objdir="${LIBSTDCPP_BUILD}"
+lib-cpp-make() {
+  lib-cpp-setup "$@"
+  local lib=$1
+  StepBanner "${lib}" "Make"
+  local objdir="${LIB_CPP_BUILD}-${lib}"
 
   ts-touch-open "${objdir}"
 
   spushd "${objdir}/pnacl-target"
-  setup-libstdcpp-env
-  RunWithLog libstdcpp.make \
+  setup-lib-cpp-env
+  RunWithLog "${lib}.make" \
     env -i PATH=/usr/bin/:/bin \
-        make \
-        "${STD_ENV_FOR_LIBSTDCPP[@]}" \
-        ${MAKE_OPTS}
+    make \
+    "${STD_ENV_FOR_LIB_CPP[@]}" \
+    ${MAKE_OPTS}
   spopd
 
   ts-touch-commit "${objdir}"
 }
 
-libstdcpp-install() {
-  libstdcpp-setup "$@"
-  StepBanner "LIBSTDCPP" "Install"
-  local objdir="${LIBSTDCPP_BUILD}"
+lib-cpp-install() {
+  lib-cpp-setup "$@"
+  local lib=$1
+  StepBanner "${lib}" "Install"
+  local objdir="${LIB_CPP_BUILD}-${lib}"
 
   spushd "${objdir}/pnacl-target"
 
   # Clean the existing installation
-  rm -rf "${LIBSTDCPP_INSTALL_DIR}"/include/c++
-  rm -rf "${LIBSTDCPP_INSTALL_DIR}"/lib/libstdc++*
+  local include_dir=""
+  if [ ${lib} == ${LIB_CXX_NAME} ]; then
+    include_dir="v[0-9]"
+  else
+    include_dir="[0-9].[0-9].[0-9]"
+  fi
+  rm -rf "${LIB_CPP_INSTALL_DIR}"/include/c++/"${include_dir}"
+  rm -rf "${LIB_CPP_INSTALL_DIR}"/lib/"${lib}"*
 
   # install headers (=install-data)
   # for good measure make sure we do not keep any old headers
-  setup-libstdcpp-env
-  RunWithLog libstdcpp.install \
-    make \
-    "${STD_ENV_FOR_LIBSTDCPP[@]}" \
-    ${MAKE_OPTS} install-data
+  setup-lib-cpp-env
+  if [ ${lib} == ${LIB_CXX_NAME} ]; then
+    RunWithLog "${lib}.install" \
+      make \
+      "${STD_ENV_FOR_LIB_CPP[@]}" \
+      ${MAKE_OPTS} install
+  else
+    RunWithLog "${lib}.install" \
+      make \
+      "${STD_ENV_FOR_LIB_CPP[@]}" \
+      ${MAKE_OPTS} install-data
+  fi
 
   # Install bitcode library
-  mkdir -p "${LIBSTDCPP_INSTALL_DIR}/lib"
-  cp "${objdir}/pnacl-target/src/.libs/libstdc++.a" \
-     "${LIBSTDCPP_INSTALL_DIR}/lib"
+  mkdir -p "${LIB_CPP_INSTALL_DIR}/lib"
+  if [ ${lib} == ${LIB_CXX_NAME} ]; then
+    cp "${objdir}/pnacl-target/lib/${LIB_CXX_NAME}.a" \
+      "${LIB_CPP_INSTALL_DIR}/lib"
+  else
+    cp "${objdir}/pnacl-target/src/.libs/${LIB_STDCPP_NAME}.a" \
+      "${LIB_CPP_INSTALL_DIR}/lib"
+  fi
   spopd
 
   # libstdc++ installs a file with an abnormal name: "libstdc++*-gdb.py"
@@ -1645,10 +1725,18 @@ libstdcpp-install() {
   # This causes problems on the Windows bot (during cleanup, toolchain
   # directory delete fails due to the bad character).
   # Rename it to get rid of the asterisk.
-  spushd "${LIBSTDCPP_INSTALL_DIR}/lib"
-  mv -f libstdc++'*'-gdb.py libstdc++-gdb.py
-  spopd
+  if [ ${lib} == ${LIB_STDCPP_NAME} ]; then
+    spushd "${LIB_CPP_INSTALL_DIR}/lib"
+    mv -f ${LIB_STDCPP_NAME}'*'-gdb.py ${LIB_STDCPP_NAME}-gdb.py
+    spopd
+  fi
 }
+
+#########################################################################
+#########################################################################
+#                          < Tools >
+#########################################################################
+#########################################################################
 
 build-validator() {
   local arch=$1
@@ -2292,8 +2380,10 @@ binutils-gold-sb-configure() {
   # build.sh sdk-private-libs step
   # The Gold sandboxed build uses the normally-disallowed
   # llvm.nacl.target.arch intrinsic.  Allow that for now.
+  #
+  # TODO(jfb) Gold currently only builds with libstdc++.
   local flags="-static -I$(GetAbsolutePath ${NACL_ROOT}/..) \
-    -fno-exceptions -O3 --pnacl-allow-dev-intrinsics "
+    -fno-exceptions -O3 --pnacl-allow-dev-intrinsics -stdlib=${LIB_STDCPP_NAME} "
   local configure_env=(
     AR="${PNACL_AR}" \
     AS="${PNACL_AS}" \

@@ -42,7 +42,13 @@ EXTRA_ENV = {
   'GCC_MODE'    : '',     # '' (default), '-E', '-c', or '-S'
   'STDINC'      : '1',    # Include standard headers (-nostdinc sets to 0)
   'STDINCCXX'   : '1',    # Include standard cxx headers (-nostdinc++ sets to 0)
-  'STDLIB'      : '1',    # Include standard libraries (-nostdlib sets to 0)
+  'USE_STDLIB'  : '1',    # Include standard libraries (-nostdlib sets to 0)
+  'STDLIB'      : '',     # C++ Standard Library.
+  'STDLIB_TRUNC': '',     # C++ Standard Library, truncated to pass as -lXXX.
+  'STDLIB_IDIR' : '',     # C++ Standard Library include directory.
+                          # Note: the above C++ Standard Library
+                          # settings use a default if their value
+                          # remains uset.
   'DEFAULTLIBS' : '1',    # Link with default libraries
   'DIAGNOSTIC'  : '0',    # Diagnostic flag detected
   'SHARED'      : '0',    # Produce a shared library
@@ -103,9 +109,9 @@ EXTRA_ENV = {
   # TODO(pdox): This difference will go away as soon as we compile
   #             libstdc++.so ourselves.
   'ISYSTEM_CXX_newlib' :
-    '${BASE_USR}/include/c++/4.6.2 ' +
-    '${BASE_USR}/include/c++/4.6.2/arm-none-linux-gnueabi ' +
-    '${BASE_USR}/include/c++/4.6.2/backward',
+    '${BASE_USR}/include/c++/${STDLIB_IDIR} ' +
+    '${BASE_USR}/include/c++/${STDLIB_IDIR}/arm-none-linux-gnueabi ' +
+    '${BASE_USR}/include/c++/${STDLIB_IDIR}/backward',
 
 
   'ISYSTEM_CXX_glibc' :
@@ -124,7 +130,7 @@ EXTRA_ENV = {
   'PREFIXES'         : '', # Prefixes specified by using the -B flag.
 
   # Library Strings
-  'EMITMODE'         : '${!STDLIB ? nostdlib : ' +
+  'EMITMODE'         : '${!USE_STDLIB ? nostdlib : ' +
                        '${STATIC ? ${LIBMODE}_static : ' +
                        '${SHARED ? ${LIBMODE}_shared : ${LIBMODE}_dynamic}}}',
 
@@ -166,7 +172,7 @@ EXTRA_ENV = {
 
   'STDLIBS'   : '${DEFAULTLIBS ? '
                 '${LIBSTDCPP} ${LIBPTHREAD} ${LIBC} ${LIBNACL}}',
-  'LIBSTDCPP' : '${IS_CXX ? -lstdc++ -lm }',
+  'LIBSTDCPP' : '${IS_CXX ? -l${STDLIB_TRUNC} -lm }',
   'LIBC'      : '-lc',
   'LIBNACL'   : '${LIBMODE_NEWLIB ? -lnacl}',
   # Enabled/disabled by -pthreads
@@ -215,6 +221,21 @@ def SetTarget(*args):
   arch = ParseTriple(args[0])
   env.set('FRONTEND_TRIPLE', args[0])
   AddLDFlag('--target=' + args[0])
+
+def SetStdLib(*args):
+  """Set the C++ Standard Library."""
+  lib = args[0]
+  assert(lib == 'libc++' or lib == 'libstdc++')
+  env.set('STDLIB', lib)
+  env.set('STDLIB_TRUNC', lib[3:])
+  if lib == 'libc++':
+    env.set('STDLIB_IDIR', 'v1')
+    # libc++ depends on pthread for C++11 features as well as some
+    # exception handling (which may get removed later by the PNaCl ABI
+    # simplification) and initialize-once.
+    env.set('PTHREAD', '1')
+  elif lib == 'libstdc++':
+    env.set('STDLIB_IDIR', '4.6.2')
 
 def IsPortable():
   return env.getone('FRONTEND_TRIPLE').startswith('le32-')
@@ -270,8 +291,11 @@ GCCPatterns = [
 
   ( '-nostdinc',       "env.set('STDINC', '0')"),
   ( '-nostdinc\+\+',   "env.set('STDINCCXX', '0')"),
-  ( '-nostdlib',       "env.set('STDLIB', '0')"),
+  ( '-nostdlib',       "env.set('USE_STDLIB', '0')"),
   ( '-nodefaultlibs',  "env.set('DEFAULTLIBS', '0')"),
+
+  ( '-?-stdlib=(.*)',      SetStdLib),
+  ( ('-?-stdlib', '(.*)'), SetStdLib),
 
   # Flags to pass to native linker
   ( '(-Wn,.*)',        AddLDFlag),
@@ -476,6 +500,10 @@ def main(argv):
 
   if env.getbool('ALLOW_NATIVE') and not compiling_to_native:
     Log.Fatal("--pnacl-allow-native without -arch is not meaningful.")
+
+  if not env.get('STDLIB'):
+    # Default C++ Standard Library.
+    SetStdLib('libstdc++')
 
   inputs = env.get('INPUTS')
   output = env.getone('OUTPUT')

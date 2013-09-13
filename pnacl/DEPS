@@ -3,6 +3,8 @@ vars = {
   "pnacl_clang_rev": "3b1ef29c338890ce55a1990389d8e63f6be7da2c",
   "pnacl_llvm_rev": "a90e7c5042db33b4cc05625af4593e1a796533dc",
   "pnacl_gcc_rev": "3cf5e99663b9694923c4cc437a00d197e9854565",
+  "pnacl_libcxx_rev": "7456fbacf145b57404b741dc72bac397b12f8330",
+  "pnacl_libcxxabi_rev": "19222a8f373a6db1b13c4308988fd9cf1c02cb1b",
 
   "glibc_rev": "ef989bae60d93e2906847b367becbd0e7f27679f",
   "newlib_rev": "c37e9aefa58db1b357e17fdc3754a474923250e1",
@@ -30,6 +32,10 @@ deps = {
     Var("nacl_base_readonly") + "/pnacl-compiler-rt.git@" + Var("compiler_rt_rev"),
   "clang":
     Var("nacl_base_readonly") + "/pnacl-clang.git@" + Var("pnacl_clang_rev"),
+  "libcxx":
+    Var("nacl_base_readonly") + "/pnacl-libcxx.git@" + Var("pnacl_libcxx_rev"),
+  "libcxxabi":
+    Var("nacl_base_readonly") + "/pnacl-libcxxabi.git@" + Var("pnacl_libcxxabi_rev"),
 }
 
 skip_child_includes = [

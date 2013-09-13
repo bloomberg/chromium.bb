@@ -44,7 +44,7 @@ EXTRA_ENV = {
 
   'STATIC'         : '0',
   'SHARED'         : '0',
-  'STDLIB'         : '1',
+  'USE_STDLIB'     : '1',
   'USE_DEFAULTLIBS': '1',
   'FAST_TRANSLATION': '0',
 
@@ -53,7 +53,7 @@ EXTRA_ENV = {
   'OUTPUT_TYPE'   : '',
 
   # Library Strings
-  'LD_ARGS' : '${STDLIB ? ${LD_ARGS_normal} : ${LD_ARGS_nostdlib}}',
+  'LD_ARGS' : '${USE_STDLIB ? ${LD_ARGS_normal} : ${LD_ARGS_nostdlib}}',
 
   # Note: we always requires a shim now, but the dummy shim is not doing
   # anything useful.
@@ -205,7 +205,7 @@ TranslatorPatterns = [
   # be removed once GLibC is actually statically linked.
   ( '-static',         "env.set('STATIC', '1')"),
   ( '-shared',         "env.set('SHARED', '1')"),
-  ( '-nostdlib',       "env.set('STDLIB', '0')"),
+  ( '-nostdlib',       "env.set('USE_STDLIB', '0')"),
 
   # Disables the default libraries.
   # This flag is needed for building libgcc_s.so.
@@ -342,7 +342,7 @@ def RequiresNonStandardLDCommandline(inputs, infile):
             True)
   if not infile:
     return ('No bitcode input: %s' % str(infile), True)
-  if not env.getbool('STDLIB'):
+  if not env.getbool('USE_STDLIB'):
     return ('NOSTDLIB', True)
   if env.getbool('ALLOW_CXX_EXCEPTIONS'):
     return ('ALLOW_CXX_EXCEPTIONS', True)
@@ -392,7 +392,7 @@ def RunLD(infile, outfile):
   ToggleDefaultCommandlineLD(inputs, infile)
   env.set('ld_inputs', *inputs)
   args = env.get('LD_ARGS') + ['-o', outfile]
-  if not env.getbool('SHARED') and env.getbool('STDLIB'):
+  if not env.getbool('SHARED') and env.getbool('USE_STDLIB'):
     args += env.get('LD_ARGS_ENTRY')
   args += env.get('LD_FLAGS')
   driver_tools.RunDriver('nativeld', args)

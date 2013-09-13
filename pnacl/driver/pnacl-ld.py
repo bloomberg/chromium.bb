@@ -27,7 +27,7 @@ EXTRA_ENV = {
   'SHARED'   : '0',
   'STATIC'   : '0',
   'PIC'      : '0',
-  'STDLIB'   : '1',
+  'USE_STDLIB': '1',
   'RELOCATABLE': '0',
   'SONAME'   : '',
 
@@ -48,7 +48,7 @@ EXTRA_ENV = {
   'OPT_STRIP_all': '-disable-opt --strip',
   'OPT_STRIP_debug': '-disable-opt --strip-debug',
 
-  'TRANSLATE_FLAGS': '${PIC ? -fPIC} ${!STDLIB ? -nostdlib} ' +
+  'TRANSLATE_FLAGS': '${PIC ? -fPIC} ${!USE_STDLIB ? -nostdlib} ' +
                      '${STATIC ? -static} ' +
                      '${SHARED ? -shared} ' +
                      '${#SONAME ? -Wl,--soname=${SONAME}} ' +
@@ -75,7 +75,7 @@ EXTRA_ENV = {
   'SEARCH_DIRS_USER'   : '',
 
   # Standard Library Directories
-  'SEARCH_DIRS_BUILTIN': '${STDLIB ? ' +
+  'SEARCH_DIRS_BUILTIN': '${USE_STDLIB ? ' +
                          '  ${BASE_USR}/lib/ ' +
                          '  ${BASE_SDK}/lib/ ' +
                          '  ${BASE_LIB}/ ' +
@@ -118,6 +118,7 @@ EXTRA_ENV = {
       '--allow-unresolved=_Unwind_DeleteException '
       '--allow-unresolved=_Unwind_GetCFA '
       '--allow-unresolved=_Unwind_GetDataRelBase '
+      '--allow-unresolved=_Unwind_GetGR '
       '--allow-unresolved=_Unwind_GetIP '
       '--allow-unresolved=_Unwind_GetIPInfo '
       '--allow-unresolved=_Unwind_GetLanguageSpecificData '
@@ -128,6 +129,7 @@ EXTRA_ENV = {
       '--allow-unresolved=_Unwind_RaiseException '
       '--allow-unresolved=_Unwind_Resume '
       '--allow-unresolved=_Unwind_Resume_or_Rethrow '
+      '--allow-unresolved=_Unwind_SetGR '
       '--allow-unresolved=_Unwind_SetIP}',
 
   'BCLD_FLAGS':
@@ -188,7 +190,7 @@ LDPatterns = [
 
   ( '-shared',         "env.set('SHARED', '1')"),
   ( '-static',         "env.set('STATIC', '1')"),
-  ( '-nostdlib',       "env.set('STDLIB', '0')"),
+  ( '-nostdlib',       "env.set('USE_STDLIB', '0')"),
   ( '-r',              "env.set('RELOCATABLE', '1')"),
   ( '-relocatable',    "env.set('RELOCATABLE', '1')"),
 
@@ -354,7 +356,7 @@ def main(argv):
 
   regular_inputs, native_objects = SplitLinkLine(inputs)
 
-  if not env.getbool('USE_IRT'):
+  if not env.getbool('USE_IRT') or UsesPrivateLib(inputs):
     inputs = UsePrivateLibraries(inputs)
 
   # Filter out object files which are currently used in the bitcode link.
@@ -362,7 +364,7 @@ def main(argv):
   # translator includes them automatically. Eventually, these will
   # be compiled to bitcode or replaced by bitcode stubs, and this list
   # can go away.
-  if env.getbool('STDLIB'):
+  if env.getbool('USE_STDLIB'):
     native_objects = RemoveNativeStdLibs(native_objects)
 
   if env.getbool('SHARED'):
@@ -468,9 +470,29 @@ def RemoveNativeStdLibs(objs):
 
   # GLibC standard libraries
   defaultlibs = ['libc_nonshared.a', 'libpthread_nonshared.a',
-                 'libc.a', 'libstdc++.a', 'libgcc.a', 'libgcc_eh.a',
+                 'libc.a', 'libstdc++.a', 'libc++.a', 'libgcc.a', 'libgcc_eh.a',
                  'libm.a']
   return [f for f in objs if pathtools.split(f)[1] not in defaultlibs]
+
+def UsesPrivateLib(libs):
+  """ Returns True if one of the libraries is a private library.
+
+  This indicates that the user specified that private (unstable non-IRT)
+  libraries should be used, but non-private libraries may have been
+  automatically added without the user directly specifying it,
+  e.g. libc++.a depends on libpthread.a for C++11 support. Mixing
+  private and non-private libraries can cause duplicate symbol errors at
+  link time, e.g. if some symbols are found in libnacl.a but not
+  libnacl_sys_private.a then all of libnacl.a gets pulled in which
+  duplicates symbols.
+  """
+  for l in libs:
+    base = pathtools.basename(l)
+    if (base == 'libnacl_sys_private.a' or
+        base == 'libpthread_private.a' or
+        base == 'libnacl_dyncode_private.a'):
+      return True
+  return False
 
 def UsePrivateLibraries(libs):
   """ Place libnacl_sys_private.a before libnacl.a

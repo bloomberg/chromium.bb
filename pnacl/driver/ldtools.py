@@ -204,7 +204,6 @@ def IsLib(arg):
 def FindLib(arg, searchdirs, static_only, acceptable_types):
   """Returns the full pathname for the library input.
      For example, name might be "-lc" or "-lm".
-     Returns None if the library is not found.
   """
   assert(IsLib(arg))
   assert(searchdirs is not None)
@@ -212,6 +211,16 @@ def FindLib(arg, searchdirs, static_only, acceptable_types):
   if not name:
     driver_log.Log.Fatal("-l missing library name")
   is_whole_name = (name[0] == ':')
+
+  if static_only:
+    extensions = [ 'a' ]
+  else:
+    extensions = [ 'so', 'a' ]
+
+  if is_whole_name:
+    label = name
+  else:
+    label = arg
 
   searchnames = []
   if is_whole_name:
@@ -224,10 +233,6 @@ def FindLib(arg, searchdirs, static_only, acceptable_types):
       searchnames.append('libpnacl_irt_shim_dummy.a')
   else:
     # -lfoo
-    if static_only:
-      extensions = [ 'a' ]
-    else:
-      extensions = [ 'so', 'a' ]
     for ext in extensions:
       searchnames.append('lib' + name + '.' + ext)
 
@@ -235,10 +240,19 @@ def FindLib(arg, searchdirs, static_only, acceptable_types):
   if foundpath:
     return foundpath
 
-  if is_whole_name:
-    label = name
-  else:
-    label = arg
+  # The driver sometimes injects pthread into the input library list
+  # when pthread_private should be used. The following is mostly okay
+  # because it's only run when the library isn't found, and only does
+  # something if pthread_private is found. The SDK doesn't ship with
+  # pthread_private, so in practice it won't be found by real SDK users,
+  # so it'll just fall through to the log Fatal.
+  if name == 'pthread':
+    for ext in extensions:
+      searchnames.append('lib' + 'pthread_private' + '.' + ext)
+    foundpath = FindFile(searchnames, searchdirs, acceptable_types)
+    if foundpath:
+      return foundpath
+
   driver_log.Log.Fatal("Cannot find '%s'", label)
 
 def FindFile(search_names, search_dirs, acceptable_types):

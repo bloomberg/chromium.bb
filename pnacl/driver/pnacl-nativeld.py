@@ -25,7 +25,7 @@ EXTRA_ENV = {
 
   # the INPUTS file coming from the llc translation step
   'LLC_TRANSLATED_FILE' : '',
-  'STDLIB': '1',
+  'USE_STDLIB': '1',
 
   # Determine if we should build nexes compatible with the IRT.
   'USE_IRT' : '1',
@@ -57,7 +57,7 @@ EXTRA_ENV = {
 
   'SEARCH_DIRS'        : '${SEARCH_DIRS_USER} ${SEARCH_DIRS_BUILTIN}',
   'SEARCH_DIRS_USER'   : '',
-  'SEARCH_DIRS_BUILTIN': '${STDLIB ? ${LIBS_ARCH}/}',
+  'SEARCH_DIRS_BUILTIN': '${USE_STDLIB ? ${LIBS_ARCH}/}',
 
   'LIBS_ARCH'        : '${LIBS_%ARCH%}',
   'LIBS_ARM'         : '${BASE_LIB_NATIVE}arm',
@@ -79,7 +79,7 @@ LDPatterns = [
   ( '--noirt',                      "env.set('USE_IRT', '0')"),
 
   ( '-static',         "env.set('STATIC', '1')"),
-  ( '-nostdlib',       "env.set('STDLIB', '0')"),
+  ( '-nostdlib',       "env.set('USE_STDLIB', '0')"),
 
   ( '-L(.+)',
     "env.append('SEARCH_DIRS_USER', pathtools.normalize($0))"),

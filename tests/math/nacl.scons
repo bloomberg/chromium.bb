@@ -14,15 +14,14 @@ Import('env')
 # exit_status: The expected exit status.
 # golden_filename: Name of the golden stdout file.
 def AddMathTest(test_env, src, testname=None,
-                exit_status='0', golden_filename=''):
+                exit_status='0', golden_filename='', EXTRA_LIBS=[]):
   if testname is None:
     testname = os.path.splitext(src)[0]
   golden_file = test_env.File(golden_filename) if golden_filename else None
 
   object = test_env.ComponentObject(testname, src)
-  nexe = test_env.ComponentProgram(testname,
-                                   object,
-                                   EXTRA_LIBS=['${NONIRT_LIBS}', 'm'])
+  nexe = test_env.ComponentProgram(
+      testname, object, EXTRA_LIBS=['${NONIRT_LIBS}', 'm'] + EXTRA_LIBS)
   node = test_env.CommandSelLdrTestNacl(
     testname + '.out',
     nexe,
@@ -53,10 +52,11 @@ AddMathTest(errno_env, 'c_pow.c', testname='c_pow_errno',
 AddMathTest(noerrno_env, 'c_pow.c', testname='c_pow_noerrno',
             golden_filename='common_pow.stdout')
 
+# pthread is needed when building with libc++.
 AddMathTest(errno_env, 'cxx_pow.cc', testname='cxx_pow_errno',
-            golden_filename='common_pow.stdout')
+            golden_filename='common_pow.stdout', EXTRA_LIBS=['${PTHREAD_LIBS}'])
 AddMathTest(noerrno_env, 'cxx_pow.cc', testname='cxx_pow_noerrno',
-            golden_filename='common_pow.stdout')
+            golden_filename='common_pow.stdout', EXTRA_LIBS=['${PTHREAD_LIBS}'])
 
 # --- Test rounding mode settings / queries.
 
