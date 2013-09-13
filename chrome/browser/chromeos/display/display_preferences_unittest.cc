@@ -60,22 +60,16 @@ class DisplayPreferencesTest : public ash::test::AshTestBase {
   void LoggedInAsUser() {
     EXPECT_CALL(*mock_user_manager_, IsUserLoggedIn())
         .WillRepeatedly(testing::Return(true));
-    EXPECT_CALL(*mock_user_manager_, IsLoggedInAsDemoUser())
-        .WillRepeatedly(testing::Return(false));
-    EXPECT_CALL(*mock_user_manager_, IsLoggedInAsGuest())
-        .WillRepeatedly(testing::Return(false));
-    EXPECT_CALL(*mock_user_manager_, IsLoggedInAsStub())
-        .WillRepeatedly(testing::Return(false));
+    EXPECT_CALL(*mock_user_manager_, IsLoggedInAsRegularUser())
+        .WillRepeatedly(testing::Return(true));
   }
 
   void LoggedInAsGuest() {
     EXPECT_CALL(*mock_user_manager_, IsUserLoggedIn())
         .WillRepeatedly(testing::Return(true));
-    EXPECT_CALL(*mock_user_manager_, IsLoggedInAsDemoUser())
+    EXPECT_CALL(*mock_user_manager_, IsLoggedInAsRegularUser())
         .WillRepeatedly(testing::Return(false));
-    EXPECT_CALL(*mock_user_manager_, IsLoggedInAsGuest())
-        .WillRepeatedly(testing::Return(true));
-    EXPECT_CALL(*mock_user_manager_, IsLoggedInAsStub())
+    EXPECT_CALL(*mock_user_manager_, IsLoggedInAsLocallyManagedUser())
         .WillRepeatedly(testing::Return(false));
   }
 
@@ -488,6 +482,30 @@ TEST_F(DisplayPreferencesTest, DontStoreInGuestMode) {
       display_manager->GetDisplayInfo(new_primary);
   EXPECT_EQ(gfx::Display::ROTATE_90, info_primary.rotation());
   EXPECT_EQ(1.0f, info_primary.ui_scale());
+}
+
+TEST_F(DisplayPreferencesTest, StorePowerStateNoLogin) {
+  EXPECT_FALSE(local_state()->HasPrefPath(prefs::kDisplayPowerState));
+
+  // Stores display prefs without login, which still stores the power state.
+  StoreDisplayPrefs();
+  EXPECT_TRUE(local_state()->HasPrefPath(prefs::kDisplayPowerState));
+}
+
+TEST_F(DisplayPreferencesTest, StorePowerStateGuest) {
+  EXPECT_FALSE(local_state()->HasPrefPath(prefs::kDisplayPowerState));
+
+  LoggedInAsGuest();
+  StoreDisplayPrefs();
+  EXPECT_TRUE(local_state()->HasPrefPath(prefs::kDisplayPowerState));
+}
+
+TEST_F(DisplayPreferencesTest, StorePowerStateNormalUser) {
+  EXPECT_FALSE(local_state()->HasPrefPath(prefs::kDisplayPowerState));
+
+  LoggedInAsUser();
+  StoreDisplayPrefs();
+  EXPECT_TRUE(local_state()->HasPrefPath(prefs::kDisplayPowerState));
 }
 
 TEST_F(DisplayPreferencesTest, DisplayPowerStateAfterRestart) {

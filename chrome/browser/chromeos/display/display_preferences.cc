@@ -70,12 +70,11 @@ ash::internal::DisplayManager* GetDisplayManager() {
 
 // Returns true id the current user can write display preferences to
 // Local State.
-bool IsValidUser() {
+bool UserCanSaveDisplayPreference() {
   UserManager* user_manager = UserManager::Get();
-  return (user_manager->IsUserLoggedIn() &&
-          !user_manager->IsLoggedInAsDemoUser() &&
-          !user_manager->IsLoggedInAsGuest() &&
-          !user_manager->IsLoggedInAsStub());
+  return user_manager->IsUserLoggedIn() &&
+      (user_manager->IsLoggedInAsRegularUser() ||
+       user_manager->IsLoggedInAsLocallyManagedUser());
 }
 
 ash::DisplayController* GetDisplayController() {
@@ -172,8 +171,10 @@ void StoreDisplayLayoutPref(const ash::DisplayIdPair& pair,
 }
 
 void StoreCurrentDisplayLayoutPrefs() {
-  if (!IsValidUser() || GetDisplayManager()->num_connected_displays() < 2)
+  if (!UserCanSaveDisplayPreference() ||
+      GetDisplayManager()->num_connected_displays() < 2) {
     return;
+  }
 
   ash::DisplayIdPair pair = GetDisplayManager()->GetCurrentDisplayIdPair();
   ash::DisplayLayout display_layout =
@@ -259,15 +260,19 @@ void RegisterDisplayLocalStatePrefs(PrefRegistrySimple* registry) {
 }
 
 void StoreDisplayPrefs() {
+  // Stores the power state regardless of the login status, because the power
+  // state respects to the current status (close/open) of the lid which can be
+  // changed in any situation. See crbug.com/285360
+  StoreCurrentDisplayPowerState();
+
   // Do not store prefs when the confirmation dialog is shown.
-  if (!IsValidUser() ||
+  if (!UserCanSaveDisplayPreference() ||
       ash::Shell::GetInstance()->resolution_notification_controller()->
           DoesNotificationTimeout()) {
     return;
   }
   StoreCurrentDisplayLayoutPrefs();
   StoreCurrentDisplayProperties();
-  StoreCurrentDisplayPowerState();
 }
 
 void SetCurrentDisplayLayout(const ash::DisplayLayout& layout) {
