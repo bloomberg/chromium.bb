@@ -26,38 +26,34 @@
 #define OpenTypeTypes_h
 
 #include "core/platform/SharedBuffer.h"
+#include "wtf/ByteOrder.h"
 
 namespace WebCore {
 namespace OpenType {
 
-struct BigEndianShort {
-    operator short() const { return (v & 0x00ff) << 8 | v >> 8; }
-    BigEndianShort(short u) : v((u & 0x00ff) << 8 | u >> 8) { }
-    unsigned short v;
+struct Int16 {
+    Int16(int16_t u) : v(htons(static_cast<uint16_t>(u))) { }
+    operator int16_t() const { return static_cast<int16_t>(ntohs(v)); }
+    uint16_t v; // in BigEndian
 };
 
-struct BigEndianUShort {
-    operator unsigned short() const { return (v & 0x00ff) << 8 | v >> 8; }
-    BigEndianUShort(unsigned short u) : v((u & 0x00ff) << 8 | u >> 8) { }
-    unsigned short v;
+struct UInt16 {
+    UInt16(uint16_t u) : v(htons(u)) { }
+    operator uint16_t() const { return ntohs(v); }
+    uint16_t v; // in BigEndian
 };
 
-struct BigEndianLong {
-    operator int() const { return (v & 0xff) << 24 | (v & 0xff00) << 8 | (v & 0xff0000) >> 8 | v >> 24; }
-    BigEndianLong(int u) : v((u & 0xff) << 24 | (u & 0xff00) << 8 | (u & 0xff0000) >> 8 | u >> 24) { }
-    unsigned v;
+struct Int32 {
+    Int32(int32_t u) : v(htonl(static_cast<uint32_t>(u))) { }
+    operator int32_t() const { return static_cast<int32_t>(ntohl(v)); }
+    uint32_t v; // in BigEndian
 };
 
-struct BigEndianULong {
-    operator unsigned() const { return (v & 0xff) << 24 | (v & 0xff00) << 8 | (v & 0xff0000) >> 8 | v >> 24; }
-    BigEndianULong(unsigned u) : v((u & 0xff) << 24 | (u & 0xff00) << 8 | (u & 0xff0000) >> 8 | u >> 24) { }
-    unsigned v;
+struct UInt32 {
+    UInt32(uint32_t u) : v(htonl(u)) { }
+    operator uint32_t() const { return ntohl(v); }
+    uint32_t v; // in BigEndian
 };
-
-typedef BigEndianShort Int16;
-typedef BigEndianUShort UInt16;
-typedef BigEndianLong Int32;
-typedef BigEndianULong UInt32;
 
 typedef UInt32 Fixed;
 typedef UInt16 Offset;
