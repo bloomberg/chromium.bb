@@ -399,8 +399,10 @@
         }],
         ['OS=="win" or OS=="mac"', {
           'sources': [
-            'common/media_galleries/pmp_test_helper.cc',
-            'common/media_galleries/pmp_test_helper.h',
+            'common/media_galleries/picasa_test_util.cc',
+            'common/media_galleries/picasa_test_util.cc',
+            'common/media_galleries/pmp_test_util.cc',
+            'common/media_galleries/pmp_test_util.h',
           ],
         }],
         ['OS=="mac"', {

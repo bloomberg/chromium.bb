@@ -12,9 +12,8 @@
 #include "build/build_config.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #include "chrome/browser/media_galleries/fileapi/picasa_data_provider.h"
-#include "chrome/browser/media_galleries/fileapi/safe_picasa_albums_indexer.h"
+#include "chrome/common/media_galleries/picasa_test_util.h"
 #include "chrome/common/media_galleries/picasa_types.h"
-#include "chrome/common/media_galleries/pmp_test_helper.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/test/test_browser_thread.h"
 
@@ -22,89 +21,9 @@ namespace picasa {
 
 namespace {
 
-void WriteTestAlbumTable(const PmpTestHelper* test_helper,
-                         const base::FilePath& test_folder_1_path,
-                         const base::FilePath& test_folder_2_path) {
-  std::vector<uint32> category_vector;
-  category_vector.push_back(kAlbumCategoryFolder);
-  category_vector.push_back(kAlbumCategoryInvalid);
-  category_vector.push_back(kAlbumCategoryAlbum);
-  category_vector.push_back(kAlbumCategoryFolder);
-  category_vector.push_back(kAlbumCategoryAlbum);
-
-  std::vector<double> date_vector;
-  date_vector.push_back(0.0);
-  date_vector.push_back(0.0);
-  date_vector.push_back(0.0);
-  date_vector.push_back(0.0);
-  date_vector.push_back(0.0);
-
-  std::vector<std::string> filename_vector;
-  filename_vector.push_back(test_folder_1_path.AsUTF8Unsafe());
-  filename_vector.push_back("");
-  filename_vector.push_back("");
-  filename_vector.push_back(test_folder_2_path.AsUTF8Unsafe());
-  filename_vector.push_back("");
-
-  std::vector<std::string> name_vector;
-  name_vector.push_back(test_folder_1_path.BaseName().AsUTF8Unsafe());
-  name_vector.push_back("");
-  name_vector.push_back("Album 1 Name");
-  name_vector.push_back(test_folder_2_path.BaseName().AsUTF8Unsafe());
-  name_vector.push_back("Album 2 Name");
-
-  std::vector<std::string> token_vector;
-  token_vector.push_back("");
-  token_vector.push_back("");
-  token_vector.push_back(std::string(kAlbumTokenPrefix) + "uid3");
-  token_vector.push_back("");
-  token_vector.push_back(std::string(kAlbumTokenPrefix) + "uid5");
-
-  std::vector<std::string> uid_vector;
-  uid_vector.push_back("uid1");
-  uid_vector.push_back("uid2");
-  uid_vector.push_back("uid3");
-  uid_vector.push_back("uid4");
-  uid_vector.push_back("uid5");
-
-  ASSERT_TRUE(test_helper->WriteColumnFileFromVector(
-      "category", PMP_TYPE_UINT32, category_vector));
-  ASSERT_TRUE(test_helper->WriteColumnFileFromVector(
-      "date", PMP_TYPE_DOUBLE64, date_vector));
-  ASSERT_TRUE(test_helper->WriteColumnFileFromVector(
-      "filename", PMP_TYPE_STRING, filename_vector));
-  ASSERT_TRUE(test_helper->WriteColumnFileFromVector(
-      "name", PMP_TYPE_STRING, name_vector));
-  ASSERT_TRUE(test_helper->WriteColumnFileFromVector(
-      "token", PMP_TYPE_STRING, token_vector));
-  ASSERT_TRUE(test_helper->WriteColumnFileFromVector(
-      "uid", PMP_TYPE_STRING, uid_vector));
-}
-
-void WriteAlbumsImagesIndex(const base::FilePath& test_folder_1_path,
-                            const base::FilePath& test_folder_2_path) {
-  const char folder_1_test_ini[] =
-      "[InBoth.jpg]\n"
-      "albums=uid3,uid5\n"
-      "[InSecondAlbumOnly.jpg]\n"
-      "albums=uid5\n";
-  ASSERT_TRUE(
-      file_util::WriteFile(test_folder_1_path.AppendASCII(kPicasaINIFilename),
-                           folder_1_test_ini,
-                           arraysize(folder_1_test_ini)));
-
-  const char folder_2_test_ini[] =
-      "[InFirstAlbumOnly.jpg]\n"
-      "albums=uid3\n";
-  ASSERT_TRUE(
-      file_util::WriteFile(test_folder_2_path.AppendASCII(kPicasaINIFilename),
-                           folder_2_test_ini,
-                           arraysize(folder_2_test_ini)));
-}
-
-void VerifyAlbumTable(PicasaDataProvider* data_provider,
-                      base::FilePath test_folder_1_path,
-                      base::FilePath test_folder_2_path) {
+void VerifyTestAlbumTable(PicasaDataProvider* data_provider,
+                          base::FilePath test_folder_1_path,
+                          base::FilePath test_folder_2_path) {
   scoped_ptr<AlbumMap> folders = data_provider->GetFolders();
   ASSERT_TRUE(folders.get());
   EXPECT_EQ(2u, folders->size());
@@ -142,9 +61,9 @@ void VerifyAlbumTable(PicasaDataProvider* data_provider,
   EXPECT_EQ("uid5", album_2->second.uid);
 }
 
-void VerifyAlbumsImagesIndex(PicasaDataProvider* data_provider,
-                             base::FilePath test_folder_1_path,
-                             base::FilePath test_folder_2_path) {
+void VerifyTestAlbumsImagesIndex(PicasaDataProvider* data_provider,
+                                 base::FilePath test_folder_1_path,
+                                 base::FilePath test_folder_2_path) {
   base::PlatformFileError error;
   scoped_ptr<AlbumImages> album_1_images =
       data_provider->FindAlbumImages("uid3", &error);
@@ -226,7 +145,7 @@ class TestPicasaDataProvider : public PicasaDataProvider {
 
 class PicasaDataProviderTest : public InProcessBrowserTest {
  public:
-  PicasaDataProviderTest() : test_helper_(kPicasaAlbumTableName) {}
+  PicasaDataProviderTest() {}
   virtual ~PicasaDataProviderTest() {}
 
  protected:
@@ -273,25 +192,31 @@ class PicasaDataProviderTest : public InProcessBrowserTest {
   const base::FilePath& test_folder_1_path() { return test_folder_1_.path(); }
   const base::FilePath& test_folder_2_path() { return test_folder_2_.path(); }
 
-  PmpTestHelper* test_helper() { return &test_helper_; }
-
   TestPicasaDataProvider* data_provider() const {
     return picasa_data_provider_.get();
   }
 
- private:
-  virtual PmpTestHelper::ColumnFileDestination GetColumnFileDestination() {
-    return PmpTestHelper::DATABASE_DIRECTORY;
+  const base::FilePath GetTempDirPath() const {
+    return picasa_root_dir_.path().AppendASCII(kPicasaTempDirName);
   }
 
+  virtual base::FilePath GetColumnFileDestination() const {
+    return picasa_root_dir_.path().AppendASCII(kPicasaDatabaseDirName);
+  }
+
+ private:
   void SetupFoldersAndDataProvider() {
     DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
     ASSERT_TRUE(test_folder_1_.CreateUniqueTempDir());
     ASSERT_TRUE(test_folder_2_.CreateUniqueTempDir());
-    ASSERT_TRUE(database_dir_.CreateUniqueTempDir());
-    ASSERT_TRUE(test_helper_.Init(GetColumnFileDestination()));
+    ASSERT_TRUE(picasa_root_dir_.CreateUniqueTempDir());
+    ASSERT_TRUE(file_util::CreateDirectory(
+        picasa_root_dir_.path().AppendASCII(kPicasaDatabaseDirName)));
+    ASSERT_TRUE(file_util::CreateDirectory(
+        picasa_root_dir_.path().AppendASCII(kPicasaTempDirName)));
+
     picasa_data_provider_.reset(new TestPicasaDataProvider(
-        test_helper_.GetDatabaseDirPath()));
+        picasa_root_dir_.path().AppendASCII(kPicasaDatabaseDirName)));
   }
 
   virtual void StartTestOnMediaTaskRunner() {
@@ -312,9 +237,8 @@ class PicasaDataProviderTest : public InProcessBrowserTest {
 
   base::ScopedTempDir test_folder_1_;
   base::ScopedTempDir test_folder_2_;
-  base::ScopedTempDir database_dir_;
+  base::ScopedTempDir picasa_root_dir_;
 
-  PmpTestHelper test_helper_;
   scoped_ptr<TestPicasaDataProvider> picasa_data_provider_;
 
   base::Closure quit_closure_;
@@ -358,8 +282,8 @@ IN_PROC_BROWSER_TEST_F(PicasaDataProviderNoDatabaseGetAlbumsImagesTest,
 class PicasaDataProviderGetListTest : public PicasaDataProviderTest {
  protected:
   virtual void InitializeTestData() OVERRIDE {
-    WriteTestAlbumTable(
-        test_helper(), test_folder_1_path(), test_folder_2_path());
+    WriteTestAlbumTable(GetColumnFileDestination(), test_folder_1_path(),
+                        test_folder_2_path());
   }
 
   virtual PicasaDataProvider::DataType RequestedDataType() const OVERRIDE {
@@ -368,7 +292,7 @@ class PicasaDataProviderGetListTest : public PicasaDataProviderTest {
 
   virtual void VerifyRefreshResults(bool parse_success) OVERRIDE {
     ASSERT_TRUE(parse_success);
-    VerifyAlbumTable(
+    VerifyTestAlbumTable(
         data_provider(), test_folder_1_path(), test_folder_2_path());
     TestDone();
   }
@@ -381,9 +305,9 @@ IN_PROC_BROWSER_TEST_F(PicasaDataProviderGetListTest, GetListTest) {
 class PicasaDataProviderGetAlbumsImagesTest : public PicasaDataProviderTest {
  protected:
   virtual void InitializeTestData() OVERRIDE {
-    WriteTestAlbumTable(
-        test_helper(), test_folder_1_path(), test_folder_2_path());
-    WriteAlbumsImagesIndex(test_folder_1_path(), test_folder_2_path());
+    WriteTestAlbumTable(GetColumnFileDestination(), test_folder_1_path(),
+                        test_folder_2_path());
+    WriteTestAlbumsImagesIndex(test_folder_1_path(), test_folder_2_path());
   }
 
   virtual PicasaDataProvider::DataType RequestedDataType() const OVERRIDE {
@@ -392,9 +316,9 @@ class PicasaDataProviderGetAlbumsImagesTest : public PicasaDataProviderTest {
 
   virtual void VerifyRefreshResults(bool parse_success) OVERRIDE {
     ASSERT_TRUE(parse_success);
-    VerifyAlbumTable(
+    VerifyTestAlbumTable(
         data_provider(), test_folder_1_path(), test_folder_2_path());
-    VerifyAlbumsImagesIndex(
+    VerifyTestAlbumsImagesIndex(
         data_provider(), test_folder_1_path(), test_folder_2_path());
     TestDone();
   }
@@ -412,9 +336,9 @@ class PicasaDataProviderMultipleMixedCallbacksTest
       : list_callbacks_called_(0), albums_images_callbacks_called_(0) {}
 
   virtual void InitializeTestData() OVERRIDE {
-    WriteTestAlbumTable(
-        test_helper(), test_folder_1_path(), test_folder_2_path());
-    WriteAlbumsImagesIndex(test_folder_1_path(), test_folder_2_path());
+    WriteTestAlbumTable(GetColumnFileDestination(), test_folder_1_path(),
+                        test_folder_2_path());
+    WriteTestAlbumsImagesIndex(test_folder_1_path(), test_folder_2_path());
   }
 
   virtual PicasaDataProvider::DataType RequestedDataType() const OVERRIDE {
@@ -426,7 +350,7 @@ class PicasaDataProviderMultipleMixedCallbacksTest
                             bool parse_success) {
     ASSERT_TRUE(parse_success);
     ASSERT_EQ(expected_list_callbacks_called, ++list_callbacks_called_);
-    VerifyAlbumTable(
+    VerifyTestAlbumTable(
         data_provider(), test_folder_1_path(), test_folder_2_path());
     CheckTestDone();
   }
@@ -436,7 +360,7 @@ class PicasaDataProviderMultipleMixedCallbacksTest
     ASSERT_TRUE(parse_success);
     ASSERT_EQ(expected_albums_images_callbacks_called,
               ++albums_images_callbacks_called_);
-    VerifyAlbumsImagesIndex(
+    VerifyTestAlbumsImagesIndex(
         data_provider(), test_folder_1_path(), test_folder_2_path());
     CheckTestDone();
   }
@@ -503,12 +427,11 @@ class PicasaDataProviderFileWatcherInvalidateTest
     data_provider()->MoveTempFilesToDatabase();
   }
 
- private:
-  virtual PmpTestHelper::ColumnFileDestination
-  GetColumnFileDestination() OVERRIDE {
-    return PmpTestHelper::TEMPORARY_DIRECTORY;
+  virtual base::FilePath GetColumnFileDestination() const OVERRIDE {
+    return GetTempDirPath();
   }
 
+ private:
   virtual void StartTestOnMediaTaskRunner() OVERRIDE {
     DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
 

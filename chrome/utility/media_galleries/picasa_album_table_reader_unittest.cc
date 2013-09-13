@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/files/scoped_temp_dir.h"
+#include "chrome/common/media_galleries/picasa_test_util.h"
 #include "chrome/common/media_galleries/pmp_constants.h"
-#include "chrome/common/media_galleries/pmp_test_helper.h"
 #include "chrome/utility/media_galleries/picasa_album_table_reader.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -12,8 +13,8 @@ namespace picasa {
 namespace {
 
 TEST(PicasaAlbumTableReaderTest, FoldersAndAlbums) {
-  PmpTestHelper test_helper(kPicasaAlbumTableName);
-  ASSERT_TRUE(test_helper.Init(PmpTestHelper::DATABASE_DIRECTORY));
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   int test_time_delta = 100;
 
@@ -52,20 +53,10 @@ TEST(PicasaAlbumTableReaderTest, FoldersAndAlbums) {
   uid_vector.push_back("uid2");
   uid_vector.push_back("uid3");
 
-  ASSERT_TRUE(test_helper.WriteColumnFileFromVector(
-      "category", PMP_TYPE_UINT32, category_vector));
-  ASSERT_TRUE(test_helper.WriteColumnFileFromVector(
-      "date", PMP_TYPE_DOUBLE64, date_vector));
-  ASSERT_TRUE(test_helper.WriteColumnFileFromVector(
-      "filename", PMP_TYPE_STRING, filename_vector));
-  ASSERT_TRUE(test_helper.WriteColumnFileFromVector(
-      "name", PMP_TYPE_STRING, name_vector));
-  ASSERT_TRUE(test_helper.WriteColumnFileFromVector(
-      "token", PMP_TYPE_STRING, token_vector));
-  ASSERT_TRUE(test_helper.WriteColumnFileFromVector(
-      "uid", PMP_TYPE_STRING, uid_vector));
+  WriteAlbumTable(temp_dir.path(), category_vector, date_vector,
+                  filename_vector, name_vector, token_vector, uid_vector);
 
-  AlbumTableFiles album_table_files(test_helper.GetDatabaseDirPath());
+  AlbumTableFiles album_table_files(temp_dir.path());
   PicasaAlbumTableReader reader(album_table_files);
 
   ASSERT_TRUE(reader.Init());

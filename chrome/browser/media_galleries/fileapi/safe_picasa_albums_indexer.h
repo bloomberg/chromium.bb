@@ -24,8 +24,6 @@ class Message;
 
 namespace picasa {
 
-extern const char kPicasaINIFilename[];
-
 // SafePicasaAlbumsIndexer indexes the contents of Picasa Albums by parsing the
 // INI files found in Folders. The SafePicasaAlbumsIndexer object is ref-counted
 // and kept alive after Start() is called until the ParserCallback is called.

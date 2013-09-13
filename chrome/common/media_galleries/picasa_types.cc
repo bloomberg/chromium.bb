@@ -37,6 +37,7 @@ const char kPicasaTempDirName[] = "tmp";
 
 const char kPicasaAlbumTableName[] = "albumdata";
 const char kAlbumTokenPrefix[] = "]album:";
+const char kPicasaINIFilename[] = ".picasa.ini";
 
 const uint32 kAlbumCategoryAlbum = 0;
 const uint32 kAlbumCategoryFolder = 2;

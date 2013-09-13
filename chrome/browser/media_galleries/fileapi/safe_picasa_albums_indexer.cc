@@ -26,7 +26,6 @@ const int kPicasaINIReadBatchSize = 10;
 // Picasa INI files are named "picasa.ini" on Picasa for Windows before version
 // 71.18. Later versions and Picasa for Mac uses ".picasa.ini".
 // See: https://support.google.com/picasa/answer/11257?hl=en
-const char kPicasaINIFilename[]       = ".picasa.ini";
 const char kPicasaINIFilenameLegacy[] = "picasa.ini";
 
 SafePicasaAlbumsIndexer::SafePicasaAlbumsIndexer(const AlbumMap& albums,

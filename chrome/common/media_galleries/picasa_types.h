@@ -31,6 +31,7 @@ typedef std::map<std::string, AlbumInfo> AlbumMap;
 
 extern const char kPicasaDatabaseDirName[];
 extern const char kPicasaTempDirName[];
+extern const char kPicasaINIFilename[];
 
 extern const char kPicasaAlbumTableName[];
 extern const char kAlbumTokenPrefix[];
