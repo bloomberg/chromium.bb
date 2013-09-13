@@ -397,7 +397,7 @@ v8::Handle<v8::FunctionTemplate> createRawTemplate(v8::Isolate* isolate)
 
 PassRefPtr<DOMStringList> toDOMStringList(v8::Handle<v8::Value> value, v8::Isolate* isolate)
 {
-    v8::Local<v8::Value> v8Value(v8::Local<v8::Value>::New(value));
+    v8::Local<v8::Value> v8Value(v8::Local<v8::Value>::New(isolate, value));
 
     if (V8DOMStringList::HasInstance(v8Value, isolate, worldType(isolate))) {
         RefPtr<DOMStringList> ret = V8DOMStringList::toNative(v8::Handle<v8::Object>::Cast(v8Value));

@@ -325,7 +325,7 @@ v8::Local<v8::Context> ScriptController::currentWorldContext()
         return v8::Local<v8::Context>();
 
     if (m_frame == frame)
-        return v8::Local<v8::Context>::New(context);
+        return v8::Local<v8::Context>::New(m_isolate, context);
 
     return contextForWorld(this, isolatedWorld);
 }
@@ -707,7 +707,7 @@ void ScriptController::executeScriptInIsolatedWorld(int worldID, const Vector<Sc
         for (size_t i = 0; i < sources.size(); ++i) {
             v8::Local<v8::Value> evaluationResult = compileAndRunScript(sources[i]);
             if (evaluationResult.IsEmpty())
-                evaluationResult = v8::Local<v8::Value>::New(v8::Undefined());
+                evaluationResult = v8::Local<v8::Value>::New(m_isolate, v8::Undefined(m_isolate));
             resultArray->Set(i, evaluationResult);
         }
 

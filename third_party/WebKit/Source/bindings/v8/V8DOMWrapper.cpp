@@ -44,7 +44,7 @@ namespace WebCore {
 
 class V8WrapperInstantiationScope {
 public:
-    explicit V8WrapperInstantiationScope(v8::Handle<v8::Object> creationContext)
+    V8WrapperInstantiationScope(v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
         : m_didEnterContext(false)
         , m_context(v8::Context::GetCurrent())
     {
@@ -58,7 +58,7 @@ public:
         // is different from the context that we are about to enter.
         if (contextForWrapper == m_context)
             return;
-        m_context = v8::Local<v8::Context>::New(contextForWrapper);
+        m_context = v8::Local<v8::Context>::New(isolate, contextForWrapper);
         m_didEnterContext = true;
         m_context->Enter();
     }
@@ -108,7 +108,7 @@ static v8::Local<v8::Object> wrapInShadowTemplate(v8::Local<v8::Object> wrapper,
 
 v8::Local<v8::Object> V8DOMWrapper::createWrapper(v8::Handle<v8::Object> creationContext, WrapperTypeInfo* type, void* impl, v8::Isolate* isolate)
 {
-    V8WrapperInstantiationScope scope(creationContext);
+    V8WrapperInstantiationScope scope(creationContext, isolate);
 
     V8PerContextData* perContextData = V8PerContextData::from(scope.context());
     v8::Local<v8::Object> wrapper = perContextData ? perContextData->createWrapperFromCache(type) : V8ObjectConstructor::newInstance(type->getTemplate(isolate, worldTypeInMainThread(isolate))->GetFunction());

@@ -183,7 +183,7 @@ v8::Local<v8::Object> V8AbstractEventListener::getReceiverObject(ScriptExecution
     v8::Handle<v8::Value> value = toV8(target, v8::Handle<v8::Object>(), isolate);
     if (value.IsEmpty())
         return v8::Local<v8::Object>();
-    return v8::Local<v8::Object>::New(v8::Handle<v8::Object>::Cast(value));
+    return v8::Local<v8::Object>::New(isolate, v8::Handle<v8::Object>::Cast(value));
 }
 
 void V8AbstractEventListener::makeWeakCallback(v8::Isolate*, v8::Persistent<v8::Object>*, V8AbstractEventListener* listener)

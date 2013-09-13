@@ -857,7 +857,7 @@ void WebFrameImpl::executeScriptInIsolatedWorld(int worldID, const WebScriptSour
         frame()->script()->executeScriptInIsolatedWorld(worldID, sources, extensionGroup, &scriptResults);
         WebVector<v8::Local<v8::Value> > v8Results(scriptResults.size());
         for (unsigned i = 0; i < scriptResults.size(); i++)
-            v8Results[i] = v8::Local<v8::Value>::New(scriptResults[i].v8Value());
+            v8Results[i] = v8::Local<v8::Value>::New(isolateForFrame(frame()), scriptResults[i].v8Value());
         results->swap(v8Results);
     } else
         frame()->script()->executeScriptInIsolatedWorld(worldID, sources, extensionGroup, 0);
@@ -879,7 +879,7 @@ v8::Local<v8::Context> WebFrameImpl::mainWorldScriptContext() const
 v8::Handle<v8::Value> WebFrameImpl::createFileSystem(WebFileSystemType type, const WebString& name, const WebString& path)
 {
     ASSERT(frame());
-    return toV8(DOMFileSystem::create(frame()->document(), name, static_cast<WebCore::FileSystemType>(type), KURL(ParsedURLString, path.utf8().data())), v8::Handle<v8::Object>(), frame()->script()->currentWorldContext()->GetIsolate());
+    return toV8(DOMFileSystem::create(frame()->document(), name, static_cast<WebCore::FileSystemType>(type), KURL(ParsedURLString, path.utf8().data())), v8::Handle<v8::Object>(), isolateForFrame(frame()));
 }
 
 v8::Handle<v8::Value> WebFrameImpl::createSerializableFileSystem(WebFileSystemType type, const WebString& name, const WebString& path)
@@ -887,7 +887,7 @@ v8::Handle<v8::Value> WebFrameImpl::createSerializableFileSystem(WebFileSystemTy
     ASSERT(frame());
     RefPtr<DOMFileSystem> fileSystem = DOMFileSystem::create(frame()->document(), name, static_cast<WebCore::FileSystemType>(type), KURL(ParsedURLString, path.utf8().data()));
     fileSystem->makeClonable();
-    return toV8(fileSystem.release(), v8::Handle<v8::Object>(), frame()->script()->currentWorldContext()->GetIsolate());
+    return toV8(fileSystem.release(), v8::Handle<v8::Object>(), isolateForFrame(frame()));
 }
 
 v8::Handle<v8::Value> WebFrameImpl::createFileEntry(WebFileSystemType type, const WebString& fileSystemName, const WebString& fileSystemPath, const WebString& filePath, bool isDirectory)
@@ -896,8 +896,8 @@ v8::Handle<v8::Value> WebFrameImpl::createFileEntry(WebFileSystemType type, cons
 
     RefPtr<DOMFileSystemBase> fileSystem = DOMFileSystem::create(frame()->document(), fileSystemName, static_cast<WebCore::FileSystemType>(type), KURL(ParsedURLString, fileSystemPath.utf8().data()));
     if (isDirectory)
-        return toV8(DirectoryEntry::create(fileSystem, filePath), v8::Handle<v8::Object>(), frame()->script()->currentWorldContext()->GetIsolate());
-    return toV8(FileEntry::create(fileSystem, filePath), v8::Handle<v8::Object>(), frame()->script()->currentWorldContext()->GetIsolate());
+        return toV8(DirectoryEntry::create(fileSystem, filePath), v8::Handle<v8::Object>(), isolateForFrame(frame()));
+    return toV8(FileEntry::create(fileSystem, filePath), v8::Handle<v8::Object>(), isolateForFrame(frame()));
 }
 
 void WebFrameImpl::reload(bool ignoreCache)

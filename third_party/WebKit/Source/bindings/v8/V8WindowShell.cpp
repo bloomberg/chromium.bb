@@ -244,7 +244,7 @@ bool V8WindowShell::initializeIfNeeded()
 
         SecurityOrigin* origin = m_world->isolatedWorldSecurityOrigin();
         if (origin && InspectorInstrumentation::hasFrontends()) {
-            ScriptState* scriptState = ScriptState::forContext(v8::Local<v8::Context>::New(context));
+            ScriptState* scriptState = ScriptState::forContext(v8::Local<v8::Context>::New(m_isolate, context));
             InspectorInstrumentation::didCreateIsolatedContext(m_frame, scriptState, origin);
         }
     }

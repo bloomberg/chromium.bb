@@ -942,12 +942,12 @@ private:
 
     class DenseArrayState : public AbstractObjectState {
     public:
-        DenseArrayState(v8::Handle<v8::Array> array, v8::Handle<v8::Array> propertyNames, StateBase* next)
+        DenseArrayState(v8::Handle<v8::Array> array, v8::Handle<v8::Array> propertyNames, StateBase* next, v8::Isolate* isolate)
             : AbstractObjectState(array, next)
             , m_arrayIndex(0)
             , m_arrayLength(array->Length())
         {
-            m_propertyNames = v8::Local<v8::Array>::New(propertyNames);
+            m_propertyNames = v8::Local<v8::Array>::New(isolate, propertyNames);
         }
 
         virtual StateBase* advance(Serializer& serializer)
@@ -976,10 +976,10 @@ private:
 
     class SparseArrayState : public AbstractObjectState {
     public:
-        SparseArrayState(v8::Handle<v8::Array> array, v8::Handle<v8::Array> propertyNames, StateBase* next)
+        SparseArrayState(v8::Handle<v8::Array> array, v8::Handle<v8::Array> propertyNames, StateBase* next, v8::Isolate* isolate)
             : AbstractObjectState(array, next)
         {
-            m_propertyNames = v8::Local<v8::Array>::New(propertyNames);
+            m_propertyNames = v8::Local<v8::Array>::New(isolate, propertyNames);
         }
 
         virtual StateBase* advance(Serializer& serializer)
@@ -1199,11 +1199,11 @@ private:
 
         if (shouldSerializeDensely(length, propertyNames->Length())) {
             m_writer.writeGenerateFreshDenseArray(length);
-            return push(new DenseArrayState(array, propertyNames, next));
+            return push(new DenseArrayState(array, propertyNames, next, m_isolate));
         }
 
         m_writer.writeGenerateFreshSparseArray(length);
-        return push(new SparseArrayState(array, propertyNames, next));
+        return push(new SparseArrayState(array, propertyNames, next, m_isolate));
     }
 
     StateBase* startObjectState(v8::Handle<v8::Object> object, StateBase* next)
