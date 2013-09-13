@@ -809,7 +809,7 @@ TEST_F(WorkspaceControllerTest, BasicAutoPlacingOnShowHide) {
   window3->Hide();
   window3->SetBounds(gfx::Rect(32, 48, 256, 512));
   window3->Show();
-  // |window1| should be flush right and |window3| flush left.
+  // |window1| should be flush left and |window3| flush right.
   EXPECT_EQ("0,32 640x320", window1->bounds().ToString());
   EXPECT_EQ(base::IntToString(
                 desktop_area.width() - window3->bounds().width()) +

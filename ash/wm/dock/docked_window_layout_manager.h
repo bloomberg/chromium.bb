@@ -138,6 +138,12 @@ class ASH_EXPORT DockedWindowLayoutManager
   FRIEND_TEST_ALL_PREFIXES(DockedWindowResizerTest, AttachOneTestSticky);
   FRIEND_TEST_ALL_PREFIXES(DockedWindowResizerTest, ResizeTwoWindows);
   FRIEND_TEST_ALL_PREFIXES(DockedWindowResizerTest, DragToShelf);
+  FRIEND_TEST_ALL_PREFIXES(DockedWindowLayoutManagerTest, AutoPlacingLeft);
+  FRIEND_TEST_ALL_PREFIXES(DockedWindowLayoutManagerTest, AutoPlacingRight);
+  FRIEND_TEST_ALL_PREFIXES(DockedWindowLayoutManagerTest,
+                           AutoPlacingLeftSecondScreen);
+  FRIEND_TEST_ALL_PREFIXES(DockedWindowLayoutManagerTest,
+                           AutoPlacingRightSecondScreen);
   friend class DockedWindowLayoutManagerTest;
   friend class DockedWindowResizerTest;
 

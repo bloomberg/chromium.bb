@@ -22,8 +22,10 @@
 #include "ash/wm/panels/panel_layout_manager.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_settings.h"
+#include "ash/wm/window_util.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
+#include "base/strings/string_number_conversions.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -240,6 +242,218 @@ TEST_P(DockedWindowLayoutManagerTest, AddOneWindow) {
   EXPECT_EQ(internal::kShellWindowId_DockedContainer, window->parent()->id());
 }
 
+// Tests that with a window docked on the left the auto-placing logic in
+// RearrangeVisibleWindowOnShow places windows flush with work area edges.
+TEST_P(DockedWindowLayoutManagerTest, AutoPlacingLeft) {
+  if (!SupportsHostWindowResize())
+    return;
+
+  gfx::Rect bounds(0, 0, 201, 201);
+  scoped_ptr<aura::Window> window(CreateTestWindow(bounds));
+  DragRelativeToEdge(DOCKED_EDGE_LEFT, window.get(), 0);
+
+  // The window should be attached and snapped to the right side of the screen.
+  EXPECT_EQ(window->GetRootWindow()->bounds().x(),
+            window->GetBoundsInScreen().x());
+  EXPECT_EQ(internal::kShellWindowId_DockedContainer, window->parent()->id());
+
+  DockedWindowLayoutManager* manager = static_cast<DockedWindowLayoutManager*>(
+      window->parent()->layout_manager());
+
+  // Create two additional windows and test their auto-placement
+  scoped_ptr<aura::Window> window1(CreateTestWindowInShellWithId(1));
+  gfx::Rect desktop_area = window1->parent()->bounds();
+  wm::GetWindowSettings(window1.get())->set_window_position_managed(true);
+  window1->Hide();
+  window1->SetBounds(gfx::Rect(250, 32, 231, 320));
+  window1->Show();
+  // |window1| should be centered in work area.
+  EXPECT_EQ(base::IntToString(
+      manager->docked_width_ + DockedWindowLayoutManager::kMinDockGap +
+      (desktop_area.width() - manager->docked_width_ -
+       DockedWindowLayoutManager::kMinDockGap - window1->bounds().width()) / 2)+
+      ",32 231x320", window1->bounds().ToString());
+
+  scoped_ptr<aura::Window> window2(CreateTestWindowInShellWithId(2));
+  wm::GetWindowSettings(window2.get())->set_window_position_managed(true);
+  // To avoid any auto window manager changes due to SetBounds, the window
+  // gets first hidden and then shown again.
+  window2->Hide();
+  window2->SetBounds(gfx::Rect(250, 48, 150, 300));
+  window2->Show();
+
+  // |window1| should be flush left and |window2| flush right.
+  EXPECT_EQ(
+      base::IntToString(
+          manager->docked_width_ + DockedWindowLayoutManager::kMinDockGap) +
+      ",32 231x320", window1->bounds().ToString());
+  EXPECT_EQ(
+      base::IntToString(
+          desktop_area.width() - window2->bounds().width()) +
+      ",48 150x300", window2->bounds().ToString());
+}
+
+// Tests that with a window docked on the right the auto-placing logic in
+// RearrangeVisibleWindowOnShow places windows flush with work area edges.
+TEST_P(DockedWindowLayoutManagerTest, AutoPlacingRight) {
+  if (!SupportsHostWindowResize())
+    return;
+
+  gfx::Rect bounds(0, 0, 201, 201);
+  scoped_ptr<aura::Window> window(CreateTestWindow(bounds));
+  DragRelativeToEdge(DOCKED_EDGE_RIGHT, window.get(), 0);
+
+  // The window should be attached and snapped to the right side of the screen.
+  EXPECT_EQ(window->GetRootWindow()->bounds().right(),
+            window->GetBoundsInScreen().right());
+  EXPECT_EQ(internal::kShellWindowId_DockedContainer, window->parent()->id());
+
+  DockedWindowLayoutManager* manager = static_cast<DockedWindowLayoutManager*>(
+      window->parent()->layout_manager());
+
+  // Create two additional windows and test their auto-placement
+  scoped_ptr<aura::Window> window1(CreateTestWindowInShellWithId(1));
+  gfx::Rect desktop_area = window1->parent()->bounds();
+  wm::GetWindowSettings(window1.get())->set_window_position_managed(true);
+  window1->Hide();
+  window1->SetBounds(gfx::Rect(16, 32, 231, 320));
+  window1->Show();
+
+  // |window1| should be centered in work area.
+  EXPECT_EQ(base::IntToString(
+      (desktop_area.width() - manager->docked_width_ -
+       DockedWindowLayoutManager::kMinDockGap - window1->bounds().width()) / 2)+
+      ",32 231x320", window1->bounds().ToString());
+
+  scoped_ptr<aura::Window> window2(CreateTestWindowInShellWithId(2));
+  wm::GetWindowSettings(window2.get())->set_window_position_managed(true);
+  // To avoid any auto window manager changes due to SetBounds, the window
+  // gets first hidden and then shown again.
+  window2->Hide();
+  window2->SetBounds(gfx::Rect(32, 48, 256, 512));
+  window2->Show();
+
+  // |window1| should be flush left and |window2| flush right.
+  EXPECT_EQ("0,32 231x320", window1->bounds().ToString());
+  EXPECT_EQ(
+      base::IntToString(
+          desktop_area.width() - window2->bounds().width() -
+          manager->docked_width_ - DockedWindowLayoutManager::kMinDockGap) +
+      ",48 256x512", window2->bounds().ToString());
+}
+
+// Tests that with a window docked on the left the auto-placing logic in
+// RearrangeVisibleWindowOnShow places windows flush with work area edges.
+// Test case for the secondary screen.
+TEST_P(DockedWindowLayoutManagerTest, AutoPlacingLeftSecondScreen) {
+  if (!SupportsMultipleDisplays() || !SupportsHostWindowResize())
+    return;
+
+  // Create two screen layout.
+  UpdateDisplay("600x600,600x600");
+
+  gfx::Rect bounds(600, 0, 201, 201);
+  scoped_ptr<aura::Window> window(CreateTestWindow(bounds));
+  DragRelativeToEdge(DOCKED_EDGE_LEFT, window.get(), 600);
+
+  // The window should be attached and snapped to the right side of the screen.
+  EXPECT_EQ(window->GetRootWindow()->GetBoundsInScreen().x(),
+            window->GetBoundsInScreen().x());
+  EXPECT_EQ(internal::kShellWindowId_DockedContainer, window->parent()->id());
+
+  DockedWindowLayoutManager* manager = static_cast<DockedWindowLayoutManager*>(
+      window->parent()->layout_manager());
+
+  // Create two additional windows and test their auto-placement
+  bounds = gfx::Rect(850, 32, 231, 320);
+  scoped_ptr<aura::Window> window1(
+      CreateTestWindowInShellWithDelegate(NULL, 1, bounds));
+  gfx::Rect desktop_area = window1->parent()->bounds();
+  wm::GetWindowSettings(window1.get())->set_window_position_managed(true);
+  window1->Hide();
+  window1->Show();
+  // |window1| should be centered in work area.
+  EXPECT_EQ(base::IntToString(
+      600 + manager->docked_width_ + DockedWindowLayoutManager::kMinDockGap +
+      (desktop_area.width() - manager->docked_width_ -
+       DockedWindowLayoutManager::kMinDockGap - window1->bounds().width()) / 2)+
+      ",32 231x320", window1->GetBoundsInScreen().ToString());
+
+  bounds = gfx::Rect(850, 48, 150, 300);
+  scoped_ptr<aura::Window> window2(
+      CreateTestWindowInShellWithDelegate(NULL, 2, bounds));
+  wm::GetWindowSettings(window2.get())->set_window_position_managed(true);
+  // To avoid any auto window manager changes due to SetBounds, the window
+  // gets first hidden and then shown again.
+  window2->Hide();
+  window2->Show();
+
+  // |window1| should be flush left and |window2| flush right.
+  EXPECT_EQ(
+      base::IntToString(600 +
+          manager->docked_width_ + DockedWindowLayoutManager::kMinDockGap) +
+      ",32 231x320", window1->GetBoundsInScreen().ToString());
+  EXPECT_EQ(
+      base::IntToString(
+          600 + desktop_area.width() - window2->bounds().width()) +
+      ",48 150x300", window2->GetBoundsInScreen().ToString());
+}
+
+// Tests that with a window docked on the right the auto-placing logic in
+// RearrangeVisibleWindowOnShow places windows flush with work area edges.
+// Test case for the secondary screen.
+TEST_P(DockedWindowLayoutManagerTest, AutoPlacingRightSecondScreen) {
+  if (!SupportsMultipleDisplays() || !SupportsHostWindowResize())
+    return;
+
+  // Create two screen layout.
+  UpdateDisplay("600x600,600x600");
+
+  gfx::Rect bounds(600, 0, 201, 201);
+  scoped_ptr<aura::Window> window(CreateTestWindow(bounds));
+  DragRelativeToEdge(DOCKED_EDGE_RIGHT, window.get(), 600);
+
+  // The window should be attached and snapped to the right side of the screen.
+  EXPECT_EQ(window->GetRootWindow()->GetBoundsInScreen().right(),
+            window->GetBoundsInScreen().right());
+  EXPECT_EQ(internal::kShellWindowId_DockedContainer, window->parent()->id());
+
+  DockedWindowLayoutManager* manager = static_cast<DockedWindowLayoutManager*>(
+      window->parent()->layout_manager());
+
+  // Create two additional windows and test their auto-placement
+  bounds = gfx::Rect(616, 32, 231, 320);
+  scoped_ptr<aura::Window> window1(
+      CreateTestWindowInShellWithDelegate(NULL, 1, bounds));
+  gfx::Rect desktop_area = window1->parent()->bounds();
+  wm::GetWindowSettings(window1.get())->set_window_position_managed(true);
+  window1->Hide();
+  window1->Show();
+
+  // |window1| should be centered in work area.
+  EXPECT_EQ(base::IntToString(
+      600 + (desktop_area.width() - manager->docked_width_ -
+       DockedWindowLayoutManager::kMinDockGap - window1->bounds().width()) / 2)+
+      ",32 231x320", window1->GetBoundsInScreen().ToString());
+
+  bounds = gfx::Rect(632, 48, 256, 512);
+  scoped_ptr<aura::Window> window2(
+      CreateTestWindowInShellWithDelegate(NULL, 2, bounds));
+  wm::GetWindowSettings(window2.get())->set_window_position_managed(true);
+  // To avoid any auto window manager changes due to SetBounds, the window
+  // gets first hidden and then shown again.
+  window2->Hide();
+  window2->Show();
+
+  // |window1| should be flush left and |window2| flush right.
+  EXPECT_EQ("600,32 231x320", window1->GetBoundsInScreen().ToString());
+  EXPECT_EQ(
+      base::IntToString(
+          600 + desktop_area.width() - window2->bounds().width() -
+          manager->docked_width_ - DockedWindowLayoutManager::kMinDockGap) +
+      ",48 256x512", window2->GetBoundsInScreen().ToString());
+}
+
 // Adds two windows and tests that the gaps are evenly distributed.
 TEST_P(DockedWindowLayoutManagerTest, AddTwoWindows) {
   if (!SupportsHostWindowResize())
@@ -362,13 +576,11 @@ TEST_P(DockedWindowLayoutManagerTest, ThreeWindowsDragging) {
 
 // Adds three windows in bottom display and tests layout after a drag.
 TEST_P(DockedWindowLayoutManagerTest, ThreeWindowsDraggingSecondScreen) {
-  if (!SupportsMultipleDisplays())
-    return;
-  if (!SupportsHostWindowResize())
+  if (!SupportsMultipleDisplays() || !SupportsHostWindowResize())
     return;
 
   // Create two screen vertical layout.
-  UpdateDisplay("100+100-600x600,100+700-600x600");
+  UpdateDisplay("600x600,600x600");
   // Layout the secondary display to the bottom of the primary.
   DisplayLayout layout(DisplayLayout::BOTTOM, 0);
   ASSERT_GT(Shell::GetScreen()->GetNumDisplays(), 1);

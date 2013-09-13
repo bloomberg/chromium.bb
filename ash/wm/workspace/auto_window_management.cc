@@ -5,6 +5,7 @@
 #include "ash/wm/workspace/auto_window_management.h"
 
 #include "ash/ash_switches.h"
+#include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/property_util.h"
@@ -45,33 +46,35 @@ bool WindowPositionCanBeManaged(const aura::Window* window) {
       !settings->bounds_changed_by_user();
 }
 
-// Get the work area for a given |window|.
-gfx::Rect GetWorkAreaForWindow(aura::Window* window) {
+// Get the work area for a given |window| in parent coordinates.
+gfx::Rect GetWorkAreaForWindowInParent(aura::Window* window) {
 #if defined(OS_WIN)
   // On Win 8, the host window can't be resized, so
   // use window's bounds instead.
   // TODO(oshima): Emulate host window resize on win8.
   gfx::Rect work_area = gfx::Rect(window->parent()->bounds().size());
   work_area.Inset(Shell::GetScreen()->GetDisplayMatching(
-      work_area).GetWorkAreaInsets());
+      window->parent()->GetBoundsInScreen()).GetWorkAreaInsets());
   return work_area;
 #else
-  return Shell::GetScreen()->GetDisplayNearestWindow(window).work_area();
+  return ScreenAsh::GetDisplayWorkAreaBoundsInParent(window);
 #endif
 }
 
-// Move the given |bounds| on the available |parent_width| to the
-// direction. If |move_right| is true, the rectangle gets moved to the right
-// corner, otherwise to the left one.
-bool MoveRectToOneSide(int parent_width, bool move_right, gfx::Rect* bounds) {
+// Move the given |bounds| on the available |work_area| in the direction
+// indicated by |move_right|. If |move_right| is true, the rectangle gets moved
+// to the right edge, otherwise to the left one.
+bool MoveRectToOneSide(const gfx::Rect& work_area,
+                       bool move_right,
+                       gfx::Rect* bounds) {
   if (move_right) {
-    if (parent_width > bounds->right()) {
-      bounds->set_x(parent_width - bounds->width());
+    if (work_area.right() > bounds->right()) {
+      bounds->set_x(work_area.right() - bounds->width());
       return true;
     }
   } else {
-    if (0 < bounds->x()) {
-      bounds->set_x(0);
+    if (work_area.x() < bounds->x()) {
+      bounds->set_x(work_area.x());
       return true;
     }
   }
@@ -98,7 +101,7 @@ void SetBoundsAnimated(aura::Window* window, const gfx::Rect& bounds) {
 // Move |window| into the center of the screen - or restore it to the previous
 // position.
 void AutoPlaceSingleWindow(aura::Window* window, bool animated) {
-  gfx::Rect work_area = GetWorkAreaForWindow(window);
+  gfx::Rect work_area = GetWorkAreaForWindowInParent(window);
   gfx::Rect bounds = window->bounds();
   const gfx::Rect* user_defined_area =
       ash::wm::GetPreAutoManageWindowBounds(window);
@@ -107,7 +110,7 @@ void AutoPlaceSingleWindow(aura::Window* window, bool animated) {
     ash::wm::AdjustBoundsToEnsureMinimumWindowVisibility(work_area, &bounds);
   } else {
     // Center the window (only in x).
-    bounds.set_x((work_area.width() - bounds.width()) / 2);
+    bounds.set_x(work_area.x() + (work_area.width() - bounds.width()) / 2);
   }
 
   if (animated)
@@ -204,9 +207,9 @@ void RearrangeVisibleWindowOnShow(aura::Window* added_window) {
   }
 
   gfx::Rect other_bounds = other_shown_window->bounds();
-  gfx::Rect work_area = GetWorkAreaForWindow(added_window);
+  gfx::Rect work_area = GetWorkAreaForWindowInParent(added_window);
   bool move_other_right =
-      other_bounds.CenterPoint().x() > work_area.width() / 2;
+      other_bounds.CenterPoint().x() > work_area.x() + work_area.width() / 2;
 
   // Push the other window to the size only if there are two windows left.
   if (single_window) {
@@ -223,7 +226,7 @@ void RearrangeVisibleWindowOnShow(aura::Window* added_window) {
         ash::wm::SetPreAutoManageWindowBounds(other_shown_window, other_bounds);
 
       // Push away the other window after remembering its current position.
-      if (MoveRectToOneSide(work_area.width(), move_other_right, &other_bounds))
+      if (MoveRectToOneSide(work_area, move_other_right, &other_bounds))
         SetBoundsAnimated(other_shown_window, other_bounds);
     }
   }
@@ -234,7 +237,7 @@ void RearrangeVisibleWindowOnShow(aura::Window* added_window) {
   gfx::Rect added_bounds = added_window->bounds();
   if (!ash::wm::GetPreAutoManageWindowBounds(added_window))
     ash::wm::SetPreAutoManageWindowBounds(added_window, added_bounds);
-  if (MoveRectToOneSide(work_area.width(), !move_other_right, &added_bounds))
+  if (MoveRectToOneSide(work_area, !move_other_right, &added_bounds))
     added_window->SetBounds(added_bounds);
 }
 
