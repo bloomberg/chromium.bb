@@ -4,15 +4,20 @@
 
 #include "cc/layers/texture_layer.h"
 
+#include <algorithm>
 #include <string>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "cc/debug/test_web_graphics_context_3d.h"
+#include "cc/layers/solid_color_layer.h"
 #include "cc/layers/texture_layer_client.h"
 #include "cc/layers/texture_layer_impl.h"
+#include "cc/output/compositor_frame_ack.h"
+#include "cc/output/context_provider.h"
 #include "cc/resources/returned_resource.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_client.h"
@@ -1452,6 +1457,338 @@ class TextureLayerClientTest
 // The TextureLayerClient does not use mailboxes, so can't use a delegating
 // renderer.
 SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(TextureLayerClientTest);
+
+
+// Checks that changing a texture in the client for a TextureLayer that's
+// invisible correctly works without drawing a deleted texture. See
+// crbug.com/266628
+class TextureLayerChangeInvisibleTest
+    : public LayerTreeTest,
+      public TextureLayerClient {
+ public:
+  TextureLayerChangeInvisibleTest()
+      : client_context_(TestWebGraphicsContext3D::Create()),
+        texture_(client_context_->createTexture()),
+        texture_to_delete_on_next_commit_(0),
+        prepare_called_(0),
+        commit_count_(0),
+        expected_texture_on_draw_(0) {}
+
+  // TextureLayerClient implementation.
+  virtual unsigned PrepareTexture() OVERRIDE {
+    ++prepare_called_;
+    return texture_;
+  }
+
+  // TextureLayerClient implementation.
+  virtual WebKit::WebGraphicsContext3D* Context3d() OVERRIDE {
+    return client_context_.get();
+  }
+
+  // TextureLayerClient implementation.
+  virtual bool PrepareTextureMailbox(
+      cc::TextureMailbox* mailbox, bool use_shared_memory) OVERRIDE {
+    return false;
+  }
+
+  virtual void SetupTree() OVERRIDE {
+    scoped_refptr<Layer> root = Layer::Create();
+    root->SetBounds(gfx::Size(10, 10));
+    root->SetAnchorPoint(gfx::PointF());
+    root->SetIsDrawable(true);
+
+    solid_layer_ = SolidColorLayer::Create();
+    solid_layer_->SetBounds(gfx::Size(10, 10));
+    solid_layer_->SetIsDrawable(true);
+    solid_layer_->SetBackgroundColor(SK_ColorWHITE);
+    root->AddChild(solid_layer_);
+
+    parent_layer_ = Layer::Create();
+    parent_layer_->SetBounds(gfx::Size(10, 10));
+    parent_layer_->SetIsDrawable(true);
+    root->AddChild(parent_layer_);
+
+    texture_layer_ = TextureLayer::Create(this);
+    texture_layer_->SetBounds(gfx::Size(10, 10));
+    texture_layer_->SetAnchorPoint(gfx::PointF());
+    texture_layer_->SetIsDrawable(true);
+    parent_layer_->AddChild(texture_layer_);
+
+    layer_tree_host()->SetRootLayer(root);
+    LayerTreeTest::SetupTree();
+  }
+
+  virtual void BeginTest() OVERRIDE {
+    PostSetNeedsCommitToMainThread();
+  }
+
+  virtual void DidCommitAndDrawFrame() OVERRIDE {
+    ++commit_count_;
+    switch (commit_count_) {
+      case 1:
+        // We should have updated the layer, committing the texture.
+        EXPECT_EQ(1, prepare_called_);
+        // Make layer invisible.
+        parent_layer_->SetOpacity(0.f);
+        break;
+      case 2: {
+        // Layer shouldn't have been updated.
+        EXPECT_EQ(1, prepare_called_);
+        // Change the texture.
+        texture_to_delete_on_next_commit_ = texture_;
+        texture_ = client_context_->createTexture();
+        texture_layer_->SetNeedsDisplay();
+        // Force a change to make sure we draw a frame.
+        solid_layer_->SetBackgroundColor(SK_ColorGRAY);
+        break;
+      }
+      case 3:
+        EXPECT_EQ(1, prepare_called_);
+        client_context_->deleteTexture(texture_to_delete_on_next_commit_);
+        texture_to_delete_on_next_commit_ = 0;
+        // Make layer visible again.
+        parent_layer_->SetOpacity(1.f);
+        break;
+      case 4: {
+        // Layer should have been updated.
+        EXPECT_EQ(2, prepare_called_);
+        texture_layer_->ClearClient();
+        client_context_->deleteTexture(texture_);
+        texture_ = 0;
+        break;
+      }
+      case 5:
+        EndTest();
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+  }
+
+  virtual void BeginCommitOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+    ASSERT_TRUE(proxy()->IsMainThreadBlocked());
+    // This is the only texture that can be drawn this frame.
+    expected_texture_on_draw_ = texture_;
+  }
+
+  virtual bool PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
+                                     LayerTreeHostImpl::FrameData* frame_data,
+                                     bool result) OVERRIDE {
+    ContextForImplThread(host_impl)->ResetUsedTextures();
+    return true;
+  }
+
+  virtual void SwapBuffersOnThread(LayerTreeHostImpl* host_impl,
+                                   bool result) OVERRIDE {
+    ASSERT_TRUE(result);
+    TestWebGraphicsContext3D* context = ContextForImplThread(host_impl);
+    int used_textures = context->NumUsedTextures();
+    switch (host_impl->active_tree()->source_frame_number()) {
+      case 0:
+        EXPECT_EQ(1, used_textures);
+        EXPECT_TRUE(context->UsedTexture(expected_texture_on_draw_));
+        break;
+      case 1:
+      case 2:
+        EXPECT_EQ(0, used_textures);
+        break;
+      case 3:
+        EXPECT_EQ(1, used_textures);
+        EXPECT_TRUE(context->UsedTexture(expected_texture_on_draw_));
+        break;
+      default:
+        break;
+    }
+  }
+
+  virtual void AfterTest() OVERRIDE {}
+
+ private:
+  TestWebGraphicsContext3D* ContextForImplThread(LayerTreeHostImpl* host_impl) {
+    return static_cast<TestWebGraphicsContext3D*>(
+        host_impl->output_surface()->context_provider()->Context3d());
+  }
+
+  scoped_refptr<SolidColorLayer> solid_layer_;
+  scoped_refptr<Layer> parent_layer_;
+  scoped_refptr<TextureLayer> texture_layer_;
+  scoped_ptr<TestWebGraphicsContext3D> client_context_;
+
+  // Used on the main thread, and on the impl thread while the main thread is
+  // blocked.
+  unsigned texture_;
+
+  // Used on the main thread.
+  unsigned texture_to_delete_on_next_commit_;
+  int prepare_called_;
+  int commit_count_;
+
+  // Used on the compositor thread.
+  unsigned expected_texture_on_draw_;
+};
+
+// The TextureLayerChangeInvisibleTest does not use mailboxes, so can't use a
+// delegating renderer.
+SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(TextureLayerChangeInvisibleTest);
+
+// Checks that changing a mailbox in the client for a TextureLayer that's
+// invisible correctly works and uses the new mailbox as soon as the layer
+// becomes visible (and returns the old one).
+class TextureLayerChangeInvisibleMailboxTest
+    : public LayerTreeTest,
+      public TextureLayerClient {
+ public:
+  TextureLayerChangeInvisibleMailboxTest()
+      : mailbox_changed_(true),
+        mailbox_returned_(0),
+        prepare_called_(0),
+        commit_count_(0) {
+    mailbox_ = MakeMailbox('1');
+  }
+
+  // TextureLayerClient implementation.
+  virtual unsigned PrepareTexture() OVERRIDE {
+    NOTREACHED();
+    return 0;
+  }
+
+  // TextureLayerClient implementation.
+  virtual WebKit::WebGraphicsContext3D* Context3d() OVERRIDE {
+    NOTREACHED();
+    return NULL;
+  }
+
+  // TextureLayerClient implementation.
+  virtual bool PrepareTextureMailbox(
+      cc::TextureMailbox* mailbox, bool use_shared_memory) OVERRIDE {
+    ++prepare_called_;
+    if (!mailbox_changed_)
+      return false;
+    *mailbox = mailbox_;
+    return true;
+  }
+
+  TextureMailbox MakeMailbox(char name) {
+    return TextureMailbox(
+        std::string(64, name),
+        base::Bind(&TextureLayerChangeInvisibleMailboxTest::MailboxReleased,
+                   base::Unretained(this)));
+  }
+
+  void MailboxReleased(unsigned sync_point, bool lost_resource) {
+    ++mailbox_returned_;
+  }
+
+  virtual void SetupTree() OVERRIDE {
+    scoped_refptr<Layer> root = Layer::Create();
+    root->SetBounds(gfx::Size(10, 10));
+    root->SetAnchorPoint(gfx::PointF());
+    root->SetIsDrawable(true);
+
+    solid_layer_ = SolidColorLayer::Create();
+    solid_layer_->SetBounds(gfx::Size(10, 10));
+    solid_layer_->SetIsDrawable(true);
+    solid_layer_->SetBackgroundColor(SK_ColorWHITE);
+    root->AddChild(solid_layer_);
+
+    parent_layer_ = Layer::Create();
+    parent_layer_->SetBounds(gfx::Size(10, 10));
+    parent_layer_->SetIsDrawable(true);
+    root->AddChild(parent_layer_);
+
+    texture_layer_ = TextureLayer::CreateForMailbox(this);
+    texture_layer_->SetBounds(gfx::Size(10, 10));
+    texture_layer_->SetAnchorPoint(gfx::PointF());
+    texture_layer_->SetIsDrawable(true);
+    parent_layer_->AddChild(texture_layer_);
+
+    layer_tree_host()->SetRootLayer(root);
+    LayerTreeTest::SetupTree();
+  }
+
+  virtual void BeginTest() OVERRIDE {
+    PostSetNeedsCommitToMainThread();
+  }
+
+  virtual void DidCommitAndDrawFrame() OVERRIDE {
+    ++commit_count_;
+    switch (commit_count_) {
+      case 1:
+        // We should have updated the layer, committing the texture.
+        EXPECT_EQ(1, prepare_called_);
+        // Make layer invisible.
+        parent_layer_->SetOpacity(0.f);
+        break;
+      case 2:
+        // Layer shouldn't have been updated.
+        EXPECT_EQ(1, prepare_called_);
+        // Change the texture.
+        mailbox_ = MakeMailbox('2');
+        mailbox_changed_ = true;
+        texture_layer_->SetNeedsDisplay();
+        // Force a change to make sure we draw a frame.
+        solid_layer_->SetBackgroundColor(SK_ColorGRAY);
+        break;
+      case 3:
+        // Layer shouldn't have been updated.
+        EXPECT_EQ(1, prepare_called_);
+        // So the old mailbox isn't returned yet.
+        EXPECT_EQ(0, mailbox_returned_);
+        // Make layer visible again.
+        parent_layer_->SetOpacity(1.f);
+        break;
+      case 4:
+        // Layer should have been updated.
+        EXPECT_EQ(2, prepare_called_);
+        // So the old mailbox should have been returned already.
+        EXPECT_EQ(1, mailbox_returned_);
+        texture_layer_->ClearClient();
+        break;
+      case 5:
+        EXPECT_EQ(2, mailbox_returned_);
+        EndTest();
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+  }
+
+  virtual void SwapBuffersOnThread(LayerTreeHostImpl* host_impl,
+                                   bool result) OVERRIDE {
+    ASSERT_TRUE(result);
+    DelegatedFrameData* delegated_frame_data =
+        output_surface()->last_sent_frame().delegated_frame_data.get();
+    if (!delegated_frame_data)
+      return;
+
+    // Return all resources immediately.
+    TransferableResourceArray resources_to_return =
+        output_surface()->resources_held_by_parent();
+
+    CompositorFrameAck ack;
+    for (size_t i = 0; i < resources_to_return.size(); ++i)
+      output_surface()->ReturnResource(resources_to_return[i].id, &ack);
+    host_impl->OnSwapBuffersComplete(&ack);
+  }
+
+  virtual void AfterTest() OVERRIDE {}
+
+ private:
+  scoped_refptr<SolidColorLayer> solid_layer_;
+  scoped_refptr<Layer> parent_layer_;
+  scoped_refptr<TextureLayer> texture_layer_;
+
+  // Used on the main thread.
+  bool mailbox_changed_;
+  TextureMailbox mailbox_;
+  int mailbox_returned_;
+  int prepare_called_;
+  int commit_count_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(TextureLayerChangeInvisibleMailboxTest);
 
 // Test recovering from a lost context.
 class TextureLayerLostContextTest

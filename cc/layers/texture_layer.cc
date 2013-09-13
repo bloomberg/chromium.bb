@@ -210,6 +210,7 @@ bool TextureLayer::Update(ResourceUpdateQueue* queue,
           client_->Context3d()->getGraphicsResetStatusARB() != GL_NO_ERROR)
         texture_id_ = 0;
       updated = true;
+      SetNeedsPushProperties();
       // The texture id needs to be removed from the active tree before the
       // commit is called complete.
       SetNextCommitWaitsForActivation();
