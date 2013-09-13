@@ -427,17 +427,10 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, AdvanceFocus) {
   test_guest()->WaitForAdvanceFocus();
 }
 
-// Flaky on the win7_aura bot.  See http://crbug.com/289677
-#if defined(OS_WIN) && defined(USE_AURA)
-#define MAYBE_EmbedderChangedAfterSwap DISABLED_EmbedderChangedAfterSwap
-#else
-#define MAYBE_EmbedderChangedAfterSwap EmbedderChangedAfterSwap
-#endif
-
 // This test opens a page in http and then opens another page in https, forcing
 // a RenderViewHost swap in the web_contents. We verify that the embedder in the
 // web_contents gets cleared properly.
-IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, MAYBE_EmbedderChangedAfterSwap) {
+IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, EmbedderChangedAfterSwap) {
   net::SpawnedTestServer https_server(
       net::SpawnedTestServer::TYPE_HTTPS,
       net::SpawnedTestServer::kLocalhost,
