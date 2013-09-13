@@ -65,6 +65,7 @@ class StubWebView : public WebView {
       const std::string& frame,
       const base::DictionaryValue& element,
       const std::vector<base::FilePath>& files) OVERRIDE;
+  virtual Status TakeHeapSnapshot(scoped_ptr<base::Value>* snapshot) OVERRIDE;
 
  private:
   std::string id_;

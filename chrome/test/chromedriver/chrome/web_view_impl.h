@@ -23,6 +23,7 @@ class DevToolsClient;
 class DomTracker;
 class FrameTracker;
 class GeolocationOverrideManager;
+class HeapSnapshotTaker;
 struct KeyEvent;
 struct MouseEvent;
 class NavigationTracker;
@@ -83,6 +84,7 @@ class WebViewImpl : public WebView {
       const std::string& frame,
       const base::DictionaryValue& element,
       const std::vector<base::FilePath>& files) OVERRIDE;
+  virtual Status TakeHeapSnapshot(scoped_ptr<base::Value>* snapshot) OVERRIDE;
 
  private:
   Status CallAsyncFunctionInternal(const std::string& frame,
@@ -100,6 +102,7 @@ class WebViewImpl : public WebView {
   scoped_ptr<NavigationTracker> navigation_tracker_;
   scoped_ptr<JavaScriptDialogManager> dialog_manager_;
   scoped_ptr<GeolocationOverrideManager> geolocation_override_manager_;
+  scoped_ptr<HeapSnapshotTaker> heap_snapshot_taker_;
   scoped_ptr<DevToolsClient> client_;
 };
 

@@ -255,12 +255,16 @@ Status ExecuteExecuteScript(
   std::string script;
   if (!params.GetString("script", &script))
     return Status(kUnknownError, "'script' must be a string");
-  const base::ListValue* args;
-  if (!params.GetList("args", &args))
-    return Status(kUnknownError, "'args' must be a list");
+  if (script == ":takeHeapSnapshot") {
+    return web_view->TakeHeapSnapshot(value);
+  } else {
+    const base::ListValue* args;
+    if (!params.GetList("args", &args))
+      return Status(kUnknownError, "'args' must be a list");
 
-  return web_view->CallFunction(
-      session->GetCurrentFrameId(), "function(){" + script + "}", *args, value);
+    return web_view->CallFunction(session->GetCurrentFrameId(),
+                                  "function(){" + script + "}", *args, value);
+  }
 }
 
 Status ExecuteExecuteAsyncScript(

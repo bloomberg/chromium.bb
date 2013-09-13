@@ -20,7 +20,7 @@ class Status;
 
 class StubDevToolsClient : public DevToolsClient {
  public:
-  explicit StubDevToolsClient(const std::string id);
+  explicit StubDevToolsClient(const std::string& id);
   StubDevToolsClient();
   virtual ~StubDevToolsClient();
 

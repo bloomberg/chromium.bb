@@ -17,6 +17,7 @@
 #include "chrome/test/chromedriver/chrome/dom_tracker.h"
 #include "chrome/test/chromedriver/chrome/frame_tracker.h"
 #include "chrome/test/chromedriver/chrome/geolocation_override_manager.h"
+#include "chrome/test/chromedriver/chrome/heap_snapshot_taker.h"
 #include "chrome/test/chromedriver/chrome/javascript_dialog_manager.h"
 #include "chrome/test/chromedriver/chrome/js.h"
 #include "chrome/test/chromedriver/chrome/navigation_tracker.h"
@@ -120,6 +121,7 @@ WebViewImpl::WebViewImpl(const std::string& id,
       dialog_manager_(new JavaScriptDialogManager(client.get())),
       geolocation_override_manager_(
           new GeolocationOverrideManager(client.get())),
+      heap_snapshot_taker_(new HeapSnapshotTaker(client.get())),
       client_(client.release()) {}
 
 WebViewImpl::~WebViewImpl() {}
@@ -402,6 +404,10 @@ Status WebViewImpl::SetFileInputFiles(
   params.SetInteger("nodeId", node_id);
   params.Set("files", file_list.DeepCopy());
   return client_->SendCommand("DOM.setFileInputFiles", params);
+}
+
+Status WebViewImpl::TakeHeapSnapshot(scoped_ptr<base::Value>* snapshot) {
+  return heap_snapshot_taker_->TakeSnapshot(snapshot);
 }
 
 Status WebViewImpl::CallAsyncFunctionInternal(const std::string& frame,

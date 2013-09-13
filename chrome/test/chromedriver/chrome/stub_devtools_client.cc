@@ -9,7 +9,7 @@
 
 StubDevToolsClient::StubDevToolsClient() : id_("stub-id") {}
 
-StubDevToolsClient::StubDevToolsClient(const std::string id) : id_(id) {}
+StubDevToolsClient::StubDevToolsClient(const std::string& id) : id_(id) {}
 
 StubDevToolsClient::~StubDevToolsClient() {}
 

@@ -119,3 +119,7 @@ Status StubWebView::SetFileInputFiles(
     const std::vector<base::FilePath>& files) {
   return Status(kOk);
 }
+
+Status StubWebView::TakeHeapSnapshot(scoped_ptr<base::Value>* snapshot) {
+  return Status(kOk);
+}

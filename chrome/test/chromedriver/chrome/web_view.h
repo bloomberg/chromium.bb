@@ -142,6 +142,12 @@ class WebView {
       const std::string& frame,
       const base::DictionaryValue& element,
       const std::vector<base::FilePath>& files) = 0;
+
+  // Take a heap snapshot which can build up a graph of Javascript objects.
+  // A raw heap snapshot is in JSON format:
+  //  1. A meta data element "snapshot" about how to parse data elements.
+  //  2. Data elements: "nodes", "edges", "strings".
+  virtual Status TakeHeapSnapshot(scoped_ptr<base::Value>* snapshot) = 0;
 };
 
 #endif  // CHROME_TEST_CHROMEDRIVER_CHROME_WEB_VIEW_H_
