@@ -405,6 +405,129 @@ TEST_F(WebFrameTest, ChangeInFixedLayoutTriggersTextAutosizingRecalculate)
     EXPECT_TRUE(multiplierCheckedAtLeastOnce);
 }
 
+TEST_F(WebFrameTest, FixedLayoutSizeStopsResizeFromChangingLayoutSize)
+{
+    registerMockedHttpURLLoad("fixed_layout.html");
+
+    int viewportWidth = 640;
+    int viewportHeight = 480;
+
+    int fixedLayoutWidth = viewportWidth / 2;
+    int fixedLayoutHeight = viewportHeight / 2;
+
+    m_webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "fixed_layout.html");
+    m_webView->enableFixedLayoutMode(true);
+    m_webView->settings()->setViewportEnabled(true);
+    m_webView->setFixedLayoutSize(WebSize(fixedLayoutWidth, fixedLayoutHeight));
+    m_webView->resize(WebSize(viewportWidth, viewportHeight));
+    m_webView->layout();
+
+    EXPECT_EQ(fixedLayoutWidth, m_webView->fixedLayoutSize().width);
+    EXPECT_EQ(fixedLayoutHeight, m_webView->fixedLayoutSize().height);
+}
+
+TEST_F(WebFrameTest, FixedLayoutSizePreventsResizeFromChangingPageScale)
+{
+    registerMockedHttpURLLoad("fixed_layout.html");
+
+    int viewportWidth = 640;
+    int viewportHeight = 480;
+
+    int fixedLayoutWidth = viewportWidth / 2;
+    int fixedLayoutHeight = viewportHeight / 2;
+
+    m_webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "fixed_layout.html");
+    m_webView->enableFixedLayoutMode(true);
+    m_webView->settings()->setViewportEnabled(true);
+    m_webView->setFixedLayoutSize(WebSize(fixedLayoutWidth, fixedLayoutHeight));
+    m_webView->resize(WebSize(viewportWidth, viewportHeight));
+    m_webView->layout();
+    float pageScaleFactor = m_webView->pageScaleFactor();
+
+    m_webView->resize(WebSize(viewportWidth * 2, viewportHeight * 2));
+
+    EXPECT_EQ(pageScaleFactor, m_webView->pageScaleFactor());
+}
+
+TEST_F(WebFrameTest, FixedLayoutSizePreventsLayoutFromChangingPageScale)
+{
+    registerMockedHttpURLLoad("fixed_layout.html");
+
+    int viewportWidth = 640;
+    int viewportHeight = 480;
+
+    int fixedLayoutWidth = viewportWidth * 2;
+    int fixedLayoutHeight = viewportHeight * 2;
+
+    m_webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "fixed_layout.html");
+    m_webView->enableFixedLayoutMode(true);
+    m_webView->settings()->setViewportEnabled(true);
+    m_webView->setFixedLayoutSize(WebSize(viewportWidth, viewportHeight));
+    m_webView->resize(WebSize(viewportWidth, viewportHeight));
+    m_webView->layout();
+    float pageScaleFactor = m_webView->pageScaleFactor();
+
+    m_webView->setFixedLayoutSize(WebSize(fixedLayoutWidth, fixedLayoutHeight));
+    m_webView->layout();
+
+    EXPECT_EQ(pageScaleFactor, m_webView->pageScaleFactor());
+}
+
+TEST_F(WebFrameTest, PreferredSizeAndContentSizeReportedCorrectlyWithZeroHeightFixedLayout)
+{
+    registerMockedHttpURLLoad("200-by-300.html");
+
+    int windowWidth = 100;
+    int windowHeight = 100;
+    int viewportWidth = 100;
+    int viewportHeight = 0;
+    int divWidth = 200;
+    int divHeight = 300;
+
+    FixedLayoutTestWebViewClient client;
+    client.m_screenInfo.deviceScaleFactor = 1;
+
+    m_webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "200-by-300.html", true, 0, &client);
+    m_webView->enableFixedLayoutMode(true);
+    m_webView->settings()->setViewportEnabled(true);
+    m_webView->resize(WebSize(windowWidth, windowHeight));
+    m_webView->setFixedLayoutSize(WebSize(viewportWidth, viewportHeight));
+    m_webView->layout();
+
+    EXPECT_EQ(divWidth, m_webView->mainFrame()->contentsSize().width);
+    EXPECT_EQ(divHeight, m_webView->mainFrame()->contentsSize().height);
+
+    EXPECT_EQ(divWidth, m_webView->contentsPreferredMinimumSize().width);
+    EXPECT_EQ(divHeight, m_webView->contentsPreferredMinimumSize().height);
+}
+
+TEST_F(WebFrameTest, DisablingFixedLayoutSizeSetsCorrectLayoutSize)
+{
+    registerMockedHttpURLLoad("no_viewport_tag.html");
+
+    FixedLayoutTestWebViewClient client;
+    client.m_screenInfo.deviceScaleFactor = 1;
+    int viewportWidth = 640;
+    int viewportHeight = 480;
+
+    m_webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "no_viewport_tag.html", true, 0, &client);
+    m_webView->settings()->setSupportDeprecatedTargetDensityDPI(true);
+    m_webView->enableFixedLayoutMode(true);
+    m_webView->settings()->setUseWideViewport(true);
+    m_webView->settings()->setViewportEnabled(true);
+    m_webView->resize(WebSize(viewportWidth, viewportHeight));
+
+    m_webView->setFixedLayoutSize(WebSize(viewportWidth, viewportHeight));
+    EXPECT_TRUE(webViewImpl()->mainFrameImpl()->frameView()->needsLayout());
+    m_webView->layout();
+    EXPECT_EQ(viewportWidth, webViewImpl()->mainFrameImpl()->frameView()->contentsSize().width());
+
+    m_webView->setFixedLayoutSize(WebSize(0, 0));
+    EXPECT_TRUE(webViewImpl()->mainFrameImpl()->frameView()->needsLayout());
+    m_webView->layout();
+    EXPECT_EQ(980, webViewImpl()->mainFrameImpl()->frameView()->contentsSize().width());
+}
+
 TEST_F(WebFrameTest, DeviceScaleFactorUsesDefaultWithoutViewportTag)
 {
     registerMockedHttpURLLoad("no_viewport_tag.html");

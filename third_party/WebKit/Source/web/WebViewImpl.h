@@ -656,6 +656,7 @@ private:
     BackForwardClientImpl m_backForwardClientImpl;
 
     WebSize m_size;
+    bool m_fixedLayoutSizeLock;
     // If true, automatically resize the render view around its content.
     bool m_shouldAutoResize;
     // The lower bound on the size when auto-resizing.

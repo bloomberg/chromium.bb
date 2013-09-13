@@ -211,7 +211,7 @@ IntRect ScrollView::visibleContentRect(VisibleContentRectIncludesScrollbars scol
 
 IntSize ScrollView::layoutSize(VisibleContentRectIncludesScrollbars scrollbarInclusion) const
 {
-    return m_fixedLayoutSize.isEmpty() || !m_useFixedLayout ? unscaledVisibleContentSize(scrollbarInclusion) : m_fixedLayoutSize;
+    return m_fixedLayoutSize.isZero() || !m_useFixedLayout ? unscaledVisibleContentSize(scrollbarInclusion) : m_fixedLayoutSize;
 }
 
 IntSize ScrollView::fixedLayoutSize() const
