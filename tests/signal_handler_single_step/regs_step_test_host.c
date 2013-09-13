@@ -25,6 +25,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_handlers.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
+#include "native_client/src/trusted/service_runtime/sys_memory.h"
 #include "native_client/src/trusted/service_runtime/thread_suspension_unwind.h"
 #include "native_client/tests/common/register_set.h"
 #include "native_client/tests/signal_handler_single_step/step_test_common.h"

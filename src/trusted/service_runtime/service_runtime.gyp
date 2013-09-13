@@ -75,6 +75,7 @@
           'sys_filename.c',
           'sys_imc.c',
           'sys_list_mappings.c',
+          'sys_memory.c',
           'thread_suspension_common.c',
           'thread_suspension_unwind.c',
         ],
