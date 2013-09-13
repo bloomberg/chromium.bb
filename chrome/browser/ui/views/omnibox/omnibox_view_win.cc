@@ -131,13 +131,6 @@ bool IsDrag(const POINT& origin, const POINT& current) {
       gfx::Point(current) - gfx::Point(origin));
 }
 
-// Writes |url| and |text| to the clipboard as a well-formed URL.
-void DoCopyURL(const GURL& url, const string16& text) {
-  BookmarkNodeData data;
-  data.ReadFromTuple(url, text);
-  data.WriteToClipboard();
-}
-
 }  // namespace
 
 // EditDropTarget is the IDropTarget implementation installed on
@@ -1143,16 +1136,15 @@ bool OmniboxViewWin::IsCommandIdEnabled(int command_id) const {
       return !!CanCut();
     case IDC_COPY:
       return !!CanCopy();
-    case IDC_COPY_URL:
-      return !!CanCopy() &&
-          controller()->GetToolbarModel()->WouldPerformSearchTermReplacement(
-              false);
     case IDC_PASTE:
       return !!CanPaste();
     case IDS_PASTE_AND_GO:
       return model()->CanPasteAndGo(GetClipboardText());
     case IDS_SELECT_ALL:
       return !!CanSelectAll();
+    case IDS_SHOW_URL:
+      return controller()->GetToolbarModel()->
+          WouldPerformSearchTermReplacement(false);
     case IDC_EDIT_SEARCH_ENGINES:
       return command_updater()->IsCommandEnabled(command_id);
     default:
@@ -1187,13 +1179,12 @@ void OmniboxViewWin::ExecuteCommand(int command_id, int event_flags) {
     Copy();
     return;
   }
-  if (command_id == IDC_COPY_URL) {
-    DoCopyURL(controller()->GetToolbarModel()->GetURL(),
-              controller()->GetToolbarModel()->GetText(false));
-    return;
-  }
   if (command_id == IDS_PASTE_AND_GO) {
     model()->PasteAndGo(GetClipboardText());
+    return;
+  }
+  if (command_id == IDS_SHOW_URL) {
+    ShowURL();
     return;
   }
   if (command_id == IDC_EDIT_SEARCH_ENGINES) {
@@ -1404,7 +1395,9 @@ void OmniboxViewWin::OnCopy() {
   // the smaller value.
   model()->AdjustTextForCopy(sel.cpMin, IsSelectAll(), &text, &url, &write_url);
   if (write_url) {
-    DoCopyURL(url, text);
+    BookmarkNodeData data;
+    data.ReadFromTuple(url, text);
+    data.WriteToClipboard();
   } else {
     ui::ScopedClipboardWriter scw(ui::Clipboard::GetForCurrentThread(),
                                   ui::Clipboard::BUFFER_STANDARD);
@@ -2754,8 +2747,6 @@ void OmniboxViewWin::BuildContextMenu() {
     context_menu_contents_->AddItemWithStringId(IDC_CUT, IDS_CUT);
   }
   context_menu_contents_->AddItemWithStringId(IDC_COPY, IDS_COPY);
-  if (chrome::IsQueryExtractionEnabled())
-    context_menu_contents_->AddItemWithStringId(IDC_COPY_URL, IDS_COPY_URL);
   if (!popup_window_mode_) {
     context_menu_contents_->AddItemWithStringId(IDC_PASTE, IDS_PASTE);
     // GetContextualLabel() will override this next label with the
@@ -2765,10 +2756,14 @@ void OmniboxViewWin::BuildContextMenu() {
   }
   context_menu_contents_->AddSeparator(ui::NORMAL_SEPARATOR);
   context_menu_contents_->AddItemWithStringId(IDS_SELECT_ALL, IDS_SELECT_ALL);
-  if (!popup_window_mode_) {
+  if (chrome::IsQueryExtractionEnabled() || !popup_window_mode_) {
     context_menu_contents_->AddSeparator(ui::NORMAL_SEPARATOR);
-    context_menu_contents_->AddItemWithStringId(IDC_EDIT_SEARCH_ENGINES,
-                                                IDS_EDIT_SEARCH_ENGINES);
+    if (chrome::IsQueryExtractionEnabled())
+      context_menu_contents_->AddItemWithStringId(IDS_SHOW_URL, IDS_SHOW_URL);
+    if (!popup_window_mode_) {
+      context_menu_contents_->AddItemWithStringId(IDC_EDIT_SEARCH_ENGINES,
+                                                  IDS_EDIT_SEARCH_ENGINES);
+    }
   }
 }
 

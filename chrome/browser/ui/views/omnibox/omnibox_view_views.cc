@@ -81,13 +81,6 @@ OmniboxState::OmniboxState(const OmniboxEditModel::State& model_state,
 
 OmniboxState::~OmniboxState() {}
 
-// This will write |url| and |text| to the clipboard as a well-formed URL.
-void DoCopyURL(const GURL& url, const string16& text) {
-  BookmarkNodeData data;
-  data.ReadFromTuple(url, text);
-  data.WriteToClipboard();
-}
-
 bool IsOmniboxAutoCompletionForImeEnabled() {
   return !CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableOmniboxAutoCompletionForIme);
@@ -681,7 +674,9 @@ void OmniboxViewViews::OnAfterCutOrCopy() {
   model()->AdjustTextForCopy(GetSelectedRange().GetMin(), IsSelectAll(),
                              &selected_text, &url, &write_url);
   if (write_url) {
-    DoCopyURL(url, selected_text);
+    BookmarkNodeData data;
+    data.ReadFromTuple(url, selected_text);
+    data.WriteToClipboard();
   } else {
     ui::ScopedClipboardWriter scoped_clipboard_writer(
         ui::Clipboard::GetForCurrentThread(), ui::Clipboard::BUFFER_STANDARD);
@@ -752,19 +747,20 @@ int OmniboxViewViews::OnDrop(const ui::OSExchangeData& data) {
 }
 
 void OmniboxViewViews::UpdateContextMenu(ui::SimpleMenuModel* menu_contents) {
-  if (chrome::IsQueryExtractionEnabled()) {
-    int copy_position = menu_contents->GetIndexOfCommandId(IDS_APP_COPY);
-    DCHECK_GE(copy_position, 0);
-    menu_contents->InsertItemWithStringIdAt(
-        copy_position + 1, IDC_COPY_URL, IDS_COPY_URL);
-  }
-
   int paste_position = menu_contents->GetIndexOfCommandId(IDS_APP_PASTE);
   DCHECK_GE(paste_position, 0);
   menu_contents->InsertItemWithStringIdAt(
       paste_position + 1, IDS_PASTE_AND_GO, IDS_PASTE_AND_GO);
 
   menu_contents->AddSeparator(ui::NORMAL_SEPARATOR);
+
+  if (chrome::IsQueryExtractionEnabled()) {
+    int select_all_position = menu_contents->GetIndexOfCommandId(
+        IDS_APP_SELECT_ALL);
+    DCHECK_GE(select_all_position, 0);
+    menu_contents->InsertItemWithStringIdAt(
+        select_all_position + 1, IDS_SHOW_URL, IDS_SHOW_URL);
+  }
 
   // Minor note: We use IDC_ for command id here while the underlying textfield
   // is using IDS_ for all its command ids. This is because views cannot depend
@@ -776,7 +772,7 @@ void OmniboxViewViews::UpdateContextMenu(ui::SimpleMenuModel* menu_contents) {
 bool OmniboxViewViews::IsCommandIdEnabled(int command_id) const {
   if (command_id == IDS_PASTE_AND_GO)
     return model()->CanPasteAndGo(GetClipboardText());
-  if (command_id != IDC_COPY_URL)
+  if (command_id != IDS_SHOW_URL)
     return command_updater()->IsCommandEnabled(command_id);
   return controller()->GetToolbarModel()->WouldPerformSearchTermReplacement(
       false);
@@ -801,12 +797,11 @@ bool OmniboxViewViews::HandlesCommand(int command_id) const {
 void OmniboxViewViews::ExecuteCommand(int command_id, int event_flags) {
   switch (command_id) {
     // These commands don't invoke the popup via OnBefore/AfterPossibleChange().
-    case IDC_COPY_URL:
-      DoCopyURL(controller()->GetToolbarModel()->GetURL(),
-                controller()->GetToolbarModel()->GetText(false));
-      break;
     case IDS_PASTE_AND_GO:
       model()->PasteAndGo(GetClipboardText());
+      break;
+    case IDS_SHOW_URL:
+      ShowURL();
       break;
     case IDC_EDIT_SEARCH_ENGINES:
       command_updater()->ExecuteCommand(command_id);

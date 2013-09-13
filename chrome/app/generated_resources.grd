@@ -7104,25 +7104,25 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <!-- Omnibox -->
       <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_COPY_URL" desc="The copy url menu option in context menu">
-          Copy URL
-        </message>
         <message name="IDS_PASTE_AND_GO" desc="The text label of the Paste And Go menu item when the clipboard contains a URL">
           Pa&amp;ste and go
         </message>
         <message name="IDS_PASTE_AND_SEARCH" desc="The text label of the Paste And Go menu item when the clipboard contains a string to search for">
           Pa&amp;ste and search
         </message>
+        <message name="IDS_SHOW_URL" desc="The text label of the Show URL item in the omnibox context menu, when the omnibox is showing search terms instead of the underlying search URL.">
+          Show URL
+        </message>
       </if>
       <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_COPY_URL" desc="In Title Case: The copy url menu option in context menu">
-          Copy URL
-        </message>
         <message name="IDS_PASTE_AND_GO" desc="In Title Case: The text label of the Paste And Go menu item when the clipboard contains a URL">
           Pa&amp;ste and Go
         </message>
         <message name="IDS_PASTE_AND_SEARCH" desc="In Title Case: The text label of the Paste And Go menu item when the clipboard contains a string to search for">
           Pa&amp;ste and Search
+        </message>
+        <message name="IDS_SHOW_URL" desc="In Title Case: The text label of the Show URL item in the omnibox context menu, when the omnibox is showing search terms instead of the underlying search URL.">
+          Show URL
         </message>
       </if>
       <message name="IDS_OMNIBOX_KEYWORD_HINT" desc="Shown to the user when the url in the omnibox has a keyword associated with it. $1 is replaced with an image showing the tab key. $2 is replaced with the description of the keyword.">
@@ -13429,9 +13429,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
         <message name="IDS_COPY_MAC" desc="The Mac menu item for copy in the edit menu.">
           Copy
         </message>
-        <message name="IDS_COPY_URL_MAC" desc="The Mac menu item for copy url in the context menu.">
-          Copy URL
-        </message>
         <message name="IDS_PASTE_MAC" desc="The Mac menu item for paste in the edit menu.">
           Paste
         </message>
@@ -13443,6 +13440,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
         </message>
         <message name="IDS_EDIT_SELECT_ALL_MAC" desc="The Mac menu item select all in the edit menu.">
           Select All
+        </message>
+        <message name="IDS_SHOW_URL_MAC" desc="The Mac menu item for Show URL in the omnibox context menu, when the omnibox is showing search terms instead of the underlying search URL.">
+          Show URL
         </message>
         <!-- Edit::Find submenu -->
         <message name="IDS_EDIT_FIND_SUBMENU_MAC" desc="The Mac menu item for the find submenu in the edit menu.">

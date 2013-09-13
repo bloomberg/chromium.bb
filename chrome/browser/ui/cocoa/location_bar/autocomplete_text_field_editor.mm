@@ -110,11 +110,10 @@ BOOL ThePasteboardIsTooDamnBig() {
   [self delete:nil];
 }
 
-- (void)copyURL:(id)sender {
+- (void)showURL:(id)sender {
   AutocompleteTextFieldObserver* observer = [self observer];
   DCHECK(observer);
-  if (observer->CanCopy())
-    observer->CopyURLToPasteboard([NSPasteboard generalPasteboard]);
+  observer->ShowURL();
 }
 
 // This class assumes that the delegate is an AutocompleteTextField.
@@ -230,15 +229,6 @@ BOOL ThePasteboardIsTooDamnBig() {
                   action:@selector(copy:)
            keyEquivalent:@""];
 
-  if ([self isEditable]) {
-    // Copy URL if the URL has been replaced by the Extended Instant API.
-    DCHECK([self observer]);
-    NSString* label = l10n_util::GetNSStringWithFixup(IDS_COPY_URL_MAC);
-    [menu addItemWithTitle:label
-                    action:@selector(copyURL:)
-             keyEquivalent:@""];
-  }
-
   [menu addItemWithTitle:l10n_util::GetNSStringWithFixup(IDS_PASTE)
                   action:@selector(paste:)
            keyEquivalent:@""];
@@ -247,23 +237,33 @@ BOOL ThePasteboardIsTooDamnBig() {
   // greyed-out "Paste and Go"?
   if ([self isEditable]) {
     // Paste and go/search.
+    AutocompleteTextFieldObserver* observer = [self observer];
+    DCHECK(observer);
     if (!ThePasteboardIsTooDamnBig()) {
-      AutocompleteTextFieldObserver* observer = [self observer];
-      DCHECK(observer);
-      const int string_id = observer->GetPasteActionStringId();
-      NSString* label = l10n_util::GetNSStringWithFixup(string_id);
-      DCHECK([label length]);
-      [menu addItemWithTitle:label
+      NSString* pasteAndGoLabel =
+          l10n_util::GetNSStringWithFixup(observer->GetPasteActionStringId());
+      DCHECK([pasteAndGoLabel length]);
+      [menu addItemWithTitle:pasteAndGoLabel
                       action:@selector(pasteAndGo:)
                keyEquivalent:@""];
     }
 
     [menu addItem:[NSMenuItem separatorItem]];
 
-    NSString* search_engine_label =
+    // Display a "Show URL" option if search term replacement is active.
+    if (observer->ShouldEnableShowURL()) {
+      NSString* showURLLabel =
+          l10n_util::GetNSStringWithFixup(IDS_SHOW_URL_MAC);
+      DCHECK([showURLLabel length]);
+      [menu addItemWithTitle:showURLLabel
+                      action:@selector(showURL:)
+               keyEquivalent:@""];
+    }
+
+    NSString* searchEngineLabel =
         l10n_util::GetNSStringWithFixup(IDS_EDIT_SEARCH_ENGINES);
-    DCHECK([search_engine_label length]);
-    NSMenuItem* item = [menu addItemWithTitle:search_engine_label
+    DCHECK([searchEngineLabel length]);
+    NSMenuItem* item = [menu addItemWithTitle:searchEngineLabel
                                        action:@selector(commandDispatch:)
                                 keyEquivalent:@""];
     [item setTag:IDC_EDIT_SEARCH_ENGINES];
@@ -517,10 +517,10 @@ BOOL ThePasteboardIsTooDamnBig() {
     DCHECK(observer);
     return observer->CanPasteAndGo();
   }
-  if ([item action] == @selector(copyURL:)) {
+  if ([item action] == @selector(showURL:)) {
     AutocompleteTextFieldObserver* observer = [self observer];
     DCHECK(observer);
-    return observer->ShouldEnableCopyURL();
+    return observer->ShouldEnableShowURL();
   }
   return [super validateMenuItem:item];
 }

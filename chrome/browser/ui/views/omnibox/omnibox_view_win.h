@@ -390,10 +390,6 @@ class OmniboxViewWin
   // Common implementation for performing a drop on the edit view.
   int OnPerformDropImpl(const ui::DropTargetEvent& event, bool in_drag);
 
-  // Whether to show the menu item for copying the URL.
-  bool ShouldEnableCopyURL() const;
-  void CopyURL();
-
   // The handle to the RichEdit DLL.  In the rare case where the user's system
   // is missing this DLL (due to some kind of system corruption), the similar
   // OmniboxViewViews is used instead; see Textfield::IsViewsTextfieldEnabled().

@@ -151,9 +151,6 @@ class OmniboxViewViews
   // Returns the selected text.
   string16 GetSelectedText() const;
 
-  // Copy the URL instead of the text in the textfield into clipboard.
-  void CopyURL();
-
   // Paste text from the clipboard into the omnibox.
   // Textfields implementation of Paste() pastes the contents of the clipboard
   // as is. We want to strip whitespace and other things (see GetClipboardText()

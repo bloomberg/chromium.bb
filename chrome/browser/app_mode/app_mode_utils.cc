@@ -24,7 +24,6 @@ bool IsCommandAllowedInAppMode(int command_id) {
     IDC_RELOAD_CLEARING_CACHE,
     IDC_CUT,
     IDC_COPY,
-    IDC_COPY_URL,
     IDC_PASTE,
     IDC_ZOOM_PLUS,
     IDC_ZOOM_NORMAL,

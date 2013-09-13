@@ -158,7 +158,7 @@ class OmniboxViewGtk : public OmniboxView,
                        GtkRequisition*);
   CHROMEGTK_CALLBACK_1(OmniboxViewGtk, void, HandlePopulatePopup, GtkMenu*);
   CHROMEGTK_CALLBACK_0(OmniboxViewGtk, void, HandlePasteAndGo);
-  CHROMEGTK_CALLBACK_0(OmniboxViewGtk, void, HandleCopyURLClipboard);
+  CHROMEGTK_CALLBACK_0(OmniboxViewGtk, void, HandleShowURL);
   CHROMEGTK_CALLBACK_0(OmniboxViewGtk, void, HandleEditSearchEngines);
   CHROMEGTK_CALLBACK_6(OmniboxViewGtk, void, HandleDragDataReceived,
                        GdkDragContext*, gint, gint, GtkSelectionData*,
