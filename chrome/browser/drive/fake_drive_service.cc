@@ -527,7 +527,7 @@ CancelCallback FakeDriveService::GetAboutResource(
 
   ++about_resource_load_count_;
   scoped_ptr<AboutResource> about_resource(
-      AboutResource::CreateFromAccountMetadata(
+      util::ConvertAccountMetadataToAboutResource(
           *AccountMetadata::CreateFrom(*account_metadata_value_),
           GetRootResourceId()));
   // Overwrite the change id.

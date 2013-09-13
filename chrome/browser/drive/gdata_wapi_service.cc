@@ -92,7 +92,7 @@ void ParseResourceEntryAndRun(const GetResourceEntryCallback& callback,
   callback.Run(error, entry.Pass());
 }
 
-void ParseAboutResourceAndRun(
+void ConvertAboutResourceAndRun(
     const AboutResourceCallback& callback,
     GDataErrorCode error,
     scoped_ptr<AccountMetadata> account_metadata) {
@@ -101,14 +101,14 @@ void ParseAboutResourceAndRun(
 
   scoped_ptr<AboutResource> about_resource;
   if (account_metadata) {
-    about_resource = AboutResource::CreateFromAccountMetadata(
+    about_resource = util::ConvertAccountMetadataToAboutResource(
         *account_metadata, util::kWapiRootDirectoryResourceId);
   }
 
   callback.Run(error, about_resource.Pass());
 }
 
-void ParseAppListAndRun(
+void ConvertAppListAndRun(
     const AppListCallback& callback,
     GDataErrorCode error,
     scoped_ptr<AccountMetadata> account_metadata) {
@@ -116,9 +116,8 @@ void ParseAppListAndRun(
   DCHECK(!callback.is_null());
 
   scoped_ptr<AppList> app_list;
-  if (account_metadata) {
-    app_list = AppList::CreateFromAccountMetadata(*account_metadata);
-  }
+  if (account_metadata)
+    app_list = util::ConvertAccountMetadataToAppList(*account_metadata);
 
   callback.Run(error, app_list.Pass());
 }
@@ -333,7 +332,7 @@ CancelCallback GDataWapiService::GetAboutResource(
       new GetAccountMetadataRequest(
           sender_.get(),
           url_generator_,
-          base::Bind(&ParseAboutResourceAndRun, callback),
+          base::Bind(&ConvertAboutResourceAndRun, callback),
           false));  // Exclude installed apps.
 }
 
@@ -344,7 +343,7 @@ CancelCallback GDataWapiService::GetAppList(const AppListCallback& callback) {
   return sender_->StartRequestWithRetry(
       new GetAccountMetadataRequest(sender_.get(),
                                     url_generator_,
-                                    base::Bind(&ParseAppListAndRun, callback),
+                                    base::Bind(&ConvertAppListAndRun, callback),
                                     true));  // Include installed apps.
 }
 

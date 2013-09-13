@@ -20,7 +20,9 @@
 #include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_restrictions.h"
+#include "chrome/browser/drive/drive_api_util.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
+#include "chrome/browser/google_apis/drive_entry_kinds.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.pb.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_db_migration_util.h"
 #include "chrome/browser/sync_file_system/logger.h"
@@ -96,7 +98,7 @@ void PopulateFileDetailsByFileResource(
   }
   details->set_title(file_resource.title());
 
-  google_apis::DriveEntryKind kind = file_resource.GetKind();
+  google_apis::DriveEntryKind kind = drive::util::GetKind(file_resource);
   if (kind == google_apis::ENTRY_KIND_FILE)
     details->set_file_kind(FILE_KIND_FILE);
   else if (kind == google_apis::ENTRY_KIND_FOLDER)

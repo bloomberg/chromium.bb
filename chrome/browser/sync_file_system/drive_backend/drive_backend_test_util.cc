@@ -6,7 +6,10 @@
 
 #include <set>
 
+#include "chrome/browser/drive/drive_api_util.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
+#include "chrome/browser/google_apis/drive_entry_kinds.h"
+#include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -68,7 +71,7 @@ void ExpectCompatibleResourceAndMetadata(
   const FileDetails& details = metadata.details();
   EXPECT_EQ(resource.title(), details.title());
 
-  google_apis::DriveEntryKind resource_kind = resource.GetKind();
+  google_apis::DriveEntryKind resource_kind = drive::util::GetKind(resource);
   switch (details.file_kind()) {
     case FILE_KIND_UNSUPPORTED:
       EXPECT_NE(google_apis::ENTRY_KIND_FILE, resource_kind);

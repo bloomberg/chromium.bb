@@ -14,9 +14,6 @@
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "url/gurl.h"
-// TODO(kochi): Eliminate this dependency once dependency to EntryKind is gone.
-// http://crbug.com/142293
-#include "chrome/browser/google_apis/gdata_wapi_parser.h"
 
 namespace base {
 class Value;
@@ -30,10 +27,6 @@ class RepeatedMessageConverter;
 }  // namespace base
 
 namespace google_apis {
-
-class AccountMetadata;
-class AppIcon;
-class InstalledApp;
 
 // About resource represents the account information about the current user.
 // https://developers.google.com/drive/v2/reference/about
@@ -49,15 +42,6 @@ class AboutResource {
 
   // Creates about resource from parsed JSON.
   static scoped_ptr<AboutResource> CreateFrom(const base::Value& value);
-
-  // Creates drive app icon instance from parsed AccountMetadata.
-  // It is also necessary to set |root_resource_id|, which is contained by
-  // AboutResource but not by AccountMetadata.
-  // This method is designed to migrate GData WAPI to Drive API v2.
-  // TODO(hidehiko): Remove this method once the migration is completed.
-  static scoped_ptr<AboutResource> CreateFromAccountMetadata(
-      const AccountMetadata& account_metadata,
-      const std::string& root_resource_id);
 
   // Returns the largest change ID number.
   int64 largest_change_id() const { return largest_change_id_; }
@@ -119,11 +103,6 @@ class DriveAppIcon {
   // Creates drive app icon instance from parsed JSON.
   static scoped_ptr<DriveAppIcon> CreateFrom(const base::Value& value);
 
-  // Creates drive app icon instance from parsed Icon.
-  // This method is designed to migrate GData WAPI to Drive API v2.
-  // TODO(hidehiko): Remove this method once the migration is completed.
-  static scoped_ptr<DriveAppIcon> CreateFromAppIcon(const AppIcon& app_icon);
-
   // Category of the icon.
   IconCategory category() const { return category_; }
 
@@ -177,12 +156,6 @@ class AppResource {
 
   // Creates app resource from parsed JSON.
   static scoped_ptr<AppResource> CreateFrom(const base::Value& value);
-
-  // Creates app resource from parsed InstalledApp.
-  // This method is designed to migrate GData WAPI to Drive API v2.
-  // TODO(hidehiko): Remove this method once the migration is completed.
-  static scoped_ptr<AppResource> CreateFromInstalledApp(
-      const InstalledApp& installed_app);
 
   // Returns application ID, which is 12-digit decimals (e.g. "123456780123").
   const std::string& application_id() const { return application_id_; }
@@ -323,12 +296,6 @@ class AppList {
 
   // Creates app list from parsed JSON.
   static scoped_ptr<AppList> CreateFrom(const base::Value& value);
-
-  // Creates app list from parsed AccountMetadata.
-  // This method is designed to migrate GData WAPI to Drive API v2.
-  // TODO(hidehiko): Remove this method once the migration is completed.
-  static scoped_ptr<AppList> CreateFromAccountMetadata(
-      const AccountMetadata& account_metadata);
 
   // ETag for this resource.
   const std::string& etag() const { return etag_; }
@@ -474,11 +441,6 @@ class FileResource {
   // Note: "folder" is used elsewhere in this file to match Drive API reference,
   // but outside this file we use "directory" to match HTML5 filesystem API.
   bool IsDirectory() const;
-
-  // Returns EntryKind for this file.
-  // TODO(kochi): Remove this once FileResource is directly converted to proto.
-  // http://crbug.com/142293
-  DriveEntryKind GetKind() const;
 
   // Returns file ID.  This is unique in all files in Google Drive.
   const std::string& file_id() const { return file_id_; }

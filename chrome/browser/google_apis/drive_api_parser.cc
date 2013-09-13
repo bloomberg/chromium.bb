@@ -14,7 +14,6 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
-#include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/google_apis/time_util.h"
 
 using base::Value;
@@ -166,18 +165,6 @@ const char kFile[] = "file";
 // https://developers.google.com/drive/v2/reference/changes/list
 const char kChangeListKind[] = "drive#changeList";
 
-// Google Apps MIME types:
-const char kGoogleDocumentMimeType[] = "application/vnd.google-apps.document";
-const char kGoogleDrawingMimeType[] = "application/vnd.google-apps.drawing";
-const char kGoogleFormMimeType[] = "application/vnd.google-apps.form";
-const char kGooglePresentationMimeType[] =
-    "application/vnd.google-apps.presentation";
-const char kGoogleScriptMimeType[] = "application/vnd.google-apps.script";
-const char kGoogleSiteMimeType[] = "application/vnd.google-apps.site";
-const char kGoogleSpreadsheetMimeType[] =
-    "application/vnd.google-apps.spreadsheet";
-const char kGoogleTableMimeType[] = "application/vnd.google-apps.table";
-
 // Maps category name to enum IconCategory.
 struct AppIconCategoryMap {
   DriveAppIcon::IconCategory category;
@@ -202,16 +189,6 @@ bool IsResourceKindExpected(const base::Value& value,
       kind == expected_kind;
 }
 
-ScopedVector<std::string> CopyScopedVectorString(
-    const ScopedVector<std::string>& source) {
-  ScopedVector<std::string> result;
-  result.reserve(source.size());
-  for (size_t i = 0; i < source.size(); ++i) {
-    result.push_back(new std::string(*source[i]));
-  }
-  return result.Pass();
-}
-
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -231,18 +208,6 @@ scoped_ptr<AboutResource> AboutResource::CreateFrom(const base::Value& value) {
     LOG(ERROR) << "Unable to create: Invalid About resource JSON!";
     return scoped_ptr<AboutResource>();
   }
-  return resource.Pass();
-}
-
-// static
-scoped_ptr<AboutResource> AboutResource::CreateFromAccountMetadata(
-    const AccountMetadata& account_metadata,
-    const std::string& root_resource_id) {
-  scoped_ptr<AboutResource> resource(new AboutResource);
-  resource->set_largest_change_id(account_metadata.largest_changestamp());
-  resource->set_quota_bytes_total(account_metadata.quota_bytes_total());
-  resource->set_quota_bytes_used(account_metadata.quota_bytes_used());
-  resource->set_root_folder_id(root_resource_id);
   return resource.Pass();
 }
 
@@ -298,32 +263,6 @@ scoped_ptr<DriveAppIcon> DriveAppIcon::CreateFrom(const base::Value& value) {
     LOG(ERROR) << "Unable to create: Invalid DriveAppIcon JSON!";
     return scoped_ptr<DriveAppIcon>();
   }
-  return resource.Pass();
-}
-
-// static
-scoped_ptr<DriveAppIcon> DriveAppIcon::CreateFromAppIcon(
-    const AppIcon& app_icon) {
-  scoped_ptr<DriveAppIcon> resource(new DriveAppIcon);
-  switch (app_icon.category()) {
-    case AppIcon::ICON_UNKNOWN:
-      resource->set_category(DriveAppIcon::UNKNOWN);
-      break;
-    case AppIcon::ICON_DOCUMENT:
-      resource->set_category(DriveAppIcon::DOCUMENT);
-      break;
-    case AppIcon::ICON_APPLICATION:
-      resource->set_category(DriveAppIcon::APPLICATION);
-      break;
-    case AppIcon::ICON_SHARED_DOCUMENT:
-      resource->set_category(DriveAppIcon::SHARED_DOCUMENT);
-      break;
-    default:
-      NOTREACHED();
-  }
-
-  resource->set_icon_side_length(app_icon.icon_side_length());
-  resource->set_icon_url(app_icon.GetIconURL());
   return resource.Pass();
 }
 
@@ -395,54 +334,6 @@ scoped_ptr<AppResource> AppResource::CreateFrom(const base::Value& value) {
   return resource.Pass();
 }
 
-// static
-scoped_ptr<AppResource> AppResource::CreateFromInstalledApp(
-    const InstalledApp& installed_app) {
-  scoped_ptr<AppResource> resource(new AppResource);
-  resource->set_application_id(installed_app.app_id());
-  resource->set_name(installed_app.app_name());
-  resource->set_object_type(installed_app.object_type());
-  resource->set_supports_create(installed_app.supports_create());
-  resource->set_product_url(installed_app.GetProductUrl());
-
-  {
-    ScopedVector<std::string> primary_mimetypes(
-        CopyScopedVectorString(installed_app.primary_mimetypes()));
-    resource->set_primary_mimetypes(primary_mimetypes.Pass());
-  }
-  {
-    ScopedVector<std::string> secondary_mimetypes(
-        CopyScopedVectorString(installed_app.secondary_mimetypes()));
-    resource->set_secondary_mimetypes(secondary_mimetypes.Pass());
-  }
-  {
-    ScopedVector<std::string> primary_file_extensions(
-        CopyScopedVectorString(installed_app.primary_extensions()));
-    resource->set_primary_file_extensions(primary_file_extensions.Pass());
-  }
-  {
-    ScopedVector<std::string> secondary_file_extensions(
-        CopyScopedVectorString(installed_app.secondary_extensions()));
-    resource->set_secondary_file_extensions(secondary_file_extensions.Pass());
-  }
-
-  {
-    const ScopedVector<AppIcon>& app_icons = installed_app.app_icons();
-    ScopedVector<DriveAppIcon> icons;
-    icons.reserve(app_icons.size());
-    for (size_t i = 0; i < app_icons.size(); ++i) {
-      icons.push_back(DriveAppIcon::CreateFromAppIcon(*app_icons[i]).release());
-    }
-    resource->set_icons(icons.Pass());
-  }
-
-  // supports_import, installed and authorized are not supported in
-  // InstalledApp.
-
-  return resource.Pass();
-}
-
-
 bool AppResource::Parse(const base::Value& value) {
   base::JSONValueConverter<AppResource> converter;
   if (!converter.Convert(value, this)) {
@@ -474,26 +365,6 @@ scoped_ptr<AppList> AppList::CreateFrom(const base::Value& value) {
     LOG(ERROR) << "Unable to create: Invalid AppList JSON!";
     return scoped_ptr<AppList>();
   }
-  return resource.Pass();
-}
-
-// static
-scoped_ptr<AppList> AppList::CreateFromAccountMetadata(
-    const AccountMetadata& account_metadata) {
-  scoped_ptr<AppList> resource(new AppList);
-
-  const ScopedVector<InstalledApp>& installed_apps =
-      account_metadata.installed_apps();
-  ScopedVector<AppResource> app_resources;
-  app_resources.reserve(installed_apps.size());
-  for (size_t i = 0; i < installed_apps.size(); ++i) {
-    app_resources.push_back(
-        AppResource::CreateFromInstalledApp(*installed_apps[i]).release());
-  }
-  resource->set_items(app_resources.Pass());
-
-  // etag is not supported in AccountMetadata.
-
   return resource.Pass();
 }
 
@@ -623,24 +494,6 @@ scoped_ptr<FileResource> FileResource::CreateFrom(const base::Value& value) {
 
 bool FileResource::IsDirectory() const {
   return mime_type_ == kDriveFolderMimeType;
-}
-
-DriveEntryKind FileResource::GetKind() const {
-  if (mime_type() == kGoogleDocumentMimeType)
-    return ENTRY_KIND_DOCUMENT;
-  if (mime_type() == kGoogleSpreadsheetMimeType)
-    return ENTRY_KIND_SPREADSHEET;
-  if (mime_type() == kGooglePresentationMimeType)
-    return ENTRY_KIND_PRESENTATION;
-  if (mime_type() == kGoogleDrawingMimeType)
-    return ENTRY_KIND_DRAWING;
-  if (mime_type() == kGoogleTableMimeType)
-    return ENTRY_KIND_TABLE;
-  if (mime_type() == kDriveFolderMimeType)
-    return ENTRY_KIND_FOLDER;
-  if (mime_type() == "application/pdf")
-    return ENTRY_KIND_PDF;
-  return ENTRY_KIND_FILE;
 }
 
 bool FileResource::Parse(const base::Value& value) {
