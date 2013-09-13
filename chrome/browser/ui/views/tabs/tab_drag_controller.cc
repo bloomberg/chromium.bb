@@ -376,8 +376,8 @@ TabDragController::TabDragController()
       waiting_for_run_loop_to_exit_(false),
       tab_strip_to_attach_to_after_exit_(NULL),
       move_loop_widget_(NULL),
-      destroyed_(NULL),
-      is_mutating_(false) {
+      is_mutating_(false),
+      weak_factory_(this) {
   instance_ = this;
 }
 
@@ -386,9 +386,6 @@ TabDragController::~TabDragController() {
 
   if (instance_ == this)
     instance_ = NULL;
-
-  if (destroyed_)
-    *destroyed_ = true;
 
   if (move_loop_widget_) {
     move_loop_widget_->RemoveObserver(this);
@@ -504,12 +501,10 @@ void TabDragController::Drag(const gfx::Point& point_in_screen) {
 
     // On windows SaveFocus() may trigger a capture lost, which destroys us.
     {
-      bool destroyed = false;
-      destroyed_ = &destroyed;
+      base::WeakPtr<TabDragController> ref(weak_factory_.GetWeakPtr());
       SaveFocus();
-      if (destroyed)
+      if (!ref)
         return;
-      destroyed_ = NULL;
     }
     started_drag_ = true;
     Attach(source_tabstrip_, gfx::Point());
@@ -1349,8 +1344,8 @@ void TabDragController::DetachIntoNewBrowserAndRunMoveLoop(
   Detach(DONT_RELEASE_CAPTURE);
   BrowserView* dragged_browser_view =
       BrowserView::GetBrowserViewForBrowser(browser);
-  dragged_browser_view->GetWidget()->SetVisibilityChangedAnimationsEnabled(
-      false);
+  views::Widget* dragged_widget = dragged_browser_view->GetWidget();
+  dragged_widget->SetVisibilityChangedAnimationsEnabled(false);
   Attach(dragged_browser_view->tabstrip(), gfx::Point());
 
   // If the window size has changed, the tab positioning will be quite off.
@@ -1360,7 +1355,7 @@ void TabDragController::DetachIntoNewBrowserAndRunMoveLoop(
     // while maintaining the same relative positions. This scales the tabs
     // down so that they occupy the same relative width on the new tab strip,
     // clamping to minimum tab width.
-      int available_attached_width = attached_tabstrip_->tab_area_width();
+    int available_attached_width = attached_tabstrip_->tab_area_width();
     float x_scale =
         static_cast<float>(available_attached_width) / available_source_width;
     int x_offset = std::ceil((1.0 - x_scale) * drag_bounds[0].x());
@@ -1399,13 +1394,17 @@ void TabDragController::DetachIntoNewBrowserAndRunMoveLoop(
   attached_tabstrip_->SetTabBoundsForDrag(drag_bounds);
 
   WindowPositionManagedUpdater updater;
-  dragged_browser_view->GetWidget()->AddObserver(&updater);
+  dragged_widget->AddObserver(&updater);
   browser->window()->Show();
-  dragged_browser_view->GetWidget()->RemoveObserver(&updater);
-
-  browser->window()->Activate();
-  dragged_browser_view->GetWidget()->SetVisibilityChangedAnimationsEnabled(
-      true);
+  dragged_widget->RemoveObserver(&updater);
+  dragged_widget->SetVisibilityChangedAnimationsEnabled(true);
+  // Activate may trigger a focus loss, destroying us.
+  {
+    base::WeakPtr<TabDragController> ref(weak_factory_.GetWeakPtr());
+    browser->window()->Activate();
+    if (!ref)
+      return;
+  }
   RunMoveLoop(drag_offset);
 }
 
@@ -1419,8 +1418,7 @@ void TabDragController::RunMoveLoop(const gfx::Vector2d& drag_offset) {
   SetTrackedByWorkspace(move_loop_widget_->GetNativeView(), false);
   move_loop_widget_->AddObserver(this);
   is_dragging_window_ = true;
-  bool destroyed = false;
-  destroyed_ = &destroyed;
+  base::WeakPtr<TabDragController> ref(weak_factory_.GetWeakPtr());
   // Running the move loop releases mouse capture on non-ash, which triggers
   // destroying the drag loop. Release mouse capture ourself before this while
   // the DragController isn't owned by the TabStrip.
@@ -1440,9 +1438,8 @@ void TabDragController::RunMoveLoop(const gfx::Vector2d& drag_offset) {
       content::NotificationService::AllBrowserContextsAndSources(),
       content::NotificationService::NoDetails());
 
-  if (destroyed)
+  if (!ref)
     return;
-  destroyed_ = NULL;
   // Under chromeos we immediately set the |move_loop_widget_| to NULL.
   if (move_loop_widget_) {
     move_loop_widget_->RemoveObserver(this);
