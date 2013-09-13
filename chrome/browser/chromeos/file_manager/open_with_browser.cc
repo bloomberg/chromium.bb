@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_system.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
@@ -110,9 +111,13 @@ bool IsFlashPluginEnabled(Profile* profile) {
 }
 
 void OpenNewTab(Profile* profile, const GURL& url) {
-  DCHECK(profile);
-
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // Check the validity of the pointer so that the closure from
+  // base::Bind(&OpenNewTab, profile) can be passed between threads.
+  if (!g_browser_process->profile_manager()->IsValidProfile(profile))
+    return;
+
   Browser* browser = chrome::FindOrCreateTabbedBrowser(
       profile, chrome::HOST_DESKTOP_TYPE_ASH);
   chrome::AddSelectedTabWithURL(browser, url, content::PAGE_TRANSITION_LINK);
@@ -194,7 +199,7 @@ bool OpenFileWithBrowser(Profile* profile, const base::FilePath& file_path) {
           BrowserThread::GetBlockingPool(),
           FROM_HERE,
           base::Bind(&ReadUrlFromGDocOnBlockingPool, file_path),
-          base::Bind(&OpenNewTab, static_cast<Profile*>(NULL)));
+          base::Bind(&OpenNewTab, profile));
     }
     return true;
   }
