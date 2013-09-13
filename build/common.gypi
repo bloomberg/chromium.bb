@@ -2552,7 +2552,6 @@
           'WTF_USE_DYNAMIC_ANNOTATIONS=1',
         ],
         'xcode_settings': {
-          'COPY_PHASE_STRIP': 'NO',
           'GCC_OPTIMIZATION_LEVEL': '<(mac_debug_optimization)',
           'OTHER_CFLAGS': [
             '<@(debug_extra_cflags)',
@@ -3846,6 +3845,7 @@
           'ALWAYS_SEARCH_USER_PATHS': 'NO',
           # Don't link in libarclite_macosx.a, see http://crbug.com/156530.
           'CLANG_LINK_OBJC_RUNTIME': 'NO',          # -fno-objc-link-runtime
+          'COPY_PHASE_STRIP': 'NO',
           'GCC_C_LANGUAGE_STANDARD': 'c99',         # -std=c99
           'GCC_CW_ASM_SYNTAX': 'NO',                # No -fasm-blocks
           'GCC_ENABLE_CPP_EXCEPTIONS': 'NO',        # -fno-exceptions
