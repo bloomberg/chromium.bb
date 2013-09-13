@@ -238,8 +238,6 @@ public:
 
     bool parseFlex(CSSParserValueList* args, bool important);
 
-    bool parseObjectPosition(bool important);
-
     // Image generators
     bool parseCanvas(CSSParserValueList*, RefPtr<CSSValue>&);
 

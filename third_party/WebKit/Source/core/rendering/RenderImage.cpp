@@ -517,9 +517,6 @@ bool RenderImage::foregroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect,
     // Background shows in padding area.
     if ((backgroundClip == BorderFillBox || backgroundClip == PaddingFillBox) && style()->hasPadding())
         return false;
-    // Object-position may leave parts of the content box empty, regardless of the value of object-fit.
-    if (style()->objectPosition() != RenderStyle::initialObjectPosition())
-        return false;
     // Object-fit may leave parts of the content box empty.
     ObjectFit objectFit = style()->objectFit();
     if (objectFit != ObjectFitFill && objectFit != ObjectFitCover)

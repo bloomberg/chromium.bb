@@ -44,7 +44,6 @@ public:
     static Length convertLengthOrAuto(StyleResolverState&, CSSValue*);
     static Length convertLengthSizing(StyleResolverState&, CSSValue*);
     static Length convertLengthMaxSizing(StyleResolverState&, CSSValue*);
-    static LengthPoint convertLengthPoint(StyleResolverState&, CSSValue*);
     static LengthSize convertRadius(StyleResolverState&, CSSValue*);
     static float convertSpacing(StyleResolverState&, CSSValue*);
     template <CSSValueID IdForNone> static AtomicString convertString(StyleResolverState&, CSSValue*);

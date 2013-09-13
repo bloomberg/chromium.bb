@@ -25,7 +25,6 @@
 #ifndef StyleRareNonInheritedData_h
 #define StyleRareNonInheritedData_h
 
-#include "core/platform/LengthPoint.h"
 #include "core/rendering/ClipPathOperation.h"
 #include "core/rendering/style/BasicShapes.h"
 #include "core/rendering/style/CounterDirectives.h"
@@ -143,8 +142,6 @@ public:
     Color m_visitedLinkBorderBottomColor;
 
     int m_order;
-
-    LengthPoint m_objectPosition;
 
     AtomicString m_flowThread;
     AtomicString m_regionThread;

@@ -156,8 +156,6 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyMinHeight,
     CSSPropertyMinWidth,
     CSSPropertyMixBlendMode,
-    CSSPropertyObjectFit,
-    CSSPropertyObjectPosition,
     CSSPropertyOpacity,
     CSSPropertyOrphans,
     CSSPropertyOutlineColor,
@@ -523,7 +521,7 @@ static PassRefPtr<CSSValue> valueForNinePieceImageRepeat(const NinePieceImage& i
         verticalRepeat = horizontalRepeat;
     else
         verticalRepeat = cssValuePool().createIdentifierValue(valueForRepeatRule(image.verticalRule()));
-    return cssValuePool().createValue(Pair::create(horizontalRepeat.release(), verticalRepeat.release(), Pair::DropIdenticalValues));
+    return cssValuePool().createValue(Pair::create(horizontalRepeat.release(), verticalRepeat.release()));
 }
 
 static PassRefPtr<CSSValue> valueForNinePieceImage(const NinePieceImage& image, const RenderStyle* style)
@@ -2185,12 +2183,6 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             return zoomAdjustedPixelValueForLength(style->minWidth(), style.get());
         case CSSPropertyObjectFit:
             return cssValuePool().createValue(style->objectFit());
-        case CSSPropertyObjectPosition:
-            return cssValuePool().createValue(
-                Pair::create(
-                    cssValuePool().createValue(style->objectPosition().x()),
-                    cssValuePool().createValue(style->objectPosition().y()),
-                    Pair::KeepIdenticalValues));
         case CSSPropertyOpacity:
             return cssValuePool().createValue(style->opacity(), CSSPrimitiveValue::CSS_NUMBER);
         case CSSPropertyOrphans:

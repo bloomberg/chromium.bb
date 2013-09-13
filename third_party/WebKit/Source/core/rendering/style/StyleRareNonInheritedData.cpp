@@ -48,7 +48,6 @@ StyleRareNonInheritedData::StyleRareNonInheritedData()
     , m_clipPath(RenderStyle::initialClipPath())
     , m_visitedLinkBackgroundColor(RenderStyle::initialBackgroundColor())
     , m_order(RenderStyle::initialOrder())
-    , m_objectPosition(RenderStyle::initialObjectPosition())
     , m_flowThread(RenderStyle::initialFlowThread())
     , m_regionThread(RenderStyle::initialRegionThread())
     , m_regionFragment(RenderStyle::initialRegionFragment())
@@ -122,7 +121,6 @@ StyleRareNonInheritedData::StyleRareNonInheritedData(const StyleRareNonInherited
     , m_visitedLinkBorderTopColor(o.m_visitedLinkBorderTopColor)
     , m_visitedLinkBorderBottomColor(o.m_visitedLinkBorderBottomColor)
     , m_order(o.m_order)
-    , m_objectPosition(o.m_objectPosition)
     , m_flowThread(o.m_flowThread)
     , m_regionThread(o.m_regionThread)
     , m_regionFragment(o.m_regionFragment)
@@ -199,7 +197,6 @@ bool StyleRareNonInheritedData::operator==(const StyleRareNonInheritedData& o) c
         && m_visitedLinkBorderTopColor == o.m_visitedLinkBorderTopColor
         && m_visitedLinkBorderBottomColor == o.m_visitedLinkBorderBottomColor
         && m_order == o.m_order
-        && m_objectPosition == o.m_objectPosition
         && m_flowThread == o.m_flowThread
         && m_regionThread == o.m_regionThread
         && m_regionFragment == o.m_regionFragment

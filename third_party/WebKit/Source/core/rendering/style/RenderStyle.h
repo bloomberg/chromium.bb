@@ -829,7 +829,6 @@ public:
     TextOrientation textOrientation() const { return static_cast<TextOrientation>(rareInheritedData->m_textOrientation); }
 
     ObjectFit objectFit() const { return static_cast<ObjectFit>(rareNonInheritedData->m_objectFit); }
-    LengthPoint objectPosition() const { return rareNonInheritedData->m_objectPosition; }
 
     // Return true if any transform related property (currently transform, transformStyle3D or perspective)
     // indicates that we are transforming
@@ -1265,7 +1264,6 @@ public:
     bool setTextOrientation(TextOrientation);
 
     void setObjectFit(ObjectFit f) { SET_VAR(rareNonInheritedData, m_objectFit, f); }
-    void setObjectPosition(LengthPoint position) { SET_VAR(rareNonInheritedData, m_objectPosition, position); }
 
     void setRubyPosition(RubyPosition position) { SET_VAR(rareInheritedData, m_rubyPosition, position); }
 
@@ -1476,7 +1474,6 @@ public:
     static TextCombine initialTextCombine() { return TextCombineNone; }
     static TextOrientation initialTextOrientation() { return TextOrientationVerticalRight; }
     static ObjectFit initialObjectFit() { return ObjectFitFill; }
-    static LengthPoint initialObjectPosition() { return LengthPoint(Length(50.0, Percent), Length(50.0, Percent)); }
     static EDisplay initialDisplay() { return INLINE; }
     static EEmptyCell initialEmptyCells() { return SHOW; }
     static EFloat initialFloating() { return NoFloat; }
