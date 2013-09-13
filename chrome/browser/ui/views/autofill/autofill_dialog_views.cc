@@ -1479,6 +1479,7 @@ const content::NavigationController* AutofillDialogViews::ShowSignIn() {
 
 void AutofillDialogViews::HideSignIn() {
   sign_in_webview_->SetVisible(false);
+  UpdateButtonStrip();
   ContentsPreferredSizeChanged();
 }
 
@@ -2402,7 +2403,7 @@ void AutofillDialogViews::DetailsContainerBoundsChanged() {
 
 bool AutofillDialogViews::SignInWebviewDictatesHeight() const {
   return sign_in_webview_->visible() ||
-      (sign_in_webview_->web_contents() && loading_shield_->visible());
+      (sign_in_webview_->web_contents() && delegate_->ShouldShowSpinner());
 }
 
 AutofillDialogViews::DetailsGroup::DetailsGroup(DialogSection section)
