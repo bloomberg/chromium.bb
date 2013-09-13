@@ -356,8 +356,10 @@ def main(argv):
 
   regular_inputs, native_objects = SplitLinkLine(inputs)
 
-  if not env.getbool('USE_IRT') or UsesPrivateLib(inputs):
+  if not env.getbool('USE_IRT'):
     inputs = UsePrivateLibraries(inputs)
+
+  inputs = ReorderPrivateLibs(inputs)
 
   # Filter out object files which are currently used in the bitcode link.
   # These don't actually need to be treated separately, since the
@@ -474,26 +476,6 @@ def RemoveNativeStdLibs(objs):
                  'libm.a']
   return [f for f in objs if pathtools.split(f)[1] not in defaultlibs]
 
-def UsesPrivateLib(libs):
-  """ Returns True if one of the libraries is a private library.
-
-  This indicates that the user specified that private (unstable non-IRT)
-  libraries should be used, but non-private libraries may have been
-  automatically added without the user directly specifying it,
-  e.g. libc++.a depends on libpthread.a for C++11 support. Mixing
-  private and non-private libraries can cause duplicate symbol errors at
-  link time, e.g. if some symbols are found in libnacl.a but not
-  libnacl_sys_private.a then all of libnacl.a gets pulled in which
-  duplicates symbols.
-  """
-  for l in libs:
-    base = pathtools.basename(l)
-    if (base == 'libnacl_sys_private.a' or
-        base == 'libpthread_private.a' or
-        base == 'libnacl_dyncode_private.a'):
-      return True
-  return False
-
 def UsePrivateLibraries(libs):
   """ Place libnacl_sys_private.a before libnacl.a
   Replace libpthread.a with libpthread_private.a
@@ -517,6 +499,26 @@ def UsePrivateLibraries(libs):
       result_libs.append(pathtools.join(dname, 'libnacl_dyncode_private.a'))
     else:
       result_libs.append(l)
+  return result_libs
+
+def ReorderPrivateLibs(libs):
+  """ Place private libraries just before their non-private equivalent
+  if there is one.
+  """
+  result_libs = list(libs)
+  bases = {}
+  for l in libs:
+    bases[pathtools.basename(l)] = l
+  lib_map = {
+      'libnacl_sys_private.a': 'libnacl.a',
+      'libpthread_private.a': 'libpthread.a',
+      'libnacl_dyncode_private.a': 'libnacl_dyncode.a'
+      }
+  for l in libs:
+    base = pathtools.basename(l)
+    if base in lib_map and lib_map[base] in bases:
+      result_libs.remove(l)
+      result_libs.insert(result_libs.index(bases[lib_map[base]]), l)
   return result_libs
 
 def SplitLinkLine(inputs):
