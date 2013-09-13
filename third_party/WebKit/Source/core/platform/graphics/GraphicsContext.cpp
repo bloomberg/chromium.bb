@@ -439,9 +439,10 @@ void GraphicsContext::beginMaskedLayer(const FloatRect& bounds, MaskType maskTyp
         return;
 
     SkPaint layerPaint;
-    layerPaint.setXfermode(maskType == AlphaMaskType
+    RefPtr<SkXfermode> xferMode = adoptRef(maskType == AlphaMaskType
         ? SkXfermode::Create(SkXfermode::kSrcIn_Mode)
         : SkLumaMaskXfermode::Create(SkXfermode::kSrcIn_Mode));
+    layerPaint.setXfermode(xferMode.get());
 
     SkRect skBounds = WebCoreFloatRectToSKRect(bounds);
     saveLayer(&skBounds, &layerPaint);
