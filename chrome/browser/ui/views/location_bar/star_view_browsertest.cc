@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/location_bar/star_view.h"
 
-#include "chrome/browser/ui/views/browser_dialogs.h"
+#include "chrome/browser/ui/views/bookmarks/bookmark_bubble_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -32,21 +32,21 @@ IN_PROC_BROWSER_TEST_F(StarViewTest, MAYBE_HideOnSecondClick) {
       gfx::Point(), ui::EF_LEFT_MOUSE_BUTTON);
 
   // Verify that clicking once shows the bookmark bubble.
-  EXPECT_FALSE(chrome::IsBookmarkBubbleViewShowing());
+  EXPECT_FALSE(BookmarkBubbleView::IsShowing());
   star_view->OnMousePressed(pressed_event);
-  EXPECT_FALSE(chrome::IsBookmarkBubbleViewShowing());
+  EXPECT_FALSE(BookmarkBubbleView::IsShowing());
   star_view->OnMouseReleased(released_event);
-  EXPECT_TRUE(chrome::IsBookmarkBubbleViewShowing());
+  EXPECT_TRUE(BookmarkBubbleView::IsShowing());
 
   // Verify that clicking again doesn't reshow it.
   star_view->OnMousePressed(pressed_event);
   // Hide the bubble manually. In the browser this would normally happen during
   // the event processing.
-  chrome::HideBookmarkBubbleView();
+  BookmarkBubbleView::Hide();
   base::MessageLoop::current()->RunUntilIdle();
-  EXPECT_FALSE(chrome::IsBookmarkBubbleViewShowing());
+  EXPECT_FALSE(BookmarkBubbleView::IsShowing());
   star_view->OnMouseReleased(released_event);
-  EXPECT_FALSE(chrome::IsBookmarkBubbleViewShowing());
+  EXPECT_FALSE(BookmarkBubbleView::IsShowing());
 }
 
 }  // namespace

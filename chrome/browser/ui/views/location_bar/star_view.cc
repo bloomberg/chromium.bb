@@ -10,7 +10,7 @@
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/ui/view_ids.h"
-#include "chrome/browser/ui/views/browser_dialogs.h"
+#include "chrome/browser/ui/views/bookmarks/bookmark_bubble_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -45,7 +45,7 @@ void StarView::GetAccessibleState(ui::AccessibleViewState* state) {
 
 bool StarView::GetTooltipText(const gfx::Point& p, string16* tooltip) const {
   // Don't show tooltip to distract user if BookmarkBubbleView is showing.
-  if (chrome::IsBookmarkBubbleViewShowing())
+  if (BookmarkBubbleView::IsShowing())
     return false;
 
   return views::ImageView::GetTooltipText(p, tooltip);
@@ -54,7 +54,7 @@ bool StarView::GetTooltipText(const gfx::Point& p, string16* tooltip) const {
 bool StarView::OnMousePressed(const ui::MouseEvent& event) {
   // If the bookmark bubble is showing then don't reshow it when the mouse is
   // released.
-  suppress_mouse_released_action_ = chrome::IsBookmarkBubbleViewShowing();
+  suppress_mouse_released_action_ = BookmarkBubbleView::IsShowing();
 
   // We want to show the bubble on mouse release; that is the standard behavior
   // for buttons.

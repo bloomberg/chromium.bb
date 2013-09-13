@@ -46,46 +46,15 @@ const int kControlBorderWidth = 2;
 
 }  // namespace
 
-// Declared in browser_dialogs.h so callers don't have to depend on our header.
-
-namespace chrome {
-
-void ShowBookmarkBubbleView(views::View* anchor_view,
-                            BookmarkBubbleViewObserver* observer,
-                            scoped_ptr<BookmarkBubbleDelegate> delegate,
-                            Profile* profile,
-                            const GURL& url,
-                            bool newly_bookmarked) {
-  BookmarkBubbleView::ShowBubble(anchor_view,
-                                 observer,
-                                 delegate.Pass(),
-                                 profile,
-                                 url,
-                                 newly_bookmarked);
-}
-
-void HideBookmarkBubbleView() {
-  BookmarkBubbleView::Hide();
-}
-
-bool IsBookmarkBubbleViewShowing() {
-  return BookmarkBubbleView::IsShowing();
-}
-
-}  // namespace chrome
-
-// BookmarkBubbleView ---------------------------------------------------------
-
 BookmarkBubbleView* BookmarkBubbleView::bookmark_bubble_ = NULL;
 
 // static
-void BookmarkBubbleView::ShowBubble(
-    views::View* anchor_view,
-    BookmarkBubbleViewObserver* observer,
-    scoped_ptr<BookmarkBubbleDelegate> delegate,
-    Profile* profile,
-    const GURL& url,
-    bool newly_bookmarked) {
+void BookmarkBubbleView::ShowBubble(views::View* anchor_view,
+                                    BookmarkBubbleViewObserver* observer,
+                                    scoped_ptr<BookmarkBubbleDelegate> delegate,
+                                    Profile* profile,
+                                    const GURL& url,
+                                    bool newly_bookmarked) {
   if (IsShowing())
     return;
 

@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_BROWSER_DIALOGS_H_
 #define CHROME_BROWSER_UI_VIEWS_BROWSER_DIALOGS_H_
 
-#include "base/memory/scoped_ptr.h"
+#include "base/callback_forward.h"
 #include "ui/gfx/native_widget_types.h"
 
 // This file contains functions for running a variety of browser dialogs and
@@ -15,13 +15,9 @@
 // TODO: Make as many of these methods as possible cross platform, and move them
 // into chrome/browser/ui/browser_dialogs.h.
 
-class BookmarkBubbleDelegate;
-class BookmarkBubbleViewObserver;
-class Browser;
 class BrowserView;
 class EditSearchEngineControllerDelegate;
 class FindBar;
-class GURL;
 class Profile;
 class TemplateURL;
 
@@ -29,21 +25,7 @@ namespace extensions {
 class Extension;
 }
 
-namespace views {
-class View;
-}
-
 namespace chrome {
-
-// Shows or hides the bookmark bubble anchored to the supplied view.
-void ShowBookmarkBubbleView(views::View* anchor_view,
-                            BookmarkBubbleViewObserver* observer,
-                            scoped_ptr<BookmarkBubbleDelegate> delegate,
-                            Profile* profile,
-                            const GURL& url,
-                            bool newly_bookmarked);
-void HideBookmarkBubbleView();
-bool IsBookmarkBubbleViewShowing();
 
 // Creates and returns a find bar for the given browser window. See FindBarWin.
 FindBar* CreateFindBar(BrowserView* browser_view);
@@ -59,11 +41,10 @@ void EditSearchEngine(gfx::NativeWindow parent,
                       Profile* profile);
 
 // Shows the create chrome app shortcut dialog box.
-void ShowCreateChromeAppShortcutsDialog(
-    gfx::NativeWindow parent_window,
-    Profile* profile,
-    const extensions::Extension* app,
-    const base::Closure& close_callback);
+void ShowCreateChromeAppShortcutsDialog(gfx::NativeWindow parent_window,
+                                        Profile* profile,
+                                        const extensions::Extension* app,
+                                        const base::Closure& close_callback);
 
 }  // namespace chrome
 
