@@ -30,6 +30,7 @@
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/html/ClassList.h"
 #include "core/html/ime/InputMethodContext.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "core/rendering/style/StyleInheritedData.h"
 #include "wtf/OwnPtr.h"
 
@@ -227,8 +228,9 @@ inline ElementRareData::~ElementRareData()
     ASSERT(!m_backdrop);
 }
 
-inline void ElementRareData::setPseudoElement(PseudoId pseudoId, PassRefPtr<PseudoElement> element)
+inline void ElementRareData::setPseudoElement(PseudoId pseudoId, PassRefPtr<PseudoElement> prpElement)
 {
+    RefPtr<PseudoElement> element = prpElement;
     switch (pseudoId) {
     case BEFORE:
         releasePseudoElement(m_generatedBefore.get());
@@ -245,6 +247,7 @@ inline void ElementRareData::setPseudoElement(PseudoId pseudoId, PassRefPtr<Pseu
     default:
         ASSERT_NOT_REACHED();
     }
+    InspectorInstrumentation::pseudoElementCreated(element.get());
 }
 
 inline PseudoElement* ElementRareData::pseudoElement(PseudoId pseudoId) const
@@ -265,6 +268,8 @@ inline void ElementRareData::releasePseudoElement(PseudoElement* element)
 {
     if (!element)
         return;
+
+    InspectorInstrumentation::pseudoElementDestroyed(element);
 
     if (element->attached())
         element->detach();

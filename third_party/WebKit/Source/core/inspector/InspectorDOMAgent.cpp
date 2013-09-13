@@ -48,6 +48,7 @@
 #include "core/dom/Node.h"
 #include "core/dom/NodeList.h"
 #include "core/dom/NodeTraversal.h"
+#include "core/dom/PseudoElement.h"
 #include "core/dom/Text.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
@@ -359,6 +360,14 @@ void InspectorDOMAgent::unbind(Node* node, NodeToIdMap* nodesMap)
     for (ShadowRoot* root = node->youngestShadowRoot(); root; root = root->olderShadowRoot())
         unbind(root, nodesMap);
 
+    if (node->isElementNode()) {
+        Element* element = toElement(node);
+        if (element->pseudoElement(BEFORE))
+            unbind(element->pseudoElement(BEFORE), nodesMap);
+        if (element->pseudoElement(AFTER))
+            unbind(element->pseudoElement(AFTER), nodesMap);
+    }
+
     nodesMap->remove(node);
     if (m_domListener)
         m_domListener->didRemoveDOMNode(node);
@@ -418,7 +427,12 @@ Node* InspectorDOMAgent::assertEditableNode(ErrorString* errorString, int nodeId
         return 0;
 
     if (node->isInShadowTree()) {
-        *errorString = "Can not edit nodes from shadow trees";
+        *errorString = "Cannot edit nodes from shadow trees";
+        return 0;
+    }
+
+    if (node->isPseudoElement()) {
+        *errorString = "Cannot edit pseudo elements";
         return 0;
     }
 
@@ -432,9 +446,15 @@ Element* InspectorDOMAgent::assertEditableElement(ErrorString* errorString, int 
         return 0;
 
     if (element->isInShadowTree()) {
-        *errorString = "Can not edit elements from shadow trees";
+        *errorString = "Cannot edit elements from shadow trees";
         return 0;
     }
+
+    if (element->isPseudoElement()) {
+        *errorString = "Cannot edit pseudo elements";
+        return 0;
+    }
+
     return element;
 }
 
@@ -732,7 +752,7 @@ void InspectorDOMAgent::removeNode(ErrorString* errorString, int nodeId)
 
     ContainerNode* parentNode = node->parentNode();
     if (!parentNode) {
-        *errorString = "Can not remove detached node";
+        *errorString = "Cannot remove detached node";
         return;
     }
 
@@ -1480,6 +1500,23 @@ PassRefPtr<TypeBuilder::DOM::Node> InspectorDOMAgent::buildObjectForNode(Node* n
             value->setTemplateContent(buildObjectForNode(toHTMLTemplateElement(element)->content(), 0, nodesMap));
             forcePushChildren = true;
         }
+
+        switch (element->pseudoId()) {
+        case BEFORE:
+            value->setPseudoType(TypeBuilder::DOM::PseudoType::Before);
+            break;
+        case AFTER:
+            value->setPseudoType(TypeBuilder::DOM::PseudoType::After);
+            break;
+        default: {
+            RefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node> > pseudoElements = buildArrayForPseudoElements(element, nodesMap);
+            if (pseudoElements) {
+                value->setPseudoElements(pseudoElements.release());
+                forcePushChildren = true;
+            }
+            break;
+        }
+        }
     } else if (node->isDocumentNode()) {
         Document* document = toDocument(node);
         value->setDocumentURL(documentURLString(document));
@@ -1587,6 +1624,19 @@ PassRefPtr<TypeBuilder::DOM::EventListener> InspectorDOMAgent::buildObjectForEve
             value->setSourceName(sourceName);
     }
     return value.release();
+}
+
+PassRefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node> > InspectorDOMAgent::buildArrayForPseudoElements(Element* element, NodeToIdMap* nodesMap)
+{
+    if (!element->pseudoElement(BEFORE) && !element->pseudoElement(AFTER))
+        return 0;
+
+    RefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node> > pseudoElements = TypeBuilder::Array<TypeBuilder::DOM::Node>::create();
+    if (element->pseudoElement(BEFORE))
+        pseudoElements->addItem(buildObjectForNode(element->pseudoElement(BEFORE), 0, nodesMap));
+    if (element->pseudoElement(AFTER))
+        pseudoElements->addItem(buildObjectForNode(element->pseudoElement(AFTER), 0, nodesMap));
+    return pseudoElements.release();
 }
 
 Node* InspectorDOMAgent::innerFirstChild(Node* node)
@@ -1813,8 +1863,11 @@ void InspectorDOMAgent::didPushShadowRoot(Element* host, ShadowRoot* root)
         return;
 
     int hostId = m_documentNodeToIdMap.get(host);
-    if (hostId)
-        m_frontend->shadowRootPushed(hostId, buildObjectForNode(root, 0, &m_documentNodeToIdMap));
+    if (!hostId)
+        return;
+
+    pushChildNodesToFrontend(hostId, 1);
+    m_frontend->shadowRootPushed(hostId, buildObjectForNode(root, 0, &m_documentNodeToIdMap));
 }
 
 void InspectorDOMAgent::willPopShadowRoot(Element* host, ShadowRoot* root)
@@ -1842,6 +1895,35 @@ void InspectorDOMAgent::frameDocumentUpdated(Frame* frame)
     // Only update the main frame document, nested frame document updates are not required
     // (will be handled by loadEventFired()).
     setDocument(document);
+}
+
+void InspectorDOMAgent::pseudoElementCreated(PseudoElement* pseudoElement)
+{
+    Element* parent = pseudoElement->parentOrShadowHostElement();
+    if (!parent)
+        return;
+    int parentId = m_documentNodeToIdMap.get(parent);
+    if (!parentId)
+        return;
+
+    pushChildNodesToFrontend(parentId, 1);
+    m_frontend->pseudoElementAdded(parentId, buildObjectForNode(pseudoElement, 0, &m_documentNodeToIdMap));
+}
+
+void InspectorDOMAgent::pseudoElementDestroyed(PseudoElement* pseudoElement)
+{
+    int pseudoElementId = m_documentNodeToIdMap.get(pseudoElement);
+    if (!pseudoElementId)
+        return;
+
+    // If a PseudoElement is bound, its parent element must be bound, too.
+    Element* parent = pseudoElement->parentOrShadowHostElement();
+    ASSERT(parent);
+    int parentId = m_documentNodeToIdMap.get(parent);
+    ASSERT(parentId);
+
+    unbind(pseudoElement, &m_documentNodeToIdMap);
+    m_frontend->pseudoElementRemoved(parentId, pseudoElementId);
 }
 
 Node* InspectorDOMAgent::nodeForPath(const String& path)

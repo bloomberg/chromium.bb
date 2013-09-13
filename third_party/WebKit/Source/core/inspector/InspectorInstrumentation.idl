@@ -61,6 +61,9 @@
 */
 
 interface InspectorInstrumentation {
+
+#include "core/dom/PseudoElement.h"
+
     [Page, Inspector, PageDebugger, PageRuntime]
     void didClearWindowObjectInWorld([Keep] Frame*, DOMWrapperWorld*);
 
@@ -434,6 +437,12 @@ interface InspectorInstrumentation {
 
     [LayerTree]
     void layerTreeDidChange(Page*);
+
+    [DOM, Inline=FastReturn]
+    void pseudoElementCreated([Keep] PseudoElement*);
+
+    [DOM, Inline=FastReturn]
+    void pseudoElementDestroyed([Keep] PseudoElement*);
 }
 
 interface InspectorConsoleInstrumentation {
