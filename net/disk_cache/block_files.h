@@ -24,7 +24,11 @@ class ThreadChecker;
 namespace disk_cache {
 
 // An instance of this class represents the header of a block file in memory.
-// Note that this class doesn't perform any file operation.
+// Note that this class doesn't perform any file operation (as in it only deals
+// with entities in memory).
+// The header of a block file (and hence, this object) is all that is needed to
+// perform common operations like allocating or releasing space for storage;
+// actual access to that storage, however, is not performed through this class.
 class NET_EXPORT_PRIVATE BlockHeader {
  public:
   BlockHeader();
@@ -33,10 +37,9 @@ class NET_EXPORT_PRIVATE BlockHeader {
   BlockHeader(const BlockHeader& other);
   ~BlockHeader();
 
-  // Creates a new entry on the allocation map, updating the apropriate
-  // counters. |target| is the type of block to use (number of empty blocks),
-  // and |size| is the actual number of blocks to use.
-  bool CreateMapBlock(int target, int size, int* index);
+  // Creates a new entry of |size| blocks on the allocation map, updating the
+  // apropriate counters.
+  bool CreateMapBlock(int size, int* index);
 
   // Deletes the block pointed by |index|.
   void DeleteMapBlock(int index, int block_size);
@@ -49,20 +52,34 @@ class NET_EXPORT_PRIVATE BlockHeader {
 
   // Returns true if the current block file should not be used as-is to store
   // more records. |block_count| is the number of blocks to allocate.
-  bool NeedToGrowBlockFile(int block_count);
+  bool NeedToGrowBlockFile(int block_count) const;
+
+  // Returns true if this block file can be used to store an extra record of
+  // size |block_count|.
+  bool CanAllocate(int block_count) const;
 
   // Returns the number of empty blocks for this file.
   int EmptyBlocks() const;
 
+  // Returns the minumum number of allocations that can be satisfied.
+  int MinimumAllocations() const;
+
+  // Returns the number of blocks that this file can store.
+  int Capacity() const;
+
   // Returns true if the counters look OK.
   bool ValidateCounters() const;
+
+  // Returns the identifiers of this and the next file (0 if there is none).
+  int FileId() const;
+  int NextFileId() const;
 
   // Returns the size of the wrapped structure (BlockFileHeader).
   int Size() const;
 
-  BlockFileHeader* operator->() { return header_; }
-  void operator=(const BlockHeader& other) { header_ = other.header_; }
-  BlockFileHeader* Get() { return header_; }
+  // Returns a pointer to the underlying BlockFileHeader.
+  // TODO(rvargas): This may be removed with the support for V2.
+  BlockFileHeader* Header();
 
  private:
   BlockFileHeader* header_;
