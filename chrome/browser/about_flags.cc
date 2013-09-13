@@ -1673,7 +1673,8 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_ADD_TO_HOMESCREEN_DESCRIPTION,
     kOsAndroid,
 #if defined(OS_ANDROID)
-    SINGLE_VALUE_TYPE(switches::kEnableAddToHomescreen)
+    ENABLE_DISABLE_VALUE_TYPE(switches::kEnableAddToHomescreen,
+                              switches::kDisableAddToHomescreen),
 #else
     SINGLE_VALUE_TYPE("")
 #endif

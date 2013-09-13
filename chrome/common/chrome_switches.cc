@@ -1489,6 +1489,9 @@ const char kFakeCloudPolicyType[]           = "fake-cloud-policy-type";
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
 #if defined(OS_ANDROID)
+// Makes the "Add to Homescreen" shortcut invisible.
+const char kDisableAddToHomescreen[]         = "disable-add-to-homescreen";
+
 // Disables the new NTP.
 const char kDisableNewNTP[]                  = "disable-new-ntp";
 
