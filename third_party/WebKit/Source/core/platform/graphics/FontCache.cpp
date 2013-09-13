@@ -31,6 +31,7 @@
 #include "core/platform/graphics/FontCache.h"
 
 #include "FontFamilyNames.h"
+#include "RuntimeEnabledFeatures.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/FontFallbackList.h"
 #include "core/platform/graphics/FontPlatformData.h"
@@ -63,9 +64,9 @@ FontCache::FontCache()
 struct FontPlatformDataCacheKey {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    FontPlatformDataCacheKey(const AtomicString& family = AtomicString(), unsigned size = 0, unsigned weight = 0, bool italic = false,
+    FontPlatformDataCacheKey(const AtomicString& family = AtomicString(), float size = 0, unsigned weight = 0, bool italic = false,
         bool isPrinterFont = false, FontOrientation orientation = Horizontal, FontWidthVariant widthVariant = RegularWidth)
-        : m_size(size)
+        : m_size(size * s_fontSizePrecisionMultiplier)
         , m_weight(weight)
         , m_family(family)
         , m_italic(italic)
@@ -94,6 +95,10 @@ public:
     FontWidthVariant m_widthVariant;
 
 private:
+    // Multiplying the floating point size by 100 gives two decimal
+    // point precision which should be sufficient.
+    static const unsigned s_fontSizePrecisionMultiplier = 100;
+
     static unsigned hashTableDeletedSize() { return 0xFFFFFFFFU; }
 };
 
@@ -197,7 +202,13 @@ FontPlatformData* FontCache::getFontResourcePlatformData(const FontDescription& 
         platformInit();
     }
 
-    FontPlatformDataCacheKey key(familyName, fontDescription.computedPixelSize(), fontDescription.weight(), fontDescription.italic(),
+    float fontSize;
+    if (RuntimeEnabledFeatures::subpixelFontScalingEnabled())
+        fontSize = fontDescription.computedSize();
+    else
+        fontSize = fontDescription.computedPixelSize();
+    FontPlatformDataCacheKey key(familyName, fontSize, fontDescription.weight(), fontDescription.italic(),
+
         fontDescription.usePrinterFont(), fontDescription.orientation(), fontDescription.widthVariant());
     FontPlatformData* result = 0;
     bool foundResult;

@@ -31,8 +31,7 @@
 #include "config.h"
 #include "core/platform/graphics/harfbuzz/HarfBuzzShaper.h"
 
-#include <unicode/normlzr.h>
-#include <unicode/uchar.h>
+#include "RuntimeEnabledFeatures.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/SurrogatePairAwareTextIterator.h"
 #include "core/platform/graphics/TextRun.h"
@@ -41,6 +40,8 @@
 #include "wtf/MathExtras.h"
 #include "wtf/unicode/Unicode.h"
 #include "wtf/Vector.h"
+#include <unicode/normlzr.h>
+#include <unicode/uchar.h>
 
 namespace WebCore {
 
@@ -373,7 +374,9 @@ bool HarfBuzzShaper::shape(GlyphBuffer* glyphBuffer)
     // HarfBuzz when we are calculating widths (except when directionalOverride() is set).
     if (!shapeHarfBuzzRuns(glyphBuffer || m_run.directionalOverride()))
         return false;
-    m_totalWidth = roundf(m_totalWidth);
+
+    if (!RuntimeEnabledFeatures::subpixelFontScalingEnabled())
+        m_totalWidth = roundf(m_totalWidth);
 
     if (glyphBuffer && !fillGlyphBuffer(glyphBuffer))
         return false;

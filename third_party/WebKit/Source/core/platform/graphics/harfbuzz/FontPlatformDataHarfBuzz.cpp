@@ -31,6 +31,7 @@
 #include "config.h"
 #include "core/platform/graphics/harfbuzz/FontPlatformDataHarfBuzz.h"
 
+#include "RuntimeEnabledFeatures.h"
 #include "SkPaint.h"
 #include "SkTypeface.h"
 #include "core/platform/NotImplemented.h"
@@ -195,7 +196,7 @@ void FontPlatformData::setupPaint(SkPaint* paint) const
     paint->setHinting(static_cast<SkPaint::Hinting>(m_style.hintStyle));
     paint->setEmbeddedBitmapText(m_style.useBitmaps);
     paint->setAutohinted(m_style.useAutoHint);
-    paint->setSubpixelText(m_style.useSubpixelPositioning);
+    paint->setSubpixelText(m_style.useSubpixelPositioning || RuntimeEnabledFeatures::subpixelFontScalingEnabled());
     if (m_style.useAntiAlias)
         paint->setLCDRenderText(m_style.useSubpixelRendering);
 
