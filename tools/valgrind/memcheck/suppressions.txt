@@ -4881,14 +4881,6 @@
    fun:_ZN7WebCore21DedicatedWorkerThread12runEventLoopEv
 }
 {
-   bug_139662
-   Memcheck:Uninitialized
-   fun:qcms_transform_data_rgba_out_lut_sse2
-   fun:qcms_transform_data_type
-   fun:_ZN7WebCore16JPEGImageDecoder15outputScanlinesEv
-   fun:_ZN7WebCore15JPEGImageReader6decodeERKNS_12SharedBufferEb
-}
-{
    bug_139853
    Memcheck:Unaddressable
    fun:_ZN11SkGpuDeviceC1EP9GrContextP9GrTexture
@@ -5265,28 +5257,6 @@
    fun:_ZN11PluginPrefs12EnablePluginE*
    fun:_ZN15PluginPrefsTest25EnablePluginSynchronouslyE*
    fun:_ZN44PluginPrefsTest_UnifiedPepperFlashState_Test8TestBodyEv
-}
-{
-   bug_148637_a
-   Memcheck:Unaddressable
-   ...
-   fun:_ZN9SkPathRef6EditorC1EP12SkAutoTUnrefIS_Eii
-   fun:_ZN6SkPath10incReserveEj
-   fun:_ZN7WebCoreL23setPathFromConvexPointsEP6SkPathmPKNS_10FloatPointE
-   fun:_ZN7WebCore15GraphicsContext17drawConvexPolygonEmPKNS_10FloatPointEb
-}
-{
-   bug_148637_b
-   Memcheck:Unaddressable
-   fun:_Z13sk_atomic_incPi
-   fun:_ZNK8SkRefCnt3refEv
-   fun:_ZN9SkPathRef11CreateEmptyEv
-   fun:_ZN6SkPathC1Ev
-   fun:_ZN11SkClipStack3RecC1EiRK6SkRectN8SkRegion2OpEb
-   fun:_ZN11SkClipStack11clipDevRectERK6SkRectN8SkRegion2OpEb
-   fun:_ZN8SkCanvas8clipRectERK6SkRectN8SkRegion2OpEb
-   fun:_ZN7WebCore15GraphicsContext4clipERKNS_9FloatRectE
-   fun:_ZN7WebCore15GraphicsContext4clipERKNS_7IntRectE
 }
 {
    bug_149734a
