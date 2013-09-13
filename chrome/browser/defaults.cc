@@ -49,12 +49,6 @@ const bool kAlwaysOpenIncognitoWindow = false;
 const bool kAlwaysCreateTabbedBrowserOnSessionRestore = true;
 #endif
 
-#if defined(OS_CHROMEOS)
-const bool kOSSupportsOtherBrowsers = false;
-#else
-const bool kOSSupportsOtherBrowsers = true;
-#endif
-
 const bool kDownloadPageHasShowInFolder = true;
 const bool kSizeTabButtonToTopOfTabStrip = false;
 

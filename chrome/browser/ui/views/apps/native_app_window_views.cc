@@ -175,7 +175,7 @@ void NativeAppWindowViews::InitializeDefaultWindow(
   if (position_specified && !window_bounds.IsEmpty())
     init_params.bounds = window_bounds;
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   // Set up a custom WM_CLASS for app windows. This allows task switchers in
   // X11 environments to distinguish them from main browser windows.
   init_params.wm_class_name = web_app::GetWMClassFromAppName(app_name);

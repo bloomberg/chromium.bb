@@ -1179,7 +1179,7 @@
         'browser/sessions/session_backend_unittest.cc',
         'browser/sessions/session_service_unittest.cc',
         'browser/sessions/session_types_unittest.cc',
-        'browser/shell_integration_unittest.cc',
+        'browser/shell_integration_linux_unittest.cc',
         'browser/shell_integration_win_unittest.cc',
         'browser/signin/fake_auth_status_provider.cc',
         'browser/signin/fake_auth_status_provider.h',
@@ -2237,6 +2237,7 @@
             'browser/policy/cloud/user_cloud_policy_store_unittest.cc',
             'browser/policy/cloud/user_policy_signin_service_unittest.cc',
             'browser/safe_browsing/download_protection_service_unittest.cc',
+            'browser/shell_integration_linux_unittest.cc',
             'browser/signin/signin_manager_unittest.cc',
             'browser/storage_monitor/storage_monitor_linux_unittest.cc',
             'browser/ui/sync/one_click_signin_helper_unittest.cc',
@@ -2467,8 +2468,6 @@
             # Bookmark export/import are handled via the BookmarkColumns
             # ContentProvider.
             'browser/bookmarks/bookmark_html_writer_unittest.cc',
-
-            'browser/shell_integration_unittest.cc',
 
             # No service process (which also requires multiprocess lock).
             'common/multi_process_lock_unittest.cc',

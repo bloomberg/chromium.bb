@@ -35,7 +35,7 @@
 #include "chrome/browser/ui/views/frame/glass_browser_frame_view.h"
 #endif
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 #include "chrome/browser/shell_integration_linux.h"
 #endif
 
@@ -82,7 +82,7 @@ void BrowserFrame::InitBrowserFrame() {
   }
 #endif
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   // Set up a custom WM_CLASS for some sorts of window types. This allows
   // task switchers in X11 environments to distinguish between main browser
   // windows and e.g app windows.

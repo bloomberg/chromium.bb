@@ -259,8 +259,10 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 #if !defined(OS_ANDROID)
   BackgroundModeManager::RegisterPrefs(registry);
   RegisterBrowserPrefs(registry);
+#if !defined(OS_CHROMEOS)
   RegisterDefaultBrowserPromptPrefs(registry);
-#endif
+#endif  // !defined(OS_CHROMEOS)
+#endif  // !defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
   chromeos::AudioDevicesPrefHandlerImpl::RegisterPrefs(registry);

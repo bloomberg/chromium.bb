@@ -50,10 +50,6 @@ extern const bool kAlwaysOpenIncognitoWindow;
 // where we want the desktop to show through in this situation.
 extern const bool kAlwaysCreateTabbedBrowserOnSessionRestore;
 
-// Does the OS support other browsers? If not, operations such as default
-// browser check are not done.
-extern const bool kOSSupportsOtherBrowsers;
-
 // Does the download page have the show in folder option?
 extern const bool kDownloadPageHasShowInFolder;
 

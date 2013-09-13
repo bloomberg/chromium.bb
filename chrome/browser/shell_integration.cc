@@ -288,6 +288,9 @@ bool ShellIntegration::DefaultProtocolClientWorker::SetAsDefault(
     bool interactive_permitted) {
   bool result = false;
   switch (ShellIntegration::CanSetAsDefaultProtocolClient()) {
+    case ShellIntegration::SET_DEFAULT_NOT_ALLOWED:
+      result = false;
+      break;
     case ShellIntegration::SET_DEFAULT_UNATTENDED:
       result = ShellIntegration::SetAsDefaultProtocolClient(protocol_);
       break;
@@ -297,8 +300,6 @@ bool ShellIntegration::DefaultProtocolClientWorker::SetAsDefault(
             protocol_);
       }
       break;
-    default:
-      NOTREACHED();
   }
 
   return result;

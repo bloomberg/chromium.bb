@@ -883,8 +883,8 @@ void StartupBrowserCreatorImpl::AddInfoBarsIfNecessary(
     ObsoleteOSInfoBarDelegate::Create(InfoBarService::FromWebContents(
         browser->tab_strip_model()->GetActiveWebContents()));
 
-    if (browser_defaults::kOSSupportsOtherBrowsers &&
-        !command_line_.HasSwitch(switches::kNoDefaultBrowserCheck)) {
+#if !defined(OS_CHROMEOS)
+    if (!command_line_.HasSwitch(switches::kNoDefaultBrowserCheck)) {
       // Generally, the default browser prompt should not be shown on first
       // run. However, when the set-as-default dialog has been suppressed, we
       // need to allow it.
@@ -896,6 +896,7 @@ void StartupBrowserCreatorImpl::AddInfoBarsIfNecessary(
                                          browser->host_desktop_type());
       }
     }
+#endif
   }
 }
 
