@@ -613,7 +613,7 @@ bool IsWebNodeVisibleImpl(const WebKit::WebNode& node, const int depth) {
 
 }  // namespace
 
-const size_t kMaxParseableFields = 100;
+const size_t kMaxParseableFields = 200;
 
 // All text fields, including password fields, should be extracted.
 bool IsTextInput(const WebInputElement* element) {
