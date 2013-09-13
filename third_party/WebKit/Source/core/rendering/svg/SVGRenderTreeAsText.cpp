@@ -492,7 +492,7 @@ void writeSVGResourceContainer(TextStream& ts, const RenderObject& object, int i
         writeNameValuePair(ts, "maskContentUnits", masker->maskContentUnits());
         ts << "\n";
     } else if (resource->resourceType() == FilterResourceType) {
-        RenderSVGResourceFilter* filter = static_cast<RenderSVGResourceFilter*>(resource);
+        RenderSVGResourceFilter* filter = toRenderSVGResourceFilter(resource);
         writeNameValuePair(ts, "filterUnits", filter->filterUnits());
         writeNameValuePair(ts, "primitiveUnits", filter->primitiveUnits());
         ts << "\n";

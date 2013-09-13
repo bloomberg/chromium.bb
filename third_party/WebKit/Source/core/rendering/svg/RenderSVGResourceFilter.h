@@ -88,10 +88,16 @@ private:
     HashMap<RenderObject*, FilterData*> m_filter;
 };
 
-inline RenderSVGResourceFilter* toRenderSVGFilter(RenderObject* object)
+inline RenderSVGResourceFilter* toRenderSVGResourceFilter(RenderObject* object)
 {
     ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isSVGResourceFilter());
     return static_cast<RenderSVGResourceFilter*>(object);
+}
+
+inline RenderSVGResourceFilter* toRenderSVGResourceFilter(RenderSVGResourceContainer* resource)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!resource || resource->resourceType() == FilterResourceType);
+    return static_cast<RenderSVGResourceFilter*>(resource);
 }
 
 }

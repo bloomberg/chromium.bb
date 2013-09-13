@@ -53,7 +53,7 @@ public:
         RenderObject* filter = parent();
         if (!filter || !filter->isSVGResourceFilter())
             return;
-        static_cast<RenderSVGResourceFilter*>(filter)->primitiveAttributeChanged(this, attribute);
+        toRenderSVGResourceFilter(filter)->primitiveAttributeChanged(this, attribute);
     }
 };
 
