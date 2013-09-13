@@ -64,7 +64,7 @@ namespace WebCore {
     v8::Handle<v8::Value> throwError(V8ErrorType, const String&, v8::Isolate*);
 
     // Schedule a JavaScript error to be thrown.
-    v8::Handle<v8::Value> throwError(v8::Handle<v8::Value>);
+    v8::Handle<v8::Value> throwError(v8::Handle<v8::Value>, v8::Isolate*);
 
     // A helper for throwing JavaScript TypeError.
     v8::Handle<v8::Value> throwTypeError(v8::Isolate*);

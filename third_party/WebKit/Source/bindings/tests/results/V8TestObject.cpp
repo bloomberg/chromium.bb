@@ -1060,7 +1060,7 @@ static void withScriptStateAttributeAttributeSetter(v8::Local<v8::String> name, 
     ScriptState& state = *currentState;
     imp->setWithScriptStateAttribute(&state, v);
     if (state.hadException())
-        throwError(state.exception());
+        throwError(state.exception(), info.GetIsolate());
     return;
 }
 
@@ -1143,7 +1143,7 @@ static void withScriptStateAttributeRaisesAttributeGetter(v8::Local<v8::String> 
     if (UNLIKELY(es.throwIfNeeded()))
         return;
     if (state.hadException()) {
-        throwError(state.exception());
+        throwError(state.exception(), info.GetIsolate());
         return;
     }
     v8SetReturnValueFast(info, v.release(), imp);
@@ -1167,7 +1167,7 @@ static void withScriptStateAttributeRaisesAttributeSetter(v8::Local<v8::String> 
     ScriptState& state = *currentState;
     imp->setWithScriptStateAttributeRaises(&state, WTF::getPtr(v));
     if (state.hadException())
-        throwError(state.exception());
+        throwError(state.exception(), info.GetIsolate());
     return;
 }
 
@@ -1243,7 +1243,7 @@ static void withScriptExecutionContextAndScriptStateAttributeAttributeSetter(v8:
     ScriptExecutionContext* scriptContext = getScriptExecutionContext();
     imp->setWithScriptExecutionContextAndScriptStateAttribute(&state, scriptContext, WTF::getPtr(v));
     if (state.hadException())
-        throwError(state.exception());
+        throwError(state.exception(), info.GetIsolate());
     return;
 }
 
@@ -1267,7 +1267,7 @@ static void withScriptExecutionContextAndScriptStateAttributeRaisesAttributeGett
     if (UNLIKELY(es.throwIfNeeded()))
         return;
     if (state.hadException()) {
-        throwError(state.exception());
+        throwError(state.exception(), info.GetIsolate());
         return;
     }
     v8SetReturnValueFast(info, v.release(), imp);
@@ -1292,7 +1292,7 @@ static void withScriptExecutionContextAndScriptStateAttributeRaisesAttributeSett
     ScriptExecutionContext* scriptContext = getScriptExecutionContext();
     imp->setWithScriptExecutionContextAndScriptStateAttributeRaises(&state, scriptContext, WTF::getPtr(v));
     if (state.hadException())
-        throwError(state.exception());
+        throwError(state.exception(), info.GetIsolate());
     return;
 }
 
@@ -1333,7 +1333,7 @@ static void withScriptExecutionContextAndScriptStateWithSpacesAttributeAttribute
     ScriptExecutionContext* scriptContext = getScriptExecutionContext();
     imp->setWithScriptExecutionContextAndScriptStateWithSpacesAttribute(&state, scriptContext, WTF::getPtr(v));
     if (state.hadException())
-        throwError(state.exception());
+        throwError(state.exception(), info.GetIsolate());
     return;
 }
 
@@ -3295,7 +3295,7 @@ static void withScriptStateVoidMethod(const v8::FunctionCallbackInfo<v8::Value>&
     if (state.hadException()) {
         v8::Local<v8::Value> exception = state.exception();
         state.clearException();
-        throwError(exception);
+        throwError(exception, args.GetIsolate());
         return;
     }
 
@@ -3320,7 +3320,7 @@ static void withScriptStateObjMethod(const v8::FunctionCallbackInfo<v8::Value>& 
     if (state.hadException()) {
         v8::Local<v8::Value> exception = state.exception();
         state.clearException();
-        throwError(exception);
+        throwError(exception, args.GetIsolate());
         return;
     }
     v8SetReturnValue(args, result.release(), args.Holder());
@@ -3348,7 +3348,7 @@ static void withScriptStateVoidExceptionMethod(const v8::FunctionCallbackInfo<v8
     if (state.hadException()) {
         v8::Local<v8::Value> exception = state.exception();
         state.clearException();
-        throwError(exception);
+        throwError(exception, args.GetIsolate());
         return;
     }
 
@@ -3376,7 +3376,7 @@ static void withScriptStateObjExceptionMethod(const v8::FunctionCallbackInfo<v8:
     if (state.hadException()) {
         v8::Local<v8::Value> exception = state.exception();
         state.clearException();
-        throwError(exception);
+        throwError(exception, args.GetIsolate());
         return;
     }
     v8SetReturnValue(args, result.release(), args.Holder());
@@ -3418,7 +3418,7 @@ static void withScriptExecutionContextAndScriptStateMethod(const v8::FunctionCal
     if (state.hadException()) {
         v8::Local<v8::Value> exception = state.exception();
         state.clearException();
-        throwError(exception);
+        throwError(exception, args.GetIsolate());
         return;
     }
 
@@ -3447,7 +3447,7 @@ static void withScriptExecutionContextAndScriptStateObjExceptionMethod(const v8:
     if (state.hadException()) {
         v8::Local<v8::Value> exception = state.exception();
         state.clearException();
-        throwError(exception);
+        throwError(exception, args.GetIsolate());
         return;
     }
     v8SetReturnValue(args, result.release(), args.Holder());
@@ -3473,7 +3473,7 @@ static void withScriptExecutionContextAndScriptStateWithSpacesMethod(const v8::F
     if (state.hadException()) {
         v8::Local<v8::Value> exception = state.exception();
         state.clearException();
-        throwError(exception);
+        throwError(exception, args.GetIsolate());
         return;
     }
     v8SetReturnValue(args, result.release(), args.Holder());

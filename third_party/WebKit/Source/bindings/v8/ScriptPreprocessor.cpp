@@ -74,7 +74,7 @@ String ScriptPreprocessor::preprocessSourceCode(const String& sourceCode, const 
     if (!isValid())
         return sourceCode;
 
-    return preprocessSourceCode(sourceCode, sourceName, v8::Undefined());
+    return preprocessSourceCode(sourceCode, sourceName, v8::Undefined(m_isolate));
 }
 
 String ScriptPreprocessor::preprocessSourceCode(const String& sourceCode, const String& sourceName, const String& functionName)

@@ -55,7 +55,7 @@ static v8::Handle<v8::Value> toV8(const IDBKeyPath& value, v8::Handle<v8::Object
         return toV8(keyPaths.release(), creationContext, isolate);
     }
     ASSERT_NOT_REACHED();
-    return v8::Undefined();
+    return v8::Undefined(isolate);
 }
 
 v8::Handle<v8::Value> toV8(IDBAny* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
@@ -65,7 +65,7 @@ v8::Handle<v8::Value> toV8(IDBAny* impl, v8::Handle<v8::Object> creationContext,
 
     switch (impl->type()) {
     case IDBAny::UndefinedType:
-        return v8::Undefined();
+        return v8::Undefined(isolate);
     case IDBAny::NullType:
         return v8NullWithCheck(isolate);
     case IDBAny::DOMStringListType:
@@ -95,7 +95,7 @@ v8::Handle<v8::Value> toV8(IDBAny* impl, v8::Handle<v8::Object> creationContext,
     }
 
     ASSERT_NOT_REACHED();
-    return v8::Undefined();
+    return v8::Undefined(isolate);
 }
 
 } // namespace WebCore

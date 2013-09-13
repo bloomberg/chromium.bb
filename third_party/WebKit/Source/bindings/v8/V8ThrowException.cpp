@@ -77,7 +77,7 @@ v8::Handle<v8::Value> V8ThrowException::throwDOMException(int ec, const String& 
     if (exception.IsEmpty())
         return v8Undefined();
 
-    return V8ThrowException::throwError(exception);
+    return V8ThrowException::throwError(exception, isolate);
 }
 
 v8::Handle<v8::Value> V8ThrowException::createError(V8ErrorType type, const String& message, v8::Isolate* isolate)
@@ -104,7 +104,7 @@ v8::Handle<v8::Value> V8ThrowException::throwError(V8ErrorType type, const Strin
     v8::Handle<v8::Value> exception = V8ThrowException::createError(type, message, isolate);
     if (exception.IsEmpty())
         return v8Undefined();
-    return V8ThrowException::throwError(exception);
+    return V8ThrowException::throwError(exception, isolate);
 }
 
 v8::Handle<v8::Value> V8ThrowException::createTypeError(const String& message, v8::Isolate* isolate)
@@ -115,20 +115,20 @@ v8::Handle<v8::Value> V8ThrowException::createTypeError(const String& message, v
 v8::Handle<v8::Value> V8ThrowException::throwTypeError(const String& message, v8::Isolate* isolate)
 {
     v8::Handle<v8::Value> exception = V8ThrowException::createTypeError(message, isolate);
-    return V8ThrowException::throwError(exception);
+    return V8ThrowException::throwError(exception, isolate);
 }
 
 v8::Handle<v8::Value> V8ThrowException::throwNotEnoughArgumentsError(v8::Isolate* isolate)
 {
     v8::Handle<v8::Value> exception = V8ThrowException::createTypeError("Not enough arguments", isolate);
-    return V8ThrowException::throwError(exception);
+    return V8ThrowException::throwError(exception, isolate);
 }
 
-v8::Handle<v8::Value> V8ThrowException::throwError(v8::Handle<v8::Value> exception)
+v8::Handle<v8::Value> V8ThrowException::throwError(v8::Handle<v8::Value> exception, v8::Isolate* isolate)
 {
     if (!v8::V8::IsExecutionTerminating())
         v8::ThrowException(exception);
-    return v8::Undefined();
+    return v8::Undefined(isolate);
 }
 
 } // namespace WebCore

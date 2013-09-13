@@ -65,7 +65,7 @@ static v8::Handle<v8::Value> getItem(HTMLAllCollection* collection, v8::Handle<v
         v8::Handle<v8::Value> result = getNamedItems(collection, name, callbackInfo);
 
         if (result.IsEmpty())
-            return v8::Undefined();
+            return v8::Undefined(callbackInfo.GetIsolate());
 
         return result;
     }

@@ -1508,7 +1508,7 @@ END
 
             if (ExtendedAttributeContains($attribute->extendedAttributes->{"CallWith"}, "ScriptState")) {
                 $code .= "    if (state.hadException()) {\n";
-                $code .= "        throwError(state.exception());\n";
+                $code .= "        throwError(state.exception(), info.GetIsolate());\n";
                 $code .= "        return;\n";
                 $code .= "    }\n";
             }
@@ -1943,7 +1943,7 @@ END
 
     if (ExtendedAttributeContains($attribute->extendedAttributes->{"CallWith"}, "ScriptState")) {
         $code .= "    if (state.hadException())\n";
-        $code .= "        throwError(state.exception());\n";
+        $code .= "        throwError(state.exception(), info.GetIsolate());\n";
     }
 
     if ($svgNativeType) {
@@ -4931,7 +4931,7 @@ sub GenerateFunctionCallString
         $code .= $indent . "if (state.hadException()) {\n";
         $code .= $indent . "    v8::Local<v8::Value> exception = state.exception();\n";
         $code .= $indent . "    state.clearException();\n";
-        $code .= $indent . "    throwError(exception);\n";
+        $code .= $indent . "    throwError(exception, args.GetIsolate());\n";
         $code .= $indent . "    return;\n";
         $code .= $indent . "}\n";
     }

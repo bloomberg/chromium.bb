@@ -48,7 +48,7 @@ void V8PromiseResolver::fulfillMethodCustom(const v8::FunctionCallbackInfo<v8::V
     v8::Isolate* isolate = args.GetIsolate();
     V8PromiseCustom::setState(internal, V8PromiseCustom::PendingWithResolvedFlagSet, isolate);
 
-    v8::Local<v8::Value> result = v8::Undefined();
+    v8::Local<v8::Value> result = v8::Undefined(isolate);
     if (args.Length() > 0)
         result = args[0];
     V8PromiseCustom::fulfillResolver(resolver, result, V8PromiseCustom::Asynchronous, isolate);
@@ -65,7 +65,7 @@ void V8PromiseResolver::resolveMethodCustom(const v8::FunctionCallbackInfo<v8::V
     v8::Isolate* isolate = args.GetIsolate();
     V8PromiseCustom::setState(internal, V8PromiseCustom::PendingWithResolvedFlagSet, isolate);
 
-    v8::Local<v8::Value> result = v8::Undefined();
+    v8::Local<v8::Value> result = v8::Undefined(isolate);
     if (args.Length() > 0)
         result = args[0];
     V8PromiseCustom::resolveResolver(resolver, result, V8PromiseCustom::Asynchronous, isolate);
@@ -82,7 +82,7 @@ void V8PromiseResolver::rejectMethodCustom(const v8::FunctionCallbackInfo<v8::Va
     v8::Isolate* isolate = args.GetIsolate();
     V8PromiseCustom::setState(internal, V8PromiseCustom::PendingWithResolvedFlagSet, isolate);
 
-    v8::Local<v8::Value> result = v8::Undefined();
+    v8::Local<v8::Value> result = v8::Undefined(isolate);
     if (args.Length() > 0)
         result = args[0];
     V8PromiseCustom::rejectResolver(resolver, result, V8PromiseCustom::Asynchronous, isolate);

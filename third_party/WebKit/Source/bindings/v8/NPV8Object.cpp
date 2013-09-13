@@ -444,7 +444,7 @@ bool _NPN_RemoveProperty(NPP npp, NPObject* npObject, NPIdentifier propertyName)
 
     v8::Handle<v8::Object> obj = v8::Local<v8::Object>::New(isolate, object->v8Object);
     // FIXME: Verify that setting to undefined is right.
-    obj->Set(npIdentifierToV8Identifier(propertyName), v8::Undefined());
+    obj->Set(npIdentifierToV8Identifier(propertyName), v8::Undefined(isolate));
     return true;
 }
 

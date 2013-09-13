@@ -319,7 +319,7 @@ public:
     }
 
     void dialogCreated(DOMWindow*);
-    v8::Handle<v8::Value> returnValue() const;
+    v8::Handle<v8::Value> returnValue(v8::Isolate*) const;
 
 private:
     v8::Handle<v8::Value> m_dialogArguments;
@@ -337,14 +337,14 @@ inline void DialogHandler::dialogCreated(DOMWindow* dialogFrame)
     m_dialogContext->Global()->Set(v8::String::NewSymbol("dialogArguments"), m_dialogArguments);
 }
 
-inline v8::Handle<v8::Value> DialogHandler::returnValue() const
+inline v8::Handle<v8::Value> DialogHandler::returnValue(v8::Isolate* isolate) const
 {
     if (m_dialogContext.IsEmpty())
-        return v8::Undefined();
+        return v8::Undefined(isolate);
     v8::Context::Scope scope(m_dialogContext);
     v8::Handle<v8::Value> returnValue = m_dialogContext->Global()->Get(v8::String::NewSymbol("returnValue"));
     if (returnValue.IsEmpty())
-        return v8::Undefined();
+        return v8::Undefined(isolate);
     return returnValue;
 }
 
@@ -369,7 +369,7 @@ void V8Window::showModalDialogMethodCustom(const v8::FunctionCallbackInfo<v8::Va
 
     impl->showModalDialog(urlString, dialogFeaturesString, activeDOMWindow(), firstDOMWindow(), setUpDialog, &handler);
 
-    v8SetReturnValue(args, handler.returnValue());
+    v8SetReturnValue(args, handler.returnValue(args.GetIsolate()));
 }
 
 void V8Window::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)

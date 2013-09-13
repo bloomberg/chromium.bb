@@ -142,7 +142,7 @@ void V8AbstractEventListener::invokeEventHandler(ScriptExecutionContext* context
 
         // Restore the old event. This must be done for all exit paths through this method.
         if (savedEvent.IsEmpty())
-            v8Context->Global()->SetHiddenValue(eventSymbol, v8::Undefined());
+            v8Context->Global()->SetHiddenValue(eventSymbol, v8::Undefined(v8Context->GetIsolate()));
         else
             v8Context->Global()->SetHiddenValue(eventSymbol, savedEvent);
         tryCatch.Reset();

@@ -65,7 +65,7 @@ public:
             throwDOMException(m_code);
         }
 
-        V8ThrowException::throwError(m_exception.newLocal(m_isolate));
+        V8ThrowException::throwError(m_exception.newLocal(m_isolate), m_isolate);
         return true;
     }
 

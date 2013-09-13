@@ -390,7 +390,7 @@ v8::Handle<v8::Value> WebBindings::toV8Value(const NPVariant* variant)
         NPObject* object = NPVARIANT_TO_OBJECT(*variant);
         V8NPObject* v8Object = npObjectToV8NPObject(object);
         if (!v8Object)
-            return v8::Undefined();
+            return v8::Undefined(isolate);
         return convertNPVariantToV8Object(variant, v8Object->rootObject->frame()->script()->windowScriptNPObject(), isolate);
     }
     // Safe to pass 0 since we have checked the script object class to make sure the

@@ -167,7 +167,7 @@ static v8::Handle<v8::Value> toV8Object(const WebGLGetInfo& info, v8::Handle<v8:
         return toV8(info.getWebGLVertexArrayObjectOES(), creationContext, isolate);
     default:
         notImplemented();
-        return v8::Undefined();
+        return v8::Undefined(isolate);
     }
 }
 

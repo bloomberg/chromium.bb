@@ -1379,7 +1379,7 @@ public:
         case PaddingTag:
             return true;
         case UndefinedTag:
-            *value = v8::Undefined();
+            *value = v8::Undefined(m_isolate);
             break;
         case NullTag:
             *value = v8NullWithCheck(m_isolate);

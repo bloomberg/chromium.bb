@@ -228,7 +228,7 @@ static void cachedValueCallWithAttributeSetter(v8::Local<v8::String> name, v8::L
     ScriptState& state = *currentState;
     imp->setCachedValueCallWith(&state, WTF::getPtr(v));
     if (state.hadException())
-        throwError(state.exception());
+        throwError(state.exception(), info.GetIsolate());
     info.Holder()->DeleteHiddenValue(v8::String::NewSymbol("cachedValueCallWith")); // Invalidate the cached value.
     return;
 }

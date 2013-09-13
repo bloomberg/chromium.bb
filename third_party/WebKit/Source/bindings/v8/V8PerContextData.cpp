@@ -167,7 +167,7 @@ CustomElementBinding* V8PerContextData::customElementBinding(CustomElementDefini
 }
 
 
-static v8::Handle<v8::Value> createDebugData(const char* worldName, int debugId)
+static v8::Handle<v8::Value> createDebugData(const char* worldName, int debugId, v8::Isolate* isolate)
 {
     char buffer[32];
     unsigned wanted;
@@ -179,8 +179,8 @@ static v8::Handle<v8::Value> createDebugData(const char* worldName, int debugId)
     if (wanted < sizeof(buffer))
         return v8::String::NewSymbol(buffer);
 
-    return v8::Undefined();
-};
+    return v8::Undefined(isolate);
+}
 
 static v8::Handle<v8::Value> debugData(v8::Handle<v8::Context> context)
 {
@@ -199,7 +199,7 @@ bool V8PerContextDebugData::setContextDebugData(v8::Handle<v8::Context> context,
     if (!debugData(context)->IsUndefined())
         return false;
     v8::HandleScope scope(context->GetIsolate());
-    v8::Handle<v8::Value> debugData = createDebugData(worldName, debugId);
+    v8::Handle<v8::Value> debugData = createDebugData(worldName, debugId, context->GetIsolate());
     setDebugData(context, debugData);
     return true;
 }
