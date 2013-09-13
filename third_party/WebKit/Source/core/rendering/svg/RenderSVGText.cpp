@@ -468,11 +468,10 @@ PositionWithAffinity RenderSVGText::positionForPoint(const LayoutPoint& pointInC
     if (!rootBox)
         return createPositionWithAffinity(0, DOWNSTREAM);
 
-    ASSERT_WITH_SECURITY_IMPLICATION(rootBox->isSVGRootInlineBox());
     ASSERT(!rootBox->nextRootBox());
     ASSERT(childrenInline());
 
-    InlineBox* closestBox = static_cast<SVGRootInlineBox*>(rootBox)->closestLeafChildForPosition(pointInContents);
+    InlineBox* closestBox = toSVGRootInlineBox(rootBox)->closestLeafChildForPosition(pointInContents);
     if (!closestBox)
         return createPositionWithAffinity(0, DOWNSTREAM);
 

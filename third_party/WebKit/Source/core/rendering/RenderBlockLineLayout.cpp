@@ -1463,7 +1463,7 @@ RootInlineBox* RenderBlock::createLineBoxesFromBidiRuns(unsigned bidiLevel, Bidi
     // text selection in RTL boxes would not work as expected.
     if (isSVGRootInlineBox) {
         ASSERT(isSVGText());
-        static_cast<SVGRootInlineBox*>(lineBox)->computePerCharacterLayoutInformation();
+        toSVGRootInlineBox(lineBox)->computePerCharacterLayoutInformation();
     }
 
     // Compute our overflow now.
