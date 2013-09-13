@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/weak_ptr.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/base/gtk/gtk_signal.h"
@@ -192,7 +193,6 @@ class BubbleGtk : public content::NotificationObserver {
   CHROMEGTK_CALLBACK_1(BubbleGtk, gboolean, OnToplevelUnmap, GdkEvent*);
   CHROMEGTK_CALLBACK_1(BubbleGtk, void, OnAnchorAllocate, GtkAllocation*);
   CHROMEGTK_CALLBACK_0(BubbleGtk, void, OnAnchorDestroy);
-  CHROMEGTK_CALLBACK_0(BubbleGtk, void, OnToplevelDestroy);
 
   // The caller supplied delegate, can be NULL.
   BubbleDelegateGtk* delegate_;
@@ -247,6 +247,8 @@ class BubbleGtk : public content::NotificationObserver {
   content::NotificationRegistrar registrar_;
 
   ui::GtkSignalRegistrar signals_;
+
+  base::WeakPtrFactory<BubbleGtk> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BubbleGtk);
 };

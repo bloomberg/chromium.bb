@@ -6,7 +6,9 @@
 
 #include <gdk/gdkkeysyms.h>
 
+#include "base/bind.h"
 #include "base/i18n/rtl.h"
+#include "base/message_loop/message_loop.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/gtk/bubble/bubble_accelerators_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
@@ -153,8 +155,8 @@ BubbleGtk::BubbleGtk(GtkThemeService* provider,
       actual_frame_style_(ANCHOR_TOP_LEFT),
       match_system_theme_(attribute_flags & MATCH_SYSTEM_THEME),
       grab_input_(attribute_flags & GRAB_INPUT),
-      closed_by_escape_(false) {
-}
+      closed_by_escape_(false),
+      weak_ptr_factory_(this) {}
 
 BubbleGtk::~BubbleGtk() {
   // Notify the delegate that we're about to close.  This gives the chance
@@ -243,21 +245,19 @@ void BubbleGtk::Init(GtkWidget* anchor_widget,
                      G_CALLBACK(OnGrabBrokenThunk), this);
   }
 
+  signals_.Connect(anchor_widget_, "destroy",
+                   G_CALLBACK(OnAnchorDestroyThunk), this);
   // If the toplevel window is being used as the anchor, then the signals below
   // are enough to keep us positioned correctly.
   if (anchor_widget_ != toplevel_window_) {
     signals_.Connect(anchor_widget_, "size-allocate",
                      G_CALLBACK(OnAnchorAllocateThunk), this);
-    signals_.Connect(anchor_widget_, "destroy",
-                     G_CALLBACK(OnAnchorDestroyThunk), this);
   }
 
   signals_.Connect(toplevel_window_, "configure-event",
                    G_CALLBACK(OnToplevelConfigureThunk), this);
   signals_.Connect(toplevel_window_, "unmap-event",
                    G_CALLBACK(OnToplevelUnmapThunk), this);
-  signals_.Connect(window_, "destroy",
-                   G_CALLBACK(OnToplevelDestroyThunk), this);
 
   gtk_widget_show_all(window_);
 
@@ -786,12 +786,13 @@ void BubbleGtk::OnAnchorAllocate(GtkWidget* widget,
 
 void BubbleGtk::OnAnchorDestroy(GtkWidget* widget) {
   anchor_widget_ = NULL;
-  Close();
-  // |this| is deleted.
-}
 
-void BubbleGtk::OnToplevelDestroy(GtkWidget* widget) {
-  toplevel_window_ = NULL;
-  Close();
-  // |this| is deleted.
+  // Ctrl-W will first destroy the anchor, then call |this| back via
+  // |accel_group_|. So that the callback |this| registered via |accel_group_|
+  // doesn't run after |this| is destroyed, we delay this close (which, unlike
+  // the accelerator callback, will be cancelled if |this| is destroyed).
+  // http://crbug.com/286621
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&BubbleGtk::Close, weak_ptr_factory_.GetWeakPtr()));
 }
