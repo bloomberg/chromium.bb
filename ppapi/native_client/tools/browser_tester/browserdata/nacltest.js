@@ -466,6 +466,17 @@ function embed_name(embed) {
 }
 
 
+// Write data to the filesystem. This will only work if the browser_tester was
+// initialized with --output_dir.
+function outputFile(name, data, onload, onerror) {
+  var xhr = new XMLHttpRequest();
+  xhr.onload = onload;
+  xhr.onerror = onerror;
+  xhr.open('POST', name, true);
+  xhr.send(data);
+}
+
+
 // Webkit Bug Workaround
 // THIS SHOULD BE REMOVED WHEN Webkit IS FIXED
 // http://code.google.com/p/nativeclient/issues/detail?id=2428

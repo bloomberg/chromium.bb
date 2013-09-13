@@ -47,6 +47,12 @@ def BuildArgParser():
                     metavar='DIRNAME',
                     help='Add directory DIRNAME to be served from the HTTP '
                     'server to be made visible under the root.')
+  parser.add_option('--output_dir', dest='output_dir', action='store',
+                    type='string', default=None,
+                    metavar='DIRNAME',
+                    help='Set directory DIRNAME to be the output directory '
+                    'when POSTing data to the server. NOTE: if this flag is '
+                    'not set, POSTs will fail.')
   parser.add_option('--test_arg', dest='test_args', action='append',
                     type='string', nargs=2, default=[],
                     metavar='KEY VALUE',
@@ -243,7 +249,8 @@ def RunTestsOnce(url, options):
                    options.allow_404,
                    options.bandwidth,
                    listener,
-                   options.serving_dirs)
+                   options.serving_dirs,
+                   options.output_dir)
 
   browser = browsertester.browserlauncher.ChromeLauncher(options)
 
