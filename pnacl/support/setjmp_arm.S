@@ -9,9 +9,15 @@
 /*
  * jump_buf is organized as follows
  *
- * r4, r5, r6, r7, r8, r10 (sl), r11 (fp), r13 (sp), r14 (lr)
+ * r4, r5, r6, r7, r8, r10 (sl), r11 (fp), r12 (ip/pad), r13 (sp), r14 (lr),
+ * d8-d15.
  *
- * note: we do not save/restore r9 - which pnacl uses for thread accounting
+ * Note: We do not save/restore r9 - which pnacl uses for thread accounting.
+ * r12 is spilled to pad out the jump buf so that d8-d15 are stored at an
+ * 8-byte aligned location.
+ *
+ * This also assumes that the minimal ARM hardware has d8-d15 registers,
+ * which is checked: src/trusted/platform_qualify/arch/arm/nacl_qualify_fpu.c
  */
 
     .text
@@ -20,12 +26,12 @@
 
 /* int setjmp(jmp_buf env) */
 setjmp:
-    /* Bundle -------------------- */
     bic     r0, r0, #NACL_DATA_FLOW_MASK
-    stmia   r0!, {r4, r5, r6, r7, r8, r10, r11, sp, lr}
+    stmia   r0!, {r4, r5, r6, r7, r8, r10, r11, r12, sp, lr}
+    bic     r0, r0, #NACL_DATA_FLOW_MASK
+    vstmia  r0!, {d8-d15}
+
     mov     r0, #0
-    nop
-    /* Bundle -------------------- */
     bic     lr, lr, #NACL_CONTROL_FLOW_MASK
     bx      lr
 
@@ -36,14 +42,17 @@ setjmp:
 
 /* void longjmp(jmp_buf env, int val) */
 longjmp:
-    /* Bundle -------------------- */
     bic     r0, r0, #NACL_DATA_FLOW_MASK
-    ldmia   r0!, {r4, r5, r6, r7, r8, r10, r11, r12, lr}
-    bic     sp, r12, #NACL_DATA_FLOW_MASK
+    ldmia   r0!, {r4, r5, r6, r7, r8, r10, r11, r12, sp, lr}
+    bic     sp, sp, #NACL_DATA_FLOW_MASK
+    nop
+
+    bic     r0, r0, #NACL_DATA_FLOW_MASK
+    vldmia  r0!, {d8-d15}
     /* Return the result argument if nonzero or 1 otherwise */
     /* Note: move updates condition codes */
     movs    r0, r1
-    /* Bundle -------------------- */
     moveq   r0, #1
+
     bic     lr, lr, #NACL_CONTROL_FLOW_MASK
     bx      lr
