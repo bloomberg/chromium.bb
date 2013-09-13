@@ -52,13 +52,13 @@ class ProcessUpdatesCommandTest : public SyncerCommandTest {
         Id::CreateFromServerId(item_id));
     ASSERT_TRUE(entry.good());
 
-    entry.Put(syncable::BASE_VERSION, 1);
-    entry.Put(syncable::SERVER_VERSION, 1);
-    entry.Put(syncable::NON_UNIQUE_NAME, item_id);
-    entry.Put(syncable::PARENT_ID, Id::CreateFromServerId(parent_id));
+    entry.PutBaseVersion(1);
+    entry.PutServerVersion(1);
+    entry.PutNonUniqueName(item_id);
+    entry.PutParentId(Id::CreateFromServerId(parent_id));
     sync_pb::EntitySpecifics default_specifics;
     AddDefaultFieldValue(type, &default_specifics);
-    entry.Put(syncable::SERVER_SPECIFICS, default_specifics);
+    entry.PutServerSpecifics(default_specifics);
   }
 
   SyncEntity* AddUpdate(sync_pb::GetUpdatesResponse* updates,
@@ -124,15 +124,15 @@ TEST_F(ProcessUpdatesCommandTest, NewBookmarkTag) {
   syncable::Entry entry(&trans, syncable::GET_BY_ID, server_id);
   ASSERT_TRUE(entry.good());
   EXPECT_TRUE(
-      UniquePosition::IsValidSuffix(entry.Get(syncable::UNIQUE_BOOKMARK_TAG)));
-  EXPECT_TRUE(entry.Get(syncable::SERVER_UNIQUE_POSITION).IsValid());
+      UniquePosition::IsValidSuffix(entry.GetUniqueBookmarkTag()));
+  EXPECT_TRUE(entry.GetServerUniquePosition().IsValid());
 
   // If this assertion fails, that might indicate that the algorithm used to
   // generate bookmark tags has been modified.  This could have implications for
   // bookmark ordering.  Please make sure you know what you're doing if you
   // intend to make such a change.
   EXPECT_EQ("6wHRAb3kbnXV5GHrejp4/c1y5tw=",
-            entry.Get(syncable::UNIQUE_BOOKMARK_TAG));
+            entry.GetUniqueBookmarkTag());
 }
 
 TEST_F(ProcessUpdatesCommandTest, ReceiveServerCreatedBookmarkFolders) {
@@ -157,9 +157,9 @@ TEST_F(ProcessUpdatesCommandTest, ReceiveServerCreatedBookmarkFolders) {
   ASSERT_TRUE(entry.good());
 
   EXPECT_FALSE(entry.ShouldMaintainPosition());
-  EXPECT_FALSE(entry.Get(syncable::UNIQUE_POSITION).IsValid());
-  EXPECT_FALSE(entry.Get(syncable::SERVER_UNIQUE_POSITION).IsValid());
-  EXPECT_TRUE(entry.Get(syncable::UNIQUE_BOOKMARK_TAG).empty());
+  EXPECT_FALSE(entry.GetUniquePosition().IsValid());
+  EXPECT_FALSE(entry.GetServerUniquePosition().IsValid());
+  EXPECT_TRUE(entry.GetUniqueBookmarkTag().empty());
 }
 
 TEST_F(ProcessUpdatesCommandTest, ReceiveNonBookmarkItem) {
@@ -182,9 +182,9 @@ TEST_F(ProcessUpdatesCommandTest, ReceiveNonBookmarkItem) {
   ASSERT_TRUE(entry.good());
 
   EXPECT_FALSE(entry.ShouldMaintainPosition());
-  EXPECT_FALSE(entry.Get(syncable::UNIQUE_POSITION).IsValid());
-  EXPECT_FALSE(entry.Get(syncable::SERVER_UNIQUE_POSITION).IsValid());
-  EXPECT_TRUE(entry.Get(syncable::UNIQUE_BOOKMARK_TAG).empty());
+  EXPECT_FALSE(entry.GetUniquePosition().IsValid());
+  EXPECT_FALSE(entry.GetServerUniquePosition().IsValid());
+  EXPECT_TRUE(entry.GetUniqueBookmarkTag().empty());
 }
 
 }  // namespace

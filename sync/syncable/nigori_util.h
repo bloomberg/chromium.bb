@@ -62,7 +62,7 @@ SYNC_EXPORT_PRIVATE bool VerifyDataTypeEncryptionForTest(
 
 // Stores |new_specifics| into |entry|, encrypting if necessary.
 // Returns false if an error encrypting occurred (does not modify |entry|).
-// Note: gracefully handles new_specifics aliasing with entry->Get(SPECIFICS).
+// Note: gracefully handles new_specifics aliasing with entry->GetSpecifics().
 bool UpdateEntryWithEncryption(
     BaseTransaction* const trans,
     const sync_pb::EntitySpecifics& new_specifics,

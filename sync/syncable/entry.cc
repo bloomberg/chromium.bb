@@ -56,11 +56,6 @@ base::DictionaryValue* Entry::ToValue(Cryptographer* cryptographer) const {
   return entry_info;
 }
 
-const string& Entry::Get(StringField field) const {
-  DCHECK(kernel_);
-  return kernel_->ref(field);
-}
-
 ModelType Entry::GetServerModelType() const {
   ModelType specifics_type = kernel_->GetServerModelType();
   if (specifics_type != UNSPECIFIED)
@@ -70,23 +65,23 @@ ModelType Entry::GetServerModelType() const {
   // if the item is an uncommitted locally created item.
   // It's possible we'll need to relax these checks in the future; they're
   // just here for now as a safety measure.
-  DCHECK(Get(IS_UNSYNCED));
-  DCHECK_EQ(Get(SERVER_VERSION), 0);
-  DCHECK(Get(SERVER_IS_DEL));
-  // Note: can't enforce !Get(ID).ServerKnows() here because that could
+  DCHECK(GetIsUnsynced());
+  DCHECK_EQ(GetServerVersion(), 0);
+  DCHECK(GetServerIsDel());
+  // Note: can't enforce !GetId().ServerKnows() here because that could
   // actually happen if we hit AttemptReuniteLostCommitResponses.
   return UNSPECIFIED;
 }
 
 ModelType Entry::GetModelType() const {
-  ModelType specifics_type = GetModelTypeFromSpecifics(Get(SPECIFICS));
+  ModelType specifics_type = GetModelTypeFromSpecifics(GetSpecifics());
   if (specifics_type != UNSPECIFIED)
     return specifics_type;
   if (IsRoot())
     return TOP_LEVEL_FOLDER;
   // Loose check for server-created top-level folders that aren't
   // bound to a particular model type.
-  if (!Get(UNIQUE_SERVER_TAG).empty() && Get(IS_DIR))
+  if (!GetUniqueServerTag().empty() && GetIsDir())
     return TOP_LEVEL_FOLDER;
 
   return UNSPECIFIED;
@@ -105,7 +100,7 @@ Id Entry::GetFirstChildId() const {
 }
 
 void Entry::GetChildHandles(std::vector<int64>* result) const {
-  dir()->GetChildHandlesById(basetrans_, Get(ID), result);
+  dir()->GetChildHandlesById(basetrans_, GetId(), result);
 }
 
 int Entry::GetTotalNodeCount() const {

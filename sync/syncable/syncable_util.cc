@@ -41,7 +41,7 @@ bool IsLegalNewParent(BaseTransaction* trans, const Id& entry_id,
                     "Invalid new parent",
                     trans))
       return false;
-    ancestor_id = new_parent.Get(PARENT_ID);
+    ancestor_id = new_parent.GetParentId();
   }
   return true;
 }
@@ -50,15 +50,15 @@ void ChangeEntryIDAndUpdateChildren(
     WriteTransaction* trans,
     MutableEntry* entry,
     const Id& new_id) {
-  Id old_id = entry->Get(ID);
-  if (!entry->Put(ID, new_id)) {
+  Id old_id = entry->GetId();
+  if (!entry->PutId(new_id)) {
     Entry old_entry(trans, GET_BY_ID, new_id);
     CHECK(old_entry.good());
     LOG(FATAL) << "Attempt to change ID to " << new_id
                << " conflicts with existing entry.\n\n"
                << *entry << "\n\n" << old_entry;
   }
-  if (entry->Get(IS_DIR)) {
+  if (entry->GetIsDir()) {
     // Get all child entries of the old id.
     Directory::Metahandles children;
     trans->directory()->GetChildHandlesById(trans, old_id, &children);

@@ -32,7 +32,7 @@ void SetAllSyncingBitsToValue(WriteTransaction* trans,
        it != commit_handles.end(); ++it) {
     syncable::MutableEntry entry(trans, syncable::GET_BY_HANDLE, *it);
     if (entry.good()) {
-      entry.Put(syncable::SYNCING, value_to_set);
+      entry.PutSyncing(value_to_set);
     }
   }
 }

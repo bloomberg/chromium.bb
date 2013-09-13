@@ -20,19 +20,19 @@ namespace conflict_util {
 // Allow the server's changes to take precedence.
 // This will take effect during the next ApplyUpdates step.
 void IgnoreLocalChanges(MutableEntry* entry) {
-  DCHECK(entry->Get(IS_UNSYNCED));
-  DCHECK(entry->Get(IS_UNAPPLIED_UPDATE));
-  entry->Put(IS_UNSYNCED, false);
+  DCHECK(entry->GetIsUnsynced());
+  DCHECK(entry->GetIsUnappliedUpdate());
+  entry->PutIsUnsynced(false);
 }
 
 // Overwrite the server with our own value.
 // We will commit our local data, overwriting the server, at the next
 // opportunity.
 void OverwriteServerChanges(MutableEntry* entry) {
-  DCHECK(entry->Get(IS_UNSYNCED));
-  DCHECK(entry->Get(IS_UNAPPLIED_UPDATE));
-  entry->Put(BASE_VERSION, entry->Get(SERVER_VERSION));
-  entry->Put(IS_UNAPPLIED_UPDATE, false);
+  DCHECK(entry->GetIsUnsynced());
+  DCHECK(entry->GetIsUnappliedUpdate());
+  entry->PutBaseVersion(entry->GetServerVersion());
+  entry->PutIsUnappliedUpdate(false);
 }
 
 // Having determined that everything matches, we ignore the non-conflict.
@@ -43,11 +43,11 @@ void IgnoreConflict(MutableEntry* entry) {
   // primarily an issue because we commit after applying updates, and is most
   // commonly seen when positional changes are made while a passphrase is
   // required (and hence there will be many encryption conflicts).
-  DCHECK(entry->Get(IS_UNSYNCED));
-  DCHECK(entry->Get(IS_UNAPPLIED_UPDATE));
-  entry->Put(BASE_VERSION, entry->Get(SERVER_VERSION));
-  entry->Put(IS_UNAPPLIED_UPDATE, false);
-  entry->Put(IS_UNSYNCED, false);
+  DCHECK(entry->GetIsUnsynced());
+  DCHECK(entry->GetIsUnappliedUpdate());
+  entry->PutBaseVersion(entry->GetServerVersion());
+  entry->PutIsUnappliedUpdate(false);
+  entry->PutIsUnsynced(false);
 }
 
 }  // namespace conflict_util

@@ -45,13 +45,36 @@ class SYNC_EXPORT_PRIVATE MutableEntry : public Entry {
   }
 
   // Field Accessors.  Some of them trigger the re-indexing of the entry.
-  // Return true on success, return false on failure, which means
-  // that putting the value would have caused a duplicate in the index.
-  // TODO(chron): Remove some of these unecessary return values.
-  bool Put(Int64Field field, const int64& value);
-  bool Put(TimeField field, const base::Time& value);
-  bool Put(IdField field, const Id& value);
-  bool Put(UniquePositionField field, const UniquePosition& value);
+  // Return true on success, return false on failure, which means that putting
+  // the value would have caused a duplicate in the index.  The setters that
+  // never fail return void.
+  void PutBaseVersion(int64 value);
+  void PutServerVersion(int64 value);
+  void PutLocalExternalId(int64 value);
+  void PutMtime(base::Time value);
+  void PutServerMtime(base::Time value);
+  void PutCtime(base::Time value);
+  void PutServerCtime(base::Time value);
+  bool PutId(const Id& value);
+  void PutParentId(const Id& value);
+  void PutServerParentId(const Id& value);
+  bool PutIsUnsynced(bool value);
+  bool PutIsUnappliedUpdate(bool value);
+  void PutIsDir(bool value);
+  void PutServerIsDir(bool value);
+  bool PutIsDel(bool value);
+  void PutServerIsDel(bool value);
+  void PutNonUniqueName(const std::string& value);
+  void PutServerNonUniqueName(const std::string& value);
+  bool PutUniqueServerTag(const std::string& value);
+  bool PutUniqueClientTag(const std::string& value);
+  void PutUniqueBookmarkTag(const std::string& tag);
+  void PutSpecifics(const sync_pb::EntitySpecifics& value);
+  void PutServerSpecifics(const sync_pb::EntitySpecifics& value);
+  void PutBaseServerSpecifics(const sync_pb::EntitySpecifics& value);
+  void PutUniquePosition(const UniquePosition& value);
+  void PutServerUniquePosition(const UniquePosition& value);
+  void PutSyncing(bool value);
 
   // Do a simple property-only update if the PARENT_ID field.  Use with caution.
   //
@@ -64,25 +87,11 @@ class SYNC_EXPORT_PRIVATE MutableEntry : public Entry {
   // if you're not careful.
   void PutParentIdPropertyOnly(const Id& parent_id);
 
-  bool Put(StringField field, const std::string& value);
-  bool Put(BaseVersion field, int64 value);
-
-  bool Put(ProtoField field, const sync_pb::EntitySpecifics& value);
-  bool Put(BitField field, bool value);
-  inline bool Put(IsDelField field, bool value) {
-    return PutIsDel(value);
-  }
-  bool Put(IndexedBitField field, bool value);
-
-  void PutUniqueBookmarkTag(const std::string& tag);
-
   // Sets the position of this item, and updates the entry kernels of the
   // adjacent siblings so that list invariants are maintained.  Returns false
   // and fails if |predecessor_id| does not identify a sibling.  Pass the root
   // ID to put the node in first position.
   bool PutPredecessor(const Id& predecessor_id);
-
-  bool Put(BitTemp field, bool value);
 
   // This is similar to what one would expect from Put(TRANSACTION_VERSION),
   // except that it doesn't bother to invoke 'SaveOriginals'.  Calling that
@@ -93,18 +102,24 @@ class SYNC_EXPORT_PRIVATE MutableEntry : public Entry {
  protected:
   syncable::MetahandleSet* GetDirtyIndexHelper();
 
-  bool PutIsDel(bool value);
-
  private:
   friend class Directory;
   friend class WriteTransaction;
   friend class syncer::WriteNode;
 
+  bool Put(Int64Field field, const int64& value);
+  bool Put(TimeField field, const base::Time& value);
+  bool Put(IdField field, const Id& value);
+  bool Put(StringField field, const std::string& value);
+  bool Put(BaseVersion field, int64 value);
+  bool Put(ProtoField field, const sync_pb::EntitySpecifics& value);
+  bool Put(BitTemp field, bool value);
+  bool Put(BitField field, bool value);
+  bool Put(IndexedBitField field, bool value);
+  bool Put(UniquePositionField field, const UniquePosition& value);
+
   // Don't allow creation on heap, except by sync API wrappers.
   void* operator new(size_t size) { return (::operator new)(size); }
-
-  bool PutUniqueClientTag(const std::string& value);
-  bool PutUniqueServerTag(const std::string& value);
 
   // Adjusts the successor and predecessor entries so that they no longer
   // refer to this entry.

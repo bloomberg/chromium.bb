@@ -50,19 +50,19 @@ class ChangeReorderBuffer::Traversal {
 
       syncable::Entry node(trans, syncable::GET_BY_HANDLE, node_to_include);
       CHECK(node.good());
-      if (node.Get(syncable::ID).IsRoot()) {
+      if (node.GetId().IsRoot()) {
         // If we've hit the root, and the root isn't already in the tree
         // (it would have to be |top_| if it were), start a new expansion
         // upwards from |top_| to unite the original traversal with the
         // path we just added that goes from |child_handle| to the root.
         node_to_include = top_;
-        top_ = node.Get(syncable::META_HANDLE);
+        top_ = node.GetMetahandle();
       } else {
         // Otherwise, get the parent ID so that we can add a ParentChildLink.
         syncable::Entry parent(trans, syncable::GET_BY_ID,
-                               node.Get(syncable::PARENT_ID));
+                               node.GetParentId());
         CHECK(parent.good());
-        node_parent = parent.Get(syncable::META_HANDLE);
+        node_parent = parent.GetMetahandle();
 
         ParentChildLink link(node_parent, node_to_include);
 

@@ -107,18 +107,18 @@ class SyncEncryptionHandlerImplTest : public ::testing::Test {
                                 model_type,
                                 wtrans.root_id(),
                                 tag_name);
-    node.Put(syncable::UNIQUE_SERVER_TAG, tag_name);
-    node.Put(syncable::IS_DIR, true);
-    node.Put(syncable::SERVER_IS_DIR, false);
-    node.Put(syncable::IS_UNSYNCED, false);
-    node.Put(syncable::IS_UNAPPLIED_UPDATE, false);
-    node.Put(syncable::SERVER_VERSION, 20);
-    node.Put(syncable::BASE_VERSION, 20);
-    node.Put(syncable::IS_DEL, false);
-    node.Put(syncable::ID, ids_.MakeServer(tag_name));
+    node.PutUniqueServerTag(tag_name);
+    node.PutIsDir(true);
+    node.PutServerIsDir(false);
+    node.PutIsUnsynced(false);
+    node.PutIsUnappliedUpdate(false);
+    node.PutServerVersion(20);
+    node.PutBaseVersion(20);
+    node.PutIsDel(false);
+    node.PutId(ids_.MakeServer(tag_name));
     sync_pb::EntitySpecifics specifics;
     syncer::AddDefaultFieldValue(model_type, &specifics);
-    node.Put(syncable::SPECIFICS, specifics);
+    node.PutSpecifics(specifics);
   }
 
   void PumpLoop() {

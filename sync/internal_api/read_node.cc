@@ -43,7 +43,7 @@ BaseNode::InitByLookupResult ReadNode::InitByIdLookup(int64 id) {
   entry_ = new syncable::Entry(trans, syncable::GET_BY_HANDLE, id);
   if (!entry_->good())
     return INIT_FAILED_ENTRY_NOT_GOOD;
-  if (entry_->Get(syncable::IS_DEL))
+  if (entry_->GetIsDel())
     return INIT_FAILED_ENTRY_IS_DEL;
   ModelType model_type = GetModelType();
   LOG_IF(WARNING, model_type == UNSPECIFIED || model_type == TOP_LEVEL_FOLDER)
@@ -64,7 +64,7 @@ BaseNode::InitByLookupResult ReadNode::InitByClientTagLookup(
                                syncable::GET_BY_CLIENT_TAG, hash);
   if (!entry_->good())
     return INIT_FAILED_ENTRY_NOT_GOOD;
-  if (entry_->Get(syncable::IS_DEL))
+  if (entry_->GetIsDel())
     return INIT_FAILED_ENTRY_IS_DEL;
   return DecryptIfNecessary() ? INIT_OK : INIT_FAILED_DECRYPT_IF_NECESSARY;
 }
@@ -86,7 +86,7 @@ BaseNode::InitByLookupResult ReadNode::InitByTagLookup(
   entry_ = new syncable::Entry(trans, syncable::GET_BY_SERVER_TAG, tag);
   if (!entry_->good())
     return INIT_FAILED_ENTRY_NOT_GOOD;
-  if (entry_->Get(syncable::IS_DEL))
+  if (entry_->GetIsDel())
     return INIT_FAILED_ENTRY_IS_DEL;
   ModelType model_type = GetModelType();
   LOG_IF(WARNING, model_type == UNSPECIFIED || model_type == TOP_LEVEL_FOLDER)

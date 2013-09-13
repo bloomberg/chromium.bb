@@ -833,7 +833,7 @@ bool Directory::InitialSyncEndedForType(
   syncable::Entry entry(trans,
                         syncable::GET_BY_SERVER_TAG,
                         ModelTypeToRootTag(type));
-  return entry.good() && entry.Get(syncable::BASE_VERSION) != CHANGES_VERSION;
+  return entry.good() && entry.GetBaseVersion() != CHANGES_VERSION;
 }
 
 string Directory::store_birthday() const {
@@ -993,11 +993,11 @@ bool Directory::CheckTreeInvariants(syncable::BaseTransaction* trans,
     Entry e(trans, GET_BY_HANDLE, metahandle);
     if (!SyncAssert(e.good(), FROM_HERE, "Entry is bad", trans))
       return false;
-    syncable::Id id = e.Get(ID);
-    syncable::Id parentid = e.Get(PARENT_ID);
+    syncable::Id id = e.GetId();
+    syncable::Id parentid = e.GetParentId();
 
     if (id.IsRoot()) {
-      if (!SyncAssert(e.Get(IS_DIR), FROM_HERE,
+      if (!SyncAssert(e.GetIsDir(), FROM_HERE,
                       "Entry should be a directory",
                       trans))
         return false;
@@ -1005,19 +1005,19 @@ bool Directory::CheckTreeInvariants(syncable::BaseTransaction* trans,
                       "Entry should be root",
                       trans))
          return false;
-      if (!SyncAssert(!e.Get(IS_UNSYNCED), FROM_HERE,
+      if (!SyncAssert(!e.GetIsUnsynced(), FROM_HERE,
                       "Entry should be sycned",
                       trans))
          return false;
       continue;
     }
 
-    if (!e.Get(IS_DEL)) {
+    if (!e.GetIsDel()) {
       if (!SyncAssert(id != parentid, FROM_HERE,
                       "Id should be different from parent id.",
                       trans))
          return false;
-      if (!SyncAssert(!e.Get(NON_UNIQUE_NAME).empty(), FROM_HERE,
+      if (!SyncAssert(!e.GetNonUniqueName().empty(), FROM_HERE,
                       "Non unique name should not be empty.",
                       trans))
         return false;
@@ -1028,37 +1028,37 @@ bool Directory::CheckTreeInvariants(syncable::BaseTransaction* trans,
                         "Parent entry is not valid.",
                         trans))
           return false;
-        if (handles.end() == handles.find(parent.Get(META_HANDLE)))
+        if (handles.end() == handles.find(parent.GetMetahandle()))
             break; // Skip further checking if parent was unmodified.
-        if (!SyncAssert(parent.Get(IS_DIR), FROM_HERE,
+        if (!SyncAssert(parent.GetIsDir(), FROM_HERE,
                         "Parent should be a directory",
                         trans))
           return false;
-        if (!SyncAssert(!parent.Get(IS_DEL), FROM_HERE,
+        if (!SyncAssert(!parent.GetIsDel(), FROM_HERE,
                         "Parent should not have been marked for deletion.",
                         trans))
           return false;
-        if (!SyncAssert(handles.end() != handles.find(parent.Get(META_HANDLE)),
+        if (!SyncAssert(handles.end() != handles.find(parent.GetMetahandle()),
                         FROM_HERE,
                         "Parent should be in the index.",
                         trans))
           return false;
-        parentid = parent.Get(PARENT_ID);
+        parentid = parent.GetParentId();
         if (!SyncAssert(--safety_count > 0, FROM_HERE,
                         "Count should be greater than zero.",
                         trans))
           return false;
       }
     }
-    int64 base_version = e.Get(BASE_VERSION);
-    int64 server_version = e.Get(SERVER_VERSION);
-    bool using_unique_client_tag = !e.Get(UNIQUE_CLIENT_TAG).empty();
+    int64 base_version = e.GetBaseVersion();
+    int64 server_version = e.GetServerVersion();
+    bool using_unique_client_tag = !e.GetUniqueClientTag().empty();
     if (CHANGES_VERSION == base_version || 0 == base_version) {
-      if (e.Get(IS_UNAPPLIED_UPDATE)) {
+      if (e.GetIsUnappliedUpdate()) {
         // Must be a new item, or a de-duplicated unique client tag
         // that was created both locally and remotely.
         if (!using_unique_client_tag) {
-          if (!SyncAssert(e.Get(IS_DEL), FROM_HERE,
+          if (!SyncAssert(e.GetIsDel(), FROM_HERE,
                           "The entry should not have been deleted.",
                           trans))
             return false;
@@ -1069,7 +1069,7 @@ bool Directory::CheckTreeInvariants(syncable::BaseTransaction* trans,
                         trans))
           return false;
       } else {
-        if (e.Get(IS_DIR)) {
+        if (e.GetIsDir()) {
           // TODO(chron): Implement this mode if clients ever need it.
           // For now, you can't combine a client tag and a directory.
           if (!SyncAssert(!using_unique_client_tag, FROM_HERE,
@@ -1078,8 +1078,8 @@ bool Directory::CheckTreeInvariants(syncable::BaseTransaction* trans,
             return false;
         }
         // Should be an uncomitted item, or a successfully deleted one.
-        if (!e.Get(IS_DEL)) {
-          if (!SyncAssert(e.Get(IS_UNSYNCED), FROM_HERE,
+        if (!e.GetIsDel()) {
+          if (!SyncAssert(e.GetIsUnsynced(), FROM_HERE,
                           "The item should be unsynced.",
                           trans))
             return false;
@@ -1112,9 +1112,8 @@ bool Directory::CheckTreeInvariants(syncable::BaseTransaction* trans,
     }
     // Server-unknown items that are locally deleted should not be sent up to
     // the server.  They must be !IS_UNSYNCED.
-    if (!SyncAssert(!(!id.ServerKnows() &&
-                      e.Get(IS_DEL) &&
-                      e.Get(IS_UNSYNCED)), FROM_HERE,
+    if (!SyncAssert(!(!id.ServerKnows() && e.GetIsDel() && e.GetIsUnsynced()),
+                    FROM_HERE,
                     "Locally deleted item must not be unsynced.",
                     trans)) {
       return false;

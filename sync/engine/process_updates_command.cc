@@ -75,7 +75,7 @@ bool UpdateContainsNewVersion(syncable::BaseTransaction *trans,
   syncable::Entry existing_entry(trans, GET_BY_ID,
                                  SyncableIdFromProto(update.id_string()));
   if (existing_entry.good())
-    existing_version = existing_entry.Get(syncable::BASE_VERSION);
+    existing_version = existing_entry.GetBaseVersion();
 
   if (!existing_entry.good() && update.deleted()) {
     // There are several possible explanations for this.  The most common cases
@@ -87,8 +87,8 @@ bool UpdateContainsNewVersion(syncable::BaseTransaction *trans,
   }
 
   if (existing_entry.good() &&
-      !existing_entry.Get(syncable::UNIQUE_CLIENT_TAG).empty() &&
-      existing_entry.Get(syncable::IS_DEL) &&
+      !existing_entry.GetUniqueClientTag().empty() &&
+      existing_entry.GetIsDel() &&
       update.deleted()) {
     // Unique client tags will have their version set to zero when they're
     // deleted.  The usual version comparison logic won't be able to detect
@@ -163,7 +163,7 @@ VerifyResult VerifyTagConsistency(const sync_pb::SyncEntity& entry,
                                   const syncable::MutableEntry& same_id) {
   if (entry.has_client_defined_unique_tag() &&
       entry.client_defined_unique_tag() !=
-          same_id.Get(syncable::UNIQUE_CLIENT_TAG)) {
+          same_id.GetUniqueClientTag()) {
     return VERIFY_FAIL;
   }
   return VERIFY_UNDECIDED;
@@ -290,17 +290,16 @@ ServerUpdateProcessingResult ProcessUpdatesCommand::ProcessUpdate(
     // IS_UNAPPLIED_UPDATE to true.  If the item is UNSYNCED, it's committable
     // from the new state; it may commit before the conflict resolver gets
     // a crack at it.
-    if (target_entry.Get(syncable::IS_UNSYNCED) ||
-        target_entry.Get(syncable::BASE_VERSION) > 0) {
+    if (target_entry.GetIsUnsynced() || target_entry.GetBaseVersion() > 0) {
       // If either of these conditions are met, then we can expect valid client
       // fields for this entry.  When BASE_VERSION is positive, consistency is
       // enforced on the client fields at update-application time.  Otherwise,
       // we leave the BASE_VERSION field alone; it'll get updated the first time
       // we successfully apply this update.
-      target_entry.Put(syncable::BASE_VERSION, update.version());
+      target_entry.PutBaseVersion(update.version());
     }
     // Force application of this update, no matter what.
-    target_entry.Put(syncable::IS_UNAPPLIED_UPDATE, true);
+    target_entry.PutIsUnappliedUpdate(true);
   }
 
   // If this is a newly received undecryptable update, and the only thing that
@@ -314,7 +313,7 @@ ServerUpdateProcessingResult ProcessUpdatesCommand::ProcessUpdate(
     std::string update_tag = GetUniqueBookmarkTagFromUpdate(update);
     if (UniquePosition::IsValidSuffix(update_tag)) {
       position_matches = GetUpdatePosition(update, update_tag).Equals(
-          target_entry.Get(syncable::SERVER_UNIQUE_POSITION));
+          target_entry.GetServerUniquePosition());
     } else {
       NOTREACHED();
     }
@@ -323,31 +322,31 @@ ServerUpdateProcessingResult ProcessUpdatesCommand::ProcessUpdate(
     position_matches = true;
   }
 
-  if (!update.deleted() && !target_entry.Get(syncable::SERVER_IS_DEL) &&
+  if (!update.deleted() && !target_entry.GetServerIsDel() &&
       (SyncableIdFromProto(update.parent_id_string()) ==
-          target_entry.Get(syncable::SERVER_PARENT_ID)) &&
+          target_entry.GetServerParentId()) &&
       position_matches &&
       update.has_specifics() && update.specifics().has_encrypted() &&
       !cryptographer->CanDecrypt(update.specifics().encrypted())) {
     sync_pb::EntitySpecifics prev_specifics =
-        target_entry.Get(syncable::SERVER_SPECIFICS);
+        target_entry.GetServerSpecifics();
     // We only store the old specifics if they were decryptable and applied and
     // there is no BASE_SERVER_SPECIFICS already. Else do nothing.
-    if (!target_entry.Get(syncable::IS_UNAPPLIED_UPDATE) &&
+    if (!target_entry.GetIsUnappliedUpdate() &&
         !IsRealDataType(GetModelTypeFromSpecifics(
-            target_entry.Get(syncable::BASE_SERVER_SPECIFICS))) &&
+            target_entry.GetBaseServerSpecifics())) &&
         (!prev_specifics.has_encrypted() ||
          cryptographer->CanDecrypt(prev_specifics.encrypted()))) {
       DVLOG(2) << "Storing previous server specifcs: "
                << prev_specifics.SerializeAsString();
-      target_entry.Put(syncable::BASE_SERVER_SPECIFICS, prev_specifics);
+      target_entry.PutBaseServerSpecifics(prev_specifics);
     }
   } else if (IsRealDataType(GetModelTypeFromSpecifics(
-                 target_entry.Get(syncable::BASE_SERVER_SPECIFICS)))) {
+                 target_entry.GetBaseServerSpecifics()))) {
     // We have a BASE_SERVER_SPECIFICS, but a subsequent non-specifics-only
     // change arrived. As a result, we can't use the specifics alone to detect
     // changes, so we clear BASE_SERVER_SPECIFICS.
-    target_entry.Put(syncable::BASE_SERVER_SPECIFICS,
+    target_entry.PutBaseServerSpecifics(
                      sync_pb::EntitySpecifics());
   }
 

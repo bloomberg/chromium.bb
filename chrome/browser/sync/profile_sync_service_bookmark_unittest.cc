@@ -128,8 +128,7 @@ class FakeServerChange {
       EXPECT_EQ(BaseNode::INIT_OK, node.InitByIdLookup(id));
       if (node.GetIsFolder())
         EXPECT_FALSE(node.GetFirstChildId());
-      node.GetMutableEntryForTest()->Put(syncer::syncable::SERVER_IS_DEL,
-                                         true);
+      node.GetMutableEntryForTest()->PutServerIsDel(true);
       node.Tombstone();
     }
     {
@@ -418,8 +417,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
       if (!node.InitBookmarkByCreation(root, predecessor))
         return false;
       node.SetIsFolder(true);
-      node.GetMutableEntryForTest()->Put(
-          syncer::syncable::UNIQUE_SERVER_TAG, permanent_tags[i]);
+      node.GetMutableEntryForTest()->PutUniqueServerTag(permanent_tags[i]);
       node.SetTitle(UTF8ToWide(permanent_tags[i]));
       node.SetExternalId(0);
       last_child_id = node.GetId();
@@ -1867,8 +1865,7 @@ void ProfileSyncServiceBookmarkTestWithData::ExpectTransactionVersionMatch(
     syncer::ReadNode sync_node(&trans);
     ASSERT_TRUE(model_associator_->InitSyncNodeFromChromeId(it->first,
                                                             &sync_node));
-    EXPECT_EQ(sync_node.GetEntry()->Get(syncer::syncable::TRANSACTION_VERSION),
-              it->second);
+    EXPECT_EQ(sync_node.GetEntry()->GetTransactionVersion(), it->second);
     BookmarkNodeVersionMap::const_iterator expected_ver_it =
         version_expected.find(it->first);
     if (expected_ver_it != version_expected.end())

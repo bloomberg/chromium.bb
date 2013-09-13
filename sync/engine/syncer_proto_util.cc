@@ -485,51 +485,6 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
 }
 
 // static
-bool SyncerProtoUtil::Compare(const syncable::Entry& local_entry,
-                              const sync_pb::SyncEntity& server_entry) {
-  const std::string name = NameFromSyncEntity(server_entry);
-
-  CHECK_EQ(local_entry.Get(ID), SyncableIdFromProto(server_entry.id_string()));
-  CHECK_EQ(server_entry.version(), local_entry.Get(BASE_VERSION));
-  CHECK(!local_entry.Get(IS_UNSYNCED));
-
-  if (local_entry.Get(IS_DEL) && server_entry.deleted())
-    return true;
-  if (local_entry.Get(CTIME) != ProtoTimeToTime(server_entry.ctime())) {
-    LOG(WARNING) << "ctime mismatch";
-    return false;
-  }
-
-  // These checks are somewhat prolix, but they're easier to debug than a big
-  // boolean statement.
-  string client_name = local_entry.Get(syncable::NON_UNIQUE_NAME);
-  if (client_name != name) {
-    LOG(WARNING) << "Client name mismatch";
-    return false;
-  }
-  if (local_entry.Get(PARENT_ID) !=
-      SyncableIdFromProto(server_entry.parent_id_string())) {
-    LOG(WARNING) << "Parent ID mismatch";
-    return false;
-  }
-  if (local_entry.Get(IS_DIR) != IsFolder(server_entry)) {
-    LOG(WARNING) << "Dir field mismatch";
-    return false;
-  }
-  if (local_entry.Get(IS_DEL) != server_entry.deleted()) {
-    LOG(WARNING) << "Deletion mismatch";
-    return false;
-  }
-  if (!local_entry.Get(IS_DIR) &&
-      (local_entry.Get(MTIME) != ProtoTimeToTime(server_entry.mtime()))) {
-    LOG(WARNING) << "mtime mismatch";
-    return false;
-  }
-
-  return true;
-}
-
-// static
 bool SyncerProtoUtil::ShouldMaintainPosition(
     const sync_pb::SyncEntity& sync_entity) {
   // Maintain positions for bookmarks that are not server-defined top-level

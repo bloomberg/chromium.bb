@@ -66,7 +66,7 @@ MutableEntry::MutableEntry(WriteTransaction* trans,
   if (model_type == BOOKMARKS) {
     // Base the tag off of our cache-guid and local "c-" style ID.
     std::string unique_tag = syncable::GenerateSyncableBookmarkHash(
-        trans->directory()->cache_guid(), Get(ID).GetServerId());
+        trans->directory()->cache_guid(), GetId().GetServerId());
     kernel_->put(UNIQUE_BOOKMARK_TAG, unique_tag);
     kernel_->put(UNIQUE_POSITION, UniquePosition::InitialPosition(unique_tag));
   } else {
@@ -120,6 +120,99 @@ MutableEntry::MutableEntry(WriteTransaction* trans, GetByServerTag,
     : Entry(trans, GET_BY_SERVER_TAG, tag), write_transaction_(trans) {
 }
 
+void MutableEntry::PutBaseVersion(int64 value) {
+  Put(BASE_VERSION, value);
+}
+
+void MutableEntry::PutServerVersion(int64 value) {
+  Put(SERVER_VERSION, value);
+}
+
+void MutableEntry::PutLocalExternalId(int64 value) {
+  Put(LOCAL_EXTERNAL_ID, value);
+}
+
+void MutableEntry::PutMtime(base::Time value) {
+  Put(MTIME, value);
+}
+
+void MutableEntry::PutServerMtime(base::Time value) {
+  Put(SERVER_MTIME, value);
+}
+
+void MutableEntry::PutCtime(base::Time value) {
+  Put(CTIME, value);
+}
+
+void MutableEntry::PutServerCtime(base::Time value) {
+  Put(SERVER_CTIME, value);
+}
+
+bool MutableEntry::PutId(const Id& value) {
+  return Put(ID, value);
+}
+
+void MutableEntry::PutParentId(const Id& value) {
+  Put(PARENT_ID, value);
+}
+
+void MutableEntry::PutServerParentId(const Id& value) {
+  Put(SERVER_PARENT_ID, value);
+}
+
+bool MutableEntry::PutIsUnsynced(bool value) {
+  return Put(IS_UNSYNCED, value);
+}
+
+bool MutableEntry::PutIsUnappliedUpdate(bool value) {
+  return Put(IS_UNAPPLIED_UPDATE, value);
+}
+
+void MutableEntry::PutIsDir(bool value) {
+  Put(IS_DIR, value);
+}
+
+void MutableEntry::PutServerIsDir(bool value) {
+  Put(SERVER_IS_DIR, value);
+}
+
+void MutableEntry::PutServerIsDel(bool value) {
+  Put(SERVER_IS_DEL, value);
+}
+
+void MutableEntry::PutNonUniqueName(const std::string& value) {
+  Put(NON_UNIQUE_NAME, value);
+}
+
+void MutableEntry::PutServerNonUniqueName(const std::string& value) {
+  Put(SERVER_NON_UNIQUE_NAME, value);
+}
+
+void MutableEntry::PutSpecifics(const sync_pb::EntitySpecifics& value) {
+  Put(SPECIFICS, value);
+}
+
+void MutableEntry::PutServerSpecifics(const sync_pb::EntitySpecifics& value) {
+  Put(SERVER_SPECIFICS, value);
+}
+
+void MutableEntry::PutBaseServerSpecifics(
+    const sync_pb::EntitySpecifics& value) {
+  Put(BASE_SERVER_SPECIFICS, value);
+}
+
+void MutableEntry::PutUniquePosition(const UniquePosition& value) {
+  Put(UNIQUE_POSITION, value);
+}
+
+void MutableEntry::PutServerUniquePosition(const UniquePosition& value) {
+  Put(SERVER_UNIQUE_POSITION, value);
+}
+
+void MutableEntry::PutSyncing(bool value) {
+  Put(SYNCING, value);
+}
+
 bool MutableEntry::PutIsDel(bool is_del) {
   DCHECK(kernel_);
   write_transaction_->SaveOriginal(kernel_);
@@ -135,7 +228,7 @@ bool MutableEntry::PutIsDel(bool is_del) {
     // - Let us delete this entry permanently through
     //   DirectoryBackingStore::DropDeletedEntries() when we next restart sync.
     //   This will save memory and avoid crbug.com/125381.
-    if (!Get(ID).ServerKnows()) {
+    if (!GetId().ServerKnows()) {
       Put(IS_UNSYNCED, false);
     }
   }
@@ -188,7 +281,7 @@ bool MutableEntry::Put(IdField field, const Id& value) {
         return false;
     } else if (PARENT_ID == field) {
       PutParentIdPropertyOnly(value);
-      if (!Get(IS_DEL)) {
+      if (!GetIsDel()) {
         if (!PutPredecessor(Id())) {
           // TODO(lipalani) : Propagate the error to caller. crbug.com/100444.
           NOTREACHED();
@@ -453,9 +546,9 @@ void MutableEntry::UpdateTransactionVersion(int64 value) {
 bool MarkForSyncing(MutableEntry* e) {
   DCHECK_NE(static_cast<MutableEntry*>(NULL), e);
   DCHECK(!e->IsRoot()) << "We shouldn't mark a permanent object for syncing.";
-  if (!(e->Put(IS_UNSYNCED, true)))
+  if (!(e->PutIsUnsynced(true)))
     return false;
-  e->Put(SYNCING, false);
+  e->PutSyncing(false);
   return true;
 }
 

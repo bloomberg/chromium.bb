@@ -72,10 +72,10 @@ class ProcessCommitResponseCommandTest : public SyncerCommandTest {
   void CheckEntry(Entry* e, const std::string& name,
                   ModelType model_type, const Id& parent_id) {
      EXPECT_TRUE(e->good());
-     ASSERT_EQ(name, e->Get(NON_UNIQUE_NAME));
+     ASSERT_EQ(name, e->GetNonUniqueName());
      ASSERT_EQ(model_type, e->GetModelType());
-     ASSERT_EQ(parent_id, e->Get(syncable::PARENT_ID));
-     ASSERT_LT(0, e->Get(BASE_VERSION))
+     ASSERT_EQ(parent_id, e->GetParentId());
+     ASSERT_LT(0, e->GetBaseVersion())
          << "Item should have a valid (positive) server base revision";
   }
 
@@ -103,23 +103,23 @@ class ProcessCommitResponseCommandTest : public SyncerCommandTest {
     WriteTransaction trans(FROM_HERE, UNITTEST, directory());
     MutableEntry entry(&trans, syncable::GET_BY_ID, item_id);
     EXPECT_TRUE(entry.good());
-    entry.Put(syncable::SYNCING, true);
+    entry.PutSyncing(true);
 
     // Add to the commit message.
     // TODO(sync): Use the real commit-building code to construct this.
     commit->set_message_contents(ClientToServerMessage::COMMIT);
     sync_pb::SyncEntity* entity = commit->mutable_commit()->add_entries();
-    entity->set_non_unique_name(entry.Get(syncable::NON_UNIQUE_NAME));
-    entity->set_folder(entry.Get(syncable::IS_DIR));
+    entity->set_non_unique_name(entry.GetNonUniqueName());
+    entity->set_folder(entry.GetIsDir());
     entity->set_parent_id_string(
-        SyncableIdToProto(entry.Get(syncable::PARENT_ID)));
-    entity->set_version(entry.Get(syncable::BASE_VERSION));
-    entity->mutable_specifics()->CopyFrom(entry.Get(syncable::SPECIFICS));
+        SyncableIdToProto(entry.GetParentId()));
+    entity->set_version(entry.GetBaseVersion());
+    entity->mutable_specifics()->CopyFrom(entry.GetSpecifics());
     entity->set_id_string(SyncableIdToProto(item_id));
 
-    if (!entry.Get(syncable::UNIQUE_CLIENT_TAG).empty()) {
+    if (!entry.GetUniqueClientTag().empty()) {
       entity->set_client_defined_unique_tag(
-          entry.Get(syncable::UNIQUE_CLIENT_TAG));
+          entry.GetUniqueClientTag());
     }
 
     // Add to the response message.
@@ -203,15 +203,15 @@ TEST_F(ProcessCommitResponseCommandTest, MultipleCommitIdProjections) {
   Entry b_folder(&trans, syncable::GET_BY_HANDLE, bookmark_folder_handle);
   ASSERT_TRUE(b_folder.good());
 
-  Id new_fid = b_folder.Get(syncable::ID);
+  Id new_fid = b_folder.GetId();
   ASSERT_FALSE(new_fid.IsRoot());
   EXPECT_TRUE(new_fid.ServerKnows());
   EXPECT_FALSE(bookmark_folder_id.ServerKnows());
   EXPECT_FALSE(new_fid == bookmark_folder_id);
 
-  ASSERT_EQ("A bookmark folder", b_folder.Get(NON_UNIQUE_NAME))
+  ASSERT_EQ("A bookmark folder", b_folder.GetNonUniqueName())
       << "Name of bookmark folder should not change.";
-  ASSERT_LT(0, b_folder.Get(BASE_VERSION))
+  ASSERT_LT(0, b_folder.GetBaseVersion())
       << "Bookmark folder should have a valid (positive) server base revision";
 
   // Look at the two bookmarks in bookmark_folder.
@@ -321,9 +321,9 @@ TEST_F(ProcessCommitResponseCommandTest, NewFolderCommitKeepsChildOrder) {
   EXPECT_TRUE(new_fid != folder_id);
   Entry parent(&trans, syncable::GET_BY_ID, new_fid);
   ASSERT_TRUE(parent.good());
-  ASSERT_EQ("A", parent.Get(NON_UNIQUE_NAME))
+  ASSERT_EQ("A", parent.GetNonUniqueName())
       << "Name of parent folder should not change.";
-  ASSERT_LT(0, parent.Get(BASE_VERSION))
+  ASSERT_LT(0, parent.GetBaseVersion())
       << "Parent should have a valid (positive) server base revision";
 
   Id cid = parent.GetFirstChildId();
@@ -337,22 +337,22 @@ TEST_F(ProcessCommitResponseCommandTest, NewFolderCommitKeepsChildOrder) {
     Entry c(&trans, syncable::GET_BY_ID, cid);
     DCHECK(c.good());
     ASSERT_EQ(base::StringPrintf("Item %d", child_count),
-              c.Get(NON_UNIQUE_NAME));
-    ASSERT_EQ(new_fid, c.Get(syncable::PARENT_ID));
+              c.GetNonUniqueName());
+    ASSERT_EQ(new_fid, c.GetParentId());
     if (child_count < batch_size) {
-      ASSERT_FALSE(c.Get(IS_UNSYNCED)) << "Item should be committed";
+      ASSERT_FALSE(c.GetIsUnsynced()) << "Item should be committed";
       ASSERT_TRUE(cid.ServerKnows());
-      ASSERT_LT(0, c.Get(BASE_VERSION));
+      ASSERT_LT(0, c.GetBaseVersion());
     } else {
-      ASSERT_TRUE(c.Get(IS_UNSYNCED)) << "Item should be uncommitted";
+      ASSERT_TRUE(c.GetIsUnsynced()) << "Item should be uncommitted";
       // We alternated between creates and edits; double check that these items
       // have been preserved.
       if (child_count % 4 < 2) {
         ASSERT_FALSE(cid.ServerKnows());
-        ASSERT_GE(0, c.Get(BASE_VERSION));
+        ASSERT_GE(0, c.GetBaseVersion());
       } else {
         ASSERT_TRUE(cid.ServerKnows());
-        ASSERT_LT(0, c.Get(BASE_VERSION));
+        ASSERT_LT(0, c.GetBaseVersion());
       }
     }
     cid = c.GetSuccessorId();

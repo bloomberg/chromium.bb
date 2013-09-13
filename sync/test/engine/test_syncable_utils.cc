@@ -32,7 +32,7 @@ int CountEntriesWithName(BaseTransaction* rtrans,
        i != child_handles.end(); ++i) {
     Entry e(rtrans, GET_BY_HANDLE, *i);
     CHECK(e.good());
-    if (e.Get(NON_UNIQUE_NAME) == name) {
+    if (e.GetNonUniqueName()== name) {
       ++number_of_entries_with_name;
     }
   }
@@ -49,8 +49,8 @@ Id GetFirstEntryWithName(BaseTransaction* rtrans,
        i != child_handles.end(); ++i) {
     Entry e(rtrans, GET_BY_HANDLE, *i);
     CHECK(e.good());
-    if (e.Get(NON_UNIQUE_NAME) == name) {
-      return e.Get(ID);
+    if (e.GetNonUniqueName()== name) {
+      return e.GetId();
     }
   }
 
@@ -75,19 +75,19 @@ void CreateTypeRoot(WriteTransaction* trans,
                               TestIdFactory::root(),
                               tag_name);
   DCHECK(node.good());
-  node.Put(syncable::UNIQUE_SERVER_TAG, tag_name);
-  node.Put(syncable::IS_DIR, true);
-  node.Put(syncable::SERVER_IS_DIR, false);
-  node.Put(syncable::IS_UNSYNCED, false);
-  node.Put(syncable::IS_UNAPPLIED_UPDATE, false);
-  node.Put(syncable::SERVER_VERSION, 20);
-  node.Put(syncable::BASE_VERSION, 20);
-  node.Put(syncable::IS_DEL, false);
-  node.Put(syncable::ID, syncer::TestIdFactory::MakeServer(tag_name));
+  node.PutUniqueServerTag(tag_name);
+  node.PutIsDir(true);
+  node.PutServerIsDir(false);
+  node.PutIsUnsynced(false);
+  node.PutIsUnappliedUpdate(false);
+  node.PutServerVersion(20);
+  node.PutBaseVersion(20);
+  node.PutIsDel(false);
+  node.PutId(syncer::TestIdFactory::MakeServer(tag_name));
   sync_pb::EntitySpecifics specifics;
   syncer::AddDefaultFieldValue(type, &specifics);
-  node.Put(syncable::SERVER_SPECIFICS, specifics);
-  node.Put(syncable::SPECIFICS, specifics);
+  node.PutServerSpecifics(specifics);
+  node.PutSpecifics(specifics);
 }
 
 }  // namespace syncable

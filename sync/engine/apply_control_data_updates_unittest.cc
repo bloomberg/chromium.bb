@@ -190,8 +190,8 @@ TEST_F(ApplyControlDataUpdatesTest, EncryptUnsyncedChanges) {
     MutableEntry entry(&trans, syncable::GET_BY_SERVER_TAG,
                        ModelTypeToRootTag(NIGORI));
     ASSERT_TRUE(entry.good());
-    entry.Put(syncable::SERVER_VERSION, entry_factory_->GetNextRevision());
-    entry.Put(syncable::IS_UNAPPLIED_UPDATE, true);
+    entry.PutServerVersion(entry_factory_->GetNextRevision());
+    entry.PutIsUnappliedUpdate(true);
   }
 
   ApplyControlDataUpdates(session());

@@ -146,8 +146,7 @@ TEST_F(ApplyUpdatesAndResolveConflictsCommandTest, HierarchyAndSimpleConflict) {
     MutableEntry entry(&trans, syncable::GET_BY_HANDLE, handle);
     ASSERT_TRUE(entry.good());
 
-    entry.Put(syncable::SERVER_PARENT_ID,
-              TestIdFactory::MakeServer("bogus_parent"));
+    entry.PutServerParentId(TestIdFactory::MakeServer("bogus_parent"));
   }
 
   ExpectGroupToChange(apply_updates_command_, GROUP_UI);
@@ -175,9 +174,9 @@ TEST_F(ApplyUpdatesAndResolveConflictsCommandTest,
     ASSERT_TRUE(entry.good());
 
     // Re-parent from root to "Y"
-    entry.Put(syncable::SERVER_VERSION, entry_factory_->GetNextRevision());
-    entry.Put(syncable::IS_UNAPPLIED_UPDATE, true);
-    entry.Put(syncable::SERVER_PARENT_ID, TestIdFactory::MakeServer("Y"));
+    entry.PutServerVersion(entry_factory_->GetNextRevision());
+    entry.PutIsUnappliedUpdate(true);
+    entry.PutServerParentId(TestIdFactory::MakeServer("Y"));
   }
 
   // Item 'Y' is child of 'X'.
@@ -213,7 +212,7 @@ TEST_F(ApplyUpdatesAndResolveConflictsCommandTest,
   {
     WriteTransaction trans(FROM_HERE, UNITTEST, directory());
     MutableEntry entry(&trans, syncable::GET_BY_HANDLE, parent_handle);
-    entry.Put(syncable::IS_DEL, true);
+    entry.PutIsDel(true);
   }
 
   // Create an incoming child from the server.
@@ -247,10 +246,10 @@ TEST_F(ApplyUpdatesAndResolveConflictsCommandTest,
     ASSERT_TRUE(entry.good());
 
     // Delete it on the server.
-    entry.Put(syncable::SERVER_VERSION, entry_factory_->GetNextRevision());
-    entry.Put(syncable::IS_UNAPPLIED_UPDATE, true);
-    entry.Put(syncable::SERVER_PARENT_ID, TestIdFactory::root());
-    entry.Put(syncable::SERVER_IS_DEL, true);
+    entry.PutServerVersion(entry_factory_->GetNextRevision());
+    entry.PutIsUnappliedUpdate(true);
+    entry.PutServerParentId(TestIdFactory::root());
+    entry.PutServerIsDel(true);
   }
 
   // Create a local child of the server-deleted directory.

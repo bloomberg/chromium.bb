@@ -127,7 +127,7 @@ void WriteTransaction::UpdateTransactionVersion(
   for (uint32 i = 0; i < entry_changed.size(); ++i) {
     MutableEntry entry(this, GET_BY_HANDLE, entry_changed[i]);
     if (entry.good()) {
-      ModelType type = GetModelTypeFromSpecifics(entry.Get(SPECIFICS));
+      ModelType type = GetModelTypeFromSpecifics(entry.GetSpecifics());
       if (type < FIRST_REAL_MODEL_TYPE)
         continue;
       if (!type_seen.Has(type)) {

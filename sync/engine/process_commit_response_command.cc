@@ -173,8 +173,8 @@ ProcessCommitResponseCommand::ProcessSingleCommitResponse(
     set<syncable::Id>* deleted_folders) {
   MutableEntry local_entry(trans, GET_BY_HANDLE, metahandle);
   CHECK(local_entry.good());
-  bool syncing_was_set = local_entry.Get(SYNCING);
-  local_entry.Put(SYNCING, false);
+  bool syncing_was_set = local_entry.GetSyncing();
+  local_entry.PutSyncing(false);
 
   CommitResponse::ResponseType response = (CommitResponse::ResponseType)
       server_entry.response_type();
@@ -216,12 +216,12 @@ ProcessCommitResponseCommand::ProcessSingleCommitResponse(
   // it as an error response and retry later.
   const syncable::Id& server_entry_id =
       SyncableIdFromProto(server_entry.id_string());
-  if (local_entry.Get(ID) != server_entry_id) {
+  if (local_entry.GetId() != server_entry_id) {
     Entry e(trans, GET_BY_ID, server_entry_id);
     if (e.good()) {
       LOG(ERROR)
           << "Got duplicate id when commiting id: "
-          << local_entry.Get(ID)
+          << local_entry.GetId()
           << ". Treating as an error return";
       return CommitResponse::INVALID_MESSAGE;
     }
@@ -232,7 +232,7 @@ ProcessCommitResponseCommand::ProcessSingleCommitResponse(
   }
 
   ProcessSuccessfulCommitResponse(commit_request_entry, server_entry,
-      local_entry.Get(ID), &local_entry, syncing_was_set, deleted_folders);
+      local_entry.GetId(), &local_entry, syncing_was_set, deleted_folders);
   return response;
 }
 
@@ -251,11 +251,11 @@ bool ProcessCommitResponseCommand::UpdateVersionAfterCommit(
     const sync_pb::CommitResponse_EntryResponse& entry_response,
     const syncable::Id& pre_commit_id,
     syncable::MutableEntry* local_entry) {
-  int64 old_version = local_entry->Get(BASE_VERSION);
+  int64 old_version = local_entry->GetBaseVersion();
   int64 new_version = entry_response.version();
   bool bad_commit_version = false;
   if (committed_entry.deleted() &&
-      !local_entry->Get(syncable::UNIQUE_CLIENT_TAG).empty()) {
+      !local_entry->GetUniqueClientTag().empty()) {
     // If the item was deleted, and it's undeletable (uses the client tag),
     // change the version back to zero.  We must set the version to zero so
     // that the server knows to re-create the item if it gets committed
@@ -276,10 +276,10 @@ bool ProcessCommitResponseCommand::UpdateVersionAfterCommit(
   // Update the base version and server version.  The base version must change
   // here, even if syncing_was_set is false; that's because local changes were
   // on top of the successfully committed version.
-  local_entry->Put(BASE_VERSION, new_version);
-  DVLOG(1) << "Commit is changing base version of " << local_entry->Get(ID)
+  local_entry->PutBaseVersion(new_version);
+  DVLOG(1) << "Commit is changing base version of " << local_entry->GetId()
            << " to: " << new_version;
-  local_entry->Put(SERVER_VERSION, new_version);
+  local_entry->PutServerVersion(new_version);
   return true;
 }
 
@@ -324,23 +324,20 @@ void ProcessCommitResponseCommand::UpdateServerFieldsAfterCommit(
   // that the local data changed during the commit, and even if not, the server
   // has the last word on the values of several properties.
 
-  local_entry->Put(SERVER_IS_DEL, committed_entry.deleted());
+  local_entry->PutServerIsDel(committed_entry.deleted());
   if (committed_entry.deleted()) {
     // Don't clobber any other fields of deleted objects.
     return;
   }
 
-  local_entry->Put(syncable::SERVER_IS_DIR,
+  local_entry->PutServerIsDir(
       (committed_entry.folder() ||
        committed_entry.bookmarkdata().bookmark_folder()));
-  local_entry->Put(syncable::SERVER_SPECIFICS,
-      committed_entry.specifics());
-  local_entry->Put(syncable::SERVER_MTIME,
-                   ProtoTimeToTime(committed_entry.mtime()));
-  local_entry->Put(syncable::SERVER_CTIME,
-                   ProtoTimeToTime(committed_entry.ctime()));
+  local_entry->PutServerSpecifics(committed_entry.specifics());
+  local_entry->PutServerMtime(ProtoTimeToTime(committed_entry.mtime()));
+  local_entry->PutServerCtime(ProtoTimeToTime(committed_entry.ctime()));
   if (committed_entry.has_unique_position()) {
-    local_entry->Put(syncable::SERVER_UNIQUE_POSITION,
+    local_entry->PutServerUniquePosition(
                      UniquePosition::FromProto(
                          committed_entry.unique_position()));
   }
@@ -352,16 +349,15 @@ void ProcessCommitResponseCommand::UpdateServerFieldsAfterCommit(
   // information we have, but it's a bit convoluted to pull it out directly.
   // Getting this right is important: SERVER_PARENT_ID gets fed back into
   // old_parent_id during the next commit.
-  local_entry->Put(syncable::SERVER_PARENT_ID,
-      local_entry->Get(syncable::PARENT_ID));
-  local_entry->Put(syncable::SERVER_NON_UNIQUE_NAME,
+  local_entry->PutServerParentId(local_entry->GetParentId());
+  local_entry->PutServerNonUniqueName(
       GetResultingPostCommitName(committed_entry, entry_response));
 
-  if (local_entry->Get(IS_UNAPPLIED_UPDATE)) {
+  if (local_entry->GetIsUnappliedUpdate()) {
     // This shouldn't happen; an unapplied update shouldn't be committed, and
     // if it were, the commit should have failed.  But if it does happen: we've
     // just overwritten the update info, so clear the flag.
-    local_entry->Put(IS_UNAPPLIED_UPDATE, false);
+    local_entry->PutIsUnappliedUpdate(false);
   }
 }
 
@@ -370,7 +366,7 @@ void ProcessCommitResponseCommand::ProcessSuccessfulCommitResponse(
     const sync_pb::CommitResponse_EntryResponse& entry_response,
     const syncable::Id& pre_commit_id, syncable::MutableEntry* local_entry,
     bool syncing_was_set, set<syncable::Id>* deleted_folders) {
-  DCHECK(local_entry->Get(IS_UNSYNCED));
+  DCHECK(local_entry->GetIsUnsynced());
 
   // Update SERVER_VERSION and BASE_VERSION.
   if (!UpdateVersionAfterCommit(committed_entry, entry_response, pre_commit_id,
@@ -393,16 +389,16 @@ void ProcessCommitResponseCommand::ProcessSuccessfulCommitResponse(
   // committed again if it changed locally during the commit), we can remove
   // it from the unsynced list.
   if (syncing_was_set) {
-    local_entry->Put(IS_UNSYNCED, false);
+    local_entry->PutIsUnsynced(false);
   }
 
   // Make a note of any deleted folders, whose children would have
   // been recursively deleted.
   // TODO(nick): Here, commit_message.deleted() would be more correct than
-  // local_entry->Get(IS_DEL).  For example, an item could be renamed, and then
+  // local_entry->GetIsDel().  For example, an item could be renamed, and then
   // deleted during the commit of the rename.  Unit test & fix.
-  if (local_entry->Get(IS_DIR) && local_entry->Get(IS_DEL)) {
-    deleted_folders->insert(local_entry->Get(ID));
+  if (local_entry->GetIsDir() && local_entry->GetIsDel()) {
+    deleted_folders->insert(local_entry->GetId());
   }
 }
 

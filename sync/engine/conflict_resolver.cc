@@ -45,18 +45,17 @@ void ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
 
   // This function can only resolve simple conflicts.  Simple conflicts have
   // both IS_UNSYNCED and IS_UNAPPLIED_UDPATE set.
-  if (!entry.Get(syncable::IS_UNAPPLIED_UPDATE) ||
-      !entry.Get(syncable::IS_UNSYNCED)) {
+  if (!entry.GetIsUnappliedUpdate() || !entry.GetIsUnsynced()) {
     // This is very unusual, but it can happen in tests.  We may be able to
     // assert NOTREACHED() here when those tests are updated.
     return;
   }
 
-  if (entry.Get(syncable::IS_DEL) && entry.Get(syncable::SERVER_IS_DEL)) {
+  if (entry.GetIsDel() && entry.GetServerIsDel()) {
     // we've both deleted it, so lets just drop the need to commit/update this
     // entry.
-    entry.Put(syncable::IS_UNSYNCED, false);
-    entry.Put(syncable::IS_UNAPPLIED_UPDATE, false);
+    entry.PutIsUnsynced(false);
+    entry.PutIsUnappliedUpdate(false);
     // we've made changes, but they won't help syncing progress.
     // METRIC simple conflict resolved by merge.
     return;
@@ -82,19 +81,17 @@ void ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
   // f) Otherwise, it's in general safer to ignore local changes, with the
   //    exception of deletion conflicts (choose to undelete) and conflicts
   //    where the non_unique_name or parent don't match.
-  if (!entry.Get(syncable::SERVER_IS_DEL)) {
+  if (!entry.GetServerIsDel()) {
     // TODO(nick): The current logic is arbitrary; instead, it ought to be made
     // consistent with the ModelAssociator behavior for a datatype.  It would
     // be nice if we could route this back to ModelAssociator code to pick one
     // of three options: CLIENT, SERVER, or MERGE.  Some datatypes (autofill)
     // are easily mergeable.
     // See http://crbug.com/77339.
-    bool name_matches = entry.Get(syncable::NON_UNIQUE_NAME) ==
-                        entry.Get(syncable::SERVER_NON_UNIQUE_NAME);
-    bool parent_matches = entry.Get(syncable::PARENT_ID) ==
-                          entry.Get(syncable::SERVER_PARENT_ID);
-    bool entry_deleted = entry.Get(syncable::IS_DEL);
-
+    bool name_matches = entry.GetNonUniqueName() ==
+        entry.GetServerNonUniqueName();
+    bool parent_matches = entry.GetParentId() == entry.GetServerParentId();
+    bool entry_deleted = entry.GetIsDel();
     // The position check might fail spuriously if one of the positions was
     // based on a legacy random suffix, rather than a deterministic one based on
     // originator_cache_guid and originator_item_id.  If an item is being
@@ -105,14 +102,12 @@ void ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
     // allowed to return false negatives, as long as it returns no false
     // positives.
     bool position_matches = parent_matches &&
-         entry.Get(syncable::SERVER_UNIQUE_POSITION).Equals(
-             entry.Get(syncable::UNIQUE_POSITION));
-    const sync_pb::EntitySpecifics& specifics =
-        entry.Get(syncable::SPECIFICS);
+         entry.GetServerUniquePosition().Equals(entry.GetUniquePosition());
+    const sync_pb::EntitySpecifics& specifics = entry.GetSpecifics();
     const sync_pb::EntitySpecifics& server_specifics =
-        entry.Get(syncable::SERVER_SPECIFICS);
+        entry.GetServerSpecifics();
     const sync_pb::EntitySpecifics& base_server_specifics =
-        entry.Get(syncable::BASE_SERVER_SPECIFICS);
+        entry.GetBaseServerSpecifics();
     std::string decrypted_specifics, decrypted_server_specifics;
     bool specifics_match = false;
     bool server_encrypted_with_default_key = false;
@@ -190,12 +185,12 @@ void ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
     }
     // Now that we've resolved the conflict, clear the prev server
     // specifics.
-    entry.Put(syncable::BASE_SERVER_SPECIFICS, sync_pb::EntitySpecifics());
+    entry.PutBaseServerSpecifics(sync_pb::EntitySpecifics());
   } else {  // SERVER_IS_DEL is true
-    if (entry.Get(syncable::IS_DIR)) {
+    if (entry.GetIsDir()) {
       Directory::Metahandles children;
       trans->directory()->GetChildHandlesById(trans,
-                                              entry.Get(syncable::ID),
+                                              entry.GetId(),
                                               &children);
       // If a server deleted folder has local contents it should be a hierarchy
       // conflict.  Hierarchy conflicts should not be processed by this
@@ -230,7 +225,7 @@ void ConflictResolver::ResolveConflicts(
     Entry conflicting_node(trans, syncable::GET_BY_ID, *it);
     CHECK(conflicting_node.good());
     if (IsControlType(
-        GetModelTypeFromSpecifics(conflicting_node.Get(syncable::SPECIFICS)))) {
+        GetModelTypeFromSpecifics(conflicting_node.GetSpecifics()))) {
       continue;
     }
 

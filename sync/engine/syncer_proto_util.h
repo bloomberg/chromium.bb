@@ -58,16 +58,6 @@ class SYNC_EXPORT_PRIVATE SyncerProtoUtil {
       sync_pb::ClientToServerResponse* response,
       sessions::SyncSession* session);
 
-  // Compares a syncable Entry to SyncEntity, returns true iff the data is
-  // identical.
-  //
-  // TODO(sync): The places where this function is used are arguable big causes
-  // of the fragility, because there's a tendency to freak out the moment the
-  // local and server values diverge. However, this almost always indicates a
-  // sync bug somewhere earlier in the sync cycle.
-  static bool Compare(const syncable::Entry& local_entry,
-                      const sync_pb::SyncEntity& server_entry);
-
   static bool ShouldMaintainPosition(const sync_pb::SyncEntity& sync_entity);
 
   // Utility methods for converting between syncable::Blobs and protobuf byte

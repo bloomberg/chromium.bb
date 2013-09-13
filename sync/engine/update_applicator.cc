@@ -72,7 +72,7 @@ void UpdateApplicator::AttemptApplications(
           updates_applied_++;
           break;
         case CONFLICT_SIMPLE:
-          simple_conflict_ids_.insert(entry.Get(ID));
+          simple_conflict_ids_.insert(entry.GetId());
           break;
         case CONFLICT_ENCRYPTION:
           encryption_conflicts_++;

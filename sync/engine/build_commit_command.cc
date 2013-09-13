@@ -101,8 +101,8 @@ namespace {
 void SetEntrySpecifics(const Entry& meta_entry,
                        sync_pb::SyncEntity* sync_entry) {
   // Add the new style extension and the folder bit.
-  sync_entry->mutable_specifics()->CopyFrom(meta_entry.Get(SPECIFICS));
-  sync_entry->set_folder(meta_entry.Get(syncable::IS_DIR));
+  sync_entry->mutable_specifics()->CopyFrom(meta_entry.GetSpecifics());
+  sync_entry->set_folder(meta_entry.GetIsDir());
 
   CHECK(!sync_entry->specifics().password().has_client_only_encrypted_data());
   DCHECK_EQ(meta_entry.GetModelType(), GetModelType(*sync_entry));
@@ -141,10 +141,10 @@ SyncerError BuildCommitCommand::ExecuteImpl(SyncSession* session) {
 void BuildCommitCommand::BuildCommitItem(
     const syncable::Entry& meta_entry,
     sync_pb::SyncEntity* sync_entry) {
-  syncable::Id id = meta_entry.Get(syncable::ID);
+  syncable::Id id = meta_entry.GetId();
   sync_entry->set_id_string(SyncableIdToProto(id));
 
-  string name = meta_entry.Get(syncable::NON_UNIQUE_NAME);
+  string name = meta_entry.GetNonUniqueName();
   CHECK(!name.empty());  // Make sure this isn't an update.
   // Note: Truncation is also performed in WriteNode::SetTitle(..). But this
   // call is still necessary to handle any title changes that might originate
@@ -158,19 +158,19 @@ void BuildCommitCommand::BuildCommitItem(
   // We send both because it may aid in logging.
   sync_entry->set_non_unique_name(name);
 
-  if (!meta_entry.Get(syncable::UNIQUE_CLIENT_TAG).empty()) {
+  if (!meta_entry.GetUniqueClientTag().empty()) {
     sync_entry->set_client_defined_unique_tag(
-        meta_entry.Get(syncable::UNIQUE_CLIENT_TAG));
+        meta_entry.GetUniqueClientTag());
   }
 
   // Deleted items with server-unknown parent ids can be a problem so we set
   // the parent to 0. (TODO(sync): Still true in protocol?).
   Id new_parent_id;
-  if (meta_entry.Get(syncable::IS_DEL) &&
-      !meta_entry.Get(syncable::PARENT_ID).ServerKnows()) {
+  if (meta_entry.GetIsDel() &&
+      !meta_entry.GetParentId().ServerKnows()) {
     new_parent_id = syncable::BaseTransaction::root_id();
   } else {
-    new_parent_id = meta_entry.Get(syncable::PARENT_ID);
+    new_parent_id = meta_entry.GetParentId();
   }
   sync_entry->set_parent_id_string(SyncableIdToProto(new_parent_id));
 
@@ -179,34 +179,34 @@ void BuildCommitCommand::BuildCommitItem(
   // TODO(nick): With the server keeping track of the primary sync parent,
   // it should not be necessary to provide the old_parent_id: the version
   // number should suffice.
-  if (new_parent_id != meta_entry.Get(syncable::SERVER_PARENT_ID) &&
-      0 != meta_entry.Get(syncable::BASE_VERSION) &&
-      syncable::CHANGES_VERSION != meta_entry.Get(syncable::BASE_VERSION)) {
+  if (new_parent_id != meta_entry.GetServerParentId() &&
+      0 != meta_entry.GetBaseVersion() &&
+      syncable::CHANGES_VERSION != meta_entry.GetBaseVersion()) {
     sync_entry->set_old_parent_id(
-        SyncableIdToProto(meta_entry.Get(syncable::SERVER_PARENT_ID)));
+        SyncableIdToProto(meta_entry.GetServerParentId()));
   }
 
-  int64 version = meta_entry.Get(syncable::BASE_VERSION);
+  int64 version = meta_entry.GetBaseVersion();
   if (syncable::CHANGES_VERSION == version || 0 == version) {
     // Undeletions are only supported for items that have a client tag.
     DCHECK(!id.ServerKnows() ||
-           !meta_entry.Get(syncable::UNIQUE_CLIENT_TAG).empty())
+           !meta_entry.GetUniqueClientTag().empty())
         << meta_entry;
 
     // Version 0 means to create or undelete an object.
     sync_entry->set_version(0);
   } else {
     DCHECK(id.ServerKnows()) << meta_entry;
-    sync_entry->set_version(meta_entry.Get(syncable::BASE_VERSION));
+    sync_entry->set_version(meta_entry.GetBaseVersion());
   }
-  sync_entry->set_ctime(TimeToProtoTime(meta_entry.Get(syncable::CTIME)));
-  sync_entry->set_mtime(TimeToProtoTime(meta_entry.Get(syncable::MTIME)));
+  sync_entry->set_ctime(TimeToProtoTime(meta_entry.GetCtime()));
+  sync_entry->set_mtime(TimeToProtoTime(meta_entry.GetMtime()));
 
   // Deletion is final on the server, let's move things and then delete them.
-  if (meta_entry.Get(IS_DEL)) {
+  if (meta_entry.GetIsDel()) {
     sync_entry->set_deleted(true);
   } else {
-    if (meta_entry.Get(SPECIFICS).has_bookmark()) {
+    if (meta_entry.GetSpecifics().has_bookmark()) {
       // Both insert_after_item_id and position_in_parent fields are set only
       // for legacy reasons.  See comments in sync.proto for more information.
       const Id& prev_id = meta_entry.GetPredecessorId();
@@ -214,8 +214,8 @@ void BuildCommitCommand::BuildCommitItem(
           prev_id.IsRoot() ? string() : prev_id.GetServerId();
       sync_entry->set_insert_after_item_id(prev_id_string);
       sync_entry->set_position_in_parent(
-          meta_entry.Get(UNIQUE_POSITION).ToInt64());
-      meta_entry.Get(UNIQUE_POSITION).ToProto(
+          meta_entry.GetUniquePosition().ToInt64());
+      meta_entry.GetUniquePosition().ToProto(
           sync_entry->mutable_unique_position());
     }
     SetEntrySpecifics(meta_entry, sync_entry);

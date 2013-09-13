@@ -93,13 +93,12 @@ void GetCommitIdsForType(
 namespace {
 
 bool IsEntryInConflict(const syncable::Entry& entry) {
-  if (entry.Get(syncable::IS_UNSYNCED) &&
-      entry.Get(syncable::SERVER_VERSION) > 0 &&
-      (entry.Get(syncable::SERVER_VERSION) >
-       entry.Get(syncable::BASE_VERSION))) {
+  if (entry.GetIsUnsynced() &&
+      entry.GetServerVersion() > 0 &&
+      (entry.GetServerVersion() > entry.GetBaseVersion())) {
     // The local and server versions don't match. The item must be in
     // conflict, so there's no point in attempting to commit.
-    DCHECK(entry.Get(syncable::IS_UNAPPLIED_UPDATE));
+    DCHECK(entry.GetIsUnappliedUpdate());
     DVLOG(1) << "Excluding entry from commit due to version mismatch "
              << entry;
     return true;
@@ -118,7 +117,7 @@ bool IsEntryReadyForCommit(ModelTypeSet requested_types,
                            ModelTypeSet encrypted_types,
                            bool passphrase_missing,
                            const syncable::Entry& entry) {
-  DCHECK(entry.Get(syncable::IS_UNSYNCED));
+  DCHECK(entry.GetIsUnsynced());
   if (IsEntryInConflict(entry))
     return false;
 
@@ -141,7 +140,7 @@ bool IsEntryReadyForCommit(ModelTypeSet requested_types,
   if (!requested_types.Has(type))
     return false;
 
-  if (entry.Get(syncable::IS_DEL) && !entry.Get(syncable::ID).ServerKnows()) {
+  if (entry.GetIsDel() && !entry.GetId().ServerKnows()) {
     // New clients (following the resolution of crbug.com/125381) should not
     // create such items.  Old clients may have left some in the database
     // (crbug.com/132905), but we should now be cleaning them on startup.
@@ -150,8 +149,8 @@ bool IsEntryReadyForCommit(ModelTypeSet requested_types,
   }
 
   // Extra validity checks.
-  syncable::Id id = entry.Get(syncable::ID);
-  if (id == entry.Get(syncable::PARENT_ID)) {
+  syncable::Id id = entry.GetId();
+  if (id == entry.GetParentId()) {
     CHECK(id.IsRoot()) << "Non-root item is self parenting." << entry;
     // If the root becomes unsynced it can cause us problems.
     NOTREACHED() << "Root item became unsynced " << entry;
@@ -262,13 +261,13 @@ bool Traversal::AddUncommittedParentsAndTheirPredecessors(
     const syncable::Entry& item,
     syncable::Directory::Metahandles* result) const {
   syncable::Directory::Metahandles dependencies;
-  syncable::Id parent_id = item.Get(syncable::PARENT_ID);
+  syncable::Id parent_id = item.GetParentId();
 
   // Climb the tree adding entries leaf -> root.
   while (!parent_id.ServerKnows()) {
     syncable::Entry parent(trans_, syncable::GET_BY_ID, parent_id);
     CHECK(parent.good()) << "Bad user-only parent in item path.";
-    int64 handle = parent.Get(syncable::META_HANDLE);
+    int64 handle = parent.GetMetahandle();
     if (HaveItem(handle)) {
       // We've already added this parent (and therefore all of its parents).
       // We can return early.
@@ -283,7 +282,7 @@ bool Traversal::AddUncommittedParentsAndTheirPredecessors(
     AddItemThenPredecessors(ready_unsynced_set,
                             parent,
                             &dependencies);
-    parent_id = parent.Get(syncable::PARENT_ID);
+    parent_id = parent.GetParentId();
   }
 
   // Reverse what we added to get the correct order.
@@ -295,8 +294,8 @@ bool Traversal::AddUncommittedParentsAndTheirPredecessors(
 void Traversal::TryAddItem(const std::set<int64>& ready_unsynced_set,
                            const syncable::Entry& item,
                            syncable::Directory::Metahandles* result) const {
-  DCHECK(item.Get(syncable::IS_UNSYNCED));
-  int64 item_handle = item.Get(syncable::META_HANDLE);
+  DCHECK(item.GetIsUnsynced());
+  int64 item_handle = item.GetMetahandle();
   if (ready_unsynced_set.count(item_handle) != 0) {
     result->push_back(item_handle);
   }
@@ -311,26 +310,26 @@ void Traversal::AddItemThenPredecessors(
     const std::set<int64>& ready_unsynced_set,
     const syncable::Entry& item,
     syncable::Directory::Metahandles* result) const {
-  int64 item_handle = item.Get(syncable::META_HANDLE);
+  int64 item_handle = item.GetMetahandle();
   if (HaveItem(item_handle)) {
     // We've already added this item to the commit set, and so must have
     // already added the predecessors as well.
     return;
   }
   TryAddItem(ready_unsynced_set, item, result);
-  if (item.Get(syncable::IS_DEL))
+  if (item.GetIsDel())
     return;  // Deleted items have no predecessors.
 
   syncable::Id prev_id = item.GetPredecessorId();
   while (!prev_id.IsRoot()) {
     syncable::Entry prev(trans_, syncable::GET_BY_ID, prev_id);
     CHECK(prev.good()) << "Bad id when walking predecessors.";
-    if (!prev.Get(syncable::IS_UNSYNCED)) {
+    if (!prev.GetIsUnsynced()) {
       // We're interested in "runs" of unsynced items.  This item breaks
       // the streak, so we stop traversing.
       return;
     }
-    int64 handle = prev.Get(syncable::META_HANDLE);
+    int64 handle = prev.GetMetahandle();
     if (HaveItem(handle)) {
       // We've already added this item to the commit set, and so must have
       // already added the predecessors as well.
@@ -384,7 +383,7 @@ void Traversal::AddCreatesAndMoves(
     syncable::Entry entry(trans_,
                           syncable::GET_BY_HANDLE,
                           metahandle);
-    if (!entry.Get(syncable::IS_DEL)) {
+    if (!entry.GetIsDel()) {
       // We only commit an item + its dependencies if it and all its
       // dependencies are not in conflict.
       syncable::Directory::Metahandles item_dependencies;
@@ -419,18 +418,16 @@ void Traversal::AddDeletes(
     syncable::Entry entry(trans_, syncable::GET_BY_HANDLE,
                           metahandle);
 
-    if (entry.Get(syncable::IS_DEL)) {
+    if (entry.GetIsDel()) {
       syncable::Entry parent(trans_, syncable::GET_BY_ID,
-                             entry.Get(syncable::PARENT_ID));
+                             entry.GetParentId());
       // If the parent is deleted and unsynced, then any children of that
       // parent don't need to be added to the delete queue.
       //
       // Note: the parent could be synced if there was an update deleting a
       // folder when we had a deleted all items in it.
       // We may get more updates, or we may want to delete the entry.
-      if (parent.good() &&
-          parent.Get(syncable::IS_DEL) &&
-          parent.Get(syncable::IS_UNSYNCED)) {
+      if (parent.good() && parent.GetIsDel() && parent.GetIsUnsynced()) {
         // However, if an entry is moved, these rules can apply differently.
         //
         // If the entry was moved, then the destination parent was deleted,
@@ -438,11 +435,10 @@ void Traversal::AddDeletes(
         // TODO(chron): Unit test for move / delete cases:
         // Case 1: Locally moved, then parent deleted
         // Case 2: Server moved, then locally issue recursive delete.
-        if (entry.Get(syncable::ID).ServerKnows() &&
-            entry.Get(syncable::PARENT_ID) !=
-                entry.Get(syncable::SERVER_PARENT_ID)) {
+        if (entry.GetId().ServerKnows() &&
+            entry.GetParentId() != entry.GetServerParentId()) {
           DVLOG(1) << "Inserting moved and deleted entry, will be missed by "
-                   << "delete roll." << entry.Get(syncable::ID);
+                   << "delete roll." << entry.GetId();
 
           AppendToTraversal(metahandle);
         }
@@ -453,7 +449,7 @@ void Traversal::AddDeletes(
         continue;
       }
 
-      legal_delete_parents.insert(entry.Get(syncable::PARENT_ID));
+      legal_delete_parents.insert(entry.GetParentId());
     }
   }
 
@@ -475,10 +471,9 @@ void Traversal::AddDeletes(
     int64 metahandle = *iter;
     if (HaveItem(metahandle))
       continue;
-    syncable::Entry entry(trans_, syncable::GET_BY_HANDLE,
-                          metahandle);
-    if (entry.Get(syncable::IS_DEL)) {
-      syncable::Id parent_id = entry.Get(syncable::PARENT_ID);
+    syncable::Entry entry(trans_, syncable::GET_BY_HANDLE, metahandle);
+    if (entry.GetIsDel()) {
+      syncable::Id parent_id = entry.GetParentId();
       if (legal_delete_parents.count(parent_id)) {
         AppendToTraversal(metahandle);
       }

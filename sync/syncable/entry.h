@@ -56,50 +56,149 @@ class SYNC_EXPORT Entry {
   BaseTransaction* trans() const { return basetrans_; }
 
   // Field accessors.
-  inline int64 Get(MetahandleField field) const {
+  int64 GetMetahandle() const {
     DCHECK(kernel_);
-    return kernel_->ref(field);
+    return kernel_->ref(META_HANDLE);
   }
-  inline Id Get(IdField field) const {
+
+  int64 GetBaseVersion() const {
     DCHECK(kernel_);
-    return kernel_->ref(field);
+    return kernel_->ref(BASE_VERSION);
   }
-  inline int64 Get(Int64Field field) const {
+
+  int64 GetServerVersion() const {
     DCHECK(kernel_);
-    return kernel_->ref(field);
+    return kernel_->ref(SERVER_VERSION);
   }
-  inline const base::Time& Get(TimeField field) const {
+
+  int64 GetLocalExternalId() const {
     DCHECK(kernel_);
-    return kernel_->ref(field);
+    return kernel_->ref(LOCAL_EXTERNAL_ID);
   }
-  inline int64 Get(BaseVersion field) const {
+
+  int64 GetTransactionVersion() const {
     DCHECK(kernel_);
-    return kernel_->ref(field);
+    return kernel_->ref(TRANSACTION_VERSION);
   }
-  inline bool Get(IndexedBitField field) const {
+
+  const base::Time& GetMtime() const {
     DCHECK(kernel_);
-    return kernel_->ref(field);
+    return kernel_->ref(MTIME);
   }
-  inline bool Get(IsDelField field) const {
+
+  const base::Time& GetServerMtime() const {
     DCHECK(kernel_);
-    return kernel_->ref(field);
+    return kernel_->ref(SERVER_MTIME);
   }
-  inline bool Get(BitField field) const {
+
+  const base::Time& GetCtime() const {
     DCHECK(kernel_);
-    return kernel_->ref(field);
+    return kernel_->ref(CTIME);
   }
-  const std::string& Get(StringField field) const;
-  inline const sync_pb::EntitySpecifics& Get(ProtoField field) const {
+
+  const base::Time& GetServerCtime() const {
     DCHECK(kernel_);
-    return kernel_->ref(field);
+    return kernel_->ref(SERVER_CTIME);
   }
-  inline const UniquePosition& Get(UniquePositionField field) const {
+
+  Id GetId() const {
     DCHECK(kernel_);
-    return kernel_->ref(field);
+    return kernel_->ref(ID);
   }
-  inline bool Get(BitTemp field) const {
+
+  Id GetParentId() const {
     DCHECK(kernel_);
-    return kernel_->ref(field);
+    return kernel_->ref(PARENT_ID);
+  }
+
+  Id GetServerParentId() const {
+    DCHECK(kernel_);
+    return kernel_->ref(SERVER_PARENT_ID);
+  }
+
+  bool GetIsUnsynced() const {
+    DCHECK(kernel_);
+    return kernel_->ref(IS_UNSYNCED);
+  }
+
+  bool GetIsUnappliedUpdate() const {
+    DCHECK(kernel_);
+    return kernel_->ref(IS_UNAPPLIED_UPDATE);
+  }
+
+  bool GetIsDel() const {
+    DCHECK(kernel_);
+    return kernel_->ref(IS_DEL);
+  }
+
+  bool GetIsDir() const {
+    DCHECK(kernel_);
+    return kernel_->ref(IS_DIR);
+  }
+
+  bool GetServerIsDir() const {
+    DCHECK(kernel_);
+    return kernel_->ref(SERVER_IS_DIR);
+  }
+
+  bool GetServerIsDel() const {
+    DCHECK(kernel_);
+    return kernel_->ref(SERVER_IS_DEL);
+  }
+
+  const std::string& GetNonUniqueName() const {
+    DCHECK(kernel_);
+    return kernel_->ref(NON_UNIQUE_NAME);
+  }
+
+  const std::string& GetServerNonUniqueName() const {
+    DCHECK(kernel_);
+    return kernel_->ref(SERVER_NON_UNIQUE_NAME);
+  }
+
+  const std::string& GetUniqueServerTag() const {
+    DCHECK(kernel_);
+    return kernel_->ref(UNIQUE_SERVER_TAG);
+  }
+
+  const std::string& GetUniqueClientTag() const {
+    DCHECK(kernel_);
+    return kernel_->ref(UNIQUE_CLIENT_TAG);
+  }
+
+  const std::string& GetUniqueBookmarkTag() const {
+    DCHECK(kernel_);
+    return kernel_->ref(UNIQUE_BOOKMARK_TAG);
+  }
+
+  const sync_pb::EntitySpecifics& GetSpecifics() const {
+    DCHECK(kernel_);
+    return kernel_->ref(SPECIFICS);
+  }
+
+  const sync_pb::EntitySpecifics& GetServerSpecifics() const {
+    DCHECK(kernel_);
+    return kernel_->ref(SERVER_SPECIFICS);
+  }
+
+  const sync_pb::EntitySpecifics& GetBaseServerSpecifics() const {
+    DCHECK(kernel_);
+    return kernel_->ref(BASE_SERVER_SPECIFICS);
+  }
+
+  const UniquePosition& GetServerUniquePosition() const {
+    DCHECK(kernel_);
+    return kernel_->ref(SERVER_UNIQUE_POSITION);
+  }
+
+  const UniquePosition& GetUniquePosition() const {
+    DCHECK(kernel_);
+    return kernel_->ref(UNIQUE_POSITION);
+  }
+
+  bool GetSyncing() const {
+    DCHECK(kernel_);
+    return kernel_->ref(SYNCING);
   }
 
   ModelType GetServerModelType() const;

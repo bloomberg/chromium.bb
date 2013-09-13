@@ -724,7 +724,7 @@ bool SyncEncryptionHandlerImpl::SetKeystoreKeys(
     return true;
 
   const sync_pb::NigoriSpecifics& nigori =
-      entry.Get(syncable::SPECIFICS).nigori();
+      entry.GetSpecifics().nigori();
   if (cryptographer->has_pending_keys() &&
       IsNigoriMigratedToKeystore(nigori) &&
       !nigori.keystore_decryptor_token().blob().empty()) {
@@ -815,7 +815,7 @@ void SyncEncryptionHandlerImpl::ReEncryptEverything(
       if (child.GetIsFolder()) {
         to_visit.push(child.GetFirstChildId());
       }
-      if (child.GetEntry()->Get(syncable::UNIQUE_SERVER_TAG).empty()) {
+      if (child.GetEntry()->GetUniqueServerTag().empty()) {
       // Rewrite the specifics of the node with encrypted data if necessary
       // (only rewrite the non-unique folders).
         child.ResetFromSpecifics();

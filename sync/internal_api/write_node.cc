@@ -34,10 +34,10 @@ using syncable::SPECIFICS;
 static const char kDefaultNameForNewNodes[] = " ";
 
 void WriteNode::SetIsFolder(bool folder) {
-  if (entry_->Get(syncable::IS_DIR) == folder)
+  if (entry_->GetIsDir() == folder)
     return;  // Skip redundant changes.
 
-  entry_->Put(syncable::IS_DIR, folder);
+  entry_->PutIsDir(folder);
   MarkForSyncing();
 }
 
@@ -47,7 +47,7 @@ void WriteNode::SetTitle(const std::wstring& title) {
   // It's possible the nigori lost the set of encrypted types. If the current
   // specifics are already encrypted, we want to ensure we continue encrypting.
   bool needs_encryption = GetTransaction()->GetEncryptedTypes().Has(type) ||
-                          entry_->Get(SPECIFICS).has_encrypted();
+                          entry_->GetSpecifics().has_encrypted();
 
   // If this datatype is encrypted and is not a bookmark, we disregard the
   // specified title in favor of kEncryptedString. For encrypted bookmarks the
@@ -63,19 +63,19 @@ void WriteNode::SetTitle(const std::wstring& title) {
 
   std::string current_legal_title;
   if (BOOKMARKS == type &&
-      entry_->Get(syncable::SPECIFICS).has_encrypted()) {
+      entry_->GetSpecifics().has_encrypted()) {
     // Encrypted bookmarks only have their title in the unencrypted specifics.
     current_legal_title = GetBookmarkSpecifics().title();
   } else {
     // Non-bookmarks and legacy bookmarks (those with no title in their
     // specifics) store their title in NON_UNIQUE_NAME. Non-legacy bookmarks
     // store their title in specifics as well as NON_UNIQUE_NAME.
-    current_legal_title = entry_->Get(syncable::NON_UNIQUE_NAME);
+    current_legal_title = entry_->GetNonUniqueName();
   }
 
   bool title_matches = (current_legal_title == new_legal_title);
   bool encrypted_without_overwriting_name = (needs_encryption &&
-      entry_->Get(syncable::NON_UNIQUE_NAME) != kEncryptedString);
+      entry_->GetNonUniqueName() != kEncryptedString);
 
   // If the title matches and the NON_UNIQUE_NAME is properly overwritten as
   // necessary, nothing needs to change.
@@ -97,9 +97,9 @@ void WriteNode::SetTitle(const std::wstring& title) {
   // the logic deciding whether this is an empty node or a legacy bookmark.
   // See BaseNode::GetUnencryptedSpecific(..).
   if (needs_encryption)
-    entry_->Put(syncable::NON_UNIQUE_NAME, kEncryptedString);
+    entry_->PutNonUniqueName(kEncryptedString);
   else
-    entry_->Put(syncable::NON_UNIQUE_NAME, new_legal_title);
+    entry_->PutNonUniqueName(new_legal_title);
 
   DVLOG(1) << "Overwriting title of type "
            << ModelTypeToString(type)
@@ -152,7 +152,7 @@ void WriteNode::SetPasswordSpecifics(
   // We have to do the idempotency check here (vs in UpdateEntryWithEncryption)
   // because Passwords have their encrypted data within the PasswordSpecifics,
   // vs within the EntitySpecifics like all the other types.
-  const sync_pb::EntitySpecifics& old_specifics = GetEntry()->Get(SPECIFICS);
+  const sync_pb::EntitySpecifics& old_specifics = GetEntry()->GetSpecifics();
   sync_pb::EntitySpecifics entity_specifics;
   // Copy over the old specifics if they exist.
   if (GetModelTypeFromSpecifics(old_specifics) == PASSWORDS) {
@@ -232,7 +232,7 @@ void WriteNode::SetEntitySpecifics(
   DCHECK_EQ(new_specifics_type, GetModelType());
 
   // Preserve unknown fields.
-  const sync_pb::EntitySpecifics& old_specifics = entry_->Get(SPECIFICS);
+  const sync_pb::EntitySpecifics& old_specifics = entry_->GetSpecifics();
   sync_pb::EntitySpecifics new_specifics;
   new_specifics.CopyFrom(new_value);
   new_specifics.mutable_unknown_fields()->MergeFrom(
@@ -244,7 +244,7 @@ void WriteNode::SetEntitySpecifics(
                                  entry_)) {
     return;
   }
-  if (entry_->Get(SPECIFICS).has_encrypted()) {
+  if (entry_->GetSpecifics().has_encrypted()) {
     // EncryptIfNecessary already updated the entry for us and marked for
     // syncing if it was needed. Now we just make a copy of the unencrypted
     // specifics so that if this node is updated, we do not have to decrypt the
@@ -276,7 +276,7 @@ void WriteNode::SetExtensionSpecifics(
 
 void WriteNode::SetExternalId(int64 id) {
   if (GetExternalId() != id)
-    entry_->Put(syncable::LOCAL_EXTERNAL_ID, id);
+    entry_->PutLocalExternalId(id);
 }
 
 WriteNode::WriteNode(WriteTransaction* transaction)
@@ -297,7 +297,7 @@ BaseNode::InitByLookupResult WriteNode::InitByIdLookup(int64 id) {
                                       syncable::GET_BY_HANDLE, id);
   if (!entry_->good())
     return INIT_FAILED_ENTRY_NOT_GOOD;
-  if (entry_->Get(syncable::IS_DEL))
+  if (entry_->GetIsDel())
     return INIT_FAILED_ENTRY_IS_DEL;
   return DecryptIfNecessary() ? INIT_OK : INIT_FAILED_DECRYPT_IF_NECESSARY;
 }
@@ -318,7 +318,7 @@ BaseNode::InitByLookupResult WriteNode::InitByClientTagLookup(
                                       syncable::GET_BY_CLIENT_TAG, hash);
   if (!entry_->good())
     return INIT_FAILED_ENTRY_NOT_GOOD;
-  if (entry_->Get(syncable::IS_DEL))
+  if (entry_->GetIsDel())
     return INIT_FAILED_ENTRY_IS_DEL;
   return DecryptIfNecessary() ? INIT_OK : INIT_FAILED_DECRYPT_IF_NECESSARY;
 }
@@ -332,7 +332,7 @@ BaseNode::InitByLookupResult WriteNode::InitByTagLookup(
                                       syncable::GET_BY_SERVER_TAG, tag);
   if (!entry_->good())
     return INIT_FAILED_ENTRY_NOT_GOOD;
-  if (entry_->Get(syncable::IS_DEL))
+  if (entry_->GetIsDel())
     return INIT_FAILED_ENTRY_IS_DEL;
   ModelType model_type = GetModelType();
   DCHECK_EQ(model_type, NIGORI);
@@ -350,7 +350,7 @@ bool WriteNode::InitBookmarkByCreation(const BaseNode& parent,
     return false;
   }
 
-  syncable::Id parent_id = parent.GetEntry()->Get(syncable::ID);
+  syncable::Id parent_id = parent.GetEntry()->GetId();
 
   // Start out with a dummy name.  We expect
   // the caller to set a meaningful name after creation.
@@ -364,7 +364,7 @@ bool WriteNode::InitBookmarkByCreation(const BaseNode& parent,
     return false;
 
   // Entries are untitled folders by default.
-  entry_->Put(syncable::IS_DIR, true);
+  entry_->PutIsDir(true);
 
   // Now set the predecessor, which sets IS_UNSYNCED as necessary.
   return PutPredecessor(predecessor);
@@ -389,7 +389,7 @@ WriteNode::InitUniqueByCreationResult WriteNode::InitUniqueByCreation(
 
   const std::string hash = syncable::GenerateSyncableHash(model_type, tag);
 
-  syncable::Id parent_id = parent.GetEntry()->Get(syncable::ID);
+  syncable::Id parent_id = parent.GetEntry()->GetId();
 
   // Start out with a dummy name.  We expect
   // the caller to set a meaningful name after creation.
@@ -401,7 +401,7 @@ WriteNode::InitUniqueByCreationResult WriteNode::InitUniqueByCreation(
                                  syncable::GET_BY_CLIENT_TAG, hash));
 
   if (existing_entry->good()) {
-    if (existing_entry->Get(syncable::IS_DEL)) {
+    if (existing_entry->GetIsDel()) {
       // Rules for undelete:
       // BASE_VERSION: Must keep the same.
       // ID: Essential to keep the same.
@@ -417,7 +417,7 @@ WriteNode::InitUniqueByCreationResult WriteNode::InitUniqueByCreation(
       // IS_DIR: We'll leave it the same.
       // SPECIFICS: Reset it.
 
-      existing_entry->Put(syncable::IS_DEL, false);
+      existing_entry->PutIsDel(false);
 
       // Client tags are immutable and must be paired with the ID.
       // If a server update comes down with an ID and client tag combo,
@@ -425,8 +425,8 @@ WriteNode::InitUniqueByCreationResult WriteNode::InitUniqueByCreation(
       // We have to undelete entries because we can't disassociate IDs from
       // tags and updates.
 
-      existing_entry->Put(syncable::NON_UNIQUE_NAME, dummy);
-      existing_entry->Put(syncable::PARENT_ID, parent_id);
+      existing_entry->PutNonUniqueName(dummy);
+      existing_entry->PutParentId(parent_id);
       entry_ = existing_entry.release();
     } else {
       return INIT_FAILED_ENTRY_ALREADY_EXISTS;
@@ -439,11 +439,11 @@ WriteNode::InitUniqueByCreationResult WriteNode::InitUniqueByCreation(
       return INIT_FAILED_COULD_NOT_CREATE_ENTRY;
 
     // Only set IS_DIR for new entries. Don't bitflip undeleted ones.
-    entry_->Put(syncable::UNIQUE_CLIENT_TAG, hash);
+    entry_->PutUniqueClientTag(hash);
   }
 
   // We don't support directory and tag combinations.
-  entry_->Put(syncable::IS_DIR, false);
+  entry_->PutIsDir(false);
 
   // Now set the predecessor, which sets IS_UNSYNCED as necessary.
   bool success = PutPredecessor(NULL);
@@ -461,21 +461,18 @@ bool WriteNode::SetPosition(const BaseNode& new_parent,
     return false;
   }
 
-  syncable::Id new_parent_id = new_parent.GetEntry()->Get(syncable::ID);
+  syncable::Id new_parent_id = new_parent.GetEntry()->GetId();
 
   // Filter out redundant changes if both the parent and the predecessor match.
-  if (new_parent_id == entry_->Get(syncable::PARENT_ID)) {
+  if (new_parent_id == entry_->GetParentId()) {
     const syncable::Id& old = entry_->GetPredecessorId();
     if ((!predecessor && old.IsRoot()) ||
-        (predecessor && (old == predecessor->GetEntry()->Get(syncable::ID)))) {
+        (predecessor && (old == predecessor->GetEntry()->GetId()))) {
       return true;
     }
   }
 
-  // Atomically change the parent. This will fail if it would
-  // introduce a cycle in the hierarchy.
-  if (!entry_->Put(syncable::PARENT_ID, new_parent_id))
-    return false;
+  entry_->PutParentId(new_parent_id);
 
   // Now set the predecessor, which sets IS_UNSYNCED as necessary.
   return PutPredecessor(predecessor);
@@ -498,18 +495,18 @@ void WriteNode::Tombstone() {
   // unset the IS_UNSYNCED bit if the item was not known to the server at the
   // time of deletion.  It's important that the bit not be reset in that case.
   MarkForSyncing();
-  entry_->Put(syncable::IS_DEL, true);
+  entry_->PutIsDel(true);
 }
 
 void WriteNode::Drop() {
-  if (entry_->Get(syncable::ID).ServerKnows()) {
-    entry_->Put(syncable::IS_DEL, true);
+  if (entry_->GetId().ServerKnows()) {
+    entry_->PutIsDel(true);
   }
 }
 
 bool WriteNode::PutPredecessor(const BaseNode* predecessor) {
   syncable::Id predecessor_id = predecessor ?
-      predecessor->GetEntry()->Get(syncable::ID) : syncable::Id();
+      predecessor->GetEntry()->GetId() : syncable::Id();
   if (!entry_->PutPredecessor(predecessor_id))
     return false;
   // Mark this entry as unsynced, to wake up the syncer.
