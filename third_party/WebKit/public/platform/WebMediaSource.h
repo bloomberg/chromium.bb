@@ -61,10 +61,6 @@ public:
     virtual void unmarkEndOfStream() = 0;
 };
 
-// FIXME: Remove this once the Chromium-side has been migrated to WebMediaSource.
-class WebMediaSourceNew : public WebMediaSource {
-};
-
 } // namespace WebKit
 
 #endif
