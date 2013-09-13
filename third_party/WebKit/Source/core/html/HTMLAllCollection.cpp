@@ -84,4 +84,9 @@ void HTMLAllCollection::anonymousNamedGetter(const AtomicString& name, bool& ret
     returnValue0 = NamedNodesCollection::create(namedItems);
 }
 
+PassRefPtr<NodeList> HTMLAllCollection::tags(const String& name)
+{
+    return ownerNode()->getElementsByTagName(name);
+}
+
 } // namespace WebCore

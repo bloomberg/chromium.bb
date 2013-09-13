@@ -38,7 +38,6 @@ public:
 
     // DOM API
     virtual Node* namedItem(const AtomicString& name) const;
-    PassRefPtr<NodeList> tags(const String&);
 
     // Non-DOM API
     virtual bool hasNamedItem(const AtomicString& name) const;

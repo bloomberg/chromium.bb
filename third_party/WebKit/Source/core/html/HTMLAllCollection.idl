@@ -35,6 +35,6 @@
     [ImplementedAs=anonymousNamedGetter, NotEnumerable] getter (NodeList or Node)(DOMString name);
     [Custom] Node namedItem(DOMString name);
     // FIXME: This should return an HTMLAllCollection.
-    NodeList tags(DOMString name);
+    [MeasureAs=DocumentAllTags] NodeList tags(DOMString name);
 };
 
