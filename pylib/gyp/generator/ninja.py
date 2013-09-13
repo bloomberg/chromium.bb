@@ -1515,12 +1515,8 @@ def GetDefaultConcurrentLinks():
     ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(stat))
 
     mem_limit = max(1, stat.ullTotalPhys / (4 * (2 ** 30)))  # total / 4GB
-    cpu_limit = 1
-    try:
-      cpu_limit = multiprocessing.cpu_count()
-    except NotImplementedError:
-      pass
-    return min(mem_limit, cpu_limit)
+    hard_cap = max(1, int(os.getenv('GYP_LINK_CONCURRENCY_MAX', 2**32)))
+    return min(mem_limit, hard_cap)
   elif sys.platform.startswith('linux'):
     with open("/proc/meminfo") as meminfo:
       memtotal_re = re.compile(r'^MemTotal:\s*(\d*)\s*kB')
