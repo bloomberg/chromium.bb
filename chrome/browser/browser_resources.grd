@@ -342,6 +342,7 @@
         <include name="IDR_TAB_MODAL_CONFIRM_DIALOG_HTML" file="resources\tab_modal_confirm_dialog.html" flattenhtml="true" type="BINDATA" />
       </if>
       <if expr="pp_ifdef('chromeos') and pp_ifdef('_google_chrome')">
+        <include name="IDR_GENIUS_APP_MANIFEST" file="resources\chromeos\genius_app\manifest.json" type="BINDATA" />
         <include name="IDR_HELP_MANIFEST" file="resources\help_app\manifest.json" type="BINDATA" />
         <include name="IDR_QUICKOFFICE_VIEWING_MANIFEST" file="resources\quick_office\manifest_viewing.json" type="BINDATA" />
         <include name="IDR_QUICKOFFICE_EDITOR_MANIFEST" file="resources\quick_office\manifest_editor.json" type="BINDATA" />

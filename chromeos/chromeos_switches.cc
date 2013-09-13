@@ -38,6 +38,9 @@ const char kDisableChromeCaptivePortalDetector[] =
 // Disables Google Drive integration.
 const char kDisableDrive[]                  = "disable-drive";
 
+// Disable Genius App and use the original Help App instead.
+const char kDisableGeniusApp[]              = "disable-genius-app";
+
 // Disable policy-configured local accounts.
 const char kDisableLocalAccounts[]          = "disable-local-accounts";
 

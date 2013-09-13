@@ -29,6 +29,7 @@ CHROMEOS_EXPORT extern const char kDefaultStubNetworkStateIdle[];
 CHROMEOS_EXPORT extern const char kDisableBootAnimation[];
 CHROMEOS_EXPORT extern const char kDisableChromeCaptivePortalDetector[];
 CHROMEOS_EXPORT extern const char kDisableDrive[];
+CHROMEOS_EXPORT extern const char kDisableGeniusApp[];
 CHROMEOS_EXPORT extern const char kDisableLocalAccounts[];
 CHROMEOS_EXPORT extern const char kDisableLoginAnimations[];
 CHROMEOS_EXPORT extern const char kDisableNewChannelSwitcherUI[];

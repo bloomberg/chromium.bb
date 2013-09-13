@@ -355,6 +355,13 @@ void ComponentLoader::AddDefaultComponentExtensions(
       base::FilePath(FILE_PATH_LITERAL("/usr/share/chromeos-assets/mobile")));
 
 #if defined(GOOGLE_CHROME_BUILD)
+  {
+    const CommandLine* command_line = CommandLine::ForCurrentProcess();
+    if (!command_line->HasSwitch(chromeos::switches::kDisableGeniusApp)) {
+      Add(IDR_GENIUS_APP_MANIFEST, base::FilePath(FILE_PATH_LITERAL(
+          "/usr/share/chromeos-assets/genius_app")));
+    }
+  }
   if (browser_defaults::enable_help_app) {
     Add(IDR_HELP_MANIFEST, base::FilePath(FILE_PATH_LITERAL(
                                "/usr/share/chromeos-assets/helpapp")));

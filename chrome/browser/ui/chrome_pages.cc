@@ -4,17 +4,21 @@
 
 #include "chrome/browser/ui/chrome_pages.h"
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/download/download_shelf.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/options/content_settings_handler.h"
@@ -26,6 +30,11 @@
 
 #if defined(OS_WIN)
 #include "chrome/browser/enumerate_modules_model_win.h"
+#endif
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/genius_app/app_id.h"
+#include "chromeos/chromeos_switches.h"
 #endif
 
 using content::UserMetricsAction;
@@ -126,6 +135,16 @@ void ShowConflicts(Browser* browser) {
 
 void ShowHelp(Browser* browser, HelpSource source) {
   content::RecordAction(UserMetricsAction("ShowHelpTab"));
+#if defined(OS_CHROMEOS) && defined(OFFICIAL_BUILD)
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (!command_line->HasSwitch(chromeos::switches::kDisableGeniusApp)) {
+    Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
+    const extensions::Extension* extension = profile->GetExtensionService()->
+        GetInstalledExtension(genius_app::kGeniusAppId);
+    OpenApplication(AppLaunchParams(profile, extension, 0));
+    return;
+  }
+#endif
   GURL url;
   switch (source) {
     case HELP_SOURCE_KEYBOARD:

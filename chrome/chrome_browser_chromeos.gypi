@@ -360,6 +360,7 @@
         'browser/chromeos/first_run/first_run_controller.h',
         'browser/chromeos/first_run/first_run_view.cc',
         'browser/chromeos/first_run/first_run_view.h',
+        'browser/chromeos/genius_app/app_id.h',
         'browser/chromeos/imageburner/burn_controller.cc',
         'browser/chromeos/imageburner/burn_controller.h',
         'browser/chromeos/imageburner/burn_device_handler.cc',
