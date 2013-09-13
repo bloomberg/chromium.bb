@@ -31,12 +31,35 @@ namespace {
 // This constant controls how many tests are run in a single batch by default.
 const size_t kDefaultTestBatchLimit = 10;
 
+const char kHelpFlag[] = "help";
+
 // Flag to enable the new launcher logic.
 // TODO(phajdan.jr): Remove it, http://crbug.com/236893 .
 const char kBraveNewTestLauncherFlag[] = "brave-new-test-launcher";
 
 // Flag to run all tests in a single process.
 const char kSingleProcessTestsFlag[] = "single-process-tests";
+
+void PrintUsage() {
+  fprintf(stdout,
+          "Runs tests using the gtest framework, each batch of tests being\n"
+          "run in their own process. Supported command-line flags:\n"
+          "\n"
+          "  --single-process-tests\n"
+          "    Runs the tests and the launcher in the same process. Useful\n"
+          "    for debugging a specific test in a debugger.\n"
+          "  --test-launcher-jobs=N\n"
+          "    Sets the number of parallel test jobs to N.\n"
+          "  --test-launcher-batch-limit=N\n"
+          "    Sets the limit of test batch to run in a single process to N.\n"
+          "  --gtest_filter=...\n"
+          "    Runs a subset of tests (see --gtest_help for more info).\n"
+          "  --help\n"
+          "    Shows this message.\n"
+          "  --gtest_help\n"
+          "    Shows the gtest help message.\n");
+  fflush(stdout);
+}
 
 // Returns command line for child GTest process based on the command line
 // of current process. |test_names| is a vector of test full names
@@ -312,9 +335,15 @@ int LaunchUnitTests(int argc,
                     char** argv,
                     const RunTestSuiteCallback& run_test_suite) {
   CommandLine::Init(argc, argv);
-  if (CommandLine::ForCurrentProcess()->HasSwitch(kSingleProcessTestsFlag) ||
+  if (CommandLine::ForCurrentProcess()->HasSwitch(kGTestHelpFlag) ||
+      CommandLine::ForCurrentProcess()->HasSwitch(kSingleProcessTestsFlag) ||
       !CommandLine::ForCurrentProcess()->HasSwitch(kBraveNewTestLauncherFlag)) {
     return run_test_suite.Run();
+  }
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(kHelpFlag)) {
+    PrintUsage();
+    return 0;
   }
 
   base::TimeTicks start_time(base::TimeTicks::Now());

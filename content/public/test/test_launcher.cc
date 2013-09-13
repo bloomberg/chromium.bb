@@ -269,8 +269,6 @@ void WrapperTestLauncherDelegate::RunRemainingTests() {
 // using it don't get surprised).
 const char kChildProcessFlag[]   = "child";
 
-const char kGTestHelpFlag[]   = "gtest_help";
-
 const char kHelpFlag[]   = "help";
 
 const char kLaunchAsBrowser[] = "as-browser";
@@ -332,7 +330,7 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
       (command_line->HasSwitch(switches::kSingleProcess) &&
        command_line->HasSwitch(base::kGTestFilterFlag)) ||
       command_line->HasSwitch(base::kGTestListTestsFlag) ||
-      command_line->HasSwitch(kGTestHelpFlag)) {
+      command_line->HasSwitch(base::kGTestHelpFlag)) {
 #if defined(OS_WIN)
     if (command_line->HasSwitch(kSingleProcessTestsFlag)) {
       sandbox::SandboxInterfaceInfo sandbox_info;

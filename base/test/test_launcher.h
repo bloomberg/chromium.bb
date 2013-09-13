@@ -25,6 +25,7 @@ struct LaunchOptions;
 
 // Constants for GTest command-line flags.
 extern const char kGTestFilterFlag[];
+extern const char kGTestHelpFlag[];
 extern const char kGTestListTestsFlag[];
 extern const char kGTestRepeatFlag[];
 extern const char kGTestRunDisabledTestsFlag[];

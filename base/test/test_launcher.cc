@@ -555,6 +555,7 @@ void RunTestIteration(TestLauncherDelegate* launcher_delegate,
 }  // namespace
 
 const char kGTestFilterFlag[] = "gtest_filter";
+const char kGTestHelpFlag[]   = "gtest_help";
 const char kGTestListTestsFlag[] = "gtest_list_tests";
 const char kGTestRepeatFlag[] = "gtest_repeat";
 const char kGTestRunDisabledTestsFlag[] = "gtest_also_run_disabled_tests";

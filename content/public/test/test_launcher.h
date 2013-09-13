@@ -21,7 +21,6 @@ namespace content {
 class ContentMainDelegate;
 
 extern const char kEmptyTestName[];
-extern const char kGTestHelpFlag[];
 extern const char kHelpFlag[];
 extern const char kLaunchAsBrowser[];
 extern const char kRunManualTestsFlag[];
