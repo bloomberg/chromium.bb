@@ -17,7 +17,7 @@ danakj@chromium.org
 piman@chromium.org
 danakj@chromium.org
 
-# resource management
+# resource management / mac-specific
 # unofficial: epenner@chromium.org
 ccameron@chromium.org
 
@@ -36,9 +36,11 @@ vmpstr@chromium.org
 # math / geometry / layer_tree_host_common
 shawnsingh@chromium.org
 enne@chromium.org
+vollick@chromium.org
 
 # animation
 vollick@chromium.org
+ajuma@chromium.org
 
 per-file *.isolate=csharp@chromium.org
 per-file *.isolate=maruel@chromium.org
