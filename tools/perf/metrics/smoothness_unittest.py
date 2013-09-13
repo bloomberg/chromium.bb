@@ -36,7 +36,7 @@ class MockFrame(object):
     self.impl_stats = {}
     self.texture_stats = {}
     self.latency_stats = {}
-    self.main_stats["animation_frame_count"] = 0
+    self.main_stats['animation_frame_count'] = 0
     self.main_stats['screen_frame_count'] = 0
     self.main_stats['paint_time'] = mock_timer.Advance()
     self.main_stats['record_time'] = mock_timer.Advance()
@@ -244,13 +244,10 @@ class SmoothnessMetricsUnitTest(unittest.TestCase):
     self.assertEquals(
         round(discrepancy.FrameDiscrepancy(stats.screen_frame_timestamps,
                                            True), 4),
-        res.page_results[0]['absolute_frame_discrepancy'].value)
-    self.assertEquals(
-        round(discrepancy.FrameDiscrepancy(stats.screen_frame_timestamps,
-                                           False), 4),
-        res.page_results[0]['relative_frame_discrepancy'].value)
+        res.page_results[0]['experimental_jank'].value)
     self.assertAlmostEquals(
-        round(rs['droppedFrameCount'] / rs['numFramesSentToScreen'] * 100.0, 1),
+        round(rs['droppedFrameCount'] / (rs['numFramesSentToScreen'] +
+                                         rs['droppedFrameCount']) * 100.0, 1),
         res.page_results[0]['dropped_percent'].value)
     self.assertAlmostEquals(
         round(rs['numImplThreadScrolls'] / (rs['numImplThreadScrolls'] +

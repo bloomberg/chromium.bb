@@ -16,11 +16,15 @@ def NormalizeSamples(samples):
       is not bounded (it is for Monte Carlo integration, where discrepancy was
       first used).
   '''
+  if not samples or len(samples) == 0:
+    return samples, 1.0
   samples = sorted(samples)
   low = min(samples)
   high = max(samples)
   new_low = 0.5 / len(samples)
   new_high = (len(samples)-0.5) / len(samples)
+  if high-low == 0.0:
+    return samples, 1.0
   scale = (new_high - new_low) / (high - low)
   for i in xrange(0, len(samples)):
     samples[i] = float(samples[i] - low) * scale + new_low
@@ -33,8 +37,8 @@ def Discrepancy(samples, interval_multiplier = 10000):
       http://en.wikipedia.org/wiki/Low-discrepancy_sequence
       http://mathworld.wolfram.com/Discrepancy.html
   '''
-  if (len(samples) < 3):
-    return 0
+  if not samples or len(samples) == 0:
+    return 1.0
 
   max_local_discrepancy = 0
   locations = []

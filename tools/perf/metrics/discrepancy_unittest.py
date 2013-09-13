@@ -25,6 +25,27 @@ def Relax(samples, iterations=10):
   return samples
 
 class DiscrepancyUnitTest(unittest.TestCase):
+  def testNormalizeSamples(self):
+    samples = []
+    normalized_samples, scale = discrepancy.NormalizeSamples(samples)
+    self.assertEquals(normalized_samples, samples)
+    self.assertEquals(scale, 1.0)
+
+    samples = [0.0, 0.0]
+    normalized_samples, scale = discrepancy.NormalizeSamples(samples)
+    self.assertEquals(normalized_samples, samples)
+    self.assertEquals(scale, 1.0)
+
+    samples = [0.0, 1.0/3.0, 2.0/3.0, 1.0]
+    normalized_samples, scale = discrepancy.NormalizeSamples(samples)
+    self.assertEquals(normalized_samples, [1.0/8.0, 3.0/8.0, 5.0/8.0, 7.0/8.0])
+    self.assertEquals(scale, 0.75)
+
+    samples = [1.0/8.0, 3.0/8.0, 5.0/8.0, 7.0/8.0]
+    normalized_samples, scale = discrepancy.NormalizeSamples(samples)
+    self.assertEquals(normalized_samples, samples)
+    self.assertEquals(scale, 1.0)
+
   def testRandom(self):
     ''' Generates 10 sets of 10 random samples, computes the discrepancy,
         relaxes the samples using Llloyd's algorithm in 1D, and computes the
@@ -51,6 +72,22 @@ class DiscrepancyUnitTest(unittest.TestCase):
   def testAnalytic(self):
     ''' Computes discrepancy for sample sets with known discrepancy. '''
     interval_multiplier = 100000
+
+    samples = []
+    d = discrepancy.Discrepancy(samples, interval_multiplier)
+    self.assertEquals(d, 1.0)
+
+    samples = [0.5]
+    d = discrepancy.Discrepancy(samples, interval_multiplier)
+    self.assertEquals(round(d), 1.0)
+
+    samples = [0.0, 1.0]
+    d = discrepancy.Discrepancy(samples, interval_multiplier)
+    self.assertAlmostEquals(round(d, 2), 1.0)
+
+    samples = [0.5, 0.5, 0.5]
+    d = discrepancy.Discrepancy(samples, interval_multiplier)
+    self.assertAlmostEquals(d, 1.0)
 
     samples = [1.0/8.0, 3.0/8.0, 5.0/8.0, 7.0/8.0]
     d = discrepancy.Discrepancy(samples, interval_multiplier)
