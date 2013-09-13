@@ -1,0 +1,1 @@
+PASS. No crash when stop loading on resource timing buffer full.

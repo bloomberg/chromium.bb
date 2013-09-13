@@ -1,0 +1,23 @@
+<html>
+<head>
+<script src="../resources/js-test-pre.js"></script>
+<script>
+
+performance.onwebkitresourcetimingbufferfull = function() { 
+  window.stop();
+  document.body.innerHTML = "PASS. No crash when stop loading on resource timing buffer full.";
+  setTimeout("testRunner.notifyDone()", 0);
+};
+
+performance.webkitSetResourceTimingBufferSize(1);
+</script>
+</head>
+<body>
+<script>
+if (window.testRunner) {
+    testRunner.dumpAsText();
+    testRunner.waitUntilDone();
+}
+</script>
+</body>
+</html>
