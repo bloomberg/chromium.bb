@@ -512,7 +512,7 @@ class RequestsLibEngine(RequestEngine):
     # Configure session.
     self.session.trust_env = False
     self.session.cookies = cookie_jar
-    self.verify = ca_certs
+    self.session.verify = ca_certs
     # Configure connection pools.
     for protocol in ('https://', 'http://'):
       self.session.mount(protocol, adapters.HTTPAdapter(
