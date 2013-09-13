@@ -35,6 +35,7 @@
 #include <windows.h>
 #include <mlang.h>
 #include <objidl.h>
+#include "core/platform/LayoutTestSupport.h"
 #include "core/platform/SharedBuffer.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/skia/SkiaFontWin.h"
@@ -82,6 +83,14 @@ static uint32_t getDefaultGDITextFlags()
     return gFlags;
 }
 
+static bool isWebFont(const LOGFONT& lf)
+{
+    // web-fonts have artifical names constructed to always be
+    // 1. 24 characters, followed by a '\0'
+    // 2. the last two characters are '=='
+    return '=' == lf.lfFaceName[22] && '=' == lf.lfFaceName[23] && '\0' == lf.lfFaceName[24];
+}
+
 static int computePaintTextFlags(const LOGFONT& lf)
 {
     int textFlags = 0;
@@ -101,7 +110,21 @@ static int computePaintTextFlags(const LOGFONT& lf)
     }
 
     // only allow features that SystemParametersInfo allows
-    return textFlags & getDefaultGDITextFlags();
+    textFlags &= getDefaultGDITextFlags();
+
+    /*
+     *  FontPlatformData(...) will read our logfont, and try to honor the the lfQuality
+     *  setting (computing the corresponding SkPaint flags for AA and LCD). However, it
+     *  will limit the quality based on its query of SPI_GETFONTSMOOTHING. This could mean
+     *  we end up drawing the text in BW, even though our lfQuality requested antialiasing.
+     *
+     *  Many web-fonts are so poorly hinted that they are terrible to read when drawn in BW.
+     *  In these cases, we have decided to FORCE these fonts to be drawn with at least grayscale AA,
+     *  even when the System (getDefaultGDITextFlags) tells us to draw only in BW.
+     */
+    if (isWebFont(lf) && !isRunningLayoutTest())
+        textFlags |= SkPaint::kAntiAlias_Flag;
+    return textFlags;
 }
 
 PassRefPtr<SkTypeface> CreateTypefaceFromHFont(HFONT hfont, int* size, int* paintTextFlags)
