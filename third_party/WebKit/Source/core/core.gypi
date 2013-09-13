@@ -3858,6 +3858,10 @@
             'tests/TreeTestHelpers.h',
         ],
         'scripts_for_in_files': [
+            # jinja2/__init__.py contains version string, so sufficient as
+            # dependency for whole jinja2 package
+            '<(DEPTH)/third_party/jinja2/__init__.py',
+            '<(DEPTH)/third_party/markupsafe/__init__.py',  # jinja2 dep
             'scripts/in_file.py',
             'scripts/in_generator.py',
             'scripts/license.py',

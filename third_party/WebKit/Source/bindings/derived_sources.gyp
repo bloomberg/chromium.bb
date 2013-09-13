@@ -59,6 +59,9 @@
         'scripts/idl_compiler.py',
         '<(DEPTH)/third_party/ply/lex.py',
         '<(DEPTH)/third_party/ply/yacc.py',
+        # jinja2/__init__.py contains version string, so sufficient for package
+        '<(DEPTH)/third_party/jinja2/__init__.py',
+        '<(DEPTH)/third_party/markupsafe/__init__.py',  # jinja2 dep
         '<(DEPTH)/tools/idl_parser/idl_lexer.py',
         '<(DEPTH)/tools/idl_parser/idl_node.py',
         '<(DEPTH)/tools/idl_parser/idl_parser.py',
