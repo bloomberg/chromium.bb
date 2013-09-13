@@ -176,10 +176,6 @@ void DelegatedRendererLayerImpl::SetDisplaySize(gfx::Size size) {
 
 void DelegatedRendererLayerImpl::SetRenderPasses(
     ScopedPtrVector<RenderPass>* render_passes_in_draw_order) {
-  gfx::RectF old_root_damage;
-  if (!render_passes_in_draw_order_.empty())
-    old_root_damage = render_passes_in_draw_order_.back()->damage_rect;
-
   ClearRenderPasses();
 
   for (size_t i = 0; i < render_passes_in_draw_order->size(); ++i) {
@@ -191,9 +187,6 @@ void DelegatedRendererLayerImpl::SetRenderPasses(
         render_passes_in_draw_order->take(to_take);
     render_passes_in_draw_order_.push_back(taken_render_pass.Pass());
   }
-
-  if (!render_passes_in_draw_order_.empty())
-    render_passes_in_draw_order_.back()->damage_rect.Union(old_root_damage);
 
   // Give back an empty array instead of nulls.
   render_passes_in_draw_order->clear();
