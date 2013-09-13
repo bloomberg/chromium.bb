@@ -3070,12 +3070,13 @@ TEST_F(LayerTreeHostImplViewportCoveredTest, ViewportCoveredOverhangBitmap) {
   host_impl_->SetViewportSize(DipSizeToPixelSize(viewport_size_));
   SetupActiveTreeLayers();
 
+  SkBitmap skbitmap;
+  skbitmap.setConfig(SkBitmap::kARGB_8888_Config, 2, 2);
+  skbitmap.allocPixels();
+  skbitmap.setImmutable();
+
   // Specify an overhang bitmap to use.
-  scoped_refptr<UIResourceBitmap> ui_resource_bitmap(UIResourceBitmap::Create(
-      new uint8_t[4],
-      UIResourceBitmap::RGBA8,
-      UIResourceBitmap::REPEAT,
-      gfx::Size(1, 1)));
+  UIResourceBitmap ui_resource_bitmap(skbitmap, UIResourceBitmap::REPEAT);
   UIResourceId ui_resource_id = 12345;
   host_impl_->CreateUIResource(ui_resource_id, ui_resource_bitmap);
   host_impl_->SetOverhangUIResource(ui_resource_id, gfx::Size(32, 32));
@@ -6541,12 +6542,13 @@ TEST_F(LayerTreeHostImplTest, UIResourceManagement) {
 
   EXPECT_EQ(0u, context3d->NumTextures());
 
+  SkBitmap skbitmap;
+  skbitmap.setConfig(SkBitmap::kARGB_8888_Config, 1, 1);
+  skbitmap.allocPixels();
+  skbitmap.setImmutable();
+
   UIResourceId ui_resource_id = 1;
-  scoped_refptr<UIResourceBitmap> bitmap = UIResourceBitmap::Create(
-      new uint8_t[1],
-      UIResourceBitmap::RGBA8,
-      UIResourceBitmap::CLAMP_TO_EDGE,
-      gfx::Size(1, 1));
+  UIResourceBitmap bitmap(skbitmap);
   host_impl_->CreateUIResource(ui_resource_id, bitmap);
   EXPECT_EQ(1u, context3d->NumTextures());
   ResourceProvider::ResourceId id1 =

@@ -42,8 +42,8 @@ class PaintTimeCounter;
 class Proxy;
 class ResourceProvider;
 class TileManager;
+class UIResourceRequest;
 struct RendererCapabilities;
-struct UIResourceRequest;
 
 typedef std::list<UIResourceRequest> UIResourceRequestQueue;
 

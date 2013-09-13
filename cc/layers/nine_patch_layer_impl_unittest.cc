@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stdio.h>
-
+#include "base/containers/hash_tables.h"
 #include "cc/layers/append_quads_data.h"
 #include "cc/layers/nine_patch_layer_impl.h"
 #include "cc/quads/texture_draw_quad.h"
+#include "cc/resources/ui_resource_bitmap.h"
+#include "cc/resources/ui_resource_client.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/geometry_test_utils.h"
@@ -22,6 +23,40 @@
 namespace cc {
 namespace {
 
+class FakeUIResourceLayerTreeHostImpl : public FakeLayerTreeHostImpl {
+ public:
+  explicit FakeUIResourceLayerTreeHostImpl(Proxy* proxy)
+      : FakeLayerTreeHostImpl(proxy), fake_next_resource_id_(1) {}
+
+  virtual void CreateUIResource(
+      UIResourceId uid,
+      const UIResourceBitmap& bitmap) OVERRIDE {
+    if (ResourceIdForUIResource(uid))
+      DeleteUIResource(uid);
+    fake_ui_resource_map_[uid] = fake_next_resource_id_;
+  }
+
+  virtual void DeleteUIResource(UIResourceId uid) OVERRIDE {
+    ResourceProvider::ResourceId id = ResourceIdForUIResource(uid);
+    if (id)
+      fake_ui_resource_map_.erase(uid);
+  }
+
+  virtual ResourceProvider::ResourceId ResourceIdForUIResource(
+      UIResourceId uid) const OVERRIDE {
+    UIResourceMap::const_iterator iter = fake_ui_resource_map_.find(uid);
+    if (iter != fake_ui_resource_map_.end())
+      return iter->second;
+    return 0;
+  }
+
+ private:
+  ResourceProvider::ResourceId fake_next_resource_id_;
+  typedef base::hash_map<UIResourceId, ResourceProvider::ResourceId>
+      UIResourceMap;
+  UIResourceMap fake_ui_resource_map_;
+};
+
 gfx::Rect ToRoundedIntRect(gfx::RectF rect_f) {
   return gfx::Rect(gfx::ToRoundedInt(rect_f.x()),
                    gfx::ToRoundedInt(rect_f.y()),
@@ -29,19 +64,21 @@ gfx::Rect ToRoundedIntRect(gfx::RectF rect_f) {
                    gfx::ToRoundedInt(rect_f.height()));
 }
 
-TEST(NinePatchLayerImplTest, VerifyDrawQuads) {
-  // Input is a 100x100 bitmap with a 40x50 aperture at x=20, y=30.
-  // The bounds of the layer are set to 400x400, so the draw quads
-  // generated should leave the border width (40) intact.
+void NinePatchLayerLayoutTest(gfx::Size bitmap_size,
+                              gfx::Rect aperture_rect,
+                              gfx::Size layer_size,
+                              gfx::Rect border,
+                              bool fill_center,
+                              size_t expected_quad_size) {
   MockQuadCuller quad_culler;
-  gfx::Size bitmap_size(100, 100);
-  gfx::Size layer_size(400, 400);
   gfx::Rect visible_content_rect(layer_size);
-  gfx::Rect aperture_rect(20, 30, 40, 50);
-  gfx::Rect scaled_aperture_non_uniform(20, 30, 340, 350);
+  gfx::Rect expected_remaining(border.x(),
+                               border.y(),
+                               layer_size.width() - border.width(),
+                               layer_size.height() - border.height());
 
   FakeImplProxy proxy;
-  FakeLayerTreeHostImpl host_impl(&proxy);
+  FakeUIResourceLayerTreeHostImpl host_impl(&proxy);
   scoped_ptr<NinePatchLayerImpl> layer =
       NinePatchLayerImpl::Create(host_impl.active_tree(), 1);
   layer->draw_properties().visible_content_rect = visible_content_rect;
@@ -49,21 +86,26 @@ TEST(NinePatchLayerImplTest, VerifyDrawQuads) {
   layer->SetContentBounds(layer_size);
   layer->CreateRenderSurface();
   layer->draw_properties().render_target = layer.get();
-  layer->SetLayout(bitmap_size, aperture_rect);
-  layer->SetResourceId(1);
 
-  // This scale should not affect the generated quad geometry, but only
-  // the shared draw transform.
-  gfx::Transform transform;
-  transform.Scale(10, 10);
-  layer->draw_properties().target_space_transform = transform;
+  UIResourceId uid = 1;
+  SkBitmap skbitmap;
+  skbitmap.setConfig(
+      SkBitmap::kARGB_8888_Config, bitmap_size.width(), bitmap_size.height());
+  skbitmap.allocPixels();
+  skbitmap.setImmutable();
+  UIResourceBitmap bitmap(skbitmap);
 
+  host_impl.CreateUIResource(uid, bitmap);
+  layer->SetUIResourceId(uid);
+
+  layer->SetLayout(bitmap_size, aperture_rect, border, fill_center);
   AppendQuadsData data;
   layer->AppendQuads(&quad_culler, &data);
 
   // Verify quad rects
   const QuadList& quads = quad_culler.quad_list();
-  EXPECT_EQ(8u, quads.size());
+  EXPECT_EQ(expected_quad_size, quads.size());
+
   Region remaining(visible_content_rect);
   for (size_t i = 0; i < quads.size(); ++i) {
     DrawQuad* quad = quads[i];
@@ -71,12 +113,16 @@ TEST(NinePatchLayerImplTest, VerifyDrawQuads) {
 
     EXPECT_TRUE(visible_content_rect.Contains(quad_rect)) << i;
     EXPECT_TRUE(remaining.Contains(quad_rect)) << i;
-    EXPECT_EQ(transform, quad->quadTransform());
     remaining.Subtract(Region(quad_rect));
   }
-  EXPECT_RECT_EQ(scaled_aperture_non_uniform, remaining.bounds());
-  Region scaled_aperture_region(scaled_aperture_non_uniform);
-  EXPECT_EQ(scaled_aperture_region, remaining);
+
+  // Check if the left-over quad is the same size as the mapped aperture quad in
+  // layer space.
+  if (!fill_center) {
+    EXPECT_RECT_EQ(expected_remaining, gfx::ToEnclosedRect(remaining.bounds()));
+  } else {
+    EXPECT_TRUE(remaining.bounds().IsEmpty());
+  }
 
   // Verify UV rects
   gfx::Rect bitmap_rect(bitmap_size);
@@ -89,66 +135,59 @@ TEST(NinePatchLayerImplTest, VerifyDrawQuads) {
     tex_rect.Scale(bitmap_size.width(), bitmap_size.height());
     tex_remaining.Subtract(Region(ToRoundedIntRect(tex_rect)));
   }
-  EXPECT_RECT_EQ(aperture_rect, tex_remaining.bounds());
-  Region aperture_region(aperture_rect);
-  EXPECT_EQ(aperture_region, tex_remaining);
+
+  if (!fill_center) {
+    EXPECT_RECT_EQ(aperture_rect, tex_remaining.bounds());
+    Region aperture_region(aperture_rect);
+    EXPECT_EQ(aperture_region, tex_remaining);
+  } else {
+    EXPECT_TRUE(remaining.bounds().IsEmpty());
+  }
 }
 
-TEST(NinePatchLayerImplTest, VerifyDrawQuadsForSqueezedLayer) {
-  // Test with a layer much smaller than the bitmap.
-  MockQuadCuller quad_culler;
-  gfx::Size bitmap_size(101, 101);
-  gfx::Size layer_size(51, 51);
-  gfx::Rect visible_content_rect(layer_size);
-  gfx::Rect aperture_rect(20, 30, 40, 45);  // rightWidth: 40, botHeight: 25
+TEST(NinePatchLayerImplTest, VerifyDrawQuads) {
+  // Input is a 100x100 bitmap with a 40x50 aperture at x=20, y=30.
+  // The bounds of the layer are set to 400x400.
+  gfx::Size bitmap_size(100, 100);
+  gfx::Size layer_size(400, 500);
+  gfx::Rect aperture_rect(20, 30, 40, 50);
+  gfx::Rect border(40, 40, 80, 80);
+  bool fill_center = false;
+  size_t expected_quad_size = 8;
+  NinePatchLayerLayoutTest(bitmap_size,
+                           aperture_rect,
+                           layer_size,
+                           border,
+                           fill_center,
+                           expected_quad_size);
 
-  FakeImplProxy proxy;
-  FakeLayerTreeHostImpl host_impl(&proxy);
-  scoped_ptr<NinePatchLayerImpl> layer =
-      NinePatchLayerImpl::Create(host_impl.active_tree(), 1);
-  layer->draw_properties().visible_content_rect = visible_content_rect;
-  layer->SetBounds(layer_size);
-  layer->SetContentBounds(layer_size);
-  layer->CreateRenderSurface();
-  layer->draw_properties().render_target = layer.get();
-  layer->SetLayout(bitmap_size, aperture_rect);
-  layer->SetResourceId(1);
+  // The bounds of the layer are set to less than the bitmap size.
+  bitmap_size = gfx::Size(100, 100);
+  layer_size = gfx::Size(40, 50);
+  aperture_rect = gfx::Rect(20, 30, 40, 50);
+  border = gfx::Rect(10, 10, 25, 15);
+  fill_center = true;
+  expected_quad_size = 9;
+  NinePatchLayerLayoutTest(bitmap_size,
+                           aperture_rect,
+                           layer_size,
+                           border,
+                           fill_center,
+                           expected_quad_size);
 
-  AppendQuadsData data;
-  layer->AppendQuads(&quad_culler, &data);
-
-  // Verify corner rects fill the layer and don't overlap
-  const QuadList& quads = quad_culler.quad_list();
-  EXPECT_EQ(4u, quads.size());
-  Region filled;
-  for (size_t i = 0; i < quads.size(); ++i) {
-    DrawQuad* quad = quads[i];
-    gfx::Rect quad_rect = quad->rect;
-
-    EXPECT_FALSE(filled.Intersects(quad_rect));
-    filled.Union(quad_rect);
-  }
-  Region expected_full(visible_content_rect);
-  EXPECT_EQ(expected_full, filled);
-
-  // Verify UV rects cover the corners of the bitmap and the crop is weighted
-  // proportionately to the relative corner sizes (for uneven apertures).
-  gfx::Rect bitmap_rect(bitmap_size);
-  Region tex_remaining(bitmap_rect);
-  for (size_t i = 0; i < quads.size(); ++i) {
-    DrawQuad* quad = quads[i];
-    const TextureDrawQuad* tex_quad = TextureDrawQuad::MaterialCast(quad);
-    gfx::RectF tex_rect =
-        gfx::BoundingRect(tex_quad->uv_top_left, tex_quad->uv_bottom_right);
-    tex_rect.Scale(bitmap_size.width(), bitmap_size.height());
-    tex_remaining.Subtract(Region(ToRoundedIntRect(tex_rect)));
-  }
-  Region expected_remaining_region = Region(gfx::Rect(bitmap_size));
-  expected_remaining_region.Subtract(gfx::Rect(0, 0, 17, 28));
-  expected_remaining_region.Subtract(gfx::Rect(67, 0, 34, 28));
-  expected_remaining_region.Subtract(gfx::Rect(0, 78, 17, 23));
-  expected_remaining_region.Subtract(gfx::Rect(67, 78, 34, 23));
-  EXPECT_EQ(expected_remaining_region, tex_remaining);
+  // Layer and image sizes are equal.
+  bitmap_size = gfx::Size(100, 100);
+  layer_size = gfx::Size(100, 100);
+  aperture_rect = gfx::Rect(20, 30, 40, 50);
+  border = gfx::Rect(20, 30, 40, 50);
+  fill_center = true;
+  expected_quad_size = 9;
+  NinePatchLayerLayoutTest(bitmap_size,
+                           aperture_rect,
+                           layer_size,
+                           border,
+                           fill_center,
+                           expected_quad_size);
 }
 
 }  // namespace

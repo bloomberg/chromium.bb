@@ -8,6 +8,7 @@
 #include "cc/resources/prioritized_resource_manager.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/resources/resource_update_queue.h"
+#include "cc/resources/scoped_ui_resource.h"
 #include "cc/scheduler/texture_uploader.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_output_surface.h"
@@ -55,7 +56,7 @@ class NinePatchLayerTest : public testing::Test {
   FakeLayerTreeHostClient fake_client_;
 };
 
-TEST_F(NinePatchLayerTest, TriggerFullUploadOnceWhenChangingBitmap) {
+TEST_F(NinePatchLayerTest, SetBitmap) {
   scoped_refptr<NinePatchLayer> test_layer = NinePatchLayer::Create();
   ASSERT_TRUE(test_layer.get());
   test_layer->SetIsDrawable(true);
@@ -67,82 +68,60 @@ TEST_F(NinePatchLayerTest, TriggerFullUploadOnceWhenChangingBitmap) {
 
   layer_tree_host_->InitializeOutputSurfaceIfNeeded();
 
-  PriorityCalculator calculator;
   ResourceUpdateQueue queue;
   OcclusionTracker occlusion_tracker(gfx::Rect(), false);
-
-  // No bitmap set should not trigger any uploads.
   test_layer->SavePaintProperties();
-  test_layer->SetTexturePriorities(calculator);
   test_layer->Update(&queue, &occlusion_tracker);
-  EXPECT_EQ(0u, queue.FullUploadSize());
-  EXPECT_EQ(0u, queue.PartialUploadSize());
 
-  // Setting a bitmap set should trigger a single full upload.
+  EXPECT_FALSE(test_layer->DrawsContent());
+
   SkBitmap bitmap;
   bitmap.setConfig(SkBitmap::kARGB_8888_Config, 10, 10);
   bitmap.allocPixels();
-  test_layer->SetBitmap(bitmap, gfx::Rect(5, 5, 1, 1));
-  test_layer->SavePaintProperties();
-  test_layer->SetTexturePriorities(calculator);
+  bitmap.setImmutable();
+
+  gfx::Rect aperture(5, 5, 1, 1);
+  bool fill_center = false;
+  test_layer->SetBitmap(bitmap, aperture);
+  test_layer->SetFillCenter(fill_center);
   test_layer->Update(&queue, &occlusion_tracker);
-  EXPECT_EQ(1u, queue.FullUploadSize());
-  EXPECT_EQ(0u, queue.PartialUploadSize());
-  ResourceUpdate params = queue.TakeFirstFullUpload();
-  EXPECT_TRUE(params.texture != NULL);
 
-  // Upload the texture.
-  layer_tree_host_->contents_texture_manager()->SetMaxMemoryLimitBytes(
-      1024 * 1024);
-  layer_tree_host_->contents_texture_manager()->PrioritizeTextures();
+  EXPECT_TRUE(test_layer->DrawsContent());
+}
 
-  FakeOutputSurfaceClient output_surface_client;
-  scoped_ptr<OutputSurface> output_surface;
-  scoped_ptr<ResourceProvider> resource_provider;
-  {
-    DebugScopedSetImplThread impl_thread(Proxy());
-    DebugScopedSetMainThreadBlocked main_thread_blocked(Proxy());
-    output_surface = FakeOutputSurface::Create3d();
-    CHECK(output_surface->BindToClient(&output_surface_client));
-    resource_provider = ResourceProvider::Create(output_surface.get(), 0);
-    params.texture->AcquireBackingTexture(resource_provider.get());
-    ASSERT_TRUE(params.texture->have_backing_texture());
-  }
+TEST_F(NinePatchLayerTest, SetSharedBitmap) {
+  scoped_refptr<NinePatchLayer> test_layer = NinePatchLayer::Create();
+  ASSERT_TRUE(test_layer.get());
+  test_layer->SetIsDrawable(true);
+  test_layer->SetBounds(gfx::Size(100, 100));
 
-  // Nothing changed, so no repeated upload.
+  layer_tree_host_->SetRootLayer(test_layer);
+  Mock::VerifyAndClearExpectations(layer_tree_host_.get());
+  EXPECT_EQ(test_layer->layer_tree_host(), layer_tree_host_.get());
+
+  layer_tree_host_->InitializeOutputSurfaceIfNeeded();
+
+  ResourceUpdateQueue queue;
+  OcclusionTracker occlusion_tracker(gfx::Rect(), false);
   test_layer->SavePaintProperties();
-  test_layer->SetTexturePriorities(calculator);
   test_layer->Update(&queue, &occlusion_tracker);
-  EXPECT_EQ(0u, queue.FullUploadSize());
-  EXPECT_EQ(0u, queue.PartialUploadSize());
-  {
-    DebugScopedSetImplThread impl_thread(Proxy());
-    DebugScopedSetMainThreadBlocked main_thread_blocked(Proxy());
-    layer_tree_host_->contents_texture_manager()->ClearAllMemory(
-        resource_provider.get());
-  }
 
-  // Reupload after eviction
-  test_layer->SavePaintProperties();
-  test_layer->SetTexturePriorities(calculator);
+  EXPECT_FALSE(test_layer->DrawsContent());
+
+  SkBitmap bitmap;
+  bitmap.setConfig(SkBitmap::kARGB_8888_Config, 10, 10);
+  bitmap.allocPixels();
+  bitmap.setImmutable();
+
+  scoped_ptr<ScopedUIResource> resource = ScopedUIResource::Create(
+      layer_tree_host_.get(), UIResourceBitmap(bitmap));
+  gfx::Rect aperture(5, 5, 1, 1);
+  bool fill_center = true;
+  test_layer->SetUIResourceId(resource->id(), aperture);
+  test_layer->SetFillCenter(fill_center);
   test_layer->Update(&queue, &occlusion_tracker);
-  EXPECT_EQ(1u, queue.FullUploadSize());
-  EXPECT_EQ(0u, queue.PartialUploadSize());
 
-  // PrioritizedResourceManager clearing
-  layer_tree_host_->contents_texture_manager()->UnregisterTexture(
-      params.texture);
-  EXPECT_EQ(NULL, params.texture->resource_manager());
-  test_layer->SavePaintProperties();
-  test_layer->SetTexturePriorities(calculator);
-  ResourceUpdateQueue queue2;
-  test_layer->Update(&queue2, &occlusion_tracker);
-  EXPECT_EQ(1u, queue2.FullUploadSize());
-  EXPECT_EQ(0u, queue2.PartialUploadSize());
-  params = queue2.TakeFirstFullUpload();
-  EXPECT_TRUE(params.texture != NULL);
-  EXPECT_EQ(params.texture->resource_manager(),
-            layer_tree_host_->contents_texture_manager());
+  EXPECT_TRUE(test_layer->DrawsContent());
 }
 
 }  // namespace
