@@ -2951,13 +2951,14 @@ void AutofillDialogControllerImpl::AcceptLegalDocuments() {
       content::BrowserThread::IO, FROM_HERE,
       base::Bind(&UserDidOptIntoLocationServices));
 
-  GetWalletClient()->AcceptLegalDocuments(
-      wallet_items_->legal_documents(),
-      wallet_items_->google_transaction_id(),
-      source_url_);
-
-  if (AreLegalDocumentsCurrent())
+  if (AreLegalDocumentsCurrent()) {
     LoadRiskFingerprintData();
+  } else {
+    GetWalletClient()->AcceptLegalDocuments(
+        wallet_items_->legal_documents(),
+        wallet_items_->google_transaction_id(),
+        source_url_);
+  }
 }
 
 void AutofillDialogControllerImpl::SubmitWithWallet() {
