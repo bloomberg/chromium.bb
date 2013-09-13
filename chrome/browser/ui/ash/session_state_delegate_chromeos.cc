@@ -14,6 +14,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 
 SessionStateDelegateChromeos::SessionStateDelegateChromeos() {
   chromeos::UserManager::Get()->AddSessionStateObserver(this);
@@ -96,8 +97,10 @@ void SessionStateDelegateChromeos::GetLoggedInUsers(ash::UserIdList* users) {
 }
 
 void SessionStateDelegateChromeos::SwitchActiveUser(
-    const std::string& user_id) {
-  chromeos::UserManager::Get()->SwitchActiveUser(user_id);
+    const std::string& user_email) {
+  // The user_id can be a display email which might be capitalized and has dots.
+  chromeos::UserManager::Get()->SwitchActiveUser(
+      gaia::CanonicalizeEmail(gaia::SanitizeEmail(user_email)));
 }
 
 void SessionStateDelegateChromeos::AddSessionStateObserver(

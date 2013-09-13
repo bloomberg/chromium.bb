@@ -73,7 +73,7 @@ void SessionStateDelegate::GetLoggedInUsers(ash::UserIdList* users) {
   NOTIMPLEMENTED();
 }
 
-void SessionStateDelegate::SwitchActiveUser(const std::string& user_id) {
+void SessionStateDelegate::SwitchActiveUser(const std::string& user_email) {
   NOTIMPLEMENTED();
 }
 

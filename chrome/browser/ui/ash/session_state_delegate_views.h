@@ -35,7 +35,7 @@ class SessionStateDelegate : public ash::SessionStateDelegate {
   virtual const gfx::ImageSkia& GetUserImage(
       ash::MultiProfileIndex index) const OVERRIDE;
   virtual void GetLoggedInUsers(ash::UserIdList* users) OVERRIDE;
-  virtual void SwitchActiveUser(const std::string& user_id) OVERRIDE;
+  virtual void SwitchActiveUser(const std::string& user_email) OVERRIDE;
   virtual void AddSessionStateObserver(
       ash::SessionStateObserver* observer) OVERRIDE;
   virtual void RemoveSessionStateObserver(

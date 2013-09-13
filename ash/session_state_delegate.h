@@ -77,8 +77,9 @@ class ASH_EXPORT SessionStateDelegate {
   // Returns a list of all logged in users.
   virtual void GetLoggedInUsers(UserIdList* users) = 0;
 
-  // Switches to another active user (if that user has already signed in).
-  virtual void SwitchActiveUser(const std::string& user_id) = 0;
+  // Switches to another active user using the |user_email|
+  // (if that user has already signed in).
+  virtual void SwitchActiveUser(const std::string& user_email) = 0;
 
   // Adds or removes sessions state observer.
   virtual void AddSessionStateObserver(SessionStateObserver* observer) = 0;
