@@ -17,4 +17,5 @@ SSLClientSocketTest.ConnectClientAuthSendNullCert
 SimpleIndexFileTest.WriteThenLoadIndex
 
 # Flaky. http://crbug.com/237450
+DiskCacheBackendTest.SimpleCacheAppCacheOnlyDoomAll
 DiskCacheBackendTest.SimpleCacheDoomAll
