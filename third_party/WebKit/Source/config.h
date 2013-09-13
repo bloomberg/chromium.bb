@@ -136,6 +136,7 @@
 #if OS(MACOSX)
 #define HAVE_DISPATCH_H 1
 #define HAVE_PTHREAD_SETNAME_NP 1
+#define WTF_USE_NEW_THEME 1
 #endif /* OS(MACOSX) */
 
 #if OS(WIN)

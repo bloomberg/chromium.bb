@@ -63,12 +63,6 @@
               'os-win32',
             ],
           }],
-          # FIXME: This should go in a header, not in the GYP file.
-          ['OS=="mac"', {
-            'defines': [
-              'WTF_USE_NEW_THEME=1',
-            ],
-          }],
         ],
       },
     },
