@@ -40,9 +40,6 @@ bool DnsProbeStatusIsFinished(DnsProbeStatus status) {
 }
 
 bool DnsProbesEnabled() {
-#if defined(OS_ANDROID)
-  return false;
-#else
   CommandLine* command_line = CommandLine::ForCurrentProcess();
 
   if (command_line->HasSwitch(switches::kDisableDnsProbes))
@@ -55,7 +52,6 @@ bool DnsProbesEnabled() {
 
   return base::FieldTrialList::FindFullName(kDnsProbeFieldTrialName) ==
          kDnsProbeFieldTrialEnableGroupName;
-#endif  // OS_ANDROID
 }
 
 }  // namespace chrome_common_net

@@ -14,6 +14,7 @@
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/history/history_tab_helper.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/net/net_error_tab_helper.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/password_manager/password_manager_delegate_impl.h"
 #include "chrome/browser/prerender/prerender_tab_helper.h"
@@ -83,6 +84,7 @@ void BrowserTabContents::AttachTabHelpers(content::WebContents* contents) {
   FindTabHelper::CreateForWebContents(contents);
   HistoryTabHelper::CreateForWebContents(contents);
   InfoBarService::CreateForWebContents(contents);
+  chrome_browser_net::NetErrorTabHelper::CreateForWebContents(contents);
   PasswordManagerDelegateImpl::CreateForWebContents(contents);
   PasswordManager::CreateForWebContentsAndDelegate(
       contents, PasswordManagerDelegateImpl::FromWebContents(contents));

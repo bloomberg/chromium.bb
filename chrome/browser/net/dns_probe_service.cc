@@ -50,6 +50,13 @@ DnsProbeStatus EvaluateResults(DnsProbeRunner::Result system_result,
   if (system_result == DnsProbeRunner::CORRECT)
     return chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN;
 
+  // If the system DNS is unknown (e.g. on Android), but the public server is
+  // reachable, assume the domain doesn't exist.
+  if (system_result == DnsProbeRunner::UNKNOWN &&
+      public_result == DnsProbeRunner::CORRECT) {
+    return chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN;
+  }
+
   // If the system DNS is not working but another public server is, assume the
   // DNS config is bad (or perhaps the DNS servers are down or broken).
   if (public_result == DnsProbeRunner::CORRECT)
