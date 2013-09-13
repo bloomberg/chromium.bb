@@ -12,14 +12,15 @@
 #include "base/time/time.h"
 #include "content/common/media/media_player_messages_enums_android.h"
 #include "content/public/renderer/render_view_observer.h"
-#include "media/base/android/demuxer_stream_player_params.h"
 #include "media/base/android/media_player_android.h"
 #include "media/base/media_keys.h"
 #include "url/gurl.h"
 
 namespace content {
-class WebMediaPlayerAndroid;
+
+class RendererDemuxerAndroid;
 class RendererMediaPlayerManager;
+class WebMediaPlayerAndroid;
 
 // This class manages IPC communication between WebMediaPlayerAndroid and the
 // MediaPlayerManagerAndroid in the browser process.
@@ -74,12 +75,6 @@ class WebMediaPlayerProxyAndroid : public RenderViewObserver {
   virtual void DidCommitCompositorFrame() OVERRIDE;
 #endif
 
-  // Media source related methods.
-  void DemuxerReady(int player_id, const media::DemuxerConfigs& configs);
-  void ReadFromDemuxerAck(int player_id, const media::DemuxerData& data);
-  void SeekRequestAck(int player_id, unsigned seek_request_id);
-  void DurationChanged(int player_id, const base::TimeDelta& duration);
-
   // Encrypted media related methods.
   void InitializeCDM(int media_keys_id, const std::vector<uint8>& uuid);
   void GenerateKeyRequest(int media_keys_id,
@@ -90,6 +85,10 @@ class WebMediaPlayerProxyAndroid : public RenderViewObserver {
               const std::vector<uint8>& init_data,
               const std::string& session_id);
   void CancelKeyRequest(int media_keys_id, const std::string& session_id);
+
+  RendererDemuxerAndroid* renderer_demuxer_android() {
+    return renderer_demuxer_android_;
+  }
 
  private:
   WebMediaPlayerAndroid* GetWebMediaPlayer(int player_id);
@@ -111,12 +110,6 @@ class WebMediaPlayerProxyAndroid : public RenderViewObserver {
   void OnDidEnterFullscreen(int player_id);
   void OnPlayerPlay(int player_id);
   void OnPlayerPause(int player_id);
-  void OnReadFromDemuxer(int player_id,
-                         media::DemuxerStream::Type type);
-  void OnMediaSeekRequest(int player_id,
-                          base::TimeDelta time_to_seek,
-                          unsigned seek_request_id);
-  void OnMediaConfigRequest(int player_id);
   void OnKeyAdded(int media_keys_id, const std::string& session_id);
   void OnKeyError(int media_keys_id,
                   const std::string& session_id,
@@ -126,6 +119,9 @@ class WebMediaPlayerProxyAndroid : public RenderViewObserver {
                     const std::string& session_id,
                     const std::vector<uint8>& message,
                     const std::string& destination_url);
+
+  // Owned by RenderView.
+  RendererDemuxerAndroid* renderer_demuxer_android_;
 
   RendererMediaPlayerManager* manager_;
 

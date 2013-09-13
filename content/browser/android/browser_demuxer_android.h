@@ -13,6 +13,8 @@ namespace content {
 
 // Represents the browser process half of an IPC-based implementation of
 // media::DemuxerAndroid.
+//
+// Refer to RendererDemuxerAndroid for the renderer process half.
 class CONTENT_EXPORT BrowserDemuxerAndroid
     : public RenderViewHostObserver,
       public media::DemuxerAndroid {

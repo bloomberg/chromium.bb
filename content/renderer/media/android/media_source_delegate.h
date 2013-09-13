@@ -34,7 +34,7 @@ struct DemuxerData;
 
 namespace content {
 
-class WebMediaPlayerProxyAndroid;
+class RendererDemuxerAndroid;
 
 class MediaSourceDelegate : public media::DemuxerHost {
  public:
@@ -43,6 +43,7 @@ class MediaSourceDelegate : public media::DemuxerHost {
   typedef base::Callback<void(WebKit::WebMediaPlayer::NetworkState)>
       UpdateNetworkStateCB;
   typedef base::Callback<void(const base::TimeDelta&)> DurationChangeCB;
+  typedef base::Callback<void(const base::TimeDelta&)> TimeUpdateSeekHackCB;
 
   // Helper class used by scoped_ptr to destroy an instance of
   // MediaSourceDelegate.
@@ -53,8 +54,8 @@ class MediaSourceDelegate : public media::DemuxerHost {
     }
   };
 
-  MediaSourceDelegate(WebMediaPlayerProxyAndroid* proxy,
-                      int player_id,
+  MediaSourceDelegate(RendererDemuxerAndroid* demuxer_client,
+                      int demuxer_client_id,
                       const scoped_refptr<base::MessageLoopProxy>& media_loop,
                       media::MediaLog* media_log);
 
@@ -65,7 +66,8 @@ class MediaSourceDelegate : public media::DemuxerHost {
       const media::NeedKeyCB& need_key_cb,
       const media::SetDecryptorReadyCB& set_decryptor_ready_cb,
       const UpdateNetworkStateCB& update_network_state_cb,
-      const DurationChangeCB& duration_change_cb);
+      const DurationChangeCB& duration_change_cb,
+      const TimeUpdateSeekHackCB& time_update_seek_hack_cb);
 
 #if defined(GOOGLE_TV)
   void InitializeMediaStream(
@@ -82,7 +84,7 @@ class MediaSourceDelegate : public media::DemuxerHost {
   // Seeks the demuxer and acknowledges the seek request with |seek_request_id|
   // after the seek has been completed. This method can be called during pending
   // seeks, in which case only the last seek request will be acknowledged.
-  void Seek(base::TimeDelta time, unsigned seek_request_id);
+  void Seek(const base::TimeDelta& time, unsigned seek_request_id);
 
   void NotifyKeyAdded(const std::string& key_system);
 
@@ -111,6 +113,9 @@ class MediaSourceDelegate : public media::DemuxerHost {
                                     base::TimeDelta end) OVERRIDE;
   virtual void SetDuration(base::TimeDelta duration) OVERRIDE;
   virtual void OnDemuxerError(media::PipelineStatus status) OVERRIDE;
+
+  // Notifies |demuxer_client_| and fires |duration_changed_cb_|.
+  void OnDurationChanged(const base::TimeDelta& duration);
 
   // Callback for ChunkDemuxer initialization.
   void OnDemuxerInitDone(media::PipelineStatus status);
@@ -148,7 +153,7 @@ class MediaSourceDelegate : public media::DemuxerHost {
 
   void StopDemuxer();
   void InitializeDemuxer();
-  void SeekInternal(base::TimeDelta time, unsigned seek_request_id);
+  void SeekInternal(const base::TimeDelta& time, unsigned seek_request_id);
   void OnReadFromDemuxerInternal(media::DemuxerStream::Type type);
   // Reads an access unit from the demuxer stream |stream| and stores it in
   // the |index|th access unit in |params|.
@@ -180,12 +185,13 @@ class MediaSourceDelegate : public media::DemuxerHost {
   const scoped_refptr<base::MessageLoopProxy> media_loop_;
   base::WeakPtrFactory<MediaSourceDelegate> media_weak_factory_;
 
-  WebMediaPlayerProxyAndroid* proxy_;
-  int player_id_;
+  RendererDemuxerAndroid* demuxer_client_;
+  int demuxer_client_id_;
 
   scoped_refptr<media::MediaLog> media_log_;
   UpdateNetworkStateCB update_network_state_cb_;
   DurationChangeCB duration_change_cb_;
+  TimeUpdateSeekHackCB time_update_seek_hack_cb_;
 
   scoped_ptr<media::ChunkDemuxer> chunk_demuxer_;
   media::Demuxer* demuxer_;

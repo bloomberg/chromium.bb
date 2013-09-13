@@ -10,7 +10,7 @@
 
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/string_number_conversions.h"
-#include "content/renderer/media/android/webmediaplayer_proxy_android.h"
+#include "content/renderer/media/android/renderer_demuxer_android.h"
 #include "content/renderer/media/webmediaplayer_util.h"
 #include "content/renderer/media/webmediasource_impl.h"
 #include "media/base/android/demuxer_stream_player_params.h"
@@ -53,8 +53,8 @@ static void LogMediaSourceError(const scoped_refptr<media::MediaLog>& media_log,
 }
 
 MediaSourceDelegate::MediaSourceDelegate(
-    WebMediaPlayerProxyAndroid* proxy,
-    int player_id,
+    RendererDemuxerAndroid* demuxer_client,
+    int demuxer_client_id,
     const scoped_refptr<base::MessageLoopProxy>& media_loop,
     media::MediaLog* media_log)
     : main_loop_(base::MessageLoopProxy::current()),
@@ -62,8 +62,8 @@ MediaSourceDelegate::MediaSourceDelegate(
       main_weak_this_(main_weak_factory_.GetWeakPtr()),
       media_loop_(media_loop),
       media_weak_factory_(this),
-      proxy_(proxy),
-      player_id_(player_id),
+      demuxer_client_(demuxer_client),
+      demuxer_client_id_(demuxer_client_id),
       media_log_(media_log),
       demuxer_(NULL),
       is_demuxer_ready_(false),
@@ -76,31 +76,34 @@ MediaSourceDelegate::MediaSourceDelegate(
 #endif
       access_unit_size_(0) {
   DCHECK(main_loop_->BelongsToCurrentThread());
+  demuxer_client_->AddDelegate(demuxer_client_id_, this);
 }
 
 MediaSourceDelegate::~MediaSourceDelegate() {
   DCHECK(main_loop_->BelongsToCurrentThread());
-  DVLOG(1) << "~MediaSourceDelegate() : " << player_id_;
+  DVLOG(1) << __FUNCTION__ << " : " << demuxer_client_id_;
   DCHECK(!chunk_demuxer_);
   DCHECK(!demuxer_);
   DCHECK(!audio_decrypting_demuxer_stream_);
   DCHECK(!video_decrypting_demuxer_stream_);
   DCHECK(!audio_stream_);
   DCHECK(!video_stream_);
+  demuxer_client_->RemoveDelegate(demuxer_client_id_);
 }
 
 void MediaSourceDelegate::Destroy() {
   DCHECK(main_loop_->BelongsToCurrentThread());
-  DVLOG(1) << "Destroy() : " << player_id_;
+  DVLOG(1) << __FUNCTION__ << " : " << demuxer_client_id_;
   if (!demuxer_) {
     delete this;
     return;
   }
 
   duration_change_cb_.Reset();
+  time_update_seek_hack_cb_.Reset();
   update_network_state_cb_.Reset();
   media_source_opened_cb_.Reset();
-  proxy_ = NULL;
+  demuxer_client_ = NULL;
 
   main_weak_factory_.InvalidateWeakPtrs();
   DCHECK(!main_weak_factory_.HasWeakPtrs());
@@ -142,14 +145,16 @@ void MediaSourceDelegate::InitializeMediaSource(
     const media::NeedKeyCB& need_key_cb,
     const media::SetDecryptorReadyCB& set_decryptor_ready_cb,
     const UpdateNetworkStateCB& update_network_state_cb,
-    const DurationChangeCB& duration_change_cb) {
+    const DurationChangeCB& duration_change_cb,
+    const TimeUpdateSeekHackCB& time_update_seek_hack_cb) {
   DCHECK(main_loop_->BelongsToCurrentThread());
   DCHECK(!media_source_opened_cb.is_null());
   media_source_opened_cb_ = media_source_opened_cb;
   need_key_cb_ = need_key_cb;
   set_decryptor_ready_cb_ = set_decryptor_ready_cb;
   update_network_state_cb_ = media::BindToCurrentLoop(update_network_state_cb);
-  duration_change_cb_ = media::BindToCurrentLoop(duration_change_cb);
+  duration_change_cb_ = duration_change_cb;
+  time_update_seek_hack_cb_ = time_update_seek_hack_cb;
   access_unit_size_ = kAccessUnitSizeForMediaSource;
 
   chunk_demuxer_.reset(new media::ChunkDemuxer(
@@ -216,9 +221,11 @@ size_t MediaSourceDelegate::VideoDecodedByteCount() const {
   return statistics_.video_bytes_decoded;
 }
 
-void MediaSourceDelegate::Seek(base::TimeDelta time, unsigned seek_request_id) {
+void MediaSourceDelegate::Seek(const base::TimeDelta& time,
+                               unsigned seek_request_id) {
   DCHECK(main_loop_->BelongsToCurrentThread());
-  DVLOG(1) << "Seek(" << time.InSecondsF() << ") : " << player_id_;
+  DVLOG(1) << __FUNCTION__ << "(" << time.InSecondsF() << ") : "
+           << demuxer_client_id_;
 
   last_seek_time_ = time;
   last_seek_request_id_ = seek_request_id;
@@ -238,9 +245,18 @@ void MediaSourceDelegate::Seek(base::TimeDelta time, unsigned seek_request_id) {
                         base::Bind(&MediaSourceDelegate::SeekInternal,
                                    base::Unretained(this),
                                    time, seek_request_id));
+
+  // During fullscreen media source playback Seek() can be called without
+  // WebMediaPlayerAndroid's knowledge. We need to inform it that a seek is
+  // in progress so the correct time can be returned to web applications while
+  // seeking.
+  //
+  // TODO(wolenetz): Remove after landing a uniform seeking codepath.
+  if (!time_update_seek_hack_cb_.is_null())
+    time_update_seek_hack_cb_.Run(time);
 }
 
-void MediaSourceDelegate::SeekInternal(base::TimeDelta time,
+void MediaSourceDelegate::SeekInternal(const base::TimeDelta& time,
                                        unsigned request_id) {
   DCHECK(media_loop_->BelongsToCurrentThread());
   demuxer_->Seek(time, base::Bind(
@@ -262,9 +278,17 @@ void MediaSourceDelegate::AddBufferedTimeRange(base::TimeDelta start,
 }
 
 void MediaSourceDelegate::SetDuration(base::TimeDelta duration) {
-  DVLOG(1) << "SetDuration(" << duration.InSecondsF() << ") : " << player_id_;
-  // Notify our owner (e.g. WebMediaPlayerAndroid) that duration has changed.
-  // |duration_change_cb_| is bound to the main thread.
+  DCHECK(media_loop_->BelongsToCurrentThread());
+  DVLOG(1) << __FUNCTION__ << "(" << duration.InSecondsF() << ") : "
+           << demuxer_client_id_;
+  main_loop_->PostTask(FROM_HERE, base::Bind(
+      &MediaSourceDelegate::OnDurationChanged, main_weak_this_, duration));
+}
+
+void MediaSourceDelegate::OnDurationChanged(const base::TimeDelta& duration) {
+  DCHECK(main_loop_->BelongsToCurrentThread());
+  if (demuxer_client_)
+    demuxer_client_->DurationChanged(demuxer_client_id_, duration);
   if (!duration_change_cb_.is_null())
     duration_change_cb_.Run(duration);
 }
@@ -280,7 +304,7 @@ void MediaSourceDelegate::OnReadFromDemuxer(media::DemuxerStream::Type type) {
 void MediaSourceDelegate::OnReadFromDemuxerInternal(
     media::DemuxerStream::Type type) {
   DCHECK(media_loop_->BelongsToCurrentThread());
-  DVLOG(1) << "OnReadFromDemuxer(" << type << ") : " << player_id_;
+  DVLOG(1) << __FUNCTION__ << "(" << type << ") : " << demuxer_client_id_;
   if (IsSeeking())
     return;  // Drop the request during seeking.
 
@@ -312,16 +336,16 @@ void MediaSourceDelegate::OnBufferReady(
     DemuxerStream::Status status,
     const scoped_refptr<media::DecoderBuffer>& buffer) {
   DCHECK(media_loop_->BelongsToCurrentThread());
-  DVLOG(1) << "OnBufferReady(" << index << ", " << status << ", "
+  DVLOG(1) << __FUNCTION__ << "(" << index << ", " << status << ", "
            << ((!buffer || buffer->end_of_stream()) ?
                -1 : buffer->timestamp().InMilliseconds())
-           << ") : " << player_id_;
+           << ") : " << demuxer_client_id_;
   DCHECK(demuxer_);
 
   // No new OnReadFromDemuxer() will be called during seeking. So this callback
   // must be from previous OnReadFromDemuxer() call and should be ignored.
   if (IsSeeking()) {
-    DVLOG(1) << "OnBufferReady(): Ignore previous read during seeking.";
+    DVLOG(1) << __FUNCTION__ << ": Ignore previous read during seeking.";
     return;
   }
 
@@ -338,7 +362,7 @@ void MediaSourceDelegate::OnBufferReady(
 
   switch (status) {
     case DemuxerStream::kAborted:
-      DVLOG(1) << "OnBufferReady() : Aborted";
+      DVLOG(1) << __FUNCTION__ << " : Aborted";
       data->access_units[index].status = status;
       data->access_units.resize(index + 1);
       break;
@@ -416,12 +440,12 @@ void MediaSourceDelegate::OnBufferReady(
 
 void MediaSourceDelegate::SendReadFromDemuxerAck(scoped_ptr<DemuxerData> data) {
   DCHECK(main_loop_->BelongsToCurrentThread());
-  if (!IsSeeking() && proxy_)
-    proxy_->ReadFromDemuxerAck(player_id_, *data);
+  if (!IsSeeking() && demuxer_client_)
+    demuxer_client_->ReadFromDemuxerAck(demuxer_client_id_, *data);
 }
 
 void MediaSourceDelegate::OnDemuxerError(media::PipelineStatus status) {
-  DVLOG(1) << "OnDemuxerError(" << status << ") : " << player_id_;
+  DVLOG(1) << __FUNCTION__ << "(" << status << ") : " << demuxer_client_id_;
   // |update_network_state_cb_| is bound to the main thread.
   if (status != media::PIPELINE_OK && !update_network_state_cb_.is_null())
     update_network_state_cb_.Run(PipelineErrorToNetworkState(status));
@@ -429,7 +453,7 @@ void MediaSourceDelegate::OnDemuxerError(media::PipelineStatus status) {
 
 void MediaSourceDelegate::OnDemuxerInitDone(media::PipelineStatus status) {
   DCHECK(media_loop_->BelongsToCurrentThread());
-  DVLOG(1) << "OnDemuxerInitDone(" << status << ") : " << player_id_;
+  DVLOG(1) << __FUNCTION__ << "(" << status << ") : " << demuxer_client_id_;
   DCHECK(demuxer_);
 
   if (status != media::PIPELINE_OK) {
@@ -462,7 +486,7 @@ void MediaSourceDelegate::OnDemuxerInitDone(media::PipelineStatus status) {
 
 void MediaSourceDelegate::InitAudioDecryptingDemuxerStream() {
   DCHECK(media_loop_->BelongsToCurrentThread());
-  DVLOG(1) << "InitAudioDecryptingDemuxerStream() : " << player_id_;
+  DVLOG(1) << __FUNCTION__ << " : " << demuxer_client_id_;
   DCHECK(!set_decryptor_ready_cb_.is_null());
 
   audio_decrypting_demuxer_stream_.reset(new media::DecryptingDemuxerStream(
@@ -475,7 +499,7 @@ void MediaSourceDelegate::InitAudioDecryptingDemuxerStream() {
 
 void MediaSourceDelegate::InitVideoDecryptingDemuxerStream() {
   DCHECK(media_loop_->BelongsToCurrentThread());
-  DVLOG(1) << "InitVideoDecryptingDemuxerStream() : " << player_id_;
+  DVLOG(1) << __FUNCTION__ << " : " << demuxer_client_id_;
   DCHECK(!set_decryptor_ready_cb_.is_null());
 
   video_decrypting_demuxer_stream_.reset(new media::DecryptingDemuxerStream(
@@ -489,8 +513,7 @@ void MediaSourceDelegate::InitVideoDecryptingDemuxerStream() {
 void MediaSourceDelegate::OnAudioDecryptingDemuxerStreamInitDone(
     media::PipelineStatus status) {
   DCHECK(media_loop_->BelongsToCurrentThread());
-  DVLOG(1) << "OnAudioDecryptingDemuxerStreamInitDone(" << status
-           << ") : " << player_id_;
+  DVLOG(1) << __FUNCTION__ << "(" << status << ") : " << demuxer_client_id_;
   DCHECK(demuxer_);
 
   if (status != media::PIPELINE_OK)
@@ -513,8 +536,7 @@ void MediaSourceDelegate::OnAudioDecryptingDemuxerStreamInitDone(
 void MediaSourceDelegate::OnVideoDecryptingDemuxerStreamInitDone(
     media::PipelineStatus status) {
   DCHECK(media_loop_->BelongsToCurrentThread());
-  DVLOG(1) << "OnVideoDecryptingDemuxerStreamInitDone(" << status
-           << ") : " << player_id_;
+  DVLOG(1) << __FUNCTION__ << "(" << status << ") : " << demuxer_client_id_;
   DCHECK(demuxer_);
 
   if (status != media::PIPELINE_OK)
@@ -531,7 +553,7 @@ void MediaSourceDelegate::OnVideoDecryptingDemuxerStreamInitDone(
 void MediaSourceDelegate::OnDemuxerSeekDone(unsigned seek_request_id,
                                             media::PipelineStatus status) {
   DCHECK(media_loop_->BelongsToCurrentThread());
-  DVLOG(1) << "OnDemuxerSeekDone(" << status << ") : " << player_id_;
+  DVLOG(1) << __FUNCTION__ << "(" << status << ") : " << demuxer_client_id_;
   DCHECK(IsSeeking());
 
   if (status != media::PIPELINE_OK) {
@@ -552,7 +574,7 @@ void MediaSourceDelegate::OnDemuxerSeekDone(unsigned seek_request_id,
 
 void MediaSourceDelegate::ResetAudioDecryptingDemuxerStream() {
   DCHECK(media_loop_->BelongsToCurrentThread());
-  DVLOG(1) << "ResetAudioDecryptingDemuxerStream() : " << player_id_;
+  DVLOG(1) << __FUNCTION__ << " : " << demuxer_client_id_;
   if (audio_decrypting_demuxer_stream_) {
     audio_decrypting_demuxer_stream_->Reset(
         base::Bind(&MediaSourceDelegate::ResetVideoDecryptingDemuxerStream,
@@ -565,7 +587,7 @@ void MediaSourceDelegate::ResetAudioDecryptingDemuxerStream() {
 
 void MediaSourceDelegate::ResetVideoDecryptingDemuxerStream() {
   DCHECK(media_loop_->BelongsToCurrentThread());
-  DVLOG(1) << "ResetVideoDecryptingDemuxerStream()";
+  DVLOG(1) << __FUNCTION__ << " : " << demuxer_client_id_;
   if (video_decrypting_demuxer_stream_) {
     video_decrypting_demuxer_stream_->Reset(base::Bind(
         &MediaSourceDelegate::FinishResettingDecryptingDemuxerStreams,
@@ -578,22 +600,22 @@ void MediaSourceDelegate::ResetVideoDecryptingDemuxerStream() {
 
 void MediaSourceDelegate::FinishResettingDecryptingDemuxerStreams() {
   DCHECK(media_loop_->BelongsToCurrentThread());
-  DVLOG(1) << "FinishResettingDecryptingDemuxerStreams()";
+  DVLOG(1) << __FUNCTION__ << " : " << demuxer_client_id_;
   main_loop_->PostTask(FROM_HERE, base::Bind(
       &MediaSourceDelegate::SendSeekRequestAck, main_weak_this_));
 }
 
 void MediaSourceDelegate::SendSeekRequestAck() {
   DCHECK(main_loop_->BelongsToCurrentThread());
-  DVLOG(1) << "SendSeekRequestAck() : " << player_id_;
+  DVLOG(1) << __FUNCTION__ << " : " << demuxer_client_id_;
   SetSeeking(false);
-  proxy_->SeekRequestAck(player_id_, last_seek_request_id_);
+  demuxer_client_->SeekRequestAck(demuxer_client_id_, last_seek_request_id_);
   last_seek_request_id_ = 0;
 }
 
 void MediaSourceDelegate::OnDemuxerStopDone() {
   DCHECK(main_loop_->BelongsToCurrentThread());
-  DVLOG(1) << "OnDemuxerStopDone() : " << player_id_;
+  DVLOG(1) << __FUNCTION__ << " : " << demuxer_client_id_;
   chunk_demuxer_.reset();
   demuxer_ = NULL;
   delete this;
@@ -621,7 +643,7 @@ void MediaSourceDelegate::NotifyKeyAdded(const std::string& key_system) {
                    base::Unretained(this), key_system));
     return;
   }
-  DVLOG(1) << "NotifyKeyAdded() : " << player_id_;
+  DVLOG(1) << __FUNCTION__ << " : " << demuxer_client_id_;
   if (key_added_)
     return;
   key_added_ = true;
@@ -651,7 +673,7 @@ bool MediaSourceDelegate::CanNotifyDemuxerReady() {
 
 void MediaSourceDelegate::NotifyDemuxerReady() {
   DCHECK(media_loop_->BelongsToCurrentThread());
-  DVLOG(1) << "NotifyDemuxerReady() : " << player_id_;
+  DVLOG(1) << __FUNCTION__ << " : " << demuxer_client_id_;
   DCHECK(CanNotifyDemuxerReady());
 
   scoped_ptr<DemuxerConfigs> configs(new DemuxerConfigs());
@@ -686,8 +708,8 @@ void MediaSourceDelegate::NotifyDemuxerReady() {
 
 void MediaSourceDelegate::SendDemuxerReady(scoped_ptr<DemuxerConfigs> configs) {
   DCHECK(main_loop_->BelongsToCurrentThread());
-  if (proxy_)
-    proxy_->DemuxerReady(player_id_, *configs);
+  if (demuxer_client_)
+    demuxer_client_->DemuxerReady(demuxer_client_id_, *configs);
 }
 
 int MediaSourceDelegate::GetDurationMs() {

@@ -164,6 +164,8 @@
     'renderer/media/android/media_source_delegate.h',
     'renderer/media/android/proxy_media_keys.cc',
     'renderer/media/android/proxy_media_keys.h',
+    'renderer/media/android/renderer_demuxer_android.cc',
+    'renderer/media/android/renderer_demuxer_android.h',
     'renderer/media/android/renderer_media_player_manager.cc',
     'renderer/media/android/renderer_media_player_manager.h',
     'renderer/media/android/stream_texture_factory_android.h',

@@ -156,20 +156,17 @@ class WebMediaPlayerAndroid
       OVERRIDE;
 
   // Media player callback handlers.
-  void OnMediaMetadataChanged(base::TimeDelta duration, int width,
+  void OnMediaMetadataChanged(const base::TimeDelta& duration, int width,
                               int height, bool success);
   void OnPlaybackComplete();
   void OnBufferingUpdate(int percentage);
-  void OnSeekComplete(base::TimeDelta current_time);
+  void OnSeekComplete(const base::TimeDelta& current_time);
   void OnMediaError(int error_type);
   void OnVideoSizeChanged(int width, int height);
-  void OnMediaSeekRequest(base::TimeDelta time_to_seek,
-                          unsigned seek_request_id);
-  void OnMediaConfigRequest();
-  void OnDurationChange(const base::TimeDelta& duration);
+  void OnDurationChanged(const base::TimeDelta& duration);
 
   // Called to update the current time.
-  void OnTimeUpdate(base::TimeDelta current_time);
+  void OnTimeUpdate(const base::TimeDelta& current_time);
 
   // Functions called when media player status changes.
   void OnMediaPlayerPlay();
@@ -314,7 +311,7 @@ class WebMediaPlayerAndroid
   base::TimeDelta duration_;
 
   // Flag to remember if we have a trusted duration_ value provided by
-  // MediaSourceDelegate notifying OnDurationChange(). In this case, ignore
+  // MediaSourceDelegate notifying OnDurationChanged(). In this case, ignore
   // any subsequent duration value passed to OnMediaMetadataChange().
   bool ignore_metadata_duration_change_;
 
