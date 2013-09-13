@@ -8,16 +8,14 @@
 Keeps a local cache.
 """
 
-__version__ = '0.1.1'
+__version__ = '0.2'
 
 import ctypes
 import hashlib
-import httplib
 import json
 import logging
 import optparse
 import os
-import random
 import re
 import shutil
 import stat
@@ -25,12 +23,10 @@ import subprocess
 import sys
 import tempfile
 import time
-import zlib
 
 from third_party.depot_tools import fix_encoding
 
 from utils import lru
-from utils import net
 from utils import threading_utils
 from utils import tools
 from utils import zip_package
@@ -68,10 +64,6 @@ DELAY_BETWEEN_UPDATES_IN_SECS = 30
 # in run_tha_test. If it takes longer than that, a deadlock might be happening
 # and all stack frames for all threads are dumped to log.
 DEADLOCK_TIMEOUT = 5 * 60
-
-# Read timeout in seconds for downloads from isolate storage. If there's no
-# response from the server within this timeout whole download will be aborted.
-DOWNLOAD_READ_TIMEOUT = 60
 
 
 # Used by get_flavor().
@@ -321,90 +313,6 @@ def load_isolated(content, os_flavor=None):
       raise ConfigError('Unknown key %s' % key)
 
   return data
-
-
-class IsolateServer(object):
-  """Client class to download or upload to Isolate Server."""
-  def __init__(self, base_url):
-    self.base_url = base_url
-
-  def retrieve(self, item, dest):
-    # TODO(maruel): Reuse HTTP connections. The stdlib doesn't make this
-    # easy.
-    try:
-      zipped_source = self.base_url + item
-      logging.debug('download_file(%s)', zipped_source)
-
-      # Because the app engine DB is only eventually consistent, retry
-      # 404 errors because the file might just not be visible yet (even
-      # though it has been uploaded).
-      connection = net.url_open(
-          zipped_source, retry_404=True,
-          read_timeout=DOWNLOAD_READ_TIMEOUT)
-      if not connection:
-        raise IOError('Unable to open connection to %s' % zipped_source)
-
-      content_length = connection.content_length
-      decompressor = zlib.decompressobj()
-      size = 0
-      with open(dest, 'wb') as f:
-        while True:
-          chunk = connection.read(isolateserver.ZIPPED_FILE_CHUNK)
-          if not chunk:
-            break
-          size += len(chunk)
-          f.write(decompressor.decompress(chunk))
-      # Ensure that all the data was properly decompressed.
-      uncompressed_data = decompressor.flush()
-      assert not uncompressed_data
-    except IOError as e:
-      logging.error('Failed to download %s at %s.\n%s', item, dest, e)
-      raise
-    except httplib.HTTPException as e:
-      msg = 'HTTPException while retrieving %s at %s.\n%s' % (item, dest, e)
-      logging.error(msg)
-      raise IOError(msg)
-    except zlib.error as e:
-      msg = 'Corrupted zlib for item %s. Processed %d of %s bytes.\n%s' % (
-          item, size, content_length, e)
-      logging.error(msg)
-
-      # Testing seems to show that if a few machines are trying to download
-      # the same blob, they can cause each other to fail. So if we hit a
-      # zip error, this is the most likely cause (it only downloads some of
-      # the data). Randomly sleep for between 5 and 25 seconds to try and
-      # spread out the downloads.
-      # TODO(csharp): Switch from blobstorage to cloud storage and see if
-      # that solves the issue.
-      sleep_duration = (random.random() * 20) + 5
-      time.sleep(sleep_duration)
-      raise IOError(msg)
-
-
-class FileSystem(object):
-  """Fetches data from the file system.
-
-  The common use case is a NFS/CIFS file server that is mounted locally that is
-  used to fetch the file on a local partition.
-  """
-  def __init__(self, base_path):
-    self.base_path = base_path
-
-  def retrieve(self, item, dest):
-    source = os.path.join(self.base_path, item)
-    if source == dest:
-      logging.info('Source and destination are the same, no action required')
-      return
-    logging.debug('copy_file(%s, %s)', source, dest)
-    shutil.copy(source, dest)
-
-
-def get_storage_api(file_or_url):
-  """Returns an object that implements .retrieve()."""
-  if re.match(r'^https?://.+$', file_or_url):
-    return IsolateServer(file_or_url)
-  else:
-    return FileSystem(file_or_url)
 
 
 class CachePolicies(object):
@@ -952,13 +860,17 @@ def main():
   group.add_option(
       '-H', '--hash',
       help='Hash of the .isolated to grab from the hash table')
+  group.add_option(
+      '-I', '--isolate-server', metavar='URL',
+      default=
+          'https://isolateserver.appspot.com',
+      help='Remote where to get the items. Defaults to %default')
+  group.add_option(
+      '-n', '--namespace',
+      default='default-gzip',
+      help='namespace to use when using isolateserver, default: %default')
   parser.add_option_group(group)
 
-  group.add_option(
-      '-r', '--remote', metavar='URL',
-      default=
-          'https://isolateserver.appspot.com/content/retrieve/default-gzip/',
-      help='Remote where to get the items. Defaults to %default')
   group = optparse.OptionGroup(parser, 'Cache management')
   group.add_option(
       '--cache',
@@ -1000,7 +912,8 @@ def main():
   policies = CachePolicies(
       options.max_cache_size, options.min_free_space, options.max_items)
 
-  retriever = get_storage_api(options.remote)
+  retriever = isolateserver.get_storage_api(
+      options.isolate_server, options.namespace)
   try:
     return run_tha_test(
         options.isolated or options.hash,

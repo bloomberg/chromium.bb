@@ -8,6 +8,7 @@ import random
 import hashlib
 import logging
 import os
+import StringIO
 import sys
 import threading
 import time
@@ -21,15 +22,12 @@ sys.path.insert(0, ROOT_DIR)
 import auto_stub
 import isolateserver
 
-from utils import net
 
-
-class IsolateServerTest(auto_stub.TestCase):
+class TestCase(auto_stub.TestCase):
   def setUp(self):
-    super(IsolateServerTest, self).setUp()
+    super(TestCase, self).setUp()
     self.mock(isolateserver.net, 'url_open', self._url_open)
     self.mock(isolateserver.net, 'sleep_before_retry', lambda *_: None)
-    self.mock(isolateserver, 'randomness', lambda: 'not_really_random')
     self._lock = threading.Lock()
     self._requests = []
 
@@ -37,7 +35,7 @@ class IsolateServerTest(auto_stub.TestCase):
     try:
       self.assertEqual([], self._requests)
     finally:
-      super(IsolateServerTest, self).tearDown()
+      super(TestCase, self).tearDown()
 
   def _url_open(self, url, **kwargs):
     logging.warn('url_open(%s, %s)', url[:500], str(kwargs)[:500])
@@ -45,15 +43,23 @@ class IsolateServerTest(auto_stub.TestCase):
       if not self._requests:
         return None
       # Ignore 'stream' argument, it's not important for these tests.
-      kwargs.pop('stream')
+      if 'stream' in kwargs:
+        kwargs.pop('stream')
       for i, n in enumerate(self._requests):
         if n[0] == url:
           _, expected_kwargs, result = self._requests.pop(i)
           self.assertEqual(expected_kwargs, kwargs)
           if result is not None:
-            return net.HttpResponse.get_fake_response(result, url)
+            return isolateserver.net.HttpResponse.get_fake_response(result, url)
           return None
     self.fail('Unknown request %s' % url)
+
+
+class IsolateServerArchiveTest(TestCase):
+  def setUp(self):
+    super(IsolateServerArchiveTest, self).setUp()
+    self.mock(isolateserver, 'randomness', lambda: 'not_really_random')
+    self.mock(sys, 'stdout', StringIO.StringIO())
 
   def test_present(self):
     files = [
@@ -260,6 +266,41 @@ class IsolateServerTest(auto_stub.TestCase):
     result = isolateserver.upload_hash_content_to_blobstore(
         path + 'gen_url?foo#bar', data[:], s, content)
     self.assertEqual('ok42', result)
+
+
+class IsolateServerDownloadTest(TestCase):
+  def test_download_two_files(self):
+    # Test downloading two files.
+    actual = {}
+    def out(key, generator):
+      actual[key] = ''.join(generator)
+    self.mock(isolateserver, 'file_write', out)
+    server = 'http://example.com'
+    self._requests = [
+      (
+        server + '/content/retrieve/default-gzip/sha-1',
+        {'read_timeout': 60, 'retry_404': True},
+        zlib.compress('Coucou'),
+      ),
+      (
+        server + '/content/retrieve/default-gzip/sha-2',
+        {'read_timeout': 60, 'retry_404': True},
+        zlib.compress('Bye Bye'),
+      ),
+    ]
+    cmd = [
+      'download',
+      '--isolate-server', server,
+      '--target', ROOT_DIR,
+      '--file', 'sha-1', 'path/to/a',
+      '--file', 'sha-2', 'path/to/b',
+    ]
+    self.assertEqual(0, isolateserver.main(cmd))
+    expected = {
+      os.path.join(ROOT_DIR, 'path/to/a'): 'Coucou',
+      os.path.join(ROOT_DIR, 'path/to/b'): 'Bye Bye',
+    }
+    self.assertEqual(expected, actual)
 
 
 def upload_file(item, _dest):

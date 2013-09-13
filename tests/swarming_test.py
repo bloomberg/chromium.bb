@@ -391,7 +391,7 @@ def chromium_tasks(retrieval_url):
       u'action': [
         u'python', u'run_isolated.zip',
         u'--hash', FILE_HASH,
-        u'--remote', retrieval_url + u'default-gzip/',
+        u'--isolate-server', retrieval_url,
       ],
       u'decorate_output': False,
       u'test_name': u'Run Test',
@@ -414,7 +414,7 @@ def generate_expected_json(
     working_dir,
     isolate_server,
     profile):
-  retrieval_url = isolate_server + '/content/retrieve/'
+  retrieval_url = isolate_server + u'/content/retrieve/default/'
   os_value = unicode(swarming.PLATFORM_MAPPING[slave_os])
   expected = {
     u'cleanup': u'root',
@@ -427,11 +427,11 @@ def generate_expected_json(
         u'min_instances': shards,
       },
     ],
-    u'data': [[retrieval_url + u'default/', u'swarm_data.zip']],
+    u'data': [[retrieval_url, u'swarm_data.zip']],
     u'env_vars': {},
     u'restart_on_failure': True,
     u'test_case_name': TEST_NAME,
-    u'tests': chromium_tasks(retrieval_url),
+    u'tests': chromium_tasks(isolate_server),
     u'working_dir': unicode(working_dir),
     u'priority': 101,
   }
@@ -498,7 +498,7 @@ class ManifestTest(auto_stub.TestCase):
         shards=2,
         slave_os='win32',
         working_dir='swarm_tests',
-        isolate_server='http://localhost:8081',
+        isolate_server=u'http://localhost:8081',
         profile=False)
     self.assertEqual(expected, manifest_json)
 
@@ -525,7 +525,7 @@ class ManifestTest(auto_stub.TestCase):
         shards=1,
         slave_os='linux2',
         working_dir='swarm_tests',
-        isolate_server='http://localhost:8081',
+        isolate_server=u'http://localhost:8081',
         profile=False)
     self.assertEqual(expected, manifest_json)
 
@@ -549,7 +549,7 @@ class ManifestTest(auto_stub.TestCase):
         shards=1,
         slave_os='linux2',
         working_dir='swarm_tests',
-        isolate_server='http://localhost:8081',
+        isolate_server=u'http://localhost:8081',
         profile=True)
     self.assertEqual(expected, manifest_json)
 

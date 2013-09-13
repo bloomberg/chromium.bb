@@ -72,7 +72,7 @@ def main():
         [
           'run_isolated.py',
           '--cache', cachedir,
-          '--remote', remote,
+          '--isolate-server', remote,
           '--hash', hashval,
         ])
   finally:

@@ -18,14 +18,14 @@ import auto_stub
 import isolateserver
 import run_isolated
 
-from utils import net
-
 
 class RunIsolatedTest(auto_stub.TestCase):
   def setUp(self):
     super(RunIsolatedTest, self).setUp()
     self.tempdir = tempfile.mkdtemp(prefix='run_isolated')
     os.chdir(self.tempdir)
+    # Mock out file_write() so nothing it written to disk.
+    self.mock(isolateserver, 'file_write', lambda y, x: list(x))
 
   def tearDown(self):
     os.chdir(ROOT_DIR)
@@ -90,11 +90,14 @@ class RunIsolatedTest(auto_stub.TestCase):
       pass
 
   def test_zip_header_error(self):
-    self.mock(run_isolated.net, 'url_open',
-        lambda url, **_kwargs: net.HttpResponse.get_fake_response('111', url))
+    self.mock(
+        isolateserver.net, 'url_open',
+        lambda url, **_: isolateserver.net.HttpResponse.get_fake_response(
+            '111', url))
     self.mock(run_isolated.time, 'sleep', lambda _x: None)
 
-    retriever = run_isolated.get_storage_api('https://fake-CAD.com/')
+    retriever = isolateserver.get_storage_api(
+        'https://fake-CAD.com/', 'namespace')
     remote = isolateserver.RemoteOperation(retriever.retrieve)
 
     # Both files will fail to be unzipped due to incorrect headers,

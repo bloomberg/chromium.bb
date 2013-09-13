@@ -68,7 +68,7 @@ def main():
         [
           'run_isolated.py',
           '--cache', cachedir,
-          '--remote', hashtabledir,
+          '--isolate-server', hashtabledir,
           '--hash', hashval,
         ])
 

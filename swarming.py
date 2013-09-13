@@ -93,7 +93,8 @@ class Manifest(object):
     self._target_platform = PLATFORM_MAPPING[slave_os]
     self._working_dir = working_dir
 
-    self.data_server_retrieval = isolate_server + '/content/retrieve/default/'
+    self.isolate_server = isolate_server
+    self._data_server_retrieval = isolate_server + '/content/retrieve/default/'
     self._data_server_storage = isolate_server + '/content/store/default/'
     self._data_server_has = isolate_server + '/content/contains/default'
     self._data_server_get_token = isolate_server + '/content/get_token'
@@ -173,7 +174,7 @@ class Manifest(object):
     test_case = {
       'test_case_name': self._test_name,
       'data': [
-        [self.data_server_retrieval + urllib.quote(self._zip_file_hash),
+        [self._data_server_retrieval + urllib.quote(self._zip_file_hash),
          'swarm_data.zip'],
       ],
       'tests': self._tasks,
@@ -320,7 +321,7 @@ def chromium_setup(manifest):
   run_cmd = [
     'python', run_test_name,
     '--hash', manifest.manifest_hash,
-    '--remote', manifest.data_server_retrieval.rstrip('/') + '-gzip/',
+    '--isolate-server', manifest.isolate_server,
   ]
   if manifest.verbose or manifest.profile:
     # Have it print the profiling section.

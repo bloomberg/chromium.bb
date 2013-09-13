@@ -128,7 +128,7 @@ class RunSwarmStep(unittest.TestCase):
     return [
       '--isolated', isolated,
       '--cache', self.cache,
-      '--remote', self.table,
+      '--isolate-server', self.table,
     ]
 
   def _generate_args_with_sha1(self, sha1_hash):
@@ -139,7 +139,7 @@ class RunSwarmStep(unittest.TestCase):
     return [
       '--hash', sha1_hash,
       '--cache', self.cache,
-      '--remote', self.table,
+      '--isolate-server', self.table,
     ]
 
   def test_result(self):
