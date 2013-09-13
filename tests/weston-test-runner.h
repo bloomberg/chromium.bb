@@ -1,5 +1,6 @@
 /*
  * Copyright © 2012 Intel Corporation
+ * Copyright © 2013 Sam Spilsbury <smspillaz@gmail.com>
  *
  * Permission to use, copy, modify, distribute, and sell this software and
  * its documentation for any purpose is hereby granted without fee, provided
@@ -23,34 +24,53 @@
 #ifndef _WESTON_TEST_RUNNER_H_
 #define _WESTON_TEST_RUNNER_H_
 
+#include <stdlib.h>
+
 #ifdef NDEBUG
 #error "Tests must not be built with NDEBUG defined, they rely on assert()."
 #endif
 
 struct weston_test {
 	const char *name;
-	void (*run)(void);
+	void (*run)(void *);
+	const void *table_data;
+	size_t element_size;
+	int n_elements;
 	int must_fail;
-} __attribute__ ((aligned (16)));
+} __attribute__ ((aligned (32)));
 
-#define TEST(name)						\
-	static void name(void);					\
+#define TEST_BEGIN(name, arg)					\
+	static void name(arg)
+
+#define TEST_COMMON(func, name, ret, data, size, n_elem)	\
+	static void func(void *);				\
 								\
 	const struct weston_test test##name			\
-		 __attribute__ ((section ("test_section"))) = {	\
-		#name, name, 0					\
-	};							\
-								\
-	static void name(void)
+		__attribute__ ((section ("test_section"))) =	\
+	{							\
+		#name, func, data, size, n_elem, ret		\
+	};
 
-#define FAIL_TEST(name)						\
+#define NO_ARG_TEST(name, ret)					\
+	TEST_COMMON(wrap##name, name, ret, NULL, 0, 1)		\
 	static void name(void);					\
+	static void wrap##name(void *data)			\
+	{							\
+		(void) data;					\
+		name();						\
+	}							\
 								\
-	const struct weston_test test##name			\
-		 __attribute__ ((section ("test_section"))) = {	\
-		#name, name, 1					\
-	};							\
-								\
-	static void name(void)
+	TEST_BEGIN(name, void)
+
+#define ARG_TEST(name, ret, test_data)				\
+	TEST_COMMON(name, name, ret, test_data,			\
+		    sizeof(test_data[0]),			\
+		    sizeof(test_data) / sizeof (test_data[0]))	\
+	TEST_BEGIN(name, void *data)				\
+
+#define TEST(name) NO_ARG_TEST(name, 0)
+#define FAIL_TEST(name) NO_ARG_TEST(name, 1)
+#define TEST_P(name, data) ARG_TEST(name, 0, data)
+#define FAIL_TEST_P(name, data) ARG_TEST(name, 1, data)
 
 #endif

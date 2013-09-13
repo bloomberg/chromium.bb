@@ -47,9 +47,9 @@ find_test(const char *name)
 }
 
 static void
-run_test(const struct weston_test *t)
+run_test(const struct weston_test *t, void *data)
 {
-	t->run();
+	t->run(data);
 	exit(EXIT_SUCCESS);
 }
 
@@ -63,12 +63,75 @@ list_tests(void)
 		fprintf(stderr, "	%s\n", t->name);
 }
 
+static int
+exec_and_report_test(const struct weston_test *t, void *test_data, int iteration)
+{
+	int success = 0;
+	int hardfail = 0;
+	siginfo_t info;
+
+	pid_t pid = fork();
+	assert(pid >= 0);
+
+	if (pid == 0)
+		run_test(t, test_data); /* never returns */
+
+	if (waitid(P_ALL, 0, &info, WEXITED)) {
+		fprintf(stderr, "waitid failed: %m\n");
+		abort();
+	}
+
+	if (test_data)
+		fprintf(stderr, "test \"%s/%i\":\t", t->name, iteration);
+	else
+		fprintf(stderr, "test \"%s\":\t", t->name);
+
+	switch (info.si_code) {
+	case CLD_EXITED:
+		fprintf(stderr, "exit status %d", info.si_status);
+		if (info.si_status == EXIT_SUCCESS)
+			success = 1;
+		break;
+	case CLD_KILLED:
+	case CLD_DUMPED:
+		fprintf(stderr, "signal %d", info.si_status);
+		if (info.si_status != SIGABRT)
+			hardfail = 1;
+		break;
+	}
+
+	if (t->must_fail)
+		success = !success;
+
+	if (success && !hardfail) {
+		fprintf(stderr, ", pass.\n");
+		return 1;
+	} else { 
+		fprintf(stderr, ", fail.\n");
+		return 0;
+	}
+}
+
+/* Returns number of tests and number of pass / fail in param args */
+static int
+iterate_test(const struct weston_test *t, int *passed)
+{
+	int i;
+	void *current_test_data = (void *) t->table_data;
+	for (i = 0; i < t->n_elements; ++i, current_test_data += t->element_size)
+	{
+		if (exec_and_report_test(t, current_test_data, i))
+			++(*passed);
+	}
+
+	return t->n_elements;
+}
+
 int main(int argc, char *argv[])
 {
 	const struct weston_test *t;
-	pid_t pid;
-	int total, pass;
-	siginfo_t info;
+	int total = 0;
+	int pass = 0;
 
 	if (argc == 2) {
 		const char *testname = argv[1];
@@ -86,51 +149,17 @@ int main(int argc, char *argv[])
 			exit(EXIT_FAILURE);
 		}
 
-		run_test(t);
+		int number_passed_in_test = 0;
+		total += iterate_test(t, &number_passed_in_test);
+		pass += number_passed_in_test;
+	} else {
+		for (t = &__start_test_section; t < &__stop_test_section; t++) {
+			int number_passed_in_test = 0;
+			total += iterate_test(t, &number_passed_in_test);
+			pass += number_passed_in_test;
+		}
 	}
 
-	pass = 0;
-	for (t = &__start_test_section; t < &__stop_test_section; t++) {
-		int success = 0;
-		int hardfail = 0;
-
-		pid = fork();
-		assert(pid >= 0);
-
-		if (pid == 0)
-			run_test(t); /* never returns */
-
-		if (waitid(P_ALL, 0, &info, WEXITED)) {
-			fprintf(stderr, "waitid failed: %m\n");
-			abort();
-		}
-
-		fprintf(stderr, "test \"%s\":\t", t->name);
-		switch (info.si_code) {
-		case CLD_EXITED:
-			fprintf(stderr, "exit status %d", info.si_status);
-			if (info.si_status == EXIT_SUCCESS)
-				success = 1;
-			break;
-		case CLD_KILLED:
-		case CLD_DUMPED:
-			fprintf(stderr, "signal %d", info.si_status);
-			if (info.si_status != SIGABRT)
-				hardfail = 1;
-			break;
-		}
-
-		if (t->must_fail)
-			success = !success;
-
-		if (success && !hardfail) {
-			pass++;
-			fprintf(stderr, ", pass.\n");
-		} else
-			fprintf(stderr, ", fail.\n");
-	}
-
-	total = &__stop_test_section - &__start_test_section;
 	fprintf(stderr, "%d tests, %d pass, %d fail\n",
 		total, pass, total - pass);
 
