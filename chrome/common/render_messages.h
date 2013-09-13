@@ -668,11 +668,6 @@ IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_PDFSaveURLAs,
 IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_PDFUpdateContentRestrictions,
                     int /* restrictions */)
 
-// Brings up a Password... dialog for protected documents.
-IPC_SYNC_MESSAGE_ROUTED1_1(ChromeViewHostMsg_PDFModalPromptForPassword,
-                           std::string /* prompt */,
-                           std::string /* actual_value */)
-
 // This message indicates the error appeared in the frame.
 IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_FrameLoadingError,
                     int /* error */)

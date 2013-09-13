@@ -398,26 +398,6 @@ PP_Resource GetResourceImage(PP_Instance instance_id,
   return GetResourceImageForScale(instance_id, image_id, 1.0f);
 }
 
-PP_Var ModalPromptForPassword(PP_Instance instance_id,
-                              PP_Var message) {
-  content::PepperPluginInstance* instance =
-      content::PepperPluginInstance::Get(instance_id);
-  if (!instance)
-    return PP_MakeUndefined();
-
-  std::string actual_value;
-  scoped_refptr<ppapi::StringVar> message_string(
-      ppapi::StringVar::FromPPVar(message));
-
-  instance->GetRenderView()->Send(
-      new ChromeViewHostMsg_PDFModalPromptForPassword(
-          instance->GetRenderView()->GetRoutingID(),
-          message_string->value(),
-          &actual_value));
-
-  return ppapi::StringVar::StringToPPVar(actual_value);
-}
-
 const PPB_PDF ppb_pdf = {
   &GetLocalizedString,
   &GetResourceImage,
@@ -433,8 +413,7 @@ const PPB_PDF ppb_pdf = {
   &SaveAs,
   &PPB_PDF_Impl::InvokePrintingForInstance,
   &IsFeatureEnabled,
-  &GetResourceImageForScale,
-  &ModalPromptForPassword,
+  &GetResourceImageForScale
 };
 
 }  // namespace

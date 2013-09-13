@@ -4,9 +4,7 @@
 
 #include "chrome/browser/ui/pdf/pdf_tab_helper.h"
 
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/download/download_stats.h"
-#include "chrome/browser/ui/app_modal_dialogs/javascript_dialog_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -15,7 +13,6 @@
 #include "chrome/browser/ui/pdf/pdf_unsupported_feature.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/common/render_messages.h"
-#include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/navigation_details.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(PDFTabHelper);
@@ -41,8 +38,6 @@ bool PDFTabHelper::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_PDFSaveURLAs, OnSaveURLAs)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_PDFUpdateContentRestrictions,
                         OnUpdateContentRestrictions)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ChromeViewHostMsg_PDFModalPromptForPassword,
-                                    OnModalPromptForPassword)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -88,36 +83,4 @@ void PDFTabHelper::OnUpdateContentRestrictions(int content_restrictions) {
   CoreTabHelper* core_tab_helper =
       CoreTabHelper::FromWebContents(web_contents());
   core_tab_helper->UpdateContentRestrictions(content_restrictions);
-}
-
-void PDFTabHelper::OnModalPromptForPasswordClosed(
-    IPC::Message* reply_message,
-    bool success,
-    const string16& actual_value) {
-  ChromeViewHostMsg_PDFModalPromptForPassword::WriteReplyParams(
-      reply_message, UTF16ToUTF8(actual_value));
-  Send(reply_message);
-}
-
-void PDFTabHelper::OnModalPromptForPassword(const std::string& prompt,
-                                            IPC::Message* reply_message) {
-  base::Callback<void(bool, const string16&)> callback =
-      base::Bind(&PDFTabHelper::OnModalPromptForPasswordClosed,
-                 base::Unretained(this), reply_message);
-#if defined(OS_MACOSX)
-  ShowPDFPasswordDialog(web_contents(), base::UTF8ToUTF16(prompt), callback);
-#else
-  // Cheat (for now).
-  bool did_suppress_message;
-  GetJavaScriptDialogManagerInstance()->RunJavaScriptDialog(
-      web_contents(),
-      GURL(),
-      std::string(),
-      content::JAVASCRIPT_MESSAGE_TYPE_PROMPT,
-      base::UTF8ToUTF16(prompt),
-      base::string16(),
-      true,
-      callback,
-      &did_suppress_message);
-#endif  // OS_*
 }

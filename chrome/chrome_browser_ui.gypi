@@ -866,7 +866,6 @@
         'browser/ui/cocoa/panels/panel_utils_cocoa.mm',
         'browser/ui/cocoa/panels/panel_window_controller_cocoa.h',
         'browser/ui/cocoa/panels/panel_window_controller_cocoa.mm',
-        'browser/ui/cocoa/pdf_password_dialog.mm',
         'browser/ui/cocoa/presentation_mode_controller.h',
         'browser/ui/cocoa/presentation_mode_controller.mm',
         'browser/ui/cocoa/profile_menu_controller.h',

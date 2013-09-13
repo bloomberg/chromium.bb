@@ -5,13 +5,9 @@
 #ifndef CHROME_BROWSER_UI_PDF_PDF_TAB_HELPER_H_
 #define CHROME_BROWSER_UI_PDF_PDF_TAB_HELPER_H_
 
-#include <string>
-
-#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
-#include "ipc/ipc_message.h"
 
 class OpenPDFInReaderPromptDelegate;
 
@@ -43,34 +39,17 @@ class PDFTabHelper : public content::WebContentsObserver,
   // Internal helpers ----------------------------------------------------------
 
   void UpdateLocationBar();
-  void OnModalPromptForPasswordClosed(IPC::Message* reply_message,
-                                      bool success,
-                                      const string16& actual_value);
 
   // Message handlers.
   void OnHasUnsupportedFeature();
   void OnSaveURLAs(const GURL& url,
                    const content::Referrer& referrer);
   void OnUpdateContentRestrictions(int content_restrictions);
-  void OnModalPromptForPassword(const std::string& prompt,
-                                IPC::Message* reply_message);
 
   // The model for the confirmation prompt to open a PDF in Adobe Reader.
   scoped_ptr<OpenPDFInReaderPromptDelegate> open_in_reader_prompt_;
 
   DISALLOW_COPY_AND_ASSIGN(PDFTabHelper);
 };
-
-// TODO(avi): write for other platforms
-#if defined(OS_MACOSX)
-typedef base::Callback<void(bool /* success */,
-                            const base::string16& /* password */)>
-                                PasswordDialogClosedCallback;
-
-// Shows a tab-modal dialog to get a password for a PDF document.
-void ShowPDFPasswordDialog(content::WebContents* web_contents,
-                           const base::string16& prompt,
-                           const PasswordDialogClosedCallback& callback);
-#endif  // OS_*
 
 #endif  // CHROME_BROWSER_UI_PDF_PDF_TAB_HELPER_H_
