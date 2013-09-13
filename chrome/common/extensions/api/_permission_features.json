@@ -12,10 +12,11 @@
     "min_manifest_version": 2
   },
   "activityLogPrivate": {
-    "channel": "dev",
+    "channel": "stable",
     "extension_types": ["extension", "platform_app"],
     "whitelist": [
-      "acldcpdepobcjbdanifkmfndkjoilgba",  // Activity Log (Watchdog)
+      "acldcpdepobcjbdanifkmfndkjoilgba",  // Watchdog Release
+      "llifadooppchlccojjkgplcfeglhphpe",  // Watchdog Testing
       "ajabfgledjhbabeoojlabelaifmakodf"   // For testing
     ]
   },
