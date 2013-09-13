@@ -3,14 +3,10 @@
 # found in the LICENSE file.
 
 {
-  'variables': {
-    'ime_test_files': [
-      'character_composer_unittest.cc',
-      'input_method_ibus_unittest.cc',
-    ],
-  },
   'sources': [
-    '<@(ime_test_files)',
+    'character_composer_unittest.cc',
+    'input_method_base_unittest.cc',
+    'input_method_ibus_unittest.cc',
     'win/imm32_manager_unittest.cc',
     'win/tsf_input_scope_unittest.cc',
     'win/tsf_text_store_unittest.cc',
@@ -18,7 +14,13 @@
   'conditions': [
     ['use_aura==0 or use_x11==0 or chromeos==0', {
       'sources!': [
-        '<@(ime_test_files)',
+        'character_composer_unittest.cc',
+        'input_method_ibus_unittest.cc',
+      ],
+    }],
+    ['use_aura==0 and OS!="win"', {
+      'sources!': [
+        'input_method_base_unittest.cc',
       ],
     }],
     ['OS!="win"', {

@@ -37,6 +37,8 @@ class UI_EXPORT InputMethodBase : NON_EXPORTED_BASE(public InputMethod) {
   virtual void OnFocus() OVERRIDE;
   virtual void OnBlur() OVERRIDE;
   virtual void SetFocusedTextInputClient(TextInputClient* client) OVERRIDE;
+  virtual void SetStickyFocusedTextInputClient(
+      TextInputClient* client) OVERRIDE;
   virtual void DetachTextInputClient(TextInputClient* client) OVERRIDE;
   virtual TextInputClient* GetTextInputClient() const OVERRIDE;
 
@@ -88,8 +90,11 @@ class UI_EXPORT InputMethodBase : NON_EXPORTED_BASE(public InputMethod) {
   }
 
  private:
+  void SetFocusedTextInputClientInternal(TextInputClient* client);
+
   internal::InputMethodDelegate* delegate_;
   TextInputClient* text_input_client_;
+  bool is_sticky_text_input_client_;
 
   ObserverList<InputMethodObserver> observer_list_;
 

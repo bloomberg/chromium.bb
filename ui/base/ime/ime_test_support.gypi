@@ -6,6 +6,8 @@
   'sources': [
     'dummy_input_method.cc',
     'dummy_input_method.h',
+    'dummy_text_input_client.cc',
+    'dummy_text_input_client.h',
     'win/mock_tsf_bridge.cc',
     'win/mock_tsf_bridge.h',
   ],

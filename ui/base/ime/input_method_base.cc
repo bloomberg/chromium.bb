@@ -14,6 +14,7 @@ namespace ui {
 InputMethodBase::InputMethodBase()
   : delegate_(NULL),
     text_input_client_(NULL),
+    is_sticky_text_input_client_(false),
     system_toplevel_window_focused_(false) {
 }
 
@@ -43,19 +44,21 @@ void InputMethodBase::OnBlur() {
 }
 
 void InputMethodBase::SetFocusedTextInputClient(TextInputClient* client) {
-  TextInputClient* old = text_input_client_;
-  OnWillChangeFocusedClient(old, client);
-  text_input_client_ = client;  // NULL allowed.
-  OnDidChangeFocusedClient(old, client);
+  if (is_sticky_text_input_client_)
+    return;
+  SetFocusedTextInputClientInternal(client);
+}
 
-  if (old != text_input_client_)
-    NotifyTextInputStateChanged(text_input_client_);
+void InputMethodBase::SetStickyFocusedTextInputClient(TextInputClient* client) {
+  is_sticky_text_input_client_ = (client != NULL);
+  SetFocusedTextInputClientInternal(client);
 }
 
 void InputMethodBase::DetachTextInputClient(TextInputClient* client) {
   if (text_input_client_ == client) {
     OnWillChangeFocusedClient(client, NULL);
     text_input_client_ = NULL;
+    is_sticky_text_input_client_ = false;
     OnDidChangeFocusedClient(client, NULL);
     NotifyTextInputStateChanged(text_input_client_);
   }
@@ -125,6 +128,17 @@ void InputMethodBase::NotifyTextInputStateChanged(
   FOR_EACH_OBSERVER(InputMethodObserver,
                     observer_list_,
                     OnTextInputStateChanged(client));
+}
+
+void InputMethodBase::SetFocusedTextInputClientInternal(
+    TextInputClient* client) {
+  TextInputClient* old = text_input_client_;
+  if (old == client)
+    return;
+  OnWillChangeFocusedClient(old, client);
+  text_input_client_ = client;  // NULL allowed.
+  OnDidChangeFocusedClient(old, client);
+  NotifyTextInputStateChanged(text_input_client_);
 }
 
 }  // namespace ui

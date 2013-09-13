@@ -32,6 +32,10 @@ bool DummyInputMethod::OnUntranslatedIMEMessage(const base::NativeEvent& event,
 void DummyInputMethod::SetFocusedTextInputClient(TextInputClient* client) {
 }
 
+void DummyInputMethod::SetStickyFocusedTextInputClient(
+    TextInputClient* client) {
+}
+
 void DummyInputMethod::DetachTextInputClient(TextInputClient* client) {
 }
 
