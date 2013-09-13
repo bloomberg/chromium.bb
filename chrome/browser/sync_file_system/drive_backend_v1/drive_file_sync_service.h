@@ -390,7 +390,6 @@ class DriveFileSyncService : public RemoteFileSyncService,
   RemoteChangeProcessor* remote_change_processor_;
 
   google_apis::GDataErrorCode last_gdata_error_;
-  int gdata_errors_;
 
   ConflictResolutionResolver conflict_resolution_resolver_;
 

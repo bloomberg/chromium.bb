@@ -47,8 +47,6 @@ typedef RemoteFileSyncService::OriginStatusMap OriginStatusMap;
 
 namespace {
 
-const int kGDataErrorCountMax = 5;
-
 const base::FilePath::CharType kTempDirName[] = FILE_PATH_LITERAL("tmp");
 const base::FilePath::CharType kSyncFileSystemDir[] =
     FILE_PATH_LITERAL("Sync FileSystem");
@@ -341,7 +339,6 @@ DriveFileSyncService::DriveFileSyncService(Profile* profile)
       may_have_unfetched_changes_(false),
       remote_change_processor_(NULL),
       last_gdata_error_(google_apis::HTTP_SUCCESS),
-      gdata_errors_(0),
       conflict_resolution_resolver_(kDefaultPolicy) {
 }
 
@@ -445,10 +442,8 @@ void DriveFileSyncService::UpdateServiceStateFromLastOperationStatus(
     case SYNC_STATUS_OK:
       // If the last Drive-related operation was successful we can
       // change the service state to OK.
-      if (GDataErrorCodeToSyncStatusCode(gdata_error) == SYNC_STATUS_OK) {
-        gdata_errors_ = 0;
+      if (GDataErrorCodeToSyncStatusCode(gdata_error) == SYNC_STATUS_OK)
         UpdateServiceState(REMOTE_SERVICE_OK, std::string());
-      }
       break;
 
     // Authentication error.
@@ -468,11 +463,8 @@ void DriveFileSyncService::UpdateServiceStateFromLastOperationStatus(
     case SYNC_STATUS_NETWORK_ERROR:
     case SYNC_STATUS_ABORT:
     case SYNC_STATUS_FAILED:
-      if (gdata_errors_++ > kGDataErrorCountMax) {
-        gdata_errors_ = 0;
-        UpdateServiceState(REMOTE_SERVICE_TEMPORARY_UNAVAILABLE,
-                          "Network or temporary service error.");
-      }
+      UpdateServiceState(REMOTE_SERVICE_TEMPORARY_UNAVAILABLE,
+                         "Network or temporary service error.");
       break;
 
     // Errors which would require manual user intervention to resolve.
@@ -487,7 +479,6 @@ void DriveFileSyncService::UpdateServiceStateFromLastOperationStatus(
       // Other errors don't affect service state
       break;
   }
-  gdata_errors_ = 0;
 }
 
 void DriveFileSyncService::UpdateServiceState(RemoteServiceState state,
