@@ -149,7 +149,8 @@ void WebContentsScreenshotManager::OnScreenshotTaken(int unique_id,
   }
 
   if (!success || bitmap.empty() || bitmap.isNull()) {
-    ClearScreenshot(entry);
+    if (!ClearScreenshot(entry))
+      OnScreenshotSet(entry);
     return;
   }
 
@@ -193,7 +194,8 @@ void WebContentsScreenshotManager::OnScreenshotEncodeComplete(
 }
 
 void WebContentsScreenshotManager::OnScreenshotSet(NavigationEntryImpl* entry) {
-  PurgeScreenshotsIfNecessary();
+  if (entry->screenshot().get())
+    PurgeScreenshotsIfNecessary();
 }
 
 bool WebContentsScreenshotManager::ClearScreenshot(NavigationEntryImpl* entry) {

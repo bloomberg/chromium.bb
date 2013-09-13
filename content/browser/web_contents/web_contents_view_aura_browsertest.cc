@@ -14,6 +14,7 @@
 #include "content/browser/web_contents/navigation_entry_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_screenshot_manager.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
@@ -44,6 +45,7 @@ class ScreenshotTracker : public WebContentsScreenshotManager {
 
   void Reset() {
     screenshot_taken_for_ = NULL;
+    screenshot_set_.clear();
   }
 
   void SetScreenshotInterval(int interval_ms) {
@@ -57,6 +59,10 @@ class ScreenshotTracker : public WebContentsScreenshotManager {
     message_loop_runner_->Run();
   }
 
+  bool ScreenshotSetForEntry(NavigationEntryImpl* entry) const {
+    return screenshot_set_.count(entry) > 0;
+  }
+
  private:
   // Overridden from WebContentsScreenshotManager:
   virtual void TakeScreenshotImpl(RenderViewHost* host,
@@ -68,6 +74,7 @@ class ScreenshotTracker : public WebContentsScreenshotManager {
 
   virtual void OnScreenshotSet(NavigationEntryImpl* entry) OVERRIDE {
     --waiting_for_screenshots_;
+    screenshot_set_[entry] = true;
     WebContentsScreenshotManager::OnScreenshotSet(entry);
     if (waiting_for_screenshots_ == 0 && message_loop_runner_.get())
       message_loop_runner_->Quit();
@@ -76,8 +83,40 @@ class ScreenshotTracker : public WebContentsScreenshotManager {
   RenderViewHost* screenshot_taken_for_;
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
   int waiting_for_screenshots_;
+  std::map<NavigationEntryImpl*, bool> screenshot_set_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenshotTracker);
+};
+
+class NavigationWatcher : public WebContentsObserver {
+ public:
+  explicit NavigationWatcher(WebContents* contents)
+      : WebContentsObserver(contents),
+        navigated_(false),
+        should_quit_loop_(false) {
+  }
+
+  virtual ~NavigationWatcher() {}
+
+  void WaitUntilNavigationStarts() {
+    if (navigated_)
+      return;
+    should_quit_loop_ = true;
+    base::MessageLoop::current()->Run();
+  }
+
+ private:
+  // Overridden from WebContentsObserver:
+  virtual void AboutToNavigateRenderView(RenderViewHost* host) OVERRIDE {
+    navigated_ = true;
+    if (should_quit_loop_)
+      base::MessageLoop::current()->Quit();
+  }
+
+  bool navigated_;
+  bool should_quit_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(NavigationWatcher);
 };
 
 class WebContentsViewAuraTest : public ContentBrowserTest {
@@ -89,6 +128,7 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
   virtual void SetUp() OVERRIDE {
     // TODO(jbauman): Remove this. http://crbug.com/268644
     UseRealGLContexts();
+    ContentBrowserTest::SetUp();
   }
 
   // Executes the javascript synchronously and makes sure the returned value is
@@ -151,6 +191,8 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
     aura::Window* content = web_contents->GetView()->GetContentNativeView();
     gfx::Rect bounds = content->GetBoundsInRootWindow();
     aura::test::EventGenerator generator(content->GetRootWindow(), content);
+    const int kScrollDurationMs = 20;
+    const int kScrollSteps = 10;
 
     {
       // Do a swipe-right now. That should navigate backwards.
@@ -159,8 +201,8 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
       generator.GestureScrollSequence(
           gfx::Point(bounds.x() + 2, bounds.y() + 10),
           gfx::Point(bounds.right() - 10, bounds.y() + 10),
-          base::TimeDelta::FromMilliseconds(20),
-          1);
+          base::TimeDelta::FromMilliseconds(kScrollDurationMs),
+          kScrollSteps);
       string16 actual_title = title_watcher.WaitAndGetTitle();
       EXPECT_EQ(expected_title, actual_title);
       value = content::ExecuteScriptAndGetValue(view_host, "get_current()");
@@ -177,8 +219,8 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
       generator.GestureScrollSequence(
           gfx::Point(bounds.x() + 2, bounds.y() + 10),
           gfx::Point(bounds.right() - 10, bounds.y() + 10),
-          base::TimeDelta::FromMilliseconds(20),
-          10);
+          base::TimeDelta::FromMilliseconds(kScrollDurationMs),
+          kScrollSteps);
       string16 actual_title = title_watcher.WaitAndGetTitle();
       EXPECT_EQ(expected_title, actual_title);
       value = content::ExecuteScriptAndGetValue(view_host, "get_current()");
@@ -195,8 +237,8 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
       generator.GestureScrollSequence(
           gfx::Point(bounds.right() - 10, bounds.y() + 10),
           gfx::Point(bounds.x() + 2, bounds.y() + 10),
-          base::TimeDelta::FromMilliseconds(20),
-          10);
+          base::TimeDelta::FromMilliseconds(kScrollDurationMs),
+          kScrollSteps);
       string16 actual_title = title_watcher.WaitAndGetTitle();
       EXPECT_EQ(expected_title, actual_title);
       value = content::ExecuteScriptAndGetValue(view_host, "get_current()");
@@ -354,11 +396,11 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
 
   entry = NavigationEntryImpl::FromNavigationEntry(
       web_contents->GetController().GetEntryAtIndex(1));
-  EXPECT_TRUE(entry->screenshot().get());
+  EXPECT_TRUE(screenshot_manager()->ScreenshotSetForEntry(entry));
 
   entry = NavigationEntryImpl::FromNavigationEntry(
       web_contents->GetController().GetEntryAtIndex(0));
-  EXPECT_TRUE(entry->screenshot().get());
+  EXPECT_TRUE(screenshot_manager()->ScreenshotSetForEntry(entry));
 
   // Navigate again. Index 2 should now have a screenshot.
   ExecuteSyncJSFunction(view_host, "navigate_next()");
@@ -367,7 +409,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
 
   entry = NavigationEntryImpl::FromNavigationEntry(
       web_contents->GetController().GetEntryAtIndex(2));
-  EXPECT_TRUE(entry->screenshot().get());
+  EXPECT_TRUE(screenshot_manager()->ScreenshotSetForEntry(entry));
 
   entry = NavigationEntryImpl::FromNavigationEntry(
       web_contents->GetController().GetEntryAtIndex(3));
@@ -392,7 +434,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
     screenshot_manager()->WaitUntilScreenshotIsReady();
     entry = NavigationEntryImpl::FromNavigationEntry(
         web_contents->GetController().GetEntryAtIndex(3));
-    EXPECT_TRUE(entry->screenshot().get());
+    EXPECT_TRUE(screenshot_manager()->ScreenshotSetForEntry(entry));
   }
 
   // Navigate a couple more times.
@@ -416,7 +458,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
     screenshot_manager()->WaitUntilScreenshotIsReady();
     entry = NavigationEntryImpl::FromNavigationEntry(
         web_contents->GetController().GetEntryAtIndex(4));
-    EXPECT_TRUE(entry->screenshot().get());
+    EXPECT_TRUE(screenshot_manager()->ScreenshotSetForEntry(entry));
   }
 }
 
@@ -464,15 +506,16 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
     EXPECT_NE(old_host, web_contents->GetRenderViewHost())
         << navigations[i].url.spec();
     EXPECT_EQ(old_host, screenshot_manager()->screenshot_taken_for());
-    screenshot_manager()->Reset();
 
     NavigationEntryImpl* entry = NavigationEntryImpl::FromNavigationEntry(
         web_contents->GetController().GetEntryAtOffset(-1));
-    EXPECT_TRUE(entry->screenshot().get());
+    EXPECT_TRUE(screenshot_manager()->ScreenshotSetForEntry(entry));
 
     entry = NavigationEntryImpl::FromNavigationEntry(
         web_contents->GetController().GetActiveEntry());
+    EXPECT_FALSE(screenshot_manager()->ScreenshotSetForEntry(entry));
     EXPECT_FALSE(entry->screenshot().get());
+    screenshot_manager()->Reset();
   }
 
   // Increase the minimum interval between taking screenshots.
@@ -568,6 +611,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
   web_contents->GetController().GoBack();
   WaitForLoadStop(web_contents);
   EXPECT_EQ(1, GetCurrentIndex());
+  EXPECT_EQ(base::ASCIIToUTF16("Title: #1"), web_contents->GetTitle());
   EXPECT_TRUE(controller.CanGoBack());
   EXPECT_TRUE(controller.CanGoForward());
 
@@ -579,18 +623,15 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
   // right.
   string16 expected_title = ASCIIToUTF16("Title: #2");
   content::TitleWatcher title_watcher(web_contents, expected_title);
+  NavigationWatcher nav_watcher(web_contents);
 
   generator.GestureScrollSequence(
       gfx::Point(bounds.right() - 10, bounds.y() + 10),
       gfx::Point(bounds.x() + 2, bounds.y() + 10),
       base::TimeDelta::FromMilliseconds(2000),
       10);
-  // Make sure the GestureEventFilter's debouncing doesn't interfere.
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::MessageLoop::QuitClosure(),
-      base::TimeDelta::FromMilliseconds(100));
-  base::MessageLoop::current()->Run();
+  nav_watcher.WaitUntilNavigationStarts();
+
   generator.GestureScrollSequence(
       gfx::Point(bounds.x() + 2, bounds.y() + 10),
       gfx::Point(bounds.right() - 10, bounds.y() + 10),
