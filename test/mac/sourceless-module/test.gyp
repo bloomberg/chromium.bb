@@ -69,6 +69,28 @@
         'resource_framework',
       ],
     },
+
+    { # No actions, but still have resources.
+      'target_name': 'mac_resource_bundle_no_actions',
+      'product_extension': 'bundle',
+      'type': 'executable',
+      'mac_bundle': 1,
+      'mac_bundle_resources': [
+        'empty.txt',
+      ],
+    },
+    {
+      'target_name': 'bundle_dependent_on_resource_bundle_no_actions',
+      'type': 'executable',
+      'mac_bundle': 1,
+      'sources': [ 'empty.c' ],
+      'dependencies': [
+        'mac_resource_bundle_no_actions',
+      ],
+      'mac_bundle_resources': [
+        '<(PRODUCT_DIR)/mac_resource_bundle_no_actions.bundle',
+      ],
+    },
   ],
 }
 

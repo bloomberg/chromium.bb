@@ -32,6 +32,17 @@ if sys.platform == 'darwin':
       'resource_bundle.bundle/Contents/MacOS/resource_bundle',
       chdir='sourceless-module')
 
+  # Build an app containing an actionless bundle.
+  test.build(
+      'test.gyp',
+      'bundle_dependent_on_resource_bundle_no_actions',
+      chdir='sourceless-module')
+
+  test.built_file_must_exist(
+      'bundle_dependent_on_resource_bundle_no_actions.app/Contents/Resources/'
+          'mac_resource_bundle_no_actions.bundle/Contents/Resources/empty.txt',
+      chdir='sourceless-module')
+
   # Needs to build and cause the bundle to be built.
   test.build(
       'test.gyp', 'dependent_on_resource_bundle', chdir='sourceless-module')

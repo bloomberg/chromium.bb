@@ -478,12 +478,11 @@ class NinjaWriter:
 
     # Write out a link step, if needed.
     output = None
-    is_empty_bundle = True
+    is_empty_bundle = not link_deps and not mac_bundle_depends
     if link_deps or self.target.actions_stamp or actions_depends:
       output = self.WriteTarget(spec, config_name, config, link_deps,
                                 self.target.actions_stamp or actions_depends)
       if self.is_mac_bundle:
-        is_empty_bundle = not link_deps and not mac_bundle_depends
         mac_bundle_depends.append(output)
 
     # Bundle all of the above together, if needed.
