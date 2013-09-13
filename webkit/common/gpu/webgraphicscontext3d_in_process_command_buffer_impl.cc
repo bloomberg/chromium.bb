@@ -219,7 +219,7 @@ bool WebGraphicsContext3DInProcessCommandBufferImpl::makeContextCurrent() {
   return context_ && !isContextLost();
 }
 
-uint32_t WebGraphicsContext3DInProcessCommandBufferImpl::getLastFlushID() {
+uint32_t WebGraphicsContext3DInProcessCommandBufferImpl::lastFlushID() {
   return flush_id_;
 }
 

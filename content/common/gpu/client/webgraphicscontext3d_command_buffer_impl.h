@@ -143,7 +143,7 @@ class WebGraphicsContext3DCommandBufferImpl
   // graphics context fails to create. Do not call from more than one thread.
   virtual bool makeContextCurrent();
 
-  virtual uint32_t getLastFlushID();
+  virtual uint32_t lastFlushID();
 
   virtual int width();
   virtual int height();

@@ -74,7 +74,7 @@ class WEBKIT_GPU_EXPORT WebGraphicsContext3DInProcessCommandBufferImpl
   // WebGraphicsContext3D methods
   virtual bool makeContextCurrent();
 
-  virtual uint32_t getLastFlushID();
+  virtual uint32_t lastFlushID();
 
   virtual int width();
   virtual int height();

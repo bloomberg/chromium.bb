@@ -507,7 +507,7 @@ bool WebGraphicsContext3DCommandBufferImpl::makeContextCurrent() {
   return true;
 }
 
-uint32_t WebGraphicsContext3DCommandBufferImpl::getLastFlushID() {
+uint32_t WebGraphicsContext3DCommandBufferImpl::lastFlushID() {
   return flush_id_;
 }
 
