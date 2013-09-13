@@ -424,7 +424,13 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
 
 // Test that setting the opener to null in a window affects cross-process
 // navigations, including those to existing entries.  http://crbug.com/156669.
-IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, DisownOpener) {
+// Flaky on windows: http://crbug.com/291249
+#if defined(OS_WIN)
+#define MAYBE_DisownOpener DISABLED_DisownOpener
+#else
+#define MAYBE_DisownOpener DisownOpener
+#endif
+IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, MAYBE_DisownOpener) {
   // Start two servers with different sites.
   ASSERT_TRUE(test_server()->Start());
   net::SpawnedTestServer https_server(
