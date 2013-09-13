@@ -43,6 +43,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
@@ -1634,6 +1635,34 @@ bool UserManagerImpl::AreLocallyManagedUsersAllowed() const {
   return ManagedUserService::AreManagedUsersEnabled() &&
         (locally_managed_users_allowed ||
          !g_browser_process->browser_policy_connector()->IsEnterpriseManaged());
+}
+
+base::FilePath UserManagerImpl::GetUserProfileDir(
+    const std::string& email) const {
+  // TODO(dpolukhin): Remove Chrome OS specific profile path logic from
+  // ProfileManager and use only this function to construct profile path.
+  base::FilePath profile_dir;
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(::switches::kMultiProfiles)) {
+    const User* user = FindUser(email);
+    if (user && !user->username_hash().empty()) {
+      profile_dir = base::FilePath(
+          chrome::kProfileDirPrefix + user->username_hash());
+    }
+  } else if (command_line.HasSwitch(chromeos::switches::kLoginProfile)) {
+    profile_dir = command_line.GetSwitchValuePath(
+        chromeos::switches::kLoginProfile);
+  } else {
+    // We should never be logged in with no profile dir unless
+    // multi-profiles are enabled.
+    NOTREACHED();
+    profile_dir = base::FilePath();
+  }
+
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  profile_dir = profile_manager->user_data_dir().Append(profile_dir);
+
+  return profile_dir;
 }
 
 UserFlow* UserManagerImpl::GetDefaultUserFlow() const {

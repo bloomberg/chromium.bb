@@ -87,13 +87,6 @@ class ProfileManager : public base::NonThreadSafe,
                           const string16& icon_url,
                           const std::string& managed_user_id);
 
-  // Initiates profile creation identified by |active_profile_username_hash_|.
-  // If profile has already been created then the callback is called
-  // immediately. Should be called on the UI thread.
-  // This method is only used on Chrome OS where every user profile
-  // has username_hash associated with it.
-  static void CreateDefaultProfileAsync(const CreateCallback& callback);
-
   // Returns true if the profile pointer is known to point to an existing
   // profile.
   bool IsValidProfile(Profile* profile);

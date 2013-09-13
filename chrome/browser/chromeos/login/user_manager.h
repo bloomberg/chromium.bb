@@ -330,11 +330,11 @@ class UserManager {
   // Returned value should not be cached.
   virtual UserFlow* GetUserFlow(const std::string& email) const = 0;
 
-  // Resets user flow fo user idenitified by |email|.
+  // Resets user flow for user identified by |email|.
   virtual void ResetUserFlow(const std::string& email) = 0;
 
   // Gets/sets chrome oauth client id and secret for kiosk app mode. The default
-  // values can be overriden with kiosk auth file.
+  // values can be overridden with kiosk auth file.
   virtual bool GetAppModeChromeClientOAuthInfo(
       std::string* chrome_client_id,
       std::string* chrome_client_secret) = 0;
@@ -352,6 +352,9 @@ class UserManager {
 
   // Returns true if locally managed users allowed.
   virtual bool AreLocallyManagedUsersAllowed() const = 0;
+
+  // Returns profile dir for the user identified by |email|.
+  virtual base::FilePath GetUserProfileDir(const std::string& email) const = 0;
 
  private:
   friend class ScopedUserManagerEnabler;

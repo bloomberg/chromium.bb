@@ -96,6 +96,8 @@ class MockUserManager : public UserManager {
   MOCK_METHOD2(SetAppModeChromeClientOAuthInfo, void(const std::string&,
                                                      const std::string&));
   MOCK_CONST_METHOD0(AreLocallyManagedUsersAllowed, bool(void));
+  MOCK_CONST_METHOD1(GetUserProfileDir,
+                     base::FilePath(const std::string& email));
 
   // You can't mock these functions easily because nobody can create
   // User objects but the UserManagerImpl and us.

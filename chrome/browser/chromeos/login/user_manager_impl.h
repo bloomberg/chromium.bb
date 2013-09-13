@@ -139,6 +139,8 @@ class UserManagerImpl
       const std::string& chrome_client_id,
       const std::string& chrome_client_secret) OVERRIDE;
   virtual bool AreLocallyManagedUsersAllowed() const OVERRIDE;
+  virtual base::FilePath GetUserProfileDir(
+      const std::string& email) const OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
