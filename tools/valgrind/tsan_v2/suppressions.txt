@@ -71,6 +71,9 @@ race:skia::BeginPlatformPaint
 # http://crbug.com/244385
 race:unixTempFileDir
 
+# http://crbug.com/244755
+race:v8::internal::Zone::NewExpand
+
 # http://crbug.com/244774
 race:webrtc::RTPReceiver::ProcessBitrate
 race:webrtc::RTPSender::ProcessBitrate
@@ -120,3 +123,6 @@ race:base::*::g_lazy_tls_ptr
 
 # http://crbug.com/280466
 race:content::WebRtcAudioCapturer::SetCapturerSource
+
+# http://crbug.com/290964
+race:~PostponeInterruptsScope
