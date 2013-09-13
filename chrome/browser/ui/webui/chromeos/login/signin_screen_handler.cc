@@ -446,7 +446,6 @@ void SigninScreenHandler::DeclareLocalizedValues(
   builder->Add("signinButton", IDS_LOGIN_BUTTON);
   builder->Add("shutDown", IDS_SHUTDOWN_BUTTON);
   builder->Add("addUser", IDS_ADD_USER_BUTTON);
-  builder->Add("cancelUserAdding", IDS_CANCEL_USER_ADDING);
   builder->Add("browseAsGuest", IDS_GO_INCOGNITO_BUTTON);
   builder->Add("cancel", IDS_CANCEL);
   builder->Add("signOutUser", IDS_SCREEN_LOCK_SIGN_OUT);
@@ -470,6 +469,7 @@ void SigninScreenHandler::DeclareLocalizedValues(
           IDS_DISABLED_ADD_USER_TOOLTIP);
   builder->Add("supervisedUserExpiredTokenWarning",
                IDS_SUPERVISED_USER_EXPIRED_TOKEN_WARNING);
+  builder->Add("multiple-signin-banner-text", IDS_LOGIN_USER_ADDING_BANNER);
 
   // Strings used by password changed dialog.
   builder->Add("passwordChangedTitle", IDS_LOGIN_PASSWORD_CHANGED_TITLE);

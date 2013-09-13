@@ -5,6 +5,7 @@
 
 #account-picker {
   -webkit-box-align: center;
+  -webkit-box-orient: vertical;
   -webkit-box-pack: center;
   /*
    * Account picker has .step class but should be
@@ -16,4 +17,17 @@
   left: 0;
   margin: 0;
   padding: 0;
+}
+
+#multiple-signin-banner {
+  background-color: rgba(0, 0, 0, 0.75);
+  border-radius: 4px;
+  color: whitesmoke;
+  display: none;
+  font-size: 15px;
+  padding: 20px;
+}
+
+html[screen=user-adding] #multiple-signin-banner {
+  display: block;
 }
