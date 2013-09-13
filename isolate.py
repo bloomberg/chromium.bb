@@ -1924,26 +1924,11 @@ def merge(complete_state, trace_blacklist):
 ### Commands.
 
 
-def CMDcheck(parser, args):
-  """Checks that all the inputs are present and generates .isolated."""
-  parser.add_option('--subdir', help='Filters to a subdirectory')
-  options, args = parser.parse_args(args)
-  if args:
-    parser.error('Unsupported argument: %s' % args)
+def CMDarchive(parser, args):
+  """Creates a .isolated file and uploads the tree to an isolate server.
 
-  complete_state = load_complete_state(
-      options, os.getcwd(), options.subdir, False)
-
-  # Nothing is done specifically. Just store the result and state.
-  complete_state.save_files()
-  return 0
-
-
-def CMDhashtable(parser, args):
-  """Creates a hash table content addressed object store.
-
-  All the files listed in the .isolated file are put in the output directory
-  with the file name being the sha-1 of the file's content.
+  All the files listed in the .isolated file are put in the isolate server
+  cache via isolateserver.py.
   """
   parser.add_option('--subdir', help='Filters to a subdirectory')
   options, args = parser.parse_args(args)
@@ -2008,6 +1993,24 @@ def CMDhashtable(parser, args):
       if not success and os.path.isfile(options.isolated):
         os.remove(options.isolated)
   return not success
+
+
+def CMDcheck(parser, args):
+  """Checks that all the inputs are present and generates .isolated."""
+  parser.add_option('--subdir', help='Filters to a subdirectory')
+  options, args = parser.parse_args(args)
+  if args:
+    parser.error('Unsupported argument: %s' % args)
+
+  complete_state = load_complete_state(
+      options, os.getcwd(), options.subdir, False)
+
+  # Nothing is done specifically. Just store the result and state.
+  complete_state.save_files()
+  return 0
+
+
+CMDhashtable = CMDarchive
 
 
 def CMDmerge(parser, args):

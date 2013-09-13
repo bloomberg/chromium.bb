@@ -43,8 +43,7 @@ class TestCase(auto_stub.TestCase):
       if not self._requests:
         return None
       # Ignore 'stream' argument, it's not important for these tests.
-      if 'stream' in kwargs:
-        kwargs.pop('stream')
+      kwargs.pop('stream', None)
       for i, n in enumerate(self._requests):
         if n[0] == url:
           _, expected_kwargs, result = self._requests.pop(i)

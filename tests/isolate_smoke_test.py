@@ -28,8 +28,8 @@ SHA_1_NULL = hashlib.sha1().hexdigest()
 
 # Keep the list hard coded.
 EXPECTED_MODES = (
+  'archive',
   'check',
-  'hashtable',
   'help',
   'merge',
   'read',
@@ -509,7 +509,7 @@ class Isolate_check(IsolateModeBase):
       self._expect_results(['symlink_outside_build_root.py'], None, None, None)
 
 
-class Isolate_hashtable(IsolateModeBase):
+class Isolate_archive(IsolateModeBase):
   def _gen_expected_tree(self, empty_file):
     expected = [
       unicode(v['h'])
@@ -525,30 +525,30 @@ class Isolate_hashtable(IsolateModeBase):
         map(unicode, self._result_tree()))
 
   def test_fail(self):
-    self._execute('hashtable', 'fail.isolate', [], False)
+    self._execute('archive', 'fail.isolate', [], False)
     self._expected_hash_tree(None)
     self._expect_results(['fail.py'], None, None, None)
 
   def test_missing_trailing_slash(self):
-    self._test_missing_trailing_slash('hashtable')
+    self._test_missing_trailing_slash('archive')
 
   def test_non_existent(self):
-    self._test_non_existent('hashtable')
+    self._test_non_existent('archive')
 
   def test_all_items_invalid(self):
-    out = self._test_all_items_invalid('hashtable')
+    out = self._test_all_items_invalid('archive')
     expected = '%s  isolate_smoke_test.isolated\n' % calc_sha1(self.isolated)
     self.assertEqual(expected, out)
     self._expected_hash_tree(None)
 
   def test_no_run(self):
-    self._execute('hashtable', 'no_run.isolate', [], False)
+    self._execute('archive', 'no_run.isolate', [], False)
     self._expected_hash_tree(None)
     self._expect_results([], None, None, None)
 
   def test_split(self):
     self._execute(
-        'hashtable',
+        'archive',
         'split.isolate',
         ['-V', 'DEPTH', '.', '-V', 'PRODUCT_DIR', 'files1'],
         False,
@@ -594,26 +594,26 @@ class Isolate_hashtable(IsolateModeBase):
   # TODO(csharp): Disabled until crbug.com/150823 is fixed.
   def do_not_test_touch_only(self):
     self._execute(
-        'hashtable', 'touch_only.isolate', ['-V', 'FLAG', 'gyp'], False)
+        'archive', 'touch_only.isolate', ['-V', 'FLAG', 'gyp'], False)
     empty = os.path.join('files1', 'test_file1.txt')
     self._expected_hash_tree(empty)
     self._expected_result(['touch_only.py', 'gyp'], None, empty)
 
   def test_touch_root(self):
-    self._execute('hashtable', 'touch_root.isolate', [], False)
+    self._execute('archive', 'touch_root.isolate', [], False)
     self._expected_hash_tree(None)
     self._expect_results(['touch_root.py'], None, None, None)
 
   def test_with_flag(self):
     self._execute(
-        'hashtable', 'with_flag.isolate', ['-V', 'FLAG', 'gyp'], False)
+        'archive', 'with_flag.isolate', ['-V', 'FLAG', 'gyp'], False)
     self._expected_hash_tree(None)
     self._expect_results(
         ['with_flag.py', 'gyp'], None, {u'FLAG': u'gyp'}, None)
 
   if sys.platform != 'win32':
     def test_symlink_full(self):
-      self._execute('hashtable', 'symlink_full.isolate', [], False)
+      self._execute('archive', 'symlink_full.isolate', [], False)
       # Construct our own tree.
       expected = [
         str(v['h'])
@@ -624,7 +624,7 @@ class Isolate_hashtable(IsolateModeBase):
       self._expect_results(['symlink_full.py'], None, None, None)
 
     def test_symlink_partial(self):
-      self._execute('hashtable', 'symlink_partial.isolate', [], False)
+      self._execute('archive', 'symlink_partial.isolate', [], False)
       # Construct our own tree.
       expected = [
         str(v['h'])
@@ -636,7 +636,7 @@ class Isolate_hashtable(IsolateModeBase):
 
     def test_symlink_outside_build_root(self):
       self._execute(
-          'hashtable', 'symlink_outside_build_root.isolate', [], False)
+          'archive', 'symlink_outside_build_root.isolate', [], False)
       # Construct our own tree.
       expected = [
         str(v['h'])
@@ -1031,8 +1031,8 @@ class IsolateNoOutdir(IsolateBase):
     ])
     self.assertEqual(files, list_files_tree(self.tempdir))
 
-  def test_hashtable(self):
-    self._execute('hashtable', ['--isolate', self.filename()], False)
+  def test_archive(self):
+    self._execute('archive', ['--isolate', self.filename()], False)
     files = sorted([
       os.path.join(
           'hashtable', calc_sha1(os.path.join(ROOT_DIR, 'isolate.py'))),
