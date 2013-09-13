@@ -1060,6 +1060,7 @@ void PictureLayerImpl::GetDebugBorderProperties(
 void PictureLayerImpl::AsValueInto(base::DictionaryValue* state) const {
   LayerImpl::AsValueInto(state);
   state->SetDouble("ideal_contents_scale", ideal_contents_scale_);
+  state->SetDouble("geometry_contents_scale", contents_scale_x());
   state->Set("tilings", tilings_->AsValue().release());
   state->Set("pictures", pile_->AsValue().release());
   state->Set("invalidation", invalidation_.AsValue().release());
@@ -1067,7 +1068,7 @@ void PictureLayerImpl::AsValueInto(base::DictionaryValue* state) const {
   scoped_ptr<base::ListValue> coverage_tiles(new base::ListValue);
   for (PictureLayerTilingSet::CoverageIterator iter(tilings_.get(),
                                                     contents_scale_x(),
-                                                    gfx::Rect(bounds()),
+                                                    gfx::Rect(content_bounds()),
                                                     ideal_contents_scale_);
        iter;
        ++iter) {
