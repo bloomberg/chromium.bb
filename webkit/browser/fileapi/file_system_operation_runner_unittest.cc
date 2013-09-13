@@ -146,4 +146,17 @@ TEST_F(FileSystemOperationRunnerTest, InvalidURLErrorAndCancel) {
   ASSERT_EQ(base::PLATFORM_FILE_ERROR_INVALID_OPERATION, cancel_status);
 }
 
+TEST_F(FileSystemOperationRunnerTest, CancelWithInvalidId) {
+  const FileSystemOperationRunner::OperationID kInvalidId = -1;
+  bool done = true;  // The operation is not running.
+  bool cancel_done = false;
+  base::PlatformFileError cancel_status = base::PLATFORM_FILE_ERROR_FAILED;
+  operation_runner()->Cancel(kInvalidId, base::Bind(&GetCancelStatus,
+                                                    &done, &cancel_done,
+                                                    &cancel_status));
+
+  ASSERT_TRUE(cancel_done);
+  ASSERT_EQ(base::PLATFORM_FILE_ERROR_INVALID_OPERATION, cancel_status);
+}
+
 }  // namespace fileapi

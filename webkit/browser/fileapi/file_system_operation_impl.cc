@@ -230,6 +230,9 @@ void FileSystemOperationImpl::Cancel(const StatusCallback& cancel_callback) {
     DCHECK_EQ(kOperationWrite, pending_operation_);
     // This will call DidWrite() with ABORT status code.
     file_writer_delegate_->Cancel();
+  } else if (recursive_operation_delegate_) {
+    // This will call DidFinishOperation() with ABORT status code.
+    recursive_operation_delegate_->Cancel();
   } else {
     // For truncate we have no way to cancel the inflight operation (for now).
     // Let it just run and dispatch cancel callback later.
@@ -468,8 +471,6 @@ void FileSystemOperationImpl::DidFinishOperation(
     const StatusCallback& callback,
     base::PlatformFileError rv) {
   if (!cancel_callback_.is_null()) {
-    DCHECK_EQ(kOperationTruncate, pending_operation_);
-
     StatusCallback cancel_callback = cancel_callback_;
     callback.Run(rv);
 

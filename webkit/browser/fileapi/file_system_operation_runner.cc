@@ -304,7 +304,11 @@ void FileSystemOperationRunner::Cancel(
     return;
   }
   FileSystemOperation* operation = operations_.Lookup(id);
-  DCHECK(operation);
+  if (!operation) {
+    // There is no operation with |id|.
+    callback.Run(base::PLATFORM_FILE_ERROR_INVALID_OPERATION);
+    return;
+  }
   operation->Cancel(callback);
 }
 

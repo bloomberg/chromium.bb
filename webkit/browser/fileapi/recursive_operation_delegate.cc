@@ -18,10 +18,20 @@ const int kMaxInflightOperations = 5;
 RecursiveOperationDelegate::RecursiveOperationDelegate(
     FileSystemContext* file_system_context)
     : file_system_context_(file_system_context),
-      inflight_operations_(0) {
+      inflight_operations_(0),
+      canceled_(false) {
 }
 
 RecursiveOperationDelegate::~RecursiveOperationDelegate() {
+}
+
+void RecursiveOperationDelegate::Cancel() {
+  // Set the cancel flag and remove all pending tasks.
+  canceled_ = true;
+  while (!pending_directories_.empty())
+    pending_directories_.pop();
+  while (!pending_files_.empty())
+    pending_files_.pop();
 }
 
 void RecursiveOperationDelegate::StartRecursiveOperation(
@@ -38,10 +48,10 @@ FileSystemOperationRunner* RecursiveOperationDelegate::operation_runner() {
 
 void RecursiveOperationDelegate::ProcessNextDirectory() {
   DCHECK(pending_files_.empty());
-  if (inflight_operations_ > 0)
-    return;
+  DCHECK_EQ(0, inflight_operations_);
+
   if (pending_directories_.empty()) {
-    callback_.Run(base::PLATFORM_FILE_OK);
+    Done(base::PLATFORM_FILE_OK);
     return;
   }
   FileSystemURL url = pending_directories_.top();
@@ -53,7 +63,7 @@ void RecursiveOperationDelegate::ProcessNextDirectory() {
 }
 
 void RecursiveOperationDelegate::ProcessPendingFiles() {
-  if (pending_files_.empty()) {
+  if (pending_files_.empty() && inflight_operations_ == 0) {
     ProcessNextDirectory();
     return;
   }
@@ -75,7 +85,7 @@ void RecursiveOperationDelegate::DidProcessFile(base::PlatformFileError error) {
   inflight_operations_--;
   DCHECK_GE(inflight_operations_, 0);
   if (error != base::PLATFORM_FILE_OK) {
-    callback_.Run(error);
+    Done(error);
     return;
   }
   ProcessPendingFiles();
@@ -84,8 +94,8 @@ void RecursiveOperationDelegate::DidProcessFile(base::PlatformFileError error) {
 void RecursiveOperationDelegate::DidProcessDirectory(
     const FileSystemURL& url,
     base::PlatformFileError error) {
-  if (error != base::PLATFORM_FILE_OK) {
-    callback_.Run(error);
+  if (canceled_ || error != base::PLATFORM_FILE_OK) {
+    Done(error);
     return;
   }
   operation_runner()->ReadDirectory(
@@ -98,6 +108,11 @@ void RecursiveOperationDelegate::DidReadDirectory(
     base::PlatformFileError error,
     const FileEntryList& entries,
     bool has_more) {
+  if (canceled_) {
+    Done(error);
+    return;
+  }
+
   if (error != base::PLATFORM_FILE_OK) {
     if (error == base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY) {
       // The given path may have been a file, so try ProcessFile now.
@@ -106,7 +121,7 @@ void RecursiveOperationDelegate::DidReadDirectory(
                              AsWeakPtr(), error));
       return;
     }
-    callback_.Run(error);
+    Done(error);
     return;
   }
   for (size_t i = 0; i < entries.size(); i++) {
@@ -132,10 +147,18 @@ void RecursiveOperationDelegate::DidTryProcessFile(
     base::PlatformFileError error) {
   if (error == base::PLATFORM_FILE_ERROR_NOT_A_FILE) {
     // It wasn't a file either; returns with the previous error.
-    callback_.Run(previous_error);
+    Done(previous_error);
     return;
   }
   DidProcessFile(error);
+}
+
+void RecursiveOperationDelegate::Done(base::PlatformFileError error) {
+  if (canceled_ && error == base::PLATFORM_FILE_OK) {
+    callback_.Run(base::PLATFORM_FILE_ERROR_ABORT);
+  } else {
+    callback_.Run(error);
+  }
 }
 
 }  // namespace fileapi

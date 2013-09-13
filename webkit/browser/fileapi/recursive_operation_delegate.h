@@ -50,6 +50,9 @@ class RecursiveOperationDelegate
   virtual void ProcessDirectory(const FileSystemURL& url,
                                 const StatusCallback& callback) = 0;
 
+  // Cancels currently running operations.
+  void Cancel();
+
  protected:
   // Starts to process files/directories recursively from the given |root|.
   // This will call ProcessFile and ProcessDirectory on each directory or file.
@@ -81,11 +84,15 @@ class RecursiveOperationDelegate
   void DidTryProcessFile(base::PlatformFileError previous_error,
                          base::PlatformFileError error);
 
+  // Called when all recursive operation is done (or an error occurs).
+  void Done(base::PlatformFileError error);
+
   FileSystemContext* file_system_context_;
   StatusCallback callback_;
   std::stack<FileSystemURL> pending_directories_;
   std::stack<FileSystemURL> pending_files_;
   int inflight_operations_;
+  bool canceled_;
 
   DISALLOW_COPY_AND_ASSIGN(RecursiveOperationDelegate);
 };
