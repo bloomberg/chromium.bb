@@ -50,6 +50,7 @@ from webkitpy.layout_tests.models import test_expectations
 from webkitpy.layout_tests.models import test_failures
 from webkitpy.layout_tests.models import test_run_results
 from webkitpy.layout_tests.models.test_input import TestInput
+from webkitpy.layout_tests.models.test_run_results import INTERRUPTED_EXIT_STATUS
 
 _log = logging.getLogger(__name__)
 
@@ -213,8 +214,11 @@ class Manager(object):
             initial_results = self._run_tests(tests_to_run, tests_to_skip, self._options.repeat_each, self._options.iterations,
                 int(self._options.child_processes), retrying=False)
 
+            # Don't retry failures when interrupted by user or failures limit exception.
+            should_retry_failures = should_retry_failures and not (initial_results.interrupted or initial_results.keyboard_interrupted)
+
             tests_to_retry = self._tests_to_retry(initial_results)
-            if should_retry_failures and tests_to_retry and not initial_results.interrupted:
+            if should_retry_failures and tests_to_retry:
                 enabled_pixel_tests_in_retry = self._force_pixel_tests_if_needed()
 
                 _log.info('')
@@ -249,10 +253,12 @@ class Manager(object):
 
             results_path = self._filesystem.join(self._results_directory, "results.html")
             self._copy_results_html_file(results_path)
-            if self._options.show_results and (exit_code or (self._options.full_results_html and initial_results.total_failures)):
-                self._port.show_results_html_file(results_path)
-
-        self._printer.print_results(time.time() - start_time, initial_results, summarized_failing_results)
+            if initial_results.keyboard_interrupted:
+                exit_code = INTERRUPTED_EXIT_STATUS
+            else:
+                if self._options.show_results and (exit_code or (self._options.full_results_html and initial_results.total_failures)):
+                    self._port.show_results_html_file(results_path)
+                self._printer.print_results(time.time() - start_time, initial_results, summarized_failing_results)
         return test_run_results.RunDetails(exit_code, summarized_full_results, summarized_failing_results, initial_results, retry_results, enabled_pixel_tests_in_retry)
 
     def _run_tests(self, tests_to_run, tests_to_skip, repeat_each, iterations, num_workers, retrying):
