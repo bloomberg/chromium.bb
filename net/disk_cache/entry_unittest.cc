@@ -2908,9 +2908,7 @@ TEST_F(DiskCacheEntryTest, SimpleCacheOptimistic5) {
       static_cast<disk_cache::SimpleEntryImpl*>(entry)->HasOneRef());
 }
 
-// TODO(gavinp): Fix this, perhaps by landing
-// https://codereview.chromium.org/23823002/
-TEST_F(DiskCacheEntryTest, DISABLED_SimpleCacheOptimistic6) {
+TEST_F(DiskCacheEntryTest, SimpleCacheOptimistic6) {
   // Test sequence:
   // Create, Write, Doom, Doom, Read, Doom, Close.
   SetSimpleCacheMode();
@@ -3051,6 +3049,40 @@ TEST_F(DiskCacheEntryTest, SimpleCacheDoomCreateRace) {
                 cache_->CreateEntry(key, &entry2, create_callback.callback())));
   ScopedEntryPtr entry2_closer(entry2);
   EXPECT_EQ(net::OK, doom_callback.GetResult(net::ERR_IO_PENDING));
+}
+
+TEST_F(DiskCacheEntryTest, SimpleCacheDoomDoom) {
+  // Test sequence:
+  // Create, Doom, Create, Doom (1st entry), Open.
+  SetSimpleCacheMode();
+  InitCache();
+  disk_cache::Entry* null = NULL;
+
+  const char key[] = "the first key";
+
+  disk_cache::Entry* entry1 = NULL;
+  ASSERT_EQ(net::OK, CreateEntry(key, &entry1));
+  ScopedEntryPtr entry1_closer(entry1);
+  EXPECT_NE(null, entry1);
+
+  EXPECT_EQ(net::OK, DoomEntry(key));
+
+  disk_cache::Entry* entry2 = NULL;
+  ASSERT_EQ(net::OK, CreateEntry(key, &entry2));
+  ScopedEntryPtr entry2_closer(entry2);
+  EXPECT_NE(null, entry2);
+
+  // Redundantly dooming entry1 should not delete entry2.
+  disk_cache::SimpleEntryImpl* simple_entry1 =
+      static_cast<disk_cache::SimpleEntryImpl*>(entry1);
+  net::TestCompletionCallback cb;
+  EXPECT_EQ(net::OK,
+            cb.GetResult(simple_entry1->DoomEntry(cb.callback())));
+
+  disk_cache::Entry* entry3 = NULL;
+  ASSERT_EQ(net::OK, OpenEntry(key, &entry3));
+  ScopedEntryPtr entry3_closer(entry3);
+  EXPECT_NE(null, entry3);
 }
 
 // Checks that an optimistic Create would fail later on a racing Open.

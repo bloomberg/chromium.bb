@@ -262,6 +262,8 @@ int SimpleEntryImpl::CreateEntry(Entry** out_entry,
 }
 
 int SimpleEntryImpl::DoomEntry(const CompletionCallback& callback) {
+  if (doomed_)
+    return net::OK;
   net_log_.AddEvent(net::NetLog::TYPE_SIMPLE_CACHE_ENTRY_DOOM_CALL);
   net_log_.AddEvent(net::NetLog::TYPE_SIMPLE_CACHE_ENTRY_DOOM_BEGIN);
 
@@ -558,9 +560,9 @@ void SimpleEntryImpl::RemoveSelfFromBackend() {
 }
 
 void SimpleEntryImpl::MarkAsDoomed() {
+  doomed_ = true;
   if (!backend_.get())
     return;
-  doomed_ = true;
   backend_->index()->Remove(entry_hash_);
   RemoveSelfFromBackend();
 }

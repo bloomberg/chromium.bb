@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "net/base/cache_type.h"
+#include "net/base/net_export.h"
 #include "net/base/net_log.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/disk_cache/simple/simple_entry_format.h"
@@ -37,7 +38,8 @@ struct SimpleEntryCreationResults;
 // SimpleEntryImpl is the IO thread interface to an entry in the very simple
 // disk cache. It proxies for the SimpleSynchronousEntry, which performs IO
 // on the worker thread.
-class SimpleEntryImpl : public Entry, public base::RefCounted<SimpleEntryImpl>,
+class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
+    public base::RefCounted<SimpleEntryImpl>,
     public base::SupportsWeakPtr<SimpleEntryImpl> {
   friend class base::RefCounted<SimpleEntryImpl>;
  public:
