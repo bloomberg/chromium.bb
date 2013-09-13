@@ -101,10 +101,11 @@ LoadState TransportConnectJob::GetLoadState() const {
     case STATE_TRANSPORT_CONNECT:
     case STATE_TRANSPORT_CONNECT_COMPLETE:
       return LOAD_STATE_CONNECTING;
-    default:
-      NOTREACHED();
+    case STATE_NONE:
       return LOAD_STATE_IDLE;
   }
+  NOTREACHED();
+  return LOAD_STATE_IDLE;
 }
 
 // static
