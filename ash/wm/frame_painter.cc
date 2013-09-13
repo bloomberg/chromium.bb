@@ -230,6 +230,7 @@ FramePainter::~FramePainter() {
   // Sometimes we are destroyed before the window closes, so ensure we clean up.
   if (window_) {
     window_->RemoveObserver(this);
+    wm::GetWindowSettings(window_)->RemoveObserver(this);
   }
 }
 
