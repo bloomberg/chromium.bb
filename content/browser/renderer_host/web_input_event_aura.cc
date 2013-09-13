@@ -11,6 +11,52 @@
 
 namespace content {
 
+#if defined(USE_X11) || defined(USE_OZONE)
+// From third_party/WebKit/Source/web/gtk/WebInputEventFactory.cpp:
+WebKit::WebUChar GetControlCharacter(int windows_key_code, bool shift) {
+  if (windows_key_code >= ui::VKEY_A &&
+    windows_key_code <= ui::VKEY_Z) {
+    // ctrl-A ~ ctrl-Z map to \x01 ~ \x1A
+    return windows_key_code - ui::VKEY_A + 1;
+  }
+  if (shift) {
+    // following graphics chars require shift key to input.
+    switch (windows_key_code) {
+      // ctrl-@ maps to \x00 (Null byte)
+      case ui::VKEY_2:
+        return 0;
+      // ctrl-^ maps to \x1E (Record separator, Information separator two)
+      case ui::VKEY_6:
+        return 0x1E;
+      // ctrl-_ maps to \x1F (Unit separator, Information separator one)
+      case ui::VKEY_OEM_MINUS:
+        return 0x1F;
+      // Returns 0 for all other keys to avoid inputting unexpected chars.
+      default:
+        break;
+    }
+  } else {
+    switch (windows_key_code) {
+      // ctrl-[ maps to \x1B (Escape)
+      case ui::VKEY_OEM_4:
+        return 0x1B;
+      // ctrl-\ maps to \x1C (File separator, Information separator four)
+      case ui::VKEY_OEM_5:
+        return 0x1C;
+      // ctrl-] maps to \x1D (Group separator, Information separator three)
+      case ui::VKEY_OEM_6:
+        return 0x1D;
+      // ctrl-Enter maps to \x0A (Line feed)
+      case ui::VKEY_RETURN:
+        return 0x0A;
+      // Returns 0 for all other keys to avoid inputting unexpected chars.
+      default:
+        break;
+    }
+  }
+  return 0;
+}
+#endif
 #if defined(OS_WIN)
 WebKit::WebMouseEvent MakeUntranslatedWebMouseEventFromNativeEvent(
     base::NativeEvent native_event);
@@ -21,28 +67,104 @@ WebKit::WebKeyboardEvent MakeWebKeyboardEventFromNativeEvent(
 WebKit::WebGestureEvent MakeWebGestureEventFromNativeEvent(
     base::NativeEvent native_event);
 #elif defined(USE_X11)
-WebKit::WebMouseWheelEvent MakeWebMouseWheelEventFromAuraEvent(
-    ui::ScrollEvent* event);
 WebKit::WebKeyboardEvent MakeWebKeyboardEventFromAuraEvent(
     ui::KeyEvent* event);
-WebKit::WebGestureEvent MakeWebGestureEventFromAuraEvent(
-    ui::ScrollEvent* event);
-#else
+#elif defined(USE_OZONE)
+WebKit::WebKeyboardEvent MakeWebKeyboardEventFromAuraEvent(
+    ui::KeyEvent* event) {
+  base::NativeEvent native_event = event->native_event();
+  ui::EventType type = ui::EventTypeFromNative(native_event);
+  WebKit::WebKeyboardEvent webkit_event;
+
+  webkit_event.timeStampSeconds = event->time_stamp().InSecondsF();
+  webkit_event.modifiers = EventFlagsToWebEventModifiers(event->flags());
+
+  switch (type) {
+    case ui::ET_KEY_PRESSED:
+      webkit_event.type = event->is_char() ? WebKit::WebInputEvent::Char :
+          WebKit::WebInputEvent::RawKeyDown;
+      break;
+    case ui::ET_KEY_RELEASED:
+      webkit_event.type = WebKit::WebInputEvent::KeyUp;
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  if (webkit_event.modifiers & WebKit::WebInputEvent::AltKey)
+    webkit_event.isSystemKey = true;
+
+  wchar_t character = ui::KeyboardCodeFromNative(native_event);
+  webkit_event.windowsKeyCode = character;
+  webkit_event.nativeKeyCode = character;
+
+  if (webkit_event.windowsKeyCode == ui::VKEY_RETURN)
+    webkit_event.unmodifiedText[0] = '\r';
+  else
+    webkit_event.unmodifiedText[0] = character;
+
+  if (webkit_event.modifiers & WebKit::WebInputEvent::ControlKey) {
+    webkit_event.text[0] =
+        GetControlCharacter(
+            webkit_event.windowsKeyCode,
+            webkit_event.modifiers & WebKit::WebInputEvent::ShiftKey);
+  } else {
+    webkit_event.text[0] = webkit_event.unmodifiedText[0];
+  }
+
+  webkit_event.setKeyIdentifierFromWindowsKeyCode();
+
+  return webkit_event;
+}
+#endif
+#if defined(USE_X11) || defined(USE_OZONE)
 WebKit::WebMouseWheelEvent MakeWebMouseWheelEventFromAuraEvent(
     ui::ScrollEvent* event) {
   WebKit::WebMouseWheelEvent webkit_event;
-  return webkit_event;
-}
 
-WebKit::WebKeyboardEvent MakeWebKeyboardEventFromAuraEvent(
-    ui::KeyEvent* event) {
-  WebKit::WebKeyboardEvent webkit_event;
+  webkit_event.type = WebKit::WebInputEvent::MouseWheel;
+  webkit_event.button = WebKit::WebMouseEvent::ButtonNone;
+  webkit_event.modifiers = EventFlagsToWebEventModifiers(event->flags());
+  webkit_event.timeStampSeconds = event->time_stamp().InSecondsF();
+  webkit_event.hasPreciseScrollingDeltas = true;
+  webkit_event.deltaX = event->x_offset();
+  if (event->x_offset_ordinal() != 0.f && event->x_offset() != 0.f) {
+    webkit_event.accelerationRatioX =
+        event->x_offset_ordinal() / event->x_offset();
+  }
+  webkit_event.wheelTicksX = webkit_event.deltaX / kPixelsPerTick;
+  webkit_event.deltaY = event->y_offset();
+  webkit_event.wheelTicksY = webkit_event.deltaY / kPixelsPerTick;
+  if (event->y_offset_ordinal() != 0.f && event->y_offset() != 0.f) {
+    webkit_event.accelerationRatioY =
+        event->y_offset_ordinal() / event->y_offset();
+  }
   return webkit_event;
 }
 
 WebKit::WebGestureEvent MakeWebGestureEventFromAuraEvent(
     ui::ScrollEvent* event) {
   WebKit::WebGestureEvent webkit_event;
+
+  switch (event->type()) {
+    case ui::ET_SCROLL_FLING_START:
+      webkit_event.type = WebKit::WebInputEvent::GestureFlingStart;
+      webkit_event.data.flingStart.velocityX = event->x_offset();
+      webkit_event.data.flingStart.velocityY = event->y_offset();
+      break;
+    case ui::ET_SCROLL_FLING_CANCEL:
+      webkit_event.type = WebKit::WebInputEvent::GestureFlingCancel;
+      break;
+    case ui::ET_SCROLL:
+      NOTREACHED() << "Invalid gesture type: " << event->type();
+      break;
+    default:
+      NOTREACHED() << "Unknown gesture type: " << event->type();
+  }
+
+  webkit_event.sourceDevice = WebKit::WebGestureEvent::Touchpad;
+  webkit_event.modifiers = EventFlagsToWebEventModifiers(event->flags());
+  webkit_event.timeStampSeconds = event->time_stamp().InSecondsF();
   return webkit_event;
 }
 

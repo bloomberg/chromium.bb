@@ -36,7 +36,7 @@ base::NativeEvent CopyNativeEvent(const base::NativeEvent& event) {
 #elif defined(OS_WIN)
   return event;
 #elif defined(USE_OZONE)
-  return event;
+  return NULL;
 #else
   NOTREACHED() <<
       "Don't know how to copy base::NativeEvent for this platform";
@@ -600,7 +600,11 @@ uint16 KeyEvent::GetUnmodifiedCharacter() const {
 }
 
 KeyEvent* KeyEvent::Copy() const {
+#if defined(USE_OZONE)
+  KeyEvent* copy = new KeyEvent(*this);
+#else
   KeyEvent* copy = new KeyEvent(::CopyNativeEvent(native_event()), is_char());
+#endif
 #if defined(USE_X11)
   copy->set_delete_native_event(true);
 #endif

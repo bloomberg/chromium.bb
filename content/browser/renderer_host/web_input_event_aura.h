@@ -22,6 +22,10 @@ namespace content {
 // Used for scrolling. This matches Firefox behavior.
 const int kPixelsPerTick = 53;
 
+#if defined(USE_X11) || defined(USE_OZONE)
+CONTENT_EXPORT WebKit::WebUChar GetControlCharacter(
+    int windows_key_code, bool shift);
+#endif
 CONTENT_EXPORT WebKit::WebMouseEvent MakeWebMouseEvent(
     ui::MouseEvent* event);
 CONTENT_EXPORT WebKit::WebMouseWheelEvent MakeWebMouseWheelEvent(

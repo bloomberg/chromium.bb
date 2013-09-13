@@ -111,6 +111,27 @@ bool FakeInputMethod::DispatchKeyEvent(const base::NativeEvent& native_event) {
         text_input_client_->InsertChar(ch, state);
     }
   }
+#elif defined(USE_OZONE)
+  DCHECK(native_event);
+  if (EventTypeFromNative(native_event) == ET_KEY_RELEASED) {
+    // On key release, just dispatch it.
+    handled = delegate_->DispatchKeyEventPostIME(native_event);
+  } else {
+    const uint32 state = EventFlagsFromNative(native_event);
+    // Send a RawKeyDown event first,
+    handled = delegate_->DispatchKeyEventPostIME(native_event);
+    if (text_input_client_) {
+      // then send a Char event via ui::TextInputClient.
+      const KeyboardCode key_code = ui::KeyboardCodeFromNative(native_event);
+      uint16 ch = 0;
+
+      // TODO(vignatti): Support EF_CONTROL_DOWN state
+
+      ch = ui::GetCharacterFromKeyCode(key_code, state);
+      if (ch)
+        text_input_client_->InsertChar(ch, state);
+    }
+  }
 #else
   // TODO(yusukes): Support other platforms. Call InsertChar() when necessary.
   handled = delegate_->DispatchKeyEventPostIME(native_event);
