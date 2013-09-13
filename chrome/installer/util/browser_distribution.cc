@@ -199,6 +199,18 @@ string16 BrowserDistribution::GetBaseAppId() {
   return L"Chromium";
 }
 
+string16 BrowserDistribution::GetBrowserProgIdPrefix() {
+  // This used to be "ChromiumHTML", but was forced to become "ChromiumHTM"
+  // because of http://crbug.com/153349.  See the declaration of this function
+  // in the header file for more details.
+  return L"ChromiumHTM";
+}
+
+string16 BrowserDistribution::GetBrowserProgIdDesc() {
+  return L"Chromium HTML Document";
+}
+
+
 string16 BrowserDistribution::GetInstallSubDir() {
   return L"Chromium";
 }

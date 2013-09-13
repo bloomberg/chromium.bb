@@ -736,7 +736,9 @@ void RemoveFiletypeRegistration(const InstallerState& installer_state,
   string16 classes_path(ShellUtil::kRegClasses);
   classes_path.push_back(base::FilePath::kSeparators[0]);
 
-  const string16 prog_id(ShellUtil::kChromeHTMLProgId + browser_entry_suffix);
+  BrowserDistribution* distribution = BrowserDistribution::GetDistribution();
+  const string16 prog_id(
+      distribution->GetBrowserProgIdPrefix() + browser_entry_suffix);
 
   // Delete each filetype association if it references this Chrome.  Take care
   // not to delete the association if it references a system-level install of
@@ -809,7 +811,8 @@ bool DeleteChromeRegistrationKeys(const InstallerState& installer_state,
   base::FilePath chrome_exe(installer_state.target_path().Append(kChromeExe));
 
   // Delete Software\Classes\ChromeHTML.
-  const string16 prog_id(ShellUtil::kChromeHTMLProgId + browser_entry_suffix);
+  const string16 prog_id(
+      dist->GetBrowserProgIdPrefix() + browser_entry_suffix);
   string16 reg_prog_id(ShellUtil::kRegClasses);
   reg_prog_id.push_back(base::FilePath::kSeparators[0]);
   reg_prog_id.append(prog_id);

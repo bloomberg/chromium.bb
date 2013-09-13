@@ -89,6 +89,18 @@ class BrowserDistribution {
   // should be suffixed in all scenarios.
   virtual string16 GetBaseAppId();
 
+  // Returns the Browser ProgId prefix (e.g. ChromeHTML, ChromiumHTM, etc...).
+  // The full id is of the form |prefix|.|suffix| and is limited to a maximum
+  // length of 39 characters including null-terminator.  See
+  // http://msdn.microsoft.com/library/aa911706.aspx for details.  We define
+  // |suffix| as a fixed-length 26-character alphanumeric identifier, therefore
+  // the return value of this function must have a maximum length of
+  // 39 - 1(null-term) - 26(|suffix|) - 1(dot separator) = 11 characters.
+  virtual string16 GetBrowserProgIdPrefix();
+
+  // Returns the Browser ProgId description.
+  virtual string16 GetBrowserProgIdDesc();
+
   virtual string16 GetInstallSubDir();
 
   virtual string16 GetPublisherName();
@@ -117,6 +129,7 @@ class BrowserDistribution {
 
   virtual string16 GetVersionKey();
 
+  // Returns true if this distribution can be set as the default browser.
   virtual bool CanSetAsDefault();
 
   virtual bool CanCreateDesktopShortcuts();

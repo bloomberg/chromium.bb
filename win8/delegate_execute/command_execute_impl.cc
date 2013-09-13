@@ -23,6 +23,9 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/installer/util/browser_distribution.h"
+#include "chrome/installer/util/install_util.h"
+#include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/util_constants.h"
 #include "ui/base/clipboard/clipboard_util_win.h"
 #include "win8/delegate_execute/chrome_util.h"
@@ -322,7 +325,11 @@ STDMETHODIMP CommandExecuteImpl::Execute() {
     return S_OK;
   }
 
-  string16 app_id = delegate_execute::GetAppId(chrome_exe_);
+  BrowserDistribution* distribution = BrowserDistribution::GetDistribution();
+  bool is_per_user_install = InstallUtil::IsPerUserInstall(
+      chrome_exe_.value().c_str());
+  string16 app_id = ShellUtil::GetBrowserModelId(
+      distribution, is_per_user_install);
 
   DWORD pid = 0;
   if (launch_scheme_ == INTERNET_SCHEME_FILE &&

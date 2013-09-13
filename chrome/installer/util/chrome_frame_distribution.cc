@@ -36,6 +36,16 @@ string16 ChromeFrameDistribution::GetBaseAppName() {
   return L"Google Chrome Frame";
 }
 
+string16 ChromeFrameDistribution::GetBrowserProgIdPrefix() {
+  NOTREACHED();
+  return string16();
+}
+
+string16 ChromeFrameDistribution::GetBrowserProgIdDesc() {
+  NOTREACHED();
+  return string16();
+}
+
 string16 ChromeFrameDistribution::GetShortcutName(ShortcutType shortcut_type) {
   switch (shortcut_type) {
     case SHORTCUT_CHROME:

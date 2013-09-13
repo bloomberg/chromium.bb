@@ -23,13 +23,12 @@ EXTERN_C const GUID CLSID_CommandExecuteImpl;
 // This class implements the IExecuteCommand and related interfaces for
 // handling ShellExecute launches of the Chrome browser, i.e. whether to
 // launch Chrome in metro mode or desktop mode.
-#if defined(GOOGLE_CHROME_BUILD)
-class ATL_NO_VTABLE DECLSPEC_UUID("5C65F4B0-3651-4514-B207-D10CB699B14B")
+// The CLSID here is a dummy CLSID not used for anything, since we register
+// the class with a dynamic CLSID.  However, a static CLSID is necessary
+// so that we can force at least one entry into ATL's object map (it will
+// treat a 0-element object map as an initialization failure case).
+class ATL_NO_VTABLE DECLSPEC_UUID("071BB5F2-85A4-424F-BFE7-5F1609BE4C2C")
     CommandExecuteImpl
-#else  // GOOGLE_CHROME_BUILD
-class ATL_NO_VTABLE DECLSPEC_UUID("A2DF06F9-A21A-44A8-8A99-8B9C84F29160")
-    CommandExecuteImpl
-#endif  // GOOGLE_CHROME_BUILD
     : public CComObjectRootEx<CComSingleThreadModel>,
       public CComCoClass<CommandExecuteImpl, &CLSID_CommandExecuteImpl>,
       public IExecuteCommand,

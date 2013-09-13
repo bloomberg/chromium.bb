@@ -102,7 +102,8 @@ bool IsChromeMetroSupported() {
 // "ChromeHTML|suffix|").
 // |suffix| can be the empty string.
 string16 GetBrowserProgId(const string16& suffix) {
-  string16 chrome_html(ShellUtil::kChromeHTMLProgId);
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  string16 chrome_html(dist->GetBrowserProgIdPrefix());
   chrome_html.append(suffix);
 
   // ProgIds cannot be longer than 39 characters.
@@ -289,7 +290,7 @@ class RegistryEntry {
     chrome_html_prog_id.push_back(base::FilePath::kSeparators[0]);
     chrome_html_prog_id.append(GetBrowserProgId(suffix));
     entries->push_back(new RegistryEntry(
-        chrome_html_prog_id, ShellUtil::kChromeHTMLProgIdDesc));
+        chrome_html_prog_id, dist->GetBrowserProgIdDesc()));
     entries->push_back(new RegistryEntry(
         chrome_html_prog_id, ShellUtil::kRegUrlProtocol, L""));
     entries->push_back(new RegistryEntry(
@@ -789,7 +790,7 @@ bool QuickIsChromeRegistered(BrowserDistribution* dist,
       // Software\Classes\ChromeHTML|suffix|
       reg_key = ShellUtil::kRegClasses;
       reg_key.push_back(base::FilePath::kSeparators[0]);
-      reg_key.append(ShellUtil::kChromeHTMLProgId);
+      reg_key.append(dist->GetBrowserProgIdPrefix());
       reg_key.append(suffix);
       break;
     case CONFIRM_SHELL_REGISTRATION:
@@ -1058,7 +1059,7 @@ ShellUtil::DefaultState ProbeCurrentDefaultHandlers(
     NOTREACHED();
     return ShellUtil::UNKNOWN_DEFAULT;
   }
-  string16 prog_id(ShellUtil::kChromeHTMLProgId);
+  string16 prog_id(dist->GetBrowserProgIdPrefix());
   prog_id += ShellUtil::GetCurrentInstallationSuffix(dist, chrome_exe.value());
 
   for (size_t i = 0; i < num_protocols; ++i) {
@@ -1352,21 +1353,6 @@ const wchar_t* ShellUtil::kRegVistaUrlPrefs =
 const wchar_t* ShellUtil::kAppPathsRegistryKey =
     L"Software\\Microsoft\\Windows\\CurrentVersion\\App Paths";
 const wchar_t* ShellUtil::kAppPathsRegistryPathName = L"Path";
-
-#if defined(GOOGLE_CHROME_BUILD)
-const wchar_t* ShellUtil::kChromeHTMLProgId = L"ChromeHTML";
-const wchar_t* ShellUtil::kChromeHTMLProgIdDesc = L"Chrome HTML Document";
-#else
-// This used to be "ChromiumHTML", but was forced to become "ChromiumHTM"
-// because of http://crbug.com/153349 as with the '.' and 26 characters suffix
-// added on user-level installs, the generated progid for Chromium was 39
-// characters long which, according to MSDN (
-// http://msdn.microsoft.com/library/aa911706.aspx), is the maximum length
-// for a progid. It was however determined through experimentation that the 39
-// character limit mentioned on MSDN includes the NULL character...
-const wchar_t* ShellUtil::kChromeHTMLProgId = L"ChromiumHTM";
-const wchar_t* ShellUtil::kChromeHTMLProgIdDesc = L"Chromium HTML Document";
-#endif
 
 const wchar_t* ShellUtil::kDefaultFileAssociations[] = {L".htm", L".html",
     L".shtml", L".xht", L".xhtml", NULL};

@@ -56,6 +56,16 @@ string16 GoogleChromeDistribution::GetBaseAppId() {
   return string16();
 }
 
+string16 GoogleChromeDistribution::GetBrowserProgIdPrefix() {
+  NOTREACHED();
+  return string16();
+}
+
+string16 GoogleChromeDistribution::GetBrowserProgIdDesc() {
+  NOTREACHED();
+  return string16();
+}
+
 string16 GoogleChromeDistribution::GetInstallSubDir() {
   NOTREACHED();
   return string16();

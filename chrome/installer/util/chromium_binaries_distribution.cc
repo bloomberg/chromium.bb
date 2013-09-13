@@ -29,6 +29,16 @@ string16 ChromiumBinariesDistribution::GetBaseAppName() {
   return string16();
 }
 
+string16 ChromiumBinariesDistribution::GetBrowserProgIdPrefix() {
+  NOTREACHED();
+  return string16();
+}
+
+string16 ChromiumBinariesDistribution::GetBrowserProgIdDesc() {
+  NOTREACHED();
+  return string16();
+}
+
 string16 ChromiumBinariesDistribution::GetDisplayName() {
   return kChromiumBinariesName;
 }

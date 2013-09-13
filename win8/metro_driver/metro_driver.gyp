@@ -53,6 +53,7 @@
           'dependencies': [
             '../../base/base.gyp:base',
             '../../chrome/common_constants.gyp:common_constants',
+            '../../chrome/chrome.gyp:installer_util',
             '../../crypto/crypto.gyp:crypto',
             '../../google_update/google_update.gyp:google_update',
             '../../ipc/ipc.gyp:ipc',
@@ -89,8 +90,6 @@
                 'chrome_app_view.h',
                 'chrome_url_launch_handler.cc',
                 'chrome_url_launch_handler.h',
-                '../delegate_execute/chrome_util.cc',
-                '../delegate_execute/chrome_util.h',
                 'devices_handler.cc',
                 'devices_handler.h',
                 'file_picker.cc',
@@ -128,6 +127,7 @@
           'type': 'executable',
           'dependencies': [
             '../../base/base.gyp:base',
+            '../../chrome/chrome.gyp:installer_util',
             '../../testing/gtest.gyp:gtest',
             'metro_driver',
           ],

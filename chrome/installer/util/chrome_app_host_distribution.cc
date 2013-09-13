@@ -38,6 +38,16 @@ string16 ChromeAppHostDistribution::GetBaseAppName() {
   return L"Google Chrome App Launcher";
 }
 
+string16 ChromeAppHostDistribution::GetBrowserProgIdPrefix() {
+  NOTREACHED();
+  return string16();
+}
+
+string16 ChromeAppHostDistribution::GetBrowserProgIdDesc() {
+  NOTREACHED();
+  return string16();
+}
+
 string16 ChromeAppHostDistribution::GetDisplayName() {
   return GetShortcutName(SHORTCUT_APP_LAUNCHER);
 }

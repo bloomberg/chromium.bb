@@ -16,7 +16,11 @@ namespace {
 const wchar_t kChromeSxSGuid[] = L"{4ea16ac7-fd5a-47c3-875b-dbf4a2008c20}";
 const wchar_t kChannelName[] = L"canary";
 const wchar_t kBrowserAppId[] = L"ChromeCanary";
+const wchar_t kBrowserProgIdPrefix[] = L"ChromeSSHTM";
+const wchar_t kBrowserProgIdDesc[] = L"Chrome Canary HTML Document";
 const int kSxSIconIndex = 4;
+const wchar_t kCommandExecuteImplUuid[] =
+    L"{1BEAC3E3-B852-44F4-B468-8906C062422E}";
 
 // The Chrome App Launcher Canary icon is index 6; see chrome_exe.rc.
 const int kSxSAppLauncherIconIndex = 6;
@@ -53,6 +57,14 @@ string16 GoogleChromeSxSDistribution::GetBaseAppId() {
   return kBrowserAppId;
 }
 
+string16 GoogleChromeSxSDistribution::GetBrowserProgIdPrefix() {
+  return kBrowserProgIdPrefix;
+}
+
+string16 GoogleChromeSxSDistribution::GetBrowserProgIdDesc() {
+  return kBrowserProgIdDesc;
+}
+
 string16 GoogleChromeSxSDistribution::GetInstallSubDir() {
   return GoogleChromeDistribution::GetInstallSubDir().append(
       installer::kSxSSuffix);
@@ -82,7 +94,9 @@ bool GoogleChromeSxSDistribution::GetChromeChannel(string16* channel) {
 
 bool GoogleChromeSxSDistribution::GetCommandExecuteImplClsid(
     string16* handler_class_uuid) {
-  return false;
+  if (handler_class_uuid)
+    *handler_class_uuid = kCommandExecuteImplUuid;
+  return true;
 }
 
 bool GoogleChromeSxSDistribution::AppHostIsSupported() {

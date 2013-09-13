@@ -365,10 +365,26 @@ bool CheckIsChromeSxSProcess() {
   PathService::Get(base::DIR_EXE, &exe_dir);
   string16 chrome_sxs_dir(installer::kGoogleChromeInstallSubDir2);
   chrome_sxs_dir.append(installer::kSxSSuffix);
-  return base::FilePath::CompareEqualIgnoreCase(
-          exe_dir.BaseName().value(), installer::kInstallBinaryDir) &&
-      base::FilePath::CompareEqualIgnoreCase(
-          exe_dir.DirName().BaseName().value(), chrome_sxs_dir);
+
+  // This is SxS if current EXE is in or under (possibly multiple levels under)
+  // |chrome_sxs_dir|\|installer::kInstallBinaryDir|
+  std::vector<base::FilePath::StringType> components;
+  exe_dir.GetComponents(&components);
+  // We need at least 1 element in the array for the behavior of the following
+  // loop to be defined.  This should always be true, since we're splitting the
+  // path to our executable.
+  DCHECK(!components.empty());
+  typedef std::vector<base::FilePath::StringType>::const_reverse_iterator
+      ComponentsIterator;
+  for (ComponentsIterator current = components.rbegin(), parent = current + 1;
+       parent != components.rend(); current = parent++) {
+    if (base::FilePath::CompareEqualIgnoreCase(
+            *current, installer::kInstallBinaryDir) &&
+        base::FilePath::CompareEqualIgnoreCase(*parent, chrome_sxs_dir))
+      return true;
+  }
+
+  return false;
 }
 
 bool InstallUtil::IsChromeSxSProcess() {

@@ -16,9 +16,6 @@ namespace delegate_execute {
 // Finalizes a previously updated installation.
 void UpdateChromeIfNeeded(const base::FilePath& chrome_exe);
 
-// Returns the appid of the Chrome pointed to by |chrome_exe|.
-string16 GetAppId(const base::FilePath& chrome_exe);
-
 }  // namespace delegate_execute
 
 #endif  // WIN8_DELEGATE_EXECUTE_CHROME_UTIL_H_

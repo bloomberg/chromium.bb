@@ -11,9 +11,10 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
-// TODO(ananta)
-// Refactor the chrome_util and shell_util code from chrome into a common lib
-#include "win8/delegate_execute/chrome_util.h"
+#include "chrome/installer/util/browser_distribution.h"
+#include "chrome/installer/util/install_util.h"
+#include "chrome/installer/util/shell_util.h"
+
 #include "win8/metro_driver/winrt_utils.h"
 
 typedef winfoundtn::ITypedEventHandler<
@@ -201,11 +202,13 @@ void ToastNotificationHandler::DisplayNotification(
     NOTREACHED() << "Failed to get chrome exe path";
     return;
   }
-  string16 appid = delegate_execute::GetAppId(chrome_path);
+
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  bool is_per_user_install = InstallUtil::IsPerUserInstall(
+      chrome_path.value().c_str());
+  string16 appid = ShellUtil::GetBrowserModelId(dist, is_per_user_install);
   DVLOG(1) << "Chrome Appid is " << appid.c_str();
 
-  // TODO(ananta)
-  // We should probably use BrowserDistribution here to get the product name.
   mswrw::HString app_user_model_id;
   app_user_model_id.Attach(MakeHString(appid));
 

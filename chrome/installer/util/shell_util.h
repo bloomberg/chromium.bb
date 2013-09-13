@@ -228,12 +228,6 @@ class ShellUtil {
   static const wchar_t* kAppPathsRegistryKey;
   static const wchar_t* kAppPathsRegistryPathName;
 
-  // Name that we give to Chrome file association handler ProgId.
-  static const wchar_t* kChromeHTMLProgId;
-
-  // Description of Chrome file association handler ProgId.
-  static const wchar_t* kChromeHTMLProgIdDesc;
-
   // Registry path that stores url associations on Vista.
   static const wchar_t* kRegVistaUrlPrefs;
 

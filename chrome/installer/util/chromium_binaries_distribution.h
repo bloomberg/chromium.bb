@@ -15,6 +15,10 @@ class ChromiumBinariesDistribution : public BrowserDistribution {
  public:
   virtual string16 GetAppGuid() OVERRIDE;
 
+  virtual string16 GetBrowserProgIdPrefix() OVERRIDE;
+
+  virtual string16 GetBrowserProgIdDesc() OVERRIDE;
+
   virtual string16 GetDisplayName() OVERRIDE;
 
   virtual string16 GetShortcutName(ShortcutType shortcut_type) OVERRIDE;

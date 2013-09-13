@@ -11,6 +11,8 @@
 #include "base/logging.h"
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_comptr.h"
+#include "chrome/installer/util/browser_distribution.h"
+#include "chrome/installer/util/install_util.h"
 
 void CheckHR(HRESULT hr, const char* message) {
   if (FAILED(hr)) {
@@ -207,12 +209,10 @@ string16 ReadArgumentsFromPinnedTaskbarShortcut() {
     shortcut = shortcut.Append(
         L"Microsoft\\Internet Explorer\\Quick Launch\\User Pinned\\TaskBar");
 
-    // TODO(robertshield): Get this stuff from BrowserDistribution.
-#if defined(GOOGLE_CHROME_BUILD)
-    shortcut = shortcut.Append(L"Google Chrome.lnk");
-#else
-    shortcut = shortcut.Append(L"Chromium.lnk");
-#endif
+    BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+    base::string16 link_name = dist->GetShortcutName(
+        BrowserDistribution::SHORTCUT_CHROME) + installer::kLnkExt;
+    shortcut = shortcut.Append(link_name);
 
     string16 arguments;
     if (GetArgumentsFromShortcut(shortcut, &arguments)) {
