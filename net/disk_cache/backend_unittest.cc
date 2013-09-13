@@ -132,10 +132,8 @@ int DiskCacheBackendTest::GeneratePendingIO(net::TestCompletionCallback* cb) {
     return net::ERR_FAILED;
   }
 
-  disk_cache::EntryImpl* entry;
-  int rv = cache_->CreateEntry("some key",
-                               reinterpret_cast<disk_cache::Entry**>(&entry),
-                               cb->callback());
+  disk_cache::Entry* entry;
+  int rv = cache_->CreateEntry("some key", &entry, cb->callback());
   if (cb->GetResult(rv) != net::OK)
     return net::ERR_CACHE_CREATE_FAILURE;
 
@@ -147,7 +145,13 @@ int DiskCacheBackendTest::GeneratePendingIO(net::TestCompletionCallback* cb) {
     // We are using the current thread as the cache thread because we want to
     // be able to call directly this method to make sure that the OS (instead
     // of us switching thread) is returning IO pending.
-    rv = entry->WriteDataImpl(0, i, buffer.get(), kSize, cb->callback(), false);
+    if (!simple_cache_mode_) {
+      rv = static_cast<disk_cache::EntryImpl*>(entry)->WriteDataImpl(
+          0, i, buffer.get(), kSize, cb->callback(), false);
+    } else {
+      rv = entry->WriteData(0, i, buffer.get(), kSize, cb->callback(), false);
+    }
+
     if (rv == net::ERR_IO_PENDING)
       break;
     if (rv != kSize)
@@ -156,7 +160,11 @@ int DiskCacheBackendTest::GeneratePendingIO(net::TestCompletionCallback* cb) {
 
   // Don't call Close() to avoid going through the queue or we'll deadlock
   // waiting for the operation to finish.
-  entry->Release();
+  if (!simple_cache_mode_)
+    static_cast<disk_cache::EntryImpl*>(entry)->Release();
+  else
+    entry->Close();
+
   return rv;
 }
 
@@ -502,7 +510,7 @@ void DiskCacheBackendTest::BackendShutdownWithPendingFileIO(bool fast) {
   cache_.reset();
 
   if (rv == net::ERR_IO_PENDING) {
-    if (fast)
+    if (fast || simple_cache_mode_)
       EXPECT_FALSE(cb.have_result());
     else
       EXPECT_TRUE(cb.have_result());
@@ -3131,6 +3139,18 @@ TEST_F(DiskCacheBackendTest, TracingBackendBasics) {
 // The simple cache backend isn't intended to work on windows, which has very
 // different file system guarantees from Windows.
 #if !defined(OS_WIN)
+
+TEST_F(DiskCacheBackendTest, SimpleCacheShutdownWithPendingCreate) {
+  SetCacheType(net::APP_CACHE);
+  SetSimpleCacheMode();
+  BackendShutdownWithPendingCreate(false);
+}
+
+TEST_F(DiskCacheBackendTest, SimpleCacheShutdownWithPendingFileIO) {
+  SetCacheType(net::APP_CACHE);
+  SetSimpleCacheMode();
+  BackendShutdownWithPendingFileIO(false);
+}
 
 TEST_F(DiskCacheBackendTest, SimpleCacheBasics) {
   SetSimpleCacheMode();

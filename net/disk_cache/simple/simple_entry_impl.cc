@@ -28,6 +28,7 @@
 #include "net/disk_cache/simple/simple_util.h"
 #include "third_party/zlib/zlib.h"
 
+namespace disk_cache {
 namespace {
 
 // Used in histograms, please only add entries at the end.
@@ -121,9 +122,17 @@ void AdjustOpenEntryCountBy(net::CacheType cache_type, int offset) {
                    "GlobalOpenEntryCount", cache_type, g_open_entry_count);
 }
 
-}  // namespace
+void InvokeCallbackIfBackendIsAlive(
+    const base::WeakPtr<SimpleBackendImpl>& backend,
+    const net::CompletionCallback& completion_callback,
+    int result) {
+  DCHECK(!completion_callback.is_null());
+  if (!backend.get())
+    return;
+  completion_callback.Run(result);
+}
 
-namespace disk_cache {
+}  // namespace
 
 using base::Closure;
 using base::FilePath;
@@ -504,6 +513,17 @@ SimpleEntryImpl::~SimpleEntryImpl() {
   net_log_.EndEvent(net::NetLog::TYPE_SIMPLE_CACHE_ENTRY);
 }
 
+void SimpleEntryImpl::PostClientCallback(const CompletionCallback& callback,
+                                         int result) {
+  if (callback.is_null())
+    return;
+  // Note that the callback is posted rather than directly invoked to avoid
+  // reentrancy issues.
+  MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&InvokeCallbackIfBackendIsAlive, backend_, callback, result));
+}
+
 void SimpleEntryImpl::MakeUninitialized() {
   state_ = STATE_UNINITIALIZED;
   std::memset(crc32s_end_offset_, 0, sizeof(crc32s_end_offset_));
@@ -519,6 +539,15 @@ void SimpleEntryImpl::ReturnEntryToCaller(Entry** out_entry) {
   DCHECK(out_entry);
   ++open_count_;
   AddRef();  // Balanced in Close()
+  if (!backend_.get()) {
+    // This method can be called when an asynchronous operation completed.
+    // If the backend no longer exists, the callback won't be invoked, and so we
+    // must close ourselves to avoid leaking. As well, there's no guarantee the
+    // client-provided pointer (|out_entry|) hasn't been freed, and no point
+    // dereferencing it, either.
+    Close();
+    return;
+  }
   *out_entry = this;
 }
 
@@ -599,18 +628,14 @@ void SimpleEntryImpl::OpenEntryInternal(bool have_index,
 
   if (state_ == STATE_READY) {
     ReturnEntryToCaller(out_entry);
-    MessageLoopProxy::current()->PostTask(FROM_HERE, base::Bind(callback,
-                                                                net::OK));
+    PostClientCallback(callback, net::OK);
     net_log_.AddEvent(
         net::NetLog::TYPE_SIMPLE_CACHE_ENTRY_OPEN_END,
         CreateNetLogSimpleEntryCreationCallback(this, net::OK));
     return;
   }
   if (state_ == STATE_FAILURE) {
-    if (!callback.is_null()) {
-      MessageLoopProxy::current()->PostTask(FROM_HERE, base::Bind(
-          callback, net::ERR_FAILED));
-    }
+    PostClientCallback(callback, net::ERR_FAILED);
     net_log_.AddEvent(
         net::NetLog::TYPE_SIMPLE_CACHE_ENTRY_OPEN_END,
         CreateNetLogSimpleEntryCreationCallback(this, net::ERR_FAILED));
@@ -652,11 +677,7 @@ void SimpleEntryImpl::CreateEntryInternal(bool have_index,
     net_log_.AddEvent(
         net::NetLog::TYPE_SIMPLE_CACHE_ENTRY_CREATE_END,
         CreateNetLogSimpleEntryCreationCallback(this, net::ERR_FAILED));
-
-    if (!callback.is_null()) {
-      MessageLoopProxy::current()->PostTask(FROM_HERE, base::Bind(
-          callback, net::ERR_FAILED));
-    }
+    PostClientCallback(callback, net::ERR_FAILED);
     return;
   }
   DCHECK_EQ(STATE_UNINITIALIZED, state_);
@@ -758,8 +779,11 @@ void SimpleEntryImpl::ReadDataInternal(int stream_index,
   if (state_ == STATE_FAILURE || state_ == STATE_UNINITIALIZED) {
     if (!callback.is_null()) {
       RecordReadResult(cache_type_, READ_RESULT_BAD_STATE);
-      MessageLoopProxy::current()->PostTask(FROM_HERE, base::Bind(
-          callback, net::ERR_FAILED));
+      // Note that the API states that client-provided callbacks for entry-level
+      // (i.e. non-backend) operations (e.g. read, write) are invoked even if
+      // the backend was already destroyed.
+      MessageLoopProxy::current()->PostTask(
+          FROM_HERE, base::Bind(callback, net::ERR_FAILED));
     }
     if (net_log_.IsLoggingAllEvents()) {
       net_log_.AddEvent(
@@ -774,8 +798,7 @@ void SimpleEntryImpl::ReadDataInternal(int stream_index,
     // If there is nothing to read, we bail out before setting state_ to
     // STATE_IO_PENDING.
     if (!callback.is_null())
-      MessageLoopProxy::current()->PostTask(FROM_HERE, base::Bind(
-          callback, 0));
+      MessageLoopProxy::current()->PostTask(FROM_HERE, base::Bind(callback, 0));
     return;
   }
 
@@ -831,10 +854,8 @@ void SimpleEntryImpl::WriteDataInternal(int stream_index,
           CreateNetLogReadWriteCompleteCallback(net::ERR_FAILED));
     }
     if (!callback.is_null()) {
-      // We need to posttask so that we don't go in a loop when we call the
-      // callback directly.
-      MessageLoopProxy::current()->PostTask(FROM_HERE, base::Bind(
-          callback, net::ERR_FAILED));
+      MessageLoopProxy::current()->PostTask(
+          FROM_HERE, base::Bind(callback, net::ERR_FAILED));
     }
     // |this| may be destroyed after return here.
     return;
@@ -922,11 +943,7 @@ void SimpleEntryImpl::CreationOperationComplete(
       MarkAsDoomed();
 
     net_log_.AddEventWithNetErrorCode(end_event_type, net::ERR_FAILED);
-
-    if (!completion_callback.is_null()) {
-      MessageLoopProxy::current()->PostTask(FROM_HERE, base::Bind(
-          completion_callback, net::ERR_FAILED));
-    }
+    PostClientCallback(completion_callback, net::ERR_FAILED);
     MakeUninitialized();
     return;
   }
@@ -951,10 +968,7 @@ void SimpleEntryImpl::CreationOperationComplete(
   AdjustOpenEntryCountBy(cache_type_, 1);
 
   net_log_.AddEvent(end_event_type);
-  if (!completion_callback.is_null()) {
-    MessageLoopProxy::current()->PostTask(FROM_HERE, base::Bind(
-        completion_callback, net::OK));
-  }
+  PostClientCallback(completion_callback, net::OK);
 }
 
 void SimpleEntryImpl::EntryOperationComplete(
