@@ -83,7 +83,8 @@ BrowserDesktopRootWindowHostWin::BrowserDesktopRootWindowHostWin(
                                desktop_native_widget_aura,
                                initial_bounds),
       browser_view_(browser_view),
-      browser_frame_(browser_frame) {
+      browser_frame_(browser_frame),
+      did_gdi_clear_(false) {
   scoped_ptr<ui::ThemeProvider> theme_provider(
       new DesktopThemeProvider(ThemeServiceFactory::GetForProfile(
                                    browser_view->browser()->profile())));
@@ -189,7 +190,7 @@ void BrowserDesktopRootWindowHostWin::PostHandleMSG(UINT message,
   case WM_CREATE:
     minimize_button_metrics_.Init(GetHWND());
     break;
-  case WM_WINDOWPOSCHANGED:
+  case WM_WINDOWPOSCHANGED: {
     UpdateDWMFrame();
 
     // Windows lies to us about the position of the minimize button before a
@@ -210,7 +211,25 @@ void BrowserDesktopRootWindowHostWin::PostHandleMSG(UINT message,
     }
     break;
   }
+  case WM_ERASEBKGND:
+    if (!did_gdi_clear_ && DesktopRootWindowHostWin::ShouldUseNativeFrame()) {
+      // This is necessary to avoid white flashing in the titlebar area around
+      // the minimize/maximize/close buttons.
+      HDC dc = GetDC(GetHWND());
+      MARGINS margins = GetDWMFrameMargins();
+      RECT client_rect;
+      GetClientRect(GetHWND(), &client_rect);
+      HBRUSH brush = CreateSolidBrush(0);
+      RECT rect = { 0, 0, client_rect.right, margins.cyTopHeight };
+      FillRect(dc, &rect, brush);
+      DeleteObject(brush);
+      ReleaseDC(GetHWND(), dc);
+      did_gdi_clear_ = true;
+    }
+    break;
+  }
 }
+
 
 bool BrowserDesktopRootWindowHostWin::IsUsingCustomFrame() const {
   // We don't theme popup or app windows, so regardless of whether or not a
@@ -237,6 +256,11 @@ bool BrowserDesktopRootWindowHostWin::ShouldUseNativeFrame() {
                                       GetWidget()->GetThemeProvider());
 }
 
+void BrowserDesktopRootWindowHostWin::FrameTypeChanged() {
+  views::DesktopRootWindowHostWin::FrameTypeChanged();
+  did_gdi_clear_ = false;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserDesktopRootWindowHostWin, private:
 
@@ -253,6 +277,12 @@ void BrowserDesktopRootWindowHostWin::UpdateDWMFrame() {
       !DesktopRootWindowHostWin::ShouldUseNativeFrame())
     return;
 
+  MARGINS margins = GetDWMFrameMargins();
+
+  DwmExtendFrameIntoClientArea(GetHWND(), &margins);
+}
+
+MARGINS BrowserDesktopRootWindowHostWin::GetDWMFrameMargins() const {
   MARGINS margins = { 0 };
 
   // If the opaque frame is visible, we use the default (zero) margins.
@@ -276,8 +306,7 @@ void BrowserDesktopRootWindowHostWin::UpdateDWMFrame() {
       margins.cyTopHeight = tabstrip_bounds.bottom() + kDWMFrameTopOffset;
     }
   }
-
-  DwmExtendFrameIntoClientArea(GetHWND(), &margins);
+  return margins;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

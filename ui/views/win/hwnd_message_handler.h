@@ -476,9 +476,6 @@ class VIEWS_EXPORT HWNDMessageHandler :
   // Generates touch-ids for touch-events.
   ui::SequentialIDGenerator id_generator_;
 
-  // Necessary to avoid corruption on NC paint in Aero mode.
-  bool did_gdi_clear_;
-
   DISALLOW_COPY_AND_ASSIGN(HWNDMessageHandler);
 };
 
