@@ -62,6 +62,8 @@ class PDF {
   static ImageData GetResourceImageForScale(const InstanceHandle& instance,
                                             PP_ResourceImage image_id,
                                             float scale);
+  static Var ModalPromptForPassword(const InstanceHandle& instance,
+                                    Var message);
 };
 
 }  // namespace pp

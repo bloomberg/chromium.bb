@@ -14191,6 +14191,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
     <message name="IDS_PDF_INFOBAR_ALWAYS_USE_READER_BUTTON" desc="The label of the 'always' button on the infobar that asks the user if they want to set Adobe Reader as default.">
       Always
     </message>
+    <message name="IDS_PDF_PASSWORD_DIALOG_TITLE" desc="The title of the dialog requesting a password to open a protected PDF.">
+      Password required
+    </message>
 
     <!-- Adobe Reader is out of date Blocking Page -->
     <message name="IDS_READER_OUT_OF_DATE_BLOCKING_PAGE_TITLE" desc="The title of the Adobe Reader out of date blocking page.">

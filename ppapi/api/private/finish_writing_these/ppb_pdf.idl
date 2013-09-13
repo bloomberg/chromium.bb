@@ -138,4 +138,12 @@ interface PPB_PDF_0_1 {
   /* Notifies the browser that the PDF has an unsupported feature. */
   void HasUnsupportedFeature(
       [in] PP_Instance instance);
+
+  /* Tells the browser to open a dialog box to receive a password from the
+   * user, masking input characters. Returns the value entered by the user, or
+   * an empty string if the user cancels instead.
+   */
+  PP_Var ModalPromptForPassword(
+      [in] PP_Instance instance,
+      [in] PP_Var message);
 };
