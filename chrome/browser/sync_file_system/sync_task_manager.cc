@@ -153,9 +153,11 @@ void SyncTaskManager::NotifyTaskDone(
   if (client_)
     client_->NotifyLastOperationStatus(last_operation_status_);
 
-  if (!current_callback_.is_null())
-    current_callback_.Run(status);
-  current_callback_.Reset();
+  if (!current_callback_.is_null()) {
+    SyncStatusCallback callback = current_callback_;
+    current_callback_.Reset();
+    callback.Run(status);
+  }
 
   if (!pending_tasks_.empty()) {
     base::Closure closure = pending_tasks_.top().task;
