@@ -1370,12 +1370,26 @@ bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect
             // scroll using the fast path, otherwise the outsets of the filter will be moved around the page.
             return false;
         }
+
         IntRect updateRect = pixelSnappedIntRect(layer->repaintRectIncludingNonCompositingDescendants());
-        updateRect = contentsToRootView(updateRect);
-        if (!isCompositedContentLayer && clipsRepaints())
-            updateRect.intersect(rectToScroll);
-        if (!updateRect.isEmpty())
-            regionToUpdate.unite(updateRect);
+
+        RenderLayer* enclosingCompositingLayer = layer->enclosingCompositingLayer(false);
+        if (enclosingCompositingLayer && !enclosingCompositingLayer->renderer()->isRenderView()) {
+            // If the fixed-position layer is contained by a composited layer that is not its containing block,
+            // then we have to invlidate that enclosing layer, not the RenderView.
+            updateRect.moveBy(scrollPosition());
+            IntRect previousRect = updateRect;
+            previousRect.move(scrollDelta);
+            updateRect.unite(previousRect);
+            enclosingCompositingLayer->setBackingNeedsRepaintInRect(updateRect);
+        } else {
+            // Coalesce the repaints that will be issued to the renderView.
+            updateRect = contentsToRootView(updateRect);
+            if (!isCompositedContentLayer && clipsRepaints())
+                updateRect.intersect(rectToScroll);
+            if (!updateRect.isEmpty())
+                regionToUpdate.unite(updateRect);
+        }
     }
 
     // 1) scroll
