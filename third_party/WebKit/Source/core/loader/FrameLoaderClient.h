@@ -47,6 +47,7 @@ template<class T> class Handle;
 
 namespace WebKit {
 class WebCookieJar;
+class WebNavigationControllerRegistry;
 }
 
 namespace WebCore {
@@ -214,6 +215,8 @@ class FetchRequest;
         virtual void dispatchWillInsertBody() { }
 
         virtual void dispatchDidChangeResourcePriority(unsigned long /*identifier*/, ResourceLoadPriority) { }
+
+        virtual WebKit::WebNavigationControllerRegistry* navigationControllerRegistry() = 0;
     };
 
 } // namespace WebCore

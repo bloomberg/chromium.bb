@@ -64,6 +64,7 @@ LocalStorage status=stable
 Media status=stable
 MediaSource status=experimental
 MediaStream status=stable
+NavigationController status=experimental
 Notifications status=stable
 ObjectFitPosition status=experimental
 PagePopup status=stable

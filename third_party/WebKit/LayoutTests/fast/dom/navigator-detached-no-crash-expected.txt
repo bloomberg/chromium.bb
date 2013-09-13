@@ -14,8 +14,10 @@ navigator.platform is OK
 navigator.plugins is OK
 navigator.product is OK
 navigator.productSub is OK
+navigator.registerController() threw err TypeError: Not enough arguments
 navigator.registerProtocolHandler() threw err TypeError: Not enough arguments
 navigator.requestMIDIAccess() is OK
+navigator.unregisterController() threw err TypeError: Not enough arguments
 navigator.userAgent is OK
 navigator.vendor is OK
 navigator.vendorSub is OK
@@ -37,8 +39,10 @@ navigator.platform is OK
 navigator.plugins is OK
 navigator.product is OK
 navigator.productSub is OK
+navigator.registerController() threw err TypeError: Not enough arguments
 navigator.registerProtocolHandler() threw err TypeError: Not enough arguments
 navigator.requestMIDIAccess() is OK
+navigator.unregisterController() threw err TypeError: Not enough arguments
 navigator.userAgent is OK
 navigator.vendor is OK
 navigator.vendorSub is OK
