@@ -4,6 +4,8 @@
 
 #include "media/base/bit_reader.h"
 
+#include <algorithm>
+
 namespace media {
 
 BitReader::BitReader(const uint8* data, off_t size)

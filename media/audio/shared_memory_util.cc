@@ -4,6 +4,8 @@
 
 #include "media/audio/shared_memory_util.h"
 
+#include <algorithm>
+
 #include "base/atomicops.h"
 #include "base/logging.h"
 
