@@ -50,6 +50,13 @@ void MockConnection::AdvanceTime(QuicTime::Delta delta) {
   static_cast<MockHelper*>(helper())->AdvanceTime(delta);
 }
 
+
+MockQuicSessionOwner::MockQuicSessionOwner() {
+}
+
+MockQuicSessionOwner::~MockQuicSessionOwner() {
+}
+
 bool TestDecompressorVisitor::OnDecompressedData(StringPiece data) {
   data.AppendToString(&data_);
   return true;
@@ -80,6 +87,12 @@ MockAckNotifierDelegate::MockAckNotifierDelegate() {
 }
 
 MockAckNotifierDelegate::~MockAckNotifierDelegate() {
+}
+
+MockPacketWriter::MockPacketWriter() {
+}
+
+MockPacketWriter::~MockPacketWriter() {
 }
 
 }  // namespace test

@@ -25,6 +25,10 @@ class ReliableQuicStream;
 
 namespace tools {
 
+namespace test {
+class QuicServerSessionPeer;
+}  // namespace test
+
 // An interface from the session to the entity owning the session.
 // This lets the session notify its owner (the Dispatcher) when the connection
 // is closed.
@@ -66,6 +70,8 @@ class QuicServerSession : public QuicSession {
     const QuicCryptoServerConfig& crypto_config);
 
  private:
+  friend class test::QuicServerSessionPeer;
+
   scoped_ptr<QuicCryptoServerStream> crypto_stream_;
   QuicSessionOwner* owner_;
 
