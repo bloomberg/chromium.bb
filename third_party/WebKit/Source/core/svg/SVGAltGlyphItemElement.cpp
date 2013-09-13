@@ -52,7 +52,7 @@ bool SVGAltGlyphItemElement::hasValidGlyphElements(Vector<String>& glyphNames) c
     for (Node* child = firstChild(); child; child = child->nextSibling()) {
         if (child->hasTagName(SVGNames::glyphRefTag)) {
             String referredGlyphName;
-            if (static_cast<SVGGlyphRefElement*>(child)->hasValidGlyphElement(referredGlyphName))
+            if (toSVGGlyphRefElement(child)->hasValidGlyphElement(referredGlyphName))
                 glyphNames.append(referredGlyphName);
             else {
                 glyphNames.clear();

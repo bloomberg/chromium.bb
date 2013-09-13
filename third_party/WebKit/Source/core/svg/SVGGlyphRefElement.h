@@ -21,6 +21,7 @@
 #define SVGGlyphRefElement_h
 
 #if ENABLE(SVG_FONTS)
+#include "SVGNames.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGURIReference.h"
 
@@ -63,6 +64,12 @@ private:
     float m_dx;
     float m_dy;
 };
+
+inline SVGGlyphRefElement* toSVGGlyphRefElement(Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(SVGNames::glyphRefTag));
+    return static_cast<SVGGlyphRefElement*>(node);
+}
 
 }
 
