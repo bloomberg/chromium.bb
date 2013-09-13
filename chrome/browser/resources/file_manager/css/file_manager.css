@@ -1607,7 +1607,6 @@ body[unformatted] #format-panel > .error,
 body[drive='mounting'] #unmounted-panel > .loading,
 body[drive='error'] #unmounted-panel > .error,
 #format-panel > #format-button,
-#unmounted-panel.retry-enabled > .retry,
 #unmounted-panel.retry-enabled > .learn-more {
   display: -webkit-box;
 }

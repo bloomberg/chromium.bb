@@ -560,13 +560,6 @@ FileListBannerController.prototype.ensureDriveUnmountedPanelInitialized_ =
   create(spinnerBox, 'div', 'spinner');
   create(panel, 'div', 'error', str('DRIVE_CANNOT_REACH'));
 
-  var retryButton = create(panel, 'button', 'retry', str('DRIVE_RETRY'));
-  retryButton.hidden = true;
-  var vm = this.volumeManager_;
-  retryButton.onclick = function() {
-    vm.mountDrive(function() {}, function() {});
-  };
-
   var learnMore = create(panel, 'a', 'learn-more plain-link',
                          str('DRIVE_LEARN_MORE'));
   learnMore.href = urlConstants.GOOGLE_DRIVE_ERROR_HELP_URL;
