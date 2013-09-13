@@ -30,5 +30,5 @@ if env.Bit('target_arm') and not env.Bit('pnacl_generate_pexe'):
         nexe)
   native_env.AddNodeToTestSuite(
       node, ['small_tests', 'nonpexe_tests'], 'run_longjmp_float_test',
-      # http://code.google.com/p/nativeclient/issues/detail?id=3677
-      is_broken=True)
+      # http://code.google.com/p/nativeclient/issues/detail?id=3684
+      is_broken=native_env.Bit('bitcode'))
