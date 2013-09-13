@@ -231,6 +231,19 @@ public:
         RenderObject* m_renderObject;
         bool m_preexistingForbidden;
     };
+
+    void assertRendererLaidOut() const
+    {
+        if (needsLayout())
+            showRenderTreeForThis();
+        ASSERT_WITH_SECURITY_IMPLICATION(!needsLayout());
+    }
+
+    void assertSubtreeIsLaidOut() const
+    {
+        for (const RenderObject* renderer = this; renderer; renderer = renderer->nextInPreOrder())
+            assertRendererLaidOut();
+    }
 #endif
 
     // Obtains the nearest enclosing block (including this block) that contributes a first-line style to our inline
@@ -1366,6 +1379,7 @@ void showRenderTree(const WebCore::RenderObject* object1);
 // We don't make object2 an optional parameter so that showRenderTree
 // can be called from gdb easily.
 void showRenderTree(const WebCore::RenderObject* object1, const WebCore::RenderObject* object2);
+
 #endif
 
 #endif // RenderObject_h

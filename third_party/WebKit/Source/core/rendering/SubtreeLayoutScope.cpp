@@ -53,13 +53,8 @@ SubtreeLayoutScope::~SubtreeLayoutScope()
     RELEASE_ASSERT(!m_root->needsLayout());
 
 #ifndef NDEBUG
-    for (HashSet<RenderObject*>::iterator it = m_renderersToLayout.begin(); it != m_renderersToLayout.end(); ++it) {
-        RenderObject* renderer = *it;
-        // FIXME: Thie patter is really common. Move it into an assertRendererLaidOut function.
-        if (renderer->needsLayout())
-            showRenderTree(renderer);
-        ASSERT(!renderer->needsLayout());
-    }
+    for (HashSet<RenderObject*>::iterator it = m_renderersToLayout.begin(); it != m_renderersToLayout.end(); ++it)
+        (*it)->assertRendererLaidOut();
 #endif
 }
 

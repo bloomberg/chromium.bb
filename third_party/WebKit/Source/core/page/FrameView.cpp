@@ -1124,8 +1124,7 @@ void FrameView::layout(bool allowSubtree)
 
 #ifndef NDEBUG
     // Post-layout assert that nobody was re-marked as needing layout during layout.
-    for (RenderObject* renderer = document->renderer(); renderer; renderer = renderer->nextInPreOrder())
-        ASSERT_WITH_SECURITY_IMPLICATION(!renderer->needsLayout());
+    document->renderer()->assertSubtreeIsLaidOut();
 #endif
 
     // FIXME: It should be not possible to remove the FrameView from the frame/page during layout
@@ -2929,6 +2928,7 @@ void FrameView::paintContents(GraphicsContext* p, const IntRect& rect)
     RenderLayer* rootLayer = renderView->layer();
 
 #ifndef NDEBUG
+    renderView->assertSubtreeIsLaidOut();
     RenderObject::SetLayoutNeededForbiddenScope forbidSetNeedsLayout(rootLayer->renderer());
 #endif
 

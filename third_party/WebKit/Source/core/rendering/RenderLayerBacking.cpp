@@ -1641,6 +1641,10 @@ void RenderLayerBacking::doPaintTask(GraphicsLayerPaintInfo& paintInfo, Graphics
     if (!(paintInfo.paintingPhase & GraphicsLayerPaintOverflowContents))
         dirtyRect.intersect(paintInfo.compositedBounds);
 
+#ifndef NDEBUG
+    paintInfo.renderLayer->renderer()->assertSubtreeIsLaidOut();
+#endif
+
     // FIXME: GraphicsLayers need a way to split for RenderRegions.
     RenderLayer::LayerPaintingInfo paintingInfo(paintInfo.renderLayer, dirtyRect, PaintBehaviorNormal, LayoutSize());
     paintInfo.renderLayer->paintLayerContents(context, paintingInfo, paintFlags);
