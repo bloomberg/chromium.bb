@@ -8,7 +8,7 @@
 #include "base/android/jni_array.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/browser/android/browser_media_player_manager.h"
+#include "content/browser/media/android/browser_media_player_manager.h"
 #include "content/browser/renderer_host/compositor_impl_android.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/public/browser/browser_thread.h"

@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "content/browser/android/browser_media_player_manager.h"
+#include "content/browser/media/android/browser_media_player_manager.h"
 #include "content/common/android/surface_texture_peer.h"
 #include "content/public/common/content_switches.h"
 #include "jni/ContentVideoView_jni.h"

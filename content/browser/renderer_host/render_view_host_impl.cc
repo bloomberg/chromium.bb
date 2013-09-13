@@ -73,7 +73,7 @@
 #if defined(OS_MACOSX)
 #include "content/browser/renderer_host/popup_menu_helper_mac.h"
 #elif defined(OS_ANDROID)
-#include "content/browser/android/browser_media_player_manager.h"
+#include "content/browser/media/android/browser_media_player_manager.h"
 #endif
 
 using base::TimeDelta;

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_ANDROID_BROWSER_DEMUXER_ANDROID_H_
-#define CONTENT_BROWSER_ANDROID_BROWSER_DEMUXER_ANDROID_H_
+#ifndef CONTENT_BROWSER_MEDIA_ANDROID_BROWSER_DEMUXER_ANDROID_H_
+#define CONTENT_BROWSER_MEDIA_ANDROID_BROWSER_DEMUXER_ANDROID_H_
 
 #include "base/id_map.h"
 #include "content/public/browser/render_view_host_observer.h"
@@ -52,4 +52,4 @@ class CONTENT_EXPORT BrowserDemuxerAndroid
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_ANDROID_BROWSER_DEMUXER_ANDROID_H_
+#endif  // CONTENT_BROWSER_MEDIA_ANDROID_BROWSER_DEMUXER_ANDROID_H_

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/android/browser_media_player_manager.h"
+#include "content/browser/media/android/browser_media_player_manager.h"
 
 #include "base/command_line.h"
-#include "content/browser/android/browser_demuxer_android.h"
 #include "content/browser/android/content_view_core_impl.h"
-#include "content/browser/android/media_resource_getter_impl.h"
+#include "content/browser/media/android/browser_demuxer_android.h"
+#include "content/browser/media/android/media_resource_getter_impl.h"
 #include "content/browser/web_contents/web_contents_view_android.h"
 #include "content/common/media/media_player_messages_android.h"
 #include "content/public/browser/browser_context.h"
