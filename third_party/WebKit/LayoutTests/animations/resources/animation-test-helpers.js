@@ -367,6 +367,19 @@ function checkExpectedTransitionValue(expected, index)
         } else {
             pass = isCloseEnough(computedCrossFade.percent, expectedValue, tolerance);
         }
+    } else if (property == "object-position") {
+        computedValue = window.getComputedStyle(document.getElementById(elementId)).objectPosition;
+        var actualArray = computedValue.split(" ");
+        var expectedArray = expectedValue.split(" ");
+        if (actualArray.length != expectedArray.length) {
+            pass = false;
+        } else {
+            for (i = 0; i < expectedArray.length; ++i) {
+                pass = isCloseEnough(parseFloat(actualArray[i]), parseFloat(expectedArray[i]), tolerance);
+                if (!pass)
+                    break;
+            }
+        }
     } else {
         var computedStyle = window.getComputedStyle(document.getElementById(elementId)).getPropertyCSSValue(property);
         if (computedStyle.cssValueType == CSSValue.CSS_VALUE_LIST) {

@@ -870,6 +870,15 @@ Length StyleBuilderConverter::convertLengthMaxSizing(StyleResolverState& state, 
     return convertLengthSizing(state, value);
 }
 
+LengthPoint StyleBuilderConverter::convertLengthPoint(StyleResolverState& state, CSSValue* value)
+{
+    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+    Pair* pair = primitiveValue->getPairValue();
+    Length x = pair->first()->convertToLength<FixedIntegerConversion | PercentConversion>(state.style(), state.rootElementStyle(), state.style()->effectiveZoom());
+    Length y = pair->second()->convertToLength<FixedIntegerConversion | PercentConversion>(state.style(), state.rootElementStyle(), state.style()->effectiveZoom());
+    return LengthPoint(x, y);
+}
+
 LengthSize StyleBuilderConverter::convertRadius(StyleResolverState& state, CSSValue* value)
 {
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
@@ -1444,6 +1453,7 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
     case CSSPropertyBorderWidth:
     case CSSPropertyListStyle:
     case CSSPropertyMargin:
+    case CSSPropertyObjectPosition:
     case CSSPropertyOutline:
     case CSSPropertyOverflow:
     case CSSPropertyPadding:

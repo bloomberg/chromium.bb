@@ -34,52 +34,69 @@ namespace WebCore {
 // it (eliminating some extra -webkit- internal properties).
 class Pair : public RefCounted<Pair> {
 public:
+    enum IdenticalValuesPolicy { DropIdenticalValues, KeepIdenticalValues };
+
     static PassRefPtr<Pair> create()
     {
         return adoptRef(new Pair);
     }
-    static PassRefPtr<Pair> create(PassRefPtr<CSSPrimitiveValue> first, PassRefPtr<CSSPrimitiveValue> second)
+    static PassRefPtr<Pair> create(PassRefPtr<CSSPrimitiveValue> first, PassRefPtr<CSSPrimitiveValue> second, IdenticalValuesPolicy identicalValuesPolicy)
     {
-        return adoptRef(new Pair(first, second));
+        return adoptRef(new Pair(first, second, identicalValuesPolicy));
     }
     virtual ~Pair() { }
 
     CSSPrimitiveValue* first() const { return m_first.get(); }
     CSSPrimitiveValue* second() const { return m_second.get(); }
+    IdenticalValuesPolicy identicalValuesPolicy() const { return m_identicalValuesPolicy; }
 
     void setFirst(PassRefPtr<CSSPrimitiveValue> first) { m_first = first; }
     void setSecond(PassRefPtr<CSSPrimitiveValue> second) { m_second = second; }
+    void setIdenticalValuesPolicy(IdenticalValuesPolicy identicalValuesPolicy) { m_identicalValuesPolicy = identicalValuesPolicy; }
 
     String cssText() const
     {
-
-        return generateCSSString(first()->cssText(), second()->cssText());
+        return generateCSSString(first()->cssText(), second()->cssText(), m_identicalValuesPolicy);
     }
 
-    bool equals(const Pair& other) const { return compareCSSValuePtr(m_first, other.m_first) && compareCSSValuePtr(m_second, other.m_second); }
+    bool equals(const Pair& other) const
+    {
+        return compareCSSValuePtr(m_first, other.m_first)
+            && compareCSSValuePtr(m_second, other.m_second)
+            && m_identicalValuesPolicy == other.m_identicalValuesPolicy;
+    }
 
     String serializeResolvingVariables(const HashMap<AtomicString, String>& variables) const
     {
-        return generateCSSString(first()->customSerializeResolvingVariables(variables),
-                                 second()->customSerializeResolvingVariables(variables));
+        return generateCSSString(
+            first()->customSerializeResolvingVariables(variables),
+            second()->customSerializeResolvingVariables(variables),
+            m_identicalValuesPolicy);
     }
 
     bool hasVariableReference() const { return first()->hasVariableReference() || second()->hasVariableReference(); }
 
 private:
-    Pair() : m_first(0), m_second(0) { }
-    Pair(PassRefPtr<CSSPrimitiveValue> first, PassRefPtr<CSSPrimitiveValue> second)
-        : m_first(first), m_second(second) { }
+    Pair()
+        : m_first(0)
+        , m_second(0)
+        , m_identicalValuesPolicy(DropIdenticalValues) { }
 
-    static String generateCSSString(const String& first, const String& second)
+    Pair(PassRefPtr<CSSPrimitiveValue> first, PassRefPtr<CSSPrimitiveValue> second, IdenticalValuesPolicy identicalValuesPolicy)
+        : m_first(first)
+        , m_second(second)
+        , m_identicalValuesPolicy(identicalValuesPolicy) { }
+
+    static String generateCSSString(const String& first, const String& second, IdenticalValuesPolicy identicalValuesPolicy)
     {
-        if (first == second)
+        if (identicalValuesPolicy == DropIdenticalValues && first == second)
             return first;
         return first + ' ' + second;
     }
 
     RefPtr<CSSPrimitiveValue> m_first;
     RefPtr<CSSPrimitiveValue> m_second;
+    IdenticalValuesPolicy m_identicalValuesPolicy;
 };
 
 } // namespace

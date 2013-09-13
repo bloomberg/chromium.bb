@@ -314,7 +314,7 @@ LayoutRect RenderReplaced::replacedContentRect(const LayoutSize* overriddenIntri
 {
     LayoutRect contentRect = contentBoxRect();
     ObjectFit objectFit = style()->objectFit();
-    if (objectFit == ObjectFitFill)
+    if (objectFit == ObjectFitFill && style()->objectPosition() == RenderStyle::initialObjectPosition())
         return contentRect;
 
     LayoutSize intrinsicSize = overriddenIntrinsicSize ? *overriddenIntrinsicSize : this->intrinsicSize();
@@ -334,13 +334,13 @@ LayoutRect RenderReplaced::replacedContentRect(const LayoutSize* overriddenIntri
         finalRect.setSize(intrinsicSize);
         break;
     case ObjectFitFill:
+        break;
+    default:
         ASSERT_NOT_REACHED();
     }
 
-    // FIXME: This is where object-position should be taken into account, but since it's not
-    // implemented yet, assume the initial value of "50% 50%".
-    LayoutUnit xOffset = (contentRect.width() - finalRect.width()) / 2;
-    LayoutUnit yOffset = (contentRect.height() - finalRect.height()) / 2;
+    LayoutUnit xOffset = minimumValueForLength(style()->objectPosition().x(), contentRect.width() - finalRect.width(), view());
+    LayoutUnit yOffset = minimumValueForLength(style()->objectPosition().y(), contentRect.height() - finalRect.height(), view());
     finalRect.move(xOffset, yOffset);
 
     return finalRect;
