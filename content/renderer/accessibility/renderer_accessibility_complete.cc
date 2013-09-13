@@ -258,7 +258,8 @@ void RendererAccessibilityComplete::SendPendingAccessibilityEvents() {
     AccessibilityHostMsg_EventParams event_msg;
     event_msg.event_type = event.event_type;
     event_msg.id = event.id;
-    SerializeChangedNodes(obj, &event_msg.nodes);
+    std::set<int> ids_serialized;
+    SerializeChangedNodes(obj, &event_msg.nodes, &ids_serialized);
     event_msgs.push_back(event_msg);
 
 #ifndef NDEBUG
@@ -328,7 +329,12 @@ RendererAccessibilityComplete::CreateBrowserTreeNode() {
 
 void RendererAccessibilityComplete::SerializeChangedNodes(
     const WebKit::WebAXObject& obj,
-    std::vector<AccessibilityNodeData>* dst) {
+    std::vector<AccessibilityNodeData>* dst,
+    std::set<int>* ids_serialized) {
+  if (ids_serialized->find(obj.axID()) != ids_serialized->end())
+    return;
+  ids_serialized->insert(obj.axID());
+
   // This method has three responsibilities:
   // 1. Serialize |obj| into an AccessibilityNodeData, and append it to
   //    the end of the |dst| vector to be send to the browser process.
@@ -383,6 +389,7 @@ void RendererAccessibilityComplete::SerializeChangedNodes(
         WebAXObject parent_obj;
         while (parent) {
           parent_obj = document.accessibilityObjectFromID(parent->id);
+
           if (!parent_obj.isDetached())
             break;
           parent = parent->parent;
@@ -392,7 +399,7 @@ void RendererAccessibilityComplete::SerializeChangedNodes(
         // so that the update that clears |child| from its old parent
         // occurs stricly before the update that adds |child| to its
         // new parent.
-        SerializeChangedNodes(parent_obj, dst);
+        SerializeChangedNodes(parent_obj, dst, ids_serialized);
       }
     }
   }
@@ -465,7 +472,7 @@ void RendererAccessibilityComplete::SerializeChangedNodes(
 
   // Serialize all of the new children, recursively.
   for (size_t i = 0; i < children_to_serialize.size(); ++i)
-    SerializeChangedNodes(children_to_serialize[i], dst);
+    SerializeChangedNodes(children_to_serialize[i], dst, ids_serialized);
 }
 
 void RendererAccessibilityComplete::ClearBrowserTreeNode(

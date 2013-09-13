@@ -5,6 +5,7 @@
 #ifndef CONTENT_RENDERER_ACCESSIBILITY_RENDERER_ACCESSIBILITY_COMPLETE_H_
 #define CONTENT_RENDERER_ACCESSIBILITY_RENDERER_ACCESSIBILITY_COMPLETE_H_
 
+#include <set>
 #include <vector>
 
 #include "base/containers/hash_tables.h"
@@ -75,8 +76,11 @@ class CONTENT_EXPORT RendererAccessibilityComplete
   // Serialize the given accessibility object |obj| and append it to
   // |dst|, and then recursively also serialize any *new* children of
   // |obj|, based on what object ids we know the browser already has.
+  // The set of ids serialized is added to |ids_serialized|, and any
+  // ids previously in that set are not serialized again.
   void SerializeChangedNodes(const WebKit::WebAXObject& obj,
-                             std::vector<AccessibilityNodeData>* dst);
+                             std::vector<AccessibilityNodeData>* dst,
+                             std::set<int>* ids_serialized);
 
   // Clear the given node and recursively delete all of its descendants
   // from the browser tree. (Does not delete |browser_node|).
