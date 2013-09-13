@@ -122,6 +122,12 @@ void ChildThread::Init() {
   g_lazy_tls.Pointer()->Set(this);
   on_channel_error_called_ = false;
   message_loop_ = base::MessageLoop::current();
+#ifdef IPC_MESSAGE_LOG_ENABLED
+  // We must make sure to instantiate the IPC Logger *before* we create the
+  // channel, otherwise we can get a callback on the IO thread which creates
+  // the logger, and the logger does not like being created on the IO thread.
+  IPC::Logging::GetInstance();
+#endif
   channel_.reset(
       new IPC::SyncChannel(channel_name_,
                            IPC::Channel::MODE_CLIENT,
