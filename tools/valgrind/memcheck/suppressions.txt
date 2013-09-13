@@ -6395,7 +6395,7 @@
    fun:malloc
    fun:_ZN3WTF10fastMallocEm
    fun:_ZN3WTF10StringImpl19createUninitializedEjRPh
-   fun:_ZN3WTF6String6appendERKS0_
+   ...
    fun:_ZN7WebCoreL24valueForGridTrackBreadthERKNS_10GridLengthEPKNS_11RenderStyleEPNS_10RenderViewE
    fun:_ZN7WebCoreL21valueForGridTrackSizeERKNS_13GridTrackSizeEPKNS_11RenderStyleEPNS_10RenderViewE
    fun:_ZN7WebCoreL21valueForGridTrackListERKN3WTF6VectorINS_13GridTrackSizeELm0EEERKNS0_7HashMap*
@@ -7162,4 +7162,16 @@
    fun:_ZN7content12_GLOBAL__N_123WaitableCallbackResults11MaybeCreateEN6WebKit22WebFileSystemCallbacksE
    ...
    fun:_ZN7WebCore*SyncV8Internal*FunctionCallbackInfo*
+}
+{
+   bug_291240
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7WebCore12_GLOBAL__N_110Serializer11handleErrorENS1_6StatusEPNS1_9StateBaseE
+   fun:_ZN7WebCore12_GLOBAL__N_110Serializer27writeTransferredArrayBufferEN2v86HandleINS2_5ValueEEEjPNS1_9StateBaseE
+   fun:_ZN7WebCore12_GLOBAL__N_110Serializer11doSerializeEN2v86HandleINS2_5ValueEEEPNS1_9StateBaseE
+   fun:_ZN7WebCore12_GLOBAL__N_110Serializer27writeAndGreyArrayBufferViewEN2v86HandleINS2_6ObjectEEEPNS1_9StateBaseE
+   fun:_ZN7WebCore12_GLOBAL__N_110Serializer11doSerializeEN2v86HandleINS2_5ValueEEEPNS1_9StateBaseE
+   fun:_ZN7WebCore12_GLOBAL__N_110Serializer15DenseArrayState7advanceERS1_
+   fun:_ZN7WebCore12_GLOBAL__N_110Serializer9serializeEN2v86HandleINS2_5ValueEEE
 }
