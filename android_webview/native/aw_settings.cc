@@ -189,6 +189,7 @@ void AwSettings::UpdateWebkitPreferencesLocked(JNIEnv* env, jobject obj) {
 
   prefs.databases_enabled = Java_AwSettings_getDatabaseEnabledLocked(env, obj);
 
+  prefs.wide_viewport_quirk = true;
   prefs.double_tap_to_zoom_enabled = prefs.use_wide_viewport =
       Java_AwSettings_getUseWideViewportLocked(env, obj);
 

@@ -211,7 +211,13 @@ public class AwTestBase
 
     protected AwTestContainerView createAwTestContainerView(
             final AwContentsClient awContentsClient) {
-        AwTestContainerView testContainerView = createDetachedAwTestContainerView(awContentsClient);
+        return createAwTestContainerView(awContentsClient, true);
+    }
+
+    protected AwTestContainerView createAwTestContainerView(
+            final AwContentsClient awContentsClient, boolean supportsLegacyQuirks) {
+        AwTestContainerView testContainerView =
+                createDetachedAwTestContainerView(awContentsClient, supportsLegacyQuirks);
         getActivity().addView(testContainerView);
         testContainerView.requestFocus();
         return testContainerView;
@@ -223,6 +229,11 @@ public class AwTestBase
 
     protected AwTestContainerView createDetachedAwTestContainerView(
             final AwContentsClient awContentsClient) {
+        return createDetachedAwTestContainerView(awContentsClient, true);
+    }
+
+    protected AwTestContainerView createDetachedAwTestContainerView(
+            final AwContentsClient awContentsClient, boolean supportsLegacyQuirks) {
         final TestDependencyFactory testDependencyFactory = createTestDependencyFactory();
         final AwTestContainerView testContainerView =
             testDependencyFactory.createAwTestContainerView(getActivity());
@@ -230,18 +241,24 @@ public class AwTestBase
         // See http://crbug.com/278106
         testContainerView.initialize(new AwContents(
                 mBrowserContext, testContainerView, testContainerView.getInternalAccessDelegate(),
-                awContentsClient, false, testDependencyFactory.createLayoutSizer(), true));
+                awContentsClient, false, testDependencyFactory.createLayoutSizer(),
+                supportsLegacyQuirks));
         return testContainerView;
     }
 
     protected AwTestContainerView createAwTestContainerViewOnMainSync(
             final AwContentsClient client) throws Exception {
+        return createAwTestContainerViewOnMainSync(client, true);
+    }
+
+    protected AwTestContainerView createAwTestContainerViewOnMainSync(
+            final AwContentsClient client, final boolean supportsLegacyQuirks) throws Exception {
         final AtomicReference<AwTestContainerView> testContainerView =
                 new AtomicReference<AwTestContainerView>();
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                testContainerView.set(createAwTestContainerView(client));
+                testContainerView.set(createAwTestContainerView(client, supportsLegacyQuirks));
             }
         });
         return testContainerView.get();
