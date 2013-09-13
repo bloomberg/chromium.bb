@@ -113,7 +113,7 @@ $(document).ready(function() {
     g_unexpectedFailuresController = new controllers.UnexpectedFailures(model.state, unexpectedFailuresView, onebarController);
 
     g_info = new ui.notifications.Stream();
-    g_nonLayoutTestFailureBuilders = new controllers.FailingBuilders(g_info, 'Non-layout test failures');
+    g_nonLayoutTestFailureBuilders = new controllers.FailingBuilders(g_info);
 
     // FIXME: This should be an Action object.
     var updateButton = document.body.insertBefore(document.createElement('button'), document.body.firstChild);
