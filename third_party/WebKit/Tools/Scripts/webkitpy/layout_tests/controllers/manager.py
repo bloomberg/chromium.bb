@@ -150,7 +150,7 @@ class Manager(object):
 
     def _set_up_run(self, test_names):
         self._printer.write_update("Checking build ...")
-        if not self._port.check_build(self.needs_servers(test_names)):
+        if self._options.build and not self._port.check_build(self.needs_servers(test_names), self._printer):
             _log.error("Build check failed")
             return False
 

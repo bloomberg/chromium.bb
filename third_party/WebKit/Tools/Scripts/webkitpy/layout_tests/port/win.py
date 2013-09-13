@@ -91,8 +91,8 @@ class WinPort(chromium.ChromiumPort):
         # See https://bugs.webkit.org/show_bug.cgi?id=89706.
         return []
 
-    def check_build(self, needs_http):
-        result = chromium.ChromiumPort.check_build(self, needs_http)
+    def check_build(self, needs_http, printer):
+        result = chromium.ChromiumPort.check_build(self, needs_http, printer)
         if not result:
             _log.error('For complete Windows build requirements, please see:')
             _log.error('')

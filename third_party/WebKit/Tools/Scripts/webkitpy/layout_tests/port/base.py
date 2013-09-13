@@ -243,7 +243,7 @@ class Port(object):
             return factory.get(target_port).default_baseline_search_path()
         return []
 
-    def check_build(self, needs_http):
+    def check_build(self, needs_http, printer):
         """This routine is used to ensure that the build is up to date
         and all the needed binaries are present."""
         if self.get_option('build'):

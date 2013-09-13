@@ -157,7 +157,7 @@ class ChromiumPort(Port):
             return False
         return True
 
-    def check_build(self, needs_http):
+    def check_build(self, needs_http, printer):
         result = True
 
         dump_render_tree_binary_path = self._path_to_driver()

@@ -35,6 +35,8 @@ import subprocess
 import threading
 import time
 
+from multiprocessing.pool import ThreadPool
+
 from webkitpy.layout_tests.port import chromium
 from webkitpy.layout_tests.port import linux
 from webkitpy.layout_tests.port import driver
@@ -303,6 +305,9 @@ class AndroidDevices(object):
         self._prepared_devices = []
         self._debug_logging = debug_logging
 
+    def prepared_devices(self):
+        return self._prepared_devices
+
     def usable_devices(self, executive):
         if self._usable_devices:
             return self._usable_devices
@@ -406,6 +411,10 @@ class AndroidPort(chromium.ChromiumPort):
         AndroidCommands.set_adb_command_path_options(['adb',
             self.path_from_chromium_base('third_party', 'android_tools', 'sdk', 'platform-tools', 'adb')])
 
+        prepared_devices = self.get_option('prepared_devices', [])
+        for serial in prepared_devices:
+            self._devices.set_device_prepared(serial)
+
     # Local public methods.
     def path_to_forwarder(self):
         return self._build_path('forwarder')
@@ -442,17 +451,74 @@ class AndroidPort(chromium.ChromiumPort):
     def check_wdiff(self, logging=True):
         return self._host_port.check_wdiff(logging)
 
-    def check_build(self, needs_http):
-        result = super(AndroidPort, self).check_build(needs_http)
+    def check_build(self, needs_http, printer):
+        result = super(AndroidPort, self).check_build(needs_http, printer)
         result = self._check_file_exists(self.path_to_md5sum(), 'md5sum utility') and result
         result = self._check_file_exists(self.path_to_md5sum_host(), 'md5sum host utility') and result
         result = self._check_file_exists(self.path_to_forwarder(), 'forwarder utility') and result
+        if result:
+            # FIXME: We should figure out how to handle failures here better.
+            self._check_devices(printer)
+
         if not result:
             _log.error('For complete Android build requirements, please see:')
             _log.error('')
             _log.error('    http://code.google.com/p/chromium/wiki/AndroidBuildInstructions')
 
         return result
+
+    def _check_devices(self, printer):
+        # Printer objects aren't threadsafe, so we need to protect calls to them.
+        lock = threading.Lock()
+        pool = None
+
+        # Push the executables and other files to the devices; doing this now
+        # means we can do this in parallel in the manager process and not mix
+        # this in with starting and stopping workers.
+        def setup_device(worker_number):
+            d = self.create_driver(worker_number)
+            serial = d._android_commands.get_serial()
+
+            def log_safely(msg, throttled=True):
+                if throttled:
+                    callback = printer.write_throttled_update
+                else:
+                    callback = printer.write_update
+                lock.acquire()
+                try:
+                    callback("[%s] %s" % (serial, msg))
+                finally:
+                    lock.release()
+
+            log_safely("preparing device", throttled=False)
+            try:
+                d._setup_test(log_safely)
+            except KeyboardInterrupt:
+                if pool:
+                    pool.terminate()
+            log_safely("device prepared", throttled=False)
+
+        # FIXME: It would be nice if we knew how many workers we needed.
+        num_workers = self.default_child_processes()
+        num_child_processes = self.get_option('child_processes')
+        if num_child_processes:
+            num_workers = min(num_workers, num_child_processes)
+        if num_workers > 1:
+            pool = ThreadPool(num_workers)
+            pool.map(setup_device, range(num_workers))
+        else:
+            setup_device(0)
+
+    def setup_test_run(self):
+        super(AndroidPort, self).setup_test_run()
+
+        # By setting this on the options object, we can propagate the list
+        # of prepared devices to the workers (it is read in __init__()).
+        if self._devices._prepared_devices:
+            self._options.prepared_devices = self._devices.prepared_devices()
+        else:
+            # We were called with --no-build, so assume the devices are up to date.
+            self._options.prepared_devices = [d.get_serial() for d in self._devices.usable_devices(self.host.executive)]
 
     def check_sys_deps(self, needs_http):
         for (font_dirs, font_file, package) in HOST_FONT_FILES:
@@ -746,22 +812,26 @@ class ChromiumAndroidDriver(driver.Driver):
 
         return symfs_path
 
-    def _setup_md5sum_and_push_data_if_needed(self):
+    def _setup_md5sum_and_push_data_if_needed(self, log_callback):
         self._md5sum_path = self._port.path_to_md5sum()
         if not self._android_commands.file_exists(MD5SUM_DEVICE_PATH):
             if not self._android_commands.push(self._md5sum_path, MD5SUM_DEVICE_PATH):
                 raise AssertionError('Could not push md5sum to device')
 
-        self._push_executable()
-        self._push_fonts()
-        self._push_test_resources()
+        self._push_executable(log_callback)
+        self._push_fonts(log_callback)
+        self._push_test_resources(log_callback)
 
-    def _setup_test(self):
+    def _setup_test(self, log_callback):
+        # FIXME: Move this routine and its subroutines off of the AndroidDriver
+        # class and onto AndroidCommands or some other helper class, so that we
+        # can initialize the device without needing to create a driver.
+
         if self._android_devices.is_device_prepared(self._android_commands.get_serial()):
             return
 
         self._android_commands.restart_as_root()
-        self._setup_md5sum_and_push_data_if_needed()
+        self._setup_md5sum_and_push_data_if_needed(log_callback)
         self._setup_performance()
 
         # Required by webkit_support::GetWebKitRootDirFilePath().
@@ -795,7 +865,7 @@ class ChromiumAndroidDriver(driver.Driver):
         return [line.split('  ')[0] for line in md5sum_output]
 
     def _files_match(self, host_file, device_file):
-        assert os.path.exists(host_file)
+        assert self._port.host.filesystem.exists(host_file)
         device_hashes = self._extract_hashes_from_md5sum_output(
                 self._port.host.executive.popen(self._android_commands.adb_command() + ['shell', MD5SUM_DEVICE_PATH, device_file],
                                                 stdout=subprocess.PIPE).stdout)
@@ -804,42 +874,46 @@ class ChromiumAndroidDriver(driver.Driver):
                                                 stdout=subprocess.PIPE).stdout)
         return host_hashes and device_hashes == host_hashes
 
-    def _push_file_if_needed(self, host_file, device_file):
+    def _push_file_if_needed(self, host_file, device_file, log_callback):
+        basename = self._port.host.filesystem.basename(host_file)
+        log_callback("checking %s" % basename)
         if not self._files_match(host_file, device_file):
+            log_callback("pushing %s" % basename)
             self._android_commands.push(host_file, device_file)
 
-    def _push_executable(self):
-        self._push_file_if_needed(self._port.path_to_forwarder(), self._driver_details.device_forwarder_path())
+    def _push_executable(self, log_callback):
+        self._push_file_if_needed(self._port.path_to_forwarder(), self._driver_details.device_forwarder_path(), log_callback)
         for resource in self._driver_details.additional_resources():
-            self._push_file_if_needed(self._port._build_path(resource), self._driver_details.device_directory() + resource)
+            self._push_file_if_needed(self._port._build_path(resource), self._driver_details.device_directory() + resource, log_callback)
 
-        self._push_file_if_needed(self._port._build_path('android_main_fonts.xml'), self._driver_details.device_directory() + 'android_main_fonts.xml')
-        self._push_file_if_needed(self._port._build_path('android_fallback_fonts.xml'), self._driver_details.device_directory() + 'android_fallback_fonts.xml')
+        self._push_file_if_needed(self._port._build_path('android_main_fonts.xml'), self._driver_details.device_directory() + 'android_main_fonts.xml', log_callback)
+        self._push_file_if_needed(self._port._build_path('android_fallback_fonts.xml'), self._driver_details.device_directory() + 'android_fallback_fonts.xml', log_callback)
 
+        log_callback("checking apk")
         if self._files_match(self._port._build_path('apks', 'ContentShell.apk'),
                              '/data/app/org.chromium.content_shell_apk-1.apk'):
             return
 
+        log_callback("uninstalling apk")
         self._android_commands.run(['uninstall', self._driver_details.package_name()])
         driver_host_path = self._port._path_to_driver()
+        log_callback("installing apk")
         install_result = self._android_commands.run(['install', driver_host_path])
         if install_result.find('Success') == -1:
             self._abort('Failed to install %s onto device: %s' % (driver_host_path, install_result))
 
-    def _push_fonts(self):
-        self._log_debug('Pushing fonts')
+    def _push_fonts(self, log_callback):
         path_to_ahem_font = self._port._build_path('AHEM____.TTF')
-        self._push_file_if_needed(path_to_ahem_font, self._driver_details.device_fonts_directory() + 'AHEM____.TTF')
+        self._push_file_if_needed(path_to_ahem_font, self._driver_details.device_fonts_directory() + 'AHEM____.TTF', log_callback)
         for (host_dirs, font_file, package) in HOST_FONT_FILES:
             for host_dir in host_dirs:
                 host_font_path = host_dir + font_file
                 if self._port._check_file_exists(host_font_path, '', logging=False):
-                    self._push_file_if_needed(host_font_path, self._driver_details.device_fonts_directory() + font_file)
+                    self._push_file_if_needed(host_font_path, self._driver_details.device_fonts_directory() + font_file, log_callback)
 
-    def _push_test_resources(self):
-        self._log_debug('Pushing test resources')
+    def _push_test_resources(self, log_callback):
         for resource in TEST_RESOURCES_TO_PUSH:
-            self._push_file_if_needed(self._port.layout_tests_dir() + '/' + resource, DEVICE_LAYOUT_TESTS_DIR + resource)
+            self._push_file_if_needed(self._port.layout_tests_dir() + '/' + resource, DEVICE_LAYOUT_TESTS_DIR + resource, log_callback)
 
     def _get_last_stacktrace(self):
         tombstones = self._android_commands.run(['shell', 'ls', '-n', '/data/tombstones'])
@@ -944,7 +1018,7 @@ class ChromiumAndroidDriver(driver.Driver):
         super(ChromiumAndroidDriver, self).start(pixel_tests, per_test_args)
 
     def _start(self, pixel_tests, per_test_args):
-        self._setup_test()
+        assert self._android_devices.is_device_prepared(self._android_commands.get_serial())
 
         for retries in range(3):
             if self._start_once(pixel_tests, per_test_args):
@@ -1022,6 +1096,7 @@ class ChromiumAndroidDriver(driver.Driver):
 
         # Inform the deadlock detector that the startup is successful without deadlock.
         normal_startup_event.set()
+        self._log_debug("content_shell is ready")
         return True
 
     def _pid_from_android_ps_output(self, ps_output, package_name):

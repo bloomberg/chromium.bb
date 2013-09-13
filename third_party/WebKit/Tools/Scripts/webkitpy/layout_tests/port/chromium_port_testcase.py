@@ -42,11 +42,19 @@ from webkitpy.layout_tests.models.test_configuration import TestConfiguration
 from webkitpy.layout_tests.port import port_testcase
 
 
+class FakePrinter(object):
+    def write_update(self, msg):
+        pass
+
+    def write_throttled_update(self, msg):
+        pass
+
+
 class ChromiumPortTestCase(port_testcase.PortTestCase):
 
     def test_check_build(self):
         port = self.make_port()
-        port.check_build(needs_http=True)
+        port.check_build(needs_http=True, printer=FakePrinter())
 
     def test_default_max_locked_shards(self):
         port = self.make_port()

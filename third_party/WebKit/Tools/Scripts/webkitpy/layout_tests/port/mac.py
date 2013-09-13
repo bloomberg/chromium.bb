@@ -63,8 +63,8 @@ class MacPort(chromium.ChromiumPort):
     def _modules_to_search_for_symbols(self):
         return [self._build_path('ffmpegsumo.so')]
 
-    def check_build(self, needs_http):
-        result = chromium.ChromiumPort.check_build(self, needs_http)
+    def check_build(self, needs_http, printer):
+        result = chromium.ChromiumPort.check_build(self, needs_http, printer)
         if not result:
             _log.error('For complete Mac build requirements, please see:')
             _log.error('')

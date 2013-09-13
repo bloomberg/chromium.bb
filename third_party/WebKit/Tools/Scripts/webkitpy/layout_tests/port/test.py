@@ -419,7 +419,7 @@ class TestPort(Port):
     def worker_startup_delay_secs(self):
         return 0
 
-    def check_build(self, needs_http):
+    def check_build(self, needs_http, printer):
         return True
 
     def check_sys_deps(self, needs_http):

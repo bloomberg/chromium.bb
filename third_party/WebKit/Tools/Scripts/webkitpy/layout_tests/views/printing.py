@@ -415,6 +415,9 @@ class Printer(object):
         if self._options.debug_rwt_logging:
             self.writeln(msg)
 
+    def write_throttled_update(self, msg):
+        self._meter.write_throttled_update(msg)
+
     def write_update(self, msg):
         self._meter.write_update(msg)
 

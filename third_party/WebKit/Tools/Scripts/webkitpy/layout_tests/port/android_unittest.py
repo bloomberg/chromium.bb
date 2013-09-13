@@ -69,8 +69,14 @@ class MockAndroidDebugBridge:
                 return self._get_device_output()
             if len(args) > 3 and args[3] == 'command':
                 return 'mockoutput'
+            if len(args) > 3 and args[3] == 'install':
+                return 'Success'
+            if len(args) > 3 and args[3] in ('push', 'wait-for-device'):
+                return 'mockoutput'
             if len(args) > 5 and args[5] == 'battery':
                 return 'level: 99'
+            if len(args) > 5 and args[5] == 'force-stop':
+                return 'mockoutput'
             if len(args) > 5 and args[5] == 'power':
                 return 'mScreenOn=true'
 
@@ -146,6 +152,13 @@ class AndroidPortTest(chromium_port_testcase.ChromiumPortTestCase):
         port._mock_adb = MockAndroidDebugBridge(kwargs.get('device_count', 1))
         port._executive = MockExecutive2(run_command_fn=port._mock_adb.run_command)
         return port
+
+    def test_check_build(self):
+        host = MockSystemHost()
+        host.filesystem.exists = lambda p: True
+        port = self.make_port(host=host)
+        port.check_build(needs_http=True, printer=chromium_port_testcase.FakePrinter())
+
 
     def make_wdiff_available(self, port):
         port._wdiff_available = True
