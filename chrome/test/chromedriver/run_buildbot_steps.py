@@ -96,7 +96,7 @@ def MaybeRelease(revision):
     lines = f.readlines()
     chrome_min_version_line = filter(
         lambda x: 'kMinimumSupportedChromeVersion' in x, lines)
-  version = open(os.path.join(_THIS_DIR, 'VERSION'), 'r').strip().read()
+  version = open(os.path.join(_THIS_DIR, 'VERSION'), 'r').read().strip()
   chrome_min_version = chrome_min_version_line[0].split('{')[1].split(',')[0]
   with open(os.path.join(chrome_paths.GetSrc(), 'chrome', 'VERSION'), 'r') as f:
     chrome_max_version = f.readlines()[0].split('=')[1]
