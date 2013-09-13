@@ -85,7 +85,8 @@ ComponentUnpacker::Error ComponentPatcherWin::Patch(
   // child processes around when the parent process exits, either gracefully or
   // accidentally.
   base::win::ScopedHandle job(CreateJobObject(NULL, NULL));
-  if (!job || !base::SetJobObjectAsKillOnJobClose(job)) {
+  if (!job ||
+      !base::SetJobObjectLimitFlags(job, JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE)) {
     *error = GetLastError();
     return ComponentUnpacker::kDeltaPatchProcessFailure;
   }

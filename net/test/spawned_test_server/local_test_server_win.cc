@@ -129,8 +129,9 @@ bool LocalTestServer::LaunchPython(const base::FilePath& testserver_path) {
     return false;
   }
 
-  if (!base::SetJobObjectAsKillOnJobClose(job_handle_.Get())) {
-    LOG(ERROR) << "Could not SetInformationJobObject.";
+  if (!base::SetJobObjectLimitFlags(job_handle_.Get(),
+                                    JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE)) {
+    LOG(ERROR) << "Could not SetJobObjectLimitFlags.";
     return false;
   }
 

@@ -625,6 +625,30 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
   DCHECK(options.new_process_group);
 #endif
 
+  LaunchOptions new_options(options);
+
+#if defined(OS_WIN)
+  DCHECK(!new_options.job_handle);
+
+  win::ScopedHandle job_handle(CreateJobObject(NULL, NULL));
+  if (!job_handle.IsValid()) {
+    LOG(ERROR) << "Could not create JobObject.";
+    return -1;
+  }
+
+  // Allow break-away from job since sandbox and few other places rely on it
+  // on Windows versions prior to Windows 8 (which supports nested jobs).
+  // TODO(phajdan.jr): Do not allow break-away on Windows 8.
+  if (!SetJobObjectLimitFlags(job_handle.Get(),
+                              JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE |
+                              JOB_OBJECT_LIMIT_BREAKAWAY_OK)) {
+    LOG(ERROR) << "Could not SetJobObjectLimitFlags.";
+    return -1;
+  }
+
+  new_options.job_handle = job_handle.Get();
+#endif  // defined(OS_WIN)
+
   base::ProcessHandle process_handle;
 
   {
@@ -633,7 +657,7 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
     // in the set.
     AutoLock lock(g_live_process_handles_lock.Get());
 
-    if (!base::LaunchProcess(command_line, options, &process_handle))
+    if (!base::LaunchProcess(command_line, new_options, &process_handle))
       return -1;
 
     g_live_process_handles.Get().insert(process_handle);

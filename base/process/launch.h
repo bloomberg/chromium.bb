@@ -164,12 +164,9 @@ BASE_EXPORT void CloseSuperfluousFds(const InjectiveMultimap& saved_map);
 #endif  // defined(OS_POSIX)
 
 #if defined(OS_WIN)
-// Set JOBOBJECT_EXTENDED_LIMIT_INFORMATION to JobObject |job_object|.
-// As its limit_info.BasicLimitInformation.LimitFlags has
-// JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE.
-// When the provide JobObject |job_object| is closed, the binded process will
-// be terminated.
-BASE_EXPORT bool SetJobObjectAsKillOnJobClose(HANDLE job_object);
+// Set |job_object|'s JOBOBJECT_EXTENDED_LIMIT_INFORMATION
+// BasicLimitInformation.LimitFlags to |limit_flags|.
+BASE_EXPORT bool SetJobObjectLimitFlags(HANDLE job_object, DWORD limit_flags);
 
 // Output multi-process printf, cout, cerr, etc to the cmd.exe console that ran
 // chrome. This is not thread-safe: only call from main thread.

@@ -195,10 +195,9 @@ bool LaunchProcess(const CommandLine& cmdline,
   return LaunchProcess(cmdline.GetCommandLineString(), options, process_handle);
 }
 
-bool SetJobObjectAsKillOnJobClose(HANDLE job_object) {
+bool SetJobObjectLimitFlags(HANDLE job_object, DWORD limit_flags) {
   JOBOBJECT_EXTENDED_LIMIT_INFORMATION limit_info = {0};
-  limit_info.BasicLimitInformation.LimitFlags =
-      JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
+  limit_info.BasicLimitInformation.LimitFlags = limit_flags;
   return 0 != SetInformationJobObject(
       job_object,
       JobObjectExtendedLimitInformation,
