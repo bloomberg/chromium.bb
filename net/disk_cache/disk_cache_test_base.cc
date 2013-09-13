@@ -250,8 +250,9 @@ void DiskCacheTestWithCache::TearDown() {
   if (!memory_only_ && !simple_cache_mode_ && integrity_) {
     EXPECT_TRUE(CheckCacheIntegrity(cache_path_, new_eviction_, mask_));
   }
-
-  PlatformTest::TearDown();
+  base::RunLoop().RunUntilIdle();
+  disk_cache::SimpleBackendImpl::FlushWorkerPoolForTesting();
+  DiskCacheTest::TearDown();
 }
 
 void DiskCacheTestWithCache::InitMemoryCache() {
