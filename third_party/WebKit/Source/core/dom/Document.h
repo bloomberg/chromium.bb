@@ -223,8 +223,6 @@ public:
     using ContainerNode::ref;
     using ContainerNode::deref;
 
-    Element* getElementById(const AtomicString& id) const;
-
     virtual bool canContainRangeEndPoint() const { return true; }
 
     SelectorQueryCache* selectorQueryCache();
