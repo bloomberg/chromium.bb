@@ -228,6 +228,13 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, Basic) {
   EXPECT_EQ("fake_app_1", GetAppIds());
   EXPECT_EQ("", manager()->GetAutoLaunchApp());
 
+  // Add the just removed auto launch app again and it should no longer be
+  // the auto launch app.
+  manager()->AddApp("fake_app_2");
+  EXPECT_EQ("", manager()->GetAutoLaunchApp());
+  manager()->RemoveApp("fake_app_2");
+  EXPECT_EQ("fake_app_1", GetAppIds());
+
   // Set a none exist app as auto launch.
   manager()->SetAutoLaunchApp("none_exist_app");
   EXPECT_EQ("", manager()->GetAutoLaunchApp());
