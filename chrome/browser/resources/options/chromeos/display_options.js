@@ -11,11 +11,6 @@ cr.define('options', function() {
   // The number of pixels to share the edges between displays.
   /** @const */ var MIN_OFFSET_OVERLAP = 5;
 
-  // The border width of the display rectangles for the focused one.
-  /** @const */ var FOCUSED_BORDER_WIDTH_PX = 2;
-  // The border width of the display rectangles for the normal one.
-  /** @const */ var NORMAL_BORDER_WIDTH_PX = 1;
-
   /**
    * Enumeration of secondary display layout.  The value has to be same as the
    * values in ash/display/display_controller.cc.
@@ -484,7 +479,6 @@ cr.define('options', function() {
       for (var i = 0; i < this.displays_.length; i++) {
         var display = this.displays_[i];
         display.div.className = 'displays-display';
-        this.resizeDisplayRectangle_(display, i);
         if (i != this.focusedIndex_)
           continue;
 
@@ -672,24 +666,6 @@ cr.define('options', function() {
     },
 
     /**
-     * Resize the specified display rectangle to keep the change of
-     * the border width.
-     * @param {Object} display The display object.
-     * @param {number} index The index of the display.
-     * @private
-     */
-    resizeDisplayRectangle_: function(display, index) {
-      var borderWidth = (index == this.focusedIndex_) ?
-          FOCUSED_BORDER_WIDTH_PX : NORMAL_BORDER_WIDTH_PX;
-      display.div.style.width =
-          display.width * this.visualScale_ - borderWidth * 2 + 'px';
-      var newHeight = display.height * this.visualScale_ - borderWidth * 2;
-      display.div.style.height = newHeight + 'px';
-      display.nameContainer.style.marginTop =
-            (newHeight - display.nameContainer.offsetHeight) / 2 + 'px';
-    },
-
-    /**
      * Lays out the display rectangles for mirroring.
      * @private
      */
@@ -704,8 +680,8 @@ cr.define('options', function() {
       /** @const */ var MIRRORING_VERTICAL_MARGIN = 20;
 
       // The width/height should be same as the first display:
-      var width = this.displays_[0].width * this.visualScale_;
-      var height = this.displays_[0].height * this.visualScale_;
+      var width = Math.ceil(this.displays_[0].width * this.visualScale_);
+      var height = Math.ceil(this.displays_[0].height * this.visualScale_);
 
       var numDisplays = Math.max(MIN_NUM_DISPLAYS, this.displays_.length);
 
@@ -765,18 +741,23 @@ cr.define('options', function() {
           VISUAL_SCALE, this.displaysView_.offsetWidth / areaWidth);
 
       // Prepare enough area for thisplays_view by adding the maximum height.
-      this.displaysView_.style.height = areaHeight * this.visualScale_ + 'px';
+      this.displaysView_.style.height =
+          Math.ceil(areaHeight * this.visualScale_) + 'px';
 
       var boundingCenter = {
-        x: (boundingBox.right + boundingBox.left) * this.visualScale_ / 2,
-        y: (boundingBox.bottom + boundingBox.top) * this.visualScale_ / 2};
+        x: Math.floor((boundingBox.right + boundingBox.left) *
+            this.visualScale_ / 2),
+        y: Math.floor((boundingBox.bottom + boundingBox.top) *
+            this.visualScale_ / 2)
+      };
 
       // Centering the bounding box of the display rectangles.
       var offset = {
-        x: this.displaysView_.offsetWidth / 2 -
-           (boundingBox.right + boundingBox.left) * this.visualScale_ / 2,
-        y: this.displaysView_.offsetHeight / 2 -
-           (boundingBox.bottom + boundingBox.top) * this.visualScale_ / 2};
+        x: Math.floor(this.displaysView_.offsetWidth / 2 -
+            (boundingBox.right + boundingBox.left) * this.visualScale_ / 2),
+        y: Math.floor(this.displaysView_.offsetHeight / 2 -
+            (boundingBox.bottom + boundingBox.top) * this.visualScale_ / 2)
+      };
 
       for (var i = 0; i < this.displays_.length; i++) {
         var display = this.displays_[i];
@@ -796,9 +777,16 @@ cr.define('options', function() {
         displayNameContainer.textContent = display.name;
         div.appendChild(displayNameContainer);
         display.nameContainer = displayNameContainer;
-        this.resizeDisplayRectangle_(display, i);
-        div.style.left = display.x * this.visualScale_ + offset.x + 'px';
-        div.style.top = display.y * this.visualScale_ + offset.y + 'px';
+        display.div.style.width =
+            Math.floor(display.width * this.visualScale_) + 'px';
+        var newHeight = Math.floor(display.height * this.visualScale_);
+        display.div.style.height = newHeight + 'px';
+        div.style.left =
+            Math.floor(display.x * this.visualScale_) + offset.x + 'px';
+        div.style.top =
+            Math.floor(display.y * this.visualScale_) + offset.y + 'px';
+        display.nameContainer.style.marginTop =
+            (newHeight - display.nameContainer.offsetHeight) / 2 + 'px';
 
         div.onmousedown = this.onMouseDown_.bind(this);
         div.ontouchstart = this.onTouchStart_.bind(this);

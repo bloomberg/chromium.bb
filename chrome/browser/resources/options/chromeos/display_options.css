@@ -71,6 +71,7 @@
   -webkit-user-select: none;
   background: rgb(240, 240, 240);
   border: solid 1px;
+  box-sizing: border-box;
   font-weight: bold;
   position: absolute;
   text-align: center;
