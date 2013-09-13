@@ -6,11 +6,11 @@
 
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
-#include "ash/system/tray/test_system_tray_delegate.h"
 #include "ash/test/display_manager_test_api.h"
 #include "ash/test/shell_test_api.h"
 #include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_shell_delegate.h"
+#include "ash/test/test_system_tray_delegate.h"
 #include "base/run_loop.h"
 #include "ui/aura/env.h"
 #include "ui/base/ime/input_method_initializer.h"
