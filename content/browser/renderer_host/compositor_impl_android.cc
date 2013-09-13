@@ -236,7 +236,6 @@ void CompositorImpl::SetVisible(bool visible) {
     host_.reset();
   } else if (!host_) {
     cc::LayerTreeSettings settings;
-    settings.compositor_name = "BrowserCompositor";
     settings.refresh_rate = 60.0;
     settings.impl_side_painting = false;
     settings.allow_antialiasing = false;
@@ -411,7 +410,8 @@ scoped_ptr<cc::OutputSurface> CompositorImpl::CreateOutputSurface(
         WebGraphicsContext3DInProcessCommandBufferImpl::CreateViewContext(
             attrs, window_);
     scoped_refptr<webkit::gpu::ContextProviderInProcess> context_provider =
-        webkit::gpu::ContextProviderInProcess::Create(context3d.Pass());
+        webkit::gpu::ContextProviderInProcess::Create(context3d.Pass(),
+                                                      "BrowserCompositor");
 
     scoped_ptr<cc::OutputSurface> output_surface;
     if (!window_)
@@ -426,11 +426,12 @@ scoped_ptr<cc::OutputSurface> CompositorImpl::CreateOutputSurface(
 
   scoped_refptr<ContextProviderCommandBuffer> context_provider =
       ContextProviderCommandBuffer::Create(CreateGpuProcessViewContext(
-          attrs, surface_id_, weak_factory_.GetWeakPtr()));
+          attrs, surface_id_, weak_factory_.GetWeakPtr()), "BrowserCompositor");
   if (!context_provider.get()) {
     LOG(ERROR) << "Failed to create 3D context for compositor.";
     return scoped_ptr<cc::OutputSurface>();
   }
+
   return scoped_ptr<cc::OutputSurface>(
       new OutputSurfaceWithoutParent(context_provider));
 }

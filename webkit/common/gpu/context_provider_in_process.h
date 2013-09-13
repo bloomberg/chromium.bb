@@ -26,7 +26,8 @@ class WEBKIT_GPU_EXPORT ContextProviderInProcess
     : NON_EXPORTED_BASE(public cc::ContextProvider) {
  public:
   static scoped_refptr<ContextProviderInProcess> Create(
-      scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> context3d);
+      scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> context3d,
+      const std::string& debug_name);
 
   // Calls Create() with a default factory method for creating an offscreen
   // context.
@@ -49,7 +50,8 @@ class WEBKIT_GPU_EXPORT ContextProviderInProcess
 
  protected:
   ContextProviderInProcess(
-      scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> context3d);
+      scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> context3d,
+      const std::string& debug_name);
   virtual ~ContextProviderInProcess();
 
   void OnLostContext();
@@ -72,6 +74,7 @@ class WEBKIT_GPU_EXPORT ContextProviderInProcess
   base::Lock destroyed_lock_;
   bool destroyed_;
 
+  std::string debug_name_;
   class LostContextCallbackProxy;
   scoped_ptr<LostContextCallbackProxy> lost_context_callback_proxy_;
 

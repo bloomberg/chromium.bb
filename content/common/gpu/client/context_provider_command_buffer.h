@@ -24,7 +24,8 @@ namespace content {
 class ContextProviderCommandBuffer : public cc::ContextProvider {
  public:
   static scoped_refptr<ContextProviderCommandBuffer> Create(
-      scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context3d);
+      scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context3d,
+      const std::string& debug_name);
 
   virtual bool BindToCurrentThread() OVERRIDE;
   virtual WebGraphicsContext3DCommandBufferImpl* Context3d() OVERRIDE;
@@ -48,7 +49,8 @@ class ContextProviderCommandBuffer : public cc::ContextProvider {
 
  protected:
   ContextProviderCommandBuffer(
-      scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context3d);
+      scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context3d,
+      const std::string& debug_name);
   virtual ~ContextProviderCommandBuffer();
 
   void OnLostContext();
@@ -66,6 +68,7 @@ class ContextProviderCommandBuffer : public cc::ContextProvider {
   scoped_ptr<webkit::gpu::GrContextForWebGraphicsContext3D> gr_context_;
 
   cc::ContextProvider::Capabilities capabilities_;
+  std::string debug_name_;
 
   LostContextCallback lost_context_callback_;
   SwapBuffersCompleteCallback swap_buffers_complete_callback_;

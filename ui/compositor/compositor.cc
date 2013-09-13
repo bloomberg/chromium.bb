@@ -124,7 +124,8 @@ scoped_ptr<cc::OutputSurface> DefaultContextFactory::CreateOutputSurface(
 
   using webkit::gpu::ContextProviderInProcess;
   scoped_refptr<ContextProviderInProcess> context_provider =
-      ContextProviderInProcess::Create(context3d.Pass());
+      ContextProviderInProcess::Create(context3d.Pass(),
+                                       "UICompositor");
 
   return make_scoped_ptr(new cc::OutputSurface(context_provider));
 }

@@ -197,7 +197,7 @@ bool SynchronousCompositorOutputSurface::InitializeHwDraw(
 
   scoped_refptr<cc::ContextProvider> onscreen_context_provider =
       webkit::gpu::ContextProviderInProcess::Create(
-          CreateWebGraphicsContext3D(surface));
+          CreateWebGraphicsContext3D(surface), "SynchronousCompositor");
   return InitializeAndSetContext3d(onscreen_context_provider,
                                    offscreen_context_provider);
 }

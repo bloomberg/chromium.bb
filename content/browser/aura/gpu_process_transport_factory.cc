@@ -226,7 +226,8 @@ scoped_ptr<cc::OutputSurface> GpuProcessTransportFactory::CreateOutputSurface(
     context_provider = ContextProviderCommandBuffer::Create(
         GpuProcessTransportFactory::CreateContextCommon(
             data->swap_client->AsWeakPtr(),
-            data->surface_id));
+            data->surface_id),
+            "Compositor");
   }
   if (!context_provider.get()) {
     if (ui::Compositor::WasInitializedWithThread()) {
@@ -393,7 +394,8 @@ GpuProcessTransportFactory::OffscreenContextProviderForMainThread() {
   // context notification is sent to the ImageTransportFactoryObserver clients.
   if (!shared_contexts_main_thread_.get()) {
     shared_contexts_main_thread_ = ContextProviderCommandBuffer::Create(
-        GpuProcessTransportFactory::CreateOffscreenCommandBufferContext());
+        GpuProcessTransportFactory::CreateOffscreenCommandBufferContext(),
+        "Compositor-Offscreen-MainThread");
     if (shared_contexts_main_thread_) {
       shared_contexts_main_thread_->SetLostContextCallback(base::Bind(
           &GpuProcessTransportFactory::
@@ -414,7 +416,8 @@ GpuProcessTransportFactory::OffscreenContextProviderForCompositorThread() {
   // DestroyedOnMainThread().
   if (!shared_contexts_compositor_thread_.get()) {
     shared_contexts_compositor_thread_ = ContextProviderCommandBuffer::Create(
-        GpuProcessTransportFactory::CreateOffscreenCommandBufferContext());
+        GpuProcessTransportFactory::CreateOffscreenCommandBufferContext(),
+        "Compositor-Offscreen");
   }
   return shared_contexts_compositor_thread_;
 }

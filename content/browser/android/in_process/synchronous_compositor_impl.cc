@@ -146,7 +146,8 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
          offscreen_context_for_main_thread_->DestroyedOnMainThread())) {
       offscreen_context_for_main_thread_ =
           webkit::gpu::ContextProviderInProcess::Create(
-              CreateOffscreenContext());
+              CreateOffscreenContext(),
+              "Compositor-Offscreen");
       failed = !offscreen_context_for_main_thread_.get() ||
                !offscreen_context_for_main_thread_->BindToCurrentThread();
     }

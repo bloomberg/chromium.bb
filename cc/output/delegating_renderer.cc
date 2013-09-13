@@ -70,10 +70,6 @@ bool DelegatingRenderer::Initialize() {
   if (!context3d->makeContextCurrent())
     return false;
 
-  std::string unique_context_name = base::StringPrintf(
-      "%s-%p", settings_->compositor_name.c_str(), context3d);
-  context3d->pushGroupMarkerEXT(unique_context_name.c_str());
-
   const ContextProvider::Capabilities& caps =
       output_surface_->context_provider()->ContextCapabilities();
 

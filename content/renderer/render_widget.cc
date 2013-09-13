@@ -680,7 +680,8 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(bool fallback) {
   scoped_refptr<ContextProviderCommandBuffer> context_provider;
   if (!fallback) {
     context_provider = ContextProviderCommandBuffer::Create(
-        CreateGraphicsContext3D(attributes));
+        CreateGraphicsContext3D(attributes),
+        "RenderCompositor");
   }
 
   uint32 output_surface_id = next_output_surface_id_++;

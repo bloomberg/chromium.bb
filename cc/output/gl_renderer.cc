@@ -172,7 +172,6 @@ GLRenderer::GLRenderer(RendererClient* client,
       blend_shadow_(false),
       highp_threshold_min_(highp_threshold_min),
       highp_threshold_cache_(0),
-      offscreen_context_labelled_(false),
       on_demand_tile_raster_resource_id_(0) {
   DCHECK(context_);
 }
@@ -180,10 +179,6 @@ GLRenderer::GLRenderer(RendererClient* client,
 bool GLRenderer::Initialize() {
   if (!context_->makeContextCurrent())
     return false;
-
-  std::string unique_context_name =
-      base::StringPrintf("%s-%p", settings_->compositor_name.c_str(), context_);
-  context_->pushGroupMarkerEXT(unique_context_name.c_str());
 
   ContextProvider::Capabilities context_caps =
     output_surface_->context_provider()->ContextCapabilities();
@@ -500,9 +495,6 @@ static inline SkBitmap ApplyFilters(GLRenderer* renderer,
   // Make sure skia uses the correct GL context.
   offscreen_contexts->Context3d()->makeContextCurrent();
 
-  // Lazily label this context.
-  renderer->LazyLabelOffscreenContext(offscreen_contexts);
-
   SkBitmap source =
       RenderSurfaceFilters::Apply(filters,
                                   lock.texture_id(),
@@ -543,9 +535,6 @@ static SkBitmap ApplyImageFilter(GLRenderer* renderer,
 
   // Make sure skia uses the correct GL context.
   offscreen_contexts->Context3d()->makeContextCurrent();
-
-  // Lazily label this context.
-  renderer->LazyLabelOffscreenContext(offscreen_contexts);
 
   // Wrap the source texture in a Ganesh platform texture.
   GrBackendTextureDesc backend_texture_description;
@@ -3135,17 +3124,5 @@ bool GLRenderer::CanUseSkiaGPUBackend() const {
 bool GLRenderer::IsContextLost() {
   return (context_->getGraphicsResetStatusARB() != GL_NO_ERROR);
 }
-
-void GLRenderer::LazyLabelOffscreenContext(
-    ContextProvider* offscreen_context_provider) {
-  if (offscreen_context_labelled_)
-    return;
-  offscreen_context_labelled_ = true;
-  std::string unique_context_name = base::StringPrintf(
-      "%s-Offscreen-%p", settings_->compositor_name.c_str(), context_);
-  offscreen_context_provider->Context3d()
-      ->pushGroupMarkerEXT(unique_context_name.c_str());
-}
-
 
 }  // namespace cc
