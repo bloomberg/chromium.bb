@@ -108,6 +108,27 @@ enum EdgeStateSignatureType {
   GST_PENDING_SYNTHETIC_CLICK_SECOND_PRESSED =
       G(GS_PENDING_SYNTHETIC_CLICK, 1, TS_PRESSED, TSI_NOT_PROCESSED),
 
+  GST_PENDING_SYNTHETIC_CLICK_NO_SCROLL_FIRST_RELEASED =
+      G(GS_PENDING_SYNTHETIC_CLICK_NO_SCROLL,
+        0,
+        TS_RELEASED,
+        TSI_NOT_PROCESSED),
+
+  GST_PENDING_SYNTHETIC_CLICK_NO_SCROLL_FIRST_RELEASED_HANDLED =
+      G(GS_PENDING_SYNTHETIC_CLICK_NO_SCROLL, 0, TS_RELEASED, TSI_PROCESSED),
+
+  GST_PENDING_SYNTHETIC_CLICK_NO_SCROLL_FIRST_MOVED =
+      G(GS_PENDING_SYNTHETIC_CLICK_NO_SCROLL, 0, TS_MOVED, TSI_ALWAYS),
+
+  GST_PENDING_SYNTHETIC_CLICK_NO_SCROLL_FIRST_STATIONARY =
+      G(GS_PENDING_SYNTHETIC_CLICK_NO_SCROLL, 0, TS_STATIONARY, TSI_ALWAYS),
+
+  GST_PENDING_SYNTHETIC_CLICK_NO_SCROLL_FIRST_CANCELLED =
+      G(GS_PENDING_SYNTHETIC_CLICK_NO_SCROLL, 0, TS_CANCELLED, TSI_ALWAYS),
+
+  GST_PENDING_SYNTHETIC_CLICK_NO_SCROLL_SECOND_PRESSED =
+      G(GS_PENDING_SYNTHETIC_CLICK_NO_SCROLL, 1, TS_PRESSED, TSI_NOT_PROCESSED),
+
   GST_SCROLL_FIRST_RELEASED =
       G(GS_SCROLL, 0, TS_RELEASED, TSI_ALWAYS),
 
@@ -243,6 +264,12 @@ EdgeStateSignatureType Signature(GestureState gesture_state,
     case GST_PENDING_SYNTHETIC_CLICK_FIRST_STATIONARY:
     case GST_PENDING_SYNTHETIC_CLICK_FIRST_CANCELLED:
     case GST_PENDING_SYNTHETIC_CLICK_SECOND_PRESSED:
+    case GST_PENDING_SYNTHETIC_CLICK_NO_SCROLL_FIRST_RELEASED:
+    case GST_PENDING_SYNTHETIC_CLICK_NO_SCROLL_FIRST_RELEASED_HANDLED:
+    case GST_PENDING_SYNTHETIC_CLICK_NO_SCROLL_FIRST_MOVED:
+    case GST_PENDING_SYNTHETIC_CLICK_NO_SCROLL_FIRST_STATIONARY:
+    case GST_PENDING_SYNTHETIC_CLICK_NO_SCROLL_FIRST_CANCELLED:
+    case GST_PENDING_SYNTHETIC_CLICK_NO_SCROLL_SECOND_PRESSED:
     case GST_SCROLL_FIRST_RELEASED:
     case GST_SCROLL_FIRST_MOVED:
     case GST_SCROLL_FIRST_CANCELLED:
@@ -419,13 +446,24 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
           point.UpdateForScroll();
       }
       break;
+    case GST_PENDING_SYNTHETIC_CLICK_NO_SCROLL_FIRST_MOVED:
+    case GST_PENDING_SYNTHETIC_CLICK_NO_SCROLL_FIRST_STATIONARY:
+      // No scrolling allowed, so nothing happens.
+      break;
     case GST_PENDING_SYNTHETIC_CLICK_FIRST_MOVED_PROCESSED:
-      // TODO(rbyers): This should be able to trigger a TapCancel
-      // if we moved far enough. crbug.com/146397
+      if (point.IsInScrollWindow(event)) {
+        PrependTapCancelGestureEvent(point, gestures.get());
+        set_state(GS_PENDING_SYNTHETIC_CLICK_NO_SCROLL);
+      }
       break;
     case GST_PENDING_SYNTHETIC_CLICK_FIRST_RELEASED_HANDLED:
     case GST_PENDING_SYNTHETIC_CLICK_FIRST_CANCELLED:
       PrependTapCancelGestureEvent(point, gestures.get());
+      set_state(GS_NO_GESTURE);
+      break;
+    case GST_PENDING_SYNTHETIC_CLICK_NO_SCROLL_FIRST_RELEASED:
+    case GST_PENDING_SYNTHETIC_CLICK_NO_SCROLL_FIRST_RELEASED_HANDLED:
+    case GST_PENDING_SYNTHETIC_CLICK_NO_SCROLL_FIRST_CANCELLED:
       set_state(GS_NO_GESTURE);
       break;
     case GST_SCROLL_FIRST_MOVED:
@@ -442,12 +480,11 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
       break;
     case GST_PENDING_SYNTHETIC_CLICK_SECOND_PRESSED:
       PrependTapCancelGestureEvent(point, gestures.get());
-      if (IsSecondTouchDownCloseEnoughForTwoFingerTap()) {
-        TwoFingerTouchDown(event, point, gestures.get());
-        set_state(GS_PENDING_TWO_FINGER_TAP);
-        break;
-      }
-      // fall through
+      TwoFingerTapOrPinch(event, point, gestures.get());
+      break;
+    case GST_PENDING_SYNTHETIC_CLICK_NO_SCROLL_SECOND_PRESSED:
+      TwoFingerTapOrPinch(event, point, gestures.get());
+      break;
     case GST_SCROLL_SECOND_PRESSED:
       PinchStart(event, point, gestures.get());
       set_state(GS_PINCH);
@@ -901,8 +938,7 @@ bool GestureSequence::ScrollStart(const TouchEvent& event,
                                   GesturePoint& point,
                                   Gestures* gestures) {
   DCHECK(state_ == GS_PENDING_SYNTHETIC_CLICK);
-  if (!point.IsConsistentScrollingActionUnderway() &&
-      !point.IsInScrollWindow(event))
+  if (!point.IsInScrollWindow(event))
     return false;
   AppendScrollGestureBegin(point, point.first_touch_position(), gestures);
   if (point.IsInHorizontalRailWindow())
@@ -953,7 +989,10 @@ bool GestureSequence::TouchDown(const TouchEvent& event,
 bool GestureSequence::TwoFingerTouchDown(const TouchEvent& event,
                                          const GesturePoint& point,
                                          Gestures* gestures) {
-  DCHECK(state_ == GS_PENDING_SYNTHETIC_CLICK || state_ == GS_SCROLL);
+  DCHECK(state_ == GS_PENDING_SYNTHETIC_CLICK ||
+         state_ == GS_PENDING_SYNTHETIC_CLICK_NO_SCROLL ||
+         state_ == GS_SCROLL);
+
   if (state_ == GS_SCROLL) {
     AppendScrollGestureEnd(point, point.last_touch_position(), gestures,
         0.f, 0.f);
@@ -1170,6 +1209,19 @@ bool GestureSequence::MaybeSwipe(const TouchEvent& event,
 
   return true;
 }
+
+void GestureSequence::TwoFingerTapOrPinch(const TouchEvent& event,
+                                          const GesturePoint& point,
+                                          Gestures* gestures) {
+  if (IsSecondTouchDownCloseEnoughForTwoFingerTap()) {
+    TwoFingerTouchDown(event, point, gestures);
+    set_state(GS_PENDING_TWO_FINGER_TAP);
+  } else {
+    PinchStart(event, point, gestures);
+    set_state(GS_PINCH);
+  }
+}
+
 
 void GestureSequence::StopLongPressTimerIfRequired(const TouchEvent& event) {
   if (!GetLongPressTimer()->IsRunning() ||

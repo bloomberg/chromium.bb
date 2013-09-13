@@ -40,11 +40,11 @@ class GesturePoint {
   bool IsInClickWindow(const TouchEvent& event) const;
   bool IsInDoubleClickWindow(const TouchEvent& event) const;
   bool IsInTripleClickWindow(const TouchEvent& event) const;
-  bool IsInScrollWindow(const TouchEvent& event) const;
   bool IsInFlickWindow(const TouchEvent& event);
   bool IsInHorizontalRailWindow() const;
   bool IsInVerticalRailWindow() const;
   bool IsInsideManhattanSquare(const TouchEvent& event) const;
+  bool IsInScrollWindow(const TouchEvent& event) const;
   bool BreaksHorizontalRail();
   bool BreaksVerticalRail();
   bool DidScroll(const TouchEvent& event, int distance) const;
@@ -79,12 +79,12 @@ class GesturePoint {
 
   const gfx::Rect& enclosing_rectangle() const { return enclosing_rect_; }
 
-  // Tests if the point has a consistent scroll vector across a window of touch
-  // move events.
-  bool IsConsistentScrollingActionUnderway();
-
  private:
   // Various statistical functions to manipulate gestures.
+
+  // Tests if the point has a consistent scroll vector across a window of touch
+  // move events.
+  bool IsConsistentScrollingActionUnderway() const;
   bool IsInClickTimeWindow() const;
   bool IsInClickAggregateTimeWindow(double before, double after) const;
   bool IsPointInsideManhattanSquare(gfx::Point p1, gfx::Point p2) const;

@@ -2908,9 +2908,7 @@ TEST_F(GestureRecognizerTest, GestureEventScrollTouchMoveConsumed) {
   tes.SendScrollEvent(root_window(), 130, 230, kTouchId, delegate.get());
   EXPECT_FALSE(delegate->tap());
   EXPECT_FALSE(delegate->tap_down());
-  // TODO(rbyers): Really we should get the TapCancel here instead of below,
-  // but this is a symptom of a larger issue: crbug.com/146397.
-  EXPECT_FALSE(delegate->tap_cancel());
+  EXPECT_TRUE(delegate->tap_cancel());
   EXPECT_FALSE(delegate->begin());
   EXPECT_FALSE(delegate->scroll_begin());
   EXPECT_FALSE(delegate->scroll_update());
@@ -2924,7 +2922,7 @@ TEST_F(GestureRecognizerTest, GestureEventScrollTouchMoveConsumed) {
   root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
   EXPECT_FALSE(delegate->tap());
   EXPECT_FALSE(delegate->tap_down());
-  EXPECT_TRUE(delegate->tap_cancel());
+  EXPECT_FALSE(delegate->tap_cancel());
   EXPECT_FALSE(delegate->begin());
   EXPECT_TRUE(delegate->end());
   EXPECT_FALSE(delegate->scroll_begin());
@@ -3059,9 +3057,7 @@ TEST_F(GestureRecognizerTest, GestureEventScrollTouchMovePartialConsumed) {
   tes.SendScrollEvent(root_window(), 130, 230, kTouchId, delegate.get());
   EXPECT_FALSE(delegate->tap());
   EXPECT_FALSE(delegate->tap_down());
-  // TODO(rbyers): Really we should get the TapCancel here instead of below,
-  // but this is a symptom of a larger issue: crbug.com/146397.
-  EXPECT_FALSE(delegate->tap_cancel());
+  EXPECT_TRUE(delegate->tap_cancel());
   EXPECT_FALSE(delegate->begin());
   EXPECT_FALSE(delegate->scroll_begin());
   EXPECT_FALSE(delegate->scroll_update());
@@ -3072,21 +3068,18 @@ TEST_F(GestureRecognizerTest, GestureEventScrollTouchMovePartialConsumed) {
   tes.SendScrollEvent(root_window(), 159, 259, kTouchId, delegate.get());
   EXPECT_FALSE(delegate->tap());
   EXPECT_FALSE(delegate->tap_down());
-  EXPECT_TRUE(delegate->tap_cancel());
+  EXPECT_FALSE(delegate->tap_cancel());
   EXPECT_FALSE(delegate->begin());
-  EXPECT_TRUE(delegate->scroll_begin());
-  EXPECT_TRUE(delegate->scroll_update());
+  EXPECT_FALSE(delegate->scroll_begin());
+  EXPECT_FALSE(delegate->scroll_update());
   EXPECT_FALSE(delegate->scroll_end());
-  // Consuming move events doesn't effect what the ultimate scroll position
-  // will be if scrolling is later allowed to happen.
-  EXPECT_EQ(58, delegate->scroll_x());
-  EXPECT_EQ(58, delegate->scroll_y());
-  EXPECT_EQ(gfx::Point(1, 1).ToString(),
+  // No scroll has occurred, because an early touch move was consumed.
+  EXPECT_EQ(0, delegate->scroll_x());
+  EXPECT_EQ(0, delegate->scroll_y());
+  EXPECT_EQ(gfx::Point(0, 0).ToString(),
             delegate->scroll_begin_position().ToString());
 
-  // Start consuming touch-move events again. However, since gesture-scroll has
-  // already started, the touch-move events should still result in scroll-update
-  // gestures.
+  // Start consuming touch-move events again.
   delegate->set_consume_touch_move(true);
 
   // Move some more to generate a few more scroll updates.
@@ -3096,10 +3089,10 @@ TEST_F(GestureRecognizerTest, GestureEventScrollTouchMovePartialConsumed) {
   EXPECT_FALSE(delegate->tap_cancel());
   EXPECT_FALSE(delegate->begin());
   EXPECT_FALSE(delegate->scroll_begin());
-  EXPECT_TRUE(delegate->scroll_update());
+  EXPECT_FALSE(delegate->scroll_update());
   EXPECT_FALSE(delegate->scroll_end());
-  EXPECT_EQ(-49, delegate->scroll_x());
-  EXPECT_EQ(-48, delegate->scroll_y());
+  EXPECT_EQ(0, delegate->scroll_x());
+  EXPECT_EQ(0, delegate->scroll_y());
 
   tes.SendScrollEvent(root_window(), 140, 215, kTouchId, delegate.get());
   EXPECT_FALSE(delegate->tap());
@@ -3107,12 +3100,12 @@ TEST_F(GestureRecognizerTest, GestureEventScrollTouchMovePartialConsumed) {
   EXPECT_FALSE(delegate->tap_cancel());
   EXPECT_FALSE(delegate->begin());
   EXPECT_FALSE(delegate->scroll_begin());
-  EXPECT_TRUE(delegate->scroll_update());
+  EXPECT_FALSE(delegate->scroll_update());
   EXPECT_FALSE(delegate->scroll_end());
-  EXPECT_EQ(30, delegate->scroll_x());
-  EXPECT_EQ(4, delegate->scroll_y());
+  EXPECT_EQ(0, delegate->scroll_x());
+  EXPECT_EQ(0, delegate->scroll_y());
 
-  // Release the touch. This should end the scroll.
+  // Release the touch.
   delegate->Reset();
   ui::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201),
                          kTouchId, tes.LeapForward(50));
@@ -3125,8 +3118,7 @@ TEST_F(GestureRecognizerTest, GestureEventScrollTouchMovePartialConsumed) {
   EXPECT_FALSE(delegate->scroll_begin());
   EXPECT_FALSE(delegate->scroll_update());
   EXPECT_FALSE(delegate->scroll_end());
-  // Moves arrive without delays and hence have high velocity.
-  EXPECT_TRUE(delegate->fling());
+  EXPECT_FALSE(delegate->fling());
 }
 
 // Check that appropriate touch events generate double tap gesture events.
@@ -3416,6 +3408,39 @@ TEST_F(GestureRecognizerTest, NoDriftInScroll) {
   EXPECT_EQ(-1, delegate->scroll_y());
 
   delegate->Reset();
+}
+
+// Ensure that move events which are preventDefaulted will cause a tap
+// cancel gesture event to be fired if the move would normally cause a
+// scroll. See bug http://crbug.com/146397.
+TEST_F(GestureRecognizerTest, GestureEventConsumedTouchMoveCanFireTapCancel) {
+  scoped_ptr<ConsumesTouchMovesDelegate> delegate(
+      new ConsumesTouchMovesDelegate());
+  const int kTouchId = 5;
+  gfx::Rect bounds(100, 200, 123, 45);
+  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      delegate.get(), -1234, bounds, root_window()));
+  TimedEvents tes;
+
+  delegate->Reset();
+  ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201),
+                       kTouchId, tes.Now());
+
+  delegate->set_consume_touch_move(false);
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
+  delegate->set_consume_touch_move(true);
+  delegate->Reset();
+  // Move the touch-point enough so that it would normally be considered a
+  // scroll. But since the touch-moves will be consumed, the scroll should not
+  // start.
+  tes.SendScrollEvent(root_window(), 130, 230, kTouchId, delegate.get());
+  EXPECT_FALSE(delegate->tap());
+  EXPECT_FALSE(delegate->tap_down());
+  EXPECT_TRUE(delegate->tap_cancel());
+  EXPECT_FALSE(delegate->begin());
+  EXPECT_FALSE(delegate->scroll_begin());
+  EXPECT_FALSE(delegate->scroll_update());
+  EXPECT_FALSE(delegate->scroll_end());
 }
 
 }  // namespace test
