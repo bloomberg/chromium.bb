@@ -590,6 +590,40 @@ void CountingPolicy::DoRemoveURLs(const std::vector<GURL>& restrict_urls) {
   CleanStringTables(db);
 }
 
+void CountingPolicy::DoRemoveExtensionData(const std::string& extension_id) {
+  if (extension_id.empty())
+    return;
+
+  sql::Connection* db = GetDatabaseConnection();
+  if (!db) {
+    LOG(ERROR) << "Unable to connect to database";
+    return;
+  }
+
+  // Make sure any queued in memory are sent to the database before cleaning.
+  activity_database()->AdviseFlush(ActivityDatabase::kFlushImmediately);
+
+  std::string sql_str = base::StringPrintf(
+      "DELETE FROM %s WHERE extension_id_x=?", kTableName);
+  sql::Statement statement(
+      db->GetCachedStatement(sql::StatementID(SQL_FROM_HERE), sql_str.c_str()));
+  int64 id;
+  if (string_table_.StringToInt(db, extension_id, &id)) {
+    statement.BindInt64(0, id);
+  } else {
+    // If the string isn't listed, that means we never recorded anything about
+    // the extension so there's no deletion to do.
+    statement.Clear();
+    return;
+  }
+  if (!statement.Run()) {
+    LOG(ERROR) << "Removing URLs for extension "
+               << extension_id << "from database failed: "
+               << statement.GetSQLStatement();
+  }
+  CleanStringTables(db);
+}
+
 void CountingPolicy::DoDeleteDatabase() {
   sql::Connection* db = GetDatabaseConnection();
   if (!db) {
@@ -660,6 +694,10 @@ void CountingPolicy::ReadFilteredData(
 
 void CountingPolicy::RemoveURLs(const std::vector<GURL>& restrict_urls) {
   ScheduleAndForget(this, &CountingPolicy::DoRemoveURLs, restrict_urls);
+}
+
+void CountingPolicy::RemoveExtensionData(const std::string& extension_id) {
+  ScheduleAndForget(this, &CountingPolicy::DoRemoveExtensionData, extension_id);
 }
 
 void CountingPolicy::DeleteDatabase() {

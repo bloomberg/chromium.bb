@@ -315,6 +315,11 @@ ActivityLogFactory::ActivityLogFactory()
   DependsOn(InstallTrackerFactory::GetInstance());
 }
 
+// static
+ActivityLog* ActivityLog::GetInstance(Profile* profile) {
+  return ActivityLogFactory::GetForProfile(profile);
+}
+
 ActivityLogFactory::~ActivityLogFactory() {
 }
 
@@ -457,18 +462,18 @@ void ActivityLog::OnExtensionUnloaded(const Extension* extension) {
 }
 
 void ActivityLog::OnExtensionUninstalled(const Extension* extension) {
+  if (!policy_)
+    return;
   // If the extension has been uninstalled but not disabled, we delete the
   // database.
-  if (extension->id() != kActivityLogExtensionId) return;
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableExtensionActivityLogging)) {
-    DeleteDatabase();
+  if (extension->id() == kActivityLogExtensionId) {
+    if (!CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnableExtensionActivityLogging)) {
+      DeleteDatabase();
+    }
+  } else {
+    policy_->RemoveExtensionData(extension->id());
   }
-}
-
-// static
-ActivityLog* ActivityLog::GetInstance(Profile* profile) {
-  return ActivityLogFactory::GetForProfile(profile);
 }
 
 void ActivityLog::AddObserver(ActivityLog::Observer* observer) {
