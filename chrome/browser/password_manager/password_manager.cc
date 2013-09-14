@@ -320,13 +320,6 @@ void PasswordManager::OnPasswordFormsRendered(
     return;
   }
 
-  if (!provisional_save_manager_->HasValidPasswordForm()) {
-    // Form is not completely valid - we do not support it.
-    NOTREACHED();
-    provisional_save_manager_.reset();
-    return;
-  }
-
   // Looks like a successful login attempt. Either show an infobar or
   // automatically save the login data. We prompt when the user hasn't already
   // given consent, either through previously accepting the infobar or by having
