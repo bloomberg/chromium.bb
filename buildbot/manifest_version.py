@@ -376,7 +376,7 @@ class BuildSpecsManager(object):
     """
     self.cros_source = source_repo
     buildroot = source_repo.directory
-    if manifest_repo.startswith(constants.GERRIT_INT_SSH_URL):
+    if manifest_repo.startswith(constants.INTERNAL_GOB_URL):
       self.manifest_dir = os.path.join(buildroot, 'manifest-versions-internal')
     else:
       self.manifest_dir = os.path.join(buildroot, 'manifest-versions')
