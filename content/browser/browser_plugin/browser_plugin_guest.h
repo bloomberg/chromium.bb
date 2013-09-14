@@ -104,6 +104,10 @@ class CONTENT_EXPORT BrowserPluginGuest
       BrowserPluginGuest* opener,
       bool has_render_view);
 
+  // Called when the embedder RenderViewHost is destroyed to give the
+  // BrowserPluginGuest an opportunity to clean up after itself.
+  void EmbedderDestroyed();
+
   // Destroys the guest WebContents and all its associated state, including
   // this BrowserPluginGuest, and its new unattached windows.
   void Destroy();

@@ -319,8 +319,7 @@ class BrowserPluginGuest::EmbedderRenderViewHostObserver
   // RenderViewHostObserver:
   virtual void RenderViewHostDestroyed(
       RenderViewHost* render_view_host) OVERRIDE {
-    browser_plugin_guest_->embedder_web_contents_ = NULL;
-    browser_plugin_guest_->Destroy();
+    browser_plugin_guest_->EmbedderDestroyed();
   }
 
  private:
@@ -422,6 +421,13 @@ int BrowserPluginGuest::RequestPermission(
     callback.Run(false, "");
 
   return request_id;
+}
+
+void BrowserPluginGuest::EmbedderDestroyed() {
+  embedder_web_contents_ = NULL;
+  if (delegate_)
+    delegate_->EmbedderDestroyed();
+  Destroy();
 }
 
 void BrowserPluginGuest::Destroy() {

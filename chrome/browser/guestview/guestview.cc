@@ -45,7 +45,6 @@ GuestView::GuestView(WebContents* guest_web_contents)
     : guest_web_contents_(guest_web_contents),
       embedder_web_contents_(NULL),
       embedder_render_process_id_(0),
-      embedder_routing_id_(MSG_ROUTING_NONE),
       browser_context_(guest_web_contents->GetBrowserContext()),
       guest_instance_id_(guest_web_contents->GetEmbeddedInstanceID()),
       view_instance_id_(guestview::kInstanceIDNone) {
@@ -98,7 +97,6 @@ void GuestView::Attach(content::WebContents* embedder_web_contents,
   embedder_web_contents_ = embedder_web_contents;
   embedder_render_process_id_ =
       embedder_web_contents->GetRenderProcessHost()->GetID();
-  embedder_routing_id_ = embedder_web_contents->GetRoutingID();
   extension_id_ = extension_id;
   args.GetInteger(guestview::kParameterInstanceId, &view_instance_id_);
 
