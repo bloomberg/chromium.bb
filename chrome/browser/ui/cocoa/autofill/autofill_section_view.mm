@@ -16,6 +16,7 @@ SkColor kShadingColor = 0x07000000;  // SkColorSetARGB(7, 0, 0, 0);
 
 @implementation AutofillSectionView
 
+@synthesize clickTarget = clickTarget_;
 @synthesize shouldHighlightOnHover = shouldHighlightOnHover_;
 @synthesize isHighlighted = isHighlighted_;
 
@@ -24,6 +25,8 @@ SkColor kShadingColor = 0x07000000;  // SkColorSetARGB(7, 0, 0, 0);
     [self setIsHighlighted:NO];
   else if ([event type] == NSMouseEntered)
     [self setIsHighlighted:YES];
+  else if ([event type] == NSLeftMouseDown)
+    [clickTarget_ performClick:clickTarget_];
 }
 
 - (void)drawRect:(NSRect)dirtyRect {

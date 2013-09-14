@@ -9,6 +9,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
+#include "ui/base/test/cocoa_test_event_utils.h"
 #import "ui/base/test/ui_cocoa_test_helper.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
@@ -82,6 +83,26 @@ class AutofillSectionViewTest : public ui::CocoaTest {
 
 }  // namespace
 
+// A simple delegate to intercept and register performClick: invocation.
+@interface AutofillClickTestDelegate : NSControl {
+ @private
+  BOOL didFire_;
+}
+@property(readonly, nonatomic) BOOL didFire;
+@end
+
+
+@implementation AutofillClickTestDelegate
+
+@synthesize didFire = didFire_;
+
+// Override performClick to record invocation.
+- (void)performClick:(id)sender {
+  didFire_ = YES;
+}
+
+@end
+
 TEST_VIEW(AutofillSectionViewTest, view_)
 
 TEST_F(AutofillSectionViewTest, HoverColorIsOpaque) {
@@ -128,4 +149,16 @@ TEST_F(AutofillSectionViewTest, HoverHighlighting) {
   [view_ mouseEntered:fakeEvent(NSMouseEntered)];
   [view_ drawRect:bounds];
   CheckImageIsSolidColor(fillColor);
+}
+
+TEST_F(AutofillSectionViewTest, MouseClicksAreForwarded) {
+  base::scoped_nsobject<AutofillClickTestDelegate> delegate(
+      [[AutofillClickTestDelegate alloc] init]);
+  [view_ setClickTarget:delegate];
+
+  NSEvent* down_event =
+      cocoa_test_event_utils::LeftMouseDownAtPoint(NSMakePoint(5, 5));
+  ASSERT_FALSE([delegate didFire]);
+  [test_window() sendEvent:down_event];
+  EXPECT_TRUE([delegate didFire]);
 }

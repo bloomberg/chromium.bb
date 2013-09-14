@@ -303,6 +303,10 @@ bool CompareInputRows(const autofill::DetailInput* input1,
     [suggestContainer_ showInputField:extraText withIcon:extraIcon];
   }
   [view_ setShouldHighlightOnHover:showSuggestions];
+  if (showSuggestions)
+    [view_ setClickTarget:suggestButton_];
+  else
+    [view_ setClickTarget:nil];
   [view_ setHidden:!delegate_->SectionIsActive(section_)];
 }
 

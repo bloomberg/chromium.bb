@@ -13,12 +13,16 @@
 // Tracking areas are subtle and quick to anger. BaseView does the right thing.
 @interface AutofillSectionView : BaseView {
  @private
+  NSControl* clickTarget_;  // Target for mouse clicks, weak.
   BOOL isHighlighted_;  // Track current highlight state.
   BOOL shouldHighlightOnHover_;  // Indicates if view should highlight on hover
 }
 
+// Target for any mouse click.
+@property(assign, nonatomic) NSControl* clickTarget;
+
 // Color used to highlight the view on hover.
-@property (readonly, nonatomic, getter=hoverColor) NSColor* hoverColor;
+@property(readonly, nonatomic, getter=hoverColor) NSColor* hoverColor;
 
 // Controls if the view should show a highlight when hovered over.
 @property(assign, nonatomic) BOOL shouldHighlightOnHover;
