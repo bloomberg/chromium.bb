@@ -7,6 +7,7 @@
 #include "ash/ash_switches.h"
 #include "ash/launcher/launcher.h"
 #include "ash/root_window_controller.h"
+#include "ash/screen_ash.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
@@ -162,11 +163,16 @@ void AppListController::SetVisible(bool visible, aura::Window* window) {
     // will be released with AppListView on close.
     app_list::AppListView* view = new app_list::AppListView(
         Shell::GetInstance()->delegate()->CreateAppListViewDelegate());
-    aura::Window* container = GetRootWindowController(window->GetRootWindow())->
+    aura::RootWindow* root_window = window->GetRootWindow();
+    aura::Window* container = GetRootWindowController(root_window)->
         GetContainer(kShellWindowId_AppListContainer);
     if (ash::switches::UseAlternateShelfLayout()) {
       gfx::Rect applist_button_bounds = Launcher::ForWindow(container)->
           GetAppListButtonView()->GetBoundsInScreen();
+      // We need the location of the button within the local screen.
+      applist_button_bounds = ash::ScreenAsh::ConvertRectFromScreen(
+          root_window,
+          applist_button_bounds);
       view->InitAsBubbleAttachedToAnchor(
           container,
           pagination_model_.get(),
