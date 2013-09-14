@@ -17,10 +17,10 @@ class UserInputMonitorMac : public UserInputMonitor {
   virtual size_t GetKeyPressCount() const OVERRIDE;
 
  private:
-  virtual void StartKeyboardMonitoring() OVERRIDE;
-  virtual void StopKeyboardMonitoring() OVERRIDE;
   virtual void StartMouseMonitoring() OVERRIDE;
   virtual void StopMouseMonitoring() OVERRIDE;
+  virtual void StartKeyboardMonitoring() OVERRIDE;
+  virtual void StopKeyboardMonitoring() OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(UserInputMonitorMac);
 };
@@ -36,15 +36,15 @@ size_t UserInputMonitorMac::GetKeyPressCount() const {
                                           kCGEventKeyDown);
 }
 
-void UserInputMonitorMac::StartKeyboardMonitoring() {}
-
-void UserInputMonitorMac::StopKeyboardMonitoring() {}
-
 // TODO(jiayl): add the impl.
 void UserInputMonitorMac::StartMouseMonitoring() { NOTIMPLEMENTED(); }
 
 // TODO(jiayl): add the impl.
 void UserInputMonitorMac::StopMouseMonitoring() { NOTIMPLEMENTED(); }
+
+void UserInputMonitorMac::StartKeyboardMonitoring() {}
+
+void UserInputMonitorMac::StopKeyboardMonitoring() {}
 
 }  // namespace
 
