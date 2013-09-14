@@ -913,6 +913,7 @@ void Dispatcher::PopulateSourceMap() {
   source_map_.RegisterSource("json_schema", IDR_JSON_SCHEMA_JS);
   source_map_.RegisterSource("lastError", IDR_LAST_ERROR_JS);
   source_map_.RegisterSource("messaging", IDR_MESSAGING_JS);
+  source_map_.RegisterSource("messaging_utils", IDR_MESSAGING_UTILS_JS);
   source_map_.RegisterSource(kSchemaUtils, IDR_SCHEMA_UTILS_JS);
   source_map_.RegisterSource("sendRequest", IDR_SEND_REQUEST_JS);
   source_map_.RegisterSource("setIcon", IDR_SET_ICON_JS);

@@ -15,6 +15,7 @@
   var messagingNatives = requireNative('messaging_natives');
   var processNatives = requireNative('process');
   var unloadEvent = require('unload_event');
+  var messagingUtils = require('messaging_utils');
 
   // The reserved channel name for the sendRequest/send(Native)Message APIs.
   // Note: sendRequest is deprecated.
@@ -332,29 +333,11 @@
   };
 
   function sendMessageUpdateArguments(functionName) {
-    // Align missing (optional) function arguments with the arguments that
-    // schema validation is expecting, e.g.
-    //   extension.sendRequest(req)     -> extension.sendRequest(null, req)
-    //   extension.sendRequest(req, cb) -> extension.sendRequest(null, req, cb)
-    var args = $Array.splice(arguments, 1);  // skip functionName
-    var lastArg = args.length - 1;
-
-    // responseCallback (last argument) is optional.
-    var responseCallback = null;
-    if (typeof(args[lastArg]) == 'function')
-      responseCallback = args[lastArg--];
-
-    // request (second argument) is required.
-    var request = args[lastArg--];
-
-    // targetId (first argument, extensionId in the manifest) is optional.
-    var targetId = null;
-    if (lastArg >= 0)
-      targetId = args[lastArg--];
-
-    if (lastArg != -1)
+    var args = $Array.slice(arguments, 1);  // skip functionName
+    var alignedArgs = messagingUtils.alignSendMessageArguments(args);
+    if (!alignedArgs)
       throw new Error('Invalid arguments to ' + functionName + '.');
-    return [targetId, request, responseCallback];
+    return alignedArgs;
   }
 
 exports.kRequestChannel = kRequestChannel;

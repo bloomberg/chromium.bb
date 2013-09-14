@@ -207,6 +207,7 @@
         'renderer/resources/extensions/json_schema.js',
         'renderer/resources/extensions/last_error.js',
         'renderer/resources/extensions/messaging.js',
+        'renderer/resources/extensions/messaging_utils.js',
         'renderer/resources/extensions/notifications_custom_bindings.js',
         'renderer/resources/extensions/omnibox_custom_bindings.js',
         'renderer/resources/extensions/page_action_custom_bindings.js',

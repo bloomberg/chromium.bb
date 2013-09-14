@@ -1808,6 +1808,7 @@
         'renderer/extensions/event_unittest.cc',
         'renderer/extensions/extension_localization_peer_unittest.cc',
         'renderer/extensions/json_schema_unittest.cc',
+        'renderer/extensions/messaging_utils_unittest.cc',
         'renderer/extensions/module_system_unittest.cc',
         'renderer/extensions/renderer_permissions_policy_delegate_unittest.cc',
         'renderer/extensions/safe_builtins_unittest.cc',
