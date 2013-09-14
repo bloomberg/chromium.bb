@@ -150,9 +150,14 @@ void MessagePopupCollection::UpdateWidgets() {
     toasts_.push_back(toast);
 
     gfx::Size preferred_size = toast->GetPreferredSize();
-    gfx::Point origin(
-        GetToastOriginX(gfx::Rect(preferred_size)) + preferred_size.width(),
-        top_down ? base + view_height : base);
+    gfx::Point origin(GetToastOriginX(gfx::Rect(preferred_size)), base);
+    // The toast slides in from the edge of the screen horizontally.
+    if (alignment_ & POPUP_ALIGNMENT_LEFT)
+      origin.set_x(origin.x() - preferred_size.width());
+    else
+      origin.set_x(origin.x() + preferred_size.width());
+    if (top_down)
+      origin.set_y(origin.y() + view_height);
     toast->RevealWithAnimation(origin);
 
     // Shift the base line to be a few pixels above the last added toast or (few
