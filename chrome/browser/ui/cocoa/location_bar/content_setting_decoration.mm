@@ -30,9 +30,9 @@ using content::WebContents;
 
 namespace {
 
-// How far to offset up from the bottom of the view to get the top
-// border of the popup 2px below the bottom of the Omnibox.
-const CGFloat kPopupPointYOffset = 2.0;
+// The bubble point should look like it points to the bottom of the respective
+// icon. The offset should be 2px.
+const CGFloat kPageBubblePointYOffset = 2.0;
 
 // Duration of animation, 3 seconds. The ContentSettingAnimationState breaks
 // this up into different states of varying lengths.
@@ -254,7 +254,7 @@ NSPoint ContentSettingDecoration::GetBubblePointInFrame(NSRect frame) {
 
   const NSRect draw_frame = GetDrawRectInFrame(frame);
   return NSMakePoint(NSMidX(draw_frame),
-                     NSMaxY(draw_frame) - kPopupPointYOffset);
+                     NSMaxY(draw_frame) + kPageBubblePointYOffset);
 }
 
 bool ContentSettingDecoration::AcceptsMousePress() {
