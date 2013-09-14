@@ -104,6 +104,11 @@ IntRect ScrollbarThemeOverlay::trackRect(ScrollbarThemeClient* scrollbar, bool)
     return rect;
 }
 
+int ScrollbarThemeOverlay::thumbThickness(ScrollbarThemeClient*)
+{
+    return m_thumbThickness;
+}
+
 void ScrollbarThemeOverlay::paintThumb(GraphicsContext* context, ScrollbarThemeClient* scrollbar, const IntRect& rect)
 {
     IntRect thumbRect = rect;

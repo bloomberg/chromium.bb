@@ -287,7 +287,7 @@ void ScrollingCoordinator::scrollableAreaScrollbarLayerDidChange(ScrollableArea*
             OwnPtr<WebScrollbarLayer> webScrollbarLayer;
             if (settings->useSolidColorScrollbars()) {
                 ASSERT(RuntimeEnabledFeatures::overlayScrollbarsEnabled());
-                webScrollbarLayer = createSolidColorScrollbarLayer(orientation, -1, scrollableArea->shouldPlaceVerticalScrollbarOnLeft());
+                webScrollbarLayer = createSolidColorScrollbarLayer(orientation, scrollbar->theme()->thumbThickness(scrollbar), scrollableArea->shouldPlaceVerticalScrollbarOnLeft());
             } else {
                 webScrollbarLayer = createScrollbarLayer(scrollbar);
             }

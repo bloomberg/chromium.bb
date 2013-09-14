@@ -299,6 +299,12 @@ IntRect ScrollbarTheme::thumbRect(ScrollbarThemeClient* scrollbar)
     return thumbRect;
 }
 
+int ScrollbarTheme::thumbThickness(ScrollbarThemeClient* scrollbar)
+{
+    IntRect track = trackRect(scrollbar);
+    return scrollbar->orientation() == HorizontalScrollbar ? track.height() : track.width();
+}
+
 void ScrollbarTheme::paintOverhangBackground(ScrollView*, GraphicsContext* context, const IntRect& horizontalOverhangRect, const IntRect& verticalOverhangRect, const IntRect& dirtyRect)
 {
     context->setFillColor(Color::white);

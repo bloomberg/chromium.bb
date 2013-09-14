@@ -112,6 +112,7 @@ public:
     virtual IntRect forwardButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool painting = false) = 0;
     virtual IntRect trackRect(ScrollbarThemeClient*, bool painting = false) = 0;
     virtual IntRect thumbRect(ScrollbarThemeClient*);
+    virtual int thumbThickness(ScrollbarThemeClient*);
 
     virtual int minimumThumbLength(ScrollbarThemeClient*);
 

@@ -51,6 +51,7 @@ public:
     virtual IntRect backButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool painting = false) OVERRIDE;
     virtual IntRect forwardButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool painting = false) OVERRIDE;
     virtual IntRect trackRect(ScrollbarThemeClient*, bool painting = false) OVERRIDE;
+    virtual int thumbThickness(ScrollbarThemeClient*) OVERRIDE;
 
     virtual void paintThumb(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) OVERRIDE;
     virtual ScrollbarPart hitTest(ScrollbarThemeClient*, const IntPoint&) OVERRIDE;
