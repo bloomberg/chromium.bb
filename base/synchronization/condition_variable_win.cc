@@ -97,7 +97,7 @@ void WinVistaCondVar::Wait() {
 void WinVistaCondVar::TimedWait(const TimeDelta& max_time) {
   base::ThreadRestrictions::AssertWaitAllowed();
   DWORD timeout = static_cast<DWORD>(max_time.InMilliseconds());
-  CRITICAL_SECTION* cs = user_lock_.lock_.os_lock();
+  CRITICAL_SECTION* cs = user_lock_.lock_.native_handle();
 
 #if !defined(NDEBUG)
   user_lock_.CheckHeldAndUnmark();

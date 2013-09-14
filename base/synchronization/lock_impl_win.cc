@@ -10,26 +10,26 @@ namespace internal {
 LockImpl::LockImpl() {
   // The second parameter is the spin count, for short-held locks it avoid the
   // contending thread from going to sleep which helps performance greatly.
-  ::InitializeCriticalSectionAndSpinCount(&os_lock_, 2000);
+  ::InitializeCriticalSectionAndSpinCount(&native_handle_, 2000);
 }
 
 LockImpl::~LockImpl() {
-  ::DeleteCriticalSection(&os_lock_);
+  ::DeleteCriticalSection(&native_handle_);
 }
 
 bool LockImpl::Try() {
-  if (::TryEnterCriticalSection(&os_lock_) != FALSE) {
+  if (::TryEnterCriticalSection(&native_handle_) != FALSE) {
     return true;
   }
   return false;
 }
 
 void LockImpl::Lock() {
-  ::EnterCriticalSection(&os_lock_);
+  ::EnterCriticalSection(&native_handle_);
 }
 
 void LockImpl::Unlock() {
-  ::LeaveCriticalSection(&os_lock_);
+  ::LeaveCriticalSection(&native_handle_);
 }
 
 }  // namespace internal

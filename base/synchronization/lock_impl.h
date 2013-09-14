@@ -25,9 +25,9 @@ namespace internal {
 class BASE_EXPORT LockImpl {
  public:
 #if defined(OS_WIN)
-  typedef CRITICAL_SECTION OSLockType;
+  typedef CRITICAL_SECTION NativeHandle;
 #elif defined(OS_POSIX)
-  typedef pthread_mutex_t OSLockType;
+  typedef pthread_mutex_t NativeHandle;
 #endif
 
   LockImpl();
@@ -47,10 +47,10 @@ class BASE_EXPORT LockImpl {
   // Return the native underlying lock.
   // TODO(awalker): refactor lock and condition variables so that this is
   // unnecessary.
-  OSLockType* os_lock() { return &os_lock_; }
+  NativeHandle* native_handle() { return &native_handle_; }
 
  private:
-  OSLockType os_lock_;
+  NativeHandle native_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(LockImpl);
 };

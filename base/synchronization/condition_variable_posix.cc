@@ -15,7 +15,7 @@
 namespace base {
 
 ConditionVariable::ConditionVariable(Lock* user_lock)
-    : user_mutex_(user_lock->lock_.os_lock())
+    : user_mutex_(user_lock->lock_.native_handle())
 #if !defined(NDEBUG)
     , user_lock_(user_lock)
 #endif
