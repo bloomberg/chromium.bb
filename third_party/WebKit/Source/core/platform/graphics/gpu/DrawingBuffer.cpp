@@ -539,33 +539,6 @@ void DrawingBuffer::clearFramebuffers(GC3Dbitfield clearMask)
     }
 }
 
-// Only way to ensure that we're not getting a bad framebuffer on some AMD/OSX devices.
-// FIXME: This can be removed once renderbufferStorageMultisample starts reporting GL_OUT_OF_MEMORY properly.
-bool DrawingBuffer::checkBufferIntegrity()
-{
-    if (!m_multisampleFBO)
-        return true;
-
-    if (m_scissorEnabled)
-        m_context->disable(GraphicsContext3D::SCISSOR_TEST);
-
-    m_context->colorMask(true, true, true, true);
-
-    m_context->bindFramebuffer(GraphicsContext3D::FRAMEBUFFER, m_multisampleFBO);
-    m_context->clearColor(1.0f, 0.0f, 1.0f, 1.0f);
-    m_context->clear(GraphicsContext3D::COLOR_BUFFER_BIT);
-
-    commit(0, 0, 1, 1);
-
-    unsigned char pixel[4] = {0, 0, 0, 0};
-    m_context->readPixels(0, 0, 1, 1, GraphicsContext3D::RGBA, GraphicsContext3D::UNSIGNED_BYTE, &pixel);
-
-    if (m_scissorEnabled)
-        m_context->enable(GraphicsContext3D::SCISSOR_TEST);
-
-    return (pixel[0] == 0xFF && pixel[1] == 0x00 && pixel[2] == 0xFF && pixel[3] == 0xFF);
-}
-
 void DrawingBuffer::setSize(const IntSize& size) {
     if (m_size == size)
         return;
@@ -649,14 +622,6 @@ void DrawingBuffer::reset(const IntSize& newSize)
                 adjustedSize.scale(s_resourceAdjustedRatio);
                 continue;
             }
-
-#if OS(MACOSX)
-            // FIXME: This can be removed once renderbufferStorageMultisample starts reporting GL_OUT_OF_MEMORY properly on OSX.
-            if (!checkBufferIntegrity()) {
-                adjustedSize.scale(s_resourceAdjustedRatio);
-                continue;
-            }
-#endif
             break;
         } while (!adjustedSize.isEmpty());
 

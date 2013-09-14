@@ -143,7 +143,6 @@ private:
     bool resizeFramebuffer(const IntSize&);
     bool resizeMultisampleFramebuffer(const IntSize&);
     void resizeDepthStencil(const IntSize&, int sampleCount);
-    bool checkBufferIntegrity();
 
     // Bind to the m_framebufferBinding if it's not 0.
     void restoreFramebufferBinding();
