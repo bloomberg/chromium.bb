@@ -746,8 +746,8 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   void DestroyRootView();
 
  private:
+  friend class ComboboxTest;
   friend class NativeTextfieldViewsTest;
-  friend class NativeComboboxViewsTest;
 
   // Sets the value of |disable_inactive_rendering_|. If the value changes,
   // both the NonClientView and WidgetDelegate are notified.

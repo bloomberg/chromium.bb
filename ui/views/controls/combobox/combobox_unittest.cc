@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/controls/combobox/native_combobox_views.h"
+#include "ui/views/controls/combobox/combobox.h"
 
 #include <set>
 
@@ -10,10 +10,8 @@
 #include "ui/base/events/event.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/models/combobox_model.h"
-#include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/ime/mock_input_method.h"
 #include "ui/views/test/views_test_base.h"
-#include "ui/views/widget/native_widget_private.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
@@ -85,18 +83,9 @@ class TestComboboxModel : public ui::ComboboxModel {
 
 namespace views {
 
-class NativeComboboxViewsTest : public ViewsTestBase {
+class ComboboxTest : public ViewsTestBase {
  public:
-  NativeComboboxViewsTest()
-      : widget_(NULL),
-        combobox_(NULL),
-        combobox_view_(NULL),
-        input_method_(NULL) {}
-
-  // ::testing::Test:
-  virtual void SetUp() OVERRIDE {
-    ViewsTestBase::SetUp();
-  }
+  ComboboxTest() : widget_(NULL), combobox_(NULL), input_method_(NULL) {}
 
   virtual void TearDown() OVERRIDE {
     if (widget_)
@@ -118,10 +107,6 @@ class NativeComboboxViewsTest : public ViewsTestBase {
     View* container = new View();
     widget_->SetContentsView(container);
     container->AddChildView(combobox_);
-
-    combobox_view_ = static_cast<NativeComboboxViews*>(
-        combobox_->GetNativeWrapperForTesting());
-    ASSERT_TRUE(combobox_view_);
 
     input_method_ = new MockInputMethod();
     widget_->ReplaceInputMethod(input_method_);
@@ -148,9 +133,6 @@ class NativeComboboxViewsTest : public ViewsTestBase {
   // |combobox_| will be allocated InitCombobox() and then owned by |widget_|.
   TestCombobox* combobox_;
 
-  // |combobox_view_| is the pointer to the pure Views interface of |combobox_|.
-  NativeComboboxViews* combobox_view_;
-
   // Combobox does not take ownership of the model, hence it needs to be scoped.
   scoped_ptr<TestComboboxModel> model_;
 
@@ -158,7 +140,7 @@ class NativeComboboxViewsTest : public ViewsTestBase {
   MockInputMethod* input_method_;
 };
 
-TEST_F(NativeComboboxViewsTest, KeyTest) {
+TEST_F(ComboboxTest, KeyTest) {
   InitCombobox();
   SendKeyEvent(ui::VKEY_END);
   EXPECT_EQ(combobox_->selected_index() + 1, model_->GetItemCount());
@@ -181,13 +163,12 @@ TEST_F(NativeComboboxViewsTest, KeyTest) {
 
 // Check that if a combobox is disabled before it has a native wrapper, then the
 // native wrapper inherits the disabled state when it gets created.
-TEST_F(NativeComboboxViewsTest, DisabilityTest) {
+TEST_F(ComboboxTest, DisabilityTest) {
   model_.reset(new TestComboboxModel());
 
   ASSERT_FALSE(combobox_);
   combobox_ = new TestCombobox(model_.get());
   combobox_->SetEnabled(false);
-  ASSERT_FALSE(combobox_->GetNativeWrapperForTesting());
 
   widget_ = new Widget;
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
@@ -196,16 +177,12 @@ TEST_F(NativeComboboxViewsTest, DisabilityTest) {
   View* container = new View();
   widget_->SetContentsView(container);
   container->AddChildView(combobox_);
-
-  combobox_view_ = static_cast<NativeComboboxViews*>(
-      combobox_->GetNativeWrapperForTesting());
-  ASSERT_TRUE(combobox_view_);
-  ASSERT_FALSE(combobox_view_->enabled());
+  EXPECT_FALSE(combobox_->enabled());
 }
 
 // Verifies that we don't select a separator line in combobox when navigating
 // through keyboard.
-TEST_F(NativeComboboxViewsTest, SkipSeparatorSimple) {
+TEST_F(ComboboxTest, SkipSeparatorSimple) {
   InitCombobox();
   std::set<int> separators;
   separators.insert(2);
@@ -227,7 +204,7 @@ TEST_F(NativeComboboxViewsTest, SkipSeparatorSimple) {
 
 // Verifies that we never select the separator that is in the beginning of the
 // combobox list when navigating through keyboard.
-TEST_F(NativeComboboxViewsTest, SkipSeparatorBeginning) {
+TEST_F(ComboboxTest, SkipSeparatorBeginning) {
   InitCombobox();
   std::set<int> separators;
   separators.insert(0);
@@ -249,7 +226,7 @@ TEST_F(NativeComboboxViewsTest, SkipSeparatorBeginning) {
 
 // Verifies that we never select the separator that is in the end of the
 // combobox list when navigating through keyboard.
-TEST_F(NativeComboboxViewsTest, SkipSeparatorEnd) {
+TEST_F(ComboboxTest, SkipSeparatorEnd) {
   InitCombobox();
   std::set<int> separators;
   separators.insert(model_->GetItemCount() - 1);
@@ -266,7 +243,7 @@ TEST_F(NativeComboboxViewsTest, SkipSeparatorEnd) {
 // Verifies that we never select any of the adjacent separators (multiple
 // consecutive) that appear in the beginning of the combobox list when
 // navigating through keyboard.
-TEST_F(NativeComboboxViewsTest, SkipMultipleSeparatorsAtBeginning) {
+TEST_F(ComboboxTest, SkipMultipleSeparatorsAtBeginning) {
   InitCombobox();
   std::set<int> separators;
   separators.insert(0);
@@ -291,7 +268,7 @@ TEST_F(NativeComboboxViewsTest, SkipMultipleSeparatorsAtBeginning) {
 // Verifies that we never select any of the adjacent separators (multiple
 // consecutive) that appear in the middle of the combobox list when navigating
 // through keyboard.
-TEST_F(NativeComboboxViewsTest, SkipMultipleAdjacentSeparatorsAtMiddle) {
+TEST_F(ComboboxTest, SkipMultipleAdjacentSeparatorsAtMiddle) {
   InitCombobox();
   std::set<int> separators;
   separators.insert(4);
@@ -308,7 +285,7 @@ TEST_F(NativeComboboxViewsTest, SkipMultipleAdjacentSeparatorsAtMiddle) {
 // Verifies that we never select any of the adjacent separators (multiple
 // consecutive) that appear in the end of the combobox list when navigating
 // through keyboard.
-TEST_F(NativeComboboxViewsTest, SkipMultipleSeparatorsAtEnd) {
+TEST_F(ComboboxTest, SkipMultipleSeparatorsAtEnd) {
   InitCombobox();
   std::set<int> separators;
   separators.insert(7);
