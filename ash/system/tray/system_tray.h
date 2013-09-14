@@ -138,6 +138,7 @@ class ASH_EXPORT SystemTray : public internal::TrayBackgroundView,
   virtual void SetShelfAlignment(ShelfAlignment alignment) OVERRIDE;
   virtual void AnchorUpdated() OVERRIDE;
   virtual base::string16 GetAccessibleNameForTray() OVERRIDE;
+  virtual void BubbleResized(const views::TrayBubbleView* bubble_view) OVERRIDE;
   virtual void HideBubbleWithView(
       const views::TrayBubbleView* bubble_view) OVERRIDE;
   virtual bool ClickedOutsideBubble() OVERRIDE;

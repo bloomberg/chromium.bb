@@ -587,6 +587,10 @@ base::string16 SystemTray::GetAccessibleNameForTray() {
   return l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBLE_NAME);
 }
 
+void SystemTray::BubbleResized(const TrayBubbleView* bubble_view) {
+  UpdateWebNotifications();
+}
+
 void SystemTray::HideBubbleWithView(const TrayBubbleView* bubble_view) {
   if (system_bubble_.get() && bubble_view == system_bubble_->bubble_view()) {
     DestroySystemBubble();
