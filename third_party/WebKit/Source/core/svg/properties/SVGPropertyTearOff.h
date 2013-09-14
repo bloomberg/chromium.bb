@@ -23,11 +23,17 @@
 #include "core/svg/SVGElement.h"
 #include "core/svg/properties/SVGAnimatedProperty.h"
 #include "core/svg/properties/SVGProperty.h"
+#include "wtf/WeakPtr.h"
 
 namespace WebCore {
 
+class SVGPropertyTearOffBase : public SVGProperty {
+public:
+    virtual void detachWrapper() = 0;
+};
+
 template<typename PropertyType>
-class SVGPropertyTearOff : public SVGProperty {
+class SVGPropertyTearOff : public SVGPropertyTearOffBase {
 public:
     typedef SVGPropertyTearOff<PropertyType> Self;
 
@@ -71,10 +77,17 @@ public:
         return m_contextElement.get();
     }
 
-    void detachWrapper()
+    void addChild(WeakPtr<SVGPropertyTearOffBase> child)
+    {
+        m_childTearOffs.append(child);
+    }
+
+    virtual void detachWrapper() OVERRIDE
     {
         if (m_valueIsCopy)
             return;
+
+        detachChildren();
 
         // Switch from a live value, to a non-live value.
         // For example: <text x="50"/>
@@ -132,10 +145,20 @@ protected:
             delete m_value;
     }
 
+    void detachChildren()
+    {
+        for (Vector<WeakPtr<SVGPropertyTearOffBase> >::iterator iter = m_childTearOffs.begin(); iter != m_childTearOffs.end(); iter++) {
+            if (iter->get())
+                iter->get()->detachWrapper();
+        }
+        m_childTearOffs.clear();
+    }
+
     RefPtr<SVGElement> m_contextElement;
     SVGAnimatedProperty* m_animatedProperty;
     SVGPropertyRole m_role;
     PropertyType* m_value;
+    Vector<WeakPtr<SVGPropertyTearOffBase> > m_childTearOffs;
     bool m_valueIsCopy : 1;
 };
 

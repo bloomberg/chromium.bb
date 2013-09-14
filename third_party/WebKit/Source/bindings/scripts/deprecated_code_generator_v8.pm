@@ -1583,10 +1583,9 @@ END
 
             my $selfIsTearOffType = IsSVGTypeNeedingTearOff($interfaceName);
             if ($selfIsTearOffType) {
-                AddToImplIncludes("core/svg/properties/SVGStaticPropertyWithParentTearOff.h");
-                $tearOffType =~ s/SVGPropertyTearOff</SVGStaticPropertyWithParentTearOff<$implClassName, /;
-
-                $wrappedValue = "WTF::getPtr(${tearOffType}::create(wrapper, $expression, $updateMethod))";
+                AddToImplIncludes("core/svg/properties/SVGMatrixTearOff.h");
+                # FIXME: Don't create a new one everytime we access the matrix property. This means, e.g, === won't work.
+                $wrappedValue = "WTF::getPtr(SVGMatrixTearOff::create(wrapper, $expression))";
             } else {
                 AddToImplIncludes("core/svg/properties/SVGStaticPropertyTearOff.h");
                 $tearOffType =~ s/SVGPropertyTearOff</SVGStaticPropertyTearOff<$implClassName, /;
