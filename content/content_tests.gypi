@@ -1140,6 +1140,7 @@
               'common/gpu/media/android_video_decode_accelerator_unittest.cc',
               'common/gpu/media/rendering_helper.h',
               'common/gpu/media/rendering_helper_gl.cc',
+              'common/gpu/media/video_accelerator_unittest_helpers.h',
               'common/gpu/media/video_decode_accelerator_unittest.cc',
             ],
             'conditions': [
@@ -1183,6 +1184,26 @@
             'msvs_disabled_warnings': [ 4267, ],
           },
         ]
+    }],
+    ['chromeos==1 and target_arch == "arm"', {
+      'targets': [
+        {
+          'target_name': 'video_encode_accelerator_unittest',
+          'type': 'executable',
+          'dependencies': [
+            'content',
+            '../base/base.gyp:base',
+            '../testing/gtest.gyp:gtest',
+            '../media/media.gyp:media',
+              '../ui/gl/gl.gyp:gl',
+              '../ui/ui.gyp:ui',
+          ],
+          'sources': [
+            'common/gpu/media/video_accelerator_unittest_helpers.h',
+            'common/gpu/media/video_encode_accelerator_unittest.cc',
+          ],
+        },
+      ]
     }],
     ['chromeos == 1 or OS == "linux"', {
       'targets': [

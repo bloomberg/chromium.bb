@@ -46,6 +46,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "content/common/gpu/media/rendering_helper.h"
+#include "content/common/gpu/media/video_accelerator_unittest_helpers.h"
 #include "content/public/common/content_switches.h"
 #include "ui/gfx/codec/png_codec.h"
 
@@ -238,44 +239,6 @@ enum ClientState {
   CS_MAX,  // Must be last entry.
 };
 
-// Helper class allowing one thread to wait on a notification from another.
-// If notifications come in faster than they are Wait()'d for, they are
-// accumulated (so exactly as many Wait() calls will unblock as Notify() calls
-// were made, regardless of order).
-class ClientStateNotification {
- public:
-  ClientStateNotification();
-  ~ClientStateNotification();
-
-  // Used to notify a single waiter of a ClientState.
-  void Notify(ClientState state);
-  // Used by waiters to wait for the next ClientState Notification.
-  ClientState Wait();
- private:
-  base::Lock lock_;
-  base::ConditionVariable cv_;
-  std::queue<ClientState> pending_states_for_notification_;
-};
-
-ClientStateNotification::ClientStateNotification() : cv_(&lock_) {}
-
-ClientStateNotification::~ClientStateNotification() {}
-
-void ClientStateNotification::Notify(ClientState state) {
-  base::AutoLock auto_lock(lock_);
-  pending_states_for_notification_.push(state);
-  cv_.Signal();
-}
-
-ClientState ClientStateNotification::Wait() {
-  base::AutoLock auto_lock(lock_);
-  while (pending_states_for_notification_.empty())
-    cv_.Wait();
-  ClientState ret = pending_states_for_notification_.front();
-  pending_states_for_notification_.pop();
-  return ret;
-}
-
 // A wrapper client that throttles the PictureReady callbacks to a given rate.
 // It may drops or queues frame to deliver them on time.
 class ThrottlingVDAClient : public VideoDecodeAccelerator::Client,
@@ -452,7 +415,7 @@ class GLRenderingVDAClient
   // will start delaying the call to ReusePictureBuffer() for kReuseDelay.
   GLRenderingVDAClient(RenderingHelper* rendering_helper,
                        int rendering_window_id,
-                       ClientStateNotification* note,
+                       ClientStateNotification<ClientState>* note,
                        const std::string& encoded_data,
                        int num_fragments_per_decode,
                        int num_in_flight_decodes,
@@ -525,7 +488,7 @@ class GLRenderingVDAClient
   int outstanding_decodes_;
   size_t encoded_data_next_pos_to_decode_;
   int next_bitstream_buffer_id_;
-  ClientStateNotification* note_;
+  ClientStateNotification<ClientState>* note_;
   scoped_ptr<VideoDecodeAccelerator> decoder_;
   std::set<int> outstanding_texture_ids_;
   int remaining_play_throughs_;
@@ -547,21 +510,22 @@ class GLRenderingVDAClient
   DISALLOW_IMPLICIT_CONSTRUCTORS(GLRenderingVDAClient);
 };
 
-GLRenderingVDAClient::GLRenderingVDAClient(RenderingHelper* rendering_helper,
-                                           int rendering_window_id,
-                                           ClientStateNotification* note,
-                                           const std::string& encoded_data,
-                                           int num_fragments_per_decode,
-                                           int num_in_flight_decodes,
-                                           int num_play_throughs,
-                                           int reset_after_frame_num,
-                                           int delete_decoder_state,
-                                           int frame_width,
-                                           int frame_height,
-                                           int profile,
-                                           double rendering_fps,
-                                           bool suppress_rendering,
-                                           int delay_reuse_after_frame_num)
+GLRenderingVDAClient::GLRenderingVDAClient(
+    RenderingHelper* rendering_helper,
+    int rendering_window_id,
+    ClientStateNotification<ClientState>* note,
+    const std::string& encoded_data,
+    int num_fragments_per_decode,
+    int num_in_flight_decodes,
+    int num_play_throughs,
+    int reset_after_frame_num,
+    int delete_decoder_state,
+    int frame_width,
+    int frame_height,
+    int profile,
+    double rendering_fps,
+    bool suppress_rendering,
+    int delay_reuse_after_frame_num)
     : rendering_helper_(rendering_helper),
       rendering_window_id_(rendering_window_id),
       encoded_data_(encoded_data),
@@ -982,9 +946,10 @@ class VideoDecodeAcceleratorTest
 
 // Wait for |note| to report a state and if it's not |expected_state| then
 // assert |client| has deleted its decoder.
-static void AssertWaitForStateOrDeleted(ClientStateNotification* note,
-                                        GLRenderingVDAClient* client,
-                                        ClientState expected_state) {
+static void AssertWaitForStateOrDeleted(
+    ClientStateNotification<ClientState>* note,
+    GLRenderingVDAClient* client,
+    ClientState expected_state) {
   ClientState state = note->Wait();
   if (state == expected_state) return;
   ASSERT_TRUE(client->decoder_deleted())
@@ -1024,7 +989,8 @@ TEST_P(VideoDecodeAcceleratorTest, TestSimpleDecode) {
   const bool suppress_rendering =
       num_fragments_per_decode > 1 || g_disable_rendering;
 
-  std::vector<ClientStateNotification*> notes(num_concurrent_decoders, NULL);
+  std::vector<ClientStateNotification<ClientState>*>
+      notes(num_concurrent_decoders, NULL);
   std::vector<GLRenderingVDAClient*> clients(num_concurrent_decoders, NULL);
 
   // Initialize the rendering helper.
@@ -1073,7 +1039,8 @@ TEST_P(VideoDecodeAcceleratorTest, TestSimpleDecode) {
   for (size_t index = 0; index < num_concurrent_decoders; ++index) {
     TestVideoFile* video_file =
         test_video_files[index % test_video_files.size()];
-    ClientStateNotification* note = new ClientStateNotification();
+    ClientStateNotification<ClientState>* note =
+        new ClientStateNotification<ClientState>();
     notes[index] = note;
 
     int delay_after_frame_num = std::numeric_limits<int>::max();
@@ -1111,7 +1078,7 @@ TEST_P(VideoDecodeAcceleratorTest, TestSimpleDecode) {
   // Only check performance & correctness later if we play through only once.
   bool skip_performance_and_correctness_checks = num_play_throughs > 1;
   for (size_t i = 0; i < num_concurrent_decoders; ++i) {
-    ClientStateNotification* note = notes[i];
+    ClientStateNotification<ClientState>* note = notes[i];
     ClientState state = note->Wait();
     if (state != CS_INITIALIZED) {
       skip_performance_and_correctness_checks = true;
@@ -1241,8 +1208,9 @@ TEST_P(VideoDecodeAcceleratorTest, TestSimpleDecode) {
                  &clients));
   rendering_thread.message_loop()->PostTask(
       FROM_HERE,
-      base::Bind(&STLDeleteElements<std::vector<ClientStateNotification*> >,
-                 &notes));
+      base::Bind(&STLDeleteElements<
+          std::vector<ClientStateNotification<ClientState>*> >,
+          &notes));
   rendering_thread.message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&STLDeleteElements<std::vector<TestVideoFile*> >,
