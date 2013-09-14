@@ -372,7 +372,7 @@ bool CheckIsChromeSxSProcess() {
   exe_dir.GetComponents(&components);
   // We need at least 1 element in the array for the behavior of the following
   // loop to be defined.  This should always be true, since we're splitting the
-  // path to our executable.
+  // path to our executable and one of the components will be the drive letter.
   DCHECK(!components.empty());
   typedef std::vector<base::FilePath::StringType>::const_reverse_iterator
       ComponentsIterator;
@@ -380,8 +380,9 @@ bool CheckIsChromeSxSProcess() {
        parent != components.rend(); current = parent++) {
     if (base::FilePath::CompareEqualIgnoreCase(
             *current, installer::kInstallBinaryDir) &&
-        base::FilePath::CompareEqualIgnoreCase(*parent, chrome_sxs_dir))
+        base::FilePath::CompareEqualIgnoreCase(*parent, chrome_sxs_dir)) {
       return true;
+    }
   }
 
   return false;
