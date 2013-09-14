@@ -86,6 +86,8 @@ const char kSendAction[] = "sendaction";
 const char kZombie[] = "zombie";
 const char kZombieTrace[] = "zombie_dealloc_bt";
 
+const char kPasswordThreadDtorTrace[] = "password_thread_dtor";
+
 }  // namespace mac
 #endif
 
@@ -123,6 +125,7 @@ size_t RegisterChromeCrashKeys() {
     { mac::kSendAction, kMediumSize },
     { mac::kZombie, kMediumSize },
     { mac::kZombieTrace, kMediumSize },
+    { mac::kPasswordThreadDtorTrace, kLargeSize },
     // content/:
     { "channel_error_bt", kMediumSize },
     { "remove_route_bt", kMediumSize },
