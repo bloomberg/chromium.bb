@@ -3,15 +3,19 @@
 // found in the LICENSE file.
 
 chrome.app.runtime.onLaunched.addListener(function() {
-  chrome.test.runTests([
-    function testWindowDotPrintCallWorks() {
-      chrome.app.window.create('test.html', {}, chrome.test.callbackPass(
-          function(appWindow) {
-            appWindow.contentWindow.onload = chrome.test.callbackPass(
-                function() {
-                  appWindow.contentWindow.print();
-                });
-          }));
-    }
-  ]);
+  chrome.test.getConfig(function(config) {
+    chrome.test.runTests([
+      function testWindowDotPrintApi() {
+        chrome.app.window.create('test.html', {}, chrome.test.callbackPass(
+            function(appWindow) {
+              appWindow.contentWindow.onload = chrome.test.callbackPass(
+                  function() {
+                    appWindow.contentWindow.print();
+                    if (config.customArg === 'close')
+                      appWindow.contentWindow.close();
+                  });
+            }));
+      }
+    ]);
+  });
 });

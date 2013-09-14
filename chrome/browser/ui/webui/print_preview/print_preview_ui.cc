@@ -520,7 +520,8 @@ void PrintPreviewUI::OnPreviewDataIsAvailable(int expected_pages_count,
   }
   base::FundamentalValue ui_identifier(id_);
   base::FundamentalValue ui_preview_request_id(preview_request_id);
-  if (AutoCancelForTesting()) {
+  if (ScopedAutoCancelForTesting::IsEnabledForTesting()) {
+    ScopedAutoCancelForTesting::IncrementCountForTesting();
     OnClosePrintPreviewDialog();
   } else {
     web_ui()->CallJavascriptFunction("updatePrintPreview", ui_identifier,
@@ -587,12 +588,25 @@ void PrintPreviewUI::OnPrintPreviewScalingDisabled() {
   web_ui()->CallJavascriptFunction("printScalingDisabledForSourcePDF");
 }
 
-static bool g_auto_cancel_for_testing_ = false;
+static int g_auto_cancel_count_for_testing_ = -1;  // Disabled if count < 0.
 
-void PrintPreviewUI::SetAutoCancelForTesting(bool auto_cancel) {
-  g_auto_cancel_for_testing_ = auto_cancel;
+PrintPreviewUI::ScopedAutoCancelForTesting::ScopedAutoCancelForTesting() {
+  g_auto_cancel_count_for_testing_ = 0;
 }
 
-bool PrintPreviewUI::AutoCancelForTesting() {
-  return g_auto_cancel_for_testing_;
+PrintPreviewUI::ScopedAutoCancelForTesting::~ScopedAutoCancelForTesting() {
+  g_auto_cancel_count_for_testing_ = -1;
+}
+
+bool PrintPreviewUI::ScopedAutoCancelForTesting::IsEnabledForTesting() {
+  return (g_auto_cancel_count_for_testing_ >= 0);
+}
+
+void PrintPreviewUI::ScopedAutoCancelForTesting::IncrementCountForTesting() {
+  if (g_auto_cancel_count_for_testing_ >= 0)
+    ++g_auto_cancel_count_for_testing_;
+}
+
+int PrintPreviewUI::ScopedAutoCancelForTesting::GetCountForTesting() {
+  return std::max(g_auto_cancel_count_for_testing_, -1);
 }

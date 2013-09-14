@@ -1035,15 +1035,15 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_WebContentsHasFocus) {
       GetRenderWidgetHostView()->HasFocus());
 }
 
-// The next test will only run automatically with Chrome branded builds because
-// it requires the PDF preview plug-in. To run this test manually for Chromium
-// builds (non-Chrome branded) in a development environment:
+// The next two tests will only run automatically with Chrome branded builds
+// because they require the PDF preview plug-in. To run these tests manually for
+// Chromium (non-Chrome branded) builds in a development environment:
 //
-//   1) Remove "MAYBE_" in the first line of the test definition
+//   1) Remove "MAYBE_" in the first line of each test definition
 //   2) Build Chromium browser_tests
 //   3) Make a copy of the PDF plug-in from a recent version of Chrome (Canary
 //      or a recent development build) to your Chromium build:
-//      - On Linux and Chrome OS, copy /opt/google.chrome/libpdf.so to
+//      - On Linux and Chrome OS, copy /opt/google/chrome/libpdf.so to
 //        <path-to-your-src>/out/Debug
 //      - On OS X, copy PDF.plugin from
 //        <recent-chrome-app-folder>/*/*/*/*/"Internet Plug-Ins" to
@@ -1051,15 +1051,35 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_WebContentsHasFocus) {
 //   4) Run browser_tests with the --enable-print-preview flag
 
 #if !defined(GOOGLE_CHROME_BUILD)
-#define MAYBE_WindowDotPrintWorks DISABLED_WindowDotPrintWorks
+#define MAYBE_WindowDotPrintShouldBringUpPrintPreview \
+    DISABLED_WindowDotPrintShouldBringUpPrintPreview
 #else
-#define MAYBE_WindowDotPrintWorks WindowDotPrintWorks
+#define MAYBE_WindowDotPrintShouldBringUpPrintPreview \
+    WindowDotPrintShouldBringUpPrintPreview
 #endif
 
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_WindowDotPrintWorks) {
-  PrintPreviewUI::SetAutoCancelForTesting(true);
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
+                       MAYBE_WindowDotPrintShouldBringUpPrintPreview) {
+  PrintPreviewUI::ScopedAutoCancelForTesting auto_cancel;
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/print_api")) << message_;
-  PrintPreviewUI::SetAutoCancelForTesting(false);
+  EXPECT_EQ(1, auto_cancel.GetCountForTesting());
+}
+
+// Currently fails on OS X.
+#if !defined(GOOGLE_CHROME_BUILD) || defined(OS_MACOSX)
+#define MAYBE_ClosingWindowWhilePrintingShouldNotCrash \
+    DISABLED_ClosingWindowWhilePrintingShouldNotCrash
+#else
+#define MAYBE_ClosingWindowWhilePrintingShouldNotCrash \
+    ClosingWindowWhilePrintingShouldNotCrash
+#endif
+
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
+                       MAYBE_ClosingWindowWhilePrintingShouldNotCrash) {
+  PrintPreviewUI::ScopedAutoCancelForTesting auto_cancel;
+  ASSERT_TRUE(RunPlatformAppTestWithArg("platform_apps/print_api",
+                                        "close")) << message_;
+  EXPECT_EQ(0, auto_cancel.GetCountForTesting());
 }
 
 
