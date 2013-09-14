@@ -35,11 +35,11 @@ embedder.setUpGuest_ = function(partitionName) {
 
 embedder.test = {};
 embedder.test.succeed = function() {
-  chrome.test.sendMessage('DonePointerLockTest.PASSED');
+  chrome.test.sendMessage('TEST_PASSED');
 };
 
 embedder.test.fail = function() {
-  chrome.test.sendMessage('DonePointerLockTest.FAILED');
+  chrome.test.sendMessage('TEST_FAILED');
 };
 
 embedder.test.assertEq = function(a, b) {

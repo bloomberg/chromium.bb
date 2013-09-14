@@ -423,6 +423,47 @@ int BrowserPluginGuest::RequestPermission(
   return request_id;
 }
 
+BrowserPluginGuest* BrowserPluginGuest::CreateNewGuestWindow(
+    const OpenURLParams& params) {
+  BrowserPluginGuestManager* guest_manager =
+      GetWebContents()->GetBrowserPluginGuestManager();
+
+  // Allocate a new instance ID for the new guest.
+  int instance_id = guest_manager->get_next_instance_id();
+
+  // Set the attach params to use the same partition as the opener.
+  // We pull the partition information from the site's URL, which is of the form
+  // guest://site/{persist}?{partition_name}.
+  const GURL& site_url = GetWebContents()->GetSiteInstance()->GetSiteURL();
+  BrowserPluginHostMsg_Attach_Params attach_params;
+  attach_params.storage_partition_id = site_url.query();
+  attach_params.persist_storage =
+      site_url.path().find("persist") != std::string::npos;
+
+  // The new guest gets a copy of this guest's extra params so that the content
+  // embedder exposes the same API for this guest as its opener.
+  scoped_ptr<base::DictionaryValue> extra_params(
+      extra_attach_params_->DeepCopy());
+  BrowserPluginGuest* new_guest =
+      GetWebContents()->GetBrowserPluginGuestManager()->CreateGuest(
+          GetWebContents()->GetSiteInstance(), instance_id,
+          attach_params, extra_params.Pass());
+  new_guest->opener_ = AsWeakPtr();
+
+  // Take ownership of |new_guest|.
+  pending_new_windows_.insert(
+      std::make_pair(new_guest, NewWindowInfo(params.url, std::string())));
+
+  // Request permission to show the new window.
+  RequestNewWindowPermission(
+      new_guest->GetWebContents(),
+      params.disposition,
+      gfx::Rect(),
+      params.user_gesture);
+
+  return new_guest;
+}
+
 void BrowserPluginGuest::EmbedderDestroyed() {
   embedder_web_contents_ = NULL;
   if (delegate_)
@@ -585,6 +626,7 @@ BrowserPluginGuest* BrowserPluginGuest::Create(
   } else {
     guest = new BrowserPluginGuest(instance_id, web_contents, NULL, false);
   }
+  guest->extra_attach_params_.reset(extra_params->DeepCopy());
   web_contents->SetBrowserPluginGuest(guest);
   BrowserPluginGuestDelegate* delegate = NULL;
   GetContentClient()->browser()->GuestWebContentsCreated(
@@ -738,10 +780,14 @@ WebContents* BrowserPluginGuest::OpenURLFromTab(WebContents* source,
     it->second = new_window_info;
     return NULL;
   }
-  // This can happen for cross-site redirects.
-  source->GetController().LoadURL(
-        params.url, params.referrer, params.transition, std::string());
-  return source;
+  if (params.disposition == CURRENT_TAB) {
+    // This can happen for cross-site redirects.
+    source->GetController().LoadURL(
+          params.url, params.referrer, params.transition, std::string());
+    return source;
+  }
+
+  return CreateNewGuestWindow(params)->GetWebContents();
 }
 
 void BrowserPluginGuest::WebContentsCreated(WebContents* source_contents,
@@ -1111,9 +1157,12 @@ bool BrowserPluginGuest::OnMessageReceived(const IPC::Message& message) {
 
 void BrowserPluginGuest::Attach(
     WebContentsImpl* embedder_web_contents,
-    BrowserPluginHostMsg_Attach_Params params) {
+    BrowserPluginHostMsg_Attach_Params params,
+    const base::DictionaryValue& extra_params) {
   if (attached())
     return;
+
+  extra_attach_params_.reset(extra_params.DeepCopy());
 
   // Clear parameters that get inherited from the opener.
   params.storage_partition_id.clear();
