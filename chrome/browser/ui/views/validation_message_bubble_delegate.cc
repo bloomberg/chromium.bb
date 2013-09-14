@@ -87,7 +87,7 @@ void ValidationMessageBubbleDelegate::Close() {
 void ValidationMessageBubbleDelegate::SetPositionRelativeToAnchor(
     const gfx::Rect& anchor_in_screen) {
   set_anchor_rect(anchor_in_screen);
-  GetWidget()->SetBounds(GetBubbleBounds());
+  SizeToContents();
 }
 
 gfx::Size ValidationMessageBubbleDelegate::GetPreferredSize() {
