@@ -5,8 +5,9 @@
 #ifndef MEDIA_BASE_USER_INPUT_MONITOR_H_
 #define MEDIA_BASE_USER_INPUT_MONITOR_H_
 
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/observer_list.h"
+#include "base/observer_list_threadsafe.h"
 #include "base/synchronization/lock.h"
 #include "media/base/media_export.h"
 
@@ -19,11 +20,8 @@ class SingleThreadTaskRunner;
 namespace media {
 
 // Monitors and notifies about mouse movements and keyboard events.
-// Thread safe. The thread on which the listenters are called is not guaranteed.
-// The callers should not perform expensive/blocking tasks in the callback since
-// it might be called on the browser UI/IO threads.
-// The object must outlive the browser UI/IO threads to make sure the callbacks
-// will not access a deleted object.
+// Thread safe. The listeners are called on the thread where the listeners are
+// added.
 class MEDIA_EXPORT UserInputMonitor {
  public:
   // The interface to receive mouse movement events.
@@ -35,6 +33,8 @@ class MEDIA_EXPORT UserInputMonitor {
    protected:
     virtual ~MouseEventListener() {}
   };
+  typedef ObserverListThreadSafe<UserInputMonitor::MouseEventListener>
+      MouseListenerList;
 
   UserInputMonitor();
   virtual ~UserInputMonitor();
@@ -66,20 +66,20 @@ class MEDIA_EXPORT UserInputMonitor {
   virtual size_t GetKeyPressCount() const = 0;
 
  protected:
-  // Called by the platform-specific sub-classes to propagate the events to the
-  // listeners.
-  void OnMouseEvent(const SkIPoint& position);
+  scoped_refptr<MouseListenerList> mouse_listeners() {
+    return mouse_listeners_;
+  }
 
  private:
-  virtual void StartMouseMonitoring() = 0;
-  virtual void StopMouseMonitoring() = 0;
   virtual void StartKeyboardMonitoring() = 0;
   virtual void StopKeyboardMonitoring() = 0;
+  virtual void StartMouseMonitoring() = 0;
+  virtual void StopMouseMonitoring() = 0;
 
   base::Lock lock_;
-  ObserverList<MouseEventListener, true> mouse_listeners_;
-  bool monitoring_mouse_;
   size_t key_press_counter_references_;
+  size_t mouse_listeners_count_;
+  scoped_refptr<MouseListenerList> mouse_listeners_;
 
   DISALLOW_COPY_AND_ASSIGN(UserInputMonitor);
 };
