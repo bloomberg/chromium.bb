@@ -6110,6 +6110,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_ADVANCED_GESTURES_DESCRIPTION" desc="Title for the flag to enable advanced gestures.">
         Enables advanced gestures (e.g. 4-finger pinch to minimize window etc.).
       </message>
+      <message name="IDS_FLAGS_ASH_FRAME_CAPTION_BUTTON_STYLE_NAME" desc="Title for the flag for the alternate frame caption button style.">
+        Alternate frame caption button style
+      </message>
+      <message name="IDS_FLAGS_ASH_FRAME_CAPTION_BUTTON_STYLE_DESCRIPTION" desc="Description for the flag for the alternate frame caption button style.">
+        Enables an experimental visual style for the frame caption buttons (minimize, maximize, close).
+      </message>
       <message name="IDS_FLAGS_DISABLE_TAB_SCRUBBING_NAME" desc="Title for the flag to disable tab scrubbing.">
         Disable tab scrubbing
       </message>

@@ -806,15 +806,6 @@ const Experiment kExperiments[] = {
     kOsMac | kOsWin | kOsLinux | kOsCrOSOwnerOnly,
     SINGLE_VALUE_TYPE(switches::kEnableManagedUsers)
   },
-#if defined(USE_ASH)
-  {
-    "ash-disable-auto-maximizing",
-    IDS_FLAGS_ASH_AUTO_MAXIMIZING_NAME,
-    IDS_FLAGS_ASH_AUTO_MAXIMIZING_DESCRIPTION,
-    kOsWin | kOsLinux | kOsCrOS,
-    SINGLE_VALUE_TYPE(ash::switches::kAshDisableAutoMaximizing)
-  },
-#endif
   {
     "per-tile-painting",
     IDS_FLAGS_PER_TILE_PAINTING_NAME,
@@ -1147,15 +1138,6 @@ const Experiment kExperiments[] = {
     kOsWin | kOsCrOS,
     SINGLE_VALUE_TYPE(switches::kDisableAcceleratedVideoDecode),
   },
-#if defined(USE_ASH)
-  {
-    "ash-debug-shortcuts",
-    IDS_FLAGS_DEBUG_SHORTCUTS_NAME,
-    IDS_FLAGS_DEBUG_SHORTCUTS_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(ash::switches::kAshDebugShortcuts),
-  },
-#endif
   {
     "enable-contacts",
     IDS_FLAGS_ENABLE_CONTACTS_NAME,
@@ -1164,17 +1146,39 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableContacts)
   },
 #if defined(USE_ASH)
+  {
+    "ash-debug-shortcuts",
+    IDS_FLAGS_DEBUG_SHORTCUTS_NAME,
+    IDS_FLAGS_DEBUG_SHORTCUTS_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(ash::switches::kAshDebugShortcuts),
+  },
   { "ash-enable-advanced-gestures",
     IDS_FLAGS_ENABLE_ADVANCED_GESTURES_NAME,
     IDS_FLAGS_ENABLE_ADVANCED_GESTURES_DESCRIPTION,
     kOsCrOS,
     SINGLE_VALUE_TYPE(ash::switches::kAshEnableAdvancedGestures),
   },
+  { "ash-alternate-caption-button",
+    IDS_FLAGS_ASH_FRAME_CAPTION_BUTTON_STYLE_NAME,
+    IDS_FLAGS_ASH_FRAME_CAPTION_BUTTON_STYLE_DESCRIPTION,
+    kOsCrOS,
+    ENABLE_DISABLE_VALUE_TYPE(
+        ash::switches::kAshEnableAlternateFrameCaptionButtonStyle,
+        ash::switches::kAshDisableAlternateFrameCaptionButtonStyle),
+  },
   { "ash-disable-tab-scrubbing",
     IDS_FLAGS_DISABLE_TAB_SCRUBBING_NAME,
     IDS_FLAGS_DISABLE_TAB_SCRUBBING_DESCRIPTION,
     kOsCrOS,
     SINGLE_VALUE_TYPE(switches::kAshDisableTabScrubbing),
+  },
+  {
+    "ash-disable-auto-maximizing",
+    IDS_FLAGS_ASH_AUTO_MAXIMIZING_NAME,
+    IDS_FLAGS_ASH_AUTO_MAXIMIZING_DESCRIPTION,
+    kOsWin | kOsLinux | kOsCrOS,
+    SINGLE_VALUE_TYPE(ash::switches::kAshDisableAutoMaximizing)
   },
   { "ash-disable-drag-and-drop-applist-to-launcher",
     IDS_FLAGS_DND_APPLIST_TO_LAUNCHER_NAME,
