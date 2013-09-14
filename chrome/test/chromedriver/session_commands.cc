@@ -102,10 +102,10 @@ Status InitSessionHelper(
   if (status.IsError())
     return status;
 
-  if (capabilities.logging_prefs.count(WebDriverLog::kDriverType)) {
-    session->driver_log->set_min_level(
-        capabilities.logging_prefs[WebDriverLog::kDriverType]);
-  }
+  Log::Level driver_level = Log::kWarning;
+  if (capabilities.logging_prefs.count(WebDriverLog::kDriverType))
+    driver_level = capabilities.logging_prefs[WebDriverLog::kDriverType];
+  session->driver_log->set_min_level(driver_level);
 
   // Create Log's and DevToolsEventListener's for ones that are DevTools-based.
   // Session will own the Log's, Chrome will own the listeners.
