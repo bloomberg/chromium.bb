@@ -28,7 +28,7 @@ namespace content {
 class GLHelper;
 
 // This class provides a way to get notified when surface handles get lost.
-class ImageTransportFactoryObserver {
+class CONTENT_EXPORT ImageTransportFactoryObserver {
  public:
   virtual ~ImageTransportFactoryObserver() {}
 

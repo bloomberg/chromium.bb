@@ -11,6 +11,7 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_metadata.h"
 #include "cc/output/gl_frame_data.h"
+#include "content/browser/aura/resize_lock.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -36,6 +37,8 @@
 #include "ui/base/events/event.h"
 #include "ui/base/events/event_utils.h"
 #include "ui/base/ui_base_types.h"
+
+using testing::_;
 
 namespace content {
 namespace {
@@ -76,6 +79,41 @@ class TestWindowObserver : public aura::WindowObserver {
   DISALLOW_COPY_AND_ASSIGN(TestWindowObserver);
 };
 
+class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
+ public:
+  FakeRenderWidgetHostViewAura(RenderWidgetHost* widget)
+      : RenderWidgetHostViewAura(widget), has_resize_lock_(false) {}
+
+  virtual ~FakeRenderWidgetHostViewAura() {}
+
+  virtual bool ShouldCreateResizeLock() OVERRIDE {
+    gfx::Size desired_size = window()->bounds().size();
+    return desired_size != current_frame_size();
+  }
+
+  virtual scoped_ptr<ResizeLock> CreateResizeLock(bool defer_compositor_lock)
+      OVERRIDE {
+    gfx::Size desired_size = window()->bounds().size();
+    return scoped_ptr<ResizeLock>(
+        new FakeResizeLock(desired_size, defer_compositor_lock));
+  }
+
+  void RunOnCompositingDidCommit() {
+    OnCompositingDidCommit(window()->GetRootWindow()->compositor());
+  }
+
+  // A lock that doesn't actually do anything to the compositor, and does not
+  // time out.
+  class FakeResizeLock : public ResizeLock {
+   public:
+    FakeResizeLock(const gfx::Size new_size, bool defer_compositor_lock)
+        : ResizeLock(new_size, defer_compositor_lock) {}
+  };
+
+  bool has_resize_lock_;
+  gfx::Size last_frame_size_;
+};
+
 class RenderWidgetHostViewAuraTest : public testing::Test {
  public:
   RenderWidgetHostViewAuraTest()
@@ -103,8 +141,9 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
     widget_host_ = new RenderWidgetHostImpl(
         &delegate_, process_host, MSG_ROUTING_NONE, false);
     widget_host_->Init();
-    view_ = static_cast<RenderWidgetHostViewAura*>(
-        RenderWidgetHostView::CreateViewForWidget(widget_host_));
+    widget_host_->OnMessageReceived(
+        ViewHostMsg_DidActivateAcceleratedCompositing(0, true));
+    view_ = new FakeRenderWidgetHostViewAura(widget_host_);
   }
 
   virtual void TearDown() {
@@ -139,7 +178,7 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
   // Tests should set these to NULL if they've already triggered their
   // destruction.
   RenderWidgetHostImpl* widget_host_;
-  RenderWidgetHostViewAura* view_;
+  FakeRenderWidgetHostViewAura* view_;
 
   IPC::TestSink* sink_;
 
@@ -729,6 +768,78 @@ TEST_F(RenderWidgetHostViewAuraTest, SwapNotifiesWindow) {
   view_->OnSwapCompositorFrame(
       0, MakeDelegatedFrame(1.f, view_size, gfx::Rect(5, 5, 5, 5)));
   testing::Mock::VerifyAndClearExpectations(&observer);
+
+  view_->window_->RemoveObserver(&observer);
+}
+
+// Skipped frames should not drop their damage.
+TEST_F(RenderWidgetHostViewAuraTest, SkippedDelegatedFrames) {
+  gfx::Rect view_rect(100, 100);
+  gfx::Size frame_size = view_rect.size();
+
+  view_->InitAsChild(NULL);
+  view_->GetNativeView()->SetDefaultParentByRootWindow(
+      parent_view_->GetNativeView()->GetRootWindow(), gfx::Rect());
+  view_->SetSize(view_rect.size());
+
+  MockWindowObserver observer;
+  view_->window_->AddObserver(&observer);
+
+  // A full frame of damage.
+  EXPECT_CALL(observer, OnWindowPaintScheduled(view_->window_, view_rect));
+  view_->OnSwapCompositorFrame(
+      0, MakeDelegatedFrame(1.f, frame_size, view_rect));
+  testing::Mock::VerifyAndClearExpectations(&observer);
+  view_->RunOnCompositingDidCommit();
+
+  // A partial damage frame.
+  gfx::Rect partial_view_rect(30, 30, 20, 20);
+  EXPECT_CALL(observer,
+              OnWindowPaintScheduled(view_->window_, partial_view_rect));
+  view_->OnSwapCompositorFrame(
+      0, MakeDelegatedFrame(1.f, frame_size, partial_view_rect));
+  testing::Mock::VerifyAndClearExpectations(&observer);
+  view_->RunOnCompositingDidCommit();
+
+  // Lock the compositor. Now we should drop frames.
+  view_rect = gfx::Rect(150, 150);
+  view_->SetSize(view_rect.size());
+  view_->MaybeCreateResizeLock();
+
+  // This frame is dropped.
+  gfx::Rect dropped_damage_rect_1(10, 20, 30, 40);
+  EXPECT_CALL(observer, OnWindowPaintScheduled(_, _)).Times(0);
+  view_->OnSwapCompositorFrame(
+      0, MakeDelegatedFrame(1.f, frame_size, dropped_damage_rect_1));
+  testing::Mock::VerifyAndClearExpectations(&observer);
+  view_->RunOnCompositingDidCommit();
+
+  gfx::Rect dropped_damage_rect_2(40, 50, 10, 20);
+  EXPECT_CALL(observer, OnWindowPaintScheduled(_, _)).Times(0);
+  view_->OnSwapCompositorFrame(
+      0, MakeDelegatedFrame(1.f, frame_size, dropped_damage_rect_2));
+  testing::Mock::VerifyAndClearExpectations(&observer);
+  view_->RunOnCompositingDidCommit();
+
+  // Unlock the compositor. This frame should damage everything.
+  frame_size = view_rect.size();
+
+  gfx::Rect new_damage_rect(5, 6, 10, 10);
+  EXPECT_CALL(observer,
+              OnWindowPaintScheduled(view_->window_, view_rect));
+  view_->OnSwapCompositorFrame(
+      0, MakeDelegatedFrame(1.f, frame_size, new_damage_rect));
+  testing::Mock::VerifyAndClearExpectations(&observer);
+  view_->RunOnCompositingDidCommit();
+
+  // A partial damage frame, this should not be dropped.
+  EXPECT_CALL(observer,
+              OnWindowPaintScheduled(view_->window_, partial_view_rect));
+  view_->OnSwapCompositorFrame(
+      0, MakeDelegatedFrame(1.f, frame_size, partial_view_rect));
+  testing::Mock::VerifyAndClearExpectations(&observer);
+  view_->RunOnCompositingDidCommit();
+
 
   view_->window_->RemoveObserver(&observer);
 }
