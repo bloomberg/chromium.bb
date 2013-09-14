@@ -78,6 +78,38 @@ class TestOutputSurface : public OutputSurface {
   base::TimeDelta alternate_retroactive_begin_frame_period_;
 };
 
+class TestSoftwareOutputDevice : public SoftwareOutputDevice {
+ public:
+  TestSoftwareOutputDevice();
+  virtual ~TestSoftwareOutputDevice();
+
+  // Overriden from cc:SoftwareOutputDevice
+  virtual void DiscardBackbuffer() OVERRIDE;
+  virtual void EnsureBackbuffer() OVERRIDE;
+
+  int discard_backbuffer_count() { return discard_backbuffer_count_; }
+  int ensure_backbuffer_count() { return ensure_backbuffer_count_; }
+
+ private:
+  int discard_backbuffer_count_;
+  int ensure_backbuffer_count_;
+};
+
+TestSoftwareOutputDevice::TestSoftwareOutputDevice()
+    : discard_backbuffer_count_(0), ensure_backbuffer_count_(0) {}
+
+TestSoftwareOutputDevice::~TestSoftwareOutputDevice() {}
+
+void TestSoftwareOutputDevice::DiscardBackbuffer() {
+  SoftwareOutputDevice::DiscardBackbuffer();
+  discard_backbuffer_count_++;
+}
+
+void TestSoftwareOutputDevice::EnsureBackbuffer() {
+  SoftwareOutputDevice::EnsureBackbuffer();
+  ensure_backbuffer_count_++;
+}
+
 TEST(OutputSurfaceTest, ClientPointerIndicatesBindToClientSuccess) {
   TestOutputSurface output_surface(TestContextProvider::Create());
   EXPECT_FALSE(output_surface.HasClient());
@@ -410,6 +442,27 @@ TEST(OutputSurfaceTest, MemoryAllocation) {
   context_provider->SetMemoryAllocation(policy,
                                         discard_backbuffer_when_not_visible);
   EXPECT_EQ(1234u, client.memory_policy().bytes_limit_when_visible);
+}
+
+TEST(OutputSurfaceTest, SoftwareOutputDeviceBackbufferManagement) {
+  TestSoftwareOutputDevice* software_output_device =
+      new TestSoftwareOutputDevice();
+
+  // TestOutputSurface now owns software_output_device and has responsibility to
+  // free it.
+  scoped_ptr<TestSoftwareOutputDevice> p(software_output_device);
+  TestOutputSurface output_surface(p.PassAs<SoftwareOutputDevice>());
+
+  EXPECT_EQ(0, software_output_device->ensure_backbuffer_count());
+  EXPECT_EQ(0, software_output_device->discard_backbuffer_count());
+
+  output_surface.EnsureBackbuffer();
+  EXPECT_EQ(1, software_output_device->ensure_backbuffer_count());
+  EXPECT_EQ(0, software_output_device->discard_backbuffer_count());
+  output_surface.DiscardBackbuffer();
+
+  EXPECT_EQ(1, software_output_device->ensure_backbuffer_count());
+  EXPECT_EQ(1, software_output_device->discard_backbuffer_count());
 }
 
 }  // namespace

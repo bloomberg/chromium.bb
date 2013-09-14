@@ -323,11 +323,15 @@ void OutputSurface::ResetContext3d() {
 void OutputSurface::EnsureBackbuffer() {
   if (context_provider_ && has_gl_discard_backbuffer_)
     context_provider_->Context3d()->ensureBackbufferCHROMIUM();
+  if (software_device_)
+    software_device_->EnsureBackbuffer();
 }
 
 void OutputSurface::DiscardBackbuffer() {
   if (context_provider_ && has_gl_discard_backbuffer_)
     context_provider_->Context3d()->discardBackbufferCHROMIUM();
+  if (software_device_)
+    software_device_->DiscardBackbuffer();
 }
 
 void OutputSurface::Reshape(gfx::Size size, float scale_factor) {

@@ -28,20 +28,41 @@ class CC_EXPORT SoftwareOutputDevice {
   SoftwareOutputDevice();
   virtual ~SoftwareOutputDevice();
 
-  // SoftwareOutputDevice implementation.
+  // Discards any pre-existing backing buffers and allocates memory for a
+  // software device of |size|. This must be called before the
+  // |SoftwareOutputDevice| can be used in other ways.
   virtual void Resize(gfx::Size size);
 
+  // Called on BeginDrawingFrame. The compositor will draw into the returned
+  // SkCanvas. The |SoftwareOutputDevice| implementation needs to provide a
+  // valid SkCanvas of at least size |damage_rect|. This class retains ownership
+  // of the SkCanvas.
   virtual SkCanvas* BeginPaint(gfx::Rect damage_rect);
+
+  // Called on FinishDrawingFrame. The compositor will no longer mutate the the
+  // SkCanvas instance returned by |BeginPaint| and should discard any reference
+  // that it holds to it.
   virtual void EndPaint(SoftwareFrameData* frame_data);
 
+  // Copies pixels inside |rect| from the current software framebuffer to
+  // |output|. Fails if there is no current softwareframebuffer.
   virtual void CopyToBitmap(gfx::Rect rect, SkBitmap* output);
+
+  // Blit the pixel content of the SoftwareOutputDevice by |delta| with the
+  // write clipped to |clip_rect|.
   virtual void Scroll(gfx::Vector2d delta,
                       gfx::Rect clip_rect);
 
+  // Discard the backing buffer in the surface provided by this instance.
   virtual void DiscardBackbuffer() {}
+
+  // Ensures that there is a backing buffer available on this instance.
   virtual void EnsureBackbuffer() {}
 
   // TODO(skaslev) Remove this after UberCompositor lands.
+  // Called in response to receiving a SwapBuffersAck. At this point, software
+  // frame identified by id can be reused or discarded as it is no longer being
+  // displayed.
   virtual void ReclaimSoftwareFrame(unsigned id);
 
  protected:
