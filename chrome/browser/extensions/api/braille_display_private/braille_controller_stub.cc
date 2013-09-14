@@ -17,7 +17,7 @@ namespace braille_display_private {
 class BrailleControllerImpl : public BrailleController {
  public:
   static BrailleControllerImpl* GetInstance();
-  virtual scoped_ptr<base::DictionaryValue> GetDisplayState() OVERRIDE;
+  virtual scoped_ptr<DisplayState> GetDisplayState() OVERRIDE;
   virtual void WriteDots(const std::string& cells) OVERRIDE;
   virtual void AddObserver(BrailleObserver* observer) OVERRIDE;
   virtual void RemoveObserver(BrailleObserver* observer) OVERRIDE;
@@ -52,8 +52,8 @@ BrailleControllerImpl* BrailleControllerImpl::GetInstance() {
                    LeakySingletonTraits<BrailleControllerImpl> >::get();
 }
 
-scoped_ptr<base::DictionaryValue> BrailleControllerImpl::GetDisplayState() {
-  return DisplayState().ToValue().Pass();
+scoped_ptr<DisplayState> BrailleControllerImpl::GetDisplayState() {
+  return scoped_ptr<DisplayState>(new DisplayState()).Pass();
 }
 
 void BrailleControllerImpl::WriteDots(const std::string& cells) {

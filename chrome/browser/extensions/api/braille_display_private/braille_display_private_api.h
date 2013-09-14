@@ -5,9 +5,11 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_BRAILLE_DISPLAY_PRIVATE_BRAILLE_DISPLAY_PRIVATE_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_BRAILLE_DISPLAY_PRIVATE_BRAILLE_DISPLAY_PRIVATE_API_H_
 
+#include "base/scoped_observer.h"
 #include "chrome/browser/extensions/api/api_function.h"
 #include "chrome/browser/extensions/api/braille_display_private/braille_controller.h"
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
+#include "chrome/browser/extensions/event_router.h"
 #include "chrome/common/extensions/api/braille_display_private.h"
 
 namespace extensions {
@@ -15,7 +17,8 @@ namespace extensions {
 // Implementation of the chrome.brailleDisplayPrivate API.
 class BrailleDisplayPrivateAPI
     : public ProfileKeyedAPI,
-      api::braille_display_private::BrailleObserver {
+      api::braille_display_private::BrailleObserver,
+      EventRouter::Observer {
  public:
   explicit BrailleDisplayPrivateAPI(Profile* profile);
   virtual ~BrailleDisplayPrivateAPI();
@@ -27,13 +30,22 @@ class BrailleDisplayPrivateAPI
   static ProfileKeyedAPIFactory<BrailleDisplayPrivateAPI>* GetFactoryInstance();
 
   // BrailleObserver implementation.
+  virtual void OnDisplayStateChanged(
+      const api::braille_display_private::DisplayState& display_state) OVERRIDE;
   virtual void OnKeyEvent(
       const api::braille_display_private::KeyEvent& keyEvent) OVERRIDE;
+
+  // EventRouter::Observer implementation.
+  virtual void OnListenerAdded(const EventListenerInfo& details) OVERRIDE;
+  virtual void OnListenerRemoved(const EventListenerInfo& details) OVERRIDE;
+
 
  private:
   friend class ProfileKeyedAPIFactory<BrailleDisplayPrivateAPI>;
 
   Profile* profile_;
+  ScopedObserver<api::braille_display_private::BrailleController,
+                 BrailleObserver> scoped_observer_;
 
   // ProfileKeyedAPI implementation.
   static const char* service_name() {

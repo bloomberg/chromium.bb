@@ -19,25 +19,12 @@ namespace api {
 namespace braille_display_private {
 class BrailleObserver;
 
-#ifdef USE_BRLAPI
-class BrlapiConnection;
-#endif  // USE_BRLAPI
-
 // Singleton class that controls the braille display.
 class BrailleController {
  public:
   static BrailleController* GetInstance();
 
-#ifdef USE_BRLAPI
-  typedef base::Callback<scoped_ptr<BrlapiConnection>()>
-      CreateBrlapiConnectionFunction;
-  // For dependency injection in tests.  Sets the function used to create
-  // brlapi connections.
-  virtual void SetCreateBrlapiConnectionForTesting(
-      const CreateBrlapiConnectionFunction& callback) = 0;
-#endif  // USE_BRLAPI
-
-  virtual scoped_ptr<base::DictionaryValue> GetDisplayState() = 0;
+  virtual scoped_ptr<DisplayState> GetDisplayState() = 0;
   virtual void WriteDots(const std::string& cells) = 0;
   virtual void AddObserver(BrailleObserver* observer) = 0;
   virtual void RemoveObserver(BrailleObserver* observer) = 0;
@@ -53,8 +40,8 @@ class BrailleController {
 // Observer for events from the BrailleController
 class BrailleObserver {
  public:
-  virtual void OnKeyEvent(
-      const extensions::api::braille_display_private::KeyEvent &event) {}
+  virtual void OnDisplayStateChanged(const DisplayState& display_state) {}
+  virtual void OnKeyEvent(const KeyEvent& event) {}
 };
 
 }  // namespace braille_display_private

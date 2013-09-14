@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_BRAILLE_DISPLAY_PRIVATE_BRLAPI_BRLAPI_CONNECTION_H_
-#define CHROME_BROWSER_EXTENSIONS_API_BRAILLE_DISPLAY_PRIVATE_BRLAPI_BRLLAPI_CONNECTION_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_BRAILLE_DISPLAY_PRIVATE_BRLAPI_CONNECTION_H_
+#define CHROME_BROWSER_EXTENSIONS_API_BRAILLE_DISPLAY_PRIVATE_BRLAPI_CONNECTION_H_
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
@@ -61,8 +61,8 @@ class BrlapiConnection {
   DISALLOW_COPY_AND_ASSIGN(BrlapiConnection);
 };
 
-}  // braille_display_private
-}  // api
-}  // extensions
+}  // namespace braille_display_private
+}  // namespace api
+}  // namespace extensions
 
-#endif // CHROME_BROWSER_EXTENSIONS_API_BRAILLE_DISPLAY_PRIVATE_BRLAPI_BRLAPI_CONNECTION_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_API_BRAILLE_DISPLAY_PRIVATE_BRLAPI_CONNECTION_H_

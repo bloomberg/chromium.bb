@@ -9,15 +9,17 @@
 #include <deque>
 
 #include "base/bind.h"
-#include "chrome/browser/extensions/api/braille_display_private/braille_controller.h"
+#include "chrome/browser/extensions/api/braille_display_private/braille_controller_brlapi.h"
 #include "chrome/browser/extensions/api/braille_display_private/brlapi_connection.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "content/public/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
-using extensions::api::braille_display_private::BrailleController;
-using extensions::api::braille_display_private::BrlapiConnection;
+
+namespace extensions {
+namespace api {
+namespace braille_display_private {
 
 // Data maintained by the mock BrlapiConnection.  This data lives throughout
 // a test, while the api implementation takes ownership of the connection
@@ -27,12 +29,18 @@ struct MockBrlapiConnectionData {
   size_t display_size;
   brlapi_error_t error;
   std::vector<std::string> written_content;
+  // List of brlapi key codes.  A negative number makes the connection mock
+  // return an error from ReadKey.
   std::deque<brlapi_keyCode_t> pending_keys;
+  // Causes a new display to appear to appear on disconnect, that is the
+  // display size doubles and the controller gets notified of a brltty
+  // restart.
+  bool reappear_on_disconnect;
 };
 
 class MockBrlapiConnection : public BrlapiConnection {
  public:
-  MockBrlapiConnection(MockBrlapiConnectionData* data)
+  explicit MockBrlapiConnection(MockBrlapiConnectionData* data)
       : data_(data) {}
   virtual bool Connect(const OnDataReadyCallback& on_data_ready) OVERRIDE {
     data_->connected = true;
@@ -47,6 +55,13 @@ class MockBrlapiConnection : public BrlapiConnection {
 
   virtual void Disconnect() OVERRIDE {
     data_->connected = false;
+    if (data_->reappear_on_disconnect) {
+      data_->display_size *= 2;
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
+          base::Bind(&BrailleControllerImpl::PokeSocketDirForTesting,
+                     base::Unretained(BrailleControllerImpl::GetInstance())));
+    }
   }
 
   virtual bool Connected() OVERRIDE {
@@ -73,10 +88,15 @@ class MockBrlapiConnection : public BrlapiConnection {
     return true;
   }
 
-  virtual int ReadKey(brlapi_keyCode_t* keyCode) {
+  virtual int ReadKey(brlapi_keyCode_t* key_code) {
     if (!data_->pending_keys.empty()) {
-      *keyCode = data_->pending_keys.front();
+      int queued_key_code = data_->pending_keys.front();
       data_->pending_keys.pop_front();
+      if (queued_key_code < 0) {
+        data_->error.brlerrno = BRLAPI_ERROR_EOF;
+        return -1;  // Signal error.
+      }
+      *key_code = queued_key_code;
       return 1;
     } else {
       return 0;
@@ -105,7 +125,8 @@ class BrailleDisplayPrivateApiTest : public ExtensionApiTest {
     connection_data_.connected = false;
     connection_data_.display_size = 0;
     connection_data_.error.brlerrno = BRLAPI_ERROR_SUCCESS;
-    BrailleController::GetInstance()->SetCreateBrlapiConnectionForTesting(
+    connection_data_.reappear_on_disconnect = false;
+    BrailleControllerImpl::GetInstance()->SetCreateBrlapiConnectionForTesting(
         base::Bind(
             &BrailleDisplayPrivateApiTest::CreateBrlapiConnection,
             base::Unretained(this)));
@@ -144,3 +165,15 @@ IN_PROC_BROWSER_TEST_F(BrailleDisplayPrivateApiTest, KeyEvents) {
       BRLAPI_KEY_TYPE_CMD | BRLAPI_KEY_CMD_LNDN);
   ASSERT_TRUE(RunComponentExtensionTest("braille_display_private/key_events"));
 }
+
+IN_PROC_BROWSER_TEST_F(BrailleDisplayPrivateApiTest, DisplayStateChanges) {
+  connection_data_.display_size = 11;
+  connection_data_.pending_keys.push_back(-1);
+  connection_data_.reappear_on_disconnect = true;
+  ASSERT_TRUE(RunComponentExtensionTest(
+      "braille_display_private/display_state_changes"));
+}
+
+}  // namespace braille_display_private
+}  // namespace api
+}  // namespace extensions

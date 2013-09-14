@@ -142,6 +142,7 @@
         'browser/extensions/api/bookmarks/bookmarks_api.cc',
         'browser/extensions/api/bookmarks/bookmarks_api.h',
         'browser/extensions/api/braille_display_private/braille_controller_brlapi.cc',
+        'browser/extensions/api/braille_display_private/braille_controller_brlapi.h',
         'browser/extensions/api/braille_display_private/braille_controller_stub.cc',
         'browser/extensions/api/braille_display_private/braille_controller.h',
         'browser/extensions/api/braille_display_private/braille_display_private_api.h',
