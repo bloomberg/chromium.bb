@@ -37,6 +37,7 @@ void GetFingerprintInternal(
     const std::string& accept_languages,
     const base::Time& install_time,
     const std::string& app_locale,
+    const base::TimeDelta& timeout,
     const base::Callback<void(scoped_ptr<Fingerprint>)>& callback);
 
 }  // namespace internal
@@ -193,6 +194,7 @@ IN_PROC_BROWSER_TEST_F(AutofillRiskFingerprintTest, GetFingerprint) {
       kObfuscatedGaiaId, window_bounds_, content_bounds_, screen_info,
       "25.0.0.123", kCharset, kAcceptLanguages, base::Time::Now(),
       g_browser_process->GetApplicationLocale(),
+      base::TimeDelta::FromDays(1),  // Ought to be longer than any test run.
       base::Bind(&AutofillRiskFingerprintTest::GetFingerprintTestCallback,
                  base::Unretained(this)));
 
