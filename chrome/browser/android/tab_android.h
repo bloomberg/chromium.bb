@@ -100,12 +100,6 @@ class TabAndroid : public CoreTabHelperDelegate,
   // Called to notify that the new tab page has completely rendered.
   virtual void OnNewTabPageReady() = 0;
 
-  // Called when the common ExternalProtocolHandler wants to
-  // run the external protocol dialog.
-  // TODO(jknotten): Remove this method. Making it non-abstract, so that
-  // derived classes may remove their implementation first.
-  virtual void RunExternalProtocolDialog(const GURL& url);
-
   // Used by sync to get/set the sync id of tab.
   virtual int GetSyncId() const = 0;
   virtual void SetSyncId(int sync_id) = 0;

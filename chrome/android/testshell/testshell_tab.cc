@@ -79,10 +79,6 @@ void TestShellTab::OnNewTabPageReady() {
   NOTIMPLEMENTED();
 }
 
-void TestShellTab::RunExternalProtocolDialog(const GURL& url) {
-  NOTIMPLEMENTED();
-}
-
 void TestShellTab::HandlePopupNavigation(chrome::NavigateParams* params) {
   NOTIMPLEMENTED();
 }

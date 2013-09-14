@@ -64,7 +64,6 @@ class TestShellTab : public TabAndroid {
   virtual bool ShouldWelcomePageLinkToTermsOfService() OVERRIDE;
   virtual void OnNewTabPageReady() OVERRIDE;
 
-  virtual void RunExternalProtocolDialog(const GURL& url) OVERRIDE;
   virtual void HandlePopupNavigation(chrome::NavigateParams* params) OVERRIDE;
   virtual int GetSyncId() const OVERRIDE;
   virtual void SetSyncId(int sync_id) OVERRIDE;

@@ -155,9 +155,6 @@ browser_sync::SyncedTabDelegate* TabAndroid::GetSyncedTabDelegate() const {
   return synced_tab_delegate_.get();
 }
 
-void TabAndroid::RunExternalProtocolDialog(const GURL& url) {
-}
-
 void TabAndroid::SwapTabContents(content::WebContents* old_contents,
                                  content::WebContents* new_contents) {
   JNIEnv* env = base::android::AttachCurrentThread();
