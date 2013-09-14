@@ -589,8 +589,6 @@
         'browser/chromeos/login/user_manager.h',
         'browser/chromeos/login/user_manager_impl.cc',
         'browser/chromeos/login/user_manager_impl.h',
-        'browser/chromeos/login/user_policy_status_manager.cc',
-        'browser/chromeos/login/user_policy_status_manager.h',
         'browser/chromeos/login/version_info_updater.cc',
         'browser/chromeos/login/version_info_updater.h',
         'browser/chromeos/login/wallpaper_manager.cc',
@@ -893,7 +891,7 @@
         ['use_cras==1', {
           'defines': [
             'USE_CRAS',
-          ],
+          ],          
         }],
         ['use_ash==1', {
           'dependencies': [
