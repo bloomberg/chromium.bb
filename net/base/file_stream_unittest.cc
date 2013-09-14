@@ -1136,6 +1136,8 @@ TEST_F(FileStreamTest, AsyncWriteError) {
       new FileStream(file, flags, NULL, base::MessageLoopProxy::current()));
 
   scoped_refptr<IOBuffer> buf = new IOBuffer(1);
+  buf->data()[0] = 0;
+
   TestCompletionCallback callback;
   int rv = stream->Write(buf.get(), 1, callback.callback());
   if (rv == ERR_IO_PENDING)
