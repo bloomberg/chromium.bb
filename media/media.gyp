@@ -548,15 +548,6 @@
             'webm/chromeos/webm_encoder.cc',
             'webm/chromeos/webm_encoder.h',
           ],
-          'defines': [
-            # TODO(jiayl): figure out why MediaStreamInfoBarTest.
-            # DenyingCameraDoesNotCauseStickyDenyForMics fails on ChromeOS and
-            # remove this.
-            'DISABLE_USER_INPUT_MONITOR',
-          ],
-          'sources!': [
-            'base/user_input_monitor_linux.cc',
-          ],
         }],
         ['use_alsa==1', {
           'link_settings': {
@@ -635,8 +626,6 @@
             'audio/cras/cras_input.h',
             'audio/cras/cras_unified.cc',
             'audio/cras/cras_unified.h',
-            'base/keyboard_event_counter.cc',
-            'base/keyboard_event_counter.h',
           ],
         }],
         ['use_pulseaudio==1', {
@@ -830,6 +819,12 @@
             'ENABLE_EAC3_PLAYBACK',
           ],
         }],
+        ['OS!="linux" and OS!="win"', {
+          'sources!': [
+            'base/keyboard_event_counter.cc',
+            'base/keyboard_event_counter.h',
+          ],
+        }],
       ],
     },
     {
@@ -912,6 +907,7 @@
         'base/sinc_resampler_unittest.cc',
         'base/test_data_util.cc',
         'base/test_data_util.h',
+        'base/user_input_monitor_unittest.cc',
         'base/vector_math_testing.h',
         'base/vector_math_unittest.cc',
         'base/video_frame_unittest.cc',
