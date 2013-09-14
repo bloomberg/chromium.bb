@@ -381,11 +381,11 @@
       # Enable FTP support by default.
       'disable_ftp_support%': 0,
 
-      # XInput2 multitouch support is disabled by default (use_xi2_mt=0).
-      # Setting to non-zero value enables XI2 MT. When XI2 MT is enabled,
+      # XInput2 multitouch support is enabled by default (use_xi2_mt=2).
+      # Setting to zero value disables XI2 MT. When XI2 MT is enabled,
       # the input value also defines the required XI2 minor minimum version.
       # For example, use_xi2_mt=2 means XI2.2 or above version is required.
-      'use_xi2_mt%': 0,
+      'use_xi2_mt%': 2,
 
       # Use of precompiled headers on Windows.
       #
