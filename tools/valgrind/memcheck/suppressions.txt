@@ -5914,20 +5914,6 @@
    fun:_ZN10extensionsL9SerializeERKSt6vectorINS_10UserScriptESaIS1_EE
 }
 {
-   bug_178424a
-   Memcheck:Param
-   write(buf)
-   obj:/lib*/libpthread-*.so
-   fun:_ZN3net10FileStream7Context13WriteFileImplE13scoped_refptrINS_8IOBufferEEi
-}
-{
-   bug_178424b
-   Memcheck:Param
-   read(buf)
-   obj:/lib*/libpthread-*.so
-   fun:_ZN3net10FileStream7Context12ReadFileImplE13scoped_refptrINS_8IOBufferEEi
-}
-{
    bug_179758_a
    Memcheck:Leak
    fun:_Znw*

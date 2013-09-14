@@ -174,11 +174,6 @@ void FileStream::Context::RecordError(const IOResult& result,
     return;
   }
 
-  // The following check is against incorrect use or bug. File descriptor
-  // shouldn't ever be closed outside of FileStream while it still tries to do
-  // something with it.
-  DCHECK_NE(result.result, ERR_INVALID_HANDLE);
-
   if (!orphaned_) {
     bound_net_log_.AddEvent(
         NetLog::TYPE_FILE_STREAM_ERROR,

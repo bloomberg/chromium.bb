@@ -1121,42 +1121,54 @@ TEST_F(FileStreamTest, AsyncOpenAndDelete) {
 
 // Verify that async Write() errors are mapped correctly.
 TEST_F(FileStreamTest, AsyncWriteError) {
-  scoped_ptr<FileStream> stream(
-      new FileStream(NULL, base::MessageLoopProxy::current()));
-  int flags = base::PLATFORM_FILE_CREATE_ALWAYS |
-              base::PLATFORM_FILE_WRITE |
-              base::PLATFORM_FILE_ASYNC;
-  TestCompletionCallback callback;
-  int rv = stream->Open(temp_file_path(), flags, callback.callback());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-  EXPECT_EQ(OK, callback.WaitForResult());
+  // Try opening file as read-only and then writing to it using FileStream.
+  base::PlatformFile file = base::CreatePlatformFile(
+      temp_file_path(),
+      base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ |
+          base::PLATFORM_FILE_ASYNC,
+      NULL,
+      NULL);
+  ASSERT_NE(base::kInvalidPlatformFileValue, file);
 
-  // Try passing NULL buffer to Write() and check that it fails.
-  scoped_refptr<IOBuffer> buf = new WrappedIOBuffer(NULL);
-  rv = stream->Write(buf.get(), 1, callback.callback());
+  int flags = base::PLATFORM_FILE_CREATE_ALWAYS | base::PLATFORM_FILE_WRITE |
+              base::PLATFORM_FILE_ASYNC;
+  scoped_ptr<FileStream> stream(
+      new FileStream(file, flags, NULL, base::MessageLoopProxy::current()));
+
+  scoped_refptr<IOBuffer> buf = new IOBuffer(1);
+  TestCompletionCallback callback;
+  int rv = stream->Write(buf.get(), 1, callback.callback());
   if (rv == ERR_IO_PENDING)
     rv = callback.WaitForResult();
   EXPECT_LT(rv, 0);
+
+  base::ClosePlatformFile(file);
 }
 
 // Verify that async Read() errors are mapped correctly.
 TEST_F(FileStreamTest, AsyncReadError) {
-  scoped_ptr<FileStream> stream(
-      new FileStream(NULL, base::MessageLoopProxy::current()));
-  int flags = base::PLATFORM_FILE_OPEN |
-              base::PLATFORM_FILE_READ |
-              base::PLATFORM_FILE_ASYNC;
-  TestCompletionCallback callback;
-  int rv = stream->Open(temp_file_path(), flags, callback.callback());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-  EXPECT_EQ(OK, callback.WaitForResult());
+  // Try opening file for write and then reading from it using FileStream.
+  base::PlatformFile file = base::CreatePlatformFile(
+      temp_file_path(),
+      base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_WRITE |
+          base::PLATFORM_FILE_ASYNC,
+      NULL,
+      NULL);
+  ASSERT_NE(base::kInvalidPlatformFileValue, file);
 
-  // Try passing NULL buffer to Read() and check that it fails.
-  scoped_refptr<IOBuffer> buf = new WrappedIOBuffer(NULL);
-  rv = stream->Read(buf.get(), 1, callback.callback());
+  int flags = base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ |
+              base::PLATFORM_FILE_ASYNC;
+  scoped_ptr<FileStream> stream(
+      new FileStream(file, flags, NULL, base::MessageLoopProxy::current()));
+
+  scoped_refptr<IOBuffer> buf = new IOBuffer(1);
+  TestCompletionCallback callback;
+  int rv = stream->Read(buf.get(), 1, callback.callback());
   if (rv == ERR_IO_PENDING)
     rv = callback.WaitForResult();
   EXPECT_LT(rv, 0);
+
+  base::ClosePlatformFile(file);
 }
 
 }  // namespace
