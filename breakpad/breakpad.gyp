@@ -48,6 +48,8 @@
             'src/processor/stackwalker_amd64.h',
             'src/processor/stackwalker_arm.cc',
             'src/processor/stackwalker_arm.h',
+            'src/processor/stackwalker_mips.cc',
+            'src/processor/stackwalker_mips.h',
             'src/processor/stackwalker_ppc.cc',
             'src/processor/stackwalker_ppc.h',
             'src/processor/stackwalker_ppc64.cc',
