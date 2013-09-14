@@ -3,17 +3,18 @@
 // found in the LICENSE file.
 
 #include "media/video/capture/video_capture_device.h"
+#include "base/strings/string_util.h"
 
 namespace media {
 
 const std::string VideoCaptureDevice::Name::GetNameAndModel() const {
-// On Linux, the device name already includes the model identifier.
-#if !defined(OS_LINUX)
-  std::string model_id = GetModel();
-  if (!model_id.empty())
-    return device_name_ + " (" + model_id + ")";
-#endif  // if !defined(OS_LINUX)
-  return device_name_;
+  const std::string model_id = GetModel();
+  if (model_id.empty())
+    return device_name_;
+  const std::string suffix = " (" + model_id + ")";
+  if (EndsWith(device_name_, suffix, true))  // |true| means case-sensitive.
+    return device_name_;
+  return device_name_ + suffix;
 }
 
 VideoCaptureDevice::Name*

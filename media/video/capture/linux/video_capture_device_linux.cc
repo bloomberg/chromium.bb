@@ -45,10 +45,15 @@ static const int32 kV4l2RawFmts[] = {
   V4L2_PIX_FMT_YUYV
 };
 
-// Linux USB camera devices have names like "UVC Camera (1234:fdcb)"
-static const char kUsbSuffixStart[] = " (";
-static const size_t kUsbModelSize = 9;
-static const char kUsbSuffixEnd[] = ")";
+// USB VID and PID are both 4 bytes long
+static const size_t kVidPidSize = 4;
+
+// /sys/class/video4linux/video{N}/device is a symlink to the corresponding
+// USB device info directory.
+static const char kVidPathTemplate[] =
+    "/sys/class/video4linux/%s/device/../idVendor";
+static const char kPidPathTemplate[] =
+    "/sys/class/video4linux/%s/device/../idProduct";
 
 static VideoPixelFormat V4l2ColorToVideoCaptureColorFormat(
     int32 v4l2_fourcc) {
@@ -136,24 +141,39 @@ void VideoCaptureDevice::GetDeviceNames(Names* device_names) {
   }
 }
 
+static bool ReadIdFile(const std::string path, std::string* id) {
+  char id_buf[kVidPidSize];
+  FILE* file = fopen(path.c_str(), "rb");
+  if (!file)
+    return false;
+  const bool success = fread(id_buf, kVidPidSize, 1, file) == 1;
+  fclose(file);
+  if (!success)
+    return false;
+  id->append(id_buf, kVidPidSize);
+  return true;
+}
+
 const std::string VideoCaptureDevice::Name::GetModel() const {
-  const size_t usb_suffix_start_size = sizeof(kUsbSuffixStart) - 1;
-  const size_t usb_suffix_end_size = sizeof(kUsbSuffixEnd) - 1;
-  const size_t suffix_size =
-      usb_suffix_start_size + kUsbModelSize + usb_suffix_end_size;
-  if (device_name_.length() < suffix_size)
-    return "";
-  const std::string suffix = device_name_.substr(
-      device_name_.length() - suffix_size, suffix_size);
+  // |unique_id| is of the form "/dev/video2".  |file_name| is "video2".
+  const std::string dev_dir = "/dev/";
+  DCHECK_EQ(0, unique_id_.compare(0, dev_dir.length(), dev_dir));
+  const std::string file_name =
+      unique_id_.substr(dev_dir.length(), unique_id_.length());
 
-  int start_compare =
-      suffix.compare(0, usb_suffix_start_size, kUsbSuffixStart);
-  int end_compare = suffix.compare(suffix_size - usb_suffix_end_size,
-      usb_suffix_end_size, kUsbSuffixEnd);
-  if (start_compare != 0 || end_compare != 0)
+  const std::string vidPath =
+      base::StringPrintf(kVidPathTemplate, file_name.c_str());
+  const std::string pidPath =
+      base::StringPrintf(kPidPathTemplate, file_name.c_str());
+
+  std::string usb_id;
+  if (!ReadIdFile(vidPath, &usb_id))
+    return "";
+  usb_id.append(":");
+  if (!ReadIdFile(pidPath, &usb_id))
     return "";
 
-  return suffix.substr(usb_suffix_start_size, kUsbModelSize);
+  return usb_id;
 }
 
 VideoCaptureDevice* VideoCaptureDevice::Create(const Name& device_name) {
