@@ -39,8 +39,7 @@ class NET_EXPORT_PRIVATE ProofVerifierChromium : public ProofVerifier {
   virtual ~ProofVerifierChromium();
 
   // ProofVerifier interface
-  virtual Status VerifyProof(QuicVersion version,
-                             const std::string& hostname,
+  virtual Status VerifyProof(const std::string& hostname,
                              const std::string& server_config,
                              const std::vector<std::string>& certs,
                              const std::string& signature,
@@ -60,8 +59,7 @@ class NET_EXPORT_PRIVATE ProofVerifierChromium : public ProofVerifier {
   int DoVerifyCert(int result);
   int DoVerifyCertComplete(int result);
 
-  bool VerifySignature(QuicVersion version,
-                       const std::string& signed_data,
+  bool VerifySignature(const std::string& signed_data,
                        const std::string& signature,
                        const std::string& cert);
 

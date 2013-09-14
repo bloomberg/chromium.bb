@@ -264,7 +264,6 @@ void QuicCryptoClientStream::DoHandshakeLoop(
         verify_ok_ = false;
 
         ProofVerifier::Status status = verifier->VerifyProof(
-            session()->connection()->version(),
             server_hostname_,
             cached->server_config(),
             cached->certs(),

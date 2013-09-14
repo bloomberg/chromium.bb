@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "net/base/net_export.h"
-#include "net/quic/quic_protocol.h"
 
 namespace net {
 
@@ -27,9 +26,6 @@ class NET_EXPORT_PRIVATE ProofSource {
   // key is RSA.
   //
   // The signature uses SHA-256 as the hash function when the key is ECDSA.
-  //
-  // |version| is the QUIC version for the connection. TODO(wtc): Remove once
-  // QUIC_VERSION_7 and before are removed.
   //
   // If |ecdsa_ok| is true, the signature may use an ECDSA key. Otherwise, the
   // signature must use an RSA key.
@@ -49,8 +45,7 @@ class NET_EXPORT_PRIVATE ProofSource {
   // used.
   //
   // This function may be called concurrently.
-  virtual bool GetProof(QuicVersion version,
-                        const std::string& hostname,
+  virtual bool GetProof(const std::string& hostname,
                         const std::string& server_config,
                         bool ecdsa_ok,
                         const std::vector<std::string>** out_certs,

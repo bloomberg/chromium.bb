@@ -10,7 +10,6 @@
 
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
-#include "net/quic/quic_protocol.h"
 
 namespace net {
 
@@ -71,11 +70,7 @@ class NET_EXPORT_PRIVATE ProofVerifier {
   //
   // The signature uses SHA-256 as the hash function and PSS padding in the
   // case of RSA.
-  //
-  // |version| is the QUIC version for the connection. TODO(wtc): Remove once
-  // QUIC_VERSION_7 and before are removed.
-  virtual Status VerifyProof(QuicVersion version,
-                             const std::string& hostname,
+  virtual Status VerifyProof(const std::string& hostname,
                              const std::string& server_config,
                              const std::vector<std::string>& certs,
                              const std::string& signature,

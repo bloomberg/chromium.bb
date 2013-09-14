@@ -42,7 +42,6 @@ ProofVerifierChromium::~ProofVerifierChromium() {
 }
 
 ProofVerifierChromium::Status ProofVerifierChromium::VerifyProof(
-    QuicVersion version,
     const string& hostname,
     const string& server_config,
     const vector<string>& certs,
@@ -90,7 +89,7 @@ ProofVerifierChromium::Status ProofVerifierChromium::VerifyProof(
 
   // We call VerifySignature first to avoid copying of server_config and
   // signature.
-  if (!VerifySignature(version, server_config, signature, certs[0])) {
+  if (!VerifySignature(server_config, signature, certs[0])) {
     *error_details = "Failed to verify signature of server config";
     DLOG(WARNING) << *error_details;
     verify_details_->cert_verify_result.cert_status = CERT_STATUS_INVALID;
@@ -177,8 +176,7 @@ int ProofVerifierChromium::DoVerifyCertComplete(int result) {
   return result;
 }
 
-bool ProofVerifierChromium::VerifySignature(QuicVersion version,
-                                            const string& signed_data,
+bool ProofVerifierChromium::VerifySignature(const string& signed_data,
                                             const string& signature,
                                             const string& cert) {
   StringPiece spki;
@@ -198,11 +196,9 @@ bool ProofVerifierChromium::VerifySignature(QuicVersion version,
         crypto::SignatureVerifier::SHA256;
     crypto::SignatureVerifier::HashAlgorithm mask_hash_alg = hash_alg;
     unsigned int hash_len = 32;  // 32 is the length of a SHA-256 hash.
-    unsigned int salt_len =
-        version >= QUIC_VERSION_8 ? hash_len : signature.size() - hash_len - 2;
 
     bool ok = verifier.VerifyInitRSAPSS(
-        hash_alg, mask_hash_alg, salt_len,
+        hash_alg, mask_hash_alg, hash_len,
         reinterpret_cast<const uint8*>(signature.data()), signature.size(),
         reinterpret_cast<const uint8*>(spki.data()), spki.size());
     if (!ok) {

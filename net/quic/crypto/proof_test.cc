@@ -25,21 +25,7 @@ using std::vector;
 namespace net {
 namespace test {
 
-class ProofTest : public ::testing::TestWithParam<QuicVersion> {
- protected:
-  ProofTest() {
-    version_ = GetParam();
-  }
-
-  QuicVersion version_;
-};
-
-// Run all ProofTests with QUIC versions 7 and 8.
-INSTANTIATE_TEST_CASE_P(ProofTests,
-                        ProofTest,
-                        ::testing::Values(QUIC_VERSION_7, QUIC_VERSION_8));
-
-TEST_P(ProofTest, Verify) {
+TEST(ProofTest, Verify) {
   // TODO(rtenneti): Enable testing of ProofVerifier.
 #if 0
   scoped_ptr<ProofSource> source(CryptoTestUtils::ProofSourceForTesting());
@@ -53,11 +39,10 @@ TEST_P(ProofTest, Verify) {
   string error_details, signature, first_signature;
   CertVerifyResult cert_verify_result;
 
-  ASSERT_TRUE(source->GetProof(version_, hostname, server_config,
-                               false /* no ECDSA */, &first_certs,
-                               &first_signature));
-  ASSERT_TRUE(source->GetProof(version_, hostname, server_config,
-                               false /* no ECDSA */, &certs, &signature));
+  ASSERT_TRUE(source->GetProof(hostname, server_config, false /* no ECDSA */,
+                               &first_certs, &first_signature));
+  ASSERT_TRUE(source->GetProof(hostname, server_config, false /* no ECDSA */,
+                               &certs, &signature));
 
   // Check that the proof source is caching correctly:
   ASSERT_EQ(first_certs, certs);
@@ -65,23 +50,22 @@ TEST_P(ProofTest, Verify) {
 
   int rv;
   TestCompletionCallback callback;
-  rv = verifier->VerifyProof(version_, hostname, server_config, *certs,
-                             signature, &error_details, &cert_verify_result,
+  rv = verifier->VerifyProof(hostname, server_config, *certs, signature,
+                             &error_details, &cert_verify_result,
                              callback.callback());
   rv = callback.GetResult(rv);
   ASSERT_EQ(OK, rv);
   ASSERT_EQ("", error_details);
   ASSERT_FALSE(IsCertStatusError(cert_verify_result.cert_status));
 
-  rv = verifier->VerifyProof(version_, "foo.com", server_config, *certs,
-                             signature, &error_details, &cert_verify_result,
+  rv = verifier->VerifyProof("foo.com", server_config, *certs, signature,
+                             &error_details, &cert_verify_result,
                              callback.callback());
   rv = callback.GetResult(rv);
   ASSERT_EQ(ERR_FAILED, rv);
   ASSERT_NE("", error_details);
 
-  rv = verifier->VerifyProof(version_, hostname,
-                             server_config.substr(1, string::npos),
+  rv = verifier->VerifyProof(hostname, server_config.substr(1, string::npos),
                              *certs, signature, &error_details,
                              &cert_verify_result, callback.callback());
   rv = callback.GetResult(rv);
@@ -89,7 +73,7 @@ TEST_P(ProofTest, Verify) {
   ASSERT_NE("", error_details);
 
   const string corrupt_signature = "1" + signature;
-  rv = verifier->VerifyProof(version_, hostname, server_config, *certs,
+  rv = verifier->VerifyProof(hostname, server_config, *certs,
                              corrupt_signature, &error_details,
                              &cert_verify_result, callback.callback());
   rv = callback.GetResult(rv);
@@ -100,8 +84,8 @@ TEST_P(ProofTest, Verify) {
   for (size_t i = 1; i < certs->size(); i++) {
     wrong_certs.push_back((*certs)[i]);
   }
-  rv = verifier->VerifyProof(version_, "foo.com", server_config, wrong_certs,
-                             signature, &error_details, &cert_verify_result,
+  rv = verifier->VerifyProof("foo.com", server_config, wrong_certs, signature,
+                             &error_details, &cert_verify_result,
                              callback.callback());
   rv = callback.GetResult(rv);
   ASSERT_EQ(ERR_FAILED, rv);
@@ -138,8 +122,7 @@ class TestProofVerifierCallback : public ProofVerifierCallback {
 
 // RunVerification runs |verifier->VerifyProof| and asserts that the result
 // matches |expected_ok|.
-static void RunVerification(QuicVersion version,
-                            ProofVerifier* verifier,
+static void RunVerification(ProofVerifier* verifier,
                             const std::string& hostname,
                             const std::string& server_config,
                             const vector<std::string>& certs,
@@ -153,7 +136,7 @@ static void RunVerification(QuicVersion version,
       new TestProofVerifierCallback(&comp_callback, &ok, &error_details);
 
   ProofVerifier::Status status = verifier->VerifyProof(
-      version, hostname, server_config, certs, proof, &error_details, &details,
+      hostname, server_config, certs, proof, &error_details, &details,
       callback);
 
   switch (status) {
@@ -185,56 +168,11 @@ static string PEMCertFileToDER(const string& file_name) {
 
 // A known answer test that allows us to test ProofVerifier without a working
 // ProofSource.
-TEST_P(ProofTest, VerifyRSAKnownAnswerTest) {
+TEST(ProofTest, VerifyRSAKnownAnswerTest) {
   // These sample signatures were generated by running the Proof.Verify test
   // and dumping the bytes of the |signature| output of ProofSource::GetProof().
   // sLen = special value -2 used by OpenSSL.
   static const unsigned char signature_data_0[] = {
-    0x4c, 0x68, 0x3c, 0xc2, 0x1f, 0x31, 0x73, 0xa5, 0x29, 0xd3,
-    0x56, 0x75, 0xb1, 0xbf, 0xbd, 0x31, 0x17, 0xfb, 0x2e, 0x24,
-    0xb3, 0xc4, 0x0d, 0xfa, 0x56, 0xb8, 0x65, 0x94, 0x12, 0x38,
-    0x6e, 0xff, 0xb3, 0x10, 0x2e, 0xf8, 0x5c, 0xc1, 0x21, 0x9d,
-    0x29, 0x0c, 0x3a, 0x0a, 0x1a, 0xbf, 0x6b, 0x1c, 0x63, 0x77,
-    0xf7, 0x86, 0xd3, 0xa4, 0x36, 0xf2, 0xb1, 0x6f, 0xac, 0xc3,
-    0x23, 0x8d, 0xda, 0xe6, 0xd5, 0x83, 0xba, 0xdf, 0x28, 0x3e,
-    0x7f, 0x4e, 0x79, 0xfc, 0xba, 0xdb, 0xf7, 0xd0, 0x4b, 0xad,
-    0x79, 0xd0, 0xeb, 0xcf, 0xfa, 0x6e, 0x84, 0x44, 0x7a, 0x26,
-    0xb1, 0x29, 0xa3, 0x08, 0xa8, 0x63, 0xfd, 0xed, 0x85, 0xff,
-    0x9a, 0xe6, 0x79, 0x8b, 0xb6, 0x81, 0x13, 0x2c, 0xde, 0xe2,
-    0xd8, 0x31, 0x29, 0xa4, 0xe0, 0x1b, 0x75, 0x2d, 0x8a, 0xf8,
-    0x27, 0x55, 0xbc, 0xc7, 0x3b, 0x1e, 0xc1, 0x42,
-  };
-  static const unsigned char signature_data_1[] = {
-    0xbb, 0xd1, 0x17, 0x43, 0xf3, 0x42, 0x16, 0xe9, 0xf9, 0x76,
-    0xe6, 0xe3, 0xaa, 0x50, 0x47, 0x5f, 0x93, 0xb6, 0x7d, 0x35,
-    0x03, 0x49, 0x0a, 0x07, 0x61, 0xd5, 0xf1, 0x9c, 0x6b, 0xaf,
-    0xaa, 0xd7, 0x64, 0xe4, 0x0a, 0x0c, 0xab, 0x97, 0xfb, 0x4e,
-    0x5c, 0x14, 0x08, 0xf6, 0xb9, 0xa9, 0x1d, 0xa9, 0xf8, 0x6d,
-    0xb0, 0x2b, 0x2a, 0x0e, 0xc4, 0xd0, 0xd2, 0xe9, 0x96, 0x4f,
-    0x44, 0x70, 0x90, 0x46, 0xb9, 0xd5, 0x89, 0x72, 0xb9, 0xa8,
-    0xe4, 0xfb, 0x88, 0xbc, 0x69, 0x7f, 0xc9, 0xdc, 0x84, 0x87,
-    0x18, 0x21, 0x9b, 0xde, 0x22, 0x33, 0xde, 0x16, 0x3f, 0xe6,
-    0xfd, 0x27, 0x56, 0xd3, 0xa4, 0x97, 0x91, 0x65, 0x1a, 0xe7,
-    0x5e, 0x80, 0x9a, 0xbf, 0xbf, 0x1a, 0x29, 0x8a, 0xbe, 0xa2,
-    0x8c, 0x9c, 0x23, 0xf4, 0xcb, 0xba, 0x79, 0x31, 0x28, 0xab,
-    0x77, 0x94, 0x92, 0xb2, 0xc2, 0x35, 0xb2, 0xfa,
-  };
-  static const unsigned char signature_data_2[] = {
-    0x7e, 0x17, 0x01, 0xcb, 0x76, 0x9e, 0x9f, 0xce, 0xeb, 0x66,
-    0x3e, 0xaa, 0xc9, 0x36, 0x5b, 0x7e, 0x48, 0x25, 0x99, 0xf8,
-    0x0d, 0xe1, 0xa8, 0x48, 0x93, 0x3c, 0xe8, 0x97, 0x2e, 0x98,
-    0xd6, 0x73, 0x0f, 0xd0, 0x74, 0x9c, 0x17, 0xef, 0xee, 0xf8,
-    0x0e, 0x2a, 0x27, 0x3f, 0xc6, 0x55, 0xc6, 0xb9, 0xfe, 0x17,
-    0xcc, 0xeb, 0x5d, 0xa1, 0xdc, 0xbd, 0x64, 0xd9, 0x5e, 0xec,
-    0x57, 0x9d, 0xc3, 0xdc, 0x11, 0xbf, 0x23, 0x02, 0x58, 0xc4,
-    0xf1, 0x18, 0xc1, 0x6f, 0x3f, 0xef, 0x18, 0x4d, 0xa6, 0x1e,
-    0xe8, 0x25, 0x32, 0x8f, 0x92, 0x1e, 0xad, 0xbc, 0xbe, 0xde,
-    0x83, 0x2a, 0x92, 0xd5, 0x59, 0x6f, 0xe4, 0x95, 0x6f, 0xe6,
-    0xb1, 0xf9, 0xaf, 0x3f, 0xdb, 0x69, 0x6f, 0xae, 0xa6, 0x36,
-    0xd2, 0x50, 0x81, 0x78, 0x41, 0x13, 0x2c, 0x65, 0x9c, 0x9e,
-    0xf4, 0xd2, 0xd5, 0x58, 0x5b, 0x8b, 0x87, 0xcf,
-  };
-  static const unsigned char signature_data_4[] = {
     0x9e, 0xe6, 0x74, 0x3b, 0x8f, 0xb8, 0x66, 0x77, 0x57, 0x09,
     0x8a, 0x04, 0xe9, 0xf0, 0x7c, 0x91, 0xa9, 0x5c, 0xe9, 0xdf,
     0x12, 0x4d, 0x23, 0x82, 0x8c, 0x29, 0x72, 0x7f, 0xc2, 0x20,
@@ -249,7 +187,7 @@ TEST_P(ProofTest, VerifyRSAKnownAnswerTest) {
     0x78, 0xc8, 0x8b, 0xf5, 0xb9, 0x36, 0x5d, 0x72, 0x1f, 0xfc,
     0x14, 0xff, 0xa7, 0x81, 0x27, 0x49, 0xae, 0xe1,
   };
-  static const unsigned char signature_data_5[] = {
+  static const unsigned char signature_data_1[] = {
     0x5e, 0xc2, 0xab, 0x6b, 0x16, 0xe6, 0x55, 0xf3, 0x16, 0x46,
     0x35, 0xdc, 0xcc, 0xde, 0xd0, 0xbd, 0x6c, 0x66, 0xb2, 0x3d,
     0xd3, 0x14, 0x78, 0xed, 0x47, 0x55, 0xfb, 0xdb, 0xe1, 0x7d,
@@ -264,7 +202,7 @@ TEST_P(ProofTest, VerifyRSAKnownAnswerTest) {
     0xaf, 0x6b, 0x47, 0xbc, 0x16, 0x55, 0x37, 0x0a, 0xbe, 0x0e,
     0xc5, 0x75, 0x3f, 0x3d, 0x8e, 0xe8, 0x44, 0xe3,
   };
-  static const unsigned char signature_data_6[] = {
+  static const unsigned char signature_data_2[] = {
     0x8e, 0x5c, 0x78, 0x63, 0x74, 0x99, 0x2e, 0x96, 0xc0, 0x14,
     0x8d, 0xb5, 0x13, 0x74, 0xa3, 0xa4, 0xe0, 0x43, 0x3e, 0x85,
     0xba, 0x8f, 0x3c, 0x5e, 0x14, 0x64, 0x0e, 0x5e, 0xff, 0x89,
@@ -295,52 +233,41 @@ TEST_P(ProofTest, VerifyRSAKnownAnswerTest) {
   // Signatures are nondeterministic, so we test multiple signatures on the
   // same server_config.
   vector<string> signatures(3);
-  if (version_ < QUIC_VERSION_8) {
-    signatures[0].assign(reinterpret_cast<const char*>(signature_data_0),
-                         sizeof(signature_data_0));
-    signatures[1].assign(reinterpret_cast<const char*>(signature_data_1),
-                         sizeof(signature_data_1));
-    signatures[2].assign(reinterpret_cast<const char*>(signature_data_2),
-                         sizeof(signature_data_2));
-  } else {
-    signatures[0].assign(reinterpret_cast<const char*>(signature_data_4),
-                         sizeof(signature_data_4));
-    signatures[1].assign(reinterpret_cast<const char*>(signature_data_5),
-                         sizeof(signature_data_5));
-    signatures[2].assign(reinterpret_cast<const char*>(signature_data_6),
-                         sizeof(signature_data_6));
-  }
+  signatures[0].assign(reinterpret_cast<const char*>(signature_data_0),
+                       sizeof(signature_data_0));
+  signatures[1].assign(reinterpret_cast<const char*>(signature_data_1),
+                       sizeof(signature_data_1));
+  signatures[2].assign(reinterpret_cast<const char*>(signature_data_2),
+                       sizeof(signature_data_2));
 
   for (size_t i = 0; i < signatures.size(); i++) {
     const string& signature = signatures[i];
 
     RunVerification(
-        version_, verifier.get(), hostname, server_config, certs, signature,
-        true);
+        verifier.get(), hostname, server_config, certs, signature, true);
     RunVerification(
-        version_, verifier.get(), "foo.com", server_config, certs, signature,
-        false);
+        verifier.get(), "foo.com", server_config, certs, signature, false);
     RunVerification(
-        version_, verifier.get(), hostname,
-        server_config.substr(1, string::npos), certs, signature, false);
+        verifier.get(), hostname, server_config.substr(1, string::npos),
+        certs, signature, false);
 
     const string corrupt_signature = "1" + signature;
     RunVerification(
-        version_, verifier.get(), hostname, server_config, certs,
-        corrupt_signature, false);
+        verifier.get(), hostname, server_config, certs, corrupt_signature,
+        false);
 
     vector<string> wrong_certs;
     for (size_t i = 1; i < certs.size(); i++) {
       wrong_certs.push_back(certs[i]);
     }
-    RunVerification(version_, verifier.get(), hostname, server_config,
-                    wrong_certs, signature, false);
+    RunVerification(verifier.get(), hostname, server_config, wrong_certs,
+                    signature, false);
   }
 }
 
 // A known answer test that allows us to test ProofVerifier without a working
 // ProofSource.
-TEST_P(ProofTest, VerifyECDSAKnownAnswerTest) {
+TEST(ProofTest, VerifyECDSAKnownAnswerTest) {
   // Disable this test on platforms that do not support ECDSA certificates.
 #if defined(OS_WIN)
   if (base::win::GetVersion() < base::win::VERSION_VISTA)
@@ -406,36 +333,34 @@ TEST_P(ProofTest, VerifyECDSAKnownAnswerTest) {
     const string& signature = signatures[i];
 
     RunVerification(
-        version_, verifier.get(), hostname, server_config, certs, signature,
-        true);
+        verifier.get(), hostname, server_config, certs, signature, true);
     RunVerification(
-        version_, verifier.get(), "foo.com", server_config, certs, signature,
-        false);
+        verifier.get(), "foo.com", server_config, certs, signature, false);
     RunVerification(
-        version_, verifier.get(), hostname,
-        server_config.substr(1, string::npos), certs, signature, false);
+        verifier.get(), hostname, server_config.substr(1, string::npos),
+        certs, signature, false);
 
     // An ECDSA signature is DER-encoded. Corrupt the last byte so that the
     // signature can still be DER-decoded correctly.
     string corrupt_signature = signature;
     corrupt_signature[corrupt_signature.size() - 1] += 1;
     RunVerification(
-        version_, verifier.get(), hostname, server_config, certs,
-        corrupt_signature, false);
+        verifier.get(), hostname, server_config, certs, corrupt_signature,
+        false);
 
     // Prepending a "1" makes the DER invalid.
     const string bad_der_signature1 = "1" + signature;
     RunVerification(
-        version_, verifier.get(), hostname, server_config, certs,
-        bad_der_signature1, false);
+        verifier.get(), hostname, server_config, certs, bad_der_signature1,
+        false);
 
     vector<string> wrong_certs;
     for (size_t i = 1; i < certs.size(); i++) {
       wrong_certs.push_back(certs[i]);
     }
     RunVerification(
-        version_, verifier.get(), hostname, server_config, wrong_certs,
-        signature, false);
+        verifier.get(), hostname, server_config, wrong_certs, signature,
+        false);
   }
 }
 

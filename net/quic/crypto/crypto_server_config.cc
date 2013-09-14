@@ -306,7 +306,6 @@ struct ClientHelloInfo {
 
 QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
     const CryptoHandshakeMessage& client_hello,
-    QuicVersion version,
     QuicGuid guid,
     const IPEndPoint& client_ip,
     const QuicClock* clock,
@@ -361,8 +360,7 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
       !info.client_nonce_well_formed ||
       !info.unique ||
       !requested_config.get()) {
-    BuildRejection(version, primary_config.get(), client_hello, info, rand,
-                   out);
+    BuildRejection(primary_config.get(), client_hello, info, rand, out);
     return QUIC_NO_ERROR;
   }
 
@@ -668,7 +666,6 @@ QuicErrorCode QuicCryptoServerConfig::EvaluateClientHello(
 }
 
 void QuicCryptoServerConfig::BuildRejection(
-    QuicVersion version,
     const scoped_refptr<Config>& config,
     const CryptoHandshakeMessage& client_hello,
     const ClientHelloInfo& info,
@@ -712,9 +709,8 @@ void QuicCryptoServerConfig::BuildRejection(
 
   const vector<string>* certs;
   string signature;
-  if (!proof_source_->GetProof(version, info.sni.as_string(),
-                               config->serialized, x509_ecdsa_supported,
-                               &certs, &signature)) {
+  if (!proof_source_->GetProof(info.sni.as_string(), config->serialized,
+                               x509_ecdsa_supported, &certs, &signature)) {
     return;
   }
 

@@ -189,7 +189,6 @@ enum QuicVersion {
   // Special case to indicate unknown/unsupported QUIC version.
   QUIC_VERSION_UNSUPPORTED = 0,
 
-  QUIC_VERSION_7 = 7,
   QUIC_VERSION_8 = 8,
   QUIC_VERSION_9 = 9,
   QUIC_VERSION_10 = 10,  // Current version.

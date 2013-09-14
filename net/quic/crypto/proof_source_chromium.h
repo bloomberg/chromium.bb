@@ -23,8 +23,7 @@ class NET_EXPORT_PRIVATE ProofSourceChromium : public ProofSource {
   virtual ~ProofSourceChromium() {}
 
   // ProofSource interface
-  virtual bool GetProof(QuicVersion version,
-                        const std::string& hostname,
+  virtual bool GetProof(const std::string& hostname,
                         const std::string& server_config,
                         bool ecdsa_ok,
                         const std::vector<std::string>** out_certs,
