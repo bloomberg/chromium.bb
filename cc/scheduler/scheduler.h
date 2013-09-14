@@ -129,7 +129,6 @@ class CC_EXPORT Scheduler {
 
   base::WeakPtrFactory<Scheduler> weak_factory_;
   bool last_set_needs_begin_frame_;
-  bool has_pending_begin_frame_;
   BeginFrameArgs last_begin_frame_args_;
   base::CancelableClosure poll_for_draw_triggers_closure_;
 

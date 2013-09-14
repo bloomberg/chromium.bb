@@ -39,7 +39,7 @@ OutputSurface::OutputSurface(scoped_refptr<ContextProvider> context_provider)
       max_frames_pending_(0),
       pending_swap_buffers_(0),
       needs_begin_frame_(false),
-      begin_frame_pending_(false),
+      client_ready_for_begin_frame_(true),
       client_(NULL),
       check_for_retroactive_begin_frame_pending_(false),
       external_stencil_test_enabled_(false) {}
@@ -54,7 +54,7 @@ OutputSurface::OutputSurface(
       max_frames_pending_(0),
       pending_swap_buffers_(0),
       needs_begin_frame_(false),
-      begin_frame_pending_(false),
+      client_ready_for_begin_frame_(true),
       client_(NULL),
       check_for_retroactive_begin_frame_pending_(false),
       external_stencil_test_enabled_(false) {}
@@ -71,7 +71,7 @@ OutputSurface::OutputSurface(
       max_frames_pending_(0),
       pending_swap_buffers_(0),
       needs_begin_frame_(false),
-      begin_frame_pending_(false),
+      client_ready_for_begin_frame_(true),
       client_(NULL),
       check_for_retroactive_begin_frame_pending_(false),
       external_stencil_test_enabled_(false) {}
@@ -133,7 +133,7 @@ void OutputSurface::SetNeedsRedrawRect(gfx::Rect damage_rect) {
 void OutputSurface::SetNeedsBeginFrame(bool enable) {
   TRACE_EVENT1("cc", "OutputSurface::SetNeedsBeginFrame", "enable", enable);
   needs_begin_frame_ = enable;
-  begin_frame_pending_ = false;
+  client_ready_for_begin_frame_ = true;
   if (frame_rate_controller_) {
     BeginFrameArgs skipped = frame_rate_controller_->SetActive(enable);
     if (skipped.IsValid())
@@ -145,14 +145,14 @@ void OutputSurface::SetNeedsBeginFrame(bool enable) {
 
 void OutputSurface::BeginFrame(const BeginFrameArgs& args) {
   TRACE_EVENT2("cc", "OutputSurface::BeginFrame",
-               "begin_frame_pending_", begin_frame_pending_,
+               "client_ready_for_begin_frame_", client_ready_for_begin_frame_,
                "pending_swap_buffers_", pending_swap_buffers_);
-  if (!needs_begin_frame_ || begin_frame_pending_ ||
+  if (!needs_begin_frame_ || !client_ready_for_begin_frame_ ||
       (pending_swap_buffers_ >= max_frames_pending_ &&
        max_frames_pending_ > 0)) {
     skipped_begin_frame_args_ = args;
   } else {
-    begin_frame_pending_ = true;
+    client_ready_for_begin_frame_ = false;
     client_->BeginFrame(args);
     // args might be an alias for skipped_begin_frame_args_.
     // Do not reset it before calling BeginFrame!
@@ -192,7 +192,6 @@ void OutputSurface::CheckForRetroactiveBeginFrame() {
 }
 
 void OutputSurface::DidSwapBuffers() {
-  begin_frame_pending_ = false;
   pending_swap_buffers_++;
   TRACE_EVENT1("cc", "OutputSurface::DidSwapBuffers",
                "pending_swap_buffers_", pending_swap_buffers_);
@@ -213,7 +212,7 @@ void OutputSurface::OnSwapBuffersComplete(const CompositorFrameAck* ack) {
 
 void OutputSurface::DidLoseOutputSurface() {
   TRACE_EVENT0("cc", "OutputSurface::DidLoseOutputSurface");
-  begin_frame_pending_ = false;
+  client_ready_for_begin_frame_ = true;
   pending_swap_buffers_ = 0;
   client_->DidLoseOutputSurface();
 }

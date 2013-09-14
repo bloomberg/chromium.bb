@@ -209,7 +209,7 @@ TEST(SchedulerTest, RequestCommit) {
   scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client, 0, 2);
   EXPECT_ACTION("SetNeedsBeginFrameOnImplThread", client, 1, 2);
-  EXPECT_FALSE(client.needs_begin_frame());
+  EXPECT_TRUE(client.needs_begin_frame());
   client.Reset();
 }
 
@@ -240,15 +240,26 @@ TEST(SchedulerTest, RequestCommitAfterBeginFrameSentToMainThread) {
   client.Reset();
 
   // Tick should draw but then begin another frame for the second commit.
+  // Because we just swapped, the Scheduler should also request the next
+  // BeginFrame from the OutputSurface.
   scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_TRUE(client.needs_begin_frame());
-  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client, 0, 2);
-  EXPECT_ACTION("ScheduledActionSendBeginFrameToMainThread", client, 1, 2);
+  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client, 0, 3);
+  EXPECT_ACTION("ScheduledActionSendBeginFrameToMainThread", client, 1, 3);
+  EXPECT_ACTION("SetNeedsBeginFrameOnImplThread", client, 2, 3);
   client.Reset();
 
-  // Finish the second commit to go back to quiescent state and verify we no
-  // longer request BeginFrames.
+  // Finish the second commit.
   scheduler->FinishCommit();
+  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
+  EXPECT_ACTION("ScheduledActionCommit", client, 0, 3);
+  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client, 1, 3);
+  EXPECT_ACTION("SetNeedsBeginFrameOnImplThread", client, 2, 3);
+  EXPECT_TRUE(client.needs_begin_frame());
+  client.Reset();
+
+  // On the next BeginFrame, verify we go back to a quiescent state and
+  // no longer request BeginFrames.
   scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_FALSE(client.needs_begin_frame());
 }
@@ -273,6 +284,12 @@ TEST(SchedulerTest, TextureAcquisitionCausesCommitInsteadOfDraw) {
   scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client, 0, 2);
   EXPECT_ACTION("SetNeedsBeginFrameOnImplThread", client, 1, 2);
+  EXPECT_FALSE(scheduler->RedrawPending());
+  EXPECT_TRUE(client.needs_begin_frame());
+
+  client.Reset();
+  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
+  EXPECT_SINGLE_ACTION("SetNeedsBeginFrameOnImplThread", client);
   EXPECT_FALSE(scheduler->RedrawPending());
   EXPECT_FALSE(client.needs_begin_frame());
 
@@ -313,8 +330,13 @@ TEST(SchedulerTest, TextureAcquisitionCausesCommitInsteadOfDraw) {
   EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client, 0, 2);
   EXPECT_ACTION("SetNeedsBeginFrameOnImplThread", client, 1, 2);
   EXPECT_FALSE(scheduler->RedrawPending());
-  EXPECT_FALSE(client.needs_begin_frame());
+  EXPECT_TRUE(client.needs_begin_frame());
+
+  // Make sure we stop requesting BeginFrames if we don't swap.
   client.Reset();
+  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
+  EXPECT_SINGLE_ACTION("SetNeedsBeginFrameOnImplThread", client);
+  EXPECT_FALSE(client.needs_begin_frame());
 }
 
 TEST(SchedulerTest, TextureAcquisitionCollision) {
@@ -361,11 +383,15 @@ TEST(SchedulerTest, TextureAcquisitionCollision) {
                 1,
                 3);
   EXPECT_ACTION("SetNeedsBeginFrameOnImplThread", client, 2, 3);
+  EXPECT_TRUE(client.needs_begin_frame());
   client.Reset();
 
   // Compositor not scheduled to draw because textures are locked by main
   // thread.
+  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
+  EXPECT_SINGLE_ACTION("SetNeedsBeginFrameOnImplThread", client);
   EXPECT_FALSE(client.needs_begin_frame());
+  client.Reset();
 
   // Needs an explicit commit from the main thread.
   scheduler->SetNeedsCommit();
@@ -375,7 +401,16 @@ TEST(SchedulerTest, TextureAcquisitionCollision) {
 
   // Trigger the commit
   scheduler->FinishCommit();
+  EXPECT_SINGLE_ACTION("ScheduledActionCommit", client);
   EXPECT_TRUE(client.needs_begin_frame());
+  client.Reset();
+
+  // Verify we draw on the next BeginFrame.
+  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
+  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client, 0, 2);
+  EXPECT_ACTION("SetNeedsBeginFrameOnImplThread", client, 1, 2);
+  EXPECT_TRUE(client.needs_begin_frame());
+  client.Reset();
 }
 
 TEST(SchedulerTest, VisibilitySwitchWithTextureAcquisition) {
@@ -463,6 +498,12 @@ TEST(SchedulerTest, RequestRedrawInsideDraw) {
   EXPECT_TRUE(scheduler->RedrawPending());
   EXPECT_TRUE(client.needs_begin_frame());
 
+  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
+  EXPECT_EQ(2, client.num_draws());
+  EXPECT_FALSE(scheduler->RedrawPending());
+  EXPECT_TRUE(client.needs_begin_frame());
+
+  // We stop requesting BeginFrames after a BeginFrame where we don't swap.
   scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_EQ(2, client.num_draws());
   EXPECT_FALSE(scheduler->RedrawPending());
@@ -573,6 +614,13 @@ TEST(SchedulerTest, RequestCommitInsideDraw) {
 
   scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_EQ(2, client.num_draws());;
+  EXPECT_FALSE(scheduler->RedrawPending());
+  EXPECT_FALSE(scheduler->CommitPending());
+  EXPECT_TRUE(client.needs_begin_frame());
+
+  // We stop requesting BeginFrames after a BeginFrame where we don't swap.
+  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
+  EXPECT_EQ(2, client.num_draws());
   EXPECT_FALSE(scheduler->RedrawPending());
   EXPECT_FALSE(scheduler->CommitPending());
   EXPECT_FALSE(client.needs_begin_frame());
@@ -755,6 +803,12 @@ TEST(SchedulerTest, ManageTiles) {
             client.ActionIndex("ScheduledActionManageTiles"));
   EXPECT_FALSE(scheduler->RedrawPending());
   EXPECT_FALSE(scheduler->ManageTilesPending());
+
+  // We need a BeginFrame where we don't swap to go idle.
+  client.Reset();
+  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
+  EXPECT_SINGLE_ACTION("SetNeedsBeginFrameOnImplThread", client);
+  EXPECT_EQ(0, client.num_draws());
 
   // Now trigger a ManageTiles outside of a draw. We will then need
   // a begin-frame for the ManageTiles, but we don't need a draw.

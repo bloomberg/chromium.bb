@@ -210,8 +210,10 @@ TEST(OutputSurfaceTest, BeginFrameEmulation) {
   EXPECT_EQ(client.begin_frame_count(), 1);
   EXPECT_EQ(output_surface.pending_swap_buffers(), 0);
 
-  // DidSwapBuffers should clear the pending BeginFrame.
+  // SetNeedsBeginFrame should clear the pending BeginFrame after
+  // a SwapBuffers.
   output_surface.DidSwapBuffersForTesting();
+  output_surface.SetNeedsBeginFrame(true);
   EXPECT_EQ(client.begin_frame_count(), 1);
   EXPECT_EQ(output_surface.pending_swap_buffers(), 1);
   task_runner->RunPendingTasks();
@@ -220,6 +222,7 @@ TEST(OutputSurfaceTest, BeginFrameEmulation) {
 
   // BeginFrame should be throttled by pending swap buffers.
   output_surface.DidSwapBuffersForTesting();
+  output_surface.SetNeedsBeginFrame(true);
   EXPECT_EQ(client.begin_frame_count(), 2);
   EXPECT_EQ(output_surface.pending_swap_buffers(), 2);
   task_runner->RunPendingTasks();
@@ -284,12 +287,14 @@ TEST(OutputSurfaceTest, OptimisticAndRetroactiveBeginFrames) {
   output_surface.BeginFrameForTesting();
   EXPECT_EQ(client.begin_frame_count(), 2);
   output_surface.DidSwapBuffersForTesting();
+  output_surface.SetNeedsBeginFrame(true);
   EXPECT_EQ(client.begin_frame_count(), 3);
   EXPECT_EQ(output_surface.pending_swap_buffers(), 1);
 
   // Optimistically injected BeginFrames should be by throttled by pending
   // swap buffers...
   output_surface.DidSwapBuffersForTesting();
+  output_surface.SetNeedsBeginFrame(true);
   EXPECT_EQ(client.begin_frame_count(), 3);
   EXPECT_EQ(output_surface.pending_swap_buffers(), 2);
   output_surface.BeginFrameForTesting();

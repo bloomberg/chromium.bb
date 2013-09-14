@@ -769,6 +769,13 @@ bool SchedulerStateMachine::ProactiveBeginFrameWantedByImplThread() const {
   if (needs_manage_tiles_)
     return true;
 
+  // If we just swapped, it's likely that we are going to produce another
+  // frame soon. This helps avoid negative glitches in our SetNeedsBeginFrame
+  // requests, which may propagate to the BeginFrame provider and get sampled
+  // at an inopportune time, delaying the next BeginFrame.
+  if (last_frame_number_swap_performed_ == current_frame_number_)
+    return true;
+
   return false;
 }
 
