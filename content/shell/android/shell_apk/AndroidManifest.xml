@@ -14,7 +14,7 @@
 
     <application android:name="ContentShellApplication"
             android:icon="@mipmap/app_icon"
-            android:label="ContentShell">
+            android:label="Content Shell">
         <activity android:name="ContentShellActivity"
                   android:launchMode="singleTask"
                   android:theme="@android:style/Theme.Holo.Light.NoActionBar"
