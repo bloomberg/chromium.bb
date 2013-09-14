@@ -42,6 +42,7 @@ class SchedulerClient {
   virtual void ScheduledActionActivatePendingTree() = 0;
   virtual void ScheduledActionBeginOutputSurfaceCreation() = 0;
   virtual void ScheduledActionAcquireLayerTexturesForMainThread() = 0;
+  virtual void ScheduledActionManageTiles() = 0;
   virtual void DidAnticipatedDrawTimeChange(base::TimeTicks time) = 0;
   virtual base::TimeDelta DrawDurationEstimate() = 0;
   virtual base::TimeDelta BeginFrameToCommitDurationEstimate() = 0;
@@ -75,6 +76,8 @@ class CC_EXPORT Scheduler {
 
   void SetNeedsRedraw();
 
+  void SetNeedsManageTiles();
+
   void SetMainThreadNeedsLayerTextures();
 
   void SetSwapUsedIncompleteTile(bool used_incomplete_tile);
@@ -90,6 +93,9 @@ class CC_EXPORT Scheduler {
 
   bool CommitPending() const { return state_machine_.CommitPending(); }
   bool RedrawPending() const { return state_machine_.RedrawPending(); }
+  bool ManageTilesPending() const {
+    return state_machine_.ManageTilesPending();
+  }
 
   bool WillDrawIfNeeded() const;
 
@@ -102,6 +108,10 @@ class CC_EXPORT Scheduler {
 
   scoped_ptr<base::Value> StateAsValue() {
     return state_machine_.AsValue().Pass();
+  }
+
+  bool IsInsideAction(SchedulerStateMachine::Action action) {
+    return inside_action_ == action;
   }
 
  private:
@@ -125,6 +135,7 @@ class CC_EXPORT Scheduler {
 
   SchedulerStateMachine state_machine_;
   bool inside_process_scheduled_actions_;
+  SchedulerStateMachine::Action inside_action_;
 
   DISALLOW_COPY_AND_ASSIGN(Scheduler);
 };

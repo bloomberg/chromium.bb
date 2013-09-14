@@ -87,6 +87,7 @@ class CC_EXPORT SchedulerStateMachine {
   }
 
   bool RedrawPending() const { return needs_redraw_; }
+  bool ManageTilesPending() const { return needs_manage_tiles_; }
 
   enum Action {
     ACTION_NONE,
@@ -100,6 +101,7 @@ class CC_EXPORT SchedulerStateMachine {
     ACTION_DRAW_AND_READBACK,
     ACTION_BEGIN_OUTPUT_SURFACE_CREATION,
     ACTION_ACQUIRE_LAYER_TEXTURES_FOR_MAIN_THREAD,
+    ACTION_MANAGE_TILES,
   };
   static const char* ActionToString(Action action);
 
@@ -124,7 +126,11 @@ class CC_EXPORT SchedulerStateMachine {
   // PollForAnticipatedDrawTriggers is used by the synchronous compositor to
   // avoid requesting BeginImplFrames when we won't actually draw but still
   // need to advance our state at vsync intervals.
-  void PollForAnticipatedDrawTriggers();
+  void DidEnterPollForAnticipatedDrawTriggers();
+  void DidLeavePollForAnticipatedDrawTriggers();
+  bool inside_poll_for_anticipated_draw_triggers() const {
+    return inside_poll_for_anticipated_draw_triggers_;
+  }
 
   // Indicates whether the LayerTreeHostImpl is visible.
   void SetVisible(bool visible);
@@ -132,6 +138,10 @@ class CC_EXPORT SchedulerStateMachine {
   // Indicates that a redraw is required, either due to the impl tree changing
   // or the screen being damaged and simply needing redisplay.
   void SetNeedsRedraw();
+
+  // Indicates that manage-tiles is required. This guarantees another
+  // ManageTiles will occur shortly (even if no redraw is required).
+  void SetNeedsManageTiles();
 
   // Indicates whether a redraw is required because we are currently rendering
   // with a low resolution or checkerboarded tile.
@@ -202,15 +212,18 @@ class CC_EXPORT SchedulerStateMachine {
   bool ShouldUpdateVisibleTiles() const;
   bool ShouldSendBeginFrameToMainThread() const;
   bool ShouldCommit() const;
+  bool ShouldManageTiles() const;
 
   bool HasDrawnAndSwappedThisFrame() const;
   bool HasActivatedPendingTreeThisFrame() const;
   bool HasUpdatedVisibleTilesThisFrame() const;
   bool HasSentBeginFrameToMainThreadThisFrame() const;
+  bool HasScheduledManageTilesThisFrame() const;
 
   void UpdateStateOnCommit(bool commit_was_aborted);
   void UpdateStateOnActivation();
   void UpdateStateOnDraw(bool did_swap);
+  void UpdateStateOnManageTiles();
 
   const SchedulerSettings settings_;
 
@@ -227,10 +240,13 @@ class CC_EXPORT SchedulerStateMachine {
   int last_frame_number_where_update_visible_tiles_was_called_;
   int consecutive_failed_draws_;
   bool needs_redraw_;
+  bool needs_manage_tiles_;
   bool swap_used_incomplete_tile_;
   bool needs_commit_;
   bool main_thread_needs_layer_textures_;
   bool inside_begin_frame_;
+  bool inside_poll_for_anticipated_draw_triggers_;
+
   BeginFrameArgs last_begin_frame_args_;
   bool visible_;
   bool can_start_;

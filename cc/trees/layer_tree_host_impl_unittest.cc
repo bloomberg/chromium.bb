@@ -77,6 +77,7 @@ class LayerTreeHostImplTest : public testing::Test,
         did_notify_ready_to_activate_(false),
         did_request_commit_(false),
         did_request_redraw_(false),
+        did_request_manage_tiles_(false),
         did_upload_visible_tile_(false),
         did_lose_output_surface_(false),
         reduce_memory_result_(true),
@@ -119,6 +120,9 @@ class LayerTreeHostImplTest : public testing::Test,
   }
   virtual void SetNeedsRedrawRectOnImplThread(gfx::Rect damage_rect) OVERRIDE {
     did_request_redraw_ = true;
+  }
+  virtual void SetNeedsManageTilesOnImplThread() OVERRIDE {
+    did_request_manage_tiles_ = true;
   }
   virtual void DidInitializeVisibleTileOnImplThread() OVERRIDE {
     did_upload_visible_tile_ = true;
@@ -360,6 +364,7 @@ class LayerTreeHostImplTest : public testing::Test,
   bool did_notify_ready_to_activate_;
   bool did_request_commit_;
   bool did_request_redraw_;
+  bool did_request_manage_tiles_;
   bool did_upload_visible_tile_;
   bool did_lose_output_surface_;
   bool reduce_memory_result_;
@@ -6526,7 +6531,7 @@ class LayerTreeHostImplTestManageTiles : public LayerTreeHostImplTest {
 };
 
 TEST_F(LayerTreeHostImplTestManageTiles, ManageTilesWhenInvisible) {
-  fake_host_impl_->SetNeedsManageTiles();
+  fake_host_impl_->DidModifyTilePriorities();
   EXPECT_TRUE(fake_host_impl_->manage_tiles_needed());
   fake_host_impl_->SetVisible(false);
   EXPECT_FALSE(fake_host_impl_->manage_tiles_needed());

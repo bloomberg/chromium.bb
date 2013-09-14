@@ -602,8 +602,8 @@ void LayerTreeImpl::ClearLatencyInfo() {
   latency_info_.Clear();
 }
 
-void LayerTreeImpl::WillModifyTilePriorities() {
-  layer_tree_host_impl_->SetNeedsManageTiles();
+void LayerTreeImpl::DidModifyTilePriorities() {
+  layer_tree_host_impl_->DidModifyTilePriorities();
 }
 
 void LayerTreeImpl::set_ui_resource_request_queue(

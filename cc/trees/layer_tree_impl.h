@@ -201,7 +201,7 @@ class CC_EXPORT LayerTreeImpl {
   const ui::LatencyInfo& GetLatencyInfo();
   void ClearLatencyInfo();
 
-  void WillModifyTilePriorities();
+  void DidModifyTilePriorities();
 
   ResourceProvider::ResourceId ResourceIdForUIResource(UIResourceId uid) const;
   void ProcessUIResourceRequestQueue();

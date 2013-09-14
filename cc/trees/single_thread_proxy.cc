@@ -287,6 +287,11 @@ void SingleThreadProxy::SetNeedsRedrawOnImplThread() {
   layer_tree_host_->ScheduleComposite();
 }
 
+void SingleThreadProxy::SetNeedsManageTilesOnImplThread() {
+  // Thread-only/Impl-side-painting-only feature.
+  NOTREACHED();
+}
+
 void SingleThreadProxy::SetNeedsRedrawRectOnImplThread(gfx::Rect damage_rect) {
   // TODO(brianderson): Once we move render_widget scheduling into this class,
   // we can treat redraw requests more efficiently than CommitAndRedraw

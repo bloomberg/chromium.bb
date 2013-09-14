@@ -74,6 +74,7 @@ class ThreadProxy : public Proxy,
   virtual void NotifyReadyToActivate() OVERRIDE;
   virtual void SetNeedsRedrawOnImplThread() OVERRIDE;
   virtual void SetNeedsRedrawRectOnImplThread(gfx::Rect dirty_rect) OVERRIDE;
+  virtual void SetNeedsManageTilesOnImplThread() OVERRIDE;
   virtual void DidInitializeVisibleTileOnImplThread() OVERRIDE;
   virtual void SetNeedsCommitOnImplThread() OVERRIDE;
   virtual void PostAnimationEventsToMainThreadOnImplThread(
@@ -102,6 +103,7 @@ class ThreadProxy : public Proxy,
   virtual void ScheduledActionActivatePendingTree() OVERRIDE;
   virtual void ScheduledActionBeginOutputSurfaceCreation() OVERRIDE;
   virtual void ScheduledActionAcquireLayerTexturesForMainThread() OVERRIDE;
+  virtual void ScheduledActionManageTiles() OVERRIDE;
   virtual void DidAnticipatedDrawTimeChange(base::TimeTicks time) OVERRIDE;
   virtual base::TimeDelta DrawDurationEstimate() OVERRIDE;
   virtual base::TimeDelta BeginFrameToCommitDurationEstimate() OVERRIDE;

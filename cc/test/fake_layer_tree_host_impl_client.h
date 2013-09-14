@@ -23,6 +23,7 @@ class FakeLayerTreeHostImplClient : public LayerTreeHostImplClient {
   virtual void SetNeedsRedrawRectOnImplThread(gfx::Rect damage_rect) OVERRIDE {}
   virtual void DidInitializeVisibleTileOnImplThread() OVERRIDE {}
   virtual void SetNeedsCommitOnImplThread() OVERRIDE {}
+  virtual void SetNeedsManageTilesOnImplThread() OVERRIDE {}
   virtual void PostAnimationEventsToMainThreadOnImplThread(
       scoped_ptr<AnimationEventsVector> events,
       base::Time wall_clock_time) OVERRIDE {}

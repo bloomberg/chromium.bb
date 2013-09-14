@@ -538,6 +538,12 @@ void ThreadProxy::SetNeedsRedrawOnImplThread() {
   scheduler_on_impl_thread_->SetNeedsRedraw();
 }
 
+void ThreadProxy::SetNeedsManageTilesOnImplThread() {
+  DCHECK(IsImplThread());
+  TRACE_EVENT0("cc", "ThreadProxy::SetNeedsManageTilesOnImplThread");
+  scheduler_on_impl_thread_->SetNeedsManageTiles();
+}
+
 void ThreadProxy::SetNeedsRedrawRectOnImplThread(gfx::Rect damage_rect) {
   DCHECK(IsImplThread());
   layer_tree_host_impl_->SetViewportDamage(damage_rect);
@@ -1148,12 +1154,6 @@ DrawSwapReadbackResult ThreadProxy::DrawSwapReadbackInternal(
                                50);
   }
 
-  // Update the tile state after drawing.  This prevents manage tiles from
-  // being in the critical path for getting things on screen, but still
-  // makes sure that tile state is updated on a semi-regular basis.
-  if (layer_tree_host_impl_->settings().impl_side_painting)
-    layer_tree_host_impl_->ManageTiles();
-
   return result;
 }
 
@@ -1196,6 +1196,12 @@ void ThreadProxy::ScheduledActionAcquireLayerTexturesForMainThread() {
   DCHECK(texture_acquisition_completion_event_on_impl_thread_);
   texture_acquisition_completion_event_on_impl_thread_->Signal();
   texture_acquisition_completion_event_on_impl_thread_ = NULL;
+}
+
+void ThreadProxy::ScheduledActionManageTiles() {
+  TRACE_EVENT0("cc", "ThreadProxy::ScheduledActionManageTiles");
+  DCHECK(layer_tree_host_impl_->settings().impl_side_painting);
+  layer_tree_host_impl_->ManageTiles();
 }
 
 DrawSwapReadbackResult ThreadProxy::ScheduledActionDrawAndSwapIfPossible() {

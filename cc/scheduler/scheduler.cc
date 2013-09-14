@@ -19,7 +19,8 @@ Scheduler::Scheduler(SchedulerClient* client,
       last_set_needs_begin_frame_(false),
       has_pending_begin_frame_(false),
       state_machine_(scheduler_settings),
-      inside_process_scheduled_actions_(false) {
+      inside_process_scheduled_actions_(false),
+      inside_action_(SchedulerStateMachine::ACTION_NONE) {
   DCHECK(client_);
   DCHECK(!state_machine_.BeginFrameNeededToDrawByImplThread());
 }
@@ -61,6 +62,12 @@ void Scheduler::SetNeedsForcedCommitForReadback() {
 
 void Scheduler::SetNeedsRedraw() {
   state_machine_.SetNeedsRedraw();
+  ProcessScheduledActions();
+}
+
+void Scheduler::SetNeedsManageTiles() {
+  DCHECK(!IsInsideAction(SchedulerStateMachine::ACTION_MANAGE_TILES));
+  state_machine_.SetNeedsManageTiles();
   ProcessScheduledActions();
 }
 
@@ -183,8 +190,9 @@ void Scheduler::BeginFrame(const BeginFrameArgs& args) {
 
 void Scheduler::PollForAnticipatedDrawTriggers() {
   TRACE_EVENT0("cc", "Scheduler::PollForAnticipatedDrawTriggers");
-  state_machine_.PollForAnticipatedDrawTriggers();
+  state_machine_.DidEnterPollForAnticipatedDrawTriggers();
   ProcessScheduledActions();
+  state_machine_.DidLeavePollForAnticipatedDrawTriggers();
 }
 
 void Scheduler::DrawAndSwapIfPossible() {
@@ -223,6 +231,8 @@ void Scheduler::ProcessScheduledActions() {
                  "state",
                  TracedValue::FromValue(state_machine_.AsValue().release()));
     state_machine_.UpdateState(action);
+    base::AutoReset<SchedulerStateMachine::Action>
+        mark_inside_action(&inside_action_, action);
     switch (action) {
       case SchedulerStateMachine::ACTION_NONE:
         break;
@@ -256,6 +266,9 @@ void Scheduler::ProcessScheduledActions() {
         break;
       case SchedulerStateMachine::ACTION_ACQUIRE_LAYER_TEXTURES_FOR_MAIN_THREAD:
         client_->ScheduledActionAcquireLayerTexturesForMainThread();
+        break;
+      case SchedulerStateMachine::ACTION_MANAGE_TILES:
+        client_->ScheduledActionManageTiles();
         break;
     }
   } while (action != SchedulerStateMachine::ACTION_NONE);

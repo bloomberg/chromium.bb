@@ -197,7 +197,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       did_lock_scrolling_layer_(false),
       should_bubble_scrolls_(false),
       wheel_scrolling_(false),
-      manage_tiles_needed_(false),
+      tile_priorities_dirty_(false),
       root_layer_scroll_offset_delegate_(NULL),
       settings_(settings),
       visible_(true),
@@ -279,7 +279,7 @@ void LayerTreeHostImpl::CommitComplete() {
     pending_tree_->set_needs_update_draw_properties();
     pending_tree_->UpdateDrawProperties();
     // Start working on newly created tiles immediately if needed.
-    if (!tile_manager_ || !manage_tiles_needed_)
+    if (!tile_manager_ || !tile_priorities_dirty_)
       NotifyReadyToActivate();
     else
       ManageTiles();
@@ -357,12 +357,12 @@ void LayerTreeHostImpl::Animate(base::TimeTicks monotonic_time,
 void LayerTreeHostImpl::ManageTiles() {
   if (!tile_manager_)
     return;
-  if (!manage_tiles_needed_)
+  if (!tile_priorities_dirty_)
     return;
   if (!device_viewport_valid_for_tile_management_)
     return;
 
-  manage_tiles_needed_ = false;
+  tile_priorities_dirty_ = false;
   tile_manager_->ManageTiles();
 
   size_t memory_required_bytes;
@@ -1138,8 +1138,16 @@ void LayerTreeHostImpl::UpdateTileManagerMemoryPolicy(
           policy.priority_cutoff_when_visible :
           policy.priority_cutoff_when_not_visible);
   new_state.num_resources_limit = policy.num_resources_limit;
+
   tile_manager_->SetGlobalState(new_state);
-  manage_tiles_needed_ = true;
+  DidModifyTilePriorities();
+}
+
+void LayerTreeHostImpl::DidModifyTilePriorities() {
+  DCHECK(settings_.impl_side_painting);
+  // Mark priorities as dirty and schedule a ManageTiles().
+  tile_priorities_dirty_ = true;
+  client_->SetNeedsManageTilesOnImplThread();
 }
 
 void LayerTreeHostImpl::DidInitializeVisibleTile() {
@@ -2551,7 +2559,7 @@ void LayerTreeHostImpl::SetTreePriority(TreePriority priority) {
 
   new_state.tree_priority = priority;
   tile_manager_->SetGlobalState(new_state);
-  manage_tiles_needed_ = true;
+  DidModifyTilePriorities();
 }
 
 void LayerTreeHostImpl::ResetCurrentFrameTimeForNextFrame() {

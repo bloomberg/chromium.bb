@@ -66,11 +66,15 @@ class FakeSchedulerClient : public SchedulerClient {
   const char* Action(int i) const { return actions_[i]; }
   base::Value& StateForAction(int i) const { return *states_[i]; }
 
-  bool HasAction(const char* action) const {
+  int ActionIndex(const char* action) const {
     for (size_t i = 0; i < actions_.size(); i++)
       if (!strcmp(actions_[i], action))
-        return true;
-    return false;
+        return i;
+    return -1;
+  }
+
+  bool HasAction(const char* action) const {
+    return ActionIndex(action) >= 0;
   }
 
   void SetDrawWillHappen(bool draw_will_happen) {
@@ -135,6 +139,10 @@ class FakeSchedulerClient : public SchedulerClient {
   }
   virtual void ScheduledActionAcquireLayerTexturesForMainThread() OVERRIDE {
     actions_.push_back("ScheduledActionAcquireLayerTexturesForMainThread");
+    states_.push_back(scheduler_->StateAsValue().release());
+  }
+  virtual void ScheduledActionManageTiles() OVERRIDE {
+    actions_.push_back("ScheduledActionManageTiles");
     states_.push_back(scheduler_->StateAsValue().release());
   }
   virtual void DidAnticipatedDrawTimeChange(base::TimeTicks) OVERRIDE {}
@@ -685,6 +693,83 @@ TEST(SchedulerTest, BackToBackReadbackAllowed) {
   // The replacement commit comes in after 2 readbacks.
   client.Reset();
   scheduler->FinishCommit();
+}
+
+
+class SchedulerClientNeedsManageTilesInDraw : public FakeSchedulerClient {
+ public:
+  virtual DrawSwapReadbackResult ScheduledActionDrawAndSwapIfPossible()
+      OVERRIDE {
+    scheduler_->SetNeedsManageTiles();
+    return FakeSchedulerClient::ScheduledActionDrawAndSwapIfPossible();
+  }
+};
+
+// Test manage tiles is independant of draws.
+TEST(SchedulerTest, ManageTiles) {
+  SchedulerClientNeedsManageTilesInDraw client;
+  SchedulerSettings default_scheduler_settings;
+  Scheduler* scheduler = client.CreateScheduler(default_scheduler_settings);
+  scheduler->SetCanStart();
+  scheduler->SetVisible(true);
+  scheduler->SetCanDraw(true);
+  InitializeOutputSurfaceAndFirstCommit(scheduler);
+
+  // Request both draw and manage tiles. ManageTiles shouldn't
+  // be trigged until BeginFrame.
+  client.Reset();
+  scheduler->SetNeedsManageTiles();
+  scheduler->SetNeedsRedraw();
+  EXPECT_TRUE(scheduler->RedrawPending());
+  EXPECT_TRUE(scheduler->ManageTilesPending());
+  EXPECT_TRUE(client.needs_begin_frame());
+  EXPECT_EQ(0, client.num_draws());
+  EXPECT_FALSE(client.HasAction("ScheduledActionManageTiles"));
+  EXPECT_FALSE(client.HasAction("ScheduledActionDrawAndSwapIfPossible"));
+  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
+  // The actions should have occured, in the right order.
+  EXPECT_EQ(1, client.num_draws());
+  EXPECT_TRUE(client.HasAction("ScheduledActionDrawAndSwapIfPossible"));
+  EXPECT_TRUE(client.HasAction("ScheduledActionManageTiles"));
+  EXPECT_LT(client.ActionIndex("ScheduledActionDrawAndSwapIfPossible"),
+            client.ActionIndex("ScheduledActionManageTiles"));
+  EXPECT_FALSE(scheduler->RedrawPending());
+  EXPECT_FALSE(scheduler->ManageTilesPending());
+
+  // Request a draw. We don't need a ManageTiles yet.
+  client.Reset();
+  scheduler->SetNeedsRedraw();
+  EXPECT_TRUE(scheduler->RedrawPending());
+  EXPECT_FALSE(scheduler->ManageTilesPending());
+  EXPECT_TRUE(client.needs_begin_frame());
+  EXPECT_EQ(0, client.num_draws());
+
+  // Draw. The draw will trigger SetNeedsManageTiles, and
+  // then the ManageTiles action will be triggered after the Draw.
+  // Afterwards, neither a draw nor ManageTiles are pending.
+  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
+  EXPECT_EQ(1, client.num_draws());
+  EXPECT_TRUE(client.HasAction("ScheduledActionDrawAndSwapIfPossible"));
+  EXPECT_TRUE(client.HasAction("ScheduledActionManageTiles"));
+  EXPECT_LT(client.ActionIndex("ScheduledActionDrawAndSwapIfPossible"),
+            client.ActionIndex("ScheduledActionManageTiles"));
+  EXPECT_FALSE(scheduler->RedrawPending());
+  EXPECT_FALSE(scheduler->ManageTilesPending());
+
+  // Now trigger a ManageTiles outside of a draw. We will then need
+  // a begin-frame for the ManageTiles, but we don't need a draw.
+  client.Reset();
+  EXPECT_FALSE(client.needs_begin_frame());
+  scheduler->SetNeedsManageTiles();
+  EXPECT_TRUE(client.needs_begin_frame());
+  EXPECT_TRUE(scheduler->ManageTilesPending());
+  EXPECT_FALSE(scheduler->RedrawPending());
+
+  // BeginFrame. There will be no draw, only ManageTiles.
+  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
+  EXPECT_EQ(0, client.num_draws());
+  EXPECT_FALSE(client.HasAction("ScheduledActionDrawAndSwapIfPossible"));
+  EXPECT_TRUE(client.HasAction("ScheduledActionManageTiles"));
 }
 
 }  // namespace

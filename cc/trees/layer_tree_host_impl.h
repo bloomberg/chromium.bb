@@ -65,6 +65,7 @@ class LayerTreeHostImplClient {
   virtual void SetNeedsRedrawRectOnImplThread(gfx::Rect damage_rect) = 0;
   virtual void DidInitializeVisibleTileOnImplThread() = 0;
   virtual void SetNeedsCommitOnImplThread() = 0;
+  virtual void SetNeedsManageTilesOnImplThread() = 0;
   virtual void PostAnimationEventsToMainThreadOnImplThread(
       scoped_ptr<AnimationEventsVector> events,
       base::Time wall_clock_time) = 0;
@@ -162,7 +163,7 @@ class CC_EXPORT LayerTreeHostImpl
   void UpdateBackgroundAnimateTicking(bool should_background_tick);
   void SetViewportDamage(gfx::Rect damage_rect);
 
-  void ManageTiles();
+  virtual void ManageTiles();
 
   // Returns false if problems occured preparing the frame, and we should try
   // to avoid displaying the frame. If PrepareToDraw is called, DidDrawAllLayers
@@ -254,7 +255,7 @@ class CC_EXPORT LayerTreeHostImpl
 
   virtual bool SwapBuffers(const FrameData& frame);
   void SetNeedsBeginFrame(bool enable);
-  void SetNeedsManageTiles() { manage_tiles_needed_ = true; }
+  void DidModifyTilePriorities();
 
   void Readback(void* pixels, gfx::Rect rect_in_device_viewport);
 
@@ -428,7 +429,7 @@ class CC_EXPORT LayerTreeHostImpl
     return animation_registrar_->active_animation_controllers();
   }
 
-  bool manage_tiles_needed() const { return manage_tiles_needed_; }
+  bool manage_tiles_needed() const { return tile_priorities_dirty_; }
 
   LayerTreeHostImplClient* client_;
   Proxy* proxy_;
@@ -518,7 +519,7 @@ class CC_EXPORT LayerTreeHostImpl
   bool should_bubble_scrolls_;
   bool wheel_scrolling_;
 
-  bool manage_tiles_needed_;
+  bool tile_priorities_dirty_;
 
   // The optional delegate for the root layer scroll offset.
   LayerScrollOffsetDelegate* root_layer_scroll_offset_delegate_;

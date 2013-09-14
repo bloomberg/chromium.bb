@@ -25,10 +25,12 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
       last_frame_number_where_update_visible_tiles_was_called_(-1),
       consecutive_failed_draws_(0),
       needs_redraw_(false),
+      needs_manage_tiles_(false),
       swap_used_incomplete_tile_(false),
       needs_commit_(false),
       main_thread_needs_layer_textures_(false),
       inside_begin_frame_(false),
+      inside_poll_for_anticipated_draw_triggers_(false),
       visible_(false),
       can_start_(false),
       can_draw_(false),
@@ -146,6 +148,8 @@ const char* SchedulerStateMachine::ActionToString(Action action) {
       return "ACTION_BEGIN_OUTPUT_SURFACE_CREATION";
     case ACTION_ACQUIRE_LAYER_TEXTURES_FOR_MAIN_THREAD:
       return "ACTION_ACQUIRE_LAYER_TEXTURES_FOR_MAIN_THREAD";
+    case ACTION_MANAGE_TILES:
+      return "ACTION_MANAGE_TILES";
   }
   NOTREACHED();
   return "???";
@@ -209,6 +213,7 @@ scoped_ptr<base::Value> SchedulerStateMachine::AsValue() const  {
   minor_state->SetInteger("consecutive_failed_draws",
                           consecutive_failed_draws_);
   minor_state->SetBoolean("needs_redraw", needs_redraw_);
+  minor_state->SetBoolean("needs_manage_tiles", needs_manage_tiles_);
   minor_state->SetBoolean("swap_used_incomplete_tile",
                           swap_used_incomplete_tile_);
   minor_state->SetBoolean("needs_commit", needs_commit_);
@@ -442,6 +447,15 @@ bool SchedulerStateMachine::ShouldCommit() const {
   return commit_state_ == COMMIT_STATE_READY_TO_COMMIT;
 }
 
+bool SchedulerStateMachine::ShouldManageTiles() const {
+  // Limiting to once per-frame is not enough, since we only want to
+  // manage tiles _after_ draws. Polling for draw triggers and
+  // begin-frame are mutually exclusive, so we limit to these two cases.
+  if (!inside_begin_frame_ && !inside_poll_for_anticipated_draw_triggers_)
+    return false;
+  return needs_manage_tiles_;
+}
+
 SchedulerStateMachine::Action SchedulerStateMachine::NextAction() const {
   if (ShouldAcquireLayerTexturesForMainThread())
     return ACTION_ACQUIRE_LAYER_TEXTURES_FOR_MAIN_THREAD;
@@ -461,6 +475,8 @@ SchedulerStateMachine::Action SchedulerStateMachine::NextAction() const {
     else
       return ACTION_DRAW_AND_SWAP_IF_POSSIBLE;
   }
+  if (ShouldManageTiles())
+    return ACTION_MANAGE_TILES;
   if (ShouldSendBeginFrameToMainThread())
     return ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD;
   if (ShouldBeginOutputSurfaceCreation())
@@ -535,6 +551,10 @@ void SchedulerStateMachine::UpdateState(Action action) {
     case ACTION_ACQUIRE_LAYER_TEXTURES_FOR_MAIN_THREAD:
       texture_state_ = LAYER_TEXTURE_STATE_ACQUIRED_BY_MAIN_THREAD;
       main_thread_needs_layer_textures_ = false;
+      return;
+
+    case ACTION_MANAGE_TILES:
+      UpdateStateOnManageTiles();
       return;
   }
 }
@@ -677,6 +697,10 @@ void SchedulerStateMachine::UpdateStateOnDraw(bool did_swap) {
     last_frame_number_swap_performed_ = current_frame_number_;
 }
 
+void SchedulerStateMachine::UpdateStateOnManageTiles() {
+  needs_manage_tiles_ = false;
+}
+
 void SchedulerStateMachine::SetMainThreadNeedsLayerTextures() {
   DCHECK(!main_thread_needs_layer_textures_);
   DCHECK_NE(texture_state_, LAYER_TEXTURE_STATE_ACQUIRED_BY_MAIN_THREAD);
@@ -740,6 +764,11 @@ bool SchedulerStateMachine::ProactiveBeginFrameWantedByImplThread() const {
   if (has_pending_tree_)
     return true;
 
+  // Changing priorities may allow us to activate (given the new priorities),
+  // which may result in a new frame.
+  if (needs_manage_tiles_)
+    return true;
+
   return false;
 }
 
@@ -753,13 +782,22 @@ void SchedulerStateMachine::DidLeaveBeginFrame() {
   inside_begin_frame_ = false;
 }
 
-void SchedulerStateMachine::PollForAnticipatedDrawTriggers() {
+void SchedulerStateMachine::DidEnterPollForAnticipatedDrawTriggers() {
   current_frame_number_++;
+  inside_poll_for_anticipated_draw_triggers_ = true;
+}
+
+void SchedulerStateMachine::DidLeavePollForAnticipatedDrawTriggers() {
+  inside_poll_for_anticipated_draw_triggers_ = false;
 }
 
 void SchedulerStateMachine::SetVisible(bool visible) { visible_ = visible; }
 
 void SchedulerStateMachine::SetNeedsRedraw() { needs_redraw_ = true; }
+
+void SchedulerStateMachine::SetNeedsManageTiles() {
+  needs_manage_tiles_ = true;
+}
 
 void SchedulerStateMachine::SetSwapUsedIncompleteTile(
     bool used_incomplete_tile) {

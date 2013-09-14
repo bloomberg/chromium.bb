@@ -319,9 +319,6 @@ void PictureLayerImpl::UpdateTilePriorities() {
   if (!tiling_needs_update)
     return;
 
-  // At this point, tile priorities are going to be modified.
-  layer_tree_impl()->WillModifyTilePriorities();
-
   UpdateLCDTextStatus(can_use_lcd_text());
 
   gfx::Transform current_screen_space_transform = screen_space_transform();
@@ -359,12 +356,15 @@ void PictureLayerImpl::UpdateTilePriorities() {
   last_screen_space_transform_ = current_screen_space_transform;
   last_bounds_ = bounds();
   last_content_scale_ = contents_scale_x();
+
+  // Tile priorities were modified.
+  layer_tree_impl()->DidModifyTilePriorities();
 }
 
 void PictureLayerImpl::DidBecomeActive() {
   LayerImpl::DidBecomeActive();
   tilings_->DidBecomeActive();
-  layer_tree_impl()->WillModifyTilePriorities();
+  layer_tree_impl()->DidModifyTilePriorities();
 }
 
 void PictureLayerImpl::DidBeginTracing() {
