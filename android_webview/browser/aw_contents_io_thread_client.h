@@ -47,6 +47,10 @@ class AwContentsIoThreadClient {
 
   virtual ~AwContentsIoThreadClient() {}
 
+  // Returns whether this is a new pop up that is still waiting for association
+  // with the java counter part.
+  virtual bool PendingAssociation() const = 0;
+
   // Retrieve CacheMode setting value of this AwContents.
   // This method is called on the IO thread only.
   virtual CacheMode GetCacheMode() const = 0;

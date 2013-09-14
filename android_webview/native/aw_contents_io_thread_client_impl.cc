@@ -39,8 +39,17 @@ namespace android_webview {
 
 namespace {
 
-typedef map<pair<int, int>, JavaObjectWeakGlobalRef>
-    RenderViewHostToWeakDelegateMapType;
+struct IoThreadClientData {
+  bool pending_association;
+  JavaObjectWeakGlobalRef io_thread_client;
+
+  IoThreadClientData();
+};
+
+IoThreadClientData::IoThreadClientData() : pending_association(false) {}
+
+typedef map<pair<int, int>, IoThreadClientData>
+    RenderViewHostToIoThreadClientType;
 
 static pair<int, int> GetRenderViewHostIdPair(RenderViewHost* rvh) {
   return pair<int, int>(rvh->GetProcess()->GetID(), rvh->GetRoutingID());
@@ -50,14 +59,14 @@ static pair<int, int> GetRenderViewHostIdPair(RenderViewHost* rvh) {
 class RvhToIoThreadClientMap {
  public:
   static RvhToIoThreadClientMap* GetInstance();
-  void Insert(pair<int, int> rvh_id, JavaObjectWeakGlobalRef jdelegate);
-  ScopedJavaLocalRef<jobject> Get(pair<int, int> rvh_id);
+  void Set(pair<int, int> rvh_id, const IoThreadClientData& client);
+  bool Get(pair<int, int> rvh_id, IoThreadClientData* client);
   void Erase(pair<int, int> rvh_id);
 
  private:
   static LazyInstance<RvhToIoThreadClientMap> g_instance_;
   base::Lock map_lock_;
-  RenderViewHostToWeakDelegateMapType rvh_to_weak_delegate_map_;
+  RenderViewHostToIoThreadClientType rvh_to_io_thread_client_;
 };
 
 // static
@@ -69,27 +78,27 @@ RvhToIoThreadClientMap* RvhToIoThreadClientMap::GetInstance() {
   return g_instance_.Pointer();
 }
 
-void RvhToIoThreadClientMap::Insert(pair<int, int> rvh_id,
-                                  JavaObjectWeakGlobalRef jdelegate) {
+void RvhToIoThreadClientMap::Set(pair<int, int> rvh_id,
+                                 const IoThreadClientData& client) {
   base::AutoLock lock(map_lock_);
-  rvh_to_weak_delegate_map_[rvh_id] = jdelegate;
+  rvh_to_io_thread_client_[rvh_id] = client;
 }
 
-ScopedJavaLocalRef<jobject> RvhToIoThreadClientMap::Get(
-    pair<int, int> rvh_id) {
+bool RvhToIoThreadClientMap::Get(
+    pair<int, int> rvh_id, IoThreadClientData* client) {
   base::AutoLock lock(map_lock_);
-  RenderViewHostToWeakDelegateMapType::iterator weak_delegate_iterator =
-      rvh_to_weak_delegate_map_.find(rvh_id);
-  if (weak_delegate_iterator == rvh_to_weak_delegate_map_.end())
-    return ScopedJavaLocalRef<jobject>();
+  RenderViewHostToIoThreadClientType::iterator iterator =
+      rvh_to_io_thread_client_.find(rvh_id);
+  if (iterator == rvh_to_io_thread_client_.end())
+    return false;
 
-  JNIEnv* env = AttachCurrentThread();
-  return weak_delegate_iterator->second.get(env);
+  *client = iterator->second;
+  return true;
 }
 
 void RvhToIoThreadClientMap::Erase(pair<int, int> rvh_id) {
   base::AutoLock lock(map_lock_);
-  rvh_to_weak_delegate_map_.erase(rvh_id);
+  rvh_to_io_thread_client_.erase(rvh_id);
 }
 
 // ClientMapEntryUpdater ------------------------------------------------------
@@ -122,8 +131,11 @@ ClientMapEntryUpdater::ClientMapEntryUpdater(JNIEnv* env,
 }
 
 void ClientMapEntryUpdater::RenderViewCreated(RenderViewHost* rvh) {
-  RvhToIoThreadClientMap::GetInstance()->Insert(
-      GetRenderViewHostIdPair(rvh), jdelegate_);
+  IoThreadClientData client_data;
+  client_data.io_thread_client = jdelegate_;
+  client_data.pending_association = false;
+  RvhToIoThreadClientMap::GetInstance()->Set(
+      GetRenderViewHostIdPair(rvh), client_data);
 }
 
 void ClientMapEntryUpdater::RenderViewForInterstitialPageCreated(
@@ -149,13 +161,25 @@ void ClientMapEntryUpdater::WebContentsDestroyed(WebContents* web_contents) {
 scoped_ptr<AwContentsIoThreadClient>
 AwContentsIoThreadClient::FromID(int render_process_id, int render_view_id) {
   pair<int, int> rvh_id(render_process_id, render_view_id);
-  ScopedJavaLocalRef<jobject> java_delegate =
-      RvhToIoThreadClientMap::GetInstance()->Get(rvh_id);
-  if (java_delegate.is_null())
+  IoThreadClientData client_data;
+  if (!RvhToIoThreadClientMap::GetInstance()->Get(rvh_id, &client_data))
     return scoped_ptr<AwContentsIoThreadClient>();
 
-  return scoped_ptr<AwContentsIoThreadClient>(
-      new AwContentsIoThreadClientImpl(java_delegate));
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> java_delegate =
+      client_data.io_thread_client.get(env);
+  DCHECK(!client_data.pending_association || java_delegate.is_null());
+  return scoped_ptr<AwContentsIoThreadClient>(new AwContentsIoThreadClientImpl(
+      client_data.pending_association, java_delegate));
+}
+
+// static
+void AwContentsIoThreadClientImpl::RegisterPendingContents(
+    WebContents* web_contents) {
+  IoThreadClientData client_data;
+  client_data.pending_association = true;
+  RvhToIoThreadClientMap::GetInstance()->Set(
+      GetRenderViewHostIdPair(web_contents->GetRenderViewHost()), client_data);
 }
 
 // static
@@ -168,12 +192,18 @@ void AwContentsIoThreadClientImpl::Associate(
 }
 
 AwContentsIoThreadClientImpl::AwContentsIoThreadClientImpl(
+    bool pending_association,
     const JavaRef<jobject>& obj)
-  : java_object_(obj) {
+  : pending_association_(pending_association),
+    java_object_(obj) {
 }
 
 AwContentsIoThreadClientImpl::~AwContentsIoThreadClientImpl() {
   // explict, out-of-line destructor.
+}
+
+bool AwContentsIoThreadClientImpl::PendingAssociation() const {
+  return pending_association_;
 }
 
 AwContentsIoThreadClient::CacheMode

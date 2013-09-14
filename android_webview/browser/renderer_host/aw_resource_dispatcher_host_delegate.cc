@@ -70,7 +70,6 @@ class IoThreadClientThrottle : public content::ResourceThrottle {
   void OnIoThreadClientReady(int new_child_id, int new_route_id);
   bool MaybeBlockRequest();
   bool ShouldBlockRequest();
-  scoped_ptr<AwContentsIoThreadClient> GetIoThreadClient();
   int get_child_id() const { return child_id_; }
   int get_route_id() const { return route_id_; }
 
@@ -112,10 +111,13 @@ void IoThreadClientThrottle::WillRedirectRequest(const GURL& new_url,
 }
 
 bool IoThreadClientThrottle::MaybeDeferRequest(bool* defer) {
+  *defer = false;
+
+  // Defer all requests of a pop up that is still not associated with Java
+  // client so that the client will get a chance to override requests.
   scoped_ptr<AwContentsIoThreadClient> io_client =
       AwContentsIoThreadClient::FromID(child_id_, route_id_);
-  *defer = false;
-  if (!io_client.get()) {
+  if (io_client && io_client->PendingAssociation()) {
     *defer = true;
     AwResourceDispatcherHostDelegate::AddPendingThrottle(
         child_id_, route_id_, this);
@@ -169,8 +171,7 @@ bool IoThreadClientThrottle::ShouldBlockRequest() {
     }
     SetCacheControlFlag(request_, net::LOAD_ONLY_FROM_CACHE);
   } else {
-    AwContentsIoThreadClient::CacheMode cache_mode =
-        GetIoThreadClient()->GetCacheMode();
+    AwContentsIoThreadClient::CacheMode cache_mode = io_client->GetCacheMode();
     switch(cache_mode) {
       case AwContentsIoThreadClient::LOAD_CACHE_ELSE_NETWORK:
         SetCacheControlFlag(request_, net::LOAD_PREFERRING_CACHE);
@@ -186,11 +187,6 @@ bool IoThreadClientThrottle::ShouldBlockRequest() {
     }
   }
   return false;
-}
-
-scoped_ptr<AwContentsIoThreadClient>
-    IoThreadClientThrottle::GetIoThreadClient() {
-  return AwContentsIoThreadClient::FromID(child_id_, route_id_);
 }
 
 // static
@@ -215,6 +211,14 @@ void AwResourceDispatcherHostDelegate::RequestBeginning(
     int route_id,
     bool is_continuation_of_transferred_request,
     ScopedVector<content::ResourceThrottle>* throttles) {
+  // If io_client is NULL, then the browser side objects have already been
+  // destroyed, so do not do anything to the request. Conversely if the
+  // request relates to a not-yet-created popup window, then the client will
+  // be non-NULL but PopupPendingAssociation() will be set.
+  scoped_ptr<AwContentsIoThreadClient> io_client =
+      AwContentsIoThreadClient::FromID(child_id, route_id);
+  if (!io_client)
+    return;
 
   throttles->push_back(new IoThreadClientThrottle(
       child_id, route_id, request));
