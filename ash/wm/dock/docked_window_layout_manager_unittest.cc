@@ -20,6 +20,7 @@
 #include "ash/test/launcher_view_test_api.h"
 #include "ash/test/shell_test_api.h"
 #include "ash/test/test_launcher_delegate.h"
+#include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/panels/panel_layout_manager.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_settings.h"
@@ -100,16 +101,11 @@ class DockedWindowLayoutManagerTest
   }
 
   void DragStart(aura::Window* window) {
-    initial_location_in_parent_ = window->bounds().origin();
-    resizer_.reset(CreateSomeWindowResizer(window,
-                                           initial_location_in_parent_,
-                                           HTCAPTION));
-    ASSERT_TRUE(resizer_.get());
+    DragStartAtOffsetFromwindowOrigin(window, 0, 0);
   }
 
   void DragStartAtOffsetFromwindowOrigin(aura::Window* window,
-                                         int dx,
-                                         int dy) {
+                                         int dx, int dy) {
     initial_location_in_parent_ =
         window->bounds().origin() + gfx::Vector2d(dx, dy);
     resizer_.reset(CreateSomeWindowResizer(window,
@@ -172,48 +168,31 @@ class DockedWindowLayoutManagerTest
   // horizontally to the edge with an added offset from the edge of |dx|.
   void DragVerticallyAndRelativeToEdge(DockedEdge edge,
                                        aura::Window* window,
-                                       int dx,
-                                       int dy) {
-    aura::RootWindow* root_window = window->GetRootWindow();
+                                       int dx, int dy) {
     gfx::Rect initial_bounds = window->GetBoundsInScreen();
-
-    if (window_type_ == aura::client::WINDOW_TYPE_PANEL) {
-      ASSERT_NO_FATAL_FAILURE(DragStart(window));
-      EXPECT_TRUE(wm::GetWindowSettings(window)->panel_attached());
-
-      // Drag enough to detach since our tests assume panels to be initially
-      // detached.
-      DragMove(0, dy);
-      EXPECT_EQ(CorrectContainerIdDuringDrag(), window->parent()->id());
-      EXPECT_EQ(initial_bounds.x(), window->GetBoundsInScreen().x());
-      EXPECT_EQ(initial_bounds.y() + dy, window->GetBoundsInScreen().y());
-
-      // The panel should be detached when the drag completes.
-      DragEnd();
-
-      EXPECT_FALSE(wm::GetWindowSettings(window)->panel_attached());
-      EXPECT_EQ(internal::kShellWindowId_DefaultContainer,
-                window->parent()->id());
-      EXPECT_EQ(root_window, window->GetRootWindow());
-    }
-
     // avoid snap by clicking away from the border
     ASSERT_NO_FATAL_FAILURE(DragStartAtOffsetFromwindowOrigin(window, 25, 5));
 
+    gfx::Rect work_area =
+        Shell::GetScreen()->GetDisplayNearestWindow(window).work_area();
+    gfx::Point initial_location_in_screen = initial_location_in_parent_;
+    wm::ConvertPointToScreen(window->parent(), &initial_location_in_screen);
     // Drag the window left or right to the edge (or almost to it).
     if (edge == DOCKED_EDGE_LEFT)
-      dx += window->GetRootWindow()->bounds().x() - initial_bounds.x();
+      dx += work_area.x() - initial_location_in_screen.x();
     else if (edge == DOCKED_EDGE_RIGHT)
-      dx += window->GetRootWindow()->bounds().right() - initial_bounds.right();
-    DragMove(dx, window_type_ == aura::client::WINDOW_TYPE_PANEL ? 0 : dy);
+      dx += work_area.right() - 1 - initial_location_in_screen.x();
+    DragMove(dx, dy);
     EXPECT_EQ(CorrectContainerIdDuringDrag(), window->parent()->id());
     // Release the mouse and the panel should be attached to the dock.
     DragEnd();
 
     // x-coordinate can get adjusted by snapping or sticking.
     // y-coordinate could be changed by possible automatic layout if docked.
-    if (window->parent()->id() != internal::kShellWindowId_DockedContainer)
+    if (window->parent()->id() != internal::kShellWindowId_DockedContainer &&
+        GetRestoreBoundsInScreen(window) == NULL) {
       EXPECT_EQ(initial_bounds.y() + dy, window->GetBoundsInScreen().y());
+    }
   }
 
  private:
@@ -343,63 +322,6 @@ TEST_P(DockedWindowLayoutManagerTest, AutoPlacingRight) {
       ",48 256x512", window2->bounds().ToString());
 }
 
-// Tests that with a window docked on the left the auto-placing logic in
-// RearrangeVisibleWindowOnShow places windows flush with work area edges.
-// Test case for the secondary screen.
-TEST_P(DockedWindowLayoutManagerTest, AutoPlacingLeftSecondScreen) {
-  if (!SupportsMultipleDisplays() || !SupportsHostWindowResize())
-    return;
-
-  // Create two screen layout.
-  UpdateDisplay("600x600,600x600");
-
-  gfx::Rect bounds(600, 0, 201, 201);
-  scoped_ptr<aura::Window> window(CreateTestWindow(bounds));
-  DragRelativeToEdge(DOCKED_EDGE_LEFT, window.get(), 600);
-
-  // The window should be attached and snapped to the right side of the screen.
-  EXPECT_EQ(window->GetRootWindow()->GetBoundsInScreen().x(),
-            window->GetBoundsInScreen().x());
-  EXPECT_EQ(internal::kShellWindowId_DockedContainer, window->parent()->id());
-
-  DockedWindowLayoutManager* manager = static_cast<DockedWindowLayoutManager*>(
-      window->parent()->layout_manager());
-
-  // Create two additional windows and test their auto-placement
-  bounds = gfx::Rect(850, 32, 231, 320);
-  scoped_ptr<aura::Window> window1(
-      CreateTestWindowInShellWithDelegate(NULL, 1, bounds));
-  gfx::Rect desktop_area = window1->parent()->bounds();
-  wm::GetWindowSettings(window1.get())->set_window_position_managed(true);
-  window1->Hide();
-  window1->Show();
-  // |window1| should be centered in work area.
-  EXPECT_EQ(base::IntToString(
-      600 + manager->docked_width_ + DockedWindowLayoutManager::kMinDockGap +
-      (desktop_area.width() - manager->docked_width_ -
-       DockedWindowLayoutManager::kMinDockGap - window1->bounds().width()) / 2)+
-      ",32 231x320", window1->GetBoundsInScreen().ToString());
-
-  bounds = gfx::Rect(850, 48, 150, 300);
-  scoped_ptr<aura::Window> window2(
-      CreateTestWindowInShellWithDelegate(NULL, 2, bounds));
-  wm::GetWindowSettings(window2.get())->set_window_position_managed(true);
-  // To avoid any auto window manager changes due to SetBounds, the window
-  // gets first hidden and then shown again.
-  window2->Hide();
-  window2->Show();
-
-  // |window1| should be flush left and |window2| flush right.
-  EXPECT_EQ(
-      base::IntToString(600 +
-          manager->docked_width_ + DockedWindowLayoutManager::kMinDockGap) +
-      ",32 231x320", window1->GetBoundsInScreen().ToString());
-  EXPECT_EQ(
-      base::IntToString(
-          600 + desktop_area.width() - window2->bounds().width()) +
-      ",48 150x300", window2->GetBoundsInScreen().ToString());
-}
-
 // Tests that with a window docked on the right the auto-placing logic in
 // RearrangeVisibleWindowOnShow places windows flush with work area edges.
 // Test case for the secondary screen.
@@ -412,7 +334,8 @@ TEST_P(DockedWindowLayoutManagerTest, AutoPlacingRightSecondScreen) {
 
   gfx::Rect bounds(600, 0, 201, 201);
   scoped_ptr<aura::Window> window(CreateTestWindow(bounds));
-  DragRelativeToEdge(DOCKED_EDGE_RIGHT, window.get(), 600);
+  // Drag pointer to the right edge of the second screen.
+  DragRelativeToEdge(DOCKED_EDGE_RIGHT, window.get(), 0);
 
   // The window should be attached and snapped to the right side of the screen.
   EXPECT_EQ(window->GetRootWindow()->GetBoundsInScreen().right(),
@@ -503,7 +426,7 @@ TEST_P(DockedWindowLayoutManagerTest, TwoWindowsDragging) {
 
   // Drag w2 above w1.
   ASSERT_NO_FATAL_FAILURE(DragStartAtOffsetFromwindowOrigin(w2.get(), 0, 20));
-  DragMove(0, w1->bounds().y() - w2->bounds().y() - 20);
+  DragMove(0, w1->bounds().y() - w2->bounds().y() + 20);
   DragEnd();
 
   // Test the new windows order and that the gaps differ at most by a pixel.

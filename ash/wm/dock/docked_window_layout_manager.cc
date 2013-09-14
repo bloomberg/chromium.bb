@@ -4,6 +4,7 @@
 
 #include "ash/wm/dock/docked_window_layout_manager.h"
 
+#include "ash/ash_switches.h"
 #include "ash/launcher/launcher.h"
 #include "ash/screen_ash.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -14,7 +15,9 @@
 #include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/workspace/snap_types.h"
 #include "base/auto_reset.h"
+#include "base/command_line.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
@@ -27,10 +30,12 @@ namespace ash {
 namespace internal {
 
 // Minimum, maximum width of the dock area and a width of the gap
+// static
+const int DockedWindowLayoutManager::kMaxDockWidth = 360;
+// static
 const int DockedWindowLayoutManager::kMinDockWidth = 200;
-const int DockedWindowLayoutManager::kMaxDockWidth = 450;
+// static
 const int DockedWindowLayoutManager::kMinDockGap = 2;
-const int kWindowIdealSpacing = 4;
 
 namespace {
 
@@ -207,6 +212,7 @@ void DockedWindowLayoutManager::DockDraggedWindow(aura::Window* window) {
 void DockedWindowLayoutManager::UndockDraggedWindow() {
   OnWindowUndocked();
   Relayout();
+  UpdateDockBounds();
   is_dragged_from_dock_ = false;
 }
 
@@ -217,9 +223,13 @@ void DockedWindowLayoutManager::FinishDragging() {
   DCHECK (!is_dragged_window_docked_);
   // Stop observing a window unless it is docked container's child in which
   // case it needs to keep being observed after the drag completes.
-  if (dragged_window_->parent() != dock_container_)
+  if (dragged_window_->parent() != dock_container_) {
     dragged_window_->RemoveObserver(this);
+    if (last_active_window_ == dragged_window_)
+      last_active_window_ = NULL;
+  }
   dragged_window_ = NULL;
+  dragged_bounds_ = gfx::Rect();
   Relayout();
   UpdateDockBounds();
 }
@@ -239,26 +249,20 @@ void DockedWindowLayoutManager::SetLauncher(ash::Launcher* launcher) {
 DockedAlignment DockedWindowLayoutManager::GetAlignmentOfWindow(
     const aura::Window* window) const {
   const gfx::Rect& bounds(window->GetBoundsInScreen());
-  const gfx::Rect docked_bounds = dock_container_->GetBoundsInScreen();
 
-  // Do not allow docking if a window is vertically maximized (as is the case
-  // when it is snapped).
-  const gfx::Rect work_area =
-      Shell::GetScreen()->GetDisplayNearestWindow(dock_container_).work_area();
-  if (bounds.y() == work_area.y() && bounds.height() == work_area.height())
-    return DOCKED_ALIGNMENT_NONE;
-
-  // Do not allow docking on the same side as launcher shelf.
-  ShelfAlignment shelf_alignment = SHELF_ALIGNMENT_BOTTOM;
-  if (launcher_)
-    shelf_alignment = launcher_->alignment();
-
-  if (bounds.x() == docked_bounds.x() &&
-      shelf_alignment != SHELF_ALIGNMENT_LEFT) {
-    return DOCKED_ALIGNMENT_LEFT;
+  // Test overlap with an existing docked area first.
+  if (docked_bounds_.Intersects(bounds) &&
+      alignment_ != DOCKED_ALIGNMENT_NONE) {
+    // A window is being added to other docked windows (on the same side).
+    return alignment_;
   }
-  if (bounds.right() == docked_bounds.right() &&
-      shelf_alignment != SHELF_ALIGNMENT_RIGHT) {
+
+  const gfx::Rect container_bounds = dock_container_->GetBoundsInScreen();
+  if (bounds.x() <= container_bounds.x() &&
+      bounds.right() > container_bounds.x()) {
+    return DOCKED_ALIGNMENT_LEFT;
+  } else if (bounds.x() < container_bounds.right() &&
+             bounds.right() >= container_bounds.right()) {
     return DOCKED_ALIGNMENT_RIGHT;
   }
   return DOCKED_ALIGNMENT_NONE;
@@ -279,6 +283,30 @@ DockedAlignment DockedWindowLayoutManager::CalculateAlignment() const {
   // No docked windows remain other than possibly the window being dragged.
   // Return |NONE| to indicate that windows may get docked on either side.
   return DOCKED_ALIGNMENT_NONE;
+}
+
+bool DockedWindowLayoutManager::CanDockWindow(aura::Window* window,
+                                              SnapType edge) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kAshEnableDockedWindows)) {
+    return false;
+  }
+  // Cannot dock on the other size from an existing dock.
+  const DockedAlignment alignment = CalculateAlignment();
+  if ((edge == SNAP_LEFT && alignment == DOCKED_ALIGNMENT_RIGHT) ||
+      (edge == SNAP_RIGHT && alignment == DOCKED_ALIGNMENT_LEFT)) {
+    return false;
+  }
+
+  // Do not allow docking on the same side as launcher shelf.
+  ShelfAlignment shelf_alignment = SHELF_ALIGNMENT_BOTTOM;
+  if (launcher_)
+    shelf_alignment = launcher_->alignment();
+  if ((edge == SNAP_LEFT && shelf_alignment == SHELF_ALIGNMENT_LEFT) ||
+      (edge == SNAP_RIGHT && shelf_alignment == SHELF_ALIGNMENT_RIGHT)) {
+    return false;
+  }
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -564,6 +592,17 @@ void DockedWindowLayoutManager::Relayout() {
     aura::Window* window = *iter;
     gfx::Rect bounds = window->GetBoundsInScreen();
 
+    DockedAlignment alignment = alignment_;
+    if (alignment == DOCKED_ALIGNMENT_NONE && window == dragged_window_) {
+      alignment = GetAlignmentOfWindow(window);
+      if (alignment == DOCKED_ALIGNMENT_NONE)
+        bounds.set_size(gfx::Size());
+    }
+
+    // Restrict width.
+    if (bounds.width() > kMaxDockWidth)
+      bounds.set_width(kMaxDockWidth);
+
     // Fan out windows evenly distributing the overlap or remaining free space.
     bounds.set_y(std::max(work_area.y(),
                           std::min(work_area.bottom() - bounds.height(),
@@ -572,7 +611,7 @@ void DockedWindowLayoutManager::Relayout() {
 
     // All docked windows other than the one currently dragged remain stuck
     // to the screen edge.
-    switch (alignment_) {
+    switch (alignment) {
       case DOCKED_ALIGNMENT_LEFT:
         bounds.set_x(dock_bounds.x());
         break;
@@ -586,6 +625,8 @@ void DockedWindowLayoutManager::Relayout() {
       dragged_bounds_ = bounds;
       continue;
     }
+    // If the following asserts it is probably because not all the children
+    // have been removed when dock was closed.
     DCHECK_NE(alignment_, DOCKED_ALIGNMENT_NONE);
     // Keep the dock at least kMinDockWidth when all windows in it overhang.
     docked_width_ = std::min(kMaxDockWidth,

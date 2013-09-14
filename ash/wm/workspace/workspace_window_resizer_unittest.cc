@@ -1843,14 +1843,14 @@ TEST_F(WorkspaceWindowResizerTest, PhantomWindowShow) {
   EXPECT_EQ(root_windows[0], window_->GetRootWindow());
 
   scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
-      window_.get(), gfx::Point(), HTCAPTION,
+      window_.get(), gfx::Point(0,0), HTCAPTION,
       aura::client::WINDOW_MOVE_SOURCE_MOUSE, empty_windows()));
   ASSERT_TRUE(resizer.get());
   EXPECT_FALSE(resizer->snap_phantom_window_controller_.get());
 
   // The pointer is on the edge but not shared. The snap phantom window
   // controller should be non-NULL.
-  resizer->Drag(CalculateDragPoint(*resizer, 499, 0), 0);
+  resizer->Drag(CalculateDragPoint(*resizer, -1, 0), 0);
   EXPECT_TRUE(resizer->snap_phantom_window_controller_.get());
   PhantomWindowController* phantom_controller(
       resizer->snap_phantom_window_controller_.get());

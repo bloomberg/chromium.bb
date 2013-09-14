@@ -9,14 +9,17 @@
 
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/workspace/magnetism_matcher.h"
+#include "ash/wm/workspace/snap_types.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "ui/aura/window_tracker.h"
 
 namespace ash {
 namespace internal {
 
+class DockedWindowLayoutManager;
 class PhantomWindowController;
 class SnapSizer;
 class WindowSize;
@@ -70,16 +73,6 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   FRIEND_TEST_ALL_PREFIXES(WorkspaceWindowResizerTest, CancelSnapPhantom);
   FRIEND_TEST_ALL_PREFIXES(WorkspaceWindowResizerTest, PhantomSnapMaxSize);
   FRIEND_TEST_ALL_PREFIXES(WorkspaceWindowResizerTest, PhantomWindowShow);
-
-  // Type of snapping.
-  enum SnapType {
-    // Snap to the left/right edge of the screen.
-    SNAP_LEFT_EDGE,
-    SNAP_RIGHT_EDGE,
-
-    // No snap position.
-    SNAP_NONE
-  };
 
   // Returns the final bounds to place the window at. This differs from
   // the current when snapping.
@@ -164,6 +157,10 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   // snapping should be used.
   SnapType GetSnapType(const gfx::Point& location) const;
 
+  // Dock when a window is at its last step in snapping sequence, undock
+  // otherwise.
+  void UpdateDockedState(bool is_docked);
+
   aura::Window* window() const { return details_.window; }
 
   const Details details_;
@@ -210,6 +207,13 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   // If |magnetism_window_| is non-NULL this indicates how the two windows
   // should attach.
   MatchedEdge magnetism_edge_;
+
+  // Dock container window layout manager.
+  DockedWindowLayoutManager* dock_layout_;
+
+  // Used to determine if this has been deleted during a drag such as when a tab
+  // gets dragged into another browser window.
+  base::WeakPtrFactory<WorkspaceWindowResizer> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkspaceWindowResizer);
 };

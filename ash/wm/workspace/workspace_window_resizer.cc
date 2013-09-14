@@ -10,12 +10,14 @@
 #include <vector>
 
 #include "ash/ash_switches.h"
+#include "ash/display/display_controller.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/default_window_resizer.h"
+#include "ash/wm/dock/docked_window_layout_manager.h"
 #include "ash/wm/dock/docked_window_resizer.h"
 #include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/panels/panel_window_resizer.h"
@@ -25,6 +27,7 @@
 #include "ash/wm/workspace/phantom_window_controller.h"
 #include "ash/wm/workspace/snap_sizer.h"
 #include "base/command_line.h"
+#include "base/memory/weak_ptr.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/client/window_types.h"
@@ -386,20 +389,38 @@ void WorkspaceWindowResizer::Drag(const gfx::Point& location_in_parent,
 
   gfx::Point location_in_screen = location_in_parent;
   wm::ConvertPointToScreen(window()->parent(), &location_in_screen);
-  const bool in_original_root =
-      wm::GetRootWindowAt(location_in_screen) == window()->GetRootWindow();
+
+  aura::RootWindow* root = NULL;
+  gfx::Display display =
+      ScreenAsh::FindDisplayContainingPoint(location_in_screen);
+  // Track the last screen that the pointer was on to keep the snap phantom
+  // window there.
+  if (display.is_valid()) {
+    root = Shell::GetInstance()->display_controller()->
+        GetRootWindowForDisplayId(display.id());
+  }
+  if (!attached_windows_.empty())
+    LayoutAttachedWindows(&bounds);
+  if (bounds != window()->bounds()) {
+    // SetBounds needs to be called to update the layout which affects where the
+    // phantom window is drawn. Keep track if the window was destroyed during
+    // the drag and quit early if so.
+    base::WeakPtr<WorkspaceWindowResizer> resizer(
+        weak_ptr_factory_.GetWeakPtr());
+    window()->SetBounds(bounds);
+    if (!resizer)
+      return;
+  }
+  const bool in_original_root = !root || root == window()->GetRootWindow();
   // Hide a phantom window for snapping if the cursor is in another root window.
-  if (in_original_root && wm::CanResizeWindow(window())) {
+  if (in_original_root) {
     UpdateSnapPhantomWindow(location_in_parent, bounds);
   } else {
     snap_type_ = SNAP_NONE;
     snap_phantom_window_controller_.reset();
+    snap_sizer_.reset();
+    UpdateDockedState(false);
   }
-
-  if (!attached_windows_.empty())
-    LayoutAttachedWindows(&bounds);
-  if (bounds != window()->bounds())
-    window()->SetBounds(bounds);
 }
 
 void WorkspaceWindowResizer::CompleteDrag(int event_flags) {
@@ -416,7 +437,7 @@ void WorkspaceWindowResizer::CompleteDrag(int event_flags) {
   if (wm::IsWindowNormal(window()) &&
       (window()->type() != aura::client::WINDOW_TYPE_PANEL ||
        !wm::GetWindowSettings(window())->panel_attached()) &&
-      (snap_type_ == SNAP_LEFT_EDGE || snap_type_ == SNAP_RIGHT_EDGE)) {
+      (snap_type_ == SNAP_LEFT || snap_type_ == SNAP_RIGHT)) {
     if (!GetRestoreBoundsInScreen(window())) {
       gfx::Rect initial_bounds = ScreenAsh::ConvertRectToScreen(
           window()->parent(), details_.initial_bounds_in_parent);
@@ -424,7 +445,12 @@ void WorkspaceWindowResizer::CompleteDrag(int event_flags) {
                                initial_bounds :
                                details_.restore_bounds);
     }
-    window()->SetBounds(snap_sizer_->target_bounds());
+    DCHECK(snap_sizer_);
+    if (wm::CanResizeWindow(window()) &&
+        !dock_layout_->is_dragged_window_docked() &&
+        !snap_sizer_->target_bounds().IsEmpty()) {
+      window()->SetBounds(snap_sizer_->target_bounds());
+    }
     return;
   }
 }
@@ -478,11 +504,17 @@ WorkspaceWindowResizer::WorkspaceWindowResizer(
       total_initial_size_(0),
       snap_type_(SNAP_NONE),
       num_mouse_moves_since_bounds_change_(0),
-      magnetism_window_(NULL) {
+      magnetism_window_(NULL),
+      weak_ptr_factory_(this) {
   DCHECK(details_.is_resizable);
 
   Shell* shell = Shell::GetInstance();
   shell->cursor_manager()->LockCursor();
+
+  aura::Window* dock_container = Shell::GetContainer(
+      window()->GetRootWindow(), kShellWindowId_DockedContainer);
+  dock_layout_ = static_cast<DockedWindowLayoutManager*>(
+      dock_container->layout_manager());
 
   // Only support attaching to the right/bottom.
   DCHECK(attached_windows_.empty() ||
@@ -858,25 +890,19 @@ void WorkspaceWindowResizer::UpdateSnapPhantomWindow(const gfx::Point& location,
   if (!did_move_or_resize_ || details_.window_component != HTCAPTION)
     return;
 
-  if (!wm::CanSnapWindow(window()))
-    return;
-
-  if (window()->type() == aura::client::WINDOW_TYPE_PANEL &&
-      wm::GetWindowSettings(window())->panel_attached()) {
-    return;
-  }
-
   SnapType last_type = snap_type_;
   snap_type_ = GetSnapType(location);
   if (snap_type_ == SNAP_NONE || snap_type_ != last_type) {
     snap_phantom_window_controller_.reset();
     snap_sizer_.reset();
+    UpdateDockedState(false);
     if (snap_type_ == SNAP_NONE)
       return;
   }
+  SnapSizer::Edge edge = (snap_type_ == SNAP_LEFT) ?
+      SnapSizer::LEFT_EDGE : SnapSizer::RIGHT_EDGE;
+
   if (!snap_sizer_) {
-    SnapSizer::Edge edge = (snap_type_ == SNAP_LEFT_EDGE) ?
-        SnapSizer::LEFT_EDGE : SnapSizer::RIGHT_EDGE;
     snap_sizer_.reset(new SnapSizer(window(),
                                     location,
                                     edge,
@@ -884,12 +910,37 @@ void WorkspaceWindowResizer::UpdateSnapPhantomWindow(const gfx::Point& location,
   } else {
     snap_sizer_->Update(location);
   }
+
+  const bool can_dock = dock_layout_->CanDockWindow(window(), snap_type_);
+  if (!wm::CanSnapWindow(window()) && !can_dock)
+    return;
+
+  // Update phantom window with snapped or docked guide bounds.
+  // Windows that cannot be snapped or are less wide than kMaxDockWidth can get
+  // docked without going through a snapping sequence.
+  gfx::Rect phantom_bounds;
+  if (!can_dock ||
+      window()->bounds().width() > DockedWindowLayoutManager::kMaxDockWidth)
+    phantom_bounds = snap_sizer_->target_bounds();
+  const bool is_docked = can_dock &&
+      (phantom_bounds.IsEmpty() || snap_sizer_->end_of_sequence());
+  UpdateDockedState(is_docked);
+  if (is_docked) {
+    phantom_bounds = ScreenAsh::ConvertRectFromScreen(
+        window()->parent(), dock_layout_->dragged_bounds());
+  }
+
+  if (phantom_bounds.IsEmpty()) {
+    snap_phantom_window_controller_.reset();
+    return;
+  }
+
   if (!snap_phantom_window_controller_) {
     snap_phantom_window_controller_.reset(
         new PhantomWindowController(window()));
   }
   snap_phantom_window_controller_->Show(ScreenAsh::ConvertRectToScreen(
-      window()->parent(), snap_sizer_->target_bounds()));
+      window()->parent(), phantom_bounds));
 }
 
 void WorkspaceWindowResizer::RestackWindows() {
@@ -923,16 +974,27 @@ void WorkspaceWindowResizer::RestackWindows() {
   }
 }
 
-WorkspaceWindowResizer::SnapType WorkspaceWindowResizer::GetSnapType(
+SnapType WorkspaceWindowResizer::GetSnapType(
     const gfx::Point& location) const {
   // TODO: this likely only wants total display area, not the area of a single
   // display.
-  gfx::Rect area(ScreenAsh::GetDisplayBoundsInParent(window()));
+  gfx::Rect area(ScreenAsh::GetDisplayWorkAreaBoundsInParent(window()));
   if (location.x() <= area.x())
-    return SNAP_LEFT_EDGE;
+    return SNAP_LEFT;
   if (location.x() >= area.right() - 1)
-    return SNAP_RIGHT_EDGE;
+    return SNAP_RIGHT;
   return SNAP_NONE;
+}
+
+void WorkspaceWindowResizer::UpdateDockedState(bool is_docked) {
+  if (is_docked &&
+      dock_layout_->GetAlignmentOfWindow(window()) != DOCKED_ALIGNMENT_NONE) {
+    if (!dock_layout_->is_dragged_window_docked())
+      dock_layout_->DockDraggedWindow(window());
+  } else {
+    if (dock_layout_->is_dragged_window_docked())
+      dock_layout_->UndockDraggedWindow();
+  }
 }
 
 }  // namespace internal

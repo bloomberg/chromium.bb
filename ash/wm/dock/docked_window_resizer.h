@@ -24,7 +24,6 @@ namespace ash {
 namespace internal {
 
 class DockedWindowLayoutManager;
-class PhantomWindowController;
 
 // DockWindowResizer is used by ToplevelWindowEventFilter to handle dragging,
 // moving or resizing of a window while it is docked to the side of a screen.
@@ -55,12 +54,6 @@ class ASH_EXPORT DockedWindowResizer : public WindowResizer {
   DockedWindowResizer(WindowResizer* next_window_resizer,
                       const Details& details);
 
-  // Returns the side of the screen that the window should dock to or
-  // DOCKED_ALIGNMENT_NONE when the window is not on a side or when some other
-  // windows are already docked on the other side or when launcher (shelf) is
-  // aligned on the same side.
-  DockedAlignment GetDraggedWindowAlignment();
-
   // Checks if the provided window bounds should snap to the side of a screen.
   // If so the offset returned gives the necessary adjustment to snap.
   bool MaybeSnapToEdge(const gfx::Rect& bounds, gfx::Point* offset);
@@ -72,9 +65,6 @@ class ASH_EXPORT DockedWindowResizer : public WindowResizer {
   // Informs the DockLayoutManager that the drag is complete if it was informed
   // of the drag start.
   void FinishedDragging();
-
-  // Updates the bounds of the phantom window that is used as a docking hint.
-  void UpdateSnapPhantomWindow();
 
   const Details details_;
 
@@ -89,9 +79,6 @@ class ASH_EXPORT DockedWindowResizer : public WindowResizer {
 
   // Set to true once Drag() is invoked and the bounds of the window change.
   bool did_move_or_resize_;
-
-  // Gives a preview of where the the window will end up.
-  scoped_ptr<PhantomWindowController> snap_phantom_window_controller_;
 
   // Set to true if the window that is being dragged was docked before drag.
   bool was_docked_;

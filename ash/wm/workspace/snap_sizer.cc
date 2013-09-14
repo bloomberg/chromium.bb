@@ -78,11 +78,11 @@ int GetDefaultWidth(aura::Window* window) {
   return std::max(width, GetMinWidth(window));
 }
 
-// Create the list of possible widths for the current screen configuration:
-// Fill the |usable_width_| list with items from |kIdealWidth| which fit on
-// the screen and supplement it with the 'half of screen' size. Furthermore,
-// add an entry for 90% of the screen size if it is smaller than the biggest
-// value in the |kIdealWidth| list (to get a step between the values).
+// Creates the list of possible width for the current screen configuration:
+// Returns a list with items from |kIdealWidth| which fit on the screen and
+// supplement it with the 'half of screen' size. Furthermore, add an entry for
+// 90% of the screen size if it is smaller than the biggest value in the
+// |kIdealWidth| list (to get a step between the values).
 std::vector<int> BuildIdealWidthList(aura::Window* window) {
   if (ash::switches::UseAlternateFrameCaptionButtonStyle()) {
     // Only the 'half of screen' width is supported when using the alternate
@@ -133,6 +133,7 @@ SnapSizer::SnapSizer(aura::Window* window,
       edge_(edge),
       time_last_update_(base::TimeTicks::Now()),
       size_index_(0),
+      end_of_sequence_(false),
       resize_disabled_(false),
       num_moves_since_adjust_(0),
       last_adjust_x_(start.x()),
@@ -218,6 +219,7 @@ gfx::Rect SnapSizer::GetSnapBounds(const gfx::Rect& bounds) {
 void SnapSizer::SelectDefaultSizeAndDisableResize() {
   resize_disabled_ = true;
   size_index_ = 0;
+  end_of_sequence_ = false;
   target_bounds_ = GetTargetBounds();
 }
 
@@ -260,6 +262,8 @@ int SnapSizer::CalculateIncrement(int x, int reference_x) const {
 }
 
 void SnapSizer::ChangeBounds(int x, int delta) {
+  end_of_sequence_ =
+      delta > 0 && size_index_ == static_cast<int>(usable_width_.size()) - 1;
   int index = std::min(static_cast<int>(usable_width_.size()) - 1,
                        std::max(size_index_ + delta, 0));
   if (index != size_index_) {
@@ -275,7 +279,7 @@ gfx::Rect SnapSizer::GetTargetBounds() const {
 }
 
 bool SnapSizer::AlongEdge(int x) const {
-  gfx::Rect area(ScreenAsh::GetDisplayBoundsInParent(window_));
+  gfx::Rect area(ScreenAsh::GetDisplayWorkAreaBoundsInParent(window_));
   return (x <= area.x()) || (x >= area.right() - 1);
 }
 

@@ -10,6 +10,7 @@
 #include "ash/shell_observer.h"
 #include "ash/wm/dock/dock_types.h"
 #include "ash/wm/property_util.h"
+#include "ash/wm/workspace/snap_types.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
@@ -61,6 +62,9 @@ class ASH_EXPORT DockedWindowLayoutManager
       public keyboard::KeyboardControllerObserver,
       public ash::ShelfLayoutManagerObserver {
  public:
+  // Maximum width of the docked windows area.
+  static const int kMaxDockWidth;
+
   explicit DockedWindowLayoutManager(aura::Window* dock_container);
   virtual ~DockedWindowLayoutManager();
 
@@ -94,6 +98,10 @@ class ASH_EXPORT DockedWindowLayoutManager
   // Used to snap docked windows to the side of screen during drag.
   DockedAlignment CalculateAlignment() const;
 
+  // Returns true when a window can be docked. Windows cannot be docked at the
+  // edge used by the launcher shelf or the edge opposite from existing dock.
+  bool CanDockWindow(aura::Window* window, SnapType edge);
+
   aura::Window* dock_container() const { return dock_container_; }
 
   // Returns current bounding rectangle of docked windows area.
@@ -101,6 +109,9 @@ class ASH_EXPORT DockedWindowLayoutManager
 
   // Returns last known coordinates of |dragged_window_| after Relayout.
   const gfx::Rect dragged_bounds() const { return dragged_bounds_;}
+
+  // Returns true if currently dragged window is docked at the screen edge.
+  bool is_dragged_window_docked() const { return is_dragged_window_docked_; }
 
   // aura::LayoutManager:
   virtual void OnWindowResized() OVERRIDE;
@@ -141,17 +152,12 @@ class ASH_EXPORT DockedWindowLayoutManager
   FRIEND_TEST_ALL_PREFIXES(DockedWindowLayoutManagerTest, AutoPlacingLeft);
   FRIEND_TEST_ALL_PREFIXES(DockedWindowLayoutManagerTest, AutoPlacingRight);
   FRIEND_TEST_ALL_PREFIXES(DockedWindowLayoutManagerTest,
-                           AutoPlacingLeftSecondScreen);
-  FRIEND_TEST_ALL_PREFIXES(DockedWindowLayoutManagerTest,
                            AutoPlacingRightSecondScreen);
   friend class DockedWindowLayoutManagerTest;
   friend class DockedWindowResizerTest;
 
   // Minimum width of the docked windows area.
   static const int kMinDockWidth;
-
-  // Maximum width of the docked windows area.
-  static const int kMaxDockWidth;
 
   // Width of the gap between the docked windows and a workspace.
   static const int kMinDockGap;

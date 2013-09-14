@@ -77,6 +77,8 @@ bool CanResizeWindow(const aura::Window* window) {
 bool CanSnapWindow(aura::Window* window) {
   if (!CanResizeWindow(window))
     return false;
+  if (window->type() == aura::client::WINDOW_TYPE_PANEL)
+    return false;
   // If a window has a maximum size defined, snapping may make it too big.
   return window->delegate() ? window->delegate()->GetMaximumSize().IsEmpty() :
                               true;
