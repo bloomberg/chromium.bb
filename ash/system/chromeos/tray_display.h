@@ -20,6 +20,7 @@ class AshTestBase;
 }
 
 namespace internal {
+class DisplayView;
 
 class ASH_EXPORT TrayDisplay : public SystemTrayItem,
                                public DisplayController::Observer {
@@ -62,9 +63,11 @@ class ASH_EXPORT TrayDisplay : public SystemTrayItem,
 
   // Test accessors.
   base::string16 GetDefaultViewMessage() const;
-  const views::View* default_view() const { return default_; }
+  const views::View* default_view() const {
+    return reinterpret_cast<views::View*>(default_);
+  }
 
-  views::View* default_;
+  DisplayView* default_;
   DisplayInfoMap display_info_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayDisplay);

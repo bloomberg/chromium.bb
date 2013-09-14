@@ -219,6 +219,7 @@ class DisplayView : public ash::internal::ActionableView {
       message = GetDisplayInfoLine(GetDisplayManager()->first_display_id());
     SetVisible(!message.empty());
     label_->SetText(message);
+    Layout();
   }
 
   const views::Label* label() const { return label_; }
@@ -383,6 +384,9 @@ void TrayDisplay::DestroyDefaultView() {
 void TrayDisplay::OnDisplayConfigurationChanged() {
   DisplayInfoMap old_info;
   UpdateDisplayInfo(&old_info);
+
+  if (default_)
+    default_->Update();
 
   if (!Shell::GetInstance()->system_tray_delegate()->
           ShouldShowDisplayNotification()) {

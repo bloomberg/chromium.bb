@@ -116,7 +116,8 @@ void TrayDisplayTest::CloseNotification() {
 }
 
 bool TrayDisplayTest::IsDisplayVisibleInTray() const {
-  return tray_display_->default_view() &&
+  return tray_->HasSystemBubble() &&
+      tray_display_->default_view() &&
       tray_display_->default_view()->visible();
 }
 
@@ -349,6 +350,41 @@ TEST_F(TrayDisplayTest, OverscanDisplay) {
   EXPECT_EQ(GetTooltipText(headline, GetFirstDisplayName(), "400x400",
                            GetSecondDisplayName(), second_data),
             GetTrayDisplayTooltipText());
+}
+
+TEST_F(TrayDisplayTest, UpdateDuringDisplayConfigurationChange) {
+  tray()->ShowDefaultView(BUBBLE_USE_EXISTING);
+  EXPECT_FALSE(IsDisplayVisibleInTray());
+
+  UpdateDisplay("400x400@1.5");
+  EXPECT_TRUE(tray()->HasSystemBubble());
+  EXPECT_TRUE(IsDisplayVisibleInTray());
+  base::string16 internal_info = l10n_util::GetStringFUTF16(
+      IDS_ASH_STATUS_TRAY_DISPLAY_SINGLE_DISPLAY,
+      GetFirstDisplayName(), UTF8ToUTF16("600x600"));
+  EXPECT_EQ(internal_info, GetTrayDisplayText());
+  EXPECT_EQ(GetTooltipText(base::string16(), GetFirstDisplayName(), "600x600",
+                           base::string16(), std::string()),
+            GetTrayDisplayTooltipText());
+
+  UpdateDisplay("400x400,200x200");
+  EXPECT_TRUE(tray()->HasSystemBubble());
+  EXPECT_TRUE(IsDisplayVisibleInTray());
+  base::string16 expected = l10n_util::GetStringUTF16(
+      IDS_ASH_STATUS_TRAY_DISPLAY_EXTENDED_NO_INTERNAL);
+  base::string16 first_name = GetFirstDisplayName();
+  EXPECT_EQ(expected, GetTrayDisplayText());
+  EXPECT_EQ(GetTooltipText(expected, GetFirstDisplayName(), "400x400",
+                           GetSecondDisplayName(), "200x200"),
+            GetTrayDisplayTooltipText());
+
+  UpdateDisplay("400x400@1.5");
+  tray()->ShowDefaultView(BUBBLE_USE_EXISTING);
+
+  // Back to the default state, the display tray item should disappear.
+  UpdateDisplay("400x400");
+  EXPECT_TRUE(tray()->HasSystemBubble());
+  EXPECT_FALSE(IsDisplayVisibleInTray());
 }
 
 TEST_F(TrayDisplayTest, DisplayNotifications) {
