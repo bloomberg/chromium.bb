@@ -316,7 +316,8 @@ def RunWebRTCTests(options):
   RunTestSuites(options, gtest_config.WEBRTC_TEST_SUITES)
 
 
-def RunGPUTests(_):
+def RunGPUTests(options):
+  InstallApk(options, INSTRUMENTATION_TESTS['ContentShell'], False)
   bb_annotations.PrintNamedStep('gpu_tests')
   RunCmd(['content/test/gpu/run_gpu_test',
           '--browser=android-content-shell', 'pixel'])
