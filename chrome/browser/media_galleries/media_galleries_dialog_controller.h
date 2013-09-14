@@ -127,12 +127,20 @@ class MediaGalleriesDialogController
   virtual void OnRemovableStorageAttached(const StorageInfo& info) OVERRIDE;
   virtual void OnRemovableStorageDetached(const StorageInfo& info) OVERRIDE;
 
-  // MediaGalleriesPreferences::GalleryChangeObserver implementation.
+  // MediaGalleriesPreferences::GalleryChangeObserver implementations.
   // Used to keep the dialog in sync when the preferences change.
-  virtual void OnGalleryChanged(MediaGalleriesPreferences* pref,
-                                const std::string& extension_id,
-                                MediaGalleryPrefId pref_id,
-                                bool has_permission) OVERRIDE;
+  virtual void OnPermissionAdded(MediaGalleriesPreferences* pref,
+                                 const std::string& extension_id,
+                                 MediaGalleryPrefId pref_id) OVERRIDE;
+  virtual void OnPermissionRemoved(MediaGalleriesPreferences* pref,
+                                   const std::string& extension_id,
+                                   MediaGalleryPrefId pref_id) OVERRIDE;
+  virtual void OnGalleryAdded(MediaGalleriesPreferences* pref,
+                              MediaGalleryPrefId pref_id) OVERRIDE;
+  virtual void OnGalleryRemoved(MediaGalleriesPreferences* pref,
+                                MediaGalleryPrefId pref_id) OVERRIDE;
+  virtual void OnGalleryInfoUpdated(MediaGalleriesPreferences* pref,
+                                    MediaGalleryPrefId pref_id) OVERRIDE;
 
   // Populates |known_galleries_| from |preferences_|. Subsequent calls merge
   // into |known_galleries_| and do not change permissions for user toggled

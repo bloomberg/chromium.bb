@@ -446,19 +446,13 @@ void MediaFileSystemRegistry::GetMediaFileSystemsForExtension(
     return;
   }
 
-  if (!ContainsKey(pref_change_registrar_map_, profile)) {
-    PrefChangeRegistrar* pref_registrar = new PrefChangeRegistrar;
-    pref_registrar->Init(profile->GetPrefs());
-    pref_registrar->Add(
-        prefs::kMediaGalleriesRememberedGalleries,
-        base::Bind(&MediaFileSystemRegistry::OnRememberedGalleriesChanged,
-                   base::Unretained(this),
-                   pref_registrar->prefs()));
-    pref_change_registrar_map_[profile] = pref_registrar;
-  }
+  ExtensionGalleriesHostMap::iterator extension_hosts =
+      extension_hosts_map_.find(profile);
+  if (extension_hosts->second.empty())
+    preferences->AddGalleryChangeObserver(this);
 
   ExtensionGalleriesHost* extension_host =
-      extension_hosts_map_[profile][extension->id()].get();
+      extension_hosts->second[extension->id()].get();
   if (!extension_host) {
     extension_host = new ExtensionGalleriesHost(
         file_system_context_.get(),
@@ -639,32 +633,38 @@ MediaFileSystemRegistry::~MediaFileSystemRegistry() {
   DCHECK(mtp_device_delegate_map_.empty());
 }
 
-void MediaFileSystemRegistry::OnRememberedGalleriesChanged(
-    PrefService* prefs) {
-  // Find the Profile that contains the source PrefService.
-  PrefChangeRegistrarMap::iterator pref_change_it =
-      pref_change_registrar_map_.begin();
-  for (; pref_change_it != pref_change_registrar_map_.end(); ++pref_change_it) {
-    if (pref_change_it->first->GetPrefs() == prefs)
-      break;
-  }
-  DCHECK(pref_change_it != pref_change_registrar_map_.end());
-  Profile* profile = pref_change_it->first;
+void MediaFileSystemRegistry::OnPermissionRemoved(
+    MediaGalleriesPreferences* prefs,
+    const std::string& extension_id,
+    MediaGalleryPrefId pref_id) {
+  Profile* profile = prefs->profile();
+  ExtensionGalleriesHostMap::const_iterator host_map_it =
+      extension_hosts_map_.find(profile);
+  DCHECK(host_map_it != extension_hosts_map_.end());
+  const ExtensionHostMap& extension_host_map = host_map_it->second;
+  ExtensionHostMap::const_iterator gallery_host_it =
+      extension_host_map.find(extension_id);
+  if (gallery_host_it == extension_host_map.end())
+    return;
+  gallery_host_it->second->RevokeGalleryByPrefId(pref_id);
+}
 
+void MediaFileSystemRegistry::OnGalleryRemoved(
+    MediaGalleriesPreferences* prefs,
+    MediaGalleryPrefId pref_id) {
+  Profile* profile = prefs->profile();
   // Get the Extensions, MediaGalleriesPreferences and ExtensionHostMap for
   // |profile|.
   const ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
   const ExtensionSet* extensions_set = extension_service->extensions();
-  const MediaGalleriesPreferences* preferences = GetPreferences(profile);
   ExtensionGalleriesHostMap::const_iterator host_map_it =
       extension_hosts_map_.find(profile);
   DCHECK(host_map_it != extension_hosts_map_.end());
   const ExtensionHostMap& extension_host_map = host_map_it->second;
 
-  // Go through ExtensionsHosts, get the updated galleries list and use it to
-  // revoke the old galleries.
-  // RevokeOldGalleries() may end up deleting from |extension_host_map| and
+  // Go through ExtensionHosts, and remove indicated gallery, if any.
+  // RevokeGalleryByPrefId() may end up deleting from |extension_host_map| and
   // even delete |extension_host_map| altogether. So do this in two loops to
   // avoid using an invalidated iterator or deleted map.
   std::vector<const extensions::Extension*> extensions;
@@ -680,8 +680,7 @@ void MediaFileSystemRegistry::OnRememberedGalleriesChanged(
         extension_host_map.find(extensions[i]->id());
     if (gallery_host_it == extension_host_map.end())
       continue;
-    gallery_host_it->second->RevokeOldGalleries(
-        preferences->GalleriesForExtension(*extensions[i]));
+    gallery_host_it->second->RevokeGalleryByPrefId(pref_id);
   }
 }
 
@@ -730,13 +729,10 @@ void MediaFileSystemRegistry::OnExtensionGalleriesHostEmpty(
   DCHECK_EQ(1U, erase_count);
   if (extension_hosts->second.empty()) {
     // When a profile has no ExtensionGalleriesHosts left, remove the
-    // matching PrefChangeRegistrar since it is no longer needed. Leave the
+    // matching gallery-change-watcher since it is no longer needed. Leave the
     // |extension_hosts| entry alone, since it indicates the profile has been
     // previously used.
-    PrefChangeRegistrarMap::iterator pref_it =
-        pref_change_registrar_map_.find(profile);
-    DCHECK(pref_it != pref_change_registrar_map_.end());
-    delete pref_it->second;
-    pref_change_registrar_map_.erase(pref_it);
+    MediaGalleriesPreferences* preferences = GetPreferences(profile);
+    preferences->RemoveGalleryChangeObserver(this);
   }
 }

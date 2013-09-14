@@ -52,16 +52,18 @@ class GalleryWatchStateTracker
                              MediaGalleryPrefId gallery_id);
 
   // Updates the state of the gallery watchers on the receipt of access
-  // permission changed event for the extension specified by the |extension_id|.
-  // If |extension_id| is empty, the callback is a global event
-  // which this class is not interested in.
-  // |has_permission| is set to true if the user granted permission to
-  // access the gallery associated with the |gallery_id| and is set to false
-  // if the user revoked the gallery permission.
-  virtual void OnGalleryChanged(MediaGalleriesPreferences* pref,
-                                const std::string& extension_id,
-                                MediaGalleryPrefId gallery_id,
-                                bool has_permission) OVERRIDE;
+  // permission changed event for the extension specified by the
+  // |extension_id|.
+  virtual void OnPermissionAdded(MediaGalleriesPreferences* pref,
+                                 const std::string& extension_id,
+                                 MediaGalleryPrefId gallery_id) OVERRIDE;
+
+  virtual void OnPermissionRemoved(MediaGalleriesPreferences* pref,
+                                   const std::string& extension_id,
+                                   MediaGalleryPrefId gallery_id) OVERRIDE;
+
+  virtual void OnGalleryRemoved(MediaGalleriesPreferences* pref,
+                                MediaGalleryPrefId gallery_id) OVERRIDE;
 
   // Returns a set of watched gallery identifiers for the extension specified
   // by the |extension_id|.

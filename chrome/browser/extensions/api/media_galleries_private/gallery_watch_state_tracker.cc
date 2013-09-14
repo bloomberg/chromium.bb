@@ -112,23 +112,35 @@ GalleryWatchStateTracker* GalleryWatchStateTracker::GetForProfile(
   return NULL;
 }
 
-void GalleryWatchStateTracker::OnGalleryChanged(
+void GalleryWatchStateTracker::OnPermissionAdded(
     MediaGalleriesPreferences* preferences,
     const std::string& extension_id,
-    MediaGalleryPrefId gallery_id,
-    bool has_permission) {
-  if (extension_id.empty())
-    return;
+    MediaGalleryPrefId gallery_id) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   // Granted gallery permission.
-  if (has_permission && HasGalleryWatchInfo(extension_id, gallery_id, false)) {
+  if (HasGalleryWatchInfo(extension_id, gallery_id, false))
     SetupGalleryWatch(extension_id, gallery_id, preferences);
-    return;
-  }
+}
 
+void GalleryWatchStateTracker::OnPermissionRemoved(
+    MediaGalleriesPreferences* preferences,
+    const std::string& extension_id,
+    MediaGalleryPrefId gallery_id) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   // Revoked gallery permission.
-  if (!has_permission && HasGalleryWatchInfo(extension_id, gallery_id, true))
+  if (HasGalleryWatchInfo(extension_id, gallery_id, true))
     RemoveGalleryWatch(extension_id, gallery_id, preferences);
+}
+
+void GalleryWatchStateTracker::OnGalleryRemoved(MediaGalleriesPreferences* pref,
+                                                MediaGalleryPrefId gallery_id) {
+  for (WatchedExtensionsMap::const_iterator it =
+           watched_extensions_map_.begin();
+       it != watched_extensions_map_.end();
+       ++it) {
+    if (it->second.find(gallery_id) != it->second.end())
+      RemoveGalleryWatch(it->first, gallery_id, pref);
+  }
 }
 
 MediaGalleryPrefIdSet

@@ -124,20 +124,31 @@ class MediaGalleriesPreferences : public BrowserContextKeyedService,
   class GalleryChangeObserver {
     public:
      // |extension_id| specifies the extension affected by this change.
-     // It is empty if the gallery change affects all extensions.
-     // If not empty, |pref_id| and |has_permission| are relevant
-     // and refer to a specific relationship.
-     virtual void OnGalleryChanged(MediaGalleriesPreferences* pref,
-                                   const std::string& extension_id,
-                                   MediaGalleryPrefId pref_id,
-                                   bool has_permission) = 0;
+     // |pref_id| refers to the gallery.
+     virtual void OnPermissionAdded(MediaGalleriesPreferences* pref,
+                                    const std::string& extension_id,
+                                    MediaGalleryPrefId pref_id) {}
 
+     virtual void OnPermissionRemoved(MediaGalleriesPreferences* pref,
+                                      const std::string& extension_id,
+                                      MediaGalleryPrefId pref_id) {}
+
+     virtual void OnGalleryAdded(MediaGalleriesPreferences* pref,
+                                 MediaGalleryPrefId pref_id) {}
+
+     virtual void OnGalleryRemoved(MediaGalleriesPreferences* pref,
+                                   MediaGalleryPrefId pref_id) {}
+
+     virtual void OnGalleryInfoUpdated(MediaGalleriesPreferences* pref,
+                                       MediaGalleryPrefId pref_id) {}
     protected:
      virtual ~GalleryChangeObserver();
   };
 
   explicit MediaGalleriesPreferences(Profile* profile);
   virtual ~MediaGalleriesPreferences();
+
+  Profile* profile();
 
   void AddGalleryChangeObserver(GalleryChangeObserver* observer);
   void RemoveGalleryChangeObserver(GalleryChangeObserver* observer);
@@ -232,13 +243,7 @@ class MediaGalleriesPreferences : public BrowserContextKeyedService,
   void OnPicasaDeviceID(const std::string& device_id);
 
   // Builds |known_galleries_| from the persistent store.
-  // Notifies GalleryChangeObservers if |notify_observers| is true.
-  void InitFromPrefs(bool notify_observers);
-
-  // Notifies |gallery_change_observers_| about changes in |known_galleries_|.
-  void NotifyChangeObservers(const std::string& extension_id,
-                             MediaGalleryPrefId pref_id,
-                             bool has_permission);
+  void InitFromPrefs();
 
   MediaGalleryPrefId AddGalleryInternal(const std::string& device_id,
                                         const string16& display_name,
@@ -253,14 +258,15 @@ class MediaGalleriesPreferences : public BrowserContextKeyedService,
                                         int prefs_version);
 
   // Sets permission for the media galleries identified by |gallery_id| for the
-  // extension in the given |prefs|.
-  void SetGalleryPermissionInPrefs(const std::string& extension_id,
+  // extension in the given |prefs|. Returns true only if anything changed.
+  bool SetGalleryPermissionInPrefs(const std::string& extension_id,
                                    MediaGalleryPrefId gallery_id,
                                    bool has_access);
 
   // Removes the entry for the media galleries permissions identified by
   // |gallery_id| for the extension in the given |prefs|.
-  void UnsetGalleryPermissionInPrefs(const std::string& extension_id,
+  // Returns true only if anything changed.
+  bool UnsetGalleryPermissionInPrefs(const std::string& extension_id,
                                      MediaGalleryPrefId gallery_id);
 
   // Return all media gallery permissions for the extension in the given
