@@ -20,6 +20,7 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/launcher_test_api.h"
 #include "ash/test/launcher_view_test_api.h"
 #include "ash/test/shell_test_api.h"
 #include "ash/test/test_launcher_delegate.h"
@@ -86,7 +87,7 @@ class LauncherViewIconObserverTest : public ash::test::AshTestBase {
     observer_.reset(new TestLauncherIconObserver(launcher));
 
     launcher_view_test_.reset(new LauncherViewTestAPI(
-        launcher->GetLauncherViewForTest()));
+        LauncherTestAPI(launcher).launcher_view()));
     launcher_view_test_->SetAnimationDuration(1);
   }
 
@@ -203,7 +204,7 @@ class LauncherViewTest : public AshTestBase {
     test::ShellTestApi test_api(Shell::GetInstance());
     model_ = test_api.launcher_model();
     Launcher* launcher = Launcher::ForPrimaryDisplay();
-    launcher_view_ = launcher->GetLauncherViewForTest();
+    launcher_view_ = test::LauncherTestAPI(launcher).launcher_view();
 
     // The bounds should be big enough for 4 buttons + overflow chevron.
     launcher_view_->SetBounds(0, 0, 500, 50);

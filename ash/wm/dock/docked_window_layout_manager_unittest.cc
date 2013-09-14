@@ -16,6 +16,7 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/launcher_test_api.h"
 #include "ash/test/launcher_view_test_api.h"
 #include "ash/test/shell_test_api.h"
 #include "ash/test/test_launcher_delegate.h"
@@ -53,7 +54,7 @@ class DockedWindowLayoutManagerTest
     ASSERT_TRUE(test::TestLauncherDelegate::instance());
 
     launcher_view_test_.reset(new test::LauncherViewTestAPI(
-        Launcher::ForPrimaryDisplay()->GetLauncherViewForTest()));
+        test::LauncherTestAPI(Launcher::ForPrimaryDisplay()).launcher_view()));
     launcher_view_test_->SetAnimationDuration(1);
   }
 

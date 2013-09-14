@@ -5,6 +5,7 @@
 #include "ash/launcher/launcher.h"
 #include "ash/launcher/launcher_view.h"
 #include "ash/shell.h"
+#include "ash/test/launcher_test_api.h"
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -45,7 +46,7 @@ void CloseBrowser(Browser* browser) {
 gfx::Rect GetChromeIconBoundsForRootWindow(aura::RootWindow* root_window) {
   ash::Launcher* launcher = ash::Launcher::ForWindow(root_window);
   const ash::internal::LauncherView* launcher_view =
-      launcher->GetLauncherViewForTest();
+      ash::test::LauncherTestAPI(launcher).launcher_view();
   const views::ViewModel* view_model = launcher_view->view_model_for_test();
 
   EXPECT_EQ(2, view_model->view_size());

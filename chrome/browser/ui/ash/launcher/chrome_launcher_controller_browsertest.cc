@@ -15,6 +15,7 @@
 #include "ash/launcher/launcher_util.h"
 #include "ash/launcher/launcher_view.h"
 #include "ash/shell.h"
+#include "ash/test/launcher_test_api.h"
 #include "ash/test/launcher_view_test_api.h"
 #include "ash/test/shell_test_api.h"
 #include "ash/wm/window_util.h"
@@ -1489,7 +1490,8 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, DragAndDrop) {
   // Get a number of interfaces we need.
   aura::test::EventGenerator generator(
       ash::Shell::GetPrimaryRootWindow(), gfx::Point());
-  ash::test::LauncherViewTestAPI test(launcher_->GetLauncherViewForTest());
+  ash::test::LauncherViewTestAPI test(
+      ash::test::LauncherTestAPI(launcher_).launcher_view());
   AppListService* service = AppListService::Get();
 
   // There should be two items in our launcher by this time.
@@ -1593,7 +1595,8 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, DragAndDrop) {
 IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, DragOffShelf) {
   aura::test::EventGenerator generator(
       ash::Shell::GetPrimaryRootWindow(), gfx::Point());
-  ash::test::LauncherViewTestAPI test(launcher_->GetLauncherViewForTest());
+  ash::test::LauncherViewTestAPI test(
+      ash::test::LauncherTestAPI(launcher_).launcher_view());
 
   // Create a known application and check that we have 3 items in the launcher.
   CreateShortcut("app1");
@@ -1657,7 +1660,8 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, ClickItem) {
   // Get a number of interfaces we need.
   aura::test::EventGenerator generator(
       ash::Shell::GetPrimaryRootWindow(), gfx::Point());
-  ash::test::LauncherViewTestAPI test(launcher_->GetLauncherViewForTest());
+  ash::test::LauncherViewTestAPI test(
+      ash::test::LauncherTestAPI(launcher_).launcher_view());
   AppListService* service = AppListService::Get();
   // There should be two items in our launcher by this time.
   EXPECT_EQ(2, model_->item_count());
@@ -1757,7 +1761,8 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, OverflowBubble) {
   // No overflow yet.
   EXPECT_FALSE(launcher_->IsShowingOverflowBubble());
 
-  ash::test::LauncherViewTestAPI test(launcher_->GetLauncherViewForTest());
+  ash::test::LauncherViewTestAPI test(
+      ash::test::LauncherTestAPI(launcher_).launcher_view());
 
   int items_added = 0;
   while (!test.IsOverflowButtonVisible()) {

@@ -37,6 +37,10 @@ class LauncherView;
 class ShelfLayoutManager;
 }
 
+namespace test {
+class LauncherTestAPI;
+}
+
 class LauncherIconObserver;
 class LauncherDelegate;
 class LauncherModel;
@@ -97,10 +101,6 @@ class ASH_EXPORT Launcher {
   // A negative index launches the last launcher item in the launcher.
   void LaunchAppIndexAt(int item_index);
 
-  // Only to be called for testing. Retrieves the LauncherView.
-  // TODO(sky): remove this!
-  internal::LauncherView* GetLauncherViewForTest();
-
   ShelfWidget* shelf_widget() { return shelf_widget_; }
 
   // Set the bounds of the launcher view.
@@ -111,6 +111,8 @@ class ASH_EXPORT Launcher {
   app_list::ApplicationDragAndDropHost* GetDragAndDropHostForAppList();
 
  private:
+  friend class ash::test::LauncherTestAPI;
+
   // LauncherView used to display icons.
   internal::LauncherView* launcher_view_;
 

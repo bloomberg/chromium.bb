@@ -606,6 +606,8 @@
         'test/ash_test_helper.h',
         'test/cursor_manager_test_api.cc',
         'test/cursor_manager_test_api.h',
+        'test/launcher_test_api.cc',
+        'test/launcher_test_api.h',
         'test/launcher_view_test_api.cc',
         'test/launcher_view_test_api.h',
         'test/display_manager_test_api.cc',

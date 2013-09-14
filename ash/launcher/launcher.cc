@@ -177,10 +177,6 @@ void Launcher::LaunchAppIndexAt(int item_index) {
   }
 }
 
-internal::LauncherView* Launcher::GetLauncherViewForTest() {
-  return launcher_view_;
-}
-
 void Launcher::SetLauncherViewBounds(gfx::Rect bounds) {
   launcher_view_->SetBoundsRect(bounds);
 }
