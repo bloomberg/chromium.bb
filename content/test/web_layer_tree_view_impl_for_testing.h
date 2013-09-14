@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_SUPPORT_WEB_LAYER_TREE_VIEW_IMPL_FOR_TESTING_H_
-#define WEBKIT_SUPPORT_WEB_LAYER_TREE_VIEW_IMPL_FOR_TESTING_H_
+#ifndef CONTENT_TEST_WEB_LAYER_TREE_VIEW_IMPL_FOR_TESTING_H_
+#define CONTENT_TEST_WEB_LAYER_TREE_VIEW_IMPL_FOR_TESTING_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "cc/trees/layer_tree_host_client.h"
@@ -84,4 +84,4 @@ class WebLayerTreeViewImplForTesting : public WebKit::WebLayerTreeView,
 
 }  // namespace webkit
 
-#endif  // WEBKIT_SUPPORT_WEB_LAYER_TREE_VIEW_IMPL_FOR_TESTING_H_
+#endif  // CONTENT_TEST_WEB_LAYER_TREE_VIEW_IMPL_FOR_TESTING_H_

@@ -1,19 +1,19 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_SUPPORT_TEST_WEBKIT_PLATFORM_SUPPORT_H_
-#define WEBKIT_SUPPORT_TEST_WEBKIT_PLATFORM_SUPPORT_H_
+#ifndef CONTENT_TEST_TEST_WEBKIT_PLATFORM_SUPPORT_H_
+#define CONTENT_TEST_TEST_WEBKIT_PLATFORM_SUPPORT_H_
 
 #include "base/compiler_specific.h"
 #include "base/files/scoped_temp_dir.h"
+#include "content/test/mock_webclipboard_impl.h"
+#include "content/test/weburl_loader_mock_factory.h"
 #include "third_party/WebKit/public/platform/WebUnitTestSupport.h"
 #include "webkit/child/webkitplatformsupport_child_impl.h"
 #include "webkit/glue/simple_webmimeregistry_impl.h"
 #include "webkit/glue/webfileutilities_impl.h"
 #include "webkit/renderer/compositor_bindings/web_compositor_support_impl.h"
-#include "webkit/support/mock_webclipboard_impl.h"
-#include "webkit/support/weburl_loader_mock_factory.h"
 
 namespace WebKit {
 class WebLayerTreeView;
@@ -108,4 +108,4 @@ class TestWebKitPlatformSupport :
   DISALLOW_COPY_AND_ASSIGN(TestWebKitPlatformSupport);
 };
 
-#endif  // WEBKIT_SUPPORT_TEST_WEBKIT_PLATFORM_SUPPORT_H_
+#endif  // CONTENT_TEST_TEST_WEBKIT_PLATFORM_SUPPORT_H_

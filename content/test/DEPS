@@ -6,4 +6,5 @@ include_rules = [
   "+ui/aura/test/test_aura_initializer.h",
   "+ui/base/resource/data_pack.h",
   "+third_party/WebKit/public/testing",
+  "!v8/include/v8.h",
 ]

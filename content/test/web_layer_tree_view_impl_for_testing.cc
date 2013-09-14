@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/support/web_layer_tree_view_impl_for_testing.h"
+#include "content/test/web_layer_tree_view_impl_for_testing.h"
 
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
@@ -13,6 +13,7 @@
 #include "cc/layers/layer.h"
 #include "cc/output/output_surface.h"
 #include "cc/trees/layer_tree_host.h"
+#include "content/test/test_webkit_platform_support.h"
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/public/platform/WebLayer.h"
@@ -21,7 +22,6 @@
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "webkit/common/gpu/test_context_provider_factory.h"
 #include "webkit/renderer/compositor_bindings/web_layer_impl.h"
-#include "webkit/support/test_webkit_platform_support.h"
 
 using WebKit::WebColor;
 using WebKit::WebGraphicsContext3D;

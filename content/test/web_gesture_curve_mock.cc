@@ -1,12 +1,12 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/support/web_gesture_curve_mock.h"
+#include "content/test/web_gesture_curve_mock.h"
 
+#include "content/test/weburl_loader_mock_factory.h"
 #include "third_party/WebKit/public/platform/WebFloatSize.h"
 #include "third_party/WebKit/public/platform/WebGestureCurveTarget.h"
-#include "webkit/support/weburl_loader_mock_factory.h"
 
 WebGestureCurveMock::WebGestureCurveMock(const WebKit::WebFloatPoint& velocity,
     const WebKit::WebSize& cumulative_scroll)

@@ -4,7 +4,7 @@
 
 #include "content/test/webkit_unit_test_support.h"
 
-#include "webkit/support/webkit_support.h"
+#include "content/test/webkit_support.h"
 
 namespace content {
 

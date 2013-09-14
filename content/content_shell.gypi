@@ -51,8 +51,10 @@
         '../ui/ui.gyp:ui',
         '../url/url.gyp:url_lib',
         '../v8/tools/gyp/v8.gyp:v8',
-        '../webkit/support/webkit_support.gyp:webkit_support',
+        '../webkit/common/webkit_common.gyp:webkit_common',
         '../webkit/webkit_resources.gyp:webkit_resources',
+        '../webkit/common/user_agent/webkit_user_agent.gyp:user_agent',
+        '../webkit/support/webkit_support.gyp:glue',
       ],
       'include_dirs': [
         '..',
@@ -203,7 +205,7 @@
           'dependencies': [
             # This dependency is for running DRT against the content shell, and
             # this combination is not yet supported on Android.
-            '../webkit/support/webkit_support.gyp:webkit_support',
+            'test_support_content',
           ],
         }],  # OS=="android"
         ['(os_posix==1 and use_aura==1 and linux_use_tcmalloc==1) or (android_use_tcmalloc==1)', {

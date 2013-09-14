@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_SUPPORT_WEBURL_LOADER_MOCK_FACTORY_H_
-#define WEBKIT_SUPPORT_WEBURL_LOADER_MOCK_FACTORY_H_
+#ifndef CONTENT_TEST_WEBURL_LOADER_MOCK_FACTORY_H_
+#define CONTENT_TEST_WEBURL_LOADER_MOCK_FACTORY_H_
 
 #include <map>
 
@@ -111,5 +111,5 @@ class WebURLLoaderMockFactory {
   DISALLOW_COPY_AND_ASSIGN(WebURLLoaderMockFactory);
 };
 
-#endif  // WEBKIT_SUPPORT_WEBURL_LOADER_MOCK_FACTORY_H_
+#endif  // CONTENT_TEST_WEBURL_LOADER_MOCK_FACTORY_H_
 

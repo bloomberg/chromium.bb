@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/support/test_webkit_platform_support.h"
+#include "content/test/test_webkit_platform_support.h"
 
 #include "base/command_line.h"
 #include "base/file_util.h"
@@ -11,6 +11,10 @@
 #include "base/metrics/stats_counters.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/test/mock_webclipboard_impl.h"
+#include "content/test/web_gesture_curve_mock.h"
+#include "content/test/web_layer_tree_view_impl_for_testing.h"
+#include "content/test/weburl_loader_mock_factory.h"
 #include "media/base/media.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
@@ -32,10 +36,6 @@
 #include "webkit/glue/simple_webmimeregistry_impl.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/renderer/compositor_bindings/web_compositor_support_impl.h"
-#include "webkit/support/mock_webclipboard_impl.h"
-#include "webkit/support/web_gesture_curve_mock.h"
-#include "webkit/support/web_layer_tree_view_impl_for_testing.h"
-#include "webkit/support/weburl_loader_mock_factory.h"
 
 #if defined(OS_WIN)
 #include "third_party/WebKit/public/platform/win/WebThemeEngine.h"

@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_SUPPORT_WEB_GESTURE_CURVE_MOCK_H_
-#define WEBKIT_SUPPORT_WEB_GESTURE_CURVE_MOCK_H_
+#ifndef CONTENT_TEST_WEB_GESTURE_CURVE_MOCK_H_
+#define CONTENT_TEST_WEB_GESTURE_CURVE_MOCK_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
@@ -29,4 +29,4 @@ class WebGestureCurveMock : public WebKit::WebGestureCurve {
   DISALLOW_COPY_AND_ASSIGN(WebGestureCurveMock);
 };
 
-#endif  // WEBKIT_SUPPORT_WEB_GESTURE_CURVE_MOCK_H_
+#endif  // CONTENT_TEST_WEB_GESTURE_CURVE_MOCK_H_

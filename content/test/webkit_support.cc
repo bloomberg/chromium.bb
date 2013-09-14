@@ -1,18 +1,18 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/support/webkit_support.h"
+#include "content/test/webkit_support.h"
 
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "content/test/test_webkit_platform_support.h"
 #include "third_party/WebKit/public/web/WebCache.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "url/url_util.h"
 #include "webkit/common/user_agent/user_agent.h"
 #include "webkit/common/user_agent/user_agent_util.h"
-#include "webkit/support/test_webkit_platform_support.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"

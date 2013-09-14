@@ -13,6 +13,7 @@
         '../skia/skia.gyp:skia',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
+        '../ui/ui.gyp:ui',
         '../ui/ui.gyp:ui_resources',
         '../ui/ui.gyp:ui_test_support',
         '../url/url.gyp:url_lib',
@@ -114,6 +115,10 @@
         'test/mock_keyboard_driver_win.h',
         'test/mock_render_process.cc',
         'test/mock_render_process.h',
+        'test/mock_webclipboard_impl.cc',
+        'test/mock_webclipboard_impl.h',
+        'test/net/url_request_abort_on_end_job.cc',
+        'test/net/url_request_abort_on_end_job.h',
         'test/net/url_request_failed_job.cc',
         'test/net/url_request_failed_job.h',
         'test/net/url_request_mock_http_job.cc',
@@ -122,8 +127,6 @@
         'test/net/url_request_prepackaged_interceptor.h',
         'test/net/url_request_slow_download_job.cc',
         'test/net/url_request_slow_download_job.h',
-        'test/net/url_request_abort_on_end_job.cc',
-        'test/net/url_request_abort_on_end_job.h',
         'test/ppapi_unittest.cc',
         'test/ppapi_unittest.h',
         'test/test_content_browser_client.cc',
@@ -140,6 +143,19 @@
         'test/test_web_contents.h',
         'test/test_web_contents_view.cc',
         'test/test_web_contents_view.h',
+        'test/test_webkit_platform_support.cc',
+        'test/test_webkit_platform_support.h',
+        'test/web_gesture_curve_mock.cc',
+        'test/web_gesture_curve_mock.h',
+        'test/web_layer_tree_view_impl_for_testing.cc',
+        'test/web_layer_tree_view_impl_for_testing.h',
+        'test/webkit_support.cc',
+        'test/webkit_support.h',
+        'test/webkit_support_glue.cc',
+        'test/weburl_loader_mock.cc',
+        'test/weburl_loader_mock.h',
+        'test/weburl_loader_mock_factory.cc',
+        'test/weburl_loader_mock_factory.h',
 
         # TODO(phajdan.jr): Those files should be moved to webkit
         # test support target.
@@ -166,6 +182,25 @@
             ['include', '^test/test_content_client\\.cc$'],
           ],
         }, {  # OS != "ios"
+          'conditions': [
+            ['OS=="mac"', {
+              'copies': [{
+                'destination': '<(SHARED_INTERMEDIATE_DIR)/webkit',
+                'files': [
+                  '../webkit/tools/test_shell/resources/missingImage.png',
+                  '../webkit/tools/test_shell/resources/textAreaResizeCorner.png',
+                ],
+              }],
+            }, { # OS!="mac"
+              'copies': [{
+                'destination': '<(PRODUCT_DIR)/DumpRenderTree_resources',
+                'files': [
+                  '../webkit/tools/test_shell/resources/missingImage.gif',
+                  '../webkit/tools/test_shell/resources/textAreaResizeCorner.png',
+                ],
+              }],
+            }],
+          ],
           'dependencies': [
             'content_child',
             'content_gpu',
@@ -182,10 +217,13 @@
             '../third_party/WebKit/public/blink_test_runner.gyp:blink_test_runner',
             '../ui/surface/surface.gyp:surface',
             '../webkit/common/gpu/webkit_gpu.gyp:webkit_gpu',
+            '../webkit/common/user_agent/webkit_user_agent.gyp:user_agent',
             '../webkit/renderer/compositor_bindings/compositor_bindings.gyp:webkit_compositor_support',
-            '../webkit/support/webkit_support.gyp:webkit_support_common',
+            '../webkit/renderer/webkit_renderer.gyp:webkit_renderer',
             '../webkit/storage_browser.gyp:webkit_storage_browser',
             '../webkit/storage_common.gyp:webkit_storage_common',
+            '../webkit/support/webkit_support.gyp:glue',
+            '../webkit/support/webkit_support.gyp:glue_child',
           ],
         }],
         ['OS == "win" or toolkit_uses_gtk == 1', {
@@ -1070,7 +1108,7 @@
           'target_name': 'content_webkit_unit_test_support',
           'type': 'static_library',
           'dependencies': [
-            '../webkit/support/webkit_support.gyp:webkit_support',
+            'test_support_content',
           ],
           'include_dirs': [
             '..',

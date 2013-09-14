@@ -15,6 +15,7 @@
 #include "content/shell/renderer/shell_render_process_observer.h"
 #include "content/shell/renderer/shell_render_view_observer.h"
 #include "content/shell/renderer/webkit_test_runner.h"
+#include "content/test/mock_webclipboard_impl.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamCenter.h"
 #include "third_party/WebKit/public/testing/WebTestInterfaces.h"
 #include "third_party/WebKit/public/testing/WebTestProxy.h"
@@ -22,7 +23,6 @@
 #include "third_party/WebKit/public/web/WebPluginParams.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "v8/include/v8.h"
-#include "webkit/support/mock_webclipboard_impl.h"
 
 using WebKit::WebAudioDevice;
 using WebKit::WebClipboard;

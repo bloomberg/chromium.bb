@@ -9,6 +9,9 @@
      'cflags+': ['-Wno-narrowing'],
      'cflags_cc+': ['-Wno-narrowing'],
   },
+  'variables': {
+    'chromium_code': 1,
+  },
   'targets': [
     {
       'target_name': 'glue_child',

@@ -1,19 +1,19 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/support/weburl_loader_mock_factory.h"
+#include "content/test/weburl_loader_mock_factory.h"
 
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
+#include "content/test/webkit_support.h"
+#include "content/test/weburl_loader_mock.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/web/WebCache.h"
-#include "webkit/support/webkit_support.h"
-#include "webkit/support/weburl_loader_mock.h"
 
 using WebKit::WebCache;
 using WebKit::WebData;
