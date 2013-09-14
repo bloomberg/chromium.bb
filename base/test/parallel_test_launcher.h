@@ -17,7 +17,7 @@ class CommandLine;
 
 namespace base {
 
-class SequencedWorkerPool;
+class SequencedWorkerPoolOwner;
 class Timer;
 
 // Launches child gtest process in parallel. Keeps track of running processes,
@@ -74,7 +74,7 @@ class ParallelTestLauncher {
   RunningProcessesMap running_processes_map_;
 
   // Worker pool used to launch processes in parallel.
-  scoped_refptr<SequencedWorkerPool> worker_pool_;
+  scoped_ptr<SequencedWorkerPoolOwner> worker_pool_owner_;
 
   // Make sure we don't accidentally call the wrong methods e.g. on the worker
   // pool thread. With lots of callbacks used this is non-trivial.

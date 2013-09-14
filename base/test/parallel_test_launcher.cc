@@ -20,8 +20,9 @@
 #include "base/location.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/process/launch.h"
+#include "base/run_loop.h"
 #include "base/test/test_launcher.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/test/sequenced_worker_pool_owner.h"
 
 #if defined(OS_WIN)
 #include "base/win/scoped_handle.h"
@@ -127,7 +128,8 @@ ParallelTestLauncher::ParallelTestLauncher(size_t jobs)
              this,
              &ParallelTestLauncher::OnOutputTimeout),
       launch_sequence_number_(0),
-      worker_pool_(new SequencedWorkerPool(jobs, "parallel_test_launcher")) {
+      worker_pool_owner_(
+          new SequencedWorkerPoolOwner(jobs, "parallel_test_launcher")) {
   // Start the watchdog timer.
   timer_.Reset();
 }
@@ -135,7 +137,7 @@ ParallelTestLauncher::ParallelTestLauncher(size_t jobs)
 ParallelTestLauncher::~ParallelTestLauncher() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  worker_pool_->Shutdown();
+  worker_pool_owner_->pool()->Shutdown();
 }
 
 void ParallelTestLauncher::LaunchChildGTestProcess(
@@ -152,7 +154,7 @@ void ParallelTestLauncher::LaunchChildGTestProcess(
   running_processes_map_.insert(
       std::make_pair(launch_sequence_number_, new_command_line));
 
-  worker_pool_->PostWorkerTask(
+  worker_pool_owner_->pool()->PostWorkerTask(
       FROM_HERE,
       Bind(&DoLaunchChildTestProcess,
            new_command_line,
