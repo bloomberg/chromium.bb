@@ -45,10 +45,10 @@ class ValidationError(Exception):
 
 class RemoteTryJob(object):
   """Remote Tryjob that is submitted through a Git repo."""
-  EXT_SSH_URL = os.path.join(constants.GERRIT_SSH_URL,
-                             'chromiumos/tryjobs')
-  INT_SSH_URL = os.path.join(constants.GERRIT_INT_SSH_URL,
-                             'chromeos/tryjobs')
+  PUBLIC_URL = os.path.join(constants.PUBLIC_GOB_URL,
+                            'chromiumos/tryjobs')
+  INTERNAL_URL = os.path.join(constants.INTERNAL_GOB_URL,
+                              'chromeos/tryjobs')
 
   # In version 3, remote patches have an extra field.
   # In version 4, cherry-picking is the norm, thus multiple patches are
@@ -92,12 +92,12 @@ class RemoteTryJob(object):
                            % (self.TRYJOB_FORMAT_VERSION,))
     self.tryjob_repo = None
     self.local_patches = local_patches
-    self.ssh_url = self.EXT_SSH_URL
+    self.repo_url = self.PUBLIC_URL
     self.manifest = None
     if repository.IsARepoRoot(options.sourceroot):
       self.manifest = git.ManifestCheckout.Cached(options.sourceroot)
       if repository.IsInternalRepoCheckout(options.sourceroot):
-        self.ssh_url = self.INT_SSH_URL
+        self.repo_url = self.INTERNAL_URL
 
   @property
   def values(self):
@@ -158,7 +158,7 @@ class RemoteTryJob(object):
                                 patch.tracking_branch, tag))
 
     self._VerifyForBuildbot()
-    repository.CloneGitRepo(self.tryjob_repo, self.ssh_url)
+    repository.CloneGitRepo(self.tryjob_repo, self.repo_url)
     version_path = os.path.join(self.tryjob_repo,
                                 self.TRYJOB_FORMAT_FILE)
     with open(version_path, 'r') as f:

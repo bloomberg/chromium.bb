@@ -57,7 +57,7 @@ class RemoteTryTests(cros_test_lib.MoxTempDirTestCase):
   def _SubmitJob(self, checkout_dir, job, version=None):
     """Returns the path to the tryjob description."""
     self.assertTrue(isinstance(job, RemoteTryJobMock))
-    basehash = git.GetGitRepoRevision(job.ssh_url)
+    basehash = git.GetGitRepoRevision(job.repo_url)
     if version is not None:
       self._SetMirrorVersion(version)
     job.Submit(workdir=checkout_dir, dryrun=True)
@@ -78,8 +78,8 @@ class RemoteTryTests(cros_test_lib.MoxTempDirTestCase):
                             bare=True)
 
     self.int_mirror = mirror
-    RemoteTryJobMock.EXT_SSH_URL = self.ext_mirror
-    RemoteTryJobMock.INT_SSH_URL = self.int_mirror
+    RemoteTryJobMock.PUBLIC_URL = self.ext_mirror
+    RemoteTryJobMock.INTERNAL_URL = self.int_mirror
     self._SetMirrorVersion(remote_try.RemoteTryJob.TRYJOB_FORMAT_VERSION, True)
 
   def _SetMirrorVersion(self, version, only_if_missing=False):
@@ -188,7 +188,7 @@ class RemoteTryTests(cros_test_lib.MoxTempDirTestCase):
 
     self.mox.ReplayAll()
     job = self._CreateJob(mirror=False)
-    self.assertEqual(job.ssh_url, remote_try.RemoteTryJob.EXT_SSH_URL)
+    self.assertEqual(job.repo_url, remote_try.RemoteTryJob.PUBLIC_URL)
 
 
 if __name__ == '__main__':
