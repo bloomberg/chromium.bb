@@ -12,6 +12,7 @@
 #undef None
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/events/event.h"
 #include "ui/base/events/event_constants.h"
 #include "ui/base/events/event_utils.h"
 #include "ui/base/touch/touch_factory_x11.h"
@@ -232,6 +233,27 @@ TEST(EventsXTest, EnterLeaveEvent) {
   EXPECT_EQ(ui::ET_MOUSE_EXITED, ui::EventTypeFromNative(&event));
   EXPECT_EQ("30,40", ui::EventLocationFromNative(&event).ToString());
   EXPECT_EQ("230,240", ui::EventSystemLocationFromNative(&event).ToString());
+}
+
+TEST(EventsXTest, ClickCount) {
+  XEvent event;
+  gfx::Point location(5, 10);
+
+  for (int i = 1; i <= 3; ++i) {
+    InitButtonEvent(&event, true, location, 1, 0);
+    {
+      MouseEvent mouseev(&event);
+      EXPECT_EQ(ui::ET_MOUSE_PRESSED, mouseev.type());
+      EXPECT_EQ(i, mouseev.GetClickCount());
+    }
+
+    InitButtonEvent(&event, false, location, 1, 0);
+    {
+      MouseEvent mouseev(&event);
+      EXPECT_EQ(ui::ET_MOUSE_RELEASED, mouseev.type());
+      EXPECT_EQ(i, mouseev.GetClickCount());
+    }
+  }
 }
 
 #if defined(USE_XI2_MT)

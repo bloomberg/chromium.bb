@@ -356,6 +356,7 @@ WebKit::WebMouseEvent MakeWebMouseEventFromAuraEvent(ui::MouseEvent* event) {
       break;
     case ui::ET_MOUSE_RELEASED:
       webkit_event.type = WebKit::WebInputEvent::MouseUp;
+      webkit_event.clickCount = event->GetClickCount();
       break;
     case ui::ET_MOUSE_ENTERED:
     case ui::ET_MOUSE_EXITED:
