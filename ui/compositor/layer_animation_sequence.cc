@@ -242,6 +242,18 @@ void LayerAnimationSequence::OnAnimatorDestroyed() {
   }
 }
 
+size_t LayerAnimationSequence::size() const {
+  return elements_.size();
+}
+
+LayerAnimationElement* LayerAnimationSequence::FirstElement() const {
+  if (elements_.empty()) {
+    return NULL;
+  }
+
+  return elements_[0].get();
+}
+
 void LayerAnimationSequence::NotifyScheduled() {
   FOR_EACH_OBSERVER(LayerAnimationObserver,
                     observers_,
@@ -260,7 +272,7 @@ void LayerAnimationSequence::NotifyAborted() {
                     OnLayerAnimationAborted(this));
 }
 
-LayerAnimationElement* LayerAnimationSequence::CurrentElement() {
+LayerAnimationElement* LayerAnimationSequence::CurrentElement() const {
   if (elements_.empty())
     return NULL;
 
