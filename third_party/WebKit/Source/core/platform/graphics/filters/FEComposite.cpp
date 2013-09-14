@@ -45,7 +45,7 @@ namespace WebCore {
 
 class CompositeImageFilter : public SkImageFilter {
 public:
-    CompositeImageFilter(SkXfermode::Mode mode, SkImageFilter* background, SkImageFilter* foreground) : SkImageFilter(background, foreground), m_mode(mode)
+    CompositeImageFilter(SkXfermode::Mode mode, SkImageFilter* background, SkImageFilter* foreground, const SkIRect* cropRect) : SkImageFilter(background, foreground, cropRect), m_mode(mode)
     {
     }
 
@@ -62,7 +62,17 @@ public:
         if (foregroundInput && !foregroundInput->filterImage(proxy, src, ctm, &foreground, &foregroundOffset))
             return false;
 
-        SkAutoTUnref<SkBaseDevice> device(proxy->createDevice(background.width(), background.height()));
+        SkIRect bounds;
+        background.getBounds(&bounds);
+        if (!applyCropRect(&bounds, ctm)) {
+            return false;
+        }
+        backgroundOffset.fX -= bounds.left();
+        backgroundOffset.fY -= bounds.top();
+        foregroundOffset.fX -= bounds.left();
+        foregroundOffset.fY -= bounds.top();
+
+        SkAutoTUnref<SkBaseDevice> device(proxy->createDevice(bounds.width(), bounds.height()));
         SkCanvas canvas(device);
         SkPaint paint;
         paint.setXfermodeMode(SkXfermode::kSrc_Mode);
@@ -70,6 +80,8 @@ public:
         paint.setXfermodeMode(m_mode);
         canvas.drawBitmap(foreground, foregroundOffset.fX, foregroundOffset.fY, &paint);
         *dst = device->accessBitmap(false);
+        offset->fX += bounds.left();
+        offset->fY += bounds.top();
         return true;
     }
 
@@ -400,7 +412,8 @@ PassRefPtr<SkImageFilter> FEComposite::createImageFilter(SkiaImageFilterBuilder*
         SkAutoTUnref<SkXfermode> mode(SkArithmeticMode::Create(SkFloatToScalar(m_k1), SkFloatToScalar(m_k2), SkFloatToScalar(m_k3), SkFloatToScalar(m_k4)));
         return adoptRef(new SkXfermodeImageFilter(mode, background.get(), foreground.get()));
     }
-    return adoptRef(new CompositeImageFilter(toXfermode(m_type), background.get(), foreground.get()));
+    SkIRect cropRect = getCropRect(builder->cropOffset());
+    return adoptRef(new CompositeImageFilter(toXfermode(m_type), background.get(), foreground.get(), &cropRect));
 }
 
 static TextStream& operator<<(TextStream& ts, const CompositeOperationType& type)

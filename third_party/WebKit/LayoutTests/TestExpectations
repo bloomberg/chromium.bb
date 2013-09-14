@@ -736,6 +736,12 @@ webkit.org/b/100806 [ Win7 ] fast/css/font-face-download-error.html [ Failure Pa
 webkit.org/b/102131 fast/workers/worker-exception-during-navigation.html [ Crash Pass ]
 webkit.org/b/102264 [ Debug ] css3/filters/custom/custom-filter-property-computed-style.html [ Pass Timeout ]
 
+crbug.com/229910 css3/filters/effect-reference-colorspace-hw.html [ NeedsRebaseline ]
+crbug.com/229910 css3/filters/effect-reference-composite-hw.html [ NeedsRebaseline ]
+crbug.com/229910 css3/filters/effect-reference-composite.html [ NeedsRebaseline ]
+crbug.com/229910 css3/filters/effect-reference-hw.html [ NeedsRebaseline ]
+crbug.com/229910 css3/filters/effect-reference-subregion-hw.html [ NeedsRebaseline ]
+
 webkit.org/b/102724 svg/carto.net/colourpicker.svg [ ImageOnlyFailure Pass ]
 
 crbug.com/237003 [ Win Mac Debug ] http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_iframe_self_navigation.html [ Failure Pass ]

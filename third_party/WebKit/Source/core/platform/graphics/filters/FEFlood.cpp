@@ -29,6 +29,7 @@
 #include "SkImageFilter.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/filters/Filter.h"
+#include "core/platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "core/platform/text/TextStream.h"
 #include "core/rendering/RenderTreeAsText.h"
 #include "third_party/skia/include/core/SkDevice.h"
@@ -37,8 +38,8 @@ namespace {
 
 class FloodImageFilter : public SkImageFilter {
 public:
-    FloodImageFilter(const SkColor& color)
-        : SkImageFilter(0, 0)
+    FloodImageFilter(const SkColor& color, const SkIRect* cropRect)
+        : SkImageFilter(0, 0, cropRect)
         , m_color(color)
     {
     }
@@ -51,20 +52,29 @@ public:
 
     virtual void flatten(SkFlattenableWriteBuffer& buffer) const
     {
+        this->SkImageFilter::flatten(buffer);
         buffer.writeColor(m_color);
     }
 
-    virtual bool onFilterImage(Proxy* proxy, const SkBitmap& src, const SkMatrix&, SkBitmap* result, SkIPoint*)
+    virtual bool onFilterImage(Proxy* proxy, const SkBitmap& src, const SkMatrix& ctm, SkBitmap* result, SkIPoint* offset)
     {
         if (!src.width() || !src.height())
             return false;
 
-        SkAutoTUnref<SkBaseDevice> device(proxy->createDevice(src.width(), src.height()));
+        SkIRect bounds;
+        src.getBounds(&bounds);
+        if (!applyCropRect(&bounds, ctm)) {
+            return false;
+        }
+
+        SkAutoTUnref<SkBaseDevice> device(proxy->createDevice(bounds.width(), bounds.height()));
         SkCanvas canvas(device.get());
         SkPaint paint;
         paint.setColor(m_color);
         canvas.drawRect(SkRect::MakeWH(src.width(), src.height()), paint);
         *result = device->accessBitmap(false);
+        offset->fX += bounds.left();
+        offset->fY += bounds.top();
         return true;
     }
 private:
@@ -128,7 +138,9 @@ void FEFlood::applySoftware()
 PassRefPtr<SkImageFilter> FEFlood::createImageFilter(SkiaImageFilterBuilder* builder)
 {
     Color color = colorWithOverrideAlpha(floodColor().rgb(), floodOpacity());
-    return adoptRef(new FloodImageFilter(color.rgb()));
+
+    SkIRect rect = getCropRect(builder->cropOffset());
+    return adoptRef(new FloodImageFilter(color.rgb(), &rect));
 }
 
 TextStream& FEFlood::externalRepresentation(TextStream& ts, int indent) const

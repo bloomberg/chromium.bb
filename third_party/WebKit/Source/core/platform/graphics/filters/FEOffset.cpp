@@ -40,7 +40,7 @@ namespace WebCore {
 
 class OffsetImageFilter : public SkImageFilter {
 public:
-    OffsetImageFilter(SkScalar dx, SkScalar dy, SkImageFilter* input) : SkImageFilter(input), m_dx(dx), m_dy(dy)
+    OffsetImageFilter(SkScalar dx, SkScalar dy, SkImageFilter* input, const SkIRect* cropRect = 0) : SkImageFilter(input, cropRect), m_dx(dx), m_dy(dy)
     {
     }
 
@@ -52,12 +52,21 @@ public:
         if (input && !input->filterImage(proxy, src, ctm, &source, &srcOffset))
             return false;
 
-        SkAutoTUnref<SkBaseDevice> device(proxy->createDevice(source.width(), source.height()));
+        SkIRect bounds;
+        source.getBounds(&bounds);
+
+        if (!applyCropRect(&bounds, ctm)) {
+            return false;
+        }
+
+        SkAutoTUnref<SkBaseDevice> device(proxy->createDevice(bounds.width(), bounds.height()));
         SkCanvas canvas(device);
         SkPaint paint;
         paint.setXfermodeMode(SkXfermode::kSrc_Mode);
-        canvas.drawBitmap(source, m_dx, m_dy, &paint);
+        canvas.drawBitmap(source, m_dx - bounds.left(), m_dy - bounds.top(), &paint);
         *dst = device->accessBitmap(false);
+        offset->fX += bounds.left();
+        offset->fY += bounds.top();
         return true;
     }
 
@@ -156,7 +165,8 @@ PassRefPtr<SkImageFilter> FEOffset::createImageFilter(SkiaImageFilterBuilder* bu
 {
     RefPtr<SkImageFilter> input(builder->build(inputEffect(0), operatingColorSpace()));
     Filter* filter = this->filter();
-    return adoptRef(new OffsetImageFilter(SkFloatToScalar(filter->applyHorizontalScale(m_dx)), SkFloatToScalar(filter->applyVerticalScale(m_dy)), input.get()));
+    SkIRect cropRect = getCropRect(builder->cropOffset());
+    return adoptRef(new OffsetImageFilter(SkFloatToScalar(filter->applyHorizontalScale(m_dx)), SkFloatToScalar(filter->applyVerticalScale(m_dy)), input.get(), &cropRect));
 }
 
 TextStream& FEOffset::externalRepresentation(TextStream& ts, int indent) const
