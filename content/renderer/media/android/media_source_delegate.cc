@@ -84,16 +84,22 @@ MediaSourceDelegate::~MediaSourceDelegate() {
   DVLOG(1) << __FUNCTION__ << " : " << demuxer_client_id_;
   DCHECK(!chunk_demuxer_);
   DCHECK(!demuxer_);
+  DCHECK(!demuxer_client_);
   DCHECK(!audio_decrypting_demuxer_stream_);
   DCHECK(!video_decrypting_demuxer_stream_);
   DCHECK(!audio_stream_);
   DCHECK(!video_stream_);
-  demuxer_client_->RemoveDelegate(demuxer_client_id_);
 }
 
 void MediaSourceDelegate::Destroy() {
   DCHECK(main_loop_->BelongsToCurrentThread());
   DVLOG(1) << __FUNCTION__ << " : " << demuxer_client_id_;
+
+  // |this| may live longer than |demuxer_client_| since this object deletes
+  // itself only after the demuxer has stopped.
+  demuxer_client_->RemoveDelegate(demuxer_client_id_);
+  demuxer_client_ = NULL;
+
   if (!demuxer_) {
     delete this;
     return;
@@ -103,7 +109,6 @@ void MediaSourceDelegate::Destroy() {
   time_update_seek_hack_cb_.Reset();
   update_network_state_cb_.Reset();
   media_source_opened_cb_.Reset();
-  demuxer_client_ = NULL;
 
   main_weak_factory_.InvalidateWeakPtrs();
   DCHECK(!main_weak_factory_.HasWeakPtrs());
@@ -278,9 +283,12 @@ void MediaSourceDelegate::AddBufferedTimeRange(base::TimeDelta start,
 }
 
 void MediaSourceDelegate::SetDuration(base::TimeDelta duration) {
-  DCHECK(media_loop_->BelongsToCurrentThread());
+  DCHECK(main_loop_->BelongsToCurrentThread());
   DVLOG(1) << __FUNCTION__ << "(" << duration.InSecondsF() << ") : "
            << demuxer_client_id_;
+
+  // Force duration change notification to be async to avoid reentrancy into
+  // ChunkDemxuer.
   main_loop_->PostTask(FROM_HERE, base::Bind(
       &MediaSourceDelegate::OnDurationChanged, main_weak_this_, duration));
 }
