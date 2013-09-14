@@ -8,6 +8,10 @@
   "bytes": {
     "improvement_direction": "down"
   },
+  "commit_count": {
+    "improvement_direction": "up",
+    "why": "layer_tree_host_perftest"
+  },
   "count": {
     "improvement_direction": "down",
     "why": "Processes"
@@ -25,6 +29,10 @@
   },
   "frames-per-second": {
     "improvement_direction": "up"
+  },
+  "frame_count": {
+    "improvement_direction": "up",
+    "why": "layer_tree_host_perftest"
   },
   "frame_time": {
     "improvement_direction": "down"
@@ -62,6 +70,10 @@
   },
   "percent": {
     "improvement_direction": "down"
+  },
+  "points": {
+    "improvement_direction": "up",
+    "why": "Synonym for score, used in ChromeOS touchpad tests"
   },
   "ports": {
     "improvement_direction": "down"
