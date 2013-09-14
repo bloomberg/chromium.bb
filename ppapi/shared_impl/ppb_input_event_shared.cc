@@ -24,6 +24,7 @@ InputEventData::InputEventData()
       wheel_scroll_by_page(false),
       key_code(0),
       usb_key_code(0),
+      code(),
       character_text(),
       composition_target_segment(-1),
       composition_selection_start(0),
@@ -106,6 +107,10 @@ PP_Bool PPB_InputEvent_Shared::SetUsbKeyCode(uint32_t usb_key_code) {
 
 uint32_t PPB_InputEvent_Shared::GetUsbKeyCode() {
   return data_.usb_key_code;
+}
+
+PP_Var PPB_InputEvent_Shared::GetCode() {
+  return StringVar::StringToPPVar(data_.code);
 }
 
 uint32_t PPB_InputEvent_Shared::GetIMESegmentNumber() {

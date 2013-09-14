@@ -311,9 +311,19 @@ uint32_t GetUsbKeyCode(PP_Resource key_event) {
   return enter.object()->GetUsbKeyCode();
 }
 
-const PPB_KeyboardInputEvent_Dev g_ppb_keyboard_input_event_dev_thunk = {
+PP_Var GetCode(PP_Resource key_event) {
+  VLOG(4) << "PPB_KeyboardInputEvent_Dev::GetCode()";
+  EnterInputEvent enter(key_event, true);
+  if (enter.failed())
+    return PP_MakeUndefined();
+  return enter.object()->GetCode();
+}
+
+const PPB_KeyboardInputEvent_Dev_0_2
+    g_ppb_keyboard_input_event_dev_0_2_thunk = {
   &SetUsbKeyCode,
   &GetUsbKeyCode,
+  &GetCode,
 };
 
 // Composition -----------------------------------------------------------------
@@ -511,9 +521,9 @@ const PPB_KeyboardInputEvent_1_0* GetPPB_KeyboardInputEvent_1_0_Thunk() {
   return &g_ppb_keyboard_input_event_thunk;
 }
 
-const PPB_KeyboardInputEvent_Dev_0_1*
-    GetPPB_KeyboardInputEvent_Dev_0_1_Thunk() {
-  return &g_ppb_keyboard_input_event_dev_thunk;
+const PPB_KeyboardInputEvent_Dev_0_2*
+    GetPPB_KeyboardInputEvent_Dev_0_2_Thunk() {
+  return &g_ppb_keyboard_input_event_dev_0_2_thunk;
 }
 
 const PPB_WheelInputEvent_1_0* GetPPB_WheelInputEvent_1_0_Thunk() {

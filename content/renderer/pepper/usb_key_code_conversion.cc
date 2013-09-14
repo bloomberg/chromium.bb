@@ -16,6 +16,10 @@ uint32_t UsbKeyCodeForKeyboardEvent(const WebKeyboardEvent& key_event) {
   return 0;
 }
 
+const char* CodeForKeyboardEvent(const WebKeyboardEvent& key_event) {
+  return NULL;
+}
+
 #endif
 
 }  // namespace content

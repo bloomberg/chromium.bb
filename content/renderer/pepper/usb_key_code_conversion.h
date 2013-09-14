@@ -20,6 +20,10 @@ namespace content {
 // is returned.
 uint32_t UsbKeyCodeForKeyboardEvent(const WebKit::WebKeyboardEvent& key_event);
 
+// Returns a string that represents the UI Event |code| parameter as specified
+// in http://www.w3.org/TR/uievents/
+const char* CodeForKeyboardEvent(const WebKit::WebKeyboardEvent& key_event);
+
 }  // namespace content
 
 #endif  // CONTENT_RENDERER_PEPPER_USB_KEY_CODE_CONVERSION_H_

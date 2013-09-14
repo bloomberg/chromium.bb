@@ -139,6 +139,7 @@ void AppendKeyEvent(const WebInputEvent& event,
   result.event_modifiers = key_event.modifiers;
   result.key_code = key_event.windowsKeyCode;
   result.usb_key_code = UsbKeyCodeForKeyboardEvent(key_event);
+  result.code = CodeForKeyboardEvent(key_event);
   result_events->push_back(result);
 }
 

@@ -179,6 +179,7 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileChooser_Dev_0_6;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Font_Dev_0_6;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_IMEInputEvent_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_IMEInputEvent_Dev_0_2;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_KeyboardInputEvent_Dev_0_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Printing_Dev_0_7;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Testing_Dev_0_9;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Testing_Dev_0_91;
@@ -1823,7 +1824,24 @@ static void Pnacl_M21_PPB_IMEInputEvent_Dev_GetSelection(PP_Resource ime_event, 
 
 /* End wrapper methods for PPB_IMEInputEvent_Dev_0_2 */
 
-/* Not generating wrapper methods for PPB_KeyboardInputEvent_Dev_0_1 */
+/* Begin wrapper methods for PPB_KeyboardInputEvent_Dev_0_2 */
+
+static PP_Bool Pnacl_M31_PPB_KeyboardInputEvent_Dev_SetUsbKeyCode(PP_Resource key_event, uint32_t usb_key_code) {
+  const struct PPB_KeyboardInputEvent_Dev_0_2 *iface = Pnacl_WrapperInfo_PPB_KeyboardInputEvent_Dev_0_2.real_iface;
+  return iface->SetUsbKeyCode(key_event, usb_key_code);
+}
+
+static uint32_t Pnacl_M31_PPB_KeyboardInputEvent_Dev_GetUsbKeyCode(PP_Resource key_event) {
+  const struct PPB_KeyboardInputEvent_Dev_0_2 *iface = Pnacl_WrapperInfo_PPB_KeyboardInputEvent_Dev_0_2.real_iface;
+  return iface->GetUsbKeyCode(key_event);
+}
+
+static void Pnacl_M31_PPB_KeyboardInputEvent_Dev_GetCode(struct PP_Var* _struct_result, PP_Resource key_event) {
+  const struct PPB_KeyboardInputEvent_Dev_0_2 *iface = Pnacl_WrapperInfo_PPB_KeyboardInputEvent_Dev_0_2.real_iface;
+  *_struct_result = iface->GetCode(key_event);
+}
+
+/* End wrapper methods for PPB_KeyboardInputEvent_Dev_0_2 */
 
 /* Not generating wrapper methods for PPB_Memory_Dev_0_1 */
 
@@ -4473,7 +4491,11 @@ struct PPB_IMEInputEvent_Dev_0_2 Pnacl_Wrappers_PPB_IMEInputEvent_Dev_0_2 = {
     .GetSelection = (void (*)(PP_Resource ime_event, uint32_t* start, uint32_t* end))&Pnacl_M21_PPB_IMEInputEvent_Dev_GetSelection
 };
 
-/* Not generating wrapper interface for PPB_KeyboardInputEvent_Dev_0_1 */
+struct PPB_KeyboardInputEvent_Dev_0_2 Pnacl_Wrappers_PPB_KeyboardInputEvent_Dev_0_2 = {
+    .SetUsbKeyCode = (PP_Bool (*)(PP_Resource key_event, uint32_t usb_key_code))&Pnacl_M31_PPB_KeyboardInputEvent_Dev_SetUsbKeyCode,
+    .GetUsbKeyCode = (uint32_t (*)(PP_Resource key_event))&Pnacl_M31_PPB_KeyboardInputEvent_Dev_GetUsbKeyCode,
+    .GetCode = (struct PP_Var (*)(PP_Resource key_event))&Pnacl_M31_PPB_KeyboardInputEvent_Dev_GetCode
+};
 
 /* Not generating wrapper interface for PPB_Memory_Dev_0_1 */
 
@@ -5341,6 +5363,12 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_IMEInputEvent_Dev_0_2 = {
   .real_iface = NULL
 };
 
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_KeyboardInputEvent_Dev_0_2 = {
+  .iface_macro = PPB_KEYBOARD_INPUT_EVENT_DEV_INTERFACE_0_2,
+  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_KeyboardInputEvent_Dev_0_2,
+  .real_iface = NULL
+};
+
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Printing_Dev_0_7 = {
   .iface_macro = PPB_PRINTING_DEV_INTERFACE_0_7,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_Printing_Dev_0_7,
@@ -5709,6 +5737,7 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_Font_Dev_0_6,
   &Pnacl_WrapperInfo_PPB_IMEInputEvent_Dev_0_1,
   &Pnacl_WrapperInfo_PPB_IMEInputEvent_Dev_0_2,
+  &Pnacl_WrapperInfo_PPB_KeyboardInputEvent_Dev_0_2,
   &Pnacl_WrapperInfo_PPB_Printing_Dev_0_7,
   &Pnacl_WrapperInfo_PPB_Testing_Dev_0_9,
   &Pnacl_WrapperInfo_PPB_Testing_Dev_0_91,

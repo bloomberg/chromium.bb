@@ -38,6 +38,7 @@ class PPAPI_THUNK_EXPORT PPB_InputEvent_API {
   virtual PP_Var GetCharacterText() = 0;
   virtual PP_Bool SetUsbKeyCode(uint32_t) = 0;
   virtual uint32_t GetUsbKeyCode() = 0;
+  virtual PP_Var GetCode() = 0;
   virtual uint32_t GetIMESegmentNumber() = 0;
   virtual uint32_t GetIMESegmentOffset(uint32_t index) = 0;
   virtual int32_t GetIMETargetSegment() = 0;

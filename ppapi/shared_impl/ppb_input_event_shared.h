@@ -43,6 +43,10 @@ struct PPAPI_SHARED_EXPORT InputEventData {
   uint32_t key_code;
   uint32_t usb_key_code;
 
+  // The key event's |code| attribute as defined in:
+  // http://www.w3.org/TR/uievents/
+  std::string code;
+
   std::string character_text;
 
   std::vector<uint32_t> composition_segment_offsets;
@@ -84,6 +88,7 @@ class PPAPI_SHARED_EXPORT PPB_InputEvent_Shared
   virtual PP_Var GetCharacterText() OVERRIDE;
   virtual PP_Bool SetUsbKeyCode(uint32_t usb_key_code) OVERRIDE;
   virtual uint32_t GetUsbKeyCode() OVERRIDE;
+  virtual PP_Var GetCode() OVERRIDE;
   virtual uint32_t GetIMESegmentNumber() OVERRIDE;
   virtual uint32_t GetIMESegmentOffset(uint32_t index) OVERRIDE;
   virtual int32_t GetIMETargetSegment() OVERRIDE;

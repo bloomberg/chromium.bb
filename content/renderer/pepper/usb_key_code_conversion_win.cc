@@ -28,4 +28,8 @@ uint32_t UsbKeyCodeForKeyboardEvent(const WebKeyboardEvent& key_event) {
   return NativeKeycodeToUsbKeycode(scancode);
 }
 
+const char* CodeForKeyboardEvent(const WebKeyboardEvent& key_event) {
+  return NativeKeycodeToCode(key_event.nativeKeyCode);
+}
+
 }  // namespace content

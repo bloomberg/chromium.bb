@@ -4,7 +4,7 @@
  */
 
 /* From dev/ppb_keyboard_input_event_dev.idl,
- *   modified Tue Feb 21 08:56:59 2012.
+ *   modified Fri Sep  6 10:00:04 2013.
  */
 
 #ifndef PPAPI_C_DEV_PPB_KEYBOARD_INPUT_EVENT_DEV_H_
@@ -14,11 +14,12 @@
 #include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
+#include "ppapi/c/pp_var.h"
 
-#define PPB_KEYBOARD_INPUT_EVENT_DEV_INTERFACE_0_1 \
-    "PPB_KeyboardInputEvent(Dev);0.1"
+#define PPB_KEYBOARD_INPUT_EVENT_DEV_INTERFACE_0_2 \
+    "PPB_KeyboardInputEvent(Dev);0.2"
 #define PPB_KEYBOARD_INPUT_EVENT_DEV_INTERFACE \
-    PPB_KEYBOARD_INPUT_EVENT_DEV_INTERFACE_0_1
+    PPB_KEYBOARD_INPUT_EVENT_DEV_INTERFACE_0_2
 
 /**
  * @file
@@ -36,7 +37,7 @@
  * The <code>PPB_KeyboardInputEvent_Dev</code> interface is an extension to the
  * PPB_KeyboardInputEvent</code> interface that provides
  */
-struct PPB_KeyboardInputEvent_Dev_0_1 {
+struct PPB_KeyboardInputEvent_Dev_0_2 {
   /**
    * This sets a USB key code in the given <code>PP_Resource</code>. It is
    * intended that this method be called immediately after any call to
@@ -63,9 +64,18 @@ struct PPB_KeyboardInputEvent_Dev_0_1 {
    * a 0 is returned.
    */
   uint32_t (*GetUsbKeyCode)(PP_Resource key_event);
+  /**
+   * GetCode() returns the DOM |code| field for this keyboard event, as
+   * defined by the UI Events spec: http://www.w3.org/TR/uievents/
+   *
+   * @param[in] key_event The key event for which to return the key code.
+   *
+   * @return The string that contains the DOM |code| for the keyboard event.
+   */
+  struct PP_Var (*GetCode)(PP_Resource key_event);
 };
 
-typedef struct PPB_KeyboardInputEvent_Dev_0_1 PPB_KeyboardInputEvent_Dev;
+typedef struct PPB_KeyboardInputEvent_Dev_0_2 PPB_KeyboardInputEvent_Dev;
 /**
  * @}
  */
