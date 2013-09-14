@@ -1,3 +1,4 @@
+CONSOLE MESSAGE: DOMCharacterDataModified is deprecated. Use MutationObservers instead.
 This tests deleting a node in DOMCharacterDataModified doesn't result in a crash.
 
 PASS

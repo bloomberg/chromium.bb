@@ -1,3 +1,9 @@
+CONSOLE MESSAGE: DOMCharacterDataModified is deprecated. Use MutationObservers instead.
+CONSOLE MESSAGE: DOMSubtreeModified is deprecated. Use MutationObservers instead.
+CONSOLE MESSAGE: DOMNodeInserted is deprecated. Use MutationObservers instead.
+CONSOLE MESSAGE: DOMNodeRemoved is deprecated. Use MutationObservers instead.
+CONSOLE MESSAGE: DOMNodeRemovedFromDocument is deprecated. Use MutationObservers instead.
+CONSOLE MESSAGE: DOMNodeInsertedIntoDocument is deprecated. Use MutationObservers instead.
 This test ensures WebKit does not fire DOM mutation events while execCommand is in progress.
 
 PASS: execCommand('BackColor', false, 'blue')

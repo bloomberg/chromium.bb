@@ -1,3 +1,4 @@
+CONSOLE MESSAGE: DOMSubtreeModified is deprecated. Use MutationObservers instead.
 Tests to ensure that shadow DOM boundary is not crossed during event propagation. Can only run within DRT.
 
 See bug 46015 for details.

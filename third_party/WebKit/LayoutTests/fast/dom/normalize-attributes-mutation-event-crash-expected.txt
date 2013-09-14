@@ -1,3 +1,4 @@
+CONSOLE MESSAGE: DOMSubtreeModified is deprecated. Use MutationObservers instead.
 Tests that mutating an elements attribute map during DOMSubtreeModified event dispatch doesn't break Node.normalize. Passes if it doesn't crash.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

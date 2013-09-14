@@ -1,1 +1,2 @@
+CONSOLE MESSAGE: DOMCharacterDataModified is deprecated. Use MutationObservers instead.
 Test passes if a DOMCharacterModified event on the textarea does not crash.

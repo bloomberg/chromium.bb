@@ -1,1 +1,2 @@
+CONSOLE MESSAGE: DOMCharacterDataModified is deprecated. Use MutationObservers instead.
 PASS. WebKit didn't crash.

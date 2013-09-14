@@ -1,3 +1,4 @@
+CONSOLE MESSAGE: DOMSubtreeModified is deprecated. Use MutationObservers instead.
 Tests for a crash when creating a link inside a region with a subtree modified event listener.
 
 This should be a link.

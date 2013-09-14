@@ -1,3 +1,4 @@
+CONSOLE MESSAGE: DOMNodeInsertedIntoDocument is deprecated. Use MutationObservers instead.
 PASS
 
 PASS

@@ -1,1 +1,2 @@
+CONSOLE MESSAGE: DOMNodeRemovedFromDocument is deprecated. Use MutationObservers instead.
 PASS; NOT CRASHED

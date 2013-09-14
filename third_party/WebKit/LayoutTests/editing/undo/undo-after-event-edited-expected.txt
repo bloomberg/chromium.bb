@@ -1,1 +1,2 @@
+CONSOLE MESSAGE: DOMCharacterDataModified is deprecated. Use MutationObservers instead.
 Pass. Test didn't crash.

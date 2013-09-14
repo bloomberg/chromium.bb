@@ -1,3 +1,6 @@
+CONSOLE MESSAGE: DOMNodeInserted is deprecated. Use MutationObservers instead.
+CONSOLE MESSAGE: DOMNodeInsertedIntoDocument is deprecated. Use MutationObservers instead.
+CONSOLE MESSAGE: DOMSubtreeModified is deprecated. Use MutationObservers instead.
 Test that HTMLSelectElement DOM is in a consistent state when handling mutation events.
 
 

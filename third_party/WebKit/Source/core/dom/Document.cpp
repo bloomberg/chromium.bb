@@ -3766,22 +3766,22 @@ void Document::addMutationEventListenerTypeIfEnabled(ListenerType listenerType)
 void Document::addListenerTypeIfNeeded(const AtomicString& eventType)
 {
     if (eventType == eventNames().DOMSubtreeModifiedEvent) {
-        UseCounter::count(this, UseCounter::DOMSubtreeModifiedEvent);
+        UseCounter::countDeprecation(this, UseCounter::DOMSubtreeModifiedEvent);
         addMutationEventListenerTypeIfEnabled(DOMSUBTREEMODIFIED_LISTENER);
     } else if (eventType == eventNames().DOMNodeInsertedEvent) {
-        UseCounter::count(this, UseCounter::DOMNodeInsertedEvent);
+        UseCounter::countDeprecation(this, UseCounter::DOMNodeInsertedEvent);
         addMutationEventListenerTypeIfEnabled(DOMNODEINSERTED_LISTENER);
     } else if (eventType == eventNames().DOMNodeRemovedEvent) {
-        UseCounter::count(this, UseCounter::DOMNodeRemovedEvent);
+        UseCounter::countDeprecation(this, UseCounter::DOMNodeRemovedEvent);
         addMutationEventListenerTypeIfEnabled(DOMNODEREMOVED_LISTENER);
     } else if (eventType == eventNames().DOMNodeRemovedFromDocumentEvent) {
-        UseCounter::count(this, UseCounter::DOMNodeRemovedFromDocumentEvent);
+        UseCounter::countDeprecation(this, UseCounter::DOMNodeRemovedFromDocumentEvent);
         addMutationEventListenerTypeIfEnabled(DOMNODEREMOVEDFROMDOCUMENT_LISTENER);
     } else if (eventType == eventNames().DOMNodeInsertedIntoDocumentEvent) {
-        UseCounter::count(this, UseCounter::DOMNodeInsertedIntoDocumentEvent);
+        UseCounter::countDeprecation(this, UseCounter::DOMNodeInsertedIntoDocumentEvent);
         addMutationEventListenerTypeIfEnabled(DOMNODEINSERTEDINTODOCUMENT_LISTENER);
     } else if (eventType == eventNames().DOMCharacterDataModifiedEvent) {
-        UseCounter::count(this, UseCounter::DOMCharacterDataModifiedEvent);
+        UseCounter::countDeprecation(this, UseCounter::DOMCharacterDataModifiedEvent);
         addMutationEventListenerTypeIfEnabled(DOMCHARACTERDATAMODIFIED_LISTENER);
     } else if (eventType == eventNames().overflowchangedEvent) {
         addListenerType(OVERFLOWCHANGED_LISTENER);

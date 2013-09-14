@@ -1,3 +1,4 @@
+CONSOLE MESSAGE: DOMSubtreeModified is deprecated. Use MutationObservers instead.
 Tests that cloning the body node in response to a DOMSubtreeModified event doesn't crash.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

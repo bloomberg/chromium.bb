@@ -1,3 +1,4 @@
+CONSOLE MESSAGE: DOMCharacterDataModified is deprecated. Use MutationObservers instead.
 PASS successfullyParsed is true
 
 TEST COMPLETE

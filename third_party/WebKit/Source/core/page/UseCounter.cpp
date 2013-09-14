@@ -670,6 +670,24 @@ String UseCounter::deprecationMessage(Feature feature)
     case EventReturnValue:
         return "event.returnValue is deprecated. Please use the standard event.preventDefault() instead.";
 
+    case DOMSubtreeModifiedEvent:
+        return "DOMSubtreeModified is deprecated. Use MutationObservers instead.";
+
+    case DOMNodeInsertedEvent:
+        return "DOMNodeInserted is deprecated. Use MutationObservers instead.";
+
+    case DOMNodeRemovedEvent:
+        return "DOMNodeRemoved is deprecated. Use MutationObservers instead.";
+
+    case DOMNodeRemovedFromDocumentEvent:
+        return "DOMNodeRemovedFromDocument is deprecated. Use MutationObservers instead.";
+
+    case DOMNodeInsertedIntoDocumentEvent:
+        return "DOMNodeInsertedIntoDocument is deprecated. Use MutationObservers instead.";
+
+    case DOMCharacterDataModifiedEvent:
+        return "DOMCharacterDataModified is deprecated. Use MutationObservers instead.";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();

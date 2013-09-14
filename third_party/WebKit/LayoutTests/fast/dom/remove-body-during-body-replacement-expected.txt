@@ -1,1 +1,3 @@
+CONSOLE MESSAGE: DOMNodeInsertedIntoDocument is deprecated. Use MutationObservers instead.
+CONSOLE MESSAGE: DOMSubtreeModified is deprecated. Use MutationObservers instead.
 PASS. WebKit didn't crash.

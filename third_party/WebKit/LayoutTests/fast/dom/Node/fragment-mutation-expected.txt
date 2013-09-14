@@ -1,3 +1,4 @@
+CONSOLE MESSAGE: DOMSubtreeModified is deprecated. Use MutationObservers instead.
 This test creates a fragment containing three elements: "B", "U", and "P", attempts to appendChild this fragment and studies effects of mutation events on the fragment.
 
 Inserting an element in front of the next item in fragment should not affect the result: PASS

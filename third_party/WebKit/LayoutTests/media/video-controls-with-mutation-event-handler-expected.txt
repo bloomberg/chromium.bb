@@ -1,3 +1,4 @@
+CONSOLE MESSAGE: DOMSubtreeModified is deprecated. Use MutationObservers instead.
 This tests that we don't crash while creating a video element while a DOMSubtreeModified even handler is registered.
 
 If you can see the movie below, the test passed.
