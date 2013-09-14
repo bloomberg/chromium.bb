@@ -77,7 +77,7 @@ const char ClientSideDetectionService::kClientReportPhishingUrl[] =
 const char ClientSideDetectionService::kClientReportMalwareUrl[] =
     "https://sb-ssl.google.com/safebrowsing/clientreport/malware-check";
 const char ClientSideDetectionService::kClientModelUrl[] =
-    "https://ssl.gstatic.com/safebrowsing/csd/client_model_v4.pb";
+    "https://ssl.gstatic.com/safebrowsing/csd/client_model_v5.pb";
 
 struct ClientSideDetectionService::ClientReportInfo {
   ClientReportPhishingRequestCallback callback;
