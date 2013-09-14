@@ -361,6 +361,10 @@ class XExposeEventForwarder : public base::MessagePumpObserver {
 
 static base::LazyInstance<XExposeEventForwarder> g_xexpose_event_forwarder =
     LAZY_INSTANCE_INITIALIZER;
+
+// Do not use this workaround when running in test harnesses that do not have
+// a message loop or do not have a TYPE_GPU message loop.
+bool g_create_child_windows = false;
 #endif
 
 }  // namespace
@@ -382,7 +386,11 @@ bool GLSurfaceGLX::InitializeOneOff() {
 #if defined(TOOLKIT_GTK)
   // Be sure to use the X display handle and not the GTK display handle if this
   // is the GPU process.
-  if (base::MessageLoop::current()->type() == base::MessageLoop::TYPE_GPU)
+  g_create_child_windows =
+      base::MessageLoop::current() &&
+      base::MessageLoop::current()->type() == base::MessageLoop::TYPE_GPU;
+
+  if (g_create_child_windows)
     g_display = base::MessagePumpX11::GetDefaultXDisplay();
   else
     g_display = base::MessagePumpForUI::GetDefaultXDisplay();
@@ -475,6 +483,9 @@ void NativeViewGLSurfaceGLX::SetFrontbufferAllocation(bool allocated) {
 }
 
 void NativeViewGLSurfaceGLX::AdjustBufferAllocation() {
+  if (!g_create_child_windows)
+    return;
+
   if (frontbuffer_allocated_ || backbuffer_allocated_)
     CreateChildWindow();
   else
@@ -482,6 +493,8 @@ void NativeViewGLSurfaceGLX::AdjustBufferAllocation() {
 }
 
 void NativeViewGLSurfaceGLX::CreateChildWindow() {
+  DCHECK(g_create_child_windows);
+
   if (child_window_)
     return;
 
@@ -523,12 +536,13 @@ NativeViewGLSurfaceGLX::NativeViewGLSurfaceGLX(gfx::AcceleratedWidget window)
 
 gfx::AcceleratedWidget NativeViewGLSurfaceGLX::GetDrawableHandle() const {
 #if defined(TOOLKIT_GTK)
-  if (child_window_)
-    return child_window_;
-  return dummy_window_;
-#else
-  return parent_window_;
+  if (g_create_child_windows) {
+    if (child_window_)
+      return child_window_;
+    return dummy_window_;
+  }
 #endif
+  return parent_window_;
 }
 
 bool NativeViewGLSurfaceGLX::Initialize() {
@@ -543,12 +557,14 @@ bool NativeViewGLSurfaceGLX::Initialize() {
   gfx::AcceleratedWidget window_for_vsync = parent_window_;
 
 #if defined(TOOLKIT_GTK)
-  dummy_window_ = XCreateWindow(
-      g_display,
-      RootWindow(g_display, XScreenNumberOfScreen(attributes.screen)),
-      0, 0, 1, 1, 0, CopyFromParent, InputOutput, attributes.visual, 0, NULL);
-  window_for_vsync = dummy_window_;
-  CreateChildWindow();
+  if (g_create_child_windows) {
+    dummy_window_ = XCreateWindow(
+        g_display,
+        RootWindow(g_display, XScreenNumberOfScreen(attributes.screen)),
+        0, 0, 1, 1, 0, CopyFromParent, InputOutput, attributes.visual, 0, NULL);
+    window_for_vsync = dummy_window_;
+    CreateChildWindow();
+  }
 #endif
 
   if (g_glx_oml_sync_control_supported)
