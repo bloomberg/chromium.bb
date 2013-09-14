@@ -16,24 +16,10 @@ class AutofillDialogViewDelegate;
 struct DialogOverlayState;
 }  // autofill
 
-namespace ui {
-class Animation;
-class MultiAnimation;
-}  // ui
-
-class AnimationDelegateBridge;
-
 @class AutofillMessageStackView;
 
-// Protocol that allows Cocoa objects to act as a delegate for a ui::Animation.
-@protocol AnimationDelegate
-- (void)animationProgressed:(const ui::Animation*)animation;
-- (void)animationEnded:(const ui::Animation*)animation;
-@end
-
-
 @interface AutofillOverlayController :
-    NSViewController<AnimationDelegate, AutofillLayout> {
+    NSViewController<AutofillLayout> {
  @private
   // |childView_| contains all overlay UI elements. This is used to fade out
   // UI elements first, before making the main view transparent to fade out the
@@ -41,9 +27,6 @@ class AnimationDelegateBridge;
   base::scoped_nsobject<NSView> childView_;
   base::scoped_nsobject<NSImageView> imageView_;
   base::scoped_nsobject<AutofillMessageStackView> messageStackView_;
-
-  scoped_ptr<ui::MultiAnimation> fadeOutAnimation_;  // Animation rules.
-  scoped_ptr<AnimationDelegateBridge> animationDelegate_;
 
   autofill::AutofillDialogViewDelegate* delegate_;  // not owned, owns dialog.
 }
@@ -53,12 +36,6 @@ class AnimationDelegateBridge;
 
 // Updates the state from the dialog controller.
 - (void)updateState;
-
-// Sets a specific state for the overlay.
-- (void)setState:(const autofill::DialogOverlayState&)state;
-
-// Start the animation sequence. At its end, the dialog will hide itself.
-- (void)beginFadeOut;
 
 // Get the preferred view height for a given width.
 - (CGFloat)heightForWidth:(int)width;

@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view_delegate.h"
 #include "chrome/browser/ui/autofill/testable_autofill_dialog_view.h"
-#include "ui/base/animation/animation_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
@@ -51,7 +50,6 @@ class Widget;
 namespace ui {
 class ComboboxModel;
 class KeyEvent;
-class MultiAnimation;
 }
 
 namespace autofill {
@@ -238,9 +236,8 @@ class AutofillDialogViews : public AutofillDialogView,
   };
 
   // A view which displays an image, optionally some messages and a button. Used
-  // for the splash page as well as the Wallet interstitial.
-  class OverlayView : public views::View,
-                      public ui::AnimationDelegate {
+  // for the Wallet interstitial.
+  class OverlayView : public views::View {
    public:
     explicit OverlayView(AutofillDialogViewDelegate* delegate);
     virtual ~OverlayView();
@@ -253,23 +250,11 @@ class AutofillDialogViews : public AutofillDialogView,
     // Sets the state to whatever |delegate_| says it should be.
     void UpdateState();
 
-    // Sets properties that should be displayed. Note that |state| may not come
-    // from |delegate_|.
-    void SetState(const DialogOverlayState& state);
-
-    // Fades the view out after a delay.
-    void BeginFadeOut();
-
-    // ui::AnimationDelegate implementation:
-    virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
-    virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
-
     // views::View implementation:
     virtual gfx::Insets GetInsets() const OVERRIDE;
     virtual void Layout() OVERRIDE;
     virtual const char* GetClassName() const OVERRIDE;
     virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-    virtual void PaintChildren(gfx::Canvas* canvas) OVERRIDE;
 
    private:
     // Gets the border of the non-client frame view as a BubbleBorder.
@@ -285,11 +270,6 @@ class AutofillDialogViews : public AutofillDialogView,
     views::ImageView* image_view_;
     // Child View. When visible, below |image_view_|.
     views::View* message_stack_;
-
-    // This MultiAnimation is used to first fade out the contents of the
-    // overlay, then fade out the background of the overlay (revealing the
-    // dialog behind the overlay). This avoids cross-fade.
-    scoped_ptr<ui::MultiAnimation> fade_out_;
 
     DISALLOW_COPY_AND_ASSIGN(OverlayView);
   };

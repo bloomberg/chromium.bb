@@ -11,8 +11,6 @@
 #include "chrome/browser/ui/autofill/autofill_dialog_view_delegate.h"
 #include "chrome/browser/ui/cocoa/autofill/autofill_dialog_constants.h"
 #include "skia/ext/skia_utils_mac.h"
-#include "ui/base/animation/animation_delegate.h"
-#include "ui/base/animation/multi_animation.h"
 
 namespace {
 
@@ -29,39 +27,7 @@ SkColor kShadingColor = 0xfff2f2f2;
 // A border color for the legal document view.
 SkColor kSubtleBorderColor = 0xffdfdfdf;
 
-// Shorten a few long types.
-typedef ui::MultiAnimation::Part Part;
-typedef ui::MultiAnimation::Parts Parts;
-
 }  // namespace
-
-// Bridges Objective C and C++ delegate interfaces.
-class AnimationDelegateBridge : public ui::AnimationDelegate {
- public:
-  AnimationDelegateBridge(id<AnimationDelegate> delegate);
-
- protected:
-  // AnimationDelegate implementation.
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
-  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
-
- private:
-  id<AnimationDelegate> delegate_;  // Not owned. Owns DelegateBridge.
-  DISALLOW_COPY_AND_ASSIGN(AnimationDelegateBridge);
-};
-
-AnimationDelegateBridge::AnimationDelegateBridge(
-    id<AnimationDelegate> delegate) : delegate_(delegate) {}
-
-void AnimationDelegateBridge::AnimationProgressed(
-    const ui::Animation* animation) {
-  [delegate_ animationProgressed:animation];
-}
-
-void AnimationDelegateBridge::AnimationEnded(
-    const ui::Animation* animation) {
-  [delegate_ animationEnded:animation];
-}
 
 // An NSView encapsulating the message stack and its custom drawn elements.
 @interface AutofillMessageStackView : NSView<AutofillLayout>
@@ -149,7 +115,7 @@ void AnimationDelegateBridge::AnimationEnded(
                                NSWidth([self bounds]), labelHeight)];
     y = NSMinY([label frame]) - kOverlayTextInterlineSpacing;
   }
-  DCHECK_GT(0.0, y);
+  DCHECK_GE(y, 0.0);
 }
 
 - (NSSize)preferredSize {
@@ -187,13 +153,7 @@ void AnimationDelegateBridge::AnimationEnded(
 }
 
 - (void)updateState {
-  [self setState:delegate_->GetDialogOverlay()];
-}
-
-- (void)setState:(const autofill::DialogOverlayState&)state {
-  // Don't update anything if we're still fading out the old state.
-  if (fadeOutAnimation_)
-    return;
+  const autofill::DialogOverlayState& state = delegate_->GetDialogOverlay();
 
   if (state.image.IsEmpty()) {
     [[self view] setHidden:YES];
@@ -212,31 +172,6 @@ void AnimationDelegateBridge::AnimationEnded(
   NSWindowController* delegate = [[[self view] window] windowController];
   if ([delegate respondsToSelector:@selector(requestRelayout)])
     [delegate performSelector:@selector(requestRelayout)];
-}
-
-- (void)beginFadeOut {
-  // Remove first responders, since focus rings show on top of overlay view.
-  // TODO(groby): Figure out to do that less hacky. Ideally, the focus ring
-  // should be part of the controls fading in, not appear at the end.
-  [[self view] setNextResponder:[[[self view] window] firstResponder]];
-  [[[self view] window] makeFirstResponder:[self view]];
-
-  Parts parts;
-  // For this part of the animation, simply show the splash image.
-  parts.push_back(Part(autofill::kSplashDisplayDurationMs, ui::Tween::ZERO));
-  // For this part of the animation, fade out the splash image.
-  parts.push_back(
-      Part(autofill::kSplashFadeOutDurationMs, ui::Tween::EASE_IN));
-  // For this part of the animation, fade out |this| (fade in the dialog).
-  parts.push_back(
-      Part(autofill::kSplashFadeInDialogDurationMs, ui::Tween::EASE_OUT));
-  fadeOutAnimation_.reset(
-      new ui::MultiAnimation(parts,
-                             ui::MultiAnimation::GetDefaultTimerInterval()));
-  animationDelegate_.reset(new AnimationDelegateBridge(self));
-  fadeOutAnimation_->set_delegate(animationDelegate_.get());
-  fadeOutAnimation_->set_continuous(false);
-  fadeOutAnimation_->Start();
 }
 
 - (CGFloat)heightForWidth:(int) width {
@@ -272,32 +207,6 @@ void AnimationDelegateBridge::AnimationEnded(
   [imageView_ setFrame:NSMakeRect(
        0, NSMaxY([messageStackView_ frame]) + kOverlayImageBottomMargin,
        NSWidth(bounds), imageSize.height)];
-}
-
-- (void)animationProgressed:(const ui::Animation*)animation {
-  DCHECK_EQ(animation, fadeOutAnimation_.get());
-
-  // Fade out children in stage 1.
-  if (fadeOutAnimation_->current_part_index() == 1) {
-    [childView_ setAlphaValue:(1 - fadeOutAnimation_->GetCurrentValue())];
-  }
-
-  // Fade out background in stage 2(i.e. fade in what's behind |this|).
-  if (fadeOutAnimation_->current_part_index() == 2) {
-    [[self view] setAlphaValue: (1 - fadeOutAnimation_->GetCurrentValue())];
-    [childView_ setHidden:YES];
-  }
-
-  // If any fading was done, refresh display.
-  if (fadeOutAnimation_->current_part_index() != 0) {
-    [[self view] setNeedsDisplay:YES];
-  }
-}
-
-- (void)animationEnded:(const ui::Animation*)animation {
-  DCHECK_EQ(animation, fadeOutAnimation_.get());
-  [[self view] setHidden:YES];
-  fadeOutAnimation_.reset();
 }
 
 @end

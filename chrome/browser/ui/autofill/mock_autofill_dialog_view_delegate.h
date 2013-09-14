@@ -63,7 +63,6 @@ class MockAutofillDialogViewDelegate : public AutofillDialogViewDelegate {
   MOCK_METHOD1(HandleKeyPressEventInInput,
                bool(const content::NativeWebKeyboardEvent& event));
   MOCK_METHOD0(FocusMoved, void());
-  MOCK_CONST_METHOD0(SplashPageImage, gfx::Image());
   MOCK_METHOD0(ViewClosed, void());
   MOCK_METHOD0(CurrentNotifications,std::vector<DialogNotification>());
   MOCK_METHOD1(LinkClicked, void(const GURL&));

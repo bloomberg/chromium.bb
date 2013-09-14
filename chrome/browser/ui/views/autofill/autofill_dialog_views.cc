@@ -27,8 +27,7 @@
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/base/animation/multi_animation.h"
-#include "ui/base/animation/throb_animation.h"
+#include "ui/base/animation/animation_delegate.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/models/menu_model.h"
@@ -117,9 +116,6 @@ const SkColor kGreyTextColor = SkColorSetRGB(102, 102, 102);
 const char kNotificationAreaClassName[] = "autofill/NotificationArea";
 const char kOverlayViewClassName[] = "autofill/OverlayView";
 const char kSuggestedButtonClassName[] = "autofill/SuggestedButton";
-
-typedef ui::MultiAnimation::Part Part;
-typedef ui::MultiAnimation::Parts Parts;
 
 // Draws an arrow at the top of |canvas| pointing to |tip_x|.
 void DrawArrow(gfx::Canvas* canvas,
@@ -487,8 +483,6 @@ class LoadingAnimationView : public views::View,
     Layout();
   }
 
-  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE {}
-
  private:
   // Contains the "Loading" label and the dots.
   views::View* container_;
@@ -661,14 +655,7 @@ int AutofillDialogViews::OverlayView::GetHeightForContentsForWidth(int width) {
 }
 
 void AutofillDialogViews::OverlayView::UpdateState() {
-  SetState(delegate_->GetDialogOverlay());
-}
-
-void AutofillDialogViews::OverlayView::SetState(
-    const DialogOverlayState& state) {
-  // Don't update anything if we're still fading out the old state.
-  if (fade_out_)
-    return;
+  const DialogOverlayState& state = delegate_->GetDialogOverlay();
 
   if (state.image.IsEmpty()) {
     SetVisible(false);
@@ -694,36 +681,6 @@ void AutofillDialogViews::OverlayView::SetState(
   InvalidateLayout();
   if (parent())
     parent()->Layout();
-}
-
-void AutofillDialogViews::OverlayView::BeginFadeOut() {
-  Parts parts;
-  // For this part of the animation, simply show the splash image.
-  parts.push_back(Part(kSplashDisplayDurationMs, ui::Tween::ZERO));
-  // For this part of the animation, fade out the splash image.
-  parts.push_back(Part(kSplashFadeOutDurationMs, ui::Tween::EASE_IN));
-  // For this part of the animation, fade out |this| (fade in the dialog).
-  parts.push_back(Part(kSplashFadeInDialogDurationMs, ui::Tween::EASE_OUT));
-  fade_out_.reset(
-      new ui::MultiAnimation(parts,
-                             ui::MultiAnimation::GetDefaultTimerInterval()));
-  fade_out_->set_delegate(this);
-  fade_out_->set_continuous(false);
-  fade_out_->Start();
-}
-
-void AutofillDialogViews::OverlayView::AnimationProgressed(
-    const ui::Animation* animation) {
-  DCHECK_EQ(animation, fade_out_.get());
-  if (fade_out_->current_part_index() != 0)
-    SchedulePaint();
-}
-
-void AutofillDialogViews::OverlayView::AnimationEnded(
-    const ui::Animation* animation) {
-  DCHECK_EQ(animation, fade_out_.get());
-  SetVisible(false);
-  fade_out_.reset();
 }
 
 gfx::Insets AutofillDialogViews::OverlayView::GetInsets() const {
@@ -761,10 +718,6 @@ void AutofillDialogViews::OverlayView::OnPaint(gfx::Canvas* canvas) {
                            kCornerRadius, kCornerRadius);
   canvas->ClipPath(window_mask);
 
-  // Fade out background (i.e. fade in what's behind |this|).
-  if (fade_out_ && fade_out_->current_part_index() == 2)
-    canvas->SaveLayerAlpha((1 - fade_out_->GetCurrentValue()) * 255);
-
   OnPaintBackground(canvas);
 
   // Draw the arrow, border, and fill for the bottom area.
@@ -793,18 +746,6 @@ void AutofillDialogViews::OverlayView::OnPaint(gfx::Canvas* canvas) {
   }
 
   PaintChildren(canvas);
-}
-
-void AutofillDialogViews::OverlayView::PaintChildren(gfx::Canvas* canvas) {
-  // Don't draw children.
-  if (fade_out_ && fade_out_->current_part_index() == 2)
-    return;
-
-  // Fade out children.
-  if (fade_out_ && fade_out_->current_part_index() == 1)
-    canvas->SaveLayerAlpha((1 - fade_out_->GetCurrentValue()) * 255);
-
-  views::View::PaintChildren(canvas);
 }
 
 views::BubbleBorder* AutofillDialogViews::OverlayView::GetBubbleBorder() {
@@ -1301,14 +1242,6 @@ void AutofillDialogViews::Show() {
       views::Widget::GetTopLevelWidgetForNativeView(
           delegate_->GetWebContents()->GetView()->GetNativeView());
   observer_.Add(browser_widget);
-
-  gfx::Image splash_image = delegate_->SplashPageImage();
-  if (!splash_image.IsEmpty()) {
-    DialogOverlayState state;
-    state.image = splash_image;
-    overlay_view_->SetState(state);
-    overlay_view_->BeginFadeOut();
-  }
 }
 
 void AutofillDialogViews::Hide() {

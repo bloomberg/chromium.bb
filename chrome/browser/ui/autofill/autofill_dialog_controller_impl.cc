@@ -560,6 +560,8 @@ base::WeakPtr<AutofillDialogControllerImpl>
 // static
 void AutofillDialogControllerImpl::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
+  // TODO(estade): this pref is no longer used, but may prove to be valuable.
+  // Remove it if we don't wind up using it at some point.
   registry->RegisterIntegerPref(
       ::prefs::kAutofillDialogShowCount,
       0,
@@ -1803,18 +1805,6 @@ void AutofillDialogControllerImpl::UserEditedOrActivatedInput(
 
 void AutofillDialogControllerImpl::FocusMoved() {
   HidePopup();
-}
-
-gfx::Image AutofillDialogControllerImpl::SplashPageImage() const {
-  // Only show the splash page the first few times the dialog is opened.
-  int show_count =
-      profile_->GetPrefs()->GetInteger(::prefs::kAutofillDialogShowCount);
-  if (show_count <= 4) {
-    return ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-        IDR_PRODUCT_LOGO_NAME_48);
-  }
-
-  return gfx::Image();
 }
 
 void AutofillDialogControllerImpl::ViewClosed() {

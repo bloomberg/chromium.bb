@@ -156,10 +156,6 @@ class AutofillDialogViewDelegate {
 
   // Miscellany ----------------------------------------------------------------
 
-  // The image to show in the splash screen when the dialog is first shown. If
-  // no splash screen should be shown, this image will be empty.
-  virtual gfx::Image SplashPageImage() const = 0;
-
   // Called when the view has been closed.
   virtual void ViewClosed() = 0;
 
