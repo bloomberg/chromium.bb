@@ -549,8 +549,6 @@
         'browser/extensions/api/tab_capture/tab_capture_api.h',
         'browser/extensions/api/tab_capture/tab_capture_registry.cc',
         'browser/extensions/api/tab_capture/tab_capture_registry.h',
-        'browser/extensions/api/tab_capture/tab_capture_registry_factory.cc',
-        'browser/extensions/api/tab_capture/tab_capture_registry_factory.h',
         'browser/extensions/api/tabs/tabs_api.cc',
         'browser/extensions/api/tabs/tabs_api.h',
         'browser/extensions/api/tabs/tabs_windows_api.cc',

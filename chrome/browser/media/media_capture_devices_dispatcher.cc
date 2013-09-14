@@ -12,7 +12,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/tab_capture/tab_capture_registry.h"
-#include "chrome/browser/extensions/api/tab_capture/tab_capture_registry_factory.h"
 #include "chrome/browser/media/audio_stream_indicator.h"
 #include "chrome/browser/media/desktop_streams_registry.h"
 #include "chrome/browser/media/media_stream_capture_indicator.h"
@@ -381,7 +380,7 @@ void MediaCaptureDevicesDispatcher::ProcessTabCaptureAccessRequest(
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   extensions::TabCaptureRegistry* tab_capture_registry =
-      extensions::TabCaptureRegistryFactory::GetForProfile(profile);
+      extensions::TabCaptureRegistry::Get(profile);
   bool tab_capture_allowed =
       tab_capture_registry->VerifyRequest(request.render_process_id,
                                           request.render_view_id);
@@ -623,7 +622,6 @@ void MediaCaptureDevicesDispatcher::OnMediaRequestStateChanged(
           &MediaCaptureDevicesDispatcher::UpdateMediaRequestStateOnUIThread,
           base::Unretained(this), render_process_id, render_view_id,
           page_request_id, device, state));
-
 }
 
 void MediaCaptureDevicesDispatcher::OnAudioStreamPlayingChanged(
@@ -655,7 +653,7 @@ void MediaCaptureDevicesDispatcher::UpdateAudioDevicesOnUIThread(
 }
 
 void MediaCaptureDevicesDispatcher::UpdateVideoDevicesOnUIThread(
-    const content::MediaStreamDevices& devices){
+    const content::MediaStreamDevices& devices) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   devices_enumerated_ = true;
   video_devices_ = devices;

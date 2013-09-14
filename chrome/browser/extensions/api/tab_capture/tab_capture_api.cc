@@ -6,11 +6,13 @@
 
 #include "chrome/browser/extensions/api/tab_capture/tab_capture_api.h"
 
+#include <string>
+#include <vector>
+
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/tab_capture/tab_capture_registry.h"
-#include "chrome/browser/extensions/api/tab_capture/tab_capture_registry_factory.h"
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/extension_renderer_state.h"
 #include "chrome/browser/extensions/tab_helper.h"
@@ -128,7 +130,7 @@ bool TabCaptureCaptureFunction::RunImpl() {
   }
 
   extensions::TabCaptureRegistry* registry =
-      extensions::TabCaptureRegistryFactory::GetForProfile(profile());
+      extensions::TabCaptureRegistry::Get(profile());
   if (!registry->AddRequest(render_process_id,
                             routing_id,
                             extension_id,
@@ -150,7 +152,7 @@ bool TabCaptureCaptureFunction::RunImpl() {
 
 bool TabCaptureGetCapturedTabsFunction::RunImpl() {
   extensions::TabCaptureRegistry* registry =
-      extensions::TabCaptureRegistryFactory::GetForProfile(profile());
+      extensions::TabCaptureRegistry::Get(profile());
 
   const TabCaptureRegistry::RegistryCaptureInfo& captured_tabs =
       registry->GetCapturedTabs(GetExtension()->id());

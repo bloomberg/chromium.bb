@@ -52,7 +52,7 @@
 #include "chrome/browser/extensions/api/sockets_udp/udp_socket_event_dispatcher.h"
 #include "chrome/browser/extensions/api/streams_private/streams_private_api.h"
 #include "chrome/browser/extensions/api/system_info/system_info_api.h"
-#include "chrome/browser/extensions/api/tab_capture/tab_capture_registry_factory.h"
+#include "chrome/browser/extensions/api/tab_capture/tab_capture_registry.h"
 #include "chrome/browser/extensions/api/tabs/tabs_windows_api.h"
 #include "chrome/browser/extensions/api/usb/usb_device_resource.h"
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
@@ -260,7 +260,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::StreamsPrivateAPI::GetFactoryInstance();
   extensions::SystemInfoAPI::GetFactoryInstance();
   extensions::SuggestedLinksRegistryFactory::GetInstance();
-  extensions::TabCaptureRegistryFactory::GetInstance();
+  extensions::TabCaptureRegistry::GetFactoryInstance();
   extensions::TabsWindowsAPI::GetFactoryInstance();
   extensions::TtsAPI::GetFactoryInstance();
   extensions::WebNavigationAPI::GetFactoryInstance();

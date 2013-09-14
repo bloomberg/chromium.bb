@@ -4,8 +4,7 @@
 
 #include "chrome/browser/extensions/api/tab_capture/tab_capture_registry.h"
 
-#include <utility>
-
+#include "base/lazy_instance.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -119,6 +118,20 @@ TabCaptureRegistry::TabCaptureRegistry(Profile* profile)
 
 TabCaptureRegistry::~TabCaptureRegistry() {
   MediaCaptureDevicesDispatcher::GetInstance()->RemoveObserver(this);
+}
+
+// static
+TabCaptureRegistry* TabCaptureRegistry::Get(Profile* profile) {
+  return ProfileKeyedAPIFactory<TabCaptureRegistry>::GetForProfile(profile);
+}
+
+static base::LazyInstance<ProfileKeyedAPIFactory<TabCaptureRegistry> >
+    g_factory = LAZY_INSTANCE_INITIALIZER;
+
+// static
+ProfileKeyedAPIFactory<TabCaptureRegistry>*
+TabCaptureRegistry::GetFactoryInstance() {
+  return &g_factory.Get();
 }
 
 const TabCaptureRegistry::RegistryCaptureInfo
