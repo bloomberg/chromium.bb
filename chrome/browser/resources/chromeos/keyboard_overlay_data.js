@@ -15803,7 +15803,7 @@ var keyboardOverlayData = {
     '8<>SEARCH': 'keyboardOverlayF8',
     '9<>ALT': 'keyboardOverlayActivateLastLauncherItem',
     '9<>CTRL': 'keyboardOverlayActivateLastTab',
-    '9<>CTRL<>SHIFT': 'keyboardOverlayToggleTouchHudProjection',
+    '9<>CTRL<>SHIFT': 'keyboardOverlayToggleProjectionTouchHud',
     '9<>SEARCH': 'keyboardOverlayF9',
     '=<>SEARCH': 'keyboardOverlayF12',
     'ALT<>SEARCH': 'keyboardOverlayToggleCapsLock',
