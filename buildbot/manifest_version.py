@@ -592,7 +592,7 @@ class BuildSpecsManager(object):
 
   def CheckoutSourceCode(self):
     """Syncs the cros source to the latest git hashes for the branch."""
-    self.cros_source.Sync(self.manifest, cleanup=False)
+    self.cros_source.Sync(self.manifest)
 
   def GetNextBuildSpec(self, retries=NUM_RETRIES):
     """Returns a path to the next manifest to build.

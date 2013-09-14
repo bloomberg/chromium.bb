@@ -28,8 +28,6 @@ from chromite.lib import osutils
 sys.path.pop(0)
 del _path
 
-EXTERNAL_GERRIT_SSH_REMOTE = 'gerrit'
-
 # Retry a push in GitPush if git returns a error response with any of that
 # messages. It's all observed 'bad' GoB responses so far.
 GIT_TRANSIENT_ERRORS = (
@@ -318,17 +316,8 @@ class Manifest(object):
 
     attrs['pushable'] = remote in constants.GIT_REMOTES
     if attrs['pushable']:
-      if remote in (constants.EXTERNAL_REMOTE, constants.CHROMIUM_REMOTE):
-        attrs['push_remote'] = EXTERNAL_GERRIT_SSH_REMOTE
-        if rev.startswith('refs/heads/'):
-          attrs['push_remote_local'] = 'refs/remotes/%s/%s' % (
-              EXTERNAL_GERRIT_SSH_REMOTE, StripRefsHeads(rev))
-        else:
-          attrs['push_remote_local'] = rev
-      elif remote in (constants.INTERNAL_REMOTE, constants.CHROME_REMOTE):
-        attrs['push_remote'] = constants.INTERNAL_REMOTE
-        attrs['push_remote_local'] = attrs['local_revision']
-
+      attrs['push_remote'] = remote
+      attrs['push_remote_local'] = attrs['local_revision']
       attrs['push_remote_url'] = constants.GIT_REMOTES[remote]
       attrs['push_url'] = '%s/%s' % (attrs['push_remote_url'], attrs['name'])
     groups = set(attrs.get('groups', 'default').replace(',', ' ').split())

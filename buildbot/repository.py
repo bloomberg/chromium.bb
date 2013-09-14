@@ -12,7 +12,6 @@ import os
 import re
 import shutil
 
-from chromite.buildbot import configure_repo
 from chromite.lib import cros_build_lib
 from chromite.lib import git
 from chromite.lib import osutils
@@ -273,8 +272,8 @@ class RepoRepository(object):
     cros_build_lib.RunCommand(['repo', '--time', 'sync', '-d'],
                               cwd=self.directory)
 
-  def Sync(self, local_manifest=None, jobs=None, cleanup=True,
-           all_branches=False, network_only=False):
+  def Sync(self, local_manifest=None, jobs=None, all_branches=False,
+           network_only=False):
     """Sync/update the source.  Changes manifest if specified.
 
     Args:
@@ -282,9 +281,6 @@ class RepoRepository(object):
         may be used to set it back to the default manifest.
       jobs: May be set to override the default sync parallelism defined by
         the manifest.
-      cleanup: If true, repo referencing is rebuilt, insteadOf configuration is
-        wiped, and appropriate remotes are setup.  Should only be turned off
-        by code that knows the repo is clean.
       all_branches: If False (the default), a repo sync -c is performed; this
         saves on sync'ing via grabbing only what is needed for the manifest
         specified branch.
@@ -299,9 +295,6 @@ class RepoRepository(object):
       self.Initialize(local_manifest)
       # Fix existing broken mirroring configurations.
       self._EnsureMirroring()
-
-      if cleanup:
-        configure_repo.FixBrokenExistingRepos(self.directory)
 
       cmd = ['repo', '--time', 'sync']
       if jobs:
@@ -333,9 +326,6 @@ class RepoRepository(object):
 
         # Retry the sync now; if it fails, let the exception propagate.
         cros_build_lib.RunCommand(cmd + ['-l'], cwd=self.directory)
-
-      # Setup gerrit remote for any new repositories.
-      configure_repo.SetupGerritRemote(self.directory)
 
       # We do a second run to fix any new repositories created by repo to
       # use relative object pathways.  Note that cros_sdk also triggers the
