@@ -26,6 +26,9 @@ void SetActiveExtensions(const std::set<std::string>& extensions);
 
 // Crash Key Name Constants ////////////////////////////////////////////////////
 
+// The product release/distribution channel.
+extern const char kChannel[];
+
 // The URL of the active tab.
 extern const char kActiveURL[];
 

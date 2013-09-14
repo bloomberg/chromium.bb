@@ -40,7 +40,6 @@ namespace child_process_logging {
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 // These are declared here so the crash reporter can access them directly in
 // compromised context without going through the standard library.
-extern char g_channel[];
 extern char g_client_id[];
 extern char g_num_switches[];
 extern char g_num_variations[];
@@ -73,11 +72,6 @@ void SetCommandLine(const CommandLine* command_line);
 
 // Initialize the list of experiment info to send along with crash reports.
 void SetExperimentList(const std::vector<string16>& state);
-
-#if defined(OS_LINUX) || defined(OS_OPENBSD) || defined(OS_MACOSX)
-// Sets the product channel data to send along with crash reports to |channel|.
-void SetChannel(const std::string& channel);
-#endif
 
 // Set/clear information about currently accessed printer.
 class ScopedPrinterInfoSetter {

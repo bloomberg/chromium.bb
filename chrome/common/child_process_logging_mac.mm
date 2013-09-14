@@ -118,10 +118,4 @@ void SetExperimentList(const std::vector<string16>& experiments) {
                    base::StringPrintf("%zu", experiments.size()));
 }
 
-void SetChannel(const std::string& channel) {
-  // This should match the corresponding string in breakpad_win.cc.
-  const std::string kChannelKey = "channel";
-  SetCrashKeyValue(kChannelKey, channel);
-}
-
 }  // namespace child_process_logging

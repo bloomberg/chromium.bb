@@ -14,6 +14,7 @@
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/debug/crash_logging.h"
 #include "base/debug/debugger.h"
 #include "base/debug/trace_event.h"
 #include "base/file_util.h"
@@ -109,6 +110,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/crash_keys.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/net/net_resource_provider.h"
@@ -962,7 +964,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
 
 #if defined(OS_LINUX) || defined(OS_OPENBSD) || defined(OS_MACOSX)
   // Set the product channel for crash reports.
-  child_process_logging::SetChannel(
+  base::debug::SetCrashKeyValue(crash_keys::kChannel,
       chrome::VersionInfo::GetVersionStringModifier());
 #endif
 

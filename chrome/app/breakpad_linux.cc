@@ -1157,11 +1157,6 @@ void HandleCrashDump(const BreakpadInfo& info) {
   //   abcdef \r\n
   //   BOUNDARY \r\n
   //
-  //   zero or one:
-  //   Content-Disposition: form-data; name="channel" \r\n \r\n
-  //   beta \r\n
-  //   BOUNDARY \r\n
-  //
   //   zero to 4:
   //   Content-Disposition: form-data; name="prn-info-1" \r\n \r\n
   //   abcdefghijklmnopqrstuvwxyzabcdef \r\n
@@ -1280,12 +1275,6 @@ void HandleCrashDump(const BreakpadInfo& info) {
   if (info.distro_length) {
     static const char distro_msg[] = "lsb-release";
     writer.AddPairString(distro_msg, info.distro);
-    writer.AddBoundary();
-    writer.Flush();
-  }
-
-  if (*child_process_logging::g_channel) {
-    writer.AddPairString("channel", child_process_logging::g_channel);
     writer.AddBoundary();
     writer.Flush();
   }

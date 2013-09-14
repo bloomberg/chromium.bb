@@ -48,6 +48,8 @@ COMPILE_ASSERT(kMediumSize <= kSingleChunkLength,
                mac_has_medium_size_crash_key_chunks);
 #endif
 
+const char kChannel[] = "channel";
+
 const char kActiveURL[] = "url-chunk";
 
 const char kExtensionID[] = "extension-%" PRIuS;
@@ -95,6 +97,7 @@ size_t RegisterChromeCrashKeys() {
   // The following keys may be chunked by the underlying crash logging system,
   // but ultimately constitute a single key-value pair.
   base::debug::CrashKey fixed_keys[] = {
+    { kChannel, kSmallSize },
     { kActiveURL, kLargeSize },
     { kNumExtensionsCount, kSmallSize },
     { kNumberOfViews, kSmallSize },

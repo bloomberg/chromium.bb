@@ -17,14 +17,11 @@ namespace child_process_logging {
 
 // Account for the terminating null character.
 static const size_t kClientIdSize = 32 + 1;
-static const size_t kChannelSize = 32;
 
 // We use static strings to hold the most recent active url and the client
 // identifier. If we crash, the crash handler code will send the contents of
 // these strings to the browser.
 char g_client_id[kClientIdSize];
-
-char g_channel[kChannelSize] = "";
 
 char g_printer_info[kPrinterInfoStrLen * kMaxReportedPrinterRecords + 1] = "";
 
@@ -109,10 +106,6 @@ void SetExperimentList(const std::vector<string16>& experiments) {
   // simultaneously.
   snprintf(g_num_variations, arraysize(g_num_variations), "%" PRIuS,
            experiments.size());
-}
-
-void SetChannel(const std::string& channel) {
-  base::strlcpy(g_channel, channel.c_str(), arraysize(g_channel));
 }
 
 }  // namespace child_process_logging
