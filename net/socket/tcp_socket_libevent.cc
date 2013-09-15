@@ -41,7 +41,7 @@ TCPSocketLibevent::~TCPSocketLibevent() {
   net_log_.EndEvent(NetLog::TYPE_SOCKET_ALIVE);
 }
 
-int TCPSocketLibevent::Create(AddressFamily family) {
+int TCPSocketLibevent::Open(AddressFamily family) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(socket_, kInvalidSocket);
 

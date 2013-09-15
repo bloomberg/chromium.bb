@@ -28,7 +28,7 @@ class NET_EXPORT TCPSocketLibevent : public base::NonThreadSafe,
   TCPSocketLibevent(NetLog* net_log, const NetLog::Source& source);
   virtual ~TCPSocketLibevent();
 
-  int Create(AddressFamily family);
+  int Open(AddressFamily family);
   // Takes ownership of |socket|.
   int Adopt(int socket);
   // Returns a socket file descriptor. The ownership is transferred to the

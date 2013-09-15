@@ -22,7 +22,7 @@ TCPServerSocket::~TCPServerSocket() {
 }
 
 int TCPServerSocket::Listen(const IPEndPoint& address, int backlog) {
-  int result = socket_.Create(address.GetFamily());
+  int result = socket_.Open(address.GetFamily());
   if (result != OK)
     return result;
 
@@ -88,17 +88,17 @@ int TCPServerSocket::ConvertAcceptedSocket(
   if (result != OK)
     return result;
 
+  // TODO(yzshen): Once we switch TCPClientSocketLibevent to take a connected
+  // TCPSocket object, we don't need to do platform-specific handling.
+#if defined(OS_WIN)
+  scoped_ptr<TCPClientSocket> client_socket(new TCPClientSocket(
+      temp_accepted_socket.Pass(), accepted_address_));
+#elif defined(OS_POSIX)
   scoped_ptr<TCPClientSocket> client_socket(new TCPClientSocket(
       AddressList(accepted_address_),
       temp_accepted_socket->net_log().net_log(),
       temp_accepted_socket->net_log().source()));
-  // TODO(yzshen): Once we switch TCPClientSocket::AdoptSocket() to take a
-  // TCPSocket object, we don't need to do platform-specific handling.
-#if defined(OS_WIN)
-  SOCKET raw_socket = temp_accepted_socket->Release();
-#elif defined(OS_POSIX)
   int raw_socket = temp_accepted_socket->Release();
-#endif
   result = client_socket->AdoptSocket(raw_socket);
   if (result != OK) {
     // |client_socket| won't take ownership of |raw_socket| on failure.
@@ -106,6 +106,7 @@ int TCPServerSocket::ConvertAcceptedSocket(
     temp_accepted_socket->Adopt(raw_socket);
     return result;
   }
+#endif
 
   *output_accepted_socket = client_socket.Pass();
   return OK;

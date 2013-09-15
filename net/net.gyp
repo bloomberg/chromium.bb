@@ -909,8 +909,6 @@
         'socket/tcp_client_socket.h',
         'socket/tcp_client_socket_libevent.cc',
         'socket/tcp_client_socket_libevent.h',
-        'socket/tcp_client_socket_win.cc',
-        'socket/tcp_client_socket_win.h',
         'socket/tcp_listen_socket.cc',
         'socket/tcp_listen_socket.h',
         'socket/tcp_server_socket.cc',

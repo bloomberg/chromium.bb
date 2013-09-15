@@ -4,10 +4,16 @@
 
 #include "net/socket/tcp_socket.h"
 
-#include <string>
+#include <string.h>
 
+#include <string>
+#include <vector>
+
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "build/build_config.h"
 #include "net/base/address_list.h"
+#include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
@@ -29,7 +35,7 @@ class TCPSocketTest : public PlatformTest {
     IPEndPoint address;
     ParseAddress("127.0.0.1", 0, &address);
 
-    ASSERT_EQ(OK, socket_.Create(ADDRESS_FAMILY_IPV4));
+    ASSERT_EQ(OK, socket_.Open(ADDRESS_FAMILY_IPV4));
     ASSERT_EQ(OK, socket_.Bind(address));
     ASSERT_EQ(OK, socket_.Listen(kListenBacklog));
     ASSERT_EQ(OK, socket_.GetLocalAddress(&local_address_));
@@ -40,7 +46,7 @@ class TCPSocketTest : public PlatformTest {
     IPEndPoint address;
     ParseAddress("::1", 0, &address);
 
-    if (socket_.Create(ADDRESS_FAMILY_IPV6) != OK ||
+    if (socket_.Open(ADDRESS_FAMILY_IPV6) != OK ||
         socket_.Bind(address) != OK ||
         socket_.Listen(kListenBacklog) != OK) {
       LOG(ERROR) << "Failed to listen on ::1 - probably because IPv6 is "
@@ -193,6 +199,72 @@ TEST_F(TCPSocketTest, AcceptIPv6) {
 
   EXPECT_EQ(OK, connect_callback.WaitForResult());
 }
+
+// TODO(yzshen): Enable it for other platforms once TCPSocketLibevent supports
+// client socket operations.
+#if defined(OS_WIN)
+
+TEST_F(TCPSocketTest, ReadWrite) {
+  ASSERT_NO_FATAL_FAILURE(SetUpListenIPv4());
+
+  TestCompletionCallback connect_callback;
+  TCPSocket connecting_socket(NULL, NetLog::Source());
+  int result = connecting_socket.Open(ADDRESS_FAMILY_IPV4);
+  ASSERT_EQ(OK, result);
+  connecting_socket.Connect(local_address_, connect_callback.callback());
+
+  TestCompletionCallback accept_callback;
+  scoped_ptr<TCPSocket> accepted_socket;
+  IPEndPoint accepted_address;
+  result = socket_.Accept(&accepted_socket, &accepted_address,
+                          accept_callback.callback());
+  ASSERT_EQ(OK, accept_callback.GetResult(result));
+
+  ASSERT_TRUE(accepted_socket.get());
+
+  // Both sockets should be on the loopback network interface.
+  EXPECT_EQ(accepted_address.address(), local_address_.address());
+
+  EXPECT_EQ(OK, connect_callback.WaitForResult());
+
+  const std::string message("test message");
+  std::vector<char> buffer(message.size());
+
+  size_t bytes_written = 0;
+  while (bytes_written < message.size()) {
+    scoped_refptr<IOBufferWithSize> write_buffer(
+        new IOBufferWithSize(message.size() - bytes_written));
+    memmove(write_buffer->data(), message.data() + bytes_written,
+            message.size() - bytes_written);
+
+    TestCompletionCallback write_callback;
+    int write_result = accepted_socket->Write(
+        write_buffer.get(), write_buffer->size(), write_callback.callback());
+    write_result = write_callback.GetResult(write_result);
+    ASSERT_TRUE(write_result >= 0);
+    bytes_written += write_result;
+    ASSERT_TRUE(bytes_written <= message.size());
+  }
+
+  size_t bytes_read = 0;
+  while (bytes_read < message.size()) {
+    scoped_refptr<IOBufferWithSize> read_buffer(
+        new IOBufferWithSize(message.size() - bytes_read));
+    TestCompletionCallback read_callback;
+    int read_result = connecting_socket.Read(
+        read_buffer.get(), read_buffer->size(), read_callback.callback());
+    read_result = read_callback.GetResult(read_result);
+    ASSERT_TRUE(read_result >= 0);
+    ASSERT_TRUE(bytes_read + read_result <= message.size());
+    memmove(&buffer[bytes_read], read_buffer->data(), read_result);
+    bytes_read += read_result;
+  }
+
+  std::string received_message(buffer.begin(), buffer.end());
+  ASSERT_EQ(message, received_message);
+}
+
+#endif
 
 }  // namespace
 }  // namespace net
