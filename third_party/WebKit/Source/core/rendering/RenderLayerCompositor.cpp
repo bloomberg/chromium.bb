@@ -896,8 +896,22 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
                     if (!willBeComposited) {
                         // make layer compositing
                         childState.m_compositingAncestor = layer;
+                        overlapMap->beginNewOverlapTestingContext();
                         willBeComposited = true;
                         willHaveForegroundLayer = true;
+
+                        // FIXME: temporary solution for the first negative z-index composited child:
+                        //        re-compute the absBounds for the child so that we can add the
+                        //        negative z-index child's bounds to the new overlap context.
+                        if (overlapMap) {
+                            overlapMap->geometryMap().pushMappingsToAncestor(curLayer, layer);
+                            IntRect childAbsBounds = enclosingIntRect(overlapMap->geometryMap().absoluteRect(curLayer->overlapBounds()));
+                            bool boundsComputed = true;
+                            overlapMap->beginNewOverlapTestingContext();
+                            addToOverlapMap(*overlapMap, curLayer, childAbsBounds, boundsComputed);
+                            overlapMap->finishCurrentOverlapTestingContext();
+                            overlapMap->geometryMap().popMappingsToAncestor(layer);
+                        }
                     }
                 }
             }
@@ -905,8 +919,12 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
     }
 
     if (overlapMap && willHaveForegroundLayer) {
+        ASSERT(willBeComposited);
         // A foreground layer effectively is a new backing for all subsequent children, so
-        // we don't need to test for overlap with anything behind this.
+        // we don't need to test for overlap with anything behind this. So, we can finish
+        // the previous context that was accumulating rects for the negative z-index
+        // children, and start with a fresh new empty context.
+        overlapMap->finishCurrentOverlapTestingContext();
         overlapMap->beginNewOverlapTestingContext();
         // This layer is going to be composited, so children can safely ignore the fact that there's an
         // animation running behind this layer, meaning they can rely on the overlap map testing again
