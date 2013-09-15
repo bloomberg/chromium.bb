@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/metrics/histogram.h"
 #include "base/safe_numerics.h"
 #include "base/stl_util.h"
 #include "base/task_runner_util.h"
@@ -155,13 +156,13 @@ int32_t RTCVideoDecoder::InitDecode(const webrtc::VideoCodec* codecSettings,
   DCHECK_EQ(codecSettings->codecType, webrtc::kVideoCodecVP8);
   if (codecSettings->codecSpecific.VP8.feedbackModeOn) {
     LOG(ERROR) << "Feedback mode not supported";
-    return WEBRTC_VIDEO_CODEC_ERROR;
+    return RecordInitDecodeUMA(WEBRTC_VIDEO_CODEC_ERROR);
   }
 
   base::AutoLock auto_lock(lock_);
   if (state_ == UNINITIALIZED || state_ == DECODE_ERROR) {
     LOG(ERROR) << "VDA is not initialized. state=" << state_;
-    return WEBRTC_VIDEO_CODEC_UNINITIALIZED;
+    return RecordInitDecodeUMA(WEBRTC_VIDEO_CODEC_UNINITIALIZED);
   }
   // Create some shared memory if the queue is empty.
   if (available_shm_segments_.size() == 0) {
@@ -171,7 +172,7 @@ int32_t RTCVideoDecoder::InitDecode(const webrtc::VideoCodec* codecSettings,
                                          kMaxInFlightDecodes,
                                          kSharedMemorySegmentBytes));
   }
-  return WEBRTC_VIDEO_CODEC_OK;
+  return RecordInitDecodeUMA(WEBRTC_VIDEO_CODEC_OK);
 }
 
 int32_t RTCVideoDecoder::Decode(
@@ -461,6 +462,9 @@ void RTCVideoDecoder::NotifyError(media::VideoDecodeAccelerator::Error error) {
     return;
 
   LOG(ERROR) << "VDA Error:" << error;
+  UMA_HISTOGRAM_ENUMERATION("Media.RTCVideoDecoderError",
+                            error,
+                            media::VideoDecodeAccelerator::LARGEST_ERROR_ENUM);
   DestroyVDA();
 
   base::AutoLock auto_lock(lock_);
@@ -745,6 +749,14 @@ void RTCVideoDecoder::GetBufferData(int32 bitstream_buffer_id,
     return;
   }
   NOTREACHED() << "Missing bitstream buffer id: " << bitstream_buffer_id;
+}
+
+int32_t RTCVideoDecoder::RecordInitDecodeUMA(int32_t status) {
+  // Logging boolean is enough to know if HW decoding has been used. Also,
+  // InitDecode is less likely to return an error so enum is not used here.
+  bool sample = (status == WEBRTC_VIDEO_CODEC_OK) ? true : false;
+  UMA_HISTOGRAM_BOOLEAN("Media.RTCVideoDecoderInitDecodeStatus", sample);
+  return status;
 }
 
 }  // namespace content

@@ -5736,6 +5736,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Media.RTCVideoDecoderError" enum="PepperVideoDecodeError">
+  <summary>Counts of video decode errors reported to RTCVideoDecoder.</summary>
+</histogram>
+
+<histogram name="Media.RTCVideoDecoderInitDecodeStatus" enum="BooleanSuccess">
+  <summary>Results of attempts to RTCVideoDecoder::InitDecode().</summary>
+</histogram>
+
 <histogram name="Media.TimeToPipelineStarted" units="ms">
   <summary>
     Time in milliseconds from HTML5 media pipeline creation to playing event.

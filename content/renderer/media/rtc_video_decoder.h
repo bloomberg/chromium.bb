@@ -181,6 +181,9 @@ class CONTENT_EXPORT RTCVideoDecoder
                      uint32_t* height,
                      size_t* size);
 
+  // Records the result of InitDecode to UMA and returns |status|.
+  int32_t RecordInitDecodeUMA(int32_t status);
+
   enum State {
     UNINITIALIZED,  // The decoder has not initialized.
     INITIALIZED,    // The decoder has initialized.
