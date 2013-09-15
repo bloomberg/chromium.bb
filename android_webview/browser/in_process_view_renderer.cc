@@ -260,18 +260,11 @@ InProcessViewRenderer::~InProcessViewRenderer() {
   DCHECK(web_contents_ == NULL);  // WebContentsGone should have been called.
 }
 
-
-// TODO(boliu): Should also call this when we know for sure we are no longer,
-// for example, when visible rect becomes 0.
 void InProcessViewRenderer::NoLongerExpectsDrawGL() {
   GLViewRendererManager& mru = g_view_renderer_manager.Get();
   if (manager_key_ != mru.NullKey()) {
     mru.NoLongerExpectsDrawGL(manager_key_);
     manager_key_ = mru.NullKey();
-
-    // TODO(boliu): If this is the first one and there are GL pending,
-    // requestDrawGL on next one.
-    // TODO(boliu): If this is the last one, lose all global contexts.
   }
 }
 
