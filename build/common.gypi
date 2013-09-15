@@ -2016,7 +2016,7 @@
       ['google_tv==1', {
         'defines': ['GOOGLE_TV=1'],
       }],
-      ['use_xi2_mt!=0', {
+      ['use_xi2_mt!=0 and use_x11==1', {
         'defines': ['USE_XI2_MT=<(use_xi2_mt)'],
       }],
       ['file_manager_extension==1', {
