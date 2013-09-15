@@ -185,7 +185,12 @@ struct wl_listener {
  *
  * Signals are recognized points where significant events can be observed.
  * Compositors as well as the server can provide signals. Observers are
- * added through \ref wl_signal_add.
+ * wl_listener's that are added through #wl_signal_add. Signals are emitted
+ * using #wl_signal_emit, which will invoke all listeners until that
+ * listener is removed by #wl_list_remove (or whenever the signal is
+ * destroyed).
+ *
+ * \sa wl_listener for more information on using wl_signal
  */
 struct wl_signal {
 	struct wl_list listener_list;
