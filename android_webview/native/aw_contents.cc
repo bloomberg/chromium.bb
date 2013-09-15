@@ -51,6 +51,7 @@
 #include "third_party/skia/include/core/SkPicture.h"
 #include "ui/base/l10n/l10n_util_android.h"
 #include "ui/gfx/android/java_bitmap.h"
+#include "ui/gfx/font_render_params_linux.h"
 #include "ui/gfx/image/image.h"
 
 struct AwDrawSWFunctionTable;
@@ -110,6 +111,46 @@ class AwContentsUserData : public base::SupportsUserData::Data {
 };
 
 base::subtle::Atomic32 g_instance_count = 0;
+
+// TODO(boliu): Deduplicate with chrome/ code.
+content::RendererPreferencesHintingEnum GetRendererPreferencesHintingEnum(
+    gfx::FontRenderParams::Hinting hinting) {
+  switch (hinting) {
+    case gfx::FontRenderParams::HINTING_NONE:
+      return content::RENDERER_PREFERENCES_HINTING_NONE;
+    case gfx::FontRenderParams::HINTING_SLIGHT:
+      return content::RENDERER_PREFERENCES_HINTING_SLIGHT;
+    case gfx::FontRenderParams::HINTING_MEDIUM:
+      return content::RENDERER_PREFERENCES_HINTING_MEDIUM;
+    case gfx::FontRenderParams::HINTING_FULL:
+      return content::RENDERER_PREFERENCES_HINTING_FULL;
+    default:
+      NOTREACHED() << "Unhandled hinting style " << hinting;
+      return content::RENDERER_PREFERENCES_HINTING_SYSTEM_DEFAULT;
+  }
+}
+
+// TODO(boliu): Deduplicate with chrome/ code.
+content::RendererPreferencesSubpixelRenderingEnum
+GetRendererPreferencesSubpixelRenderingEnum(
+    gfx::FontRenderParams::SubpixelRendering subpixel_rendering) {
+  switch (subpixel_rendering) {
+    case gfx::FontRenderParams::SUBPIXEL_RENDERING_NONE:
+      return content::RENDERER_PREFERENCES_SUBPIXEL_RENDERING_NONE;
+    case gfx::FontRenderParams::SUBPIXEL_RENDERING_RGB:
+      return content::RENDERER_PREFERENCES_SUBPIXEL_RENDERING_RGB;
+    case gfx::FontRenderParams::SUBPIXEL_RENDERING_BGR:
+      return content::RENDERER_PREFERENCES_SUBPIXEL_RENDERING_BGR;
+    case gfx::FontRenderParams::SUBPIXEL_RENDERING_VRGB:
+      return content::RENDERER_PREFERENCES_SUBPIXEL_RENDERING_VRGB;
+    case gfx::FontRenderParams::SUBPIXEL_RENDERING_VBGR:
+      return content::RENDERER_PREFERENCES_SUBPIXEL_RENDERING_VBGR;
+    default:
+      NOTREACHED() << "Unhandled subpixel rendering style "
+                   << subpixel_rendering;
+      return content::RENDERER_PREFERENCES_SUBPIXEL_RENDERING_SYSTEM_DEFAULT;
+  }
+}
 
 }  // namespace
 
@@ -218,10 +259,19 @@ void AwContents::InitAutofillIfNecessary(bool enabled) {
 void AwContents::SetAndroidWebViewRendererPrefs() {
   content::RendererPreferences* prefs =
       web_contents_->GetMutableRendererPrefs();
-  prefs->hinting = content::RENDERER_PREFERENCES_HINTING_SLIGHT;
   prefs->tap_multiple_targets_strategy =
       content::TAP_MULTIPLE_TARGETS_STRATEGY_NONE;
-  prefs->use_subpixel_positioning = true;
+
+  // TODO(boliu): Deduplicate with chrome/ code.
+  const gfx::FontRenderParams& params = gfx::GetDefaultWebKitFontRenderParams();
+  prefs->should_antialias_text = params.antialiasing;
+  prefs->use_subpixel_positioning = params.subpixel_positioning;
+  prefs->hinting = GetRendererPreferencesHintingEnum(params.hinting);
+  prefs->use_autohinter = params.autohinter;
+  prefs->use_bitmaps = params.use_bitmaps;
+  prefs->subpixel_rendering =
+      GetRendererPreferencesSubpixelRenderingEnum(params.subpixel_rendering);
+
   content::RenderViewHost* host = web_contents_->GetRenderViewHost();
   if (host)
     host->SyncRendererPrefs();
