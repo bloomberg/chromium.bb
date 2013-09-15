@@ -20,6 +20,11 @@
  * OF THIS SOFTWARE.
  */
 
+/** \file wayland-util.h
+ *
+ * \brief Utility classes, functions, and macros.
+ */
+
 #ifndef WAYLAND_UTIL_H
 #define WAYLAND_UTIL_H
 
