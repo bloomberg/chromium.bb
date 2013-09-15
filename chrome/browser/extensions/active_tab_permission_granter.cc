@@ -37,40 +37,37 @@ ActiveTabPermissionGranter::ActiveTabPermissionGranter(
 ActiveTabPermissionGranter::~ActiveTabPermissionGranter() {}
 
 void ActiveTabPermissionGranter::GrantIfRequested(const Extension* extension) {
-  if (!extension->HasAPIPermission(extensions::APIPermission::kActiveTab) &&
-      !extension->HasAPIPermission(extensions::APIPermission::kTabCapture)) {
+  if (granted_extensions_.Contains(extension->id()))
     return;
-  }
-
-  if (IsGranted(extension))
-    return;
-
-  URLPattern pattern(UserScript::ValidUserScriptSchemes());
-  if (pattern.Parse(web_contents()->GetURL().spec()) !=
-          URLPattern::PARSE_SUCCESS) {
-    // Pattern parsing could fail if this is an unsupported URL e.g. chrome://.
-    return;
-  }
 
   APIPermissionSet new_apis;
-  new_apis.insert(APIPermission::kTab);
   URLPatternSet new_hosts;
-  new_hosts.AddPattern(pattern);
-  scoped_refptr<const PermissionSet> new_permissions =
-      new PermissionSet(new_apis, new_hosts, URLPatternSet());
 
-  PermissionsData::UpdateTabSpecificPermissions(extension,
-                                                tab_id_,
-                                                new_permissions);
-  granted_extensions_.Insert(extension);
-  Send(new ExtensionMsg_UpdateTabSpecificPermissions(GetPageID(),
-                                                     tab_id_,
-                                                     extension->id(),
-                                                     new_hosts));
-}
+  if (extension->HasAPIPermission(APIPermission::kActiveTab)) {
+    URLPattern pattern(UserScript::ValidUserScriptSchemes());
+    // Pattern parsing could fail if this is an unsupported URL e.g. chrome://.
+    if (pattern.Parse(web_contents()->GetURL().spec()) ==
+            URLPattern::PARSE_SUCCESS) {
+      new_hosts.AddPattern(pattern);
+      new_apis.insert(APIPermission::kTab);
+      granted_extensions_.Insert(extension);
+    }
+  }
 
-bool ActiveTabPermissionGranter::IsGranted(const Extension* extension) {
-  return granted_extensions_.Contains(extension->id());
+  if (extension->HasAPIPermission(APIPermission::kTabCapture))
+    new_apis.insert(APIPermission::kTabCaptureForTab);
+
+  if (!new_apis.empty()) {
+    scoped_refptr<const PermissionSet> new_permissions =
+        new PermissionSet(new_apis, new_hosts, URLPatternSet());
+    PermissionsData::UpdateTabSpecificPermissions(extension,
+                                                  tab_id_,
+                                                  new_permissions);
+    Send(new ExtensionMsg_UpdateTabSpecificPermissions(GetPageID(),
+                                                       tab_id_,
+                                                       extension->id(),
+                                                       new_hosts));
+  }
 }
 
 void ActiveTabPermissionGranter::DidNavigateMainFrame(

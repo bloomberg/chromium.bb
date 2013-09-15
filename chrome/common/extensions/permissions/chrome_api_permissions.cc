@@ -249,6 +249,8 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
       APIPermissionInfo::kFlagImpliesFullURLAccess },
     { APIPermission::kTabCapture, "tabCapture",
       APIPermissionInfo::kFlagImpliesFullURLAccess },
+    { APIPermission::kTabCaptureForTab, "tabCaptureForTab",
+      APIPermissionInfo::kFlagInternal },
     { APIPermission::kPlugin, "plugin",
       APIPermissionInfo::kFlagImpliesFullURLAccess |
       APIPermissionInfo::kFlagImpliesFullAccess |

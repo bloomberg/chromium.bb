@@ -43,6 +43,14 @@ class ScriptBadgesCommandsApiTest : public ExtensionApiTest {
         switches::kScriptBadges, "1");
   }
   virtual ~ScriptBadgesCommandsApiTest() {}
+
+  bool IsGrantedForTab(const Extension* extension,
+                       const content::WebContents* web_contents) {
+    return PermissionsData::HasAPIPermissionForTab(
+        extension,
+        SessionID::IdForTab(web_contents),
+        APIPermission::kTab);
+  }
 };
 
 // Test the basic functionality of the Keybinding API:
@@ -73,16 +81,14 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, Basic) {
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(tab);
 
-  ActiveTabPermissionGranter* granter =
-      TabHelper::FromWebContents(tab)->active_tab_permission_granter();
-  EXPECT_FALSE(granter->IsGranted(extension));
+  EXPECT_FALSE(IsGrantedForTab(extension, tab));
 
   // Activate the shortcut (Ctrl+Shift+F).
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
       browser(), ui::VKEY_F, true, true, false, false));
 
   // activeTab should now be granted.
-  EXPECT_TRUE(granter->IsGranted(extension));
+  EXPECT_TRUE(IsGrantedForTab(extension, tab));
 
   // Verify the command worked.
   bool result = false;

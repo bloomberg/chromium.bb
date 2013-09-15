@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/permissions/permissions_data.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
@@ -31,6 +32,14 @@ class CommandsApiTest : public ExtensionApiTest {
  protected:
   BrowserActionTestUtil GetBrowserActionsBar() {
     return BrowserActionTestUtil(browser());
+  }
+
+  bool IsGrantedForTab(const Extension* extension,
+                       const content::WebContents* web_contents) {
+    return PermissionsData::HasAPIPermissionForTab(
+        extension,
+        SessionID::IdForTab(web_contents),
+        APIPermission::kTab);
   }
 };
 
@@ -73,16 +82,14 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, Basic) {
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(tab);
 
-  ActiveTabPermissionGranter* granter =
-      TabHelper::FromWebContents(tab)->active_tab_permission_granter();
-  EXPECT_FALSE(granter->IsGranted(extension));
+  EXPECT_FALSE(IsGrantedForTab(extension, tab));
 
   // Activate the shortcut (Ctrl+Shift+F).
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
       browser(), ui::VKEY_F, true, true, false, false));
 
   // activeTab should now be granted.
-  EXPECT_TRUE(granter->IsGranted(extension));
+  EXPECT_TRUE(IsGrantedForTab(extension, tab));
 
   // Verify the command worked.
   bool result = false;

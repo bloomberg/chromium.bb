@@ -15,13 +15,13 @@
 #include "chrome/browser/extensions/api/tab_capture/tab_capture_registry.h"
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/extension_renderer_state.h"
-#include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/permissions/permissions_data.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "extensions/common/features/feature.h"
@@ -75,10 +75,12 @@ bool TabCaptureCaptureFunction::RunImpl() {
   const Extension* extension = GetExtension();
   const std::string& extension_id = extension->id();
 
+  const int tab_id = SessionID::IdForTab(target_contents);
+
   // Make sure either we have been granted permission to capture through an
   // extension icon click or our extension is whitelisted.
-  if (!TabHelper::FromWebContents(target_contents)->
-          active_tab_permission_granter()->IsGranted(extension) &&
+  if (!PermissionsData::HasAPIPermissionForTab(
+          extension, tab_id, APIPermission::kTabCaptureForTab) &&
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kWhitelistedExtensionID) != extension_id &&
       !FeatureProvider::GetByName("permission")->GetFeature("tabCapture")->
@@ -90,8 +92,6 @@ bool TabCaptureCaptureFunction::RunImpl() {
   content::RenderViewHost* const rvh = target_contents->GetRenderViewHost();
   int render_process_id = rvh->GetProcess()->GetID();
   int routing_id = rvh->GetRoutingID();
-  int tab_id = SessionTabHelper::FromWebContents(target_contents)->
-                   session_id().id();
 
   // Create a constraints vector. We will modify all the constraints in this
   // vector to append our chrome specific constraints.

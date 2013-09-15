@@ -134,6 +134,7 @@ class APIPermission {
     kSystemStorage,
     kTab,
     kTabCapture,
+    kTabCaptureForTab,
     kTerminalPrivate,
     kTopSites,
     kTts,
