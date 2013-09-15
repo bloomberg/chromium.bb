@@ -1188,9 +1188,6 @@ CompositingReasonsAsValue(CompositingReasons reasons) {
   if (reasons & kCompositingReasonOverflowScrollingTouch)
     reason_list->AppendString("Is a scrollable overflow element");
 
-  if (reasons & kCompositingReasonBlending)
-    reason_list->AppendString("Has a blend mode");
-
   if (reasons & kCompositingReasonAssumedOverlap)
     reason_list->AppendString("Might overlap a composited animation");
 

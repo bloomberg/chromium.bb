@@ -22,7 +22,6 @@ const uint64 kCompositingReasonFilters = GG_UINT64_C(1) << 7;
 const uint64 kCompositingReasonPositionFixed = GG_UINT64_C(1) << 8;
 const uint64 kCompositingReasonPositionSticky = GG_UINT64_C(1) << 9;
 const uint64 kCompositingReasonOverflowScrollingTouch = GG_UINT64_C(1) << 10;
-const uint64 kCompositingReasonBlending = GG_UINT64_C(1) << 11;
 const uint64 kCompositingReasonAssumedOverlap = GG_UINT64_C(1) << 12;
 const uint64 kCompositingReasonOverlap = GG_UINT64_C(1) << 13;
 const uint64 kCompositingReasonNegativeZIndexChildren = GG_UINT64_C(1) << 14;

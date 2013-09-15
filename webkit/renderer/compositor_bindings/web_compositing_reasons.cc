@@ -59,10 +59,6 @@ COMPILE_ASSERT_MATCHING_UINT64(
     WebKit::CompositingReasonOverflowScrollingTouch);
 
 COMPILE_ASSERT_MATCHING_UINT64(
-    cc::kCompositingReasonBlending,
-    WebKit::CompositingReasonBlending);
-
-COMPILE_ASSERT_MATCHING_UINT64(
     cc::kCompositingReasonAssumedOverlap,
     WebKit::CompositingReasonAssumedOverlap);
 
