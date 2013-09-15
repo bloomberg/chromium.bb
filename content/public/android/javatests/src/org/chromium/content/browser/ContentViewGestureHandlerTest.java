@@ -656,6 +656,53 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
     }
 
     /**
+     * Verify that a show pressed state gesture followed by a long press followed by the focus
+     * loss in the window due to context menu cancels show pressed.
+     * @throws Exception
+     */
+    @SmallTest
+    @Feature({"Gestures"})
+    public void testShowPressCancelOnWindowFocusLost() throws Exception {
+        final long time = SystemClock.uptimeMillis();
+        GestureRecordingMotionEventDelegate mockDelegate =
+                new GestureRecordingMotionEventDelegate();
+        mGestureHandler = new ContentViewGestureHandler(
+                getInstrumentation().getTargetContext(), mockDelegate, mMockZoomManager,
+                ContentViewCore.INPUT_EVENTS_DELIVERED_AT_VSYNC);
+        mLongPressDetector = new LongPressDetector(
+                getInstrumentation().getTargetContext(), mGestureHandler);
+        mGestureHandler.setTestDependencies(mLongPressDetector, null, null);
+
+        MotionEvent event = motionEvent(MotionEvent.ACTION_DOWN, time, time);
+        mGestureHandler.onTouchEvent(event);
+
+        mGestureHandler.sendShowPressedStateGestureForTesting();
+        assertEquals("A show pressed state event should have been sent",
+                ContentViewGestureHandler.GESTURE_SHOW_PRESSED_STATE,
+                        mockDelegate.mMostRecentGestureEvent.mType);
+        assertEquals("Only showPressedState should have been sent",
+                1, mockDelegate.mGestureTypeList.size());
+
+        mLongPressDetector.startLongPressTimerIfNeeded(event);
+        mLongPressDetector.sendLongPressGestureForTest();
+
+        assertEquals("Only should have sent only LONG_PRESS event",
+                2, mockDelegate.mGestureTypeList.size());
+        assertEquals("Should have a long press event next",
+                ContentViewGestureHandler.GESTURE_LONG_PRESS,
+                mockDelegate.mGestureTypeList.get(1).intValue());
+
+        // The long press triggers window focus loss by opening a context menu
+        mGestureHandler.onWindowFocusLost();
+
+        assertEquals("Only should have sent only GESTURE_SHOW_PRESS_CANCEL event",
+                3, mockDelegate.mGestureTypeList.size());
+        assertEquals("Should have a long press event next",
+                ContentViewGestureHandler.GESTURE_SHOW_PRESS_CANCEL,
+                mockDelegate.mGestureTypeList.get(2).intValue());
+    }
+
+    /**
      * Verify that a recent show pressed state gesture is canceled when scrolling begins.
      * @throws Exception
      */

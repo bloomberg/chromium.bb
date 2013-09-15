@@ -164,6 +164,10 @@ class ContentViewGestureHandler implements LongPressDelegate {
     // confirmTouchEvent(), from either itself or onTouchEvent().
     private int mTouchEventHandlingStackDepth;
 
+    // Keeps track of the last long press event, if we end up opening a context menu, we would need
+    // to potentially use the event to send GESUTRE_SHOW_PRESS_CANCEL to remove ::active styling
+    private MotionEvent mLastLongPressEvent;
+
     static final int GESTURE_SHOW_PRESSED_STATE = 0;
     static final int GESTURE_DOUBLE_TAP = 1;
     static final int GESTURE_SINGLE_TAP_UP = 2;
@@ -366,9 +370,9 @@ class ContentViewGestureHandler implements LongPressDelegate {
     void setTestDependencies(
             LongPressDetector longPressDetector, GestureDetector gestureDetector,
             OnGestureListener listener) {
-        mLongPressDetector = longPressDetector;
-        mGestureDetector = gestureDetector;
-        mListener = listener;
+        if (longPressDetector != null) mLongPressDetector = longPressDetector;
+        if (gestureDetector != null) mGestureDetector = gestureDetector;
+        if (listener != null) mListener = listener;
     }
 
     private void initGestureDetectors(final Context context) {
@@ -608,7 +612,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
                         if (!mZoomManager.isScaleGestureDetectionInProgress() &&
                                 (mDoubleTapDragMode == DOUBLE_TAP_DRAG_MODE_NONE ||
                                  isDoubleTapDragDisabled())) {
-                            sendShowPressCancelIfNecessary(e);
+                            mLastLongPressEvent = e;
                             sendMotionEventAsGesture(GESTURE_LONG_PRESS, e, null);
                         }
                     }
@@ -855,6 +859,15 @@ class ContentViewGestureHandler implements LongPressDelegate {
         } finally {
             onTouchEventHandlingEnd();
             TraceEvent.end("onTouchEvent");
+        }
+    }
+
+    /**
+     * Handle content view losing focus -- ensure that any remaining active state is removed.
+     */
+    void onWindowFocusLost() {
+        if (mLongPressDetector.isInLongPress() && mLastLongPressEvent != null) {
+            sendShowPressCancelIfNecessary(mLastLongPressEvent);
         }
     }
 
@@ -1161,6 +1174,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
 
         if (sendMotionEventAsGesture(GESTURE_SHOW_PRESS_CANCEL, e, null)) {
             mShowPressIsCalled = false;
+            mLastLongPressEvent = null;
         }
     }
 
