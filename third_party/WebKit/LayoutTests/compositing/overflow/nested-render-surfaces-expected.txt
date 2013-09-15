@@ -1,20 +1,2 @@
-layer at (0,0) size 785x2018
-  RenderView at (0,0) size 785x600
-layer at (0,0) size 785x2018
-  RenderBlock {HTML} at (0,0) size 785x2018
-    RenderBody {BODY} at (8,10) size 769x2000
-layer at (8,10) size 769x318
-  RenderBlock {DIV} at (0,0) size 769x318
-layer at (8,120) size 308x208 clip at (12,124) size 285x185 scrollWidth 308 scrollHeight 328
-  RenderBlock {DIV} at (0,110) size 308x208 [border: (4px solid #000000)]
-    RenderBlock {DIV} at (4,14) size 285x318
-layer at (12,244) size 308x208 backgroundClip at (12,244) size 285x65 clip at (16,248) size 281x61 outlineClip at (12,124) size 285x185 scrollHeight 560
-  RenderBlock {DIV} at (0,110) size 308x208 [border: (4px solid #000000)]
-layer at (50,200) size 200x200
-  RenderBlock (positioned) {DIV} at (50,200) size 200x200 [bgcolor=#008000]
-layer at (18,10) size 100x100
-  RenderBlock (relative positioned) zI: 1 {DIV} at (10,0) size 100x100 [bgcolor=#0000FF]
-layer at (22,134) size 100x100
-  RenderBlock (relative positioned) zI: 1 {DIV} at (10,0) size 100x100 [bgcolor=#0000FF]
-layer at (26,258) size 100x100 backgroundClip at (16,248) size 281x61 clip at (16,248) size 281x61 outlineClip at (16,248) size 281x61
-  RenderBlock (relative positioned) zI: 1 {DIV} at (14,14) size 100x100 [bgcolor=#0000FF]
+'fixed' is not an unclipped descendant.
+Unclipped Descendants are only relevant for acceleratedCompositingForOverflowScroll, so this result is expected everywhere except in the virtual/gpu/ suite.

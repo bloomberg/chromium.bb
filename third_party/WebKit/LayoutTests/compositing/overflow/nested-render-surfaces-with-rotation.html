@@ -31,7 +31,7 @@
         opacity: 0.5;
     }
 
-    .fixed {
+    #fixed {
         position: fixed;
         z-index: 0;
         background-color: green;
@@ -49,20 +49,18 @@
       -webkit-transform: translateZ(0) rotate(-9deg);
     }
 </style>
+<script src="resources/nested-render-surfaces.js"></script>
 <script>
     function setup() {
-        if (!window.internals) {
-            var pre = document.createElement("pre");
-            pre.innerHTML = "This test ensures that clipping works correctly "
-                + "with clip children, even if there are rotations involved.\n"
-                + "if this test is working correctly, all rects should be "
-                + "clipped by their containing overflow scrolling divs (the\n"
-                + "fixed position element will have the outer 'counter "
-                + "rotate' div as its containing block due to the rotation,\n"
-                + "not the viewport, and will therefore get clipped by the "
-                + "outer overflow scrolling div, but not the inner.";
-            document.body.appendChild(pre);
-        }
+        var description = "This test ensures that clipping works correctly "
+            + "with clip children, even if there are rotations involved.\n"
+            + "if this test is working correctly, all rects should be "
+            + "clipped by their containing overflow scrolling divs (the\n"
+            + "fixed position element will have the outer 'counter "
+            + "rotate' div as its containing block due to the rotation,\n"
+            + "not the viewport, and will therefore get clipped by the "
+            + "outer overflow scrolling div, but not the inner.";
+        runTest(description);
     }
     window.onload = setup;
 </script>
@@ -75,7 +73,7 @@
                 <div class="surface counter-rotated">
                     <div class="box"></div>
                     <div class="container">
-                        <div class="fixed"></div>
+                        <div id="fixed"></div>
                         <div class="box"></div>
                         <div class="box"></div>
                         <div class="box"></div>

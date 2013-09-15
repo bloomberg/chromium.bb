@@ -1074,6 +1074,10 @@ void RenderLayer::updateHasUnclippedDescendant()
     if (!m_hasVisibleContent && !m_hasVisibleDescendant)
         return;
 
+    FrameView* frameView = renderer()->view()->frameView();
+    if (!frameView)
+        return;
+
     const RenderObject* containingBlock = renderer()->containingBlock();
     setIsUnclippedDescendant(false);
     for (RenderLayer* ancestor = parent(); ancestor && ancestor->renderer() != containingBlock; ancestor = ancestor->parent()) {
@@ -1084,7 +1088,7 @@ void RenderLayer::updateHasUnclippedDescendant()
         // compositor, we will be able to relax this restriction without it being prohibitively
         // expensive (currently, we have to do a lot of work in the compositor to honor a
         // clip child/parent relationship).
-        if (ancestor->needsCompositedScrolling())
+        if (frameView->containsScrollableArea(ancestor->scrollableArea()))
             setIsUnclippedDescendant(true);
         ancestor->setHasUnclippedDescendant(true);
     }

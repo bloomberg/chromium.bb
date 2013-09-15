@@ -221,6 +221,7 @@ public:
     PassRefPtr<NodeList> paintOrderListAfterPromote(Element*, ExceptionState&);
 
     bool scrollsWithRespectTo(Element*, Element*, ExceptionState&);
+    bool isUnclippedDescendant(Element*, ExceptionState&);
 
     void setNeedsCompositedScrolling(Element*, unsigned value, ExceptionState&);
 

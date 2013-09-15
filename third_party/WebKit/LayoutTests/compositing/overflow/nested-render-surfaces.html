@@ -31,7 +31,7 @@
         opacity: 0.5;
     }
 
-    .fixed {
+    #fixed {
         position: fixed;
         z-index: 0;
         background-color: green;
@@ -41,15 +41,13 @@
         width: 200px;
     }
 </style>
+<script src="resources/nested-render-surfaces.js"></script>
 <script>
     function setup() {
-        if (!window.internals) {
-            var pre = document.createElement("pre");
-            pre.innerHTML = "This test ensures that render surfaces grow to "
-                + "accomodate clip children. If this test is working, you "
-                + "should see that the green box is square.";
-            document.body.appendChild(pre);
-        }
+        var description = "This test ensures that render surfaces grow to "
+            + "accomodate clip children. If this test is working, you "
+            + "should see that the green box is square.";
+        runTest(description);
     }
     window.onload = setup;
 </script>
@@ -61,7 +59,7 @@
             <div>
                 <div class="box"></div>
                 <div class="container">
-                    <div class="fixed"></div>
+                    <div id="fixed"></div>
                     <div class="box"></div>
                     <div class="box"></div>
                     <div class="box"></div>
