@@ -129,6 +129,51 @@ wl_client_get_object(struct wl_client *client, uint32_t id);
 void
 wl_client_post_no_memory(struct wl_client *client);
 
+/** \class wl_listener
+ *
+ * \brief A single listener for Wayland signals
+ *
+ * wl_listener provides the means to listen for wl_signal notifications. Many
+ * Wayland objects use wl_listener for notification of significant events like
+ * object destruction.
+ *
+ * Clients should create wl_listener objects manually and can register them as
+ * listeners to signals using #wl_signal_add, assuming the signal is
+ * directly accessible. For opaque structs like wl_event_loop, adding a
+ * listener should be done through provided accessor methods. A listener can
+ * only listen to one signal at a time.
+ *
+ * \code
+ * struct wl_listener your_listener;
+ * your_listener.notify = your_callback_method;
+ *
+ * // Direct access
+ * wl_signal_add(&some_object->destroy_signal, &your_listener);
+ *
+ * // Accessor access
+ * wl_event_loop *loop = ...;
+ * wl_event_loop_add_destroy_listener(loop, &your_listener);
+ * \endcode
+ *
+ * If the listener is part of a larger struct, #wl_container_of can be used
+ * to retrieve a pointer to it:
+ *
+ * \code
+ * void your_listener(struct wl_listener *listener, void *data)
+ * {
+ * 	struct your_data *data = NULL;
+ * 	your_data = wl_container_of(listener, data, your_member_name);
+ * }
+ * \endcode
+ *
+ * If you need to remove a listener from a signal, use #wl_list_remove.
+ *
+ * \code
+ * wl_list_remove(&your_listener.link);
+ * \endcode
+ *
+ * \sa wl_signal
+ */
 struct wl_listener {
 	struct wl_list link;
 	wl_notify_func_t notify;
