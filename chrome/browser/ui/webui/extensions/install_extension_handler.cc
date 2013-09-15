@@ -75,8 +75,7 @@ void InstallExtensionHandler::HandleStartDragMessage(const ListValue* args) {
 
   const content::DropData::FileInfo& file_info = drop_data->filenames.front();
 
-  file_to_install_ = base::FilePath::FromWStringHack(
-      UTF16ToWide(file_info.path));
+  file_to_install_ = base::FilePath::FromUTF16Unsafe(file_info.path);
   // Use the display name if provided, for checking file names
   // (.path is likely a random hash value in that case).
   file_display_name_ =
