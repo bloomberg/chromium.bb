@@ -31,43 +31,27 @@
 #include "config.h"
 #include "core/html/ime/Composition.h"
 
-#include "core/html/ime/InputMethodContext.h"
-
 namespace WebCore {
 
 Composition::~Composition()
 {
 }
 
-PassRefPtr<Composition> Composition::create(InputMethodContext* context)
+PassRefPtr<Composition> Composition::create()
 {
-    return adoptRef(new Composition(context));
+    return adoptRef(new Composition());
 }
 
-Composition::Composition(InputMethodContext* context)
-    : m_inputMethodContext(context)
+Composition::Composition()
+    : m_selectionStart(0)
+    , m_selectionEnd(0)
 {
     ScriptWrappable::init(this);
 }
 
-String Composition::text() const
-{
-    return m_inputMethodContext->compositionText();
-}
-
-int Composition::selectionStart() const
-{
-    return m_inputMethodContext->selectionStart();
-}
-
-int Composition::selectionEnd() const
-{
-    return m_inputMethodContext->selectionEnd();
-}
-
 const Vector<unsigned>& Composition::getSegments() const
 {
-    return m_inputMethodContext->segments();
+    return m_segments;
 }
 
 } // namespace WebCore

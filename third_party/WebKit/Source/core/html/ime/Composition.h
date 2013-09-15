@@ -39,22 +39,29 @@
 
 namespace WebCore {
 
-class InputMethodContext;
-
 class Composition : public RefCounted<Composition>, public ScriptWrappable {
 public:
-    static PassRefPtr<Composition> create(InputMethodContext*);
+    static PassRefPtr<Composition> create();
     ~Composition();
 
-    String text() const;
-    int selectionStart() const;
-    int selectionEnd() const;
+    String text() const { return m_text; }
+    void setText(const String& text) { m_text = text; }
+
+    int selectionStart() const { return m_selectionStart; }
+    void setSelectionStart(int selectionStart) { selectionStart = m_selectionStart; }
+
+    int selectionEnd() const { return m_selectionEnd; }
+    void setSelectionEnd(int selectionEnd) { selectionEnd = m_selectionEnd; }
+
     const Vector<unsigned>& getSegments() const;
 
 private:
-    explicit Composition(InputMethodContext*);
+    Composition();
 
-    InputMethodContext* m_inputMethodContext;
+    String m_text;
+    int m_selectionStart;
+    int m_selectionEnd;
+    Vector<unsigned> m_segments;
 };
 
 } // namespace WebCore

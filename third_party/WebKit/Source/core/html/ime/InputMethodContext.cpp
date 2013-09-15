@@ -31,7 +31,6 @@
 #include "config.h"
 #include "core/html/ime/InputMethodContext.h"
 
-#include "core/dom/Text.h"
 #include "core/editing/InputMethodController.h"
 #include "core/html/ime/Composition.h"
 #include "core/page/Frame.h"
@@ -44,7 +43,7 @@ PassOwnPtr<InputMethodContext> InputMethodContext::create(HTMLElement* element)
 }
 
 InputMethodContext::InputMethodContext(HTMLElement* element)
-    : m_composition(Composition::create(this))
+    : m_composition(0)
     , m_element(element)
 {
     ScriptWrappable::init(this);
@@ -56,6 +55,8 @@ InputMethodContext::~InputMethodContext()
 
 Composition* InputMethodContext::composition() const
 {
+    // FIXME: Implement this. This should lazily update the composition object
+    // here.
     return m_composition.get();
 }
 
@@ -72,8 +73,15 @@ HTMLElement* InputMethodContext::target() const
 
 void InputMethodContext::confirmComposition()
 {
-    if (hasFocus())
-        inputMethodController().confirmCompositionAndResetState();
+    Frame* frame = m_element->document().frame();
+    if (!frame)
+        return;
+
+    const Element* element = frame->document()->focusedElement();
+    if (!element || !element->isHTMLElement() || m_element != toHTMLElement(element))
+        return;
+
+    frame->inputMethodController().confirmCompositionAndResetState();
 }
 
 void InputMethodContext::setCaretRectangle(Node* anchor, int x, int y, int w, int h)
@@ -84,83 +92,6 @@ void InputMethodContext::setCaretRectangle(Node* anchor, int x, int y, int w, in
 void InputMethodContext::setExclusionRectangle(Node* anchor, int x, int y, int w, int h)
 {
     // FIXME: Implement this.
-}
-
-bool InputMethodContext::hasFocus() const
-{
-    Frame* frame = m_element->document().frame();
-    if (!frame)
-        return false;
-
-    const Element* element = frame->document()->focusedElement();
-    return element && element->isHTMLElement() && m_element == toHTMLElement(element);
-}
-
-String InputMethodContext::compositionText() const
-{
-    if (!hasFocus())
-        return emptyString();
-
-    Text* text = inputMethodController().compositionNode();
-    return text ? text->wholeText() : emptyString();
-}
-
-CompositionUnderline InputMethodContext::selectedSegment() const
-{
-    CompositionUnderline underline;
-    if (!hasFocus())
-        return underline;
-
-    const InputMethodController& controller = inputMethodController();
-    if (!controller.hasComposition())
-        return underline;
-
-    Vector<CompositionUnderline> underlines = controller.customCompositionUnderlines();
-    for (size_t i = 0; i < underlines.size(); ++i) {
-        if (underlines[i].thick)
-            return underlines[i];
-    }
-
-    // When no underline information is available while composition exists,
-    // build a CompositionUnderline whose element is the whole composition.
-    underline.endOffset = controller.compositionEnd() - controller.compositionStart();
-    return underline;
-
-}
-
-int InputMethodContext::selectionStart() const
-{
-    return selectedSegment().startOffset;
-}
-
-int InputMethodContext::selectionEnd() const
-{
-    return selectedSegment().endOffset;
-}
-
-const Vector<unsigned>& InputMethodContext::segments()
-{
-    m_segments.clear();
-    if (!hasFocus())
-        return m_segments;
-    const InputMethodController& controller = inputMethodController();
-    if (!controller.hasComposition())
-        return m_segments;
-
-    Vector<CompositionUnderline> underlines = controller.customCompositionUnderlines();
-    if (!underlines.size()) {
-        m_segments.append(0);
-    } else {
-        for (size_t i = 0; i < underlines.size(); ++i)
-            m_segments.append(underlines[i].startOffset);
-    }
-
-    return m_segments;
-}
-
-InputMethodController& InputMethodContext::inputMethodController() const
-{
-    return m_element->document().frame()->inputMethodController();
 }
 
 } // namespace WebCore
