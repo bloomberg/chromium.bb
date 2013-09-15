@@ -8,8 +8,8 @@
 #include "grit/ui_resources.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/effects/SkLerpXfermode.h"
-#include "ui/base/animation/animation.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/animation/animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/skia_util.h"
@@ -118,7 +118,7 @@ void LabelButtonBorder::Paint(const View& view, gfx::Canvas* canvas) {
   gfx::Rect rect(native_theme_delegate->GetThemePaintRect());
   ui::NativeTheme::ExtraParams extra;
   const ui::NativeTheme* theme = view.GetNativeTheme();
-  const ui::Animation* animation = native_theme_delegate->GetThemeAnimation();
+  const gfx::Animation* animation = native_theme_delegate->GetThemeAnimation();
   ui::NativeTheme::State state = native_theme_delegate->GetThemeState(&extra);
 
   if (animation && animation->is_animating()) {

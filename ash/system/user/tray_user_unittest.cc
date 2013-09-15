@@ -14,7 +14,7 @@
 #include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_shell_delegate.h"
 #include "ui/aura/test/event_generator.h"
-#include "ui/base/animation/animation_container_element.h"
+#include "ui/gfx/animation/animation_container_element.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 

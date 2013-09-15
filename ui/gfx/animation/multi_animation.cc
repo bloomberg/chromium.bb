@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/animation/multi_animation.h"
+#include "ui/gfx/animation/multi_animation.h"
 
 #include "base/logging.h"
-#include "ui/base/animation/animation_delegate.h"
+#include "ui/gfx/animation/animation_delegate.h"
 
-namespace ui {
+namespace gfx {
 
 // Default interval, in ms.
 static const int kDefaultTimerInterval = 20;
@@ -91,4 +91,4 @@ const MultiAnimation::Part& MultiAnimation::GetPart(int* time_ms,
   return parts_[0];
 }
 
-}  // namespace ui
+}  // namespace gfx

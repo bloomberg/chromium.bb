@@ -27,7 +27,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
-#include "ui/base/animation/slide_animation.h"
+#include "ui/gfx/animation/slide_animation.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -271,7 +271,7 @@ ImmersiveModeControllerAsh::ImmersiveModeControllerAsh()
       mouse_x_when_hit_top_in_screen_(-1),
       gesture_begun_(false),
       native_window_(NULL),
-      animation_(new ui::SlideAnimation(this)),
+      animation_(new gfx::SlideAnimation(this)),
       animations_disabled_for_test_(false),
       weak_ptr_factory_(this) {
 }
@@ -529,7 +529,7 @@ void ImmersiveModeControllerAsh::OnWidgetActivationChanged(
 // Animation delegate:
 
 void ImmersiveModeControllerAsh::AnimationEnded(
-    const ui::Animation* animation) {
+    const gfx::Animation* animation) {
   if (reveal_state_ == SLIDING_OPEN) {
     // AnimationProgressed() is called immediately before AnimationEnded()
     // and does a layout.
@@ -540,7 +540,7 @@ void ImmersiveModeControllerAsh::AnimationEnded(
 }
 
 void ImmersiveModeControllerAsh::AnimationProgressed(
-    const ui::Animation* animation) {
+    const gfx::Animation* animation) {
   // Relayout. This will also move any views whose position depends on the
   // top container position such as the find bar.
   // We do not call LayoutBrowserRootView() here because we are not toggling

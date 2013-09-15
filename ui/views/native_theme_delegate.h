@@ -34,7 +34,7 @@ class VIEWS_EXPORT NativeThemeDelegate {
 
   // If the native theme drawign should be animated, return the Animation object
   // that controlls it.  If no animation is ongoing, NULL may be returned.
-  virtual const ui::Animation* GetThemeAnimation() const = 0;
+  virtual const gfx::Animation* GetThemeAnimation() const = 0;
 
   // If animation is onging, this returns the background native theme state.
   virtual ui::NativeTheme::State GetBackgroundThemeState(

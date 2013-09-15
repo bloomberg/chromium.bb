@@ -6,13 +6,13 @@
 #define UI_BASE_ANIMATION_ANIMATION_CONTAINER_ELEMENT_H_
 
 #include "base/time/time.h"
-#include "ui/base/ui_export.h"
+#include "ui/gfx/gfx_export.h"
 
-namespace ui {
+namespace gfx {
 
 // Interface for the elements the AnimationContainer contains. This is
 // implemented by Animation.
-class UI_EXPORT AnimationContainerElement {
+class GFX_EXPORT AnimationContainerElement {
  public:
   // Sets the start of the animation. This is invoked from
   // AnimationContainer::Start.
@@ -29,6 +29,6 @@ class UI_EXPORT AnimationContainerElement {
   virtual ~AnimationContainerElement() {}
 };
 
-}  // namespace ui
+}  // namespace gfx
 
 #endif  // UI_BASE_ANIMATION_ANIMATION_CONTAINER_ELEMENT_H_

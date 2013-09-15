@@ -10,17 +10,17 @@
 #include "base/compiler_specific.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "ui/base/animation/animation_delegate.h"
-#include "ui/base/animation/slide_animation.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
+#include "ui/gfx/animation/animation_delegate.h"
+#include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/image/image.h"
 
 class GtkThemeService;
 class SkBitmap;
 
 // An animating throbber.
-class ThrobberGtk : public ui::AnimationDelegate,
+class ThrobberGtk : public gfx::AnimationDelegate,
                     public content::NotificationObserver {
  public:
   // |theme_service| must not be NULL.
@@ -33,9 +33,9 @@ class ThrobberGtk : public ui::AnimationDelegate,
 
   GtkWidget* widget() const { return widget_.get(); }
 
-  // ui::AnimationDelegate implementation.
-  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
+  // gfx::AnimationDelegate implementation.
+  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
+  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
@@ -60,7 +60,7 @@ class ThrobberGtk : public ui::AnimationDelegate,
   ui::OwnedWidgetGtk widget_;
 
   // A linear animation over the loaded frames.
-  ui::SlideAnimation animation_;
+  gfx::SlideAnimation animation_;
 
   // The image containing the throbber frames.
   gfx::Image frames_;

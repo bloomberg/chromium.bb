@@ -216,7 +216,7 @@ void DraggedViewGtk::AnimateToBounds(const gfx::Rect& bounds,
   animation_end_bounds_ = bounds;
 
   close_animation_.SetSlideDuration(kAnimateToBoundsDurationMs);
-  close_animation_.SetTweenType(ui::Tween::EASE_OUT);
+  close_animation_.SetTweenType(gfx::Tween::EASE_OUT);
   if (!close_animation_.IsShowing()) {
     close_animation_.Reset();
     close_animation_.Show();
@@ -224,9 +224,9 @@ void DraggedViewGtk::AnimateToBounds(const gfx::Rect& bounds,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DraggedViewGtk, ui::AnimationDelegate implementation:
+// DraggedViewGtk, gfx::AnimationDelegate implementation:
 
-void DraggedViewGtk::AnimationProgressed(const ui::Animation* animation) {
+void DraggedViewGtk::AnimationProgressed(const gfx::Animation* animation) {
   int delta_x = (animation_end_bounds_.x() - animation_start_bounds_.x());
   int x = animation_start_bounds_.x() +
       static_cast<int>(delta_x * animation->GetCurrentValue());
@@ -235,11 +235,11 @@ void DraggedViewGtk::AnimationProgressed(const ui::Animation* animation) {
   gdk_window_move(gdk_window, x, y);
 }
 
-void DraggedViewGtk::AnimationEnded(const ui::Animation* animation) {
+void DraggedViewGtk::AnimationEnded(const gfx::Animation* animation) {
   animation_callback_.Run();
 }
 
-void DraggedViewGtk::AnimationCanceled(const ui::Animation* animation) {
+void DraggedViewGtk::AnimationCanceled(const gfx::Animation* animation) {
   AnimationEnded(animation);
 }
 

@@ -336,7 +336,7 @@ ui::LayerAnimationElement* CreateGrowShrinkElement(
           base::TimeDelta::FromMilliseconds(
               kWindowAnimation_Bounce_DurationMS *
                   kWindowAnimation_Bounce_GrowShrinkDurationPercent / 100)));
-  transition->set_tween_type(grow ? ui::Tween::EASE_OUT : ui::Tween::EASE_IN);
+  transition->set_tween_type(grow ? gfx::Tween::EASE_OUT : gfx::Tween::EASE_IN);
   return transition.release();
 }
 
@@ -380,7 +380,7 @@ void AddLayerAnimationsForRotate(aura::Window* window, bool show) {
       ui::LayerAnimationElement::CreateOpacityElement(
           show ? kWindowAnimation_ShowOpacity : kWindowAnimation_HideOpacity,
           duration * kWindowAnimation_Rotate_OpacityDurationPercent / 100));
-  opacity->set_tween_type(ui::Tween::EASE_IN_OUT);
+  opacity->set_tween_type(gfx::Tween::EASE_IN_OUT);
   window->layer()->GetAnimator()->ScheduleAnimation(
       new ui::LayerAnimationSequence(opacity.release()));
 

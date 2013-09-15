@@ -165,7 +165,7 @@ class LongPressAffordanceHandler::LongPressAffordanceView
   virtual ~LongPressAffordanceView() {
   }
 
-  void UpdateWithGrowAnimation(ui::Animation* animation) {
+  void UpdateWithGrowAnimation(gfx::Animation* animation) {
     // Update the portion of the circle filled so far and re-draw.
     current_angle_ = animation->CurrentValueBetween(kAffordanceAngleStartValue,
         kAffordanceAngleEndValue);
@@ -177,7 +177,7 @@ class LongPressAffordanceHandler::LongPressAffordanceView
     SchedulePaint();
   }
 
-  void UpdateWithShrinkAnimation(ui::Animation* animation) {
+  void UpdateWithShrinkAnimation(gfx::Animation* animation) {
     current_scale_ = animation->CurrentValueBetween(kAffordanceScaleEndValue,
         kAffordanceShrinkScaleEndValue);
     widget_->GetNativeView()->layer()->SetOpacity(
@@ -236,7 +236,7 @@ class LongPressAffordanceHandler::LongPressAffordanceView
 // LongPressAffordanceHandler, public
 
 LongPressAffordanceHandler::LongPressAffordanceHandler()
-    : ui::LinearAnimation(kAffordanceFrameRateHz, this),
+    : gfx::LinearAnimation(kAffordanceFrameRateHz, this),
       tap_down_touch_id_(-1),
       tap_down_display_id_(0),
       current_animation_type_(NONE) {}
@@ -351,7 +351,7 @@ bool LongPressAffordanceHandler::ShouldSendCanceledFromStop() {
 }
 
 void LongPressAffordanceHandler::AnimationEnded(
-    const ui::Animation* animation) {
+    const gfx::Animation* animation) {
   switch (current_animation_type_) {
     case GROW_ANIMATION:
       current_animation_type_ = SHRINK_ANIMATION;

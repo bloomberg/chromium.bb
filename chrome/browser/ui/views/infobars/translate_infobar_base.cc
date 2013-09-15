@@ -10,8 +10,8 @@
 #include "chrome/browser/ui/views/infobars/before_translate_infobar.h"
 #include "chrome/browser/ui/views/infobars/translate_message_infobar.h"
 #include "grit/theme_resources.h"
-#include "ui/base/animation/slide_animation.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/label.h"
@@ -55,8 +55,8 @@ void TranslateInfoBarBase::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
   if (details.is_add && (details.child == this) &&
       (background_color_animation_ == NULL)) {
-    background_color_animation_.reset(new ui::SlideAnimation(this));
-    background_color_animation_->SetTweenType(ui::Tween::LINEAR);
+    background_color_animation_.reset(new gfx::SlideAnimation(this));
+    background_color_animation_->SetTweenType(gfx::Tween::LINEAR);
     background_color_animation_->SetSlideDuration(500);
     TranslateInfoBarDelegate::BackgroundAnimationType animation =
         GetDelegate()->background_animation_type();
@@ -97,7 +97,8 @@ void TranslateInfoBarBase::OnPaintBackground(gfx::Canvas* canvas) {
                  error_background_);
 }
 
-void TranslateInfoBarBase::AnimationProgressed(const ui::Animation* animation) {
+void TranslateInfoBarBase::AnimationProgressed(
+    const gfx::Animation* animation) {
   if (animation == background_color_animation_.get())
     SchedulePaint();  // That'll trigger a PaintBackgroud.
   else

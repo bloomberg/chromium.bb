@@ -6,10 +6,10 @@
 #define ASH_SYSTEM_TRAY_TRAY_ITEM_VIEW_H_
 
 #include "ash/ash_export.h"
-#include "ui/base/animation/animation_delegate.h"
+#include "ui/gfx/animation/animation_delegate.h"
 #include "ui/views/view.h"
 
-namespace ui {
+namespace gfx {
 class SlideAnimation;
 }
 
@@ -28,7 +28,7 @@ namespace internal {
 // correctly when the visibility/size of the tray item changes. It also adds
 // animation when showing/hiding the item in the tray.
 class ASH_EXPORT TrayItemView : public views::View,
-                                public ui::AnimationDelegate {
+                                public gfx::AnimationDelegate {
  public:
   explicit TrayItemView(SystemTrayItem* owner);
   virtual ~TrayItemView();
@@ -66,13 +66,13 @@ class ASH_EXPORT TrayItemView : public views::View,
   // Overridden from views::View.
   virtual void ChildPreferredSizeChanged(View* child) OVERRIDE;
 
-  // Overridden from ui::AnimationDelegate.
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
-  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
-  virtual void AnimationCanceled(const ui::Animation* animation) OVERRIDE;
+  // Overridden from gfx::AnimationDelegate.
+  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
+  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
+  virtual void AnimationCanceled(const gfx::Animation* animation) OVERRIDE;
 
   SystemTrayItem* owner_;
-  scoped_ptr<ui::SlideAnimation> animation_;
+  scoped_ptr<gfx::SlideAnimation> animation_;
   views::Label* label_;
   views::ImageView* image_view_;
 

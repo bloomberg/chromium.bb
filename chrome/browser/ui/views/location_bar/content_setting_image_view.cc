@@ -86,7 +86,7 @@ ContentSettingImageView::ContentSettingImageView(
   LocationBarView::InitTouchableLocationBarChildView(this);
 
   slide_animator_.SetSlideDuration(kAnimationDurationMS);
-  slide_animator_.SetTweenType(ui::Tween::LINEAR);
+  slide_animator_.SetTweenType(gfx::Tween::LINEAR);
 }
 
 ContentSettingImageView::~ContentSettingImageView() {
@@ -159,7 +159,7 @@ int ContentSettingImageView::GetBubbleOuterPadding(bool by_icon) {
       (by_icon ? 0 : LocationBarView::kIconInternalPadding);
 }
 
-void ContentSettingImageView::AnimationEnded(const ui::Animation* animation) {
+void ContentSettingImageView::AnimationEnded(const gfx::Animation* animation) {
   slide_animator_.Reset();
   if (!pause_animation_) {
     text_label_->SetVisible(false);
@@ -169,7 +169,7 @@ void ContentSettingImageView::AnimationEnded(const ui::Animation* animation) {
 }
 
 void ContentSettingImageView::AnimationProgressed(
-    const ui::Animation* animation) {
+    const gfx::Animation* animation) {
   if (!pause_animation_) {
     parent_->Layout();
     parent_->SchedulePaint();
@@ -177,7 +177,7 @@ void ContentSettingImageView::AnimationProgressed(
 }
 
 void ContentSettingImageView::AnimationCanceled(
-    const ui::Animation* animation) {
+    const gfx::Animation* animation) {
   AnimationEnded(animation);
 }
 

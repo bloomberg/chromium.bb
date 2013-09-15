@@ -15,16 +15,16 @@
 #include "chrome/browser/ui/status_bubble.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "ui/base/animation/animation_delegate.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
+#include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/point.h"
 #include "url/gurl.h"
 
 class GtkThemeService;
 class Profile;
 
-namespace ui {
+namespace gfx {
 class SlideAnimation;
 }
 
@@ -34,7 +34,7 @@ class SlideAnimation;
 // We therefore position it absolutely in a GtkFixed, that we don't own.
 class StatusBubbleGtk : public StatusBubble,
                         public content::NotificationObserver,
-                        public ui::AnimationDelegate {
+                        public gfx::AnimationDelegate {
  public:
   explicit StatusBubbleGtk(Profile* profile);
   virtual ~StatusBubbleGtk();
@@ -49,9 +49,9 @@ class StatusBubbleGtk : public StatusBubble,
   virtual void MouseMoved(const gfx::Point& location,
                           bool left_content) OVERRIDE;
 
-  // ui::AnimationDelegate implementation.
-  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
+  // gfx::AnimationDelegate implementation.
+  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
+  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
 
   // Called when the download shelf becomes visible or invisible.
   // This is used by to ensure that the status bubble does not obscure
@@ -146,7 +146,7 @@ class StatusBubbleGtk : public StatusBubble,
   base::OneShotTimer<StatusBubbleGtk> expand_timer_;
 
   // The animation for resizing the status bubble on long hovers.
-  scoped_ptr<ui::SlideAnimation> expand_animation_;
+  scoped_ptr<gfx::SlideAnimation> expand_animation_;
 
   // The start and end width of the current resize animation.
   int start_width_;

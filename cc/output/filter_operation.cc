@@ -68,7 +68,7 @@ FilterOperation::FilterOperation(FilterType type, float amount, int inset)
   memset(matrix_, 0, sizeof(matrix_));
 }
 
-// TODO(ajuma): Define a version of ui::Tween::ValueBetween for floats, and use
+// TODO(ajuma): Define a version of gfx::Tween::ValueBetween for floats, and use
 // that instead.
 static float BlendFloats(float from, float to, double progress) {
   return from * (1.0 - progress) + to * progress;

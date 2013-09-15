@@ -7,10 +7,10 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/base/animation/animation_delegate.h"
+#include "ui/gfx/animation/animation_delegate.h"
 #include "ui/views/views_export.h"
 
-namespace ui {
+namespace gfx {
 class SlideAnimation;
 }
 
@@ -25,7 +25,7 @@ class VIEWS_EXPORT ScrollDelegate {
   ~ScrollDelegate() {}
 };
 
-class VIEWS_EXPORT ScrollAnimator : public ui::AnimationDelegate {
+class VIEWS_EXPORT ScrollAnimator : public gfx::AnimationDelegate {
  public:
   // The ScrollAnimator does not own the delegate. Uses default acceleration.
   explicit ScrollAnimator(ScrollDelegate* delegate);
@@ -40,10 +40,10 @@ class VIEWS_EXPORT ScrollAnimator : public ui::AnimationDelegate {
   bool is_scrolling() const { return !!animation_.get(); }
 
  private:
-  // Implementation of ui::AnimationDelegate.
-  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
-  virtual void AnimationCanceled(const ui::Animation* animation) OVERRIDE;
+  // Implementation of gfx::AnimationDelegate.
+  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
+  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
+  virtual void AnimationCanceled(const gfx::Animation* animation) OVERRIDE;
 
   ScrollDelegate* delegate_;
 
@@ -53,7 +53,7 @@ class VIEWS_EXPORT ScrollAnimator : public ui::AnimationDelegate {
   float duration_;
   float acceleration_;
 
-  scoped_ptr<ui::SlideAnimation> animation_;
+  scoped_ptr<gfx::SlideAnimation> animation_;
 
   DISALLOW_COPY_AND_ASSIGN(ScrollAnimator);
 };

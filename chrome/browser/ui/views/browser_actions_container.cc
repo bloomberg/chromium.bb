@@ -25,11 +25,11 @@
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
 #include "ui/base/accessibility/accessible_view_state.h"
-#include "ui/base/animation/slide_animation.h"
 #include "ui/base/dragdrop/drag_utils.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
+#include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/controls/resize_area.h"
 #include "ui/views/metrics.h"
@@ -86,7 +86,7 @@ BrowserActionsContainer::BrowserActionsContainer(Browser* browser,
       extensions::ExtensionKeybindingRegistry::ALL_EXTENSIONS,
       this)),
 
-  resize_animation_.reset(new ui::SlideAnimation(this));
+  resize_animation_.reset(new gfx::SlideAnimation(this));
   resize_area_ = new views::ResizeArea(this);
   AddChildView(resize_area_);
 
@@ -420,19 +420,19 @@ void BrowserActionsContainer::OnResize(int resize_amount, bool done_resizing) {
   int max_width = IconCountToWidth(-1, false);
   container_width_ =
       std::min(std::max(0, container_width_ - resize_amount), max_width);
-  SaveDesiredSizeAndAnimate(ui::Tween::EASE_OUT,
+  SaveDesiredSizeAndAnimate(gfx::Tween::EASE_OUT,
                             WidthToIconCount(container_width_));
 }
 
 void BrowserActionsContainer::AnimationProgressed(
-    const ui::Animation* animation) {
+    const gfx::Animation* animation) {
   DCHECK_EQ(resize_animation_.get(), animation);
   resize_amount_ = static_cast<int>(resize_animation_->GetCurrentValue() *
       (container_width_ - animation_target_size_));
   OnBrowserActionVisibilityChanged();
 }
 
-void BrowserActionsContainer::AnimationEnded(const ui::Animation* animation) {
+void BrowserActionsContainer::AnimationEnded(const gfx::Animation* animation) {
   container_width_ = animation_target_size_;
   animation_target_size_ = 0;
   resize_amount_ = 0;
@@ -626,7 +626,7 @@ void BrowserActionsContainer::BrowserActionAdded(const Extension* extension,
       !extensions::ExtensionSystem::Get(profile_)->extension_service()->
           IsBeingUpgraded(extension)) {
     suppress_chevron_ = true;
-    SaveDesiredSizeAndAnimate(ui::Tween::LINEAR, visible_actions + 1);
+    SaveDesiredSizeAndAnimate(gfx::Tween::LINEAR, visible_actions + 1);
   } else {
     // Just redraw the (possibly modified) visible icon set.
     OnBrowserActionVisibilityChanged();
@@ -662,7 +662,7 @@ void BrowserActionsContainer::BrowserActionRemoved(const Extension* extension) {
         // Either we went from overflow to no-overflow, or we shrunk the no-
         // overflow container by 1.  Either way the size changed, so animate.
         chevron_->SetVisible(false);
-        SaveDesiredSizeAndAnimate(ui::Tween::EASE_OUT,
+        SaveDesiredSizeAndAnimate(gfx::Tween::EASE_OUT,
                                   browser_action_views_.size());
       }
       return;
@@ -777,7 +777,7 @@ int BrowserActionsContainer::ContainerMinSize() const {
 }
 
 void BrowserActionsContainer::SaveDesiredSizeAndAnimate(
-    ui::Tween::Type tween_type,
+    gfx::Tween::Type tween_type,
     size_t num_visible_icons) {
   // Save off the desired number of visible icons.  We do this now instead of at
   // the end of the animation so that even if the browser is shut down while

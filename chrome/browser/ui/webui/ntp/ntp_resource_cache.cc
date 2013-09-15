@@ -49,10 +49,10 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
-#include "ui/base/animation/animation.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
+#include "ui/gfx/animation/animation.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/sys_color_change_listener.h"
 #include "ui/webui/jstemplate_builder.h"
@@ -502,7 +502,8 @@ void NTPResourceCache::CreateNewTabHTML() {
   webui::SetFontAndTextDirection(&load_time_data);
 
   // Control fade and resize animations.
-  load_time_data.SetBoolean("anim", ui::Animation::ShouldRenderRichAnimation());
+  load_time_data.SetBoolean("anim",
+                            gfx::Animation::ShouldRenderRichAnimation());
 
   ui::ThemeProvider* tp = ThemeServiceFactory::GetForProfile(profile_);
   int alignment = tp->GetDisplayProperty(

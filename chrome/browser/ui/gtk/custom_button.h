@@ -12,10 +12,10 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/base/animation/animation_delegate.h"
-#include "ui/base/animation/slide_animation.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
+#include "ui/gfx/animation/animation_delegate.h"
+#include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/rect.h"
 
 class GtkThemeService;
@@ -103,7 +103,7 @@ class CustomDrawButtonBase : public content::NotificationObserver {
 // of controlling the hover state of a button. The "hover state" refers to the
 // percent opacity of a button's PRELIGHT. The PRELIGHT is animated such that
 // when a user moves a mouse over a button the PRELIGHT fades in.
-class CustomDrawHoverController : public ui::AnimationDelegate {
+class CustomDrawHoverController : public gfx::AnimationDelegate {
  public:
   explicit CustomDrawHoverController(GtkWidget* widget);
   CustomDrawHoverController();
@@ -117,14 +117,14 @@ class CustomDrawHoverController : public ui::AnimationDelegate {
   }
 
  private:
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
+  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
 
   CHROMEGTK_CALLBACK_1(CustomDrawHoverController, gboolean, OnEnter,
                        GdkEventCrossing*);
   CHROMEGTK_CALLBACK_1(CustomDrawHoverController, gboolean, OnLeave,
                        GdkEventCrossing*);
 
-  ui::SlideAnimation slide_animation_;
+  gfx::SlideAnimation slide_animation_;
   GtkWidget* widget_;
 };
 

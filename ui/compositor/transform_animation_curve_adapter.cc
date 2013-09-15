@@ -7,7 +7,7 @@
 namespace ui {
 
 TransformAnimationCurveAdapter::TransformAnimationCurveAdapter(
-    Tween::Type tween_type,
+    gfx::Tween::Type tween_type,
     gfx::Transform initial_value,
     gfx::Transform target_value,
     base::TimeDelta duration)
@@ -47,7 +47,8 @@ gfx::Transform TransformAnimationCurveAdapter::GetValue(
   gfx::BlendDecomposedTransforms(&to_return,
                                  decomposed_target_value_,
                                  decomposed_initial_value_,
-                                 Tween::CalculateValue(tween_type_, progress));
+                                 gfx::Tween::CalculateValue(tween_type_,
+                                                            progress));
   return gfx::ComposeTransform(to_return);
 }
 

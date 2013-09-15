@@ -30,7 +30,7 @@ TEST(InverseTransformCurveAdapterTest, InversesTransform) {
   const gfx::Transform effective_child_transform =
       parent_start * child_transform;
 
-  TransformAnimationCurveAdapter parent_curve(Tween::LINEAR,
+  TransformAnimationCurveAdapter parent_curve(gfx::Tween::LINEAR,
                                               parent_start,
                                               parent_target,
                                               duration);

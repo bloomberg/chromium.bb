@@ -17,12 +17,12 @@
 #include "chrome/browser/ui/gtk/overflow_button.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "ui/base/animation/animation_delegate.h"
-#include "ui/base/animation/slide_animation.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/gtk_signal_registrar.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/gfx/animation/animation_delegate.h"
+#include "ui/gfx/animation/slide_animation.h"
 
 class Browser;
 class BrowserActionButton;
@@ -37,7 +37,7 @@ typedef struct _GdkDragContext GdkDragContext;
 typedef struct _GtkWidget GtkWidget;
 
 class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer,
-                                 public ui::AnimationDelegate,
+                                 public gfx::AnimationDelegate,
                                  public MenuGtk::Delegate,
                                  public ui::SimpleMenuModel::Delegate,
                                  public content::NotificationObserver {
@@ -120,9 +120,9 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer,
                                   int index) OVERRIDE;
   virtual void ModelLoaded() OVERRIDE;
 
-  // ui::AnimationDelegate implementation.
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
-  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
+  // gfx::AnimationDelegate implementation.
+  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
+  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
 
   // SimpleMenuModel::Delegate implementation.
   // In our case, |command_id| is be the index into the model's extension list.
@@ -214,7 +214,7 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer,
   ExtensionButtonMap extension_button_map_;
 
   // We use this animation for the smart resizing of the toolbar.
-  ui::SlideAnimation resize_animation_;
+  gfx::SlideAnimation resize_animation_;
   // This is the final width we are animating towards.
   int desired_width_;
   // This is the width we were at when we started animating.

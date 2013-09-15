@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/animation/animation_container_element.h"
-#include "ui/base/animation/multi_animation.h"
+#include "ui/gfx/animation/multi_animation.h"
 
-namespace ui {
+#include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/animation/animation_container_element.h"
+
+namespace gfx {
 
 TEST(MultiAnimationTest, Basic) {
   // Create a MultiAnimation with two parts.
@@ -88,4 +89,4 @@ TEST(MultiAnimationTest, Cycle) {
   EXPECT_EQ(.5, animation.GetCurrentValue());
 }
 
-}  // namespace ui
+}  // namespace gfx

@@ -8,13 +8,13 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
-#include "ui/base/animation/animation_container_element.h"
+#include "ui/gfx/animation/animation_container_element.h"
 
 namespace gfx {
 class Rect;
 }
 
-namespace ui {
+namespace gfx {
 
 class AnimationContainer;
 class AnimationDelegate;
@@ -25,7 +25,7 @@ class AnimationDelegate;
 //
 // To subclass override Step, which is invoked as the animation progresses and
 // GetCurrentValue() to return the value appropriate to the animation.
-class UI_EXPORT Animation : public AnimationContainerElement {
+class GFX_EXPORT Animation : public AnimationContainerElement {
  public:
   explicit Animation(base::TimeDelta timer_interval);
   virtual ~Animation();
@@ -104,6 +104,6 @@ class UI_EXPORT Animation : public AnimationContainerElement {
   DISALLOW_COPY_AND_ASSIGN(Animation);
 };
 
-}  // namespace ui
+}  // namespace gfx
 
 #endif  // UI_BASE_ANIMATION_ANIMATION_H_

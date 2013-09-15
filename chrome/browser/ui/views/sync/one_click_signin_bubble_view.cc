@@ -127,7 +127,7 @@ ui::ModalType OneClickSigninBubbleView::GetModalType() const {
   return is_sync_dialog_? ui::MODAL_TYPE_CHILD : ui::MODAL_TYPE_NONE;
 }
 
-void OneClickSigninBubbleView::AnimationEnded(const ui::Animation* animation) {
+void OneClickSigninBubbleView::AnimationEnded(const gfx::Animation* animation) {
   views::BubbleDelegateView::AnimationEnded(animation);
   if (message_loop_for_testing_)
     message_loop_for_testing_->Quit();

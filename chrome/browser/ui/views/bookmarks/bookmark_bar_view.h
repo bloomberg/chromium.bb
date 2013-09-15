@@ -21,7 +21,7 @@
 #include "chrome/browser/ui/views/bookmarks/bookmark_bubble_view_observer.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_menu_controller_observer.h"
 #include "chrome/browser/ui/views/detachable_toolbar_view.h"
-#include "ui/base/animation/animation_delegate.h"
+#include "ui/gfx/animation/animation_delegate.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
@@ -36,7 +36,7 @@ namespace content {
 class PageNavigator;
 }
 
-namespace ui {
+namespace gfx {
 class SlideAnimation;
 }
 
@@ -59,7 +59,7 @@ class BookmarkBarView : public DetachableToolbarView,
                         public views::ButtonListener,
                         public views::ContextMenuController,
                         public views::DragController,
-                        public ui::AnimationDelegate,
+                        public gfx::AnimationDelegate,
                         public BookmarkMenuControllerObserver,
                         public BookmarkBarInstructionsDelegate,
                         public BookmarkBubbleViewObserver {
@@ -184,9 +184,9 @@ class BookmarkBarView : public DetachableToolbarView,
   // AccessiblePaneView:
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
-  // ui::AnimationDelegate:
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
-  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
+  // gfx::AnimationDelegate:
+  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
+  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
 
   // BookmarkMenuControllerObserver:
   virtual void BookmarkMenuControllerDeleted(
@@ -421,7 +421,7 @@ class BookmarkBarView : public DetachableToolbarView,
   bool infobar_visible_;
 
   // Animation controlling showing and hiding of the bar.
-  scoped_ptr<ui::SlideAnimation> size_animation_;
+  scoped_ptr<gfx::SlideAnimation> size_animation_;
 
   // If the bookmark bubble is showing, this is the visible ancestor of the URL.
   // The visible ancestor is either the other_bookmarked_button_,

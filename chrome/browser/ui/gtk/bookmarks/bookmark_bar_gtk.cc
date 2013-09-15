@@ -352,7 +352,7 @@ void BookmarkBarGtk::CalculateMaxHeight() {
   }
 }
 
-void BookmarkBarGtk::AnimationProgressed(const ui::Animation* animation) {
+void BookmarkBarGtk::AnimationProgressed(const gfx::Animation* animation) {
   DCHECK_EQ(animation, &slide_animation_);
 
   gint height =
@@ -362,7 +362,7 @@ void BookmarkBarGtk::AnimationProgressed(const ui::Animation* animation) {
   gtk_widget_set_size_request(event_box_.get(), -1, height);
 }
 
-void BookmarkBarGtk::AnimationEnded(const ui::Animation* animation) {
+void BookmarkBarGtk::AnimationEnded(const gfx::Animation* animation) {
   DCHECK_EQ(animation, &slide_animation_);
 
   if (!slide_animation_.IsShowing()) {

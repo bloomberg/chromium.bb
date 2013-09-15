@@ -10,9 +10,9 @@
 #include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 
-#include "ui/base/animation/tween.h"
 #include "ui/compositor/compositor_export.h"
 #include "ui/compositor/layer_animator.h"
+#include "ui/gfx/animation/tween.h"
 
 namespace ui {
 
@@ -34,8 +34,8 @@ class COMPOSITOR_EXPORT ScopedLayerAnimationSettings {
   void SetTransitionDuration(base::TimeDelta duration);
   base::TimeDelta GetTransitionDuration() const;
 
-  void SetTweenType(Tween::Type tween_type);
-  Tween::Type GetTweenType() const;
+  void SetTweenType(gfx::Tween::Type tween_type);
+  gfx::Tween::Type GetTweenType() const;
 
   void SetPreemptionStrategy(LayerAnimator::PreemptionStrategy strategy);
   LayerAnimator::PreemptionStrategy GetPreemptionStrategy() const;
@@ -51,7 +51,7 @@ class COMPOSITOR_EXPORT ScopedLayerAnimationSettings {
  private:
   LayerAnimator* animator_;
   base::TimeDelta old_transition_duration_;
-  Tween::Type old_tween_type_;
+  gfx::Tween::Type old_tween_type_;
   LayerAnimator::PreemptionStrategy old_preemption_strategy_;
   std::set<ImplicitAnimationObserver*> observers_;
   scoped_ptr<InvertingObserver> inverse_observer_;

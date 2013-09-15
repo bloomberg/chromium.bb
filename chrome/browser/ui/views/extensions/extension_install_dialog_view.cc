@@ -23,10 +23,10 @@
 #include "grit/generated_resources.h"
 #include "grit/google_chrome_strings.h"
 #include "grit/theme_resources.h"
-#include "ui/base/animation/animation_delegate.h"
-#include "ui/base/animation/slide_animation.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/animation/animation_delegate.h"
+#include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/transform.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
@@ -194,7 +194,7 @@ BulletedView::BulletedView(views::View* view) {
 class ExpandableContainerView : public views::View,
                                 public views::ButtonListener,
                                 public views::LinkListener,
-                                public ui::AnimationDelegate {
+                                public gfx::AnimationDelegate {
  public:
   ExpandableContainerView(ExtensionInstallDialogView* owner,
                           const string16& description,
@@ -213,9 +213,9 @@ class ExpandableContainerView : public views::View,
   // views::LinkListener:
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
-  // ui::AnimationDelegate:
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
-  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
+  // gfx::AnimationDelegate:
+  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
+  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
 
  private:
   // A view which displays all the details of an IssueAdviceInfoEntry.
@@ -255,7 +255,7 @@ class ExpandableContainerView : public views::View,
   // The '>' zippy control.
   views::ImageView* arrow_view_;
 
-  ui::SlideAnimation slide_animation_;
+  gfx::SlideAnimation slide_animation_;
 
   // The 'more details' link shown under the heading (changes to 'hide details'
   // when the details section is expanded).
@@ -855,13 +855,13 @@ void ExpandableContainerView::LinkClicked(
 }
 
 void ExpandableContainerView::AnimationProgressed(
-    const ui::Animation* animation) {
+    const gfx::Animation* animation) {
   DCHECK_EQ(&slide_animation_, animation);
   if (details_view_)
     details_view_->AnimateToState(animation->GetCurrentValue());
 }
 
-void ExpandableContainerView::AnimationEnded(const ui::Animation* animation) {
+void ExpandableContainerView::AnimationEnded(const gfx::Animation* animation) {
   if (animation->GetCurrentValue() != 0.0) {
     arrow_toggle_->SetImage(
         views::Button::STATE_NORMAL,

@@ -6,15 +6,15 @@
 #define UI_BASE_ANIMATION_LINEAR_ANIMATION_H_
 
 #include "base/time/time.h"
-#include "ui/base/animation/animation.h"
+#include "ui/gfx/animation/animation.h"
 
-namespace ui {
+namespace gfx {
 
 class AnimationDelegate;
 
 // Linear time bounded animation. As the animation progresses AnimateToState is
 // invoked.
-class UI_EXPORT LinearAnimation : public Animation {
+class GFX_EXPORT LinearAnimation : public Animation {
  public:
   // Initializes everything except the duration.
   //
@@ -74,6 +74,6 @@ class UI_EXPORT LinearAnimation : public Animation {
   DISALLOW_COPY_AND_ASSIGN(LinearAnimation);
 };
 
-}  // namespace ui
+}  // namespace gfx
 
 #endif  // APP_LINEAR_ANIMATION_H_

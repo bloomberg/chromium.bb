@@ -23,10 +23,10 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
-#include "ui/base/animation/slide_animation.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
+#include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/image_button.h"
@@ -209,7 +209,7 @@ gfx::Size DownloadShelfView::GetPreferredSize() {
   return prefsize;
 }
 
-void DownloadShelfView::AnimationProgressed(const ui::Animation *animation) {
+void DownloadShelfView::AnimationProgressed(const gfx::Animation *animation) {
   if (animation == new_item_animation_.get()) {
     Layout();
     SchedulePaint();
@@ -224,7 +224,7 @@ void DownloadShelfView::AnimationProgressed(const ui::Animation *animation) {
   }
 }
 
-void DownloadShelfView::AnimationEnded(const ui::Animation *animation) {
+void DownloadShelfView::AnimationEnded(const gfx::Animation *animation) {
   if (animation == shelf_animation_.get()) {
     parent_->SetDownloadShelfVisible(shelf_animation_->IsShowing());
     if (!shelf_animation_->IsShowing())
@@ -331,10 +331,10 @@ void DownloadShelfView::ViewHierarchyChanged(
 
     UpdateColorsFromTheme();
 
-    new_item_animation_.reset(new ui::SlideAnimation(this));
+    new_item_animation_.reset(new gfx::SlideAnimation(this));
     new_item_animation_->SetSlideDuration(kNewItemAnimationDurationMs);
 
-    shelf_animation_.reset(new ui::SlideAnimation(this));
+    shelf_animation_.reset(new gfx::SlideAnimation(this));
     shelf_animation_->SetSlideDuration(kShelfAnimationDurationMs);
   }
 }

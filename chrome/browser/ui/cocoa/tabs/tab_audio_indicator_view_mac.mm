@@ -49,7 +49,7 @@ class TabAudioIndicatorDelegateMac : public TabAudioIndicator::Delegate {
   tabAudioIndicator_->set_favicon(*image.ToImageSkia());
 }
 
-- (void)setAnimationContainer:(ui::AnimationContainer*)animationContainer {
+- (void)setAnimationContainer:(gfx::AnimationContainer*)animationContainer {
   tabAudioIndicator_->SetAnimationContainer(animationContainer);
 }
 

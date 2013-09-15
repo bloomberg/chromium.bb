@@ -10,10 +10,10 @@
 #include "base/time/time.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
-#include "ui/base/animation/animation_container_element.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/gfx/animation/animation_container_element.h"
 
 using aura::Window;
 using ui::Layer;
@@ -57,8 +57,8 @@ TEST_F(WindowAnimationsTest, HideShowBrightnessGrayscaleAnimation) {
   EXPECT_TRUE(window->layer()->visible());
 
   // Stays shown.
-  ui::AnimationContainerElement* element =
-      static_cast<ui::AnimationContainerElement*>(
+  gfx::AnimationContainerElement* element =
+      static_cast<gfx::AnimationContainerElement*>(
       window->layer()->GetAnimator());
   element->Step(base::TimeTicks::Now() +
                 base::TimeDelta::FromSeconds(5));
@@ -106,9 +106,9 @@ TEST_F(WindowAnimationsTest, CrossFadeToBounds) {
   EXPECT_EQ(gfx::Transform(), window->layer()->GetTargetTransform());
 
   // Run the animations to completion.
-  static_cast<ui::AnimationContainerElement*>(old_layer->GetAnimator())->Step(
+  static_cast<gfx::AnimationContainerElement*>(old_layer->GetAnimator())->Step(
       base::TimeTicks::Now() + base::TimeDelta::FromSeconds(1));
-  static_cast<ui::AnimationContainerElement*>(window->layer()->GetAnimator())->
+  static_cast<gfx::AnimationContainerElement*>(window->layer()->GetAnimator())->
       Step(base::TimeTicks::Now() + base::TimeDelta::FromSeconds(1));
 
   // Cross fade to a smaller size, as in a restore animation.
@@ -127,9 +127,9 @@ TEST_F(WindowAnimationsTest, CrossFadeToBounds) {
   EXPECT_EQ(1.0f, window->layer()->GetTargetOpacity());
   EXPECT_EQ(gfx::Transform(), window->layer()->GetTargetTransform());
 
-  static_cast<ui::AnimationContainerElement*>(old_layer->GetAnimator())->Step(
+  static_cast<gfx::AnimationContainerElement*>(old_layer->GetAnimator())->Step(
       base::TimeTicks::Now() + base::TimeDelta::FromSeconds(1));
-  static_cast<ui::AnimationContainerElement*>(window->layer()->GetAnimator())->
+  static_cast<gfx::AnimationContainerElement*>(window->layer()->GetAnimator())->
       Step(base::TimeTicks::Now() + base::TimeDelta::FromSeconds(1));
 }
 

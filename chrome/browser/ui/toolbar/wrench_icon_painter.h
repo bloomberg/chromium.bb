@@ -10,21 +10,21 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/global_error/global_error.h"
 #include "chrome/browser/upgrade_detector.h"
-#include "ui/base/animation/animation_delegate.h"
+#include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace gfx {
 class Canvas;
+class MultiAnimation;
 class Rect;
 }
 namespace ui {
-class MultiAnimation;
 class ThemeProvider;
 }
 
 // This class is used to draw the wrench icon. It can signify severity levels
 // by changing the wrench icon to different colors.
-class WrenchIconPainter : ui::AnimationDelegate {
+class WrenchIconPainter : gfx::AnimationDelegate {
  public:
   enum BezelType {
     BEZEL_NONE,
@@ -76,7 +76,7 @@ class WrenchIconPainter : ui::AnimationDelegate {
   FRIEND_TEST_ALL_PREFIXES(WrenchIconPainterTest, PaintCallback);
 
   // AnimationDelegate:
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
+  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
 
   // Gets the image ID used to draw bars for the current severity level.
   int GetCurrentSeverityImageID() const;
@@ -84,7 +84,7 @@ class WrenchIconPainter : ui::AnimationDelegate {
   Delegate* delegate_;
   Severity severity_;
   gfx::ImageSkia badge_;
-  scoped_ptr<ui::MultiAnimation> animation_;
+  scoped_ptr<gfx::MultiAnimation> animation_;
 
   DISALLOW_COPY_AND_ASSIGN(WrenchIconPainter);
 };

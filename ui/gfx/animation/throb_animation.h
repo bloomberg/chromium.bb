@@ -5,9 +5,9 @@
 #ifndef UI_BASE_ANIMATION_THROB_ANIMATION_H_
 #define UI_BASE_ANIMATION_THROB_ANIMATION_H_
 
-#include "ui/base/animation/slide_animation.h"
+#include "ui/gfx/animation/slide_animation.h"
 
-namespace ui {
+namespace gfx {
 
 // A subclass of SlideAnimation that can continually slide. All of the Animation
 // methods behave like that of SlideAnimation: transition to the next state.
@@ -16,7 +16,7 @@ namespace ui {
 //
 // A ThrobAnimation has two durations: the duration used when behavior like
 // a SlideAnimation, and the duration used when throbbing.
-class UI_EXPORT ThrobAnimation : public SlideAnimation {
+class GFX_EXPORT ThrobAnimation : public SlideAnimation {
  public:
   explicit ThrobAnimation(AnimationDelegate* target);
   virtual ~ThrobAnimation() {}
@@ -64,6 +64,6 @@ class UI_EXPORT ThrobAnimation : public SlideAnimation {
   DISALLOW_COPY_AND_ASSIGN(ThrobAnimation);
 };
 
-}  // namespace ui
+}  // namespace gfx
 
 #endif  // UI_BASE_ANIMATION_THROB_ANIMATION_H_

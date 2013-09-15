@@ -9,8 +9,8 @@
 
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/base/animation/animation_delegate.h"
-#include "ui/base/animation/slide_animation.h"
+#include "ui/gfx/animation/animation_delegate.h"
+#include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/controls/image_view.h"
@@ -25,7 +25,7 @@ class RenderText;
 }
 
 class OmniboxResultView : public views::View,
-                          private ui::AnimationDelegate {
+                          private gfx::AnimationDelegate {
  public:
   // Keep these ordered from least dominant (normal) to most dominant
   // (selected).
@@ -132,8 +132,8 @@ class OmniboxResultView : public views::View,
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
-  // ui::AnimationDelegate:
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
+  // gfx::AnimationDelegate:
+  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
 
   static int default_icon_size_;
 
@@ -166,7 +166,7 @@ class OmniboxResultView : public views::View,
   gfx::Rect keyword_text_bounds_;
   scoped_ptr<views::ImageView> keyword_icon_;
 
-  scoped_ptr<ui::SlideAnimation> animation_;
+  scoped_ptr<gfx::SlideAnimation> animation_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxResultView);
 };

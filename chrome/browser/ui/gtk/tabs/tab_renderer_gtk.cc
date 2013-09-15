@@ -28,11 +28,11 @@
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
 #include "skia/ext/image_operations.h"
-#include "ui/base/animation/slide_animation.h"
-#include "ui/base/animation/throb_animation.h"
 #include "ui/base/gtk/gtk_screen_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/animation/slide_animation.h"
+#include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/gtk_compat.h"
@@ -278,16 +278,16 @@ TabRendererGtk::TabData::~TabData() {}
 // FaviconCrashAnimation
 //
 //  A custom animation subclass to manage the favicon crash animation.
-class TabRendererGtk::FaviconCrashAnimation : public ui::LinearAnimation,
-                                              public ui::AnimationDelegate {
+class TabRendererGtk::FaviconCrashAnimation : public gfx::LinearAnimation,
+                                              public gfx::AnimationDelegate {
  public:
   explicit FaviconCrashAnimation(TabRendererGtk* target)
-      : ui::LinearAnimation(1000, 25, this),
+      : gfx::LinearAnimation(1000, 25, this),
         target_(target) {
   }
   virtual ~FaviconCrashAnimation() {}
 
-  // ui::Animation overrides:
+  // gfx::Animation overrides:
   virtual void AnimateToState(double state) OVERRIDE {
     const double kHidingOffset = 27;
 
@@ -302,8 +302,8 @@ class TabRendererGtk::FaviconCrashAnimation : public ui::LinearAnimation,
     }
   }
 
-  // ui::AnimationDelegate overrides:
-  virtual void AnimationCanceled(const ui::Animation* animation) OVERRIDE {
+  // gfx::AnimationDelegate overrides:
+  virtual void AnimationCanceled(const gfx::Animation* animation) OVERRIDE {
     target_->SetFaviconHidingOffset(0);
   }
 
@@ -344,7 +344,7 @@ TabRendererGtk::TabRendererGtk(GtkThemeService* theme_service)
   close_button_.reset(MakeCloseButton());
   gtk_widget_show(tab_.get());
 
-  hover_animation_.reset(new ui::SlideAnimation(this));
+  hover_animation_.reset(new gfx::SlideAnimation(this));
   hover_animation_->SetSlideDuration(kHoverDurationMs);
 }
 
@@ -614,7 +614,7 @@ gfx::Rect TabRendererGtk::GetRequisition() const {
 
 void TabRendererGtk::StartMiniTabTitleAnimation() {
   if (!mini_title_animation_.get()) {
-    mini_title_animation_.reset(new ui::ThrobAnimation(this));
+    mini_title_animation_.reset(new gfx::ThrobAnimation(this));
     mini_title_animation_->SetThrobDuration(kMiniTitleChangeThrobDuration);
   }
 
@@ -646,17 +646,17 @@ string16 TabRendererGtk::GetTitle() const {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// TabRendererGtk, ui::AnimationDelegate implementation:
+// TabRendererGtk, gfx::AnimationDelegate implementation:
 
-void TabRendererGtk::AnimationProgressed(const ui::Animation* animation) {
+void TabRendererGtk::AnimationProgressed(const gfx::Animation* animation) {
   gtk_widget_queue_draw(tab_.get());
 }
 
-void TabRendererGtk::AnimationCanceled(const ui::Animation* animation) {
+void TabRendererGtk::AnimationCanceled(const gfx::Animation* animation) {
   AnimationEnded(animation);
 }
 
-void TabRendererGtk::AnimationEnded(const ui::Animation* animation) {
+void TabRendererGtk::AnimationEnded(const gfx::Animation* animation) {
   gtk_widget_queue_draw(tab_.get());
 }
 
@@ -711,7 +711,7 @@ void TabRendererGtk::UpdateFaviconOverlay(WebContents* contents) {
     g_object_unref(pixbuf);
 
     if (!favicon_overlay_animation_.get()) {
-      favicon_overlay_animation_.reset(new ui::ThrobAnimation(this));
+      favicon_overlay_animation_.reset(new gfx::ThrobAnimation(this));
       favicon_overlay_animation_->SetThrobDuration(kRecordingDurationMs);
     }
     if (!favicon_overlay_animation_->is_animating())
@@ -1217,14 +1217,14 @@ void TabRendererGtk::OnSizeAllocate(GtkWidget* widget,
 
 gboolean TabRendererGtk::OnEnterNotifyEvent(GtkWidget* widget,
                                             GdkEventCrossing* event) {
-  hover_animation_->SetTweenType(ui::Tween::EASE_OUT);
+  hover_animation_->SetTweenType(gfx::Tween::EASE_OUT);
   hover_animation_->Show();
   return FALSE;
 }
 
 gboolean TabRendererGtk::OnLeaveNotifyEvent(GtkWidget* widget,
                                             GdkEventCrossing* event) {
-  hover_animation_->SetTweenType(ui::Tween::EASE_IN);
+  hover_animation_->SetTweenType(gfx::Tween::EASE_IN);
   hover_animation_->Hide();
   return FALSE;
 }

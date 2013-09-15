@@ -23,7 +23,7 @@ const int kThumbHoverAlpha = 128;
 const int kThumbDefaultAlpha = 64;
 
 class OverlayScrollBarThumb : public BaseScrollBarThumb,
-                              public ui::AnimationDelegate {
+                              public gfx::AnimationDelegate {
  public:
   explicit OverlayScrollBarThumb(BaseScrollBar* scroll_bar);
   virtual ~OverlayScrollBarThumb();
@@ -33,8 +33,8 @@ class OverlayScrollBarThumb : public BaseScrollBarThumb,
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
-  // ui::AnimationDelegate overrides:
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
+  // gfx::AnimationDelegate overrides:
+  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
 
  private:
   double animation_opacity_;
@@ -77,7 +77,7 @@ void OverlayScrollBarThumb::OnPaint(gfx::Canvas* canvas) {
 }
 
 void OverlayScrollBarThumb::AnimationProgressed(
-    const ui::Animation* animation) {
+    const gfx::Animation* animation) {
   animation_opacity_ = animation->GetCurrentValue();
   SchedulePaint();
 }

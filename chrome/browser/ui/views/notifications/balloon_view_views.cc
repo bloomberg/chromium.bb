@@ -23,9 +23,9 @@
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "ui/base/animation/slide_animation.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/path.h"
@@ -212,7 +212,7 @@ void BalloonViewImpl::RepositionToBalloon() {
 
   anim_frame_end_ = GetBoundsForFrameContainer();
   anim_frame_start_ = frame_container_->GetClientAreaBoundsInScreen();
-  animation_.reset(new ui::SlideAnimation(this));
+  animation_.reset(new gfx::SlideAnimation(this));
   animation_->Show();
 }
 
@@ -228,7 +228,7 @@ void BalloonViewImpl::Update() {
       content::PAGE_TRANSITION_LINK, std::string());
 }
 
-void BalloonViewImpl::AnimationProgressed(const ui::Animation* animation) {
+void BalloonViewImpl::AnimationProgressed(const gfx::Animation* animation) {
   DCHECK_EQ(animation_.get(), animation);
 
   // Linear interpolation from start to end position.

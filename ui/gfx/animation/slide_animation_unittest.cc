@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/gfx/animation/slide_animation.h"
+
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/animation/slide_animation.h"
-#include "ui/base/animation/test_animation_delegate.h"
+#include "ui/gfx/animation/test_animation_delegate.h"
 
-namespace ui {
+namespace gfx {
 
 // Class to provide access to SlideAnimation internals for testing.
 class SlideAnimation::TestApi {
@@ -101,4 +102,4 @@ TEST_F(SlideAnimationTest, DontNotifyOnDelete) {
   EXPECT_FALSE(delegate.canceled());
 }
 
-}  // namespace ui
+}  // namespace gfx

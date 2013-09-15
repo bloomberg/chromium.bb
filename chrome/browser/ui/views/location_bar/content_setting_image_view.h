@@ -7,8 +7,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/common/content_settings_types.h"
-#include "ui/base/animation/animation_delegate.h"
-#include "ui/base/animation/slide_animation.h"
+#include "ui/gfx/animation/animation_delegate.h"
+#include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/font.h"
 #include "ui/views/painter.h"
 #include "ui/views/view.h"
@@ -29,7 +29,7 @@ class Label;
 // The ContentSettingImageView displays an icon and optional text label for
 // various content settings affordances in the location bar (i.e. plugin
 // blocking, geolocation).
-class ContentSettingImageView : public ui::AnimationDelegate,
+class ContentSettingImageView : public gfx::AnimationDelegate,
                                 public views::View,
                                 public views::WidgetObserver {
  public:
@@ -64,10 +64,10 @@ class ContentSettingImageView : public ui::AnimationDelegate,
   // symmetrical padding.)
   static int GetBubbleOuterPadding(bool by_icon);
 
-  // ui::AnimationDelegate:
-  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
-  virtual void AnimationCanceled(const ui::Animation* animation) OVERRIDE;
+  // gfx::AnimationDelegate:
+  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
+  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
+  virtual void AnimationCanceled(const gfx::Animation* animation) OVERRIDE;
 
   // views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
@@ -93,7 +93,7 @@ class ContentSettingImageView : public ui::AnimationDelegate,
   scoped_ptr<views::Painter> background_painter_;
   views::ImageView* icon_;
   views::Label* text_label_;
-  ui::SlideAnimation slide_animator_;
+  gfx::SlideAnimation slide_animator_;
   bool pause_animation_;
   double pause_animation_state_;
   views::Widget* bubble_widget_;

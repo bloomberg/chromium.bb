@@ -9,9 +9,9 @@
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_result_view_model.h"
-#include "ui/base/animation/animation_delegate.h"
-#include "ui/base/animation/slide_animation.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/gfx/animation/animation_delegate.h"
+#include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/font_list.h"
 #include "ui/views/view.h"
 
@@ -26,7 +26,7 @@ class Profile;
 class OmniboxPopupContentsView : public views::View,
                                  public OmniboxResultViewModel,
                                  public OmniboxPopupView,
-                                 public ui::AnimationDelegate {
+                                 public gfx::AnimationDelegate {
  public:
   // Factory method for creating the AutocompletePopupView.
   static OmniboxPopupView* Create(const gfx::FontList& font_list,
@@ -53,8 +53,8 @@ class OmniboxPopupContentsView : public views::View,
   virtual bool IsHoveredIndex(size_t index) const OVERRIDE;
   virtual gfx::Image GetIconIfExtensionMatch(size_t index) const OVERRIDE;
 
-  // Overridden from ui::AnimationDelegate:
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
+  // Overridden from gfx::AnimationDelegate:
+  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
 
   // Overridden from views::View:
   virtual void Layout() OVERRIDE;
@@ -157,7 +157,7 @@ class OmniboxPopupContentsView : public views::View,
 
   // The popup sizes vertically using an animation when the popup is getting
   // shorter (not larger, that makes it look "slow").
-  ui::SlideAnimation size_animation_;
+  gfx::SlideAnimation size_animation_;
   gfx::Rect start_bounds_;
   gfx::Rect target_bounds_;
 

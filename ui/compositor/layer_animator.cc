@@ -8,12 +8,12 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/animation/animation_id_provider.h"
-#include "ui/base/animation/animation_container.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_delegate.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_animation_sequence.h"
+#include "ui/gfx/animation/animation_container.h"
 
 #define SAFE_INVOKE_VOID(function, running_anim, ...) \
     if (running_anim.is_sequence_alive()) \
@@ -37,10 +37,10 @@ const int kDefaultTransitionDurationMs = 120;
 const int kTimerIntervalMs = 10;
 
 // Returns the AnimationContainer we're added to.
-ui::AnimationContainer* GetAnimationContainer() {
-  static ui::AnimationContainer* container = NULL;
+gfx::AnimationContainer* GetAnimationContainer() {
+  static gfx::AnimationContainer* container = NULL;
   if (!container) {
-    container = new AnimationContainer();
+    container = new gfx::AnimationContainer();
     container->AddRef();
   }
   return container;
@@ -54,7 +54,7 @@ LayerAnimator::LayerAnimator(base::TimeDelta transition_duration)
     : delegate_(NULL),
       preemption_strategy_(IMMEDIATELY_SET_NEW_TARGET),
       transition_duration_(transition_duration),
-      tween_type_(Tween::LINEAR),
+      tween_type_(gfx::Tween::LINEAR),
       is_started_(false),
       disable_timer_for_test_(false),
       adding_animations_(false) {

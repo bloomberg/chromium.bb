@@ -43,7 +43,7 @@ class TabProjectingImageViewTest : public CocoaTest {
     [[test_window() contentView] addSubview:view_];
   }
 
-  base::MessageLoopForUI message_loop_;  // Needed for ui::ThrobAnimation.
+  base::MessageLoopForUI message_loop_;  // Needed for gfx::ThrobAnimation.
   TabProjectingImageView* view_;
 };
 

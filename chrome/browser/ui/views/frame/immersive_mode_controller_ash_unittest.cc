@@ -13,7 +13,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
-#include "ui/base/animation/slide_animation.h"
+#include "ui/gfx/animation/slide_animation.h"
 #include "ui/views/bubble/bubble_delegate.h"
 
 // For now, immersive fullscreen is Chrome OS only.

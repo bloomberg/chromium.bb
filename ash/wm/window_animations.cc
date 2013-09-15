@@ -60,7 +60,7 @@ const float kWindowAnimation_ShowOpacity = 1.f;
 const float kWindowAnimation_MinimizeRotate = 0.f;
 
 // Tween type when cross fading a workspace window.
-const ui::Tween::Type kCrossFadeTweenType = ui::Tween::EASE_IN_OUT;
+const gfx::Tween::Type kCrossFadeTweenType = gfx::Tween::EASE_IN_OUT;
 
 // Scales for AshWindow above/below current workspace.
 const float kLayerScaleAboveSize = 1.1f;
@@ -116,7 +116,7 @@ void AddLayerAnimationsForMinimize(aura::Window* window, bool show) {
           rotation_about_pivot.release(), duration));
 
   transition->set_tween_type(
-      show ? ui::Tween::EASE_IN : ui::Tween::EASE_IN_OUT);
+      show ? gfx::Tween::EASE_IN : gfx::Tween::EASE_IN_OUT);
 
   window->layer()->GetAnimator()->ScheduleAnimation(
       new ui::LayerAnimationSequence(transition.release()));
@@ -318,7 +318,7 @@ class CrossFadeObserver : public ui::CompositorObserver,
 // animating. Returns the duration of the fade.
 base::TimeDelta CrossFadeImpl(aura::Window* window,
                               ui::Layer* old_layer,
-                              ui::Tween::Type tween_type) {
+                              gfx::Tween::Type tween_type) {
   const gfx::Rect old_bounds(old_layer->bounds());
   const gfx::Rect new_bounds(window->bounds());
   const bool old_on_top = (old_bounds.width() > new_bounds.width());
@@ -413,7 +413,7 @@ void CrossFadeToBounds(aura::Window* window, const gfx::Rect& new_bounds) {
   else
     old_layer->parent()->StackAbove(new_layer, old_layer);
 
-  CrossFadeImpl(window, old_layer, ui::Tween::EASE_OUT);
+  CrossFadeImpl(window, old_layer, gfx::Tween::EASE_OUT);
 }
 
 void CrossFadeWindowBetweenWorkspaces(aura::Window* new_workspace,
@@ -473,7 +473,7 @@ bool AnimateOnChildWindowVisibilityChanged(aura::Window* window, bool visible) {
 std::vector<ui::LayerAnimationSequence*>
 CreateBrightnessGrayscaleAnimationSequence(float target_value,
                                            base::TimeDelta duration) {
-  ui::Tween::Type animation_type = ui::Tween::EASE_OUT;
+  gfx::Tween::Type animation_type = gfx::Tween::EASE_OUT;
   scoped_ptr<ui::LayerAnimationSequence> brightness_sequence(
       new ui::LayerAnimationSequence());
   scoped_ptr<ui::LayerAnimationSequence> grayscale_sequence(

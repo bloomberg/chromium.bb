@@ -8,7 +8,7 @@
 #include "base/location.h"
 #import "base/mac/foundation_util.h"
 #include "base/native_library.h"
-#include "ui/base/animation/tween.h"
+#include "ui/gfx/animation/tween.h"
 
 // The window animations in this file use private APIs as described here:
 // http://code.google.com/p/undocumented-goodness/source/browse/trunk/CoreGraphics/CGSPrivate.h
@@ -288,9 +288,9 @@ void UpdateWindowShowHideAnimationState(NSWindow* window, CGFloat value) {
     if (value >= frames[i].value) {
       CGFloat delta = frames[i + 1].value - frames[i].value;
       CGFloat frame_progress = (value - frames[i].value) / delta;
-      scale = ui::Tween::ValueBetween(frame_progress,
-                                      frames[i].scale,
-                                      frames[i + 1].scale);
+      scale = gfx::Tween::ValueBetween(frame_progress,
+                                       frames[i].scale,
+                                       frames[i + 1].scale);
       break;
     }
   }

@@ -11,8 +11,8 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "ui/base/accessibility/accessible_view_state.h"
-#include "ui/base/animation/animation_delegate.h"
-#include "ui/base/animation/slide_animation.h"
+#include "ui/gfx/animation/animation_delegate.h"
+#include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
 #include "ui/message_center/message_center.h"
@@ -59,7 +59,7 @@ ToastContentsView::ToastContentsView(
   // remains. This is hacky but easier to keep the consistency.
   set_background(views::Background::CreateSolidBackground(0, 0, 0, 0));
 
-  fade_animation_.reset(new ui::SlideAnimation(this));
+  fade_animation_.reset(new gfx::SlideAnimation(this));
   fade_animation_->SetSlideDuration(kFadeInOutDuration);
 }
 
@@ -167,7 +167,7 @@ void ToastContentsView::SetBoundsWithAnimation(gfx::Rect new_bounds) {
   if (bounds_animation_.get())
     bounds_animation_->Stop();
 
-  bounds_animation_.reset(new ui::SlideAnimation(this));
+  bounds_animation_.reset(new gfx::SlideAnimation(this));
   bounds_animation_->Show();
 }
 
@@ -195,7 +195,7 @@ void ToastContentsView::StartFadeOut() {
 }
 
 void ToastContentsView::OnBoundsAnimationEndedOrCancelled(
-    const ui::Animation* animation) {
+    const gfx::Animation* animation) {
   if (is_closing_ && closing_animation_ == animation && GetWidget()) {
     views::Widget* widget = GetWidget();
 #if defined(USE_AURA)
@@ -219,8 +219,8 @@ void ToastContentsView::OnBoundsAnimationEndedOrCancelled(
     collection_->DecrementDeferCounter();
 }
 
-// ui::AnimationDelegate
-void ToastContentsView::AnimationProgressed(const ui::Animation* animation) {
+// gfx::AnimationDelegate
+void ToastContentsView::AnimationProgressed(const gfx::Animation* animation) {
   if (animation == bounds_animation_.get()) {
     gfx::Rect current(animation->CurrentValueBetween(
         animated_bounds_start_, animated_bounds_end_));
@@ -232,12 +232,12 @@ void ToastContentsView::AnimationProgressed(const ui::Animation* animation) {
   }
 }
 
-void ToastContentsView::AnimationEnded(const ui::Animation* animation) {
+void ToastContentsView::AnimationEnded(const gfx::Animation* animation) {
   OnBoundsAnimationEndedOrCancelled(animation);
 }
 
 void ToastContentsView::AnimationCanceled(
-    const ui::Animation* animation) {
+    const gfx::Animation* animation) {
   OnBoundsAnimationEndedOrCancelled(animation);
 }
 

@@ -17,13 +17,14 @@ NetworkIconAnimation::NetworkIconAnimation()
     : animation_(this) {
   // Set up the animation throbber.
   animation_.SetThrobDuration(kThrobDurationMs);
-  animation_.SetTweenType(ui::Tween::LINEAR);
+  animation_.SetTweenType(gfx::Tween::LINEAR);
 }
 
 NetworkIconAnimation::~NetworkIconAnimation() {
 }
 
-void NetworkIconAnimation::AnimationProgressed(const ui::Animation* animation) {
+void NetworkIconAnimation::AnimationProgressed(
+    const gfx::Animation* animation) {
   if (animation != &animation_)
     return;
   FOR_EACH_OBSERVER(AnimationObserver, observers_, NetworkIconChanged());

@@ -7,7 +7,7 @@
 namespace ui {
 
 FloatAnimationCurveAdapter::FloatAnimationCurveAdapter(
-    Tween::Type tween_type,
+    gfx::Tween::Type tween_type,
     float initial_value,
     float target_value,
     base::TimeDelta duration)
@@ -36,9 +36,10 @@ float FloatAnimationCurveAdapter::GetValue(double t) const {
   if (t <= 0.0)
     return initial_value_;
   double progress = t / duration_.InSecondsF();
-  return Tween::ValueBetween(Tween::CalculateValue(tween_type_, progress),
-                             initial_value_,
-                             target_value_);
+  return gfx::Tween::ValueBetween(
+      gfx::Tween::CalculateValue(tween_type_, progress),
+      initial_value_,
+      target_value_);
 }
 
 }  // namespace ui

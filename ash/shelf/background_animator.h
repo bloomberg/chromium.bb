@@ -7,8 +7,8 @@
 
 #include "ash/ash_export.h"
 #include "base/basictypes.h"
-#include "ui/base/animation/animation_delegate.h"
-#include "ui/base/animation/slide_animation.h"
+#include "ui/gfx/animation/animation_delegate.h"
+#include "ui/gfx/animation/slide_animation.h"
 
 namespace ash {
 namespace internal {
@@ -23,7 +23,7 @@ class ASH_EXPORT BackgroundAnimatorDelegate {
 };
 
 // BackgroundAnimator is used by the shelf to animate the background (alpha).
-class ASH_EXPORT BackgroundAnimator : public ui::AnimationDelegate {
+class ASH_EXPORT BackgroundAnimator : public gfx::AnimationDelegate {
  public:
   // How the background can be changed.
   enum ChangeType {
@@ -48,8 +48,8 @@ class ASH_EXPORT BackgroundAnimator : public ui::AnimationDelegate {
   // Current alpha.
   int alpha() const { return alpha_; }
 
-  // ui::AnimationDelegate overrides:
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
+  // gfx::AnimationDelegate overrides:
+  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
 
  private:
   BackgroundAnimatorDelegate* delegate_;
@@ -57,7 +57,7 @@ class ASH_EXPORT BackgroundAnimator : public ui::AnimationDelegate {
   const int min_alpha_;
   const int max_alpha_;
 
-  ui::SlideAnimation animation_;
+  gfx::SlideAnimation animation_;
 
   // Whether the background is painted.
   bool paints_background_;

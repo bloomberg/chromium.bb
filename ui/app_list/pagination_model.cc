@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #include "ui/app_list/pagination_model_observer.h"
-#include "ui/base/animation/slide_animation.h"
+#include "ui/gfx/animation/slide_animation.h"
 
 namespace app_list {
 
@@ -221,8 +221,8 @@ void PaginationModel::StartTransitionAnimation(const Transition& transition) {
   NotifyTransitionStarted();
   SetTransition(transition);
 
-  transition_animation_.reset(new ui::SlideAnimation(this));
-  transition_animation_->SetTweenType(ui::Tween::LINEAR);
+  transition_animation_.reset(new gfx::SlideAnimation(this));
+  transition_animation_->SetTweenType(gfx::Tween::LINEAR);
   transition_animation_->Reset(transition_.progress);
 
   const int duration = is_valid_page(transition_.target_page) ?
@@ -240,12 +240,12 @@ void PaginationModel::ResetTransitionAnimation() {
   pending_selected_page_ = -1;
 }
 
-void PaginationModel::AnimationProgressed(const ui::Animation* animation) {
+void PaginationModel::AnimationProgressed(const gfx::Animation* animation) {
   transition_.progress = transition_animation_->GetCurrentValue();
   NotifyTransitionChanged();
 }
 
-void PaginationModel::AnimationEnded(const ui::Animation* animation) {
+void PaginationModel::AnimationEnded(const gfx::Animation* animation) {
   // Save |pending_selected_page_| because SelectPage resets it.
   int next_target = pending_selected_page_;
 

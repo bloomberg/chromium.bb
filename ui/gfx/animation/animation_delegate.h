@@ -5,9 +5,9 @@
 #ifndef UI_BASE_ANIMATION_ANIMATION_DELEGATE_H_
 #define UI_BASE_ANIMATION_ANIMATION_DELEGATE_H_
 
-#include "ui/base/ui_export.h"
+#include "ui/gfx/gfx_export.h"
 
-namespace ui {
+namespace gfx {
 
 class Animation;
 
@@ -15,7 +15,7 @@ class Animation;
 //
 //  Implement this interface when you want to receive notifications about the
 //  state of an animation.
-class UI_EXPORT AnimationDelegate {
+class GFX_EXPORT AnimationDelegate {
  public:
   // Called when an animation has completed.
   virtual void AnimationEnded(const Animation* animation) {}
@@ -30,6 +30,6 @@ class UI_EXPORT AnimationDelegate {
   virtual ~AnimationDelegate() {}
 };
 
-}  // namespace ui
+}  // namespace gfx
 
 #endif  // UI_BASE_ANIMATION_ANIMATION_DELEGATE_H_

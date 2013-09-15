@@ -5,7 +5,7 @@
 #ifndef UI_VIEWS_CONTROLS_SLIDER_H_
 #define UI_VIEWS_CONTROLS_SLIDER_H_
 
-#include "ui/base/animation/animation_delegate.h"
+#include "ui/gfx/animation/animation_delegate.h"
 #include "ui/views/view.h"
 #include "ui/views/views_export.h"
 
@@ -13,9 +13,6 @@ typedef unsigned int SkColor;
 
 namespace gfx {
 class ImageSkia;
-}
-
-namespace ui {
 class SlideAnimation;
 }
 
@@ -45,7 +42,7 @@ class VIEWS_EXPORT SliderListener {
 };
 
 class VIEWS_EXPORT Slider : public View,
-                            public ui::AnimationDelegate {
+                            public gfx::AnimationDelegate {
  public:
   enum Orientation {
     HORIZONTAL,
@@ -96,13 +93,13 @@ class VIEWS_EXPORT Slider : public View,
   // ui::EventHandler overrides:
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
-  // ui::AnimationDelegate overrides:
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
+  // gfx::AnimationDelegate overrides:
+  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
 
   SliderListener* listener_;
   Orientation orientation_;
 
-  scoped_ptr<ui::SlideAnimation> move_animation_;
+  scoped_ptr<gfx::SlideAnimation> move_animation_;
 
   float value_;
   float keyboard_increment_;

@@ -663,12 +663,12 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
   if (animate) {
     launcher_animation_setter.SetTransitionDuration(
         base::TimeDelta::FromMilliseconds(kCrossFadeDurationMS));
-    launcher_animation_setter.SetTweenType(ui::Tween::EASE_OUT);
+    launcher_animation_setter.SetTweenType(gfx::Tween::EASE_OUT);
     launcher_animation_setter.SetPreemptionStrategy(
         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
     status_animation_setter.SetTransitionDuration(
         base::TimeDelta::FromMilliseconds(kCrossFadeDurationMS));
-    status_animation_setter.SetTweenType(ui::Tween::EASE_OUT);
+    status_animation_setter.SetTweenType(gfx::Tween::EASE_OUT);
     status_animation_setter.SetPreemptionStrategy(
         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
   } else {

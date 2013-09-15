@@ -29,7 +29,7 @@ class WrenchToolbarButtonCellTest : public CocoaTest {
 
   NSButton* button_;
   base::scoped_nsobject<WrenchToolbarButtonCell> cell_;
-  base::MessageLoopForUI message_loop_;  // Needed for ui::Animation.
+  base::MessageLoopForUI message_loop_;  // Needed for gfx::Animation.
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WrenchToolbarButtonCellTest);

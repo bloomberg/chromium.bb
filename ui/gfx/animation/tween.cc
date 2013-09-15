@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/animation/tween.h"
+#include "ui/gfx/animation/tween.h"
 
 #include <math.h>
 
@@ -12,7 +12,7 @@
 
 #include "base/logging.h"
 
-namespace ui {
+namespace gfx {
 
 // static
 double Tween::CalculateValue(Tween::Type type, double state) {
@@ -103,4 +103,4 @@ gfx::Transform Tween::ValueBetween(double value,
   return to_return;
 }
 
-}  // namespace ui
+}  // namespace gfx

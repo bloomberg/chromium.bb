@@ -116,7 +116,7 @@ void WorkspaceController::DoInitialAnimation() {
         ui::LayerAnimationElement::VISIBILITY,
         -1);
 
-    settings.SetTweenType(ui::Tween::EASE_OUT);
+    settings.SetTweenType(gfx::Tween::EASE_OUT);
     settings.SetTransitionDuration(
         base::TimeDelta::FromMilliseconds(kCrossFadeDurationMS));
     viewport_->layer()->SetTransform(gfx::Transform());

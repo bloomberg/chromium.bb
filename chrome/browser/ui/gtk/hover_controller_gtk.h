@@ -8,17 +8,17 @@
 #include <gtk/gtk.h>
 
 #include "base/compiler_specific.h"
-#include "ui/base/animation/animation_delegate.h"
-#include "ui/base/animation/slide_animation.h"
-#include "ui/base/animation/throb_animation.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/gtk_signal_registrar.h"
+#include "ui/gfx/animation/animation_delegate.h"
+#include "ui/gfx/animation/slide_animation.h"
+#include "ui/gfx/animation/throb_animation.h"
 
 // This class handles the "throbbing" of a GtkChromeButton. The visual effect
 // of throbbing is created by painting partially transparent hover effects. It
 // only works in non-gtk theme mode. This class mainly exists to glue an
 // AnimationDelegate (C++ class) to a GtkChromeButton* (GTK/c object).
-class HoverControllerGtk : public ui::AnimationDelegate {
+class HoverControllerGtk : public gfx::AnimationDelegate {
  public:
   virtual ~HoverControllerGtk();
 
@@ -42,10 +42,10 @@ class HoverControllerGtk : public ui::AnimationDelegate {
  private:
   explicit HoverControllerGtk(GtkWidget* button);
 
-  // Overridden from ui::AnimationDelegate.
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
-  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
-  virtual void AnimationCanceled(const ui::Animation* animation) OVERRIDE;
+  // Overridden from gfx::AnimationDelegate.
+  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
+  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
+  virtual void AnimationCanceled(const gfx::Animation* animation) OVERRIDE;
 
   CHROMEGTK_CALLBACK_1(HoverControllerGtk, gboolean, OnEnter,
                        GdkEventCrossing*);
@@ -55,8 +55,8 @@ class HoverControllerGtk : public ui::AnimationDelegate {
                        GtkWidget*);
   CHROMEGTK_CALLBACK_0(HoverControllerGtk, void, OnDestroy);
 
-  ui::ThrobAnimation throb_animation_;
-  ui::SlideAnimation hover_animation_;
+  gfx::ThrobAnimation throb_animation_;
+  gfx::SlideAnimation hover_animation_;
   GtkWidget* button_;
 
   ui::GtkSignalRegistrar signals_;

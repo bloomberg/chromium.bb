@@ -29,7 +29,7 @@
 #include "chrome/common/cancelable_task_tracker.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
-#include "ui/base/animation/animation_delegate.h"
+#include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/font_list.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
@@ -41,9 +41,6 @@ class DownloadShelfContextMenuView;
 namespace gfx {
 class Image;
 class ImageSkia;
-}
-
-namespace ui {
 class SlideAnimation;
 }
 
@@ -56,7 +53,7 @@ class DownloadItemView : public views::ButtonListener,
                          public views::View,
                          public views::ContextMenuController,
                          public content::DownloadItem::Observer,
-                         public ui::AnimationDelegate {
+                         public gfx::AnimationDelegate {
  public:
   DownloadItemView(content::DownloadItem* download,
                    DownloadShelfView* parent);
@@ -105,8 +102,8 @@ class DownloadItemView : public views::ButtonListener,
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
 
-  // ui::AnimationDelegate implementation.
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
+  // gfx::AnimationDelegate implementation.
+  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
 
  protected:
   // Overridden from views::View:
@@ -224,7 +221,7 @@ class DownloadItemView : public views::ButtonListener,
   // Show/Hide/Reset |animation| based on the state transition specified by
   // |from| and |to|.
   void AnimateStateTransition(State from, State to,
-                              ui::SlideAnimation* animation);
+                              gfx::SlideAnimation* animation);
 
   // The different images used for the background.
   BodyImageSet normal_body_image_set_;
@@ -290,11 +287,11 @@ class DownloadItemView : public views::ButtonListener,
   DownloadItemModel model_;
 
   // Hover animations for our body and drop buttons.
-  scoped_ptr<ui::SlideAnimation> body_hover_animation_;
-  scoped_ptr<ui::SlideAnimation> drop_hover_animation_;
+  scoped_ptr<gfx::SlideAnimation> body_hover_animation_;
+  scoped_ptr<gfx::SlideAnimation> drop_hover_animation_;
 
   // Animation for download complete.
-  scoped_ptr<ui::SlideAnimation> complete_animation_;
+  scoped_ptr<gfx::SlideAnimation> complete_animation_;
 
   // Progress animation
   base::RepeatingTimer<DownloadItemView> progress_timer_;

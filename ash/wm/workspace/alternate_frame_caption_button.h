@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/views/controls/button/custom_button.h"
 
-namespace ui {
+namespace gfx {
 class SlideAnimation;
 }
 
@@ -47,9 +47,9 @@ class ASH_EXPORT AlternateFrameCaptionButton : public views::CustomButton {
   virtual void StateChanged() OVERRIDE;
 
   // ui::AnimateDelegate overrides. (views::CustomButton inherits from
-  // ui::AnimationDelegate).
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
-  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
+  // gfx::AnimationDelegate).
+  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
+  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
 
   Action action_;
 
@@ -59,7 +59,7 @@ class ASH_EXPORT AlternateFrameCaptionButton : public views::CustomButton {
   // The radius of the background bubble when it is visible.
   double shown_bubble_radius_;
 
-  scoped_ptr<ui::SlideAnimation> bubble_animation_;
+  scoped_ptr<gfx::SlideAnimation> bubble_animation_;
 
   DISALLOW_COPY_AND_ASSIGN(AlternateFrameCaptionButton);
 };

@@ -183,8 +183,8 @@ class ContentSettingImageViewGtk : public LocationBarViewGtk::PageToolViewGtk,
   virtual void UpdatePreLayout(WebContents* web_contents) OVERRIDE;
   virtual void UpdatePostLayout(WebContents* web_contents) OVERRIDE;
 
-  // ui::AnimationDelegate
-  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
+  // gfx::AnimationDelegate
+  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
 
  private:
   // PageToolViewGtk
@@ -288,7 +288,7 @@ void ContentSettingImageViewGtk::UpdatePostLayout(WebContents* web_contents) {
 }
 
 void ContentSettingImageViewGtk::AnimationEnded(
-    const ui::Animation* animation) {
+    const gfx::Animation* animation) {
   if (animation_.IsShowing()) {
     base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
@@ -1810,7 +1810,7 @@ void LocationBarViewGtk::PageToolViewGtk::CloseAnimation() {
 }
 
 void LocationBarViewGtk::PageToolViewGtk::AnimationProgressed(
-    const ui::Animation* animation) {
+    const gfx::Animation* animation) {
   gtk_widget_set_size_request(
       label_.get(),
       animation->GetCurrentValue() * label_req_.width,
@@ -1818,11 +1818,11 @@ void LocationBarViewGtk::PageToolViewGtk::AnimationProgressed(
 }
 
 void LocationBarViewGtk::PageToolViewGtk::AnimationEnded(
-    const ui::Animation* animation) {
+    const gfx::Animation* animation) {
 }
 
 void LocationBarViewGtk::PageToolViewGtk::AnimationCanceled(
-    const ui::Animation* animation) {
+    const gfx::Animation* animation) {
 }
 
 gboolean LocationBarViewGtk::PageToolViewGtk::OnButtonPressed(

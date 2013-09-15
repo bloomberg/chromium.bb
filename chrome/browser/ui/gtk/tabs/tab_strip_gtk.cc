@@ -39,12 +39,12 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
-#include "ui/base/animation/animation_delegate.h"
-#include "ui/base/animation/slide_animation.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
 #include "ui/base/gtk/gtk_screen_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/animation/animation_delegate.h"
+#include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/gtk_compat.h"
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/image/image.h"
@@ -131,7 +131,7 @@ bool GdkRectMatchesTabFaviconBounds(const GdkRectangle& gdk_rect, TabGtk* tab) {
 //
 //  A base class for all TabStrip animations.
 //
-class TabStripGtk::TabAnimation : public ui::AnimationDelegate {
+class TabStripGtk::TabAnimation : public gfx::AnimationDelegate {
  public:
   friend class TabStripGtk;
 
@@ -161,7 +161,7 @@ class TabStripGtk::TabAnimation : public ui::AnimationDelegate {
 
   void Start() {
     animation_.SetSlideDuration(GetDuration());
-    animation_.SetTweenType(ui::Tween::EASE_OUT);
+    animation_.SetTweenType(gfx::Tween::EASE_OUT);
     if (!animation_.IsShowing()) {
       animation_.Reset();
       animation_.Show();
@@ -200,17 +200,17 @@ class TabStripGtk::TabAnimation : public ui::AnimationDelegate {
     return tab_width;
   }
 
-  // Overridden from ui::AnimationDelegate:
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE {
+  // Overridden from gfx::AnimationDelegate:
+  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE {
     tabstrip_->AnimationLayout(end_unselected_width_);
   }
 
-  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE {
+  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE {
     tabstrip_->FinishAnimation(this, layout_on_completion_);
     // This object is destroyed now, so we can't do anything else after this.
   }
 
-  virtual void AnimationCanceled(const ui::Animation* animation) OVERRIDE {
+  virtual void AnimationCanceled(const gfx::Animation* animation) OVERRIDE {
     AnimationEnded(animation);
   }
 
@@ -258,7 +258,7 @@ class TabStripGtk::TabAnimation : public ui::AnimationDelegate {
   }
 
   TabStripGtk* tabstrip_;
-  ui::SlideAnimation animation_;
+  gfx::SlideAnimation animation_;
 
   double start_selected_width_;
   double start_unselected_width_;
@@ -412,7 +412,7 @@ class RemoveTabAnimation : public TabStripGtk::TabAnimation {
     return start_unselected_width_ + (delta * animation_.GetCurrentValue());
   }
 
-  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE {
+  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE {
     tabstrip_->RemoveTabAt(index_);
     TabStripGtk::TabAnimation::AnimationEnded(animation);
   }
@@ -442,8 +442,8 @@ class MoveTabAnimation : public TabStripGtk::TabAnimation {
   }
   virtual ~MoveTabAnimation() {}
 
-  // Overridden from ui::AnimationDelegate:
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE {
+  // Overridden from gfx::AnimationDelegate:
+  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE {
     // Position Tab A
     double distance = start_tab_b_bounds_.x() - start_tab_a_bounds_.x();
     double delta = distance * animation_.GetCurrentValue();
@@ -495,8 +495,8 @@ class ResizeLayoutAnimation : public TabStripGtk::TabAnimation {
   }
   virtual ~ResizeLayoutAnimation() {}
 
-  // Overridden from ui::AnimationDelegate:
-  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE {
+  // Overridden from gfx::AnimationDelegate:
+  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE {
     tabstrip_->needs_resize_layout_ = false;
     TabStripGtk::TabAnimation::AnimationEnded(animation);
   }
@@ -629,8 +629,8 @@ class MiniMoveAnimation : public TabStripGtk::TabAnimation {
     tab_->set_animating_mini_change(true);
   }
 
-  // Overridden from ui::AnimationDelegate:
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE {
+  // Overridden from gfx::AnimationDelegate:
+  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE {
     // Do the normal layout.
     TabAnimation::AnimationProgressed(animation);
 
@@ -644,7 +644,7 @@ class MiniMoveAnimation : public TabStripGtk::TabAnimation {
     tabstrip_->SetTabBounds(tab_, tab_bounds);
   }
 
-  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE {
+  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE {
     tabstrip_->needs_resize_layout_ = false;
     TabStripGtk::TabAnimation::AnimationEnded(animation);
   }

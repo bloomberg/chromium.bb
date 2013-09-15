@@ -16,8 +16,8 @@
 #include "chrome/browser/ui/gtk/notifications/balloon_view_host_gtk.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "ui/base/animation/animation_delegate.h"
 #include "ui/base/gtk/gtk_signal.h"
+#include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
@@ -28,7 +28,7 @@ class GtkThemeService;
 class MenuGtk;
 class NotificationOptionsMenuModel;
 
-namespace ui {
+namespace gfx {
 class SlideAnimation;
 }
 
@@ -37,7 +37,7 @@ class SlideAnimation;
 class BalloonViewImpl : public BalloonView,
                         public MenuGtk::Delegate,
                         public content::NotificationObserver,
-                        public ui::AnimationDelegate {
+                        public gfx::AnimationDelegate {
  public:
   explicit BalloonViewImpl(BalloonCollection* collection);
   virtual ~BalloonViewImpl();
@@ -59,8 +59,8 @@ class BalloonViewImpl : public BalloonView,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // ui::AnimationDelegate interface.
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
+  // gfx::AnimationDelegate interface.
+  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
 
   // Do the delayed close work.  The balloon and all view components will be
   // destroyed at this time, so it shouldn't be called while still processing
@@ -119,7 +119,7 @@ class BalloonViewImpl : public BalloonView,
   scoped_ptr<CustomDrawButton> close_button_;
 
   // An animation to move the balloon on the screen as its position changes.
-  scoped_ptr<ui::SlideAnimation> animation_;
+  scoped_ptr<gfx::SlideAnimation> animation_;
   gfx::Rect anim_frame_start_;
   gfx::Rect anim_frame_end_;
 

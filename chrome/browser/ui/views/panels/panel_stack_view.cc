@@ -11,7 +11,7 @@
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/stacked_panel_collection.h"
 #include "chrome/browser/ui/views/panels/panel_view.h"
-#include "ui/base/animation/linear_animation.h"
+#include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/widget/widget.h"
@@ -158,7 +158,7 @@ void PanelStackView::EndBatchUpdatePanelBounds() {
     return;
   }
 
-  bounds_animator_.reset(new ui::LinearAnimation(
+  bounds_animator_.reset(new gfx::LinearAnimation(
       PanelManager::AdjustTimeInterval(kSetBoundsAnimationMs),
       kDefaultFramerateHz,
       this));
@@ -313,7 +313,7 @@ void PanelStackView::OnNativeFocusChange(gfx::NativeView focused_before,
 #endif
 }
 
-void PanelStackView::AnimationEnded(const ui::Animation* animation) {
+void PanelStackView::AnimationEnded(const gfx::Animation* animation) {
   bounds_updates_started_ = false;
 
   PanelManager* panel_manager = PanelManager::GetInstance();
@@ -326,7 +326,7 @@ void PanelStackView::AnimationEnded(const ui::Animation* animation) {
   NotifyBoundsUpdateCompleted();
 }
 
-void PanelStackView::AnimationProgressed(const ui::Animation* animation) {
+void PanelStackView::AnimationProgressed(const gfx::Animation* animation) {
   UpdatePanelsBounds();
 }
 

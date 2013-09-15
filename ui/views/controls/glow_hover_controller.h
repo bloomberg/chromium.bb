@@ -5,8 +5,8 @@
 #ifndef UI_VIEWS_CONTROLS_GLOW_HOVER_CONTROLLER_H_
 #define UI_VIEWS_CONTROLS_GLOW_HOVER_CONTROLLER_H_
 
-#include "ui/base/animation/animation_delegate.h"
-#include "ui/base/animation/slide_animation.h"
+#include "ui/gfx/animation/animation_delegate.h"
+#include "ui/gfx/animation/slide_animation.h"
 #include "ui/views/views_export.h"
 
 namespace gfx {
@@ -27,7 +27,7 @@ class View;
 //   OnPaint()        -> if ShouldDraw() returns true invoke Draw().
 // Internally GlowHoverController uses an animation to animate the glow and
 // invokes SchedulePaint() back on the View as necessary.
-class VIEWS_EXPORT GlowHoverController : public ui::AnimationDelegate {
+class VIEWS_EXPORT GlowHoverController : public gfx::AnimationDelegate {
  public:
   enum Style {
     SUBTLE,
@@ -38,7 +38,7 @@ class VIEWS_EXPORT GlowHoverController : public ui::AnimationDelegate {
   virtual ~GlowHoverController();
 
   // Sets the AnimationContainer used by the animation.
-  void SetAnimationContainer(ui::AnimationContainer* container);
+  void SetAnimationContainer(gfx::AnimationContainer* container);
 
   // Sets the location of the hover, relative to the View passed to the
   // constructor.
@@ -64,16 +64,16 @@ class VIEWS_EXPORT GlowHoverController : public ui::AnimationDelegate {
   // |mask_image| is used to determine what parts of the canvas to draw on.
   void Draw(gfx::Canvas* canvas, const gfx::ImageSkia& mask_image) const;
 
-  // ui::AnimationDelegate overrides:
-  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
+  // gfx::AnimationDelegate overrides:
+  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
+  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
 
  private:
   // View we're drawing to.
   views::View* view_;
 
   // Opacity of the glow ramps up over time.
-  ui::SlideAnimation animation_;
+  gfx::SlideAnimation animation_;
 
   // Location of the glow, relative to view.
   gfx::Point location_;

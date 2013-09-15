@@ -49,7 +49,7 @@ void BackgroundAnimator::SetPaintsBackground(bool value, ChangeType type) {
     animation_.Hide();
 }
 
-void BackgroundAnimator::AnimationProgressed(const ui::Animation* animation) {
+void BackgroundAnimator::AnimationProgressed(const gfx::Animation* animation) {
   int alpha = animation->CurrentValueBetween(min_alpha_, max_alpha_);
   if (alpha_ == alpha)
     return;

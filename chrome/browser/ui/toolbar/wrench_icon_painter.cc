@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/toolbar/wrench_icon_painter.h"
 
 #include "grit/theme_resources.h"
-#include "ui/base/animation/multi_animation.h"
 #include "ui/base/theme_provider.h"
+#include "ui/gfx/animation/multi_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/rect.h"
@@ -88,16 +88,16 @@ void WrenchIconPainter::SetSeverity(Severity severity, bool animate) {
   if (severity_ == SEVERITY_NONE || !animate)
     return;
 
-  ui::MultiAnimation::Parts parts;
+  gfx::MultiAnimation::Parts parts;
   // Animate the bars left to right.
-  parts.push_back(ui::MultiAnimation::Part(1300, ui::Tween::LINEAR));
+  parts.push_back(gfx::MultiAnimation::Part(1300, gfx::Tween::LINEAR));
   // Fade out animation.
-  parts.push_back(ui::MultiAnimation::Part(1000, ui::Tween::EASE_IN));
+  parts.push_back(gfx::MultiAnimation::Part(1000, gfx::Tween::EASE_IN));
   // Again, animate the bars left to right.
-  parts.push_back(ui::MultiAnimation::Part(1300, ui::Tween::LINEAR));
+  parts.push_back(gfx::MultiAnimation::Part(1300, gfx::Tween::LINEAR));
 
   animation_.reset(
-      new ui::MultiAnimation(parts, base::TimeDelta::FromMilliseconds(40)));
+      new gfx::MultiAnimation(parts, base::TimeDelta::FromMilliseconds(40)));
   animation_->set_delegate(this);
   animation_->set_continuous(false);
   animation_->Start();
@@ -167,7 +167,7 @@ void WrenchIconPainter::Paint(gfx::Canvas* canvas,
     canvas->DrawImageInt(badge_, 0, 0);
 }
 
-void WrenchIconPainter::AnimationProgressed(const ui::Animation* animation) {
+void WrenchIconPainter::AnimationProgressed(const gfx::Animation* animation) {
   delegate_->ScheduleWrenchIconPaint();
 }
 

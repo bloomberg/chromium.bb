@@ -11,8 +11,8 @@
 #include "cc/animation/animation.h"
 #include "cc/animation/animation_events.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/base/animation/tween.h"
 #include "ui/compositor/compositor_export.h"
+#include "ui/gfx/animation/tween.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/transform.h"
 
@@ -182,8 +182,8 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
   // Whether this element animates on the compositor thread.
   virtual bool IsThreaded() const;
 
-  Tween::Type tween_type() const { return tween_type_; }
-  void set_tween_type(Tween::Type tween_type) { tween_type_ = tween_type; }
+  gfx::Tween::Type tween_type() const { return tween_type_; }
+  void set_tween_type(gfx::Tween::Type tween_type) { tween_type_ = tween_type; }
 
   // Each LayerAnimationElement has a unique animation_id. Elements belonging
   // to sequences that are supposed to start together have the same
@@ -224,7 +224,7 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
   // When the animation actually started, taking into account queueing delays.
   base::TimeTicks effective_start_time_;
   const base::TimeDelta duration_;
-  Tween::Type tween_type_;
+  gfx::Tween::Type tween_type_;
 
   const int animation_id_;
   int animation_group_id_;

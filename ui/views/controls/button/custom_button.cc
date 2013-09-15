@@ -5,9 +5,9 @@
 #include "ui/views/controls/button/custom_button.h"
 
 #include "ui/base/accessibility/accessible_view_state.h"
-#include "ui/base/animation/throb_animation.h"
 #include "ui/base/events/event.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
 
@@ -277,9 +277,9 @@ void CustomButton::VisibilityChanged(View* starting_from, bool visible) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// CustomButton, ui::AnimationDelegate implementation:
+// CustomButton, gfx::AnimationDelegate implementation:
 
-void CustomButton::AnimationProgressed(const ui::Animation* animation) {
+void CustomButton::AnimationProgressed(const gfx::Animation* animation) {
   SchedulePaint();
 }
 
@@ -293,7 +293,7 @@ CustomButton::CustomButton(ButtonListener* listener)
       is_throbbing_(false),
       triggerable_event_flags_(ui::EF_LEFT_MOUSE_BUTTON),
       request_focus_on_press_(true) {
-  hover_animation_.reset(new ui::ThrobAnimation(this));
+  hover_animation_.reset(new gfx::ThrobAnimation(this));
   hover_animation_->SetSlideDuration(kHoverFadeDurationMs);
 }
 

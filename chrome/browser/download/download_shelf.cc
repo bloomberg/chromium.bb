@@ -27,9 +27,9 @@
 #include "content/public/browser/web_contents_view.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
-#include "ui/base/animation/animation.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/animation/animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -361,7 +361,7 @@ void DownloadShelf::ShowDownload(DownloadItem* download) {
   if (DownloadItemModel(download).ShouldShowDownloadStartedAnimation() &&
       shelf_tab &&
       platform_util::IsVisible(shelf_tab->GetView()->GetNativeView()) &&
-      ui::Animation::ShouldRenderRichAnimation()) {
+      gfx::Animation::ShouldRenderRichAnimation()) {
     DownloadStartedAnimation::Show(shelf_tab);
   }
 }

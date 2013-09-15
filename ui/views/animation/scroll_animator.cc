@@ -8,7 +8,7 @@
 #include <cmath>
 
 #include "base/logging.h"
-#include "ui/base/animation/slide_animation.h"
+#include "ui/gfx/animation/slide_animation.h"
 
 namespace {
 const float kDefaultAcceleration = -1500.0f; // in pixels per second^2
@@ -51,7 +51,7 @@ void ScrollAnimator::Start(float velocity_x, float velocity_y) {
   velocity_x_ = velocity_x;
   velocity_y_ = velocity_y;
   duration_ = -v / acceleration_; // in seconds
-  animation_.reset(new ui::SlideAnimation(this));
+  animation_.reset(new gfx::SlideAnimation(this));
   animation_->SetSlideDuration(static_cast<int>(duration_ * 1000));
   animation_->Show();
 }
@@ -61,11 +61,11 @@ void ScrollAnimator::Stop() {
   animation_.reset();
 }
 
-void ScrollAnimator::AnimationEnded(const ui::Animation* animation) {
+void ScrollAnimator::AnimationEnded(const gfx::Animation* animation) {
   Stop();
 }
 
-void ScrollAnimator::AnimationProgressed(const ui::Animation* animation) {
+void ScrollAnimator::AnimationProgressed(const gfx::Animation* animation) {
   float t = static_cast<float>(animation->GetCurrentValue()) * duration_;
   float a_x = velocity_x_ > 0 ? acceleration_ : -acceleration_;
   float a_y = velocity_y_ > 0 ? acceleration_ : -acceleration_;
@@ -75,7 +75,7 @@ void ScrollAnimator::AnimationProgressed(const ui::Animation* animation) {
   delegate_->OnScroll(dx, dy);
 }
 
-void ScrollAnimator::AnimationCanceled(const ui::Animation* animation) {
+void ScrollAnimator::AnimationCanceled(const gfx::Animation* animation) {
   Stop();
 }
 

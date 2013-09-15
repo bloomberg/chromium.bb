@@ -35,10 +35,10 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/ssl_status.h"
-#include "ui/base/animation/animation_delegate.h"
-#include "ui/base/animation/linear_animation.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/gfx/animation/animation_delegate.h"
+#include "ui/gfx/animation/linear_animation.h"
 #include "url/gurl.h"
 
 class Profile;
@@ -79,7 +79,7 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
                                      public wallet::WalletSigninHelperDelegate,
                                      public PersonalDataManagerObserver,
                                      public AccountChooserModelDelegate,
-                                     public ui::AnimationDelegate {
+                                     public gfx::AnimationDelegate {
  public:
   virtual ~AutofillDialogControllerImpl();
 
@@ -220,9 +220,9 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   virtual void OnDidFetchWalletCookieValue(
       const std::string& cookie_value) OVERRIDE;
 
-  // ui::AnimationDelegate implementation.
-  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
+  // gfx::AnimationDelegate implementation.
+  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
+  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
 
  protected:
   // Exposed for testing.
@@ -733,7 +733,7 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
 
   // An animation which controls the background fade when the card is done
   // scrambling.
-  ui::LinearAnimation card_generated_animation_;
+  gfx::LinearAnimation card_generated_animation_;
 
   // A username string we display in the card scrambling/generated overlay.
   base::string16 submitted_cardholder_name_;

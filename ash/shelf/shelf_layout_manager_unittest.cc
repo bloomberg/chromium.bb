@@ -32,10 +32,10 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
-#include "ui/base/animation/animation_container_element.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/gfx/animation/animation_container_element.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/controls/label.h"
@@ -53,8 +53,8 @@ namespace internal {
 namespace {
 
 void StepWidgetLayerAnimatorToEnd(views::Widget* widget) {
-  ui::AnimationContainerElement* element =
-      static_cast<ui::AnimationContainerElement*>(
+  gfx::AnimationContainerElement* element =
+      static_cast<gfx::AnimationContainerElement*>(
       widget->GetNativeView()->layer()->GetAnimator());
   element->Step(base::TimeTicks::Now() + base::TimeDelta::FromSeconds(1));
 }

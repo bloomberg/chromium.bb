@@ -5,17 +5,17 @@
 #ifndef CHROME_BROWSER_UI_AUTOFILL_LOADING_ANIMATION_H_
 #define CHROME_BROWSER_UI_AUTOFILL_LOADING_ANIMATION_H_
 
-#include "ui/base/animation/linear_animation.h"
+#include "ui/gfx/animation/linear_animation.h"
 
 namespace autofill {
 
 // An animation for a dancing ellipsis.
-class LoadingAnimation : public ui::LinearAnimation {
+class LoadingAnimation : public gfx::LinearAnimation {
  public:
-  explicit LoadingAnimation(ui::AnimationDelegate* delegate);
+  explicit LoadingAnimation(gfx::AnimationDelegate* delegate);
   virtual ~LoadingAnimation();
 
-  // ui::Animation implementation.
+  // gfx::Animation implementation.
   virtual void Step(base::TimeTicks time_now) OVERRIDE;
 
   // Returns the vertical pixel offset for the nth dot.

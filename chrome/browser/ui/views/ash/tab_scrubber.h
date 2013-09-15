@@ -10,7 +10,6 @@
 #include "chrome/browser/ui/views/tabs/tab_strip_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "ui/base/animation/animation_delegate.h"
 #include "ui/base/events/event_handler.h"
 
 class Browser;

@@ -10,9 +10,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "ui/base/ui_export.h"
+#include "ui/gfx/gfx_export.h"
 
-namespace ui {
+namespace gfx {
 
 class AnimationContainerElement;
 class AnimationContainerObserver;
@@ -25,7 +25,7 @@ class AnimationContainerObserver;
 //
 // AnimationContainer is ref counted. Each Animation contained within the
 // AnimationContainer own it.
-class UI_EXPORT AnimationContainer
+class GFX_EXPORT AnimationContainer
     : public base::RefCounted<AnimationContainer> {
  public:
   AnimationContainer();
@@ -86,6 +86,6 @@ class UI_EXPORT AnimationContainer
   DISALLOW_COPY_AND_ASSIGN(AnimationContainer);
 };
 
-}  // namespace ui
+}  // namespace gfx
 
 #endif  // UI_BASE_ANIMATION_ANIMATION_CONTAINER_H_

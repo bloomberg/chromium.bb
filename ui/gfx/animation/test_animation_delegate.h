@@ -6,9 +6,9 @@
 #define UI_BASE_ANIMATION_TEST_ANIMATION_DELEGATE_H_
 
 #include "base/message_loop/message_loop.h"
-#include "ui/base/animation/animation_delegate.h"
+#include "ui/gfx/animation/animation_delegate.h"
 
-namespace ui {
+namespace gfx {
 
 // Trivial AnimationDelegate implementation. AnimationEnded/Canceled quit the
 // message loop.
@@ -43,6 +43,6 @@ class TestAnimationDelegate : public AnimationDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestAnimationDelegate);
 };
 
-}  // namespace ui
+}  // namespace gfx
 
 #endif  // UI_BASE_ANIMATION_TEST_ANIMATION_DELEGATE_H_

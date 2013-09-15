@@ -11,21 +11,19 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/base/animation/animation_delegate.h"
+#include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace gfx {
-class Canvas;
-class Rect;
-}
-namespace ui {
 class Animation;
 class AnimationContainer;
+class Canvas;
 class LinearAnimation;
+class Rect;
 }
 
 // This class is used to draw an animating tab audio indicator.
-class TabAudioIndicator : public ui::AnimationDelegate {
+class TabAudioIndicator : public gfx::AnimationDelegate {
  public:
   class Delegate {
    public:
@@ -40,7 +38,7 @@ class TabAudioIndicator : public ui::AnimationDelegate {
 
   void set_favicon(const gfx::ImageSkia& favicon) { favicon_ = favicon; }
 
-  void SetAnimationContainer(ui::AnimationContainer* animation_container);
+  void SetAnimationContainer(gfx::AnimationContainer* animation_container);
   void SetIsPlayingAudio(bool is_playing_audio);
   bool IsAnimating();
 
@@ -57,16 +55,16 @@ class TabAudioIndicator : public ui::AnimationDelegate {
   FRIEND_TEST_ALL_PREFIXES(TabAudioIndicatorTest, SchedulePaint);
 
   // AnimationDelegate:
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
-  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
+  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
+  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
 
   // Gets the equalizer levels for all 3 columns. The values are tweened between
   // the current and target frame.
   std::vector<int> GetCurrentEqualizerLevels() const;
 
   Delegate* delegate_;
-  scoped_ptr<ui::LinearAnimation> animation_;
-  scoped_refptr<ui::AnimationContainer> animation_container_;
+  scoped_ptr<gfx::LinearAnimation> animation_;
+  scoped_refptr<gfx::AnimationContainer> animation_container_;
   gfx::ImageSkia favicon_;
 
   // The equalizer frame that's currently being displayed.

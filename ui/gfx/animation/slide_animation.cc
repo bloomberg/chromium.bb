@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/animation/slide_animation.h"
+#include "ui/gfx/animation/slide_animation.h"
 
 #include <math.h>
 
-namespace ui {
+namespace gfx {
 
 // How many frames per second to target.
 static const int kDefaultFrameRateHz = 60;
@@ -111,4 +111,4 @@ void SlideAnimation::AnimateToState(double state) {
   }
 }
 
-}  // namespace ui
+}  // namespace gfx

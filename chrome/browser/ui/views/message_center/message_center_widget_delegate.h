@@ -9,8 +9,6 @@
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/views/message_center/web_notification_tray.h"
-#include "ui/base/animation/animation_delegate.h"
-#include "ui/base/animation/slide_animation.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 #include "ui/message_center/message_center.h"
@@ -19,11 +17,6 @@
 #include "ui/message_center/views/message_center_view.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/widget/widget_observer.h"
-
-namespace ui {
-class SlideAnimation;
-class AnimationDelegate;
-}
 
 namespace message_center {
 

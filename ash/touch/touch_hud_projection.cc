@@ -8,9 +8,9 @@
 #include "ash/shell.h"
 #include "ash/wm/property_util.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
-#include "ui/base/animation/animation_delegate.h"
-#include "ui/base/animation/linear_animation.h"
 #include "ui/base/events/event.h"
+#include "ui/gfx/animation/animation_delegate.h"
+#include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/size.h"
 #include "ui/views/widget/widget.h"
@@ -29,7 +29,7 @@ const int kFadeoutFrameRate = 60;
 // lifetime and deletes itself upon fade-out completion or whenever |Remove()|
 // is explicitly called.
 class TouchPointView : public views::View,
-                       public ui::AnimationDelegate,
+                       public gfx::AnimationDelegate,
                        public views::WidgetObserver {
  public:
   explicit TouchPointView(views::Widget* parent_widget)
@@ -58,7 +58,7 @@ class TouchPointView : public views::View,
   void UpdateTouch(const ui::TouchEvent& touch) {
     if (touch.type() == ui::ET_TOUCH_RELEASED ||
         touch.type() == ui::ET_TOUCH_CANCELLED) {
-      fadeout_.reset(new ui::LinearAnimation(kFadeoutDurationInMs,
+      fadeout_.reset(new gfx::LinearAnimation(kFadeoutDurationInMs,
                                              kFadeoutFrameRate,
                                              this));
       fadeout_->Start();
@@ -102,18 +102,18 @@ class TouchPointView : public views::View,
                        stroke_paint_);
   }
 
-  // Overridden from ui::AnimationDelegate.
-  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE {
+  // Overridden from gfx::AnimationDelegate.
+  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE {
     DCHECK_EQ(fadeout_.get(), animation);
     delete this;
   }
 
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE {
+  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE {
     DCHECK_EQ(fadeout_.get(), animation);
     SchedulePaint();
   }
 
-  virtual void AnimationCanceled(const ui::Animation* animation) OVERRIDE {
+  virtual void AnimationCanceled(const gfx::Animation* animation) OVERRIDE {
     AnimationEnded(animation);
   }
 
@@ -130,7 +130,7 @@ class TouchPointView : public views::View,
   SkColor gradient_colors_[2];
   SkScalar gradient_pos_[2];
 
-  scoped_ptr<ui::Animation> fadeout_;
+  scoped_ptr<gfx::Animation> fadeout_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchPointView);
 };

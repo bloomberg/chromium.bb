@@ -13,9 +13,9 @@
 #include "chrome/browser/ui/gtk/infobars/translate_message_infobar_gtk.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "grit/generated_resources.h"
-#include "ui/base/animation/slide_animation.h"
 #include "ui/base/gtk/gtk_signal_registrar.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
 
 
@@ -40,8 +40,8 @@ TranslateInfoBarBase::TranslateInfoBarBase(InfoBarService* owner,
   TranslateInfoBarDelegate::BackgroundAnimationType animation =
       delegate->background_animation_type();
   if (animation != TranslateInfoBarDelegate::NONE) {
-    background_color_animation_.reset(new ui::SlideAnimation(this));
-    background_color_animation_->SetTweenType(ui::Tween::LINEAR);
+    background_color_animation_.reset(new gfx::SlideAnimation(this));
+    background_color_animation_->SetTweenType(gfx::Tween::LINEAR);
     background_color_animation_->SetSlideDuration(500);
     if (animation == TranslateInfoBarDelegate::NORMAL_TO_ERROR) {
       background_color_animation_->Show();
@@ -59,7 +59,8 @@ TranslateInfoBarBase::TranslateInfoBarBase(InfoBarService* owner,
 TranslateInfoBarBase::~TranslateInfoBarBase() {
 }
 
-void TranslateInfoBarBase::AnimationProgressed(const ui::Animation* animation) {
+void TranslateInfoBarBase::AnimationProgressed(
+    const gfx::Animation* animation) {
   DCHECK(widget());
   if (animation == background_color_animation_.get()) {
     background_error_percent_ = animation->GetCurrentValue();

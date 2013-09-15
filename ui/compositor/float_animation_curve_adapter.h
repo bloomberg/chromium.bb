@@ -7,13 +7,13 @@
 
 #include "base/time/time.h"
 #include "cc/animation/animation_curve.h"
-#include "ui/base/animation/tween.h"
+#include "ui/gfx/animation/tween.h"
 
 namespace ui {
 
 class FloatAnimationCurveAdapter : public cc::FloatAnimationCurve {
  public:
-  FloatAnimationCurveAdapter(Tween::Type tween_type,
+  FloatAnimationCurveAdapter(gfx::Tween::Type tween_type,
                              float initial_value,
                              float target_value,
                              base::TimeDelta duration);
@@ -26,7 +26,7 @@ class FloatAnimationCurveAdapter : public cc::FloatAnimationCurve {
   virtual float GetValue(double t) const OVERRIDE;
 
  private:
-  Tween::Type tween_type_;
+  gfx::Tween::Type tween_type_;
   float initial_value_;
   float target_value_;
   base::TimeDelta duration_;

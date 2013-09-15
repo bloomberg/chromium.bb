@@ -288,7 +288,7 @@ gfx::Image OmniboxPopupContentsView::GetIconIfExtensionMatch(
 // OmniboxPopupContentsView, AnimationDelegate implementation:
 
 void OmniboxPopupContentsView::AnimationProgressed(
-    const ui::Animation* animation) {
+    const gfx::Animation* animation) {
   // We should only be running the animation when the popup is already visible.
   DCHECK(popup_ != NULL);
   popup_->SetBounds(GetPopupBounds());

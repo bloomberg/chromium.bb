@@ -4,7 +4,7 @@
 
 #include "ui/views/bubble/bubble_delegate.h"
 
-#include "ui/base/animation/slide_animation.h"
+#include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/rect.h"
 #include "ui/native_theme/native_theme.h"
@@ -270,7 +270,7 @@ void BubbleDelegateView::StartFade(bool fade_in) {
   else
     GetWidget()->Close();
 #else
-  fade_animation_.reset(new ui::SlideAnimation(this));
+  fade_animation_.reset(new gfx::SlideAnimation(this));
   fade_animation_->SetSlideDuration(GetFadeDuration());
   fade_animation_->Reset(fade_in ? 0.0 : 1.0);
   if (fade_in) {
@@ -323,7 +323,7 @@ void BubbleDelegateView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   UpdateColorsFromTheme(theme);
 }
 
-void BubbleDelegateView::AnimationEnded(const ui::Animation* animation) {
+void BubbleDelegateView::AnimationEnded(const gfx::Animation* animation) {
   if (animation != fade_animation_.get())
     return;
   bool closed = fade_animation_->GetCurrentValue() == 0;
@@ -332,7 +332,7 @@ void BubbleDelegateView::AnimationEnded(const ui::Animation* animation) {
     GetWidget()->Close();
 }
 
-void BubbleDelegateView::AnimationProgressed(const ui::Animation* animation) {
+void BubbleDelegateView::AnimationProgressed(const gfx::Animation* animation) {
   if (animation != fade_animation_.get())
     return;
   DCHECK(fade_animation_->is_animating());

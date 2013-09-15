@@ -7,7 +7,7 @@
 
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_exit_bubble_type.h"
-#include "ui/base/animation/animation_delegate.h"
+#include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/point.h"
 #include "url/gurl.h"
 
@@ -17,7 +17,7 @@ namespace gfx {
 class Rect;
 }
 
-class FullscreenExitBubble : public ui::AnimationDelegate {
+class FullscreenExitBubble : public gfx::AnimationDelegate {
  public:
   explicit FullscreenExitBubble(Browser* browser,
                                 const GURL& url,

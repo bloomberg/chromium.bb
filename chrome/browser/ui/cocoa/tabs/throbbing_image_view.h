@@ -9,7 +9,7 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/base/animation/throb_animation.h"
+#include "ui/gfx/animation/throb_animation.h"
 
 class ThrobbingImageViewAnimationDelegate;
 
@@ -25,7 +25,7 @@ enum ThrobPosition {
  @protected
   base::scoped_nsobject<NSImage> backgroundImage_;
   base::scoped_nsobject<NSImage> throbImage_;
-  scoped_ptr<ui::ThrobAnimation> throbAnimation_;
+  scoped_ptr<gfx::ThrobAnimation> throbAnimation_;
 
  @private
   scoped_ptr<ThrobbingImageViewAnimationDelegate> delegate_;
@@ -37,7 +37,7 @@ enum ThrobPosition {
             throbImage:(NSImage*)throbImage
             durationMS:(int)durationMS
          throbPosition:(ThrobPosition)throbPosition
-    animationContainer:(ui::AnimationContainer*)animationContainer;
+    animationContainer:(gfx::AnimationContainer*)animationContainer;
 
 @end
 

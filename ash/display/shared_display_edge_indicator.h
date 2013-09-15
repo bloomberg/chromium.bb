@@ -8,14 +8,11 @@
 #include "ash/ash_export.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/base/animation/animation_delegate.h"
+#include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/display.h"
 
 namespace gfx {
 class Rect;
-}
-
-namespace ui {
 class ThrobAnimation;
 }
 
@@ -29,7 +26,7 @@ namespace internal {
 
 // SharedDisplayEdgeIndicator is responsible for showing a window that indicates
 // the edge that a window can be dragged into another display.
-class ASH_EXPORT SharedDisplayEdgeIndicator : public ui::AnimationDelegate {
+class ASH_EXPORT SharedDisplayEdgeIndicator : public gfx::AnimationDelegate {
  public:
   SharedDisplayEdgeIndicator();
   virtual ~SharedDisplayEdgeIndicator();
@@ -40,8 +37,8 @@ class ASH_EXPORT SharedDisplayEdgeIndicator : public ui::AnimationDelegate {
   void Show(const gfx::Rect& src_bounds, const gfx::Rect& dst_bounds);
   void Hide();
 
-  // ui::AnimationDelegate overrides:
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
+  // gfx::AnimationDelegate overrides:
+  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
 
  private:
   // Used to show the displays' shared edge where a window can be moved across.
@@ -51,7 +48,7 @@ class ASH_EXPORT SharedDisplayEdgeIndicator : public ui::AnimationDelegate {
   views::View* dst_indicator_;
 
   // Used to transition the opacity.
-  scoped_ptr<ui::ThrobAnimation> animation_;
+  scoped_ptr<gfx::ThrobAnimation> animation_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedDisplayEdgeIndicator);
 };

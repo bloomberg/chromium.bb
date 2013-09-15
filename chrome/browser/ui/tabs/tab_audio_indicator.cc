@@ -5,9 +5,9 @@
 #include "chrome/browser/ui/tabs/tab_audio_indicator.h"
 
 #include "grit/theme_resources.h"
-#include "ui/base/animation/animation_container.h"
-#include "ui/base/animation/linear_animation.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/animation/animation_container.h"
+#include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/skia_util.h"
@@ -60,7 +60,7 @@ TabAudioIndicator::~TabAudioIndicator() {
 }
 
 void TabAudioIndicator::SetAnimationContainer(
-    ui::AnimationContainer* animation_container) {
+    gfx::AnimationContainer* animation_container) {
   animation_container_ = animation_container;
 }
 
@@ -68,13 +68,13 @@ void TabAudioIndicator::SetIsPlayingAudio(bool is_playing_audio) {
   if (is_playing_audio && state_ != STATE_ANIMATING) {
     state_ = STATE_ANIMATING;
     animation_.reset(
-        new ui::LinearAnimation(kAnimationCycleDurationMs, kFPS, this));
+        new gfx::LinearAnimation(kAnimationCycleDurationMs, kFPS, this));
     animation_->SetContainer(animation_container_.get());
     animation_->Start();
   } else if (!is_playing_audio && state_ == STATE_ANIMATING) {
     state_ = STATE_ANIMATION_ENDING;
     animation_.reset(
-        new ui::LinearAnimation(kAnimationEndingDurationMs, kFPS, this));
+        new gfx::LinearAnimation(kAnimationEndingDurationMs, kFPS, this));
     animation_->SetContainer(animation_container_.get());
     animation_->Start();
   }
@@ -129,13 +129,13 @@ void TabAudioIndicator::Paint(gfx::Canvas* canvas, const gfx::Rect& rect) {
   canvas->Restore();
 }
 
-void TabAudioIndicator::AnimationProgressed(const ui::Animation* animation) {
+void TabAudioIndicator::AnimationProgressed(const gfx::Animation* animation) {
   std::vector<int> levels = GetCurrentEqualizerLevels();
   if (last_displayed_equalizer_levels_ != levels)
     delegate_->ScheduleAudioIndicatorPaint();
 }
 
-void TabAudioIndicator::AnimationEnded(const ui::Animation* animation) {
+void TabAudioIndicator::AnimationEnded(const gfx::Animation* animation) {
   if (state_ == STATE_ANIMATING) {
     // The current equalizer frame animation has finished. Start animating the
     // next frame.

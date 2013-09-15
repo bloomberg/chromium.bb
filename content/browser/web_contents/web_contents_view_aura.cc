@@ -935,7 +935,7 @@ void WebContentsViewAura::ResetOverscrollTransform() {
     ui::ScopedLayerAnimationSettings settings(target->layer()->GetAnimator());
     settings.SetPreemptionStrategy(
         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-    settings.SetTweenType(ui::Tween::EASE_OUT);
+    settings.SetTweenType(gfx::Tween::EASE_OUT);
     settings.AddObserver(this);
     target->SetTransform(gfx::Transform());
   }
@@ -943,7 +943,7 @@ void WebContentsViewAura::ResetOverscrollTransform() {
     ui::ScopedLayerAnimationSettings settings(target->layer()->GetAnimator());
     settings.SetPreemptionStrategy(
         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-    settings.SetTweenType(ui::Tween::EASE_OUT);
+    settings.SetTweenType(gfx::Tween::EASE_OUT);
     UpdateOverscrollWindowBrightness(0.f);
   }
 }
@@ -968,7 +968,7 @@ void WebContentsViewAura::CompleteOverscrollNavigation(OverscrollMode mode) {
   ui::ScopedLayerAnimationSettings settings(target->layer()->GetAnimator());
   settings.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-  settings.SetTweenType(ui::Tween::EASE_OUT);
+  settings.SetTweenType(gfx::Tween::EASE_OUT);
   settings.AddObserver(this);
   gfx::Transform transform;
   int content_width =

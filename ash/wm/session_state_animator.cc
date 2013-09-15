@@ -163,11 +163,11 @@ void HideWindow(aura::Window* window,
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
   settings.SetTransitionDuration(duration);
 
-  settings.SetTweenType(ui::Tween::EASE_OUT);
+  settings.SetTweenType(gfx::Tween::EASE_OUT);
   SetTransformForScaleAnimation(layer,
       above ? LAYER_SCALE_ANIMATION_ABOVE : LAYER_SCALE_ANIMATION_BELOW);
 
-  settings.SetTweenType(ui::Tween::EASE_IN_OUT);
+  settings.SetTweenType(gfx::Tween::EASE_IN_OUT);
   layer->SetOpacity(0.0f);
 
   // After the animation completes snap the transform back to the identity,
@@ -203,10 +203,10 @@ void TransformWindowToBaseState(aura::Window* window,
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
   settings.SetTransitionDuration(duration);
 
-  settings.SetTweenType(ui::Tween::EASE_OUT);
+  settings.SetTweenType(gfx::Tween::EASE_OUT);
   layer->SetTransform(gfx::Transform());
 
-  settings.SetTweenType(ui::Tween::EASE_IN_OUT);
+  settings.SetTweenType(gfx::Tween::EASE_IN_OUT);
   layer->SetOpacity(1.0f);
 
   // A bit of a dirty trick: we need to catch the end of the animation we don't
@@ -246,7 +246,7 @@ void StartGrayscaleBrightnessAnimationForWindow(
     aura::Window* window,
     float target,
     base::TimeDelta duration,
-    ui::Tween::Type tween_type,
+    gfx::Tween::Type tween_type,
     ui::LayerAnimationObserver* observer) {
   ui::LayerAnimator* animator = window->layer()->GetAnimator();
 
@@ -604,11 +604,11 @@ void SessionStateAnimator::RunAnimationForWindow(
       break;
     case ANIMATION_GRAYSCALE_BRIGHTNESS:
       StartGrayscaleBrightnessAnimationForWindow(
-          window, 1.0, duration, ui::Tween::EASE_IN, observer);
+          window, 1.0, duration, gfx::Tween::EASE_IN, observer);
       break;
     case ANIMATION_UNDO_GRAYSCALE_BRIGHTNESS:
       StartGrayscaleBrightnessAnimationForWindow(
-          window, 0.0, duration, ui::Tween::EASE_IN_OUT, observer);
+          window, 0.0, duration, gfx::Tween::EASE_IN_OUT, observer);
       break;
   }
 }

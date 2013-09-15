@@ -11,7 +11,7 @@
      projectorImage:(NSImage*)projectorImage
          throbImage:(NSImage*)throbImage
          durationMS:(int)durationMS
-    animationContainer:(ui::AnimationContainer*)animationContainer {
+    animationContainer:(gfx::AnimationContainer*)animationContainer {
   if ((self = [super initWithFrame:rect
                    backgroundImage:backgroundImage
                         throbImage:throbImage

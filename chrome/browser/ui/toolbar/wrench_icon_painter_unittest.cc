@@ -23,7 +23,7 @@ class WrenchIconPainterTest : public testing::Test,
   virtual void ScheduleWrenchIconPaint() OVERRIDE { ++schedule_paint_count_; }
 
  protected:
-  base::MessageLoopForUI message_loop_;  // Needed for ui::Animation.
+  base::MessageLoopForUI message_loop_;  // Needed for gfx::Animation.
   TestingProfile profile_;
   int schedule_paint_count_;
   ui::ThemeProvider* theme_provider_;

@@ -121,7 +121,7 @@ OmniboxResultView::OmniboxResultView(
           string16(kEllipsis))),
       mirroring_context_(new MirroringContext()),
       keyword_icon_(new views::ImageView()),
-      animation_(new ui::SlideAnimation(this)) {
+      animation_(new gfx::SlideAnimation(this)) {
   CHECK_GE(model_index, 0);
   if (default_icon_size_ == 0) {
     default_icon_size_ =
@@ -627,7 +627,7 @@ void OmniboxResultView::OnPaint(gfx::Canvas* canvas) {
   }
 }
 
-void OmniboxResultView::AnimationProgressed(const ui::Animation* animation) {
+void OmniboxResultView::AnimationProgressed(const gfx::Animation* animation) {
   Layout();
   SchedulePaint();
 }

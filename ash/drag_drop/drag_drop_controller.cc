@@ -17,12 +17,12 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
-#include "ui/base/animation/linear_animation.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/events/event.h"
 #include "ui/base/events/event_utils.h"
 #include "ui/base/hit_test.h"
+#include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
@@ -471,17 +471,17 @@ void DragDropController::OnWindowDestroyed(aura::Window* window) {
 ////////////////////////////////////////////////////////////////////////////////
 // DragDropController, protected:
 
-ui::LinearAnimation* DragDropController::CreateCancelAnimation(
+gfx::LinearAnimation* DragDropController::CreateCancelAnimation(
     int duration,
     int frame_rate,
-    ui::AnimationDelegate* delegate) {
-  return new ui::LinearAnimation(duration, frame_rate, delegate);
+    gfx::AnimationDelegate* delegate) {
+  return new gfx::LinearAnimation(duration, frame_rate, delegate);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // DragDropController, private:
 
-void DragDropController::AnimationEnded(const ui::Animation* animation) {
+void DragDropController::AnimationEnded(const gfx::Animation* animation) {
   cancel_animation_.reset();
 
   // By the time we finish animation, another drag/drop session may have
@@ -520,14 +520,14 @@ void DragDropController::DoDragCancel(int drag_cancel_animation_duration_ms) {
     quit_closure_.Run();
 }
 
-void DragDropController::AnimationProgressed(const ui::Animation* animation) {
+void DragDropController::AnimationProgressed(const gfx::Animation* animation) {
   gfx::Rect current_bounds = animation->CurrentValueBetween(
       drag_image_initial_bounds_for_cancel_animation_,
       drag_image_final_bounds_for_cancel_animation_);
   drag_image_->SetBoundsInScreen(current_bounds);
 }
 
-void DragDropController::AnimationCanceled(const ui::Animation* animation) {
+void DragDropController::AnimationCanceled(const gfx::Animation* animation) {
   AnimationEnded(animation);
 }
 

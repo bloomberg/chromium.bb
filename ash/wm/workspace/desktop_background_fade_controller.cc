@@ -20,15 +20,15 @@ DesktopBackgroundFadeController::DesktopBackgroundFadeController(
     base::TimeDelta duration,
     Direction direction) {
   SkColor start_color, target_color;
-  ui::Tween::Type tween_type;
+  gfx::Tween::Type tween_type;
   if (direction == FADE_OUT) {
     start_color = SkColorSetARGB(0, 0, 0, 0);
     target_color = SK_ColorBLACK;
-    tween_type = ui::Tween::EASE_IN_OUT;
+    tween_type = gfx::Tween::EASE_IN_OUT;
   } else {
     start_color = SK_ColorBLACK;
     target_color = SkColorSetARGB(0, 0, 0, 0);
-    tween_type = ui::Tween::EASE_IN_OUT;
+    tween_type = gfx::Tween::EASE_IN_OUT;
   }
 
   window_controller_.reset(

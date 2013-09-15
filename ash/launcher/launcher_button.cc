@@ -12,12 +12,12 @@
 #include "grit/ash_resources.h"
 #include "skia/ext/image_operations.h"
 #include "ui/base/accessibility/accessible_view_state.h"
-#include "ui/base/animation/animation_delegate.h"
-#include "ui/base/animation/throb_animation.h"
 #include "ui/base/events/event_constants.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/gfx/animation/animation_delegate.h"
+#include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -46,7 +46,7 @@ bool ShouldHop(int state) {
 
 // Simple AnimationDelegate that owns a single ThrobAnimation instance to
 // keep all Draw Attention animations in sync.
-class LauncherButtonAnimation : public ui::AnimationDelegate {
+class LauncherButtonAnimation : public gfx::AnimationDelegate {
  public:
   class Observer {
    public:
@@ -83,13 +83,13 @@ class LauncherButtonAnimation : public ui::AnimationDelegate {
   LauncherButtonAnimation()
       : animation_(this) {
     animation_.SetThrobDuration(kAttentionThrobDurationMS);
-    animation_.SetTweenType(ui::Tween::SMOOTH_IN_OUT);
+    animation_.SetTweenType(gfx::Tween::SMOOTH_IN_OUT);
   }
 
   virtual ~LauncherButtonAnimation() {
   }
 
-  ui::ThrobAnimation& GetThrobAnimation() {
+  gfx::ThrobAnimation& GetThrobAnimation() {
     if (!animation_.is_animating()) {
       animation_.Reset();
       animation_.StartThrobbing(-1 /*throb indefinitely*/);
@@ -97,8 +97,8 @@ class LauncherButtonAnimation : public ui::AnimationDelegate {
     return animation_;
   }
 
-  // ui::AnimationDelegate
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE {
+  // gfx::AnimationDelegate
+  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE {
     if (animation != &animation_)
       return;
     if (!animation_.is_animating())
@@ -106,7 +106,7 @@ class LauncherButtonAnimation : public ui::AnimationDelegate {
     FOR_EACH_OBSERVER(Observer, observers_, AnimationProgressed());
   }
 
-  ui::ThrobAnimation animation_;
+  gfx::ThrobAnimation animation_;
   ObserverList<Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherButtonAnimation);
@@ -319,7 +319,7 @@ void LauncherButton::ClearState(State state) {
         (!ShouldHop(state) || ShouldHop(state_))) {
       ui::ScopedLayerAnimationSettings scoped_setter(
           icon_view_->layer()->GetAnimator());
-      scoped_setter.SetTweenType(ui::Tween::LINEAR);
+      scoped_setter.SetTweenType(gfx::Tween::LINEAR);
       scoped_setter.SetTransitionDuration(
           base::TimeDelta::FromMilliseconds(kHopDownMS));
     }

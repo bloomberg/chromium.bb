@@ -15,10 +15,10 @@
 #include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
 #include "grit/ui_strings.h"
-#include "ui/base/animation/slide_animation.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/bubble/bubble_border.h"
@@ -261,7 +261,7 @@ FullscreenExitBubbleViews::FullscreenExitBubbleViews(
     : FullscreenExitBubble(browser_view->browser(), url, bubble_type),
       browser_view_(browser_view),
       popup_(NULL),
-      animation_(new ui::SlideAnimation(this)),
+      animation_(new gfx::SlideAnimation(this)),
       animated_attribute_(ANIMATED_ATTRIBUTE_BOUNDS) {
   animation_->Reset(1);
 
@@ -404,7 +404,7 @@ views::View* FullscreenExitBubbleViews::GetBrowserRootView() const {
 }
 
 void FullscreenExitBubbleViews::AnimationProgressed(
-    const ui::Animation* animation) {
+    const gfx::Animation* animation) {
   if (animated_attribute_ == ANIMATED_ATTRIBUTE_OPACITY) {
     int opacity = animation_->CurrentValueBetween(0, 255);
     if (opacity == 0) {
@@ -424,7 +424,7 @@ void FullscreenExitBubbleViews::AnimationProgressed(
 }
 
 void FullscreenExitBubbleViews::AnimationEnded(
-    const ui::Animation* animation) {
+    const gfx::Animation* animation) {
   AnimationProgressed(animation);
 }
 

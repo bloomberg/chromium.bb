@@ -5,18 +5,18 @@
 #include "ui/views/animation/bounds_animator.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "ui/base/animation/animation_container.h"
-#include "ui/base/animation/slide_animation.h"
+#include "ui/gfx/animation/animation_container.h"
+#include "ui/gfx/animation/slide_animation.h"
 #include "ui/views/animation/bounds_animator_observer.h"
 #include "ui/views/view.h"
 
 // Duration in milliseconds for animations.
 static const int kDefaultAnimationDuration = 200;
 
-using ui::Animation;
-using ui::AnimationContainer;
-using ui::SlideAnimation;
-using ui::Tween;
+using gfx::Animation;
+using gfx::AnimationContainer;
+using gfx::SlideAnimation;
+using gfx::Tween;
 
 namespace views {
 

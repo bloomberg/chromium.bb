@@ -65,13 +65,13 @@
 #include "grit/ui_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
-#import "ui/base/animation/animation_container.h"
 #include "ui/base/cocoa/animation_utils.h"
 #import "ui/base/cocoa/tracking_area.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/list_selection_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
+#include "ui/gfx/animation/animation_container.h"
 #include "ui/gfx/image/image.h"
 
 using content::OpenURLParams;
@@ -502,7 +502,7 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
         [[TabStripDragController alloc] initWithTabStripController:self]);
     tabContentsArray_.reset([[NSMutableArray alloc] init]);
     tabArray_.reset([[NSMutableArray alloc] init]);
-    animationContainer_ = new ui::AnimationContainer;
+    animationContainer_ = new gfx::AnimationContainer;
     NSWindow* browserWindow = [view window];
 
     // Important note: any non-tab subviews not added to |permanentSubviews_|

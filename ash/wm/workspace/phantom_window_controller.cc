@@ -10,9 +10,9 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
-#include "ui/base/animation/slide_animation.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/painter.h"
@@ -142,8 +142,8 @@ void PhantomWindowController::Show(const gfx::Rect& bounds_in_screen) {
   if (!phantom_widget_start_ && start_root != target_root)
     phantom_widget_start_ = CreatePhantomWidget(start_root, start_bounds_);
 
-  animation_.reset(new ui::SlideAnimation(this));
-  animation_->SetTweenType(ui::Tween::EASE_IN);
+  animation_.reset(new gfx::SlideAnimation(this));
+  animation_->SetTweenType(gfx::Tween::EASE_IN);
   const int kAnimationDurationMS = 200;
   animation_->SetSlideDuration(kAnimationDurationMS);
   animation_->Show();
@@ -163,7 +163,7 @@ bool PhantomWindowController::IsShowing() const {
 }
 
 void PhantomWindowController::AnimationProgressed(
-    const ui::Animation* animation) {
+    const gfx::Animation* animation) {
   const gfx::Rect current_bounds =
       animation->CurrentValueBetween(start_bounds_, bounds_in_screen_);
   if (phantom_widget_start_)

@@ -11,7 +11,7 @@
 #endif
 
 #include "base/logging.h"
-#include "ui/base/animation/tween.h"
+#include "ui/gfx/animation/tween.h"
 
 namespace {
 
@@ -125,7 +125,8 @@ inline float InterpolatedTransform::ValueBetween(float time,
     return end_value;
 
   float t = (time - start_time_) / (end_time_ - start_time_);
-  return static_cast<float>(Tween::ValueBetween(t, start_value, end_value));
+  return static_cast<float>(
+      gfx::Tween::ValueBetween(t, start_value, end_value));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

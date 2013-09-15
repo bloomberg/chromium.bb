@@ -208,7 +208,7 @@ void CustomDrawHoverController::Init(GtkWidget* widget) {
 }
 
 void CustomDrawHoverController::AnimationProgressed(
-    const ui::Animation* animation) {
+    const gfx::Animation* animation) {
   gtk_widget_queue_draw(widget_);
 }
 

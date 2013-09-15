@@ -361,11 +361,11 @@ bool PanelView::FilterMessage(HWND hwnd,
 }
 #endif
 
-void PanelView::AnimationEnded(const ui::Animation* animation) {
+void PanelView::AnimationEnded(const gfx::Animation* animation) {
   panel_->manager()->OnPanelAnimationEnded(panel_.get());
 }
 
-void PanelView::AnimationProgressed(const ui::Animation* animation) {
+void PanelView::AnimationProgressed(const gfx::Animation* animation) {
   gfx::Rect new_bounds = bounds_animator_->CurrentValueBetween(
       animation_start_bounds_, bounds_);
   SetWidgetBounds(new_bounds);

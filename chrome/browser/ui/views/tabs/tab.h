@@ -12,8 +12,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/tabs/tab_audio_indicator.h"
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
-#include "ui/base/animation/animation_delegate.h"
 #include "ui/base/layout.h"
+#include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/point.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
@@ -23,11 +23,9 @@
 class TabController;
 
 namespace gfx {
-class Font;
-}
-namespace ui {
 class Animation;
 class AnimationContainer;
+class Font;
 class LinearAnimation;
 class MultiAnimation;
 }
@@ -41,7 +39,7 @@ class ImageButton;
 //
 ///////////////////////////////////////////////////////////////////////////////
 class Tab : public TabAudioIndicator::Delegate,
-            public ui::AnimationDelegate,
+            public gfx::AnimationDelegate,
             public views::ButtonListener,
             public views::ContextMenuController,
             public views::View {
@@ -63,7 +61,7 @@ class Tab : public TabAudioIndicator::Delegate,
   bool dragging() const { return dragging_; }
 
   // Sets the container all animations run from.
-  void set_animation_container(ui::AnimationContainer* container);
+  void set_animation_container(gfx::AnimationContainer* container);
 
   // Set the theme provider - because we get detached, we are frequently
   // outside of a hierarchy with a theme provider at the top. This should be
@@ -158,10 +156,10 @@ class Tab : public TabAudioIndicator::Delegate,
   // Overridden from TabAudioIndicator::Delegate:
   virtual void ScheduleAudioIndicatorPaint() OVERRIDE;
 
-  // Overridden from ui::AnimationDelegate:
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
-  virtual void AnimationCanceled(const ui::Animation* animation) OVERRIDE;
-  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
+  // Overridden from gfx::AnimationDelegate:
+  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
+  virtual void AnimationCanceled(const gfx::Animation* animation) OVERRIDE;
+  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
@@ -211,8 +209,9 @@ class Tab : public TabAudioIndicator::Delegate,
 
   // Paint various portions of the Tab
   void PaintTabBackground(gfx::Canvas* canvas);
-  void PaintInactiveTabBackgroundWithTitleChange(gfx::Canvas* canvas,
-                                                 ui::MultiAnimation* animation);
+  void PaintInactiveTabBackgroundWithTitleChange(
+      gfx::Canvas* canvas,
+      gfx::MultiAnimation* animation);
   void PaintInactiveTabBackground(gfx::Canvas* canvas);
   void PaintInactiveTabBackgroundUsingResourceId(gfx::Canvas* canvas,
                                                  int tab_id);
@@ -317,10 +316,10 @@ class Tab : public TabAudioIndicator::Delegate,
   // color. The icon can have one of several of animations like crashing,
   // recording, projecting, etc. Note that the icon animation related to network
   // state does not have an animation associated with it.
-  scoped_ptr<ui::Animation> tab_animation_;
-  scoped_ptr<ui::LinearAnimation> icon_animation_;
+  scoped_ptr<gfx::Animation> tab_animation_;
+  scoped_ptr<gfx::LinearAnimation> icon_animation_;
 
-  scoped_refptr<ui::AnimationContainer> animation_container_;
+  scoped_refptr<gfx::AnimationContainer> animation_container_;
 
   scoped_ptr<TabAudioIndicator> tab_audio_indicator_;
 

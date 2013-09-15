@@ -29,11 +29,11 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/common/page_transition_types.h"
-#include "ui/base/animation/animation_delegate.h"
-#include "ui/base/animation/slide_animation.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/gfx/animation/animation_delegate.h"
+#include "ui/gfx/animation/slide_animation.h"
 #include "url/gurl.h"
 
 class Browser;
@@ -165,7 +165,7 @@ class LocationBarViewGtk : public OmniboxEditController,
 
   // Superclass for content settings icons shown at the left side of the
   // location bar.
-  class PageToolViewGtk : public ui::AnimationDelegate {
+  class PageToolViewGtk : public gfx::AnimationDelegate {
    public:
     PageToolViewGtk();
     virtual ~PageToolViewGtk();
@@ -181,10 +181,10 @@ class LocationBarViewGtk : public OmniboxEditController,
     // out by the owning LocationBarView.
     virtual void UpdatePostLayout(content::WebContents* web_contents) = 0;
 
-    // Overridden from ui::AnimationDelegate:
-    virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
-    virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
-    virtual void AnimationCanceled(const ui::Animation* animation) OVERRIDE;
+    // Overridden from gfx::AnimationDelegate:
+    virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
+    virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
+    virtual void AnimationCanceled(const gfx::Animation* animation) OVERRIDE;
 
    protected:
     // Theme constants for solid background elements.
@@ -214,7 +214,7 @@ class LocationBarViewGtk : public OmniboxEditController,
     ui::OwnedWidgetGtk label_;
 
     // When we show explanatory text, we slide it in/out.
-    ui::SlideAnimation animation_;
+    gfx::SlideAnimation animation_;
 
     // The label's default requisition (cached so we can animate accordingly).
     GtkRequisition label_req_;

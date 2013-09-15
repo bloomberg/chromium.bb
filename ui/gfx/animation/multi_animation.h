@@ -7,16 +7,16 @@
 
 #include <vector>
 
-#include "ui/base/animation/animation.h"
-#include "ui/base/animation/tween.h"
+#include "ui/gfx/animation/animation.h"
+#include "ui/gfx/animation/tween.h"
 
-namespace ui {
+namespace gfx {
 
 // MultiAnimation is an animation that consists of a number of sub animations.
 // To create a MultiAnimation pass in the parts, invoke Start() and the delegate
 // is notified as the animation progresses. By default MultiAnimation runs until
 // Stop is invoked, see |set_continuous()| for details.
-class UI_EXPORT MultiAnimation : public Animation {
+class GFX_EXPORT MultiAnimation : public Animation {
  public:
   // Defines part of the animation. Each part consists of the following:
   //
@@ -91,6 +91,6 @@ class UI_EXPORT MultiAnimation : public Animation {
   DISALLOW_COPY_AND_ASSIGN(MultiAnimation);
 };
 
-}  // namespace ui
+}  // namespace gfx
 
 #endif  // UI_BASE_ANIMATION_MULTI_ANIMATION_H_

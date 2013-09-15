@@ -31,9 +31,10 @@
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
 
-namespace ui {
+namespace gfx {
 
 // Class to provide access to SlideAnimation internals for testing.
+// TODO: this should be next to SlideAnimation, not here.
 class SlideAnimation::TestApi {
  public:
   explicit TestApi(SlideAnimation* animation) : animation_(animation) {}
@@ -202,8 +203,8 @@ class WorkspaceWindowResizerTest : public test::AshTestBase {
   }
 
   // Simulate running the animation.
-  void RunAnimationTillComplete(ui::SlideAnimation* animation) {
-    ui::SlideAnimation::TestApi test_api(animation);
+  void RunAnimationTillComplete(gfx::SlideAnimation* animation) {
+    gfx::SlideAnimation::TestApi test_api(animation);
     test_api.RunTillComplete();
   }
 

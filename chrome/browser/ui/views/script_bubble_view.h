@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "ui/base/animation/slide_animation.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/link_listener.h"

@@ -85,7 +85,7 @@ void RunAnimationForWidget(views::Widget* widget) {
 
   ui::Layer* layer = widget->GetNativeView()->layer();
   ui::LayerAnimatorTestController controller(layer->GetAnimator());
-  ui::AnimationContainerElement* element = layer->GetAnimator();
+  gfx::AnimationContainerElement* element = layer->GetAnimator();
   // Multiple steps are required to complete complex animations.
   // TODO(vollick): This should not be necessary. crbug.com/154017
   while (controller.animator()->is_animating()) {

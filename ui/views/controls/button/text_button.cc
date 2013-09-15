@@ -8,8 +8,8 @@
 
 #include "base/logging.h"
 #include "grit/ui_resources.h"
-#include "ui/base/animation/throb_animation.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/button/button.h"
@@ -345,7 +345,7 @@ void TextButtonBase::OnBoundsChanged(const gfx::Rect& previous_bounds) {
     UpdateTextSize();
 }
 
-const ui::Animation* TextButtonBase::GetAnimation() const {
+const gfx::Animation* TextButtonBase::GetAnimation() const {
   return hover_animation_.get();
 }
 
@@ -570,7 +570,7 @@ ui::NativeTheme::State TextButtonBase::GetThemeState(
   }
 }
 
-const ui::Animation* TextButtonBase::GetThemeAnimation() const {
+const gfx::Animation* TextButtonBase::GetThemeAnimation() const {
 #if defined(OS_WIN)
   if (GetNativeTheme() == ui::NativeThemeWin::instance()) {
     return ui::NativeThemeWin::instance()->IsThemingActive() ?

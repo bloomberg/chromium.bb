@@ -22,11 +22,11 @@
 #include "chrome/browser/ui/gtk/menu_bar_helper.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "ui/base/animation/animation.h"
-#include "ui/base/animation/animation_delegate.h"
-#include "ui/base/animation/slide_animation.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
+#include "ui/gfx/animation/animation.h"
+#include "ui/gfx/animation/animation_delegate.h"
+#include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/size.h"
 
@@ -42,7 +42,7 @@ namespace content {
 class PageNavigator;
 }
 
-class BookmarkBarGtk : public ui::AnimationDelegate,
+class BookmarkBarGtk : public gfx::AnimationDelegate,
                        public BookmarkModelObserver,
                        public MenuBarHelper::Delegate,
                        public content::NotificationObserver,
@@ -77,9 +77,9 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
   // Returns true if the bookmark bar is showing an animation.
   bool IsAnimating();
 
-  // ui::AnimationDelegate implementation --------------------------------------
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
-  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
+  // gfx::AnimationDelegate implementation -------------------------------------
+  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
+  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
 
   // MenuBarHelper::Delegate implementation ------------------------------------
   virtual void PopupForButton(GtkWidget* button) OVERRIDE;
@@ -89,7 +89,7 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
   // BookmarkContextMenuController::Delegate implementation --------------------
   virtual void CloseMenu() OVERRIDE;
 
-  const ui::Animation* animation() { return &slide_animation_; }
+  const gfx::Animation* animation() { return &slide_animation_; }
 
   int max_height() const { return max_height_; }
 
@@ -392,7 +392,7 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
   // displayed yet.
   scoped_ptr<BookmarkMenuController> current_menu_;
 
-  ui::SlideAnimation slide_animation_;
+  gfx::SlideAnimation slide_animation_;
 
   // Used to optimize out |bookmark_toolbar_| size-allocate events we don't
   // need to respond to.

@@ -7,15 +7,15 @@
 
 #include "ui/views/view.h"
 
-#include "ui/base/animation/animation_delegate.h"
+#include "ui/gfx/animation/animation_delegate.h"
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/message_center_observer.h"
 #include "ui/message_center/notification_list.h"
 #include "ui/views/controls/button/button.h"
 
-namespace ui {
+namespace gfx {
 class MultiAnimation;
-}  // namespace ui
+}  // namespace gfx
 
 namespace views {
 class Button;
@@ -37,7 +37,7 @@ class NotifierSettingsView;
 
 class MESSAGE_CENTER_EXPORT MessageCenterView : public views::View,
                                                 public MessageCenterObserver,
-                                                public ui::AnimationDelegate {
+                                                public gfx::AnimationDelegate {
  public:
   MessageCenterView(MessageCenter* message_center,
                     MessageCenterTray* tray,
@@ -73,10 +73,10 @@ class MESSAGE_CENTER_EXPORT MessageCenterView : public views::View,
                                      bool by_user) OVERRIDE;
   virtual void OnNotificationUpdated(const std::string& id) OVERRIDE;
 
-  // Overridden from ui::AnimationDelegate:
-  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
-  virtual void AnimationCanceled(const ui::Animation* animation) OVERRIDE;
+  // Overridden from gfx::AnimationDelegate:
+  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
+  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
+  virtual void AnimationCanceled(const gfx::Animation* animation) OVERRIDE;
 
  private:
   friend class MessageCenterViewTest;
@@ -102,7 +102,7 @@ class MESSAGE_CENTER_EXPORT MessageCenterView : public views::View,
 
   // Animation managing transition between message center and settings (and vice
   // versa).
-  scoped_ptr<ui::MultiAnimation> settings_transition_animation_;
+  scoped_ptr<gfx::MultiAnimation> settings_transition_animation_;
 
   // Helper data to keep track of the transition between settings and
   // message center views.

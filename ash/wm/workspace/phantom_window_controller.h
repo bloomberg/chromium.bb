@@ -9,7 +9,7 @@
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/base/animation/animation_delegate.h"
+#include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/rect.h"
 
 namespace aura {
@@ -17,7 +17,7 @@ class RootWindow;
 class Window;
 }
 
-namespace ui {
+namespace gfx {
 class SlideAnimation;
 }
 
@@ -30,7 +30,7 @@ namespace internal {
 
 // PhantomWindowController is responsible for showing a phantom representation
 // of a window. It's used used during dragging a window to show a snap location.
-class ASH_EXPORT PhantomWindowController : public ui::AnimationDelegate {
+class ASH_EXPORT PhantomWindowController : public gfx::AnimationDelegate {
  public:
   explicit PhantomWindowController(aura::Window* window);
   virtual ~PhantomWindowController();
@@ -57,8 +57,8 @@ class ASH_EXPORT PhantomWindowController : public ui::AnimationDelegate {
     phantom_below_window_ = phantom_below_window;
   }
 
-  // ui::AnimationDelegate overrides:
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
+  // gfx::AnimationDelegate overrides:
+  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WorkspaceWindowResizerTest, PhantomWindowShow);
@@ -93,7 +93,7 @@ class ASH_EXPORT PhantomWindowController : public ui::AnimationDelegate {
   views::Widget* phantom_widget_start_;
 
   // Used to transition the bounds.
-  scoped_ptr<ui::SlideAnimation> animation_;
+  scoped_ptr<gfx::SlideAnimation> animation_;
 
   DISALLOW_COPY_AND_ASSIGN(PhantomWindowController);
 };

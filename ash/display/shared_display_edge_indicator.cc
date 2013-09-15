@@ -10,7 +10,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/root_window.h"
-#include "ui/base/animation/throb_animation.h"
+#include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
@@ -88,7 +88,7 @@ void SharedDisplayEdgeIndicator::Show(const gfx::Rect& src_bounds,
   dst_indicator_ = new IndicatorView;
   CreateWidget(src_bounds, src_indicator_);
   CreateWidget(dst_bounds, dst_indicator_);
-  animation_.reset(new ui::ThrobAnimation(this));
+  animation_.reset(new gfx::ThrobAnimation(this));
   animation_->SetThrobDuration(kIndicatorAnimationDurationMs);
   animation_->StartThrobbing(-1 /* infinite */);
 }
@@ -103,7 +103,7 @@ void SharedDisplayEdgeIndicator::Hide() {
 }
 
 void SharedDisplayEdgeIndicator::AnimationProgressed(
-    const ui::Animation* animation) {
+    const gfx::Animation* animation) {
   int value = animation->CurrentValueBetween(0, 255);
   SkColor color = SkColorSetARGB(0xFF, value, value, value);
   if (src_indicator_)

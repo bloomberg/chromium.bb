@@ -32,11 +32,11 @@
 #include "grit/theme_resources.h"
 #include "third_party/icu/source/common/unicode/uchar.h"
 #include "ui/base/accessibility/accessible_view_state.h"
-#include "ui/base/animation/slide_animation.h"
 #include "ui/base/events/event.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
+#include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image.h"
@@ -202,8 +202,8 @@ DownloadItemView::DownloadItemView(DownloadItem* download_item,
   else
     box_y_ = 0;
 
-  body_hover_animation_.reset(new ui::SlideAnimation(this));
-  drop_hover_animation_.reset(new ui::SlideAnimation(this));
+  body_hover_animation_.reset(new gfx::SlideAnimation(this));
+  drop_hover_animation_.reset(new gfx::SlideAnimation(this));
 
   set_accessibility_focusable(true);
 
@@ -267,9 +267,9 @@ void DownloadItemView::OnDownloadUpdated(DownloadItem* download_item) {
         break;
       case DownloadItem::INTERRUPTED:
         StopDownloadProgress();
-        complete_animation_.reset(new ui::SlideAnimation(this));
+        complete_animation_.reset(new gfx::SlideAnimation(this));
         complete_animation_->SetSlideDuration(kInterruptedAnimationDurationMs);
-        complete_animation_->SetTweenType(ui::Tween::LINEAR);
+        complete_animation_->SetTweenType(gfx::Tween::LINEAR);
         complete_animation_->Show();
         SchedulePaint();
         LoadIcon();
@@ -280,9 +280,9 @@ void DownloadItemView::OnDownloadUpdated(DownloadItem* download_item) {
           return;
         }
         StopDownloadProgress();
-        complete_animation_.reset(new ui::SlideAnimation(this));
+        complete_animation_.reset(new gfx::SlideAnimation(this));
         complete_animation_->SetSlideDuration(kCompleteAnimationDurationMs);
-        complete_animation_->SetTweenType(ui::Tween::LINEAR);
+        complete_animation_->SetTweenType(gfx::Tween::LINEAR);
         complete_animation_->Show();
         SchedulePaint();
         LoadIcon();
@@ -545,7 +545,7 @@ void DownloadItemView::ButtonPressed(
   }
 }
 
-void DownloadItemView::AnimationProgressed(const ui::Animation* animation) {
+void DownloadItemView::AnimationProgressed(const gfx::Animation* animation) {
   // We don't care if what animation (body button/drop button/complete),
   // is calling back, as they all have to go through the same paint call.
   SchedulePaint();
@@ -1264,7 +1264,7 @@ void DownloadItemView::UpdateDropDownButtonPosition() {
 }
 
 void DownloadItemView::AnimateStateTransition(State from, State to,
-                                              ui::SlideAnimation* animation) {
+                                              gfx::SlideAnimation* animation) {
   if (from == NORMAL && to == HOT) {
     animation->Show();
   } else if (from == HOT && to == NORMAL) {

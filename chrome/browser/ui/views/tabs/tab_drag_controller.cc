@@ -36,12 +36,12 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "grit/theme_resources.h"
-#include "ui/base/animation/animation.h"
-#include "ui/base/animation/animation_delegate.h"
-#include "ui/base/animation/slide_animation.h"
 #include "ui/base/events/event_constants.h"
 #include "ui/base/events/event_utils.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/animation/animation.h"
+#include "ui/gfx/animation/animation_delegate.h"
+#include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/screen.h"
@@ -236,7 +236,7 @@ class WindowPositionManagedUpdater : public views::WidgetObserver {
 // possible dock position (as represented by DockInfo). DockDisplayer shows
 // a window with a DockView in it. Two animations are used that correspond to
 // the state of DockInfo::in_enable_area.
-class TabDragController::DockDisplayer : public ui::AnimationDelegate {
+class TabDragController::DockDisplayer : public gfx::AnimationDelegate {
  public:
   DockDisplayer(TabDragController* controller, const DockInfo& info)
       : controller_(controller),
@@ -296,11 +296,11 @@ class TabDragController::DockDisplayer : public ui::AnimationDelegate {
     animation_.Hide();
   }
 
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE {
+  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE {
     UpdateLayeredAlpha();
   }
 
-  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE {
+  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE {
     if (!hidden_)
       return;
     popup_->Close();
@@ -325,7 +325,7 @@ class TabDragController::DockDisplayer : public ui::AnimationDelegate {
   gfx::NativeView popup_view_;
 
   // Animation for when first made visible.
-  ui::SlideAnimation animation_;
+  gfx::SlideAnimation animation_;
 
   // Have we been hidden?
   bool hidden_;

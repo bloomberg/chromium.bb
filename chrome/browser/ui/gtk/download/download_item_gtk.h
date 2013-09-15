@@ -20,10 +20,10 @@
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "ui/base/animation/animation_delegate.h"
-#include "ui/base/animation/slide_animation.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
+#include "ui/gfx/animation/animation_delegate.h"
+#include "ui/gfx/animation/slide_animation.h"
 
 class DownloadShelfContextMenuGtk;
 class DownloadShelfGtk;
@@ -32,14 +32,11 @@ class NineBox;
 
 namespace gfx {
 class Image;
-}
-
-namespace ui {
 class SlideAnimation;
 }
 
 class DownloadItemGtk : public content::DownloadItem::Observer,
-                        public ui::AnimationDelegate,
+                        public gfx::AnimationDelegate,
                         public content::NotificationObserver {
  public:
   // DownloadItemGtk takes ownership of |download_item_model|.
@@ -54,8 +51,8 @@ class DownloadItemGtk : public content::DownloadItem::Observer,
   virtual void OnDownloadDestroyed(content::DownloadItem* download) OVERRIDE;
   virtual void OnDownloadOpened(content::DownloadItem* download) OVERRIDE;
 
-  // ui::AnimationDelegate implementation.
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
+  // gfx::AnimationDelegate implementation.
+  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
 
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
@@ -212,13 +209,13 @@ class DownloadItemGtk : public content::DownloadItem::Observer,
   int dangerous_hbox_full_width_;
 
   // The animation when this item is first added to the shelf.
-  scoped_ptr<ui::SlideAnimation> new_item_animation_;
+  scoped_ptr<gfx::SlideAnimation> new_item_animation_;
 
   // Progress animation.
   base::RepeatingTimer<DownloadItemGtk> progress_timer_;
 
   // Animation for download complete.
-  ui::SlideAnimation complete_animation_;
+  gfx::SlideAnimation complete_animation_;
 
   // The file icon for the download. May be null. The small version is used
   // for display in the shelf; the large version is for use as a drag icon.

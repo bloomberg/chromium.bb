@@ -7,14 +7,14 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
-#include "ui/base/animation/animation_delegate.h"
+#include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 #include "ui/views/widget/widget_delegate.h"
 
-namespace ui {
+namespace gfx {
 class Animation;
 class SlideAnimation;
 }
@@ -32,7 +32,7 @@ class Notification;
 
 
 class ToastContentsView : public views::WidgetDelegateView,
-                          public ui::AnimationDelegate {
+                          public gfx::AnimationDelegate {
  public:
   ToastContentsView(const Notification* notification,
                     base::WeakPtr<MessagePopupCollection> collection,
@@ -71,10 +71,10 @@ class ToastContentsView : public views::WidgetDelegateView,
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
  private:
-  // Overridden from ui::AnimationDelegate:
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
-  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
-  virtual void AnimationCanceled(const ui::Animation* animation) OVERRIDE;
+  // Overridden from gfx::AnimationDelegate:
+  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
+  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
+  virtual void AnimationCanceled(const gfx::Animation* animation) OVERRIDE;
 
   // Overridden from views::WidgetDelegate:
   virtual views::View* GetContentsView() OVERRIDE;
@@ -90,7 +90,7 @@ class ToastContentsView : public views::WidgetDelegateView,
 
   void StartFadeIn();
   void StartFadeOut();  // Will call Widget::Close() when animation ends.
-  void OnBoundsAnimationEndedOrCancelled(const ui::Animation* animation);
+  void OnBoundsAnimationEndedOrCancelled(const gfx::Animation* animation);
 
   base::WeakPtr<MessagePopupCollection> collection_;
   MessageCenter* message_center_;
@@ -98,8 +98,8 @@ class ToastContentsView : public views::WidgetDelegateView,
   // Id if the corresponding Notification.
   std::string id_;
 
-  scoped_ptr<ui::SlideAnimation> bounds_animation_;
-  scoped_ptr<ui::SlideAnimation> fade_animation_;
+  scoped_ptr<gfx::SlideAnimation> bounds_animation_;
+  scoped_ptr<gfx::SlideAnimation> fade_animation_;
 
   bool is_animating_bounds_;
   gfx::Rect animated_bounds_start_;
@@ -108,7 +108,7 @@ class ToastContentsView : public views::WidgetDelegateView,
   bool is_closing_;
   // Closing animation - when it ends, close the widget. Weak, only used
   // for referential equality.
-  ui::Animation* closing_animation_;
+  gfx::Animation* closing_animation_;
 
   gfx::Point origin_;
   gfx::Size preferred_size_;

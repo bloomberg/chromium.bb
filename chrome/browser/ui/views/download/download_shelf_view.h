@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/download/download_shelf.h"
-#include "ui/base/animation/animation_delegate.h"
+#include "ui/gfx/animation/animation_delegate.h"
 #include "ui/views/accessible_pane_view.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/link_listener.h"
@@ -25,7 +25,7 @@ class DownloadItem;
 class PageNavigator;
 }
 
-namespace ui {
+namespace gfx {
 class SlideAnimation;
 }
 
@@ -40,7 +40,7 @@ class ImageView;
 // DownloadShelfView does not hold an infinite number of download views, rather
 // it'll automatically remove views once a certain point is reached.
 class DownloadShelfView : public views::AccessiblePaneView,
-                          public ui::AnimationDelegate,
+                          public gfx::AnimationDelegate,
                           public DownloadShelf,
                           public views::ButtonListener,
                           public views::LinkListener,
@@ -63,9 +63,9 @@ class DownloadShelfView : public views::AccessiblePaneView,
       const ViewHierarchyChangedDetails& details) OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
-  // Implementation of ui::AnimationDelegate.
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
-  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
+  // Implementation of gfx::AnimationDelegate.
+  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
+  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
 
   // Implementation of views::LinkListener.
   // Invoked when the user clicks the 'show all downloads' link button.
@@ -142,10 +142,10 @@ class DownloadShelfView : public views::AccessiblePaneView,
   Browser* browser_;
 
   // The animation for adding new items to the shelf.
-  scoped_ptr<ui::SlideAnimation> new_item_animation_;
+  scoped_ptr<gfx::SlideAnimation> new_item_animation_;
 
   // The show/hide animation for the shelf itself.
-  scoped_ptr<ui::SlideAnimation> shelf_animation_;
+  scoped_ptr<gfx::SlideAnimation> shelf_animation_;
 
   // The download views. These are also child Views, and deleted when
   // the DownloadShelfView is deleted.

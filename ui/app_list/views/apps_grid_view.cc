@@ -13,9 +13,9 @@
 #include "ui/app_list/views/apps_grid_view_delegate.h"
 #include "ui/app_list/views/page_switcher.h"
 #include "ui/app_list/views/pulsing_block_view.h"
-#include "ui/base/animation/animation.h"
 #include "ui/base/events/event.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/gfx/animation/animation.h"
 #include "ui/views/border.h"
 #include "ui/views/view_model_utils.h"
 #include "ui/views/widget/widget.h"
@@ -88,8 +88,8 @@ class RowMoveAnimationDelegate
   }
   virtual ~RowMoveAnimationDelegate() {}
 
-  // ui::AnimationDelegate overrides:
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE {
+  // gfx::AnimationDelegate overrides:
+  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE {
     view_->layer()->SetOpacity(animation->GetCurrentValue());
     view_->layer()->ScheduleDraw();
 
@@ -100,11 +100,11 @@ class RowMoveAnimationDelegate
       layer_->ScheduleDraw();
     }
   }
-  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE {
+  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE {
     view_->layer()->SetOpacity(1.0f);
     view_->layer()->ScheduleDraw();
   }
-  virtual void AnimationCanceled(const ui::Animation* animation) OVERRIDE {
+  virtual void AnimationCanceled(const gfx::Animation* animation) OVERRIDE {
     view_->layer()->SetOpacity(1.0f);
     view_->layer()->ScheduleDraw();
   }

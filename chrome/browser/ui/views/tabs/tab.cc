@@ -24,15 +24,15 @@
 #include "grit/ui_resources.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/base/accessibility/accessible_view_state.h"
-#include "ui/base/animation/animation_container.h"
-#include "ui/base/animation/multi_animation.h"
-#include "ui/base/animation/slide_animation.h"
-#include "ui/base/animation/throb_animation.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/models/list_selection_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
+#include "ui/gfx/animation/animation_container.h"
+#include "ui/gfx/animation/multi_animation.h"
+#include "ui/gfx/animation/slide_animation.h"
+#include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_analysis.h"
 #include "ui/gfx/favicon_size.h"
@@ -314,16 +314,16 @@ chrome::HostDesktopType GetHostDesktopType(views::View* view) {
 // FaviconCrashAnimation
 //
 //  A custom animation subclass to manage the favicon crash animation.
-class Tab::FaviconCrashAnimation : public ui::LinearAnimation,
-                                   public ui::AnimationDelegate {
+class Tab::FaviconCrashAnimation : public gfx::LinearAnimation,
+                                   public gfx::AnimationDelegate {
  public:
   explicit FaviconCrashAnimation(Tab* target)
-      : ui::LinearAnimation(1000, 25, this),
+      : gfx::LinearAnimation(1000, 25, this),
         target_(target) {
   }
   virtual ~FaviconCrashAnimation() {}
 
-  // ui::Animation overrides:
+  // gfx::Animation overrides:
   virtual void AnimateToState(double state) OVERRIDE {
     const double kHidingOffset = 27;
 
@@ -338,8 +338,8 @@ class Tab::FaviconCrashAnimation : public ui::LinearAnimation,
     }
   }
 
-  // ui::AnimationDelegate overrides:
-  virtual void AnimationCanceled(const ui::Animation* animation) OVERRIDE {
+  // gfx::AnimationDelegate overrides:
+  virtual void AnimationCanceled(const gfx::Animation* animation) OVERRIDE {
     target_->SetFaviconHidingOffset(0);
   }
 
@@ -499,7 +499,7 @@ Tab::Tab(TabController* controller)
 Tab::~Tab() {
 }
 
-void Tab::set_animation_container(ui::AnimationContainer* container) {
+void Tab::set_animation_container(gfx::AnimationContainer* container) {
   animation_container_ = container;
   hover_controller_.SetAnimationContainer(container);
   tab_audio_indicator_->SetAnimationContainer(container);
@@ -578,7 +578,7 @@ void Tab::UpdateLoadingAnimation(TabRendererData::NetworkState state) {
 }
 
 void Tab::StartPulse() {
-  ui::ThrobAnimation* animation = new ui::ThrobAnimation(this);
+  gfx::ThrobAnimation* animation = new gfx::ThrobAnimation(this);
   animation->SetSlideDuration(kPulseDurationMs);
   if (animation_container_.get())
     animation->SetContainer(animation_container_.get());
@@ -599,23 +599,23 @@ void Tab::StartMiniTabTitleAnimation() {
   if (!data().mini)
     return;
   if (!tab_animation_.get()) {
-    ui::MultiAnimation::Parts parts;
+    gfx::MultiAnimation::Parts parts;
     parts.push_back(
-        ui::MultiAnimation::Part(kMiniTitleChangeAnimationDuration1MS,
-                                 ui::Tween::EASE_OUT));
+        gfx::MultiAnimation::Part(kMiniTitleChangeAnimationDuration1MS,
+                                 gfx::Tween::EASE_OUT));
     parts.push_back(
-        ui::MultiAnimation::Part(kMiniTitleChangeAnimationDuration2MS,
-                                 ui::Tween::ZERO));
+        gfx::MultiAnimation::Part(kMiniTitleChangeAnimationDuration2MS,
+                                 gfx::Tween::ZERO));
     parts.push_back(
-        ui::MultiAnimation::Part(kMiniTitleChangeAnimationDuration3MS,
-                                 ui::Tween::EASE_IN));
+        gfx::MultiAnimation::Part(kMiniTitleChangeAnimationDuration3MS,
+                                 gfx::Tween::EASE_IN));
     parts[0].start_time_ms = kMiniTitleChangeAnimationStart1MS;
     parts[0].end_time_ms = kMiniTitleChangeAnimationEnd1MS;
     parts[2].start_time_ms = kMiniTitleChangeAnimationStart3MS;
     parts[2].end_time_ms = kMiniTitleChangeAnimationEnd3MS;
     base::TimeDelta timeout =
         base::TimeDelta::FromMilliseconds(kMiniTitleChangeAnimationIntervalMS);
-    ui::MultiAnimation* animation = new ui::MultiAnimation(parts, timeout);
+    gfx::MultiAnimation* animation = new gfx::MultiAnimation(parts, timeout);
     if (animation_container_.get())
       animation->SetContainer(animation_container_.get());
     animation->set_delegate(this);
@@ -691,7 +691,7 @@ void Tab::ScheduleAudioIndicatorPaint() {
 ////////////////////////////////////////////////////////////////////////////////
 // Tab, AnimationDelegate overrides:
 
-void Tab::AnimationProgressed(const ui::Animation* animation) {
+void Tab::AnimationProgressed(const gfx::Animation* animation) {
   // Ignore if the pulse animation is being performed on active tab because
   // it repaints the same image. See |Tab::PaintTabBackground()|.
   if (animation == tab_animation_.get() && IsActive())
@@ -699,11 +699,11 @@ void Tab::AnimationProgressed(const ui::Animation* animation) {
   SchedulePaint();
 }
 
-void Tab::AnimationCanceled(const ui::Animation* animation) {
+void Tab::AnimationCanceled(const gfx::Animation* animation) {
   SchedulePaint();
 }
 
-void Tab::AnimationEnded(const ui::Animation* animation) {
+void Tab::AnimationEnded(const gfx::Animation* animation) {
   SchedulePaint();
 }
 
@@ -1170,8 +1170,8 @@ void Tab::PaintTabBackground(gfx::Canvas* canvas) {
     if (tab_animation_.get() &&
         tab_animation_->is_animating() &&
         data().mini) {
-      ui::MultiAnimation* animation =
-          static_cast<ui::MultiAnimation*>(tab_animation_.get());
+      gfx::MultiAnimation* animation =
+          static_cast<gfx::MultiAnimation*>(tab_animation_.get());
       PaintInactiveTabBackgroundWithTitleChange(canvas, animation);
     } else {
       PaintInactiveTabBackground(canvas);
@@ -1189,7 +1189,7 @@ void Tab::PaintTabBackground(gfx::Canvas* canvas) {
 
 void Tab::PaintInactiveTabBackgroundWithTitleChange(
     gfx::Canvas* canvas,
-    ui::MultiAnimation* animation) {
+    gfx::MultiAnimation* animation) {
   // Render the inactive tab background. We'll use this for clipping.
   gfx::Canvas background_canvas(size(), canvas->scale_factor(), false);
   PaintInactiveTabBackground(&background_canvas);
@@ -1717,8 +1717,8 @@ void Tab::StartCrashAnimation() {
 }
 
 void Tab::StartRecordingAnimation() {
-  ui::ThrobAnimation* animation = new ui::ThrobAnimation(this);
-  animation->SetTweenType(ui::Tween::EASE_IN_OUT);
+  gfx::ThrobAnimation* animation = new gfx::ThrobAnimation(this);
+  animation->SetTweenType(gfx::Tween::EASE_IN_OUT);
   animation->SetThrobDuration(kRecordingDurationMs);
   animation->StartThrobbing(-1);
   icon_animation_.reset(animation);

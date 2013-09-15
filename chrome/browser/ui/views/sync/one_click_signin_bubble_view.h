@@ -77,7 +77,7 @@ class OneClickSigninBubbleView : public views::BubbleDelegateView,
   FRIEND_TEST_ALL_PREFIXES(OneClickSigninBubbleViewTest, DialogLearnMoreLink);
 
   // Overridden from views::BubbleDelegateView:
-  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
+  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
   virtual void Init() OVERRIDE;
 
   // Overridden from views::LinkListener:

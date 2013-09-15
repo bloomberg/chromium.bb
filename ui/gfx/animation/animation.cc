@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/animation/animation.h"
+#include "ui/gfx/animation/animation.h"
 
-#include "ui/base/animation/animation_container.h"
-#include "ui/base/animation/animation_delegate.h"
-#include "ui/base/animation/tween.h"
+#include "ui/gfx/animation/animation_container.h"
+#include "ui/gfx/animation/animation_delegate.h"
+#include "ui/gfx/animation/tween.h"
 #include "ui/gfx/rect.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #endif
 
-namespace ui {
+namespace gfx {
 
 Animation::Animation(base::TimeDelta timer_interval)
     : timer_interval_(timer_interval),
@@ -121,4 +121,4 @@ base::TimeDelta Animation::GetTimerInterval() const {
   return timer_interval_;
 }
 
-}  // namespace ui
+}  // namespace gfx

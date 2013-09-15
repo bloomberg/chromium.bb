@@ -11,9 +11,9 @@
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "grit/ui_strings.h"
-#include "ui/base/animation/multi_animation.h"
-#include "ui/base/animation/slide_animation.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/animation/multi_animation.h"
+#include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/rect.h"
@@ -416,7 +416,7 @@ void MessageListView::OnBoundsAnimatorProgressed(
   DCHECK_EQ(animator_.get(), animator);
   for (std::set<views::View*>::iterator iter = deleted_when_done_.begin();
        iter != deleted_when_done_.end(); ++iter) {
-    const ui::SlideAnimation* animation = animator->GetAnimationForView(*iter);
+    const gfx::SlideAnimation* animation = animator->GetAnimationForView(*iter);
     if (animation)
       (*iter)->layer()->SetOpacity(animation->CurrentValueBetween(1.0, 0.0));
   }
@@ -684,28 +684,28 @@ void MessageCenterView::SetSettingsVisible(bool visible) {
   source_height_ = source_view_->GetHeightForWidth(width());
   target_height_ = target_view_->GetHeightForWidth(width());
 
-  ui::MultiAnimation::Parts parts;
+  gfx::MultiAnimation::Parts parts;
   // First part: slide resize animation.
-  parts.push_back(ui::MultiAnimation::Part(
+  parts.push_back(gfx::MultiAnimation::Part(
       (source_height_ == target_height_) ? 0 : kDefaultAnimationDurationMs,
-      ui::Tween::EASE_OUT));
+      gfx::Tween::EASE_OUT));
   // Second part: fade-out the source_view.
   if (source_view_->layer()) {
-    parts.push_back(ui::MultiAnimation::Part(
-        kDefaultAnimationDurationMs, ui::Tween::LINEAR));
+    parts.push_back(gfx::MultiAnimation::Part(
+        kDefaultAnimationDurationMs, gfx::Tween::LINEAR));
   } else {
-    parts.push_back(ui::MultiAnimation::Part());
+    parts.push_back(gfx::MultiAnimation::Part());
   }
   // Third part: fade-in the target_view.
   if (target_view_->layer()) {
-    parts.push_back(ui::MultiAnimation::Part(
-        kDefaultAnimationDurationMs, ui::Tween::LINEAR));
+    parts.push_back(gfx::MultiAnimation::Part(
+        kDefaultAnimationDurationMs, gfx::Tween::LINEAR));
     target_view_->layer()->SetOpacity(0);
     target_view_->SetVisible(true);
   } else {
-    parts.push_back(ui::MultiAnimation::Part());
+    parts.push_back(gfx::MultiAnimation::Part());
   }
-  settings_transition_animation_.reset(new ui::MultiAnimation(
+  settings_transition_animation_.reset(new gfx::MultiAnimation(
       parts, base::TimeDelta::FromMicroseconds(1000000 / kDefaultFrameRateHz)));
   settings_transition_animation_->set_delegate(this);
   settings_transition_animation_->set_continuous(false);
@@ -932,7 +932,7 @@ void MessageCenterView::OnNotificationUpdated(const std::string& id) {
   }
 }
 
-void MessageCenterView::AnimationEnded(const ui::Animation* animation) {
+void MessageCenterView::AnimationEnded(const gfx::Animation* animation) {
   DCHECK_EQ(animation, settings_transition_animation_.get());
 
   Visibility visibility = target_view_ == settings_view_
@@ -951,7 +951,7 @@ void MessageCenterView::AnimationEnded(const ui::Animation* animation) {
   Layout();
 }
 
-void MessageCenterView::AnimationProgressed(const ui::Animation* animation) {
+void MessageCenterView::AnimationProgressed(const gfx::Animation* animation) {
   DCHECK_EQ(animation, settings_transition_animation_.get());
   PreferredSizeChanged();
   if (settings_transition_animation_->current_part_index() == 1 &&
@@ -967,7 +967,7 @@ void MessageCenterView::AnimationProgressed(const ui::Animation* animation) {
   }
 }
 
-void MessageCenterView::AnimationCanceled(const ui::Animation* animation) {
+void MessageCenterView::AnimationCanceled(const gfx::Animation* animation) {
   DCHECK_EQ(animation, settings_transition_animation_.get());
   AnimationEnded(animation);
 }

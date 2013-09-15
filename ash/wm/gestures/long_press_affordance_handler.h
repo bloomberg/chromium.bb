@@ -6,8 +6,8 @@
 #define ASH_WM_GESTURES_LONG_PRESS_AFFORDANCE_HANDLER_H_
 
 #include "base/timer/timer.h"
-#include "ui/base/animation/animation_delegate.h"
-#include "ui/base/animation/linear_animation.h"
+#include "ui/gfx/animation/animation_delegate.h"
+#include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/point.h"
 
 namespace aura {
@@ -33,8 +33,8 @@ namespace internal {
 // during grow animation.
 // The second part is a shrink animation that start after grow and shrinks the
 // affordance out of view.
-class LongPressAffordanceHandler : public ui::AnimationDelegate,
-                                   public ui::LinearAnimation {
+class LongPressAffordanceHandler : public gfx::AnimationDelegate,
+                                   public gfx::LinearAnimation {
  public:
   LongPressAffordanceHandler();
   virtual ~LongPressAffordanceHandler();
@@ -56,12 +56,12 @@ class LongPressAffordanceHandler : public ui::AnimationDelegate,
   void StartAnimation();
   void StopAnimation();
 
-  // Overridden from ui::LinearAnimation.
+  // Overridden from gfx::LinearAnimation.
   virtual void AnimateToState(double state) OVERRIDE;
   virtual bool ShouldSendCanceledFromStop() OVERRIDE;
 
-  // Overridden from ui::AnimationDelegate.
-  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
+  // Overridden from gfx::AnimationDelegate.
+  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
 
   class LongPressAffordanceView;
   scoped_ptr<LongPressAffordanceView> view_;

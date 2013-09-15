@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "grit/ui_resources.h"
-#include "ui/base/animation/throb_animation.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/sys_color_change_listener.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/button/label_button_border.h"
@@ -346,7 +346,7 @@ ui::NativeTheme::State LabelButton::GetThemeState(
   return ui::NativeTheme::kNormal;
 }
 
-const ui::Animation* LabelButton::GetThemeAnimation() const {
+const gfx::Animation* LabelButton::GetThemeAnimation() const {
 #if defined(OS_WIN)
   if (style() == STYLE_NATIVE_TEXTBUTTON &&
       GetNativeTheme() == ui::NativeThemeWin::instance()) {

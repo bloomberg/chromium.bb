@@ -15,9 +15,9 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/base/animation/animation_delegate.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
+#include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/cairo_cached_surface.h"
@@ -27,6 +27,8 @@ namespace gfx {
 class CairoCachedSurface;
 class Image;
 class Size;
+class SlideAnimation;
+class ThrobAnimation;
 }  // namespace gfx
 
 class CustomDrawButton;
@@ -36,12 +38,7 @@ namespace content {
 class WebContents;
 }
 
-namespace ui {
-class SlideAnimation;
-class ThrobAnimation;
-}
-
-class TabRendererGtk : public ui::AnimationDelegate,
+class TabRendererGtk : public gfx::AnimationDelegate,
                        public content::NotificationObserver {
  public:
   // Possible animation states.
@@ -268,10 +265,10 @@ class TabRendererGtk : public ui::AnimationDelegate,
     CaptureState capture_state;
   };
 
-  // Overridden from ui::AnimationDelegate:
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
-  virtual void AnimationCanceled(const ui::Animation* animation) OVERRIDE;
-  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
+  // Overridden from gfx::AnimationDelegate:
+  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
+  virtual void AnimationCanceled(const gfx::Animation* animation) OVERRIDE;
+  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
 
   // Starts/Stops the crash animation.
   void StartCrashAnimation();
@@ -408,13 +405,13 @@ class TabRendererGtk : public ui::AnimationDelegate,
   gfx::Rect requisition_;
 
   // Hover animation.
-  scoped_ptr<ui::SlideAnimation> hover_animation_;
+  scoped_ptr<gfx::SlideAnimation> hover_animation_;
 
   // Animation used when the title of an inactive mini-tab changes.
-  scoped_ptr<ui::ThrobAnimation> mini_title_animation_;
+  scoped_ptr<gfx::ThrobAnimation> mini_title_animation_;
 
   // Animation used when the favicon has an overlay (e.g. for recording).
-  scoped_ptr<ui::ThrobAnimation> favicon_overlay_animation_;
+  scoped_ptr<gfx::ThrobAnimation> favicon_overlay_animation_;
 
   // Contains the loading animation state.
   LoadingAnimation loading_animation_;

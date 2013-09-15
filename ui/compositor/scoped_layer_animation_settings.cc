@@ -120,11 +120,11 @@ base::TimeDelta ScopedLayerAnimationSettings::GetTransitionDuration() const {
   return animator_->transition_duration_;
 }
 
-void ScopedLayerAnimationSettings::SetTweenType(Tween::Type tween_type) {
+void ScopedLayerAnimationSettings::SetTweenType(gfx::Tween::Type tween_type) {
   animator_->set_tween_type(tween_type);
 }
 
-Tween::Type ScopedLayerAnimationSettings::GetTweenType() const {
+gfx::Tween::Type ScopedLayerAnimationSettings::GetTweenType() const {
   return animator_->tween_type();
 }
 

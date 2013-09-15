@@ -7,7 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/panels/native_panel.h"
-#include "ui/base/animation/animation_delegate.h"
+#include "ui/gfx/animation/animation_delegate.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -30,7 +30,7 @@ class PanelView : public NativePanel,
 #if defined(OS_WIN)
                   public ui::HWNDMessageFilter,
 #endif
-                  public ui::AnimationDelegate {
+                  public gfx::AnimationDelegate {
  public:
   // The size of inside area used for mouse resizing.
   static const int kResizeInsideBoundsSize = 5;
@@ -158,8 +158,8 @@ class PanelView : public NativePanel,
 #endif
 
   // Overridden from AnimationDelegate:
-  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
+  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
+  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
 
   void UpdateLoadingAnimations(bool should_animate);
   void UpdateWindowTitle();

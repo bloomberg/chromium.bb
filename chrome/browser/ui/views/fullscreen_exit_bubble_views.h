@@ -14,7 +14,7 @@
 
 class BrowserView;
 class GURL;
-namespace ui {
+namespace gfx {
 class SlideAnimation;
 }
 namespace views {
@@ -63,8 +63,8 @@ class FullscreenExitBubbleViews : public FullscreenExitBubble,
   views::View* GetBrowserRootView() const;
 
   // FullScreenExitBubble overrides:
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
-  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
+  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
+  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
   virtual gfx::Rect GetPopupRect(bool ignore_animation_state) const OVERRIDE;
   virtual gfx::Point GetCursorScreenPoint() OVERRIDE;
   virtual bool WindowContainsPoint(gfx::Point pos) OVERRIDE;
@@ -88,7 +88,7 @@ class FullscreenExitBubbleViews : public FullscreenExitBubble,
   views::Widget* popup_;
 
   // Animation controlling showing/hiding of the exit bubble.
-  scoped_ptr<ui::SlideAnimation> animation_;
+  scoped_ptr<gfx::SlideAnimation> animation_;
 
   // Attribute animated by |animation_|.
   AnimatedAttribute animated_attribute_;

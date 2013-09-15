@@ -30,7 +30,7 @@ GlowHoverController::~GlowHoverController() {
 }
 
 void GlowHoverController::SetAnimationContainer(
-    ui::AnimationContainer* container) {
+    gfx::AnimationContainer* container) {
   animation_.SetContainer(container);
 }
 
@@ -45,7 +45,7 @@ void GlowHoverController::Show(Style style) {
     case SUBTLE:
       opacity_scale_ = kTrackOpacityScale;
       animation_.SetSlideDuration(kTrackHoverDurationMs);
-      animation_.SetTweenType(ui::Tween::EASE_OUT);
+      animation_.SetTweenType(gfx::Tween::EASE_OUT);
       animation_.Show();
       break;
     case PRONOUNCED:
@@ -58,7 +58,7 @@ void GlowHoverController::Show(Style style) {
 }
 
 void GlowHoverController::Hide() {
-  animation_.SetTweenType(ui::Tween::EASE_IN);
+  animation_.SetTweenType(gfx::Tween::EASE_IN);
   animation_.Hide();
 }
 
@@ -117,11 +117,11 @@ void GlowHoverController::Draw(gfx::Canvas* canvas,
                        (view_->height() - mask_image.height()) / 2);
 }
 
-void GlowHoverController::AnimationEnded(const ui::Animation* animation) {
+void GlowHoverController::AnimationEnded(const gfx::Animation* animation) {
   view_->SchedulePaint();
 }
 
-void GlowHoverController::AnimationProgressed(const ui::Animation* animation) {
+void GlowHoverController::AnimationProgressed(const gfx::Animation* animation) {
   view_->SchedulePaint();
 }
 

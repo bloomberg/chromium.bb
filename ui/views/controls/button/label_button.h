@@ -98,7 +98,7 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   virtual gfx::Rect GetThemePaintRect() const OVERRIDE;
   virtual ui::NativeTheme::State GetThemeState(
       ui::NativeTheme::ExtraParams* params) const OVERRIDE;
-  virtual const ui::Animation* GetThemeAnimation() const OVERRIDE;
+  virtual const gfx::Animation* GetThemeAnimation() const OVERRIDE;
   virtual ui::NativeTheme::State GetBackgroundThemeState(
       ui::NativeTheme::ExtraParams* params) const OVERRIDE;
   virtual ui::NativeTheme::State GetForegroundThemeState(

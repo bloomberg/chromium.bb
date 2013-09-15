@@ -37,10 +37,10 @@
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "ui/base/animation/slide_animation.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/native_widget_types.h"
@@ -177,11 +177,11 @@ void BalloonViewImpl::RepositionToBalloon() {
 
   anim_frame_start_ = gfx::Rect(start_x, start_y, start_w, start_h);
   anim_frame_end_ = gfx::Rect(end_x, end_y, end_w, end_h);
-  animation_.reset(new ui::SlideAnimation(this));
+  animation_.reset(new gfx::SlideAnimation(this));
   animation_->Show();
 }
 
-void BalloonViewImpl::AnimationProgressed(const ui::Animation* animation) {
+void BalloonViewImpl::AnimationProgressed(const gfx::Animation* animation) {
   DCHECK_EQ(animation, animation_.get());
 
   // Linear interpolation from start to end position.

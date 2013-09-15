@@ -7,8 +7,8 @@
 
 #include "base/time/time.h"
 #include "cc/animation/animation_curve.h"
-#include "ui/base/animation/tween.h"
 #include "ui/compositor/compositor_export.h"
+#include "ui/gfx/animation/tween.h"
 #include "ui/gfx/transform.h"
 #include "ui/gfx/transform_util.h"
 
@@ -17,7 +17,7 @@ namespace ui {
 class COMPOSITOR_EXPORT TransformAnimationCurveAdapter
     : public cc::TransformAnimationCurve {
  public:
-  TransformAnimationCurveAdapter(Tween::Type tween_type,
+  TransformAnimationCurveAdapter(gfx::Tween::Type tween_type,
                                  gfx::Transform intial_value,
                                  gfx::Transform target_value,
                                  base::TimeDelta duration);
@@ -32,7 +32,7 @@ class COMPOSITOR_EXPORT TransformAnimationCurveAdapter
                                     gfx::BoxF* bounds) const OVERRIDE;
 
  private:
-  Tween::Type tween_type_;
+  gfx::Tween::Type tween_type_;
   gfx::Transform initial_value_;
   gfx::Transform target_value_;
   gfx::DecomposedTransform decomposed_initial_value_;

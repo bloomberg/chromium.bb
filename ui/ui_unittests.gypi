@@ -91,10 +91,6 @@
       # iOS uses a small subset of ui. common_sources are the only files that
       # are built on iOS.
       'common_sources' : [
-        'base/animation/animation_container_unittest.cc',
-        'base/animation/animation_unittest.cc',
-        'base/animation/multi_animation_unittest.cc',
-        'base/animation/slide_animation_unittest.cc',
         'base/layout_unittest.cc',
         'base/l10n/l10n_util_mac_unittest.mm',
         'base/l10n/l10n_util_unittest.cc',
@@ -104,6 +100,10 @@
         'base/resource/data_pack_literal.cc',
         'base/resource/data_pack_unittest.cc',
         'base/resource/resource_bundle_unittest.cc',
+        'gfx/animation/animation_container_unittest.cc',
+        'gfx/animation/animation_unittest.cc',
+        'gfx/animation/multi_animation_unittest.cc',
+        'gfx/animation/slide_animation_unittest.cc',
         'gfx/box_unittest.cc',
         'gfx/codec/png_codec_unittest.cc',
         'gfx/color_utils_unittest.cc',

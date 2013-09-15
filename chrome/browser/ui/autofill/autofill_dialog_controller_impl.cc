@@ -3097,13 +3097,13 @@ void AutofillDialogControllerImpl::FinishSubmit() {
 }
 
 void AutofillDialogControllerImpl::AnimationProgressed(
-    const ui::Animation* animation) {
+    const gfx::Animation* animation) {
   DCHECK_EQ(animation, &card_generated_animation_);
   PushOverlayUpdate();
 }
 
 void AutofillDialogControllerImpl::AnimationEnded(
-    const ui::Animation* animation) {
+    const gfx::Animation* animation) {
   DCHECK_EQ(animation, &card_generated_animation_);
   DoFinishSubmit();
 }

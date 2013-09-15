@@ -10,8 +10,8 @@
 
 #include "ash/ash_export.h"
 #include "base/observer_list.h"
-#include "ui/base/animation/animation_delegate.h"
-#include "ui/base/animation/throb_animation.h"
+#include "ui/gfx/animation/animation_delegate.h"
+#include "ui/gfx/animation/throb_animation.h"
 
 namespace ash {
 namespace network_icon {
@@ -19,7 +19,7 @@ namespace network_icon {
 class AnimationObserver;
 
 // Single instance class to handle icon animations and keep them in sync.
-class ASH_EXPORT NetworkIconAnimation : public ui::AnimationDelegate {
+class ASH_EXPORT NetworkIconAnimation : public gfx::AnimationDelegate {
  public:
   NetworkIconAnimation();
   virtual ~NetworkIconAnimation();
@@ -32,13 +32,13 @@ class ASH_EXPORT NetworkIconAnimation : public ui::AnimationDelegate {
   void AddObserver(AnimationObserver* observer);
   void RemoveObserver(AnimationObserver* observer);
 
-  // ui::AnimationDelegate implementation.
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
+  // gfx::AnimationDelegate implementation.
+  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
 
   static NetworkIconAnimation* GetInstance();
 
  private:
-  ui::ThrobAnimation animation_;
+  gfx::ThrobAnimation animation_;
   ObserverList<AnimationObserver> observers_;
 };
 

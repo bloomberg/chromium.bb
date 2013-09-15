@@ -12,8 +12,8 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "grit/theme_resources.h"
-#include "ui/base/animation/linear_animation.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/widget/widget.h"
@@ -38,7 +38,7 @@ namespace {
 // provided on the constructor, while simultaneously fading it out.  To use,
 // simply call "new DownloadStartAnimation"; the class cleans itself up when it
 // finishes animating.
-class DownloadStartedAnimationWin : public ui::LinearAnimation,
+class DownloadStartedAnimationWin : public gfx::LinearAnimation,
                                     public content::NotificationObserver,
                                     public views::ImageView {
  public:
@@ -80,7 +80,7 @@ class DownloadStartedAnimationWin : public ui::LinearAnimation,
 
 DownloadStartedAnimationWin::DownloadStartedAnimationWin(
     WebContents* web_contents)
-    : ui::LinearAnimation(kMoveTimeMs, kFrameRateHz, NULL),
+    : gfx::LinearAnimation(kMoveTimeMs, kFrameRateHz, NULL),
       popup_(NULL),
       web_contents_(web_contents) {
   static gfx::ImageSkia* kDownloadImage = NULL;

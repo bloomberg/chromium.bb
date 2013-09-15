@@ -23,6 +23,8 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/transform.h"
 
+using gfx::AnimationContainerElement;
+
 namespace ui {
 
 namespace {

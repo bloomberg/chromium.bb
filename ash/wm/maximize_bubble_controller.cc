@@ -14,9 +14,9 @@
 #include "grit/ash_strings.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/aura/window.h"
-#include "ui/base/animation/animation.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/animation/animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/screen.h"
@@ -218,7 +218,7 @@ class MaximizeBubbleController::Bubble : public views::BubbleDelegateView,
 
   // Overridden from views::BubbleDelegateView.
   virtual gfx::Rect GetAnchorRect() OVERRIDE;
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
+  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
   virtual bool CanActivate() const OVERRIDE { return false; }
 
   // Overridden from views::WidgetDelegateView.
@@ -457,7 +457,7 @@ gfx::Rect MaximizeBubbleController::Bubble::GetAnchorRect() {
 }
 
 void MaximizeBubbleController::Bubble::AnimationProgressed(
-    const ui::Animation* animation) {
+    const gfx::Animation* animation) {
   // First do everything needed for the fade by calling the base function.
   BubbleDelegateView::AnimationProgressed(animation);
   // When fading in we are done.

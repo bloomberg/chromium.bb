@@ -52,7 +52,7 @@
 #include "ui/views/view_model_utils.h"
 #include "ui/views/widget/widget.h"
 
-using ui::Animation;
+using gfx::Animation;
 using views::View;
 
 namespace ash {

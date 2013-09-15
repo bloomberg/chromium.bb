@@ -13,9 +13,9 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "ui/base/accessibility/accessible_view_state.h"
-#include "ui/base/animation/slide_animation.h"
 #include "ui/base/events/event.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
@@ -95,7 +95,7 @@ void Slider::SetValueInternal(float value, SliderChangeReason reason) {
     // Do not animate when setting the value of the slider for the first time.
     // There is no message-loop when running tests. So we cannot animate then.
     animating_value_ = old_value;
-    move_animation_.reset(new ui::SlideAnimation(this));
+    move_animation_.reset(new gfx::SlideAnimation(this));
     move_animation_->SetSlideDuration(kSlideValueChangeDurationMS);
     move_animation_->Show();
     AnimationProgressed(move_animation_.get());
@@ -304,7 +304,7 @@ void Slider::OnGestureEvent(ui::GestureEvent* event) {
   }
 }
 
-void Slider::AnimationProgressed(const ui::Animation* animation) {
+void Slider::AnimationProgressed(const gfx::Animation* animation) {
   animating_value_ = animation->CurrentValueBetween(animating_value_, value_);
   SchedulePaint();
 }

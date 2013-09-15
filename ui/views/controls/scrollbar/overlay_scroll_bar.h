@@ -5,7 +5,7 @@
 #ifndef UI_VIEWS_CONTROLS_SCROLLBAR_OVERLAY_SCROLL_BAR_H_
 #define UI_VIEWS_CONTROLS_SCROLLBAR_OVERLAY_SCROLL_BAR_H_
 
-#include "ui/base/animation/slide_animation.h"
+#include "ui/gfx/animation/slide_animation.h"
 #include "ui/views/controls/scrollbar/base_scroll_bar.h"
 
 namespace views {
@@ -33,7 +33,7 @@ class VIEWS_EXPORT OverlayScrollBar : public BaseScrollBar {
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
  private:
-  ui::SlideAnimation animation_;
+  gfx::SlideAnimation animation_;
   DISALLOW_COPY_AND_ASSIGN(OverlayScrollBar);
 };
 

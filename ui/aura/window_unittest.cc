@@ -1780,7 +1780,7 @@ TEST_F(WindowTest, SetBoundsInternalShouldCheckTargetBounds) {
 
   EXPECT_FALSE(!w1->layer());
   w1->layer()->GetAnimator()->set_disable_timer_for_test(true);
-  ui::AnimationContainerElement* element = w1->layer()->GetAnimator();
+  gfx::AnimationContainerElement* element = w1->layer()->GetAnimator();
 
   EXPECT_EQ("0,0 100x100", w1->bounds().ToString());
   EXPECT_EQ("0,0 100x100", w1->layer()->GetTargetBounds().ToString());
@@ -2740,7 +2740,7 @@ TEST_F(WindowTest, DelegateNotifiedAsBoundsChange) {
   // Animate to the end, which should notify of the change.
   base::TimeTicks start_time =
       window->layer()->GetAnimator()->last_step_time();
-  ui::AnimationContainerElement* element = window->layer()->GetAnimator();
+  gfx::AnimationContainerElement* element = window->layer()->GetAnimator();
   element->Step(start_time + base::TimeDelta::FromMilliseconds(1000));
   EXPECT_TRUE(delegate.bounds_changed());
   EXPECT_NE("0,0 100x100", window->bounds().ToString());
@@ -2782,7 +2782,7 @@ TEST_F(WindowTest, DelegateNotifiedAsBoundsChangeInHiddenLayer) {
   // Animate to the end: will *not* notify of the change since we are hidden.
   base::TimeTicks start_time =
       window->layer()->GetAnimator()->last_step_time();
-  ui::AnimationContainerElement* element = window->layer()->GetAnimator();
+  gfx::AnimationContainerElement* element = window->layer()->GetAnimator();
   element->Step(start_time + base::TimeDelta::FromMilliseconds(1000));
 
   // No bounds changed notification at the end of animation since layer

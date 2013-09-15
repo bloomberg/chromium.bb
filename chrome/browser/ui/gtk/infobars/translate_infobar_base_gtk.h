@@ -7,7 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/ui/gtk/infobars/infobar_gtk.h"
-#include "ui/base/animation/animation_delegate.h"
+#include "ui/gfx/animation/animation_delegate.h"
 
 class TranslateInfoBarDelegate;
 
@@ -20,7 +20,7 @@ class TranslateInfoBarBase : public InfoBarGtk {
   virtual ~TranslateInfoBarBase();
 
   // InfoBarGtk:
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
+  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
   virtual void GetTopColor(InfoBarDelegate::Type type,
                            double* r, double* g, double* b) OVERRIDE;
   virtual void GetBottomColor(InfoBarDelegate::Type type,
@@ -65,7 +65,7 @@ class TranslateInfoBarBase : public InfoBarGtk {
   double background_error_percent_;
 
   // Changes the color of the background from normal to error color and back.
-  scoped_ptr<ui::SlideAnimation> background_color_animation_;
+  scoped_ptr<gfx::SlideAnimation> background_color_animation_;
 
   // The model for the current menu displayed.
   scoped_ptr<ui::MenuModel> menu_model_;

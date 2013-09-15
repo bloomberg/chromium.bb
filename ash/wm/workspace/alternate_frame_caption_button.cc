@@ -4,7 +4,7 @@
 
 #include "ash/wm/workspace/alternate_frame_caption_button.h"
 
-#include "ui/base/animation/slide_animation.h"
+#include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
 
 namespace ash {
@@ -96,7 +96,7 @@ AlternateFrameCaptionButton::AlternateFrameCaptionButton(
       action_(action),
       hidden_bubble_radius_(0),
       shown_bubble_radius_(0),
-      bubble_animation_(new ui::SlideAnimation(this)) {
+      bubble_animation_(new gfx::SlideAnimation(this)) {
 }
 
 AlternateFrameCaptionButton::~AlternateFrameCaptionButton() {
@@ -216,12 +216,12 @@ void AlternateFrameCaptionButton::StateChanged() {
 }
 
 void AlternateFrameCaptionButton::AnimationProgressed(
-    const ui::Animation* animation) {
+    const gfx::Animation* animation) {
   SchedulePaint();
 }
 
 void AlternateFrameCaptionButton::AnimationEnded(
-    const ui::Animation* animation) {
+    const gfx::Animation* animation) {
   // The bubble animation was postponed if the button became pressed when the
   // bubble was fading out. Do the animation now.
   MaybeStartNewBubbleAnimation();

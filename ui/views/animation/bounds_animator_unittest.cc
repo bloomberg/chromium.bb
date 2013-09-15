@@ -5,13 +5,13 @@
 #include "ui/views/animation/bounds_animator.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/animation/slide_animation.h"
-#include "ui/base/animation/test_animation_delegate.h"
+#include "ui/gfx/animation/slide_animation.h"
+#include "ui/gfx/animation/test_animation_delegate.h"
 #include "ui/views/view.h"
 
-using ui::Animation;
-using ui::SlideAnimation;
-using ui::TestAnimationDelegate;
+using gfx::Animation;
+using gfx::SlideAnimation;
+using gfx::TestAnimationDelegate;
 
 namespace views {
 namespace {
@@ -52,7 +52,7 @@ class OwnedDelegate : public BoundsAnimator::OwnedAnimationDelegate {
     return value;
   }
 
-  // Overridden from ui::AnimationDelegate:
+  // Overridden from gfx::AnimationDelegate:
   virtual void AnimationCanceled(const Animation* animation) OVERRIDE {
     canceled_ = true;
   }

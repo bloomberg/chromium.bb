@@ -19,8 +19,8 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
-#include "ui/base/animation/animation_delegate.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image.h"
@@ -93,7 +93,7 @@ const int kIconFadeInDurationMs = 100;
 const int kIconFadeInFramesPerSecond = 50;
 
 ExtensionAction::IconAnimation::IconAnimation()
-    : ui::LinearAnimation(kIconFadeInDurationMs, kIconFadeInFramesPerSecond,
+    : gfx::LinearAnimation(kIconFadeInDurationMs, kIconFadeInFramesPerSecond,
                           NULL),
       weak_ptr_factory_(this) {}
 

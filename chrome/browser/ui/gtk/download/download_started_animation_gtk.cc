@@ -17,8 +17,8 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "grit/theme_resources.h"
-#include "ui/base/animation/linear_animation.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/rect.h"
 
@@ -37,7 +37,7 @@ const int kFrameRateHz = 60;
 // the frame.
 const double kMoveFraction = 1.0 / 3.0;
 
-class DownloadStartedAnimationGtk : public ui::LinearAnimation,
+class DownloadStartedAnimationGtk : public gfx::LinearAnimation,
                                     public content::NotificationObserver {
  public:
   explicit DownloadStartedAnimationGtk(WebContents* web_contents);
@@ -87,7 +87,7 @@ class DownloadStartedAnimationGtk : public ui::LinearAnimation,
 
 DownloadStartedAnimationGtk::DownloadStartedAnimationGtk(
     WebContents* web_contents)
-    : ui::LinearAnimation(kMoveTimeMs, kFrameRateHz, NULL),
+    : gfx::LinearAnimation(kMoveTimeMs, kFrameRateHz, NULL),
       popup_(NULL),
       web_contents_(web_contents) {
   static GdkPixbuf* kDownloadImage = NULL;

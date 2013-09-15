@@ -20,7 +20,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 // TODO(robertphillips): change this to "class SkBaseDevice;"
 #include "third_party/skia/include/core/SkDevice.h"
-#include "ui/base/animation/linear_animation.h"
+#include "ui/gfx/animation/linear_animation.h"
 
 class GURL;
 class SkBitmap;
@@ -54,7 +54,7 @@ class ExtensionAction {
   };
 
   // A fade-in animation.
-  class IconAnimation : public ui::LinearAnimation {
+  class IconAnimation : public gfx::LinearAnimation {
    public:
     // Observes changes to icon animation state.
     class Observer {
@@ -100,7 +100,7 @@ class ExtensionAction {
 
     base::WeakPtr<IconAnimation> AsWeakPtr();
 
-    // ui::LinearAnimation implementation.
+    // gfx::LinearAnimation implementation.
     virtual void AnimateToState(double state) OVERRIDE;
 
     // Device we use to paint icons to.

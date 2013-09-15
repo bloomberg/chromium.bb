@@ -15,7 +15,7 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
-#include "ui/base/animation/slide_animation.h"
+#include "ui/gfx/animation/slide_animation.h"
 
 InfoBarContainer::Delegate::~Delegate() {
 }
@@ -221,7 +221,7 @@ int InfoBarContainer::ArrowTargetHeightForInfoBar(size_t infobar_index) const {
     return 0;
   if (infobar_index == 0)
     return top_arrow_target_height_;
-  const ui::SlideAnimation& first_infobar_animation =
+  const gfx::SlideAnimation& first_infobar_animation =
       const_cast<const InfoBar*>(infobars_.front())->animation();
   if ((infobar_index > 1) || first_infobar_animation.IsShowing())
     return InfoBar::kDefaultArrowTargetHeight;

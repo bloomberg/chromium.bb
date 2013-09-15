@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/animation/throb_animation.h"
+#include "ui/gfx/animation/throb_animation.h"
 
 #include <limits>
 
-namespace ui {
+namespace gfx {
 
 static const int kDefaultThrobDurationMS = 400;
 
@@ -82,4 +82,4 @@ void ThrobAnimation::ResetForSlide() {
   throbbing_ = false;
 }
 
-}  // namespace ui
+}  // namespace gfx

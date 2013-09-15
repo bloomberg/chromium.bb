@@ -2,17 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/gfx/animation/animation_container.h"
+
 #include "base/memory/scoped_ptr.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/animation/animation_container.h"
-#include "ui/base/animation/animation_container_observer.h"
-#include "ui/base/animation/linear_animation.h"
-#include "ui/base/animation/test_animation_delegate.h"
+#include "ui/gfx/animation/animation_container_observer.h"
+#include "ui/gfx/animation/linear_animation.h"
+#include "ui/gfx/animation/test_animation_delegate.h"
 
 using testing::AtLeast;
 
-namespace ui {
+namespace gfx {
 
 namespace {
 
@@ -123,4 +124,4 @@ TEST_F(AnimationContainerTest, Observer) {
   container->set_observer(NULL);
 }
 
-}  // namespace ui
+}  // namespace gfx

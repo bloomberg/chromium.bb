@@ -10,7 +10,7 @@
 #include "chrome/browser/notifications/balloon.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "ui/base/animation/animation_delegate.h"
+#include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
@@ -22,9 +22,6 @@ class NotificationOptionsMenuModel;
 
 namespace gfx {
 class Path;
-}
-
-namespace ui {
 class SlideAnimation;
 }
 
@@ -42,7 +39,7 @@ class BalloonViewImpl : public BalloonView,
                         public views::WidgetDelegateView,
                         public views::ButtonListener,
                         public content::NotificationObserver,
-                        public ui::AnimationDelegate {
+                        public gfx::AnimationDelegate {
  public:
   explicit BalloonViewImpl(BalloonCollection* collection);
   virtual ~BalloonViewImpl();
@@ -81,8 +78,8 @@ class BalloonViewImpl : public BalloonView,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // ui::AnimationDelegate interface.
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
+  // gfx::AnimationDelegate interface.
+  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
 
   // Initializes the options menu.
   void CreateOptionsMenu();
@@ -144,7 +141,7 @@ class BalloonViewImpl : public BalloonView,
   views::Label* source_label_;
 
   // An animation to move the balloon on the screen as its position changes.
-  scoped_ptr<ui::SlideAnimation> animation_;
+  scoped_ptr<gfx::SlideAnimation> animation_;
   gfx::Rect anim_frame_start_;
   gfx::Rect anim_frame_end_;
 

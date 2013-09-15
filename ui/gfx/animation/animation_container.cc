@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/animation/animation_container.h"
+#include "ui/gfx/animation/animation_container.h"
 
-#include "ui/base/animation/animation_container_element.h"
-#include "ui/base/animation/animation_container_observer.h"
+#include "ui/gfx/animation/animation_container_element.h"
+#include "ui/gfx/animation/animation_container_observer.h"
 
 using base::TimeDelta;
 using base::TimeTicks;
 
-namespace ui {
+namespace gfx {
 
 AnimationContainer::AnimationContainer()
     : last_tick_time_(TimeTicks::Now()),
@@ -101,4 +101,4 @@ TimeDelta AnimationContainer::GetMinInterval() {
   return min;
 }
 
-}  // namespace ui
+}  // namespace gfx

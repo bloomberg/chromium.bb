@@ -28,9 +28,9 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/base/animation/slide_animation.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image.h"
@@ -195,7 +195,7 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
 
   download()->AddObserver(this);
 
-  new_item_animation_.reset(new ui::SlideAnimation(this));
+  new_item_animation_.reset(new gfx::SlideAnimation(this));
   new_item_animation_->SetSlideDuration(kNewItemAnimationDurationMs);
   gtk_widget_show_all(hbox_.get());
 
@@ -274,7 +274,7 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
 
   new_item_animation_->Show();
 
-  complete_animation_.SetTweenType(ui::Tween::LINEAR);
+  complete_animation_.SetTweenType(gfx::Tween::LINEAR);
   complete_animation_.SetSlideDuration(kCompleteAnimationDurationMs);
 
   // Update the status text and animation state.
@@ -374,7 +374,7 @@ void DownloadItemGtk::OnDownloadDestroyed(DownloadItem* download_item) {
   // This will delete us!
 }
 
-void DownloadItemGtk::AnimationProgressed(const ui::Animation* animation) {
+void DownloadItemGtk::AnimationProgressed(const gfx::Animation* animation) {
   if (animation == &complete_animation_) {
     gtk_widget_queue_draw(progress_area_.get());
   } else {

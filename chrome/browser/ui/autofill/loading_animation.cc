@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/autofill/loading_animation.h"
 
 #include "base/logging.h"
-#include "ui/base/animation/tween.h"
+#include "ui/gfx/animation/tween.h"
 
 namespace autofill {
 
@@ -15,7 +15,7 @@ static const int kDurationMs = 1800;
 // The frame rate of the animation.
 static const int kHertz = 60;
 
-LoadingAnimation::LoadingAnimation(ui::AnimationDelegate* delegate)
+LoadingAnimation::LoadingAnimation(gfx::AnimationDelegate* delegate)
     : LinearAnimation(kDurationMs, kHertz, delegate),
       first_cycle_(true) {}
 
@@ -31,7 +31,7 @@ void LoadingAnimation::Step(base::TimeTicks time_now) {
 }
 
 double LoadingAnimation::GetCurrentValueForDot(size_t dot_i) {
-  double base_value = ui::LinearAnimation::GetCurrentValue();
+  double base_value = gfx::LinearAnimation::GetCurrentValue();
 
   const double kSecondDotDelayMs = 100.0;
   const double kThirdDotDelayMs = 300.0;
@@ -43,7 +43,7 @@ double LoadingAnimation::GetCurrentValueForDot(size_t dot_i) {
   if (base_value < 0.0)
     base_value = first_cycle_ ? 0.0 : base_value + 1.0;
 
-  double value = ui::Tween::CalculateValue(ui::Tween::EASE_OUT, base_value);
+  double value = gfx::Tween::CalculateValue(gfx::Tween::EASE_OUT, base_value);
 
   static AnimationFrame animation_frames[] = {
     { 0.0, 0.0 },

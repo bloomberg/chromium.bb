@@ -14,7 +14,6 @@
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
-#include "ui/base/animation/linear_animation.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
@@ -24,6 +23,7 @@
 #include "ui/base/events/event_utils.h"
 #include "ui/base/gestures/gesture_types.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/image/image_skia_rep.h"
 #include "ui/views/test/test_views_delegate.h"
 #include "ui/views/view.h"
@@ -130,12 +130,12 @@ class DragTestView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(DragTestView);
 };
 
-class CompletableLinearAnimation : public ui::LinearAnimation {
+class CompletableLinearAnimation : public gfx::LinearAnimation {
  public:
   CompletableLinearAnimation(int duration,
                              int frame_rate,
-                             ui::AnimationDelegate* delegate)
-      : ui::LinearAnimation(duration, frame_rate, delegate),
+                             gfx::AnimationDelegate* delegate)
+      : gfx::LinearAnimation(duration, frame_rate, delegate),
         duration_(duration) {
   }
 
@@ -191,10 +191,10 @@ class TestDragDropController : public internal::DragDropController {
     drag_canceled_ = true;
   }
 
-  virtual ui::LinearAnimation* CreateCancelAnimation(
+  virtual gfx::LinearAnimation* CreateCancelAnimation(
       int duration,
       int frame_rate,
-      ui::AnimationDelegate* delegate) OVERRIDE {
+      gfx::AnimationDelegate* delegate) OVERRIDE {
     return new CompletableLinearAnimation(duration, frame_rate, delegate);
   }
 

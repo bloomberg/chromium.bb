@@ -12,7 +12,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/window_observer.h"
-#include "ui/base/animation/animation_delegate.h"
+#include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/rect.h"
 
 namespace aura {
@@ -25,8 +25,6 @@ class Font;
 class ImageSkia;
 class Point;
 class Size;
-}
-namespace ui {
 class SlideAnimation;
 }
 namespace views {
@@ -42,7 +40,7 @@ class FrameCaptionButtonContainerView;
 // various implementations of views::NonClientFrameView.  Canonical source of
 // layout constants for Ash window frames.
 class ASH_EXPORT FramePainter : public aura::WindowObserver,
-                                public ui::AnimationDelegate,
+                                public gfx::AnimationDelegate,
                                 public wm::WindowSettings::Observer {
  public:
   // Opacity values for the window header in various states, from 0 to 255.
@@ -151,8 +149,8 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
   virtual void OnTrackedByWorkspaceChanged(aura::Window* window,
                                            bool old) OVERRIDE;
 
-  // Overridden from ui::AnimationDelegate
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
+  // Overridden from gfx::AnimationDelegate
+  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(FramePainterTest, CreateAndDeleteSingleWindow);
@@ -238,7 +236,7 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
   int crossfade_opacity_;
 
   gfx::Rect header_frame_bounds_;
-  scoped_ptr<ui::SlideAnimation> crossfade_animation_;
+  scoped_ptr<gfx::SlideAnimation> crossfade_animation_;
 
   DISALLOW_COPY_AND_ASSIGN(FramePainter);
 };

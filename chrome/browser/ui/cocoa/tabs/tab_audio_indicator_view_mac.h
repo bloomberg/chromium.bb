@@ -12,11 +12,11 @@
 namespace content {
 class WebContents;
 }
-class TabAudioIndicator;
-class TabAudioIndicatorDelegateMac;
-namespace ui {
+namespace gfx {
 class AnimationContainer;
 }
+class TabAudioIndicator;
+class TabAudioIndicatorDelegateMac;
 
 // A view that draws an audio indicator on top of a favicon.
 @interface TabAudioIndicatorViewMac : NSView {
@@ -29,7 +29,7 @@ class AnimationContainer;
 
 - (void)setBackgroundImage:(NSImage*)backgroundImage;
 
-- (void)setAnimationContainer:(ui::AnimationContainer*)animationContainer;
+- (void)setAnimationContainer:(gfx::AnimationContainer*)animationContainer;
 
 - (BOOL)isAnimating;
 

@@ -5,16 +5,16 @@
 #ifndef UI_BASE_ANIMATION_SLIDE_ANIMATION_H_
 #define UI_BASE_ANIMATION_SLIDE_ANIMATION_H_
 
-#include "ui/base/animation/linear_animation.h"
-#include "ui/base/animation/tween.h"
+#include "ui/gfx/animation/linear_animation.h"
+#include "ui/gfx/animation/tween.h"
 
-namespace ui {
+namespace gfx {
 
 // Slide Animation
 //
 // Used for reversible animations and as a general helper class. Typical usage:
 //
-// #include "ui/base/animation/slide_animation.h"
+// #include "ui/gfx/animation/slide_animation.h"
 //
 // class MyClass : public AnimationDelegate {
 //  public:
@@ -44,7 +44,7 @@ namespace ui {
 //  private:
 //   scoped_ptr<SlideAnimation> animation_;
 // }
-class UI_EXPORT SlideAnimation : public LinearAnimation {
+class GFX_EXPORT SlideAnimation : public LinearAnimation {
  public:
   explicit SlideAnimation(AnimationDelegate* target);
   virtual ~SlideAnimation();
@@ -96,6 +96,6 @@ class UI_EXPORT SlideAnimation : public LinearAnimation {
   DISALLOW_COPY_AND_ASSIGN(SlideAnimation);
 };
 
-}  // namespace ui
+}  // namespace gfx
 
 #endif  // UI_BASE_ANIMATION_SLIDE_ANIMATION_H_

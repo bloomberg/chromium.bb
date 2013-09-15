@@ -3,15 +3,15 @@
 // found in the LICENSE file.
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/animation/animation_delegate.h"
-#include "ui/base/animation/linear_animation.h"
-#include "ui/base/animation/test_animation_delegate.h"
+#include "ui/gfx/animation/animation_delegate.h"
+#include "ui/gfx/animation/linear_animation.h"
+#include "ui/gfx/animation/test_animation_delegate.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #endif
 
-namespace ui {
+namespace gfx {
 
 class AnimationTest: public testing::Test {
  private:
@@ -155,4 +155,4 @@ TEST_F(AnimationTest, StartState) {
   EXPECT_EQ(0.0, animation.GetCurrentValue());
 }
 
-}  // namespace ui
+}  // namespace gfx

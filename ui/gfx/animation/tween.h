@@ -6,13 +6,13 @@
 #define UI_BASE_ANIMATION_TWEEN_H_
 
 #include "base/basictypes.h"
-#include "ui/base/ui_export.h"
+#include "ui/gfx/gfx_export.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/transform.h"
 
-namespace ui {
+namespace gfx {
 
-class UI_EXPORT Tween {
+class GFX_EXPORT Tween {
  public:
   enum Type {
     LINEAR,        // Linear.
@@ -46,6 +46,6 @@ class UI_EXPORT Tween {
   DISALLOW_COPY_AND_ASSIGN(Tween);
 };
 
-}  // namespace ui
+}  // namespace gfx
 
 #endif  // UI_BASE_ANIMATION_TWEEN_H_

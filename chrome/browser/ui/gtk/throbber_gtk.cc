@@ -9,7 +9,7 @@
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "content/public/browser/notification_source.h"
 #include "grit/ui_resources.h"
-#include "ui/base/animation/tween.h"
+#include "ui/gfx/animation/tween.h"
 #include "ui/gfx/image/cairo_cached_surface.h"
 
 namespace {
@@ -39,12 +39,12 @@ void ThrobberGtk::Stop() {
   animation_.Reset();
 }
 
-void ThrobberGtk::AnimationEnded(const ui::Animation* animation) {
+void ThrobberGtk::AnimationEnded(const gfx::Animation* animation) {
   animation_.Reset();
   animation_.Show();
 }
 
-void ThrobberGtk::AnimationProgressed(const ui::Animation* animation) {
+void ThrobberGtk::AnimationProgressed(const gfx::Animation* animation) {
   gtk_widget_queue_draw(widget_.get());
 }
 
@@ -79,7 +79,7 @@ gboolean ThrobberGtk::OnExpose(GtkWidget* widget, GdkEventExpose* expose) {
 
 void ThrobberGtk::Init() {
   animation_.SetSlideDuration(kThrobberDurationMs);
-  animation_.SetTweenType(ui::Tween::LINEAR);
+  animation_.SetTweenType(gfx::Tween::LINEAR);
   widget_.Own(gtk_image_new());
   gtk_widget_set_can_focus(widget_.get(), FALSE);
   g_signal_connect(widget_.get(), "expose-event", G_CALLBACK(OnExposeThunk),

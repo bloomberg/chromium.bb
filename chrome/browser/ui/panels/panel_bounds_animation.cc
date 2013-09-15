@@ -16,11 +16,11 @@ const int kSetBoundsAnimationBigMinimizeMs = 1500;
 
 }
 
-PanelBoundsAnimation::PanelBoundsAnimation(ui::AnimationDelegate* target,
+PanelBoundsAnimation::PanelBoundsAnimation(gfx::AnimationDelegate* target,
                                            Panel* panel,
                                            const gfx::Rect& initial_bounds,
                                            const gfx::Rect& final_bounds)
-    : ui::LinearAnimation(kDefaultFramerateHz, target),
+    : gfx::LinearAnimation(kDefaultFramerateHz, target),
       panel_(panel),
       for_big_minimize_(false),
       animation_stop_to_show_titlebar_(0) {
@@ -47,7 +47,7 @@ PanelBoundsAnimation::~PanelBoundsAnimation() {
 }
 
 double PanelBoundsAnimation::GetCurrentValue() const {
-  return ComputeAnimationValue(ui::LinearAnimation::GetCurrentValue(),
+  return ComputeAnimationValue(gfx::LinearAnimation::GetCurrentValue(),
                                for_big_minimize_,
                                animation_stop_to_show_titlebar_);
 }

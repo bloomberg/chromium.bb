@@ -27,11 +27,11 @@
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/base/animation/animation_delegate.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/point.h"
@@ -420,7 +420,7 @@ class NotificationView : public views::View,
 
 // A view that displays a loading message with some dancing dots.
 class LoadingAnimationView : public views::View,
-                             public ui::AnimationDelegate {
+                             public gfx::AnimationDelegate {
  public:
   explicit LoadingAnimationView(const base::string16& text) :
       container_(new views::View()),
@@ -477,8 +477,8 @@ class LoadingAnimationView : public views::View,
     }
   }
 
-  // ui::AnimationDelegate implementation.
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE {
+  // gfx::AnimationDelegate implementation.
+  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE {
     DCHECK_EQ(animation, &animation_);
     Layout();
   }

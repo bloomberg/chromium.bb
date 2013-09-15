@@ -27,7 +27,7 @@ class TabStripModel;
 namespace content {
 class WebContents;
 }
-namespace ui {
+namespace gfx {
 class AnimationContainer;
 }
 
@@ -143,7 +143,7 @@ class AnimationContainer;
   // Helper for performing tab selection as a result of dragging over a tab.
   scoped_ptr<HoverTabSelector> hoverTabSelector_;
 
-  scoped_refptr<ui::AnimationContainer> animationContainer_;
+  scoped_refptr<gfx::AnimationContainer> animationContainer_;
 }
 
 @property(nonatomic) CGFloat leftIndentForControls;

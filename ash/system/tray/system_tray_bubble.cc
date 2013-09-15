@@ -171,7 +171,7 @@ void SystemTrayBubble::UpdateView(
       settings.AddObserver(
           new AnimationObserverDeleteLayer(scoped_layer.release()));
       settings.SetTransitionDuration(swipe_duration);
-      settings.SetTweenType(ui::Tween::EASE_OUT);
+      settings.SetTweenType(gfx::Tween::EASE_OUT);
       gfx::Transform transform;
       transform.Translate(layer->bounds().width(), 0.0);
       layer->SetTransform(transform);
@@ -196,7 +196,7 @@ void SystemTrayBubble::UpdateView(
         settings.AddObserver(new AnimationObserverDeleteLayer(shadow));
         settings.SetTransitionDuration(swipe_duration +
                                        base::TimeDelta::FromMilliseconds(150));
-        settings.SetTweenType(ui::Tween::LINEAR);
+        settings.SetTweenType(gfx::Tween::LINEAR);
         shadow->SetOpacity(0.15f);
       }
     }
@@ -242,7 +242,7 @@ void SystemTrayBubble::UpdateView(
             new AnimationObserverDeleteLayer(scoped_layer.release()));
         settings.SetTransitionDuration(
             base::TimeDelta::FromMilliseconds(kSwipeDelayMS));
-        settings.SetTweenType(ui::Tween::EASE_OUT);
+        settings.SetTweenType(gfx::Tween::EASE_OUT);
         new_layer->SetTransform(gfx::Transform());
       }
     }
