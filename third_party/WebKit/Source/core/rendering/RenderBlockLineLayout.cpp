@@ -25,6 +25,7 @@
 #include "core/platform/text/BidiResolver.h"
 #include "core/rendering/InlineIterator.h"
 #include "core/rendering/InlineTextBox.h"
+#include "core/rendering/LineWidth.h"
 #include "core/rendering/RenderCombineText.h"
 #include "core/rendering/RenderCounter.h"
 #include "core/rendering/RenderFlowThread.h"
@@ -91,17 +92,6 @@ private:
     Vector<RenderBox*> m_positionedObjects;
 };
 
-static LayoutUnit logicalHeightForLine(const RenderBlock* block, bool isFirstLine, LayoutUnit replacedHeight = 0)
-{
-    if (!block->document().inNoQuirksMode() && replacedHeight)
-        return replacedHeight;
-
-    if (!(block->style(isFirstLine)->lineBoxContain() & LineBoxContainBlock))
-        return 0;
-
-    return max<LayoutUnit>(replacedHeight, block->lineHeight(isFirstLine, block->isHorizontalWritingMode() ? HorizontalLine : VerticalLine, PositionOfInteriorLineBoxes));
-}
-
 ShapeInsideInfo* RenderBlock::layoutShapeInsideInfo() const
 {
     ShapeInsideInfo* shapeInsideInfo = view()->layoutState()->shapeInsideInfo();
@@ -115,185 +105,6 @@ ShapeInsideInfo* RenderBlock::layoutShapeInsideInfo() const
     }
 
     return shapeInsideInfo;
-}
-
-enum IndentTextOrNot { DoNotIndentText, IndentText };
-
-class LineWidth {
-public:
-    LineWidth(RenderBlock* block, bool isFirstLine, IndentTextOrNot shouldIndentText)
-        : m_block(block)
-        , m_uncommittedWidth(0)
-        , m_committedWidth(0)
-        , m_overhangWidth(0)
-        , m_left(0)
-        , m_right(0)
-        , m_availableWidth(0)
-        , m_segment(0)
-        , m_isFirstLine(isFirstLine)
-        , m_shouldIndentText(shouldIndentText)
-    {
-        ASSERT(block);
-        ShapeInsideInfo* shapeInsideInfo = m_block->layoutShapeInsideInfo();
-        if (shapeInsideInfo)
-            m_segment = shapeInsideInfo->currentSegment();
-        updateAvailableWidth();
-    }
-    bool fitsOnLine() const { return currentWidth() <= m_availableWidth; }
-    bool fitsOnLine(float extra) const { return currentWidth() + extra <= m_availableWidth; }
-    float currentWidth() const { return m_committedWidth + m_uncommittedWidth; }
-
-    // FIXME: We should eventually replace these three functions by ones that work on a higher abstraction.
-    float uncommittedWidth() const { return m_uncommittedWidth; }
-    float committedWidth() const { return m_committedWidth; }
-    float availableWidth() const { return m_availableWidth; }
-
-    void updateAvailableWidth(LayoutUnit minimumHeight = 0);
-    void shrinkAvailableWidthForNewFloatIfNeeded(FloatingObject*);
-    void addUncommittedWidth(float delta) { m_uncommittedWidth += delta; }
-    void commit()
-    {
-        m_committedWidth += m_uncommittedWidth;
-        m_uncommittedWidth = 0;
-    }
-    void applyOverhang(RenderRubyRun*, RenderObject* startRenderer, RenderObject* endRenderer);
-    void fitBelowFloats();
-
-    bool shouldIndentText() const { return m_shouldIndentText == IndentText; }
-
-private:
-    void computeAvailableWidthFromLeftAndRight()
-    {
-        m_availableWidth = max(0.0f, m_right - m_left) + m_overhangWidth;
-    }
-
-private:
-    RenderBlock* m_block;
-    float m_uncommittedWidth;
-    float m_committedWidth;
-    float m_overhangWidth; // The amount by which |m_availableWidth| has been inflated to account for possible contraction due to ruby overhang.
-    float m_left;
-    float m_right;
-    float m_availableWidth;
-    const LineSegment* m_segment;
-    bool m_isFirstLine;
-    IndentTextOrNot m_shouldIndentText;
-};
-
-inline void LineWidth::updateAvailableWidth(LayoutUnit replacedHeight)
-{
-    LayoutUnit height = m_block->logicalHeight();
-    LayoutUnit logicalHeight = logicalHeightForLine(m_block, m_isFirstLine, replacedHeight);
-    m_left = m_block->logicalLeftOffsetForLine(height, shouldIndentText(), logicalHeight);
-    m_right = m_block->logicalRightOffsetForLine(height, shouldIndentText(), logicalHeight);
-
-    if (m_segment) {
-        m_left = max<float>(m_segment->logicalLeft, m_left);
-        m_right = min<float>(m_segment->logicalRight, m_right);
-    }
-
-    computeAvailableWidthFromLeftAndRight();
-}
-
-inline void LineWidth::shrinkAvailableWidthForNewFloatIfNeeded(FloatingObject* newFloat)
-{
-    LayoutUnit height = m_block->logicalHeight();
-    if (height < newFloat->logicalTop(m_block->isHorizontalWritingMode()) || height >= newFloat->logicalBottom(m_block->isHorizontalWritingMode()))
-        return;
-
-    // When floats with shape outside are stacked, the floats are positioned based on the margin box of the float,
-    // not the shape's contour. Since we computed the width based on the shape contour when we added the float,
-    // when we add a subsequent float on the same line, we need to undo the shape delta in order to position
-    // based on the margin box. In order to do this, we need to walk back through the floating object list to find
-    // the first previous float that is on the same side as our newFloat.
-    ShapeOutsideInfo* previousShapeOutsideInfo = 0;
-    const FloatingObjectSet& floatingObjectSet = m_block->m_floatingObjects->set();
-    FloatingObjectSetIterator it = floatingObjectSet.end();
-    FloatingObjectSetIterator begin = floatingObjectSet.begin();
-    while (it != begin) {
-        --it;
-        FloatingObject* previousFloat = *it;
-        if (previousFloat != newFloat && previousFloat->type() == newFloat->type()) {
-            previousShapeOutsideInfo = previousFloat->renderer()->shapeOutsideInfo();
-            if (previousShapeOutsideInfo) {
-                previousShapeOutsideInfo->computeSegmentsForContainingBlockLine(m_block->logicalHeight(), previousFloat->logicalTop(m_block->isHorizontalWritingMode()), logicalHeightForLine(m_block, m_isFirstLine));
-            }
-            break;
-        }
-    }
-
-    ShapeOutsideInfo* shapeOutsideInfo = newFloat->renderer()->shapeOutsideInfo();
-    if (shapeOutsideInfo)
-        shapeOutsideInfo->computeSegmentsForContainingBlockLine(m_block->logicalHeight(), newFloat->logicalTop(m_block->isHorizontalWritingMode()), logicalHeightForLine(m_block, m_isFirstLine));
-
-    if (newFloat->type() == FloatingObject::FloatLeft) {
-        float newLeft = newFloat->logicalRight(m_block->isHorizontalWritingMode());
-        if (previousShapeOutsideInfo)
-            newLeft -= previousShapeOutsideInfo->rightSegmentMarginBoxDelta();
-        if (shapeOutsideInfo)
-            newLeft += shapeOutsideInfo->rightSegmentMarginBoxDelta();
-
-        if (shouldIndentText() && m_block->style()->isLeftToRightDirection())
-            newLeft += floorToInt(m_block->textIndentOffset());
-        m_left = max<float>(m_left, newLeft);
-    } else {
-        float newRight = newFloat->logicalLeft(m_block->isHorizontalWritingMode());
-        if (previousShapeOutsideInfo)
-            newRight -= previousShapeOutsideInfo->leftSegmentMarginBoxDelta();
-        if (shapeOutsideInfo)
-            newRight += shapeOutsideInfo->leftSegmentMarginBoxDelta();
-
-        if (shouldIndentText() && !m_block->style()->isLeftToRightDirection())
-            newRight -= floorToInt(m_block->textIndentOffset());
-        m_right = min<float>(m_right, newRight);
-    }
-
-    computeAvailableWidthFromLeftAndRight();
-}
-
-void LineWidth::applyOverhang(RenderRubyRun* rubyRun, RenderObject* startRenderer, RenderObject* endRenderer)
-{
-    int startOverhang;
-    int endOverhang;
-    rubyRun->getOverhang(m_isFirstLine, startRenderer, endRenderer, startOverhang, endOverhang);
-
-    startOverhang = min<int>(startOverhang, m_committedWidth);
-    m_availableWidth += startOverhang;
-
-    endOverhang = max(min<int>(endOverhang, m_availableWidth - currentWidth()), 0);
-    m_availableWidth += endOverhang;
-    m_overhangWidth += startOverhang + endOverhang;
-}
-
-void LineWidth::fitBelowFloats()
-{
-    ASSERT(!m_committedWidth);
-    ASSERT(!fitsOnLine());
-
-    LayoutUnit floatLogicalBottom;
-    LayoutUnit lastFloatLogicalBottom = m_block->logicalHeight();
-    float newLineWidth = m_availableWidth;
-    float newLineLeft = m_left;
-    float newLineRight = m_right;
-    while (true) {
-        floatLogicalBottom = m_block->nextFloatLogicalBottomBelow(lastFloatLogicalBottom);
-        if (floatLogicalBottom <= lastFloatLogicalBottom)
-            break;
-
-        newLineLeft = m_block->logicalLeftOffsetForLine(floatLogicalBottom, shouldIndentText());
-        newLineRight = m_block->logicalRightOffsetForLine(floatLogicalBottom, shouldIndentText());
-        newLineWidth = max(0.0f, newLineRight - newLineLeft);
-        lastFloatLogicalBottom = floatLogicalBottom;
-        if (newLineWidth >= m_uncommittedWidth)
-            break;
-    }
-
-    if (newLineWidth > m_availableWidth) {
-        m_block->setLogicalHeight(lastFloatLogicalBottom);
-        m_availableWidth = newLineWidth + m_overhangWidth;
-        m_left = newLineLeft;
-        m_right = newLineRight;
-    }
 }
 
 class LineInfo {
@@ -2800,7 +2611,7 @@ InlineIterator LineBreaker::nextSegmentBreak(InlineBidiResolver& resolver, LineI
     bool includeEndWidth = true;
     LineMidpointState& lineMidpointState = resolver.midpointState();
 
-    LineWidth width(m_block, lineInfo.isFirstLine(), requiresIndent(lineInfo.isFirstLine(), lineInfo.previousLineBrokeCleanly(), m_block->style()));
+    LineWidth width(*m_block, lineInfo.isFirstLine(), requiresIndent(lineInfo.isFirstLine(), lineInfo.previousLineBrokeCleanly(), m_block->style()));
 
     skipLeadingWhitespace(resolver, lineInfo, lastFloatFromPreviousLine, width);
 
