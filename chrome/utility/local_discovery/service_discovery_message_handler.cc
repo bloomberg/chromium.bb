@@ -396,8 +396,7 @@ void ServiceDiscoveryMessageHandler::OnServiceUpdated(
     uint64 id,
     ServiceWatcher::UpdateType update,
     const std::string& name) {
-  VLOG(1) << "OnServiceUpdated with id " << id
-          << WatcherUpdateToString(update);
+  VLOG(1) << "OnServiceUpdated with id " << id << WatcherUpdateToString(update);
   DCHECK(service_discovery_client_);
   utility_task_runner_->PostTask(FROM_HERE,
       base::Bind(&SendServiceUpdated, id, update, name));

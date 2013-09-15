@@ -44,8 +44,7 @@ class ServiceDiscoveryHostClient::ServiceWatcherProxy : public ServiceWatcher {
   }
 
   virtual void DiscoverNewServices(bool force_update) OVERRIDE {
-    DVLOG(1) << "ServiceWatcher::DiscoverNewServices with id "
-            << id_;
+    DVLOG(1) << "ServiceWatcher::DiscoverNewServices with id " << id_;
     DCHECK(started_);
     host_->Send(new LocalDiscoveryMsg_DiscoverServices(id_, force_update));
   }
@@ -81,9 +80,7 @@ class ServiceDiscoveryHostClient::ServiceResolverProxy
   }
 
   virtual void StartResolving() OVERRIDE {
-    DVLOG(1)
-        << "ServiceResolverProxy::StartResolving with id "
-        << id_;
+    DVLOG(1) << "ServiceResolverProxy::StartResolving with id " << id_;
     DCHECK(!started_);
     host_->Send(new LocalDiscoveryMsg_ResolveService(id_, service_name_));
     started_ = true;
@@ -115,16 +112,14 @@ class ServiceDiscoveryHostClient::LocalDomainResolverProxy
   }
 
   virtual ~LocalDomainResolverProxy() {
-    DVLOG(1) << "~LocalDomainResolverProxy with id "
-            << id_;
+    DVLOG(1) << "~LocalDomainResolverProxy with id " << id_;
     host_->UnregisterLocalDomainResolverCallback(id_);
     if (started_)
       host_->Send(new LocalDiscoveryMsg_DestroyLocalDomainResolver(id_));
   }
 
   virtual void Start() OVERRIDE {
-    DVLOG(1) << "LocalDomainResolverProxy::Start with id "
-            << id_;
+    DVLOG(1) << "LocalDomainResolverProxy::Start with id " << id_;
     DCHECK(!started_);
     host_->Send(new LocalDiscoveryMsg_ResolveLocalDomain(id_, domain_,
                                                          address_family_));
@@ -141,6 +136,7 @@ class ServiceDiscoveryHostClient::LocalDomainResolverProxy
 
 ServiceDiscoveryHostClient::ServiceDiscoveryHostClient() : current_id_(0) {
   callback_runner_ = base::MessageLoop::current()->message_loop_proxy();
+  io_runner_ = BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
 }
 
 ServiceDiscoveryHostClient::~ServiceDiscoveryHostClient() {
@@ -221,8 +217,7 @@ void ServiceDiscoveryHostClient::UnregisterLocalDomainResolverCallback(
 void ServiceDiscoveryHostClient::Start() {
   DCHECK(CalledOnValidThread());
   net::NetworkChangeNotifier::AddIPAddressObserver(this);
-  BrowserThread::PostTask(
-      BrowserThread::IO,
+  io_runner_->PostTask(
       FROM_HERE,
       base::Bind(&ServiceDiscoveryHostClient::StartOnIOThread, this));
 }
@@ -230,8 +225,7 @@ void ServiceDiscoveryHostClient::Start() {
 void ServiceDiscoveryHostClient::Shutdown() {
   net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
   DCHECK(CalledOnValidThread());
-  BrowserThread::PostTask(
-      BrowserThread::IO,
+  io_runner_->PostTask(
       FROM_HERE,
       base::Bind(&ServiceDiscoveryHostClient::ShutdownOnIOThread, this));
 }
@@ -279,8 +273,7 @@ void ServiceDiscoveryHostClient::RestartOnIOThread() {
 
 void ServiceDiscoveryHostClient::Send(IPC::Message* msg) {
   DCHECK(CalledOnValidThread());
-  BrowserThread::PostTask(
-      BrowserThread::IO,
+  io_runner_->PostTask(
       FROM_HERE,
       base::Bind(&ServiceDiscoveryHostClient::SendOnIOThread, this, msg));
 }
@@ -292,8 +285,7 @@ void ServiceDiscoveryHostClient::SendOnIOThread(IPC::Message* msg) {
 }
 
 void ServiceDiscoveryHostClient::OnIPAddressChanged() {
-  BrowserThread::PostTask(
-      BrowserThread::IO,
+  io_runner_->PostTask(
       FROM_HERE,
       base::Bind(&ServiceDiscoveryHostClient::RestartOnIOThread, this));
 

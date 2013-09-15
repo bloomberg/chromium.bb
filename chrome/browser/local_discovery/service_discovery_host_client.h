@@ -126,6 +126,7 @@ class ServiceDiscoveryHostClient
   ResolverCallbacks service_resolver_callbacks_;
   DomainResolverCallbacks domain_resolver_callbacks_;
   scoped_refptr<base::TaskRunner> callback_runner_;
+  scoped_refptr<base::TaskRunner> io_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceDiscoveryHostClient);
 };
