@@ -70,7 +70,6 @@ static inline KeyboardEvent::KeyLocationCode keyLocationCode(const PlatformKeybo
     if (key.isKeypad())
         return KeyboardEvent::DOM_KEY_LOCATION_NUMPAD;
 
-    // FIXME: Support DOM_KEY_LOCATION_MOBILE & DOM_KEY_LOCATION_JOYSTICK (crbug.com/265446).
     switch (key.windowsVirtualKeyCode()) {
     case VK_LCONTROL:
     case VK_LSHIFT:

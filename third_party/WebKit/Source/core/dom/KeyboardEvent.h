@@ -51,9 +51,6 @@ public:
         DOM_KEY_LOCATION_LEFT       = 0x01,
         DOM_KEY_LOCATION_RIGHT      = 0x02,
         DOM_KEY_LOCATION_NUMPAD     = 0x03
-        // FIXME: The following values are not supported yet (crbug.com/265446)
-        // DOM_KEY_LOCATION_MOBILE     = 0x04,
-        // DOM_KEY_LOCATION_JOYSTICK   = 0x05
     };
 
     static PassRefPtr<KeyboardEvent> create()
