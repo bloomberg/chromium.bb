@@ -110,7 +110,7 @@ SVGElementInstance* SVGUseElement::instanceRoot()
     // wait for the lazy creation to happen if e.g. JS wants to access the instanceRoot
     // object right after creating the element on-the-fly
     if (!m_targetElementInstance)
-        document().updateLayoutIgnorePendingStylesheets();
+        document().updateStyleIfNeeded();
 
     return m_targetElementInstance.get();
 }
