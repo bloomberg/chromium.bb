@@ -412,7 +412,7 @@ void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
       !is_keyword_generated) {
     const GURL& origin_url(has_redirects ?
         request.redirects[0] : request.url);
-    if (origin_url.SchemeIs(chrome::kHttpScheme) ||
+    if (origin_url.SchemeIs(content::kHttpScheme) ||
         origin_url.SchemeIs(content::kHttpsScheme) ||
         origin_url.SchemeIs(chrome::kFtpScheme)) {
       std::string host(origin_url.host());

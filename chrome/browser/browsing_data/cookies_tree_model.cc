@@ -1082,7 +1082,7 @@ void CookiesTreeModel::PopulateCookieInfoWithFilter(
         domain = domain.substr(1);
 
       // We treat secure cookies just the same as normal ones.
-      source_string = std::string(chrome::kHttpScheme) +
+      source_string = std::string(content::kHttpScheme) +
           content::kStandardSchemeSeparator + domain + "/";
     }
 

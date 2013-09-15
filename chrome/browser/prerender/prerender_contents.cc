@@ -504,7 +504,7 @@ void PrerenderContents::DidUpdateFaviconURL(
 }
 
 bool PrerenderContents::AddAliasURL(const GURL& url) {
-  const bool http = url.SchemeIs(chrome::kHttpScheme);
+  const bool http = url.SchemeIs(content::kHttpScheme);
   const bool https = url.SchemeIs(content::kHttpsScheme);
   if (!http && !https) {
     DCHECK_NE(MATCH_COMPLETE_REPLACEMENT_PENDING, match_complete_status_);

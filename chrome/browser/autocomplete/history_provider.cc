@@ -138,11 +138,11 @@ size_t HistoryProvider::TrimHttpPrefix(string16* url) {
   if (!HasHTTPScheme(*url))
     return 0;
   size_t scheme_pos =
-      url->find(ASCIIToUTF16(chrome::kHttpScheme) + char16(':'));
+      url->find(ASCIIToUTF16(content::kHttpScheme) + char16(':'));
   DCHECK_NE(string16::npos, scheme_pos);
 
   // Erase scheme plus up to two slashes.
-  size_t prefix_end = scheme_pos + strlen(chrome::kHttpScheme) + 1;
+  size_t prefix_end = scheme_pos + strlen(content::kHttpScheme) + 1;
   const size_t after_slashes = std::min(url->length(), prefix_end + 2);
   while ((prefix_end < after_slashes) && ((*url)[prefix_end] == '/'))
     ++prefix_end;

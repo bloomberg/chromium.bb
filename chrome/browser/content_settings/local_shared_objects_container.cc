@@ -98,7 +98,7 @@ size_t LocalSharedObjectsContainer::GetObjectCountForDomain(
       // The |domain_url| is only created in order to use the
       // SamePublicDomainOrHost method below. It does not matter which scheme is
       // used as the scheme is ignored by the SamePublicDomainOrHost method.
-      GURL domain_url(std::string(chrome::kHttpScheme) +
+      GURL domain_url(std::string(content::kHttpScheme) +
                       content::kStandardSchemeSeparator + cookie_domain);
       if (SamePublicDomainOrHost(origin, domain_url))
         ++count;

@@ -58,7 +58,7 @@ class BrowsingDataHelperTest : public testing::Test {
 };
 
 TEST_F(BrowsingDataHelperTest, WebSafeSchemesAreWebSafe) {
-  EXPECT_TRUE(IsWebScheme(chrome::kHttpScheme));
+  EXPECT_TRUE(IsWebScheme(content::kHttpScheme));
   EXPECT_TRUE(IsWebScheme(content::kHttpsScheme));
   EXPECT_TRUE(IsWebScheme(chrome::kFtpScheme));
   EXPECT_TRUE(IsWebScheme(chrome::kDataScheme));
@@ -82,7 +82,7 @@ TEST_F(BrowsingDataHelperTest, ChromeSchemesAreNotWebSafe) {
 }
 
 TEST_F(BrowsingDataHelperTest, WebSafeSchemesAreNotExtensions) {
-  EXPECT_FALSE(IsExtensionScheme(chrome::kHttpScheme));
+  EXPECT_FALSE(IsExtensionScheme(content::kHttpScheme));
   EXPECT_FALSE(IsExtensionScheme(content::kHttpsScheme));
   EXPECT_FALSE(IsExtensionScheme(chrome::kFtpScheme));
   EXPECT_FALSE(IsExtensionScheme(chrome::kDataScheme));

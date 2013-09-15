@@ -25,11 +25,11 @@ CONTENT_EXPORT extern const char kFileScheme[];
 CONTENT_EXPORT extern const char kFileSystemScheme[];
 CONTENT_EXPORT extern const char kFtpScheme[];
 CONTENT_EXPORT extern const char kGuestScheme[];
-CONTENT_EXPORT extern const char kHttpScheme[];
 }  // namespace chrome
 
 namespace content {
 
+CONTENT_EXPORT extern const char kHttpScheme[];
 CONTENT_EXPORT extern const char kHttpsScheme[];
 CONTENT_EXPORT extern const char kJavaScriptScheme[];
 CONTENT_EXPORT extern const char kMailToScheme[];

@@ -1282,7 +1282,7 @@ void Dispatcher::AddOrRemoveOriginPermissions(
   for (URLPatternSet::const_iterator i = origins.begin();
        i != origins.end(); ++i) {
     const char* schemes[] = {
-      chrome::kHttpScheme,
+      content::kHttpScheme,
       content::kHttpsScheme,
       chrome::kFileScheme,
       chrome::kChromeUIScheme,

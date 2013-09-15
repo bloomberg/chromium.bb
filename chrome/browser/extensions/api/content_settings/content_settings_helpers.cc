@@ -43,7 +43,7 @@ COMPILE_ASSERT(arraysize(kContentSettingNames) <=
 
 // TODO(bauerb): Move this someplace where it can be reused.
 std::string GetDefaultPort(const std::string& scheme) {
-  if (scheme == chrome::kHttpScheme)
+  if (scheme == content::kHttpScheme)
     return "80";
   if (scheme == content::kHttpsScheme)
     return "443";

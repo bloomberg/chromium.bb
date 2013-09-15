@@ -91,7 +91,7 @@ bool ParsePhishingUrls(const std::string& data,
                  << urls[i];
       return false;
     }
-    phishing_url.url = std::string(chrome::kHttpScheme) +
+    phishing_url.url = std::string(content::kHttpScheme) +
         "://" + record_parts[0];
     phishing_url.list_name = record_parts[1];
     if (record_parts[2] == "yes") {

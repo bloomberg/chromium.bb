@@ -795,7 +795,7 @@ bool HistoryURLProvider::CanFindIntranetURL(
   // input's text and parts between Parse() and here, it seems better to be
   // paranoid and check.
   if ((input.type() != AutocompleteInput::UNKNOWN) ||
-      !LowerCaseEqualsASCII(input.scheme(), chrome::kHttpScheme) ||
+      !LowerCaseEqualsASCII(input.scheme(), content::kHttpScheme) ||
       !input.parts().host.is_nonempty())
     return false;
   const std::string host(UTF16ToUTF8(

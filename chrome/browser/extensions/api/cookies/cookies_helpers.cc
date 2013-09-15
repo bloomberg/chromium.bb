@@ -119,7 +119,7 @@ void GetCookieListFromStore(
 GURL GetURLFromCanonicalCookie(const net::CanonicalCookie& cookie) {
   const std::string& domain_key = cookie.Domain();
   const std::string scheme =
-      cookie.IsSecure() ? content::kHttpsScheme : chrome::kHttpScheme;
+      cookie.IsSecure() ? content::kHttpsScheme : content::kHttpScheme;
   const std::string host =
       domain_key.find('.') != 0 ? domain_key : domain_key.substr(1);
   return GURL(scheme + content::kStandardSchemeSeparator + host + "/");

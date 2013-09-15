@@ -202,7 +202,7 @@ SafeBrowsingDatabaseManager::~SafeBrowsingDatabaseManager() {
 
 bool SafeBrowsingDatabaseManager::CanCheckUrl(const GURL& url) const {
   return url.SchemeIs(chrome::kFtpScheme) ||
-         url.SchemeIs(chrome::kHttpScheme) ||
+         url.SchemeIs(content::kHttpScheme) ||
          url.SchemeIs(content::kHttpsScheme);
 }
 

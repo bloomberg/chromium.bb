@@ -942,7 +942,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcutHttp) {
 
   ASSERT_TRUE(test_server()->Start());
   GURL http_url(test_server()->GetURL(std::string()));
-  ASSERT_TRUE(http_url.SchemeIs(chrome::kHttpScheme));
+  ASSERT_TRUE(http_url.SchemeIs(content::kHttpScheme));
   ui_test_utils::NavigateToURL(browser(), http_url);
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_CREATE_SHORTCUTS));
 }
@@ -1002,7 +1002,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcutInvalid) {
 IN_PROC_BROWSER_TEST_F(BrowserTest, DISABLED_ConvertTabToAppShortcut) {
   ASSERT_TRUE(test_server()->Start());
   GURL http_url(test_server()->GetURL(std::string()));
-  ASSERT_TRUE(http_url.SchemeIs(chrome::kHttpScheme));
+  ASSERT_TRUE(http_url.SchemeIs(content::kHttpScheme));
 
   ASSERT_EQ(1, browser()->tab_strip_model()->count());
   WebContents* initial_tab = browser()->tab_strip_model()->GetWebContentsAt(0);

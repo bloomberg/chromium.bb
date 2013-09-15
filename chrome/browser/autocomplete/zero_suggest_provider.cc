@@ -222,7 +222,7 @@ bool ZeroSuggestProvider::ShouldSendURL(const GURL& url) const {
   // Only allow HTTP URLs or Google HTTPS URLs (including Google search
   // result pages).  For the latter case, Google was already sent the HTTPS
   // URLs when requesting the page, so the information is just re-sent.
-  return (url.scheme() == chrome::kHttpScheme) ||
+  return (url.scheme() == content::kHttpScheme) ||
       google_util::IsGoogleDomainUrl(url, google_util::ALLOW_SUBDOMAIN,
                                      google_util::ALLOW_NON_STANDARD_PORTS);
 }

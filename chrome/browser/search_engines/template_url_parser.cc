@@ -100,7 +100,7 @@ bool IsHTTPRef(const std::string& url) {
   if (url.empty())
     return true;
   GURL gurl(url);
-  return gurl.is_valid() && (gurl.SchemeIs(chrome::kHttpScheme) ||
+  return gurl.is_valid() && (gurl.SchemeIs(content::kHttpScheme) ||
                              gurl.SchemeIs(content::kHttpsScheme));
 }
 
@@ -258,7 +258,7 @@ void TemplateURLParsingContext::EndElementImpl(void* ctx, const xmlChar* name) {
         // favicon from the URL.
         context->derive_image_from_url_ = true;
       } else if (context->image_is_valid_for_favicon_ && image_url.is_valid() &&
-                 (image_url.SchemeIs(chrome::kHttpScheme) ||
+                 (image_url.SchemeIs(content::kHttpScheme) ||
                   image_url.SchemeIs(content::kHttpsScheme))) {
         context->data_.favicon_url = image_url;
       }

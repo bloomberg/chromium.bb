@@ -129,7 +129,7 @@ bool AutocompleteProvider::HasHTTPScheme(const string16& input) {
   if (url_util::FindAndCompareScheme(utf8_input, content::kViewSourceScheme,
                                      &scheme))
     utf8_input.erase(0, scheme.end() + 1);
-  return url_util::FindAndCompareScheme(utf8_input, chrome::kHttpScheme, NULL);
+  return url_util::FindAndCompareScheme(utf8_input, content::kHttpScheme, NULL);
 }
 
 void AutocompleteProvider::UpdateStarredStateOfMatches() {

@@ -435,10 +435,10 @@ void OmniboxEditModel::AdjustTextForCopy(int sel_min,
   // entire host, and the user hasn't edited the host or manually removed the
   // scheme.
   GURL perm_url(PermanentURL());
-  if (perm_url.SchemeIs(chrome::kHttpScheme) &&
-      url->SchemeIs(chrome::kHttpScheme) && perm_url.host() == url->host()) {
+  if (perm_url.SchemeIs(content::kHttpScheme) &&
+      url->SchemeIs(content::kHttpScheme) && perm_url.host() == url->host()) {
     *write_url = true;
-    string16 http = ASCIIToUTF16(chrome::kHttpScheme) +
+    string16 http = ASCIIToUTF16(content::kHttpScheme) +
         ASCIIToUTF16(content::kStandardSchemeSeparator);
     if (text->compare(0, http.length(), http) != 0)
       *text = http + *text;

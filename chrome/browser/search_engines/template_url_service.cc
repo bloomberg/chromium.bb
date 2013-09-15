@@ -372,7 +372,7 @@ string16 TemplateURLService::CleanUserInputKeyword(const string16& keyword) {
     // type a web address, but rather an FTP, file:, or other scheme URL, or a
     // search query with some sort of initial operator (e.g. "site:").
     if (result.compare(0, scheme_component.end(),
-                       ASCIIToUTF16(chrome::kHttpScheme)) &&
+                       ASCIIToUTF16(content::kHttpScheme)) &&
         result.compare(0, scheme_component.end(),
                        ASCIIToUTF16(content::kHttpsScheme)))
       return string16();

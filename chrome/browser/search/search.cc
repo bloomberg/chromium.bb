@@ -128,7 +128,7 @@ bool MatchesOrigin(const GURL& my_url, const GURL& other_url) {
          my_url.port() == other_url.port() &&
          (my_url.scheme() == other_url.scheme() ||
           (my_url.SchemeIs(content::kHttpsScheme) &&
-           other_url.SchemeIs(chrome::kHttpScheme)));
+           other_url.SchemeIs(content::kHttpScheme)));
 }
 
 bool MatchesAnySearchURL(const GURL& url, TemplateURL* template_url) {

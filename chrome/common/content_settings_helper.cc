@@ -15,7 +15,7 @@ std::string OriginToString(const GURL& origin) {
   std::string port_component(origin.IntPort() != url_parse::PORT_UNSPECIFIED
                                  ? ":" + origin.port()
                                  : std::string());
-  std::string scheme_component(!origin.SchemeIs(chrome::kHttpScheme)
+  std::string scheme_component(!origin.SchemeIs(content::kHttpScheme)
                                    ? origin.scheme() +
                                      content::kStandardSchemeSeparator
                                    : std::string());

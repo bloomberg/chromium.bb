@@ -99,7 +99,7 @@ TEST_F(ChildProcessSecurityPolicyTest, IsWebSafeSchemeTest) {
   ChildProcessSecurityPolicyImpl* p =
       ChildProcessSecurityPolicyImpl::GetInstance();
 
-  EXPECT_TRUE(p->IsWebSafeScheme(chrome::kHttpScheme));
+  EXPECT_TRUE(p->IsWebSafeScheme(kHttpScheme));
   EXPECT_TRUE(p->IsWebSafeScheme(kHttpsScheme));
   EXPECT_TRUE(p->IsWebSafeScheme(chrome::kFtpScheme));
   EXPECT_TRUE(p->IsWebSafeScheme(chrome::kDataScheme));

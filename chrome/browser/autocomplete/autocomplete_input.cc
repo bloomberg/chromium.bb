@@ -172,7 +172,7 @@ AutocompleteInput::Type AutocompleteInput::Parse(
   // (e.g. "ftp" or "view-source") but I'll wait to spend the effort on that
   // until I run into some cases that really need it.
   if (parts->scheme.is_nonempty() &&
-      !LowerCaseEqualsASCII(parsed_scheme, chrome::kHttpScheme) &&
+      !LowerCaseEqualsASCII(parsed_scheme, content::kHttpScheme) &&
       !LowerCaseEqualsASCII(parsed_scheme, content::kHttpsScheme)) {
     // See if we know how to handle the URL internally.
     if (ProfileIOData::IsHandledProtocol(UTF16ToASCII(parsed_scheme)))
@@ -208,7 +208,7 @@ AutocompleteInput::Type AutocompleteInput::Parse(
         // We don't know about this scheme.  It might be that the user typed a
         // URL of the form "username:password@foo.com".
         const string16 http_scheme_prefix =
-            ASCIIToUTF16(std::string(chrome::kHttpScheme) +
+            ASCIIToUTF16(std::string(content::kHttpScheme) +
                          content::kStandardSchemeSeparator);
         url_parse::Parsed http_parts;
         string16 http_scheme;
@@ -216,7 +216,7 @@ AutocompleteInput::Type AutocompleteInput::Parse(
         Type http_type = Parse(http_scheme_prefix + text, desired_tld,
                                &http_parts, &http_scheme,
                                &http_canonicalized_url);
-        DCHECK_EQ(std::string(chrome::kHttpScheme), UTF16ToUTF8(http_scheme));
+        DCHECK_EQ(std::string(content::kHttpScheme), UTF16ToUTF8(http_scheme));
 
         if (http_type == URL &&
             http_parts.username.is_nonempty() &&

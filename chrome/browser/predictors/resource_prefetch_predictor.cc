@@ -178,17 +178,17 @@ bool ResourcePrefetchPredictor::ShouldRecordRedirect(
 
 // static
 bool ResourcePrefetchPredictor::IsHandledMainPage(net::URLRequest* request) {
-  return request->original_url().scheme() == chrome::kHttpScheme;
+  return request->original_url().scheme() == content::kHttpScheme;
 }
 
 // static
 bool ResourcePrefetchPredictor::IsHandledSubresource(
     net::URLRequest* response) {
   int resource_status = 0;
-  if (response->first_party_for_cookies().scheme() != chrome::kHttpScheme)
+  if (response->first_party_for_cookies().scheme() != content::kHttpScheme)
     resource_status |= RESOURCE_STATUS_NOT_HTTP_PAGE;
 
-  if (response->original_url().scheme() != chrome::kHttpScheme)
+  if (response->original_url().scheme() != content::kHttpScheme)
     resource_status |= RESOURCE_STATUS_NOT_HTTP_RESOURCE;
 
   std::string mime_type;
