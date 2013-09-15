@@ -221,7 +221,7 @@ wl_signal_add(struct wl_signal *signal, struct wl_listener *listener)
 	wl_list_insert(signal->listener_list.prev, &listener->link);
 }
 
-/** Gets the list item for the specified listener.
+/** Gets the listener struct for the specified callback.
  *
  * \param signal The signal that contains the specified listener
  * \param notify The listener that is the target of this search
