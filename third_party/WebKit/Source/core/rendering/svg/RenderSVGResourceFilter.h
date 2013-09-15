@@ -57,7 +57,7 @@ class GraphicsContext;
 
 class RenderSVGResourceFilter FINAL : public RenderSVGResourceContainer {
 public:
-    RenderSVGResourceFilter(SVGFilterElement*);
+    explicit RenderSVGResourceFilter(SVGFilterElement*);
     virtual ~RenderSVGResourceFilter();
 
     virtual const char* renderName() const { return "RenderSVGResourceFilter"; }

@@ -44,7 +44,7 @@ public:
 
 class RenderSVGResourcePattern FINAL : public RenderSVGResourceContainer {
 public:
-    RenderSVGResourcePattern(SVGPatternElement*);
+    explicit RenderSVGResourcePattern(SVGPatternElement*);
 
     virtual const char* renderName() const { return "RenderSVGResourcePattern"; }
 

@@ -33,7 +33,7 @@ class SVGImageElement;
 
 class RenderSVGImage FINAL : public RenderSVGModelObject {
 public:
-    RenderSVGImage(SVGImageElement*);
+    explicit RenderSVGImage(SVGImageElement*);
     virtual ~RenderSVGImage();
 
     bool updateImageViewport();

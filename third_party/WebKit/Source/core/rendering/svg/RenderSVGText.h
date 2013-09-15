@@ -34,7 +34,7 @@ class RenderSVGInlineText;
 
 class RenderSVGText FINAL : public RenderSVGBlock {
 public:
-    RenderSVGText(SVGTextElement*);
+    explicit RenderSVGText(SVGTextElement*);
     virtual ~RenderSVGText();
 
     virtual bool isChildAllowed(RenderObject*, RenderStyle*) const;

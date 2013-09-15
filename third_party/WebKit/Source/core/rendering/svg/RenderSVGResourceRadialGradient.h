@@ -30,7 +30,7 @@ class SVGRadialGradientElement;
 
 class RenderSVGResourceRadialGradient FINAL : public RenderSVGResourceGradient {
 public:
-    RenderSVGResourceRadialGradient(SVGRadialGradientElement*);
+    explicit RenderSVGResourceRadialGradient(SVGRadialGradientElement*);
     virtual ~RenderSVGResourceRadialGradient();
 
     virtual const char* renderName() const { return "RenderSVGResourceRadialGradient"; }

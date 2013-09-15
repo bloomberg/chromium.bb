@@ -35,7 +35,7 @@ namespace WebCore {
 
 class RenderSVGResourceMasker FINAL : public RenderSVGResourceContainer {
 public:
-    RenderSVGResourceMasker(SVGMaskElement*);
+    explicit RenderSVGResourceMasker(SVGMaskElement*);
     virtual ~RenderSVGResourceMasker();
 
     virtual const char* renderName() const { return "RenderSVGResourceMasker"; }

@@ -30,7 +30,7 @@ class RenderLayer;
 class RenderSVGResourceContainer : public RenderSVGHiddenContainer,
                                    public RenderSVGResource {
 public:
-    RenderSVGResourceContainer(SVGElement*);
+    explicit RenderSVGResourceContainer(SVGElement*);
     virtual ~RenderSVGResourceContainer();
 
     virtual void layout();

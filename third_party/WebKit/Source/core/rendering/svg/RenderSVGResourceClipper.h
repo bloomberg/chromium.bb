@@ -37,7 +37,7 @@ public:
 
 class RenderSVGResourceClipper FINAL : public RenderSVGResourceContainer {
 public:
-    RenderSVGResourceClipper(SVGClipPathElement*);
+    explicit RenderSVGResourceClipper(SVGClipPathElement*);
     virtual ~RenderSVGResourceClipper();
 
     virtual const char* renderName() const { return "RenderSVGResourceClipper"; }

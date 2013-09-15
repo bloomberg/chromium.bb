@@ -34,7 +34,7 @@ class RenderObject;
 
 class RenderSVGResourceMarker FINAL : public RenderSVGResourceContainer {
 public:
-    RenderSVGResourceMarker(SVGMarkerElement*);
+    explicit RenderSVGResourceMarker(SVGMarkerElement*);
     virtual ~RenderSVGResourceMarker();
 
     virtual const char* renderName() const { return "RenderSVGResourceMarker"; }

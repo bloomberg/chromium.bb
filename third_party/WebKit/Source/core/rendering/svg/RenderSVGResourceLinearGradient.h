@@ -30,7 +30,7 @@ class SVGLinearGradientElement;
 
 class RenderSVGResourceLinearGradient FINAL : public RenderSVGResourceGradient {
 public:
-    RenderSVGResourceLinearGradient(SVGLinearGradientElement*);
+    explicit RenderSVGResourceLinearGradient(SVGLinearGradientElement*);
     virtual ~RenderSVGResourceLinearGradient();
 
     virtual const char* renderName() const { return "RenderSVGResourceLinearGradient"; }
