@@ -327,7 +327,6 @@
         }],
         ['OS=="win"', {
           'defines': [
-            'WEBCORE_NAVIGATOR_PLATFORM="Win32"',
             '__PRETTY_FUNCTION__=__FUNCTION__',
           ],
           # In generated bindings code: 'switch contains default but no case'.
@@ -397,7 +396,6 @@
       ],
       'direct_dependent_settings': {
         'defines': [
-          'WEBCORE_NAVIGATOR_VENDOR="Google Inc."',
           'WEBKIT_IMPLEMENTATION=1',
           'INSIDE_WEBKIT',
         ],
@@ -456,9 +454,6 @@
         ['OS=="mac"', {
           'direct_dependent_settings': {
             'defines': [
-              # Match Safari and Mozilla on Mac x86.
-              'WEBCORE_NAVIGATOR_PLATFORM="MacIntel"',
-
               # Chromium's version of WebCore includes the following Objective-C
               # classes. The system-provided WebCore framework may also provide
               # these classes. Because of the nature of Objective-C binding
@@ -512,8 +507,6 @@
         ['OS=="win"', {
           'direct_dependent_settings': {
             'defines': [
-              # Match Safari and Mozilla on Windows.
-              'WEBCORE_NAVIGATOR_PLATFORM="Win32"',
               '__PRETTY_FUNCTION__=__FUNCTION__',
             ],
           },
