@@ -9,6 +9,7 @@
 #include <set>
 #include <vector>
 
+#include "base/containers/hash_tables.h"
 #include "cc/resources/raster_worker_pool.h"
 
 namespace cc {
@@ -68,7 +69,7 @@ class CC_EXPORT PixelBufferRasterWorkerPool : public RasterWorkerPool {
   TaskDeque tasks_with_pending_upload_;
   TaskDeque completed_tasks_;
 
-  typedef std::set<internal::RasterWorkerPoolTask*> TaskSet;
+  typedef base::hash_set<internal::RasterWorkerPoolTask*> TaskSet;
   TaskSet tasks_required_for_activation_;
 
   size_t scheduled_raster_task_count_;
