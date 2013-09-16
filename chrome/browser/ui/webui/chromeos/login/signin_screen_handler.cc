@@ -1032,6 +1032,15 @@ void SigninScreenHandler::OnDnsCleared() {
 
 // Update keyboard layout to least recently used by the user.
 void SigninScreenHandler::SetUserInputMethod(const std::string& username) {
+  UserManager* user_manager = UserManager::Get();
+  if (user_manager->IsUserLoggedIn()) {
+    // We are on sign-in screen inside user session (adding new user to
+    // the session or on lock screen), don't switch input methods in this case.
+    // TODO(dpolukhin): adding user and sign-in should be consistent
+    // crbug.com/292774
+    return;
+  }
+
   chromeos::input_method::InputMethodManager* const manager =
       chromeos::input_method::InputMethodManager::Get();
 

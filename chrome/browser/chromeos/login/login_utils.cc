@@ -379,7 +379,9 @@ void LoginUtilsImpl::InitProfilePreferences(Profile* user_profile,
     google_services_username.SetValue(user ? user->display_email() : email);
   }
 
-  RespectLocalePreference(user_profile);
+  // For multi-profile case don't apply profile local because it is not safe.
+  if (UserManager::Get()->GetLoggedInUsers().size() == 1)
+    RespectLocalePreference(user_profile);
 }
 
 void LoginUtilsImpl::InitSessionRestoreStrategy() {
