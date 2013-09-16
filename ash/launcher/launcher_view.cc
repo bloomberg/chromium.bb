@@ -477,7 +477,7 @@ void LauncherView::OnShelfAlignmentChanged() {
     if (i >= first_visible_index_ && i <= last_visible_index_)
       view_model_->view_at(i)->Layout();
   }
-  tooltip_->UpdateArrow();
+  tooltip_->Close();
   if (overflow_bubble_)
     overflow_bubble_->Hide();
 }
@@ -1452,6 +1452,11 @@ void LauncherView::LauncherItemRemoved(int model_index, LauncherID id) {
                                   view_model_->view_size() - 1);
     UpdateOverflowRange(overflow_bubble_->launcher_view());
   }
+
+  // Close the tooltip because it isn't needed any longer and its anchor view
+  // will be deleted soon.
+  if (tooltip_->GetCurrentAnchorView() == view)
+    tooltip_->Close();
 }
 
 void LauncherView::LauncherItemChanged(int model_index,

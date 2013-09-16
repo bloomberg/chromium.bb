@@ -1084,6 +1084,55 @@ TEST_F(LauncherViewTest, LauncherTooltipTest) {
   EXPECT_EQ(platform_button, GetTooltipAnchorView());
 }
 
+// Verify a fix for crash caused by a tooltip update for a deleted launcher
+// button, see crbug.com/288838.
+TEST_F(LauncherViewTest, RemovingItemClosesTooltip) {
+  internal::LauncherButtonHost* button_host = launcher_view_;
+  internal::LauncherTooltipManager* tooltip_manager =
+      launcher_view_->tooltip_manager();
+
+  // Add an item to the launcher.
+  LauncherID app_button_id = AddAppShortcut();
+  internal::LauncherButton* app_button = GetButtonByID(app_button_id);
+
+  // Spawn a tooltip on that item.
+  button_host->MouseEnteredButton(app_button);
+  ShowTooltip();
+  EXPECT_TRUE(tooltip_manager->IsVisible());
+
+  // Remove the app shortcut while the tooltip is open. The tooltip should be
+  // closed.
+  RemoveByID(app_button_id);
+  EXPECT_FALSE(tooltip_manager->IsVisible());
+
+  // Change the shelf layout. This should not crash.
+  ash::Shell::GetInstance()->SetShelfAlignment(
+      ash::SHELF_ALIGNMENT_LEFT,
+      ash::Shell::GetPrimaryRootWindow());
+}
+
+// Changing the shelf alignment closes any open tooltip.
+TEST_F(LauncherViewTest, ShelfAlignmentClosesTooltip) {
+  internal::LauncherButtonHost* button_host = launcher_view_;
+  internal::LauncherTooltipManager* tooltip_manager =
+      launcher_view_->tooltip_manager();
+
+  // Add an item to the launcher.
+  LauncherID app_button_id = AddAppShortcut();
+  internal::LauncherButton* app_button = GetButtonByID(app_button_id);
+
+  // Spawn a tooltip on the item.
+  button_host->MouseEnteredButton(app_button);
+  ShowTooltip();
+  EXPECT_TRUE(tooltip_manager->IsVisible());
+
+  // Changing shelf alignment hides the tooltip.
+  ash::Shell::GetInstance()->SetShelfAlignment(
+      ash::SHELF_ALIGNMENT_LEFT,
+      ash::Shell::GetPrimaryRootWindow());
+  EXPECT_FALSE(tooltip_manager->IsVisible());
+}
+
 TEST_F(LauncherViewTest, ShouldHideTooltipTest) {
   LauncherID app_button_id = AddAppShortcut();
   LauncherID platform_button_id = AddPlatformApp();

@@ -74,6 +74,9 @@ class ASH_EXPORT LauncherTooltipManager : public ui::EventHandler,
   // Returns true if the tooltip is currently visible.
   bool IsVisible();
 
+  // Returns the view to which the tooltip bubble is anchored. May be NULL.
+  views::View* GetCurrentAnchorView() { return anchor_; }
+
   // Create an instant timer for test purposes.
   void CreateZeroDelayTimerForTest();
 
