@@ -1,4 +1,3 @@
-CONSOLE MESSAGE: DOMNodeInserted is deprecated. Use MutationObservers instead.
 Test that window.onerror and "error" event listeners from isolated world are invoked for uncaught exceptions in scripts running in isolate worlds as well as for exceptions in the main world.Bug 8519.
 
 isolated world window.onerror: Uncaught Error: Error in isolated world inline script. at , Line: 41, Column: 18

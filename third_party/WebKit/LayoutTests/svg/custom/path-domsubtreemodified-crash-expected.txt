@@ -1,2 +1,1 @@
-CONSOLE MESSAGE: DOMSubtreeModified is deprecated. Use MutationObservers instead.
 This test passes if no crash occurs and PASS is printed. PASS

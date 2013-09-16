@@ -1,2 +1,1 @@
-CONSOLE MESSAGE: DOMNodeRemoved is deprecated. Use MutationObservers instead.
 PASS: No infinite loop.

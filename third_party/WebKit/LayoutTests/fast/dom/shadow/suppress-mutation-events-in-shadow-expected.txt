@@ -1,4 +1,3 @@
-CONSOLE MESSAGE: DOMNodeInserted is deprecated. Use MutationObservers instead.
 Test that mutation events are not triggered in shadow DOM
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

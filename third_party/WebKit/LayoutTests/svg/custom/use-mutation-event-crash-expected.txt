@@ -1,3 +1,2 @@
-CONSOLE MESSAGE: DOMNodeInserted is deprecated. Use MutationObservers instead.
 PASS - didn't crash, bug 25092
 

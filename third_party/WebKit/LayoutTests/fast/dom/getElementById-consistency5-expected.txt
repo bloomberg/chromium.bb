@@ -1,4 +1,3 @@
-CONSOLE MESSAGE: DOMSubtreeModified is deprecated. Use MutationObservers instead.
 Test that DOMSubtreeModified listeners cannot cause DocumentOrderedMap to be incorrect
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

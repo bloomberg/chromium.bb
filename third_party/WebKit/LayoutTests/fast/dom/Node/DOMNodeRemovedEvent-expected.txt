@@ -1,4 +1,3 @@
-CONSOLE MESSAGE: DOMNodeRemoved is deprecated. Use MutationObservers instead.
 This test checks that DOMNodeRemovedEvent is emitted once (and only once).
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

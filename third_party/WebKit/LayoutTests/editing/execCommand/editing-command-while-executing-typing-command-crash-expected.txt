@@ -1,3 +1,2 @@
-CONSOLE MESSAGE: DOMNodeRemovedFromDocument is deprecated. Use MutationObservers instead.
 This tests executing an editing command while executing a typing command.
 PASS

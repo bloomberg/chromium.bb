@@ -1,3 +1,2 @@
-CONSOLE MESSAGE: DOMNodeRemoved is deprecated. Use MutationObservers instead.
 Test passes if it does not crash.
 

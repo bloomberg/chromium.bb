@@ -1,4 +1,3 @@
-CONSOLE MESSAGE: DOMNodeInsertedIntoDocument is deprecated. Use MutationObservers instead.
 This page contains the following errors:
 
 error on line 14 at column 1: Extra content at the end of the document

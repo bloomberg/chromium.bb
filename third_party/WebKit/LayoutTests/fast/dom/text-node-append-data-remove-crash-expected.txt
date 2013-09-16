@@ -1,2 +1,1 @@
-CONSOLE MESSAGE: DOMCharacterDataModified is deprecated. Use MutationObservers instead.
 PASS, didn't crash.

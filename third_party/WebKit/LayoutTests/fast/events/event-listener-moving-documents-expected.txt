@@ -1,5 +1,3 @@
-CONSOLE MESSAGE: DOMNodeInserted is deprecated. Use MutationObservers instead.
-CONSOLE MESSAGE: DOMNodeRemoved is deprecated. Use MutationObservers instead.
 Moving an event listener between documents should keep it active
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
