@@ -204,16 +204,23 @@ public class AndroidViewIntegrationTest extends AwTestBase {
         assertTrue(mOnContentSizeChangedHelper.getHeight() > 0);
     }
 
-    private String makeHtmlPageOfSize(int widthCss, int heightCss) {
+    private String makeHtmlPageOfSize(int widthCss, int heightCss, boolean heightPercent) {
+        String content = "<div class=\"normal\">a</div>";
+        if (heightPercent)
+            content += "<div class=\"heightPercent\"></div>";
         return CommonResources.makeHtmlPageFrom(
             "<style type=\"text/css\">" +
                 "body { margin:0px; padding:0px; } " +
-                "div { " +
+                ".normal { " +
                    "width:" + widthCss + "px; " +
                    "height:" + heightCss + "px; " +
                    "background-color: red; " +
                  "} " +
-            "</style>", "<div/>");
+                 ".heightPercent { " +
+                   "height: 150%; " +
+                   "background-color: blue; " +
+                 "} " +
+            "</style>", content);
     }
 
     private void waitForContentSizeToChangeTo(OnContentSizeChangedHelper helper, int callCount,
@@ -232,9 +239,10 @@ public class AndroidViewIntegrationTest extends AwTestBase {
     }
 
     private void loadPageOfSizeAndWaitForSizeChange(AwContents awContents,
-            OnContentSizeChangedHelper helper, int widthCss, int heightCss) throws Exception {
+            OnContentSizeChangedHelper helper, int widthCss, int heightCss,
+            boolean heightPercent) throws Exception {
 
-        final String htmlData = makeHtmlPageOfSize(widthCss, heightCss);
+        final String htmlData = makeHtmlPageOfSize(widthCss, heightCss, heightPercent);
         final int contentSizeChangeCallCount = helper.getCallCount();
         loadDataAsync(awContents, htmlData, "text/html", false);
 
@@ -253,7 +261,15 @@ public class AndroidViewIntegrationTest extends AwTestBase {
         final int contentHeightCss = 180;
 
         loadPageOfSizeAndWaitForSizeChange(testContainerView.getAwContents(),
-                mOnContentSizeChangedHelper, contentWidthCss, contentHeightCss);
+                mOnContentSizeChangedHelper, contentWidthCss, contentHeightCss, false);
+    }
+
+    public void waitForNoLayoutsPending() throws InterruptedException {
+        // This is to make sure that there are no more pending size change notifications. Ideally
+        // we'd assert that the renderer is idle (has no pending layout passes) but that would
+        // require quite a bit of plumbing, so we just wait a bit and make sure the size hadn't
+        // changed.
+        Thread.sleep(CONTENT_SIZE_CHANGE_STABILITY_TIMEOUT_MS);
     }
 
     @SmallTest
@@ -276,14 +292,36 @@ public class AndroidViewIntegrationTest extends AwTestBase {
         final int expectedHeightCss = contentHeightCss;
 
         loadPageOfSizeAndWaitForSizeChange(testContainerView.getAwContents(),
-                mOnContentSizeChangedHelper, expectedWidthCss, expectedHeightCss);
+                mOnContentSizeChangedHelper, expectedWidthCss, expectedHeightCss, false);
 
-        // This is to make sure that there are no more pending size change notifications. Ideally
-        // we'd assert that the renderer is idle (has no pending layout passes) but that would
-        // require quite a bit of plumbing, so we just wait a bit and make sure the size hadn't
-        // changed.
-        Thread.sleep(CONTENT_SIZE_CHANGE_STABILITY_TIMEOUT_MS);
+        waitForNoLayoutsPending();
         assertEquals(expectedWidthCss, mOnContentSizeChangedHelper.getWidth());
+        assertEquals(expectedHeightCss, mOnContentSizeChangedHelper.getHeight());
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testViewSizedCorrectlyInWrapContentModeWithDynamicContents() throws Throwable {
+        final TestAwContentsClient contentsClient = new TestAwContentsClient();
+        final AwTestContainerView testContainerView = createCustomTestContainerViewOnMainSync(
+                contentsClient, View.VISIBLE);
+        assertZeroHeight(testContainerView);
+
+        final double deviceDIPScale =
+            DeviceDisplayInfo.create(testContainerView.getContext()).getDIPScale();
+
+        final int contentWidthCss = 142;
+        final int contentHeightCss = 180;
+        final int expectedHeightCss = contentHeightCss +
+            // The second div in the contents is styled to have 150% of the viewport height, hence
+            // the 1.5.
+            (int) (AwLayoutSizer.FIXED_LAYOUT_HEIGHT * 1.5);
+
+        loadPageOfSizeAndWaitForSizeChange(testContainerView.getAwContents(),
+                mOnContentSizeChangedHelper, contentWidthCss, contentHeightCss, true);
+
+        waitForNoLayoutsPending();
+        assertEquals(contentWidthCss, mOnContentSizeChangedHelper.getWidth());
         assertEquals(expectedHeightCss, mOnContentSizeChangedHelper.getHeight());
     }
 }

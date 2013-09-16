@@ -11,5 +11,6 @@ include_rules = [
   "+third_party/WebKit/public/platform",
   "+third_party/WebKit/public/web",
 
+  "+ui/gfx/size.h",
   "+ui/gl/gpu_memory_buffer.h",
 ]

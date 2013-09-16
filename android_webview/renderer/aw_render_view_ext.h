@@ -10,6 +10,7 @@
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/public/web/WebPermissionClient.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/size.h"
 
 namespace WebKit {
 
@@ -49,6 +50,9 @@ class AwRenderViewExt : public content::RenderViewObserver,
   void OnResetScrollAndScaleState();
 
   void OnSetInitialPageScale(double page_scale_factor);
+
+  void OnSetFixedLayoutSize(const gfx::Size& size);
+
   void OnSetBackgroundColor(SkColor c);
 
   void UpdatePageScaleFactor();

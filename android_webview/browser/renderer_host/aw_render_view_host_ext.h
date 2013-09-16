@@ -11,6 +11,7 @@
 #include "base/callback_forward.h"
 #include "base/threading/non_thread_safe.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/size.h"
 
 class GURL;
 
@@ -65,6 +66,8 @@ class AwRenderViewHostExt : public content::WebContentsObserver,
   // Sets the zoom level for text only. Used in layout modes other than
   // Text Autosizing.
   void SetTextZoomLevel(double level);
+
+  void SetFixedLayoutSize(const gfx::Size& size);
 
   void ResetScrollAndScaleState();
 

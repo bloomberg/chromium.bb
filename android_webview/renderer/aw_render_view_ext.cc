@@ -164,6 +164,7 @@ bool AwRenderViewExt::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(AwViewMsg_ResetScrollAndScaleState,
                         OnResetScrollAndScaleState)
     IPC_MESSAGE_HANDLER(AwViewMsg_SetInitialPageScale, OnSetInitialPageScale)
+    IPC_MESSAGE_HANDLER(AwViewMsg_SetFixedLayoutSize, OnSetFixedLayoutSize)
     IPC_MESSAGE_HANDLER(AwViewMsg_SetBackgroundColor, OnSetBackgroundColor)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -302,6 +303,13 @@ void AwRenderViewExt::OnSetInitialPageScale(double page_scale_factor) {
     return;
   render_view()->GetWebView()->setInitialPageScaleOverride(
       page_scale_factor);
+}
+
+void AwRenderViewExt::OnSetFixedLayoutSize(const gfx::Size& size) {
+  if (!render_view() || !render_view()->GetWebView())
+    return;
+  DCHECK(render_view()->GetWebView()->isFixedLayoutModeEnabled());
+  render_view()->GetWebView()->setFixedLayoutSize(size);
 }
 
 void AwRenderViewExt::OnSetBackgroundColor(SkColor c) {

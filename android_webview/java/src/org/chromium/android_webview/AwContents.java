@@ -344,6 +344,11 @@ public class AwContents {
         public void setMeasuredDimension(int measuredWidth, int measuredHeight) {
             mInternalAccessAdapter.setMeasuredDimension(measuredWidth, measuredHeight);
         }
+
+        @Override
+        public void setFixedLayoutSize(int widthDip, int heightDip) {
+            nativeSetFixedLayoutSize(mNativeAwContents, widthDip, heightDip);
+        }
     }
 
     //--------------------------------------------------------------------------------------------
@@ -1514,6 +1519,7 @@ public class AwContents {
         mScrollOffsetManager.setContainerViewSize(w, h);
         mContentViewCore.onPhysicalBackingSizeChanged(w, h);
         mContentViewCore.onSizeChanged(w, h, ow, oh);
+        mLayoutSizer.onSizeChanged(w, h, ow, oh);
         nativeOnSizeChanged(mNativeAwContents, w, h, ow, oh);
     }
 
@@ -1907,6 +1913,7 @@ public class AwContents {
     private native void nativeSetDipScale(int nativeAwContents, float dipScale);
     private native void nativeSetDisplayedPageScaleFactor(int nativeAwContents,
             float pageScaleFactor);
+    private native void nativeSetFixedLayoutSize(int nativeAwContents, int widthDip, int heightDip);
 
     // Returns null if save state fails.
     private native byte[] nativeGetOpaqueState(int nativeAwContents);

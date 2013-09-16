@@ -4,6 +4,8 @@
 
 #include "android_webview/native/aw_contents.h"
 
+#include <limits>
+
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_browser_main_parts.h"
 #include "android_webview/browser/gpu_memory_buffer_factory_impl.h"
@@ -53,6 +55,7 @@
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/font_render_params_linux.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/size.h"
 
 struct AwDrawSWFunctionTable;
 struct AwDrawGLFunctionTable;
@@ -810,14 +813,21 @@ void AwContents::DidOverscroll(gfx::Vector2d overscroll_delta) {
       env, obj.obj(), overscroll_delta.x(), overscroll_delta.y());
 }
 
-void AwContents::SetDipScale(JNIEnv* env, jobject obj, jfloat dipScale) {
-  browser_view_renderer_->SetDipScale(dipScale);
+void AwContents::SetDipScale(JNIEnv* env, jobject obj, jfloat dip_scale) {
+  browser_view_renderer_->SetDipScale(dip_scale);
 }
 
 void AwContents::SetDisplayedPageScaleFactor(JNIEnv* env,
                                              jobject obj,
-                                             jfloat pageScaleFactor) {
-  browser_view_renderer_->SetPageScaleFactor(pageScaleFactor);
+                                             jfloat page_scale_factor) {
+  browser_view_renderer_->SetPageScaleFactor(page_scale_factor);
+}
+
+void AwContents::SetFixedLayoutSize(JNIEnv* env,
+                                    jobject obj,
+                                    jint width_dip,
+                                    jint height_dip) {
+  render_view_host_ext_->SetFixedLayoutSize(gfx::Size(width_dip, height_dip));
 }
 
 void AwContents::ScrollTo(JNIEnv* env, jobject obj, jint xPix, jint yPix) {
