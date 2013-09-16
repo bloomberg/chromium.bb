@@ -15,6 +15,21 @@
 
 namespace local_discovery {
 
+namespace {
+
+void LogInterfaces() {
+  net::NetworkInterfaceList list;
+  net::GetNetworkList(&list);
+  std::string log;
+  for (net::NetworkInterfaceList::iterator it = list.begin(); it != list.end();
+       ++it) {
+    log += " " + net::IPAddressToString(it->address);
+  }
+  VLOG(1) << "Local addresses:" << log;
+}
+
+}  // namespace
+
 using content::BrowserThread;
 using content::UtilityProcessHost;
 
@@ -216,14 +231,14 @@ void ServiceDiscoveryHostClient::UnregisterLocalDomainResolverCallback(
 
 void ServiceDiscoveryHostClient::Start() {
   DCHECK(CalledOnValidThread());
-  net::NetworkChangeNotifier::AddIPAddressObserver(this);
+  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
   io_runner_->PostTask(
       FROM_HERE,
       base::Bind(&ServiceDiscoveryHostClient::StartOnIOThread, this));
 }
 
 void ServiceDiscoveryHostClient::Shutdown() {
-  net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
+  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
   DCHECK(CalledOnValidThread());
   io_runner_->PostTask(
       FROM_HERE,
@@ -264,6 +279,27 @@ void ServiceDiscoveryHostClient::ShutdownOnIOThread() {
   }
 }
 
+void ServiceDiscoveryHostClient::Restart() {
+  DCHECK(CalledOnValidThread());
+
+  VLOG(1) << "ServiceDiscoveryHostClient::Restart";
+  LogInterfaces();
+
+  io_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&ServiceDiscoveryHostClient::RestartOnIOThread, this));
+
+  WatcherCallbacks service_watcher_callbacks;
+  service_watcher_callbacks_.swap(service_watcher_callbacks);
+
+  for (WatcherCallbacks::iterator i = service_watcher_callbacks.begin();
+       i != service_watcher_callbacks.end(); i++) {
+    if (!i->second.is_null()) {
+      i->second.Run(ServiceWatcher::UPDATE_INVALIDATED, "");
+    }
+  }
+}
+
 void ServiceDiscoveryHostClient::RestartOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
@@ -284,20 +320,14 @@ void ServiceDiscoveryHostClient::SendOnIOThread(IPC::Message* msg) {
     utility_host_->Send(msg);
 }
 
-void ServiceDiscoveryHostClient::OnIPAddressChanged() {
-  io_runner_->PostTask(
+void ServiceDiscoveryHostClient::OnNetworkChanged(
+    net::NetworkChangeNotifier::ConnectionType type) {
+  VLOG(1) << "ServiceDiscoveryHostClient::OnNetworkChanged";
+  LogInterfaces();
+  callback_runner_->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&ServiceDiscoveryHostClient::RestartOnIOThread, this));
-
-  WatcherCallbacks service_watcher_callbacks;
-  service_watcher_callbacks_.swap(service_watcher_callbacks);
-
-  for (WatcherCallbacks::iterator i = service_watcher_callbacks.begin();
-       i != service_watcher_callbacks.end(); i++) {
-    if (!i->second.is_null()) {
-      i->second.Run(ServiceWatcher::UPDATE_INVALIDATED, "");
-    }
-  }
+      base::Bind(&ServiceDiscoveryHostClient::Restart, this),
+      base::TimeDelta::FromSeconds(10));
 }
 
 bool ServiceDiscoveryHostClient::OnMessageReceived(

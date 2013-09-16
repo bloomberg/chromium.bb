@@ -30,7 +30,7 @@ class ServiceDiscoveryHostClient
     : public base::NonThreadSafe,
       public ServiceDiscoveryClient,
       public content::UtilityProcessHostClient,
-      public net::NetworkChangeNotifier::IPAddressObserver {
+      public net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
   ServiceDiscoveryHostClient();
 
@@ -55,8 +55,9 @@ class ServiceDiscoveryHostClient
   // UtilityProcessHostClient implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
-  // net::NetworkChangeNotifier::IPAddressObserver implementation.
-  virtual void OnIPAddressChanged() OVERRIDE;
+  // net::NetworkChangeNotifier::NetworkChangeObserver implementation.
+  virtual void OnNetworkChanged(
+      net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
 
  protected:
   virtual ~ServiceDiscoveryHostClient();
@@ -75,6 +76,8 @@ class ServiceDiscoveryHostClient
   void StartOnIOThread();
   void ShutdownOnIOThread();
   void RestartOnIOThread();
+
+  void Restart();
 
   void Send(IPC::Message* msg);
   void SendOnIOThread(IPC::Message* msg);
