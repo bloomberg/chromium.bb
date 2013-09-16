@@ -685,7 +685,8 @@ void FeatureInfo::InitializeFeatures() {
     // when available.
   }
 
-  if (is_es3) {
+  if ((is_es3 || extensions.Contains("GL_EXT_discard_framebuffer")) &&
+      !workarounds_.disable_ext_discard_framebuffer) {
     // DiscardFramebufferEXT is automatically bound to InvalidateFramebuffer.
     AddExtensionString("GL_EXT_discard_framebuffer");
   }

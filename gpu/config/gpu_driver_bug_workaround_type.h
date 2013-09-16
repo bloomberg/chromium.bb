@@ -70,6 +70,8 @@
          use_virtualized_gl_contexts)                        \
   GPU_OP(VALIDATE_MULTISAMPLE_BUFFER_ALLOCATION,             \
          validate_multisample_buffer_allocation)             \
+  GPU_OP(DISABLE_EXT_DISCARD_FRAMEBUFFER,                    \
+         disable_ext_discard_framebuffer)                    \
 
 namespace gpu {
 

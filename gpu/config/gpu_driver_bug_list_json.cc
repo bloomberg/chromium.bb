@@ -85,7 +85,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "2.14",
+  "version": "2.15",
   "entries": [
     {
       "id": 1,
@@ -604,6 +604,21 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       },
       "features": [
         "validate_multisample_buffer_allocation"
+      ]
+    },
+    {
+      "id": 40,
+      "cr_bugs": [290876],
+      "description": "Framebuffer discarding causes flickering on ARM",
+      "os": {
+        "type": "android"
+      },
+      "gl_vendor": {
+        "op": "beginwith",
+        "value": "ARM"
+      },
+      "features": [
+        "disable_ext_discard_framebuffer"
       ]
     }
   ]
