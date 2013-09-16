@@ -92,7 +92,7 @@ button.blue-button:active {
 button.blue-button:focus {
   border-image: -webkit-image-set(
     url('chrome://resources/images/apps/blue_button_focused.png') 1x,
-    url('chrome://resources/images/2x/apps/_bluebutton.png')
+    url('chrome://resources/images/2x/apps/blue_button_focused.png')
         2x) 5 fill / 5px / 2px repeat;
 }
 
