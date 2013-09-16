@@ -51,6 +51,8 @@ static const char kLocalChrome[] = "Local Chrome";
 static const char kChrome[] = "Chrome";
 static const char kOpenedUnixSocketsCommand[] = "shell:cat /proc/net/unix";
 static const char kListProcessesCommand[] = "shell:ps";
+static const char kDumpsysCommand[] = "shell:dumpsys window policy";
+static const char kDumpsysScreenSizePrefix[] = "mStable=";
 
 static const char kPageListRequest[] = "GET /json HTTP/1.1\r\n\r\n";
 static const char kVersionRequest[] = "GET /json/version HTTP/1.1\r\n\r\n";
@@ -295,6 +297,16 @@ class AdbPagesCommand : public base::RefCountedThreadSafe<
 
     ParseSocketsList(response);
     scoped_refptr<DevToolsAdbBridge::AndroidDevice> device = devices_.back();
+    device->RunCommand(kDumpsysCommand,
+                       base::Bind(&AdbPagesCommand::ReceivedDumpsys, this));
+  }
+
+  void ReceivedDumpsys(int result, const std::string& response) {
+    DCHECK_EQ(bridge_->GetAdbMessageLoop(), base::MessageLoop::current());
+    if (result >= 0)
+      ParseDumpsysResponse(response);
+
+    scoped_refptr<DevToolsAdbBridge::AndroidDevice> device = devices_.back();
     device->RunCommand(kListProcessesCommand,
                        base::Bind(&AdbPagesCommand::ReceivedProcesses, this));
   }
@@ -464,6 +476,38 @@ class AdbPagesCommand : public base::RefCountedThreadSafe<
         (*it)->set_package(pit->second);
     }
   }
+
+  void ParseDumpsysResponse(const std::string& response) {
+    std::vector<std::string> lines;
+    Tokenize(response, "\r", &lines);
+    for (size_t i = 0; i < lines.size(); ++i) {
+      std::string line = lines[i];
+      size_t pos = line.find(kDumpsysScreenSizePrefix);
+      if (pos != std::string::npos) {
+        ParseScreenSize(
+            line.substr(pos + std::string(kDumpsysScreenSizePrefix).size()));
+        break;
+      }
+    }
+  }
+
+  void ParseScreenSize(const std::string& str) {
+    std::vector<std::string> pairs;
+    Tokenize(str, "-", &pairs);
+    if (pairs.size() != 2)
+      return;
+
+    int width;
+    int height;
+    std::vector<std::string> numbers;
+    Tokenize(pairs[1].substr(1, pairs[1].size() - 2), ",", &numbers);
+    if (numbers.size() != 2 ||
+        !base::StringToInt(numbers[0], &width) ||
+        !base::StringToInt(numbers[1], &height))
+      return;
+
+    remote_devices_->back()->SetScreenSize(gfx::Size(width, height));
+}
 
   scoped_refptr<DevToolsAdbBridge> bridge_;
   Callback callback_;

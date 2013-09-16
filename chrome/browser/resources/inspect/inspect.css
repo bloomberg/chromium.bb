@@ -138,7 +138,10 @@ img {
 }
 
 .row {
+  -webkit-flex-direction: row;
+  display: -webkit-flex;
   padding: 6px 0;
+  position: relative;
 }
 
 .subrow {
@@ -150,8 +153,30 @@ img {
   margin-right: 0.5em;
 }
 
-.subrow.webview {
-  margin-top: -2px;
+.webview-thumbnail {
+  -webkit-box-align: center;
+  -webkit-box-orient: horizontal;
+  -webkit-box-pack: center;
+  display: -webkit-box;
+  height: 60px;
+  margin: 0 1px;
+  overflow: hidden;
+}
+
+.screen-rect {
+  background-color: #eee;
+  position: relative;
+}
+
+.view-rect {
+  background-color: #ccc;
+  min-height: 1px;
+  min-width: 1px;
+  position: absolute;
+}
+
+.view-rect.hidden {
+  background-color: #ddd;
 }
 
 .guest {
@@ -174,12 +199,6 @@ a {
   color: rgb(17, 85, 204);
   margin-right: 6px;
   text-decoration: none;
-}
-
-.list.pages .subrow + a,
-.subrow.webview > div:first-child,
-.guest .subrow + a {
-  margin-left: 24px;  /* Align with the favicon */
 }
 
 .list:not(.pages) .subrow {

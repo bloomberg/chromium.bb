@@ -16,6 +16,7 @@
 #include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/socket/tcp_client_socket.h"
+#include "ui/gfx/size.h"
 
 template<typename T> struct DefaultSingletonTraits;
 
@@ -200,6 +201,9 @@ class DevToolsAdbBridge
       port_status_ = port_status;
     }
 
+    gfx::Size GetScreenSize() { return screen_size_; }
+    void SetScreenSize(const gfx::Size& size) { screen_size_ = size; }
+
    private:
     friend class base::RefCounted<RemoteDevice>;
     virtual ~RemoteDevice();
@@ -208,6 +212,7 @@ class DevToolsAdbBridge
     scoped_refptr<AndroidDevice> device_;
     RemoteBrowsers browsers_;
     PortStatusMap port_status_;
+    gfx::Size screen_size_;
 
     DISALLOW_COPY_AND_ASSIGN(RemoteDevice);
   };

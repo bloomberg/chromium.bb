@@ -105,6 +105,8 @@ static const char kAdbGlobalIdField[] = "adbGlobalId";
 static const char kAdbBrowsersField[] = "browsers";
 static const char kAdbPagesField[] = "pages";
 static const char kAdbPortStatus[] = "adbPortStatus";
+static const char kAdbScreenWidthField[] = "adbScreenWidth";
+static const char kAdbScreenHeightField[] = "adbScreenHeight";
 static const char kGuestList[] = "guests";
 
 DictionaryValue* BuildTargetDescriptor(
@@ -709,6 +711,12 @@ void InspectUI::RemoteDevicesChanged(
             browser->socket().c_str(),
             page->id().c_str());
         page_data->SetString(kAdbGlobalIdField, page_id);
+        // Pass the screen size in the page object to make sure that
+        // the caching logic does not prevent the page item from updating
+        // when the screen size changes.
+        gfx::Size screen_size = device->GetScreenSize();
+        page_data->SetInteger(kAdbScreenWidthField, screen_size.width());
+        page_data->SetInteger(kAdbScreenHeightField, screen_size.height());
         remote_pages_[page_id] = page;
         page_list->Append(page_data);
       }

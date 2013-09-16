@@ -282,18 +282,19 @@ function populateDeviceLists(devices) {
         // it is impossible to activate existing DevTools window.
         page.hasNoUniqueId = page.attached &&
             majorChromeVersion < MIN_VERSION_TARGET_ID;
-        var row = addTargetToList(
-            page, pageList, ['faviconUrl', 'name', 'url', 'description']);
+        var row = addTargetToList(page, pageList, ['name', 'url']);
+        if (page['description'])
+          addWebViewDetails(row, page);
+        else
+          addFavicon(row, page);
         if (isChrome) {
           if (majorChromeVersion >= MIN_VERSION_TAB_ACTIVATE) {
-            row.appendChild(createActionLink(
-                'activate', activate.bind(null, page), false));
+            addActionLink(row, 'activate', activate.bind(null, page), false);
           }
-          row.appendChild(createActionLink(
-              'reload', reload.bind(null, page), page.attached));
+          addActionLink(row, 'reload', reload.bind(null, page), page.attached);
           if (majorChromeVersion >= MIN_VERSION_TAB_CLOSE) {
-            row.appendChild(createActionLink(
-                'close', terminate.bind(null, page), page.attached));
+            addActionLink(
+                row, 'close', terminate.bind(null, page), page.attached);
           }
         }
       }
@@ -302,7 +303,8 @@ function populateDeviceLists(devices) {
 }
 
 function addToPagesList(data) {
-  addTargetToList(data, $('pages-list'), ['faviconUrl', 'name', 'url']);
+  var row = addTargetToList(data, $('pages-list'), ['name', 'url']);
+  addFavicon(row, data);
 }
 
 function addToExtensionsList(data) {
@@ -313,16 +315,16 @@ function addToAppsList(data) {
   var row = addTargetToList(data, $('apps-list'), ['name', 'url']);
   if (data.guests) {
     Array.prototype.forEach.call(data.guests, function(guest) {
-      var guestRow = addTargetToList(guest, row, ['faviconUrl', 'name', 'url']);
+      var guestRow = addTargetToList(guest, row, ['name', 'url']);
       guestRow.classList.add('guest');
+      addFavicon(guestRow, data);
     });
   }
 }
 
 function addToWorkersList(data) {
   var row = addTargetToList(data, $('workers-list'), ['pid', 'url']);
-  row.appendChild(createActionLink(
-      'terminate', terminate.bind(null, data), data.attached));
+  addActionLink(row, 'terminate', terminate.bind(null, data), data.attached);
 }
 
 function addToOthersList(data) {
@@ -334,13 +336,6 @@ function formatValue(data, property) {
 
   if (property == 'name' && value == '') {
     value = 'untitled';
-  }
-
-  if (property == 'faviconUrl') {
-    var faviconElement = document.createElement('img');
-    if (value)
-      faviconElement.src = value;
-    return faviconElement;
   }
 
   var text = value ? String(value) : '';
@@ -356,7 +351,27 @@ function formatValue(data, property) {
   return span;
 }
 
-function addWebViewDescription(webview, list) {
+function addFavicon(row, data) {
+  var favicon = document.createElement('img');
+  if (data['faviconUrl'])
+    favicon.src = data['faviconUrl'];
+  row.insertBefore(favicon, row.firstChild);
+}
+
+function addWebViewDetails(row, data) {
+  var webview;
+  try {
+    webview = JSON.parse(data['description']);
+  } catch (e) {
+    return;
+  }
+  addWebViewDescription(row, webview);
+  if (data.adbScreenWidth && data.adbScreenHeight)
+    addWebViewThumbnail(
+        row, webview, data.adbScreenWidth, data.adbScreenHeight);
+}
+
+function addWebViewDescription(row, webview) {
   var viewStatus = { visibility: 'empty', position: '', size: '' };
   if (!webview.empty) {
     if (webview.attached)
@@ -370,47 +385,92 @@ function addWebViewDescription(webview, list) {
         'at (' + webview.screenX + ', ' + webview.screenY + ')';
   }
 
-  var row = document.createElement('div');
-  row.className = 'subrow webview';
+  var subRow = document.createElement('div');
+  subRow.className = 'subrow webview';
   if (webview.empty || !webview.attached || !webview.visible)
-    row.className += ' invisible-view';
-  row.appendChild(formatValue(viewStatus, 'visibility'));
-  row.appendChild(formatValue(viewStatus, 'position'));
-  row.appendChild(formatValue(viewStatus, 'size'));
-  list.appendChild(row);
-  return row;
+    subRow.className += ' invisible-view';
+  subRow.appendChild(formatValue(viewStatus, 'visibility'));
+  subRow.appendChild(formatValue(viewStatus, 'position'));
+  subRow.appendChild(formatValue(viewStatus, 'size'));
+  var mainSubrow = row.querySelector('.subrow.main');
+  if (mainSubrow.nextSibling)
+    mainSubrow.parentNode.insertBefore(subRow, mainSubrow.nextSibling);
+  else
+    mainSubrow.parentNode.appendChild(subRow);
+}
+
+function addWebViewThumbnail(row, webview, screenWidth, screenHeight) {
+  var maxScreenRectSize = 50;
+  var screenRectWidth;
+  var screenRectHeight;
+
+  var aspectRatio = screenWidth / screenHeight;
+  if (aspectRatio < 1) {
+    screenRectWidth = Math.round(maxScreenRectSize * aspectRatio);
+    screenRectHeight = maxScreenRectSize;
+  } else {
+    screenRectWidth = maxScreenRectSize;
+    screenRectHeight = Math.round(maxScreenRectSize / aspectRatio);
+  }
+
+  var thumbnail = document.createElement('div');
+  thumbnail.className = 'webview-thumbnail';
+  var thumbnailWidth = 3 * screenRectWidth;
+  thumbnail.style.width = thumbnailWidth + 'px';
+
+  var screenRect = document.createElement('div');
+  screenRect.className = 'screen-rect';
+  screenRect.style.width = screenRectWidth + 'px';
+  screenRect.style.height = screenRectHeight + 'px';
+  thumbnail.appendChild(screenRect);
+
+  if (!webview.empty && webview.attached) {
+    var viewRect = document.createElement('div');
+    viewRect.className = 'view-rect';
+    if (!webview.visible)
+      viewRect.classList.add('hidden');
+    function percent(ratio) {
+      return ratio * 100 + '%';
+    }
+    viewRect.style.left = percent(webview.screenX / screenWidth);
+    viewRect.style.top = percent(webview.screenY / screenHeight);
+    viewRect.style.width = percent(webview.width / screenWidth);
+    viewRect.style.height = percent(webview.height / screenHeight);
+    screenRect.appendChild(viewRect);
+  }
+
+  row.insertBefore(thumbnail, row.firstChild);
 }
 
 function addTargetToList(data, list, properties) {
   var row = document.createElement('div');
   row.className = 'row';
 
+  var subrowBox = document.createElement('div');
+  row.appendChild(subrowBox);
+
   var subrow = document.createElement('div');
-  subrow.className = 'subrow';
-  row.appendChild(subrow);
+  subrow.className = 'subrow main';
+  subrowBox.appendChild(subrow);
 
   var description = null;
-  for (var j = 0; j < properties.length; j++) {
-    if (properties[j] != 'description')
-      subrow.appendChild(formatValue(data, properties[j]));
-    else if (data['description']) {
-      try {
-        description = JSON.parse(data['description']);
-      } catch (e) {}
-    }
-  }
+  for (var j = 0; j < properties.length; j++)
+    subrow.appendChild(formatValue(data, properties[j]));
 
   if (description)
-    addWebViewDescription(description, row);
+    addWebViewDescription(description, subrowBox);
 
-  row.appendChild(createActionLink(
-      'inspect', inspect.bind(null, data), data.hasNoUniqueId));
+  var actionBox = document.createElement('div');
+  actionBox.className = 'actions';
+  subrowBox.appendChild(actionBox);
+
+  addActionLink(row, 'inspect', inspect.bind(null, data), data.hasNoUniqueId);
 
   list.appendChild(row);
   return row;
 }
 
-function createActionLink(text, handler, opt_disabled) {
+function addActionLink(row, text, handler, opt_disabled) {
   var link = document.createElement('a');
   if (opt_disabled)
     link.classList.add('disabled');
@@ -420,7 +480,7 @@ function createActionLink(text, handler, opt_disabled) {
   link.setAttribute('href', '#');
   link.textContent = text;
   link.addEventListener('click', handler, true);
-  return link;
+  row.querySelector('.actions').appendChild(link);
 }
 
 
