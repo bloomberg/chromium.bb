@@ -22,6 +22,9 @@
           'sources': [
             'policy/core/common/policy_schema.cc',
             'policy/core/common/policy_schema.h',
+            'policy/core/common/schema.cc',
+            'policy/core/common/schema.h',
+            'policy/core/common/schema_internal.h',
             'policy/policy_export.h',
           ],
         }, {  # configuration_policy==0

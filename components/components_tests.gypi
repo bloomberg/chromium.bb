@@ -112,6 +112,7 @@
             ['configuration_policy==1', {
               'sources': [
                 'policy/core/common/policy_schema_unittest.cc',
+                'policy/core/common/schema_unittest.cc',
               ],
             }],
           ],
