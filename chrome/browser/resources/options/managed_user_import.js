@@ -53,8 +53,11 @@ cr.define('options', function() {
             managedUserList.selectedItem.onCurrentDevice;
       });
 
+      var self = this;
       $('managed-user-import-cancel').onclick = function(event) {
         OptionsPage.closeOverlay();
+        self.updateImportInProgress_(false);
+
         // 'cancelCreateProfile' is handled by BrowserOptionsHandler.
         chrome.send('cancelCreateProfile');
       };
@@ -73,6 +76,8 @@ cr.define('options', function() {
      */
     didShowPage: function() {
       chrome.send('requestExistingManagedUsers');
+
+      this.updateImportInProgress_(false);
       $('managed-user-import-error-bubble').hidden = true;
       $('managed-user-import-ok').disabled = true;
       $('select-avatar-grid').hidden = true;
@@ -106,9 +111,10 @@ cr.define('options', function() {
         return;
       }
 
-      $('managed-user-import-ok').disabled = true;
       var avatarUrl = managedUser.needAvatar ?
           $('select-avatar-grid').selectedItem : managedUser.iconURL;
+
+      this.updateImportInProgress_(true);
 
       // 'createProfile' is handled by BrowserOptionsHandler.
       chrome.send('createProfile', [managedUser.name, avatarUrl,
@@ -134,6 +140,20 @@ cr.define('options', function() {
           loadTimeData.getString('managedUserSelectAvatarText');
       $('managed-user-import-title').textContent =
           loadTimeData.getString('managedUserSelectAvatarTitle');
+    },
+
+    /**
+     * Updates the UI according to the importing state.
+     * @param {boolean} inProgress True to indicate that
+     *     importing is in progress and false otherwise.
+     * @private
+     */
+    updateImportInProgress_: function(inProgress) {
+      $('managed-user-import-ok').disabled = inProgress;
+      $('managed-user-list').disabled = inProgress;
+      $('select-avatar-grid').disabled = inProgress;
+      $('create-new-user-link').disabled = inProgress;
+      $('managed-user-import-throbber').hidden = !inProgress;
     },
 
     /**
@@ -170,6 +190,7 @@ cr.define('options', function() {
       var errorBubble = $('managed-user-import-error-bubble');
       errorBubble.hidden = false;
       errorBubble.textContent = error;
+      this.updateImportInProgress_(false);
     },
 
     /**
@@ -177,6 +198,7 @@ cr.define('options', function() {
      * @private
      */
     onSuccess_: function() {
+      this.updateImportInProgress_(false);
       OptionsPage.closeOverlay();
     },
   };
