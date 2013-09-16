@@ -49,6 +49,8 @@ SyncData CreateLocalSyncData(const std::string& id,
   specifics.mutable_managed_user()->set_name(name);
   if (!chrome_avatar.empty())
     specifics.mutable_managed_user()->set_chrome_avatar(chrome_avatar);
+  else
+    specifics.mutable_managed_user()->clear_chrome_avatar();
   if (!chromeos_avatar.empty())
     specifics.mutable_managed_user()->set_chromeos_avatar(chromeos_avatar);
   if (!master_key.empty())
@@ -84,8 +86,9 @@ SyncData CreateSyncDataFromDictionaryEntry(
 const char ManagedUserSyncService::kAcknowledged[] = "acknowledged";
 const char ManagedUserSyncService::kChromeAvatar[] = "chromeAvatar";
 const char ManagedUserSyncService::kChromeOsAvatar[] = "chromeOsAvatar";
-const char ManagedUserSyncService::kName[] = "name";
 const char ManagedUserSyncService::kMasterKey[] = "masterKey";
+const char ManagedUserSyncService::kName[] = "name";
+const int ManagedUserSyncService::kNoAvatar = -100;
 
 ManagedUserSyncService::ManagedUserSyncService(PrefService* prefs)
     : prefs_(prefs) {
@@ -114,7 +117,7 @@ bool ManagedUserSyncService::GetAvatarIndex(const std::string& avatar_str,
   // for chrome OS as well.
   DCHECK(avatar_index);
   if (avatar_str.empty()) {
-    *avatar_index = -1;
+    *avatar_index = kNoAvatar;
     return true;
   }
 
@@ -184,6 +187,10 @@ void ManagedUserSyncService::AddManagedUser(const std::string& id,
 }
 
 void ManagedUserSyncService::DeleteManagedUser(const std::string& id) {
+  DictionaryPrefUpdate update(prefs_, prefs::kManagedUsers);
+  bool success = update->RemoveWithoutPathExpansion(id, NULL);
+  DCHECK(success);
+
   if (!sync_processor_)
     return;
 
@@ -200,6 +207,55 @@ void ManagedUserSyncService::DeleteManagedUser(const std::string& id) {
 const DictionaryValue* ManagedUserSyncService::GetManagedUsers() {
   DCHECK(sync_processor_);
   return prefs_->GetDictionary(prefs::kManagedUsers);
+}
+
+bool ManagedUserSyncService::UpdateManagedUserAvatarIfNeeded(
+    const std::string& id,
+    int avatar_index) {
+  DictionaryPrefUpdate update(prefs_, prefs::kManagedUsers);
+  DictionaryValue* dict = update.Get();
+  DCHECK(dict->HasKey(id));
+  DictionaryValue* value = NULL;
+  bool success = dict->GetDictionaryWithoutPathExpansion(id, &value);
+  DCHECK(success);
+
+  bool acknowledged = false;
+  value->GetBoolean(ManagedUserSyncService::kAcknowledged, &acknowledged);
+  std::string name;
+  value->GetString(ManagedUserSyncService::kName, &name);
+  std::string master_key;
+  value->GetString(ManagedUserSyncService::kMasterKey, &master_key);
+  // TODO(ibraaaa): this should be updated when avatar syncing for
+  // supervised users is implemented on Chrome OS.
+  std::string chromeos_avatar;
+  value->GetString(ManagedUserSyncService::kChromeOsAvatar, &chromeos_avatar);
+  std::string chrome_avatar;
+  value->GetString(ManagedUserSyncService::kChromeAvatar, &chrome_avatar);
+  if (!chrome_avatar.empty() && avatar_index != kNoAvatar)
+    return false;
+
+  chrome_avatar = avatar_index == kNoAvatar ?
+      std::string() : BuildAvatarString(avatar_index);
+  value->SetString(kChromeAvatar, chrome_avatar);
+
+  if (!sync_processor_)
+    return true;
+
+  SyncChangeList change_list;
+  change_list.push_back(SyncChange(
+      FROM_HERE,
+      SyncChange::ACTION_UPDATE,
+      CreateLocalSyncData(id, name, acknowledged, master_key,
+                          chrome_avatar, chromeos_avatar)));
+  SyncError error =
+      sync_processor_->ProcessSyncChanges(FROM_HERE, change_list);
+  DCHECK(!error.IsSet()) << error.ToString();
+  return true;
+}
+
+void ManagedUserSyncService::ClearManagedUserAvatar(const std::string& id) {
+  bool cleared = UpdateManagedUserAvatarIfNeeded(id, kNoAvatar);
+  DCHECK(cleared);
 }
 
 void ManagedUserSyncService::GetManagedUsersAsync(

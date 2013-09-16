@@ -50,10 +50,12 @@ class ManagedUserRegistrationUtilityImpl
   // Registers a new managed user with the server. |managed_user_id| is a new
   // unique ID for the new managed user. If its value is the same as that of
   // of one of the existing managed users, then the same user will be created
-  // on this machine. |info| contains necessary information like the display
-  // name of the  the user. |callback| is called with the result of the
-  // registration. We use the info here and not the profile, because on
-  // Chrome OS the profile of the managed user does not yet exist.
+  // on this machine (and if he has no avatar in sync, his avatar will
+  // be updated). |info| contains necessary information like
+  // the display name of the user and his avatar. |callback| is called
+  // with the result of the registration. We use the info here and not the
+  // profile, because on Chrome OS the profile of the managed user does not
+  // yet exist.
   virtual void Register(const std::string& managed_user_id,
                         const ManagedUserRegistrationInfo& info,
                         const RegistrationCallback& callback) OVERRIDE;
@@ -100,6 +102,7 @@ class ManagedUserRegistrationUtilityImpl
   std::string pending_managed_user_token_;
   bool pending_managed_user_acknowledged_;
   bool is_existing_managed_user_;
+  bool avatar_updated_;
   RegistrationCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagedUserRegistrationUtilityImpl);
@@ -182,7 +185,8 @@ ManagedUserRegistrationUtilityImpl::ManagedUserRegistrationUtilityImpl(
       token_fetcher_(token_fetcher.Pass()),
       managed_user_sync_service_(service),
       pending_managed_user_acknowledged_(false),
-      is_existing_managed_user_(false) {
+      is_existing_managed_user_(false),
+      avatar_updated_(false) {
   managed_user_sync_service_->AddObserver(this);
 }
 
@@ -207,6 +211,11 @@ void ManagedUserRegistrationUtilityImpl::Register(
                                                info.master_key,
                                                info.avatar_index);
   } else {
+    avatar_updated_ =
+        managed_user_sync_service_->UpdateManagedUserAvatarIfNeeded(
+            managed_user_id,
+            info.avatar_index);
+
     // User already exists, don't wait for acknowledgment.
     OnManagedUserAcknowledged(managed_user_id);
   }
@@ -282,17 +291,21 @@ void ManagedUserRegistrationUtilityImpl::CompleteRegistration(
   if (callback_.is_null())
     return;
 
-  // We check that the user being registered is not an existing managed
-  // user before deleting it from sync to avoid accidental deletion of
-  // existing managed users by just canceling the registration for example.
-  if (pending_managed_user_token_.empty() && !is_existing_managed_user_) {
+  if (pending_managed_user_token_.empty()) {
     DCHECK(!pending_managed_user_id_.empty());
-    // Remove the pending managed user if we weren't successful.
-    DictionaryPrefUpdate update(prefs_, prefs::kManagedUsers);
-    bool success =
-        update->RemoveWithoutPathExpansion(pending_managed_user_id_, NULL);
-    DCHECK(success);
-    managed_user_sync_service_->DeleteManagedUser(pending_managed_user_id_);
+
+    if (!is_existing_managed_user_) {
+      // Remove the pending managed user if we weren't successful.
+      // However, check that we are not importing a managed user
+      // before deleting it from sync to avoid accidental deletion of
+      // existing managed users by just canceling the registration for example.
+      managed_user_sync_service_->DeleteManagedUser(pending_managed_user_id_);
+    } else if (avatar_updated_) {
+      // Canceling (or failing) a managed user import that did set the avatar
+      // should undo this change.
+      managed_user_sync_service_->ClearManagedUserAvatar(
+          pending_managed_user_id_);
+    }
   }
 
   if (run_callback)

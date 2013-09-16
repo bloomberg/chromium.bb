@@ -33,11 +33,15 @@ class ManagedUserSyncService : public BrowserContextKeyedService,
   typedef base::Callback<void(const base::DictionaryValue*)>
       ManagedUsersCallback;
 
+  // Dictionary keys for entry values of |prefs::kManagedUsers|.
   static const char kAcknowledged[];
   static const char kChromeAvatar[];
   static const char kChromeOsAvatar[];
-  static const char kName[];
   static const char kMasterKey[];
+  static const char kName[];
+
+  // Represents a non-existing avatar on Chrome and Chrome OS.
+  static const int kNoAvatar;
 
   virtual ~ManagedUserSyncService();
 
@@ -65,6 +69,16 @@ class ManagedUserSyncService : public BrowserContextKeyedService,
                       const std::string& master_key,
                       int avatar_index);
   void DeleteManagedUser(const std::string& id);
+
+  // Updates the managed user avatar only if the managed user has
+  // no avatar and |avatar_index| is set to some value other than
+  // |kNoAvatar|. If |avatar_index| equals |kNoAvatar| and the
+  // managed user has an avatar, it will be cleared. However,
+  // to clear an avatar call the convenience method |ClearManagedUserAvatar()|.
+  // Returns true if the avatar value is changed (either updated or cleared)
+  // and false otherwise.
+  bool UpdateManagedUserAvatarIfNeeded(const std::string& id, int avatar_index);
+  void ClearManagedUserAvatar(const std::string& id);
 
   // Returns a dictionary containing all managed users managed by this
   // custodian. This method should only be called once this service has started

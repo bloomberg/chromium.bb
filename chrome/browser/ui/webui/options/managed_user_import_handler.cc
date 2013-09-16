@@ -77,13 +77,14 @@ void ManagedUserImportHandler::RequestExistingManagedUsers(
     managed_user->SetString("id", it.key());
     managed_user->SetString("name", name);
 
-    int avatar_index = -1;
+    int avatar_index = ManagedUserSyncService::kNoAvatar;
     success = ManagedUserSyncService::GetAvatarIndex(avatar_str, &avatar_index);
     DCHECK(success);
 
     // TODO(ibraaaa): When we have an image indicating that this user
     // has no synced avatar then change this to use it.
-    avatar_index = avatar_index < 0 ? 0 : avatar_index;
+    avatar_index =
+        avatar_index == ManagedUserSyncService::kNoAvatar ? 0 : avatar_index;
     std::string avatar_url =
         ProfileInfoCache::GetDefaultAvatarIconUrl(avatar_index);
     managed_user->SetString("iconURL", avatar_url);

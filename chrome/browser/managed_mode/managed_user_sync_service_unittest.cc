@@ -271,7 +271,7 @@ TEST_F(ManagedUserSyncServiceTest, MergeExisting) {
 TEST_F(ManagedUserSyncServiceTest, GetAvatarIndex) {
   int avatar = 100;
   EXPECT_TRUE(ManagedUserSyncService::GetAvatarIndex(std::string(), &avatar));
-  EXPECT_EQ(-1, avatar);
+  EXPECT_EQ(ManagedUserSyncService::kNoAvatar, avatar);
 
   std::string avatar_str = ManagedUserSyncService::BuildAvatarString(24);
   EXPECT_EQ("chrome-avatar-index:24", avatar_str);
