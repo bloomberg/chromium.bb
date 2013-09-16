@@ -58,4 +58,9 @@ crbug.com/288674 virtual/gpu/fast/canvas/fillrect_gradient.html [ ImageOnlyFailu
 # This image difference is related to the recent oval rendering changes
 crbug.com/288674 virtual/gpu/fast/canvas/canvas-composite.html [ ImageOnlyFailure ]
 
+# Skia CL r11249 altered some of the parameters to the spot light filter
+crbug.com/292656 css3/filters/effect-reference-colorspace-hw.html [ ImageOnlyFailure ]
+crbug.com/292656 css3/filters/effect-reference-hw.html [ ImageOnlyFailure ]
+crbug.com/292656 css3/filters/effect-reference-subregion-hw.html [ ImageOnlyFailure ]
+
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
