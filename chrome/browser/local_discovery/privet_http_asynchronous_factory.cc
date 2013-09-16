@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/local_discovery/privet_http_asynchronous_factory.h"
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/local_discovery/privet_http_asynchronous_factory.h"
+#include "chrome/browser/local_discovery/privet_http.h"
 #include "chrome/browser/local_discovery/privet_http_impl.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/local_discovery/service_discovery_client.h"
 
 namespace local_discovery {
 
@@ -26,6 +29,45 @@ std::string IPAddressToHostString(const net::IPAddressNumber& address) {
 
 }  // namespace
 
+class PrivetHTTPAsynchronousFactoryImpl : public PrivetHTTPAsynchronousFactory {
+ public:
+  PrivetHTTPAsynchronousFactoryImpl(
+      ServiceDiscoveryClient* service_discovery_client,
+      net::URLRequestContextGetter* request_context);
+  virtual ~PrivetHTTPAsynchronousFactoryImpl();
+
+  virtual scoped_ptr<PrivetHTTPResolution> CreatePrivetHTTP(
+      const std::string& name,
+      const net::HostPortPair& address,
+      const ResultCallback& callback) OVERRIDE;
+
+ private:
+  class ResolutionImpl : public PrivetHTTPResolution {
+   public:
+    ResolutionImpl(const std::string& name,
+                   const net::HostPortPair& address,
+                   const ResultCallback& callback,
+                   ServiceDiscoveryClient* service_discovery_client,
+                   net::URLRequestContextGetter* request_context);
+    virtual ~ResolutionImpl();
+
+    virtual void Start() OVERRIDE;
+   private:
+    void ResolveComplete(bool success,
+                         const net::IPAddressNumber& address_ipv4,
+                         const net::IPAddressNumber& address_ipv6);
+
+    std::string name_;
+    scoped_ptr<LocalDomainResolver> resolver_;
+    net::HostPortPair hostport_;
+    ResultCallback callback_;
+    scoped_refptr<net::URLRequestContextGetter> request_context_;
+  };
+
+  ServiceDiscoveryClient* service_discovery_client_;
+  scoped_refptr<net::URLRequestContextGetter> request_context_;
+};
+
 PrivetHTTPAsynchronousFactoryImpl::PrivetHTTPAsynchronousFactoryImpl(
     ServiceDiscoveryClient* service_discovery_client,
     net::URLRequestContextGetter* request_context)
@@ -36,14 +78,24 @@ PrivetHTTPAsynchronousFactoryImpl::PrivetHTTPAsynchronousFactoryImpl(
 PrivetHTTPAsynchronousFactoryImpl::~PrivetHTTPAsynchronousFactoryImpl() {
 }
 
-scoped_ptr<PrivetHTTPAsynchronousFactory::Resolution>
-PrivetHTTPAsynchronousFactoryImpl::CreatePrivetHTTP(
-    const std::string& name,
-    const net::HostPortPair& address,
-    const ResultCallback& callback) {
-  return scoped_ptr<Resolution>(new ResolutionImpl(name, address, callback,
-                                                   service_discovery_client_,
-                                                   request_context_.get()));
+// static
+scoped_ptr<PrivetHTTPAsynchronousFactory>
+    PrivetHTTPAsynchronousFactory::CreateInstance(
+        ServiceDiscoveryClient* service_discovery_client,
+        net::URLRequestContextGetter* request_context) {
+  return make_scoped_ptr<PrivetHTTPAsynchronousFactory>(
+      new PrivetHTTPAsynchronousFactoryImpl(service_discovery_client,
+                                            request_context));
+}
+
+scoped_ptr<PrivetHTTPResolution>
+    PrivetHTTPAsynchronousFactoryImpl::CreatePrivetHTTP(
+        const std::string& name,
+        const net::HostPortPair& address,
+        const ResultCallback& callback) {
+  return scoped_ptr<PrivetHTTPResolution>(
+      new ResolutionImpl(name, address, callback, service_discovery_client_,
+                         request_context_.get()));
 }
 
 PrivetHTTPAsynchronousFactoryImpl::ResolutionImpl::ResolutionImpl(

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/local_discovery/privet_http_asynchronous_factory.h"
+
 #include "chrome/browser/local_discovery/privet_notifications.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -98,7 +100,7 @@ class MockPrivetHTTPClient : public PrivetHTTPClient {
 
 class MockPrivetHttpFactory : public PrivetHTTPAsynchronousFactory {
  public:
-  class MockResolution : public Resolution {
+  class MockResolution : public PrivetHTTPResolution {
    public:
     MockResolution(
         const std::string& name,
@@ -127,11 +129,11 @@ class MockPrivetHttpFactory : public PrivetHTTPAsynchronousFactory {
       : delegate_for_tests_(delegate_for_tests) {
   }
 
-  virtual scoped_ptr<Resolution> CreatePrivetHTTP(
+  virtual scoped_ptr<PrivetHTTPResolution> CreatePrivetHTTP(
       const std::string& name,
       const net::HostPortPair& address,
       const ResultCallback& callback) OVERRIDE {
-    return scoped_ptr<Resolution>(
+    return scoped_ptr<PrivetHTTPResolution>(
         new MockResolution(name, delegate_for_tests_, callback));
   }
 

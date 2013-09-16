@@ -10,8 +10,14 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "chrome/browser/local_discovery/cloud_print_account_manager.h"
+#include "chrome/browser/local_discovery/privet_confirm_api_flow.h"
+#include "chrome/browser/local_discovery/privet_constants.h"
 #include "chrome/browser/local_discovery/privet_device_lister_impl.h"
+#include "chrome/browser/local_discovery/privet_http_asynchronous_factory.h"
+#include "chrome/browser/local_discovery/privet_http_asynchronous_factory.h"
 #include "chrome/browser/local_discovery/privet_http_impl.h"
+#include "chrome/browser/local_discovery/service_discovery_host_client.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_url.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
@@ -22,6 +28,7 @@
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/page_transition_types.h"
 #include "net/base/host_port_pair.h"
@@ -105,9 +112,9 @@ void LocalDiscoveryUIHandler::HandleStart(const base::ListValue* args) {
     service_discovery_client_ = ServiceDiscoveryHostClientFactory::GetClient();
     privet_lister_.reset(new PrivetDeviceListerImpl(
         service_discovery_client_.get(), this));
-    privet_http_factory_.reset(new PrivetHTTPAsynchronousFactoryImpl(
-        service_discovery_client_.get(),
-        profile->GetRequestContext()));
+    privet_http_factory_ =
+        PrivetHTTPAsynchronousFactory::CreateInstance(
+            service_discovery_client_.get(), profile->GetRequestContext());
   }
 
   privet_lister_->Start();

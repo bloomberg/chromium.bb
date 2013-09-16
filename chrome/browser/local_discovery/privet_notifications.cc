@@ -10,7 +10,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/local_discovery/privet_device_lister_impl.h"
+#include "chrome/browser/local_discovery/privet_http_asynchronous_factory.h"
+#include "chrome/browser/local_discovery/service_discovery_host_client.h"
 #include "chrome/browser/notifications/notification.h"
+#include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -227,8 +230,8 @@ void PrivetNotificationService::Start() {
   device_lister_->Start();
 
   scoped_ptr<PrivetHTTPAsynchronousFactory> http_factory(
-      new PrivetHTTPAsynchronousFactoryImpl(service_discovery_client_.get(),
-                                            profile_->GetRequestContext()));
+      PrivetHTTPAsynchronousFactory::CreateInstance(
+          service_discovery_client_.get(), profile_->GetRequestContext()));
 
   privet_notifications_listener_.reset(new PrivetNotificationsListener(
       http_factory.Pass(), this));

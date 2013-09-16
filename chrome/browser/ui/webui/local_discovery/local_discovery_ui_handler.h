@@ -10,20 +10,18 @@
 #include <vector>
 
 #include "base/cancelable_callback.h"
-#include "chrome/browser/local_discovery/cloud_print_account_manager.h"
 #include "chrome/browser/local_discovery/cloud_print_printer_list.h"
-#include "chrome/browser/local_discovery/privet_confirm_api_flow.h"
-#include "chrome/browser/local_discovery/privet_constants.h"
 #include "chrome/browser/local_discovery/privet_device_lister.h"
 #include "chrome/browser/local_discovery/privet_http.h"
-#include "chrome/browser/local_discovery/privet_http_asynchronous_factory.h"
-#include "chrome/browser/local_discovery/service_discovery_host_client.h"
-#include "chrome/common/local_discovery/service_discovery_client.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 // TODO(noamsml): Factor out full registration flow into single class
 namespace local_discovery {
+
+class PrivetConfirmApiCallFlow;
+class PrivetHTTPAsynchronousFactory;
+class PrivetHTTPResolution;
+class ServiceDiscoveryHostClient;
 
 // UI Handler for chrome://devices/
 // It listens to local discovery notifications and passes those notifications
@@ -165,7 +163,7 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
   scoped_ptr<PrivetHTTPAsynchronousFactory> privet_http_factory_;
 
   // An object representing the resolution process for the privet_http_factory.
-  scoped_ptr<PrivetHTTPAsynchronousFactory::Resolution> privet_resolution_;
+  scoped_ptr<PrivetHTTPResolution> privet_resolution_;
 
   // A map of current device descriptions provided by the PrivetDeviceLister.
   DeviceDescriptionMap device_descriptions_;
