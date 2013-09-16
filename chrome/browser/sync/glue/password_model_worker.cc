@@ -22,6 +22,7 @@ PasswordModelWorker::PasswordModelWorker(
 }
 
 void PasswordModelWorker::RegisterForLoopDestruction() {
+  base::AutoLock lock(password_store_lock_);
   password_store_->ScheduleTask(
       base::Bind(&PasswordModelWorker::RegisterForPasswordLoopDestruction,
                  this));
@@ -30,13 +31,22 @@ void PasswordModelWorker::RegisterForLoopDestruction() {
 syncer::SyncerError PasswordModelWorker::DoWorkAndWaitUntilDoneImpl(
     const syncer::WorkCallback& work) {
   syncer::SyncerError error = syncer::UNSET;
-  if (password_store_->ScheduleTask(
-          base::Bind(&PasswordModelWorker::CallDoWorkAndSignalTask,
-                     this, work, work_done_or_stopped(), &error))) {
-    work_done_or_stopped()->Wait();
-  } else {
-    error = syncer::CANNOT_DO_WORK;
+
+  bool scheduled = false;
+  {
+    base::AutoLock lock(password_store_lock_);
+    if (!password_store_.get())
+      return syncer::CANNOT_DO_WORK;
+
+    scheduled = password_store_->ScheduleTask(
+        base::Bind(&PasswordModelWorker::CallDoWorkAndSignalTask,
+                   this, work, work_done_or_stopped(), &error));
   }
+
+  if (scheduled)
+    work_done_or_stopped()->Wait();
+  else
+    error = syncer::CANNOT_DO_WORK;
   return error;
 }
 
@@ -57,6 +67,13 @@ void PasswordModelWorker::CallDoWorkAndSignalTask(
 void PasswordModelWorker::RegisterForPasswordLoopDestruction() {
   base::MessageLoop::current()->AddDestructionObserver(this);
   SetWorkingLoopToCurrent();
+}
+
+void PasswordModelWorker::RequestStop() {
+  ModelSafeWorker::RequestStop();
+
+  base::AutoLock lock(password_store_lock_);
+  password_store_ = NULL;
 }
 
 }  // namespace browser_sync

@@ -83,8 +83,8 @@ class SYNC_EXPORT ModelSafeWorker
   SyncerError DoWorkAndWaitUntilDone(const WorkCallback& work);
 
   // Soft stop worker by setting stopped_ flag. Called when sync is disabled
-  // or browser is shutting down.
-  void RequestStop();
+  // or browser is shutting down. Called on UI loop.
+  virtual void RequestStop();
 
   virtual ModelSafeGroup GetModelSafeGroup() = 0;
 

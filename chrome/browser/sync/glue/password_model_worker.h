@@ -31,6 +31,7 @@ class PasswordModelWorker : public syncer::ModelSafeWorker {
   // syncer::ModelSafeWorker implementation. Called on syncapi SyncerThread.
   virtual void RegisterForLoopDestruction() OVERRIDE;
   virtual syncer::ModelSafeGroup GetModelSafeGroup() OVERRIDE;
+  virtual void RequestStop() OVERRIDE;
 
  protected:
   virtual syncer::SyncerError DoWorkAndWaitUntilDoneImpl(
@@ -48,6 +49,9 @@ class PasswordModelWorker : public syncer::ModelSafeWorker {
   // observer.
   void RegisterForPasswordLoopDestruction();
 
+  // |password_store_| is used on password thread but released on UI thread.
+  // Protected by |password_store_lock_|.
+  base::Lock password_store_lock_;
   scoped_refptr<PasswordStore> password_store_;
   DISALLOW_COPY_AND_ASSIGN(PasswordModelWorker);
 };
