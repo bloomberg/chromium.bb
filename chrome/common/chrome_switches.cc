@@ -551,6 +551,9 @@ const char kEnableBatchedShutdown[]         = "enable-batched-shutdown";
 // Enables the benchmarking extensions.
 const char kEnableBenchmarking[]            = "enable-benchmarking";
 
+// Enables pushing cloud policy to Chrome using an invalidation service.
+const char kEnableCloudPolicyPush[]         = "enable-cloud-policy-push";
+
 // This applies only when the process type is "service". Enables the Cloud
 // Print Proxy component within the service process.
 const char kEnableCloudPrintProxy[]         = "enable-cloud-print-proxy";

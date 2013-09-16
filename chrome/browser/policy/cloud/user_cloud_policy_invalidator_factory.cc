@@ -43,10 +43,17 @@ UserCloudPolicyInvalidatorFactory::~UserCloudPolicyInvalidatorFactory() {}
 BrowserContextKeyedService*
     UserCloudPolicyInvalidatorFactory::BuildServiceInstanceFor(
         content::BrowserContext* context) const {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableCloudPolicyPush)) {
+#if defined(OS_ANDROID)
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnableCloudPolicyPush)) {
     return NULL;
   }
+#else
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kDisableCloudPolicyPush)) {
+    return NULL;
+  }
+#endif
 
   Profile* profile = static_cast<Profile*>(context);
 #if defined(OS_CHROMEOS)
