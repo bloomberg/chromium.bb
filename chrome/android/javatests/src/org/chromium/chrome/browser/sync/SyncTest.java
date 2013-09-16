@@ -155,8 +155,7 @@ public class SyncTest extends ChromiumTestShellTestBase {
             throws InterruptedException {
         Account defaultTestAccount = SyncTestUtil.setupTestAccount(mAccountManager,
                 SyncTestUtil.DEFAULT_TEST_ACCOUNT, SyncTestUtil.DEFAULT_PASSWORD,
-                SyncTestUtil.CHROME_SYNC_OAUTH2_SCOPE, SyncTestUtil.LOGIN_OAUTH2_SCOPE,
-                SyncStatusHelper.AUTH_TOKEN_TYPE_SYNC);
+                SyncTestUtil.CHROME_SYNC_OAUTH2_SCOPE, SyncTestUtil.LOGIN_OAUTH2_SCOPE);
 
         UniqueIdentificationGeneratorFactory.registerGenerator(
                 UuidBasedUniqueIdentificationGenerator.GENERATOR_ID,
