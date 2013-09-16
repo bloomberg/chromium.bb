@@ -49,15 +49,15 @@ void ActiveTabPermissionGranter::GrantIfRequested(const Extension* extension) {
     if (pattern.Parse(web_contents()->GetURL().spec()) ==
             URLPattern::PARSE_SUCCESS) {
       new_hosts.AddPattern(pattern);
-      new_apis.insert(APIPermission::kTab);
-      granted_extensions_.Insert(extension);
     }
+    new_apis.insert(APIPermission::kTab);
   }
 
   if (extension->HasAPIPermission(APIPermission::kTabCapture))
     new_apis.insert(APIPermission::kTabCaptureForTab);
 
-  if (!new_apis.empty()) {
+  if (!new_apis.empty() || !new_hosts.is_empty()) {
+    granted_extensions_.Insert(extension);
     scoped_refptr<const PermissionSet> new_permissions =
         new PermissionSet(new_apis, new_hosts, URLPatternSet());
     PermissionsData::UpdateTabSpecificPermissions(extension,
