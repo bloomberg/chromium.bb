@@ -31,7 +31,7 @@ class ActivityLogApiTest : public ExtensionApiTest {
   CommandLine saved_cmdline_;
 };
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_MACOSX)
 // TODO(karenlees): test flaky on windows. See Bug: crbug.com/245594
 #define MAYBE_TriggerEvent DISABLED_TriggerEvent
 #else
