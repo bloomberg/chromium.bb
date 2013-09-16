@@ -108,6 +108,7 @@ race:tracked_objects::ThreadData::tls_index_
 
 # http://crbug.com/268946
 race:CommandLine::HasSwitch
+race:CommandLine::current_process_commandline_
 
 # http://crbug.com/270037
 race:gLibCleanupFunctions
@@ -120,9 +121,10 @@ race:base::g_top_manager
 
 # http://crbug.com/273047
 race:base::*::g_lazy_tls_ptr
+race:IPC::SyncChannel::ReceivedSyncMsgQueue::lazy_tls_ptr_
 
 # http://crbug.com/280466
 race:content::WebRtcAudioCapturer::SetCapturerSource
 
 # http://crbug.com/290964
-race:~PostponeInterruptsScope
+race:PostponeInterruptsScope
