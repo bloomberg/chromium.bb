@@ -109,7 +109,7 @@ static void AddAndroidWidevine(
 #if defined(USE_PROPRIETARY_CODECS)
   SupportedCodecs supported_codecs =
       static_cast<SupportedCodecs>(MP4_AAC | MP4_AVC1);
-  AddWidevineForTypes(supported_codecs, concrete_key_systems);
+  AddWidevineWithCodecs(supported_codecs, concrete_key_systems);
 #endif  // defined(USE_PROPRIETARY_CODECS)
 }
 #endif  // defined(ENABLE_PEPPER_CDMS)
