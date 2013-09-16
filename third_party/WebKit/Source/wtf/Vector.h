@@ -784,17 +784,18 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
     {
         size_t oldCapacity = capacity();
         size_t expandedCapacity = oldCapacity;
+        // We use a more aggressive expansion strategy for Vectors with inline storage.
+        // This is because they are more likely to be on the stack, so the risk of heap bloat is minimized.
+        // Furthermore, exceeding the inline capacity limit is not supposed to happen in the common case and may indicate a pathological condition or microbenchmark.
         if (inlineCapacity) {
             expandedCapacity *= 2;
-            // Check for integer overflow, which could happen in the 32-bit
-            // build.
+            // Check for integer overflow, which could happen in the 32-bit build.
             RELEASE_ASSERT(expandedCapacity > oldCapacity);
         } else {
-            // This cannot integer overflow. On 64-bit, the "expanded" integer
-            // is 32-bit, and any encroachment above 2^32 will fail allocation
-            // in allocateBuffer().
-            // On 32-bit, there's not enough address space to hold the old and
-            // new buffers.
+            // This cannot integer overflow.
+            // On 64-bit, the "expanded" integer is 32-bit, and any encroachment above 2^32 will fail allocation in allocateBuffer().
+            // On 32-bit, there's not enough address space to hold the old and new buffers.
+            // In addition, our underlying allocator is supposed to always fail on > (2^31 - 1) allocations.
             expandedCapacity += (expandedCapacity / 4) + 1;
         }
         reserveCapacity(std::max(newMinCapacity, std::max(static_cast<size_t>(kInitialVectorSize), expandedCapacity)));
