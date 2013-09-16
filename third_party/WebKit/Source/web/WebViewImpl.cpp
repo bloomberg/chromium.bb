@@ -3835,7 +3835,9 @@ void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* layer)
                 m_pinchViewports->registerViewportLayersWithTreeView(m_layerTreeView);
             } else {
                 GraphicsLayer* rootScrollLayer = compositor()->scrollLayer();
-                m_layerTreeView->registerViewportLayers(m_rootLayer, rootScrollLayer->platformLayer(), 0);
+                ASSERT(rootScrollLayer);
+                WebLayer* pageScaleLayer = rootScrollLayer->parent() ? rootScrollLayer->parent()->platformLayer() : 0;
+                m_layerTreeView->registerViewportLayers(pageScaleLayer, rootScrollLayer->platformLayer(), 0);
             }
         } else {
             m_layerTreeView->clearRootLayer();
