@@ -9,8 +9,9 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/threading/thread.h"
 #include "base/values.h"
 #include "content/renderer/pepper/resource_converter.h"
 #include "ppapi/c/pp_bool.h"
@@ -145,14 +146,10 @@ class V8VarConverterTest : public testing::Test {
  public:
   V8VarConverterTest()
       : isolate_(v8::Isolate::GetCurrent()),
-        conversion_success_(false),
-        conversion_event_(true, false),
-        callback_thread_("callback_thread") {
-    callback_thread_.Start();
+        conversion_success_(false) {
     PP_Instance dummy = 1234;
     converter_.reset(new V8VarConverter(
         dummy,
-        callback_thread_.message_loop_proxy(),
         scoped_ptr<ResourceConverter>(new MockResourceConverter).Pass()));
   }
   virtual ~V8VarConverterTest() {}
@@ -174,22 +171,24 @@ class V8VarConverterTest : public testing::Test {
   bool FromV8ValueSync(v8::Handle<v8::Value> val,
                        v8::Handle<v8::Context> context,
                        PP_Var* result) {
+    base::RunLoop loop;
     converter_->FromV8Value(val, context, base::Bind(
-        &V8VarConverterTest::FromV8ValueComplete, base::Unretained(this)));
-    conversion_event_.Wait();
-    conversion_event_.Reset();
+        &V8VarConverterTest::FromV8ValueComplete, base::Unretained(this),
+        loop.QuitClosure()));
     if (conversion_success_)
       *result = conversion_result_;
     return conversion_success_;
   }
 
-  void FromV8ValueComplete(const ScopedPPVar& scoped_var, bool success) {
+  void FromV8ValueComplete(base::Closure quit_closure,
+                           const ScopedPPVar& scoped_var,
+                           bool success) {
     conversion_success_ = success;
     if (success) {
       ScopedPPVar var = scoped_var;
       conversion_result_ = var.Release();
     }
-    conversion_event_.Signal();
+    quit_closure.Run();
   }
 
   bool RoundTrip(const PP_Var& var, PP_Var* result) {
@@ -229,8 +228,7 @@ class V8VarConverterTest : public testing::Test {
 
   PP_Var conversion_result_;
   bool conversion_success_;
-  base::WaitableEvent conversion_event_;
-  base::Thread callback_thread_;
+  base::MessageLoop message_loop_;
 };
 
 }  // namespace

@@ -246,9 +246,8 @@ V8VarConverter::V8VarConverter(PP_Instance instance)
 
 V8VarConverter::V8VarConverter(
     PP_Instance instance,
-    const scoped_refptr<base::MessageLoopProxy>& message_loop_proxy,
     scoped_ptr<ResourceConverter> resource_converter)
-    : message_loop_proxy_(message_loop_proxy),
+    : message_loop_proxy_(base::MessageLoopProxy::current()),
       resource_converter_(resource_converter.release()) {
 }
 

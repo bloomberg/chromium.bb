@@ -29,7 +29,6 @@ class CONTENT_EXPORT V8VarConverter {
   // Constructor for testing.
   V8VarConverter(
       PP_Instance instance,
-      const scoped_refptr<base::MessageLoopProxy>& message_loop_proxy,
       scoped_ptr<ResourceConverter> resource_converter);
   ~V8VarConverter();
 
