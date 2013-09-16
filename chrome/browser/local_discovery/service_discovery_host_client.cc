@@ -15,21 +15,6 @@
 
 namespace local_discovery {
 
-namespace {
-
-void LogInterfaces() {
-  net::NetworkInterfaceList list;
-  net::GetNetworkList(&list);
-  std::string log;
-  for (net::NetworkInterfaceList::iterator it = list.begin(); it != list.end();
-       ++it) {
-    log += " " + net::IPAddressToString(it->address);
-  }
-  VLOG(1) << "Local addresses:" << log;
-}
-
-}  // namespace
-
 using content::BrowserThread;
 using content::UtilityProcessHost;
 
@@ -283,7 +268,6 @@ void ServiceDiscoveryHostClient::Restart() {
   DCHECK(CalledOnValidThread());
 
   VLOG(1) << "ServiceDiscoveryHostClient::Restart";
-  LogInterfaces();
 
   io_runner_->PostTask(
       FROM_HERE,
@@ -323,7 +307,6 @@ void ServiceDiscoveryHostClient::SendOnIOThread(IPC::Message* msg) {
 void ServiceDiscoveryHostClient::OnNetworkChanged(
     net::NetworkChangeNotifier::ConnectionType type) {
   VLOG(1) << "ServiceDiscoveryHostClient::OnNetworkChanged";
-  LogInterfaces();
   callback_runner_->PostDelayedTask(
       FROM_HERE,
       base::Bind(&ServiceDiscoveryHostClient::Restart, this),
