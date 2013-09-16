@@ -27,7 +27,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/ScriptableDocumentParser.h"
-#include "core/dom/StyleSheetCollections.h"
+#include "core/dom/StyleEngine.h"
 #include "core/html/HTMLStyleElement.h"
 #include "core/page/ContentSecurityPolicy.h"
 #include "wtf/text/StringBuilder.h"
@@ -58,7 +58,7 @@ StyleElement::~StyleElement()
 void StyleElement::processStyleSheet(Document& document, Element* element)
 {
     ASSERT(element);
-    document.styleSheetCollections()->addStyleSheetCandidateNode(element, m_createdByParser);
+    document.styleEngine()->addStyleSheetCandidateNode(element, m_createdByParser);
     if (m_createdByParser)
         return;
 
@@ -68,7 +68,7 @@ void StyleElement::processStyleSheet(Document& document, Element* element)
 void StyleElement::removedFromDocument(Document& document, Element* element, ContainerNode* scopingNode)
 {
     ASSERT(element);
-    document.styleSheetCollections()->removeStyleSheetCandidateNode(element, scopingNode);
+    document.styleEngine()->removeStyleSheetCandidateNode(element, scopingNode);
 
     RefPtr<StyleSheet> removedSheet = m_sheet;
 
@@ -86,7 +86,7 @@ void StyleElement::clearDocumentData(Document& document, Element* element)
         m_sheet->clearOwnerNode();
 
     if (element->inDocument())
-        document.styleSheetCollections()->removeStyleSheetCandidateNode(element, isHTMLStyleElement(element) ? toHTMLStyleElement(element)->scopingNode() :  0);
+        document.styleEngine()->removeStyleSheetCandidateNode(element, isHTMLStyleElement(element) ? toHTMLStyleElement(element)->scopingNode() :  0);
 }
 
 void StyleElement::childrenChanged(Element* element)
@@ -125,7 +125,7 @@ void StyleElement::createSheet(Element* e, const String& text)
     Document& document = e->document();
     if (m_sheet) {
         if (m_sheet->isLoading())
-            document.styleSheetCollections()->removePendingSheet(e);
+            document.styleEngine()->removePendingSheet(e);
         clearSheet();
     }
 
@@ -137,7 +137,7 @@ void StyleElement::createSheet(Element* e, const String& text)
         MediaQueryEvaluator screenEval("screen", true);
         MediaQueryEvaluator printEval("print", true);
         if (screenEval.eval(mediaQueries.get()) || printEval.eval(mediaQueries.get())) {
-            document.styleSheetCollections()->addPendingSheet();
+            document.styleEngine()->addPendingSheet();
             m_loading = true;
 
             TextPosition startPosition = m_startPosition == TextPosition::belowRangePosition() ? TextPosition::minimumPosition() : m_startPosition;
@@ -166,13 +166,13 @@ bool StyleElement::sheetLoaded(Document& document)
     if (isLoading())
         return false;
 
-    document.styleSheetCollections()->removePendingSheet(m_sheet->ownerNode());
+    document.styleEngine()->removePendingSheet(m_sheet->ownerNode());
     return true;
 }
 
 void StyleElement::startLoadingDynamicSheet(Document& document)
 {
-    document.styleSheetCollections()->addPendingSheet();
+    document.styleEngine()->addPendingSheet();
 }
 
 }

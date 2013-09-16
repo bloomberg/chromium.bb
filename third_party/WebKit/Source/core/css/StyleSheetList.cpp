@@ -23,7 +23,7 @@
 
 #include "HTMLNames.h"
 #include "core/dom/Document.h"
-#include "core/dom/StyleSheetCollections.h"
+#include "core/dom/StyleEngine.h"
 #include "core/html/HTMLStyleElement.h"
 #include "wtf/text/WTFString.h"
 
@@ -44,12 +44,12 @@ inline const Vector<RefPtr<StyleSheet> >& StyleSheetList::styleSheets() const
 {
     if (!m_document)
         return m_detachedStyleSheets;
-    return m_document->styleSheetCollections()->styleSheetsForStyleSheetList();
+    return m_document->styleEngine()->styleSheetsForStyleSheetList();
 }
 
 void StyleSheetList::detachFromDocument()
 {
-    m_detachedStyleSheets = m_document->styleSheetCollections()->styleSheetsForStyleSheetList();
+    m_detachedStyleSheets = m_document->styleEngine()->styleSheetsForStyleSheetList();
     m_document = 0;
 }
 

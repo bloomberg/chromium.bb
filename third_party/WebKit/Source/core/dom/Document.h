@@ -145,7 +145,7 @@ class SerializedScriptValue;
 class Settings;
 class StyleResolver;
 class StyleSheet;
-class StyleSheetCollections;
+class StyleEngine;
 class StyleSheetContents;
 class StyleSheetList;
 class Text;
@@ -440,7 +440,7 @@ public:
     // This is a DOM function.
     StyleSheetList* styleSheets();
 
-    StyleSheetCollections* styleSheetCollections() { return m_styleSheetCollections.get(); }
+    StyleEngine* styleEngine() { return m_StyleEngine.get(); }
 
     bool gotoAnchorNeededAfterStylesheetsLoad() { return m_gotoAnchorNeededAfterStylesheetsLoad; }
     void setGotoAnchorNeededAfterStylesheetsLoad(bool b) { m_gotoAnchorNeededAfterStylesheetsLoad = b; }
@@ -1228,7 +1228,7 @@ private:
 
     MutationObserverOptions m_mutationObserverTypes;
 
-    OwnPtr<StyleSheetCollections> m_styleSheetCollections;
+    OwnPtr<StyleEngine> m_StyleEngine;
     RefPtr<StyleSheetList> m_styleSheetList;
 
     OwnPtr<FormController> m_formController;

@@ -64,7 +64,7 @@
 #include "core/css/resolver/StyleBuilder.h"
 #include "core/css/resolver/ViewportStyleResolver.h"
 #include "core/dom/NodeRenderStyle.h"
-#include "core/dom/StyleSheetCollections.h"
+#include "core/dom/StyleEngine.h"
 #include "core/dom/Text.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
@@ -136,7 +136,7 @@ StyleResolver::StyleResolver(Document& document, bool matchAuthorAndUserStyles)
 
     m_styleTree.clear();
 
-    StyleSheetCollections* styleSheetCollection = document.styleSheetCollections();
+    StyleEngine* styleSheetCollection = document.styleEngine();
     m_ruleSets.initUserStyle(styleSheetCollection, *m_medium, *this);
 
 #if ENABLE(SVG_FONTS)

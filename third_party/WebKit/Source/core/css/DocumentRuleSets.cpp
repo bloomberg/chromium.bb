@@ -34,7 +34,7 @@
 #include "core/css/StyleSheetContents.h"
 #include "core/css/resolver/MatchRequest.h"
 #include "core/css/resolver/StyleResolver.h"
-#include "core/dom/StyleSheetCollections.h"
+#include "core/dom/StyleEngine.h"
 
 namespace WebCore {
 
@@ -74,7 +74,7 @@ DocumentRuleSets::~DocumentRuleSets()
 {
 }
 
-void DocumentRuleSets::initUserStyle(StyleSheetCollections* styleSheetCollection, const MediaQueryEvaluator& medium, StyleResolver& resolver)
+void DocumentRuleSets::initUserStyle(StyleEngine* styleSheetCollection, const MediaQueryEvaluator& medium, StyleResolver& resolver)
 {
     OwnPtr<RuleSet> tempUserStyle = RuleSet::create();
     if (CSSStyleSheet* pageUserSheet = styleSheetCollection->pageUserSheet())

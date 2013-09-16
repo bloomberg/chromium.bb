@@ -154,7 +154,7 @@ SelectorChecker::Match SelectorChecker::match(const SelectorCheckingContext& con
 
             PseudoId pseudoId = CSSSelector::pseudoId(context.selector->pseudoType());
             if (pseudoId == FIRST_LETTER)
-                context.element->document().styleSheetCollections()->setUsesFirstLetterRules(true);
+                context.element->document().styleEngine()->setUsesFirstLetterRules(true);
             if (pseudoId != NOPSEUDO && m_mode != SharingRules)
                 dynamicPseudo = pseudoId;
         }
@@ -466,7 +466,7 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
                     element->setStyleAffectedByEmpty();
                     if (context.elementStyle)
                         context.elementStyle->setEmptyState(result);
-                    else if (element->renderStyle() && (element->document().styleSheetCollections()->usesSiblingRules() || element->renderStyle()->unique()))
+                    else if (element->renderStyle() && (element->document().styleEngine()->usesSiblingRules() || element->renderStyle()->unique()))
                         element->renderStyle()->setEmptyState(result);
                 }
                 return result;

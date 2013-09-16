@@ -36,17 +36,17 @@ class CSSStyleSheet;
 class ShadowRoot;
 class StyleSheet;
 class StyleSheetCollection;
-class StyleSheetCollections;
+class StyleEngine;
 
 class ShadowTreeStyleSheetCollection FINAL : public StyleSheetCollection {
     WTF_MAKE_NONCOPYABLE(ShadowTreeStyleSheetCollection); WTF_MAKE_FAST_ALLOCATED;
 public:
     explicit ShadowTreeStyleSheetCollection(ShadowRoot&);
 
-    bool updateActiveStyleSheets(StyleSheetCollections*, StyleResolverUpdateMode);
+    bool updateActiveStyleSheets(StyleEngine*, StyleResolverUpdateMode);
 
 private:
-    void collectStyleSheets(StyleSheetCollections*, Vector<RefPtr<StyleSheet> >& styleSheets, Vector<RefPtr<CSSStyleSheet> >& activeSheets);
+    void collectStyleSheets(StyleEngine*, Vector<RefPtr<StyleSheet> >& styleSheets, Vector<RefPtr<CSSStyleSheet> >& activeSheets);
 };
 
 }

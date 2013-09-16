@@ -1587,7 +1587,7 @@ PassRefPtr<TypeBuilder::CSS::CSSRule> InspectorCSSAgent::buildObjectForRule(CSSS
     // Since the inspector wants to walk the parent chain, we construct the full wrappers here.
     // FIXME: This could be factored better. StyleResolver::styleRulesForElement should return a StyleRule vector, not a CSSRuleList.
     if (!rule->parentStyleSheet()) {
-        rule = styleResolver->inspectorCSSOMWrappers().getWrapperForRuleInSheets(rule->styleRule(), styleResolver->document().styleSheetCollections());
+        rule = styleResolver->inspectorCSSOMWrappers().getWrapperForRuleInSheets(rule->styleRule(), styleResolver->document().styleEngine());
         if (!rule)
             return 0;
     }

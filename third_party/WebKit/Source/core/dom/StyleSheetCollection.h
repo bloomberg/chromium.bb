@@ -43,7 +43,7 @@ namespace WebCore {
 
 class ContainerNode;
 class CSSStyleSheet;
-class StyleSheetCollections;
+class StyleEngine;
 class Node;
 class StyleSheet;
 class StyleSheetContents;

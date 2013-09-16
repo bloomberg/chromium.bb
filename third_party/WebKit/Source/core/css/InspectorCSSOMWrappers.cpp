@@ -39,7 +39,7 @@
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/CSSSupportsRule.h"
 #include "core/css/StyleSheetContents.h"
-#include "core/dom/StyleSheetCollections.h"
+#include "core/dom/StyleEngine.h"
 
 namespace WebCore {
 
@@ -103,7 +103,7 @@ void InspectorCSSOMWrappers::collectFromStyleSheets(const Vector<RefPtr<CSSStyle
         collect(sheets[i].get());
 }
 
-void InspectorCSSOMWrappers::collectFromStyleSheetCollections(StyleSheetCollections* styleSheetCollection)
+void InspectorCSSOMWrappers::collectFromStyleEngine(StyleEngine* styleSheetCollection)
 {
     collectFromStyleSheets(styleSheetCollection->activeAuthorStyleSheets());
     collect(styleSheetCollection->pageUserSheet());
@@ -111,7 +111,7 @@ void InspectorCSSOMWrappers::collectFromStyleSheetCollections(StyleSheetCollecti
     collectFromStyleSheets(styleSheetCollection->documentUserStyleSheets());
 }
 
-CSSStyleRule* InspectorCSSOMWrappers::getWrapperForRuleInSheets(StyleRule* rule, StyleSheetCollections* styleSheetCollection)
+CSSStyleRule* InspectorCSSOMWrappers::getWrapperForRuleInSheets(StyleRule* rule, StyleEngine* styleSheetCollection)
 {
     if (m_styleRuleToCSSOMWrapperMap.isEmpty()) {
         collectFromStyleSheetContents(m_styleSheetCSSOMWrapperSet, CSSDefaultStyleSheets::simpleDefaultStyleSheet);
@@ -121,7 +121,7 @@ CSSStyleRule* InspectorCSSOMWrappers::getWrapperForRuleInSheets(StyleRule* rule,
         collectFromStyleSheetContents(m_styleSheetCSSOMWrapperSet, CSSDefaultStyleSheets::mediaControlsStyleSheet);
         collectFromStyleSheetContents(m_styleSheetCSSOMWrapperSet, CSSDefaultStyleSheets::fullscreenStyleSheet);
 
-        collectFromStyleSheetCollections(styleSheetCollection);
+        collectFromStyleEngine(styleSheetCollection);
     }
     return m_styleRuleToCSSOMWrapperMap.get(rule);
 }

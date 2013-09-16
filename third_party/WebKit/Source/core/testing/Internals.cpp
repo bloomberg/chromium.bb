@@ -1948,7 +1948,7 @@ void Internals::insertAuthorCSS(Document* document, const String& css) const
     RefPtr<StyleSheetContents> parsedSheet = StyleSheetContents::create(*document);
     parsedSheet->setIsUserStyleSheet(false);
     parsedSheet->parseString(css);
-    document->styleSheetCollections()->addAuthorSheet(parsedSheet);
+    document->styleEngine()->addAuthorSheet(parsedSheet);
 }
 
 void Internals::insertUserCSS(Document* document, const String& css) const
@@ -1959,7 +1959,7 @@ void Internals::insertUserCSS(Document* document, const String& css) const
     RefPtr<StyleSheetContents> parsedSheet = StyleSheetContents::create(*document);
     parsedSheet->setIsUserStyleSheet(true);
     parsedSheet->parseString(css);
-    document->styleSheetCollections()->addUserSheet(parsedSheet);
+    document->styleEngine()->addUserSheet(parsedSheet);
 }
 
 String Internals::counterValue(Element* element)

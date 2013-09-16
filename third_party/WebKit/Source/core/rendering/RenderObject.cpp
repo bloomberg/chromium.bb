@@ -2848,7 +2848,7 @@ static PassRefPtr<RenderStyle> firstLineStyleForCachedUncachedType(StyleCacheSta
 
 PassRefPtr<RenderStyle> RenderObject::uncachedFirstLineStyle(RenderStyle* style) const
 {
-    if (!document().styleSheetCollections()->usesFirstLineRules())
+    if (!document().styleEngine()->usesFirstLineRules())
         return 0;
 
     ASSERT(!isText());
@@ -2858,7 +2858,7 @@ PassRefPtr<RenderStyle> RenderObject::uncachedFirstLineStyle(RenderStyle* style)
 
 RenderStyle* RenderObject::cachedFirstLineStyle() const
 {
-    ASSERT(document().styleSheetCollections()->usesFirstLineRules());
+    ASSERT(document().styleEngine()->usesFirstLineRules());
 
     if (RefPtr<RenderStyle> style = firstLineStyleForCachedUncachedType(Cached, isText() ? parent() : this, m_style.get()))
         return style.get();

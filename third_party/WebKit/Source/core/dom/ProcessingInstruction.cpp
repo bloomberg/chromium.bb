@@ -26,7 +26,7 @@
 #include "core/css/MediaList.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/dom/Document.h"
-#include "core/dom/StyleSheetCollections.h"
+#include "core/dom/StyleEngine.h"
 #include "core/fetch/CSSStyleSheetResource.h"
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/ResourceFetcher.h"
@@ -63,7 +63,7 @@ ProcessingInstruction::~ProcessingInstruction()
         m_resource->removeClient(this);
 
     if (inDocument())
-        document().styleSheetCollections()->removeStyleSheetCandidateNode(this);
+        document().styleEngine()->removeStyleSheetCandidateNode(this);
 }
 
 String ProcessingInstruction::nodeName() const
@@ -133,7 +133,7 @@ void ProcessingInstruction::checkStyleSheet()
                 return;
 
             m_loading = true;
-            document().styleSheetCollections()->addPendingSheet();
+            document().styleEngine()->addPendingSheet();
             FetchRequest request(ResourceRequest(document().completeURL(href)), FetchInitiatorTypeNames::processinginstruction);
             if (m_isXSL)
                 m_resource = document().fetcher()->fetchXSLStyleSheet(request);
@@ -151,7 +151,7 @@ void ProcessingInstruction::checkStyleSheet()
             else {
                 // The request may have been denied if (for example) the stylesheet is local and the document is remote.
                 m_loading = false;
-                document().styleSheetCollections()->removePendingSheet(this);
+                document().styleEngine()->removePendingSheet(this);
             }
         }
     }
@@ -169,7 +169,7 @@ bool ProcessingInstruction::isLoading() const
 bool ProcessingInstruction::sheetLoaded()
 {
     if (!isLoading()) {
-        document().styleSheetCollections()->removePendingSheet(this);
+        document().styleEngine()->removePendingSheet(this);
         return true;
     }
     return false;
@@ -248,7 +248,7 @@ Node::InsertionNotificationRequest ProcessingInstruction::insertedInto(Container
     CharacterData::insertedInto(insertionPoint);
     if (!insertionPoint->inDocument())
         return InsertionDone;
-    document().styleSheetCollections()->addStyleSheetCandidateNode(this, m_createdByParser);
+    document().styleEngine()->addStyleSheetCandidateNode(this, m_createdByParser);
     checkStyleSheet();
     return InsertionDone;
 }
@@ -259,7 +259,7 @@ void ProcessingInstruction::removedFrom(ContainerNode* insertionPoint)
     if (!insertionPoint->inDocument())
         return;
 
-    document().styleSheetCollections()->removeStyleSheetCandidateNode(this);
+    document().styleEngine()->removeStyleSheetCandidateNode(this);
 
     RefPtr<StyleSheet> removedSheet = m_sheet;
 

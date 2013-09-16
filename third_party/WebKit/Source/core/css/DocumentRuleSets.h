@@ -38,7 +38,7 @@ class InspectorCSSOMWrappers;
 class MatchRequest;
 class MediaQueryEvaluator;
 class RuleSet;
-class StyleSheetCollections;
+class StyleEngine;
 
 class ShadowDistributedRules {
 public:
@@ -60,7 +60,7 @@ public:
     ~DocumentRuleSets();
     RuleSet* userStyle() const { return m_userStyle.get(); }
 
-    void initUserStyle(StyleSheetCollections*, const MediaQueryEvaluator&, StyleResolver&);
+    void initUserStyle(StyleEngine*, const MediaQueryEvaluator&, StyleResolver&);
     void resetAuthorStyle();
     void collectFeaturesTo(RuleFeatureSet&, bool isViewSource);
 

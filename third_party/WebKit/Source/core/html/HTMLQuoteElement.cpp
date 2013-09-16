@@ -25,7 +25,7 @@
 
 #include "HTMLNames.h"
 #include "core/dom/Document.h"
-#include "core/dom/StyleSheetCollections.h"
+#include "core/dom/StyleEngine.h"
 
 namespace WebCore {
 

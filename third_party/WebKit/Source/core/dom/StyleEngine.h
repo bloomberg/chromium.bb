@@ -25,8 +25,8 @@
  *
  */
 
-#ifndef StyleSheetCollections_h
-#define StyleSheetCollections_h
+#ifndef StyleEngine_h
+#define StyleEngine_h
 
 #include "core/dom/Document.h"
 #include "core/dom/DocumentOrderedList.h"
@@ -48,12 +48,12 @@ class StyleSheetCollection;
 class StyleSheetContents;
 class StyleSheetList;
 
-class StyleSheetCollections {
+class StyleEngine {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassOwnPtr<StyleSheetCollections> create(Document& document) { return adoptPtr(new StyleSheetCollections(document)); }
+    static PassOwnPtr<StyleEngine> create(Document& document) { return adoptPtr(new StyleEngine(document)); }
 
-    ~StyleSheetCollections();
+    ~StyleEngine();
 
     const Vector<RefPtr<StyleSheet> >& styleSheetsForStyleSheetList();
     const Vector<RefPtr<CSSStyleSheet> >& activeAuthorStyleSheets() const;
@@ -112,7 +112,7 @@ public:
     void getActiveAuthorStyleSheets(Vector<const Vector<RefPtr<CSSStyleSheet> >*>& activeAuthorStyleSheets) const;
 
 private:
-    StyleSheetCollections(Document&);
+    StyleEngine(Document&);
 
     StyleSheetCollection* ensureStyleSheetCollectionFor(TreeScope&);
     StyleSheetCollection* styleSheetCollectionFor(TreeScope&);
