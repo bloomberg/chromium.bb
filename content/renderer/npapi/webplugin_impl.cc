@@ -25,6 +25,7 @@
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/npapi/webplugin_delegate_proxy.h"
 #include "content/renderer/render_process.h"
+#include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
@@ -979,6 +980,7 @@ void WebPluginImpl::didReceiveResponse(WebURLLoader* loader,
                                                    &upper_bound,
                                                    &instance_size);
     } else if (response.httpStatusCode() == kHttpResponseSuccessStatusCode) {
+      RenderThreadImpl::current()->RecordUserMetrics("Plugin_200ForByteRange");
       // If the client issued a byte range request and the server responds with
       // HTTP 200 OK, it indicates that the server does not support byte range
       // requests.

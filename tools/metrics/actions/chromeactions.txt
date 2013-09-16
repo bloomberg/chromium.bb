@@ -372,6 +372,7 @@
 0x9a2fdef24427ff67	EmailPageLocation
 0xb63daeca06ecea16	EnterFullScreenWithWrenchMenu
 0xfef46e5063ce3dc7	Exit
+0xcf0c759bda6783fd	ExtensionNotFound_ED
 0xdf56dffe242f621a	Extensions.ExtensionInstalled
 0x4f07c158c8047ab9	Extensions.ExtensionUninstalled
 0x08566bf746b7f665	Extensions.IDChangedError
@@ -1436,6 +1437,7 @@
 0x5d0e6942f354a06c	PasteAndMatchStyle
 0xca471265efb33961	PluginContextMenu_RotateClockwise
 0xa260d9dde6e550c4	PluginContextMenu_RotateCounterclockwise
+0xd0aab07db234653a	Plugin_200ForByteRange
 0x6f2cd84fa374c281	Plugin_Blocked
 0xcecb82fcd8e64529	Plugin_ClickToPlay
 0xc52b281d793adc6b	Plugin_Hide_Click
@@ -1443,6 +1445,7 @@
 0x007757ef58e358af	Plugin_Load_Click
 0xd84554ce585d6c63	Plugin_Load_Menu
 0x116bd7e07524f140	Plugin_Load_UI
+0xa9b341634f9ea6ad	Plugin_NPAPINotSupported
 0x352f2d6315d52044	PrintNow
 0xcb83fba9c48fd911	PrintPreview
 0x89ad6a22de4ca850	PrintView_PrintDialog
