@@ -247,6 +247,7 @@
           'mac/bind_objc_block.h',
           'mac/bundle_locations.h',
           'mac/bundle_locations.mm',
+          'mac/close_nocancel.cc',
           'mac/cocoa_protocols.h',
           'mac/foundation_util.h',
           'mac/foundation_util.mm',
