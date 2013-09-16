@@ -7116,22 +7116,6 @@
    fun:_ZN13WebTestRunner11CppNPObject6invokeEP8NPObjectPvPK10_NPVariantjPS4_
 }
 {
-   bug_290552a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN18SkLumaMaskXfermode6CreateEN10SkXfermode4ModeE
-   fun:_ZN7WebCore15GraphicsContext16beginMaskedLayerERKNS_9FloatRectENS_8MaskTypeE
-   fun:_ZN7WebCore*RenderSVGResource*
-}
-{
-   bug_290552b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN10SkXfermode6CreateENS_4ModeE
-   fun:_ZN7WebCore15GraphicsContext16beginMaskedLayerERKNS_9FloatRectENS_8MaskTypeE
-   fun:_ZN7WebCore*RenderSVGResource*
-}
-{
    bug_290559a
    Memcheck:Leak
    fun:_Znw*

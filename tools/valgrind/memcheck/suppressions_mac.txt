@@ -2607,3 +2607,30 @@
    fun:_ZN6webrtc12_GLOBAL__N_117ScreenCapturerMac7CaptureERKNS_13DesktopRegionE
    fun:_ZN7content20DesktopCaptureDevice4Core9DoCaptureEv
 }
+{
+   bug_292913_a
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   fun:_CFRuntimeCreateInstance
+   fun:_ZN7TCFBaseI11TDescriptorEnwEm
+   fun:_ZNK17TDescriptorSource14CopyDescriptorEPK7__CFURL
+   fun:_ZNK17TDescriptorSource32CopySystemWideFallbackDescriptorEP6CGFontPKtl
+   fun:_ZNK17TDescriptorSource32CopySystemWideFallbackDescriptorEP6CGFontPK10__CFString7CFRange
+   fun:_ZNK12TFontCascade24CreateSystemWideFallbackEPK8__CTFontPK10__CFString7CFRange
+   fun:_ZNK12TFontCascade14CreateFallbackEPK8__CTFontPK10__CFString7CFRange
+   ...
+   fun:_ZN3gfx13RenderTextMac12EnsureLayoutEv
+}
+{
+   bug_292913_b
+   Memcheck:Uninitialized
+   fun:_ZL10AddEncHashP12EncHashTablePKhij
+   fun:_Z16BuildMacEncTablev
+   fun:_ZN15TParsingContext13GetParseProcsEv
+   fun:_ZN19TSFNTParsingContext13GetParseProcsEv
+   fun:_ZN18TCIDParsingContext13GetParseProcsEv
+   fun:_ZN16TType1OTFCIDFont20ParseCFFCIDFontDictsERK19TType1CFFDescriptorP32Type1ProtectionEvaluationContextRVt
+   fun:_ZN16TType1OTFCIDFont15ParseCFFCIDFontERK19TType1CFFDescriptorP32Type1ProtectionEvaluationContext
+   fun:_ZN16TType1OTFCIDFontC2ERK19TType1CFFDescriptor
+   fun:_ZN10TType1Font7GetFontEPK5TFont
+}
