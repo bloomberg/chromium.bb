@@ -7,9 +7,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
+#include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -17,10 +17,10 @@
 #include <gtk/gtk.h>
 #endif
 
-namespace errors = extension_manifest_errors;
-namespace keys = extensions::manifest_keys;
-
 namespace extensions {
+
+namespace errors = manifest_errors;
+namespace keys = manifest_keys;
 
 class InitValueManifestTest : public ExtensionManifestTest {
 };

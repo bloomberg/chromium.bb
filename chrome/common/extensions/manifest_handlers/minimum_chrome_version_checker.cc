@@ -8,15 +8,15 @@
 #include "base/version.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "extensions/common/error_utils.h"
+#include "extensions/common/manifest_constants.h"
 #include "grit/chromium_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace keys = extensions::manifest_keys;
-namespace errors = extension_manifest_errors;
-
 namespace extensions {
+
+namespace keys = manifest_keys;
+namespace errors = manifest_errors;
 
 MinimumChromeVersionChecker::MinimumChromeVersionChecker() {
 }

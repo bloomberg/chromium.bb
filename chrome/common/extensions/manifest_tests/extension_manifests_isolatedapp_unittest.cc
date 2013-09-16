@@ -6,14 +6,14 @@
 
 #include "base/command_line.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest_handlers/app_isolation_info.h"
+#include "extensions/common/manifest_constants.h"
 #include "extensions/common/switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace errors = extension_manifest_errors;
-
 namespace extensions {
+
+namespace errors = manifest_errors;
 
 class IsolatedAppsManifestTest : public ExtensionManifestTest {
 };

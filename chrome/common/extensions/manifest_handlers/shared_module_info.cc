@@ -10,16 +10,16 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
-
-namespace keys = extensions::manifest_keys;
-namespace values = extension_manifest_values;
-namespace errors = extension_manifest_errors;
+#include "extensions/common/manifest_constants.h"
 
 namespace extensions {
+
+namespace keys = manifest_keys;
+namespace values = manifest_values;
+namespace errors = manifest_errors;
 
 namespace {
 

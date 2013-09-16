@@ -11,9 +11,9 @@
 #include "base/values.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/message_bundle.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -21,7 +21,7 @@ using extensions::kLocaleFolder;
 using extensions::kMessagesFilename;
 using extensions::MessageBundle;
 
-namespace errors = extension_manifest_errors;
+namespace errors = extensions::manifest_errors;
 namespace keys = extensions::manifest_keys;
 
 namespace {

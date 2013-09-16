@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/permissions/permissions_data.h"
 #include "chrome/renderer/chrome_render_process_observer.h"
@@ -20,6 +19,7 @@
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/v8_value_converter.h"
 #include "extensions/common/error_utils.h"
+#include "extensions/common/manifest_constants.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -193,7 +193,7 @@ void UserScriptScheduler::ExecuteCodeImpl(
           continue;
         } else {
           error = ErrorUtils::FormatErrorMessage(
-              extension_manifest_errors::kCannotAccessPage,
+              manifest_errors::kCannotAccessPage,
               child_frame->document().url().spec());
           break;
         }

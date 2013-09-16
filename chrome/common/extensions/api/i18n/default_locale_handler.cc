@@ -12,16 +12,16 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/manifest.h"
+#include "extensions/common/manifest_constants.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace keys = extensions::manifest_keys;
-namespace errors = extension_manifest_errors;
-
 namespace extensions {
+
+namespace keys = manifest_keys;
+namespace errors = manifest_errors;
 
 // static
 const std::string& LocaleInfo::GetDefaultLocale(const Extension* extension) {
@@ -41,7 +41,7 @@ bool DefaultLocaleHandler::Parse(Extension* extension, string16* error) {
   if (!extension->manifest()->GetString(keys::kDefaultLocale,
                                         &info->default_locale) ||
       !l10n_util::IsValidLocaleSyntax(info->default_locale)) {
-    *error = ASCIIToUTF16(extension_manifest_errors::kInvalidDefaultLocale);
+    *error = ASCIIToUTF16(manifest_errors::kInvalidDefaultLocale);
     return false;
   }
   extension->SetManifestData(keys::kDefaultLocale, info.release());

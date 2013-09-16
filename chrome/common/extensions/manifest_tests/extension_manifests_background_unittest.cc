@@ -9,16 +9,16 @@
 #include "base/values.h"
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
+#include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace errors = extension_manifest_errors;
-namespace keys = extensions::manifest_keys;
-
 namespace extensions {
+
+namespace errors = manifest_errors;
+namespace keys = manifest_keys;
 
 class ExtensionManifestBackgroundTest : public ExtensionManifestTest {
 };

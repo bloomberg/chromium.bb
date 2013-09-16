@@ -7,8 +7,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/common/manifest_constants.h"
 
 #if !defined(OS_CHROMEOS)
 #include "chrome/browser/signin/signin_manager.h"
@@ -17,7 +17,7 @@
 
 namespace extensions {
 
-namespace errors = extension_manifest_errors;
+namespace errors = manifest_errors;
 
 BrowserPermissionsPolicyDelegate::BrowserPermissionsPolicyDelegate() {
   PermissionsData::SetPolicyDelegate(this);

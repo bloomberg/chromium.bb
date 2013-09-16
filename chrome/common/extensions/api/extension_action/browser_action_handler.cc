@@ -10,9 +10,9 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_file_util.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/feature_switch.h"
 #include "extensions/common/manifest.h"
+#include "extensions/common/manifest_constants.h"
 #include "grit/generated_resources.h"
 
 namespace extensions {
@@ -28,7 +28,7 @@ bool BrowserActionHandler::Parse(Extension* extension,
   const base::DictionaryValue* dict = NULL;
   if (!extension->manifest()->GetDictionary(
           manifest_keys::kBrowserAction, &dict)) {
-    *error = ASCIIToUTF16(extension_manifest_errors::kInvalidBrowserAction);
+    *error = ASCIIToUTF16(manifest_errors::kInvalidBrowserAction);
     return false;
   }
 

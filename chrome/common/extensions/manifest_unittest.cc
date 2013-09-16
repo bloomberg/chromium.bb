@@ -11,17 +11,17 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/features/simple_feature.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/common/install_warning.h"
+#include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace errors = extension_manifest_errors;
-namespace keys = extensions::manifest_keys;
-
 namespace extensions {
+
+namespace errors = manifest_errors;
+namespace keys = manifest_keys;
 
 class ManifestTest : public testing::Test {
  public:

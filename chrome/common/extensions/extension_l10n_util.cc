@@ -17,14 +17,14 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension_file_util.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/message_bundle.h"
 #include "chrome/common/url_constants.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/manifest_constants.h"
 #include "third_party/icu/source/common/unicode/uloc.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace errors = extension_manifest_errors;
+namespace errors = extensions::manifest_errors;
 namespace keys = extensions::manifest_keys;
 
 static std::string& GetProcessLocale() {
@@ -291,7 +291,7 @@ bool GetValidLocales(const base::FilePath& locale_path,
   }
 
   if (valid_locales->empty()) {
-    *error = extension_manifest_errors::kLocalesNoValidLocaleNamesListed;
+    *error = extensions::manifest_errors::kLocalesNoValidLocaleNamesListed;
     return false;
   }
 

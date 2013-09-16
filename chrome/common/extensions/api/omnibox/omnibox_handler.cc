@@ -9,8 +9,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "extensions/common/manifest.h"
+#include "extensions/common/manifest_constants.h"
 
 namespace extensions {
 
@@ -41,7 +41,7 @@ bool OmniboxHandler::Parse(Extension* extension, string16* error) {
                                             &dict) ||
       !dict->GetString(kKeyword, &info->keyword) ||
       info->keyword.empty()) {
-    *error = ASCIIToUTF16(extension_manifest_errors::kInvalidOmniboxKeyword);
+    *error = ASCIIToUTF16(manifest_errors::kInvalidOmniboxKeyword);
     return false;
   }
   extension->SetManifestData(manifest_keys::kOmnibox, info.release());

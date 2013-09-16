@@ -10,12 +10,14 @@
 #include "base/values.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_icon_set.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "extensions/common/error_utils.h"
+#include "extensions/common/manifest_constants.h"
 
-namespace errors = extension_manifest_errors;
 
 namespace extensions {
+
+namespace errors = manifest_errors;
+
 namespace manifest_handler_helpers {
 
 bool NormalizeAndValidatePath(std::string* path) {
@@ -57,5 +59,6 @@ bool LoadIconsFromDictionary(const base::DictionaryValue* icons_value,
   return true;
 }
 
+}  // namespace manifest_handler_helpers
+
 }  // namespace extensions
-}  // namespace manifest_handler_extensions

@@ -10,19 +10,19 @@
 #include "base/values.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/utility/extensions/unpacker.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
-namespace errors = extension_manifest_errors;
-namespace keys = extensions::manifest_keys;
-
 namespace extensions {
 
+namespace errors = manifest_errors;
+namespace keys = manifest_keys;
+
 class UnpackerTest : public testing::Test {
-public:
+ public:
   virtual ~UnpackerTest() {
     LOG(WARNING) << "Deleting temp dir: "
                  << temp_dir_.path().LossyDisplayName();

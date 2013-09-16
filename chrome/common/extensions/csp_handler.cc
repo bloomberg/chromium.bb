@@ -9,16 +9,16 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/extensions/csp_validator.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest_handlers/sandboxed_page_info.h"
-
-namespace keys = extensions::manifest_keys;
-namespace errors = extension_manifest_errors;
-
-using extensions::csp_validator::ContentSecurityPolicyIsLegal;
-using extensions::csp_validator::ContentSecurityPolicyIsSecure;
+#include "extensions/common/manifest_constants.h"
 
 namespace extensions {
+
+namespace keys = manifest_keys;
+namespace errors = manifest_errors;
+
+using csp_validator::ContentSecurityPolicyIsLegal;
+using csp_validator::ContentSecurityPolicyIsSecure;
 
 namespace {
 

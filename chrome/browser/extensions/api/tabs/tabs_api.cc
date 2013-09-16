@@ -58,7 +58,6 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/incognito_handler.h"
 #include "chrome/common/extensions/message_bundle.h"
@@ -80,6 +79,7 @@
 #include "extensions/browser/file_reader.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
+#include "extensions/common/manifest_constants.h"
 #include "extensions/common/user_script.h"
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
@@ -111,7 +111,7 @@ using content::WebContents;
 namespace extensions {
 
 namespace windows = api::windows;
-namespace errors = extension_manifest_errors;
+namespace errors = manifest_errors;
 namespace keys = tabs_constants;
 namespace tabs = api::tabs;
 typedef tabs::CaptureVisibleTab::Params::Options FormatEnum;

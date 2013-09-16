@@ -12,20 +12,21 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_file_util.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/permissions/api_permission_set.h"
 #include "chrome/common/extensions/permissions/permissions_data.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
+#include "extensions/common/manifest_constants.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using base::DictionaryValue;
-namespace keys = extensions::manifest_keys;
-namespace values = extension_manifest_values;
-namespace errors = extension_manifest_errors;
 
 namespace extensions {
+
+namespace keys = manifest_keys;
+namespace values = manifest_values;
+namespace errors = manifest_errors;
 
 namespace {
 

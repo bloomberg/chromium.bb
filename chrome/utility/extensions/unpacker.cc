@@ -21,11 +21,11 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "content/public/child/image_decoder_utils.h"
 #include "content/public/common/common_param_traits.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/manifest.h"
+#include "extensions/common/manifest_constants.h"
 #include "grit/generated_resources.h"
 #include "ipc/ipc_message_utils.h"
 #include "net/base/file_stream.h"
@@ -34,10 +34,12 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/size.h"
 
-namespace errors = extension_manifest_errors;
-namespace keys = extensions::manifest_keys;
+namespace extensions {
 
 namespace {
+
+namespace errors = manifest_errors;
+namespace keys = manifest_keys;
 
 // A limit to stop us passing dangerously large canvases to the browser.
 const int kMaxImageCanvas = 4096 * 4096;
@@ -84,8 +86,6 @@ bool PathContainsParentDirectory(const base::FilePath& path) {
 }
 
 }  // namespace
-
-namespace extensions {
 
 struct Unpacker::InternalData {
   DecodedImages decoded_images;

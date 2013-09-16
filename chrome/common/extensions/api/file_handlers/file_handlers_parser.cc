@@ -8,14 +8,14 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/manifest.h"
-
-namespace keys = extensions::manifest_keys;
-namespace errors = extension_manifest_errors;
+#include "extensions/common/manifest_constants.h"
 
 namespace extensions {
+
+namespace keys = manifest_keys;
+namespace errors = manifest_errors;
 
 FileHandlerInfo::FileHandlerInfo() {}
 FileHandlerInfo::~FileHandlerInfo() {}

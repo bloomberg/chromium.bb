@@ -9,10 +9,10 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/permissions/api_permission_set.h"
 #include "chrome/common/extensions/permissions/permissions_data.h"
 #include "extensions/common/error_utils.h"
+#include "extensions/common/manifest_constants.h"
 
 namespace extensions {
 
@@ -59,7 +59,7 @@ bool AppIsolationHandler::Parse(Extension* extension, string16* error) {
 
   const base::ListValue* isolation_list = NULL;
   if (!extension->manifest()->GetList(keys::kIsolation, &isolation_list)) {
-    *error = ASCIIToUTF16(extension_manifest_errors::kInvalidIsolation);
+    *error = ASCIIToUTF16(manifest_errors::kInvalidIsolation);
     return false;
   }
 
@@ -68,13 +68,13 @@ bool AppIsolationHandler::Parse(Extension* extension, string16* error) {
     std::string isolation_string;
     if (!isolation_list->GetString(i, &isolation_string)) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
-          extension_manifest_errors::kInvalidIsolationValue,
+          manifest_errors::kInvalidIsolationValue,
           base::UintToString(i));
       return false;
     }
 
     // Check for isolated storage.
-    if (isolation_string == extension_manifest_values::kIsolatedStorage) {
+    if (isolation_string == manifest_values::kIsolatedStorage) {
       has_isolated_storage = true;
     } else {
       DLOG(WARNING) << "Did not recognize isolation type: " << isolation_string;

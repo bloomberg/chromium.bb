@@ -4,12 +4,13 @@
 
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
 
+#include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using extensions::Extension;
 
-namespace errors = extension_manifest_errors;
+namespace errors = extensions::manifest_errors;
 
 TEST_F(ExtensionManifestTest, ManifestVersionError) {
   scoped_ptr<base::DictionaryValue> manifest1(new base::DictionaryValue());

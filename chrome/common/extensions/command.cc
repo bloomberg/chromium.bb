@@ -10,17 +10,16 @@
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "extensions/common/error_utils.h"
+#include "extensions/common/manifest_constants.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace errors = extension_manifest_errors;
-namespace keys = extensions::manifest_keys;
-namespace values = extension_manifest_values;
+namespace extensions {
 
-using extensions::ErrorUtils;
-using extensions::Command;
+namespace errors = manifest_errors;
+namespace keys = manifest_keys;
+namespace values = manifest_values;
 
 namespace {
 
@@ -250,8 +249,6 @@ std::string NormalizeShortcutSuggestion(const std::string& suggestion,
 }
 
 }  // namespace
-
-namespace extensions {
 
 Command::Command() {}
 

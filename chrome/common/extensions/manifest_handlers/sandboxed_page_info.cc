@@ -10,8 +10,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/extensions/csp_validator.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "extensions/common/error_utils.h"
+#include "extensions/common/manifest_constants.h"
 #include "extensions/common/url_pattern.h"
 
 namespace extensions {
@@ -19,7 +19,7 @@ namespace extensions {
 namespace {
 
 namespace keys = extensions::manifest_keys;
-namespace errors = extension_manifest_errors;
+namespace errors = manifest_errors;
 
 const char kDefaultSandboxedPageContentSecurityPolicy[] =
     "sandbox allow-scripts allow-forms allow-popups";

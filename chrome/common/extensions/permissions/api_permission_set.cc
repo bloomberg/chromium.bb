@@ -8,19 +8,15 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/permissions/permissions_info.h"
 #include "extensions/common/error_utils.h"
+#include "extensions/common/manifest_constants.h"
 
-namespace errors = extension_manifest_errors;
+namespace extensions {
+
+namespace errors = manifest_errors;
 
 namespace {
-
-using extensions::APIPermission;
-using extensions::APIPermissionInfo;
-using extensions::APIPermissionSet;
-using extensions::ErrorUtils;
-using extensions::PermissionsInfo;
 
 bool CreateAPIPermission(
     const std::string& permission_str,
@@ -112,8 +108,6 @@ bool ParseChildPermissions(const std::string& base_name,
 }
 
 }  // namespace
-
-namespace extensions {
 
 APIPermissionSet::APIPermissionSet() {
 }

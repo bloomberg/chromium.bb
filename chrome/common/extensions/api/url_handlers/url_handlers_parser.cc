@@ -9,18 +9,15 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest_handlers/offline_enabled_info.h"
 #include "extensions/common/error_utils.h"
+#include "extensions/common/manifest_constants.h"
 #include "extensions/common/switches.h"
 #include "net/base/network_change_notifier.h"
 #include "url/gurl.h"
 
 using base::ASCIIToUTF16;
 using net::NetworkChangeNotifier;
-
-namespace mkeys = extensions::manifest_keys;
-namespace merrors = extension_manifest_errors;
 
 // TODO(sergeygs): Use the same strategy that externally_connectable does for
 // parsing the manifest: declare a schema for the manifest entry in
@@ -33,6 +30,9 @@ namespace merrors = extension_manifest_errors;
 // Do the same in (at least) file_handlers_parser.cc as well.
 
 namespace extensions {
+
+namespace mkeys = manifest_keys;
+namespace merrors = manifest_errors;
 
 UrlHandlerInfo::UrlHandlerInfo() {
 }

@@ -23,7 +23,6 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/common/extensions/manifest_handlers/icons_handler.h"
@@ -33,6 +32,7 @@
 #include "extensions/common/extension_resource.h"
 #include "extensions/common/install_warning.h"
 #include "extensions/common/manifest.h"
+#include "extensions/common/manifest_constants.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "net/base/file_stream.h"
@@ -42,7 +42,7 @@ using extensions::Extension;
 using extensions::ExtensionResource;
 using extensions::Manifest;
 
-namespace errors = extension_manifest_errors;
+namespace errors = extensions::manifest_errors;
 
 namespace {
 

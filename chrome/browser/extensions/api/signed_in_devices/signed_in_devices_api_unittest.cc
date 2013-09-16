@@ -18,14 +18,11 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using extensions::Extension;
-using extensions::TestExtensionPrefs;
 using browser_sync::DeviceInfo;
 using testing::Return;
 
@@ -128,8 +125,7 @@ class ExtensionSignedInDevicesTest : public BrowserWithTestWindowTest {
     ProfileSyncServiceFactory::GetInstance()->SetTestingFactory(
         profile(), CreateProfileSyncServiceMock);
 
-    extension_ = utils::CreateEmptyExtensionWithLocation(
-        extensions::Manifest::UNPACKED);
+    extension_ = utils::CreateEmptyExtensionWithLocation(Manifest::UNPACKED);
 
   }
 
@@ -149,7 +145,7 @@ class ExtensionSignedInDevicesTest : public BrowserWithTestWindowTest {
   }
 
  protected:
-  scoped_refptr<extensions::Extension> extension_;
+  scoped_refptr<Extension> extension_;
 };
 
 DeviceInfo* CreateDeviceInfo(const DeviceInfo& device_info) {

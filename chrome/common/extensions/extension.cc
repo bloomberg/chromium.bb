@@ -20,7 +20,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/version.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/common/extensions/permissions/api_permission_set.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
@@ -31,6 +30,7 @@
 #include "extensions/common/error_utils.h"
 #include "extensions/common/id_util.h"
 #include "extensions/common/manifest.h"
+#include "extensions/common/manifest_constants.h"
 #include "extensions/common/switches.h"
 #include "extensions/common/url_pattern_set.h"
 #include "grit/chromium_strings.h"
@@ -43,11 +43,11 @@
 #include "grit/generated_resources.h"
 #endif
 
-namespace keys = extensions::manifest_keys;
-namespace values = extension_manifest_values;
-namespace errors = extension_manifest_errors;
-
 namespace extensions {
+
+namespace keys = manifest_keys;
+namespace values = manifest_values;
+namespace errors = manifest_errors;
 
 namespace {
 

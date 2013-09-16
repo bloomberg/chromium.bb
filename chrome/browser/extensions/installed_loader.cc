@@ -24,22 +24,19 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
 #include "extensions/common/manifest.h"
+#include "extensions/common/manifest_constants.h"
 
 using content::BrowserThread;
 using content::UserMetricsAction;
-using extensions::Extension;
-using extensions::ExtensionInfo;
-using extensions::Manifest;
-
-namespace errors = extension_manifest_errors;
 
 namespace extensions {
+
+namespace errors = manifest_errors;
 
 namespace {
 

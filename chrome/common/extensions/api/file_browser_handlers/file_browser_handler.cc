@@ -10,14 +10,14 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/manifest.h"
+#include "extensions/common/manifest_constants.h"
 #include "extensions/common/url_pattern.h"
 
 namespace keys = extensions::manifest_keys;
-namespace errors = extension_manifest_errors;
+namespace errors = extensions::manifest_errors;
 
 namespace {
 

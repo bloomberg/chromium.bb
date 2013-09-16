@@ -17,7 +17,7 @@
 #include "chrome/browser/ui/views/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
+#include "extensions/common/manifest_constants.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/accessibility/accessible_view_state.h"
@@ -285,7 +285,7 @@ void BrowserActionButton::Observe(int type,
               details).ptr();
       if (extension_->id() == payload->first &&
           payload->second ==
-              extension_manifest_values::kBrowserActionCommandEvent) {
+              extensions::manifest_values::kBrowserActionCommandEvent) {
         if (type == chrome::NOTIFICATION_EXTENSION_COMMAND_ADDED)
           MaybeRegisterExtensionCommand();
         else

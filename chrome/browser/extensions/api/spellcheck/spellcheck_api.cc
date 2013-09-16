@@ -9,13 +9,13 @@
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "chrome/common/extensions/api/spellcheck/spellcheck_handler.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "extensions/common/manifest_constants.h"
 
 namespace extensions {
 
-namespace errors = extension_manifest_errors;
+namespace errors = manifest_errors;
 
 namespace {
 

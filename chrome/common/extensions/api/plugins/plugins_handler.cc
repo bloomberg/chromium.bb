@@ -8,12 +8,12 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
 #include "chrome/common/extensions/permissions/api_permission_set.h"
 #include "chrome/common/extensions/permissions/permissions_data.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/manifest.h"
+#include "extensions/common/manifest_constants.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -69,7 +69,7 @@ const std::vector<std::string> PluginsHandler::Keys() const {
 bool PluginsHandler::Parse(Extension* extension, string16* error) {
   const base::ListValue* list_value = NULL;
   if (!extension->manifest()->GetList(keys::kPlugins, &list_value)) {
-    *error = ASCIIToUTF16(extension_manifest_errors::kInvalidPlugins);
+    *error = ASCIIToUTF16(manifest_errors::kInvalidPlugins);
     return false;
   }
 
@@ -78,14 +78,14 @@ bool PluginsHandler::Parse(Extension* extension, string16* error) {
   for (size_t i = 0; i < list_value->GetSize(); ++i) {
     const base::DictionaryValue* plugin_value = NULL;
     if (!list_value->GetDictionary(i, &plugin_value)) {
-      *error = ASCIIToUTF16(extension_manifest_errors::kInvalidPlugins);
+      *error = ASCIIToUTF16(manifest_errors::kInvalidPlugins);
       return false;
     }
     // Get plugins[i].path.
     std::string path_str;
     if (!plugin_value->GetString(keys::kPluginsPath, &path_str)) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
-          extension_manifest_errors::kInvalidPluginsPath, base::IntToString(i));
+          manifest_errors::kInvalidPluginsPath, base::IntToString(i));
       return false;
     }
 
@@ -94,7 +94,7 @@ bool PluginsHandler::Parse(Extension* extension, string16* error) {
     if (plugin_value->HasKey(keys::kPluginsPublic)) {
       if (!plugin_value->GetBoolean(keys::kPluginsPublic, &is_public)) {
         *error = ErrorUtils::FormatErrorMessageUTF16(
-            extension_manifest_errors::kInvalidPluginsPublic,
+            manifest_errors::kInvalidPluginsPublic,
             base::IntToString(i));
         return false;
       }

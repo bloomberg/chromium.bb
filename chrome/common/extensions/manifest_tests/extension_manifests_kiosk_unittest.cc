@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest_handlers/kiosk_enabled_info.h"
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
+#include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -15,7 +15,7 @@ class ExtensionManifestKioskEnabledTest : public ExtensionManifestTest {
 
 TEST_F(ExtensionManifestKioskEnabledTest, InvalidKioskEnabled) {
   LoadAndExpectError("kiosk_enabled_invalid.json",
-                     extension_manifest_errors::kInvalidKioskEnabled);
+                     manifest_errors::kInvalidKioskEnabled);
 }
 
 TEST_F(ExtensionManifestKioskEnabledTest, KioskEnabledHostedApp) {

@@ -12,8 +12,8 @@
 #include "base/values.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest_handler_helpers.h"
+#include "extensions/common/manifest_constants.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -76,7 +76,7 @@ bool IconsHandler::Parse(Extension* extension, string16* error) {
   scoped_ptr<IconsInfo> icons_info(new IconsInfo);
   const base::DictionaryValue* icons_dict = NULL;
   if (!extension->manifest()->GetDictionary(keys::kIcons, &icons_dict)) {
-    *error = ASCIIToUTF16(extension_manifest_errors::kInvalidIcons);
+    *error = ASCIIToUTF16(manifest_errors::kInvalidIcons);
     return false;
   }
 

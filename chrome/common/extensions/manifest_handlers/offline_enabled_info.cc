@@ -9,7 +9,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
+#include "extensions/common/manifest_constants.h"
 
 namespace extensions {
 
@@ -49,7 +49,7 @@ bool OfflineEnabledHandler::Parse(Extension* extension, string16* error) {
 
   if (!extension->manifest()->GetBoolean(keys::kOfflineEnabled,
                                          &offline_enabled)) {
-    *error = ASCIIToUTF16(extension_manifest_errors::kInvalidOfflineEnabled);
+    *error = ASCIIToUTF16(manifest_errors::kInvalidOfflineEnabled);
     return false;
   }
 

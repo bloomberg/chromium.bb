@@ -7,8 +7,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "extensions/common/error_utils.h"
+#include "extensions/common/manifest_constants.h"
 
 namespace extensions {
 
@@ -72,7 +72,7 @@ bool CommandsHandler::Parse(Extension* extension, string16* error) {
 
   const base::DictionaryValue* dict = NULL;
   if (!extension->manifest()->GetDictionary(keys::kCommands, &dict)) {
-    *error = ASCIIToUTF16(extension_manifest_errors::kInvalidCommandsKey);
+    *error = ASCIIToUTF16(manifest_errors::kInvalidCommandsKey);
     return false;
   }
 
@@ -87,7 +87,7 @@ bool CommandsHandler::Parse(Extension* extension, string16* error) {
     const DictionaryValue* command = NULL;
     if (!iter.value().GetAsDictionary(&command)) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
-          extension_manifest_errors::kInvalidKeyBindingDictionary,
+          manifest_errors::kInvalidKeyBindingDictionary,
           base::IntToString(command_index));
       return false;
     }
@@ -99,20 +99,20 @@ bool CommandsHandler::Parse(Extension* extension, string16* error) {
     if (binding->accelerator().key_code() != ui::VKEY_UNKNOWN) {
       if (++keybindings_found > kMaxCommandsWithKeybindingPerExtension) {
         *error = ErrorUtils::FormatErrorMessageUTF16(
-            extension_manifest_errors::kInvalidKeyBindingTooMany,
+            manifest_errors::kInvalidKeyBindingTooMany,
             base::IntToString(kMaxCommandsWithKeybindingPerExtension));
         return false;
       }
     }
 
     std::string command_name = binding->command_name();
-    if (command_name == extension_manifest_values::kBrowserActionCommandEvent) {
+    if (command_name == manifest_values::kBrowserActionCommandEvent) {
       commands_info->browser_action_command.reset(binding.release());
     } else if (command_name ==
-                   extension_manifest_values::kPageActionCommandEvent) {
+                   manifest_values::kPageActionCommandEvent) {
       commands_info->page_action_command.reset(binding.release());
     } else if (command_name ==
-                   extension_manifest_values::kScriptBadgeCommandEvent) {
+                   manifest_values::kScriptBadgeCommandEvent) {
       commands_info->script_badge_command.reset(binding.release());
     } else {
       if (command_name[0] != '_')  // All commands w/underscore are reserved.
@@ -138,7 +138,7 @@ void CommandsHandler::MaybeSetBrowserActionDefault(const Extension* extension,
   if (extension->manifest()->HasKey(keys::kBrowserAction) &&
       !info->browser_action_command.get()) {
     info->browser_action_command.reset(
-        new Command(extension_manifest_values::kBrowserActionCommandEvent,
+        new Command(manifest_values::kBrowserActionCommandEvent,
                     string16(),
                     std::string()));
   }

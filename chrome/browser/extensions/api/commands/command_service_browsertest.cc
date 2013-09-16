@@ -5,9 +5,9 @@
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/common/manifest_constants.h"
 
 namespace extensions {
 
@@ -44,7 +44,7 @@ IN_PROC_BROWSER_TEST_F(CommandServiceTest, RemoveShortcutSurvivesUpdate) {
   // Verify it has a command of Alt+Shift+F.
   ui::Accelerator accelerator =
       command_service->FindShortcutForCommand(
-          kId, extension_manifest_values::kBrowserActionCommandEvent);
+          kId, manifest_values::kBrowserActionCommandEvent);
   EXPECT_EQ(ui::VKEY_F, accelerator.key_code());
   EXPECT_FALSE(accelerator.IsCtrlDown());
   EXPECT_TRUE(accelerator.IsShiftDown());
@@ -52,11 +52,11 @@ IN_PROC_BROWSER_TEST_F(CommandServiceTest, RemoveShortcutSurvivesUpdate) {
 
   // Remove the keybinding.
   command_service->RemoveKeybindingPrefs(
-      kId, extension_manifest_values::kBrowserActionCommandEvent);
+      kId, manifest_values::kBrowserActionCommandEvent);
 
   // Verify it got removed.
   accelerator = command_service->FindShortcutForCommand(
-      kId, extension_manifest_values::kBrowserActionCommandEvent);
+      kId, manifest_values::kBrowserActionCommandEvent);
   EXPECT_EQ(ui::VKEY_UNKNOWN, accelerator.key_code());
 
   // Update to version 2.
@@ -65,7 +65,7 @@ IN_PROC_BROWSER_TEST_F(CommandServiceTest, RemoveShortcutSurvivesUpdate) {
 
   // Verify it is still set to nothing.
   accelerator = command_service->FindShortcutForCommand(
-      kId, extension_manifest_values::kBrowserActionCommandEvent);
+      kId, manifest_values::kBrowserActionCommandEvent);
   EXPECT_EQ(ui::VKEY_UNKNOWN, accelerator.key_code());
 }
 

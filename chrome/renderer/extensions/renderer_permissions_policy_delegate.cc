@@ -7,12 +7,12 @@
 #include "base/command_line.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/renderer/extensions/dispatcher.h"
+#include "extensions/common/manifest_constants.h"
 
 namespace extensions {
 
-namespace errors = extension_manifest_errors;
+namespace errors = manifest_errors;
 
 RendererPermissionsPolicyDelegate::RendererPermissionsPolicyDelegate(
     Dispatcher* dispatcher) : dispatcher_(dispatcher) {
