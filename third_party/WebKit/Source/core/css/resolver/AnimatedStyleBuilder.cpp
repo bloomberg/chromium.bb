@@ -145,11 +145,11 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
     case CSSPropertyHeight:
         style->setHeight(animatableValueToLength(value, state));
         return;
-    case CSSPropertyListStyleImage:
-        style->setListStyleImage(toAnimatableImage(value)->toStyleImage());
-        return;
     case CSSPropertyLeft:
         style->setLeft(animatableValueToLength(value, state));
+        return;
+    case CSSPropertyListStyleImage:
+        style->setListStyleImage(toAnimatableImage(value)->toStyleImage());
         return;
     case CSSPropertyMarginBottom:
         style->setMarginBottom(animatableValueToLength(value, state));
