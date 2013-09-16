@@ -4,6 +4,7 @@
 
 #include "rlz/lib/recursive_cross_process_lock_posix.h"
 
+#include <errno.h>
 #include <fcntl.h>
 #include <sys/file.h>
 #include <sys/stat.h>
