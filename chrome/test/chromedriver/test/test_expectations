@@ -180,6 +180,7 @@ _OS_NEGATIVE_FILTER['android'] = [
 
     # Flaky: https://code.google.com/p/chromedriver/issues/detail?id=441
     'PageLoadingTest.testShouldBeAbleToNavigateBackInTheBrowserHistory',
+    'PageLoadingTest.testShouldBeAbleToNavigateForwardsInTheBrowserHistory',
     # Flaky: https://code.google.com/p/chromedriver/issues/detail?id=528
     'PageLoadingTest.testShouldDoNothingIfThereIsNothingToGoBackTo',
 
