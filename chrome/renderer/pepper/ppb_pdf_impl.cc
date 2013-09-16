@@ -409,11 +409,12 @@ PP_Var ModalPromptForPassword(PP_Instance instance_id,
   scoped_refptr<ppapi::StringVar> message_string(
       ppapi::StringVar::FromPPVar(message));
 
-  instance->GetRenderView()->Send(
-      new ChromeViewHostMsg_PDFModalPromptForPassword(
-          instance->GetRenderView()->GetRoutingID(),
-          message_string->value(),
-          &actual_value));
+  IPC::SyncMessage* msg = new ChromeViewHostMsg_PDFModalPromptForPassword(
+      instance->GetRenderView()->GetRoutingID(),
+      message_string->value(),
+      &actual_value);
+  msg->EnableMessagePumping();
+  instance->GetRenderView()->Send(msg);
 
   return ppapi::StringVar::StringToPPVar(actual_value);
 }
