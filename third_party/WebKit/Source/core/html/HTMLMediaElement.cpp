@@ -346,11 +346,20 @@ HTMLMediaElement::~HTMLMediaElement()
     // us to dispatch an abort event, which would result in a crash.
     // See http://crbug.com/233654 for more details.
     m_completelyLoaded = true;
+
+    // Destroying the player may cause a resource load to be canceled,
+    // which could result in Document::dispatchWindowLoadEvent() being
+    // called via ResourceFetch::didLoadResource() then
+    // FrameLoader::loadDone(). To prevent load event dispatching during
+    // object destruction, we use Document::incrementLoadEventDelayCount().
+    // See http://crbug.com/275223 for more details.
+    document().incrementLoadEventDelayCount();
     m_player.clear();
 #if ENABLE(WEB_AUDIO)
     if (audioSourceProvider())
         audioSourceProvider()->setClient(0);
 #endif
+    document().decrementLoadEventDelayCount();
 }
 
 void HTMLMediaElement::didMoveToNewDocument(Document* oldDocument)
