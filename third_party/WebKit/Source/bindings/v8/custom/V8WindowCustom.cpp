@@ -93,7 +93,7 @@ void WindowSetTimeoutImpl(const v8::FunctionCallbackInfo<v8::Value>& args, bool 
     String functionString;
     if (!function->IsFunction()) {
         if (function->IsString()) {
-            functionString = toWebCoreString(function);
+            functionString = toWebCoreString(function.As<v8::String>());
         } else {
             v8::Handle<v8::Value> v8String = function->ToString();
 
@@ -473,7 +473,7 @@ bool V8Window::namedSecurityCheckCustom(v8::Local<v8::Object> host, v8::Local<v8
     if (key->IsString()) {
         DEFINE_STATIC_LOCAL(AtomicString, nameOfProtoProperty, ("__proto__", AtomicString::ConstructFromLiteral));
 
-        String name = toWebCoreString(key);
+        String name = toWebCoreString(key.As<v8::String>());
         Frame* childFrame = target->tree()->scopedChild(name);
         // Notice that we can't call HasRealNamedProperty for ACCESS_HAS
         // because that would generate infinite recursion.

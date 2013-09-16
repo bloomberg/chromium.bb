@@ -99,7 +99,7 @@ static void messageHandlerInMainThread(v8::Handle<v8::Message> message, v8::Hand
 
     v8::Handle<v8::Value> resourceName = message->GetScriptResourceName();
     bool shouldUseDocumentURL = resourceName.IsEmpty() || !resourceName->IsString();
-    String resource = shouldUseDocumentURL ? firstWindow->document()->url() : toWebCoreString(resourceName);
+    String resource = shouldUseDocumentURL ? firstWindow->document()->url() : toWebCoreString(resourceName.As<v8::String>());
     AccessControlStatus corsStatus = message->IsSharedCrossOrigin() ? SharableCrossOrigin : NotSharableCrossOrigin;
 
     RefPtr<ErrorEvent> event = ErrorEvent::create(errorMessage, resource, message->GetLineNumber(), message->GetStartColumn(), DOMWrapperWorld::current());

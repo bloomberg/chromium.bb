@@ -163,6 +163,33 @@ namespace WebCore {
         V8PerIsolateData::from(isolate)->stringCache()->setReturnValueFromString(info.GetReturnValue(), string.impl());
     }
 
+    // Convert v8::String to a WTF::String. If the V8 string is not already
+    // an external string then it is transformed into an external string at this
+    // point to avoid repeated conversions.
+    inline String toWebCoreString(v8::Handle<v8::String> value)
+    {
+        return v8StringToWebCoreString<String>(value, Externalize);
+    }
+
+    inline String toWebCoreStringWithNullCheck(v8::Handle<v8::String> value)
+    {
+        if (value.IsEmpty() || value->IsNull())
+            return String();
+        return toWebCoreString(value);
+    }
+
+    inline String toWebCoreStringWithUndefinedOrNullCheck(v8::Handle<v8::String> value)
+    {
+        if (value.IsEmpty() || value->IsNull() || value->IsUndefined())
+            return String();
+        return toWebCoreString(value);
+    }
+
+    inline AtomicString toWebCoreAtomicString(v8::Handle<v8::String> value)
+    {
+        return v8StringToWebCoreString<AtomicString>(value, Externalize);
+    }
+
     // Convert v8 types to a WTF::String. If the V8 string is not already
     // an external string then it is transformed into an external string at this
     // point to avoid repeated conversions.
@@ -200,15 +227,6 @@ namespace WebCore {
     inline AtomicString toWebCoreAtomicString(v8::Handle<v8::Value> value)
     {
         V8StringResource<> stringResource(value);
-        if (!stringResource.prepare())
-            return AtomicString();
-        return stringResource;
-    }
-
-    // FIXME: See the above comment.
-    inline AtomicString toWebCoreAtomicStringWithNullCheck(v8::Handle<v8::Value> value)
-    {
-        V8StringResource<WithNullCheck> stringResource(value);
         if (!stringResource.prepare())
             return AtomicString();
         return stringResource;

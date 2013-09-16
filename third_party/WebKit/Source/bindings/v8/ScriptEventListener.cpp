@@ -98,7 +98,7 @@ String eventListenerHandlerBody(Document* document, EventListener* listener)
     V8AbstractEventListener* v8Listener = static_cast<V8AbstractEventListener*>(listener);
     v8::Handle<v8::Context> context = toV8Context(document, v8Listener->world());
     v8::Context::Scope contextScope(context);
-    v8::Handle<v8::Object> function = v8Listener->getListenerObject(document);
+    v8::Handle<v8::Value> function = v8Listener->getListenerObject(document);
     if (function.IsEmpty())
         return "";
 
@@ -147,8 +147,8 @@ bool eventListenerHandlerLocation(Document* document, EventListener* listener, S
     v8::Handle<v8::Value> scriptIdValue = function->GetScriptId();
     scriptId = toWebCoreStringWithUndefinedOrNullCheck(scriptIdValue);
     v8::ScriptOrigin origin = function->GetScriptOrigin();
-    if (origin.ResourceName()->IsString() && !origin.ResourceName().IsEmpty())
-        sourceName = toWebCoreString(origin.ResourceName());
+    if (!origin.ResourceName().IsEmpty() && origin.ResourceName()->IsString())
+        sourceName = toWebCoreString(origin.ResourceName().As<v8::String>());
     else
         sourceName = "";
     lineNumber = function->GetScriptLineNumber();

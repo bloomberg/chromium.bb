@@ -104,7 +104,7 @@ String ScriptPreprocessor::preprocessSourceCode(const String& sourceCode, const 
     v8::Handle<v8::Value> resultValue = V8ScriptRunner::callAsFunction(m_preprocessorFunction.newLocal(m_isolate), m_context.newLocal(m_isolate)->Global(), WTF_ARRAY_LENGTH(argv), argv);
 
     if (!resultValue.IsEmpty() && resultValue->IsString())
-        return toWebCoreStringWithNullCheck(resultValue);
+        return toWebCoreStringWithNullCheck(resultValue.As<v8::String>());
 
     return sourceCode;
 }

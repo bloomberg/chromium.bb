@@ -78,7 +78,7 @@ void V8CanvasRenderingContext2D::strokeStyleAttributeSetterCustom(v8::Local<v8::
 {
     CanvasRenderingContext2D* impl = V8CanvasRenderingContext2D::toNative(info.Holder());
     if (value->IsString())
-        impl->setStrokeColor(toWebCoreString(value));
+        impl->setStrokeColor(toWebCoreString(value.As<v8::String>()));
     else
         impl->setStrokeStyle(toCanvasStyle(value, info.GetIsolate()));
 }
@@ -93,7 +93,7 @@ void V8CanvasRenderingContext2D::fillStyleAttributeSetterCustom(v8::Local<v8::St
 {
     CanvasRenderingContext2D* impl = V8CanvasRenderingContext2D::toNative(info.Holder());
     if (value->IsString())
-        impl->setFillColor(toWebCoreString(value));
+        impl->setFillColor(toWebCoreString(value.As<v8::String>()));
     else
         impl->setFillStyle(toCanvasStyle(value, info.GetIsolate()));
 }
