@@ -18,6 +18,7 @@
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "content/public/browser/browser_thread.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace drive {
 namespace test_util {
@@ -27,19 +28,10 @@ using content::BrowserThread;
 FakeFileSystem::FakeFileSystem(DriveServiceInterface* drive_service)
     : drive_service_(drive_service),
       weak_ptr_factory_(this) {
+  CHECK(cache_dir_.CreateUniqueTempDir());
 }
 
 FakeFileSystem::~FakeFileSystem() {
-}
-
-bool FakeFileSystem::InitializeForTesting() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return cache_dir_.CreateUniqueTempDir();
-}
-
-void FakeFileSystem::Initialize() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  InitializeForTesting();
 }
 
 void FakeFileSystem::AddObserver(FileSystemObserver* observer) {

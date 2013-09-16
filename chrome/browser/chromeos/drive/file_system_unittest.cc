@@ -118,6 +118,7 @@ class FileSystemTest : public testing::Test {
 
     resource_metadata_.reset(new internal::ResourceMetadata(
         metadata_storage_.get(), base::MessageLoopProxy::current()));
+    ASSERT_EQ(FILE_ERROR_OK, resource_metadata_->Initialize());
 
     const base::FilePath temp_file_dir = temp_dir_.path().AppendASCII("tmp");
     ASSERT_TRUE(file_util::CreateDirectory(temp_file_dir));
@@ -130,13 +131,10 @@ class FileSystemTest : public testing::Test {
         base::MessageLoopProxy::current().get(),
         temp_file_dir));
     file_system_->AddObserver(mock_directory_observer_.get());
-    file_system_->Initialize();
 
     // Disable delaying so that the sync starts immediately.
     file_system_->sync_client_for_testing()->set_delay_for_testing(
         base::TimeDelta::FromSeconds(0));
-
-    ASSERT_EQ(FILE_ERROR_OK, resource_metadata_->Initialize());
   }
 
   // Loads the full resource list via FakeDriveService.

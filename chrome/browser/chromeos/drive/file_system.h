@@ -71,7 +71,6 @@ class FileSystem : public FileSystemInterface,
   virtual ~FileSystem();
 
   // FileSystemInterface overrides.
-  virtual void Initialize() OVERRIDE;
   virtual void AddObserver(FileSystemObserver* observer) OVERRIDE;
   virtual void RemoveObserver(FileSystemObserver* observer) OVERRIDE;
   virtual void CheckForUpdates() OVERRIDE;

@@ -113,7 +113,6 @@ class DriveURLRequestJobTest : public testing::Test {
     // Initialize FakeFileSystem.
     fake_file_system_.reset(
         new test_util::FakeFileSystem(fake_drive_service_.get()));
-    ASSERT_TRUE(fake_file_system_->InitializeForTesting());
 
     scoped_refptr<base::SequencedWorkerPool> blocking_pool =
         content::BrowserThread::GetBlockingPool();

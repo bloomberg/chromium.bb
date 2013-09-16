@@ -421,7 +421,6 @@ void DriveIntegrationService::Initialize() {
 
   state_ = INITIALIZING;
   drive_service_->Initialize();
-  file_system_->Initialize();
 
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
@@ -453,7 +452,7 @@ void DriveIntegrationService::InitializeAfterMetadataInitialized(
     }
 
     // Back to NOT_INITIALIZED state. Then, re-running Initialize() should
-    // work if the error is recovarable manually (such as out of disk space).
+    // work if the error is recoverable manually (such as out of disk space).
     state_ = NOT_INITIALIZED;
     return;
   }

@@ -273,10 +273,6 @@ FileSystem::~FileSystem() {
   change_list_loader_->RemoveObserver(this);
 }
 
-void FileSystem::Initialize() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-}
-
 void FileSystem::Reload(const FileOperationCallback& callback) {
   // Discard the current loader and operation objects and renew them. This is to
   // avoid that changes initiated before the metadata reset is applied after the

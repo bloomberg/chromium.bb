@@ -20,14 +20,13 @@ class FakeFileSystemTest : public ::testing::Test {
   virtual void SetUp() OVERRIDE {
     // Initialize FakeDriveService.
     fake_drive_service_.reset(new FakeDriveService);
-    fake_drive_service_->LoadResourceListForWapi(
-        "gdata/root_feed.json");
-    fake_drive_service_->LoadAccountMetadataForWapi(
-        "gdata/account_metadata.json");
+    ASSERT_TRUE(fake_drive_service_->LoadResourceListForWapi(
+        "gdata/root_feed.json"));
+    ASSERT_TRUE(fake_drive_service_->LoadAccountMetadataForWapi(
+        "gdata/account_metadata.json"));
 
     // Create a testee instance.
     fake_file_system_.reset(new FakeFileSystem(fake_drive_service_.get()));
-    ASSERT_TRUE(fake_file_system_->InitializeForTesting());
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
