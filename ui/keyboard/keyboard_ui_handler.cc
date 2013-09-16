@@ -17,6 +17,7 @@
 #include "ui/aura/window.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
+#include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_util.h"
 
 namespace keyboard {
@@ -40,7 +41,10 @@ void KeyboardUIHandler::RegisterMessages() {
       "sendKeyEvent",
       base::Bind(&KeyboardUIHandler::HandleSendKeyEventMessage,
                  base::Unretained(this)));
-
+  web_ui()->RegisterMessageCallback(
+      "hideKeyboard",
+      base::Bind(&KeyboardUIHandler::HandleHideKeyboard,
+                 base::Unretained(this)));
 }
 
 void KeyboardUIHandler::HandleInsertTextMessage(const base::ListValue* args) {
@@ -123,6 +127,13 @@ void KeyboardUIHandler::HandleSendKeyEventMessage(
                               root_window)) {
     LOG(ERROR) << "sendKeyEvent failed";
   }
+}
+
+void KeyboardUIHandler::HandleHideKeyboard(const base::ListValue* args) {
+  // TODO(stevet): Call into the keyboard controller to hide the keyboard
+  // directly.
+  NOTIMPLEMENTED();
+  return;
 }
 
 }  // namespace keyboard

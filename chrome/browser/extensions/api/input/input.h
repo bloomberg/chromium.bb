@@ -50,6 +50,19 @@ class SendKeyEventFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
+class HideKeyboardFunction : public SyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION(
+      "virtualKeyboardPrivate.hideKeyboard",
+      VIRTUALKEYBOARDPRIVATE_HIDEKEYBOARD);
+
+ protected:
+  virtual ~HideKeyboardFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
+};
+
 class InputAPI : public ProfileKeyedAPI {
  public:
   explicit InputAPI(Profile* profile);

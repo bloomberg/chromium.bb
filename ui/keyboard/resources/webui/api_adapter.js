@@ -10,6 +10,10 @@ function sendKeyEvent(event) {
   chrome.send('sendKeyEvent', [ event ]);
 }
 
+function hideKeyboard() {
+  chrome.send('hideKeyboard');
+}
+
 (function(exports) {
   /**
    * An array to save callbacks of each request.

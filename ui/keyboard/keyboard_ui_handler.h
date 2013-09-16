@@ -34,6 +34,9 @@ class KeyboardUIHandler : public content::WebUIMessageHandler {
   // released, a virtual key code, and the state of the shift key.
   void HandleSendKeyEventMessage(const base::ListValue* args);
 
+  // Callback for the "hideKeyboard" message.
+  void HandleHideKeyboard(const base::ListValue* args);
+
   DISALLOW_COPY_AND_ASSIGN(KeyboardUIHandler);
 };
 

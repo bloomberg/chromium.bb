@@ -102,6 +102,10 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
     return always_on_top_controller_.get();
   }
 
+  keyboard::KeyboardController* keyboard_controller() {
+    return keyboard_controller_.get();
+  }
+
   ScreenDimmer* screen_dimmer() { return screen_dimmer_.get(); }
 
   // Access the shelf associated with this root window controller,

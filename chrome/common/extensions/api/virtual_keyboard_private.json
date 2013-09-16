@@ -45,7 +45,7 @@
           { "name": "swipe_direction",
             "type": "integer",
             "discription": "The direction of the cursor movement."
-	  },
+          },
           { "name": "modifier_flags",
             "type": "integer",
             "description": "Bitmask representing the state of the system modifier keys."
@@ -56,7 +56,7 @@
             "decription": "called when the swipe movement is completed.",
             "parameters": []
           }
-	]
+        ]
       },
       {
         "name": "sendKeyEvent",
@@ -71,6 +71,19 @@
             "type": "function",
             "optional": true,
             "description": "Called after processing the event.",
+            "parameters": []
+          }
+        ]
+      },
+      {
+        "name": "hideKeyboard",
+        "type": "function",
+        "description": "Hides the virtual keyboard.",
+        "parameters": [
+          { "type": "function",
+            "name": "callback",
+            "optional": true,
+            "description": "Called when the keyboard is hidden.",
             "parameters": []
           }
         ]

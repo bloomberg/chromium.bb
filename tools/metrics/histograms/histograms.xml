@@ -20483,6 +20483,7 @@ other types of suffix sets.
   <int value="517" label="VIRTUALKEYBOARDPRIVATE_MOVECURSOR"/>
   <int value="518" label="AUTOTESTPRIVATE_SIMULATEASANMEMORYBUG"/>
   <int value="519" label="WALLPAPER_SETWALLPAPER"/>
+  <int value="520" label="VIRTUALKEYBOARDPRIVATE_HIDEKEYBOARD"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

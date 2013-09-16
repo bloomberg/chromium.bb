@@ -42,6 +42,11 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   // It is the responsibility of the caller to Show() the returned window.
   aura::Window* GetContainerWindow();
 
+  // Hides virtual keyboard and notifies observer bounds change.
+  // This function should be called with a delay to avoid layout flicker
+  // when the focus of input field quickly change.
+  void HideKeyboard();
+
   // Management of the observer list.
   virtual void AddObserver(KeyboardControllerObserver* observer);
   virtual void RemoveObserver(KeyboardControllerObserver* observer);
@@ -60,11 +65,6 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
       const ui::TextInputClient* client) OVERRIDE;
   virtual void OnInputMethodDestroyed(
       const ui::InputMethod* input_method) OVERRIDE;
-
-  // Hides virtual keyboard and notifies observer bounds change.
-  // This functions should be called with a delay to avoid layout flicker
-  // when the focus of input field quickly change.
-  void HideKeyboard();
 
   // Returns true if keyboard is scheduled to hide.
   bool WillHideKeyboard() const;

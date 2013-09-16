@@ -4,11 +4,13 @@
 
 #include "chrome/browser/extensions/api/input/input.h"
 
+#include "ash/root_window_controller.h"
 #include "base/lazy_instance.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/extensions/extension_function_registry.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/events/event.h"
+#include "ui/keyboard/keyboard_controller.h"
 
 #if defined(USE_ASH)
 #include "ash/shell.h"
@@ -76,7 +78,19 @@ bool SendKeyEventFunction::RunImpl() {
                                 key_code,
                                 shift_modifier,
                                 ash::Shell::GetPrimaryRootWindow());
+#endif
+  error_ = kNotYetImplementedError;
+  return false;
+}
 
+bool HideKeyboardFunction::RunImpl() {
+#if defined(USE_ASH)
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  ash::Shell::GetPrimaryRootWindowController()->keyboard_controller()->
+      HideKeyboard();
+
+  return true;
 #endif
   error_ = kNotYetImplementedError;
   return false;
@@ -88,6 +102,7 @@ InputAPI::InputAPI(Profile* profile) {
   registry->RegisterFunction<InsertTextFunction>();
   registry->RegisterFunction<MoveCursorFunction>();
   registry->RegisterFunction<SendKeyEventFunction>();
+  registry->RegisterFunction<HideKeyboardFunction>();
 }
 
 InputAPI::~InputAPI() {

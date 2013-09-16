@@ -19,3 +19,7 @@ function MoveCursor(swipe_direction, swipe_flags) {
 function sendKeyEvent(event) {
   chrome.virtualKeyboardPrivate.sendKeyEvent(event, logIfError);
 }
+
+function hideKeyboard() {
+  chrome.virtualKeyboardPrivate.hideKeyboard(logIfError);
+}

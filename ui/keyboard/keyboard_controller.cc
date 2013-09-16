@@ -148,6 +148,16 @@ aura::Window* KeyboardController::GetContainerWindow() {
   return container_;
 }
 
+void KeyboardController::HideKeyboard() {
+  keyboard_visible_ = false;
+
+  FOR_EACH_OBSERVER(KeyboardControllerObserver,
+                    observer_list_,
+                    OnKeyboardBoundsChanging(gfx::Rect()));
+
+  proxy_->HideKeyboardContainer(container_);
+}
+
 void KeyboardController::AddObserver(KeyboardControllerObserver* observer) {
   observer_list_.AddObserver(observer);
 }
@@ -203,6 +213,8 @@ void KeyboardController::OnTextInputStateChanged(
           OnKeyboardBoundsChanging(container_->children()[0]->bounds()));
       proxy_->ShowKeyboardContainer(container_);
     } else {
+      // Set the visibility state here so that any queries for visibility
+      // before the timer fires returns the correct future value.
       keyboard_visible_ = false;
       base::MessageLoop::current()->PostDelayedTask(
           FROM_HERE,
@@ -220,13 +232,6 @@ void KeyboardController::OnInputMethodDestroyed(
     const ui::InputMethod* input_method) {
   DCHECK_EQ(input_method_, input_method);
   input_method_ = NULL;
-}
-
-void KeyboardController::HideKeyboard() {
-  FOR_EACH_OBSERVER(KeyboardControllerObserver,
-                    observer_list_,
-                    OnKeyboardBoundsChanging(gfx::Rect()));
-  proxy_->HideKeyboardContainer(container_);
 }
 
 bool KeyboardController::WillHideKeyboard() const {
