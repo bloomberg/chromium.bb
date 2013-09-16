@@ -240,6 +240,12 @@ void NetworkState::GetProperties(base::DictionaryValue* dictionary) const {
                                              cellular_out_of_credits_);
 }
 
+bool NetworkState::RequiresActivation() const {
+  return (type() == flimflam::kTypeCellular &&
+      activation_state() != flimflam::kActivationStateActivated &&
+      activation_state() != flimflam::kActivationStateUnknown);
+}
+
 bool NetworkState::IsConnectedState() const {
   return StateIsConnected(connection_state_);
 }

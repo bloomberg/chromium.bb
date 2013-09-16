@@ -270,7 +270,7 @@ void HandleUnconfiguredNetwork(const std::string& service_path,
   }
 
   if (network->type() == flimflam::kTypeCellular) {
-    if (network->activation_state() != flimflam::kActivationStateActivated) {
+    if (network->RequiresActivation()) {
       ash::network_connect::ActivateCellular(service_path);
       return;
     }

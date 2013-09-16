@@ -47,12 +47,6 @@ bool IsAuthenticationError(const std::string& error) {
           error == shill::kErrorEapAuthenticationFailed);
 }
 
-bool NetworkRequiresActivation(const NetworkState* network) {
-  return (network->type() == flimflam::kTypeCellular &&
-      ((network->activation_state() != flimflam::kActivationStateActivated &&
-        network->activation_state() != flimflam::kActivationStateUnknown)));
-}
-
 bool VPNIsConfigured(const std::string& service_path,
                      const std::string& provider_type,
                      const base::DictionaryValue& provider_properties) {
@@ -230,7 +224,7 @@ void NetworkConnectionHandler::ConnectToNetwork(
       InvokeErrorCallback(service_path, error_callback, kErrorConnecting);
       return;
     }
-    if (NetworkRequiresActivation(network)) {
+    if (network->RequiresActivation()) {
       InvokeErrorCallback(service_path, error_callback,
                           kErrorActivationRequired);
       return;

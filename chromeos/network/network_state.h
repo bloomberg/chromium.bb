@@ -38,6 +38,9 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   // stored.
   void GetProperties(base::DictionaryValue* dictionary) const;
 
+  // Returns true, if the network requires a service activation.
+  bool RequiresActivation() const;
+
   // Accessors
   const std::string& security() const { return security_; }
   const std::string& device_path() const { return device_path_; }
