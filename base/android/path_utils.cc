@@ -23,6 +23,15 @@ bool GetDataDirectory(FilePath* result) {
   return true;
 }
 
+bool GetDatabaseDirectory(FilePath* result) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> path =
+      Java_PathUtils_getDatabaseDirectory(env, GetApplicationContext());
+  FilePath data_path(ConvertJavaStringToUTF8(path));
+  *result = data_path;
+  return true;
+}
+
 bool GetCacheDirectory(FilePath* result) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jstring> path =

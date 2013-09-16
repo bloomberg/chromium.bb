@@ -387,7 +387,8 @@ void ProfileImplIOData::InitializeInternal(
         lazy_params_->cookie_path,
         lazy_params_->restore_old_session_cookies,
         lazy_params_->special_storage_policy.get(),
-        profile_params->cookie_monster_delegate.get());
+        profile_params->cookie_monster_delegate.get(),
+        scoped_refptr<base::SequencedTaskRunner>());
     cookie_store->GetCookieMonster()->SetPersistSessionCookies(true);
   }
 
@@ -482,7 +483,8 @@ void ProfileImplIOData::
           lazy_params_->extensions_cookie_path,
           lazy_params_->restore_old_session_cookies,
           NULL,
-          NULL);
+          NULL,
+          scoped_refptr<base::SequencedTaskRunner>());
   // Enable cookies for devtools and extension URLs.
   const char* schemes[] = {chrome::kChromeDevToolsScheme,
                            extensions::kExtensionScheme};
@@ -568,7 +570,8 @@ ProfileImplIOData::InitializeAppRequestContext(
         cookie_path,
         false,
         NULL,
-        NULL);
+        NULL,
+        scoped_refptr<base::SequencedTaskRunner>());
   }
 
   // Transfer ownership of the cookies and cache to AppRequestContext.

@@ -10,9 +10,14 @@
 #include "android_webview/browser/jni_dependency_factory.h"
 #include "android_webview/browser/net/aw_url_request_context_getter.h"
 #include "android_webview/browser/net/init_native_callback.h"
+#include "base/android/path_utils.h"
+#include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/pref_service_builder.h"
+#include "base/sequenced_task_runner.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/user_prefs/user_prefs.h"
 #include "components/visitedlink/browser/visitedlink_master.h"
@@ -23,6 +28,7 @@
 #include "content/public/browser/web_contents.h"
 #include "net/url_request/url_request_context.h"
 
+using base::FilePath;
 using content::BrowserThread;
 
 namespace android_webview {
@@ -65,10 +71,31 @@ class AwResourceContext : public content::ResourceContext {
 
 AwBrowserContext* g_browser_context = NULL;
 
+void ImportLegacyCookieStore(const FilePath& cookie_store_path) {
+  // We use the old cookie store to create the new cookie store only if the
+  // new cookie store does not exist.
+  if (base::PathExists(cookie_store_path))
+    return;
+
+  // WebViewClassic gets the database path from Context and appends a
+  // hardcoded name. (see https://android.googlesource.com/platform/frameworks/base/+/bf6f6f9de72c9fd15e6bd/core/java/android/webkit/JniUtil.java and
+  // https://android.googlesource.com/platform/external/webkit/+/7151ed0c74599/Source/WebKit/android/WebCoreSupport/WebCookieJar.cpp)
+  FilePath old_cookie_store_path;
+  base::android::GetDatabaseDirectory(&old_cookie_store_path);
+  old_cookie_store_path = old_cookie_store_path.Append(
+      FILE_PATH_LITERAL("webviewCookiesChromium.db"));
+  if (base::PathExists(old_cookie_store_path) &&
+      !base::Move(old_cookie_store_path, cookie_store_path)) {
+    LOG(WARNING) << "Failed to move old cookie store path from "
+                 << old_cookie_store_path.AsUTF8Unsafe() << " to "
+                 << cookie_store_path.AsUTF8Unsafe();
+  }
+}
+
 }  // namespace
 
 AwBrowserContext::AwBrowserContext(
-    const base::FilePath path,
+    const FilePath path,
     JniDependencyFactory* native_factory)
     : context_storage_path_(path),
       native_factory_(native_factory),
@@ -101,11 +128,23 @@ AwBrowserContext* AwBrowserContext::FromWebContents(
 }
 
 void AwBrowserContext::PreMainMessageLoopRun() {
+
+  FilePath cookie_store_path = GetPath().Append(FILE_PATH_LITERAL("Cookies"));
+  scoped_refptr<base::SequencedTaskRunner> background_task_runner =
+      BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(
+          BrowserThread::GetBlockingPool()->GetSequenceToken());
+
+  background_task_runner->PostTask(
+      FROM_HERE,
+      base::Bind(ImportLegacyCookieStore, cookie_store_path));
+
   cookie_store_ = content::CreatePersistentCookieStore(
-      GetPath().Append(FILE_PATH_LITERAL("Cookies")),
+      cookie_store_path,
       true,
       NULL,
-      NULL);
+      NULL,
+      background_task_runner);
+
   cookie_store_->GetCookieMonster()->SetPersistSessionCookies(true);
   url_request_context_getter_ =
       new AwURLRequestContextGetter(GetPath(), cookie_store_.get());

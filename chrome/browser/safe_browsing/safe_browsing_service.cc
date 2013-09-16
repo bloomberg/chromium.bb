@@ -307,7 +307,8 @@ void SafeBrowsingService::InitURLRequestContextOnIOThread(
           CookieFilePath(),
           false,
           NULL,
-          NULL));
+          NULL,
+          scoped_refptr<base::SequencedTaskRunner>()));
 
   url_request_context_.reset(new net::URLRequestContext);
   // |system_url_request_context_getter| may be NULL during tests.
