@@ -268,6 +268,8 @@ int SimpleEntryImpl::DoomEntry(const CompletionCallback& callback) {
   net_log_.AddEvent(net::NetLog::TYPE_SIMPLE_CACHE_ENTRY_DOOM_BEGIN);
 
   MarkAsDoomed();
+  if (backend_.get())
+    backend_->OnDoomStart(entry_hash_);
   pending_operations_.push(SimpleEntryOperation::DoomOperation(this, callback));
   RunNextOperationIfNeeded();
   return net::ERR_IO_PENDING;
@@ -917,8 +919,6 @@ void SimpleEntryImpl::WriteDataInternal(int stream_index,
 }
 
 void SimpleEntryImpl::DoomEntryInternal(const CompletionCallback& callback) {
-  if (backend_)
-    backend_->OnDoomStart(entry_hash_);
   PostTaskAndReplyWithResult(
       worker_pool_, FROM_HERE,
       base::Bind(&SimpleSynchronousEntry::DoomEntry, path_, key_, entry_hash_),

@@ -3085,6 +3085,33 @@ TEST_F(DiskCacheEntryTest, SimpleCacheDoomDoom) {
   EXPECT_NE(null, entry3);
 }
 
+TEST_F(DiskCacheEntryTest, SimpleCacheDoomCreateDoom) {
+  // Test sequence:
+  // Create, Doom, Create, Doom.
+  SetSimpleCacheMode();
+  InitCache();
+
+  disk_cache::Entry* null = NULL;
+
+  const char key[] = "the first key";
+
+  disk_cache::Entry* entry1 = NULL;
+  ASSERT_EQ(net::OK, CreateEntry(key, &entry1));
+  ScopedEntryPtr entry1_closer(entry1);
+  EXPECT_NE(null, entry1);
+
+  entry1->Doom();
+
+  disk_cache::Entry* entry2 = NULL;
+  ASSERT_EQ(net::OK, CreateEntry(key, &entry2));
+  ScopedEntryPtr entry2_closer(entry2);
+  EXPECT_NE(null, entry2);
+
+  entry2->Doom();
+
+  // This test passes if it doesn't crash.
+}
+
 // Checks that an optimistic Create would fail later on a racing Open.
 TEST_F(DiskCacheEntryTest, SimpleCacheOptimisticCreateFailsOnOpen) {
   SetSimpleCacheMode();

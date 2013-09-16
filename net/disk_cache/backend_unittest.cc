@@ -3210,10 +3210,7 @@ TEST_F(DiskCacheBackendTest, SimpleDoomBetween) {
   BackendDoomBetween();
 }
 
-// See http://crbug.com/237450.
-// TODO(gavinp): Consider enabling this test again when
-// https://codereview.chromium.org/23823002/ lands.
-TEST_F(DiskCacheBackendTest, DISABLED_SimpleCacheDoomAll) {
+TEST_F(DiskCacheBackendTest, SimpleCacheDoomAll) {
   SetSimpleCacheMode();
   BackendDoomAll();
 }
