@@ -391,7 +391,7 @@ done
 
 # Make sure we have all necessary commands installed.
 install_if_not_installed pngcrush pngcrush
-if [ $OPTIMIZE_LEVEL == 2 ]; then
+if [ $OPTIMIZE_LEVEL -ge 1 ]; then
   install_if_not_installed optipng optipng
 
   if $using_cygwin ; then
