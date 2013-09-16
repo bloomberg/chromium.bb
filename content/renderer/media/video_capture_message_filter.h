@@ -87,8 +87,7 @@ class CONTENT_EXPORT VideoCaptureMessageFilter
                        int length, int buffer_id);
 
   // Receive a buffer from browser process.
-  void OnBufferReceived(int device_id,
-                        int buffer_id, base::Time timestamp);
+  void OnBufferReceived(int device_id, int buffer_id, base::Time timestamp);
 
   // State of browser process' video capture device has changed.
   void OnDeviceStateChanged(int device_id, VideoCaptureState state);

@@ -11,37 +11,14 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "media/base/media_export.h"
-#include "media/base/video_frame.h"
 #include "media/video/capture/video_capture_types.h"
 
 namespace media {
 
+class VideoFrame;
+
 class MEDIA_EXPORT VideoCapture {
  public:
-  // TODO(wjia): consider merging with media::VideoFrame if possible.
-  class VideoFrameBuffer : public base::RefCountedThreadSafe<VideoFrameBuffer> {
-   public:
-    VideoFrameBuffer()
-        : width(0),
-          height(0),
-          stride(0),
-          buffer_size(0),
-          memory_pointer(NULL) {}
-
-    int width;
-    int height;
-    int stride;
-    size_t buffer_size;
-    uint8* memory_pointer;
-    base::Time timestamp;
-
-   private:
-    friend class base::RefCountedThreadSafe<VideoFrameBuffer>;
-    ~VideoFrameBuffer() {}
-
-    DISALLOW_COPY_AND_ASSIGN(VideoFrameBuffer);
-  };
-
   // TODO(wjia): add error codes.
   // TODO(wjia): support weak ptr.
   // Callbacks provided by client for notification of events.
@@ -64,8 +41,9 @@ class MEDIA_EXPORT VideoCapture {
     virtual void OnRemoved(VideoCapture* capture) = 0;
 
     // Notify client that a buffer is available.
-    virtual void OnBufferReady(VideoCapture* capture,
-                               scoped_refptr<VideoFrameBuffer> buffer) = 0;
+    virtual void OnFrameReady(
+        VideoCapture* capture,
+        const scoped_refptr<media::VideoFrame>& frame) = 0;
 
     // Notify client about device info.
     virtual void OnDeviceInfoReceived(
@@ -92,9 +70,6 @@ class MEDIA_EXPORT VideoCapture {
   // Request video capture to stop capturing for client |handler|.
   // |handler| must remain valid until it has received |OnRemoved()|.
   virtual void StopCapture(EventHandler* handler) = 0;
-
-  // Feed buffer to video capture when done with it.
-  virtual void FeedBuffer(scoped_refptr<VideoFrameBuffer> buffer) = 0;
 
   virtual bool CaptureStarted() = 0;
   virtual int CaptureWidth() = 0;

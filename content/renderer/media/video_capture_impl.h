@@ -33,6 +33,7 @@
 #include <list>
 #include <map>
 
+#include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "content/common/media/video_capture.h"
 #include "content/renderer/media/video_capture_message_filter.h"
@@ -53,7 +54,6 @@ class CONTENT_EXPORT VideoCaptureImpl
       media::VideoCapture::EventHandler* handler,
       const media::VideoCaptureCapability& capability) OVERRIDE;
   virtual void StopCapture(media::VideoCapture::EventHandler* handler) OVERRIDE;
-  virtual void FeedBuffer(scoped_refptr<VideoFrameBuffer> buffer) OVERRIDE;
   virtual bool CaptureStarted() OVERRIDE;
   virtual int CaptureWidth() OVERRIDE;
   virtual int CaptureHeight() OVERRIDE;
@@ -78,9 +78,9 @@ class CONTENT_EXPORT VideoCaptureImpl
   friend class VideoCaptureImplTest;
   friend class MockVideoCaptureImpl;
 
-  struct DIBBuffer;
+  class ClientBuffer;
   typedef std::map<media::VideoCapture::EventHandler*,
-      media::VideoCaptureCapability> ClientInfo;
+                   media::VideoCaptureCapability> ClientInfo;
 
   VideoCaptureImpl(media::VideoCaptureSessionId id,
                    base::MessageLoopProxy* capture_message_loop_proxy,
@@ -91,11 +91,12 @@ class CONTENT_EXPORT VideoCaptureImpl
       media::VideoCapture::EventHandler* handler,
       const media::VideoCaptureCapability& capability);
   void DoStopCaptureOnCaptureThread(media::VideoCapture::EventHandler* handler);
-  void DoFeedBufferOnCaptureThread(scoped_refptr<VideoFrameBuffer> buffer);
-
   void DoBufferCreatedOnCaptureThread(base::SharedMemoryHandle handle,
                                       int length, int buffer_id);
   void DoBufferReceivedOnCaptureThread(int buffer_id, base::Time timestamp);
+  void DoClientBufferFinishedOnCaptureThread(
+      int buffer_id,
+      const scoped_refptr<ClientBuffer>& buffer);
   void DoStateChangedOnCaptureThread(VideoCaptureState state);
   void DoDeviceInfoReceivedOnCaptureThread(
       const media::VideoCaptureParams& device_info);
@@ -116,7 +117,6 @@ class CONTENT_EXPORT VideoCaptureImpl
   virtual void Send(IPC::Message* message);
 
   // Helpers.
-  bool ClientHasDIB() const;
   bool RemoveClient(media::VideoCapture::EventHandler* handler,
                     ClientInfo* clients);
 
@@ -125,9 +125,13 @@ class CONTENT_EXPORT VideoCaptureImpl
   const scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
   int device_id_;
 
-  // Pool of DIBs. The key is buffer_id.
-  typedef std::map<int, DIBBuffer*> CachedDIB;
-  CachedDIB cached_dibs_;
+  // Buffers available for sending to the client.
+  typedef std::map<int32, scoped_refptr<ClientBuffer> > ClientBufferMap;
+  ClientBufferMap client_buffers_;
+  // WeakPtrFactory pointing back to |this| object, for use with
+  // media::VideoFrames constructed in OnBufferReceived() from buffers cached
+  // in |client_buffers_|.
+  base::WeakPtrFactory<VideoCaptureImpl> client_buffer_weak_this_factory_;
 
   ClientInfo clients_;
 

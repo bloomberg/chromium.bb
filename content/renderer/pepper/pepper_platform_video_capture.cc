@@ -71,12 +71,6 @@ void PepperPlatformVideoCapture::StopCapture(
   }
 }
 
-void PepperPlatformVideoCapture::FeedBuffer(
-    scoped_refptr<VideoFrameBuffer> buffer) {
-  if (video_capture_)
-    video_capture_->FeedBuffer(buffer);
-}
-
 bool PepperPlatformVideoCapture::CaptureStarted() {
   return handler_proxy_->state().started;
 }
@@ -145,16 +139,11 @@ void PepperPlatformVideoCapture::OnRemoved(VideoCapture* capture) {
   Release();  // Balance the AddRef() in StartCapture().
 }
 
-void PepperPlatformVideoCapture::OnBufferReady(
+void PepperPlatformVideoCapture::OnFrameReady(
     VideoCapture* capture,
-    scoped_refptr<VideoFrameBuffer> buffer) {
-  if (handler_) {
-    handler_->OnBufferReady(capture, buffer);
-  } else {
-    // Even after handler_ is detached, we have to return buffers that are in
-    // flight to us. Otherwise VideoCaptureController will not tear down.
-    FeedBuffer(buffer);
-  }
+    const scoped_refptr<media::VideoFrame>& frame) {
+  if (handler_)
+    handler_->OnFrameReady(capture, frame);
 }
 
 void PepperPlatformVideoCapture::OnDeviceInfoReceived(

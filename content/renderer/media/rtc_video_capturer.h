@@ -41,8 +41,7 @@ class RtcVideoCapturer
 
  private:
   // Frame captured callback method.
-  virtual void OnFrameCaptured(
-      const media::VideoCapture::VideoFrameBuffer& frame);
+  virtual void OnFrameCaptured(const scoped_refptr<media::VideoFrame>& frame);
 
   // State change callback, must be called on same thread as Start is called.
   void OnStateChange(RtcVideoCaptureDelegate::CaptureState state);
@@ -50,7 +49,7 @@ class RtcVideoCapturer
   const bool is_screencast_;
   scoped_refptr<RtcVideoCaptureDelegate> delegate_;
   VideoCaptureState state_;
-  base::Time start_time_;
+  base::TimeDelta first_frame_timestamp_;
 
   DISALLOW_COPY_AND_ASSIGN(RtcVideoCapturer);
 };

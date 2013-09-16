@@ -29,9 +29,9 @@ class RtcVideoCaptureDelegate
     CAPTURE_FAILED,  // The capturer failed to start.
   };
 
-  typedef base::Callback<void(const media::VideoCapture::VideoFrameBuffer& buf)>
+  typedef base::Callback<void(const scoped_refptr<media::VideoFrame>&)>
       FrameCapturedCallback;
-  typedef base::Callback<void(CaptureState state)> StateChangeCallback;
+  typedef base::Callback<void(CaptureState)> StateChangeCallback;
 
   RtcVideoCaptureDelegate(const media::VideoCaptureSessionId id,
                           VideoCaptureImplManager* vc_manager);
@@ -48,9 +48,9 @@ class RtcVideoCaptureDelegate
   virtual void OnPaused(media::VideoCapture* capture) OVERRIDE;
   virtual void OnError(media::VideoCapture* capture, int error_code) OVERRIDE;
   virtual void OnRemoved(media::VideoCapture* capture) OVERRIDE;
-  virtual void OnBufferReady(
+  virtual void OnFrameReady(
       media::VideoCapture* capture,
-      scoped_refptr<media::VideoCapture::VideoFrameBuffer> buf) OVERRIDE;
+      const scoped_refptr<media::VideoFrame>& frame) OVERRIDE;
   virtual void OnDeviceInfoReceived(
       media::VideoCapture* capture,
       const media::VideoCaptureParams& device_info) OVERRIDE;
@@ -63,9 +63,9 @@ class RtcVideoCaptureDelegate
 
   virtual ~RtcVideoCaptureDelegate();
 
-  void OnBufferReadyOnCaptureThread(
+  void OnFrameReadyOnCaptureThread(
       media::VideoCapture* capture,
-      scoped_refptr<media::VideoCapture::VideoFrameBuffer> buf);
+      const scoped_refptr<media::VideoFrame>& frame);
   void OnErrorOnCaptureThread(media::VideoCapture* capture);
   void OnRemovedOnCaptureThread(media::VideoCapture* capture);
 

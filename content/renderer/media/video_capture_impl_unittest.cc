@@ -40,9 +40,9 @@ class MockVideoCaptureClient : public media::VideoCapture::EventHandler {
   MOCK_METHOD1(OnPaused, void(media::VideoCapture* capture));
   MOCK_METHOD2(OnError, void(media::VideoCapture* capture, int error_code));
   MOCK_METHOD1(OnRemoved, void(media::VideoCapture* capture));
-  MOCK_METHOD2(OnBufferReady,
+  MOCK_METHOD2(OnFrameReady,
                void(media::VideoCapture* capture,
-                    scoped_refptr<media::VideoCapture::VideoFrameBuffer> buf));
+                    const scoped_refptr<media::VideoFrame>& frame));
   MOCK_METHOD2(OnDeviceInfoReceived,
                void(media::VideoCapture* capture,
                     const media::VideoCaptureParams& device_info));

@@ -77,15 +77,16 @@ void VideoCaptureHandlerProxy::OnRemoved(VideoCapture* capture) {
       GetState(capture)));
 }
 
-void VideoCaptureHandlerProxy::OnBufferReady(
+void VideoCaptureHandlerProxy::OnFrameReady(
     VideoCapture* capture,
-    scoped_refptr<VideoCapture::VideoFrameBuffer> buffer) {
-  main_message_loop_->PostTask(FROM_HERE, base::Bind(
-      &VideoCaptureHandlerProxy::OnBufferReadyOnMainThread,
-      base::Unretained(this),
-      capture,
-      GetState(capture),
-      buffer));
+    const scoped_refptr<VideoFrame>& frame) {
+  main_message_loop_->PostTask(
+      FROM_HERE,
+      base::Bind(&VideoCaptureHandlerProxy::OnFrameReadyOnMainThread,
+                 base::Unretained(this),
+                 capture,
+                 GetState(capture),
+                 frame));
 }
 
 void VideoCaptureHandlerProxy::OnDeviceInfoReceived(
@@ -135,12 +136,12 @@ void VideoCaptureHandlerProxy::OnRemovedOnMainThread(
   proxied_->OnRemoved(capture);
 }
 
-void VideoCaptureHandlerProxy::OnBufferReadyOnMainThread(
+void VideoCaptureHandlerProxy::OnFrameReadyOnMainThread(
     VideoCapture* capture,
     const VideoCaptureState& state,
-    scoped_refptr<VideoCapture::VideoFrameBuffer> buffer) {
+    const scoped_refptr<VideoFrame>& frame) {
   state_ = state;
-  proxied_->OnBufferReady(capture, buffer);
+  proxied_->OnFrameReady(capture, frame);
 }
 
 void VideoCaptureHandlerProxy::OnDeviceInfoReceivedOnMainThread(

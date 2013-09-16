@@ -9,14 +9,12 @@
 
 namespace content {
 
-RtcVideoCapturer::RtcVideoCapturer(
-    const media::VideoCaptureSessionId id,
-    VideoCaptureImplManager* vc_manager,
-    bool is_screencast)
+RtcVideoCapturer::RtcVideoCapturer(const media::VideoCaptureSessionId id,
+                                   VideoCaptureImplManager* vc_manager,
+                                   bool is_screencast)
     : is_screencast_(is_screencast),
       delegate_(new RtcVideoCaptureDelegate(id, vc_manager)),
-      state_(VIDEO_CAPTURE_STATE_STOPPED) {
-}
+      state_(VIDEO_CAPTURE_STATE_STOPPED) {}
 
 RtcVideoCapturer::~RtcVideoCapturer() {
   DCHECK(VIDEO_CAPTURE_STATE_STOPPED);
@@ -40,8 +38,9 @@ cricket::CaptureState RtcVideoCapturer::Start(
   SetCaptureFormat(&capture_format);
 
   state_ = VIDEO_CAPTURE_STATE_STARTED;
-  start_time_ = base::Time::Now();
-  delegate_->StartCapture(cap,
+  first_frame_timestamp_ = media::kNoTimestamp();
+  delegate_->StartCapture(
+      cap,
       base::Bind(&RtcVideoCapturer::OnFrameCaptured, base::Unretained(this)),
       base::Bind(&RtcVideoCapturer::OnStateChange, base::Unretained(this)));
   // Update the desired aspect ratio so that later the video frame can be
@@ -95,34 +94,40 @@ bool RtcVideoCapturer::GetBestCaptureFormat(const cricket::VideoFormat& desired,
 }
 
 void RtcVideoCapturer::OnFrameCaptured(
-    const media::VideoCapture::VideoFrameBuffer& buf) {
-  // Currently, |fourcc| is always I420.
-  cricket::CapturedFrame frame;
-  frame.width = buf.width;
-  frame.height = buf.height;
-  frame.fourcc = cricket::FOURCC_I420;
-  frame.data_size = buf.buffer_size;
-  // cricket::CapturedFrame time is in nanoseconds.
-  frame.elapsed_time = (buf.timestamp - start_time_).InMicroseconds() *
-      base::Time::kNanosecondsPerMicrosecond;
-  frame.time_stamp =
-      (buf.timestamp - base::Time::UnixEpoch()).InMicroseconds() *
-      base::Time::kNanosecondsPerMicrosecond;
-  frame.data = buf.memory_pointer;
-  frame.pixel_height = 1;
-  frame.pixel_width = 1;
+    const scoped_refptr<media::VideoFrame>& frame) {
+  if (first_frame_timestamp_ == media::kNoTimestamp())
+    first_frame_timestamp_ = frame->GetTimestamp();
 
-  TRACE_EVENT_INSTANT2("rtc_video_capturer",
-                       "OnFrameCaptured",
-                       TRACE_EVENT_SCOPE_THREAD,
-                       "elapsed time",
-                       frame.elapsed_time,
-                       "timestamp_ms",
-                       frame.time_stamp / talk_base::kNumNanosecsPerMillisec);
+  // Currently, |fourcc| is always I420.
+  cricket::CapturedFrame captured_frame;
+  captured_frame.width = frame->coded_size().width();
+  captured_frame.height = frame->coded_size().height();
+  captured_frame.fourcc = cricket::FOURCC_I420;
+  // cricket::CapturedFrame time is in nanoseconds.
+  captured_frame.elapsed_time =
+      (frame->GetTimestamp() - first_frame_timestamp_).InMicroseconds() *
+      base::Time::kNanosecondsPerMicrosecond;
+  captured_frame.time_stamp = frame->GetTimestamp().InMicroseconds() *
+                              base::Time::kNanosecondsPerMicrosecond;
+  // TODO(sheu): we assume contiguous layout of image planes.
+  captured_frame.data = frame->data(0);
+  captured_frame.data_size =
+      media::VideoFrame::AllocationSize(frame->format(), frame->coded_size());
+  captured_frame.pixel_height = 1;
+  captured_frame.pixel_width = 1;
+
+  TRACE_EVENT_INSTANT2(
+      "rtc_video_capturer",
+      "OnFrameCaptured",
+      TRACE_EVENT_SCOPE_THREAD,
+      "elapsed time",
+      captured_frame.elapsed_time,
+      "timestamp_ms",
+      captured_frame.time_stamp / talk_base::kNumNanosecsPerMillisec);
 
   // This signals to libJingle that a new VideoFrame is available.
   // libJingle have no assumptions on what thread this signal come from.
-  SignalFrameCaptured(this, &frame);
+  SignalFrameCaptured(this, &captured_frame);
 }
 
 void RtcVideoCapturer::OnStateChange(

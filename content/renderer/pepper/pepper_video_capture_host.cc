@@ -129,29 +129,40 @@ void PepperVideoCaptureHost::OnError(media::VideoCapture* capture,
 void PepperVideoCaptureHost::OnRemoved(media::VideoCapture* capture) {
 }
 
-void PepperVideoCaptureHost::OnBufferReady(
+void PepperVideoCaptureHost::OnFrameReady(
     media::VideoCapture* capture,
-    scoped_refptr<media::VideoCapture::VideoFrameBuffer> buffer) {
-  DCHECK(buffer.get());
+    const scoped_refptr<media::VideoFrame>& frame) {
+  DCHECK(frame.get());
   for (uint32_t i = 0; i < buffers_.size(); ++i) {
     if (!buffers_[i].in_use) {
-      // TODO(ihf): Switch to a size calculation based on stride.
-      // Stride is filled out now but not more meaningful than size
-      // until wjia unifies VideoFrameBuffer and media::VideoFrame.
-      size_t size = std::min(static_cast<size_t>(buffers_[i].buffer->size()),
-          buffer->buffer_size);
-      memcpy(buffers_[i].data, buffer->memory_pointer, size);
+      DCHECK_EQ(frame->format(), media::VideoFrame::I420);
+      if (buffers_[i].buffer->size() <
+          media::VideoFrame::AllocationSize(frame->format(),
+                                            frame->coded_size())) {
+        // TODO(ihf): handle size mismatches gracefully here.
+        return;
+      }
+      uint8* dst = reinterpret_cast<uint8*>(buffers_[i].data);
+      COMPILE_ASSERT(media::VideoFrame::kYPlane == 0, y_plane_should_be_0);
+      COMPILE_ASSERT(media::VideoFrame::kUPlane == 1, u_plane_should_be_1);
+      COMPILE_ASSERT(media::VideoFrame::kVPlane == 2, v_plane_should_be_2);
+      for (size_t j = 0; j < media::VideoFrame::NumPlanes(frame->format());
+           ++j) {
+        const uint8* src = frame->data(j);
+        const size_t row_bytes = frame->row_bytes(j);
+        const size_t src_stride = frame->stride(j);
+        for (int k = 0; k < frame->rows(j); ++k) {
+          memcpy(dst, src, row_bytes);
+          dst += row_bytes;
+          src += src_stride;
+        }
+      }
       buffers_[i].in_use = true;
-      platform_video_capture_->FeedBuffer(buffer);
       host()->SendUnsolicitedReply(pp_resource(),
           PpapiPluginMsg_VideoCapture_OnBufferReady(i));
       return;
     }
   }
-
-  // No free slot, just discard the frame and tell the media layer it can
-  // re-use the buffer.
-  platform_video_capture_->FeedBuffer(buffer);
 }
 
 void PepperVideoCaptureHost::OnDeviceInfoReceived(
@@ -164,10 +175,8 @@ void PepperVideoCaptureHost::OnDeviceInfoReceived(
   };
   ReleaseBuffers();
 
-  // YUV 4:2:0
-  int uv_width = info.width / 2;
-  int uv_height = info.height / 2;
-  size_t size = info.width * info.height + 2 * uv_width * uv_height;
+  const size_t size = media::VideoFrame::AllocationSize(
+      media::VideoFrame::I420, gfx::Size(info.width, info.height));
 
   ppapi::proxy::ResourceMessageReplyParams params(pp_resource(), 0);
 

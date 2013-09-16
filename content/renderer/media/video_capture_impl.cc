@@ -8,26 +8,35 @@
 #include "base/stl_util.h"
 #include "content/child/child_process.h"
 #include "content/common/media/video_capture_messages.h"
+#include "media/base/bind_to_loop.h"
 #include "media/base/limits.h"
 
 namespace content {
 
-struct VideoCaptureImpl::DIBBuffer {
+class VideoCaptureImpl::ClientBuffer : public base::RefCounted<ClientBuffer> {
  public:
-  DIBBuffer(
-      base::SharedMemory* d,
-      media::VideoCapture::VideoFrameBuffer* ptr)
-      : dib(d),
-        mapped_memory(ptr),
-        references(0) {
-  }
-  ~DIBBuffer() {}
+  ClientBuffer(scoped_ptr<base::SharedMemory> buffer,
+               size_t buffer_size,
+               int frame_width,
+               int frame_height,
+               int frame_stride)
+      : buffer(buffer.Pass()),
+        buffer_size(buffer_size),
+        frame_width(frame_width),
+        frame_height(frame_height),
+        frame_stride(frame_stride) {}
+  const scoped_ptr<base::SharedMemory> buffer;
+  const size_t buffer_size;
+  const int frame_width;   // In pixels.
+  const int frame_height;  // In pixels.
+  const int frame_stride;  // In pixels.
 
-  scoped_ptr<base::SharedMemory> dib;
-  scoped_refptr<media::VideoCapture::VideoFrameBuffer> mapped_memory;
+ private:
+  friend class base::RefCounted<ClientBuffer>;
 
-  // Number of clients which hold this DIB.
-  int references;
+  virtual ~ClientBuffer() {}
+
+  DISALLOW_COPY_AND_ASSIGN(ClientBuffer);
 };
 
 bool VideoCaptureImpl::CaptureStarted() {
@@ -55,6 +64,7 @@ VideoCaptureImpl::VideoCaptureImpl(
       capture_message_loop_proxy_(capture_message_loop_proxy),
       io_message_loop_proxy_(ChildProcess::current()->io_message_loop_proxy()),
       device_id_(0),
+      client_buffer_weak_this_factory_(this),
       video_type_(media::PIXEL_FORMAT_I420),
       device_info_available_(false),
       suspended_(false),
@@ -63,9 +73,7 @@ VideoCaptureImpl::VideoCaptureImpl(
   capture_format_.session_id = id;
 }
 
-VideoCaptureImpl::~VideoCaptureImpl() {
-  STLDeleteValues(&cached_dibs_);
-}
+VideoCaptureImpl::~VideoCaptureImpl() {}
 
 void VideoCaptureImpl::Init() {
   if (!io_message_loop_proxy_->BelongsToCurrentThread()) {
@@ -97,12 +105,6 @@ void VideoCaptureImpl::StopCapture(media::VideoCapture::EventHandler* handler) {
   capture_message_loop_proxy_->PostTask(FROM_HERE,
       base::Bind(&VideoCaptureImpl::DoStopCaptureOnCaptureThread,
                  base::Unretained(this), handler));
-}
-
-void VideoCaptureImpl::FeedBuffer(scoped_refptr<VideoFrameBuffer> buffer) {
-  capture_message_loop_proxy_->PostTask(FROM_HERE,
-      base::Bind(&VideoCaptureImpl::DoFeedBufferOnCaptureThread,
-                 base::Unretained(this), buffer));
 }
 
 void VideoCaptureImpl::OnBufferCreated(
@@ -235,25 +237,8 @@ void VideoCaptureImpl::DoStopCaptureOnCaptureThread(
   if (clients_.empty()) {
     DVLOG(1) << "StopCapture: No more client, stopping ...";
     StopDevice();
-  }
-}
-
-void VideoCaptureImpl::DoFeedBufferOnCaptureThread(
-    scoped_refptr<VideoFrameBuffer> buffer) {
-  DCHECK(capture_message_loop_proxy_->BelongsToCurrentThread());
-
-  CachedDIB::iterator it;
-  for (it = cached_dibs_.begin(); it != cached_dibs_.end(); ++it) {
-    if (buffer.get() == it->second->mapped_memory.get())
-      break;
-  }
-
-  if (it != cached_dibs_.end() && it->second) {
-    DCHECK_GT(it->second->references, 0);
-    --it->second->references;
-    if (it->second->references == 0) {
-      Send(new VideoCaptureHostMsg_BufferReady(device_id_, it->first));
-    }
+    client_buffers_.clear();
+    client_buffer_weak_this_factory_.InvalidateWeakPtrs();
   }
 }
 
@@ -271,20 +256,21 @@ void VideoCaptureImpl::DoBufferCreatedOnCaptureThread(
 
   DCHECK(device_info_available_);
 
-  media::VideoCapture::VideoFrameBuffer* buffer;
-  DCHECK(cached_dibs_.find(buffer_id) == cached_dibs_.end());
+  scoped_ptr<base::SharedMemory> shm(new base::SharedMemory(handle, false));
+  if (!shm->Map(length)) {
+    DLOG(ERROR) << "DoBufferCreatedOnCaptureThread: Map() failed.";
+    return;
+  }
 
-  base::SharedMemory* dib = new base::SharedMemory(handle, false);
-  dib->Map(length);
-  buffer = new VideoFrameBuffer();
-  buffer->memory_pointer = static_cast<uint8*>(dib->memory());
-  buffer->buffer_size = length;
-  buffer->width = device_info_.width;
-  buffer->height = device_info_.height;
-  buffer->stride = device_info_.width;
-
-  DIBBuffer* dib_buffer = new DIBBuffer(dib, buffer);
-  cached_dibs_[buffer_id] = dib_buffer;
+  bool inserted =
+      client_buffers_.insert(std::make_pair(
+                                 buffer_id,
+                                 new ClientBuffer(shm.Pass(),
+                                                  length,
+                                                  device_info_.width,
+                                                  device_info_.height,
+                                                  device_info_.width))).second;
+  DCHECK(inserted);
 }
 
 void VideoCaptureImpl::DoBufferReceivedOnCaptureThread(
@@ -296,15 +282,38 @@ void VideoCaptureImpl::DoBufferReceivedOnCaptureThread(
     return;
   }
 
-  media::VideoCapture::VideoFrameBuffer* buffer;
-  DCHECK(cached_dibs_.find(buffer_id) != cached_dibs_.end());
-  buffer = cached_dibs_[buffer_id]->mapped_memory.get();
-  buffer->timestamp = timestamp;
+  ClientBufferMap::iterator iter = client_buffers_.find(buffer_id);
+  DCHECK(iter != client_buffers_.end());
+  scoped_refptr<ClientBuffer> buffer = iter->second;
+  scoped_refptr<media::VideoFrame> frame =
+      media::VideoFrame::WrapExternalSharedMemory(
+          media::VideoFrame::I420,
+          gfx::Size(buffer->frame_stride, buffer->frame_height),
+          gfx::Rect(0, 0, buffer->frame_width, buffer->frame_height),
+          gfx::Size(buffer->frame_width, buffer->frame_height),
+          reinterpret_cast<uint8*>(buffer->buffer->memory()),
+          buffer->buffer_size,
+          buffer->buffer->handle(),
+          // TODO(sheu): convert VideoCaptureMessageFilter::Delegate to use
+          // base::TimeTicks instead of base::Time.  http://crbug.com/249215
+          timestamp - base::Time::UnixEpoch(),
+          media::BindToLoop(
+              capture_message_loop_proxy_,
+              base::Bind(
+                  &VideoCaptureImpl::DoClientBufferFinishedOnCaptureThread,
+                  client_buffer_weak_this_factory_.GetWeakPtr(),
+                  buffer_id,
+                  buffer)));
 
-  for (ClientInfo::iterator it = clients_.begin(); it != clients_.end(); ++it) {
-    it->first->OnBufferReady(this, buffer);
-  }
-  cached_dibs_[buffer_id]->references = clients_.size();
+  for (ClientInfo::iterator it = clients_.begin(); it != clients_.end(); ++it)
+    it->first->OnFrameReady(this, frame);
+}
+
+void VideoCaptureImpl::DoClientBufferFinishedOnCaptureThread(
+    int buffer_id,
+    const scoped_refptr<ClientBuffer>& buffer) {
+  DCHECK(capture_message_loop_proxy_->BelongsToCurrentThread());
+  Send(new VideoCaptureHostMsg_BufferReady(device_id_, buffer_id));
 }
 
 void VideoCaptureImpl::DoStateChangedOnCaptureThread(VideoCaptureState state) {
@@ -316,7 +325,8 @@ void VideoCaptureImpl::DoStateChangedOnCaptureThread(VideoCaptureState state) {
     case VIDEO_CAPTURE_STATE_STOPPED:
       state_ = VIDEO_CAPTURE_STATE_STOPPED;
       DVLOG(1) << "OnStateChanged: stopped!, device_id = " << device_id_;
-      STLDeleteValues(&cached_dibs_);
+      client_buffers_.clear();
+      client_buffer_weak_this_factory_.InvalidateWeakPtrs();
       if (!clients_.empty() || !clients_pending_on_restart_.empty())
         RestartCapture();
       break;
@@ -354,9 +364,7 @@ void VideoCaptureImpl::DoStateChangedOnCaptureThread(VideoCaptureState state) {
 void VideoCaptureImpl::DoDeviceInfoReceivedOnCaptureThread(
     const media::VideoCaptureParams& device_info) {
   DCHECK(capture_message_loop_proxy_->BelongsToCurrentThread());
-  DCHECK(!ClientHasDIB());
-
-  STLDeleteValues(&cached_dibs_);
+  DCHECK(client_buffers_.empty());
 
   device_info_ = device_info;
   device_info_available_ = true;
@@ -460,16 +468,6 @@ void VideoCaptureImpl::Send(IPC::Message* message) {
   io_message_loop_proxy_->PostTask(FROM_HERE,
       base::Bind(base::IgnoreResult(&VideoCaptureMessageFilter::Send),
                  message_filter_.get(), message));
-}
-
-bool VideoCaptureImpl::ClientHasDIB() const {
-  DCHECK(capture_message_loop_proxy_->BelongsToCurrentThread());
-  for (CachedDIB::const_iterator it = cached_dibs_.begin();
-       it != cached_dibs_.end(); ++it) {
-    if (it->second->references > 0)
-      return true;
-  }
-  return false;
 }
 
 bool VideoCaptureImpl::RemoveClient(
