@@ -1709,7 +1709,8 @@ class FlagsState {
  public:
   FlagsState() : needs_restart_(false) {}
   void ConvertFlagsToSwitches(FlagsStorage* flags_storage,
-                              CommandLine* command_line);
+                              CommandLine* command_line,
+                              SentinelsMode sentinels);
   bool IsRestartNeededToCommitChanges();
   void SetExperimentEnabled(
       FlagsStorage* flags_storage,
@@ -1875,9 +1876,11 @@ string16 Experiment::DescriptionForChoice(int index) const {
 }
 
 void ConvertFlagsToSwitches(FlagsStorage* flags_storage,
-                            CommandLine* command_line) {
+                            CommandLine* command_line,
+                            SentinelsMode sentinels) {
   FlagsState::GetInstance()->ConvertFlagsToSwitches(flags_storage,
-                                                    command_line);
+                                                    command_line,
+                                                    sentinels);
 }
 
 bool AreSwitchesIdenticalToCurrentCommandLine(
@@ -2013,8 +2016,9 @@ void SetFlagToSwitchMapping(const std::string& key,
   (*name_to_switch_map)[key] = std::make_pair(switch_name, switch_value);
 }
 
-void FlagsState::ConvertFlagsToSwitches(
-    FlagsStorage* flags_storage, CommandLine* command_line) {
+void FlagsState::ConvertFlagsToSwitches(FlagsStorage* flags_storage,
+                                        CommandLine* command_line,
+                                        SentinelsMode sentinels) {
   if (command_line->HasSwitch(switches::kNoExperiments))
     return;
 
@@ -2047,10 +2051,12 @@ void FlagsState::ConvertFlagsToSwitches(
     }
   }
 
-  command_line->AppendSwitch(switches::kFlagSwitchesBegin);
-  flags_switches_.insert(
-      std::pair<std::string, std::string>(switches::kFlagSwitchesBegin,
-                                          std::string()));
+  if (sentinels == kAddSentinels) {
+    command_line->AppendSwitch(switches::kFlagSwitchesBegin);
+    flags_switches_.insert(
+        std::pair<std::string, std::string>(switches::kFlagSwitchesBegin,
+                                            std::string()));
+  }
   for (std::set<std::string>::iterator it = enabled_experiments.begin();
        it != enabled_experiments.end();
        ++it) {
@@ -2070,10 +2076,12 @@ void FlagsState::ConvertFlagsToSwitches(
                                     switch_and_value_pair.second);
     flags_switches_[switch_and_value_pair.first] = switch_and_value_pair.second;
   }
-  command_line->AppendSwitch(switches::kFlagSwitchesEnd);
-  flags_switches_.insert(
-      std::pair<std::string, std::string>(switches::kFlagSwitchesEnd,
-                                          std::string()));
+  if (sentinels == kAddSentinels) {
+    command_line->AppendSwitch(switches::kFlagSwitchesEnd);
+    flags_switches_.insert(
+        std::pair<std::string, std::string>(switches::kFlagSwitchesEnd,
+                                            std::string()));
+  }
 }
 
 bool FlagsState::IsRestartNeededToCommitChanges() {

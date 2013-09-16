@@ -4,8 +4,10 @@
 
 #include "chrome/browser/chromeos/settings/owner_flags_storage.h"
 
+#include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
+#include "chrome/browser/about_flags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
@@ -50,8 +52,12 @@ bool OwnerFlagsStorage::SetFlags(std::set<std::string> flags) {
 
   base::ListValue experiments_list;
 
-  for (std::set<std::string>::const_iterator it = flags.begin();
-       it != flags.end(); ++it) {
+  CommandLine command_line(CommandLine::NO_PROGRAM);
+  ::about_flags::ConvertFlagsToSwitches(this, &command_line,
+                                        ::about_flags::kNoSentinels);
+  CommandLine::StringVector switches = command_line.argv();
+  for (CommandLine::StringVector::const_iterator it = switches.begin() + 1;
+       it != switches.end(); ++it) {
     experiments_list.Append(new base::StringValue(*it));
   }
   cros_settings_->Set(kStartUpFlags, experiments_list);

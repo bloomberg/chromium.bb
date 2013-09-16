@@ -251,7 +251,8 @@ void LoginUtilsImpl::DoBrowserLaunch(Profile* profile,
 
   CommandLine user_flags(CommandLine::NO_PROGRAM);
   about_flags::PrefServiceFlagsStorage flags_storage_(profile->GetPrefs());
-  about_flags::ConvertFlagsToSwitches(&flags_storage_, &user_flags);
+  about_flags::ConvertFlagsToSwitches(&flags_storage_, &user_flags,
+                                      about_flags::kAddSentinels);
   // Only restart if needed and if not going into managed mode.
   // Don't restart browser if it is not first profile in session.
   if (UserManager::Get()->GetLoggedInUsers().size() == 1 &&

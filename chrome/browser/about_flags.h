@@ -105,10 +105,15 @@ struct Experiment {
   string16 DescriptionForChoice(int index) const;
 };
 
+// A flag controlling the behavior of the |ConvertFlagsToSwitches| function -
+// whether it should add the sentinel switches around flags.
+enum SentinelsMode { kNoSentinels, kAddSentinels };
+
 // Reads the Labs |prefs| (called "Labs" for historical reasons) and adds the
 // commandline flags belonging to the active experiments to |command_line|.
 void ConvertFlagsToSwitches(FlagsStorage* flags_storage,
-                            CommandLine* command_line);
+                            CommandLine* command_line,
+                            SentinelsMode sentinels);
 
 // Compares a set of switches of the two provided command line objects and
 // returns true if they are the same and false otherwise.
