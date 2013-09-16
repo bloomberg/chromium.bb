@@ -161,21 +161,13 @@ void Err::InternalPrintToStdout(bool is_sub_err) const {
 
   // File name and location.
   const InputFile* input_file = location_.file();
-  std::string loc_str;
-  if (input_file) {
-    std::string name;
-    if (input_file->friendly_name().empty())
-      name = input_file->name().value();
-    else
-      name = input_file->friendly_name();
-
+  std::string loc_str = location_.Describe(true);
+  if (!loc_str.empty()) {
     if (is_sub_err)
-      loc_str = "See ";
+      loc_str.insert(0, "See ");
     else
-      loc_str = "at ";
-    loc_str += name + ": " +
-        base::IntToString(location_.line_number()) + ":" +
-        base::IntToString(location_.char_offset()) + ": ";
+      loc_str.insert(0, "at ");
+    loc_str.append(": ");
   }
   OutputString(loc_str + message_ + "\n");
 

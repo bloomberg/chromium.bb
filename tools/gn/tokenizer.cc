@@ -64,7 +64,6 @@ Token::Type GetSpecificOperatorType(base::StringPiece value) {
     return Token::BOOLEAN_OR;
   if (value == "!")
     return Token::BANG;
-  NOTREACHED();
   return Token::INVALID;
 }
 

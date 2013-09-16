@@ -5,42 +5,28 @@
 #ifndef TOOLS_GN_LOCATION_H_
 #define TOOLS_GN_LOCATION_H_
 
-#include <algorithm>
-
-#include "base/logging.h"
+#include <string>
 
 class InputFile;
 
 // Represents a place in a source file. Used for error reporting.
 class Location {
  public:
-  Location()
-      : file_(NULL),
-        line_number_(-1),
-        char_offset_(-1) {
-  }
-  Location(const InputFile* file, int line_number, int char_offset)
-      : file_(file),
-        line_number_(line_number),
-        char_offset_(char_offset) {
-  }
+  Location();
+  Location(const InputFile* file, int line_number, int char_offset);
 
   const InputFile* file() const { return file_; }
   int line_number() const { return line_number_; }
   int char_offset() const { return char_offset_; }
 
-  bool operator==(const Location& other) const {
-    return other.file_ == file_ &&
-           other.line_number_ == line_number_ &&
-           other.char_offset_ == char_offset_;
-  }
+  bool operator==(const Location& other) const;
+  bool operator!=(const Location& other) const;
+  bool operator<(const Location& other) const;
 
-  bool operator<(const Location& other) const {
-    DCHECK(file_ == other.file_);
-    if (line_number_ != other.line_number_)
-      return line_number_ < other.line_number_;
-    return char_offset_ < other.char_offset_;
-  }
+  // Returns a string with the file, line, and (optionally) the character
+  // offset for this location. If this location is null, returns an empty
+  // string.
+  std::string Describe(bool include_char_offset) const;
 
  private:
   const InputFile* file_;  // Null when unset.
@@ -52,22 +38,13 @@ class Location {
 // The end is exclusive i.e. [begin, end)
 class LocationRange {
  public:
-  LocationRange() {}
-  LocationRange(const Location& begin, const Location& end)
-      : begin_(begin),
-        end_(end) {
-    DCHECK(begin_.file() == end_.file());
-  }
+  LocationRange();
+  LocationRange(const Location& begin, const Location& end);
 
   const Location& begin() const { return begin_; }
   const Location& end() const { return end_; }
 
-  LocationRange Union(const LocationRange& other) const {
-    DCHECK(begin_.file() == other.begin_.file());
-    return LocationRange(
-        begin_ < other.begin_ ? begin_ : other.begin_,
-        end_ < other.end_ ? other.end_ : end_);
-  }
+  LocationRange Union(const LocationRange& other) const;
 
  private:
   Location begin_;

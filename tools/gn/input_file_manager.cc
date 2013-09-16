@@ -194,8 +194,12 @@ bool InputFileManager::LoadFile(const LocationRange& origin,
                                 Err* err) {
   // Do all of this stuff outside the lock. We should not give out file
   // pointers until the read is complete.
-  if (g_scheduler->verbose_logging())
-    g_scheduler->Log("Loading", name.value());
+  if (g_scheduler->verbose_logging()) {
+    std::string logmsg = name.value();
+    if (origin.begin().file())
+      logmsg += " (referenced from " + origin.begin().Describe(false) + ")";
+    g_scheduler->Log("Loading", logmsg);
+  }
 
   // Read.
   base::FilePath primary_path = build_settings->GetFullPath(name);
