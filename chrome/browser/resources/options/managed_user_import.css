@@ -7,7 +7,6 @@
 }
 
 #managed-user-import {
-  height: 400px;
   width: 612px;
 }
 
@@ -16,6 +15,15 @@
   padding-left: 17px;
   white-space: pre-wrap;
   word-wrap: break-word;
+}
+
+#managed-user-list {
+  height: 240px;
+}
+
+#select-avatar-grid {
+  background-color: rgba(255, 255, 255, 0.75);
+  padding: 2px;
 }
 
 #managed-user-import-error-bubble {

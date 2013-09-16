@@ -19,6 +19,20 @@
 #include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
 
+namespace {
+
+scoped_ptr<base::ListValue> GetAvatarIcons() {
+  scoped_ptr<base::ListValue> avatar_icons(new base::ListValue);
+  for (size_t i = 0; i < ProfileInfoCache::GetDefaultAvatarIconCount(); ++i) {
+    std::string avatar_url = ProfileInfoCache::GetDefaultAvatarIconUrl(i);
+    avatar_icons->Append(new base::StringValue(avatar_url));
+  }
+
+  return avatar_icons.Pass();
+}
+
+}  // namespace
+
 namespace options {
 
 ManagedUserImportHandler::ManagedUserImportHandler() {}
@@ -30,17 +44,20 @@ void ManagedUserImportHandler::GetLocalizedValues(
   DCHECK(localized_strings);
 
   static OptionsStringResource resources[] = {
+      { "managedUserImportTitle", IDS_IMPORT_EXISTING_MANAGED_USER_TITLE },
       { "managedUserImportText", IDS_IMPORT_EXISTING_MANAGED_USER_TEXT },
       { "createNewUserLink", IDS_CREATE_NEW_USER_LINK },
       { "managedUserImportOk", IDS_IMPORT_EXISTING_MANAGED_USER_OK },
       { "managedUserAlreadyOnThisDevice",
           IDS_MANAGED_USER_ALREADY_ON_THIS_DEVICE },
       { "noExistingManagedUsers", IDS_MANAGED_USER_NO_EXISTING_ERROR },
+      { "managedUserSelectAvatarTitle", IDS_MANAGED_USER_SELECT_AVATAR_TITLE },
+      { "managedUserSelectAvatarText", IDS_MANAGED_USER_SELECT_AVATAR_TEXT },
+      { "managedUserSelectAvatarOk", IDS_MANAGED_USER_SELECT_AVATAR_OK },
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
-  RegisterTitle(localized_strings, "managedUserImport",
-                IDS_IMPORT_EXISTING_MANAGED_USER_TITLE);
+  localized_strings->Set("avatarIcons", GetAvatarIcons().release());
 }
 
 void ManagedUserImportHandler::RegisterMessages() {
@@ -80,6 +97,7 @@ void ManagedUserImportHandler::RequestExistingManagedUsers(
     int avatar_index = ManagedUserSyncService::kNoAvatar;
     success = ManagedUserSyncService::GetAvatarIndex(avatar_str, &avatar_index);
     DCHECK(success);
+    managed_user->SetBoolean("needAvatar", avatar_index < 0);
 
     // TODO(ibraaaa): When we have an image indicating that this user
     // has no synced avatar then change this to use it.

@@ -1,11 +1,12 @@
 <div id="managed-user-import" class="page" hidden>
   <div class="close-button"></div>
   <!-- Overlay to import an existing managed user during user creation -->
-  <h1 i18n-content="managedUserImport"></h1>
-  <div id="managed-user-import-text" i18n-content="managedUserImportText">
+  <h1 id="managed-user-import-title"></h1>
+  <div id="managed-user-import-text">
   </div>
   <div id="managed-user-import-content-area" class="content-area">
     <list id="managed-user-list" class="settings-list"></list>
+    <grid id="select-avatar-grid" hidden></grid>
   </div>
   <div id="managed-user-import-error-bubble" hidden></div>
   <div id="managed-user-import-action-area" class="action-area">
@@ -15,9 +16,7 @@
     <div class="button-strip">
       <button id="managed-user-import-cancel" i18n-content="cancel">
       </button>
-      <button id="managed-user-import-ok"
-          i18n-content="managedUserImportOk"
-          class="default-button">
+      <button id="managed-user-import-ok" class="default-button">
       </button>
     </div>
   </div>

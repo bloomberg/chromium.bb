@@ -13,7 +13,7 @@ cr.define('options', function() {
    * @class
    */
   function ManagedUserImportOverlay() {
-    var title = loadTimeData.getString('managedUserImportTabTitle');
+    var title = loadTimeData.getString('managedUserImportTitle');
     OptionsPage.call(this, 'managedUserImport',
                      title, 'managed-user-import');
   };
@@ -39,6 +39,11 @@ cr.define('options', function() {
       var managedUserList = $('managed-user-list');
       options.managedUserOptions.ManagedUserList.decorate(managedUserList);
 
+      var avatarGrid = $('select-avatar-grid');
+      options.ProfilesIconGrid.decorate(avatarGrid);
+      var avatarIcons = loadTimeData.getValue('avatarIcons');
+      avatarGrid.dataModel = new ArrayDataModel(avatarIcons);
+
       managedUserList.addEventListener('change', function(event) {
         var managedUser = managedUserList.selectedItem;
         if (!managedUser)
@@ -54,19 +59,8 @@ cr.define('options', function() {
         chrome.send('cancelCreateProfile');
       };
 
-      $('managed-user-import-ok').onclick = function(event) {
-        var managedUser = managedUserList.selectedItem;
-        if (!managedUser)
-          return;
-
-        $('managed-user-import-error-bubble').hidden = true;
-        $('managed-user-import-ok').disabled = true;
-
-        // 'createProfile' is handled by BrowserOptionsHandler.
-        chrome.send('createProfile',
-            [managedUser.name, managedUser.iconURL,
-             false, true, managedUser.id]);
-      };
+      $('managed-user-import-ok').onclick =
+          this.showAvatarGridOrSubmit_.bind(this);
 
       $('create-new-user-link').onclick = function(event) {
         OptionsPage.closeOverlay();
@@ -81,6 +75,65 @@ cr.define('options', function() {
       chrome.send('requestExistingManagedUsers');
       $('managed-user-import-error-bubble').hidden = true;
       $('managed-user-import-ok').disabled = true;
+      $('select-avatar-grid').hidden = true;
+      $('managed-user-list').hidden = false;
+
+      $('managed-user-import-ok').textContent =
+          loadTimeData.getString('managedUserImportOk');
+      $('managed-user-import-text').textContent =
+          loadTimeData.getString('managedUserImportText');
+      $('managed-user-import-title').textContent =
+          loadTimeData.getString('managedUserImportTitle');
+    },
+
+    /**
+     * Called when the user clicks the "OK" button. In case the managed
+     * user being imported has no avatar in sync, it shows the avatar
+     * icon grid. In case the avatar grid is visible or the managed user
+     * already has an avatar stored in sync, it proceeds with importing
+     * the managed user.
+     * @private
+     */
+    showAvatarGridOrSubmit_: function() {
+      var managedUser = $('managed-user-list').selectedItem;
+      if (!managedUser)
+        return;
+
+      $('managed-user-import-error-bubble').hidden = true;
+
+      if ($('select-avatar-grid').hidden && managedUser.needAvatar) {
+        this.showAvatarGridHelper_();
+        return;
+      }
+
+      $('managed-user-import-ok').disabled = true;
+      var avatarUrl = managedUser.needAvatar ?
+          $('select-avatar-grid').selectedItem : managedUser.iconURL;
+
+      // 'createProfile' is handled by BrowserOptionsHandler.
+      chrome.send('createProfile', [managedUser.name, avatarUrl,
+                                    false, true, managedUser.id]);
+    },
+
+    /**
+     * Hides the 'managed user list' and shows the avatar grid instead.
+     * It also updates the overlay text and title to instruct the user
+     * to choose an avatar for the supervised user.
+     * @private
+     */
+    showAvatarGridHelper_: function() {
+      $('managed-user-list').hidden = true;
+      $('select-avatar-grid').hidden = false;
+      $('select-avatar-grid').redraw();
+      $('select-avatar-grid').selectedItem =
+          loadTimeData.getValue('avatarIcons')[0];
+
+      $('managed-user-import-ok').textContent =
+          loadTimeData.getString('managedUserSelectAvatarOk');
+      $('managed-user-import-text').textContent =
+          loadTimeData.getString('managedUserSelectAvatarText');
+      $('managed-user-import-title').textContent =
+          loadTimeData.getString('managedUserSelectAvatarTitle');
     },
 
     /**
@@ -91,7 +144,8 @@ cr.define('options', function() {
      *         id: "Managed User ID",
      *         name: "Managed User Name",
      *         iconURL: "chrome://path/to/icon/image",
-     *         onCurrentDevice: true or false
+     *         onCurrentDevice: true or false,
+     *         needAvatar: true or false
      *       }
      * @private
      */

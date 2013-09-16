@@ -34,7 +34,8 @@ class ManagedUserImportHandler : public OptionsPageUIHandler {
   //     id: "Managed User ID",
   //     name: "Managed User Name",
   //     iconURL: "chrome://path/to/icon/image",
-  //     onCurrentDevice: true or false
+  //     onCurrentDevice: true or false,
+  //     needAvatar: true or false
   //   }
   // The array holds all existing managed users attached to the
   // custodian's profile who initiated the request except for

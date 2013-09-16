@@ -14400,9 +14400,8 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
     <message name="IDS_IMPORT_EXISTING_MANAGED_USER_TITLE" desc="Title for the dialog used to import existing supervised users. The dialog appears when the custodian clicks on 'Import existing supervised user' during the user creation flow. The dialog displays a list of existing supervised users for the custodian to choose from">
       Import an existing supervised user
     </message>
-    <message name="IDS_IMPORT_EXISTING_MANAGED_USER_TEXT" desc="Text that instructs the user to choose one of the displayed supervised users to import to this device. The text also gives hint to the user about how the supervised user's settings and browsing history will be dealt with across multiple devices.">
+    <message name="IDS_IMPORT_EXISTING_MANAGED_USER_TEXT" desc="Text that instructs the user to choose one of the displayed supervised users to import to this device.">
       Choose a supervised user to add to this device.
-The supervised user's settings and browsing history will be merged across devices.
     </message>
     <message name="IDS_CREATE_NEW_USER_LINK" desc="The text for the 'Create a new user' link button. The button takes the user back from the dialog for importing an existing supervised user to the user creation dialog.">
       Create a new user
@@ -14424,6 +14423,15 @@ The supervised user's settings and browsing history will be merged across device
     </message>
     <message name="IDS_MANAGED_USER_IMPORT_SIGN_IN_ERROR" desc="Message shown when a sign in error occurs during supervised user import.">
       Oops! The supervised user couldn't be imported. Please make sure you're signed in properly and try again.
+    </message>
+    <message name="IDS_MANAGED_USER_SELECT_AVATAR_TITLE" desc="Title for the dialog used to select an avatar for a supervised user being imported. The dialog is shown only when the supervised user being imported has no chrome synced avatar.">
+      Select an avatar for this supervised user
+    </message>
+    <message name="IDS_MANAGED_USER_SELECT_AVATAR_TEXT" desc="Text that instructs the user to choose an avatar for the supervised user being imported.">
+      Choose an avatar for this supervised user.
+    </message>
+    <message name="IDS_MANAGED_USER_SELECT_AVATAR_OK" desc="Text on the button to confirm the avatar selection for the supervised user being imported.">
+      Ok, import
     </message>
 
     <if expr="not is_android and not is_ios">
