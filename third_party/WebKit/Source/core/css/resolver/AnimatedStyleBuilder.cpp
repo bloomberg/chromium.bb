@@ -61,21 +61,6 @@ Length animatableValueToLength(const AnimatableValue* value, const StyleResolver
     return cssPrimitiveValue->convertToLength<AnyConversion>(style, state.rootElementStyle(), style->effectiveZoom());
 }
 
-unsigned animatableValueToUnsigned(const AnimatableValue* value)
-{
-    return clampTo<unsigned>(round(toAnimatableNumber(value)->toDouble()));
-}
-
-unsigned short animatableValueToUnsignedShort(const AnimatableValue* value)
-{
-    return clampTo<unsigned short>(round(toAnimatableNumber(value)->toDouble()));
-}
-
-int animatableValueToInt(const AnimatableValue* value)
-{
-    return clampTo<int>(round(toAnimatableNumber(value)->toDouble()));
-}
-
 template<typename T> T animatableValueRoundClampTo(const AnimatableValue* value)
 {
     COMPILE_ASSERT(WTF::IsInteger<T>::value, ShouldUseIntegralTypeTWhenRoundingValues);
@@ -198,7 +183,7 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setVisitedLinkOutlineColor(toAnimatableColor(value)->visitedLinkColor());
         return;
     case CSSPropertyOutlineOffset:
-        style->setOutlineOffset(animatableValueToInt(value));
+        style->setOutlineOffset(animatableValueRoundClampTo<int>(value));
         return;
     case CSSPropertyOutlineWidth:
         style->setOutlineWidth(animatableValueRoundClampTo<unsigned short>(value));
