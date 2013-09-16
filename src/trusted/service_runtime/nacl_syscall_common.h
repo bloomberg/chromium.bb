@@ -48,40 +48,6 @@ void NaClInsecurelyBypassAllAclChecks(void);
 int32_t NaClSysNameService(struct NaClAppThread *natp,
                            int32_t              *desc_addr);
 
-int32_t NaClSysDup(struct NaClAppThread *natp,
-                   int                  oldfd);
-
-int32_t NaClSysDup2(struct NaClAppThread  *natp,
-                    int                   oldfd,
-                    int                   newfd);
-
-int32_t NaClSysClose(struct NaClAppThread *natp,
-                     int                  d);
-
-int32_t NaClSysRead(struct NaClAppThread  *natp,
-                    int                   d,
-                    void                  *buf,
-                    size_t                count);
-
-int32_t NaClSysWrite(struct NaClAppThread *natp,
-                     int                  d,
-                     void                 *buf,
-                     size_t               count);
-
-int32_t NaClSysLseek(struct NaClAppThread *natp,
-                     int                  d,
-                     nacl_abi_off_t       *offp,
-                     int                  whence);
-
-int32_t NaClSysIoctl(struct NaClAppThread *natp,
-                     int                  d,
-                     int                  request,
-                     void                 *arg);
-
-int32_t NaClSysFstat(struct NaClAppThread *natp,
-                     int                  d,
-                     struct nacl_abi_stat *nasp);
-
 /* bool */
 int NaClSysCommonAddrRangeContainsExecutablePages(struct NaClApp *nap,
                                                   uintptr_t usraddr,
@@ -91,11 +57,6 @@ int NaClSysCommonAddrRangeContainsExecutablePages(struct NaClApp *nap,
 int NaClSysCommonAddrRangeInAllowedDynamicCodeSpace(struct NaClApp *nap,
                                                     uintptr_t usraddr,
                                                     size_t length);
-
-int32_t NaClSysGetdents(struct NaClAppThread  *natp,
-                        int                   d,
-                        void                  *dirp,
-                        size_t                count);
 
 int32_t NaClSysGetTimeOfDay(struct NaClAppThread      *natp,
                             struct nacl_abi_timeval   *tv,
