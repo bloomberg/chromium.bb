@@ -67,3 +67,6 @@ PnaclTranslationCacheTest.*
 
 # Failing on the bot. crbug.com/266972
 OneClickSigninBubbleViewTest.ShowBubble
+
+# http://crbug.com/292960
+SyncBackendHostTest.DownloadControlTypes
