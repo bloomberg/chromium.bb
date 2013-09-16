@@ -144,6 +144,16 @@ public:
         return m_map.get(index);
     }
 
+    void decrementRef(int index)
+    {
+        ASSERT(m_map.contains(index));
+        CalculationValue* value = m_map.get(index);
+        if (value->hasOneRef())
+            m_map.remove(index);
+        else
+            value->deref();
+    }
+
 private:
     int m_index;
     HashMap<int, RefPtr<CalculationValue> > m_map;
@@ -190,10 +200,7 @@ void Length::incrementCalculatedRef() const
 void Length::decrementCalculatedRef() const
 {
     ASSERT(isCalculated());
-    RefPtr<CalculationValue> calcLength = calculationValue();
-    if (calcLength->hasOneRef())
-        calcHandles().remove(calculationHandle());
-    calcLength->deref();
+    calcHandles().decrementRef(calculationHandle());
 }
 
 float Length::nonNanCalculatedValue(int maxValue) const
