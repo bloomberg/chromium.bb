@@ -636,50 +636,6 @@
    fun:ash::test::FocusCyclerTest_CycleFocusThroughWindowWithPanes_Test::TestBody
 }
 {
-   bug_246567a
-   Heapcheck:Leak
-   fun:v8::internal::PerThreadAssertScopeBase::AssertData
-   fun:v8::internal::PerThreadAssertScope::IsAllowed
-   fun:v8::internal::Heap::AllocateRaw
-   fun:v8::internal::Heap::Allocate
-   fun:v8::internal::Heap::AllocateForeign
-   fun:v8::internal::Heap::AllocateExternal
-   fun:v8::internal::Factory::NewExternal
-   fun:v8::External::New
-   fun:net::ProxyResolverV8::Context::InitV8
-   fun:net::ProxyResolverV8::SetPacScript
-   fun:net::ProxyResolverV8Tracing::Job::ExecuteProxyResolver
-   fun:net::ProxyResolverV8Tracing::Job::ExecuteBlocking
-}
-{
-   bug_246567b
-   Heapcheck:Leak
-   fun:v8::internal::PerThreadAssertScopeBase::AssertData
-   fun:v8::internal::PerThreadAssertScope::IsAllowed
-   fun:v8::internal::HandleScope::CreateHandle
-   fun:Handle
-   fun:MacroAssembler
-   fun:v8::internal::Deoptimizer::EnsureCodeForDeoptimizationEntry
-   fun:v8::internal::Isolate::Init
-   fun:v8::internal::V8::Initialize
-   fun:v8::internal::Snapshot::Initialize
-   fun:InitializeHelper
-   fun:v8::V8::Initialize
-   fun:v8::Locker::Initialize
-   fun:net::ProxyResolverV8::Context::InitV8
-   fun:net::ProxyResolverV8::SetPacScript
-   fun:net::ProxyResolverV8Tracing::Job::ExecuteProxyResolver
-   fun:net::ProxyResolverV8Tracing::Job::ExecuteBlocking
-}
-{
-   bug_246567c
-   Heapcheck:Leak
-   fun:v8::internal::PerThreadAssertScopeBase::AssertData
-   fun:v8::internal::PerThreadAssertScope::IsAllowed
-   fun:v8::internal::HandleScope::CreateHandle
-   fun:Handle
-}
-{
    bug_247525
    Heapcheck:Leak
    ...
@@ -932,28 +888,4 @@
    fun:SafeBrowsingCheck
    fun:SafeBrowsingDatabaseManagerTest::RunSBHashTest
    fun:SafeBrowsingDatabaseManagerTest_CheckCorrespondsListType_Test::TestBody
-}
-{
-   bug_291236_a
-   Heapcheck:Leak
-   fun:v8::internal::Malloced::New
-   fun:v8::internal::Zone::NewSegment
-   fun:v8::internal::Zone::NewExpand
-   fun:v8::internal::Zone::New
-   fun:v8::internal::ZoneAllocationPolicy::New
-   fun:v8::internal::List::NewData
-   fun:v8::internal::List::Resize
-}
-{
-   bug_291236_b
-   Heapcheck:Leak
-   fun:v8::internal::Malloced::New
-   fun:v8::internal::Zone::NewSegment
-   fun:v8::internal::Zone::NewExpand
-   fun:v8::internal::Zone::New
-   fun:v8::internal::ZoneObject::operator new
-   fun:v8::internal::HOptimizedGraphBuilder::VisitCompareOperation
-   fun:v8::internal::CompareOperation::Accept
-   fun:v8::internal::HOptimizedGraphBuilder::Visit
-   fun:v8::internal::HOptimizedGraphBuilder::VisitForControl
 }
