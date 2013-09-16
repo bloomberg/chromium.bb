@@ -67,12 +67,16 @@ public:
 private:
     class HarfBuzzRun {
     public:
+        HarfBuzzRun(const HarfBuzzRun&);
+        ~HarfBuzzRun();
+
         static PassOwnPtr<HarfBuzzRun> create(const SimpleFontData* fontData, unsigned startIndex, unsigned numCharacters, TextDirection direction, hb_script_t script)
         {
             return adoptPtr(new HarfBuzzRun(fontData, startIndex, numCharacters, direction, script));
         }
 
         void applyShapeResult(hb_buffer_t*);
+        void copyShapeResultAndGlyphPositions(const HarfBuzzRun&);
         void setGlyphAndPositions(unsigned index, uint16_t glyphId, float advance, float offsetX, float offsetY);
         void setWidth(float width) { m_width = width; }
 
@@ -148,6 +152,8 @@ private:
     int m_toIndex;
 
     float m_totalWidth;
+
+    friend struct CachedShapingResults;
 };
 
 } // namespace WebCore

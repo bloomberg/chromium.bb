@@ -43,6 +43,10 @@
 #include <unicode/normlzr.h>
 #include <unicode/uchar.h>
 
+#include <list>
+#include <map>
+#include <string>
+
 namespace WebCore {
 
 template<typename T>
@@ -63,26 +67,178 @@ public:
     }
 
     T* get() { return m_ptr; }
+    void set(T* ptr) { m_ptr = ptr; }
 private:
     T* m_ptr;
     DestroyFunction m_destroy;
 };
+
+
+static const int cHarfBuzzCacheMaxSize = 256;
+
+struct CachedShapingResultsLRUNode;
+struct CachedShapingResults;
+typedef std::map<std::wstring, CachedShapingResults*> CachedShapingResultsMap;
+typedef std::list<CachedShapingResultsLRUNode*> CachedShapingResultsLRU;
+
+struct CachedShapingResults {
+    CachedShapingResults(hb_buffer_t* harfBuzzBuffer, const Font* runFont, hb_direction_t runDir);
+    ~CachedShapingResults();
+
+    hb_buffer_t* buffer;
+    Font font;
+    hb_direction_t dir;
+    CachedShapingResultsLRU::iterator lru;
+};
+
+struct CachedShapingResultsLRUNode {
+    CachedShapingResultsLRUNode(const CachedShapingResultsMap::iterator& cacheEntry);
+    ~CachedShapingResultsLRUNode();
+
+    CachedShapingResultsMap::iterator entry;
+};
+
+CachedShapingResults::CachedShapingResults(hb_buffer_t* harfBuzzBuffer, const Font* fontData, hb_direction_t dirData)
+    : buffer(harfBuzzBuffer)
+    , font(*fontData)
+    , dir(dirData)
+{
+}
+
+CachedShapingResults::~CachedShapingResults()
+{
+    hb_buffer_destroy(buffer);
+}
+
+CachedShapingResultsLRUNode::CachedShapingResultsLRUNode(const CachedShapingResultsMap::iterator& cacheEntry)
+    : entry(cacheEntry)
+{
+}
+
+CachedShapingResultsLRUNode::~CachedShapingResultsLRUNode()
+{
+}
+
+class HarfBuzzRunCache {
+public:
+    HarfBuzzRunCache();
+    ~HarfBuzzRunCache();
+
+    CachedShapingResults* find(const std::wstring& key) const;
+    void remove(CachedShapingResults* node);
+    void moveToBack(CachedShapingResults* node);
+    bool insert(const std::wstring& key, CachedShapingResults* run);
+
+private:
+    CachedShapingResultsMap m_harfBuzzRunMap;
+    CachedShapingResultsLRU m_harfBuzzRunLRU;
+};
+
+
+HarfBuzzRunCache::HarfBuzzRunCache()
+{
+}
+
+HarfBuzzRunCache::~HarfBuzzRunCache()
+{
+    for (CachedShapingResultsMap::iterator it = m_harfBuzzRunMap.begin(); it != m_harfBuzzRunMap.end(); ++it)
+        delete it->second;
+    for (CachedShapingResultsLRU::iterator it = m_harfBuzzRunLRU.begin(); it != m_harfBuzzRunLRU.end(); ++it)
+        delete *it;
+}
+
+bool HarfBuzzRunCache::insert(const std::wstring& key, CachedShapingResults* data)
+{
+    std::pair<CachedShapingResultsMap::iterator, bool> results =
+        m_harfBuzzRunMap.insert(CachedShapingResultsMap::value_type(key, data));
+
+    if (!results.second)
+        return false;
+
+    CachedShapingResultsLRUNode* node = new CachedShapingResultsLRUNode(results.first);
+
+    m_harfBuzzRunLRU.push_back(node);
+    data->lru = --m_harfBuzzRunLRU.end();
+
+    if (m_harfBuzzRunMap.size() > cHarfBuzzCacheMaxSize) {
+        CachedShapingResultsLRUNode* lru = m_harfBuzzRunLRU.front();
+        CachedShapingResults* foo = lru->entry->second;
+        m_harfBuzzRunMap.erase(lru->entry);
+        m_harfBuzzRunLRU.pop_front();
+        delete foo;
+        delete lru;
+    }
+
+    return true;
+}
+
+inline CachedShapingResults* HarfBuzzRunCache::find(const std::wstring& key) const
+{
+    CachedShapingResultsMap::const_iterator it = m_harfBuzzRunMap.find(key);
+
+    return it != m_harfBuzzRunMap.end() ? it->second : 0;
+}
+
+inline void HarfBuzzRunCache::remove(CachedShapingResults* node)
+{
+    CachedShapingResultsLRUNode* lruNode = *node->lru;
+
+    m_harfBuzzRunLRU.erase(node->lru);
+    m_harfBuzzRunMap.erase(lruNode->entry);
+    delete lruNode;
+    delete node;
+}
+
+inline void HarfBuzzRunCache::moveToBack(CachedShapingResults* node)
+{
+    CachedShapingResultsLRUNode* lruNode = *node->lru;
+    m_harfBuzzRunLRU.erase(node->lru);
+    m_harfBuzzRunLRU.push_back(lruNode);
+    node->lru = --m_harfBuzzRunLRU.end();
+}
+
+HarfBuzzRunCache& harfBuzzRunCache()
+{
+    DEFINE_STATIC_LOCAL(HarfBuzzRunCache, globalHarfBuzzRunCache, ());
+    return globalHarfBuzzRunCache;
+}
 
 static inline float harfBuzzPositionToFloat(hb_position_t value)
 {
     return static_cast<float>(value) / (1 << 16);
 }
 
-HarfBuzzShaper::HarfBuzzRun::HarfBuzzRun(const SimpleFontData* fontData, unsigned startIndex, unsigned numCharacters, TextDirection direction, hb_script_t script)
+inline HarfBuzzShaper::HarfBuzzRun::HarfBuzzRun(const SimpleFontData* fontData, unsigned startIndex, unsigned numCharacters, TextDirection direction, hb_script_t script)
     : m_fontData(fontData)
     , m_startIndex(startIndex)
     , m_numCharacters(numCharacters)
     , m_direction(direction)
     , m_script(script)
+    , m_numGlyphs(0)
+    , m_width(0)
 {
 }
 
-void HarfBuzzShaper::HarfBuzzRun::applyShapeResult(hb_buffer_t* harfBuzzBuffer)
+inline HarfBuzzShaper::HarfBuzzRun::HarfBuzzRun(const HarfBuzzRun& rhs)
+    : m_fontData(rhs.m_fontData)
+    , m_startIndex(rhs.m_startIndex)
+    , m_numCharacters(rhs.m_numCharacters)
+    , m_numGlyphs(rhs.m_numGlyphs)
+    , m_direction(rhs.m_direction)
+    , m_script(rhs.m_script)
+    , m_glyphs(rhs.m_glyphs)
+    , m_advances(rhs.m_advances)
+    , m_glyphToCharacterIndexes(rhs.m_glyphToCharacterIndexes)
+    , m_offsets(rhs.m_offsets)
+    , m_width(rhs.m_width)
+{
+}
+
+HarfBuzzShaper::HarfBuzzRun::~HarfBuzzRun()
+{
+}
+
+inline void HarfBuzzShaper::HarfBuzzRun::applyShapeResult(hb_buffer_t* harfBuzzBuffer)
 {
     m_numGlyphs = hb_buffer_get_length(harfBuzzBuffer);
     m_glyphs.resize(m_numGlyphs);
@@ -91,7 +247,17 @@ void HarfBuzzShaper::HarfBuzzRun::applyShapeResult(hb_buffer_t* harfBuzzBuffer)
     m_offsets.resize(m_numGlyphs);
 }
 
-void HarfBuzzShaper::HarfBuzzRun::setGlyphAndPositions(unsigned index, uint16_t glyphId, float advance, float offsetX, float offsetY)
+inline void HarfBuzzShaper::HarfBuzzRun::copyShapeResultAndGlyphPositions(const HarfBuzzRun& run)
+{
+    m_numGlyphs = run.m_numGlyphs;
+    m_glyphs = run.m_glyphs;
+    m_advances = run.m_advances;
+    m_glyphToCharacterIndexes = run.m_glyphToCharacterIndexes;
+    m_offsets = run.m_offsets;
+    m_width = run.m_width;
+}
+
+inline void HarfBuzzShaper::HarfBuzzRun::setGlyphAndPositions(unsigned index, uint16_t glyphId, float advance, float offsetX, float offsetY)
 {
     m_glyphs[index] = glyphId;
     m_advances[index] = advance;
@@ -431,10 +597,9 @@ bool HarfBuzzShaper::collectHarfBuzzRuns()
                     clusterLength = markLength;
                     continue;
                 }
-                nextFontData = m_font->glyphDataForCharacter(character, false).fontData;
-            } else
-                nextFontData = m_font->glyphDataForCharacter(character, false).fontData;
+            }
 
+            nextFontData = m_font->glyphDataForCharacter(character, false).fontData;
             nextScript = uscript_getScript(character, &errorCode);
             if (U_FAILURE(errorCode))
                 return false;
@@ -459,6 +624,7 @@ bool HarfBuzzShaper::shapeHarfBuzzRuns(bool shouldSetDirection)
     HarfBuzzScopedPtr<hb_buffer_t> harfBuzzBuffer(hb_buffer_create(), hb_buffer_destroy);
 
     hb_buffer_set_unicode_funcs(harfBuzzBuffer.get(), hb_icu_get_unicode_funcs());
+    HarfBuzzRunCache& runCache = harfBuzzRunCache();
 
     for (unsigned i = 0; i < m_harfBuzzRuns.size(); ++i) {
         unsigned runIndex = m_run.rtl() ? m_harfBuzzRuns.size() - i - 1 : i;
@@ -467,12 +633,39 @@ bool HarfBuzzShaper::shapeHarfBuzzRuns(bool shouldSetDirection)
         if (currentFontData->isSVGFont())
             return false;
 
+        FontPlatformData* platformData = const_cast<FontPlatformData*>(&currentFontData->platformData());
+        HarfBuzzFace* face = platformData->harfBuzzFace();
+        if (!face)
+            return false;
+
         hb_buffer_set_script(harfBuzzBuffer.get(), currentRun->script());
         if (shouldSetDirection)
             hb_buffer_set_direction(harfBuzzBuffer.get(), currentRun->rtl() ? HB_DIRECTION_RTL : HB_DIRECTION_LTR);
         else
             // Leaving direction to HarfBuzz to guess is *really* bad, but will do for now.
             hb_buffer_guess_segment_properties(harfBuzzBuffer.get());
+
+        hb_segment_properties_t props;
+        hb_buffer_get_segment_properties(harfBuzzBuffer.get(), &props);
+
+        const UChar* src = m_normalizedBuffer.get() + currentRun->startIndex();
+        std::wstring key(src, src + currentRun->numCharacters());
+
+        CachedShapingResults* cachedResults = runCache.find(key);
+        if (cachedResults) {
+            if (cachedResults->dir == props.direction && cachedResults->font == *m_font) {
+                currentRun->applyShapeResult(cachedResults->buffer);
+                setGlyphPositionsForHarfBuzzRun(currentRun, cachedResults->buffer);
+
+                hb_buffer_reset(harfBuzzBuffer.get());
+
+                runCache.moveToBack(cachedResults);
+
+                continue;
+            }
+
+            runCache.remove(cachedResults);
+        }
 
         // Add a space as pre-context to the buffer. This prevents showing dotted-circle
         // for combining marks at the beginning of runs.
@@ -488,22 +681,19 @@ bool HarfBuzzShaper::shapeHarfBuzzRuns(bool shouldSetDirection)
         } else
             hb_buffer_add_utf16(harfBuzzBuffer.get(), m_normalizedBuffer.get() + currentRun->startIndex(), currentRun->numCharacters(), 0, currentRun->numCharacters());
 
-        FontPlatformData* platformData = const_cast<FontPlatformData*>(&currentFontData->platformData());
-        HarfBuzzFace* face = platformData->harfBuzzFace();
-        if (!face)
-            return false;
-
         if (m_font->fontDescription().orientation() == Vertical)
             face->setScriptForVerticalGlyphSubstitution(harfBuzzBuffer.get());
 
         HarfBuzzScopedPtr<hb_font_t> harfBuzzFont(face->createFont(), hb_font_destroy);
 
         hb_shape(harfBuzzFont.get(), harfBuzzBuffer.get(), m_features.isEmpty() ? 0 : m_features.data(), m_features.size());
-
         currentRun->applyShapeResult(harfBuzzBuffer.get());
         setGlyphPositionsForHarfBuzzRun(currentRun, harfBuzzBuffer.get());
 
-        hb_buffer_reset(harfBuzzBuffer.get());
+        runCache.insert(key, new CachedShapingResults(harfBuzzBuffer.get(), m_font, props.direction));
+
+        harfBuzzBuffer.set(hb_buffer_create());
+        hb_buffer_set_unicode_funcs(harfBuzzBuffer.get(), hb_icu_get_unicode_funcs());
     }
 
     return true;
