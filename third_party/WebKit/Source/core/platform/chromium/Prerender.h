@@ -87,6 +87,8 @@ private:
     const String m_referrer;
     const ReferrerPolicy m_referrerPolicy;
 
+    bool m_isActive;
+
     RefPtr<ExtraData> m_extraData;
 };
 

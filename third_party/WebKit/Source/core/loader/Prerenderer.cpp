@@ -83,6 +83,7 @@ PassRefPtr<PrerenderHandle> Prerenderer::render(PrerenderClient* prerenderClient
         client()->willAddPrerender(prerenderHandle.get());
     prerenderHandle->add();
 
+    // FIXME: This handle isn't released until page unload, but it may be canceled before then. It should be released in that case.
     m_activeHandles.append(prerenderHandle);
     return prerenderHandle;
 }
