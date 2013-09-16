@@ -33,8 +33,7 @@ InputMethodBridge::~InputMethodBridge() {
 
 void InputMethodBridge::OnFocus() {
   // Direct the shared IME to send TextInputClient messages to |this| object.
-  if (IsWidgetActive() &&
-      (shared_input_method_ || !host_->GetTextInputClient()))
+  if (shared_input_method_ || !host_->GetTextInputClient())
     host_->SetFocusedTextInputClient(this);
 
   // TODO(yusukes): We don't need to call OnTextInputTypeChanged() once we move
@@ -55,8 +54,6 @@ void InputMethodBridge::OnBlur() {
 
 bool InputMethodBridge::OnUntranslatedIMEMessage(const base::NativeEvent& event,
                                                  NativeEventResult* result) {
-  if (!IsWidgetActive())
-    return false;
   return host_->OnUntranslatedIMEMessage(event, result);
 }
 
@@ -85,8 +82,7 @@ void InputMethodBridge::CancelComposition(View* view) {
 }
 
 void InputMethodBridge::OnInputLocaleChanged() {
-  if (IsWidgetActive())
-    host_->OnInputLocaleChanged();
+  return host_->OnInputLocaleChanged();
 }
 
 std::string InputMethodBridge::GetInputLocale() {
@@ -255,5 +251,6 @@ void InputMethodBridge::OnDidChangeFocus(View* focused_before, View* focused) {
 ui::InputMethod* InputMethodBridge::GetHostInputMethod() const {
   return host_;
 }
+
 
 }  // namespace views
