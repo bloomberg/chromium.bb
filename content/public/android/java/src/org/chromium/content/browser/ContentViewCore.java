@@ -1487,12 +1487,12 @@ import java.util.Map;
         mAttachedToWindow = true;
         if (mNativeContentViewCore != 0) {
             assert mPid == nativeGetCurrentRenderProcessId(mNativeContentViewCore);
-            ChildProcessLauncher.bindAsHighPriority(mPid);
+            ChildProcessLauncher.getBindingManager().bindAsHighPriority(mPid);
             // Normally the initial binding is removed in onRenderProcessSwap(), but it is possible
             // to construct WebContents and spawn the renderer before passing it to ContentViewCore.
             // In this case there will be no onRenderProcessSwap() call and the initial binding will
             // be removed here.
-            ChildProcessLauncher.removeInitialBinding(mPid);
+            ChildProcessLauncher.getBindingManager().removeInitialBinding(mPid);
         }
         setAccessibilityState(mAccessibilityManager.isEnabled());
     }
@@ -1505,7 +1505,7 @@ import java.util.Map;
         mAttachedToWindow = false;
         if (mNativeContentViewCore != 0) {
             assert mPid == nativeGetCurrentRenderProcessId(mNativeContentViewCore);
-            ChildProcessLauncher.unbindAsHighPriority(mPid);
+            ChildProcessLauncher.getBindingManager().unbindAsHighPriority(mPid);
         }
         setInjectedAccessibility(false);
         hidePopupDialog();
@@ -1897,7 +1897,8 @@ import java.util.Map;
     @CalledByNative
     private void onTabCrash() {
         assert mPid != 0;
-        getContentViewClient().onRendererCrash(ChildProcessLauncher.isOomProtected(mPid));
+        getContentViewClient().onRendererCrash(
+                ChildProcessLauncher.getBindingManager().isOomProtected(mPid));
         mPid = 0;
     }
 
@@ -2569,13 +2570,13 @@ import java.util.Map;
     private void onRenderProcessSwap(int oldPid, int newPid) {
         assert mPid == oldPid || mPid == newPid;
         if (mAttachedToWindow && oldPid != newPid) {
-            ChildProcessLauncher.unbindAsHighPriority(oldPid);
-            ChildProcessLauncher.bindAsHighPriority(newPid);
+            ChildProcessLauncher.getBindingManager().unbindAsHighPriority(oldPid);
+            ChildProcessLauncher.getBindingManager().bindAsHighPriority(newPid);
         }
 
         // We want to remove the initial binding even if the ContentView is not attached, so that
         // renderers for ContentViews loading in background do not retain the high priority.
-        ChildProcessLauncher.removeInitialBinding(newPid);
+        ChildProcessLauncher.getBindingManager().removeInitialBinding(newPid);
         mPid = newPid;
     }
 
