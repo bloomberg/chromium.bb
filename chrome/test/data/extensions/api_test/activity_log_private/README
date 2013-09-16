@@ -54,6 +54,34 @@ Adding a new test:
         reply.js.
 
 
+Running a testcase in Incognito mode:
+  
+  To check logging when run in incognito mode, add the following to the
+  testcase:
+      
+      is_incognito: true
+
+  This will automatically cause all new tabs to be opened in incognito mode and
+  check the url information has been correctly cleaned.  
+
+
+Configuring a testcase for a particular OS:  
+  
+  If you need to disable a test for a particular OS then you can do this by
+  adding the disabled field to the test case. For example:
+       
+       disabled:  {win: true, mac: true}
+
+  If you need to configure different expected activity for a particular OS, you
+  can override the logging. E.g.:
+
+       expected_activity_win: ['api.call1', 'api.call2', 'api.call3']
+       expected_activity_mac: ['api.call1', 'api.call2', 'api.call3']
+       
+  See the chrome.runtime.getPlatformInfo documentation for details of which OS
+  names to use.
+
+
 Running the tests:
 
   > out/Debug/browser_tests --gtest_filter=ActivityLogApiTest.TriggerEvent
