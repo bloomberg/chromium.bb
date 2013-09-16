@@ -45,7 +45,7 @@ const char* PanelFrameView::GetClassName() const {
 void PanelFrameView::InitFramePainter() {
   frame_painter_.reset(new FramePainter);
 
-  caption_button_container_ = new FrameCaptionButtonContainerView(this, frame_,
+  caption_button_container_ = new FrameCaptionButtonContainerView(frame_,
       FrameCaptionButtonContainerView::MINIMIZE_ALLOWED);
   AddChildView(caption_button_container_);
 

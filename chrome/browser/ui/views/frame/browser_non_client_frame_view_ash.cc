@@ -90,8 +90,8 @@ BrowserNonClientFrameViewAsh::~BrowserNonClientFrameViewAsh() {
 }
 
 void BrowserNonClientFrameViewAsh::Init() {
-  caption_button_container_ = new ash::FrameCaptionButtonContainerView(this,
-      frame(), ash::FrameCaptionButtonContainerView::MINIMIZE_ALLOWED);
+  caption_button_container_ = new ash::FrameCaptionButtonContainerView(frame(),
+      ash::FrameCaptionButtonContainerView::MINIMIZE_ALLOWED);
   AddChildView(caption_button_container_);
 
   // Initializing the TabIconView is expensive, so only do it if we need to.

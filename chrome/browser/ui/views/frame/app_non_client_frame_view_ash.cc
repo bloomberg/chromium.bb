@@ -119,7 +119,7 @@ AppNonClientFrameViewAsh::AppNonClientFrameViewAsh(
       control_view_(NULL),
       control_widget_(NULL),
       frame_observer_(new FrameObserver(this)) {
-  control_view_ = new ash::FrameCaptionButtonContainerView(this, frame,
+  control_view_ = new ash::FrameCaptionButtonContainerView(frame,
       ash::FrameCaptionButtonContainerView::MINIMIZE_ALLOWED);
   control_view_->set_header_style(
       ash::FrameCaptionButtonContainerView::HEADER_STYLE_MAXIMIZED_HOSTED_APP);

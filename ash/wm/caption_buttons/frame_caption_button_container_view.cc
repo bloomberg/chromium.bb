@@ -21,7 +21,6 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
-#include "ui/views/window/non_client_view.h"
 
 namespace ash {
 
@@ -65,7 +64,6 @@ const char FrameCaptionButtonContainerView::kViewClassName[] =
     "FrameCaptionButtonContainerView";
 
 FrameCaptionButtonContainerView::FrameCaptionButtonContainerView(
-    views::NonClientFrameView* frame_view,
     views::Widget* frame,
     MinimizeAllowed minimize_allowed)
     : frame_(frame),
@@ -85,7 +83,7 @@ FrameCaptionButtonContainerView::FrameCaptionButtonContainerView(
         AlternateFrameCaptionButton::ACTION_CLOSE);
   } else {
     minimize_button_ = new views::ImageButton(this);
-    size_button_ = new FrameMaximizeButton(this, frame_view);
+    size_button_ = new FrameMaximizeButton(this, frame);
     close_button_ = new views::ImageButton(this);
   }
 

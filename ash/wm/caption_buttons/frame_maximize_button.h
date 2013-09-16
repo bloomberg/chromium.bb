@@ -15,7 +15,7 @@
 #include "ui/views/widget/widget_observer.h"
 
 namespace views {
-class NonClientFrameView;
+class Widget;
 }
 
 namespace ash {
@@ -33,7 +33,7 @@ class ASH_EXPORT FrameMaximizeButton : public views::ImageButton,
                                        public aura::WindowObserver {
  public:
   FrameMaximizeButton(views::ButtonListener* listener,
-                      views::NonClientFrameView* frame);
+                      views::Widget* frame);
   virtual ~FrameMaximizeButton();
 
   // Updates |snap_type_| based on a a given snap type. This is used by
@@ -138,8 +138,12 @@ class ASH_EXPORT FrameMaximizeButton : public views::ImageButton,
   // Determine the maximize type of this window.
   MaximizeBubbleFrameState GetMaximizeBubbleFrameState() const;
 
-  // Frame that the maximize button acts on.
-  views::NonClientFrameView* frame_;
+  // Widget that the maximize button acts on. This is different than the widget
+  // which contains the button in the case of AppNonClientFrameViewAsh.
+  views::Widget* frame_;
+
+  // True if we have put observers on |frame_|.
+  bool observing_frame_;
 
   // Renders the snap position.
   scoped_ptr<internal::PhantomWindowController> phantom_window_;
@@ -150,10 +154,6 @@ class ASH_EXPORT FrameMaximizeButton : public views::ImageButton,
 
   // Did the user drag far enough to trigger snapping?
   bool exceeded_drag_threshold_;
-
-  // Remember the widget on which we have put some an observers,
-  // so that we can remove it upon destruction.
-  views::Widget* widget_;
 
   // Location of the press.
   gfx::Point press_location_;

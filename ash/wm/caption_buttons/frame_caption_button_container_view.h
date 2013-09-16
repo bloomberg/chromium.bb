@@ -12,7 +12,6 @@
 
 namespace views {
 class CustomButton;
-class NonClientFrameView;
 class Widget;
 }
 
@@ -45,14 +44,10 @@ class ASH_EXPORT FrameCaptionButtonContainerView
     HEADER_STYLE_MAXIMIZED_HOSTED_APP
   };
 
-  // |frame_view| and |frame| are the NonClientFrameView and the views::Widget
-  // that the caption buttons act on.
+  // |frame| is the views::Widget that the caption buttons act on.
   // |minimize_allowed| indicates whether the frame can be minimized (either via
   // the maximize/restore button or via a dedicated button).
-  // TODO(pkotwicz): Remove the |frame_view| parameter once FrameMaximizeButton
-  // is refactored to take in a views::Widget instead.
-  FrameCaptionButtonContainerView(views::NonClientFrameView* frame_view,
-                                  views::Widget* frame,
+  FrameCaptionButtonContainerView(views::Widget* frame,
                                   MinimizeAllowed minimize_allowed);
   virtual ~FrameCaptionButtonContainerView();
 

@@ -53,7 +53,7 @@ void CustomFrameViewAsh::Init(views::Widget* frame) {
       frame_->widget_delegate()->CanMaximize() ?
           FrameCaptionButtonContainerView::MINIMIZE_ALLOWED :
           FrameCaptionButtonContainerView::MINIMIZE_DISALLOWED;
-  caption_button_container_ = new FrameCaptionButtonContainerView(this, frame,
+  caption_button_container_ = new FrameCaptionButtonContainerView(frame,
       minimize_allowed);
   AddChildView(caption_button_container_);
 

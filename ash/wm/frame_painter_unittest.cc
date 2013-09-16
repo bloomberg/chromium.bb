@@ -119,7 +119,6 @@ FramePainter* CreateTestPainter(Widget* widget) {
   NonClientFrameView* frame_view = widget->non_client_view()->frame_view();
   ash::FrameCaptionButtonContainerView* container =
       new ash::FrameCaptionButtonContainerView(
-          frame_view,
           widget,
           ash::FrameCaptionButtonContainerView::MINIMIZE_ALLOWED);
   // Add the container to the widget's non-client frame view so that it will be
@@ -576,7 +575,7 @@ TEST_F(FramePainterTest, MinimalHeaderStyle) {
 TEST_F(FramePainterTest, TitleIconAlignment) {
   scoped_ptr<Widget> w(CreateTestWidget());
   FramePainter p;
-  ash::FrameCaptionButtonContainerView container(NULL, w.get(),
+  ash::FrameCaptionButtonContainerView container(w.get(),
       ash::FrameCaptionButtonContainerView::MINIMIZE_ALLOWED);
   views::View window_icon;
   window_icon.SetBounds(0, 0, 16, 16);

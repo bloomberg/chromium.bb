@@ -138,7 +138,7 @@ TEST_F(FrameCaptionButtonContainerViewTestOldStyle, ButtonVisibility) {
   // are allowed because the size button can do both.
   scoped_ptr<views::Widget> widget_can_maximize(
       CreateTestWidget(MAXIMIZE_ALLOWED));
-  FrameCaptionButtonContainerView container1(NULL, widget_can_maximize.get(),
+  FrameCaptionButtonContainerView container1(widget_can_maximize.get(),
       FrameCaptionButtonContainerView::MINIMIZE_ALLOWED);
   container1.Layout();
   FrameCaptionButtonContainerView::TestApi t1(&container1);
@@ -152,7 +152,7 @@ TEST_F(FrameCaptionButtonContainerViewTestOldStyle, ButtonVisibility) {
   // maximizing is disallowed.
   scoped_ptr<views::Widget> widget_cannot_maximize(
       CreateTestWidget(MAXIMIZE_DISALLOWED));
-  FrameCaptionButtonContainerView container2(NULL, widget_cannot_maximize.get(),
+  FrameCaptionButtonContainerView container2(widget_cannot_maximize.get(),
       FrameCaptionButtonContainerView::MINIMIZE_ALLOWED);
   container2.Layout();
   FrameCaptionButtonContainerView::TestApi t2(&container2);
@@ -164,7 +164,7 @@ TEST_F(FrameCaptionButtonContainerViewTestOldStyle, ButtonVisibility) {
 
   // Neither the minimize button nor the size button should be visible when
   // neither minimizing nor maximizing are allowed.
-  FrameCaptionButtonContainerView container3(NULL, widget_cannot_maximize.get(),
+  FrameCaptionButtonContainerView container3(widget_cannot_maximize.get(),
       FrameCaptionButtonContainerView::MINIMIZE_DISALLOWED);
   container3.Layout();
   FrameCaptionButtonContainerView::TestApi t3(&container3);
@@ -177,7 +177,7 @@ TEST_F(FrameCaptionButtonContainerViewTestOldStyle, ButtonVisibility) {
   // Neither the minimize button nor the size button should be visible when the
   // "force-maximize-mode" experiment is turned on.
   CommandLine::ForCurrentProcess()->AppendSwitch(switches::kForcedMaximizeMode);
-  FrameCaptionButtonContainerView container4(NULL, widget_can_maximize.get(),
+  FrameCaptionButtonContainerView container4(widget_can_maximize.get(),
       FrameCaptionButtonContainerView::MINIMIZE_ALLOWED);
   container4.Layout();
   FrameCaptionButtonContainerView::TestApi t4(&container4);
@@ -196,7 +196,7 @@ TEST_F(FrameCaptionButtonContainerViewTestOldStyle, LayoutBorder) {
   const int kRightInset = 4;
 
   scoped_ptr<views::Widget> widget(CreateTestWidget(MAXIMIZE_ALLOWED));
-  FrameCaptionButtonContainerView container(NULL, widget.get(),
+  FrameCaptionButtonContainerView container(widget.get(),
       FrameCaptionButtonContainerView::MINIMIZE_ALLOWED);
   container.set_border(views::Border::CreateEmptyBorder(
       kTopInset, kLeftInset, kBottomInset, kRightInset));
@@ -214,7 +214,7 @@ TEST_F(FrameCaptionButtonContainerViewTestOldStyle, LayoutBorder) {
 // Test how the header style affects which images are used for the buttons.
 TEST_F(FrameCaptionButtonContainerViewTestOldStyle, HeaderStyle) {
   scoped_ptr<views::Widget> widget(CreateTestWidget(MAXIMIZE_ALLOWED));
-  FrameCaptionButtonContainerView container(NULL, widget.get(),
+  FrameCaptionButtonContainerView container(widget.get(),
       FrameCaptionButtonContainerView::MINIMIZE_ALLOWED);
   FrameCaptionButtonContainerView::TestApi t(&container);
 
@@ -311,7 +311,7 @@ TEST_F(FrameCaptionButtonContainerViewTestAlternateStyle, ButtonVisibility) {
   // button style.
   scoped_ptr<views::Widget> widget_can_maximize(
       CreateTestWidget(MAXIMIZE_ALLOWED));
-  FrameCaptionButtonContainerView container(NULL, widget_can_maximize.get(),
+  FrameCaptionButtonContainerView container(widget_can_maximize.get(),
       FrameCaptionButtonContainerView::MINIMIZE_ALLOWED);
   container.Layout();
   FrameCaptionButtonContainerView::TestApi t(&container);
