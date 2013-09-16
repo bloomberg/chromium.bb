@@ -155,26 +155,6 @@ public class UrlUtilities {
     }
 
     /**
-     * This function works by calling net::registry_controlled_domains::GetDomainAndRegistry with
-     * the filter EXCLUDE_PRIVATE_REGISTRIES.
-     *
-     * @param uri A URI
-     *
-     * @return The registered, organization-identifying host and all its registry information, but
-     * no subdomains, from the given URI. Returns an empty string if the URI is invalid, has no host
-     * (e.g. a file: URI), has multiple trailing dots, is an IP address, has only one subcomponent
-     * (i.e. no dots other than leading/trailing ones), or is itself a recognized registry
-     * identifier.
-     *
-     * TODO(rmcilroy): remove this method once all callers have been updated to use two parameter
-     * version.
-     */
-    @Deprecated
-    public static String getDomainAndRegistry(String uri) {
-        return nativeGetDomainAndRegistry(uri, false);
-    }
-
-    /**
      * This function works by calling net::registry_controlled_domains::GetDomainAndRegistry
      *
      * @param uri A URI
