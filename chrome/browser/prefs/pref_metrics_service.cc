@@ -104,6 +104,7 @@ PrefMetricsService::PrefMetricsService(Profile* profile,
     : profile_(profile),
       prefs_(profile->GetPrefs()),
       local_state_(local_state),
+      profile_name_(profile_->GetPath().AsUTF8Unsafe()),
       pref_hash_seed_(kSHA256DigestSize, 0),
       device_id_(device_id),
       tracked_pref_paths_(tracked_pref_paths),
@@ -284,7 +285,8 @@ void PrefMetricsService::CheckTrackedPreferences() {
   // Get the hashed prefs dictionary if it exists. If it doesn't, it will be
   // created if we set preference values below.
   const base::DictionaryValue* hashed_prefs = NULL;
-  pref_hash_dicts->GetDictionary(profile_name_, &hashed_prefs);
+  pref_hash_dicts->GetDictionaryWithoutPathExpansion(profile_name_,
+                                                     &hashed_prefs);
   for (int i = 0; i < tracked_pref_path_count_; ++i) {
     // Skip prefs that haven't been registered.
     if (!prefs_->FindPreference(tracked_pref_paths_[i]))
@@ -351,21 +353,28 @@ void PrefMetricsService::UpdateTrackedPreference(const char* path) {
     RemoveTrackedPreference(path);
   } else {
     DictionaryPrefUpdate update(local_state_, prefs::kProfilePreferenceHashes);
-    update->SetString(GetHashedPrefPath(path),
-                      GetHashedPrefValue(path, value));
+    DictionaryValue* child_dictionary = NULL;
+
+    // Get the dictionary corresponding to the profile name,
+    // which may have a '.'
+    if (!update->GetDictionaryWithoutPathExpansion(profile_name_,
+                                                   &child_dictionary)) {
+      child_dictionary = new DictionaryValue;
+      update->SetWithoutPathExpansion(profile_name_, child_dictionary);
+    }
+    child_dictionary->SetString(path, GetHashedPrefValue(path, value));
   }
 }
 
 bool PrefMetricsService::RemoveTrackedPreference(const char* path) {
   DictionaryPrefUpdate update(local_state_, prefs::kProfilePreferenceHashes);
-  return update->Remove(GetHashedPrefPath(path), NULL);
-}
+  DictionaryValue* child_dictionary = NULL;
 
-std::string PrefMetricsService::GetHashedPrefPath(const char* path) {
-  std::string hash_pref_path(profile_name_);
-  hash_pref_path.append(".");
-  hash_pref_path.append(path);
-  return hash_pref_path;
+  if (!update->GetDictionaryWithoutPathExpansion(profile_name_,
+                                                 &child_dictionary)) {
+    return false;
+  }
+  return child_dictionary->Remove(path, NULL);
 }
 
 std::string PrefMetricsService::GetHashedPrefValue(

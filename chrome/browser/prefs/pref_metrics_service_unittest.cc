@@ -9,8 +9,10 @@
 #include "base/values.h"
 #include "chrome/browser/prefs/pref_metrics_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -41,7 +43,15 @@ class PrefMetricsServiceTest : public testing::Test {
 
     base::StatisticsRecorder::Initialize();
 
-    prefs_ = profile_.GetTestingPrefService();
+    // Reset and set up the profile manager.
+    profile_manager_.reset(new TestingProfileManager(
+        TestingBrowserProcess::GetGlobal()));
+    ASSERT_TRUE(profile_manager_->SetUp());
+
+    // Check that PrefMetricsService behaves with a '.' in the profile name.
+    profile_ = profile_manager_->CreateTestingProfile("test@example.com");
+
+    prefs_ = profile_->GetTestingPrefService();
 
     // Register our test-only tracked prefs as string values.
     for (int i = 0; i < kTrackedPrefCount; ++i) {
@@ -60,7 +70,7 @@ class PrefMetricsServiceTest : public testing::Test {
 
   scoped_ptr<PrefMetricsService> CreatePrefMetricsService() {
     return scoped_ptr<PrefMetricsService>(
-        new PrefMetricsService(&profile_,
+        new PrefMetricsService(profile_,
                                &local_state_,
                                "test_device_id",
                                kTrackedPrefs,
@@ -115,7 +125,8 @@ class PrefMetricsServiceTest : public testing::Test {
     pref2_unchanged_total = unchanged2;
   }
 
-  TestingProfile profile_;
+  TestingProfile* profile_;
+  scoped_ptr<TestingProfileManager> profile_manager_;
   TestingPrefServiceSyncable* prefs_;
   TestingPrefServiceSimple local_state_;
 

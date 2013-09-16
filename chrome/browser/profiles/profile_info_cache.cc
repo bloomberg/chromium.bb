@@ -216,7 +216,7 @@ void ProfileInfoCache::AddProfileToCache(const base::FilePath& profile_path,
   // Default value for whether background apps are running is false.
   info->SetBoolean(kBackgroundAppsKey, false);
   info->SetString(kManagedUserId, managed_user_id);
-  cache->Set(key, info.release());
+  cache->SetWithoutPathExpansion(key, info.release());
 
   sorted_keys_.insert(FindPositionForProfile(key, name), key);
 
@@ -807,7 +807,7 @@ const DictionaryValue* ProfileInfoCache::GetInfoForProfileAtIndex(
   const DictionaryValue* cache =
       prefs_->GetDictionary(prefs::kProfileInfoCache);
   const DictionaryValue* info = NULL;
-  cache->GetDictionary(sorted_keys_[index], &info);
+  cache->GetDictionaryWithoutPathExpansion(sorted_keys_[index], &info);
   return info;
 }
 
@@ -815,7 +815,7 @@ void ProfileInfoCache::SetInfoForProfileAtIndex(size_t index,
                                                 DictionaryValue* info) {
   DictionaryPrefUpdate update(prefs_, prefs::kProfileInfoCache);
   DictionaryValue* cache = update.Get();
-  cache->Set(sorted_keys_[index], info);
+  cache->SetWithoutPathExpansion(sorted_keys_[index], info);
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,

@@ -108,9 +108,6 @@ class PrefMetricsService : public BrowserContextKeyedService {
   // value was present.
   bool RemoveTrackedPreference(const char* path);
 
-  // Gets the path to the preference value hash in local state.
-  std::string GetHashedPrefPath(const char* path);
-
   // Computes an MD5 hash for the given preference value.
   std::string GetHashedPrefValue(const char* path, const base::Value* value);
 
