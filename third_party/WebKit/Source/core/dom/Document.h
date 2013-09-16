@@ -49,7 +49,6 @@
 #include "weborigin/ReferrerPolicy.h"
 #include "core/platform/Timer.h"
 #include "core/rendering/HitTestRequest.h"
-#include "wtf/Deque.h"
 #include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"

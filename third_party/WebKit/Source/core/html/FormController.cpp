@@ -25,6 +25,7 @@
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/platform/FileChooser.h"
+#include "wtf/Deque.h"
 #include "wtf/HashTableDeletedValueType.h"
 #include "wtf/text/StringBuilder.h"
 
