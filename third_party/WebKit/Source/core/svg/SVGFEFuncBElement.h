@@ -21,6 +21,7 @@
 #ifndef SVGFEFuncBElement_h
 #define SVGFEFuncBElement_h
 
+#include "SVGNames.h"
 #include "core/svg/SVGComponentTransferFunctionElement.h"
 
 namespace WebCore {
@@ -32,6 +33,12 @@ public:
 private:
     SVGFEFuncBElement(const QualifiedName&, Document&);
 };
+
+inline SVGFEFuncBElement* toSVGFEFuncBElement(Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(SVGNames::feFuncBTag));
+    return static_cast<SVGFEFuncBElement*>(node);
+}
 
 } // namespace WebCore
 
