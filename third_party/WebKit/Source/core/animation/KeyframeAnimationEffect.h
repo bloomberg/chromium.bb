@@ -62,6 +62,7 @@ public:
     void setPropertyValue(CSSPropertyID, const AnimatableValue*);
     const AnimatableValue* propertyValue(CSSPropertyID) const;
     PropertySet properties() const;
+    PassRefPtr<Keyframe> cloneWithOffset(double offset) const;
 private:
     Keyframe();
     double m_offset;

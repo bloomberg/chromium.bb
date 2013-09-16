@@ -845,25 +845,22 @@ void StyleResolver::resolveKeyframes(const Element* element, const RenderStyle* 
     for (size_t i = 0; i < styleKeyframes.size(); ++i) {
         const StyleKeyframe* styleKeyframe = styleKeyframes[i].get();
         RefPtr<RenderStyle> keyframeStyle = styleForKeyframe(0, style, styleKeyframe);
+        RefPtr<Keyframe> keyframe = Keyframe::create();
         const Vector<double>& offsets = styleKeyframe->keys();
-        RefPtr<Keyframe> firstOffsetKeyframe;
-        for (size_t j = 0; j < offsets.size(); ++j) {
-            RefPtr<Keyframe> keyframe = Keyframe::create();
-            keyframe->setOffset(offsets[j]);
-            const StylePropertySet* properties = styleKeyframe->properties();
-            for (unsigned k = 0; k < properties->propertyCount(); k++) {
-                CSSPropertyID property = properties->propertyAt(k).id();
-                // FIXME: Build the correct chained timing function when this property is specified.
-                if (property == CSSPropertyWebkitAnimationTimingFunction || property == CSSPropertyAnimationTimingFunction)
-                    continue;
-                if (!CSSAnimations::isAnimatableProperty(property))
-                    continue;
-                keyframe->setPropertyValue(property, firstOffsetKeyframe ? firstOffsetKeyframe->propertyValue(property) : CSSAnimatableValueFactory::create(property, keyframeStyle.get()).get());
-            }
-            if (!firstOffsetKeyframe)
-                firstOffsetKeyframe = keyframe;
-            keyframes.append(keyframe);
+        ASSERT(!offsets.isEmpty());
+        keyframe->setOffset(offsets[0]);
+        const StylePropertySet* properties = styleKeyframe->properties();
+        for (unsigned j = 0; j < properties->propertyCount(); j++) {
+            CSSPropertyID property = properties->propertyAt(j).id();
+            // FIXME: Build the correct chained timing function when this property is specified.
+            if (property == CSSPropertyWebkitAnimationTimingFunction || property == CSSPropertyAnimationTimingFunction)
+                continue;
+            if (CSSAnimations::isAnimatableProperty(property))
+                keyframe->setPropertyValue(property, CSSAnimatableValueFactory::create(property, keyframeStyle.get()).get());
         }
+        keyframes.append(keyframe);
+        for (size_t j = 1; j < offsets.size(); ++j)
+            keyframes.append(keyframe->cloneWithOffset(offsets[j]));
     }
 
     if (keyframes.isEmpty())
@@ -880,14 +877,7 @@ void StyleResolver::resolveKeyframes(const Element* element, const RenderStyle* 
     }
     keyframes.shrink(targetIndex + 1);
 
-    HashSet<CSSPropertyID> allProperties;
-    for (size_t i = 0; i < keyframes.size(); i++) {
-        const HashSet<CSSPropertyID> keyframeProperties = keyframes[i]->properties();
-        for (HashSet<CSSPropertyID>::const_iterator iter = keyframeProperties.begin(); iter != keyframeProperties.end(); ++iter)
-            allProperties.add(*iter);
-    }
-
-    // Snapshot current property values for 0% and 100% if missing.
+    // Add 0% and 100% keyframes if absent.
     RefPtr<Keyframe> startKeyframe = keyframes[0];
     if (startKeyframe->offset()) {
         startKeyframe = Keyframe::create();
@@ -899,6 +889,17 @@ void StyleResolver::resolveKeyframes(const Element* element, const RenderStyle* 
         endKeyframe = Keyframe::create();
         endKeyframe->setOffset(1);
         keyframes.append(endKeyframe);
+    }
+    ASSERT(keyframes.size() >= 2);
+    ASSERT(!keyframes.first()->offset());
+    ASSERT(keyframes.last()->offset() == 1);
+
+    // Snapshot current property values for 0% and 100% if missing.
+    HashSet<CSSPropertyID> allProperties;
+    for (size_t i = 0; i < keyframes.size(); i++) {
+        const HashSet<CSSPropertyID>& keyframeProperties = keyframes[i]->properties();
+        for (HashSet<CSSPropertyID>::const_iterator iter = keyframeProperties.begin(); iter != keyframeProperties.end(); ++iter)
+            allProperties.add(*iter);
     }
     const HashSet<CSSPropertyID>& startKeyframeProperties = startKeyframe->properties();
     const HashSet<CSSPropertyID>& endKeyframeProperties = endKeyframe->properties();
@@ -918,6 +919,8 @@ void StyleResolver::resolveKeyframes(const Element* element, const RenderStyle* 
         if (endNeedsValue)
             endKeyframe->setPropertyValue(property, snapshotValue.get());
     }
+    ASSERT(startKeyframe->properties().size() == allProperties.size());
+    ASSERT(endKeyframe->properties().size() == allProperties.size());
 }
 
 PassRefPtr<RenderStyle> StyleResolver::pseudoStyleForElement(Element* e, const PseudoStyleRequest& pseudoStyleRequest, RenderStyle* parentStyle)

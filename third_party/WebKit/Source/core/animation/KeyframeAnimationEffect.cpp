@@ -140,6 +140,16 @@ PropertySet Keyframe::properties() const
     return properties;
 }
 
+PassRefPtr<Keyframe> Keyframe::cloneWithOffset(double offset) const
+{
+    RefPtr<Keyframe> clone = Keyframe::create();
+    clone->setOffset(offset);
+    clone->setComposite(m_composite);
+    for (PropertyValueMap::const_iterator iter = m_propertyValues.begin(); iter != m_propertyValues.end(); ++iter)
+        clone->setPropertyValue(iter->key, iter->value.get());
+    return clone.release();
+}
+
 
 KeyframeAnimationEffect::KeyframeAnimationEffect(const KeyframeVector& keyframes)
     : m_keyframes(keyframes)
