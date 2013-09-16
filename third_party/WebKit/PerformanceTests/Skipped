@@ -81,3 +81,6 @@ Bindings/gc-forest.html
 Bindings/gc-mini-tree.html
 Bindings/gc-tree.html
 Bindings/named-property-enumerator.html
+
+# Times out on the bots
+Interactive/spellcheck-paste-huge-text.html
