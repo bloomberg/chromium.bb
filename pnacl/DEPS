@@ -1,7 +1,7 @@
 vars = {
   "pnacl_binutils_rev": "1712e607754a0eaa507ec6f735997542c99dd0be",
   "pnacl_clang_rev": "3b1ef29c338890ce55a1990389d8e63f6be7da2c",
-  "pnacl_llvm_rev": "1d241cef755d5a129d3f17117c559a70ecaa0e0c",
+  "pnacl_llvm_rev": "de60bbfea3de2565a2f696810befece301507494",
   "pnacl_gcc_rev": "3cf5e99663b9694923c4cc437a00d197e9854565",
   "pnacl_libcxx_rev": "7456fbacf145b57404b741dc72bac397b12f8330",
   "pnacl_libcxxabi_rev": "19222a8f373a6db1b13c4308988fd9cf1c02cb1b",
