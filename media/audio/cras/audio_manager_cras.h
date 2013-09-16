@@ -25,8 +25,10 @@ class MEDIA_EXPORT AudioManagerCras : public AudioManagerBase {
   virtual bool HasAudioOutputDevices() OVERRIDE;
   virtual bool HasAudioInputDevices() OVERRIDE;
   virtual void ShowAudioInputSettings() OVERRIDE;
-  virtual void GetAudioInputDeviceNames(media::AudioDeviceNames* device_names)
-      OVERRIDE;
+  virtual void GetAudioInputDeviceNames(
+      AudioDeviceNames* device_names) OVERRIDE;
+  virtual void GetAudioOutputDeviceNames(
+      AudioDeviceNames* device_names) OVERRIDE;
   virtual AudioParameters GetInputStreamParameters(
       const std::string& device_id) OVERRIDE;
 
@@ -50,9 +52,6 @@ class MEDIA_EXPORT AudioManagerCras : public AudioManagerBase {
       const AudioParameters& input_params) OVERRIDE;
 
  private:
-  // Gets a list of available cras input devices.
-  void GetCrasAudioInputDevices(media::AudioDeviceNames* device_names);
-
   // Called by MakeLinearOutputStream and MakeLowLatencyOutputStream.
   AudioOutputStream* MakeOutputStream(const AudioParameters& params);
 

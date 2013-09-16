@@ -33,11 +33,11 @@ void MockAudioManager::ShowAudioInputSettings() {
 }
 
 void MockAudioManager::GetAudioInputDeviceNames(
-      media::AudioDeviceNames* device_names) {
+    AudioDeviceNames* device_names) {
 }
 
 void MockAudioManager::GetAudioOutputDeviceNames(
-      media::AudioDeviceNames* device_names) {
+    AudioDeviceNames* device_names) {
 }
 
 media::AudioOutputStream* MockAudioManager::MakeAudioOutputStream(

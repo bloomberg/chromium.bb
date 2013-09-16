@@ -310,8 +310,6 @@ void AudioManagerBase::GetAudioInputDeviceNames(
 
 void AudioManagerBase::GetAudioOutputDeviceNames(
     AudioDeviceNames* device_names) {
-  // TODO(joi): Remove this and keep pure virtual once implemented everywhere.
-  NOTREACHED() << "Don't use this yet, it's not ready on all platforms!";
 }
 
 void AudioManagerBase::ReleaseOutputStream(AudioOutputStream* stream) {

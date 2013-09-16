@@ -16,6 +16,13 @@
 
 namespace media {
 
+static void AddDefaultDevice(AudioDeviceNames* device_names) {
+  DCHECK(device_names->empty());
+  device_names->push_front(
+      AudioDeviceName(AudioManagerBase::kDefaultDeviceName,
+                      AudioManagerBase::kDefaultDeviceId));
+}
+
 // Maximum number of output streams that can be open simultaneously.
 static const int kMaxOutputStreams = 10;
 
@@ -51,10 +58,13 @@ bool AudioManagerAndroid::HasAudioInputDevices() {
 }
 
 void AudioManagerAndroid::GetAudioInputDeviceNames(
-    media::AudioDeviceNames* device_names) {
-  DCHECK(device_names->empty());
-  device_names->push_front(
-      media::AudioDeviceName(kDefaultDeviceName, kDefaultDeviceId));
+    AudioDeviceNames* device_names) {
+  AddDefaultDevice(device_names);
+}
+
+void AudioManagerAndroid::GetAudioOutputDeviceNames(
+    AudioDeviceNames* device_names) {
+  AddDefaultDevice(device_names);
 }
 
 AudioParameters AudioManagerAndroid::GetInputStreamParameters(
@@ -90,7 +100,7 @@ AudioOutputStream* AudioManagerAndroid::MakeAudioOutputStream(
 AudioInputStream* AudioManagerAndroid::MakeAudioInputStream(
     const AudioParameters& params, const std::string& device_id) {
   AudioInputStream* stream =
-    AudioManagerBase::MakeAudioInputStream(params, device_id);
+      AudioManagerBase::MakeAudioInputStream(params, device_id);
   return stream;
 }
 

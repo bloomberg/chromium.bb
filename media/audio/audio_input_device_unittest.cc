@@ -9,11 +9,19 @@
 #include "media/audio/audio_manager_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_LINUX)
+#include "media/audio/linux/audio_manager_linux.h"
+#endif  // defined(OS_LINUX)
+
 #if defined(OS_WIN)
 #include "base/win/scoped_com_initializer.h"
 #include "media/audio/win/audio_manager_win.h"
 #include "media/audio/win/wavein_input_win.h"
 #endif
+
+#if defined(USE_PULSEAUDIO)
+#include "media/audio/pulse/audio_manager_pulse.h"
+#endif  // defined(USE_PULSEAUDIO)
 
 namespace media {
 
@@ -64,6 +72,7 @@ class AudioInputDeviceTest
   // Helper method which verifies that the device list starts with a valid
   // default record followed by non-default device names.
   static void CheckDeviceNames(const AudioDeviceNames& device_names) {
+    VLOG(2) << "Got " << device_names.size() << " audio devices.";
     if (!device_names.empty()) {
       AudioDeviceNames::const_iterator it = device_names.begin();
 
@@ -78,6 +87,8 @@ class AudioInputDeviceTest
       while (it != device_names.end()) {
         EXPECT_FALSE(it->device_name.empty());
         EXPECT_FALSE(it->unique_id.empty());
+        VLOG(2) << "Device ID(" << it->unique_id
+                << "), label: " << it->device_name;
         EXPECT_NE(std::string(AudioManagerBase::kDefaultDeviceName),
                   it->device_name);
         EXPECT_NE(std::string(AudioManagerBase::kDefaultDeviceId),
@@ -92,8 +103,12 @@ class AudioInputDeviceTest
     }
   }
 
-  bool CanRunAudioTest() {
+  bool CanRunInputTest() {
     return audio_manager_->HasAudioInputDevices();
+  }
+
+  bool CanRunOutputTest() {
+    return audio_manager_->HasAudioOutputDevices();
   }
 
   scoped_ptr<AudioManager> audio_manager_;
@@ -105,12 +120,22 @@ class AudioInputDeviceTest
 };
 
 // Test that devices can be enumerated.
-TEST_F(AudioInputDeviceTest, EnumerateDevices) {
-  if (!CanRunAudioTest())
+TEST_F(AudioInputDeviceTest, EnumerateInputDevices) {
+  if (!CanRunInputTest())
     return;
 
   AudioDeviceNames device_names;
   audio_manager_->GetAudioInputDeviceNames(&device_names);
+  CheckDeviceNames(device_names);
+}
+
+// Test that devices can be enumerated.
+TEST_F(AudioInputDeviceTest, EnumerateOutputDevices) {
+  if (!CanRunOutputTest())
+    return;
+
+  AudioDeviceNames device_names;
+  audio_manager_->GetAudioOutputDeviceNames(&device_names);
   CheckDeviceNames(device_names);
 }
 
@@ -121,8 +146,8 @@ TEST_F(AudioInputDeviceTest, EnumerateDevices) {
 
 // Override default enumeration API and force usage of Windows MMDevice.
 // This test will only run on Windows Vista and higher.
-TEST_F(AudioInputDeviceTest, EnumerateDevicesWinMMDevice) {
-  if (!CanRunAudioTest())
+TEST_F(AudioInputDeviceTest, EnumerateInputDevicesWinMMDevice) {
+  if (!CanRunInputTest())
     return;
 
   AudioDeviceNames device_names;
@@ -135,10 +160,24 @@ TEST_F(AudioInputDeviceTest, EnumerateDevicesWinMMDevice) {
   CheckDeviceNames(device_names);
 }
 
+TEST_F(AudioInputDeviceTest, EnumerateOutputDevicesWinMMDevice) {
+  if (!CanRunOutputTest())
+    return;
+
+  AudioDeviceNames device_names;
+  if (!SetMMDeviceEnumeration()) {
+    // Usage of MMDevice will fail on XP and lower.
+    LOG(WARNING) << "MM device enumeration is not supported.";
+    return;
+  }
+  audio_manager_->GetAudioOutputDeviceNames(&device_names);
+  CheckDeviceNames(device_names);
+}
+
 // Override default enumeration API and force usage of Windows Wave.
 // This test will run on Windows XP, Windows Vista and Windows 7.
-TEST_F(AudioInputDeviceTest, EnumerateDevicesWinWave) {
-  if (!CanRunAudioTest())
+TEST_F(AudioInputDeviceTest, EnumerateInputDevicesWinWave) {
+  if (!CanRunInputTest())
     return;
 
   AudioDeviceNames device_names;
@@ -147,8 +186,18 @@ TEST_F(AudioInputDeviceTest, EnumerateDevicesWinWave) {
   CheckDeviceNames(device_names);
 }
 
+TEST_F(AudioInputDeviceTest, EnumerateOutputDevicesWinWave) {
+  if (!CanRunOutputTest())
+    return;
+
+  AudioDeviceNames device_names;
+  SetWaveEnumeration();
+  audio_manager_->GetAudioOutputDeviceNames(&device_names);
+  CheckDeviceNames(device_names);
+}
+
 TEST_F(AudioInputDeviceTest, WinXPDeviceIdUnchanged) {
-  if (!CanRunAudioTest())
+  if (!CanRunInputTest())
     return;
 
   AudioDeviceNames xp_device_names;
@@ -165,7 +214,7 @@ TEST_F(AudioInputDeviceTest, WinXPDeviceIdUnchanged) {
 }
 
 TEST_F(AudioInputDeviceTest, ConvertToWinXPInputDeviceId) {
-  if (!CanRunAudioTest())
+  if (!CanRunInputTest())
     return;
 
   if (!SetMMDeviceEnumeration()) {
@@ -194,6 +243,103 @@ TEST_F(AudioInputDeviceTest, ConvertToWinXPInputDeviceId) {
   }
 }
 
-#endif
+#endif  // defined(OS_WIN)
+
+#if defined(USE_PULSEAUDIO)
+// On Linux, there are two implementations available and both can
+// sometimes be tested on a single system. These tests specifically
+// test Pulseaudio.
+
+TEST_F(AudioInputDeviceTest, EnumerateInputDevicesPulseaudio) {
+  if (!CanRunInputTest())
+    return;
+
+  audio_manager_.reset(AudioManagerPulse::Create());
+  if (audio_manager_.get()) {
+    AudioDeviceNames device_names;
+    audio_manager_->GetAudioInputDeviceNames(&device_names);
+    CheckDeviceNames(device_names);
+  } else {
+    LOG(WARNING) << "No pulseaudio on this system.";
+  }
+}
+
+TEST_F(AudioInputDeviceTest, EnumerateOutputDevicesPulseaudio) {
+  if (!CanRunOutputTest())
+    return;
+
+  audio_manager_.reset(AudioManagerPulse::Create());
+  if (audio_manager_.get()) {
+    AudioDeviceNames device_names;
+    audio_manager_->GetAudioOutputDeviceNames(&device_names);
+    CheckDeviceNames(device_names);
+  } else {
+    LOG(WARNING) << "No pulseaudio on this system.";
+  }
+}
+#endif  // defined(USE_PULSEAUDIO)
+
+#if defined(USE_ALSA)
+// On Linux, there are two implementations available and both can
+// sometimes be tested on a single system. These tests specifically
+// test Alsa.
+
+TEST_F(AudioInputDeviceTest, EnumerateInputDevicesAlsa) {
+  if (!CanRunInputTest())
+    return;
+
+  VLOG(2) << "Testing AudioManagerLinux.";
+  audio_manager_.reset(new AudioManagerLinux());
+  AudioDeviceNames device_names;
+  audio_manager_->GetAudioInputDeviceNames(&device_names);
+  CheckDeviceNames(device_names);
+}
+
+TEST_F(AudioInputDeviceTest, EnumerateOutputDevicesAlsa) {
+  if (!CanRunOutputTest())
+    return;
+
+  VLOG(2) << "Testing AudioManagerLinux.";
+  audio_manager_.reset(new AudioManagerLinux());
+  AudioDeviceNames device_names;
+  audio_manager_->GetAudioOutputDeviceNames(&device_names);
+  CheckDeviceNames(device_names);
+}
+#endif  // defined(USE_ALSA)
+
+TEST_F(AudioInputDeviceTest, GetDefaultOutputStreamParameters) {
+#if defined(OS_WIN) || defined(OS_MACOSX)
+  if (!CanRunInputTest())
+    return;
+
+  AudioParameters params = audio_manager_->GetDefaultOutputStreamParameters();
+  EXPECT_TRUE(params.IsValid());
+#endif  // defined(OS_WIN) || defined(OS_MACOSX)
+}
+
+TEST_F(AudioInputDeviceTest, GetAssociatedOutputDeviceID) {
+#if defined(OS_WIN) || defined(OS_MACOSX)
+  if (!CanRunInputTest() || !CanRunOutputTest())
+    return;
+
+  AudioDeviceNames device_names;
+  audio_manager_->GetAudioInputDeviceNames(&device_names);
+  bool found_an_associated_device = false;
+  for (AudioDeviceNames::iterator it = device_names.begin();
+       it != device_names.end();
+       ++it) {
+    EXPECT_FALSE(it->unique_id.empty());
+    EXPECT_FALSE(it->device_name.empty());
+    std::string output_device_id(
+        audio_manager_->GetAssociatedOutputDeviceID(it->unique_id));
+    if (!output_device_id.empty()) {
+      VLOG(2) << it->unique_id << " matches with " << output_device_id;
+      found_an_associated_device = true;
+    }
+  }
+
+  EXPECT_TRUE(found_an_associated_device);
+#endif  // defined(OS_WIN) || defined(OS_MACOSX)
+}
 
 }  // namespace media

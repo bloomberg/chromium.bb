@@ -25,10 +25,8 @@ using base::win::ScopedCoMem;
 
 namespace media {
 
-namespace {
-
-bool GetDeviceNamesWinImpl(EDataFlow data_flow,
-                           AudioDeviceNames* device_names) {
+static bool GetDeviceNamesWinImpl(EDataFlow data_flow,
+                                  AudioDeviceNames* device_names) {
   // It is assumed that this method is called from a COM thread, i.e.,
   // CoInitializeEx() is not called here again to avoid STA/MTA conflicts.
   ScopedComPtr<IMMDeviceEnumerator> enumerator;
@@ -103,7 +101,7 @@ bool GetDeviceNamesWinImpl(EDataFlow data_flow,
 template <UINT (__stdcall *NumDevsFunc)(),
           typename CAPSSTRUCT,
           MMRESULT (__stdcall *DevCapsFunc)(UINT_PTR, CAPSSTRUCT*, UINT)>
-bool GetDeviceNamesWinXPImpl(AudioDeviceNames* device_names) {
+static bool GetDeviceNamesWinXPImpl(AudioDeviceNames* device_names) {
   // Retrieve the number of active waveform input devices.
   UINT number_of_active_devices = NumDevsFunc();
   if (number_of_active_devices == 0)
@@ -137,8 +135,6 @@ bool GetDeviceNamesWinXPImpl(AudioDeviceNames* device_names) {
 
   return true;
 }
-
-}  // namespace
 
 bool GetInputDeviceNamesWin(AudioDeviceNames* device_names) {
   return GetDeviceNamesWinImpl(eCapture, device_names);

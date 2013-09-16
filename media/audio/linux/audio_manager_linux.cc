@@ -103,13 +103,13 @@ void AudioManagerLinux::ShowAudioInputSettings() {
 }
 
 void AudioManagerLinux::GetAudioInputDeviceNames(
-    media::AudioDeviceNames* device_names) {
+    AudioDeviceNames* device_names) {
   DCHECK(device_names->empty());
   GetAlsaAudioDevices(kStreamCapture, device_names);
 }
 
 void AudioManagerLinux::GetAudioOutputDeviceNames(
-    media::AudioDeviceNames* device_names) {
+    AudioDeviceNames* device_names) {
   DCHECK(device_names->empty());
   GetAlsaAudioDevices(kStreamPlayback, device_names);
 }

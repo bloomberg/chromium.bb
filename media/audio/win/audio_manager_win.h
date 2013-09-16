@@ -25,10 +25,10 @@ class MEDIA_EXPORT AudioManagerWin : public AudioManagerBase {
   virtual bool HasAudioInputDevices() OVERRIDE;
   virtual string16 GetAudioInputDeviceModel() OVERRIDE;
   virtual void ShowAudioInputSettings() OVERRIDE;
-  virtual void GetAudioInputDeviceNames(AudioDeviceNames* device_names)
-       OVERRIDE;
-  virtual void GetAudioOutputDeviceNames(AudioDeviceNames* device_names)
-      OVERRIDE;
+  virtual void GetAudioInputDeviceNames(
+      AudioDeviceNames* device_names) OVERRIDE;
+  virtual void GetAudioOutputDeviceNames(
+      AudioDeviceNames* device_names) OVERRIDE;
   virtual AudioParameters GetInputStreamParameters(
       const std::string& device_id) OVERRIDE;
   virtual std::string GetAssociatedOutputDeviceID(
@@ -62,8 +62,6 @@ class MEDIA_EXPORT AudioManagerWin : public AudioManagerBase {
   };
 
   // Allow unit test to modify the utilized enumeration API.
-  // TODO(joi): Collapse these tests into one.
-  friend class AudioManagerTest;
   friend class AudioInputDeviceTest;
 
   EnumerationType enumeration_type_;
