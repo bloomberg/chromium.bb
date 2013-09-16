@@ -8,26 +8,10 @@
         <link rel="stylesheet" href="/w3c/resources/testharness.css">
     </head>
     <body>
-        <div id='log'></div>
-
+        <div id="log"></div>
         <script>
 
-            function seekBackAfterPlayingTest(testFunction, description, options)
-            {
-                mediasource_test(function(test, mediaElement, mediaSource)
-                {
-                    var segmentInfo = WebMSegmentInfo.testWebM;
-                    test.failOnEvent(mediaElement, 'error');
-
-                    var sourceBuffer = mediaSource.addSourceBuffer(segmentInfo.type);
-                    MediaSourceUtil.loadBinaryData(test, segmentInfo.url, function(mediaData)
-                    {
-                        testFunction(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData);
-                    });
-                }, description, options);
-            }
-
-            seekBackAfterPlayingTest(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
+            mediasource_testafterdataloaded(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
             {
 
                 mediaElement.play();

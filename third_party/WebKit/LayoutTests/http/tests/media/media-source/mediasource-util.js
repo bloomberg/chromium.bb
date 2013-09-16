@@ -147,6 +147,28 @@
         });
     };
 
+    MediaSourceUtil.extractSegmentData = function(mediaData, info)
+    {
+        var start = info.offset;
+        var end = start + info.size;
+        return mediaData.subarray(start, end);
+    }
+
+    MediaSourceUtil.getMediaDataForPlaybackTime = function(mediaData, segmentInfo, playbackTimeToAdd)
+    {
+        assert_less_than_equal(playbackTimeToAdd, segmentInfo.duration);
+        var mediaInfo = segmentInfo.media;
+        var start = mediaInfo[0].offset;
+        var numBytes = 0;
+        var segmentIndex = 0;
+        while (segmentIndex < mediaInfo.length && mediaInfo[segmentIndex].timecode <= playbackTimeToAdd)
+        {
+          numBytes += mediaInfo[segmentIndex].size;
+          ++segmentIndex;
+        }
+        return mediaData.subarray(start, numBytes + start);
+    }
+
     function getFirstSupportedType(typeList)
     {
         for (var i = 0; i < typeList.length; ++i) {
@@ -162,6 +184,9 @@
     MediaSourceUtil.AUDIO_ONLY_TYPE = getFirstSupportedType(audioOnlyTypes);
     MediaSourceUtil.VIDEO_ONLY_TYPE = getFirstSupportedType(videoOnlyTypes);
     MediaSourceUtil.AUDIO_VIDEO_TYPE = getFirstSupportedType(audioVideoTypes);
+
+    // TODO: Add wrapper object to MediaSourceUtil that binds loaded mediaData to its
+    // associated segmentInfo.
 
     function addExtraTestMethods(test)
     {
@@ -250,6 +275,21 @@
         }, description, options);
     };
 
+    window['mediasource_testafterdataloaded'] = function(testFunction, description, options)
+    {
+        mediasource_test(function(test, mediaElement, mediaSource)
+        {
+            var segmentInfo = WebMSegmentInfo.testWebM;
+            test.failOnEvent(mediaElement, 'error');
+
+            var sourceBuffer = mediaSource.addSourceBuffer(segmentInfo.type);
+            MediaSourceUtil.loadBinaryData(test, segmentInfo.url, function(mediaData)
+            {
+                testFunction(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData);
+            });
+        }, description, options);
+    }
+
     function timeRangesToString(ranges)
     {
         var s = "{";
@@ -264,4 +304,5 @@
         var actual = timeRangesToString(obj.buffered);
         assert_equals(actual, expected, description);
     };
+
 })(window);
