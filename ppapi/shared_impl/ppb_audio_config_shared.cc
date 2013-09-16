@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "build/build_config.h"
 #include "ppapi/shared_impl/ppb_audio_config_shared.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_instance_api.h"
@@ -81,21 +82,31 @@ uint32_t PPB_AudioConfig_Shared::RecommendSampleFrameCount_1_1(
   // care when modifying these values as they impact a large number of users.
   // TODO(dalecurtis): Land jitter test and add documentation for updating this.
 
+  // Should track the value reported by XP and ALSA backends.
+  const uint32_t kHighLatencySampleFrameCount = 2048;
+#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
+  // TODO(ihf): Remove this once ARM Chromebooks support low latency audio. For
+  // now we classify them as high latency. See crbug.com/289770. Note that
+  // Adobe Flash is affected but not HTML5, WebRTC and WebAudio (they are using
+  // real time threads).
+  const bool kHighLatencyDevice = true;
+#else
+  const bool kHighLatencyDevice = false;
+#endif
+
   // If client is using same sample rate as audio hardware, then recommend a
   // multiple of the audio hardware's sample frame count.
-  if (hardware_sample_rate == sample_rate) {
+  if (!kHighLatencyDevice && hardware_sample_rate == sample_rate) {
     return CalculateMultipleOfSampleFrameCount(
         hardware_sample_frame_count, sample_frame_count);
   }
-
-  // Should track the value reported by XP and ALSA backends.
-  const uint32_t kHighLatencySampleFrameCount = 2048;
 
   // If the hardware requires a high latency buffer or we're at a low sample
   // rate w/ a buffer that's larger than 10ms, choose the nearest multiple of
   // the high latency sample frame count.  An example of too low and too large
   // is 16kHz and a sample frame count greater than 160 frames.
-  if (hardware_sample_frame_count >= kHighLatencySampleFrameCount ||
+  if (kHighLatencyDevice ||
+      hardware_sample_frame_count >= kHighLatencySampleFrameCount ||
       (hardware_sample_rate < 44100 &&
        hardware_sample_frame_count > hardware_sample_rate / 100u)) {
     return CalculateMultipleOfSampleFrameCount(
