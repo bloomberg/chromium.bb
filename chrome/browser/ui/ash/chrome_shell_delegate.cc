@@ -41,6 +41,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/default_pinned_apps_field_trial.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #endif
 
 // static
@@ -111,7 +112,20 @@ ChromeShellDelegate::~ChromeShellDelegate() {
 }
 
 bool ChromeShellDelegate::IsMultiProfilesEnabled() const {
-  return CommandLine::ForCurrentProcess()->HasSwitch(switches::kMultiProfiles);
+  // TODO(skuhne): There is a function named profiles::IsMultiProfilesEnabled
+  // which does similar things - but it is not the same. We should investigate
+  // if these two could be folded together.
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kMultiProfiles))
+    return false;
+#if defined(OS_CHROMEOS)
+  // If there is a user manager, we need to see that we can at least have 2
+  // simultaneous users to allow this feature.
+  if (chromeos::UserManager::IsInitialized() &&
+      chromeos::UserManager::Get()->GetUsersAdmittedForMultiProfile().size() +
+      chromeos::UserManager::Get()->GetLoggedInUsers().size() <= 1)
+    return false;
+#endif
+  return true;
 }
 
 bool ChromeShellDelegate::IsRunningInForcedAppMode() const {

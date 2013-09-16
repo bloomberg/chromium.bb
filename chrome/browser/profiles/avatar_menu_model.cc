@@ -21,6 +21,7 @@
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/signin_promo.h"
+#include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -269,11 +270,10 @@ bool AvatarMenuModel::ShouldShowAvatarMenu() {
   }
   if (profiles::IsMultipleProfilesEnabled()) {
 #if defined(OS_CHROMEOS)
-    // On ChromeOS we can always show this menu.
-    // TODO(skuhne):  For now show this menu even if there is a single profile.
-    // This will have to change once we work out the right way to determine if
-    // the multi profile UX should be displayed.
-    return true;
+    // On ChromeOS the menu will be always visible when it is possible to have
+    // two users logged in at the same time.
+    return ChromeShellDelegate::instance() &&
+           ChromeShellDelegate::instance()->IsMultiProfilesEnabled();
 #else
     return profiles::IsNewProfileManagementEnabled() ||
            (g_browser_process->profile_manager() &&
