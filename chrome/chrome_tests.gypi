@@ -2654,10 +2654,6 @@
             'test/perf/perftests.cc',
             'test/perf/url_parse_perftest.cc',
             '../content/browser/net/sqlite_persistent_cookie_store_perftest.cc',
-
-            # TODO(boliu): Move this to a separate components_perftest target
-            # under components/.
-            '../components/visitedlink/test/visitedlink_perftest.cc',
           ],
           'conditions': [
             ['use_x11==1', {
