@@ -21,6 +21,7 @@
 #define SVGFontFaceUriElement_h
 
 #if ENABLE(SVG_FONTS)
+#include "SVGNames.h"
 #include "core/fetch/FontResource.h"
 #include "core/fetch/ResourcePtr.h"
 #include "core/svg/SVGElement.h"
@@ -50,6 +51,12 @@ private:
 
     ResourcePtr<FontResource> m_resource;
 };
+
+inline SVGFontFaceUriElement* toSVGFontFaceUriElement(Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(SVGNames::font_face_uriTag));
+    return static_cast<SVGFontFaceUriElement*>(node);
+}
 
 } // namespace WebCore
 
