@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/test/test_simple_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {
@@ -29,7 +30,8 @@ const char kData1[] = "{}";
 TEST(ResourceCacheTest, StoreAndLoad) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  ResourceCache cache(temp_dir.path());
+  ResourceCache cache(temp_dir.path(),
+                      make_scoped_refptr(new base::TestSimpleTaskRunner));
 
   // No data initially.
   std::string data;

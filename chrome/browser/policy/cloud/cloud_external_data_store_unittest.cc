@@ -6,8 +6,10 @@
 
 #include "base/compiler_specific.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/sha1.h"
+#include "base/test/test_simple_task_runner.h"
 #include "chrome/browser/policy/cloud/resource_cache.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -49,7 +51,9 @@ CouldExternalDataStoreTest::CouldExternalDataStoreTest()
 
 void CouldExternalDataStoreTest::SetUp() {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  resource_cache_.reset(new ResourceCache(temp_dir_.path()));
+  resource_cache_.reset(new ResourceCache(
+      temp_dir_.path(),
+      make_scoped_refptr(new base::TestSimpleTaskRunner)));
 }
 
 TEST_F(CouldExternalDataStoreTest, StoreAndLoad) {

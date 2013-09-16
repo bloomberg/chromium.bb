@@ -11,7 +11,11 @@
 
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/memory/ref_counted.h"
+
+namespace base {
+class SequencedTaskRunner;
+}
 
 namespace policy {
 
@@ -19,11 +23,12 @@ namespace policy {
 // a subkey, and can be queried by (key, subkey) or (key) lookups.
 // The contents of the cache have to be manually cleared using Delete() or
 // PurgeOtherSubkeys().
-// Instances of this class can be created on any thread, but from then on must
-// be always used from the same thread, and it must support file I/O.
-class ResourceCache : public base::NonThreadSafe {
+// The class can be instantiated on any thread but from then on, it must be
+// accessed via the |task_runner| only. The |task_runner| must support file I/O.
+class ResourceCache {
  public:
-  explicit ResourceCache(const base::FilePath& cache_path);
+  explicit ResourceCache(const base::FilePath& cache_path,
+                         scoped_refptr<base::SequencedTaskRunner> task_runner);
   virtual ~ResourceCache();
 
   // Stores |data| under (key, subkey). Returns true if the store suceeded, and
@@ -71,6 +76,9 @@ class ResourceCache : public base::NonThreadSafe {
                                      base::FilePath* subkey_path);
 
   base::FilePath cache_dir_;
+
+  // Task runner that |this| runs on.
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceCache);
 };

@@ -14,7 +14,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/non_thread_safe.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -32,7 +31,7 @@ class ExternalPolicyDataFetcher;
 // with exponential backoff.
 // The actual fetching is handled by an ExternalPolicyDataFetcher, allowing this
 // class to run on a background thread where network I/O is not possible.
-class ExternalPolicyDataUpdater : public base::NonThreadSafe {
+class ExternalPolicyDataUpdater {
  public:
   struct Request {
    public:

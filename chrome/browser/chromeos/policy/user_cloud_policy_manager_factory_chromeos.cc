@@ -7,6 +7,8 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/memory/ref_counted.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/path_service.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
@@ -24,6 +26,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace policy {
@@ -147,8 +150,12 @@ scoped_ptr<UserCloudPolicyManagerChromeOS>
     store->LoadImmediately();
 
   scoped_ptr<ResourceCache> resource_cache;
-  if (command_line->HasSwitch(switches::kEnableComponentCloudPolicy))
-    resource_cache.reset(new ResourceCache(resource_cache_dir));
+  if (command_line->HasSwitch(switches::kEnableComponentCloudPolicy)) {
+    resource_cache.reset(new ResourceCache(
+        resource_cache_dir,
+        content::BrowserThread::GetMessageLoopProxyForThread(
+            content::BrowserThread::FILE)));
+  }
 
   scoped_ptr<UserCloudPolicyManagerChromeOS> manager(
       new UserCloudPolicyManagerChromeOS(

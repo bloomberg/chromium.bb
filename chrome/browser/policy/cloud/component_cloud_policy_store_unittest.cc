@@ -11,8 +11,9 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "base/sha1.h"
+#include "base/test/test_simple_task_runner.h"
 #include "chrome/browser/policy/cloud/cloud_policy_constants.h"
 #include "chrome/browser/policy/cloud/policy_builder.h"
 #include "chrome/browser/policy/cloud/resource_cache.h"
@@ -61,7 +62,9 @@ class ComponentCloudPolicyStoreTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    cache_.reset(new ResourceCache(temp_dir_.path()));
+    cache_.reset(new ResourceCache(
+        temp_dir_.path(),
+        make_scoped_refptr(new base::TestSimpleTaskRunner)));
     store_.reset(new ComponentCloudPolicyStore(&store_delegate_, cache_.get()));
     store_->SetCredentials(ComponentPolicyBuilder::kFakeUsername,
                            ComponentPolicyBuilder::kFakeToken);

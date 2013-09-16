@@ -8,6 +8,7 @@
 #include "base/file_util.h"
 #include "base/files/file_enumerator.h"
 #include "base/logging.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
 
 namespace policy {
@@ -53,21 +54,21 @@ bool Base64Decode(const std::string& encoded, std::string* value) {
 
 }  // namespace
 
-ResourceCache::ResourceCache(const base::FilePath& cache_dir)
-    : cache_dir_(cache_dir) {
-  // Allow the cache to be created in a different thread than the thread that is
-  // going to use it.
-  DetachFromThread();
+ResourceCache::ResourceCache(
+    const base::FilePath& cache_dir,
+    scoped_refptr<base::SequencedTaskRunner> task_runner)
+    : cache_dir_(cache_dir),
+      task_runner_(task_runner) {
 }
 
 ResourceCache::~ResourceCache() {
-  DCHECK(CalledOnValidThread());
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
 }
 
 bool ResourceCache::Store(const std::string& key,
                           const std::string& subkey,
                           const std::string& data) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
   base::FilePath subkey_path;
   // Delete the file before writing to it. This ensures that the write does not
   // follow a symlink planted at |subkey_path|, clobbering a file outside the
@@ -86,7 +87,7 @@ bool ResourceCache::Store(const std::string& key,
 bool ResourceCache::Load(const std::string& key,
                          const std::string& subkey,
                          std::string* data) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
   base::FilePath subkey_path;
   // Only read from |subkey_path| if it is not a symlink.
   if (!VerifyKeyPathAndGetSubkeyPath(key, false, subkey, &subkey_path) ||
@@ -100,7 +101,7 @@ bool ResourceCache::Load(const std::string& key,
 void ResourceCache::LoadAllSubkeys(
     const std::string& key,
     std::map<std::string, std::string>* contents) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
   contents->clear();
   base::FilePath key_path;
   if (!VerifyKeyPath(key, false, &key_path))
@@ -123,7 +124,7 @@ void ResourceCache::LoadAllSubkeys(
 }
 
 void ResourceCache::Delete(const std::string& key, const std::string& subkey) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
   base::FilePath subkey_path;
   if (VerifyKeyPathAndGetSubkeyPath(key, false, subkey, &subkey_path))
     base::DeleteFile(subkey_path, false);
@@ -134,7 +135,7 @@ void ResourceCache::Delete(const std::string& key, const std::string& subkey) {
 }
 
 void ResourceCache::PurgeOtherKeys(const std::set<std::string>& keys_to_keep) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
   std::set<std::string> encoded_keys_to_keep;
   if (!Base64Encode(keys_to_keep, &encoded_keys_to_keep))
     return;
@@ -152,7 +153,7 @@ void ResourceCache::PurgeOtherKeys(const std::set<std::string>& keys_to_keep) {
 void ResourceCache::PurgeOtherSubkeys(
     const std::string& key,
     const std::set<std::string>& subkeys_to_keep) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
   base::FilePath key_path;
   if (!VerifyKeyPath(key, false, &key_path))
     return;

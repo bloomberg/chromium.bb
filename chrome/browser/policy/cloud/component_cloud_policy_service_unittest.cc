@@ -107,7 +107,7 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    cache_ = new ResourceCache(temp_dir_.path());
+    cache_ = new ResourceCache(temp_dir_.path(), loop_.message_loop_proxy());
     service_.reset(new ComponentCloudPolicyService(
         &delegate_,
         &store_,

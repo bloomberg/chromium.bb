@@ -144,7 +144,8 @@ CouldExternalDataManagerBaseTest::CouldExternalDataManagerBaseTest()
 
 void CouldExternalDataManagerBaseTest::SetUp() {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  resource_cache_.reset(new ResourceCache(temp_dir_.path()));
+  resource_cache_.reset(new ResourceCache(temp_dir_.path(),
+                                          base::MessageLoopProxy::current()));
   SetUpExternalDataManager();
 
   // Set |kStringPolicy| to a string value.

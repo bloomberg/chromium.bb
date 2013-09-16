@@ -73,12 +73,12 @@ class ComponentCloudPolicyUpdaterTest : public testing::Test {
 
   scoped_ptr<em::PolicyFetchResponse> CreateResponse();
 
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ScopedTempDir temp_dir_;
   scoped_ptr<ResourceCache> cache_;
   scoped_ptr<ComponentCloudPolicyStore> store_;
   MockComponentCloudPolicyStoreDelegate store_delegate_;
   net::TestURLFetcherFactory fetcher_factory_;
-  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   scoped_ptr<ExternalPolicyDataFetcherBackend> fetcher_backend_;
   scoped_ptr<ComponentCloudPolicyUpdater> updater_;
   ComponentPolicyBuilder builder_;
@@ -87,12 +87,12 @@ class ComponentCloudPolicyUpdaterTest : public testing::Test {
 
 void ComponentCloudPolicyUpdaterTest::SetUp() {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  cache_.reset(new ResourceCache(temp_dir_.path()));
+  task_runner_ = new base::TestSimpleTaskRunner();
+  cache_.reset(new ResourceCache(temp_dir_.path(), task_runner_));
   store_.reset(new ComponentCloudPolicyStore(&store_delegate_, cache_.get()));
   store_->SetCredentials(ComponentPolicyBuilder::kFakeUsername,
                          ComponentPolicyBuilder::kFakeToken);
   fetcher_factory_.set_remove_fetcher_on_delete(true);
-  task_runner_ = new base::TestSimpleTaskRunner();
   fetcher_backend_.reset(new ExternalPolicyDataFetcherBackend(
       task_runner_,
       scoped_refptr<net::URLRequestContextGetter>()));
