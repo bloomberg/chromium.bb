@@ -441,7 +441,7 @@ class NinjaWriter:
 
     # Write out the compilation steps, if any.
     link_deps = []
-    sources = spec.get('sources', []) + extra_sources
+    sources = extra_sources + spec.get('sources', [])
     if sources:
       if self.flavor == 'mac' and len(self.archs) > 1:
         # Write subninja file containing compile and link commands scoped to
@@ -557,7 +557,7 @@ class NinjaWriter:
 
     if self.is_mac_bundle:
       self.WriteMacBundleResources(
-          mac_bundle_resources + extra_mac_bundle_resources, mac_bundle_depends)
+          extra_mac_bundle_resources + mac_bundle_resources, mac_bundle_depends)
       self.WriteMacInfoPlist(mac_bundle_depends)
 
     return stamp
