@@ -289,6 +289,20 @@
         this.lastPressedKey = event.target;
         this.lastPressedKey.classList.add('active');
         repeatKey.cancel();
+
+        var char = detail.char;
+        switch(char) {
+          case 'Shift':
+            // Removes caps-lock if caps-locked.
+            if(this.classList.contains('caps-locked')) {
+              this.classList.remove('caps-locked');
+            }
+            break;
+          default:
+            break;
+        }
+
+        // A transition key was pressed, immediately move to new keyset.
         var toKeyset = detail.toKeyset;
         if (toKeyset) {
           this.keyset = toKeyset;
@@ -400,7 +414,8 @@
           return;
         }
         var toKeysetId = detail.toKeyset;
-        // Keyset transition key.
+        // Keyset transition key. This is needed to transition from upper
+        // to lower case when we are not in caps mode.
         if (toKeysetId) {
           this.keyset = toKeysetId;
           this.querySelector('#' + this.layout + '-' + this.keyset).nextKeyset =
@@ -422,9 +437,6 @@
             return;
           case 'Shift':
             swipeStatus.swipeFlags = 0;
-            // We have reverted to lower case.
-            if(this.classList.contains('caps-locked'))
-              this.classList.remove('caps-locked');
             return;
           case 'Microphone':
             this.voiceInput_.onDown();
