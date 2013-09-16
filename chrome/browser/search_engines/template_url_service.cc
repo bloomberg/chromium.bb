@@ -1535,25 +1535,37 @@ void TemplateURLService::AddToMaps(TemplateURL* template_url) {
   }
 }
 
-void TemplateURLService::SetTemplateURLs(const TemplateURLVector& urls) {
-  // Add mappings for the new items.
+// Helper for partition() call in next function.
+bool HasValidID(TemplateURL* t_url) {
+  return t_url->id() != kInvalidTemplateURLID;
+}
 
-  // First, add the items that already have id's, so that the next_id_
-  // gets properly set.
-  for (TemplateURLVector::const_iterator i = urls.begin(); i != urls.end();
+void TemplateURLService::SetTemplateURLs(TemplateURLVector* urls) {
+  // Partition the URLs first, instead of implementing the loops below by simply
+  // scanning the input twice.  While it's not supposed to happen normally, it's
+  // possible for corrupt databases to return multiple entries with the same
+  // keyword.  In this case, the first loop may delete the first entry when
+  // adding the second.  If this happens, the second loop must not attempt to
+  // access the deleted entry.  Partitioning ensures this constraint.
+  TemplateURLVector::iterator first_invalid(
+      std::partition(urls->begin(), urls->end(), HasValidID));
+
+  // First, add the items that already have id's, so that the next_id_ gets
+  // properly set.
+  for (TemplateURLVector::const_iterator i = urls->begin(); i != first_invalid;
        ++i) {
-    if ((*i)->id() != kInvalidTemplateURLID) {
-      next_id_ = std::max(next_id_, (*i)->id());
-      AddNoNotify(*i, false);
-    }
+    next_id_ = std::max(next_id_, (*i)->id());
+    AddNoNotify(*i, false);
   }
 
   // Next add the new items that don't have id's.
-  for (TemplateURLVector::const_iterator i = urls.begin(); i != urls.end();
-       ++i) {
-    if ((*i)->id() == kInvalidTemplateURLID)
-      AddNoNotify(*i, true);
-  }
+  for (TemplateURLVector::const_iterator i = first_invalid; i != urls->end();
+       ++i)
+    AddNoNotify(*i, true);
+
+  // Clear the input vector to reduce the chance callers will try to use a
+  // (possibly deleted) entry.
+  urls->clear();
 }
 
 void TemplateURLService::ChangeToLoadedState() {
@@ -2533,7 +2545,7 @@ void TemplateURLService::AddTemplateURLsAndSetupDefaultEngine(
   PatchMissingSyncGUIDs(template_urls);
 
   if (is_default_search_managed_) {
-    SetTemplateURLs(*template_urls);
+    SetTemplateURLs(template_urls);
 
     if (TemplateURLsHaveSamePrefs(default_search_provider,
                                   default_from_prefs.get())) {
@@ -2581,7 +2593,7 @@ void TemplateURLService::AddTemplateURLsAndSetupDefaultEngine(
       default_search_provider_ = default_search_provider;
       default_search_provider = NULL;
     }
-    SetTemplateURLs(*template_urls);
+    SetTemplateURLs(template_urls);
 
     if (default_search_provider) {
       // Note that this saves the default search provider to prefs.

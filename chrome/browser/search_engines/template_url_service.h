@@ -425,7 +425,11 @@ class TemplateURLService : public WebDataServiceConsumer,
 
   // Sets the keywords. This is used once the keywords have been loaded.
   // This does NOT notify the delegate or the database.
-  void SetTemplateURLs(const TemplateURLVector& urls);
+  //
+  // This transfers ownership of the elements in |urls| to |this|, and may
+  // delete some elements, so it's not safe for callers to access any elements
+  // after calling; to reinforce this, this function clears |urls| on exit.
+  void SetTemplateURLs(TemplateURLVector* urls);
 
   // Transitions to the loaded state.
   void ChangeToLoadedState();
@@ -615,6 +619,11 @@ class TemplateURLService : public WebDataServiceConsumer,
   // Adds |template_urls| to |template_urls_| and sets up the default search
   // provider.  If |default_search_provider| is non-NULL, it must refer to one
   // of the |template_urls|, and will be used as the new default.
+  //
+  // This transfers ownership of the elements in |template_urls| to |this|, and
+  // may delete some elements, so it's not safe for callers to access any
+  // elements after calling; to reinforce this, this function clears
+  // |template_urls| on exit.
   void AddTemplateURLsAndSetupDefaultEngine(
       TemplateURLVector* template_urls,
       TemplateURL* default_search_provider);
