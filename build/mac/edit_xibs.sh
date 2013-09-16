@@ -12,6 +12,6 @@ set -e
 
 RELSRC=$(dirname "$0")/../..
 SRC=$(cd "$RELSRC" && pwd)
-GYP_GENERATORS=xcode python "$SRC/tools/gyp/gyp" "$SRC/chrome/chrome_nibs.gyp"
+GYP_GENERATORS=xcode "$SRC/tools/gyp/gyp" "$SRC/chrome/chrome_nibs.gyp"
 echo "You can now edit XIB files in Xcode using:"
 echo "  $SRC/chrome/chrome_nibs.xcodeproj"
