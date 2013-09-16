@@ -9,6 +9,7 @@
 import optparse
 import os
 import shlex
+import shutil
 
 from util import build_utils
 
@@ -50,6 +51,32 @@ def ParseArgs():
   return options
 
 
+def MoveImagesToNonMdpiFolders(res_root):
+  """Move images from drawable-*-mdpi-* folders to drawable-* folders.
+
+  Why? http://crbug.com/289843
+  """
+  for src_dir_name in os.listdir(res_root):
+    src_components = src_dir_name.split('-')
+    if src_components[0] != 'drawable' or 'mdpi' not in src_components:
+      continue
+    src_dir = os.path.join(res_root, src_dir_name)
+    if not os.path.isdir(src_dir):
+      continue
+    dst_components = [c for c in src_components if c != 'mdpi']
+    assert dst_components != src_components
+    dst_dir_name = '-'.join(dst_components)
+    dst_dir = os.path.join(res_root, dst_dir_name)
+    build_utils.MakeDirectory(dst_dir)
+    for src_file_name in os.listdir(src_dir):
+      if not src_file_name.endswith('.png'):
+        continue
+      src_file = os.path.join(src_dir, src_file_name)
+      dst_file = os.path.join(dst_dir, src_file_name)
+      assert not os.path.lexists(dst_file)
+      shutil.move(src_file, dst_file)
+
+
 def main():
   options = ParseArgs()
   android_jar = os.path.join(options.android_sdk, 'android.jar')
@@ -82,12 +109,13 @@ def main():
   # Crunch image resources. This shrinks png files and is necessary for 9-patch
   # images to display correctly.
   build_utils.MakeDirectory(options.crunch_output_dir)
-
   aapt_cmd = [aapt,
               'crunch',
               '-S', options.crunch_input_dir,
               '-C', options.crunch_output_dir]
   build_utils.CheckCallDie(aapt_cmd, suppress_output=True)
+
+  MoveImagesToNonMdpiFolders(options.crunch_output_dir)
 
   if options.stamp:
     build_utils.Touch(options.stamp)
