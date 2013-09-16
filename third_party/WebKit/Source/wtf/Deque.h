@@ -103,9 +103,9 @@ namespace WTF {
         void expandCapacityIfNeeded();
         void expandCapacity();
 
-        size_t m_start;
-        size_t m_end;
         Buffer m_buffer;
+        unsigned m_start;
+        unsigned m_end;
     };
 
     template<typename T, size_t inlineCapacity = 0>
@@ -129,7 +129,7 @@ namespace WTF {
 
     private:
         Deque<T, inlineCapacity>* m_deque;
-        size_t m_index;
+        unsigned m_index;
 
         friend class Deque<T, inlineCapacity>;
     };
