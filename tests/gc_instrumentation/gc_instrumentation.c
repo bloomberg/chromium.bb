@@ -150,15 +150,32 @@ void test_syscall_wrappers(void) {
    * is not officially supported.
    */
 #if TESTS_USE_IRT
+  struct nacl_irt_futex irt_futex;
   struct nacl_irt_mutex irt_mutex;
   struct nacl_irt_cond irt_cond;
   struct nacl_irt_sem irt_sem;
+  __libnacl_mandatory_irt_query(NACL_IRT_FUTEX_v0_1,
+                                &irt_futex, sizeof(irt_futex));
   __libnacl_mandatory_irt_query(NACL_IRT_MUTEX_v0_1,
                                 &irt_mutex, sizeof(irt_mutex));
   __libnacl_mandatory_irt_query(NACL_IRT_COND_v0_1,
                                 &irt_cond, sizeof(irt_cond));
   __libnacl_mandatory_irt_query(NACL_IRT_SEM_v0_1,
                                 &irt_sem, sizeof(irt_sem));
+
+  /* Check the IRT's futex interface */
+
+  int futex_value = 123;
+  CHECK_SYSCALL_PRE();
+  CHECK(irt_futex.futex_wait_abs(&futex_value, futex_value + 1, NULL)
+        == EWOULDBLOCK);
+  CHECK_SYSCALL_WRAPPED();
+
+  int woken_count;
+  CHECK_SYSCALL_PRE();
+  CHECK(irt_futex.futex_wake(&futex_value, 1, &woken_count) == 0);
+  CHECK_SYSCALL_WRAPPED();
+  CHECK(woken_count == 0);
 
   /* Check the IRT's mutex interface */
 
