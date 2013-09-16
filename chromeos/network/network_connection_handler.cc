@@ -593,7 +593,7 @@ void NetworkConnectionHandler::CheckPendingRequest(
   if (error_callback.is_null())
     return;
   scoped_ptr<base::DictionaryValue> error_data(
-      network_handler::CreateErrorData(service_path, error_name, error_msg));
+      network_handler::CreateErrorData(service_path, error_name, error_detail));
   error_callback.Run(error_name, error_data.Pass());
 }
 

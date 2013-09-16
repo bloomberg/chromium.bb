@@ -196,46 +196,58 @@ void NetworkStateNotifier::UpdateCellularActivating(
 
 void NetworkStateNotifier::ShowNetworkConnectError(
     const std::string& error_name,
+    const std::string& shill_error,
     const std::string& service_path) {
   if (service_path.empty()) {
     base::DictionaryValue shill_properties;
-    ShowConnectErrorNotification(error_name, service_path, shill_properties);
+    ShowConnectErrorNotification(error_name, shill_error, service_path,
+                                 shill_properties);
     return;
   }
   // Get the up-to-date properties for the network and display the error.
   NetworkHandler::Get()->network_configuration_handler()->GetProperties(
       service_path,
       base::Bind(&NetworkStateNotifier::ConnectErrorPropertiesSucceeded,
-                 weak_ptr_factory_.GetWeakPtr(), error_name),
+                 weak_ptr_factory_.GetWeakPtr(), error_name, shill_error),
       base::Bind(&NetworkStateNotifier::ConnectErrorPropertiesFailed,
-                 weak_ptr_factory_.GetWeakPtr(), error_name, service_path));
+                 weak_ptr_factory_.GetWeakPtr(), error_name, shill_error,
+                 service_path));
 }
 
 void NetworkStateNotifier::ConnectErrorPropertiesSucceeded(
     const std::string& error_name,
+    const std::string& shill_error,
     const std::string& service_path,
     const base::DictionaryValue& shill_properties) {
-  ShowConnectErrorNotification(error_name, service_path, shill_properties);
+  ShowConnectErrorNotification(error_name, shill_error, service_path,
+                               shill_properties);
 }
 
 void NetworkStateNotifier::ConnectErrorPropertiesFailed(
     const std::string& error_name,
+    const std::string& shill_error,
     const std::string& service_path,
-    const std::string& shill_error_name,
+    const std::string& shill_connect_error,
     scoped_ptr<base::DictionaryValue> shill_error_data) {
   base::DictionaryValue shill_properties;
-  ShowConnectErrorNotification(error_name, service_path, shill_properties);
+  ShowConnectErrorNotification(error_name, shill_error, service_path,
+                               shill_properties);
 }
 
 void NetworkStateNotifier::ShowConnectErrorNotification(
     const std::string& error_name,
+    const std::string& shill_error,
     const std::string& service_path,
     const base::DictionaryValue& shill_properties) {
   string16 error = GetConnectErrorString(error_name);
   if (error.empty()) {
-    std::string network_error;
-    shill_properties.GetStringWithoutPathExpansion(
-        flimflam::kErrorProperty, &network_error);
+    // Service.Error gets cleared shortly after State transitions to Failure,
+    // so rely on |shill_error| unless empty.
+    std::string network_error = shill_error;
+    if (network_error.empty()) {
+      shill_properties.GetStringWithoutPathExpansion(
+          flimflam::kErrorProperty, &network_error);
+    }
     error = network_connect::ErrorString(network_error);
     if (error.empty())
       error = l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_UNKNOWN);
