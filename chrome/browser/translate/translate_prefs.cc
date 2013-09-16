@@ -356,16 +356,16 @@ void TranslatePrefs::MigrateUserPrefs(PrefService* user_prefs) {
 
     // Create the new preference kPrefTranslateBlockedLanguages.
     {
-      ListValue* blocked_languages_list = new ListValue();
+      ListValue blocked_languages_list;
       for (std::vector<std::string>::const_iterator it =
                blocked_languages.begin();
            it != blocked_languages.end(); ++it) {
-        blocked_languages_list->Append(new StringValue(*it));
+        blocked_languages_list.Append(new StringValue(*it));
       }
       ListPrefUpdate update(user_prefs, kPrefTranslateBlockedLanguages);
       ListValue* list = update.Get();
       DCHECK(list != NULL);
-      list->Swap(blocked_languages_list);
+      list->Swap(&blocked_languages_list);
     }
 
     // Update kAcceptLanguages
