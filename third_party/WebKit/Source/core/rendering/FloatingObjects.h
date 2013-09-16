@@ -220,7 +220,15 @@ public:
     void clearLineBoxTreePointers();
     LayoutUnit logicalLeftOffset(LayoutUnit fixedOffset, LayoutUnit logicalTop, LayoutUnit logicalHeight, ShapeOutsideFloatOffsetMode = ShapeOutsideFloatShapeOffset, LayoutUnit* heightRemaining = 0);
     LayoutUnit logicalRightOffset(LayoutUnit fixedOffset, LayoutUnit logicalTop, LayoutUnit logicalHeight, ShapeOutsideFloatOffsetMode = ShapeOutsideFloatShapeOffset, LayoutUnit* heightRemaining = 0);
+
+    LayoutUnit lowestFloatLogicalBottom(FloatingObject::Type);
+
 private:
+    bool hasLowestFloatLogicalBottomCached(bool isHorizontal, FloatingObject::Type floatType) const;
+    LayoutUnit getCachedlowestFloatLogicalBottom(FloatingObject::Type floatType) const;
+    void setCachedLowestFloatLogicalBottom(bool isHorizontal, FloatingObject::Type floatType, LayoutUnit value);
+    void markLowestFloatLogicalBottomCacheAsDirty();
+
     void computePlacedFloatsTree();
     const FloatingObjectTree& placedFloatsTree()
     {
@@ -238,6 +246,14 @@ private:
     unsigned m_rightObjectsCount;
     bool m_horizontalWritingMode;
     const RenderBlock* m_renderer;
+
+    struct FloatBottomCachedValue {
+        FloatBottomCachedValue();
+        LayoutUnit value;
+        bool dirty;
+    };
+    FloatBottomCachedValue m_lowestFloatBottomCache[2];
+    bool m_cachedHorizontalWritingMode;
 };
 
 #ifndef NDEBUG

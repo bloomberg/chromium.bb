@@ -4211,15 +4211,8 @@ LayoutUnit RenderBlock::lowestFloatLogicalBottom(FloatingObject::Type floatType)
 {
     if (!m_floatingObjects)
         return 0;
-    LayoutUnit lowestFloatBottom = 0;
-    const FloatingObjectSet& floatingObjectSet = m_floatingObjects->set();
-    FloatingObjectSetIterator end = floatingObjectSet.end();
-    for (FloatingObjectSetIterator it = floatingObjectSet.begin(); it != end; ++it) {
-        FloatingObject* r = *it;
-        if (r->isPlaced() && r->type() & floatType)
-            lowestFloatBottom = max(lowestFloatBottom, r->logicalBottom(isHorizontalWritingMode()));
-    }
-    return lowestFloatBottom;
+
+    return m_floatingObjects->lowestFloatLogicalBottom(floatType);
 }
 
 void RenderBlock::markLinesDirtyInBlockRange(LayoutUnit logicalTop, LayoutUnit logicalBottom, RootInlineBox* highest)

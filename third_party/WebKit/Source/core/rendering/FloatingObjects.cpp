@@ -123,6 +123,84 @@ void FloatingObjects::clear()
     m_placedFloatsTree.clear();
     m_leftObjectsCount = 0;
     m_rightObjectsCount = 0;
+    markLowestFloatLogicalBottomCacheAsDirty();
+}
+
+LayoutUnit FloatingObjects::lowestFloatLogicalBottom(FloatingObject::Type floatType)
+{
+    bool isInHorizontalWritingMode = m_horizontalWritingMode;
+    if (floatType != FloatingObject::FloatLeftRight) {
+        if (hasLowestFloatLogicalBottomCached(isInHorizontalWritingMode, floatType))
+            return getCachedlowestFloatLogicalBottom(floatType);
+    } else {
+        if (hasLowestFloatLogicalBottomCached(isInHorizontalWritingMode, FloatingObject::FloatLeft) && hasLowestFloatLogicalBottomCached(isInHorizontalWritingMode, FloatingObject::FloatRight)) {
+            return max(getCachedlowestFloatLogicalBottom(FloatingObject::FloatLeft),
+                getCachedlowestFloatLogicalBottom(FloatingObject::FloatRight));
+        }
+    }
+
+    LayoutUnit lowestFloatBottom = 0;
+    const FloatingObjectSet& floatingObjectSet = set();
+    FloatingObjectSetIterator end = floatingObjectSet.end();
+    if (floatType == FloatingObject::FloatLeftRight) {
+        LayoutUnit lowestFloatBottomLeft = 0;
+        LayoutUnit lowestFloatBottomRight = 0;
+        for (FloatingObjectSetIterator it = floatingObjectSet.begin(); it != end; ++it) {
+            FloatingObject* r = *it;
+            if (r->isPlaced()) {
+                FloatingObject::Type curType = r->type();
+                LayoutUnit curFloatLogicalBottom = r->logicalBottom(isInHorizontalWritingMode);
+                if (curType & FloatingObject::FloatLeft)
+                    lowestFloatBottomLeft = max(lowestFloatBottomLeft, curFloatLogicalBottom);
+                if (curType & FloatingObject::FloatRight)
+                    lowestFloatBottomRight = max(lowestFloatBottomRight, curFloatLogicalBottom);
+            }
+        }
+        lowestFloatBottom = max(lowestFloatBottomLeft, lowestFloatBottomRight);
+        setCachedLowestFloatLogicalBottom(isInHorizontalWritingMode, FloatingObject::FloatLeft, lowestFloatBottomLeft);
+        setCachedLowestFloatLogicalBottom(isInHorizontalWritingMode, FloatingObject::FloatRight, lowestFloatBottomRight);
+    } else {
+        for (FloatingObjectSetIterator it = floatingObjectSet.begin(); it != end; ++it) {
+            FloatingObject* r = *it;
+            if (r->isPlaced() && r->type() == floatType)
+                lowestFloatBottom = max(lowestFloatBottom, r->logicalBottom(isInHorizontalWritingMode));
+        }
+        setCachedLowestFloatLogicalBottom(isInHorizontalWritingMode, floatType, lowestFloatBottom);
+    }
+
+    return lowestFloatBottom;
+}
+
+bool FloatingObjects::hasLowestFloatLogicalBottomCached(bool isHorizontal, FloatingObject::Type type) const
+{
+    int floatIndex = static_cast<int>(type) - 1;
+    ASSERT(floatIndex < sizeof(m_lowestFloatBottomCache) / sizeof(FloatBottomCachedValue));
+    ASSERT(floatIndex >= 0);
+    return (m_cachedHorizontalWritingMode == isHorizontal && !m_lowestFloatBottomCache[floatIndex].dirty);
+}
+
+LayoutUnit FloatingObjects::getCachedlowestFloatLogicalBottom(FloatingObject::Type type) const
+{
+    int floatIndex = static_cast<int>(type) - 1;
+    ASSERT(floatIndex < sizeof(m_lowestFloatBottomCache) / sizeof(FloatBottomCachedValue));
+    ASSERT(floatIndex >= 0);
+    return m_lowestFloatBottomCache[floatIndex].value;
+}
+
+void FloatingObjects::setCachedLowestFloatLogicalBottom(bool isHorizontal, FloatingObject::Type type, LayoutUnit value)
+{
+    int floatIndex = static_cast<int>(type) - 1;
+    ASSERT(floatIndex < sizeof(m_lowestFloatBottomCache) / sizeof(FloatBottomCachedValue));
+    ASSERT(floatIndex >= 0);
+    m_cachedHorizontalWritingMode = isHorizontal;
+    m_lowestFloatBottomCache[floatIndex].value = value;
+    m_lowestFloatBottomCache[floatIndex].dirty = false;
+}
+
+void FloatingObjects::markLowestFloatLogicalBottomCacheAsDirty()
+{
+    for (int i = 0; i < sizeof(m_lowestFloatBottomCache) / sizeof(FloatBottomCachedValue); ++i)
+        m_lowestFloatBottomCache[i].dirty = true;
 }
 
 inline void FloatingObjects::increaseObjectsCount(FloatingObject::Type type)
@@ -159,6 +237,7 @@ void FloatingObjects::addPlacedObject(FloatingObject* floatingObject)
 #ifndef NDEBUG
     floatingObject->setIsInPlacedTree(true);
 #endif
+    markLowestFloatLogicalBottomCacheAsDirty();
 }
 
 void FloatingObjects::removePlacedObject(FloatingObject* floatingObject)
@@ -174,6 +253,7 @@ void FloatingObjects::removePlacedObject(FloatingObject* floatingObject)
 #ifndef NDEBUG
     floatingObject->setIsInPlacedTree(false);
 #endif
+    markLowestFloatLogicalBottomCacheAsDirty();
 }
 
 void FloatingObjects::add(FloatingObject* floatingObject)
@@ -182,6 +262,7 @@ void FloatingObjects::add(FloatingObject* floatingObject)
     m_set.add(floatingObject);
     if (floatingObject->isPlaced())
         addPlacedObject(floatingObject);
+    markLowestFloatLogicalBottomCacheAsDirty();
 }
 
 void FloatingObjects::remove(FloatingObject* floatingObject)
@@ -191,6 +272,7 @@ void FloatingObjects::remove(FloatingObject* floatingObject)
     ASSERT(floatingObject->isPlaced() || !floatingObject->isInPlacedTree());
     if (floatingObject->isPlaced())
         removePlacedObject(floatingObject);
+    markLowestFloatLogicalBottomCacheAsDirty();
 }
 
 void FloatingObjects::computePlacedFloatsTree()
@@ -246,6 +328,12 @@ LayoutUnit FloatingObjects::logicalRightOffset(LayoutUnit fixedOffset, LayoutUni
     }
 
     return min(fixedOffset, offset);
+}
+
+FloatingObjects::FloatBottomCachedValue::FloatBottomCachedValue()
+    : value(0)
+    , dirty(true)
+{
 }
 
 inline static bool rangesIntersect(int floatTop, int floatBottom, int objectTop, int objectBottom)
