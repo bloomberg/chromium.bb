@@ -12,7 +12,8 @@ found in the LICENSE file.
 
     <uses-sdk android:minSdkVersion="14" android:targetSdkVersion="17" />
 
-    <application android:label="ChromeNativeTests">
+    <application android:label="ChromeNativeTests"
+            android:name="org.chromium.base.ChromiumApplication">
         <activity android:name=".ChromeNativeTestActivity"
                 android:label="ChromeNativeTest"
                 android:configChanges="orientation|keyboardHidden">

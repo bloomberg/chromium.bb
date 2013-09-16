@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.testshell;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -14,7 +15,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import org.chromium.base.ChromiumActivity;
 import org.chromium.base.MemoryPressureListener;
 import org.chromium.chrome.browser.DevToolsServer;
 import org.chromium.chrome.testshell.sync.SyncController;
@@ -31,7 +31,7 @@ import org.chromium.ui.WindowAndroid;
 /**
  * The {@link android.app.Activity} component of a basic test shell to test Chrome features.
  */
-public class ChromiumTestShellActivity extends ChromiumActivity implements MenuHandler {
+public class ChromiumTestShellActivity extends Activity implements MenuHandler {
     private static final String TAG = "ChromiumTestShellActivity";
     /**
      * Sending an intent with this action will simulate a memory pressure signal

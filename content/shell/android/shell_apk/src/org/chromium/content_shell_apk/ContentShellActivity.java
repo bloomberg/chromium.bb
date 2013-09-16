@@ -4,6 +4,7 @@
 
 package org.chromium.content_shell_apk;
 
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -14,7 +15,6 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.widget.Toast;
 
-import org.chromium.base.ChromiumActivity;
 import org.chromium.base.MemoryPressureListener;
 import org.chromium.content.app.LibraryLoader;
 import org.chromium.content.browser.ActivityContentVideoViewClient;
@@ -33,7 +33,7 @@ import org.chromium.ui.WindowAndroid;
 /**
  * Activity for managing the Content Shell.
  */
-public class ContentShellActivity extends ChromiumActivity {
+public class ContentShellActivity extends Activity {
 
     public static final String COMMAND_LINE_FILE = "/data/local/tmp/content-shell-command-line";
     private static final String TAG = "ContentShellActivity";

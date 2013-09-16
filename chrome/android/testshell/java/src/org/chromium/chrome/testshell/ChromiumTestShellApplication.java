@@ -4,9 +4,9 @@
 
 package org.chromium.chrome.testshell;
 
-import android.app.Application;
 import android.content.Intent;
 
+import org.chromium.base.ChromiumApplication;
 import org.chromium.base.PathUtils;
 import org.chromium.chrome.browser.UmaUtils;
 import org.chromium.content.browser.ResourceExtractor;
@@ -15,10 +15,10 @@ import org.chromium.content.common.CommandLine;
 import java.util.ArrayList;
 
 /**
- * A basic test shell {@link Application}.  Handles setting up the native library and
+ * A basic test shell {@link android.app.Application}.  Handles setting up the native library and
  * loading the right resources.
  */
-public class ChromiumTestShellApplication extends Application {
+public class ChromiumTestShellApplication extends ChromiumApplication {
     private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "chromiumtestshell";
     private static final String[] CHROME_MANDATORY_PAKS = {
         "en-US.pak",
