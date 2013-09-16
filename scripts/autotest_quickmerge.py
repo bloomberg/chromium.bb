@@ -11,6 +11,7 @@ emerge-$board autotest-all, by simply rsync'ing changes from trunk to sysroot.
 """
 
 import argparse
+import glob
 import logging
 import os
 import re
@@ -31,13 +32,7 @@ if cros_build_lib.IsInsideChroot():
 INCLUDE_PATTERNS_FILENAME = 'autotest-quickmerge-includepatterns'
 AUTOTEST_PROJECT_NAME = 'chromiumos/third_party/autotest'
 AUTOTEST_EBUILD = 'chromeos-base/autotest'
-DOWNGRADE_EBUILDS = ['chromeos-base/autotest',
-                     'chromeos-base/autotest-deps',
-                     'chromeos-base/autotest-tests',
-                     'chromeos-base/autotest-chrome',
-                     'chromeos-base/autotest-factory',
-                     'chromeos-base/autotest-tests-ltp',
-                     'chromeos-base/autotest-tests-ownershipapi']
+DOWNGRADE_EBUILDS = ['chromeos-base/autotest']
 
 IGNORE_SUBDIRS = ['ExternalSource',
                   'logs',
@@ -392,6 +387,17 @@ def main(argv):
     logging.info('Updating portage database.')
     UpdatePackageContents(change_report, AUTOTEST_EBUILD,
                           sysroot_path)
+    for logfile in glob.glob(os.path.join(sysroot_autotest_path, 'packages',
+                                          '*.log')):
+      try:
+        # Open file in a try-except block, for atomicity, instead of
+        # doing existence check.
+        with open(logfile, 'r') as f:
+          package_cp = f.readline().strip()
+          DOWNGRADE_EBUILDS.append(package_cp)
+      except IOError:
+        pass
+
     for ebuild in DOWNGRADE_EBUILDS:
       if not DowngradePackageVersion(sysroot_path, ebuild):
         logging.warning('Unable to downgrade package %s version number.',
@@ -401,6 +407,7 @@ def main(argv):
     sentinel_filename = os.path.join(sysroot_autotest_path,
                                      '.quickmerge_sentinel')
     cros_build_lib.RunCommand(['touch', sentinel_filename])
+
 
   if args.pretend:
     logging.info('The following message is pretend only. No filesystem '
