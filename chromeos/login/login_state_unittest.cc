@@ -6,9 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
-#include "base/message_loop/message_loop.h"
 #include "chromeos/chromeos_switches.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -25,8 +23,6 @@ class LoginStateTest : public testing::Test,
   // testing::Test
   virtual void SetUp() OVERRIDE {
     CommandLine::ForCurrentProcess()->AppendSwitch(switches::kLoginManager);
-    // Initialize DBusThreadManager with a stub implementation.
-    DBusThreadManager::InitializeWithStub();
     LoginState::Initialize();
     LoginState::Get()->AddObserver(this);
   }
@@ -34,7 +30,6 @@ class LoginStateTest : public testing::Test,
   virtual void TearDown() OVERRIDE {
     LoginState::Get()->RemoveObserver(this);
     LoginState::Shutdown();
-    DBusThreadManager::Shutdown();
   }
 
   // LoginState::Observer
@@ -52,7 +47,6 @@ class LoginStateTest : public testing::Test,
     return result;
   }
 
-  base::MessageLoopForUI message_loop_;
   LoginState::LoggedInUserType logged_in_user_type_;
 
  private:
@@ -76,8 +70,6 @@ TEST_F(LoginStateTest, TestLoginState) {
   EXPECT_TRUE(LoginState::Get()->IsUserLoggedIn());
   EXPECT_FALSE(LoginState::Get()->IsInSafeMode());
 
-  // Run the message loop, observer should update members.
-  message_loop_.RunUntilIdle();
   EXPECT_EQ(1U, GetNewLoginStateChangesCount());
   EXPECT_EQ(LoginState::LOGGED_IN_USER_REGULAR, logged_in_user_type_);
 }
@@ -96,8 +88,6 @@ TEST_F(LoginStateTest, TestSafeModeLoginState) {
   EXPECT_FALSE(LoginState::Get()->IsUserLoggedIn());
   EXPECT_TRUE(LoginState::Get()->IsInSafeMode());
 
-  // Run the message loop, observer should update members.
-  message_loop_.RunUntilIdle();
   EXPECT_EQ(1U, GetNewLoginStateChangesCount());
   EXPECT_EQ(LoginState::LOGGED_IN_USER_NONE, logged_in_user_type_);
 
@@ -109,10 +99,29 @@ TEST_F(LoginStateTest, TestSafeModeLoginState) {
   EXPECT_TRUE(LoginState::Get()->IsUserLoggedIn());
   EXPECT_FALSE(LoginState::Get()->IsInSafeMode());
 
-  // Run the message loop, observer should update members.
-  message_loop_.RunUntilIdle();
   EXPECT_EQ(1U, GetNewLoginStateChangesCount());
   EXPECT_EQ(LoginState::LOGGED_IN_USER_OWNER, logged_in_user_type_);
+}
+
+TEST_F(LoginStateTest, TestLoggedInStateChangedObserverOnUserTypeChange) {
+  LoginState::Get()->SetLoggedInState(LoginState::LOGGED_IN_ACTIVE,
+                                      LoginState::LOGGED_IN_USER_REGULAR);
+
+  EXPECT_EQ(1u, GetNewLoginStateChangesCount());
+  EXPECT_TRUE(LoginState::Get()->IsUserLoggedIn());
+  EXPECT_EQ(LoginState::LOGGED_IN_USER_REGULAR, logged_in_user_type_);
+  EXPECT_EQ(LoginState::LOGGED_IN_USER_REGULAR,
+            LoginState::Get()->GetLoggedInUserType());
+
+  // Change the user type, without changing the logged in state.
+  LoginState::Get()->SetLoggedInState(LoginState::LOGGED_IN_ACTIVE,
+                                      LoginState::LOGGED_IN_USER_OWNER);
+
+  EXPECT_EQ(1u, GetNewLoginStateChangesCount());
+  EXPECT_TRUE(LoginState::Get()->IsUserLoggedIn());
+  EXPECT_EQ(LoginState::LOGGED_IN_USER_OWNER, logged_in_user_type_);
+  EXPECT_EQ(LoginState::LOGGED_IN_USER_OWNER,
+            LoginState::Get()->GetLoggedInUserType());
 }
 
 }  // namespace chromeos
