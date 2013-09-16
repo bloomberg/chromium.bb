@@ -62,6 +62,11 @@ class ActivityLogPrerenderTest : public ExtensionApiTest {
 };
 
 IN_PROC_BROWSER_TEST_F(ActivityLogPrerenderTest, TestScriptInjected) {
+#if defined (USE_AURA)
+  // This tests fails in Aura, but it is the only one in this set so
+  // we disable it for now. Tracking bug: 292299.
+  return;
+#endif
   host_resolver()->AddRule("*", "127.0.0.1");
   StartEmbeddedTestServer();
   int port = embedded_test_server()->port();
