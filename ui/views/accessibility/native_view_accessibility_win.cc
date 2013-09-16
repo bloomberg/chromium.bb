@@ -12,6 +12,7 @@
 
 #include "base/memory/singleton.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/win/scoped_comptr.h"
 #include "base/win/windows_version.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
 #include "ui/base/accessibility/accessible_text_utils.h"
@@ -44,12 +45,23 @@ class AccessibleWebViewRegistry {
   // |top_view|'s view hierarchy, if any.
   IAccessible* GetAccessibleFromWebView(View* top_view, long child_id);
 
+  // The system uses IAccessible APIs for many purposes, but only
+  // assistive technology like screen readers uses IAccessible2.
+  // Call this method to note that the IAccessible2 interface was queried and
+  // that WebViews should be proactively notified that this interface will be
+  // used. If this is enabled for the first time, this will explicitly call
+  // QueryService with an argument of IAccessible2 on all WebViews, otherwise
+  // it will just do it from now on.
+  void EnableIAccessible2Support();
+
  private:
   friend struct DefaultSingletonTraits<AccessibleWebViewRegistry>;
   AccessibleWebViewRegistry();
   ~AccessibleWebViewRegistry() {}
 
   IAccessible* AccessibleObjectFromChildId(View* web_view, long child_id);
+
+  void QueryIAccessible2Interface(View* web_view);
 
   // Set of all web views. We check whether each one is contained in a
   // top view dynamically rather than keeping track of a map.
@@ -62,12 +74,18 @@ class AccessibleWebViewRegistry {
   // corresponding to |last_top_view_|.
   View* last_web_view_;
 
+  // If IAccessible2 support is enabled, we query the IAccessible2 interface
+  // of WebViews proactively when they're registered, so that they are
+  // aware that they need to support this interface.
+  bool iaccessible2_support_enabled_;
+
   DISALLOW_COPY_AND_ASSIGN(AccessibleWebViewRegistry);
 };
 
 AccessibleWebViewRegistry::AccessibleWebViewRegistry()
     : last_top_view_(NULL),
-      last_web_view_(NULL) {
+      last_web_view_(NULL),
+      iaccessible2_support_enabled_(false) {
 }
 
 AccessibleWebViewRegistry* AccessibleWebViewRegistry::GetInstance() {
@@ -77,6 +95,9 @@ AccessibleWebViewRegistry* AccessibleWebViewRegistry::GetInstance() {
 void AccessibleWebViewRegistry::RegisterWebView(View* web_view) {
   DCHECK(web_views_.find(web_view) == web_views_.end());
   web_views_.insert(web_view);
+
+  if (iaccessible2_support_enabled_)
+    QueryIAccessible2Interface(web_view);
 }
 
 void AccessibleWebViewRegistry::UnregisterWebView(View* web_view) {
@@ -120,6 +141,16 @@ IAccessible* AccessibleWebViewRegistry::GetAccessibleFromWebView(
   return NULL;
 }
 
+void AccessibleWebViewRegistry::EnableIAccessible2Support() {
+  if (iaccessible2_support_enabled_)
+    return;
+  iaccessible2_support_enabled_ = true;
+  for (std::set<View*>::iterator iter = web_views_.begin();
+       iter != web_views_.end(); ++iter) {
+    QueryIAccessible2Interface(*iter);
+  }
+}
+
 IAccessible* AccessibleWebViewRegistry::AccessibleObjectFromChildId(
     View* web_view,
     long child_id) {
@@ -137,6 +168,20 @@ IAccessible* AccessibleWebViewRegistry::AccessibleObjectFromChildId(
   }
 
   return NULL;
+}
+
+void AccessibleWebViewRegistry::QueryIAccessible2Interface(View* web_view) {
+  IAccessible* web_view_accessible = web_view->GetNativeViewAccessible();
+  if (!web_view_accessible)
+    return;
+
+  base::win::ScopedComPtr<IServiceProvider> service_provider;
+  if (S_OK != web_view_accessible->QueryInterface(service_provider.Receive()))
+    return;
+  base::win::ScopedComPtr<IAccessible2> iaccessible2;
+  service_provider->QueryService(
+      IID_IAccessible, IID_IAccessible2,
+      reinterpret_cast<void**>(iaccessible2.Receive()));
 }
 
 }  // anonymous namespace
@@ -1025,6 +1070,9 @@ STDMETHODIMP NativeViewAccessibilityWin::QueryService(
     REFGUID guidService, REFIID riid, void** object) {
   if (!view_)
     return E_FAIL;
+
+  if (riid == IID_IAccessible2)
+    AccessibleWebViewRegistry::GetInstance()->EnableIAccessible2Support();
 
   if (guidService == IID_IAccessible ||
       guidService == IID_IAccessible2 ||

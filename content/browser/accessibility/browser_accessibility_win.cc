@@ -15,6 +15,7 @@
 #include "base/win/scoped_comptr.h"
 #include "base/win/windows_version.h"
 #include "content/browser/accessibility/browser_accessibility_manager_win.h"
+#include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/common/accessibility_messages.h"
 #include "content/public/common/content_client.h"
 #include "ui/base/accessibility/accessible_text_utils.h"
@@ -2650,6 +2651,12 @@ STDMETHODIMP BrowserAccessibilityWin::QueryService(REFGUID guidService,
                                                    void** object) {
   if (!instance_active_)
     return E_FAIL;
+
+  // The system uses IAccessible APIs for many purposes, but only
+  // assistive technology like screen readers uses IAccessible2.
+  // Enable full accessibility support when IAccessible2 APIs are queried.
+  if (riid == IID_IAccessible2)
+    BrowserAccessibilityStateImpl::GetInstance()->EnableAccessibility();
 
   if (guidService == GUID_IAccessibleContentDocument) {
     // Special Mozilla extension: return the accessible for the root document.
