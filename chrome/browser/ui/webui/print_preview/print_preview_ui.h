@@ -154,8 +154,6 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
    public:
     ScopedAutoCancelForTesting();
     ~ScopedAutoCancelForTesting();
-    static bool IsEnabledForTesting();
-    static void IncrementCountForTesting();
     int GetCountForTesting();
   };
 
