@@ -61,7 +61,7 @@ public:
     virtual ~ScriptValue();
 
     ScriptValue(v8::Handle<v8::Value> value)
-        : m_value(value.IsEmpty() ? 0 : SharedPersistent<v8::Value>::create(value))
+        : m_value(value.IsEmpty() ? 0 : SharedPersistent<v8::Value>::create(value, v8::Isolate::GetCurrent()))
     {
     }
 

@@ -46,7 +46,7 @@ void GCObservation::setWasCollected()
 }
 
 GCObservation::GCObservation(v8::Handle<v8::Value> observedValue)
-    : m_observed(observedValue)
+    : m_observed(v8::Isolate::GetCurrent(), observedValue)
     , m_collected(false)
 {
     m_observed.makeWeak(this, makeWeakCallback);

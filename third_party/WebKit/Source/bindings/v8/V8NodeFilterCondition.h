@@ -60,9 +60,9 @@ class ScriptState;
 // (V8)
 class V8NodeFilterCondition : public NodeFilterCondition {
 public:
-    static PassRefPtr<V8NodeFilterCondition> create(v8::Handle<v8::Value> filter, v8::Handle<v8::Object> owner)
+    static PassRefPtr<V8NodeFilterCondition> create(v8::Handle<v8::Value> filter, v8::Handle<v8::Object> owner, v8::Isolate* isolate)
     {
-        return adoptRef(new V8NodeFilterCondition(filter, owner));
+        return adoptRef(new V8NodeFilterCondition(filter, owner, isolate));
     }
 
     virtual ~V8NodeFilterCondition();
@@ -73,7 +73,7 @@ private:
     // As the value |filter| is maintained by V8GC, the |owner| which references
     // V8NodeFilterCondition, usually a wrapper of NodeFilter, is specified here
     // to hold a strong reference to |filter|.
-    V8NodeFilterCondition(v8::Handle<v8::Value> filter, v8::Handle<v8::Object> owner);
+    V8NodeFilterCondition(v8::Handle<v8::Value> filter, v8::Handle<v8::Object> owner, v8::Isolate*);
 
     static void makeWeakCallback(v8::Isolate*, v8::Persistent<v8::Value>*, V8NodeFilterCondition*);
 

@@ -36,9 +36,9 @@
 namespace WebCore {
 
 JavaScriptCallFrame::JavaScriptCallFrame(v8::Handle<v8::Context> debuggerContext, v8::Handle<v8::Object> callFrame)
-    : m_debuggerContext(debuggerContext)
-    , m_callFrame(callFrame)
-    , m_isolate(v8::Isolate::GetCurrent())
+    : m_isolate(v8::Isolate::GetCurrent())
+    , m_debuggerContext(m_isolate, debuggerContext)
+    , m_callFrame(m_isolate, callFrame)
 {
     ScriptWrappable::init(this);
 }

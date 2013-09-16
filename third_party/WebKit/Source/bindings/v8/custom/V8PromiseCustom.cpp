@@ -97,10 +97,10 @@ v8::Local<v8::ObjectTemplate> internalObjectTemplate(v8::Isolate* isolate)
 
 class PromiseTask : public ScriptExecutionContext::Task {
 public:
-    PromiseTask(v8::Handle<v8::Function> callback, v8::Handle<v8::Object> receiver, v8::Handle<v8::Value> result)
-        : m_callback(callback)
-        , m_receiver(receiver)
-        , m_result(result)
+    PromiseTask(v8::Handle<v8::Function> callback, v8::Handle<v8::Object> receiver, v8::Handle<v8::Value> result, v8::Isolate* isolate)
+        : m_callback(isolate, callback)
+        , m_receiver(isolate, receiver)
+        , m_result(isolate, result)
     {
         ASSERT(!m_callback.isEmpty());
         ASSERT(!m_receiver.isEmpty());
@@ -143,7 +143,7 @@ v8::Handle<v8::Value> postTask(v8::Handle<v8::Function> callback, v8::Handle<v8:
 {
     ScriptExecutionContext* scriptExecutionContext = getScriptExecutionContext();
     ASSERT(scriptExecutionContext && scriptExecutionContext->isContextThread());
-    scriptExecutionContext->postTask(adoptPtr(new PromiseTask(callback, receiver, value)));
+    scriptExecutionContext->postTask(adoptPtr(new PromiseTask(callback, receiver, value, isolate)));
     return v8::Undefined(isolate);
 }
 

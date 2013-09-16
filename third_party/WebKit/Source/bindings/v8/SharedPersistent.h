@@ -42,9 +42,9 @@ namespace WebCore {
     class SharedPersistent : public RefCounted<SharedPersistent<T> > {
     WTF_MAKE_NONCOPYABLE(SharedPersistent);
     public:
-        static PassRefPtr<SharedPersistent<T> > create(v8::Handle<T> value)
+        static PassRefPtr<SharedPersistent<T> > create(v8::Handle<T> value, v8::Isolate* isolate)
         {
-            return adoptRef(new SharedPersistent<T>(value));
+            return adoptRef(new SharedPersistent<T>(value, isolate));
         }
 
         v8::Local<T> newLocal(v8::Isolate* isolate) const
@@ -60,7 +60,7 @@ namespace WebCore {
         }
 
     private:
-        explicit SharedPersistent(v8::Handle<T> value) : m_value(value) { }
+        explicit SharedPersistent(v8::Handle<T> value, v8::Isolate* isolate) : m_value(isolate, value) { }
         ScopedPersistent<T> m_value;
     };
 

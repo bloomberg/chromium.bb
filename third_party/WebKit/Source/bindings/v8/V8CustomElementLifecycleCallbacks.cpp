@@ -91,11 +91,11 @@ V8CustomElementLifecycleCallbacks::V8CustomElementLifecycleCallbacks(ScriptExecu
     : CustomElementLifecycleCallbacks(flagSet(enteredView, leftView, attributeChanged))
     , ActiveDOMCallback(scriptExecutionContext)
     , m_world(DOMWrapperWorld::current())
-    , m_prototype(prototype)
-    , m_created(created)
-    , m_enteredView(enteredView)
-    , m_leftView(leftView)
-    , m_attributeChanged(attributeChanged)
+    , m_prototype(isolateForScriptExecutionContext(scriptExecutionContext), prototype)
+    , m_created(isolateForScriptExecutionContext(scriptExecutionContext), created)
+    , m_enteredView(isolateForScriptExecutionContext(scriptExecutionContext), enteredView)
+    , m_leftView(isolateForScriptExecutionContext(scriptExecutionContext), leftView)
+    , m_attributeChanged(isolateForScriptExecutionContext(scriptExecutionContext), attributeChanged)
     , m_owner(0)
 {
     m_prototype.makeWeak(&m_prototype, weakCallback<v8::Object>);

@@ -574,7 +574,7 @@ void ScriptDebugServer::compileScript(ScriptState* state, const String& expressi
         return;
 
     *scriptId = toWebCoreStringWithUndefinedOrNullCheck(script->Id());
-    m_compiledScripts.set(*scriptId, adoptPtr(new ScopedPersistent<v8::Script>(script)));
+    m_compiledScripts.set(*scriptId, adoptPtr(new ScopedPersistent<v8::Script>(m_isolate, script)));
 }
 
 void ScriptDebugServer::clearCompiledScripts()

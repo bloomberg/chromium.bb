@@ -44,7 +44,7 @@
 namespace WebCore {
 
 ScriptState::ScriptState(v8::Handle<v8::Context> context)
-    : m_context(context)
+    : m_context(context->GetIsolate(), context)
     , m_isolate(context->GetIsolate())
 {
     m_context.makeWeak(this, &makeWeakCallback);

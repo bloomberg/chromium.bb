@@ -41,12 +41,12 @@ namespace WebCore {
 
 class V8ScriptInstance : public RefCounted<V8ScriptInstance> {
 public:
-    static PassRefPtr<V8ScriptInstance> create(v8::Handle<v8::Object> instance) { return adoptRef(new V8ScriptInstance(instance)); }
+    static PassRefPtr<V8ScriptInstance> create(v8::Handle<v8::Object> instance, v8::Isolate* isolate) { return adoptRef(new V8ScriptInstance(instance, isolate)); }
 
     v8::Local<v8::Object> newLocal(v8::Isolate* isolate) { return m_instance.newLocal(isolate); }
 
 private:
-    explicit V8ScriptInstance(v8::Handle<v8::Object>);
+    V8ScriptInstance(v8::Handle<v8::Object>, v8::Isolate*);
 
     ScopedPersistent<v8::Object> m_instance;
 };

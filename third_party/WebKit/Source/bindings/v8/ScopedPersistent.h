@@ -42,8 +42,8 @@ class ScopedPersistent {
 public:
     ScopedPersistent() { }
 
-    explicit ScopedPersistent(v8::Handle<T> handle)
-        : m_handle(v8::Isolate::GetCurrent(), handle)
+    ScopedPersistent(v8::Isolate* isolate, v8::Handle<T> handle)
+        : m_handle(isolate, handle)
     {
     }
 

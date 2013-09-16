@@ -419,7 +419,7 @@ PassScriptInstance ScriptController::createScriptInstanceForWidget(Widget* widge
     // Track the plugin object. We've been given a reference to the object.
     m_pluginObjects.set(widget, npObject);
 
-    return V8ScriptInstance::create(wrapper);
+    return V8ScriptInstance::create(wrapper, m_isolate);
 }
 
 void ScriptController::cleanupScriptObjectsForPlugin(Widget* nativeHandle)

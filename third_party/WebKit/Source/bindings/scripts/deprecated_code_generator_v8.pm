@@ -4596,7 +4596,7 @@ sub GenerateCallbackImplementation
     $implementation{nameSpaceWebCore}->add(<<END);
 ${v8ClassName}::${v8ClassName}(v8::Handle<v8::Object> callback, ScriptExecutionContext* context)
     : ActiveDOMCallback(context)
-    , m_callback(callback)
+    , m_callback(isolateForScriptExecutionContext(context), callback)
     , m_world(DOMWrapperWorld::current())
 {
 }

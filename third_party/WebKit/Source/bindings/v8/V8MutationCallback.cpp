@@ -38,7 +38,7 @@ namespace WebCore {
 
 V8MutationCallback::V8MutationCallback(v8::Handle<v8::Function> callback, ScriptExecutionContext* context, v8::Handle<v8::Object> owner, v8::Isolate* isolate)
     : ActiveDOMCallback(context)
-    , m_callback(callback)
+    , m_callback(isolate, callback)
     , m_world(DOMWrapperWorld::current())
     , m_isolate(isolate)
 {

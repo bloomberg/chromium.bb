@@ -33,8 +33,8 @@
 
 namespace WebCore {
 
-V8ScriptInstance::V8ScriptInstance(v8::Handle<v8::Object> instance)
-    : m_instance(instance)
+V8ScriptInstance::V8ScriptInstance(v8::Handle<v8::Object> instance, v8::Isolate* isolate)
+    : m_instance(isolate, instance)
 {
 }
 

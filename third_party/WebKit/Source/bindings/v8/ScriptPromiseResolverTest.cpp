@@ -47,7 +47,7 @@ public:
     ScriptPromiseResolverTest()
         : m_isolate(v8::Isolate::GetCurrent())
         , m_handleScope(m_isolate)
-        , m_context(v8::Context::New(m_isolate))
+        , m_context(m_isolate, v8::Context::New(m_isolate))
         , m_contextScope(m_context.newLocal(m_isolate))
     {
     }
