@@ -466,13 +466,17 @@ NotificationView::NotificationView(const Notification& notification,
   top_view_->set_border(MakeEmptyBorder(
       kTextTopPadding - 8, 0, kTextBottomPadding - 5, 0));
 
+  const gfx::FontList default_label_font_list = views::Label().font_list();
+
   // Create the title view if appropriate.
   title_view_ = NULL;
   if (!notification.title().empty()) {
-    gfx::Font font = views::Label().font().DeriveFont(2);
-    int padding = kTitleLineHeight - font.GetHeight();
+    const gfx::FontList& font_list =
+        default_label_font_list.DeriveFontListWithSizeDelta(2);
+    int padding = kTitleLineHeight - font_list.GetHeight();
     title_view_ = new BoundedLabel(
-        gfx::TruncateString(notification.title(), kTitleCharacterLimit), font);
+        gfx::TruncateString(notification.title(), kTitleCharacterLimit),
+        font_list);
     title_view_->SetLineHeight(kTitleLineHeight);
     title_view_->SetLineLimit(message_center::kTitleLineLimit);
     title_view_->SetColors(message_center::kRegularTextColor,
@@ -485,7 +489,7 @@ NotificationView::NotificationView(const Notification& notification,
   // Create the message view if appropriate.
   message_view_ = NULL;
   if (!notification.message().empty()) {
-    int padding = kMessageLineHeight - views::Label().font().GetHeight();
+    int padding = kMessageLineHeight - default_label_font_list.GetHeight();
     message_view_ = new BoundedLabel(
         gfx::TruncateString(notification.message(), kMessageCharacterLimit));
     message_view_->SetLineHeight(kMessageLineHeight);
@@ -500,12 +504,11 @@ NotificationView::NotificationView(const Notification& notification,
   // Create the context message view if appropriate.
   context_message_view_ = NULL;
   if (!notification.context_message().empty()) {
-    gfx::Font font = views::Label().font();
-    int padding = kMessageLineHeight - font.GetHeight();
+    int padding = kMessageLineHeight - default_label_font_list.GetHeight();
     context_message_view_ =
         new BoundedLabel(gfx::TruncateString(notification.context_message(),
                                             kContextMessageCharacterLimit),
-                         font);
+                         default_label_font_list);
     context_message_view_->SetLineLimit(
         message_center::kContextMessageLineLimit);
     context_message_view_->SetLineHeight(kMessageLineHeight);
@@ -527,7 +530,7 @@ NotificationView::NotificationView(const Notification& notification,
   }
 
   // Create the list item views (up to a maximum).
-  int padding = kMessageLineHeight - views::Label().font().GetHeight();
+  int padding = kMessageLineHeight - default_label_font_list.GetHeight();
   std::vector<NotificationItem> items = notification.items();
   for (size_t i = 0; i < items.size() && i < kNotificationMaximumItems; ++i) {
     ItemView* item_view = new ItemView(items[i]);

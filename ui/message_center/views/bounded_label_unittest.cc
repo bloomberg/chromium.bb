@@ -10,7 +10,8 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/font.h"
+#include "ui/gfx/font_list.h"
+#include "ui/gfx/text_utils.h"
 #include "ui/views/controls/label.h"
 
 namespace message_center {
@@ -22,9 +23,10 @@ namespace test {
 class BoundedLabelTest : public testing::Test {
  public:
   BoundedLabelTest() {
-    digit_pixels_ = font_.GetStringWidth(UTF8ToUTF16("0"));
-    space_pixels_ = font_.GetStringWidth(UTF8ToUTF16(" "));
-    ellipsis_pixels_ = font_.GetStringWidth(UTF8ToUTF16("\xE2\x80\xA6"));
+    digit_pixels_ = gfx::GetStringWidth(UTF8ToUTF16("0"), font_list_);
+    space_pixels_ = gfx::GetStringWidth(UTF8ToUTF16(" "), font_list_);
+    ellipsis_pixels_ = gfx::GetStringWidth(UTF8ToUTF16("\xE2\x80\xA6"),
+                                           font_list_);
   }
 
   virtual ~BoundedLabelTest() {}
@@ -62,7 +64,7 @@ class BoundedLabelTest : public testing::Test {
 
   // Exercise BounderLabel::GetLinesForWidthAndLimit() using the test label.
   int GetLinesForWidth(int width) {
-    label_->SetBounds(0, 0, width, font_.GetHeight() * lines_);
+    label_->SetBounds(0, 0, width, font_list_.GetHeight() * lines_);
     return label_->GetLinesForWidthAndLimit(width, lines_);
   }
 
@@ -71,13 +73,14 @@ class BoundedLabelTest : public testing::Test {
   // test the newly created label using the exercise methods above.
   BoundedLabelTest& Label(string16 text, int lines) {
     lines_ = lines;
-    label_.reset(new BoundedLabel(text, font_));
+    label_.reset(new BoundedLabel(text, font_list_));
     label_->SetLineLimit(lines_);
     return *this;
   }
 
  private:
-  gfx::Font font_;  // The default font, which will be used for tests.
+  // The default font list, which will be used for tests.
+  gfx::FontList font_list_;
   int digit_pixels_;
   int space_pixels_;
   int ellipsis_pixels_;

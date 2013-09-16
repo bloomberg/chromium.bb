@@ -143,9 +143,9 @@ std::vector<string16> InnerBoundedLabel::GetWrappedText(int width, int lines) {
 
   // Wrap, using INT_MAX for -1 widths that indicate no wrapping.
   std::vector<string16> wrapped;
-  gfx::ElideRectangleText(text(), font(),
-                         (width < 0) ? std::numeric_limits<int>::max() : width,
-                         height, gfx::WRAP_LONG_WORDS, &wrapped);
+  gfx::ElideRectangleText(text(), font_list(),
+                          (width < 0) ? std::numeric_limits<int>::max() : width,
+                          height, gfx::WRAP_LONG_WORDS, &wrapped);
 
   // Elide if necessary.
   if (lines > 0 && wrapped.size() > static_cast<unsigned int>(lines)) {
@@ -259,10 +259,10 @@ void InnerBoundedLabel::SetCachedSize(std::pair<int, int> width_and_lines,
 
 // BoundedLabel ///////////////////////////////////////////////////////////
 
-BoundedLabel::BoundedLabel(const string16& text, gfx::Font font)
+BoundedLabel::BoundedLabel(const string16& text, const gfx::FontList& font_list)
     : line_limit_(-1) {
   label_.reset(new InnerBoundedLabel(*this));
-  label_->SetFont(font);
+  label_->SetFontList(font_list);
   label_->SetText(text);
 }
 

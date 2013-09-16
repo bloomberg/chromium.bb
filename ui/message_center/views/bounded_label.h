@@ -14,7 +14,7 @@
 #include "ui/views/view.h"
 
 namespace gfx {
-class Font;
+class FontList;
 }
 
 namespace message_center {
@@ -33,7 +33,7 @@ class BoundedLabelTest;
 // bounded_label.cc file for details.
 class MESSAGE_CENTER_EXPORT BoundedLabel : public views::View {
  public:
-  BoundedLabel(const string16& text, gfx::Font font);
+  BoundedLabel(const string16& text, const gfx::FontList& font_list);
   BoundedLabel(const string16& text);
   virtual ~BoundedLabel();
 
