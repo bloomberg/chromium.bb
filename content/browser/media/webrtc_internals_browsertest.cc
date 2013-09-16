@@ -118,9 +118,8 @@ class PeerConnectionEntry {
 
 static const int64 FAKE_TIME_STAMP = 3600000;
 
-#if defined(OS_WIN) || defined(OS_LINUX)
+#if defined(OS_WIN)
 // All tests are flaky on Windows: crbug.com/277322.
-// All tests are flaky on Linux: crbug.com/281492.
 #define MAYBE_WebRTCInternalsBrowserTest DISABLED_WebRTCInternalsBrowserTest
 #else
 #define MAYBE_WebRTCInternalsBrowserTest WebRTCInternalsBrowserTest
