@@ -989,23 +989,26 @@ class NinjaWriter:
             self.link_deps_file.write(target.binary)
             self.link_deps_file.write('\n')
 
+          new_deps = []
           if (self.flavor == 'win' and
               target.component_objs and
               self.msvs_settings.IsUseLibraryDependencyInputs(config_name)):
-            extra_link_deps |= set(target.component_objs)
+            new_deps = target.component_objs
           elif self.flavor == 'win' and target.import_lib:
-            extra_link_deps.add(target.import_lib)
+            new_deps = [target.import_lib]
           elif target.UsesToc(self.flavor):
             solibs.add(target.binary)
             implicit_deps.add(target.binary + '.TOC')
           else:
-            extra_link_deps.add(target.binary)
+            new_deps = [target.binary]
+          for new_dep in new_deps:
+            if new_dep not in extra_link_deps:
+              extra_link_deps.add(new_dep)
+              link_deps.append(new_dep)
 
         final_output = target.FinalOutput()
         if not linkable or final_output != target.binary:
           implicit_deps.add(final_output)
-
-      link_deps.extend(list(extra_link_deps))
 
     extra_bindings = []
     if self.uses_cpp and self.flavor != 'win':
