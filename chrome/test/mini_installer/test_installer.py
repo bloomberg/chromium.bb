@@ -52,6 +52,7 @@ class InstallerTest(unittest.TestCase):
     self._test = test
     self._config = config
     self._path_resolver = path_resolver
+    self._clean_on_teardown = True
 
   def __str__(self):
     """Returns a string representing the test case.
@@ -69,18 +70,25 @@ class InstallerTest(unittest.TestCase):
     self.assertEqual(1, len(self._test) % 2,
                      'The length of test array must be odd')
 
-    # TODO(sukolsak): run a reset command that puts the machine in clean state.
-
     state = self._test[0]
     self._VerifyState(state)
 
     # Starting at index 1, we loop through pairs of (action, state).
     for i in range(1, len(self._test), 2):
       action = self._test[i]
-      self._RunCommand(self._config.actions[action])
+      RunCommand(self._config.actions[action], self._path_resolver)
 
       state = self._test[i + 1]
       self._VerifyState(state)
+
+    # If the test makes it here, it means it was successful, because RunCommand
+    # and _VerifyState throw an exception on failure.
+    self._clean_on_teardown = False
+
+  def tearDown(self):
+    """Cleans up the machine if the test case fails."""
+    if self._clean_on_teardown:
+      RunCleanCommand(True, self._path_resolver)
 
   def shortDescription(self):
     """Overridden from unittest.TestCase.
@@ -105,18 +113,44 @@ class InstallerTest(unittest.TestCase):
       # to the error message so that we know where the test fails.
       raise AssertionError("In state '%s', %s" % (state, e))
 
-  def _RunCommand(self, command):
-    """Runs the given command from the current file's directory.
 
-    Args:
-      command: A command to run. It is expanded using ResolvePath.
-    """
-    resolved_command = self._path_resolver.ResolvePath(command)
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    exit_status = subprocess.call(resolved_command, shell=True, cwd=script_dir)
-    if exit_status != 0:
-      self.fail('Command %s returned non-zero exit status %s' % (
-          resolved_command, exit_status))
+def RunCommand(command, path_resolver):
+  """Runs the given command from the current file's directory.
+
+  This function throws an Exception if the command returns with non-zero exit
+  status.
+
+  Args:
+    command: A command to run. It is expanded using ResolvePath.
+    path_resolver: A PathResolver object.
+  """
+  resolved_command = path_resolver.ResolvePath(command)
+  script_dir = os.path.dirname(os.path.abspath(__file__))
+  exit_status = subprocess.call(resolved_command, shell=True, cwd=script_dir)
+  if exit_status != 0:
+    raise Exception('Command %s returned non-zero exit status %s' % (
+        command, exit_status))
+
+
+def RunCleanCommand(force_clean, path_resolver):
+  """Puts the machine in the clean state (i.e. Chrome not installed).
+
+  Args:
+    force_clean: A boolean indicating whether to force cleaning existing
+        installations.
+    path_resolver: A PathResolver object.
+  """
+  # TODO(sukolsak): Read the clean state from the config file and clean
+  # the machine according to it.
+  # TODO(sukolsak): Handle Chrome SxS installs.
+  commands = []
+  interactive_option = '--interactive' if not force_clean else ''
+  for level_option in ('', '--system-level'):
+    commands.append('python uninstall_chrome.py '
+                    '--chrome-long-name="$CHROME_LONG_NAME" '
+                    '--no-error-if-absent %s %s' %
+                    (level_option, interactive_option))
+  RunCommand(' && '.join(commands), path_resolver)
 
 
 def MergePropertyDictionaries(current_property, new_property):
@@ -185,18 +219,21 @@ def ParseConfigFile(filename):
   return config
 
 
-def RunTests(mini_installer_path, config):
+def RunTests(mini_installer_path, config, force_clean):
   """Tests the installer using the given Config object.
 
   Args:
     mini_installer_path: The path to mini_installer.exe.
     config: A Config object.
+    force_clean: A boolean indicating whether to force cleaning existing
+        installations.
 
   Returns:
     True if all the tests passed, or False otherwise.
   """
   suite = unittest.TestSuite()
   path_resolver = PathResolver(mini_installer_path)
+  RunCleanCommand(force_clean, path_resolver)
   for test in config.tests:
     suite.addTest(InstallerTest(test, config, path_resolver))
   result = unittest.TextTestRunner(verbosity=2).run(suite)
@@ -211,6 +248,8 @@ def main():
                          'Release or Debug directory)')
   parser.add_option('--target', default='Release',
                     help='Build target (Release or Debug)')
+  parser.add_option('--force-clean', action='store_true', dest='force_clean',
+                    default=False, help='Force cleaning existing installations')
   options, args = parser.parse_args()
   if len(args) != 1:
     parser.error('Incorrect number of arguments.')
@@ -221,7 +260,7 @@ def main():
   assert os.path.exists(mini_installer_path), ('Could not find file %s' %
                                                mini_installer_path)
   config = ParseConfigFile(config_filename)
-  if not RunTests(mini_installer_path, config):
+  if not RunTests(mini_installer_path, config, options.force_clean):
     return 1
   return 0
 
