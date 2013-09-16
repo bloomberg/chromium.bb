@@ -1,14 +1,16 @@
-# This should match chrome/browser/extensions/OWNERS
+# Extension and apps team owners. Use file history to guide reviewer selection
+# as this list is randomized. If editing, see chrome/browser/extensions/OWNERS
+kalman@chromium.org
+jyasskin@chromium.org
+mpcomplete@chromium.org
+koz@chromium.org
+yoz@chromium.org
+finnur@chromium.org
+miket@chromium.org
 asargent@chromium.org
 benwells@chromium.org
-finnur@chromium.org
-jyasskin@chromium.org
-kalman@chromium.org
-koz@chromium.org
+scheib@chromium.org
 mek@chromium.org
-miket@chromium.org
-mpcomplete@chromium.org
-yoz@chromium.org
 
 per-file searchbox_api.js=dcblack@chromium.org
 per-file searchbox_api.js=jered@chromium.org

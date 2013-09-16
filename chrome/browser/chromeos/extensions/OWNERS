@@ -1,14 +1,16 @@
-# This should match chrome/browser/extensions/OWNERS
-asargent@chromium.org
-benwells@chromium.org
-finnur@chromium.org
-jyasskin@chromium.org
-kalman@chromium.org
-koz@chromium.org
-mek@chromium.org
-miket@chromium.org
+# Extension and apps team owners. Use file history to guide reviewer selection
+# as this list is randomized. If editing, see chrome/browser/extensions/OWNERS
 mpcomplete@chromium.org
 yoz@chromium.org
+koz@chromium.org
+miket@chromium.org
+mek@chromium.org
+benwells@chromium.org
+finnur@chromium.org
+scheib@chromium.org
+jyasskin@chromium.org
+asargent@chromium.org
+kalman@chromium.org
 
 # Additional ChromeOS-specific reviewers
 tbarzic@chromium.org
@@ -16,3 +18,4 @@ zelidrag@chromium.org
 
 # bshe for wallpaper related files
 bshe@chromium.org
+
