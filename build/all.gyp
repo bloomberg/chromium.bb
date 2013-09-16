@@ -14,6 +14,7 @@
         '../chrome/chrome.gyp:*',
         '../content/content.gyp:*',
         '../crypto/crypto.gyp:*',
+        '../mojo/mojo.gyp:*',
         '../net/net.gyp:*',
         '../sdch/sdch.gyp:*',
         '../sql/sql.gyp:*',
