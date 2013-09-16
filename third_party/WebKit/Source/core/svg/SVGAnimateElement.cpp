@@ -165,6 +165,10 @@ bool SVGAnimateElement::calculateFromAndByValues(const String& fromString, const
     if (animationMode() == ByAnimation && !isAdditive())
         return false;
 
+    // from-by animation may only be used with attributes that support addition (e.g. most numeric attributes).
+    if (animationMode() == FromByAnimation && !animatedPropertyTypeSupportsAddition())
+        return false;
+
     ASSERT(!hasTagName(SVGNames::setTag));
 
     determinePropertyValueTypes(fromString, byString);
@@ -367,21 +371,26 @@ void SVGAnimateElement::applyResultsToTarget()
     notifyTargetAndInstancesAboutAnimValChange(targetElement(), attributeName());
 }
 
+bool SVGAnimateElement::animatedPropertyTypeSupportsAddition() const
+{
+    // Spec: http://www.w3.org/TR/SVG/animate.html#AnimationAttributesAndProperties.
+    switch (m_animatedPropertyType) {
+    case AnimatedBoolean:
+    case AnimatedEnumeration:
+    case AnimatedPreserveAspectRatio:
+    case AnimatedString:
+    case AnimatedUnknown:
+        return false;
+    default:
+        return true;
+    }
+}
+
 bool SVGAnimateElement::isAdditive() const
 {
-    if (animationMode() == ByAnimation || animationMode() == FromByAnimation) {
-        // Spec: http://www.w3.org/TR/SVG/animate.html#AnimationAttributesAndProperties.
-        switch (m_animatedPropertyType) {
-        case AnimatedBoolean:
-        case AnimatedEnumeration:
-        case AnimatedPreserveAspectRatio:
-        case AnimatedString:
-        case AnimatedUnknown:
+    if (animationMode() == ByAnimation || animationMode() == FromByAnimation)
+        if (!animatedPropertyTypeSupportsAddition())
             return false;
-        default:
-            break;
-        }
-    }
 
     return SVGAnimationElement::isAdditive();
 }
