@@ -125,11 +125,27 @@ class MacTool(object):
 
     # Go through all the environment variables and replace them as variables in
     # the file.
+    IDENT_RE = re.compile('[/\s]')
     for key in os.environ:
       if key.startswith('_'):
         continue
       evar = '${%s}' % key
-      lines = string.replace(lines, evar, os.environ[key])
+      evalue = os.environ[key]
+      lines = string.replace(lines, evar, evalue)
+
+      # Xcode supports various suffices on environment variables, which are
+      # all undocumented. :rfc1034identifier is used in the standard project
+      # template these days, and :identifier was used earlier. They are used to
+      # convert non-url characters into things that look like valid urls --
+      # except that the replacement character for :identifier, '_' isn't valid
+      # in a URL either -- oops, hence :rfc1034identifier was born.
+      evar = '${%s:identifier}' % key
+      evalue = IDENT_RE.sub('_', os.environ[key])
+      lines = string.replace(lines, evar, evalue)
+
+      evar = '${%s:rfc1034identifier}' % key
+      evalue = IDENT_RE.sub('-', os.environ[key])
+      lines = string.replace(lines, evar, evalue)
 
     # Remove any keys with values that haven't been replaced.
     lines = lines.split('\n')

@@ -36,9 +36,11 @@ if sys.platform == 'darwin':
       chdir='framework')
 
   # Info.plist
-  test.built_file_must_exist(
+  info_plist = test.built_file_path(
       'Test Framework.framework/Versions/A/Resources/Info.plist',
       chdir='framework')
+  test.must_exist(info_plist)
+  test.must_contain(info_plist, 'com.yourcompany.Test_Framework')
 
   # Resources
   test.built_file_must_exist(
