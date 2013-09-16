@@ -1674,6 +1674,12 @@ TEST_F(RenderTextTest, Multiline_MinWidth) {
 
 // Ensure strings wrap onto multiple lines for a normal available width.
 TEST_F(RenderTextTest, Multiline_NormalWidth) {
+  // TODO(ckocagil): Enable this test on XP.
+#if defined(OS_WIN)
+  if (base::win::GetVersion() < base::win::VERSION_VISTA)
+    return;
+#endif
+
   const struct {
     const wchar_t* const text;
     const Range first_line_char_range;
