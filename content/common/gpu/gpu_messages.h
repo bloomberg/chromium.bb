@@ -84,6 +84,10 @@ IPC_STRUCT_BEGIN(AcceleratedSurfaceMsg_BufferPresented_Params)
 #if defined(OS_MACOSX)
   IPC_STRUCT_MEMBER(int32, renderer_id)
 #endif
+#if defined(OS_WIN)
+  IPC_STRUCT_MEMBER(base::TimeTicks, vsync_timebase)
+  IPC_STRUCT_MEMBER(base::TimeDelta, vsync_interval)
+#endif
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(GPUCommandBufferConsoleMessage)
