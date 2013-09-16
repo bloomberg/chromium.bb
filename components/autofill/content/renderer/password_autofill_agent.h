@@ -50,6 +50,9 @@ class PasswordAutofillAgent : public content::RenderViewObserver {
   // Returns true if any suggestions were shown, false otherwise.
   bool ShowSuggestions(const WebKit::WebInputElement& element);
 
+  // Called when new form controls are inserted.
+  void OnDynamicFormsSeen(WebKit::WebFrame* frame);
+
  protected:
   virtual bool OriginCanAccessPasswordManager(
       const WebKit::WebSecurityOrigin& origin);

@@ -356,6 +356,10 @@ bool PasswordAutofillAgent::OriginCanAccessPasswordManager(
   return origin.canAccessPasswordManager();
 }
 
+void PasswordAutofillAgent::OnDynamicFormsSeen(WebKit::WebFrame* frame) {
+  SendPasswordForms(frame, false /* only_visible */);
+}
+
 void PasswordAutofillAgent::SendPasswordForms(WebKit::WebFrame* frame,
                                               bool only_visible) {
   // Make sure that this security origin is allowed to use password manager.

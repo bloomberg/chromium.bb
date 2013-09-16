@@ -176,6 +176,24 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   EXPECT_TRUE(observer.infobar_shown());
 }
 
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
+                       PromptForDynamicForm) {
+  NavigateToFile("/password/dynamic_password_form.html");
+
+  // Fill the dynamic password form and submit.
+  NavigationObserver observer(WebContents());
+  std::string fill_and_submit =
+      "document.getElementById('create_form_button').click();"
+      "window.setTimeout(function() {"
+      "  document.dynamic_form.username.value = 'tempro';"
+      "  document.dynamic_form.password.value = 'random';"
+      "  document.dynamic_form.submit();"
+      "}, 0)";
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  observer.Wait();
+  EXPECT_TRUE(observer.infobar_shown());
+}
+
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, NoPromptForNavigation) {
   NavigateToFile("/password/password_form.html");
 

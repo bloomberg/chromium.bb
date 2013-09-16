@@ -607,9 +607,18 @@ void AutofillAgent::HideAutofillUI() {
   Send(new AutofillHostMsg_HideAutofillUI(routing_id()));
 }
 
-// TODO(isherman): Decide if we want to support autofill with AJAX.
+// TODO(isherman): Decide if we want to support non-password autofill with AJAX.
 void AutofillAgent::didAssociateFormControls(
     const WebKit::WebVector<WebKit::WebNode>& nodes) {
+  for (size_t i = 0; i < nodes.size(); ++i) {
+    WebKit::WebFrame* frame = nodes[i].document().frame();
+    // Only monitors dynamic forms created in the top frame. Dynamic forms
+    // inserted in iframes are not captured yet.
+    if (!frame->parent()) {
+      password_autofill_agent_->OnDynamicFormsSeen(frame);
+      return;
+    }
+  }
 }
 
 }  // namespace autofill
