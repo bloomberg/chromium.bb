@@ -1291,7 +1291,11 @@ public class AwContents {
 
         nativeUpdateLastHitTestData(mNativeAwContents);
         Bundle data = msg.getData();
-        data.putString("url", mPossiblyStaleHitTestData.href);
+
+        // In order to maintain compatibility with the old WebView's implementation,
+        // the absolute (full) url is passed in the |url| field, not only the href attribute.
+        // Note: HitTestData could be cleaned up at this point. See http://crbug.com/290992.
+        data.putString("url", mPossiblyStaleHitTestData.hitTestResultExtraData);
         data.putString("title", mPossiblyStaleHitTestData.anchorText);
         data.putString("src", mPossiblyStaleHitTestData.imgSrc);
         msg.setData(data);
