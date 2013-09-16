@@ -56,6 +56,7 @@ enum FieldTypeGroupForMetrics {
   CREDIT_CARD_NUMBER,
   CREDIT_CARD_DATE,
   CREDIT_CARD_TYPE,
+  PASSWORD,
   NUM_FIELD_TYPE_GROUPS_FOR_METRICS
 };
 
@@ -85,13 +86,14 @@ int GetFieldTypeGroupMetric(const ServerFieldType field_type,
                             const int num_possible_metrics) {
   DCHECK_LT(metric, num_possible_metrics);
 
-  FieldTypeGroupForMetrics group;
+  FieldTypeGroupForMetrics group = AMBIGUOUS;
   switch (AutofillType(field_type).group()) {
     case ::autofill::NO_GROUP:
       group = AMBIGUOUS;
       break;
 
     case ::autofill::NAME:
+    case ::autofill::NAME_BILLING:
       group = NAME;
       break;
 
@@ -100,7 +102,8 @@ int GetFieldTypeGroupMetric(const ServerFieldType field_type,
       break;
 
     case ::autofill::ADDRESS_HOME:
-      switch (field_type) {
+    case ::autofill::ADDRESS_BILLING:
+      switch (AutofillType(field_type).GetStorableType()) {
         case ADDRESS_HOME_LINE1:
           group = ADDRESS_LINE_1;
           break;
@@ -122,6 +125,7 @@ int GetFieldTypeGroupMetric(const ServerFieldType field_type,
         default:
           NOTREACHED();
           group = AMBIGUOUS;
+          break;
       }
       break;
 
@@ -130,6 +134,7 @@ int GetFieldTypeGroupMetric(const ServerFieldType field_type,
       break;
 
     case ::autofill::PHONE_HOME:
+    case ::autofill::PHONE_BILLING:
       group = PHONE;
       break;
 
@@ -144,14 +149,23 @@ int GetFieldTypeGroupMetric(const ServerFieldType field_type,
         case ::autofill::CREDIT_CARD_TYPE:
           group = CREDIT_CARD_TYPE;
           break;
-        default:
+        case ::autofill::CREDIT_CARD_EXP_MONTH:
+        case ::autofill::CREDIT_CARD_EXP_2_DIGIT_YEAR:
+        case ::autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR:
+        case ::autofill::CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR:
+        case ::autofill::CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR:
           group = CREDIT_CARD_DATE;
+          break;
+        default:
+          NOTREACHED();
+          group = AMBIGUOUS;
+          break;
       }
       break;
 
-    default:
-      NOTREACHED();
-      group = AMBIGUOUS;
+    case ::autofill::PASSWORD_FIELD:
+      group = PASSWORD;
+      break;
   }
 
   // Interpolate the |metric| with the |group|, so that all metrics for a given
