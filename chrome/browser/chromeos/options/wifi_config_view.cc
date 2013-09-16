@@ -1249,6 +1249,9 @@ void WifiConfigView::InitFromProperties(
       if (cert_index >= 0) {
         // Skip item for "Default".
         server_ca_cert_combobox_->SetSelectedIndex(1 + cert_index);
+      } else {
+        // "Default"
+        server_ca_cert_combobox_->SetSelectedIndex(0);
       }
     }
   }
@@ -1292,6 +1295,7 @@ void WifiConfigView::InitFromProperties(
       flimflam::kSaveCredentialsProperty, &save_credentials);
   save_credentials_checkbox_->SetChecked(save_credentials);
 
+  UpdateDialogButtons();
   RefreshShareCheckbox();
   UpdateErrorLabel();
 }

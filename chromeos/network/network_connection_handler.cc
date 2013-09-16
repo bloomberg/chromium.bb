@@ -452,21 +452,16 @@ void NetworkConnectionHandler::VerifyConfiguredAndConnect(
 
   if (!config_properties.empty()) {
     NET_LOG_EVENT("Configuring Network", service_path);
-    if (shill_property_util::CopyIdentifyingProperties(service_properties,
-                                                       &config_properties)) {
-      network_configuration_handler_->SetProperties(
-          service_path,
-          config_properties,
-          base::Bind(&NetworkConnectionHandler::CallShillConnect,
-                     AsWeakPtr(),
-                     service_path),
-          base::Bind(&NetworkConnectionHandler::HandleConfigurationFailure,
-                     AsWeakPtr(),
-                     service_path));
-      return;
-    }
-    NET_LOG_ERROR("Shill dictionary is missing some relevant entries",
-                  service_path);
+    network_configuration_handler_->SetProperties(
+        service_path,
+        config_properties,
+        base::Bind(&NetworkConnectionHandler::CallShillConnect,
+                   AsWeakPtr(),
+                   service_path),
+        base::Bind(&NetworkConnectionHandler::HandleConfigurationFailure,
+                   AsWeakPtr(),
+                   service_path));
+    return;
   }
 
   // Otherwise, we probably still need to configure the network since
