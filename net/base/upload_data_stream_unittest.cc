@@ -14,6 +14,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/time/time.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -123,8 +124,13 @@ class MockUploadElementReader : public UploadElementReader {
 
 class UploadDataStreamTest : public PlatformTest {
  public:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() {
+    PlatformTest::SetUp();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+  }
+  virtual ~UploadDataStreamTest() {
+    element_readers_.clear();
+    base::RunLoop().RunUntilIdle();
   }
 
   void FileChangedHelper(const base::FilePath& file_path,

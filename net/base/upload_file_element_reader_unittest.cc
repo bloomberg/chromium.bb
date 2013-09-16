@@ -7,6 +7,7 @@
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/run_loop.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
@@ -17,7 +18,8 @@ namespace net {
 
 class UploadFileElementReaderTest : public PlatformTest {
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() {
+    PlatformTest::SetUp();
     // Some tests (*.ReadPartially) rely on bytes_.size() being even.
     const char kData[] = "123456789abcdefghi";
     bytes_.assign(kData, kData + arraysize(kData) - 1);
@@ -42,6 +44,11 @@ class UploadFileElementReaderTest : public PlatformTest {
     EXPECT_EQ(bytes_.size(), reader_->GetContentLength());
     EXPECT_EQ(bytes_.size(), reader_->BytesRemaining());
     EXPECT_FALSE(reader_->IsInMemory());
+  }
+
+  virtual ~UploadFileElementReaderTest() {
+    reader_.reset();
+    base::RunLoop().RunUntilIdle();
   }
 
   std::vector<char> bytes_;
