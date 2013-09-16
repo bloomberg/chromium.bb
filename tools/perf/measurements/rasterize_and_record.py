@@ -148,7 +148,7 @@ class RasterizeAndRecord(page_measurement.PageMeasurement):
         });
     """)
 
-    tab.browser.StartTracing('webkit,webkit.console,benchmark', 60)
+    tab.browser.StartTracing('webkit.console,benchmark', 60)
     self._metrics.Start()
 
     tab.ExecuteJavaScript("""
@@ -166,10 +166,9 @@ class RasterizeAndRecord(page_measurement.PageMeasurement):
     time.sleep(float(self.options.stop_wait_time))
     tab.ExecuteJavaScript('console.timeEnd("measureNextFrame")')
 
-    tab.browser.StopTracing()
     self._metrics.Stop()
+    timeline = tab.browser.StopTracing().AsTimelineModel()
 
-    timeline = tab.browser.GetTraceResultAndReset().AsTimelineModel()
     collector = StatsCollector(timeline)
     collector.GatherRenderingStats()
 

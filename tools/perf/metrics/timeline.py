@@ -38,8 +38,7 @@ class TimelineMetric(Metric):
           console.timeEnd("__loading_measurement_was_here__");
           """)
 
-      tab.browser.StopTracing()
-      trace_result = tab.browser.GetTraceResultAndReset()
+      trace_result = tab.browser.StopTracing()
       self._model = trace_result.AsTimelineModel()
       events = [s for
                 s in self._model.GetAllEventsOfName(
@@ -68,4 +67,3 @@ class TimelineMetric(Metric):
       results.Add(event_name, 'ms', total)
       results.Add(event_name + '_max', 'ms', biggest_jank)
       results.Add(event_name + '_avg', 'ms', total / len(times))
-

@@ -28,6 +28,7 @@ class Smoothness(page_measurement.PageMeasurement):
     super(Smoothness, self).__init__('smoothness')
     self.force_enable_threaded_compositing = False
     self._metrics = None
+    self._trace_result = None
 
   def AddCommandLineOptions(self, parser):
     parser.add_option('--report-all-results', dest='report_all_results',
@@ -43,9 +44,7 @@ class Smoothness(page_measurement.PageMeasurement):
     return hasattr(page, 'smoothness')
 
   def WillRunAction(self, page, tab, action):
-    # TODO(ernstm): remove 'webkit' category when
-    # https://codereview.chromium.org/23848006/ has landed.
-    tab.browser.StartTracing('webkit,webkit.console,benchmark', 60)
+    tab.browser.StartTracing('webkit.console,benchmark', 60)
     if tab.browser.platform.IsRawDisplayFrameRateSupported():
       tab.browser.platform.StartRawDisplayFrameRateMeasurement()
     self._metrics = smoothness.SmoothnessMetrics(tab)
@@ -59,7 +58,7 @@ class Smoothness(page_measurement.PageMeasurement):
       tab.browser.platform.StopRawDisplayFrameRateMeasurement()
     if not action.CanBeBound():
       self._metrics.Stop()
-    tab.browser.StopTracing()
+    self._trace_result = tab.browser.StopTracing()
 
   def FindTimelineMarker(self, timeline):
     events = [s for
@@ -80,8 +79,8 @@ class Smoothness(page_measurement.PageMeasurement):
 
     smoothness.CalcFirstPaintTimeResults(results, tab)
 
-    timeline = tab.browser.GetTraceResultAndReset().AsTimelineModel()
-    timeline_marker = self.FindTimelineMarker(timeline)
+    timeline_marker = self.FindTimelineMarker(
+        self._trace_result.AsTimelineModel())
     benchmark_stats = GpuRenderingStats(timeline_marker,
                                         rendering_stats_deltas,
                                         self._metrics.is_using_gpu_benchmarking)
