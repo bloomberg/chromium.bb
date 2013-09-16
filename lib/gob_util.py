@@ -307,7 +307,7 @@ def RemoveReviewers(host, change, remove=None):
           ' from change %s' % (r, change))
 
 
-def SetReview(host, change, msg=None, labels=None):
+def SetReview(host, change, msg=None, labels=None, notify=None):
   """Set labels and/or add a message to a code review."""
   if not msg and not labels:
     return
@@ -322,6 +322,8 @@ def SetReview(host, change, msg=None, labels=None):
     body['message'] = msg
   if labels:
     body['labels'] = labels
+  if notify:
+    body['notify'] = notify
   conn = CreateHttpConn(host, path, reqtype='POST', body=body)
   response = ReadHttpJsonResponse(conn)
   if labels:
@@ -332,7 +334,8 @@ def SetReview(host, change, msg=None, labels=None):
             key, change))
 
 
-def ResetReviewLabels(host, change, label, value='0', message=None):
+def ResetReviewLabels(host, change, label, value='0', message=None,
+                      notify=None):
   """Reset the value of a given label for all reviewers on a change."""
   # This is tricky, because we want to work on the "current revision", but
   # there's always the risk that "current revision" will change in between
@@ -358,6 +361,8 @@ def ResetReviewLabels(host, change, label, value='0', message=None):
           'labels': {label: value},
           'on_behalf_of': review['_account_id'],
       }
+      if notify:
+        body['notify'] = notify
       conn = CreateHttpConn(
           host, path, reqtype='POST', body=body)
       response = ReadHttpJsonResponse(conn)

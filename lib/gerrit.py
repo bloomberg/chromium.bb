@@ -652,15 +652,15 @@ class GerritOnBorgHelper(GerritHelper):
           logging.info('Would have set label "%s" to "%s" for change "%s".',
               key, val, change)
       return
-    gob_util.SetReview(
-        self.host, self._to_changenum(change), msg=msg, labels=labels)
+    gob_util.SetReview(self.host, self._to_changenum(change),
+                       msg=msg, labels=labels, notify='ALL')
 
   def RemoveCommitReady(self, change, dryrun=False):
     if dryrun:
       logging.info('Would have reset Commit-Queue label for %s', change)
       return
-    gob_util.ResetReviewLabels(
-        self.host, self._to_changenum(change), label='Commit-Queue')
+    gob_util.ResetReviewLabels(self.host, self._to_changenum(change),
+                               label='Commit-Queue', notify='OWNER')
 
   def SubmitChange(self, change, dryrun=False):
     if dryrun:

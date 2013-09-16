@@ -1866,7 +1866,10 @@ class PaladinMessage():
     _RunCommand(cmd, dryrun)
 
   def _SendViaHTTP(self, dryrun):
-    body = { 'message': self._ConstructPaladinMessage() }
+    body = {
+        'message': self._ConstructPaladinMessage(),
+        'notify': 'OWNER',
+    }
     path = 'changes/%s/revisions/%s/review' % (
         self.patch.gerrit_number, self.patch.revision)
     if dryrun:
