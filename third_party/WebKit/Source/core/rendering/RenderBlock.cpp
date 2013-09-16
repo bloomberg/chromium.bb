@@ -6518,8 +6518,7 @@ void RenderBlock::adjustForBorderFit(LayoutUnit x, LayoutUnit& left, LayoutUnit&
                 if (box->lastChild())
                     right = max(right, x + static_cast<LayoutUnit>(ceilf(box->lastChild()->logicalRight())));
             }
-        }
-        else {
+        } else {
             for (RenderBox* obj = firstChildBox(); obj; obj = obj->nextSiblingBox()) {
                 if (!obj->isFloatingOrOutOfFlowPositioned()) {
                     if (obj->isRenderBlockFlow() && !obj->hasOverflowClip())
