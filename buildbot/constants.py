@@ -8,8 +8,20 @@ import os
 
 USE_GOB = True
 
-SOURCE_ROOT = os.path.dirname(os.path.abspath(__file__))
-SOURCE_ROOT = os.path.realpath(os.path.join(SOURCE_ROOT, '..', '..'))
+def _FindSourceRoot():
+  """Try and find the root check out of the chromiumos tree"""
+  source_root = path = os.path.realpath(os.path.join(
+      os.path.abspath(__file__), '..', '..', '..'))
+  while True:
+    if os.path.isdir(os.path.join(path, '.repo')):
+      return path
+    elif path == '/':
+      break
+    path = os.path.dirname(path)
+  return source_root
+
+SOURCE_ROOT = _FindSourceRoot()
+
 CROSUTILS_DIR = os.path.join(SOURCE_ROOT, 'src/scripts')
 CHROMITE_BIN_SUBDIR = 'chromite/bin'
 CHROMITE_BIN_DIR = os.path.join(SOURCE_ROOT, CHROMITE_BIN_SUBDIR)
