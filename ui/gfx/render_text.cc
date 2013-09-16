@@ -301,6 +301,14 @@ void StyleIterator::UpdatePosition(size_t position) {
     style_[i] = styles_[i].GetBreak(position);
 }
 
+LineSegment::LineSegment() : run(0) {}
+
+LineSegment::~LineSegment() {}
+
+Line::Line() : preceding_heights(0), baseline(0) {}
+
+Line::~Line() {}
+
 }  // namespace internal
 
 RenderText::~RenderText() {
@@ -308,6 +316,8 @@ RenderText::~RenderText() {
 
 void RenderText::SetText(const base::string16& text) {
   DCHECK(!composition_range_.IsValid());
+  if (text_ == text)
+    return;
   text_ = text;
 
   // Adjust ranged styles and colors to accommodate a new text length.
@@ -394,9 +404,18 @@ void RenderText::SetObscuredRevealIndex(int index) {
   ResetLayout();
 }
 
+void RenderText::SetMultiline(bool multiline) {
+  if (multiline != multiline_) {
+    multiline_ = multiline;
+    cached_bounds_and_offset_valid_ = false;
+    lines_.clear();
+  }
+}
+
 void RenderText::SetDisplayRect(const Rect& r) {
   display_rect_ = r;
   cached_bounds_and_offset_valid_ = false;
+  lines_.clear();
 }
 
 void RenderText::SetCursorPosition(size_t position) {
@@ -687,6 +706,10 @@ void RenderText::DrawSelectedTextForDrag(Canvas* canvas) {
 
 Rect RenderText::GetCursorBounds(const SelectionModel& caret,
                                  bool insert_mode) {
+  // TODO(ckocagil): Support multiline. This function should return the height
+  //                 of the line the cursor is on. |GetStringSize()| now returns
+  //                 the multiline size, eliminate its use here.
+
   EnsureLayout();
 
   size_t caret_pos = caret.caret_pos();
@@ -776,6 +799,7 @@ RenderText::RenderText()
       obscured_(false),
       obscured_reveal_index_(-1),
       truncate_length_(0),
+      multiline_(false),
       fade_head_(false),
       fade_tail_(false),
       background_is_transparent_(false),
@@ -819,6 +843,26 @@ const base::string16& RenderText::GetLayoutText() const {
   return layout_text_.empty() ? text_ : layout_text_;
 }
 
+const BreakList<size_t>& RenderText::GetLineBreaks() {
+  if (line_breaks_.max() != 0)
+    return line_breaks_;
+
+  const string16& layout_text = GetLayoutText();
+  const size_t text_length = layout_text.length();
+  line_breaks_.SetValue(0);
+  line_breaks_.SetMax(text_length);
+  base::i18n::BreakIterator iter(layout_text,
+                                 base::i18n::BreakIterator::BREAK_LINE);
+  const bool success = iter.Init();
+  DCHECK(success);
+  if (success) {
+    do {
+      line_breaks_.ApplyValue(iter.pos(), Range(iter.pos(), text_length));
+    } while (iter.Advance());
+  }
+  return line_breaks_;
+}
+
 void RenderText::ApplyCompositionAndSelectionStyles() {
   // Save the underline and color breaks to undo the temporary styles later.
   DCHECK(!composition_and_selection_styles_applied_);
@@ -845,25 +889,81 @@ void RenderText::UndoCompositionAndSelectionStyles() {
   composition_and_selection_styles_applied_ = false;
 }
 
-Vector2d RenderText::GetTextOffset() {
+Vector2d RenderText::GetLineOffset(size_t line_number) {
   Vector2d offset = display_rect().OffsetFromOrigin();
-  offset.Add(GetUpdatedDisplayOffset());
-  offset.Add(GetAlignmentOffset());
+  // TODO(ckocagil): Apply the display offset for multiline scrolling.
+  if (!multiline())
+    offset.Add(GetUpdatedDisplayOffset());
+  else
+    offset.Add(Vector2d(0, lines_[line_number].preceding_heights));
+  offset.Add(GetAlignmentOffset(line_number));
   return offset;
 }
 
 Point RenderText::ToTextPoint(const Point& point) {
-  return point - GetTextOffset();
+  return point - GetLineOffset(0);
+  // TODO(ckocagil): Convert multiline view space points to text space.
 }
 
 Point RenderText::ToViewPoint(const Point& point) {
-  return point + GetTextOffset();
+  if (!multiline())
+    return point + GetLineOffset(0);
+
+  // TODO(ckocagil): Traverse individual line segments for RTL support.
+  DCHECK(!lines_.empty());
+  int x = point.x();
+  size_t line = 0;
+  for (; line < lines_.size() && x > lines_[line].size.width(); ++line)
+    x -= lines_[line].size.width();
+  return Point(x, point.y()) + GetLineOffset(line);
 }
 
-Vector2d RenderText::GetAlignmentOffset() {
+std::vector<Rect> RenderText::TextBoundsToViewBounds(const Range& x) {
+  std::vector<Rect> rects;
+
+  if (!multiline()) {
+    rects.push_back(Rect(ToViewPoint(Point(x.GetMin(), 0)),
+                         Size(x.length(), GetStringSize().height())));
+    return rects;
+  }
+
+  EnsureLayout();
+
+  // Each line segment keeps its position in text coordinates. Traverse all line
+  // segments and if the segment intersects with the given range, add the view
+  // rect corresponding to the intersection to |rects|.
+  for (size_t line = 0; line < lines_.size(); ++line) {
+    int line_x = 0;
+    const Vector2d offset = GetLineOffset(line);
+    for (size_t i = 0; i < lines_[line].segments.size(); ++i) {
+      const internal::LineSegment* segment = &lines_[line].segments[i];
+      const Range intersection = segment->x_range.Intersect(x);
+      if (!intersection.is_empty()) {
+        Rect rect(line_x + intersection.start() - segment->x_range.start(),
+                  0, intersection.length(), lines_[line].size.height());
+        rects.push_back(rect + offset);
+      }
+      line_x += segment->x_range.length();
+    }
+  }
+
+  return rects;
+}
+
+Vector2d RenderText::GetAlignmentOffset(size_t line_number) {
+  // TODO(ckocagil): Enable |lines_| usage in other platforms.
+#if defined(OS_WIN)
+  DCHECK_LT(line_number, lines_.size());
+#endif
   Vector2d offset;
   if (horizontal_alignment_ != ALIGN_LEFT) {
-    offset.set_x(display_rect().width() - GetContentWidth());
+#if defined(OS_WIN)
+    const int width = lines_[line_number].size.width() +
+        (cursor_enabled_ ? 1 : 0);
+#else
+    const int width = GetContentWidth();
+#endif
+    offset.set_x(display_rect().width() - width);
     if (horizontal_alignment_ == ALIGN_CENTER)
       offset.set_x(offset.x() / 2);
   }
@@ -876,14 +976,13 @@ Vector2d RenderText::GetAlignmentOffset() {
 }
 
 void RenderText::ApplyFadeEffects(internal::SkiaTextRenderer* renderer) {
-  if (!fade_head() && !fade_tail())
+  if (multiline() || (!fade_head() && !fade_tail()))
     return;
 
-  const int text_width = GetStringSize().width();
   const int display_width = display_rect().width();
 
   // If the text fits as-is, no need to fade.
-  if (text_width <= display_width)
+  if (GetStringSize().width() <= display_width)
     return;
 
   int gradient_width = CalculateFadeGradientWidth(GetPrimaryFont(),
@@ -915,7 +1014,7 @@ void RenderText::ApplyFadeEffects(internal::SkiaTextRenderer* renderer) {
   }
 
   Rect text_rect = display_rect();
-  text_rect.Inset(GetAlignmentOffset().x(), 0, 0, 0);
+  text_rect.Inset(GetAlignmentOffset(0).x(), 0, 0, 0);
 
   // TODO(msw): Use the actual text colors corresponding to each faded part.
   skia::RefPtr<SkShader> shader = CreateFadeShader(
@@ -949,6 +1048,7 @@ void RenderText::MoveCursorTo(size_t position, bool select) {
 
 void RenderText::UpdateLayoutText() {
   layout_text_.clear();
+  line_breaks_.SetMax(0);
 
   if (obscured_) {
     size_t obscured_text_length =
@@ -984,6 +1084,8 @@ void RenderText::UpdateLayoutText() {
 void RenderText::UpdateCachedBoundsAndOffset() {
   if (cached_bounds_and_offset_valid_)
     return;
+
+  // TODO(ckocagil): Add support for scrolling multiline text.
 
   // First, set the valid flag true to calculate the current cursor bounds using
   // the stale |display_offset_|. Applying |delta_offset| at the end of this

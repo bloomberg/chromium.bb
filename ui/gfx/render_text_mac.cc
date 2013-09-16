@@ -249,9 +249,9 @@ void RenderTextMac::ComputeRuns() {
   CFArrayRef ct_runs = CTLineGetGlyphRuns(line_);
   const CFIndex ct_runs_count = CFArrayGetCount(ct_runs);
 
-  // TODO(asvitkine): Don't use GetTextOffset() until draw time, since it may be
+  // TODO(asvitkine): Don't use GetLineOffset() until draw time, since it may be
   // updated based on alignment changes without resetting the layout.
-  gfx::Vector2d text_offset = GetTextOffset();
+  gfx::Vector2d text_offset = GetLineOffset(0);
   // Skia will draw glyphs with respect to the baseline.
   text_offset += gfx::Vector2d(0, common_baseline_);
 

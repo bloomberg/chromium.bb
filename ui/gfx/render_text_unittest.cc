@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/format_macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -1294,7 +1295,7 @@ TEST_F(RenderTextTest, GetTextOffset) {
   Rect display_rect(font_size);
   render_text->SetDisplayRect(display_rect);
 
-  Vector2d offset = render_text->GetTextOffset();
+  Vector2d offset = render_text->GetLineOffset(0);
   EXPECT_TRUE(offset.IsZero());
 
   // Set display area's size greater than font size.
@@ -1303,30 +1304,30 @@ TEST_F(RenderTextTest, GetTextOffset) {
   render_text->SetDisplayRect(display_rect);
 
   // Check the default horizontal and vertical alignment.
-  offset = render_text->GetTextOffset();
+  offset = render_text->GetLineOffset(0);
   EXPECT_EQ(kEnlargement / 2, offset.y());
   EXPECT_EQ(0, offset.x());
 
   // Check explicitly setting the horizontal alignment.
   render_text->SetHorizontalAlignment(ALIGN_LEFT);
-  offset = render_text->GetTextOffset();
+  offset = render_text->GetLineOffset(0);
   EXPECT_EQ(0, offset.x());
   render_text->SetHorizontalAlignment(ALIGN_CENTER);
-  offset = render_text->GetTextOffset();
+  offset = render_text->GetLineOffset(0);
   EXPECT_EQ(kEnlargement / 2, offset.x());
   render_text->SetHorizontalAlignment(ALIGN_RIGHT);
-  offset = render_text->GetTextOffset();
+  offset = render_text->GetLineOffset(0);
   EXPECT_EQ(kEnlargement, offset.x());
 
   // Check explicitly setting the vertical alignment.
   render_text->SetVerticalAlignment(ALIGN_TOP);
-  offset = render_text->GetTextOffset();
+  offset = render_text->GetLineOffset(0);
   EXPECT_EQ(0, offset.y());
   render_text->SetVerticalAlignment(ALIGN_VCENTER);
-  offset = render_text->GetTextOffset();
+  offset = render_text->GetLineOffset(0);
   EXPECT_EQ(kEnlargement / 2, offset.y());
   render_text->SetVerticalAlignment(ALIGN_BOTTOM);
-  offset = render_text->GetTextOffset();
+  offset = render_text->GetLineOffset(0);
   EXPECT_EQ(kEnlargement, offset.y());
 
   SetRTL(was_rtl);
@@ -1334,7 +1335,7 @@ TEST_F(RenderTextTest, GetTextOffset) {
 
 TEST_F(RenderTextTest, GetTextOffsetHorizontalDefaultInRTL) {
   // This only checks the default horizontal alignment in RTL mode; all other
-  // GetTextOffset() attributes are checked by the test above.
+  // GetLineOffset(0) attributes are checked by the test above.
   const bool was_rtl = base::i18n::IsRTL();
   SetRTL(true);
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
@@ -1345,7 +1346,7 @@ TEST_F(RenderTextTest, GetTextOffsetHorizontalDefaultInRTL) {
                        render_text->GetStringSize().height());
   Rect display_rect(font_size);
   render_text->SetDisplayRect(display_rect);
-  Vector2d offset = render_text->GetTextOffset();
+  Vector2d offset = render_text->GetLineOffset(0);
   EXPECT_EQ(kEnlargement, offset.x());
   SetRTL(was_rtl);
 }
@@ -1650,6 +1651,80 @@ TEST_F(RenderTextTest, SelectionKeepsLigatures) {
     render_text->MoveCursorTo(SelectionModel(0, CURSOR_FORWARD));
   }
 }
+
+#if defined(OS_WIN)
+// Ensure strings wrap onto multiple lines for a small available width.
+TEST_F(RenderTextTest, Multiline_MinWidth) {
+  const wchar_t* kTestStrings[] = { kWeak, kLtr, kLtrRtl, kLtrRtlLtr, kRtl,
+                                    kRtlLtr, kRtlLtrRtl };
+
+  scoped_ptr<RenderTextWin> render_text(
+      static_cast<RenderTextWin*>(RenderText::CreateInstance()));
+  render_text->SetDisplayRect(Rect(1, 1000));
+  render_text->SetMultiline(true);
+  Canvas canvas;
+
+  for (size_t i = 0; i < arraysize(kTestStrings); ++i) {
+    SCOPED_TRACE(base::StringPrintf("kTestStrings[%" PRIuS "]", i));
+    render_text->SetText(WideToUTF16(kTestStrings[i]));
+    render_text->Draw(&canvas);
+    EXPECT_GT(render_text->lines_.size(), 1U);
+  }
+}
+
+// Ensure strings wrap onto multiple lines for a normal available width.
+TEST_F(RenderTextTest, Multiline_NormalWidth) {
+  const struct {
+    const wchar_t* const text;
+    const Range first_line_char_range;
+    const Range second_line_char_range;
+  } kTestStrings[] = {
+    { L"abc defg hijkl", Range(0, 9), Range(9, 14) },
+    { L"qwertyuiop", Range(0, 8), Range(8, 10) },
+    { L"\x062A\x0641\x0627\x062D\x05EA\x05E4\x05D5\x05D6\x05D9\x05DD",
+          Range(4, 10), Range(0, 4) }
+  };
+
+  scoped_ptr<RenderTextWin> render_text(
+      static_cast<RenderTextWin*>(RenderText::CreateInstance()));
+  render_text->SetDisplayRect(Rect(50, 1000));
+  render_text->SetMultiline(true);
+  Canvas canvas;
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestStrings); ++i) {
+    SCOPED_TRACE(base::StringPrintf("kTestStrings[%" PRIuS "]", i));
+    render_text->SetText(WideToUTF16(kTestStrings[i].text));
+    render_text->Draw(&canvas);
+    ASSERT_EQ(2U, render_text->lines_.size());
+    ASSERT_EQ(1U, render_text->lines_[0].segments.size());
+    EXPECT_EQ(kTestStrings[i].first_line_char_range,
+              render_text->lines_[0].segments[0].char_range);
+    ASSERT_EQ(1U, render_text->lines_[1].segments.size());
+    EXPECT_EQ(kTestStrings[i].second_line_char_range,
+              render_text->lines_[1].segments[0].char_range);
+  }
+}
+
+// Ensure strings don't wrap onto multiple lines for a sufficient available
+// width.
+TEST_F(RenderTextTest, Multiline_SufficientWidth) {
+  const wchar_t* kTestStrings[] = { L"", L" ", L".", L" . ", L"abc", L"a b c",
+                                    L"\x62E\x628\x632", L"\x62E \x628 \x632" };
+
+  scoped_ptr<RenderTextWin> render_text(
+      static_cast<RenderTextWin*>(RenderText::CreateInstance()));
+  render_text->SetDisplayRect(Rect(30, 1000));
+  render_text->SetMultiline(true);
+  Canvas canvas;
+
+  for (size_t i = 0; i < arraysize(kTestStrings); ++i) {
+    SCOPED_TRACE(base::StringPrintf("kTestStrings[%" PRIuS "]", i));
+    render_text->SetText(WideToUTF16(kTestStrings[i]));
+    render_text->Draw(&canvas);
+    EXPECT_EQ(1U, render_text->lines_.size());
+  }
+}
+#endif  // defined(OS_WIN)
 
 #if defined(OS_WIN)
 TEST_F(RenderTextTest, Win_BreakRunsByUnicodeBlocks) {

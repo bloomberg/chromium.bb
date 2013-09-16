@@ -44,6 +44,7 @@ class BreakList {
 
   // Set the max position and trim any breaks at or beyond that position.
   void SetMax(size_t max);
+  size_t max() const { return max_; }
 
   // Get the break applicable to |position| (at or preceeding |position|).
   typename std::vector<Break>::iterator GetBreak(size_t position);

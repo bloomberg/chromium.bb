@@ -89,6 +89,8 @@ class RenderTextWin : public RenderText {
  private:
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, Win_BreakRunsByUnicodeBlocks);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, Win_LogicalClusters);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, Multiline_MinWidth);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, Multiline_NormalWidth);
 
   void ItemizeLogicalText();
   void LayoutVisualText();
@@ -123,11 +125,12 @@ class RenderTextWin : public RenderText {
   SCRIPT_STATE script_state_;
 
   ScopedVector<internal::TextRun> runs_;
-  Size string_size_;
 
-  // A common vertical baseline for all the text runs. This is computed as the
-  // largest baseline over all the runs' fonts.
-  int common_baseline_;
+  // Single line width of the layout text.
+  int string_width_;
+
+  // Wrapped multiline size of the layout text.
+  Size multiline_string_size_;
 
   scoped_ptr<int[]> visual_to_logical_;
   scoped_ptr<int[]> logical_to_visual_;

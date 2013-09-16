@@ -111,6 +111,40 @@ class StyleIterator {
   DISALLOW_COPY_AND_ASSIGN(StyleIterator);
 };
 
+// Line segments are slices of the layout text to be rendered on a single line.
+struct LineSegment {
+  LineSegment();
+  ~LineSegment();
+
+  // X coordinates of this line segment in text space.
+  Range x_range;
+
+  // The character range this segment corresponds to.
+  Range char_range;
+
+  // Index of the text run that generated this segment.
+  size_t run;
+};
+
+// A line of layout text, comprised of a line segment list and some metrics.
+struct Line {
+  Line();
+  ~Line();
+
+  // Segments that make up this line in visual order.
+  std::vector<LineSegment> segments;
+
+  // A line size is the sum of segment widths and the maximum of segment
+  // heights.
+  Size size;
+
+  // Sum of preceding lines' heights.
+  int preceding_heights;
+
+  // Maximum baseline of all segments on this line.
+  int baseline;
+};
+
 }  // namespace internal
 
 // RenderText represents an abstract model of styled text and its corresponding
@@ -185,6 +219,11 @@ class UI_EXPORT RenderText {
   // or out of range, no char will be revealed. The revealed index is also
   // cleared when SetText or SetObscured is called.
   void SetObscuredRevealIndex(int index);
+
+  // TODO(ckocagil): Multiline text rendering is currently only supported on
+  // Windows. Support other platforms.
+  bool multiline() const { return multiline_; }
+  void SetMultiline(bool multiline);
 
   // Set the maximum length of the displayed layout text, not the actual text.
   // A |length| of 0 forgoes a hard limit, but does not guarantee proper
@@ -281,14 +320,14 @@ class UI_EXPORT RenderText {
   // |GetTextDirection()|, not the direction of a particular run.
   VisualCursorDirection GetVisualDirectionOfLogicalEnd();
 
-  // Returns the size in pixels of the entire string. For the height, this will
-  // return the maximum height among the different fonts in the text runs.
-  // Note that this returns the raw size of the string, which does not include
-  // the margin area of text shadows.
+  // Returns the size required to display the current string (which is the
+  // wrapped size in multiline mode). Note that this returns the raw size of the
+  // string, which does not include the cursor or the margin area of text
+  // shadows.
   virtual Size GetStringSize() = 0;
 
-  // Returns the width of content, which reserves room for the cursor if
-  // |cursor_enabled_| is true.
+  // Returns the width of the content (which is the wrapped width in multiline
+  // mode). Reserves room for the cursor if |cursor_enabled_| is true.
   int GetContentWidth();
 
   // Returns the common baseline of the text. The returned value is the vertical
@@ -348,6 +387,9 @@ class UI_EXPORT RenderText {
   const BreakList<SkColor>& colors() const { return colors_; }
   const std::vector<BreakList<bool> >& styles() const { return styles_; }
 
+  const std::vector<internal::Line>& lines() const { return lines_; }
+  void set_lines(std::vector<internal::Line>* lines) { lines_.swap(*lines); }
+
   const Vector2d& GetUpdatedDisplayOffset();
 
   void set_cached_bounds_and_offset_valid(bool valid) {
@@ -406,7 +448,7 @@ class UI_EXPORT RenderText {
   // Reset the layout to be invalid.
   virtual void ResetLayout() = 0;
 
-  // Ensure the text is laid out.
+  // Ensure the text is laid out, lines are computed, and |lines_| is valid.
   virtual void EnsureLayout() = 0;
 
   // Draw the text.
@@ -415,22 +457,29 @@ class UI_EXPORT RenderText {
   // Returns the text used for layout, which may be obscured or truncated.
   const base::string16& GetLayoutText() const;
 
+  // Returns layout text positions that are suitable for breaking lines.
+  const BreakList<size_t>& GetLineBreaks();
+
   // Apply (and undo) temporary composition underlines and selection colors.
   void ApplyCompositionAndSelectionStyles();
   void UndoCompositionAndSelectionStyles();
 
-  // Returns the text offset from the origin after applying text alignment and
-  // display offset.
-  Vector2d GetTextOffset();
+  // Returns the line offset from the origin after applying the text alignment
+  // and the display offset.
+  Vector2d GetLineOffset(size_t line_number);
 
-  // Convert points from the text space to the view space and back.
-  // Handles the display area, display offset, and the application LTR/RTL mode.
+  // Convert points from the text space to the view space and back. Handles the
+  // display area, display offset, application LTR/RTL mode and multiline.
   Point ToTextPoint(const Point& point);
   Point ToViewPoint(const Point& point);
 
-  // Returns the text offset from the origin, taking into account text alignment
+  // Convert a text space x-coordinate range to corresponding rects in view
+  // space.
+  std::vector<Rect> TextBoundsToViewBounds(const Range& x);
+
+  // Returns the line offset from the origin, accounting for text alignment
   // only.
-  Vector2d GetAlignmentOffset();
+  Vector2d GetAlignmentOffset(size_t line_number);
 
   // Applies fade effects to |renderer|.
   void ApplyFadeEffects(internal::SkiaTextRenderer* renderer);
@@ -457,6 +506,9 @@ class UI_EXPORT RenderText {
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, EdgeSelectionModels);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, GetTextOffset);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, GetTextOffsetHorizontalDefaultInRTL);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, Multiline_MinWidth);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, Multiline_NormalWidth);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, Multiline_SufficientWidth);
 
   // Set the cursor to |position|, with the caret trailing the previous
   // grapheme, or if there is no previous grapheme, leading the cursor position.
@@ -547,6 +599,10 @@ class UI_EXPORT RenderText {
   // The obscured and/or truncated text that will be displayed.
   base::string16 layout_text_;
 
+  // Whether the text should be broken into multiple lines. Uses the width of
+  // |display_rect_| as the width cap.
+  bool multiline_;
+
   // Fade text head and/or tail, if text doesn't fit into |display_rect_|.
   bool fade_head_;
   bool fade_tail_;
@@ -573,6 +629,13 @@ class UI_EXPORT RenderText {
 
   // Text shadows to be drawn.
   ShadowValues text_shadows_;
+
+  // A list of valid layout text line break positions.
+  BreakList<size_t> line_breaks_;
+
+  // Lines computed by EnsureLayout. These should be invalidated with
+  // ResetLayout and on |display_rect_| changes.
+  std::vector<internal::Line> lines_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderText);
 };

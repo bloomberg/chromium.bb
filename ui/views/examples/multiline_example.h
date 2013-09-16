@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/strings/string16.h"
+#include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/examples/example_base.h"
 
@@ -16,15 +17,19 @@ class Label;
 
 namespace examples {
 
-// An example that compares the multi-line rendering of different controls.
+// An example that compares the multiline rendering of different controls.
 class MultilineExample : public ExampleBase,
-                         public TextfieldController {
+                         public TextfieldController,
+                         public ButtonListener {
  public:
   MultilineExample();
   virtual ~MultilineExample();
 
   // ExampleBase:
   virtual void CreateExampleView(View* container) OVERRIDE;
+
+  // ButtonListener:
+  virtual void ButtonPressed(Button* sender, const ui::Event& event) OVERRIDE;
 
  private:
   class RenderTextView;
@@ -38,6 +43,9 @@ class MultilineExample : public ExampleBase,
   RenderTextView* render_text_view_;
   Label* label_;
   Textfield* textfield_;
+
+  // Checkbox to enable and disable text rendering in |label_|.
+  Checkbox* label_checkbox_;
 
   DISALLOW_COPY_AND_ASSIGN(MultilineExample);
 };

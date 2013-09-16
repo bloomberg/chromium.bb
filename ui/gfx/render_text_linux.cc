@@ -376,7 +376,7 @@ void RenderTextLinux::DrawVisualText(Canvas* canvas) {
   DCHECK(layout_);
 
   // Skia will draw glyphs with respect to the baseline.
-  Vector2d offset(GetTextOffset() + Vector2d(0, GetBaseline()));
+  Vector2d offset(GetLineOffset(0) + Vector2d(0, GetBaseline()));
 
   SkScalar x = SkIntToScalar(offset.x());
   SkScalar y = SkIntToScalar(offset.y());
