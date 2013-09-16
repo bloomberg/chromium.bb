@@ -340,7 +340,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
             fastFree(bufferToDeallocate);
         }
 
-        void clearBufferPointer()
+        void resetBufferPointer()
         {
             m_buffer = 0;
             m_capacity = 0;
@@ -351,8 +351,6 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
             std::swap(m_buffer, other.m_buffer);
             std::swap(m_capacity, other.m_capacity);
         }
-
-        void restoreInlineBufferIfNeeded() { }
 
         using Base::allocateBuffer;
         using Base::shouldReallocateBuffer;
@@ -404,10 +402,10 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
             fastFree(bufferToDeallocate);
         }
 
-        void clearBufferPointer()
+        void resetBufferPointer()
         {
-            m_buffer = 0;
-            m_capacity = 0;
+            m_buffer = inlineBuffer();
+            m_capacity = inlineCapacity;
         }
 
         void allocateBuffer(size_t newCapacity)
@@ -415,10 +413,8 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
             // FIXME: This should ASSERT(!m_buffer) to catch misuse/leaks.
             if (newCapacity > inlineCapacity)
                 Base::allocateBuffer(newCapacity);
-            else {
-                m_buffer = inlineBuffer();
-                m_capacity = inlineCapacity;
-            }
+            else
+                resetBufferPointer();
         }
 
         bool shouldReallocateBuffer(size_t newCapacity) const
@@ -452,14 +448,6 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
                 std::swap(m_buffer, other.m_buffer);
                 std::swap(m_capacity, other.m_capacity);
             }
-        }
-
-        void restoreInlineBufferIfNeeded()
-        {
-            if (m_buffer)
-                return;
-            m_buffer = inlineBuffer();
-            m_capacity = inlineCapacity;
         }
 
         using Base::buffer;
@@ -637,7 +625,6 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         using Base::allocateBuffer;
         using Base::shouldReallocateBuffer;
         using Base::reallocateBuffer;
-        using Base::restoreInlineBufferIfNeeded;
     };
 
     template<typename T, size_t inlineCapacity>
@@ -906,11 +893,10 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
             if (begin() != oldBuffer)
                 TypeOperations::move(oldBuffer, oldEnd, begin());
         } else {
-            Base::clearBufferPointer();
+            Base::resetBufferPointer();
         }
 
         Base::deallocateBuffer(oldBuffer);
-        Base::restoreInlineBufferIfNeeded();
     }
 
     // Templatizing these is better than just letting the conversion happen implicitly,

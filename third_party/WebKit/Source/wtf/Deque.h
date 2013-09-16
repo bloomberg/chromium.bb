@@ -271,7 +271,7 @@ namespace WTF {
         m_start = 0;
         m_end = 0;
         m_buffer.deallocateBuffer(m_buffer.buffer());
-        m_buffer.clearBufferPointer();
+        m_buffer.resetBufferPointer();
     }
 
     template<typename T, size_t inlineCapacity>
