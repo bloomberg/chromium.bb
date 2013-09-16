@@ -1259,9 +1259,6 @@ crbug.com/284779 crbug.com/284782 http/tests/media/media-source/mediasource-dura
 crbug.com/284789 http/tests/media/media-source/mediasource-buffered.html [ Failure Pass ]
 crbug.com/284793 http/tests/media/media-source/mediasource-play-then-seek-back.html [ Failure Pass ]
 
-# Temporarily mark as flaky in advance of Chromium change.
-crbug.com/276769 http/tests/security/contentSecurityPolicy/source-list-parsing-nonascii.html [ Failure Pass ]
-
 crbug.com/286081 inspector/debugger/long-resume-vs-reload.html [ Failure Pass Timeout ]
 crbug.com/285703 [ Debug ] fast/table/table-rowspan-crash-with-huge-rowspan-cells.html [ Crash Pass ]
 crbug.com/286287 http/tests/inspector/network/network-initiator.html [ Failure Pass ]
