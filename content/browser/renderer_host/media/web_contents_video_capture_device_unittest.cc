@@ -493,7 +493,7 @@ class WebContentsVideoCaptureDeviceTest : public testing::Test {
 
   // Accessors.
   CaptureTestSourceController* source() { return &controller_; }
-  media::VideoCaptureDevice* device() { return device_.get(); }
+  media::VideoCaptureDevice1* device() { return device_.get(); }
   StubConsumer* consumer() { return &consumer_; }
 
   void SimulateDrawEvent() {
@@ -532,7 +532,7 @@ class WebContentsVideoCaptureDeviceTest : public testing::Test {
   scoped_ptr<WebContents> web_contents_;
 
   // Finally, the WebContentsVideoCaptureDevice under test.
-  scoped_ptr<media::VideoCaptureDevice> device_;
+  scoped_ptr<media::VideoCaptureDevice1> device_;
 
   TestBrowserThreadBundle thread_bundle_;
 };
@@ -753,7 +753,7 @@ TEST_F(WebContentsVideoCaptureDeviceTest, RejectsInvalidAllocateParams) {
       media::ConstantResolutionVideoCaptureDevice);
   BrowserThread::PostTask(BrowserThread::UI,
                           FROM_HERE,
-                          base::Bind(&media::VideoCaptureDevice::Allocate,
+                          base::Bind(&media::VideoCaptureDevice1::Allocate,
                                      base::Unretained(device()),
                                      capture_format,
                                      consumer()));

@@ -25,7 +25,7 @@ struct DesktopMediaID;
 // DesktopCaptureDevice implements VideoCaptureDevice for screens and windows.
 // It's essentially an adapter between webrtc::DesktopCapturer and
 // VideoCaptureDevice.
-class CONTENT_EXPORT DesktopCaptureDevice : public media::VideoCaptureDevice {
+class CONTENT_EXPORT DesktopCaptureDevice : public media::VideoCaptureDevice1 {
  public:
   // Creates capturer for the specified |source| and then creates
   // DesktopCaptureDevice for it. May return NULL in case of a failure (e.g. if

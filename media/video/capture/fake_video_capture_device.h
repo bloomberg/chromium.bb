@@ -16,7 +16,7 @@
 
 namespace media {
 
-class MEDIA_EXPORT FakeVideoCaptureDevice : public VideoCaptureDevice {
+class MEDIA_EXPORT FakeVideoCaptureDevice : public VideoCaptureDevice1 {
  public:
   static VideoCaptureDevice* Create(const Name& device_name);
   virtual ~FakeVideoCaptureDevice();
@@ -28,7 +28,7 @@ class MEDIA_EXPORT FakeVideoCaptureDevice : public VideoCaptureDevice {
 
   // VideoCaptureDevice implementation.
   virtual void Allocate(const VideoCaptureCapability& capture_format,
-                         VideoCaptureDevice::EventHandler* observer) OVERRIDE;
+                        VideoCaptureDevice::EventHandler* observer) OVERRIDE;
   virtual void Start() OVERRIDE;
   virtual void Stop() OVERRIDE;
   virtual void DeAllocate() OVERRIDE;

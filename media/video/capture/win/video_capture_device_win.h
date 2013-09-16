@@ -30,7 +30,7 @@ namespace media {
 // All the methods in the class can only be run on a COM initialized thread.
 class VideoCaptureDeviceWin
     : public base::NonThreadSafe,
-      public VideoCaptureDevice,
+      public VideoCaptureDevice1,
       public SinkFilterObserver {
  public:
   explicit VideoCaptureDeviceWin(const Name& device_name);

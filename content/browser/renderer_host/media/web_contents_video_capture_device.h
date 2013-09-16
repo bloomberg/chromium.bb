@@ -27,7 +27,7 @@ class RenderWidgetHost;
 // underlying render view to be swapped out (e.g., due to navigation or
 // crashes/reloads), without any interruption in capturing.
 class CONTENT_EXPORT WebContentsVideoCaptureDevice
-    : public media::VideoCaptureDevice {
+    : public media::VideoCaptureDevice1 {
  public:
   // Construct from a |device_id| string of the form:
   //   "virtual-media-stream://render_process_id:render_view_id", where
@@ -37,7 +37,7 @@ class CONTENT_EXPORT WebContentsVideoCaptureDevice
   // WebContentsVideoCaptureDevice is itself deleted.
   // TODO(miu): Passing a destroy callback suggests needing to revisit the
   // design philosophy of an asynchronous DeAllocate().  http://crbug.com/158641
-  static media::VideoCaptureDevice* Create(const std::string& device_id);
+  static media::VideoCaptureDevice1* Create(const std::string& device_id);
 
   virtual ~WebContentsVideoCaptureDevice();
 

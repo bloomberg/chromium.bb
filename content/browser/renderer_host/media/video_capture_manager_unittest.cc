@@ -85,14 +85,15 @@ class VideoCaptureManagerTest : public testing::Test {
 
   virtual void TearDown() OVERRIDE {}
 
-  void OnGotControllerCallback(VideoCaptureControllerID id,
-                               base::Closure quit_closure,
-                               bool expect_success,
-                               VideoCaptureController* controller) {
+  void OnGotControllerCallback(
+      VideoCaptureControllerID id,
+      base::Closure quit_closure,
+      bool expect_success,
+      const base::WeakPtr<VideoCaptureController>& controller) {
     if (expect_success) {
-      ASSERT_TRUE(NULL != controller);
+      ASSERT_TRUE(controller);
       ASSERT_TRUE(0 == controllers_.count(id));
-      controllers_[id] = controller;
+      controllers_[id] = controller.get();
     } else {
       ASSERT_TRUE(NULL == controller);
     }

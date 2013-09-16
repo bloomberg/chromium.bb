@@ -28,7 +28,7 @@ class MFReaderCallback;
 
 class MEDIA_EXPORT VideoCaptureDeviceMFWin
     : public base::NonThreadSafe,
-      public VideoCaptureDevice {
+      public VideoCaptureDevice1 {
  public:
   explicit VideoCaptureDeviceMFWin(const Name& device_name);
   virtual ~VideoCaptureDeviceMFWin();

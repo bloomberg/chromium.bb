@@ -93,12 +93,77 @@ struct VideoCaptureController::ControllerClient {
   bool session_closed;
 };
 
+// Receives events from the VideoCaptureDevice and posts them to a
+// VideoCaptureController on the IO thread. An instance of this class may safely
+// outlive its target VideoCaptureController.
+//
+// Methods of this class may be called from any thread, and in practice will
+// often be called on some auxiliary thread depending on the platform and the
+// device type; including, for example, the DirectShow thread on Windows, the
+// v4l2_thread on Linux, and the UI thread for tab capture.
+class VideoCaptureController::VideoCaptureDeviceClient
+    : public media::VideoCaptureDevice::EventHandler {
+ public:
+  explicit VideoCaptureDeviceClient(
+      const base::WeakPtr<VideoCaptureController>& controller);
+  virtual ~VideoCaptureDeviceClient();
+
+  // VideoCaptureDevice::EventHandler implementation.
+  virtual scoped_refptr<media::VideoFrame> ReserveOutputBuffer() OVERRIDE;
+  virtual void OnIncomingCapturedFrame(const uint8* data,
+                                       int length,
+                                       base::Time timestamp,
+                                       int rotation,
+                                       bool flip_vert,
+                                       bool flip_horiz) OVERRIDE;
+  virtual void OnIncomingCapturedVideoFrame(
+      const scoped_refptr<media::VideoFrame>& frame,
+      base::Time timestamp) OVERRIDE;
+  virtual void OnError() OVERRIDE;
+  virtual void OnFrameInfo(
+      const media::VideoCaptureCapability& info) OVERRIDE;
+  virtual void OnFrameInfoChanged(
+      const media::VideoCaptureCapability& info) OVERRIDE;
+
+ private:
+  // The controller to which we post events.
+  const base::WeakPtr<VideoCaptureController> controller_;
+
+  // The pool of shared-memory buffers used for capturing.
+  scoped_refptr<VideoCaptureBufferPool> buffer_pool_;
+
+  // Chopped pixels in width/height in case video capture device has odd
+  // numbers for width/height.
+  int chopped_width_;
+  int chopped_height_;
+
+  // Tracks the current frame format.
+  media::VideoCaptureCapability frame_info_;
+};
+
 VideoCaptureController::VideoCaptureController()
-    : chopped_width_(0),
-      chopped_height_(0),
-      frame_info_available_(false),
-      state_(VIDEO_CAPTURE_STATE_STARTED) {
+    : state_(VIDEO_CAPTURE_STATE_STARTED),
+      weak_ptr_factory_(this) {
   memset(&current_params_, 0, sizeof(current_params_));
+}
+
+VideoCaptureController::VideoCaptureDeviceClient::VideoCaptureDeviceClient(
+    const base::WeakPtr<VideoCaptureController>& controller)
+    : controller_(controller),
+      chopped_width_(0),
+      chopped_height_(0) {}
+
+VideoCaptureController::VideoCaptureDeviceClient::~VideoCaptureDeviceClient() {}
+
+base::WeakPtr<VideoCaptureController> VideoCaptureController::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
+
+scoped_ptr<media::VideoCaptureDevice::EventHandler>
+VideoCaptureController::NewDeviceClient() {
+  scoped_ptr<media::VideoCaptureDevice::EventHandler> result(
+      new VideoCaptureDeviceClient(this->GetWeakPtr()));
+  return result.Pass();
 }
 
 void VideoCaptureController::AddClient(
@@ -129,7 +194,7 @@ void VideoCaptureController::AddClient(
   // If we already have gotten frame_info from the device, repeat it to the new
   // client.
   if (state_ == VIDEO_CAPTURE_STATE_STARTED) {
-    if (frame_info_available_) {
+    if (frame_info_.IsValid()) {
       SendFrameInfoAndBuffers(client);
     }
     controller_clients_.push_back(client);
@@ -165,8 +230,7 @@ int VideoCaptureController::RemoveClient(
   return session_id;
 }
 
-void VideoCaptureController::StopSession(
-    int session_id) {
+void VideoCaptureController::StopSession(int session_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DVLOG(1) << "VideoCaptureController::StopSession, id " << session_id;
 
@@ -198,20 +262,15 @@ void VideoCaptureController::ReturnBuffer(
   buffer_pool_->RelinquishConsumerHold(buffer_id, 1);
 }
 
-scoped_refptr<media::VideoFrame> VideoCaptureController::ReserveOutputBuffer() {
-  base::AutoLock lock(buffer_pool_lock_);
-  if (!buffer_pool_.get())
-    return NULL;
+scoped_refptr<media::VideoFrame>
+VideoCaptureController::VideoCaptureDeviceClient::ReserveOutputBuffer() {
   return buffer_pool_->ReserveI420VideoFrame(gfx::Size(frame_info_.width,
                                                        frame_info_.height),
                                              0);
 }
 
-// Implements VideoCaptureDevice::EventHandler.
-// OnIncomingCapturedFrame is called the thread running the capture device.
-// I.e.- DirectShow thread on windows and v4l2_thread on Linux.
 #if !defined(OS_IOS) && !defined(OS_ANDROID)
-void VideoCaptureController::OnIncomingCapturedFrame(
+void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedFrame(
     const uint8* data,
     int length,
     base::Time timestamp,
@@ -220,14 +279,10 @@ void VideoCaptureController::OnIncomingCapturedFrame(
     bool flip_horiz) {
   TRACE_EVENT0("video", "VideoCaptureController::OnIncomingCapturedFrame");
 
-  scoped_refptr<media::VideoFrame> dst;
-  {
-    base::AutoLock lock(buffer_pool_lock_);
-    if (!buffer_pool_.get())
-      return;
-    dst = buffer_pool_->ReserveI420VideoFrame(
-        gfx::Size(frame_info_.width, frame_info_.height), rotation);
-  }
+  if (!buffer_pool_.get())
+    return;
+  scoped_refptr<media::VideoFrame> dst = buffer_pool_->ReserveI420VideoFrame(
+      gfx::Size(frame_info_.width, frame_info_.height), rotation);
 
   if (!dst.get())
     return;
@@ -336,12 +391,12 @@ void VideoCaptureController::OnIncomingCapturedFrame(
       BrowserThread::IO,
       FROM_HERE,
       base::Bind(&VideoCaptureController::DoIncomingCapturedFrameOnIOThread,
-                 this,
+                 controller_,
                  dst,
                  timestamp));
 }
 #else
-void VideoCaptureController::OnIncomingCapturedFrame(
+void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedFrame(
     const uint8* data,
     int length,
     base::Time timestamp,
@@ -354,15 +409,12 @@ void VideoCaptureController::OnIncomingCapturedFrame(
 
   TRACE_EVENT0("video", "VideoCaptureController::OnIncomingCapturedFrame");
 
-  scoped_refptr<media::VideoFrame> dst;
-  {
-    base::AutoLock lock(buffer_pool_lock_);
-    if (!buffer_pool_.get())
-      return;
-    dst = buffer_pool_->ReserveI420VideoFrame(gfx::Size(frame_info_.width,
-                                                        frame_info_.height),
-                                              rotation);
-  }
+  if (!buffer_pool_)
+    return;
+  scoped_refptr<media::VideoFrame> dst =
+      buffer_pool_->ReserveI420VideoFrame(gfx::Size(frame_info_.width,
+                                                    frame_info_.height),
+                                          rotation);
 
   if (!dst.get())
     return;
@@ -426,38 +478,35 @@ void VideoCaptureController::OnIncomingCapturedFrame(
   BrowserThread::PostTask(BrowserThread::IO,
       FROM_HERE,
       base::Bind(&VideoCaptureController::DoIncomingCapturedFrameOnIOThread,
-                 this, dst, timestamp));
+                 controller_, dst, timestamp));
 }
 #endif  // #if !defined(OS_IOS) && !defined(OS_ANDROID)
 
-// OnIncomingCapturedVideoFrame is called the thread running the capture device.
-void VideoCaptureController::OnIncomingCapturedVideoFrame(
+void
+VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedVideoFrame(
     const scoped_refptr<media::VideoFrame>& frame,
     base::Time timestamp) {
 
-  scoped_refptr<media::VideoFrame> target;
-  {
-    base::AutoLock lock(buffer_pool_lock_);
+  if (!buffer_pool_)
+    return;
 
-    if (!buffer_pool_.get())
-      return;
-
-    // If this is a frame that belongs to the buffer pool, we can forward it
-    // directly to the IO thread and be done.
-    if (buffer_pool_->RecognizeReservedBuffer(
-        frame->shared_memory_handle()) >= 0) {
-      BrowserThread::PostTask(BrowserThread::IO,
-          FROM_HERE,
-          base::Bind(&VideoCaptureController::DoIncomingCapturedFrameOnIOThread,
-                     this, frame, timestamp));
-      return;
-    }
-    // Otherwise, this is a frame that belongs to the caller, and we must copy
-    // it to a frame from the buffer pool.
-    target = buffer_pool_->ReserveI420VideoFrame(gfx::Size(frame_info_.width,
-                                                           frame_info_.height),
-                                                 0);
+  // If this is a frame that belongs to the buffer pool, we can forward it
+  // directly to the IO thread and be done.
+  if (buffer_pool_->RecognizeReservedBuffer(
+      frame->shared_memory_handle()) >= 0) {
+    BrowserThread::PostTask(BrowserThread::IO,
+        FROM_HERE,
+        base::Bind(&VideoCaptureController::DoIncomingCapturedFrameOnIOThread,
+                   controller_, frame, timestamp));
+    return;
   }
+
+  // Otherwise, this is a frame that belongs to the caller, and we must copy
+  // it to a frame from the buffer pool.
+  scoped_refptr<media::VideoFrame> target =
+      buffer_pool_->ReserveI420VideoFrame(gfx::Size(frame_info_.width,
+                                                    frame_info_.height),
+                                          0);
 
   if (!target.get())
     return;
@@ -545,18 +594,18 @@ void VideoCaptureController::OnIncomingCapturedVideoFrame(
   BrowserThread::PostTask(BrowserThread::IO,
       FROM_HERE,
       base::Bind(&VideoCaptureController::DoIncomingCapturedFrameOnIOThread,
-                 this, target, timestamp));
+                 controller_, target, timestamp));
 }
 
-void VideoCaptureController::OnError() {
+void VideoCaptureController::VideoCaptureDeviceClient::OnError() {
   BrowserThread::PostTask(BrowserThread::IO,
       FROM_HERE,
-      base::Bind(&VideoCaptureController::DoErrorOnIOThread, this));
+      base::Bind(&VideoCaptureController::DoErrorOnIOThread, controller_));
 }
 
-void VideoCaptureController::OnFrameInfo(
+void VideoCaptureController::VideoCaptureDeviceClient::OnFrameInfo(
     const media::VideoCaptureCapability& info) {
-  frame_info_= info;
+  frame_info_ = info;
   // Handle cases when |info| has odd numbers for width/height.
   if (info.width & 1) {
     --frame_info_.width;
@@ -570,17 +619,38 @@ void VideoCaptureController::OnFrameInfo(
   } else {
     chopped_height_ = 0;
   }
+
+  DCHECK(!buffer_pool_.get());
+
+  // TODO(nick): Give BufferPool the same lifetime as the controller, have it
+  // support frame size changes, and stop checking it for NULL everywhere.
+  // http://crbug.com/266082
+  buffer_pool_ = new VideoCaptureBufferPool(
+      media::VideoFrame::AllocationSize(
+            media::VideoFrame::I420,
+            gfx::Size(frame_info_.width, frame_info_.height)),
+      kNoOfBuffers);
+
+  // Check whether all buffers were created successfully.
+  if (!buffer_pool_->Allocate()) {
+    // Transition to the error state.
+    buffer_pool_ = NULL;
+    OnError();
+    return;
+  }
+
   BrowserThread::PostTask(BrowserThread::IO,
       FROM_HERE,
-      base::Bind(&VideoCaptureController::DoFrameInfoOnIOThread, this));
+      base::Bind(&VideoCaptureController::DoFrameInfoOnIOThread, controller_,
+                 frame_info_, buffer_pool_));
 }
 
-void VideoCaptureController::OnFrameInfoChanged(
+void VideoCaptureController::VideoCaptureDeviceClient::OnFrameInfoChanged(
     const media::VideoCaptureCapability& info) {
   BrowserThread::PostTask(BrowserThread::IO,
       FROM_HERE,
       base::Bind(&VideoCaptureController::DoFrameInfoChangedOnIOThread,
-                 this, info));
+                 controller_, info));
 }
 
 VideoCaptureController::~VideoCaptureController() {
@@ -621,7 +691,9 @@ void VideoCaptureController::DoIncomingCapturedFrameOnIOThread(
   buffer_pool_->HoldForConsumers(buffer_id, count);
 }
 
-void VideoCaptureController::DoFrameInfoOnIOThread() {
+void VideoCaptureController::DoFrameInfoOnIOThread(
+    const media::VideoCaptureCapability& frame_info,
+    const scoped_refptr<VideoCaptureBufferPool>& buffer_pool) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(!buffer_pool_.get()) << "Frame info should happen only once.";
 
@@ -629,24 +701,8 @@ void VideoCaptureController::DoFrameInfoOnIOThread() {
   if (state_ != VIDEO_CAPTURE_STATE_STARTED)
     return;
 
-  scoped_refptr<VideoCaptureBufferPool> buffer_pool =
-      new VideoCaptureBufferPool(
-          media::VideoFrame::AllocationSize(
-              media::VideoFrame::I420,
-              gfx::Size(frame_info_.width, frame_info_.height)),
-          kNoOfBuffers);
-
-  // Check whether all buffers were created successfully.
-  if (!buffer_pool->Allocate()) {
-    DoErrorOnIOThread();
-    return;
-  }
-
-  {
-    base::AutoLock lock(buffer_pool_lock_);
-    buffer_pool_ = buffer_pool;
-  }
-  frame_info_available_ = true;
+  frame_info_ = frame_info;
+  buffer_pool_ = buffer_pool;
 
   for (ControllerClients::iterator client_it = controller_clients_.begin();
        client_it != controller_clients_.end(); ++client_it) {
@@ -690,7 +746,7 @@ void VideoCaptureController::DoErrorOnIOThread() {
 
 void VideoCaptureController::SendFrameInfoAndBuffers(ControllerClient* client) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(frame_info_available_);
+  DCHECK(frame_info_.IsValid());
   client->event_handler->OnFrameInfo(client->controller_id,
                                      frame_info_);
   for (int buffer_id = 0; buffer_id < buffer_pool_->count(); ++buffer_id) {

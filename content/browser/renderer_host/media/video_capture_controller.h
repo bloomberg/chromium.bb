@@ -13,21 +13,25 @@
 //     with I420 video frames for IPC communication between VideoCaptureHost (in
 //     the browser process) and VideoCaptureMessageFilter (in the renderer
 //     process).
-//   * Conveying events from the device thread (where capture devices live) to
-//     the IO thread (where the clients can be reached).
 //   * Broadcasting the events from a single VideoCaptureDevice, fanning them
 //     out to multiple clients.
 //   * Keeping track of the clients on behalf of the VideoCaptureManager, making
 //     it possible for the Manager to delete the Controller and its Device when
 //     there are no clients left.
+//
+// A helper class, VCC::VideoCaptureDeviceClient, is responsible for:
+//
+//   * Conveying events from the device thread (where VideoCaptureDevices live)
+//     the IO thread (where the VideoCaptureController lives).
 //   * Performing some image transformations on the output of the Device;
 //     specifically, colorspace conversion and rotation.
 //
 // Interactions between VideoCaptureController and other classes:
 //
-//   * VideoCaptureController receives events from its VideoCaptureDevice
-//     entirely through the VideoCaptureDevice::EventHandler interface, which
-//     VCC implements.
+//   * VideoCaptureController indirectly observes a VideoCaptureDevice
+//     by means of its proxy, VideoCaptureDeviceClient, which implements
+//     the VideoCaptureDevice::EventHandler interface. The proxy forwards
+//     observed events to the VideoCaptureController on the IO thread.
 //   * A VideoCaptureController interacts with its clients (VideoCaptureHosts)
 //     via the VideoCaptureControllerEventHandler interface.
 //   * Conversely, a VideoCaptureControllerEventHandler (typically,
@@ -38,12 +42,7 @@
 //     VideoCaptureController through its public methods, to add and remove
 //     clients.
 //
-// Thread safety:
-//
-//   The public methods implementing the VCD::EventHandler interface are safe to
-//   call from any thread -- in practice, this is the thread on which the Device
-//   is running. For this reason, it is RefCountedThreadSafe. ALL OTHER METHODS
-//   are only safe to run on the IO browser thread.
+// VideoCaptureController is not thread safe and operates on the IO thread only.
 
 #ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_VIDEO_CAPTURE_CONTROLLER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_MEDIA_VIDEO_CAPTURE_CONTROLLER_H_
@@ -53,6 +52,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
 #include "base/synchronization/lock.h"
 #include "content/browser/renderer_host/media/video_capture_buffer_pool.h"
@@ -66,11 +67,16 @@
 namespace content {
 class VideoCaptureBufferPool;
 
-class CONTENT_EXPORT VideoCaptureController
-    : public base::RefCountedThreadSafe<VideoCaptureController>,
-      public media::VideoCaptureDevice::EventHandler {
+class CONTENT_EXPORT VideoCaptureController {
  public:
   VideoCaptureController();
+  virtual ~VideoCaptureController();
+
+  base::WeakPtr<VideoCaptureController> GetWeakPtr();
+
+  // Return a new VideoCaptureDeviceClient to forward capture events to this
+  // instance.
+  scoped_ptr<media::VideoCaptureDevice::EventHandler> NewDeviceClient();
 
   // Start video capturing and try to use the resolution specified in
   // |params|.
@@ -100,36 +106,19 @@ class CONTENT_EXPORT VideoCaptureController
                     VideoCaptureControllerEventHandler* event_handler,
                     int buffer_id);
 
-  // Implement media::VideoCaptureDevice::EventHandler.
-  virtual scoped_refptr<media::VideoFrame> ReserveOutputBuffer() OVERRIDE;
-  virtual void OnIncomingCapturedFrame(const uint8* data,
-                                       int length,
-                                       base::Time timestamp,
-                                       int rotation,
-                                       bool flip_vert,
-                                       bool flip_horiz) OVERRIDE;
-  virtual void OnIncomingCapturedVideoFrame(
-      const scoped_refptr<media::VideoFrame>& frame,
-      base::Time timestamp) OVERRIDE;
-  virtual void OnError() OVERRIDE;
-  virtual void OnFrameInfo(const media::VideoCaptureCapability& info) OVERRIDE;
-  virtual void OnFrameInfoChanged(
-      const media::VideoCaptureCapability& info) OVERRIDE;
-
- protected:
-  virtual ~VideoCaptureController();
-
  private:
-  friend class base::RefCountedThreadSafe<VideoCaptureController>;
+  class VideoCaptureDeviceClient;
 
   struct ControllerClient;
   typedef std::list<ControllerClient*> ControllerClients;
 
-  // Worker functions on IO thread.
+  // Worker functions on IO thread. Called by the VideoCaptureDeviceClient.
   void DoIncomingCapturedFrameOnIOThread(
       const scoped_refptr<media::VideoFrame>& captured_frame,
       base::Time timestamp);
-  void DoFrameInfoOnIOThread();
+  void DoFrameInfoOnIOThread(
+      const media::VideoCaptureCapability& frame_info,
+      const scoped_refptr<VideoCaptureBufferPool>& buffer_pool);
   void DoFrameInfoChangedOnIOThread(const media::VideoCaptureCapability& info);
   void DoErrorOnIOThread();
   void DoDeviceStoppedOnIOThread();
@@ -148,11 +137,6 @@ class CONTENT_EXPORT VideoCaptureController
       int session_id,
       const ControllerClients& clients);
 
-  // Protects access to the |buffer_pool_| pointer on non-IO threads.  IO thread
-  // must hold this lock when modifying the |buffer_pool_| pointer itself.
-  // TODO(nick): Make it so that this lock isn't required.
-  base::Lock buffer_pool_lock_;
-
   // The pool of shared-memory buffers used for capturing.
   scoped_refptr<VideoCaptureBufferPool> buffer_pool_;
 
@@ -162,21 +146,14 @@ class CONTENT_EXPORT VideoCaptureController
   // The parameter that currently used for the capturing.
   media::VideoCaptureParams current_params_;
 
-  // It's modified on caller thread, assuming there is only one OnFrameInfo()
-  // call per StartCapture().
+  // Tracks the current frame format.
   media::VideoCaptureCapability frame_info_;
 
-  // Chopped pixels in width/height in case video capture device has odd numbers
-  // for width/height. Accessed only on the device thread.
-  int chopped_width_;
-  int chopped_height_;
-
-  // It's accessed only on IO thread.
-  bool frame_info_available_;
-
   // Takes on only the states 'STARTED' and 'ERROR'. 'ERROR' is an absorbing
-  // state which stops the flow of data to clients. Accessed only on IO thread.
+  // state which stops the flow of data to clients.
   VideoCaptureState state_;
+
+  base::WeakPtrFactory<VideoCaptureController> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureController);
 };

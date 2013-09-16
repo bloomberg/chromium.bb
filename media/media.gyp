@@ -402,8 +402,6 @@
         'video/capture/video_capture.h',
         'video/capture/video_capture_device.cc',
         'video/capture/video_capture_device.h',
-        'video/capture/video_capture_device_dummy.cc',
-        'video/capture/video_capture_device_dummy.h',
         'video/capture/video_capture_proxy.cc',
         'video/capture/video_capture_proxy.h',
         'video/capture/video_capture_types.cc',

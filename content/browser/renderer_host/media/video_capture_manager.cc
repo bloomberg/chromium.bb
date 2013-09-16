@@ -37,10 +37,10 @@ enum { kFirstSessionId = VideoCaptureManager::kStartOpenSessionId + 1 };
 VideoCaptureManager::DeviceEntry::DeviceEntry(
     MediaStreamType stream_type,
     const std::string& id,
-    scoped_refptr<VideoCaptureController> controller)
+    scoped_ptr<VideoCaptureController> controller)
     : stream_type(stream_type),
       id(id),
-      video_capture_controller(controller) {}
+      video_capture_controller(controller.Pass()) {}
 
 VideoCaptureManager::DeviceEntry::~DeviceEntry() {}
 
@@ -139,7 +139,7 @@ void VideoCaptureManager::UseFakeDevice() {
 void VideoCaptureManager::DoStartDeviceOnDeviceThread(
     DeviceEntry* entry,
     const media::VideoCaptureCapability& capture_params,
-    media::VideoCaptureDevice::EventHandler* controller_as_handler) {
+    scoped_ptr<media::VideoCaptureDevice::EventHandler> device_client) {
   SCOPED_UMA_HISTOGRAM_TIMER("Media.VideoCaptureManager.StartDeviceTime");
   DCHECK(IsOnDeviceThread());
 
@@ -179,13 +179,11 @@ void VideoCaptureManager::DoStartDeviceOnDeviceThread(
   }
 
   if (!video_capture_device) {
-    controller_as_handler->OnError();
+    device_client->OnError();
     return;
   }
 
-  // TODO(nick): Merge Allocate() and Start(). http://crbug.com/285562
-  video_capture_device->Allocate(capture_params, controller_as_handler);
-  video_capture_device->Start();
+  video_capture_device->AllocateAndStart(capture_params, device_client.Pass());
   entry->video_capture_device = video_capture_device.Pass();
 }
 
@@ -194,7 +192,7 @@ void VideoCaptureManager::StartCaptureForClient(
     base::ProcessHandle client_render_process,
     VideoCaptureControllerID client_id,
     VideoCaptureControllerEventHandler* client_handler,
-    base::Callback<void(VideoCaptureController*)> done_cb) {
+    const DoneCB& done_cb) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DVLOG(1) << "VideoCaptureManager::StartCaptureForClient, ("
          << capture_params.width
@@ -224,12 +222,12 @@ void VideoCaptureManager::DoStartCaptureForClient(
     base::ProcessHandle client_render_process,
     VideoCaptureControllerID client_id,
     VideoCaptureControllerEventHandler* client_handler,
-    base::Callback<void(VideoCaptureController*)> done_cb) {
+    const DoneCB& done_cb) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   DeviceEntry* entry = GetOrCreateDeviceEntry(capture_params.session_id);
   if (!entry) {
-    done_cb.Run(NULL);
+    done_cb.Run(base::WeakPtr<VideoCaptureController>());
     return;
   }
 
@@ -249,10 +247,11 @@ void VideoCaptureManager::DoStartCaptureForClient(
 
     device_loop_->PostTask(FROM_HERE, base::Bind(
         &VideoCaptureManager::DoStartDeviceOnDeviceThread, this,
-        entry, params_as_capability, entry->video_capture_controller));
+        entry, params_as_capability,
+        base::Passed(entry->video_capture_controller->NewDeviceClient())));
   }
   // Run the callback first, as AddClient() may trigger OnFrameInfo().
-  done_cb.Run(entry->video_capture_controller);
+  done_cb.Run(entry->video_capture_controller->GetWeakPtr());
   entry->video_capture_controller->AddClient(client_id,
                                              client_handler,
                                              client_render_process,
@@ -294,18 +293,9 @@ void VideoCaptureManager::DoStopDeviceOnDeviceThread(DeviceEntry* entry) {
   SCOPED_UMA_HISTOGRAM_TIMER("Media.VideoCaptureManager.StopDeviceTime");
   DCHECK(IsOnDeviceThread());
   if (entry->video_capture_device) {
-    // TODO(nick): Merge Stop() and DeAllocate(). http://crbug.com/285562
-    entry->video_capture_device->Stop();
-    entry->video_capture_device->DeAllocate();
-    entry->video_capture_device.reset();
+    entry->video_capture_device->StopAndDeAllocate();
   }
-}
-
-void VideoCaptureManager::FreeDeviceEntryOnIOThread(
-    scoped_ptr<DeviceEntry> entry) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  entry->video_capture_controller = NULL;
-  entry.reset();
+  entry->video_capture_device.reset();
 }
 
 void VideoCaptureManager::OnOpened(MediaStreamType stream_type,
@@ -423,7 +413,7 @@ void VideoCaptureManager::OpenAndStartDefaultSession(
     base::ProcessHandle client_render_process,
     VideoCaptureControllerID client_id,
     VideoCaptureControllerEventHandler* client_handler,
-    base::Callback<void(VideoCaptureController*)> done_cb,
+    const DoneCB& done_cb,
     const media::VideoCaptureDevice::Names& device_names) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
@@ -432,7 +422,7 @@ void VideoCaptureManager::OpenAndStartDefaultSession(
   DCHECK(capture_params.session_id == kStartOpenSessionId);
   if (device_names.empty() ||
       sessions_.count(capture_params.session_id) != 0) {
-    done_cb.Run(NULL);
+    done_cb.Run(base::WeakPtr<VideoCaptureController>());
     return;
   }
 
@@ -457,17 +447,16 @@ void VideoCaptureManager::DestroyDeviceEntryIfNoClients(DeviceEntry* entry) {
     DVLOG(1) << "VideoCaptureManager stopping device (type = "
              << entry->stream_type << ", id = " << entry->id << ")";
 
-    // The DeviceEntry is removed from |devices_| immediately, but will be torn
-    // down asynchronously. After this point, subsequent request to open this
-    // same device ID will create a new DeviceEntry, VideoCaptureController,
-    // and VideoCaptureDevice.
+    // The DeviceEntry is removed from |devices_| immediately. The controller is
+    // deleted immediately, and the device is freed asynchronously. After this
+    // point, subsequent requests to open this same device ID will create a new
+    // DeviceEntry, VideoCaptureController, and VideoCaptureDevice.
     devices_.erase(entry);
-    device_loop_->PostTaskAndReply(
+    entry->video_capture_controller.reset();
+    device_loop_->PostTask(
         FROM_HERE,
         base::Bind(&VideoCaptureManager::DoStopDeviceOnDeviceThread, this,
-                   base::Unretained(entry)),
-        base::Bind(&VideoCaptureManager::FreeDeviceEntryOnIOThread, this,
-                   base::Passed(make_scoped_ptr(entry).Pass())));
+                   base::Owned(entry)));
   }
 }
 
@@ -491,11 +480,11 @@ VideoCaptureManager::DeviceEntry* VideoCaptureManager::GetOrCreateDeviceEntry(
     return existing_device;
   }
 
-  scoped_refptr<VideoCaptureController> video_capture_controller =
-      new VideoCaptureController();
+  scoped_ptr<VideoCaptureController> video_capture_controller(
+      new VideoCaptureController());
   DeviceEntry* new_device = new DeviceEntry(device_info.type,
                                             device_info.id,
-                                            video_capture_controller);
+                                            video_capture_controller.Pass());
   devices_.insert(new_device);
   return new_device;
 }

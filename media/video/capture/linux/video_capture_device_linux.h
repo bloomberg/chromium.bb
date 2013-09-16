@@ -18,7 +18,7 @@
 
 namespace media {
 
-class VideoCaptureDeviceLinux : public VideoCaptureDevice {
+class VideoCaptureDeviceLinux : public VideoCaptureDevice1 {
  public:
   explicit VideoCaptureDeviceLinux(const Name& device_name);
   virtual ~VideoCaptureDeviceLinux();

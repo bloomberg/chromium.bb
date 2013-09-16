@@ -17,6 +17,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/process/process_handle.h"
 #include "content/browser/renderer_host/media/media_stream_provider.h"
 #include "content/browser/renderer_host/media/video_capture_controller_event_handler.h"
@@ -26,13 +27,16 @@
 #include "media/video/capture/video_capture_types.h"
 
 namespace content {
-class MockVideoCaptureManager;
 class VideoCaptureController;
 class VideoCaptureControllerEventHandler;
 
 // VideoCaptureManager opens/closes and start/stops video capture devices.
 class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
  public:
+  // Callback used to signal the completion of a controller lookup.
+  typedef base::Callback<
+      void(const base::WeakPtr<VideoCaptureController>&)> DoneCB;
+
   // Calling |Start| of this id will open the first device, even though open has
   // not been called. This is used to be able to use video capture devices
   // before MediaStream is implemented in Chrome and WebKit.
@@ -69,12 +73,11 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   // On success, the controller is returned via calling |done_cb|, indicating
   // that the client was successfully added. A NULL controller is passed to
   // the callback on failure.
-  void StartCaptureForClient(
-      const media::VideoCaptureParams& capture_params,
-      base::ProcessHandle client_render_process,
-      VideoCaptureControllerID client_id,
-      VideoCaptureControllerEventHandler* client_handler,
-      base::Callback<void(VideoCaptureController*)> done_cb);
+  void StartCaptureForClient(const media::VideoCaptureParams& capture_params,
+                             base::ProcessHandle client_render_process,
+                             VideoCaptureControllerID client_id,
+                             VideoCaptureControllerEventHandler* client_handler,
+                             const DoneCB& done_cb);
 
   // Called by VideoCaptureHost to remove |client_handler|. If this is the last
   // client of the device, the |controller| and its VideoCaptureDevice may be
@@ -94,7 +97,7 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
       base::ProcessHandle client_render_process,
       VideoCaptureControllerID client_id,
       VideoCaptureControllerEventHandler* client_handler,
-      base::Callback<void(VideoCaptureController*)> done_cb,
+      const DoneCB& done_cb,
       const media::VideoCaptureDevice::Names& device_names);
 
   // Helper routine implementing StartCaptureForClient().
@@ -103,7 +106,7 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
       base::ProcessHandle client_render_process,
       VideoCaptureControllerID client_id,
       VideoCaptureControllerEventHandler* client_handler,
-      base::Callback<void(VideoCaptureController*)> done_cb);
+      const DoneCB& done_cb);
 
   // Check to see if |entry| has no clients left on its controller. If so,
   // remove it from the list of devices, and delete it asynchronously. |entry|
@@ -135,21 +138,16 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
       MediaStreamType stream_type);
 
   // Create and Start a new VideoCaptureDevice, storing the result in
-  // |entry->video_capture_device|.
+  // |entry->video_capture_device|. Ownership of |handler| passes to
+  // the device.
   void DoStartDeviceOnDeviceThread(
       DeviceEntry* entry,
       const media::VideoCaptureCapability& capture_params,
-      media::VideoCaptureDevice::EventHandler* controller_as_handler);
+      scoped_ptr<media::VideoCaptureDevice::EventHandler> handler);
 
   // Stop and destroy the VideoCaptureDevice held in
   // |entry->video_capture_device|.
   void DoStopDeviceOnDeviceThread(DeviceEntry* entry);
-
-  // Helper to clean up the DeviceEntry* instance, and the
-  // VideoCaptureController, on the IO thread. Must happen after
-  // DoStopDeviceOnDeviceThread() destroys the VideoCaptureDevice. It is assumed
-  // that |dead_device| has already been removed from the |devices_| map.
-  void FreeDeviceEntryOnIOThread(scoped_ptr<DeviceEntry> dead_device);
 
   // The message loop of media stream device thread, where VCD's live.
   scoped_refptr<base::MessageLoopProxy> device_loop_;
@@ -176,14 +174,14 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   struct DeviceEntry {
     DeviceEntry(MediaStreamType stream_type,
                 const std::string& id,
-                scoped_refptr<VideoCaptureController> controller);
+                scoped_ptr<VideoCaptureController> controller);
     ~DeviceEntry();
 
     const MediaStreamType stream_type;
     const std::string id;
 
     // The controller. Only used from the IO thread.
-    scoped_refptr<VideoCaptureController> video_capture_controller;
+    scoped_ptr<VideoCaptureController> video_capture_controller;
 
     // The capture device. Only used from the device thread.
     scoped_ptr<media::VideoCaptureDevice> video_capture_device;

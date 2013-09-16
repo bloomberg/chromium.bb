@@ -1228,7 +1228,7 @@ WebContentsVideoCaptureDevice::~WebContentsVideoCaptureDevice() {
 }
 
 // static
-media::VideoCaptureDevice* WebContentsVideoCaptureDevice::Create(
+media::VideoCaptureDevice1* WebContentsVideoCaptureDevice::Create(
     const std::string& device_id) {
   // Parse device_id into render_process_id and render_view_id.
   int render_process_id = -1;

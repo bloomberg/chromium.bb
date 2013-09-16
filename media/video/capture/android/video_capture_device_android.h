@@ -20,7 +20,7 @@ namespace media {
 // by VideoCaptureManager on its own thread, while OnFrameAvailable is called
 // on JAVA thread (i.e., UI thread). Both will access |state_| and |observer_|,
 // but only VideoCaptureManager would change their value.
-class MEDIA_EXPORT VideoCaptureDeviceAndroid : public VideoCaptureDevice {
+class MEDIA_EXPORT VideoCaptureDeviceAndroid : public VideoCaptureDevice1 {
  public:
   virtual ~VideoCaptureDeviceAndroid();
 

@@ -26,4 +26,25 @@ VideoCaptureDevice::Names::FindById(const std::string& id) {
   return NULL;
 }
 
+VideoCaptureDevice::~VideoCaptureDevice() {}
+
+VideoCaptureDevice1::VideoCaptureDevice1() {}
+
+VideoCaptureDevice1::~VideoCaptureDevice1() {}
+
+void VideoCaptureDevice1::AllocateAndStart(
+    const VideoCaptureCapability& capture_format,
+    scoped_ptr<EventHandler> client) {
+  client_ = client.Pass();
+  Allocate(capture_format, client_.get());
+  Start();
+}
+
+void VideoCaptureDevice1::StopAndDeAllocate() {
+  Stop();
+  DeAllocate();
+  client_.reset();
+};
+
+
 }  // namespace media

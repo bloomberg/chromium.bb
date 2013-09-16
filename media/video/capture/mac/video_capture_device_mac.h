@@ -22,7 +22,7 @@ namespace media {
 
 // Called by VideoCaptureManager to open, close and start, stop video capture
 // devices.
-class VideoCaptureDeviceMac : public VideoCaptureDevice {
+class VideoCaptureDeviceMac : public VideoCaptureDevice1 {
  public:
   explicit VideoCaptureDeviceMac(const Name& device_name);
   virtual ~VideoCaptureDeviceMac();

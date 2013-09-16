@@ -39,6 +39,7 @@
 #include <map>
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "content/browser/renderer_host/media/video_capture_controller.h"
 #include "content/common/content_export.h"
@@ -97,10 +98,10 @@ class CONTENT_EXPORT VideoCaptureHost
                       const media::VideoCaptureParams& params);
   void OnControllerAdded(
       int device_id, const media::VideoCaptureParams& params,
-      VideoCaptureController* controller);
+      const base::WeakPtr<VideoCaptureController>& controller);
   void DoControllerAddedOnIOThread(
       int device_id, const media::VideoCaptureParams params,
-      VideoCaptureController* controller);
+      const base::WeakPtr<VideoCaptureController>& controller);
 
   // IPC message: Stop capture on device referenced by |device_id|.
   void OnStopCapture(int device_id);
@@ -148,9 +149,12 @@ class CONTENT_EXPORT VideoCaptureHost
 
   MediaStreamManager* media_stream_manager_;
 
-  struct Entry;
-  typedef std::map<VideoCaptureControllerID, Entry*> EntryMap;
-  // A map of VideoCaptureControllerID to its state and VideoCaptureController.
+  typedef std::map<VideoCaptureControllerID,
+                   base::WeakPtr<VideoCaptureController> > EntryMap;
+
+  // A map of VideoCaptureControllerID to the VideoCaptureController to which it
+  // is connected. An entry in this map holds a null controller while it is in
+  // the process of starting.
   EntryMap entries_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureHost);
