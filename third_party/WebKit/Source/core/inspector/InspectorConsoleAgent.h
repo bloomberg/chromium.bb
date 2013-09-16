@@ -45,6 +45,7 @@ class DOMWindow;
 class Frame;
 class InspectorFrontend;
 class InjectedScriptManager;
+class InspectorTimelineAgent;
 class InstrumentingAgents;
 class ResourceError;
 class ResourceLoader;
@@ -59,7 +60,7 @@ typedef String ErrorString;
 class InspectorConsoleAgent : public InspectorBaseAgent<InspectorConsoleAgent>, public InspectorBackendDispatcher::ConsoleCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorConsoleAgent);
 public:
-    InspectorConsoleAgent(InstrumentingAgents*, InspectorCompositeState*, InjectedScriptManager*);
+    InspectorConsoleAgent(InstrumentingAgents*, InspectorTimelineAgent*, InspectorCompositeState*, InjectedScriptManager*);
     virtual ~InspectorConsoleAgent();
 
     virtual void enable(ErrorString*);
@@ -80,8 +81,11 @@ public:
 
     Vector<unsigned> consoleMessageArgumentCounts();
 
-    void startConsoleTiming(ScriptExecutionContext*, const String& title);
-    void stopConsoleTiming(ScriptExecutionContext*, const String& title, PassRefPtr<ScriptCallStack>);
+    void consoleTime(ScriptExecutionContext*, const String& title);
+    void consoleTimeEnd(ScriptExecutionContext*, const String& title, ScriptState*);
+    void consoleTimeline(ScriptExecutionContext*, const String& title, ScriptState*);
+    void consoleTimelineEnd(ScriptExecutionContext*, const String& title, ScriptState*);
+
     void consoleCount(ScriptState*, PassRefPtr<ScriptArguments>);
 
     void frameWindowDiscarded(DOMWindow*);
@@ -101,6 +105,7 @@ public:
 protected:
     void addConsoleMessage(PassOwnPtr<ConsoleMessage>);
 
+    InspectorTimelineAgent* m_timelineAgent;
     InjectedScriptManager* m_injectedScriptManager;
     InspectorFrontend::Console* m_frontend;
     ConsoleMessage* m_previousMessage;

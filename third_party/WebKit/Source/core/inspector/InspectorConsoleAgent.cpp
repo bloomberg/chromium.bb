@@ -35,6 +35,7 @@
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/InspectorState.h"
+#include "core/inspector/InspectorTimelineAgent.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/ScriptArguments.h"
 #include "core/inspector/ScriptCallFrame.h"
@@ -62,8 +63,9 @@ static const char consoleMessagesEnabled[] = "consoleMessagesEnabled";
 
 int InspectorConsoleAgent::s_enabledAgentCount = 0;
 
-InspectorConsoleAgent::InspectorConsoleAgent(InstrumentingAgents* instrumentingAgents, InspectorCompositeState* state, InjectedScriptManager* injectedScriptManager)
+InspectorConsoleAgent::InspectorConsoleAgent(InstrumentingAgents* instrumentingAgents, InspectorTimelineAgent* timelineAgent, InspectorCompositeState* state, InjectedScriptManager* injectedScriptManager)
     : InspectorBaseAgent<InspectorConsoleAgent>("Console", instrumentingAgents, state)
+    , m_timelineAgent(timelineAgent)
     , m_injectedScriptManager(injectedScriptManager)
     , m_frontend(0)
     , m_previousMessage(0)
@@ -191,7 +193,7 @@ Vector<unsigned> InspectorConsoleAgent::consoleMessageArgumentCounts()
     return result;
 }
 
-void InspectorConsoleAgent::startConsoleTiming(ScriptExecutionContext*, const String& title)
+void InspectorConsoleAgent::consoleTime(ScriptExecutionContext*, const String& title)
 {
     // Follow Firebug's behavior of requiring a title that is not null or
     // undefined for timing functions
@@ -201,7 +203,7 @@ void InspectorConsoleAgent::startConsoleTiming(ScriptExecutionContext*, const St
     m_times.add(title, monotonicallyIncreasingTime());
 }
 
-void InspectorConsoleAgent::stopConsoleTiming(ScriptExecutionContext*, const String& title, PassRefPtr<ScriptCallStack> callStack)
+void InspectorConsoleAgent::consoleTimeEnd(ScriptExecutionContext*, const String& title, ScriptState* state)
 {
     // Follow Firebug's behavior of requiring a title that is not null or
     // undefined for timing functions
@@ -217,8 +219,17 @@ void InspectorConsoleAgent::stopConsoleTiming(ScriptExecutionContext*, const Str
 
     double elapsed = monotonicallyIncreasingTime() - startTime;
     String message = title + String::format(": %.3fms", elapsed * 1000);
-    const ScriptCallFrame& lastCaller = callStack->at(0);
-    addMessageToConsole(ConsoleAPIMessageSource, TimingMessageType, DebugMessageLevel, message, lastCaller.sourceURL(), lastCaller.lineNumber(), lastCaller.columnNumber());
+    addMessageToConsole(ConsoleAPIMessageSource, LogMessageType, DebugMessageLevel, message, String(), 0, 0, state);
+}
+
+void InspectorConsoleAgent::consoleTimeline(ScriptExecutionContext* context, const String& title, ScriptState* state)
+{
+    m_timelineAgent->consoleTimeline(context, title, state);
+}
+
+void InspectorConsoleAgent::consoleTimelineEnd(ScriptExecutionContext* context, const String& title, ScriptState* state)
+{
+    m_timelineAgent->consoleTimelineEnd(context, title, state);
 }
 
 void InspectorConsoleAgent::consoleCount(ScriptState* state, PassRefPtr<ScriptArguments> arguments)

@@ -467,16 +467,19 @@ interface InspectorConsoleInstrumentation {
     void consoleCount(ScriptExecutionContext* context, ScriptState* state, PassRefPtr<ScriptArguments> arguments);
 
     [Timeline, Console]
-    void startConsoleTiming([Keep] ScriptExecutionContext* context, const String& title);
+    void consoleTime([Keep] ScriptExecutionContext* context, const String& title);
 
     [Console, Timeline]
-    void stopConsoleTiming([Keep] ScriptExecutionContext* context, const String& title, PassRefPtr<ScriptCallStack> stack);
+    void consoleTimeEnd([Keep] ScriptExecutionContext* context, const String& title, ScriptState* state);
 
     [Timeline, Inline=FastReturn]
-    void consoleTimeStamp([Keep] ScriptExecutionContext* context, PassRefPtr<ScriptArguments> arguments);
+    void consoleTimeStamp([Keep] ScriptExecutionContext* context, const String& title);
 
-    [Profiler]
-    void addStartProfilingMessageToConsole(ScriptExecutionContext* context, const String& title, unsigned lineNumber, const String& sourceURL);
+    [Console, Inline=FastReturn]
+    void consoleTimeline([Keep] ScriptExecutionContext* context, const String& title, ScriptState* state);
+
+    [Console, Inline=FastReturn]
+    void consoleTimelineEnd([Keep] ScriptExecutionContext* context, const String& title, ScriptState* state);
 
     [Profiler]
     void addProfile(ScriptExecutionContext* context, PassRefPtr<ScriptProfile> profile, PassRefPtr<ScriptCallStack> callStack);

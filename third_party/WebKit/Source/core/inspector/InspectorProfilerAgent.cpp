@@ -101,13 +101,6 @@ void InspectorProfilerAgent::addProfileFinishedMessageToConsole(PassRefPtr<Scrip
     m_consoleAgent->addMessageToConsole(ConsoleAPIMessageSource, ProfileEndMessageType, DebugMessageLevel, message, sourceURL, lineNumber);
 }
 
-void InspectorProfilerAgent::addStartProfilingMessageToConsole(const String& title, unsigned lineNumber, const String& sourceURL)
-{
-    if (!m_frontend)
-        return;
-    m_consoleAgent->addMessageToConsole(ConsoleAPIMessageSource, ProfileMessageType, DebugMessageLevel, title, sourceURL, lineNumber);
-}
-
 PassRefPtr<TypeBuilder::Profiler::ProfileHeader> InspectorProfilerAgent::createProfileHeader(const ScriptProfile& profile)
 {
     return TypeBuilder::Profiler::ProfileHeader::create()
@@ -227,7 +220,6 @@ void InspectorProfilerAgent::start(ErrorString*)
     m_recordingCPUProfile = true;
     String title = getCurrentUserInitiatedProfileName(true);
     ScriptProfiler::start(title);
-    addStartProfilingMessageToConsole(title, 0, String());
     toggleRecordButton(true);
     m_state->setBoolean(ProfilerAgentState::userInitiatedProfiling, true);
 }

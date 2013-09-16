@@ -43,14 +43,18 @@
     [CallWith=ScriptArguments&ScriptState] void trace();
     [CallWith=ScriptArguments&ScriptState, ImplementedAs=assertCondition] void assert([Default=Undefined] optional boolean condition);
     [CallWith=ScriptArguments&ScriptState] void count();
-    [DeprecateAs=ConsoleMarkTimeline, CallWith=ScriptArguments] void markTimeline();
+    [DeprecateAs=ConsoleMarkTimeline] void markTimeline([Default=NullString] optional DOMString title);
 
     [CallWith=ScriptState] void profile([Default=NullString] optional DOMString title);
     [CallWith=ScriptState] void profileEnd([Default=NullString] optional DOMString title);
 
-    void time([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString title);
-    [CallWith=ScriptState] void timeEnd([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString title);
-    [CallWith=ScriptArguments] void timeStamp();
+    void time([Default=NullString] optional DOMString title);
+    [CallWith=ScriptState] void timeEnd([Default=NullString] optional DOMString title);
+    void timeStamp([Default=NullString] optional DOMString title);
+
+    [CallWith=ScriptState] void timeline([Default=NullString] optional DOMString title);
+    [CallWith=ScriptState] void timelineEnd([Default=NullString] optional DOMString title);
+
     [CallWith=ScriptArguments&ScriptState] void group();
     [CallWith=ScriptArguments&ScriptState] void groupCollapsed();
     void groupEnd();

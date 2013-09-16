@@ -71,6 +71,7 @@ class ResourceResponse;
 class ScriptArguments;
 class ScriptCallStack;
 class ScriptExecutionContext;
+class ScriptState;
 class TimelineTraceEventProcessor;
 class WebSocketHandshakeRequest;
 class WebSocketHandshakeResponse;
@@ -117,6 +118,8 @@ public:
     virtual void clearFrontend();
     virtual void restore();
 
+    virtual void enable(ErrorString*);
+    virtual void disable(ErrorString*);
     virtual void start(ErrorString*, const int* maxCallStackDepth, const bool* includeDomCounters, const bool* includeNativeMemoryStatistics);
     virtual void stop(ErrorString*);
 
@@ -175,12 +178,14 @@ public:
     bool willEvaluateScript(Frame*, const String&, int);
     void didEvaluateScript();
 
-    void consoleTimeStamp(ScriptExecutionContext*, PassRefPtr<ScriptArguments>);
+    void consoleTimeStamp(ScriptExecutionContext*, const String& title);
     void domContentLoadedEventFired(Frame*);
     void loadEventFired(Frame*);
 
-    void startConsoleTiming(ScriptExecutionContext*, const String&);
-    void stopConsoleTiming(ScriptExecutionContext*, const String&, PassRefPtr<ScriptCallStack>);
+    void consoleTime(ScriptExecutionContext*, const String&);
+    void consoleTimeEnd(ScriptExecutionContext*, const String&, ScriptState*);
+    void consoleTimeline(ScriptExecutionContext*, const String& title, ScriptState*);
+    void consoleTimelineEnd(ScriptExecutionContext*, const String& title, ScriptState*);
 
     void didScheduleResourceRequest(Document*, const String& url);
     void willSendRequest(unsigned long, DocumentLoader*, const ResourceRequest&, const ResourceResponse&, const FetchInitiatorInfo&);
@@ -259,6 +264,10 @@ private:
     double timestamp();
     Page* page();
 
+    bool isStarted();
+    void innerStart();
+    void innerStop(bool fromConsole);
+
     InspectorPageAgent* m_pageAgent;
     InspectorMemoryAgent* m_memoryAgent;
     InspectorDOMAgent* m_domAgent;
@@ -291,6 +300,7 @@ private:
     unsigned m_styleRecalcElementCounter;
     int m_layerTreeId;
     RenderImage* m_imageBeingPainted;
+    Vector<String> m_consoleTimelines;
 };
 
 } // namespace WebCore

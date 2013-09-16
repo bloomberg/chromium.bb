@@ -61,12 +61,14 @@ public:
     void trace(ScriptState*, PassRefPtr<ScriptArguments>);
     void assertCondition(ScriptState*, PassRefPtr<ScriptArguments>, bool condition);
     void count(ScriptState*, PassRefPtr<ScriptArguments>);
-    void markTimeline(PassRefPtr<ScriptArguments>);
+    void markTimeline(const String&);
     void profile(ScriptState*, const String&);
     void profileEnd(ScriptState*, const String&);
     void time(const String&);
     void timeEnd(ScriptState*, const String&);
-    void timeStamp(PassRefPtr<ScriptArguments>);
+    void timeStamp(const String&);
+    void timeline(ScriptState*, const String&);
+    void timelineEnd(ScriptState*, const String&);
     void group(ScriptState*, PassRefPtr<ScriptArguments>);
     void groupCollapsed(ScriptState*, PassRefPtr<ScriptArguments>);
     void groupEnd();

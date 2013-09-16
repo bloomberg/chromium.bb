@@ -38,7 +38,6 @@ enum MessageType {
     EndGroupMessageType,
     ClearMessageType,
     AssertMessageType,
-    TimingMessageType,
     ProfileMessageType,
     ProfileEndMessageType
 };

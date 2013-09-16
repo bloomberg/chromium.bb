@@ -34,8 +34,8 @@
 
 namespace WebCore {
 
-WorkerConsoleAgent::WorkerConsoleAgent(InstrumentingAgents* instrumentingAgents, InspectorCompositeState* state, InjectedScriptManager* injectedScriptManager)
-    : InspectorConsoleAgent(instrumentingAgents, state, injectedScriptManager)
+WorkerConsoleAgent::WorkerConsoleAgent(InstrumentingAgents* instrumentingAgents, InspectorTimelineAgent* timelineAgent, InspectorCompositeState* state, InjectedScriptManager* injectedScriptManager)
+    : InspectorConsoleAgent(instrumentingAgents, timelineAgent, state, injectedScriptManager)
 {
 }
 

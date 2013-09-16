@@ -111,9 +111,9 @@ void ConsoleBase::count(ScriptState* state, PassRefPtr<ScriptArguments> argument
     InspectorInstrumentation::consoleCount(context(), state, arguments);
 }
 
-void ConsoleBase::markTimeline(PassRefPtr<ScriptArguments> arguments)
+void ConsoleBase::markTimeline(const String& title)
 {
-    InspectorInstrumentation::consoleTimeStamp(context(), arguments);
+    InspectorInstrumentation::consoleTimeStamp(context(), title);
 }
 
 void ConsoleBase::profile(ScriptState* state, const String& title)
@@ -131,10 +131,7 @@ void ConsoleBase::profile(ScriptState* state, const String& title)
         resolvedTitle = InspectorInstrumentation::getCurrentUserInitiatedProfileName(context, true);
 
     ScriptProfiler::start(resolvedTitle);
-
-    RefPtr<ScriptCallStack> callStack(createScriptCallStack(state, 1));
-    const ScriptCallFrame& lastCaller = callStack->at(0);
-    InspectorInstrumentation::addStartProfilingMessageToConsole(context, resolvedTitle, lastCaller.lineNumber(), lastCaller.sourceURL());
+    InspectorInstrumentation::addMessageToConsole(context, ConsoleAPIMessageSource, ProfileMessageType, DebugMessageLevel, resolvedTitle, String(), 0, 0, state);
 }
 
 void ConsoleBase::profileEnd(ScriptState* state, const String& title)
@@ -154,23 +151,31 @@ void ConsoleBase::profileEnd(ScriptState* state, const String& title)
     InspectorInstrumentation::addProfile(context, profile, callStack);
 }
 
-
 void ConsoleBase::time(const String& title)
 {
-    InspectorInstrumentation::startConsoleTiming(context(), title);
+    InspectorInstrumentation::consoleTime(context(), title);
     TRACE_EVENT_COPY_ASYNC_BEGIN0("webkit.console", title.utf8().data(), this);
 }
 
 void ConsoleBase::timeEnd(ScriptState* state, const String& title)
 {
     TRACE_EVENT_COPY_ASYNC_END0("webkit.console", title.utf8().data(), this);
-    RefPtr<ScriptCallStack> callStack(createScriptCallStackForConsole(state));
-    InspectorInstrumentation::stopConsoleTiming(context(), title, callStack.release());
+    InspectorInstrumentation::consoleTimeEnd(context(), title, state);
 }
 
-void ConsoleBase::timeStamp(PassRefPtr<ScriptArguments> arguments)
+void ConsoleBase::timeStamp(const String& title)
 {
-    InspectorInstrumentation::consoleTimeStamp(context(), arguments);
+    InspectorInstrumentation::consoleTimeStamp(context(), title);
+}
+
+void ConsoleBase::timeline(ScriptState* state, const String& title)
+{
+    InspectorInstrumentation::consoleTimeline(context(), title, state);
+}
+
+void ConsoleBase::timelineEnd(ScriptState* state, const String& title)
+{
+    InspectorInstrumentation::consoleTimelineEnd(context(), title, state);
 }
 
 void ConsoleBase::group(ScriptState* state, PassRefPtr<ScriptArguments> arguments)

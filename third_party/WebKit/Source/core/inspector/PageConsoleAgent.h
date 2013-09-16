@@ -41,16 +41,16 @@ class InspectorDOMAgent;
 class PageConsoleAgent : public InspectorConsoleAgent {
     WTF_MAKE_NONCOPYABLE(PageConsoleAgent);
 public:
-    static PassOwnPtr<PageConsoleAgent> create(InstrumentingAgents* instrumentingAgents, InspectorCompositeState* state, InjectedScriptManager* injectedScriptManager, InspectorDOMAgent* domAgent)
+    static PassOwnPtr<PageConsoleAgent> create(InstrumentingAgents* instrumentingAgents, InspectorCompositeState* state, InjectedScriptManager* injectedScriptManager, InspectorDOMAgent* domAgent, InspectorTimelineAgent* timelineAgent)
     {
-        return adoptPtr(new PageConsoleAgent(instrumentingAgents, state, injectedScriptManager, domAgent));
+        return adoptPtr(new PageConsoleAgent(instrumentingAgents, state, injectedScriptManager, domAgent, timelineAgent));
     }
     virtual ~PageConsoleAgent();
 
     virtual bool isWorkerAgent() OVERRIDE { return false; }
 
 private:
-    PageConsoleAgent(InstrumentingAgents*, InspectorCompositeState*, InjectedScriptManager*, InspectorDOMAgent*);
+    PageConsoleAgent(InstrumentingAgents*, InspectorCompositeState*, InjectedScriptManager*, InspectorDOMAgent*, InspectorTimelineAgent*);
     virtual void clearMessages(ErrorString*);
     virtual void addInspectedNode(ErrorString*, int nodeId);
 

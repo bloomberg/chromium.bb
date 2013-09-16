@@ -48,6 +48,7 @@
 #include "core/page/DOMWindow.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
+#include "core/page/PageConsole.h"
 #include "core/platform/MemoryUsageSupport.h"
 #include "core/platform/chromium/TraceEvent.h"
 #include "core/platform/network/ResourceRequest.h"
@@ -60,7 +61,9 @@
 namespace WebCore {
 
 namespace TimelineAgentState {
-static const char timelineAgentEnabled[] = "timelineAgentEnabled";
+static const char enabled[] = "enabled";
+static const char started[] = "started";
+static const char startedFromProtocol[] = "startedFromProtocol";
 static const char timelineMaxCallStackDepth[] = "timelineMaxCallStackDepth";
 static const char includeDomCounters[] = "includeDomCounters";
 static const char includeNativeMemoryStatistics[] = "includeNativeMemoryStatistics";
@@ -189,25 +192,44 @@ void InspectorTimelineAgent::clearFrontend()
 {
     ErrorString error;
     stop(&error);
+    disable(&error);
     releaseNodeIds();
     m_frontend = 0;
 }
 
 void InspectorTimelineAgent::restore()
 {
-    if (m_state->getBoolean(TimelineAgentState::timelineAgentEnabled)) {
-        m_maxCallStackDepth = m_state->getLong(TimelineAgentState::timelineMaxCallStackDepth);
-        ErrorString error;
-        bool includeDomCounters = m_state->getBoolean(TimelineAgentState::includeDomCounters);
-        bool includeNativeMemoryStatistics = m_state->getBoolean(TimelineAgentState::includeNativeMemoryStatistics);
-        start(&error, &m_maxCallStackDepth, &includeDomCounters, &includeNativeMemoryStatistics);
+    if (m_state->getBoolean(TimelineAgentState::startedFromProtocol)) {
+        innerStart();
+    } else if (isStarted()) {
+        // Timeline was started from console.timeline, it is not restored.
+        // Tell front-end timline is no longer collecting.
+        m_state->setBoolean(TimelineAgentState::started, false);
+        bool fromConsole = true;
+        m_frontend->stopped(&fromConsole);
     }
 }
 
-void InspectorTimelineAgent::start(ErrorString*, const int* maxCallStackDepth, const bool* includeDomCounters, const bool* includeNativeMemoryStatistics)
+void InspectorTimelineAgent::enable(ErrorString*)
+{
+    m_state->setBoolean(TimelineAgentState::enabled, true);
+}
+
+void InspectorTimelineAgent::disable(ErrorString*)
+{
+    m_state->setBoolean(TimelineAgentState::enabled, false);
+}
+
+void InspectorTimelineAgent::start(ErrorString* errorString, const int* maxCallStackDepth, const bool* includeDomCounters, const bool* includeNativeMemoryStatistics)
 {
     if (!m_frontend)
         return;
+    m_state->setBoolean(TimelineAgentState::startedFromProtocol, true);
+
+    if (isStarted()) {
+        *errorString = "Timeline is already started";
+        return;
+    }
 
     releaseNodeIds();
     if (maxCallStackDepth && *maxCallStackDepth >= 0)
@@ -217,19 +239,40 @@ void InspectorTimelineAgent::start(ErrorString*, const int* maxCallStackDepth, c
     m_state->setLong(TimelineAgentState::timelineMaxCallStackDepth, m_maxCallStackDepth);
     m_state->setBoolean(TimelineAgentState::includeDomCounters, includeDomCounters && *includeDomCounters);
     m_state->setBoolean(TimelineAgentState::includeNativeMemoryStatistics, includeNativeMemoryStatistics && *includeNativeMemoryStatistics);
-    m_timeConverter.reset();
 
+    innerStart();
+    bool fromConsole = false;
+    m_frontend->started(&fromConsole);
+}
+
+bool InspectorTimelineAgent::isStarted()
+{
+    return m_state->getBoolean(TimelineAgentState::started);
+}
+
+void InspectorTimelineAgent::innerStart()
+{
+    m_state->setBoolean(TimelineAgentState::started, true);
+    m_timeConverter.reset();
     m_instrumentingAgents->setInspectorTimelineAgent(this);
     ScriptGCEvent::addEventListener(this);
-    m_state->setBoolean(TimelineAgentState::timelineAgentEnabled, true);
     if (m_client && m_pageAgent)
         m_traceEventProcessor = adoptRef(new TimelineTraceEventProcessor(m_weakFactory.createWeakPtr(), m_client));
 }
 
-void InspectorTimelineAgent::stop(ErrorString*)
+void InspectorTimelineAgent::stop(ErrorString* errorString)
 {
-    if (!m_state->getBoolean(TimelineAgentState::timelineAgentEnabled))
+    m_state->setBoolean(TimelineAgentState::startedFromProtocol, false);
+    if (!isStarted()) {
+        *errorString = "Timeline was not started";
         return;
+    }
+    innerStop(false);
+}
+
+void InspectorTimelineAgent::innerStop(bool fromConsole)
+{
+    m_state->setBoolean(TimelineAgentState::started, false);
 
     if (m_traceEventProcessor) {
         m_traceEventProcessor->shutdown();
@@ -242,7 +285,13 @@ void InspectorTimelineAgent::stop(ErrorString*)
     clearRecordStack();
     m_gcEvents.clear();
 
-    m_state->setBoolean(TimelineAgentState::timelineAgentEnabled, false);
+    for (size_t i = 0; i < m_consoleTimelines.size(); ++i) {
+        String message = String::format("Timeline '%s' terminated.", m_consoleTimelines[i].utf8().data());
+        page()->console().addMessage(ConsoleAPIMessageSource, DebugMessageLevel, message);
+    }
+    m_consoleTimelines.clear();
+
+    m_frontend->stopped(&fromConsole);
 }
 
 void InspectorTimelineAgent::didBeginFrame()
@@ -566,23 +615,56 @@ void InspectorTimelineAgent::didFailLoading(unsigned long identifier, DocumentLo
     didFinishLoadingResource(identifier, true, 0, loader->frame());
 }
 
-void InspectorTimelineAgent::consoleTimeStamp(ScriptExecutionContext* context, PassRefPtr<ScriptArguments> arguments)
+void InspectorTimelineAgent::consoleTimeStamp(ScriptExecutionContext* context, const String& title)
 {
-    String message;
-    arguments->getFirstArgumentAsString(message);
-    appendRecord(TimelineRecordFactory::createTimeStampData(message), TimelineRecordType::TimeStamp, true, frameForScriptExecutionContext(context));
+    appendRecord(TimelineRecordFactory::createTimeStampData(title), TimelineRecordType::TimeStamp, true, frameForScriptExecutionContext(context));
 }
 
-void InspectorTimelineAgent::startConsoleTiming(ScriptExecutionContext* context, const String& message)
+void InspectorTimelineAgent::consoleTime(ScriptExecutionContext* context, const String& message)
 {
     appendRecord(TimelineRecordFactory::createTimeStampData(message), TimelineRecordType::Time, true, frameForScriptExecutionContext(context));
 }
 
-void InspectorTimelineAgent::stopConsoleTiming(ScriptExecutionContext* context, const String& message, PassRefPtr<ScriptCallStack> stack)
+void InspectorTimelineAgent::consoleTimeEnd(ScriptExecutionContext* context, const String& message, ScriptState*)
 {
     appendRecord(TimelineRecordFactory::createTimeStampData(message), TimelineRecordType::TimeEnd, true, frameForScriptExecutionContext(context));
 }
 
+void InspectorTimelineAgent::consoleTimeline(ScriptExecutionContext* context, const String& title, ScriptState* state)
+{
+    if (!m_state->getBoolean(TimelineAgentState::enabled))
+        return;
+
+    String message = String::format("Timeline '%s' started.", title.utf8().data());
+    page()->console().addMessage(ConsoleAPIMessageSource, DebugMessageLevel, message, String(), 0, 0, 0, state);
+    m_consoleTimelines.append(title);
+    if (!isStarted()) {
+        innerStart();
+        bool fromConsole = true;
+        m_frontend->started(&fromConsole);
+    }
+    appendRecord(TimelineRecordFactory::createTimeStampData(message), TimelineRecordType::TimeStamp, true, frameForScriptExecutionContext(context));
+}
+
+void InspectorTimelineAgent::consoleTimelineEnd(ScriptExecutionContext* context, const String& title, ScriptState* state)
+{
+    if (!m_state->getBoolean(TimelineAgentState::enabled))
+        return;
+
+    size_t index = m_consoleTimelines.find(title);
+    if (index == notFound) {
+        String message = String::format("Timeline '%s' was not started.", title.utf8().data());
+        page()->console().addMessage(ConsoleAPIMessageSource, DebugMessageLevel, message, String(), 0, 0, 0, state);
+        return;
+    }
+
+    String message = String::format("Timeline '%s' finished.", title.utf8().data());
+    appendRecord(TimelineRecordFactory::createTimeStampData(message), TimelineRecordType::TimeStamp, true, frameForScriptExecutionContext(context));
+    m_consoleTimelines.remove(index);
+    if (!m_consoleTimelines.size() && isStarted() && !m_state->getBoolean(TimelineAgentState::startedFromProtocol))
+        innerStop(true);
+    page()->console().addMessage(ConsoleAPIMessageSource, DebugMessageLevel, message, String(), 0, 0, 0, state);
+}
 
 void InspectorTimelineAgent::domContentLoadedEventFired(Frame* frame)
 {
