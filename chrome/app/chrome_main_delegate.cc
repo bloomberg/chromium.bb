@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/files/file_path.h"
+#include "base/i18n/rtl.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/statistics_recorder.h"
@@ -705,6 +706,7 @@ void ChromeMainDelegate::PreSandboxStartup() {
           pak_fd, ui::SCALE_FACTOR_100P);
     }
 
+    base::i18n::SetICUDefaultLocale(locale);
     const std::string loaded_locale = locale;
 #else
     const std::string loaded_locale =
