@@ -11,10 +11,10 @@
 #include "ash/root_window_settings.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
+#include "ash/wm/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_settings.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm/workspace/frame_caption_button_container_view.h"
 #include "base/logging.h"  // DCHECK
 #include "grit/ash_resources.h"
 #include "third_party/skia/include/core/SkCanvas.h"

@@ -4,8 +4,8 @@
 
 #include "ash/wm/panels/panel_frame_view.h"
 
+#include "ash/wm/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/wm/frame_painter.h"
-#include "ash/wm/workspace/frame_caption_button_container_view.h"
 #include "grit/ash_resources.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "ui/base/cursor/cursor.h"

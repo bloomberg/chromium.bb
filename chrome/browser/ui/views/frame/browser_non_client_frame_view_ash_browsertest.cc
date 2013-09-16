@@ -6,7 +6,7 @@
 
 #include "ash/ash_constants.h"
 #include "ash/ash_switches.h"
-#include "ash/wm/workspace/frame_caption_button_container_view.h"
+#include "ash/wm/caption_buttons/frame_caption_button_container_view.h"
 #include "base/command_line.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"

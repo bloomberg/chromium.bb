@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/workspace/alternate_frame_caption_button.h"
+#include "ash/wm/caption_buttons/alternate_frame_caption_button.h"
 
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"

@@ -4,8 +4,8 @@
 
 #include "ash/wm/custom_frame_view_ash.h"
 
+#include "ash/wm/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/wm/frame_painter.h"
-#include "ash/wm/workspace/frame_caption_button_container_view.h"
 #include "grit/ash_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"

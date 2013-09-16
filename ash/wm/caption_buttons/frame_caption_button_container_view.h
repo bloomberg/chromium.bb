@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_WORKSPACE_FRAME_CAPTION_BUTTON_CONTAINER_VIEW_H_
-#define ASH_WM_WORKSPACE_FRAME_CAPTION_BUTTON_CONTAINER_VIEW_H_
+#ifndef ASH_WM_CAPTION_BUTTONS_FRAME_CAPTION_BUTTON_CONTAINER_VIEW_H_
+#define ASH_WM_CAPTION_BUTTONS_FRAME_CAPTION_BUTTON_CONTAINER_VIEW_H_
 
 #include "ash/ash_export.h"
 #include "ui/gfx/image/image_skia.h"
@@ -146,4 +146,4 @@ class ASH_EXPORT FrameCaptionButtonContainerView
 
 }  // namesapace ash
 
-#endif  // ASH_WM_WORKSPACE_FRAME_CAPTION_BUTTON_CONTAINER_VIEW_H_
+#endif  // ASH_WM_CAPTION_BUTTONS_FRAME_CAPTION_BUTTON_CONTAINER_VIEW_H_

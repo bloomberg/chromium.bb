@@ -15,7 +15,6 @@
 #include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm/workspace/snap_types.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "third_party/skia/include/core/SkColor.h"

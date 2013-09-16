@@ -1,12 +1,12 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_WORKSPACE_FRAME_MAXIMIZE_BUTTON_H_
-#define ASH_WM_WORKSPACE_FRAME_MAXIMIZE_BUTTON_H_
+#ifndef ASH_WM_CAPTION_BUTTONS_FRAME_MAXIMIZE_BUTTON_H_
+#define ASH_WM_CAPTION_BUTTONS_FRAME_MAXIMIZE_BUTTON_H_
 
 #include "ash/ash_export.h"
-#include "ash/wm/workspace/maximize_bubble_frame_state.h"
+#include "ash/wm/caption_buttons/maximize_bubble_frame_state.h"
 #include "ash/wm/workspace/snap_types.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
@@ -180,4 +180,4 @@ class ASH_EXPORT FrameMaximizeButton : public views::ImageButton,
 
 }  // namespace ash
 
-#endif  // ASH_WM_WORKSPACE_FRAME_MAXIMIZE_BUTTON_H_
+#endif  // ASH_WM_CAPTION_BUTTONS_FRAME_MAXIMIZE_BUTTON_H_

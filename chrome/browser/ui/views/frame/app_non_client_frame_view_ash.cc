@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/frame/app_non_client_frame_view_ash.h"
 
-#include "ash/wm/workspace/frame_caption_button_container_view.h"
+#include "ash/wm/caption_buttons/frame_caption_button_container_view.h"
 #include "base/i18n/rtl.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"

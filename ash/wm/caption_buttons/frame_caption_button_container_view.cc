@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/workspace/frame_caption_button_container_view.h"
+#include "ash/wm/caption_buttons/frame_caption_button_container_view.h"
 
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
+#include "ash/wm/caption_buttons/alternate_frame_caption_button.h"
+#include "ash/wm/caption_buttons/frame_maximize_button.h"
 #include "ash/wm/window_settings.h"
-#include "ash/wm/workspace/alternate_frame_caption_button.h"
-#include "ash/wm/workspace/frame_maximize_button.h"
 #include "grit/ash_resources.h"
 #include "grit/ui_strings.h"  // Accessibility names
 #include "ui/base/hit_test.h"

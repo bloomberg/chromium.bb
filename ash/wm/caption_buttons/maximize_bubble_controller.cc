@@ -1,14 +1,14 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/maximize_bubble_controller.h"
+#include "ash/wm/caption_buttons/maximize_bubble_controller.h"
 
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
+#include "ash/wm/caption_buttons/frame_maximize_button.h"
 #include "ash/wm/window_animations.h"
-#include "ash/wm/workspace/frame_maximize_button.h"
 #include "base/timer/timer.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
