@@ -87,11 +87,6 @@ class RenderWidgetCompositor : public WebKit::WebLayerTreeView,
   virtual void finishAllRendering();
   virtual void setDeferCommits(bool defer_commits);
   virtual void registerForAnimations(WebKit::WebLayer* layer);
-  virtual void registerViewportLayers(
-      const WebKit::WebLayer* pageScaleLayer,
-      const WebKit::WebLayer* innerViewportScrollLayer,
-      const WebKit::WebLayer* outerViewportScrollLayer) OVERRIDE;
-  virtual void clearViewportLayers() OVERRIDE;
   virtual void renderingStats(WebKit::WebRenderingStats& stats) const {}
   virtual void setShowFPSCounter(bool show);
   virtual void setShowPaintRects(bool show);

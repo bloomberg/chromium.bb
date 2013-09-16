@@ -9,7 +9,6 @@
 #include "cc/animation/scrollbar_animation_controller.h"
 #include "cc/debug/traced_value.h"
 #include "cc/layers/heads_up_display_layer_impl.h"
-#include "cc/layers/layer.h"
 #include "cc/layers/render_surface_impl.h"
 #include "cc/layers/scrollbar_layer_impl_base.h"
 #include "cc/trees/layer_tree_host_common.h"
@@ -28,9 +27,6 @@ LayerTreeImpl::LayerTreeImpl(LayerTreeHostImpl* layer_tree_host_impl)
       root_layer_scroll_offset_delegate_(NULL),
       background_color_(0),
       has_transparent_background_(false),
-      page_scale_layer_(NULL),
-      inner_viewport_scroll_layer_(NULL),
-      outer_viewport_scroll_layer_(NULL),
       page_scale_factor_(1),
       page_scale_delta_(1),
       sent_page_scale_delta_(1),
@@ -119,13 +115,6 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
       target_tree->page_scale_delta() / target_tree->sent_page_scale_delta());
   target_tree->set_sent_page_scale_delta(1);
 
-  if (settings().use_pinch_virtual_viewport) {
-    target_tree->SetViewportLayersFromIds(
-        page_scale_layer_->id(),
-        inner_viewport_scroll_layer_->id(),
-        outer_viewport_scroll_layer_ ? outer_viewport_scroll_layer_->id()
-                                     : Layer::INVALID_ID);
-  }
   // This should match the property synchronization in
   // LayerTreeHost::finishCommitOnImplThread().
   target_tree->set_source_frame_number(source_frame_number());
@@ -268,29 +257,6 @@ void LayerTreeImpl::ApplyScrollDeltasSinceBeginFrame() {
       root_layer(), base::Bind(&ApplyScrollDeltasSinceBeginFrameTo));
 }
 
-void LayerTreeImpl::SetViewportLayersFromIds(
-    int page_scale_layer_id,
-    int inner_viewport_scroll_layer_id,
-    int outer_viewport_scroll_layer_id) {
-  page_scale_layer_ = LayerById(page_scale_layer_id);
-  DCHECK(page_scale_layer_);
-
-  inner_viewport_scroll_layer_ =
-      LayerById(inner_viewport_scroll_layer_id);
-  DCHECK(inner_viewport_scroll_layer_);
-
-  outer_viewport_scroll_layer_ =
-      LayerById(outer_viewport_scroll_layer_id);
-  DCHECK(outer_viewport_scroll_layer_ ||
-         outer_viewport_scroll_layer_id == Layer::INVALID_ID);
-}
-
-void LayerTreeImpl::ClearViewportLayers() {
-  page_scale_layer_ = NULL;
-  inner_viewport_scroll_layer_ = NULL;
-  outer_viewport_scroll_layer_ = NULL;
-}
-
 // TODO(wjmaclean) This needs to go away, and be replaced with a single core
 // of login that works for both scrollbar layer types. This is already planned
 // as part of the larger pinch-zoom re-factoring viewport.
@@ -350,15 +316,13 @@ void LayerTreeImpl::UpdateDrawProperties() {
                  IsActiveTree(),
                  "SourceFrameNumber",
                  source_frame_number_);
-    LayerImpl* page_scale_layer =
-        page_scale_layer_ ? page_scale_layer_ : RootContainerLayer();
     LayerTreeHostCommon::CalcDrawPropsImplInputs inputs(
         root_layer(),
         DrawViewportSize(),
         layer_tree_host_impl_->DrawTransform(),
         device_scale_factor(),
         total_page_scale_factor(),
-        page_scale_layer,
+        root_scroll_layer_ ? root_scroll_layer_->parent() : NULL,
         MaxTextureSize(),
         settings().can_use_lcd_text,
         settings().layer_transforms_should_scale_layer_contents,
