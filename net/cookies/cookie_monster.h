@@ -311,7 +311,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
  private:
   // For queueing the cookie monster calls.
   class CookieMonsterTask;
-  template <typename Result> class DeleteTask;
   class DeleteAllCreatedBetweenTask;
   class DeleteAllCreatedBetweenForHostTask;
   class DeleteAllForHostTask;

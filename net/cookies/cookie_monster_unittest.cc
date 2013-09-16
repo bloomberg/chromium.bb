@@ -50,10 +50,7 @@ class NewMockPersistentCookieStore
   MOCK_METHOD1(AddCookie, void(const CanonicalCookie& cc));
   MOCK_METHOD1(UpdateCookieAccessTime, void(const CanonicalCookie& cc));
   MOCK_METHOD1(DeleteCookie, void(const CanonicalCookie& cc));
-  virtual void Flush(const base::Closure& callback) {
-    if (!callback.is_null())
-      base::MessageLoop::current()->PostTask(FROM_HERE, callback);
-  }
+  MOCK_METHOD1(Flush, void(const base::Closure& callback));
   MOCK_METHOD0(SetForceKeepSessionState, void());
 
  private:
