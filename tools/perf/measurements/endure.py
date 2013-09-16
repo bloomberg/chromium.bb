@@ -8,7 +8,7 @@ from telemetry.page import page_measurement
 import optparse
 import time
 
-_V8_BYTES_COMMITED = [
+_V8_BYTES_COMMITTED = [
   'V8.MemoryNewSpaceBytesCommitted',
   'V8.MemoryOldPointerSpaceBytesCommitted',
   'V8.MemoryOldDataSpaceBytesCommitted',
@@ -108,13 +108,13 @@ class Endure(page_measurement.PageMeasurement):
                         'KB', renderer_vm)
 
     # V8 stats
-    v8_bytes_commited = v8_object_stats.V8ObjectStatsMetric.GetV8StatsTable(
-                            tab, _V8_BYTES_COMMITED)
-    v8_bytes_commited = sum(v8_bytes_commited.values()) / 1024.0
-    self._SaveToResults(results, 'V8BytesCommited_X',
+    v8_bytes_committed = v8_object_stats.V8ObjectStatsMetric.GetV8StatsTable(
+                            tab, _V8_BYTES_COMMITTED)
+    v8_bytes_committed = sum(v8_bytes_committed.values()) / 1024.0
+    self._SaveToResults(results, 'V8BytesCommitted_X',
                         'seconds', elapsed_time)
-    self._SaveToResults(results, 'V8BytesCommited_Y',
-                        'KB', v8_bytes_commited)
+    self._SaveToResults(results, 'V8BytesCommitted_Y',
+                        'KB', v8_bytes_committed)
 
     v8_bytes_used = v8_object_stats.V8ObjectStatsMetric.GetV8StatsTable(
                             tab, _V8_BYTES_USED)
