@@ -69,7 +69,12 @@ namespace app.window {
     // Type of window to create.
     [nodoc] WindowType? type;
 
-    // Frame type: 'none' or 'chrome' (defaults to 'chrome').
+    // Frame type: <code>none</code> or <code>chrome</code> (defaults to
+    // <code>chrome</code>). For <code>none</code>, the
+    // <code>-webkit-app-region</code> CSS property can be used to apply
+    // draggability to the app's window. <code>-webkit-app-region: drag</code>
+    // can be used to mark regions draggable. <code>no-drag</code> can be used
+    // to disable this style on nested elements.
     DOMString? frame;
 
     // Size and position of the content in the window (excluding the titlebar).
