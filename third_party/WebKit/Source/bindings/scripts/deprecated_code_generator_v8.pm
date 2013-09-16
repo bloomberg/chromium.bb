@@ -4780,6 +4780,20 @@ END
 END
     }
 
+    if (InheritsInterface($interface, "AudioBuffer")) {
+      AddToImplIncludes("modules/webaudio/AudioBuffer.h");
+      $code .= <<END;
+    for (unsigned i = 0, n = impl->numberOfChannels(); i < n; i++) {
+        Float32Array* channelData = impl->getChannelData(i);
+        if (!channelData->buffer()->hasDeallocationObserver()) {
+            v8::V8::AdjustAmountOfExternalAllocatedMemory(channelData->buffer()->byteLength());
+            channelData->buffer()->setDeallocationObserver(V8ArrayBufferDeallocationObserver::instance());
+        }
+    }
+END
+    }
+
+
     $code .= <<END;
     installPerContextProperties(wrapper, impl.get(), isolate);
     V8DOMWrapper::associateObjectWithWrapper<$v8ClassName>(impl, &info, wrapper, isolate, $wrapperConfiguration);
