@@ -6,6 +6,7 @@
 
 #include <android/bitmap.h>
 
+#include "base/android/jni_string.h"
 #include "base/logging.h"
 #include "jni/BitmapHelper_jni.h"
 #include "skia/ext/image_operations.h"
@@ -64,7 +65,8 @@ ScopedJavaLocalRef<jobject> ConvertToJavaBitmap(const SkBitmap* skbitmap) {
 static ScopedJavaLocalRef<jobject> CreateJavaBitmapFromResource(
     const char* name, gfx::Size requested_size) {
   JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jstring> jname(env, env->NewStringUTF(name));
+  ScopedJavaLocalRef<jstring> jname(
+      base::android::ConvertUTF8ToJavaString(env, name));
   return ui::Java_BitmapHelper_decodeDrawableResource(env,
                                                       jname.obj(),
                                                       requested_size.width(),
