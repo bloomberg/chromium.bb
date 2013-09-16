@@ -1223,7 +1223,23 @@ other types of suffix sets.
 
 <histogram name="Chrome.BrowserCrashDumpAttempts">
   <summary>
-    Number of time the browser processes attempts to generate a crash dump.
+    The total number of times the browser process has attempted to generate a
+    crash dump. This should be the sum of Chrome.BrowserDumpsWithCrash and
+    Chrome.BrowserDumpsWithNoCrash.
+  </summary>
+</histogram>
+
+<histogram name="Chrome.BrowserDumpsWithCrash">
+  <summary>
+    The number of times the browser process has attempted to generate a crash
+    dump because of an actual browser crash.
+  </summary>
+</histogram>
+
+<histogram name="Chrome.BrowserDumpsWithNoCrash">
+  <summary>
+    The number of times the browser process has attempted to generate a crash
+    dump in a non-crashing (i.e., reporting only) context.
   </summary>
 </histogram>
 
