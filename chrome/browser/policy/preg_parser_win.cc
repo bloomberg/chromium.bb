@@ -64,12 +64,13 @@ int NextChar(const uint8** cursor, const uint8* end) {
 // Reads a fixed-size field from a PReg file.
 bool ReadFieldBinary(const uint8** cursor,
                      const uint8* end,
-                     int size,
+                     uint32 size,
                      uint8* data) {
-  if (!size)
-    return false;
+  if (size == 0)
+    return true;
+
   const uint8* field_end = *cursor + size;
-  if (field_end > end)
+  if (field_end <= *cursor || field_end > end)
     return false;
   std::copy(*cursor, field_end, data);
   *cursor = field_end;

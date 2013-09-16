@@ -43,8 +43,9 @@ testing::AssertionResult RegistryDictEquals(const RegistryDict& a,
     if (iter_value_a->first != iter_value_b->first ||
         !base::Value::Equals(iter_value_a->second, iter_value_b->second)) {
       return testing::AssertionFailure()
-          << "Value mismatch " << iter_value_a->first
-          << " vs. " << iter_value_b->first;
+          << "Value mismatch "
+          << iter_value_a->first << "=" << *iter_value_a->second
+          << " vs. " << iter_value_b->first << "=" << *iter_value_b->second;
     }
   }
 
@@ -108,6 +109,7 @@ TEST(PRegParserWinTest, TestParseFile) {
   expected.SetKey("RestoreOnStartupURLs", startup_urls.Pass());
   SetInteger(&expected, "ShowHomeButton", 1);
   SetString(&expected, "Snowman", "\xE2\x98\x83");
+  SetString(&expected, "Empty", "");
 
   EXPECT_TRUE(RegistryDictEquals(dict, expected));
 }
