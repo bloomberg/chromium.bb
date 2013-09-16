@@ -448,12 +448,9 @@ void SpellcheckCustomDictionary::Apply(
                   dictionary_change.to_add().end());
   }
   if (!dictionary_change.to_remove().empty()) {
-    WordSet updated_words;
-    std::set_difference(words_.begin(),
-                        words_.end(),
-                        dictionary_change.to_remove().begin(),
-                        dictionary_change.to_remove().end(),
-                        std::inserter(updated_words, updated_words.end()));
+    WordSet updated_words =
+        base::STLSetDifference<WordSet>(words_,
+                                        dictionary_change.to_remove());
     std::swap(words_, updated_words);
   }
 }
