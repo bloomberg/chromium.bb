@@ -6,7 +6,7 @@
 var test = function()
 {
     var logView = WebInspector.panel("network")._networkLogView;
-    
+
     function newRequest(headers, data, opt_url)
     {
         var request = new WebInspector.NetworkRequest(0, opt_url || 'http://example.org/path', 0, 0, 0);
@@ -37,7 +37,8 @@ var test = function()
     dumpRequest({"Content-Type": "application/binary"}, "1234\r\n\1\x30\x30\2\3\4\5\'\"!");  // expected content length: 16
     dumpRequest({"Content-Type": "application/binary"}, "\x7F\x80\x90\xFF\u0009\u0700");
     dumpRequest({}, "", "http://labs.ft.com/?querystring=[]{}");  // Character range symbols must be escaped (http://crbug.com/265449).
-    
+    dumpRequest({"Content-Type": "application/binary"}, "%PATH%$PATH");
+
     InspectorTest.completeTest();
 }
 
