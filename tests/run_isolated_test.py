@@ -102,9 +102,14 @@ class RunIsolatedTest(auto_stub.TestCase):
 
     # Both files will fail to be unzipped due to incorrect headers,
     # ensure that we don't accept the files (even if the size is unknown)}.
-    remote.add_item(isolateserver.RemoteOperation.MED, 'zipped_A', 'A',
-                    isolateserver.UNKNOWN_FILE_SIZE)
-    remote.add_item(isolateserver.RemoteOperation.MED, 'zipped_B', 'B', 5)
+    remote.add_item(
+        isolateserver.RemoteOperation.MED, 'zipped_A',
+        os.path.join(self.tempdir, 'run_isolated_test_A'),
+        isolateserver.UNKNOWN_FILE_SIZE)
+    remote.add_item(
+        isolateserver.RemoteOperation.MED, 'zipped_B',
+        os.path.join(self.tempdir, 'run_isolated_test_B'),
+        5)
     self.assertRaises(IOError, remote.get_one_result)
     self.assertRaises(IOError, remote.get_one_result)
     # Need to use join here, since get_one_result will hang.

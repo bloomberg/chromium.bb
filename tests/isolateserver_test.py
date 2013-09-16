@@ -302,7 +302,7 @@ class IsolateServerDownloadTest(TestCase):
     self.assertEqual(expected, actual)
 
 
-def upload_file(item, _dest):
+def upload_file(item, _dest, _size):
   if type(item) == type(Exception) and issubclass(item, Exception):
     raise item()
   elif isinstance(item, int):

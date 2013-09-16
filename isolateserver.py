@@ -13,7 +13,6 @@ import hashlib
 import itertools
 import logging
 import os
-import Queue
 import random
 import re
 import shutil
@@ -168,7 +167,7 @@ def file_write(filepath, content_generator):
       f.write(d)
 
 
-def valid_file(filepath, size):
+def is_valid_file(filepath, size):
   """Determines if the given files appears valid.
 
   Currently it just checks the file's size.
@@ -182,6 +181,14 @@ def valid_file(filepath, size):
         os.path.basename(filepath), actual_size, size)
     return False
   return True
+
+
+def try_remove(filepath):
+  """Removes a file without crashing even if it doesn't exist."""
+  try:
+    os.remove(filepath)
+  except OSError:
+    pass
 
 
 def url_read(url, **kwargs):
@@ -245,53 +252,64 @@ class IsolateServer(object):
         self._token = urllib.quote(url_read(self.content_url + 'get_token'))
       return self._token
 
-  def retrieve(self, item, dest):
-    size = [0]
+  def fetch(self, item, size):
+    """Fetches an object and yields its content."""
+    zipped_url = '%sretrieve/%s/%s' % (self.content_url, self.namespace, item)
+    logging.debug('download_file(%s)', zipped_url)
+
+    # Because the app engine DB is only eventually consistent, retry 404 errors
+    # because the file might just not be visible yet (even though it has been
+    # uploaded).
+    connection = net.url_open(
+        zipped_url, retry_404=True, read_timeout=DOWNLOAD_READ_TIMEOUT)
+    if not connection:
+      raise IOError('Unable to open connection to %s' % zipped_url)
+
+    decompressor = zlib.decompressobj()
     try:
-      zipped_url = '%sretrieve/%s/%s' % (self.content_url, self.namespace, item)
-      logging.debug('download_file(%s)', zipped_url)
+      compressed_size = 0
+      decompressed_size = 0
+      while True:
+        chunk = connection.read(ZIPPED_FILE_CHUNK)
+        if not chunk:
+          break
+        compressed_size += len(chunk)
+        decompressed = decompressor.decompress(chunk)
+        decompressed_size += len(decompressed)
+        yield decompressed
 
-      # Because the app engine DB is only eventually consistent, retry
-      # 404 errors because the file might just not be visible yet (even
-      # though it has been uploaded).
-      connection = net.url_open(
-          zipped_url, retry_404=True, read_timeout=DOWNLOAD_READ_TIMEOUT)
-      if not connection:
-        raise IOError('Unable to open connection to %s' % zipped_url)
-
-      content_length = connection.content_length
-      decompressor = zlib.decompressobj()
-      def generator():
-        while True:
-          chunk = connection.read(ZIPPED_FILE_CHUNK)
-          if not chunk:
-            break
-          size[0] += len(chunk)
-          yield decompressor.decompress(chunk)
-      file_write(dest, generator())
       # Ensure that all the data was properly decompressed.
       uncompressed_data = decompressor.flush()
-      assert not uncompressed_data
-    except IOError as e:
-      logging.error('Failed to download %s at %s.\n%s', item, dest, e)
-      raise
+      if uncompressed_data:
+        raise IOError('Decompression failed')
+      if size != UNKNOWN_FILE_SIZE and decompressed_size != size:
+        raise IOError('File incorrect size after download of %s. Got %s and '
+                      'expected %s' % (item, decompressed_size, size))
     except zlib.error as e:
       msg = 'Corrupted zlib for item %s. Processed %d of %s bytes.\n%s' % (
-          item, size[0], content_length, e)
+          item, compressed_size, connection.content_length, e)
       logging.error(msg)
 
       # Testing seems to show that if a few machines are trying to download
-      # the same blob, they can cause each other to fail. So if we hit a
-      # zip error, this is the most likely cause (it only downloads some of
-      # the data). Randomly sleep for between 5 and 25 seconds to try and
-      # spread out the downloads.
-      # TODO(csharp): Switch from blobstorage to cloud storage and see if
-      # that solves the issue.
+      # the same blob, they can cause each other to fail. So if we hit a zip
+      # error, this is the most likely cause (it only downloads some of the
+      # data). Randomly sleep for between 5 and 25 seconds to try and spread
+      # out the downloads.
       sleep_duration = (random.random() * 20) + 5
       time.sleep(sleep_duration)
       raise IOError(msg)
 
-  def store(self, content, hash_key):
+  def retrieve(self, item, dest, size):
+    """Fetches an object and save its content to |dest|."""
+    try:
+      file_write(dest, self.fetch(item, size))
+    except IOError as e:
+      # Remove unfinished download.
+      try_remove(dest)
+      logging.error('Failed to download %s at %s.\n%s', item, dest, e)
+      raise
+
+  def store(self, content, hash_key, _size):
     # TODO(maruel): Detect failures.
     hash_key = str(hash_key)
     if len(content) > MIN_SIZE_FOR_DIRECT_BLOBSTORE:
@@ -346,12 +364,22 @@ class FileSystem(object):
   def __init__(self, base_path):
     self.base_path = base_path
 
-  def retrieve(self, item, dest):
+  def fetch(self, item, size):
+    source = os.path.join(self.base_path, item)
+    if size != UNKNOWN_FILE_SIZE and not is_valid_file(source, size):
+      raise IOError('Invalid file %s' % item)
+    with open(source, 'rb') as f:
+      return [f.read()]
+
+  def retrieve(self, item, dest, size):
     source = os.path.join(self.base_path, item)
     if source == dest:
       logging.info('Source and destination are the same, no action required')
       return
     logging.debug('copy_file(%s, %s)', source, dest)
+    if size != UNKNOWN_FILE_SIZE and not is_valid_file(source, size):
+      raise IOError(
+          'Invalid file %s, %d != %d' % (item, os.stat(source).st_size, size))
     shutil.copy(source, dest)
 
   def store(self, content, hash_key):
@@ -385,8 +413,6 @@ class RemoteOperation(object):
   def __init__(self, do_item):
     # Function to fetch a remote object or upload to a remote location.
     self._do_item = do_item
-    # Contains tuple(priority, obj).
-    self._done = Queue.PriorityQueue()
     self._pool = threading_utils.ThreadPool(
         self.INITIAL_WORKERS, self.MAX_WORKERS, 0, 'remote')
 
@@ -408,6 +434,9 @@ class RemoteOperation(object):
     assert (priority & self.INTERNAL_PRIORITY_BITS) == 0
     return self._add_item(priority, obj, dest, size)
 
+  def get_one_result(self):
+    return self._pool.get_one_result()
+
   def _add_item(self, priority, obj, dest, size):
     assert isinstance(obj, basestring), obj
     assert isinstance(dest, basestring), dest
@@ -415,26 +444,14 @@ class RemoteOperation(object):
     return self._pool.add_task(
         priority, self._task_executer, priority, obj, dest, size)
 
-  def get_one_result(self):
-    return self._pool.get_one_result()
-
   def _task_executer(self, priority, obj, dest, size):
     """Wraps self._do_item to trap and retry on IOError exceptions."""
     try:
-      self._do_item(obj, dest)
-      if size and not valid_file(dest, size):
-        download_size = os.stat(dest).st_size
-        os.remove(dest)
-        raise IOError('File incorrect size after download of %s. Got %s and '
-                      'expected %s' % (obj, download_size, size))
+      self._do_item(obj, dest, size)
       # TODO(maruel): Technically, we'd want to have an output queue to be a
       # PriorityQueue.
       return obj
-    except IOError as e:
-      logging.debug('Caught IOError: %s', e)
-      # Remove unfinished download.
-      if os.path.exists(dest):
-        os.remove(dest)
+    except IOError:
       # Retry a few times, lowering the priority.
       if (priority & self.INTERNAL_PRIORITY_BITS) < self.RETRIES:
         self._add_item(priority + 1, obj, dest, size)
@@ -472,7 +489,8 @@ def zip_and_trigger_upload(infile, metadata, upload_function):
   priority = (
       RemoteOperation.HIGH if metadata.get('priority', '1') == '0'
       else RemoteOperation.MED)
-  return upload_function(priority, compressed_data, metadata['h'], None)
+  return upload_function(
+      priority, compressed_data, metadata['h'], UNKNOWN_FILE_SIZE)
 
 
 def batch_files_for_check(infiles):
@@ -634,7 +652,7 @@ def CMDdownload(parser, args):
   remote = IsolateServer(options.isolate_server, options.namespace)
   for h, dest in options.file:
     logging.info('%s: %s', h, dest)
-    remote.retrieve(h, os.path.join(options.target, dest))
+    remote.retrieve(h, os.path.join(options.target, dest), UNKNOWN_FILE_SIZE)
   return 0
 
 

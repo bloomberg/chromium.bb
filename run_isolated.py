@@ -331,8 +331,8 @@ class CachePolicies(object):
     self.max_items = max_items
 
 
-class Cache(object):
-  """Stateful LRU cache.
+class DiskCache(object):
+  """Stateful LRU cache in a flat hash table in a directory.
 
   Saves its state as json file.
   """
@@ -420,24 +420,18 @@ class Cache(object):
         '%5d (%8dkb) removed', len(self._removed), sum(self._removed) / 1024)
     logging.info('       %8dkb free', self._free_disk / 1024)
 
-  def remove_lru_file(self):
-    """Removes the last recently used file and returns its size."""
-    item, size = self.lru.pop_oldest()
-    self._delete_file(item, size)
-    return size
-
   def trim(self):
     """Trims anything we don't know, make sure enough free space exists."""
     # Ensure maximum cache size.
     if self.policies.max_cache_size:
       total_size = sum(self.lru.itervalues())
       while total_size > self.policies.max_cache_size:
-        total_size -= self.remove_lru_file()
+        total_size -= self._remove_lru_file()
 
     # Ensure maximum number of items in the cache.
     if self.policies.max_items and len(self.lru) > self.policies.max_items:
       for _ in xrange(len(self.lru) - self.policies.max_items):
-        self.remove_lru_file()
+        self._remove_lru_file()
 
     # Ensure enough free space.
     self._free_disk = get_free_space(self.cache_dir)
@@ -447,7 +441,7 @@ class Cache(object):
         self.lru and
         self._free_disk < self.policies.min_free_space):
       trimmed_due_to_space = True
-      self.remove_lru_file()
+      self._remove_lru_file()
       self._free_disk = get_free_space(self.cache_dir)
     if trimmed_due_to_space:
       total = sum(self.lru.itervalues())
@@ -458,7 +452,7 @@ class Cache(object):
           total / 1024.,
           100. * self.policies.max_cache_size / float(total),
           )
-    self.save()
+    self._save()
 
   def retrieve(self, priority, item, size):
     """Retrieves a file from the remote, if not already cached, and adds it to
@@ -472,7 +466,8 @@ class Cache(object):
     found = False
 
     if item in self.lru:
-      if not isolateserver.valid_file(self.path(item), size):
+      # Note that is doesn't compute the hash so it could still be corrupted.
+      if not isolateserver.is_valid_file(self.path(item), size):
         self.lru.pop(item)
         self._delete_file(item, size)
       else:
@@ -504,10 +499,6 @@ class Cache(object):
     """Returns the path to one item."""
     return os.path.join(self.cache_dir, item)
 
-  def save(self):
-    """Saves the LRU ordering."""
-    self.lru.save(self.state_file)
-
   def wait_for(self, items):
     """Starts a loop that waits for at least one of |items| to be retrieved.
 
@@ -531,6 +522,16 @@ class Cache(object):
       self._add(item)
       if item in items:
         return item
+
+  def _save(self):
+    """Saves the LRU ordering."""
+    self.lru.save(self.state_file)
+
+  def _remove_lru_file(self):
+    """Removes the last recently used file and returns its size."""
+    item, size = self.lru.pop_oldest()
+    self._delete_file(item, size)
+    return size
 
   def _add(self, item):
     """Adds an item into LRU cache marking it as a newest one."""
@@ -776,8 +777,8 @@ def run_tha_test(isolated_hash, cache_dir, retriever, policies):
   directory and runs the executable.
   """
   settings = Settings()
-  with Cache(
-      cache_dir, isolateserver.RemoteOperation(retriever), policies) as cache:
+  remote = isolateserver.RemoteOperation(retriever)
+  with DiskCache(cache_dir, remote, policies) as cache:
     outdir = make_temp_dir('run_tha_test', cache_dir)
     try:
       # Initiate all the files download.
