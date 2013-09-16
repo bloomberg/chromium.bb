@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "chrome/browser/ui/cocoa/history_menu_bridge.h"
 #include "chrome/common/favicon/favicon_types.h"
+#include "chrome/test/base/testing_profile.h"
 #include "components/sessions/serialized_navigation_entry_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

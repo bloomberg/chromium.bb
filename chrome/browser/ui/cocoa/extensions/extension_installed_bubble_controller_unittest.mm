@@ -19,6 +19,7 @@
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/test/base/testing_profile.h"
 #include "extensions/common/manifest_constants.h"
 #include "third_party/ocmock/gtest_support.h"
 #import "third_party/ocmock/OCMock/OCMock.h"

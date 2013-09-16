@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/cocoa/infobars/infobar_cocoa.h"
 #include "chrome/browser/ui/cocoa/infobars/mock_confirm_infobar_delegate.h"
 #import "chrome/browser/ui/cocoa/view_resizer_pong.h"
+#include "chrome/test/base/testing_profile.h"
 #import "content/public/browser/web_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"

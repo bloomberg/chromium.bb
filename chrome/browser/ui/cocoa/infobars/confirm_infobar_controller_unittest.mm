@@ -14,6 +14,7 @@
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
 #include "chrome/browser/ui/cocoa/infobars/mock_confirm_infobar_delegate.h"
 #include "chrome/browser/ui/cocoa/run_loop_testing.h"
+#include "chrome/test/base/testing_profile.h"
 #import "content/public/browser/web_contents.h"
 #include "ipc/ipc_message.h"
 #include "testing/gtest/include/gtest/gtest.h"

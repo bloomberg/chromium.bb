@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/toolbar/recent_tabs_builder_test_helper.h"
 #include "chrome/browser/ui/toolbar/recent_tabs_sub_menu_model.h"
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
+#include "chrome/test/base/testing_profile.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"

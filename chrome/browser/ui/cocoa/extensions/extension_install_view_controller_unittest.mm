@@ -8,6 +8,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #import "chrome/browser/extensions/extension_install_prompt.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_install_prompt_test_utils.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_install_view_controller.h"

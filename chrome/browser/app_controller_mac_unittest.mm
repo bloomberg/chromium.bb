@@ -6,33 +6,30 @@
 
 #include "base/files/file_path.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/run_loop.h"
 #include "chrome/app/chrome_command_ids.h"
 #import "chrome/browser/app_controller_mac.h"
-#include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/base/testing_browser_process.h"
+#include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/platform_test.h"
 
 class AppControllerTest : public PlatformTest {
  protected:
-  AppControllerTest()
-      : ui_thread_(content::BrowserThread::UI, &message_loop_),
-        db_thread_(content::BrowserThread::DB, &message_loop_),
-        file_thread_(content::BrowserThread::FILE, &message_loop_) {
-  }
+  AppControllerTest() {}
 
   virtual void TearDown() {
     TestingBrowserProcess::GetGlobal()->SetProfileManager(NULL);
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread db_thread_;
-  content::TestBrowserThread file_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
 };
 
 TEST_F(AppControllerTest, DockMenu) {
@@ -71,7 +68,7 @@ TEST_F(AppControllerTest, LastProfile) {
   manager.profile_manager()->ScheduleProfileForDeletion(
       dest_path1, ProfileManager::CreateCallback());
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(dest_path2, [ac lastProfile]->GetPath());
 }

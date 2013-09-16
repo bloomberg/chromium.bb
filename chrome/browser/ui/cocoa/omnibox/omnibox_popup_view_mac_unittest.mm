@@ -9,6 +9,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #import "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
+#include "chrome/test/base/testing_profile.h"
+#include "ui/gfx/rect.h"
 #include "ui/gfx/text_elider.h"
 
 namespace {

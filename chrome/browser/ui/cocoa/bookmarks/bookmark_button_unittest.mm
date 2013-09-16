@@ -9,6 +9,7 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button_cell.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
+#include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #import "ui/base/test/cocoa_test_event_utils.h"

@@ -6,13 +6,15 @@
 #define CHROME_BROWSER_UI_COCOA_PROFILE_TEST_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
-#include "chrome/browser/ui/browser.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
-#include "chrome/test/base/testing_browser_process.h"
-#include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "content/public/test/test_browser_thread.h"
+
+namespace content {
+class TestBrowserThreadBundle;
+}
+
+class Browser;
+class TestingProfile;
 
 // Base class which contains a valid Browser*.  Lots of boilerplate to
 // recycle between unit test classes.
@@ -57,16 +59,11 @@ class CocoaProfileTest : public CocoaTest {
   virtual Browser* CreateBrowser();
 
  private:
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
-
   TestingProfileManager profile_manager_;
   TestingProfile* profile_;  // Weak; owned by profile_manager_.
   scoped_ptr<Browser> browser_;
 
-  scoped_ptr<content::TestBrowserThread> file_user_blocking_thread_;
-  scoped_ptr<content::TestBrowserThread> file_thread_;
-  scoped_ptr<content::TestBrowserThread> io_thread_;
+  scoped_ptr<content::TestBrowserThreadBundle> thread_bundle_;
 };
 
 #endif  // CHROME_BROWSER_UI_COCOA_PROFILE_TEST_H_

@@ -11,6 +11,7 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_editor_controller.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "chrome/test/base/test_browser_window.h"
+#include "chrome/test/base/testing_profile.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"

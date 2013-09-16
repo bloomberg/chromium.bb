@@ -10,6 +10,7 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
+#include "chrome/test/base/testing_profile.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"

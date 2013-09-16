@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "chrome/browser/ui/cocoa/info_bubble_window.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/base/testing_profile.h"
 
 class AvatarButtonControllerTest : public CocoaProfileTest {
  public:

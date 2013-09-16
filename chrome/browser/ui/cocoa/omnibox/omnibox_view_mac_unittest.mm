@@ -11,8 +11,10 @@
 #include "chrome/browser/ui/omnibox/omnibox_popup_view.h"
 #include "chrome/browser/ui/toolbar/toolbar_model_delegate.h"
 #include "chrome/browser/ui/toolbar/toolbar_model_impl.h"
+#include "chrome/test/base/testing_profile.h"
 #include "testing/platform_test.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/rect.h"
 
 namespace {
 

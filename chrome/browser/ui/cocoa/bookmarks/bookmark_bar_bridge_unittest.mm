@@ -6,9 +6,11 @@
 #include "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_bridge.h"
 #include "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
+#include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
+#include "url/gurl.h"
 
 // TODO(jrg): use OCMock.
 

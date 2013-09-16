@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "chrome/browser/ui/cocoa/history_menu_bridge.h"
 #include "chrome/browser/ui/cocoa/history_menu_cocoa_controller.h"
+#include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 @interface FakeHistoryMenuController : HistoryMenuCocoaController {
