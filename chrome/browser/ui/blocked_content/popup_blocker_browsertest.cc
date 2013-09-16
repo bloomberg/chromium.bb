@@ -258,6 +258,41 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
   NavigateAndCheckPopupShown(url);
 }
 
+// Verify that content settings are applied based on the top-level frame URL.
+IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
+                       AllowPopupThroughContentSettingIFrame) {
+  GURL url(ui_test_utils::GetTestUrl(
+      base::FilePath(kTestDir),
+      base::FilePath(FILE_PATH_LITERAL("popup-frames.html"))));
+  browser()->profile()->GetHostContentSettingsMap()
+      ->SetContentSetting(ContentSettingsPattern::FromURL(url),
+                          ContentSettingsPattern::Wildcard(),
+                          CONTENT_SETTINGS_TYPE_POPUPS,
+                          std::string(),
+                          CONTENT_SETTING_ALLOW);
+
+  // Popup from the iframe should be allowed since the top-level URL is
+  // whitelisted.
+  NavigateAndCheckPopupShown(url);
+
+  // Whitelist iframe URL instead.
+  GURL frame_url(ui_test_utils::GetTestUrl(
+      base::FilePath(kTestDir),
+      base::FilePath(FILE_PATH_LITERAL("popup-frames-iframe.html"))));
+  browser()->profile()->GetHostContentSettingsMap()->ClearSettingsForOneType(
+      CONTENT_SETTINGS_TYPE_POPUPS);
+  browser()->profile()->GetHostContentSettingsMap()
+      ->SetContentSetting(ContentSettingsPattern::FromURL(frame_url),
+                          ContentSettingsPattern::Wildcard(),
+                          CONTENT_SETTINGS_TYPE_POPUPS,
+                          std::string(),
+                          CONTENT_SETTING_ALLOW);
+
+  // Popup should be blocked.
+  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_EQ(1, GetBlockedContentsCount());
+}
+
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
                        PopupsLaunchWhenTabIsClosed) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -365,6 +400,16 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, WebUI) {
 
   // Check that the new popup displays about:blank.
   EXPECT_EQ(GURL(content::kAboutBlankURL), popup->GetURL());
+}
+
+// Verify that the renderer can't DOS the browser by creating arbitrarily many
+// popups.
+IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, DenialOfService) {
+  GURL url(ui_test_utils::GetTestUrl(
+      base::FilePath(kTestDir),
+      base::FilePath(FILE_PATH_LITERAL("popup-dos.html"))));
+  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_EQ(25, GetBlockedContentsCount());
 }
 
 }  // namespace
