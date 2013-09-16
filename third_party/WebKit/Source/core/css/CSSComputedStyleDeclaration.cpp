@@ -999,10 +999,8 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::valueForFilter(const RenderObj
 
 static PassRefPtr<CSSValue> valueForGridTrackBreadth(const GridLength& trackBreadth, const RenderStyle* style, RenderView* renderView)
 {
-    if (!trackBreadth.isLength()) {
-        String flex = String::number(trackBreadth.flex()) + "fr";
-        return cssValuePool().createValue(flex, CSSPrimitiveValue::CSS_DIMENSION);
-    }
+    if (!trackBreadth.isLength())
+        return cssValuePool().createValue(trackBreadth.flex(), CSSPrimitiveValue::CSS_FR);
 
     const Length& trackBreadthLength = trackBreadth.length();
     if (trackBreadthLength.isAuto())

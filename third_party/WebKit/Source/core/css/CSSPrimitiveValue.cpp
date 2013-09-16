@@ -988,7 +988,8 @@ String CSSPrimitiveValue::customCssText(CssTextFormattingFlags formattingFlag) c
             text = formatNumber(m_value.num, "turn");
             break;
         case CSS_DIMENSION:
-            text = m_value.string;
+            // FIXME: We currently don't handle CSS_DIMENSION properly as we don't store
+            // the actual dimension, just the numeric value as a string.
             break;
         case CSS_STRING:
             text = formattingFlag == AlwaysQuoteCSSString ? quoteCSSString(m_value.string) : quoteCSSStringIfNeeded(m_value.string);

@@ -937,7 +937,7 @@ static bool createGridTrackBreadth(CSSPrimitiveValue* primitiveValue, const Styl
 
     if (primitiveValue->isFlex()) {
         // Fractional unit.
-        workingLength.setFlex(primitiveValue->getFloatValue());
+        workingLength.setFlex(primitiveValue->getDoubleValue());
         return true;
     }
 
