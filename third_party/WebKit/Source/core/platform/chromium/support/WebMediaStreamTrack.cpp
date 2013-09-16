@@ -31,6 +31,7 @@
 #include "public/platform/WebMediaStream.h"
 #include "public/platform/WebMediaStreamSource.h"
 #include "public/platform/WebString.h"
+#include "public/web/WebAudioSourceProvider.h"
 #include "wtf/Vector.h"
 
 using namespace WebCore;
@@ -100,6 +101,14 @@ WebMediaStreamSource WebMediaStreamTrack::source() const
 {
     ASSERT(!m_private.isNull());
     return WebMediaStreamSource(m_private->source());
+}
+
+void WebMediaStreamTrack::setSourceProvider(WebAudioSourceProvider* provider)
+{
+#if ENABLE(WEB_AUDIO)
+    ASSERT(!m_private.isNull());
+    m_private->setSourceProvider(provider);
+#endif // ENABLE(WEB_AUDIO)
 }
 
 void WebMediaStreamTrack::assign(const WebMediaStreamTrack& other)
