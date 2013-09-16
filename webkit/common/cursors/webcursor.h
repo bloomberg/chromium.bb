@@ -15,6 +15,10 @@
 
 #include <vector>
 
+#if defined(USE_AURA)
+#include "ui/base/cursor/cursor.h"
+#endif
+
 #if defined(OS_WIN)
 typedef struct HINSTANCE__* HINSTANCE;
 typedef struct HICON__* HICON;

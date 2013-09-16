@@ -43,13 +43,12 @@
 // 'views'.
 
 #if defined(USE_AURA)
-#include "ui/base/cursor/cursor.h"
-
 class SkRegion;
 namespace aura {
 class Window;
 }
 namespace ui {
+class Cursor;
 class Event;
 }
 #endif  // defined(USE_AURA)

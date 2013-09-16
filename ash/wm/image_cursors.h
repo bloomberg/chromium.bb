@@ -8,6 +8,7 @@
 #include "ash/ash_export.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gfx {

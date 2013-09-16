@@ -17,6 +17,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/window_observer.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/base/x/x11_atom_cache.h"
 #include "ui/gfx/point.h"
 #include "ui/views/views_export.h"

@@ -20,6 +20,10 @@
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/widget/widget_deletion_observer.h"
 
+#if defined(USE_AURA)
+#include "ui/base/cursor/cursor.h"
+#endif
+
 namespace views {
 namespace internal {
 

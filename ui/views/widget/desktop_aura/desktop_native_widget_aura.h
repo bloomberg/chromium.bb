@@ -12,6 +12,7 @@
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/root_window_observer.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/views/ime/input_method_delegate.h"
 #include "ui/views/widget/native_widget_private.h"
 

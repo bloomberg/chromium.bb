@@ -31,6 +31,10 @@
 #include "ui/views/window/custom_frame_view.h"
 #include "ui/views/window/dialog_delegate.h"
 
+#if defined(USE_AURA)
+#include "ui/base/cursor/cursor.h"
+#endif
+
 #if !defined(OS_MACOSX)
 #include "ui/views/controls/menu/menu_controller.h"
 #endif

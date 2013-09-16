@@ -12,6 +12,10 @@
 #include "ui/gfx/path.h"
 #include "ui/gfx/skia_util.h"
 
+#if defined(USE_AURA)
+#include "ui/base/cursor/cursor.h"
+#endif
+
 namespace aura {
 namespace test {
 

@@ -4,6 +4,7 @@
 
 #include "content/browser/web_contents/aura/image_window_delegate.h"
 
+#include "ui/base/cursor/cursor.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/compositor.h"
 #include "ui/gfx/canvas.h"

@@ -15,6 +15,10 @@
 #include "ui/base/events/event.h"
 #include "ui/views/widget/widget.h"
 
+#if defined(USE_AURA)
+#include "ui/base/cursor/cursor.h"
+#endif
+
 ExtensionViewViews::ExtensionViewViews(extensions::ExtensionHost* host,
                                        Browser* browser)
     : host_(host),

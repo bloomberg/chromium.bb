@@ -2,10 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/base/cursor/cursor_loader_win.h"
+
 #include "base/lazy_instance.h"
 #include "base/strings/string16.h"
-#include "ui/base/cursor/cursor_loader_win.h"
 #include "grit/ui_unscaled_resources.h"
+
+#if defined(USE_AURA)
+#include "ui/base/cursor/cursor.h"
+#endif
 
 namespace ui {
 

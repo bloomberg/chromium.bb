@@ -43,6 +43,10 @@
 #include "ui/views/widget/tooltip_manager.h"
 #include "ui/views/widget/widget.h"
 
+#if defined(USE_AURA)
+#include "ui/base/cursor/cursor.h"
+#endif
+
 #if defined(OS_WIN)
 #include "base/win/scoped_gdi_object.h"
 #endif
