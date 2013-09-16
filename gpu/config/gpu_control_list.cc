@@ -10,6 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/config/gpu_util.h"
@@ -1036,6 +1037,12 @@ GpuControlList::GpuControlListEntry::StringToMultiGpuCategory(
   return kMultiGpuCategoryNone;
 }
 
+void GpuControlList::GpuControlListEntry::LogControlListMatch() const {
+  static const char kControlListMatchMessage[] =
+      "Control list match for rule #%u.";
+  LOG(INFO) << base::StringPrintf(kControlListMatchMessage, id_);
+}
+
 bool GpuControlList::GpuControlListEntry::Contains(
     OsType os_type, const std::string& os_version,
     const GPUInfo& gpu_info) const {
@@ -1192,7 +1199,8 @@ GpuControlList::GpuControlList()
     : max_entry_id_(0),
       contains_unknown_fields_(false),
       needs_more_info_(false),
-      supports_feature_type_all_(false) {
+      supports_feature_type_all_(false),
+      control_list_logging_enabled_(false) {
 }
 
 GpuControlList::~GpuControlList() {
@@ -1309,6 +1317,8 @@ std::set<int> GpuControlList::MakeDecision(
   for (size_t i = 0; i < entries_.size(); ++i) {
     if (entries_[i]->Contains(os, os_version, gpu_info)) {
       if (!entries_[i]->disabled()) {
+        if (control_list_logging_enabled_)
+          entries_[i]->LogControlListMatch();
         MergeFeatureSets(&possible_features, entries_[i]->features());
         if (!entries_[i]->NeedsMoreInfo(gpu_info))
           MergeFeatureSets(&features, entries_[i]->features());

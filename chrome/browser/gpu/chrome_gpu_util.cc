@@ -40,32 +40,6 @@ bool ShouldRunCompositingFieldTrial() {
   return false;
 #endif
 
-// Necessary for linux_chromeos build since it defines both OS_LINUX
-// and OS_CHROMEOS.
-#if defined(OS_CHROMEOS)
-  return false;
-#endif
-
-#if defined(OS_WIN)
-  // Don't run the trial on Windows XP.
-  if (base::win::GetVersion() < base::win::VERSION_VISTA)
-    return false;
-#endif
-
-#if defined(OS_MACOSX)
-  // Browser and content shell tests hang on 10.7 when the Apple software
-  // renderer is used. These tests ignore the blacklist (which disables
-  // compositing both on 10.7 and when the Apple software renderer is used)
-  // by specifying the kSkipGpuDataLoading switch, so disable forced
-  // compositing here based on the switch and OS version.
-  // http://crbug.com/230931
-  if (base::mac::IsOSLion() &&
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSkipGpuDataLoading)) {
-    return false;
-  }
-#endif
-
   // Don't activate the field trial if force-compositing-mode has been
   // explicitly disabled from the command line.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
