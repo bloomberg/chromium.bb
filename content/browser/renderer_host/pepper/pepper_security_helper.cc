@@ -10,8 +10,18 @@
 
 namespace content {
 
-bool CanOpenWithPepperFlags(int pp_open_flags, int child_id,
-                            const base::FilePath& file) {
+namespace {
+
+template <typename CanRead, typename CanWrite,
+          typename CanCreate, typename CanCreateWrite,
+          typename FileID>
+bool CanOpenFileWithPepperFlags(CanRead can_read,
+                                CanWrite can_write,
+                                CanCreate can_create,
+                                CanCreateWrite can_create_write,
+                                int pp_open_flags,
+                                int child_id,
+                                const FileID& file) {
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
 
@@ -22,33 +32,53 @@ bool CanOpenWithPepperFlags(int pp_open_flags, int child_id,
   bool pp_exclusive = !!(pp_open_flags & PP_FILEOPENFLAG_EXCLUSIVE);
   bool pp_append = !!(pp_open_flags & PP_FILEOPENFLAG_APPEND);
 
-  if (pp_read && !policy->CanReadFile(child_id, file))
+  if (pp_read && !(policy->*can_read)(child_id, file))
     return false;
 
-  if (pp_write && !policy->CanWriteFile(child_id, file))
+  if (pp_write && !(policy->*can_write)(child_id, file))
     return false;
 
-  if (pp_append) {
-    // Given ChildSecurityPolicyImpl's current definition of permissions,
-    // APPEND is never supported.
+  // TODO(tommycli): Maybe tighten up required permission. crbug.com/284792
+  if (pp_append && !(policy->*can_create_write)(child_id, file))
     return false;
-  }
 
   if (pp_truncate && !pp_write)
     return false;
 
   if (pp_create) {
     if (pp_exclusive) {
-      return policy->CanCreateFile(child_id, file);
+      return (policy->*can_create)(child_id, file);
     } else {
       // Asks for too much, but this is the only grant that allows overwrite.
-      return policy->CanCreateWriteFile(child_id, file);
+      return (policy->*can_create_write)(child_id, file);
     }
   } else if (pp_truncate) {
-    return policy->CanCreateWriteFile(child_id, file);
+    return (policy->*can_create_write)(child_id, file);
   }
 
   return true;
+}
+
+}
+
+bool CanOpenWithPepperFlags(int pp_open_flags, int child_id,
+                            const base::FilePath& file) {
+  return CanOpenFileWithPepperFlags(
+      &ChildProcessSecurityPolicyImpl::CanReadFile,
+      &ChildProcessSecurityPolicyImpl::CanWriteFile,
+      &ChildProcessSecurityPolicyImpl::CanCreateFile,
+      &ChildProcessSecurityPolicyImpl::CanCreateWriteFile,
+      pp_open_flags, child_id, file);
+}
+
+bool CanOpenFileSystemURLWithPepperFlags(int pp_open_flags, int child_id,
+                                         const fileapi::FileSystemURL& url) {
+  return CanOpenFileWithPepperFlags(
+      &ChildProcessSecurityPolicyImpl::CanReadFileSystemFile,
+      &ChildProcessSecurityPolicyImpl::CanWriteFileSystemFile,
+      &ChildProcessSecurityPolicyImpl::CanCreateFileSystemFile,
+      &ChildProcessSecurityPolicyImpl::CanCreateWriteFileSystemFile,
+      pp_open_flags, child_id, url);
 }
 
 }  // namespace content

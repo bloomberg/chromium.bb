@@ -141,20 +141,6 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   // the browser should call this method to check for the capability.
   bool CanReadDirectory(int child_id, const base::FilePath& directory);
 
-  // Deprecated: Use CanReadFile, etc. methods instead.
-  // Determines if certain permissions were granted for a file. |permissions|
-  // must be a bitwise-or'd value of base::PlatformFileFlags.
-  bool HasPermissionsForFile(int child_id,
-                             const base::FilePath& file,
-                             int permissions);
-
-  // Deprecated: Use CanReadFileSystemFile, etc. methods instead.
-  // Determines if certain permissions were granted for a file in FileSystem
-  // API. |permissions| must be a bitwise-or'd value of base::PlatformFileFlags.
-  bool HasPermissionsForFileSystemFile(int child_id,
-                                       const fileapi::FileSystemURL& url,
-                                       int permissions);
-
   // Explicit permissions checks for FileSystemURL specified files.
   bool CanReadFileSystemFile(int child_id, const fileapi::FileSystemURL& url);
   bool CanWriteFileSystemFile(int child_id, const fileapi::FileSystemURL& url);
@@ -211,6 +197,7 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   friend class ChildProcessSecurityPolicyTest;
   FRIEND_TEST_ALL_PREFIXES(ChildProcessSecurityPolicyInProcessBrowserTest,
                            NoLeak);
+  FRIEND_TEST_ALL_PREFIXES(ChildProcessSecurityPolicyTest, FilePermissions);
 
   class SecurityState;
 
@@ -246,6 +233,20 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
       int child_id,
       const std::string& filesystem_id,
       int permission);
+
+  // Deprecated: Use CanReadFile, etc. methods instead.
+  // Determines if certain permissions were granted for a file. |permissions|
+  // must be a bitwise-or'd value of base::PlatformFileFlags.
+  bool HasPermissionsForFile(int child_id,
+                             const base::FilePath& file,
+                             int permissions);
+
+  // Deprecated: Use CanReadFileSystemFile, etc. methods instead.
+  // Determines if certain permissions were granted for a file in FileSystem
+  // API. |permissions| must be a bitwise-or'd value of base::PlatformFileFlags.
+  bool HasPermissionsForFileSystemFile(int child_id,
+                                       const fileapi::FileSystemURL& url,
+                                       int permissions);
 
   // You must acquire this lock before reading or writing any members of this
   // class.  You must not block while holding this lock.

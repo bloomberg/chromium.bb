@@ -216,8 +216,7 @@ bool ShouldServiceRequest(int process_type,
       if (iter->type() == ResourceRequestBody::Element::TYPE_FILE_FILESYSTEM) {
         fileapi::FileSystemURL url =
             file_system_context->CrackURL(iter->filesystem_url());
-        if (!policy->HasPermissionsForFileSystemFile(
-                child_id, url, fileapi::kReadFilePermissions)) {
+        if (!policy->CanReadFileSystemFile(child_id, url)) {
           NOTREACHED() << "Denied unauthorized upload of "
                        << iter->filesystem_url().spec();
           return false;

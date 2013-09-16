@@ -150,10 +150,10 @@ IPC_MESSAGE_CONTROL2(FileSystemHostMsg_CancelWrite,
                      int /* id of request to cancel */)
 
 // Pepper's OpenFile message.
-IPC_MESSAGE_CONTROL3(FileSystemHostMsg_OpenFile,
+IPC_MESSAGE_CONTROL3(FileSystemHostMsg_OpenPepperFile,
                      int /* request id */,
                      GURL /* file path */,
-                     int /* file flags */)
+                     int /* pp_open_flags */)
 
 // Pepper's NotifyCloseFile message.
 IPC_MESSAGE_CONTROL1(FileSystemHostMsg_NotifyCloseFile,

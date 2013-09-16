@@ -98,27 +98,6 @@ bool FileSystemURLIsValid(
   return context->GetFileSystemBackend(url.type()) != NULL;
 }
 
-bool CheckFileSystemPermissionsForProcess(
-    fileapi::FileSystemContext* context, int process_id,
-    const fileapi::FileSystemURL& url, int permissions,
-    base::PlatformFileError* error) {
-  DCHECK(error);
-
-  if (!FileSystemURLIsValid(context, url)) {
-    *error = base::PLATFORM_FILE_ERROR_INVALID_URL;
-    return false;
-  }
-
-  if (!ChildProcessSecurityPolicyImpl::GetInstance()->
-          HasPermissionsForFileSystemFile(process_id, url, permissions)) {
-    *error = base::PLATFORM_FILE_ERROR_SECURITY;
-    return false;
-  }
-
-  *error = base::PLATFORM_FILE_OK;
-  return true;
-}
-
 void SyncGetPlatformPath(fileapi::FileSystemContext* context,
                          int process_id,
                          const GURL& path,

@@ -122,10 +122,10 @@ class FileSystemDispatcher : public IPC::Listener {
 
   // This returns a raw open PlatformFile, unlike the above, which are
   // self-contained operations.
-  void OpenFile(const GURL& file_path,
-                int file_flags,  // passed to FileUtilProxy::CreateOrOpen
-                const OpenFileCallback& success_callback,
-                const StatusCallback& error_callback);
+  void OpenPepperFile(const GURL& file_path,
+                      int pp_open_flags,
+                      const OpenFileCallback& success_callback,
+                      const StatusCallback& error_callback);
   // This must be paired with OpenFile, and called after finished using the
   // raw PlatformFile returned from OpenFile.
   void NotifyCloseFile(int file_open_id);

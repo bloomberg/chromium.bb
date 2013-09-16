@@ -50,6 +50,7 @@ class ShareableFileReference;
 }
 
 namespace content {
+class ChildProcessSecurityPolicyImpl;
 class ChromeBlobStorageContext;
 
 // TODO(tyoshino): Factor out code except for IPC gluing from
@@ -125,7 +126,9 @@ class CONTENT_EXPORT FileAPIMessageFilter : public BrowserMessageFilter {
                    const base::Time& last_access_time,
                    const base::Time& last_modified_time);
   void OnCancel(int request_id, int request_to_cancel);
-  void OnOpenFile(int request_id, const GURL& path, int file_flags);
+#if defined(ENABLE_PLUGINS)
+  void OnOpenPepperFile(int request_id, const GURL& path, int pp_open_flags);
+#endif  // defined(ENABLE_PLUGINS)
   void OnNotifyCloseFile(int file_open_id);
   void OnWillUpdate(const GURL& path);
   void OnDidUpdate(const GURL& path, int64 delta);
@@ -210,10 +213,8 @@ class CONTENT_EXPORT FileAPIMessageFilter : public BrowserMessageFilter {
       const base::FilePath& platform_path,
       const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref);
 
-  // Checks renderer's access permissions for single file.
-  bool HasPermissionsForFile(const fileapi::FileSystemURL& url,
-                             int permissions,
-                             base::PlatformFileError* error);
+  // Sends a FileSystemMsg_DidFail and returns false if |url| is invalid.
+  bool ValidateFileSystemURL(int request_id, const fileapi::FileSystemURL& url);
 
   // Retrieves the Stream object for |url| from |stream_context_|. Returns unset
   // scoped_refptr when there's no Stream instance for the given |url|
@@ -227,6 +228,7 @@ class CONTENT_EXPORT FileAPIMessageFilter : public BrowserMessageFilter {
   int process_id_;
 
   fileapi::FileSystemContext* context_;
+  ChildProcessSecurityPolicyImpl* security_policy_;
 
   // Keeps map from request_id to OperationID for ongoing operations.
   // (Primarily for Cancel operation)

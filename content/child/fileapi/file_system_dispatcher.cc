@@ -324,16 +324,16 @@ void FileSystemDispatcher::TouchFile(
           request_id, path, last_access_time, last_modified_time));
 }
 
-void FileSystemDispatcher::OpenFile(
+void FileSystemDispatcher::OpenPepperFile(
     const GURL& file_path,
-    int file_flags,
+    int pp_open_flags,
     const OpenFileCallback& success_callback,
     const StatusCallback& error_callback) {
   int request_id = dispatchers_.Add(
       CallbackDispatcher::Create(success_callback, error_callback));
   ChildThread::current()->Send(
-      new FileSystemHostMsg_OpenFile(
-          request_id, file_path, file_flags));
+      new FileSystemHostMsg_OpenPepperFile(
+          request_id, file_path, pp_open_flags));
 }
 
 void FileSystemDispatcher::NotifyCloseFile(int file_open_id) {

@@ -41,6 +41,11 @@
 #include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
+#if defined(ENABLE_PLUGINS)
+#include "content/browser/renderer_host/pepper/pepper_security_helper.h"
+#include "ppapi/shared_impl/file_type_conversion.h"
+#endif  // defined(ENABLE_PLUGINS)
+
 using fileapi::FileSystemFileUtil;
 using fileapi::FileSystemBackend;
 using fileapi::FileSystemOperation;
@@ -70,6 +75,7 @@ FileAPIMessageFilter::FileAPIMessageFilter(
     StreamContext* stream_context)
     : process_id_(process_id),
       context_(file_system_context),
+      security_policy_(ChildProcessSecurityPolicyImpl::GetInstance()),
       request_context_getter_(request_context_getter),
       request_context_(NULL),
       blob_storage_context_(blob_storage_context),
@@ -88,6 +94,7 @@ FileAPIMessageFilter::FileAPIMessageFilter(
     StreamContext* stream_context)
     : process_id_(process_id),
       context_(file_system_context),
+      security_policy_(ChildProcessSecurityPolicyImpl::GetInstance()),
       request_context_(request_context),
       blob_storage_context_(blob_storage_context),
       stream_context_(stream_context) {
@@ -174,7 +181,9 @@ bool FileAPIMessageFilter::OnMessageReceived(
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_Truncate, OnTruncate)
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_TouchFile, OnTouchFile)
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_CancelWrite, OnCancel)
-    IPC_MESSAGE_HANDLER(FileSystemHostMsg_OpenFile, OnOpenFile)
+#if defined(ENABLE_PLUGINS)
+    IPC_MESSAGE_HANDLER(FileSystemHostMsg_OpenPepperFile, OnOpenPepperFile)
+#endif  // defined(ENABLE_PLUGINS)
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_NotifyCloseFile, OnNotifyCloseFile)
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_CreateSnapshotFile,
                         OnCreateSnapshotFile)
@@ -253,15 +262,17 @@ void FileAPIMessageFilter::OnDeleteFileSystem(
 void FileAPIMessageFilter::OnMove(
     int request_id, const GURL& src_path, const GURL& dest_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  base::PlatformFileError error;
   FileSystemURL src_url(context_->CrackURL(src_path));
   FileSystemURL dest_url(context_->CrackURL(dest_path));
-  const int src_permissions =
-      fileapi::kReadFilePermissions | fileapi::kWriteFilePermissions;
-  if (!HasPermissionsForFile(src_url, src_permissions, &error) ||
-      !HasPermissionsForFile(
-          dest_url, fileapi::kCreateFilePermissions, &error)) {
-    Send(new FileSystemMsg_DidFail(request_id, error));
+  if (!ValidateFileSystemURL(request_id, src_url) ||
+      !ValidateFileSystemURL(request_id, dest_url)) {
+    return;
+  }
+  if (!security_policy_->CanReadFileSystemFile(process_id_, src_url) ||
+      !security_policy_->CanWriteFileSystemFile(process_id_, src_url) ||
+      !security_policy_->CanCreateFileSystemFile(process_id_, dest_url)) {
+    Send(new FileSystemMsg_DidFail(request_id,
+                                   base::PLATFORM_FILE_ERROR_SECURITY));
     return;
   }
 
@@ -273,13 +284,16 @@ void FileAPIMessageFilter::OnMove(
 void FileAPIMessageFilter::OnCopy(
     int request_id, const GURL& src_path, const GURL& dest_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  base::PlatformFileError error;
   FileSystemURL src_url(context_->CrackURL(src_path));
   FileSystemURL dest_url(context_->CrackURL(dest_path));
-  if (!HasPermissionsForFile(src_url, fileapi::kReadFilePermissions, &error) ||
-      !HasPermissionsForFile(
-          dest_url, fileapi::kCreateFilePermissions, &error)) {
-    Send(new FileSystemMsg_DidFail(request_id, error));
+  if (!ValidateFileSystemURL(request_id, src_url) ||
+      !ValidateFileSystemURL(request_id, dest_url)) {
+    return;
+  }
+  if (!security_policy_->CanReadFileSystemFile(process_id_, src_url) ||
+      !security_policy_->CanCreateFileSystemFile(process_id_, dest_url)) {
+    Send(new FileSystemMsg_DidFail(request_id,
+                                   base::PLATFORM_FILE_ERROR_SECURITY));
     return;
   }
 
@@ -292,10 +306,12 @@ void FileAPIMessageFilter::OnCopy(
 void FileAPIMessageFilter::OnRemove(
     int request_id, const GURL& path, bool recursive) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  base::PlatformFileError error;
   FileSystemURL url(context_->CrackURL(path));
-  if (!HasPermissionsForFile(url, fileapi::kWriteFilePermissions, &error)) {
-    Send(new FileSystemMsg_DidFail(request_id, error));
+  if (!ValidateFileSystemURL(request_id, url))
+    return;
+  if (!security_policy_->CanWriteFileSystemFile(process_id_, url)) {
+    Send(new FileSystemMsg_DidFail(request_id,
+                                   base::PLATFORM_FILE_ERROR_SECURITY));
     return;
   }
 
@@ -307,10 +323,12 @@ void FileAPIMessageFilter::OnRemove(
 void FileAPIMessageFilter::OnReadMetadata(
     int request_id, const GURL& path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  base::PlatformFileError error;
   FileSystemURL url(context_->CrackURL(path));
-  if (!HasPermissionsForFile(url, fileapi::kReadFilePermissions, &error)) {
-    Send(new FileSystemMsg_DidFail(request_id, error));
+  if (!ValidateFileSystemURL(request_id, url))
+    return;
+  if (!security_policy_->CanReadFileSystemFile(process_id_, url)) {
+    Send(new FileSystemMsg_DidFail(request_id,
+                                   base::PLATFORM_FILE_ERROR_SECURITY));
     return;
   }
 
@@ -322,10 +340,12 @@ void FileAPIMessageFilter::OnCreate(
     int request_id, const GURL& path, bool exclusive,
     bool is_directory, bool recursive) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  base::PlatformFileError error;
   FileSystemURL url(context_->CrackURL(path));
-  if (!HasPermissionsForFile(url, fileapi::kCreateFilePermissions, &error)) {
-    Send(new FileSystemMsg_DidFail(request_id, error));
+  if (!ValidateFileSystemURL(request_id, url))
+    return;
+  if (!security_policy_->CanCreateFileSystemFile(process_id_, url)) {
+    Send(new FileSystemMsg_DidFail(request_id,
+                                   base::PLATFORM_FILE_ERROR_SECURITY));
     return;
   }
 
@@ -343,10 +363,12 @@ void FileAPIMessageFilter::OnCreate(
 void FileAPIMessageFilter::OnExists(
     int request_id, const GURL& path, bool is_directory) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  base::PlatformFileError error;
   FileSystemURL url(context_->CrackURL(path));
-  if (!HasPermissionsForFile(url, fileapi::kReadFilePermissions, &error)) {
-    Send(new FileSystemMsg_DidFail(request_id, error));
+  if (!ValidateFileSystemURL(request_id, url))
+    return;
+  if (!security_policy_->CanReadFileSystemFile(process_id_, url)) {
+    Send(new FileSystemMsg_DidFail(request_id,
+                                   base::PLATFORM_FILE_ERROR_SECURITY));
     return;
   }
 
@@ -364,10 +386,12 @@ void FileAPIMessageFilter::OnExists(
 void FileAPIMessageFilter::OnReadDirectory(
     int request_id, const GURL& path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  base::PlatformFileError error;
   FileSystemURL url(context_->CrackURL(path));
-  if (!HasPermissionsForFile(url, fileapi::kReadFilePermissions, &error)) {
-    Send(new FileSystemMsg_DidFail(request_id, error));
+  if (!ValidateFileSystemURL(request_id, url))
+    return;
+  if (!security_policy_->CanReadFileSystemFile(process_id_, url)) {
+    Send(new FileSystemMsg_DidFail(request_id,
+                                   base::PLATFORM_FILE_ERROR_SECURITY));
     return;
   }
 
@@ -399,9 +423,11 @@ void FileAPIMessageFilter::OnWrite(
   }
 
   FileSystemURL url(context_->CrackURL(path));
-  base::PlatformFileError error;
-  if (!HasPermissionsForFile(url, fileapi::kWriteFilePermissions, &error)) {
-    Send(new FileSystemMsg_DidFail(request_id, error));
+  if (!ValidateFileSystemURL(request_id, url))
+    return;
+  if (!security_policy_->CanWriteFileSystemFile(process_id_, url)) {
+    Send(new FileSystemMsg_DidFail(request_id,
+                                   base::PLATFORM_FILE_ERROR_SECURITY));
     return;
   }
 
@@ -417,10 +443,12 @@ void FileAPIMessageFilter::OnTruncate(
     int request_id,
     const GURL& path,
     int64 length) {
-  base::PlatformFileError error;
   FileSystemURL url(context_->CrackURL(path));
-  if (!HasPermissionsForFile(url, fileapi::kWriteFilePermissions, &error)) {
-    Send(new FileSystemMsg_DidFail(request_id, error));
+  if (!ValidateFileSystemURL(request_id, url))
+    return;
+  if (!security_policy_->CanWriteFileSystemFile(process_id_, url)) {
+    Send(new FileSystemMsg_DidFail(request_id,
+                                   base::PLATFORM_FILE_ERROR_SECURITY));
     return;
   }
 
@@ -436,9 +464,11 @@ void FileAPIMessageFilter::OnTouchFile(
     const base::Time& last_modified_time) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   FileSystemURL url(context_->CrackURL(path));
-  base::PlatformFileError error;
-  if (!HasPermissionsForFile(url, fileapi::kCreateFilePermissions, &error)) {
-    Send(new FileSystemMsg_DidFail(request_id, error));
+  if (!ValidateFileSystemURL(request_id, url))
+    return;
+  if (!security_policy_->CanCreateFileSystemFile(process_id_, url)) {
+    Send(new FileSystemMsg_DidFail(request_id,
+                                   base::PLATFORM_FILE_ERROR_SECURITY));
     return;
   }
 
@@ -466,14 +496,16 @@ void FileAPIMessageFilter::OnCancel(
   }
 }
 
-void FileAPIMessageFilter::OnOpenFile(
-    int request_id, const GURL& path, int file_flags) {
+#if defined(ENABLE_PLUGINS)
+void FileAPIMessageFilter::OnOpenPepperFile(
+    int request_id, const GURL& path, int pp_open_flags) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  base::PlatformFileError error;
-  const int open_permissions = file_flags & fileapi::kOpenPepperFilePermissions;
-  FileSystemURL url(context_->CrackURL(path));
-  if (!HasPermissionsForFile(url, open_permissions, &error)) {
-    Send(new FileSystemMsg_DidFail(request_id, error));
+FileSystemURL url(context_->CrackURL(path));
+  if (!ValidateFileSystemURL(request_id, url))
+    return;
+  if (!CanOpenFileSystemURLWithPepperFlags(pp_open_flags, process_id_, url)) {
+    Send(new FileSystemMsg_DidFail(
+        request_id, base::PLATFORM_FILE_ERROR_SECURITY));
     return;
   }
 
@@ -490,11 +522,19 @@ void FileAPIMessageFilter::OnOpenFile(
     quota_policy = quota::kQuotaLimitTypeLimited;
   }
 
+  int platform_file_flags = 0;
+  if (!ppapi::PepperFileOpenFlagsToPlatformFileFlags(pp_open_flags,
+                                                     &platform_file_flags)) {
+    // |pp_open_flags| should have already been checked in PepperFileIOHost.
+    NOTREACHED() << "Open file request with invalid pp_open_flags ignored.";
+  }
+
   operations_[request_id] = operation_runner()->OpenFile(
-      url, open_permissions, PeerHandle(),
+      url, platform_file_flags, PeerHandle(),
       base::Bind(&FileAPIMessageFilter::DidOpenFile, this, request_id,
                  quota_policy));
 }
+#endif  // defined(ENABLE_PLUGINS)
 
 void FileAPIMessageFilter::OnNotifyCloseFile(int file_open_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -547,9 +587,11 @@ void FileAPIMessageFilter::OnCreateSnapshotFile(
   // Make sure if this file can be read by the renderer as this is
   // called when the renderer is about to create a new File object
   // (for reading the file).
-  base::PlatformFileError error;
-  if (!HasPermissionsForFile(url, fileapi::kReadFilePermissions, &error)) {
-    Send(new FileSystemMsg_DidFail(request_id, error));
+  if (!ValidateFileSystemURL(request_id, url))
+    return;
+  if (!security_policy_->CanReadFileSystemFile(process_id_, url)) {
+    Send(new FileSystemMsg_DidFail(request_id,
+                                   base::PLATFORM_FILE_ERROR_SECURITY));
     return;
   }
 
@@ -573,17 +615,15 @@ void FileAPIMessageFilter::OnAppendBlobDataItemToBlob(
     const std::string& uuid, const BlobData::Item& item) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (item.type() == BlobData::Item::TYPE_FILE_FILESYSTEM) {
-    base::PlatformFileError error;
     FileSystemURL filesystem_url(context_->CrackURL(item.filesystem_url()));
-    if (!HasPermissionsForFile(filesystem_url,
-                               fileapi::kReadFilePermissions, &error)) {
+    if (!FileSystemURLIsValid(context_, filesystem_url) ||
+        !security_policy_->CanReadFileSystemFile(process_id_, filesystem_url)) {
       ignore_result(blob_storage_host_->CancelBuildingBlob(uuid));
       return;
     }
   }
   if (item.type() == BlobData::Item::TYPE_FILE &&
-      !ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
-          process_id_, item.path())) {
+      !security_policy_->CanReadFile(process_id_, item.path())) {
     ignore_result(blob_storage_host_->CancelBuildingBlob(uuid));
     return;
   }
@@ -873,16 +913,14 @@ void FileAPIMessageFilter::DidCreateSnapshot(
 
   scoped_refptr<webkit_blob::ShareableFileReference> file_ref =
       webkit_blob::ShareableFileReference::Get(platform_path);
-  if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
-          process_id_, platform_path)) {
+  if (!security_policy_->CanReadFile(process_id_, platform_path)) {
     // Give per-file read permission to the snapshot file if it hasn't it yet.
     // In order for the renderer to be able to read the file via File object,
     // it must be granted per-file read permission for the file's platform
     // path. By now, it has already been verified that the renderer has
     // sufficient permissions to read the file, so giving per-file permission
     // here must be safe.
-    ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFile(
-        process_id_, platform_path);
+    security_policy_->GrantReadFile(process_id_, platform_path);
 
     // Revoke all permissions for the file when the last ref of the file
     // is dropped.
@@ -907,10 +945,13 @@ void FileAPIMessageFilter::DidCreateSnapshot(
                request_id, info, platform_path));
 }
 
-bool FileAPIMessageFilter::HasPermissionsForFile(
-    const FileSystemURL& url, int permissions, base::PlatformFileError* error) {
-  return CheckFileSystemPermissionsForProcess(context_, process_id_, url,
-                                              permissions, error);
+bool FileAPIMessageFilter::ValidateFileSystemURL(
+    int request_id, const fileapi::FileSystemURL& url) {
+  if (FileSystemURLIsValid(context_, url))
+    return true;
+  Send(new FileSystemMsg_DidFail(request_id,
+                                 base::PLATFORM_FILE_ERROR_INVALID_URL));
+  return false;
 }
 
 scoped_refptr<Stream> FileAPIMessageFilter::GetStreamForURL(const GURL& url) {

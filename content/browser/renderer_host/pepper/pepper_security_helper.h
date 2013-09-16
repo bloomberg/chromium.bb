@@ -7,14 +7,22 @@
 
 #include "base/files/file_path.h"
 #include "content/common/content_export.h"
+#include "webkit/browser/fileapi/file_system_url.h"
 
 namespace content {
 
-// Helper method that returns whether or not the child process is allowed to
+// Helper function that returns whether or not the child process is allowed to
 // open the specified |file| with the specified |pp_open_flags|.
 CONTENT_EXPORT bool CanOpenWithPepperFlags(int pp_open_flags,
                                            int child_id,
                                            const base::FilePath& file);
+
+// Helper function that returns whether or not the child process is allowed to
+// open the specified file system |url| with the specified |pp_open_flags|.
+CONTENT_EXPORT bool CanOpenFileSystemURLWithPepperFlags(
+    int pp_open_flags,
+    int child_id,
+    const fileapi::FileSystemURL& url);
 
 }  // namespace content
 

@@ -32,14 +32,6 @@ CreateFileSystemContext(
 CONTENT_EXPORT bool FileSystemURLIsValid(fileapi::FileSystemContext* context,
                                          const fileapi::FileSystemURL& url);
 
-// Check whether a process has permission to access the file system URL.
-CONTENT_EXPORT bool CheckFileSystemPermissionsForProcess(
-    fileapi::FileSystemContext* context,
-    int process_id,
-    const fileapi::FileSystemURL& url,
-    int permissions,
-    base::PlatformFileError* error);
-
 // Get the platform path from a file system URL. This needs to be called
 // on the FILE thread.
 CONTENT_EXPORT void SyncGetPlatformPath(fileapi::FileSystemContext* context,

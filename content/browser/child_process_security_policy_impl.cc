@@ -51,7 +51,7 @@ const int kEnumerateDirectoryPermissions =
     base::PLATFORM_FILE_ENUMERATE;
 
 // TODO(tommycli): These flag sets need some work to make more obvious.
-// Why for instance, does Create|Write != Create|Write? http://crbug.com/263150
+// Why for instance, does Create|Write != CreateWrite? http://crbug.com/263150
 const int kCreateReadWriteFilePermissions =
     kReadFilePermissions |
     kWriteFilePermissions |
