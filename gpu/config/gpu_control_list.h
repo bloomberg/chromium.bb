@@ -96,9 +96,6 @@ class GPU_EXPORT GpuControlList {
   // Register whether "all" is recognized as all features.
   void set_supports_feature_type_all(bool supported);
 
-  // Enables logging of control list decisions.
-  void enable_control_list_logging() { control_list_logging_enabled_ = true; }
-
  private:
   friend class GpuControlListEntryTest;
   friend class MachineModelInfoTest;
@@ -294,9 +291,6 @@ class GPU_EXPORT GpuControlList {
         const base::DictionaryValue* value, bool top_level,
         const FeatureMap& feature_map,
         bool supports_feature_type_all);
-
-    // Logs a control list match for this rule.
-    void LogControlListMatch() const;
 
     // Determines if a given os/gc/machine_model/driver is included in the
     // Entry set.
@@ -501,8 +495,6 @@ class GPU_EXPORT GpuControlList {
   // The features a GpuControlList recognizes and handles.
   FeatureMap feature_map_;
   bool supports_feature_type_all_;
-
-  bool control_list_logging_enabled_;
 };
 
 }  // namespace gpu

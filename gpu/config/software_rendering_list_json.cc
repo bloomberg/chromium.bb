@@ -67,7 +67,7 @@
 // "number" is used for all "op" values except "any". "number" and "number2"
 // are in the format of x, x.x, x.x.x, etc.
 // Only "driver_version" supports lexical style if the format is major.minor;
-// in that case, major is still numerical, but minor is lexical.
+// in that case, major is still numerical, but minor is lexical. 
 //
 // STRING includes "op" and "value".  "op" can be any of the following values:
 // "contains", "beginwith", "endwith", "=".  "value" is a string.
@@ -89,7 +89,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "6.10",
+  "version": "6.9",
   "entries": [
     {
       "id": 1,
@@ -1177,21 +1177,6 @@ LONG_STRING_CONST(
       "features": [
         "multisampling"
       ]
-    },
-    {
-      "id": 78,
-      "description": "Disable force compositing mode on all Windows versions prior to Vista.",
-      "cr_bugs": [273920],
-      "os": {
-        "type": "win",
-        "version": {
-          "op": "<",
-          "number": "6.0"
-        }
-      },
-      "features": [
-        "force_compositing_mode"
-      ]
     }
   ]
 }
@@ -1199,3 +1184,4 @@ LONG_STRING_CONST(
 );  // LONG_STRING_CONST macro
 
 }  // namespace gpu
+
