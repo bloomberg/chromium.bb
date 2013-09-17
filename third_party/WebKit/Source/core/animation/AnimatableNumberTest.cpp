@@ -34,6 +34,8 @@
 #include "core/css/CSSCalculationValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/platform/CalculationValue.h"
+#include "core/rendering/style/RenderStyle.h"
+#include "core/rendering/style/StyleInheritedData.h"
 #include "wtf/MathExtras.h"
 
 #include <gtest/gtest.h>
@@ -46,6 +48,7 @@ class AnimatableNumberTest : public ::testing::Test {
 protected:
     virtual void SetUp()
     {
+        style = RenderStyle::createDefaultStyle();
     }
 
     PassRefPtr<AnimatableNumber> create(double value)
@@ -56,6 +59,11 @@ protected:
     PassRefPtr<AnimatableNumber> create(double value, CSSPrimitiveValue::UnitTypes type)
     {
         return AnimatableNumber::create(CSSPrimitiveValue::create(value, type).get());
+    }
+
+    PassRefPtr<AnimatableNumber> create(double valueLeft, CSSPrimitiveValue::UnitTypes typeLeft, double valueRight, CSSPrimitiveValue::UnitTypes typeRight)
+    {
+        return AnimatableNumber::create(createCalc(valueLeft, typeLeft, valueRight, typeRight).get());
     }
 
     PassRefPtr<CSSCalcValue> createCalc(double valueLeft, CSSPrimitiveValue::UnitTypes typeLeft, double valueRight, CSSPrimitiveValue::UnitTypes typeRight)
@@ -83,6 +91,8 @@ protected:
     {
         return toAnimatableNumber(AnimatableValue::add(numberA, numberB).get())->toCSSValue()->equals(*cssValueExpected);
     }
+
+    RefPtr<RenderStyle> style;
 };
 
 TEST_F(AnimatableNumberTest, CanCreateFrom)
@@ -189,6 +199,52 @@ TEST_F(AnimatableNumberTest, ToCSSValue)
     EXPECT_TRUE(testToCSSValue(CSSPrimitiveValue::create(createCalc(3, CSSPrimitiveValue::CSS_PX, 5, CSSPrimitiveValue::CSS_IN)).get()));
     EXPECT_TRUE(testToCSSValue(CSSPrimitiveValue::create(createCalc(3, CSSPrimitiveValue::CSS_PX, 5, CSSPrimitiveValue::CSS_IN)).get(),
         createCalc(3, CSSPrimitiveValue::CSS_PX, 5, CSSPrimitiveValue::CSS_IN).get()));
+}
+
+TEST_F(AnimatableNumberTest, ToLength)
+{
+    EXPECT_EQ(Length(-5, WebCore::Fixed), create(-5, CSSPrimitiveValue::CSS_PX)->toLength(style.get(), style.get(), 1));
+    EXPECT_EQ(Length(-15, WebCore::Fixed), create(-5, CSSPrimitiveValue::CSS_PX)->toLength(style.get(), style.get(), 3));
+    EXPECT_EQ(Length(0, WebCore::Fixed), create(-5, CSSPrimitiveValue::CSS_PX)->toLength(style.get(), style.get(), 1, NonNegativeValues));
+    EXPECT_EQ(Length(0, WebCore::Fixed), create(-5, CSSPrimitiveValue::CSS_PX)->toLength(style.get(), style.get(), 3, NonNegativeValues));
+
+    EXPECT_EQ(Length(-5, Percent), create(-5, CSSPrimitiveValue::CSS_PERCENTAGE)->toLength(style.get(), style.get(), 1));
+    EXPECT_EQ(Length(-5, Percent), create(-5, CSSPrimitiveValue::CSS_PERCENTAGE)->toLength(style.get(), style.get(), 3));
+    EXPECT_EQ(Length(0, Percent), create(-5, CSSPrimitiveValue::CSS_PERCENTAGE)->toLength(style.get(), style.get(), 1, NonNegativeValues));
+    EXPECT_EQ(Length(0, Percent), create(-5, CSSPrimitiveValue::CSS_PERCENTAGE)->toLength(style.get(), style.get(), 3, NonNegativeValues));
+
+    EXPECT_EQ(
+        Length(CalculationValue::create(
+            adoptPtr(new CalcExpressionBinaryOperation(
+                adoptPtr(new CalcExpressionNumber(-5)),
+                adoptPtr(new CalcExpressionLength(Length(-5, Percent))),
+                CalcAdd)),
+            CalculationRangeAll)),
+        create(-5, CSSPrimitiveValue::CSS_PX, -5, CSSPrimitiveValue::CSS_PERCENTAGE)->toLength(style.get(), style.get(), 1));
+    EXPECT_EQ(
+        Length(CalculationValue::create(
+            adoptPtr(new CalcExpressionBinaryOperation(
+                adoptPtr(new CalcExpressionNumber(-15)),
+                adoptPtr(new CalcExpressionLength(Length(-5, Percent))),
+                CalcAdd)),
+            CalculationRangeAll)),
+        create(-5, CSSPrimitiveValue::CSS_PX, -5, CSSPrimitiveValue::CSS_PERCENTAGE)->toLength(style.get(), style.get(), 3));
+    EXPECT_EQ(
+        Length(CalculationValue::create(
+            adoptPtr(new CalcExpressionBinaryOperation(
+                adoptPtr(new CalcExpressionNumber(-5)),
+                adoptPtr(new CalcExpressionLength(Length(-5, Percent))),
+                CalcAdd)),
+            CalculationRangeNonNegative)),
+        create(-5, CSSPrimitiveValue::CSS_PX, -5, CSSPrimitiveValue::CSS_PERCENTAGE)->toLength(style.get(), style.get(), 1, NonNegativeValues));
+    EXPECT_EQ(
+        Length(CalculationValue::create(
+            adoptPtr(new CalcExpressionBinaryOperation(
+                adoptPtr(new CalcExpressionNumber(-15)),
+                adoptPtr(new CalcExpressionLength(Length(-5, Percent))),
+                CalcAdd)),
+            CalculationRangeNonNegative)),
+        create(-5, CSSPrimitiveValue::CSS_PX, -5, CSSPrimitiveValue::CSS_PERCENTAGE)->toLength(style.get(), style.get(), 3, NonNegativeValues));
 }
 
 TEST_F(AnimatableNumberTest, Interpolate)

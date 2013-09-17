@@ -34,9 +34,13 @@
 #include "core/animation/AnimatableValue.h"
 #include "core/css/CSSCalculationValue.h"
 #include "core/css/CSSPrimitiveValue.h"
-#include "core/platform/CalculationValue.h"
 
 namespace WebCore {
+
+enum NumberRange {
+    AllValues,
+    NonNegativeValues,
+};
 
 // Handles animation of CSSPrimitiveValues that can be represented by doubles including CSSCalcValue.
 // See primitiveUnitToNumberType() for the list of supported units (with the exception of calc).
@@ -68,9 +72,9 @@ public:
     {
         return adoptRef(new AnimatableNumber(number, unitType, cssPrimitiveValue));
     }
-    PassRefPtr<CSSValue> toCSSValue(CalculationPermittedValueRange = CalculationRangeAll) const;
+    PassRefPtr<CSSValue> toCSSValue(NumberRange = AllValues) const;
     double toDouble() const;
-    Length toLength(const RenderStyle* currStyle, const RenderStyle* rootStyle, double zoom, CalculationPermittedValueRange = CalculationRangeAll) const;
+    Length toLength(const RenderStyle* currStyle, const RenderStyle* rootStyle, double zoom, NumberRange = AllValues) const;
 
 protected:
     virtual PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const OVERRIDE;
@@ -101,11 +105,15 @@ private:
     }
     static PassRefPtr<AnimatableNumber> create(const AnimatableNumber* leftAddend, const AnimatableNumber* rightAddend);
 
-    PassRefPtr<CSSPrimitiveValue> toCSSPrimitiveValue(CalculationPermittedValueRange) const;
+    PassRefPtr<CSSPrimitiveValue> toCSSPrimitiveValue(NumberRange) const;
     PassRefPtr<CSSCalcExpressionNode> toCSSCalcExpressionNode() const;
 
     PassRefPtr<AnimatableNumber> scale(double) const;
-    static bool isCompatibleWithCalcRange(const CSSPrimitiveValue*, CalculationPermittedValueRange&);
+    double clampedNumber(NumberRange range) const
+    {
+        ASSERT(!m_isCalc);
+        return (range == NonNegativeValues && m_number <= 0) ? 0 : m_number;
+    }
     static NumberUnitType primitiveUnitToNumberType(unsigned short primitiveUnit);
     static unsigned short numberTypeToPrimitiveUnit(NumberUnitType numberType);
 
