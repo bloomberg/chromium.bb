@@ -94,7 +94,7 @@ String eventListenerHandlerBody(Document* document, EventListener* listener)
     if (listener->type() != EventListener::JSEventListenerType)
         return "";
 
-    v8::HandleScope scope(isolateForScriptExecutionContext(document));
+    v8::HandleScope scope(toIsolate(document));
     V8AbstractEventListener* v8Listener = static_cast<V8AbstractEventListener*>(listener);
     v8::Handle<v8::Context> context = toV8Context(document, v8Listener->world());
     v8::Context::Scope contextScope(context);
@@ -110,7 +110,7 @@ ScriptValue eventListenerHandler(Document* document, EventListener* listener)
     if (listener->type() != EventListener::JSEventListenerType)
         return ScriptValue();
 
-    v8::HandleScope scope(isolateForScriptExecutionContext(document));
+    v8::HandleScope scope(toIsolate(document));
     V8AbstractEventListener* v8Listener = static_cast<V8AbstractEventListener*>(listener);
     v8::Handle<v8::Context> context = toV8Context(document, v8Listener->world());
     v8::Context::Scope contextScope(context);
@@ -125,7 +125,7 @@ ScriptState* eventListenerHandlerScriptState(Frame* frame, EventListener* listen
     if (listener->type() != EventListener::JSEventListenerType)
         return 0;
     V8AbstractEventListener* v8Listener = static_cast<V8AbstractEventListener*>(listener);
-    v8::HandleScope scope(isolateForFrame(frame));
+    v8::HandleScope scope(toIsolate(frame));
     v8::Handle<v8::Context> v8Context = frame->script()->windowShell(v8Listener->world())->context();
     return ScriptState::forContext(v8Context);
 }
@@ -135,7 +135,7 @@ bool eventListenerHandlerLocation(Document* document, EventListener* listener, S
     if (listener->type() != EventListener::JSEventListenerType)
         return false;
 
-    v8::HandleScope scope(isolateForScriptExecutionContext(document));
+    v8::HandleScope scope(toIsolate(document));
     V8AbstractEventListener* v8Listener = static_cast<V8AbstractEventListener*>(listener);
     v8::Handle<v8::Context> context = toV8Context(document, v8Listener->world());
     v8::Context::Scope contextScope(context);

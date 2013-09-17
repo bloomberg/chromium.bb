@@ -58,7 +58,7 @@ void V8WorkerGlobalScopeEventListener::handleEvent(ScriptExecutionContext* conte
     // See issue 889829.
     RefPtr<V8AbstractEventListener> protect(this);
 
-    v8::Isolate* isolate = isolateForScriptExecutionContext(context);
+    v8::Isolate* isolate = toIsolate(context);
     v8::HandleScope handleScope(isolate);
 
     WorkerScriptController* script = toWorkerGlobalScope(context)->script();
@@ -97,7 +97,7 @@ v8::Local<v8::Value> V8WorkerGlobalScopeEventListener::callListenerFunction(Scri
         cookie = InspectorInstrumentation::willCallFunction(context, resourceName, lineNumber);
     }
 
-    v8::Isolate* isolate = isolateForScriptExecutionContext(context);
+    v8::Isolate* isolate = toIsolate(context);
     v8::Handle<v8::Value> parameters[1] = { jsEvent };
     v8::Local<v8::Value> result = V8ScriptRunner::callFunction(handlerFunction, context, receiver, WTF_ARRAY_LENGTH(parameters), parameters, isolate);
 
@@ -114,7 +114,7 @@ v8::Local<v8::Object> V8WorkerGlobalScopeEventListener::getReceiverObject(Script
         return listener;
 
     EventTarget* target = event->currentTarget();
-    v8::Isolate* isolate = isolateForScriptExecutionContext(context);
+    v8::Isolate* isolate = toIsolate(context);
     v8::Handle<v8::Value> value = toV8(target, v8::Handle<v8::Object>(), isolate);
     if (value.IsEmpty())
         return v8::Local<v8::Object>();

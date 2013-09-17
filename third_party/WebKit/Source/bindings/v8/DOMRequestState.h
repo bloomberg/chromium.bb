@@ -39,7 +39,7 @@ public:
     explicit DOMRequestState(ScriptExecutionContext* scriptExecutionContext)
         : m_scriptExecutionContext(scriptExecutionContext)
         , m_world(DOMWrapperWorld::current())
-        , m_isolate(isolateForScriptExecutionContext(scriptExecutionContext))
+        , m_isolate(toIsolate(scriptExecutionContext))
     {
     }
 

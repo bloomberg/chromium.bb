@@ -148,7 +148,7 @@ void WebDevToolsFrontendImpl::doDispatchOnInspectorFrontend(const WebString& mes
     WebFrameImpl* frame = m_webViewImpl->mainFrameImpl();
     if (!frame->frame())
         return;
-    v8::Isolate* isolate = isolateForFrame(frame->frame());
+    v8::Isolate* isolate = toIsolate(frame->frame());
     v8::HandleScope scope(isolate);
     v8::Handle<v8::Context> frameContext = frame->frame()->script()->currentWorldContext();
     v8::Context::Scope contextScope(frameContext);

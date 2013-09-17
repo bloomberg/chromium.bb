@@ -591,7 +591,7 @@ v8::Local<v8::Value> getHiddenValueFromMainWorldWrapper(v8::Isolate* isolate, Sc
     return wrapper.IsEmpty() ? v8::Local<v8::Value>() : wrapper->GetHiddenValue(key);
 }
 
-v8::Isolate* isolateForScriptExecutionContext(ScriptExecutionContext* context)
+v8::Isolate* toIsolate(ScriptExecutionContext* context)
 {
     if (context && context->isDocument()) {
         static v8::Isolate* mainWorldIsolate = 0;
@@ -602,7 +602,7 @@ v8::Isolate* isolateForScriptExecutionContext(ScriptExecutionContext* context)
     return v8::Isolate::GetCurrent();
 }
 
-v8::Isolate* isolateForFrame(Frame* frame)
+v8::Isolate* toIsolate(Frame* frame)
 {
     return frame->script()->isolate();
 }

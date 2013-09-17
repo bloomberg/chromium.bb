@@ -91,11 +91,11 @@ V8CustomElementLifecycleCallbacks::V8CustomElementLifecycleCallbacks(ScriptExecu
     : CustomElementLifecycleCallbacks(flagSet(enteredView, leftView, attributeChanged))
     , ActiveDOMCallback(scriptExecutionContext)
     , m_world(DOMWrapperWorld::current())
-    , m_prototype(isolateForScriptExecutionContext(scriptExecutionContext), prototype)
-    , m_created(isolateForScriptExecutionContext(scriptExecutionContext), created)
-    , m_enteredView(isolateForScriptExecutionContext(scriptExecutionContext), enteredView)
-    , m_leftView(isolateForScriptExecutionContext(scriptExecutionContext), leftView)
-    , m_attributeChanged(isolateForScriptExecutionContext(scriptExecutionContext), attributeChanged)
+    , m_prototype(toIsolate(scriptExecutionContext), prototype)
+    , m_created(toIsolate(scriptExecutionContext), created)
+    , m_enteredView(toIsolate(scriptExecutionContext), enteredView)
+    , m_leftView(toIsolate(scriptExecutionContext), leftView)
+    , m_attributeChanged(toIsolate(scriptExecutionContext), attributeChanged)
     , m_owner(0)
 {
     m_prototype.makeWeak(&m_prototype, weakCallback<v8::Object>);
@@ -125,7 +125,7 @@ V8CustomElementLifecycleCallbacks::~V8CustomElementLifecycleCallbacks()
     if (!m_owner)
         return;
 
-    v8::HandleScope handleScope(isolateForScriptExecutionContext(scriptExecutionContext()));
+    v8::HandleScope handleScope(toIsolate(scriptExecutionContext()));
     if (V8PerContextData* perContextData = creationContextData())
         perContextData->clearCustomElementBinding(m_owner);
 }
@@ -153,7 +153,7 @@ void V8CustomElementLifecycleCallbacks::created(Element* element)
 
     element->setCustomElementState(Element::Upgraded);
 
-    v8::Isolate* isolate = isolateForScriptExecutionContext(scriptExecutionContext());
+    v8::Isolate* isolate = toIsolate(scriptExecutionContext());
     v8::HandleScope handleScope(isolate);
     v8::Handle<v8::Context> context = toV8Context(scriptExecutionContext(), m_world.get());
     if (context.IsEmpty())
@@ -201,7 +201,7 @@ void V8CustomElementLifecycleCallbacks::attributeChanged(Element* element, const
     if (!canInvokeCallback())
         return;
 
-    v8::Isolate* isolate = isolateForScriptExecutionContext(scriptExecutionContext());
+    v8::Isolate* isolate = toIsolate(scriptExecutionContext());
     v8::HandleScope handleScope(isolate);
     v8::Handle<v8::Context> context = toV8Context(scriptExecutionContext(), m_world.get());
     if (context.IsEmpty())
@@ -232,7 +232,7 @@ void V8CustomElementLifecycleCallbacks::call(const ScopedPersistent<v8::Function
     if (!canInvokeCallback())
         return;
 
-    v8::HandleScope handleScope(isolateForScriptExecutionContext(scriptExecutionContext()));
+    v8::HandleScope handleScope(toIsolate(scriptExecutionContext()));
     v8::Handle<v8::Context> context = toV8Context(scriptExecutionContext(), m_world.get());
     if (context.IsEmpty())
         return;
