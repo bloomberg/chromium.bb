@@ -50,6 +50,11 @@
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
 
+#if defined(OS_WIN)
+#include "base/win/metro.h"
+#include "chrome/browser/browser_process.h"
+#endif
+
 #if defined(USE_AURA)
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
@@ -80,6 +85,29 @@ OmniboxState::OmniboxState(const OmniboxEditModel::State& model_state,
 }
 
 OmniboxState::~OmniboxState() {}
+
+// We'd like to set the text input type to TEXT_INPUT_TYPE_URL, because this
+// triggers URL-specific layout in software keyboards, e.g. adding top-level "/"
+// and ".com" keys for English.  However, this also causes IMEs to default to
+// Latin character mode, which makes entering search queries difficult for IME
+// users.  Therefore, we try to guess whether an IME will be used based on the
+// application language, and set the input type accordingly.
+ui::TextInputType DetermineTextInputType() {
+#if defined(OS_WIN)
+  if (base::win::IsTSFAwareRequired()) {
+    DCHECK(g_browser_process);
+    const std::string& locale = g_browser_process->GetApplicationLocale();
+    const std::string& language = locale.substr(0, 2);
+    // Assume CJK + Thai users are using an IME.
+    if (language == "ja" ||
+        language == "ko" ||
+        language == "th" ||
+        language == "zh")
+      return ui::TEXT_INPUT_TYPE_SEARCH;
+  }
+#endif
+  return ui::TEXT_INPUT_TYPE_URL;
+}
 
 bool IsOmniboxAutoCompletionForImeEnabled() {
   return !CommandLine::ForCurrentProcess()->HasSwitch(
@@ -130,7 +158,7 @@ OmniboxViewViews::~OmniboxViewViews() {
 
 void OmniboxViewViews::Init() {
   SetController(this);
-  SetTextInputType(ui::TEXT_INPUT_TYPE_URL);
+  SetTextInputType(DetermineTextInputType());
   SetBackgroundColor(location_bar_view_->GetColor(
       ToolbarModel::NONE, LocationBarView::BACKGROUND));
 
