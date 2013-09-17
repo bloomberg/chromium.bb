@@ -11,19 +11,11 @@
 #include "ppapi/thunk/ppapi_thunk_export.h"
 
 namespace ppapi {
-
-struct NetworkInfo;
-typedef std::vector<NetworkInfo> NetworkList;
-
 namespace thunk {
 
 class PPAPI_THUNK_EXPORT PPB_NetworkList_API {
  public:
   virtual ~PPB_NetworkList_API() {}
-
-  // This function is not exposed through the C API, but returns the
-  // internal data for easy proxying.
-  virtual const NetworkList& GetNetworkListData() const = 0;
 
   // Private API
   virtual uint32_t GetCount() = 0;

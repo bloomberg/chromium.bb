@@ -47,6 +47,7 @@
 #include "ppapi/c/private/ppb_talk_private.h"
 #include "ppapi/c/private/ppp_flash_browser_operations.h"
 #include "ppapi/proxy/host_resolver_private_resource.h"
+#include "ppapi/proxy/network_list_resource.h"
 #include "ppapi/proxy/ppapi_param_traits.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
 #include "ppapi/proxy/resource_message_params.h"
@@ -61,7 +62,6 @@
 #include "ppapi/shared_impl/ppapi_preferences.h"
 #include "ppapi/shared_impl/ppb_device_ref_shared.h"
 #include "ppapi/shared_impl/ppb_input_event_shared.h"
-#include "ppapi/shared_impl/ppb_network_list_private_shared.h"
 #include "ppapi/shared_impl/ppb_view_shared.h"
 #include "ppapi/shared_impl/ppp_flash_browser_operations_shared.h"
 #include "ppapi/shared_impl/private/ppb_x509_certificate_private_shared.h"
@@ -315,7 +315,7 @@ IPC_STRUCT_TRAITS_BEGIN(ppapi::URLResponseInfoData)
   IPC_STRUCT_TRAITS_MEMBER(body_as_file_ref)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(ppapi::NetworkInfo)
+IPC_STRUCT_TRAITS_BEGIN(ppapi::proxy::SerializedNetworkInfo)
   IPC_STRUCT_TRAITS_MEMBER(name)
   IPC_STRUCT_TRAITS_MEMBER(type)
   IPC_STRUCT_TRAITS_MEMBER(state)
@@ -624,11 +624,6 @@ IPC_MESSAGE_ROUTED2(PpapiMsg_PPPMessaging_HandleMessage,
 // PPP_MouseLock.
 IPC_MESSAGE_ROUTED1(PpapiMsg_PPPMouseLock_MouseLockLost,
                     PP_Instance /* instance */)
-
-// PPB_NetworkMonitor_Private.
-IPC_MESSAGE_ROUTED2(PpapiMsg_PPBNetworkMonitor_NetworkList,
-                    uint32 /* plugin_dispatcher_id */,
-                    ppapi::NetworkList /* network_list */)
 
 // PPP_Printing
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiMsg_PPPPrinting_QuerySupportedFormats,
@@ -1082,12 +1077,6 @@ IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBInstance_DeliverSamples,
                     std::string /* serialized_block_info */)
 #endif  // !defined(OS_NACL) && !defined(NACL_WIN64)
 
-// PPB_NetworkMonitor_Private.
-IPC_MESSAGE_CONTROL1(PpapiHostMsg_PPBNetworkMonitor_Start,
-                     uint32 /* plugin_dispatcher_id */)
-IPC_MESSAGE_CONTROL1(PpapiHostMsg_PPBNetworkMonitor_Stop,
-                     uint32 /* plugin_dispatcher_id */)
-
 // PPB_Testing.
 IPC_SYNC_MESSAGE_ROUTED3_1(
     PpapiHostMsg_PPBTesting_ReadImageData,
@@ -1440,6 +1429,13 @@ IPC_MESSAGE_CONTROL2(PpapiHostMsg_Graphics2D_ReadImageData,
                      PP_Resource /* image */,
                      PP_Point /* top_left */)
 IPC_MESSAGE_CONTROL0(PpapiPluginMsg_Graphics2D_ReadImageDataAck)
+
+// NetworkMonitor.
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_NetworkMonitor_Create)
+IPC_MESSAGE_CONTROL1(PpapiPluginMsg_NetworkMonitor_NetworkList,
+                     ppapi::proxy::SerializedNetworkList /* network_list */)
+IPC_MESSAGE_CONTROL0(PpapiPluginMsg_NetworkMonitor_Forbidden)
+
 
 // NetworkProxy ----------------------------------------------------------------
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_NetworkProxy_Create)

@@ -68,8 +68,6 @@
           'shared_impl/ppb_memory_shared.cc',
           'shared_impl/ppb_message_loop_shared.cc',
           'shared_impl/ppb_message_loop_shared.h',
-          'shared_impl/ppb_network_list_private_shared.cc',
-          'shared_impl/ppb_network_list_private_shared.h',
           'shared_impl/ppb_opengles2_shared.cc',
           'shared_impl/ppb_opengles2_shared.h',
           'shared_impl/ppb_resource_array_shared.cc',

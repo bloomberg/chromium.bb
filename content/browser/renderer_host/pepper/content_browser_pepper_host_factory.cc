@@ -11,6 +11,7 @@
 #include "content/browser/renderer_host/pepper/pepper_flash_file_message_filter.h"
 #include "content/browser/renderer_host/pepper/pepper_gamepad_host.h"
 #include "content/browser/renderer_host/pepper/pepper_host_resolver_message_filter.h"
+#include "content/browser/renderer_host/pepper/pepper_network_monitor_host.h"
 #include "content/browser/renderer_host/pepper/pepper_network_proxy_host.h"
 #include "content/browser/renderer_host/pepper/pepper_print_settings_manager.h"
 #include "content/browser/renderer_host/pepper/pepper_printing_host.h"
@@ -197,6 +198,10 @@ scoped_ptr<ResourceHost> ContentBrowserPepperHostFactory::CreateResourceHost(
     } else {
       return scoped_ptr<ResourceHost>();
     }
+  }
+  if (message.type() == PpapiHostMsg_NetworkMonitor_Create::ID) {
+    return scoped_ptr<ResourceHost>(
+        new PepperNetworkMonitorHost(host_, instance, params.pp_resource()));
   }
 
   // Flash interfaces.
