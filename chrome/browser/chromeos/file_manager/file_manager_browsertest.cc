@@ -182,47 +182,6 @@ void AddEntriesMessage::RegisterJSONConverter(
       &AddEntriesMessage::entries);
 }
 
-// Create the test entry data for common use.
-std::vector<TestEntryInfo> createTestEntrySetCommon() {
-  std::vector<TestEntryInfo> entryInfoSet;
-  base::Time time;
-  base::Time::FromString("4 Sep 1998 12:34:56", &time);
-  entryInfoSet.push_back(TestEntryInfo(
-      FILE, "text.txt", "hello.txt", "text/plain", NONE, time));
-  base::Time::FromString("18 Jan 2038 01:02:03", &time);
-  entryInfoSet.push_back(TestEntryInfo(
-      FILE, "image.png", "My Desktop Background.png", "text/plain", NONE,
-      time));
-  base::Time::FromString("12 Nov 2086 12:00:00", &time);
-  entryInfoSet.push_back(TestEntryInfo(
-      FILE, "music.ogg", "Beautiful Song.ogg", "text/plain", NONE, time));
-  base::Time::FromString("4 July 2012 10:35:00", &time);
-  entryInfoSet.push_back(TestEntryInfo(
-      FILE, "video.ogv", "world.ogv", "text/plain", NONE, time));
-  base::Time::FromString("1 Jan 1980 23:59:59", &time);
-  entryInfoSet.push_back(TestEntryInfo(
-      DIRECTORY, "", "photos", "", NONE, time));
-  base::Time::FromString("26 Oct 1985 13:39", &time);
-  entryInfoSet.push_back(TestEntryInfo(
-      DIRECTORY, "", ".warez", "", NONE, time));
-  return entryInfoSet;
-}
-
-// Creates the test entry data for the drive volume.
-std::vector<TestEntryInfo> createTestEntrySetDriveOnly() {
-  std::vector<TestEntryInfo> entryInfoSet;
-  base::Time time;
-  base::Time::FromString("10 Apr 2013 16:20:00", &time);
-  entryInfoSet.push_back(TestEntryInfo(
-      FILE, "", "Test Document", "application/vnd.google-apps.document", NONE,
-      time));
-  base::Time::FromString("20 Mar 2013 22:40:00", &time);
-  entryInfoSet.push_back(TestEntryInfo(
-      FILE, "", "Test Shared Document", "application/vnd.google-apps.document",
-      SHARED, time));
-  return entryInfoSet;
-}
-
 // The local volume class for test.
 // This class provides the operations for a test volume that simulates local
 // drive.
@@ -506,29 +465,12 @@ void FileManagerBrowserTest::SetUpOnMainThread() {
   ExtensionApiTest::SetUpOnMainThread();
   ASSERT_TRUE(local_volume_->Mount(browser()->profile()));
 
-  const std::vector<TestEntryInfo> testEntrySetCommon(
-      createTestEntrySetCommon());
-  const std::vector<TestEntryInfo> testEntrySetDriveOnly(
-      createTestEntrySetDriveOnly());
-
-  for (size_t i = 0; i < testEntrySetCommon.size(); ++i)
-    local_volume_->CreateEntry(testEntrySetCommon[i]);
-
   if (drive_volume_) {
     // Install the web server to serve the mocked share dialog.
     ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
     const GURL share_url_base(embedded_test_server()->GetURL(
         "/chromeos/file_manager/share_dialog_mock/index.html"));
     drive_volume_->ConfigureShareUrlBase(share_url_base);
-
-    for (size_t i = 0; i < testEntrySetCommon.size(); ++i)
-      drive_volume_->CreateEntry(testEntrySetCommon[i]);
-
-    // For testing Drive, create more entries with Drive specific attributes.
-    // TODO(haruki): Add a case for an entry cached by DriveCache.
-    for (size_t i = 0; i < testEntrySetDriveOnly.size(); ++i)
-      drive_volume_->CreateEntry(testEntrySetDriveOnly[i]);
-
     test_util::WaitUntilDriveMountPointIsAdded(browser()->profile());
   }
 }

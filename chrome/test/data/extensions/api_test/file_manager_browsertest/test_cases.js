@@ -47,9 +47,9 @@ var TestEntryInfo = function(type,
                              sizeText,
                              typeText) {
   this.type = type;
-  this.sourceFileName = sourceFileName;
+  this.sourceFileName = sourceFileName || '';
   this.targetName = targetName;
-  this.mimeType = mimeType;
+  this.mimeType = mimeType || '';
   this.sharedOption = sharedOption;
   this.lastModifiedTime = lastModifiedTime;
   this.nameText = nameText;
@@ -66,47 +66,105 @@ TestEntryInfo.prototype.getExpectedRow = function() {
 };
 
 /**
- * Expected files before tests are performed. Entries for Local tests.
- * @type {Array.<Array.<string>>}
- * @const
- */
-var EXPECTED_FILES_BEFORE_LOCAL = [
-  ['hello.txt', '51 bytes', 'Plain text', 'Sep 4, 1998 12:34 PM'],
-  ['world.ogv', '59 KB', 'OGG video', 'Jul 4, 2012 10:35 AM'],
-  ['My Desktop Background.png', '272 bytes', 'PNG image',
-      'Jan 18, 2038 1:02 AM'],
-  ['Beautiful Song.ogg', '14 KB', 'OGG audio', 'Nov 12, 2086 12:00 PM'],
-  ['photos', '--', 'Folder', 'Jan 1, 1980 11:59 PM']
-  // ['.warez', '--', 'Folder', 'Oct 26, 1985 1:39 PM']  # should be hidden
-].sort();
-
-/**
- * Expected files before tests are performed. Entries for Drive tests.
- * @type {Array.<Array.<string>>}
- * @const
- */
-var EXPECTED_FILES_BEFORE_DRIVE = [
-  ['hello.txt', '51 bytes', 'Plain text', 'Sep 4, 1998 12:34 PM'],
-  ['world.ogv', '59 KB', 'OGG video', 'Jul 4, 2012 10:35 AM'],
-  ['My Desktop Background.png', '272 bytes', 'PNG image',
-      'Jan 18, 2038 1:02 AM'],
-  ['Beautiful Song.ogg', '14 KB', 'OGG audio', 'Nov 12, 2086 12:00 PM'],
-  ['photos', '--', 'Folder', 'Jan 1, 1980 11:59 PM'],
-  ['Test Document.gdoc','--','Google document','Apr 10, 2013 4:20 PM'],
-  ['Test Shared Document.gdoc','--','Google document','Mar 20, 2013 10:40 PM']
-].sort();
-
-/**
  * Filesystem entries used by the test cases.
  * @type {Object.<string, TestEntryInfo>}
  * @const
  */
 var ENTRIES = {
+  hello: new TestEntryInfo(
+      EntryType.FILE, 'text.txt', 'hello.txt',
+      'text/plain', SharedOption.NONE, 'Sep 4, 1998 12:34 PM',
+      'hello.txt', '51 bytes', 'Plain text'),
+
+  world: new TestEntryInfo(
+      EntryType.FILE, 'video.ogv', 'world.ogv',
+      'text/plain', SharedOption.NONE, 'Jul 4, 2012 10:35 AM',
+      'world.ogv', '59 KB', 'OGG video'),
+
+  desktop: new TestEntryInfo(
+      EntryType.FILE, 'image.png', 'My Desktop Background.png',
+      'text/plain', SharedOption.NONE, 'Jan 18, 2038 1:02 AM',
+      'My Desktop Background.png', '272 bytes', 'PNG image'),
+
+  beautiful: new TestEntryInfo(
+      EntryType.FILE, 'music.ogg', 'Beautiful Song.ogg',
+      'text/plain', SharedOption.NONE, 'Nov 12, 2086 12:00 PM',
+      'Beautiful Song.ogg', '14 KB', 'OGG audio'),
+
+  photos: new TestEntryInfo(
+      EntryType.DIRECTORY, null, 'photos',
+      null, SharedOption.NONE, 'Jan 1, 1980 11:59 PM',
+      'photos', '--', 'Folder'),
+
+  testDocument: new TestEntryInfo(
+      EntryType.FILE, null, 'Test Document',
+      'application/vnd.google-apps.document',
+      SharedOption.NONE, 'Apr 10, 2013 4:20 PM',
+      'Test Document.gdoc', '--', 'Google document'),
+
+  testSharedDocument: new TestEntryInfo(
+      EntryType.FILE, null, 'Test Shared Document',
+      'application/vnd.google-apps.document',
+      SharedOption.SHARED, 'Mar 20, 2013 10:40 PM',
+      'Test Shared Document.gdoc', '--', 'Google document'),
+
   newlyAdded: new TestEntryInfo(
       EntryType.FILE, 'music.ogg', 'newly added file.ogg',
       'audio/ogg', SharedOption.NONE, 'Sep 4, 1998 12:00 AM',
       'newly added file.ogg', '14 KB', 'OGG audio')
 };
+
+/**
+ * Basic entry set for the local volume.
+ * @type {Array.<TestEntryInfo>}
+ * @const
+ */
+var BASIC_LOCAL_ENTRY_SET = [
+  ENTRIES.hello,
+  ENTRIES.world,
+  ENTRIES.desktop,
+  ENTRIES.beautiful,
+  ENTRIES.photos
+];
+
+/**
+ * Basic entry set for the drive volume.
+ *
+ * TODO(hirono): Add a case for an entry cached by FileCache. For testing
+ *               Drive, create more entries with Drive specific attributes.
+ *
+ * @type {Array.<TestEntryInfo>}
+ * @const
+ */
+var BASIC_DRIVE_ENTRY_SET = [
+  ENTRIES.hello,
+  ENTRIES.world,
+  ENTRIES.desktop,
+  ENTRIES.beautiful,
+  ENTRIES.photos,
+  ENTRIES.testDocument,
+  ENTRIES.testSharedDocument
+];
+
+/**
+ * Expected files before tests are performed. Entries for Local tests.
+ * TODO(hirono): Remove the constant.
+ * @type {Array.<Array.<string>>}
+ * @const
+ */
+var EXPECTED_FILES_BEFORE_LOCAL = BASIC_LOCAL_ENTRY_SET.map(function(entry) {
+  return entry.getExpectedRow();
+}).sort();
+
+/**
+ * Expected files before tests are performed. Entries for Drive tests.
+ * TODO(hirono): Remove the constant.
+ * @type {Array.<Array.<string>>}
+ * @const
+ */
+var EXPECTED_FILES_BEFORE_DRIVE = BASIC_DRIVE_ENTRY_SET.map(function(entry) {
+  return entry.getExpectedRow();
+}).sort();
 
 /**
  * @param {boolean} isDrive True if the test is for Drive.
@@ -122,16 +180,35 @@ function getExpectedFilesBefore(isDrive) {
 /**
  * Opens a Files.app's main window and waits until it is initialized.
  *
+ * TODO(hirono): Add parameters to specify the entry set to be prepared.
+ *
  * @param {string} path Directory to be opened.
  * @param {function(string, Array.<Array.<string>>)} Callback with the app id
  *     and with the file list.
  */
 function setupAndWaitUntilReady(path, callback) {
-  callRemoteTestUtil('openMainWindow', null, [path], function(appId) {
-    callRemoteTestUtil('waitForFileListChange', appId, [0], function(files) {
-      callback(appId, files);
-    });
-  });
+  var appId;
+  var steps = [
+    function() {
+      callRemoteTestUtil('openMainWindow', null, [path], steps.shift());
+    },
+    function(inAppId) {
+      appId = inAppId;
+      addEntries(['local'], BASIC_LOCAL_ENTRY_SET, steps.shift());
+    },
+    function(success) {
+      chrome.test.assertTrue(success);
+      addEntries(['drive'], BASIC_DRIVE_ENTRY_SET, steps.shift());
+    },
+    function(success) {
+      chrome.test.assertTrue(success);
+      callRemoteTestUtil('waitForFileListChange', appId, [0], steps.shift());
+    },
+    function(fileList) {
+      callback(appId, fileList);
+    }
+  ];
+  steps.shift()();
 }
 
 /**
@@ -148,6 +225,8 @@ function checkIfNoErrorsOccured(callback) {
 /**
  * Expected files shown in "Recent". Directories (e.g. 'photos') are not in this
  * list as they are not expected in "Recent".
+ *
+ *  TODO(hirono): Remove the constant.
  *
  * @type {Array.<Array.<string>>}
  * @const
@@ -166,6 +245,9 @@ var EXPECTED_FILES_IN_RECENT = [
  * Expected files shown in "Offline", which should have the files
  * "available offline". Google Documents, Google Spreadsheets, and the files
  * cached locally are "available offline".
+ *
+ * TODO(hirono): Remove the constant.
+ *
  * @type {Array.<Array.<string>>}
  * @const
  */
@@ -177,6 +259,9 @@ var EXPECTED_FILES_IN_OFFLINE = [
 /**
  * Expected files shown in "Shared with me", which should be the entries labeled
  * with "shared-with-me".
+ *
+ * TODO(hirono): Remove the constant.
+ *
  * @type {Array.<Array.<string>>}
  * @const
  */
