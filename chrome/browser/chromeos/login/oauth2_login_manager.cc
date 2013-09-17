@@ -216,6 +216,14 @@ void OAuth2LoginManager::SetSessionRestoreState(
     return;
 
   state_ = state;
+  if (state == OAuth2LoginManager::SESSION_RESTORE_FAILED) {
+    UMA_HISTOGRAM_TIMES("OAuth2Login.SessionRestoreTimeToFailure",
+                        base::Time::Now() - session_restore_start_);
+  } else if (state == OAuth2LoginManager::SESSION_RESTORE_DONE) {
+    UMA_HISTOGRAM_TIMES("OAuth2Login.SessionRestoreTimeToSuccess",
+                        base::Time::Now() - session_restore_start_);
+  }
+
   FOR_EACH_OBSERVER(Observer, observer_list_,
                     OnSessionRestoreStateChanged(user_profile_, state_));
 }
