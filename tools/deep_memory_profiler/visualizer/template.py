@@ -13,18 +13,19 @@ from string import Template
 
 _TEMPLATE = """<!DOCTYPE html>
 <meta charset="utf-8">
-<link rel="stylesheet" href="../visualizer/index.css">
-<link rel="stylesheet" href="../visualizer/third_party/jqTree/jqtree.css">
+<link rel="stylesheet" href="../visualizer/static/index.css">
+<link rel="stylesheet"
+  href="../visualizer/static/third_party/jqTree/jqtree.css">
 
 <script src="../../../third_party/flot/jquery.min.js"></script>
 <script src="../../../third_party/flot/jquery.flot.min.js"></script>
 <script src="../../../third_party/flot/jquery.flot.stack.min.js"></script>
-<script src="../visualizer/third_party/jqTree/tree.jquery.js"></script>
-<script src="../visualizer/utility.js"></script>
-<script src="../visualizer/profiler.js"></script>
-<script src="../visualizer/graph-view.js"></script>
-<script src="../visualizer/dropdown-view.js"></script>
-<script src="../visualizer/menu-view.js"></script>
+<script src="../visualizer/static/third_party/jqTree/tree.jquery.js"></script>
+<script src="../visualizer/static/utility.js"></script>
+<script src="../visualizer/static/profiler.js"></script>
+<script src="../visualizer/static/graph-view.js"></script>
+<script src="../visualizer/static/dropdown-view.js"></script>
+<script src="../visualizer/static/menu-view.js"></script>
 <script type="text/javascript">
   $(function() {
   var data = $DATA;

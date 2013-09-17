@@ -1,1 +1,3 @@
 graphs/*
+visualizer/static/third_party/flot/*
+visualizer/app.yaml

@@ -35,7 +35,7 @@ var modelIsValid = function(model) {
 // Test title format is file-name:function-name.
 test('profiler:parseTemplate_', function() {
   stop();
-  $.getJSON('data/sample.json', function(data) {
+  $.getJSON('../data/sample.json', function(data) {
     start();
     var profiler = new Profiler(data);
     var models = profiler.parseTemplate_();

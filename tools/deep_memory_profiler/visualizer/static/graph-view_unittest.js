@@ -23,7 +23,7 @@ var lineIsValid = function(line, length) {
 // Test title format is file-name:function-name.
 test('graph-view:generateLines_', function() {
   stop();
-  $.getJSON('data/sample.json', function(data) {
+  $.getJSON('../data/sample.json', function(data) {
     start();
     var profiler = new Profiler(data);
     var models = profiler.parseTemplate_();
