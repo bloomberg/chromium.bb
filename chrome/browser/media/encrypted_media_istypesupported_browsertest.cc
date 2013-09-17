@@ -155,12 +155,13 @@ class EncryptedMediaIsTypeSupportedTest : public InProcessBrowserTest {
   // |pepper_type_for_key_system|.
   void RegisterPepperCdm(CommandLine* command_line,
                          const std::string& adapter_name,
-                         const std::string& pepper_type_for_key_system) {
+                         const std::string& pepper_type_for_key_system,
+                         bool expect_adapter_exists = true) {
     // Append the switch to register the appropriate adapter.
     base::FilePath plugin_dir;
     EXPECT_TRUE(PathService::Get(base::DIR_MODULE, &plugin_dir));
     base::FilePath plugin_lib = plugin_dir.AppendASCII(adapter_name);
-    EXPECT_TRUE(base::PathExists(plugin_lib));
+    EXPECT_EQ(expect_adapter_exists, base::PathExists(plugin_lib));
     base::FilePath::StringType pepper_plugin = plugin_lib.value();
     pepper_plugin.append(FILE_PATH_LITERAL("#CDM#0.1.0.0;"));
 #if defined(OS_WIN)
@@ -199,7 +200,7 @@ class EncryptedMediaIsTypeSupportedTest : public InProcessBrowserTest {
         browser()->tab_strip_model()->GetActiveWebContents(),
         command,
         &result));
-    DCHECK(result == "success" || result == "NotSupportedError");
+    CHECK(result == "success" || result == "NotSupportedError") << result;
     return (result == "success");
   }
 
@@ -296,8 +297,27 @@ class EncryptedMediaIsTypeSupportedWidevineTest
     const std::string pepper_name("application/x-ppapi-widevine-cdm");
     RegisterPepperCdm(command_line, adapter_file_name, pepper_name);
   }
-#endif  // defined(ENABLE_PEPPER_CDMS)
+#endif  // defined(WIDEVINE_CDM_AVAILABLE) && defined(ENABLE_PEPPER_CDMS)
 };
+
+#if defined(ENABLE_PEPPER_CDMS)
+// Registers all possibly supported Pepper CDMs with the wrong path (filename).
+class EncryptedMediaIsTypeSupportedPepperCDMRegisteredWithWrongPathTest
+    : public EncryptedMediaIsTypeSupportedTest {
+ protected:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+   RegisterPepperCdm(command_line,
+                     "clearkeycdmadapterwrongname.dll",
+                     "application/x-ppapi-clearkey-cdm",
+                     false);
+   RegisterPepperCdm(command_line,
+                     "widevinecdmadapterwrongname.dll",
+                     "application/x-ppapi-widevine-cdm",
+                     false);
+  }
+};
+#endif  // defined(ENABLE_PEPPER_CDMS)
+
 
 IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedTest, ClearKey_Basic) {
   EXPECT_TRUE(IsConcreteSupportedKeySystem(kPrefixedClearKey));
@@ -471,6 +491,7 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedTest,
 // External Clear Key
 //
 
+// When defined(ENABLE_PEPPER_CDMS), this also tests the Pepper CDM check.
 IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedExternalClearKeyTest,
                        ExternalClearKey_Basic) {
   EXPECT_ECK(IsConcreteSupportedKeySystem(kExternalClearKey));
@@ -830,5 +851,64 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedWidevineTest,
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       "audio/mp4", vorbis_codec(), kWidevineAlpha));
 }
+
+#if defined(ENABLE_PEPPER_CDMS)
+// Since this test fixture does not register the CDMs on the command line, the
+// check for the CDMs in chrome_key_systems.cc should fail, and they should not
+// be registered with KeySystems.
+IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedTest,
+                       PepperCDMsNotRegistered) {
+  EXPECT_FALSE(IsConcreteSupportedKeySystem(kExternalClearKey));
+  EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
+      "video/webm", no_codecs(), kExternalClearKey));
+
+  // This will fail in all builds unless widevine is available but not a
+  // component, in which case it is registered internally
+#if !defined(WIDEVINE_CDM_AVAILABLE) || defined(WIDEVINE_CDM_IS_COMPONENT)
+  EXPECT_FALSE(IsConcreteSupportedKeySystem(kWidevineAlpha));
+  EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
+      "video/webm", no_codecs(), kWidevineAlpha));
+#endif
+
+  // Clear Key should still be registered.
+  EXPECT_TRUE(IsConcreteSupportedKeySystem(kPrefixedClearKey));
+  EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(
+      "video/webm", no_codecs(), kPrefixedClearKey));
+
+  // Not yet out from behind the vendor prefix.
+  EXPECT_FALSE(IsConcreteSupportedKeySystem(kUnprefixedClearKey));
+  EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
+      "video/webm", no_codecs(), kUnprefixedClearKey));
+}
+
+// Since this test fixture does not register the CDMs on the command line, the
+// check for the CDMs in chrome_key_systems.cc should fail, and they should not
+// be registered with KeySystems.
+IN_PROC_BROWSER_TEST_F(
+    EncryptedMediaIsTypeSupportedPepperCDMRegisteredWithWrongPathTest,
+    PepperCDMsRegisteredButAdapterNotPresent) {
+  EXPECT_FALSE(IsConcreteSupportedKeySystem(kExternalClearKey));
+  EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
+      "video/webm", no_codecs(), kExternalClearKey));
+
+  // This will fail in all builds unless widevine is available but not a
+  // component, in which case it is registered internally
+#if !defined(WIDEVINE_CDM_AVAILABLE) || defined(WIDEVINE_CDM_IS_COMPONENT)
+  EXPECT_FALSE(IsConcreteSupportedKeySystem(kWidevineAlpha));
+  EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
+      "video/webm", no_codecs(), kWidevineAlpha));
+#endif
+
+  // Clear Key should still be registered.
+  EXPECT_TRUE(IsConcreteSupportedKeySystem(kPrefixedClearKey));
+  EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(
+      "video/webm", no_codecs(), kPrefixedClearKey));
+
+  // Not yet out from behind the vendor prefix.
+  EXPECT_FALSE(IsConcreteSupportedKeySystem(kUnprefixedClearKey));
+  EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
+      "video/webm", no_codecs(), kUnprefixedClearKey));
+}
+#endif  // defined(ENABLE_PEPPER_CDMS)
 
 }  // namespace chrome

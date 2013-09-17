@@ -5,6 +5,8 @@
 #include "chrome/renderer/media/chrome_key_systems.h"
 
 #include "base/logging.h"
+#include "chrome/common/render_messages.h"
+#include "content/public/renderer/render_thread.h"
 
 #include "widevine_cdm_version.h" // In SHARED_INTERMEDIATE_DIR.
 
@@ -30,6 +32,58 @@ static const char kMp4a[] = "mp4a";
 static const char kAvc1[] = "avc1";
 static const char kMp4aAvc1[] = "mp4a,avc1";
 
+static void AddClearKey(std::vector<KeySystemInfo>* concrete_key_systems) {
+  KeySystemInfo info(kClearKeyKeySystem);
+
+  info.supported_types.push_back(std::make_pair(kAudioWebM, kVorbis));
+  info.supported_types.push_back(std::make_pair(kVideoWebM, kVorbisVP8));
+#if defined(USE_PROPRIETARY_CODECS)
+  info.supported_types.push_back(std::make_pair(kAudioMp4, kMp4a));
+  info.supported_types.push_back(std::make_pair(kVideoMp4, kMp4aAvc1));
+#endif  // defined(USE_PROPRIETARY_CODECS)
+
+  info.use_aes_decryptor = true;
+
+  concrete_key_systems->push_back(info);
+}
+
+#if defined(ENABLE_PEPPER_CDMS)
+static bool IsPepperCdmRegistered(const std::string& pepper_type) {
+  bool is_registered = false;
+  content::RenderThread::Get()->Send(
+      new ChromeViewHostMsg_IsInternalPluginRegisteredForMimeType(
+          pepper_type, &is_registered));
+
+  return is_registered;
+}
+
+// External Clear Key (used for testing).
+static void AddExternalClearKey(
+    std::vector<KeySystemInfo>* concrete_key_systems) {
+  static const char kExternalClearKeyKeySystem[] =
+      "org.chromium.externalclearkey";
+  static const char kExternalClearKeyPepperType[] =
+      "application/x-ppapi-clearkey-cdm";
+
+  if (!IsPepperCdmRegistered(kExternalClearKeyPepperType))
+    return;
+
+  KeySystemInfo info(kExternalClearKeyKeySystem);
+
+  info.supported_types.push_back(std::make_pair(kAudioWebM, kVorbis));
+  info.supported_types.push_back(std::make_pair(kVideoWebM, kVorbisVP8));
+#if defined(USE_PROPRIETARY_CODECS)
+  info.supported_types.push_back(std::make_pair(kAudioMp4, kMp4a));
+  info.supported_types.push_back(std::make_pair(kVideoMp4, kMp4aAvc1));
+#endif  // defined(USE_PROPRIETARY_CODECS)
+
+  info.pepper_type = kExternalClearKeyPepperType;
+
+  concrete_key_systems->push_back(info);
+}
+#endif  // defined(ENABLE_PEPPER_CDMS)
+
+
 #if defined(WIDEVINE_CDM_AVAILABLE)
 // Defines bitmask values used to specify supported codecs.
 // Each value represents a codec within a specific container.
@@ -50,13 +104,6 @@ static void AddWidevineWithCodecs(
       0xED, 0xEF, 0x8B, 0xA9, 0x79, 0xD6, 0x4A, 0xCE,
       0xA3, 0xC8, 0x27, 0xDC, 0xD5, 0x1D, 0x21, 0xED };
 #endif
-
-#if defined(WIDEVINE_CDM_MIN_GLIBC_VERSION)
-  Version glibc_version(gnu_get_libc_version());
-  DCHECK(glibc_version.IsValid());
-  if (glibc_version.IsOlderThan(WIDEVINE_CDM_MIN_GLIBC_VERSION))
-    return;
-#endif  // defined(WIDEVINE_CDM_MIN_GLIBC_VERSION)
 
   KeySystemInfo info(kWidevineKeySystem);
 
@@ -90,6 +137,18 @@ static void AddWidevineWithCodecs(
 // Supported types are determined at compile time.
 static void AddPepperBasedWidevine(
     std::vector<KeySystemInfo>* concrete_key_systems) {
+#if defined(WIDEVINE_CDM_MIN_GLIBC_VERSION)
+  Version glibc_version(gnu_get_libc_version());
+  DCHECK(glibc_version.IsValid());
+  if (glibc_version.IsOlderThan(WIDEVINE_CDM_MIN_GLIBC_VERSION))
+    return;
+#endif  // defined(WIDEVINE_CDM_MIN_GLIBC_VERSION)
+
+  if (!IsPepperCdmRegistered(kWidevineCdmPluginMimeType)) {
+    DVLOG(1) << "Widevine CDM is not currently available.";
+    return;
+  }
+
   SupportedCodecs supported_codecs = WEBM_VP8_AND_VORBIS;
 
 #if defined(USE_PROPRIETARY_CODECS)
@@ -114,45 +173,6 @@ static void AddAndroidWidevine(
 }
 #endif  // defined(ENABLE_PEPPER_CDMS)
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
-
-static void AddClearKey(std::vector<KeySystemInfo>* concrete_key_systems) {
-  KeySystemInfo info(kClearKeyKeySystem);
-
-  info.supported_types.push_back(std::make_pair(kAudioWebM, kVorbis));
-  info.supported_types.push_back(std::make_pair(kVideoWebM, kVorbisVP8));
-#if defined(USE_PROPRIETARY_CODECS)
-  info.supported_types.push_back(std::make_pair(kAudioMp4, kMp4a));
-  info.supported_types.push_back(std::make_pair(kVideoMp4, kMp4aAvc1));
-#endif  // defined(USE_PROPRIETARY_CODECS)
-
-  info.use_aes_decryptor = true;
-
-  concrete_key_systems->push_back(info);
-}
-
-#if defined(ENABLE_PEPPER_CDMS)
-// External Clear Key (used for testing).
-static void AddExternalClearKey(
-    std::vector<KeySystemInfo>* concrete_key_systems) {
-  static const char kExternalClearKeyKeySystem[] =
-      "org.chromium.externalclearkey";
-  static const char kExternalClearKeyPepperType[] =
-      "application/x-ppapi-clearkey-cdm";
-
-  KeySystemInfo info(kExternalClearKeyKeySystem);
-
-  info.supported_types.push_back(std::make_pair(kAudioWebM, kVorbis));
-  info.supported_types.push_back(std::make_pair(kVideoWebM, kVorbisVP8));
-#if defined(USE_PROPRIETARY_CODECS)
-  info.supported_types.push_back(std::make_pair(kAudioMp4, kMp4a));
-  info.supported_types.push_back(std::make_pair(kVideoMp4, kMp4aAvc1));
-#endif  // defined(USE_PROPRIETARY_CODECS)
-
-  info.pepper_type = kExternalClearKeyPepperType;
-
-  concrete_key_systems->push_back(info);
-}
-#endif  // defined(ENABLE_PEPPER_CDMS)
 
 void AddChromeKeySystems(std::vector<KeySystemInfo>* key_systems_info) {
   AddClearKey(key_systems_info);

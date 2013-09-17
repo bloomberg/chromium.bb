@@ -503,6 +503,14 @@ IPC_SYNC_MESSAGE_CONTROL4_1(ChromeViewHostMsg_GetPluginInfo,
                             std::string /* mime_type */,
                             ChromeViewHostMsg_GetPluginInfo_Output /* output */)
 
+// Returns whether any internal plugin supporting |mime_type| is registered
+// Does not determine whether the plugin can actually be instantiated
+// (e.g. whether it is allowed or has all its dependencies).
+IPC_SYNC_MESSAGE_CONTROL1_1(
+    ChromeViewHostMsg_IsInternalPluginRegisteredForMimeType,
+    std::string /* mime_type */,
+    bool /* registered */)
+
 #if defined(ENABLE_PLUGIN_INSTALLATION)
 // Tells the browser to search for a plug-in that can handle the given MIME
 // type. The result will be sent asynchronously to the routing ID

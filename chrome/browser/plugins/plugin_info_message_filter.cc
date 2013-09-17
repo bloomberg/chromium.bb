@@ -97,6 +97,9 @@ bool PluginInfoMessageFilter::OnMessageReceived(const IPC::Message& message,
   IPC_BEGIN_MESSAGE_MAP_EX(PluginInfoMessageFilter, message, *message_was_ok)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ChromeViewHostMsg_GetPluginInfo,
                                     OnGetPluginInfo)
+    IPC_MESSAGE_HANDLER(
+        ChromeViewHostMsg_IsInternalPluginRegisteredForMimeType,
+        OnIsInternalPluginRegisteredForMimeType)
     IPC_MESSAGE_UNHANDLED(return false)
   IPC_END_MESSAGE_MAP()
   return true;
@@ -162,6 +165,25 @@ void PluginInfoMessageFilter::PluginsLoaded(
 
   ChromeViewHostMsg_GetPluginInfo::WriteReplyParams(reply_msg, output);
   Send(reply_msg);
+}
+
+void PluginInfoMessageFilter::OnIsInternalPluginRegisteredForMimeType(
+    const std::string& mime_type,
+    bool* is_registered) {
+   std::vector<WebPluginInfo> plugins;
+   PluginService::GetInstance()->GetInternalPlugins(&plugins);
+   for (size_t i = 0; i < plugins.size(); ++i) {
+     const std::vector<content::WebPluginMimeType>& mime_types =
+         plugins[i].mime_types;
+     for (size_t j = 0; j < mime_types.size(); ++j) {
+       if (mime_types[j].mime_type == mime_type) {
+         *is_registered = true;
+         return;
+       }
+     }
+   }
+
+   *is_registered = false;
 }
 
 void PluginInfoMessageFilter::Context::DecidePluginStatus(

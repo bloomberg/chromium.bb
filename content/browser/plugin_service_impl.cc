@@ -658,7 +658,7 @@ void PluginServiceImpl::RegisterPepperPlugins() {
 PepperPluginInfo* PluginServiceImpl::GetRegisteredPpapiPluginInfo(
     const base::FilePath& plugin_path) {
   PepperPluginInfo* info = NULL;
-  for (size_t i = 0; i < ppapi_plugins_.size(); i++) {
+  for (size_t i = 0; i < ppapi_plugins_.size(); ++i) {
     if (ppapi_plugins_[i].path == plugin_path) {
       info = &ppapi_plugins_[i];
       break;

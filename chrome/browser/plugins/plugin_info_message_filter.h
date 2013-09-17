@@ -98,6 +98,12 @@ class PluginInfoMessageFilter : public content::BrowserMessageFilter {
                      IPC::Message* reply_msg,
                      const std::vector<content::WebPluginInfo>& plugins);
 
+  // Returns whether any internal plugin supporting |mime_type| is registered.
+  // Does not determine whether the plugin can actually be instantiated
+  // (e.g. whether it is allowed or has all its dependencies).
+  void OnIsInternalPluginRegisteredForMimeType(const std::string& mime_type,
+                                               bool* is_registered);
+
   Context context_;
 
   base::WeakPtrFactory<PluginInfoMessageFilter> weak_ptr_factory_;
