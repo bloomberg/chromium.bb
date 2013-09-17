@@ -116,6 +116,41 @@ int wl_list_length(const struct wl_list *list);
 int wl_list_empty(const struct wl_list *list);
 void wl_list_insert_list(struct wl_list *list, struct wl_list *other);
 
+/**
+ * Retrieves a pointer to the containing struct of a given member item.
+ *
+ * This macro allows conversion from a pointer to a item to its containing
+ * struct. This is useful if you have a contained item like a wl_list,
+ * wl_listener, or wl_signal, provided via a callback or other means and would
+ * like to retrieve the struct that contains it.
+ *
+ * To demonstrate, the following example retrieves a pointer to
+ * `example_container` given only its `destroy_listener` member:
+ *
+ * ~~~
+ * struct example_container {
+ *     struct wl_listener destroy_listener;
+ *     \comment{other members...}
+ * };
+ *
+ * void example_container_destroy(struct wl_listener *listener, void *data)
+ * {
+ *     struct example_container *ctr = NULL;
+ *
+ *     ctr = wl_container_of(listener, ctr, destroy_listener);
+ *     \comment{destroy ctr...}
+ * }
+ * ~~~
+ *
+ * \param ptr A valid pointer to the contained item.
+ *
+ * \param sample A pointer to the type of content that the list item stores.
+ * Sample does not need be a valid pointer; a null pointer will suffice.
+ *
+ * \param member The named location of ptr within the sample type.
+ *
+ * \return The container for the specified pointer.
+ */
 #ifdef __GNUC__
 #define wl_container_of(ptr, sample, member)				\
 	(__typeof__(sample))((char *)(ptr)	-			\
