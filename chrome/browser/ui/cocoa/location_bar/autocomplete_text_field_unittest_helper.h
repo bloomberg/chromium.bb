@@ -54,6 +54,7 @@ class MockAutocompleteTextFieldObserver : public AutocompleteTextFieldObserver {
   MOCK_METHOD1(OnSetFocus, void(bool control_down));
   MOCK_METHOD0(OnKillFocus, void());
   MOCK_METHOD1(OnMouseDown, void(NSInteger button_number));
+  MOCK_METHOD0(ShouldSelectAllOnMouseDown, bool());
 };
 
 #endif  // CHROME_BROWSER_UI_COCOA_AUTOCOMPLETE_TEXT_FIELD_UNITTEST_HELPER_H_

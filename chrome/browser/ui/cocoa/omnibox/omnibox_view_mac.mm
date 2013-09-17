@@ -775,6 +775,11 @@ void OmniboxViewMac::OnMouseDown(NSInteger button_number) {
     model()->SetCaretVisibility(true);
 }
 
+bool OmniboxViewMac::ShouldSelectAllOnMouseDown() {
+  return !controller()->GetToolbarModel()->WouldPerformSearchTermReplacement(
+      false);
+}
+
 bool OmniboxViewMac::CanCopy() {
   const NSRange selection = GetSelectedRange();
   return selection.length > 0;

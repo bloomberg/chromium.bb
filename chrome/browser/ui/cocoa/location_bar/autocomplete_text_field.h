@@ -102,6 +102,9 @@ class AutocompleteTextFieldObserver {
   // Called before the text field handles a mouse down event.
   virtual void OnMouseDown(NSInteger button_number) = 0;
 
+  // Returns true if mouse down should select all.
+  virtual bool ShouldSelectAllOnMouseDown() = 0;
+
  protected:
   virtual ~AutocompleteTextFieldObserver() {}
 };

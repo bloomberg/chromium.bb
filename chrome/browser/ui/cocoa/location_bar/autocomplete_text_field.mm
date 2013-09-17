@@ -128,7 +128,8 @@
     if (editor) {
       NSEvent* currentEvent = [NSApp currentEvent];
       if ([currentEvent type] == NSLeftMouseUp &&
-          ![editor selectedRange].length) {
+          ![editor selectedRange].length &&
+          (!observer_ || observer_->ShouldSelectAllOnMouseDown())) {
         [editor selectAll:nil];
       }
     }
