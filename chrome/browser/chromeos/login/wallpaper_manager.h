@@ -117,14 +117,6 @@ class WallpaperManager: public content::NotificationObserver {
   // Returns filepath to save original custom wallpaper for the given user.
   base::FilePath GetOriginalWallpaperPathForUser(const std::string& username);
 
-  // Returns small resolution custom wallpaper filepath for the given user when
-  // |is_small| is ture. Otherwise, returns large resolution custom wallpaper
-  // path.
-  // TODO(bshe): Remove this function when all custom wallpapers moved to the
-  // new direcotry. crbug.com/174925
-  base::FilePath GetWallpaperPathForUser(const std::string& username,
-                                         bool is_small);
-
   // Gets wallpaper information of logged in user.
   bool GetLoggedInUserWallpaperInfo(WallpaperInfo* info);
 
@@ -234,14 +226,6 @@ class WallpaperManager: public content::NotificationObserver {
   // Gets the CommandLine representing the current process's command line.
   CommandLine* GetComandLine();
 
-  // Loads custom wallpaper from old places and triggers move all custom
-  // wallpapers to new places.
-  // TODO(bshe): Remove this function when all custom wallpapers moved to the
-  // new direcotry. crbug.com/174925
-  void FallbackToOldCustomWallpaper(const std::string& email,
-                                    const WallpaperInfo& info,
-                                    bool update_wallpaper);
-
   // Initialize wallpaper of registered device after device policy is trusted.
   // Note that before device is enrolled, it proceeds with untrusted setting.
   void InitializeRegisteredDeviceWallpaper();
@@ -251,28 +235,6 @@ class WallpaperManager: public content::NotificationObserver {
   void LoadWallpaper(const std::string& email,
                      const WallpaperInfo& info,
                      bool update_wallpaper);
-
-  // Gets UserList and starts MoveCustomWallpapersOnWorker().
-  // Must be called on UI thread.
-  // TODO(bshe): Remove this function when all custom wallpapers moved to the
-  // new direcotry. crbug.com/174925
-  void MoveCustomWallpapers();
-
-  // Move old custom wallpapers to new places for |users|.
-  // Must execute on wallpaper sequenced worker thread.
-  // TODO(bshe): Remove this function when all custom wallpapers moved to the
-  // new direcotry. crbug.com/174925
-  void MoveCustomWallpapersOnWorker(const UserList& users);
-
-  // Gets |email|'s custom wallpaper at |wallpaper_path|. Falls back on original
-  // custom wallpaper. When |update_wallpaper| is true, sets wallpaper to the
-  // loaded wallpaper. Must run on wallpaper sequenced worker thread.
-  // TODO(bshe): Remove this function when all custom wallpapers moved to the
-  // new direcotry. crbug.com/174925
-  void GetCustomWallpaperInternalOld(const std::string& email,
-                                     const WallpaperInfo& info,
-                                     const base::FilePath& wallpaper_path,
-                                     bool update_wallpaper);
 
   // Gets |email|'s custom wallpaper at |wallpaper_path|. Falls back on original
   // custom wallpaper. When |update_wallpaper| is true, sets wallpaper to the
