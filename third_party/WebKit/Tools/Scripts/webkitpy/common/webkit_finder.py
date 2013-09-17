@@ -89,7 +89,7 @@ class WebKitFinder(object):
     def _check_upward_for_depot_tools(self):
         fs = self._filesystem
         prev_dir = ''
-        current_dir = fs.dirname(self._webkit_base())
+        current_dir = fs.dirname(self._webkit_base)
         while current_dir != prev_dir:
             if fs.exists(fs.join(current_dir, 'depot_tools', 'pylint.py')):
                 return fs.join(current_dir, 'depot_tools')
