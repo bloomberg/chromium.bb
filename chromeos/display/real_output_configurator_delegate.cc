@@ -43,15 +43,10 @@ RRMode GetOutputNativeMode(const XRROutputInfo* output_info) {
 RealOutputConfiguratorDelegate::RealOutputConfiguratorDelegate()
     : display_(base::MessagePumpX11::GetDefaultXDisplay()),
       window_(DefaultRootWindow(display_)),
-      screen_(NULL),
-      is_panel_fitting_enabled_(false) {
+      screen_(NULL) {
 }
 
 RealOutputConfiguratorDelegate::~RealOutputConfiguratorDelegate() {
-}
-
-void RealOutputConfiguratorDelegate::SetPanelFittingEnabled(bool enabled) {
-  is_panel_fitting_enabled_ = enabled;
 }
 
 void RealOutputConfiguratorDelegate::InitXRandRExtension(int* event_base) {
@@ -107,97 +102,36 @@ void RealOutputConfiguratorDelegate::ForceDPMSOn() {
 }
 
 std::vector<OutputConfigurator::OutputSnapshot>
-RealOutputConfiguratorDelegate::GetOutputs(
-    const OutputConfigurator::StateController* state_controller) {
+RealOutputConfiguratorDelegate::GetOutputs() {
   CHECK(screen_) << "Server not grabbed";
 
   std::vector<OutputConfigurator::OutputSnapshot> outputs;
-  XRROutputInfo* one_info = NULL;
-  XRROutputInfo* two_info = NULL;
   RRCrtc last_used_crtc = None;
 
   for (int i = 0; i < screen_->noutput && outputs.size() < 2; ++i) {
     RROutput output_id = screen_->outputs[i];
     XRROutputInfo* output_info = XRRGetOutputInfo(display_, screen_, output_id);
-    bool is_connected = (output_info->connection == RR_Connected);
-
-    if (!is_connected) {
-      XRRFreeOutputInfo(output_info);
-      continue;
+    if (output_info->connection == RR_Connected) {
+      OutputConfigurator::OutputSnapshot output = InitOutputSnapshot(
+          output_id, output_info, &last_used_crtc, i);
+      VLOG(2) << "Found display " << outputs.size() << ":"
+              << " output=" << output.output
+              << " crtc=" << output.crtc
+              << " current_mode=" << output.current_mode;
+      outputs.push_back(output);
     }
-
-    (outputs.empty() ? one_info : two_info) = output_info;
-
-    OutputConfigurator::OutputSnapshot output = InitOutputSnapshot(
-        output_id, output_info, &last_used_crtc, i);
-
-    if (output.has_display_id) {
-      int width = 0, height = 0;
-      if (state_controller &&
-          state_controller->GetResolutionForDisplayId(
-              output.display_id, &width, &height)) {
-        output.selected_mode =
-            FindOutputModeMatchingSize(screen_, output_info, width, height);
-      }
-    }
-    // Fall back to native mode.
-    if (output.selected_mode == None)
-      output.selected_mode = output.native_mode;
-
-    VLOG(2) << "Found display " << outputs.size() << ":"
-            << " output=" << output.output
-            << " crtc=" << output.crtc
-            << " current_mode=" << output.current_mode;
-    outputs.push_back(output);
-  }
-
-  if (outputs.size() == 2) {
-    bool one_is_internal = IsInternalOutput(one_info);
-    bool two_is_internal = IsInternalOutput(two_info);
-    int internal_outputs = (one_is_internal ? 1 : 0) +
-        (two_is_internal ? 1 : 0);
-    DCHECK_LT(internal_outputs, 2);
-    LOG_IF(WARNING, internal_outputs == 2)
-        << "Two internal outputs detected.";
-
-    bool can_mirror = false;
-    for (int attempt = 0; !can_mirror && attempt < 2; ++attempt) {
-      // Try preserving external output's aspect ratio on the first attempt.
-      // If that fails, fall back to the highest matching resolution.
-      bool preserve_aspect = attempt == 0;
-
-      if (internal_outputs == 1) {
-        if (one_is_internal) {
-          can_mirror = FindOrCreateMirrorMode(one_info, two_info,
-              outputs[0].output, is_panel_fitting_enabled_, preserve_aspect,
-              &outputs[0].mirror_mode, &outputs[1].mirror_mode);
-        } else {  // if (two_is_internal)
-          can_mirror = FindOrCreateMirrorMode(two_info, one_info,
-              outputs[1].output, is_panel_fitting_enabled_, preserve_aspect,
-              &outputs[1].mirror_mode, &outputs[0].mirror_mode);
-        }
-      } else {  // if (internal_outputs == 0)
-        // No panel fitting for external outputs, so fall back to exact match.
-        can_mirror = FindOrCreateMirrorMode(one_info, two_info,
-            outputs[0].output, false, preserve_aspect,
-            &outputs[0].mirror_mode, &outputs[1].mirror_mode);
-        if (!can_mirror && preserve_aspect) {
-          // FindOrCreateMirrorMode will try to preserve aspect ratio of
-          // what it thinks is external display, so if it didn't succeed
-          // with one, maybe it will succeed with the other.  This way we
-          // will have correct aspect ratio on at least one of them.
-          can_mirror = FindOrCreateMirrorMode(two_info, one_info,
-              outputs[1].output, false, preserve_aspect,
-              &outputs[1].mirror_mode, &outputs[0].mirror_mode);
-        }
-      }
-    }
+    XRRFreeOutputInfo(output_info);
   }
 
   GetTouchscreens(&outputs);
-  XRRFreeOutputInfo(one_info);
-  XRRFreeOutputInfo(two_info);
   return outputs;
+}
+
+void RealOutputConfiguratorDelegate::AddOutputMode(RROutput output,
+                                                   RRMode mode) {
+  CHECK(screen_) << "Server not grabbed";
+  VLOG(1) << "AddOutputMode: output=" << output << " mode=" << mode;
+  XRRAddOutputMode(display_, output, mode);
 }
 
 bool RealOutputConfiguratorDelegate::ConfigureCrtc(
@@ -291,10 +225,10 @@ void RealOutputConfiguratorDelegate::SendProjectingStateToPowerManager(
       SetIsProjecting(projecting);
 }
 
-bool RealOutputConfiguratorDelegate::GetModeDetails(RRMode mode,
-                                                    int* width,
-                                                    int* height,
-                                                    bool* interlaced) {
+bool RealOutputConfiguratorDelegate::InitModeInfo(
+    RRMode mode,
+    OutputConfigurator::ModeInfo* mode_info) {
+  DCHECK(mode_info);
   CHECK(screen_) << "Server not grabbed";
   // TODO: Determine if we need to organize modes in a way which provides
   // better than O(n) lookup time.  In many call sites, for example, the
@@ -303,12 +237,16 @@ bool RealOutputConfiguratorDelegate::GetModeDetails(RRMode mode,
   for (int i = 0; i < screen_->nmode; ++i) {
     if (mode == screen_->modes[i].id) {
       const XRRModeInfo& info = screen_->modes[i];
-      if (width)
-        *width = info.width;
-      if (height)
-        *height = info.height;
-      if (interlaced)
-        *interlaced = info.modeFlags & RR_Interlace;
+      mode_info->width = info.width;
+      mode_info->height = info.height;
+      mode_info->interlaced = info.modeFlags & RR_Interlace;
+      if (info.hTotal && info.vTotal) {
+        mode_info->refresh_rate = static_cast<float>(info.dotClock) /
+            (static_cast<float>(info.hTotal) *
+             static_cast<float>(info.vTotal));
+      } else {
+        mode_info->refresh_rate = 0.0f;
+      }
       return true;
     }
   }
@@ -359,12 +297,10 @@ RealOutputConfiguratorDelegate::InitOutputSnapshot(
   for (int i = 0; i < info->nmode; ++i) {
     const RRMode mode = info->modes[i];
     OutputConfigurator::ModeInfo mode_info;
-    if (GetModeDetails(mode, &mode_info.width, &mode_info.height,
-                       &mode_info.interlaced)) {
+    if (InitModeInfo(mode, &mode_info))
       output.mode_infos.insert(std::make_pair(mode, mode_info));
-    } else {
+    else
       LOG(WARNING) << "Unable to find XRRModeInfo for mode " << mode;
-    }
   }
 
   return output;
@@ -456,80 +392,6 @@ bool RealOutputConfiguratorDelegate::IsOutputAspectPreservingScaling(
     XFree(props);
 
   return ret;
-}
-
-bool RealOutputConfiguratorDelegate::FindOrCreateMirrorMode(
-    XRROutputInfo* internal_info,
-    XRROutputInfo* external_info,
-    RROutput internal_output_id,
-    bool try_creating,
-    bool preserve_aspect,
-    RRMode* internal_mirror_mode,
-    RRMode* external_mirror_mode) {
-  RRMode internal_mode_id = GetOutputNativeMode(internal_info);
-  RRMode external_mode_id = GetOutputNativeMode(external_info);
-
-  if (internal_mode_id == None || external_mode_id == None)
-    return false;
-
-  int internal_native_width = 0, internal_native_height = 0;
-  int external_native_width = 0, external_native_height = 0;
-  CHECK(GetModeDetails(internal_mode_id, &internal_native_width,
-                       &internal_native_height, NULL));
-  CHECK(GetModeDetails(external_mode_id, &external_native_width,
-                       &external_native_height, NULL));
-
-  // Check if some external output resolution can be mirrored on internal.
-  // Prefer the modes in the order that X sorts them,
-  // assuming this is the order in which they look better on the monitor.
-  // If X's order is not satisfactory, we can either fix X's sorting,
-  // or implement our sorting here.
-  for (int i = 0; i < external_info->nmode; i++) {
-    external_mode_id = external_info->modes[i];
-    int external_width = 0, external_height = 0;
-    bool is_external_interlaced = false;
-    CHECK(GetModeDetails(external_mode_id, &external_width, &external_height,
-                         &is_external_interlaced));
-    bool is_native_aspect_ratio =
-        external_native_width * external_height ==
-        external_native_height * external_width;
-    if (preserve_aspect && !is_native_aspect_ratio)
-      continue;  // Allow only aspect ratio preserving modes for mirroring
-
-    // Try finding exact match
-    for (int j = 0; j < internal_info->nmode; j++) {
-      internal_mode_id = internal_info->modes[j];
-      int internal_width = 0, internal_height = 0;
-      bool is_internal_interlaced = false;
-      CHECK(GetModeDetails(internal_mode_id, &internal_width,
-                           &internal_height, &is_internal_interlaced));
-      if (internal_width == external_width &&
-          internal_height == external_height &&
-          is_internal_interlaced == is_external_interlaced) {
-        *internal_mirror_mode = internal_mode_id;
-        *external_mirror_mode = external_mode_id;
-        return true;  // Mirror mode found
-      }
-    }
-
-    // Try to create a matching internal output mode by panel fitting
-    if (try_creating) {
-      // We can downscale by 1.125, and upscale indefinitely
-      // Downscaling looks ugly, so, can fit == can upscale
-      // Also, internal panels don't support fitting interlaced modes
-      bool can_fit =
-          internal_native_width >= external_width &&
-          internal_native_height >= external_height &&
-          !is_external_interlaced;
-      if (can_fit) {
-        XRRAddOutputMode(display_, internal_output_id, external_mode_id);
-        *internal_mirror_mode = *external_mirror_mode = external_mode_id;
-        return true;  // Mirror mode created
-      }
-    }
-  }
-
-  return false;
 }
 
 void RealOutputConfiguratorDelegate::GetTouchscreens(

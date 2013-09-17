@@ -39,6 +39,11 @@ std::string GetBackgroundAction(uint32 color_argb) {
   return base::StringPrintf("background(0x%x)", color_argb);
 }
 
+// Returns a string describing a TestDelegate::AddOutputMode() call.
+std::string GetAddOutputModeAction(RROutput output, RRMode mode) {
+  return base::StringPrintf("add_mode(output=%lu,mode=%lu)", output, mode);
+}
+
 // Returns a string describing a TestDelegate::ConfigureCrtc() call.
 std::string GetCrtcAction(RRCrtc crtc,
                           int x,
@@ -115,7 +120,6 @@ class TestDelegate : public OutputConfigurator::Delegate {
   }
 
   // OutputConfigurator::Delegate overrides:
-  virtual void SetPanelFittingEnabled(bool enabled) OVERRIDE {}
   virtual void InitXRandRExtension(int* event_base) OVERRIDE {
     AppendAction(kInitXRandR);
     *event_base = kXRandREventBase;
@@ -129,9 +133,12 @@ class TestDelegate : public OutputConfigurator::Delegate {
     AppendAction(GetBackgroundAction(color_argb));
   }
   virtual void ForceDPMSOn() OVERRIDE { AppendAction(kForceDPMS); }
-  virtual std::vector<OutputConfigurator::OutputSnapshot> GetOutputs(
-      const OutputConfigurator::StateController* controller) OVERRIDE {
+  virtual std::vector<OutputConfigurator::OutputSnapshot> GetOutputs()
+      OVERRIDE {
     return outputs_;
+  }
+  virtual void AddOutputMode(RROutput output, RRMode mode) OVERRIDE {
+    AppendAction(GetAddOutputModeAction(output, mode));
   }
   virtual bool ConfigureCrtc(RRCrtc crtc,
                              RRMode mode,
@@ -205,7 +212,8 @@ class TestObserver : public OutputConfigurator::Observer {
 
   int num_changes() const { return num_changes_; }
   int num_failures() const { return num_failures_; }
-  std::vector<OutputConfigurator::OutputSnapshot> latest_outputs() const {
+  const std::vector<OutputConfigurator::OutputSnapshot>& latest_outputs()
+      const {
     return latest_outputs_;
   }
   OutputState latest_failed_state() const { return latest_failed_state_; }
@@ -289,6 +297,15 @@ class TestMirroringController
 
 class OutputConfiguratorTest : public testing::Test {
  public:
+  // Predefined modes that can be used by outputs.
+  static const RRMode kSmallModeId;
+  static const int kSmallModeWidth;
+  static const int kSmallModeHeight;
+
+  static const RRMode kBigModeId;
+  static const int kBigModeWidth;
+  static const int kBigModeHeight;
+
   OutputConfiguratorTest()
       : observer_(&configurator_),
         test_api_(&configurator_, TestDelegate::kXRandREventBase) {}
@@ -314,49 +331,28 @@ class OutputConfiguratorTest : public testing::Test {
     o->crtc = 10;
     o->current_mode = kSmallModeId;
     o->native_mode = kSmallModeId;
-    o->selected_mode = kSmallModeId;
-    o->mirror_mode = kSmallModeId;
-    o->x = 0;
-    o->y = 0;
     o->is_internal = true;
     o->is_aspect_preserving_scaling = true;
     o->mode_infos[kSmallModeId] = small_mode_info;
-    o->touch_device_id = 0;
     o->has_display_id = true;
+    o->index = 0;
 
     o = &outputs_[1];
     o->output = 2;
     o->crtc = 11;
     o->current_mode = kBigModeId;
     o->native_mode = kBigModeId;
-    o->selected_mode = kBigModeId;
-    o->mirror_mode = kSmallModeId;
-    o->x = 0;
-    o->y = 0;
     o->is_internal = false;
     o->is_aspect_preserving_scaling = true;
     o->mode_infos[kSmallModeId] = small_mode_info;
     o->mode_infos[kBigModeId] = big_mode_info;
-    o->touch_device_id = 0;
     o->has_display_id = true;
+    o->index = 1;
 
     UpdateOutputs(2, false);
   }
 
-  void DisableNativeMirroring() {
-    outputs_[0].mirror_mode = outputs_[1].mirror_mode = 0L;
-  }
-
  protected:
-  // Predefined modes that can be used by outputs.
-  static const int kSmallModeId = 20;
-  static const int kSmallModeWidth = 1366;
-  static const int kSmallModeHeight = 768;
-
-  static const int kBigModeId = 21;
-  static const int kBigModeWidth = 2560;
-  static const int kBigModeHeight = 1600;
-
   // Configures |delegate_| to return the first |num_outputs| entries from
   // |outputs_|. If |send_events| is true, also sends screen-change and
   // output-change events to |configurator_| and triggers the configure
@@ -410,7 +406,75 @@ class OutputConfiguratorTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(OutputConfiguratorTest);
 };
 
+const RRMode OutputConfiguratorTest::kSmallModeId = 20;
+const int OutputConfiguratorTest::kSmallModeWidth = 1366;
+const int OutputConfiguratorTest::kSmallModeHeight = 768;
+
+const RRMode OutputConfiguratorTest::kBigModeId = 21;
+const int OutputConfiguratorTest::kBigModeWidth = 2560;
+const int OutputConfiguratorTest::kBigModeHeight = 1600;
+
 }  // namespace
+
+TEST_F(OutputConfiguratorTest, FindOutputModeMatchingSize) {
+  OutputConfigurator::OutputSnapshot output;
+
+  // Fields are width, height, interlaced, refresh rate.
+  output.mode_infos[11] = OutputConfigurator::ModeInfo(1920, 1200, false, 60.0);
+  // Different rates.
+  output.mode_infos[12] = OutputConfigurator::ModeInfo(1920, 1080, false, 30.0);
+  output.mode_infos[13] = OutputConfigurator::ModeInfo(1920, 1080, false, 50.0);
+  output.mode_infos[14] = OutputConfigurator::ModeInfo(1920, 1080, false, 40.0);
+  output.mode_infos[15] = OutputConfigurator::ModeInfo(1920, 1080, false, 0.0);
+  // Interlaced vs non-interlaced.
+  output.mode_infos[16] = OutputConfigurator::ModeInfo(1280, 720, true, 60.0);
+  output.mode_infos[17] = OutputConfigurator::ModeInfo(1280, 720, false, 40.0);
+  // Interlaced only.
+  output.mode_infos[18] = OutputConfigurator::ModeInfo(1024, 768, true, 0.0);
+  output.mode_infos[19] = OutputConfigurator::ModeInfo(1024, 768, true, 40.0);
+  output.mode_infos[20] = OutputConfigurator::ModeInfo(1024, 768, true, 60.0);
+  // Mixed.
+  output.mode_infos[21] = OutputConfigurator::ModeInfo(1024, 600, true, 60.0);
+  output.mode_infos[22] = OutputConfigurator::ModeInfo(1024, 600, false, 40.0);
+  output.mode_infos[23] = OutputConfigurator::ModeInfo(1024, 600, false, 50.0);
+  // Just one interlaced mode.
+  output.mode_infos[24] = OutputConfigurator::ModeInfo(640, 480, true, 60.0);
+  // Refresh rate not available.
+  output.mode_infos[25] = OutputConfigurator::ModeInfo(320, 200, false, 0.0);
+
+  EXPECT_EQ(11u, OutputConfigurator::FindOutputModeMatchingSize(output,
+                                                                1920, 1200));
+
+  // Should pick highest refresh rate.
+  EXPECT_EQ(13u, OutputConfigurator::FindOutputModeMatchingSize(output,
+                                                                1920, 1080));
+
+  // Should pick non-interlaced mode.
+  EXPECT_EQ(17u, OutputConfigurator::FindOutputModeMatchingSize(output,
+                                                                1280, 720));
+
+  // Interlaced only. Should pick one with the highest refresh rate in
+  // interlaced mode.
+  EXPECT_EQ(20u, OutputConfigurator::FindOutputModeMatchingSize(output,
+                                                                1024, 768));
+
+  // Mixed: Should pick one with the highest refresh rate in
+  // interlaced mode.
+  EXPECT_EQ(23u, OutputConfigurator::FindOutputModeMatchingSize(output,
+                                                                1024, 600));
+
+  // Just one interlaced mode.
+  EXPECT_EQ(24u, OutputConfigurator::FindOutputModeMatchingSize(output,
+                                                                640, 480));
+
+  // Refresh rate not available.
+  EXPECT_EQ(25u, OutputConfigurator::FindOutputModeMatchingSize(output,
+                                                                320, 200));
+
+  // No mode found.
+  EXPECT_EQ(0u, OutputConfigurator::FindOutputModeMatchingSize(output,
+                                                               1440, 900));
+}
 
 TEST_F(OutputConfiguratorTest, ConnectSecondOutput) {
   InitWithSingleOutput();
@@ -462,8 +526,8 @@ TEST_F(OutputConfiguratorTest, ConnectSecondOutput) {
   EXPECT_FALSE(mirroring_controller_.software_mirroring_enabled());
   EXPECT_EQ(1, observer_.num_changes());
 
-  // Software Mirroring
-  DisableNativeMirroring();
+  // Get rid of shared modes to force software mirroring.
+  outputs_[1].mode_infos.erase(kSmallModeId);
   state_controller_.set_state(STATE_DUAL_EXTENDED);
   UpdateOutputs(2, true);
   EXPECT_EQ(JoinActions(kUpdateXRandR, kGrab,
@@ -585,8 +649,8 @@ TEST_F(OutputConfiguratorTest, SetDisplayPower) {
   EXPECT_FALSE(mirroring_controller_.software_mirroring_enabled());
   EXPECT_EQ(1, observer_.num_changes());
 
-  // Software Mirroring
-  DisableNativeMirroring();
+  // Get rid of shared modes to force software mirroring.
+  outputs_[1].mode_infos.erase(kSmallModeId);
   state_controller_.set_state(STATE_DUAL_MIRROR);
   observer_.Reset();
   UpdateOutputs(2, true);
@@ -948,6 +1012,57 @@ TEST_F(OutputConfiguratorTest, AvoidUnnecessaryProbes) {
                             outputs_[1].output).c_str(),
                         kUngrab, kProjectingOn, NULL),
             delegate_->GetActionsAndClear());
+}
+
+TEST_F(OutputConfiguratorTest, PanelFitting) {
+  // Configure the internal display to support only the big mode and the
+  // external display to support only the small mode.
+  outputs_[0].current_mode = kBigModeId;
+  outputs_[0].native_mode = kBigModeId;
+  outputs_[0].mode_infos.clear();
+  outputs_[0].mode_infos[kBigModeId] = OutputConfigurator::ModeInfo(
+      kBigModeWidth, kBigModeHeight, false, 60.0);
+
+  outputs_[1].current_mode = kSmallModeId;
+  outputs_[1].native_mode = kSmallModeId;
+  outputs_[1].mode_infos.clear();
+  outputs_[1].mode_infos[kSmallModeId] = OutputConfigurator::ModeInfo(
+      kSmallModeWidth, kSmallModeHeight, false, 60.0);
+
+  // The small mode should be added to the internal output when requesting
+  // mirrored mode.
+  UpdateOutputs(2, false);
+  state_controller_.set_state(STATE_DUAL_MIRROR);
+  configurator_.Init(true /* is_panel_fitting_enabled */);
+  configurator_.Start(0);
+  EXPECT_EQ(STATE_DUAL_MIRROR, configurator_.output_state());
+  EXPECT_EQ(JoinActions(kGrab, kInitXRandR,
+                        GetAddOutputModeAction(
+                            outputs_[0].output, kSmallModeId).c_str(),
+                        GetFramebufferAction(kSmallModeWidth, kSmallModeHeight,
+                            outputs_[0].crtc, outputs_[1].crtc).c_str(),
+                        GetCrtcAction(outputs_[0].crtc, 0, 0, kSmallModeId,
+                            outputs_[0].output).c_str(),
+                        GetCrtcAction(outputs_[1].crtc, 0, 0, kSmallModeId,
+                            outputs_[1].output).c_str(),
+                        kForceDPMS, kUngrab, kProjectingOn, NULL),
+            delegate_->GetActionsAndClear());
+
+  // Both outputs should be using the small mode.
+  ASSERT_EQ(1, observer_.num_changes());
+  ASSERT_EQ(static_cast<size_t>(2), observer_.latest_outputs().size());
+  EXPECT_EQ(kSmallModeId, observer_.latest_outputs()[0].mirror_mode);
+  EXPECT_EQ(kSmallModeId, observer_.latest_outputs()[0].current_mode);
+  EXPECT_EQ(kSmallModeId, observer_.latest_outputs()[1].mirror_mode);
+  EXPECT_EQ(kSmallModeId, observer_.latest_outputs()[1].current_mode);
+
+  // Also check that the newly-added small mode is present in the internal
+  // snapshot that was passed to the observer (http://crbug.com/289159).
+  const OutputConfigurator::ModeInfo* info = OutputConfigurator::GetModeInfo(
+      observer_.latest_outputs()[0], kSmallModeId);
+  ASSERT_TRUE(info);
+  EXPECT_EQ(kSmallModeWidth, info->width);
+  EXPECT_EQ(kSmallModeHeight, info->height);
 }
 
 }  // namespace chromeos

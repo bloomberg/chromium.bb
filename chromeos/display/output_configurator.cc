@@ -101,12 +101,17 @@ bool IsProjecting(
 OutputConfigurator::ModeInfo::ModeInfo()
     : width(0),
       height(0),
-      interlaced(false) {}
+      interlaced(false),
+      refresh_rate(0.0) {}
 
-OutputConfigurator::ModeInfo::ModeInfo(int width, int height, bool interlaced)
+OutputConfigurator::ModeInfo::ModeInfo(int width,
+                                       int height,
+                                       bool interlaced,
+                                       float refresh_rate)
     : width(width),
       height(height),
-      interlaced(interlaced) {}
+      interlaced(interlaced),
+      refresh_rate(refresh_rate) {}
 
 OutputConfigurator::CoordinateTransformation::CoordinateTransformation()
     : x_scale(1.0),
@@ -172,7 +177,7 @@ const OutputConfigurator::ModeInfo* OutputConfigurator::GetModeInfo(
   if (mode == None)
     return NULL;
 
-  std::map<RRMode, ModeInfo>::const_iterator it = output.mode_infos.find(mode);
+  ModeInfoMap::const_iterator it = output.mode_infos.find(mode);
   if (it == output.mode_infos.end()) {
     LOG(WARNING) << "Unable to find info about mode " << mode
                  << " for output " << output.output;
@@ -181,9 +186,44 @@ const OutputConfigurator::ModeInfo* OutputConfigurator::GetModeInfo(
   return &it->second;
 }
 
+// static
+RRMode OutputConfigurator::FindOutputModeMatchingSize(
+    const OutputSnapshot& output,
+    int width,
+    int height) {
+  RRMode found = None;
+  float best_rate = 0;
+  bool non_interlaced_found = false;
+  for (ModeInfoMap::const_iterator it = output.mode_infos.begin();
+       it != output.mode_infos.end(); ++it) {
+    RRMode mode = it->first;
+    const ModeInfo& info = it->second;
+
+    if (info.width == width && info.height == height) {
+      if (info.interlaced) {
+        if (non_interlaced_found)
+          continue;
+      } else {
+        // Reset the best rate if the non interlaced is
+        // found the first time.
+        if (!non_interlaced_found)
+          best_rate = info.refresh_rate;
+        non_interlaced_found = true;
+      }
+      if (info.refresh_rate < best_rate)
+        continue;
+
+      found = mode;
+      best_rate = info.refresh_rate;
+    }
+  }
+  return found;
+}
+
 OutputConfigurator::OutputConfigurator()
     : state_controller_(NULL),
       mirroring_controller_(NULL),
+      is_panel_fitting_enabled_(false),
       configure_display_(base::chromeos::IsRunningOnChromeOS()),
       xrandr_event_base_(0),
       output_state_(STATE_INVALID),
@@ -203,12 +243,12 @@ void OutputConfigurator::SetInitialDisplayPower(DisplayPowerState power_state) {
 }
 
 void OutputConfigurator::Init(bool is_panel_fitting_enabled) {
+  is_panel_fitting_enabled_ = is_panel_fitting_enabled;
   if (!configure_display_)
     return;
 
   if (!delegate_)
     delegate_.reset(new RealOutputConfiguratorDelegate());
-  delegate_->SetPanelFittingEnabled(is_panel_fitting_enabled);
 }
 
 void OutputConfigurator::Start(uint32 background_color_argb) {
@@ -218,8 +258,7 @@ void OutputConfigurator::Start(uint32 background_color_argb) {
   delegate_->GrabServer();
   delegate_->InitXRandRExtension(&xrandr_event_base_);
 
-  std::vector<OutputSnapshot> outputs =
-      delegate_->GetOutputs(state_controller_);
+  std::vector<OutputSnapshot> outputs = GetOutputs();
   if (outputs.size() > 1 && background_color_argb)
     delegate_->SetBackgroundColor(background_color_argb);
   const OutputState new_state = GetOutputState(outputs, power_state_);
@@ -249,8 +288,7 @@ bool OutputConfigurator::SetDisplayPower(DisplayPowerState power_state,
     return true;
 
   delegate_->GrabServer();
-  std::vector<OutputSnapshot> outputs =
-      delegate_->GetOutputs(state_controller_);
+  std::vector<OutputSnapshot> outputs = GetOutputs();
 
   const OutputState new_state = GetOutputState(outputs, power_state);
   bool attempted_change = false;
@@ -291,8 +329,7 @@ bool OutputConfigurator::SetDisplayMode(OutputState new_state) {
   }
 
   delegate_->GrabServer();
-  std::vector<OutputSnapshot> outputs =
-      delegate_->GetOutputs(state_controller_);
+  std::vector<OutputSnapshot> outputs = GetOutputs();
   const bool success = EnterStateOrFallBackToSoftwareMirroring(
       new_state, power_state_, outputs);
   delegate_->UngrabServer();
@@ -418,12 +455,137 @@ void OutputConfigurator::ScheduleConfigureOutputs() {
   }
 }
 
+std::vector<OutputConfigurator::OutputSnapshot>
+OutputConfigurator::GetOutputs() {
+  std::vector<OutputSnapshot> outputs = delegate_->GetOutputs();
+
+  // Set |selected_mode| fields.
+  for (size_t i = 0; i < outputs.size(); ++i) {
+    OutputSnapshot* output = &outputs[i];
+    if (output->has_display_id) {
+      int width = 0, height = 0;
+      if (state_controller_ &&
+          state_controller_->GetResolutionForDisplayId(
+              output->display_id, &width, &height)) {
+        output->selected_mode =
+            FindOutputModeMatchingSize(*output, width, height);
+      }
+    }
+    // Fall back to native mode.
+    if (output->selected_mode == None)
+      output->selected_mode = output->native_mode;
+  }
+
+  // Set |mirror_mode| fields.
+  if (outputs.size() == 2) {
+    bool one_is_internal = outputs[0].is_internal;
+    bool two_is_internal = outputs[1].is_internal;
+    int internal_outputs = (one_is_internal ? 1 : 0) +
+        (two_is_internal ? 1 : 0);
+    DCHECK_LT(internal_outputs, 2);
+    LOG_IF(WARNING, internal_outputs == 2)
+        << "Two internal outputs detected.";
+
+    bool can_mirror = false;
+    for (int attempt = 0; !can_mirror && attempt < 2; ++attempt) {
+      // Try preserving external output's aspect ratio on the first attempt.
+      // If that fails, fall back to the highest matching resolution.
+      bool preserve_aspect = attempt == 0;
+
+      if (internal_outputs == 1) {
+        if (one_is_internal) {
+          can_mirror = FindMirrorMode(&outputs[0], &outputs[1],
+              is_panel_fitting_enabled_, preserve_aspect);
+        } else {
+          DCHECK(two_is_internal);
+          can_mirror = FindMirrorMode(&outputs[1], &outputs[0],
+              is_panel_fitting_enabled_, preserve_aspect);
+        }
+      } else {  // if (internal_outputs == 0)
+        // No panel fitting for external outputs, so fall back to exact match.
+        can_mirror = FindMirrorMode(&outputs[0], &outputs[1], false,
+                                    preserve_aspect);
+        if (!can_mirror && preserve_aspect) {
+          // FindMirrorMode() will try to preserve aspect ratio of what it
+          // thinks is external display, so if it didn't succeed with one, maybe
+          // it will succeed with the other.  This way we will have the correct
+          // aspect ratio on at least one of them.
+          can_mirror = FindMirrorMode(&outputs[1], &outputs[0], false,
+                                      preserve_aspect);
+        }
+      }
+    }
+  }
+
+  return outputs;
+}
+
+bool OutputConfigurator::FindMirrorMode(OutputSnapshot* internal_output,
+                                        OutputSnapshot* external_output,
+                                        bool try_panel_fitting,
+                                        bool preserve_aspect) {
+  const ModeInfo* internal_native_info =
+      GetModeInfo(*internal_output, internal_output->native_mode);
+  const ModeInfo* external_native_info =
+      GetModeInfo(*external_output, external_output->native_mode);
+  if (!internal_native_info || !external_native_info)
+    return false;
+
+  // Check if some external output resolution can be mirrored on internal.
+  // Prefer the modes in the order that X sorts them, assuming this is the order
+  // in which they look better on the monitor.
+  for (ModeInfoMap::const_iterator external_it =
+       external_output->mode_infos.begin();
+       external_it != external_output->mode_infos.end(); ++external_it) {
+    const ModeInfo& external_info = external_it->second;
+    bool is_native_aspect_ratio =
+        external_native_info->width * external_info.height ==
+        external_native_info->height * external_info.width;
+    if (preserve_aspect && !is_native_aspect_ratio)
+      continue;  // Allow only aspect ratio preserving modes for mirroring.
+
+    // Try finding an exact match.
+    for (ModeInfoMap::const_iterator internal_it =
+         internal_output->mode_infos.begin();
+         internal_it != internal_output->mode_infos.end(); ++internal_it) {
+      const ModeInfo& internal_info = internal_it->second;
+      if (internal_info.width == external_info.width &&
+          internal_info.height == external_info.height &&
+          internal_info.interlaced == external_info.interlaced) {
+        internal_output->mirror_mode = internal_it->first;
+        external_output->mirror_mode = external_it->first;
+        return true;  // Mirror mode found.
+      }
+    }
+
+    // Try to create a matching internal output mode by panel fitting.
+    if (try_panel_fitting) {
+      // We can downscale by 1.125, and upscale indefinitely. Downscaling looks
+      // ugly, so, can fit == can upscale. Also, internal panels don't support
+      // fitting interlaced modes.
+      bool can_fit =
+          internal_native_info->width >= external_info.width &&
+          internal_native_info->height >= external_info.height &&
+          !external_info.interlaced;
+      if (can_fit) {
+        RRMode mode = external_it->first;
+        delegate_->AddOutputMode(internal_output->output, mode);
+        internal_output->mode_infos.insert(std::make_pair(mode, external_info));
+        internal_output->mirror_mode = mode;
+        external_output->mirror_mode = mode;
+        return true;  // Mirror mode created.
+      }
+    }
+  }
+
+  return false;
+}
+
 void OutputConfigurator::ConfigureOutputs() {
   configure_timer_.reset();
 
   delegate_->GrabServer();
-  std::vector<OutputSnapshot> outputs =
-      delegate_->GetOutputs(state_controller_);
+  std::vector<OutputSnapshot> outputs = GetOutputs();
   const OutputState new_state = GetOutputState(outputs, power_state_);
   const bool success = EnterStateOrFallBackToSoftwareMirroring(
       new_state, power_state_, outputs);

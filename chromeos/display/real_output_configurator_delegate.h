@@ -28,7 +28,6 @@ class RealOutputConfiguratorDelegate : public OutputConfigurator::Delegate {
   virtual ~RealOutputConfiguratorDelegate();
 
   // OutputConfigurator::Delegate overrides:
-  virtual void SetPanelFittingEnabled(bool enabled) OVERRIDE;
   virtual void InitXRandRExtension(int* event_base) OVERRIDE;
   virtual void UpdateXRandRConfiguration(
       const base::NativeEvent& event) OVERRIDE;
@@ -37,8 +36,8 @@ class RealOutputConfiguratorDelegate : public OutputConfigurator::Delegate {
   virtual void SyncWithServer() OVERRIDE;
   virtual void SetBackgroundColor(uint32 color_argb) OVERRIDE;
   virtual void ForceDPMSOn() OVERRIDE;
-  virtual std::vector<OutputConfigurator::OutputSnapshot> GetOutputs(
-      const OutputConfigurator::StateController* state_controller) OVERRIDE;
+  virtual std::vector<OutputConfigurator::OutputSnapshot> GetOutputs() OVERRIDE;
+  virtual void AddOutputMode(RROutput output, RRMode mode) OVERRIDE;
   virtual bool ConfigureCrtc(
       RRCrtc crtc,
       RRMode mode,
@@ -55,9 +54,9 @@ class RealOutputConfiguratorDelegate : public OutputConfigurator::Delegate {
   virtual void SendProjectingStateToPowerManager(bool projecting) OVERRIDE;
 
  private:
-  // Gets details corresponding to |mode|. Parameters may be NULL. Returns
+  // Initializes |mode_info| to contain details corresponding to |mode|. Returns
   // true on success.
-  bool GetModeDetails(RRMode mode, int* width, int* height, bool* interlaced);
+  bool InitModeInfo(RRMode mode, OutputConfigurator::ModeInfo* mode_info);
 
   // Helper method for GetOutputs() that returns an OutputSnapshot struct based
   // on the passed-in information. Further initialization is required (e.g.
@@ -77,26 +76,6 @@ class RealOutputConfiguratorDelegate : public OutputConfigurator::Delegate {
   // Returns whether |id| is configured to preserve aspect when scaling.
   bool IsOutputAspectPreservingScaling(RROutput id);
 
-  // Looks for a mode on internal and external outputs having same
-  // resolution.  |internal_info| and |external_info| are used to search
-  // for the modes.  |internal_output_id| is used to create a new mode, if
-  // applicable.  |try_creating|=true will enable creating panel-fitting
-  // mode on the |internal_info| output instead of only searching for a
-  // matching mode.  Note: it may lead to a crash, if |internal_info| is
-  // not capable of panel fitting.  |preserve_aspect|=true will limit the
-  // search / creation only to the modes having the native aspect ratio of
-  // |external_info|.  |internal_mirror_mode| and |external_mirror_mode|
-  // are the out-parameters for the modes on the two outputs which will
-  // have the same resolution.  Returns false if no mode appropriate for
-  // mirroring has been found/created.
-  bool FindOrCreateMirrorMode(XRROutputInfo* internal_info,
-                              XRROutputInfo* external_info,
-                              RROutput internal_output_id,
-                              bool try_creating,
-                              bool preserve_aspect,
-                              RRMode* internal_mirror_mode,
-                              RRMode* external_mirror_mode);
-
   // Searches for touchscreens among input devices,
   // and tries to match them up to screens in |outputs|.
   // |outputs| is an array of detected screens.
@@ -110,9 +89,6 @@ class RealOutputConfiguratorDelegate : public OutputConfigurator::Delegate {
 
   // Initialized when the server is grabbed and freed when it's ungrabbed.
   XRRScreenResources* screen_;
-
-  // Used to enable modes which rely on panel fitting.
-  bool is_panel_fitting_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(RealOutputConfiguratorDelegate);
 };

@@ -44,12 +44,15 @@ class CHROMEOS_EXPORT OutputConfigurator
  public:
   struct ModeInfo {
     ModeInfo();
-    ModeInfo(int width, int height, bool interlaced);
+    ModeInfo(int width, int height, bool interlaced, float refresh_rate);
 
     int width;
     int height;
     bool interlaced;
+    float refresh_rate;
   };
+
+  typedef std::map<RRMode, ModeInfo> ModeInfoMap;
 
   struct CoordinateTransformation {
     // Initialized to the identity transformation.
@@ -96,7 +99,7 @@ class CHROMEOS_EXPORT OutputConfigurator
     bool is_aspect_preserving_scaling;
 
     // Map from mode IDs to details about the corresponding modes.
-    std::map<RRMode, ModeInfo> mode_infos;
+    ModeInfoMap mode_infos;
 
     // XInput device ID or 0 if this output isn't a touchscreen.
     int touch_device_id;
@@ -160,8 +163,6 @@ class CHROMEOS_EXPORT OutputConfigurator
    public:
     virtual ~Delegate() {}
 
-    virtual void SetPanelFittingEnabled(bool enabled) = 0;
-
     // Initializes the XRandR extension, saving the base event ID to
     // |event_base|.
     virtual void InitXRandRExtension(int* event_base) = 0;
@@ -187,10 +188,13 @@ class CHROMEOS_EXPORT OutputConfigurator
     // Enables DPMS and forces it to the "on" state.
     virtual void ForceDPMSOn() = 0;
 
-    // Returns information about the current outputs.
-    // This method may block for 60 milliseconds or more.
-    virtual std::vector<OutputSnapshot> GetOutputs(
-        const StateController* state_controller) = 0;
+    // Returns information about the current outputs. This method may block for
+    // 60 milliseconds or more. The returned outputs are not fully initialized;
+    // the rest of the work happens in OutputConfigurator::GetOutputs().
+    virtual std::vector<OutputSnapshot> GetOutputs() = 0;
+
+    // Adds |mode| to |output|.
+    virtual void AddOutputMode(RROutput output, RRMode mode) = 0;
 
     // Calls XRRSetCrtcConfig() with the given options but some of our default
     // output count and rotation arguments. Returns true on success.
@@ -271,6 +275,12 @@ class CHROMEOS_EXPORT OutputConfigurator
   static const ModeInfo* GetModeInfo(const OutputSnapshot& output,
                                      RRMode mode);
 
+  // Returns the mode within |output| that matches the given size with highest
+  // refresh rate. Returns None if no matching output was found.
+  static RRMode FindOutputModeMatchingSize(const OutputSnapshot& output,
+                                           int width,
+                                           int height);
+
   OutputConfigurator();
   virtual ~OutputConfigurator();
 
@@ -349,7 +359,29 @@ class CHROMEOS_EXPORT OutputConfigurator
   void ScheduleConfigureOutputs();
 
  private:
-  // Configure outputs.
+  // Returns currently-connected outputs. This method is a wrapper around
+  // |delegate_->GetOutputs()| that does additional work, like finding the
+  // mirror mode and setting user-preferred modes. Note that the server must
+  // be grabbed via |delegate_->GrabServer()| first.
+  std::vector<OutputSnapshot> GetOutputs();
+
+  // Helper method for GetOutputs() that initializes the passed-in outputs'
+  // |mirror_mode| fields by looking for a mode in |internal_output| and
+  // |external_output| having the same resolution. Returns false if a shared
+  // mode wasn't found or created.
+  //
+  // |try_panel_fitting| allows creating a panel-fitting mode for
+  // |internal_output| instead of only searching for a matching mode (note that
+  // it may lead to a crash if |internal_info| is not capable of panel fitting).
+  //
+  // |preserve_aspect| limits the search/creation only to the modes having the
+  // native aspect ratio of |external_output|.
+  bool FindMirrorMode(OutputSnapshot* internal_output,
+                      OutputSnapshot* external_output,
+                      bool try_panel_fitting,
+                      bool preserve_aspect);
+
+  // Configures outputs.
   void ConfigureOutputs();
 
   // Notifies observers about an attempted state change.
@@ -392,6 +424,9 @@ class CHROMEOS_EXPORT OutputConfigurator
   StateController* state_controller_;
   SoftwareMirroringController* mirroring_controller_;
   scoped_ptr<Delegate> delegate_;
+
+  // Used to enable modes which rely on panel fitting.
+  bool is_panel_fitting_enabled_;
 
   // Key of the map is the touch display's id, and the value of the map is the
   // touch display's area ratio in mirror mode defined as :
