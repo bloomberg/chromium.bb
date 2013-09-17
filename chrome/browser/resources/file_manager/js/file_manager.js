@@ -5,17 +5,6 @@
 'use strict';
 
 /**
- * This variable is checked in SelectFileDialogExtensionBrowserTest.
- * @type {number}
- */
-window.JSErrorCount = 0;
-
-/**
- * Count uncaught exceptions.
- */
-window.onerror = function() { window.JSErrorCount++; };
-
-/**
  * FileManager constructor.
  *
  * FileManager objects encapsulate the functionality of the file selector

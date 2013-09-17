@@ -66,6 +66,9 @@
 (function() {
 // 'strict mode' is invoked for this scope.
 
+// // This script must be loaded before all other Files.app's scripts.
+//<include src="error_counter.js"/>
+//
 //<include src="combobutton.js"/>
 //<include src="commandbutton.js"/>
 //<include src="ui/file_manager_dialog_base.js"/>
