@@ -307,8 +307,7 @@ int QuicStreamFactory::Create(const HostPortProxyPair& host_port_proxy_pair,
 
 void QuicStreamFactory::OnJobComplete(Job* job, int rv) {
   if (rv == OK) {
-    // TODO(rch): Uncomment this once we trust 0-RTT
-    // require_confirmation_ = false;
+    require_confirmation_ = false;
 
     // Create all the streams, but do not notify them yet.
     for (RequestSet::iterator it = job_requests_map_[job].begin();
@@ -437,18 +436,10 @@ QuicClientSession* QuicStreamFactory::CreateSession(
   // revisit this setting and test for its impact.
   const int32 kSocketBufferSize(kMaxPacketSize * 100);  // Support 100 packets.
   socket->SetReceiveBufferSize(kSocketBufferSize);
-  // TODO(jar): What should the UDP send buffer be set to?  If the send buffer
-  // is too large, then we might(?) wastefully queue packets in the OS, when
-  // we'd rather construct packets just in time. We do however expect that the
-  // calculated send rate (paced, or ack clocked), will be well below the egress
-  // rate of the local machine, so that *shouldn't* be a problem.
-  // If the buffer setting is too small, then we will starve our outgoing link
-  // on a fast connection, because we won't respond fast enough to the many
-  // async callbacks to get data from us.  On the other hand, until we have real
-  // pacing support (beyond ack-clocked pacing), we get a bit of adhoc-pacing by
-  // requiring the application to refill this OS buffer (ensuring that we don't
-  // blast a pile of packets at the kernel's max egress rate).
-  // socket->SetSendBufferSize(????);
+  // Set a buffer large enough to contain the initial CWND's worth of packet
+  // to work around the problem with CHLO packets being sent out with the
+  // wrong encryption level, when the send buffer is full.
+  socket->SetSendBufferSize(kMaxPacketSize * 20); // Support 20 packets.
 
   QuicConnectionHelper* helper = new QuicConnectionHelper(
       base::MessageLoop::current()->message_loop_proxy().get(),
