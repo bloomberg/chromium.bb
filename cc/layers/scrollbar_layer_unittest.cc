@@ -266,7 +266,6 @@ TEST(ScrollbarLayerTest, SolidColorDrawQuads) {
   const int kTrackLength = 100;
 
   LayerTreeSettings layer_tree_settings;
-  layer_tree_settings.solid_color_scrollbar_thickness_dip = kThumbThickness;
   scoped_ptr<FakeLayerTreeHost> host =
       FakeLayerTreeHost::Create(layer_tree_settings);
 
@@ -329,7 +328,6 @@ TEST(ScrollbarLayerTest, LayerDrivenSolidColorDrawQuads) {
   const int kTrackLength = 10;
 
   LayerTreeSettings layer_tree_settings;
-  layer_tree_settings.solid_color_scrollbar_thickness_dip = 3;
   scoped_ptr<FakeLayerTreeHost> host =
       FakeLayerTreeHost::Create(layer_tree_settings);
 

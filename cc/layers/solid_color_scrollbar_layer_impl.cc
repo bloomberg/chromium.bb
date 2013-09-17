@@ -46,15 +46,6 @@ void SolidColorScrollbarLayerImpl::PushPropertiesTo(LayerImpl* layer) {
 }
 
 int SolidColorScrollbarLayerImpl::ThumbThickness() const {
-  // TODO(wjmaclean) This should be removed when
-  // solid_color_scrollbar_thickness_dip is removed.
-  int thickness_override =
-      layer_tree_impl()
-          ? layer_tree_impl()->settings().solid_color_scrollbar_thickness_dip
-          : -1;
-  if (thickness_override != -1)
-    return thickness_override;
-
   if (thumb_thickness_ != -1)
     return thumb_thickness_;
 
