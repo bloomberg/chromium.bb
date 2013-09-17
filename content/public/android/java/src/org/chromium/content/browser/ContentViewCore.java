@@ -1381,11 +1381,9 @@ import java.util.Map;
      *                 result will be json encoded and passed as the parameter, and the call
      *                 will be made on the main thread.
      *                 If no result is required, pass null.
-     * @throws IllegalStateException If the ContentView has been destroyed.
      */
-    public void evaluateJavaScript(
-            String script, JavaScriptCallback callback) throws IllegalStateException {
-        checkIsAlive();
+    public void evaluateJavaScript(String script, JavaScriptCallback callback) {
+        if (mNativeContentViewCore == 0) return;
         nativeEvaluateJavaScript(mNativeContentViewCore, script, callback, false);
     }
 
@@ -1394,11 +1392,9 @@ import java.util.Map;
      * If there is no page existing, a new one will be created.
      *
      * @param script The Javascript to execute.
-     * @throws IllegalStateException If the ContentView has been destroyed.
      */
-    public void evaluateJavaScriptEvenIfNotYetNavigated(String script)
-            throws IllegalStateException {
-        checkIsAlive();
+    public void evaluateJavaScriptEvenIfNotYetNavigated(String script) {
+        if (mNativeContentViewCore == 0) return;
         nativeEvaluateJavaScript(mNativeContentViewCore, script, null, true);
     }
 
