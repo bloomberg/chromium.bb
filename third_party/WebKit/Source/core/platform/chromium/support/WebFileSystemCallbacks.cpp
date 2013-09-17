@@ -128,6 +128,13 @@ void WebFileSystemCallbacks::didOpenFileSystem(const WebString& name, const WebU
     m_private.reset();
 }
 
+void WebFileSystemCallbacks::didResolveURL(const WebString& name, const WebURL& rootURL, WebFileSystemType type, const WebString& filePath, bool isDirectory)
+{
+    ASSERT(!m_private.isNull());
+    m_private->callbacks()->didResolveURL(name, rootURL, static_cast<WebCore::FileSystemType>(type), filePath, isDirectory);
+    m_private.reset();
+}
+
 void WebFileSystemCallbacks::didCreateFileWriter(WebFileWriter* webFileWriter, long long length)
 {
     ASSERT(!m_private.isNull());

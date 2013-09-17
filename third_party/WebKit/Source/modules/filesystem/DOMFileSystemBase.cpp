@@ -96,17 +96,27 @@ bool DOMFileSystemBase::crackFileSystemURL(const KURL& url, FileSystemType& type
         return false;
 
     String typeString = url.innerURL()->path().substring(1);
-    if (typeString == temporaryPathPrefix)
-        type = FileSystemTypeTemporary;
-    else if (typeString == persistentPathPrefix)
-        type = FileSystemTypePersistent;
-    else if (typeString == externalPathPrefix)
-        type = FileSystemTypeExternal;
-    else
+    if (!pathPrefixToFileSystemType(typeString, type))
         return false;
 
     filePath = decodeURLEscapeSequences(url.path());
     return true;
+}
+
+KURL DOMFileSystemBase::createFileSystemRootURL(const String& origin, FileSystemType type)
+{
+    String typeString;
+    if (type == FileSystemTypeTemporary)
+        typeString = temporaryPathPrefix;
+    else if (type == FileSystemTypePersistent)
+        typeString = persistentPathPrefix;
+    else if (type == FileSystemTypeExternal)
+        typeString = externalPathPrefix;
+    else
+        return KURL();
+
+    String result = "filesystem:" + origin + "/" + typeString + "/";
+    return KURL(ParsedURLString, result);
 }
 
 bool DOMFileSystemBase::supportsToURL() const
@@ -145,6 +155,37 @@ KURL DOMFileSystemBase::createFileSystemURL(const String& fullPath) const
     return url;
 }
 
+bool DOMFileSystemBase::pathToAbsolutePath(FileSystemType type, const EntryBase* base, String path, String& absolutePath)
+{
+    ASSERT(base);
+
+    if (!DOMFilePath::isAbsolute(path))
+        path = DOMFilePath::append(base->fullPath(), path);
+    absolutePath = DOMFilePath::removeExtraParentReferences(path);
+
+    return (type != FileSystemTypeTemporary && type != FileSystemTypePersistent) || DOMFilePath::isValidPath(absolutePath);
+}
+
+bool DOMFileSystemBase::pathPrefixToFileSystemType(const String& pathPrefix, FileSystemType& type)
+{
+    if (pathPrefix == temporaryPathPrefix) {
+        type = FileSystemTypeTemporary;
+        return true;
+    }
+
+    if (pathPrefix == persistentPathPrefix) {
+        type = FileSystemTypePersistent;
+        return true;
+    }
+
+    if (pathPrefix == externalPathPrefix) {
+        type = FileSystemTypeExternal;
+        return true;
+    }
+
+    return false;
+}
+
 bool DOMFileSystemBase::getMetadata(const EntryBase* entry, PassRefPtr<MetadataCallback> successCallback, PassRefPtr<ErrorCallback> errorCallback, SynchronousType synchronousType)
 {
     OwnPtr<AsyncFileSystemCallbacks> callbacks(MetadataCallbacks::create(successCallback, errorCallback, this));
@@ -179,19 +220,6 @@ static bool verifyAndGetDestinationPathForCopyOrMove(const EntryBase* source, En
     else
         destinationPath = DOMFilePath::append(destinationPath, source->name());
 
-    return true;
-}
-
-static bool pathToAbsolutePath(FileSystemType type, const EntryBase* base, String path, String& absolutePath)
-{
-    ASSERT(base);
-
-    if (!DOMFilePath::isAbsolute(path))
-        path = DOMFilePath::append(base->fullPath(), path);
-    absolutePath = DOMFilePath::removeExtraParentReferences(path);
-
-    if ((type == FileSystemTypeTemporary || type == FileSystemTypePersistent) && !DOMFilePath::isValidPath(absolutePath))
-        return false;
     return true;
 }
 

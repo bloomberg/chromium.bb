@@ -216,6 +216,25 @@ void ResolveURICallbacks::didOpenFileSystem(const String& name, const KURL& root
     root->getDirectory(m_filePath, Dictionary(), m_successCallback, ErrorCallbackWrapper::create(m_successCallback, m_errorCallback, root, m_filePath));
 }
 
+void ResolveURICallbacks::didResolveURL(const String& name, const KURL& rootURL, FileSystemType type, const String& filePath, bool isDirectory)
+{
+    RefPtr<DOMFileSystem> filesystem = DOMFileSystem::create(m_scriptExecutionContext.get(), name, type, rootURL);
+    RefPtr<DirectoryEntry> root = filesystem->root();
+
+    String absolutePath;
+    if (!DOMFileSystemBase::pathToAbsolutePath(type, root.get(), filePath, absolutePath)) {
+        m_errorCallback->handleEvent(FileError::create(FileError::INVALID_MODIFICATION_ERR).get());
+        m_errorCallback.clear();
+        return;
+    }
+
+    if (isDirectory)
+        m_successCallback->handleEvent(DirectoryEntry::create(filesystem, absolutePath).get());
+    else
+        m_successCallback->handleEvent(FileEntry::create(filesystem, absolutePath).get());
+    m_successCallback.clear();
+}
+
 // MetadataCallbacks ----------------------------------------------------------
 
 PassOwnPtr<AsyncFileSystemCallbacks> MetadataCallbacks::create(PassRefPtr<MetadataCallback> successCallback, PassRefPtr<ErrorCallback> errorCallback, DOMFileSystemBase* fileSystem)

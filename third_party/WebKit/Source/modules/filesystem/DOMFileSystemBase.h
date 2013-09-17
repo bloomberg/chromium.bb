@@ -96,9 +96,12 @@ public:
 
     static bool isValidType(FileSystemType);
     static bool crackFileSystemURL(const KURL&, FileSystemType&, String& filePath);
+    static KURL createFileSystemRootURL(const String& origin, FileSystemType);
     bool supportsToURL() const;
     KURL createFileSystemURL(const EntryBase*) const;
     KURL createFileSystemURL(const String& fullPath) const;
+    static bool pathToAbsolutePath(FileSystemType, const EntryBase*, String path, String& absolutePath);
+    static bool pathPrefixToFileSystemType(const String& pathPrefix, FileSystemType&);
 
     // Actual FileSystem API implementations. All the validity checks on virtual paths are done at this level.
     // They return false for immediate errors that don't involve lower WebFileSystem layer (e.g. for name validation errors). Otherwise they return true (but later may call back with an runtime error).

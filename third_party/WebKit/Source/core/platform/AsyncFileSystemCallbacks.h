@@ -50,6 +50,9 @@ public:
     // Called when a requested file system is opened.
     virtual void didOpenFileSystem(const String& name, const KURL& rootURL) { ASSERT_NOT_REACHED(); }
 
+    // Called when a filesystem URL is resolved.
+    virtual void didResolveURL(const String& name, const KURL& rootURL, FileSystemType, const String& filePath, bool isDirectory) { ASSERT_NOT_REACHED(); }
+
     // Called when a file metadata is read successfully.
     virtual void didReadMetadata(const FileMetadata&) { ASSERT_NOT_REACHED(); }
 
