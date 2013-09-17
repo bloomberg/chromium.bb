@@ -18,7 +18,7 @@ if sys.platform == 'darwin':
   test = TestGyp.TestGyp(formats=['ninja', 'make', 'xcode'])
 
   # Make sure this works on the bots, which only have the 10.6 sdk, and on
-  # dev machines, who usually don't have the 10.6 sdk.
+  # dev machines, which usually don't have the 10.6 sdk.
   sdk = '10.6'
   DEVNULL = open(os.devnull, 'wb')
   proc = subprocess.Popen(['xcodebuild', '-version', '-sdk', 'macosx' + sdk],

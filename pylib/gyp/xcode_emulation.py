@@ -22,6 +22,10 @@ class XcodeSettings(object):
   # at class-level for efficiency.
   _sdk_path_cache = {}
 
+  # Populated lazily by GetExtraPlistItems(). Shared by all XcodeSettings, so
+  # cached at class-level for efficiency.
+  _plist_cache = {}
+
   def __init__(self, spec):
     self.spec = spec
 
@@ -246,17 +250,22 @@ class XcodeSettings(object):
     # CURRENT_ARCH / NATIVE_ARCH env vars?
     return self.xcode_settings[configname].get('ARCHS', ['i386'])
 
-  def _GetSdkVersionInfoItem(self, sdk, infoitem):
-    job = subprocess.Popen(['xcodebuild', '-version', '-sdk', sdk, infoitem],
-                           stdout=subprocess.PIPE)
+  def _GetStdout(self, cmdlist):
+    job = subprocess.Popen(cmdlist, stdout=subprocess.PIPE)
     out = job.communicate()[0]
     if job.returncode != 0:
       sys.stderr.write(out + '\n')
-      raise GypError('Error %d running xcodebuild' % job.returncode)
+      raise GypError('Error %d running %s' % (job.returncode, cmdlist[0]))
     return out.rstrip('\n')
 
+  def _GetSdkVersionInfoItem(self, sdk, infoitem):
+    return self._GetStdout(['xcodebuild', '-version', '-sdk', sdk, infoitem])
+
+  def _SdkRoot(self):
+    return self.GetPerTargetSetting('SDKROOT', default='')
+
   def _SdkPath(self):
-    sdk_root = self.GetPerTargetSetting('SDKROOT', default='macosx')
+    sdk_root = self._SdkRoot()
     if sdk_root.startswith('/'):
       return sdk_root
     if sdk_root not in XcodeSettings._sdk_path_cache:
@@ -659,12 +668,12 @@ class XcodeSettings(object):
   def GetPerTargetSetting(self, setting, default=None):
     """Tries to get xcode_settings.setting from spec. Assumes that the setting
        has the same value in all configurations and throws otherwise."""
-    first_pass = True
+    is_first_pass = True
     result = None
     for configname in sorted(self.xcode_settings.keys()):
-      if first_pass:
+      if is_first_pass:
         result = self.xcode_settings[configname].get(setting, None)
-        first_pass = False
+        is_first_pass = False
       else:
         assert result == self.xcode_settings[configname].get(setting, None), (
             "Expected per-target setting for '%s', got per-config setting "
@@ -751,6 +760,41 @@ class XcodeSettings(object):
     """
     libraries = [ self._AdjustLibrary(library) for library in libraries]
     return libraries
+
+  def _BuildMachineOSBuild(self):
+    return self._GetStdout(['sw_vers', '-buildVersion'])
+
+  def _XcodeVersion(self):
+    # `xcodebuild -version` output looks like
+    #    Xcode 4.6.3
+    #    Build version 4H1503
+    # Convert that to '0463', '4H1503'.
+    version, build = self._GetStdout(['xcodebuild', '-version']).splitlines()
+    # Be careful to convert "4.2" to "0420":
+    version = version.split()[-1].replace('.', '')
+    version = (version + '0' * (3 - len(version))).zfill(4)
+    build = build.split()[-1]
+    return version, build
+
+  def GetExtraPlistItems(self):
+    """Returns a dictionary with extra items to insert into Info.plist."""
+    if not XcodeSettings._plist_cache:
+      cache = XcodeSettings._plist_cache
+      cache['BuildMachineOSBuild'] = self._BuildMachineOSBuild()
+
+      xcode, xcode_build = self._XcodeVersion()
+      cache['DTXcode'] = xcode
+      cache['DTXcodeBuild'] = xcode_build
+
+      sdk_root = self._SdkRoot()
+      cache['DTSDKName'] = sdk_root
+      if xcode >= '0430':
+        cache['DTSDKBuild'] = self._GetSdkVersionInfoItem(
+            sdk_root, 'ProductBuildVersion')
+      else:
+        cache['DTSDKBuild'] = cache['BuildMachineOSBuild']
+
+    return XcodeSettings._plist_cache
 
 
 class MacPrefixHeader(object):

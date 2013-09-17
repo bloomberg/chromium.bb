@@ -116,12 +116,17 @@ class MacTool(object):
     else:
       return None
 
-  def ExecCopyInfoPlist(self, source, dest):
+  def ExecCopyInfoPlist(self, source, dest, *keys):
     """Copies the |source| Info.plist to the destination directory |dest|."""
     # Read the source Info.plist into memory.
     fd = open(source, 'r')
     lines = fd.read()
     fd.close()
+
+    # Insert synthesized key/value pairs (e.g. BuildMachineOSBuild).
+    plist = plistlib.readPlistFromString(lines)
+    plist = dict(plist.items() + zip(keys[::2], keys[1::2]))
+    lines = plistlib.writePlistToString(plist)
 
     # Go through all the environment variables and replace them as variables in
     # the file.

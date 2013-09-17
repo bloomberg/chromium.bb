@@ -11,8 +11,18 @@ Verifies that app bundles are built correctly.
 import TestGyp
 
 import os
+import plistlib
+import subprocess
 import sys
 
+def GetStdout(cmdlist):
+  return subprocess.Popen(cmdlist,
+                          stdout=subprocess.PIPE).communicate()[0].rstrip('\n')
+
+def ExpectEq(expected, actual):
+  if expected != actual:
+    print >>sys.stderr, 'Expected "%s", got "%s"' % (expected, actual)
+    test.fail_test()
 
 def ls(path):
   '''Returns a list of all files in a directory, relative to the directory.'''
@@ -40,6 +50,25 @@ if sys.platform == 'darwin':
   test.must_exist(info_plist)
   test.must_contain(info_plist, 'com.google.Test-App-Gyp')  # Variable expansion
   test.must_not_contain(info_plist, '${MACOSX_DEPLOYMENT_TARGET}');
+
+  if test.format != 'make':
+    # TODO: Synthesized plist entries aren't hooked up in the make generator.
+    plist = plistlib.readPlist(info_plist)
+    ExpectEq(GetStdout(['sw_vers', '-buildVersion']),
+             plist['BuildMachineOSBuild'])
+    ExpectEq('', plist['DTSDKName'])
+    sdkbuild = GetStdout(
+        ['xcodebuild', '-version', '-sdk', '', 'ProductBuildVersion'])
+    if not sdkbuild:
+      # Above command doesn't work in Xcode 4.2.
+      sdkbuild = plist['BuildMachineOSBuild']
+    ExpectEq(sdkbuild, plist['DTSDKBuild'])
+    xcode, build = GetStdout(['xcodebuild', '-version']).splitlines()
+    xcode = xcode.split()[-1].replace('.', '')
+    xcode = (xcode + '0' * (3 - len(xcode))).zfill(4)
+    build = build.split()[-1]
+    ExpectEq(xcode, plist['DTXcode'])
+    ExpectEq(build, plist['DTXcodeBuild'])
 
   # Resources
   strings_files = ['InfoPlist.strings', 'utf-16be.strings', 'utf-16le.strings']

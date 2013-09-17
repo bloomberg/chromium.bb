@@ -762,15 +762,17 @@ class NinjaWriter:
       intermediate_plist = self.GypPathToUniqueOutput(
           os.path.basename(info_plist))
       defines = ' '.join([Define(d, self.flavor) for d in defines])
-      info_plist = self.ninja.build(intermediate_plist, 'infoplist', info_plist,
-                                    variables=[('defines',defines)])
+      info_plist = self.ninja.build(
+          intermediate_plist, 'preprocess_infoplist', info_plist,
+          variables=[('defines',defines)])
 
     env = self.GetSortedXcodeEnv(additional_settings=extra_env)
     env = self.ComputeExportEnvString(env)
 
-    self.ninja.build(out, 'mac_tool', info_plist,
-                     variables=[('mactool_cmd', 'copy-info-plist'),
-                                ('env', env)])
+    keys = self.xcode_settings.GetExtraPlistItems()
+    keys = [QuoteShellArgument(v, self.flavor) for v in sum(keys.items(), ())]
+    self.ninja.build(out, 'copy_infoplist', info_plist,
+                     variables=[('env', env), ('keys', keys)])
     bundle_depends.append(out)
 
   def WriteSources(self, ninja_file, config_name, config, sources, predepends,
@@ -1972,10 +1974,14 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
                '$in $solibs $libs$postbuilds'),
       pool='link_pool')
     master_ninja.rule(
-      'infoplist',
-      description='INFOPLIST $out',
+      'preprocess_infoplist',
+      description='PREPROCESS INFOPLIST $out',
       command=('$cc -E -P -Wno-trigraphs -x c $defines $in -o $out && '
                'plutil -convert xml1 $out $out'))
+    master_ninja.rule(
+      'copy_infoplist',
+      description='COPY INFOPLIST $in',
+      command='$env ./gyp-mac-tool copy-info-plist $in $out $keys')
     master_ninja.rule(
       'mac_tool',
       description='MACTOOL $mactool_cmd $in',
