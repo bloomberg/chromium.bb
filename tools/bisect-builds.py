@@ -13,7 +13,8 @@ it will ask you whether it is good or bad before continuing the search.
 """
 
 # The root URL for storage.
-BASE_URL = 'http://commondatastorage.googleapis.com/chromium-browser-snapshots'
+CHROMIUM_BASE_URL = 'http://commondatastorage.googleapis.com/chromium-browser-snapshots'
+WEBKIT_BASE_URL = 'http://commondatastorage.googleapis.com/chromium-webkit-snapshots'
 
 # The root URL for official builds.
 OFFICIAL_BASE_URL = 'http://master.chrome.corp.google.com/official_builds'
@@ -41,6 +42,7 @@ DONE_MESSAGE_GOOD_MAX = 'You are probably looking for a change made after %s ' \
 
 ###############################################################################
 
+import json
 import math
 import optparse
 import os
@@ -60,10 +62,11 @@ import zipfile
 class PathContext(object):
   """A PathContext is used to carry the information used to construct URLs and
   paths when dealing with the storage server and archives."""
-  def __init__(self, platform, good_revision, bad_revision, is_official,
-               is_aura):
+  def __init__(self, base_url, platform, good_revision, bad_revision,
+               is_official, is_aura):
     super(PathContext, self).__init__()
     # Store off the input parameters.
+    self.base_url = base_url
     self.platform = platform  # What's passed in to the '-a/--archive' option.
     self.good_revision = good_revision
     self.bad_revision = bad_revision
@@ -127,8 +130,8 @@ class PathContext(object):
     marker_param = ''
     if marker:
       marker_param = '&marker=' + str(marker)
-    return BASE_URL + '/?delimiter=/&prefix=' + self._listing_platform_dir + \
-        marker_param
+    return self.base_url + '/?delimiter=/&prefix=' + \
+        self._listing_platform_dir + marker_param
 
   def GetDownloadURL(self, revision):
     """Gets the download URL for a build archive of a specific revision."""
@@ -137,12 +140,12 @@ class PathContext(object):
           OFFICIAL_BASE_URL, revision, self._listing_platform_dir,
           self.archive_name)
     else:
-      return "%s/%s%s/%s" % (
-          BASE_URL, self._listing_platform_dir, revision, self.archive_name)
+      return "%s/%s%s/%s" % (self.base_url, self._listing_platform_dir,
+                             revision, self.archive_name)
 
   def GetLastChangeURL(self):
     """Returns a URL to the LAST_CHANGE file."""
-    return BASE_URL + '/' + self._listing_platform_dir + 'LAST_CHANGE'
+    return self.base_url + '/' + self._listing_platform_dir + 'LAST_CHANGE'
 
   def GetLaunchPath(self):
     """Returns a relative path (presumably from the archive extraction location)
@@ -416,7 +419,8 @@ class DownloadJob(object):
     self.thread.join()
 
 
-def Bisect(platform,
+def Bisect(base_url,
+           platform,
            official_builds,
            is_aura,
            good_rev=0,
@@ -457,10 +461,9 @@ def Bisect(platform,
   if not profile:
     profile = 'profile'
 
-  context = PathContext(platform, good_rev, bad_rev, official_builds, is_aura)
+  context = PathContext(base_url, platform, good_rev, bad_rev,
+                        official_builds, is_aura)
   cwd = os.getcwd()
-
-
 
   print "Downloading list of known revisions..."
   _GetDownloadPath = lambda rev: os.path.join(cwd,
@@ -605,16 +608,17 @@ def Bisect(platform,
   return (revlist[minrev], revlist[maxrev])
 
 
-def GetBlinkRevisionForChromiumRevision(rev):
-  """Returns the blink revision that was in chromium's DEPS file at
+def GetBlinkRevisionForChromiumRevision(self, rev):
+  """Returns the blink revision that was in REVISIONS file at
   chromium revision |rev|."""
   # . doesn't match newlines without re.DOTALL, so this is safe.
-  blink_re = re.compile(r'webkit_revision.:\D*(\d+)')
-  url = urllib.urlopen(DEPS_FILE % rev)
-  m = blink_re.search(url.read())
+  file_url = "%s/%s%d/REVISIONS" % (self.base_url,
+                                    self._listing_platform_dir, rev)
+  url = urllib.urlopen(file_url)
+  data = json.loads(url.read())
   url.close()
-  if m:
-    return int(m.group(1))
+  if 'webkit_revision' in data:
+    return data['webkit_revision']
   else:
     raise Exception('Could not get blink revision for cr rev %d' % rev)
 
@@ -680,6 +684,8 @@ def main():
                     'Defaults to "%p %a". Note that any extra paths ' +
                     'specified should be absolute.',
                     default = '%p %a');
+  parser.add_option('-l', '--blink', action='store_true',
+                    help = 'Use Blink bisect instead of Chromium. ')
   parser.add_option('--aura',
                     dest='aura',
                     action='store_true',
@@ -700,8 +706,14 @@ def main():
             'and official builds.'
       return 1
 
+  if opts.blink:
+    base_url = WEBKIT_BASE_URL
+  else:
+    base_url = CHROMIUM_BASE_URL
+
   # Create the context. Initialize 0 for the revisions as they are set below.
-  context = PathContext(opts.archive, 0, 0, opts.official_builds, opts.aura)
+  context = PathContext(base_url, opts.archive, 0, 0,
+                        opts.official_builds, opts.aura)
   # Pick a starting point, try to get HEAD for this.
   if opts.bad:
     bad_rev = opts.bad
@@ -730,13 +742,15 @@ def main():
     return 1
 
   (min_chromium_rev, max_chromium_rev) = Bisect(
-      opts.archive, opts.official_builds, opts.aura, good_rev, bad_rev,
-      opts.times, opts.command, args, opts.profile)
+      base_url, opts.archive, opts.official_builds, opts.aura, good_rev,
+      bad_rev, opts.times, opts.command, args, opts.profile)
 
   # Get corresponding blink revisions.
   try:
-    min_blink_rev = GetBlinkRevisionForChromiumRevision(min_chromium_rev)
-    max_blink_rev = GetBlinkRevisionForChromiumRevision(max_chromium_rev)
+    min_blink_rev = GetBlinkRevisionForChromiumRevision(context,
+                                                        min_chromium_rev)
+    max_blink_rev = GetBlinkRevisionForChromiumRevision(context,
+                                                        max_chromium_rev)
   except Exception, e:
     # Silently ignore the failure.
     min_blink_rev, max_blink_rev = 0, 0
