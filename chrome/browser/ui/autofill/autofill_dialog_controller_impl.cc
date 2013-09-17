@@ -74,6 +74,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/component_strings.h"
 #include "grit/generated_resources.h"
+#include "grit/platform_locale_settings.h"
 #include "grit/theme_resources.h"
 #include "grit/webkit_resources.h"
 #include "net/cert/cert_status_flags.h"
@@ -479,7 +480,9 @@ gfx::Image GetGeneratedCardImage(const base::string16& card_number,
   canvas.DrawRoundRect(display_rect, 8, paint);
 
   display_rect.Inset(20, 0, 0, 0);
-  gfx::Font monospace("monospace", 18);
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  gfx::Font monospace(
+      UTF16ToUTF8(rb.GetLocalizedString(IDS_FIXED_FONT_FAMILY)), 18);
   gfx::ShadowValues shadows;
   shadows.push_back(gfx::ShadowValue(gfx::Point(0, 1), 1.0, SK_ColorBLACK));
   // TODO(estade): use DrawStringRectWithShadows().
