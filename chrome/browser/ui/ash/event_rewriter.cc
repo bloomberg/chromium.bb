@@ -66,6 +66,8 @@ const struct ModifierRemapping {
     { XK_VoidSymbol, XK_VoidSymbol, XK_VoidSymbol, XK_VoidSymbol }},
   { chromeos::input_method::kCapsLockKey, 0, 0U, ui::VKEY_CAPITAL,
     { XK_Caps_Lock, XK_Caps_Lock, XK_Caps_Lock, XK_Caps_Lock }},
+  { chromeos::input_method::kEscapeKey, 0, 0U, ui::VKEY_ESCAPE,
+    { XK_Escape, XK_Escape, XK_Escape, XK_Escape }},
 };
 
 const ModifierRemapping* kModifierRemappingCtrl = &kModifierRemappings[1];

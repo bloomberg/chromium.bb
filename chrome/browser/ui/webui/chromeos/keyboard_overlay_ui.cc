@@ -54,6 +54,7 @@ struct ModifierToLabel {
   {chromeos::input_method::kAltKey, "alt"},
   {chromeos::input_method::kVoidKey, "disabled"},
   {chromeos::input_method::kCapsLockKey, "caps lock"},
+  {chromeos::input_method::kEscapeKey, "esc"},
 };
 
 struct I18nContentToMessage {

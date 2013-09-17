@@ -27,6 +27,8 @@ const struct ModifierKeysSelectItem {
     chromeos::input_method::kVoidKey },
   { IDS_OPTIONS_SETTINGS_LANGUAGES_KEY_CAPS_LOCK,
     chromeos::input_method::kCapsLockKey },
+  { IDS_OPTIONS_SETTINGS_LANGUAGES_KEY_ESCAPE,
+    chromeos::input_method::kEscapeKey },
 };
 
 const char* kDataValuesNames[] = {

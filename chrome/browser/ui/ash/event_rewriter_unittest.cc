@@ -118,6 +118,7 @@ class EventRewriterTest : public testing::Test {
         keycode_next_(XKeysymToKeycode(display_, XK_Next)),
         keycode_home_(XKeysymToKeycode(display_, XK_Home)),
         keycode_end_(XKeysymToKeycode(display_, XK_End)),
+        keycode_escape_(XKeysymToKeycode(display_, XK_Escape)),
         keycode_launch6_(XKeysymToKeycode(display_, XF86XK_Launch6)),
         keycode_launch7_(XKeysymToKeycode(display_, XF86XK_Launch7)),
         keycode_f1_(XKeysymToKeycode(display_, XK_F1)),
@@ -231,6 +232,7 @@ class EventRewriterTest : public testing::Test {
   const KeyCode keycode_next_;
   const KeyCode keycode_home_;
   const KeyCode keycode_end_;
+  const KeyCode keycode_escape_;
   const KeyCode keycode_launch6_;  // F15
   const KeyCode keycode_launch7_;  // F16
   const KeyCode keycode_f1_;
@@ -1377,6 +1379,32 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToControl) {
                                       ui::ET_KEY_PRESSED,
                                       keycode_b_,
                                       ShiftMask | ControlMask | Mod1Mask));
+}
+
+TEST_F(EventRewriterTest, TestRewriteModifiersRemapToEscape) {
+  // Remap Search to ESC.
+  TestingPrefServiceSyncable prefs;
+  chromeos::Preferences::RegisterProfilePrefs(prefs.registry());
+  IntegerPrefMember search;
+  search.Init(prefs::kLanguageRemapSearchKeyTo, &prefs);
+  search.SetValue(chromeos::input_method::kEscapeKey);
+
+  EventRewriter rewriter;
+  rewriter.set_pref_service_for_testing(&prefs);
+
+  // Press Search. Confirm the event is now VKEY_ESCAPE.
+  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_ESCAPE,
+                                      ui::EF_NONE,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_escape_,
+                                      0U,
+                                      KeyPress),
+            GetRewrittenEventAsString(&rewriter,
+                                      ui::VKEY_LWIN,
+                                      0,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_super_l_,
+                                      0U));
 }
 
 TEST_F(EventRewriterTest, TestRewriteModifiersRemapMany) {

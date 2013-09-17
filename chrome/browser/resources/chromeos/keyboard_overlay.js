@@ -38,6 +38,7 @@ var LABEL_TO_IDENTIFIER = {
   'ctrl': '1D',
   'alt': '38',
   'caps lock': '3A',
+  'esc': '01',
   'disabled': 'DISABLED'
 };
 

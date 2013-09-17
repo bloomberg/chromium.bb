@@ -32,6 +32,7 @@ enum ModifierKey {
   kAltKey,  // Customizable.
   kVoidKey,
   kCapsLockKey,
+  kEscapeKey,
   // IMPORTANT: You should update kCustomizableKeys[] in .cc file, if you
   // add a customizable key.
   kNumModifierKeys,

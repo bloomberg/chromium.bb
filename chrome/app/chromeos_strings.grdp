@@ -2323,6 +2323,10 @@ Press any key to continue exploring.
            desc="The dropdown list item for 'Customize modifier keys' overlay">
     Caps Lock
   </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_KEY_ESCAPE"
+           desc="The dropdown list item for 'Customize modifier keys' overlay">
+    Escape
+  </message>
   <message name="IDS_OPTIONS_SETTINGS_CHANGE_LANGUAGE_AND_INPUT_SETTINGS"
            desc="The link to open 'Language and input settings' window.">
     Change language and input settings
