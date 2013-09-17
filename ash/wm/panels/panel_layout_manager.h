@@ -71,6 +71,9 @@ class ASH_EXPORT PanelLayoutManager
 
   void ToggleMinimize(aura::Window* panel);
 
+  // Returns the callout widget (arrow) for |panel|.
+  views::Widget* GetCalloutWidgetForPanel(aura::Window* panel);
+
   ash::Launcher* launcher() { return launcher_; }
   void SetLauncher(ash::Launcher* launcher);
 
