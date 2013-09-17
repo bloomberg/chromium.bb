@@ -32,10 +32,8 @@ class FileBrowserPrivateRequestFileSystemFunction
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.requestFileSystem",
                              FILEBROWSERPRIVATE_REQUESTFILESYSTEM)
 
-  FileBrowserPrivateRequestFileSystemFunction();
-
  protected:
-  virtual ~FileBrowserPrivateRequestFileSystemFunction();
+  virtual ~FileBrowserPrivateRequestFileSystemFunction() {}
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
@@ -69,11 +67,8 @@ class FileBrowserPrivateRequestFileSystemFunction
 // the class and its sub classes are used only for watching changes in
 // directories.
 class FileWatchFunctionBase : public LoggedAsyncExtensionFunction {
- public:
-  FileWatchFunctionBase();
-
  protected:
-  virtual ~FileWatchFunctionBase();
+  virtual ~FileWatchFunctionBase() {}
 
   // Performs a file watch operation (ex. adds or removes a file watch).
   virtual void PerformFileWatchOperation(
@@ -95,10 +90,8 @@ class FileBrowserPrivateAddFileWatchFunction : public FileWatchFunctionBase {
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.addFileWatch",
                              FILEBROWSERPRIVATE_ADDFILEWATCH)
 
-  FileBrowserPrivateAddFileWatchFunction();
-
  protected:
-  virtual ~FileBrowserPrivateAddFileWatchFunction();
+  virtual ~FileBrowserPrivateAddFileWatchFunction() {}
 
   // FileWatchFunctionBase override.
   virtual void PerformFileWatchOperation(
@@ -115,10 +108,8 @@ class FileBrowserPrivateRemoveFileWatchFunction : public FileWatchFunctionBase {
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.removeFileWatch",
                              FILEBROWSERPRIVATE_REMOVEFILEWATCH)
 
-  FileBrowserPrivateRemoveFileWatchFunction();
-
  protected:
-  virtual ~FileBrowserPrivateRemoveFileWatchFunction();
+  virtual ~FileBrowserPrivateRemoveFileWatchFunction() {}
 
   // FileWatchFunctionBase override.
   virtual void PerformFileWatchOperation(
@@ -135,10 +126,8 @@ class FileBrowserPrivateSetLastModifiedFunction
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.setLastModified",
                              FILEBROWSERPRIVATE_SETLASTMODIFIED)
 
-  FileBrowserPrivateSetLastModifiedFunction();
-
  protected:
-  virtual ~FileBrowserPrivateSetLastModifiedFunction();
+  virtual ~FileBrowserPrivateSetLastModifiedFunction() {}
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
@@ -151,10 +140,8 @@ class FileBrowserPrivateGetSizeStatsFunction
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.getSizeStats",
                              FILEBROWSERPRIVATE_GETSIZESTATS)
 
-  FileBrowserPrivateGetSizeStatsFunction();
-
  protected:
-  virtual ~FileBrowserPrivateGetSizeStatsFunction();
+  virtual ~FileBrowserPrivateGetSizeStatsFunction() {}
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
@@ -176,10 +163,8 @@ class FileBrowserPrivateGetVolumeMetadataFunction
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.getVolumeMetadata",
                              FILEBROWSERPRIVATE_GETVOLUMEMETADATA)
 
-  FileBrowserPrivateGetVolumeMetadataFunction();
-
  protected:
-  virtual ~FileBrowserPrivateGetVolumeMetadataFunction();
+  virtual ~FileBrowserPrivateGetVolumeMetadataFunction() {}
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
@@ -192,10 +177,8 @@ class FileBrowserPrivateValidatePathNameLengthFunction
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.validatePathNameLength",
                              FILEBROWSERPRIVATE_VALIDATEPATHNAMELENGTH)
 
-  FileBrowserPrivateValidatePathNameLengthFunction();
-
  protected:
-  virtual ~FileBrowserPrivateValidatePathNameLengthFunction();
+  virtual ~FileBrowserPrivateValidatePathNameLengthFunction() {}
 
   void OnFilePathLimitRetrieved(size_t current_length, size_t max_length);
 
@@ -211,10 +194,8 @@ class FileBrowserPrivateFormatDeviceFunction
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.formatDevice",
                              FILEBROWSERPRIVATE_FORMATDEVICE)
 
-  FileBrowserPrivateFormatDeviceFunction();
-
  protected:
-  virtual ~FileBrowserPrivateFormatDeviceFunction();
+  virtual ~FileBrowserPrivateFormatDeviceFunction() {}
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
@@ -227,10 +208,8 @@ class FileBrowserPrivateStartCopyFunction
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.startCopy",
                              FILEBROWSERPRIVATE_STARTCOPY)
 
-  FileBrowserPrivateStartCopyFunction();
-
  protected:
-  virtual ~FileBrowserPrivateStartCopyFunction();
+  virtual ~FileBrowserPrivateStartCopyFunction() {}
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
@@ -247,10 +226,8 @@ class FileBrowserPrivateCancelCopyFunction
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.cancelCopy",
                              FILEBROWSERPRIVATE_CANCELCOPY)
 
-  FileBrowserPrivateCancelCopyFunction();
-
  protected:
-  virtual ~FileBrowserPrivateCancelCopyFunction();
+  virtual ~FileBrowserPrivateCancelCopyFunction() {}
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;

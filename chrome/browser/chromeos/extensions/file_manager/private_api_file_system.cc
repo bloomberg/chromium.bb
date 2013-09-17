@@ -297,14 +297,6 @@ void CancelCopyOnIOThread(
 
 }  // namespace
 
-FileBrowserPrivateRequestFileSystemFunction::
-    FileBrowserPrivateRequestFileSystemFunction() {
-}
-
-FileBrowserPrivateRequestFileSystemFunction::
-    ~FileBrowserPrivateRequestFileSystemFunction() {
-}
-
 void FileBrowserPrivateRequestFileSystemFunction::DidOpenFileSystem(
     scoped_refptr<fileapi::FileSystemContext> file_system_context,
     base::PlatformFileError result,
@@ -423,12 +415,6 @@ bool FileBrowserPrivateRequestFileSystemFunction::RunImpl() {
   return true;
 }
 
-FileWatchFunctionBase::FileWatchFunctionBase() {
-}
-
-FileWatchFunctionBase::~FileWatchFunctionBase() {
-}
-
 void FileWatchFunctionBase::Respond(bool success) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -463,14 +449,6 @@ bool FileWatchFunctionBase::RunImpl() {
   return true;
 }
 
-FileBrowserPrivateAddFileWatchFunction::
-    FileBrowserPrivateAddFileWatchFunction() {
-}
-
-FileBrowserPrivateAddFileWatchFunction::
-    ~FileBrowserPrivateAddFileWatchFunction() {
-}
-
 void FileBrowserPrivateAddFileWatchFunction::PerformFileWatchOperation(
     const base::FilePath& local_path,
     const base::FilePath& virtual_path,
@@ -486,14 +464,6 @@ void FileBrowserPrivateAddFileWatchFunction::PerformFileWatchOperation(
       base::Bind(&FileBrowserPrivateAddFileWatchFunction::Respond, this));
 }
 
-FileBrowserPrivateRemoveFileWatchFunction::
-    FileBrowserPrivateRemoveFileWatchFunction() {
-}
-
-FileBrowserPrivateRemoveFileWatchFunction::
-    ~FileBrowserPrivateRemoveFileWatchFunction() {
-}
-
 void FileBrowserPrivateRemoveFileWatchFunction::PerformFileWatchOperation(
     const base::FilePath& local_path,
     const base::FilePath& unused,
@@ -506,62 +476,33 @@ void FileBrowserPrivateRemoveFileWatchFunction::PerformFileWatchOperation(
   Respond(true);
 }
 
-FileBrowserPrivateSetLastModifiedFunction::
-    FileBrowserPrivateSetLastModifiedFunction() {
-}
-
-FileBrowserPrivateSetLastModifiedFunction::
-    ~FileBrowserPrivateSetLastModifiedFunction() {
-}
-
 bool FileBrowserPrivateSetLastModifiedFunction::RunImpl() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (args_->GetSize() != 2) {
-    return false;
-  }
-
-  std::string file_url;
-  if (!args_->GetString(0, &file_url))
-    return false;
-
-  std::string timestamp;
-  if (!args_->GetString(1, &timestamp))
-    return false;
+  using extensions::api::file_browser_private::SetLastModified::Params;
+  const scoped_ptr<Params> params(Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
 
   base::FilePath local_path = file_manager::util::GetLocalPathFromURL(
-      render_view_host(), profile(), GURL(file_url));
+      render_view_host(), profile(), GURL(params->file_url));
 
   base::PostTaskAndReplyWithResult(
       BrowserThread::GetBlockingPool(),
       FROM_HERE,
       base::Bind(&SetLastModifiedOnBlockingPool,
                  local_path,
-                 strtoul(timestamp.c_str(), NULL, 0)),
+                 strtoul(params->last_modified.c_str(), NULL, 0)),
       base::Bind(&FileBrowserPrivateSetLastModifiedFunction::SendResponse,
                  this));
   return true;
 }
 
-FileBrowserPrivateGetSizeStatsFunction::
-    FileBrowserPrivateGetSizeStatsFunction() {
-}
-
-FileBrowserPrivateGetSizeStatsFunction::
-    ~FileBrowserPrivateGetSizeStatsFunction() {
-}
-
 bool FileBrowserPrivateGetSizeStatsFunction::RunImpl() {
-  if (args_->GetSize() != 1) {
-    return false;
-  }
-
-  std::string mount_url;
-  if (!args_->GetString(0, &mount_url))
-    return false;
+  using extensions::api::file_browser_private::GetSizeStats::Params;
+  const scoped_ptr<Params> params(Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
 
   base::FilePath file_path = file_manager::util::GetLocalPathFromURL(
-      render_view_host(), profile(), GURL(mount_url));
+      render_view_host(), profile(), GURL(params->mount_path));
   if (file_path.empty())
     return false;
 
@@ -625,28 +566,13 @@ void FileBrowserPrivateGetSizeStatsFunction::GetSizeStatsCallback(
   SendResponse(true);
 }
 
-FileBrowserPrivateGetVolumeMetadataFunction::
-    FileBrowserPrivateGetVolumeMetadataFunction() {
-}
-
-FileBrowserPrivateGetVolumeMetadataFunction::
-    ~FileBrowserPrivateGetVolumeMetadataFunction() {
-}
-
 bool FileBrowserPrivateGetVolumeMetadataFunction::RunImpl() {
-  if (args_->GetSize() != 1) {
-    error_ = "Invalid argument count";
-    return false;
-  }
-
-  std::string volume_mount_url;
-  if (!args_->GetString(0, &volume_mount_url)) {
-    NOTREACHED();
-    return false;
-  }
+  using extensions::api::file_browser_private::GetVolumeMetadata::Params;
+  const scoped_ptr<Params> params(Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
 
   base::FilePath file_path = file_manager::util::GetLocalPathFromURL(
-      render_view_host(), profile(), GURL(volume_mount_url));
+      render_view_host(), profile(), GURL(params->mount_url));
   if (file_path.empty()) {
     error_ = "Invalid mount path.";
     return false;
@@ -670,29 +596,17 @@ bool FileBrowserPrivateGetVolumeMetadataFunction::RunImpl() {
   return true;
 }
 
-FileBrowserPrivateValidatePathNameLengthFunction::
-    FileBrowserPrivateValidatePathNameLengthFunction() {
-}
-
-FileBrowserPrivateValidatePathNameLengthFunction::
-    ~FileBrowserPrivateValidatePathNameLengthFunction() {
-}
-
 bool FileBrowserPrivateValidatePathNameLengthFunction::RunImpl() {
-  std::string parent_url;
-  if (!args_->GetString(0, &parent_url))
-    return false;
-
-  std::string name;
-  if (!args_->GetString(1, &name))
-    return false;
+  using extensions::api::file_browser_private::ValidatePathNameLength::Params;
+  const scoped_ptr<Params> params(Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
 
   scoped_refptr<fileapi::FileSystemContext> file_system_context =
       file_manager::util::GetFileSystemContextForRenderViewHost(
           profile(), render_view_host());
 
   fileapi::FileSystemURL filesystem_url(
-      file_system_context->CrackURL(GURL(parent_url)));
+      file_system_context->CrackURL(GURL(params->parent_directory_url)));
   if (!chromeos::FileSystemBackend::CanHandleURL(filesystem_url))
     return false;
 
@@ -710,7 +624,7 @@ bool FileBrowserPrivateValidatePathNameLengthFunction::RunImpl() {
                  filesystem_url.path().AsUTF8Unsafe()),
       base::Bind(&FileBrowserPrivateValidatePathNameLengthFunction::
                      OnFilePathLimitRetrieved,
-                 this, name.size()));
+                 this, params->name.size()));
   return true;
 }
 
@@ -721,39 +635,19 @@ void FileBrowserPrivateValidatePathNameLengthFunction::OnFilePathLimitRetrieved(
   SendResponse(true);
 }
 
-FileBrowserPrivateFormatDeviceFunction::
-    FileBrowserPrivateFormatDeviceFunction() {
-}
-
-FileBrowserPrivateFormatDeviceFunction::
-    ~FileBrowserPrivateFormatDeviceFunction() {
-}
-
 bool FileBrowserPrivateFormatDeviceFunction::RunImpl() {
-  if (args_->GetSize() != 1) {
-    return false;
-  }
-
-  std::string volume_file_url;
-  if (!args_->GetString(0, &volume_file_url)) {
-    NOTREACHED();
-    return false;
-  }
+  using extensions::api::file_browser_private::FormatDevice::Params;
+  const scoped_ptr<Params> params(Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
 
   base::FilePath file_path = file_manager::util::GetLocalPathFromURL(
-      render_view_host(), profile(), GURL(volume_file_url));
+      render_view_host(), profile(), GURL(params->mount_path));
   if (file_path.empty())
     return false;
 
   DiskMountManager::GetInstance()->FormatMountedDevice(file_path.value());
   SendResponse(true);
   return true;
-}
-
-FileBrowserPrivateStartCopyFunction::FileBrowserPrivateStartCopyFunction() {
-}
-
-FileBrowserPrivateStartCopyFunction::~FileBrowserPrivateStartCopyFunction() {
 }
 
 bool FileBrowserPrivateStartCopyFunction::RunImpl() {
@@ -800,12 +694,6 @@ void FileBrowserPrivateStartCopyFunction::RunAfterStartCopy(
 
   SetResult(Value::CreateIntegerValue(operation_id));
   SendResponse(true);
-}
-
-FileBrowserPrivateCancelCopyFunction::FileBrowserPrivateCancelCopyFunction() {
-}
-
-FileBrowserPrivateCancelCopyFunction::~FileBrowserPrivateCancelCopyFunction() {
 }
 
 bool FileBrowserPrivateCancelCopyFunction::RunImpl() {
