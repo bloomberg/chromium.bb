@@ -1,0 +1,8 @@
+{
+  "Ethernet":{
+    "Authentication":"None"
+  },
+  "GUID":"guid",
+  "Name":"",
+  "Type":"Ethernet"
+}

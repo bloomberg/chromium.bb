@@ -115,7 +115,10 @@ var availableTests = [
                     "ConnectionState": "Connected",
                     "GUID": "stub_ethernet",
                     "Name": "eth0",
-                    "Type": "Ethernet"
+                    "Type": "Ethernet",
+                    "Ethernet": {
+                      "Authentication": "None"
+                    }
                   },
                   {
                     "ConnectionState": "Connected",

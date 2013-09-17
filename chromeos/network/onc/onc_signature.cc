@@ -144,7 +144,6 @@ const OncFieldSignature vpn_fields[] = {
 
 const OncFieldSignature ethernet_fields[] = {
   { kRecommended, &kRecommendedSignature },
-  // Not supported, yet.
   { ethernet::kAuthentication, &kStringSignature },
   { ethernet::kEAP, &kEAPSignature },
   { NULL }

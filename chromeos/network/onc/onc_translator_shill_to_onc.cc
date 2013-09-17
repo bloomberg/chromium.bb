@@ -58,6 +58,7 @@ class ShillToONCTranslator {
   scoped_ptr<base::DictionaryValue> CreateTranslatedONCObject();
 
  private:
+  void TranslateEthernet();
   void TranslateOpenVPN();
   void TranslateVPN();
   void TranslateWiFiWithState();
@@ -109,6 +110,8 @@ ShillToONCTranslator::CreateTranslatedONCObject() {
   onc_object_.reset(new base::DictionaryValue);
   if (onc_signature_ == &kNetworkWithStateSignature) {
     TranslateNetworkWithState();
+  } else if (onc_signature_ == &kEthernetSignature) {
+    TranslateEthernet();
   } else if (onc_signature_ == &kVPNSignature) {
     TranslateVPN();
   } else if (onc_signature_ == &kOpenVPNSignature) {
@@ -121,6 +124,17 @@ ShillToONCTranslator::CreateTranslatedONCObject() {
     CopyPropertiesAccordingToSignature();
   }
   return onc_object_.Pass();
+}
+
+void ShillToONCTranslator::TranslateEthernet() {
+  std::string shill_network_type;
+  shill_dictionary_->GetStringWithoutPathExpansion(flimflam::kTypeProperty,
+                                                   &shill_network_type);
+  const char* onc_auth = ethernet::kNone;
+  if (shill_network_type == shill::kTypeEthernetEap)
+    onc_auth = ethernet::k8021X;
+  onc_object_->SetStringWithoutPathExpansion(ethernet::kAuthentication,
+                                             onc_auth);
 }
 
 void ShillToONCTranslator::TranslateOpenVPN() {
@@ -219,14 +233,21 @@ void ShillToONCTranslator::TranslateCellularWithState() {
 }
 
 void ShillToONCTranslator::TranslateNetworkWithState() {
-  TranslateWithTableAndSet(flimflam::kTypeProperty, kNetworkTypeTable,
-                           network_config::kType);
   CopyPropertiesAccordingToSignature();
 
-  std::string network_type;
-  if (onc_object_->GetStringWithoutPathExpansion(network_config::kType,
-                                                 &network_type)) {
-    TranslateAndAddNestedObject(network_type);
+  std::string shill_network_type;
+  shill_dictionary_->GetStringWithoutPathExpansion(flimflam::kTypeProperty,
+                                                   &shill_network_type);
+  std::string onc_network_type = network_type::kEthernet;
+  if (shill_network_type != flimflam::kTypeEthernet &&
+      shill_network_type != shill::kTypeEthernetEap) {
+    TranslateStringToONC(
+        kNetworkTypeTable, shill_network_type, &onc_network_type);
+  }
+  if (!onc_network_type.empty()) {
+    onc_object_->SetStringWithoutPathExpansion(network_config::kType,
+                                               onc_network_type);
+    TranslateAndAddNestedObject(onc_network_type);
   }
 
   // Since Name is a read only field in Shill unless it's a VPN, it is copied

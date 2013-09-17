@@ -52,6 +52,7 @@ class LocalTranslator {
   void TranslateFields();
 
  private:
+  void TranslateEthernet();
   void TranslateOpenVPN();
   void TranslateVPN();
   void TranslateWiFi();
@@ -86,6 +87,8 @@ class LocalTranslator {
 void LocalTranslator::TranslateFields() {
   if (onc_signature_ == &kNetworkConfigurationSignature)
     TranslateNetworkConfiguration();
+  else if (onc_signature_ == &kEthernetSignature)
+    TranslateEthernet();
   else if (onc_signature_ == &kVPNSignature)
     TranslateVPN();
   else if (onc_signature_ == &kOpenVPNSignature)
@@ -96,6 +99,20 @@ void LocalTranslator::TranslateFields() {
     TranslateEAP();
   else
     CopyFieldsAccordingToSignature();
+}
+
+void LocalTranslator::TranslateEthernet() {
+  std::string authentication;
+  onc_object_->GetStringWithoutPathExpansion(ethernet::kAuthentication,
+                                             &authentication);
+
+  const char* shill_type = flimflam::kTypeEthernet;
+  if (authentication == ethernet::k8021X)
+    shill_type = shill::kTypeEthernetEap;
+  shill_dictionary_->SetStringWithoutPathExpansion(flimflam::kTypeProperty,
+                                                   shill_type);
+
+  CopyFieldsAccordingToSignature();
 }
 
 void LocalTranslator::TranslateOpenVPN() {
@@ -171,14 +188,17 @@ void LocalTranslator::TranslateEAP() {
 void LocalTranslator::TranslateNetworkConfiguration() {
   std::string type;
   onc_object_->GetStringWithoutPathExpansion(network_config::kType, &type);
-  TranslateWithTableAndSet(type, kNetworkTypeTable, flimflam::kTypeProperty);
+
+  // Set the type except for Ethernet which is set in TranslateEthernet.
+  if (type != network_type::kEthernet)
+    TranslateWithTableAndSet(type, kNetworkTypeTable, flimflam::kTypeProperty);
 
   // Shill doesn't allow setting the name for non-VPN networks.
   if (type == network_type::kVPN) {
     std::string name;
     onc_object_->GetStringWithoutPathExpansion(network_config::kName, &name);
-    shill_dictionary_->SetStringWithoutPathExpansion(
-        flimflam::kNameProperty, name);
+    shill_dictionary_->SetStringWithoutPathExpansion(flimflam::kNameProperty,
+                                                     name);
   }
 
   CopyFieldsAccordingToSignature();

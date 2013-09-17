@@ -212,7 +212,9 @@ const NestedShillDictionaryEntry nested_shill_dictionaries[] = {
 }  // namespace
 
 const StringTranslationEntry kNetworkTypeTable[] = {
-  { network_type::kEthernet, flimflam::kTypeEthernet },
+  // This mapping is ensured in the translation code.
+  //  { network_type::kEthernet, flimflam::kTypeEthernet },
+  //  { network_type::kEthernet, shill::kTypeEthernetEap },
   { network_type::kWiFi, flimflam::kTypeWifi },
   { network_type::kCellular, flimflam::kTypeCellular },
   { network_type::kVPN, flimflam::kTypeVPN },

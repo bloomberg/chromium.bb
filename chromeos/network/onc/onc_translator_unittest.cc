@@ -42,7 +42,9 @@ INSTANTIATE_TEST_CASE_P(
     ONCTranslatorOncToShillTest,
     ONCTranslatorOncToShillTest,
     ::testing::Values(
-        std::make_pair("managed_ethernet.onc", "shill_ethernet.json"),
+        std::make_pair("ethernet.onc", "shill_ethernet.json"),
+        std::make_pair("ethernet_with_eap_and_cert_pems.onc",
+                       "shill_ethernet_with_eap.json"),
         std::make_pair("valid_wifi_psk.onc", "shill_wifi_psk.json"),
         std::make_pair("wifi_clientcert_with_cert_pems.onc",
                        "shill_wifi_clientcert.json"),
@@ -86,6 +88,10 @@ INSTANTIATE_TEST_CASE_P(
     ONCTranslatorShillToOncTest,
     ONCTranslatorShillToOncTest,
     ::testing::Values(
+        std::make_pair("shill_ethernet.json",
+                       "translation_of_shill_ethernet.onc"),
+        std::make_pair("shill_ethernet_with_eap.json",
+                       "translation_of_shill_ethernet_with_eap.onc"),
         std::make_pair("shill_wifi_clientcert.json",
                        "translation_of_shill_wifi_clientcert.onc"),
         std::make_pair("shill_wifi_wpa1.json",
