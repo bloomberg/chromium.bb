@@ -226,6 +226,14 @@ void GlyphPageTreeNode::initializePage(const FontData* fontData, unsigned pageNu
                     int from = max(0, static_cast<int>(range.from()) - static_cast<int>(start));
                     int to = 1 + min(static_cast<int>(range.to()) - static_cast<int>(start), static_cast<int>(GlyphPage::size) - 1);
                     if (from < static_cast<int>(GlyphPage::size) && to > 0) {
+                        // If this is a custom font needs to be loaded, kick off
+                        // the load here, and do not fill the page so that
+                        // font fallback is used while loading.
+                        if (range.fontData()->isLoadingFallback()) {
+                            range.fontData()->beginLoadIfNeeded();
+                            continue;
+                        }
+
                         if (haveGlyphs && !scratchPage) {
                             scratchPage = GlyphPage::createForMixedFontData(this);
                             pageToFill = scratchPage.get();

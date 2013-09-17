@@ -37,6 +37,7 @@ namespace WebCore {
 
 class CSSSegmentedFontFace;
 class FontDescription;
+class FontResource;
 class SimpleFontData;
 
 // FIXME: Can this be a subclass of FontFace?
@@ -59,6 +60,7 @@ public:
 
     void addSource(PassOwnPtr<CSSFontFaceSource>);
 
+    void beginLoadingFontSoon(FontResource*);
     void fontLoaded(CSSFontFaceSource*);
 
     PassRefPtr<SimpleFontData> getFontData(const FontDescription&, bool syntheticBold, bool syntheticItalic);

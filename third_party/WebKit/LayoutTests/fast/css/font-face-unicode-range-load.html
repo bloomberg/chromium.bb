@@ -1,0 +1,67 @@
+<html>
+<head>
+<script src="../js/resources/js-test-pre.js"></script>
+<script>
+description('Tests that unicode-range descriptor is used to selectively download fonts that are used in document.');
+
+window.jsTestIsAsync = true;
+
+var latin1Loaded = false;
+var cyrillicLoaded = false;
+var arabicLoaded = false;
+
+function runTests() {
+    document.fonts.addEventListener('load', onload);
+    document.fonts.notifyWhenFontsReady(verify);
+}
+
+function onload(e) {
+    var range = e.fontfaces[0].unicodeRange;
+    if (range == 'U+0-FF')
+        latin1Loaded = true;
+    if (range == 'U+400-4FF')
+        cyrillicLoaded = true;
+    if (range == 'U+600-6FF')
+        arabicLoaded = true;
+}
+
+function verify() {
+    shouldBeTrue('latin1Loaded'); // Latin-1 font is loaded for basic font metrics.
+    shouldBeTrue('cyrillicLoaded');
+    shouldBeFalse('arabicLoaded');
+    finishJSTest();
+}
+
+if (document.fonts)
+    runTests();
+else {
+    testFailed('document.fonts does not exist');
+    finishJSTest();
+}
+</script>
+<style>
+@font-face {
+    font-family: TestFont;
+    src: url('../../resources/Ahem.ttf');
+    unicode-range: U+00-0FF;  /* Latin-1 */
+}
+@font-face {
+    font-family: TestFont;
+    src: url('../../resources/Ahem.otf');
+    unicode-range: U+0400-04FF;  /* Cyrillic */
+}
+@font-face {
+    font-family: TestFont;
+    src: url('../../resources/Ahem.woff');
+    unicode-range: U+0600-06FF;  /* Arabic */
+}
+#test {
+    font-family: TestFont;
+}
+</style>
+</head>
+<body>
+  <p id="test">&#x41F;&#x440;&#x43E;&#x432;&#x435;&#x440;&#x43A;&#x430;</p>
+  <script src="../js/resources/js-test-post.js"></script>
+</body>
+</html>

@@ -47,6 +47,7 @@
 
 namespace WebCore {
 
+class CSSFontFaceSource;
 class FontDescription;
 class SharedBuffer;
 struct WidthIterator;
@@ -68,9 +69,9 @@ public:
     };
 
     // Used to create platform fonts.
-    static PassRefPtr<SimpleFontData> create(const FontPlatformData& platformData, bool isCustomFont = false, bool isLoading = false, bool isTextOrientationFallback = false)
+    static PassRefPtr<SimpleFontData> create(const FontPlatformData& platformData, bool isCustomFont = false, bool isLoadingFallback = false, bool isTextOrientationFallback = false)
     {
-        return adoptRef(new SimpleFontData(platformData, isCustomFont, isLoading, isTextOrientationFallback));
+        return adoptRef(new SimpleFontData(platformData, isCustomFont, isLoadingFallback, isTextOrientationFallback));
     }
 
     // Used to create SVG Fonts.
@@ -156,13 +157,16 @@ public:
 
     AdditionalFontData* fontData() const { return m_fontData.get(); }
     bool isSVGFont() const { return m_fontData; }
+    bool isLoadingFallback() const { return m_customFontData.isLoadingFallback; }
 
-    virtual bool isCustomFont() const { return m_isCustomFont; }
-    virtual bool isLoading() const { return m_isLoading; }
+    virtual bool isCustomFont() const { return m_customFontData.isCustomFont; }
+    virtual bool isLoading() const { return m_customFontData.isLoadingFallback && m_customFontData.isUsed; }
     virtual bool isSegmented() const;
 
     const GlyphData& missingGlyphData() const { return m_missingGlyphData; }
     void setMissingGlyphData(const GlyphData& glyphData) { m_missingGlyphData = glyphData; }
+
+    void beginLoadIfNeeded() const;
 
 #ifndef NDEBUG
     virtual String description() const;
@@ -190,8 +194,11 @@ public:
         return false;
     }
 
+    void setCSSFontFaceSource(CSSFontFaceSource* source) { m_customFontData.fontFaceSource = source; }
+    void clearCSSFontFaceSource() { m_customFontData.fontFaceSource = 0; }
+
 private:
-    SimpleFontData(const FontPlatformData&, bool isCustomFont = false, bool isLoading = false, bool isTextOrientationFallback = false);
+    SimpleFontData(const FontPlatformData&, bool isCustomFont = false, bool isLoadingFallback = false, bool isTextOrientationFallback = false);
 
     SimpleFontData(PassOwnPtr<AdditionalFontData> , float fontSize, bool syntheticBold, bool syntheticItalic);
 
@@ -216,8 +223,6 @@ private:
     mutable GlyphMetricsMap<float> m_glyphToWidthMap;
 
     bool m_treatAsFixedPitch;
-    bool m_isCustomFont;  // Whether or not we are custom font loaded via @font-face
-    bool m_isLoading; // Whether or not this custom font is still in the act of loading.
 
     bool m_isTextOrientationFallback;
     bool m_isBrokenIdeographFallback;
@@ -257,6 +262,21 @@ private:
     };
 
     mutable OwnPtr<DerivedFontData> m_derivedFontData;
+
+    struct CustomFontData {
+        CustomFontData(bool isCustomFont, bool isLoadingFallback)
+            : isCustomFont(isCustomFont)
+            , isLoadingFallback(isLoadingFallback)
+            , isUsed(false)
+            , fontFaceSource(0)
+        {
+        }
+        bool isCustomFont; // Whether or not we are custom font loaded via @font-face
+        bool isLoadingFallback; // Whether or not this is a temporary font data for a custom font which is not yet loaded.
+        mutable bool isUsed;
+        CSSFontFaceSource* fontFaceSource;
+    };
+    CustomFontData m_customFontData;
 
 #if OS(MACOSX)
     float m_syntheticBoldOffset;

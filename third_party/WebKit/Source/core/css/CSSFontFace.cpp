@@ -67,6 +67,18 @@ void CSSFontFace::setSegmentedFontFace(CSSSegmentedFontFace* segmentedFontFace)
     m_segmentedFontFace = segmentedFontFace;
 }
 
+void CSSFontFace::beginLoadingFontSoon(FontResource* resource)
+{
+    if (!m_segmentedFontFace)
+        return;
+
+    CSSFontSelector* fontSelector = m_segmentedFontFace->fontSelector();
+    fontSelector->beginLoadingFontSoon(resource);
+
+    if (loadStatus() == FontFace::Unloaded)
+        setLoadStatus(FontFace::Loading);
+}
+
 void CSSFontFace::fontLoaded(CSSFontFaceSource* source)
 {
     if (source != m_activeSource)
@@ -100,19 +112,20 @@ PassRefPtr<SimpleFontData> CSSFontFace::getFontData(const FontDescription& fontD
     ASSERT(m_segmentedFontFace);
     CSSFontSelector* fontSelector = m_segmentedFontFace->fontSelector();
 
-    if (loadStatus() == FontFace::Unloaded)
-        setLoadStatus(FontFace::Loading);
-
     size_t size = m_sources.size();
     for (size_t i = 0; i < size; ++i) {
         if (RefPtr<SimpleFontData> result = m_sources[i]->getFontData(fontDescription, syntheticBold, syntheticItalic, fontSelector)) {
             m_activeSource = m_sources[i].get();
+            if (loadStatus() == FontFace::Unloaded && (m_sources[i]->isLoading() || m_sources[i]->isLoaded()))
+                setLoadStatus(FontFace::Loading);
             if (loadStatus() == FontFace::Loading && m_sources[i]->isLoaded())
                 setLoadStatus(FontFace::Loaded);
             return result.release();
         }
     }
 
+    if (loadStatus() == FontFace::Unloaded)
+        setLoadStatus(FontFace::Loading);
     if (loadStatus() == FontFace::Loading)
         setLoadStatus(FontFace::Error);
     return 0;

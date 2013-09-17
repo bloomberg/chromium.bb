@@ -73,7 +73,7 @@ public:
     bool isFixedPitch(const Font* f) const { if (m_pitch == UnknownPitch) determinePitch(f); return m_pitch == FixedPitch; };
     void determinePitch(const Font*) const;
 
-    bool loadingCustomFonts() const { return m_loadingCustomFonts; }
+    bool loadingCustomFonts() const;
 
     FontSelector* fontSelector() const { return m_fontSelector.get(); }
     // FIXME: It should be possible to combine fontSelectorVersion and generation.
@@ -88,8 +88,11 @@ private:
     const SimpleFontData* primarySimpleFontData(const Font* f)
     {
         ASSERT(isMainThread());
-        if (!m_cachedPrimarySimpleFontData)
+        if (!m_cachedPrimarySimpleFontData) {
             m_cachedPrimarySimpleFontData = primaryFontData(f)->fontDataForCharacter(' ');
+            if (m_cachedPrimarySimpleFontData)
+                m_cachedPrimarySimpleFontData->beginLoadIfNeeded();
+        }
         return m_cachedPrimarySimpleFontData;
     }
 

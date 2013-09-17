@@ -88,6 +88,21 @@ void FontFallbackList::determinePitch(const Font* font) const
     }
 }
 
+bool FontFallbackList::loadingCustomFonts() const
+{
+    if (m_loadingCustomFonts)
+        return true;
+
+    unsigned numFonts = m_fontList.size();
+    for (unsigned i = 0; i < numFonts; ++i) {
+        if (m_fontList[i]->isCustomFont() && m_fontList[i]->isLoading()) {
+            m_loadingCustomFonts = true;
+            return true;
+        }
+    }
+    return false;
+}
+
 const FontData* FontFallbackList::fontDataAt(const Font* font, unsigned realizedFontIndex) const
 {
     if (realizedFontIndex < m_fontList.size())

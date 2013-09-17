@@ -80,6 +80,12 @@ private:
     Vector<FontDataRange, 1> m_ranges;
 };
 
+inline SegmentedFontData* toSegmentedFontData(FontData* fontData)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!fontData || fontData->isSegmented());
+    return static_cast<SegmentedFontData*>(fontData);
+}
+
 } // namespace WebCore
 
 #endif // SegmentedFontData_h

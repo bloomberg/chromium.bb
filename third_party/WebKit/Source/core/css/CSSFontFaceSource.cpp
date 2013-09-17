@@ -68,6 +68,10 @@ void CSSFontFaceSource::pruneTable()
     if (m_fontDataTable.isEmpty())
         return;
 
+    for (FontDataTable::iterator it = m_fontDataTable.begin(); it != m_fontDataTable.end(); ++it) {
+        if (SimpleFontData* fontData = it->value.get())
+            fontData->clearCSSFontFaceSource();
+    }
     m_fontDataTable.clear();
 }
 
@@ -80,6 +84,13 @@ bool CSSFontFaceSource::isLocal() const
         return false;
 #endif
     return true;
+}
+
+bool CSSFontFaceSource::isLoading() const
+{
+    if (m_font)
+        return !m_font->stillNeedsLoad() && !m_font->isLoaded();
+    return false;
 }
 
 bool CSSFontFaceSource::isLoaded() const
@@ -193,14 +204,11 @@ PassRefPtr<SimpleFontData> CSSFontFaceSource::getFontData(const FontDescription&
 #endif
         }
     } else {
-        // Kick off the load. Do it soon rather than now, because we may be in the middle of layout,
-        // and the loader may invoke arbitrary delegate or event handler code.
-        fontSelector->beginLoadingFontSoon(m_font.get());
-
         // This temporary font is not retained and should not be returned.
         FontCachePurgePreventer fontCachePurgePreventer;
         SimpleFontData* temporaryFont = fontCache()->getNonRetainedLastResortFallbackFont(fontDescription);
         fontData = SimpleFontData::create(temporaryFont->platformData(), true, true);
+        fontData->setCSSFontFaceSource(this);
     }
 
     return fontData; // No release, because fontData is a reference to a RefPtr that is held in the m_fontDataTable.
@@ -252,6 +260,13 @@ void CSSFontFaceSource::willUseFontData()
 {
     if (m_font)
         m_font->willUseFontData();
+}
+
+void CSSFontFaceSource::beginLoadingFontSoon()
+{
+    ASSERT(m_face);
+    ASSERT(m_font);
+    m_face->beginLoadingFontSoon(m_font.get());
 }
 
 void CSSFontFaceSource::FontLoadHistograms::loadStarted()
