@@ -91,15 +91,12 @@ namespace {
 
 // Keys for the network description dictionary passed to the web ui. Make sure
 // to keep the strings in sync with what the JavaScript side uses.
-const char kNetworkInfoKeyActivationState[] = "activationState";
 const char kNetworkInfoKeyConnectable[] = "connectable";
 const char kNetworkInfoKeyConnected[] = "connected";
 const char kNetworkInfoKeyConnecting[] = "connecting";
 const char kNetworkInfoKeyIconURL[] = "iconURL";
 const char kNetworkInfoKeyNetworkName[] = "networkName";
-const char kNetworkInfoKeyNetworkStatus[] = "networkStatus";
 const char kNetworkInfoKeyNetworkType[] = "networkType";
-const char kNetworkInfoKeyRemembered[] = "remembered";
 const char kNetworkInfoKeyServicePath[] = "servicePath";
 const char kNetworkInfoKeyPolicyManaged[] = "policyManaged";
 
@@ -415,116 +412,55 @@ std::string ProviderTypeString(
   return l10n_util::GetStringUTF8(id);
 }
 
-// A helper class for building network information dictionaries to be sent to
-// the webui code.
-class NetworkInfoDictionary {
- public:
-  // Sets properties based on |network| and sets an appropriate icon based
-  // on the network type and |icon_scale_factor|.
-  NetworkInfoDictionary(const NetworkState* network,
-                        ui::ScaleFactor icon_scale_factor);
-  NetworkInfoDictionary(const FavoriteState* network,
-                        ui::ScaleFactor icon_scale_factor);
+void SetCommonNetworkInfo(const ManagedState* state,
+                          const gfx::ImageSkia& icon,
+                          ui::ScaleFactor icon_scale_factor,
+                          base::DictionaryValue* network_info) {
+  gfx::ImageSkiaRep image_rep = icon.GetRepresentation(icon_scale_factor);
+  std::string icon_url =
+      icon.isNull() ? "" : webui::GetBitmapDataUrl(image_rep.sk_bitmap());
+  network_info->SetString(kNetworkInfoKeyIconURL, icon_url);
 
-  // Builds the DictionaryValue representation from the previously set
-  // parameters. Ownership of the returned pointer is transferred to the caller.
-  base::DictionaryValue* BuildDictionary();
+  std::string name = state->name();
+  if (state->Matches(NetworkTypePattern::Ethernet()))
+    name = l10n_util::GetStringUTF8(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET);
+  network_info->SetString(kNetworkInfoKeyNetworkName, name);
+  network_info->SetString(kNetworkInfoKeyNetworkType, state->type());
+  network_info->SetString(kNetworkInfoKeyServicePath, state->path());
+}
 
- private:
-  void SetIcon(const gfx::ImageSkia& icon,
-               ui::ScaleFactor icon_scale_factor) {
-    gfx::ImageSkiaRep image_rep = icon.GetRepresentation(icon_scale_factor);
-    icon_url_ = icon.isNull() ? "" : webui::GetBitmapDataUrl(
-        image_rep.sk_bitmap());
-  }
+// Builds a dictionary with network information and an icon used for the
+// NetworkList on the settings page. Ownership of the returned pointer is
+// transferred to the caller.
+base::DictionaryValue* BuildNetworkDictionary(
+    const NetworkState* network,
+    ui::ScaleFactor icon_scale_factor) {
+  scoped_ptr<base::DictionaryValue> network_info(new base::DictionaryValue());
+  network_info->SetBoolean(kNetworkInfoKeyConnectable, network->connectable());
+  network_info->SetBoolean(kNetworkInfoKeyConnected,
+                           network->IsConnectedState());
+  network_info->SetBoolean(kNetworkInfoKeyConnecting,
+                           network->IsConnectingState());
+  network_info->SetBoolean(kNetworkInfoKeyPolicyManaged, network->IsManaged());
 
-  std::string service_path_;
-  std::string icon_url_;
-  std::string name_;
-  bool connecting_;
-  bool connected_;
-  bool connectable_;
-  std::string connection_type_;
-  bool remembered_;
-  bool shared_;
-  std::string activation_state_;
-  bool policy_managed_;
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkInfoDictionary);
-};
-
-NetworkInfoDictionary::NetworkInfoDictionary(const NetworkState* network,
-                                             ui::ScaleFactor icon_scale_factor)
-    : service_path_(network->path()),
-      name_(network->name()),
-      connecting_(network->IsConnectingState()),
-      connected_(network->IsConnectedState()),
-      connectable_(network->connectable()),
-      connection_type_(network->type()),
-      remembered_(false),
-      shared_(false),
-      activation_state_(network->activation_state()),
-      policy_managed_(network->IsManaged()) {
-  if (network->Matches(NetworkTypePattern::Ethernet()))
-    name_ = l10n_util::GetStringUTF8(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET);
   gfx::ImageSkia icon = ash::network_icon::GetImageForNetwork(
       network, ash::network_icon::ICON_TYPE_LIST);
-  SetIcon(icon, icon_scale_factor);
+  SetCommonNetworkInfo(network, icon, icon_scale_factor, network_info.get());
+  return network_info.release();
 }
 
-NetworkInfoDictionary::NetworkInfoDictionary(const FavoriteState* favorite,
-                                             ui::ScaleFactor icon_scale_factor)
-    : service_path_(favorite->path()),
-      name_(favorite->name()),
-      connecting_(false),
-      connected_(false),
-      connectable_(false),
-      connection_type_(favorite->type()),
-      remembered_(true),
-      shared_(!favorite->IsPrivate()),
-      policy_managed_(favorite->IsManaged()) {
-  if (favorite->Matches(NetworkTypePattern::Ethernet()))
-    name_ = l10n_util::GetStringUTF8(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET);
+base::DictionaryValue* BuildFavoriteDictionary(
+    const FavoriteState* favorite,
+    ui::ScaleFactor icon_scale_factor) {
+  scoped_ptr<base::DictionaryValue> network_info(new base::DictionaryValue());
+  network_info->SetBoolean(kNetworkInfoKeyConnectable, false);
+  network_info->SetBoolean(kNetworkInfoKeyConnected, false);
+  network_info->SetBoolean(kNetworkInfoKeyConnecting, false);
+  network_info->SetBoolean(kNetworkInfoKeyPolicyManaged, favorite->IsManaged());
+
   gfx::ImageSkia icon = ash::network_icon::GetImageForDisconnectedNetwork(
       ash::network_icon::ICON_TYPE_LIST, favorite->type());
-  SetIcon(icon, icon_scale_factor);
-}
-
-base::DictionaryValue* NetworkInfoDictionary::BuildDictionary() {
-  std::string status;
-  if (remembered_) {
-    if (shared_)
-      status = l10n_util::GetStringUTF8(IDS_OPTIONS_SETTINGS_SHARED_NETWORK);
-  } else {
-    int id;
-    if (connected_)
-      id = IDS_STATUSBAR_NETWORK_DEVICE_CONNECTED;
-    else if (connecting_)
-      id = IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING;
-    else if (!connectable_)
-      id = IDS_STATUSBAR_NETWORK_DEVICE_NOT_CONFIGURED;
-    else
-      id = IDS_STATUSBAR_NETWORK_DEVICE_DISCONNECTED;
-    std::string status = l10n_util::GetStringUTF8(id);
-    if (connection_type_ == flimflam::kTypeCellular &&
-        activation_state_ != flimflam::kActivationStateActivated) {
-      status.append(" / ");
-      status.append(ActivationStateString(activation_state_));
-    }
-  }
-
-  scoped_ptr<base::DictionaryValue> network_info(new base::DictionaryValue());
-  network_info->SetString(kNetworkInfoKeyActivationState, activation_state_);
-  network_info->SetBoolean(kNetworkInfoKeyConnectable, connectable_);
-  network_info->SetBoolean(kNetworkInfoKeyConnected, connected_);
-  network_info->SetBoolean(kNetworkInfoKeyConnecting, connecting_);
-  network_info->SetString(kNetworkInfoKeyIconURL, icon_url_);
-  network_info->SetString(kNetworkInfoKeyNetworkName, name_);
-  network_info->SetString(kNetworkInfoKeyNetworkStatus, status);
-  network_info->SetString(kNetworkInfoKeyNetworkType, connection_type_);
-  network_info->SetBoolean(kNetworkInfoKeyRemembered, remembered_);
-  network_info->SetString(kNetworkInfoKeyServicePath, service_path_);
-  network_info->SetBoolean(kNetworkInfoKeyPolicyManaged, policy_managed_);
+  SetCommonNetworkInfo(favorite, icon, icon_scale_factor, network_info.get());
   return network_info.release();
 }
 
@@ -1991,8 +1927,8 @@ base::ListValue* InternetOptionsHandler::GetWiredList() {
       FirstNetworkByType(NetworkTypePattern::Ethernet());
   if (!network)
     return list;
-  NetworkInfoDictionary network_dict(network, web_ui()->GetDeviceScaleFactor());
-  list->Append(network_dict.BuildDictionary());
+  list->Append(
+      BuildNetworkDictionary(network, web_ui()->GetDeviceScaleFactor()));
   return list;
 }
 
@@ -2004,8 +1940,8 @@ base::ListValue* InternetOptionsHandler::GetWirelessList() {
       NetworkTypePattern::Wireless(), &networks);
   for (NetworkStateHandler::NetworkStateList::const_iterator iter =
            networks.begin(); iter != networks.end(); ++iter) {
-    NetworkInfoDictionary network_dict(*iter, web_ui()->GetDeviceScaleFactor());
-    list->Append(network_dict.BuildDictionary());
+    list->Append(
+        BuildNetworkDictionary(*iter, web_ui()->GetDeviceScaleFactor()));
   }
 
   return list;
@@ -2019,8 +1955,8 @@ base::ListValue* InternetOptionsHandler::GetVPNList() {
       NetworkTypePattern::VPN(), &networks);
   for (NetworkStateHandler::NetworkStateList::const_iterator iter =
            networks.begin(); iter != networks.end(); ++iter) {
-    NetworkInfoDictionary network_dict(*iter, web_ui()->GetDeviceScaleFactor());
-    list->Append(network_dict.BuildDictionary());
+    list->Append(
+        BuildNetworkDictionary(*iter, web_ui()->GetDeviceScaleFactor()));
   }
 
   return list;
@@ -2037,9 +1973,8 @@ base::ListValue* InternetOptionsHandler::GetRememberedList() {
     if (favorite->type() != flimflam::kTypeWifi &&
         favorite->type() != flimflam::kTypeVPN)
       continue;
-    NetworkInfoDictionary network_dict(
-        favorite, web_ui()->GetDeviceScaleFactor());
-    list->Append(network_dict.BuildDictionary());
+    list->Append(
+        BuildFavoriteDictionary(favorite, web_ui()->GetDeviceScaleFactor()));
   }
 
   return list;
