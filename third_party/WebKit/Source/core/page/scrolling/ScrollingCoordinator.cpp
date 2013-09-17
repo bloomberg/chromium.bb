@@ -811,6 +811,11 @@ bool ScrollingCoordinator::hasVisibleSlowRepaintViewportConstrainedObjects(Frame
         // Any explicit reason that a fixed position element is not composited shouldn't cause slow scrolling.
         if (!layer->isComposited() && layer->viewportConstrainedNotCompositedReason() == RenderLayer::NoNotCompositedReason)
             return true;
+
+        // Composited layers that actually paint into their enclosing ancestor
+        // must also force main thread scrolling.
+        if (layer->isComposited() && layer->backing()->paintsIntoCompositedAncestor())
+            return true;
     }
     return false;
 }
