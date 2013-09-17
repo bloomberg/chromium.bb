@@ -20,6 +20,8 @@
 #include "content/renderer/media/rtc_data_channel_handler.h"
 #include "content/renderer/media/rtc_dtmf_sender_handler.h"
 #include "content/renderer/media/rtc_media_constraints.h"
+#include "content/renderer/media/webrtc_audio_capturer.h"
+#include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
 // TODO(hta): Move the following include to WebRTCStatsRequest.h file.
@@ -528,6 +530,17 @@ bool RTCPeerConnectionHandler::addStream(
   if (peer_connection_tracker_)
     peer_connection_tracker_->TrackAddStream(
         this, stream, PeerConnectionTracker::SOURCE_LOCAL);
+
+  // A media stream is connected to a peer connection, enable the
+  // peer connection mode for the capturer.
+  WebRtcAudioDeviceImpl* audio_device =
+      dependency_factory_->GetWebRtcAudioDevice();
+  if (audio_device) {
+    WebRtcAudioCapturer* capturer = audio_device->GetDefaultCapturer();
+    if (capturer)
+      capturer->EnablePeerConnectionMode();
+  }
+
   return AddStream(stream, &constraints);
 }
 

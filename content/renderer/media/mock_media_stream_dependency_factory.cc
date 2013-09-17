@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/renderer/media/mock_peer_connection_impl.h"
+#include "content/renderer/media/webaudio_capturer_source.h"
 #include "content/renderer/media/webrtc_audio_capturer.h"
 #include "content/renderer/media/webrtc_local_audio_track.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
@@ -406,7 +407,7 @@ MockMediaStreamDependencyFactory::CreateLocalVideoSource(
   return last_video_source_;
 }
 
-scoped_refptr<WebRtcAudioCapturer>
+scoped_refptr<WebAudioCapturerSource>
 MockMediaStreamDependencyFactory::CreateWebAudioSource(
     WebKit::WebMediaStreamSource* source,
     RTCMediaConstraints* constraints) {
@@ -448,12 +449,14 @@ scoped_refptr<webrtc::AudioTrackInterface>
 MockMediaStreamDependencyFactory::CreateLocalAudioTrack(
     const std::string& id,
     const scoped_refptr<WebRtcAudioCapturer>& capturer,
+    WebAudioCapturerSource* webaudio_source,
     webrtc::AudioSourceInterface* source,
     const webrtc::MediaConstraintsInterface* constraints) {
   DCHECK(mock_pc_factory_created_);
   DCHECK(!capturer.get());
   return WebRtcLocalAudioTrack::Create(
-      id, WebRtcAudioCapturer::CreateCapturer(), source, constraints);
+      id, WebRtcAudioCapturer::CreateCapturer(), webaudio_source,
+      source, constraints);
 }
 
 SessionDescriptionInterface*

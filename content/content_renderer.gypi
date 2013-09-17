@@ -635,6 +635,8 @@
         'renderer/media/webrtc_identity_service.h',
         'renderer/media/webrtc_local_audio_renderer.cc',
         'renderer/media/webrtc_local_audio_renderer.h',
+        'renderer/media/webrtc_local_audio_source_provider.cc',
+        'renderer/media/webrtc_local_audio_source_provider.h',
         'renderer/media/webrtc_local_audio_track.cc',
         'renderer/media/webrtc_local_audio_track.h',
         'renderer/media/webrtc_logging_initializer.cc',

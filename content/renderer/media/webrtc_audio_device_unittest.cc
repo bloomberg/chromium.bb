@@ -119,7 +119,7 @@ bool CreateAndInitializeCapturer(WebRtcAudioDeviceImpl* webrtc_audio_device) {
   int sample_rate = hardware_config->GetInputSampleRate();
   media::ChannelLayout channel_layout =
       hardware_config->GetInputChannelLayout();
-  if (!capturer->Initialize(kRenderViewId, channel_layout, sample_rate, 1,
+  if (!capturer->Initialize(kRenderViewId, channel_layout, sample_rate, 0, 1,
                             media::AudioManagerBase::kDefaultDeviceId)) {
     return false;
   }
@@ -137,7 +137,7 @@ scoped_refptr<WebRtcLocalAudioTrack>
 CreateAndStartLocalAudioTrack(WebRtcAudioCapturer* capturer,
                               WebRtcAudioCapturerSink* sink) {
   scoped_refptr<WebRtcLocalAudioTrack> local_audio_track(
-      WebRtcLocalAudioTrack::Create(std::string(), capturer, NULL, NULL));
+      WebRtcLocalAudioTrack::Create(std::string(), capturer, NULL, NULL, NULL));
   local_audio_track->AddSink(sink);
   local_audio_track->Start();
   return local_audio_track;

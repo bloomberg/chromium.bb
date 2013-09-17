@@ -727,9 +727,7 @@ MediaStreamSourceExtraData::MediaStreamSourceExtraData(
       webkit_source_(webkit_source) {
 }
 
-MediaStreamSourceExtraData::MediaStreamSourceExtraData(
-    media::AudioCapturerSource* source)
-    : audio_source_(source)  {
+MediaStreamSourceExtraData::MediaStreamSourceExtraData() {
 }
 
 MediaStreamSourceExtraData::~MediaStreamSourceExtraData() {}

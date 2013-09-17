@@ -381,8 +381,8 @@ void MediaStreamDependencyFactory::CreateNativeLocalMediaStream(
 }
 
 bool MediaStreamDependencyFactory::AddNativeMediaStreamTrack(
-      const WebKit::WebMediaStream& stream,
-      const WebKit::WebMediaStreamTrack& track) {
+    const WebKit::WebMediaStream& stream,
+    const WebKit::WebMediaStreamTrack& track) {
   MediaStreamExtraData* extra_data =
      static_cast<MediaStreamExtraData*>(stream.extraData());
   webrtc::MediaStreamInterface* native_stream = extra_data->stream().get();
@@ -396,12 +396,12 @@ bool MediaStreamDependencyFactory::AddNativeMediaStreamTrack(
   // right now they're on the source, so we fetch them from there.
   RTCMediaConstraints track_constraints(source.constraints());
 
-  scoped_refptr<WebRtcAudioCapturer> capturer;
+  scoped_refptr<WebAudioCapturerSource> webaudio_source;
   if (!source_data) {
     if (source.requiresAudioConsumer()) {
       // We're adding a WebAudio MediaStream.
       // Create a specific capturer for each WebAudio consumer.
-      capturer = CreateWebAudioSource(&source, &track_constraints);
+      webaudio_source = CreateWebAudioSource(&source, &track_constraints);
       source_data =
           static_cast<MediaStreamSourceExtraData*>(source.extraData());
     } else {
@@ -418,15 +418,21 @@ bool MediaStreamDependencyFactory::AddNativeMediaStreamTrack(
 
   std::string track_id = UTF16ToUTF8(track.id());
   if (source.type() == WebKit::WebMediaStreamSource::TypeAudio) {
-    if (!capturer.get() && GetWebRtcAudioDevice())
+    scoped_refptr<WebRtcAudioCapturer> capturer;
+    if (GetWebRtcAudioDevice())
       capturer = GetWebRtcAudioDevice()->GetDefaultCapturer();
 
     scoped_refptr<webrtc::AudioTrackInterface> audio_track(
         CreateLocalAudioTrack(track_id,
                               capturer,
+                              webaudio_source.get(),
                               source_data->local_audio_source(),
                               &track_constraints));
     audio_track->set_enabled(track.isEnabled());
+    if (capturer.get()) {
+      WebKit::WebMediaStreamTrack writable_track = track;
+      writable_track.setSourceProvider(capturer->audio_source_provider());
+    }
     return native_stream->AddTrack(audio_track.get());
   } else {
     DCHECK(source.type() == WebKit::WebMediaStreamSource::TypeVideo);
@@ -484,9 +490,15 @@ bool MediaStreamDependencyFactory::RemoveNativeMediaStreamTrack(
          type == WebKit::WebMediaStreamSource::TypeVideo);
 
   std::string track_id = UTF16ToUTF8(track.id());
-  return type == WebKit::WebMediaStreamSource::TypeAudio ?
-      native_stream->RemoveTrack(native_stream->FindAudioTrack(track_id)) :
-      native_stream->RemoveTrack(native_stream->FindVideoTrack(track_id));
+  if (type == WebKit::WebMediaStreamSource::TypeAudio) {
+    // Remove the source provider as the track is going away.
+    WebKit::WebMediaStreamTrack writable_track = track;
+    writable_track.setSourceProvider(NULL);
+    return native_stream->RemoveTrack(native_stream->FindAudioTrack(track_id));
+  }
+
+  CHECK_EQ(type, WebKit::WebMediaStreamSource::TypeVideo);
+  return native_stream->RemoveTrack(native_stream->FindVideoTrack(track_id));
 }
 
 bool MediaStreamDependencyFactory::CreatePeerConnectionFactory() {
@@ -605,26 +617,17 @@ MediaStreamDependencyFactory::CreateLocalVideoSource(
   return source;
 }
 
-scoped_refptr<WebRtcAudioCapturer>
+scoped_refptr<WebAudioCapturerSource>
 MediaStreamDependencyFactory::CreateWebAudioSource(
     WebKit::WebMediaStreamSource* source,
     RTCMediaConstraints* constraints) {
   DVLOG(1) << "MediaStreamDependencyFactory::CreateWebAudioSource()";
   DCHECK(GetWebRtcAudioDevice());
 
-  // Set up the source and ensure that WebAudio is driving things instead of
-  // a microphone. For WebAudio, we always create a new capturer without
-  // calling initialize(), WebAudio will re-configure the capturer later on.
-  // Pass -1 as the |render_view_id| and an empty device struct to tell the
-  // capturer not to start the default source.
-  scoped_refptr<WebRtcAudioCapturer> capturer(
-      MaybeCreateAudioCapturer(-1, StreamDeviceInfo()));
-  DCHECK(capturer.get());
-
   scoped_refptr<WebAudioCapturerSource>
-      webaudio_capturer_source(new WebAudioCapturerSource(capturer.get()));
+      webaudio_capturer_source(new WebAudioCapturerSource());
   MediaStreamSourceExtraData* source_data =
-      new content::MediaStreamSourceExtraData(webaudio_capturer_source.get());
+      new content::MediaStreamSourceExtraData();
 
   // Create a LocalAudioSource object which holds audio options.
   // Use audio constraints where all values are true, i.e., enable
@@ -638,7 +641,7 @@ MediaStreamDependencyFactory::CreateWebAudioSource(
   // Replace the default source with WebAudio as source instead.
   source->addAudioConsumer(webaudio_capturer_source.get());
 
-  return capturer;
+  return webaudio_capturer_source;
 }
 
 scoped_refptr<webrtc::VideoTrackInterface>
@@ -668,13 +671,16 @@ scoped_refptr<webrtc::AudioTrackInterface>
 MediaStreamDependencyFactory::CreateLocalAudioTrack(
     const std::string& id,
     const scoped_refptr<WebRtcAudioCapturer>& capturer,
+    WebAudioCapturerSource* webaudio_source,
     webrtc::AudioSourceInterface* source,
     const webrtc::MediaConstraintsInterface* constraints) {
   // TODO(xians): Merge |source| to the capturer(). We can't do this today
   // because only one capturer() is supported while one |source| is created
   // for each audio track.
   scoped_refptr<WebRtcLocalAudioTrack> audio_track(
-      WebRtcLocalAudioTrack::Create(id, capturer, source, constraints));
+      WebRtcLocalAudioTrack::Create(id, capturer, webaudio_source,
+                                    source, constraints));
+
   // Add the WebRtcAudioDevice as the sink to the local audio track.
   audio_track->AddSink(GetWebRtcAudioDevice());
   // Start the audio track. This will hook the |audio_track| to the capturer
@@ -811,11 +817,13 @@ scoped_refptr<WebRtcAudioCapturer>
 MediaStreamDependencyFactory::MaybeCreateAudioCapturer(
     int render_view_id,
     const StreamDeviceInfo& device_info) {
-  scoped_refptr<WebRtcAudioCapturer> capturer;
-  if (render_view_id != -1) {
-    // From a normal getUserMedia, re-use the existing default capturer.
-    capturer = GetWebRtcAudioDevice()->GetDefaultCapturer();
-  }
+  // TODO(xians): Handle the cases when gUM is called without a proper render
+  // view, for example, by an extension.
+  DCHECK_GE(render_view_id, 0);
+
+  scoped_refptr<WebRtcAudioCapturer> capturer =
+      GetWebRtcAudioDevice()->GetDefaultCapturer();
+
   // If the default capturer does not exist or |render_view_id| == -1, create
   // a new capturer.
   bool is_new_capturer = false;
@@ -829,6 +837,7 @@ MediaStreamDependencyFactory::MaybeCreateAudioCapturer(
           static_cast<media::ChannelLayout>(
               device_info.device.input.channel_layout),
           device_info.device.input.sample_rate,
+          device_info.device.input.frames_per_buffer,
           device_info.session_id,
           device_info.device.id)) {
     return NULL;

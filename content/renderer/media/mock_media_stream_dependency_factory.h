@@ -14,6 +14,8 @@
 
 namespace content {
 
+class WebAudioCapturerSource;
+
 class MockVideoSource : public webrtc::VideoSourceInterface {
  public:
   MockVideoSource();
@@ -126,7 +128,7 @@ class MockMediaStreamDependencyFactory : public MediaStreamDependencyFactory {
           int video_session_id,
           bool is_screencast,
           const webrtc::MediaConstraintsInterface* constraints) OVERRIDE;
-  virtual scoped_refptr<WebRtcAudioCapturer> CreateWebAudioSource(
+  virtual scoped_refptr<WebAudioCapturerSource> CreateWebAudioSource(
       WebKit::WebMediaStreamSource* source,
       RTCMediaConstraints* constraints) OVERRIDE;
   virtual scoped_refptr<webrtc::MediaStreamInterface>
@@ -140,6 +142,7 @@ class MockMediaStreamDependencyFactory : public MediaStreamDependencyFactory {
   virtual scoped_refptr<webrtc::AudioTrackInterface> CreateLocalAudioTrack(
       const std::string& id,
       const scoped_refptr<WebRtcAudioCapturer>& capturer,
+      WebAudioCapturerSource* webaudio_source,
       webrtc::AudioSourceInterface* source,
       const webrtc::MediaConstraintsInterface* constraints) OVERRIDE;
   virtual webrtc::SessionDescriptionInterface* CreateSessionDescription(

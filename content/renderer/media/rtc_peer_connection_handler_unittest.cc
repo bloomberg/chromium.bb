@@ -253,7 +253,7 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
     RTCMediaConstraints audio_constraints(audio_source.constraints());
     scoped_refptr<webrtc::AudioTrackInterface> audio_track(
         mock_dependency_factory_->CreateLocalAudioTrack(
-            audio_track_id, capturer, NULL,
+            audio_track_id, capturer, NULL, NULL,
             &audio_constraints));
     native_stream->AddTrack(audio_track.get());
 
@@ -290,6 +290,7 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
       scoped_refptr<webrtc::AudioTrackInterface> audio_track(
           mock_dependency_factory_->CreateLocalAudioTrack(audio_track_label,
                                                           capturer,
+                                                          NULL,
                                                           NULL,
                                                           NULL));
       stream->AddTrack(audio_track.get());

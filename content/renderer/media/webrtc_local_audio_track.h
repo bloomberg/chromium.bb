@@ -18,10 +18,15 @@
 
 namespace cricket {
 class AudioRenderer;
-}
+}  // namespace cricket
+
+namespace media {
+class AudioBus;
+}  // namespace media
 
 namespace content {
 
+class WebAudioCapturerSource;
 class WebRtcAudioCapturer;
 class WebRtcAudioCapturerSinkOwner;
 
@@ -38,7 +43,8 @@ class CONTENT_EXPORT WebRtcLocalAudioTrack
   static scoped_refptr<WebRtcLocalAudioTrack> Create(
       const std::string& id,
       const scoped_refptr<WebRtcAudioCapturer>& capturer,
-      webrtc::AudioSourceInterface* stream_source,
+      WebAudioCapturerSource* webaudio_source,
+      webrtc::AudioSourceInterface* track_source,
       const webrtc::MediaConstraintsInterface* constraints);
 
   // Add a sink to the track. This function will trigger a SetCaptureFormat()
@@ -58,13 +64,11 @@ class CONTENT_EXPORT WebRtcLocalAudioTrack
   // should be called only once when audio track going away.
   void Stop();
 
-  // Method called by the capturer to deliever the capture data.
-  void CaptureData(const int16* audio_data,
-                   int number_of_channels,
-                   int number_of_frames,
-                   int audio_delay_milliseconds,
-                   int volume,
-                   bool key_pressed);
+  // Method called by the capturer to deliver the capture data.
+  void Capture(media::AudioBus* audio_source,
+               int audio_delay_milliseconds,
+               int volume,
+               bool key_pressed);
 
   // Method called by the capturer to set the audio parameters used by source
   // of the capture data..
@@ -72,10 +76,13 @@ class CONTENT_EXPORT WebRtcLocalAudioTrack
   void SetCaptureFormat(const media::AudioParameters& params);
 
  protected:
-  WebRtcLocalAudioTrack(const std::string& label,
-                        const scoped_refptr<WebRtcAudioCapturer>& capturer,
-                        webrtc::AudioSourceInterface* track_source,
-                        const webrtc::MediaConstraintsInterface* constraints);
+  WebRtcLocalAudioTrack(
+      const std::string& label,
+      const scoped_refptr<WebRtcAudioCapturer>& capturer,
+      WebAudioCapturerSource* webaudio_source,
+      webrtc::AudioSourceInterface* track_source,
+      const webrtc::MediaConstraintsInterface* constraints);
+
   virtual ~WebRtcLocalAudioTrack();
 
  private:
@@ -96,6 +103,10 @@ class CONTENT_EXPORT WebRtcLocalAudioTrack
   // The WebRtcAudioCapturer is today created by WebRtcAudioDeviceImpl.
   scoped_refptr<WebRtcAudioCapturer> capturer_;
 
+  // The source of the audio track which is used by WebAudio, which provides
+  // data to the audio track when hooking up with WebAudio.
+  scoped_refptr<WebAudioCapturerSource> webaudio_source_;
+
   // The source of the audio track which handles the audio constraints.
   // TODO(xians): merge |track_source_| to |capturer_|.
   talk_base::scoped_refptr<webrtc::AudioSourceInterface> track_source_;
@@ -106,9 +117,6 @@ class CONTENT_EXPORT WebRtcLocalAudioTrack
   // Used to DCHECK that we are called on the correct thread.
   base::ThreadChecker thread_checker_;
 
-  // Cached values of the audio parameters used by the |source_| and |sinks_|.
-  media::AudioParameters params_;
-
   // Protects |params_| and |sinks_|.
   mutable base::Lock lock_;
 
@@ -116,6 +124,11 @@ class CONTENT_EXPORT WebRtcLocalAudioTrack
   std::vector<int> voe_channels_;
 
   bool need_audio_processing_;
+
+  // Buffers used for temporary storage during capture callbacks.
+  // Allocated during initialization.
+  class ConfiguredBuffer;
+  scoped_refptr<ConfiguredBuffer> buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcLocalAudioTrack);
 };

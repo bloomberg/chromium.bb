@@ -9,7 +9,6 @@
 #include "content/common/content_export.h"
 #include "content/common/media/media_stream_options.h"
 #include "content/renderer/media/media_stream_source_observer.h"
-#include "media/base/audio_capturer_source.h"
 #include "third_party/libjingle/source/talk/app/webrtc/videosourceinterface.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 
@@ -21,8 +20,7 @@ class CONTENT_EXPORT MediaStreamSourceExtraData
   MediaStreamSourceExtraData(
       const StreamDeviceInfo& device_info,
       const WebKit::WebMediaStreamSource& webkit_source);
-  explicit MediaStreamSourceExtraData(
-      media::AudioCapturerSource* source);
+  MediaStreamSourceExtraData();
   virtual ~MediaStreamSourceExtraData();
 
   // Returns the WebMediaStreamSource object that owns this object.
@@ -47,7 +45,6 @@ class CONTENT_EXPORT MediaStreamSourceExtraData
   }
 
   webrtc::VideoSourceInterface* video_source() { return video_source_.get(); }
-  media::AudioCapturerSource* audio_source() { return audio_source_.get(); }
   webrtc::AudioSourceInterface* local_audio_source() {
     return local_audio_source_.get();
   }
@@ -65,7 +62,6 @@ class CONTENT_EXPORT MediaStreamSourceExtraData
   // MediaStreamImpl::~UserMediaRequestInfo() does.
   WebKit::WebMediaStreamSource webkit_source_;
   scoped_refptr<webrtc::VideoSourceInterface> video_source_;
-  scoped_refptr<media::AudioCapturerSource> audio_source_;
 
   // This member holds an instance of webrtc::LocalAudioSource. This is used
   // as a container for audio options.
