@@ -7,10 +7,12 @@
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/perftimer.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/password_manager/password_form_manager.h"
 #include "chrome/browser/password_manager/password_manager.h"
+#include "chrome/browser/password_manager/password_manager_metrics_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/sync/one_click_signin_helper.h"
 #include "components/autofill/content/browser/autofill_driver_impl.h"
@@ -74,6 +76,14 @@ class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
   // Used to track the results we get from the info bar.
   ResponseType infobar_response_;
 
+  // Measures the "Save password?" prompt lifetime. Used to report an UMA
+  // signal.
+  PerfTimer timer_;
+
+  // The group name corresponding to the domain name of |form_to_save_| if the
+  // form is on a monitored domain. Otherwise, an empty string.
+  const std::string uma_histogram_suffix_;
+
   DISALLOW_COPY_AND_ASSIGN(SavePasswordInfoBarDelegate);
 };
 
@@ -105,12 +115,36 @@ SavePasswordInfoBarDelegate::SavePasswordInfoBarDelegate(
     PasswordFormManager* form_to_save)
     : ConfirmInfoBarDelegate(infobar_service),
       form_to_save_(form_to_save),
-      infobar_response_(NO_RESPONSE) {
+      infobar_response_(NO_RESPONSE),
+      uma_histogram_suffix_(password_manager_metrics_util::GroupIdToString(
+          password_manager_metrics_util::MonitoredDomainGroupId(
+              form_to_save->realm()))) {
+  if (!uma_histogram_suffix_.empty()) {
+    password_manager_metrics_util::LogUMAHistogramBoolean(
+        "PasswordManager.SavePasswordPromptDisplayed_" + uma_histogram_suffix_,
+        true);
+  }
 }
 
 SavePasswordInfoBarDelegate::~SavePasswordInfoBarDelegate() {
   UMA_HISTOGRAM_ENUMERATION("PasswordManager.InfoBarResponse",
                             infobar_response_, NUM_RESPONSE_TYPES);
+
+  // The shortest period for which the prompt needs to live, so that we don't
+  // consider it killed prematurely, as might happen, e.g., if a pre-rendered
+  // page gets swapped in (and the current WebContents is destroyed).
+  const base::TimeDelta kMinimumPromptDisplayTime =
+      base::TimeDelta::FromSeconds(1);
+
+  if (!uma_histogram_suffix_.empty()) {
+    password_manager_metrics_util::LogUMAHistogramEnumeration(
+        "PasswordManager.SavePasswordPromptResponse_" + uma_histogram_suffix_,
+        infobar_response_, NUM_RESPONSE_TYPES);
+    password_manager_metrics_util::LogUMAHistogramBoolean(
+        "PasswordManager.SavePasswordPromptDisappearedQuickly_" +
+            uma_histogram_suffix_,
+        timer_.Elapsed() < kMinimumPromptDisplayTime);
+  }
 }
 
 int SavePasswordInfoBarDelegate::GetIconID() const {

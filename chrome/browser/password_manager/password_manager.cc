@@ -14,6 +14,7 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/password_manager/password_form_manager.h"
 #include "chrome/browser/password_manager/password_manager_delegate.h"
+#include "chrome/browser/password_manager/password_manager_metrics_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
@@ -55,12 +56,7 @@ void ReportMetrics(bool password_manager_enabled) {
     return;
   ran_once = true;
 
-  // TODO(isherman): This does not actually measure a user action.  It should be
-  // a boolean histogram.
-  if (password_manager_enabled)
-    content::RecordAction(UserMetricsAction("PasswordManager_Enabled"));
-  else
-    content::RecordAction(UserMetricsAction("PasswordManager_Disabled"));
+  UMA_HISTOGRAM_BOOLEAN("PasswordManager.Enabled", password_manager_enabled);
 }
 
 }  // namespace
@@ -139,13 +135,13 @@ bool PasswordManager::IsSavingEnabled() const {
 
 void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
   if (!IsSavingEnabled()) {
-    RecordFailure(SAVING_DISABLED);
+    RecordFailure(SAVING_DISABLED, form.origin.host());
     return;
   }
 
   // No password to save? Then don't.
   if (form.password_value.empty()) {
-    RecordFailure(EMPTY_PASSWORD);
+    RecordFailure(EMPTY_PASSWORD, form.origin.host());
     return;
   }
 
@@ -178,7 +174,7 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
     manager.reset(*matched_manager_it);
     pending_login_managers_.weak_erase(matched_manager_it);
   } else {
-    RecordFailure(NO_MATCHING_FORM);
+    RecordFailure(NO_MATCHING_FORM, form.origin.host());
     return;
   }
 
@@ -187,20 +183,20 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
   // results for the given form and autofill. If this is the case, we just
   // give up.
   if (!manager->HasCompletedMatching()) {
-    RecordFailure(MATCHING_NOT_COMPLETE);
+    RecordFailure(MATCHING_NOT_COMPLETE, form.origin.host());
     return;
   }
 
   // Also get out of here if the user told us to 'never remember' passwords for
   // this form.
   if (manager->IsBlacklisted()) {
-    RecordFailure(FORM_BLACKLISTED);
+    RecordFailure(FORM_BLACKLISTED, form.origin.host());
     return;
   }
 
   // Bail if we're missing any of the necessary form components.
   if (!manager->HasValidPasswordForm()) {
-    RecordFailure(INVALID_FORM);
+    RecordFailure(INVALID_FORM, form.origin.host());
     return;
   }
 
@@ -208,7 +204,7 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
   // Chrome to manage such passwords. For other passwords, respect the
   // autocomplete attribute.
   if (!manager->HasGeneratedPassword() && !form.password_autocomplete_set) {
-    RecordFailure(AUTOCOMPLETE_OFF);
+    RecordFailure(AUTOCOMPLETE_OFF, form.origin.host());
     return;
   }
 
@@ -224,9 +220,18 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
   provisional_save_manager_.swap(manager);
 }
 
-void PasswordManager::RecordFailure(ProvisionalSaveFailure failure) {
+void PasswordManager::RecordFailure(ProvisionalSaveFailure failure,
+                                    const std::string& form_origin) {
   UMA_HISTOGRAM_ENUMERATION("PasswordManager.ProvisionalSaveFailure",
                             failure, MAX_FAILURE_VALUE);
+
+  std::string group_name = password_manager_metrics_util::GroupIdToString(
+      password_manager_metrics_util::MonitoredDomainGroupId(form_origin));
+  if (!group_name.empty()) {
+    password_manager_metrics_util::LogUMAHistogramEnumeration(
+        "PasswordManager.ProvisionalSaveFailure_" + group_name, failure,
+        MAX_FAILURE_VALUE);
+  }
 }
 
 void PasswordManager::AddSubmissionCallback(
@@ -301,8 +306,8 @@ void PasswordManager::OnPasswordFormsParsed(
 
 bool PasswordManager::ShouldShowSavePasswordInfoBar() const {
   return provisional_save_manager_->IsNewLogin() &&
-      !provisional_save_manager_->HasGeneratedPassword() &&
-      !provisional_save_manager_->IsPendingCredentialsPublicSuffixMatch();
+         !provisional_save_manager_->HasGeneratedPassword() &&
+         !provisional_save_manager_->IsPendingCredentialsPublicSuffixMatch();
 }
 
 void PasswordManager::OnPasswordFormsRendered(

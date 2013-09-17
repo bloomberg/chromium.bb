@@ -10477,6 +10477,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="PasswordManager.Enabled" enum="BooleanEnabled">
+  <summary>
+    Indicates whether the password manager is enabled when a tab is opened. This
+    includes prerendered tabs.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.OtherPossibleUsernamesUsage"
     enum="OtherPossibleUsernamesUsage">
   <summary>
@@ -10490,6 +10497,27 @@ other types of suffix sets.
   <summary>
     Breakdown of cases where a password is submitted, but we don't even try and
     save it. Recorded for every password form submit.
+  </summary>
+</histogram>
+
+<histogram name="PasswordManager.SavePasswordPromptDisappearedQuickly"
+    enum="Boolean">
+  <summary>
+    Indicates whether the save password prompt disappeared in less than one
+    second. This most likely indicates that the prompt was dismissed
+    automatically, e.g. due to a page navigation, before the user was able to
+    respond to the infobar.
+  </summary>
+</histogram>
+
+<histogram name="PasswordManager.SavePasswordPromptDisplayed" enum="Boolean">
+  <summary>Indicates whether the save password prompt was displayed.</summary>
+</histogram>
+
+<histogram name="PasswordManager.SavePasswordPromptResponse"
+    enum="SavePasswordPromptResponseType">
+  <summary>
+    Breakdown of which response the user selected from the save password prompt.
   </summary>
 </histogram>
 
@@ -24279,6 +24307,12 @@ other types of suffix sets.
   </int>
 </enum>
 
+<enum name="SavePasswordPromptResponseType" type="int">
+  <int value="0" label="NO_RESPONSE"/>
+  <int value="1" label="REMEMBER_PASSWORD"/>
+  <int value="2" label="DONT_REMEMBER_PASSWORD"/>
+</enum>
+
 <enum name="SB2BloomFailure" type="int">
   <int value="0" label="READ_OPEN"/>
   <int value="1" label="READ_VERSION"/>
@@ -27536,6 +27570,35 @@ other types of suffix sets.
   </affected-histogram>
   <affected-histogram name="Renderer4.BeginToFinish"/>
   <affected-histogram name="Renderer4.BeginToFinishDoc"/>
+</fieldtrial>
+
+<fieldtrial name="PasswordManagerMonitor">
+  <group name="group_1" label="group 1"/>
+  <group name="group_2" label="group 2"/>
+  <group name="group_3" label="group 3"/>
+  <group name="group_4" label="group 4"/>
+  <group name="group_5" label="group 5"/>
+  <group name="group_6" label="group 6"/>
+  <group name="group_7" label="group 7"/>
+  <group name="group_8" label="group 8"/>
+  <group name="group_9" label="group 9"/>
+  <group name="group_10" label="group 10"/>
+  <group name="group_11" label="group 11"/>
+  <group name="group_12" label="group 12"/>
+  <group name="group_13" label="group 13"/>
+  <group name="group_14" label="group 14"/>
+  <group name="group_15" label="group 15"/>
+  <group name="group_16" label="group 16"/>
+  <group name="group_17" label="group 17"/>
+  <group name="group_18" label="group 18"/>
+  <group name="group_19" label="group 19"/>
+  <group name="group_20" label="group 20"/>
+  <group name="" label=""/>
+  <affected-histogram name="PasswordManager.ProvisionalSaveFailure"/>
+  <affected-histogram
+      name="PasswordManager.SavePasswordPromptDisappearedQuickly"/>
+  <affected-histogram name="PasswordManager.SavePasswordPromptDisplayed"/>
+  <affected-histogram name="PasswordManager.SavePasswordPromptResponse"/>
 </fieldtrial>
 
 <fieldtrial name="PpapiPluginName">

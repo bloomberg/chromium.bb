@@ -113,8 +113,10 @@ class PasswordManager : public LoginModel,
     MAX_FAILURE_VALUE
   };
 
-  // Log failure for UMA
-  void RecordFailure(ProvisionalSaveFailure failure);
+  // Log failure for UMA. Logs additional metrics if the |form_origin|
+  // corresponds to one of the top, explicitly monitored websites.
+  void RecordFailure(ProvisionalSaveFailure failure,
+                     const std::string& form_origin);
 
   // Possibly set up FieldTrial for testing other possible usernames. This only
   // happens if there are other_possible_usernames to be shown and the
