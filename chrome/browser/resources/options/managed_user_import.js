@@ -75,7 +75,7 @@ cr.define('options', function() {
      * @override
      */
     didShowPage: function() {
-      chrome.send('requestExistingManagedUsers');
+      chrome.send('requestManagedUserImportUpdate');
 
       this.updateImportInProgress_(false);
       $('managed-user-import-error-bubble').hidden = true;
@@ -157,7 +157,8 @@ cr.define('options', function() {
     },
 
     /**
-     * Adds all the existing |managedUsers| to the list.
+     * Adds all the existing |managedUsers| to the list. If |managedUsers|
+     * is undefined, then the list is cleared.
      * @param {Array.<Object>} managedUsers An array of managed user objects.
      *     Each object is of the form:
      *       managedUser = {
@@ -170,6 +171,11 @@ cr.define('options', function() {
      * @private
      */
     receiveExistingManagedUsers_: function(managedUsers) {
+      if (!managedUsers) {
+        $('managed-user-list').dataModel = null;
+        return;
+      }
+
       managedUsers.sort(function(a, b) {
         return a.name.localeCompare(b.name);
       });
@@ -177,6 +183,13 @@ cr.define('options', function() {
       $('managed-user-list').dataModel = new ArrayDataModel(managedUsers);
       if (managedUsers.length == 0)
         this.onError_(loadTimeData.getString('noExistingManagedUsers'));
+    },
+
+    /**
+     * @private
+     */
+    hideErrorBubble_: function() {
+      $('managed-user-import-error-bubble').hidden = true;
     },
 
     /**
@@ -205,6 +218,7 @@ cr.define('options', function() {
 
   // Forward public APIs to private implementations.
   [
+    'hideErrorBubble',
     'onError',
     'onSuccess',
     'receiveExistingManagedUsers',
