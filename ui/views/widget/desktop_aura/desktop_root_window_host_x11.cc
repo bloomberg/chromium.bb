@@ -114,7 +114,7 @@ DesktopRootWindowHostX11::DesktopRootWindowHostX11(
     DesktopNativeWidgetAura* desktop_native_widget_aura,
     const gfx::Rect& initial_bounds)
     : close_widget_factory_(this),
-      xdisplay_(ui::GetXDisplay()),
+      xdisplay_(base::MessagePumpX11::GetDefaultXDisplay()),
       xwindow_(0),
       x_root_window_(DefaultRootWindow(xdisplay_)),
       atom_cache_(xdisplay_, kAtomsToCache),

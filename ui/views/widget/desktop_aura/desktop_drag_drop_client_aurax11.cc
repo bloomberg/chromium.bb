@@ -238,11 +238,12 @@ DesktopDragDropClientAuraX11::X11DragContext::X11DragContext(
     // created by some other process. Listen for messages on it.
     base::MessagePumpX11::Current()->AddDispatcherForWindow(
         this, source_window_);
-    XSelectInput(ui::GetXDisplay(), source_window_, PropertyChangeMask);
+    XSelectInput(base::MessagePumpX11::GetDefaultXDisplay(),
+                 source_window_, PropertyChangeMask);
 
     // We must perform a full sync here because we could be racing
     // |source_window_|.
-    XSync(ui::GetXDisplay(), False);
+    XSync(base::MessagePumpX11::GetDefaultXDisplay(), False);
   } else {
     // This drag originates from an aura window within our process. This means
     // that we can shortcut the X11 server and ask the owning SelectionOwner
@@ -288,7 +289,7 @@ void DesktopDragDropClientAuraX11::X11DragContext::RequestNextTarget() {
   ::Atom target = unfetched_targets_.back();
   unfetched_targets_.pop_back();
 
-  XConvertSelection(ui::GetXDisplay(),
+  XConvertSelection(base::MessagePumpX11::GetDefaultXDisplay(),
                     atom_cache_->GetAtom(kXdndSelection),
                     target,
                     atom_cache_->GetAtom(kChromiumDragReciever),

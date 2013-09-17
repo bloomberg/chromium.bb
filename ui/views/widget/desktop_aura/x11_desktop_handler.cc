@@ -38,7 +38,7 @@ X11DesktopHandler* X11DesktopHandler::get() {
 }
 
 X11DesktopHandler::X11DesktopHandler()
-    : xdisplay_(ui::GetXDisplay()),
+    : xdisplay_(base::MessagePumpX11::GetDefaultXDisplay()),
       x_root_window_(DefaultRootWindow(xdisplay_)),
       current_window_(None),
       atom_cache_(xdisplay_, kAtomsToCache) {
@@ -58,7 +58,7 @@ X11DesktopHandler::~X11DesktopHandler() {
 }
 
 void X11DesktopHandler::ActivateWindow(::Window window) {
-  DCHECK_EQ(ui::GetXDisplay(), xdisplay_);
+  DCHECK_EQ(base::MessagePumpX11::GetDefaultXDisplay(), xdisplay_);
 
   XEvent xclient;
   memset(&xclient, 0, sizeof(xclient));

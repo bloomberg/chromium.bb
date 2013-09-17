@@ -260,7 +260,9 @@ double GetTouchParamFromXEvent(XEvent* xev,
 }
 
 Atom GetNoopEventAtom() {
-  return XInternAtom(ui::GetXDisplay(), "noop", False);
+  return XInternAtom(
+      base::MessagePumpX11::GetDefaultXDisplay(),
+      "noop", False);
 }
 
 }  // namespace
