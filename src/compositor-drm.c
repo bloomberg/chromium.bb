@@ -84,6 +84,7 @@ struct drm_compositor {
 	uint32_t crtc_allocator;
 	uint32_t connector_allocator;
 	struct tty *tty;
+	struct wl_listener session_listener;
 
 	/* we need these parameters in order to not fail drmModeAddFB2()
 	 * due to out of bounds dimensions, and then mistakenly set
@@ -2307,15 +2308,15 @@ drm_compositor_set_modes(struct drm_compositor *compositor)
 }
 
 static void
-vt_func(struct weston_compositor *compositor, int event)
+session_notify(struct wl_listener *listener, void *data)
 {
-	struct drm_compositor *ec = (struct drm_compositor *) compositor;
+	struct weston_compositor *compositor = data;
+	struct drm_compositor *ec = data;
 	struct drm_sprite *sprite;
 	struct drm_output *output;
 
-	switch (event) {
-	case TTY_ENTER_VT:
-		weston_log("entering VT\n");
+	if (ec->base.session_active) {
+		weston_log("activating session\n");
 		compositor->focus = 1;
 		if (weston_launcher_drm_set_master(ec->base.launcher,
 						   ec->drm.fd, 1)) {
@@ -2326,9 +2327,8 @@ vt_func(struct weston_compositor *compositor, int event)
 		drm_compositor_set_modes(ec);
 		weston_compositor_damage_all(compositor);
 		udev_input_enable(&ec->input, ec->udev);
-		break;
-	case TTY_LEAVE_VT:
-		weston_log("leaving VT\n");
+	} else {
+		weston_log("deactivating session\n");
 		udev_input_disable(&ec->input);
 
 		compositor->focus = 0;
@@ -2360,8 +2360,6 @@ vt_func(struct weston_compositor *compositor, int event)
 		if (weston_launcher_drm_set_master(ec->base.launcher,
 						   ec->drm.fd, 0) < 0)
 			weston_log("failed to drop master: %m\n");
-
-		break;
 	};
 }
 
@@ -2587,7 +2585,9 @@ drm_compositor_create(struct wl_display *display,
 	}
 
 	ec->base.wl_display = display;
-	ec->tty = tty_create(&ec->base, vt_func, tty);
+	ec->session_listener.notify = session_notify;
+	wl_signal_add(&ec->base.session_signal, &ec->session_listener);
+	ec->tty = tty_create(&ec->base, tty);
 	if (!ec->tty) {
 		weston_log("failed to initialize tty\n");
 		goto err_udev;

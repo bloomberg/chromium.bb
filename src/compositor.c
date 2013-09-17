@@ -2908,6 +2908,8 @@ weston_compositor_init(struct weston_compositor *ec,
 	wl_signal_init(&ec->update_input_panel_signal);
 	wl_signal_init(&ec->seat_created_signal);
 	wl_signal_init(&ec->output_created_signal);
+	wl_signal_init(&ec->session_signal);
+	ec->session_active = 1;
 
 	ec->output_id_pool = 0;
 

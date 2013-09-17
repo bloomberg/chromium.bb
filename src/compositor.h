@@ -556,6 +556,9 @@ struct weston_compositor {
 	struct wl_event_loop *input_loop;
 	struct wl_event_source *input_loop_source;
 
+	struct wl_signal session_signal;
+	int session_active;
+
 	struct weston_layer fade_layer;
 	struct weston_layer cursor_layer;
 
@@ -1139,11 +1142,8 @@ enum {
 	TTY_LEAVE_VT
 };
 
-typedef void (*tty_vt_func_t)(struct weston_compositor *compositor, int event);
-
 struct tty *
-tty_create(struct weston_compositor *compositor,
-	   tty_vt_func_t vt_func, int tty_nr);
+tty_create(struct weston_compositor *compositor, int tty_nr);
 
 void
 tty_destroy(struct tty *tty);

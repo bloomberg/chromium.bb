@@ -50,25 +50,28 @@ struct tty {
 
 	struct wl_event_source *input_source;
 	struct wl_event_source *vt_source;
-	tty_vt_func_t vt_func;
-	int vt, starting_vt, has_vt;
+	int vt, starting_vt;
 	int kb_mode;
 };
 
 static int vt_handler(int signal_number, void *data)
 {
 	struct tty *tty = data;
+	struct weston_compositor *compositor = tty->compositor;
 
-	if (tty->has_vt) {
-		tty->vt_func(tty->compositor, TTY_LEAVE_VT);
-		tty->has_vt = 0;
+	if (compositor->session_active) {
+		compositor->session_active = 0;
+		wl_signal_emit(&tty->compositor->session_signal,
+			       tty->compositor);
 
 		ioctl(tty->fd, VT_RELDISP, 1);
 	} else {
+
 		ioctl(tty->fd, VT_RELDISP, VT_ACKACQ);
 
-		tty->vt_func(tty->compositor, TTY_ENTER_VT);
-		tty->has_vt = 1;
+		compositor->session_active = 1;
+		wl_signal_emit(&tty->compositor->session_signal,
+			       tty->compositor);
 	}
 
 	return 1;
@@ -120,8 +123,7 @@ tty_activate_vt(struct tty *tty, int vt)
 }
 
 struct tty *
-tty_create(struct weston_compositor *compositor, tty_vt_func_t vt_func,
-           int tty_nr)
+tty_create(struct weston_compositor *compositor, int tty_nr)
 {
 	struct termios raw_attributes;
 	struct vt_mode mode = { 0 };
@@ -137,7 +139,6 @@ tty_create(struct weston_compositor *compositor, tty_vt_func_t vt_func,
 		return NULL;
 
 	tty->compositor = compositor;
-	tty->vt_func = vt_func;
 
 	tty->fd = weston_environment_get_fd("WESTON_TTY_FD");
 	if (tty->fd < 0)
@@ -218,7 +219,6 @@ tty_create(struct weston_compositor *compositor, tty_vt_func_t vt_func,
 		goto err_kdkbmode;
 	}
 
-	tty->has_vt = 1;
 	mode.mode = VT_PROCESS;
 	mode.relsig = SIGUSR1;
 	mode.acqsig = SIGUSR1;
@@ -271,7 +271,7 @@ void tty_reset(struct tty *tty)
 	if (ioctl(tty->fd, VT_SETMODE, &mode) < 0)
 		weston_log("could not reset vt handling\n");
 
-	if (tty->has_vt && tty->vt != tty->starting_vt) {
+	if (tty->compositor->session_active && tty->vt != tty->starting_vt) {
 		ioctl(tty->fd, VT_ACTIVATE, tty->starting_vt);
 		ioctl(tty->fd, VT_WAITACTIVE, tty->starting_vt);
 	}

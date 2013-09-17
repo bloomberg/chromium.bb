@@ -87,6 +87,7 @@ struct rpi_compositor {
 
 	struct udev *udev;
 	struct tty *tty;
+	struct wl_listener session_listener;
 
 	int single_buffer;
 };
@@ -662,15 +663,14 @@ rpi_compositor_destroy(struct weston_compositor *base)
 }
 
 static void
-vt_func(struct weston_compositor *base, int event)
+session_notify(struct wl_listener *listener, void *data)
 {
-	struct rpi_compositor *compositor = to_rpi_compositor(base);
+	struct rpi_compositor *compositor = data;
 	struct weston_seat *seat;
 	struct weston_output *output;
 
-	switch (event) {
-	case TTY_ENTER_VT:
-		weston_log("entering VT\n");
+	if (compositor->base.session_active) {
+		weston_log("activating session\n");
 		compositor->base.focus = 1;
 		compositor->base.state = compositor->prev_state;
 		weston_compositor_damage_all(&compositor->base);
@@ -678,9 +678,8 @@ vt_func(struct weston_compositor *base, int event)
 			evdev_add_devices(compositor->udev, seat);
 			evdev_enable_udev_monitor(compositor->udev, seat);
 		}
-		break;
-	case TTY_LEAVE_VT:
-		weston_log("leaving VT\n");
+	} else {
+		weston_log("deactivating session\n");
 		wl_list_for_each(seat, &compositor->base.seat_list, link) {
 			evdev_disable_udev_monitor(seat);
 			evdev_remove_devices(seat);
@@ -702,8 +701,6 @@ vt_func(struct weston_compositor *base, int event)
 				 &compositor->base.output_list, link) {
 			output->repaint_needed = 0;
 		}
-
-		break;
 	};
 }
 
@@ -754,7 +751,10 @@ rpi_compositor_create(struct wl_display *display, int *argc, char *argv[],
 		goto out_compositor;
 	}
 
-	compositor->tty = tty_create(&compositor->base, vt_func, param->tty);
+	compositor->session_listener.notify = session_notify;
+	wl_signal_add(&compositor->base.session_signal,
+		      &compositor ->session_listener);
+	compositor->tty = tty_create(&compositor->base, param->tty);
 	if (!compositor->tty) {
 		weston_log("Failed to initialize tty.\n");
 		goto out_udev;

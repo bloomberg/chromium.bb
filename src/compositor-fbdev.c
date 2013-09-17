@@ -53,6 +53,7 @@ struct fbdev_compositor {
 	struct tty *tty;
 	struct udev_input input;
 	int use_pixman;
+	struct wl_listener session_listener;
 };
 
 struct fbdev_screeninfo {
@@ -804,13 +805,12 @@ fbdev_compositor_destroy(struct weston_compositor *base)
 }
 
 static void
-vt_func(struct weston_compositor *base, int event)
+session_notify(struct wl_listener *listener, void *data)
 {
-	struct fbdev_compositor *compositor = to_fbdev_compositor(base);
+	struct fbdev_compositor *compositor = data;
 	struct weston_output *output;
 
-	switch (event) {
-	case TTY_ENTER_VT:
+	if (compositor->base.session_active) {
 		weston_log("entering VT\n");
 		compositor->base.focus = 1;
 		compositor->base.state = compositor->prev_state;
@@ -822,8 +822,7 @@ vt_func(struct weston_compositor *base, int event)
 		weston_compositor_damage_all(&compositor->base);
 
 		udev_input_enable(&compositor->input, compositor->udev);
-		break;
-	case TTY_LEAVE_VT:
+	} else {
 		weston_log("leaving VT\n");
 		udev_input_disable(&compositor->input);
 
@@ -846,8 +845,6 @@ vt_func(struct weston_compositor *base, int event)
 				 &compositor->base.output_list, link) {
 			output->repaint_needed = 0;
 		}
-
-		break;
 	};
 }
 
@@ -901,7 +898,10 @@ fbdev_compositor_create(struct wl_display *display, int *argc, char *argv[],
 	}
 
 	/* Set up the TTY. */
-	compositor->tty = tty_create(&compositor->base, vt_func, param->tty);
+	compositor->session_listener.notify = session_notify;
+	wl_signal_add(&compositor->base.session_signal,
+		      &compositor->session_listener);
+	compositor->tty = tty_create(&compositor->base, param->tty);
 	if (!compositor->tty) {
 		weston_log("Failed to initialize tty.\n");
 		goto out_udev;
