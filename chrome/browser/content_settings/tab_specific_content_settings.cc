@@ -20,7 +20,6 @@
 #include "chrome/browser/content_settings/content_settings_details.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
-#include "chrome/browser/password_manager/password_form_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
@@ -97,18 +96,6 @@ TabSpecificContentSettings::TabSpecificContentSettings(WebContents* tab)
 TabSpecificContentSettings::~TabSpecificContentSettings() {
   FOR_EACH_OBSERVER(
       SiteDataObserver, observer_list_, ContentSettingsDestroyed());
-}
-
-bool TabSpecificContentSettings::PasswordAccepted() {
-  DCHECK(form_to_save_.get());
-  form_to_save_->SavePassword();
-  return true;
-}
-
-bool TabSpecificContentSettings::PasswordFormBlacklisted() {
-  DCHECK(form_to_save_.get());
-  form_to_save_->BlacklistPassword();
-  return true;
 }
 
 TabSpecificContentSettings* TabSpecificContentSettings::Get(
@@ -476,8 +463,8 @@ void TabSpecificContentSettings::OnGeolocationPermissionSet(
 }
 
 void TabSpecificContentSettings::OnPasswordSubmitted(
-      PasswordFormManager* form_to_save) {
-  form_to_save_.reset(form_to_save);
+    PasswordFormManager* form_manager) {
+  form_manager_.reset(form_manager);
   OnContentAllowed(CONTENT_SETTINGS_TYPE_SAVE_PASSWORD);
   NotifySiteDataObservers();
 }
@@ -659,8 +646,8 @@ bool TabSpecificContentSettings::OnMessageReceived(
 void TabSpecificContentSettings::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
-  if (form_to_save_)
-    form_to_save_->ApplyChange();
+  if (form_manager_)
+    form_manager_->ApplyChange();
   if (!details.is_in_page) {
     // Clear "blocked" flags.
     ClearBlockedContentSettingsExceptForCookies();

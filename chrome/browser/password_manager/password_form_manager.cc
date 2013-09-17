@@ -40,8 +40,7 @@ PasswordFormManager::PasswordFormManager(Profile* profile,
       manager_action_(kManagerActionNone),
       user_action_(kUserActionNone),
       submit_result_(kSubmitResultNotSubmitted),
-      should_save_password_(false),
-      should_blacklist_password_(false) {
+      password_action_(DO_NOTHING) {
   DCHECK(profile_);
   if (observed_form_.origin.is_valid())
     base::SplitString(observed_form_.origin.path(), '/', &form_path_tokens_);
@@ -54,8 +53,7 @@ PasswordFormManager::~PasswordFormManager() {
                             kMaxNumActionsTaken);
   // In case the tab is closed before the next navigation occurs this will
   // apply outstanding changes.
-  if (should_save_password_ || should_blacklist_password_)
-    ApplyChange();
+  ApplyChange();
 }
 
 int PasswordFormManager::GetActionsTaken() {
@@ -113,23 +111,11 @@ bool PasswordFormManager::DoesManage(const PasswordForm& form,
 }
 
 void PasswordFormManager::ApplyChange() {
-  DCHECK(!should_blacklist_password_ || !should_save_password_);
-  if (should_save_password_)
+  if (password_action_ == SAVE)
     Save();
-  else if (should_blacklist_password_)
+  else if (password_action_ == BLACKLIST)
     PermanentlyBlacklist();
-  should_blacklist_password_ = false;
-  should_save_password_ = false;
-}
-
-void PasswordFormManager::SavePassword() {
-  should_blacklist_password_ = false;
-  should_save_password_ = true;
-}
-
-void PasswordFormManager::BlacklistPassword() {
-  should_save_password_ = false;
-  should_blacklist_password_ = true;
+  password_action_ = DO_NOTHING;
 }
 
 bool PasswordFormManager::IsBlacklisted() {

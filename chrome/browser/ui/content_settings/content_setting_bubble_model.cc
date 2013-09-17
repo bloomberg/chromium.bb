@@ -588,6 +588,8 @@ SavePasswordBubbleModel::SavePasswordBubbleModel(Delegate* delegate,
   SetTitle();
 }
 
+SavePasswordBubbleModel::~SavePasswordBubbleModel() {}
+
 void SavePasswordBubbleModel::SetTitle() {
   int title_id = 0;
   // If the save password icon was accessed, the icon is displayed and the
@@ -601,13 +603,13 @@ void SavePasswordBubbleModel::SetTitle() {
 void SavePasswordBubbleModel::OnCancelClicked() {
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents());
-  content_settings->PasswordFormBlacklisted();
+  content_settings->set_password_action(PasswordFormManager::BLACKLIST);
 }
 
 void SavePasswordBubbleModel::OnSaveClicked() {
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents());
-  content_settings->PasswordAccepted();
+  content_settings->set_password_action(PasswordFormManager::SAVE);
 }
 
 // The model of the content settings bubble for media settings.
@@ -621,7 +623,6 @@ class ContentSettingMediaStreamBubbleModel
   virtual ~ContentSettingMediaStreamBubbleModel();
 
  private:
-  // Sets the title of the bubble.
   void SetTitle();
   // Sets the data for the radio buttons of the bubble.
   void SetRadioGroup();

@@ -31,24 +31,23 @@ void BrowserContentSettingBubbleModelDelegate::ShowCollectedCookiesDialog(
 
 void BrowserContentSettingBubbleModelDelegate::ShowContentSettingsPage(
     ContentSettingsType type) {
-  if (type == CONTENT_SETTINGS_TYPE_MIXEDSCRIPT) {
-    // We don't (yet?) implement user-settable exceptions for mixed script
-    // blocking, so bounce to an explanatory page for now.
-    GURL url(google_util::AppendGoogleLocaleParam(
-        GURL(kInsecureScriptHelpUrl)));
-    chrome::AddSelectedTabWithURL(browser_, url, content::PAGE_TRANSITION_LINK);
-    return;
+  switch (type) {
+    case CONTENT_SETTINGS_TYPE_MIXEDSCRIPT:
+      // We don't (yet?) implement user-settable exceptions for mixed script
+      // blocking, so bounce to an explanatory page for now.
+      chrome::AddSelectedTabWithURL(
+          browser_,
+          google_util::AppendGoogleLocaleParam(GURL(kInsecureScriptHelpUrl)),
+          content::PAGE_TRANSITION_LINK);
+      return;
+    case CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS:
+      chrome::ShowSettingsSubPage(browser_, chrome::kHandlerSettingsSubPage);
+      return;
+    case CONTENT_SETTINGS_TYPE_SAVE_PASSWORD:
+      chrome::ShowSettingsSubPage(browser_, chrome::kPasswordManagerSubPage);
+      return;
+    default:
+      chrome::ShowContentSettings(browser_, type);
+      return;
   }
-
-  if (type == CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS) {
-    chrome::ShowSettingsSubPage(browser_, chrome::kHandlerSettingsSubPage);
-    return;
-  }
-
-  if (type == CONTENT_SETTINGS_TYPE_SAVE_PASSWORD) {
-    chrome::ShowSettingsSubPage(browser_, chrome::kPasswordManagerSubPage);
-    return;
-  }
-
-  chrome::ShowContentSettings(browser_, type);
 }

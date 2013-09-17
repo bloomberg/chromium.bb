@@ -110,11 +110,11 @@ class ContentSettingBubbleContents : public content::NotificationObserver,
   PopupLinks popup_links_;
   typedef std::vector<views::RadioButton*> RadioGroup;
   RadioGroup radio_group_;
+  views::LabelButton* cancel_button_;
+  views::LabelButton* save_button_;
   views::Link* custom_link_;
   views::Link* manage_link_;
   views::LabelButton* close_button_;
-  views::LabelButton* never_button_;
-  views::LabelButton* save_button_;
   scoped_ptr<views::MenuRunner> menu_runner_;
   MediaMenuPartsMap media_menus_;
 

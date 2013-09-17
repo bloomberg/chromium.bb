@@ -196,11 +196,11 @@ class SavePasswordBubbleModel : public ContentSettingTitleAndLinkModel {
   SavePasswordBubbleModel(Delegate* delegate,
                           content::WebContents* web_contents,
                           Profile* profile);
-  virtual ~SavePasswordBubbleModel() {}
+  virtual ~SavePasswordBubbleModel();
   virtual void OnCancelClicked() OVERRIDE;
   virtual void OnSaveClicked() OVERRIDE;
+
  private:
-  // Sets the title of the bubble.
   void SetTitle();
 
   TabSpecificContentSettings::PasswordSavingState state_;

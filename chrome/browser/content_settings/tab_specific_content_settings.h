@@ -15,6 +15,7 @@
 #include "chrome/browser/content_settings/content_settings_usages_state.h"
 #include "chrome/browser/content_settings/local_shared_objects_container.h"
 #include "chrome/browser/media/media_stream_devices_controller.h"
+#include "chrome/browser/password_manager/password_form_manager.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/custom_handlers/protocol_handler.h"
@@ -26,7 +27,6 @@
 #include "net/cookies/canonical_cookie.h"
 
 class CookiesTreeModel;
-class PasswordFormManager;
 class Profile;
 
 namespace content {
@@ -295,13 +295,17 @@ class TabSpecificContentSettings
   virtual void AppCacheAccessed(const GURL& manifest_url,
                                 bool blocked_by_policy) OVERRIDE;
 
-  // If user clicks on 'save password' this will have the password saved upon
-  // the next navigation.
-  bool PasswordAccepted();
-
-  // If user clicks on 'never save password for this site' this have the
-  // password blacklisted upon the next navigation.
-  bool PasswordFormBlacklisted();
+  // Called when the user chooses to save or blacklist a password. Instructs
+  // |form_manager_| to perfom the chosen action when the next navigation
+  // occurs or when the tab is closed. The change isn't applied immediately
+  // because the user can still recall the UI and change the desired action,
+  // until the next navigation, and undoing a blacklist operation is
+  // nontrivial.
+  void set_password_action(
+      PasswordFormManager::PasswordAction password_action) {
+    DCHECK(form_manager_.get());
+    form_manager_->set_password_action(password_action);
+  }
 
   // Message handlers. Public for testing.
   void OnContentBlocked(ContentSettingsType type,
@@ -342,10 +346,11 @@ class TabSpecificContentSettings
       const MediaStreamDevicesController::MediaStreamTypePermissionMap&
           request_permissions);
 
-  // This method is called to pass the |form_to_save| on a successful password
-  // submission. It also updates the status of the save password content
-  // setting.
-  void OnPasswordSubmitted(PasswordFormManager* form_to_save);
+  // Called when the user submits a form containing login information, so we
+  // can handle later requests to save or blacklist that login information.
+  // This stores the provided object in form_manager_ and triggers the UI to
+  // prompt the user about whether they would like to save the password.
+  void OnPasswordSubmitted(PasswordFormManager* form_manager);
 
   // There methods are called to update the status about MIDI access.
   void OnMIDISysExAccessed(const GURL& reqesting_origin);
@@ -428,9 +433,11 @@ class TabSpecificContentSettings
   // stored here. http://crbug.com/259794
   GURL media_stream_access_origin_;
 
-  // The PasswordFormManager managing the form we're asking the user about,
-  // and should update as per the decision.
-  scoped_ptr<PasswordFormManager> form_to_save_;
+  // Set by OnPasswordSubmitted() when the user submits a form containing login
+  // information.  If the user responds to a subsequent "Do you want to save
+  // this password?" prompt, we ask this object to save or blacklist the
+  // associated login information in Chrome's password store.
+  scoped_ptr<PasswordFormManager> form_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(TabSpecificContentSettings);
 };
