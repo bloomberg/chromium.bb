@@ -19,7 +19,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/test/perf_test_suite.h"
-#include "base/test/perftimer.h"
+#include "base/test/perf_time_logger.h"
 #include "media/base/media.h"
 #include "media/ffmpeg/ffmpeg_common.h"
 #include "media/filters/ffmpeg_glue.h"
@@ -424,27 +424,27 @@ FFMPEG_TEST_CASE(counting, ogv);
 
 TEST_P(FFmpegTest, Perf) {
   {
-    PerfTimeLogger timer("Opening file");
+    base::PerfTimeLogger timer("Opening file");
     OpenFile(GetParam());
   }
   {
-    PerfTimeLogger timer("Opening codecs");
+    base::PerfTimeLogger timer("Opening codecs");
     OpenCodecs();
   }
   {
-    PerfTimeLogger timer("Reading file");
+    base::PerfTimeLogger timer("Reading file");
     ReadRemainingFile();
   }
   if (has_audio()) {
-    PerfTimeLogger timer("Decoding audio");
+    base::PerfTimeLogger timer("Decoding audio");
     DecodeRemainingAudio();
   }
   if (has_video()) {
-    PerfTimeLogger timer("Decoding video");
+    base::PerfTimeLogger timer("Decoding video");
     DecodeRemainingVideo();
   }
   {
-    PerfTimeLogger timer("Seeking to zero");
+    base::PerfTimeLogger timer("Seeking to zero");
     SeekTo(0);
   }
 }

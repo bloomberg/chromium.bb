@@ -9,7 +9,7 @@
 #include "base/bind_helpers.h"
 #include "base/hash.h"
 #include "base/strings/string_util.h"
-#include "base/test/perftimer.h"
+#include "base/test/perf_time_logger.h"
 #include "base/test/test_file_util.h"
 #include "base/threading/thread.h"
 #include "base/timer/timer.h"
@@ -53,7 +53,7 @@ bool TimeWrite(int num_entries, disk_cache::Backend* cache,
   MessageLoopHelper helper;
   CallbackTest callback(&helper, true);
 
-  PerfTimeLogger timer("Write disk cache entries");
+  base::PerfTimeLogger timer("Write disk cache entries");
 
   for (int i = 0; i < num_entries; i++) {
     TestEntry entry;
@@ -107,7 +107,7 @@ bool TimeRead(int num_entries, disk_cache::Backend* cache,
 
   const char* message = cold ? "Read disk cache entries (cold)" :
                         "Read disk cache entries (warm)";
-  PerfTimeLogger timer(message);
+  base::PerfTimeLogger timer(message);
 
   for (int i = 0; i < num_entries; i++) {
     disk_cache::Entry* cache_entry;
@@ -150,7 +150,7 @@ TEST_F(DiskCacheTest, Hash) {
   int seed = static_cast<int>(Time::Now().ToInternalValue());
   srand(seed);
 
-  PerfTimeLogger timer("Hash disk cache keys");
+  base::PerfTimeLogger timer("Hash disk cache keys");
   for (int i = 0; i < 300000; i++) {
     std::string key = GenerateKey(true);
     base::Hash(key);
@@ -223,7 +223,7 @@ TEST_F(DiskCacheTest, BlockFilesPerformance) {
   const int kNumEntries = 60000;
   disk_cache::Addr* address = new disk_cache::Addr[kNumEntries];
 
-  PerfTimeLogger timer1("Fill three block-files");
+  base::PerfTimeLogger timer1("Fill three block-files");
 
   // Fill up the 32-byte block file (use three files).
   for (int i = 0; i < kNumEntries; i++) {
@@ -232,7 +232,7 @@ TEST_F(DiskCacheTest, BlockFilesPerformance) {
   }
 
   timer1.Done();
-  PerfTimeLogger timer2("Create and delete blocks");
+  base::PerfTimeLogger timer2("Create and delete blocks");
 
   for (int i = 0; i < 200000; i++) {
     int entry = rand() * (kNumEntries / RAND_MAX + 1);

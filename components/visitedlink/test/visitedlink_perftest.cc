@@ -10,6 +10,8 @@
 #include "base/files/file_path.h"
 #include "base/memory/shared_memory.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/perf_log.h"
+#include "base/test/perf_time_logger.h"
 #include "base/test/perftimer.h"
 #include "base/test/test_file_util.h"
 #include "components/visitedlink/browser/visitedlink_master.h"
@@ -83,7 +85,7 @@ TEST_F(VisitedLink, TestAddAndQuery) {
                            NULL, true, true, db_path_, 0);
   ASSERT_TRUE(master.Init());
 
-  PerfTimeLogger timer("Visited_link_add_and_query");
+  base::PerfTimeLogger timer("Visited_link_add_and_query");
 
   // first check without anything in the table
   CheckVisited(master, added_prefix, 0, add_count);
@@ -108,13 +110,13 @@ TEST_F(VisitedLink, TestAddAndQuery) {
 TEST_F(VisitedLink, TestLoad) {
   // create a big DB
   {
-    PerfTimeLogger table_initialization_timer("Table_initialization");
+    base::PerfTimeLogger table_initialization_timer("Table_initialization");
 
     VisitedLinkMaster master(new DummyVisitedLinkEventListener(),
                              NULL, true, true, db_path_, 0);
 
     // time init with empty table
-    PerfTimeLogger initTimer("Empty_visited_link_init");
+    base::PerfTimeLogger initTimer("Empty_visited_link_init");
     bool success = master.Init();
     initTimer.Done();
     ASSERT_TRUE(success);
@@ -126,7 +128,7 @@ TEST_F(VisitedLink, TestLoad) {
     FillTable(master, added_prefix, 0, load_test_add_count);
 
     // time writing the file out out
-    PerfTimeLogger flushTimer("Visited_link_database_flush");
+    base::PerfTimeLogger flushTimer("Visited_link_database_flush");
     master.RewriteFile();
     // TODO(maruel): Without calling FlushFileBuffers(master.file_); you don't
     // know really how much time it took to write the file.
@@ -190,10 +192,10 @@ TEST_F(VisitedLink, TestLoad) {
     cold_sum += cold_load_times[i];
     hot_sum += hot_load_times[i];
   }
-  LogPerfResult("Visited_link_cold_load_time",
-                cold_sum / cold_load_times.size(), "ms");
-  LogPerfResult("Visited_link_hot_load_time",
-                hot_sum / hot_load_times.size(), "ms");
+  base::LogPerfResult(
+      "Visited_link_cold_load_time", cold_sum / cold_load_times.size(), "ms");
+  base::LogPerfResult(
+      "Visited_link_hot_load_time", hot_sum / hot_load_times.size(), "ms");
 }
 
 }  // namespace visitedlink

@@ -8,7 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/perftimer.h"
+#include "base/test/perf_time_logger.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_monster_store_test.h"
@@ -97,7 +97,7 @@ class GetCookiesCallback : public BaseCallback {
 
 TEST(ParsedCookieTest, TestParseCookies) {
   std::string cookie(kCookieLine);
-  PerfTimeLogger timer("Parsed_cookie_parse_cookies");
+  base::PerfTimeLogger timer("Parsed_cookie_parse_cookies");
   for (int i = 0; i < kNumCookies; ++i) {
     ParsedCookie pc(cookie);
     EXPECT_TRUE(pc.IsValid());
@@ -108,7 +108,7 @@ TEST(ParsedCookieTest, TestParseCookies) {
 TEST(ParsedCookieTest, TestParseBigCookies) {
   std::string cookie(3800, 'z');
   cookie += kCookieLine;
-  PerfTimeLogger timer("Parsed_cookie_parse_big_cookies");
+  base::PerfTimeLogger timer("Parsed_cookie_parse_big_cookies");
   for (int i = 0; i < kNumCookies; ++i) {
     ParsedCookie pc(cookie);
     EXPECT_TRUE(pc.IsValid());
@@ -126,7 +126,7 @@ TEST_F(CookieMonsterTest, TestAddCookiesOnSingleHost) {
   SetCookieCallback setCookieCallback;
 
   // Add a bunch of cookies on a single host
-  PerfTimeLogger timer("Cookie_monster_add_single_host");
+  base::PerfTimeLogger timer("Cookie_monster_add_single_host");
 
   for (std::vector<std::string>::const_iterator it = cookies.begin();
        it != cookies.end(); ++it) {
@@ -136,14 +136,14 @@ TEST_F(CookieMonsterTest, TestAddCookiesOnSingleHost) {
 
   GetCookiesCallback getCookiesCallback;
 
-  PerfTimeLogger timer2("Cookie_monster_query_single_host");
+  base::PerfTimeLogger timer2("Cookie_monster_query_single_host");
   for (std::vector<std::string>::const_iterator it = cookies.begin();
        it != cookies.end(); ++it) {
     getCookiesCallback.GetCookies(cm.get(), GURL(kGoogleURL));
   }
   timer2.Done();
 
-  PerfTimeLogger timer3("Cookie_monster_deleteall_single_host");
+  base::PerfTimeLogger timer3("Cookie_monster_deleteall_single_host");
   cm->DeleteAllAsync(CookieMonster::DeleteCallback());
   base::MessageLoop::current()->RunUntilIdle();
   timer3.Done();
@@ -160,7 +160,7 @@ TEST_F(CookieMonsterTest, TestAddCookieOnManyHosts) {
   SetCookieCallback setCookieCallback;
 
   // Add a cookie on a bunch of host
-  PerfTimeLogger timer("Cookie_monster_add_many_hosts");
+  base::PerfTimeLogger timer("Cookie_monster_add_many_hosts");
   for (std::vector<GURL>::const_iterator it = gurls.begin();
        it != gurls.end(); ++it) {
     setCookieCallback.SetCookie(cm.get(), *it, cookie);
@@ -169,14 +169,14 @@ TEST_F(CookieMonsterTest, TestAddCookieOnManyHosts) {
 
   GetCookiesCallback getCookiesCallback;
 
-  PerfTimeLogger timer2("Cookie_monster_query_many_hosts");
+  base::PerfTimeLogger timer2("Cookie_monster_query_many_hosts");
   for (std::vector<GURL>::const_iterator it = gurls.begin();
        it != gurls.end(); ++it) {
     getCookiesCallback.GetCookies(cm.get(), *it);
   }
   timer2.Done();
 
-  PerfTimeLogger timer3("Cookie_monster_deleteall_many_hosts");
+  base::PerfTimeLogger timer3("Cookie_monster_deleteall_many_hosts");
   cm->DeleteAllAsync(CookieMonster::DeleteCallback());
   base::MessageLoop::current()->RunUntilIdle();
   timer3.Done();
@@ -229,7 +229,7 @@ TEST_F(CookieMonsterTest, TestDomainTree) {
   std::string cookie_line = getCookiesCallback.GetCookies(cm.get(), probe_gurl);
   EXPECT_EQ(5, CountInString(cookie_line, '='))
       << "Cookie line: " << cookie_line;
-  PerfTimeLogger timer("Cookie_monster_query_domain_tree");
+  base::PerfTimeLogger timer("Cookie_monster_query_domain_tree");
   for (int i = 0; i < kNumCookies; i++) {
     getCookiesCallback.GetCookies(cm.get(), probe_gurl);
   }
@@ -269,7 +269,7 @@ TEST_F(CookieMonsterTest, TestDomainLine) {
 
   cookie_line = getCookiesCallback.GetCookies(cm.get(), probe_gurl);
   EXPECT_EQ(32, CountInString(cookie_line, '='));
-  PerfTimeLogger timer2("Cookie_monster_query_domain_line");
+  base::PerfTimeLogger timer2("Cookie_monster_query_domain_line");
   for (int i = 0; i < kNumCookies; i++) {
     getCookiesCallback.GetCookies(cm.get(), probe_gurl);
   }
@@ -304,7 +304,7 @@ TEST_F(CookieMonsterTest, TestImport) {
   // Import will happen on first access.
   GURL gurl("www.google.com");
   CookieOptions options;
-  PerfTimeLogger timer("Cookie_monster_import_from_store");
+  base::PerfTimeLogger timer("Cookie_monster_import_from_store");
   getCookiesCallback.GetCookies(cm.get(), gurl);
   timer.Done();
 
@@ -314,7 +314,7 @@ TEST_F(CookieMonsterTest, TestImport) {
 
 TEST_F(CookieMonsterTest, TestGetKey) {
   scoped_refptr<CookieMonster> cm(new CookieMonster(NULL, NULL));
-  PerfTimeLogger timer("Cookie_monster_get_key");
+  base::PerfTimeLogger timer("Cookie_monster_get_key");
   for (int i = 0; i < kNumCookies; i++)
     cm->GetKey("www.google.com");
   timer.Done();
@@ -375,7 +375,7 @@ TEST_F(CookieMonsterTest, TestGCTimes) {
     // Trigger the Garbage collection we're allowed.
     setCookieCallback.SetCookie(cm.get(), gurl, cookie_line);
 
-    PerfTimeLogger timer((std::string("GC_") + test_case.name).c_str());
+    base::PerfTimeLogger timer((std::string("GC_") + test_case.name).c_str());
     for (int i = 0; i < kNumCookies; i++)
       setCookieCallback.SetCookie(cm.get(), gurl, cookie_line);
     timer.Done();

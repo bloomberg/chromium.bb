@@ -10,7 +10,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/test/perftimer.h"
+#include "base/test/perf_time_logger.h"
 #include "base/test/sequenced_worker_pool_owner.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "net/cookies/canonical_cookie.h"
@@ -118,7 +118,7 @@ class SQLitePersistentCookieStorePerfTest : public testing::Test {
 TEST_F(SQLitePersistentCookieStorePerfTest, TestLoadForKeyPerformance) {
   for (int domain_num = 0; domain_num < 3; ++domain_num) {
     std::string domain_name(base::StringPrintf("domain_%d.com", domain_num));
-    PerfTimeLogger timer(
+    base::PerfTimeLogger timer(
       ("Load cookies for the eTLD+1 " + domain_name).c_str());
     store_->LoadCookiesForKey(domain_name,
       base::Bind(&SQLitePersistentCookieStorePerfTest::OnKeyLoaded,
@@ -132,7 +132,7 @@ TEST_F(SQLitePersistentCookieStorePerfTest, TestLoadForKeyPerformance) {
 
 // Test the performance of load
 TEST_F(SQLitePersistentCookieStorePerfTest, TestLoadPerformance) {
-  PerfTimeLogger timer("Load all cookies");
+  base::PerfTimeLogger timer("Load all cookies");
   Load();
   timer.Done();
 

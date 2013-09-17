@@ -1,6 +1,7 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #include "chrome_frame/test/perf/chrome_frame_perftest.h"
 
 #include <atlhost.h>
@@ -21,6 +22,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/perf_time_logger.h"
 #include "base/test/test_file_util.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
@@ -230,8 +232,8 @@ class ChromeFrameActiveXContainerPerf : public ChromeFrameActiveXContainer {
   ChromeFrameActiveXContainerPerf() {}
 
   void CreateControl(bool setup_event_sinks) {
-    perf_initialize_.reset(new PerfTimeLogger("Fully initialized"));
-    PerfTimeLogger perf_create("Create Control");
+    perf_initialize_.reset(new base::PerfTimeLogger("Fully initialized"));
+    base::PerfTimeLogger perf_create("Create Control");
 
     HRESULT hr = chromeview_.CreateControl(L"ChromeTab.ChromeFrame");
     EXPECT_HRESULT_SUCCEEDED(hr);
@@ -272,11 +274,11 @@ class ChromeFrameActiveXContainerPerf : public ChromeFrameActiveXContainer {
   virtual void BeforeNavigateImpl(const char* url ) {
     std::string test_name = "Navigate ";
     test_name += url;
-    perf_navigate_.reset(new PerfTimeLogger(test_name.c_str()));
+    perf_navigate_.reset(new base::PerfTimeLogger(test_name.c_str()));
   }
 
-  scoped_ptr<PerfTimeLogger> perf_initialize_;
-  scoped_ptr<PerfTimeLogger> perf_navigate_;
+  scoped_ptr<base::PerfTimeLogger> perf_initialize_;
+  scoped_ptr<base::PerfTimeLogger> perf_navigate_;
 };
 
 // This class provides common functionality which can be used for most of the

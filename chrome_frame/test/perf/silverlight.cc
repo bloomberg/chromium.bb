@@ -6,6 +6,7 @@
 #include <atlwin.h>
 #include <atlhost.h>
 
+#include "base/test/perf_time_logger.h"
 #include "base/win/scoped_comptr.h"
 #include "chrome_frame/test/perf/chrome_frame_perftest.h"
 
@@ -73,13 +74,16 @@ class IXcpControlHostImpl : public IXcpControlHost {
 
 // Silverlight container. Supports do-nothing implementation of IXcpControlHost.
 // Should be extended to do some real movie-or-something download.
-class SilverlightContainer :
-    public IServiceProviderImpl<SilverlightContainer>,
-    public IXcpControlHostImpl,
-    public CWindowImpl<SilverlightContainer, CWindow, CWinTraits<
-        WS_OVERLAPPEDWINDOW | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
-        WS_EX_APPWINDOW | WS_EX_WINDOWEDGE> >,
-    public CComObjectRootEx<CComSingleThreadModel> {
+class SilverlightContainer
+    : public IServiceProviderImpl<SilverlightContainer>,
+      public IXcpControlHostImpl,
+      public CWindowImpl<
+          SilverlightContainer,
+          CWindow,
+          CWinTraits<WS_OVERLAPPEDWINDOW | WS_VISIBLE | WS_CLIPCHILDREN |
+                         WS_CLIPSIBLINGS,
+                     WS_EX_APPWINDOW | WS_EX_WINDOWEDGE> >,
+      public CComObjectRootEx<CComSingleThreadModel> {
  public:
   DECLARE_WND_CLASS_EX(L"Silverlight_container", 0, 0)
   BEGIN_COM_MAP(SilverlightContainer)
@@ -141,7 +145,7 @@ TEST(ChromeFramePerf, DISABLED_HostSilverlight2) {
   CComObjectStackEx<SilverlightContainer> wnd;
   RECT rc = {0, 0, 800, 600};
   wnd.CreateWndAndHost(&rc);
-  PerfTimeLogger perf_create("Create Silverlight Control2");
+  base::PerfTimeLogger perf_create("Create Silverlight Control2");
   wnd.CreateControl();
   perf_create.Done();
   wnd.DestroyWindow();
@@ -153,7 +157,7 @@ TEST(ChromeFramePerf, DISABLED_HostSilverlight) {
   AtlAxWinInit();
   CAxWindow host;
   RECT rc = {0, 0, 800, 600};
-  PerfTimeLogger perf_create("Create Silverlight Control");
+  base::PerfTimeLogger perf_create("Create Silverlight Control");
   host.Create(NULL, rc, L"AgControl.AgControl",
       WS_OVERLAPPEDWINDOW | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
       WS_EX_APPWINDOW | WS_EX_WINDOWEDGE);

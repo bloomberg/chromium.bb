@@ -12,7 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/pickle.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/perftimer.h"
+#include "base/test/perf_time_logger.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "ipc/ipc_channel.h"
@@ -184,7 +184,7 @@ class PerformanceChannelListener : public IPC::Listener {
       DCHECK(!perf_logger_.get());
       std::string test_name = base::StringPrintf(
           "IPC_Perf_%dx_%u", msg_count_, static_cast<unsigned>(msg_size_));
-      perf_logger_.reset(new PerfTimeLogger(test_name.c_str()));
+      perf_logger_.reset(new base::PerfTimeLogger(test_name.c_str()));
     } else {
       DCHECK_EQ(payload_.size(), reflected_payload.size());
 
@@ -217,7 +217,7 @@ class PerformanceChannelListener : public IPC::Listener {
   int count_down_;
   std::string payload_;
   EventTimeTracker latency_tracker_;
-  scoped_ptr<PerfTimeLogger> perf_logger_;
+  scoped_ptr<base::PerfTimeLogger> perf_logger_;
 };
 
 TEST_F(IPCChannelPerfTest, Performance) {

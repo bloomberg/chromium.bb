@@ -886,9 +886,14 @@
         'test/null_task_runner.h',
         'test/parallel_test_launcher.cc',
         'test/parallel_test_launcher.h',
+        'test/perf_log.cc',
+        'test/perf_log.h',
         'test/perf_test_suite.cc',
         'test/perf_test_suite.h',
+        'test/perf_time_logger.cc',
+        'test/perf_time_logger.h',
         'test/perftimer.cc',
+        'test/perftimer.h',
         'test/power_monitor_test_base.cc',
         'test/power_monitor_test_base.h',
         'test/scoped_locale.cc',
@@ -964,10 +969,10 @@
       'type': 'static_library',
       'dependencies': [
         'base',
+        'test_support_base',
         '../testing/gtest.gyp:gtest',
       ],
       'sources': [
-        'test/perftimer.cc',
         'test/run_all_perftests.cc',
       ],
       'direct_dependent_settings': {

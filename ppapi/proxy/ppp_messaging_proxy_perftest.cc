@@ -4,7 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/test/perftimer.h"
+#include "base/test/perf_time_logger.h"
 #include "ppapi/c/ppp_messaging.h"
 #include "ppapi/proxy/ppapi_proxy_test.h"
 #include "ppapi/proxy/serialized_var.h"
@@ -73,7 +73,7 @@ TEST_F(PppMessagingPerfTest, StringPerformance) {
     }
   }
   srand(seed);
-  PerfTimeLogger logger("PppMessagingPerfTest.StringPerformance");
+  base::PerfTimeLogger logger("PppMessagingPerfTest.StringPerformance");
   for (int i = 0; i < string_count; ++i) {
     const std::string test_string(rand() % max_string_size, 'a');
     PP_Var host_string = StringVar::StringToPPVar(test_string);
