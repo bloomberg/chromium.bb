@@ -17,6 +17,7 @@ namespace WebKit { class WebGraphicsContext3D; }
 
 namespace cc {
 class BlockingTaskRunner;
+class SingleReleaseCallback;
 class TextureLayerClient;
 
 // A Layer containing a the rendered output of a plugin instance.
@@ -41,20 +42,22 @@ class CC_EXPORT TextureLayer : public Layer {
 
     // Gets a ReleaseCallback that can be called from another thread. Note: the
     // caller must ensure the callback is called.
-    TextureMailbox::ReleaseCallback GetCallbackForImplThread();
+    scoped_ptr<SingleReleaseCallback> GetCallbackForImplThread();
 
    protected:
     friend class TextureLayer;
 
     // Protected visiblity so only TextureLayer and unit tests can create these.
     static scoped_ptr<MainThreadReference> Create(
-        const TextureMailbox& mailbox);
+        const TextureMailbox& mailbox,
+        scoped_ptr<SingleReleaseCallback> release_callback);
     virtual ~MailboxHolder();
 
    private:
     friend class base::RefCountedThreadSafe<MailboxHolder>;
     friend class MainThreadReference;
-    explicit MailboxHolder(const TextureMailbox& mailbox);
+    explicit MailboxHolder(const TextureMailbox& mailbox,
+                           scoped_ptr<SingleReleaseCallback> release_callback);
 
     void InternalAddRef();
     void InternalRelease();
@@ -67,6 +70,7 @@ class CC_EXPORT TextureLayer : public Layer {
     // during commit where the main thread is blocked.
     unsigned internal_references_;
     TextureMailbox mailbox_;
+    scoped_ptr<SingleReleaseCallback> release_callback_;
 
     // This lock guards the sync_point_ and is_lost_ fields because they can be
     // accessed on both the impl and main thread. We do this to ensure that the
@@ -125,7 +129,8 @@ class CC_EXPORT TextureLayer : public Layer {
 
   // Code path for plugins which supply their own mailbox.
   bool uses_mailbox() const { return uses_mailbox_; }
-  void SetTextureMailbox(const TextureMailbox& mailbox);
+  void SetTextureMailbox(const TextureMailbox& mailbox,
+                         scoped_ptr<SingleReleaseCallback> release_callback);
 
   void WillModifyTexture();
 

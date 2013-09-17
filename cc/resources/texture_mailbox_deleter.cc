@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "cc/output/context_provider.h"
+#include "cc/resources/single_release_callback.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 
 namespace cc {
@@ -25,7 +26,7 @@ static void DeleteTextureOnImplThread(
 
 static void PostTaskFromMainToImplThread(
     scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner,
-    TextureMailbox::ReleaseCallback run_impl_callback,
+    ReleaseCallback run_impl_callback,
     unsigned sync_point,
     bool is_lost) {
   // This posts the task to RunDeleteTextureOnImplThread().
@@ -40,43 +41,45 @@ TextureMailboxDeleter::~TextureMailboxDeleter() {
     impl_callbacks_.at(i)->Run(0, true);
 }
 
-TextureMailbox::ReleaseCallback TextureMailboxDeleter::GetReleaseCallback(
+scoped_ptr<SingleReleaseCallback> TextureMailboxDeleter::GetReleaseCallback(
     const scoped_refptr<ContextProvider>& context_provider,
     unsigned texture_id) {
   // This callback owns a reference on the |context_provider|. It must be
   // destroyed on the impl thread. Upon destruction of this class, the
   // callback must immediately be destroyed.
-  scoped_ptr<TextureMailbox::ReleaseCallback> impl_callback(
-      new TextureMailbox::ReleaseCallback(base::Bind(
-          &DeleteTextureOnImplThread, context_provider, texture_id)));
+  scoped_ptr<SingleReleaseCallback> impl_callback =
+      SingleReleaseCallback::Create(base::Bind(&DeleteTextureOnImplThread,
+                                               context_provider,
+                                               texture_id));
 
   impl_callbacks_.push_back(impl_callback.Pass());
 
   // The raw pointer to the impl-side callback is valid as long as this
   // class is alive. So we guard it with a WeakPtr.
-  TextureMailbox::ReleaseCallback run_impl_callback =
+  ReleaseCallback run_impl_callback(
       base::Bind(&TextureMailboxDeleter::RunDeleteTextureOnImplThread,
                  weak_ptr_factory_.GetWeakPtr(),
-                 impl_callbacks_.back());
+                 impl_callbacks_.back()));
 
   // Provide a callback for the main thread that posts back to the impl
   // thread.
-  TextureMailbox::ReleaseCallback main_callback =
-      base::Bind(&PostTaskFromMainToImplThread,
-                 base::MessageLoopProxy::current(),
-                 run_impl_callback);
+  scoped_ptr<SingleReleaseCallback> main_callback =
+      SingleReleaseCallback::Create(base::Bind(
+          &PostTaskFromMainToImplThread,
+          base::MessageLoopProxy::current(),
+          run_impl_callback));
 
-  return main_callback;
+  return main_callback.Pass();
 }
 
 void TextureMailboxDeleter::RunDeleteTextureOnImplThread(
-    TextureMailbox::ReleaseCallback* impl_callback,
+    SingleReleaseCallback* impl_callback,
     unsigned sync_point,
     bool is_lost) {
   for (size_t i = 0; i < impl_callbacks_.size(); ++i) {
-    if (impl_callbacks_.at(i)->Equals(*impl_callback)) {
+    if (impl_callbacks_.at(i) == impl_callback) {
       // Run the callback, then destroy it here on the impl thread.
-      impl_callback->Run(sync_point, is_lost);
+      impl_callbacks_.at(i)->Run(sync_point, is_lost);
       impl_callbacks_.erase(impl_callbacks_.begin() + i);
       return;
     }

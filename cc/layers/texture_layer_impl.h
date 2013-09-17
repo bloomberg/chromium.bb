@@ -12,6 +12,7 @@
 #include "cc/layers/layer_impl.h"
 
 namespace cc {
+class SingleReleaseCallback;
 class ScopedResource;
 
 class CC_EXPORT TextureLayerImpl : public LayerImpl {
@@ -61,7 +62,8 @@ class CC_EXPORT TextureLayerImpl : public LayerImpl {
 
   virtual bool CanClipSelf() const OVERRIDE;
 
-  void SetTextureMailbox(const TextureMailbox& mailbox);
+  void SetTextureMailbox(const TextureMailbox& mailbox,
+                         scoped_ptr<SingleReleaseCallback> release_callback);
 
  private:
   TextureLayerImpl(LayerTreeImpl* tree_impl, int id, bool uses_mailbox);
@@ -81,6 +83,7 @@ class CC_EXPORT TextureLayerImpl : public LayerImpl {
   scoped_ptr<ScopedResource> texture_copy_;
 
   TextureMailbox texture_mailbox_;
+  scoped_ptr<SingleReleaseCallback> release_callback_;
   bool uses_mailbox_;
   bool own_mailbox_;
   bool valid_texture_copy_;

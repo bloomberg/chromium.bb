@@ -312,7 +312,8 @@ ResourceProvider::CreateResourceFromExternalTexture(
 }
 
 ResourceProvider::ResourceId ResourceProvider::CreateResourceFromTextureMailbox(
-    const TextureMailbox& mailbox) {
+    const TextureMailbox& mailbox,
+    scoped_ptr<SingleReleaseCallback> release_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // Just store the information. Mailbox will be consumed in LockForRead().
   ResourceId id = next_id_++;
@@ -332,6 +333,9 @@ ResourceProvider::ResourceId ResourceProvider::CreateResourceFromTextureMailbox(
   resource.external = true;
   resource.allocated = true;
   resource.mailbox = mailbox;
+  resource.release_callback =
+      base::Bind(&SingleReleaseCallback::Run,
+                 base::Owned(release_callback.release()));
   return id;
 }
 
@@ -400,7 +404,7 @@ void ResourceProvider::DeleteResourceInternal(ResourceMap::iterator it,
         resource->pixels = NULL;
       }
     }
-    resource->mailbox.RunReleaseCallback(sync_point, lost_resource);
+    resource->release_callback.Run(sync_point, lost_resource);
   }
   if (resource->pixels)
     delete[] resource->pixels;
@@ -963,9 +967,8 @@ void ResourceProvider::ReceiveReturnsFromParent(
       if (it->sync_point)
         GLC(context3d, context3d->waitSyncPoint(it->sync_point));
     } else {
-      resource->mailbox = TextureMailbox(resource->mailbox.name(),
-                                         resource->mailbox.callback(),
-                                         it->sync_point);
+      resource->mailbox =
+          TextureMailbox(resource->mailbox.name(), it->sync_point);
     }
     if (resource->marked_for_deletion)
       DeleteResourceInternal(map_iterator, Normal);

@@ -16,7 +16,10 @@
 #include "ppapi/host/resource_host.h"
 #include "third_party/WebKit/public/platform/WebCanvas.h"
 
-namespace cc { class TextureMailbox; }
+namespace cc {
+class SingleReleaseCallback;
+class TextureMailbox;
+}
 
 namespace gfx {
 class Point;
@@ -59,7 +62,9 @@ class CONTENT_EXPORT PepperGraphics2DHost
              const gfx::Rect& plugin_rect,
              const gfx::Rect& paint_rect);
 
-  bool PrepareTextureMailbox(cc::TextureMailbox* mailbox);
+  bool PrepareTextureMailbox(
+      cc::TextureMailbox* mailbox,
+      scoped_ptr<cc::SingleReleaseCallback>* release_callback);
   void AttachedToNewLayer();
 
   // Notifications about the view's progress painting.  See PluginInstance.

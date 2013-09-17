@@ -9,9 +9,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "cc/layers/texture_layer_client.h"
-#include "cc/resources/texture_mailbox.h"
 #include "third_party/WebKit/public/platform/WebExternalTextureLayer.h"
 #include "webkit/renderer/compositor_bindings/webkit_compositor_bindings_export.h"
+
+namespace cc {
+class SingleReleaseCallback;
+class TextureMailbox;
+}
 
 namespace WebKit {
 struct WebFloatRect;
@@ -43,8 +47,10 @@ class WebExternalTextureLayerImpl
   // TextureLayerClient implementation.
   virtual unsigned PrepareTexture() OVERRIDE;
   virtual WebKit::WebGraphicsContext3D* Context3d() OVERRIDE;
-  virtual bool PrepareTextureMailbox(cc::TextureMailbox* mailbox,
-                                     bool use_shared_memory) OVERRIDE;
+  virtual bool PrepareTextureMailbox(
+      cc::TextureMailbox* mailbox,
+      scoped_ptr<cc::SingleReleaseCallback>* release_callback,
+      bool use_shared_memory) OVERRIDE;
 
  private:
   static void DidReleaseMailbox(

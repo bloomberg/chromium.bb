@@ -7,6 +7,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "cc/resources/single_release_callback.h"
 #include "cc/test/layer_tree_test.h"
 
 #ifndef CC_TEST_LAYER_TREE_PIXEL_TEST_H_
@@ -75,7 +76,10 @@ class LayerTreePixelTest : public LayerTreeTest {
       gfx::Size size,
       const TextureMailbox& texture_mailbox);
 
-  TextureMailbox CopyBitmapToTextureMailboxAsTexture(const SkBitmap& bitmap);
+  void CopyBitmapToTextureMailboxAsTexture(
+      const SkBitmap& bitmap,
+      TextureMailbox* texture_mailbox,
+      scoped_ptr<SingleReleaseCallback>* release_callback);
 
   void ReleaseTextureMailbox(
       scoped_ptr<WebKit::WebGraphicsContext3D> context3d,

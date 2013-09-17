@@ -6,6 +6,7 @@
 
 #include "cc/debug/test_context_provider.h"
 #include "cc/debug/test_web_graphics_context_3d.h"
+#include "cc/resources/single_release_callback.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
@@ -23,8 +24,8 @@ TEST(TextureMailboxDeleterTest, Destroy) {
   EXPECT_TRUE(context_provider->HasOneRef());
   EXPECT_EQ(1u, context_provider->TestContext3d()->NumTextures());
 
-  TextureMailbox::ReleaseCallback cb =
-      deleter->GetReleaseCallback(context_provider, texture_id);
+  scoped_ptr<SingleReleaseCallback> cb =
+      deleter->GetReleaseCallback(context_provider, texture_id).Pass();
   EXPECT_FALSE(context_provider->HasOneRef());
   EXPECT_EQ(1u, context_provider->TestContext3d()->NumTextures());
 
@@ -33,6 +34,10 @@ TEST(TextureMailboxDeleterTest, Destroy) {
   deleter.reset();
   EXPECT_TRUE(context_provider->HasOneRef());
   EXPECT_EQ(0u, context_provider->TestContext3d()->NumTextures());
+
+  // Run the scoped release callback before destroying it, but it won't do
+  // anything.
+  cb->Run(0, false);
 }
 
 }  // namespace

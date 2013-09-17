@@ -8,6 +8,7 @@
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "cc/output/copy_output_result.h"
+#include "cc/resources/single_release_callback.h"
 #include "cc/resources/texture_mailbox.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -40,11 +41,13 @@ void CopyOutputRequest::SendBitmapResult(scoped_ptr<SkBitmap> bitmap) {
   SendResult(CopyOutputResult::CreateBitmapResult(bitmap.Pass()).Pass());
 }
 
-void CopyOutputRequest::SendTextureResult(gfx::Size size,
-                                          scoped_ptr<TextureMailbox> texture) {
-  DCHECK(texture->IsTexture());
-  SendResult(CopyOutputResult::CreateTextureResult(size,
-                                                   texture.Pass()).Pass());
+void CopyOutputRequest::SendTextureResult(
+    gfx::Size size,
+    const TextureMailbox& texture_mailbox,
+    scoped_ptr<SingleReleaseCallback> release_callback) {
+  DCHECK(texture_mailbox.IsTexture());
+  SendResult(CopyOutputResult::CreateTextureResult(
+      size, texture_mailbox, release_callback.Pass()));
 }
 
 }  // namespace cc

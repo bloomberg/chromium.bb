@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/base/cc_export.h"
+#include "cc/resources/release_callback.h"
 #include "cc/resources/texture_mailbox.h"
 #include "ui/gfx/size.h"
 
@@ -48,10 +49,11 @@ class CC_EXPORT VideoFrameExternalResources {
 
   ResourceType type;
   std::vector<TextureMailbox> mailboxes;
+  std::vector<ReleaseCallback> release_callbacks;
 
   // TODO(danakj): Remove these too.
   std::vector<unsigned> software_resources;
-  TextureMailbox::ReleaseCallback software_release_callback;
+  ReleaseCallback software_release_callback;
 
   VideoFrameExternalResources();
   ~VideoFrameExternalResources();

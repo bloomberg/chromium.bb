@@ -2221,13 +2221,13 @@ void GLRenderer::GetFramebufferPixelsAsync(
         GL_TEXTURE_2D, mailbox.name));
     GLC(context_, context_->bindTexture(GL_TEXTURE_2D, 0));
     sync_point = context_->insertSyncPoint();
-    scoped_ptr<TextureMailbox> texture_mailbox = make_scoped_ptr(
-        new TextureMailbox(mailbox,
-                           texture_mailbox_deleter_->GetReleaseCallback(
-                               output_surface_->context_provider(), texture_id),
-                           GL_TEXTURE_2D,
-                           sync_point));
-    request->SendTextureResult(window_rect.size(), texture_mailbox.Pass());
+    TextureMailbox texture_mailbox(mailbox, GL_TEXTURE_2D, sync_point);
+    scoped_ptr<SingleReleaseCallback> release_callback =
+        texture_mailbox_deleter_->GetReleaseCallback(
+            output_surface_->context_provider(), texture_id);
+    request->SendTextureResult(window_rect.size(),
+                               texture_mailbox,
+                               release_callback.Pass());
     return;
   }
 

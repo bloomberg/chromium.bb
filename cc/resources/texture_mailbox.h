@@ -19,23 +19,16 @@ namespace cc {
 // can hold a shared memory resource as well as a texture mailbox.
 class CC_EXPORT TextureMailbox {
  public:
-  typedef base::Callback<void(unsigned sync_point,
-                              bool lost_resource)> ReleaseCallback;
   TextureMailbox();
-  TextureMailbox(const std::string& mailbox_name,
-                 const ReleaseCallback& callback);
+  explicit TextureMailbox(const std::string& mailbox_name);
+  explicit TextureMailbox(const gpu::Mailbox& mailbox_name);
   TextureMailbox(const gpu::Mailbox& mailbox_name,
-                 const ReleaseCallback& callback);
-  TextureMailbox(const gpu::Mailbox& mailbox_name,
-                 const ReleaseCallback& callback,
                  unsigned sync_point);
   TextureMailbox(const gpu::Mailbox& mailbox_name,
-                 const ReleaseCallback& callback,
                  unsigned texture_target,
                  unsigned sync_point);
   TextureMailbox(base::SharedMemory* shared_memory,
-                 gfx::Size size,
-                 const ReleaseCallback& callback);
+                 gfx::Size size);
 
   ~TextureMailbox();
 
@@ -61,16 +54,8 @@ class CC_EXPORT TextureMailbox {
   // storing a TextureMailbox in ResourceProvider. Then we can remove this.
   void SetName(const gpu::Mailbox& name);
 
-  // TODO(danakj): ReleaseCallback should be a separate scoped_ptr outside this
-  // class to avoid silently adding references to the callback's internals.
-  void RunReleaseCallback(unsigned sync_point, bool lost_resource);
-
-  TextureMailbox CopyWithNewCallback(const ReleaseCallback& callback) const;
-  const ReleaseCallback& callback() const { return callback_; }
-
  private:
   gpu::Mailbox name_;
-  ReleaseCallback callback_;
   unsigned target_;
   unsigned sync_point_;
   base::SharedMemory* shared_memory_;

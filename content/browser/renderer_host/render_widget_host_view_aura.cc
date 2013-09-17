@@ -102,10 +102,10 @@ class MemoryHolder : public base::RefCounted<MemoryHolder> {
         frame_size_(frame_size),
         callback_(callback) {}
 
-  cc::TextureMailbox GetMailbox() {
-    return cc::TextureMailbox(
-        shared_memory_.get(),
-        frame_size_,
+  void GetMailbox(cc::TextureMailbox* mailbox,
+                  scoped_ptr<cc::SingleReleaseCallback>* release_callback) {
+    *mailbox = cc::TextureMailbox(shared_memory_.get(), frame_size_);
+    *release_callback = cc::SingleReleaseCallback::Create(
         base::Bind(ReleaseMailbox, make_scoped_refptr(this)));
   }
 
@@ -1273,8 +1273,11 @@ void RenderWidgetHostViewAura::UpdateExternalTexture() {
     CheckResizeLock();
     framebuffer_holder_ = NULL;
   } else if (is_compositing_active && framebuffer_holder_) {
-    cc::TextureMailbox mailbox = framebuffer_holder_->GetMailbox();
+    cc::TextureMailbox mailbox;
+    scoped_ptr<cc::SingleReleaseCallback> callback;
+    framebuffer_holder_->GetMailbox(&mailbox, &callback);
     window_->layer()->SetTextureMailbox(mailbox,
+                                        callback.Pass(),
                                         last_swapped_surface_scale_factor_);
     current_frame_size_ = ConvertSizeToDIP(last_swapped_surface_scale_factor_,
                                            mailbox.shared_memory_size());
@@ -1531,13 +1534,17 @@ void RenderWidgetHostViewAura::SwapSoftwareFrame(
                  frame_data->id)));
   bool first_frame = !framebuffer_holder_;
   framebuffer_holder_.swap(holder);
-  cc::TextureMailbox mailbox = framebuffer_holder_->GetMailbox();
+  cc::TextureMailbox mailbox;
+  scoped_ptr<cc::SingleReleaseCallback> callback;
+  framebuffer_holder_->GetMailbox(&mailbox, &callback);
   DCHECK(mailbox.IsSharedMemory());
   current_frame_size_ = frame_size_in_dip;
 
   released_front_lock_ = NULL;
   CheckResizeLock();
-  window_->layer()->SetTextureMailbox(mailbox, frame_device_scale_factor);
+  window_->layer()->SetTextureMailbox(mailbox,
+                                      callback.Pass(),
+                                      frame_device_scale_factor);
   window_->SchedulePaintInRect(
       ConvertRectToDIP(frame_device_scale_factor, damage_rect));
 
@@ -1772,12 +1779,12 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurfaceHasResult(
 
 static void CopyFromCompositingSurfaceFinished(
     const base::Callback<void(bool, const SkBitmap&)>& callback,
-    const cc::TextureMailbox::ReleaseCallback& release_callback,
+    scoped_ptr<cc::SingleReleaseCallback> release_callback,
     scoped_ptr<SkBitmap> bitmap,
     scoped_ptr<SkAutoLockPixels> bitmap_pixels_lock,
     bool result) {
   bitmap_pixels_lock.reset();
-  release_callback.Run(0, false);
+  release_callback->Run(0, false);
   callback.Run(result, *bitmap);
 }
 
@@ -1809,23 +1816,25 @@ void RenderWidgetHostViewAura::PrepareTextureCopyOutputResult(
       new SkAutoLockPixels(*bitmap));
   uint8* pixels = static_cast<uint8*>(bitmap->getPixels());
 
-  scoped_ptr<cc::TextureMailbox> texture_mailbox = result->TakeTexture();
-  DCHECK(texture_mailbox->IsTexture());
-  if (!texture_mailbox->IsTexture())
+  cc::TextureMailbox texture_mailbox;
+  scoped_ptr<cc::SingleReleaseCallback> release_callback;
+  result->TakeTexture(&texture_mailbox, &release_callback);
+  DCHECK(texture_mailbox.IsTexture());
+  if (!texture_mailbox.IsTexture())
     return;
 
   ignore_result(scoped_callback_runner.Release());
 
   gl_helper->CropScaleReadbackAndCleanMailbox(
-      texture_mailbox->name(),
-      texture_mailbox->sync_point(),
+      texture_mailbox.name(),
+      texture_mailbox.sync_point(),
       result->size(),
       gfx::Rect(result->size()),
       dst_size_in_pixel,
       pixels,
       base::Bind(&CopyFromCompositingSurfaceFinished,
                  callback,
-                 texture_mailbox->callback(),
+                 base::Passed(&release_callback),
                  base::Passed(&bitmap),
                  base::Passed(&bitmap_pixels_lock)));
 }
@@ -1859,9 +1868,9 @@ void RenderWidgetHostViewAura::PrepareBitmapCopyOutputResult(
 
 static void CopyFromCompositingSurfaceFinishedForVideo(
     const base::Callback<void(bool)>& callback,
-    const cc::TextureMailbox::ReleaseCallback& release_callback,
+    scoped_ptr<cc::SingleReleaseCallback> release_callback,
     bool result) {
-  release_callback.Run(0, false);
+  release_callback->Run(0, false);
   callback.Run(result);
 }
 
@@ -1934,9 +1943,11 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurfaceHasResultForVideo(
   if (!gl_helper)
     return;
 
-  scoped_ptr<cc::TextureMailbox> texture_mailbox = result->TakeTexture();
-  DCHECK(texture_mailbox->IsTexture());
-  if (!texture_mailbox->IsTexture())
+  cc::TextureMailbox texture_mailbox;
+  scoped_ptr<cc::SingleReleaseCallback> release_callback;
+  result->TakeTexture(&texture_mailbox, &release_callback);
+  DCHECK(texture_mailbox.IsTexture());
+  if (!texture_mailbox.IsTexture())
     return;
 
   gfx::Rect result_rect(result->size());
@@ -1978,10 +1989,10 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurfaceHasResultForVideo(
   base::Callback<void(bool result)> finished_callback = base::Bind(
       &CopyFromCompositingSurfaceFinishedForVideo,
       callback,
-      texture_mailbox->callback());
+      base::Passed(&release_callback));
   yuv_readback_pipeline->ReadbackYUV(
-      texture_mailbox->name(),
-      texture_mailbox->sync_point(),
+      texture_mailbox.name(),
+      texture_mailbox.sync_point(),
       video_frame.get(),
       finished_callback);
 }
@@ -2522,12 +2533,14 @@ void RenderWidgetHostViewAura::DidRecreateLayer(ui::Layer *old_layer,
     if (old_buffer->memory() && new_buffer->memory()) {
       memcpy(new_buffer->memory(), old_buffer->memory(), size);
       base::SharedMemory* new_buffer_raw_ptr = new_buffer.get();
-      cc::TextureMailbox::ReleaseCallback callback =
-          base::Bind(MailboxReleaseCallback, Passed(&new_buffer));
+      scoped_ptr<cc::SingleReleaseCallback> callback =
+          cc::SingleReleaseCallback::Create(base::Bind(MailboxReleaseCallback,
+                                                       Passed(&new_buffer)));
       cc::TextureMailbox new_mailbox(new_buffer_raw_ptr,
-                                     old_mailbox.shared_memory_size(),
-                                     callback);
-      new_layer->SetTextureMailbox(new_mailbox, mailbox_scale_factor);
+                                     old_mailbox.shared_memory_size());
+      new_layer->SetTextureMailbox(new_mailbox,
+                                   callback.Pass(),
+                                   mailbox_scale_factor);
     }
   }
   // TODO(piman): handle delegated frames.

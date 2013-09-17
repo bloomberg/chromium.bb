@@ -5,6 +5,8 @@
 #ifndef CC_LAYERS_TEXTURE_LAYER_CLIENT_H_
 #define CC_LAYERS_TEXTURE_LAYER_CLIENT_H_
 
+#include "cc/resources/single_release_callback.h"
+
 namespace WebKit { class WebGraphicsContext3D; }
 
 namespace cc {
@@ -24,8 +26,10 @@ class TextureLayerClient {
   // Returns true and provides a mailbox if a new frame is available.
   // Returns false if no new data is available
   // and the old mailbox is to be reused.
-  virtual bool PrepareTextureMailbox(TextureMailbox* mailbox,
-                                     bool use_shared_memory) = 0;
+  virtual bool PrepareTextureMailbox(
+      TextureMailbox* mailbox,
+      scoped_ptr<SingleReleaseCallback>* release_callback,
+      bool use_shared_memory) = 0;
 
  protected:
   virtual ~TextureLayerClient() {}

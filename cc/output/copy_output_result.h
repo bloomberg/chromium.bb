@@ -7,11 +7,13 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
+#include "cc/resources/texture_mailbox.h"
 #include "ui/gfx/size.h"
 
 class SkBitmap;
 
 namespace cc {
+class SingleReleaseCallback;
 class TextureMailbox;
 
 class CC_EXPORT CopyOutputResult {
@@ -25,29 +27,34 @@ class CC_EXPORT CopyOutputResult {
   }
   static scoped_ptr<CopyOutputResult> CreateTextureResult(
       gfx::Size size,
-      scoped_ptr<TextureMailbox> texture_mailbox) {
-    return make_scoped_ptr(new CopyOutputResult(size, texture_mailbox.Pass()));
+      const TextureMailbox& texture_mailbox,
+      scoped_ptr<SingleReleaseCallback> release_callback) {
+    return make_scoped_ptr(
+        new CopyOutputResult(size, texture_mailbox, release_callback.Pass()));
   }
 
   ~CopyOutputResult();
 
   bool IsEmpty() const { return !HasBitmap() && !HasTexture(); }
   bool HasBitmap() const { return !!bitmap_; }
-  bool HasTexture() const { return !!texture_mailbox_; }
+  bool HasTexture() const { return texture_mailbox_.IsValid(); }
 
   gfx::Size size() const { return size_; }
   scoped_ptr<SkBitmap> TakeBitmap();
-  scoped_ptr<TextureMailbox> TakeTexture();
+  void TakeTexture(TextureMailbox* texture_mailbox,
+                   scoped_ptr<SingleReleaseCallback>* release_callback);
 
  private:
   CopyOutputResult();
   explicit CopyOutputResult(scoped_ptr<SkBitmap> bitmap);
   explicit CopyOutputResult(gfx::Size size,
-                            scoped_ptr<TextureMailbox> texture_mailbox);
+                            const TextureMailbox& texture_mailbox,
+                            scoped_ptr<SingleReleaseCallback> release_callback);
 
   gfx::Size size_;
   scoped_ptr<SkBitmap> bitmap_;
-  scoped_ptr<TextureMailbox> texture_mailbox_;
+  TextureMailbox texture_mailbox_;
+  scoped_ptr<SingleReleaseCallback> release_callback_;
 };
 
 }  // namespace cc

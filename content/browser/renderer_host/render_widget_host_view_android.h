@@ -36,6 +36,7 @@ namespace cc {
 class CopyOutputResult;
 class DelegatedRendererLayer;
 class Layer;
+class SingleReleaseCallback;
 class TextureLayer;
 }
 
@@ -187,8 +188,10 @@ class RenderWidgetHostViewAndroid
   // cc::TextureLayerClient implementation.
   virtual unsigned PrepareTexture() OVERRIDE;
   virtual WebKit::WebGraphicsContext3D* Context3d() OVERRIDE;
-  virtual bool PrepareTextureMailbox(cc::TextureMailbox* mailbox,
-                                     bool use_shared_memory) OVERRIDE;
+  virtual bool PrepareTextureMailbox(
+      cc::TextureMailbox* mailbox,
+      scoped_ptr<cc::SingleReleaseCallback>* release_callback,
+      bool use_shared_memory) OVERRIDE;
 
   // cc::DelegatedRendererLayerClient implementation.
   virtual void DidCommitFrameData() OVERRIDE;

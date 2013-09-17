@@ -271,13 +271,12 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
       plane_resources[0].resource_format,
       gpu::Mailbox()
     };
-    TextureMailbox::ReleaseCallback callback_to_free_resource =
-        base::Bind(&RecycleResource,
-                   AsWeakPtr(),
-                   recycle_data);
+
     external_resources.software_resources.push_back(
         plane_resources[0].resource_id);
-    external_resources.software_release_callback = callback_to_free_resource;
+    external_resources.software_release_callback =
+        base::Bind(&RecycleResource, AsWeakPtr(), recycle_data);
+
 
     external_resources.type = VideoFrameExternalResources::SOFTWARE_RESOURCE;
     return external_resources;
@@ -307,13 +306,11 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
       plane_resources[i].resource_format,
       plane_resources[i].mailbox
     };
-    TextureMailbox::ReleaseCallback callback_to_free_resource =
-        base::Bind(&RecycleResource,
-                   AsWeakPtr(),
-                   recycle_data);
+
     external_resources.mailboxes.push_back(
-        TextureMailbox(plane_resources[i].mailbox,
-                       callback_to_free_resource));
+        TextureMailbox(plane_resources[i].mailbox));
+    external_resources.release_callbacks.push_back(
+        base::Bind(&RecycleResource, AsWeakPtr(), recycle_data));
   }
 
   external_resources.type = VideoFrameExternalResources::YUV_RESOURCE;
@@ -358,14 +355,12 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
   scoped_refptr<media::VideoFrame::MailboxHolder> mailbox_holder =
       video_frame->texture_mailbox();
 
-  TextureMailbox::ReleaseCallback callback_to_return_resource =
-      base::Bind(&ReturnTexture, mailbox_holder);
-
   external_resources.mailboxes.push_back(
       TextureMailbox(mailbox_holder->mailbox(),
-                     callback_to_return_resource,
                      video_frame->texture_target(),
                      mailbox_holder->sync_point()));
+  external_resources.release_callbacks.push_back(
+      base::Bind(&ReturnTexture, mailbox_holder));
   return external_resources;
 }
 

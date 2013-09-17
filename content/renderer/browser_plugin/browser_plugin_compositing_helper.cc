@@ -8,6 +8,7 @@
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/texture_layer.h"
 #include "cc/output/context_provider.h"
+#include "cc/resources/single_release_callback.h"
 #include "content/common/browser_plugin/browser_plugin_messages.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
@@ -238,21 +239,20 @@ void BrowserPluginCompositingHelper::OnBuffersSwappedPrivate(
   }
 
   cc::TextureMailbox texture_mailbox;
+  scoped_ptr<cc::SingleReleaseCallback> release_callback;
   if (current_mailbox_valid) {
-    cc::TextureMailbox::ReleaseCallback callback =
+    release_callback = cc::SingleReleaseCallback::Create(
         base::Bind(&BrowserPluginCompositingHelper::MailboxReleased,
                    scoped_refptr<BrowserPluginCompositingHelper>(this),
-                   mailbox);
-    if (is_software_frame) {
-      texture_mailbox = cc::TextureMailbox(mailbox.shared_memory,
-                                           mailbox.size, callback);
-    } else {
-      texture_mailbox = cc::TextureMailbox(mailbox.name, callback, sync_point);
-    }
+                   mailbox)).Pass();
+    if (is_software_frame)
+      texture_mailbox = cc::TextureMailbox(mailbox.shared_memory, mailbox.size);
+    else
+      texture_mailbox = cc::TextureMailbox(mailbox.name, sync_point);
   }
 
   texture_layer_->SetFlipped(!is_software_frame);
-  texture_layer_->SetTextureMailbox(texture_mailbox);
+  texture_layer_->SetTextureMailbox(texture_mailbox, release_callback.Pass());
   texture_layer_->SetNeedsDisplay();
   last_mailbox_valid_ = current_mailbox_valid;
 }

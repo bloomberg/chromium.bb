@@ -18,6 +18,8 @@
 #include "cc/base/cc_export.h"
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface.h"
+#include "cc/resources/release_callback.h"
+#include "cc/resources/single_release_callback.h"
 #include "cc/resources/texture_mailbox.h"
 #include "cc/resources/transferable_resource.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -103,7 +105,9 @@ class CC_EXPORT ResourceProvider {
       unsigned texture_id);
 
   // Wraps an external texture mailbox into a GL resource.
-  ResourceId CreateResourceFromTextureMailbox(const TextureMailbox& mailbox);
+  ResourceId CreateResourceFromTextureMailbox(
+      const TextureMailbox& mailbox,
+      scoped_ptr<SingleReleaseCallback> release_callback);
 
   void DeleteResource(ResourceId id);
 
@@ -354,6 +358,7 @@ class CC_EXPORT ResourceProvider {
     // Query used to determine when asynchronous set pixels complete.
     unsigned gl_upload_query_id;
     TextureMailbox mailbox;
+    ReleaseCallback release_callback;
     uint8_t* pixels;
     uint8_t* pixel_buffer;
     int lock_for_read_count;

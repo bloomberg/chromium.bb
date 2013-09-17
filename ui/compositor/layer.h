@@ -256,7 +256,9 @@ class COMPOSITOR_EXPORT Layer
 
   // Set new TextureMailbox for this layer. Note that |mailbox| may hold a
   // shared memory resource or an actual mailbox for a texture.
-  void SetTextureMailbox(const cc::TextureMailbox& mailbox, float scale_factor);
+  void SetTextureMailbox(const cc::TextureMailbox& mailbox,
+                         scoped_ptr<cc::SingleReleaseCallback> release_callback,
+                         float scale_factor);
   cc::TextureMailbox GetTextureMailbox(float* scale_factor);
 
   // Sets a delegated frame, coming from a child compositor.
@@ -322,8 +324,10 @@ class COMPOSITOR_EXPORT Layer
   // TextureLayerClient
   virtual unsigned PrepareTexture() OVERRIDE;
   virtual WebKit::WebGraphicsContext3D* Context3d() OVERRIDE;
-  virtual bool PrepareTextureMailbox(cc::TextureMailbox* mailbox,
-                                     bool use_shared_memory) OVERRIDE;
+  virtual bool PrepareTextureMailbox(
+      cc::TextureMailbox* mailbox,
+      scoped_ptr<cc::SingleReleaseCallback>* release_callback,
+      bool use_shared_memory) OVERRIDE;
 
   float device_scale_factor() const { return device_scale_factor_; }
 
@@ -476,7 +480,7 @@ class COMPOSITOR_EXPORT Layer
   cc::Layer* cc_layer_;
 
   // If true, the layer scales the canvas and the texture with the device scale
-  // factor as appropriate. When true, the texture size is in DIP.
+  // factor as apporpriate. When true, the texture size is in DIP.
   bool scale_content_;
 
   // A cached copy of |Compositor::device_scale_factor()|.

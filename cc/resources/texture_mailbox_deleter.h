@@ -8,10 +8,10 @@
 #include "base/memory/weak_ptr.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/scoped_ptr_vector.h"
-#include "cc/resources/texture_mailbox.h"
 
 namespace cc {
 class ContextProvider;
+class SingleReleaseCallback;
 
 class CC_EXPORT TextureMailboxDeleter {
  public:
@@ -25,7 +25,7 @@ class CC_EXPORT TextureMailboxDeleter {
   // due to the compositor shutting down, then the ReleaseCallback will
   // become a no-op and the texture will be deleted immediately on the
   // impl thread, along with dropping the reference to the ContextProvider.
-  TextureMailbox::ReleaseCallback GetReleaseCallback(
+  scoped_ptr<SingleReleaseCallback> GetReleaseCallback(
       const scoped_refptr<ContextProvider>& context_provider,
       unsigned texture_id);
 
@@ -33,12 +33,12 @@ class CC_EXPORT TextureMailboxDeleter {
   // Runs the |impl_callback| to delete the texture and removes the callback
   // from the |impl_callbacks_| list.
   void RunDeleteTextureOnImplThread(
-      TextureMailbox::ReleaseCallback* impl_callback,
+      SingleReleaseCallback* impl_callback,
       unsigned sync_point,
       bool is_lost);
 
   base::WeakPtrFactory<TextureMailboxDeleter> weak_ptr_factory_;
-  ScopedPtrVector<TextureMailbox::ReleaseCallback> impl_callbacks_;
+  ScopedPtrVector<SingleReleaseCallback> impl_callbacks_;
 };
 
 }  // namespace cc

@@ -125,8 +125,10 @@ scoped_refptr<SolidColorLayer> LayerTreePixelTest::CreateSolidColorLayer(
 void LayerTreePixelTest::EndTest() {
   // Drop TextureMailboxes on the main thread so that they can be cleaned up and
   // the pending callbacks will fire.
-  for (size_t i = 0; i < texture_layers_.size(); ++i)
-    texture_layers_[i]->SetTextureMailbox(TextureMailbox());
+  for (size_t i = 0; i < texture_layers_.size(); ++i) {
+    texture_layers_[i]->SetTextureMailbox(TextureMailbox(),
+                                          scoped_ptr<SingleReleaseCallback>());
+  }
 
   TryEndTest();
 }
@@ -174,7 +176,12 @@ scoped_refptr<TextureLayer> LayerTreePixelTest::CreateTextureLayer(
   layer->SetAnchorPoint(gfx::PointF());
   layer->SetBounds(rect.size());
   layer->SetPosition(rect.origin());
-  layer->SetTextureMailbox(CopyBitmapToTextureMailboxAsTexture(bitmap));
+
+  TextureMailbox texture_mailbox;
+  scoped_ptr<SingleReleaseCallback> release_callback;
+  CopyBitmapToTextureMailboxAsTexture(
+      bitmap, &texture_mailbox, &release_callback);
+  layer->SetTextureMailbox(texture_mailbox, release_callback.Pass());
 
   texture_layers_.push_back(layer);
   pending_texture_mailbox_callbacks_++;
@@ -301,8 +308,10 @@ void LayerTreePixelTest::ReleaseTextureMailbox(
   TryEndTest();
 }
 
-TextureMailbox LayerTreePixelTest::CopyBitmapToTextureMailboxAsTexture(
-    const SkBitmap& bitmap) {
+void LayerTreePixelTest::CopyBitmapToTextureMailboxAsTexture(
+    const SkBitmap& bitmap,
+    TextureMailbox* texture_mailbox,
+    scoped_ptr<SingleReleaseCallback>* release_callback) {
   DCHECK_GT(bitmap.width(), 0);
   DCHECK_GT(bitmap.height(), 0);
 
@@ -364,13 +373,12 @@ TextureMailbox LayerTreePixelTest::CopyBitmapToTextureMailboxAsTexture(
   context3d->bindTexture(GL_TEXTURE_2D, 0);
   uint32 sync_point = context3d->insertSyncPoint();
 
-  return TextureMailbox(
-      mailbox,
+  *texture_mailbox = TextureMailbox(mailbox, sync_point);
+  *release_callback = SingleReleaseCallback::Create(
       base::Bind(&LayerTreePixelTest::ReleaseTextureMailbox,
                  base::Unretained(this),
                  base::Passed(&context3d),
-                 texture_id),
-      sync_point);
+                 texture_id));
 }
 
 }  // namespace cc

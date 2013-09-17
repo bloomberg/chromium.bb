@@ -559,7 +559,9 @@ void ReleaseCallback(scoped_ptr<base::SharedMemory> memory,
                      unsigned sync_point,
                      bool lost_resource) {}
 
-bool PepperGraphics2DHost::PrepareTextureMailbox(cc::TextureMailbox* mailbox) {
+bool PepperGraphics2DHost::PrepareTextureMailbox(
+    cc::TextureMailbox* mailbox,
+    scoped_ptr<cc::SingleReleaseCallback>* release_callback) {
   if (!texture_mailbox_modified_)
     return false;
   // TODO(jbauman): Send image_data_ through mailbox to avoid copy.
@@ -573,11 +575,9 @@ bool PepperGraphics2DHost::PrepareTextureMailbox(cc::TextureMailbox* mailbox) {
   memcpy(memory->memory(), src, buffer_size);
   image_data_->Unmap();
 
-  base::SharedMemory* mem = memory.get();
-  *mailbox =
-      cc::TextureMailbox(mem,
-                         pixel_image_size,
-                         base::Bind(&ReleaseCallback, base::Passed(&memory)));
+  *mailbox = cc::TextureMailbox(memory.get(), pixel_image_size);
+  *release_callback = cc::SingleReleaseCallback::Create(
+      base::Bind(&ReleaseCallback, base::Passed(&memory)));
   texture_mailbox_modified_ = false;
   return true;
 }

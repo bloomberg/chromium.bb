@@ -4,12 +4,15 @@
 
 #include "cc/layers/texture_layer_impl.h"
 
+#include <vector>
+
 #include "base/strings/stringprintf.h"
 #include "cc/layers/quad_sink.h"
 #include "cc/output/renderer.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/resources/platform_color.h"
 #include "cc/resources/scoped_resource.h"
+#include "cc/resources/single_release_callback.h"
 #include "cc/trees/layer_tree_impl.h"
 
 namespace cc {
@@ -36,10 +39,14 @@ TextureLayerImpl::TextureLayerImpl(LayerTreeImpl* tree_impl,
 
 TextureLayerImpl::~TextureLayerImpl() { FreeTextureMailbox(); }
 
-void TextureLayerImpl::SetTextureMailbox(const TextureMailbox& mailbox) {
+void TextureLayerImpl::SetTextureMailbox(
+    const TextureMailbox& mailbox,
+    scoped_ptr<SingleReleaseCallback> release_callback) {
   DCHECK(uses_mailbox_);
+  DCHECK_EQ(mailbox.IsValid(), !!release_callback);
   FreeTextureMailbox();
   texture_mailbox_ = mailbox;
+  release_callback_ = release_callback.Pass();
   own_mailbox_ = true;
   valid_texture_copy_ = false;
 }
@@ -60,7 +67,8 @@ void TextureLayerImpl::PushPropertiesTo(LayerImpl* layer) {
   texture_layer->set_vertex_opacity(vertex_opacity_);
   texture_layer->set_premultiplied_alpha(premultiplied_alpha_);
   if (uses_mailbox_ && own_mailbox_) {
-    texture_layer->SetTextureMailbox(texture_mailbox_);
+    texture_layer->SetTextureMailbox(texture_mailbox_,
+                                     release_callback_.Pass());
     own_mailbox_ = false;
   } else {
     texture_layer->set_texture_id(texture_id_);
@@ -80,7 +88,8 @@ bool TextureLayerImpl::WillDraw(DrawMode draw_mode,
            texture_mailbox_.IsSharedMemory())) {
         external_texture_resource_ =
             resource_provider->CreateResourceFromTextureMailbox(
-                texture_mailbox_);
+                texture_mailbox_,
+                release_callback_.Pass());
         DCHECK(external_texture_resource_);
         texture_copy_.reset();
         valid_texture_copy_ = false;
@@ -229,7 +238,10 @@ void TextureLayerImpl::FreeTextureMailbox() {
     return;
   if (own_mailbox_) {
     DCHECK(!external_texture_resource_);
-    texture_mailbox_.RunReleaseCallback(texture_mailbox_.sync_point(), false);
+    if (release_callback_)
+      release_callback_->Run(texture_mailbox_.sync_point(), false);
+    texture_mailbox_ = TextureMailbox();
+    release_callback_.reset();
   } else if (external_texture_resource_) {
     DCHECK(!own_mailbox_);
     ResourceProvider* resource_provider =

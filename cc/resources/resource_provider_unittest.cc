@@ -14,6 +14,7 @@
 #include "cc/debug/test_web_graphics_context_3d.h"
 #include "cc/output/output_surface.h"
 #include "cc/resources/returned_resource.h"
+#include "cc/resources/single_release_callback.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_output_surface_client.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -918,11 +919,12 @@ TEST_P(ResourceProviderTest, TransferMailboxResources) {
 
   unsigned release_sync_point = 0;
   bool lost_resource = false;
-  TextureMailbox::ReleaseCallback callback =
+  ReleaseCallback callback =
       base::Bind(ReleaseTextureMailbox, &release_sync_point, &lost_resource);
   ResourceProvider::ResourceId resource =
       resource_provider_->CreateResourceFromTextureMailbox(
-          TextureMailbox(mailbox, callback, sync_point));
+          TextureMailbox(mailbox, sync_point),
+          SingleReleaseCallback::Create(callback));
   EXPECT_EQ(1, context()->texture_count());
   EXPECT_EQ(0u, release_sync_point);
   {
@@ -968,7 +970,8 @@ TEST_P(ResourceProviderTest, TransferMailboxResources) {
   EXPECT_LT(0u, sync_point);
   release_sync_point = 0;
   resource = resource_provider_->CreateResourceFromTextureMailbox(
-      TextureMailbox(mailbox, callback, sync_point));
+      TextureMailbox(mailbox, sync_point),
+      SingleReleaseCallback::Create(callback));
   EXPECT_EQ(1, context()->texture_count());
   EXPECT_EQ(0u, release_sync_point);
   {
@@ -1030,10 +1033,11 @@ TEST_P(ResourceProviderTest, Shutdown) {
 
   unsigned release_sync_point = 0;
   bool lost_resource = false;
-  TextureMailbox::ReleaseCallback callback =
-      base::Bind(ReleaseTextureMailbox, &release_sync_point, &lost_resource);
+  scoped_ptr<SingleReleaseCallback> callback = SingleReleaseCallback::Create(
+      base::Bind(ReleaseTextureMailbox, &release_sync_point, &lost_resource));
   resource_provider_->CreateResourceFromTextureMailbox(
-      TextureMailbox(mailbox, callback, sync_point));
+      TextureMailbox(mailbox, sync_point),
+      callback.Pass());
 
   EXPECT_EQ(0u, release_sync_point);
   EXPECT_FALSE(lost_resource);
@@ -1069,10 +1073,11 @@ TEST_P(ResourceProviderTest, ShutdownSharedMemory) {
       CreateAndFillSharedMemory(size, 0));
 
   bool release_called = false;
-  TextureMailbox::ReleaseCallback callback =
-      base::Bind(ReleaseSharedMemoryCallback, &release_called);
+  scoped_ptr<SingleReleaseCallback> callback = SingleReleaseCallback::Create(
+      base::Bind(ReleaseSharedMemoryCallback, &release_called));
   resource_provider_->CreateResourceFromTextureMailbox(
-      TextureMailbox(shared_memory.get(), size, callback));
+      TextureMailbox(shared_memory.get(), size),
+      callback.Pass());
 
   resource_provider_.reset();
 
@@ -1094,11 +1099,12 @@ TEST_P(ResourceProviderTest, ShutdownWithExportedResource) {
 
   unsigned release_sync_point = 0;
   bool lost_resource = false;
-  TextureMailbox::ReleaseCallback callback =
-      base::Bind(ReleaseTextureMailbox, &release_sync_point, &lost_resource);
+  scoped_ptr<SingleReleaseCallback> callback = SingleReleaseCallback::Create(
+      base::Bind(ReleaseTextureMailbox, &release_sync_point, &lost_resource));
   ResourceProvider::ResourceId resource =
       resource_provider_->CreateResourceFromTextureMailbox(
-          TextureMailbox(mailbox, callback, sync_point));
+          TextureMailbox(mailbox, sync_point),
+          callback.Pass());
 
   // Transfer the resource, so we can't release it properly on shutdown.
   ResourceProvider::ResourceIdArray resource_ids_to_transfer;
@@ -1131,10 +1137,11 @@ TEST_P(ResourceProviderTest, LostContext) {
 
   unsigned release_sync_point = 0;
   bool lost_resource = false;
-  TextureMailbox::ReleaseCallback callback =
-      base::Bind(ReleaseTextureMailbox, &release_sync_point, &lost_resource);
+  scoped_ptr<SingleReleaseCallback> callback = SingleReleaseCallback::Create(
+      base::Bind(ReleaseTextureMailbox, &release_sync_point, &lost_resource));
   resource_provider_->CreateResourceFromTextureMailbox(
-      TextureMailbox(mailbox, callback, sync_point));
+      TextureMailbox(mailbox, sync_point),
+      callback.Pass());
 
   EXPECT_EQ(0u, release_sync_point);
   EXPECT_FALSE(lost_resource);
@@ -1341,11 +1348,13 @@ TEST_P(ResourceProviderTest, TextureMailbox_SharedMemory) {
   scoped_ptr<ResourceProvider> resource_provider(
       ResourceProvider::Create(output_surface.get(), 0));
 
-  TextureMailbox::ReleaseCallback callback = base::Bind(&EmptyReleaseCallback);
-  TextureMailbox mailbox(shared_memory.get(), size, callback);
+  scoped_ptr<SingleReleaseCallback> callback = SingleReleaseCallback::Create(
+      base::Bind(&EmptyReleaseCallback));
+  TextureMailbox mailbox(shared_memory.get(), size);
 
   ResourceProvider::ResourceId id =
-      resource_provider->CreateResourceFromTextureMailbox(mailbox);
+      resource_provider->CreateResourceFromTextureMailbox(
+          mailbox, callback.Pass());
   EXPECT_NE(0u, id);
 
   {
@@ -1386,14 +1395,14 @@ TEST_P(ResourceProviderTest, TextureMailbox_GLTexture2D) {
 
   gpu::Mailbox gpu_mailbox;
   memcpy(gpu_mailbox.name, "Hello world", strlen("Hello world") + 1);
-  TextureMailbox::ReleaseCallback callback = base::Bind(&EmptyReleaseCallback);
+  scoped_ptr<SingleReleaseCallback> callback = SingleReleaseCallback::Create(
+      base::Bind(&EmptyReleaseCallback));
 
-  TextureMailbox mailbox(gpu_mailbox,
-                         callback,
-                         sync_point);
+  TextureMailbox mailbox(gpu_mailbox, sync_point);
 
   ResourceProvider::ResourceId id =
-      resource_provider->CreateResourceFromTextureMailbox(mailbox);
+      resource_provider->CreateResourceFromTextureMailbox(
+          mailbox, callback.Pass());
   EXPECT_NE(0u, id);
 
   Mock::VerifyAndClearExpectations(context);
@@ -1450,15 +1459,14 @@ TEST_P(ResourceProviderTest, TextureMailbox_GLTextureExternalOES) {
 
   gpu::Mailbox gpu_mailbox;
   memcpy(gpu_mailbox.name, "Hello world", strlen("Hello world") + 1);
-  TextureMailbox::ReleaseCallback callback = base::Bind(&EmptyReleaseCallback);
+  scoped_ptr<SingleReleaseCallback> callback = SingleReleaseCallback::Create(
+      base::Bind(&EmptyReleaseCallback));
 
-  TextureMailbox mailbox(gpu_mailbox,
-                         callback,
-                         target,
-                         sync_point);
+  TextureMailbox mailbox(gpu_mailbox, target, sync_point);
 
   ResourceProvider::ResourceId id =
-      resource_provider->CreateResourceFromTextureMailbox(mailbox);
+      resource_provider->CreateResourceFromTextureMailbox(
+          mailbox, callback.Pass());
   EXPECT_NE(0u, id);
 
   Mock::VerifyAndClearExpectations(context);

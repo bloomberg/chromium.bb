@@ -1841,7 +1841,8 @@ void PepperPluginInstanceImpl::UpdateLayer() {
       texture_layer_ = cc::TextureLayer::CreateForMailbox(NULL);
       opaque = bound_graphics_3d_->IsOpaque();
       texture_layer_->SetTextureMailbox(
-          cc::TextureMailbox(mailbox, base::Bind(&IgnoreCallback), 0));
+          cc::TextureMailbox(mailbox, 0),
+          cc::SingleReleaseCallback::Create(base::Bind(&IgnoreCallback)));
     } else {
       DCHECK(bound_graphics_2d_platform_);
       texture_layer_ = cc::TextureLayer::CreateForMailbox(this);
@@ -1875,10 +1876,12 @@ WebKit::WebGraphicsContext3D* PepperPluginInstanceImpl::Context3d() {
 
 bool PepperPluginInstanceImpl::PrepareTextureMailbox(
     cc::TextureMailbox* mailbox,
+    scoped_ptr<cc::SingleReleaseCallback>* release_callback,
     bool use_shared_memory) {
   if (!bound_graphics_2d_platform_)
     return false;
-  return bound_graphics_2d_platform_->PrepareTextureMailbox(mailbox);
+  return bound_graphics_2d_platform_->PrepareTextureMailbox(
+      mailbox, release_callback);
 }
 
 void PepperPluginInstanceImpl::AddPluginObject(PluginObject* plugin_object) {

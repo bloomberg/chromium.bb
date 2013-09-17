@@ -6,6 +6,8 @@
 
 #include "cc/layers/texture_layer.h"
 #include "cc/resources/resource_update_queue.h"
+#include "cc/resources/single_release_callback.h"
+#include "cc/resources/texture_mailbox.h"
 #include "third_party/WebKit/public/platform/WebExternalTextureLayerClient.h"
 #include "third_party/WebKit/public/platform/WebExternalTextureMailbox.h"
 #include "third_party/WebKit/public/platform/WebFloatRect.h"
@@ -36,7 +38,8 @@ WebKit::WebLayer* WebExternalTextureLayerImpl::layer() { return layer_.get(); }
 void WebExternalTextureLayerImpl::clearTexture() {
   TextureLayer *layer = static_cast<TextureLayer*>(layer_->layer());
   layer->WillModifyTexture();
-  layer->SetTextureMailbox(cc::TextureMailbox());
+  layer->SetTextureMailbox(cc::TextureMailbox(),
+                           scoped_ptr<cc::SingleReleaseCallback>());
 }
 
 void WebExternalTextureLayerImpl::setOpaque(bool opaque) {
@@ -69,6 +72,7 @@ WebKit::WebGraphicsContext3D* WebExternalTextureLayerImpl::Context3d() {
 
 bool WebExternalTextureLayerImpl::PrepareTextureMailbox(
     cc::TextureMailbox* mailbox,
+    scoped_ptr<cc::SingleReleaseCallback>* release_callback,
     bool use_shared_memory) {
   WebKit::WebExternalTextureMailbox client_mailbox;
   WebExternalBitmapImpl* bitmap = NULL;
@@ -82,17 +86,17 @@ bool WebExternalTextureLayerImpl::PrepareTextureMailbox(
   }
   gpu::Mailbox name;
   name.SetName(client_mailbox.name);
-  cc::TextureMailbox::ReleaseCallback callback =
-      base::Bind(&WebExternalTextureLayerImpl::DidReleaseMailbox,
-                 this->AsWeakPtr(),
-                 client_mailbox,
-                 bitmap);
-  if (bitmap) {
-    *mailbox =
-        cc::TextureMailbox(bitmap->shared_memory(), bitmap->size(), callback);
-  } else {
-    *mailbox = cc::TextureMailbox(name, callback, client_mailbox.syncPoint);
-  }
+  scoped_ptr<cc::SingleReleaseCallback> callback =
+      cc::SingleReleaseCallback::Create(base::Bind(
+          &WebExternalTextureLayerImpl::DidReleaseMailbox,
+          this->AsWeakPtr(),
+          client_mailbox,
+          bitmap));
+  if (bitmap)
+    *mailbox = cc::TextureMailbox(bitmap->shared_memory(), bitmap->size());
+  else
+    *mailbox = cc::TextureMailbox(name, client_mailbox.syncPoint);
+  *release_callback = callback.Pass();
   return true;
 }
 

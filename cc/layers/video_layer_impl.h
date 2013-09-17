@@ -9,6 +9,7 @@
 
 #include "cc/base/cc_export.h"
 #include "cc/layers/layer_impl.h"
+#include "cc/resources/release_callback.h"
 #include "cc/resources/video_resource_updater.h"
 
 namespace media {
@@ -59,7 +60,8 @@ class CC_EXPORT VideoLayerImpl : public LayerImpl {
   // TODO(danakj): Remove these, hide software path inside ResourceProvider and
   // ExternalResource (aka TextureMailbox) classes.
   std::vector<unsigned> software_resources_;
-  TextureMailbox::ReleaseCallback software_release_callback_;
+  // Called once for each software resource.
+  ReleaseCallback software_release_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoLayerImpl);
 };

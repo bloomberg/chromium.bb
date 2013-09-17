@@ -14,6 +14,7 @@ class SkBitmap;
 
 namespace cc {
 class CopyOutputResult;
+class SingleReleaseCallback;
 class TextureMailbox;
 
 class CC_EXPORT CopyOutputRequest {
@@ -61,7 +62,8 @@ class CC_EXPORT CopyOutputRequest {
   void SendEmptyResult();
   void SendBitmapResult(scoped_ptr<SkBitmap> bitmap);
   void SendTextureResult(gfx::Size size,
-                         scoped_ptr<TextureMailbox> texture_mailbox);
+                         const TextureMailbox& texture_mailbox,
+                         scoped_ptr<SingleReleaseCallback> release_callback);
 
   void SendResult(scoped_ptr<CopyOutputResult> result);
 
