@@ -54,7 +54,7 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
   // MediaPlayerAndroid implementation.
   virtual void SetVideoSurface(gfx::ScopedJavaSurface surface) OVERRIDE;
   virtual void Start() OVERRIDE;
-  virtual void Pause() OVERRIDE;
+  virtual void Pause(bool is_media_related_action ALLOW_UNUSED) OVERRIDE;
   virtual void SeekTo(base::TimeDelta timestamp) OVERRIDE;
   virtual void Release() OVERRIDE;
   virtual void SetVolume(double volume) OVERRIDE;

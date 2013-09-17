@@ -50,8 +50,12 @@ class WebMediaPlayerProxyAndroid : public RenderViewObserver {
   // Starts the player.
   void Start(int player_id);
 
-  // Pausees the player.
-  void Pause(int player_id);
+  // Pauses the player.
+  // is_media_related_action should be true if this pause is coming from an
+  // an action that explicitly pauses the video (user pressing pause, JS, etc.)
+  // Otherwise it should be false if Pause is being called due to other reasons
+  // (cleanup, freeing resources, etc.)
+  void Pause(int player_id, bool is_media_related_action);
 
   // Performs seek on the player.
   void Seek(int player_id, base::TimeDelta time);

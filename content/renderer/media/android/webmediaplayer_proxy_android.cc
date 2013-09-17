@@ -65,8 +65,11 @@ void WebMediaPlayerProxyAndroid::Start(int player_id) {
   Send(new MediaPlayerHostMsg_Start(routing_id(), player_id));
 }
 
-void WebMediaPlayerProxyAndroid::Pause(int player_id) {
-  Send(new MediaPlayerHostMsg_Pause(routing_id(), player_id));
+void WebMediaPlayerProxyAndroid::Pause(
+    int player_id,
+    bool is_media_related_action) {
+  Send(new MediaPlayerHostMsg_Pause(
+      routing_id(), player_id, is_media_related_action));
 }
 
 void WebMediaPlayerProxyAndroid::Seek(int player_id, base::TimeDelta time) {

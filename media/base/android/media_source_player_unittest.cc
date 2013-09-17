@@ -402,7 +402,7 @@ TEST_F(MediaSourcePlayerTest, StartImmediatelyAfterPause) {
 
   // Decoder job will not immediately stop after Pause() since it is
   // running on another thread.
-  player_.Pause();
+  player_.Pause(true);
   EXPECT_TRUE(GetMediaDecoderJob(true)->is_decoding());
 
   // Nothing happens when calling Start() again.

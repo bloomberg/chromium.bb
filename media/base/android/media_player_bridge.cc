@@ -181,7 +181,7 @@ void MediaPlayerBridge::Start() {
   }
 }
 
-void MediaPlayerBridge::Pause() {
+void MediaPlayerBridge::Pause(bool is_media_related_action) {
   if (j_media_player_bridge_.is_null()) {
     pending_play_ = false;
   } else {

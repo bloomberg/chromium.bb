@@ -115,7 +115,7 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
       const GURL& first_party_for_cookies);
   virtual void OnStart(int player_id);
   virtual void OnSeek(int player_id, base::TimeDelta time);
-  virtual void OnPause(int player_id);
+  virtual void OnPause(int player_id, bool is_media_related_action);
   virtual void OnSetVolume(int player_id, double volume);
   virtual void OnReleaseResources(int player_id);
   virtual void OnDestroyPlayer(int player_id);

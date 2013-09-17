@@ -146,7 +146,7 @@ void MediaSourcePlayer::Start() {
   StartInternal();
 }
 
-void MediaSourcePlayer::Pause() {
+void MediaSourcePlayer::Pause(bool is_media_related_action) {
   DVLOG(1) << __FUNCTION__;
 
   // Since decoder jobs have their own thread, decoding is not fully paused

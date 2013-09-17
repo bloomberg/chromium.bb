@@ -129,7 +129,7 @@ void BrowserMediaPlayerManager::FullscreenPlayerPlay() {
 void BrowserMediaPlayerManager::FullscreenPlayerPause() {
   MediaPlayerAndroid* player = GetFullscreenPlayer();
   if (player) {
-    player->Pause();
+    player->Pause(true);
     Send(new MediaPlayerMsg_DidMediaPlayerPause(
         routing_id(), fullscreen_player_id_));
   }
@@ -411,10 +411,12 @@ void BrowserMediaPlayerManager::OnSeek(int player_id, base::TimeDelta time) {
     player->SeekTo(time);
 }
 
-void BrowserMediaPlayerManager::OnPause(int player_id) {
+void BrowserMediaPlayerManager::OnPause(
+    int player_id,
+    bool is_media_related_action) {
   MediaPlayerAndroid* player = GetPlayer(player_id);
   if (player)
-    player->Pause();
+    player->Pause(is_media_related_action);
 }
 
 void BrowserMediaPlayerManager::OnSetVolume(int player_id, double volume) {

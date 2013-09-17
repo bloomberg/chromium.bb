@@ -162,7 +162,9 @@ IPC_MESSAGE_ROUTED4(
     GURL /* first_party_for_cookies */)
 
 // Pause the player.
-IPC_MESSAGE_ROUTED1(MediaPlayerHostMsg_Pause, int /* player_id */)
+IPC_MESSAGE_ROUTED2(MediaPlayerHostMsg_Pause,
+                    int /* player_id */,
+                    bool /* is_media_related_action */)
 
 // Release player resources, but keep the object for future usage.
 IPC_MESSAGE_ROUTED1(MediaPlayerHostMsg_Release, int /* player_id */)

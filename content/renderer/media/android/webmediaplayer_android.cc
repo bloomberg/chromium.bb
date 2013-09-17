@@ -321,11 +321,15 @@ void WebMediaPlayerAndroid::play() {
 }
 
 void WebMediaPlayerAndroid::pause() {
+  pause(true);
+}
+
+void WebMediaPlayerAndroid::pause(bool is_media_related_action) {
 #if defined(GOOGLE_TV)
   if (audio_renderer_ && !paused())
     audio_renderer_->Pause();
 #endif
-  proxy_->Pause(player_id_);
+  proxy_->Pause(player_id_, is_media_related_action);
   UpdatePlayingState(false);
 }
 
@@ -773,7 +777,7 @@ void WebMediaPlayerAndroid::ReleaseMediaResources() {
     case WebMediaPlayer::NetworkStateIdle:
     case WebMediaPlayer::NetworkStateLoading:
     case WebMediaPlayer::NetworkStateLoaded:
-      pause();
+      pause(false);
       client_->playbackStateChanged();
       break;
     // If a WebMediaPlayer instance has entered into one of these states,

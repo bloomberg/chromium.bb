@@ -95,6 +95,7 @@ class WebMediaPlayerAndroid
   // Playback controls.
   virtual void play();
   virtual void pause();
+  virtual void pause(bool is_media_related_action);
   virtual void seek(double seconds);
   virtual bool supportsFullscreen() const;
   virtual bool supportsSave() const;

@@ -41,7 +41,7 @@ class MEDIA_EXPORT MediaPlayerAndroid {
   virtual void Start() = 0;
 
   // Pause the media.
-  virtual void Pause() = 0;
+  virtual void Pause(bool is_media_related_action) = 0;
 
   // Seek to a particular position. When succeeds, OnSeekComplete() will be
   // called. Otherwise, nothing will happen.
