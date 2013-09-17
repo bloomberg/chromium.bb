@@ -9,6 +9,7 @@
 import json
 import optparse
 import os
+import pipes
 import subprocess
 import sys
 
@@ -31,13 +32,15 @@ def main():
     with open(options.output_json, 'w') as f:
       json.dump(dict(os.environ), f)
   else:
-    envsetup_cmd = ' '.join(args)
+    envsetup_cmd = ' '.join(map(pipes.quote, args))
     full_cmd = [
         'bash', '-c',
-        '. %s; ./%s -d -f %s' % (envsetup_cmd, __file__, options.output_json)]
+        '. %s; %s -d -f %s' % (envsetup_cmd, os.path.abspath(__file__),
+                               options.output_json)
+    ]
     ret = subprocess.call(full_cmd)
     if ret:
-      sys.exit('Error running %s and dumping env', envsetup_cmd)
+      sys.exit('Error running %s and dumping env' % envsetup_cmd)
 
 
 if __name__ == '__main__':
