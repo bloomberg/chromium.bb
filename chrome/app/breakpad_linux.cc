@@ -1157,6 +1157,11 @@ void HandleCrashDump(const BreakpadInfo& info) {
   //   abcdef \r\n
   //   BOUNDARY \r\n
   //
+  //   zero to 4:
+  //   Content-Disposition: form-data; name="prn-info-1" \r\n \r\n
+  //   abcdefghijklmnopqrstuvwxyzabcdef \r\n
+  //   BOUNDARY \r\n
+  //
   //   zero or one:
   //   Content-Disposition: form-data; name="num-switches" \r\n \r\n
   //   5 \r\n
@@ -1272,6 +1277,19 @@ void HandleCrashDump(const BreakpadInfo& info) {
     writer.AddPairString(distro_msg, info.distro);
     writer.AddBoundary();
     writer.Flush();
+  }
+
+  unsigned printer_info_len =
+      my_strlen(child_process_logging::g_printer_info);
+  if (printer_info_len) {
+    static const char printer_info_msg[] = "prn-info-";
+    static const unsigned kMaxPrnInfoLen =
+        kMaxReportedPrinterRecords * child_process_logging::kPrinterInfoStrLen;
+    writer.AddPairDataInChunks(printer_info_msg, sizeof(printer_info_msg) - 1,
+        child_process_logging::g_printer_info,
+        std::min(printer_info_len, kMaxPrnInfoLen),
+        child_process_logging::kPrinterInfoStrLen,
+        true);
   }
 
   if (*child_process_logging::g_num_switches) {

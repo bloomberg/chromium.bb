@@ -25,6 +25,9 @@ static const size_t kMaxReportedVariationChunks = 15;
 // limit of google_breakpad::CustomInfoEntry::kValueMaxLength.
 static const size_t kMaxVariationChunkSize = 64;
 
+// The maximum number of prn-info-* records.
+static const size_t kMaxReportedPrinterRecords = 4;
+
 // The maximum number of command line switches to include in the crash
 // report's metadata. Note that the mini-dump itself will also contain the
 // (original) command line arguments within the PEB.
@@ -40,11 +43,15 @@ namespace child_process_logging {
 extern char g_client_id[];
 extern char g_num_switches[];
 extern char g_num_variations[];
+extern char g_printer_info[];
 extern char g_switches[];
 extern char g_variation_chunks[];
 
 // Assume command line switches are less than 64 chars.
 static const size_t kSwitchLen = 64;
+
+// Assume printer info strings are less than 64 chars.
+static const size_t kPrinterInfoStrLen = 64;
 #endif
 
 // Sets the Client ID that is used as GUID if a Chrome process crashes.
@@ -54,12 +61,32 @@ void SetClientId(const std::string& client_id);
 // id in |client_id| if it's known, an empty string otherwise.
 std::string GetClientId();
 
+// Sets the data on the printer to send along with crash reports. Data may be
+// separated by ';' up to kMaxReportedPrinterRecords strings. Each substring
+// would be cut to 63 chars.
+void SetPrinterInfo(const char* printer_info);
+
 // Sets the command line arguments to send along with crash reports to the
 // values in |command_line|.
 void SetCommandLine(const CommandLine* command_line);
 
 // Initialize the list of experiment info to send along with crash reports.
 void SetExperimentList(const std::vector<string16>& state);
+
+// Set/clear information about currently accessed printer.
+class ScopedPrinterInfoSetter {
+ public:
+  explicit ScopedPrinterInfoSetter(const std::string& printer_info) {
+    SetPrinterInfo(printer_info.c_str());
+  }
+
+  ~ScopedPrinterInfoSetter() {
+    SetPrinterInfo("");
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ScopedPrinterInfoSetter);
+};
 
 }  // namespace child_process_logging
 

@@ -23,6 +23,10 @@ namespace {
 typedef void (__cdecl *MainSetClientId)(const wchar_t*);
 
 // exported in breakpad_win.cc:
+//     void __declspec(dllexport) __cdecl SetPrinterInfo.
+typedef void (__cdecl *MainSetPrinterInfo)(const wchar_t*);
+
+// exported in breakpad_win.cc:
 //   void __declspec(dllexport) __cdecl SetCommandLine2
 typedef void (__cdecl *MainSetCommandLine)(const wchar_t**, size_t);
 
@@ -84,6 +88,21 @@ std::string GetClientId() {
     return WideToASCII(wstr_client_id);
   else
     return std::string();
+}
+
+void SetPrinterInfo(const char* printer_info) {
+  static MainSetPrinterInfo set_printer_info = NULL;
+  // note: benign race condition on set_printer_info.
+  if (!set_printer_info) {
+    HMODULE exe_module = GetModuleHandle(chrome::kBrowserProcessExecutableName);
+    if (!exe_module)
+      return;
+    set_printer_info = reinterpret_cast<MainSetPrinterInfo>(
+        GetProcAddress(exe_module, "SetPrinterInfo"));
+    if (!set_printer_info)
+      return;
+  }
+  (set_printer_info)(UTF8ToWide(printer_info).c_str());
 }
 
 void SetCommandLine(const CommandLine* command_line) {

@@ -23,6 +23,7 @@ using base::debug::SetCrashKeyValue;
 using base::debug::ClearCrashKey;
 
 const char* kGuidParamName = "guid";
+const char* kPrinterInfoNameFormat = "prn-info-%zu";
 
 // Account for the terminating null character.
 static const size_t kClientIdSize = 32 + 1;
@@ -46,6 +47,20 @@ void SetClientId(const std::string& client_id) {
 
 std::string GetClientId() {
   return std::string(g_client_id);
+}
+
+void SetPrinterInfo(const char* printer_info) {
+  std::vector<std::string> info;
+  base::SplitString(printer_info, ';', &info);
+  info.resize(kMaxReportedPrinterRecords);
+  for (size_t i = 0; i < info.size(); ++i) {
+    std::string key = base::StringPrintf(kPrinterInfoNameFormat, i);
+    if (!info[i].empty()) {
+      SetCrashKeyValue(key, info[i]);
+    } else {
+      ClearCrashKey(key);
+    }
+  }
 }
 
 void SetCommandLine(const CommandLine* command_line) {

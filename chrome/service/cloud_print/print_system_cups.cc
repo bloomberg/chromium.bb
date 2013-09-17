@@ -25,8 +25,8 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/common/child_process_logging.h"
 #include "chrome/common/cloud_print/cloud_print_constants.h"
-#include "chrome/common/crash_keys.h"
 #include "chrome/service/cloud_print/cloud_print_helpers.h"
 #include "grit/generated_resources.h"
 #include "printing/backend/cups_helper.h"
@@ -264,7 +264,7 @@ class PrinterWatcherCUPS
       PrintSystem::PrinterWatcher::Delegate* delegate) OVERRIDE{
     scoped_refptr<printing::PrintBackend> print_backend(
         printing::PrintBackend::CreateInstance(NULL));
-    crash_keys::ScopedPrinterInfo crash_key(
+    child_process_logging::ScopedPrinterInfoSetter prn_info(
         print_backend->GetPrinterDriverInfo(printer_name_));
     if (delegate_ != NULL)
       StopWatching();
@@ -595,7 +595,7 @@ bool PrintSystemCUPS::GetPrinterCapsAndDefaults(
   }
 
   // TODO(gene): Retry multiple times in case of error.
-  crash_keys::ScopedPrinterInfo crash_key(
+  child_process_logging::ScopedPrinterInfoSetter prn_info(
       server_info->backend->GetPrinterDriverInfo(short_printer_name));
   if (!server_info->backend->GetPrinterCapsAndDefaults(short_printer_name,
                                                        printer_info) ) {
@@ -618,7 +618,7 @@ bool PrintSystemCUPS::GetJobDetails(const std::string& printer_name,
   if (!server_info)
     return false;
 
-  crash_keys::ScopedPrinterInfo crash_key(
+  child_process_logging::ScopedPrinterInfoSetter prn_info(
       server_info->backend->GetPrinterDriverInfo(short_printer_name));
   cups_job_t* jobs = NULL;
   int num_jobs = GetJobs(&jobs, server_info->url, cups_encryption_,
@@ -778,7 +778,7 @@ PlatformJobId PrintSystemCUPS::SpoolPrintJob(
   if (!server_info)
     return false;
 
-  crash_keys::ScopedPrinterInfo crash_key(
+  child_process_logging::ScopedPrinterInfoSetter prn_info(
       server_info->backend->GetPrinterDriverInfo(printer_name));
 
   // We need to store options as char* string for the duration of the

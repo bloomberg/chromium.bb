@@ -54,7 +54,7 @@
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
 #if defined(ENABLE_FULL_PRINTING)
-#include "chrome/common/crash_keys.h"
+#include "chrome/common/child_process_logging.h"
 #include "printing/backend/print_backend.h"
 #endif
 
@@ -504,7 +504,7 @@ void ChromeContentUtilityClient::OnGetPrinterCapsAndDefaults(
       printing::PrintBackend::CreateInstance(NULL);
   printing::PrinterCapsAndDefaults printer_info;
 
-  crash_keys::ScopedPrinterInfo crash_key(
+  child_process_logging::ScopedPrinterInfoSetter prn_info(
       print_backend->GetPrinterDriverInfo(printer_name));
 
   if (print_backend->GetPrinterCapsAndDefaults(printer_name, &printer_info)) {
