@@ -417,7 +417,7 @@ static inline bool nodeIsDetachedFromDocument(const Node& node)
     return highest->nodeType() == Node::DOCUMENT_FRAGMENT_NODE && !highest->isShadowRoot();
 }
 
-void FrameSelection::textWasReplaced(CharacterData* node, unsigned offset, unsigned oldLength, unsigned newLength)
+void FrameSelection::didUpdateCharacterData(CharacterData* node, unsigned offset, unsigned oldLength, unsigned newLength)
 {
     // The fragment check is a performance optimization. See http://trac.webkit.org/changeset/30062.
     if (isNone() || !node || nodeIsDetachedFromDocument(*node))
@@ -443,7 +443,7 @@ static Position updatePostionAfterAdoptingTextNodeSplit(const Position& position
     return Position(toText(oldNode.nextSibling()), positionOffset - oldLength);
 }
 
-void FrameSelection::textNodeSplit(const Text& oldNode)
+void FrameSelection::didSplitTextNode(const Text& oldNode)
 {
     if (isNone() || nodeIsDetachedFromDocument(oldNode))
         return;

@@ -1726,7 +1726,7 @@ static inline void boundaryTextInserted(RangeBoundaryPoint& boundary, Node* text
     boundary.setOffset(boundaryOffset + length);
 }
 
-void Range::textInserted(Node* text, unsigned offset, unsigned length)
+void Range::didInsertText(Node* text, unsigned offset, unsigned length)
 {
     ASSERT(text);
     ASSERT(&text->document() == m_ownerDocument);
@@ -1747,7 +1747,7 @@ static inline void boundaryTextRemoved(RangeBoundaryPoint& boundary, Node* text,
         boundary.setOffset(boundaryOffset - length);
 }
 
-void Range::textRemoved(Node* text, unsigned offset, unsigned length)
+void Range::didRemoveText(Node* text, unsigned offset, unsigned length)
 {
     ASSERT(text);
     ASSERT(&text->document() == m_ownerDocument);
@@ -1763,7 +1763,7 @@ static inline void boundaryTextNodesMerged(RangeBoundaryPoint& boundary, NodeWit
         boundary.set(oldNode.node()->previousSibling(), offset, 0);
 }
 
-void Range::textNodesMerged(NodeWithIndex& oldNode, unsigned offset)
+void Range::didMergeTextNodes(NodeWithIndex& oldNode, unsigned offset)
 {
     ASSERT(oldNode.node());
     ASSERT(&oldNode.node()->document() == m_ownerDocument);
@@ -1775,7 +1775,7 @@ void Range::textNodesMerged(NodeWithIndex& oldNode, unsigned offset)
     boundaryTextNodesMerged(m_end, oldNode, offset);
 }
 
-static inline void boundaryTextNodesSplit(RangeBoundaryPoint& boundary, Text* oldNode)
+static inline void boundaryTextNodeSplit(RangeBoundaryPoint& boundary, Text* oldNode)
 {
     if (boundary.container() != oldNode)
         return;
@@ -1785,7 +1785,7 @@ static inline void boundaryTextNodesSplit(RangeBoundaryPoint& boundary, Text* ol
     boundary.set(oldNode->nextSibling(), boundaryOffset - oldNode->length(), 0);
 }
 
-void Range::textNodeSplit(Text* oldNode)
+void Range::didSplitTextNode(Text* oldNode)
 {
     ASSERT(oldNode);
     ASSERT(&oldNode->document() == m_ownerDocument);
@@ -1793,8 +1793,8 @@ void Range::textNodeSplit(Text* oldNode)
     ASSERT(oldNode->isTextNode());
     ASSERT(oldNode->nextSibling());
     ASSERT(oldNode->nextSibling()->isTextNode());
-    boundaryTextNodesSplit(m_start, oldNode);
-    boundaryTextNodesSplit(m_end, oldNode);
+    boundaryTextNodeSplit(m_start, oldNode);
+    boundaryTextNodeSplit(m_end, oldNode);
 }
 
 void Range::expand(const String& unit, ExceptionState& es)

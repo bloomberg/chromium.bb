@@ -155,8 +155,8 @@ public:
     void debugRenderer(RenderObject*, bool selected) const;
 
     void nodeWillBeRemoved(Node*);
-    void textWasReplaced(CharacterData*, unsigned offset, unsigned oldLength, unsigned newLength);
-    void textNodeSplit(const Text& oldNode);
+    void didUpdateCharacterData(CharacterData*, unsigned offset, unsigned oldLength, unsigned newLength);
+    void didSplitTextNode(const Text& oldNode);
 
     void setCaretVisible(bool caretIsVisible) { setCaretVisibility(caretIsVisible ? Visible : Hidden); }
     bool recomputeCaretRect();

@@ -697,10 +697,10 @@ public:
     void nodeWillBeRemoved(Node*);
     bool canReplaceChild(Node* newChild, Node* oldChild);
 
-    void textInserted(Node*, unsigned offset, unsigned length);
-    void textRemoved(Node*, unsigned offset, unsigned length);
-    void textNodesMerged(Text* oldNode, unsigned offset);
-    void textNodeSplit(Text* oldNode);
+    void didInsertText(Node*, unsigned offset, unsigned length);
+    void didRemoveText(Node*, unsigned offset, unsigned length);
+    void didMergeTextNodes(Text* oldNode, unsigned offset);
+    void didSplitTextNode(Text* oldNode);
 
     void setDOMWindow(DOMWindow* domWindow) { m_domWindow = domWindow; }
     DOMWindow* domWindow() const { return m_domWindow; }

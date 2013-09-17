@@ -538,7 +538,7 @@ void Node::normalize()
             // Both non-empty text nodes. Merge them.
             unsigned offset = text->length();
             text->appendData(nextText->data());
-            document().textNodesMerged(nextText.get(), offset);
+            document().didMergeTextNodes(nextText.get(), offset);
             nextText->remove(IGNORE_EXCEPTION);
         }
 

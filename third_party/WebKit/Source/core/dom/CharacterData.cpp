@@ -55,7 +55,7 @@ void CharacterData::setData(const String& data)
     unsigned oldLength = length();
 
     setDataAndUpdate(nonNullData, 0, oldLength, nonNullData.length());
-    document().textRemoved(this, 0, oldLength);
+    document().didRemoveText(this, 0, oldLength);
 }
 
 String CharacterData::substringData(unsigned offset, unsigned count, ExceptionState& es)
@@ -129,7 +129,7 @@ void CharacterData::insertData(unsigned offset, const String& data, ExceptionSta
 
     setDataAndUpdate(newStr, offset, 0, data.length(), recalcStyleBehavior);
 
-    document().textInserted(this, offset, data.length());
+    document().didInsertText(this, offset, data.length());
 }
 
 void CharacterData::deleteData(unsigned offset, unsigned count, ExceptionState& es, RecalcStyleBehavior recalcStyleBehavior)
@@ -150,7 +150,7 @@ void CharacterData::deleteData(unsigned offset, unsigned count, ExceptionState& 
 
     setDataAndUpdate(newStr, offset, count, 0, recalcStyleBehavior);
 
-    document().textRemoved(this, offset, realCount);
+    document().didRemoveText(this, offset, realCount);
 }
 
 void CharacterData::replaceData(unsigned offset, unsigned count, const String& data, ExceptionState& es)
@@ -173,8 +173,8 @@ void CharacterData::replaceData(unsigned offset, unsigned count, const String& d
     setDataAndUpdate(newStr, offset, count, data.length());
 
     // update the markers for spell checking and grammar checking
-    document().textRemoved(this, offset, realCount);
-    document().textInserted(this, offset, data.length());
+    document().didRemoveText(this, offset, realCount);
+    document().didInsertText(this, offset, data.length());
 }
 
 String CharacterData::nodeValue() const
@@ -205,7 +205,7 @@ void CharacterData::setDataAndUpdate(const String& newData, unsigned offsetOfRep
         toProcessingInstruction(this)->checkStyleSheet();
 
     if (document().frame())
-        document().frame()->selection().textWasReplaced(this, offsetOfReplacedData, oldLength, newLength);
+        document().frame()->selection().didUpdateCharacterData(this, offsetOfReplacedData, oldLength, newLength);
 
     document().incDOMTreeVersion();
     didModifyData(oldData);

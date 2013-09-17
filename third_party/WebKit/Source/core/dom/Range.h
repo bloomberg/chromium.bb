@@ -132,10 +132,10 @@ public:
     void nodeChildrenWillBeRemoved(ContainerNode*);
     void nodeWillBeRemoved(Node*);
 
-    void textInserted(Node*, unsigned offset, unsigned length);
-    void textRemoved(Node*, unsigned offset, unsigned length);
-    void textNodesMerged(NodeWithIndex& oldNode, unsigned offset);
-    void textNodeSplit(Text* oldNode);
+    void didInsertText(Node*, unsigned offset, unsigned length);
+    void didRemoveText(Node*, unsigned offset, unsigned length);
+    void didMergeTextNodes(NodeWithIndex& oldNode, unsigned offset);
+    void didSplitTextNode(Text* oldNode);
 
     // Expand range to a unit (word or sentence or block or document) boundary.
     // Please refer to https://bugs.webkit.org/show_bug.cgi?id=27632 comment #5
