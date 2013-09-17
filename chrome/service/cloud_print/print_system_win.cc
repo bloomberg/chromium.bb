@@ -18,7 +18,7 @@
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_hdc.h"
-#include "chrome/common/child_process_logging.h"
+#include "chrome/common/crash_keys.h"
 #include "chrome/service/service_process.h"
 #include "chrome/service/service_utility_process_host.h"
 #include "grit/generated_resources.h"
@@ -170,7 +170,7 @@ class PrintSystemWatcherWin : public base::win::ObjectWatcher::Delegate {
     scoped_refptr<printing::PrintBackend> print_backend(
         printing::PrintBackend::CreateInstance(NULL));
     printer_info_ = print_backend->GetPrinterDriverInfo(printer_name);
-    child_process_logging::ScopedPrinterInfoSetter prn_info(printer_info_);
+    crash_keys::ScopedPrinterInfo crash_key(printer_info_);
 
     delegate_ = delegate;
     // An empty printer name means watch the current server, we need to pass
@@ -203,7 +203,7 @@ class PrintSystemWatcherWin : public base::win::ObjectWatcher::Delegate {
 
   // base::ObjectWatcher::Delegate method
   virtual void OnObjectSignaled(HANDLE object) {
-    child_process_logging::ScopedPrinterInfoSetter prn_info(printer_info_);
+    crash_keys::ScopedPrinterInfo crash_key(printer_info_);
     DWORD change = 0;
     FindNextPrinterChangeNotification(object, &change, NULL, NULL);
 
@@ -370,7 +370,7 @@ class PrintSystemWin : public PrintSystem {
       // TODO(gene): add tags handling.
       scoped_refptr<printing::PrintBackend> print_backend(
           printing::PrintBackend::CreateInstance(NULL));
-      child_process_logging::ScopedPrinterInfoSetter prn_info(
+      crash_keys::ScopedPrinterInfo crash_key(
           print_backend->GetPrinterDriverInfo(printer_name));
       return core_->Spool(print_ticket, print_data_file_path,
                           print_data_mime_type, printer_name, job_title,
@@ -403,7 +403,7 @@ class PrintSystemWin : public PrintSystem {
                  JobSpooler::Delegate* delegate) {
         scoped_refptr<printing::PrintBackend> print_backend(
             printing::PrintBackend::CreateInstance(NULL));
-        child_process_logging::ScopedPrinterInfoSetter prn_info(
+        crash_keys::ScopedPrinterInfo crash_key(
             print_backend->GetPrinterDriverInfo(printer_name));
         if (delegate_) {
           // We are already in the process of printing.
@@ -792,7 +792,7 @@ bool PrintSystemWin::IsValidPrinter(const std::string& printer_name) {
 bool PrintSystemWin::ValidatePrintTicket(
     const std::string& printer_name,
     const std::string& print_ticket_data) {
-  child_process_logging::ScopedPrinterInfoSetter prn_info(
+  crash_keys::ScopedPrinterInfo crash_key(
       print_backend_->GetPrinterDriverInfo(printer_name));
   printing::ScopedXPSInitializer xps_initializer;
   if (!xps_initializer.initialized()) {
@@ -833,7 +833,7 @@ bool PrintSystemWin::ValidatePrintTicket(
 bool PrintSystemWin::GetJobDetails(const std::string& printer_name,
                                    PlatformJobId job_id,
                                    PrintJobDetails *job_details) {
-  child_process_logging::ScopedPrinterInfoSetter prn_info(
+  crash_keys::ScopedPrinterInfo crash_key(
       print_backend_->GetPrinterDriverInfo(printer_name));
   DCHECK(job_details);
   printing::ScopedPrinterHandle printer_handle;

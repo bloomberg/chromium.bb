@@ -105,7 +105,6 @@ typedef NTSTATUS (WINAPI* NtTerminateProcessPtr)(HANDLE ProcessHandle,
 char* g_real_terminate_process_stub = NULL;
 
 static size_t g_client_id_offset = 0;
-static size_t g_printer_info_offset = 0;
 static size_t g_num_switches_offset = 0;
 static size_t g_switches_offset = 0;
 static size_t g_dynamic_keys_offset = 0;
@@ -458,16 +457,6 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& exe_path,
     g_custom_entries->push_back(google_breakpad::CustomInfoEntry(
         L"special", UTF16ToWide(special_build).c_str()));
 
-  // Add empty values for the prn_info-*. We'll put the actual values when we
-  // collect them at this location.
-  g_printer_info_offset = g_custom_entries->size();
-  // one-based index for the name suffix.
-  for (size_t i = 1; i <= kMaxReportedPrinterRecords; ++i) {
-    g_custom_entries->push_back(
-        google_breakpad::CustomInfoEntry(
-            base::StringPrintf(L"prn-info-%d", i).c_str(), L""));
-  }
-
   // Read the id from registry. If reporting has never been enabled
   // the result will be empty string. Its OK since when user enables reporting
   // we will insert the new value at this location.
@@ -651,21 +640,6 @@ extern "C" void __declspec(dllexport) __cdecl SetClientId(
   base::wcslcpy((*g_custom_entries)[g_client_id_offset].value,
                 client_id,
                 google_breakpad::CustomInfoEntry::kValueMaxLength);
-}
-
-extern "C" void __declspec(dllexport) __cdecl SetPrinterInfo(
-    const wchar_t* printer_info) {
-  if (!g_custom_entries)
-    return;
-  std::vector<string16> info;
-  base::SplitString(printer_info, L';', &info);
-  DCHECK_LE(info.size(), kMaxReportedPrinterRecords);
-  info.resize(kMaxReportedPrinterRecords);
-  for (size_t i = 0; i < info.size(); ++i) {
-    base::wcslcpy((*g_custom_entries)[g_printer_info_offset + i].value,
-                info[i].c_str(),
-                google_breakpad::CustomInfoEntry::kValueMaxLength);
-  }
 }
 
 // NOTE: This function is used by SyzyASAN to annotate crash reports. If you
