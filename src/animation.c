@@ -124,6 +124,7 @@ struct weston_surface_animation {
 	struct wl_listener listener;
 	float start, stop;
 	weston_surface_animation_frame_func_t frame;
+	weston_surface_animation_frame_func_t reset;
 	weston_surface_animation_done_func_t done;
 	void *data;
 };
@@ -134,6 +135,8 @@ weston_surface_animation_destroy(struct weston_surface_animation *animation)
 	wl_list_remove(&animation->animation.link);
 	wl_list_remove(&animation->listener.link);
 	wl_list_remove(&animation->transform.link);
+	if (animation->reset)
+		animation->reset(animation);
 	weston_surface_geometry_dirty(animation->surface);
 	if (animation->done)
 		animation->done(animation, animation->data);
@@ -179,6 +182,7 @@ static struct weston_surface_animation *
 weston_surface_animation_run(struct weston_surface *surface,
 			     float start, float stop,
 			     weston_surface_animation_frame_func_t frame,
+			     weston_surface_animation_frame_func_t reset,
 			     weston_surface_animation_done_func_t done,
 			     void *data)
 {
@@ -190,6 +194,7 @@ weston_surface_animation_run(struct weston_surface *surface,
 
 	animation->surface = surface;
 	animation->frame = frame;
+	animation->reset = reset;
 	animation->done = done;
 	animation->data = data;
 	animation->start = start;
@@ -210,6 +215,14 @@ weston_surface_animation_run(struct weston_surface *surface,
 		       &animation->animation.link);
 
 	return animation;
+}
+
+static void
+reset_alpha(struct weston_surface_animation *animation)
+{
+	struct weston_surface *surface = animation->surface;
+
+	surface->alpha = animation->stop;
 }
 
 static void
@@ -242,7 +255,8 @@ weston_zoom_run(struct weston_surface *surface, float start, float stop,
 	struct weston_surface_animation *zoom;
 
 	zoom = weston_surface_animation_run(surface, start, stop,
-					    zoom_frame, done, data);
+					    zoom_frame, reset_alpha,
+					    done, data);
 
 	weston_spring_init(&zoom->spring, 300.0, start, stop);
 	zoom->spring.friction = 1400;
@@ -269,8 +283,9 @@ weston_fade_run(struct weston_surface *surface,
 {
 	struct weston_surface_animation *fade;
 
-	fade = weston_surface_animation_run(surface, 0, 0,
-					    fade_frame, done, data);
+	fade = weston_surface_animation_run(surface, 0, end,
+					    fade_frame, reset_alpha,
+					    done, data);
 
 	weston_spring_init(&fade->spring, k, start, end);
 
@@ -307,7 +322,8 @@ weston_slide_run(struct weston_surface *surface, float start, float stop,
 	struct weston_surface_animation *animation;
 
 	animation = weston_surface_animation_run(surface, start, stop,
-						 slide_frame, done, data);
+						 slide_frame, NULL, done,
+						 data);
 	if (!animation)
 		return NULL;
 
