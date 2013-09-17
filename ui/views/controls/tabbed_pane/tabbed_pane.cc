@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "ui/base/accessibility/accessible_view_state.h"
-#include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "ui/views/controls/label.h"

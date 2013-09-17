@@ -10,7 +10,7 @@ namespace {
 
 // These must be defined in the same order as the Android keycodes in
 // <android/keycodes.h> and
-// "ui/base/keycodes/keyboard_code_conversion_android.cc" . Some of these
+// "ui/events/keycodes/keyboard_code_conversion_android.cc" . Some of these
 // mappings assume a US keyboard layout for now.
 const uint32 usb_keycodes[] = {
   0,         // UNKNOWN

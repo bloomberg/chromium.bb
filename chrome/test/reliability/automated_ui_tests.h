@@ -105,7 +105,7 @@
 #include "chrome/test/reliability/automated_ui_test_base.h"
 #include "chrome/test/ui/ui_test.h"
 #include "third_party/libxml/chromium/libxml_utils.h"
-#include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 
 namespace base {
 class Time;

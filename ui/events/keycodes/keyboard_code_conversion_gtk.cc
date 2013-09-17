@@ -33,7 +33,7 @@
 
 // WindowsKeyCodeForGdkKeyCode is copied from platform/gtk/KeyEventGtk.cpp
 
-#include "ui/base/keycodes/keyboard_code_conversion_gtk.h"
+#include "ui/events/keycodes/keyboard_code_conversion_gtk.h"
 
 #include <gdk/gdk.h>
 #include <gdk/gdkkeysyms.h>
@@ -41,8 +41,8 @@
 
 #include "base/basictypes.h"
 #include "build/build_config.h"
-#include "ui/base/keycodes/keyboard_code_conversion_x.h"
-#include "ui/base/keycodes/keyboard_codes_posix.h"
+#include "ui/events/keycodes/keyboard_code_conversion_x.h"
+#include "ui/events/keycodes/keyboard_codes_posix.h"
 
 namespace ui {
 

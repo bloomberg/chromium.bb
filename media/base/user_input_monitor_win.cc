@@ -14,7 +14,7 @@
 #include "base/win/message_window.h"
 #include "media/base/keyboard_event_counter.h"
 #include "third_party/skia/include/core/SkPoint.h"
-#include "ui/base/keycodes/keyboard_code_conversion_win.h"
+#include "ui/events/keycodes/keyboard_code_conversion_win.h"
 
 namespace media {
 namespace {

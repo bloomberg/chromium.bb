@@ -13,8 +13,8 @@
 #include <gdk/gdkkeysyms.h>
 #include <vector>
 
-#include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/ui_export.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 
 namespace ui {
 

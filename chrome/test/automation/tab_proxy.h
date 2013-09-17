@@ -23,8 +23,8 @@
 #include "content/public/common/page_type.h"
 #include "content/public/common/security_style.h"
 #include "net/cert/cert_status_flags.h"
-#include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 
 class BrowserProxy;
 class GURL;

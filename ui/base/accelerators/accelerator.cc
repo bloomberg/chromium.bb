@@ -18,7 +18,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(OS_WIN) && (defined(USE_AURA) || defined(OS_MACOSX))
-#include "ui/base/keycodes/keyboard_code_conversion.h"
+#include "ui/events/keycodes/keyboard_code_conversion.h"
 #endif
 
 namespace ui {

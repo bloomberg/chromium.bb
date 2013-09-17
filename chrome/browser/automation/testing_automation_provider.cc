@@ -145,8 +145,8 @@
 #include "net/cookies/cookie_store.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/base/events/event_constants.h"
-#include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
 #include "chrome/browser/policy/policy_service.h"

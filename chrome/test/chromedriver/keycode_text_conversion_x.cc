@@ -12,8 +12,8 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/test/chromedriver/chrome/ui_events.h"
-#include "ui/base/keycodes/keyboard_code_conversion_x.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/events/keycodes/keyboard_code_conversion_x.h"
 
 namespace {
 

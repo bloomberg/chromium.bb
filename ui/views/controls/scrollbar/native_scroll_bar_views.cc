@@ -5,7 +5,7 @@
 #include "ui/views/controls/scrollbar/native_scroll_bar_views.h"
 
 #include "base/logging.h"
-#include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/path.h"
 #include "ui/views/controls/button/custom_button.h"

@@ -11,7 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/events/event_constants.h"
-#include "ui/base/keycodes/keyboard_code_conversion_x.h"
+#include "ui/events/keycodes/keyboard_code_conversion_x.h"
 #include "ui/gfx/size.h"
 
 namespace {

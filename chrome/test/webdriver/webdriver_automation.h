@@ -15,7 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/common/automation_constants.h"
 #include "chrome/test/webdriver/webdriver_logging.h"
-#include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 
 class AutomationId;
 class AutomationProxy;

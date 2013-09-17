@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_KEYCODES_KEYBOARD_CODES_WIN_H_
-#define UI_BASE_KEYCODES_KEYBOARD_CODES_WIN_H_
+#ifndef UI_EVENTS_KEYCODES_KEYBOARD_CODES_WIN_H_
+#define UI_EVENTS_KEYCODES_KEYBOARD_CODES_WIN_H_
 
 #include <windows.h>
 #include <ime.h>
@@ -189,4 +189,4 @@ enum KeyboardCode {
 
 }  // namespace ui
 
-#endif  // UI_BASE_KEYCODES_KEYBOARD_CODES_WIN_H_
+#endif  // UI_EVENTS_KEYCODES_KEYBOARD_CODES_WIN_H_

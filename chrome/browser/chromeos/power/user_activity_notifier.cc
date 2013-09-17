@@ -10,7 +10,7 @@
 #include "chromeos/dbus/power_manager_client.h"
 #include "ui/base/events/event.h"
 #include "ui/base/events/event_constants.h"
-#include "ui/base/keycodes/keyboard_codes_posix.h"
+#include "ui/events/keycodes/keyboard_codes_posix.h"
 
 namespace {
 

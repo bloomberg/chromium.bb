@@ -7,8 +7,8 @@
 #include "base/logging.h"
 #include "content/browser/renderer_host/input/web_input_event_util.h"
 #include "content/browser/renderer_host/input/web_input_event_util_posix.h"
-#include "ui/base/keycodes/keyboard_code_conversion_android.h"
-#include "ui/base/keycodes/keyboard_codes_posix.h"
+#include "ui/events/keycodes/keyboard_code_conversion_android.h"
+#include "ui/events/keycodes/keyboard_codes_posix.h"
 
 namespace content {
 

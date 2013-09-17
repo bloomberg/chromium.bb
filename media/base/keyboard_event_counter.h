@@ -10,7 +10,7 @@
 #include "base/synchronization/lock.h"
 #include "media/base/media_export.h"
 #include "ui/base/events/event_constants.h"
-#include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 
 namespace media {
 

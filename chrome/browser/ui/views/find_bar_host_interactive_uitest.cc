@@ -21,7 +21,7 @@
 #include "content/public/browser/web_contents.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "ui/base/clipboard/clipboard.h"
-#include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/view.h"
 #include "ui/views/views_delegate.h"

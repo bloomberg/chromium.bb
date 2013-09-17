@@ -13,9 +13,9 @@
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/events/event_constants.h"
 #include "ui/base/gestures/gesture_types.h"
-#include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/latency_info.h"
 #include "ui/base/ui_export.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/point.h"
 
 namespace gfx {

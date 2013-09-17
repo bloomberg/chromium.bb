@@ -33,11 +33,11 @@
 
 // WindowsKeyCodeForGdkKeyCode is copied from platform/gtk/KeyEventGtk.cpp
 
-#ifndef UI_BASE_KEYCODES_KEYBOARD_CODE_CONVERSION_GTK_H_
-#define UI_BASE_KEYCODES_KEYBOARD_CODE_CONVERSION_GTK_H_
+#ifndef UI_EVENTS_KEYCODES_KEYBOARD_CODE_CONVERSION_GTK_H_
+#define UI_EVENTS_KEYCODES_KEYBOARD_CODE_CONVERSION_GTK_H_
 
-#include "ui/base/keycodes/keyboard_codes_posix.h"
 #include "ui/base/ui_export.h"
+#include "ui/events/keycodes/keyboard_codes_posix.h"
 
 typedef struct _GdkEventKey GdkEventKey;
 
@@ -54,4 +54,4 @@ UI_EXPORT int GdkNativeKeyCodeForWindowsKeyCode(KeyboardCode keycode,
 
 } // namespace ui
 
-#endif  // UI_BASE_KEYCODES_KEYBOARD_CODE_CONVERSION_GTK_H_
+#endif  // UI_EVENTS_KEYCODES_KEYBOARD_CODE_CONVERSION_GTK_H_

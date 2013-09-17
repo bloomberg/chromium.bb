@@ -14,7 +14,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/root_window_observer.h"
-#include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/device_hierarchy_observer.h"

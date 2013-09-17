@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_KEYCODES_KEYBOARD_CODE_CONVERSION_X_H_
-#define UI_BASE_KEYCODES_KEYBOARD_CODE_CONVERSION_X_H_
+#ifndef UI_EVENTS_KEYCODES_KEYBOARD_CODE_CONVERSION_X_H_
+#define UI_EVENTS_KEYCODES_KEYBOARD_CODE_CONVERSION_X_H_
 
 #include "base/basictypes.h"
-#include "ui/base/keycodes/keyboard_codes_posix.h"
 #include "ui/base/ui_export.h"
+#include "ui/events/keycodes/keyboard_codes_posix.h"
 
 typedef union _XEvent XEvent;
 
@@ -28,4 +28,4 @@ unsigned int DefaultXKeysymFromHardwareKeycode(unsigned int keycode);
 
 }  // namespace ui
 
-#endif  // UI_BASE_KEYCODES_KEYBOARD_CODE_CONVERSION_X_H_
+#endif  // UI_EVENTS_KEYCODES_KEYBOARD_CODE_CONVERSION_X_H_

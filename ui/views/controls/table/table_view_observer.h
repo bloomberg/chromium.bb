@@ -5,7 +5,7 @@
 #ifndef UI_VIEWS_CONTROLS_TABLE_TABLE_VIEW_OBSERVER_H_
 #define UI_VIEWS_CONTROLS_TABLE_TABLE_VIEW_OBSERVER_H_
 
-#include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 
 namespace views {
 

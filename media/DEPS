@@ -7,6 +7,7 @@ include_rules = [
   "+third_party/opus",
   "+third_party/skia",
   "+ui/base",
+  "+ui/events",
   "+ui/gfx",
   "+ui/gl",
 ]

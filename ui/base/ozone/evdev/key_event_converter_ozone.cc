@@ -7,7 +7,7 @@
 #include <linux/input.h>
 
 #include "ui/base/events/event.h"
-#include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 
 namespace {
 

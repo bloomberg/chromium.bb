@@ -17,7 +17,7 @@
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 
 #if defined(OS_WIN) || defined(USE_AURA)
 #include "content/browser/renderer_host/ui_events_helper.h"

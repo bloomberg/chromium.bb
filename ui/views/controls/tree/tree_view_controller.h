@@ -5,7 +5,7 @@
 #ifndef UI_VIEWS_CONTROLS_TREE_TREE_VIEW_CONTROLLER_H_
 #define UI_VIEWS_CONTROLS_TREE_TREE_VIEW_CONTROLLER_H_
 
-#include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/views/views_export.h"
 
 namespace ui {

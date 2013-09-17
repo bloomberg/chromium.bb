@@ -37,7 +37,7 @@
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/WebKit/public/web/WebWindowFeatures.h"
-#include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/range/range.h"
 
@@ -52,8 +52,8 @@
 #if defined(USE_AURA) && defined(USE_X11)
 #include <X11/Xlib.h>
 #include "ui/base/events/event_constants.h"
-#include "ui/base/keycodes/keyboard_code_conversion.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/events/keycodes/keyboard_code_conversion.h"
 #endif
 
 using WebKit::WebFrame;

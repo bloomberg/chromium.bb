@@ -47,8 +47,8 @@
 #include "content/browser/renderer_host/ui_events_helper.h"
 #include "ui/base/events/event.h"
 #include "ui/base/events/event_constants.h"
-#include "ui/base/keycodes/keyboard_code_conversion_x.h"
-#include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/events/keycodes/keyboard_code_conversion_x.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 
 namespace content {
 

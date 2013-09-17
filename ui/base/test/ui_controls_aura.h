@@ -6,8 +6,8 @@
 #define UI_TEST_BASE_UI_CONTROLS_AURA_H_
 
 #include "base/callback_forward.h"
-#include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/test/ui_controls.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace ui_controls {

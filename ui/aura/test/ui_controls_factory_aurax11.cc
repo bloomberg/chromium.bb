@@ -16,9 +16,9 @@
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/ui_controls_factory_aura.h"
-#include "ui/base/keycodes/keyboard_code_conversion_x.h"
 #include "ui/base/test/ui_controls_aura.h"
 #include "ui/compositor/dip_util.h"
+#include "ui/events/keycodes/keyboard_code_conversion_x.h"
 
 namespace aura {
 namespace test {

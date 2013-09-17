@@ -21,8 +21,8 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/test/ui_controls.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 
 using apps::ShellWindow;
 

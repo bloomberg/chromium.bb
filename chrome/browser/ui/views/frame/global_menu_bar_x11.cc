@@ -29,8 +29,8 @@
 #include "content/public/browser/notification_source.h"
 #include "grit/generated_resources.h"
 #include "ui/base/accelerators/menu_label_accelerator_util_linux.h"
-#include "ui/base/keycodes/keyboard_code_conversion_x.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/events/keycodes/keyboard_code_conversion_x.h"
 #include "ui/gfx/text_elider.h"
 
 // libdbusmenu-glib types

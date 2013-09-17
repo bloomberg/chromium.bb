@@ -10,7 +10,7 @@
 #include "chrome/test/chromedriver/keycode_text_conversion.h"
 #include "chrome/test/chromedriver/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 
 namespace {
 

@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 
 // Specifies the type of the mouse event.
 enum MouseEventType {

@@ -161,14 +161,14 @@ ui/base/clipboard/clipboard_util_win.cc
 ui/base/dragdrop/os_exchange_data_provider_win.cc
 # Copyright The Chromium Authors, Apple Inc, Michael Emmel, Holger Hans Peter
 # Freyther, Collabora Ltd, Google Inc; BSD license. Not used on Android.
-ui/base/keycodes/keyboard_code_conversion_gtk.cc
+ui/events/keycodes/keyboard_code_conversion_gtk.cc
 # Copyright The Chromium Authors, Apple Inc, Michael Emmel, Holger Hans Peter
 # Freyther, Collabora Ltd, Google Inc; BSD license. Not used on Android.
-ui/base/keycodes/keyboard_code_conversion_gtk.h
+ui/events/keycodes/keyboard_code_conversion_gtk.h
 # Copyright The Chromium Authors, Michael Emmel, Google Inc; BSD license. This
 # third-party code is taken from WebKit, the license for which we already pick
 # up from webkit/.
-ui/base/keycodes/keyboard_codes_posix.h
+ui/events/keycodes/keyboard_codes_posix.h
 # This third-party code is taken from Mozilla, but is copyright Google and has
 # been re-licensed under the Chromium license.
 ui/gfx/codec/jpeg_codec.cc

@@ -12,8 +12,8 @@
 #include "base/i18n/rtl.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
-#include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/ui_export.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 
 namespace ui {
 

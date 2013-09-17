@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "content/browser/renderer_host/input/web_input_event_util_posix.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
-#include "ui/base/keycodes/keyboard_code_conversion_gtk.h"
+#include "ui/events/keycodes/keyboard_code_conversion_gtk.h"
 
 using WebKit::WebInputEvent;
 using WebKit::WebMouseEvent;

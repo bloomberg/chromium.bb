@@ -9,7 +9,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
-#include "ui/base/keycodes/keyboard_code_conversion_gtk.h"
+#include "ui/events/keycodes/keyboard_code_conversion_gtk.h"
 
 using WebKit::WebInputEvent;
 using WebKit::WebKeyboardEvent;

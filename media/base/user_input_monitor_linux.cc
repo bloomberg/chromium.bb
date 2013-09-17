@@ -23,7 +23,7 @@
 #include "base/synchronization/lock.h"
 #include "media/base/keyboard_event_counter.h"
 #include "third_party/skia/include/core/SkPoint.h"
-#include "ui/base/keycodes/keyboard_code_conversion_x.h"
+#include "ui/events/keycodes/keyboard_code_conversion_x.h"
 
 // These includes need to be later than dictated by the style guide due to
 // Xlib header pollution, specifically the min, max, and Status macros.

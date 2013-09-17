@@ -21,7 +21,7 @@
 
 namespace {
 
-// Extracted from: ui/base/keycodes/keyboard_codes.h
+// Extracted from: ui/events/keycodes/keyboard_codes.h
 enum {
   VKEY_BACK = 0x08,
   VKEY_SHIFT = 0x10,

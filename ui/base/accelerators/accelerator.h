@@ -15,8 +15,8 @@
 #include "base/strings/string16.h"
 #include "ui/base/accelerators/platform_accelerator.h"
 #include "ui/base/events/event_constants.h"
-#include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/ui_export.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 
 namespace ui {
 

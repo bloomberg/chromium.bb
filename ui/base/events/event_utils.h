@@ -7,7 +7,7 @@
 
 #include "base/event_types.h"
 #include "ui/base/events/event_constants.h"
-#include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_WIN)

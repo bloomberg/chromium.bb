@@ -14,7 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "chrome/common/automation_constants.h"
 #include "chrome/common/automation_id.h"
-#include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 
 class AutomationMessageSender;
 

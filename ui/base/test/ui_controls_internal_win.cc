@@ -9,8 +9,8 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
-#include "ui/base/keycodes/keyboard_code_conversion_win.h"
-#include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/events/keycodes/keyboard_code_conversion_win.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 
 #if defined(USE_AURA)
 #include "ui/aura/root_window.h"

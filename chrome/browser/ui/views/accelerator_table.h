@@ -9,7 +9,7 @@
 
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/views/chrome_views_export.h"
-#include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 
 namespace ui {
 class Accelerator;

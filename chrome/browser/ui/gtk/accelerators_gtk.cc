@@ -12,7 +12,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "ui/base/accelerators/platform_accelerator_gtk.h"
 #include "ui/base/events/event_conversion_gtk.h"
-#include "ui/base/keycodes/keyboard_code_conversion_gtk.h"
+#include "ui/events/keycodes/keyboard_code_conversion_gtk.h"
 
 namespace {
 
