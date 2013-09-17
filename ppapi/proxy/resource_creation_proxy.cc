@@ -19,6 +19,7 @@
 #include "ppapi/proxy/host_resolver_private_resource.h"
 #include "ppapi/proxy/host_resolver_resource.h"
 #include "ppapi/proxy/net_address_resource.h"
+#include "ppapi/proxy/network_monitor_resource.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_globals.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
@@ -30,7 +31,6 @@
 #include "ppapi/proxy/ppb_flash_message_loop_proxy.h"
 #include "ppapi/proxy/ppb_graphics_3d_proxy.h"
 #include "ppapi/proxy/ppb_image_data_proxy.h"
-#include "ppapi/proxy/ppb_network_monitor_private_proxy.h"
 #include "ppapi/proxy/ppb_video_decoder_proxy.h"
 #include "ppapi/proxy/ppb_x509_certificate_private_proxy.h"
 #include "ppapi/proxy/printing_resource.h"
@@ -313,7 +313,8 @@ PP_Resource ResourceCreationProxy::CreateNetAddressFromNetAddressPrivate(
 
 PP_Resource ResourceCreationProxy::CreateNetworkMonitorPrivate(
     PP_Instance instance) {
-  return PPB_NetworkMonitor_Private_Proxy::CreateProxyResource(instance);
+  return (new NetworkMonitorResource(GetConnection(), instance))->
+      GetReference();
 }
 
 PP_Resource ResourceCreationProxy::CreatePrinting(PP_Instance instance) {

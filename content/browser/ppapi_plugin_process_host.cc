@@ -217,7 +217,7 @@ PpapiPluginProcessHost::PpapiPluginProcessHost(
                                             info.path, profile_data_directory,
                                             false));
 
-  filter_ = new PepperMessageFilter(permissions_);
+  filter_ = new PepperMessageFilter();
   process_->GetHost()->AddFilter(filter_.get());
   process_->GetHost()->AddFilter(host_impl_->message_filter().get());
 
