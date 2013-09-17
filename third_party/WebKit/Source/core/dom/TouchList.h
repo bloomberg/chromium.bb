@@ -40,6 +40,11 @@ public:
         return adoptRef(new TouchList);
     }
 
+    static PassRefPtr<TouchList> create(Vector<RefPtr<Touch> >& touches)
+    {
+        return adoptRef(new TouchList(touches));
+    }
+
     unsigned length() const { return m_values.size(); }
 
     Touch* item(unsigned);
@@ -50,6 +55,12 @@ public:
 private:
     TouchList()
     {
+        ScriptWrappable::init(this);
+    }
+
+    TouchList(Vector<RefPtr<Touch> >& touches)
+    {
+        m_values.swap(touches);
         ScriptWrappable::init(this);
     }
 

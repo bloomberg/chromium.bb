@@ -40,7 +40,7 @@ try {
 try {
     var tl = document.createTouchList(1, 2);
 } catch(e) {
-    testFailed("An exception was thrown: " + e.message);
+    testPassed("An exception was thrown: " + e.message);
 }
 isSuccessfullyParsed();
 

@@ -104,16 +104,4 @@ v8::Handle<v8::Object> wrap(Document* impl, v8::Handle<v8::Object> creationConte
     return wrapper;
 }
 
-void V8Document::createTouchListMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
-{
-    RefPtr<TouchList> touchList = TouchList::create();
-
-    for (int i = 0; i < args.Length(); i++) {
-        Touch* touch = V8DOMWrapper::isWrapperOfType(args[i], &V8Touch::info) ? V8Touch::toNative(args[i]->ToObject()) : 0;
-        touchList->append(touch);
-    }
-
-    v8SetReturnValue(args, toV8(touchList.release(), args.Holder(), args.GetIsolate()));
-}
-
 } // namespace WebCore

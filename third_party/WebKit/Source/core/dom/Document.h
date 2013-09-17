@@ -971,6 +971,7 @@ public:
     bool isDelayingLoadEvent() const { return m_loadEventDelayCount; }
 
     PassRefPtr<Touch> createTouch(DOMWindow*, EventTarget*, int identifier, int pageX, int pageY, int screenX, int screenY, int radiusX, int radiusY, float rotationAngle, float force) const;
+    PassRefPtr<TouchList> createTouchList(Vector<RefPtr<Touch> >&) const;
 
     const DocumentTiming* timing() const { return &m_documentTiming; }
 

@@ -5045,6 +5045,11 @@ PassRefPtr<Touch> Document::createTouch(DOMWindow* window, EventTarget* target, 
     return Touch::create(frame, target, identifier, screenX, screenY, pageX, pageY, radiusX, radiusY, rotationAngle, force);
 }
 
+PassRefPtr<TouchList> Document::createTouchList(Vector<RefPtr<Touch> >& touches) const
+{
+    return TouchList::create(touches);
+}
+
 void Document::didAddTouchEventHandler(Node* handler)
 {
     if (!m_touchEventTargets.get())

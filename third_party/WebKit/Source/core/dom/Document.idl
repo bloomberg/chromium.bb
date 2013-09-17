@@ -259,7 +259,7 @@ callback CustomElementConstructor = Element ();
                                                [Default=Undefined] optional long webkitRadiusY,
                                                [Default=Undefined] optional float webkitRotationAngle,
                                                [Default=Undefined] optional float webkitForce);
-    [EnabledAtRuntime=Touch, Custom, RaisesException] TouchList createTouchList();
+    [EnabledAtRuntime=Touch] TouchList createTouchList(Touch... touches);
 
     [DeprecateAs=PrefixedDocumentRegister, EnabledAtRuntime=CustomElements, ImplementedAs=registerElement, CallWith=ScriptState, CustomElementCallbacks=Enable, RaisesException] CustomElementConstructor webkitRegister(DOMString name, optional Dictionary options);
     [EnabledAtRuntime=CustomElements, ImplementedAs=registerElement, CallWith=ScriptState, CustomElementCallbacks=Enable, RaisesException] CustomElementConstructor register(DOMString name, optional Dictionary options);
