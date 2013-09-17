@@ -62,7 +62,7 @@ class SYNC_EXPORT_PRIVATE MutableEntry : public Entry {
   bool PutIsUnappliedUpdate(bool value);
   void PutIsDir(bool value);
   void PutServerIsDir(bool value);
-  bool PutIsDel(bool value);
+  void PutIsDel(bool value);
   void PutServerIsDel(bool value);
   void PutNonUniqueName(const std::string& value);
   void PutServerNonUniqueName(const std::string& value);
@@ -106,17 +106,6 @@ class SYNC_EXPORT_PRIVATE MutableEntry : public Entry {
   friend class Directory;
   friend class WriteTransaction;
   friend class syncer::WriteNode;
-
-  bool Put(Int64Field field, const int64& value);
-  bool Put(TimeField field, const base::Time& value);
-  bool Put(IdField field, const Id& value);
-  bool Put(StringField field, const std::string& value);
-  bool Put(BaseVersion field, int64 value);
-  bool Put(ProtoField field, const sync_pb::EntitySpecifics& value);
-  bool Put(BitTemp field, bool value);
-  bool Put(BitField field, bool value);
-  bool Put(IndexedBitField field, bool value);
-  bool Put(UniquePositionField field, const UniquePosition& value);
 
   // Don't allow creation on heap, except by sync API wrappers.
   void* operator new(size_t size) { return (::operator new)(size); }

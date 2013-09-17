@@ -121,105 +121,192 @@ MutableEntry::MutableEntry(WriteTransaction* trans, GetByServerTag,
 }
 
 void MutableEntry::PutBaseVersion(int64 value) {
-  Put(BASE_VERSION, value);
+  DCHECK(kernel_);
+  write_transaction_->SaveOriginal(kernel_);
+  if (kernel_->ref(BASE_VERSION) != value) {
+    kernel_->put(BASE_VERSION, value);
+    kernel_->mark_dirty(&dir()->kernel_->dirty_metahandles);
+  }
 }
 
 void MutableEntry::PutServerVersion(int64 value) {
-  Put(SERVER_VERSION, value);
+  DCHECK(kernel_);
+  write_transaction_->SaveOriginal(kernel_);
+  if (kernel_->ref(SERVER_VERSION) != value) {
+    ScopedKernelLock lock(dir());
+    kernel_->put(SERVER_VERSION, value);
+    kernel_->mark_dirty(&dir()->kernel_->dirty_metahandles);
+  }
 }
 
 void MutableEntry::PutLocalExternalId(int64 value) {
-  Put(LOCAL_EXTERNAL_ID, value);
+  DCHECK(kernel_);
+  write_transaction_->SaveOriginal(kernel_);
+  if (kernel_->ref(LOCAL_EXTERNAL_ID) != value) {
+    ScopedKernelLock lock(dir());
+    kernel_->put(LOCAL_EXTERNAL_ID, value);
+    kernel_->mark_dirty(&dir()->kernel_->dirty_metahandles);
+  }
 }
 
 void MutableEntry::PutMtime(base::Time value) {
-  Put(MTIME, value);
+  DCHECK(kernel_);
+  write_transaction_->SaveOriginal(kernel_);
+  if (kernel_->ref(MTIME) != value) {
+    kernel_->put(MTIME, value);
+    kernel_->mark_dirty(&dir()->kernel_->dirty_metahandles);
+  }
 }
 
 void MutableEntry::PutServerMtime(base::Time value) {
-  Put(SERVER_MTIME, value);
+  DCHECK(kernel_);
+  write_transaction_->SaveOriginal(kernel_);
+  if (kernel_->ref(SERVER_MTIME) != value) {
+    kernel_->put(SERVER_MTIME, value);
+    kernel_->mark_dirty(&dir()->kernel_->dirty_metahandles);
+  }
 }
 
 void MutableEntry::PutCtime(base::Time value) {
-  Put(CTIME, value);
+  DCHECK(kernel_);
+  write_transaction_->SaveOriginal(kernel_);
+  if (kernel_->ref(CTIME) != value) {
+    kernel_->put(CTIME, value);
+    kernel_->mark_dirty(&dir()->kernel_->dirty_metahandles);
+  }
 }
 
 void MutableEntry::PutServerCtime(base::Time value) {
-  Put(SERVER_CTIME, value);
+  DCHECK(kernel_);
+  write_transaction_->SaveOriginal(kernel_);
+  if (kernel_->ref(SERVER_CTIME) != value) {
+    kernel_->put(SERVER_CTIME, value);
+    kernel_->mark_dirty(&dir()->kernel_->dirty_metahandles);
+  }
 }
 
 bool MutableEntry::PutId(const Id& value) {
-  return Put(ID, value);
+  DCHECK(kernel_);
+  write_transaction_->SaveOriginal(kernel_);
+  if (kernel_->ref(ID) != value) {
+    if (!dir()->ReindexId(write_transaction(), kernel_, value))
+      return false;
+    kernel_->mark_dirty(&dir()->kernel_->dirty_metahandles);
+  }
+  return true;
 }
 
 void MutableEntry::PutParentId(const Id& value) {
-  Put(PARENT_ID, value);
+  DCHECK(kernel_);
+  write_transaction_->SaveOriginal(kernel_);
+  if (kernel_->ref(PARENT_ID) != value) {
+    PutParentIdPropertyOnly(value);
+    if (!GetIsDel()) {
+      if (!PutPredecessor(Id())) {
+        // TODO(lipalani) : Propagate the error to caller. crbug.com/100444.
+        NOTREACHED();
+      }
+    }
+  }
 }
 
 void MutableEntry::PutServerParentId(const Id& value) {
-  Put(SERVER_PARENT_ID, value);
+  DCHECK(kernel_);
+  write_transaction_->SaveOriginal(kernel_);
+
+  if (kernel_->ref(SERVER_PARENT_ID) != value) {
+    kernel_->put(SERVER_PARENT_ID, value);
+    kernel_->mark_dirty(&dir()->kernel_->dirty_metahandles);
+  }
 }
 
 bool MutableEntry::PutIsUnsynced(bool value) {
-  return Put(IS_UNSYNCED, value);
+  DCHECK(kernel_);
+  write_transaction_->SaveOriginal(kernel_);
+  if (kernel_->ref(IS_UNSYNCED) != value) {
+    MetahandleSet* index = &dir()->kernel_->unsynced_metahandles;
+
+    ScopedKernelLock lock(dir());
+    if (value) {
+      if (!SyncAssert(index->insert(kernel_->ref(META_HANDLE)).second,
+                      FROM_HERE,
+                      "Could not insert",
+                      write_transaction())) {
+        return false;
+      }
+    } else {
+      if (!SyncAssert(1U == index->erase(kernel_->ref(META_HANDLE)),
+                      FROM_HERE,
+                      "Entry Not succesfully erased",
+                      write_transaction())) {
+        return false;
+      }
+    }
+    kernel_->put(IS_UNSYNCED, value);
+    kernel_->mark_dirty(&dir()->kernel_->dirty_metahandles);
+  }
+  return true;
 }
 
 bool MutableEntry::PutIsUnappliedUpdate(bool value) {
-  return Put(IS_UNAPPLIED_UPDATE, value);
+  DCHECK(kernel_);
+  write_transaction_->SaveOriginal(kernel_);
+  if (kernel_->ref(IS_UNAPPLIED_UPDATE) != value) {
+    // Use kernel_->GetServerModelType() instead of
+    // GetServerModelType() as we may trigger some DCHECKs in the
+    // latter.
+    MetahandleSet* index = &dir()->kernel_->unapplied_update_metahandles[
+        kernel_->GetServerModelType()];
+
+    ScopedKernelLock lock(dir());
+    if (value) {
+      if (!SyncAssert(index->insert(kernel_->ref(META_HANDLE)).second,
+                      FROM_HERE,
+                      "Could not insert",
+                      write_transaction())) {
+        return false;
+      }
+    } else {
+      if (!SyncAssert(1U == index->erase(kernel_->ref(META_HANDLE)),
+                      FROM_HERE,
+                      "Entry Not succesfully erased",
+                      write_transaction())) {
+        return false;
+      }
+    }
+    kernel_->put(IS_UNAPPLIED_UPDATE, value);
+    kernel_->mark_dirty(&dir()->kernel_->dirty_metahandles);
+  }
+  return true;
 }
 
 void MutableEntry::PutIsDir(bool value) {
-  Put(IS_DIR, value);
+  DCHECK(kernel_);
+  write_transaction_->SaveOriginal(kernel_);
+  bool old_value = kernel_->ref(IS_DIR);
+  if (old_value != value) {
+    kernel_->put(IS_DIR, value);
+    kernel_->mark_dirty(GetDirtyIndexHelper());
+  }
 }
 
 void MutableEntry::PutServerIsDir(bool value) {
-  Put(SERVER_IS_DIR, value);
-}
-
-void MutableEntry::PutServerIsDel(bool value) {
-  Put(SERVER_IS_DEL, value);
-}
-
-void MutableEntry::PutNonUniqueName(const std::string& value) {
-  Put(NON_UNIQUE_NAME, value);
-}
-
-void MutableEntry::PutServerNonUniqueName(const std::string& value) {
-  Put(SERVER_NON_UNIQUE_NAME, value);
-}
-
-void MutableEntry::PutSpecifics(const sync_pb::EntitySpecifics& value) {
-  Put(SPECIFICS, value);
-}
-
-void MutableEntry::PutServerSpecifics(const sync_pb::EntitySpecifics& value) {
-  Put(SERVER_SPECIFICS, value);
-}
-
-void MutableEntry::PutBaseServerSpecifics(
-    const sync_pb::EntitySpecifics& value) {
-  Put(BASE_SERVER_SPECIFICS, value);
-}
-
-void MutableEntry::PutUniquePosition(const UniquePosition& value) {
-  Put(UNIQUE_POSITION, value);
-}
-
-void MutableEntry::PutServerUniquePosition(const UniquePosition& value) {
-  Put(SERVER_UNIQUE_POSITION, value);
-}
-
-void MutableEntry::PutSyncing(bool value) {
-  Put(SYNCING, value);
-}
-
-bool MutableEntry::PutIsDel(bool is_del) {
   DCHECK(kernel_);
   write_transaction_->SaveOriginal(kernel_);
-  if (is_del == kernel_->ref(IS_DEL)) {
-    return true;
+  bool old_value = kernel_->ref(SERVER_IS_DIR);
+  if (old_value != value) {
+    kernel_->put(SERVER_IS_DIR, value);
+    kernel_->mark_dirty(GetDirtyIndexHelper());
   }
-  if (is_del) {
+}
+
+void MutableEntry::PutIsDel(bool value) {
+  DCHECK(kernel_);
+  write_transaction_->SaveOriginal(kernel_);
+  if (value == kernel_->ref(IS_DEL)) {
+    return;
+  }
+  if (value) {
     // If the server never knew about this item and it's deleted then we don't
     // need to keep it around.  Unsetting IS_UNSYNCED will:
     // - Ensure that the item is never committed to the server.
@@ -229,7 +316,7 @@ bool MutableEntry::PutIsDel(bool is_del) {
     //   DirectoryBackingStore::DropDeletedEntries() when we next restart sync.
     //   This will save memory and avoid crbug.com/125381.
     if (!GetId().ServerKnows()) {
-      Put(IS_UNSYNCED, false);
+      PutIsUnsynced(false);
     }
   }
 
@@ -240,159 +327,17 @@ bool MutableEntry::PutIsDel(bool is_del) {
     ScopedParentChildIndexUpdater updater(lock, kernel_,
         &dir()->kernel_->parent_child_index);
 
-    kernel_->put(IS_DEL, is_del);
+    kernel_->put(IS_DEL, value);
     kernel_->mark_dirty(&dir()->kernel_->dirty_metahandles);
   }
-
-  return true;
 }
 
-bool MutableEntry::Put(Int64Field field, const int64& value) {
-  DCHECK(kernel_);
-
-  // We shouldn't set TRANSACTION_VERSION here.  See UpdateTransactionVersion.
-  DCHECK_NE(TRANSACTION_VERSION, field);
-
-  write_transaction_->SaveOriginal(kernel_);
-  if (kernel_->ref(field) != value) {
-    ScopedKernelLock lock(dir());
-    kernel_->put(field, value);
-    kernel_->mark_dirty(&dir()->kernel_->dirty_metahandles);
-  }
-  return true;
-}
-
-bool MutableEntry::Put(TimeField field, const base::Time& value) {
+void MutableEntry::PutServerIsDel(bool value) {
   DCHECK(kernel_);
   write_transaction_->SaveOriginal(kernel_);
-  if (kernel_->ref(field) != value) {
-    kernel_->put(field, value);
-    kernel_->mark_dirty(&dir()->kernel_->dirty_metahandles);
-  }
-  return true;
-}
-
-bool MutableEntry::Put(IdField field, const Id& value) {
-  DCHECK(kernel_);
-  write_transaction_->SaveOriginal(kernel_);
-  if (kernel_->ref(field) != value) {
-    if (ID == field) {
-      if (!dir()->ReindexId(write_transaction(), kernel_, value))
-        return false;
-    } else if (PARENT_ID == field) {
-      PutParentIdPropertyOnly(value);
-      if (!GetIsDel()) {
-        if (!PutPredecessor(Id())) {
-          // TODO(lipalani) : Propagate the error to caller. crbug.com/100444.
-          NOTREACHED();
-        }
-      }
-    } else {
-      kernel_->put(field, value);
-    }
-    kernel_->mark_dirty(&dir()->kernel_->dirty_metahandles);
-  }
-  return true;
-}
-
-bool MutableEntry::Put(UniquePositionField field, const UniquePosition& value) {
-  DCHECK(kernel_);
-  write_transaction_->SaveOriginal(kernel_);
-  if(!kernel_->ref(field).Equals(value)) {
-    // We should never overwrite a valid position with an invalid one.
-    DCHECK(value.IsValid());
-    ScopedKernelLock lock(dir());
-    if (UNIQUE_POSITION == field) {
-      ScopedParentChildIndexUpdater updater(
-          lock, kernel_, &dir()->kernel_->parent_child_index);
-      kernel_->put(field, value);
-    } else {
-      kernel_->put(field, value);
-    }
-    kernel_->mark_dirty(&dir()->kernel_->dirty_metahandles);
-  }
-  return true;
-}
-
-void MutableEntry::PutParentIdPropertyOnly(const Id& parent_id) {
-  write_transaction_->SaveOriginal(kernel_);
-  dir()->ReindexParentId(write_transaction(), kernel_, parent_id);
-  kernel_->mark_dirty(&dir()->kernel_->dirty_metahandles);
-}
-
-bool MutableEntry::Put(BaseVersion field, int64 value) {
-  DCHECK(kernel_);
-  write_transaction_->SaveOriginal(kernel_);
-  if (kernel_->ref(field) != value) {
-    kernel_->put(field, value);
-    kernel_->mark_dirty(&dir()->kernel_->dirty_metahandles);
-  }
-  return true;
-}
-
-bool MutableEntry::Put(StringField field, const string& value) {
-  DCHECK(kernel_);
-  write_transaction_->SaveOriginal(kernel_);
-  if (field == UNIQUE_CLIENT_TAG) {
-    return PutUniqueClientTag(value);
-  }
-
-  if (field == UNIQUE_SERVER_TAG) {
-    return PutUniqueServerTag(value);
-  }
-
-  DCHECK_NE(UNIQUE_BOOKMARK_TAG, field)
-      << "Should use PutUniqueBookmarkTag instead of Put(UNIQUE_BOOKMARK_TAG)";
-
-  if (kernel_->ref(field) != value) {
-    kernel_->put(field, value);
-    kernel_->mark_dirty(&dir()->kernel_->dirty_metahandles);
-  }
-  return true;
-}
-
-bool MutableEntry::Put(ProtoField field,
-                       const sync_pb::EntitySpecifics& value) {
-  DCHECK(kernel_);
-  CHECK(!value.password().has_client_only_encrypted_data());
-  write_transaction_->SaveOriginal(kernel_);
-  // TODO(ncarter): This is unfortunately heavyweight.  Can we do
-  // better?
-  if (kernel_->ref(field).SerializeAsString() != value.SerializeAsString()) {
-    const bool update_unapplied_updates_index =
-        (field == SERVER_SPECIFICS) && kernel_->ref(IS_UNAPPLIED_UPDATE);
-    if (update_unapplied_updates_index) {
-      // Remove ourselves from unapplied_update_metahandles with our
-      // old server type.
-      const ModelType old_server_type = kernel_->GetServerModelType();
-      const int64 metahandle = kernel_->ref(META_HANDLE);
-      size_t erase_count =
-          dir()->kernel_->unapplied_update_metahandles[old_server_type]
-          .erase(metahandle);
-      DCHECK_EQ(erase_count, 1u);
-    }
-
-    kernel_->put(field, value);
-    kernel_->mark_dirty(&dir()->kernel_->dirty_metahandles);
-
-    if (update_unapplied_updates_index) {
-      // Add ourselves back into unapplied_update_metahandles with our
-      // new server type.
-      const ModelType new_server_type = kernel_->GetServerModelType();
-      const int64 metahandle = kernel_->ref(META_HANDLE);
-      dir()->kernel_->unapplied_update_metahandles[new_server_type]
-          .insert(metahandle);
-    }
-  }
-  return true;
-}
-
-bool MutableEntry::Put(BitField field, bool value) {
-  DCHECK(kernel_);
-  write_transaction_->SaveOriginal(kernel_);
-  bool old_value = kernel_->ref(field);
+  bool old_value = kernel_->ref(SERVER_IS_DEL);
   if (old_value != value) {
-    kernel_->put(field, value);
+    kernel_->put(SERVER_IS_DEL, value);
     kernel_->mark_dirty(GetDirtyIndexHelper());
   }
 
@@ -401,40 +346,28 @@ bool MutableEntry::Put(BitField field, bool value) {
   // early returns when processing updates. And because
   // UpdateDeleteJournalForServerDelete() checks for SERVER_IS_DEL, it has
   // to be called on sync thread.
-  if (field == SERVER_IS_DEL) {
-    dir()->delete_journal()->UpdateDeleteJournalForServerDelete(
-        write_transaction(), old_value, *kernel_);
-  }
-
-  return true;
+  dir()->delete_journal()->UpdateDeleteJournalForServerDelete(
+      write_transaction(), old_value, *kernel_);
 }
 
-MetahandleSet* MutableEntry::GetDirtyIndexHelper() {
-  return &dir()->kernel_->dirty_metahandles;
-}
-
-bool MutableEntry::PutUniqueClientTag(const string& new_tag) {
-  if (new_tag == kernel_->ref(UNIQUE_CLIENT_TAG)) {
-    return true;
-  }
-
+void MutableEntry::PutNonUniqueName(const std::string& value) {
+  DCHECK(kernel_);
   write_transaction_->SaveOriginal(kernel_);
-  ScopedKernelLock lock(dir());
-  // Make sure your new value is not in there already.
-  if (dir()->kernel_->client_tags_map.find(new_tag) !=
-      dir()->kernel_->client_tags_map.end()) {
-    DVLOG(1) << "Detected duplicate client tag";
-    return false;
-  }
-  dir()->kernel_->client_tags_map.erase(
-      kernel_->ref(UNIQUE_CLIENT_TAG));
-  kernel_->put(UNIQUE_CLIENT_TAG, new_tag);
-  kernel_->mark_dirty(&dir()->kernel_->dirty_metahandles);
-  if (!new_tag.empty()) {
-    dir()->kernel_->client_tags_map[new_tag] = kernel_;
-  }
 
-  return true;
+  if (kernel_->ref(NON_UNIQUE_NAME) != value) {
+    kernel_->put(NON_UNIQUE_NAME, value);
+    kernel_->mark_dirty(&dir()->kernel_->dirty_metahandles);
+  }
+}
+
+void MutableEntry::PutServerNonUniqueName(const std::string& value) {
+  DCHECK(kernel_);
+  write_transaction_->SaveOriginal(kernel_);
+
+  if (kernel_->ref(SERVER_NON_UNIQUE_NAME) != value) {
+    kernel_->put(SERVER_NON_UNIQUE_NAME, value);
+    kernel_->mark_dirty(&dir()->kernel_->dirty_metahandles);
+  }
 }
 
 bool MutableEntry::PutUniqueServerTag(const string& new_tag) {
@@ -461,41 +394,27 @@ bool MutableEntry::PutUniqueServerTag(const string& new_tag) {
   return true;
 }
 
-bool MutableEntry::Put(IndexedBitField field, bool value) {
-  DCHECK(kernel_);
-  write_transaction_->SaveOriginal(kernel_);
-  if (kernel_->ref(field) != value) {
-    MetahandleSet* index;
-    if (IS_UNSYNCED == field) {
-      index = &dir()->kernel_->unsynced_metahandles;
-    } else {
-      // Use kernel_->GetServerModelType() instead of
-      // GetServerModelType() as we may trigger some DCHECKs in the
-      // latter.
-      index =
-          &dir()->kernel_->unapplied_update_metahandles[
-              kernel_->GetServerModelType()];
-    }
-
-    ScopedKernelLock lock(dir());
-    if (value) {
-      if (!SyncAssert(index->insert(kernel_->ref(META_HANDLE)).second,
-                      FROM_HERE,
-                      "Could not insert",
-                      write_transaction())) {
-        return false;
-      }
-    } else {
-      if (!SyncAssert(1U == index->erase(kernel_->ref(META_HANDLE)),
-                      FROM_HERE,
-                      "Entry Not succesfully erased",
-                      write_transaction())) {
-        return false;
-      }
-    }
-    kernel_->put(field, value);
-    kernel_->mark_dirty(&dir()->kernel_->dirty_metahandles);
+bool MutableEntry::PutUniqueClientTag(const string& new_tag) {
+  if (new_tag == kernel_->ref(UNIQUE_CLIENT_TAG)) {
+    return true;
   }
+
+  write_transaction_->SaveOriginal(kernel_);
+  ScopedKernelLock lock(dir());
+  // Make sure your new value is not in there already.
+  if (dir()->kernel_->client_tags_map.find(new_tag) !=
+      dir()->kernel_->client_tags_map.end()) {
+    DVLOG(1) << "Detected duplicate client tag";
+    return false;
+  }
+  dir()->kernel_->client_tags_map.erase(
+      kernel_->ref(UNIQUE_CLIENT_TAG));
+  kernel_->put(UNIQUE_CLIENT_TAG, new_tag);
+  kernel_->mark_dirty(&dir()->kernel_->dirty_metahandles);
+  if (!new_tag.empty()) {
+    dir()->kernel_->client_tags_map[new_tag] = kernel_;
+  }
+
   return true;
 }
 
@@ -507,8 +426,8 @@ void MutableEntry::PutUniqueBookmarkTag(const std::string& tag) {
     return;
   }
 
-  if (!kernel_->ref(UNIQUE_BOOKMARK_TAG).empty()
-      && tag != kernel_->ref(UNIQUE_BOOKMARK_TAG)) {
+  if (!kernel_->ref(UNIQUE_BOOKMARK_TAG).empty() &&
+      tag != kernel_->ref(UNIQUE_BOOKMARK_TAG)) {
     // There is only one scenario where our tag is expected to change.  That
     // scenario occurs when our current tag is a non-correct tag assigned during
     // the UniquePosition migration.
@@ -522,17 +441,111 @@ void MutableEntry::PutUniqueBookmarkTag(const std::string& tag) {
   kernel_->mark_dirty(&dir()->kernel_->dirty_metahandles);
 }
 
+void MutableEntry::PutSpecifics(const sync_pb::EntitySpecifics& value) {
+  DCHECK(kernel_);
+  CHECK(!value.password().has_client_only_encrypted_data());
+  write_transaction_->SaveOriginal(kernel_);
+  // TODO(ncarter): This is unfortunately heavyweight.  Can we do
+  // better?
+  if (kernel_->ref(SPECIFICS).SerializeAsString() !=
+      value.SerializeAsString()) {
+    kernel_->put(SPECIFICS, value);
+    kernel_->mark_dirty(&dir()->kernel_->dirty_metahandles);
+  }
+}
+
+void MutableEntry::PutServerSpecifics(const sync_pb::EntitySpecifics& value) {
+  DCHECK(kernel_);
+  CHECK(!value.password().has_client_only_encrypted_data());
+  write_transaction_->SaveOriginal(kernel_);
+  // TODO(ncarter): This is unfortunately heavyweight.  Can we do
+  // better?
+  if (kernel_->ref(SERVER_SPECIFICS).SerializeAsString() !=
+      value.SerializeAsString()) {
+    if (kernel_->ref(IS_UNAPPLIED_UPDATE)) {
+      // Remove ourselves from unapplied_update_metahandles with our
+      // old server type.
+      const ModelType old_server_type = kernel_->GetServerModelType();
+      const int64 metahandle = kernel_->ref(META_HANDLE);
+      size_t erase_count =
+          dir()->kernel_->unapplied_update_metahandles[old_server_type]
+          .erase(metahandle);
+      DCHECK_EQ(erase_count, 1u);
+    }
+
+    kernel_->put(SERVER_SPECIFICS, value);
+    kernel_->mark_dirty(&dir()->kernel_->dirty_metahandles);
+
+    if (kernel_->ref(IS_UNAPPLIED_UPDATE)) {
+      // Add ourselves back into unapplied_update_metahandles with our
+      // new server type.
+      const ModelType new_server_type = kernel_->GetServerModelType();
+      const int64 metahandle = kernel_->ref(META_HANDLE);
+      dir()->kernel_->unapplied_update_metahandles[new_server_type]
+          .insert(metahandle);
+    }
+  }
+}
+
+void MutableEntry::PutBaseServerSpecifics(
+    const sync_pb::EntitySpecifics& value) {
+  DCHECK(kernel_);
+  CHECK(!value.password().has_client_only_encrypted_data());
+  write_transaction_->SaveOriginal(kernel_);
+  // TODO(ncarter): This is unfortunately heavyweight.  Can we do
+  // better?
+  if (kernel_->ref(BASE_SERVER_SPECIFICS).SerializeAsString()
+      != value.SerializeAsString()) {
+    kernel_->put(BASE_SERVER_SPECIFICS, value);
+    kernel_->mark_dirty(&dir()->kernel_->dirty_metahandles);
+  }
+}
+
+void MutableEntry::PutUniquePosition(const UniquePosition& value) {
+  DCHECK(kernel_);
+  write_transaction_->SaveOriginal(kernel_);
+  if(!kernel_->ref(UNIQUE_POSITION).Equals(value)) {
+    // We should never overwrite a valid position with an invalid one.
+    DCHECK(value.IsValid());
+    ScopedKernelLock lock(dir());
+    ScopedParentChildIndexUpdater updater(
+        lock, kernel_, &dir()->kernel_->parent_child_index);
+    kernel_->put(UNIQUE_POSITION, value);
+    kernel_->mark_dirty(&dir()->kernel_->dirty_metahandles);
+  }
+}
+
+void MutableEntry::PutServerUniquePosition(const UniquePosition& value) {
+  DCHECK(kernel_);
+  write_transaction_->SaveOriginal(kernel_);
+  if(!kernel_->ref(SERVER_UNIQUE_POSITION).Equals(value)) {
+    // We should never overwrite a valid position with an invalid one.
+    DCHECK(value.IsValid());
+    ScopedKernelLock lock(dir());
+    kernel_->put(SERVER_UNIQUE_POSITION, value);
+    kernel_->mark_dirty(&dir()->kernel_->dirty_metahandles);
+  }
+}
+
+void MutableEntry::PutSyncing(bool value) {
+  kernel_->put(SYNCING, value);
+}
+
+void MutableEntry::PutParentIdPropertyOnly(const Id& parent_id) {
+  write_transaction_->SaveOriginal(kernel_);
+  dir()->ReindexParentId(write_transaction(), kernel_, parent_id);
+  kernel_->mark_dirty(&dir()->kernel_->dirty_metahandles);
+}
+
+MetahandleSet* MutableEntry::GetDirtyIndexHelper() {
+  return &dir()->kernel_->dirty_metahandles;
+}
+
 bool MutableEntry::PutPredecessor(const Id& predecessor_id) {
   MutableEntry predecessor(write_transaction_, GET_BY_ID, predecessor_id);
   if (!predecessor.good())
     return false;
   dir()->PutPredecessor(kernel_, predecessor.kernel_);
-  return true;
-}
-
-bool MutableEntry::Put(BitTemp field, bool value) {
-  DCHECK(kernel_);
-  kernel_->put(field, value);
   return true;
 }
 
