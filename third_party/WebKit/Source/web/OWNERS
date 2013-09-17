@@ -7,3 +7,14 @@ jochen@chromium.org
 tkent@chromium.org
 tony@chromium.org
 pfeldman@chromium.org
+
+# Bindings owners for WebBindings.cpp
+per-file WebBindings.cpp=adamk@chromium.org
+per-file WebBindings.cpp=arv@chromium.org
+per-file WebBindings.cpp=ch.dumez@sisa.samsung.com
+per-file WebBindings.cpp=dcarney@chromium.org
+per-file WebBindings.cpp=esprehn@chromium.org
+per-file WebBindings.cpp=haraken@chromium.org
+per-file WebBindings.cpp=japhet@chromium.org
+per-file WebBindings.cpp=marja@chromium.org
+per-file WebBindings.cpp=yurys@chromium.org
