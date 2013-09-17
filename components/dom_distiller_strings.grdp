@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<grit-part>
-
-  <message name="IDS_DOM_DISTILLER_TITLE" desc="The title to show on the DOM Distiller debug page.">
-    DOM Distiller
-  </message>
-
-</grit-part>

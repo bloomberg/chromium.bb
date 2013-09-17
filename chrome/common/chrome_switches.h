@@ -171,7 +171,6 @@ extern const char kEnableComponentCloudPolicy[];
 extern const char kEnableContacts[];
 extern const char kEnableDevToolsExperiments[];
 extern const char kEnableDnsProbes[];
-extern const char kEnableDomDistiller[];
 extern const char kEnableExtensionActivityLogging[];
 extern const char kEnableExtensionActivityLogTesting[];
 extern const char kEnableFastUnload[];
