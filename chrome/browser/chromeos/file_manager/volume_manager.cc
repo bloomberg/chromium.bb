@@ -160,7 +160,9 @@ std::vector<VolumeInfo> VolumeManager::GetVolumeInfoList() const {
 
   std::vector<VolumeInfo> result;
 
-  // TODO(hidehiko): Adds Drive if available.
+  // Adds "Drive" volume.
+  if (drive_integration_service_ && drive_integration_service_->IsMounted())
+    result.push_back(CreateDriveVolumeInfo());
 
   // Adds "Downloads".
   base::FilePath home_path;

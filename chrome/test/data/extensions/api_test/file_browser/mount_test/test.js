@@ -58,6 +58,12 @@ var expectedDownloadsVolume = {
 //       and values sorted by mountPath.
 var expectedMountPoints = [
   {
+    sourcePath: '/special/drive',
+    mountPath: 'drive',
+    volumeType: 'drive',
+    mountCondition: ''
+  },
+  {
     mountPath: 'Downloads',
     volumeType: 'downloads',
     mountCondition: ''

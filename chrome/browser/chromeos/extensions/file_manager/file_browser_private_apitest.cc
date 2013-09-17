@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/stl_util.h"
+#include "chrome/browser/chromeos/file_manager/drive_test_util.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/disks/mock_disk_mount_manager.h"
@@ -234,6 +235,9 @@ class FileBrowserPrivateApiTest : public ExtensionApiTest {
 };
 
 IN_PROC_BROWSER_TEST_F(FileBrowserPrivateApiTest, Mount) {
+  file_manager::test_util::WaitUntilDriveMountPointIsAdded(
+      browser()->profile());
+
   // We will call fileBrowserPrivate.unmountVolume once. To test that method, we
   // check that UnmountPath is really called with the same value.
   EXPECT_CALL(*disk_mount_manager_mock_, UnmountPath(_, _,  _))
