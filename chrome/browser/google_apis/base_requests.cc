@@ -248,7 +248,7 @@ base::TaskRunner* UrlFetchRequestBase::blocking_task_runner() const {
   return sender_->blocking_task_runner();
 }
 
-void UrlFetchRequestBase::OnProcessURLFetchResultsComplete(bool result) {
+void UrlFetchRequestBase::OnProcessURLFetchResultsComplete() {
   sender_->RequestFinished(this);
 }
 
@@ -295,10 +295,8 @@ EntryActionRequest::EntryActionRequest(RequestSender* sender,
 EntryActionRequest::~EntryActionRequest() {}
 
 void EntryActionRequest::ProcessURLFetchResults(const URLFetcher* source) {
-  GDataErrorCode code = GetErrorCode(source);
-  callback_.Run(code);
-  const bool success = true;
-  OnProcessURLFetchResultsComplete(success);
+  callback_.Run(GetErrorCode(source));
+  OnProcessURLFetchResultsComplete();
 }
 
 void EntryActionRequest::RunCallbackOnPrematureFailure(GDataErrorCode code) {
@@ -343,8 +341,7 @@ void GetDataRequest::ProcessURLFetchResults(const URLFetcher* source) {
       break;
     default:
       RunCallbackOnPrematureFailure(fetch_error_code);
-      const bool success = false;
-      OnProcessURLFetchResultsComplete(success);
+      OnProcessURLFetchResultsComplete();
       break;
   }
 }
@@ -358,22 +355,11 @@ void GetDataRequest::OnDataParsed(GDataErrorCode fetch_error_code,
                                   scoped_ptr<base::Value> value) {
   DCHECK(CalledOnValidThread());
 
-  bool success = true;
-  if (!value.get()) {
+  if (!value.get())
     fetch_error_code = GDATA_PARSE_ERROR;
-    success = false;
-  }
 
-  RunCallbackOnSuccess(fetch_error_code, value.Pass());
-
-  DCHECK(!value.get());
-  OnProcessURLFetchResultsComplete(success);
-}
-
-void GetDataRequest::RunCallbackOnSuccess(GDataErrorCode fetch_error_code,
-                                          scoped_ptr<base::Value> value) {
-  DCHECK(CalledOnValidThread());
   callback_.Run(fetch_error_code, value.Pass());
+  OnProcessURLFetchResultsComplete();
 }
 
 //========================= InitiateUploadRequestBase ========================
@@ -407,7 +393,7 @@ void InitiateUploadRequestBase::ProcessURLFetchResults(
   }
 
   callback_.Run(code, GURL(upload_location));
-  OnProcessURLFetchResultsComplete(code == HTTP_SUCCESS);
+  OnProcessURLFetchResultsComplete();
 }
 
 void InitiateUploadRequestBase::RunCallbackOnPrematureFailure(
@@ -500,7 +486,7 @@ void UploadRangeRequestBase::ProcessURLFetchResults(
                                                end_position_received),
                            scoped_ptr<base::Value>());
 
-    OnProcessURLFetchResultsComplete(true);
+    OnProcessURLFetchResultsComplete();
   } else if (code == HTTP_CREATED || code == HTTP_SUCCESS) {
     // The upload is successfully done. Parse the response which should be
     // the entry's metadata.
@@ -516,7 +502,7 @@ void UploadRangeRequestBase::ProcessURLFetchResults(
     // Failed to upload. Run callbacks to notify the error.
     OnRangeRequestComplete(
         UploadRangeResponse(code, -1, -1), scoped_ptr<base::Value>());
-    OnProcessURLFetchResultsComplete(false);
+    OnProcessURLFetchResultsComplete();
   }
 }
 
@@ -526,7 +512,7 @@ void UploadRangeRequestBase::OnDataParsed(GDataErrorCode code,
   DCHECK(code == HTTP_CREATED || code == HTTP_SUCCESS);
 
   OnRangeRequestComplete(UploadRangeResponse(code, -1, -1), value.Pass());
-  OnProcessURLFetchResultsComplete(true);
+  OnProcessURLFetchResultsComplete();
 }
 
 void UploadRangeRequestBase::RunCallbackOnPrematureFailure(
@@ -690,7 +676,7 @@ void DownloadFileRequestBase::ProcessURLFetchResults(const URLFetcher* source) {
   }
 
   download_action_callback_.Run(code, temp_file);
-  OnProcessURLFetchResultsComplete(code == HTTP_SUCCESS);
+  OnProcessURLFetchResultsComplete();
 }
 
 void DownloadFileRequestBase::RunCallbackOnPrematureFailure(

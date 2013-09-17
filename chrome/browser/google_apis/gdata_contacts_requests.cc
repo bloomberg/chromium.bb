@@ -104,7 +104,7 @@ void GetContactPhotoRequest::ProcessURLFetchResults(
   scoped_ptr<std::string> data(new std::string);
   source->GetResponseAsString(data.get());
   callback_.Run(code, data.Pass());
-  OnProcessURLFetchResultsComplete(code == HTTP_SUCCESS);
+  OnProcessURLFetchResultsComplete();
 }
 
 void GetContactPhotoRequest::RunCallbackOnPrematureFailure(

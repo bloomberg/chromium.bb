@@ -138,8 +138,8 @@ class UrlFetchRequestBase : public AuthenticatedRequestInterface,
   // a user request. Must be implemented by a derived class.
   virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) = 0;
 
-  // Invoked when ProcessURLFetchResults() is completed.
-  void OnProcessURLFetchResultsComplete(bool result);
+  // Invoked from derived classes when ProcessURLFetchResults() is completed.
+  void OnProcessURLFetchResultsComplete();
 
   // Returns an appropriate GDataErrorCode based on the HTTP response code and
   // the status of the URLFetcher.
@@ -223,11 +223,6 @@ class GetDataRequest : public UrlFetchRequestBase {
       GDataErrorCode fetch_error_code) OVERRIDE;
 
  private:
-  // Runs |callback_| with the given parameters.
-  void RunCallbackOnSuccess(GDataErrorCode fetch_error_code,
-                            scoped_ptr<base::Value> value);
-
-
   // Called when ParseJsonOnBlockingPool() is completed.
   void OnDataParsed(GDataErrorCode fetch_error_code,
                     scoped_ptr<base::Value> value);
