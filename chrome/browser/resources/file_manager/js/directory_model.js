@@ -213,9 +213,6 @@ DirectoryModel.prototype.start = function() {
       'drive-status-changed',
       this.taskQueue_.run.bind(
           this.taskQueue_, this.onDriveStatusChanged_.bind(this)));
-  this.volumeManager_.addEventListener(
-      'drive-enabled-status-changed',
-      this.onDriveEnabledStatusChanged_.bind(this));
   this.taskQueue_.run(this.updateRoots_.bind(this));
 };
 
@@ -231,27 +228,6 @@ DirectoryModel.prototype.dispose = function() {
  */
 DirectoryModel.prototype.getFileList = function() {
   return this.currentFileListContext_.fileList;
-};
-
-/**
- * Called when the drive enable status is changed.
- * @param {cr.Event} event Event object for the status change.
- * @private
- */
-DirectoryModel.prototype.onDriveEnabledStatusChanged_ = function(event) {
-  this.taskQueue_.run(function(callback) {
-    // TODO(hidehiko): This should be moved to VolumeManager, when rootsList
-    // is moved to there.
-    this.taskQueue_.run(this.updateRoots_.bind(this));
-
-    if (!event.enabled &&
-        PathUtil.isDriveBasedPath(this.getCurrentDirEntry().fullPath)) {
-      // Currently, this is on Drive's directory, but Drive file system is
-      // disabled. So, move back to the default directory.
-      this.changeDirectory(PathUtil.DEFAULT_DIRECTORY);
-    }
-    callback();
-  }.bind(this));
 };
 
 /**
@@ -1203,12 +1179,17 @@ DirectoryModel.prototype.isDriveMounted = function() {
  */
 DirectoryModel.prototype.onMountChanged_ = function(callback) {
   this.updateRoots_(function() {
-    var rootType = this.getCurrentRootType();
+    var rootPath = this.getCurrentRootPath();
+    // Reduce to the DRIVE root path, if necessary.
+    if (rootPath == RootDirectory.DRIVE_OFFLINE ||
+        rootPath == RootDirectory.DRIVE_SHARED_WITH_ME ||
+        rootPath == RootDirectory.DRIVE_RECENT)
+      rootPath = RootDirectory.DRIVE;
 
-    if ((rootType == RootType.ARCHIVE || rootType == RootType.REMOVABLE) &&
-        !this.volumeManager_.isMounted(this.getCurrentRootPath())) {
+    // When the volume where we are is unmounted, fallback to
+    // DEFAULT_DIRECTORY.
+    if (!this.volumeManager_.isMounted(rootPath))
       this.changeDirectory(PathUtil.DEFAULT_DIRECTORY);
-    }
 
     callback();
   }.bind(this));
