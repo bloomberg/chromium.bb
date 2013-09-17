@@ -48,6 +48,7 @@ config.kPlatforms = {
             'WebKit Mac10.7': {version: 'lion'},
             'WebKit Mac10.7 (dbg)': {version: 'lion', debug: true},
             'WebKit Mac10.8': {version: 'mountainlion'},
+            'WebKit Mac10.8 (retina)': {version: 'retina'},
         },
         resultsDirectoryNameFromBuilderName: function(builderName) {
             return base.underscoredBuilderName(builderName);
