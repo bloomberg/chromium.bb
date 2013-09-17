@@ -276,8 +276,9 @@ void LanguageOptionsHandlerCommon::RefreshHunspellDictionary() {
   if (hunspell_dictionary_.get())
     hunspell_dictionary_->RemoveObserver(this);
   hunspell_dictionary_.reset();
-  hunspell_dictionary_ = SpellcheckServiceFactory::GetForProfile(
-      Profile::FromWebUI(web_ui()))->GetHunspellDictionary()->AsWeakPtr();
+  SpellcheckService* service = SpellcheckServiceFactory::GetForContext(
+      Profile::FromWebUI(web_ui()));
+  hunspell_dictionary_ = service->GetHunspellDictionary()->AsWeakPtr();
   hunspell_dictionary_->AddObserver(this);
 }
 

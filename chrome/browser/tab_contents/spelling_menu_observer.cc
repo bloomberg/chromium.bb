@@ -155,7 +155,7 @@ void SpellingMenuObserver::InitMenu(const content::ContextMenuParams& params) {
     // |spellcheck_service| can be null when the suggested word is
     // provided by Web SpellCheck API.
     SpellcheckService* spellcheck_service =
-        SpellcheckServiceFactory::GetForProfile(profile);
+        SpellcheckServiceFactory::GetForContext(profile);
     if (spellcheck_service && spellcheck_service->GetMetrics())
       spellcheck_service->GetMetrics()->RecordSuggestionStats(1);
   }
@@ -260,7 +260,7 @@ void SpellingMenuObserver::ExecuteCommand(int command_id) {
     Profile* profile = proxy_->GetProfile();
     if (profile) {
       SpellcheckService* spellcheck =
-          SpellcheckServiceFactory::GetForProfile(profile);
+          SpellcheckServiceFactory::GetForContext(profile);
       if (spellcheck) {
         if (spellcheck->GetMetrics())
           spellcheck->GetMetrics()->RecordReplacedWordStats(1);
@@ -286,7 +286,7 @@ void SpellingMenuObserver::ExecuteCommand(int command_id) {
     Profile* profile = proxy_->GetProfile();
     if (profile) {
       SpellcheckService* spellcheck =
-          SpellcheckServiceFactory::GetForProfile(profile);
+          SpellcheckServiceFactory::GetForContext(profile);
       if (spellcheck) {
         spellcheck->GetCustomDictionary()->AddWord(UTF16ToUTF8(
             misspelled_word_));
@@ -359,7 +359,7 @@ void SpellingMenuObserver::OnMenuCancel() {
   if (!profile)
     return;
   SpellcheckService* spellcheck =
-      SpellcheckServiceFactory::GetForProfile(profile);
+      SpellcheckServiceFactory::GetForContext(profile);
   if (!spellcheck)
     return;
   spellcheck->GetFeedbackSender()->IgnoredSuggestions(misspelling_hash_);

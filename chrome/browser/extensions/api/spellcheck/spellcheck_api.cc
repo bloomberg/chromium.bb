@@ -70,7 +70,7 @@ void SpellcheckAPI::Observe(int type,
           GetSpellcheckDictionaryInfo(extension);
       if (spellcheck_info) {
         // TODO(rlp): Handle load failure. =
-        spellcheck = SpellcheckServiceFactory::GetForProfile(profile);
+        spellcheck = SpellcheckServiceFactory::GetForContext(profile);
         spellcheck->LoadExternalDictionary(
             spellcheck_info->language,
             spellcheck_info->locale,
@@ -86,7 +86,7 @@ void SpellcheckAPI::Observe(int type,
           GetSpellcheckDictionaryInfo(extension);
       if (spellcheck_info) {
         // TODO(rlp): Handle unload failure.
-        spellcheck = SpellcheckServiceFactory::GetForProfile(profile);
+        spellcheck = SpellcheckServiceFactory::GetForContext(profile);
         spellcheck->UnloadExternalDictionary(spellcheck_info->path);
       }
       break;

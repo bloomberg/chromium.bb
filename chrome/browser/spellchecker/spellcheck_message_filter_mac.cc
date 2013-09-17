@@ -9,16 +9,17 @@
 
 #include "base/barrier_closure.h"
 #include "base/bind.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_platform_mac.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "chrome/browser/spellchecker/spelling_service_client.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "chrome/common/spellcheck_result.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_process_host.h"
 
 using content::BrowserThread;
+using content::BrowserContext;
 
 namespace {
 
@@ -112,14 +113,14 @@ void SpellingRequest::RequestCheck(
 }
 
 void SpellingRequest::RequestRemoteCheck(const string16& text) {
-  Profile* profile = NULL;
+  BrowserContext* context = NULL;
   content::RenderProcessHost* host =
       content::RenderProcessHost::FromID(render_process_id_);
   if (host)
-    profile = Profile::FromBrowserContext(host->GetBrowserContext());
+    context = host->GetBrowserContext();
 
   client_->RequestTextCheck(
-    profile,
+    context,
     SpellingServiceClient::SPELLCHECK,
     text,
     base::Bind(&SpellingRequest::OnRemoteCheckCompleted,

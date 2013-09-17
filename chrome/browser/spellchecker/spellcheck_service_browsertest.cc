@@ -14,6 +14,8 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "url/gurl.h"
 
+using content::BrowserContext;
+
 namespace {
 
 // A corrupted BDICT data used in DeleteCorruptedBDICT. Please do not use this
@@ -58,18 +60,22 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest, DeleteCorruptedBDICT) {
   base::WaitableEvent event(true, false);
   SpellcheckService::AttachStatusEvent(&event);
 
+  BrowserContext * context = static_cast<BrowserContext*>(GetProfile());
+
   // Ensure that the SpellcheckService object does not already exist. Otherwise
   // the next line will not force creation of the SpellcheckService and the
   // test will fail.
-  SpellcheckService* service =
-      SpellcheckServiceFactory::GetForProfileWithoutCreating(GetProfile());
+  SpellcheckService* service = static_cast<SpellcheckService*>(
+      SpellcheckServiceFactory::GetInstance()->GetServiceForBrowserContext(
+          context,
+          false));
   ASSERT_EQ(NULL, service);
 
   // Getting the spellcheck_service will initialize the SpellcheckService
   // object with the corrupted BDICT file created above since the hunspell
   // dictionary is loaded in the SpellcheckService constructor right now.
   // The SpellCheckHost object will send a BDICT_CORRUPTED event.
-  SpellcheckServiceFactory::GetForProfile(GetProfile());
+  SpellcheckServiceFactory::GetForContext(context);
 
   // Check the received event. Also we check if Chrome has successfully deleted
   // the corrupted dictionary. We delete the corrupted dictionary to avoid

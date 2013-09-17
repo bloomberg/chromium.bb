@@ -377,7 +377,7 @@ base::WeakPtr<syncer::SyncableService> ProfileSyncComponentsFactoryImpl::
 #endif
 #if defined(ENABLE_SPELLCHECK)
     case syncer::DICTIONARY:
-      return SpellcheckServiceFactory::GetForProfile(profile_)->
+      return SpellcheckServiceFactory::GetForContext(profile_)->
           GetCustomDictionary()->AsWeakPtr();
 #endif
     case syncer::FAVICON_IMAGES:

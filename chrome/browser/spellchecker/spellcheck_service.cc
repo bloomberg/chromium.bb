@@ -9,13 +9,14 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_split.h"
 #include "base/synchronization/waitable_event.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_host_metrics.h"
 #include "chrome/browser/spellchecker/spellcheck_hunspell_dictionary.h"
 #include "chrome/browser/spellchecker/spellcheck_platform_mac.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/spellcheck_messages.h"
+#include "components/user_prefs/user_prefs.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -33,11 +34,11 @@ base::WaitableEvent* g_status_event = NULL;
 SpellcheckService::EventType g_status_type =
     SpellcheckService::BDICT_NOTINITIALIZED;
 
-SpellcheckService::SpellcheckService(Profile* profile)
-    : profile_(profile),
+SpellcheckService::SpellcheckService(content::BrowserContext* context)
+    : context_(context),
       weak_ptr_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  PrefService* prefs = profile_->GetPrefs();
+  PrefService* prefs = user_prefs::UserPrefs::Get(context);
   pref_change_registrar_.Init(prefs);
 
   std::string language_code;
@@ -47,7 +48,7 @@ SpellcheckService::SpellcheckService(Profile* profile)
       &language_code,
       &country_code);
   feedback_sender_.reset(new spellcheck::FeedbackSender(
-      profile->GetRequestContext(), language_code, country_code));
+      context->GetRequestContext(), language_code, country_code));
 
   pref_change_registrar_.Add(
       prefs::kEnableAutoSpellCorrect,
@@ -68,7 +69,7 @@ SpellcheckService::SpellcheckService(Profile* profile)
 
   OnSpellCheckDictionaryChanged();
 
-  custom_dictionary_.reset(new SpellcheckCustomDictionary(profile_->GetPath()));
+  custom_dictionary_.reset(new SpellcheckCustomDictionary(context_->GetPath()));
   custom_dictionary_->AddObserver(this);
   custom_dictionary_->Load();
 
@@ -84,13 +85,13 @@ SpellcheckService::~SpellcheckService() {
 
 // static
 int SpellcheckService::GetSpellCheckLanguages(
-    Profile* profile,
+    content::BrowserContext* context,
     std::vector<std::string>* languages) {
+  PrefService* prefs = user_prefs::UserPrefs::Get(context);
   StringPrefMember accept_languages_pref;
   StringPrefMember dictionary_language_pref;
-  accept_languages_pref.Init(prefs::kAcceptLanguages, profile->GetPrefs());
-  dictionary_language_pref.Init(prefs::kSpellCheckDictionary,
-                                profile->GetPrefs());
+  accept_languages_pref.Init(prefs::kAcceptLanguages, prefs);
+  dictionary_language_pref.Init(prefs::kSpellCheckDictionary, prefs);
   std::string dictionary_language = dictionary_language_pref.GetValue();
 
   // Now scan through the list of accept languages, and find possible mappings
@@ -157,11 +158,11 @@ void SpellcheckService::StartRecordingMetrics(bool spellcheck_enabled) {
 void SpellcheckService::InitForRenderer(content::RenderProcessHost* process) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  Profile* profile = Profile::FromBrowserContext(process->GetBrowserContext());
-  if (SpellcheckServiceFactory::GetForProfile(profile) != this)
+  content::BrowserContext* context = process->GetBrowserContext();
+  if (SpellcheckServiceFactory::GetForContext(context) != this)
     return;
 
-  PrefService* prefs = profile->GetPrefs();
+  PrefService* prefs = user_prefs::UserPrefs::Get(context);
   IPC::PlatformFileForTransit file = IPC::InvalidPlatformFileForTransit();
 
   if (hunspell_dictionary_->GetDictionaryFile() !=
@@ -292,10 +293,13 @@ void SpellcheckService::OnEnableAutoSpellCorrectChanged() {
 void SpellcheckService::OnSpellCheckDictionaryChanged() {
   if (hunspell_dictionary_.get())
     hunspell_dictionary_->RemoveObserver(this);
+  PrefService* prefs = user_prefs::UserPrefs::Get(context_);
+  DCHECK(prefs);
+
   std::string dictionary =
-      profile_->GetPrefs()->GetString(prefs::kSpellCheckDictionary);
+      prefs->GetString(prefs::kSpellCheckDictionary);
   hunspell_dictionary_.reset(new SpellcheckHunspellDictionary(
-      dictionary, profile_->GetRequestContext(), this));
+      dictionary, context_->GetRequestContext(), this));
   hunspell_dictionary_->AddObserver(this);
   hunspell_dictionary_->Load();
   std::string language_code;

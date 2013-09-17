@@ -16,9 +16,12 @@
 #include "net/url_request/url_fetcher_delegate.h"
 
 class GURL;
-class Profile;
 class TextCheckClientDelegate;
 struct SpellCheckResult;
+
+namespace content {
+class BrowserContext;
+}
 
 namespace net {
 class URLFetcher;
@@ -44,9 +47,9 @@ class URLFetcher;
 //       ...
 //     }
 //
-//     void MyTextCheck(Profile* profile, const string16& text) {
+//     void MyTextCheck(BrowserContext* context, const string16& text) {
 //        client_.reset(new SpellingServiceClient);
-//        client_->RequestTextCheck(profile, 0, text,
+//        client_->RequestTextCheck(context, 0, text,
 //            base::Bind(&MyClient::OnTextCheckComplete,
 //                       base::Unretained(this));
 //     }
@@ -79,13 +82,13 @@ class SpellingServiceClient : public net::URLFetcherDelegate {
   // to the Spelling service successfully, this function returns true. (This
   // does not mean the service finishes checking text successfully.) We will
   // call |callback| when we receive a text-check response from the service.
-  bool RequestTextCheck(Profile* profile,
+  bool RequestTextCheck(content::BrowserContext* context,
                         ServiceType type,
                         const string16& text,
                         const TextCheckCompleteCallback& callback);
 
-  // Returns whether the specified service is available for the given profile.
-  static bool IsAvailable(Profile* profile, ServiceType type);
+  // Returns whether the specified service is available for the given context.
+  static bool IsAvailable(content::BrowserContext* context, ServiceType type);
 
  protected:
   // Parses a JSON-RPC response from the Spelling service.

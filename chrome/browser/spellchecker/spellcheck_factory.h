@@ -6,25 +6,22 @@
 #define CHROME_BROWSER_SPELLCHECKER_SPELLCHECK_FACTORY_H_
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/singleton.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
 
 class SpellcheckService;
-class Profile;
 
 // Entry into the SpellCheck system.
 //
 // Internally, this owns all SpellcheckService objects.
 class SpellcheckServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
-  // Returns the spell check host. This will create the SpellcheckService if it
-  // does not already exist.
-  static SpellcheckService* GetForProfile(Profile* profile);
+  // Returns the spell check host. This will create the SpellcheckService
+  // if it does not already exist. This can return NULL.
+  static SpellcheckService* GetForContext(content::BrowserContext* context);
 
   static SpellcheckService* GetForRenderProcessId(int render_process_id);
-
-  // Returns the spell check host. This can return NULL.
-  static SpellcheckService* GetForProfileWithoutCreating(Profile* profile);
 
   static SpellcheckServiceFactory* GetInstance();
 
@@ -42,6 +39,8 @@ class SpellcheckServiceFactory : public BrowserContextKeyedServiceFactory {
   virtual content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const OVERRIDE;
   virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
+
+  FRIEND_TEST_ALL_PREFIXES(SpellcheckServiceBrowserTest, DeleteCorruptedBDICT);
 
   DISALLOW_COPY_AND_ASSIGN(SpellcheckServiceFactory);
 };

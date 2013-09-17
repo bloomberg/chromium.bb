@@ -15,7 +15,6 @@
 #include "net/url_request/url_fetcher_delegate.h"
 
 class GURL;
-class Profile;
 class SpellcheckService;
 struct DictionaryFile;
 

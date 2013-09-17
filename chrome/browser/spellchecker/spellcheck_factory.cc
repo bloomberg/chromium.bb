@@ -7,18 +7,19 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "chrome/common/pref_names.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 #include "components/user_prefs/pref_registry_syncable.h"
+#include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/render_process_host.h"
 #include "grit/locale_settings.h"
 
 // static
-SpellcheckService* SpellcheckServiceFactory::GetForProfile(Profile* profile) {
+SpellcheckService* SpellcheckServiceFactory::GetForContext(
+    content::BrowserContext* context) {
   return static_cast<SpellcheckService*>(
-      GetInstance()->GetServiceForBrowserContext(profile, true));
+      GetInstance()->GetServiceForBrowserContext(context, true));
 }
 
 // static
@@ -28,17 +29,10 @@ SpellcheckService* SpellcheckServiceFactory::GetForRenderProcessId(
       content::RenderProcessHost::FromID(render_process_id);
   if (!host)
     return NULL;
-  Profile* profile = Profile::FromBrowserContext(host->GetBrowserContext());
-  if (!profile)
+  content::BrowserContext* context = host->GetBrowserContext();
+  if (!context)
     return NULL;
-  return GetForProfile(profile);
-}
-
-// static
-SpellcheckService* SpellcheckServiceFactory::GetForProfileWithoutCreating(
-    Profile* profile) {
-  return static_cast<SpellcheckService*>(
-      GetInstance()->GetServiceForBrowserContext(profile, false));
+  return GetForContext(context);
 }
 
 // static
@@ -58,15 +52,15 @@ SpellcheckServiceFactory::~SpellcheckServiceFactory() {}
 
 BrowserContextKeyedService* SpellcheckServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  Profile* profile = static_cast<Profile*>(context);
+  // Many variables are initialized from the |context| in the SpellcheckService.
+  SpellcheckService* spellcheck = new SpellcheckService(context);
 
-  // Many variables are initialized from the profile in the SpellcheckService.
-  DCHECK(profile);
-  SpellcheckService* spellcheck = new SpellcheckService(profile);
+  PrefService* prefs = user_prefs::UserPrefs::Get(context);
+  DCHECK(prefs);
 
   // Instantiates Metrics object for spellchecking for use.
   spellcheck->StartRecordingMetrics(
-      profile->GetPrefs()->GetBoolean(prefs::kEnableContinuousSpellcheck));
+      prefs->GetBoolean(prefs::kEnableContinuousSpellcheck));
 
   return spellcheck;
 }

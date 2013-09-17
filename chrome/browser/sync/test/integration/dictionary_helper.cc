@@ -39,12 +39,12 @@ namespace dictionary_helper {
 namespace {
 
 SpellcheckCustomDictionary* GetDictionary(int index) {
-  return SpellcheckServiceFactory::GetForProfile(
+  return SpellcheckServiceFactory::GetForContext(
       sync_datatype_helper::test()->GetProfile(index))->GetCustomDictionary();
 }
 
 SpellcheckCustomDictionary* GetVerifierDictionary() {
-  return SpellcheckServiceFactory::GetForProfile(
+  return SpellcheckServiceFactory::GetForContext(
       sync_datatype_helper::test()->verifier())->GetCustomDictionary();
 }
 

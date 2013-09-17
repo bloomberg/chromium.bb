@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_host_metrics.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
@@ -69,13 +68,12 @@ void SpellCheckMessageFilter::OnSpellCheckerRequestDictionary() {
       content::RenderProcessHost::FromID(render_process_id_);
   if (!host)
     return;  // Teardown.
-  Profile* profile = Profile::FromBrowserContext(host->GetBrowserContext());
   // The renderer has requested that we initialize its spellchecker. This should
   // generally only be called once per session, as after the first call, all
   // future renderers will be passed the initialization information on startup
   // (or when the dictionary changes in some way).
   SpellcheckService* spellcheck_service =
-      SpellcheckServiceFactory::GetForProfile(profile);
+      SpellcheckServiceFactory::GetForContext(host->GetBrowserContext());
 
   DCHECK(spellcheck_service);
   // The spellchecker initialization already started and finished; just send
@@ -172,14 +170,11 @@ void SpellCheckMessageFilter::CallSpellingService(
     int route_id,
     int identifier,
     const std::vector<SpellCheckMarker>& markers) {
-  Profile* profile = NULL;
   content::RenderProcessHost* host =
       content::RenderProcessHost::FromID(render_process_id_);
-  if (host)
-    profile = Profile::FromBrowserContext(host->GetBrowserContext());
 
   client_->RequestTextCheck(
-    profile,
+    host ? host->GetBrowserContext() : NULL,
     SpellingServiceClient::SPELLCHECK,
     text,
     base::Bind(&SpellCheckMessageFilter::OnTextCheckComplete,

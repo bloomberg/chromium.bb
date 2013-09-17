@@ -85,8 +85,9 @@ void LanguageDictionaryOverlayHandler::ResetDictionaryWords() {
     return;
 
   if (!dictionary_) {
-    dictionary_ = SpellcheckServiceFactory::GetForProfile(
-        Profile::FromWebUI(web_ui()))->GetCustomDictionary();
+    SpellcheckService* service = SpellcheckServiceFactory::GetForContext(
+        Profile::FromWebUI(web_ui()));
+    dictionary_ = service->GetCustomDictionary();
     dictionary_->AddObserver(this);
   }
 
