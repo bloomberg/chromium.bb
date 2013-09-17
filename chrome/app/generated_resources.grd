@@ -14949,6 +14949,36 @@ Do you accept?
     <message name="IDS_RESET_PROFILE_SETTINGS_FEEDBACK" desc="Feedback label in the Reset Profile Settings dialog">
       Help make Google Chrome better by reporting the current settings
     </message>
+    <message name="IDS_RESET_PROFILE_SETTINGS_LOCALE" desc="Locale field in the feedback details of the Reset Profile Settings dialog">
+      Locale
+    </message>
+    <message name="IDS_RESET_PROFILE_SETTINGS_USER_AGENT" desc="User Agent field in the feedback details of the Reset Profile Settings dialog">
+      User Agent
+    </message>
+    <message name="IDS_RESET_PROFILE_SETTINGS_STARTUP_URLS" desc="Startup URLs tag in the feedback details of the Reset Profile Settings dialog">
+      Startup URLs
+    </message>
+    <message name="IDS_RESET_PROFILE_SETTINGS_STARTUP_TYPE" desc="Startup type tag in the feedback details of the Reset Profile Settings dialog">
+      Startup type
+    </message>
+    <message name="IDS_RESET_PROFILE_SETTINGS_HOMEPAGE" desc="Homepage tag in the feedback details of the Reset Profile Settings dialog">
+      Homepage
+    </message>
+    <message name="IDS_RESET_PROFILE_SETTINGS_HOMEPAGE_IS_NTP" desc="Tag in the feedback details of the Reset Profile Settings dialog">
+      Homepage is the New Tab page
+    </message>
+    <message name="IDS_RESET_PROFILE_SETTINGS_HOMEPAGE_IS_NTP_TRUE" desc="Value of HOMEPAGE_IS_NTP in the feedback details of the Reset Profile Settings dialog">
+      Yes
+    </message>
+    <message name="IDS_RESET_PROFILE_SETTINGS_HOMEPAGE_IS_NTP_FALSE" desc="Value of HOMEPAGE_IS_NTP in the feedback details of the Reset Profile Settings dialog">
+      No
+    </message>
+    <message name="IDS_RESET_PROFILE_SETTINGS_DSE" desc="Default search engine in the feedback details of the Reset Profile Settings dialog">
+      Default search engine
+    </message>
+    <message name="IDS_RESET_PROFILE_SETTINGS_EXTENSIONS" desc="Extensions tag in the feedback details of the Reset Profile Settings dialog">
+      Extensions
+    </message>
 
     <!-- Identity internals strings -->
     <message name="IDS_IDENTITY_INTERNALS_TOKEN_CACHE_TEXT" desc="The title of the token cache of the Identity API.">

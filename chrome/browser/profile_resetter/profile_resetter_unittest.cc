@@ -726,7 +726,8 @@ TEST_F(ProfileResetterTest, CheckSnapshots) {
   EXPECT_TRUE(empty_snap.homepage().empty());
   EXPECT_TRUE(empty_snap.homepage_is_ntp());
   EXPECT_NE(std::string::npos, empty_snap.dse_url().find("{google:baseURL}"));
-  EXPECT_EQ(std::vector<std::string>(), empty_snap.enabled_extensions());
+  EXPECT_EQ(ResettableSettingsSnapshot::ExtensionList(),
+            empty_snap.enabled_extensions());
 
   // Reset to organic defaults.
   ResetAndWait(ProfileResetter::DEFAULT_SEARCH_ENGINE |
@@ -745,8 +746,9 @@ TEST_F(ProfileResetterTest, CheckSnapshots) {
   EXPECT_EQ("http://www.foo.com", nonorganic_snap.homepage());
   EXPECT_FALSE(nonorganic_snap.homepage_is_ntp());
   EXPECT_EQ("http://www.foo.com/s?q={searchTerms}", nonorganic_snap.dse_url());
-  EXPECT_EQ(std::vector<std::string>(1, ext_id),
-            nonorganic_snap.enabled_extensions());
+  EXPECT_EQ(ResettableSettingsSnapshot::ExtensionList(
+      1, std::make_pair(ext_id, "example")),
+      nonorganic_snap.enabled_extensions());
 }
 
 TEST_F(ProfileResetterTest, FeedbackSerializtionTest) {

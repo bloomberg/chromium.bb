@@ -21,13 +21,25 @@
       </div>
     </div>
   </div>
-  <div class="gray-bottom-bar checkbox">
+  <div id="feedback-bar" class="gray-bottom-bar checkbox">
     <span class="controlled-setting-with-label">
       <input id="send-settings" type="checkbox" checked>
       <span>
         <label for="send-settings" i18n-content="resetProfileSettingsFeedback">
         </label>
+        <div id='expand-feedback'></div>
       </span>
     </span>
+    <div id="feedback-template" hidden>
+      <div>
+        <table>
+          <tr jsselect="feedbackInfo">
+            <td class="key"><span jscontent="key">KEY</span></td>
+            <td class="value"><span jscontent="value">VALUE</span></td>
+          </tr>
+        </table>
+      </div>
+    </div>
   </div>
 </div>
+<script src="chrome://resources/js/jstemplate_compiled.js"></script>

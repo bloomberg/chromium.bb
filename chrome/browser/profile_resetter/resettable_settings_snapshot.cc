@@ -6,13 +6,20 @@
 
 #include "base/json/json_writer.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/utf_string_conversions.h"
+#include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/feedback/feedback_data.h"
 #include "chrome/browser/feedback/feedback_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
+#include "grit/generated_resources.h"
+#include "grit/google_chrome_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 
@@ -26,6 +33,13 @@ const char kHomepageIsNewTabPage[] = "homepage_is_ntp";
 const char kHomepagePath[] = "homepage";
 const char kStartupTypePath[] = "startup_type";
 const char kStartupURLPath[] = "startup_urls";
+
+void AddPair(ListValue* list, const string16& key, const string16& value) {
+  DictionaryValue* results = new DictionaryValue();
+  results->SetString("key", key);
+  results->SetString("value", value);
+  list->Append(results);
+}
 
 }  // namespace
 
@@ -53,7 +67,7 @@ ResettableSettingsSnapshot::ResettableSettingsSnapshot(Profile* profile)
 
   for (ExtensionSet::const_iterator it = enabled_ext->begin();
        it != enabled_ext->end(); ++it)
-    enabled_extensions_.push_back((*it)->id());
+    enabled_extensions_.push_back(std::make_pair((*it)->id(), (*it)->name()));
 
   // ExtensionSet is sorted but it seems to be an implementation detail.
   std::sort(enabled_extensions_.begin(), enabled_extensions_.end());
@@ -70,7 +84,7 @@ void ResettableSettingsSnapshot::Subtract(
                       std::back_inserter(urls));
   startup_.urls.swap(urls);
 
-  std::vector<std::string> extensions;
+  ExtensionList extensions;
   std::set_difference(enabled_extensions_.begin(), enabled_extensions_.end(),
                       snapshot.enabled_extensions_.begin(),
                       snapshot.enabled_extensions_.end(),
@@ -134,10 +148,15 @@ std::string SerializeSettingsReport(const ResettableSettingsSnapshot& snapshot,
 
   if (field_mask & ResettableSettingsSnapshot::EXTENSIONS) {
     ListValue* list = new ListValue;
-    const std::vector<std::string>& extensions = snapshot.enabled_extensions();
-    for (std::vector<std::string>::const_iterator i = extensions.begin();
-         i != extensions.end(); ++i)
-      list->AppendString(*i);
+    const ResettableSettingsSnapshot::ExtensionList& extensions =
+        snapshot.enabled_extensions();
+    for (ResettableSettingsSnapshot::ExtensionList::const_iterator i =
+         extensions.begin(); i != extensions.end(); ++i) {
+      // Replace "\"" to simplify server-side analysis.
+      std::string ext_name;
+      ReplaceChars(i->second, "\"", "\'", &ext_name);
+      list->AppendString(i->first + ";" + ext_name);
+    }
     dict.Set(kEnabledExtensions, list);
   }
 
@@ -161,4 +180,92 @@ void SendSettingsFeedback(const std::string& report, Profile* profile) {
   feedback_data->set_user_email("");
 
   feedback_util::SendReport(feedback_data);
+}
+
+ListValue* GetReadableFeedback(Profile* profile) {
+  DCHECK(profile);
+  ListValue* list = new ListValue;
+  AddPair(list, l10n_util::GetStringUTF16(IDS_RESET_PROFILE_SETTINGS_LOCALE),
+          ASCIIToUTF16(g_browser_process->GetApplicationLocale()));
+  AddPair(list,
+          l10n_util::GetStringUTF16(IDS_RESET_PROFILE_SETTINGS_USER_AGENT),
+          ASCIIToUTF16(content::GetUserAgent(GURL())));
+  chrome::VersionInfo version_info;
+  std::string version = version_info.Version();
+  version += chrome::VersionInfo::GetVersionStringModifier();
+  AddPair(list,
+          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
+          ASCIIToUTF16(version));
+
+  // Add snapshot data.
+  ResettableSettingsSnapshot snapshot(profile);
+  const std::vector<GURL>& urls = snapshot.startup_urls();
+  std::string startup_urls;
+  for (std::vector<GURL>::const_iterator i = urls.begin();
+       i != urls.end(); ++i) {
+    (startup_urls += i->host()) += ' ';
+  }
+  if (!startup_urls.empty()) {
+    startup_urls.erase(startup_urls.end() - 1);
+    AddPair(list,
+            l10n_util::GetStringUTF16(IDS_RESET_PROFILE_SETTINGS_STARTUP_URLS),
+            ASCIIToUTF16(startup_urls));
+  }
+
+  string16 startup_type;
+  switch (snapshot.startup_type()) {
+    case SessionStartupPref::DEFAULT:
+      startup_type = l10n_util::GetStringUTF16(IDS_OPTIONS_STARTUP_SHOW_NEWTAB);
+      break;
+    case SessionStartupPref::LAST:
+      startup_type = l10n_util::GetStringUTF16(
+          IDS_OPTIONS_STARTUP_RESTORE_LAST_SESSION);
+      break;
+    case SessionStartupPref::URLS:
+      startup_type = l10n_util::GetStringUTF16(IDS_OPTIONS_STARTUP_SHOW_PAGES);
+      break;
+    default:
+      break;
+  }
+  AddPair(list,
+          l10n_util::GetStringUTF16(IDS_RESET_PROFILE_SETTINGS_STARTUP_TYPE),
+          startup_type);
+
+  if (!snapshot.homepage().empty()) {
+    AddPair(list,
+            l10n_util::GetStringUTF16(IDS_RESET_PROFILE_SETTINGS_HOMEPAGE),
+            ASCIIToUTF16(snapshot.homepage()));
+  }
+
+  int is_ntp_message_id = snapshot.homepage_is_ntp() ?
+      IDS_RESET_PROFILE_SETTINGS_HOMEPAGE_IS_NTP_TRUE :
+      IDS_RESET_PROFILE_SETTINGS_HOMEPAGE_IS_NTP_FALSE;
+  AddPair(list,
+          l10n_util::GetStringUTF16(IDS_RESET_PROFILE_SETTINGS_HOMEPAGE_IS_NTP),
+          l10n_util::GetStringUTF16(is_ntp_message_id));
+
+  TemplateURLService* service =
+      TemplateURLServiceFactory::GetForProfile(profile);
+  DCHECK(service);
+  TemplateURL* dse = service->GetDefaultSearchProvider();
+  if (dse) {
+    AddPair(list,
+            l10n_util::GetStringUTF16(IDS_RESET_PROFILE_SETTINGS_DSE),
+            ASCIIToUTF16(TemplateURLService::GenerateSearchURL(dse).host()));
+  }
+
+  const ResettableSettingsSnapshot::ExtensionList& extensions =
+      snapshot.enabled_extensions();
+  std::string extension_ids;
+  for (ResettableSettingsSnapshot::ExtensionList::const_iterator i =
+       extensions.begin(); i != extensions.end(); ++i) {
+    (extension_ids += i->second) += '\n';
+  }
+  if (!extension_ids.empty()) {
+    extension_ids.erase(extension_ids.end() - 1);
+    AddPair(list,
+            l10n_util::GetStringUTF16(IDS_RESET_PROFILE_SETTINGS_EXTENSIONS),
+            ASCIIToUTF16(extension_ids));
+  }
+  return list;
 }

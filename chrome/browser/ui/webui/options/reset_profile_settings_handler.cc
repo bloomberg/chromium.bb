@@ -23,8 +23,10 @@
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
+
 const char kResetProfileSettingsLearnMoreUrl[] =
     "https://support.google.com/chrome/?p=ui_reset_settings";
+
 }  // namespace
 
 namespace options {
@@ -112,6 +114,13 @@ void ResetProfileSettingsHandler::OnResetProfileSettingsDone() {
 }
 
 void ResetProfileSettingsHandler::OnShowResetProfileDialog(const ListValue*) {
+  DictionaryValue flashInfo;
+  flashInfo.Set("feedbackInfo", GetReadableFeedback(
+      Profile::FromWebUI(web_ui())));
+  web_ui()->CallJavascriptFunction(
+      "ResetProfileSettingsOverlay.setFeedbackInfo",
+      flashInfo);
+
   if (brandcode_.empty())
     return;
   config_fetcher_.reset(new BrandcodeConfigFetcher(

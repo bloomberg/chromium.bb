@@ -8,10 +8,17 @@
 #include "base/basictypes.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 
+namespace base {
+class ListValue;
+}
+
 // ResettableSettingsSnapshot captures some settings values at constructor. It
 // can calculate the difference between two snapshots. That is, modified fields.
 class ResettableSettingsSnapshot {
  public:
+  // ExtensionList is a vector of pairs. The first component is the extension
+  // id, the second is the name.
+  typedef std::vector<std::pair<std::string, std::string> > ExtensionList;
   // All types of settings handled by this class.
   enum Field {
     STARTUP_URLS = 1 << 0,
@@ -39,7 +46,7 @@ class ResettableSettingsSnapshot {
 
   const std::string& dse_url() const { return dse_url_; }
 
-  const std::vector<std::string>& enabled_extensions() const {
+  const ExtensionList& enabled_extensions() const {
     return enabled_extensions_;
   }
 
@@ -65,8 +72,8 @@ class ResettableSettingsSnapshot {
   // Default search engine.
   std::string dse_url_;
 
-  // Enabled extension ids. Always sorted.
-  std::vector<std::string> enabled_extensions_;
+  // List of pairs [id, name] for enabled extensions. Always sorted.
+  ExtensionList enabled_extensions_;
 
   DISALLOW_COPY_AND_ASSIGN(ResettableSettingsSnapshot);
 };
@@ -79,5 +86,9 @@ std::string SerializeSettingsReport(const ResettableSettingsSnapshot& snapshot,
 // Sends |report| as a feedback. |report| is supposed to be result of
 // SerializeSettingsReport().
 void SendSettingsFeedback(const std::string& report, Profile* profile);
+
+// Returns list of key/value pairs for all reported information from the
+// |profile| and some additional fields.
+base::ListValue* GetReadableFeedback(Profile* profile);
 
 #endif  // CHROME_BROWSER_PROFILE_RESETTER_RESETTABLE_SETTINGS_SNAPSHOT_H_
