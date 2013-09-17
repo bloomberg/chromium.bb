@@ -20,6 +20,17 @@
 
 using content::BrowserThread;
 
+namespace {
+
+void OnRequestUsbAccessReplied(
+    const base::Callback<void(bool success)>& callback,
+    bool success) {
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                          base::Bind(callback, success));
+}
+
+}  // namespace
+
 UsbDevice::UsbDevice(
     scoped_refptr<UsbContext> context,
     PlatformUsbDevice platform_device,
@@ -55,6 +66,7 @@ UsbDevice::~UsbDevice() {
 }
 
 #if defined(OS_CHROMEOS)
+
 void UsbDevice::RequestUsbAcess(
     int interface_id,
     const base::Callback<void(bool success)>& callback) {
@@ -78,17 +90,8 @@ void UsbDevice::RequestUsbAcess(
                    this->vendor_id_,
                    this->product_id_,
                    interface_id,
-                   base::Bind(&UsbDevice::OnRequestUsbAccessReplied,
-                              base::Unretained(this),
-                              callback)));
+                   base::Bind(&OnRequestUsbAccessReplied, callback)));
   }
-}
-
-void UsbDevice::OnRequestUsbAccessReplied(
-    const base::Callback<void(bool success)>& callback,
-    bool success) {
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                          base::Bind(callback, success));
 }
 
 #endif

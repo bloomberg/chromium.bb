@@ -73,15 +73,6 @@ class UsbDevice : public base::RefCountedThreadSafe<UsbDevice> {
   // Called only be UsbService.
   virtual void OnDisconnect();
 
-#if defined(OS_CHROMEOS)
-  // This method is called when permission broker replied our request.
-  // We will simply relay it to FILE thread.
-  // |callback| comes first because it will be base::Bind'ed.
-  void OnRequestUsbAccessReplied(
-      const base::Callback<void(bool success)>& callback,
-      bool success);
-#endif  // OS_CHROMEOS
-
  private:
   PlatformUsbDevice platform_device_;
   uint16 vendor_id_;
