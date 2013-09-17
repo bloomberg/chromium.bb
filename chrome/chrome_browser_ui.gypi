@@ -2460,6 +2460,8 @@
             'installer_util',
             '../components/components.gyp:autofill_content_risk_proto',
             '../components/component_strings.gyp:component_strings',
+            '../components/components.gyp:dom_distiller_core',
+            '../components/components.gyp:dom_distiller_webui',
             '../device/bluetooth/bluetooth.gyp:device_bluetooth',
             '../media/media.gyp:media',
             '../net/net.gyp:net_with_v8',

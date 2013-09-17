@@ -8,6 +8,10 @@ per-file breakpad.gypi=jochen@chromium.org
 per-file breakpad.gypi=rsesek@chromium.org
 per-file breakpad.gypi=thestig@chromium.org
 
+per-file dom_distiller*=bengr@chromium.org
+per-file dom_distiller*=cjhopman@chromium.org
+per-file dom_distiller*=nyquist@chromium.org
+
 per-file json_schema.gypi=asargent@chromium.org
 per-file json_schema.gypi=calamity@chromium.org
 per-file json_schema.gypi=kalman@chromium.org

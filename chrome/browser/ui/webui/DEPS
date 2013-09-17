@@ -9,4 +9,8 @@ include_rules = [
   "+device/bluetooth",
   "+third_party/angle",       # For ANGLE version.
   "+third_party/zlib/zlib.h", # For compression level constants.
+
+  # DOM Distiller.
+  "+components/dom_distiller/core",
+  "+components/dom_distiller/webui",
 ]
