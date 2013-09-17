@@ -371,15 +371,14 @@ void MessageCenterSettingsController::RebuildNotifierGroups() {
 
   const size_t count = profile_info_cache_->GetNumberOfProfiles();
   for (size_t i = 0; i < count; ++i) {
-    message_center::ProfileNotifierGroup* group =
+    scoped_ptr<message_center::ProfileNotifierGroup> group(
         new message_center::ProfileNotifierGroup(
             profile_info_cache_->GetAvatarIconOfProfileAtIndex(i),
             profile_info_cache_->GetNameOfProfileAtIndex(i),
             profile_info_cache_->GetUserNameOfProfileAtIndex(i),
             i,
-            profile_info_cache_->GetPathOfProfileAtIndex(i));
-    if (group->profile() != NULL) {
-      notifier_groups_.push_back(group);
-    }
+            profile_info_cache_->GetPathOfProfileAtIndex(i)));
+    if (group->profile() != NULL)
+      notifier_groups_.push_back(group.release());
   }
 }
