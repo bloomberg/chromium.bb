@@ -447,9 +447,6 @@ void WebNavigationTabObserver::DidCommitProvisionalLoadForFrame(
   navigation_state_.UpdateFrame(frame_id, url);
   navigation_state_.SetNavigationCommitted(frame_id);
 
-  if (is_reference_fragment_navigation || is_history_state_modification)
-    navigation_state_.SetNavigationCompleted(frame_id);
-
   if (!navigation_state_.CanSendEvents(frame_id))
     return;
 
