@@ -1060,13 +1060,13 @@ AutofillDialogViews::SuggestionView::SuggestionView(
   decorated_->set_default_width_in_chars(15);
   label_container->AddChildView(decorated_);
 
-  // TODO(estade): need to get the line height right.
   label_line_2_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label_line_2_->SetVisible(false);
+  label_line_2_->SetLineHeight(22);
   label_line_2_->SetMultiLine(true);
   AddChildView(label_line_2_);
 
-  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
+  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 7));
 }
 
 AutofillDialogViews::SuggestionView::~SuggestionView() {}
