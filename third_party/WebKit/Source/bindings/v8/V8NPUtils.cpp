@@ -41,7 +41,7 @@
 
 namespace WebCore {
 
-void convertV8ObjectToNPVariant(v8::Local<v8::Value> object, NPObject* owner, NPVariant* result)
+void convertV8ObjectToNPVariant(v8::Local<v8::Value> object, NPObject* owner, NPVariant* result, v8::Isolate* isolate)
 {
     VOID_TO_NPVARIANT(*result);
 
@@ -68,7 +68,7 @@ void convertV8ObjectToNPVariant(v8::Local<v8::Value> object, NPObject* owner, NP
         STRINGN_TO_NPVARIANT(utf8Chars, length-1, *result);
     } else if (object->IsObject()) {
         DOMWindow* window = toDOMWindow(v8::Context::GetCurrent());
-        NPObject* npobject = npCreateV8ScriptObject(0, v8::Handle<v8::Object>::Cast(object), window);
+        NPObject* npobject = npCreateV8ScriptObject(0, v8::Handle<v8::Object>::Cast(object), window, isolate);
         if (npobject)
             _NPN_RegisterObject(npobject, owner);
         OBJECT_TO_NPVARIANT(npobject, *result);

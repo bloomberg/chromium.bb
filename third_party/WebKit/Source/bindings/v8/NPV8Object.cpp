@@ -66,7 +66,7 @@ static NPObject* allocV8NPObject(NPP, NPClass*)
 static void freeV8NPObject(NPObject* npObject)
 {
     V8NPObject* v8NpObject = reinterpret_cast<V8NPObject*>(npObject);
-    disposeUnderlyingV8Object(npObject);
+    disposeUnderlyingV8Object(npObject, v8::Isolate::GetCurrent());
     free(v8NpObject);
 }
 
@@ -114,7 +114,7 @@ NPObject* v8ObjectToNPObject(v8::Handle<v8::Object> object)
     return reinterpret_cast<NPObject*>(object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex));
 }
 
-NPObject* npCreateV8ScriptObject(NPP npp, v8::Handle<v8::Object> object, DOMWindow* root)
+NPObject* npCreateV8ScriptObject(NPP npp, v8::Handle<v8::Object> object, DOMWindow* root, v8::Isolate* isolate)
 {
     // Check to see if this object is already wrapped.
     if (object->InternalFieldCount() == npObjectInternalFieldCount) {
@@ -151,7 +151,7 @@ NPObject* npCreateV8ScriptObject(NPP npp, v8::Handle<v8::Object> object, DOMWind
     // This is uninitialized memory, we need to clear it so that
     // Persistent::Reset won't try to Dispose anything bogus.
     v8npObject->v8Object.Clear();
-    v8npObject->v8Object.Reset(v8::Isolate::GetCurrent(), object);
+    v8npObject->v8Object.Reset(isolate, object);
     v8npObject->rootObject = root;
 
     if (objectVector)
@@ -170,13 +170,12 @@ V8NPObject* npObjectToV8NPObject(NPObject* npObject)
     return v8NpObject;
 }
 
-void disposeUnderlyingV8Object(NPObject* npObject)
+void disposeUnderlyingV8Object(NPObject* npObject, v8::Isolate* isolate)
 {
     ASSERT(npObject);
     V8NPObject* v8NpObject = npObjectToV8NPObject(npObject);
     if (!v8NpObject)
         return;
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HandleScope scope(isolate);
     v8::Handle<v8::Object> v8Object = v8::Local<v8::Object>::New(isolate, v8NpObject->v8Object);
     ASSERT(!v8Object->CreationContext().IsEmpty());
@@ -265,7 +264,7 @@ bool _NPN_Invoke(NPP npp, NPObject* npObject, NPIdentifier methodName, const NPV
     if (resultObject.IsEmpty())
         return false;
 
-    convertV8ObjectToNPVariant(resultObject, npObject, result);
+    convertV8ObjectToNPVariant(resultObject, npObject, result, isolate);
     return true;
 }
 
@@ -315,7 +314,7 @@ bool _NPN_InvokeDefault(NPP npp, NPObject* npObject, const NPVariant* arguments,
     if (resultObject.IsEmpty())
         return false;
 
-    convertV8ObjectToNPVariant(resultObject, npObject, result);
+    convertV8ObjectToNPVariant(resultObject, npObject, result, isolate);
     return true;
 }
 
@@ -336,7 +335,8 @@ bool _NPN_EvaluateHelper(NPP npp, bool popupsAllowed, NPObject* npObject, NPStri
     if (!v8NpObject)
         return false;
 
-    v8::HandleScope handleScope(v8::Isolate::GetCurrent());
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    v8::HandleScope handleScope(isolate);
     v8::Handle<v8::Context> context = toV8Context(npp, npObject);
     if (context.IsEmpty())
         return false;
@@ -361,7 +361,7 @@ bool _NPN_EvaluateHelper(NPP npp, bool popupsAllowed, NPObject* npObject, NPStri
         return false;
 
     if (_NPN_IsAlive(npObject))
-        convertV8ObjectToNPVariant(v8result, npObject, result);
+        convertV8ObjectToNPVariant(v8result, npObject, result, isolate);
     return true;
 }
 
@@ -386,7 +386,7 @@ bool _NPN_GetProperty(NPP npp, NPObject* npObject, NPIdentifier propertyName, NP
         if (v8result.IsEmpty())
             return false;
 
-        convertV8ObjectToNPVariant(v8result, npObject, result);
+        convertV8ObjectToNPVariant(v8result, npObject, result, isolate);
         return true;
     }
 
@@ -603,7 +603,7 @@ bool _NPN_Construct(NPP npp, NPObject* npObject, const NPVariant* arguments, uin
         if (resultObject.IsEmpty())
             return false;
 
-        convertV8ObjectToNPVariant(resultObject, npObject, result);
+        convertV8ObjectToNPVariant(resultObject, npObject, result, isolate);
         return true;
     }
 

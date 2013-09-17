@@ -319,7 +319,7 @@ static NPObject* makeIntArrayImpl(const WebVector<int>& data, v8::Isolate* isola
         result->Set(i, v8::Number::New(isolate, data[i]));
 
     DOMWindow* window = toDOMWindow(isolate->GetCurrentContext());
-    return npCreateV8ScriptObject(0, result, window);
+    return npCreateV8ScriptObject(0, result, window, isolate);
 }
 
 static NPObject* makeStringArrayImpl(const WebVector<WebString>& data, v8::Isolate* isolate)
@@ -330,7 +330,7 @@ static NPObject* makeStringArrayImpl(const WebVector<WebString>& data, v8::Isola
         result->Set(i, v8String(data[i], isolate));
 
     DOMWindow* window = toDOMWindow(isolate->GetCurrentContext());
-    return npCreateV8ScriptObject(0, result, window);
+    return npCreateV8ScriptObject(0, result, window, isolate);
 }
 
 bool WebBindings::getRange(NPObject* range, WebRange* webRange)
@@ -380,7 +380,7 @@ void WebBindings::popExceptionHandler()
 
 void WebBindings::toNPVariant(v8::Local<v8::Value> object, NPObject* root, NPVariant* result)
 {
-    WebCore::convertV8ObjectToNPVariant(object, root, result);
+    WebCore::convertV8ObjectToNPVariant(object, root, result, v8::Isolate::GetCurrent());
 }
 
 v8::Handle<v8::Value> WebBindings::toV8Value(const NPVariant* variant)

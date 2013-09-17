@@ -36,7 +36,7 @@
 namespace WebCore {
 
 // Convert a V8 Value of any type (string, bool, object, etc) to a NPVariant.
-void convertV8ObjectToNPVariant(v8::Local<v8::Value>, NPObject*, NPVariant*);
+void convertV8ObjectToNPVariant(v8::Local<v8::Value>, NPObject*, NPVariant*, v8::Isolate*);
 
 // Convert a NPVariant (string, bool, object, etc) back to a V8 Value.  The owner object is the NPObject which relates to the
 // object, if the object is an Object.  The created NPObject will be tied to the lifetime of the owner.

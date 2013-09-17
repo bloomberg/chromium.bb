@@ -64,13 +64,13 @@ struct PrivateIdentifier {
     bool isString;
 };
 
-NPObject* npCreateV8ScriptObject(NPP, v8::Handle<v8::Object>, DOMWindow*);
+NPObject* npCreateV8ScriptObject(NPP, v8::Handle<v8::Object>, DOMWindow*, v8::Isolate*);
 
 NPObject* v8ObjectToNPObject(v8::Handle<v8::Object>);
 
 V8NPObject* npObjectToV8NPObject(NPObject*);
 
-void disposeUnderlyingV8Object(NPObject*);
+void disposeUnderlyingV8Object(NPObject*, v8::Isolate*);
 
 } // namespace WebCore
 
