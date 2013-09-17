@@ -372,9 +372,8 @@ bool DoResolveRelativeHost(const char* base_url,
   // Parse the relative URL, just like we would for anything following a
   // scheme.
   url_parse::Parsed relative_parsed;  // Everything but the scheme is valid.
-  url_parse::ParseAfterScheme(&relative_url[relative_component.begin],
-                              relative_component.len, relative_component.begin,
-                              &relative_parsed);
+  url_parse::ParseAfterScheme(relative_url, relative_component.end(),
+                              relative_component.begin, &relative_parsed);
 
   // Now we can just use the replacement function to replace all the necessary
   // parts of the old URL with the new one.
