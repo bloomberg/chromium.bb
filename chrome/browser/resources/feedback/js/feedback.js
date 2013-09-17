@@ -125,6 +125,10 @@ function sendReport() {
     }
   }
 
+  // If the user doesn't want to send the screenshot.
+  if (!$('screenshot-checkbox').checked)
+    feedbackInfo.screenshot = null;
+
   chrome.feedbackPrivate.sendFeedback(feedbackInfo, function(result) {
     window.open(FEEDBACK_LANDING_PAGE, '_blank');
     window.close();
