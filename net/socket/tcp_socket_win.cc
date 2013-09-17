@@ -780,7 +780,9 @@ int TCPSocketWin::DoConnect() {
     if (os_error != WSAEWOULDBLOCK) {
       LOG(ERROR) << "connect failed: " << os_error;
       connect_os_error_ = os_error;
-      return MapConnectError(os_error);
+      int rv = MapConnectError(os_error);
+      CHECK_NE(ERR_IO_PENDING, rv);
+      return rv;
     }
   }
 
