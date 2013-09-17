@@ -165,6 +165,11 @@ KioskModeScreensaver::KioskModeScreensaver()
 }
 
 KioskModeScreensaver::~KioskModeScreensaver() {
+  // If we are shutting down the system might already be gone and we shouldn't
+  // do anything (see crbug.com/288216).
+  if (!g_browser_process || g_browser_process->IsShuttingDown())
+    return;
+
   // If the extension was unpacked.
   if (!extension_base_path_.empty()) {
     ExtensionService* service = GetDefaultExtensionService();
