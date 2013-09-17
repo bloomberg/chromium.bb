@@ -18,6 +18,8 @@ var lastReader = null;
 var feedbackInfo = null;
 var systemInfo = null;
 
+var systemInfoWindowId = 0;
+
 /**
  * Reads the selected file when the user selects a file.
  * @param {Event} fileSelectedEvent The onChanged event for the file input box.
@@ -56,10 +58,17 @@ function clearAttachedFile() {
 }
 
 /**
- * Opens a new tab with chrome://system, showing the current system info.
+ * Opens a new window with chrome://system, showing the current system info.
  */
-function openSystemTab() {
-  window.open('chrome://system', '_blank');
+function openSystemInfoWindow() {
+  if (systemInfoWindowId == 0) {
+    chrome.windows.create({url: 'chrome://system'}, function(win) {
+      systemInfoWindowId = win.id;
+      chrome.app.window.current().show();
+    });
+  } else {
+    chrome.windows.update(systemInfoWindowId, {drawAttention: true});
+  }
 }
 
 /**
@@ -190,8 +199,13 @@ function initialize() {
     $('send-report-button').onclick = sendReport;
     $('cancel-button').onclick = cancel;
     $('remove-attached-file').onclick = clearAttachedFile;
+
+    chrome.windows.onRemoved.addListener(function(windowId, removeInfo) {
+      if (windowId == systemInfoWindowId)
+        systemInfoWindowId = 0;
+    });
     if ($('sysinfo-url')) {
-      $('sysinfo-url').onclick = openSystemTab;
+      $('sysinfo-url').onclick = openSystemInfoWindow;
     }
   });
 }
