@@ -30,6 +30,11 @@ const int kMuteThresholdPercent = 1;
 
 static CrasAudioHandler* g_cras_audio_handler = NULL;
 
+bool IsSameAudioDevice(const AudioDevice& a, const AudioDevice& b) {
+  return a.id == b.id && a.is_input == b.is_input && a.type == b.type
+      && a.device_name == b.device_name;
+}
+
 }  // namespace
 
 CrasAudioHandler::AudioObserver::AudioObserver() {
@@ -562,10 +567,29 @@ bool CrasAudioHandler::HasDeviceChange(const AudioNodeList& new_nodes,
 
   for (AudioNodeList::const_iterator it = new_nodes.begin();
        it != new_nodes.end(); ++it) {
-    if (is_input == it->is_input)
+    if (is_input == it->is_input) {
       ++num_new_devices;
+      // Look to see if the new device not in the old device list.
+      AudioDevice device(*it);
+      if (FoundNewDevice(device))
+        return true;
+    }
   }
   return num_old_devices != num_new_devices;
+}
+
+bool CrasAudioHandler::FoundNewDevice(const AudioDevice& device) {
+  const AudioDevice* device_found = GetDeviceFromId(device.id);
+  if (!device_found)
+    return true;
+
+  if (!IsSameAudioDevice(device, *device_found)) {
+    LOG(WARNING) << "Different Audio devices with same id:"
+        << " new device: " << device.ToString()
+        << " old device: " << device_found->ToString();
+    return true;
+  }
+  return false;
 }
 
 void CrasAudioHandler::UpdateDevicesAndSwitchActive(

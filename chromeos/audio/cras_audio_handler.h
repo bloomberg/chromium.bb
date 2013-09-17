@@ -238,6 +238,9 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   void HandleGetNodesError(const std::string& error_name,
                            const std::string& error_msg);
 
+  // Returns true if |device| is not found in audio_devices_.
+  bool FoundNewDevice(const AudioDevice& device);
+
   scoped_refptr<AudioDevicesPrefHandler> audio_pref_handler_;
   base::WeakPtrFactory<CrasAudioHandler> weak_ptr_factory_;
   ObserverList<AudioObserver> observers_;

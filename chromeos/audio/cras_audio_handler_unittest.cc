@@ -935,6 +935,55 @@ TEST_F(CrasAudioHandlerTest, OneActiveAudioOutputAfterLoginNewUserSession) {
   }
 }
 
+TEST_F(CrasAudioHandlerTest, BluetoothSpeakerIdChangedOnFly) {
+  // Initialize with internal speaker and bluetooth headset.
+  AudioNodeList audio_nodes;
+  audio_nodes.push_back(kInternalSpeaker);
+  audio_nodes.push_back(kBluetoothHeadset);
+  SetUpCrasAudioHandler(audio_nodes);
+  const size_t init_nodes_size = audio_nodes.size();
+
+  // Verify the audio devices size.
+  AudioDeviceList audio_devices;
+  cras_audio_handler_->GetAudioDevices(&audio_devices);
+  EXPECT_EQ(init_nodes_size, audio_devices.size());
+  EXPECT_EQ(0, test_observer_->audio_nodes_changed_count());
+
+  // Verify the bluetooth headset is selected as the active output and all other
+  // audio devices are not active.
+  EXPECT_EQ(0, test_observer_->active_output_node_changed_count());
+  AudioDevice active_output;
+  EXPECT_TRUE(cras_audio_handler_->GetActiveOutputDevice(&active_output));
+  EXPECT_EQ(kBluetoothHeadset.id, active_output.id);
+  EXPECT_EQ(kBluetoothHeadset.id, cras_audio_handler_->GetActiveOutputNode());
+  EXPECT_TRUE(cras_audio_handler_->has_alternative_output());
+
+  // Cras changes the bluetooth headset's id on the fly.
+  audio_nodes.clear();
+  AudioNode internal_speaker(kInternalSpeaker);
+  internal_speaker.active = false;
+  audio_nodes.push_back(internal_speaker);
+  AudioNode bluetooth_headphone(kBluetoothHeadset);
+  // Change bluetooth headphone id.
+  bluetooth_headphone.id = kBluetoothHeadsetId + 20000;
+  bluetooth_headphone.active = false;
+  audio_nodes.push_back(bluetooth_headphone);
+  ChangeAudioNodes(audio_nodes);
+
+  // Verify NodesChanged event is fired, and the audio devices size is not
+  // changed.
+  audio_devices.clear();
+  cras_audio_handler_->GetAudioDevices(&audio_devices);
+  EXPECT_EQ(init_nodes_size, audio_devices.size());
+  EXPECT_EQ(1, test_observer_->audio_nodes_changed_count());
+
+  // Verify ActiveOutputNodeChanged event is fired, and active device should be
+  // bluetooth headphone.
+  EXPECT_EQ(1, test_observer_->active_output_node_changed_count());
+  EXPECT_TRUE(cras_audio_handler_->GetActiveOutputDevice(&active_output));
+  EXPECT_EQ(bluetooth_headphone.id, active_output.id);
+}
+
 TEST_F(CrasAudioHandlerTest, PlugUSBMic) {
   // Set up initial audio devices, only with internal mic.
   AudioNodeList audio_nodes;
