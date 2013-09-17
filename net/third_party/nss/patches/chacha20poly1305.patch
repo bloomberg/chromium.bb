@@ -1,0 +1,280 @@
+diff --git a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
+index 8be517c..53c29f0 100644
+--- a/nss/lib/ssl/ssl3con.c
++++ b/nss/lib/ssl/ssl3con.c
+@@ -40,6 +40,21 @@
+ #define CKM_NSS_TLS_MASTER_KEY_DERIVE_DH_SHA256 (CKM_NSS + 24)
+ #endif
+ 
++/* This is a bodge to allow this code to be compiled against older NSS
++ * headers. */
++#ifndef CKM_NSS_CHACHA20_POLY1305
++#define CKM_NSS_CHACHA20_POLY1305               (CKM_NSS + 25)
++
++typedef struct CK_AEAD_PARAMS {
++  CK_BYTE_PTR  pIv;  /* This is the nonce. */
++  CK_ULONG     ulIvLen;
++  CK_BYTE_PTR  pAAD;
++  CK_ULONG     ulAADLen;
++  CK_ULONG     ulTagBits;
++} CK_AEAD_PARAMS;
++
++#endif
++
+ #include <stdio.h>
+ #ifdef NSS_ENABLE_ZLIB
+ #include "zlib.h"
+@@ -100,6 +115,8 @@ static SECStatus ssl3_AESGCMBypass(ssl3KeyMaterial *keys, PRBool doDecrypt,
+ static ssl3CipherSuiteCfg cipherSuites[ssl_V3_SUITES_IMPLEMENTED] = {
+    /*      cipher_suite                         policy      enabled is_present*/
+ #ifdef NSS_ENABLE_ECC
++ { TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305, SSL_NOT_ALLOWED, PR_FALSE,PR_FALSE},
++ { TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305,   SSL_NOT_ALLOWED, PR_FALSE,PR_FALSE},
+  { TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,SSL_NOT_ALLOWED, PR_FALSE,PR_FALSE},
+  { TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,  SSL_NOT_ALLOWED, PR_FALSE,PR_FALSE},
+ #endif /* NSS_ENABLE_ECC */
+@@ -273,6 +290,7 @@ static const ssl3BulkCipherDef bulk_cipher_defs[] = {
+     {cipher_camellia_256, calg_camellia,    32,32, type_block, 16,16, 0, 0},
+     {cipher_seed,         calg_seed,        16,16, type_block, 16,16, 0, 0},
+     {cipher_aes_128_gcm,  calg_aes_gcm,     16,16, type_aead,   4, 0,16, 8},
++    {cipher_chacha20,     calg_chacha20,    32,32, type_aead,   0, 0,16, 0},
+     {cipher_missing,      calg_null,         0, 0, type_stream, 0, 0, 0, 0},
+ };
+ 
+@@ -399,6 +417,8 @@ static const ssl3CipherSuiteDef cipher_suite_defs[] =
+     {TLS_RSA_WITH_AES_128_GCM_SHA256, cipher_aes_128_gcm, mac_aead, kea_rsa},
+     {TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256, cipher_aes_128_gcm, mac_aead, kea_ecdhe_rsa},
+     {TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256, cipher_aes_128_gcm, mac_aead, kea_ecdhe_ecdsa},
++    {TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305, cipher_chacha20, mac_aead, kea_ecdhe_rsa},
++    {TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305, cipher_chacha20, mac_aead, kea_ecdhe_ecdsa},
+ 
+ #ifdef NSS_ENABLE_ECC
+     {TLS_ECDH_ECDSA_WITH_NULL_SHA,        cipher_null, mac_sha, kea_ecdh_ecdsa},
+@@ -464,6 +484,7 @@ static const SSLCipher2Mech alg2Mech[] = {
+     { calg_camellia , CKM_CAMELLIA_CBC			},
+     { calg_seed     , CKM_SEED_CBC			},
+     { calg_aes_gcm  , CKM_AES_GCM			},
++    { calg_chacha20 , CKM_NSS_CHACHA20_POLY1305		},
+ /*  { calg_init     , (CK_MECHANISM_TYPE)0x7fffffffL    }  */
+ };
+ 
+@@ -2020,6 +2041,46 @@ ssl3_AESGCMBypass(ssl3KeyMaterial *keys,
+ }
+ #endif
+ 
++static SECStatus
++ssl3_ChaCha20Poly1305(
++	ssl3KeyMaterial *keys,
++	PRBool doDecrypt,
++	unsigned char *out,
++	int *outlen,
++	int maxout,
++	const unsigned char *in,
++	int inlen,
++	const unsigned char *additionalData,
++	int additionalDataLen)
++{
++    SECItem            param;
++    SECStatus          rv = SECFailure;
++    unsigned int       uOutLen;
++    CK_AEAD_PARAMS     aeadParams;
++    static const int   tagSize = 16;
++
++    param.type = siBuffer;
++    param.len = sizeof(aeadParams);
++    param.data = (unsigned char *) &aeadParams;
++    memset(&aeadParams, 0, sizeof(CK_AEAD_PARAMS));
++    aeadParams.pIv = (unsigned char *) additionalData;
++    aeadParams.ulIvLen = 8;
++    aeadParams.pAAD = (unsigned char *) additionalData;
++    aeadParams.ulAADLen = additionalDataLen;
++    aeadParams.ulTagBits = tagSize * 8;
++
++    if (doDecrypt) {
++	rv = pk11_decrypt(keys->write_key, CKM_NSS_CHACHA20_POLY1305, &param,
++			  out, &uOutLen, maxout, in, inlen);
++    } else {
++	rv = pk11_encrypt(keys->write_key, CKM_NSS_CHACHA20_POLY1305, &param,
++			  out, &uOutLen, maxout, in, inlen);
++    }
++    *outlen = (int) uOutLen;
++
++    return rv;
++}
++
+ /* Initialize encryption and MAC contexts for pending spec.
+  * Master Secret already is derived.
+  * Caller holds Spec write lock.
+@@ -2053,13 +2114,17 @@ ssl3_InitPendingContextsPKCS11(sslSocket *ss)
+     pwSpec->client.write_mac_context = NULL;
+     pwSpec->server.write_mac_context = NULL;
+ 
+-    if (calg == calg_aes_gcm) {
++    if (calg == calg_aes_gcm || calg == calg_chacha20) {
+ 	pwSpec->encode = NULL;
+ 	pwSpec->decode = NULL;
+ 	pwSpec->destroy = NULL;
+ 	pwSpec->encodeContext = NULL;
+ 	pwSpec->decodeContext = NULL;
+-	pwSpec->aead = ssl3_AESGCM;
++	if (calg == calg_aes_gcm) {
++	    pwSpec->aead = ssl3_AESGCM;
++	} else {
++	    pwSpec->aead = ssl3_ChaCha20Poly1305;
++	}
+ 	return SECSuccess;
+     }
+ 
+diff --git a/nss/lib/ssl/ssl3ecc.c b/nss/lib/ssl/ssl3ecc.c
+index a3638e7..21a5e05 100644
+--- a/nss/lib/ssl/ssl3ecc.c
++++ b/nss/lib/ssl/ssl3ecc.c
+@@ -913,6 +913,7 @@ static const ssl3CipherSuite ecdhe_ecdsa_suites[] = {
+     TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,
+     TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+     TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,
++    TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305,
+     TLS_ECDHE_ECDSA_WITH_NULL_SHA,
+     TLS_ECDHE_ECDSA_WITH_RC4_128_SHA,
+     0 /* end of list marker */
+@@ -924,6 +925,7 @@ static const ssl3CipherSuite ecdhe_rsa_suites[] = {
+     TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,
+     TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+     TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
++    TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305,
+     TLS_ECDHE_RSA_WITH_NULL_SHA,
+     TLS_ECDHE_RSA_WITH_RC4_128_SHA,
+     0 /* end of list marker */
+@@ -936,6 +938,7 @@ static const ssl3CipherSuite ecSuites[] = {
+     TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,
+     TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+     TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,
++    TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305,
+     TLS_ECDHE_ECDSA_WITH_NULL_SHA,
+     TLS_ECDHE_ECDSA_WITH_RC4_128_SHA,
+     TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA,
+@@ -943,6 +946,7 @@ static const ssl3CipherSuite ecSuites[] = {
+     TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,
+     TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+     TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
++    TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305,
+     TLS_ECDHE_RSA_WITH_NULL_SHA,
+     TLS_ECDHE_RSA_WITH_RC4_128_SHA,
+     TLS_ECDH_ECDSA_WITH_3DES_EDE_CBC_SHA,
+diff --git a/nss/lib/ssl/sslenum.c b/nss/lib/ssl/sslenum.c
+index 597ec07..fc6b854 100644
+--- a/nss/lib/ssl/sslenum.c
++++ b/nss/lib/ssl/sslenum.c
+@@ -31,6 +31,8 @@
+ const PRUint16 SSL_ImplementedCiphers[] = {
+     /* AES-GCM */
+ #ifdef NSS_ENABLE_ECC
++    TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305,
++    TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305,
+     TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+     TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+ #endif /* NSS_ENABLE_ECC */
+diff --git a/nss/lib/ssl/sslimpl.h b/nss/lib/ssl/sslimpl.h
+index 0fe12d0..e3ae9ce 100644
+--- a/nss/lib/ssl/sslimpl.h
++++ b/nss/lib/ssl/sslimpl.h
+@@ -65,6 +65,7 @@ typedef SSLSignType     SSL3SignType;
+ #define calg_camellia	ssl_calg_camellia
+ #define calg_seed	ssl_calg_seed
+ #define calg_aes_gcm    ssl_calg_aes_gcm
++#define calg_chacha20	ssl_calg_chacha20
+ 
+ #define mac_null	ssl_mac_null
+ #define mac_md5 	ssl_mac_md5
+@@ -292,7 +293,7 @@ typedef struct {
+ } ssl3CipherSuiteCfg;
+ 
+ #ifdef NSS_ENABLE_ECC
+-#define ssl_V3_SUITES_IMPLEMENTED 61
++#define ssl_V3_SUITES_IMPLEMENTED 63
+ #else
+ #define ssl_V3_SUITES_IMPLEMENTED 37
+ #endif /* NSS_ENABLE_ECC */
+@@ -474,6 +475,7 @@ typedef enum {
+     cipher_camellia_256,
+     cipher_seed,
+     cipher_aes_128_gcm,
++    cipher_chacha20,
+     cipher_missing              /* reserved for no such supported cipher */
+     /* This enum must match ssl3_cipherName[] in ssl3con.c.  */
+ } SSL3BulkCipher;
+diff --git a/nss/lib/ssl/sslinfo.c b/nss/lib/ssl/sslinfo.c
+index 9597209..bfc1676 100644
+--- a/nss/lib/ssl/sslinfo.c
++++ b/nss/lib/ssl/sslinfo.c
+@@ -118,6 +118,7 @@ SSL_GetChannelInfo(PRFileDesc *fd, SSLChannelInfo *info, PRUintn len)
+ #define C_NULL  "NULL", calg_null
+ #define C_SJ 	"SKIPJACK", calg_sj
+ #define C_AESGCM "AES-GCM", calg_aes_gcm
++#define C_CHACHA20 "CHACHA20POLY1305", calg_chacha20
+ 
+ #define B_256	256, 256, 256
+ #define B_128	128, 128, 128
+@@ -196,12 +197,14 @@ static const SSLCipherSuiteInfo suiteInfo[] = {
+ {0,CS(TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA),  S_ECDSA, K_ECDHE, C_AES, B_128, M_SHA, 1, 0, 0, },
+ {0,CS(TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256), S_ECDSA, K_ECDHE, C_AES, B_128, M_SHA256, 1, 0, 0, },
+ {0,CS(TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA),  S_ECDSA, K_ECDHE, C_AES, B_256, M_SHA, 1, 0, 0, },
++{0,CS(TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305),S_ECDSA,K_ECDHE,C_CHACHA20,B_256,M_AEAD_128,0, 0, 0, },
+ 
+ {0,CS(TLS_ECDH_RSA_WITH_NULL_SHA),            S_RSA, K_ECDH, C_NULL, B_0, M_SHA, 0, 0, 0, },
+ {0,CS(TLS_ECDH_RSA_WITH_RC4_128_SHA),         S_RSA, K_ECDH, C_RC4, B_128, M_SHA, 0, 0, 0, },
+ {0,CS(TLS_ECDH_RSA_WITH_3DES_EDE_CBC_SHA),    S_RSA, K_ECDH, C_3DES, B_3DES, M_SHA, 1, 0, 0, },
+ {0,CS(TLS_ECDH_RSA_WITH_AES_128_CBC_SHA),     S_RSA, K_ECDH, C_AES, B_128, M_SHA, 1, 0, 0, },
+ {0,CS(TLS_ECDH_RSA_WITH_AES_256_CBC_SHA),     S_RSA, K_ECDH, C_AES, B_256, M_SHA, 1, 0, 0, },
++{0,CS(TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305),  S_RSA,K_ECDHE,C_CHACHA20,B_256,M_AEAD_128, 0, 0, 0, },
+ 
+ {0,CS(TLS_ECDHE_RSA_WITH_NULL_SHA),           S_RSA, K_ECDHE, C_NULL, B_0, M_SHA, 0, 0, 0, },
+ {0,CS(TLS_ECDHE_RSA_WITH_RC4_128_SHA),        S_RSA, K_ECDHE, C_RC4, B_128, M_SHA, 0, 0, 0, },
+diff --git a/nss/lib/ssl/sslproto.h b/nss/lib/ssl/sslproto.h
+index 53bba01..6b60a28 100644
+--- a/nss/lib/ssl/sslproto.h
++++ b/nss/lib/ssl/sslproto.h
+@@ -213,6 +213,9 @@
+ #define TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256   0xC02F
+ #define TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256    0xC031
+ 
++#define TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305	0xCC13
++#define TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305	0xCC14
++
+ /* Netscape "experimental" cipher suites. */
+ #define SSL_RSA_OLDFIPS_WITH_3DES_EDE_CBC_SHA	0xffe0
+ #define SSL_RSA_OLDFIPS_WITH_DES_CBC_SHA	0xffe1
+diff --git a/nss/lib/ssl/sslsock.c b/nss/lib/ssl/sslsock.c
+index c17c7a3..ffbccc6 100644
+--- a/nss/lib/ssl/sslsock.c
++++ b/nss/lib/ssl/sslsock.c
+@@ -98,6 +98,7 @@ static cipherPolicy ssl_ciphers[] = {	   /*   Export           France   */
+  {  TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,SSL_NOT_ALLOWED, SSL_NOT_ALLOWED },
+  {  TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,SSL_NOT_ALLOWED, SSL_NOT_ALLOWED },
+  {  TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,   SSL_NOT_ALLOWED, SSL_NOT_ALLOWED },
++ {  TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305, SSL_NOT_ALLOWED, SSL_NOT_ALLOWED },
+  {  TLS_ECDH_RSA_WITH_NULL_SHA,             SSL_ALLOWED,     SSL_ALLOWED },
+  {  TLS_ECDH_RSA_WITH_RC4_128_SHA,          SSL_NOT_ALLOWED, SSL_NOT_ALLOWED },
+  {  TLS_ECDH_RSA_WITH_3DES_EDE_CBC_SHA,     SSL_NOT_ALLOWED, SSL_NOT_ALLOWED },
+@@ -110,6 +111,7 @@ static cipherPolicy ssl_ciphers[] = {	   /*   Export           France   */
+  {  TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,  SSL_NOT_ALLOWED, SSL_NOT_ALLOWED },
+  {  TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,  SSL_NOT_ALLOWED, SSL_NOT_ALLOWED },
+  {  TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,     SSL_NOT_ALLOWED, SSL_NOT_ALLOWED },
++ {  TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305,   SSL_NOT_ALLOWED, SSL_NOT_ALLOWED },
+ #endif /* NSS_ENABLE_ECC */
+  {  0,					    SSL_NOT_ALLOWED, SSL_NOT_ALLOWED }
+ };
+diff --git a/nss/lib/ssl/sslt.h b/nss/lib/ssl/sslt.h
+index b03422e..a8007d8 100644
+--- a/nss/lib/ssl/sslt.h
++++ b/nss/lib/ssl/sslt.h
+@@ -94,7 +94,8 @@ typedef enum {
+     ssl_calg_aes      = 7,
+     ssl_calg_camellia = 8,
+     ssl_calg_seed     = 9,
+-    ssl_calg_aes_gcm  = 10
++    ssl_calg_aes_gcm  = 10,
++    ssl_calg_chacha20 = 11
+ } SSLCipherAlgorithm;
+ 
+ typedef enum { 

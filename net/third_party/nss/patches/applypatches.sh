@@ -53,3 +53,5 @@ patch -p4 < $patches_dir/aesgcm.patch
 patch -p4 < $patches_dir/aesgcmchromium.patch
 
 patch -p4 < $patches_dir/tls12backuphash.patch
+
+patch -p4 < $patches_dir/chacha20poly1305.patch

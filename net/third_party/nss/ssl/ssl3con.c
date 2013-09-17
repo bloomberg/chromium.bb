@@ -40,6 +40,21 @@
 #define CKM_NSS_TLS_MASTER_KEY_DERIVE_DH_SHA256 (CKM_NSS + 24)
 #endif
 
+/* This is a bodge to allow this code to be compiled against older NSS
+ * headers. */
+#ifndef CKM_NSS_CHACHA20_POLY1305
+#define CKM_NSS_CHACHA20_POLY1305               (CKM_NSS + 25)
+
+typedef struct CK_AEAD_PARAMS {
+  CK_BYTE_PTR  pIv;  /* This is the nonce. */
+  CK_ULONG     ulIvLen;
+  CK_BYTE_PTR  pAAD;
+  CK_ULONG     ulAADLen;
+  CK_ULONG     ulTagBits;
+} CK_AEAD_PARAMS;
+
+#endif
+
 #include <stdio.h>
 #ifdef NSS_ENABLE_ZLIB
 #include "zlib.h"
@@ -100,6 +115,8 @@ static SECStatus ssl3_AESGCMBypass(ssl3KeyMaterial *keys, PRBool doDecrypt,
 static ssl3CipherSuiteCfg cipherSuites[ssl_V3_SUITES_IMPLEMENTED] = {
    /*      cipher_suite                         policy      enabled is_present*/
 #ifdef NSS_ENABLE_ECC
+ { TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305, SSL_NOT_ALLOWED, PR_FALSE,PR_FALSE},
+ { TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305,   SSL_NOT_ALLOWED, PR_FALSE,PR_FALSE},
  { TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,SSL_NOT_ALLOWED, PR_FALSE,PR_FALSE},
  { TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,  SSL_NOT_ALLOWED, PR_FALSE,PR_FALSE},
 #endif /* NSS_ENABLE_ECC */
@@ -273,6 +290,7 @@ static const ssl3BulkCipherDef bulk_cipher_defs[] = {
     {cipher_camellia_256, calg_camellia,    32,32, type_block, 16,16, 0, 0},
     {cipher_seed,         calg_seed,        16,16, type_block, 16,16, 0, 0},
     {cipher_aes_128_gcm,  calg_aes_gcm,     16,16, type_aead,   4, 0,16, 8},
+    {cipher_chacha20,     calg_chacha20,    32,32, type_aead,   0, 0,16, 0},
     {cipher_missing,      calg_null,         0, 0, type_stream, 0, 0, 0, 0},
 };
 
@@ -399,6 +417,8 @@ static const ssl3CipherSuiteDef cipher_suite_defs[] =
     {TLS_RSA_WITH_AES_128_GCM_SHA256, cipher_aes_128_gcm, mac_aead, kea_rsa},
     {TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256, cipher_aes_128_gcm, mac_aead, kea_ecdhe_rsa},
     {TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256, cipher_aes_128_gcm, mac_aead, kea_ecdhe_ecdsa},
+    {TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305, cipher_chacha20, mac_aead, kea_ecdhe_rsa},
+    {TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305, cipher_chacha20, mac_aead, kea_ecdhe_ecdsa},
 
 #ifdef NSS_ENABLE_ECC
     {TLS_ECDH_ECDSA_WITH_NULL_SHA,        cipher_null, mac_sha, kea_ecdh_ecdsa},
@@ -464,6 +484,7 @@ static const SSLCipher2Mech alg2Mech[] = {
     { calg_camellia , CKM_CAMELLIA_CBC			},
     { calg_seed     , CKM_SEED_CBC			},
     { calg_aes_gcm  , CKM_AES_GCM			},
+    { calg_chacha20 , CKM_NSS_CHACHA20_POLY1305		},
 /*  { calg_init     , (CK_MECHANISM_TYPE)0x7fffffffL    }  */
 };
 
@@ -2020,6 +2041,46 @@ ssl3_AESGCMBypass(ssl3KeyMaterial *keys,
 }
 #endif
 
+static SECStatus
+ssl3_ChaCha20Poly1305(
+	ssl3KeyMaterial *keys,
+	PRBool doDecrypt,
+	unsigned char *out,
+	int *outlen,
+	int maxout,
+	const unsigned char *in,
+	int inlen,
+	const unsigned char *additionalData,
+	int additionalDataLen)
+{
+    SECItem            param;
+    SECStatus          rv = SECFailure;
+    unsigned int       uOutLen;
+    CK_AEAD_PARAMS     aeadParams;
+    static const int   tagSize = 16;
+
+    param.type = siBuffer;
+    param.len = sizeof(aeadParams);
+    param.data = (unsigned char *) &aeadParams;
+    memset(&aeadParams, 0, sizeof(CK_AEAD_PARAMS));
+    aeadParams.pIv = (unsigned char *) additionalData;
+    aeadParams.ulIvLen = 8;
+    aeadParams.pAAD = (unsigned char *) additionalData;
+    aeadParams.ulAADLen = additionalDataLen;
+    aeadParams.ulTagBits = tagSize * 8;
+
+    if (doDecrypt) {
+	rv = pk11_decrypt(keys->write_key, CKM_NSS_CHACHA20_POLY1305, &param,
+			  out, &uOutLen, maxout, in, inlen);
+    } else {
+	rv = pk11_encrypt(keys->write_key, CKM_NSS_CHACHA20_POLY1305, &param,
+			  out, &uOutLen, maxout, in, inlen);
+    }
+    *outlen = (int) uOutLen;
+
+    return rv;
+}
+
 /* Initialize encryption and MAC contexts for pending spec.
  * Master Secret already is derived.
  * Caller holds Spec write lock.
@@ -2053,13 +2114,17 @@ ssl3_InitPendingContextsPKCS11(sslSocket *ss)
     pwSpec->client.write_mac_context = NULL;
     pwSpec->server.write_mac_context = NULL;
 
-    if (calg == calg_aes_gcm) {
+    if (calg == calg_aes_gcm || calg == calg_chacha20) {
 	pwSpec->encode = NULL;
 	pwSpec->decode = NULL;
 	pwSpec->destroy = NULL;
 	pwSpec->encodeContext = NULL;
 	pwSpec->decodeContext = NULL;
-	pwSpec->aead = ssl3_AESGCM;
+	if (calg == calg_aes_gcm) {
+	    pwSpec->aead = ssl3_AESGCM;
+	} else {
+	    pwSpec->aead = ssl3_ChaCha20Poly1305;
+	}
 	return SECSuccess;
     }
 
