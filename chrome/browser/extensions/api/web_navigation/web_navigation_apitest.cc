@@ -381,7 +381,7 @@ class WebNavigationApiTest : public ExtensionApiTest {
 };
 
 // Fails often on Windows dbg bots. http://crbug.com/177163
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(NDEBUG)
 #define MAYBE_Api DISABLED_Api
 #else
 #define MAYBE_Api Api
@@ -393,7 +393,7 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_Api) {
 }
 
 // Fails often on Windows dbg bots. http://crbug.com/177163
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(NDEBUG)
 #define MAYBE_GetFrame DISABLED_GetFrame
 #else
 #define MAYBE_GetFrame GetFrame
@@ -497,7 +497,7 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, SimpleLoad) {
 }
 
 // Fails often on Windows dbg bots. http://crbug.com/177163
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(NDEBUG)
 #define MAYBE_Failures DISABLED_Failures
 #else
 #define MAYBE_Failures Failures
@@ -515,7 +515,7 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, FilteredTest) {
 }
 
 // Fails often on Windows dbg bots. http://crbug.com/177163
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(NDEBUG)
 #define MAYBE_UserAction DISABLED_UserAction
 #else
 #define MAYBE_UserAction UserAction
@@ -597,7 +597,7 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_RequestOpenTab) {
 }
 
 // Fails often on Windows dbg bots. http://crbug.com/177163
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(NDEBUG)
 #define MAYBE_TargetBlank DISABLED_TargetBlank
 #else
 #define MAYBE_TargetBlank TargetBlank
