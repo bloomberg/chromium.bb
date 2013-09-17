@@ -1912,15 +1912,14 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
             if (image)
                 list->append(CSSCursorImageValue::create(image, hasHotSpot, hotSpot));
 
-            if ((inStrictMode() && !value) || (value && !(value->unit == CSSParserValue::Operator && value->iValue == ',')))
+            if (!value || !(value->unit == CSSParserValue::Operator && value->iValue == ','))
                 return false;
             value = m_valueList->next(); // comma
         }
         if (list) {
-            if (!value) { // no value after url list (MSIE 5 compatibility)
-                if (list->length() != 1)
-                    return false;
-            } else if (inQuirksMode() && value->id == CSSValueHand) // MSIE 5 compatibility :/
+            if (!value)
+                return false;
+            if (inQuirksMode() && value->id == CSSValueHand) // MSIE 5 compatibility :/
                 list->append(cssValuePool().createIdentifierValue(CSSValuePointer));
             else if ((value->id >= CSSValueAuto && value->id <= CSSValueWebkitGrabbing) || value->id == CSSValueCopy || value->id == CSSValueNone)
                 list->append(cssValuePool().createIdentifierValue(value->id));
