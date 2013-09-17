@@ -22,6 +22,7 @@
 #include "config.h"
 #include "core/dom/CharacterData.h"
 
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/Document.h"
 #include "core/dom/EventNames.h"
@@ -61,7 +62,7 @@ void CharacterData::setData(const String& data)
 String CharacterData::substringData(unsigned offset, unsigned count, ExceptionState& es)
 {
     if (offset > length()) {
-        es.throwDOMException(IndexSizeError);
+        es.throwDOMException(IndexSizeError, ExceptionMessages::failedToExecute("substringData", "CharacterData", "The offset " + String::number(offset) + " is greater than the node's length (" + String::number(length()) + ")."));
         return String();
     }
 
@@ -120,7 +121,7 @@ void CharacterData::appendData(const String& data)
 void CharacterData::insertData(unsigned offset, const String& data, ExceptionState& es, RecalcStyleBehavior recalcStyleBehavior)
 {
     if (offset > length()) {
-        es.throwDOMException(IndexSizeError);
+        es.throwDOMException(IndexSizeError, ExceptionMessages::failedToExecute("insertData", "CharacterData", "The offset " + String::number(offset) + " is greater than the node's length (" + String::number(length()) + ")."));
         return;
     }
 
@@ -135,7 +136,7 @@ void CharacterData::insertData(unsigned offset, const String& data, ExceptionSta
 void CharacterData::deleteData(unsigned offset, unsigned count, ExceptionState& es, RecalcStyleBehavior recalcStyleBehavior)
 {
     if (offset > length()) {
-        es.throwDOMException(IndexSizeError);
+        es.throwDOMException(IndexSizeError, ExceptionMessages::failedToExecute("deleteData", "CharacterData", "The offset " + String::number(offset) + " is greater than the node's length (" + String::number(length()) + ")."));
         return;
     }
 
@@ -156,7 +157,7 @@ void CharacterData::deleteData(unsigned offset, unsigned count, ExceptionState& 
 void CharacterData::replaceData(unsigned offset, unsigned count, const String& data, ExceptionState& es)
 {
     if (offset > length()) {
-        es.throwDOMException(IndexSizeError);
+        es.throwDOMException(IndexSizeError, ExceptionMessages::failedToExecute("replaceData", "CharacterData", "The offset " + String::number(offset) + " is greater than the node's length (" + String::number(length()) + ")."));
         return;
     }
 

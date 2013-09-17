@@ -15,7 +15,7 @@ PASS text.insertData() threw exception TypeError: Not enough arguments.
 PASS text.data is "abcdefg"
 PASS text.insertData(0) threw exception TypeError: Not enough arguments.
 PASS text.data is "abcdefg"
-PASS text.insertData(999, 'test') threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
+PASS text.insertData(999, 'test') threw exception IndexSizeError: Failed to execute 'insertData' on 'CharacterData': The offset 999 is greater than the node's length (7)..
 PASS text.data is "abcdefg"
 PASS text.insertData(-4294967294, 'test') did not throw exception.
 PASS text.data is "abtestcdefg"
@@ -25,9 +25,9 @@ PASS text.deleteData() threw exception TypeError: Not enough arguments.
 PASS text.data is "abcd"
 PASS text.deleteData(0) threw exception TypeError: Not enough arguments.
 PASS text.data is "abcd"
-PASS text.deleteData(999, 3) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
+PASS text.deleteData(999, 3) threw exception IndexSizeError: Failed to execute 'deleteData' on 'CharacterData': The offset 999 is greater than the node's length (4)..
 PASS text.data is "abcd"
-PASS text.deleteData(-1, 3) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
+PASS text.deleteData(-1, 3) threw exception IndexSizeError: Failed to execute 'deleteData' on 'CharacterData': The offset 4294967295 is greater than the node's length (4)..
 PASS text.data is "abcd"
 PASS text.deleteData(-4294967294, 2) did not throw exception.
 PASS text.data is "ab"
@@ -41,9 +41,9 @@ PASS text.replaceData(0) threw exception TypeError: Not enough arguments.
 PASS text.data is "abcdefg"
 PASS text.replaceData(0, 0) threw exception TypeError: Not enough arguments.
 PASS text.data is "abcdefg"
-PASS text.replaceData(999, 3, 'test') threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
+PASS text.replaceData(999, 3, 'test') threw exception IndexSizeError: Failed to execute 'replaceData' on 'CharacterData': The offset 999 is greater than the node's length (7)..
 PASS text.data is "abcdefg"
-PASS text.replaceData(-1, 3, 'test') threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
+PASS text.replaceData(-1, 3, 'test') threw exception IndexSizeError: Failed to execute 'replaceData' on 'CharacterData': The offset 4294967295 is greater than the node's length (7)..
 PASS text.data is "abcdefg"
 PASS text.replaceData(-4294967294, 0, 'test') did not throw exception.
 PASS text.data is "abtestcdefg"
@@ -54,7 +54,7 @@ PASS text.substringData() threw exception TypeError: Not enough arguments.
 PASS text.substringData(0) threw exception TypeError: Not enough arguments.
 PASS text.substringData(4, 999) is "efg"
 PASS text.substringData(4, -1) is "efg"
-PASS text.substringData(-1, 2) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
+PASS text.substringData(-1, 2) threw exception IndexSizeError: Failed to execute 'substringData' on 'CharacterData': The offset 4294967295 is greater than the node's length (7)..
 PASS text.substringData(-4294967294, 3) is "cde"
 PASS successfullyParsed is true
 
