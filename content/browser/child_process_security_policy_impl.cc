@@ -11,7 +11,9 @@
 #include "base/platform_file.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
+#include "content/browser/plugin_process_host.h"
 #include "content/browser/site_instance_impl.h"
+#include "content/public/browser/child_process_data.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/bindings_policy.h"
@@ -802,6 +804,17 @@ bool ChildProcessSecurityPolicyImpl::CanAccessCookiesForOrigin(
 
 bool ChildProcessSecurityPolicyImpl::CanSendCookiesForOrigin(int child_id,
                                                              const GURL& gurl) {
+  for (PluginProcessHostIterator iter; !iter.Done(); ++iter) {
+    if (iter.GetData().process_type == child_id) {
+      if (iter.GetData().process_type == PROCESS_TYPE_PLUGIN) {
+        // NPAPI plugin processes are unsandboxed and so are trusted. Plugins
+        // can make request to any origin.
+        return true;
+      }
+      break;
+    }
+  }
+
   base::AutoLock lock(lock_);
   SecurityStateMap::iterator state = security_state_.find(child_id);
   if (state == security_state_.end())

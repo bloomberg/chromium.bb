@@ -425,12 +425,17 @@ void WebPluginDelegateStub::OnHTTPRangeRequestReply(
 
 void WebPluginDelegateStub::OnFetchURL(
     const PluginMsg_FetchURL_Params& params) {
+  const char* data = NULL;
+  if (params.post_data.size())
+    data = &params.post_data[0];
+
   delegate_->FetchURL(params.resource_id,
                       params.notify_id,
                       params.url,
                       params.first_party_for_cookies,
                       params.method,
-                      params.post_data,
+                      data,
+                      params.post_data.size(),
                       params.referrer,
                       params.notify_redirect,
                       params.is_plugin_src_load,

@@ -7,10 +7,12 @@
 
 #include "base/memory/ref_counted.h"
 #include "third_party/WebKit/public/platform/WebURLLoader.h"
+#include "webkit/child/webkit_child_export.h"
 
 namespace webkit_glue {
 
 class WebKitPlatformSupportImpl;
+struct ResourceResponseInfo;
 
 class WebURLLoaderImpl : public WebKit::WebURLLoader {
  public:
@@ -19,6 +21,10 @@ class WebURLLoaderImpl : public WebKit::WebURLLoader {
 
   static WebKit::WebURLError CreateError(const WebKit::WebURL& unreachable_url,
                                          int reason);
+  WEBKIT_CHILD_EXPORT static void PopulateURLResponse(
+      const GURL& url,
+      const ResourceResponseInfo& info,
+      WebKit::WebURLResponse* response);
 
   // WebURLLoader methods:
   virtual void loadSynchronously(

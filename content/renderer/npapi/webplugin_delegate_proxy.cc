@@ -450,6 +450,8 @@ bool WebPluginDelegateProxy::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(PluginHostMsg_CancelDocumentLoad, OnCancelDocumentLoad)
     IPC_MESSAGE_HANDLER(PluginHostMsg_InitiateHTTPRangeRequest,
                         OnInitiateHTTPRangeRequest)
+    IPC_MESSAGE_HANDLER(PluginHostMsg_DidStartLoading, OnDidStartLoading)
+    IPC_MESSAGE_HANDLER(PluginHostMsg_DidStopLoading, OnDidStopLoading)
     IPC_MESSAGE_HANDLER(PluginHostMsg_DeferResourceLoading,
                         OnDeferResourceLoading)
     IPC_MESSAGE_HANDLER(PluginHostMsg_URLRedirectResponse,
@@ -1123,7 +1125,8 @@ void WebPluginDelegateProxy::FetchURL(unsigned long resource_id,
                                       const GURL& url,
                                       const GURL& first_party_for_cookies,
                                       const std::string& method,
-                                      const std::string& post_data,
+                                      const char* buf,
+                                      unsigned int len,
                                       const GURL& referrer,
                                       bool notify_redirects,
                                       bool is_plugin_src_load,
@@ -1135,7 +1138,10 @@ void WebPluginDelegateProxy::FetchURL(unsigned long resource_id,
   params.url = url;
   params.first_party_for_cookies = first_party_for_cookies;
   params.method = method;
-  params.post_data = post_data;
+  if (len) {
+    params.post_data.resize(len);
+    memcpy(&params.post_data.front(), buf, len);
+  }
   params.referrer = referrer;
   params.notify_redirect = notify_redirects;
   params.is_plugin_src_load = is_plugin_src_load;
@@ -1169,6 +1175,14 @@ void WebPluginDelegateProxy::OnInitiateHTTPRangeRequest(
     int range_request_id) {
   plugin_->InitiateHTTPRangeRequest(
       url.c_str(), range_info.c_str(), range_request_id);
+}
+
+void WebPluginDelegateProxy::OnDidStartLoading() {
+  plugin_->DidStartLoading();
+}
+
+void WebPluginDelegateProxy::OnDidStopLoading() {
+  plugin_->DidStopLoading();
 }
 
 void WebPluginDelegateProxy::OnDeferResourceLoading(unsigned long resource_id,

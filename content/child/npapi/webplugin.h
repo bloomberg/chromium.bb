@@ -90,6 +90,9 @@ class WebPlugin {
                                         const char* range_info,
                                         int range_request_id) = 0;
 
+  virtual void DidStartLoading() = 0;
+  virtual void DidStopLoading() = 0;
+
   // Returns true iff in incognito mode.
   virtual bool IsOffTheRecord() = 0;
 

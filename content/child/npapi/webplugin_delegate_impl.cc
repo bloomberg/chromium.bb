@@ -305,7 +305,8 @@ void WebPluginDelegateImpl::FetchURL(unsigned long resource_id,
                                      const GURL& url,
                                      const GURL& first_party_for_cookies,
                                      const std::string& method,
-                                     const std::string& post_data,
+                                     const char* buf,
+                                     unsigned int len,
                                      const GURL& referrer,
                                      bool notify_redirects,
                                      bool is_plugin_src_load,
@@ -317,7 +318,7 @@ void WebPluginDelegateImpl::FetchURL(unsigned long resource_id,
       resource_id, url, std::string(), notify_id);
 
   plugin_stream->SetPluginURLFetcher(new PluginURLFetcher(
-      plugin_stream, url, first_party_for_cookies, method, post_data,
+      plugin_stream, url, first_party_for_cookies, method, buf, len,
       referrer, notify_redirects, is_plugin_src_load, origin_pid,
       render_view_id, resource_id));
 }

@@ -86,6 +86,8 @@ class WebPluginProxy : public WebPlugin,
   virtual void CancelDocumentLoad() OVERRIDE;
   virtual void InitiateHTTPRangeRequest(
       const char* url, const char* range_info, int range_request_id) OVERRIDE;
+  virtual void DidStartLoading() OVERRIDE;
+  virtual void DidStopLoading() OVERRIDE;
   virtual void SetDeferResourceLoading(unsigned long resource_id,
                                        bool defer) OVERRIDE;
   virtual bool IsOffTheRecord() OVERRIDE;

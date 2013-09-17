@@ -96,9 +96,7 @@ namespace {
 class MultiPartResponseClient : public WebURLLoaderClient {
  public:
   explicit MultiPartResponseClient(WebPluginResourceClient* resource_client)
-      : resource_client_(resource_client) {
-    Clear();
-  }
+      : byte_range_lower_bound_(0), resource_client_(resource_client) {}
 
   virtual void willSendRequest(
       WebURLLoader*, WebURLRequest&, const WebURLResponse&) {}
@@ -109,17 +107,14 @@ class MultiPartResponseClient : public WebURLLoaderClient {
   // response.
   virtual void didReceiveResponse(
       WebURLLoader*, const WebURLResponse& response) {
-    int64 instance_size;
+    int64 byte_range_upper_bound, instance_size;
     if (!MultipartResponseDelegate::ReadContentRanges(
             response,
             &byte_range_lower_bound_,
-            &byte_range_upper_bound_,
+            &byte_range_upper_bound,
             &instance_size)) {
       NOTREACHED();
-      return;
     }
-
-    resource_response_ = response;
   }
 
   // Receives individual part data from a multipart response.
@@ -138,18 +133,9 @@ class MultiPartResponseClient : public WebURLLoaderClient {
   virtual void didFinishLoading(WebURLLoader*, double finishTime) {}
   virtual void didFail(WebURLLoader*, const WebURLError&) {}
 
-  void Clear() {
-    resource_response_.reset();
-    byte_range_lower_bound_ = 0;
-    byte_range_upper_bound_ = 0;
-  }
-
  private:
-  WebURLResponse resource_response_;
   // The lower bound of the byte range.
   int64 byte_range_lower_bound_;
-  // The upper bound of the byte range.
-  int64 byte_range_upper_bound_;
   // The handler for the data.
   WebPluginResourceClient* resource_client_;
 };
@@ -947,6 +933,8 @@ void WebPluginImpl::didSendData(WebURLLoader* loader,
 
 void WebPluginImpl::didReceiveResponse(WebURLLoader* loader,
                                        const WebURLResponse& response) {
+  // TODO(jam): THIS LOGIC IS COPIED IN PluginURLFetcher::OnReceivedResponse
+  // until kDirectNPAPIRequests is the default and we can remove this old path.
   static const int kHttpPartialResponseStatusCode = 206;
   static const int kHttpResponseSuccessStatusCode = 200;
 
@@ -1081,10 +1069,7 @@ void WebPluginImpl::didFinishLoading(WebURLLoader* loader, double finishTime) {
     if (index != multi_part_response_map_.end()) {
       delete (*index).second;
       multi_part_response_map_.erase(index);
-      if (render_view_.get()) {
-        // TODO(darin): Make is_loading_ be a counter!
-        render_view_->didStopLoading();
-      }
+      DidStopLoading();
     }
     loader->setDefersLoading(true);
     WebPluginResourceClient* resource_client = client_info->client;
@@ -1228,8 +1213,8 @@ void WebPluginImpl::HandleURLRequestInternal(const char* url,
 
     GURL first_party_for_cookies = webframe_->document().firstPartyForCookies();
     delegate_->FetchURL(resource_id, notify_id, complete_url,
-                        first_party_for_cookies, method, std::string(buf, len),
-                        referrer, notify_redirects, is_plugin_src_load, 0,
+                        first_party_for_cookies, method, buf, len, referrer,
+                        notify_redirects, is_plugin_src_load, 0,
                         render_view_->routing_id());
   } else {
     WebPluginResourceClient* resource_client = delegate_->CreateResourceClient(
@@ -1333,6 +1318,20 @@ void WebPluginImpl::InitiateHTTPRangeRequest(
       load_manually_ ? NO_REFERRER : PLUGIN_SRC, false, false);
 }
 
+void WebPluginImpl::DidStartLoading() {
+  if (render_view_.get()) {
+    // TODO(darin): Make is_loading_ be a counter!
+    render_view_->didStartLoading();
+  }
+}
+
+void WebPluginImpl::DidStopLoading() {
+  if (render_view_.get()) {
+    // TODO(darin): Make is_loading_ be a counter!
+    render_view_->didStopLoading();
+  }
+}
+
 void WebPluginImpl::SetDeferResourceLoading(unsigned long resource_id,
                                             bool defer) {
   std::vector<ClientInfo>::iterator client_index = clients_.begin();
@@ -1373,10 +1372,7 @@ bool WebPluginImpl::HandleHttpMultipartResponse(
     return false;
   }
 
-  if (render_view_.get()) {
-    // TODO(darin): Make is_loading_ be a counter!
-    render_view_->didStartLoading();
-  }
+  DidStartLoading();
 
   MultiPartResponseClient* multi_part_response_client =
       new MultiPartResponseClient(client);

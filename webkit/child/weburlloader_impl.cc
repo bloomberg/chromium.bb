@@ -180,115 +180,6 @@ void PopulateURLLoadTiming(const net::LoadTimingInfo& load_timing,
       (load_timing.receive_headers_end - kNullTicks).InSecondsF());
 }
 
-void PopulateURLResponse(
-    const GURL& url,
-    const ResourceResponseInfo& info,
-    WebURLResponse* response) {
-  response->setURL(url);
-  response->setResponseTime(info.response_time.ToDoubleT());
-  response->setMIMEType(WebString::fromUTF8(info.mime_type));
-  response->setTextEncodingName(WebString::fromUTF8(info.charset));
-  response->setExpectedContentLength(info.content_length);
-  response->setSecurityInfo(info.security_info);
-  response->setAppCacheID(info.appcache_id);
-  response->setAppCacheManifestURL(info.appcache_manifest_url);
-  response->setWasCached(!info.load_timing.request_start_time.is_null() &&
-      info.response_time < info.load_timing.request_start_time);
-  response->setRemoteIPAddress(
-      WebString::fromUTF8(info.socket_address.host()));
-  response->setRemotePort(info.socket_address.port());
-  response->setConnectionID(info.load_timing.socket_log_id);
-  response->setConnectionReused(info.load_timing.socket_reused);
-  response->setDownloadFilePath(info.download_file_path.AsUTF16Unsafe());
-  WebURLResponseExtraDataImpl* extra_data =
-      new WebURLResponseExtraDataImpl(info.npn_negotiated_protocol);
-  response->setExtraData(extra_data);
-  extra_data->set_was_fetched_via_spdy(info.was_fetched_via_spdy);
-  extra_data->set_was_npn_negotiated(info.was_npn_negotiated);
-  extra_data->set_was_alternate_protocol_available(
-      info.was_alternate_protocol_available);
-  extra_data->set_connection_info(info.connection_info);
-  extra_data->set_was_fetched_via_proxy(info.was_fetched_via_proxy);
-
-  // If there's no received headers end time, don't set load timing.  This is
-  // the case for non-HTTP requests, requests that don't go over the wire, and
-  // certain error cases.
-  if (!info.load_timing.receive_headers_end.is_null()) {
-    WebURLLoadTiming timing;
-    PopulateURLLoadTiming(info.load_timing, &timing);
-    response->setLoadTiming(timing);
-  }
-
-  if (info.devtools_info.get()) {
-    WebHTTPLoadInfo load_info;
-
-    load_info.setHTTPStatusCode(info.devtools_info->http_status_code);
-    load_info.setHTTPStatusText(WebString::fromLatin1(
-        info.devtools_info->http_status_text));
-    load_info.setEncodedDataLength(info.encoded_data_length);
-
-    load_info.setRequestHeadersText(WebString::fromLatin1(
-        info.devtools_info->request_headers_text));
-    load_info.setResponseHeadersText(WebString::fromLatin1(
-        info.devtools_info->response_headers_text));
-    const HeadersVector& request_headers = info.devtools_info->request_headers;
-    for (HeadersVector::const_iterator it = request_headers.begin();
-         it != request_headers.end(); ++it) {
-      load_info.addRequestHeader(WebString::fromLatin1(it->first),
-          WebString::fromLatin1(it->second));
-    }
-    const HeadersVector& response_headers =
-        info.devtools_info->response_headers;
-    for (HeadersVector::const_iterator it = response_headers.begin();
-         it != response_headers.end(); ++it) {
-      load_info.addResponseHeader(WebString::fromLatin1(it->first),
-          WebString::fromLatin1(it->second));
-    }
-    response->setHTTPLoadInfo(load_info);
-  }
-
-  const net::HttpResponseHeaders* headers = info.headers.get();
-  if (!headers)
-    return;
-
-  WebURLResponse::HTTPVersion version = WebURLResponse::Unknown;
-  if (headers->GetHttpVersion() == net::HttpVersion(0, 9))
-    version = WebURLResponse::HTTP_0_9;
-  else if (headers->GetHttpVersion() == net::HttpVersion(1, 0))
-    version = WebURLResponse::HTTP_1_0;
-  else if (headers->GetHttpVersion() == net::HttpVersion(1, 1))
-    version = WebURLResponse::HTTP_1_1;
-  response->setHTTPVersion(version);
-  response->setHTTPStatusCode(headers->response_code());
-  response->setHTTPStatusText(WebString::fromLatin1(headers->GetStatusText()));
-
-  // TODO(darin): We should leverage HttpResponseHeaders for this, and this
-  // should be using the same code as ResourceDispatcherHost.
-  // TODO(jungshik): Figure out the actual value of the referrer charset and
-  // pass it to GetSuggestedFilename.
-  std::string value;
-  headers->EnumerateHeader(NULL, "content-disposition", &value);
-  response->setSuggestedFileName(
-      net::GetSuggestedFilename(url,
-                                value,
-                                std::string(),  // referrer_charset
-                                std::string(),  // suggested_name
-                                std::string(),  // mime_type
-                                std::string()));  // default_name
-
-  Time time_val;
-  if (headers->GetLastModifiedValue(&time_val))
-    response->setLastModifiedDate(time_val.ToDoubleT());
-
-  // Build up the header map.
-  void* iter = NULL;
-  std::string name;
-  while (headers->EnumerateHeaderLines(&iter, &name, &value)) {
-    response->addHTTPHeaderField(WebString::fromLatin1(name),
-                                 WebString::fromLatin1(value));
-  }
-}
-
 net::RequestPriority ConvertWebKitPriorityToNetPriority(
     const WebURLRequest::Priority& priority) {
   switch (priority) {
@@ -802,6 +693,114 @@ WebURLError WebURLLoaderImpl::CreateError(const WebURL& unreachable_url,
         kThrottledErrorDescription);
   }
   return error;
+}
+
+void WebURLLoaderImpl::PopulateURLResponse(const GURL& url,
+                                           const ResourceResponseInfo& info,
+                                           WebURLResponse* response) {
+  response->setURL(url);
+  response->setResponseTime(info.response_time.ToDoubleT());
+  response->setMIMEType(WebString::fromUTF8(info.mime_type));
+  response->setTextEncodingName(WebString::fromUTF8(info.charset));
+  response->setExpectedContentLength(info.content_length);
+  response->setSecurityInfo(info.security_info);
+  response->setAppCacheID(info.appcache_id);
+  response->setAppCacheManifestURL(info.appcache_manifest_url);
+  response->setWasCached(!info.load_timing.request_start_time.is_null() &&
+      info.response_time < info.load_timing.request_start_time);
+  response->setRemoteIPAddress(
+      WebString::fromUTF8(info.socket_address.host()));
+  response->setRemotePort(info.socket_address.port());
+  response->setConnectionID(info.load_timing.socket_log_id);
+  response->setConnectionReused(info.load_timing.socket_reused);
+  response->setDownloadFilePath(info.download_file_path.AsUTF16Unsafe());
+  WebURLResponseExtraDataImpl* extra_data =
+      new WebURLResponseExtraDataImpl(info.npn_negotiated_protocol);
+  response->setExtraData(extra_data);
+  extra_data->set_was_fetched_via_spdy(info.was_fetched_via_spdy);
+  extra_data->set_was_npn_negotiated(info.was_npn_negotiated);
+  extra_data->set_was_alternate_protocol_available(
+      info.was_alternate_protocol_available);
+  extra_data->set_connection_info(info.connection_info);
+  extra_data->set_was_fetched_via_proxy(info.was_fetched_via_proxy);
+
+  // If there's no received headers end time, don't set load timing.  This is
+  // the case for non-HTTP requests, requests that don't go over the wire, and
+  // certain error cases.
+  if (!info.load_timing.receive_headers_end.is_null()) {
+    WebURLLoadTiming timing;
+    PopulateURLLoadTiming(info.load_timing, &timing);
+    response->setLoadTiming(timing);
+  }
+
+  if (info.devtools_info.get()) {
+    WebHTTPLoadInfo load_info;
+
+    load_info.setHTTPStatusCode(info.devtools_info->http_status_code);
+    load_info.setHTTPStatusText(WebString::fromLatin1(
+        info.devtools_info->http_status_text));
+    load_info.setEncodedDataLength(info.encoded_data_length);
+
+    load_info.setRequestHeadersText(WebString::fromLatin1(
+        info.devtools_info->request_headers_text));
+    load_info.setResponseHeadersText(WebString::fromLatin1(
+        info.devtools_info->response_headers_text));
+    const HeadersVector& request_headers = info.devtools_info->request_headers;
+    for (HeadersVector::const_iterator it = request_headers.begin();
+         it != request_headers.end(); ++it) {
+      load_info.addRequestHeader(WebString::fromLatin1(it->first),
+          WebString::fromLatin1(it->second));
+    }
+    const HeadersVector& response_headers =
+        info.devtools_info->response_headers;
+    for (HeadersVector::const_iterator it = response_headers.begin();
+         it != response_headers.end(); ++it) {
+      load_info.addResponseHeader(WebString::fromLatin1(it->first),
+          WebString::fromLatin1(it->second));
+    }
+    response->setHTTPLoadInfo(load_info);
+  }
+
+  const net::HttpResponseHeaders* headers = info.headers.get();
+  if (!headers)
+    return;
+
+  WebURLResponse::HTTPVersion version = WebURLResponse::Unknown;
+  if (headers->GetHttpVersion() == net::HttpVersion(0, 9))
+    version = WebURLResponse::HTTP_0_9;
+  else if (headers->GetHttpVersion() == net::HttpVersion(1, 0))
+    version = WebURLResponse::HTTP_1_0;
+  else if (headers->GetHttpVersion() == net::HttpVersion(1, 1))
+    version = WebURLResponse::HTTP_1_1;
+  response->setHTTPVersion(version);
+  response->setHTTPStatusCode(headers->response_code());
+  response->setHTTPStatusText(WebString::fromLatin1(headers->GetStatusText()));
+
+  // TODO(darin): We should leverage HttpResponseHeaders for this, and this
+  // should be using the same code as ResourceDispatcherHost.
+  // TODO(jungshik): Figure out the actual value of the referrer charset and
+  // pass it to GetSuggestedFilename.
+  std::string value;
+  headers->EnumerateHeader(NULL, "content-disposition", &value);
+  response->setSuggestedFileName(
+      net::GetSuggestedFilename(url,
+                                value,
+                                std::string(),  // referrer_charset
+                                std::string(),  // suggested_name
+                                std::string(),  // mime_type
+                                std::string()));  // default_name
+
+  Time time_val;
+  if (headers->GetLastModifiedValue(&time_val))
+    response->setLastModifiedDate(time_val.ToDoubleT());
+
+  // Build up the header map.
+  void* iter = NULL;
+  std::string name;
+  while (headers->EnumerateHeaderLines(&iter, &name, &value)) {
+    response->addHTTPHeaderField(WebString::fromLatin1(name),
+                                 WebString::fromLatin1(value));
+  }
 }
 
 void WebURLLoaderImpl::loadSynchronously(const WebURLRequest& request,

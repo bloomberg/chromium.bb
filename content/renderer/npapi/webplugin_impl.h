@@ -125,6 +125,8 @@ class WebPluginImpl : public WebPlugin,
   virtual void InitiateHTTPRangeRequest(const char* url,
                                         const char* range_info,
                                         int pending_request_id) OVERRIDE;
+  virtual void DidStartLoading() OVERRIDE;
+  virtual void DidStopLoading() OVERRIDE;
   virtual bool IsOffTheRecord() OVERRIDE;
   virtual void SetDeferResourceLoading(unsigned long resource_id,
                                        bool defer) OVERRIDE;

@@ -128,7 +128,8 @@ class WebPluginDelegateProxy
                         const GURL& url,
                         const GURL& first_party_for_cookies,
                         const std::string& method,
-                        const std::string& post_data,
+                        const char* buf,
+                        unsigned int len,
                         const GURL& referrer,
                         bool notify_redirects,
                         bool is_plugin_src_load,
@@ -170,6 +171,8 @@ class WebPluginDelegateProxy
   void OnInitiateHTTPRangeRequest(const std::string& url,
                                   const std::string& range_info,
                                   int range_request_id);
+  void OnDidStartLoading();
+  void OnDidStopLoading();
   void OnDeferResourceLoading(unsigned long resource_id, bool defer);
   void OnURLRedirectResponse(bool allow, int resource_id);
   void OnCheckIfRunInsecureContent(const GURL& url, bool* result);

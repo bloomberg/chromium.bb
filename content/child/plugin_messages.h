@@ -58,7 +58,7 @@ IPC_STRUCT_BEGIN(PluginMsg_FetchURL_Params)
   IPC_STRUCT_MEMBER(GURL, url)
   IPC_STRUCT_MEMBER(GURL, first_party_for_cookies)
   IPC_STRUCT_MEMBER(std::string, method)
-  IPC_STRUCT_MEMBER(std::string, post_data)
+  IPC_STRUCT_MEMBER(std::vector<char>, post_data)
   IPC_STRUCT_MEMBER(GURL, referrer)
   IPC_STRUCT_MEMBER(bool, notify_redirect)
   IPC_STRUCT_MEMBER(bool, is_plugin_src_load)
@@ -276,6 +276,9 @@ IPC_MESSAGE_ROUTED3(PluginHostMsg_InitiateHTTPRangeRequest,
                     std::string /* url */,
                     std::string /* range_info */,
                     int         /* range_request_id */)
+
+IPC_MESSAGE_ROUTED0(PluginHostMsg_DidStartLoading)
+IPC_MESSAGE_ROUTED0(PluginHostMsg_DidStopLoading)
 
 IPC_MESSAGE_ROUTED2(PluginHostMsg_DeferResourceLoading,
                     unsigned long /* resource_id */,

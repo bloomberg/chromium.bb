@@ -12,6 +12,7 @@
 #include "webkit/child/resource_loader_bridge.h"
 
 namespace webkit_glue {
+class MultipartResponseDelegate;
 class ResourceLoaderBridge;
 }
 
@@ -25,7 +26,8 @@ class PluginURLFetcher : public webkit_glue::ResourceLoaderBridge::Peer {
                    const GURL& url,
                    const GURL& first_party_for_cookies,
                    const std::string& method,
-                   const std::string& post_data,
+                   const char* buf,
+                   unsigned int len,
                    const GURL& referrer,
                    bool notify_redirects,
                    bool is_plugin_src_load,
@@ -63,12 +65,13 @@ class PluginURLFetcher : public webkit_glue::ResourceLoaderBridge::Peer {
   GURL url_;
   GURL first_party_for_cookies_;
   std::string method_;
-  std::string post_data_;
   GURL referrer_;
   bool notify_redirects_;
   bool is_plugin_src_load_;
   unsigned long resource_id_;
-  int data_offset_;
+  int64 data_offset_;
+
+  scoped_ptr<webkit_glue::MultipartResponseDelegate> multipart_delegate_;
 
   scoped_ptr<webkit_glue::ResourceLoaderBridge> bridge_;
 

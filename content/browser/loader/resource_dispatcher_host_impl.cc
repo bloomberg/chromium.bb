@@ -989,7 +989,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
   if (request_data.request_body.get()) {
     webkit_blob::BlobStorageContext* blob_context = NULL;
     if (filter_->blob_storage_context())
-      blob_context = filter_->blob_storage_context()->context(),
+      blob_context = filter_->blob_storage_context()->context();
     request->set_upload(UploadDataStreamBuilder::Build(
         request_data.request_body.get(),
         blob_context,
