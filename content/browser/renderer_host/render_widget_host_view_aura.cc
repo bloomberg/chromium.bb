@@ -79,6 +79,7 @@
 #include "content/browser/accessibility/browser_accessibility_win.h"
 #include "ui/base/win/hidden_window.h"
 #include "ui/gfx/gdi_util.h"
+#include "ui/gfx/win/dpi.h"
 #endif
 
 using gfx::RectToSkIRect;
@@ -2002,7 +2003,32 @@ void RenderWidgetHostViewAura::GetScreenInfo(WebScreenInfo* results) {
 }
 
 gfx::Rect RenderWidgetHostViewAura::GetBoundsInRootWindow() {
+#if defined(OS_WIN)
+  // aura::Window::GetBoundsInScreen doesn't take non-client area into
+  // account.
+  RECT window_rect = {0};
+
+  aura::Window* top_level = window_->GetToplevelWindow();
+  aura::RootWindow* root_window = top_level->GetRootWindow();
+  if (!root_window)
+    return top_level->GetBoundsInScreen();
+  HWND hwnd = root_window->GetAcceleratedWidget();
+  ::GetWindowRect(hwnd, &window_rect);
+  gfx::Rect rect(window_rect);
+
+  // Maximized windows are outdented from the work area by the frame thickness
+  // even though this "frame" is not painted.  This confuses code (and people)
+  // that think of a maximized window as corresponding exactly to the work area.
+  // Correct for this by subtracting the frame thickness back off.
+  if (::IsZoomed(hwnd)) {
+    rect.Inset(GetSystemMetrics(SM_CXSIZEFRAME),
+               GetSystemMetrics(SM_CYSIZEFRAME));
+  }
+
+  return gfx::win::ScreenToDIPRect(rect);
+#else
   return window_->GetToplevelWindow()->GetBoundsInScreen();
+#endif
 }
 
 void RenderWidgetHostViewAura::GestureEventAck(int gesture_event_type,
