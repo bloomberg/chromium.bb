@@ -70,7 +70,6 @@ class GpuFunctionalTest : public ContentBrowserTest {
   }
 
   void VerifyGPUProcessOnPage(std::string filename, bool wait) {
-    Shell::Initialize();
     ASSERT_TRUE(test_server()->Start());
     DOMMessageQueue message_queue;
 
