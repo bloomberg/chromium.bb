@@ -8,6 +8,8 @@
 #include "chrome/common/extensions/api/downloads.h"
 #include "chrome/common/extensions/api/downloads_internal.h"
 
+namespace extensions {
+
 DownloadsInternalDetermineFilenameFunction::
     DownloadsInternalDetermineFilenameFunction() {}
 
@@ -33,3 +35,5 @@ bool DownloadsInternalDetermineFilenameFunction::RunImpl() {
         params->conflict_action),
       &error_);
 }
+
+}  // namespace extensions

@@ -7,6 +7,8 @@
 
 #include "chrome/browser/extensions/extension_function.h"
 
+namespace extensions {
+
 class DownloadsInternalDetermineFilenameFunction
     : public AsyncExtensionFunction {
  public:
@@ -22,4 +24,5 @@ class DownloadsInternalDetermineFilenameFunction
   DISALLOW_COPY_AND_ASSIGN(DownloadsInternalDetermineFilenameFunction);
 };
 
+}  // namespace extensions
 #endif  // CHROME_BROWSER_EXTENSIONS_API_DOWNLOADS_INTERNAL_DOWNLOADS_INTERNAL_API_H_

@@ -37,6 +37,8 @@ const extensions::Extension* GetTerminalExtension(Profile* profile) {
 
 }  // namespace
 
+namespace extensions {
+
 GURL TerminalExtensionHelper::GetCroshExtensionURL(Profile* profile) {
   const extensions::Extension* extension = GetTerminalExtension(profile);
   if (!extension)
@@ -44,3 +46,5 @@ GURL TerminalExtensionHelper::GetCroshExtensionURL(Profile* profile) {
 
   return extension->GetResourceURL(kCroshExtensionEntryPoint);
 }
+
+}  // namespace extensions

@@ -73,6 +73,8 @@ void NotifyProcessOutput(Profile* profile,
 
 }  // namespace
 
+namespace extensions {
+
 TerminalPrivateFunction::TerminalPrivateFunction() {}
 
 TerminalPrivateFunction::~TerminalPrivateFunction() {}
@@ -217,3 +219,5 @@ void TerminalPrivateOnTerminalResizeFunction::RespondOnUIThread(bool success) {
   SetResult(new base::FundamentalValue(success));
   SendResponse(true);
 }
+
+}  // namespace extensions

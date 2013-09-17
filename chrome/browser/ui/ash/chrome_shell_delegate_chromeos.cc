@@ -109,7 +109,7 @@ void ChromeShellDelegate::OpenFileManager(bool as_dialog) {
 }
 
 void ChromeShellDelegate::OpenCrosh() {
-  GURL crosh_url = TerminalExtensionHelper::GetCroshExtensionURL(
+  GURL crosh_url = extensions::TerminalExtensionHelper::GetCroshExtensionURL(
       ProfileManager::GetDefaultProfileOrOffTheRecord());
   if (!crosh_url.is_valid())
     return;

@@ -7,6 +7,8 @@
 
 #include "chrome/browser/extensions/api/execute_code_function.h"
 
+namespace extensions {
+
 class WebviewClearDataFunction : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webview.clearData", WEBVIEW_CLEARDATA);
@@ -169,5 +171,7 @@ class WebviewTerminateFunction : public AsyncExtensionFunction {
  private:
   DISALLOW_COPY_AND_ASSIGN(WebviewTerminateFunction);
 };
+
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_WEBVIEW_WEBVIEW_API_H_

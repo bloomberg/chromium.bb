@@ -18,6 +18,8 @@
 using extensions::api::tabs::InjectDetails;
 namespace webview = extensions::api::webview;
 
+namespace extensions {
+
 namespace {
 int MaskForKey(const char* key) {
   if (strcmp(key, extension_browsing_data_api_constants::kAppCacheKey) == 0)
@@ -308,3 +310,5 @@ bool WebviewTerminateFunction::RunImpl() {
   guest->Terminate();
   return true;
 }
+
+}  // namespace extensions
