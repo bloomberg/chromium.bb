@@ -31,20 +31,12 @@ TEST(ScopePerFileProvider, Expected) {
       variables::kCurrentToolchain)->string_value());
   EXPECT_EQ("//toolchain:default", provider.GetProgrammaticValue(
       variables::kDefaultToolchain)->string_value());
-  EXPECT_EQ("../..",provider.GetProgrammaticValue(
-      variables::kRelativeBuildToSourceRootDir)->string_value());
-  EXPECT_EQ("../out/Debug", provider.GetProgrammaticValue(
-      variables::kRelativeRootOutputDir)->string_value());
-  EXPECT_EQ("../out/Debug/gen", provider.GetProgrammaticValue(
-      variables::kRelativeRootGenDir)->string_value());
-  EXPECT_EQ("..", provider.GetProgrammaticValue(
-      variables::kRelativeSourceRootDir)->string_value());
-  EXPECT_EQ("../out/Debug/obj/source", provider.GetProgrammaticValue(
-      variables::kRelativeTargetOutputDir)->string_value());
-  EXPECT_EQ("../out/Debug/gen/source", provider.GetProgrammaticValue(
-      variables::kRelativeTargetGenDir)->string_value());
   EXPECT_EQ("//out/Debug/gen",provider.GetProgrammaticValue(
       variables::kRootGenDir)->string_value());
+  EXPECT_EQ("//out/Debug",provider.GetProgrammaticValue(
+      variables::kRootOutDir)->string_value());
   EXPECT_EQ("//out/Debug/gen/source",provider.GetProgrammaticValue(
       variables::kTargetGenDir)->string_value());
+  EXPECT_EQ("//out/Debug/obj/source",provider.GetProgrammaticValue(
+      variables::kTargetOutDir)->string_value());
 }

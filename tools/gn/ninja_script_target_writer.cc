@@ -21,26 +21,7 @@ NinjaScriptTargetWriter::~NinjaScriptTargetWriter() {
 void NinjaScriptTargetWriter::Run() {
   WriteEnvironment();
 
-  // Run the script from the dir of the BUILD file. This has no trailing
-  // slash.
-  const SourceDir& script_cd = target_->label().dir();
-  std::string script_cd_to_root = InvertDir(script_cd);
-  if (script_cd_to_root.empty()) {
-    script_cd_to_root = ".";
-  } else {
-    // Remove trailing slash.
-    DCHECK(script_cd_to_root[script_cd_to_root.size() - 1] == '/');
-    script_cd_to_root.resize(script_cd_to_root.size() - 1);
-  }
-
-  // Compute the relative script file name. The script string should start with
-  // 2 slashes, and we trim 1.
-  DCHECK(target_->script_values().script().is_source_absolute());
-  std::string script_relative_to_cd = script_cd_to_root;
-  const std::string& script_string = target_->script_values().script().value();
-  script_relative_to_cd.append(&script_string[1], script_string.size() - 1);
-
-  std::string custom_rule_name = WriteRuleDefinition(script_relative_to_cd);
+  std::string custom_rule_name = WriteRuleDefinition();
   std::string implicit_deps = GetSourcesImplicitDeps();
 
   // Collects all output files for writing below.
@@ -48,8 +29,7 @@ void NinjaScriptTargetWriter::Run() {
 
   if (has_sources()) {
     // Write separate rules for each input source file.
-    WriteSourceRules(custom_rule_name, implicit_deps, script_cd,
-                     script_cd_to_root, &output_files);
+    WriteSourceRules(custom_rule_name, implicit_deps, &output_files);
   } else {
     // No sources, write a rule that invokes the script once with the
     // outputs as outputs, and the data as inputs.
@@ -70,17 +50,16 @@ void NinjaScriptTargetWriter::Run() {
   WriteStamp(output_files);
 }
 
-std::string NinjaScriptTargetWriter::WriteRuleDefinition(
-    const std::string& script_relative_to_cd) {
+std::string NinjaScriptTargetWriter::WriteRuleDefinition() {
   // Make a unique name for this rule.
+  //
+  // Use a unique name for the response file when there are multiple build
+  // steps so that they don't stomp on each other. When there are no sources,
+  // there will be only one invocation so we can use a simple name.
   std::string target_label = target_->label().GetUserVisibleName(true);
   std::string custom_rule_name(target_label);
   ReplaceChars(custom_rule_name, ":/()", "_", &custom_rule_name);
   custom_rule_name.append("_rule");
-
-  // Use a unique name for the response file when there are multiple build
-  // steps so that they don't stomp on each other. When there are no sources,
-  // there will be only one invocation so we can use a simple name.
 
   if (settings_->IsWin()) {
     // Send through gyp-win-tool and use a response file.
@@ -91,16 +70,14 @@ std::string NinjaScriptTargetWriter::WriteRuleDefinition(
 
     out_ << "rule " << custom_rule_name << std::endl;
     out_ << "  command = $pythonpath gyp-win-tool action-wrapper $arch "
-         << rspfile << " ";
-    path_output_.WriteDir(out_, target_->label().dir(),
-                          PathOutput::DIR_NO_LAST_SLASH);
-    out_ << std::endl;
+         << rspfile << std::endl;
     out_ << "  description = CUSTOM " << target_label << std::endl;
     out_ << "  restat = 1" << std::endl;
     out_ << "  rspfile = " << rspfile << std::endl;
 
     // The build command goes in the rsp file.
-    out_ << "  rspfile_content = $pythonpath " << script_relative_to_cd;
+    out_ << "  rspfile_content = $pythonpath ";
+    path_output_.WriteFile(out_, target_->script_values().script());
     for (size_t i = 0; i < target_->script_values().args().size(); i++) {
       const std::string& arg = target_->script_values().args()[i];
       out_ << " ";
@@ -112,7 +89,8 @@ std::string NinjaScriptTargetWriter::WriteRuleDefinition(
     out_ << "  command = cd ";
     path_output_.WriteDir(out_, target_->label().dir(),
                           PathOutput::DIR_NO_LAST_SLASH);
-    out_ << "; $pythonpath " << script_relative_to_cd;
+    out_ << "; $pythonpath ";
+    path_output_.WriteFile(out_, target_->script_values().script());
     for (size_t i = 0; i < target_->script_values().args().size(); i++) {
       const std::string& arg = target_->script_values().args()[i];
       out_ << " ";
@@ -145,8 +123,6 @@ void NinjaScriptTargetWriter::WriteArg(const std::string& arg) {
 void NinjaScriptTargetWriter::WriteSourceRules(
     const std::string& custom_rule_name,
     const std::string& implicit_deps,
-    const SourceDir& script_cd,
-    const std::string& script_cd_to_root,
     std::vector<OutputFile>* output_files) {
   // Construct the template for generating the output files from each source.
   const Target::FileList& outputs = target_->script_values().outputs();
@@ -161,9 +137,6 @@ void NinjaScriptTargetWriter::WriteSourceRules(
 
   // Prevent re-allocating each time by initializing outside the loop.
   std::vector<std::string> output_template_result;
-
-  // Path output formatter for wrigin source paths passed to the script.
-  PathOutput script_source_path_output(script_cd, ESCAPE_SHELL, true);
 
   const Target::FileList& sources = target_->sources();
   for (size_t i = 0; i < sources.size(); i++) {
@@ -188,7 +161,7 @@ void NinjaScriptTargetWriter::WriteSourceRules(
     // OutputFile object by putting a non-output-relative path in it to signal
     // that the PathWriter should not prepend directories.
     out_ << "  source = ";
-    script_source_path_output.WriteFile(out_, sources[i]);
+    path_output_.WriteFile(out_, sources[i]);
     out_ << std::endl;
 
     out_ << "  source_name_part = "

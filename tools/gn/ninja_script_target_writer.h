@@ -24,7 +24,7 @@ class NinjaScriptTargetWriter : public NinjaTargetWriter {
   // Returns the name of the custom rule generated. This will be based on the
   // target name, and will include the string "$unique_name" if there are
   // multiple inputs.
-  std::string WriteRuleDefinition(const std::string& script_relative_to_cd);
+  std::string WriteRuleDefinition();
 
   // Writes the rules for compiling each source, writing all output files
   // to the given vector.
@@ -33,8 +33,6 @@ class NinjaScriptTargetWriter : public NinjaTargetWriter {
   // to each build step, it starts with a "|" if it's nonempty.
   void WriteSourceRules(const std::string& custom_rule_name,
                         const std::string& implicit_deps,
-                        const SourceDir& script_cd,
-                        const std::string& script_cd_to_root,
                         std::vector<OutputFile>* output_files);
 
   void WriteArg(const std::string& arg);

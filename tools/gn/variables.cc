@@ -79,159 +79,98 @@ const char kPythonPath_Help[] =
     "  requires Python. You will normally not need this when invoking scripts\n"
     "  since GN automatically finds it for you.\n";
 
-const char kRelativeBuildToSourceRootDir[] =
-    "relative_build_to_source_root_dir";
-const char kRelativeBuildToSourceRootDir_HelpShort[] =
-    "relative_build_to_source_root_dir: [string] Relative location of root";
-const char kRelativeBuildToSourceRootDir_Help[] =
-    "relative_build_to_source_root_dir: Relative location of root.\n"
-    "\n"
-    "  A relative path from the build directory to the root of the source\n"
-    "  tree, with no terminating slash. The build directory will be the\n"
-    "  directory when executing normal build commands (except for scripts).\n"
-    "\n"
-    "  If the checkout is in \"/foo/src/\" and the build directory is in\n"
-    "  \"/foo/src/out/Debug/\" then the relative build to source root dir\n"
-    "  will be \"../..\".\n"
-    "\n"
-    "  See also relative_source_root_dir.\n"
-    "\n"
-    "Example:\n"
-    "  This is typically used to invoke tools checked out in the tree:\n"
-    "\n"
-    "  tool(\"link\") {\n"
-    "    command = \"$relative_build_to_source_root_dir/third_party/gold/ld\n"
-    "  }\n";
-
-const char kRelativeRootGenDir[] = "relative_root_gen_dir";
-const char kRelativeRootGenDir_HelpShort[] =
-    "relative_root_gen_dir: [string] Relative root dir for generated files.";
-const char kRelativeRootGenDir_Help[] =
-    "relative_root_gen_dir: Relative root for generated files.\n"
-    "\n"
-    "  Relative path from the directory of the current build file to the\n"
-    "  root of the generated file directory hierarchy for the current\n"
-    "  toolchain.\n"
-    "\n"
-    "  Generally scripts should use \"relative_target_output_dir\" instead.\n"
-    "\n"
-    "  See also \"root_gen_dir\".\n"
-    "\n"
-    "Example:\n"
-    "\n"
-    "  If your current build file is in \"//tools\", you might write\n"
-    "  args = [ \"$relative_root_gen_dir/output.txt\" ]\n";
-
-const char kRelativeRootOutputDir[] = "relative_root_output_dir";
-const char kRelativeRootOutputDir_HelpShort[] =
-    "relative_root_output_dir: [string] Relative dir for output files.";
-const char kRelativeRootOutputDir_Help[] =
-    "relative_root_output_dir: Relative dir for output files.\n"
-    "\n"
-    "  Relative path from the directory of the current build file to the\n"
-    "  current toolchain's root build output directory.\n"
-    "\n"
-    "  Generally scripts should use \"relative_target_output_dir\" instead.\n";
-
-extern const char kRelativeSourceRootDir[] = "relative_source_root_dir";
-extern const char kRelativeSourceRootDir_HelpShort[] =
-    "relative_source_root_dir: [string] Relative location of root.";
-extern const char kRelativeSourceRootDir_Help[] =
-    "relative_source_root_dir: Relative location of root.\n"
-    "\n"
-    "  A relative path from the current source directory to the root of the\n"
-    "  source tree, with no terminating slash. The build directory will be\n"
-    "  the directory when executing scripts.\n"
-    "\n"
-    "  If the checkout is in \"/foo/src/\" and the build directory is in\n"
-    "  \"/foo/src/out/Debug/\" then the relative build to source root dir\n"
-    "  will be \"../..\".\n"
-    "\n"
-    "  See also relative_build_to_source_root_dir.\n"
-    "\n"
-    "Example:\n"
-    "  This is typically used to invoke tools checked out in the tree:\n"
-    "\n"
-    "  tool(\"link\") {\n"
-    "    command = \"$relative_build_to_source_root_dir/third_party/gold/ld\n"
-    "  }\n";
-
-const char kRelativeTargetGenDir[] = "relative_target_gen_dir";
-const char kRelativeTargetGenDir_HelpShort[] =
-    "relative_target_gen_dir: [string] Relative dir for generated files.";
-const char kRelativeTargetGenDir_Help[] =
-    "relative_target_gen_dir: Relative dir for generated files.\n"
-    "\n"
-    "  Relative path from the directory of the current build file to the\n"
-    "  current target's generated file directory.\n"
-    "\n"
-    "  Normally used when invoking scripts (the current directory of which is\n"
-    "  that of the invoking buildfile) that need to write files.\n"
-    "\n"
-    "  Scripts generating final rather than intermediate files should use the\n"
-    "  \"relative_target_output_dir\" instead.\n"
-    "\n"
-    "  See also \"target_gen_dir\".\n"
-    "\n"
-    "Example:\n"
-    "\n"
-    "  If your current build file is in \"//tools\", you might write\n"
-    "  args = [ \"$relative_root_gen_dir/output.txt\" ]\n";
-
-const char kRelativeTargetOutputDir[] = "relative_target_output_dir";
-const char kRelativeTargetOutputDir_HelpShort[] =
-    "relative_target_output_dir: [string] Relative dir for build results.";
-const char kRelativeTargetOutputDir_Help[] =
-    "relative_target_output_dir: Relative dir for build results."
-    "\n"
-    "  Relative path from the directory of the current build file to the\n"
-    "  current target's generated file directory.\n"
-    "\n"
-    "  Normally used when invoking scripts (the current directory of which is\n"
-    "  that of the invoking buildfile) that need to write files.\n"
-    "\n"
-    "  Scripts generating intermediate files rather than final output files\n"
-    "  should use the \"relative_target_output_dir\" instead.\n"
-    "\n"
-    "Example:\n"
-    "\n"
-    "  If your current build file is in \"//tools\", you might write\n"
-    "  args = [ \"$relative_target_output_dir/final.lib\" ]\n";
-
 const char kRootGenDir[] = "root_gen_dir";
 const char kRootGenDir_HelpShort[] =
-    "root_gen_dir: [string] Absolute root dir for generated files.";
+    "root_gen_dir: [string] Directory for the toolchain's generated files.";
 const char kRootGenDir_Help[] =
-    "root_gen_dir: Absolute root dir for generated files.\n"
+    "root_gen_dir: Directory for the toolchain's generated files.\n"
     "\n"
     "  Absolute path to the root of the generated output directory tree for\n"
     "  the current toolchain. An example value might be \"//out/Debug/gen\".\n"
     "  It will not have a trailing slash.\n"
     "\n"
     "  This is primarily useful for setting up include paths for generated\n"
-    "  files. Scripts will want the \"relative_root_gen_dir\" instead\n"
-    "  which will be relative to the scripts' current directory.\n"
+    "  files. If you are passing this to a script, you will want to pass it\n"
+    "  through to_build_path() (see \"gn help to_build_path\") to convert it\n"
+    "  to be relative to the build directory.\n"
     "\n"
-    "  See also \"relative_root_gen_dir\" and \"target_gen_dir\".\n";
+    "  See also \"target_gen_dir\" which is usually a better location for\n"
+    "  generated files. It will be inside the root generated dir.\n";
+
+const char kRootOutDir[] = "root_out_dir";
+const char kRootOutDir_HelpShort[] =
+    "root_out_dir: [string] Root directory for toolchain output files.";
+const char kRootOutDir_Help[] =
+    "root_out_dir: [string] Root directory for toolchain output files.\n"
+    "\n"
+    "  Absolute path to the root of the output directory tree for the current\n"
+    "  toolchain. An example value might be \"//out/Debug/gen\". It will not\n"
+    "  have a trailing slash.\n"
+    "\n"
+    "  This is primarily useful for setting up script calls. If you are\n"
+    "  passing this to a script, you will want to pass it through\n"
+    "  to_build_path() (see \"gn help to_build_path\") to convert it\n"
+    "  to be relative to the build directory.\n"
+    "\n"
+    "  See also \"target_out_dir\" which is usually a better location for\n"
+    "  output files. It will be inside the root output dir.\n"
+    "\n"
+    "Example:\n"
+    "\n"
+    "  custom(\"myscript\") {\n"
+    "    # Pass the output dir to the script.\n"
+    "    args = [ \"-o\", to_build_path(root_out_dir) ]\n"
+    "  }\n";
 
 const char kTargetGenDir[] = "target_gen_dir";
 const char kTargetGenDir_HelpShort[] =
-    "target_gen_dir: [string] Absolute dir for generated files.";
+    "target_gen_dir: [string] Directory for a target's generated files.";
 const char kTargetGenDir_Help[] =
-    "target_gen_dir: Absolute dir for generated files.\n"
+    "target_gen_dir: Directory for a target's generated files.\n"
     "\n"
     "  Absolute path to the target's generated file directory. If your\n"
     "  current target is in \"//tools/doom_melon\" then this value might be\n"
     "  \"//out/Debug/gen/tools/doom_melon\". It will not have a trailing\n"
     "  slash.\n"
     "\n"
-    "  Scripts generating files will generally want the relative version of\n"
-    "  this instead: \"relative_target_gen_dir\".\n"
+    "  This is primarily useful for setting up include paths for generated\n"
+    "  files. If you are passing this to a script, you will want to pass it\n"
+    "  through to_build_path() (see \"gn help to_build_path\") to convert it\n"
+    "  to be relative to the build directory.\n"
+    "\n"
+    "  See also \"gn help root_gen_dir\".\n"
     "\n"
     "Example:\n"
     "\n"
-    "  # Add the gen directory to the include path.\n"
-    "  args = [ target_gen_dir ]\n";
+    "  custom(\"myscript\") {\n"
+    "    # Pass the generated output dir to the script.\n"
+    "    args = [ \"-o\", to_build_path(target_gen_dir) ]\n"
+    "  }\n";
+
+const char kTargetOutDir[] = "target_out_dir";
+const char kTargetOutDir_HelpShort[] =
+    "target_out_dir: [string] Directory for target output files.";
+const char kTargetOutDir_Help[] =
+    "target_out_dir: [string] Directory for target output files."
+    "\n"
+    "  Absolute path to the target's generated file directory. If your\n"
+    "  current target is in \"//tools/doom_melon\" then this value might be\n"
+    "  \"//out/Debug/obj/tools/doom_melon\". It will not have a trailing\n"
+    "  slash.\n"
+    "\n"
+    "  This is primarily useful for setting up arguments for calling\n"
+    "  scripts. If you are passing this to a script, you will want to pass it\n"
+    "  through to_build_path() (see \"gn help to_build_path\") to convert it\n"
+    "  to be relative to the build directory.\n"
+    "\n"
+    "  See also \"gn help root_out_dir\".\n"
+    "\n"
+    "Example:\n"
+    "\n"
+    "  custom(\"myscript\") {\n"
+    "    # Pass the output dir to the script.\n"
+    "    args = [ \"-o\", to_build_path(target_out_dir) ]\n"
+    "  }\n";
 
 // Target variables ------------------------------------------------------------
 
@@ -639,14 +578,10 @@ const VariableInfoMap& GetBuiltinVariables() {
     INSERT_VARIABLE(IsPosix)
     INSERT_VARIABLE(IsWin)
     INSERT_VARIABLE(PythonPath)
-    INSERT_VARIABLE(RelativeBuildToSourceRootDir)
-    INSERT_VARIABLE(RelativeRootGenDir)
-    INSERT_VARIABLE(RelativeRootOutputDir)
-    INSERT_VARIABLE(RelativeSourceRootDir)
-    INSERT_VARIABLE(RelativeTargetGenDir)
-    INSERT_VARIABLE(RelativeTargetOutputDir)
     INSERT_VARIABLE(RootGenDir)
+    INSERT_VARIABLE(RootOutDir)
     INSERT_VARIABLE(TargetGenDir)
+    INSERT_VARIABLE(TargetOutDir)
   }
   return info_map;
 }

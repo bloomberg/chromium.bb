@@ -512,6 +512,7 @@ struct FunctionInfoInitializer {
     INSERT_FUNCTION(StaticLibrary)
     INSERT_FUNCTION(Template)
     INSERT_FUNCTION(Test)
+    INSERT_FUNCTION(ToBuildPath)
     INSERT_FUNCTION(Tool)
     INSERT_FUNCTION(Toolchain)
     INSERT_FUNCTION(ToolchainArgs)

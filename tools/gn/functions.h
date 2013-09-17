@@ -211,6 +211,13 @@ Value RunTest(Scope* scope,
               BlockNode* block,
               Err* err);
 
+extern const char kToBuildPath[];
+extern const char kToBuildPath_Help[];
+Value RunToBuildPath(Scope* scope,
+                     const FunctionCallNode* function,
+                     const std::vector<Value>& args,
+                     Err* err);
+
 extern const char kTool[];
 extern const char kTool_Help[];
 Value RunTool(Scope* scope,

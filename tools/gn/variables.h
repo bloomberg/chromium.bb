@@ -41,37 +41,21 @@ extern const char kPythonPath[];
 extern const char kPythonPath_HelpShort[];
 extern const char kPythonPath_Help[];
 
-extern const char kRelativeBuildToSourceRootDir[];
-extern const char kRelativeBuildToSourceRootDir_HelpShort[];
-extern const char kRelativeBuildToSourceRootDir_Help[];
-
-extern const char kRelativeRootGenDir[];
-extern const char kRelativeRootGenDir_HelpShort[];
-extern const char kRelativeRootGenDir_Help[];
-
-extern const char kRelativeRootOutputDir[];
-extern const char kRelativeRootOutputDir_HelpShort[];
-extern const char kRelativeRootOutputDir_Help[];
-
-extern const char kRelativeSourceRootDir[];
-extern const char kRelativeSourceRootDir_HelpShort[];
-extern const char kRelativeSourceRootDir_Help[];
-
-extern const char kRelativeTargetGenDir[];
-extern const char kRelativeTargetGenDir_HelpShort[];
-extern const char kRelativeTargetGenDir_Help[];
-
-extern const char kRelativeTargetOutputDir[];
-extern const char kRelativeTargetOutputDir_HelpShort[];
-extern const char kRelativeTargetOutputDir_Help[];
-
 extern const char kRootGenDir[];
 extern const char kRootGenDir_HelpShort[];
 extern const char kRootGenDir_Help[];
 
+extern const char kRootOutDir[];
+extern const char kRootOutDir_HelpShort[];
+extern const char kRootOutDir_Help[];
+
 extern const char kTargetGenDir[];
 extern const char kTargetGenDir_HelpShort[];
 extern const char kTargetGenDir_Help[];
+
+extern const char kTargetOutDir[];
+extern const char kTargetOutDir_HelpShort[];
+extern const char kTargetOutDir_Help[];
 
 // Target vars -----------------------------------------------------------------
 

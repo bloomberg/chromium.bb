@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-cc = "$relative_build_to_source_root_dir/third_party/llvm-build/Release+Asserts/bin/clang"
-cxx = "$relative_build_to_source_root_dir/third_party/llvm-build/Release+Asserts/bin/clang++"
+cc = to_build_path("//third_party/llvm-build/Release+Asserts/bin/clang")
+cxx = to_build_path("//third_party/llvm-build/Release+Asserts/bin/clang++")
 ld = cxx
 
 toolchain("clang") {

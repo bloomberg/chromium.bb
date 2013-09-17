@@ -41,6 +41,7 @@ static_library("gn_lib") {
     "function_set_default_toolchain.cc",
     "function_set_defaults.cc",
     "function_template.cc",
+    "function_to_build_path.cc",
     "function_toolchain.cc",
     "function_write_file.cc",
     "group_target_generator.cc",
@@ -155,6 +156,7 @@ test("gn_unittests") {
     "escape_unittest.cc",
     "file_template_unittest.cc",
     "filesystem_utils_unittest.cc",
+    "function_to_build_path_unittest.cc",
     "input_conversion_unittest.cc",
     "label_unittest.cc",
     "ninja_helper_unittest.cc",
@@ -167,6 +169,8 @@ test("gn_unittests") {
     "target_generator_unittest.cc",
     "target_manager_unittest.cc",
     "target_unittest.cc",
+    "test_with_scope.cc",
+    "test_with_scope.h",
     "tokenizer_unittest.cc",
   ]
   deps = [

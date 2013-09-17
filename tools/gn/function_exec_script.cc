@@ -242,10 +242,16 @@ const char kExecScript_Help[] =
     "  generation will fail if the script does not exist or returns a nonzero\n"
     "  exit code.\n"
     "\n"
+    "  The current directory when executing the script will be the root\n"
+    "  build directory. If you are passing file names, you will want to use\n"
+    "  the to_build_dir() function to make file names relative to this\n"
+    "  path (see \"gn help to_build_dir\").\n"
+    "\n"
     "Arguments:\n"
     "\n"
     "  filename:\n"
-    "      File name of python script to execute, relative to the build file.\n"
+    "      File name of python script to execute. Non-absolute names will\n"
+    "      be treated as relative to the current build file.\n"
     "\n"
     "  arguments:\n"
     "      A list of strings to be passed to the script as arguments.\n"
@@ -266,7 +272,7 @@ const char kExecScript_Help[] =
     "Example:\n"
     "\n"
     "  all_lines = exec_script(\"myscript.py\", [some_input], \"list lines\",\n"
-    "                          [\"data_file.txt\"])\n";
+    "                          [ to_build_dir(\"data_file.txt\") ])\n";
 
 Value RunExecScript(Scope* scope,
                     const FunctionCallNode* function,
@@ -336,12 +342,15 @@ Value RunExecScript(Scope* scope,
     begin_exec = base::TimeTicks::Now();
   }
 
+  base::FilePath startup_dir =
+      build_settings->GetFullPath(build_settings->build_dir());
+
   // Execute the process.
   // TODO(brettw) set the environment block.
   std::string output;
   std::string stderr_output;  // TODO(brettw) not hooked up, see above.
   int exit_code = 0;
-  if (!ExecProcess(cmdline, build_settings->GetFullPath(cur_dir),
+  if (!ExecProcess(cmdline, startup_dir,
                    &output, &stderr_output, &exit_code)) {
     *err = Err(function->function(), "Could not execute python.",
         "I was trying to execute \"" + FilePathToUTF8(python_path) + "\".");
@@ -356,9 +365,8 @@ Value RunExecScript(Scope* scope,
 
   // TODO(brettw) maybe we need stderr also for reasonable stack dumps.
   if (exit_code != 0) {
-    std::string msg = "Current dir: " +
-        FilePathToUTF8(build_settings->GetFullPath(cur_dir)) + "\nCommand: " +
-        cmdline.GetCommandLineString() +
+    std::string msg = "Current dir: " + FilePathToUTF8(startup_dir) +
+        "\nCommand: " + cmdline.GetCommandLineString() +
         "\nReturned " + base::IntToString(exit_code);
     if (!output.empty())
       msg += " and printed out:\n\n" + output;

@@ -9,17 +9,15 @@ template("grit") {
          "Neither \"sources\" nor \"outputs\" can be defined for the grit " +
          "template $target_name")
 
-  resource_ids = "$relative_source_root_dir/tools/gritsettings/resource_ids"
-  output_dir = "$relative_target_gen_dir"
-
-  # Note that this needs to be source-absolute since the current directory will
-  # be that of the file invoking the template, not this file.
-  grit_info_script = "$relative_source_root_dir/tools/grit/grit_info.py"
+  resource_ids = to_build_path("//tools/gritsettings/resource_ids")
+  output_dir = to_build_path(target_gen_dir)
+  grit_info_script = to_build_path("//tools/grit/grit_info.py")
+  source_path = to_build_path(source)
 
   grit_inputs = exec_script(grit_info_script,
-    [ "--inputs", source, "-f", resource_ids], "list lines")
+    [ "--inputs", source_path, "-f", resource_ids], "list lines")
   grit_outputs = exec_script(grit_info_script,
-    [ "--outputs", "$output_dir", source, "-f", resource_ids ],
+    [ "--outputs", "$output_dir", source_path, "-f", resource_ids ],
     "list lines")
 
   # The current grit setup makes an file in $target_gen_dir/grit/foo.h that
@@ -33,15 +31,15 @@ template("grit") {
 
   grit_custom_target = target_name + "_grit"
   custom(grit_custom_target) {
-    script = "$relative_source_root_dir/tools/grit/grit.py"
+    script = "//tools/grit/grit.py"
     source_prereqs = grit_inputs
     outputs = grit_outputs
 
     # TODO(brettw) grit_defines.
     args = [
-      "-i", source, "build",
+      "-i", source_path, "build",
       "-f", resource_ids,
-      "-o", relative_target_gen_dir,
+      "-o", output_dir,
     ]
   }
 

@@ -173,8 +173,6 @@ static_library("utility") {
 
 # Resources --------------------------------------------------------------------
 
-print("resourcing")
-
 group("chrome_resources") {
   deps = [
     ":browser_resources",
@@ -194,7 +192,6 @@ grit("renderer_resources") {
   external = true
   source = "renderer/resources/renderer_resources.grd"
 }
-print("resourcing 2")
 
 group("chrome_strings") {
   deps = [
@@ -220,7 +217,6 @@ grit("google_chrome_strings") {
   external = true
   source = "app/google_chrome_strings.grd"
 }
-print("resourcing 3")
 
 group("chrome_extra_resources") {
   deps = [
@@ -251,7 +247,6 @@ grit("translate_internals_resources") {
   external = true
   source = "browser/resources/translate_internals_resources.grd"
 }
-print("resourcing 4")
 
 group("theme_resources") {
   deps = [
@@ -263,5 +258,3 @@ grit("app_theme_resources") {
   external = true
   source = "app/theme/theme_resources.grd"
 }
-
-print("resourcing done")
