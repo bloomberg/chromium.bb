@@ -50,6 +50,7 @@ _exact_matches = {
     "WebKit Mac10.7": {"port_name": "mac-lion"},
     "WebKit Mac10.7 (dbg)": {"port_name": "mac-lion"},
     "WebKit Mac10.8": {"port_name": "mac-mountainlion"},
+    "WebKit Mac10.8 (retina)": {"port_name": "mac-retina"},
 }
 
 
@@ -62,6 +63,7 @@ _deps_builders = {
     "mac-snowleopard": "WebKit Mac10.6 (deps)",
     "mac-lion": "WebKit Mac10.6 (deps)",
     "mac-mountainlion": "WebKit Mac10.6 (deps)",
+    "mac-retina": "WebKit Mac10.6 (deps)",
 }
 
 

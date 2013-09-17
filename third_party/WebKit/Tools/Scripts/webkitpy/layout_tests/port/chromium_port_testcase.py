@@ -84,6 +84,8 @@ class ChromiumPortTestCase(port_testcase.PortTestCase):
             TestConfiguration('snowleopard', 'x86', 'release'),
             TestConfiguration('lion', 'x86', 'debug'),
             TestConfiguration('lion', 'x86', 'release'),
+            TestConfiguration('retina', 'x86', 'debug'),
+            TestConfiguration('retina', 'x86', 'release'),
             TestConfiguration('mountainlion', 'x86', 'debug'),
             TestConfiguration('mountainlion', 'x86', 'release'),
             TestConfiguration('xp', 'x86', 'debug'),

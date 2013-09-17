@@ -28,9 +28,10 @@
 
 
 class MockPlatformInfo(object):
-    def __init__(self, os_name='mac', os_version='snowleopard'):
+    def __init__(self, os_name='mac', os_version='snowleopard', is_highdpi=False):
         self.os_name = os_name
         self.os_version = os_version
+        self._is_highdpi = is_highdpi
 
     def is_mac(self):
         return self.os_name == 'mac'
@@ -40,6 +41,9 @@ class MockPlatformInfo(object):
 
     def is_win(self):
         return self.os_name == 'win'
+
+    def is_highdpi(self):
+        return self._is_highdpi
 
     def is_cygwin(self):
         return self.os_name == 'cygwin'

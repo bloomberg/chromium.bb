@@ -72,6 +72,13 @@ class PlatformInfo(object):
     def is_freebsd(self):
         return self.os_name == 'freebsd'
 
+    def is_highdpi(self):
+        if self.is_mac():
+            output = self._executive.run_command(['system_profiler', 'SPDisplaysDataType'], error_handler=self._executive.ignore_error)
+            if output and 'Retina: Yes' in output:
+                return True
+        return False
+
     def display_name(self):
         # platform.platform() returns Darwin information for Mac, which is just confusing.
         if self.is_mac():

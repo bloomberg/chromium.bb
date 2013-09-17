@@ -51,6 +51,12 @@ class ChromiumPort(Port):
     ALL_SYSTEMS = (
         ('snowleopard', 'x86'),
         ('lion', 'x86'),
+
+        # FIXME: We treat Retina (High-DPI) devices as if they are running
+        # a different operating system version. This isn't accurate, but will work until
+        # we need to test and support baselines across multiple O/S versions.
+        ('retina', 'x86'),
+
         ('mountainlion', 'x86'),
         ('xp', 'x86'),
         ('win7', 'x86'),
@@ -62,13 +68,13 @@ class ChromiumPort(Port):
         )
 
     ALL_BASELINE_VARIANTS = [
-        'mac-mountainlion', 'mac-lion', 'mac-snowleopard',
+        'mac-mountainlion', 'mac-retina', 'mac-lion', 'mac-snowleopard',
         'win-win7', 'win-xp',
         'linux-x86_64', 'linux-x86',
     ]
 
     CONFIGURATION_SPECIFIER_MACROS = {
-        'mac': ['snowleopard', 'lion', 'mountainlion'],
+        'mac': ['snowleopard', 'lion', 'retina', 'mountainlion'],
         'win': ['xp', 'win7'],
         'linux': ['lucid'],
         'android': ['icecreamsandwich'],

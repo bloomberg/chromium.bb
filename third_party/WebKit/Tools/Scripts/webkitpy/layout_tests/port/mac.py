@@ -38,12 +38,17 @@ _log = logging.getLogger(__name__)
 
 
 class MacPort(chromium.ChromiumPort):
-    SUPPORTED_VERSIONS = ('snowleopard', 'lion', 'mountainlion')
+    SUPPORTED_VERSIONS = ('snowleopard', 'lion', 'retina', 'mountainlion')
     port_name = 'mac'
 
     FALLBACK_PATHS = { 'mountainlion': [ 'mac' ]}
     FALLBACK_PATHS['lion'] = ['mac-lion'] + FALLBACK_PATHS['mountainlion']
     FALLBACK_PATHS['snowleopard'] = ['mac-snowleopard'] + FALLBACK_PATHS['lion']
+
+    # FIXME: We treat Retina (High-DPI) devices as if they are running
+    # a different operating system version. This isn't accurate, but will work until
+    # we need to test and support baselines across multiple O/S versions.
+    FALLBACK_PATHS['retina'] = ['mac-retina'] + FALLBACK_PATHS['mountainlion']
 
     DEFAULT_BUILD_DIRECTORIES = ('xcodebuild', 'out')
 
@@ -52,6 +57,8 @@ class MacPort(chromium.ChromiumPort):
     @classmethod
     def determine_full_port_name(cls, host, options, port_name):
         if port_name.endswith('mac'):
+            if host.platform.is_highdpi():
+                return "mac-retina"
             return port_name + '-' + host.platform.os_version
         return port_name
 
