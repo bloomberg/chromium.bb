@@ -9,6 +9,7 @@ Contents:
    rest-devsite-examples.rst
    overview.rst
    quick-start.rst
+   nacl-and-pnacl.rst
    sdk/download.rst
    sdk/examples.rst
    sdk/index.rst
