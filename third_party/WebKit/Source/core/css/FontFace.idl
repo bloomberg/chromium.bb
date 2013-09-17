@@ -28,37 +28,30 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "core/css/CSSFontFaceLoadEvent.h"
+enum FontFaceLoadStatus {
+    "unloaded",
+    "loading",
+    "loaded",
+    "error"
+};
 
-namespace WebCore {
+[
+    EnabledAtRuntime=FontLoadEvents,
+    Constructor(DOMString family, DOMString source, Dictionary descriptors),
+    ConstructorRaisesException
+] interface FontFace {
 
-CSSFontFaceLoadEvent::CSSFontFaceLoadEvent()
-{
-    ScriptWrappable::init(this);
-}
+    [SetterRaisesException] attribute DOMString family;
+    [SetterRaisesException] attribute DOMString style;
+    [SetterRaisesException] attribute DOMString weight;
+    [SetterRaisesException] attribute DOMString stretch;
+    [SetterRaisesException] attribute DOMString unicodeRange;
+    [SetterRaisesException] attribute DOMString variant;
+    [SetterRaisesException] attribute DOMString featureSettings;
 
-CSSFontFaceLoadEvent::CSSFontFaceLoadEvent(const AtomicString& type, const FontFaceArray& fontfaces)
-    : Event(type, false, false)
-    , m_fontfaces(fontfaces)
-{
-    ScriptWrappable::init(this);
-}
+    readonly attribute FontFaceLoadStatus status;
 
-CSSFontFaceLoadEvent::CSSFontFaceLoadEvent(const AtomicString& type, const CSSFontFaceLoadEventInit& initializer)
-    : Event(type, initializer)
-    , m_fontfaces(initializer.fontfaces)
-{
-    ScriptWrappable::init(this);
-}
-
-CSSFontFaceLoadEvent::~CSSFontFaceLoadEvent()
-{
-}
-
-const AtomicString& CSSFontFaceLoadEvent::interfaceName() const
-{
-    return eventNames().interfaceForCSSFontFaceLoadEvent;
-}
-
-} // namespace WebCore
+    // FIXME: Implement them
+    //  void load();
+    //  Promise ready();
+};

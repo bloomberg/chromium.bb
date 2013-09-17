@@ -38,8 +38,8 @@
 
 namespace WebCore {
 
+class FontFace;
 class FontResource;
-class CSSFontFaceRule;
 class CSSFontFaceSource;
 class Dictionary;
 class Document;
@@ -76,9 +76,9 @@ public:
     Document* document() const;
 
     void didLayout();
-    void beginFontLoading(CSSFontFaceRule*);
-    void fontLoaded(CSSFontFaceRule*);
-    void loadError(CSSFontFaceRule*, CSSFontFaceSource*);
+    void beginFontLoading(FontFace*);
+    void fontLoaded(FontFace*);
+    void loadError(FontFace*);
     void scheduleCallback(PassRefPtr<VoidCallback>);
 
 private:
@@ -101,7 +101,7 @@ private:
     virtual EventTargetData* ensureEventTargetData();
 
     void scheduleEvent(PassRefPtr<Event>);
-    void queueDoneEvent(CSSFontFaceRule*);
+    void queueDoneEvent(FontFace*);
     void firePendingEvents();
     void firePendingCallbacks();
     void fireDoneEventIfPossible();

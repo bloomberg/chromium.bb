@@ -28,11 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// FIXME: Make this constructable from Javascript
 [
     NoInterfaceObject,
     EnabledAtRuntime=FontLoadEvents,
-    ConstructorTemplate=Event
 ] interface CSSFontFaceLoadEvent : Event {
-    [InitializedByEventConstructor] readonly attribute CSSFontFaceRule fontface;
-    [InitializedByEventConstructor] readonly attribute DOMError error;
+    readonly attribute FontFace[] fontfaces;
 };

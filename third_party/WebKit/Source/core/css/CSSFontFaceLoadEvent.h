@@ -31,7 +31,7 @@
 #ifndef CSSFontFaceLoadEvent_h
 #define CSSFontFaceLoadEvent_h
 
-#include "core/css/CSSFontFaceRule.h"
+#include "core/css/FontFace.h"
 #include "core/dom/DOMError.h"
 #include "core/dom/Event.h"
 #include "core/dom/EventNames.h"
@@ -41,8 +41,7 @@
 namespace WebCore {
 
 struct CSSFontFaceLoadEventInit : public EventInit {
-    RefPtr<CSSFontFaceRule> fontface;
-    RefPtr<DOMError> error;
+    FontFaceArray fontfaces;
 };
 
 class CSSFontFaceLoadEvent : public Event {
@@ -57,30 +56,25 @@ public:
         return adoptRef<CSSFontFaceLoadEvent>(new CSSFontFaceLoadEvent(type, initializer));
     }
 
-    static PassRefPtr<CSSFontFaceLoadEvent> createForFontFaceRule(const AtomicString& type, PassRefPtr<CSSFontFaceRule> rule)
+    static PassRefPtr<CSSFontFaceLoadEvent> createForFontFace(const AtomicString& type, FontFace* face)
     {
-        return adoptRef<CSSFontFaceLoadEvent>(new CSSFontFaceLoadEvent(type, rule, 0));
-    }
-
-    static PassRefPtr<CSSFontFaceLoadEvent> createForError(PassRefPtr<CSSFontFaceRule> rule, PassRefPtr<DOMError> error)
-    {
-        return adoptRef<CSSFontFaceLoadEvent>(new CSSFontFaceLoadEvent(eventNames().errorEvent, rule, error));
+        FontFaceArray fontfaces;
+        fontfaces.append(face);
+        return adoptRef<CSSFontFaceLoadEvent>(new CSSFontFaceLoadEvent(type, fontfaces));
     }
 
     virtual ~CSSFontFaceLoadEvent();
 
-    CSSFontFaceRule* fontface() const { return m_fontface.get(); }
-    DOMError* error() const { return m_error.get(); }
+    FontFaceArray fontfaces() const { return m_fontfaces; }
 
     virtual const AtomicString& interfaceName() const;
 
 private:
     CSSFontFaceLoadEvent();
-    CSSFontFaceLoadEvent(const AtomicString&, PassRefPtr<CSSFontFaceRule>, PassRefPtr<DOMError>);
+    CSSFontFaceLoadEvent(const AtomicString&, const FontFaceArray&);
     CSSFontFaceLoadEvent(const AtomicString&, const CSSFontFaceLoadEventInit&);
 
-    RefPtr<CSSFontFaceRule> m_fontface;
-    RefPtr<DOMError> m_error;
+    FontFaceArray m_fontfaces;
 };
 
 } // namespace WebCore

@@ -1,0 +1,44 @@
+Test getting/setting FontFace properties.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS ahemFace.family is "Ahem"
+PASS ahemFace.style is "italic"
+PASS ahemFace.weight is "300"
+PASS ahemFace.unicodeRange is "U+0-3FF"
+PASS ahemFace.variant is "small-caps"
+PASS ahemFace.featureSettings is "'dlig' 1"
+
+PASS defaultFace.family is "defaultFace"
+PASS defaultFace.style is "normal"
+PASS defaultFace.weight is "normal"
+PASS defaultFace.stretch is "normal"
+PASS defaultFace.unicodeRange is "U+0-10FFFF"
+PASS defaultFace.variant is "normal"
+PASS defaultFace.featureSettings is "normal"
+
+PASS constructedFace.family is "constructedFace"
+PASS constructedFace.style is "oblique"
+PASS constructedFace.weight is "bold"
+PASS constructedFace.unicodeRange is "U+100-1FF, U+ABCD"
+PASS constructedFace.variant is "small-caps"
+PASS constructedFace.featureSettings is "'liga' 0"
+
+PASS modifiedFace.family is "modified"
+PASS modifiedFace.style is "italic"
+PASS modifiedFace.weight is "900"
+PASS modifiedFace.unicodeRange is "U+0-3FF"
+PASS modifiedFace.variant is "small-caps"
+PASS modifiedFace.featureSettings is "'dlig' 1, 'liga' 0"
+
+PASS new FontFace('test', 'invalid_src', {}) threw exception SyntaxError: An invalid or illegal string was specified..
+PASS face.style = '' threw exception SyntaxError: An invalid or illegal string was specified..
+PASS face.weight = 'a' threw exception SyntaxError: An invalid or illegal string was specified..
+PASS face.unicodeRange = 'U+' threw exception SyntaxError: An invalid or illegal string was specified..
+PASS face.variant = '???' threw exception SyntaxError: An invalid or illegal string was specified..
+PASS face.featureSettings = null threw exception SyntaxError: An invalid or illegal string was specified..
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

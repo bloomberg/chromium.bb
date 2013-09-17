@@ -35,7 +35,6 @@
 #include "core/css/CSSSegmentedFontFace.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/resolver/StyleResolver.h"
-#include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/page/FrameView.h"
 #include "core/platform/HistogramSupport.h"
@@ -208,7 +207,7 @@ void FontFaceSet::firePendingCallbacks()
         pendingCallbacks[index]->handleEvent();
 }
 
-void FontFaceSet::beginFontLoading(CSSFontFaceRule* rule)
+void FontFaceSet::beginFontLoading(FontFace* fontFace)
 {
     m_histogram.incrementCount();
     if (!RuntimeEnabledFeatures::fontLoadEventsEnabled())
@@ -216,36 +215,34 @@ void FontFaceSet::beginFontLoading(CSSFontFaceRule* rule)
 
     ++m_loadingCount;
     if (m_loadingCount == 1 && !m_pendingDoneEvent)
-        scheduleEvent(CSSFontFaceLoadEvent::createForFontFaceRule(eventNames().loadingEvent, rule));
-    scheduleEvent(CSSFontFaceLoadEvent::createForFontFaceRule(eventNames().loadstartEvent, rule));
+        scheduleEvent(CSSFontFaceLoadEvent::createForFontFace(eventNames().loadingEvent, fontFace));
+    scheduleEvent(CSSFontFaceLoadEvent::createForFontFace(eventNames().loadstartEvent, fontFace));
     m_pendingDoneEvent.clear();
 }
 
-void FontFaceSet::fontLoaded(CSSFontFaceRule* rule)
+void FontFaceSet::fontLoaded(FontFace* fontFace)
 {
     if (!RuntimeEnabledFeatures::fontLoadEventsEnabled())
         return;
-    scheduleEvent(CSSFontFaceLoadEvent::createForFontFaceRule(eventNames().loadEvent, rule));
-    queueDoneEvent(rule);
+    scheduleEvent(CSSFontFaceLoadEvent::createForFontFace(eventNames().loadEvent, fontFace));
+    queueDoneEvent(fontFace);
 }
 
-void FontFaceSet::loadError(CSSFontFaceRule* rule, CSSFontFaceSource* source)
+void FontFaceSet::loadError(FontFace* fontFace)
 {
     if (!RuntimeEnabledFeatures::fontLoadEventsEnabled())
         return;
-    // FIXME: We should report NetworkError in case of timeout, etc.
-    String errorName = (source && source->isDecodeError()) ? "InvalidFontDataError" : DOMException::getErrorName(NotFoundError);
-    scheduleEvent(CSSFontFaceLoadEvent::createForError(rule, DOMError::create(errorName)));
-    queueDoneEvent(rule);
+    scheduleEvent(CSSFontFaceLoadEvent::createForFontFace(eventNames().errorEvent, fontFace));
+    queueDoneEvent(fontFace);
 }
 
-void FontFaceSet::queueDoneEvent(CSSFontFaceRule* rule)
+void FontFaceSet::queueDoneEvent(FontFace* fontFace)
 {
     ASSERT(m_loadingCount > 0);
     --m_loadingCount;
     if (!m_loadingCount) {
         ASSERT(!m_pendingDoneEvent);
-        m_pendingDoneEvent = CSSFontFaceLoadEvent::createForFontFaceRule(eventNames().loadingdoneEvent, rule);
+        m_pendingDoneEvent = CSSFontFaceLoadEvent::createForFontFace(eventNames().loadingdoneEvent, fontFace);
     }
 }
 

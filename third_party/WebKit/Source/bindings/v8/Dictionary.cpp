@@ -26,7 +26,6 @@
 #include "config.h"
 #include "bindings/v8/Dictionary.h"
 
-#include "V8CSSFontFaceRule.h"
 #include "V8DOMError.h"
 #include "V8EventTarget.h"
 #include "V8IDBKeyRange.h"
@@ -517,23 +516,6 @@ bool Dictionary::get(const String& key, ArrayValue& value) const
     ASSERT(m_isolate);
     ASSERT(m_isolate == v8::Isolate::GetCurrent());
     value = ArrayValue(v8::Local<v8::Array>::Cast(v8Value), m_isolate);
-    return true;
-}
-
-bool Dictionary::get(const String& key, RefPtr<CSSFontFaceRule>& value) const
-{
-    v8::Local<v8::Value> v8Value;
-    if (!getKey(key, v8Value))
-        return false;
-
-    CSSFontFaceRule* source = 0;
-    if (v8Value->IsObject()) {
-        v8::Handle<v8::Object> wrapper = v8::Handle<v8::Object>::Cast(v8Value);
-        v8::Handle<v8::Object> fontface = wrapper->FindInstanceInPrototypeChain(V8CSSFontFaceRule::GetTemplate(m_isolate, worldType(m_isolate)));
-        if (!fontface.IsEmpty())
-            source = V8CSSFontFaceRule::toNative(fontface);
-    }
-    value = source;
     return true;
 }
 

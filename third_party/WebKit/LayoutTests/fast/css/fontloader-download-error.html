@@ -40,7 +40,7 @@ window.jsTestIsAsync = true;
 var events = {};
 
 function logEvent(e) {
-    var family = e.fontface.style.getPropertyValue('font-family');
+    var family = e.fontfaces[0].family;
     if (!events[family])
         events[family] = [];
     events[family].push(e.type);

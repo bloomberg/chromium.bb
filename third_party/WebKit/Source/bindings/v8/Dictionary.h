@@ -39,7 +39,6 @@
 namespace WebCore {
 
 class ArrayValue;
-class CSSFontFaceRule;
 class DOMError;
 class DOMWindow;
 class IDBKeyRange;
@@ -92,7 +91,6 @@ public:
     bool get(const String&, Dictionary&) const;
     bool get(const String&, Vector<String>&) const;
     bool get(const String&, ArrayValue&) const;
-    bool get(const String&, RefPtr<CSSFontFaceRule>&) const;
     bool get(const String&, RefPtr<DOMError>&) const;
     bool get(const String&, RefPtr<VoidCallback>&) const;
     bool get(const String&, v8::Local<v8::Value>&) const;

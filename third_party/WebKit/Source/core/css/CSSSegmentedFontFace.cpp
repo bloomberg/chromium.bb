@@ -159,7 +159,7 @@ bool CSSSegmentedFontFace::isLoading() const
 {
     unsigned size = m_fontFaces.size();
     for (unsigned i = 0; i < size; i++) {
-        if (m_fontFaces[i]->loadState() == CSSFontFace::Loading)
+        if (m_fontFaces[i]->loadStatus() == FontFace::Loading)
             return true;
     }
     return false;
@@ -176,7 +176,7 @@ bool CSSSegmentedFontFace::checkFont() const
 {
     unsigned size = m_fontFaces.size();
     for (unsigned i = 0; i < size; i++) {
-        if (m_fontFaces[i]->loadState() != CSSFontFace::Loaded)
+        if (m_fontFaces[i]->loadStatus() != FontFace::Loaded)
             return false;
     }
     return true;

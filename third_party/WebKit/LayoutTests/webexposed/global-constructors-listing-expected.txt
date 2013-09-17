@@ -91,6 +91,7 @@ FileReader
 Float32Array
 Float64Array
 FocusEvent
+FontFace
 FormData
 Function
 GainNode
