@@ -358,8 +358,10 @@ void ComponentLoader::AddDefaultComponentExtensions(
   {
     const CommandLine* command_line = CommandLine::ForCurrentProcess();
     if (!command_line->HasSwitch(chromeos::switches::kDisableGeniusApp)) {
-      Add(IDR_GENIUS_APP_MANIFEST, base::FilePath(FILE_PATH_LITERAL(
-          "/usr/share/chromeos-assets/genius_app")));
+      AddWithName(IDR_GENIUS_APP_MANIFEST,
+                  base::FilePath(FILE_PATH_LITERAL(
+                      "/usr/share/chromeos-assets/genius_app")),
+                  l10n_util::GetStringUTF8(IDS_GENIUS_APP_NAME));
     }
   }
   if (browser_defaults::enable_help_app) {

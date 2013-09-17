@@ -3778,4 +3778,9 @@ Battery full
     To check for updates, please use Ethernet, Wi-Fi or mobile data.
   </message>
 
+  <!-- Genius App -->
+  <message name="IDS_GENIUS_APP_NAME" desc="Name of the genius app in the app launcher">
+    Get Help
+  </message>
+
 </grit-part>
