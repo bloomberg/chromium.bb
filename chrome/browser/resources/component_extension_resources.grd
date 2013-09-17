@@ -52,6 +52,8 @@
       <include name="IDR_FEEDBACK_TAKE_SCREENSHOT_JS" file="feedback/js/take_screenshot.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_FEEDBACK_TOPBAR_HANDLER_JS" file="feedback/js/topbar_handlers.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_FEEDBACK_FEEDBACK_CSS" file="feedback/css/feedback.css" type="BINDATA" />
+      <include name="IDR_FEEDBACK_ICON_32" file="feedback/images/icon32.png" type="BINDATA" />
+      <include name="IDR_FEEDBACK_ICON_64" file="feedback/images/icon64.png" type="BINDATA" />
       <if expr="pp_ifdef('file_manager_extension')">
         <!-- App pages and scripts. -->
         <include name="IDR_FILE_MANAGER_MAIN" file="file_manager/main.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />

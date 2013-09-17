@@ -5,6 +5,10 @@
   "version": "1.0",
   "manifest_version": 2,
   "description": "User feedback extension",
+  "icons": {
+    "32": "images/icon32.png",
+    "64": "images/icon64.png"
+  },
   "permissions": [
       "feedbackPrivate",
       "chrome://resources/"
