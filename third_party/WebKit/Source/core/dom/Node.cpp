@@ -27,6 +27,7 @@
 
 #include "HTMLNames.h"
 #include "XMLNames.h"
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/accessibility/AXObjectCache.h"
@@ -897,9 +898,13 @@ void Node::checkSetPrefix(const AtomicString& prefix, ExceptionState& es)
     // FIXME: Raise NamespaceError if prefix is malformed per the Namespaces in XML specification.
 
     const AtomicString& nodeNamespaceURI = namespaceURI();
-    if ((nodeNamespaceURI.isEmpty() && !prefix.isEmpty())
-        || (prefix == xmlAtom && nodeNamespaceURI != XMLNames::xmlNamespaceURI)) {
-        es.throwDOMException(NamespaceError);
+    if (nodeNamespaceURI.isEmpty() && !prefix.isEmpty()) {
+        es.throwDOMException(NamespaceError, ExceptionMessages::failedToSet("prefix", "Node", "No namespace is set, so a namespace prefix may not be set."));
+        return;
+    }
+
+    if (prefix == xmlAtom && nodeNamespaceURI != XMLNames::xmlNamespaceURI) {
+        es.throwDOMException(NamespaceError, ExceptionMessages::failedToSet("prefix", "Node", "The prefix '" + xmlAtom + "' may not be set on namespace '" + nodeNamespaceURI + "'."));
         return;
     }
     // Attribute-specific checks are in Attr::setPrefix().
