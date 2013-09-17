@@ -660,8 +660,13 @@ void LocationBarViewMac::Layout() {
   for (size_t i = 0; i < page_action_decorations_.size(); ++i) {
     [cell addRightDecoration:page_action_decorations_[i]];
   }
-  for (size_t i = 0; i < content_setting_decorations_.size(); ++i) {
-    [cell addRightDecoration:content_setting_decorations_[i]];
+
+  // Iterate through |content_setting_decorations_| in reverse order so that
+  // the order in which the decorations are drawn matches the Views code.
+  for (ScopedVector<ContentSettingDecoration>::reverse_iterator i =
+       content_setting_decorations_.rbegin();
+       i != content_setting_decorations_.rend(); ++i) {
+    [cell addRightDecoration:*i];
   }
 
   [cell addRightDecoration:keyword_hint_decoration_.get()];
