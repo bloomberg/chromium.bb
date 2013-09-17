@@ -350,7 +350,7 @@ crbug.com/23476 [ Mac ] fast/frames/inline-object-inside-frameset.html [ Failure
 
 # We could fix this test for us and upstream it if the test shell user agent
 # would let us differentiate test_shell and WebKit DumpTreeNode.
-crbug.com/7482 [ Win Lion MountainLion ] http/tests/misc/timer-vs-loading.html [ Pass Timeout ]
+crbug.com/7482 [ Win Lion MountainLion Retina ] http/tests/misc/timer-vs-loading.html [ Pass Timeout ]
 
 # This test isn't just slow -- sometimes it times out indefinitely.
 crbug.com/27569 [ Win ] http/tests/xmlhttprequest/redirect-cross-origin-tripmine.html [ Pass Timeout ]
@@ -592,9 +592,9 @@ webkit.org/b/81638 [ Mac Debug ] editing/selection/iframe.html [ ImageOnlyFailur
 webkit.org/b/81931 fast/images/destroyed-image-load-event.html [ Pass Timeout ]
 webkit.org/b/81931 virtual/deferred/fast/images/destroyed-image-load-event.html [ Pass Timeout ]
 
-webkit.org/b/82297 [ Lion MountainLion ] fast/events/platform-wheelevent-paging-x-in-scrolling-page.html [ Failure Pass ]
-webkit.org/b/82297 [ Lion MountainLion ] fast/events/platform-wheelevent-paging-xy-in-scrolling-page.html [ Failure Pass ]
-webkit.org/b/82297 [ Lion MountainLion ] fast/events/platform-wheelevent-paging-y-in-scrolling-page.html [ Failure Pass ]
+webkit.org/b/82297 [ Lion MountainLion Retina ] fast/events/platform-wheelevent-paging-x-in-scrolling-page.html [ Failure Pass ]
+webkit.org/b/82297 [ Lion MountainLion Retina ] fast/events/platform-wheelevent-paging-xy-in-scrolling-page.html [ Failure Pass ]
+webkit.org/b/82297 [ Lion MountainLion Retina ] fast/events/platform-wheelevent-paging-y-in-scrolling-page.html [ Failure Pass ]
 
 webkit.org/b/ [ Win7 ] http/tests/xmlhttprequest/redirect-cross-origin-post.html [ Failure Pass ]
 
@@ -1179,7 +1179,7 @@ crbug.com/265650 [ SnowLeopard Debug ] compositing/repaint/transform-style-chang
 
 crbug.com/266754 fast/ruby/ruby-svg-crash.html [ ImageOnlyFailure Pass ]
 
-crbug.com/267206 [ Lion MountainLion ] fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
+crbug.com/267206 [ Lion MountainLion Retina ] fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
 
 crbug.com/267302 [ Win ] http/tests/htmlimports/import-script-block-crossorigin-dynamic.html [ Pass Failure ]
 
