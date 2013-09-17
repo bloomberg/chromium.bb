@@ -609,7 +609,7 @@ void DocumentLoader::dataReceived(Resource* resource, const char* data, int leng
 
     // If we are sending data to MediaDocument, we should stop here
     // and cancel the request.
-    if (m_frame->document()->isMediaDocument())
+    if (m_frame && m_frame->document()->isMediaDocument())
         cancelMainResourceLoad(ResourceError::cancelledError(m_request.url()));
 }
 
