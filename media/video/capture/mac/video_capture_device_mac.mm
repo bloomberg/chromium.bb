@@ -25,10 +25,14 @@ struct Resolution {
   int height;
 };
 
+const Resolution kQVGA = { 320, 240 },
+                 kVGA = { 640, 480 },
+                 kHD = { 1280, 720 };
+
 const Resolution kWellSupportedResolutions[] = {
-   { 320, 240 },
-   { 640, 480 },
-   { 1280, 720 },
+   kQVGA,
+   kVGA,
+   kHD,
 };
 
 // TODO(ronghuawu): Replace this with CapabilityList::GetBestMatchedCapability.
@@ -140,33 +144,46 @@ void VideoCaptureDeviceMac::Allocate(
   else if (frame_rate > kMaxFrameRate)
     frame_rate = kMaxFrameRate;
 
-  if (![capture_device_ setCaptureHeight:height
-                                   width:width
-                               frameRate:frame_rate]) {
-    SetErrorState("Could not configure capture device.");
+  current_settings_.color = PIXEL_FORMAT_UYVY;
+  current_settings_.width = width;
+  current_settings_.height = height;
+  current_settings_.frame_rate = frame_rate;
+  current_settings_.expected_capture_delay = 0;
+  current_settings_.interlaced = false;
+
+  if (width != kHD.width || height != kHD.height) {
+    // If the resolution is VGA or QVGA, set the capture resolution to the
+    // target size.  For most cameras (though not all), at these resolutions
+    // QTKit produces frames with square pixels.
+    if (!UpdateCaptureResolution())
+      return;
+
+    sent_frame_info_ = true;
+    observer_->OnFrameInfo(current_settings_);
+  }
+
+  // If the resolution is HD, start capturing without setting a resolution.
+  // QTKit will produce frames at the native resolution, allowing us to
+  // identify cameras whose native resolution is too low for HD.  This
+  // additional information comes at a cost in startup latency, because the
+  // webcam will need to be reopened if its default resolution is not HD or VGA.
+
+  if (![capture_device_ startCapture]) {
+    SetErrorState("Could not start capture device.");
     return;
   }
 
   state_ = kAllocated;
-  VideoCaptureCapability current_settings;
-  current_settings.color = PIXEL_FORMAT_UYVY;
-  current_settings.width = width;
-  current_settings.height = height;
-  current_settings.frame_rate = frame_rate;
-  current_settings.expected_capture_delay = 0;
-  current_settings.interlaced = false;
-
-  observer_->OnFrameInfo(current_settings);
 }
 
 void VideoCaptureDeviceMac::Start() {
   DCHECK_EQ(loop_proxy_, base::MessageLoopProxy::current());
   DCHECK_EQ(state_, kAllocated);
-  if (![capture_device_ startCapture]) {
-    SetErrorState("Could not start capture device.");
-    return;
-  }
   state_ = kCapturing;
+
+  // This method no longer has any effect.  Capturing is triggered by
+  // the call to Allocate.
+  // TODO(bemasc, ncarter): Remove this method.
 }
 
 void VideoCaptureDeviceMac::Stop() {
@@ -216,9 +233,52 @@ bool VideoCaptureDeviceMac::Init() {
 void VideoCaptureDeviceMac::ReceiveFrame(
     const uint8* video_frame,
     int video_frame_length,
-    const VideoCaptureCapability& frame_info) {
+    const VideoCaptureCapability& frame_info,
+    int aspect_numerator,
+    int aspect_denominator) {
   // This method is safe to call from a device capture thread,
   // i.e. any thread controlled by QTKit.
+
+  if (!sent_frame_info_) {
+    if (current_settings_.width == kHD.width &&
+        current_settings_.height == kHD.height) {
+      bool changeToVga = false;
+      if (frame_info.width < kHD.width || frame_info.height < kHD.height) {
+        // These are the default capture settings, not yet configured to match
+        // |current_settings_|.
+        DCHECK(frame_info.frame_rate == 0);
+        DVLOG(1) << "Switching to VGA because the default resolution is " <<
+            frame_info.width << "x" << frame_info.height;
+        changeToVga = true;
+      }
+      if (frame_info.width == kHD.width && frame_info.height == kHD.height &&
+          aspect_numerator != aspect_denominator) {
+        DVLOG(1) << "Switching to VGA because HD has nonsquare pixel " <<
+            "aspect ratio " << aspect_numerator << ":" << aspect_denominator;
+        changeToVga = true;
+      }
+
+      if (changeToVga) {
+        current_settings_.width = kVGA.width;
+        current_settings_.height = kVGA.height;
+      }
+    }
+
+    if (current_settings_.width == frame_info.width &&
+        current_settings_.height == frame_info.height) {
+      sent_frame_info_ = true;
+      observer_->OnFrameInfo(current_settings_);
+    } else {
+      UpdateCaptureResolution();
+      // The current frame does not have the right width and height, so it
+      // must not be passed to |observer_|.
+      return;
+    }
+  }
+
+  DCHECK(current_settings_.width == frame_info.width &&
+         current_settings_.height == frame_info.height);
+
   observer_->OnIncomingCapturedFrame(
       video_frame, video_frame_length, base::Time::Now(), 0, false, false);
 }
@@ -234,6 +294,16 @@ void VideoCaptureDeviceMac::SetErrorState(const std::string& reason) {
   DLOG(ERROR) << reason;
   state_ = kError;
   observer_->OnError();
+}
+
+bool VideoCaptureDeviceMac::UpdateCaptureResolution() {
+ if (![capture_device_ setCaptureHeight:current_settings_.height
+                                  width:current_settings_.width
+                              frameRate:current_settings_.frame_rate]) {
+   ReceiveError("Could not configure capture device.");
+   return false;
+ }
+ return true;
 }
 
 } // namespace media
