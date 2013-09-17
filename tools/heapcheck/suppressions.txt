@@ -890,7 +890,7 @@
    fun:SafeBrowsingDatabaseManagerTest_CheckCorrespondsListType_Test::TestBody
 }
 {
-   bug_2912
+   bug_291236_a
    Heapcheck:Leak
    fun:v8::internal::Malloced::New
    fun:v8::internal::Zone::NewSegment
@@ -912,4 +912,16 @@
    fun:v8::internal::CompareOperation::Accept
    fun:v8::internal::HOptimizedGraphBuilder::Visit
    fun:v8::internal::HOptimizedGraphBuilder::VisitForControl
+}
+{
+   bug_291236_c
+   Heapcheck:Leak
+   fun:v8::internal::Malloced::New
+   fun:v8::internal::Zone::NewSegment
+   fun:v8::internal::Zone::NewExpand
+   fun:v8::internal::Zone::New
+   fun:v8::internal::ZoneObject::operator new
+   fun:v8::internal::LChunkBuilder::Build
+   fun:v8::internal::LChunk::NewChunk
+   fun:v8::internal::OptimizingCompiler::OptimizeGraph
 }
