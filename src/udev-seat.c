@@ -75,7 +75,7 @@ device_added(struct udev_device *udev_device, struct udev_input *input)
 	/* Use non-blocking mode so that we can loop on read on
 	 * evdev_device_data() until all events on the fd are
 	 * read.  mtdev_get() also expects this. */
-	fd = weston_launcher_open(c, devnode, O_RDWR | O_NONBLOCK);
+	fd = weston_launcher_open(c->launcher, devnode, O_RDWR | O_NONBLOCK);
 	if (fd < 0) {
 		weston_log("opening input device '%s' failed.\n", devnode);
 		return 0;

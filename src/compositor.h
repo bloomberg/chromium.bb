@@ -590,7 +590,7 @@ struct weston_compositor {
 
 	void (*ping_handler)(struct weston_surface *surface, uint32_t serial);
 
-	int launcher_sock;
+	struct weston_launcher *launcher;
 
 	uint32_t output_id_pool;
 

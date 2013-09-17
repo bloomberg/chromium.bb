@@ -887,9 +887,8 @@ fbdev_compositor_create(struct wl_display *display, int *argc, char *argv[],
 		goto out_free;
 
 	/* Check if we run fbdev-backend using weston-launch */
-	compositor->base.launcher_sock =
-		weston_environment_get_fd("WESTON_LAUNCHER_SOCK");
-	if (compositor->base.launcher_sock == -1 && geteuid() != 0) {
+	compositor->base.launcher = weston_launcher_connect(&compositor->base);
+	if (compositor->base.launcher == NULL && geteuid() != 0) {
 		weston_log("fatal: fbdev backend should be run "
 			   "using weston-launch binary or as root\n");
 		goto out_compositor;

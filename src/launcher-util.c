@@ -1,5 +1,6 @@
 /*
  * Copyright © 2012 Benjamin Franzke
+ * Copyright © 2013 Intel Corporation
  *
  * Permission to use, copy, modify, distribute, and sell this software and
  * its documentation for any purpose is hereby granted without fee, provided
@@ -32,6 +33,7 @@
 #include <sys/stat.h>
 #include <sys/uio.h>
 #include <fcntl.h>
+#include <unistd.h>
 
 #include <xf86drm.h>
 
@@ -41,11 +43,15 @@
 
 union cmsg_data { unsigned char b[4]; int fd; };
 
+struct weston_launcher {
+	struct weston_compositor *compositor;
+	int fd;
+};
+
 int
-weston_launcher_open(struct weston_compositor *compositor,
+weston_launcher_open(struct weston_launcher *launcher,
 		     const char *path, int flags)
 {
-	int sock = compositor->launcher_sock;
 	int n, ret = -1;
 	struct msghdr msg;
 	struct cmsghdr *cmsg;
@@ -55,7 +61,7 @@ weston_launcher_open(struct weston_compositor *compositor,
 	ssize_t len;
 	struct weston_launcher_open *message;
 
-	if (sock == -1)
+	if (launcher == NULL)
 		return open(path, flags | O_CLOEXEC);
 
 	n = sizeof(*message) + strlen(path) + 1;
@@ -68,7 +74,7 @@ weston_launcher_open(struct weston_compositor *compositor,
 	strcpy(message->path, path);
 
 	do {
-		len = send(sock, message, n, 0);
+		len = send(launcher->fd, message, n, 0);
 	} while (len < 0 && errno == EINTR);
 	free(message);
 
@@ -81,7 +87,7 @@ weston_launcher_open(struct weston_compositor *compositor,
 	msg.msg_controllen = sizeof control;
 	
 	do {
-		len = recvmsg(sock, &msg, MSG_CMSG_CLOEXEC);
+		len = recvmsg(launcher->fd, &msg, MSG_CMSG_CLOEXEC);
 	} while (len < 0 && errno == EINTR);
 
 	if (len != sizeof ret ||
@@ -106,7 +112,7 @@ weston_launcher_open(struct weston_compositor *compositor,
 }
 
 int
-weston_launcher_drm_set_master(struct weston_compositor *compositor,
+weston_launcher_drm_set_master(struct weston_launcher *launcher,
 			       int drm_fd, char master)
 {
 	struct msghdr msg;
@@ -118,7 +124,7 @@ weston_launcher_drm_set_master(struct weston_compositor *compositor,
 	struct weston_launcher_set_master message;
 	union cmsg_data *data;
 
-	if (compositor->launcher_sock == -1) {
+	if (launcher == NULL) {
 		if (master)
 			return drmSetMaster(drm_fd);
 		else
@@ -146,13 +152,13 @@ weston_launcher_drm_set_master(struct weston_compositor *compositor,
 	message.set_master = master;
 
 	do {
-		len = sendmsg(compositor->launcher_sock, &msg, 0);
+		len = sendmsg(launcher->fd, &msg, 0);
 	} while (len < 0 && errno == EINTR);
 	if (len < 0)
 		return -1;
 
 	do {
-		len = recv(compositor->launcher_sock, &ret, sizeof ret, 0);
+		len = recv(launcher->fd, &ret, sizeof ret, 0);
 	} while (len < 0 && errno == EINTR);
 	if (len < 0)
 		return -1;
@@ -160,3 +166,29 @@ weston_launcher_drm_set_master(struct weston_compositor *compositor,
 	return ret;
 }
 
+struct weston_launcher *
+weston_launcher_connect(struct weston_compositor *compositor)
+{
+	struct weston_launcher *launcher;
+	int fd;
+
+	fd = weston_environment_get_fd("WESTON_LAUNCHER_SOCK");
+	if (fd == -1)
+		return NULL;
+
+	launcher = malloc(sizeof *launcher);
+	if (launcher == NULL)
+		return NULL;
+
+	launcher->compositor = compositor;
+	launcher->fd = fd;
+
+	return launcher;
+}
+
+void
+weston_launcher_destroy(struct weston_launcher *launcher)
+{
+	close(launcher->fd);
+	free(launcher);
+}

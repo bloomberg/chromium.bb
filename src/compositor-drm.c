@@ -1215,7 +1215,7 @@ init_drm(struct drm_compositor *ec, struct udev_device *device)
 	}
 
 	filename = udev_device_get_devnode(device);
-	fd = weston_launcher_open(&ec->base, filename, O_RDWR);
+	fd = weston_launcher_open(ec->base.launcher, filename, O_RDWR);
 	if (fd < 0) {
 		/* Probably permissions error */
 		weston_log("couldn't open %s, skipping\n",
@@ -2241,7 +2241,7 @@ drm_restore(struct weston_compositor *ec)
 {
 	struct drm_compositor *d = (struct drm_compositor *) ec;
 
-	if (weston_launcher_drm_set_master(&d->base, d->drm.fd, 0) < 0)
+	if (weston_launcher_drm_set_master(d->base.launcher, d->drm.fd, 0) < 0)
 		weston_log("failed to drop master: %m\n");
 	tty_reset(d->tty);
 }
@@ -2265,7 +2265,7 @@ drm_destroy(struct weston_compositor *ec)
 	if (d->gbm)
 		gbm_device_destroy(d->gbm);
 
-	if (weston_launcher_drm_set_master(&d->base, d->drm.fd, 0) < 0)
+	if (weston_launcher_drm_set_master(d->base.launcher, d->drm.fd, 0) < 0)
 		weston_log("failed to drop master: %m\n");
 	tty_destroy(d->tty);
 
@@ -2317,7 +2317,8 @@ vt_func(struct weston_compositor *compositor, int event)
 	case TTY_ENTER_VT:
 		weston_log("entering VT\n");
 		compositor->focus = 1;
-		if (weston_launcher_drm_set_master(&ec->base, ec->drm.fd, 1)) {
+		if (weston_launcher_drm_set_master(ec->base.launcher,
+						   ec->drm.fd, 1)) {
 			weston_log("failed to set master: %m\n");
 			wl_display_terminate(compositor->wl_display);
 		}
@@ -2356,7 +2357,8 @@ vt_func(struct weston_compositor *compositor, int event)
 					output->crtc_id, 0, 0,
 					0, 0, 0, 0, 0, 0, 0, 0);
 
-		if (weston_launcher_drm_set_master(&ec->base, ec->drm.fd, 0) < 0)
+		if (weston_launcher_drm_set_master(ec->base.launcher,
+						   ec->drm.fd, 0) < 0)
 			weston_log("failed to drop master: %m\n");
 
 		break;
@@ -2571,9 +2573,8 @@ drm_compositor_create(struct wl_display *display,
 	}
 
 	/* Check if we run drm-backend using weston-launch */
-	ec->base.launcher_sock =
-		weston_environment_get_fd("WESTON_LAUNCHER_SOCK");
-	if (ec->base.launcher_sock == -1 && geteuid() != 0) {
+	ec->base.launcher = weston_launcher_connect(&ec->base);
+	if (ec->base.launcher == NULL && geteuid() != 0) {
 		weston_log("fatal: drm backend should be run "
 			   "using weston-launch binary or as root\n");
 		goto err_compositor;
@@ -2691,7 +2692,8 @@ err_sprite:
 err_udev_dev:
 	udev_device_unref(drm_device);
 err_tty:
-	if (weston_launcher_drm_set_master(&ec->base, ec->drm.fd, 0) < 0)
+	if (weston_launcher_drm_set_master(ec->base.launcher,
+					   ec->drm.fd, 0) < 0)
 		weston_log("failed to drop master: %m\n");
 	tty_destroy(ec->tty);
 err_udev:
