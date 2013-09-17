@@ -6,14 +6,22 @@
 
 #include "base/android/base_jni_registrar.h"
 #include "base/android/jni_android.h"
+#include "base/android/scoped_java_ref.h"
 #include "base/memory/singleton.h"
+#include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "media/base/yuv_convert.h"
 #include "net/android/net_jni_registrar.h"
 #include "remoting/base/url_request_context.h"
 
+namespace {
+
 // Class and package name of the Java class supporting the methods we call.
 const char* const kJavaClass = "org/chromium/chromoting/jni/JniInterface";
+
+const int kBytesPerPixel = 4;
+
+}  // namespace
 
 namespace remoting {
 
@@ -179,6 +187,34 @@ void ChromotingJniRuntime::UpdateImageBuffer(int width,
       class_,
       env->GetStaticFieldID(class_, "sBuffer", "Ljava/nio/ByteBuffer;"),
       buffer);
+}
+
+void ChromotingJniRuntime::UpdateCursorShape(
+    const protocol::CursorShapeInfo& cursor_shape) {
+  DCHECK(display_task_runner_->BelongsToCurrentThread());
+
+  // const_cast<> is safe as long as the Java updateCursorShape() method copies
+  // the data out of the buffer without mutating it, and doesn't keep any
+  // reference to the buffer afterwards. Unfortunately, there seems to be no way
+  // to create a read-only ByteBuffer from a pointer-to-const.
+  char* data = string_as_array(const_cast<std::string*>(&cursor_shape.data()));
+  int cursor_total_bytes =
+      cursor_shape.width() * cursor_shape.height() * kBytesPerPixel;
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  base::android::ScopedJavaLocalRef<jobject> buffer(env,
+      env->NewDirectByteBuffer(data, cursor_total_bytes));
+  env->CallStaticVoidMethod(
+      class_,
+      env->GetStaticMethodID(
+          class_,
+          "updateCursorShape",
+          "(IIIILjava/nio/ByteBuffer;)V"),
+      cursor_shape.width(),
+      cursor_shape.height(),
+      cursor_shape.hotspot_x(),
+      cursor_shape.hotspot_y(),
+      buffer.obj());
 }
 
 void ChromotingJniRuntime::RedrawCanvas() {

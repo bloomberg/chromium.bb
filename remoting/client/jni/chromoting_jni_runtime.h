@@ -82,6 +82,9 @@ class ChromotingJniRuntime {
   // Updates image dimensions and canvas memory space. Call on display thread.
   void UpdateImageBuffer(int width, int height, jobject buffer);
 
+  // Updates cursor shape. Call on display thread.
+  void UpdateCursorShape(const protocol::CursorShapeInfo& cursor_shape);
+
   // Draws the latest image buffer onto the canvas. Call on the display thread.
   void RedrawCanvas();
 

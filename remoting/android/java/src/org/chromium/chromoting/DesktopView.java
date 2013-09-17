@@ -11,6 +11,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Looper;
 import android.text.InputType;
@@ -67,6 +68,12 @@ public class DesktopView extends SurfaceView implements Runnable, SurfaceHolder.
     private int mScreenWidth;
     private int mScreenHeight;
 
+    /**
+     * Specifies the position, in image coordinates, at which the cursor image will be drawn.
+     * This will normally be at the location of the most recently injected motion event.
+     */
+    private Point mCursorPosition;
+
     /** Specifies the dimension by which the zoom level is being lower-bounded. */
     private Constraint mConstraint;
 
@@ -98,6 +105,7 @@ public class DesktopView extends SurfaceView implements Runnable, SurfaceHolder.
         mTransform = new Matrix();
         mScreenWidth = 0;
         mScreenHeight = 0;
+        mCursorPosition = new Point();
 
         mConstraint = Constraint.UNDEFINED;
         mRecheckConstraint = false;
@@ -216,6 +224,16 @@ public class DesktopView extends SurfaceView implements Runnable, SurfaceHolder.
 
         canvas.drawColor(Color.BLACK);
         canvas.drawBitmap(image, 0, 0, new Paint());
+        Bitmap cursorBitmap = JniInterface.getCursorBitmap();
+        if (cursorBitmap != null) {
+            Point hotspot = JniInterface.getCursorHotspot();
+            int bitmapX, bitmapY;
+            synchronized (mCursorPosition) {
+                bitmapX = mCursorPosition.x - hotspot.x;
+                bitmapY = mCursorPosition.y - hotspot.y;
+            }
+            canvas.drawBitmap(cursorBitmap, bitmapX, bitmapY, new Paint());
+        }
         getHolder().unlockCanvasAndPost(canvas);
     }
 
@@ -247,6 +265,11 @@ public class DesktopView extends SurfaceView implements Runnable, SurfaceHolder.
                 mConstraint = Constraint.UNDEFINED;
                 mRecheckConstraint = false;
             }
+        }
+
+        synchronized (mCursorPosition) {
+            mCursorPosition.x = width / 2;
+            mCursorPosition.y = height / 2;
         }
 
         if (!JniInterface.redrawGraphics()) {
@@ -296,11 +319,25 @@ public class DesktopView extends SurfaceView implements Runnable, SurfaceHolder.
 
         // Coordinates are relative to the canvas, but we need image coordinates.
         Matrix canvasToImage = new Matrix();
-        mTransform.invert(canvasToImage);
+        synchronized (mTransform) {
+            mTransform.invert(canvasToImage);
+        }
         canvasToImage.mapPoints(coordinates);
 
+        int imageX = (int)coordinates[0];
+        int imageY = (int)coordinates[1];
+
+        synchronized (mCursorPosition) {
+            mCursorPosition.x = imageX;
+            mCursorPosition.y = imageY;
+        }
+
         // Coordinates are now relative to the image, so transmit them to the host.
-        JniInterface.mouseAction((int)coordinates[0], (int)coordinates[1], button, pressed);
+        JniInterface.mouseAction(imageX, imageY, button, pressed);
+
+        // TODO(lambroslambrou): Optimize this to repaint only the areas covered by the old and new
+        // cursor positions.
+        JniInterface.redrawGraphics();
     }
 
     /**

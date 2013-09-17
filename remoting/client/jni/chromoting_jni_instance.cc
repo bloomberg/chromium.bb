@@ -216,7 +216,14 @@ void ChromotingJniInstance::InjectClipboardEvent(
 
 void ChromotingJniInstance::SetCursorShape(
     const protocol::CursorShapeInfo& shape) {
-  NOTIMPLEMENTED();
+  if (!jni_runtime_->display_task_runner()->BelongsToCurrentThread()) {
+    jni_runtime_->display_task_runner()->PostTask(
+        FROM_HERE,
+        base::Bind(&ChromotingJniInstance::SetCursorShape, this, shape));
+    return;
+  }
+
+  jni_runtime_->UpdateCursorShape(shape);
 }
 
 void ChromotingJniInstance::ConnectToHostOnDisplayThread() {
