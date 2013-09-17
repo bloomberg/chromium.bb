@@ -257,10 +257,6 @@ void LabelButton::GetExtraParams(ui::NativeTheme::ExtraParams* params) const {
   params->button.background_color = label()->background_color();
 }
 
-void LabelButton::UpdateImage() {
-  image_->SetImage(GetImage(state()));
-}
-
 void LabelButton::ResetColorsFromNativeTheme() {
   const ui::NativeTheme* theme = GetNativeTheme();
   SkColor colors[STATE_COUNT] = {
@@ -277,9 +273,6 @@ void LabelButton::ResetColorsFromNativeTheme() {
                           theme == ui::NativeThemeWin::instance());
 #endif
 
-  label_->SetBackgroundColor(theme->GetSystemColor(
-      ui::NativeTheme::kColorId_ButtonBackgroundColor));
-
   // Use hardcoded colors for inverted color scheme support and STYLE_BUTTON.
   if (gfx::IsInvertedColorScheme()) {
     constant_text_color = true;
@@ -290,6 +283,8 @@ void LabelButton::ResetColorsFromNativeTheme() {
   } else if (style() == STYLE_BUTTON) {
     constant_text_color = true;
     colors[STATE_NORMAL] = kStyleButtonTextColor;
+    label_->SetBackgroundColor(theme->GetSystemColor(
+        ui::NativeTheme::kColorId_ButtonBackgroundColor));
     label_->SetAutoColorReadabilityEnabled(false);
     label_->SetShadowColors(kStyleButtonShadowColor, kStyleButtonShadowColor);
     label_->SetShadowOffset(0, 1);
@@ -304,6 +299,10 @@ void LabelButton::ResetColorsFromNativeTheme() {
       explicitly_set_colors_[state] = false;
     }
   }
+}
+
+void LabelButton::UpdateImage() {
+  image_->SetImage(GetImage(state()));
 }
 
 void LabelButton::StateChanged() {
