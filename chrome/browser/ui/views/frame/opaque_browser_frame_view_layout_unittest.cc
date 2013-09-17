@@ -204,6 +204,15 @@ class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
     root_view_->AddChildView(menu_button_);
   }
 
+  void AddAvatarLabel() {
+    avatar_label_ = new views::MenuButton(NULL, string16(), NULL, false);
+    avatar_label_->set_id(VIEW_ID_AVATAR_LABEL);
+    root_view_->AddChildView(avatar_label_);
+
+    // The avatar label should only be used together with the avatar button.
+    AddAvatarButton();
+  }
+
   void ExpectBasicWindowBounds() {
     EXPECT_EQ("428,1 25x18", maximize_button_->bounds().ToString());
     EXPECT_EQ("402,1 26x18", minimize_button_->bounds().ToString());
@@ -228,6 +237,7 @@ class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
   views::Label* window_title_;
 
   views::MenuButton* menu_button_;
+  views::MenuButton* avatar_label_;
 
   DISALLOW_COPY_AND_ASSIGN(OpaqueBrowserFrameViewLayoutTest);
 };
@@ -302,4 +312,19 @@ TEST_F(OpaqueBrowserFrameViewLayoutTest, WindowWithAvatar) {
             layout_manager_->GetBoundsForTabStrip(
                 delegate_->GetTabstripPreferredSize(), kWidth).ToString());
   EXPECT_EQ("261x73", layout_manager_->GetMinimumSize(kWidth).ToString());
+}
+
+TEST_F(OpaqueBrowserFrameViewLayoutTest, WindowWithAvatarLabelAndButton) {
+  AddAvatarLabel();
+  root_view_->Layout();
+
+  ExpectBasicWindowBounds();
+
+  // Check the location of the avatar label relative to the avatar button.
+  // The label height and width depends on the font size and the text displayed.
+  // This may possibly change, so we don't test it here.
+  EXPECT_EQ(menu_button_->bounds().x() - 2, avatar_label_->bounds().x());
+  EXPECT_EQ(
+      menu_button_->bounds().bottom() - 3 - avatar_label_->bounds().height(),
+      avatar_label_->bounds().y());
 }

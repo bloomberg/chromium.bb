@@ -372,24 +372,29 @@ void OpaqueBrowserFrameViewLayout::LayoutAvatar() {
       delegate_->ShouldShowAvatar() ? (avatar_bottom - avatar_y) : 0);
   if (avatar_button_) {
     avatar_button_->SetBoundsRect(avatar_bounds_);
-    leading_button_start_ += kAvatarLeftSpacing + incognito_icon.width();
-    minimum_size_for_buttons_ += kAvatarLeftSpacing + incognito_icon.width();
-  }
 
-  if (avatar_label_) {
-    // Space between the bottom of the avatar and the bottom of the avatar
-    // label.
-    const int kAvatarLabelBottomSpacing = 3;
-    // Space between the frame border and the left edge of the avatar label.
-    const int kAvatarLabelLeftSpacing = -1;
-    gfx::Size label_size = avatar_label_->GetPreferredSize();
-    gfx::Rect label_bounds(
-        leading_button_start_ + kAvatarLabelLeftSpacing,
-        avatar_bottom - kAvatarLabelBottomSpacing - label_size.height(),
-        label_size.width(),
-        delegate_->ShouldShowAvatar() ? label_size.height() : 0);
-    avatar_label_->SetBoundsRect(label_bounds);
-    leading_button_start_ += kAvatarLabelLeftSpacing + label_size.width();
+    if (avatar_label_) {
+      // Space between the bottom of the avatar and the bottom of the avatar
+      // label.
+      const int kAvatarLabelBottomSpacing = 3;
+      gfx::Size label_size = avatar_label_->GetPreferredSize();
+      // The x-position of the avatar label should be slightly to the left of
+      // the avatar menu button. Therefore we use the |leading_button_start_|
+      // value directly.
+      gfx::Rect label_bounds(
+          leading_button_start_,
+          avatar_bottom - kAvatarLabelBottomSpacing - label_size.height(),
+          label_size.width(),
+          delegate_->ShouldShowAvatar() ? label_size.height() : 0);
+      avatar_label_->SetBoundsRect(label_bounds);
+      leading_button_start_ += label_size.width();
+    } else {
+      leading_button_start_ += kAvatarLeftSpacing + incognito_icon.width();
+    }
+
+    // We just add the avatar button size to the minimum size because clicking
+    // the avatar label does the same thing as clicking the avatar button.
+    minimum_size_for_buttons_ += kAvatarLeftSpacing + incognito_icon.width();
   }
 }
 
