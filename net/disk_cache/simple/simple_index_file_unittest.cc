@@ -25,6 +25,11 @@ using disk_cache::SimpleIndex;
 
 namespace disk_cache {
 
+// The Simple Cache backend requires a few guarantees from the filesystem like
+// atomic renaming of recently open files. Those guarantees are not provided in
+// general on Windows.
+#if defined(OS_POSIX)
+
 TEST(IndexMetadataTest, Basics) {
   SimpleIndexFile::IndexMetadata index_metadata;
 
@@ -241,5 +246,7 @@ TEST_F(SimpleIndexFileTest, LoadCorruptIndex) {
   EXPECT_TRUE(load_index_result.did_load);
   EXPECT_TRUE(load_index_result.flush_required);
 }
+
+#endif  // defined(OS_POSIX)
 
 }  // namespace disk_cache

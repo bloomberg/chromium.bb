@@ -3136,9 +3136,10 @@ TEST_F(DiskCacheBackendTest, TracingBackendBasics) {
   TracingBackendBasics();
 }
 
-// The simple cache backend isn't intended to work on windows, which has very
-// different file system guarantees from Windows.
-#if !defined(OS_WIN)
+// The Simple Cache backend requires a few guarantees from the filesystem like
+// atomic renaming of recently open files. Those guarantees are not provided in
+// general on Windows.
+#if defined(OS_POSIX)
 
 TEST_F(DiskCacheBackendTest, SimpleCacheShutdownWithPendingCreate) {
   SetCacheType(net::APP_CACHE);
@@ -3470,4 +3471,4 @@ TEST_F(DiskCacheBackendTest, SimpleCacheEnumerationCorruption) {
   EXPECT_TRUE(keys_to_match.empty());
 }
 
-#endif  // !defined(OS_WIN)
+#endif  // defined(OS_POSIX)

@@ -2297,8 +2297,9 @@ TEST_F(DiskCacheEntryTest, KeySanityCheck) {
   DisableIntegrityCheck();
 }
 
-// The simple cache backend isn't intended to work on Windows, which has very
-// different file system guarantees from Linux.
+// The Simple Cache backend requires a few guarantees from the filesystem like
+// atomic renaming of recently open files. Those guarantees are not provided in
+// general on Windows.
 #if defined(OS_POSIX)
 
 TEST_F(DiskCacheEntryTest, SimpleCacheInternalAsyncIO) {
