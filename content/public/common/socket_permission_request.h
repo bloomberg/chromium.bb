@@ -20,8 +20,7 @@ struct SocketPermissionRequest {
     UDP_SEND_TO,
     UDP_MULTICAST_MEMBERSHIP,
     RESOLVE_HOST,
-    RESOLVE_PROXY,
-    NETWORK_STATE
+    RESOLVE_PROXY
   };
 
   SocketPermissionRequest(OperationType type,
