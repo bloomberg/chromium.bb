@@ -42,9 +42,6 @@ def DeviceInfo(serial, options):
   device_product_name = device_adb.GetProductName()
 
   battery = device_adb.GetBatteryInfo()
-  install_output = GetCmdOutput(
-    ['%s/build/android/adb_install_apk.py' % constants.DIR_SOURCE_ROOT, '--apk',
-     '%s/build/android/CheckInstallApk-debug.apk' % constants.DIR_SOURCE_ROOT])
 
   def _GetData(re_expression, line, lambda_function=lambda x:x):
     if not line:
@@ -54,7 +51,17 @@ def DeviceInfo(serial, options):
       return lambda_function(found[0])
     return 'Unknown'
 
-  install_speed = _GetData('(\d+) KB/s', install_output)
+  if options.device_status_dashboard:
+    # Dashboard does not track install speed. Do not unnecessarily install.
+    install_speed = 'Unknown'
+  else:
+    install_output = GetCmdOutput(
+      ['%s/build/android/adb_install_apk.py' % constants.DIR_SOURCE_ROOT,
+       '--apk',
+       '%s/build/android/CheckInstallApk-debug.apk' % constants.DIR_SOURCE_ROOT
+      ])
+    install_speed = _GetData('(\d+) KB/s', install_output)
+
   ac_power = _GetData('AC powered: (\w+)', battery)
   battery_level = _GetData('level: (\d+)', battery)
   battery_temp = _GetData('temperature: (\d+)', battery,
