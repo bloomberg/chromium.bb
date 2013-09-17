@@ -877,6 +877,7 @@ weston_wm_handle_unmap_notify(struct weston_wm *wm, xcb_generic_event_t *event)
 	if (window->surface)
 		wl_list_remove(&window->surface_destroy_listener.link);
 	window->surface = NULL;
+	window->shsurf = NULL;
 	xcb_unmap_window(wm->conn, window->frame_id);
 }
 
