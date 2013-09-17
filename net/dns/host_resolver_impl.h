@@ -279,6 +279,10 @@ class NET_EXPORT HostResolverImpl
   // explicit setting in |default_address_family_| is used.
   bool probe_ipv6_support_;
 
+  // True if DnsConfigService detected that system configuration depends on
+  // local IPv6 connectivity. Disables probing.
+  bool use_local_ipv6_;
+
   // True iff ProcTask has successfully resolved a hostname known to have IPv6
   // addresses using ADDRESS_FAMILY_UNSPECIFIED. Reset on IP address change.
   bool resolved_known_ipv6_hostname_;

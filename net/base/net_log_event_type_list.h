@@ -1632,14 +1632,8 @@ EVENT_TYPE(NETWORK_CHANGED)
 //   {
 //     "nameservers":                <List of name server IPs>,
 //     "search":                     <List of domain suffixes>,
-//     "unhandled_options":          <See DnsConfig>,
-//     "append_to_multi_label_name": <See DnsConfig>,
-//     "ndots":                      <See DnsConfig>,
-//     "timeout":                    <See DnsConfig>,
-//     "attempts":                   <See DnsConfig>,
-//     "rotate":                     <See DnsConfig>,
-//     "edns0":                      <See DnsConfig>,
-//     "num_hosts":                  <Number of entries in the HOSTS file>
+//     "num_hosts":                  <Number of entries in the HOSTS file>,
+//     <other>:                      <See DnsConfig>
 //   }
 EVENT_TYPE(DNS_CONFIG_CHANGED)
 

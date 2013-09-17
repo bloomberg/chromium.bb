@@ -83,6 +83,11 @@ struct NET_EXPORT_PRIVATE DnsConfig {
   bool rotate;
   // Enable EDNS0 extensions.
   bool edns0;
+
+  // Indicates system configuration uses local IPv6 connectivity, e.g.,
+  // DirectAccess. This is exposed for HostResolver to skip IPv6 probes,
+  // as it may cause them to return incorrect results.
+  bool use_local_ipv6;
 };
 
 

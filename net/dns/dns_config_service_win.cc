@@ -43,8 +43,19 @@ namespace {
 // Interval between retries to parse config. Used only until parsing succeeds.
 const int kRetryIntervalSeconds = 5;
 
+// Registry key paths.
+const wchar_t* const kTcpipPath =
+    L"SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters";
+const wchar_t* const kTcpip6Path =
+    L"SYSTEM\\CurrentControlSet\\Services\\Tcpip6\\Parameters";
+const wchar_t* const kDnscachePath =
+    L"SYSTEM\\CurrentControlSet\\Services\\Dnscache\\Parameters";
+const wchar_t* const kPolicyPath =
+    L"SOFTWARE\\Policies\\Microsoft\\Windows NT\\DNSClient";
 const wchar_t* const kPrimaryDnsSuffixPath =
     L"SOFTWARE\\Policies\\Microsoft\\System\\DNSClient";
+const wchar_t* const kNRPTPath =
+    L"SOFTWARE\\Policies\\Microsoft\\Windows NT\\DNSClient\\DnsPolicyConfig";
 
 enum HostsParseWinResult {
   HOSTS_PARSE_WIN_OK = 0,
@@ -198,6 +209,10 @@ ConfigParseWinResult ReadSystemSettings(DnsSystemSettings* settings) {
                                             &settings->primary_dns_suffix)) {
     return CONFIG_PARSE_WIN_READ_PRIMARY_SUFFIX;
   }
+
+  base::win::RegistryKeyIterator nrpt_rules(HKEY_LOCAL_MACHINE, kNRPTPath);
+  settings->have_name_resolution_policy = (nrpt_rules.SubkeyCount() > 0);
+
   return CONFIG_PARSE_WIN_OK;
 }
 
@@ -330,8 +345,7 @@ bool IsStatelessDiscoveryAddress(const IPAddressNumber& address) {
                     address.begin()) && (address.back() < 4);
 }
 
-}  // namespace
-
+// Returns the path to the HOSTS file.
 base::FilePath GetHostsPath() {
   TCHAR buffer[MAX_PATH];
   UINT rc = GetSystemDirectory(buffer, MAX_PATH);
@@ -339,6 +353,92 @@ base::FilePath GetHostsPath() {
   return base::FilePath(buffer).Append(
       FILE_PATH_LITERAL("drivers\\etc\\hosts"));
 }
+
+void ConfigureSuffixSearch(const DnsSystemSettings& settings,
+                           DnsConfig* config) {
+  // SearchList takes precedence, so check it first.
+  if (settings.policy_search_list.set) {
+    std::vector<std::string> search;
+    if (ParseSearchList(settings.policy_search_list.value, &search)) {
+      config->search.swap(search);
+      return;
+    }
+    // Even if invalid, the policy disables the user-specified setting below.
+  } else if (settings.tcpip_search_list.set) {
+    std::vector<std::string> search;
+    if (ParseSearchList(settings.tcpip_search_list.value, &search)) {
+      config->search.swap(search);
+      return;
+    }
+  }
+
+  // In absence of explicit search list, suffix search is:
+  // [primary suffix, connection-specific suffix, devolution of primary suffix].
+  // Primary suffix can be set by policy (primary_dns_suffix) or
+  // user setting (tcpip_domain).
+  //
+  // The policy (primary_dns_suffix) can be edited via Group Policy Editor
+  // (gpedit.msc) at Local Computer Policy => Computer Configuration
+  // => Administrative Template => Network => DNS Client => Primary DNS Suffix.
+  //
+  // The user setting (tcpip_domain) can be configurred at Computer Name in
+  // System Settings
+  std::string primary_suffix;
+  if ((settings.primary_dns_suffix.set &&
+       ParseDomainASCII(settings.primary_dns_suffix.value, &primary_suffix)) ||
+      (settings.tcpip_domain.set &&
+       ParseDomainASCII(settings.tcpip_domain.value, &primary_suffix))) {
+    // Primary suffix goes in front.
+    config->search.insert(config->search.begin(), primary_suffix);
+  } else {
+    return;  // No primary suffix, hence no devolution.
+  }
+
+  // Devolution is determined by precedence: policy > dnscache > tcpip.
+  // |enabled|: UseDomainNameDevolution and |level|: DomainNameDevolutionLevel
+  // are overridden independently.
+  DnsSystemSettings::DevolutionSetting devolution = settings.policy_devolution;
+
+  if (!devolution.enabled.set)
+    devolution.enabled = settings.dnscache_devolution.enabled;
+  if (!devolution.enabled.set)
+    devolution.enabled = settings.tcpip_devolution.enabled;
+  if (devolution.enabled.set && (devolution.enabled.value == 0))
+    return;  // Devolution disabled.
+
+  // By default devolution is enabled.
+
+  if (!devolution.level.set)
+    devolution.level = settings.dnscache_devolution.level;
+  if (!devolution.level.set)
+    devolution.level = settings.tcpip_devolution.level;
+
+  // After the recent update, Windows will try to determine a safe default
+  // value by comparing the forest root domain (FRD) to the primary suffix.
+  // See http://support.microsoft.com/kb/957579 for details.
+  // For now, if the level is not set, we disable devolution, assuming that
+  // we will fallback to the system getaddrinfo anyway. This might cause
+  // performance loss for resolutions which depend on the system default
+  // devolution setting.
+  //
+  // If the level is explicitly set below 2, devolution is disabled.
+  if (!devolution.level.set || devolution.level.value < 2)
+    return;  // Devolution disabled.
+
+  // Devolve the primary suffix. This naive logic matches the observed
+  // behavior (see also ParseSearchList). If a suffix is not valid, it will be
+  // discarded when the fully-qualified name is converted to DNS format.
+
+  unsigned num_dots = std::count(primary_suffix.begin(),
+                                 primary_suffix.end(), '.');
+
+  for (size_t offset = 0; num_dots >= devolution.level.value; --num_dots) {
+    offset = primary_suffix.find('.', offset + 1);
+    config->search.push_back(primary_suffix.substr(offset + 1));
+  }
+}
+
+}  // namespace
 
 bool ParseSearchList(const base::string16& value,
                      std::vector<std::string>* output) {
@@ -429,87 +529,16 @@ ConfigParseWinResult ConvertSettingsToDnsConfig(
         (settings.append_to_multi_label_name.value != 0);
   }
 
-  // SearchList takes precedence, so check it first.
-  if (settings.policy_search_list.set) {
-    std::vector<std::string> search;
-    if (ParseSearchList(settings.policy_search_list.value, &search)) {
-      config->search.swap(search);
-      return CONFIG_PARSE_WIN_OK;
-    }
-    // Even if invalid, the policy disables the user-specified setting below.
-  } else if (settings.tcpip_search_list.set) {
-    std::vector<std::string> search;
-    if (ParseSearchList(settings.tcpip_search_list.value, &search)) {
-      config->search.swap(search);
-      return CONFIG_PARSE_WIN_OK;
-    }
+  ConfigParseWinResult result = CONFIG_PARSE_WIN_OK;
+  if (settings.have_name_resolution_policy) {
+    config->unhandled_options = true;
+    // TODO(szym): only set this to true if NRPT has DirectAccess rules.
+    config->use_local_ipv6 = true;
+    result = CONFIG_PARSE_WIN_UNHANDLED_OPTIONS;
   }
 
-  // In absence of explicit search list, suffix search is:
-  // [primary suffix, connection-specific suffix, devolution of primary suffix].
-  // Primary suffix can be set by policy (primary_dns_suffix) or
-  // user setting (tcpip_domain).
-  //
-  // The policy (primary_dns_suffix) can be edited via Group Policy Editor
-  // (gpedit.msc) at Local Computer Policy => Computer Configuration
-  // => Administrative Template => Network => DNS Client => Primary DNS Suffix.
-  //
-  // The user setting (tcpip_domain) can be configurred at Computer Name in
-  // System Settings
-  std::string primary_suffix;
-  if ((settings.primary_dns_suffix.set &&
-       ParseDomainASCII(settings.primary_dns_suffix.value, &primary_suffix)) ||
-      (settings.tcpip_domain.set &&
-       ParseDomainASCII(settings.tcpip_domain.value, &primary_suffix))) {
-    // Primary suffix goes in front.
-    config->search.insert(config->search.begin(), primary_suffix);
-  } else {
-    return CONFIG_PARSE_WIN_OK;  // No primary suffix, hence no devolution.
-  }
-
-  // Devolution is determined by precedence: policy > dnscache > tcpip.
-  // |enabled|: UseDomainNameDevolution and |level|: DomainNameDevolutionLevel
-  // are overridden independently.
-  DnsSystemSettings::DevolutionSetting devolution = settings.policy_devolution;
-
-  if (!devolution.enabled.set)
-    devolution.enabled = settings.dnscache_devolution.enabled;
-  if (!devolution.enabled.set)
-    devolution.enabled = settings.tcpip_devolution.enabled;
-  if (devolution.enabled.set && (devolution.enabled.value == 0))
-    return CONFIG_PARSE_WIN_OK;  // Devolution disabled.
-
-  // By default devolution is enabled.
-
-  if (!devolution.level.set)
-    devolution.level = settings.dnscache_devolution.level;
-  if (!devolution.level.set)
-    devolution.level = settings.tcpip_devolution.level;
-
-  // After the recent update, Windows will try to determine a safe default
-  // value by comparing the forest root domain (FRD) to the primary suffix.
-  // See http://support.microsoft.com/kb/957579 for details.
-  // For now, if the level is not set, we disable devolution, assuming that
-  // we will fallback to the system getaddrinfo anyway. This might cause
-  // performance loss for resolutions which depend on the system default
-  // devolution setting.
-  //
-  // If the level is explicitly set below 2, devolution is disabled.
-  if (!devolution.level.set || devolution.level.value < 2)
-    return CONFIG_PARSE_WIN_OK;  // Devolution disabled.
-
-  // Devolve the primary suffix. This naive logic matches the observed
-  // behavior (see also ParseSearchList). If a suffix is not valid, it will be
-  // discarded when the fully-qualified name is converted to DNS format.
-
-  unsigned num_dots = std::count(primary_suffix.begin(),
-                                 primary_suffix.end(), '.');
-
-  for (size_t offset = 0; num_dots >= devolution.level.value; --num_dots) {
-    offset = primary_suffix.find('.', offset + 1);
-    config->search.push_back(primary_suffix.substr(offset + 1));
-  }
-  return CONFIG_PARSE_WIN_OK;
+  ConfigureSuffixSearch(settings, config);
+  return result;
 }
 
 // Watches registry and HOSTS file for changes. Must live on a thread which
@@ -606,7 +635,8 @@ class DnsConfigServiceWin::ConfigReader : public SerialWorker {
     ConfigParseWinResult result = ReadSystemSettings(&settings);
     if (result == CONFIG_PARSE_WIN_OK)
       result = ConvertSettingsToDnsConfig(settings, &dns_config_);
-    success_ = (result == CONFIG_PARSE_WIN_OK);
+    success_ = (result == CONFIG_PARSE_WIN_OK ||
+                result == CONFIG_PARSE_WIN_UNHANDLED_OPTIONS);
     UMA_HISTOGRAM_ENUMERATION("AsyncDNS.ConfigParseWin",
                               result, CONFIG_PARSE_WIN_MAX);
     UMA_HISTOGRAM_BOOLEAN("AsyncDNS.ConfigParseResult", success_);

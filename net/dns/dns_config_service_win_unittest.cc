@@ -4,6 +4,7 @@
 
 #include "net/dns/dns_config_service_win.h"
 
+#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/win/windows_version.h"
 #include "net/dns/dns_protocol.h"
@@ -420,9 +421,45 @@ TEST(DnsConfigServiceWinTest, AppendToMultiLabelName) {
     DnsConfig config;
     EXPECT_EQ(internal::CONFIG_PARSE_WIN_OK,
               internal::ConvertSettingsToDnsConfig(settings, &config));
-    EXPECT_EQ(config.append_to_multi_label_name, t.expected_output);
+    EXPECT_EQ(t.expected_output, config.append_to_multi_label_name);
   }
 }
+
+// Setting have_name_resolution_policy_table should set unhandled_options.
+TEST(DnsConfigServiceWinTest, HaveNRPT) {
+  AdapterInfo infos[2] = {
+    { IF_TYPE_USB, IfOperStatusUp, L"connection.suffix", { "1.0.0.1" } },
+    { 0 },
+  };
+
+  const struct TestCase {
+    bool have_nrpt;
+    bool unhandled_options;
+    internal::ConfigParseWinResult result;
+  } cases[] = {
+    { false, false, internal::CONFIG_PARSE_WIN_OK },
+    { true, true, internal::CONFIG_PARSE_WIN_UNHANDLED_OPTIONS },
+  };
+
+  for (size_t i = 0; i < arraysize(cases); ++i) {
+    const TestCase& t = cases[i];
+    internal::DnsSystemSettings settings = {
+      CreateAdapterAddresses(infos),
+      { false }, { false }, { false }, { false },
+      { { false }, { false } },
+      { { false }, { false } },
+      { { false }, { false } },
+      { false },
+      t.have_nrpt,
+    };
+    DnsConfig config;
+    EXPECT_EQ(t.result,
+              internal::ConvertSettingsToDnsConfig(settings, &config));
+    EXPECT_EQ(t.unhandled_options, config.unhandled_options);
+    EXPECT_EQ(t.have_nrpt, config.use_local_ipv6);
+  }
+}
+
 
 }  // namespace
 

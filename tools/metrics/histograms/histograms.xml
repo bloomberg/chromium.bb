@@ -18389,6 +18389,7 @@ other types of suffix sets.
   <int value="9" label="READ_PRIMARY_SUFFIX"/>
   <int value="10" label="BAD_ADDRESS"/>
   <int value="11" label="NO_NAMESERVERS"/>
+  <int value="12" label="UNHANDLED_OPTIONS"/>
 </enum>
 
 <enum name="AsyncDNSHostsParseWin" type="int">

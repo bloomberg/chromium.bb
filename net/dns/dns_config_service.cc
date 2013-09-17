@@ -21,7 +21,8 @@ DnsConfig::DnsConfig()
       timeout(base::TimeDelta::FromSeconds(kDnsTimeoutSeconds)),
       attempts(2),
       rotate(false),
-      edns0(false) {}
+      edns0(false),
+      use_local_ipv6(false) {}
 
 DnsConfig::~DnsConfig() {}
 
@@ -38,7 +39,8 @@ bool DnsConfig::EqualsIgnoreHosts(const DnsConfig& d) const {
          (timeout == d.timeout) &&
          (attempts == d.attempts) &&
          (rotate == d.rotate) &&
-         (edns0 == d.edns0);
+         (edns0 == d.edns0) &&
+         (use_local_ipv6 == d.use_local_ipv6);
 }
 
 void DnsConfig::CopyIgnoreHosts(const DnsConfig& d) {
@@ -51,6 +53,7 @@ void DnsConfig::CopyIgnoreHosts(const DnsConfig& d) {
   attempts = d.attempts;
   rotate = d.rotate;
   edns0 = d.edns0;
+  use_local_ipv6 = d.use_local_ipv6;
 }
 
 base::Value* DnsConfig::ToValue() const {
@@ -73,6 +76,7 @@ base::Value* DnsConfig::ToValue() const {
   dict->SetInteger("attempts", attempts);
   dict->SetBoolean("rotate", rotate);
   dict->SetBoolean("edns0", edns0);
+  dict->SetBoolean("use_local_ipv6", use_local_ipv6);
   dict->SetInteger("num_hosts", hosts.size());
 
   return dict;

@@ -34,19 +34,6 @@ namespace net {
 
 namespace internal {
 
-// Registry key paths.
-const wchar_t* const kTcpipPath =
-    L"SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters";
-const wchar_t* const kTcpip6Path =
-    L"SYSTEM\\CurrentControlSet\\Services\\Tcpip6\\Parameters";
-const wchar_t* const kDnscachePath =
-    L"SYSTEM\\CurrentControlSet\\Services\\Dnscache\\Parameters";
-const wchar_t* const kPolicyPath =
-    L"SOFTWARE\\Policies\\Microsoft\\Windows NT\\DNSClient";
-
-// Returns the path to the HOSTS file.
-base::FilePath GetHostsPath();
-
 // Parses |value| as search list (comma-delimited list of domain names) from
 // a registry key and stores it in |out|. Returns true on success. Empty
 // entries (e.g., "chromium.org,,org") terminate the list. Non-ascii hostnames
@@ -98,6 +85,10 @@ struct NET_EXPORT_PRIVATE DnsSystemSettings {
 
   // SOFTWARE\Policies\Microsoft\Windows NT\DNSClient\AppendToMultiLabelName
   RegDword append_to_multi_label_name;
+
+  // True when the Name Resolution Policy Table (NRPT) has at least one rule:
+  // SOFTWARE\Policies\Microsoft\Windows NT\DNSClient\DnsPolicyConfig\Rule*
+  bool have_name_resolution_policy;
 };
 
 enum ConfigParseWinResult {
@@ -113,6 +104,7 @@ enum ConfigParseWinResult {
   CONFIG_PARSE_WIN_READ_PRIMARY_SUFFIX,
   CONFIG_PARSE_WIN_BAD_ADDRESS,
   CONFIG_PARSE_WIN_NO_NAMESERVERS,
+  CONFIG_PARSE_WIN_UNHANDLED_OPTIONS,
   CONFIG_PARSE_WIN_MAX  // Bounding values for enumeration.
 };
 
