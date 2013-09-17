@@ -31,6 +31,7 @@
 #include "config.h"
 #include "modules/webmidi/MIDIOutput.h"
 
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/webmidi/MIDIAccess.h"
@@ -66,7 +67,7 @@ void MIDIOutput::send(Uint8Array* array, double timestamp, ExceptionState& es)
     // Filter out System Exclusive messages if we're not allowed.
     // FIXME: implement more extensive filtering.
     if (length > 0 && data[0] >= 0xf0 && !m_access->sysExEnabled()) {
-        es.throwDOMException(SecurityError);
+        es.throwSecurityError(ExceptionMessages::failedToExecute("send", "MIDIOutput", "permission to send system exclusive messages is denied."));
         return;
     }
 

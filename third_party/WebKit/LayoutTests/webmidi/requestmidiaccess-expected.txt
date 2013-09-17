@@ -9,6 +9,7 @@ PASS access.inputs().length is 1
 PASS access.outputs().length is 1
 PASS input attributes are correct
 PASS output attributes are correct
+PASS output.send([0xf1, 0x45, 0x7f]) threw exception SecurityError: Failed to execute 'send' on 'MIDIOutput': permission to send system exclusive messages is denied..
 PASS requestMIDIAccess() was correctly blocked for System Exclusive access with error [object DOMError].
 PASS successfullyParsed is true
 

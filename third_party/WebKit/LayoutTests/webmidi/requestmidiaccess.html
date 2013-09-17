@@ -9,7 +9,7 @@
 description("Tests navigator.requestMIDIAccess.");
 
 var access;
-
+var output;
 function successCallback1(a) {
     access = a;
 
@@ -22,7 +22,7 @@ function successCallback1(a) {
     var inputs = access.inputs();
     var outputs = access.outputs();
     var input = inputs[0];
-    var output = outputs[0];
+    output = outputs[0];
 
     // Validate the values of the attributes on the input and output.
     if (input.id == "MockInputID" &&
@@ -52,6 +52,9 @@ function successCallback1(a) {
 
     // Test sending of MIDI data with a regular Array giving an explicit timestamp.
     output.send([0x90, 0x45, 0x7f], performance.now());
+
+    // Test sending system exclusive messages. These should throw, since we don't have sysex access.
+    shouldThrow('output.send([0xf1, 0x45, 0x7f])', '"SecurityError: Failed to execute \'send\' on \'MIDIOutput\': permission to send system exclusive messages is denied."');
 
     // Now test System Exclusive access - our test mock should not allow this type of access.
     shouldNotThrow("navigator.requestMIDIAccess({sysex: true}).then(successCallback2, errorCallback2)");
