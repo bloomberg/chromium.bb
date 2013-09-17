@@ -383,7 +383,7 @@ bool CompareInputRows(const autofill::DetailInput* input1,
   string16 fieldValue = base::SysNSStringToUTF16([textfield fieldValue]);
 
   // Get the frame rectangle for the designated field, in screen coordinates.
-  NSRect textFrameInScreen = [field convertRect:[field frame] toView:nil];
+  NSRect textFrameInScreen = [field convertRect:[field bounds] toView:nil];
   textFrameInScreen.origin =
       [[field window] convertBaseToScreen:textFrameInScreen.origin];
 
