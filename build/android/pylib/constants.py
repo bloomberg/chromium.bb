@@ -16,23 +16,6 @@ ISOLATE_DEPS_DIR = os.path.join(DIR_SOURCE_ROOT, 'isolate_deps_dir')
 EMULATOR_SDK_ROOT = os.path.abspath(os.path.join(DIR_SOURCE_ROOT, os.pardir,
                                                  os.pardir))
 
-# TODO(craigdh): Remove these once references have been removed downstream.
-CHROME_PACKAGE = 'com.google.android.apps.chrome'
-CHROME_ACTIVITY = 'com.google.android.apps.chrome.Main'
-
-CHROME_STABLE_PACKAGE = 'com.android.chrome'
-CHROME_BETA_PACKAGE = 'com.chrome.beta'
-
-LEGACY_BROWSER_PACKAGE = 'com.google.android.browser'
-LEGACY_BROWSER_ACTIVITY = 'com.android.browser.BrowserActivity'
-
-CONTENT_SHELL_PACKAGE = 'org.chromium.content_shell_apk'
-CONTENT_SHELL_ACTIVITY = 'org.chromium.content_shell_apk.ContentShellActivity'
-
-CHROMIUM_TEST_SHELL_PACKAGE = 'org.chromium.chrome.testshell'
-CHROMIUM_TEST_SHELL_ACTIVITY = (
-    'org.chromium.chrome.testshell.ChromiumTestShellActivity')
-CHROMIUM_TEST_SHELL_DEVTOOLS_SOCKET = 'chromium_testshell_devtools_remote'
 CHROMIUM_TEST_SHELL_HOST_DRIVEN_DIR = os.path.join(
     DIR_SOURCE_ROOT, 'chrome', 'android')
 
@@ -43,28 +26,40 @@ PackageInfo = collections.namedtuple('PackageInfo',
 
 PACKAGE_INFO = {
     'chrome': PackageInfo(
-        CHROME_PACKAGE,
-        CHROME_ACTIVITY,
+        'com.google.android.apps.chrome',
+        'com.google.android.apps.chrome.Main',
         '/data/local/chrome-command-line',
         'chrome_devtools_remote',
         'com.google.android.apps.chrome.tests'),
+    'chrome_beta': PackageInfo(
+        'com.chrome.beta',
+        'com.chrome.beta.Main',
+        '/data/local/chrome-command-line',
+        'chrome_devtools_remote',
+        None),
+    'chrome_stable': PackageInfo(
+        'com.android.chrome',
+        'com.android.chrome.Main',
+        '/data/local/chrome-command-line',
+        'chrome_devtools_remote',
+        None),
     'legacy_browser': PackageInfo(
-        LEGACY_BROWSER_PACKAGE,
-        LEGACY_BROWSER_ACTIVITY,
+        'com.google.android.browser',
+        'com.android.browser.BrowserActivity',
         None,
         None,
         None),
     'content_shell': PackageInfo(
-        CONTENT_SHELL_PACKAGE,
-        CONTENT_SHELL_ACTIVITY,
+        'org.chromium.content_shell_apk',
+        'org.chromium.content_shell_apk.ContentShellActivity',
         '/data/local/tmp/content-shell-command-line',
         None,
         None),
     'chromium_test_shell': PackageInfo(
-        CHROMIUM_TEST_SHELL_PACKAGE,
-        CHROMIUM_TEST_SHELL_ACTIVITY,
+        'org.chromium.chrome.testshell',
+        'org.chromium.chrome.testshell.ChromiumTestShellActivity',
         '/data/local/tmp/chromium-testshell-command-line',
-        CHROMIUM_TEST_SHELL_DEVTOOLS_SOCKET,
+        'chromium_testshell_devtools_remote',
         'org.chromium.chrome.testshell.tests'),
     'gtest': PackageInfo(
         'org.chromium.native_test',
@@ -108,7 +103,8 @@ SDK_BUILD_APKS_DIR = 'apks'
 
 PERF_OUTPUT_DIR = os.path.join(DIR_SOURCE_ROOT, 'out', 'step_results')
 # The directory on the device where perf test output gets saved to.
-DEVICE_PERF_OUTPUT_DIR = '/data/data/' + CHROME_PACKAGE + '/files'
+DEVICE_PERF_OUTPUT_DIR = (
+    '/data/data/' + PACKAGE_INFO['chrome'].package + '/files')
 
 SCREENSHOTS_DIR = os.path.join(DIR_SOURCE_ROOT, 'out_screenshots')
 

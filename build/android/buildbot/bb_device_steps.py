@@ -130,9 +130,9 @@ def RunChromeDriverTests(_):
   bb_annotations.PrintNamedStep('chromedriver_annotation')
   RunCmd(['chrome/test/chromedriver/run_buildbot_steps.py',
           '--android-packages=%s,%s,%s' %
-           (constants.CHROMIUM_TEST_SHELL_PACKAGE,
-            constants.CHROME_STABLE_PACKAGE,
-            constants.CHROME_BETA_PACKAGE)])
+           (constants.PACKAGE_INFO['chromium_test_shell'].package,
+            constants.PACKAGE_INFO['chrome_stable'].package,
+            constants.PACKAGE_INFO['chrome_beta'].package)])
 
 def InstallApk(options, test, print_step=False):
   """Install an apk to all phones.

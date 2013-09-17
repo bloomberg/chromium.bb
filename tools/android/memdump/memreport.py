@@ -254,7 +254,7 @@ def main(argv):
                     help='Manually collect data and generate a graph.')
   parser.add_option('-p',
                     '--package',
-                    default=constants.CHROME_PACKAGE,
+                    default=constants.PACKAGE_INFO['chrome'].package,
                     help='Package name to collect.')
   parser.add_option('-i',
                     '--interval',
