@@ -75,7 +75,7 @@ class DevToolsServerDelegate : public content::DevToolsHttpHandlerDelegate {
     history::TopSites* top_sites = profile->GetTopSites();
     if (top_sites) {
       scoped_refptr<base::RefCountedMemory> data;
-      if (top_sites->GetPageThumbnail(url, &data))
+      if (top_sites->GetPageThumbnail(url, false, &data))
         return std::string(reinterpret_cast<const char*>(data->front()),
                            data->size());
     }

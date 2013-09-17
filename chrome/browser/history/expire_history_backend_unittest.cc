@@ -311,7 +311,7 @@ bool ExpireHistoryTest::HasThumbnail(URLID url_id) {
     return false;
   GURL url = info.url();
   scoped_refptr<base::RefCountedMemory> data;
-  return top_sites_->GetPageThumbnail(url, &data);
+  return top_sites_->GetPageThumbnail(url, false, &data);
 }
 
 void ExpireHistoryTest::EnsureURLInfoGone(const URLRow& row) {

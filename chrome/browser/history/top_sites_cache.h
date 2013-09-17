@@ -10,8 +10,26 @@
 
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/history/history_types.h"
+#include "chrome/browser/history/url_utils.h"
 
 namespace history {
+
+// TopSiteCache caches thumbnails for visited pages. Retrieving thumbnails from
+// a given input URL is a two-stage process:
+//
+//   input URL --(map 1)--> canonical URL --(map 2)--> image.
+//
+// (map 1) searches input URL in |canonical_urls_|. canonical URL is
+// assigned to the resulting value if found; else input URL.
+//
+// (map 2) simply looks up canonical URL in |images_|.
+//
+// TopSiteCache also provides GetCanonicalURLsIteratorForPrefix(), which is an
+// alternative implementation of (map 1) that does the following:
+// - if canonical URL is a key in |canonical_urls_|, return the value.
+// - else if canonical URL is a "URL prefix" (see comment in url_utils.h) of
+//   some key in |canonical_urls_|, return the value corresponding to the key.
+// - else return input URL.
 
 // TopSitesCache caches the top sites and thumbnails for TopSites.
 class TopSitesCache {
@@ -44,6 +62,11 @@ class TopSitesCache {
   // Returns the canonical URL for |url|.
   const GURL& GetCanonicalURL(const GURL& url);
 
+  // Returns the canonical URL for |url_prefix| that matches by prefix.
+  // Multiple matches exst, returns the canonical URL for the first
+  // matching entry under lexicographical order.
+  const GURL& GetCanonicalURLForPrefix(const GURL& url_prefix);
+
   // Returns true if |url| is known.
   bool IsKnownURL(const GURL& url);
 
@@ -60,7 +83,8 @@ class TopSitesCache {
    public:
     bool operator()(const CanonicalURLEntry& e1,
                     const CanonicalURLEntry& e2) const {
-      return e1.first->redirects[e1.second] < e2.first->redirects[e2.second];
+      return CanonicalURLStringCompare(e1.first->redirects[e1.second].spec(),
+                                       e2.first->redirects[e2.second].spec());
     }
   };
 
@@ -80,8 +104,13 @@ class TopSitesCache {
   // Stores a set of redirects. This is used by GenerateCanonicalURLs.
   void StoreRedirectChain(const RedirectList& redirects, size_t destination);
 
-  // Returns the iterator into canconical_urls_ for the specified url.
+  // Returns the iterator into |canonical_urls_| for the |url|.
   CanonicalURLs::iterator GetCanonicalURLsIterator(const GURL& url);
+
+  // Returns the first iterator into |canonical_urls_| for which |prefix_url|
+  // is a URL prefix. Returns |canonical_urls_.end()| if no match is found.
+  CanonicalURLs::iterator GetCanonicalURLsIteratorForPrefix(
+      const GURL& prefix_url);
 
   // The top sites.
   MostVisitedURLList top_sites_;

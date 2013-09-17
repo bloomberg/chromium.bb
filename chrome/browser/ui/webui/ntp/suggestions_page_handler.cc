@@ -63,7 +63,7 @@ SuggestionsHandler::~SuggestionsHandler() {
 void SuggestionsHandler::RegisterMessages() {
   Profile* profile = Profile::FromWebUI(web_ui());
   // Set up our sources for thumbnail and favicon data.
-  content::URLDataSource::Add(profile, new ThumbnailSource(profile));
+  content::URLDataSource::Add(profile, new ThumbnailSource(profile, false));
   content::URLDataSource::Add(
       profile, new FaviconSource(profile, FaviconSource::FAVICON));
 

@@ -65,7 +65,9 @@ class TopSitesImpl : public TopSites {
   virtual void GetMostVisitedURLs(
       const GetMostVisitedURLsCallback& callback) OVERRIDE;
   virtual bool GetPageThumbnail(
-      const GURL& url, scoped_refptr<base::RefCountedMemory>* bytes) OVERRIDE;
+      const GURL& url,
+      bool prefix_match,
+      scoped_refptr<base::RefCountedMemory>* bytes) OVERRIDE;
   virtual bool GetPageThumbnailScore(const GURL& url,
                                      ThumbnailScore* score) OVERRIDE;
   virtual bool GetTemporaryPageThumbnailScore(const GURL& url,

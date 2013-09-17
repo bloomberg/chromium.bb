@@ -1563,7 +1563,7 @@ ScopedJavaLocalRef<jbyteArray> ChromeBrowserProvider::GetThumbnail(
   // GetPageThumbnail is synchronous and can be called from any thread.
   scoped_refptr<base::RefCountedMemory> thumbnail;
   if (top_sites_)
-    top_sites_->GetPageThumbnail(url, &thumbnail);
+    top_sites_->GetPageThumbnail(url, false, &thumbnail);
 
   if (!thumbnail.get() || !thumbnail->front()) {
     return ScopedJavaLocalRef<jbyteArray>();

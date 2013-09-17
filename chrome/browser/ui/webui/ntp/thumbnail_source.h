@@ -25,7 +25,7 @@ class ThumbnailService;
 // thumbnails and the history/top-sites backend that serves these.
 class ThumbnailSource : public content::URLDataSource {
  public:
-  explicit ThumbnailSource(Profile* profile);
+  ThumbnailSource(Profile* profile, bool prefix_match);
 
   // content::URLDataSource implementation.
   virtual std::string GetSource() const OVERRIDE;
@@ -52,6 +52,11 @@ class ThumbnailSource : public content::URLDataSource {
 
   // Only used when servicing requests on the UI thread.
   Profile* const profile_;
+
+  // If an exact thumbnail URL match fails, specifies whether or not to try
+  // harder by matching the query thumbnail URL as URL prefix. This affects
+  // GetSource().
+  const bool prefix_match_;
 
   DISALLOW_COPY_AND_ASSIGN(ThumbnailSource);
 };

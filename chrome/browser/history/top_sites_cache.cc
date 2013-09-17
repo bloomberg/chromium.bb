@@ -55,7 +55,12 @@ bool TopSitesCache::GetPageThumbnailScore(const GURL& url,
 }
 
 const GURL& TopSitesCache::GetCanonicalURL(const GURL& url) {
-  CanonicalURLs::iterator i = TopSitesCache::GetCanonicalURLsIterator(url);
+  CanonicalURLs::iterator i = GetCanonicalURLsIterator(url);
+  return i == canonical_urls_.end() ? url : i->first.first->url;
+}
+
+const GURL& TopSitesCache::GetCanonicalURLForPrefix(const GURL& url) {
+  CanonicalURLs::iterator i = GetCanonicalURLsIteratorForPrefix(url);
   return i == canonical_urls_.end() ? url : i->first.first->url;
 }
 
@@ -76,7 +81,7 @@ void TopSitesCache::GenerateCanonicalURLs() {
 
 void TopSitesCache::StoreRedirectChain(const RedirectList& redirects,
                                        size_t destination) {
-  // redirects is empty if the user pinned a site and there are not enough top
+  // |redirects| is empty if the user pinned a site and there are not enough top
   // sites before the pinned site.
 
   // Map all the redirected URLs to the destination.
@@ -99,6 +104,26 @@ TopSitesCache::CanonicalURLs::iterator TopSitesCache::GetCanonicalURLsIterator(
   entry.first = &most_visited_url;
   entry.second = 0u;
   return canonical_urls_.find(entry);
+}
+
+TopSitesCache::CanonicalURLs::iterator
+    TopSitesCache::GetCanonicalURLsIteratorForPrefix(const GURL& prefix_url) {
+  MostVisitedURL most_visited_url;
+  most_visited_url.redirects.push_back(prefix_url);
+  CanonicalURLEntry entry;
+  entry.first = &most_visited_url;
+  entry.second = 0u;
+
+  // Perform effective binary search for URL prefix search.
+  TopSitesCache::CanonicalURLs::iterator it =
+      canonical_urls_.lower_bound(entry);
+  // Perform prefix match.
+  if (it != canonical_urls_.end()) {
+    const GURL& comp_url = it->first.first->redirects[it->first.second];
+    if (!UrlIsPrefix(prefix_url, comp_url))
+      it = canonical_urls_.end();
+  }
+  return it;
 }
 
 }  // namespace history

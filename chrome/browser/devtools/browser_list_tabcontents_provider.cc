@@ -78,7 +78,7 @@ std::string BrowserListTabContentsProvider::GetPageThumbnailData(
     if (!top_sites)
       continue;
     scoped_refptr<base::RefCountedMemory> data;
-    if (top_sites->GetPageThumbnail(url, &data))
+    if (top_sites->GetPageThumbnail(url, false, &data))
       return std::string(
           reinterpret_cast<const char*>(data->front()), data->size());
   }

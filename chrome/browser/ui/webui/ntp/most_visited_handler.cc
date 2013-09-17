@@ -77,8 +77,11 @@ MostVisitedHandler::~MostVisitedHandler() {
 void MostVisitedHandler::RegisterMessages() {
   Profile* profile = Profile::FromWebUI(web_ui());
   // Set up our sources for thumbnail and favicon data.
-  ThumbnailSource* thumbnail_src = new ThumbnailSource(profile);
-  content::URLDataSource::Add(profile, thumbnail_src);
+  ThumbnailSource* thumbnail_src_exact = new ThumbnailSource(profile, false);
+  content::URLDataSource::Add(profile, thumbnail_src_exact);
+
+  ThumbnailSource* thumbnail_src_prefix = new ThumbnailSource(profile, true);
+  content::URLDataSource::Add(profile, thumbnail_src_prefix);
 
 #if defined(OS_ANDROID)
   // Register chrome://touch-icon as a data source for touch icons or favicons.

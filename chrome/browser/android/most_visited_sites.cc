@@ -112,7 +112,7 @@ void GetUrlThumbnailTask(
   GURL gurl(url_string);
 
   scoped_refptr<base::RefCountedMemory> data;
-  if (top_sites->GetPageThumbnail(gurl, &data)) {
+  if (top_sites->GetPageThumbnail(gurl, false, &data)) {
     SkBitmap thumbnail_bitmap = ExtractThumbnail(*data.get());
     if (!thumbnail_bitmap.empty()) {
       j_bitmap_ref->Reset(

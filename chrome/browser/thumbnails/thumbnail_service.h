@@ -39,10 +39,13 @@ class ThumbnailService : public RefcountedBrowserContextKeyedService {
 
   // Gets a thumbnail for a given page. Returns true iff we have the thumbnail.
   // This may be invoked on any thread.
+  // If an exact thumbnail URL match fails, |prefix_match| specifies whether or
+  // not to try harder by matching the query thumbnail URL as URL prefix.
   // As this method may be invoked on any thread the ref count needs to be
   // incremented before this method returns, so this takes a scoped_refptr*.
   virtual bool GetPageThumbnail(
       const GURL& url,
+      bool prefix_match,
       scoped_refptr<base::RefCountedMemory>* bytes) = 0;
 
   // Returns true if the page thumbnail should be updated.
@@ -52,6 +55,6 @@ class ThumbnailService : public RefcountedBrowserContextKeyedService {
   virtual ~ThumbnailService() {}
 };
 
-}
+}  // namespace thumbnails
 
 #endif  // CHROME_BROWSER_THUMBNAILS_THUMBNAIL_SERVICE_H_

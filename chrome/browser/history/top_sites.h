@@ -73,10 +73,15 @@ class TopSites
 
   // Get a thumbnail for a given page. Returns true iff we have the thumbnail.
   // This may be invoked on any thread.
+  // If an exact thumbnail URL match fails, |prefix_match| specifies whether or
+  // not to try harder by matching the query thumbnail URL as URL prefix (as
+  // defined by UrlIsPrefix()).
   // As this method may be invoked on any thread the ref count needs to be
   // incremented before this method returns, so this takes a scoped_refptr*.
   virtual bool GetPageThumbnail(
-      const GURL& url, scoped_refptr<base::RefCountedMemory>* bytes) = 0;
+      const GURL& url,
+      bool prefix_match,
+      scoped_refptr<base::RefCountedMemory>* bytes) = 0;
 
   // Get a thumbnail score for a given page. Returns true iff we have the
   // thumbnail score.  This may be invoked on any thread. The score will

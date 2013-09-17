@@ -148,7 +148,7 @@ class TopSitesImplTest : public HistoryUnitTestBase {
   // Gets the thumbnail for |url| from TopSites.
   SkBitmap GetThumbnail(const GURL& url) {
     scoped_refptr<base::RefCountedMemory> data;
-    return top_sites()->GetPageThumbnail(url, &data) ?
+    return top_sites()->GetPageThumbnail(url, false, &data) ?
         ExtractThumbnail(*data.get()) : SkBitmap();
   }
 
@@ -478,13 +478,13 @@ TEST_F(TopSitesImplTest, ThumbnailRemoved) {
 
   // Make sure the thumbnail was actually set.
   scoped_refptr<base::RefCountedMemory> result;
-  EXPECT_TRUE(top_sites()->GetPageThumbnail(url, &result));
+  EXPECT_TRUE(top_sites()->GetPageThumbnail(url, false, &result));
   EXPECT_TRUE(ThumbnailEqualsBytes(thumbnail, result.get()));
 
   // Reset the thumbnails and make sure we don't get it back.
   SetTopSites(MostVisitedURLList());
   RefreshTopSitesAndRecreate();
-  EXPECT_FALSE(top_sites()->GetPageThumbnail(url, &result));
+  EXPECT_FALSE(top_sites()->GetPageThumbnail(url, false, &result));
 }
 
 // Tests GetPageThumbnail.
@@ -509,19 +509,21 @@ TEST_F(TopSitesImplTest, GetPageThumbnail) {
 
   scoped_refptr<base::RefCountedMemory> result;
   EXPECT_TRUE(top_sites()->SetPageThumbnail(url1.url, thumbnail, score));
-  EXPECT_TRUE(top_sites()->GetPageThumbnail(url1.url, &result));
+  EXPECT_TRUE(top_sites()->GetPageThumbnail(url1.url, false, &result));
 
   EXPECT_TRUE(top_sites()->SetPageThumbnail(GURL("http://gmail.com"),
                                            thumbnail, score));
   EXPECT_TRUE(top_sites()->GetPageThumbnail(GURL("http://gmail.com"),
+                                            false,
                                             &result));
   // Get a thumbnail via a redirect.
   EXPECT_TRUE(top_sites()->GetPageThumbnail(GURL("http://mail.google.com"),
+                                            false,
                                             &result));
 
   EXPECT_TRUE(top_sites()->SetPageThumbnail(GURL("http://mail.google.com"),
                                            thumbnail, score));
-  EXPECT_TRUE(top_sites()->GetPageThumbnail(url2.url, &result));
+  EXPECT_TRUE(top_sites()->GetPageThumbnail(url2.url, false, &result));
 
   EXPECT_TRUE(ThumbnailEqualsBytes(thumbnail, result.get()));
 }
@@ -582,7 +584,7 @@ TEST_F(TopSitesImplTest, SaveToDB) {
     ASSERT_NO_FATAL_FAILURE(ContainsPrepopulatePages(querier, 1));
 
     scoped_refptr<base::RefCountedMemory> read_data;
-    EXPECT_TRUE(top_sites()->GetPageThumbnail(asdf_url, &read_data));
+    EXPECT_TRUE(top_sites()->GetPageThumbnail(asdf_url, false, &read_data));
     EXPECT_TRUE(ThumbnailEqualsBytes(tmp_bitmap, read_data.get()));
   }
 
@@ -647,7 +649,7 @@ TEST_F(TopSitesImplTest, RealDatabase) {
     ASSERT_NO_FATAL_FAILURE(ContainsPrepopulatePages(querier, 1));
 
     scoped_refptr<base::RefCountedMemory> read_data;
-    EXPECT_TRUE(top_sites()->GetPageThumbnail(asdf_url, &read_data));
+    EXPECT_TRUE(top_sites()->GetPageThumbnail(asdf_url, false, &read_data));
     EXPECT_TRUE(ThumbnailEqualsBytes(asdf_thumbnail, read_data.get()));
   }
 
@@ -679,7 +681,7 @@ TEST_F(TopSitesImplTest, RealDatabase) {
     EXPECT_EQ(google1_url, querier.urls()[0].url);
     EXPECT_EQ(google_title, querier.urls()[0].title);
     ASSERT_EQ(3u, querier.urls()[0].redirects.size());
-    EXPECT_TRUE(top_sites()->GetPageThumbnail(google3_url, &read_data));
+    EXPECT_TRUE(top_sites()->GetPageThumbnail(google3_url, false, &read_data));
     EXPECT_TRUE(ThumbnailEqualsBytes(google_thumbnail, read_data.get()));
 
     EXPECT_EQ(asdf_url, querier.urls()[1].url);
@@ -701,7 +703,7 @@ TEST_F(TopSitesImplTest, RealDatabase) {
   RefreshTopSitesAndRecreate();
   {
     scoped_refptr<base::RefCountedMemory> read_data;
-    EXPECT_TRUE(top_sites()->GetPageThumbnail(google3_url, &read_data));
+    EXPECT_TRUE(top_sites()->GetPageThumbnail(google3_url, false, &read_data));
     EXPECT_TRUE(ThumbnailEqualsBytes(weewar_bitmap, read_data.get()));
   }
 
@@ -721,7 +723,7 @@ TEST_F(TopSitesImplTest, RealDatabase) {
   RefreshTopSitesAndRecreate();
   {
     scoped_refptr<base::RefCountedMemory> read_data;
-    EXPECT_TRUE(top_sites()->GetPageThumbnail(google3_url, &read_data));
+    EXPECT_TRUE(top_sites()->GetPageThumbnail(google3_url, false, &read_data));
     EXPECT_FALSE(ThumbnailEqualsBytes(weewar_bitmap, read_data.get()));
     EXPECT_TRUE(ThumbnailEqualsBytes(green_bitmap, read_data.get()));
   }
@@ -964,7 +966,7 @@ TEST_F(TopSitesImplTest, AddTemporaryThumbnail) {
 
   // We shouldn't get the thumnail back though (the url isn't in to sites yet).
   scoped_refptr<base::RefCountedMemory> out;
-  EXPECT_FALSE(top_sites()->GetPageThumbnail(unknown_url, &out));
+  EXPECT_FALSE(top_sites()->GetPageThumbnail(unknown_url, false, &out));
   // But we should be able to get the temporary page thumbnail score.
   ThumbnailScore out_score;
   EXPECT_TRUE(top_sites()->GetTemporaryPageThumbnailScore(unknown_url,
@@ -983,7 +985,7 @@ TEST_F(TopSitesImplTest, AddTemporaryThumbnail) {
   // Update URLs. This should result in using thumbnail.
   SetTopSites(list);
 
-  ASSERT_TRUE(top_sites()->GetPageThumbnail(unknown_url, &out));
+  ASSERT_TRUE(top_sites()->GetPageThumbnail(unknown_url, false, &out));
   EXPECT_TRUE(ThumbnailEqualsBytes(thumbnail, out.get()));
 }
 

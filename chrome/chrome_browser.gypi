@@ -823,6 +823,8 @@
         'browser/history/url_database.h',
         'browser/history/url_index_private_data.cc',
         'browser/history/url_index_private_data.h',
+        'browser/history/url_utils.cc',
+        'browser/history/url_utils.h',
         'browser/history/visit_database.cc',
         'browser/history/visit_database.h',
         'browser/history/visit_filter.cc',

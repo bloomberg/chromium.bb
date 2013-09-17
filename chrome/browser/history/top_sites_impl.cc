@@ -212,8 +212,11 @@ void TopSitesImpl::GetMostVisitedURLs(
 }
 
 bool TopSitesImpl::GetPageThumbnail(
-    const GURL& url, scoped_refptr<base::RefCountedMemory>* bytes) {
+    const GURL& url,
+    bool prefix_match,
+    scoped_refptr<base::RefCountedMemory>* bytes) {
   // WARNING: this may be invoked on any thread.
+  // Perform exact match.
   {
     base::AutoLock lock(lock_);
     if (thread_safe_cache_->GetPageThumbnail(url, bytes))
@@ -231,6 +234,18 @@ bool TopSitesImpl::GetPageThumbnail(
     }
   }
 
+  if (prefix_match) {
+    // Still not found, so strip "?query#ref", and perform prefix match.
+    GURL::Replacements replacements;
+    replacements.ClearQuery();
+    replacements.ClearRef();
+    GURL url_stripped(url.ReplaceComponents(replacements));
+    base::AutoLock lock(lock_);
+    GURL canonical_url(
+        thread_safe_cache_->GetCanonicalURLForPrefix(url_stripped));
+    if (thread_safe_cache_->GetPageThumbnail(canonical_url, bytes))
+      return true;
+  }
   return false;
 }
 
