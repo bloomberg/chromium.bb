@@ -30,6 +30,7 @@ import errors
 
 SLAVE_SCRIPTS_DIR = os.path.join(bb_utils.BB_BUILD_DIR, 'scripts', 'slave')
 LOGCAT_DIR = os.path.join(bb_utils.CHROME_OUT_DIR, 'logcat')
+GS_URL = 'https://storage.googleapis.com'
 
 # Describes an instrumation test suite:
 #   test: Name of test we're running.
@@ -335,31 +336,28 @@ def GetTestStepCmds():
   ]
 
 
-def UploadCoverageData(options, path, coverage_type):
-  """Uploads directory at |path| to Google Storage.
-
-  The directory at path should ostensibly contain HTML coverage data.
+def UploadHTML(options, gs_base_dir, dir_to_upload, link_text,
+               link_rel_path='index.html', gs_url=GS_URL):
+  """Uploads directory at |dir_to_upload| to Google Storage and output a link.
 
   Args:
     options: Command line options.
-    path: Path to the directory to be uploaded.
-    coverage_type: String used as the first component of the url.
-
-  Returns:
-    None.
+    gs_base_dir: The Google Storage base directory (e.g.
+      'chromium-code-coverage/java')
+    dir_to_upload: Absolute path to the directory to be uploaded.
+    link_text: Link text to be displayed on the step.
+    link_rel_path: Link path relative to |dir_to_upload|.
+    gs_url: Google storage URL.
   """
   revision = options.build_properties.get('got_revision')
   if not revision:
     revision = options.build_properties.get('revision', 'testing')
   bot_id = options.build_properties.get('buildername', 'testing')
   randhash = hashlib.sha1(str(random.random())).hexdigest()
-  gs_path = '%s/%s/%s/%s/%s' % (options.coverage_bucket, coverage_type,
-                                bot_id, revision, randhash)
-
-  RunCmd([bb_utils.GSUTIL_PATH, 'cp', '-R', path, 'gs://%s' % gs_path])
-  bb_annotations.PrintLink(
-      'Coverage report',
-      'https://storage.googleapis.com/%s/index.html' % gs_path)
+  gs_path = '%s/%s/%s/%s' % (gs_base_dir, bot_id, revision, randhash)
+  RunCmd([bb_utils.GSUTIL_PATH, 'cp', '-R', dir_to_upload, 'gs://%s' % gs_path])
+  bb_annotations.PrintLink(link_text,
+      '%s/%s/%s' % (gs_url, gs_path, link_rel_path))
 
 
 def GenerateJavaCoverageReport(options):
@@ -372,7 +370,7 @@ def GenerateJavaCoverageReport(options):
           '--metadata-dir', os.path.join(CHROME_OUT_DIR, options.target),
           '--cleanup',
           '--output', os.path.join(coverage_html, 'index.html')])
-  UploadCoverageData(options, coverage_html, 'java')
+  return coverage_html
 
 
 def LogcatDump(options):
@@ -412,7 +410,9 @@ def MainTestWrapper(options):
       bb_utils.RunSteps(options.test_filter, GetTestStepCmds(), options)
 
     if options.coverage_bucket:
-      GenerateJavaCoverageReport(options)
+      coverage_html = GenerateJavaCoverageReport(options)
+      UploadHTML(options, '%s/java' % options.coverage_bucket, coverage_html,
+                 'Coverage Report')
 
     if options.experimental:
       RunTestSuites(options, gtest_config.EXPERIMENTAL_TEST_SUITES)
