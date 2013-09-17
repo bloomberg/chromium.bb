@@ -3558,6 +3558,10 @@
             'android/java/src/org/chromium/chrome/browser/UrlUtilities.java',
             'android/java/src/org/chromium/chrome/browser/ValidationMessageBubble.java',
             'android/java/src/org/chromium/chrome/browser/WebsiteSettingsPopup.java',
+            'android/java/src/org/chromium/chrome/browser/infobar/AutoLoginDelegate.java',
+            'android/java/src/org/chromium/chrome/browser/infobar/ConfirmInfoBarDelegate.java',
+            'android/java/src/org/chromium/chrome/browser/infobar/InfoBar.java',
+            'android/java/src/org/chromium/chrome/browser/infobar/InfoBarContainer.java',
           ],
           'variables': {
             'jni_gen_package': 'chrome',

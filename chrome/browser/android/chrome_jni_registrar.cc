@@ -36,11 +36,15 @@
 #include "chrome/browser/ui/android/autofill/autofill_dialog_result.h"
 #include "chrome/browser/ui/android/autofill/autofill_popup_view_android.h"
 #include "chrome/browser/ui/android/chrome_http_auth_handler.h"
+#include "chrome/browser/ui/android/infobar/confirm_infobar.h"
+#include "chrome/browser/ui/android/infobar/infobar_android.h"
+#include "chrome/browser/ui/android/infobar/infobar_container_android.h"
 #include "chrome/browser/ui/android/javascript_app_modal_dialog_android.h"
 #include "chrome/browser/ui/android/navigation_popup.h"
 #include "chrome/browser/ui/android/ssl_client_certificate_request.h"
 #include "chrome/browser/ui/android/validation_message_bubble_android.h"
 #include "chrome/browser/ui/android/website_settings_popup_android.h"
+#include "chrome/browser/ui/auto_login_infobar_delegate_android.h"
 #include "components/autofill/core/browser/android/component_jni_registrar.h"
 #include "components/navigation_interception/component_jni_registrar.h"
 #include "components/web_contents_delegate_android/component_jni_registrar.h"
@@ -68,6 +72,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     autofill::AutofillDialogResult::RegisterAutofillDialogResult },
   { "AutofillPopup",
     autofill::AutofillPopupViewAndroid::RegisterAutofillPopupViewAndroid },
+  {"AutoLoginDelegate", AutoLoginInfoBarDelegateAndroid::Register},
   { "BookmarksBridge", BookmarksBridge::RegisterBookmarksBridge },
   { "CertificateViewer", RegisterCertificateViewer },
   { "ChromeBrowserProvider",
@@ -76,6 +81,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     ChromeHttpAuthHandler::RegisterChromeHttpAuthHandler },
   { "ChromeWebContentsDelegateAndroid",
     RegisterChromeWebContentsDelegateAndroid },
+  {"ConfirmInfoBarDelegate", RegisterConfirmInfoBarDelegate},
   { "ContentViewUtil", RegisterContentViewUtil },
   { "DevToolsServer", RegisterDevToolsServer },
   { "InvalidationController", invalidation::RegisterInvalidationController },
@@ -83,11 +89,13 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
   { "FieldTrialHelper", RegisterFieldTrialHelper },
   { "ForeignSessionHelper",
     ForeignSessionHelper::RegisterForeignSessionHelper },
+  {"InfoBarContainer", RegisterInfoBarContainer},
   { "ShortcutHelper", ShortcutHelper::RegisterShortcutHelper },
   { "IntentHelper", RegisterIntentHelper },
   { "JavascriptAppModalDialog",
     JavascriptAppModalDialogAndroid::RegisterJavascriptAppModalDialog },
   { "MostVisitedSites", RegisterMostVisitedSites },
+  {"NativeInfoBar", RegisterNativeInfoBar},
   { "NavigationPopup", NavigationPopup::RegisterNavigationPopup },
   { "OmniboxPrerender", RegisterOmniboxPrerender },
   { "PersonalDataManagerAndroid",

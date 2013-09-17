@@ -6,44 +6,9 @@
 // needed to compile some tests.
 
 #include "chrome/browser/android/tab_android.h"
-#include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
-#include "chrome/browser/ui/auto_login_infobar_delegate.h"
-#include "chrome/browser/ui/auto_login_infobar_delegate_android.h"
 #include "printing/printing_context.h"
 #include "printing/printing_context_android.h"
-
-// AutoLoginInfoBarDelegatAndroid empty implementation for test_shell.
-// TODO(miguelg) remove once the AutoLoginInfoBar is upstreamed.
-AutoLoginInfoBarDelegateAndroid::AutoLoginInfoBarDelegateAndroid(
-    InfoBarService* owner,
-    const AutoLoginInfoBarDelegate::Params& params)
-    : AutoLoginInfoBarDelegate(owner, params), params_() {}
-
-AutoLoginInfoBarDelegateAndroid::~AutoLoginInfoBarDelegateAndroid() {}
-
-bool AutoLoginInfoBarDelegateAndroid::Accept() {
-  return false;
-}
-
-bool AutoLoginInfoBarDelegateAndroid::Cancel() {
-  return false;
-}
-
-base::string16 AutoLoginInfoBarDelegateAndroid::GetMessageText() const {
-  return base::string16();
-}
-
-// static
-bool AutoLoginInfoBarDelegateAndroid::Register(JNIEnv* env) {
-  return false;
-}
-
-// static
-InfoBar* ConfirmInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
-  NOTREACHED() << "ConfirmInfoBar: InfoBarFactory should be used on Android";
-  return NULL;
-}
 
 // static
 InfoBar* TranslateInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {

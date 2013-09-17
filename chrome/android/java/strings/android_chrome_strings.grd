@@ -65,6 +65,10 @@ You are signing in with a managed account and giving its administrator control o
       <message desc="Message for the progress dialog shown while profile data is being wiped after signing out of an enterprise account" name="IDS_WIPING_PROFILE_DATA_MESSAGE">
         Please wait...
       </message>
+       <!-- InfoBar -->
+        <message desc="Accessibility label for the dismiss infobar Button" name="IDS_INFOBAR_CLOSE">
+        Close
+      </message>
     </messages>
   </release>
   <translations>
