@@ -30,11 +30,12 @@
 #ifndef WebTestThemeEngineMac_h
 #define WebTestThemeEngineMac_h
 
+#include "public/platform/WebNonCopyable.h"
 #include "public/platform/mac/WebThemeEngine.h"
 
 namespace WebTestRunner {
 
-class WebTestThemeEngineMac : public WebKit::WebThemeEngine {
+class WebTestThemeEngineMac : public WebKit::WebThemeEngine, public WebKit::WebNonCopyable {
 public:
     virtual void paintScrollbarThumb(
         WebKit::WebCanvas*,

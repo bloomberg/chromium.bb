@@ -33,6 +33,7 @@
 
 #include "TestCommon.h"
 #include "public/platform/WebMIDIAccessor.h"
+#include "public/platform/WebNonCopyable.h"
 #include "public/testing/WebTask.h"
 
 namespace WebKit {
@@ -43,7 +44,7 @@ namespace WebTestRunner {
 
 class TestInterfaces;
 
-class MockWebMIDIAccessor : public WebKit::WebMIDIAccessor {
+class MockWebMIDIAccessor : public WebKit::WebMIDIAccessor, public WebKit::WebNonCopyable {
 public:
     explicit MockWebMIDIAccessor(WebKit::WebMIDIAccessorClient*, TestInterfaces*);
     virtual ~MockWebMIDIAccessor();

@@ -39,6 +39,7 @@
 #ifndef WebTestThemeControlWin_h
 #define WebTestThemeControlWin_h
 
+#include "public/platform/WebNonCopyable.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkRect.h"
 
@@ -47,7 +48,7 @@ class SkCanvas;
 
 namespace WebTestRunner {
 
-class WebTestThemeControlWin {
+class WebTestThemeControlWin : public WebKit::WebNonCopyable {
 public:
     // This list of states mostly mirrors the list in WebCore/platform/ThemeTypes.h
     // but is maintained separately since that isn't public and also to minimize

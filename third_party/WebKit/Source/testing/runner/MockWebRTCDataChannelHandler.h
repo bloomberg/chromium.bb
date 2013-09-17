@@ -26,6 +26,7 @@
 #define MockWebRTCDataChannelHandler_h
 
 #include "TestCommon.h"
+#include "public/platform/WebNonCopyable.h"
 #include "public/platform/WebRTCDataChannelHandler.h"
 #include "public/platform/WebRTCDataChannelInit.h"
 #include "public/platform/WebString.h"
@@ -35,7 +36,7 @@ namespace WebTestRunner {
 
 class WebTestDelegate;
 
-class MockWebRTCDataChannelHandler : public WebKit::WebRTCDataChannelHandler {
+class MockWebRTCDataChannelHandler : public WebKit::WebRTCDataChannelHandler, public WebKit::WebNonCopyable {
 public:
     MockWebRTCDataChannelHandler(WebKit::WebString label, const WebKit::WebRTCDataChannelInit&, WebTestDelegate*);
 

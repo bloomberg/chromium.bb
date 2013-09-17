@@ -33,6 +33,7 @@
 
 #include "TestCommon.h"
 #include "public/platform/WebCommon.h"
+#include "public/platform/WebNonCopyable.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 #include "public/testing/WebTask.h"
@@ -42,7 +43,7 @@ namespace WebTestRunner {
 
 class WebTestDelegate;
 
-class WebUserMediaClientMock : public WebKit::WebUserMediaClient {
+class WebUserMediaClientMock : public WebKit::WebUserMediaClient, public WebKit::WebNonCopyable {
 public:
     explicit WebUserMediaClientMock(WebTestDelegate*);
     ~WebUserMediaClientMock() { }

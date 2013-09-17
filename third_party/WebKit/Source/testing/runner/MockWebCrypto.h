@@ -33,10 +33,11 @@
 
 #include "TestCommon.h"
 #include "public/platform/WebCrypto.h"
+#include "public/platform/WebNonCopyable.h"
 
 namespace WebTestRunner {
 
-class MockWebCrypto : public WebKit::WebCrypto {
+class MockWebCrypto : public WebKit::WebCrypto, public WebKit::WebNonCopyable {
 public:
     static MockWebCrypto* get();
 

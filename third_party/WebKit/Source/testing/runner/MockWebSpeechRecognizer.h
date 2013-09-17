@@ -27,6 +27,7 @@
 #define MockWebSpeechRecognizer_h
 
 #include "TestCommon.h"
+#include "public/platform/WebNonCopyable.h"
 #include "public/testing/WebTask.h"
 #include "public/web/WebSpeechRecognizer.h"
 #include <deque>
@@ -42,7 +43,7 @@ namespace WebTestRunner {
 
 class WebTestDelegate;
 
-class MockWebSpeechRecognizer : public WebKit::WebSpeechRecognizer {
+class MockWebSpeechRecognizer : public WebKit::WebSpeechRecognizer, public WebKit::WebNonCopyable {
 public:
     MockWebSpeechRecognizer();
     ~MockWebSpeechRecognizer();

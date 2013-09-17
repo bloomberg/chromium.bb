@@ -31,13 +31,14 @@
 #ifndef WebPermissions_h
 #define WebPermissions_h
 
+#include "public/platform/WebNonCopyable.h"
 #include "public/web/WebPermissionClient.h"
 
 namespace WebTestRunner {
 
 class WebTestDelegate;
 
-class WebPermissions : public WebKit::WebPermissionClient {
+class WebPermissions : public WebKit::WebPermissionClient, public WebKit::WebNonCopyable {
 public:
     WebPermissions();
     virtual ~WebPermissions();

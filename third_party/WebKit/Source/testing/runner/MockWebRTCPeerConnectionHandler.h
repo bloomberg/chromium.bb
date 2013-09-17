@@ -32,6 +32,7 @@
 #define MockWebRTCPeerConnectionHandler_h
 
 #include "TestCommon.h"
+#include "public/platform/WebNonCopyable.h"
 #include "public/platform/WebRTCPeerConnectionHandler.h"
 #include "public/platform/WebRTCSessionDescription.h"
 #include "public/platform/WebRTCSessionDescriptionRequest.h"
@@ -46,7 +47,7 @@ namespace WebTestRunner {
 
 class TestInterfaces;
 
-class MockWebRTCPeerConnectionHandler : public WebKit::WebRTCPeerConnectionHandler {
+class MockWebRTCPeerConnectionHandler : public WebKit::WebRTCPeerConnectionHandler, public WebKit::WebNonCopyable {
 public:
     MockWebRTCPeerConnectionHandler(WebKit::WebRTCPeerConnectionHandlerClient*, TestInterfaces*);
 

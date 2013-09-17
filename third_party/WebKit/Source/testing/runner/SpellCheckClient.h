@@ -32,14 +32,15 @@
 #define SpellCheckClient_h
 
 #include "MockSpellCheck.h"
-#include "public/web/WebSpellCheckClient.h"
+#include "public/platform/WebNonCopyable.h"
 #include "public/testing/WebTask.h"
+#include "public/web/WebSpellCheckClient.h"
 
 namespace WebTestRunner {
 
 class WebTestDelegate;
 
-class SpellCheckClient : public WebKit::WebSpellCheckClient {
+class SpellCheckClient : public WebKit::WebSpellCheckClient, public WebKit::WebNonCopyable {
 public:
     SpellCheckClient();
     virtual ~SpellCheckClient();

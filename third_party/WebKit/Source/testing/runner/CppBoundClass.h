@@ -44,6 +44,7 @@
 #define CppBoundClass_h
 
 #include "CppVariant.h"
+#include "public/platform/WebNonCopyable.h"
 #include <map>
 #include <memory>
 #include <vector>
@@ -59,7 +60,7 @@ typedef std::vector<CppVariant> CppArgumentList;
 
 // CppBoundClass lets you map Javascript method calls and property accesses
 // directly to C++ method calls and CppVariant* variable access.
-class CppBoundClass {
+class CppBoundClass : public WebKit::WebNonCopyable {
 public:
     class PropertyCallback {
     public:
@@ -238,10 +239,6 @@ private:
     // True if our np_object has been bound to a WebFrame, in which case it must
     // be unregistered with V8 when we delete it.
     bool m_boundToFrame;
-
-private:
-    CppBoundClass(CppBoundClass&);
-    CppBoundClass& operator=(const CppBoundClass&);
 };
 
 }

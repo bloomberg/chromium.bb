@@ -32,6 +32,7 @@
 #define MockColorChooser_h
 
 #include "TestCommon.h"
+#include "public/platform/WebNonCopyable.h"
 #include "public/testing/WebTask.h"
 #include "public/web/WebColorChooser.h"
 #include "public/web/WebColorChooserClient.h"
@@ -40,7 +41,7 @@ namespace WebTestRunner {
 
 class WebTestDelegate;
 class WebTestProxyBase;
-class MockColorChooser : public WebKit::WebColorChooser {
+class MockColorChooser : public WebKit::WebColorChooser, public WebKit::WebNonCopyable {
 public:
     MockColorChooser(WebKit::WebColorChooserClient*, WebTestDelegate*, WebTestProxyBase*);
     virtual ~MockColorChooser();

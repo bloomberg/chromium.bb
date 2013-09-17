@@ -28,6 +28,7 @@
 
 #include "TestCommon.h"
 #include "public/platform/WebMediaStreamTrack.h"
+#include "public/platform/WebNonCopyable.h"
 #include "public/platform/WebRTCDTMFSenderHandler.h"
 #include "public/platform/WebString.h"
 #include "public/testing/WebTask.h"
@@ -36,7 +37,7 @@ namespace WebTestRunner {
 
 class WebTestDelegate;
 
-class MockWebRTCDTMFSenderHandler : public WebKit::WebRTCDTMFSenderHandler {
+class MockWebRTCDTMFSenderHandler : public WebKit::WebRTCDTMFSenderHandler, public WebKit::WebNonCopyable {
 public:
     MockWebRTCDTMFSenderHandler(const WebKit::WebMediaStreamTrack&, WebTestDelegate*);
 

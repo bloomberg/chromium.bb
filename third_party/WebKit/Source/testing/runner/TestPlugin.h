@@ -29,6 +29,7 @@
 #include "public/platform/WebExternalTextureLayer.h"
 #include "public/platform/WebExternalTextureLayerClient.h"
 #include "public/platform/WebExternalTextureMailbox.h"
+#include "public/platform/WebNonCopyable.h"
 #include "public/web/WebPlugin.h"
 #include "public/web/WebPluginContainer.h"
 #include <memory>
@@ -50,7 +51,7 @@ class WebTestDelegate;
 //
 // Whether the plugin accepts touch events or not can be customized using the
 // 'accepts-touch' plugin parameter (defaults to false).
-class TestPlugin : public WebKit::WebPlugin, public WebKit::WebExternalTextureLayerClient {
+class TestPlugin : public WebKit::WebPlugin, public WebKit::WebExternalTextureLayerClient, public WebKit::WebNonCopyable {
 public:
     static TestPlugin* create(WebKit::WebFrame*, const WebKit::WebPluginParams&, WebTestDelegate*);
     virtual ~TestPlugin();

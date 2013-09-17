@@ -31,6 +31,8 @@
 #ifndef TestInterfaces_h
 #define TestInterfaces_h
 
+#include "public/platform/WebNonCopyable.h"
+
 #include <memory>
 #include <vector>
 
@@ -57,7 +59,7 @@ class TextInputController;
 class WebTestDelegate;
 class WebTestProxyBase;
 
-class TestInterfaces {
+class TestInterfaces : public WebKit::WebNonCopyable {
 public:
     TestInterfaces();
     ~TestInterfaces();

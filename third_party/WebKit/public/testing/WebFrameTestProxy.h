@@ -32,13 +32,14 @@
 #define WebFrameTestProxy_h
 
 #include "WebTestProxy.h"
+#include "public/platform/WebNonCopyable.h"
 
 namespace WebTestRunner {
 
 // Templetized wrapper around RenderFrameImpl objects, which implement
 // the WebFrameClient interface.
 template<class Base, typename P, typename R>
-class WebFrameTestProxy : public Base {
+class WebFrameTestProxy : public Base, public WebKit::WebNonCopyable {
 public:
     WebFrameTestProxy(P p, R r)
         : Base(p, r)

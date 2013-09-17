@@ -31,6 +31,7 @@
 #ifndef NotificationPresenter_h
 #define NotificationPresenter_h
 
+#include "public/platform/WebNonCopyable.h"
 #include "public/web/WebNotification.h"
 #include "public/web/WebNotificationPresenter.h"
 #include <map>
@@ -42,7 +43,7 @@ namespace WebTestRunner {
 class WebTestDelegate;
 
 // A class that implements WebNotificationPresenter for the TestRunner library.
-class NotificationPresenter : public WebKit::WebNotificationPresenter {
+class NotificationPresenter : public WebKit::WebNotificationPresenter, public WebKit::WebNonCopyable {
 public:
     NotificationPresenter();
     virtual ~NotificationPresenter();

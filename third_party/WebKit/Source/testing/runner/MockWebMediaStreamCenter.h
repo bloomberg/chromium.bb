@@ -33,6 +33,7 @@
 
 #include "TestCommon.h"
 #include "public/platform/WebMediaStreamCenter.h"
+#include "public/platform/WebNonCopyable.h"
 
 namespace WebKit {
 class WebMediaStreamCenterClient;
@@ -40,7 +41,7 @@ class WebMediaStreamCenterClient;
 
 namespace WebTestRunner {
 
-class MockWebMediaStreamCenter : public WebKit::WebMediaStreamCenter {
+class MockWebMediaStreamCenter : public WebKit::WebMediaStreamCenter, public WebKit::WebNonCopyable {
 public:
     explicit MockWebMediaStreamCenter(WebKit::WebMediaStreamCenterClient*);
 

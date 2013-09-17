@@ -31,6 +31,7 @@
 #ifndef MockSpellCheck_h
 #define MockSpellCheck_h
 
+#include "public/platform/WebNonCopyable.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebVector.h"
 #include <vector>
@@ -43,7 +44,7 @@ namespace WebTestRunner {
 // words in webkit tests and mark them as missspelled.
 // Even though this is sufficent for webkit tests, this class is not suitable
 // for any other usages.
-class MockSpellCheck {
+class MockSpellCheck : public WebKit::WebNonCopyable {
 public:
     static void fillSuggestionList(const WebKit::WebString& word, WebKit::WebVector<WebKit::WebString>* suggestions);
 

@@ -32,13 +32,14 @@
 #define MockWebValidationMessageClient_h
 
 #include "TestCommon.h"
+#include "public/platform/WebNonCopyable.h"
 #include "public/web/WebValidationMessageClient.h"
 
 namespace WebTestRunner {
 
 class WebTestDelegate;
 
-class MockWebValidationMessageClient : public WebKit::WebValidationMessageClient {
+class MockWebValidationMessageClient : public WebKit::WebValidationMessageClient, public WebKit::WebNonCopyable {
 public:
     MockWebValidationMessageClient();
     virtual ~MockWebValidationMessageClient();

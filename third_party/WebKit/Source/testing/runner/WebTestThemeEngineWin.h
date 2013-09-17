@@ -47,11 +47,12 @@
 #ifndef WebTestThemeEngineWin_h
 #define WebTestThemeEngineWin_h
 
+#include "public/platform/WebNonCopyable.h"
 #include "public/platform/win/WebThemeEngine.h"
 
 namespace WebTestRunner {
 
-class WebTestThemeEngineWin : public WebKit::WebThemeEngine {
+class WebTestThemeEngineWin : public WebKit::WebThemeEngine, public WebKit::WebNonCopyable {
 public:
     WebTestThemeEngineWin() { }
 

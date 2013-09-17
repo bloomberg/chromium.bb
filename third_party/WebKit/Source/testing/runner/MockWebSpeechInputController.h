@@ -27,6 +27,7 @@
 #define MockWebSpeechInputController_h
 
 #include "TestCommon.h"
+#include "public/platform/WebNonCopyable.h"
 #include "public/platform/WebRect.h"
 #include "public/testing/WebTask.h"
 #include "public/web/WebSpeechInputController.h"
@@ -45,7 +46,7 @@ namespace WebTestRunner {
 
 class WebTestDelegate;
 
-class MockWebSpeechInputController : public WebKit::WebSpeechInputController {
+class MockWebSpeechInputController : public WebKit::WebSpeechInputController, public WebKit::WebNonCopyable {
 public:
     explicit MockWebSpeechInputController(WebKit::WebSpeechInputListener*);
     ~MockWebSpeechInputController();
