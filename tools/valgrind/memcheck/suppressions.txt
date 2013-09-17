@@ -1117,6 +1117,16 @@
    fun:ssl_InitSessionCacheLocks
 }
 {
+   bug_73299 (Intentional)
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7content17WorkerProcessHost20CreateMessageFiltersEi
+   fun:_ZN7content17WorkerProcessHost4InitEi
+   fun:_ZN7content17WorkerServiceImpl24CreateWorkerFromInstanceENS_17WorkerProcessHost14WorkerInstanceE
+   fun:_ZN7content17WorkerServiceImpl12CreateWorkerERK31ViewHostMsg_CreateWorker_ParamsiPNS_19WorkerMessageFilterEPNS_15ResourceContextERKNS_22WorkerStoragePartitionE
+   fun:_ZN7content19WorkerMessageFilter14OnCreateWorkerERK31ViewHostMsg_CreateWorker_ParamsPi
+}
+{
    bug_83345 (Needs_Annotation)
    Memcheck:Leak
    ...
@@ -2504,15 +2514,6 @@
    fun:_Znw*
    ...
    fun:_ZN13ProfileIOData20InitializeOnUIThreadEP7Profile
-}
-{
-   bug_73299
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN21RenderProcessHostImpl20CreateMessageFiltersEv
-   fun:_ZN21RenderProcessHostImpl4InitEb
-   fun:_ZN7content18RenderViewHostImpl16CreateRenderViewERKSbItN4base20string16_char_traitsESaItEEi
 }
 {
    bug_73415
@@ -7003,6 +7004,18 @@
    fun:_ZN22theme_service_internal40ThemeServiceTest_DisableUnusedTheme_Test8TestBodyEv
 }
 {
+   bug_288801
+   Memcheck:Uninitialized
+   fun:_ZN7WebCore22InspectorDatabaseAgent15didOpenDatabaseEN3WTF10PassRefPtrINS_8DatabaseEEERKNS1_6StringES7_S7_
+   fun:_ZN7WebCore24InspectorInstrumentation19didOpenDatabaseImplEPNS_19InstrumentingAgentsEN3WTF10PassRefPtrINS_8DatabaseEEERKNS3_6StringES9_S9_
+   fun:_ZN7WebCore24InspectorInstrumentation15didOpenDatabaseEPNS_22ScriptExecutionContextEN3WTF10PassRefPtrINS_8DatabaseEEERKNS3_6StringES9_S9_
+   fun:_ZN7WebCore15DatabaseManager12openDatabaseEPNS_22ScriptExecutionContextERKN3WTF6StringES6_S6_mNS3_10PassRefPtrINS_16DatabaseCallbackEEERNS3_9EnumClassINS_23DatabaseErrorDefinitionEEE
+   fun:_ZN7WebCore20DOMWindowWebDatabase12openDatabaseEPNS_9DOMWindowERKN3WTF6StringES6_S6_mNS3_10PassRefPtrINS_16DatabaseCallbackEEERNS_14ExceptionStateE
+   fun:_ZN7WebCore19DOMWindowV8InternalL*openDatabaseMethod*
+   fun:_ZN7WebCore19DOMWindowV8InternalL*openDatabaseMethodCallback*
+   fun:_ZN2v88internal25FunctionCallbackArguments4CallEPFvRKNS_20FunctionCallbackInfoINS_5ValueEEEE
+}
+{
    bug_288804
    Memcheck:Leak
    fun:_Znw*
@@ -7015,18 +7028,6 @@
    fun:_ZNSt3mapIN3net12HostPortPairES_INS0_15SpdySettingsIdsESt4pairINS0_17SpdySettingsFlagsEjESt4lessIS2_ESaIS3_IKS2_S5_EEES6_IS1_ESaIS3_IKS1_SB_EEEaSERKSG_
    fun:_ZN18chrome_browser_net27HttpServerPropertiesManager24UpdatePrefsFromCacheOnIOERKN4base8CallbackIFvvEEE
    fun:_ZN18chrome_browser_net27HttpServerPropertiesManager24UpdatePrefsFromCacheOnIOEv
-}
-{
-   bug_288801
-   Memcheck:Uninitialized
-   fun:_ZN7WebCore22InspectorDatabaseAgent15didOpenDatabaseEN3WTF10PassRefPtrINS_8DatabaseEEERKNS1_6StringES7_S7_
-   fun:_ZN7WebCore24InspectorInstrumentation19didOpenDatabaseImplEPNS_19InstrumentingAgentsEN3WTF10PassRefPtrINS_8DatabaseEEERKNS3_6StringES9_S9_
-   fun:_ZN7WebCore24InspectorInstrumentation15didOpenDatabaseEPNS_22ScriptExecutionContextEN3WTF10PassRefPtrINS_8DatabaseEEERKNS3_6StringES9_S9_
-   fun:_ZN7WebCore15DatabaseManager12openDatabaseEPNS_22ScriptExecutionContextERKN3WTF6StringES6_S6_mNS3_10PassRefPtrINS_16DatabaseCallbackEEERNS3_9EnumClassINS_23DatabaseErrorDefinitionEEE
-   fun:_ZN7WebCore20DOMWindowWebDatabase12openDatabaseEPNS_9DOMWindowERKN3WTF6StringES6_S6_mNS3_10PassRefPtrINS_16DatabaseCallbackEEERNS_14ExceptionStateE
-   fun:_ZN7WebCore19DOMWindowV8InternalL30openDatabaseMethodForMainWorldERKN2v820FunctionCallbackInfoINS1_5ValueEEE
-   fun:_ZN7WebCore19DOMWindowV8InternalL38openDatabaseMethodCallbackForMainWorldERKN2v820FunctionCallbackInfoINS1_5ValueEEE
-   fun:_ZN2v88internal25FunctionCallbackArguments4CallEPFvRKNS_20FunctionCallbackInfoINS_5ValueEEEE
 }
 {
    bug_290364
@@ -7212,4 +7213,21 @@
    fun:_ZN7content17WebFileSystemImpl16createFileWriterERKN6WebKit6WebURLEPNS1_19WebFileWriterClientENS1_22WebFileSystemCallbacksE
    fun:_ZN7WebCore17DOMFileSystemSync12createWriterEPKNS_13FileEntrySyncERNS_14ExceptionStateE
    fun:_ZN7WebCore13FileEntrySync12createWriterERNS_14ExceptionStateE
+}
+{
+   bug_293088
+   Memcheck:Unaddressable
+   fun:_ZNK3WTF6RefPtrIN7WebCore19TextResourceDecoderEE3getEv
+   fun:_ZNK7WebCore8Document7decoderEv
+   fun:_ZN7WebCore25DecodedDataDocumentParser5flushEv
+   fun:_ZN7WebCore14DocumentWriter3endEv
+   fun:_ZN7WebCore14DocumentLoader10endWritingEPNS_14DocumentWriterE
+   fun:_ZN7WebCore14DocumentLoader15finishedLoadingEd
+   fun:_ZN7WebCore14DocumentLoader14notifyFinishedEPNS_8ResourceE
+   fun:_ZN7WebCore8Resource11checkNotifyEv
+   fun:_ZN7WebCore8Resource13finishOnePartEv
+   fun:_ZN7WebCore8Resource6finishEd
+   fun:_ZN7WebCore14ResourceLoader16didFinishLoadingEPN6WebKit12WebURLLoaderEd
+   fun:_ZN11webkit_glue16WebURLLoaderImpl7Context18OnCompletedRequestEibRKSsRKN4base9TimeTicksE
+   fun:_ZN7content18ResourceDispatcher17OnRequestCompleteEiibRKSsRKN4base9TimeTicksE
 }
