@@ -238,7 +238,7 @@ find_resource_for_surface(struct wl_list *list, struct weston_surface *surface)
 
 	if (!surface->resource)
 		return NULL;
-	
+
 	return wl_resource_find_for_client(list, wl_resource_get_client(surface->resource));
 }
 
@@ -344,7 +344,7 @@ weston_keyboard_create(void)
 
 	keyboard = zalloc(sizeof *keyboard);
 	if (keyboard == NULL)
-	    return NULL;
+		return NULL;
 
 	wl_list_init(&keyboard->resource_list);
 	wl_array_init(&keyboard->keys);
@@ -1350,7 +1350,7 @@ weston_compositor_xkb_init(struct weston_compositor *ec,
 	return 0;
 }
 
-static void 
+static void
 weston_xkb_info_destroy(struct weston_xkb_info *xkb_info)
 {
 	if (--xkb_info->ref_count > 0)
@@ -1381,7 +1381,7 @@ weston_compositor_xkb_destroy(struct weston_compositor *ec)
 	free((char *) ec->xkb_names.layout);
 	free((char *) ec->xkb_names.variant);
 	free((char *) ec->xkb_names.options);
-	
+
 	if (ec->xkb_info)
 		weston_xkb_info_destroy(ec->xkb_info);
 	xkb_context_unref(ec->xkb_context);
@@ -1479,7 +1479,7 @@ weston_compositor_build_global_keymap(struct weston_compositor *ec)
 	}
 
 	ec->xkb_info = weston_xkb_info_create(keymap);
-	if (ec->xkb_info == NULL) 
+	if (ec->xkb_info == NULL)
 		return -1;
 
 	return 0;
