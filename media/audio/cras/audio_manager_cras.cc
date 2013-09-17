@@ -31,8 +31,6 @@ static const int kMaxOutputStreams = 50;
 // Default sample rate for input and output streams.
 static const int kDefaultSampleRate = 48000;
 
-const char AudioManagerCras::kLoopbackDeviceId[] = "loopback";
-
 bool AudioManagerCras::HasAudioOutputDevices() {
   return true;
 }

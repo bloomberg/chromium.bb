@@ -32,10 +32,23 @@ class AudioOutputDispatcher;
 // AudioManagerBase provides AudioManager functions common for all platforms.
 class MEDIA_EXPORT AudioManagerBase : public AudioManager {
  public:
+  // TODO(sergeyu): The constants below belong to AudioManager interface, not
+  // to the base implementation.
+
   // Name of the generic "default" device.
   static const char kDefaultDeviceName[];
   // Unique Id of the generic "default" device.
   static const char kDefaultDeviceId[];
+
+  // Input device ID used to capture the default system playback stream. When
+  // this device ID is passed to MakeAudioInputStream() the returned
+  // AudioInputStream will be capturing audio currently being played on the
+  // default playback device. At the moment this feature is supported only on
+  // some platforms. AudioInputStream::Intialize() will return an error on
+  // platforms that don't support it. GetInputStreamParameters() must be used
+  // to get the parameters of the loopback device before creating a loopback
+  // stream, otherwise stream initialization may fail.
+  static const char kLoopbackInputDeviceId[];
 
   virtual ~AudioManagerBase();
 

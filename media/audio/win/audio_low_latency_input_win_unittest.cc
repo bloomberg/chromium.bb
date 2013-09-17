@@ -39,10 +39,51 @@ ACTION_P3(CheckCountAndPostQuitTask, count, limit, loop) {
 class MockAudioInputCallback : public AudioInputStream::AudioInputCallback {
  public:
   MOCK_METHOD5(OnData, void(AudioInputStream* stream,
-      const uint8* src, uint32 size,
-      uint32 hardware_delay_bytes, double volume));
+                            const uint8* src, uint32 size,
+                            uint32 hardware_delay_bytes, double volume));
   MOCK_METHOD1(OnClose, void(AudioInputStream* stream));
   MOCK_METHOD1(OnError, void(AudioInputStream* stream));
+};
+
+class FakeAudioInputCallback : public AudioInputStream::AudioInputCallback {
+ public:
+  FakeAudioInputCallback()
+    : closed_(false),
+      error_(false),
+      data_event_(false, false) {
+  }
+
+  const std::vector<uint8>& received_data() const { return received_data_; }
+  bool closed() const { return closed_; }
+  bool error() const { return error_; }
+
+  // Waits until OnData() is called on another thread.
+  void WaitForData() {
+    data_event_.Wait();
+  }
+
+  virtual void OnData(AudioInputStream* stream,
+                      const uint8* src, uint32 size,
+                      uint32 hardware_delay_bytes, double volume) OVERRIDE {
+    received_data_.insert(received_data_.end(), src, src + size);
+    data_event_.Signal();
+  }
+
+  virtual void OnClose(AudioInputStream* stream) OVERRIDE {
+    closed_ = true;
+  }
+
+  virtual void OnError(AudioInputStream* stream) OVERRIDE {
+    error_ = true;
+  }
+
+ private:
+  std::vector<uint8> received_data_;
+  base::WaitableEvent data_event_;
+  bool closed_;
+  bool error_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeAudioInputCallback);
 };
 
 // This audio sink implementation should be used for manual tests only since
@@ -188,6 +229,39 @@ static AudioInputStream* CreateDefaultAudioInputStream(
   return ais;
 }
 
+class ScopedAudioInputStream {
+ public:
+  explicit ScopedAudioInputStream(AudioInputStream* stream)
+      : stream_(stream) {}
+
+  ~ScopedAudioInputStream() {
+    if (stream_)
+      stream_->Close();
+  }
+
+  void Close() {
+    if (stream_)
+      stream_->Close();
+    stream_ = NULL;
+  }
+
+  AudioInputStream* operator->() {
+    return stream_;
+  }
+
+  AudioInputStream* get() const { return stream_; }
+
+  void Reset(AudioInputStream* new_stream) {
+    Close();
+    stream_ = new_stream;
+  }
+
+ private:
+  AudioInputStream* stream_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedAudioInputStream);
+};
+
 // Verify that we can retrieve the current hardware/mixing sample rate
 // for all available input devices.
 TEST(WinAudioInputTest, WASAPIAudioInputStreamHardwareSampleRate) {
@@ -217,8 +291,9 @@ TEST(WinAudioInputTest, WASAPIAudioInputStreamCreateAndClose) {
   scoped_ptr<AudioManager> audio_manager(AudioManager::Create());
   if (!CanRunAudioTests(audio_manager.get()))
     return;
-  AudioInputStream* ais = CreateDefaultAudioInputStream(audio_manager.get());
-  ais->Close();
+  ScopedAudioInputStream ais(
+      CreateDefaultAudioInputStream(audio_manager.get()));
+  ais.Close();
 }
 
 // Test Open(), Close() calling sequence.
@@ -226,9 +301,10 @@ TEST(WinAudioInputTest, WASAPIAudioInputStreamOpenAndClose) {
   scoped_ptr<AudioManager> audio_manager(AudioManager::Create());
   if (!CanRunAudioTests(audio_manager.get()))
     return;
-  AudioInputStream* ais = CreateDefaultAudioInputStream(audio_manager.get());
+  ScopedAudioInputStream ais(
+      CreateDefaultAudioInputStream(audio_manager.get()));
   EXPECT_TRUE(ais->Open());
-  ais->Close();
+  ais.Close();
 }
 
 // Test Open(), Start(), Close() calling sequence.
@@ -236,13 +312,14 @@ TEST(WinAudioInputTest, WASAPIAudioInputStreamOpenStartAndClose) {
   scoped_ptr<AudioManager> audio_manager(AudioManager::Create());
   if (!CanRunAudioTests(audio_manager.get()))
     return;
-  AudioInputStream* ais = CreateDefaultAudioInputStream(audio_manager.get());
+  ScopedAudioInputStream ais(
+      CreateDefaultAudioInputStream(audio_manager.get()));
   EXPECT_TRUE(ais->Open());
   MockAudioInputCallback sink;
   ais->Start(&sink);
-  EXPECT_CALL(sink, OnClose(ais))
+  EXPECT_CALL(sink, OnClose(ais.get()))
       .Times(1);
-  ais->Close();
+  ais.Close();
 }
 
 // Test Open(), Start(), Stop(), Close() calling sequence.
@@ -250,14 +327,15 @@ TEST(WinAudioInputTest, WASAPIAudioInputStreamOpenStartStopAndClose) {
   scoped_ptr<AudioManager> audio_manager(AudioManager::Create());
   if (!CanRunAudioTests(audio_manager.get()))
     return;
-  AudioInputStream* ais = CreateDefaultAudioInputStream(audio_manager.get());
+  ScopedAudioInputStream ais(
+      CreateDefaultAudioInputStream(audio_manager.get()));
   EXPECT_TRUE(ais->Open());
   MockAudioInputCallback sink;
   ais->Start(&sink);
   ais->Stop();
-  EXPECT_CALL(sink, OnClose(ais))
+  EXPECT_CALL(sink, OnClose(ais.get()))
       .Times(1);
-  ais->Close();
+  ais.Close();
 }
 
 // Test some additional calling sequences.
@@ -265,8 +343,10 @@ TEST(WinAudioInputTest, WASAPIAudioInputStreamMiscCallingSequences) {
   scoped_ptr<AudioManager> audio_manager(AudioManager::Create());
   if (!CanRunAudioTests(audio_manager.get()))
     return;
-  AudioInputStream* ais = CreateDefaultAudioInputStream(audio_manager.get());
-  WASAPIAudioInputStream* wais = static_cast<WASAPIAudioInputStream*>(ais);
+  ScopedAudioInputStream ais(
+      CreateDefaultAudioInputStream(audio_manager.get()));
+  WASAPIAudioInputStream* wais =
+      static_cast<WASAPIAudioInputStream*>(ais.get());
 
   // Open(), Open() should fail the second time.
   EXPECT_TRUE(ais->Open());
@@ -286,9 +366,9 @@ TEST(WinAudioInputTest, WASAPIAudioInputStreamMiscCallingSequences) {
   ais->Stop();
   EXPECT_FALSE(wais->started());
 
-  EXPECT_CALL(sink, OnClose(ais))
+  EXPECT_CALL(sink, OnClose(ais.get()))
     .Times(1);
-  ais->Close();
+  ais.Close();
 }
 
 TEST(WinAudioInputTest, WASAPIAudioInputStreamTestPacketSizes) {
@@ -304,7 +384,7 @@ TEST(WinAudioInputTest, WASAPIAudioInputStreamTestPacketSizes) {
   // Create default WASAPI input stream which records in stereo using
   // the shared mixing rate. The default buffer size is 10ms.
   AudioInputStreamWrapper aisw(audio_manager.get());
-  AudioInputStream* ais = aisw.Create();
+  ScopedAudioInputStream ais(aisw.Create());
   EXPECT_TRUE(ais->Open());
 
   MockAudioInputCallback sink;
@@ -317,7 +397,7 @@ TEST(WinAudioInputTest, WASAPIAudioInputStreamTestPacketSizes) {
   // All should contain valid packets of the same size and a valid delay
   // estimate.
   EXPECT_CALL(sink, OnData(
-      ais, NotNull(), bytes_per_packet, Gt(bytes_per_packet), _))
+      ais.get(), NotNull(), bytes_per_packet, Gt(bytes_per_packet), _))
       .Times(AtLeast(10))
       .WillRepeatedly(CheckCountAndPostQuitTask(&count, 10, &loop));
   ais->Start(&sink);
@@ -327,49 +407,78 @@ TEST(WinAudioInputTest, WASAPIAudioInputStreamTestPacketSizes) {
   // Store current packet size (to be used in the subsequent tests).
   int samples_per_packet_10ms = aisw.samples_per_packet();
 
-  EXPECT_CALL(sink, OnClose(ais))
+  EXPECT_CALL(sink, OnClose(ais.get()))
       .Times(1);
-  ais->Close();
+  ais.Close();
 
   // 20 ms packet size.
 
   count = 0;
-  ais = aisw.Create(2 * samples_per_packet_10ms);
+  ais.Reset(aisw.Create(2 * samples_per_packet_10ms));
   EXPECT_TRUE(ais->Open());
   bytes_per_packet = aisw.channels() * aisw.samples_per_packet() *
       (aisw.bits_per_sample() / 8);
 
   EXPECT_CALL(sink, OnData(
-      ais, NotNull(), bytes_per_packet, Gt(bytes_per_packet), _))
+      ais.get(), NotNull(), bytes_per_packet, Gt(bytes_per_packet), _))
       .Times(AtLeast(10))
       .WillRepeatedly(CheckCountAndPostQuitTask(&count, 10, &loop));
   ais->Start(&sink);
   loop.Run();
   ais->Stop();
 
-  EXPECT_CALL(sink, OnClose(ais))
+  EXPECT_CALL(sink, OnClose(ais.get()))
       .Times(1);
-  ais->Close();
+  ais.Close();
 
   // 5 ms packet size.
 
   count = 0;
-  ais = aisw.Create(samples_per_packet_10ms / 2);
+  ais.Reset(aisw.Create(samples_per_packet_10ms / 2));
   EXPECT_TRUE(ais->Open());
   bytes_per_packet = aisw.channels() * aisw.samples_per_packet() *
     (aisw.bits_per_sample() / 8);
 
   EXPECT_CALL(sink, OnData(
-      ais, NotNull(), bytes_per_packet, Gt(bytes_per_packet), _))
+      ais.get(), NotNull(), bytes_per_packet, Gt(bytes_per_packet), _))
       .Times(AtLeast(10))
       .WillRepeatedly(CheckCountAndPostQuitTask(&count, 10, &loop));
   ais->Start(&sink);
   loop.Run();
   ais->Stop();
 
-  EXPECT_CALL(sink, OnClose(ais))
+  EXPECT_CALL(sink, OnClose(ais.get()))
       .Times(1);
-  ais->Close();
+  ais.Close();
+}
+
+// Test that we can capture loopback stream.
+TEST(WinAudioInputTest, WASAPIAudioInputStreamLoopback) {
+  scoped_ptr<AudioManager> audio_manager(AudioManager::Create());
+  if (!audio_manager->HasAudioOutputDevices() || !CoreAudioUtil::IsSupported())
+    return;
+
+  AudioParameters params = audio_manager->GetInputStreamParameters(
+      AudioManagerBase::kLoopbackInputDeviceId);
+
+  AudioParameters output_params =
+      audio_manager->GetOutputStreamParameters(std::string());
+  EXPECT_EQ(params.sample_rate(), output_params.sample_rate());
+  EXPECT_EQ(params.channel_layout(), output_params.channel_layout());
+
+  ScopedAudioInputStream stream(audio_manager->MakeAudioInputStream(
+      params, AudioManagerBase::kLoopbackInputDeviceId));
+  ASSERT_TRUE(stream->Open());
+  FakeAudioInputCallback sink;
+  stream->Start(&sink);
+  ASSERT_FALSE(sink.error());
+
+  sink.WaitForData();
+  stream.Close();
+
+  EXPECT_FALSE(sink.received_data().empty());
+  EXPECT_TRUE(sink.closed());
+  EXPECT_FALSE(sink.error());
 }
 
 // This test is intended for manual tests and should only be enabled
@@ -389,7 +498,7 @@ TEST(WinAudioInputTest, DISABLED_WASAPIAudioInputStreamRecordToFile) {
   const char* file_name = "out_stereo_10sec.pcm";
 
   AudioInputStreamWrapper aisw(audio_manager.get());
-  AudioInputStream* ais = aisw.Create();
+  ScopedAudioInputStream ais(aisw.Create());
   EXPECT_TRUE(ais->Open());
 
   LOG(INFO) << ">> Sample rate: " << aisw.sample_rate() << " [Hz]";
@@ -399,7 +508,7 @@ TEST(WinAudioInputTest, DISABLED_WASAPIAudioInputStreamRecordToFile) {
   base::PlatformThread::Sleep(TestTimeouts::action_timeout());
   ais->Stop();
   LOG(INFO) << ">> Recording has stopped.";
-  ais->Close();
+  ais.Close();
 }
 
 }  // namespace media

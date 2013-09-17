@@ -15,10 +15,6 @@ namespace media {
 
 class MEDIA_EXPORT AudioManagerCras : public AudioManagerBase {
  public:
-  // Unique ID of the "loopback" input device. This device captures post-mix,
-  // pre-DSP system audio.
-  static const char kLoopbackDeviceId[];
-
   AudioManagerCras();
 
   // AudioManager implementation.

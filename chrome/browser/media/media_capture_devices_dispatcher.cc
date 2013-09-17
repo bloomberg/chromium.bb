@@ -34,11 +34,8 @@
 #include "content/public/common/media_stream_request.h"
 #include "extensions/common/constants.h"
 #include "grit/generated_resources.h"
+#include "media/audio/audio_manager_base.h"
 #include "ui/base/l10n/l10n_util.h"
-
-#if defined(USE_CRAS)
-#include "media/audio/cras/audio_manager_cras.h"
-#endif
 
 using content::BrowserThread;
 using content::MediaStreamDevices;
@@ -288,7 +285,7 @@ void MediaCaptureDevicesDispatcher::ProcessScreenCaptureAccessRequest(
   const bool system_audio_capture_requested =
       request.audio_type == content::MEDIA_SYSTEM_AUDIO_CAPTURE;
 
-#if defined(USE_CRAS)
+#if defined(USE_CRAS) || defined(OS_WIN)
   const bool system_audio_capture_supported = true;
 #else
   const bool system_audio_capture_supported = false;
@@ -343,11 +340,11 @@ void MediaCaptureDevicesDispatcher::ProcessScreenCaptureAccessRequest(
       devices.push_back(content::MediaStreamDevice(
           content::MEDIA_DESKTOP_VIDEO_CAPTURE, media_id.ToString(), "Screen"));
       if (system_audio_capture_requested) {
-#if defined(USE_CRAS)
+#if defined(USE_CRAS) || defined(OS_WIN)
         // Use the special loopback device ID for system audio capture.
         devices.push_back(content::MediaStreamDevice(
             content::MEDIA_SYSTEM_AUDIO_CAPTURE,
-            media::AudioManagerCras::kLoopbackDeviceId,
+            media::AudioManagerBase::kLoopbackInputDeviceId,
             "System Audio"));
 #endif
       }

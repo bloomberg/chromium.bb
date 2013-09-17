@@ -26,9 +26,8 @@ CrasInputStream::CrasInputStream(const AudioParameters& params,
       params_(params),
       started_(false),
       stream_id_(0),
-      stream_direction_(device_id == AudioManagerCras::kLoopbackDeviceId
-                            ? CRAS_STREAM_POST_MIX_PRE_DSP
-                            : CRAS_STREAM_INPUT) {
+      stream_direction_(device_id == AudioManagerBase::kLoopbackInputDeviceId ?
+                            CRAS_STREAM_POST_MIX_PRE_DSP : CRAS_STREAM_INPUT) {
   DCHECK(audio_manager_);
 }
 
