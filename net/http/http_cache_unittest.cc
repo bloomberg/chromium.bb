@@ -2934,6 +2934,28 @@ TEST(HttpCache, SimplePOST_NoUploadId_Invalidate_205) {
   RemoveMockTransaction(&transaction);
 }
 
+// Tests that processing a POST before creating the backend doesn't crash.
+TEST(HttpCache, SimplePOST_NoUploadId_NoBackend) {
+  // This will initialize a cache object with NULL backend.
+  MockBlockingBackendFactory* factory = new MockBlockingBackendFactory();
+  factory->set_fail(true);
+  factory->FinishCreation();
+  MockHttpCache cache(factory);
+
+  ScopedVector<net::UploadElementReader> element_readers;
+  element_readers.push_back(new net::UploadBytesElementReader("hello", 5));
+  net::UploadDataStream upload_data_stream(&element_readers, 0);
+
+  MockTransaction transaction(kSimplePOST_Transaction);
+  AddMockTransaction(&transaction);
+  MockHttpRequest req(transaction);
+  req.upload_data_stream = &upload_data_stream;
+
+  RunTransactionTestWithRequest(cache.http_cache(), transaction, req, NULL);
+
+  RemoveMockTransaction(&transaction);
+}
+
 // Tests that we don't invalidate entries as a result of a failed POST.
 TEST(HttpCache, SimplePOST_DontInvalidate_100) {
   MockHttpCache cache;
