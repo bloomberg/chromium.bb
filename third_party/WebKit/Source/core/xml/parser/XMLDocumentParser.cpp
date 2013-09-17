@@ -350,6 +350,10 @@ void XMLDocumentParser::append(PassRefPtr<StringImpl> inputSource)
         return;
     }
 
+    // JavaScript can detach the parser. Make sure this is not released
+    // before the end of this method.
+    RefPtr<XMLDocumentParser> protect(this);
+
     doWrite(source.toString());
 
     if (isStopped())
