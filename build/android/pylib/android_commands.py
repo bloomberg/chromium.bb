@@ -863,6 +863,7 @@ class AndroidCommands(object):
     changed_files = self.GetFilesChanged(host_path, device_path)
     logging.info('Found %d files that need to be pushed to %s',
         len(changed_files), device_path)
+    logging.info([os.path.relpath(f[0], host_path) for f in changed_files])
     if not changed_files:
       return
 
