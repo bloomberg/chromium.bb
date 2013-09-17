@@ -773,16 +773,24 @@ bool ChromeContentRendererClient::IsNaClAllowed(
     bool is_nacl_unrestricted,
     const Extension* extension,
     WebPluginParams* params) {
-  // Temporarily allow these URLs to run NaCl apps, as long as the manifest is
-  // also whitelisted. We should remove this code when PNaCl ships.
-  bool is_whitelisted_url =
+  // Temporarily allow these whitelisted apps to use NaCl.
+  std::string app_url_host = app_url.host();
+  std::string manifest_url_path = manifest_url.path();
+  bool is_whitelisted_app =
+      // Whitelisted apps must be served over https.
       app_url.SchemeIs("https") &&
-      (app_url.host() == "plus.google.com" ||
-       app_url.host() == "plus.sandbox.google.com") &&
       manifest_url.SchemeIs("https") &&
-      manifest_url.host() == "ssl.gstatic.com" &&
-      ((manifest_url.path().find("s2/oz/nacl/") == 1) ||
-       (manifest_url.path().find("photos/nacl/") == 1));
+      // Photos app.
+      (((EndsWith(app_url_host, "plus.google.com", false) ||
+         EndsWith(app_url_host, "plus.sandbox.google.com", false)) &&
+       manifest_url.DomainIs("ssl.gstatic.com") &&
+      (manifest_url_path.find("s2/oz/nacl/") == 1 ||
+       manifest_url_path.find("photos/nacl/") == 1)) ||
+      // Chat app.
+      ((EndsWith(app_url_host, "talk.google.com", false) ||
+        EndsWith(app_url_host, "talkgadget.google.com", false)) &&
+       manifest_url.DomainIs("ssl.gstatic.com") &&
+       manifest_url_path.find("chat/apps/fx") == 1));
 
   bool is_extension_from_webstore =
       extension && extension->from_webstore();
@@ -809,7 +817,7 @@ bool ChromeContentRendererClient::IsNaClAllowed(
   // scheme. Also allow invocations if they are from whitelisted URLs or
   // if --enable-nacl is set.
   bool is_nacl_allowed = is_nacl_unrestricted ||
-                         is_whitelisted_url ||
+                         is_whitelisted_app ||
                          is_nacl_pdf_viewer ||
                          is_invoked_by_hosted_app ||
                          (is_invoked_by_extension &&
@@ -820,7 +828,7 @@ bool ChromeContentRendererClient::IsNaClAllowed(
     // Make sure that PPAPI 'dev' interfaces aren't available for production
     // apps unless they're whitelisted.
     WebString dev_attribute = WebString::fromUTF8("@dev");
-    if ((!is_whitelisted_url && !is_extension_from_webstore) ||
+    if ((!is_whitelisted_app && !is_extension_from_webstore) ||
         app_can_use_dev_interfaces) {
       // Add the special '@dev' attribute.
       std::vector<string16> param_names;
@@ -1285,12 +1293,13 @@ bool ChromeContentRendererClient::AllowBrowserPlugin(
 bool ChromeContentRendererClient::AllowPepperMediaStreamAPI(
     const GURL& url) {
 #if !defined(OS_ANDROID)
-  std::string host = url.host();
-  // Allow only the Hangouts app to use the MediaStream APIs. It's OK to check
+  // Allow only the Chat app to use the MediaStream APIs. It's OK to check
   // the whitelist in the renderer, since we're only preventing access until
   // these APIs are public and stable.
-  if (url.SchemeIs(extensions::kExtensionScheme) &&
-      !host.compare("hpcogiolnobbkijnnkdahioejpdcdoph")) {
+  std::string url_host = url.host();
+  if (url.SchemeIs("https") &&
+      (EndsWith(url_host, "talk.google.com", false) ||
+       EndsWith(url_host, "talkgadget.google.com", false))) {
     return true;
   }
   // Allow access for tests.
