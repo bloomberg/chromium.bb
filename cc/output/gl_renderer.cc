@@ -1967,11 +1967,8 @@ void GLRenderer::CopyCurrentRenderPassToBitmap(
     DrawingFrame* frame,
     scoped_ptr<CopyOutputRequest> request) {
   gfx::Rect copy_rect = frame->current_render_pass->output_rect;
-  if (request->has_area()) {
-    // Intersect with the request's area, positioned with its origin at the
-    // origin of the full copy_rect.
-    copy_rect.Intersect(request->area() - copy_rect.OffsetFromOrigin());
-  }
+  if (request->has_area())
+    copy_rect.Intersect(request->area());
   GetFramebufferPixelsAsync(copy_rect, request.Pass());
 }
 
@@ -2187,10 +2184,6 @@ void GLRenderer::GetFramebufferPixelsAsync(
     return;
   if (rect.IsEmpty())
     return;
-
-  DCHECK(gfx::Rect(current_surface_size_).Contains(rect)) <<
-      "current_surface_size_: " << current_surface_size_.ToString() <<
-      " rect: " << rect.ToString();
 
   gfx::Rect window_rect = MoveFromDrawToWindowSpace(rect);
 
