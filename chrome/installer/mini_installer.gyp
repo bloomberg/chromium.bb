@@ -291,6 +291,25 @@
           ],
         },
       ],
+      'conditions': [
+        ['test_isolation_mode != "noop"', {
+          'targets': [
+            {
+              'target_name': 'mini_installer_tests_run',
+              'type': 'none',
+              'dependencies': [
+              ],
+              'includes': [
+                '../../build/isolate.gypi',
+                'mini_installer_tests.isolate',
+              ],
+              'sources': [
+                'mini_installer_tests.isolate',
+              ],
+            },
+          ],
+        }],
+      ],
     }],
     [ 'branding == "Chrome"', {
       'variables': {
