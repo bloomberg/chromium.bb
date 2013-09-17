@@ -35,6 +35,7 @@ class SocketPermission : public SetDisjunctionPermission<SocketPermissionData,
   bool AddAnyHostMessage(PermissionMessages& messages) const;
   void AddSubdomainHostMessage(PermissionMessages& messages) const;
   void AddSpecificHostMessage(PermissionMessages& messages) const;
+  void AddNetworkListMessage(PermissionMessages& messages) const;
 };
 
 }  // namespace extensions

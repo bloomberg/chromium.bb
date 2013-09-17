@@ -22,7 +22,11 @@ namespace extensions {
 //   <op>   := 'tcp-connect' |
 //             'tcp-listen' |
 //             'udp-bind' |
-//             'udp-send-to'
+//             'udp-send-to' |
+//             'udp-multicast-membership' |
+//             'resolve-host' |
+//             'resolve-proxy' |
+//             'network-state'
 //   <host> := '*' |
 //             '*.' <anychar except '/' and '*'>+ |
 //             <anychar except '/' and '*'>+
@@ -54,6 +58,9 @@ class SocketPermissionData {
 
   // Populate |this| from a base::Value.
   bool FromValue(const base::Value* value);
+
+  // Returns true if the permission type can be bound to a host or port.
+  bool IsAddressBoundType() const;
 
   HostType GetHostType() const;
   const std::string GetHost() const;

@@ -33,6 +33,7 @@ const char kUDPSendTo[] = "udp-send-to";
 const char kUDPMulticastMembership[] = "udp-multicast-membership";
 const char kResolveHost[] = "resolve-host";
 const char kResolveProxy[] = "resolve-proxy";
+const char kNetworkState[] = "network-state";
 const int kWildcardPortNumber = 0;
 const int kInvalidPort = -1;
 
@@ -51,6 +52,8 @@ SocketPermissionRequest::OperationType StringToType(const std::string& s) {
     return SocketPermissionRequest::RESOLVE_HOST;
   if (s == kResolveProxy)
     return SocketPermissionRequest::RESOLVE_PROXY;
+  if (s == kNetworkState)
+    return SocketPermissionRequest::NETWORK_STATE;
   return SocketPermissionRequest::NONE;
 }
 
@@ -70,6 +73,8 @@ const char* TypeToString(SocketPermissionRequest::OperationType type) {
       return kResolveHost;
     case SocketPermissionRequest::RESOLVE_PROXY:
       return kResolveProxy;
+    case SocketPermissionRequest::NETWORK_STATE:
+      return kNetworkState;
     default:
       return kInvalid;
   }
@@ -180,6 +185,13 @@ bool SocketPermissionData::FromValue(const base::Value* value) {
   return Parse(spec);
 }
 
+bool SocketPermissionData::IsAddressBoundType() const {
+  return pattern_.type == SocketPermissionRequest::TCP_CONNECT ||
+      pattern_.type == SocketPermissionRequest::TCP_LISTEN ||
+      pattern_.type == SocketPermissionRequest::UDP_BIND ||
+      pattern_.type == SocketPermissionRequest::UDP_SEND_TO;
+}
+
 SocketPermissionData::HostType SocketPermissionData::GetHostType() const {
   return pattern_.host.empty() ? SocketPermissionData::ANY_HOST :
          match_subdomains_     ? SocketPermissionData::HOSTS_IN_DOMAINS :
@@ -223,11 +235,9 @@ bool SocketPermissionData::Parse(const std::string& permission) {
     if (tokens.size() == 1)
       return true;
 
-    // Multicast membership, resolve proxy and resolve host permission strings
-    // do not carry an address.
-    if (pattern_.type == SocketPermissionRequest::UDP_MULTICAST_MEMBERSHIP ||
-        pattern_.type == SocketPermissionRequest::RESOLVE_PROXY ||
-        pattern_.type == SocketPermissionRequest::RESOLVE_HOST)
+    // Return an error if address is specified for permissions that don't
+    // need it (such as 'resolve-host').
+    if (!IsAddressBoundType())
       break;
 
     pattern_.host = tokens[1];
@@ -273,9 +283,7 @@ const std::string& SocketPermissionData::GetAsString() const {
   spec_.reserve(64);
   spec_.append(TypeToString(pattern_.type));
 
-  if (pattern_.type == SocketPermissionRequest::UDP_MULTICAST_MEMBERSHIP ||
-      pattern_.type == SocketPermissionRequest::RESOLVE_PROXY ||
-      pattern_.type == SocketPermissionRequest::RESOLVE_HOST)
+  if (!IsAddressBoundType())
     return spec_;
 
   if (match_subdomains_) {

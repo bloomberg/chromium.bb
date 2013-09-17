@@ -30,26 +30,27 @@ PermissionMessages SocketPermission::GetMessages() const {
     AddSpecificHostMessage(result);
     AddSubdomainHostMessage(result);
   }
+  AddNetworkListMessage(result);
   return result;
 }
 
-bool SocketPermission::AddAnyHostMessage(PermissionMessages& messages)
-    const {
+bool SocketPermission::AddAnyHostMessage(PermissionMessages& messages) const {
   std::set<SocketPermissionData>::const_iterator i;
   for (i = data_set_.begin(); i != data_set_.end(); ++i) {
-    if (i->GetHostType() == SocketPermissionData::ANY_HOST) {
+    if (i->IsAddressBoundType() &&
+        i->GetHostType() == SocketPermissionData::ANY_HOST) {
       messages.push_back(PermissionMessage(
-            PermissionMessage::kSocketAnyHost,
-            l10n_util::GetStringUTF16(
-                IDS_EXTENSION_PROMPT_WARNING_SOCKET_ANY_HOST)));
+          PermissionMessage::kSocketAnyHost,
+          l10n_util::GetStringUTF16(
+              IDS_EXTENSION_PROMPT_WARNING_SOCKET_ANY_HOST)));
       return true;
     }
   }
   return false;
 }
 
-void SocketPermission::AddSubdomainHostMessage(PermissionMessages& messages)
-    const {
+void SocketPermission::AddSubdomainHostMessage(
+    PermissionMessages& messages) const {
   std::set<string16> domains;
   std::set<SocketPermissionData>::const_iterator i;
   for (i = data_set_.begin(); i != data_set_.end(); ++i) {
@@ -61,17 +62,17 @@ void SocketPermission::AddSubdomainHostMessage(PermissionMessages& messages)
              IDS_EXTENSION_PROMPT_WARNING_SOCKET_HOSTS_IN_DOMAIN :
              IDS_EXTENSION_PROMPT_WARNING_SOCKET_HOSTS_IN_DOMAINS;
     messages.push_back(PermissionMessage(
-          PermissionMessage::kSocketDomainHosts,
-          l10n_util::GetStringFUTF16(
-              id,
-              JoinString(
-                  std::vector<string16>(
-                      domains.begin(), domains.end()), ' '))));
+        PermissionMessage::kSocketDomainHosts,
+        l10n_util::GetStringFUTF16(
+            id,
+            JoinString(
+                std::vector<string16>(
+                    domains.begin(), domains.end()), ' '))));
   }
 }
 
-void SocketPermission::AddSpecificHostMessage(PermissionMessages& messages)
-    const {
+void SocketPermission::AddSpecificHostMessage(
+    PermissionMessages& messages) const {
   std::set<string16> hostnames;
   std::set<SocketPermissionData>::const_iterator i;
   for (i = data_set_.begin(); i != data_set_.end(); ++i) {
@@ -83,12 +84,25 @@ void SocketPermission::AddSpecificHostMessage(PermissionMessages& messages)
              IDS_EXTENSION_PROMPT_WARNING_SOCKET_SPECIFIC_HOST :
              IDS_EXTENSION_PROMPT_WARNING_SOCKET_SPECIFIC_HOSTS;
     messages.push_back(PermissionMessage(
-          PermissionMessage::kSocketSpecificHosts,
-          l10n_util::GetStringFUTF16(
-              id,
-              JoinString(
-                  std::vector<string16>(
-                      hostnames.begin(), hostnames.end()), ' '))));
+        PermissionMessage::kSocketSpecificHosts,
+        l10n_util::GetStringFUTF16(
+            id,
+            JoinString(
+                std::vector<string16>(
+                    hostnames.begin(), hostnames.end()), ' '))));
+  }
+}
+
+void SocketPermission::AddNetworkListMessage(
+    PermissionMessages& messages) const {
+  std::set<SocketPermissionData>::const_iterator i;
+  for (i = data_set_.begin(); i != data_set_.end(); ++i) {
+    if (i->pattern().type == content::SocketPermissionRequest::NETWORK_STATE) {
+      messages.push_back(PermissionMessage(
+          PermissionMessage::kNetworkState,
+          l10n_util::GetStringUTF16(
+              IDS_EXTENSION_PROMPT_WARNING_NETWORK_STATE)));
+    }
   }
 }
 

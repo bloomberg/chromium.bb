@@ -74,6 +74,7 @@ class PermissionMessage {
     kFileSystemWriteDirectory,
     kSignedInDevices,
     kWallpaper,
+    kNetworkState,
     kEnumBoundary,
   };
   COMPILE_ASSERT(PermissionMessage::kNone > PermissionMessage::kUnknown,
