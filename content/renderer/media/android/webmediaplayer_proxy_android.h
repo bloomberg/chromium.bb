@@ -16,6 +16,10 @@
 #include "media/base/media_keys.h"
 #include "url/gurl.h"
 
+#if defined(GOOGLE_TV)
+#include "ui/gfx/rect_f.h"
+#endif
+
 namespace content {
 
 class RendererDemuxerAndroid;
