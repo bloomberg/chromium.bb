@@ -440,7 +440,7 @@ public:
     // This is a DOM function.
     StyleSheetList* styleSheets();
 
-    StyleEngine* styleEngine() { return m_StyleEngine.get(); }
+    StyleEngine* styleEngine() { return m_styleEngine.get(); }
 
     bool gotoAnchorNeededAfterStylesheetsLoad() { return m_gotoAnchorNeededAfterStylesheetsLoad; }
     void setGotoAnchorNeededAfterStylesheetsLoad(bool b) { m_gotoAnchorNeededAfterStylesheetsLoad = b; }
@@ -1228,7 +1228,7 @@ private:
 
     MutationObserverOptions m_mutationObserverTypes;
 
-    OwnPtr<StyleEngine> m_StyleEngine;
+    OwnPtr<StyleEngine> m_styleEngine;
     RefPtr<StyleSheetList> m_styleSheetList;
 
     OwnPtr<FormController> m_formController;

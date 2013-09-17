@@ -404,7 +404,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_domTreeVersion(++s_globalTreeVersion)
     , m_listenerTypes(0)
     , m_mutationObserverTypes(0)
-    , m_StyleEngine(StyleEngine::create(*this))
+    , m_styleEngine(StyleEngine::create(*this))
     , m_visitedLinkState(VisitedLinkState::create(this))
     , m_visuallyOrdered(false)
     , m_readyState(Complete)
@@ -543,7 +543,7 @@ Document::~Document()
         m_import = 0;
     }
 
-    m_StyleEngine.clear();
+    m_styleEngine.clear();
 
     if (m_elemSheet)
         m_elemSheet->clearOwnerNode();
@@ -640,8 +640,8 @@ void Document::setCompatibilityMode(CompatibilityMode mode)
     selectorQueryCache()->invalidate();
     if (inQuirksMode() != wasInQuirksMode) {
         // All user stylesheets have to reparse using the different mode.
-        m_StyleEngine->clearPageUserSheet();
-        m_StyleEngine->invalidateInjectedStyleSheetCache();
+        m_styleEngine->clearPageUserSheet();
+        m_styleEngine->invalidateInjectedStyleSheetCache();
     }
 }
 
@@ -1690,13 +1690,13 @@ void Document::recalcStyle(StyleRecalcChange change)
     // re-attaching our containing iframe, which when asked HTMLFrameElementBase::isURLAllowed
     // hits a null-dereference due to security code always assuming the document has a SecurityOrigin.
 
-    if (m_StyleEngine->needsUpdateActiveStylesheetsOnStyleRecalc())
-        m_StyleEngine->updateActiveStyleSheets(FullStyleUpdate);
+    if (m_styleEngine->needsUpdateActiveStylesheetsOnStyleRecalc())
+        m_styleEngine->updateActiveStyleSheets(FullStyleUpdate);
 
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::willRecalculateStyle(this);
 
     if (m_elemSheet && m_elemSheet->contents()->usesRemUnits())
-        m_StyleEngine->setUsesRemUnit(true);
+        m_styleEngine->setUsesRemUnit(true);
 
     m_inStyleRecalc = true;
     {
@@ -1743,14 +1743,14 @@ void Document::recalcStyle(StyleRecalcChange change)
 
         // FIXME: SVG <use> element can schedule a recalc in the middle of an already running one.
         // See StyleEngine::updateActiveStyleSheets.
-        if (m_StyleEngine->needsUpdateActiveStylesheetsOnStyleRecalc())
+        if (m_styleEngine->needsUpdateActiveStylesheetsOnStyleRecalc())
             setNeedsStyleRecalc();
 
         m_inStyleRecalc = false;
 
         // Pseudo element removal and similar may only work with these flags still set. Reset them after the style recalc.
         if (m_styleResolver) {
-            m_StyleEngine->resetCSSFeatureFlags(m_styleResolver->ruleFeatureSet());
+            m_styleEngine->resetCSSFeatureFlags(m_styleResolver->ruleFeatureSet());
             m_styleResolver->clearStyleSharingList();
         }
 
@@ -1972,7 +1972,7 @@ void Document::createStyleResolver()
     if (Settings* docSettings = settings())
         matchAuthorAndUserStyles = docSettings->authorAndUserStylesEnabled();
     m_styleResolver = adoptPtr(new StyleResolver(*this, matchAuthorAndUserStyles));
-    m_StyleEngine->combineCSSFeatureFlags(m_styleResolver->ruleFeatureSet());
+    m_styleEngine->combineCSSFeatureFlags(m_styleResolver->ruleFeatureSet());
 }
 
 void Document::clearStyleResolver()
@@ -2813,7 +2813,7 @@ Frame* Document::findUnsafeParentScrollPropagationBoundary()
 
 void Document::seamlessParentUpdatedStylesheets()
 {
-    m_StyleEngine->didModifySeamlessParentStyleSheet();
+    m_styleEngine->didModifySeamlessParentStyleSheet();
     styleResolverChanged(RecalcStyleImmediately);
 }
 
@@ -2889,8 +2889,8 @@ void Document::processHttpEquivDefaultStyle(const String& content)
     // For more info, see the test at:
     // http://www.hixie.ch/tests/evil/css/import/main/preferred.html
     // -dwh
-    m_StyleEngine->setSelectedStylesheetSetName(content);
-    m_StyleEngine->setPreferredStylesheetSetName(content);
+    m_styleEngine->setSelectedStylesheetSetName(content);
+    m_styleEngine->setPreferredStylesheetSetName(content);
     styleResolverChanged(RecalcStyleDeferred);
 }
 
@@ -3264,17 +3264,17 @@ StyleSheetList* Document::styleSheets()
 
 String Document::preferredStylesheetSet() const
 {
-    return m_StyleEngine->preferredStylesheetSetName();
+    return m_styleEngine->preferredStylesheetSetName();
 }
 
 String Document::selectedStylesheetSet() const
 {
-    return m_StyleEngine->selectedStylesheetSetName();
+    return m_styleEngine->selectedStylesheetSetName();
 }
 
 void Document::setSelectedStylesheetSet(const String& aString)
 {
-    m_StyleEngine->setSelectedStylesheetSetName(aString);
+    m_styleEngine->setSelectedStylesheetSetName(aString);
     styleResolverChanged(RecalcStyleDeferred);
 }
 
@@ -3294,9 +3294,9 @@ void Document::styleResolverChanged(StyleResolverUpdateType updateType, StyleRes
     }
     m_didCalculateStyleResolver = true;
 
-    bool needsRecalc = m_StyleEngine->updateActiveStyleSheets(updateMode);
+    bool needsRecalc = m_styleEngine->updateActiveStyleSheets(updateMode);
 
-    if (didLayoutWithPendingStylesheets() && !m_StyleEngine->hasPendingSheets()) {
+    if (didLayoutWithPendingStylesheets() && !m_styleEngine->hasPendingSheets()) {
         // We need to manually repaint because we avoid doing all repaints in layout or style
         // recalc while sheets are still loading to avoid FOUC.
         m_pendingSheetLayout = IgnoreLayoutWithPendingSheets;
@@ -5373,7 +5373,7 @@ void Document::updateHoverActiveState(const HitTestRequest& request, Element* in
 
 bool Document::haveStylesheetsLoaded() const
 {
-    return !m_StyleEngine->hasPendingSheets() || m_ignorePendingStylesheets;
+    return !m_styleEngine->hasPendingSheets() || m_ignorePendingStylesheets;
 }
 
 Locale& Document::getCachedLocale(const AtomicString& locale)
