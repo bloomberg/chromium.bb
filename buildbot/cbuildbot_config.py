@@ -1587,7 +1587,6 @@ _arm_release.add_config('daisy_spring-release',
 
 _arm_release.add_config('peach_pit-release',
   boards=['peach_pit'],
-  hw_tests=[],
 )
 
 # Factory and Firmware releases much inherit from these classes.  Modifications
