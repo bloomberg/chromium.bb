@@ -103,9 +103,9 @@ base::PlatformFileError PicasaFileUtil::GetFileInfoSync(
     base::PlatformFileInfo* file_info, base::FilePath* platform_path) {
   DCHECK(context);
   DCHECK(file_info);
-  DCHECK(platform_path);
 
-  *platform_path = base::FilePath();
+  if (platform_path)
+    *platform_path = base::FilePath();
 
   std::vector<std::string> components;
   fileapi::VirtualPath::GetComponentsUTF8Unsafe(url.path(), &components);
