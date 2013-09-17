@@ -38,4 +38,25 @@ TEST(SequentialIDGeneratorTest, AddRemove) {
   EXPECT_FALSE(generator.HasGeneratedIDFor(45));
 }
 
+TEST(SequentialIDGeneratorTest, RemoveMultipleNumbers) {
+  const uint32 kMinID = 4;
+  SequentialIDGenerator generator(kMinID);
+
+  EXPECT_EQ(4U, generator.GetGeneratedID(45));
+  EXPECT_EQ(5U, generator.GetGeneratedID(55));
+  EXPECT_EQ(6U, generator.GetGeneratedID(15));
+
+  generator.ReleaseNumber(45);
+  EXPECT_FALSE(generator.HasGeneratedIDFor(45));
+  generator.ReleaseNumber(15);
+  EXPECT_FALSE(generator.HasGeneratedIDFor(15));
+
+  EXPECT_EQ(5U, generator.GetGeneratedID(55));
+  EXPECT_EQ(4U, generator.GetGeneratedID(12));
+
+  generator.ReleaseNumber(12);
+  generator.ReleaseNumber(55);
+  EXPECT_EQ(4U, generator.GetGeneratedID(0));
+}
+
 }  // namespace ui

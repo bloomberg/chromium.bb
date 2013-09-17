@@ -42,7 +42,9 @@ class UI_EXPORT SequentialIDGenerator {
  private:
   typedef base::hash_map<uint32, uint32> IDMap;
 
-  uint32 GetNextAvailableSlot();
+  uint32 GetNextAvailableID();
+
+  void UpdateNextAvailableIDAfterRelease(uint32 id);
 
   IDMap number_to_id_;
   IDMap id_to_number_;
