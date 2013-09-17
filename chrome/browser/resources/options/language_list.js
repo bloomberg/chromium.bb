@@ -407,43 +407,8 @@ cr.define('options', function() {
      * Saves the preference.
      */
     savePreference_: function() {
-      // Encode the language codes into a CSV string.
-      if (cr.isChromeOS)
-        Preferences.setStringPref(this.preferredLanguagesPref,
-                                  this.dataModel.slice().join(','), true);
-      // Save the same language list as accept languages preference as
-      // well, but we need to expand the language list, to make it more
-      // acceptable. For instance, some web sites don't understand 'en-US'
-      // but 'en'. See crosbug.com/9884.
-      var acceptLanguages = this.expandLanguageCodes(this.dataModel.slice());
-      Preferences.setStringPref(this.acceptLanguagesPref,
-                                acceptLanguages.join(','), true);
+      chrome.send('updateLanguageList', [this.dataModel.slice()]);
       cr.dispatchSimpleEvent(this, 'save');
-    },
-
-    /**
-     * Expands language codes to make these more suitable for Accept-Language.
-     * Example: ['en-US', 'ja', 'en-CA'] => ['en-US', 'en', 'ja', 'en-CA'].
-     * 'en' won't appear twice as this function eliminates duplicates.
-     * @param {Array} languageCodes List of language codes.
-     * @private
-     */
-    expandLanguageCodes: function(languageCodes) {
-      var expandedLanguageCodes = [];
-      var seen = {};  // Used to eliminiate duplicates.
-      for (var i = 0; i < languageCodes.length; i++) {
-        var languageCode = languageCodes[i];
-        if (!(languageCode in seen)) {
-          expandedLanguageCodes.push(languageCode);
-          seen[languageCode] = true;
-        }
-        var parts = languageCode.split('-');
-        if (!(parts[0] in seen)) {
-          expandedLanguageCodes.push(parts[0]);
-          seen[parts[0]] = true;
-        }
-      }
-      return expandedLanguageCodes;
     },
 
     /**

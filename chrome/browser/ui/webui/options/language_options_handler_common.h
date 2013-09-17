@@ -79,6 +79,9 @@ class LanguageOptionsHandlerCommon
   // has failed to download.
   void RetrySpellcheckDictionaryDownload(const base::ListValue* args);
 
+  // Called when the user saves the language list preferences.
+  void UpdateLanguageListCallback(const base::ListValue* args);
+
   // Updates the hunspell dictionary that is used for spellchecking.
   void RefreshHunspellDictionary();
 

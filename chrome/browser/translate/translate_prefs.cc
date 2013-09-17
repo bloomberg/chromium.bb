@@ -4,6 +4,8 @@
 
 #include "chrome/browser/translate/translate_prefs.h"
 
+#include <set>
+
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -33,6 +35,7 @@ namespace {
 
 void GetBlacklistedLanguages(const PrefService* prefs,
                              std::vector<std::string>* languages) {
+  DCHECK(languages);
   DCHECK(languages->empty());
 
   const char* key = TranslatePrefs::kPrefTranslateLanguageBlacklist;
@@ -64,33 +67,38 @@ std::string ConvertLangCodeForTranslation(const std::string &lang) {
   return main_part;
 }
 
-}  // namespace
+// Expands language codes to make these more suitable for Accept-Language.
+// Example: ['en-US', 'ja', 'en-CA'] => ['en-US', 'en', 'ja', 'en-CA'].
+// 'en' won't appear twice as this function eliminates duplicates.
+void ExpandLanguageCodes(const std::vector<std::string>& languages,
+                         std::vector<std::string>* expanded_languages) {
+  DCHECK(expanded_languages);
+  DCHECK(expanded_languages->empty());
 
-namespace {
+  // used to eliminate duplicates.
+  std::set<std::string> seen;
 
-void AppendLanguageToAcceptLanguages(PrefService* prefs,
-                                     const std::string& language) {
-  if (!TranslateAcceptLanguages::CanBeAcceptLanguage(language))
-    return;
+  for (std::vector<std::string>::const_iterator it = languages.begin();
+       it != languages.end(); ++it) {
+    const std::string& language = *it;
+    if (seen.find(language) == seen.end()) {
+      expanded_languages->push_back(language);
+      seen.insert(language);
+    }
 
-  std::string accept_language = language;
-  TranslateUtil::ToChromeLanguageSynonym(&accept_language);
-
-  std::string accept_languages_str = prefs->GetString(prefs::kAcceptLanguages);
-  std::vector<std::string> accept_languages;
-  base::SplitString(accept_languages_str, ',', &accept_languages);
-  if (std::find(accept_languages.begin(),
-                accept_languages.end(),
-                accept_language) == accept_languages.end()) {
-    accept_languages.push_back(accept_language);
+    std::vector<std::string> tokens;
+    base::SplitString(language, '-', &tokens);
+    if (tokens.size() == 0)
+      continue;
+    const std::string& main_part = tokens[0];
+    if (seen.find(main_part) == seen.end()) {
+      expanded_languages->push_back(main_part);
+      seen.insert(main_part);
+    }
   }
-  accept_languages_str = JoinString(accept_languages, ',');
-  prefs->SetString(prefs::kAcceptLanguages, accept_languages_str);
 }
 
 }  // namespace
-
-// TranslatePrefs: public: -----------------------------------------------------
 
 TranslatePrefs::TranslatePrefs(PrefService* user_prefs)
     : prefs_(user_prefs) {
@@ -105,7 +113,19 @@ bool TranslatePrefs::IsBlockedLanguage(
 void TranslatePrefs::BlockLanguage(
     const std::string& original_language) {
   BlacklistValue(kPrefTranslateBlockedLanguages, original_language);
-  AppendLanguageToAcceptLanguages(prefs_, original_language);
+
+  // Add the language to the language list at chrome://settings/languages.
+  std::string language = original_language;
+  TranslateUtil::ToChromeLanguageSynonym(&language);
+
+  std::vector<std::string> languages;
+  GetLanguageList(&languages);
+
+  if (std::find(languages.begin(), languages.end(), language) ==
+      languages.end()) {
+    languages.push_back(language);
+    UpdateLanguageList(languages);
+  }
 }
 
 void TranslatePrefs::UnblockLanguage(
@@ -238,7 +258,35 @@ void TranslatePrefs::ResetTranslationAcceptedCount(
   update.Get()->SetInteger(language, 0);
 }
 
-// TranslatePrefs: public, static: ---------------------------------------------
+void TranslatePrefs::GetLanguageList(std::vector<std::string>* languages) {
+  DCHECK(languages);
+  DCHECK(languages->empty());
+
+#if defined(OS_CHROMEOS)
+  const char* key = prefs::kLanguagePreferredLanguages;
+#else
+  const char* key = prefs::kAcceptLanguages;
+#endif
+
+  std::string languages_str = prefs_->GetString(key);
+  base::SplitString(languages_str, ',', languages);
+}
+
+void TranslatePrefs::UpdateLanguageList(
+    const std::vector<std::string>& languages) {
+#if defined(OS_CHROMEOS)
+  std::string languages_str = JoinString(languages, ',');
+  prefs_->SetString(prefs::kLanguagePreferredLanguages, languages_str);
+#endif
+
+  // Save the same language list as accept languages preference as well, but we
+  // need to expand the language list, to make it more acceptable. For instance,
+  // some web sites don't understand 'en-US' but 'en'. See crosbug.com/9884.
+  std::vector<std::string> accept_languages;
+  ExpandLanguageCodes(languages, &accept_languages);
+  std::string accept_languages_str = JoinString(accept_languages, ',');
+  prefs_->SetString(prefs::kAcceptLanguages, accept_languages_str);
+}
 
 // static
 bool TranslatePrefs::CanTranslateLanguage(Profile* profile,
@@ -386,13 +434,12 @@ void TranslatePrefs::MigrateUserPrefs(PrefService* user_prefs) {
   }
 }
 
-// TranslatePrefs: private: ----------------------------------------------------
-
 // static
 void TranslatePrefs::CreateBlockedLanguages(
     std::vector<std::string>* blocked_languages,
     const std::vector<std::string>& blacklisted_languages,
     const std::vector<std::string>& accept_languages) {
+  DCHECK(blocked_languages);
   DCHECK(blocked_languages->empty());
 
   std::set<std::string> result;

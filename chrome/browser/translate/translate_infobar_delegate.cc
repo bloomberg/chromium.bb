@@ -211,7 +211,6 @@ void TranslateInfoBarDelegate::AlwaysTranslatePageLanguage() {
 
 void TranslateInfoBarDelegate::NeverTranslatePageLanguage() {
   std::string original_lang = original_language_code();
-  DCHECK(!prefs_.IsBlockedLanguage(original_lang));
   prefs_.BlockLanguage(original_lang);
   RemoveSelf();
 }

@@ -22,6 +22,7 @@
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "chrome/browser/translate/translate_manager.h"
+#include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -163,6 +164,10 @@ void LanguageOptionsHandlerCommon::RegisterMessages() {
       base::Bind(
           &LanguageOptionsHandlerCommon::RetrySpellcheckDictionaryDownload,
           base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("updateLanguageList",
+      base::Bind(
+          &LanguageOptionsHandlerCommon::UpdateLanguageListCallback,
+          base::Unretained(this)));
 }
 
 void LanguageOptionsHandlerCommon::OnHunspellDictionaryInitialized() {
@@ -238,6 +243,27 @@ void LanguageOptionsHandlerCommon::SpellCheckLanguageChangeCallback(
       "LanguageOptions_SpellCheckLanguageChange_%s", language_code.c_str());
   content::RecordComputedAction(action);
   RefreshHunspellDictionary();
+}
+
+void LanguageOptionsHandlerCommon::UpdateLanguageListCallback(
+    const ListValue* args) {
+  CHECK_EQ(args->GetSize(), 1u);
+  const ListValue* language_list;
+  args->GetList(0, &language_list);
+  DCHECK(language_list);
+
+  std::vector<std::string> languages;
+  for (ListValue::const_iterator it = language_list->begin();
+       it != language_list->end(); ++it) {
+    std::string lang;
+    (*it)->GetAsString(&lang);
+    languages.push_back(lang);
+  }
+
+  Profile* profile = Profile::FromWebUI(web_ui());
+  PrefService* prefs = profile->GetPrefs();
+  TranslatePrefs translate_prefs(prefs);
+  translate_prefs.UpdateLanguageList(languages);
 }
 
 void LanguageOptionsHandlerCommon::RetrySpellcheckDictionaryDownload(
