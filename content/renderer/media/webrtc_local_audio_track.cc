@@ -67,7 +67,7 @@ class WebRtcLocalAudioTrack::ConfiguredBuffer :
     sink_buffer_size_ = params.sample_rate() / 100;
     audio_wrapper_ =
         media::AudioBus::Create(params.channels(), sink_buffer_size_);
-    buffer_.reset(new int16[params.frames_per_buffer() * params.channels()]);
+    buffer_.reset(new int16[sink_buffer_size_ * params.channels()]);
 
     // The size of the FIFO should be at least twice of the source buffer size
     // or twice of the sink buffer size.
