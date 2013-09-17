@@ -31,7 +31,6 @@
 #include "config.h"
 
 #include "wtf/Assertions.h"
-#include "wtf/CPU.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"

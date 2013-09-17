@@ -29,7 +29,6 @@
 #define DOUBLE_CONVERSION_UTILS_H_
 
 #include "wtf/Assertions.h"
-#include "wtf/CPU.h"
 #include <string.h>
 
 #define UNIMPLEMENTED ASSERT_NOT_REACHED

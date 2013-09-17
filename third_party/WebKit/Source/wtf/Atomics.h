@@ -30,7 +30,6 @@
 #ifndef Atomics_h
 #define Atomics_h
 
-#include "wtf/CPU.h"
 #include <stdint.h>
 
 #if OS(WIN)

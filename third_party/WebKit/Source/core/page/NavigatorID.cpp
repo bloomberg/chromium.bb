@@ -33,7 +33,6 @@
 #include "NavigatorID.h"
 
 #include "core/page/NavigatorBase.h"
-#include "wtf/CPU.h"
 
 #if !defined(WEBCORE_NAVIGATOR_PLATFORM) && OS(POSIX) && !OS(MACOSX)
 #include "wtf/StdLibExtras.h"
