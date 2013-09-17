@@ -94,6 +94,7 @@ bool VideoCaptureDeviceAndroid::RegisterVideoCaptureDevice(JNIEnv* env) {
 
 VideoCaptureDeviceAndroid::VideoCaptureDeviceAndroid(const Name& device_name)
     : state_(kIdle),
+      got_first_frame_(false),
       observer_(NULL),
       device_name_(device_name),
       current_settings_() {
@@ -155,6 +156,12 @@ void VideoCaptureDeviceAndroid::Allocate(
   CHECK(current_settings_.width > 0 && !(current_settings_.width % 2));
   CHECK(current_settings_.height > 0 && !(current_settings_.height % 2));
 
+  if (capture_format.frame_rate > 0) {
+    frame_interval_ = base::TimeDelta::FromMicroseconds(
+        (base::Time::kMicrosecondsPerSecond + capture_format.frame_rate - 1) /
+        capture_format.frame_rate);
+  }
+
   DVLOG(1) << "VideoCaptureDeviceAndroid::Allocate: queried width="
            << current_settings_.width
            << ", height="
@@ -169,6 +176,7 @@ void VideoCaptureDeviceAndroid::Start() {
   DVLOG(1) << "VideoCaptureDeviceAndroid::Start";
   {
     base::AutoLock lock(lock_);
+    got_first_frame_ = false;
     DCHECK_EQ(state_, kAllocated);
   }
 
@@ -249,9 +257,21 @@ void VideoCaptureDeviceAndroid::OnFrameAvailable(
     return;
   }
 
-  observer_->OnIncomingCapturedFrame(
-      reinterpret_cast<uint8*>(buffer), length, base::Time::Now(),
-      rotation, flip_vert, flip_horiz);
+  base::TimeTicks current_time = base::TimeTicks::Now();
+  if (!got_first_frame_) {
+    // Set aside one frame allowance for fluctuation.
+    expected_next_frame_time_ = current_time - frame_interval_;
+    got_first_frame_ = true;
+  }
+
+  // Deliver the frame when it doesn't arrive too early.
+  if (expected_next_frame_time_ <= current_time) {
+    expected_next_frame_time_ += frame_interval_;
+
+    observer_->OnIncomingCapturedFrame(
+        reinterpret_cast<uint8*>(buffer), length, base::Time::Now(),
+        rotation, flip_vert, flip_horiz);
+  }
 
   env->ReleaseByteArrayElements(data, buffer, JNI_ABORT);
 }

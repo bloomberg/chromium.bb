@@ -11,6 +11,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
+#include "base/time/time.h"
 #include "media/base/media_export.h"
 #include "media/video/capture/video_capture_device.h"
 
@@ -61,6 +62,9 @@ class MEDIA_EXPORT VideoCaptureDeviceAndroid : public VideoCaptureDevice1 {
   // accessed from different threads.
   base::Lock lock_;
   InternalState state_;
+  bool got_first_frame_;
+  base::TimeTicks expected_next_frame_time_;
+  base::TimeDelta frame_interval_;
   VideoCaptureDevice::EventHandler* observer_;
 
   Name device_name_;
