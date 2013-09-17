@@ -16,8 +16,6 @@
 #include "content/public/browser/android/download_controller_android.h"
 #else
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
-#include "chrome/browser/ui/blocked_content/blocked_content_tab_helper_delegate.h"
 #endif
 
 namespace {
@@ -64,22 +62,6 @@ class DefaultUIControllerDelegate : public DownloadUIController::Delegate {
 void DefaultUIControllerDelegate::NotifyDownloadStarting(
     content::DownloadItem* item) {
   content::WebContents* web_contents = item->GetWebContents();
-
-  // If the tab requesting the download is a constrained popup that is not
-  // shown, treat the request as if it came from the parent.
-  if (web_contents != NULL) {
-    BlockedContentTabHelper* blocked_content_tab_helper =
-        BlockedContentTabHelper::FromWebContents(web_contents);
-    if (blocked_content_tab_helper &&
-        blocked_content_tab_helper->delegate()) {
-      content::WebContents* constraining_web_contents =
-          blocked_content_tab_helper->delegate()->
-              GetConstrainingWebContents(web_contents);
-      if (constraining_web_contents)
-        web_contents = constraining_web_contents;
-    }
-  }
-
   Browser* browser =
       web_contents ? chrome::FindBrowserWithWebContents(web_contents) : NULL;
 

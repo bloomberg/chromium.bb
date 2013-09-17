@@ -9,7 +9,6 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/download/download_request_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/navigation_controller.h"
@@ -28,7 +27,6 @@ class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
 
   virtual void SetUp() {
     ChromeRenderViewHostTestHarness::SetUp();
-    BlockedContentTabHelper::CreateForWebContents(web_contents());
     InfoBarService::CreateForWebContents(web_contents());
     testing_action_ = ACCEPT;
     ask_allow_count_ = cancel_count_ = continue_count_ = 0;

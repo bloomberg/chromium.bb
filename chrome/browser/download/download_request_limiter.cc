@@ -12,8 +12,6 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
-#include "chrome/browser/ui/blocked_content/blocked_content_tab_helper_delegate.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
@@ -364,19 +362,8 @@ void DownloadRequestLimiter::CanDownloadImpl(
     const Callback& callback) {
   DCHECK(originating_contents);
 
-  // If the tab requesting the download is a constrained popup that is not
-  // shown, treat the request as if it came from the parent.
-  content::WebContents* effective_contents = originating_contents;
-  BlockedContentTabHelper* blocked_content_tab_helper =
-      BlockedContentTabHelper::FromWebContents(originating_contents);
-  if (blocked_content_tab_helper &&
-      blocked_content_tab_helper->delegate()) {
-    effective_contents = blocked_content_tab_helper->delegate()->
-        GetConstrainingWebContents(originating_contents);
-  }
-
   TabDownloadState* state = GetDownloadState(
-      effective_contents, originating_contents, true);
+      originating_contents, originating_contents, true);
   switch (state->download_status()) {
     case ALLOW_ALL_DOWNLOADS:
       if (state->download_count() && !(state->download_count() %
@@ -398,24 +385,24 @@ void DownloadRequestLimiter::CanDownloadImpl(
 
     case PROMPT_BEFORE_DOWNLOAD: {
       HostContentSettingsMap* content_settings = GetContentSettings(
-          effective_contents);
+          originating_contents);
       ContentSetting setting = CONTENT_SETTING_ASK;
       if (content_settings)
         setting = content_settings->GetContentSetting(
-            effective_contents->GetURL(),
-            effective_contents->GetURL(),
+            originating_contents->GetURL(),
+            originating_contents->GetURL(),
             CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
             std::string());
       switch (setting) {
         case CONTENT_SETTING_ALLOW:
           TabSpecificContentSettings::FromWebContents(
-              effective_contents)->SetDownloadsBlocked(false);
+              originating_contents)->SetDownloadsBlocked(false);
           ScheduleNotification(callback, true);
           state->increment_download_count();
           return;
         case CONTENT_SETTING_BLOCK:
           TabSpecificContentSettings::FromWebContents(
-              effective_contents)->SetDownloadsBlocked(true);
+              originating_contents)->SetDownloadsBlocked(true);
           ScheduleNotification(callback, false);
           return;
         case CONTENT_SETTING_DEFAULT:

@@ -170,20 +170,6 @@ class RendererMediaPlayerManager;
 class WebMediaPlayerProxyAndroid;
 #endif
 
-// We need to prevent a page from trying to create infinite popups. It is not
-// as simple as keeping a count of the number of immediate children
-// popups. Having an html file that window.open()s itself would create
-// an unlimited chain of RenderViews who only have one RenderView child.
-//
-// Therefore, each new top level RenderView creates a new counter and shares it
-// with all its children and grandchildren popup RenderViewImpls created with
-// createView() to have a sort of global limit for the page so no more than
-// kMaximumNumberOfPopups popups are created.
-//
-// This is a RefCounted holder of an int because I can't say
-// scoped_refptr<int>.
-typedef base::RefCountedData<int> SharedRenderViewCounter;
-
 //
 // RenderView is an object that manages a WebView object, and provides a
 // communication interface with an embedding application process
@@ -197,15 +183,12 @@ class CONTENT_EXPORT RenderViewImpl
       NON_EXPORTED_BASE(public WebMediaPlayerDelegate),
       public base::SupportsWeakPtr<RenderViewImpl> {
  public:
-  // Creates a new RenderView. If this is a blocked popup or as a new tab,
-  // opener_id is the routing ID of the RenderView responsible for creating this
-  // RenderView. |counter| is either a currently initialized counter, or NULL
-  // (in which case we treat this RenderView as a top level window).
+  // Creates a new RenderView. |opener_id| is the routing ID of the RenderView
+  // responsible for creating this RenderView.
   static RenderViewImpl* Create(
       int32 opener_id,
       const RendererPreferences& renderer_prefs,
       const WebPreferences& webkit_prefs,
-      SharedRenderViewCounter* counter,
       int32 routing_id,
       int32 main_frame_routing_id,
       int32 surface_id,
@@ -943,7 +926,6 @@ class CONTENT_EXPORT RenderViewImpl
   void OnDeterminePageLanguage();
   void OnDisableScrollbarsForSmallWindows(
       const gfx::Size& disable_scrollbars_size_limit);
-  void OnDisassociateFromPopupCount();
   void OnDragSourceEndedOrMoved(const gfx::Point& client_point,
                                 const gfx::Point& screen_point,
                                 bool ended,
@@ -1483,16 +1465,6 @@ class CONTENT_EXPORT RenderViewImpl
   // is passed to us upon creation.  WebKit asks for this ID upon first use and
   // uses it whenever asking the browser process to allocate new storage areas.
   int64 session_storage_namespace_id_;
-
-  // The total number of unrequested popups that exist and can be followed back
-  // to a common opener. This count is shared among all RenderViews created with
-  // createView(). All popups are treated as unrequested until specifically
-  // instructed otherwise by the Browser process.
-  scoped_refptr<SharedRenderViewCounter> shared_popup_counter_;
-
-  // Whether this is a top level window (instead of a popup). Top level windows
-  // shouldn't count against their own |shared_popup_counter_|.
-  bool decrement_shared_popup_at_destruction_;
 
   // Stores edit commands associated to the next key event.
   // Shall be cleared as soon as the next key event is processed.

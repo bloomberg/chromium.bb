@@ -10,7 +10,6 @@
 #include "chrome/browser/safe_browsing/safe_browsing_tab_observer.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
@@ -89,12 +88,6 @@ void InstantLoader::SetContents(scoped_ptr<content::WebContents> new_contents) {
   // Set up various tab helpers. The rest will get attached when (if) the
   // contents is added to the tab strip.
 
-  // Tab helpers to control popups.
-  BlockedContentTabHelper::CreateForWebContents(contents());
-  BlockedContentTabHelper::FromWebContents(contents())->
-      SetAllContentsBlocked(true);
-  TabSpecificContentSettings::CreateForWebContents(contents());
-
   // Bookmarks (Users can bookmark the Instant NTP. This ensures the bookmarked
   // state is correctly set when the contents are swapped into a tab.)
   BookmarkTabHelper::CreateForWebContents(contents());
@@ -127,10 +120,6 @@ scoped_ptr<content::WebContents> InstantLoader::ReleaseContents() {
   contents_->SetDelegate(NULL);
 
   // Undo tab helper work done in SetContents().
-
-  BlockedContentTabHelper::FromWebContents(contents())->
-      SetAllContentsBlocked(false);
-
   CoreTabHelper::FromWebContents(contents())->set_delegate(NULL);
 
   registrar_.Remove(this, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,

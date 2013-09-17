@@ -37,7 +37,6 @@
 #include "chrome/browser/repost_form_warning_controller.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/app_modal_dialogs/javascript_dialog_manager.h"
-#include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_tab_contents.h"
@@ -447,8 +446,6 @@ bool ExternalTabContainerWin::Init(Profile* profile,
 
   LoadAccelerators();
   SetupExternalTabView();
-  BlockedContentTabHelper::FromWebContents(existing_contents)->
-      set_delegate(this);
   return true;
 }
 
@@ -787,11 +784,6 @@ void ExternalTabContainerWin::MoveContents(WebContents* source,
                                            const gfx::Rect& pos) {
   if (automation_ && is_popup_window_)
     automation_->Send(new AutomationMsg_MoveWindow(tab_handle_, pos));
-}
-
-content::WebContents* ExternalTabContainerWin::GetConstrainingWebContents(
-    content::WebContents* source) {
-  return source;
 }
 
 ExternalTabContainerWin::~ExternalTabContainerWin() {

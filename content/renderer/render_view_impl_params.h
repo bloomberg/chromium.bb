@@ -20,14 +20,12 @@ struct WebScreenInfo;
 namespace content {
 
 struct RendererPreferences;
-typedef base::RefCountedData<int> SharedRenderViewCounter;
 
 // Container for all parameters passed to RenderViewImpl's constructor.
 struct CONTENT_EXPORT RenderViewImplParams {
   RenderViewImplParams(int32 opener_id,
                        const RendererPreferences& renderer_prefs,
                        const WebPreferences& webkit_prefs,
-                       SharedRenderViewCounter* counter,
                        int32 routing_id,
                        int32 main_frame_routing_id,
                        int32 surface_id,
@@ -45,7 +43,6 @@ struct CONTENT_EXPORT RenderViewImplParams {
   int32 opener_id;
   const RendererPreferences& renderer_prefs;
   const WebPreferences& webkit_prefs;
-  SharedRenderViewCounter* counter;
   int32 routing_id;
   int32 main_frame_routing_id;
   int32 surface_id;

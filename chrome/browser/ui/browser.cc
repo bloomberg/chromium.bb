@@ -87,7 +87,6 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/app_modal_dialogs/javascript_dialog_manager.h"
 #include "chrome/browser/ui/autofill/tab_autofill_manager_delegate.h"
-#include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/browser_command_controller.h"
@@ -1755,14 +1754,6 @@ Browser::GetWebContentsModalDialogHost() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Browser, BlockedContentTabHelperDelegate implementation:
-
-content::WebContents* Browser::GetConstrainingWebContents(
-    content::WebContents* source) {
-  return source;
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // Browser, BookmarkTabHelperDelegate implementation:
 
 void Browser::URLStarredChanged(content::WebContents* web_contents,
@@ -2104,8 +2095,6 @@ void Browser::SetAsDelegate(WebContents* web_contents, Browser* delegate) {
   web_contents->SetDelegate(delegate);
 
   // ...and all the helpers.
-  BlockedContentTabHelper::FromWebContents(web_contents)->
-      set_delegate(delegate);
   BookmarkTabHelper::FromWebContents(web_contents)->set_delegate(delegate);
   WebContentsModalDialogManager::FromWebContents(web_contents)->
       SetDelegate(delegate);

@@ -169,7 +169,6 @@ void RenderViewTest::SetUp() {
       kOpenerId,
       RendererPreferences(),
       WebPreferences(),
-      new SharedRenderViewCounter(0),
       kRouteId,
       kMainFrameRouteId,
       kSurfaceId,

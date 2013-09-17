@@ -131,7 +131,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   virtual void ClearFocusedNode() OVERRIDE;
   virtual void ClosePage() OVERRIDE;
   virtual void CopyImageAt(int x, int y) OVERRIDE;
-  virtual void DisassociateFromPopupCount() OVERRIDE;
   virtual void DesktopNotificationPermissionRequestDone(
       int callback_context) OVERRIDE;
   virtual void DesktopNotificationPostDisplay(int callback_context) OVERRIDE;

@@ -1131,7 +1131,6 @@ void RenderThreadImpl::OnCreateNewView(const ViewMsg_New_Params& params) {
       params.opener_route_id,
       params.renderer_preferences,
       params.web_preferences,
-      new SharedRenderViewCounter(0),
       params.view_id,
       params.main_frame_routing_id,
       params.surface_id,

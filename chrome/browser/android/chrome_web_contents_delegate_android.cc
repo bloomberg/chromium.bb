@@ -12,7 +12,6 @@
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_modal_dialogs/javascript_dialog_manager.h"
-#include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
@@ -282,23 +281,7 @@ void ChromeWebContentsDelegateAndroid::AddNewContents(
   // Can't create a new contents for the current tab - invalid case.
   DCHECK_NE(disposition, CURRENT_TAB);
 
-  BlockedContentTabHelper* source_blocked_content = NULL;
-  if (source)
-    source_blocked_content = BlockedContentTabHelper::FromWebContents(source);
-
   TabAndroid::InitTabHelpers(new_contents);
-
-  if (source_blocked_content) {
-    if (source_blocked_content->all_contents_blocked()) {
-      source_blocked_content->AddWebContents(
-          new_contents, disposition, initial_pos, user_gesture);
-      if (was_blocked)
-        *was_blocked = true;
-      return;
-    }
-
-    new_contents->GetRenderViewHost()->DisassociateFromPopupCount();
-  }
 
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);

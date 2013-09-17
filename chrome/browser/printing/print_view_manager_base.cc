@@ -57,13 +57,10 @@ PrintViewManagerBase::PrintViewManagerBase(content::WebContents* web_contents)
       number_pages_(0),
       printing_succeeded_(false),
       inside_inner_message_loop_(false),
-      cookie_(0),
-      tab_content_blocked_(false) {
+      cookie_(0) {
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   expecting_first_page_ = true;
 #endif
-  registrar_.Add(this, chrome::NOTIFICATION_CONTENT_BLOCKED_STATE_CHANGED,
-                 content::Source<content::WebContents>(web_contents));
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   printing_enabled_.Init(
@@ -85,7 +82,7 @@ bool PrintViewManagerBase::PrintNow() {
 void PrintViewManagerBase::UpdateScriptedPrintingBlocked() {
   Send(new PrintMsg_SetScriptedPrintingBlocked(
        routing_id(),
-       !printing_enabled_.GetValue() || tab_content_blocked_));
+       !printing_enabled_.GetValue()));
 }
 
 void PrintViewManagerBase::NavigationStopped() {
@@ -239,11 +236,6 @@ void PrintViewManagerBase::Observe(
   switch (type) {
     case chrome::NOTIFICATION_PRINT_JOB_EVENT: {
       OnNotifyPrintJobEvent(*content::Details<JobEventDetails>(details).ptr());
-      break;
-    }
-    case chrome::NOTIFICATION_CONTENT_BLOCKED_STATE_CHANGED: {
-      tab_content_blocked_ = *content::Details<const bool>(details).ptr();
-      UpdateScriptedPrintingBlocked();
       break;
     }
     default: {

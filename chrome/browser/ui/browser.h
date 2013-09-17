@@ -20,7 +20,6 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/devtools/devtools_toggle_action.h"
 #include "chrome/browser/sessions/session_id.h"
-#include "chrome/browser/ui/blocked_content/blocked_content_tab_helper_delegate.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper_delegate.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -98,7 +97,6 @@ class Browser : public TabStripModelObserver,
                 public CoreTabHelperDelegate,
                 public SearchEngineTabHelperDelegate,
                 public ChromeWebModalDialogManagerDelegate,
-                public BlockedContentTabHelperDelegate,
                 public BookmarkTabHelperDelegate,
                 public ZoomObserver,
                 public content::PageNavigator,
@@ -675,10 +673,6 @@ class Browser : public TabStripModelObserver,
                                      bool blocked) OVERRIDE;
   virtual web_modal::WebContentsModalDialogHost*
       GetWebContentsModalDialogHost() OVERRIDE;
-
-  // Overridden from BlockedContentTabHelperDelegate:
-  virtual content::WebContents* GetConstrainingWebContents(
-      content::WebContents* source) OVERRIDE;
 
   // Overridden from BookmarkTabHelperDelegate:
   virtual void URLStarredChanged(content::WebContents* web_contents,

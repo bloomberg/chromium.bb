@@ -1882,10 +1882,6 @@ void RenderViewHostImpl::ExecutePluginActionAtLocation(
   Send(new ViewMsg_PluginActionAt(GetRoutingID(), location, action));
 }
 
-void RenderViewHostImpl::DisassociateFromPopupCount() {
-  Send(new ViewMsg_DisassociateFromPopupCount(GetRoutingID()));
-}
-
 void RenderViewHostImpl::NotifyMoveOrResizeStarted() {
   Send(new ViewMsg_MoveOrResizeStarted(GetRoutingID()));
 }

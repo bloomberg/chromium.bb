@@ -34,7 +34,6 @@
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/alternate_error_tab_observer.h"
 #include "chrome/browser/ui/autofill/tab_autofill_manager_delegate.h"
-#include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
@@ -119,7 +118,6 @@ void BrowserTabContents::AttachTabHelpers(WebContents* web_contents) {
       TabAutofillManagerDelegate::FromWebContents(web_contents),
       g_browser_process->GetApplicationLocale(),
       AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER);
-  BlockedContentTabHelper::CreateForWebContents(web_contents);
   BookmarkTabHelper::CreateForWebContents(web_contents);
   chrome_browser_net::LoadTimeStatsTabHelper::CreateForWebContents(
       web_contents);

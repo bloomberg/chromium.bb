@@ -17,7 +17,6 @@
 #include "chrome/browser/external_tab/external_tab_container.h"
 #include "chrome/browser/infobars/infobar_container.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
-#include "chrome/browser/ui/blocked_content/blocked_content_tab_helper_delegate.h"
 #include "content/public/browser/navigation_type.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -59,8 +58,7 @@ class ExternalTabContainerWin : public ExternalTabContainer,
                                 public content::NotificationObserver,
                                 public views::WidgetObserver,
                                 public ui::AcceleratorTarget,
-                                public InfoBarContainer::Delegate,
-                                public BlockedContentTabHelperDelegate {
+                                public InfoBarContainer::Delegate {
  public:
   typedef std::map<uintptr_t,
                    scoped_refptr<ExternalTabContainerWin> > PendingTabs;
@@ -216,10 +214,6 @@ class ExternalTabContainerWin : public ExternalTabContainer,
   virtual SkColor GetInfoBarSeparatorColor() const OVERRIDE;
   virtual void InfoBarContainerStateChanged(bool is_animating) OVERRIDE;
   virtual bool DrawInfoBarArrows(int* x) const OVERRIDE;
-
-  // Overridden from BlockedContentTabHelperDelegate:
-  virtual content::WebContents* GetConstrainingWebContents(
-      content::WebContents* source) OVERRIDE;
 
  protected:
   virtual ~ExternalTabContainerWin();

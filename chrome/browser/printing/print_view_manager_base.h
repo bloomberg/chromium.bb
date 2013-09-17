@@ -155,9 +155,6 @@ class PrintViewManagerBase : public content::NotificationObserver,
   // Whether printing is enabled.
   BooleanPrefMember printing_enabled_;
 
-  // Whether our content is in blocked state.
-  bool tab_content_blocked_;
-
   DISALLOW_COPY_AND_ASSIGN(PrintViewManagerBase);
 };
 
