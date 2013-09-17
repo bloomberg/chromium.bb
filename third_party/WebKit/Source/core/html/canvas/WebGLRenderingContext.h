@@ -905,6 +905,9 @@ public:
     static void deactivateContext(WebGLRenderingContext*, bool addToInactiveList);
     static void willDestroyContext(WebGLRenderingContext*);
     static void forciblyLoseOldestContext(const String& reason);
+    // Return the least recently used context's position in the active context vector.
+    // If the vector is empty, return the maximum allowed active context number.
+    static size_t oldestContextIndex();
     static IntSize oldestContextSize();
 };
 

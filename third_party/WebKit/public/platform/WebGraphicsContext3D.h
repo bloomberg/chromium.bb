@@ -159,6 +159,10 @@ public:
     // success.
     virtual bool makeContextCurrent() = 0;
 
+    // Each flush or finish is assigned an unique ID. The larger
+    // the ID number, the more recently the context has been flushed.
+    virtual uint32_t lastFlushID() { return 0; }
+
     // The size of the region into which this WebGraphicsContext3D is rendering.
     // Returns the last values passed to reshape().
     virtual int width() = 0;

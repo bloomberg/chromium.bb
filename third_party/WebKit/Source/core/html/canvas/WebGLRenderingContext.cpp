@@ -103,26 +103,57 @@ Vector<WebGLRenderingContext*>& WebGLRenderingContext::forciblyEvictedContexts()
 
 void WebGLRenderingContext::forciblyLoseOldestContext(const String& reason)
 {
-    if (activeContexts().size()) {
-        WebGLRenderingContext* oldestActiveContext = activeContexts().first();
-        activeContexts().remove(0);
+    size_t candidateID = oldestContextIndex();
+    if (candidateID >= activeContexts().size())
+        return;
 
-        oldestActiveContext->printWarningToConsole(reason);
-        InspectorInstrumentation::didFireWebGLWarning(oldestActiveContext->canvas());
+    WebGLRenderingContext* candidate = activeContexts()[candidateID];
 
-        // This will call deactivateContext once the context has actually been lost.
-        oldestActiveContext->forceLostContext(WebGLRenderingContext::SyntheticLostContext);
+    activeContexts().remove(candidateID);
+
+    candidate->printWarningToConsole(reason);
+    InspectorInstrumentation::didFireWebGLWarning(candidate->canvas());
+
+    // This will call deactivateContext once the context has actually been lost.
+    candidate->forceLostContext(WebGLRenderingContext::SyntheticLostContext);
+}
+
+size_t WebGLRenderingContext::oldestContextIndex()
+{
+    if (!activeContexts().size())
+        return maxGLActiveContexts;
+
+    WebGLRenderingContext* candidate = activeContexts().first();
+    size_t candidateID = 0;
+    for (size_t ii = 1; ii < activeContexts().size(); ++ii) {
+        WebGLRenderingContext* context = activeContexts()[ii];
+        // Always evict a context that no longer belongs to any dom tree
+        // before a context that's still in a dom tree.
+        if (context->canvas()->inDocument() && !candidate->canvas()->inDocument())
+            continue;
+        if (!context->canvas()->inDocument() && candidate->canvas()->inDocument()) {
+            candidate = context;
+            candidateID = ii;
+            continue;
+        }
+        if (context->graphicsContext3D() && candidate->graphicsContext3D() && context->graphicsContext3D()->lastFlushID() < candidate->graphicsContext3D()->lastFlushID()) {
+            candidate = context;
+            candidateID = ii;
+        }
     }
+
+    return candidateID;
 }
 
 IntSize WebGLRenderingContext::oldestContextSize()
 {
     IntSize size;
 
-    if (activeContexts().size()) {
-        WebGLRenderingContext* oldestActiveContext = activeContexts().first();
-        size.setWidth(oldestActiveContext->drawingBufferWidth());
-        size.setHeight(oldestActiveContext->drawingBufferHeight());
+    size_t candidateID = oldestContextIndex();
+    if (candidateID < activeContexts().size()) {
+        WebGLRenderingContext* candidate = activeContexts()[candidateID];
+        size.setWidth(candidate->drawingBufferWidth());
+        size.setHeight(candidate->drawingBufferHeight());
     }
 
     return size;
