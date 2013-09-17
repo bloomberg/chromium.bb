@@ -330,15 +330,6 @@ void PanelLayoutManager::ToggleMinimize(aura::Window* panel) {
   }
 }
 
-views::Widget* PanelLayoutManager::GetCalloutWidgetForPanel(
-    aura::Window* panel) {
-  DCHECK(panel->parent() == panel_container_);
-  PanelList::iterator found =
-      std::find(panel_windows_.begin(), panel_windows_.end(), panel);
-  DCHECK(found != panel_windows_.end());
-  return found->callout_widget;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // PanelLayoutManager, aura::LayoutManager implementation:
 void PanelLayoutManager::OnWindowResized() {
@@ -841,8 +832,7 @@ void PanelLayoutManager::UpdateCallouts() {
     ui::Layer* layer = callout_widget->GetNativeWindow()->layer();
     // If the panel is not over the callout position or has just become visible
     // then fade in the callout.
-    if ((distance_until_over_panel > 0 || layer->GetTargetOpacity() < 1) &&
-        panel->layer()->GetTargetTransform().IsIdentity()) {
+    if (distance_until_over_panel > 0 || layer->GetTargetOpacity() < 1) {
       if (distance_until_over_panel > 0 &&
           slide_distance >= distance_until_over_panel) {
         layer->SetOpacity(0);

@@ -10,7 +10,7 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/overview/window_selector.h"
-#include "ash/wm/overview/window_selector_item.h"
+#include "ash/wm/overview/window_selector_window.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -31,14 +31,14 @@ const float kWindowOverviewSelectionOpacity = 0.5f;
 const int kWindowOverviewSelectionPadding = 15;
 
 // A comparator for locating a given target window.
-struct WindowSelectorItemComparator
-    : public std::unary_function<WindowSelectorItem*, bool> {
-  explicit WindowSelectorItemComparator(const aura::Window* target_window)
+struct WindowSelectorWindowComparator
+    : public std::unary_function<WindowSelectorWindow*, bool> {
+  explicit WindowSelectorWindowComparator(const aura::Window* target_window)
       : target(target_window) {
   }
 
-  bool operator()(const WindowSelectorItem* window) const {
-    return window->TargetedWindow(target) != NULL;
+  bool operator()(const WindowSelectorWindow* window) const {
+    return target == window->window();
   }
 
   const aura::Window* target;
@@ -47,7 +47,7 @@ struct WindowSelectorItemComparator
 }  // namespace
 
 WindowOverview::WindowOverview(WindowSelector* window_selector,
-                               WindowSelectorItemList* windows,
+                               WindowSelectorWindowList* windows,
                                aura::RootWindow* single_root_window)
     : window_selector_(window_selector),
       windows_(windows),
@@ -89,9 +89,9 @@ void WindowOverview::OnEvent(ui::Event* event) {
   // If the event is targetted at any of the windows in the overview, then
   // prevent it from propagating.
   aura::Window* target = static_cast<aura::Window*>(event->target());
-  for (WindowSelectorItemList::iterator iter = windows_->begin();
+  for (WindowSelectorWindowList::iterator iter = windows_->begin();
        iter != windows_->end(); ++iter) {
-    if ((*iter)->TargetedWindow(target)) {
+    if ((*iter)->Contains(target)) {
       // TODO(flackr): StopPropogation prevents generation of gesture events.
       // We should find a better way to prevent events from being delivered to
       // the window, perhaps a transparent window in front of the target window
@@ -116,24 +116,24 @@ void WindowOverview::OnKeyEvent(ui::KeyEvent* event) {
 void WindowOverview::OnMouseEvent(ui::MouseEvent* event) {
   if (event->type() != ui::ET_MOUSE_RELEASED)
     return;
-  aura::Window* target = GetEventTarget(event);
+  WindowSelectorWindow* target = GetEventTarget(event);
   if (!target)
     return;
 
-  window_selector_->SelectWindow(target);
+  window_selector_->SelectWindow(target->window());
 }
 
 void WindowOverview::OnTouchEvent(ui::TouchEvent* event) {
   if (event->type() != ui::ET_TOUCH_PRESSED)
     return;
-  aura::Window* target = GetEventTarget(event);
+  WindowSelectorWindow* target = GetEventTarget(event);
   if (!target)
     return;
 
-  window_selector_->SelectWindow(target);
+  window_selector_->SelectWindow(target->window());
 }
 
-aura::Window* WindowOverview::GetEventTarget(ui::LocatedEvent* event) {
+WindowSelectorWindow* WindowOverview::GetEventTarget(ui::LocatedEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
   // If the target window doesn't actually contain the event location (i.e.
   // mouse down over the window and mouse up elsewhere) then do not select the
@@ -141,19 +141,18 @@ aura::Window* WindowOverview::GetEventTarget(ui::LocatedEvent* event) {
   if (!target->HitTest(event->location()))
     return NULL;
 
-  for (WindowSelectorItemList::iterator iter = windows_->begin();
+  for (WindowSelectorWindowList::iterator iter = windows_->begin();
        iter != windows_->end(); ++iter) {
-    aura::Window* selected = (*iter)->TargetedWindow(target);
-    if (selected)
-      return selected;
+    if ((*iter)->Contains(target))
+      return *iter;
   }
   return NULL;
 }
 
 void WindowOverview::PositionWindows() {
   if (single_root_window_) {
-    std::vector<WindowSelectorItem*> windows;
-    for (WindowSelectorItemList::iterator iter = windows_->begin();
+    std::vector<WindowSelectorWindow*> windows;
+    for (WindowSelectorWindowList::iterator iter = windows_->begin();
          iter != windows_->end(); ++iter) {
       windows.push_back(*iter);
     }
@@ -166,10 +165,10 @@ void WindowOverview::PositionWindows() {
 }
 
 void WindowOverview::PositionWindowsFromRoot(aura::RootWindow* root_window) {
-  std::vector<WindowSelectorItem*> windows;
-  for (WindowSelectorItemList::iterator iter = windows_->begin();
+  std::vector<WindowSelectorWindow*> windows;
+  for (WindowSelectorWindowList::iterator iter = windows_->begin();
        iter != windows_->end(); ++iter) {
-    if ((*iter)->GetRootWindow() == root_window)
+    if ((*iter)->window()->GetRootWindow() == root_window)
       windows.push_back(*iter);
   }
   PositionWindowsOnRoot(root_window, windows);
@@ -177,7 +176,7 @@ void WindowOverview::PositionWindowsFromRoot(aura::RootWindow* root_window) {
 
 void WindowOverview::PositionWindowsOnRoot(
     aura::RootWindow* root_window,
-    const std::vector<WindowSelectorItem*>& windows) {
+    const std::vector<WindowSelectorWindow*>& windows) {
   if (windows.empty())
     return;
 
@@ -214,7 +213,7 @@ void WindowOverview::PositionWindowsOnRoot(
                             window_size.width(),
                             window_size.height());
     target_bounds.Inset(kWindowMargin, kWindowMargin);
-    windows[i]->SetBounds(root_window, target_bounds);
+    windows[i]->TransformToFitBounds(root_window, target_bounds);
   }
 }
 

@@ -90,8 +90,7 @@ MruWindowTracker::WindowList BuildWindowListInternal(
 
 const int kSwitchableWindowContainerIds[] = {
   internal::kShellWindowId_DefaultContainer,
-  internal::kShellWindowId_AlwaysOnTopContainer,
-  internal::kShellWindowId_PanelContainer
+  internal::kShellWindowId_AlwaysOnTopContainer
 };
 
 const size_t kSwitchableWindowContainerIdsLength =

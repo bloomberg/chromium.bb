@@ -2,15 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/launcher/launcher.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/launcher_test_api.h"
-#include "ash/test/launcher_view_test_api.h"
 #include "ash/test/shell_test_api.h"
-#include "ash/test/test_launcher_delegate.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/window_selector.h"
 #include "ash/wm/overview/window_selector_controller.h"
@@ -38,25 +34,8 @@ class WindowSelectorTest : public test::AshTestBase {
   WindowSelectorTest() {}
   virtual ~WindowSelectorTest() {}
 
-  virtual void SetUp() OVERRIDE {
-    test::AshTestBase::SetUp();
-    ASSERT_TRUE(test::TestLauncherDelegate::instance());
-
-    launcher_view_test_.reset(new test::LauncherViewTestAPI(
-        test::LauncherTestAPI(Launcher::ForPrimaryDisplay()).launcher_view()));
-    launcher_view_test_->SetAnimationDuration(1);
-  }
-
   aura::Window* CreateWindow(const gfx::Rect& bounds) {
     return CreateTestWindowInShellWithDelegate(&wd, -1, bounds);
-  }
-
-  aura::Window* CreatePanelWindow(const gfx::Rect& bounds) {
-    aura::Window* window = CreateTestWindowInShellWithDelegateAndType(
-        NULL, aura::client::WINDOW_TYPE_PANEL, 0, bounds);
-    test::TestLauncherDelegate::instance()->AddLauncherItem(window);
-    launcher_view_test()->RunMessageLoopUntilAnimationsDone();
-    return window;
   }
 
   bool WindowsOverlapping(aura::Window* window1, aura::Window* window2) {
@@ -89,15 +68,13 @@ class WindowSelectorTest : public test::AshTestBase {
   }
 
   gfx::RectF GetTransformedBounds(aura::Window* window) {
-    gfx::RectF bounds(ash::ScreenAsh::ConvertRectToScreen(
-        window->parent(), window->layer()->bounds()));
+    gfx::RectF bounds(window->layer()->bounds());
     window->layer()->transform().TransformRect(&bounds);
     return bounds;
   }
 
   gfx::RectF GetTransformedTargetBounds(aura::Window* window) {
-    gfx::RectF bounds(ash::ScreenAsh::ConvertRectToScreen(
-        window->parent(), window->layer()->GetTargetBounds()));
+    gfx::RectF bounds(window->layer()->GetTargetBounds());
     window->layer()->GetTargetTransform().TransformRect(&bounds);
     return bounds;
   }
@@ -118,13 +95,8 @@ class WindowSelectorTest : public test::AshTestBase {
         Shell::GetPrimaryRootWindow())->GetFocusedWindow();
   }
 
-  test::LauncherViewTestAPI* launcher_view_test() {
-    return launcher_view_test_.get();
-  }
-
  private:
   aura::test::TestWindowDelegate wd;
-  scoped_ptr<test::LauncherViewTestAPI> launcher_view_test_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowSelectorTest);
 };
@@ -134,11 +106,7 @@ TEST_F(WindowSelectorTest, Basic) {
   gfx::Rect bounds(0, 0, 400, 400);
   scoped_ptr<aura::Window> window1(CreateWindow(bounds));
   scoped_ptr<aura::Window> window2(CreateWindow(bounds));
-  scoped_ptr<aura::Window> panel1(CreatePanelWindow(bounds));
-  scoped_ptr<aura::Window> panel2(CreatePanelWindow(bounds));
   EXPECT_TRUE(WindowsOverlapping(window1.get(), window2.get()));
-  EXPECT_TRUE(WindowsOverlapping(window1.get(), panel1.get()));
-  EXPECT_TRUE(WindowsOverlapping(panel1.get(), panel2.get()));
   wm::ActivateWindow(window2.get());
   EXPECT_FALSE(wm::IsActiveWindow(window1.get()));
   EXPECT_TRUE(wm::IsActiveWindow(window2.get()));
@@ -149,10 +117,6 @@ TEST_F(WindowSelectorTest, Basic) {
   ToggleOverview();
   EXPECT_EQ(NULL, GetFocusedWindow());
   EXPECT_FALSE(WindowsOverlapping(window1.get(), window2.get()));
-  EXPECT_FALSE(WindowsOverlapping(window1.get(), panel1.get()));
-  // Panels 1 and 2 should still be overlapping being in a single selector
-  // item.
-  EXPECT_TRUE(WindowsOverlapping(panel1.get(), panel2.get()));
 
   // Clicking window 1 should activate it.
   ClickWindow(window1.get());
@@ -182,81 +146,6 @@ TEST_F(WindowSelectorTest, BasicCycle) {
   EXPECT_FALSE(wm::IsActiveWindow(window1.get()));
   EXPECT_FALSE(wm::IsActiveWindow(window2.get()));
   EXPECT_TRUE(wm::IsActiveWindow(window3.get()));
-}
-
-// Tests cycles between panel and normal windows.
-TEST_F(WindowSelectorTest, CyclePanels) {
-  gfx::Rect bounds(0, 0, 400, 400);
-  scoped_ptr<aura::Window> window1(CreateWindow(bounds));
-  scoped_ptr<aura::Window> window2(CreateWindow(bounds));
-  scoped_ptr<aura::Window> panel1(CreatePanelWindow(bounds));
-  scoped_ptr<aura::Window> panel2(CreatePanelWindow(bounds));
-  wm::ActivateWindow(window2.get());
-  wm::ActivateWindow(window1.get());
-  wm::ActivateWindow(panel2.get());
-  wm::ActivateWindow(panel1.get());
-  EXPECT_TRUE(wm::IsActiveWindow(panel1.get()));
-
-  // Cycling once should select window1 since the panels are grouped into a
-  // single selectable item.
-  Cycle(WindowSelector::FORWARD);
-  StopCycling();
-  EXPECT_TRUE(wm::IsActiveWindow(window1.get()));
-
-  // Cycling again should select the most recently used panel.
-  Cycle(WindowSelector::FORWARD);
-  StopCycling();
-  EXPECT_TRUE(wm::IsActiveWindow(panel1.get()));
-}
-
-// Tests cycles between panel and normal windows.
-TEST_F(WindowSelectorTest, CyclePanelsDestroyed) {
-  gfx::Rect bounds(0, 0, 400, 400);
-  scoped_ptr<aura::Window> window1(CreateWindow(bounds));
-  scoped_ptr<aura::Window> window2(CreateWindow(bounds));
-  scoped_ptr<aura::Window> window3(CreateWindow(bounds));
-  scoped_ptr<aura::Window> panel1(CreatePanelWindow(bounds));
-  scoped_ptr<aura::Window> panel2(CreatePanelWindow(bounds));
-  wm::ActivateWindow(window3.get());
-  wm::ActivateWindow(panel2.get());
-  wm::ActivateWindow(panel1.get());
-  wm::ActivateWindow(window2.get());
-  wm::ActivateWindow(window1.get());
-  EXPECT_TRUE(wm::IsActiveWindow(window1.get()));
-
-  // Cycling once highlights window2.
-  Cycle(WindowSelector::FORWARD);
-  // All panels are destroyed.
-  panel1.reset();
-  panel2.reset();
-  // Cycling again should now select window3.
-  Cycle(WindowSelector::FORWARD);
-  StopCycling();
-  EXPECT_TRUE(wm::IsActiveWindow(window3.get()));
-}
-
-// Tests cycles between panel and normal windows.
-TEST_F(WindowSelectorTest, CycleMruPanelDestroyed) {
-  gfx::Rect bounds(0, 0, 400, 400);
-  scoped_ptr<aura::Window> window1(CreateWindow(bounds));
-  scoped_ptr<aura::Window> window2(CreateWindow(bounds));
-  scoped_ptr<aura::Window> panel1(CreatePanelWindow(bounds));
-  scoped_ptr<aura::Window> panel2(CreatePanelWindow(bounds));
-  wm::ActivateWindow(panel2.get());
-  wm::ActivateWindow(panel1.get());
-  wm::ActivateWindow(window2.get());
-  wm::ActivateWindow(window1.get());
-  EXPECT_TRUE(wm::IsActiveWindow(window1.get()));
-
-  // Cycling once highlights window2.
-  Cycle(WindowSelector::FORWARD);
-  // Panel 1 is the next item as the MRU panel, removing it should make panel 2
-  // the next window to be selected.
-  panel1.reset();
-  // Cycling again should now select window3.
-  Cycle(WindowSelector::FORWARD);
-  StopCycling();
-  EXPECT_TRUE(wm::IsActiveWindow(panel2.get()));
 }
 
 // Tests that a newly created window aborts overview.
@@ -368,28 +257,17 @@ TEST_F(WindowSelectorTest, MultipleDisplays) {
   if (!SupportsMultipleDisplays())
     return;
 
-  UpdateDisplay("600x400,600x400");
+  UpdateDisplay("400x400,400x400");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
-  gfx::Rect bounds1(0, 0, 200, 200);
-  gfx::Rect bounds2(650, 0, 200, 200);
 
-  scoped_ptr<aura::Window> window1(CreateWindow(bounds1));
-  scoped_ptr<aura::Window> window2(CreateWindow(bounds1));
-  scoped_ptr<aura::Window> window3(CreateWindow(bounds2));
-  scoped_ptr<aura::Window> window4(CreateWindow(bounds2));
-  scoped_ptr<aura::Window> panel1(CreatePanelWindow(bounds1));
-  scoped_ptr<aura::Window> panel2(CreatePanelWindow(bounds1));
-  scoped_ptr<aura::Window> panel3(CreatePanelWindow(bounds2));
-  scoped_ptr<aura::Window> panel4(CreatePanelWindow(bounds2));
+  scoped_ptr<aura::Window> window1(CreateWindow(gfx::Rect(0, 0, 100, 100)));
+  scoped_ptr<aura::Window> window2(CreateWindow(gfx::Rect(0, 0, 100, 100)));
+  scoped_ptr<aura::Window> window3(CreateWindow(gfx::Rect(450, 0, 100, 100)));
+  scoped_ptr<aura::Window> window4(CreateWindow(gfx::Rect(450, 0, 100, 100)));
   EXPECT_EQ(root_windows[0], window1->GetRootWindow());
   EXPECT_EQ(root_windows[0], window2->GetRootWindow());
   EXPECT_EQ(root_windows[1], window3->GetRootWindow());
   EXPECT_EQ(root_windows[1], window4->GetRootWindow());
-
-  EXPECT_EQ(root_windows[0], panel1->GetRootWindow());
-  EXPECT_EQ(root_windows[0], panel2->GetRootWindow());
-  EXPECT_EQ(root_windows[1], panel3->GetRootWindow());
-  EXPECT_EQ(root_windows[1], panel4->GetRootWindow());
 
   // In overview mode, each window remains in the same root window.
   ToggleOverview();
@@ -397,11 +275,6 @@ TEST_F(WindowSelectorTest, MultipleDisplays) {
   EXPECT_EQ(root_windows[0], window2->GetRootWindow());
   EXPECT_EQ(root_windows[1], window3->GetRootWindow());
   EXPECT_EQ(root_windows[1], window4->GetRootWindow());
-  EXPECT_EQ(root_windows[0], panel1->GetRootWindow());
-  EXPECT_EQ(root_windows[0], panel2->GetRootWindow());
-  EXPECT_EQ(root_windows[1], panel3->GetRootWindow());
-  EXPECT_EQ(root_windows[1], panel4->GetRootWindow());
-
   root_windows[0]->bounds().Contains(
       ToEnclosingRect(GetTransformedBounds(window1.get())));
   root_windows[0]->bounds().Contains(
@@ -410,18 +283,6 @@ TEST_F(WindowSelectorTest, MultipleDisplays) {
       ToEnclosingRect(GetTransformedBounds(window3.get())));
   root_windows[1]->bounds().Contains(
       ToEnclosingRect(GetTransformedBounds(window4.get())));
-
-  root_windows[0]->bounds().Contains(
-      ToEnclosingRect(GetTransformedBounds(panel1.get())));
-  root_windows[0]->bounds().Contains(
-      ToEnclosingRect(GetTransformedBounds(panel2.get())));
-  root_windows[1]->bounds().Contains(
-      ToEnclosingRect(GetTransformedBounds(panel3.get())));
-  root_windows[1]->bounds().Contains(
-      ToEnclosingRect(GetTransformedBounds(panel4.get())));
-  EXPECT_TRUE(WindowsOverlapping(panel1.get(), panel2.get()));
-  EXPECT_TRUE(WindowsOverlapping(panel3.get(), panel4.get()));
-  EXPECT_FALSE(WindowsOverlapping(panel1.get(), panel3.get()));
 }
 
 }  // namespace internal
