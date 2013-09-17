@@ -788,6 +788,7 @@
                     '../chrome_frame/chrome_frame.gyp:npchrome_frame',
                     # Omitting tests from Win64 to speed up cycle times.
                     '../chrome/chrome.gyp:automated_ui_tests',
+                    '../chrome/chrome.gyp:chromedriver',
                     '../chrome/chrome.gyp:interactive_ui_tests',
                     '../chrome/chrome.gyp:reliability_tests',
                   ],

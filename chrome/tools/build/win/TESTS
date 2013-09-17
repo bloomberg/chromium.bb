@@ -10,3 +10,4 @@ plugins\npTestNetscapePlugIn.dll
 pyautolib.py
 _pyautolib.pyd
 fonts\*
+chromedriver.exe
