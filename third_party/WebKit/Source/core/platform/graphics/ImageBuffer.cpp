@@ -64,7 +64,7 @@ using namespace std;
 
 namespace WebCore {
 
-static SkCanvas* createAcceleratedCanvas(const IntSize& size, Canvas2DLayerBridgePtr* outLayerBridge, OpacityMode opacityMode)
+static PassRefPtr<SkCanvas> createAcceleratedCanvas(const IntSize& size, Canvas2DLayerBridgePtr* outLayerBridge, OpacityMode opacityMode)
 {
     RefPtr<GraphicsContext3D> context3D = SharedGraphicsContext3D::get();
     if (!context3D)
@@ -76,11 +76,11 @@ static SkCanvas* createAcceleratedCanvas(const IntSize& size, Canvas2DLayerBridg
     return (*outLayerBridge) ? (*outLayerBridge)->getCanvas() : 0;
 }
 
-static SkCanvas* createNonPlatformCanvas(const IntSize& size)
+static PassRefPtr<SkCanvas> createNonPlatformCanvas(const IntSize& size)
 {
     SkAutoTUnref<SkBaseDevice> device(new SkBitmapDevice(SkBitmap::kARGB_8888_Config, size.width(), size.height()));
     SkPixelRef* pixelRef = device->accessBitmap(false).pixelRef();
-    return pixelRef ? new SkCanvas(device) : 0;
+    return adoptRef(pixelRef ? new SkCanvas(device) : 0);
 }
 
 PassOwnPtr<ImageBuffer> ImageBuffer::createCompatibleBuffer(const IntSize& size, float resolutionScale, const GraphicsContext* context, bool hasAlpha)
@@ -114,7 +114,7 @@ ImageBuffer::ImageBuffer(const IntSize& size, float resolutionScale, const Graph
         return;
     }
 
-    m_canvas = adoptPtr(new SkCanvas(device));
+    m_canvas = adoptRef(new SkCanvas(device));
     m_context = adoptPtr(new GraphicsContext(m_canvas.get()));
     m_context->setCertainlyOpaque(!hasAlpha);
     m_context->scale(FloatSize(m_resolutionScale, m_resolutionScale));
@@ -128,16 +128,16 @@ ImageBuffer::ImageBuffer(const IntSize& size, float resolutionScale, RenderingMo
     , m_resolutionScale(resolutionScale)
 {
     if (renderingMode == Accelerated) {
-        m_canvas = adoptPtr(createAcceleratedCanvas(size, &m_layerBridge, opacityMode));
+        m_canvas = createAcceleratedCanvas(size, &m_layerBridge, opacityMode);
         if (!m_canvas)
             renderingMode = UnacceleratedNonPlatformBuffer;
     }
 
     if (renderingMode == UnacceleratedNonPlatformBuffer)
-        m_canvas = adoptPtr(createNonPlatformCanvas(size));
+        m_canvas = createNonPlatformCanvas(size);
 
     if (!m_canvas)
-        m_canvas = adoptPtr(skia::TryCreateBitmapCanvas(size.width(), size.height(), false));
+        m_canvas = adoptRef(skia::TryCreateBitmapCanvas(size.width(), size.height(), false));
 
     if (!m_canvas) {
         success = false;

@@ -93,7 +93,7 @@ public:
 
     WebKit::WebLayer* layer();
     void contextAcquired();
-    SkCanvas* getCanvas() { return m_canvas; }
+    PassRefPtr<SkCanvas> getCanvas() { return PassRefPtr<SkCanvas>(m_canvas); }
 
     unsigned backBufferTexture();
 
@@ -105,7 +105,7 @@ protected:
     Canvas2DLayerBridge(PassRefPtr<GraphicsContext3D>, SkDeferredCanvas*, OpacityMode);
     void setRateLimitingEnabled(bool);
 
-    SkDeferredCanvas* m_canvas;
+    RefPtr<SkDeferredCanvas> m_canvas;
     OwnPtr<WebKit::WebExternalTextureLayer> m_layer;
     RefPtr<GraphicsContext3D> m_context;
     size_t m_bytesAllocated;

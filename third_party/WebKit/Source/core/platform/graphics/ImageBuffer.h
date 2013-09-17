@@ -142,7 +142,7 @@ private:
     IntSize m_size;
     IntSize m_logicalSize;
     float m_resolutionScale;
-    OwnPtr<SkCanvas> m_canvas;
+    RefPtr<SkCanvas> m_canvas;
     OwnPtr<GraphicsContext> m_context;
     Canvas2DLayerBridgePtr m_layerBridge;
 
