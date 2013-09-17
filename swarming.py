@@ -662,10 +662,7 @@ def main(args):
   dispatcher = subcommand.CommandDispatcher(__name__)
   try:
     return dispatcher.execute(OptionParserSwarming(version=__version__), args)
-  except (
-      Failure,
-      run_isolated.MappingError,
-      run_isolated.ConfigError) as e:
+  except Failure as e:
     sys.stderr.write('\nError: ')
     sys.stderr.write(str(e))
     sys.stderr.write('\n')

@@ -31,7 +31,6 @@ sys.path.insert(0, ROOT_DIR)
 from third_party import colorama
 
 import isolateserver
-import run_isolated
 
 from utils import net
 from utils import threading_utils
@@ -231,7 +230,7 @@ def send_and_receive(
     else:
       time.sleep(size / 10.)
     duration = max(0, time.time() - start)
-  except run_isolated.MappingError as e:
+  except isolateserver.MappingError as e:
     duration = str(e)
   progress.update_item(size if isinstance(duration, float) else 0)
   return (duration, size)

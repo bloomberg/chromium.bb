@@ -32,7 +32,7 @@ from utils import tools
 from utils import zip_package
 
 import isolateserver
-from isolateserver import ConfigError, MappingError
+from isolateserver import ConfigError
 
 
 # Absolute path to this file (can be None if running from zip on Mac).
@@ -125,9 +125,9 @@ def link_file(outfile, infile, action):
   if action not in (HARDLINK, HARDLINK_WITH_FALLBACK, SYMLINK, COPY):
     raise ValueError('Unknown mapping action %s' % action)
   if not os.path.isfile(infile):
-    raise MappingError('%s is missing' % infile)
+    raise isolateserver.MappingError('%s is missing' % infile)
   if os.path.isfile(outfile):
-    raise MappingError(
+    raise isolateserver.MappingError(
         '%s already exist; insize:%d; outsize:%d' %
         (outfile, os.stat(infile).st_size, os.stat(outfile).st_size))
 
@@ -141,7 +141,7 @@ def link_file(outfile, infile, action):
       os_link(infile, outfile)
     except OSError as e:
       if action == HARDLINK:
-        raise MappingError(
+        raise isolateserver.MappingError(
             'Failed to hardlink %s to %s: %s' % (infile, outfile, e))
       # Probably a different file system.
       logging.warning(

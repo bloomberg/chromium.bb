@@ -52,6 +52,7 @@ MIN_SIZE_FOR_DIRECT_BLOBSTORE = 20 * 1024
 # files missing" case.
 ITEMS_PER_CONTAINS_QUERIES = [20, 20, 50, 50, 50, 100]
 
+
 # A list of already compressed extension types that should not receive any
 # compression before being uploaded.
 ALREADY_COMPRESSED_TYPES = [

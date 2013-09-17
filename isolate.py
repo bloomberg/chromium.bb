@@ -156,7 +156,7 @@ def fix_native_path_case(root, path):
 
     part = trace_inputs.find_item_native_case(native_case_path, raw_part)
     if not part:
-      raise run_isolated.MappingError(
+      raise isolateserver.MappingError(
           'Input file %s doesn\'t exist' %
           os.path.join(native_case_path, raw_part))
     native_case_path = os.path.join(native_case_path, part)
@@ -204,7 +204,7 @@ def expand_symlinks(indir, relfile):
       target = fix_native_path_case(target, symlink_target)
 
     if not os.path.exists(target):
-      raise run_isolated.MappingError(
+      raise isolateserver.MappingError(
           'Symlink target doesn\'t exist: %s -> %s' % (symlink_path, target))
     target = trace_inputs.get_native_path_case(target)
     if not path_starts_with(indir, target):
@@ -212,7 +212,7 @@ def expand_symlinks(indir, relfile):
       todo = post_symlink
       continue
     if path_starts_with(target, symlink_path):
-      raise run_isolated.MappingError(
+      raise isolateserver.MappingError(
           'Can\'t map recursive symlink reference %s -> %s' %
           (symlink_path, target))
     logging.info('Found symlink: %s -> %s', symlink_path, target)
@@ -246,12 +246,12 @@ def expand_directory_and_symlink(indir, relfile, blacklist, follow_symlinks):
     ln -s .. foo
   """
   if os.path.isabs(relfile):
-    raise run_isolated.MappingError(
+    raise isolateserver.MappingError(
         'Can\'t map absolute path %s' % relfile)
 
   infile = normpath(os.path.join(indir, relfile))
   if not infile.startswith(indir):
-    raise run_isolated.MappingError(
+    raise isolateserver.MappingError(
         'Can\'t map file %s outside %s' % (infile, indir))
 
   filepath = os.path.join(indir, relfile)
@@ -274,7 +274,7 @@ def expand_directory_and_symlink(indir, relfile, blacklist, follow_symlinks):
       # and Carbon.File.FSPathMakeRef('path').FSRefMakePath() to disagree.  We
       # have no idea why.
       if sys.platform != 'darwin':
-        raise run_isolated.MappingError(
+        raise isolateserver.MappingError(
             'File path doesn\'t equal native file path\n%s != %s' %
             (filepath, native_filepath))
 
@@ -284,7 +284,7 @@ def expand_directory_and_symlink(indir, relfile, blacklist, follow_symlinks):
 
   if relfile.endswith(os.path.sep):
     if not os.path.isdir(infile):
-      raise run_isolated.MappingError(
+      raise isolateserver.MappingError(
           '%s is not a directory but ends with "%s"' % (infile, os.path.sep))
 
     # Special case './'.
@@ -303,16 +303,16 @@ def expand_directory_and_symlink(indir, relfile, blacklist, follow_symlinks):
                                          follow_symlinks))
       return outfiles
     except OSError as e:
-      raise run_isolated.MappingError(
+      raise isolateserver.MappingError(
           'Unable to iterate over directory %s.\n%s' % (infile, e))
   else:
     # Always add individual files even if they were blacklisted.
     if os.path.isdir(infile):
-      raise run_isolated.MappingError(
+      raise isolateserver.MappingError(
           'Input directory %s must have a trailing slash' % infile)
 
     if not os.path.isfile(infile):
-      raise run_isolated.MappingError(
+      raise isolateserver.MappingError(
           'Input file %s doesn\'t exist' % infile)
 
     return symlinks + [relfile]
@@ -330,7 +330,7 @@ def expand_directories_and_symlinks(indir, infiles, blacklist,
     try:
       outfiles.extend(expand_directory_and_symlink(indir, relfile, blacklist,
                                                    follow_symlinks))
-    except run_isolated.MappingError as e:
+    except isolateserver.MappingError as e:
       if ignore_broken_items:
         logging.info('warning: %s', e)
       else:
@@ -369,7 +369,7 @@ def recreate_tree(outdir, indir, infiles, action, as_sha1):
         # Just do a quick check that the file size matches. No need to stat()
         # again the input file, grab the value from the dict.
         if not 's' in metadata:
-          raise run_isolated.MappingError(
+          raise isolateserver.MappingError(
               'Misconfigured item %s: %s' % (relfile, metadata))
         if metadata['s'] == os.stat(outfile).st_size:
           continue
@@ -431,7 +431,7 @@ def process_input(filepath, prevdict, read_only, flavor):
     filestats = os.lstat(filepath)
   except OSError:
     # The file is not present.
-    raise run_isolated.MappingError('%s is missing' % filepath)
+    raise isolateserver.MappingError('%s is missing' % filepath)
   is_link = stat.S_ISLNK(filestats.st_mode)
 
   if flavor != 'win':
@@ -1677,7 +1677,7 @@ class CompleteState(object):
       if i in variables:
         if not path_starts_with(
             root_dir, os.path.join(relative_base_dir, variables[i])):
-          raise run_isolated.MappingError(
+          raise isolateserver.MappingError(
               'Path variable %s=%r points outside the inferred root directory'
               ' %s' % (i, variables[i], root_dir))
     # Normalize the files based to root_dir. It is important to keep the
@@ -2404,8 +2404,8 @@ def main(argv):
     return dispatcher.execute(OptionParserIsolate(version=__version__), argv)
   except (
       ExecutionError,
-      run_isolated.MappingError,
-      run_isolated.ConfigError) as e:
+      isolateserver.ConfigError,
+      isolateserver.MappingError) as e:
     sys.stderr.write('\nError: ')
     sys.stderr.write(str(e))
     sys.stderr.write('\n')
