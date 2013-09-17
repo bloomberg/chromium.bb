@@ -34,6 +34,7 @@
 #include "modules/notifications/Notification.h"
 
 #include "bindings/v8/Dictionary.h"
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/Document.h"
 #include "core/dom/ErrorEvent.h"
@@ -70,13 +71,13 @@ Notification::Notification(const String& title, const String& body, const String
 
     ScriptWrappable::init(this);
     if (provider->checkPermission() != NotificationClient::PermissionAllowed) {
-        es.throwDOMException(SecurityError);
+        es.throwSecurityError(ExceptionMessages::failedToExecute("createNotification", "NotificationCenter", "Notification permission has not been granted."));
         return;
     }
 
     m_icon = iconURI.isEmpty() ? KURL() : scriptExecutionContext()->completeURL(iconURI);
     if (!m_icon.isEmpty() && !m_icon.isValid()) {
-        es.throwDOMException(SyntaxError);
+        es.throwDOMException(SyntaxError, ExceptionMessages::failedToExecute("createNotification", "NotificationCenter", "'" + iconURI + "' is not a valid icon URL."));
         return;
     }
 }

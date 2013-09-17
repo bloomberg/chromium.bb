@@ -1,0 +1,11 @@
+The legacy notification constructor should throw exceptions in certain cases.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+FAIL window.webkitNotifications.createNotification("", "Title", "Message"); should throw SecurityError: Failed to execute 'createNotification' on 'NotificationCenter': Notification permission has not been granted.. Was [object Notification].
+PASS window.webkitNotifications.createNotification("http:///", "Title", "Message"); threw exception SyntaxError: Failed to execute 'createNotification' on 'NotificationCenter': 'http:///' is not a valid icon URL..
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

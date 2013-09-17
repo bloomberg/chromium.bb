@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <script src="../js/resources/js-test-pre.js"></script>
+    <script>
+        description("The legacy notification constructor should throw exceptions in certain cases.");
+
+        // No permission grant; should throw SecurityError.
+        shouldThrow('window.webkitNotifications.createNotification("", "Title", "Message");', '"SecurityError: Failed to execute \'createNotification\' on \'NotificationCenter\': Notification permission has not been granted."');
+
+        // Invalid icon should throw SyntaxError.
+        testRunner.grantWebNotificationPermission("file://");
+        shouldThrow('window.webkitNotifications.createNotification("http:///", "Title", "Message");', '"SyntaxError: Failed to execute \'createNotification\' on \'NotificationCenter\': \'http:///\' is not a valid icon URL."');
+    </script>
+    <script src="../js/resources/js-test-post.js"></script>
+</body>
+</html>
