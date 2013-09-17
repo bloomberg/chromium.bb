@@ -10215,6 +10215,74 @@ other types of suffix sets.
   <summary>The pane selected when the user switches panes in the NTP.</summary>
 </histogram>
 
+<histogram name="OAuth2Login.GetOAuth2AccessTokenFailure" enum="GaiaAuthError">
+  <summary>
+    Failure reason of final OAuth2 access token retreival call during ChromeOS
+    login.
+  </summary>
+</histogram>
+
+<histogram name="OAuth2Login.GetOAuth2AccessTokenRetry" enum="GaiaAuthError">
+  <summary>
+    Retry reason of failed OAuth2 access token retreival call call during
+    ChromeOS login.
+  </summary>
+</histogram>
+
+<histogram name="OAuth2Login.MergeSessionFailure" enum="GaiaAuthError">
+  <summary>
+    Failure reason of final MergeSession call during ChromeOS login.
+  </summary>
+</histogram>
+
+<histogram name="OAuth2Login.MergeSessionRetry" enum="GaiaAuthError">
+  <summary>
+    Retry reason of failed MergeSession call during ChromeOS login.
+  </summary>
+</histogram>
+
+<histogram name="OAuth2Login.OAuthLoginGaiaCredFailure" enum="GaiaAuthError">
+  <summary>
+    Failure reason of final OAuthLogin (with SID+LSID) call during ChromeOS
+    login.
+  </summary>
+</histogram>
+
+<histogram name="OAuth2Login.OAuthLoginGaiaCredRetry" enum="GaiaAuthError">
+  <summary>
+    Retry reason of failed OAuthLogin (with SID+LSID) call during ChromeOS
+    login.
+  </summary>
+</histogram>
+
+<histogram name="OAuth2Login.OAuthLoginUberTokenFailure" enum="GaiaAuthError">
+  <summary>
+    Failure reason of final OAuthLogin (with uber token) call during ChromeOS
+    login.
+  </summary>
+</histogram>
+
+<histogram name="OAuth2Login.OAuthLoginUberTokenRetry" enum="GaiaAuthError">
+  <summary>
+    Retry reason of failed OAuthLogin (with uber token) call during ChromeOS
+    login.
+  </summary>
+</histogram>
+
+<histogram name="OAuth2Login.SessionRestore" enum="GaiaSessionRestoreOutcome">
+  <summary>Outcome of ChromeOS GAIA cookie session restore process.</summary>
+</histogram>
+
+<histogram name="OAuth2Login.SessionRestoreTimeToFailure" units="milliseconds">
+  <summary>How long it takes for the session restore to fail.</summary>
+</histogram>
+
+<histogram name="OAuth2Login.SessionRestoreTimeToSuccess" units="milliseconds">
+  <summary>
+    How long it takes for the session restore to finish succeessfully.
+  </summary>
+</histogram>
+
 <histogram name="OfflinePolicy.SuccessfulResourceLoadPercentage" units="%">
   <summary>
     When a page is loaded in offline mode, the percentage of resources on that
@@ -17428,6 +17496,46 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="UserImage.ChangeChoice" enum="ChromeOSUserImageId">
+  <summary>
+    Distribution of the default images that users choose in Change Picture
+    dialog (Chrome OS). One sample is taken each time the user changes picture.
+  </summary>
+</histogram>
+
+<histogram name="UserImage.FirstTimeChoice" enum="ChromeOSUserImageId">
+  <summary>
+    Distribution of the default images chosen on user image screen during
+    out-of-the-box experience (Chrome OS). One sample is taken each time the
+    user confirms the choice by clicking OK button.
+  </summary>
+</histogram>
+
+<histogram name="UserImage.LoggedIn" enum="ChromeOSUserImageId">
+  <summary>
+    Distribution of the default images that existing users login with (Chrome
+    OS). One sample is taken each time the user logs in.
+  </summary>
+</histogram>
+
+<histogram name="UserImage.ProfileDownloadResult"
+    enum="ProfileImageDownloadResult">
+  <summary>
+    Profile image download result for UserManager (either on behalf of the
+    Change Picture prefs page, OOBE or scheduled refresh after user login).
+  </summary>
+</histogram>
+
+<histogram name="UserImage.ProfileDownloadTime" units="milliseconds">
+  <summary>The time it took to download user's profile picture.</summary>
+</histogram>
+
+<histogram name="UserImage.ScreenIsShownTime" units="milliseconds">
+  <summary>
+    Time histogram of the &quot;Choose Picture&quot; OOBE screen display delay.
+  </summary>
+</histogram>
+
 <histogram name="UserManager.LoginUserType" enum="UserType">
   <summary>
     The number of users of different types that log in to the system (Chrome
@@ -18967,6 +19075,37 @@ other types of suffix sets.
   <int value="2" label="Initiated by WebStore Installer"/>
   <int value="3" label="Initiated by ImageBurner"/>
   <int value="4" label="Initiated by Plugin Installer"/>
+</enum>
+
+<enum name="ChromeOSUserImageId" type="int">
+  <summary>
+    Indices of the default images as defined in
+    chrome/browser/chromeos/login/default_user_images.cc. The last three values
+    are for taken photo, downloaded file and the image previously used by user.
+  </summary>
+  <int value="0" label="Default, Beaker"/>
+  <int value="1" label="Default, Bee"/>
+  <int value="2" label="Default, Briefcase"/>
+  <int value="3" label="Default, Circles"/>
+  <int value="4" label="Default, Cloud"/>
+  <int value="5" label="Default, Cupcake"/>
+  <int value="6" label="Default, Day"/>
+  <int value="7" label="Default, Flower"/>
+  <int value="8" label="Default, Globe"/>
+  <int value="9" label="Default, Hot air"/>
+  <int value="10" label="Default, Ladybug"/>
+  <int value="11" label="Default, Leaf"/>
+  <int value="12" label="Default, Night"/>
+  <int value="13" label="Default, Plane"/>
+  <int value="14" label="Default, Robot body"/>
+  <int value="15" label="Default, Robot head"/>
+  <int value="16" label="Default, Toolbox"/>
+  <int value="17" label="Default, User color"/>
+  <int value="18" label="Default, User enterprise"/>
+  <int value="19" label="Photo taken"/>
+  <int value="20" label="Downloaded file"/>
+  <int value="21" label="Old image"/>
+  <int value="22" label="Profile image"/>
 </enum>
 
 <enum name="ClipboardAction" type="int">
@@ -21280,6 +21419,31 @@ other types of suffix sets.
   <int value="8" label="win16">
     win16 hosts: SuperTCP or NetManage Chameleon
   </int>
+</enum>
+
+<enum name="GaiaAuthError" type="int">
+  <summary>Google service authentication error cause.</summary>
+  <int value="0" label="NONE"/>
+  <int value="1" label="INVALID_GAIA_CREDENTIALS"/>
+  <int value="2" label="USER_NOT_SIGNED_UP"/>
+  <int value="3" label="CONNECTION_FAILED"/>
+  <int value="4" label="CAPTCHA_REQUIRED"/>
+  <int value="5" label="ACCOUNT_DELETED"/>
+  <int value="6" label="ACCOUNT_DISABLED"/>
+  <int value="7" label="SERVICE_UNAVAILABLE"/>
+  <int value="8" label="TWO_FACTOR"/>
+  <int value="9" label="REQUEST_CANCELED"/>
+  <int value="10" label="HOSTED_NOT_ALLOWED"/>
+  <int value="11" label="NUM_STATES"/>
+</enum>
+
+<enum name="GaiaSessionRestoreOutcome" type="int">
+  <int value="0" label="UNDEFINED"/>
+  <int value="1" label="SUCCESS"/>
+  <int value="2" label="RESTORE_TOKEN_FETCH_FAILED"/>
+  <int value="3" label="NO_REFRESH_TOKEN_FAILED"/>
+  <int value="4" label="OAUTHLOGIN_FAILED"/>
+  <int value="5" label="MERGESESSION_FAILED"/>
 </enum>
 
 <enum name="GDataAuthResult" type="int">
@@ -24077,6 +24241,26 @@ other types of suffix sets.
   <int value="2" label="Created but not initialized (should never happen)"/>
   <int value="3" label="Succeeded"/>
   <int value="4" label="Canceled"/>
+</enum>
+
+<enum name="ProfileImageDownloadResult" type="int">
+  <int value="0" label="DownloadSuccessChanged">
+    <summary>
+      Reported when image download succeeds and the image is newer than what we
+      already have so we update it.
+    </summary>
+  </int>
+  <int value="1" label="DownloadSuccess">
+    <summary>Reported anytime we download profile image successfully.</summary>
+  </int>
+  <int value="2" label="DownloadFailure">
+    <summary>Download failed because of network errors.</summary>
+  </int>
+  <int value="3" label="DownloadDefault">
+    <summary>
+      We didn't download the image because it's the default one.
+    </summary>
+  </int>
 </enum>
 
 <enum name="ProtectorError" type="int">
