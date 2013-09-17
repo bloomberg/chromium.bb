@@ -162,7 +162,7 @@ v8::Local<v8::Value> ScriptController::callFunction(v8::Handle<v8::Function> fun
 ScriptValue ScriptController::callFunctionEvenIfScriptDisabled(v8::Handle<v8::Function> function, v8::Handle<v8::Object> receiver, int argc, v8::Handle<v8::Value> argv[])
 {
     // FIXME: This should probably perform the same isPaused check that happens in ScriptController::executeScript.
-    return ScriptValue(callFunction(function, receiver, argc, argv));
+    return ScriptValue(callFunction(function, receiver, argc, argv), m_isolate);
 }
 
 static void resourceInfo(const v8::Handle<v8::Function> function, String& resourceName, int& lineNumber)
@@ -683,7 +683,7 @@ ScriptValue ScriptController::executeScriptInMainWorld(const ScriptSourceCode& s
     if (object.IsEmpty())
         return ScriptValue();
 
-    return ScriptValue(object);
+    return ScriptValue(object, m_isolate);
 }
 
 void ScriptController::executeScriptInIsolatedWorld(int worldID, const Vector<ScriptSourceCode>& sources, int extensionGroup, Vector<ScriptValue>* results)
@@ -716,7 +716,7 @@ void ScriptController::executeScriptInIsolatedWorld(int worldID, const Vector<Sc
 
     if (results && !v8Results.IsEmpty()) {
         for (size_t i = 0; i < v8Results->Length(); ++i)
-            results->append(ScriptValue(v8Results->Get(i)));
+            results->append(ScriptValue(v8Results->Get(i), m_isolate));
     }
 }
 

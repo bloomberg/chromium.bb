@@ -5155,7 +5155,7 @@ sub JSValueToNative
 
     if ($type eq "any" || IsCallbackFunctionType($type)) {
         AddToImplIncludes("bindings/v8/ScriptValue.h");
-        return "ScriptValue($value)";
+        return "ScriptValue($value, $getIsolate)";
     }
 
     if ($type eq "Promise") {
@@ -5169,7 +5169,7 @@ sub JSValueToNative
 
     if ($type eq "MediaQueryListListener") {
         AddToImplIncludes("core/css/MediaQueryListListener.h");
-        return "MediaQueryListListener::create(" . $value . ")";
+        return "MediaQueryListListener::create(ScriptValue(" . $value . ", $getIsolate))";
     }
 
     if ($type eq "EventTarget") {

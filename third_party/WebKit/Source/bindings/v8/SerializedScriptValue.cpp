@@ -2510,10 +2510,11 @@ v8::Handle<v8::Value> SerializedScriptValue::deserialize(v8::Isolate* isolate, M
 
 ScriptValue SerializedScriptValue::deserializeForInspector(ScriptState* scriptState)
 {
-    v8::HandleScope handleScope(scriptState->isolate());
+    v8::Isolate* isolate = scriptState->isolate();
+    v8::HandleScope handleScope(isolate);
     v8::Context::Scope contextScope(scriptState->context());
 
-    return ScriptValue(deserialize(scriptState->isolate()));
+    return ScriptValue(deserialize(isolate), isolate);
 }
 
 void SerializedScriptValue::registerMemoryAllocatedWithCurrentScriptContext()

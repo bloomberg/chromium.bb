@@ -110,14 +110,15 @@ ScriptValue eventListenerHandler(Document* document, EventListener* listener)
     if (listener->type() != EventListener::JSEventListenerType)
         return ScriptValue();
 
-    v8::HandleScope scope(toIsolate(document));
+    v8::Isolate* isolate = toIsolate(document);
+    v8::HandleScope scope(isolate);
     V8AbstractEventListener* v8Listener = static_cast<V8AbstractEventListener*>(listener);
     v8::Handle<v8::Context> context = toV8Context(document, v8Listener->world());
     v8::Context::Scope contextScope(context);
     v8::Handle<v8::Object> function = v8Listener->getListenerObject(document);
     if (function.IsEmpty())
         return ScriptValue();
-    return ScriptValue(function);
+    return ScriptValue(function, isolate);
 }
 
 ScriptState* eventListenerHandlerScriptState(Frame* frame, EventListener* listener)

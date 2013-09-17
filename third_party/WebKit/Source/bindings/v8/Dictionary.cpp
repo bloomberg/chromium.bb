@@ -180,7 +180,7 @@ bool Dictionary::get(const String& key, ScriptValue& value) const
     if (!getKey(key, v8Value))
         return false;
 
-    value = ScriptValue(v8Value);
+    value = ScriptValue(v8Value, m_isolate);
     return true;
 }
 

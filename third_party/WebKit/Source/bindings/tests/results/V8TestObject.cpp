@@ -1698,7 +1698,7 @@ static void anyAttributeAttributeGetterCallback(v8::Local<v8::String> name, cons
 static void anyAttributeAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    V8TRYCATCH_VOID(ScriptValue, v, ScriptValue(value));
+    V8TRYCATCH_VOID(ScriptValue, v, ScriptValue(value, info.GetIsolate()));
     imp->setAnyAttribute(v);
     return;
 }
@@ -1727,7 +1727,7 @@ static void callbackFunctionAttributeAttributeGetterCallback(v8::Local<v8::Strin
 static void callbackFunctionAttributeAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    V8TRYCATCH_VOID(ScriptValue, v, ScriptValue(value));
+    V8TRYCATCH_VOID(ScriptValue, v, ScriptValue(value, info.GetIsolate()));
     imp->setCallbackFunctionAttribute(v);
     return;
 }
@@ -3984,7 +3984,7 @@ static void callbackFunctionArgumentMethod(const v8::FunctionCallbackInfo<v8::Va
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
-    V8TRYCATCH_VOID(ScriptValue, function, ScriptValue(args[0]));
+    V8TRYCATCH_VOID(ScriptValue, function, ScriptValue(args[0], args.GetIsolate()));
     imp->callbackFunctionArgument(function);
 
     return;

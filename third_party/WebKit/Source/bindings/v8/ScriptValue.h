@@ -60,8 +60,8 @@ public:
     ScriptValue() { }
     virtual ~ScriptValue();
 
-    ScriptValue(v8::Handle<v8::Value> value)
-        : m_value(value.IsEmpty() ? 0 : SharedPersistent<v8::Value>::create(value, v8::Isolate::GetCurrent()))
+    ScriptValue(v8::Handle<v8::Value> value, v8::Isolate* isolate)
+        : m_value(value.IsEmpty() ? 0 : SharedPersistent<v8::Value>::create(value, isolate))
     {
     }
 
@@ -70,8 +70,16 @@ public:
     {
     }
 
-    static ScriptValue createNull() { return ScriptValue(v8::Null()); }
-    static ScriptValue createBoolean(bool b) { return ScriptValue(b ? v8::True() : v8::False()); }
+    static ScriptValue createNull()
+    {
+        v8::Isolate* isolate = v8::Isolate::GetCurrent();
+        return ScriptValue(v8::Null(isolate), isolate);
+    }
+    static ScriptValue createBoolean(bool b)
+    {
+        v8::Isolate* isolate = v8::Isolate::GetCurrent();
+        return ScriptValue(b ? v8::True(isolate) : v8::False(isolate), isolate);
+    }
 
     ScriptValue& operator=(const ScriptValue& value)
     {

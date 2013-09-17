@@ -71,13 +71,14 @@ Node* InjectedScriptHost::scriptValueAsNode(ScriptValue value)
 
 ScriptValue InjectedScriptHost::nodeAsScriptValue(ScriptState* state, Node* node)
 {
-    v8::HandleScope scope(state->isolate());
+    v8::Isolate* isolate = state->isolate();
+    v8::HandleScope scope(isolate);
     v8::Local<v8::Context> context = state->context();
     v8::Context::Scope contextScope(context);
 
     if (!BindingSecurity::shouldAllowAccessToNode(node))
-        return ScriptValue(v8::Null(state->isolate()));
-    return ScriptValue(toV8(node, v8::Handle<v8::Object>(), state->isolate()));
+        return ScriptValue(v8::Null(isolate), isolate);
+    return ScriptValue(toV8(node, v8::Handle<v8::Object>(), isolate), isolate);
 }
 
 void V8InjectedScriptHost::inspectedObjectMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -295,8 +296,8 @@ void V8InjectedScriptHost::inspectMethodCustom(const v8::FunctionCallbackInfo<v8
         return;
 
     InjectedScriptHost* host = V8InjectedScriptHost::toNative(args.Holder());
-    ScriptValue object(args[0]);
-    ScriptValue hints(args[1]);
+    ScriptValue object(args[0], args.GetIsolate());
+    ScriptValue hints(args[1], args.GetIsolate());
     host->inspectImpl(object.toJSONValue(ScriptState::current()), hints.toJSONValue(ScriptState::current()));
 }
 

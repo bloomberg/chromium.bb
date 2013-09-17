@@ -252,8 +252,8 @@ ScriptValue deserializeIDBValue(DOMRequestState* state, PassRefPtr<SerializedScr
     v8::HandleScope handleScope(isolate);
     RefPtr<SerializedScriptValue> serializedValue = prpValue;
     if (serializedValue)
-        return ScriptValue(serializedValue->deserialize());
-    return ScriptValue(v8::Null(isolate));
+        return ScriptValue(serializedValue->deserialize(), isolate);
+    return ScriptValue(v8::Null(isolate), isolate);
 }
 
 ScriptValue deserializeIDBValueBuffer(DOMRequestState* state, PassRefPtr<SharedBuffer> prpBuffer)
@@ -267,9 +267,9 @@ ScriptValue deserializeIDBValueBuffer(DOMRequestState* state, PassRefPtr<SharedB
         Vector<uint8_t> value;
         value.append(buffer->data(), buffer->size());
         RefPtr<SerializedScriptValue> serializedValue = SerializedScriptValue::createFromWireBytes(value);
-        return ScriptValue(serializedValue->deserialize());
+        return ScriptValue(serializedValue->deserialize(), isolate);
     }
-    return ScriptValue(v8::Null(isolate));
+    return ScriptValue(v8::Null(isolate), isolate);
 }
 
 bool injectIDBKeyIntoScriptValue(DOMRequestState* state, PassRefPtr<IDBKey> key, ScriptValue& value, const IDBKeyPath& keyPath)
@@ -321,7 +321,7 @@ ScriptValue idbKeyToScriptValue(DOMRequestState* state, PassRefPtr<IDBKey> key)
     v8::Isolate* isolate = state ? state->context()->GetIsolate() : v8::Isolate::GetCurrent();
     v8::HandleScope handleScope(isolate);
     v8::Handle<v8::Value> v8Value(idbKeyToV8Value(key.get(), state->context()->GetIsolate()));
-    return ScriptValue(v8Value);
+    return ScriptValue(v8Value, isolate);
 }
 
 PassRefPtr<IDBKey> scriptValueToIDBKey(DOMRequestState* state, const ScriptValue& scriptValue)

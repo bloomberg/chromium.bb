@@ -56,8 +56,9 @@ public:
         ASSERT(!m_promise.hasNoValue());
     }
 
+    // FIXME: This constructor should take an isolate.
     explicit ScriptPromise(v8::Handle<v8::Value> promise)
-        : m_promise(promise)
+        : m_promise(promise, v8::Isolate::GetCurrent())
     {
         ASSERT(!m_promise.hasNoValue());
     }

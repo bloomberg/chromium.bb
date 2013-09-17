@@ -232,7 +232,7 @@ bool CustomElementConstructorBuilder::didRegisterDefinition(CustomElementDefinit
 
 ScriptValue CustomElementConstructorBuilder::bindingsReturnValue() const
 {
-    return ScriptValue(m_constructor);
+    return ScriptValue(m_constructor, m_context->GetIsolate());
 }
 
 bool CustomElementConstructorBuilder::hasValidPrototypeChainFor(WrapperTypeInfo* type) const

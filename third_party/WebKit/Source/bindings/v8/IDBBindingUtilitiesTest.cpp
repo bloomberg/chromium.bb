@@ -107,7 +107,7 @@ TEST_F(IDBKeyFromValueAndKeyPathTest, TopLevelPropertyStringValue)
     v8::Local<v8::Object> object = v8::Object::New();
     object->Set(v8::String::New("foo"), v8::String::New("zoo"));
 
-    ScriptValue scriptValue(object);
+    ScriptValue scriptValue(object, v8::Isolate::GetCurrent());
 
     checkKeyPathStringValue(scriptValue, "foo", "zoo");
     checkKeyPathNullValue(scriptValue, "bar");
@@ -118,7 +118,7 @@ TEST_F(IDBKeyFromValueAndKeyPathTest, TopLevelPropertyNumberValue)
     v8::Local<v8::Object> object = v8::Object::New();
     object->Set(v8::String::New("foo"), v8::Number::New(456));
 
-    ScriptValue scriptValue(object);
+    ScriptValue scriptValue(object, v8::Isolate::GetCurrent());
 
     checkKeyPathNumberValue(scriptValue, "foo", 456);
     checkKeyPathNullValue(scriptValue, "bar");
@@ -131,7 +131,7 @@ TEST_F(IDBKeyFromValueAndKeyPathTest, SubProperty)
     subProperty->Set(v8::String::New("bar"), v8::String::New("zee"));
     object->Set(v8::String::New("foo"), subProperty);
 
-    ScriptValue scriptValue(object);
+    ScriptValue scriptValue(object, v8::Isolate::GetCurrent());
 
     checkKeyPathStringValue(scriptValue, "foo.bar", "zee");
     checkKeyPathNullValue(scriptValue, "bar");
@@ -145,7 +145,7 @@ TEST_F(InjectIDBKeyTest, TopLevelPropertyStringValue)
     v8::Local<v8::Object> object = v8::Object::New();
     object->Set(v8::String::New("foo"), v8::String::New("zoo"));
 
-    ScriptValue foozoo(object);
+    ScriptValue foozoo(object, v8::Isolate::GetCurrent());
     checkInjection(IDBKey::createString("myNewKey"), foozoo, "bar");
     checkInjection(IDBKey::createNumber(1234), foozoo, "bar");
 
@@ -159,7 +159,7 @@ TEST_F(InjectIDBKeyTest, SubProperty)
     subProperty->Set(v8::String::New("bar"), v8::String::New("zee"));
     object->Set(v8::String::New("foo"), subProperty);
 
-    ScriptValue scriptObject(object);
+    ScriptValue scriptObject(object, v8::Isolate::GetCurrent());
     checkInjection(IDBKey::createString("myNewKey"), scriptObject, "foo.baz");
     checkInjection(IDBKey::createNumber(789), scriptObject, "foo.baz");
     checkInjection(IDBKey::createDate(4567), scriptObject, "foo.baz");

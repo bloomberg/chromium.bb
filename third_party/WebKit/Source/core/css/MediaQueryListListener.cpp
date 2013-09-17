@@ -35,7 +35,7 @@ void MediaQueryListListener::queryChanged(ScriptState* state, MediaQueryList* qu
         return; // JS may not be enabled.
 
     v8::Context::Scope scope(context);
-    callback.appendArgument(toV8(query, v8::Handle<v8::Object>(), context->GetIsolate()));
+    callback.appendArgument(ScriptValue(toV8(query, v8::Handle<v8::Object>(), context->GetIsolate()), context->GetIsolate()));
     callback.call();
 }
 

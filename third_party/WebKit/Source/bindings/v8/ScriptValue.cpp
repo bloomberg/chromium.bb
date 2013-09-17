@@ -59,7 +59,7 @@ PassRefPtr<SerializedScriptValue> ScriptValue::serialize(ScriptState* scriptStat
 ScriptValue ScriptValue::deserialize(ScriptState* scriptState, SerializedScriptValue* value)
 {
     ScriptScope scope(scriptState);
-    return ScriptValue(value->deserialize());
+    return ScriptValue(value->deserialize(), scriptState->isolate());
 }
 
 bool ScriptValue::getString(String& result, v8::Isolate* isolate) const
