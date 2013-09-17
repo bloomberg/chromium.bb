@@ -390,6 +390,9 @@
       "channel": "stable",
       "extension_types": ["platform_app"],
       "whitelist": [
+          "ohmmkhmmmpcnpikjeljgnaoabkaalbgc", // Published Apps developer tool.
+          // TODO(grv): clean up once Apps developer tool is published.
+          "lphgohfeebnhcpiohjndkgbhhkoapkjc",  // Apps Developer tool.
           "gonnpeheodhmhdjiimoiheniambmdcco",  // Apps Editor old.
           "cbelnpbjogfbjamhpbofhlnklecjpido",  // Apps Editor published.
           "acldcpdepobcjbdanifkmfndkjoilgba"   // Activity Log (Watchdog)
