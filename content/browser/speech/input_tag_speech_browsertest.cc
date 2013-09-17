@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,7 +25,7 @@
 
 namespace content {
 
-class SpeechRecognitionBrowserTest : public ContentBrowserTest {
+class InputTagSpeechBrowserTest : public ContentBrowserTest {
  public:
   // ContentBrowserTest methods
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
@@ -94,7 +94,7 @@ class SpeechRecognitionBrowserTest : public ContentBrowserTest {
 };
 
 SpeechRecognitionManager*
-    SpeechRecognitionBrowserTest::speech_recognition_manager_ = NULL;
+    InputTagSpeechBrowserTest::speech_recognition_manager_ = NULL;
 
 // TODO(satish): Once this flakiness has been fixed, add a second test here to
 // check for sending many clicks in succession to the speech button and verify
@@ -105,19 +105,19 @@ SpeechRecognitionManager*
 // another test here to check that when speech recognition is in progress and
 // a renderer crashes, we get a call to
 // SpeechRecognitionManager::CancelAllRequestsWithDelegate.
-IN_PROC_BROWSER_TEST_F(SpeechRecognitionBrowserTest, TestBasicRecognition) {
+IN_PROC_BROWSER_TEST_F(InputTagSpeechBrowserTest, TestBasicRecognition) {
   RunSpeechRecognitionTest("basic_recognition.html");
   EXPECT_TRUE(fake_speech_recognition_manager_.grammar().empty());
 }
 
-IN_PROC_BROWSER_TEST_F(SpeechRecognitionBrowserTest, GrammarAttribute) {
+IN_PROC_BROWSER_TEST_F(InputTagSpeechBrowserTest, GrammarAttribute) {
   RunSpeechRecognitionTest("grammar_attribute.html");
   EXPECT_EQ("http://example.com/grammar.xml",
             fake_speech_recognition_manager_.grammar());
 }
 
 // Flaky on Linux, Windows and Mac http://crbug.com/140765.
-IN_PROC_BROWSER_TEST_F(SpeechRecognitionBrowserTest, DISABLED_TestCancelAll) {
+IN_PROC_BROWSER_TEST_F(InputTagSpeechBrowserTest, DISABLED_TestCancelAll) {
   // The test checks that the cancel-all callback gets issued when a session
   // is pending, so don't send a fake response.
   // We are not expecting a navigation event being raised from the JS of the
