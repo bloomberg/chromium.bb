@@ -40,6 +40,7 @@ class DataFetcherSharedMemoryBase::PollingThread : public base::Thread {
   void RemoveConsumer(ConsumerType consumer_type);
 
   unsigned GetConsumersBitmask() const { return consumers_bitmask_; }
+  bool IsTimerRunning() const { return timer_ ? timer_->IsRunning() : false; }
 
  private:
 
@@ -47,6 +48,7 @@ class DataFetcherSharedMemoryBase::PollingThread : public base::Thread {
 
   unsigned consumers_bitmask_;
   DataFetcherSharedMemoryBase* fetcher_;
+  base::TimeDelta poll_interval_;
   scoped_ptr<base::RepeatingTimer<PollingThread> > timer_;
 
   DISALLOW_COPY_AND_ASSIGN(PollingThread);
@@ -56,7 +58,10 @@ class DataFetcherSharedMemoryBase::PollingThread : public base::Thread {
 
 DataFetcherSharedMemoryBase::PollingThread::PollingThread(
     const char* name, DataFetcherSharedMemoryBase* fetcher)
-    : base::Thread(name), consumers_bitmask_(0), fetcher_(fetcher) {
+    : base::Thread(name),
+      consumers_bitmask_(0),
+      fetcher_(fetcher),
+      poll_interval_(fetcher->GetPollDelay()) {
 }
 
 DataFetcherSharedMemoryBase::PollingThread::~PollingThread() {
@@ -70,10 +75,10 @@ void DataFetcherSharedMemoryBase::PollingThread::AddConsumer(
 
   consumers_bitmask_ |= consumer_type;
 
-  if (!timer_) {
+  if (!timer_ && poll_interval_.InMilliseconds() > 0) {
     timer_.reset(new base::RepeatingTimer<PollingThread>());
     timer_->Start(FROM_HERE,
-                  base::TimeDelta::FromMilliseconds(kPeriodInMilliseconds),
+                  poll_interval_,
                   this, &PollingThread::DoPoll);
   }
 }
@@ -196,6 +201,10 @@ bool DataFetcherSharedMemoryBase::IsPolling() const {
   return false;
 }
 
+base::TimeDelta DataFetcherSharedMemoryBase::GetPollDelay() const {
+  return base::TimeDelta::FromMilliseconds(kPeriodInMilliseconds);
+}
+
 base::SharedMemory* DataFetcherSharedMemoryBase::GetSharedMemory(
     ConsumerType consumer_type) {
   SharedMemoryMap::const_iterator it = shared_memory_map_.find(consumer_type);
@@ -229,5 +238,10 @@ void* DataFetcherSharedMemoryBase::GetSharedMemoryBuffer(
 base::MessageLoop* DataFetcherSharedMemoryBase::GetPollingMessageLoop() const {
   return polling_thread_ ? polling_thread_->message_loop() : NULL;
 }
+
+bool DataFetcherSharedMemoryBase::IsPollingTimerRunningForTesting() const {
+  return polling_thread_ ? polling_thread_->IsTimerRunning() : false;
+}
+
 
 }  // namespace content

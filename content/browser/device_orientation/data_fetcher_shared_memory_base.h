@@ -57,11 +57,17 @@ class CONTENT_EXPORT DataFetcherSharedMemoryBase {
   // fetch the sensor data.
   virtual bool IsPolling() const;
 
+  // Returns the interval between successive calls to Fetch().
+  // If interval is zero, Fetch() is never called.
+  virtual base::TimeDelta GetPollDelay() const;
+
   // Start() method should call InitSharedMemoryBuffer() to get the shared
   // memory pointer. If IsPolling() is true both Start() and Stop() methods
   // are called from the |polling_thread_|.
   virtual bool Start(ConsumerType consumer_type, void* buffer) = 0;
   virtual bool Stop(ConsumerType consumer_type) = 0;
+
+  bool IsPollingTimerRunningForTesting() const;
 
  private:
   bool InitAndStartPollingThreadIfNecessary();

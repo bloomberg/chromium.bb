@@ -232,6 +232,65 @@ class FakePollingDataFetcher : public FakeDataFetcher {
   DISALLOW_COPY_AND_ASSIGN(FakePollingDataFetcher);
 };
 
+class FakeZeroDelayPollingDataFetcher : public FakeDataFetcher {
+ public:
+  FakeZeroDelayPollingDataFetcher() { }
+  virtual ~FakeZeroDelayPollingDataFetcher() { }
+
+  virtual bool Start(ConsumerType consumer_type, void* buffer) OVERRIDE {
+    EXPECT_TRUE(base::MessageLoop::current() == GetPollingMessageLoop());
+
+    Init(consumer_type, buffer);
+    switch (consumer_type) {
+      case CONSUMER_TYPE_MOTION:
+        start_motion_.Signal();
+        break;
+      case CONSUMER_TYPE_ORIENTATION:
+        start_orientation_.Signal();
+        break;
+      default:
+        return false;
+    }
+    return true;
+  }
+
+  virtual bool Stop(ConsumerType consumer_type) OVERRIDE {
+    EXPECT_TRUE(base::MessageLoop::current() == GetPollingMessageLoop());
+
+    switch (consumer_type) {
+      case CONSUMER_TYPE_MOTION:
+        stop_motion_.Signal();
+        break;
+      case CONSUMER_TYPE_ORIENTATION:
+        stop_orientation_.Signal();
+        break;
+      default:
+        return false;
+    }
+    return true;
+  }
+
+  virtual void Fetch(unsigned consumer_bitmask) OVERRIDE {
+    FAIL() << "fetch should not be called";
+  }
+
+  virtual bool IsPolling() const OVERRIDE {
+    return true;
+  }
+
+  virtual base::TimeDelta GetPollDelay() const OVERRIDE {
+    return base::TimeDelta::FromMilliseconds(0);
+  }
+
+  bool IsPollingTimerRunningForTesting() const {
+    return FakeDataFetcher::IsPollingTimerRunningForTesting();
+  }
+
+ private:
+
+  DISALLOW_COPY_AND_ASSIGN(FakeZeroDelayPollingDataFetcher);
+};
+
 
 TEST(DataFetcherSharedMemoryBaseTest, DoesStartMotion) {
   FakeNonPollingDataFetcher fake_data_fetcher;
@@ -324,6 +383,24 @@ TEST(DataFetcherSharedMemoryBaseTest, DoesPollMotionAndOrientation) {
   fake_data_fetcher.WaitForStop(CONSUMER_TYPE_ORIENTATION);
   fake_data_fetcher.WaitForStop(CONSUMER_TYPE_MOTION);
 }
+
+TEST(DataFetcherSharedMemoryBaseTest, DoesNotPollZeroDelay) {
+  FakeZeroDelayPollingDataFetcher fake_data_fetcher;
+  EXPECT_TRUE(fake_data_fetcher.IsPolling());
+  EXPECT_EQ(0, fake_data_fetcher.GetPollDelay().InMilliseconds());
+
+  EXPECT_TRUE(fake_data_fetcher.StartFetchingDeviceData(
+      CONSUMER_TYPE_ORIENTATION));
+  fake_data_fetcher.WaitForStart(CONSUMER_TYPE_ORIENTATION);
+
+  EXPECT_FALSE(fake_data_fetcher.IsPollingTimerRunningForTesting());
+  EXPECT_EQ(0, fake_data_fetcher.GetOrientationBuffer()->data.alpha);
+
+  fake_data_fetcher.StopFetchingDeviceData(CONSUMER_TYPE_ORIENTATION);
+  fake_data_fetcher.WaitForStop(CONSUMER_TYPE_ORIENTATION);
+}
+
+
 
 }  // namespace
 
