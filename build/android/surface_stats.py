@@ -13,7 +13,8 @@ import optparse
 import sys
 import time
 
-from pylib import android_commands, surface_stats_collector
+from pylib import android_commands
+from pylib.perf import surface_stats_collector
 from pylib.utils import run_tests_helper
 
 

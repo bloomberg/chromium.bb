@@ -12,11 +12,11 @@ import time
 from pylib import android_commands
 from pylib import constants
 from pylib import flag_changer
-from pylib import json_perf_parser
 from pylib import perf_tests_helper
 from pylib import valgrind_tools
 from pylib.base import base_test_result
 from pylib.base import base_test_runner
+from pylib.instrumentation import json_perf_parser
 
 import test_result
 

@@ -106,8 +106,8 @@ def PrintPerfResult(measurement, trace, values, units,
     Returns:
       String of the formated perf result.
   """
-  assert (perf_result_data_type.IsValidType(result_type),
-          'result type: %s is invalid' % result_type)
+  assert perf_result_data_type.IsValidType(result_type), \
+         'result type: %s is invalid' % result_type
 
   trace_name = _EscapePerfResult(trace)
 

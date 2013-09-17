@@ -937,13 +937,18 @@ class AndroidCommands(object):
       i += 1
     return self.GetExternalStorage() + '/' + base_name % i
 
+  def RunShellCommandWithSU(self, command, timeout_time=20, log_result=False):
+    return self.RunShellCommand('su -c %s' % command,
+                                timeout_time=timeout_time,
+                                log_result=log_result)
+
   def CanAccessProtectedFileContents(self):
     """Returns True if Get/SetProtectedFileContents would work via "su".
 
     Devices running user builds don't have adb root, but may provide "su" which
     can be used for accessing protected files.
     """
-    r = self.RunShellCommand('su -c cat /dev/null')
+    r = self.RunShellCommandWithSU('cat /dev/null')
     return r == [] or r[0].strip() == ''
 
   def GetProtectedFileContents(self, filename, log_result=False):
@@ -953,7 +958,7 @@ class AndroidCommands(object):
     files and device files.
     """
     # Run the script as root
-    return self.RunShellCommand('su -c cat "%s" 2> /dev/null' % filename)
+    return self.RunShellCommandWithSU('cat "%s" 2> /dev/null' % filename)
 
   def SetProtectedFileContents(self, filename, contents):
     """Writes |contents| to the protected file specified by |filename|.
@@ -970,7 +975,7 @@ class AndroidCommands(object):
     # Create a script to copy the file contents to its final destination
     self.SetFileContents(temp_script, 'cat %s > %s' % (temp_file, filename))
     # Run the script as root
-    self.RunShellCommand('su -c sh %s' % temp_script)
+    self.RunShellCommandWithSU('sh %s' % temp_script)
     # And remove the temporary files
     self.RunShellCommand('rm ' + temp_file)
     self.RunShellCommand('rm ' + temp_script)

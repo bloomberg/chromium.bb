@@ -2,13 +2,17 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import json
+import logging
+import math
 import re
 import sys
 
 import android_commands
-import json
-import logging
-import math
+
+from perf import cache_control
+from perf import perf_control
+
 
 # Valid values of result type.
 RESULT_TYPES = {'unimportant': 'RESULT ',
@@ -146,58 +150,11 @@ def PrintPerfResult(measurement, trace, values, units, result_type='default',
   return output
 
 
-class CacheControl(object):
-  _DROP_CACHES = '/proc/sys/vm/drop_caches'
-
+# TODO(bulach): remove once all references to PerfControl are fixed.
+class CacheControl(cache_control.CacheControl):
   def __init__(self, adb):
-    self._adb = adb
+    super(CacheControl, self).__init__(adb)
 
-  def DropRamCaches(self):
-    """Drops the filesystem ram caches for performance testing."""
-    self._adb.RunShellCommand('su -c sync')
-    self._adb.SetProtectedFileContents(CacheControl._DROP_CACHES, '3')
-
-
-class PerfControl(object):
-  """Provides methods for setting the performance mode of a device."""
-  _SCALING_GOVERNOR_FMT = (
-      '/sys/devices/system/cpu/cpu%d/cpufreq/scaling_governor')
-
+class PerfControl(perf_control.PerfControl):
   def __init__(self, adb):
-    self._adb = adb
-    kernel_max = self._adb.GetFileContents('/sys/devices/system/cpu/kernel_max',
-                                           log_result=False)
-    assert kernel_max, 'Unable to find /sys/devices/system/cpu/kernel_max'
-    self._kernel_max = int(kernel_max[0])
-    logging.info('Maximum CPU index: %d' % self._kernel_max)
-    self._original_scaling_governor = self._adb.GetFileContents(
-      PerfControl._SCALING_GOVERNOR_FMT % 0,
-      log_result=False)[0]
-
-  def SetHighPerfMode(self):
-    """Sets the highest possible performance mode for the device."""
-    self._SetScalingGovernorInternal('performance')
-
-  def SetDefaultPerfMode(self):
-    """Sets the performance mode for the device to its default mode."""
-    product_model = self._adb.GetProductModel()
-    governor_mode = {
-                    "GT-I9300" : 'pegasusq',
-                    "Galaxy Nexus" : 'interactive',
-                    "Nexus 4" : 'ondemand',
-                    "Nexus 7" : 'interactive',
-                    "Nexus 10": 'interactive'
-                    }.get(product_model, 'ondemand')
-    self._SetScalingGovernorInternal(governor_mode)
-
-  def RestoreOriginalPerfMode(self):
-    """Resets the original performance mode of the device."""
-    self._SetScalingGovernorInternal(self._original_scaling_governor)
-
-  def _SetScalingGovernorInternal(self, value):
-    for cpu in range(self._kernel_max + 1):
-      scaling_governor_file = PerfControl._SCALING_GOVERNOR_FMT % cpu
-      if self._adb.FileExistsOnDevice(scaling_governor_file):
-        logging.info('Writing scaling governor mode \'%s\' -> %s' %
-                     (value, scaling_governor_file))
-        self._adb.SetProtectedFileContents(scaling_governor_file, value)
+    super(PerfControl, self).__init__(adb)
