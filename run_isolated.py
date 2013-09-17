@@ -713,66 +713,6 @@ class Settings(object):
       self.relative_cwd = node.data['relative_cwd']
 
 
-def create_directories(base_directory, files):
-  """Creates the directory structure needed by the given list of files."""
-  logging.debug('create_directories(%s, %d)', base_directory, len(files))
-  # Creates the tree of directories to create.
-  directories = set(os.path.dirname(f) for f in files)
-  for item in list(directories):
-    while item:
-      directories.add(item)
-      item = os.path.dirname(item)
-  for d in sorted(directories):
-    if d:
-      os.mkdir(os.path.join(base_directory, d))
-
-
-def create_links(base_directory, files):
-  """Creates any links needed by the given set of files."""
-  for filepath, properties in files:
-    if 'l' not in properties:
-      continue
-    if sys.platform == 'win32':
-      # TODO(maruel): Create junctions or empty text files similar to what
-      # cygwin do?
-      logging.warning('Ignoring symlink %s', filepath)
-      continue
-    outfile = os.path.join(base_directory, filepath)
-    # symlink doesn't exist on Windows. So the 'link' property should
-    # never be specified for windows .isolated file.
-    os.symlink(properties['l'], outfile)  # pylint: disable=E1101
-    if 'm' in properties:
-      lchmod = getattr(os, 'lchmod', None)
-      if lchmod:
-        lchmod(outfile, properties['m'])
-
-
-def setup_commands(base_directory, cwd, cmd):
-  """Correctly adjusts and then returns the required working directory
-  and command needed to run the test.
-  """
-  assert not os.path.isabs(cwd), 'The cwd must be a relative path, got %s' % cwd
-  cwd = os.path.join(base_directory, cwd)
-  if not os.path.isdir(cwd):
-    os.makedirs(cwd)
-
-  # Ensure paths are correctly separated on windows.
-  cmd[0] = cmd[0].replace('/', os.path.sep)
-  cmd = tools.fix_python_path(cmd)
-
-  return cwd, cmd
-
-
-def generate_remaining_files(files):
-  """Generates a dictionary of all the remaining files to be downloaded."""
-  remaining = {}
-  for filepath, props in files:
-    if 'h' in props:
-      remaining.setdefault(props['h'], []).append((filepath, props))
-
-  return remaining
-
-
 def run_tha_test(isolated_hash, cache_dir, retriever, policies):
   """Downloads the dependencies in the cache, hardlinks them into a temporary
   directory and runs the executable.
@@ -799,13 +739,14 @@ def run_tha_test(isolated_hash, cache_dir, retriever, policies):
         return 1
 
       with tools.Profiler('GetRest'):
-        create_directories(outdir, settings.files)
-        create_links(outdir, settings.files.iteritems())
-        remaining = generate_remaining_files(settings.files.iteritems())
+        isolateserver.create_directories(outdir, settings.files)
+        isolateserver.create_links(outdir, settings.files.iteritems())
+        remaining = isolateserver.generate_remaining_files(
+            settings.files.iteritems())
 
         # Do bookkeeping while files are being downloaded in the background.
-        cwd, cmd = setup_commands(outdir, settings.relative_cwd,
-                                  settings.command[:])
+        cwd, cmd = isolateserver.setup_commands(
+            outdir, settings.relative_cwd, settings.command[:])
 
         # Now block on the remaining files to be downloaded and mapped.
         logging.info('Retrieving remaining files')
