@@ -50,6 +50,9 @@ class CachingFileSystem(FileSystem):
     self._read_binary_object_store = create_object_store(
         'read-binary', start_empty=False, app_version=None)
 
+  def Refresh(self):
+    return self._file_system.Refresh()
+
   def Stat(self, path):
     '''Stats the directory given, or if a file is given, stats the file's parent
     directory to get info about the file.

@@ -68,6 +68,9 @@ class FileSystem(object):
     '''
     return self.Read([path], binary=binary).Get()[path]
 
+  def Refresh(self):
+    raise NotImplementedError(self.__class__)
+
   # TODO(cduvall): Allow Stat to take a list of paths like Read.
   def Stat(self, path):
     '''Returns a |StatInfo| object containing the version of |path|. If |path|
