@@ -95,9 +95,26 @@ function sendReport() {
   feedbackInfo.pageUrl = $('page-url-text').value;
   feedbackInfo.email = $('user-email-text').value;
 
+  var useSystemInfo = false;
+  // On ChromeOS, since we gather System info, check if the user has given his
+  // permission for us to send system info.
+<if expr="pp_ifdef('chromeos')">
   if ($('sys-info-checkbox') != null &&
       $('sys-info-checkbox').checked &&
       systemInfo != null) {
+    useSystemInfo = true;
+  }
+</if>
+
+// On NonChromeOS, we don't have any system information gathered except the
+// Chrome version and the OS version. Hence for Chrome, pass the system info
+// through.
+<if expr="not pp_ifdef('chromeos')">
+  if (systemInfo != null)
+    useSystemInfo = true;
+</if>
+
+  if (useSystemInfo) {
     if (feedbackInfo.systemInformation != null) {
       // Concatenate sysinfo if we had any initial system information
       // sent with the feedback request event.

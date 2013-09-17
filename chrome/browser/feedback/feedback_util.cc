@@ -124,9 +124,6 @@ const int64 kInitialRetryDelay = 900000;  // 15 minutes
 const int64 kRetryDelayIncreaseFactor = 2;
 const int64 kRetryDelayLimit = 14400000;  // 4 hours
 
-const size_t kFeedbackMaxLength = 4 * 1024;
-const size_t kFeedbackMaxLineCount = 40;
-
 const char kArbitraryMimeType[] = "application/octet-stream";
 const char kLogsAttachmentName[] = "system_logs.zip";
 
@@ -250,15 +247,6 @@ void AddFeedbackData(userfeedback::ExtensionSubmit* feedback_data,
   *(web_data->add_product_specific_data()) = log_value;
 }
 
-bool ValidFeedbackSize(const std::string& content) {
-  if (content.length() > kFeedbackMaxLength)
-    return false;
-  const size_t line_count = std::count(content.begin(), content.end(), '\n');
-  if (line_count > kFeedbackMaxLineCount)
-    return false;
-  return true;
-}
-
 }  // namespace
 
 namespace chrome {
@@ -320,7 +308,7 @@ void SendReport(scoped_refptr<FeedbackData> data) {
     for (FeedbackData::SystemLogsMap::const_iterator i =
         data->sys_info()->begin(); i != data->sys_info()->end(); ++i) {
       if (!IsScreensizeInfo(i->first, i->second, &screen_size)) {
-        if (ValidFeedbackSize(i->second))
+        if (FeedbackData::BelowCompressionThreshold(i->second))
           AddFeedbackData(&feedback_data, i->first, i->second);
       }
     }

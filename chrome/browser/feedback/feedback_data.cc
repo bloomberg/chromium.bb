@@ -28,14 +28,31 @@ const char kMultilineIndicatorString[] = "<multiline>\n";
 const char kMultilineStartString[] = "---------- START ----------\n";
 const char kMultilineEndString[] = "---------- END ----------\n\n";
 
+const size_t kFeedbackMaxLength = 4 * 1024;
+const size_t kFeedbackMaxLineCount = 40;
+
 const char kTraceFilename[] = "tracing.log\n";
 
+// Converts the system logs into a string that we can compress and send
+// with the report. This method only converts those logs that we want in
+// the compressed zip file sent with the report, hence it ignores any logs
+// below the size threshold of what we want compressed.
 std::string LogsToString(FeedbackData::SystemLogsMap* sys_info) {
   std::string syslogs_string;
   for (FeedbackData::SystemLogsMap::const_iterator it = sys_info->begin();
       it != sys_info->end(); ++it) {
     std::string key = it->first;
     std::string value = it->second;
+
+    // Screensize info is sent with every report to remember the window size
+    // for when feedback was invoked. This is a hack needed to know what
+    // dimensions the user screenshot is since the actual screenshot mechanism
+    // in JS doesn't give us the dimensions of the screenshot taken. These
+    // values shouldn't be sent with the report.
+    if (key == FeedbackData::kScreensizeHeightKey ||
+        key == FeedbackData::kScreensizeWidthKey ||
+        FeedbackData::BelowCompressionThreshold(value))
+      continue;
 
     TrimString(key, "\n ", &key);
     TrimString(value, "\n ", &value);
@@ -57,7 +74,8 @@ void ZipLogs(FeedbackData::SystemLogsMap* sys_info,
              std::string* compressed_logs) {
   DCHECK(compressed_logs);
   std::string logs_string = LogsToString(sys_info);
-  if (!feedback_util::ZipString(logs_string, compressed_logs)) {
+  if (logs_string.empty() ||
+      !feedback_util::ZipString(logs_string, compressed_logs)) {
     compressed_logs->clear();
   }
 }
@@ -69,6 +87,15 @@ const char FeedbackData::kScreensizeHeightKey[] = "ScreensizeHeight";
 // static
 const char FeedbackData::kScreensizeWidthKey[] = "ScreensizeWidth";
 
+// static
+bool FeedbackData::BelowCompressionThreshold(const std::string& content) {
+  if (content.length() > kFeedbackMaxLength)
+    return false;
+  const size_t line_count = std::count(content.begin(), content.end(), '\n');
+  if (line_count > kFeedbackMaxLineCount)
+    return false;
+  return true;
+}
 
 FeedbackData::FeedbackData() : profile_(NULL),
                                feedback_page_data_complete_(false),
