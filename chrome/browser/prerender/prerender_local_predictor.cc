@@ -40,6 +40,7 @@
 #include "crypto/secure_hash.h"
 #include "grit/browser_resources.h"
 #include "net/base/escape.h"
+#include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "url/url_canon.h"
@@ -683,6 +684,9 @@ void PrerenderLocalPredictor::DoPrerenderServiceCheck(
       URLFetcher::GET, this);
   fetcher->SetRequestContext(
       prerender_manager_->profile()->GetRequestContext());
+  fetcher->SetLoadFlags(net::LOAD_DISABLE_CACHE |
+                        net::LOAD_DO_NOT_SAVE_COOKIES |
+                        net::LOAD_DO_NOT_SEND_COOKIES);
   fetcher->AddExtraRequestHeader("Pragma: no-cache");
   info->start_time_ = base::Time::Now();
   outstanding_prerender_service_requests_.insert(
