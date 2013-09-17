@@ -195,8 +195,13 @@ TerminationStatus GetTerminationStatus(ProcessHandle handle, int* exit_code) {
   return GetTerminationStatusImpl(handle, false /* can_block */, exit_code);
 }
 
-TerminationStatus WaitForTerminationStatus(ProcessHandle handle,
-                                           int* exit_code) {
+TerminationStatus GetKnownDeadTerminationStatus(ProcessHandle handle,
+                                                int* exit_code) {
+  bool result = kill(handle, SIGKILL) == 0;
+
+  if (!result)
+    DPLOG(ERROR) << "Unable to terminate process " << handle;
+
   return GetTerminationStatusImpl(handle, true /* can_block */, exit_code);
 }
 

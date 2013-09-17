@@ -223,16 +223,7 @@ bool Zygote::GetTerminationStatus(base::ProcessHandle real_pid,
   } else {
     // Handle the request directly.
     if (known_dead) {
-      // If we know that the process is already dead and the kernel is cleaning
-      // it up, we do want to wait until it becomes a zombie and not risk
-      // returning eroneously that it is still running. However, we do not
-      // want to risk a bug where we're told a process is dead when it's not.
-      // By sending SIGKILL, we make sure that WaitForTerminationStatus will
-      // return quickly even in this case.
-      if (kill(child, SIGKILL)) {
-        PLOG(ERROR) << "kill (" << child << ")";
-      }
-      *status = base::WaitForTerminationStatus(child, exit_code);
+      *status = base::GetKnownDeadTerminationStatus(child, exit_code);
     } else {
       // We don't know if the process is dying, so get its status but don't
       // wait.

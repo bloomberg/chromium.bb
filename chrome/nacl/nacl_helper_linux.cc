@@ -164,17 +164,10 @@ bool HandleGetTerminationStatusRequest(PickleIterator* input_iter,
 
   int exit_code;
   base::TerminationStatus status;
-  // See the comment in the Zygote about known_dead.
-  if (known_dead) {
-    // Make sure to not perform a blocking wait on something that
-    // could still be alive.
-    if (kill(child_to_wait, SIGKILL)) {
-      PLOG(ERROR) << "kill (" << child_to_wait << ")";
-    }
-    status = base::WaitForTerminationStatus(child_to_wait, &exit_code);
-  } else {
+  if (known_dead)
+    status = base::GetKnownDeadTerminationStatus(child_to_wait, &exit_code);
+  else
     status = base::GetTerminationStatus(child_to_wait, &exit_code);
-  }
   output_pickle->WriteInt(static_cast<int>(status));
   output_pickle->WriteInt(exit_code);
   return true;
