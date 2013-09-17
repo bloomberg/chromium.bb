@@ -299,6 +299,7 @@ String KURL::lastPathComponent() const
 {
     if (!m_isValid)
         return stringForInvalidComponent();
+    ASSERT(!m_string.isNull());
 
     // When the output ends in a slash, WebCore has different expectations than
     // the GoogleURL library. For "/foo/bar/" the library will return the empty
@@ -308,7 +309,7 @@ String KURL::lastPathComponent() const
         path.len--;
 
     url_parse::Component file;
-    if (!m_string.isNull() && m_string.is8Bit())
+    if (m_string.is8Bit())
         url_parse::ExtractFileName(asURLChar8Subtle(m_string), path, &file);
     else
         url_parse::ExtractFileName(m_string.characters16(), path, &file);
@@ -339,11 +340,10 @@ unsigned short KURL::port() const
 {
     if (!m_isValid || m_parsed.port.len <= 0)
         return 0;
-    int port = 0;
-    if (!m_string.isNull() && m_string.is8Bit())
-        port = url_parse::ParsePort(asURLChar8Subtle(m_string), m_parsed.port);
-    else
-        port = url_parse::ParsePort(m_string.characters16(), m_parsed.port);
+    ASSERT(!m_string.isNull());
+    int port = m_string.is8Bit() ?
+        url_parse::ParsePort(asURLChar8Subtle(m_string), m_parsed.port) :
+        url_parse::ParsePort(m_string.characters16(), m_parsed.port);
     ASSERT(port != url_parse::PORT_UNSPECIFIED); // Checked port.len <= 0 before.
 
     if (port == url_parse::PORT_INVALID || port > maximumValidPortNumber) // Mimic KURL::port()
@@ -624,11 +624,11 @@ String encodeWithURLEscapeSequences(const String& notEncodedString)
 
 bool KURL::isHierarchical() const
 {
-    if (!m_parsed.scheme.is_nonempty())
+    if (m_string.isNull() || !m_parsed.scheme.is_nonempty())
         return false;
-    if (!m_string.isNull() && m_string.is8Bit())
-        return url_util::IsStandard(asURLChar8Subtle(m_string), m_parsed.scheme);
-    return url_util::IsStandard(m_string.characters16(), m_parsed.scheme);
+    return m_string.is8Bit() ?
+        url_util::IsStandard(asURLChar8Subtle(m_string), m_parsed.scheme) :
+        url_util::IsStandard(m_string.characters16(), m_parsed.scheme);
 }
 
 #ifndef NDEBUG
@@ -686,11 +686,12 @@ unsigned KURL::pathEnd() const
 
 unsigned KURL::pathAfterLastSlash() const
 {
+    if (m_string.isNull())
+        return 0;
     if (!m_isValid || !m_parsed.path.is_valid())
         return m_parsed.CountCharactersBefore(url_parse::Parsed::PATH, false);
-
     url_parse::Component filename;
-    if (!m_string.isNull() && m_string.is8Bit())
+    if (m_string.is8Bit())
         url_parse::ExtractFileName(asURLChar8Subtle(m_string), m_parsed.path, &filename);
     else
         url_parse::ExtractFileName(m_string.characters16(), m_parsed.path, &filename);
@@ -788,10 +789,10 @@ void KURL::initProtocolIsInHTTPFamily()
         return;
     }
 
-    if (!m_string.isNull() && m_string.is8Bit())
-        m_protocolIsInHTTPFamily = checkIfProtocolIsInHTTPFamily(m_parsed.scheme, m_string.characters8());
-    else
-        m_protocolIsInHTTPFamily = checkIfProtocolIsInHTTPFamily(m_parsed.scheme, m_string.characters16());
+    ASSERT(!m_string.isNull());
+    m_protocolIsInHTTPFamily = m_string.is8Bit() ?
+        checkIfProtocolIsInHTTPFamily(m_parsed.scheme, m_string.characters8()) :
+        checkIfProtocolIsInHTTPFamily(m_parsed.scheme, m_string.characters16());
 }
 
 bool KURL::protocolIs(const char* protocol) const
@@ -802,11 +803,12 @@ bool KURL::protocolIs(const char* protocol) const
     // The free function protocolIsJavaScript() should be used instead.
     // FIXME: Chromium code needs to be fixed for this assert to be enabled. ASSERT(strcmp(protocol, "javascript"));
 
-    if (m_parsed.scheme.len <= 0)
-        return !protocol;
-    if (!m_string.isNull() && m_string.is8Bit())
-        return internalProtocolIs(m_parsed.scheme, m_string.characters8(), protocol);
-    return internalProtocolIs(m_parsed.scheme, m_string.characters16(), protocol);
+    if (m_string.isNull() || m_parsed.scheme.len <= 0)
+        return *protocol == '\0';
+
+    return m_string.is8Bit() ?
+        internalProtocolIs(m_parsed.scheme, m_string.characters8(), protocol) :
+        internalProtocolIs(m_parsed.scheme, m_string.characters16(), protocol);
 }
 
 String KURL::stringForInvalidComponent() const

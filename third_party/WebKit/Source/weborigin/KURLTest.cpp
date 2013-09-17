@@ -605,6 +605,42 @@ TEST(KURLTest, DeepCopy)
     EXPECT_NE(dest.string().impl(), src.string().impl());
 }
 
+TEST(KURLTest, LastPathComponent)
+{
+    WebCore::KURL url1(WebCore::ParsedURLString, "http://host/path/to/file.txt");
+    EXPECT_EQ("file.txt", url1.lastPathComponent());
+
+    WebCore::KURL invalidUTF8(WebCore::ParsedURLString, "http://a@9%aa%:/path/to/file.txt");
+    EXPECT_EQ(String(), invalidUTF8.lastPathComponent());
+}
+
+TEST(KURLTest, IsHierarchical)
+{
+    WebCore::KURL url1(WebCore::ParsedURLString, "http://host/path/to/file.txt");
+    EXPECT_TRUE(url1.isHierarchical());
+
+    WebCore::KURL invalidUTF8(WebCore::ParsedURLString, "http://a@9%aa%:/path/to/file.txt");
+    EXPECT_FALSE(invalidUTF8.isHierarchical());
+}
+
+TEST(KURLTest, PathAfterLastSlash)
+{
+    WebCore::KURL url1(WebCore::ParsedURLString, "http://host/path/to/file.txt");
+    EXPECT_EQ(20u, url1.pathAfterLastSlash());
+
+    WebCore::KURL invalidUTF8(WebCore::ParsedURLString, "http://a@9%aa%:/path/to/file.txt");
+    EXPECT_EQ(0u, invalidUTF8.pathAfterLastSlash());
+}
+
+TEST(KURLTest, ProtocolIsInHTTPFamily)
+{
+    WebCore::KURL url1(WebCore::ParsedURLString, "http://host/path/to/file.txt");
+    EXPECT_TRUE(url1.protocolIsInHTTPFamily());
+
+    WebCore::KURL invalidUTF8(WebCore::ParsedURLString, "http://a@9%aa%:/path/to/file.txt");
+    EXPECT_FALSE(invalidUTF8.protocolIsInHTTPFamily());
+}
+
 TEST(KURLTest, ProtocolIs)
 {
     WebCore::KURL url1(WebCore::ParsedURLString, "foo://bar");
@@ -614,6 +650,10 @@ TEST(KURLTest, ProtocolIs)
     WebCore::KURL url2(WebCore::ParsedURLString, "foo-bar:");
     EXPECT_TRUE(url2.protocolIs("foo-bar"));
     EXPECT_FALSE(url2.protocolIs("foo"));
+
+    WebCore::KURL invalidUTF8(WebCore::ParsedURLString, "http://a@9%aa%:");
+    EXPECT_FALSE(invalidUTF8.protocolIs("http"));
+    EXPECT_TRUE(invalidUTF8.protocolIs(""));
 }
 
 } // namespace
