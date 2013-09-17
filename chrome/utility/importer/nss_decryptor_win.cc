@@ -87,6 +87,12 @@ bool NSSDecryptor::Init(const base::FilePath& dll_path,
   HMODULE plds4_dll = GetModuleHandle(kPLDS4Library);
   HMODULE nspr4_dll = GetModuleHandle(kNSPR4Library);
 
+  // On Firefox 22 and higher, NSPR is part of nss3.dll rather than separate
+  // DLLs.
+  if (plds4_dll == NULL) {
+    plds4_dll = nss3_dll_;
+    nspr4_dll = nss3_dll_;
+  }
   return InitNSS(db_path, plds4_dll, nspr4_dll);
 }
 
@@ -106,12 +112,6 @@ NSSDecryptor::~NSSDecryptor() {
 bool NSSDecryptor::InitNSS(const base::FilePath& db_path,
                            base::NativeLibrary plds4_dll,
                            base::NativeLibrary nspr4_dll) {
-  // NSPR DLLs are already loaded now.
-  if (plds4_dll == NULL || nspr4_dll == NULL) {
-    Free();
-    return false;
-  }
-
   // Gets the function address.
   NSS_Init = (NSSInitFunc)
       base::GetFunctionPointerFromNativeLibrary(nss3_dll_, "NSS_Init");
