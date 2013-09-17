@@ -48,6 +48,9 @@ bool SVGAnimateTransformElement::hasValidAttributeType()
     if (!targetElement)
         return false;
 
+    if (attributeType() == AttributeTypeCSS)
+        return false;
+
     return m_animatedPropertyType == AnimatedTransformList;
 }
 
