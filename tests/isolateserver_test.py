@@ -211,43 +211,55 @@ class IsolateServerArchiveTest(TestCase):
     self.assertEqual(result, missing)
 
   def test_upload_blobstore_simple(self):
-    content = 'blob_content'
+    # A tad over 20kb so it triggers uploading to the blob store.
+    content = '0123456789' * 21*1024
     s = ALGO(content).hexdigest()
     path = 'http://example.com:80/'
-    data = [('token', 'foo bar')]
+    data = [('token', 'a_token')]
     content_type, body = isolateserver.encode_multipart_formdata(
-        data[:], [('content', s, 'blob_content')])
+        data, [('content', s, content)])
     self._requests = [
       (
-        path + 'gen_url?foo#bar',
-        {'data': data[:]},
-        'an_url/',
+        path + 'content/get_token',
+        {},
+        'a_token',
       ),
       (
-        'an_url/',
+        path + 'content/generate_blobstore_url/x/' + s,
+        {'data': data[:]},
+        'http://example.com/an_url/',
+      ),
+      (
+        'http://example.com/an_url/',
         {'data': body, 'content_type': content_type, 'retry_50x': False},
         'ok42',
       ),
     ]
-    result = isolateserver.upload_hash_content_to_blobstore(
-        path + 'gen_url?foo#bar', data[:], s, content)
+    # |size| is currently ignored.
+    result = isolateserver.IsolateServer(path, 'x').store(content, s, -2)
     self.assertEqual('ok42', result)
 
   def test_upload_blobstore_retry_500(self):
-    content = 'blob_content'
+    # A tad over 20kb so it triggers uploading to the blob store.
+    content = '0123456789' * 21*1024
     s = ALGO(content).hexdigest()
     path = 'http://example.com:80/'
-    data = [('token', 'foo bar')]
+    data = [('token', 'a_token')]
     content_type, body = isolateserver.encode_multipart_formdata(
-        data[:], [('content', s, 'blob_content')])
+        data, [('content', s, content)])
     self._requests = [
       (
-        path + 'gen_url?foo#bar',
-        {'data': data[:]},
-        'an_url/',
+        path + 'content/get_token',
+        {},
+        'a_token',
       ),
       (
-        'an_url/',
+        path + 'content/generate_blobstore_url/x/' + s,
+        {'data': data[:]},
+        'http://example.com/an_url/',
+      ),
+      (
+        'http://example.com/an_url/',
         {'data': body, 'content_type': content_type, 'retry_50x': False},
         # Let's say an HTTP 500 was returned.
         None,
@@ -255,18 +267,18 @@ class IsolateServerArchiveTest(TestCase):
       # In that case, a new url must be generated since the last one may have
       # been "consumed".
       (
-        path + 'gen_url?foo#bar',
+        path + 'content/generate_blobstore_url/x/' + s,
         {'data': data[:]},
-        'an_url/',
+        'http://example.com/an_url_2/',
       ),
       (
-        'an_url/',
+        'http://example.com/an_url_2/',
         {'data': body, 'content_type': content_type, 'retry_50x': False},
         'ok42',
       ),
     ]
-    result = isolateserver.upload_hash_content_to_blobstore(
-        path + 'gen_url?foo#bar', data[:], s, content)
+    # |size| is currently ignored.
+    result = isolateserver.IsolateServer(path, 'x').store(content, s, -2)
     self.assertEqual('ok42', result)
 
 
@@ -337,6 +349,8 @@ class WorkerPoolTest(auto_stub.TestCase):
 
 
 if __name__ == '__main__':
+  if '-v' in sys.argv:
+    unittest.TestCase.maxDiff = None
   logging.basicConfig(
       level=(logging.DEBUG if '-v' in sys.argv else logging.ERROR))
   unittest.main()

@@ -270,40 +270,6 @@ def url_read(url, **kwargs):
   return result
 
 
-def upload_hash_content_to_blobstore(
-    generate_upload_url, data, hash_key, content):
-  """Uploads the given hash contents directly to the blobstore via a generated
-  url.
-
-  Arguments:
-    generate_upload_url: The url to get the new upload url from.
-    data: extra POST data.
-    hash_key: hash of the uncompressed version of content.
-    content: The contents to upload. Must fit in memory for now.
-  """
-  logging.debug('Generating url to directly upload file to blobstore')
-  assert isinstance(hash_key, str), hash_key
-  assert isinstance(content, str), (hash_key, content)
-  # TODO(maruel): Support large files. This would require streaming support.
-  content_type, body = encode_multipart_formdata(
-      data, [('content', hash_key, content)])
-  for _ in net.retry_loop(max_attempts=net.URL_OPEN_MAX_ATTEMPTS):
-    # Retry HTTP 50x here.
-    upload_url = net.url_read(generate_upload_url, data=data)
-    if not upload_url:
-      raise MappingError(
-          'Unable to connect to server %s' % generate_upload_url)
-
-    # Do not retry this request on HTTP 50x. Regenerate an upload url each time
-    # since uploading "consumes" the upload url.
-    result = net.url_read(
-        upload_url, data=body, content_type=content_type, retry_50x=False)
-    if result is not None:
-      return result
-  raise MappingError(
-      'Unable to connect to server %s' % generate_upload_url)
-
-
 class IsolateServer(object):
   """Client class to download or upload to Isolate Server."""
   def __init__(self, base_url, namespace):
@@ -383,17 +349,38 @@ class IsolateServer(object):
     # TODO(maruel): Detect failures.
     hash_key = str(hash_key)
     if len(content) > MIN_SIZE_FOR_DIRECT_BLOBSTORE:
-      url = '%sgenerate_blobstore_url/%s/%s' % (
-          self.content_url, self.namespace, hash_key)
-      # token is guaranteed to be already quoted but it is unnecessary here, and
-      # only here.
-      data = [('token', urllib.unquote(self.token))]
-      return upload_hash_content_to_blobstore(url, data, hash_key, content)
-    else:
-      url = '%sstore/%s/%s?token=%s' % (
-          self.content_url, self.namespace, hash_key, self.token)
-      return url_read(
-          url, data=content, content_type='application/octet-stream')
+      return self._upload_hash_content_to_blobstore(hash_key, content)
+
+    url = '%sstore/%s/%s?token=%s' % (
+        self.content_url, self.namespace, hash_key, self.token)
+    return url_read(
+        url, data=content, content_type='application/octet-stream')
+
+  def _upload_hash_content_to_blobstore(self, hash_key, content):
+    """Uploads the content directly to the blobstore via a generated url."""
+    # TODO(maruel): Support large files. This would require streaming support.
+    gen_url = '%sgenerate_blobstore_url/%s/%s' % (
+        self.content_url, self.namespace, hash_key)
+    # Token is guaranteed to be already quoted but it is unnecessary here, and
+    # only here.
+    data = [('token', urllib.unquote(self.token))]
+    content_type, body = encode_multipart_formdata(
+        data, [('content', hash_key, content)])
+    last_url = gen_url
+    for _ in net.retry_loop(max_attempts=net.URL_OPEN_MAX_ATTEMPTS):
+      # Retry HTTP 50x here but not 404.
+      upload_url = net.url_read(gen_url, data=data)
+      if not upload_url:
+        raise MappingError('Unable to connect to server %s' % gen_url)
+      last_url = upload_url
+
+      # Do not retry this request on HTTP 50x. Regenerate an upload url each
+      # time since uploading "consumes" the upload url.
+      result = net.url_read(
+          upload_url, data=body, content_type=content_type, retry_50x=False)
+      if result is not None:
+        return result
+    raise MappingError('Unable to connect to server %s' % last_url)
 
 
 def check_files_exist_on_server(query_url, queries):
