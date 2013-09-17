@@ -244,33 +244,25 @@ def _FilterTestsUsingPrefixes(all_tests, pre=False, manual=False):
   return filtered_tests
 
 
-def _GetTestsFiltered(suite_name, gtest_filter, runner_factory, devices):
-  """Get all tests in the suite and filter them.
+def _FilterDisabledTests(tests, suite_name, has_gtest_filter):
+  """Removes disabled tests from |tests|.
 
-  Obtains a list of tests from the test package on the device, and
-  applies the following filters in order:
+  Applies the following filters in order:
     1. Remove tests with disabled prefixes.
     2. Remove tests specified in the *_disabled files in the 'filter' dir
-    3. Applies |gtest_filter|.
 
   Args:
+    tests: List of tests.
     suite_name: Name of the test suite (e.g. base_unittests).
-    gtest_filter: A filter including negative and/or positive patterns.
-    runner_factory: callable that takes a device and index and returns a
-      TestRunner object.
-    devices: List of devices.
+    has_gtest_filter: Whether a gtest_filter is provided.
 
   Returns:
     List of tests remaining.
   """
-  tests = _GetTestsFromDevice(runner_factory, devices)
   tests = _FilterTestsUsingPrefixes(
-      tests, bool(gtest_filter), bool(gtest_filter))
+      tests, has_gtest_filter, has_gtest_filter)
   tests = unittest_util.FilterTestNames(
       tests, _GetDisabledTestsFilterFromFile(suite_name))
-
-  if gtest_filter:
-    tests = unittest_util.FilterTestNames(tests, gtest_filter)
 
   return tests
 
@@ -308,8 +300,17 @@ def Setup(test_options, devices):
         device,
         test_package)
 
-  tests = _GetTestsFiltered(test_options.suite_name, test_options.gtest_filter,
-                            TestRunnerFactory, devices)
+  tests = _GetTestsFromDevice(TestRunnerFactory, devices)
+  if test_options.run_disabled:
+    test_options = test_options._replace(
+        test_arguments=('%s --gtest_also_run_disabled_tests' %
+                        test_options.test_arguments))
+  else:
+    tests = _FilterDisabledTests(tests, test_options.suite_name,
+                                 bool(test_options.gtest_filter))
+  if test_options.gtest_filter:
+    tests = unittest_util.FilterTestNames(tests, test_options.gtest_filter)
+
   # Coalesce unit tests into a single test per device
   if test_options.suite_name != 'content_browsertests':
     num_devices = len(devices)

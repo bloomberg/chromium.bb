@@ -39,55 +39,49 @@ from pylib.utils import run_tests_helper
 _SDK_OUT_DIR = os.path.join(constants.DIR_SOURCE_ROOT, 'out')
 
 
-def AddBuildTypeOption(option_parser):
-  """Adds the build type option to |option_parser|."""
-  default_build_type = 'Debug'
-  if 'BUILDTYPE' in os.environ:
-    default_build_type = os.environ['BUILDTYPE']
-  option_parser.add_option('--debug', action='store_const', const='Debug',
-                           dest='build_type', default=default_build_type,
-                           help=('If set, run test suites under out/Debug. '
-                                 'Default is env var BUILDTYPE or Debug.'))
-  option_parser.add_option('--release', action='store_const',
-                           const='Release', dest='build_type',
-                           help=('If set, run test suites under out/Release.'
-                                 ' Default is env var BUILDTYPE or Debug.'))
-
-
 def AddCommonOptions(option_parser):
   """Adds all common options to |option_parser|."""
 
-  AddBuildTypeOption(option_parser)
-
-  option_parser.add_option('-c', dest='cleanup_test_files',
-                           help='Cleanup test files on the device after run',
-                           action='store_true')
-  option_parser.add_option('--num_retries', dest='num_retries', type='int',
-                           default=2,
-                           help=('Number of retries for a test before '
-                                 'giving up.'))
-  option_parser.add_option('-v',
-                           '--verbose',
-                           dest='verbose_count',
-                           default=0,
-                           action='count',
-                           help='Verbose level (multiple times for more)')
-  option_parser.add_option('--tool',
-                           dest='tool',
-                           help=('Run the test under a tool '
-                                 '(use --tool help to list them)'))
-  option_parser.add_option('--flakiness-dashboard-server',
-                           dest='flakiness_dashboard_server',
-                           help=('Address of the server that is hosting the '
-                                 'Chrome for Android flakiness dashboard.'))
-  option_parser.add_option('--skip-deps-push', dest='push_deps',
-                           action='store_false', default=True,
-                           help=('Do not push dependencies to the device. '
-                                 'Use this at own risk for speeding up test '
-                                 'execution on local machine.'))
-  option_parser.add_option('-d', '--device', dest='test_device',
-                           help=('Target device for the test suite '
-                                 'to run on.'))
+  group = optparse.OptionGroup(option_parser, 'Common Options')
+  default_build_type = os.environ.get('BUILDTYPE', 'Debug')
+  group.add_option('--debug', action='store_const', const='Debug',
+                   dest='build_type', default=default_build_type,
+                   help=('If set, run test suites under out/Debug. '
+                         'Default is env var BUILDTYPE or Debug.'))
+  group.add_option('--release', action='store_const',
+                   const='Release', dest='build_type',
+                   help=('If set, run test suites under out/Release.'
+                         ' Default is env var BUILDTYPE or Debug.'))
+  group.add_option('-c', dest='cleanup_test_files',
+                   help='Cleanup test files on the device after run',
+                   action='store_true')
+  group.add_option('--num_retries', dest='num_retries', type='int',
+                   default=2,
+                   help=('Number of retries for a test before '
+                         'giving up.'))
+  group.add_option('-v',
+                   '--verbose',
+                   dest='verbose_count',
+                   default=0,
+                   action='count',
+                   help='Verbose level (multiple times for more)')
+  group.add_option('--tool',
+                   dest='tool',
+                   help=('Run the test under a tool '
+                         '(use --tool help to list them)'))
+  group.add_option('--flakiness-dashboard-server',
+                   dest='flakiness_dashboard_server',
+                   help=('Address of the server that is hosting the '
+                         'Chrome for Android flakiness dashboard.'))
+  group.add_option('--skip-deps-push', dest='push_deps',
+                   action='store_false', default=True,
+                   help=('Do not push dependencies to the device. '
+                         'Use this at own risk for speeding up test '
+                         'execution on local machine.'))
+  group.add_option('-d', '--device', dest='test_device',
+                   help=('Target device for the test suite '
+                         'to run on.'))
+  option_parser.add_option_group(group)
 
 
 def ProcessCommonOptions(options):
@@ -100,16 +94,20 @@ def AddGTestOptions(option_parser):
   """Adds gtest options to |option_parser|."""
 
   option_parser.usage = '%prog gtest [options]'
-  option_parser.command_list = []
+  option_parser.commands_dict = {}
   option_parser.example = '%prog gtest -s base_unittests'
 
   # TODO(gkanwar): Make this option required
   option_parser.add_option('-s', '--suite', dest='suite_name',
                            help=('Executable name of the test suite to run '
                                  '(use -s help to list them).'))
-  option_parser.add_option('-f', '--gtest_filter', dest='test_filter',
+  option_parser.add_option('-f', '--gtest-filter', dest='test_filter',
                            help='googletest-style filter string.')
-  option_parser.add_option('-a', '--test_arguments', dest='test_arguments',
+  option_parser.add_option('--gtest-also-run-disabled-tests',
+                           dest='run_disabled', action='store_true',
+                           help='Also run disabled tests if applicable.')
+  option_parser.add_option('-a', '--test-arguments', dest='test_arguments',
+                           default='',
                            help='Additional arguments to pass to the test.')
   option_parser.add_option('-t', dest='timeout',
                            help='Timeout to wait for each test',
@@ -144,7 +142,7 @@ def ProcessGTestOptions(options):
 def AddJavaTestOptions(option_parser):
   """Adds the Java test options to |option_parser|."""
 
-  option_parser.add_option('-f', '--test_filter', dest='test_filter',
+  option_parser.add_option('-f', '--test-filter', dest='test_filter',
                            help=('Test filter (if not fully qualified, '
                                  'will run all matches).'))
   option_parser.add_option(
@@ -205,16 +203,16 @@ def AddInstrumentationTestOptions(option_parser):
   """Adds Instrumentation test options to |option_parser|."""
 
   option_parser.usage = '%prog instrumentation [options]'
-  option_parser.command_list = []
+  option_parser.commands_dict = {}
   option_parser.example = ('%prog instrumentation '
                            '--test-apk=ChromiumTestShellTest')
 
   AddJavaTestOptions(option_parser)
   AddCommonOptions(option_parser)
 
-  option_parser.add_option('-j', '--java_only', action='store_true',
+  option_parser.add_option('-j', '--java-only', action='store_true',
                            default=False, help='Run only the Java tests.')
-  option_parser.add_option('-p', '--python_only', action='store_true',
+  option_parser.add_option('-p', '--python-only', action='store_true',
                            default=False,
                            help='Run only the host-driven tests.')
   option_parser.add_option('--host-driven-root',
@@ -297,7 +295,7 @@ def AddUIAutomatorTestOptions(option_parser):
   """Adds UI Automator test options to |option_parser|."""
 
   option_parser.usage = '%prog uiautomator [options]'
-  option_parser.command_list = []
+  option_parser.commands_dict = {}
   option_parser.example = (
       '%prog uiautomator --test-jar=chromium_testshell_uiautomator_tests'
       ' --package-name=org.chromium.chrome.testshell')
@@ -364,7 +362,7 @@ def AddMonkeyTestOptions(option_parser):
   """Adds monkey test options to |option_parser|."""
 
   option_parser.usage = '%prog monkey [options]'
-  option_parser.command_list = []
+  option_parser.commands_dict = {}
   option_parser.example = (
       '%prog monkey --package-name=org.chromium.content_shell_apk'
       ' --activity-name=.ContentShellActivity')
@@ -426,7 +424,7 @@ def AddPerfTestOptions(option_parser):
   """Adds perf test options to |option_parser|."""
 
   option_parser.usage = '%prog perf [options]'
-  option_parser.command_list = []
+  option_parser.commands_dict = {}
   option_parser.example = ('%prog perf --steps perf_steps.json')
 
   option_parser.add_option(
@@ -477,6 +475,7 @@ def _RunGTests(options, error_func, devices):
         options.cleanup_test_files,
         options.push_deps,
         options.test_filter,
+        options.run_disabled,
         options.test_arguments,
         options.timeout,
         suite_name)
@@ -706,7 +705,7 @@ def HelpCommand(command, options, args, option_parser):
 
   VALID_COMMANDS[command].add_options_func(option_parser)
   option_parser.usage = '%prog ' + command + ' [options]'
-  option_parser.command_list = None
+  option_parser.commands_dict = {}
   option_parser.print_help()
 
   return 0

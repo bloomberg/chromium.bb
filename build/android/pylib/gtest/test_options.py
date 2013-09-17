@@ -11,6 +11,7 @@ GTestOptions = collections.namedtuple('GTestOptions', [
     'cleanup_test_files',
     'push_deps',
     'gtest_filter',
+    'run_disabled',
     'test_arguments',
     'timeout',
     'suite_name'])

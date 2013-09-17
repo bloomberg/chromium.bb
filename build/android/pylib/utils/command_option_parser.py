@@ -25,7 +25,7 @@ class CommandOptionParser(optparse.OptionParser):
       example: An example command.
       everything else: Passed to optparse.OptionParser contructor.
     """
-    self.commands_dict = kwargs.pop('commands_dict', [])
+    self.commands_dict = kwargs.pop('commands_dict', {})
     self.example = kwargs.pop('example', '')
     if not 'usage' in kwargs:
       kwargs['usage'] = 'Usage: %prog <command> [options]'
@@ -69,8 +69,7 @@ def ParseAndExecute(option_parser, argv=None):
       option_parser.parse_args(argv)
       option_parser.error('Invalid command.')
 
-    command = argv[1]
-    option_parser.commands_dict[command].add_options_func(option_parser)
+    cmd = option_parser.commands_dict[argv[1]]
+    cmd.add_options_func(option_parser)
     options, args = option_parser.parse_args(argv)
-    return option_parser.commands_dict[command].run_command_func(
-        command, options, args, option_parser)
+    return cmd.run_command_func(argv[1], options, args, option_parser)
