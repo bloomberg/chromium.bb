@@ -25,33 +25,36 @@ var SharedOption = Object.freeze({
 /**
  * File system entry information for tests.
  *
- * @param {EntryType} entryType Entry type.
+ * @param {EntryType} type Entry type.
  * @param {string} sourceFileName Source file name that provides file contents.
  * @param {string} targetName Name of entry on the test file system.
  * @param {string} mimeType Mime type.
- * @param {string} typeText Type name to be shown in the type column.
- * @param {string} sizeText Size text to be shown in the size column.
  * @param {SharedOption} sharedOption Shared option.
  * @param {string} lastModifiedTime Last modified time as a text to be shown in
  *     the last modified column.
+ * @param {string} nameText File name to be shown in the name column.
+ * @param {string} sizeText Size text to be shown in the size column.
+ * @param {string} typeText Type name to be shown in the type column.
  * @constructor
  */
-var TestEntryInfo = function(entryType,
+var TestEntryInfo = function(type,
                              sourceFileName,
                              targetName,
                              mimeType,
-                             typeText,
-                             sizeText,
                              sharedOption,
-                             lastModifiedTime) {
-  this.entryType = entryType;
+                             lastModifiedTime,
+                             nameText,
+                             sizeText,
+                             typeText) {
+  this.type = type;
   this.sourceFileName = sourceFileName;
   this.targetName = targetName;
   this.mimeType = mimeType;
-  this.typeText = typeText;
-  this.sizeText = sizeText;
   this.sharedOption = sharedOption;
   this.lastModifiedTime = lastModifiedTime;
+  this.nameText = nameText;
+  this.sizeText = sizeText;
+  this.typeText = typeText;
   Object.freeze(this);
 };
 
@@ -59,7 +62,7 @@ var TestEntryInfo = function(entryType,
  * Obtains a expected row contents of the file in the file list.
  */
 TestEntryInfo.prototype.getExpectedRow = function() {
-  return [this.targetName, this.sizeText, this.typeText, this.lastModifiedTime];
+  return [this.nameText, this.sizeText, this.typeText, this.lastModifiedTime];
 };
 
 /**
@@ -101,8 +104,8 @@ var EXPECTED_FILES_BEFORE_DRIVE = [
 var ENTRIES = {
   newlyAdded: new TestEntryInfo(
       EntryType.FILE, 'music.ogg', 'newly added file.ogg',
-      'audio/ogg', 'OGG audio', '14 KB', SharedOption.NONE,
-      'Sep 4, 1998 12:00 AM')
+      'audio/ogg', SharedOption.NONE, 'Sep 4, 1998 12:00 AM',
+      'newly added file.ogg', '14 KB', 'OGG audio')
 };
 
 /**
