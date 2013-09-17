@@ -151,7 +151,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MANUAL_CanSetupCallAndSendDtmf) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
-                       CanMakeEmptyCallThenAddStreamsAndRenegotiate) {
+                       DISABLED_CanMakeEmptyCallThenAddStreamsAndRenegotiate) {
   GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
   NavigateToURL(shell(), url);
 
