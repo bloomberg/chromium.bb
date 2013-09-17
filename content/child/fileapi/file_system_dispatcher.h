@@ -24,6 +24,7 @@ struct PlatformFileInfo;
 
 namespace fileapi {
 struct DirectoryEntry;
+struct FileSystemInfo;
 }
 
 class GURL;
@@ -49,6 +50,10 @@ class FileSystemDispatcher : public IPC::Listener {
       const std::string& name,
       const GURL& root)> OpenFileSystemCallback;
   typedef base::Callback<void(
+      const fileapi::FileSystemInfo& info,
+      const base::FilePath& file_path,
+      bool is_directory)> ResolveURLCallback;
+  typedef base::Callback<void(
       int64 bytes,
       bool complete)> WriteCallback;
   typedef base::Callback<void(
@@ -68,6 +73,9 @@ class FileSystemDispatcher : public IPC::Listener {
                       bool create,
                       const OpenFileSystemCallback& success_callback,
                       const StatusCallback& error_callback);
+  void ResolveURL(const GURL& filesystem_url,
+                  const ResolveURLCallback& success_callback,
+                  const StatusCallback& error_callback);
   void DeleteFileSystem(const GURL& origin_url,
                         fileapi::FileSystemType type,
                         const StatusCallback& callback);
@@ -144,6 +152,10 @@ class FileSystemDispatcher : public IPC::Listener {
   void OnDidOpenFileSystem(int request_id,
                            const std::string& name,
                            const GURL& root);
+  void OnDidResolveURL(int request_id,
+                       const fileapi::FileSystemInfo& info,
+                       const base::FilePath& file_path,
+                       bool is_directory);
   void OnDidSucceed(int request_id);
   void OnDidReadMetadata(int request_id,
                          const base::PlatformFileInfo& file_info);

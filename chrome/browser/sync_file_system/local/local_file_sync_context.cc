@@ -495,8 +495,6 @@ void LocalFileSyncContext::InitializeFileSystemContextOnIOThread(
       SyncFileSystemBackend::GetBackend(file_system_context);
   DCHECK(backend);
   if (!backend->change_tracker()) {
-    // First registers the service name.
-    RegisterSyncableFileSystem();
     // Create and initialize LocalFileChangeTracker and call back this method
     // later again.
     std::set<GURL>* origins_with_changes = new std::set<GURL>;
