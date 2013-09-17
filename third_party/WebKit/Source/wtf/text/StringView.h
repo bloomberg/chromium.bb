@@ -55,7 +55,7 @@ public:
         , m_offset(offset)
         , m_length(length)
     {
-        ASSERT_WITH_SECURITY_IMPLICATION(offset + length <= impl->length());
+        ASSERT_WITH_SECURITY_IMPLICATION(offset + length <= m_impl->length());
     }
 
     void narrow(unsigned offset, unsigned length)
