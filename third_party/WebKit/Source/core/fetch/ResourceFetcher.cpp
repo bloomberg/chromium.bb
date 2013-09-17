@@ -59,6 +59,7 @@
 #include "core/page/Performance.h"
 #include "core/page/ResourceTimingInfo.h"
 #include "core/page/Settings.h"
+#include "core/platform/HistogramSupport.h"
 #include "core/platform/Logging.h"
 #include "core/platform/chromium/TraceEvent.h"
 #include "public/platform/Platform.h"
@@ -72,7 +73,16 @@
 
 namespace WebCore {
 
-static Resource* createResource(Resource::Type type, const ResourceRequest& request, const String& charset)
+namespace {
+
+enum ActionUponResourceRequest {
+    LoadResource,
+    RevalidateResource,
+    UseResourceFromCache,
+    NumberOfResourceRequestActions,
+};
+
+Resource* createResource(Resource::Type type, const ResourceRequest& request, const String& charset)
 {
     switch (type) {
     case Resource::Image:
@@ -100,13 +110,15 @@ static Resource* createResource(Resource::Type type, const ResourceRequest& requ
         return new ShaderResource(request);
     case Resource::ImportResource:
         return new RawResource(request, type);
+    case Resource::NumberOfTypes:
+        ASSERT_NOT_REACHED();
     }
 
     ASSERT_NOT_REACHED();
     return 0;
 }
 
-static ResourceLoadPriority loadPriority(Resource::Type type, const FetchRequest& request)
+ResourceLoadPriority loadPriority(Resource::Type type, const FetchRequest& request)
 {
     if (request.priority() != ResourceLoadPriorityUnresolved)
         return request.priority();
@@ -135,12 +147,14 @@ static ResourceLoadPriority loadPriority(Resource::Type type, const FetchRequest
         return ResourceLoadPriorityLow;
     case Resource::Shader:
         return ResourceLoadPriorityMedium;
+    case Resource::NumberOfTypes:
+        ASSERT_NOT_REACHED();
     }
     ASSERT_NOT_REACHED();
     return ResourceLoadPriorityUnresolved;
 }
 
-static Resource* resourceFromDataURIRequest(const ResourceRequest& request)
+Resource* resourceFromDataURIRequest(const ResourceRequest& request)
 {
     const KURL& url = request.url();
     ASSERT(url.protocolIsData());
@@ -160,6 +174,8 @@ static Resource* resourceFromDataURIRequest(const ResourceRequest& request)
     resource->finish();
     return resource;
 }
+
+} // namespace
 
 ResourceFetcher::ResourceFetcher(DocumentLoader* documentLoader)
     : m_document(0)
@@ -357,6 +373,8 @@ bool ResourceFetcher::checkInsecureContent(Resource::Type type, const KURL& url,
             // These cannot affect the current document.
             treatment = TreatAsAlwaysAllowedContent;
             break;
+        case Resource::NumberOfTypes:
+            ASSERT_NOT_REACHED();
         }
     }
     if (treatment == TreatAsActiveContent) {
@@ -417,6 +435,8 @@ bool ResourceFetcher::canRequest(Resource::Type type, const KURL& url, const Res
             return false;
         }
         break;
+    case Resource::NumberOfTypes:
+        ASSERT_NOT_REACHED();
     }
 
     switch (type) {
@@ -464,6 +484,8 @@ bool ResourceFetcher::canRequest(Resource::Type type, const KURL& url, const Res
         if (!shouldBypassMainWorldContentSecurityPolicy && !m_document->contentSecurityPolicy()->allowMediaFromSource(url))
             return false;
         break;
+    case Resource::NumberOfTypes:
+        ASSERT_NOT_REACHED();
     }
 
     // Last of all, check for insecure content. We do this last so that when
@@ -541,13 +563,27 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(Resource::Type type, Fetc
         // Fall through
     case Load:
         resource = loadResource(type, request, request.charset());
+        HistogramSupport::histogramEnumeration(
+            "WebCore.ResourceFetcher.ActionUponResourceRequest", LoadResource,
+            NumberOfResourceRequestActions);
         break;
     case Revalidate:
         resource = revalidateResource(request, resource.get());
+        HistogramSupport::histogramEnumeration(
+            "WebCore.ResourceFetcher.ActionUponResourceRequest", RevalidateResource,
+            NumberOfResourceRequestActions);
         break;
     case Use:
         resource->updateForAccess();
         notifyLoadedFromMemoryCache(resource.get());
+        HistogramSupport::histogramEnumeration(
+            "WebCore.ResourceFetcher.ActionUponResourceRequest", UseResourceFromCache,
+            NumberOfResourceRequestActions);
+        HistogramSupport::histogramEnumeration(
+            "WebCore.ResourceFetcher.ResourceHasClientUponCacheHit", resource->hasClients(), 2);
+        HistogramSupport::histogramEnumeration(
+            "WebCore.ResourceFetcher.ResourceTypeUponCacheHit", resource->type(),
+            Resource::NumberOfTypes);
         break;
     }
 
