@@ -264,13 +264,14 @@ class WebrtcVideoQualityBrowserTest : public WebRtcTestBase {
   // into every frame of the video (produced by rgba_to_i420_converter). It
   // produces a set of PNG images and a |stats_file| that maps each captured
   // frame to a frame in the reference video. The frames should be of size
-  // |width| x |height|. The output of compare_videos.py is returned.
-  bool CompareVideos(int width,
-                     int height,
-                     const base::FilePath& captured_video_filename,
-                     const base::FilePath& reference_video_filename,
-                     const base::FilePath& stats_file,
-                     std::string* result) {
+  // |width| x |height|.
+  // All measurements calculated are printed as perf parsable numbers to stdout.
+  bool CompareVideosAndPrintResult(
+      int width,
+      int height,
+      const base::FilePath& captured_video_filename,
+      const base::FilePath& reference_video_filename,
+      const base::FilePath& stats_file) {
 
     base::FilePath path_to_analyzer = base::MakeAbsoluteFilePath(
         GetBrowserDir().Append(kFrameAnalyzerExecutable));
@@ -294,6 +295,7 @@ class WebrtcVideoQualityBrowserTest : public WebRtcTestBase {
     EXPECT_TRUE(GetPythonCommand(&compare_command));
 
     compare_command.AppendArgPath(path_to_compare_script);
+    compare_command.AppendArg("--label=VGA");
     compare_command.AppendArg("--ref_video");
     compare_command.AppendArgPath(reference_video_filename);
     compare_command.AppendArg("--test_video");
@@ -308,87 +310,12 @@ class WebrtcVideoQualityBrowserTest : public WebRtcTestBase {
     compare_command.AppendArgPath(stats_file);
 
     LOG(INFO) << "Running " << compare_command.GetCommandLineString();
-    bool ok = base::GetAppOutput(compare_command, result);
-    LOG(INFO) << "Output was:\n\n" << *result;
+    std::string output;
+    bool ok = base::GetAppOutput(compare_command, &output);
+    // Print to stdout to ensure the perf numbers are parsed properly by the
+    // buildbot step.
+    printf("Output was:\n\n%s\n", output.c_str());
     return ok;
-  }
-
-  // Processes the |frame_analyzer_output| for the different frame counts.
-  //
-  // The frame analyzer outputs additional information about the number of
-  // unique frames captured, The max number of repeated frames in a sequence and
-  // the max number of skipped frames. These values are then written to the Perf
-  // Graph. (Note: Some of the repeated or skipped frames will probably be due
-  // to the imperfection of JavaScript timers).
-  void PrintFramesCountPerfResults(std::string frame_analyzer_output) {
-    size_t unique_frames_pos =
-        frame_analyzer_output.rfind("Unique_frames_count");
-    EXPECT_NE(unique_frames_pos, std::string::npos)
-        << "Missing Unique_frames_count in frame analyzer output:\n"
-        << frame_analyzer_output;
-
-    std::string unique_frame_counts =
-        frame_analyzer_output.substr(unique_frames_pos);
-    // TODO(phoglund): Fix ESTATS result to not have this silly newline.
-    std::replace(
-        unique_frame_counts.begin(), unique_frame_counts.end(), '\n', ' ');
-
-    std::vector<std::pair<std::string, std::string> > key_values;
-    base::SplitStringIntoKeyValuePairs(
-        unique_frame_counts, ':', ' ', &key_values);
-    std::vector<std::pair<std::string, std::string> >::const_iterator iter;
-    for (iter = key_values.begin(); iter != key_values.end(); ++iter) {
-      const std::pair<std::string, std::string>& key_value = *iter;
-      perf_test::PrintResult(
-          key_value.first, "", "VGA", key_value.second, "", false);
-    }
-  }
-
-  // Processes the |frame_analyzer_output| to extract the PSNR and SSIM values.
-  //
-  // The frame analyzer produces PSNR and SSIM results for every unique frame
-  // that has been captured. This method forms a list of all the psnr and ssim
-  // values and passes it to PrintResultList() for printing on the Perf Graph.
-  void PrintPsnrAndSsimPerfResults(std::string frame_analyzer_output) {
-    size_t stats_start = frame_analyzer_output.find("BSTATS");
-    EXPECT_NE(stats_start, std::string::npos)
-        << "Missing BSTATS in frame analyzer output:\n"
-        << frame_analyzer_output;
-    size_t stats_end = frame_analyzer_output.find("ESTATS");
-    EXPECT_NE(stats_end, std::string::npos)
-        << "Missing ESTATS in frame analyzer output:\n"
-        << frame_analyzer_output;
-
-    stats_start += std::string("BSTATS").size();
-    std::string psnr_ssim_stats =
-        frame_analyzer_output.substr(stats_start, stats_end - stats_start);
-
-    // PSNR and SSIM values aren't really key-value pairs but it is convenient
-    // to parse them as such.
-    // TODO(phoglund): make the format more convenient so we need less
-    // processing here.
-    std::vector<std::pair<std::string, std::string> > psnr_ssim_entries;
-    base::SplitStringIntoKeyValuePairs(
-        psnr_ssim_stats, ' ', ';', &psnr_ssim_entries);
-
-    std::string psnr_value_list;
-    std::string ssim_value_list;
-    std::vector<std::pair<std::string, std::string> >::const_iterator iter;
-    for (iter = psnr_ssim_entries.begin(); iter != psnr_ssim_entries.end();
-         ++iter) {
-      const std::pair<std::string, std::string>& psnr_and_ssim = *iter;
-      psnr_value_list.append(psnr_and_ssim.first).append(",");
-      ssim_value_list.append(psnr_and_ssim.second).append(",");
-    }
-
-    // Nuke last comma.
-    ASSERT_GT(psnr_value_list.size(), 0u) << "Received no valid PSNR values.";
-    ASSERT_GT(ssim_value_list.size(), 0u) << "Received no valid SSIM values.";
-    psnr_value_list.erase(psnr_value_list.size() - 1);
-    ssim_value_list.erase(ssim_value_list.size() - 1);
-
-    perf_test::PrintResultList("PSNR", "", "VGA", psnr_value_list, "dB", false);
-    perf_test::PrintResultList("SSIM", "", "VGA", ssim_value_list, "", false);
   }
 
   base::FilePath GetWorkingDir() {
@@ -467,17 +394,12 @@ IN_PROC_BROWSER_TEST_F(WebrtcVideoQualityBrowserTest,
 
   RunARGBtoI420Converter(
       kVgaWidth, kVgaHeight, GetWorkingDir().Append(kCapturedYuvFileName));
-  std::string output;
   ASSERT_TRUE(
-      CompareVideos(kVgaWidth,
-                    kVgaHeight,
-                    GetWorkingDir().Append(kCapturedYuvFileName),
-                    GetWorkingDir().Append(kReferenceYuvFileName),
-                    GetWorkingDir().Append(kStatsFileName),
-                    &output));
-
-  PrintFramesCountPerfResults(output);
-  PrintPsnrAndSsimPerfResults(output);
+      CompareVideosAndPrintResult(kVgaWidth,
+                                  kVgaHeight,
+                                  GetWorkingDir().Append(kCapturedYuvFileName),
+                                  GetWorkingDir().Append(kReferenceYuvFileName),
+                                  GetWorkingDir().Append(kStatsFileName)));
 
   ASSERT_TRUE(peerconnection_server_.Stop());
   ASSERT_TRUE(ShutdownPyWebSocketServer());
