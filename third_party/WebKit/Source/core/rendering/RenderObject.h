@@ -242,7 +242,7 @@ public:
     void assertSubtreeIsLaidOut() const
     {
         for (const RenderObject* renderer = this; renderer; renderer = renderer->nextInPreOrder())
-            assertRendererLaidOut();
+            renderer->assertRendererLaidOut();
     }
 #endif
 
