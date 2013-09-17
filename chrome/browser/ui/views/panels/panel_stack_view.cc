@@ -27,6 +27,85 @@ namespace {
 // These values are experimental and subjective.
 const int kDefaultFramerateHz = 50;
 const int kSetBoundsAnimationMs = 180;
+
+// The widget window that acts as a background window for the stack of panels.
+class PanelStackWindow : public views::WidgetObserver,
+                         public views::WidgetDelegateView {
+ public:
+  PanelStackWindow(const gfx::Rect& bounds,
+                   NativePanelStackWindowDelegate* delegate);
+  virtual ~PanelStackWindow();
+
+  // Overridden from views::WidgetDelegate:
+  virtual string16 GetWindowTitle() const OVERRIDE;
+  virtual gfx::ImageSkia GetWindowAppIcon() OVERRIDE;
+  virtual gfx::ImageSkia GetWindowIcon() OVERRIDE;
+  virtual views::Widget* GetWidget() OVERRIDE;
+  virtual const views::Widget* GetWidget() const OVERRIDE;
+
+  // Overridden from views::WidgetObserver:
+  virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
+  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
+
+ private:
+  views::Widget* window_;  // Weak pointer, own us.
+  NativePanelStackWindowDelegate* delegate_;  // Weak pointer.
+
+  DISALLOW_COPY_AND_ASSIGN(PanelStackWindow);
+};
+
+PanelStackWindow::PanelStackWindow(const gfx::Rect& bounds,
+                                   NativePanelStackWindowDelegate* delegate)
+    : window_(NULL),
+      delegate_(delegate) {
+  window_ = new views::Widget;
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
+  params.delegate = this;
+  params.remove_standard_frame = true;
+  params.bounds = bounds;
+  window_->Init(params);
+  window_->set_frame_type(views::Widget::FRAME_TYPE_FORCE_CUSTOM);
+  window_->set_focus_on_creation(false);
+  window_->AddObserver(this);
+  window_->ShowInactive();
+}
+
+PanelStackWindow::~PanelStackWindow() {
+}
+
+string16 PanelStackWindow::GetWindowTitle() const {
+  return delegate_ ? delegate_->GetTitle() : string16();
+}
+
+gfx::ImageSkia PanelStackWindow::GetWindowAppIcon() {
+  if (delegate_) {
+    gfx::Image app_icon = delegate_->GetIcon();
+    if (!app_icon.IsEmpty())
+      return *app_icon.ToImageSkia();
+  }
+  return gfx::ImageSkia();
+}
+
+gfx::ImageSkia PanelStackWindow::GetWindowIcon() {
+  return GetWindowAppIcon();
+}
+
+views::Widget* PanelStackWindow::GetWidget() {
+  return window_;
+}
+
+const views::Widget* PanelStackWindow::GetWidget() const {
+  return window_;
+}
+
+void PanelStackWindow::OnWidgetClosing(views::Widget* widget) {
+  delegate_ = NULL;
+}
+
+void PanelStackWindow::OnWidgetDestroying(views::Widget* widget) {
+  window_ = NULL;
+}
+
 }
 
 // static
@@ -43,7 +122,6 @@ NativePanelStackWindow* NativePanelStackWindow::Create(
 PanelStackView::PanelStackView(NativePanelStackWindowDelegate* delegate)
     : delegate_(delegate),
       window_(NULL),
-      is_closing_(false),
       is_drawing_attention_(false),
       animate_bounds_updates_(false),
       bounds_updates_started_(false) {
@@ -58,7 +136,6 @@ PanelStackView::~PanelStackView() {
 }
 
 void PanelStackView::Close() {
-  is_closing_ = true;
   delegate_ = NULL;
   if (bounds_animator_)
     bounds_animator_.reset();
@@ -254,47 +331,6 @@ void PanelStackView::OnPanelActivated(Panel* panel) {
   // Nothing to do.
 }
 
-string16 PanelStackView::GetWindowTitle() const {
-  return delegate_->GetTitle();
-}
-
-gfx::ImageSkia PanelStackView::GetWindowAppIcon() {
-  if (panels_.empty())
-    return gfx::ImageSkia();
-
-  Panel* panel = panels_.front();
-  gfx::Image app_icon = panel->app_icon();
-  if (!app_icon.IsEmpty())
-    return *app_icon.ToImageSkia();
-
-  return gfx::ImageSkia();
-}
-
-gfx::ImageSkia PanelStackView::GetWindowIcon() {
-  return GetWindowAppIcon();
-}
-
-views::Widget* PanelStackView::GetWidget() {
-  return window_;
-}
-
-const views::Widget* PanelStackView::GetWidget() const {
-  return window_;
-}
-
-void PanelStackView::DeleteDelegate() {
-  // |window_| could be closed when it is regenerated in order to clear the
-  // taskbar icon flash state. We should only delete this instance when the
-  // window is really being closed.
-  if (is_closing_)
-    delete this;
-}
-
-void PanelStackView::OnWidgetDestroying(views::Widget* widget) {
-  if (widget == window_)
-    window_ = NULL;
-}
-
 void PanelStackView::OnNativeFocusChange(gfx::NativeView focused_before,
                                          gfx::NativeView focused_now) {
   // When the user selects the stacked panels via ALT-TAB or WIN-TAB, the
@@ -445,16 +481,8 @@ void PanelStackView::MakeStackWindowOwnPanelWindow(
 }
 
 views::Widget* PanelStackView::CreateWindowWithBounds(const gfx::Rect& bounds) {
-  views::Widget* window = new views::Widget;
-  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
-  params.delegate = this;
-  params.remove_standard_frame = true;
-  params.bounds = bounds;
-  window->Init(params);
-  window->set_frame_type(views::Widget::FRAME_TYPE_FORCE_CUSTOM);
-  window->set_focus_on_creation(false);
-  window->AddObserver(this);
-  window->ShowInactive();
+  PanelStackWindow* stack_window = new PanelStackWindow(bounds, delegate_);
+  views::Widget* window = stack_window->GetWidget();
 
 #if defined(OS_WIN)
   DCHECK(!panels_.empty());

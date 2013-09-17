@@ -105,6 +105,7 @@ class StackedPanelCollection : public PanelCollection,
 
   // Overridden from PanelBoundsBatchUpdateObserver:
   virtual string16 GetTitle() const OVERRIDE;
+  virtual gfx::Image GetIcon() const OVERRIDE;
   virtual void PanelBoundsBatchUpdateCompleted() OVERRIDE;
 
   // Returns the enclosing bounds that include all panels in the stack.

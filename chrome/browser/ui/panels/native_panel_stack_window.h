@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
+#include "ui/gfx/image/image.h"
 
 class Panel;
 namespace gfx {
@@ -18,6 +19,9 @@ class NativePanelStackWindowDelegate {
  public:
   // Returns the title representing the whole stack.
   virtual string16 GetTitle() const = 0;
+
+  // Returns the icon denoting the whole stack.
+  virtual gfx::Image GetIcon() const = 0;
 
   // Called when the batch bounds update is completed, i.e. animation ends.
   virtual void PanelBoundsBatchUpdateCompleted() = 0;

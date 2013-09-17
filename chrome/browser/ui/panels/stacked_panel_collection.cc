@@ -149,6 +149,12 @@ string16 StackedPanelCollection::GetTitle() const {
       extension->name() : panel->app_name());
 }
 
+gfx::Image StackedPanelCollection::GetIcon() const {
+  if (panels_.empty())
+    return gfx::Image();
+  return panels_.front()->app_icon();
+}
+
 void StackedPanelCollection::PanelBoundsBatchUpdateCompleted() {
   if (!secondary_stack_window_ || panels_.empty())
     return;

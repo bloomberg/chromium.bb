@@ -30,8 +30,6 @@ class Widget;
 // A native window that acts as the owner of all panels in the stack, in order
 // to make all panels appear as a single window on the taskbar or launcher.
 class PanelStackView : public NativePanelStackWindow,
-                       public views::WidgetObserver,
-                       public views::WidgetDelegateView,
                        public views::WidgetFocusChangeListener,
 #if defined(OS_WIN)
                        public ui::HWNDMessageFilter,
@@ -66,17 +64,6 @@ class PanelStackView : public NativePanelStackWindow,
 
   // The map value is old bounds of the panel.
   typedef std::map<Panel*, gfx::Rect> BoundsUpdates;
-
-  // Overridden from views::WidgetDelegate:
-  virtual string16 GetWindowTitle() const OVERRIDE;
-  virtual gfx::ImageSkia GetWindowAppIcon() OVERRIDE;
-  virtual gfx::ImageSkia GetWindowIcon() OVERRIDE;
-  virtual views::Widget* GetWidget() OVERRIDE;
-  virtual const views::Widget* GetWidget() const OVERRIDE;
-  virtual void DeleteDelegate() OVERRIDE;
-
-  // Overridden from views::WidgetObserver:
-  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
 
   // Overridden from views::WidgetFocusChangeListener:
   virtual void OnNativeFocusChange(gfx::NativeView focused_before,
@@ -129,8 +116,6 @@ class PanelStackView : public NativePanelStackWindow,
   NativePanelStackWindowDelegate* delegate_;
 
   views::Widget* window_;  // Weak pointer, own us.
-
-  bool is_closing_;
 
   // Tracks all panels that are enclosed by this window.
   Panels panels_;
