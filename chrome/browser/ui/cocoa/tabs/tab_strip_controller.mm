@@ -166,7 +166,7 @@ NSImage* CreateImageWithSize(NSSize size,
   [NSGraphicsContext saveGraphicsState];
   for (ui::ScaleFactor scale_factor : ui::GetSupportedScaleFactors()) {
     float scale = GetScaleFactorScale(scale_factor);
-    NSBitmapImageRep *bmpImageRep = [[NSBitmapImageRep alloc]
+    NSBitmapImageRep *bmpImageRep = [[[NSBitmapImageRep alloc]
         initWithBitmapDataPlanes:NULL
                       pixelsWide:size.width * scale
                       pixelsHigh:size.height * scale
@@ -176,7 +176,7 @@ NSImage* CreateImageWithSize(NSSize size,
                         isPlanar:NO
                   colorSpaceName:NSDeviceRGBColorSpace
                      bytesPerRow:0
-                    bitsPerPixel:0];
+                    bitsPerPixel:0] autorelease];
     [bmpImageRep setSize:size];
     [NSGraphicsContext setCurrentContext:
         [NSGraphicsContext graphicsContextWithBitmapImageRep:bmpImageRep]];

@@ -683,9 +683,9 @@ const CGFloat kRapidCloseDist = 2.5;
   // draw the mask into it.
   base::ScopedCFTypeRef<CGColorSpaceRef> colorspace(
       CGColorSpaceCreateDeviceGray());
-  CGContextRef maskContext =
+  base::ScopedCFTypeRef<CGContextRef> maskContext(
       CGBitmapContextCreate(NULL, tabWidth * scale, kMaskHeight * scale,
-                            8, tabWidth * scale, colorspace, 0);
+                            8, tabWidth * scale, colorspace, 0));
   CGContextScaleCTM(maskContext, scale, scale);
   NSGraphicsContext* maskGraphicsContext =
       [NSGraphicsContext graphicsContextWithGraphicsPort:maskContext
