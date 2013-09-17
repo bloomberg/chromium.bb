@@ -169,12 +169,13 @@ void RecordLastRunAppBundlePath() {
   // or a unit test.)
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  base::FilePath appBundlePath =
+  base::FilePath app_bundle_path =
       chrome::GetVersionedDirectory().DirName().DirName().DirName();
+  base::ScopedCFTypeRef<CFStringRef> app_bundle_path_cfstring(
+      base::SysUTF8ToCFStringRef(app_bundle_path.value()));
   CFPreferencesSetAppValue(
       base::mac::NSToCFCast(app_mode::kLastRunAppBundlePathPrefsKey),
-      base::SysUTF8ToCFStringRef(appBundlePath.value()),
-      BaseBundleID_CFString());
+      app_bundle_path_cfstring, BaseBundleID_CFString());
 
   // Sync after a delay avoid I/O contention on startup; 1500 ms is plenty.
   BrowserThread::PostDelayedTask(
