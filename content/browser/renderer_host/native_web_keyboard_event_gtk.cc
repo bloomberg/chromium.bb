@@ -6,9 +6,7 @@
 
 #include <gdk/gdk.h>
 
-#include "third_party/WebKit/public/web/gtk/WebInputEventFactory.h"
-
-using WebKit::WebInputEventFactory;
+#include "content/browser/renderer_host/input/web_input_event_builders_gtk.h"
 
 namespace {
 
@@ -32,7 +30,7 @@ NativeWebKeyboardEvent::NativeWebKeyboardEvent()
 }
 
 NativeWebKeyboardEvent::NativeWebKeyboardEvent(gfx::NativeEvent native_event)
-    : WebKeyboardEvent(WebInputEventFactory::keyboardEvent(&native_event->key)),
+    : WebKeyboardEvent(WebKeyboardEventBuilder::Build(&native_event->key)),
       skip_in_browser(false),
       match_edit_command(false) {
   CopyEventTo(native_event, &os_event);
@@ -41,9 +39,9 @@ NativeWebKeyboardEvent::NativeWebKeyboardEvent(gfx::NativeEvent native_event)
 NativeWebKeyboardEvent::NativeWebKeyboardEvent(wchar_t character,
                                                int state,
                                                double time_stamp_seconds)
-    : WebKeyboardEvent(WebInputEventFactory::keyboardEvent(character,
-                                                           state,
-                                                           time_stamp_seconds)),
+    : WebKeyboardEvent(WebKeyboardEventBuilder::Build(character,
+                                                      state,
+                                                      time_stamp_seconds)),
       os_event(NULL),
       skip_in_browser(false),
       match_edit_command(false) {

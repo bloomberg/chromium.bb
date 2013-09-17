@@ -844,6 +844,8 @@
     'browser/renderer_host/input/touchscreen_tap_suppression_controller_stub.cc',
     'browser/renderer_host/input/web_input_event_builders_android.cc',
     'browser/renderer_host/input/web_input_event_builders_android.h',
+    'browser/renderer_host/input/web_input_event_builders_gtk.cc',
+    'browser/renderer_host/input/web_input_event_builders_gtk.h',
     'browser/renderer_host/input/web_input_event_builders_win.cc',
     'browser/renderer_host/input/web_input_event_builders_win.h',
     'browser/renderer_host/input/web_input_event_util.cc',

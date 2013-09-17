@@ -57,7 +57,6 @@ include_rules = [
   "+third_party/WebKit/public/web/WebTextDirection.h",
 
   # These should be burned down. http://crbug.com/237267
-  "!third_party/WebKit/public/web/gtk/WebInputEventFactory.h",
   "!third_party/WebKit/public/web/mac/WebInputEventFactory.h",
 
   # DO NOT ADD ANY CHROME OR COMPONENTS INCLUDES HERE!!!
