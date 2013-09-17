@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/views/website_settings/permission_selector_view_observer.h"
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
@@ -114,6 +115,8 @@ class WebsiteSettingsPopupView
                               const string16& headline,
                               const string16& text,
                               views::Link* link);
+  // Handles LinkClicked asynchronously.
+  void HandleLinkClickedAsync(views::Link* source);
 
   // The web contents of the current tab. The popup can't live longer than a
   // tab.
@@ -158,6 +161,8 @@ class WebsiteSettingsPopupView
 
   views::View* connection_info_content_;
   views::View* page_info_content_;
+
+  base::WeakPtrFactory<WebsiteSettingsPopupView> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebsiteSettingsPopupView);
 };

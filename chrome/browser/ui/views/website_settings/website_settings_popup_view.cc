@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/website_settings/website_settings_utils.h"
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cert_store.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/chromium_strings.h"
@@ -290,7 +291,8 @@ WebsiteSettingsPopupView::WebsiteSettingsPopupView(
       cert_id_(0),
       help_center_link_(NULL),
       connection_info_content_(NULL),
-      page_info_content_(NULL) {
+      page_info_content_(NULL),
+      weak_factory_(this) {
   // Compensate for built-in vertical padding in the anchor view's image.
   set_anchor_view_insets(gfx::Insets(kLocationIconVerticalMargin, 0,
                                      kLocationIconVerticalMargin, 0));
@@ -363,25 +365,13 @@ void WebsiteSettingsPopupView::ButtonPressed(
 
 void WebsiteSettingsPopupView::LinkClicked(views::Link* source,
                                            int event_flags) {
-  if (source == cookie_dialog_link_) {
-    // Count how often the Collected Cookies dialog is opened.
-    content::RecordAction(
-        content::UserMetricsAction("WebsiteSettings_CookiesDialogOpened"));
-    new CollectedCookiesViews(web_contents_);
-  } else if (source == certificate_dialog_link_) {
-    gfx::NativeWindow parent =
-        anchor_view() ? anchor_view()->GetWidget()->GetNativeWindow() : NULL;
-    ShowCertificateViewerByID(web_contents_, parent, cert_id_);
-  } else if (source == help_center_link_) {
-    browser_->OpenURL(content::OpenURLParams(
-        GURL(chrome::kPageInfoHelpCenterURL),
-        content::Referrer(),
-        NEW_FOREGROUND_TAB,
-        content::PAGE_TRANSITION_LINK,
-        false));
-  }
   // The popup closes automatically when the collected cookies dialog or the
-  // certificate viewer opens.
+  // certificate viewer opens. So delay handling of the link clicked to avoid
+  // a crash in the base class which needs to complete the mouse event handling.
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(&WebsiteSettingsPopupView::HandleLinkClickedAsync,
+                 weak_factory_.GetWeakPtr(), source));
 }
 
 void WebsiteSettingsPopupView::TabSelectedAt(int index) {
@@ -748,4 +738,27 @@ void WebsiteSettingsPopupView::ResetConnectionSection(
   layout->AddView(content_pane, 1, 1, views::GridLayout::LEADING,
                   views::GridLayout::LEADING);
   layout->AddPaddingRow(0, kConnectionSectionPaddingBottom);
+}
+
+// Used to asynchronously handle clicks since these calls may cause the
+// destruction of the settings view and the base class window still
+// needs to be alive to finish handling the mouse click.
+void WebsiteSettingsPopupView::HandleLinkClickedAsync(views::Link* source) {
+  if (source == cookie_dialog_link_) {
+    // Count how often the Collected Cookies dialog is opened.
+    content::RecordAction(
+        content::UserMetricsAction("WebsiteSettings_CookiesDialogOpened"));
+    new CollectedCookiesViews(web_contents_);
+  } else if (source == certificate_dialog_link_) {
+    gfx::NativeWindow parent =
+        anchor_view() ? anchor_view()->GetWidget()->GetNativeWindow() : NULL;
+    ShowCertificateViewerByID(web_contents_, parent, cert_id_);
+  } else if (source == help_center_link_) {
+    browser_->OpenURL(content::OpenURLParams(
+        GURL(chrome::kPageInfoHelpCenterURL),
+        content::Referrer(),
+        NEW_FOREGROUND_TAB,
+        content::PAGE_TRANSITION_LINK,
+        false));
+  }
 }
