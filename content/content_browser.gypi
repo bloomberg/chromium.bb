@@ -943,6 +943,8 @@
     'browser/renderer_host/pepper/pepper_lookup_request.h',
     'browser/renderer_host/pepper/pepper_message_filter.cc',
     'browser/renderer_host/pepper/pepper_message_filter.h',
+    'browser/renderer_host/pepper/pepper_network_monitor_host.cc',
+    'browser/renderer_host/pepper/pepper_network_monitor_host.h',
     'browser/renderer_host/pepper/pepper_network_proxy_host.cc',
     'browser/renderer_host/pepper/pepper_network_proxy_host.h',
     'browser/renderer_host/pepper/pepper_print_settings_manager.cc',
