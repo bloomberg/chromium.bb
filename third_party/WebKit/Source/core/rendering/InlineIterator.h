@@ -36,7 +36,7 @@ namespace WebCore {
 class InlineIterator {
 public:
     enum IncrementRule {
-        FastIncrementInlineRenderer,
+        FastIncrementInIsolatedRenderer,
         FastIncrementInTextNode
     };
 
@@ -361,7 +361,13 @@ inline void InlineIterator::increment(InlineBidiResolver* resolver, IncrementRul
 {
     if (!m_obj)
         return;
-    if (m_obj->isText() && rule == FastIncrementInTextNode) {
+
+    if (resolver && resolver->inIsolate() && rule == FastIncrementInIsolatedRenderer) {
+        moveTo(bidiNextSkippingEmptyInlines(m_root, m_obj, resolver), 0);
+        return;
+    }
+
+    if (m_obj->isText()) {
         fastIncrementInTextNode();
         if (m_pos < toRenderText(m_obj)->textLength())
             return;
@@ -410,7 +416,19 @@ ALWAYS_INLINE WTF::Unicode::Direction InlineIterator::direction() const
 template<>
 inline void InlineBidiResolver::increment()
 {
-    m_current.increment(this);
+    m_current.increment(this, InlineIterator::FastIncrementInIsolatedRenderer);
+}
+
+template <>
+inline bool InlineBidiResolver::isEndOfParagraph(const InlineIterator& end)
+{
+    bool inEndOfParagraph = m_current == end || m_current.atEnd() || (inIsolate() && m_current.m_obj == end.m_obj);
+    if (inIsolate() && inEndOfParagraph) {
+        m_current.moveTo(m_current.m_obj, end.m_pos, m_current.m_nextBreakablePosition);
+        m_last = m_current;
+        updateStatusLastFromCurrentDirection(WTF::Unicode::OtherNeutral);
+    }
+    return inEndOfParagraph;
 }
 
 static inline bool isIsolatedInline(RenderObject* object)

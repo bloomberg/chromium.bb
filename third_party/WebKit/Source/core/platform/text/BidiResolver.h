@@ -178,14 +178,13 @@ public:
 #endif
 
     const Iterator& position() const { return m_current; }
+    Iterator& position() { return m_current; }
     void setPositionIgnoringNestedIsolates(const Iterator& position) { m_current = position; }
     void setPosition(const Iterator& position, unsigned nestedIsolatedCount)
     {
         m_current = position;
         m_nestedIsolateCount = nestedIsolatedCount;
     }
-
-    void increment() { m_current.increment(); }
 
     BidiContext* context() const { return m_status.context.get(); }
     void setContext(PassRefPtr<BidiContext> c) { m_status.context = c; }
@@ -222,7 +221,10 @@ public:
 
     Vector<Run*>& isolatedRuns() { return m_isolatedRuns; }
 
+    bool isEndOfParagraph(const Iterator& end) { return m_current == end || m_current.atEnd(); }
+
 protected:
+    void increment() { m_current.increment(); }
     // FIXME: Instead of InlineBidiResolvers subclassing this method, we should
     // pass in some sort of Traits object which knows how to create runs for appending.
     void appendRun();
@@ -550,12 +552,31 @@ void BidiResolver<Iterator, Run>::createBidiRunsForLine(const Iterator& end, Vis
     m_eor = Iterator();
 
     m_last = m_current;
-    bool pastEnd = false;
+    bool lastParagraphEnded = false;
     BidiResolver<Iterator, Run> stateAtEnd;
 
     while (true) {
+        if (inIsolate() && m_emptyRun) {
+            m_sor = m_current;
+            m_emptyRun = false;
+        }
+
+        if (!lastParagraphEnded && isEndOfParagraph(end)) {
+            if (m_emptyRun)
+                break;
+
+            stateAtEnd.m_status = m_status;
+            stateAtEnd.m_sor = m_sor;
+            stateAtEnd.m_eor = m_eor;
+            stateAtEnd.m_last = m_last;
+            stateAtEnd.m_reachedEndOfLine = m_reachedEndOfLine;
+            stateAtEnd.m_lastBeforeET = m_lastBeforeET;
+            stateAtEnd.m_emptyRun = m_emptyRun;
+            endOfLine = m_last;
+            lastParagraphEnded = true;
+        }
         Direction dirCurrent;
-        if (pastEnd && (hardLineBreak || m_current.atEnd())) {
+        if (lastParagraphEnded && (hardLineBreak || m_current.atEnd())) {
             BidiContext* c = context();
             if (hardLineBreak) {
                 // A deviation from the Unicode Bidi Algorithm in order to match
@@ -842,7 +863,7 @@ void BidiResolver<Iterator, Run>::createBidiRunsForLine(const Iterator& end, Vis
             break;
         }
 
-        if (pastEnd && m_eor == m_current) {
+        if (lastParagraphEnded && m_eor == m_current) {
             if (!m_reachedEndOfLine) {
                 m_eor = endOfLine;
                 switch (m_status.eor) {
@@ -882,7 +903,7 @@ void BidiResolver<Iterator, Run>::createBidiRunsForLine(const Iterator& end, Vis
         increment();
         if (!m_currentExplicitEmbeddingSequence.isEmpty()) {
             bool committed = commitExplicitEmbedding();
-            if (committed && pastEnd) {
+            if (committed && lastParagraphEnded) {
                 m_current = end;
                 m_status = stateAtEnd.m_status;
                 m_sor = stateAtEnd.m_sor;
@@ -894,20 +915,6 @@ void BidiResolver<Iterator, Run>::createBidiRunsForLine(const Iterator& end, Vis
                 m_direction = OtherNeutral;
                 break;
             }
-        }
-
-        if (!pastEnd && (m_current == end || m_current.atEnd())) {
-            if (m_emptyRun)
-                break;
-            stateAtEnd.m_status = m_status;
-            stateAtEnd.m_sor = m_sor;
-            stateAtEnd.m_eor = m_eor;
-            stateAtEnd.m_last = m_last;
-            stateAtEnd.m_reachedEndOfLine = m_reachedEndOfLine;
-            stateAtEnd.m_lastBeforeET = m_lastBeforeET;
-            stateAtEnd.m_emptyRun = m_emptyRun;
-            endOfLine = m_last;
-            pastEnd = true;
         }
     }
 

@@ -244,7 +244,7 @@ static TextDirection determinePlaintextDirectionality(RenderObject* root, Render
     observer.setStatus(BidiStatus(root->style()->direction(), isOverride(root->style()->unicodeBidi())));
     while (!iter.atEnd()) {
         if (observer.inIsolate()) {
-            iter.increment(&observer, InlineIterator::FastIncrementInlineRenderer);
+            iter.increment(&observer, InlineIterator::FastIncrementInIsolatedRenderer);
             continue;
         }
         if (iter.atParagraphSeparator())
@@ -2411,7 +2411,7 @@ void LineBreaker::skipLeadingWhitespace(InlineBidiResolver& resolver, LineInfo& 
             if (toRenderCombineText(object)->isCombined())
                 continue;
         }
-        resolver.increment();
+        resolver.position().increment(&resolver);
     }
     resolver.commitExplicitEmbedding();
 }
@@ -2566,7 +2566,7 @@ InlineIterator LineBreaker::nextLineBreak(InlineBidiResolver& resolver, LineInfo
     SegmentRangeList& segmentRanges = shapeInsideInfo->segmentRanges();
 
     for (unsigned i = 0; i < segments.size() && !end.atEnd(); i++) {
-        InlineIterator segmentStart = resolver.position();
+        const InlineIterator segmentStart = resolver.position();
         end = nextSegmentBreak(resolver, lineInfo, renderTextInfo, lastFloatFromPreviousLine, consecutiveHyphenatedLines, wordMeasurements);
 
         ASSERT(segmentRanges.size() == i);
@@ -2818,7 +2818,7 @@ InlineIterator LineBreaker::nextSegmentBreak(InlineBidiResolver& resolver, LineI
                 if (iteratorIsBeyondEndOfRenderCombineText(lBreak, combineRenderer)) {
                     ASSERT(iteratorIsBeyondEndOfRenderCombineText(resolver.position(), combineRenderer));
                     lBreak.increment();
-                    resolver.increment();
+                    resolver.position().increment(&resolver);
                 }
             }
 
