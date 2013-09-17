@@ -379,7 +379,7 @@ class ChromeTests(object):
     # While Heapcheck is not memory bound like Valgrind for running layout tests
     # in parallel, it is still CPU bound. Many machines have hyper-threading
     # turned on, so the real number of cores is actually half.
-    jobs = int(multiprocessing.cpu_count() * 0.5)
+    jobs = max(1, int(multiprocessing.cpu_count() * 0.5))
     script_cmd = ["python", script, "-v",
                   "--run-singly",  # run a separate DumpRenderTree for each test
                   "--fully-parallel",
