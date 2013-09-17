@@ -13,6 +13,7 @@
 #include "base/file_util.h"
 #include "base/json/string_escape.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/safe_numerics.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -269,7 +270,8 @@ void ReadTraceFileCallback(TaskProxy* proxy, const base::FilePath& path) {
 void WriteTraceFileCallback(TaskProxy* proxy,
                             const base::FilePath& path,
                             std::string* contents) {
-  if (!file_util::WriteFile(path, contents->c_str(), contents->size()))
+  int size = base::checked_numeric_cast<int>(contents->size());
+  if (file_util::WriteFile(path, contents->c_str(), size) != size)
     return;
 
   BrowserThread::PostTask(
@@ -363,7 +365,7 @@ void TracingMessageHandler::OnSaveTraceFile(const base::ListValue* list) {
   if (select_trace_file_dialog_.get())
     return;
 
-  DCHECK(list->GetSize() == 1);
+  DCHECK_EQ(1U, list->GetSize());
 
   std::string* trace_data = new std::string();
   bool ok = list->GetString(0, trace_data);

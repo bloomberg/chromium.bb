@@ -8,6 +8,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/safe_numerics.h"
 #include "base/values.h"
 
 namespace {
@@ -69,8 +70,8 @@ bool SaveToFile(const base::FilePath& path, const PrinterState& state) {
   base::JSONWriter::WriteWithOptions(&json,
                                      base::JSONWriter::OPTIONS_PRETTY_PRINT,
                                      &json_str);
-  return !!file_util::WriteFile(path, json_str.data(),
-                                static_cast<int>(json_str.size()));
+  int size = base::checked_numeric_cast<int>(json_str.size());
+  return (file_util::WriteFile(path, json_str.data(), size) == size);
 }
 
 bool LoadFromFile(const base::FilePath& path, PrinterState* state) {
