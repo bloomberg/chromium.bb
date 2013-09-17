@@ -85,7 +85,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "2.15",
+  "version": "2.16",
   "entries": [
     {
       "id": 1,
@@ -408,9 +408,13 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 26,
-      "description": "Disable use of Direct3D 11 on Windows",
+      "description": "Disable use of Direct3D 11 on Windows Vista and lower.",
       "os": {
-        "type": "win"
+        "type": "win",
+        "version": {
+          "op": "<=",
+          "number": "6.0"
+        }
       },
       "features": [
         "disable_d3d11"
@@ -619,6 +623,22 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       },
       "features": [
         "disable_ext_discard_framebuffer"
+      ]
+    },
+    {
+      "id": 41,
+      "cr_bugs": [259978],
+      "description": "Intel D3D driver crashes when sharing surfaces between D3D9 and D3D11.",
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x8086",
+      "driver_version": {
+        "op": ">=",
+        "number": "9.18.10.0"
+      },
+      "features": [
+        "disable_d3d11"
       ]
     }
   ]
