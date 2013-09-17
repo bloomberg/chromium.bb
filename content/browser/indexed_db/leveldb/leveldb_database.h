@@ -6,7 +6,6 @@
 #define CONTENT_BROWSER_INDEXED_DB_LEVELDB_LEVELDB_DATABASE_H_
 
 #include <string>
-#include <vector>
 
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"

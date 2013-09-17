@@ -197,6 +197,52 @@ TEST(LevelDBDatabaseTest, TransactionIterator) {
   EXPECT_FALSE(it->IsValid());
 }
 
+TEST(LevelDBDatabaseTest, TransactionCommitTest) {
+  base::ScopedTempDir temp_directory;
+  ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
+
+  const std::string key1("key1");
+  const std::string key2("key2");
+  const std::string value1("value1");
+  const std::string value2("value2");
+  const std::string value3("value3");
+
+  std::string put_value;
+  std::string got_value;
+  SimpleComparator comparator;
+  bool success;
+  bool found;
+
+  scoped_ptr<LevelDBDatabase> leveldb;
+  LevelDBDatabase::Open(temp_directory.path(), &comparator, &leveldb);
+  EXPECT_TRUE(leveldb);
+
+  scoped_refptr<LevelDBTransaction> transaction =
+      new LevelDBTransaction(leveldb.get());
+
+  put_value = value1;
+  transaction->Put(key1, &put_value);
+
+  put_value = value2;
+  transaction->Put(key2, &put_value);
+
+  put_value = value3;
+  transaction->Put(key2, &put_value);
+
+  success = transaction->Commit();
+  EXPECT_TRUE(success);
+
+  success = leveldb->Get(key1, &got_value, &found);
+  EXPECT_TRUE(success);
+  EXPECT_TRUE(found);
+  EXPECT_EQ(value1, got_value);
+
+  success = leveldb->Get(key2, &got_value, &found);
+  EXPECT_TRUE(success);
+  EXPECT_TRUE(found);
+  EXPECT_EQ(value3, got_value);
+}
+
 }  // namespace
 
 }  // namespace content
