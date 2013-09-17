@@ -857,15 +857,11 @@ void RenderGrid::layoutGridItems()
     ASSERT(tracksAreWiderThanMinTrackBreadth(ForRows, rowTracks));
 
     for (RenderBox* child = firstChildBox(); child; child = child->nextSiblingBox()) {
-        LayoutPoint childPosition = findChildLogicalPosition(child, columnTracks, rowTracks);
-
         // Because the grid area cannot be styled, we don't need to adjust
         // the grid breadth to account for 'box-sizing'.
         LayoutUnit oldOverrideContainingBlockContentLogicalWidth = child->hasOverrideContainingBlockLogicalWidth() ? child->overrideContainingBlockContentLogicalWidth() : LayoutUnit();
         LayoutUnit oldOverrideContainingBlockContentLogicalHeight = child->hasOverrideContainingBlockLogicalHeight() ? child->overrideContainingBlockContentLogicalHeight() : LayoutUnit();
 
-        // FIXME: For children in a content sized track, we clear the overrideContainingBlockContentLogicalHeight
-        // in minContentForChild / maxContentForChild which means that we will always relayout the child.
         LayoutUnit overrideContainingBlockContentLogicalWidth = gridAreaBreadthForChild(child, ForColumns, columnTracks);
         LayoutUnit overrideContainingBlockContentLogicalHeight = gridAreaBreadthForChild(child, ForRows, rowTracks);
 
@@ -883,8 +879,7 @@ void RenderGrid::layoutGridItems()
         // now, just size as if we were a regular child.
         child->layoutIfNeeded();
 
-        // FIXME: Handle border & padding on the grid element.
-        child->setLogicalLocation(childPosition);
+        child->setLogicalLocation(findChildLogicalPosition(child, columnTracks, rowTracks));
 
         // If the child moved, we have to repaint it as well as any floating/positioned
         // descendants. An exception is if we need a layout. In this case, we know we're going to
@@ -1128,14 +1123,13 @@ LayoutPoint RenderGrid::findChildLogicalPosition(RenderBox* child, const Vector<
     const GridCoordinate& coordinate = cachedGridCoordinate(child);
 
     // The grid items should be inside the grid container's border box, that's why they need to be shifted.
-    LayoutPoint offset(borderAndPaddingStart(), borderAndPaddingBefore());
+    LayoutPoint offset(borderAndPaddingStart() + marginStartForChild(child), borderAndPaddingBefore() + marginBeforeForChild(child));
     // FIXME: |columnTrack| and |rowTrack| should be smaller than our column / row count.
     for (size_t i = 0; i < coordinate.columns.initialPositionIndex && i < columnTracks.size(); ++i)
         offset.setX(offset.x() + columnTracks[i].m_usedBreadth);
     for (size_t i = 0; i < coordinate.rows.initialPositionIndex && i < rowTracks.size(); ++i)
         offset.setY(offset.y() + rowTracks[i].m_usedBreadth);
 
-    // FIXME: Handle margins on the grid item.
     return offset;
 }
 
