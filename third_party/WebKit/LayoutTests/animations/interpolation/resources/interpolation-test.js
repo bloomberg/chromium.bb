@@ -161,9 +161,9 @@
   function normalizeValue(value) {
     return value.
         // Round numbers to two decimal places.
-        replace(/\.\d+/g, function(n) {
-          return ('.' + Math.round(parseFloat(n, 10) * 100)).
-              replace(/\.?0*$/, '');
+        replace(/-?\d*\.\d+/g, function(n) {
+          return (parseFloat(n).toFixed(2)).
+              replace(/\.0*$/, '');
         }).
         // Place whitespace between tokens.
         replace(/([\w\d.]+|[^\s])/g, '$1 ').
