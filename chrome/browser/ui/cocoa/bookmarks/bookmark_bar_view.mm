@@ -262,7 +262,7 @@ using content::UserMetricsAction;
 }
 
 - (NSMenu*)menu {
-  return [[controller_ menuController] menuForBookmarkNode:NULL];
+  return [[controller_ menuController] menuForBookmarkBar];
 }
 
 - (void)setController:(id)controller {

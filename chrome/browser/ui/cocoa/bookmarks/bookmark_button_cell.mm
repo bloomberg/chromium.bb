@@ -183,9 +183,6 @@ const int kHierarchyButtonXMargin = 4;
 }
 
 - (NSMenu*)menu {
-  if (empty_)
-    return nil;
-
   // If node is NULL, this is a custom button, the menu does not represent
   // anything.
   const BookmarkNode* node = [self bookmarkNode];

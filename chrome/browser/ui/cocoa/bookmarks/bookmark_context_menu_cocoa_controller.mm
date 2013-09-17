@@ -62,12 +62,12 @@ class BookmarkContextMenuDelegateBridge :
   if (bookmarkNode_ == bookmarkModel->other_node()) {
     nodes.push_back(bookmarkNode_);
     parent = bookmarkModel->bookmark_bar_node();
-  } else if (bookmarkNode_ != bookmarkModel->bookmark_bar_node()) {
-    nodes.push_back(bookmarkNode_);
-    parent = bookmarkNode_->parent();
-  } else {
+  } else if (bookmarkNode_ == bookmarkModel->bookmark_bar_node()) {
     parent = bookmarkModel->bookmark_bar_node();
     nodes.push_back(parent);
+  } else if (bookmarkNode_) {
+    nodes.push_back(bookmarkNode_);
+    parent = bookmarkNode_->parent();
   }
 
   Browser* browser = [bookmarkBarController_ browser];
@@ -82,20 +82,22 @@ class BookmarkContextMenuDelegateBridge :
                                        useWithPopUpButtonCell:NO]);
 }
 
-- (NSMenu*)menuForBookmarkNode:(const BookmarkNode*)node {
+- (BookmarkModel*)bookmarkModel {
   // Depending on timing, the model may not yet have been loaded.
   BookmarkModel* bookmarkModel = [bookmarkBarController_ bookmarkModel];
   if (!bookmarkModel || !bookmarkModel->loaded())
     return nil;
+  return bookmarkModel;
+}
+
+- (NSMenu*)menuForBookmarkNode:(const BookmarkNode*)node {
+  BookmarkModel* bookmarkModel = [self bookmarkModel];
 
   // This may be called before the BMB view has been added to the window. In
   // that case, simply return nil so that BookmarkContextMenuController doesn't
   // get created with a nil window.
-  if (![bookmarkBarController_ browserWindow])
+  if (!bookmarkModel || ![bookmarkBarController_ browserWindow])
     return nil;
-
-  if (!node)
-    node = bookmarkModel->bookmark_bar_node();
 
   // Rebuild the menu if it's for a different node than the last request.
   if (!menuController_ || node != bookmarkNode_) {
@@ -103,6 +105,14 @@ class BookmarkContextMenuDelegateBridge :
     [self createMenuControllers:bookmarkModel];
   }
   return [menuController_ menu];
+}
+
+- (NSMenu*)menuForBookmarkBar {
+  BookmarkModel* bookmarkModel = [self bookmarkModel];
+  if (!bookmarkModel)
+    return nil;
+
+  return [self menuForBookmarkNode:bookmarkModel->bookmark_bar_node()];
 }
 
 - (void)willExecuteCommand:(int)command {

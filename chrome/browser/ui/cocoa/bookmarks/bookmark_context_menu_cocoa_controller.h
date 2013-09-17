@@ -51,8 +51,11 @@ class BookmarkNode;
 // Returns an NSMenu customized for |node|. Works under the assumption that
 // only one menu should ever be shown at a time, and thus caches the last
 // returned menu and re-creates it if a menu for a different node is requested.
-// Passing in a NULL |node| will return the menu for the bookmark bar itself.
+// Passing in a NULL |node| will return the menu for "empty" placeholder.
 - (NSMenu*)menuForBookmarkNode:(const BookmarkNode*)node;
+
+// Returns an NSMenu customized for the bookmark bar.
+- (NSMenu*)menuForBookmarkBar;
 
 // Closes the menu, if it's currently open.
 - (void)cancelTracking;

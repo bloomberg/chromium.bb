@@ -920,9 +920,9 @@ TEST_F(BookmarkBarControllerTest, Cell) {
   EXPECT_EQ(node, [[cell representedObject] pointerValue]);
   EXPECT_TRUE([cell menu]);
 
-  // Empty cells have no menu.
+  // Empty cells still have a menu.
   cell = [bar_ cellForBookmarkNode:nil];
-  EXPECT_FALSE([cell menu]);
+  EXPECT_TRUE([cell menu]);
   // Even empty cells have a title (of "(empty)")
   EXPECT_TRUE([cell title]);
 
