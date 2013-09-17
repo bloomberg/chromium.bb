@@ -234,6 +234,11 @@ PP_Resource ResourceCreationImpl::CreateNetworkMonitorPrivate(
   return 0;  // Not supported in-process.
 }
 
+PP_Resource ResourceCreationImpl::CreatePlatformVerificationPrivate(
+    PP_Instance instance) {
+  return 0;  // Not supported in-process.
+}
+
 PP_Resource ResourceCreationImpl::CreateScrollbar(PP_Instance instance,
                                                   PP_Bool vertical) {
   return PPB_Scrollbar_Impl::Create(instance, PP_ToBool(vertical));

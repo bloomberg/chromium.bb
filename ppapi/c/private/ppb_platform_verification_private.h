@@ -4,7 +4,7 @@
  */
 
 /* From private/ppb_platform_verification_private.idl,
- *   modified Mon Sep  9 12:54:47 2013.
+ *   modified Thu Sep 12 11:48:28 2013.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPB_PLATFORM_VERIFICATION_PRIVATE_H_
@@ -69,10 +69,19 @@ struct PPB_PlatformVerification_Private_0_1 {
    * a trusted platform. Useful for avoiding unnecessary work on platforms
    * which will always fail; i.e. dev mode Chrome OS.
    *
-   * @return <code>PP_TRUE</code> if a platform challenge might pass and
+   * @param[out] can_challenge_platform A <code>PP_Bool</code> which is set to
+   * <code>PP_TRUE</code> if a platform challenge might pass and
    * <code>PP_FALSE</code> if it definitely won't.
+   *
+   * @param[in] callback A <code>PP_CompletionCallback</code> to be called after
+   * the method has been completed. This callback will only run if the return
+   * code is <code>PP_OK_COMPLETIONPENDING</code>.
+   *
+   * @return An int32_t containing an error code from <code>pp_errors.h</code>.
    */
-  PP_Bool (*CanChallengePlatform)(PP_Resource instance);
+  int32_t (*CanChallengePlatform)(PP_Resource instance,
+                                  PP_Bool* can_challenge_platform,
+                                  struct PP_CompletionCallback callback);
   /**
    * Requests a platform challenge for a given service id.
    *

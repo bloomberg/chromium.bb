@@ -4,12 +4,14 @@
 
 #include "chrome/browser/renderer_host/pepper/chrome_browser_pepper_host_factory.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/renderer_host/pepper/pepper_broker_message_filter.h"
 #include "chrome/browser/renderer_host/pepper/pepper_crx_file_system_message_filter.h"
 #include "chrome/browser/renderer_host/pepper/pepper_extensions_common_message_filter.h"
 #include "chrome/browser/renderer_host/pepper/pepper_flash_browser_host.h"
 #include "chrome/browser/renderer_host/pepper/pepper_flash_clipboard_message_filter.h"
 #include "chrome/browser/renderer_host/pepper/pepper_flash_drm_host.h"
+#include "chrome/browser/renderer_host/pepper/pepper_platform_verification_message_filter.h"
 #include "chrome/browser/renderer_host/pepper/pepper_talk_host.h"
 #include "content/public/browser/browser_ppapi_host.h"
 #include "ppapi/host/message_filter_host.h"
@@ -70,6 +72,14 @@ scoped_ptr<ResourceHost> ChromeBrowserPepperHostFactory::CreateResourceHost(
             host_->GetPpapiHost(), instance, params.pp_resource(),
             broker_filter));
       }
+#if defined(OS_CHROMEOS)
+      case PpapiHostMsg_PlatformVerification_Create::ID: {
+        scoped_refptr<ResourceMessageFilter> pv_filter(
+            new PepperPlatformVerificationMessageFilter(host_, instance));
+        return scoped_ptr<ResourceHost>(new MessageFilterHost(
+            host_->GetPpapiHost(), instance, params.pp_resource(), pv_filter));
+      }
+#endif
       case PpapiHostMsg_Talk_Create::ID:
         return scoped_ptr<ResourceHost>(new PepperTalkHost(
             host_, instance, params.pp_resource()));

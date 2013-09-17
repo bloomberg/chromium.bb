@@ -1492,6 +1492,20 @@ IPC_MESSAGE_CONTROL2(PpapiPluginMsg_HostResolver_ResolveReply,
                      std::string /* canonical_name */,
                      std::vector<PP_NetAddress_Private> /* net_address_list */)
 
+// Platform Verification -------------------------------------------------------
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_PlatformVerification_Create)
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_PlatformVerification_CanChallengePlatform)
+IPC_MESSAGE_CONTROL1(
+    PpapiHostMsg_PlatformVerification_CanChallengePlatformReply,
+    bool /* can_challenge_platform */)
+IPC_MESSAGE_CONTROL2(PpapiHostMsg_PlatformVerification_ChallengePlatform,
+                     std::string /* service_id  */,
+                     std::vector<uint8_t> /* challenge */)
+IPC_MESSAGE_CONTROL3(PpapiHostMsg_PlatformVerification_ChallengePlatformReply,
+                     std::vector<uint8_t> /* signed_data */,
+                     std::vector<uint8_t> /* signed_data_signature */,
+                     std::string /* platform_key_certificate */)
+
 // Printing.
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_Printing_Create)
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_Printing_GetDefaultPrintSettings)

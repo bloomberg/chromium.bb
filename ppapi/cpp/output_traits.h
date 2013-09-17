@@ -161,6 +161,29 @@ struct CallbackOutputTraits<Var> {
   }
 };
 
+// A specialization of CallbackOutputTraits for bool output parameters.
+// It passes a PP_Bool* to the browser and converts to a bool when passing
+// to the plugin.
+template<>
+struct CallbackOutputTraits<bool> {
+  // To call the browser, we just pass a PP_Bool* as an output param.
+  typedef PP_Bool* APIArgType;
+  typedef PP_Bool StorageType;
+
+  static inline APIArgType StorageToAPIArg(StorageType& t) {
+    return &t;
+  }
+
+  // Converts the PP_Bool to a bool object.
+  static inline bool StorageToPluginArg(StorageType& t) {
+    return PP_ToBool(t);
+  }
+
+  static inline void Initialize(StorageType* t) {
+    *t = PP_FALSE;
+  }
+};
+
 // Array output parameters -----------------------------------------------------
 
 // Output traits for vectors of all "plain old data" (POD) types. It is

@@ -20,6 +20,7 @@
 #include "ppapi/proxy/host_resolver_resource.h"
 #include "ppapi/proxy/net_address_resource.h"
 #include "ppapi/proxy/network_monitor_resource.h"
+#include "ppapi/proxy/platform_verification_private_resource.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_globals.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
@@ -418,6 +419,12 @@ PP_Resource ResourceCreationProxy::CreateFlashMenu(
 PP_Resource ResourceCreationProxy::CreateFlashMessageLoop(
     PP_Instance instance) {
   return PPB_Flash_MessageLoop_Proxy::CreateProxyResource(instance);
+}
+
+PP_Resource ResourceCreationProxy::CreatePlatformVerificationPrivate(
+    PP_Instance instance) {
+  return (new PlatformVerificationPrivateResource(GetConnection(), instance))->
+      GetReference();
 }
 
 PP_Resource ResourceCreationProxy::CreateScrollbar(PP_Instance instance,

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // From private/ppb_platform_verification_private.idl,
-//   modified Thu Sep  5 17:37:17 2013.
+//   modified Thu Sep 12 11:48:28 2013.
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
@@ -34,12 +34,16 @@ PP_Bool IsPlatformVerification(PP_Resource resource) {
   return PP_FromBool(enter.succeeded());
 }
 
-PP_Bool CanChallengePlatform(PP_Resource instance) {
+int32_t CanChallengePlatform(PP_Resource instance,
+                             PP_Bool* can_challenge_platform,
+                             struct PP_CompletionCallback callback) {
   VLOG(4) << "PPB_PlatformVerification_Private::CanChallengePlatform()";
-  EnterResource<PPB_PlatformVerification_API> enter(instance, true);
+  EnterResource<PPB_PlatformVerification_API> enter(instance, callback, true);
   if (enter.failed())
-    return PP_FALSE;
-  return enter.object()->CanChallengePlatform();
+    return enter.retval();
+  return enter.SetResult(enter.object()->CanChallengePlatform(
+      can_challenge_platform,
+      enter.callback()));
 }
 
 int32_t ChallengePlatform(PP_Resource instance,

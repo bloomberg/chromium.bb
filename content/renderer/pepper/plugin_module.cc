@@ -13,6 +13,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "content/common/view_messages.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/pepper/common.h"
@@ -136,6 +137,10 @@
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_graphics_2d_api.h"
 #include "ppapi/thunk/thunk.h"
+
+#if defined(OS_CHROMEOS)
+#include "ppapi/c/private/ppb_platform_verification_private.h"
+#endif
 
 using ppapi::InputEventData;
 using ppapi::PpapiGlobals;

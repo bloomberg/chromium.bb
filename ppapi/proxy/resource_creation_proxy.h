@@ -165,6 +165,8 @@ class ResourceCreationProxy : public InterfaceProxy,
   virtual PP_Resource CreateFlashMenu(PP_Instance instance,
                                       const PP_Flash_Menu* menu_data) OVERRIDE;
   virtual PP_Resource CreateFlashMessageLoop(PP_Instance instance) OVERRIDE;
+  virtual PP_Resource CreatePlatformVerificationPrivate(
+      PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateScrollbar(PP_Instance instance,
                                       PP_Bool vertical) OVERRIDE;
   virtual PP_Resource CreateTalk(PP_Instance instance) OVERRIDE;

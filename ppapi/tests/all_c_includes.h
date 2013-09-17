@@ -118,6 +118,7 @@
 #include "ppapi/c/private/ppb_network_list_private.h"
 #include "ppapi/c/private/ppb_network_monitor_private.h"
 #include "ppapi/c/private/ppb_pdf.h"
+#include "ppapi/c/private/ppb_platform_verification_private.h"
 #include "ppapi/c/private/ppb_proxy_private.h"
 #include "ppapi/c/private/ppb_tcp_socket_private.h"
 #include "ppapi/c/private/ppb_udp_socket_private.h"

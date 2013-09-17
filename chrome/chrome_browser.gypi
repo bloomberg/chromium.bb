@@ -1764,6 +1764,8 @@
         'browser/renderer_host/pepper/pepper_flash_clipboard_message_filter.h',
         'browser/renderer_host/pepper/pepper_flash_drm_host.cc',
         'browser/renderer_host/pepper/pepper_flash_drm_host.h',
+        'browser/renderer_host/pepper/pepper_platform_verification_message_filter.cc',
+        'browser/renderer_host/pepper/pepper_platform_verification_message_filter.h',
         'browser/renderer_host/pepper/pepper_talk_host.cc',
         'browser/renderer_host/pepper/pepper_talk_host.h',
         'browser/renderer_host/safe_browsing_resource_throttle.cc',
@@ -2826,6 +2828,8 @@
             'browser/policy/proto/chrome_device_policy.pb.h',
             'browser/renderer_host/offline_resource_throttle.cc',
             'browser/renderer_host/offline_resource_throttle.h',
+            'browser/renderer_host/pepper/pepper_platform_verification_message_filter.cc',
+            'browser/renderer_host/pepper/pepper_platform_verification_message_filter.h',
           ],
         }, {  # chromeos==1
           'dependencies': [

@@ -109,6 +109,8 @@ class ResourceCreationImpl : public ppapi::thunk::ResourceCreationAPI {
       uint32_t modifiers) OVERRIDE;
   virtual PP_Resource CreateNetworkMonitorPrivate(
       PP_Instance instance) OVERRIDE;
+  virtual PP_Resource CreatePlatformVerificationPrivate(
+      PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateResourceArray(PP_Instance instance,
                                           const PP_Resource elements[],
                                           uint32_t size) OVERRIDE;

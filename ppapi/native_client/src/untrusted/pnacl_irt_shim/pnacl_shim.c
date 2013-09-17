@@ -3184,9 +3184,9 @@ static PP_Bool Pnacl_M31_PPB_PlatformVerification_Private_IsPlatformVerification
   return iface->IsPlatformVerification(resource);
 }
 
-static PP_Bool Pnacl_M31_PPB_PlatformVerification_Private_CanChallengePlatform(PP_Resource instance) {
+static int32_t Pnacl_M31_PPB_PlatformVerification_Private_CanChallengePlatform(PP_Resource instance, PP_Bool* can_challenge_platform, struct PP_CompletionCallback* callback) {
   const struct PPB_PlatformVerification_Private_0_1 *iface = Pnacl_WrapperInfo_PPB_PlatformVerification_Private_0_1.real_iface;
-  return iface->CanChallengePlatform(instance);
+  return iface->CanChallengePlatform(instance, can_challenge_platform, *callback);
 }
 
 static int32_t Pnacl_M31_PPB_PlatformVerification_Private_ChallengePlatform(PP_Resource instance, struct PP_Var* service_id, struct PP_Var* challenge, struct PP_Var* signed_data, struct PP_Var* signed_data_signature, struct PP_Var* platform_key_certificate, struct PP_CompletionCallback* callback) {
@@ -4884,7 +4884,7 @@ struct PPB_OutputProtection_Private_0_1 Pnacl_Wrappers_PPB_OutputProtection_Priv
 struct PPB_PlatformVerification_Private_0_1 Pnacl_Wrappers_PPB_PlatformVerification_Private_0_1 = {
     .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M31_PPB_PlatformVerification_Private_Create,
     .IsPlatformVerification = (PP_Bool (*)(PP_Resource resource))&Pnacl_M31_PPB_PlatformVerification_Private_IsPlatformVerification,
-    .CanChallengePlatform = (PP_Bool (*)(PP_Resource instance))&Pnacl_M31_PPB_PlatformVerification_Private_CanChallengePlatform,
+    .CanChallengePlatform = (int32_t (*)(PP_Resource instance, PP_Bool* can_challenge_platform, struct PP_CompletionCallback callback))&Pnacl_M31_PPB_PlatformVerification_Private_CanChallengePlatform,
     .ChallengePlatform = (int32_t (*)(PP_Resource instance, struct PP_Var service_id, struct PP_Var challenge, struct PP_Var* signed_data, struct PP_Var* signed_data_signature, struct PP_Var* platform_key_certificate, struct PP_CompletionCallback callback))&Pnacl_M31_PPB_PlatformVerification_Private_ChallengePlatform
 };
 

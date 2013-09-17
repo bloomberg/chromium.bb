@@ -5,6 +5,7 @@
 
 #include <cstring>
 
+#include "build/build_config.h"
 #include "ppapi/c/dev/ppb_audio_input_dev.h"
 #include "ppapi/c/dev/ppb_buffer_dev.h"
 #include "ppapi/c/dev/ppb_char_set_dev.h"
@@ -103,6 +104,10 @@
 #include "ppapi/c/trusted/ppb_file_io_trusted.h"
 #include "ppapi/c/trusted/ppb_url_loader_trusted.h"
 #include "ppapi/thunk/thunk.h"
+
+#if defined(OS_CHROMEOS)
+#include "ppapi/c/private/ppb_platform_verification_private.h"
+#endif
 
 bool IsSupportedPepperInterface(const char* name) {
   // TODO(brettw) put these in a hash map for better performance.

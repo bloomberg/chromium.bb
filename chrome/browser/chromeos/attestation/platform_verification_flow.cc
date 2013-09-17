@@ -82,6 +82,7 @@ PlatformVerificationFlow::PlatformVerificationFlow()
       async_caller_(cryptohome::AsyncMethodCaller::GetInstance()),
       cryptohome_client_(DBusThreadManager::Get()->GetCryptohomeClient()),
       user_manager_(UserManager::Get()),
+      statistics_provider_(system::StatisticsProvider::GetInstance()),
       delegate_(NULL),
       testing_prefs_(NULL),
       weak_factory_(this) {
