@@ -34,9 +34,16 @@ const std::vector<CreditCard*>& TestPersonalDataManager::
   return credit_cards_;
 }
 
-void TestPersonalDataManager::SaveImportedProfile(
+std::string TestPersonalDataManager::SaveImportedProfile(
     const AutofillProfile& imported_profile) {
   imported_profile_ = imported_profile;
+  return imported_profile.guid();
+}
+
+std::string TestPersonalDataManager::SaveImportedCreditCard(
+    const CreditCard& imported_credit_card) {
+  imported_credit_card_ = imported_credit_card;
+  return imported_credit_card.guid();
 }
 
 }  // namespace autofill

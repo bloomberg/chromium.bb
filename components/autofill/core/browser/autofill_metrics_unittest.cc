@@ -125,7 +125,7 @@ class TestPersonalDataManager : public PersonalDataManager {
   }
 
   MOCK_METHOD1(SaveImportedCreditCard,
-               void(const CreditCard& imported_credit_card));
+               std::string(const CreditCard& imported_credit_card));
 
  private:
   void CreateTestAutofillProfiles(ScopedVector<AutofillProfile>* profiles) {
@@ -319,8 +319,9 @@ scoped_ptr<ConfirmInfoBarDelegate> AutofillMetricsTest::CreateDelegate(
   CreditCard credit_card;
   return AutofillCCInfoBarDelegate::Create(
       metric_logger,
-      base::Bind(&TestPersonalDataManager::SaveImportedCreditCard,
-                 base::Unretained(personal_data_.get()), credit_card));
+      base::Bind(
+          base::IgnoreResult(&TestPersonalDataManager::SaveImportedCreditCard),
+          base::Unretained(personal_data_.get()), credit_card));
 }
 
 // Test that we log quality metrics appropriately.

@@ -128,8 +128,21 @@ CreditCard GetCreditCard() {
   return credit_card;
 }
 
+CreditCard GetCreditCard2() {
+  CreditCard credit_card(base::GenerateGUID(), "https://www.example.com");
+  SetCreditCardInfo(
+      &credit_card, "Someone Else", "378282246310005" /* AmEx */, "07", "2019");
+  return credit_card;
+}
+
 CreditCard GetVerifiedCreditCard() {
   CreditCard credit_card(GetCreditCard());
+  credit_card.set_origin(kSettingsOrigin);
+  return credit_card;
+}
+
+CreditCard GetVerifiedCreditCard2() {
+  CreditCard credit_card(GetCreditCard2());
   credit_card.set_origin(kSettingsOrigin);
   return credit_card;
 }

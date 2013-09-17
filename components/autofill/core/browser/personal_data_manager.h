@@ -79,11 +79,15 @@ class PersonalDataManager : public WebDataServiceConsumer,
   bool ImportFormData(const FormStructure& form,
                       const CreditCard** credit_card);
 
-  // Saves |imported_profile| to the WebDB if it exists.
-  virtual void SaveImportedProfile(const AutofillProfile& imported_profile);
+  // Saves |imported_profile| to the WebDB if it exists. Returns the guid of
+  // the new or updated profile, or the empty string if no profile was saved.
+  virtual std::string SaveImportedProfile(
+      const AutofillProfile& imported_profile);
 
-  // Saves a credit card value detected in |ImportedFormData|.
-  virtual void SaveImportedCreditCard(const CreditCard& imported_credit_card);
+  // Saves a credit card value detected in |ImportedFormData|. Returns the guid
+  // of the new or updated card, or the empty string if no card was saved.
+  virtual std::string SaveImportedCreditCard(
+      const CreditCard& imported_credit_card);
 
   // Adds |profile| to the web database.
   void AddProfile(const AutofillProfile& profile);
@@ -169,8 +173,9 @@ class PersonalDataManager : public WebDataServiceConsumer,
 
   // Merges |new_profile| into one of the |existing_profiles| if possible;
   // otherwise appends |new_profile| to the end of that list. Fills
-  // |merged_profiles| with the result.
-  static bool MergeProfile(
+  // |merged_profiles| with the result. Returns the |guid| of the new or updated
+  // profile.
+  static std::string MergeProfile(
       const AutofillProfile& new_profile,
       const std::vector<AutofillProfile*>& existing_profiles,
       const std::string& app_locale,

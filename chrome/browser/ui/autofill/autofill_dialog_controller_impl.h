@@ -407,11 +407,6 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   string16 GetValueFromSection(DialogSection section,
                                ServerFieldType type);
 
-  // Saves the data in |profile| to the personal data manager. This may add
-  // a new profile or tack onto an existing profile.
-  void SaveProfileGleanedFromSection(const AutofillProfile& profile,
-                                     DialogSection section);
-
   // Gets the SuggestionsMenuModel for |section|.
   SuggestionsMenuModel* SuggestionsMenuModelForSection(DialogSection section);
   const SuggestionsMenuModel* SuggestionsMenuModelForSection(
@@ -711,6 +706,11 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   // The Google Wallet cookie value, set as an authorization header on requests
   // to Wallet.
   std::string wallet_cookie_value_;
+
+  // A map from dialog sections to the GUID of a newly saved Autofill data
+  // models for that section. No entries present that don't have newly saved
+  // data models.
+  std::map<DialogSection, std::string> newly_saved_data_model_guids_;
 
   // Populated if the user chose to save a newly inputted credit card. Used to
   // show a bubble as the dialog closes to confirm a user's new card info was

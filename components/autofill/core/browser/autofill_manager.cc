@@ -739,8 +739,9 @@ void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
     manager_delegate_->ConfirmSaveCreditCard(
         *metric_logger_,
         *imported_credit_card,
-        base::Bind(&PersonalDataManager::SaveImportedCreditCard,
-                   base::Unretained(personal_data_), *imported_credit_card));
+        base::Bind(
+            base::IgnoreResult(&PersonalDataManager::SaveImportedCreditCard),
+            base::Unretained(personal_data_), *imported_credit_card));
   }
 }
 

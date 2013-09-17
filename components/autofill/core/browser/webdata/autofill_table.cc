@@ -2095,7 +2095,7 @@ bool AutofillTable::MigrateToVersion37MergeAndCullOlderProfiles() {
 
     if (PersonalDataManager::IsValidLearnableProfile(*profile, app_locale_)) {
       std::vector<AutofillProfile> merged_profiles;
-      bool merged = PersonalDataManager::MergeProfile(
+      std::string merged_guid = PersonalDataManager::MergeProfile(
           *profile, accumulated_profiles_p, app_locale_, &merged_profiles);
 
       std::swap(accumulated_profiles, merged_profiles);
@@ -2108,9 +2108,8 @@ bool AutofillTable::MigrateToVersion37MergeAndCullOlderProfiles() {
                      address_of<AutofillProfile>);
 
       // If the profile got merged trash the original.
-      if (merged)
+      if (merged_guid != profile->guid())
         AddAutofillGUIDToTrash(profile->guid());
-
     } else {
       // An invalid profile, so trash it.
       AddAutofillGUIDToTrash(profile->guid());

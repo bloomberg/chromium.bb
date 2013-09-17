@@ -27,16 +27,21 @@ class TestPersonalDataManager : public PersonalDataManager {
   void AddTestingCreditCard(CreditCard* credit_card);
 
   virtual const std::vector<AutofillProfile*>& GetProfiles() OVERRIDE;
-  virtual void SaveImportedProfile(const AutofillProfile& imported_profile)
-      OVERRIDE;
+  virtual const std::vector<CreditCard*>& GetCreditCards() const OVERRIDE;
+
+  virtual std::string SaveImportedProfile(
+      const AutofillProfile& imported_profile) OVERRIDE;
+  virtual std::string SaveImportedCreditCard(
+      const CreditCard& imported_credit_card) OVERRIDE;
 
   const AutofillProfile& imported_profile() { return imported_profile_; }
-  virtual const std::vector<CreditCard*>& GetCreditCards() const OVERRIDE;
+  const CreditCard& imported_credit_card() { return imported_credit_card_; }
 
  private:
   std::vector<AutofillProfile*> profiles_;
   std::vector<CreditCard*> credit_cards_;
   AutofillProfile imported_profile_;
+  CreditCard imported_credit_card_;
 };
 
 }  // namespace autofill

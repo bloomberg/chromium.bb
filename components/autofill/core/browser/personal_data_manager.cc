@@ -726,7 +726,7 @@ bool PersonalDataManager::IsValidLearnableProfile(
 }
 
 // static
-bool PersonalDataManager::MergeProfile(
+std::string PersonalDataManager::MergeProfile(
     const AutofillProfile& new_profile,
     const std::vector<AutofillProfile*>& existing_profiles,
     const std::string& app_locale,
@@ -735,6 +735,7 @@ bool PersonalDataManager::MergeProfile(
 
   // Set to true if |existing_profiles| already contains an equivalent profile.
   bool matching_profile_found = false;
+  std::string guid = new_profile.guid();
 
   // If we have already saved this address, merge in any missing values.
   // Only merge with the first match.
@@ -751,6 +752,7 @@ bool PersonalDataManager::MergeProfile(
       // data.  If an automatically aggregated profile would overwrite a
       // verified profile, just drop it.
       matching_profile_found = true;
+      guid = existing_profile->guid();
       if (!existing_profile->IsVerified() || new_profile.IsVerified())
         existing_profile->OverwriteWithOrAddTo(new_profile, app_locale);
     }
@@ -761,7 +763,7 @@ bool PersonalDataManager::MergeProfile(
   if (!matching_profile_found)
     merged_profiles->push_back(new_profile);
 
-  return matching_profile_found;
+  return guid;
 }
 
 void PersonalDataManager::SetProfiles(std::vector<AutofillProfile>* profiles) {
@@ -962,10 +964,10 @@ void PersonalDataManager::CancelPendingQuery(
   *handle = 0;
 }
 
-void PersonalDataManager::SaveImportedProfile(
+std::string PersonalDataManager::SaveImportedProfile(
     const AutofillProfile& imported_profile) {
   if (browser_context_->IsOffTheRecord())
-    return;
+    return std::string();
 
   // Don't save a web profile if the data in the profile is a subset of an
   // auxiliary profile.
@@ -973,32 +975,39 @@ void PersonalDataManager::SaveImportedProfile(
            auxiliary_profiles_.begin();
        iter != auxiliary_profiles_.end(); ++iter) {
     if (imported_profile.IsSubsetOf(**iter, app_locale_))
-      return;
+      return (*iter)->guid();
   }
 
   std::vector<AutofillProfile> profiles;
-  MergeProfile(imported_profile, web_profiles_.get(), app_locale_, &profiles);
+  std::string guid =
+      MergeProfile(imported_profile, web_profiles_.get(), app_locale_,
+                   &profiles);
   SetProfiles(&profiles);
+  return guid;
 }
 
 
-void PersonalDataManager::SaveImportedCreditCard(
+std::string PersonalDataManager::SaveImportedCreditCard(
     const CreditCard& imported_card) {
   DCHECK(!imported_card.number().empty());
   if (browser_context_->IsOffTheRecord())
-    return;
+    return std::string();
 
   // Set to true if |imported_card| is merged into the credit card list.
   bool merged = false;
 
+  std::string guid = imported_card.guid();
   std::vector<CreditCard> credit_cards;
   for (std::vector<CreditCard*>::const_iterator card = credit_cards_.begin();
        card != credit_cards_.end();
        ++card) {
     // If |imported_card| has not yet been merged, check whether it should be
     // with the current |card|.
-    if (!merged && (*card)->UpdateFromImportedCard(imported_card, app_locale_))
+    if (!merged &&
+        (*card)->UpdateFromImportedCard(imported_card, app_locale_)) {
+      guid = (*card)->guid();
       merged = true;
+    }
 
     credit_cards.push_back(**card);
   }
@@ -1007,6 +1016,7 @@ void PersonalDataManager::SaveImportedCreditCard(
     credit_cards.push_back(imported_card);
 
   SetCreditCards(&credit_cards);
+  return guid;
 }
 
 void PersonalDataManager::LogProfileCount() const {

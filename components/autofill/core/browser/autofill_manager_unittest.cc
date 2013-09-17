@@ -84,7 +84,7 @@ class TestPersonalDataManager : public PersonalDataManager {
     return NULL;
   }
 
-  MOCK_METHOD1(SaveImportedProfile, void(const AutofillProfile&));
+  MOCK_METHOD1(SaveImportedProfile, std::string(const AutofillProfile&));
 
   AutofillProfile* GetProfileWithGUID(const char* guid) {
     for (std::vector<AutofillProfile *>::iterator it = web_profiles_.begin();

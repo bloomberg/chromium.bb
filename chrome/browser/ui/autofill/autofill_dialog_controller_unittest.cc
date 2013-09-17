@@ -460,6 +460,30 @@ class AutofillDialogControllerTest : public ChromeRenderViewHostTestHarness {
     controller()->GetView()->SetUserInput(SECTION_CC, cc_outputs);
   }
 
+  // Activates the 'Add new foo' option from the |section|'s suggestions
+  // dropdown and fills the |section|'s inputs with the data from the
+  // |data_model|.  If |section| is SECTION_CC, also fills in '123' for the CVC.
+  void FillInputs(DialogSection section, const AutofillDataModel& data_model) {
+    // Select the 'Add new foo' option.
+    ui::MenuModel* model = GetMenuModelForSection(section);
+    model->ActivatedAt(model->GetItemCount() - 2);
+
+    // Fill the inputs.
+    DetailOutputMap outputs;
+    const DetailInputs& inputs =
+        controller()->RequestedFieldsForSection(section);
+    for (size_t i = 0; i < inputs.size(); ++i) {
+      ServerFieldType type = inputs[i].type;
+      base::string16 output;
+      if (type == CREDIT_CARD_VERIFICATION_CODE)
+        output = ASCIIToUTF16("123");
+      else
+        output = data_model.GetInfo(AutofillType(type), "en-US");
+      outputs[&inputs[i]] = output;
+    }
+    controller()->GetView()->SetUserInput(section, outputs);
+  }
+
   std::vector<DialogNotification> NotificationsOfType(
       DialogNotification::Type type) {
     std::vector<DialogNotification> right_type;
@@ -536,6 +560,11 @@ class AutofillDialogControllerTest : public ChromeRenderViewHostTestHarness {
         return true;
     }
     return false;
+  }
+
+  SuggestionsMenuModel* GetMenuModelForSection(DialogSection section) {
+    ui::MenuModel* model = controller()->MenuModelForSection(section);
+    return static_cast<SuggestionsMenuModel*>(model);
   }
 
   TestAutofillDialogController* controller() { return controller_.get(); }
@@ -906,31 +935,27 @@ TEST_F(AutofillDialogControllerTest, AutofillProfiles) {
 // Makes sure that the choice of which Autofill profile to use for each section
 // is sticky.
 TEST_F(AutofillDialogControllerTest, AutofillProfileDefaults) {
-  AutofillProfile full_profile(test::GetFullProfile());
-  full_profile.set_origin(kSettingsOrigin);
-  controller()->GetTestingManager()->AddTestingProfile(&full_profile);
-  AutofillProfile full_profile2(test::GetFullProfile2());
-  full_profile2.set_origin(kSettingsOrigin);
-  controller()->GetTestingManager()->AddTestingProfile(&full_profile2);
+  AutofillProfile profile(test::GetVerifiedProfile());
+  AutofillProfile profile2(test::GetVerifiedProfile2());
+  controller()->GetTestingManager()->AddTestingProfile(&profile);
+  controller()->GetTestingManager()->AddTestingProfile(&profile2);
 
   // Until a selection has been made, the default shipping suggestion is the
   // first one (after "use billing").
-  SuggestionsMenuModel* shipping_model = static_cast<SuggestionsMenuModel*>(
-      controller()->MenuModelForSection(SECTION_SHIPPING));
+  SuggestionsMenuModel* shipping_model =
+      GetMenuModelForSection(SECTION_SHIPPING);
   EXPECT_EQ(1, shipping_model->checked_item());
 
   for (int i = 2; i >= 0; --i) {
-    shipping_model = static_cast<SuggestionsMenuModel*>(
-        controller()->MenuModelForSection(SECTION_SHIPPING));
+    shipping_model = GetMenuModelForSection(SECTION_SHIPPING);
     shipping_model->ExecuteCommand(i, 0);
     FillCreditCardInputs();
     controller()->OnAccept();
 
     Reset();
-    controller()->GetTestingManager()->AddTestingProfile(&full_profile);
-    controller()->GetTestingManager()->AddTestingProfile(&full_profile2);
-    shipping_model = static_cast<SuggestionsMenuModel*>(
-        controller()->MenuModelForSection(SECTION_SHIPPING));
+    controller()->GetTestingManager()->AddTestingProfile(&profile);
+    controller()->GetTestingManager()->AddTestingProfile(&profile2);
+    shipping_model = GetMenuModelForSection(SECTION_SHIPPING);
     EXPECT_EQ(i, shipping_model->checked_item());
   }
 
@@ -940,10 +965,52 @@ TEST_F(AutofillDialogControllerTest, AutofillProfileDefaults) {
   FillCreditCardInputs();
   controller()->OnAccept();
   Reset();
-  controller()->GetTestingManager()->AddTestingProfile(&full_profile);
-  shipping_model = static_cast<SuggestionsMenuModel*>(
-      controller()->MenuModelForSection(SECTION_SHIPPING));
+  controller()->GetTestingManager()->AddTestingProfile(&profile);
+  shipping_model = GetMenuModelForSection(SECTION_SHIPPING);
   EXPECT_EQ(1, shipping_model->checked_item());
+}
+
+// Makes sure that a newly added Autofill profile becomes set as the default
+// choice for the next run.
+TEST_F(AutofillDialogControllerTest, NewAutofillProfileIsDefault) {
+  SwitchToAutofill();
+
+  AutofillProfile profile(test::GetVerifiedProfile());
+  CreditCard credit_card(test::GetVerifiedCreditCard());
+  controller()->GetTestingManager()->AddTestingProfile(&profile);
+  controller()->GetTestingManager()->AddTestingCreditCard(&credit_card);
+
+  // Until a selection has been made, the default suggestion is the first one.
+  // For the shipping section, this follows the "use billing" suggestion.
+  EXPECT_EQ(0, GetMenuModelForSection(SECTION_CC)->checked_item());
+  EXPECT_EQ(1, GetMenuModelForSection(SECTION_SHIPPING)->checked_item());
+
+  // Fill in the shipping and credit card sections with new data.
+  AutofillProfile new_profile(test::GetVerifiedProfile2());
+  CreditCard new_credit_card(test::GetVerifiedCreditCard2());
+  FillInputs(SECTION_SHIPPING, new_profile);
+  FillInputs(SECTION_CC, new_credit_card);
+  controller()->GetView()->CheckSaveDetailsLocallyCheckbox(true);
+  controller()->OnAccept();
+
+  // Update the |new_profile| and |new_credit_card|'s guids to the saved ones.
+  new_profile.set_guid(
+      controller()->GetTestingManager()->imported_profile().guid());
+  new_credit_card.set_guid(
+      controller()->GetTestingManager()->imported_credit_card().guid());
+
+  // Reload the dialog. The newly added address and credit card should now be
+  // set as the defaults.
+  Reset();
+  controller()->GetTestingManager()->AddTestingProfile(&profile);
+  controller()->GetTestingManager()->AddTestingProfile(&new_profile);
+  controller()->GetTestingManager()->AddTestingCreditCard(&credit_card);
+  controller()->GetTestingManager()->AddTestingCreditCard(&new_credit_card);
+
+  // Until a selection has been made, the default suggestion is the first one.
+  // For the shipping section, this follows the "use billing" suggestion.
+  EXPECT_EQ(1, GetMenuModelForSection(SECTION_CC)->checked_item());
+  EXPECT_EQ(2, GetMenuModelForSection(SECTION_SHIPPING)->checked_item());
 }
 
 TEST_F(AutofillDialogControllerTest, AutofillProfileVariants) {
@@ -1425,8 +1492,7 @@ TEST_F(AutofillDialogControllerTest, ManageItem) {
   controller()->GetTestingManager()->AddTestingProfile(&full_profile);
   SwitchToAutofill();
 
-  SuggestionsMenuModel* shipping = static_cast<SuggestionsMenuModel*>(
-      controller()->MenuModelForSection(SECTION_SHIPPING));
+  SuggestionsMenuModel* shipping = GetMenuModelForSection(SECTION_SHIPPING);
   shipping->ExecuteCommand(shipping->GetItemCount() - 1, 0);
   GURL autofill_manage_url = controller()->open_tab_url();
   EXPECT_EQ("chrome", autofill_manage_url.scheme());
@@ -1440,8 +1506,7 @@ TEST_F(AutofillDialogControllerTest, ManageItem) {
   GURL wallet_manage_addresses_url = controller()->open_tab_url();
   EXPECT_EQ("https", wallet_manage_addresses_url.scheme());
 
-  SuggestionsMenuModel* billing = static_cast<SuggestionsMenuModel*>(
-      controller()->MenuModelForSection(SECTION_CC_BILLING));
+  SuggestionsMenuModel* billing = GetMenuModelForSection(SECTION_CC_BILLING);
   controller()->SuggestionItemSelected(billing, billing->GetItemCount() - 1);
   GURL wallet_manage_instruments_url = controller()->open_tab_url();
   EXPECT_EQ("https", wallet_manage_instruments_url.scheme());

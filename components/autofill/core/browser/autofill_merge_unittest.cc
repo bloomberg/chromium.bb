@@ -88,7 +88,8 @@ class PersonalDataManagerMock : public PersonalDataManager {
   void Reset();
 
   // PersonalDataManager:
-  virtual void SaveImportedProfile(const AutofillProfile& profile) OVERRIDE;
+  virtual std::string SaveImportedProfile(
+      const AutofillProfile& profile) OVERRIDE;
   virtual const std::vector<AutofillProfile*>& web_profiles() const OVERRIDE;
 
  private:
@@ -108,11 +109,14 @@ void PersonalDataManagerMock::Reset() {
   profiles_.clear();
 }
 
-void PersonalDataManagerMock::SaveImportedProfile(
+std::string PersonalDataManagerMock::SaveImportedProfile(
     const AutofillProfile& profile) {
   std::vector<AutofillProfile> profiles;
-  if (!MergeProfile(profile, profiles_.get(), "en-US", &profiles))
+  std::string merged_guid =
+      MergeProfile(profile, profiles_.get(), "en-US", &profiles);
+  if (merged_guid == profile.guid())
     profiles_.push_back(new AutofillProfile(profile));
+  return merged_guid;
 }
 
 const std::vector<AutofillProfile*>& PersonalDataManagerMock::web_profiles()

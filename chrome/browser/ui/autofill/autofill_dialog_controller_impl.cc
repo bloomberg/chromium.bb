@@ -2678,7 +2678,8 @@ void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(
                       GetValueFromSection(SECTION_BILLING, NAME_FULL));
 
       if (ShouldSaveDetailsLocally()) {
-        GetManager()->SaveImportedCreditCard(card);
+        std::string guid = GetManager()->SaveImportedCreditCard(card);
+        newly_saved_data_model_guids_[section] = guid;
         DCHECK(!profile()->IsOffTheRecord());
         newly_saved_card_.reset(new CreditCard(card));
       }
@@ -2695,8 +2696,10 @@ void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(
       profile.set_origin(kAutofillDialogOrigin);
       FillFormGroupFromOutputs(output, &profile);
 
-      if (ShouldSaveDetailsLocally())
-        SaveProfileGleanedFromSection(profile, section);
+      if (ShouldSaveDetailsLocally()) {
+        std::string guid = GetManager()->SaveImportedProfile(profile);
+        newly_saved_data_model_guids_[section] = guid;
+      }
 
       AutofillProfileWrapper profile_wrapper(&profile);
       profile_wrapper.FillFormStructure(inputs, compare, &form_structure_);
@@ -2747,12 +2750,6 @@ string16 AutofillDialogControllerImpl::GetValueFromSection(
   }
 
   return string16();
-}
-
-void AutofillDialogControllerImpl::SaveProfileGleanedFromSection(
-    const AutofillProfile& profile,
-    DialogSection section) {
-  GetManager()->SaveImportedProfile(profile);
 }
 
 SuggestionsMenuModel* AutofillDialogControllerImpl::
@@ -3143,8 +3140,12 @@ void AutofillDialogControllerImpl::DoFinishSubmit() {
 
       SuggestionsMenuModel* model = SuggestionsMenuModelForSection(section);
       std::string item_key = model->GetItemKeyForCheckedItem();
-      if (IsASuggestionItemKey(item_key) || item_key == kSameAsBillingKey)
+      if (IsASuggestionItemKey(item_key) || item_key == kSameAsBillingKey) {
         PersistAutofillChoice(section, item_key);
+      } else if (item_key == kAddNewItemKey && ShouldSaveDetailsLocally()) {
+        DCHECK(newly_saved_data_model_guids_.count(section));
+        PersistAutofillChoice(section, newly_saved_data_model_guids_[section]);
+      }
     }
 
     profile_->GetPrefs()->SetBoolean(::prefs::kAutofillDialogSaveData,

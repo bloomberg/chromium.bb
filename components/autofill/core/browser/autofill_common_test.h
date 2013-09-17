@@ -46,8 +46,14 @@ AutofillProfile GetVerifiedProfile2();
 // Returns a credit card full of dummy info.
 CreditCard GetCreditCard();
 
+// Returns a credit card full of dummy info, different to the above.
+CreditCard GetCreditCard2();
+
 // Returns a verified credit card full of dummy info.
 CreditCard GetVerifiedCreditCard();
+
+// Returns a verified credit card full of dummy info, different to the above.
+CreditCard GetVerifiedCreditCard2();
 
 // A unit testing utility that is common to a number of the Autofill unit
 // tests.  |SetProfileInfo| provides a quick way to populate a profile with
