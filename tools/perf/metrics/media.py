@@ -56,7 +56,7 @@ class MediaMetric(Metric):
       for m in metrics:
         if m.startswith(metric):
           special_label = m[len(metric):]
-          results.Add(trace + special_label, unit, str(metrics[m]),
+          results.Add(trace + special_label, unit, metrics[m],
                       chart_name=metric, data_type='default')
 
     trace = media_metric['id']
