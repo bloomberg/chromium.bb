@@ -9,6 +9,8 @@
 
 // These interfaces don't require private permissions. However, they only work
 // for whitelisted origins.
+UNPROXIED_API(PPB_NetworkList_Private)
+PROXIED_API(PPB_NetworkMonitor_Private)
 
 PROXIED_IFACE(NoAPIName, PPB_HOSTRESOLVER_PRIVATE_INTERFACE_0_1,
               PPB_HostResolver_Private_0_1)
@@ -37,7 +39,8 @@ PROXIED_IFACE(NoAPIName, PPB_NETADDRESS_PRIVATE_INTERFACE_1_1,
               PPB_NetAddress_Private_1_1)
 PROXIED_IFACE(NoAPIName, PPB_NETWORKLIST_PRIVATE_INTERFACE_0_3,
               PPB_NetworkList_Private_0_3)
-PROXIED_IFACE(NoAPIName, PPB_NETWORKMONITOR_PRIVATE_INTERFACE_0_3,
+PROXIED_IFACE(PPB_NetworkMonitor_Private,
+              PPB_NETWORKMONITOR_PRIVATE_INTERFACE_0_3,
               PPB_NetworkMonitor_Private_0_3)
 
 PROXIED_IFACE(NoAPIName, PPB_EXT_CRXFILESYSTEM_PRIVATE_INTERFACE_0_1,
