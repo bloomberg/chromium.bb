@@ -54,26 +54,34 @@ namespace content {
 // WebRTC logging. It's a Google specific key, hence the "goog" prefix.
 const char kWebRtcLoggingConstraint[] = "googLog";
 
-// Constant constraint keys which disables all audio constraints.
-// Only used in combination with WebAudio sources.
+// Constant constraint keys which enables default audio constraints on
+// mediastreams with audio.
 struct {
   const char* key;
   const char* value;
-} const kWebAudioConstraints[] = {
-    {webrtc::MediaConstraintsInterface::kEchoCancellation,
-     webrtc::MediaConstraintsInterface::kValueTrue},
-    {webrtc::MediaConstraintsInterface::kAutoGainControl,
-     webrtc::MediaConstraintsInterface::kValueTrue},
-    {webrtc::MediaConstraintsInterface::kNoiseSuppression,
-     webrtc::MediaConstraintsInterface::kValueTrue},
-    {webrtc::MediaConstraintsInterface::kHighpassFilter,
-     webrtc::MediaConstraintsInterface::kValueTrue},
+} const kDefaultAudioConstraints[] = {
+  { webrtc::MediaConstraintsInterface::kEchoCancellation,
+    webrtc::MediaConstraintsInterface::kValueTrue },
+  { webrtc::MediaConstraintsInterface::kAutoGainControl,
+    webrtc::MediaConstraintsInterface::kValueTrue },
+  { webrtc::MediaConstraintsInterface::kNoiseSuppression,
+    webrtc::MediaConstraintsInterface::kValueTrue },
+  { webrtc::MediaConstraintsInterface::kHighpassFilter,
+    webrtc::MediaConstraintsInterface::kValueTrue },
 };
 
-void ApplyFixedWebAudioConstraints(RTCMediaConstraints* constraints) {
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kWebAudioConstraints); ++i) {
-    constraints->AddMandatory(kWebAudioConstraints[i].key,
-        kWebAudioConstraints[i].value, false);
+void ApplyFixedAudioConstraints(RTCMediaConstraints* constraints) {
+  const webrtc::MediaConstraintsInterface::Constraints& mandatory =
+      constraints->GetMandatory();
+  std::string string_value;
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kDefaultAudioConstraints); ++i) {
+    if (!mandatory.FindFirst(kDefaultAudioConstraints[i].key, &string_value)) {
+      constraints->AddMandatory(kDefaultAudioConstraints[i].key,
+          kDefaultAudioConstraints[i].value, false);
+    } else {
+      DVLOG(1) << "Constraint " << kDefaultAudioConstraints[i].key
+               << " already set to " << string_value;
+    }
   }
 }
 
@@ -288,6 +296,7 @@ void MediaStreamDependencyFactory::CreateNativeMediaSources(
   // Do additional source initialization if the audio source is a valid
   // microphone or tab audio.
   RTCMediaConstraints native_audio_constraints(audio_constraints);
+  ApplyFixedAudioConstraints(&native_audio_constraints);
   WebKit::WebVector<WebKit::WebMediaStreamTrack> audio_tracks;
   web_stream->audioTracks(audio_tracks);
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
@@ -622,7 +631,7 @@ MediaStreamDependencyFactory::CreateWebAudioSource(
   // echo cancellation, automatic gain control, noise suppression and
   // high-pass filter. SetLocalAudioSource() affects core audio parts in
   // third_party/Libjingle.
-  ApplyFixedWebAudioConstraints(constraints);
+  ApplyFixedAudioConstraints(constraints);
   source_data->SetLocalAudioSource(CreateLocalAudioSource(constraints).get());
   source->setExtraData(source_data);
 
