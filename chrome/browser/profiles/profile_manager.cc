@@ -164,11 +164,6 @@ bool IsProfileMarkedForDeletion(const base::FilePath& profile_path) {
       profile_path) != ProfilesToDelete().end();
 }
 
-void ForceIncognitoModeOnProfile(Profile* profile) {
-  IncognitoModePrefs::SetAvailability(profile->GetPrefs(),
-                                      IncognitoModePrefs::FORCED);
-}
-
 #if defined(OS_CHROMEOS)
 void CheckCryptohomeIsMounted(chromeos::DBusMethodCallStatus call_status,
                               bool is_mounted) {
@@ -520,9 +515,9 @@ void ProfileManager::CreateProfileAsync(
   if (!callback.is_null()) {
     if (iter != profiles_info_.end() && info->created) {
       Profile* profile = info->profile.get();
-      // If this was the guest profile, finish setting its incognito status.
+      // If this was the guest profile, apply settings.
       if (profile->GetPath() == ProfileManager::GetGuestProfilePath())
-        ForceIncognitoModeOnProfile(profile);
+        SetGuestProfilePrefs(profile);
       // Profile has already been created. Run callback immediately.
       callback.Run(profile, Profile::CREATE_STATUS_INITIALIZED);
     } else {
@@ -830,7 +825,7 @@ void ProfileManager::OnProfileCreated(Profile* profile,
 
   // If this was the guest profile, finish setting its incognito status.
   if (profile->GetPath() == ProfileManager::GetGuestProfilePath())
-    ForceIncognitoModeOnProfile(profile);
+    SetGuestProfilePrefs(profile);
 
   // Invoke CREATED callback for incognito profiles.
   if (profile && go_off_the_record)
@@ -993,6 +988,12 @@ void ProfileManager::InitProfileUserPrefs(Profile* profile) {
 
   if (!profile->GetPrefs()->HasPrefPath(prefs::kManagedUserId))
     profile->GetPrefs()->SetString(prefs::kManagedUserId, managed_user_id);
+}
+
+void ProfileManager::SetGuestProfilePrefs(Profile* profile) {
+  IncognitoModePrefs::SetAvailability(profile->GetPrefs(),
+                                      IncognitoModePrefs::FORCED);
+  profile->GetPrefs()->SetBoolean(prefs::kShowBookmarkBar, false);
 }
 
 bool ProfileManager::ShouldGoOffTheRecord(Profile* profile) {

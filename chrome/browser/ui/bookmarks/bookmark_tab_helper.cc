@@ -62,6 +62,12 @@ bool BookmarkTabHelper::ShouldShowBookmarkBar() const {
 
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+
+#if !defined(OS_CHROMEOS)
+  if (profile->IsGuestSession())
+    return false;
+#endif
+
   PrefService* prefs = profile->GetPrefs();
   if (prefs->IsManagedPreference(prefs::kShowBookmarkBar) &&
       !prefs->GetBoolean(prefs::kShowBookmarkBar))

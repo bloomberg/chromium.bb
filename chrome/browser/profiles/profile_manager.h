@@ -274,6 +274,9 @@ class ProfileManager : public base::NonThreadSafe,
   // avatar values
   void InitProfileUserPrefs(Profile* profile);
 
+  // Apply settings for (desktop) Guest User profile.
+  void SetGuestProfilePrefs(Profile* profile);
+
   // For ChromeOS, determines if profile should be otr.
   bool ShouldGoOffTheRecord(Profile* profile);
 
