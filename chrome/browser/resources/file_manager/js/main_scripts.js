@@ -87,7 +87,6 @@
 //<include src="file_operation_manager_wrapper.js"/>
 //<include src="file_grid.js"/>
 //<include src="file_manager.js"/>
-//<include src="file_manager_pyauto.js"/>
 //<include src="file_selection.js"/>
 //<include src="file_table.js"/>
 //<include src="file_tasks.js"/>

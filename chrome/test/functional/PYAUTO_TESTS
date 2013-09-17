@@ -217,12 +217,10 @@
       'chromeos_basic',
       'chromeos_browser',
       'chromeos_crosh',
-      'chromeos_file_browser',
       'chromeos_power',
       'chromeos_prefs',
       'chromeos_security',
       'chromeos_time',
-      'doc_viewing',
       'secure_shell',
       'youtube',
 
