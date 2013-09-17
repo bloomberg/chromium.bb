@@ -421,8 +421,10 @@ class WebViewInteractiveTest
 
 // ui_test_utils::SendMouseMoveSync doesn't seem to work on OS_MACOSX, and
 // likely won't work on many other platforms as well, so for now this test
-// is for Windows and Linux only.
-#if (defined(OS_WIN) || defined(OS_LINUX))
+// is for Windows and Linux only. As of Sept 17th, 2013 this test is disabled
+// on Windows due to flakines, see http://crbug.com/293445.
+
+#if defined(OS_LINUX)
 
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, PointerLock) {
   SetupTest("web_view/pointer_lock",
@@ -711,7 +713,16 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, Navigation_BackForwardKeys) {
   ASSERT_TRUE(done_listener.WaitUntilSatisfied());
 }
 
+// Fail at least once a day on Windows. See http://crbug.com/293445.
+#if defined(OS_WIN)
+#define MAYBE_PointerLock_PointerLockLostWithFocus \
+    DISABLED_PointerLock_PointerLockLostWithFocus
+#else
+#define MAYBE_PointerLock_PointerLockLostWithFocus \
+    PointerLock_PointerLockLostWithFocus
+#endif
+
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest,
-                       PointerLock_PointerLockLostWithFocus) {
+                       MAYBE_PointerLock_PointerLockLostWithFocus) {
   TestHelper("testPointerLockLostWithFocus", "web_view/pointerlock");
 }
