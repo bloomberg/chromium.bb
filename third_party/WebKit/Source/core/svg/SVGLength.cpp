@@ -34,6 +34,18 @@
 
 namespace WebCore {
 
+static inline SVGLengthMode toSVGLengthMode(unsigned short mode)
+{
+    ASSERT(mode >= LengthModeWidth && mode <= LengthModeOther);
+    return static_cast<SVGLengthMode>(mode);
+}
+
+static inline SVGLengthType toSVGLengthType(unsigned short type)
+{
+    ASSERT(type >= LengthTypeUnknown && type <= LengthTypePC);
+    return static_cast<SVGLengthType>(type);
+}
+
 static inline unsigned int storeUnit(SVGLengthMode mode, SVGLengthType type)
 {
     return (mode << 4) | type;
@@ -42,14 +54,14 @@ static inline unsigned int storeUnit(SVGLengthMode mode, SVGLengthType type)
 static inline SVGLengthMode extractMode(unsigned int unit)
 {
     unsigned int mode = unit >> 4;
-    return static_cast<SVGLengthMode>(mode);
+    return toSVGLengthMode(mode);
 }
 
 static inline SVGLengthType extractType(unsigned int unit)
 {
     unsigned int mode = unit >> 4;
     unsigned int type = unit ^ (mode << 4);
-    return static_cast<SVGLengthType>(type);
+    return toSVGLengthType(type);
 }
 
 static inline String lengthTypeToString(SVGLengthType type)
@@ -266,7 +278,7 @@ void SVGLength::newValueSpecifiedUnits(unsigned short type, float value, Excepti
         return;
     }
 
-    m_unit = storeUnit(extractMode(m_unit), static_cast<SVGLengthType>(type));
+    m_unit = storeUnit(extractMode(m_unit), toSVGLengthType(type));
     m_valueInSpecifiedUnits = value;
 }
 
@@ -282,7 +294,7 @@ void SVGLength::convertToSpecifiedUnits(unsigned short type, const SVGLengthCont
         return;
 
     unsigned int originalUnitAndType = m_unit;
-    m_unit = storeUnit(extractMode(m_unit), static_cast<SVGLengthType>(type));
+    m_unit = storeUnit(extractMode(m_unit), toSVGLengthType(type));
     setValue(valueInUserUnits, context, es);
     if (!es.hadException())
         return;
