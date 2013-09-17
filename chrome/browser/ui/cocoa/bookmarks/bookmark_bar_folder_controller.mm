@@ -108,6 +108,13 @@ struct LayoutMetrics {
     folderTop(0.0) {}
 };
 
+NSRect GetFirstButtonFrameForHeight(CGFloat height) {
+  CGFloat y = height - bookmarks::kBookmarkFolderButtonHeight -
+      bookmarks::kBookmarkVerticalPadding;
+  return NSMakeRect(0, y, bookmarks::kDefaultBookmarkWidth,
+                    bookmarks::kBookmarkFolderButtonHeight);
+}
+
 }  // namespace
 
 
@@ -786,12 +793,7 @@ struct LayoutMetrics {
 
   // TODO(jrg): combine with frame code in bookmark_bar_controller.mm
   // http://crbug.com/35966
-  NSRect buttonsOuterFrame = NSMakeRect(
-      0,
-      height - bookmarks::kBookmarkFolderButtonHeight -
-          bookmarks::kBookmarkVerticalPadding,
-      bookmarks::kDefaultBookmarkWidth,
-      bookmarks::kBookmarkFolderButtonHeight);
+  NSRect buttonsOuterFrame = GetFirstButtonFrameForHeight(height);
 
   // TODO(jrg): combine with addNodesToButtonList: code from
   // bookmark_bar_controller.mm (but use y offset)
@@ -1917,8 +1919,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     // If all nodes have been removed from this folder then add in the
     // 'empty' placeholder button.
     NSRect buttonFrame =
-        NSMakeRect(0.0, 0.0, bookmarks::kDefaultBookmarkWidth,
-                   bookmarks::kBookmarkFolderButtonHeight);
+        GetFirstButtonFrameForHeight([self menuHeightForButtonCount:1]);
     BookmarkButton* button = [self makeButtonForNode:nil
                                                frame:buttonFrame];
     [buttons_ addObject:button];
