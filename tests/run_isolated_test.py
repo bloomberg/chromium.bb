@@ -3,6 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import hashlib
 import json
 import logging
 import os
@@ -17,6 +18,8 @@ sys.path.insert(0, ROOT_DIR)
 import auto_stub
 import isolateserver
 import run_isolated
+
+ALGO = hashlib.sha1
 
 
 class RunIsolatedTest(auto_stub.TestCase):
@@ -33,7 +36,7 @@ class RunIsolatedTest(auto_stub.TestCase):
     super(RunIsolatedTest, self).tearDown()
 
   def test_load_isolated_empty(self):
-    m = run_isolated.load_isolated('{}')
+    m = run_isolated.load_isolated('{}', None, ALGO)
     self.assertEqual({}, m)
 
   def test_load_isolated_good(self):
@@ -50,11 +53,11 @@ class RunIsolatedTest(auto_stub.TestCase):
         }
       },
       u'includes': [u'0123456789abcdef0123456789abcdef01234567'],
-      u'os': run_isolated.get_flavor(),
+      u'os': 'irix',
       u'read_only': False,
       u'relative_cwd': u'somewhere_else'
     }
-    m = run_isolated.load_isolated(json.dumps(data))
+    m = run_isolated.load_isolated(json.dumps(data), 'irix', ALGO)
     self.assertEqual(data, m)
 
   def test_load_isolated_bad(self):
@@ -67,7 +70,7 @@ class RunIsolatedTest(auto_stub.TestCase):
       },
     }
     try:
-      run_isolated.load_isolated(json.dumps(data))
+      run_isolated.load_isolated(json.dumps(data), None, ALGO)
       self.fail()
     except run_isolated.ConfigError:
       pass
@@ -76,7 +79,7 @@ class RunIsolatedTest(auto_stub.TestCase):
     data = {
       u'os': run_isolated.get_flavor(),
     }
-    m = run_isolated.load_isolated(json.dumps(data))
+    m = run_isolated.load_isolated(json.dumps(data), None, ALGO)
     self.assertEqual(data, m)
 
   def test_load_isolated_os_bad(self):
@@ -84,7 +87,7 @@ class RunIsolatedTest(auto_stub.TestCase):
       u'os': 'foo',
     }
     try:
-      run_isolated.load_isolated(json.dumps(data))
+      run_isolated.load_isolated(json.dumps(data), 'bar', ALGO)
       self.fail()
     except run_isolated.ConfigError:
       pass

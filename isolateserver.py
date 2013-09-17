@@ -142,9 +142,18 @@ def encode_multipart_formdata(fields, files,
   return content_type, body
 
 
-def sha1_file(filepath):
-  """Calculates the SHA-1 of a file without reading it all in memory at once."""
-  digest = hashlib.sha1()
+def is_valid_hash(value, algo):
+  """Returns if the value is a valid hash for the corresponding algorithm."""
+  size = 2 * algo().digest_size
+  return bool(re.match(r'^[a-fA-F0-9]{%d}$' % size, value))
+
+
+def hash_file(filepath, algo):
+  """Calculates the hash of a file without reading it all in memory at once.
+
+  |algo| should be one of hashlib hashing algorithm.
+  """
+  digest = algo()
   with open(filepath, 'rb') as f:
     while True:
       # Read in 1mb chunks.
@@ -209,7 +218,7 @@ def upload_hash_content_to_blobstore(
   Arguments:
     generate_upload_url: The url to get the new upload url from.
     data: extra POST data.
-    hash_key: sha1 of the uncompressed version of content.
+    hash_key: hash of the uncompressed version of content.
     content: The contents to upload. Must fit in memory for now.
   """
   logging.debug('Generating url to directly upload file to blobstore')
@@ -527,7 +536,7 @@ def get_files_to_upload(contains_hash_url, infiles):
       yield missing_file
 
 
-def upload_sha1_tree(base_url, indir, infiles, namespace):
+def upload_tree(base_url, indir, infiles, namespace):
   """Uploads the given tree to the given url.
 
   Arguments:
@@ -611,18 +620,19 @@ def CMDarchive(parser, args):
 
   # Load the necessary metadata. This is going to be rewritten eventually to be
   # more efficient.
+  algo = hashlib.sha1
   infiles = dict(
       (
         f,
         {
           's': os.stat(f).st_size,
-          'h': sha1_file(f),
+          'h': hash_file(f, algo),
         }
       )
       for f in files)
 
   with tools.Profiler('Archive'):
-    ret = upload_sha1_tree(
+    ret = upload_tree(
         base_url=options.isolate_server,
         indir=os.getcwd(),
         infiles=infiles,

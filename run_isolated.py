@@ -47,8 +47,6 @@ MAIN_DIR = os.path.dirname(os.path.abspath(zip_package.get_main_script_path()))
 # Types of action accepted by link_file().
 HARDLINK, HARDLINK_WITH_FALLBACK, SYMLINK, COPY = range(1, 5)
 
-RE_IS_SHA1 = re.compile(r'^[a-fA-F0-9]{40}$')
-
 # The name of the log file to use.
 RUN_ISOLATED_LOG_FILE = 'run_isolated.log'
 
@@ -235,7 +233,7 @@ def make_temp_dir(prefix, root_dir):
   return tempfile.mkdtemp(prefix=prefix, dir=base_temp_dir)
 
 
-def load_isolated(content, os_flavor=None):
+def load_isolated(content, os_flavor, algo):
   """Verifies the .isolated file is valid and loads this object with the json
   data.
   """
@@ -273,7 +271,7 @@ def load_isolated(content, os_flavor=None):
             if not isinstance(subsubvalue, int):
               raise ConfigError('Expected int, got %r' % subsubvalue)
           elif subsubkey == 'h':
-            if not RE_IS_SHA1.match(subsubvalue):
+            if not isolateserver.is_valid_hash(subsubvalue, algo):
               raise ConfigError('Expected sha-1, got %r' % subsubvalue)
           elif subsubkey == 's':
             if not isinstance(subsubvalue, int):
@@ -291,7 +289,7 @@ def load_isolated(content, os_flavor=None):
       if not value:
         raise ConfigError('Expected non-empty includes list')
       for subvalue in value:
-        if not RE_IS_SHA1.match(subvalue):
+        if not isolateserver.is_valid_hash(subvalue, algo):
           raise ConfigError('Expected sha-1, got %r' % subvalue)
 
     elif key == 'read_only':
@@ -303,11 +301,10 @@ def load_isolated(content, os_flavor=None):
         raise ConfigError('Expected string, got %r' % value)
 
     elif key == 'os':
-      expected_value = os_flavor or get_flavor()
-      if value != expected_value:
+      if os_flavor and value != os_flavor:
         raise ConfigError(
             'Expected \'os\' to be \'%s\' but got \'%s\'' %
-            (expected_value, value))
+            (os_flavor, value))
 
     else:
       raise ConfigError('Unknown key %s' % key)
@@ -338,12 +335,13 @@ class DiskCache(object):
   """
   STATE_FILE = 'state.json'
 
-  def __init__(self, cache_dir, remote_fetcher, policies):
+  def __init__(self, cache_dir, remote_fetcher, policies, algo):
     """
     Arguments:
     - cache_dir: Directory where to place the cache.
     - remote_fetcher: isolateserver.RemoteOperation where to fetch items from.
     - policies: cache retention policies.
+    - algo: hashing algorithm used.
     """
     self.cache_dir = cache_dir
     self.remote_fetcher = remote_fetcher
@@ -382,7 +380,7 @@ class DiskCache(object):
           previous.remove(filename)
           continue
         # An untracked file.
-        if not RE_IS_SHA1.match(filename):
+        if not isolateserver.is_valid_hash(filename, algo):
           logging.warning('Removing unknown file %s from cache', filename)
           os.remove(self.path(filename))
           continue
@@ -559,10 +557,11 @@ class DiskCache(object):
 
 class IsolatedFile(object):
   """Represents a single parsed .isolated file."""
-  def __init__(self, obj_hash):
+  def __init__(self, obj_hash, algo):
     """|obj_hash| is really the sha-1 of the file."""
     logging.debug('IsolatedFile(%s)' % obj_hash)
     self.obj_hash = obj_hash
+    self.algo = algo
     # Set once all the left-side of the tree is parsed. 'Tree' here means the
     # .isolate and all the .isolated files recursively included by it with
     # 'includes' key. The order of each sha-1 in 'includes', each representing a
@@ -586,8 +585,10 @@ class IsolatedFile(object):
     """
     logging.debug('IsolatedFile.load(%s)' % self.obj_hash)
     assert not self._is_parsed
-    self.data = load_isolated(content)
-    self.children = [IsolatedFile(i) for i in self.data.get('includes', [])]
+    self.data = load_isolated(content, get_flavor(), self.algo)
+    self.children = [
+      IsolatedFile(i, self.algo) for i in self.data.get('includes', [])
+    ]
     self._is_parsed = True
 
   def fetch_files(self, cache, files):
@@ -626,7 +627,7 @@ class Settings(object):
     # The main .isolated file, a IsolatedFile instance.
     self.root = None
 
-  def load(self, cache, root_isolated_hash):
+  def load(self, cache, root_isolated_hash, algo):
     """Loads the .isolated and all the included .isolated asynchronously.
 
     It enables support for "included" .isolated files. They are processed in
@@ -644,7 +645,7 @@ class Settings(object):
     .isolated file earlier in the 'includes' list. So the order of the elements
     in 'includes' is important.
     """
-    self.root = IsolatedFile(root_isolated_hash)
+    self.root = IsolatedFile(root_isolated_hash, algo)
 
     # Isolated files being retrieved now: hash -> IsolatedFile instance.
     pending = {}
@@ -778,19 +779,20 @@ def run_tha_test(isolated_hash, cache_dir, retriever, policies):
   """
   settings = Settings()
   remote = isolateserver.RemoteOperation(retriever)
-  with DiskCache(cache_dir, remote, policies) as cache:
+  algo = hashlib.sha1
+  with DiskCache(cache_dir, remote, policies, algo) as cache:
     outdir = make_temp_dir('run_tha_test', cache_dir)
     try:
       # Initiate all the files download.
       with tools.Profiler('GetIsolateds'):
         # Optionally support local files.
-        if not RE_IS_SHA1.match(isolated_hash):
+        if not isolateserver.is_valid_hash(isolated_hash, algo):
           # Adds it in the cache. While not strictly necessary, this simplifies
           # the rest.
-          h = hashlib.sha1(open(isolated_hash, 'rb').read()).hexdigest()
+          h = isolateserver.hash_file(isolated_hash, algo)
           cache.add(isolated_hash, h)
           isolated_hash = h
-        settings.load(cache, isolated_hash)
+        settings.load(cache, isolated_hash, algo)
 
       if not settings.command:
         print >> sys.stderr, 'No command to run'

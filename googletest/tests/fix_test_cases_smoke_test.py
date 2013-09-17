@@ -19,6 +19,7 @@ ROOT_DIR = os.path.dirname(GOOGLETEST_DIR)
 
 sys.path.insert(0, ROOT_DIR)
 
+import isolateserver
 import run_isolated
 
 
@@ -113,31 +114,28 @@ class FixTestCases(unittest.TestCase):
     gtest_fake_pass_py = os.path.join(self.srcdir, 'gtest_fake_pass.py')
     run_isolated_zip = os.path.join(self.srcdir, 'run_isolated.zip')
     run_test_cases_py = os.path.join(self.srcdir, 'run_test_cases.py')
+    algo = hashlib.sha1
     expected_isolated = {
       u'command': [u'run_test_cases.py', u'gtest_fake_pass.py'],
       u'files': {
         u'gtest_fake_base.py': {
           u'm': 416,
-          u'h': unicode(hashlib.sha1(
-              open(gtest_fake_base_py, 'rb').read()).hexdigest()),
+          u'h': unicode(isolateserver.hash_file(gtest_fake_base_py, algo)),
           u's': os.stat(gtest_fake_base_py).st_size,
         },
         u'gtest_fake_pass.py': {
           u'm': 488,
-          u'h': unicode(hashlib.sha1(
-              open(gtest_fake_pass_py, 'rb').read()).hexdigest()),
+          u'h': unicode(isolateserver.hash_file(gtest_fake_pass_py, algo)),
           u's': os.stat(gtest_fake_pass_py).st_size,
         },
         u'run_isolated.zip': {
           u'm': 416,
-          u'h': unicode(hashlib.sha1(
-              open(run_isolated_zip, 'rb').read()).hexdigest()),
+          u'h': unicode(isolateserver.hash_file(run_isolated_zip, algo)),
           u's': os.stat(run_isolated_zip).st_size,
         },
         u'run_test_cases.py': {
           u'm': 488,
-          u'h': unicode(hashlib.sha1(
-              open(run_test_cases_py, 'rb').read()).hexdigest()),
+          u'h': unicode(isolateserver.hash_file(run_test_cases_py, algo)),
           u's': os.stat(run_test_cases_py).st_size,
         },
       },

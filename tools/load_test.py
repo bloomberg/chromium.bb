@@ -215,18 +215,19 @@ def send_and_receive(
   start = time.time()
   content = random_pool.gen(size)
   data = zlib.compress(content, 0)
-  sha1 = hashlib.sha1(content).hexdigest()
+  hash_value = hashlib.sha1(content).hexdigest()
   try:
     if not dry_run:
       # 1 Upload.
-      isolateserver.upload_file(isolate_server, namespace, data, sha1, token)
+      isolateserver.upload_file(
+          isolate_server, namespace, data, hash_value, token)
 
       # 2 Download.
       # Only count download time when not in dry run time.
       # TODO(maruel): Count the number of retries!
       start = time.time()
       net.url_read(
-          isolate_server + '/content/retrieve/%s/%s' % (namespace, sha1))
+          isolate_server + '/content/retrieve/%s/%s' % (namespace, hash_value))
     else:
       time.sleep(size / 10.)
     duration = max(0, time.time() - start)

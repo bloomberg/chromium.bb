@@ -20,10 +20,13 @@ ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
 
 import isolate
+import isolateserver
 
 
 VERBOSE = False
-SHA_1_NULL = hashlib.sha1().hexdigest()
+
+ALGO = hashlib.sha1
+HASH_NULL = ALGO().hexdigest()
 
 
 # Keep the list hard coded.
@@ -137,11 +140,6 @@ def list_files_tree(directory):
   return sorted(actual)
 
 
-def calc_sha1(filepath):
-  """Calculates the SHA-1 hash for a file."""
-  return hashlib.sha1(open(filepath, 'rb').read()).hexdigest()
-
-
 class IsolateBase(unittest.TestCase):
   def setUp(self):
     # The tests assume the current directory is the file's directory.
@@ -232,11 +230,11 @@ class IsolateModeBase(IsolateBase):
         # Upgrade the value to unicode so diffing the structure in case of
         # test failure is easier, since the basestring type must match,
         # str!=unicode.
-        v[u'h'] = unicode(calc_sha1(filepath))
+        v[u'h'] = unicode(isolateserver.hash_file(filepath, ALGO))
 
     if empty_file:
       item = files[empty_file]
-      item['h'] = unicode(SHA_1_NULL)
+      item['h'] = unicode(HASH_NULL)
       if sys.platform != 'win32':
         item['m'] = 288
       item['s'] = 0
@@ -284,7 +282,8 @@ class IsolateModeBase(IsolateBase):
     self._expected_result(args, read_only, empty_file)
     self._expected_saved_state(args, read_only, empty_file, extra_vars)
     # Also verifies run_isolated.py will be able to read it.
-    isolate.run_isolated.load_isolated(open(self.isolated, 'r').read())
+    isolate.run_isolated.load_isolated(
+        open(self.isolated, 'r').read(), None, ALGO)
 
   def _expect_no_result(self):
     self.assertFalse(os.path.exists(self.isolated))
@@ -515,7 +514,8 @@ class Isolate_archive(IsolateModeBase):
       unicode(v['h'])
       for v in self._gen_files(False, empty_file, False).itervalues()
     ]
-    expected.append(unicode(calc_sha1(self.isolated)))
+    expected.append(
+        unicode(isolateserver.hash_file(self.isolated, ALGO)))
     return expected
 
   def _expected_hash_tree(self, empty_file):
@@ -537,7 +537,9 @@ class Isolate_archive(IsolateModeBase):
 
   def test_all_items_invalid(self):
     out = self._test_all_items_invalid('archive')
-    expected = '%s  isolate_smoke_test.isolated\n' % calc_sha1(self.isolated)
+    expected = (
+        '%s  isolate_smoke_test.isolated\n' %
+        isolateserver.hash_file(self.isolated, ALGO))
     self.assertEqual(expected, out)
     self._expected_hash_tree(None)
 
@@ -557,8 +559,8 @@ class Isolate_archive(IsolateModeBase):
     tree = self._gen_expected_tree(None)
     isolated_base = self.isolated[:-len('.isolated')]
     isolated_hashes = [
-      unicode(calc_sha1(isolated_base + '.0.isolated')),
-      unicode(calc_sha1(isolated_base + '.1.isolated')),
+      unicode(isolateserver.hash_file(isolated_base + '.0.isolated', ALGO)),
+      unicode(isolateserver.hash_file(isolated_base + '.1.isolated', ALGO)),
     ]
     tree.extend(isolated_hashes)
     self.assertEqual(sorted(tree), map(unicode, self._result_tree()))
@@ -619,7 +621,7 @@ class Isolate_archive(IsolateModeBase):
         str(v['h'])
         for v in self._gen_files(False, None, False).itervalues() if 'h' in v
       ]
-      expected.append(calc_sha1(self.isolated))
+      expected.append(isolateserver.hash_file(self.isolated, ALGO))
       self.assertEqual(sorted(expected), self._result_tree())
       self._expect_results(['symlink_full.py'], None, None, None)
 
@@ -630,7 +632,7 @@ class Isolate_archive(IsolateModeBase):
         str(v['h'])
         for v in self._gen_files(False, None, False).itervalues() if 'h' in v
       ]
-      expected.append(calc_sha1(self.isolated))
+      expected.append(isolateserver.hash_file(self.isolated, ALGO))
       self.assertEqual(sorted(expected), self._result_tree())
       self._expect_results(['symlink_partial.py'], None, None, None)
 
@@ -642,7 +644,7 @@ class Isolate_archive(IsolateModeBase):
         str(v['h'])
         for v in self._gen_files(False, None, False).itervalues() if 'h' in v
       ]
-      expected.append(calc_sha1(self.isolated))
+      expected.append(isolateserver.hash_file(self.isolated, ALGO))
       self.assertEqual(sorted(expected), self._result_tree())
       self._expect_results(['symlink_outside_build_root.py'], None, None, None)
 
@@ -1035,12 +1037,16 @@ class IsolateNoOutdir(IsolateBase):
     self._execute('archive', ['--isolate', self.filename()], False)
     files = sorted([
       os.path.join(
-          'hashtable', calc_sha1(os.path.join(ROOT_DIR, 'isolate.py'))),
+          'hashtable',
+          isolateserver.hash_file(os.path.join(ROOT_DIR, 'isolate.py'), ALGO)),
       os.path.join(
           'hashtable',
-          calc_sha1(
-              os.path.join(ROOT_DIR, 'tests', 'isolate', 'touch_root.py'))),
-      os.path.join('hashtable', calc_sha1(os.path.join(self.isolated))),
+          isolateserver.hash_file(
+              os.path.join(ROOT_DIR, 'tests', 'isolate', 'touch_root.py'),
+              ALGO)),
+      os.path.join(
+          'hashtable',
+          isolateserver.hash_file(os.path.join(self.isolated), ALGO)),
       'isolate_smoke_test.isolated',
       'isolate_smoke_test.isolated.state',
       os.path.join('root', 'tests', 'isolate', 'touch_root.isolate'),

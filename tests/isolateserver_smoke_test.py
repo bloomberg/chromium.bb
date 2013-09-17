@@ -4,6 +4,7 @@
 # found in the LICENSE file.
 
 import binascii
+import hashlib
 import logging
 import os
 import subprocess
@@ -54,7 +55,7 @@ class IsolateServerArchiveSmokeTest(unittest.TestCase):
 
     # Try to download the files from the server.
     file_hashes = [
-        isolateserver.sha1_file(os.path.join(TEST_DATA_DIR, f))
+        isolateserver.hash_file(os.path.join(TEST_DATA_DIR, f), hashlib.sha1)
         for f in files
     ]
     for i in range(len(files)):

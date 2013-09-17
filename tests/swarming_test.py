@@ -3,6 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import hashlib
 import json
 import logging
 import os
@@ -20,6 +21,7 @@ import swarming
 from utils import net
 
 
+ALGO = hashlib.sha1
 FILE_NAME = u'test.isolated'
 FILE_HASH = u'1' * 40
 TEST_NAME = u'unit_tests'
@@ -489,7 +491,8 @@ class ManifestTest(auto_stub.TestCase):
         isolate_server='http://localhost:8081',
         verbose=False,
         profile=False,
-        priority=101)
+        priority=101,
+        algo=ALGO)
 
     swarming.chromium_setup(manifest)
     manifest_json = json.loads(manifest.to_json())
@@ -516,7 +519,8 @@ class ManifestTest(auto_stub.TestCase):
         isolate_server='http://localhost:8081',
         verbose=False,
         profile=False,
-        priority=101)
+        priority=101,
+        algo=ALGO)
 
     swarming.chromium_setup(manifest)
     manifest_json = json.loads(manifest.to_json())
@@ -540,7 +544,8 @@ class ManifestTest(auto_stub.TestCase):
         isolate_server='http://localhost:8081',
         verbose=False,
         profile=True,
-        priority=101)
+        priority=101,
+        algo=ALGO)
 
     swarming.chromium_setup(manifest)
     manifest_json = json.loads(manifest.to_json())
@@ -557,7 +562,7 @@ class ManifestTest(auto_stub.TestCase):
     self.mock(swarming.net, 'url_open', MockUrlOpenNoZip)
 
     result = swarming.process_manifest(
-        file_sha1_or_isolated=FILE_HASH,
+        file_hash_or_isolated=FILE_HASH,
         test_name=TEST_NAME,
         shards=1,
         test_filter='*',
@@ -567,7 +572,8 @@ class ManifestTest(auto_stub.TestCase):
         swarming='http://localhost:8082',
         verbose=False,
         profile=False,
-        priority=101)
+        priority=101,
+        algo=ALGO)
     self.assertEqual(0, result)
 
     # Just assert it printed enough, since it contains variable output.
@@ -582,7 +588,7 @@ class ManifestTest(auto_stub.TestCase):
     self.mock(swarming.net, 'url_open', MockUrlOpenHasZip)
 
     result = swarming.process_manifest(
-        file_sha1_or_isolated=FILE_HASH,
+        file_hash_or_isolated=FILE_HASH,
         test_name=TEST_NAME,
         shards=1,
         test_filter='*',
@@ -592,7 +598,8 @@ class ManifestTest(auto_stub.TestCase):
         swarming='http://localhost:8082',
         verbose=False,
         profile=False,
-        priority=101)
+        priority=101,
+        algo=ALGO)
     self.assertEqual(0, result)
 
     # Just assert it printed enough, since it contains variable output.

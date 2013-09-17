@@ -12,7 +12,6 @@ import hashlib
 import json
 import logging
 import os
-import re
 import shutil
 import subprocess
 import sys
@@ -28,6 +27,7 @@ from utils import threading_utils
 from utils import tools
 from utils import zip_package
 
+import isolateserver
 import run_isolated
 
 
@@ -70,7 +70,7 @@ class Manifest(object):
   """
   def __init__(
       self, manifest_hash, test_name, shards, test_filter, slave_os,
-      working_dir, isolate_server, verbose, profile, priority):
+      working_dir, isolate_server, verbose, profile, priority, algo):
     """Populates a manifest object.
       Args:
         manifest_hash - The manifest's sha-1 that the slave is going to fetch.
@@ -82,7 +82,8 @@ class Manifest(object):
         isolate_server - isolate server url.
         verbose - if True, have the slave print more details.
         profile - if True, have the slave print more timing data.
-        priority - int between 0 and 1000, lower the higher priority
+        priority - int between 0 and 1000, lower the higher priority.
+        algo - hashing algorithm used.
     """
     self.manifest_hash = manifest_hash
     self.bundle = zip_package.ZipPackage(ROOT_DIR)
@@ -102,6 +103,7 @@ class Manifest(object):
     self.verbose = bool(verbose)
     self.profile = bool(profile)
     self.priority = priority
+    self._algo = algo
 
     self._zip_file_hash = ''
     self._tasks = []
@@ -138,7 +140,7 @@ class Manifest(object):
 
     start_time = time.time()
     zip_contents = self.bundle.zip_into_buffer()
-    self._zip_file_hash = hashlib.sha1(zip_contents).hexdigest()
+    self._zip_file_hash = self._algo(zip_contents).hexdigest()
     print 'Zipping completed, time elapsed: %f' % (time.time() - start_time)
 
     response = net.url_open(
@@ -332,7 +334,7 @@ def chromium_setup(manifest):
   manifest.add_task('Clean Up', ['python', cleanup_script_name])
 
 
-def archive(isolated, isolate_server, verbose):
+def archive(isolated, isolate_server, algo, verbose):
   """Archives a .isolated and all the dependencies on the CAC."""
   tempdir = None
   try:
@@ -349,34 +351,34 @@ def archive(isolated, isolate_server, verbose):
     logging.info(' '.join(cmd))
     if subprocess.call(cmd, verbose):
       return
-    return hashlib.sha1(open(isolated, 'rb').read()).hexdigest()
+    return isolateserver.hash_file(isolated, algo)
   finally:
     if tempdir:
       shutil.rmtree(tempdir)
 
 
 def process_manifest(
-    file_sha1_or_isolated, test_name, shards, test_filter, slave_os,
-    working_dir, isolate_server, swarming, verbose, profile, priority):
+    file_hash_or_isolated, test_name, shards, test_filter, slave_os,
+    working_dir, isolate_server, swarming, verbose, profile, priority, algo):
   """Process the manifest file and send off the swarm test request.
 
   Optionally archives an .isolated file.
   """
-  if file_sha1_or_isolated.endswith('.isolated'):
-    file_sha1 = archive(file_sha1_or_isolated, isolate_server, verbose)
-    if not file_sha1:
-      print >> sys.stderr, 'Archival failure %s' % file_sha1_or_isolated
+  if file_hash_or_isolated.endswith('.isolated'):
+    file_hash = archive(file_hash_or_isolated, isolate_server, algo, verbose)
+    if not file_hash:
+      print >> sys.stderr, 'Archival failure %s' % file_hash_or_isolated
       return 1
-  elif re.match(r'^[a-f0-9]{40}$', file_sha1_or_isolated):
-    file_sha1 = file_sha1_or_isolated
+  elif isolateserver.is_valid_hash(file_hash_or_isolated, algo):
+    file_hash = file_hash_or_isolated
   else:
-    print >> sys.stderr, 'Invalid hash %s' % file_sha1_or_isolated
+    print >> sys.stderr, 'Invalid hash %s' % file_hash_or_isolated
     return 1
 
   try:
     manifest = Manifest(
-        file_sha1, test_name, shards, test_filter, slave_os,
-        working_dir, isolate_server, verbose, profile, priority)
+        file_hash, test_name, shards, test_filter, slave_os,
+        working_dir, isolate_server, verbose, profile, priority, algo)
   except ValueError as e:
     print >> sys.stderr, 'Unable to process %s: %s' % (test_name, e)
     return 1
@@ -421,11 +423,11 @@ def trigger(
     priority):
   """Sends off the hash swarming test requests."""
   highest_exit_code = 0
-  for (file_sha1, test_name, shards, testfilter) in tasks:
+  for (file_hash, test_name, shards, testfilter) in tasks:
     # TODO(maruel): It should first create a request manifest object, then pass
     # it to a function to zip, archive and trigger.
     exit_code = process_manifest(
-        file_sha1,
+        file_hash,
         task_prefix + test_name,
         int(shards),
         testfilter,
@@ -435,7 +437,8 @@ def trigger(
         swarming,
         verbose,
         profile,
-        priority)
+        priority,
+        hashlib.sha1)
     highest_exit_code = max(highest_exit_code, exit_code)
   return highest_exit_code
 
@@ -549,7 +552,7 @@ def CMDcollect(parser, args):
     parser.error(e.args[0])
 
 
-@subcommand.usage('[sha1|isolated ...]')
+@subcommand.usage('[hash|isolated ...]')
 def CMDrun(parser, args):
   """Triggers a job and wait for the results.
 
@@ -560,7 +563,7 @@ def CMDrun(parser, args):
   options, args = parser.parse_args(args)
 
   if not args:
-    parser.error('Must pass at least one .isolated file or its sha1.')
+    parser.error('Must pass at least one .isolated file or its hash (sha1).')
   process_trigger_options(parser, options)
 
   success = []
@@ -607,9 +610,9 @@ def CMDrun(parser, args):
 def CMDtrigger(parser, args):
   """Triggers Swarm request(s).
 
-  Accepts one or multiple --task requests, with either the sha1 of a .isolated
-  file already uploaded or the path to an .isolated file to archive, packages it
-  if needed and sends a Swarm manifest file to the Swarm server.
+  Accepts one or multiple --task requests, with either the hash (sha1) of a
+  .isolated file already uploaded or the path to an .isolated file to archive,
+  packages it if needed and sends a Swarm manifest file to the Swarm server.
   """
   add_trigger_options(parser)
   parser.add_option(

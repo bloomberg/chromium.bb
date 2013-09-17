@@ -22,13 +22,15 @@ import isolate
 from isolate import KEY_TOUCHED, KEY_TRACKED, KEY_UNTRACKED
 
 
+ALGO = hashlib.sha1
+
+
 def _size(*args):
   return os.stat(os.path.join(ROOT_DIR, *args)).st_size
 
 
-def _sha1(*args):
-  with open(os.path.join(ROOT_DIR, *args), 'rb') as f:
-    return hashlib.sha1(f.read()).hexdigest()
+def hash_file(*args):
+  return isolate.isolateserver.hash_file(os.path.join(ROOT_DIR, *args), ALGO)
 
 
 class IsolateBase(auto_stub.TestCase):
@@ -1004,7 +1006,8 @@ class IsolateTest(IsolateBase):
       os.mkdir(subdir)
       linkdir = os.path.join(self.cwd, 'linkdir')
       os.symlink('subDir', linkdir)
-      actual = isolate.process_input(unicode(linkdir.upper()), {}, True, 'mac')
+      actual = isolate.process_input(
+          unicode(linkdir.upper()), {}, True, 'mac', ALGO)
       expected = {'l': u'subdir', 'm': 360, 't': int(os.stat(linkdir).st_mtime)}
       self.assertEqual(expected, actual)
 
@@ -1024,14 +1027,14 @@ class IsolateTest(IsolateBase):
       os.symlink('linkedDir1', subsymlinkdir)
 
       actual = isolate.process_input(
-          unicode(subsymlinkdir.upper()), {}, True, 'mac')
+          unicode(subsymlinkdir.upper()), {}, True, 'mac', ALGO)
       expected = {
         'l': u'linkeddir1', 'm': 360, 't': int(os.stat(subsymlinkdir).st_mtime),
       }
       self.assertEqual(expected, actual)
 
       actual = isolate.process_input(
-          unicode(linkeddir1.upper()), {}, True, 'mac')
+          unicode(linkeddir1.upper()), {}, True, 'mac', ALGO)
       expected = {
         'l': u'../linkeddir2', 'm': 360, 't': int(os.stat(linkeddir1).st_mtime),
       }
@@ -1134,12 +1137,12 @@ class IsolateLoad(IsolateBase):
       'files': {
         os.path.join(u'tests', 'isolate', 'touch_root.py'): {
           'm': 488,
-          'h': _sha1('tests', 'isolate', 'touch_root.py'),
+          'h': hash_file('tests', 'isolate', 'touch_root.py'),
           's': _size('tests', 'isolate', 'touch_root.py'),
         },
         'isolate.py': {
           'm': 488,
-          'h': _sha1('isolate.py'),
+          'h': hash_file('isolate.py'),
           's': _size('isolate.py'),
         },
       },
@@ -1155,12 +1158,12 @@ class IsolateLoad(IsolateBase):
       'files': {
         os.path.join(u'tests', 'isolate', 'touch_root.py'): {
           'm': 488,
-          'h': _sha1('tests', 'isolate', 'touch_root.py'),
+          'h': hash_file('tests', 'isolate', 'touch_root.py'),
           's': _size('tests', 'isolate', 'touch_root.py'),
         },
         u'isolate.py': {
           'm': 488,
-          'h': _sha1('isolate.py'),
+          'h': hash_file('isolate.py'),
           's': _size('isolate.py'),
         },
       },
@@ -1196,7 +1199,7 @@ class IsolateLoad(IsolateBase):
       'files': {
         os.path.join('tests', 'isolate', 'touch_root.py'): {
           'm': 488,
-          'h': _sha1('tests', 'isolate', 'touch_root.py'),
+          'h': hash_file('tests', 'isolate', 'touch_root.py'),
           's': _size('tests', 'isolate', 'touch_root.py'),
         },
       },
@@ -1212,7 +1215,7 @@ class IsolateLoad(IsolateBase):
       'files': {
         os.path.join(u'tests', 'isolate', 'touch_root.py'): {
           'm': 488,
-          'h': _sha1('tests', 'isolate', 'touch_root.py'),
+          'h': hash_file('tests', 'isolate', 'touch_root.py'),
           's': _size('tests', 'isolate', 'touch_root.py'),
         },
       },
@@ -1231,7 +1234,7 @@ class IsolateLoad(IsolateBase):
     self.assertEqual(expected_saved_state, actual_saved_state)
 
   def test_subdir_variable(self):
-    # The resulting .isolated file will be missing ../../isolate.py. It is
+    # the resulting .isolated file will be missing ../../isolate.py. it is
     # because this file is outside the --subdir parameter.
     isolate_file = os.path.join(
         ROOT_DIR, 'tests', 'isolate', 'touch_root.isolate')
@@ -1249,12 +1252,12 @@ class IsolateLoad(IsolateBase):
       'files': {
         os.path.join('tests', 'isolate', 'touch_root.py'): {
           'm': 488,
-          'h': _sha1('tests', 'isolate', 'touch_root.py'),
+          'h': hash_file('tests', 'isolate', 'touch_root.py'),
           's': _size('tests', 'isolate', 'touch_root.py'),
         },
       },
       'os': isolate.get_flavor(),
-      'relative_cwd': os.path.join('tests', 'isolate'),
+      'relative_cwd': os.path.join(u'tests', 'isolate'),
     }
     self._cleanup_isolated(expected_isolated)
     self.assertEqual(expected_isolated, actual_isolated)
@@ -1265,7 +1268,7 @@ class IsolateLoad(IsolateBase):
       'files': {
         os.path.join(u'tests', 'isolate', 'touch_root.py'): {
           'm': 488,
-          'h': _sha1('tests', 'isolate', 'touch_root.py'),
+          'h': hash_file('tests', 'isolate', 'touch_root.py'),
           's': _size('tests', 'isolate', 'touch_root.py'),
         },
       },
@@ -1315,12 +1318,12 @@ class IsolateLoad(IsolateBase):
       'files': {
         'isolate.py': {
           'm': 488,
-          'h': _sha1('isolate.py'),
+          'h': hash_file('isolate.py'),
           's': _size('isolate.py'),
         },
         os.path.join('tests', 'isolate', 'touch_root.py'): {
           'm': 488,
-          'h': _sha1('tests', 'isolate', 'touch_root.py'),
+          'h': hash_file('tests', 'isolate', 'touch_root.py'),
           's': _size('tests', 'isolate', 'touch_root.py'),
         },
       },
@@ -1336,12 +1339,12 @@ class IsolateLoad(IsolateBase):
       'files': {
         u'isolate.py': {
           'm': 488,
-          'h': _sha1('isolate.py'),
+          'h': hash_file('isolate.py'),
           's': _size('isolate.py'),
         },
         os.path.join(u'tests', 'isolate', 'touch_root.py'): {
           'm': 488,
-          'h': _sha1('tests', 'isolate', 'touch_root.py'),
+          'h': hash_file('tests', 'isolate', 'touch_root.py'),
           's': _size('tests', 'isolate', 'touch_root.py'),
         },
       },
@@ -1386,22 +1389,22 @@ class IsolateLoad(IsolateBase):
       'files': {
         os.path.join(u'tests', 'isolate', 'files1', 'subdir', '42.txt'): {
           'm': 416,
-          'h': _sha1('tests', 'isolate', 'files1', 'subdir', '42.txt'),
+          'h': hash_file('tests', 'isolate', 'files1', 'subdir', '42.txt'),
           's': _size('tests', 'isolate', 'files1', 'subdir', '42.txt'),
         },
         os.path.join(u'tests', 'isolate', 'files1', 'test_file1.txt'): {
           'm': 416,
-          'h': _sha1('tests', 'isolate', 'files1', 'test_file1.txt'),
+          'h': hash_file('tests', 'isolate', 'files1', 'test_file1.txt'),
           's': _size('tests', 'isolate', 'files1', 'test_file1.txt'),
         },
         os.path.join(u'tests', 'isolate', 'files1', 'test_file2.txt'): {
           'm': 416,
-          'h': _sha1('tests', 'isolate', 'files1', 'test_file2.txt'),
+          'h': hash_file('tests', 'isolate', 'files1', 'test_file2.txt'),
           's': _size('tests', 'isolate', 'files1', 'test_file2.txt'),
         },
         os.path.join(u'tests', 'isolate', 'no_run.isolate'): {
           'm': 416,
-          'h': _sha1('tests', 'isolate', 'no_run.isolate'),
+          'h': hash_file('tests', 'isolate', 'no_run.isolate'),
           's': _size('tests', 'isolate', 'no_run.isolate'),
         },
       },
@@ -1417,22 +1420,22 @@ class IsolateLoad(IsolateBase):
       'files': {
         os.path.join(u'tests', 'isolate', 'files1', 'subdir', '42.txt'): {
           'm': 416,
-          'h': _sha1('tests', 'isolate', 'files1', 'subdir', '42.txt'),
+          'h': hash_file('tests', 'isolate', 'files1', 'subdir', '42.txt'),
           's': _size('tests', 'isolate', 'files1', 'subdir', '42.txt'),
         },
         os.path.join(u'tests', 'isolate', 'files1', 'test_file1.txt'): {
           'm': 416,
-          'h': _sha1('tests', 'isolate', 'files1', 'test_file1.txt'),
+          'h': hash_file('tests', 'isolate', 'files1', 'test_file1.txt'),
           's': _size('tests', 'isolate', 'files1', 'test_file1.txt'),
         },
         os.path.join(u'tests', 'isolate', 'files1', 'test_file2.txt'): {
           'm': 416,
-          'h': _sha1('tests', 'isolate', 'files1', 'test_file2.txt'),
+          'h': hash_file('tests', 'isolate', 'files1', 'test_file2.txt'),
           's': _size('tests', 'isolate', 'files1', 'test_file2.txt'),
         },
         os.path.join(u'tests', 'isolate', 'no_run.isolate'): {
           'm': 416,
-          'h': _sha1('tests', 'isolate', 'no_run.isolate'),
+          'h': hash_file('tests', 'isolate', 'no_run.isolate'),
           's': _size('tests', 'isolate', 'no_run.isolate'),
         },
       },
@@ -1474,13 +1477,13 @@ class IsolateLoad(IsolateBase):
       u'files': {
         u'split.py': {
           u'm': 488,
-          u'h': unicode(_sha1('tests', 'isolate', 'split.py')),
+          u'h': unicode(hash_file('tests', 'isolate', 'split.py')),
           u's': _size('tests', 'isolate', 'split.py'),
         },
       },
       u'includes': [
-        unicode(_sha1(os.path.join(self.directory, 'foo.0.isolated'))),
-        unicode(_sha1(os.path.join(self.directory, 'foo.1.isolated'))),
+        unicode(hash_file(os.path.join(self.directory, 'foo.0.isolated'))),
+        unicode(hash_file(os.path.join(self.directory, 'foo.1.isolated'))),
       ],
       u'os': unicode(isolate.get_flavor()),
       u'relative_cwd': u'.',
@@ -1494,7 +1497,8 @@ class IsolateLoad(IsolateBase):
       u'files': {
         os.path.join(u'test', 'data', 'foo.txt'): {
           u'm': 416,
-          u'h': unicode(_sha1('tests', 'isolate', 'test', 'data', 'foo.txt')),
+          u'h': unicode(
+              hash_file('tests', 'isolate', 'test', 'data', 'foo.txt')),
           u's': _size('tests', 'isolate', 'test', 'data', 'foo.txt'),
         },
       },
@@ -1510,7 +1514,7 @@ class IsolateLoad(IsolateBase):
         os.path.join(u'files1', 'subdir', '42.txt'): {
           u'm': 416,
           u'h': unicode(
-              _sha1('tests', 'isolate', 'files1', 'subdir', '42.txt')),
+              hash_file('tests', 'isolate', 'files1', 'subdir', '42.txt')),
           u's': _size('tests', 'isolate', 'files1', 'subdir', '42.txt'),
         },
       },
@@ -1532,17 +1536,18 @@ class IsolateLoad(IsolateBase):
         os.path.join(u'files1', 'subdir', '42.txt'): {
           u'm': 416,
           u'h': unicode(
-            _sha1('tests', 'isolate', 'files1', 'subdir', '42.txt')),
+              hash_file('tests', 'isolate', 'files1', 'subdir', '42.txt')),
           u's': _size('tests', 'isolate', 'files1', 'subdir', '42.txt'),
         },
         u'split.py': {
           u'm': 488,
-          u'h': unicode(_sha1('tests', 'isolate', 'split.py')),
+          u'h': unicode(hash_file('tests', 'isolate', 'split.py')),
           u's': _size('tests', 'isolate', 'split.py'),
         },
         os.path.join(u'test', 'data', 'foo.txt'): {
           u'm': 416,
-          u'h': unicode(_sha1('tests', 'isolate', 'test', 'data', 'foo.txt')),
+          u'h': unicode(
+              hash_file('tests', 'isolate', 'test', 'data', 'foo.txt')),
           u's': _size('tests', 'isolate', 'test', 'data', 'foo.txt'),
         },
       },
@@ -1622,7 +1627,7 @@ class IsolateCommand(IsolateBase):
           (
             f,
             {
-              'h': _sha1('tests', 'isolate', f),
+              'h': hash_file('tests', 'isolate', f),
               's': _size('tests', 'isolate', f),
             }
           )

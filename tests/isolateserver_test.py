@@ -23,6 +23,9 @@ import auto_stub
 import isolateserver
 
 
+ALGO = hashlib.sha1
+
+
 class TestCase(auto_stub.TestCase):
   def setUp(self):
     super(TestCase, self).setUp()
@@ -65,14 +68,14 @@ class IsolateServerArchiveTest(TestCase):
       os.path.join(BASE_PATH, 'isolateserver', f)
       for f in ('small_file.txt', 'empty_file.txt')
     ]
-    sha1encoded = ''.join(
-        binascii.unhexlify(isolateserver.sha1_file(f)) for f in files)
+    hash_encoded = ''.join(
+        binascii.unhexlify(isolateserver.hash_file(f, ALGO)) for f in files)
     path = 'http://random/'
     self._requests = [
       (path + 'content/get_token', {}, 'foo bar'),
       (
         path + 'content/contains/default-gzip?token=foo%20bar',
-        {'data': sha1encoded, 'content_type': 'application/octet-stream'},
+        {'data': hash_encoded, 'content_type': 'application/octet-stream'},
         '\1\1',
       ),
     ]
@@ -84,8 +87,8 @@ class IsolateServerArchiveTest(TestCase):
       os.path.join(BASE_PATH, 'isolateserver', f)
       for f in ('small_file.txt', 'empty_file.txt')
     ]
-    sha1s = map(isolateserver.sha1_file, files)
-    sha1encoded = ''.join(map(binascii.unhexlify, sha1s))
+    hashes = [isolateserver.hash_file(f, ALGO) for f in files]
+    hash_encoded = ''.join(map(binascii.unhexlify, hashes))
     compressed = [
         zlib.compress(
             open(f, 'rb').read(),
@@ -97,16 +100,16 @@ class IsolateServerArchiveTest(TestCase):
       (path + 'content/get_token', {}, 'foo bar'),
       (
         path + 'content/contains/default-gzip?token=foo%20bar',
-        {'data': sha1encoded, 'content_type': 'application/octet-stream'},
+        {'data': hash_encoded, 'content_type': 'application/octet-stream'},
         '\0\0',
       ),
       (
-        path + 'content/store/default-gzip/%s?token=foo%%20bar' % sha1s[0],
+        path + 'content/store/default-gzip/%s?token=foo%%20bar' % hashes[0],
         {'data': compressed[0], 'content_type': 'application/octet-stream'},
         'ok',
       ),
       (
-        path + 'content/store/default-gzip/%s?token=foo%%20bar' % sha1s[1],
+        path + 'content/store/default-gzip/%s?token=foo%%20bar' % hashes[1],
         {'data': compressed[1], 'content_type': 'application/octet-stream'},
         'ok',
       ),
@@ -125,7 +128,7 @@ class IsolateServerArchiveTest(TestCase):
       compressed = zlib.compress(
           content, isolateserver.compression_level('foo.txt'))
 
-    s = hashlib.sha1(content).hexdigest()
+    s = ALGO(content).hexdigest()
     infiles = {
       'foo.txt': {
         's': len(content),
@@ -133,7 +136,7 @@ class IsolateServerArchiveTest(TestCase):
       },
     }
     path = 'http://random/'
-    sha1encoded = binascii.unhexlify(s)
+    hash_encoded = binascii.unhexlify(s)
     content_type, body = isolateserver.encode_multipart_formdata(
                 [('token', 'foo bar')], [('content', s, compressed)])
 
@@ -141,7 +144,7 @@ class IsolateServerArchiveTest(TestCase):
       (path + 'content/get_token', {}, 'foo bar'),
       (
         path + 'content/contains/default-gzip?token=foo%20bar',
-        {'data': sha1encoded, 'content_type': 'application/octet-stream'},
+        {'data': hash_encoded, 'content_type': 'application/octet-stream'},
         '\0',
       ),
       (
@@ -157,7 +160,7 @@ class IsolateServerArchiveTest(TestCase):
     ]
 
     self.mock(isolateserver, 'read_and_compress', lambda x, y: compressed)
-    result = isolateserver.upload_sha1_tree(
+    result = isolateserver.upload_tree(
           base_url=path,
           indir=os.getcwd(),
           infiles=infiles,
@@ -209,7 +212,7 @@ class IsolateServerArchiveTest(TestCase):
 
   def test_upload_blobstore_simple(self):
     content = 'blob_content'
-    s = hashlib.sha1(content).hexdigest()
+    s = ALGO(content).hexdigest()
     path = 'http://example.com:80/'
     data = [('token', 'foo bar')]
     content_type, body = isolateserver.encode_multipart_formdata(
@@ -232,7 +235,7 @@ class IsolateServerArchiveTest(TestCase):
 
   def test_upload_blobstore_retry_500(self):
     content = 'blob_content'
-    s = hashlib.sha1(content).hexdigest()
+    s = ALGO(content).hexdigest()
     path = 'http://example.com:80/'
     data = [('token', 'foo bar')]
     content_type, body = isolateserver.encode_multipart_formdata(

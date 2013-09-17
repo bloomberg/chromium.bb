@@ -15,10 +15,12 @@ import unittest
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
 
-# Imported for the rmtree and get_as_zip_package functions.
+import isolateserver
 import run_isolated
 
 VERBOSE = False
+
+ALGO = hashlib.sha1
 
 
 class CalledProcessError(subprocess.CalledProcessError):
@@ -45,11 +47,6 @@ def list_files_tree(directory):
   for root, _dirs, files in os.walk(directory):
     actual.extend(os.path.join(root, f)[len(directory)+1:] for f in files)
   return sorted(actual)
-
-
-def calc_sha1(filepath):
-  """Calculates the SHA-1 hash for a file."""
-  return hashlib.sha1(open(filepath, 'rb').read()).hexdigest()
 
 
 def write_content(filepath, content):
@@ -106,9 +103,9 @@ class RunSwarmStep(unittest.TestCase):
   def _store_result(self, result_data):
     """Stores a .isolated file in the hash table."""
     result_text = json.dumps(result_data, sort_keys=True, indent=2)
-    result_sha1 = hashlib.sha1(result_text).hexdigest()
-    write_content(os.path.join(self.table, result_sha1), result_text)
-    return result_sha1
+    result_hash = ALGO(result_text).hexdigest()
+    write_content(os.path.join(self.table, result_hash), result_text)
+    return result_hash
 
   def _store(self, filename):
     """Stores a test data file in the table.
@@ -116,7 +113,7 @@ class RunSwarmStep(unittest.TestCase):
     Returns its sha-1 hash.
     """
     filepath = os.path.join(self.data_dir, filename)
-    h = calc_sha1(filepath)
+    h = isolateserver.hash_file(filepath, ALGO)
     shutil.copyfile(filepath, os.path.join(self.table, h))
     return h
 
@@ -131,13 +128,13 @@ class RunSwarmStep(unittest.TestCase):
       '--isolate-server', self.table,
     ]
 
-  def _generate_args_with_sha1(self, sha1_hash):
-    """Generates the standard arguments used with sha1_hash as the hash.
+  def _generate_args_with_hash(self, hash_value):
+    """Generates the standard arguments used with |hash_value| as the hash.
 
     Returns a list of the required arguments.
     """
     return [
-      '--hash', sha1_hash,
+      '--hash', hash_value,
       '--cache', self.cache,
       '--isolate-server', self.table,
     ]
@@ -150,7 +147,7 @@ class RunSwarmStep(unittest.TestCase):
       self._store('file1.txt'),
       self._store('file1_copy.txt'),
       self._store('repeated_files.py'),
-      calc_sha1(isolated),
+      isolateserver.hash_file(isolated, ALGO),
     ]
     out, err, returncode = self._run(
         self._generate_args_with_isolated(isolated))
@@ -162,16 +159,16 @@ class RunSwarmStep(unittest.TestCase):
 
   def test_hash(self):
     # Loads the .isolated from the store as a hash.
-    result_sha1 = self._store('repeated_files.isolated')
+    result_hash = self._store('repeated_files.isolated')
     expected = [
       'state.json',
       self._store('file1.txt'),
       self._store('file1_copy.txt'),
       self._store('repeated_files.py'),
-      result_sha1,
+      result_hash,
     ]
 
-    out, err, returncode = self._run(self._generate_args_with_sha1(result_sha1))
+    out, err, returncode = self._run(self._generate_args_with_hash(result_hash))
     if not VERBOSE:
       self.assertEqual('', err)
       self.assertEqual('Success\n', out, out)
@@ -180,12 +177,12 @@ class RunSwarmStep(unittest.TestCase):
     self.assertEqual(sorted(set(expected)), actual)
 
   def test_fail_empty_isolated(self):
-    result_sha1 = self._store_result({})
+    result_hash = self._store_result({})
     expected = [
       'state.json',
-      result_sha1,
+      result_hash,
     ]
-    out, err, returncode = self._run(self._generate_args_with_sha1(result_sha1))
+    out, err, returncode = self._run(self._generate_args_with_hash(result_hash))
     if not VERBOSE:
       self.assertEqual('', out)
       self.assertEqual('No command to run\n', err)
@@ -198,7 +195,7 @@ class RunSwarmStep(unittest.TestCase):
 
     # References manifest2.isolated and repeated_files.isolated. Maps file3.txt
     # as file2.txt.
-    result_sha1 = self._store('check_files.isolated')
+    result_hash = self._store('check_files.isolated')
     expected = [
       'state.json',
       self._store('check_files.py'),
@@ -208,11 +205,11 @@ class RunSwarmStep(unittest.TestCase):
       self._store('manifest1.isolated'),
       # References manifest1.isolated. Maps file2.txt but it is overriden.
       self._store('manifest2.isolated'),
-      result_sha1,
+      result_hash,
       self._store('repeated_files.py'),
       self._store('repeated_files.isolated'),
     ]
-    out, err, returncode = self._run(self._generate_args_with_sha1(result_sha1))
+    out, err, returncode = self._run(self._generate_args_with_hash(result_hash))
     if not VERBOSE:
       self.assertEqual('', err)
       self.assertEqual('Success\n', out)
@@ -223,15 +220,15 @@ class RunSwarmStep(unittest.TestCase):
   def test_link_all_hash_instances(self):
     # Load an isolated file with the same file (same sha-1 hash), listed under
     # two different names and ensure both are created.
-    result_sha1 = self._store('repeated_files.isolated')
+    result_hash = self._store('repeated_files.isolated')
     expected = [
         'state.json',
-        result_sha1,
+        result_hash,
         self._store('file1.txt'),
         self._store('repeated_files.py')
     ]
 
-    out, err, returncode = self._run(self._generate_args_with_sha1(result_sha1))
+    out, err, returncode = self._run(self._generate_args_with_hash(result_hash))
     if not VERBOSE:
       self.assertEqual('', err)
       self.assertEqual('Success\n', out)
@@ -241,7 +238,7 @@ class RunSwarmStep(unittest.TestCase):
 
   def test_delete_invalid_cache_entry(self):
     isolated_file = os.path.join(self.data_dir, 'file_with_size.isolated')
-    file1_sha1 = self._store('file1.txt')
+    file1_hash = self._store('file1.txt')
 
     # Run the test once to generate the cache.
     out, err, returncode = self._run(self._generate_args_with_isolated(
@@ -252,7 +249,7 @@ class RunSwarmStep(unittest.TestCase):
     self.assertEqual(0, returncode)
 
     # Modify one of the files in the cache to be invalid.
-    cached_file_path = os.path.join(self.cache, file1_sha1)
+    cached_file_path = os.path.join(self.cache, file1_hash)
     with open(cached_file_path, 'w') as f:
       f.write('invalid size')
     logging.info('Modified %s', cached_file_path)

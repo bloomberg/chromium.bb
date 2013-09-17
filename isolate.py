@@ -338,7 +338,7 @@ def expand_directories_and_symlinks(indir, infiles, blacklist,
   return outfiles
 
 
-def recreate_tree(outdir, indir, infiles, action, as_sha1):
+def recreate_tree(outdir, indir, infiles, action, as_hash):
   """Creates a new tree with only the input files in it.
 
   Arguments:
@@ -346,11 +346,11 @@ def recreate_tree(outdir, indir, infiles, action, as_sha1):
     indir:     Root directory the infiles are based in.
     infiles:   dict of files to map from |indir| to |outdir|.
     action:    One of accepted action of run_isolated.link_file().
-    as_sha1:   Output filename is the sha1 instead of relfile.
+    as_hash:   Output filename is the hash instead of relfile.
   """
   logging.info(
-      'recreate_tree(outdir=%s, indir=%s, files=%d, action=%s, as_sha1=%s)' %
-      (outdir, indir, len(infiles), action, as_sha1))
+      'recreate_tree(outdir=%s, indir=%s, files=%d, action=%s, as_hash=%s)' %
+      (outdir, indir, len(infiles), action, as_hash))
 
   assert os.path.isabs(outdir) and outdir == os.path.normpath(outdir), outdir
   if not os.path.isdir(outdir):
@@ -359,7 +359,7 @@ def recreate_tree(outdir, indir, infiles, action, as_sha1):
 
   for relfile, metadata in infiles.iteritems():
     infile = os.path.join(indir, relfile)
-    if as_sha1:
+    if as_hash:
       # Do the hashtable specific checks.
       if 'l' in metadata:
         # Skip links when storing a hashtable.
@@ -394,7 +394,7 @@ def recreate_tree(outdir, indir, infiles, action, as_sha1):
       run_isolated.link_file(outfile, infile, action)
 
 
-def process_input(filepath, prevdict, read_only, flavor):
+def process_input(filepath, prevdict, read_only, flavor, algo):
   """Processes an input file, a dependency, and return meta data about it.
 
   Arguments:
@@ -405,6 +405,7 @@ def process_input(filepath, prevdict, read_only, flavor):
                one of 4 modes: 0755 (rwx), 0644 (rw), 0555 (rx), 0444 (r). On
                windows, mode is not set since all files are 'executable' by
                default.
+  - algo:      Hashing algorithm used.
 
   Behaviors:
   - Retrieves the file mode, file size, file timestamp, file link
@@ -418,7 +419,7 @@ def process_input(filepath, prevdict, read_only, flavor):
   #   if get_flavor() != 'win':
   #     out['m'] = stat.S_IRUSR | stat.S_IRGRP
   #   out['s'] = 0
-  #   out['h'] = SHA_1_NULL
+  #   out['h'] = algo().hexdigest()
   #   out['T'] = True
   #   return out
 
@@ -462,7 +463,7 @@ def process_input(filepath, prevdict, read_only, flavor):
       # Reuse the previous hash if available.
       out['h'] = prevdict.get('h')
     if not out.get('h'):
-      out['h'] = isolateserver.sha1_file(filepath)
+      out['h'] = isolateserver.hash_file(filepath, algo)
   else:
     # If the timestamp wasn't updated, carry on the link destination.
     if prevdict.get('t') == out['t']:
@@ -1384,7 +1385,7 @@ def save_isolated(isolated, data):
   return []
 
 
-def chromium_save_isolated(isolated, data, variables):
+def chromium_save_isolated(isolated, data, variables, algo):
   """Writes one or many .isolated files.
 
   This slightly increases the cold cache cost but greatly reduce the warm cache
@@ -1412,7 +1413,8 @@ def chromium_save_isolated(isolated, data, variables):
   for index, f in enumerate(slaves):
     slavepath = isolated[:-len('.isolated')] + '.%d.isolated' % index
     trace_inputs.write_json(slavepath, f, True)
-    data.setdefault('includes', []).append(isolateserver.sha1_file(slavepath))
+    data.setdefault('includes', []).append(
+        isolateserver.hash_file(slavepath, algo))
     files.append(os.path.basename(slavepath))
 
   files.extend(save_isolated(isolated, data))
@@ -1479,7 +1481,7 @@ class SavedState(Flattenable):
     # files are never loaded by isolate.py so it's the only way to load the
     # command safely.
     'command',
-    # Cache of the files found so the next run can skip sha1 calculation.
+    # Cache of the files found so the next run can skip hash calculation.
     'files',
     # Path of the original .isolate file. Relative path to isolated_basedir.
     'isolate_file',
@@ -1535,7 +1537,7 @@ class SavedState(Flattenable):
   def update_isolated(self, command, infiles, touched, read_only, relative_cwd):
     """Updates the saved state with data necessary to generate a .isolated file.
 
-    The new files in |infiles| are added to self.files dict but their sha1 is
+    The new files in |infiles| are added to self.files dict but their hash is
     not calculated here.
     """
     self.command = command
@@ -1623,6 +1625,7 @@ class CompleteState(object):
     # Contains the data to ease developer's use-case but that is not strictly
     # necessary.
     self.saved_state = saved_state
+    self.algo = hashlib.sha1
 
   @classmethod
   def load_files(cls, isolated_filepath):
@@ -1732,7 +1735,8 @@ class CompleteState(object):
             filepath,
             self.saved_state.files[infile],
             self.saved_state.read_only,
-            self.saved_state.variables['OS'])
+            self.saved_state.variables['OS'],
+            self.algo)
 
   def save_files(self):
     """Saves self.saved_state and creates a .isolated file."""
@@ -1740,7 +1744,8 @@ class CompleteState(object):
     self.saved_state.child_isolated_files = chromium_save_isolated(
         self.isolated_filepath,
         self.saved_state.to_isolated(),
-        self.saved_state.variables)
+        self.saved_state.variables,
+        self.algo)
     total_bytes = sum(
         i.get('s', 0) for i in self.saved_state.files.itervalues())
     if total_bytes:
@@ -1957,7 +1962,7 @@ def CMDarchive(parser, args):
       for item in isolated_files:
         item_path = os.path.join(
             os.path.dirname(complete_state.isolated_filepath), item)
-        # Do not use isolateserver.sha1_file() here because the file is
+        # Do not use isolateserver.hash_file() here because the file is
         # likely smallish (under 500kb) and its file size is needed.
         with open(item_path, 'rb') as f:
           content = f.read()
@@ -1973,7 +1978,7 @@ def CMDarchive(parser, args):
                    len(infiles))
 
       if is_url(options.outdir):
-        isolateserver.upload_sha1_tree(
+        isolateserver.upload_tree(
             base_url=options.outdir,
             indir=complete_state.root_dir,
             infiles=infiles,
@@ -1984,7 +1989,7 @@ def CMDarchive(parser, args):
             indir=complete_state.root_dir,
             infiles=infiles,
             action=run_isolated.HARDLINK_WITH_FALLBACK,
-            as_sha1=True)
+            as_hash=True)
       success = True
       print('%s  %s' % (isolated_hash[0], os.path.basename(options.isolated)))
     finally:
@@ -2039,7 +2044,7 @@ def CMDread(parser, args):
   add_trace_option(parser)
   parser.add_option(
       '--skip-refresh', action='store_true',
-      help='Skip reading .isolate file and do not refresh the sha1 of '
+      help='Skip reading .isolate file and do not refresh the hash of '
            'dependencies')
   parser.add_option(
       '-m', '--merge', action='store_true',
@@ -2094,7 +2099,7 @@ def CMDremap(parser, args):
       indir=complete_state.root_dir,
       infiles=complete_state.saved_state.files,
       action=run_isolated.HARDLINK_WITH_FALLBACK,
-      as_sha1=False)
+      as_hash=False)
   if complete_state.saved_state.read_only:
     run_isolated.make_writable(options.outdir, True)
 
@@ -2147,7 +2152,7 @@ def CMDrun(parser, args):
   parser.require_isolated = False
   parser.add_option(
       '--skip-refresh', action='store_true',
-      help='Skip reading .isolate file and do not refresh the sha1 of '
+      help='Skip reading .isolate file and do not refresh the hash of '
            'dependencies')
   options, args = parser.parse_args(args)
   if options.outdir and is_url(options.outdir):
@@ -2174,7 +2179,7 @@ def CMDrun(parser, args):
         indir=root_dir,
         infiles=complete_state.saved_state.files,
         action=run_isolated.HARDLINK_WITH_FALLBACK,
-        as_sha1=False)
+        as_hash=False)
     cwd = os.path.normpath(
         os.path.join(options.outdir, complete_state.saved_state.relative_cwd))
     if not os.path.isdir(cwd):
@@ -2214,7 +2219,7 @@ def CMDtrace(parser, args):
       help='After tracing, merge the results back in the .isolate file')
   parser.add_option(
       '--skip-refresh', action='store_true',
-      help='Skip reading .isolate file and do not refresh the sha1 of '
+      help='Skip reading .isolate file and do not refresh the hash of '
            'dependencies')
   options, args = parser.parse_args(args)
 
