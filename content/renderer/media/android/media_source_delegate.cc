@@ -498,7 +498,7 @@ void MediaSourceDelegate::InitAudioDecryptingDemuxerStream() {
   DCHECK(!set_decryptor_ready_cb_.is_null());
 
   audio_decrypting_demuxer_stream_.reset(new media::DecryptingDemuxerStream(
-      base::MessageLoopProxy::current(), set_decryptor_ready_cb_));
+      media_loop_, set_decryptor_ready_cb_));
   audio_decrypting_demuxer_stream_->Initialize(
       audio_stream_,
       base::Bind(&MediaSourceDelegate::OnAudioDecryptingDemuxerStreamInitDone,
@@ -511,7 +511,7 @@ void MediaSourceDelegate::InitVideoDecryptingDemuxerStream() {
   DCHECK(!set_decryptor_ready_cb_.is_null());
 
   video_decrypting_demuxer_stream_.reset(new media::DecryptingDemuxerStream(
-      base::MessageLoopProxy::current(), set_decryptor_ready_cb_));
+      media_loop_, set_decryptor_ready_cb_));
   video_decrypting_demuxer_stream_->Initialize(
       video_stream_,
       base::Bind(&MediaSourceDelegate::OnVideoDecryptingDemuxerStreamInitDone,
