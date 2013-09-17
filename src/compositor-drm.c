@@ -1215,7 +1215,7 @@ init_drm(struct drm_compositor *ec, struct udev_device *device)
 	}
 
 	filename = udev_device_get_devnode(device);
-	fd = open(filename, O_RDWR | O_CLOEXEC);
+	fd = weston_launcher_open(&ec->base, filename, O_RDWR);
 	if (fd < 0) {
 		/* Probably permissions error */
 		weston_log("couldn't open %s, skipping\n",

@@ -58,6 +58,8 @@
 
 #include "weston-launch.h"
 
+#define DRM_MAJOR 226
+
 #define MAX_ARGV_SIZE 256
 
 struct weston_launch {
@@ -313,10 +315,11 @@ handle_open(struct weston_launch *wl, struct msghdr *msg, ssize_t len)
 		goto err0;
 	}
 
-	if (major(s.st_rdev) != INPUT_MAJOR) {
+	if (major(s.st_rdev) != INPUT_MAJOR &&
+	    major(s.st_rdev) != DRM_MAJOR) {
 		close(fd);
 		fd = -1;
-		fprintf(stderr, "Device %s is not an input device\n",
+		fprintf(stderr, "Device %s is not an input or drm device\n",
 			message->path);
 		goto err0;
 	}
