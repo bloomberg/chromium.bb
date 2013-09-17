@@ -212,6 +212,22 @@ void WebContentsObserverAndroid::DidChangeVisibleSSLState() {
   Java_WebContentsObserverAndroid_didChangeVisibleSSLState(env, obj.obj());
 }
 
+void WebContentsObserverAndroid::DidAttachInterstitialPage() {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj(weak_java_observer_.get(env));
+  if (obj.is_null())
+    return;
+  Java_WebContentsObserverAndroid_didAttachInterstitialPage(env, obj.obj());
+}
+
+void WebContentsObserverAndroid::DidDetachInterstitialPage() {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj(weak_java_observer_.get(env));
+  if (obj.is_null())
+    return;
+  Java_WebContentsObserverAndroid_didDetachInterstitialPage(env, obj.obj());
+}
+
 void WebContentsObserverAndroid::DidFailLoadInternal(
     bool is_provisional_load,
     bool is_main_frame,

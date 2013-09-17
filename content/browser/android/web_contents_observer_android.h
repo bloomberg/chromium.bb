@@ -70,6 +70,8 @@ class WebContentsObserverAndroid : public WebContentsObserver {
                              RenderViewHost* render_view_host) OVERRIDE;
   virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE;
   virtual void DidChangeVisibleSSLState() OVERRIDE;
+  virtual void DidAttachInterstitialPage() OVERRIDE;
+  virtual void DidDetachInterstitialPage() OVERRIDE;
 
   void DidFailLoadInternal(bool is_provisional_load,
                            bool is_main_frame,

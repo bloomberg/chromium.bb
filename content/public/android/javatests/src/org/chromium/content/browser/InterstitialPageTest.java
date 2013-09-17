@@ -18,6 +18,7 @@ import org.chromium.content_shell_apk.ContentShellTestBase;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Tests for interstitial pages.
@@ -26,6 +27,33 @@ public class InterstitialPageTest extends ContentShellTestBase {
 
     private static final String URL = UrlUtils.encodeHtmlDataUri(
             "<html><head></head><body>test</body></html>");
+
+    private static class TestWebContentsObserverAndroid extends WebContentsObserverAndroid {
+        private boolean mInterstitialShowing;
+
+        public TestWebContentsObserverAndroid(ContentViewCore contentViewCore) {
+            super(contentViewCore);
+        }
+
+        public boolean isInterstitialShowing() throws ExecutionException {
+            return ThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
+                @Override
+                public Boolean call() throws Exception {
+                    return mInterstitialShowing;
+                }
+            }).booleanValue();
+        }
+
+        @Override
+        public void didAttachInterstitialPage() {
+            mInterstitialShowing = true;
+        }
+
+        @Override
+        public void didDetachInterstitialPage() {
+            mInterstitialShowing = false;
+        }
+    }
 
     @Override
     protected void setUp() throws Exception {
@@ -63,7 +91,7 @@ public class InterstitialPageTest extends ContentShellTestBase {
      */
     @LargeTest
     @Feature({"Navigation"})
-    public void testCloseInterstitial() throws InterruptedException {
+    public void testCloseInterstitial() throws InterruptedException, ExecutionException {
         final String proceedCommand = "PROCEED";
         final String htmlContent =
                 "<html>" +
@@ -88,15 +116,22 @@ public class InterstitialPageTest extends ContentShellTestBase {
                 proceed();
             }
         };
-        UiUtils.runOnUiThread(getActivity(), new Runnable() {
-            @Override
-            public void run() {
-                getActiveContentViewCore().showInterstitialPage(URL, delegate);
-            }
-        });
+        TestWebContentsObserverAndroid observer = ThreadUtils.runOnUiThreadBlocking(
+                new Callable<TestWebContentsObserverAndroid>() {
+                    @Override
+                    public TestWebContentsObserverAndroid call() throws Exception {
+                        getActiveContentViewCore().showInterstitialPage(URL, delegate);
+                        return new TestWebContentsObserverAndroid(getActiveContentViewCore());
+                    }
+                });
+
         assertTrue("Interstitial never shown.", waitForInterstitial(true));
+        assertTrue("WebContentsObserver not notified of interstitial showing",
+                observer.isInterstitialShowing());
         TouchCommon touchCommon = new TouchCommon(this);
         touchCommon.singleClickViewRelative(getActivity().getActiveContentView(), 10, 10);
         assertTrue("Interstitial never hidden.", waitForInterstitial(false));
+        assertTrue("WebContentsObserver not notified of interstitial hiding",
+                !observer.isInterstitialShowing());
     }
 }

@@ -23,7 +23,7 @@ public class TestShellTab extends TabBase {
     private CleanupReference mCleanupReference;
 
     // Tab state
-    private boolean mIsLoading = false;
+    private boolean mIsLoading;
 
     /**
      * @param context  The Context the view is running in.
