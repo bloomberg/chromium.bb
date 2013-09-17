@@ -136,6 +136,10 @@ JavaScriptDialogManager* WebContentsDelegate::GetJavaScriptDialogManager() {
   return NULL;
 }
 
+bool WebContentsDelegate::EmbedsFullscreenWidget() const {
+  return false;
+}
+
 bool WebContentsDelegate::IsFullscreenForTabOrPending(
     const WebContents* web_contents) const {
   return false;

@@ -7,6 +7,10 @@
 
 #include <Cocoa/Cocoa.h>
 
+#include "base/memory/scoped_ptr.h"
+
+class FullscreenObserver;
+
 namespace content {
 class WebContents;
 }
@@ -21,11 +25,20 @@ class WebContents;
 @interface TabContentsController : NSViewController {
  @private
    content::WebContents* contents_;  // weak
+   // When |fullscreenObserver_| not-NULL, TabContentsController monitors for
+   // and auto-embeds fullscreen widgets as a subview.
+   scoped_ptr<FullscreenObserver> fullscreenObserver_;
+   // Set to true while TabContentsController is embedding a fullscreen widget
+   // view as a subview instead of the normal WebContentsView render view.
+   BOOL isEmbeddingFullscreenWidget_;
 }
 @property(readonly, nonatomic) content::WebContents* webContents;
 
-// Create the contents of a tab represented by |contents|.
-- (id)initWithContents:(content::WebContents*)contents;
+// Create the contents of a tab represented by |contents|.  When
+// |enableEmbeddedFullscreen| is true, the WebContents view will automatically
+// be swapped with a fullscreen render widget owned by the current WebContents.
+- (id)initWithContents:(content::WebContents*)contents
+    andAutoEmbedFullscreen:(BOOL)enableEmbeddedFullscreen;
 
 // Call when the tab contents is about to be replaced with the currently
 // selected tab contents to do not trigger unnecessary content relayout.
@@ -53,6 +66,10 @@ class WebContents;
 // notification from the model isn't specific). |updatedContents| could reflect
 // an entirely new tab contents object.
 - (void)tabDidChange:(content::WebContents*)updatedContents;
+
+// Called to switch the container's subview to the WebContents-owned fullscreen
+// widget or back to WebContentsView's widget.
+- (void)toggleFullscreenWidget:(BOOL)enterFullscreen;
 
 @end
 

@@ -48,7 +48,8 @@ FullscreenController::FullscreenController(Browser* browser)
       toggled_into_fullscreen_(false),
       mouse_lock_tab_(NULL),
       mouse_lock_state_(MOUSELOCK_NOT_REQUESTED),
-      reentrant_window_state_change_call_check_(false) {
+      reentrant_window_state_change_call_check_(false),
+      is_privileged_fullscreen_for_testing_(false) {
   DCHECK(window_);
   DCHECK(profile_);
 }
@@ -235,7 +236,8 @@ void FullscreenController::RequestToLockMouse(WebContents* web_contents,
     case CONTENT_SETTING_ALLOW:
       // If bubble already displaying buttons we must not lock the mouse yet,
       // or it would prevent pressing those buttons. Instead, merge the request.
-      if (fullscreen_bubble::ShowButtonsForType(bubble_type)) {
+      if (!IsPrivilegedFullscreenForTab() &&
+          fullscreen_bubble::ShowButtonsForType(bubble_type)) {
         mouse_lock_state_ = MOUSELOCK_REQUESTED;
       } else {
         // Lock mouse.
@@ -511,9 +513,8 @@ void FullscreenController::NotifyTabOfExitIfNecessary() {
     if (IsMouseLockRequested()) {
       mouse_lock_tab_->GotResponseToLockMouseRequest(false);
       NotifyMouseLockChange();
-    } else if (mouse_lock_tab_->GetRenderViewHost() &&
-               mouse_lock_tab_->GetRenderViewHost()->GetView()) {
-      mouse_lock_tab_->GetRenderViewHost()->GetView()->UnlockMouse();
+    } else {
+      UnlockMouse();
     }
     SetMouseLockTab(NULL);
     mouse_lock_state_ = MOUSELOCK_NOT_REQUESTED;
@@ -529,7 +530,6 @@ void FullscreenController::NotifyMouseLockChange() {
       content::NotificationService::NoDetails());
 }
 
-// TODO(koz): Change |for_tab| to an enum.
 void FullscreenController::ToggleFullscreenModeInternal(
     FullscreenInternalOption option) {
 #if defined(OS_WIN)
@@ -644,20 +644,15 @@ void FullscreenController::UpdateFullscreenExitBubbleContent() {
   FullscreenExitBubbleType bubble_type = GetFullscreenExitBubbleType();
 
   // If bubble displays buttons, unlock mouse to allow pressing them.
-  if (fullscreen_bubble::ShowButtonsForType(bubble_type) &&
-      IsMouseLocked() &&
-      mouse_lock_tab_ &&
-      mouse_lock_tab_->GetRenderViewHost() &&
-      mouse_lock_tab_->GetRenderViewHost()->GetView()) {
-    mouse_lock_tab_->GetRenderViewHost()->GetView()->UnlockMouse();
-  }
+  if (fullscreen_bubble::ShowButtonsForType(bubble_type) && IsMouseLocked())
+    UnlockMouse();
 
   window_->UpdateFullscreenExitBubbleContent(url, bubble_type);
 }
 
 ContentSetting
 FullscreenController::GetFullscreenSetting(const GURL& url) const {
-  if (url.SchemeIsFile())
+  if (IsPrivilegedFullscreenForTab() || url.SchemeIsFile())
     return CONTENT_SETTING_ALLOW;
 
   return profile_->GetHostContentSettingsMap()->GetContentSetting(url, url,
@@ -666,10 +661,39 @@ FullscreenController::GetFullscreenSetting(const GURL& url) const {
 
 ContentSetting
 FullscreenController::GetMouseLockSetting(const GURL& url) const {
-  if (url.SchemeIsFile())
+  if (IsPrivilegedFullscreenForTab() || url.SchemeIsFile())
     return CONTENT_SETTING_ALLOW;
 
   HostContentSettingsMap* settings_map = profile_->GetHostContentSettingsMap();
   return settings_map->GetContentSetting(url, url,
       CONTENT_SETTINGS_TYPE_MOUSELOCK, std::string());
+}
+
+bool FullscreenController::IsPrivilegedFullscreenForTab() const {
+  const bool embedded_widget_present =
+      fullscreened_tab_ &&
+      fullscreened_tab_->GetFullscreenRenderWidgetHostView() &&
+      implicit_cast<const content::WebContentsDelegate*>(browser_)->
+          EmbedsFullscreenWidget();
+  return embedded_widget_present || is_privileged_fullscreen_for_testing_;
+}
+
+void FullscreenController::SetPrivilegedFullscreenForTesting(
+    bool is_privileged) {
+  is_privileged_fullscreen_for_testing_ = is_privileged;
+}
+
+void FullscreenController::UnlockMouse() {
+  if (!mouse_lock_tab_)
+    return;
+  content::RenderWidgetHostView* mouse_lock_view =
+      (fullscreened_tab_ == mouse_lock_tab_ && IsPrivilegedFullscreenForTab()) ?
+      mouse_lock_tab_->GetFullscreenRenderWidgetHostView() : NULL;
+  if (!mouse_lock_view) {
+    RenderViewHost* const rvh = mouse_lock_tab_->GetRenderViewHost();
+    if (rvh)
+      mouse_lock_view = rvh->GetView();
+  }
+  if (mouse_lock_view)
+    mouse_lock_view->UnlockMouse();
 }

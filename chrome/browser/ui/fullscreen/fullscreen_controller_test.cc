@@ -98,3 +98,7 @@ void FullscreenControllerTest::Reload() {
   observer.Wait();
 }
 
+void FullscreenControllerTest::SetPrivilegedFullscreen(bool is_privileged) {
+  browser()->fullscreen_controller()->
+      SetPrivilegedFullscreenForTesting(is_privileged);
+}

@@ -514,6 +514,14 @@ const char kDnsLogDetails[]                 = "dns-log-details";
 // Disables prefetching of DNS information.
 const char kDnsPrefetchDisable[]            = "dns-prefetch-disable";
 
+// If set, Flash fullscreen widgets are embedded within the browser window and
+// with the same UX as HTML5 fullscreen.
+//
+// TODO(miu): This feature is a work in-progress.  It should not be enabled by
+// default until going through a formal UX review, and all comments/concerns on
+// the crbug are addressed.  http://crbug.com/290403
+const char kEmbedFlashFullscreen[] = "embed-flash-fullscreen";
+
 // Enables the <adview> tag in packaged apps.
 const char kEnableAdview[]                  = "enable-adview";
 

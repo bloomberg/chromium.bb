@@ -1363,6 +1363,8 @@ void RenderViewHostImpl::OnContextMenu(const ContextMenuParams& params) {
 void RenderViewHostImpl::OnToggleFullscreen(bool enter_fullscreen) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   delegate_->ToggleFullscreenMode(enter_fullscreen);
+  // We need to notify the contents that its fullscreen state has changed. This
+  // is done as part of the resize message.
   WasResized();
 }
 
@@ -1782,9 +1784,8 @@ void RenderViewHostImpl::SetAltErrorPageURL(const GURL& url) {
 
 void RenderViewHostImpl::ExitFullscreen() {
   RejectMouseLockOrUnlockIfNecessary();
-  // We need to notify the contents that its fullscreen state has changed. This
-  // is done as part of the resize message.
-  WasResized();
+  // Notify delegate_ and renderer of fullscreen state change.
+  OnToggleFullscreen(false);
 }
 
 WebPreferences RenderViewHostImpl::GetWebkitPreferences() {

@@ -196,7 +196,11 @@ class WebContents : public PageNavigator,
 
   // Returns the currently active RenderWidgetHostView. This may change over
   // time and can be NULL (during setup and teardown).
-  virtual content::RenderWidgetHostView* GetRenderWidgetHostView() const = 0;
+  virtual RenderWidgetHostView* GetRenderWidgetHostView() const = 0;
+
+  // Returns the currently active fullscreen widget. If there is none, returns
+  // NULL.
+  virtual RenderWidgetHostView* GetFullscreenRenderWidgetHostView() const = 0;
 
   // The WebContentsView will never change and is guaranteed non-NULL.
   virtual WebContentsView* GetView() const = 0;

@@ -22,14 +22,18 @@ class WebContents;
 }
 
 // There are two different kinds of fullscreen mode - "tab fullscreen" and
-// "browser fullscreen". "Tab fullscreen" refers to when a tab enters
-// fullscreen mode via the JS fullscreen API, and "browser fullscreen" refers
-// to the user putting the browser itself into fullscreen mode from the UI. The
-// difference is that tab fullscreen has implications for how the contents of
-// the tab render (eg: a video element may grow to consume the whole tab),
-// whereas browser fullscreen mode doesn't. Therefore if a user forces an exit
-// from tab fullscreen, we need to notify the tab so it can stop rendering in
-// its fullscreen mode.
+// "browser fullscreen". "Tab fullscreen" refers to a renderer-initiated
+// fullscreen mode (eg: from a Flash plugin or via the JS fullscreen API),
+// whereas "browser fullscreen" refers to the user putting the browser itself
+// into fullscreen mode from the UI. The difference is that tab fullscreen has
+// implications for how the contents of the tab render (eg: a video element may
+// grow to consume the whole tab), whereas browser fullscreen mode doesn't.
+// Therefore if a user forces an exit from tab fullscreen, we need to notify the
+// tab so it can stop rendering in its fullscreen mode.
+//
+// For Flash, FullscreenController will auto-accept all permission requests for
+// fullscreen and/or mouse lock, since the assumption is that the plugin handles
+// this for us.
 
 // This class implements fullscreen and mouselock behaviour.
 class FullscreenController : public content::NotificationObserver {
@@ -45,7 +49,7 @@ class FullscreenController : public content::NotificationObserver {
 
   void ToggleFullscreenMode();
 
-  // Tab/HTML Fullscreen ///////////////////////////////////////////////////////
+  // Tab/HTML/Flash Fullscreen /////////////////////////////////////////////////
 
   // Returns true if fullscreen has been caused by a tab.
   // The window may still be transitioning, and window_->IsFullscreen()
@@ -122,6 +126,8 @@ class FullscreenController : public content::NotificationObserver {
   FullscreenExitBubbleType GetFullscreenExitBubbleType() const;
 
  private:
+  friend class FullscreenControllerTest;
+
   enum MouseLockState {
     MOUSELOCK_NOT_REQUESTED,
     // The page requests to lock the mouse and the user hasn't responded to the
@@ -165,11 +171,15 @@ class FullscreenController : public content::NotificationObserver {
   ContentSetting GetFullscreenSetting(const GURL& url) const;
   ContentSetting GetMouseLockSetting(const GURL& url) const;
 
+  bool IsPrivilegedFullscreenForTab() const;
+  void SetPrivilegedFullscreenForTesting(bool is_privileged);
+  void UnlockMouse();
+
   base::WeakPtrFactory<FullscreenController> ptr_factory_;
 
-  Browser* browser_;
-  BrowserWindow* window_;
-  Profile* profile_;
+  Browser* const browser_;
+  BrowserWindow* const window_;
+  Profile* const profile_;
 
   // If there is currently a tab in fullscreen mode (entered via
   // webkitRequestFullScreen), this is its WebContents.
@@ -208,6 +218,10 @@ class FullscreenController : public content::NotificationObserver {
   // Used to verify that calls we expect to reenter by calling
   // WindowFullscreenStateChanged do so.
   bool reentrant_window_state_change_call_check_;
+
+  // Used in testing to confirm proper behavior for specific, privileged
+  // fullscreen cases.
+  bool is_privileged_fullscreen_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(FullscreenController);
 };

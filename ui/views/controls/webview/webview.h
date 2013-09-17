@@ -10,6 +10,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "ui/views/accessibility/native_view_accessibility.h"
 #include "ui/views/controls/webview/webview_export.h"
 #include "ui/views/view.h"
@@ -24,7 +25,8 @@ class NativeViewHost;
 
 class WEBVIEW_EXPORT WebView : public View,
                                public content::NotificationObserver,
-                               public content::WebContentsDelegate {
+                               public content::WebContentsDelegate,
+                               public content::WebContentsObserver {
  public:
   static const char kViewClassName[];
 
@@ -42,6 +44,12 @@ class WEBVIEW_EXPORT WebView : public View,
   // WebView does not assume ownership of WebContents set via this method, only
   // those it implicitly creates via GetWebContents() above.
   void SetWebContents(content::WebContents* web_contents);
+
+  // If |mode| is true, WebView will register itself with WebContents as a
+  // WebContentsObserver, monitor for the showing/destruction of fullscreen
+  // render widgets, and alter its child view hierarchy to embed the fullscreen
+  // widget or restore the normal WebContentsView.
+  void SetEmbedFullscreenWidgetMode(bool mode);
 
   content::WebContents* web_contents() { return web_contents_; }
 
@@ -103,13 +111,19 @@ class WEBVIEW_EXPORT WebView : public View,
 
   // Overridden from content::WebContentsDelegate:
   virtual void WebContentsFocused(content::WebContents* web_contents) OVERRIDE;
+  virtual bool EmbedsFullscreenWidget() const OVERRIDE;
+
+  // Overridden from content::WebContentsObserver:
+  virtual void DidShowFullscreenWidget(int routing_id) OVERRIDE;
+  virtual void DidDestroyFullscreenWidget(int routing_id) OVERRIDE;
+  // Workaround for MSVC++ linker bug/feature that requires
+  // instantiation of the inline IPC::Listener methods in all translation units.
+  virtual void OnChannelConnected(int32 peer_id) OVERRIDE {}
+  virtual void OnChannelError() OVERRIDE {}
 
   void AttachWebContents();
   void DetachWebContents();
-
-  void RenderViewHostChanged(content::RenderViewHost* old_host,
-                             content::RenderViewHost* new_host);
-  void WebContentsDestroyed(content::WebContents* web_contents);
+  void ReattachForFullscreenChange(bool enter_fullscreen);
 
   // Create a regular or test web contents (based on whether we're running
   // in a unit test or not).
@@ -120,6 +134,12 @@ class WEBVIEW_EXPORT WebView : public View,
   NativeViewHost* wcv_holder_;
   scoped_ptr<content::WebContents> wc_owner_;
   content::WebContents* web_contents_;
+  // When true, WebView observes WebContents and auto-embeds fullscreen widgets
+  // as a child view.
+  bool embed_fullscreen_widget_mode_enabled_;
+  // Set to true while WebView is embedding a fullscreen widget view as a child
+  // view instead of the normal WebContentsView render view.
+  bool is_embedding_fullscreen_widget_;
   content::BrowserContext* browser_context_;
   content::NotificationRegistrar registrar_;
   bool allow_accelerators_;

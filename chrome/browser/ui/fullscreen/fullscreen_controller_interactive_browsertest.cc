@@ -625,6 +625,35 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
   ASSERT_FALSE(IsFullscreenPermissionRequested());
 }
 
+// Tests mouse lock and fullscreen for the privileged fullscreen case (e.g.,
+// embedded flash fullscreen, since the Flash plugin handles user permissions
+// requests itself).
+IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
+                       PrivilegedMouseLockAndFullscreen) {
+  ASSERT_TRUE(test_server()->Start());
+  ui_test_utils::NavigateToURL(browser(),
+                               test_server()->GetURL(kFullscreenMouseLockHTML));
+
+  ASSERT_FALSE(IsFullscreenBubbleDisplayed());
+
+  SetPrivilegedFullscreen(true);
+
+  // Request to lock the mouse and enter fullscreen.
+  FullscreenNotificationObserver fullscreen_observer;
+  ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
+      browser(), ui::VKEY_B, false, true, false, false,
+      chrome::NOTIFICATION_MOUSE_LOCK_CHANGED,
+      content::NotificationService::AllSources()));
+  fullscreen_observer.Wait();
+
+  // Confirm they are enabled and there is no prompt.
+  ASSERT_TRUE(IsFullscreenBubbleDisplayed());
+  ASSERT_FALSE(IsFullscreenPermissionRequested());
+  ASSERT_FALSE(IsMouseLockPermissionRequested());
+  ASSERT_TRUE(IsMouseLocked());
+  ASSERT_TRUE(IsFullscreenForTabOrPending());
+}
+
 // Tests mouse lock can be exited and re-entered by an application silently
 // with no UI distraction for users.
 IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,

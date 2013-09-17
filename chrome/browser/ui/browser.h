@@ -620,6 +620,7 @@ class Browser : public TabStripModelObserver,
   virtual void EnumerateDirectory(content::WebContents* web_contents,
                                   int request_id,
                                   const base::FilePath& path) OVERRIDE;
+  virtual bool EmbedsFullscreenWidget() const OVERRIDE;
   virtual void ToggleFullscreenModeForTab(content::WebContents* web_contents,
       bool enter_fullscreen) OVERRIDE;
   virtual bool IsFullscreenForTabOrPending(

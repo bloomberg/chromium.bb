@@ -348,6 +348,12 @@ class CONTENT_EXPORT WebContentsDelegate {
                                   int request_id,
                                   const base::FilePath& path) {}
 
+  // Returns true if the delegate will embed a WebContents-owned fullscreen
+  // render widget.  In this case, the delegate may access the widget by calling
+  // WebContents::GetFullscreenRenderWidgetHostView().  If false is returned,
+  // WebContents will be responsible for showing the fullscreen widget.
+  virtual bool EmbedsFullscreenWidget() const;
+
   // Called when the renderer puts a tab into or out of fullscreen mode.
   virtual void ToggleFullscreenModeForTab(WebContents* web_contents,
                                           bool enter_fullscreen) {}

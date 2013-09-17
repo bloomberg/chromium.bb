@@ -11,16 +11,55 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_view.h"
 
 using content::WebContents;
+using content::WebContentsObserver;
+
+// FullscreenObserver is used by TabContentsController to monitor for the
+// showing/destruction of fullscreen render widgets.  When notified,
+// TabContentsController will alter its child view hierarchy to either embed a
+// fullscreen render widget view or restore the normal WebContentsView render
+// view.  The embedded fullscreen render widget will fill the user's screen in
+// the case where TabContentsController's NSView is a subview of a browser
+// window that has been toggled into fullscreen mode (e.g., via
+// FullscreenController).
+class FullscreenObserver : public WebContentsObserver {
+ public:
+  explicit FullscreenObserver(TabContentsController* controller)
+      : controller_(controller) {}
+
+  void Observe(content::WebContents* new_web_contents) {
+    WebContentsObserver::Observe(new_web_contents);
+  }
+
+  virtual void DidShowFullscreenWidget(int routing_id) OVERRIDE {
+    [controller_ toggleFullscreenWidget:YES];
+  }
+
+  virtual void DidDestroyFullscreenWidget(int routing_id) OVERRIDE {
+    [controller_ toggleFullscreenWidget:NO];
+  }
+
+ private:
+  TabContentsController* const controller_;
+
+  DISALLOW_COPY_AND_ASSIGN(FullscreenObserver);
+};
 
 @implementation TabContentsController
 @synthesize webContents = contents_;
 
-- (id)initWithContents:(WebContents*)contents {
+- (id)initWithContents:(WebContents*)contents
+    andAutoEmbedFullscreen:(BOOL)enableEmbeddedFullscreen {
   if ((self = [super initWithNibName:nil bundle:nil])) {
     contents_ = contents;
+    if (enableEmbeddedFullscreen) {
+      fullscreenObserver_.reset(new FullscreenObserver(self));
+      fullscreenObserver_->Observe(contents_);
+    }
+    isEmbeddingFullscreenWidget_ = NO;
   }
   return self;
 }
@@ -40,10 +79,8 @@ using content::WebContents;
 - (void)ensureContentsSizeDoesNotChange {
   NSView* contentsContainer = [self view];
   NSArray* subviews = [contentsContainer subviews];
-  if ([subviews count] > 0) {
-    [contents_->GetView()->GetNativeView()
-        setAutoresizingMask:NSViewNotSizable];
-  }
+  if ([subviews count] > 0)
+    [[subviews objectAtIndex:0] setAutoresizingMask:NSViewNotSizable];
 }
 
 // Call when the tab view is properly sized and the render widget host view
@@ -53,7 +90,16 @@ using content::WebContents;
     return;
   NSView* contentsContainer = [self view];
   NSArray* subviews = [contentsContainer subviews];
-  NSView* contentsNativeView = contents_->GetView()->GetNativeView();
+  NSView* contentsNativeView;
+  content::RenderWidgetHostView* const fullscreenView =
+      isEmbeddingFullscreenWidget_ ?
+      contents_->GetFullscreenRenderWidgetHostView() : NULL;
+  if (fullscreenView) {
+    contentsNativeView = fullscreenView->GetNativeView();
+  } else {
+    isEmbeddingFullscreenWidget_ = NO;
+    contentsNativeView = contents_->GetView()->GetNativeView();
+  }
   [contentsNativeView setFrame:[contentsContainer frame]];
   if ([subviews count] == 0) {
     [contentsContainer addSubview:contentsNativeView];
@@ -66,11 +112,19 @@ using content::WebContents;
   // The rendering path with overlapping views disabled causes bugs when
   // transitioning between composited and non-composited mode.
   // http://crbug.com/279472
-  contents_->GetView()->SetAllowOverlappingViews(true);
+  if (!fullscreenView)
+    contents_->GetView()->SetAllowOverlappingViews(true);
 }
 
 - (void)changeWebContents:(WebContents*)newContents {
   contents_ = newContents;
+  if (fullscreenObserver_) {
+    fullscreenObserver_->Observe(contents_);
+    isEmbeddingFullscreenWidget_ =
+        contents_ && contents_->GetFullscreenRenderWidgetHostView();
+  } else {
+    isEmbeddingFullscreenWidget_ = NO;
+  }
 }
 
 // Returns YES if the tab represented by this controller is the front-most.
@@ -114,9 +168,15 @@ using content::WebContents;
   // the view may have, so avoid changing the view hierarchy unless
   // the view is different.
   if ([self webContents] != updatedContents) {
-    contents_ = updatedContents;
+    [self changeWebContents:updatedContents];
     [self ensureContentsVisible];
   }
+}
+
+- (void)toggleFullscreenWidget:(BOOL)enterFullscreen {
+  isEmbeddingFullscreenWidget_ = enterFullscreen &&
+      contents_ && contents_->GetFullscreenRenderWidgetHostView();
+  [self ensureContentsVisible];
 }
 
 @end

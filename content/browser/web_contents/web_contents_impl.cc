@@ -848,6 +848,14 @@ RenderWidgetHostViewPort* WebContentsImpl::GetRenderWidgetHostViewPort() const {
   return RenderWidgetHostViewPort::FromRWHV(GetRenderWidgetHostView());
 }
 
+RenderWidgetHostView* WebContentsImpl::GetFullscreenRenderWidgetHostView()
+    const {
+  RenderWidgetHost* const widget_host =
+      RenderWidgetHostImpl::FromID(GetRenderProcessHost()->GetID(),
+                                   GetFullscreenWidgetRoutingID());
+  return widget_host ? widget_host->GetView() : NULL;
+}
+
 WebContentsView* WebContentsImpl::GetView() const {
   return view_.get();
 }
@@ -1330,6 +1338,8 @@ void WebContentsImpl::RenderWidgetDeleted(
 
   if (render_widget_host &&
       render_widget_host->GetRoutingID() == fullscreen_widget_routing_id_) {
+    if (delegate_ && delegate_->EmbedsFullscreenWidget())
+      delegate_->ToggleFullscreenModeForTab(this, false);
     FOR_EACH_OBSERVER(WebContentsObserver,
                       observers_,
                       DidDestroyFullscreenWidget(
@@ -1407,6 +1417,13 @@ void WebContentsImpl::HandleGestureEnd() {
 }
 
 void WebContentsImpl::ToggleFullscreenMode(bool enter_fullscreen) {
+  // This method is being called to enter or leave renderer-initiated fullscreen
+  // mode.  Either way, make sure any existing fullscreen widget is shut down
+  // first.
+  RenderWidgetHostView* const widget_view = GetFullscreenRenderWidgetHostView();
+  if (widget_view)
+    RenderWidgetHostImpl::From(widget_view->GetRenderWidgetHost())->Shutdown();
+
   if (delegate_)
     delegate_->ToggleFullscreenModeForTab(this, enter_fullscreen);
 }
@@ -1603,12 +1620,6 @@ void WebContentsImpl::ShowCreatedWidget(int route_id,
 
 void WebContentsImpl::ShowCreatedFullscreenWidget(int route_id) {
   ShowCreatedWidget(route_id, true, gfx::Rect());
-
-  DCHECK_EQ(MSG_ROUTING_NONE, fullscreen_widget_routing_id_);
-  fullscreen_widget_routing_id_ = route_id;
-  FOR_EACH_OBSERVER(WebContentsObserver,
-                    observers_,
-                    DidShowFullscreenWidget(route_id));
 }
 
 void WebContentsImpl::ShowCreatedWidget(int route_id,
@@ -1621,17 +1632,35 @@ void WebContentsImpl::ShowCreatedWidget(int route_id,
       RenderWidgetHostViewPort::FromRWHV(GetCreatedWidget(route_id));
   if (!widget_host_view)
     return;
-  if (is_fullscreen)
-    widget_host_view->InitAsFullscreen(GetRenderWidgetHostViewPort());
-  else
+  bool allow_privileged = false;
+  if (is_fullscreen) {
+    if (delegate_ && delegate_->EmbedsFullscreenWidget()) {
+      widget_host_view->InitAsChild(GetRenderWidgetHostView()->GetNativeView());
+      delegate_->ToggleFullscreenModeForTab(this, true);
+    } else {
+      widget_host_view->InitAsFullscreen(GetRenderWidgetHostViewPort());
+      // Only allow privileged mouse lock for fullscreen render widget, which is
+      // used to implement Pepper Flash fullscreen.
+      allow_privileged = true;
+    }
+
+    DCHECK_EQ(MSG_ROUTING_NONE, fullscreen_widget_routing_id_);
+    fullscreen_widget_routing_id_ = route_id;
+    FOR_EACH_OBSERVER(WebContentsObserver,
+                      observers_,
+                      DidShowFullscreenWidget(route_id));
+    if (!widget_host_view->HasFocus())
+      widget_host_view->Focus();
+  } else {
     widget_host_view->InitAsPopup(GetRenderWidgetHostViewPort(), initial_pos);
+  }
 
   RenderWidgetHostImpl* render_widget_host_impl =
       RenderWidgetHostImpl::From(widget_host_view->GetRenderWidgetHost());
   render_widget_host_impl->Init();
-  // Only allow privileged mouse lock for fullscreen render widget, which is
-  // used to implement Pepper Flash fullscreen.
-  render_widget_host_impl->set_allow_privileged_mouse_lock(is_fullscreen);
+  render_widget_host_impl->set_allow_privileged_mouse_lock(allow_privileged);
+  // TODO(miu): For now, all mouse lock requests by embedded Flash fullscreen
+  // will be denied.  This is to be rectified in a soon-upcoming change.
 
 #if defined(OS_MACOSX)
   // A RenderWidgetHostViewMac has lifetime scoped to the view. Now that it's

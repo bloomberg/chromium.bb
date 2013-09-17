@@ -223,6 +223,8 @@ class CONTENT_EXPORT WebContentsImpl
   virtual int GetEmbeddedInstanceID() const OVERRIDE;
   virtual int GetRoutingID() const OVERRIDE;
   virtual RenderWidgetHostView* GetRenderWidgetHostView() const OVERRIDE;
+  virtual RenderWidgetHostView* GetFullscreenRenderWidgetHostView() const
+      OVERRIDE;
   virtual WebContentsView* GetView() const OVERRIDE;
   virtual WebUI* CreateWebUI(const GURL& url) OVERRIDE;
   virtual WebUI* GetWebUI() const OVERRIDE;

@@ -1603,6 +1603,19 @@ void Browser::EnumerateDirectory(WebContents* web_contents,
   FileSelectHelper::EnumerateDirectory(web_contents, request_id, path);
 }
 
+bool Browser::EmbedsFullscreenWidget() const {
+#if defined(TOOLKIT_GTK)
+  // TODO(miu): On GTK, the balloon widget for Tab/HTML5 fullscreen needs to be
+  // fixed before we can implement embedded fullscreen widgets.
+  // http://crbug.com/286545
+  return false;
+#else
+  // TODO(miu): Make this feature switchable in about:flags?
+  return CommandLine::ForCurrentProcess()->
+      HasSwitch(switches::kEmbedFlashFullscreen);
+#endif
+}
+
 void Browser::ToggleFullscreenModeForTab(WebContents* web_contents,
                                          bool enter_fullscreen) {
   fullscreen_controller_->ToggleFullscreenModeForTab(web_contents,
