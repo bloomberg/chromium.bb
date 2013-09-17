@@ -1574,7 +1574,12 @@ LRESULT HWNDMessageHandler::OnMouseRange(UINT message,
             delegate_->HandleMouseEvent(ui::MouseWheelEvent(msg))) ? 0 : 1;
   }
 
+  // There are cases where the code handling the message destroys the window,
+  // so use the weak ptr to check if destruction occured or not.
+  base::WeakPtr<HWNDMessageHandler> ref(weak_factory_.GetWeakPtr());
   bool handled = delegate_->HandleMouseEvent(event);
+  if (!ref.get())
+    return 0;
   if (!handled && message == WM_NCLBUTTONDOWN && w_param != HTSYSMENU &&
       delegate_->IsUsingCustomFrame()) {
     // TODO(msw): Eliminate undesired painting, or re-evaluate this workaround.
@@ -1585,7 +1590,8 @@ LRESULT HWNDMessageHandler::OnMouseRange(UINT message,
     handled = true;
   }
 
-  SetMsgHandled(handled);
+  if (ref.get())
+    SetMsgHandled(handled);
   return 0;
 }
 
