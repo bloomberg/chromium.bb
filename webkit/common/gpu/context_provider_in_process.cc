@@ -4,8 +4,11 @@
 
 #include "webkit/common/gpu/context_provider_in_process.h"
 
+#include <set>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "cc/output/managed_memory_policy.h"
 #include "webkit/common/gpu/grcontext_for_webgraphicscontext3d.h"
@@ -154,6 +157,15 @@ ContextProviderInProcess::ContextCapabilities() {
   caps.shallow_flush = true;
   caps.texture_format_bgra8888 = true;
   caps.texture_rectangle = true;
+
+  WebKit::WebString extensions =
+      context3d_->getString(0x1F03 /* GL_EXTENSIONS */);
+  std::vector<std::string> extension_list;
+  base::SplitString(extensions.utf8(), ' ', &extension_list);
+  std::set<std::string> extension_set(extension_list.begin(),
+                                      extension_list.end());
+
+  caps.post_sub_buffer = extension_set.count("GL_CHROMIUM_post_sub_buffer") > 0;
   return caps;
 }
 
