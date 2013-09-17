@@ -185,32 +185,6 @@ class AndroidPortTest(chromium_port_testcase.ChromiumPortTestCase):
         self.assertEqual(self.make_port(options=optparse.Values({'configuration': 'Release'})).default_timeout_ms(), 10000)
         self.assertEqual(self.make_port(options=optparse.Values({'configuration': 'Debug'})).default_timeout_ms(), 10000)
 
-    def test_expectations_files(self):
-        port = self.make_port()
-        port.port_name = 'chromium'
-
-        android_path = port._filesystem.join(port.layout_tests_dir(), 'platform', 'android', 'TestExpectations')
-        generic_path = port.path_to_generic_test_expectations_file()
-        chromium_overrides_path = port.path_from_chromium_base(
-            'webkit', 'tools', 'layout_tests', 'test_expectations.txt')
-        never_fix_tests_path = port._filesystem.join(port.layout_tests_dir(), 'NeverFixTests')
-        slow_tests_path = port._filesystem.join(port.layout_tests_dir(), 'SlowTests')
-        skia_overrides_path = port.path_from_chromium_base(
-            'skia', 'skia_test_expectations.txt')
-
-        port._filesystem.write_text_file(skia_overrides_path, 'dummay text')
-
-        port._options.builder_name = 'DUMMY_BUILDER_NAME'
-        self.assertEqual(port.expectations_files(), [generic_path, skia_overrides_path, never_fix_tests_path, slow_tests_path, chromium_overrides_path, android_path])
-
-        port._options.builder_name = 'builder (deps)'
-        self.assertEqual(port.expectations_files(), [generic_path, skia_overrides_path, never_fix_tests_path, slow_tests_path, chromium_overrides_path, android_path])
-
-        # A builder which does NOT observe the Chromium test_expectations,
-        # but still observes the Skia test_expectations...
-        port._options.builder_name = 'builder'
-        self.assertEqual(port.expectations_files(), [generic_path, skia_overrides_path, never_fix_tests_path, slow_tests_path, android_path])
-
 
 class ChromiumAndroidDriverTest(unittest.TestCase):
     def setUp(self):

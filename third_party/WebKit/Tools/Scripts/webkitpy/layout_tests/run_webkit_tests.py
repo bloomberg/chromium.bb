@@ -165,6 +165,10 @@ def parse_args(args):
             help="Show all failures in results.html, rather than only regressions"),
         optparse.make_option("--clobber-old-results", action="store_true",
             default=False, help="Clobbers test results from previous runs."),
+        optparse.make_option("--smoke", action="store_true",
+            help="Run just the SmokeTests"),
+        optparse.make_option("--no-smoke", dest="smoke", action="store_false",
+            help="Do not run just the SmokeTests"),
     ]))
 
     option_group_definitions.append(("Testing Options", [
@@ -195,7 +199,7 @@ def parse_args(args):
                 "option ('layout' or 'deps').")),
         optparse.make_option("--test-list", action="append",
             help="read list of tests to run from file", metavar="FILE"),
-        optparse.make_option("--skipped", action="store", default="default",
+        optparse.make_option("--skipped", action="store", default=None,
             help=("control how tests marked SKIP are run. "
                  "'default' == Skip tests unless explicitly listed on the command line, "
                  "'ignore' == Run them anyway, "
@@ -282,7 +286,7 @@ def parse_args(args):
     return option_parser.parse_args(args)
 
 
-def _set_up_derived_options(port, options):
+def _set_up_derived_options(port, options, args):
     """Sets the options values that depend on other options values."""
     if not options.child_processes:
         options.child_processes = os.environ.get("WEBKIT_TEST_CHILD_PROCESSES",
@@ -332,6 +336,21 @@ def _set_up_derived_options(port, options):
         options.batch_size = 1
         options.verbose = True
 
+    if not args and not options.test_list and options.smoke is None:
+        options.smoke = port.default_smoke_test_only()
+    if options.smoke:
+        if not args and not options.test_list and options.retry_failures is None:
+            # Retry failures by default if we're doing just a smoke test (no additional tests).
+            options.retry_failures = True
+
+        if not options.test_list:
+            options.test_list = []
+        options.test_list.append(port.host.filesystem.join(port.layout_tests_dir(), 'SmokeTests'))
+        if not options.skipped:
+            options.skipped = 'always'
+
+    if not options.skipped:
+        options.skipped = 'default'
 
 def run(port, options, args, logging_stream):
     logger = logging.getLogger()
@@ -340,7 +359,7 @@ def run(port, options, args, logging_stream):
     try:
         printer = printing.Printer(port, options, logging_stream, logger=logger)
 
-        _set_up_derived_options(port, options)
+        _set_up_derived_options(port, options, args)
         manager = Manager(port, options, printer)
         printer.print_config(port.results_directory())
 

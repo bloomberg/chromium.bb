@@ -164,6 +164,9 @@ class Port(object):
         # FIXME: Disable until they are run by default on build.webkit.org.
         return False
 
+    def default_smoke_test_only(self):
+        return False
+
     def default_timeout_ms(self):
         timeout_ms = 6 * 1000
         if self.get_option('configuration') == 'Debug':

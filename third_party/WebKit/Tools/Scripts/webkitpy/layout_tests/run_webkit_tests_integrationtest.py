@@ -117,8 +117,8 @@ def run_and_capture(port_obj, options, parsed_args, shared_port=True):
     return (run_details, logging_stream)
 
 
-def get_tests_run(args, host=None):
-    results = get_test_results(args, host)
+def get_tests_run(args, host=None, port_obj=None):
+    results = get_test_results(args, host=host, port_obj=port_obj)
     return [result.test_name for result in results]
 
 
@@ -137,11 +137,11 @@ def get_test_batches(args, host=None):
     return batches
 
 
-def get_test_results(args, host=None):
+def get_test_results(args, host=None, port_obj=None):
     options, parsed_args = parse_args(args, tests_included=True)
 
     host = host or MockHost()
-    port_obj = host.port_factory.get(port_name=options.platform, options=options)
+    port_obj = port_obj or host.port_factory.get(port_name=options.platform, options=options)
 
     oc = outputcapture.OutputCapture()
     oc.capture_output()
@@ -472,6 +472,37 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         host.filesystem.write_text_file(filename, 'LayoutTests/passes/text.html')
         tests_run = get_tests_run(['--test-list=%s' % filename], host=host)
         self.assertEqual(['passes/text.html'], tests_run)
+
+    def test_smoke_test(self):
+        host = MockHost()
+        smoke_test_filename = test.LAYOUT_TEST_DIR + '/SmokeTests'
+        host.filesystem.write_text_file(smoke_test_filename, 'passes/text.html\n')
+
+        # Test the default smoke testing.
+        tests_run = get_tests_run(['--smoke'], host=host)
+        self.assertEqual(['passes/text.html'], tests_run)
+
+        # Test running the smoke tests plus some manually-specified tests.
+        tests_run = get_tests_run(['--smoke', 'passes/image.html'], host=host)
+        self.assertEqual(['passes/image.html', 'passes/text.html'], tests_run)
+
+        # Test running the smoke tests plus some manually-specified tests.
+        tests_run = get_tests_run(['--no-smoke', 'passes/image.html'], host=host)
+        self.assertEqual(['passes/image.html'], tests_run)
+
+        # Test that we don't run just the smoke tests by default on a normal test port.
+        tests_run = get_tests_run([], host=host)
+        self.assertNotEqual(['passes/text.html'], tests_run)
+
+        # Create a port that does run only the smoke tests by default, and verify that works as expected.
+        port_obj = host.port_factory.get('test')
+        port_obj.default_smoke_test_only = lambda: True
+        tests_run = get_tests_run([], host=host, port_obj=port_obj)
+        self.assertEqual(['passes/text.html'], tests_run)
+
+        # Verify that --no-smoke continues to work on a smoke-by-default port.
+        tests_run = get_tests_run(['--no-smoke'], host=host, port_obj=port_obj)
+        self.assertNotEqual(['passes/text.html'], tests_run)
 
     def test_missing_and_unexpected_results(self):
         # Test that we update expectations in place. If the expectation

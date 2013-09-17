@@ -415,6 +415,9 @@ class AndroidPort(chromium.ChromiumPort):
         for serial in prepared_devices:
             self._devices.set_device_prepared(serial)
 
+    def default_smoke_test_only(self):
+        return True
+
     # Local public methods.
     def path_to_forwarder(self):
         return self._build_path('forwarder')
@@ -596,15 +599,6 @@ class AndroidPort(chromium.ChromiumPort):
 
     def _driver_class(self):
         return ChromiumAndroidDriver
-
-    # Android maintains a temporary expectations file for the purpose of ramping
-    # up the set of layout tests being ran. Lines in this file will be removed
-    # as the bot starts running them. Remove this method when the file is empty.
-    def _port_specific_expectations_files(self):
-        paths = super(AndroidPort, self)._port_specific_expectations_files()
-        paths.append(self._filesystem.join(self.layout_tests_dir(), 'platform',
-                                           AndroidPort.port_name, 'TestExpectations'))
-        return paths
 
     # Local private methods.
 

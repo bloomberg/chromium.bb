@@ -421,15 +421,24 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
 
             for port_name in self._tool.port_factory.all_port_names():
                 port = self._tool.port_factory.get(port_name)
-                full_expectations = TestExpectations(port, tests=[test], include_overrides=True)
                 generic_expectations = TestExpectations(port, tests=[test], include_overrides=False)
-                generic_path = port.path_to_generic_test_expectations_file()
-                if (SKIP in full_expectations.get_expectations(test) and
-                    SKIP not in generic_expectations.get_expectations(test)):
+                if self._port_skips_test(port, test, generic_expectations):
                     for test_configuration in port.all_test_configurations():
                         if test_configuration.version == port.test_configuration().version:
                             expectationsString = generic_expectations.remove_configuration_from_test(test, test_configuration)
+                    generic_path = port.path_to_generic_test_expectations_file()
                     self._tool.filesystem.write_text_file(generic_path, expectationsString)
+
+    def _port_skips_test(self, port, test, generic_expectations):
+        fs = port.host.filesystem
+        if port.default_smoke_test_only():
+            smoke_test_filename = fs.join(port.layout_tests_dir(), 'SmokeTests')
+            if fs.exists(smoke_test_filename) and test not in fs.read_text_file(smoke_test_filename):
+                return True
+
+        full_expectations = TestExpectations(port, tests=[test], include_overrides=True)
+        return (SKIP in full_expectations.get_expectations(test) and
+                SKIP not in generic_expectations.get_expectations(test))
 
     def _run_in_parallel_and_update_scm(self, commands):
         command_results = self._tool.executive.run_in_parallel(commands)
