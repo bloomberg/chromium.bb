@@ -21,3 +21,8 @@ subversion_file_system/public_extensions_214898
   - Subversion ViewVC list of files in c/c/e/d/templates/public/extensions where
     the most recent operation in that directory is deleting a file.
   - Used in SubversionFileSystemTest.testDirectoryVersionOnDelection.
+
+github_file_system/test_owner
+  Created to mock a typical Python project on github.com
+  # TODO(jshumway): Use real data if it ever becomes a problem.
+  - Used in the github_file_system tests.
