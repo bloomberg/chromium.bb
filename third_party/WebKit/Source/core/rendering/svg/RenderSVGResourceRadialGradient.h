@@ -52,6 +52,12 @@ private:
     RadialGradientAttributes m_attributes;
 };
 
+inline RenderSVGResourceRadialGradient* toRenderSVGResourceRadialGradient(RenderSVGResourceContainer* resource)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!resource || resource->resourceType() == RadialGradientResourceType);
+    return static_cast<RenderSVGResourceRadialGradient*>(resource);
+}
+
 }
 
 #endif
