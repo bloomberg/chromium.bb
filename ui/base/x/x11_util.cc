@@ -38,6 +38,7 @@
 #include "ui/base/keycodes/keyboard_code_conversion_x.h"
 #include "ui/base/touch/touch_factory_x11.h"
 #include "ui/base/x/device_data_manager.h"
+#include "ui/base/x/x11_error_tracker.h"
 #include "ui/base/x/x11_util_internal.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia.h"
@@ -60,16 +61,9 @@
 
 #if defined(TOOLKIT_GTK)
 #include <gdk/gdk.h>
-#include <gdk/gdkx.h>
 #include <gtk/gtk.h>
 #include "ui/gfx/gdk_compat.h"
 #include "ui/gfx/gtk_compat.h"
-#else
-// TODO(sad): Use the new way of handling X errors when
-// http://codereview.chromium.org/7889040/ lands.
-#define gdk_error_trap_push()
-#define gdk_error_trap_pop() false
-#define gdk_flush()
 #endif
 
 namespace ui {
@@ -375,14 +369,13 @@ static SharedMemorySupport DoQuerySharedMemorySupport(Display* dpy) {
   memset(&shminfo, 0, sizeof(shminfo));
   shminfo.shmid = shmkey;
 
-  gdk_error_trap_push();
+  X11ErrorTracker err_tracker;
   bool result = XShmAttach(dpy, &shminfo);
   if (result)
     VLOG(1) << "X got shared memory segment " << shmkey;
   else
     LOG(WARNING) << "X failed to attach to shared memory segment " << shmkey;
-  XSync(dpy, False);
-  if (gdk_error_trap_pop())
+  if (err_tracker.FoundNewError())
     result = false;
   shmdt(address);
   if (!result) {
@@ -963,7 +956,7 @@ bool SetIntArrayProperty(XID window,
   for (size_t i = 0; i < value.size(); ++i)
     data[i] = value[i];
 
-  gdk_error_trap_push();
+  X11ErrorTracker err_tracker;
   XChangeProperty(ui::GetXDisplay(),
                   window,
                   name_atom,
@@ -972,8 +965,7 @@ bool SetIntArrayProperty(XID window,
                   PropModeReplace,
                   reinterpret_cast<const unsigned char*>(data.get()),
                   value.size());  // num items
-  XSync(ui::GetXDisplay(), False);
-  return gdk_error_trap_pop() == 0;
+  return !err_tracker.FoundNewError();
 }
 
 bool SetAtomArrayProperty(XID window,
@@ -989,7 +981,7 @@ bool SetAtomArrayProperty(XID window,
   for (size_t i = 0; i < value.size(); ++i)
     data[i] = value[i];
 
-  gdk_error_trap_push();
+  X11ErrorTracker err_tracker;
   XChangeProperty(ui::GetXDisplay(),
                   window,
                   name_atom,
@@ -998,8 +990,7 @@ bool SetAtomArrayProperty(XID window,
                   PropModeReplace,
                   reinterpret_cast<const unsigned char*>(data.get()),
                   value.size());  // num items
-  XSync(ui::GetXDisplay(), False);
-  return gdk_error_trap_pop() == 0;
+  return !err_tracker.FoundNewError();
 }
 
 Atom GetAtom(const char* name) {
@@ -1402,21 +1393,18 @@ bool GetWindowManagerName(std::string* wm_name) {
   // _NET_SUPPORTING_WM_CHECK property pointing to itself (to avoid a stale
   // property referencing an ID that's been recycled for another window), so we
   // check that too.
-  gdk_error_trap_push();
+  X11ErrorTracker err_tracker;
   int wm_window_property = 0;
   bool result = GetIntProperty(
       wm_window, "_NET_SUPPORTING_WM_CHECK", &wm_window_property);
-  gdk_flush();
-  bool got_error = gdk_error_trap_pop();
-  if (got_error || !result || wm_window_property != wm_window)
+  if (err_tracker.FoundNewError() || !result ||
+      wm_window_property != wm_window) {
     return false;
+  }
 
-  gdk_error_trap_push();
   result = GetStringProperty(
       static_cast<XID>(wm_window), "_NET_WM_NAME", wm_name);
-  gdk_flush();
-  got_error = gdk_error_trap_pop();
-  return !got_error && result;
+  return !err_tracker.FoundNewError() && result;
 }
 
 WindowManagerName GuessWindowManager() {

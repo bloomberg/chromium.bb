@@ -373,6 +373,9 @@
         'base/x/work_area_watcher_x.h',
         'base/x/x11_atom_cache.cc',
         'base/x/x11_atom_cache.h',
+        'base/x/x11_error_tracker.cc',
+        'base/x/x11_error_tracker.h',
+        'base/x/x11_error_tracker_gtk.cc',
         'base/x/x11_util.cc',
         'base/x/x11_util.h',
         'base/x/x11_util_internal.h',
@@ -752,6 +755,9 @@
             'gfx/image/cairo_cached_surface.cc',
             'gfx/image/cairo_cached_surface.h',
             'gfx/scoped_gobject.h',
+          ],
+          'sources!': [
+            'base/x/x11_error_tracker.cc',
           ],
         }],
         ['chromeos==1 or (use_aura==1 and OS=="linux" and use_x11==0)', {
