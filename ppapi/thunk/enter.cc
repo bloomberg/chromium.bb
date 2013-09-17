@@ -29,14 +29,6 @@ namespace thunk {
 
 namespace subtle {
 
-void AssertLockHeld() {
-  base::Lock* proxy_lock = PpapiGlobals::Get()->GetProxyLock();
-  // The lock is only valid in the plugin side of the proxy, so it only makes
-  // sense to assert there. Otherwise, silently succeed.
-  if (proxy_lock)
-    proxy_lock->AssertAcquired();
-}
-
 EnterBase::EnterBase()
     : resource_(NULL),
       retval_(PP_OK) {

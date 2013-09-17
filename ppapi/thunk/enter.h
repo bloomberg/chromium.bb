@@ -43,9 +43,6 @@ namespace thunk {
 
 namespace subtle {
 
-// Assert that we are holding the proxy lock.
-PPAPI_THUNK_EXPORT void AssertLockHeld();
-
 // This helps us define our RAII Enter classes easily. To make an RAII class
 // which locks the proxy lock on construction and unlocks on destruction,
 // inherit from |LockOnEntry<true>| before all other base classes. This ensures
@@ -63,12 +60,12 @@ struct LockOnEntry<false> {
 #if (!NDEBUG)
   LockOnEntry() {
     // You must already hold the lock to use Enter*NoLock.
-    AssertLockHeld();
+    ProxyLock::AssertAcquired();
   }
   ~LockOnEntry() {
     // You must not release the lock before leaving the scope of the
     // Enter*NoLock.
-    AssertLockHeld();
+    ProxyLock::AssertAcquired();
   }
 #endif
 };

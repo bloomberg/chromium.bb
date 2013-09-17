@@ -17,7 +17,6 @@
 #include "ppapi/shared_impl/ppapi_shared_export.h"
 
 namespace base {
-class Lock;
 class MessageLoopProxy;
 class TaskRunner;
 }
@@ -68,8 +67,6 @@ class PPAPI_SHARED_EXPORT PpapiGlobals {
   virtual VarTracker* GetVarTracker() = 0;
   virtual CallbackTracker* GetCallbackTrackerForInstance(
       PP_Instance instance) = 0;
-
-  virtual base::Lock* GetProxyLock() = 0;
 
   // Logs the given string to the JS console. If "source" is empty, the name of
   // the current module will be used, if it can be determined.

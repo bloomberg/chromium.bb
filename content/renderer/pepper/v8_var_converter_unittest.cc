@@ -175,6 +175,7 @@ class V8VarConverterTest : public testing::Test {
     converter_->FromV8Value(val, context, base::Bind(
         &V8VarConverterTest::FromV8ValueComplete, base::Unretained(this),
         loop.QuitClosure()));
+    loop.Run();
     if (conversion_success_)
       *result = conversion_result_;
     return conversion_success_;

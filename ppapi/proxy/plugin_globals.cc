@@ -128,10 +128,6 @@ void PluginGlobals::PreCacheFontForFlash(const void* logfontw) {
   plugin_proxy_delegate_->PreCacheFont(logfontw);
 }
 
-base::Lock* PluginGlobals::GetProxyLock() {
-  return &proxy_lock_;
-}
-
 void PluginGlobals::LogWithSource(PP_Instance instance,
                                   PP_LogLevel level,
                                   const std::string& source,

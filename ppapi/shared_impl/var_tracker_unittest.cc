@@ -5,6 +5,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include "base/compiler_specific.h"
+#include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/shared_impl/var_tracker.h"
 #include "ppapi/shared_impl/test_globals.h"
@@ -53,6 +54,7 @@ class VarTrackerTest : public testing::Test {
   // Test implementation.
   virtual void SetUp() OVERRIDE {
     ASSERT_EQ(0, mock_var_alive_count);
+    ProxyLock::EnableLockingOnThreadForTest();
   }
   virtual void TearDown() OVERRIDE {
   }
@@ -66,6 +68,7 @@ class VarTrackerTest : public testing::Test {
 // Test that ResetVarID is called when the last PP_Var ref was deleted but the
 // object lives on.
 TEST_F(VarTrackerTest, LastResourceRef) {
+  ProxyAutoLock lock;
   scoped_refptr<MockStringVar> var(new MockStringVar(std::string("xyz")));
   PP_Var pp_var = var->GetPPVar();
   EXPECT_TRUE(var->HasValidVarID());
@@ -82,6 +85,7 @@ TEST_F(VarTrackerTest, LastResourceRef) {
 }
 
 TEST_F(VarTrackerTest, GetPluginRefAgain) {
+  ProxyAutoLock lock;
   scoped_refptr<MockStringVar> var(new MockStringVar(std::string("xyz")));
   PP_Var pp_var = var->GetPPVar();
   EXPECT_TRUE(var_tracker().ReleaseVar(pp_var));
@@ -112,6 +116,7 @@ TEST_F(VarTrackerTest, GetPluginRefAgain) {
 // Tests when the plugin is holding a ref to a PP_Var when the instance is
 // owned only by VarTracker.
 TEST_F(VarTrackerTest, PluginRefWithoutVarRef) {
+  ProxyAutoLock lock;
   // Make a PP_Var with one ref held by the plugin, and release the reference.
   scoped_refptr<MockStringVar> var(new MockStringVar(std::string("zzz")));
   PP_Var pp_var = var->GetPPVar();
@@ -129,6 +134,7 @@ TEST_F(VarTrackerTest, PluginRefWithoutVarRef) {
 
 // Tests on Var having type of PP_VARTYPE_OBJECT.
 TEST_F(VarTrackerTest, ObjectRef) {
+  ProxyAutoLock lock;
   scoped_refptr<MockObjectVar> var(new MockObjectVar());
   PP_Var pp_var = var->GetPPVar();
   EXPECT_TRUE(var_tracker().ReleaseVar(pp_var));
