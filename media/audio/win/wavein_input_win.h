@@ -56,7 +56,7 @@ class PCMWaveInAudioInputStream : public AudioInputStream {
   };
 
   // Allow unit tests to query the device ID.
-  friend class AudioInputDeviceTest;
+  friend class AudioManagerTest;
 
   // Windows calls us back with the recorded audio data here. See msdn
   // documentation for 'waveInProc' for details about the parameters.

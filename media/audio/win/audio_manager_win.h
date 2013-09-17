@@ -62,7 +62,7 @@ class MEDIA_EXPORT AudioManagerWin : public AudioManagerBase {
   };
 
   // Allow unit test to modify the utilized enumeration API.
-  friend class AudioInputDeviceTest;
+  friend class AudioManagerTest;
 
   EnumerationType enumeration_type_;
   EnumerationType enumeration_type() { return enumeration_type_; }

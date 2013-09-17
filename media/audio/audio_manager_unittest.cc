@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,10 +27,10 @@ namespace media {
 
 // Test fixture which allows us to override the default enumeration API on
 // Windows.
-class AudioInputDeviceTest
+class AudioManagerTest
     : public ::testing::Test {
  protected:
-  AudioInputDeviceTest()
+  AudioManagerTest()
       : audio_manager_(AudioManager::Create())
 #if defined(OS_WIN)
       , com_init_(base::win::ScopedCOMInitializer::kMTA)
@@ -120,7 +120,7 @@ class AudioInputDeviceTest
 };
 
 // Test that devices can be enumerated.
-TEST_F(AudioInputDeviceTest, EnumerateInputDevices) {
+TEST_F(AudioManagerTest, EnumerateInputDevices) {
   if (!CanRunInputTest())
     return;
 
@@ -130,7 +130,7 @@ TEST_F(AudioInputDeviceTest, EnumerateInputDevices) {
 }
 
 // Test that devices can be enumerated.
-TEST_F(AudioInputDeviceTest, EnumerateOutputDevices) {
+TEST_F(AudioManagerTest, EnumerateOutputDevices) {
   if (!CanRunOutputTest())
     return;
 
@@ -146,7 +146,7 @@ TEST_F(AudioInputDeviceTest, EnumerateOutputDevices) {
 
 // Override default enumeration API and force usage of Windows MMDevice.
 // This test will only run on Windows Vista and higher.
-TEST_F(AudioInputDeviceTest, EnumerateInputDevicesWinMMDevice) {
+TEST_F(AudioManagerTest, EnumerateInputDevicesWinMMDevice) {
   if (!CanRunInputTest())
     return;
 
@@ -160,7 +160,7 @@ TEST_F(AudioInputDeviceTest, EnumerateInputDevicesWinMMDevice) {
   CheckDeviceNames(device_names);
 }
 
-TEST_F(AudioInputDeviceTest, EnumerateOutputDevicesWinMMDevice) {
+TEST_F(AudioManagerTest, EnumerateOutputDevicesWinMMDevice) {
   if (!CanRunOutputTest())
     return;
 
@@ -176,7 +176,7 @@ TEST_F(AudioInputDeviceTest, EnumerateOutputDevicesWinMMDevice) {
 
 // Override default enumeration API and force usage of Windows Wave.
 // This test will run on Windows XP, Windows Vista and Windows 7.
-TEST_F(AudioInputDeviceTest, EnumerateInputDevicesWinWave) {
+TEST_F(AudioManagerTest, EnumerateInputDevicesWinWave) {
   if (!CanRunInputTest())
     return;
 
@@ -186,7 +186,7 @@ TEST_F(AudioInputDeviceTest, EnumerateInputDevicesWinWave) {
   CheckDeviceNames(device_names);
 }
 
-TEST_F(AudioInputDeviceTest, EnumerateOutputDevicesWinWave) {
+TEST_F(AudioManagerTest, EnumerateOutputDevicesWinWave) {
   if (!CanRunOutputTest())
     return;
 
@@ -196,7 +196,7 @@ TEST_F(AudioInputDeviceTest, EnumerateOutputDevicesWinWave) {
   CheckDeviceNames(device_names);
 }
 
-TEST_F(AudioInputDeviceTest, WinXPDeviceIdUnchanged) {
+TEST_F(AudioManagerTest, WinXPDeviceIdUnchanged) {
   if (!CanRunInputTest())
     return;
 
@@ -213,7 +213,7 @@ TEST_F(AudioInputDeviceTest, WinXPDeviceIdUnchanged) {
   }
 }
 
-TEST_F(AudioInputDeviceTest, ConvertToWinXPInputDeviceId) {
+TEST_F(AudioManagerTest, ConvertToWinXPInputDeviceId) {
   if (!CanRunInputTest())
     return;
 
@@ -250,7 +250,7 @@ TEST_F(AudioInputDeviceTest, ConvertToWinXPInputDeviceId) {
 // sometimes be tested on a single system. These tests specifically
 // test Pulseaudio.
 
-TEST_F(AudioInputDeviceTest, EnumerateInputDevicesPulseaudio) {
+TEST_F(AudioManagerTest, EnumerateInputDevicesPulseaudio) {
   if (!CanRunInputTest())
     return;
 
@@ -264,7 +264,7 @@ TEST_F(AudioInputDeviceTest, EnumerateInputDevicesPulseaudio) {
   }
 }
 
-TEST_F(AudioInputDeviceTest, EnumerateOutputDevicesPulseaudio) {
+TEST_F(AudioManagerTest, EnumerateOutputDevicesPulseaudio) {
   if (!CanRunOutputTest())
     return;
 
@@ -284,7 +284,7 @@ TEST_F(AudioInputDeviceTest, EnumerateOutputDevicesPulseaudio) {
 // sometimes be tested on a single system. These tests specifically
 // test Alsa.
 
-TEST_F(AudioInputDeviceTest, EnumerateInputDevicesAlsa) {
+TEST_F(AudioManagerTest, EnumerateInputDevicesAlsa) {
   if (!CanRunInputTest())
     return;
 
@@ -295,7 +295,7 @@ TEST_F(AudioInputDeviceTest, EnumerateInputDevicesAlsa) {
   CheckDeviceNames(device_names);
 }
 
-TEST_F(AudioInputDeviceTest, EnumerateOutputDevicesAlsa) {
+TEST_F(AudioManagerTest, EnumerateOutputDevicesAlsa) {
   if (!CanRunOutputTest())
     return;
 
@@ -307,7 +307,7 @@ TEST_F(AudioInputDeviceTest, EnumerateOutputDevicesAlsa) {
 }
 #endif  // defined(USE_ALSA)
 
-TEST_F(AudioInputDeviceTest, GetDefaultOutputStreamParameters) {
+TEST_F(AudioManagerTest, GetDefaultOutputStreamParameters) {
 #if defined(OS_WIN) || defined(OS_MACOSX)
   if (!CanRunInputTest())
     return;
@@ -317,7 +317,7 @@ TEST_F(AudioInputDeviceTest, GetDefaultOutputStreamParameters) {
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 }
 
-TEST_F(AudioInputDeviceTest, GetAssociatedOutputDeviceID) {
+TEST_F(AudioManagerTest, GetAssociatedOutputDeviceID) {
 #if defined(OS_WIN) || defined(OS_MACOSX)
   if (!CanRunInputTest() || !CanRunOutputTest())
     return;
