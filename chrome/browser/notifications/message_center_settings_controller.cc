@@ -37,6 +37,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/system/system_notifier.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #endif
 
 using message_center::Notifier;
@@ -370,6 +371,7 @@ void MessageCenterSettingsController::RebuildNotifierGroups() {
   current_notifier_group_ = 0;
 
   const size_t count = profile_info_cache_->GetNumberOfProfiles();
+
   for (size_t i = 0; i < count; ++i) {
     scoped_ptr<message_center::ProfileNotifierGroup> group(
         new message_center::ProfileNotifierGroup(
@@ -378,7 +380,16 @@ void MessageCenterSettingsController::RebuildNotifierGroups() {
             profile_info_cache_->GetUserNameOfProfileAtIndex(i),
             i,
             profile_info_cache_->GetPathOfProfileAtIndex(i)));
-    if (group->profile() != NULL)
-      notifier_groups_.push_back(group.release());
+    if (group->profile() == NULL)
+      continue;
+
+#if defined(OS_CHROMEOS)
+    // In ChromeOS, the login screen first creates a dummy profile which is not
+    // actually used, and then the real profile for the user is created when
+    // login (or turns into kiosk mode). This profile should be skipped.
+    if (chromeos::ProfileHelper::IsSigninProfile(group->profile()))
+      continue;
+#endif
+    notifier_groups_.push_back(group.release());
   }
 }
