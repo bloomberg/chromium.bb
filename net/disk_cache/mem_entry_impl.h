@@ -82,11 +82,7 @@ class MemEntryImpl : public Entry {
     return parent_ ? kChildEntry : kParentEntry;
   }
 
-  std::string& key() {
-    return key_;
-  }
-
-  net::BoundNetLog& net_log() {
+  const net::BoundNetLog& net_log() {
     return net_log_;
   }
 
