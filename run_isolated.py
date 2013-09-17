@@ -339,7 +339,7 @@ class DiskCache(object):
     """
     Arguments:
     - cache_dir: Directory where to place the cache.
-    - remote_fetcher: isolateserver.RemoteOperation where to fetch items from.
+    - remote_fetcher: isolateserver.WorkerPool where to fetch items from.
     - policies: cache retention policies.
     - algo: hashing algorithm used.
     """
@@ -611,7 +611,7 @@ class IsolatedFile(object):
           # Preemptively request files.
           logging.debug('fetching %s' % filepath)
           cache.retrieve(
-              isolateserver.RemoteOperation.MED,
+              isolateserver.WorkerPool.MED,
               properties['h'],
               properties['s'])
     self.files_fetched = True
@@ -660,7 +660,7 @@ class Settings(object):
       seen.add(h)
       pending[h] = isolated_file
       cache.retrieve(
-          isolateserver.RemoteOperation.HIGH,
+          isolateserver.WorkerPool.HIGH,
           h,
           isolateserver.UNKNOWN_FILE_SIZE)
 
@@ -717,75 +717,79 @@ def run_tha_test(isolated_hash, cache_dir, retriever, policies):
   """Downloads the dependencies in the cache, hardlinks them into a temporary
   directory and runs the executable.
   """
-  settings = Settings()
-  remote = isolateserver.RemoteOperation(retriever)
   algo = hashlib.sha1
-  with DiskCache(cache_dir, remote, policies, algo) as cache:
-    outdir = make_temp_dir('run_tha_test', cache_dir)
+  outdir = None
+  try:
+    settings = Settings()
+    # |remote| must outlive |cache|.
+    with isolateserver.WorkerPool(retriever) as remote:
+      with DiskCache(cache_dir, remote, policies, algo) as cache:
+        # |cache_dir| may not exist until DiskCache() instance is created.
+        outdir = make_temp_dir('run_tha_test', cache_dir)
+        # Initiate all the files download.
+        with tools.Profiler('GetIsolateds'):
+          # Optionally support local files.
+          if not isolateserver.is_valid_hash(isolated_hash, algo):
+            # Adds it in the cache. While not strictly necessary, this
+            # simplifies the rest.
+            h = isolateserver.hash_file(isolated_hash, algo)
+            cache.add(isolated_hash, h)
+            isolated_hash = h
+          settings.load(cache, isolated_hash, algo)
+
+        if not settings.command:
+          print >> sys.stderr, 'No command to run'
+          return 1
+
+        with tools.Profiler('GetRest'):
+          isolateserver.create_directories(outdir, settings.files)
+          isolateserver.create_links(outdir, settings.files.iteritems())
+          remaining = isolateserver.generate_remaining_files(
+              settings.files.iteritems())
+
+          # Do bookkeeping while files are being downloaded in the background.
+          cwd, cmd = isolateserver.setup_commands(
+              outdir, settings.relative_cwd, settings.command[:])
+
+          # Now block on the remaining files to be downloaded and mapped.
+          logging.info('Retrieving remaining files')
+          last_update = time.time()
+          with threading_utils.DeadlockDetector(DEADLOCK_TIMEOUT) as detector:
+            while remaining:
+              detector.ping()
+              obj = cache.wait_for(remaining)
+              for filepath, properties in remaining.pop(obj):
+                outfile = os.path.join(outdir, filepath)
+                link_file(outfile, cache.path(obj), HARDLINK)
+                if 'm' in properties:
+                  # It's not set on Windows.
+                  os.chmod(outfile, properties['m'])
+
+              if time.time() - last_update > DELAY_BETWEEN_UPDATES_IN_SECS:
+                msg = '%d files remaining...' % len(remaining)
+                print msg
+                logging.info(msg)
+                last_update = time.time()
+
+    if settings.read_only:
+      logging.info('Making files read only')
+      make_writable(outdir, True)
+    logging.info('Running %s, cwd=%s' % (cmd, cwd))
+
+    # TODO(csharp): This should be specified somewhere else.
+    # TODO(vadimsh): Pass it via 'env_vars' in manifest.
+    # Add a rotating log file if one doesn't already exist.
+    env = os.environ.copy()
+    env.setdefault('RUN_TEST_CASES_LOG_FILE',
+                  os.path.join(MAIN_DIR, RUN_TEST_CASES_LOG))
     try:
-      # Initiate all the files download.
-      with tools.Profiler('GetIsolateds'):
-        # Optionally support local files.
-        if not isolateserver.is_valid_hash(isolated_hash, algo):
-          # Adds it in the cache. While not strictly necessary, this simplifies
-          # the rest.
-          h = isolateserver.hash_file(isolated_hash, algo)
-          cache.add(isolated_hash, h)
-          isolated_hash = h
-        settings.load(cache, isolated_hash, algo)
-
-      if not settings.command:
-        print >> sys.stderr, 'No command to run'
-        return 1
-
-      with tools.Profiler('GetRest'):
-        isolateserver.create_directories(outdir, settings.files)
-        isolateserver.create_links(outdir, settings.files.iteritems())
-        remaining = isolateserver.generate_remaining_files(
-            settings.files.iteritems())
-
-        # Do bookkeeping while files are being downloaded in the background.
-        cwd, cmd = isolateserver.setup_commands(
-            outdir, settings.relative_cwd, settings.command[:])
-
-        # Now block on the remaining files to be downloaded and mapped.
-        logging.info('Retrieving remaining files')
-        last_update = time.time()
-        with threading_utils.DeadlockDetector(DEADLOCK_TIMEOUT) as detector:
-          while remaining:
-            detector.ping()
-            obj = cache.wait_for(remaining)
-            for filepath, properties in remaining.pop(obj):
-              outfile = os.path.join(outdir, filepath)
-              link_file(outfile, cache.path(obj), HARDLINK)
-              if 'm' in properties:
-                # It's not set on Windows.
-                os.chmod(outfile, properties['m'])
-
-            if time.time() - last_update > DELAY_BETWEEN_UPDATES_IN_SECS:
-              msg = '%d files remaining...' % len(remaining)
-              print msg
-              logging.info(msg)
-              last_update = time.time()
-
-      if settings.read_only:
-        logging.info('Making files read only')
-        make_writable(outdir, True)
-      logging.info('Running %s, cwd=%s' % (cmd, cwd))
-
-      # TODO(csharp): This should be specified somewhere else.
-      # TODO(vadimsh): Pass it via 'env_vars' in manifest.
-      # Add a rotating log file if one doesn't already exist.
-      env = os.environ.copy()
-      env.setdefault('RUN_TEST_CASES_LOG_FILE',
-                     os.path.join(MAIN_DIR, RUN_TEST_CASES_LOG))
-      try:
-        with tools.Profiler('RunTest'):
-          return subprocess.call(cmd, cwd=cwd, env=env)
-      except OSError:
-        print >> sys.stderr, 'Failed to run %s; cwd=%s' % (cmd, cwd)
-        raise
-    finally:
+      with tools.Profiler('RunTest'):
+        return subprocess.call(cmd, cwd=cwd, env=env)
+    except OSError:
+      print >> sys.stderr, 'Failed to run %s; cwd=%s' % (cmd, cwd)
+      raise
+  finally:
+    if outdir:
       rmtree(outdir)
 
 

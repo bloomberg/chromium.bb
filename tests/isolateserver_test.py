@@ -312,32 +312,28 @@ def upload_file(item, _dest, _size):
     time.sleep(int(item) / 100)
 
 
-class RemoteOperationTest(auto_stub.TestCase):
+class WorkerPoolTest(auto_stub.TestCase):
   def test_remote_no_errors(self):
     files_to_handle = 50
-    remote = isolateserver.RemoteOperation(upload_file)
-
-    for i in range(files_to_handle):
-      remote.add_item(
-          isolateserver.RemoteOperation.MED,
-          'obj%d' % i,
-          'dest%d' % i,
-          isolateserver.UNKNOWN_FILE_SIZE)
-
-    items = sorted(remote.join())
+    with isolateserver.WorkerPool(upload_file) as remote:
+      for i in range(files_to_handle):
+        remote.add_item(
+            isolateserver.WorkerPool.MED,
+            'obj%d' % i,
+            'dest%d' % i,
+            isolateserver.UNKNOWN_FILE_SIZE)
+      # They will be out of order so explicitly sort them.
+      items = sorted(remote.join())
     expected = sorted('obj%d' % i for i in range(files_to_handle))
     self.assertEqual(expected, items)
 
   def test_remote_with_errors(self):
-    remote = isolateserver.RemoteOperation(upload_file)
-
     def RaiseIOError(*_):
       raise IOError()
-    remote._do_item = RaiseIOError
-    remote.add_item(isolateserver.RemoteOperation.MED, 'ignored', '',
-                    isolateserver.UNKNOWN_FILE_SIZE)
-    self.assertRaises(IOError, remote.join)
-    self.assertEqual([], remote.join())
+    with isolateserver.WorkerPool(RaiseIOError) as remote:
+      remote.add_item(isolateserver.WorkerPool.MED, 'ignored', '',
+                      isolateserver.UNKNOWN_FILE_SIZE)
+      self.assertRaises(IOError, remote.join)
 
 
 if __name__ == '__main__':

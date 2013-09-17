@@ -101,22 +101,21 @@ class RunIsolatedTest(auto_stub.TestCase):
 
     retriever = isolateserver.get_storage_api(
         'https://fake-CAD.com/', 'namespace')
-    remote = isolateserver.RemoteOperation(retriever.retrieve)
-
-    # Both files will fail to be unzipped due to incorrect headers,
-    # ensure that we don't accept the files (even if the size is unknown)}.
-    remote.add_item(
-        isolateserver.RemoteOperation.MED, 'zipped_A',
-        os.path.join(self.tempdir, 'run_isolated_test_A'),
-        isolateserver.UNKNOWN_FILE_SIZE)
-    remote.add_item(
-        isolateserver.RemoteOperation.MED, 'zipped_B',
-        os.path.join(self.tempdir, 'run_isolated_test_B'),
-        5)
-    self.assertRaises(IOError, remote.get_one_result)
-    self.assertRaises(IOError, remote.get_one_result)
-    # Need to use join here, since get_one_result will hang.
-    self.assertEqual([], remote.join())
+    with isolateserver.WorkerPool(retriever.retrieve) as remote:
+      # Both files will fail to be unzipped due to incorrect headers,
+      # ensure that we don't accept the files (even if the size is unknown)}.
+      remote.add_item(
+          isolateserver.WorkerPool.MED, 'zipped_A',
+          os.path.join(self.tempdir, 'run_isolated_test_A'),
+          isolateserver.UNKNOWN_FILE_SIZE)
+      remote.add_item(
+          isolateserver.WorkerPool.MED, 'zipped_B',
+          os.path.join(self.tempdir, 'run_isolated_test_B'),
+          5)
+      self.assertRaises(IOError, remote.get_one_result)
+      self.assertRaises(IOError, remote.get_one_result)
+      # Need to use join here, since get_one_result will hang.
+      self.assertEqual([], remote.join())
 
 
 if __name__ == '__main__':

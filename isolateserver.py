@@ -464,69 +464,34 @@ def get_storage_api(file_or_url, namespace):
     return FileSystem(file_or_url)
 
 
-class RemoteOperation(object):
-  """Priority based worker queue to operate on action items.
-
-  It execute a function with the given task items. It is specialized to download
-  files.
-
-  When the priority of items is equals, works in strict FIFO mode.
+class WorkerPool(threading_utils.AutoRetryThreadPool):
+  """Thread pool that automatically retries on IOError and runs a preconfigured
+  function.
   """
   # Initial and maximum number of worker threads.
   INITIAL_WORKERS = 2
   MAX_WORKERS = 16
-  # Priorities.
-  LOW, MED, HIGH = (1<<8, 2<<8, 3<<8)
-  INTERNAL_PRIORITY_BITS = (1<<8) - 1
   RETRIES = 5
 
   def __init__(self, do_item):
-    # Function to fetch a remote object or upload to a remote location.
-    self._do_item = do_item
-    self._pool = threading_utils.ThreadPool(
-        self.INITIAL_WORKERS, self.MAX_WORKERS, 0, 'remote')
+    super(WorkerPool, self).__init__(
+        [IOError],
+        self.RETRIES,
+        self.INITIAL_WORKERS,
+        self.MAX_WORKERS,
+        0,
+        'remote')
 
-  def join(self):
-    """Blocks until the queue is empty."""
-    return self._pool.join()
+    # Have .join() always returns the keys, i.e. the first argument for each
+    # task.
+    def run(*args, **kwargs):
+      do_item(*args, **kwargs)
+      return args[0]
+    self._do_item = run
 
-  def close(self):
-    """Terminates all worker threads."""
-    self._pool.close()
-
-  def add_item(self, priority, obj, dest, size):
-    """Retrieves an object from the remote data store.
-
-    The smaller |priority| gets fetched first.
-
-    Thread-safe.
-    """
-    assert (priority & self.INTERNAL_PRIORITY_BITS) == 0
-    return self._add_item(priority, obj, dest, size)
-
-  def get_one_result(self):
-    return self._pool.get_one_result()
-
-  def _add_item(self, priority, obj, dest, size):
-    assert isinstance(obj, basestring), obj
-    assert isinstance(dest, basestring), dest
-    assert size is None or isinstance(size, int), size
-    return self._pool.add_task(
-        priority, self._task_executer, priority, obj, dest, size)
-
-  def _task_executer(self, priority, obj, dest, size):
-    """Wraps self._do_item to trap and retry on IOError exceptions."""
-    try:
-      self._do_item(obj, dest, size)
-      # TODO(maruel): Technically, we'd want to have an output queue to be a
-      # PriorityQueue.
-      return obj
-    except IOError:
-      # Retry a few times, lowering the priority.
-      if (priority & self.INTERNAL_PRIORITY_BITS) < self.RETRIES:
-        self._add_item(priority + 1, obj, dest, size)
-        return
-      raise
+  def add_item(self, priority, *args, **kwargs):
+    """Adds task to call do_item(*args, **kwargs)."""
+    return self.add_task(priority, self._do_item, *args, **kwargs)
 
 
 def compression_level(filename):
@@ -557,8 +522,8 @@ def zip_and_trigger_upload(infile, metadata, upload_function):
   # if not metadata['T']:
   compressed_data = read_and_compress(infile, compression_level(infile))
   priority = (
-      RemoteOperation.HIGH if metadata.get('priority', '1') == '0'
-      else RemoteOperation.MED)
+      WorkerPool.HIGH if metadata.get('priority', '1') == '0'
+      else WorkerPool.MED)
   return upload_function(
       priority, compressed_data, metadata['h'], UNKNOWN_FILE_SIZE)
 
@@ -616,28 +581,26 @@ def upload_tree(base_url, indir, infiles, namespace):
   zipping_pool = threading_utils.ThreadPool(min(2, num_threads),
                                             num_threads, 0, 'zip')
   remote = IsolateServer(base_url, namespace)
-  remote_uploader = RemoteOperation(remote.store)
+  with WorkerPool(remote.store) as remote_uploader:
+    # Starts the zip and upload process for files that are missing
+    # from the server.
+    contains_hash_url = '%scontains/%s?token=%s' % (
+        remote.content_url, namespace, remote.token)
+    uploaded = []
+    for relfile, metadata in get_files_to_upload(contains_hash_url, infiles):
+      infile = os.path.join(indir, relfile)
+      zipping_pool.add_task(0, zip_and_trigger_upload, infile, metadata,
+                            remote_uploader.add_item)
+      uploaded.append((relfile, metadata))
 
-  # Starts the zip and upload process for files that are missing
-  # from the server.
-  contains_hash_url = '%scontains/%s?token=%s' % (
-      remote.content_url, namespace, remote.token)
-  uploaded = []
-  for relfile, metadata in get_files_to_upload(contains_hash_url, infiles):
-    infile = os.path.join(indir, relfile)
-    zipping_pool.add_task(0, zip_and_trigger_upload, infile, metadata,
-                          remote_uploader.add_item)
-    uploaded.append((relfile, metadata))
+    logging.info('Waiting for all files to finish zipping')
+    zipping_pool.join()
+    zipping_pool.close()
+    logging.info('All files zipped.')
 
-  logging.info('Waiting for all files to finish zipping')
-  zipping_pool.join()
-  zipping_pool.close()
-  logging.info('All files zipped.')
-
-  logging.info('Waiting for all files to finish uploading')
-  # Will raise if any exception occurred.
-  remote_uploader.join()
-  remote_uploader.close()
+    logging.info('Waiting for all files to finish uploading')
+    # Will raise if any exception occurred.
+    remote_uploader.join()
   logging.info('All files are uploaded')
 
   total = len(infiles)
