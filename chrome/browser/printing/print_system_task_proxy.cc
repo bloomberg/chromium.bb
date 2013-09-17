@@ -12,7 +12,7 @@
 #include "base/metrics/histogram.h"
 #include "base/values.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_handler.h"
-#include "chrome/common/child_process_logging.h"
+#include "chrome/common/crash_keys.h"
 #include "printing/backend/print_backend.h"
 #include "printing/print_job_constants.h"
 #include "printing/print_settings.h"
@@ -112,7 +112,7 @@ void PrintSystemTaskProxy::SetupPrinterList(ListValue* printers) {
 void PrintSystemTaskProxy::GetPrinterCapabilities(
     const std::string& printer_name) {
   VLOG(1) << "Get printer capabilities start for " << printer_name;
-  child_process_logging::ScopedPrinterInfoSetter prn_info(
+  crash_keys::ScopedPrinterInfo crash_key(
       print_backend_->GetPrinterDriverInfo(printer_name));
 
   if (!print_backend_->IsValidPrinter(printer_name)) {

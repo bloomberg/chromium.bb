@@ -24,6 +24,17 @@ size_t RegisterChromeCrashKeys();
 //   multiple because of process collapsing).
 void SetActiveExtensions(const std::set<std::string>& extensions);
 
+// Sets the printer info. Data should be separated by ';' up to
+// kPrinterInfoCount substrings. Each substring will be truncated if necessary.
+class ScopedPrinterInfo {
+ public:
+  explicit ScopedPrinterInfo(const base::StringPiece& data);
+  ~ScopedPrinterInfo();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ScopedPrinterInfo);
+};
+
 // Crash Key Name Constants ////////////////////////////////////////////////////
 
 // The product release/distribution channel.
@@ -58,6 +69,11 @@ extern const char kGPURenderer[];
 #elif defined(OS_MACOSX)
 extern const char kGPUGLVersion[];
 #endif
+
+// The user's printers, up to kPrinterInfoCount. Should be set with
+// ScopedPrinterInfo.
+const size_t kPrinterInfoCount = 4;
+extern const char kPrinterInfo[];
 
 #if defined(OS_MACOSX)
 namespace mac {

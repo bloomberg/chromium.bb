@@ -6,6 +6,7 @@
 
 #include "base/format_macros.h"
 #include "base/logging.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 
@@ -70,6 +71,8 @@ const char kGPURenderer[] = "gpu-gl-renderer";
 #elif defined(OS_MACOSX)
 const char kGPUGLVersion[] = "gpu-glver";
 #endif
+
+const char kPrinterInfo[] = "prn-info-%" PRIuS;
 
 #if defined(OS_MACOSX)
 namespace mac {
@@ -160,6 +163,21 @@ size_t RegisterChromeCrashKeys() {
     }
   }
 
+  // Register the printer info.
+  {
+    static char formatted_keys[kPrinterInfoCount][sizeof(kPrinterInfo) + 1] =
+        {{ 0 }};
+    const size_t formatted_key_len = sizeof(formatted_keys[0]);
+    for (size_t i = 0; i < kPrinterInfoCount; ++i) {
+      // Key names are 1-indexed.
+      int n = base::snprintf(
+          formatted_keys[i], formatted_key_len, kPrinterInfo, i + 1);
+      DCHECK_GT(n, 0);
+      base::debug::CrashKey crash_key = { formatted_keys[i], kSmallSize };
+      keys.push_back(crash_key);
+    }
+  }
+
   return base::debug::InitCrashKeys(&keys.at(0), keys.size(),
                                     kSingleChunkLength);
 }
@@ -177,6 +195,25 @@ void SetActiveExtensions(const std::set<std::string>& extensions) {
       base::debug::SetCrashKeyValue(key, *it);
       ++it;
     }
+  }
+}
+
+ScopedPrinterInfo::ScopedPrinterInfo(const base::StringPiece& data) {
+  std::vector<std::string> info;
+  base::SplitString(data.as_string(), ';', &info);
+  for (size_t i = 0; i < kPrinterInfoCount; ++i) {
+    std::string key = base::StringPrintf(kPrinterInfo, i + 1);
+    std::string value;
+    if (i < info.size())
+      value = info[i];
+    base::debug::SetCrashKeyValue(key, value);
+  }
+}
+
+ScopedPrinterInfo::~ScopedPrinterInfo() {
+  for (size_t i = 0; i < kPrinterInfoCount; ++i) {
+    std::string key = base::StringPrintf(kPrinterInfo, i + 1);
+    base::debug::ClearCrashKey(key);
   }
 }
 

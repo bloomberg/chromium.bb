@@ -23,8 +23,6 @@ static const size_t kClientIdSize = 32 + 1;
 // these strings to the browser.
 char g_client_id[kClientIdSize];
 
-char g_printer_info[kPrinterInfoStrLen * kMaxReportedPrinterRecords + 1] = "";
-
 static const size_t kNumSize = 32;
 char g_num_switches[kNumSize] = "";
 char g_num_variations[kNumSize] = "";
@@ -51,20 +49,6 @@ void SetClientId(const std::string& client_id) {
 
 std::string GetClientId() {
   return std::string(g_client_id);
-}
-
-void SetPrinterInfo(const char* printer_info) {
-  std::string printer_info_str;
-  std::vector<std::string> info;
-  base::SplitString(printer_info, L';', &info);
-  DCHECK_LE(info.size(), kMaxReportedPrinterRecords);
-  for (size_t i = 0; i < info.size(); ++i) {
-    printer_info_str += info[i];
-    // Truncate long switches, align short ones with spaces to be trimmed later.
-    printer_info_str.resize((i + 1) * kPrinterInfoStrLen, ' ');
-  }
-  base::strlcpy(g_printer_info, printer_info_str.c_str(),
-                arraysize(g_printer_info));
 }
 
 void SetCommandLine(const CommandLine* command_line) {
