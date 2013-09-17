@@ -217,7 +217,8 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MAYBE_CallWithDataAndMedia) {
 // Timing out on ARM linux bot: http://crbug.com/238490
 #define MAYBE_CallWithDataAndLaterAddMedia DISABLED_CallWithDataAndLaterAddMedia
 #else
-#define MAYBE_CallWithDataAndLaterAddMedia CallWithDataAndLaterAddMedia
+// Temporarily disable the test on all platforms. http://crbug.com/293252
+#define MAYBE_CallWithDataAndLaterAddMedia DISABLED_CallWithDataAndLaterAddMedia
 #endif
 
 // This test will make a PeerConnection-based call and test an unreliable text
