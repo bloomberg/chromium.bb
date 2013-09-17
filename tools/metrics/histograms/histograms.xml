@@ -6224,6 +6224,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Mist.SwitchResult" enum="MistSwitchResult">
+  <summary>
+    The result (e.g. success or the type of failure) of a modem interface switch
+    operation performed by mist on Chrome OS.
+  </summary>
+</histogram>
+
 <histogram name="Mouse.PointerSensitivity.Changed" enum="PointerSensitivity">
   <summary>
     Tracks mouse sensitivity setting changes by the user. This replaces the old
@@ -22861,6 +22868,11 @@ other types of suffix sets.
   <int value="1" label="kSuccess"/>
   <int value="2" label="kKeySystemNotSupported"/>
   <int value="3" label="kInvalidPlayerState"/>
+</enum>
+
+<enum name="MistSwitchResult" type="int">
+  <int value="0" label="Success"/>
+  <int value="1" label="Failure"/>
 </enum>
 
 <enum name="MobileSessionCallerApp" type="int">
