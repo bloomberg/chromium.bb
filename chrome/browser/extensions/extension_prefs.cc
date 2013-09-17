@@ -1835,13 +1835,26 @@ void ExtensionPrefs::FinishExtensionInfoPrefs(
     const syncer::StringOrdinal& suggested_page_ordinal,
     DictionaryValue* extension_dict) {
   // Reinitializes various preferences with empty dictionaries.
-  extension_dict->Set(pref_names::kPrefPreferences, new DictionaryValue);
-  extension_dict->Set(pref_names::kPrefIncognitoPreferences,
-                      new DictionaryValue);
-  extension_dict->Set(pref_names::kPrefRegularOnlyPreferences,
-                      new DictionaryValue);
-  extension_dict->Set(pref_names::kPrefContentSettings, new ListValue);
-  extension_dict->Set(pref_names::kPrefIncognitoContentSettings, new ListValue);
+  if (!extension_dict->HasKey(pref_names::kPrefPreferences))
+    extension_dict->Set(pref_names::kPrefPreferences, new DictionaryValue);
+
+  if (!extension_dict->HasKey(pref_names::kPrefIncognitoPreferences)) {
+    extension_dict->Set(pref_names::kPrefIncognitoPreferences,
+                        new DictionaryValue);
+  }
+
+  if (!extension_dict->HasKey(pref_names::kPrefRegularOnlyPreferences)) {
+    extension_dict->Set(pref_names::kPrefRegularOnlyPreferences,
+                        new DictionaryValue);
+  }
+
+  if (!extension_dict->HasKey(pref_names::kPrefContentSettings))
+    extension_dict->Set(pref_names::kPrefContentSettings, new ListValue);
+
+  if (!extension_dict->HasKey(pref_names::kPrefIncognitoContentSettings)) {
+    extension_dict->Set(pref_names::kPrefIncognitoContentSettings,
+                        new ListValue);
+  }
 
   // If this point has been reached, any pending installs should be considered
   // out of date.

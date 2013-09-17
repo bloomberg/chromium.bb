@@ -224,7 +224,7 @@ IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest,
   QueryHistory(history_service, "", options, &results);
 
   // Check that the entries have the correct blocked_visit value.
-  EXPECT_EQ(2u, results.size());
+  ASSERT_EQ(2u, results.size());
   EXPECT_EQ(blocked_url.spec(), results[0].url().spec());
   EXPECT_TRUE(results[0].blocked_visit());
   EXPECT_EQ(allowed_url.spec(), results[1].url().spec());
