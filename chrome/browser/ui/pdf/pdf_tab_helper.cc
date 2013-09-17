@@ -6,7 +6,6 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/download/download_stats.h"
-#include "chrome/browser/ui/app_modal_dialogs/javascript_dialog_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -15,8 +14,12 @@
 #include "chrome/browser/ui/pdf/pdf_unsupported_feature.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/common/render_messages.h"
-#include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/navigation_details.h"
+
+#if defined(TOOLKIT_GTK)
+#include "chrome/browser/ui/app_modal_dialogs/javascript_dialog_manager.h"
+#include "content/public/browser/javascript_dialog_manager.h"
+#endif
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(PDFTabHelper);
 
@@ -104,10 +107,11 @@ void PDFTabHelper::OnModalPromptForPassword(const std::string& prompt,
   base::Callback<void(bool, const string16&)> callback =
       base::Bind(&PDFTabHelper::OnModalPromptForPasswordClosed,
                  base::Unretained(this), reply_message);
-#if defined(OS_MACOSX)
+#if !defined(TOOLKIT_GTK)
   ShowPDFPasswordDialog(web_contents(), base::UTF8ToUTF16(prompt), callback);
 #else
-  // Cheat (for now).
+  // GTK is going away, so it's not worth the effort to create a password dialog
+  // for it. Cheat (for now) until the GTK code is removed.
   bool did_suppress_message;
   GetJavaScriptDialogManagerInstance()->RunJavaScriptDialog(
       web_contents(),
@@ -118,5 +122,5 @@ void PDFTabHelper::OnModalPromptForPassword(const std::string& prompt,
       base::string16(),
       callback,
       &did_suppress_message);
-#endif  // OS_*
+#endif  // TOOLKIT_GTK
 }

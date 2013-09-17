@@ -61,8 +61,7 @@ class PDFTabHelper : public content::WebContentsObserver,
   DISALLOW_COPY_AND_ASSIGN(PDFTabHelper);
 };
 
-// TODO(avi): write for other platforms
-#if defined(OS_MACOSX)
+#if !defined(TOOLKIT_GTK)
 typedef base::Callback<void(bool /* success */,
                             const base::string16& /* password */)>
                                 PasswordDialogClosedCallback;
@@ -71,6 +70,6 @@ typedef base::Callback<void(bool /* success */,
 void ShowPDFPasswordDialog(content::WebContents* web_contents,
                            const base::string16& prompt,
                            const PasswordDialogClosedCallback& callback);
-#endif  // OS_*
+#endif  // !TOOLKIT_GTK
 
 #endif  // CHROME_BROWSER_UI_PDF_PDF_TAB_HELPER_H_
