@@ -122,6 +122,10 @@ testCases.push({
 });
 
 testCases.push({
+  // TODO(karenlees): disabled as logging on windows is not consistent between
+  // runs and between different windows builds. Enable when crbug.com/292252
+  // is fixed.
+  disabled: {win: true},
   func: function triggerWebRequest() {
     chrome.runtime.sendMessage('pknkgggnfecklokoggaggchhaebkajji',
                                'webrequest', function response() { });
@@ -178,6 +182,10 @@ testCases.push({
 });
 
 testCases.push({
+  // TODO(karenlees): disabled as logging on windows is not consistent between
+  // runs and between different windows builds. Enable when crbug.com/292252
+  // is fixed.
+  disabled: {win: true},
   func: function triggerWebRequestIncognito() {
     chrome.runtime.sendMessage('pknkgggnfecklokoggaggchhaebkajji',
                                'webrequest_incognito', function response() { });
