@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/managed_mode/managed_user_sync_service.h"
@@ -16,8 +17,10 @@
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 
 namespace {
 
@@ -97,14 +100,16 @@ void ManagedUserImportHandler::RequestExistingManagedUsers(
     int avatar_index = ManagedUserSyncService::kNoAvatar;
     success = ManagedUserSyncService::GetAvatarIndex(avatar_str, &avatar_index);
     DCHECK(success);
-    managed_user->SetBoolean("needAvatar", avatar_index < 0);
+    managed_user->SetBoolean("needAvatar",
+                             avatar_index == ManagedUserSyncService::kNoAvatar);
 
-    // TODO(ibraaaa): When we have an image indicating that this user
-    // has no synced avatar then change this to use it.
-    avatar_index =
-        avatar_index == ManagedUserSyncService::kNoAvatar ? 0 : avatar_index;
+    std::string supervised_user_icon =
+        std::string(chrome::kChromeUIThemeURL) +
+        "IDR_SUPERVISED_USER_PLACEHOLDER";
     std::string avatar_url =
-        ProfileInfoCache::GetDefaultAvatarIconUrl(avatar_index);
+        avatar_index == ManagedUserSyncService::kNoAvatar ?
+            supervised_user_icon :
+            ProfileInfoCache::GetDefaultAvatarIconUrl(avatar_index);
     managed_user->SetString("iconURL", avatar_url);
     bool on_current_device =
         managed_user_ids.find(it.key()) != managed_user_ids.end();
