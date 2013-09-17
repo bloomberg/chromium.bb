@@ -30,22 +30,26 @@ class ThreadPoolClosed(ThreadPoolError):
 
 
 class ThreadPool(object):
-  """Implements a multithreaded worker pool oriented for mapping jobs with
-  thread-local result storage.
+  """Multithreaded worker pool with priority support.
 
-  Arguments:
-  - initial_threads: Number of threads to start immediately. Can be 0 if it is
-    uncertain that threads will be needed.
-  - max_threads: Maximum number of threads that will be started when all the
-                 threads are busy working. Often the number of CPU cores.
-  - queue_size: Maximum number of tasks to buffer in the queue. 0 for unlimited
-                queue. A non-zero value may make add_task() blocking.
-  - prefix: Prefix to use for thread names. Pool's threads will be
-            named '<prefix>-<thread index>'.
+  When the priority of tasks match, it works in strict FIFO mode.
   """
   QUEUE_CLASS = Queue.PriorityQueue
 
   def __init__(self, initial_threads, max_threads, queue_size, prefix=None):
+    """Immediately starts |initial_threads| threads.
+
+    Arguments:
+    - initial_threads: Number of threads to start immediately. Can be 0 if it is
+                       uncertain that threads will be needed.
+    - max_threads: Maximum number of threads that will be started when all the
+                   threads are busy working. Often the number of CPU cores.
+    - queue_size: Maximum number of tasks to buffer in the queue. 0 for
+                  unlimited queue. A non-zero value may make add_task()
+                  blocking.
+    - prefix: Prefix to use for thread names. Pool's threads will be
+              named '<prefix>-<thread index>'.
+    """
     prefix = prefix or 'tp-0x%0x' % id(self)
     logging.debug(
         'New ThreadPool(%d, %d, %d): %s', initial_threads, max_threads,
@@ -102,14 +106,19 @@ class ThreadPool(object):
   def add_task(self, priority, func, *args, **kwargs):
     """Adds a task, a function to be executed by a worker.
 
-    |priority| can adjust the priority of the task versus others. Lower priority
-    takes precedence.
+    Arguments:
+    - priority: priority of the task versus others. Lower priority takes
+                precedence.
+    - func: function to run. Can either return a return value to be added to the
+            output list or be a generator which can emit multiple values.
+    - args and kwargs: arguments to |func|. Note that if func mutates |args| or
+                       |kwargs| and that the task is retried, see
+                       AutoRetryThreadPool, the retry will use the mutated
+                       values.
 
-    |func| can either return a return value to be added to the output list or
-    be a generator which can emit multiple values.
-
-    Returns the index of the item added, e.g. the total number of enqueued items
-    up to now.
+    Returns:
+      Index of the item added, e.g. the total number of enqueued items up to
+      now.
     """
     assert isinstance(priority, int)
     assert callable(func)
@@ -262,6 +271,60 @@ class ThreadPool(object):
   def __exit__(self, _exc_type, _exc_value, _traceback):
     """Enables 'with' statement."""
     self.close()
+
+
+class AutoRetryThreadPool(ThreadPool):
+  """Automatically retries enqueued operations on exception."""
+  INTERNAL_PRIORITY_BITS = (1<<8) - 1
+  HIGH, MED, LOW = (1<<8, 2<<8, 3<<8)
+
+  def __init__(self, exceptions, retries, *args, **kwargs):
+    """
+    Arguments:
+    - exceptions: list of exception classes that can be retried on.
+    - retries: maximum number of retries to do.
+    """
+    assert exceptions and all(issubclass(e, Exception) for e in exceptions), (
+        exceptions)
+    assert 1 <= retries <= self.INTERNAL_PRIORITY_BITS
+    super(AutoRetryThreadPool, self).__init__(*args, **kwargs)
+    self._swallowed_exceptions = tuple(exceptions)
+    self._retries = retries
+
+  def add_task(self, priority, func, *args, **kwargs):
+    """Tasks added must not use the lower priority bits since they are reserved
+    for retries.
+    """
+    assert (priority & self.INTERNAL_PRIORITY_BITS) == 0
+    return super(AutoRetryThreadPool, self).add_task(
+        priority,
+        self._task_executer,
+        priority,
+        func,
+        *args,
+        **kwargs)
+
+  def _task_executer(self, priority, func, *args, **kwargs):
+    """Wraps the function and automatically retry on exceptions."""
+    try:
+      return func(*args, **kwargs)
+    except self._swallowed_exceptions as e:
+      # Retry a few times, lowering the priority.
+      actual_retries = priority & self.INTERNAL_PRIORITY_BITS
+      if actual_retries < self._retries:
+        priority += 1
+        logging.debug(
+            'Swallowed exception \'%s\'. Retrying at lower priority %X',
+            e, priority)
+        super(AutoRetryThreadPool, self).add_task(
+            priority,
+            self._task_executer,
+            priority,
+            func,
+            *args,
+            **kwargs)
+        return
+      raise
 
 
 class Progress(object):

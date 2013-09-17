@@ -243,6 +243,162 @@ class ThreadPoolTest(unittest.TestCase):
     with self.assertRaises(threading_utils.ThreadPoolClosed):
       pool.close()
 
+  def test_priority(self):
+    # Verifies that a lower priority is run first.
+    with threading_utils.ThreadPool(1, 1, 0) as pool:
+      lock = threading.Lock()
+
+      def wait_and_return(x):
+        with lock:
+          return x
+
+      def return_x(x):
+        return x
+
+      with lock:
+        pool.add_task(0, wait_and_return, 'a')
+        pool.add_task(2, return_x, 'b')
+        pool.add_task(1, return_x, 'c')
+
+      actual = pool.join()
+    self.assertEqual(['a', 'c', 'b'], actual)
+
+
+class AutoRetryThreadPoolTest(unittest.TestCase):
+  def test_bad_class(self):
+    exceptions = [AutoRetryThreadPoolTest]
+    with self.assertRaises(AssertionError):
+      threading_utils.AutoRetryThreadPool(exceptions, 1, 0, 1, 0)
+
+  def test_no_exception(self):
+    with self.assertRaises(AssertionError):
+      threading_utils.AutoRetryThreadPool([], 1, 0, 1, 0)
+
+  def test_bad_retry(self):
+    exceptions = [IOError]
+    with self.assertRaises(AssertionError):
+      threading_utils.AutoRetryThreadPool(exceptions, 256, 0, 1, 0)
+
+  def test_bad_priority(self):
+    exceptions = [IOError]
+    with threading_utils.AutoRetryThreadPool(exceptions, 1, 1, 1, 0) as pool:
+      pool.add_task(0, lambda x: x, 0)
+      pool.add_task(256, lambda x: x, 0)
+      pool.add_task(512, lambda x: x, 0)
+      with self.assertRaises(AssertionError):
+        pool.add_task(1, lambda x: x, 0)
+      with self.assertRaises(AssertionError):
+        pool.add_task(255, lambda x: x, 0)
+
+  def test_priority(self):
+    # Verifies that a lower priority is run first.
+    exceptions = [IOError]
+    with threading_utils.AutoRetryThreadPool(exceptions, 1, 1, 1, 0) as pool:
+      lock = threading.Lock()
+
+      def wait_and_return(x):
+        with lock:
+          return x
+
+      def return_x(x):
+        return x
+
+      with lock:
+        pool.add_task(pool.HIGH, wait_and_return, 'a')
+        pool.add_task(pool.LOW, return_x, 'b')
+        pool.add_task(pool.MED, return_x, 'c')
+
+      actual = pool.join()
+    self.assertEqual(['a', 'c', 'b'], actual)
+
+  def test_retry_inherited(self):
+    # Exception class inheritance works.
+    class CustomException(IOError):
+      pass
+    ran = []
+    def throw(to_throw, x):
+      ran.append(x)
+      if to_throw:
+        raise to_throw.pop(0)
+      return x
+    with threading_utils.AutoRetryThreadPool([IOError], 1, 1, 1, 0) as pool:
+      pool.add_task(pool.MED, throw, [CustomException('a')], 'yay')
+      actual = pool.join()
+    self.assertEqual(['yay'], actual)
+    self.assertEqual(['yay', 'yay'], ran)
+
+  def test_retry_2_times(self):
+    exceptions = [IOError, OSError]
+    to_throw = [OSError('a'), IOError('b')]
+    def throw(x):
+      if to_throw:
+        raise to_throw.pop(0)
+      return x
+    with threading_utils.AutoRetryThreadPool(exceptions, 2, 1, 1, 0) as pool:
+      pool.add_task(pool.MED, throw, 'yay')
+      actual = pool.join()
+    self.assertEqual(['yay'], actual)
+
+  def test_retry_too_many_times(self):
+    exceptions = [IOError, OSError]
+    to_throw = [OSError('a'), IOError('b')]
+    def throw(x):
+      if to_throw:
+        raise to_throw.pop(0)
+      return x
+    with threading_utils.AutoRetryThreadPool(exceptions, 1, 1, 1, 0) as pool:
+      pool.add_task(pool.MED, throw, 'yay')
+      with self.assertRaises(IOError):
+        pool.join()
+
+  def test_retry_mutation_1(self):
+    # This is to warn that mutable arguments WILL be mutated.
+    def throw(to_throw, x):
+      if to_throw:
+        raise to_throw.pop(0)
+      return x
+    exceptions = [IOError, OSError]
+    with threading_utils.AutoRetryThreadPool(exceptions, 1, 1, 1, 0) as pool:
+      pool.add_task(pool.MED, throw, [OSError('a'), IOError('b')], 'yay')
+      with self.assertRaises(IOError):
+        pool.join()
+
+  def test_retry_mutation_2(self):
+    # This is to warn that mutable arguments WILL be mutated.
+    def throw(to_throw, x):
+      if to_throw:
+        raise to_throw.pop(0)
+      return x
+    exceptions = [IOError, OSError]
+    with threading_utils.AutoRetryThreadPool(exceptions, 2, 1, 1, 0) as pool:
+      pool.add_task(pool.MED, throw, [OSError('a'), IOError('b')], 'yay')
+      actual = pool.join()
+    self.assertEqual(['yay'], actual)
+
+  def test_retry_interleaved(self):
+    # Verifies that retries are interleaved. This is important, we don't want a
+    # retried task to take all the pool during retries.
+    exceptions = [IOError, OSError]
+    lock = threading.Lock()
+    ran = []
+    with threading_utils.AutoRetryThreadPool(exceptions, 2, 1, 1, 0) as pool:
+      def lock_and_throw(to_throw, x):
+        with lock:
+          ran.append(x)
+          if to_throw:
+            raise to_throw.pop(0)
+          return x
+      with lock:
+        pool.add_task(
+            pool.MED, lock_and_throw, [OSError('a'), IOError('b')], 'A')
+        pool.add_task(
+            pool.MED, lock_and_throw, [OSError('a'), IOError('b')], 'B')
+
+      actual = pool.join()
+    self.assertEqual(['A', 'B'], actual)
+    # Retries are properly interleaved:
+    self.assertEqual(['A', 'B', 'A', 'B', 'A', 'B'], ran)
+
 
 class FakeProgress(object):
   @staticmethod
