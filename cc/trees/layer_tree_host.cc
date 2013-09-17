@@ -330,6 +330,19 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
 
   sync_tree->FindRootScrollLayer();
 
+  // TODO(wjmaclean) For now, not all LTH clients will register viewports, so
+  // only set them when available..
+  if (page_scale_layer_) {
+    DCHECK(inner_viewport_scroll_layer_);
+    sync_tree->SetViewportLayersFromIds(
+        page_scale_layer_->id(),
+        inner_viewport_scroll_layer_->id(),
+        outer_viewport_scroll_layer_ ? outer_viewport_scroll_layer_->id()
+                                     : Layer::INVALID_ID);
+  } else {
+    sync_tree->ClearViewportLayers();
+  }
+
   float page_scale_delta, sent_page_scale_delta;
   if (settings_.impl_side_painting) {
     // Update the delta from the active tree, which may have
@@ -758,6 +771,9 @@ bool LayerTreeHost::UpdateLayers(Layer* root_layer,
     UpdateHudLayer();
 
     Layer* root_scroll = FindFirstScrollableLayer(root_layer);
+    Layer* page_scale_layer = page_scale_layer_;
+    if (!page_scale_layer && root_scroll)
+      page_scale_layer = root_scroll->parent();
 
     if (hud_layer_) {
       hud_layer_->PrepareForCalculateDrawProperties(
@@ -771,7 +787,7 @@ bool LayerTreeHost::UpdateLayers(Layer* root_layer,
         gfx::Transform(),
         device_scale_factor_,
         page_scale_factor_,
-        root_scroll ? root_scroll->parent() : NULL,
+        page_scale_layer,
         GetRendererCapabilities().max_texture_size,
         settings_.can_use_lcd_text,
         settings_.layer_transforms_should_scale_layer_contents,
@@ -1186,6 +1202,15 @@ void LayerTreeHost::RecreateUIResources() {
     DCHECK(request.bitmap.get());
     ui_resource_request_queue_.push_back(request);
   }
+}
+
+void LayerTreeHost::RegisterViewportLayers(
+    scoped_refptr<Layer> page_scale_layer,
+    scoped_refptr<Layer> inner_viewport_scroll_layer,
+    scoped_refptr<Layer> outer_viewport_scroll_layer) {
+  page_scale_layer_ = page_scale_layer;
+  inner_viewport_scroll_layer_ = inner_viewport_scroll_layer;
+  outer_viewport_scroll_layer_ = outer_viewport_scroll_layer;
 }
 
 }  // namespace cc

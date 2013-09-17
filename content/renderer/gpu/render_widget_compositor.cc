@@ -487,6 +487,27 @@ void RenderWidgetCompositor::registerForAnimations(WebKit::WebLayer* layer) {
       layer_tree_host_->animation_registrar());
 }
 
+void RenderWidgetCompositor::registerViewportLayers(
+    const WebKit::WebLayer* pageScaleLayer,
+    const WebKit::WebLayer* innerViewportScrollLayer,
+    const WebKit::WebLayer* outerViewportScrollLayer) {
+  layer_tree_host_->RegisterViewportLayers(
+      static_cast<const webkit::WebLayerImpl*>(pageScaleLayer)->layer(),
+      static_cast<const webkit::WebLayerImpl*>(innerViewportScrollLayer)
+          ->layer(),
+      // The outer viewport layer will only exist when using pinch virtual
+      // viewports.
+      outerViewportScrollLayer ? static_cast<const webkit::WebLayerImpl*>(
+                                     outerViewportScrollLayer)->layer()
+                               : NULL);
+}
+
+void RenderWidgetCompositor::clearViewportLayers() {
+  layer_tree_host_->RegisterViewportLayers(scoped_refptr<cc::Layer>(),
+                                           scoped_refptr<cc::Layer>(),
+                                           scoped_refptr<cc::Layer>());
+}
+
 bool RenderWidgetCompositor::compositeAndReadback(
     void *pixels, const WebRect& rect_in_device_viewport) {
   return layer_tree_host_->CompositeAndReadback(pixels,
