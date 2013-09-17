@@ -17902,6 +17902,29 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="WebCore.ResourceFetcher.ActionUponResourceRequest"
+    enum="ActionUponResourceRequest">
+  <summary>
+    The resulting action (e.g. load resource, use resource from in-memory
+    cache...) upon a resource request.
+  </summary>
+</histogram>
+
+<histogram name="WebCore.ResourceFetcher.ResourceHasClientUponCacheHit"
+    enum="ResourceHasClient">
+  <summary>
+    Whether the resource in the cache is being used by at least one client (live
+    resource) or not (dead resource) upon a cache hit.
+  </summary>
+</histogram>
+
+<histogram name="WebCore.ResourceFetcher.ResourceTypeUponCacheHit"
+    enum="ResourceType">
+  <summary>
+    The type of the resource (e.g. image, script...) upon a cache hit.
+  </summary>
+</histogram>
+
 <histogram name="WebCore.V8DOMWindowShell.createContext.IsolatedWorld"
     units="milliseconds">
   <summary>
@@ -18306,6 +18329,12 @@ other types of suffix sets.
   <int value="0" label="ScrolledMainFrame"/>
   <int value="1" label="ScrolledMainFrameWithAcceleratedFixedRootBackground"/>
   <int value="2" label="ScrolledMainFrameWithUnacceleratedFixedRootBackground"/>
+</enum>
+
+<enum name="ActionUponResourceRequest" type="int">
+  <int value="0" label="Load resource"/>
+  <int value="1" label="Revalidate resource"/>
+  <int value="2" label="Use resource from cache"/>
 </enum>
 
 <enum name="AndroidEvictionReason" type="int">
@@ -24305,6 +24334,27 @@ other types of suffix sets.
   <int value="6" label="AF_WASTE_NONE_UNSPEC">
     A new job was needed for this UNSPEC lookup.  No waste.
   </int>
+</enum>
+
+<enum name="ResourceHasClient" type="int">
+  <int value="0" label="No client"/>
+  <int value="1" label="Has client"/>
+</enum>
+
+<enum name="ResourceType" type="int">
+  <int value="0" label="Main resource"/>
+  <int value="1" label="Image"/>
+  <int value="2" label="CSSS"/>
+  <int value="3" label="Script"/>
+  <int value="4" label="Font"/>
+  <int value="5" label="Raw"/>
+  <int value="6" label="SVG"/>
+  <int value="7" label="XSL"/>
+  <int value="8" label="Link prefetch"/>
+  <int value="9" label="Link subresource"/>
+  <int value="10" label="Text track"/>
+  <int value="11" label="Shader"/>
+  <int value="12" label="Import resource"/>
 </enum>
 
 <enum name="SavePasswordPromptResponseType" type="int">
