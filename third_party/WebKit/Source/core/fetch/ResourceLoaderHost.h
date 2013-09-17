@@ -60,7 +60,7 @@ public:
     virtual void didChangeLoadingPriority(const Resource*, ResourceLoadPriority) = 0;
     virtual void didFailLoading(const Resource*, const ResourceError&, const ResourceLoaderOptions&) = 0;
 
-    virtual void willSendRequest(const Resource*, ResourceRequest&, const ResourceResponse& redirectResponse, const ResourceLoaderOptions&) = 0;
+    virtual void willSendRequest(unsigned long identifier, ResourceRequest&, const ResourceResponse& redirectResponse, const ResourceLoaderOptions&) = 0;
     virtual void didReceiveResponse(const Resource*, const ResourceResponse&, const ResourceLoaderOptions&) = 0;
     virtual void didReceiveData(const Resource*, const char* data, int dataLength, int encodedDataLength, const ResourceLoaderOptions&) = 0;
 

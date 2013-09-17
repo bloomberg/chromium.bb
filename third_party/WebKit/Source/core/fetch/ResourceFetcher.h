@@ -147,7 +147,7 @@ public:
     virtual void didFinishLoading(const Resource*, double finishTime, const ResourceLoaderOptions&) OVERRIDE;
     virtual void didChangeLoadingPriority(const Resource*, ResourceLoadPriority) OVERRIDE;
     virtual void didFailLoading(const Resource*, const ResourceError&, const ResourceLoaderOptions&) OVERRIDE;
-    virtual void willSendRequest(const Resource*, ResourceRequest&, const ResourceResponse& redirectResponse, const ResourceLoaderOptions&) OVERRIDE;
+    virtual void willSendRequest(unsigned long identifier, ResourceRequest&, const ResourceResponse& redirectResponse, const ResourceLoaderOptions&) OVERRIDE;
     virtual void didReceiveResponse(const Resource*, const ResourceResponse&, const ResourceLoaderOptions&) OVERRIDE;
     virtual void didReceiveData(const Resource*, const char* data, int dataLength, int encodedDataLength, const ResourceLoaderOptions&) OVERRIDE;
     virtual void subresourceLoaderFinishedLoadingOnePart(ResourceLoader*) OVERRIDE;

@@ -116,7 +116,7 @@ void ResourceLoader::releaseResources()
 void ResourceLoader::init(const ResourceRequest& passedRequest)
 {
     ResourceRequest request(passedRequest);
-    m_host->willSendRequest(m_resource, request, ResourceResponse(), m_options);
+    m_host->willSendRequest(m_resource->identifier(), request, ResourceResponse(), m_options);
     request.setReportLoadTiming(true);
     ASSERT(m_state != Terminated);
     ASSERT(!request.isNull());
@@ -254,7 +254,7 @@ void ResourceLoader::willSendRequest(WebKit::WebURLLoader*, WebKit::WebURLReques
     if (request.isNull() || m_state == Terminated)
         return;
 
-    m_host->willSendRequest(m_resource, request, redirectResponse, m_options);
+    m_host->willSendRequest(m_resource->identifier(), request, redirectResponse, m_options);
     request.setReportLoadTiming(true);
     ASSERT(!request.isNull());
     m_request = request;

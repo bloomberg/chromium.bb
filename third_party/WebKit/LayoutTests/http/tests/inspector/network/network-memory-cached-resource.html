@@ -1,0 +1,65 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="../network-test.js"></script>
+<link rel='StyleSheet' href="resources/style.css" type="text/css">
+<script>
+function attachIframe()
+{
+    var frame = document.createElement("iframe");
+    frame.src = "resources/memory-cached-resource.html";
+    document.body.appendChild(frame);
+}
+
+function test()
+{
+    var finished = false;
+    NetworkAgent.setCacheDisabled(true, step1);
+
+    function findResource(url, status, cached)
+    {
+        var requests = WebInspector.networkLog.requests;
+        for (var i = 0; i < requests.length; ++i) {
+            var request = requests[i];
+            if (url.test(request.url) && (status === request.statusCode) && (cached === request.cached))
+                return request;
+        }
+        return null;
+    }
+
+    function step1()
+    {
+        WebInspector.networkManager.addEventListener(WebInspector.NetworkManager.EventTypes.RequestFinished, onRequest);
+        InspectorTest.reloadPage(step2);
+    }
+
+    function step2()
+    {
+        InspectorTest.evaluateInPage("attachIframe()");
+    }
+
+    function onRequest()
+    {
+        if (!finished && findResource(/style\.css/, 200, false) && findResource(/style\.css/, 200, true)) {
+            finished = true;
+            InspectorTest.addResult("Memory-cached resource found.");
+            step3();
+        }
+    }
+
+    function step3()
+    {
+        NetworkAgent.setCacheDisabled(false, step4);
+    }
+
+    function step4(msg)
+    {
+        InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+<body onload="runTest()">
+ <p>Tests that memory-cached resources are correctly reported.</p>
+</body>
+</html>

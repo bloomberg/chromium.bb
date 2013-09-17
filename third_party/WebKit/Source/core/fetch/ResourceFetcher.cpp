@@ -1042,7 +1042,7 @@ void ResourceFetcher::notifyLoadedFromMemoryCache(Resource* resource)
     unsigned long identifier = createUniqueIdentifier();
     context().dispatchDidLoadResourceFromMemoryCache(request, resource->response());
     // FIXME: If willSendRequest changes the request, we don't respect it.
-    willSendRequest(resource, request, ResourceResponse(), resource->options());
+    willSendRequest(identifier, request, ResourceResponse(), resource->options());
     InspectorInstrumentation::markResourceAsCached(frame()->page(), identifier);
     context().sendRemainingDelegateMessages(m_documentLoader, identifier, resource->response(), 0, resource->encodedSize(), 0, ResourceError());
 }
@@ -1187,12 +1187,12 @@ void ResourceFetcher::didFailLoading(const Resource* resource, const ResourceErr
     context().dispatchDidFail(m_documentLoader, resource->identifier(), error);
 }
 
-void ResourceFetcher::willSendRequest(const Resource* resource, ResourceRequest& request, const ResourceResponse& redirectResponse, const ResourceLoaderOptions& options)
+void ResourceFetcher::willSendRequest(unsigned long identifier, ResourceRequest& request, const ResourceResponse& redirectResponse, const ResourceLoaderOptions& options)
 {
     if (options.sendLoadCallbacks == SendCallbacks)
-        context().dispatchWillSendRequest(m_documentLoader, resource->identifier(), request, redirectResponse, options.initiatorInfo);
+        context().dispatchWillSendRequest(m_documentLoader, identifier, request, redirectResponse, options.initiatorInfo);
     else
-        InspectorInstrumentation::willSendRequest(frame(), resource->identifier(), m_documentLoader, request, redirectResponse, options.initiatorInfo);
+        InspectorInstrumentation::willSendRequest(frame(), identifier, m_documentLoader, request, redirectResponse, options.initiatorInfo);
 }
 
 void ResourceFetcher::didReceiveResponse(const Resource* resource, const ResourceResponse& response, const ResourceLoaderOptions& options)
