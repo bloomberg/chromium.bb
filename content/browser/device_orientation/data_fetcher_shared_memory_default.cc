@@ -5,8 +5,6 @@
 #include "data_fetcher_shared_memory.h"
 
 #include "base/logging.h"
-#include "content/common/device_motion_hardware_buffer.h"
-#include "content/common/device_orientation/device_orientation_hardware_buffer.h"
 
 namespace {
 
@@ -20,11 +18,22 @@ static bool SetMotionBuffer(content::DeviceMotionHardwareBuffer* buffer,
   return true;
 }
 
+static bool SetOrientationBuffer(
+    content::DeviceOrientationHardwareBuffer* buffer, bool enabled) {
+  if (!buffer)
+    return false;
+  buffer->seqlock.WriteBegin();
+  buffer->data.allAvailableSensorsAreActive = enabled;
+  buffer->seqlock.WriteEnd();
+  return true;
+}
+
 }
 
 namespace content {
 
-DataFetcherSharedMemory::DataFetcherSharedMemory() {
+DataFetcherSharedMemory::DataFetcherSharedMemory()
+    : motion_buffer_(NULL), orientation_buffer_(NULL) {
 }
 
 DataFetcherSharedMemory::~DataFetcherSharedMemory() {
@@ -38,8 +47,9 @@ bool DataFetcherSharedMemory::Start(ConsumerType consumer_type, void* buffer) {
       motion_buffer_ = static_cast<DeviceMotionHardwareBuffer*>(buffer);
       return SetMotionBuffer(motion_buffer_, true);
     case CONSUMER_TYPE_ORIENTATION:
-      NOTIMPLEMENTED();
-      break;
+      orientation_buffer_ =
+          static_cast<DeviceOrientationHardwareBuffer*>(buffer);
+      return SetOrientationBuffer(orientation_buffer_, true);
     default:
       NOTREACHED();
   }
@@ -52,8 +62,7 @@ bool DataFetcherSharedMemory::Stop(ConsumerType consumer_type) {
     case CONSUMER_TYPE_MOTION:
       return SetMotionBuffer(motion_buffer_, false);
     case CONSUMER_TYPE_ORIENTATION:
-      NOTIMPLEMENTED();
-      break;
+      return SetOrientationBuffer(orientation_buffer_, false);
     default:
       NOTREACHED();
   }
