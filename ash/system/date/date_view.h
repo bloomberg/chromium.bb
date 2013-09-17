@@ -5,6 +5,7 @@
 #ifndef ASH_SYSTEM_DATE_DATE_VIEW_H_
 #define ASH_SYSTEM_DATE_DATE_VIEW_H_
 
+#include "ash/ash_export.h"
 #include "ash/system/date/tray_date.h"
 #include "ash/system/tray/actionable_view.h"
 #include "base/i18n/time_formatting.h"
@@ -20,8 +21,8 @@ namespace internal {
 namespace tray {
 
 // Abstract base class containing common updating and layout code for the
-// DateView popup and the TimeView tray icon.
-class BaseDateTimeView : public ActionableView {
+// DateView popup and the TimeView tray icon. Exported for tests.
+class ASH_EXPORT BaseDateTimeView : public ActionableView {
  public:
   virtual ~BaseDateTimeView();
 
@@ -78,16 +79,11 @@ class DateView : public BaseDateTimeView {
 };
 
 // Tray view used to display the current time.
-class TimeView : public BaseDateTimeView {
+// Exported for tests.
+class ASH_EXPORT TimeView : public BaseDateTimeView {
  public:
-  TimeView(TrayDate::ClockLayout clock_layout);
+  explicit TimeView(TrayDate::ClockLayout clock_layout);
   virtual ~TimeView();
-
-  views::Label* label() const { return label_.get(); }
-  views::Label* label_hour_left() const { return label_hour_left_.get(); }
-  views::Label* label_hour_right() const { return label_hour_right_.get(); }
-  views::Label* label_minute_left() const { return label_minute_left_.get(); }
-  views::Label* label_minute_right() const { return label_minute_right_.get(); }
 
   // Updates the format of the displayed time.
   void UpdateTimeFormat();
@@ -96,6 +92,8 @@ class TimeView : public BaseDateTimeView {
   void UpdateClockLayout(TrayDate::ClockLayout clock_layout);
 
  private:
+  friend class TimeViewTest;
+
   // Overridden from BaseDateTimeView.
   virtual void UpdateTextInternal(const base::Time& now) OVERRIDE;
 
@@ -109,11 +107,12 @@ class TimeView : public BaseDateTimeView {
   void SetupLabels();
   void SetupLabel(views::Label* label);
 
-  scoped_ptr<views::Label> label_;
-  scoped_ptr<views::Label> label_hour_left_;
-  scoped_ptr<views::Label> label_hour_right_;
-  scoped_ptr<views::Label> label_minute_left_;
-  scoped_ptr<views::Label> label_minute_right_;
+  // Label text used for the normal horizontal shelf.
+  scoped_ptr<views::Label> horizontal_label_;
+
+  // The time label is split into two lines for the vertical shelf.
+  scoped_ptr<views::Label> vertical_label_hours_;
+  scoped_ptr<views::Label> vertical_label_minutes_;
 
   base::HourClockType hour_type_;
 

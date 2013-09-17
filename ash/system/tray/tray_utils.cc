@@ -54,9 +54,9 @@ void SetTrayLabelItemBorder(TrayItemView* tray_view,
     int horizontal_padding = (tray_view->GetPreferredSize().width() -
         tray_view->label()->GetPreferredSize().width()) / 2;
     tray_view->set_border(views::Border::CreateEmptyBorder(
-        kTrayLabelItemVerticalPaddingVeriticalAlignment,
+        kTrayLabelItemVerticalPaddingVerticalAlignment,
         horizontal_padding,
-        kTrayLabelItemVerticalPaddingVeriticalAlignment,
+        kTrayLabelItemVerticalPaddingVerticalAlignment,
         horizontal_padding));
   }
 }

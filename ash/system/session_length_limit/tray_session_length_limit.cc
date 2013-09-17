@@ -201,7 +201,7 @@ void RemainingSessionTimeTrayView::UpdateClockLayout(
                        0, views::GridLayout::USE_PREF, 0, 0);
     columns->AddColumn(views::GridLayout::CENTER, views::GridLayout::CENTER,
                        0, views::GridLayout::USE_PREF, 0, 0);
-    layout->AddPaddingRow(0, kTrayLabelItemVerticalPaddingVeriticalAlignment);
+    layout->AddPaddingRow(0, kTrayLabelItemVerticalPaddingVerticalAlignment);
     layout->StartRow(0, 0);
     layout->AddView(vertical_layout_label_hours_left_);
     layout->AddView(vertical_layout_label_hours_right_);
@@ -211,7 +211,7 @@ void RemainingSessionTimeTrayView::UpdateClockLayout(
     layout->StartRow(0, 0);
     layout->AddView(vertical_layout_label_seconds_left_);
     layout->AddView(vertical_layout_label_seconds_right_);
-    layout->AddPaddingRow(0, kTrayLabelItemVerticalPaddingVeriticalAlignment);
+    layout->AddPaddingRow(0, kTrayLabelItemVerticalPaddingVerticalAlignment);
   }
   Update();
 }

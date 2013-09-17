@@ -1260,9 +1260,9 @@ void TrayUser::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
     }
     if (label_) {
       label_->set_border(views::Border::CreateEmptyBorder(
-          kTrayLabelItemVerticalPaddingVeriticalAlignment,
+          kTrayLabelItemVerticalPaddingVerticalAlignment,
           kTrayLabelItemHorizontalPaddingBottomAlignment,
-          kTrayLabelItemVerticalPaddingVeriticalAlignment,
+          kTrayLabelItemVerticalPaddingVerticalAlignment,
           kTrayLabelItemHorizontalPaddingBottomAlignment));
     }
     layout_view_->SetLayoutManager(

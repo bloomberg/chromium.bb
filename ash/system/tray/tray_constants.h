@@ -24,7 +24,7 @@ extern const int kTrayImageItemHorizontalPaddingVerticalAlignment;
 extern const int kTrayImageItemVerticalPaddingVerticalAlignment;
 
 extern const int kTrayLabelItemHorizontalPaddingBottomAlignment;
-extern const int kTrayLabelItemVerticalPaddingVeriticalAlignment;
+extern const int kTrayLabelItemVerticalPaddingVerticalAlignment;
 
 extern const int kTrayMenuBottomRowPadding;
 extern const int kTrayMenuBottomRowPaddingBetweenItems;

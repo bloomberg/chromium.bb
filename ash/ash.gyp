@@ -753,6 +753,7 @@
         'system/chromeos/power/tray_power_unittest.cc',
         'system/chromeos/screen_security/screen_tray_item_unittest.cc',
         'system/chromeos/tray_display_unittest.cc',
+        'system/date/date_view_unittest.cc',
         'system/tray/system_tray_unittest.cc',
         'system/user/tray_user_unittest.cc',
         'system/web_notification/web_notification_tray_unittest.cc',
