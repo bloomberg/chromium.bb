@@ -19,7 +19,7 @@ struct FormData {
   FormData(const FormData& data);
   ~FormData();
 
-  // Used by FormStructureTest.
+  // Used in testing.
   bool operator==(const FormData& form) const;
   bool operator!=(const FormData& form) const;
 
@@ -36,6 +36,9 @@ struct FormData {
   // A vector of all the input fields in the form.
   std::vector<FormFieldData> fields;
 };
+
+// For testing.
+std::ostream& operator<<(std::ostream& os, const FormData& form);
 
 // Serialize FormData. Used by the PasswordManager to persist FormData
 // pertaining to password forms. Serialized data is appended to |pickle|

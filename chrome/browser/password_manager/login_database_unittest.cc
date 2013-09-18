@@ -41,6 +41,15 @@ class LoginDatabaseTest : public testing::Test {
     db_.public_suffix_domain_matching_ = enabled;
   }
 
+  void FormsAreEqual(const PasswordForm& expected, const PasswordForm& actual) {
+    PasswordForm expected_copy(expected);
+#if defined(OS_MACOSX)
+    // On the Mac we should never be storing passwords in the database.
+    expected_copy.password_value = ASCIIToUTF16("");
+#endif
+    EXPECT_EQ(expected_copy, actual);
+  }
+
   base::ScopedTempDir temp_dir_;
   base::FilePath file_;
   LoginDatabase db_;
@@ -66,11 +75,16 @@ TEST_F(LoginDatabaseTest, Logins) {
   form.ssl_valid = false;
   form.preferred = false;
   form.scheme = PasswordForm::SCHEME_HTML;
+  form.times_used = 1;
+  form.form_data.name = ASCIIToUTF16("form_name");
+  form.form_data.method = ASCIIToUTF16("POST");
 
-  // Add it and make sure it is there.
+  // Add it and make sure it is there and that all the fields were retrieved
+  // correctly.
   EXPECT_TRUE(db_.AddLogin(form));
   EXPECT_TRUE(db_.GetAutofillableLogins(&result));
   EXPECT_EQ(1U, result.size());
+  FormsAreEqual(form, *result[0]);
   delete result[0];
   result.clear();
 

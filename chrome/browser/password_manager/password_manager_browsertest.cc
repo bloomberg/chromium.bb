@@ -5,6 +5,8 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/metrics/histogram_samples.h"
+#include "base/metrics/statistics_recorder.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -15,6 +17,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/autofill/core/browser/autofill_common_test.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -24,6 +27,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
@@ -130,7 +134,8 @@ class PasswordManagerBrowserTest : public InProcessBrowserTest {
   // would sometimes see the DidFinishLoad event from a previous navigation and
   // return immediately.
   void NavigateToFile(const std::string& path) {
-    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+    if (!embedded_test_server()->Started())
+      ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
     NavigationObserver observer(WebContents());
     GURL url = embedded_test_server()->GetURL(path);
@@ -291,4 +296,61 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, NoPromptForOtherXHR) {
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_navigate));
   observer.Wait();
   EXPECT_FALSE(observer.infobar_shown());
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
+                       VerifyPasswordGenerationUpload) {
+  // Prevent Autofill requests from actually going over the wire.
+  net::TestURLFetcherFactory factory;
+  // Disable Autofill requesting access to AddressBook data. This causes
+  // the test to hang on Mac.
+  autofill::test::DisableSystemServices(browser()->profile());
+
+  // Visit a signup form.
+  NavigateToFile("/password/signup_form.html");
+
+  // Enter a password and save it.
+  NavigationObserver first_observer(WebContents());
+  std::string fill_and_submit =
+      "document.getElementById('other_info').value = 'stuff';"
+      "document.getElementById('username_field').value = 'my_username';"
+      "document.getElementById('password_field').value = 'password';"
+      "document.getElementById('input_submit_button').click()";
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+
+  first_observer.Wait();
+  ASSERT_TRUE(first_observer.infobar_shown());
+
+  // Now navigate to a login form that has similar HTML markup.
+  NavigateToFile("/password/password_form.html");
+
+  // The form should be filled with the previously submitted username.
+  std::string get_username =
+      "window.domAutomationController.send("
+      "document.getElementById('username_field').value);";
+  std::string actual_username;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(RenderViewHost(),
+                                                     get_username,
+                                                     &actual_username));
+  ASSERT_EQ("my_username", actual_username);
+
+  // Submit the form and verify that there is no infobar (as the password
+  // has already been saved).
+  NavigationObserver second_observer(WebContents());
+  std::string submit_form =
+      "document.getElementById('input_submit_button').click()";
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), submit_form));
+  second_observer.Wait();
+  EXPECT_FALSE(second_observer.infobar_shown());
+
+  // Verify that we sent a ping to Autofill saying that the original form
+  // was likely an account creation form since it has more than 2 text input
+  // fields and was used for the first time on a different form.
+  base::HistogramBase* upload_histogram =
+      base::StatisticsRecorder::FindHistogram(
+          "PasswordGeneration.UploadStarted");
+  scoped_ptr<base::HistogramSamples> snapshot =
+      upload_histogram->SnapshotSamples();
+  EXPECT_EQ(0, snapshot->GetCount(0 /* failure */));
+  EXPECT_EQ(1, snapshot->GetCount(1 /* success */));
 }

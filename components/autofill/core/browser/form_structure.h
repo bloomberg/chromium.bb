@@ -153,6 +153,9 @@ class FormStructure {
 
   const GURL& source_url() const { return source_url_; }
 
+  void set_upload_required(UploadRequired required) {
+    upload_required_ = required;
+  }
   UploadRequired upload_required() const { return upload_required_; }
 
   virtual std::string server_experiment_id() const;
