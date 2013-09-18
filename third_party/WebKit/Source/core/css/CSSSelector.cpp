@@ -103,10 +103,12 @@ inline unsigned CSSSelector::specificityForOneSelector() const
     case Contain:
     case Begin:
     case End:
-        // FIXME: PsuedoAny should base the specificity on the sub-selectors.
+        // FIXME: PseudoAny should base the specificity on the sub-selectors.
         // See http://lists.w3.org/Archives/Public/www-style/2010Sep/0530.html
-        if (pseudoType() == PseudoNot && selectorList())
+        if (pseudoType() == PseudoNot) {
+            ASSERT(selectorList());
             return selectorList()->first()->specificityForOneSelector();
+        }
         return 0x100;
     case Tag:
         return (tagQName().localName() != starAtom) ? 1 : 0;
@@ -627,8 +629,8 @@ String CSSSelector::selectorText(const String& rightSide) const
 
             switch (cs->pseudoType()) {
             case PseudoNot:
-                if (const CSSSelectorList* selectorList = cs->selectorList())
-                    str.append(selectorList->first()->selectorText());
+                ASSERT(cs->selectorList());
+                str.append(cs->selectorList()->first()->selectorText());
                 str.append(')');
                 break;
             case PseudoLang:

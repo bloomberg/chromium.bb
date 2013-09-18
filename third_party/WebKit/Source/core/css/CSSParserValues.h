@@ -121,6 +121,8 @@ struct CSSParserString {
 
     AtomicString atomicSubstring(unsigned position, unsigned length) const;
 
+    bool isFunction() const { return length() > 0 && (*this)[length() - 1] == '('; }
+
     union {
         const LChar* characters8;
         const UChar* characters16;

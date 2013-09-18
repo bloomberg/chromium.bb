@@ -1382,6 +1382,8 @@ ident_or_string:
 
 pseudo_page:
     ':' IDENT {
+        if ($2.isFunction())
+            YYERROR;
         $$ = parser->createFloatingSelector();
         $$->setMatch(CSSSelector::PagePseudoClass);
         parser->tokenToLowerCase($2);
@@ -1393,6 +1395,8 @@ pseudo_page:
 
 pseudo:
     ':' error_location IDENT {
+        if ($3.isFunction())
+            YYERROR;
         $$ = parser->createFloatingSelector();
         $$->setMatch(CSSSelector::PseudoClass);
         parser->tokenToLowerCase($3);
@@ -1404,6 +1408,8 @@ pseudo:
         }
     }
     | ':' ':' error_location IDENT {
+        if ($4.isFunction())
+            YYERROR;
         $$ = parser->createFloatingSelector();
         $$->setMatch(CSSSelector::PseudoElement);
         parser->tokenToLowerCase($4);
