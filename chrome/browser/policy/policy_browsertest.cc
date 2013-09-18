@@ -78,6 +78,7 @@
 #include "chrome/common/content_settings_pattern.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -139,6 +140,16 @@
 #include "chromeos/audio/cras_audio_handler.h"
 #endif
 
+#if !defined(OS_MACOSX)
+#include "apps/native_app_window.h"
+#include "apps/shell_window.h"
+#include "apps/shell_window_registry.h"
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
+#include "chrome/browser/ui/extensions/application_launch.h"
+#include "ui/base/window_open_disposition.h"
+#endif
+
 using content::BrowserThread;
 using content::URLRequestMockHTTPJob;
 using testing::AnyNumber;
@@ -177,6 +188,8 @@ const base::FilePath::CharType kGoodUnpackedExt[] =
     FILE_PATH_LITERAL("good_unpacked");
 const base::FilePath::CharType kAppUnpackedExt[] =
     FILE_PATH_LITERAL("app");
+const base::FilePath::CharType kUnpackedFullscreenAppName[] =
+    FILE_PATH_LITERAL("fullscreen_app");
 
 // Filters requests to the hosts in |urls| and redirects them to the test data
 // dir through URLRequestMockHTTPJobs.
@@ -513,6 +526,62 @@ void OneOfTwoNotificationsObserver::Observe(int type,
   running_ = false;
 }
 
+#if !defined(OS_MACOSX)
+
+// Observer used to wait for the creation of a new shell window.
+class TestAddShellWindowObserver : public apps::ShellWindowRegistry::Observer {
+ public:
+  explicit TestAddShellWindowObserver(apps::ShellWindowRegistry* registry);
+  virtual ~TestAddShellWindowObserver();
+
+  // apps::ShellWindowRegistry::Observer:
+  virtual void OnShellWindowAdded(apps::ShellWindow* shell_window) OVERRIDE;
+  virtual void OnShellWindowIconChanged(
+      apps::ShellWindow* shell_window) OVERRIDE;
+  virtual void OnShellWindowRemoved(apps::ShellWindow* shell_window) OVERRIDE;
+
+  apps::ShellWindow* WaitForShellWindow();
+
+ private:
+  apps::ShellWindowRegistry* registry_;  // Not owned.
+  apps::ShellWindow* window_;  // Not owned.
+  base::RunLoop run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestAddShellWindowObserver);
+};
+
+TestAddShellWindowObserver::TestAddShellWindowObserver(
+    apps::ShellWindowRegistry* registry)
+    : registry_(registry),
+      window_(NULL) {
+  registry_->AddObserver(this);
+}
+
+TestAddShellWindowObserver::~TestAddShellWindowObserver() {
+  registry_->RemoveObserver(this);
+}
+
+void TestAddShellWindowObserver::OnShellWindowAdded(
+    apps::ShellWindow* shell_window) {
+  window_ = shell_window;
+  run_loop_.Quit();
+}
+
+void TestAddShellWindowObserver::OnShellWindowIconChanged(
+    apps::ShellWindow* shell_window) {
+}
+
+void TestAddShellWindowObserver::OnShellWindowRemoved(
+    apps::ShellWindow* shell_window) {
+}
+
+apps::ShellWindow* TestAddShellWindowObserver::WaitForShellWindow() {
+  run_loop_.Run();
+  return window_;
+}
+
+#endif
+
 }  // namespace
 
 class PolicyTest : public InProcessBrowserTest {
@@ -595,7 +664,7 @@ class PolicyTest : public InProcessBrowserTest {
     return details.ptr();
   }
 
-  void LoadUnpackedExtension(
+  const extensions::Extension* LoadUnpackedExtension(
       const base::FilePath::StringType& name, bool expect_success) {
     base::FilePath extension_path(ui_test_utils::GetTestFilePath(
         base::FilePath(kTestExtensionsDir), base::FilePath(name)));
@@ -607,6 +676,14 @@ class PolicyTest : public InProcessBrowserTest {
         content::NotificationService::AllSources());
     installer->Load(extension_path);
     observer.Wait();
+
+    const ExtensionSet* extensions = extension_service()->extensions();
+    for (ExtensionSet::const_iterator it = extensions->begin();
+         it != extensions->end(); ++it) {
+      if ((*it)->path() == extension_path)
+        return it->get();
+    }
+    return NULL;
   }
 
   void UninstallExtension(const std::string& id, bool expect_success) {
@@ -1899,7 +1976,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, FileURLBlacklist) {
 }
 
 #if !defined(OS_MACOSX)
-IN_PROC_BROWSER_TEST_F(PolicyTest, FullscreenAllowed) {
+IN_PROC_BROWSER_TEST_F(PolicyTest, FullscreenAllowedBrowser) {
   PolicyMap policies;
   policies.Set(key::kFullscreenAllowed,
                POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
@@ -1912,6 +1989,43 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, FullscreenAllowed) {
   EXPECT_FALSE(browser_window->IsFullscreen());
   chrome::ToggleFullscreenMode(browser());
   EXPECT_FALSE(browser_window->IsFullscreen());
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, FullscreenAllowedApp) {
+  PolicyMap policies;
+  policies.Set(key::kFullscreenAllowed,
+               POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+               base::Value::CreateBooleanValue(false), NULL);
+  UpdateProviderPolicy(policies);
+
+  const extensions::Extension* extension =
+      LoadUnpackedExtension(kUnpackedFullscreenAppName, true);
+  ASSERT_TRUE(extension);
+
+  // Launch an app that tries to open a fullscreen window.
+  TestAddShellWindowObserver add_window_observer(
+      apps::ShellWindowRegistry::Get(browser()->profile()));
+  chrome::OpenApplication(chrome::AppLaunchParams(browser()->profile(),
+                                                  extension,
+                                                  extension_misc::LAUNCH_NONE,
+                                                  NEW_WINDOW));
+  apps::ShellWindow* window = add_window_observer.WaitForShellWindow();
+  ASSERT_TRUE(window);
+
+  // Verify that the window is not in fullscreen mode.
+  EXPECT_FALSE(window->GetBaseWindow()->IsFullscreen());
+
+  // Verify that the window cannot be toggled into fullscreen mode via apps
+  // APIs.
+  EXPECT_TRUE(content::ExecuteScript(
+      window->web_contents(),
+      "chrome.app.window.current().fullscreen();"));
+  EXPECT_FALSE(window->GetBaseWindow()->IsFullscreen());
+
+  // Verify that the window cannot be toggled into fullscreen mode from within
+  // Chrome (e.g., using keyboard accelerators).
+  window->Fullscreen();
+  EXPECT_FALSE(window->GetBaseWindow()->IsFullscreen());
 }
 #endif
 
