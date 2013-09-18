@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/memory/singleton.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/prefs/pref_service.h"
@@ -18,7 +19,9 @@
 #include "chrome/browser/devtools/adb_client_socket.h"
 #include "chrome/browser/devtools/adb_web_socket.h"
 #include "chrome/browser/devtools/devtools_protocol.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
+#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
@@ -268,9 +271,6 @@ class PortForwardingController::Connection
           Connection,
           content::BrowserThread::DeleteOnUIThread> {
  public:
-  typedef DevToolsAdbBridge::RemoteDevice::PortStatus PortStatus;
-  typedef DevToolsAdbBridge::RemoteDevice::PortStatusMap PortStatusMap;
-
   Connection(Registry* registry,
              scoped_refptr<DevToolsAdbBridge::AndroidDevice> device,
              const std::string& socket,
@@ -508,7 +508,7 @@ void PortForwardingController::Connection::UpdatePortStatusMapOnUIThread(
   port_status_on_ui_thread_ = status_map;
 }
 
-const PortForwardingController::Connection::PortStatusMap&
+const PortForwardingController::PortStatusMap&
 PortForwardingController::Connection::GetPortStatusMap() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return port_status_on_ui_thread_;
@@ -590,20 +590,53 @@ PortForwardingController::~PortForwardingController() {
     it->second->Shutdown();
 }
 
-void PortForwardingController::UpdateDeviceList(
+PortForwardingController::DevicesStatus
+PortForwardingController::UpdateDeviceList(
     const DevToolsAdbBridge::RemoteDevices& devices) {
+  DevicesStatus status;
   for (DevToolsAdbBridge::RemoteDevices::const_iterator it = devices.begin();
        it != devices.end(); ++it) {
-    Registry::iterator rit = registry_.find((*it)->serial());
+    scoped_refptr<DevToolsAdbBridge::RemoteDevice> device = *it;
+    Registry::iterator rit = registry_.find(device->serial());
     if (rit == registry_.end()) {
-      std::string socket = FindBestSocketForTethering((*it)->browsers());
-      if (!socket.empty() || (*it)->serial().empty()) {
+      std::string socket = FindBestSocketForTethering(device->browsers());
+      if (!socket.empty() || device->serial().empty()) {
         // Will delete itself when disconnected.
         new Connection(
-          &registry_, (*it)->device(), socket, bridge_, pref_service_);
+          &registry_, device->device(), socket, bridge_, pref_service_);
       }
     } else {
-      (*it)->set_port_status((*rit).second->GetPortStatusMap());
+      status[device->serial()] = (*rit).second->GetPortStatusMap();
     }
   }
+  return status;
+}
+
+// static
+PortForwardingController::Factory*
+PortForwardingController::Factory::GetInstance() {
+  return Singleton<PortForwardingController::Factory>::get();
+}
+
+// static
+PortForwardingController* PortForwardingController::Factory::GetForProfile(
+    Profile* profile) {
+  return static_cast<PortForwardingController*>(GetInstance()->
+          GetServiceForBrowserContext(profile, true));
+}
+
+PortForwardingController::Factory::Factory()
+    : BrowserContextKeyedServiceFactory(
+          "PortForwardingController",
+          BrowserContextDependencyManager::GetInstance()) {}
+
+PortForwardingController::Factory::~Factory() {}
+
+BrowserContextKeyedService*
+PortForwardingController::Factory::BuildServiceInstanceFor(
+    content::BrowserContext* context) const {
+  Profile* profile = Profile::FromBrowserContext(context);
+  return new PortForwardingController(
+      DevToolsAdbBridge::Factory::GetForProfile(profile),
+      profile->GetPrefs());
 }

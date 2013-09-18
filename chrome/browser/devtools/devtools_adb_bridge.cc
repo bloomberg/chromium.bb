@@ -26,7 +26,6 @@
 #include "chrome/browser/devtools/adb_web_socket.h"
 #include "chrome/browser/devtools/devtools_protocol.h"
 #include "chrome/browser/devtools/devtools_window.h"
-#include "chrome/browser/devtools/port_forwarding_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
@@ -942,8 +941,6 @@ DevToolsAdbBridge::DevToolsAdbBridge(Profile* profile)
       adb_thread_(RefCountedAdbThread::GetInstance()),
       has_message_loop_(adb_thread_->message_loop() != NULL) {
   rsa_key_.reset(AndroidRSAPrivateKey(profile));
-  port_forwarding_controller_.reset(
-      new PortForwardingController(this, profile->GetPrefs()));
 }
 
 void DevToolsAdbBridge::AddListener(Listener* listener) {
@@ -984,7 +981,6 @@ void DevToolsAdbBridge::ReceivedRemoteDevices(RemoteDevices* devices_ptr) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   scoped_ptr<RemoteDevices> devices(devices_ptr);
-  port_forwarding_controller_->UpdateDeviceList(*devices.get());
 
   Listeners copy(listeners_);
   for (Listeners::iterator it = copy.begin(); it != copy.end(); ++it)

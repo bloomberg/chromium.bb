@@ -16,6 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/devtools/devtools_window.h"
+#include "chrome/browser/devtools/port_forwarding_controller.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
@@ -664,6 +665,14 @@ content::WebUIDataSource* InspectUI::CreateInspectUIHTMLSource() {
 
 void InspectUI::RemoteDevicesChanged(
     DevToolsAdbBridge::RemoteDevices* devices) {
+  Profile* profile = Profile::FromWebUI(web_ui());
+  PortForwardingController* port_forwarding_controller =
+      PortForwardingController::Factory::GetForProfile(profile);
+  PortForwardingController::DevicesStatus port_forwarding_status;
+  if (port_forwarding_controller)
+    port_forwarding_status =
+        port_forwarding_controller->UpdateDeviceList(*devices);
+
   remote_browsers_.clear();
   remote_pages_.clear();
   ListValue device_list;
@@ -723,15 +732,21 @@ void InspectUI::RemoteDevicesChanged(
       browser_list->Append(browser_data);
     }
 
-    DictionaryValue* port_status_dict = new DictionaryValue();
-    typedef DevToolsAdbBridge::RemoteDevice::PortStatusMap StatusMap;
-    const StatusMap& port_status = device->port_status();
-    for (StatusMap::const_iterator it = port_status.begin();
-         it != port_status.end(); ++it) {
-      port_status_dict->SetInteger(
-          base::StringPrintf("%d", it->first), it->second);
+    if (port_forwarding_controller) {
+      PortForwardingController::DevicesStatus::iterator sit =
+          port_forwarding_status.find(device->serial());
+      if (sit != port_forwarding_status.end()) {
+        DictionaryValue* port_status_dict = new DictionaryValue();
+        typedef PortForwardingController::PortStatusMap StatusMap;
+        const StatusMap& port_status = sit->second;
+        for (StatusMap::const_iterator it = port_status.begin();
+             it != port_status.end(); ++it) {
+          port_status_dict->SetInteger(
+              base::StringPrintf("%d", it->first), it->second);
+        }
+        device_data->Set(kAdbPortStatus, port_status_dict);
+      }
     }
-    device_data->Set(kAdbPortStatus, port_status_dict);
 
     device_list.Append(device_data);
   }

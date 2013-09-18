@@ -8,18 +8,45 @@
 #include <map>
 
 #include "chrome/browser/devtools/devtools_adb_bridge.h"
+#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
 
 class PrefService;
 
-class PortForwardingController {
+class PortForwardingController : public BrowserContextKeyedService {
  public:
   PortForwardingController(
       scoped_refptr<DevToolsAdbBridge> bridge,
       PrefService* pref_service);
 
-  ~PortForwardingController();
+  virtual ~PortForwardingController();
 
-  void UpdateDeviceList(const DevToolsAdbBridge::RemoteDevices& devices);
+  class Factory : public BrowserContextKeyedServiceFactory {
+   public:
+    // Returns singleton instance of Factory.
+    static Factory* GetInstance();
+
+    // Returns PortForwardingController associated with |profile|.
+    static PortForwardingController* GetForProfile(Profile* profile);
+
+   private:
+    friend struct DefaultSingletonTraits<Factory>;
+
+    Factory();
+    virtual ~Factory();
+
+    // BrowserContextKeyedServiceFactory overrides:
+    virtual BrowserContextKeyedService* BuildServiceInstanceFor(
+        content::BrowserContext* context) const OVERRIDE;
+    DISALLOW_COPY_AND_ASSIGN(Factory);
+  };
+
+  typedef int PortStatus;
+  typedef std::map<int, PortStatus> PortStatusMap;
+  typedef std::map<std::string, PortStatusMap> DevicesStatus;
+
+  DevicesStatus UpdateDeviceList(
+      const DevToolsAdbBridge::RemoteDevices& devices);
 
  private:
   class Connection;
