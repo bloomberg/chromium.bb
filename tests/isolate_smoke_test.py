@@ -282,8 +282,9 @@ class IsolateModeBase(IsolateBase):
     self._expected_result(args, read_only, empty_file)
     self._expected_saved_state(args, read_only, empty_file, extra_vars)
     # Also verifies run_isolated.py will be able to read it.
-    isolate.run_isolated.load_isolated(
-        open(self.isolated, 'r').read(), None, ALGO)
+    isolate.isolateserver.load_isolated(
+        open(self.isolated, 'r').read(),
+        isolate.run_isolated.get_flavor(), ALGO)
 
   def _expect_no_result(self):
     self.assertFalse(os.path.exists(self.isolated))

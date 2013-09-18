@@ -11,6 +11,7 @@ import binascii
 import cStringIO
 import hashlib
 import itertools
+import json
 import logging
 import os
 import random
@@ -76,6 +77,12 @@ DISK_FILE_CHUNK = 1024 * 1024
 # Read timeout in seconds for downloads from isolate storage. If there's no
 # response from the server within this timeout whole download will be aborted.
 DOWNLOAD_READ_TIMEOUT = 60
+
+
+# The delay (in seconds) to wait between logging statements when retrieving
+# the required files. This is intended to let the user (or buildbot) know that
+# the program is still running.
+DELAY_BETWEEN_UPDATES_IN_SECS = 30
 
 
 class ConfigError(ValueError):
@@ -626,6 +633,293 @@ def upload_tree(base_url, indir, infiles, namespace):
       len(cache_miss) * 100. / total,
       cache_miss_size * 100. / total_size if total_size else 0)
   return 0
+
+
+class MemoryCache(object):
+  """This class is intended to be usable everywhere the Cache class is.
+
+  Instead of downloading to a cache, all files are kept in memory to be stored
+  in the target directory directly.
+  """
+
+  def __init__(self, target_directory, pool, remote):
+    self.target_directory = target_directory
+    self.pool = pool
+    self.remote = remote
+    self._lock = threading.Lock()
+    self._contents = {}
+
+  def retrieve(self, priority, item, size):
+    """Gets the requested file."""
+    self.pool.add_task(priority, self._store, item, size)
+
+  def wait_for(self, items):
+    """Starts a loop that waits for at least one of |items| to be retrieved.
+
+    Returns the first item retrieved.
+    """
+    with self._lock:
+      # Flush items already present.
+      for item in items:
+        if item in self._contents:
+          return item
+
+    while True:
+      downloaded = self.pool.get_one_result()
+      if downloaded in items:
+        return downloaded
+
+  def path(self, item):
+    return os.path.join(self.target_directory, item)
+
+  def read(self, item):
+    return self._contents[item]
+
+  def _store(self, item, size):
+    data = ''.join(self.remote.fetch(item, size))
+    with self._lock:
+      self._contents[item] = data
+    return item
+
+  def __enter__(self):
+    return self
+
+  def __exit__(self, _exc_type, _exec_value, _traceback):
+    return False
+
+
+def load_isolated(content, os_flavor, algo):
+  """Verifies the .isolated file is valid and loads this object with the json
+  data.
+  """
+  try:
+    data = json.loads(content)
+  except ValueError:
+    raise ConfigError('Failed to parse: %s...' % content[:100])
+
+  if not isinstance(data, dict):
+    raise ConfigError('Expected dict, got %r' % data)
+
+  for key, value in data.iteritems():
+    if key == 'command':
+      if not isinstance(value, list):
+        raise ConfigError('Expected list, got %r' % value)
+      if not value:
+        raise ConfigError('Expected non-empty command')
+      for subvalue in value:
+        if not isinstance(subvalue, basestring):
+          raise ConfigError('Expected string, got %r' % subvalue)
+
+    elif key == 'files':
+      if not isinstance(value, dict):
+        raise ConfigError('Expected dict, got %r' % value)
+      for subkey, subvalue in value.iteritems():
+        if not isinstance(subkey, basestring):
+          raise ConfigError('Expected string, got %r' % subkey)
+        if not isinstance(subvalue, dict):
+          raise ConfigError('Expected dict, got %r' % subvalue)
+        for subsubkey, subsubvalue in subvalue.iteritems():
+          if subsubkey == 'l':
+            if not isinstance(subsubvalue, basestring):
+              raise ConfigError('Expected string, got %r' % subsubvalue)
+          elif subsubkey == 'm':
+            if not isinstance(subsubvalue, int):
+              raise ConfigError('Expected int, got %r' % subsubvalue)
+          elif subsubkey == 'h':
+            if not is_valid_hash(subsubvalue, algo):
+              raise ConfigError('Expected sha-1, got %r' % subsubvalue)
+          elif subsubkey == 's':
+            if not isinstance(subsubvalue, int):
+              raise ConfigError('Expected int, got %r' % subsubvalue)
+          else:
+            raise ConfigError('Unknown subsubkey %s' % subsubkey)
+        if bool('h' in subvalue) and bool('l' in subvalue):
+          raise ConfigError(
+              'Did not expect both \'h\' (sha-1) and \'l\' (link), got: %r' %
+              subvalue)
+
+    elif key == 'includes':
+      if not isinstance(value, list):
+        raise ConfigError('Expected list, got %r' % value)
+      if not value:
+        raise ConfigError('Expected non-empty includes list')
+      for subvalue in value:
+        if not is_valid_hash(subvalue, algo):
+          raise ConfigError('Expected sha-1, got %r' % subvalue)
+
+    elif key == 'read_only':
+      if not isinstance(value, bool):
+        raise ConfigError('Expected bool, got %r' % value)
+
+    elif key == 'relative_cwd':
+      if not isinstance(value, basestring):
+        raise ConfigError('Expected string, got %r' % value)
+
+    elif key == 'os':
+      if os_flavor and value != os_flavor:
+        raise ConfigError(
+            'Expected \'os\' to be \'%s\' but got \'%s\'' %
+            (os_flavor, value))
+
+    else:
+      raise ConfigError('Unknown key %s' % key)
+
+  return data
+
+
+class IsolatedFile(object):
+  """Represents a single parsed .isolated file."""
+  def __init__(self, obj_hash, algo):
+    """|obj_hash| is really the sha-1 of the file."""
+    logging.debug('IsolatedFile(%s)' % obj_hash)
+    self.obj_hash = obj_hash
+    self.algo = algo
+    # Set once all the left-side of the tree is parsed. 'Tree' here means the
+    # .isolate and all the .isolated files recursively included by it with
+    # 'includes' key. The order of each sha-1 in 'includes', each representing a
+    # .isolated file in the hash table, is important, as the later ones are not
+    # processed until the firsts are retrieved and read.
+    self.can_fetch = False
+
+    # Raw data.
+    self.data = {}
+    # A IsolatedFile instance, one per object in self.includes.
+    self.children = []
+
+    # Set once the .isolated file is loaded.
+    self._is_parsed = False
+    # Set once the files are fetched.
+    self.files_fetched = False
+
+  def load(self, content):
+    """Verifies the .isolated file is valid and loads this object with the json
+    data.
+    """
+    logging.debug('IsolatedFile.load(%s)' % self.obj_hash)
+    assert not self._is_parsed
+    self.data = load_isolated(content, None, self.algo)
+    self.children = [
+        IsolatedFile(i, self.algo) for i in self.data.get('includes', [])
+    ]
+    self._is_parsed = True
+
+  def fetch_files(self, cache, files):
+    """Adds files in this .isolated file not present in |files| dictionary.
+
+    Preemptively request files.
+
+    Note that |files| is modified by this function.
+    """
+    assert self.can_fetch
+    if not self._is_parsed or self.files_fetched:
+      return
+    logging.debug('fetch_files(%s)' % self.obj_hash)
+    for filepath, properties in self.data.get('files', {}).iteritems():
+      # Root isolated has priority on the files being mapped. In particular,
+      # overriden files must not be fetched.
+      if filepath not in files:
+        files[filepath] = properties
+        if 'h' in properties:
+          # Preemptively request files.
+          logging.debug('fetching %s' % filepath)
+          cache.retrieve(
+              WorkerPool.MED,
+              properties['h'],
+              properties['s'])
+    self.files_fetched = True
+
+
+class Settings(object):
+  """Results of a completely parsed .isolated file."""
+  def __init__(self):
+    self.command = []
+    self.files = {}
+    self.read_only = None
+    self.relative_cwd = None
+    # The main .isolated file, a IsolatedFile instance.
+    self.root = None
+
+  def load(self, cache, root_isolated_hash, algo):
+    """Loads the .isolated and all the included .isolated asynchronously.
+
+    It enables support for "included" .isolated files. They are processed in
+    strict order but fetched asynchronously from the cache. This is important so
+    that a file in an included .isolated file that is overridden by an embedding
+    .isolated file is not fetched needlessly. The includes are fetched in one
+    pass and the files are fetched as soon as all the ones on the left-side
+    of the tree were fetched.
+
+    The prioritization is very important here for nested .isolated files.
+    'includes' have the highest priority and the algorithm is optimized for both
+    deep and wide trees. A deep one is a long link of .isolated files referenced
+    one at a time by one item in 'includes'. A wide one has a large number of
+    'includes' in a single .isolated file. 'left' is defined as an included
+    .isolated file earlier in the 'includes' list. So the order of the elements
+    in 'includes' is important.
+    """
+    self.root = IsolatedFile(root_isolated_hash, algo)
+
+    # Isolated files being retrieved now: hash -> IsolatedFile instance.
+    pending = {}
+    # Set of hashes of already retrieved items to refuse recursive includes.
+    seen = set()
+
+    def retrieve(isolated_file):
+      h = isolated_file.obj_hash
+      if h in seen:
+        raise ConfigError('IsolatedFile %s is retrieved recursively' % h)
+      assert h not in pending
+      seen.add(h)
+      pending[h] = isolated_file
+      cache.retrieve(WorkerPool.HIGH, h, UNKNOWN_FILE_SIZE)
+
+    retrieve(self.root)
+
+    while pending:
+      item_hash = cache.wait_for(pending)
+      item = pending.pop(item_hash)
+      item.load(cache.read(item_hash))
+      if item_hash == root_isolated_hash:
+        # It's the root item.
+        item.can_fetch = True
+
+      for new_child in item.children:
+        retrieve(new_child)
+
+      # Traverse the whole tree to see if files can now be fetched.
+      self._traverse_tree(cache, self.root)
+
+    def check(n):
+      return all(check(x) for x in n.children) and n.files_fetched
+    assert check(self.root)
+
+    self.relative_cwd = self.relative_cwd or ''
+    self.read_only = self.read_only or False
+
+  def _traverse_tree(self, cache, node):
+    if node.can_fetch:
+      if not node.files_fetched:
+        self._update_self(cache, node)
+      will_break = False
+      for i in node.children:
+        if not i.can_fetch:
+          if will_break:
+            break
+          # Automatically mark the first one as fetcheable.
+          i.can_fetch = True
+          will_break = True
+        self._traverse_tree(cache, i)
+
+  def _update_self(self, cache, node):
+    node.fetch_files(cache, self.files)
+    # Grabs properties.
+    if not self.command and node.data.get('command'):
+      self.command = node.data['command']
+    if self.read_only is None and node.data.get('read_only') is not None:
+      self.read_only = node.data['read_only']
+    if (self.relative_cwd is None and
+        node.data.get('relative_cwd') is not None):
+      self.relative_cwd = node.data['relative_cwd']
 
 
 @subcommand.usage('<file1..fileN> or - to read from stdin')

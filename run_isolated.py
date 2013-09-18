@@ -12,7 +12,6 @@ __version__ = '0.2'
 
 import ctypes
 import hashlib
-import json
 import logging
 import optparse
 import os
@@ -32,7 +31,6 @@ from utils import tools
 from utils import zip_package
 
 import isolateserver
-from isolateserver import ConfigError
 
 
 # Absolute path to this file (can be None if running from zip on Mac).
@@ -52,11 +50,6 @@ RUN_ISOLATED_LOG_FILE = 'run_isolated.log'
 
 # The name of the log to use for the run_test_cases.py command
 RUN_TEST_CASES_LOG = 'run_test_cases.log'
-
-# The delay (in seconds) to wait between logging statements when retrieving
-# the required files. This is intended to let the user (or buildbot) know that
-# the program is still running.
-DELAY_BETWEEN_UPDATES_IN_SECS = 30
 
 # Maximum expected delay (in seconds) between successive file fetches
 # in run_tha_test. If it takes longer than that, a deadlock might be happening
@@ -233,85 +226,6 @@ def make_temp_dir(prefix, root_dir):
   return tempfile.mkdtemp(prefix=prefix, dir=base_temp_dir)
 
 
-def load_isolated(content, os_flavor, algo):
-  """Verifies the .isolated file is valid and loads this object with the json
-  data.
-  """
-  try:
-    data = json.loads(content)
-  except ValueError:
-    raise ConfigError('Failed to parse: %s...' % content[:100])
-
-  if not isinstance(data, dict):
-    raise ConfigError('Expected dict, got %r' % data)
-
-  for key, value in data.iteritems():
-    if key == 'command':
-      if not isinstance(value, list):
-        raise ConfigError('Expected list, got %r' % value)
-      if not value:
-        raise ConfigError('Expected non-empty command')
-      for subvalue in value:
-        if not isinstance(subvalue, basestring):
-          raise ConfigError('Expected string, got %r' % subvalue)
-
-    elif key == 'files':
-      if not isinstance(value, dict):
-        raise ConfigError('Expected dict, got %r' % value)
-      for subkey, subvalue in value.iteritems():
-        if not isinstance(subkey, basestring):
-          raise ConfigError('Expected string, got %r' % subkey)
-        if not isinstance(subvalue, dict):
-          raise ConfigError('Expected dict, got %r' % subvalue)
-        for subsubkey, subsubvalue in subvalue.iteritems():
-          if subsubkey == 'l':
-            if not isinstance(subsubvalue, basestring):
-              raise ConfigError('Expected string, got %r' % subsubvalue)
-          elif subsubkey == 'm':
-            if not isinstance(subsubvalue, int):
-              raise ConfigError('Expected int, got %r' % subsubvalue)
-          elif subsubkey == 'h':
-            if not isolateserver.is_valid_hash(subsubvalue, algo):
-              raise ConfigError('Expected sha-1, got %r' % subsubvalue)
-          elif subsubkey == 's':
-            if not isinstance(subsubvalue, int):
-              raise ConfigError('Expected int, got %r' % subsubvalue)
-          else:
-            raise ConfigError('Unknown subsubkey %s' % subsubkey)
-        if bool('h' in subvalue) and bool('l' in subvalue):
-          raise ConfigError(
-              'Did not expect both \'h\' (sha-1) and \'l\' (link), got: %r' %
-              subvalue)
-
-    elif key == 'includes':
-      if not isinstance(value, list):
-        raise ConfigError('Expected list, got %r' % value)
-      if not value:
-        raise ConfigError('Expected non-empty includes list')
-      for subvalue in value:
-        if not isolateserver.is_valid_hash(subvalue, algo):
-          raise ConfigError('Expected sha-1, got %r' % subvalue)
-
-    elif key == 'read_only':
-      if not isinstance(value, bool):
-        raise ConfigError('Expected bool, got %r' % value)
-
-    elif key == 'relative_cwd':
-      if not isinstance(value, basestring):
-        raise ConfigError('Expected string, got %r' % value)
-
-    elif key == 'os':
-      if os_flavor and value != os_flavor:
-        raise ConfigError(
-            'Expected \'os\' to be \'%s\' but got \'%s\'' %
-            (os_flavor, value))
-
-    else:
-      raise ConfigError('Unknown key %s' % key)
-
-  return data
-
-
 class CachePolicies(object):
   def __init__(self, max_cache_size, min_free_space, max_items):
     """
@@ -419,6 +333,7 @@ class DiskCache(object):
     logging.info(
         '%5d (%8dkb) removed', len(self._removed), sum(self._removed) / 1024)
     logging.info('       %8dkb free', self._free_disk / 1024)
+    return False
 
   def trim(self):
     """Trims anything we don't know, make sure enough free space exists."""
@@ -499,6 +414,11 @@ class DiskCache(object):
     """Returns the path to one item."""
     return os.path.join(self.cache_dir, item)
 
+  def read(self, item):
+    """Reads an item from the cache."""
+    with open(self.path(item), 'rb') as f:
+      return f.read()
+
   def wait_for(self, items):
     """Starts a loop that waits for at least one of |items| to be retrieved.
 
@@ -562,164 +482,6 @@ class DiskCache(object):
       logging.error('Error attempting to delete a file\n%s' % e)
 
 
-class IsolatedFile(object):
-  """Represents a single parsed .isolated file."""
-  def __init__(self, obj_hash, algo):
-    """|obj_hash| is really the sha-1 of the file."""
-    logging.debug('IsolatedFile(%s)' % obj_hash)
-    self.obj_hash = obj_hash
-    self.algo = algo
-    # Set once all the left-side of the tree is parsed. 'Tree' here means the
-    # .isolate and all the .isolated files recursively included by it with
-    # 'includes' key. The order of each sha-1 in 'includes', each representing a
-    # .isolated file in the hash table, is important, as the later ones are not
-    # processed until the firsts are retrieved and read.
-    self.can_fetch = False
-
-    # Raw data.
-    self.data = {}
-    # A IsolatedFile instance, one per object in self.includes.
-    self.children = []
-
-    # Set once the .isolated file is loaded.
-    self._is_parsed = False
-    # Set once the files are fetched.
-    self.files_fetched = False
-
-  def load(self, content):
-    """Verifies the .isolated file is valid and loads this object with the json
-    data.
-    """
-    logging.debug('IsolatedFile.load(%s)' % self.obj_hash)
-    assert not self._is_parsed
-    self.data = load_isolated(content, get_flavor(), self.algo)
-    self.children = [
-      IsolatedFile(i, self.algo) for i in self.data.get('includes', [])
-    ]
-    self._is_parsed = True
-
-  def fetch_files(self, cache, files):
-    """Adds files in this .isolated file not present in |files| dictionary.
-
-    Preemptively request files.
-
-    Note that |files| is modified by this function.
-    """
-    assert self.can_fetch
-    if not self._is_parsed or self.files_fetched:
-      return
-    logging.debug('fetch_files(%s)' % self.obj_hash)
-    for filepath, properties in self.data.get('files', {}).iteritems():
-      # Root isolated has priority on the files being mapped. In particular,
-      # overriden files must not be fetched.
-      if filepath not in files:
-        files[filepath] = properties
-        if 'h' in properties:
-          # Preemptively request files.
-          logging.debug('fetching %s' % filepath)
-          cache.retrieve(
-              isolateserver.WorkerPool.MED,
-              properties['h'],
-              properties['s'])
-    self.files_fetched = True
-
-
-class Settings(object):
-  """Results of a completely parsed .isolated file."""
-  def __init__(self):
-    self.command = []
-    self.files = {}
-    self.read_only = None
-    self.relative_cwd = None
-    # The main .isolated file, a IsolatedFile instance.
-    self.root = None
-
-  def load(self, cache, root_isolated_hash, algo):
-    """Loads the .isolated and all the included .isolated asynchronously.
-
-    It enables support for "included" .isolated files. They are processed in
-    strict order but fetched asynchronously from the cache. This is important so
-    that a file in an included .isolated file that is overridden by an embedding
-    .isolated file is not fetched needlessly. The includes are fetched in one
-    pass and the files are fetched as soon as all the ones on the left-side
-    of the tree were fetched.
-
-    The prioritization is very important here for nested .isolated files.
-    'includes' have the highest priority and the algorithm is optimized for both
-    deep and wide trees. A deep one is a long link of .isolated files referenced
-    one at a time by one item in 'includes'. A wide one has a large number of
-    'includes' in a single .isolated file. 'left' is defined as an included
-    .isolated file earlier in the 'includes' list. So the order of the elements
-    in 'includes' is important.
-    """
-    self.root = IsolatedFile(root_isolated_hash, algo)
-
-    # Isolated files being retrieved now: hash -> IsolatedFile instance.
-    pending = {}
-    # Set of hashes of already retrieved items to refuse recursive includes.
-    seen = set()
-
-    def retrieve(isolated_file):
-      h = isolated_file.obj_hash
-      if h in seen:
-        raise ConfigError('IsolatedFile %s is retrieved recursively' % h)
-      assert h not in pending
-      seen.add(h)
-      pending[h] = isolated_file
-      cache.retrieve(
-          isolateserver.WorkerPool.HIGH,
-          h,
-          isolateserver.UNKNOWN_FILE_SIZE)
-
-    retrieve(self.root)
-
-    while pending:
-      item_hash = cache.wait_for(pending)
-      item = pending.pop(item_hash)
-      item.load(open(cache.path(item_hash), 'r').read())
-      if item_hash == root_isolated_hash:
-        # It's the root item.
-        item.can_fetch = True
-
-      for new_child in item.children:
-        retrieve(new_child)
-
-      # Traverse the whole tree to see if files can now be fetched.
-      self._traverse_tree(cache, self.root)
-
-    def check(n):
-      return all(check(x) for x in n.children) and n.files_fetched
-    assert check(self.root)
-
-    self.relative_cwd = self.relative_cwd or ''
-    self.read_only = self.read_only or False
-
-  def _traverse_tree(self, cache, node):
-    if node.can_fetch:
-      if not node.files_fetched:
-        self._update_self(cache, node)
-      will_break = False
-      for i in node.children:
-        if not i.can_fetch:
-          if will_break:
-            break
-          # Automatically mark the first one as fetcheable.
-          i.can_fetch = True
-          will_break = True
-        self._traverse_tree(cache, i)
-
-  def _update_self(self, cache, node):
-    node.fetch_files(cache, self.files)
-    # Grabs properties.
-    if not self.command and node.data.get('command'):
-      self.command = node.data['command']
-    if self.read_only is None and node.data.get('read_only') is not None:
-      self.read_only = node.data['read_only']
-    if (self.relative_cwd is None and
-        node.data.get('relative_cwd') is not None):
-      self.relative_cwd = node.data['relative_cwd']
-
-
 def run_tha_test(isolated_hash, cache_dir, retriever, policies):
   """Downloads the dependencies in the cache, hardlinks them into a temporary
   directory and runs the executable.
@@ -727,7 +489,7 @@ def run_tha_test(isolated_hash, cache_dir, retriever, policies):
   algo = hashlib.sha1
   outdir = None
   try:
-    settings = Settings()
+    settings = isolateserver.Settings()
     # |pool| must outlive |cache|.
     with isolateserver.WorkerPool() as pool:
       with DiskCache(cache_dir, pool, retriever, policies, algo) as cache:
@@ -772,7 +534,8 @@ def run_tha_test(isolated_hash, cache_dir, retriever, policies):
                   # It's not set on Windows.
                   os.chmod(outfile, properties['m'])
 
-              if time.time() - last_update > DELAY_BETWEEN_UPDATES_IN_SECS:
+              duration = time.time() - last_update
+              if duration > isolateserver.DELAY_BETWEEN_UPDATES_IN_SECS:
                 msg = '%d files remaining...' % len(remaining)
                 print msg
                 logging.info(msg)

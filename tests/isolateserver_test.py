@@ -4,10 +4,11 @@
 # found in the LICENSE file.
 
 import binascii
-import random
 import hashlib
+import json
 import logging
 import os
+import random
 import StringIO
 import sys
 import threading
@@ -337,6 +338,65 @@ class IsolateServerDownloadTest(TestCase):
       self.assertRaises(IOError, remote.get_one_result)
       # Need to use join here, since get_one_result will hang.
       self.assertEqual([], remote.join())
+
+
+class TestIsolated(unittest.TestCase):
+  def test_load_isolated_empty(self):
+    m = isolateserver.load_isolated('{}', None, ALGO)
+    self.assertEqual({}, m)
+
+  def test_load_isolated_good(self):
+    data = {
+      u'command': [u'foo', u'bar'],
+      u'files': {
+        u'a': {
+          u'l': u'somewhere',
+          u'm': 123,
+        },
+        u'b': {
+          u'm': 123,
+          u'h': u'0123456789abcdef0123456789abcdef01234567'
+        }
+      },
+      u'includes': [u'0123456789abcdef0123456789abcdef01234567'],
+      u'os': 'oPhone',
+      u'read_only': False,
+      u'relative_cwd': u'somewhere_else'
+    }
+    m = isolateserver.load_isolated(json.dumps(data), None, ALGO)
+    self.assertEqual(data, m)
+
+  def test_load_isolated_bad(self):
+    data = {
+      u'files': {
+        u'a': {
+          u'l': u'somewhere',
+          u'h': u'0123456789abcdef0123456789abcdef01234567'
+        }
+      },
+    }
+    try:
+      isolateserver.load_isolated(json.dumps(data), None, ALGO)
+      self.fail()
+    except isolateserver.ConfigError:
+      pass
+
+  def test_load_isolated_os_only(self):
+    data = {
+      u'os': 'HP/UX',
+    }
+    m = isolateserver.load_isolated(json.dumps(data), 'HP/UX', ALGO)
+    self.assertEqual(data, m)
+
+  def test_load_isolated_os_bad(self):
+    data = {
+      u'os': 'foo',
+    }
+    try:
+      isolateserver.load_isolated(json.dumps(data), 'AS/400', ALGO)
+      self.fail()
+    except isolateserver.ConfigError:
+      pass
 
 
 if __name__ == '__main__':
