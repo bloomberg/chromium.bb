@@ -8,7 +8,7 @@ Verifying contents of DataTransferItems...
 items.length: 1
 items[0].kind: string
 items[0].type: text/plain
-PASS currentItem.getAsString() threw exception TypeError: Not enough arguments.
+PASS currentItem.getAsString() threw exception TypeError: Failed to execute 'getAsString' on 'DataTransferItem': 1 argument required, but only 0 present..
 PASS currentItem.getAsString(null) did not throw exception.
 PASS stringData is "Lorem ipsum"
 Dragging text in source2: http://example.com
@@ -16,7 +16,7 @@ Verifying contents of DataTransferItems...
 items.length: 1
 items[0].kind: string
 items[0].type: text/plain
-PASS currentItem.getAsString() threw exception TypeError: Not enough arguments.
+PASS currentItem.getAsString() threw exception TypeError: Failed to execute 'getAsString' on 'DataTransferItem': 1 argument required, but only 0 present..
 PASS currentItem.getAsString(null) did not throw exception.
 PASS stringData is "http://example.com"
 PASS successfullyParsed is true

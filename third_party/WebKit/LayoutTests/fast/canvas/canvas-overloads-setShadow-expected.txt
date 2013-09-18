@@ -3,9 +3,9 @@ Test the behavior of CanvasRenderingContext2D.setShadow() when called with diffe
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS ctx.setShadow() threw exception TypeError: Not enough arguments.
-PASS ctx.setShadow(0) threw exception TypeError: Not enough arguments.
-PASS ctx.setShadow(0, 0) threw exception TypeError: Not enough arguments.
+PASS ctx.setShadow() threw exception TypeError: Failed to execute 'setShadow' on 'CanvasRenderingContext2D': 3 arguments required, but only 0 present..
+PASS ctx.setShadow(0) threw exception TypeError: Failed to execute 'setShadow' on 'CanvasRenderingContext2D': 3 arguments required, but only 1 present..
+PASS ctx.setShadow(0, 0) threw exception TypeError: Failed to execute 'setShadow' on 'CanvasRenderingContext2D': 3 arguments required, but only 2 present..
 PASS ctx.setShadow(0, 0, 0) is undefined
 PASS ctx.setShadow(0, 0, 0, 0) is undefined
 PASS ctx.setShadow(0, 0, 0, 0, 0) is undefined

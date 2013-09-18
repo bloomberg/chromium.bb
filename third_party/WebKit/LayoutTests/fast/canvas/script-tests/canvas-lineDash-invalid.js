@@ -36,7 +36,7 @@ shouldBe("trySettingLineDash([1, Infinity])", "initialLineDash");
 shouldBe("trySettingLineDash([1, -Infinity])", "initialLineDash");
 shouldBe("trySettingLineDash([1, NaN])", "initialLineDash");
 shouldBe("trySettingLineDash([1, 'string'])", "initialLineDash");
-shouldThrow("trySettingLineDashWithNoArgs()", "'TypeError: Not enough arguments'");
+shouldThrow("trySettingLineDashWithNoArgs()", '"TypeError: Failed to execute \'setLineDash\' on \'CanvasRenderingContext2D\': 1 argument required, but only 0 present."');
 
 shouldBe("trySettingLineDashOffset(Infinity)", "initialLineDashOffset");
 shouldBe("trySettingLineDashOffset(-Infinity)", "initialLineDashOffset");

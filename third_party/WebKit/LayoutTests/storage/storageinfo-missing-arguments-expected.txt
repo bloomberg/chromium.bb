@@ -4,9 +4,9 @@ Ensures that we get exceptions when we do not include required arguments for web
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS webkitStorageInfo.requestQuota() threw exception TypeError: Not enough arguments.
-PASS webkitStorageInfo.requestQuota(webkitStorageInfo.TEMPORARY) threw exception TypeError: Not enough arguments.
-PASS webkitStorageInfo.queryUsageAndQuota() threw exception TypeError: Not enough arguments.
+PASS webkitStorageInfo.requestQuota() threw exception TypeError: Failed to execute 'requestQuota' on 'StorageInfo': 2 arguments required, but only 0 present..
+PASS webkitStorageInfo.requestQuota(webkitStorageInfo.TEMPORARY) threw exception TypeError: Failed to execute 'requestQuota' on 'StorageInfo': 2 arguments required, but only 1 present..
+PASS webkitStorageInfo.queryUsageAndQuota() threw exception TypeError: Failed to execute 'queryUsageAndQuota' on 'StorageInfo': 1 argument required, but only 0 present..
 PASS successfullyParsed is true
 
 TEST COMPLETE

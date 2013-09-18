@@ -14,14 +14,14 @@ navigator.platform is OK
 navigator.plugins is OK
 navigator.product is OK
 navigator.productSub is OK
-navigator.registerController() threw err TypeError: Not enough arguments
-navigator.registerProtocolHandler() threw err TypeError: Not enough arguments
+navigator.registerController() threw err TypeError: Failed to execute 'registerController' on 'Navigator': 2 arguments required, but only 0 present.
+navigator.registerProtocolHandler() threw err TypeError: Failed to execute 'registerProtocolHandler' on 'Navigator': 3 arguments required, but only 0 present.
 navigator.requestMIDIAccess() is OK
-navigator.unregisterController() threw err TypeError: Not enough arguments
+navigator.unregisterController() threw err TypeError: Failed to execute 'unregisterController' on 'Navigator': 1 argument required, but only 0 present.
 navigator.userAgent is OK
 navigator.vendor is OK
 navigator.vendorSub is OK
-navigator.vibrate() threw err TypeError: Not enough arguments
+navigator.vibrate() threw err TypeError: Failed to execute 'vibrate' on 'Navigator': 1 argument required, but only 0 present.
 navigator.webkitGetGamepads() is OK
 navigator.webkitPersistentStorage is OK
 navigator.webkitTemporaryStorage is OK
@@ -39,14 +39,14 @@ navigator.platform is OK
 navigator.plugins is OK
 navigator.product is OK
 navigator.productSub is OK
-navigator.registerController() threw err TypeError: Not enough arguments
-navigator.registerProtocolHandler() threw err TypeError: Not enough arguments
+navigator.registerController() threw err TypeError: Failed to execute 'registerController' on 'Navigator': 2 arguments required, but only 0 present.
+navigator.registerProtocolHandler() threw err TypeError: Failed to execute 'registerProtocolHandler' on 'Navigator': 3 arguments required, but only 0 present.
 navigator.requestMIDIAccess() is OK
-navigator.unregisterController() threw err TypeError: Not enough arguments
+navigator.unregisterController() threw err TypeError: Failed to execute 'unregisterController' on 'Navigator': 1 argument required, but only 0 present.
 navigator.userAgent is OK
 navigator.vendor is OK
 navigator.vendorSub is OK
-navigator.vibrate() threw err TypeError: Not enough arguments
+navigator.vibrate() threw err TypeError: Failed to execute 'vibrate' on 'Navigator': 1 argument required, but only 0 present.
 navigator.webkitGetGamepads() is OK
 navigator.webkitPersistentStorage is OK
 navigator.webkitTemporaryStorage is OK

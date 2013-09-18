@@ -2,12 +2,15 @@ description("Test the behavior of CanvasRenderingContext2D.setShadow() when call
 
 var ctx = document.createElement('canvas').getContext('2d');
 
-var TypeError = "TypeError: Type error";
-var TypeErrorNotEnoughArguments = "TypeError: Not enough arguments";
+function ExpectedNotEnoughArgumentsMessage(num) {
+    return "\"TypeError: Failed to execute 'setShadow' on 'CanvasRenderingContext2D': 3 arguments required, but only " + num + " present.\"";
+}
 
-shouldThrow("ctx.setShadow()", "TypeErrorNotEnoughArguments");
-shouldThrow("ctx.setShadow(0)", "TypeErrorNotEnoughArguments");
-shouldThrow("ctx.setShadow(0, 0)", "TypeErrorNotEnoughArguments");
+var TypeError = "TypeError: Type error";
+
+shouldThrow("ctx.setShadow()", ExpectedNotEnoughArgumentsMessage(0));
+shouldThrow("ctx.setShadow(0)", ExpectedNotEnoughArgumentsMessage(1));
+shouldThrow("ctx.setShadow(0, 0)", ExpectedNotEnoughArgumentsMessage(2));
 shouldBe("ctx.setShadow(0, 0, 0)", "undefined");
 shouldBe("ctx.setShadow(0, 0, 0, 0)", "undefined");
 shouldBe("ctx.setShadow(0, 0, 0, 0, 0)", "undefined");

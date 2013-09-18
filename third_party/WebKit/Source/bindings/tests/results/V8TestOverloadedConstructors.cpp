@@ -23,6 +23,7 @@
 
 #include "RuntimeEnabledFeatures.h"
 #include "V8Blob.h"
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
@@ -127,7 +128,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& args)
         return;
     }
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToConstruct("TestOverloadedConstructors", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     throwTypeError(args.GetIsolate());

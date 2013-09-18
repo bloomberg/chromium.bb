@@ -11,7 +11,7 @@ PASS select.item(3).value is "d"
 PASS select.item(4) is null
 PASS select.item(-1) is null
 PASS select.item(-4294967294).value is "c"
-PASS select.item() threw exception TypeError: Not enough arguments.
+PASS select.item() threw exception TypeError: Failed to execute 'item' on 'HTMLSelectElement': 1 argument required, but only 0 present..
 PASS successfullyParsed is true
 
 TEST COMPLETE

@@ -44,11 +44,11 @@ shouldBe("hostRule.cssRules[0].cssText", '"div { border-color: blue; }"');
 
 debug("Error cases");
 shouldBe("hostRule.cssRules.length", '1');
-shouldThrow("hostRule.insertRule('#host { border-color: green; }')", "'TypeError: Not enough arguments'");
+shouldThrow("hostRule.insertRule('#host { border-color: green; }')", '"TypeError: Failed to execute \'insertRule\' on \'CSSHostRule\': 2 arguments required, but only 1 present."');
 shouldBe("hostRule.cssRules.length", '1');
-shouldThrow("hostRule.insertRule()", "'TypeError: Not enough arguments'");
+shouldThrow("hostRule.insertRule()", '"TypeError: Failed to execute \'insertRule\' on \'CSSHostRule\': 2 arguments required, but only 1 present."');
 shouldBe("hostRule.cssRules.length", '1');
-shouldThrow("hostRule.deleteRule()", "'TypeError: Not enough arguments'");
+shouldThrow("hostRule.deleteRule()", '"TypeError: Failed to execute \'deleteRule\' on \'CSSHostRule\': 1 argument required, but only 0 present."');
 shouldBe("hostRule.cssRules.length", '1');
 
 </script>

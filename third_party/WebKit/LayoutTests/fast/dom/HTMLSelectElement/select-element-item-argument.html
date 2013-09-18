@@ -26,7 +26,7 @@ shouldBeEqualToString("select.item(3).value", "d");
 shouldBeNull("select.item(4)");
 shouldBeNull("select.item(-1)"); // Offset is too large (after wrapping)
 shouldBeEqualToString("select.item(-4294967294).value", "c"); // Wraps to 2, which is a valid offset.
-shouldThrow("select.item()", "'TypeError: Not enough arguments'");
+shouldThrow("select.item()", '"TypeError: Failed to execute \'item\' on \'HTMLSelectElement\': 1 argument required, but only 0 present."');
 
 </script>
 <script src="../../js/resources/js-test-post.js"></script>

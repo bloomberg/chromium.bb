@@ -33,6 +33,11 @@
 
 namespace WebCore {
 
+String ExceptionMessages::failedToConstruct(const String& type, const String& detail)
+{
+    return "Failed to construct '" + type + (!detail.isEmpty() ? String("': " + detail) : String("'"));
+}
+
 String ExceptionMessages::failedToExecute(const String& method, const String& type, const String& detail)
 {
     return "Failed to execute '" + method + "' on '" + type + (!detail.isEmpty() ? String("': " + detail) : String("'"));
@@ -46,6 +51,11 @@ String ExceptionMessages::failedToGet(const String& property, const String& type
 String ExceptionMessages::failedToSet(const String& property, const String& type, const String& detail)
 {
     return "Failed to set the '" + property + "' property on '" + type + "': " + detail;
+}
+
+String ExceptionMessages::notEnoughArguments(unsigned expected, unsigned provided)
+{
+    return String::number(expected) + " argument" + (expected > 1 ? "s" : "") + " required, but only " + String::number(provided) + " present.";
 }
 
 } // namespace WebCore

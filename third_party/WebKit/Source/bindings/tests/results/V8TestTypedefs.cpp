@@ -26,6 +26,7 @@
 #include "V8SerializedScriptValue.h"
 #include "V8TestCallback.h"
 #include "V8TestSubObj.h"
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/SerializedScriptValue.h"
@@ -296,7 +297,7 @@ static void funcMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 static void setShadowMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 3)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("setShadow", "TestTypedefs", ExceptionMessages::notEnoughArguments(3, args.Length())), args.GetIsolate());
         return;
     }
     TestTypedefs* imp = V8TestTypedefs::toNative(args.Holder());
@@ -330,7 +331,7 @@ static void setShadowMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& a
 static void methodWithSequenceArgMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("methodWithSequenceArg", "TestTypedefs", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     TestTypedefs* imp = V8TestTypedefs::toNative(args.Holder());
@@ -349,7 +350,7 @@ static void methodWithSequenceArgMethodCallback(const v8::FunctionCallbackInfo<v
 static void nullableArrayArgMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("nullableArrayArg", "TestTypedefs", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     TestTypedefs* imp = V8TestTypedefs::toNative(args.Holder());
@@ -369,7 +370,7 @@ static void nullableArrayArgMethodCallback(const v8::FunctionCallbackInfo<v8::Va
 static void funcWithClampMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("funcWithClamp", "TestTypedefs", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     TestTypedefs* imp = V8TestTypedefs::toNative(args.Holder());
@@ -415,7 +416,7 @@ static void immutablePointFunctionMethodCallback(const v8::FunctionCallbackInfo<
 static void stringArrayFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("stringArrayFunction", "TestTypedefs", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     TestTypedefs* imp = V8TestTypedefs::toNative(args.Holder());
@@ -438,7 +439,7 @@ static void stringArrayFunctionMethodCallback(const v8::FunctionCallbackInfo<v8:
 static void stringArrayFunction2Method(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("stringArrayFunction2", "TestTypedefs", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     TestTypedefs* imp = V8TestTypedefs::toNative(args.Holder());
@@ -479,7 +480,7 @@ static void methodWithExceptionMethodCallback(const v8::FunctionCallbackInfo<v8:
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 2)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("Constructor", "TestTypedefs", ExceptionMessages::notEnoughArguments(2, args.Length())), args.GetIsolate());
         return;
     }
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, hello, args[0]);

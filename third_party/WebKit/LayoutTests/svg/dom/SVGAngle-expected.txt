@@ -17,7 +17,7 @@ PASS angle.convertToSpecifiedUnits(5) threw exception NotSupportedError: The imp
 PASS angle.convertToSpecifiedUnits('aString') threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
 PASS angle.convertToSpecifiedUnits(angle) threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
 PASS angle.convertToSpecifiedUnits(svgElement) threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
-PASS angle.convertToSpecifiedUnits() threw exception TypeError: Not enough arguments.
+PASS angle.convertToSpecifiedUnits() threw exception TypeError: Failed to execute 'convertToSpecifiedUnits' on 'SVGAngle': 1 argument required, but only 0 present..
 PASS angle.unitType is SVGAngle.SVG_ANGLETYPE_UNSPECIFIED
 
 Check valid arguments for 'convertToSpecifiedUnits', that should only modify the 'valueAsString'
@@ -46,7 +46,7 @@ Check invalid arguments for 'newValueSpecifiedUnits'
 PASS angle.newValueSpecifiedUnits(SVGAngle.SVG_ANGLETYPE_UNKNOWN, 50) threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
 PASS angle.newValueSpecifiedUnits(-1, 50) threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
 PASS angle.newValueSpecifiedUnits(5, 50) threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
-PASS angle.newValueSpecifiedUnits(SVGAngle.SVG_ANGLETYPE_DEG) threw exception TypeError: Not enough arguments.
+PASS angle.newValueSpecifiedUnits(SVGAngle.SVG_ANGLETYPE_DEG) threw exception TypeError: Failed to execute 'newValueSpecifiedUnits' on 'SVGAngle': 2 arguments required, but only 1 present..
 PASS angle.newValueSpecifiedUnits(SVGAngle.SVG_ANGLETYPE_DEG, 'aString') is undefined.
 PASS angle.value is NaN
 PASS angle.newValueSpecifiedUnits(SVGAngle.SVG_ANGLETYPE_DEG, 0) is undefined.
@@ -54,14 +54,14 @@ PASS angle.newValueSpecifiedUnits(SVGAngle.SVG_ANGLETYPE_DEG, angle) is undefine
 PASS angle.value is NaN
 PASS angle.newValueSpecifiedUnits(SVGAngle.SVG_ANGLETYPE_DEG, svgElement) is undefined.
 PASS angle.value is NaN
-PASS angle.newValueSpecifiedUnits(SVGAngle.SVG_ANGLETYPE_DEG) threw exception TypeError: Not enough arguments.
+PASS angle.newValueSpecifiedUnits(SVGAngle.SVG_ANGLETYPE_DEG) threw exception TypeError: Failed to execute 'newValueSpecifiedUnits' on 'SVGAngle': 2 arguments required, but only 1 present..
 PASS angle.newValueSpecifiedUnits('aString', 4) threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
 PASS angle.newValueSpecifiedUnits(angle, 4) threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
 PASS angle.newValueSpecifiedUnits(svgElement, 4) threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
 PASS angle.newValueSpecifiedUnits('aString', 'aString') threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
 PASS angle.newValueSpecifiedUnits(angle, angle) threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
 PASS angle.newValueSpecifiedUnits(svgElement, svgElement) threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
-PASS angle.newValueSpecifiedUnits() threw exception TypeError: Not enough arguments.
+PASS angle.newValueSpecifiedUnits() threw exception TypeError: Failed to execute 'newValueSpecifiedUnits' on 'SVGAngle': 2 arguments required, but only 0 present..
 PASS angle.unitType is SVGAngle.SVG_ANGLETYPE_DEG
 
 Check valid arguments for 'newValueSpecifiedUnits', that should only modify the 'valueAsString'

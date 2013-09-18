@@ -39,6 +39,7 @@
 #include "V8TestSubObj.h"
 #include "bindings/v8/BindingSecurity.h"
 #include "bindings/v8/Dictionary.h"
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/ScriptValue.h"
@@ -2967,7 +2968,7 @@ static void voidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& 
 static void voidMethodWithArgsMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 3)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("voidMethodWithArgs", "TestObj", ExceptionMessages::notEnoughArguments(3, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -3003,7 +3004,7 @@ static void longMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& 
 static void longMethodWithArgsMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 3)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("longMethodWithArgs", "TestObj", ExceptionMessages::notEnoughArguments(3, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -3039,7 +3040,7 @@ static void objMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& a
 static void objMethodWithArgsMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 3)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("objMethodWithArgs", "TestObj", ExceptionMessages::notEnoughArguments(3, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -3060,7 +3061,7 @@ static void objMethodWithArgsMethodCallback(const v8::FunctionCallbackInfo<v8::V
 static void methodWithSequenceArgMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("methodWithSequenceArg", "TestObj", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -3080,7 +3081,7 @@ static void methodWithSequenceArgMethodCallback(const v8::FunctionCallbackInfo<v
 static void methodReturningSequenceMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("methodReturningSequence", "TestObj", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -3099,7 +3100,7 @@ static void methodReturningSequenceMethodCallback(const v8::FunctionCallbackInfo
 static void methodWithEnumArgMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("methodWithEnumArg", "TestObj", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -3124,7 +3125,7 @@ static void methodWithEnumArgMethodCallback(const v8::FunctionCallbackInfo<v8::V
 static void methodThatRequiresAllArgsAndThrowsMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 2)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("methodThatRequiresAllArgsAndThrows", "TestObj", ExceptionMessages::notEnoughArguments(2, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -3148,7 +3149,7 @@ static void methodThatRequiresAllArgsAndThrowsMethodCallback(const v8::FunctionC
 static void serializedValueMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("serializedValue", "TestObj", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -3171,7 +3172,7 @@ static void serializedValueMethodCallback(const v8::FunctionCallbackInfo<v8::Val
 static void optionsObjectMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("optionsObject", "TestObj", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -3526,7 +3527,7 @@ static void methodWithOptionalArgMethodCallback(const v8::FunctionCallbackInfo<v
 static void methodWithNonOptionalArgAndOptionalArgMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("methodWithNonOptionalArgAndOptionalArg", "TestObj", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -3552,7 +3553,7 @@ static void methodWithNonOptionalArgAndOptionalArgMethodCallback(const v8::Funct
 static void methodWithNonOptionalArgAndTwoOptionalArgsMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("methodWithNonOptionalArgAndTwoOptionalArgs", "TestObj", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -3637,7 +3638,7 @@ static void methodWithOptionalStringIsNullStringMethodCallback(const v8::Functio
 static void methodWithCallbackArgMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("methodWithCallbackArg", "TestObj", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -3661,7 +3662,7 @@ static void methodWithCallbackArgMethodCallback(const v8::FunctionCallbackInfo<v
 static void methodWithNonCallbackArgAndCallbackArgMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 2)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("methodWithNonCallbackArgAndCallbackArg", "TestObj", ExceptionMessages::notEnoughArguments(2, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -3709,7 +3710,7 @@ static void methodWithCallbackAndOptionalArgMethodCallback(const v8::FunctionCal
 static void methodWithNullableCallbackArgMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("methodWithNullableCallbackArg", "TestObj", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -3755,7 +3756,7 @@ static void staticMethodWithCallbackAndOptionalArgMethodCallback(const v8::Funct
 static void staticMethodWithCallbackArgMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("staticMethodWithCallbackArg", "TestObj", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     if (args.Length() <= 0 || !args[0]->IsFunction()) {
@@ -3778,7 +3779,7 @@ static void staticMethodWithCallbackArgMethodCallback(const v8::FunctionCallback
 static void methodWithEnforceRangeInt8Method(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("methodWithEnforceRangeInt8", "TestObj", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -3798,7 +3799,7 @@ static void methodWithEnforceRangeInt8MethodCallback(const v8::FunctionCallbackI
 static void methodWithEnforceRangeUInt8Method(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("methodWithEnforceRangeUInt8", "TestObj", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -3818,7 +3819,7 @@ static void methodWithEnforceRangeUInt8MethodCallback(const v8::FunctionCallback
 static void methodWithEnforceRangeInt32Method(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("methodWithEnforceRangeInt32", "TestObj", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -3838,7 +3839,7 @@ static void methodWithEnforceRangeInt32MethodCallback(const v8::FunctionCallback
 static void methodWithEnforceRangeUInt32Method(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("methodWithEnforceRangeUInt32", "TestObj", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -3858,7 +3859,7 @@ static void methodWithEnforceRangeUInt32MethodCallback(const v8::FunctionCallbac
 static void methodWithEnforceRangeInt64Method(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("methodWithEnforceRangeInt64", "TestObj", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -3878,7 +3879,7 @@ static void methodWithEnforceRangeInt64MethodCallback(const v8::FunctionCallback
 static void methodWithEnforceRangeUInt64Method(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("methodWithEnforceRangeUInt64", "TestObj", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -3980,7 +3981,7 @@ static void callbackFunctionReturnValueMethodCallback(const v8::FunctionCallback
 static void callbackFunctionArgumentMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("callbackFunctionArgument", "TestObj", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -4000,7 +4001,7 @@ static void callbackFunctionArgumentMethodCallback(const v8::FunctionCallbackInf
 static void overloadedMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 2)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethod", "TestObj", ExceptionMessages::notEnoughArguments(2, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -4014,7 +4015,7 @@ static void overloadedMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& a
 static void overloadedMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethod", "TestObj", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -4033,7 +4034,7 @@ static void overloadedMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& a
 static void overloadedMethod3Method(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethod", "TestObj", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -4046,7 +4047,7 @@ static void overloadedMethod3Method(const v8::FunctionCallbackInfo<v8::Value>& a
 static void overloadedMethod4Method(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethod", "TestObj", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -4059,7 +4060,7 @@ static void overloadedMethod4Method(const v8::FunctionCallbackInfo<v8::Value>& a
 static void overloadedMethod5Method(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethod", "TestObj", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -4076,7 +4077,7 @@ static void overloadedMethod5Method(const v8::FunctionCallbackInfo<v8::Value>& a
 static void overloadedMethod6Method(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethod", "TestObj", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -4089,7 +4090,7 @@ static void overloadedMethod6Method(const v8::FunctionCallbackInfo<v8::Value>& a
 static void overloadedMethod7Method(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethod", "TestObj", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -4102,7 +4103,7 @@ static void overloadedMethod7Method(const v8::FunctionCallbackInfo<v8::Value>& a
 static void overloadedMethod8Method(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethod", "TestObj", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -4115,7 +4116,7 @@ static void overloadedMethod8Method(const v8::FunctionCallbackInfo<v8::Value>& a
 static void overloadedMethod9Method(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethod", "TestObj", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -4128,7 +4129,7 @@ static void overloadedMethod9Method(const v8::FunctionCallbackInfo<v8::Value>& a
 static void overloadedMethod10Method(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethod", "TestObj", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -4141,7 +4142,7 @@ static void overloadedMethod10Method(const v8::FunctionCallbackInfo<v8::Value>& 
 static void overloadedMethod11Method(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethod", "TestObj", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -4198,7 +4199,7 @@ static void overloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& ar
         return;
     }
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethod", "TestObj", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     throwTypeError(args.GetIsolate());
@@ -4255,7 +4256,7 @@ static void classMethod2MethodCallback(const v8::FunctionCallbackInfo<v8::Value>
 static void overloadedMethod11Method(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethod1", "TestObj", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     V8TRYCATCH_VOID(int, arg, toInt32(args[0]));
@@ -4271,7 +4272,7 @@ static void overloadedMethod11Method(const v8::FunctionCallbackInfo<v8::Value>& 
 static void overloadedMethod12Method(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethod1", "TestObj", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, type, args[0]);
@@ -4295,7 +4296,7 @@ static void overloadedMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& a
         return;
     }
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethod1", "TestObj", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     throwTypeError(args.GetIsolate());
@@ -4317,7 +4318,7 @@ static void overloadedMethod1MethodCallback(const v8::FunctionCallbackInfo<v8::V
 static void classMethodWithClampMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 2)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("classMethodWithClamp", "TestObj", ExceptionMessages::notEnoughArguments(2, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -4344,7 +4345,7 @@ static void classMethodWithClampMethodCallback(const v8::FunctionCallbackInfo<v8
 static void enabledAtRuntimeMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("enabledAtRuntimeMethod", "TestObj", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -4364,7 +4365,7 @@ static void enabledAtRuntimeMethodMethodCallback(const v8::FunctionCallbackInfo<
 static void enabledPerContextMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("enabledPerContextMethod", "TestObj", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -4384,7 +4385,7 @@ static void enabledPerContextMethodMethodCallback(const v8::FunctionCallbackInfo
 static void methodWithUnsignedLongSequenceMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("methodWithUnsignedLongSequence", "TestObj", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -4404,7 +4405,7 @@ static void methodWithUnsignedLongSequenceMethodCallback(const v8::FunctionCallb
 static void stringArrayFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("stringArrayFunction", "TestObj", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -4427,7 +4428,7 @@ static void stringArrayFunctionMethodCallback(const v8::FunctionCallbackInfo<v8:
 static void domStringListFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("domStringListFunction", "TestObj", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -4472,7 +4473,7 @@ static void getSVGDocumentMethodCallback(const v8::FunctionCallbackInfo<v8::Valu
 static void convert1Method(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("convert1", "TestObj", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -4492,7 +4493,7 @@ static void convert1MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& ar
 static void convert2Method(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("convert2", "TestObj", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -4512,7 +4513,7 @@ static void convert2MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& ar
 static void convert4Method(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("convert4", "TestObj", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -4532,7 +4533,7 @@ static void convert4MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& ar
 static void convert5Method(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("convert5", "TestObj", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -4595,7 +4596,7 @@ static void orangeMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args
 static void strictFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 3)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("strictFunction", "TestObj", ExceptionMessages::notEnoughArguments(3, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -4620,7 +4621,7 @@ static void strictFunctionMethodCallback(const v8::FunctionCallbackInfo<v8::Valu
 static void variadicStringMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("variadicStringMethod", "TestObj", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -4641,7 +4642,7 @@ static void variadicStringMethodMethodCallback(const v8::FunctionCallbackInfo<v8
 static void variadicDoubleMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("variadicDoubleMethod", "TestObj", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -4662,7 +4663,7 @@ static void variadicDoubleMethodMethodCallback(const v8::FunctionCallbackInfo<v8
 static void variadicNodeMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("variadicNodeMethod", "TestObj", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -4720,7 +4721,7 @@ static void perWorldMethodMethodCallbackForMainWorld(const v8::FunctionCallbackI
 static void overloadedPerWorldMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("overloadedPerWorldMethod", "TestObj", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -4733,7 +4734,7 @@ static void overloadedPerWorldMethod1Method(const v8::FunctionCallbackInfo<v8::V
 static void overloadedPerWorldMethod1MethodForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("overloadedPerWorldMethod", "TestObj", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -4746,7 +4747,7 @@ static void overloadedPerWorldMethod1MethodForMainWorld(const v8::FunctionCallba
 static void overloadedPerWorldMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 2)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("overloadedPerWorldMethod", "TestObj", ExceptionMessages::notEnoughArguments(2, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -4760,7 +4761,7 @@ static void overloadedPerWorldMethod2Method(const v8::FunctionCallbackInfo<v8::V
 static void overloadedPerWorldMethod2MethodForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 2)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("overloadedPerWorldMethod", "TestObj", ExceptionMessages::notEnoughArguments(2, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -4782,7 +4783,7 @@ static void overloadedPerWorldMethodMethod(const v8::FunctionCallbackInfo<v8::Va
         return;
     }
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("overloadedPerWorldMethod", "TestObj", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     throwTypeError(args.GetIsolate());
@@ -4799,7 +4800,7 @@ static void overloadedPerWorldMethodMethodForMainWorld(const v8::FunctionCallbac
         return;
     }
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("overloadedPerWorldMethod", "TestObj", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     throwTypeError(args.GetIsolate());
@@ -4822,7 +4823,7 @@ static void overloadedPerWorldMethodMethodCallbackForMainWorld(const v8::Functio
 static void activityLoggedMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("activityLoggedMethod1", "TestObj", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -4847,7 +4848,7 @@ static void activityLoggedMethod1MethodCallback(const v8::FunctionCallbackInfo<v
 static void activityLoggedMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("activityLoggedMethod2", "TestObj", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -4860,7 +4861,7 @@ static void activityLoggedMethod2Method(const v8::FunctionCallbackInfo<v8::Value
 static void activityLoggedMethod2MethodForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("activityLoggedMethod2", "TestObj", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -4897,7 +4898,7 @@ static void activityLoggedMethod2MethodCallbackForMainWorld(const v8::FunctionCa
 static void activityLoggedInIsolatedWorldMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("activityLoggedInIsolatedWorldMethod", "TestObj", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -4910,7 +4911,7 @@ static void activityLoggedInIsolatedWorldMethodMethod(const v8::FunctionCallback
 static void activityLoggedInIsolatedWorldMethodMethodForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("activityLoggedInIsolatedWorldMethod", "TestObj", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -4942,7 +4943,7 @@ static void activityLoggedInIsolatedWorldMethodMethodCallbackForMainWorld(const 
 static void overloadedActivityLoggedMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("overloadedActivityLoggedMethod", "TestObj", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -4955,7 +4956,7 @@ static void overloadedActivityLoggedMethod1Method(const v8::FunctionCallbackInfo
 static void overloadedActivityLoggedMethod1MethodForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("overloadedActivityLoggedMethod", "TestObj", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -4968,7 +4969,7 @@ static void overloadedActivityLoggedMethod1MethodForMainWorld(const v8::Function
 static void overloadedActivityLoggedMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 2)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("overloadedActivityLoggedMethod", "TestObj", ExceptionMessages::notEnoughArguments(2, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -4982,7 +4983,7 @@ static void overloadedActivityLoggedMethod2Method(const v8::FunctionCallbackInfo
 static void overloadedActivityLoggedMethod2MethodForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 2)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("overloadedActivityLoggedMethod", "TestObj", ExceptionMessages::notEnoughArguments(2, args.Length())), args.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -5004,7 +5005,7 @@ static void overloadedActivityLoggedMethodMethod(const v8::FunctionCallbackInfo<
         return;
     }
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("overloadedActivityLoggedMethod", "TestObj", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     throwTypeError(args.GetIsolate());
@@ -5021,7 +5022,7 @@ static void overloadedActivityLoggedMethodMethodForMainWorld(const v8::FunctionC
         return;
     }
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("overloadedActivityLoggedMethod", "TestObj", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     throwTypeError(args.GetIsolate());
@@ -5085,7 +5086,7 @@ static void deprecatedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("Constructor", "TestObj", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     if (args.Length() <= 0 || !args[0]->IsFunction()) {

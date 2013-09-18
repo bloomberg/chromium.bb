@@ -1346,3 +1346,5 @@ crbug.com/289833 [ Android ] tables/hittesting/filltable-levels.html [ Timeout P
 crbug.com/289833 [ Android ] transitions/transition-transform-translate-calculated-length-crash.html [ Timeout Pass ]
 crbug.com/289833 [ Android ] webaudio/stereo2mono-down-mixing.html [ Timeout Pass ]
 crbug.com/289833 [ Android ] webexposed/custom-elements.html [ Timeout Pass ]
+
+Bug(mkwst) svg/dom/SVGStringList-basics.xhtml [ NeedsRebaseline ]

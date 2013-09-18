@@ -13,7 +13,7 @@ PASS navigator.vibrate(10001); is false
 PASS navigator.vibrate(-1); is false
 PASS var p = []; for (var i = 0; i < 99; i++) p[i] = 1; navigator.vibrate(p); is true
 PASS var p = []; for (var i = 0; i < 100; i++) p[i] = 1; navigator.vibrate(p); is false
-PASS navigator.vibrate(); threw exception TypeError: Not enough arguments.
+PASS navigator.vibrate(); threw exception TypeError: Failed to execute 'vibrate' on 'Navigator': 1 argument required, but only 0 present..
 PASS navigator.vibrate([1], [2]); threw exception TypeError: Type error.
 PASS successfullyParsed is true
 

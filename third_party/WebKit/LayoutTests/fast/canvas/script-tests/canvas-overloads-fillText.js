@@ -2,12 +2,15 @@ description("Test the behavior of CanvasRenderingContext2D.fillText() when calle
 
 var ctx = document.createElement('canvas').getContext('2d');
 
-var NotEnoughArguments = "TypeError: Not enough arguments";
+function ExpectedNotEnoughArgumentsMessage(num) {
+    return "\"TypeError: Failed to execute 'fillText' on 'CanvasRenderingContext2D': 3 arguments required, but only " + num + " present.\"";
+}
+
 var TypeError = "TypeError: Type error";
 
-shouldThrow("ctx.fillText()", "NotEnoughArguments");
-shouldThrow("ctx.fillText('moo')", "NotEnoughArguments");
-shouldThrow("ctx.fillText('moo',0)", "NotEnoughArguments");
+shouldThrow("ctx.fillText()", ExpectedNotEnoughArgumentsMessage(0));
+shouldThrow("ctx.fillText('moo')", ExpectedNotEnoughArgumentsMessage(1));
+shouldThrow("ctx.fillText('moo',0)", ExpectedNotEnoughArgumentsMessage(2));
 shouldBe("ctx.fillText('moo',0,0)", "undefined");
 shouldBe("ctx.fillText('moo',0,0,0)", "undefined");
 shouldBe("ctx.fillText('moo',0,0,0,0)", "undefined");

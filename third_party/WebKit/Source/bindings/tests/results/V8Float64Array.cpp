@@ -23,6 +23,7 @@
 
 #include "RuntimeEnabledFeatures.h"
 #include "V8ArrayBufferView.h"
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
@@ -72,7 +73,7 @@ template <typename T> void V8_USE(T) { }
 static void fooMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("foo", "Float64Array", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     Float64Array* imp = V8Float64Array::toNative(args.Holder());

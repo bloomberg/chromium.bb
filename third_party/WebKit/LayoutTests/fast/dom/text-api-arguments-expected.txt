@@ -7,7 +7,7 @@ PASS text.data is "abcdefg"
 PASS text.__proto__ is Text.prototype
 PASS text.splitText(4).data is "efg"
 PASS text.data is "abcd"
-PASS text.splitText() threw exception TypeError: Not enough arguments.
+PASS text.splitText() threw exception TypeError: Failed to execute 'splitText' on 'Text': 1 argument required, but only 0 present..
 PASS text.data is "abcd"
 PASS text.splitText(999) threw exception IndexSizeError: Failed to execute 'splitText' on 'Text': The offset 999 is larger than the Text node's length..
 PASS text.data is "abcd"
@@ -19,7 +19,7 @@ PASS text.replaceWholeText('test') is text
 PASS text.data is "test"
 PASS text.replaceWholeText('') is null
 PASS text.data is "test"
-PASS text.replaceWholeText() threw exception TypeError: Not enough arguments.
+PASS text.replaceWholeText() threw exception TypeError: Failed to execute 'replaceWholeText' on 'Text': 1 argument required, but only 0 present..
 PASS text.data is "test"
 PASS text.replaceWholeText(null) is text
 PASS text.data is "null"

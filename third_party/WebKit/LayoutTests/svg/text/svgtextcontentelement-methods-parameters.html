@@ -40,15 +40,15 @@ function shouldBeEqualToSVGRect(actualRect, expectedRect)
 }
 
 // Arguments should be mandatory.
-shouldThrow("svgText.getSubStringLength()", "'TypeError: Not enough arguments'");
-shouldThrow("svgText.getSubStringLength(2)", "'TypeError: Not enough arguments'");
-shouldThrow("svgText.getStartPositionOfChar()", "'TypeError: Not enough arguments'");
-shouldThrow("svgText.getEndPositionOfChar()", "'TypeError: Not enough arguments'");
-shouldThrow("svgText.getExtentOfChar()", "'TypeError: Not enough arguments'");
-shouldThrow("svgText.getRotationOfChar()", "'TypeError: Not enough arguments'");
-shouldThrow("svgText.getCharNumAtPosition()", "'TypeError: Not enough arguments'");
-shouldThrow("svgText.selectSubString()", "'TypeError: Not enough arguments'");
-shouldThrow("svgText.selectSubString(2)", "'TypeError: Not enough arguments'");
+shouldThrow("svgText.getSubStringLength()", '"TypeError: Failed to execute \'getSubStringLength\' on \'SVGTextContentElement\': 2 arguments required, but only 0 present."');
+shouldThrow("svgText.getSubStringLength(2)", '"TypeError: Failed to execute \'getSubStringLength\' on \'SVGTextContentElement\': 2 arguments required, but only 1 present."');
+shouldThrow("svgText.getStartPositionOfChar()", '"TypeError: Failed to execute \'getStartPositionOfChar\' on \'SVGTextContentElement\': 1 argument required, but only 0 present."');
+shouldThrow("svgText.getEndPositionOfChar()", '"TypeError: Failed to execute \'getEndPositionOfChar\' on \'SVGTextContentElement\': 1 argument required, but only 0 present."');
+shouldThrow("svgText.getExtentOfChar()", '"TypeError: Failed to execute \'getExtentOfChar\' on \'SVGTextContentElement\': 1 argument required, but only 0 present."');
+shouldThrow("svgText.getRotationOfChar()", '"TypeError: Failed to execute \'getRotationOfChar\' on \'SVGTextContentElement\': 1 argument required, but only 0 present."');
+shouldThrow("svgText.getCharNumAtPosition()", '"TypeError: Failed to execute \'getCharNumAtPosition\' on \'SVGTextContentElement\': 1 argument required, but only 0 present."');
+shouldThrow("svgText.selectSubString()", '"TypeError: Failed to execute \'selectSubString\' on \'SVGTextContentElement\': 2 arguments required, but only 0 present."');
+shouldThrow("svgText.selectSubString(2)", '"TypeError: Failed to execute \'selectSubString\' on \'SVGTextContentElement\': 2 arguments required, but only 1 present."');
 
 // Should throw an IndexSizeError if charnum is greater than or equal to the number of characters at this node.
 shouldThrow("svgText.getSubStringLength(999, 2)", "'IndexSizeError: Index or size was negative, or greater than the allowed value.'");

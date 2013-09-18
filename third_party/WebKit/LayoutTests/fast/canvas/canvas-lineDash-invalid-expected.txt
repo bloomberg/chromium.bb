@@ -8,7 +8,7 @@ PASS trySettingLineDash([1, Infinity]) is initialLineDash
 PASS trySettingLineDash([1, -Infinity]) is initialLineDash
 PASS trySettingLineDash([1, NaN]) is initialLineDash
 PASS trySettingLineDash([1, 'string']) is initialLineDash
-PASS trySettingLineDashWithNoArgs() threw exception TypeError: Not enough arguments.
+PASS trySettingLineDashWithNoArgs() threw exception TypeError: Failed to execute 'setLineDash' on 'CanvasRenderingContext2D': 1 argument required, but only 0 present..
 PASS trySettingLineDashOffset(Infinity) is initialLineDashOffset
 PASS trySettingLineDashOffset(-Infinity) is initialLineDashOffset
 PASS trySettingLineDashOffset(NaN) is initialLineDashOffset

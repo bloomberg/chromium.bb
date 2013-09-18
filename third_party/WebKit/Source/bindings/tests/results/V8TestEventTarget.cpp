@@ -24,6 +24,7 @@
 #include "RuntimeEnabledFeatures.h"
 #include "V8EventTarget.h"
 #include "V8Node.h"
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
@@ -67,7 +68,7 @@ template <typename T> void V8_USE(T) { }
 static void itemMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("item", "TestEventTarget", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     TestEventTarget* imp = V8TestEventTarget::toNative(args.Holder());
@@ -86,7 +87,7 @@ static void itemMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 static void namedItemMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("namedItem", "TestEventTarget", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     TestEventTarget* imp = V8TestEventTarget::toNative(args.Holder());

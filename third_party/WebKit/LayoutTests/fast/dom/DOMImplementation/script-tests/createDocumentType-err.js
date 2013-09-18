@@ -1,15 +1,19 @@
 description("createDocument tests modeled after mozilla's testing");
 
-shouldThrow("document.implementation.createDocumentType('foo')", "'TypeError: Not enough arguments'");
-shouldThrow("document.implementation.createDocumentType('foo', null)", "'TypeError: Not enough arguments'");
-shouldThrow("document.implementation.createDocumentType(undefined, undefined)", "'TypeError: Not enough arguments'");
-shouldThrow("document.implementation.createDocumentType(null, undefined)", "'TypeError: Not enough arguments'");
-shouldThrow("document.implementation.createDocumentType(undefined, null)", "'TypeError: Not enough arguments'");
+function ExpectedNotEnoughArgumentsMessage(num) {
+    return "\"TypeError: Failed to execute 'createDocumentType' on 'DOMImplementation': 3 arguments required, but only " + num + " present.\"";
+}
+
+shouldThrow("document.implementation.createDocumentType('foo')", ExpectedNotEnoughArgumentsMessage(1));
+shouldThrow("document.implementation.createDocumentType('foo', null)", ExpectedNotEnoughArgumentsMessage(2));
+shouldThrow("document.implementation.createDocumentType(undefined, undefined)", ExpectedNotEnoughArgumentsMessage(2));
+shouldThrow("document.implementation.createDocumentType(null, undefined)", ExpectedNotEnoughArgumentsMessage(2));
+shouldThrow("document.implementation.createDocumentType(undefined, null)", ExpectedNotEnoughArgumentsMessage(2));
 shouldNotThrow("document.implementation.createDocumentType(undefined, undefined, null)");
-shouldThrow("document.implementation.createDocumentType(null, null)", "'TypeError: Not enough arguments'");
-shouldThrow("document.implementation.createDocumentType(null, '')", "'TypeError: Not enough arguments'");
-shouldThrow("document.implementation.createDocumentType('', null)", "'TypeError: Not enough arguments'");
-shouldThrow("document.implementation.createDocumentType('', '')", "'TypeError: Not enough arguments'");
+shouldThrow("document.implementation.createDocumentType(null, null)", ExpectedNotEnoughArgumentsMessage(2));
+shouldThrow("document.implementation.createDocumentType(null, '')", ExpectedNotEnoughArgumentsMessage(2));
+shouldThrow("document.implementation.createDocumentType('', null)", ExpectedNotEnoughArgumentsMessage(2));
+shouldThrow("document.implementation.createDocumentType('', '')", ExpectedNotEnoughArgumentsMessage(2));
 shouldThrow("document.implementation.createDocumentType('a:', null, null)", "'NamespaceError: An attempt was made to create or change an object in a way which is incorrect with regard to namespaces.'");
 shouldThrow("document.implementation.createDocumentType(':foo', null, null)", "'NamespaceError: An attempt was made to create or change an object in a way which is incorrect with regard to namespaces.'");
 shouldThrow("document.implementation.createDocumentType(':', null, null)", "'NamespaceError: An attempt was made to create or change an object in a way which is incorrect with regard to namespaces.'");

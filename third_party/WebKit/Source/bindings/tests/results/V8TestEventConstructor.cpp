@@ -23,6 +23,7 @@
 
 #include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/Dictionary.h"
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMConfiguration.h"
@@ -92,7 +93,7 @@ static void attr2AttributeGetterCallback(v8::Local<v8::String> name, const v8::P
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (args.Length() < 1) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToConstruct("TestEventConstructor", "An event name must be provided."), args.GetIsolate());
         return;
     }
 

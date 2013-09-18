@@ -3,9 +3,9 @@ Basic tests for AudioNode API.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-PASS audioNode.noteOn() threw exception TypeError: Not enough arguments.
-PASS audioNode.noteGrainOn() threw exception TypeError: Not enough arguments.
-PASS audioNode.noteOff() threw exception TypeError: Not enough arguments.
+PASS audioNode.noteOn() threw exception TypeError: Failed to execute 'noteOn' on 'AudioBufferSourceNode': 1 argument required, but only 0 present..
+PASS audioNode.noteGrainOn() threw exception TypeError: Failed to execute 'noteGrainOn' on 'AudioBufferSourceNode': 3 arguments required, but only 0 present..
+PASS audioNode.noteOff() threw exception TypeError: Failed to execute 'noteOff' on 'AudioBufferSourceNode': 1 argument required, but only 0 present..
 PASS Source AudioNode has no inputs.
 PASS Source AudioNode has one output.
 PASS Destination AudioNode has one input.

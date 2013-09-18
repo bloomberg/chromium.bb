@@ -25,6 +25,7 @@
 #include "RuntimeEnabledFeatures.h"
 #include "V8TestEvent.h"
 #include "bindings/v8/Dictionary.h"
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMConfiguration.h"
@@ -97,7 +98,7 @@ static void keyLocationAttributeGetterCallback(v8::Local<v8::String> name, const
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (args.Length() < 1) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToConstruct("Event", "An event name must be provided."), args.GetIsolate());
         return;
     }
 

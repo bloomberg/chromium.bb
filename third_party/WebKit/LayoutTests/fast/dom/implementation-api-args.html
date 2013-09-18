@@ -35,9 +35,9 @@ function validateDocument(document, prototype, namespace, qualifiedName, docType
 }
 
 debug('\nDocumentType createDocumentType(DOMString qualifiedName, DOMString publicId, DOMString systemId);');
-shouldThrow('document.implementation.createDocumentType()', "'TypeError: Not enough arguments'");
-shouldThrow('document.implementation.createDocumentType("qualifiedName")', "'TypeError: Not enough arguments'");
-shouldThrow('document.implementation.createDocumentType("qualifiedName", "publicId")', "'TypeError: Not enough arguments'");
+shouldThrow('document.implementation.createDocumentType()', '"TypeError: Failed to execute \'createDocumentType\' on \'DOMImplementation\': 3 arguments required, but only 0 present."');
+shouldThrow('document.implementation.createDocumentType("qualifiedName")', '"TypeError: Failed to execute \'createDocumentType\' on \'DOMImplementation\': 3 arguments required, but only 1 present."');
+shouldThrow('document.implementation.createDocumentType("qualifiedName", "publicId")', '"TypeError: Failed to execute \'createDocumentType\' on \'DOMImplementation\': 3 arguments required, but only 2 present."');
 var docType;
 shouldNotThrow('docType = document.implementation.createDocumentType("qualifiedName", "publicId", "systemId")');
 shouldBe('docType.__proto__', 'DocumentType.prototype');
@@ -46,8 +46,8 @@ shouldBeEqualToString('docType.publicId', 'publicId');
 shouldBeEqualToString('docType.systemId', 'systemId');
 
 debug('\nXMLDocument createDocument(DOMString? namespace, [TreatNullAs=EmptyString] DOMString qualifiedName, DocumentType? doctype);');
-shouldThrow('document.implementation.createDocument()', "'TypeError: Not enough arguments'");
-shouldThrow('document.implementation.createDocument("namespace")', "'TypeError: Not enough arguments'");
+shouldThrow('document.implementation.createDocument()', '"TypeError: Failed to execute \'createDocument\' on \'DOMImplementation\': 2 arguments required, but only 0 present."');
+shouldThrow('document.implementation.createDocument("namespace")', '"TypeError: Failed to execute \'createDocument\' on \'DOMImplementation\': 2 arguments required, but only 1 present."');
 shouldNotThrow('document.implementation.createDocument("namespace", "qualifiedName")');
 var doc;
 shouldNotThrow('doc = document.implementation.createDocument("namespace", "qualifiedName", null)');

@@ -19,15 +19,15 @@ PASS document.defaultView.getComputedStyle(rectElement).fill is "#008000"
 Try invalid arguments for setPaint()
 PASS fillPaint.setPaint(null, null, null, null) threw exception NoModificationAllowedError: An attempt was made to modify an object where modifications are not allowed..
 PASS fillPaint.setPaint(SVGPaint.SVG_PAINTTYPE_RGBCOLOR, svgElement, '', ''); threw exception NoModificationAllowedError: An attempt was made to modify an object where modifications are not allowed..
-PASS fillPaint.setPaint(SVGPaint.SVG_PAINTTYPE_RGBCOLOR, '', '') threw exception TypeError: Not enough arguments.
+PASS fillPaint.setPaint(SVGPaint.SVG_PAINTTYPE_RGBCOLOR, '', '') threw exception TypeError: Failed to execute 'setPaint' on 'SVGPaint': 4 arguments required, but only 3 present..
 PASS fillPaint.setPaint(SVGPaint.SVG_PAINTTYPE_RGBCOLOR_ICCCOLOR + 1, '', '', ''); threw exception NoModificationAllowedError: An attempt was made to modify an object where modifications are not allowed..
 PASS fillPaint.setPaint(SVGPaint.SVG_PAINTTYPE_NONE - 1, '', '', ''); threw exception NoModificationAllowedError: An attempt was made to modify an object where modifications are not allowed..
 PASS fillPaint.setPaint(SVGPaint.SVG_PAINTTYPE_URI + 1, '', '', ''); threw exception NoModificationAllowedError: An attempt was made to modify an object where modifications are not allowed..
-PASS fillPaint.setPaint() threw exception TypeError: Not enough arguments.
-PASS fillPaint.setPaint(fillPaint) threw exception TypeError: Not enough arguments.
+PASS fillPaint.setPaint() threw exception TypeError: Failed to execute 'setPaint' on 'SVGPaint': 4 arguments required, but only 0 present..
+PASS fillPaint.setPaint(fillPaint) threw exception TypeError: Failed to execute 'setPaint' on 'SVGPaint': 4 arguments required, but only 1 present..
 
 Try invalid arguments for setUri()
-PASS fillPaint.setUri() threw exception TypeError: Not enough arguments.
+PASS fillPaint.setUri() threw exception TypeError: Failed to execute 'setUri' on 'SVGPaint': 1 argument required, but only 0 present..
 
 Try assigning to the readonly paintType property, which silently fails
 PASS fillPaint.paintType = SVGPaint.SVG_PAINTTYPE_UNKKNOWN; is undefined.

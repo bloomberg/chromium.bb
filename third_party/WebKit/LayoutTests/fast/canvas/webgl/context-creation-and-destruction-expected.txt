@@ -1,3 +1,4 @@
+CONSOLE MESSAGE: WARNING: WebGL contexts have exceeded the maximum allowed backbuffer area. Oldest context will be lost.
 Test that contexts are freed and garbage collected reasonably
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

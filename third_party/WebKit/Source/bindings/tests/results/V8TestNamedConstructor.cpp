@@ -23,6 +23,7 @@
 
 #include "RuntimeEnabledFeatures.h"
 #include "V8Document.h"
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
@@ -86,7 +87,7 @@ static void V8TestNamedConstructorConstructorCallback(const v8::FunctionCallback
     toV8(document, args.Holder(), args.GetIsolate());
 
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("NamedConstructor", "TestNamedConstructor", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     ExceptionState es(args.GetIsolate());

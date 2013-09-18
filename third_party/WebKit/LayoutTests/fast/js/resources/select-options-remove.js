@@ -67,7 +67,7 @@ shouldBe("select1.selectedIndex", "-1");
 debug("");
 
 debug("1.10 Remove no args from empty Options");
-shouldThrow("select1.options.remove()", "'TypeError: Not enough arguments'");
+shouldThrow("select1.options.remove()", '"TypeError: Failed to execute \'remove\' on \'HTMLOptionsCollection\': 1 argument required, but only 0 present."');
 shouldBe("select1.options.length", "0");
 shouldBe("select1.selectedIndex", "-1");
 debug("");
@@ -194,7 +194,7 @@ shouldBe("select2.options[0].value", "'K'");
 debug("");
 
 debug("2.11 Remove no args from non-empty Options");
-shouldThrow("select2.options.remove()", "'TypeError: Not enough arguments'");
+shouldThrow("select2.options.remove()", '"TypeError: Failed to execute \'remove\' on \'HTMLOptionsCollection\': 1 argument required, but only 0 present."');
 shouldBe("select2.options.length", "6");
 shouldBe("select2.selectedIndex", "4");
 shouldBe("select2.options[0].value", "'K'");

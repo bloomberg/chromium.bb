@@ -25,11 +25,11 @@ PASS hostRule.cssText is "@host { \n  div { border-color: blue; }\n}"
 PASS hostRule.cssRules[0].cssText is "div { border-color: blue; }"
 Error cases
 PASS hostRule.cssRules.length is 1
-PASS hostRule.insertRule('#host { border-color: green; }') threw exception TypeError: Not enough arguments.
+PASS hostRule.insertRule('#host { border-color: green; }') threw exception TypeError: Failed to execute 'insertRule' on 'CSSHostRule': 2 arguments required, but only 1 present..
 PASS hostRule.cssRules.length is 1
-PASS hostRule.insertRule() threw exception TypeError: Not enough arguments.
+FAIL hostRule.insertRule() should throw TypeError: Failed to execute 'insertRule' on 'CSSHostRule': 2 arguments required, but only 1 present.. Threw exception TypeError: Failed to execute 'insertRule' on 'CSSHostRule': 2 arguments required, but only 0 present..
 PASS hostRule.cssRules.length is 1
-PASS hostRule.deleteRule() threw exception TypeError: Not enough arguments.
+PASS hostRule.deleteRule() threw exception TypeError: Failed to execute 'deleteRule' on 'CSSHostRule': 1 argument required, but only 0 present..
 PASS hostRule.cssRules.length is 1
 PASS successfullyParsed is true
 

@@ -29,7 +29,7 @@ PASS testData is expectedTestData
 PASS testData is expectedTestData
 PASS testData is expectedTestData
 Running test with DataTransferItemList drag handler and Legacy drop handler
-PASS testDataTransfer.items.add() threw exception TypeError: Not enough arguments.
+PASS testDataTransfer.items.add() threw exception TypeError: Failed to execute 'add' on 'DataTransferItemList': 1 argument required, but only 0 present..
 PASS testDataTransfer.items.add("sample") threw exception TypeError: Type error.
 PASS testItem.kind is "string"
 PASS testItem.type is "text/plain"
@@ -49,7 +49,7 @@ PASS testDataTransfer.getData("url") is "http://www.google.com/"
 PASS testDataTransfer.getData("text/html") is "<em>Markup</em>"
 PASS testDataTransfer.getData("custom-data") is "hello world"
 Running test with DataTransferItemList drag handler and DataTransferItemList drop handler
-PASS testDataTransfer.items.add() threw exception TypeError: Not enough arguments.
+PASS testDataTransfer.items.add() threw exception TypeError: Failed to execute 'add' on 'DataTransferItemList': 1 argument required, but only 0 present..
 PASS testDataTransfer.items.add("sample") threw exception TypeError: Type error.
 PASS testItem.kind is "string"
 PASS testItem.type is "text/plain"

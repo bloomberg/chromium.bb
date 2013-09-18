@@ -15,7 +15,7 @@ shouldBe("text.__proto__", "Text.prototype");
 // Text splitText(unsigned long offset)
 shouldBeEqualToString("text.splitText(4).data", "efg");
 shouldBeEqualToString("text.data", "abcd");
-shouldThrow("text.splitText()", "'TypeError: Not enough arguments'");
+shouldThrow("text.splitText()", '"TypeError: Failed to execute \'splitText\' on \'Text\': 1 argument required, but only 0 present."');
 shouldBeEqualToString("text.data", "abcd");
 shouldThrow("text.splitText(999)", '"IndexSizeError: Failed to execute \'splitText\' on \'Text\': The offset 999 is larger than the Text node\'s length."'); // offset greater than length
 shouldBeEqualToString("text.data", "abcd");
@@ -30,7 +30,7 @@ shouldBe("text.replaceWholeText('test')", "text");
 shouldBeEqualToString("text.data", "test");
 shouldBeNull("text.replaceWholeText('')");
 shouldBeEqualToString("text.data", "test");
-shouldThrow("text.replaceWholeText()", "'TypeError: Not enough arguments'");
+shouldThrow("text.replaceWholeText()", '"TypeError: Failed to execute \'replaceWholeText\' on \'Text\': 1 argument required, but only 0 present."');
 shouldBeEqualToString("text.data", "test");
 shouldBe("text.replaceWholeText(null)", "text");
 shouldBeEqualToString("text.data", "null");

@@ -19,7 +19,7 @@ shouldBe('window.btoa("abcde")', '"YWJjZGU="');
 shouldBe('window.btoa("abcdef")', '"YWJjZGVm"');
 
 shouldBe('typeof window.btoa', '"function"');
-shouldThrow('window.btoa()', '"TypeError: Not enough arguments"');
+shouldThrow('window.btoa()', '"TypeError: Failed to execute \'btoa\' on \'DOMWindow\': 1 argument required, but only 0 present."');
 shouldBe('window.btoa("")', '""');
 shouldBe('window.btoa(null)', '"bnVsbA=="'); // Gets converted to "null" string.
 shouldBe('window.btoa(undefined)', '"dW5kZWZpbmVk"');
@@ -32,7 +32,7 @@ shouldBe('window.btoa', '0');
 shouldBe('typeof window.btoa', '"number"');
 
 shouldBe('typeof window.atob', '"function"');
-shouldThrow('window.atob()', '"TypeError: Not enough arguments"');
+shouldThrow('window.atob()', '"TypeError: Failed to execute \'atob\' on \'DOMWindow\': 1 argument required, but only 0 present."');
 shouldBe('window.atob("")', '""');
 shouldBe('window.atob(null)', '"\x9Eée"'); // Gets converted to "null" string.
 shouldThrow('window.atob(undefined)');

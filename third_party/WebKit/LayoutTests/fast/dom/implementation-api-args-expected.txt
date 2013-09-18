@@ -5,9 +5,9 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 DocumentType createDocumentType(DOMString qualifiedName, DOMString publicId, DOMString systemId);
-PASS document.implementation.createDocumentType() threw exception TypeError: Not enough arguments.
-PASS document.implementation.createDocumentType("qualifiedName") threw exception TypeError: Not enough arguments.
-PASS document.implementation.createDocumentType("qualifiedName", "publicId") threw exception TypeError: Not enough arguments.
+PASS document.implementation.createDocumentType() threw exception TypeError: Failed to execute 'createDocumentType' on 'DOMImplementation': 3 arguments required, but only 0 present..
+PASS document.implementation.createDocumentType("qualifiedName") threw exception TypeError: Failed to execute 'createDocumentType' on 'DOMImplementation': 3 arguments required, but only 1 present..
+PASS document.implementation.createDocumentType("qualifiedName", "publicId") threw exception TypeError: Failed to execute 'createDocumentType' on 'DOMImplementation': 3 arguments required, but only 2 present..
 PASS docType = document.implementation.createDocumentType("qualifiedName", "publicId", "systemId") did not throw exception.
 PASS docType.__proto__ is DocumentType.prototype
 PASS docType.name is "qualifiedName"
@@ -15,8 +15,8 @@ PASS docType.publicId is "publicId"
 PASS docType.systemId is "systemId"
 
 XMLDocument createDocument(DOMString? namespace, [TreatNullAs=EmptyString] DOMString qualifiedName, DocumentType? doctype);
-PASS document.implementation.createDocument() threw exception TypeError: Not enough arguments.
-PASS document.implementation.createDocument("namespace") threw exception TypeError: Not enough arguments.
+PASS document.implementation.createDocument() threw exception TypeError: Failed to execute 'createDocument' on 'DOMImplementation': 2 arguments required, but only 0 present..
+PASS document.implementation.createDocument("namespace") threw exception TypeError: Failed to execute 'createDocument' on 'DOMImplementation': 2 arguments required, but only 1 present..
 PASS document.implementation.createDocument("namespace", "qualifiedName") did not throw exception.
 PASS doc = document.implementation.createDocument("namespace", "qualifiedName", null) did not throw exception.
 PASS testDocument.__proto__ is window["XMLDocument"].prototype

@@ -3,15 +3,15 @@ Check that SVGTextContentElement methods' parameters are correctly validated
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS svgText.getSubStringLength() threw exception TypeError: Not enough arguments.
-PASS svgText.getSubStringLength(2) threw exception TypeError: Not enough arguments.
-PASS svgText.getStartPositionOfChar() threw exception TypeError: Not enough arguments.
-PASS svgText.getEndPositionOfChar() threw exception TypeError: Not enough arguments.
-PASS svgText.getExtentOfChar() threw exception TypeError: Not enough arguments.
-PASS svgText.getRotationOfChar() threw exception TypeError: Not enough arguments.
-PASS svgText.getCharNumAtPosition() threw exception TypeError: Not enough arguments.
-PASS svgText.selectSubString() threw exception TypeError: Not enough arguments.
-PASS svgText.selectSubString(2) threw exception TypeError: Not enough arguments.
+PASS svgText.getSubStringLength() threw exception TypeError: Failed to execute 'getSubStringLength' on 'SVGTextContentElement': 2 arguments required, but only 0 present..
+PASS svgText.getSubStringLength(2) threw exception TypeError: Failed to execute 'getSubStringLength' on 'SVGTextContentElement': 2 arguments required, but only 1 present..
+PASS svgText.getStartPositionOfChar() threw exception TypeError: Failed to execute 'getStartPositionOfChar' on 'SVGTextContentElement': 1 argument required, but only 0 present..
+PASS svgText.getEndPositionOfChar() threw exception TypeError: Failed to execute 'getEndPositionOfChar' on 'SVGTextContentElement': 1 argument required, but only 0 present..
+PASS svgText.getExtentOfChar() threw exception TypeError: Failed to execute 'getExtentOfChar' on 'SVGTextContentElement': 1 argument required, but only 0 present..
+PASS svgText.getRotationOfChar() threw exception TypeError: Failed to execute 'getRotationOfChar' on 'SVGTextContentElement': 1 argument required, but only 0 present..
+PASS svgText.getCharNumAtPosition() threw exception TypeError: Failed to execute 'getCharNumAtPosition' on 'SVGTextContentElement': 1 argument required, but only 0 present..
+PASS svgText.selectSubString() threw exception TypeError: Failed to execute 'selectSubString' on 'SVGTextContentElement': 2 arguments required, but only 0 present..
+PASS svgText.selectSubString(2) threw exception TypeError: Failed to execute 'selectSubString' on 'SVGTextContentElement': 2 arguments required, but only 1 present..
 PASS svgText.getSubStringLength(999, 2) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
 PASS svgText.getStartPositionOfChar(999) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
 PASS svgText.getEndPositionOfChar(999) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..

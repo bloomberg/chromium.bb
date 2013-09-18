@@ -2,10 +2,13 @@ description("Test the behavior of CanvasRenderingContext2D.setFillColor() when c
 
 var ctx = document.createElement('canvas').getContext('2d');
 
-var TypeError = "TypeError: Type error";
-var TypeErrorNotEnoughArguments = "TypeError: Not enough arguments";
+function ExpectedNotEnoughArgumentsMessage(num) {
+    return "\"TypeError: Failed to execute 'setFillColor' on 'CanvasRenderingContext2D': 1 argument required, but only " + num + " present.\"";
+}
 
-shouldThrow("ctx.setFillColor()", "TypeErrorNotEnoughArguments");
+var TypeError = "TypeError: Type error";
+
+shouldThrow("ctx.setFillColor()", ExpectedNotEnoughArgumentsMessage(0));
 shouldBe("ctx.setFillColor('red')", "undefined");
 shouldBe("ctx.setFillColor(0)", "undefined");
 shouldBe("ctx.setFillColor(0, 0)", "undefined");

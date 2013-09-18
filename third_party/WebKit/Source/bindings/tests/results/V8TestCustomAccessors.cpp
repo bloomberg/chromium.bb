@@ -22,6 +22,7 @@
 #include "V8TestCustomAccessors.h"
 
 #include "RuntimeEnabledFeatures.h"
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
@@ -63,7 +64,7 @@ template <typename T> void V8_USE(T) { }
 static void anotherFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("anotherFunction", "TestCustomAccessors", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     TestCustomAccessors* imp = V8TestCustomAccessors::toNative(args.Holder());

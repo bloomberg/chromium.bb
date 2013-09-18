@@ -6,13 +6,12 @@
 description('Tests correct behavior of event.dataTransfer.setData with wrong number of arguments');
 
 var event;
-var notEnoughArgumentsError = '"TypeError: Not enough arguments"';
 
 var dragger = document.getElementById('dragger');
 dragger.addEventListener('dragstart', function(e) {
     event = e;
-    shouldThrow('event.dataTransfer.setData()', notEnoughArgumentsError);
-    shouldThrow('event.dataTransfer.setData("Text")', notEnoughArgumentsError);
+    shouldThrow('event.dataTransfer.setData()', '"TypeError: Failed to execute \'setData\' on \'Clipboard\': 2 arguments required, but only 0 present."');
+    shouldThrow('event.dataTransfer.setData("Text")', '"TypeError: Failed to execute \'setData\' on \'Clipboard\': 2 arguments required, but only 1 present."');
 }, false);
 
 if (window.eventSender) {

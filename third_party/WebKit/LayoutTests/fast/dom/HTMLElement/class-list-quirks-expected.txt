@@ -48,7 +48,7 @@ PASS element.classList.remove('') threw expected DOMException with code 12
 PASS element.classList.remove('x y') threw expected DOMException with code 5
 PASS element.classList.toggle('') threw expected DOMException with code 12
 PASS element.classList.toggle('x y') threw expected DOMException with code 5
-PASS element.classList.toggle() threw exception TypeError: Not enough arguments.
+PASS element.classList.toggle() threw exception TypeError: Failed to execute 'toggle' on 'DOMTokenList': 1 argument required, but only 0 present..
 Indexing
 PASS element.classList[0] is "x"
 PASS element.classList.item(0) is "x"
@@ -62,12 +62,12 @@ PASS element.classList[4] is undefined.
 PASS element.classList.item(4) is null
 PASS element.classList[-1] is undefined.
 PASS element.classList.item(-1) is null
-PASS element.classList.item() threw exception TypeError: Not enough arguments.
+PASS element.classList.item() threw exception TypeError: Failed to execute 'item' on 'DOMTokenList': 1 argument required, but only 0 present..
 Test case since DOMTokenList is case sensitive
 PASS element.classList.contains('x') is true
 PASS element.classList.contains('X') is false
 PASS element.classList[0] is "x"
-PASS element.classList.contains() threw exception TypeError: Not enough arguments.
+PASS element.classList.contains() threw exception TypeError: Failed to execute 'contains' on 'DOMTokenList': 1 argument required, but only 0 present..
 PASS element.classList.contains('X') is true
 PASS element.classList.contains('x') is false
 PASS element.classList[0] is "X"

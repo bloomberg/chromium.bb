@@ -20,7 +20,7 @@ shouldBeEqualToString("nodeList.item(1).id", "b");
 shouldBeNull("nodeList.item(2)");
 shouldBeNull("nodeList.item(-1)");
 shouldBeEqualToString("nodeList.item(-4294967295).id", "b"); // Wraps to 1.
-shouldThrow("nodeList.item()", "'TypeError: Not enough arguments'");
+shouldThrow("nodeList.item()", '"TypeError: Failed to execute \'item\' on \'NodeList\': 1 argument required, but only 0 present."');
 </script>
 <script src="../js/resources/js-test-post.js"></script>
 </body>

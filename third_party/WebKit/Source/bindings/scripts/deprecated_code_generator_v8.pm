@@ -1450,6 +1450,7 @@ END
     my $useExceptions = 1 if $attribute->extendedAttributes->{"GetterRaisesException"} ||  $attribute->extendedAttributes->{"RaisesException"};
     my $isNullable = $attribute->isNullable;
     if ($useExceptions) {
+        AddToImplIncludes("bindings/v8/ExceptionMessages.h");
         AddToImplIncludes("bindings/v8/ExceptionState.h");
         $code .= "    ExceptionState es(info.GetIsolate());\n";
     }
@@ -1820,6 +1821,7 @@ sub GenerateNormalAttributeSetter
     $svgNativeType* imp = ${v8ClassName}::toNative(info.Holder());
 END
         } else {
+            AddToImplIncludes("bindings/v8/ExceptionMessages.h");
             AddToImplIncludes("bindings/v8/ExceptionState.h");
             $code .= "    $svgNativeType* wrapper = ${v8ClassName}::toNative(info.Holder());\n";
             $code .= "    if (wrapper->isReadOnly()) {\n";
@@ -1894,6 +1896,7 @@ END
     my $useExceptions = 1 if $attribute->extendedAttributes->{"SetterRaisesException"} ||  $attribute->extendedAttributes->{"RaisesException"};
 
     if ($useExceptions) {
+        AddToImplIncludes("bindings/v8/ExceptionMessages.h");
         AddToImplIncludes("bindings/v8/ExceptionState.h");
         $code .= "    ExceptionState es(info.GetIsolate());\n";
     }
@@ -2066,6 +2069,7 @@ sub GenerateOverloadedFunction
     # declaration in the IDL.
 
     my $name = $function->name;
+    my $implClassName = GetImplName($interface);
 
     my $conditionalString = GenerateConditionalString($function);
     my $leastNumMandatoryParams = 255;
@@ -2089,7 +2093,7 @@ END
     }
     if ($leastNumMandatoryParams >= 1) {
         $code .= "    if (UNLIKELY(args.Length() < $leastNumMandatoryParams)) {\n";
-        $code .= "        throwNotEnoughArgumentsError(args.GetIsolate());\n";
+        $code .= "        throwTypeError(ExceptionMessages::failedToExecute(\"$name\", \"$implClassName\", ExceptionMessages::notEnoughArguments($leastNumMandatoryParams, args.Length())), args.GetIsolate());\n";
         $code .= "        return;\n";
         $code .= "    }\n";
     }
@@ -2220,6 +2224,7 @@ END
         if ($interfaceName =~ /List$/) {
             $code .= "    $nativeClassName imp = ${v8ClassName}::toNative(args.Holder());\n";
         } else {
+            AddToImplIncludes("bindings/v8/ExceptionMessages.h");
             AddToImplIncludes("bindings/v8/ExceptionState.h");
             AddToImplIncludes("core/dom/ExceptionCode.h");
             $code .= "    $nativeClassName wrapper = ${v8ClassName}::toNative(args.Holder());\n";
@@ -2251,6 +2256,7 @@ END
 
     my $raisesExceptions = $function->extendedAttributes->{"RaisesException"};
     if ($raisesExceptions) {
+        AddToImplIncludes("bindings/v8/ExceptionMessages.h");
         AddToImplIncludes("bindings/v8/ExceptionState.h");
         $code .= "    ExceptionState es(args.GetIsolate());\n";
     }
@@ -2315,6 +2321,9 @@ sub GenerateArgumentsCountCheck
     my $function = shift;
     my $interface = shift;
 
+    my $functionName = $function->name;
+    my $implClassName = GetImplName($interface);
+
     my $numMandatoryParams = 0;
     my $allowNonOptional = 1;
     foreach my $param (@{$function->parameters}) {
@@ -2329,7 +2338,7 @@ sub GenerateArgumentsCountCheck
     my $argumentsCountCheckString = "";
     if ($numMandatoryParams >= 1) {
         $argumentsCountCheckString .= "    if (UNLIKELY(args.Length() < $numMandatoryParams)) {\n";
-        $argumentsCountCheckString .= "        throwNotEnoughArgumentsError(args.GetIsolate());\n";
+        $argumentsCountCheckString .= "        throwTypeError(ExceptionMessages::failedToExecute(\"$functionName\", \"$implClassName\", ExceptionMessages::notEnoughArguments($numMandatoryParams, args.Length())), args.GetIsolate());\n";
         $argumentsCountCheckString .= "        return;\n";
         $argumentsCountCheckString .= "    }\n";
     }
@@ -2363,6 +2372,7 @@ sub GenerateParametersCheck
         }
 
         my $parameterName = $parameter->name;
+        AddToImplIncludes("bindings/v8/ExceptionMessages.h");
         AddToImplIncludes("bindings/v8/ExceptionState.h");
         if (IsCallbackInterface($parameter->type)) {
             my $v8ClassName = "V8" . $parameter->type;
@@ -2494,8 +2504,10 @@ END
         $code .= "    }\n";
     }
     if ($leastNumMandatoryParams >= 1) {
+        AddToImplIncludes("bindings/v8/ExceptionMessages.h");
         $code .= "    if (UNLIKELY(args.Length() < $leastNumMandatoryParams)) {\n";
-        $code .= "        throwNotEnoughArgumentsError(args.GetIsolate());\n";
+
+        $code .= "        throwTypeError(ExceptionMessages::failedToConstruct(\"$implClassName\", ExceptionMessages::notEnoughArguments($leastNumMandatoryParams, args.Length())), args.GetIsolate());\n";
         $code .= "        return;\n";
         $code .= "    }\n";
     }
@@ -2537,6 +2549,7 @@ END
     }
 
     if ($raisesExceptions) {
+        AddToImplIncludes("bindings/v8/ExceptionMessages.h");
         AddToImplIncludes("bindings/v8/ExceptionState.h");
         $code .= "    ExceptionState es(args.GetIsolate());\n";
     }
@@ -2671,11 +2684,12 @@ sub GenerateEventConstructor
     }
 
     AddToImplIncludes("bindings/v8/Dictionary.h");
+    AddToImplIncludes("bindings/v8/ExceptionMessages.h");
     $implementation{nameSpaceInternal}->add(<<END);
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (args.Length() < 1) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToConstruct("$implClassName", "An event name must be provided."), args.GetIsolate());
         return;
     }
 
@@ -2826,6 +2840,7 @@ END
     $code .= GenerateArgumentsCountCheck($function, $interface);
 
     if ($raisesExceptions) {
+        AddToImplIncludes("bindings/v8/ExceptionMessages.h");
         AddToImplIncludes("bindings/v8/ExceptionState.h");
         $code .= "    ExceptionState es(args.GetIsolate());\n";
     }

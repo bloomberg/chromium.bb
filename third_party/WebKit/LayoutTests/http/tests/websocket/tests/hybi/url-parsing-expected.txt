@@ -2,7 +2,7 @@ Test WebSocket URL parsing.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-PASS new WebSocket() threw exception TypeError: Not enough arguments.
+PASS new WebSocket() threw exception TypeError: Failed to construct 'WebSocket': 1 argument required, but only 0 present..
 PASS new WebSocket(null) threw exception SyntaxError: Failed to execute 'connect' on 'WebSocket': The URL's scheme must be either 'ws' or 'wss'. 'http' is not allowed..
 PASS new WebSocket("ws://javascript:a") threw exception SyntaxError: Failed to execute 'connect' on 'WebSocket': the URL 'ws://javascript:a/' is invalid..
 PASS new WebSocket("/applet") threw exception SyntaxError: Failed to execute 'connect' on 'WebSocket': The URL's scheme must be either 'ws' or 'wss'. 'http' is not allowed..

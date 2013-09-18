@@ -22,6 +22,7 @@
 #include "V8TestInterfaceImplementedAs.h"
 
 #include "RuntimeEnabledFeatures.h"
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
@@ -123,7 +124,7 @@ static void bAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::V
 static void func1Method(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("func1", "RealClass", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     RealClass* imp = V8TestInterfaceImplementedAs::toNative(args.Holder());
@@ -142,7 +143,7 @@ static void func1MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 static void funcTestInterfaceImplementedAsParamMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("funcTestInterfaceImplementedAsParam", "RealClass", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     RealClass* imp = V8TestInterfaceImplementedAs::toNative(args.Holder());

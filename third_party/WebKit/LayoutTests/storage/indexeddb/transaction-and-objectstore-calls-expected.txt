@@ -83,7 +83,7 @@ PASS code is DOMException.NOT_FOUND_ERR
 PASS ename is 'NotFoundError'
 Exception message: The specified object store was not found.
 
-PASS trans = db.transaction() threw exception TypeError: Not enough arguments.
+PASS trans = db.transaction() threw exception TypeError: Failed to execute 'transaction' on 'IDBDatabase': 1 argument required, but only 0 present..
 
 Expecting exception from db.transaction(['x'])
 PASS Exception was thrown.

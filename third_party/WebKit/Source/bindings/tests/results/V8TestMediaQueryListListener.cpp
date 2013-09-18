@@ -22,6 +22,7 @@
 #include "V8TestMediaQueryListListener.h"
 
 #include "RuntimeEnabledFeatures.h"
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
@@ -64,7 +65,7 @@ template <typename T> void V8_USE(T) { }
 static void methodMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("method", "TestMediaQueryListListener", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     TestMediaQueryListListener* imp = V8TestMediaQueryListListener::toNative(args.Holder());

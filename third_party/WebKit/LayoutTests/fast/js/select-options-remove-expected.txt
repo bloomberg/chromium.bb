@@ -49,7 +49,7 @@ PASS select1.options.length is 0
 PASS select1.selectedIndex is -1
 
 1.10 Remove no args from empty Options
-PASS select1.options.remove() threw exception TypeError: Not enough arguments.
+PASS select1.options.remove() threw exception TypeError: Failed to execute 'remove' on 'HTMLOptionsCollection': 1 argument required, but only 0 present..
 PASS select1.options.length is 0
 PASS select1.selectedIndex is -1
 
@@ -144,7 +144,7 @@ PASS select2.selectedIndex is 4
 PASS select2.options[0].value is 'K'
 
 2.11 Remove no args from non-empty Options
-PASS select2.options.remove() threw exception TypeError: Not enough arguments.
+PASS select2.options.remove() threw exception TypeError: Failed to execute 'remove' on 'HTMLOptionsCollection': 1 argument required, but only 0 present..
 PASS select2.options.length is 6
 PASS select2.selectedIndex is 4
 PASS select2.options[0].value is 'K'

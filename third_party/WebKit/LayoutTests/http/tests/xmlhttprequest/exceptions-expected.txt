@@ -4,13 +4,13 @@ new XMLHttpRequest()
 PASS: req.setRequestHeader("Foo", "bar") threw exception InvalidStateError: Failed to execute 'setRequestHeader' on 'XMLHttpRequest': the object's state must be OPENED..
 PASS: req.send(null) threw exception InvalidStateError: Failed to execute 'send' on 'XMLHttpRequest': the object's state must be OPENED..
 open()
-PASS: req.setRequestHeader() threw exception TypeError: Not enough arguments.
-PASS: req.setRequestHeader("Foo") threw exception TypeError: Not enough arguments.
+PASS: req.setRequestHeader() threw exception TypeError: Failed to execute 'setRequestHeader' on 'XMLHttpRequest': 2 arguments required, but only 0 present..
+PASS: req.setRequestHeader("Foo") threw exception TypeError: Failed to execute 'setRequestHeader' on 'XMLHttpRequest': 2 arguments required, but only 1 present..
 PASS: req.status() threw exception InvalidStateError: Failed to read the 'status' property from 'XMLHttpRequest': the object's state must not be OPENED..
 PASS: req.statusText() threw exception InvalidStateError: Failed to read the 'statusText' property from 'XMLHttpRequest': the object's state must not be OPENED..
 send()
 PASS: req.send(null) threw exception InvalidStateError: Failed to execute 'send' on 'XMLHttpRequest': the object's state must be OPENED..
 PASS: req.setRequestHeader("Foo", "bar") threw exception InvalidStateError: Failed to execute 'setRequestHeader' on 'XMLHttpRequest': the object's state must be OPENED..
-PASS: req.getResponseHeader() threw exception TypeError: Not enough arguments.
+PASS: req.getResponseHeader() threw exception TypeError: Failed to execute 'getResponseHeader' on 'XMLHttpRequest': 1 argument required, but only 0 present..
 PASS: req.open() threw exception TypeError: Not enough arguments.
 PASS: req.open(null) threw exception TypeError: Not enough arguments.

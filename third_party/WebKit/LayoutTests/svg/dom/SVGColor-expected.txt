@@ -19,8 +19,8 @@ PASS stopColor.setColor(null, null, null) threw exception NoModificationAllowedE
 PASS stopColor.setColor(SVGColor.SVG_COLORTYPE_RGBCOLOR, svgElement, ''); threw exception NoModificationAllowedError: An attempt was made to modify an object where modifications are not allowed..
 PASS stopColor.setColor(SVGColor.SVG_COLORTYPE_RGBCOLOR, '', '') threw exception NoModificationAllowedError: An attempt was made to modify an object where modifications are not allowed..
 PASS stopColor.setColor(SVGColor.SVG_COLORTYPE_CURRENTCOLOR + 1, '', ''); threw exception NoModificationAllowedError: An attempt was made to modify an object where modifications are not allowed..
-PASS stopColor.setColor() threw exception TypeError: Not enough arguments.
-PASS stopColor.setColor(stopColor) threw exception TypeError: Not enough arguments.
+PASS stopColor.setColor() threw exception TypeError: Failed to execute 'setColor' on 'SVGColor': 3 arguments required, but only 0 present..
+PASS stopColor.setColor(stopColor) threw exception TypeError: Failed to execute 'setColor' on 'SVGColor': 3 arguments required, but only 1 present..
 
 Try assigning to the readonly colorType property, which silently fails
 PASS stopColor.colorType = SVGColor.SVG_COLORTYPE_UNKKNOWN; is undefined.

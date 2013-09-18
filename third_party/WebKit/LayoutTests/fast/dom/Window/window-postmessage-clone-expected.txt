@@ -132,7 +132,7 @@ PASS: FileList should not respect reference equality (0)
 PASS: FileList should not respect reference equality (1)
 PASS: FileList preserves order and data (name0)
 PASS: FileList preserves order and data (name1)
-FAIL: FileList preserves order and data (date0)
+PASS: FileList preserves order and data (date0)
 PASS: FileList preserves order and data (date1)
 PASS: eventData is done of type string
 

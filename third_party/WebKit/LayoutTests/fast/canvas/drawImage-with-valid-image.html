@@ -7,7 +7,9 @@
     window.jsTestIsAsync = true;
     description("This test checks behavior of valid arguments to Canvas::drawImage that use a valid source image.");
 
-    var TypeError = "TypeError: Not enough arguments";
+    function ExpectedNotEnoughArgumentsMessage(num) {
+        return "\"TypeError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': 3 arguments required, but only " + num + " present.\"";
+    }
     var IndexSizeError = "IndexSizeError: Index or size was negative, or greater than the allowed value.";
 
     // Create image
@@ -20,13 +22,13 @@
     var ctx = document.createElement("canvas").getContext('2d');
     function draw() {
         // No arguments should get exception
-        shouldThrow("ctx.drawImage()", "TypeError");
+        shouldThrow("ctx.drawImage()", ExpectedNotEnoughArgumentsMessage(0));
 
         // image argument only should get exception
-        shouldThrow("ctx.drawImage(myImage)", "TypeError");
+        shouldThrow("ctx.drawImage(myImage)", ExpectedNotEnoughArgumentsMessage(1));
 
         // image argument plus one number should get exception
-        shouldThrow("ctx.drawImage(myImage, 0)", "TypeError");
+        shouldThrow("ctx.drawImage(myImage, 0)", ExpectedNotEnoughArgumentsMessage(2));
 
         // image argument plus 2 numbers
         shouldNotThrow("ctx.drawImage(myImage, 0, 0)");

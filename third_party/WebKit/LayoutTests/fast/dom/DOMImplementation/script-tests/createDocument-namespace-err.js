@@ -137,7 +137,7 @@ function runNSTests(tests, doc, createFunctionName)
     }
 }
 
-shouldThrow("document.implementation.createDocument()", "'TypeError: Not enough arguments'");
-shouldThrow("document.implementation.createDocument(\"http://www.example.com\")", "'TypeError: Not enough arguments'");
+shouldThrow("document.implementation.createDocument()", '"TypeError: Failed to execute \'createDocument\' on \'DOMImplementation\': 2 arguments required, but only 0 present."');
+shouldThrow("document.implementation.createDocument(\"http://www.example.com\")", '"TypeError: Failed to execute \'createDocument\' on \'DOMImplementation\': 2 arguments required, but only 1 present."');
 
 runNSTests(allNSTests, document.implementation, "createDocument");

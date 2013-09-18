@@ -11,7 +11,7 @@ PASS window.btoa("abcd") is "YWJjZA=="
 PASS window.btoa("abcde") is "YWJjZGU="
 PASS window.btoa("abcdef") is "YWJjZGVm"
 PASS typeof window.btoa is "function"
-PASS window.btoa() threw exception TypeError: Not enough arguments.
+PASS window.btoa() threw exception TypeError: Failed to execute 'btoa' on 'DOMWindow': 1 argument required, but only 0 present..
 PASS window.btoa("") is ""
 PASS window.btoa(null) is "bnVsbA=="
 PASS window.btoa(undefined) is "dW5kZWZpbmVk"
@@ -22,7 +22,7 @@ PASS window.btoa("тест") threw exception InvalidCharacterError: 'btoa' faile
 PASS window.btoa is 0
 PASS typeof window.btoa is "number"
 PASS typeof window.atob is "function"
-PASS window.atob() threw exception TypeError: Not enough arguments.
+PASS window.atob() threw exception TypeError: Failed to execute 'atob' on 'DOMWindow': 1 argument required, but only 0 present..
 PASS window.atob("") is ""
 PASS window.atob(null) is "ée"
 PASS window.atob(undefined) threw exception InvalidCharacterError: 'atob' failed: The string to be decoded is not correctly encoded..

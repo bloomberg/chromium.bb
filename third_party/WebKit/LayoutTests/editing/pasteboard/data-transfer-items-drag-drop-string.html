@@ -78,7 +78,7 @@ function handleDrop(e)
         debug('items[' + i + '].type: ' + items[i].type);
 
         currentItem = items[i];
-        shouldThrow('currentItem.getAsString()', '"TypeError: Not enough arguments"');
+        shouldThrow('currentItem.getAsString()', '"TypeError: Failed to execute \'getAsString\' on \'DataTransferItem\': 1 argument required, but only 0 present."');
         shouldNotThrow('currentItem.getAsString(null)');
         items[i].getAsString(function(data) {
             window.stringData = data;

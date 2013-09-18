@@ -3,9 +3,9 @@ This test checks behavior of valid arguments to Canvas::drawImage that use a val
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS ctx.drawImage() threw exception TypeError: Not enough arguments.
-PASS ctx.drawImage(myImage) threw exception TypeError: Not enough arguments.
-PASS ctx.drawImage(myImage, 0) threw exception TypeError: Not enough arguments.
+PASS ctx.drawImage() threw exception TypeError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': 3 arguments required, but only 0 present..
+PASS ctx.drawImage(myImage) threw exception TypeError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': 3 arguments required, but only 1 present..
+PASS ctx.drawImage(myImage, 0) threw exception TypeError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': 3 arguments required, but only 2 present..
 PASS ctx.drawImage(myImage, 0, 0) did not throw exception.
 PASS ctx.drawImage(myImage, 0, 0, 20, 20) did not throw exception.
 PASS ctx.drawImage(myImage, 0, 0, 20, 20, 0, 0, 20, 20) did not throw exception.

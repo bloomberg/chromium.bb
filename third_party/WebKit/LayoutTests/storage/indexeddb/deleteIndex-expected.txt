@@ -14,7 +14,7 @@ PASS Exception was thrown.
 PASS code is DOMException.NOT_FOUND_ERR
 PASS ename is 'NotFoundError'
 Exception message: The specified index was not found.
-PASS objectStore.deleteIndex() threw exception TypeError: Not enough arguments.
+PASS objectStore.deleteIndex() threw exception TypeError: Failed to execute 'deleteIndex' on 'IDBObjectStore': 1 argument required, but only 0 present..
 index = objectStore.createIndex('first', 'first');
 Expecting exception from objectStore.deleteIndex('FIRST')
 PASS Exception was thrown.

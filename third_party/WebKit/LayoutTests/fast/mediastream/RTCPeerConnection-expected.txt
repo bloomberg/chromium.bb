@@ -7,7 +7,7 @@ PASS new webkitRTCPeerConnection(null); did not throw exception.
 PASS new webkitRTCPeerConnection(null, null); did not throw exception.
 PASS new webkitRTCPeerConnection(undefined); did not throw exception.
 PASS new webkitRTCPeerConnection(undefined, undefined); did not throw exception.
-PASS new webkitRTCPeerConnection(); threw exception TypeError: Not enough arguments.
+PASS new webkitRTCPeerConnection(); threw exception TypeError: Failed to execute 'Constructor' on 'RTCPeerConnection': 1 argument required, but only 0 present..
 PASS new webkitRTCPeerConnection(''); threw exception TypeError: Not an object..
 PASS new webkitRTCPeerConnection(null, ''); threw exception TypeError: Not an object..
 PASS new webkitRTCPeerConnection({iceServers:[]}, null); did not throw exception.

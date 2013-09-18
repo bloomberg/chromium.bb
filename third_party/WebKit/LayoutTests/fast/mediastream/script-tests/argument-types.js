@@ -5,7 +5,7 @@ function test(expression, expressionShouldThrow, expectedException) {
         if (expectedException)
             shouldThrow(expression, '"' + expectedException + '"');
         else
-            shouldThrow(expression, '"TypeError: Not enough arguments"');
+            shouldThrow(expression, '"TypeError: Failed to execute \'webkitGetUserMedia\' on \'Navigator\': 2 arguments required, but only 1 present."');
     } else {
         shouldNotThrow(expression);
     }
@@ -18,7 +18,7 @@ var typeNotAnObjectError = new TypeError('Not an object.');
 var emptyFunction = function() {};
 
 // No arguments
-test('navigator.webkitGetUserMedia()', true);
+test('navigator.webkitGetUserMedia()', true, 'TypeError: Failed to execute \'webkitGetUserMedia\' on \'Navigator\': 2 arguments required, but only 0 present.');
 
 // 1 Argument (getUserMedia requires at least 2 arguments).
 test('navigator.webkitGetUserMedia(undefined)', true);

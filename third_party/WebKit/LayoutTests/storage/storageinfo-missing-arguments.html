@@ -5,10 +5,9 @@
 description('Ensures that we get exceptions when we do not include required arguments for webkitStorageInfo methods.');
 
 if (window.webkitStorageInfo) {
-    var notEnoughArguments = '"TypeError: Not enough arguments"';
-    shouldThrow('webkitStorageInfo.requestQuota()', notEnoughArguments);
-    shouldThrow('webkitStorageInfo.requestQuota(webkitStorageInfo.TEMPORARY)', notEnoughArguments);
-    shouldThrow('webkitStorageInfo.queryUsageAndQuota()', notEnoughArguments);
+    shouldThrow('webkitStorageInfo.requestQuota()', '"TypeError: Failed to execute \'requestQuota\' on \'StorageInfo\': 2 arguments required, but only 0 present."');
+    shouldThrow('webkitStorageInfo.requestQuota(webkitStorageInfo.TEMPORARY)', '"TypeError: Failed to execute \'requestQuota\' on \'StorageInfo\': 2 arguments required, but only 1 present."');
+    shouldThrow('webkitStorageInfo.queryUsageAndQuota()', '"TypeError: Failed to execute \'queryUsageAndQuota\' on \'StorageInfo\': 1 argument required, but only 0 present."');
 } else
     debug("This test requires window.webkitStorageInfo.");
 

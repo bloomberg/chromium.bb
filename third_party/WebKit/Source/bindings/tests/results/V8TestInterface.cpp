@@ -28,6 +28,7 @@
 #include "V8TestObject.h"
 #include "bindings/tests/idls/TestImplements.h"
 #include "bindings/tests/idls/TestPartialInterface.h"
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
@@ -763,7 +764,7 @@ static void implementsMethod1MethodCallback(const v8::FunctionCallbackInfo<v8::V
 static void implementsMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 2)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("implementsMethod2", "TestInterface", ExceptionMessages::notEnoughArguments(2, args.Length())), args.GetIsolate());
         return;
     }
     TestInterface* imp = V8TestInterface::toNative(args.Holder());
@@ -852,7 +853,7 @@ static void supplementalMethod1MethodCallback(const v8::FunctionCallbackInfo<v8:
 static void supplementalMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 2)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("supplementalMethod2", "TestInterface", ExceptionMessages::notEnoughArguments(2, args.Length())), args.GetIsolate());
         return;
     }
     TestInterface* imp = V8TestInterface::toNative(args.Holder());
@@ -916,7 +917,7 @@ static void supplementalMethod4MethodCallback(const v8::FunctionCallbackInfo<v8:
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 1)) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("Constructor", "TestInterface", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     ExceptionState es(args.GetIsolate());

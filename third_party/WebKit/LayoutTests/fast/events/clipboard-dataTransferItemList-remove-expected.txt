@@ -9,7 +9,7 @@ PASS dataTansferItemList[0].type is "text/plain"
 PASS dataTansferItemList[1].type is "text/uri-list"
 PASS dataTansferItemList[2].type is "text/html"
 PASS dataTansferItemList[3].type is "custom-data"
-PASS dataTansferItemList.remove() threw exception TypeError: Not enough arguments.
+PASS dataTansferItemList.remove() threw exception TypeError: Failed to execute 'remove' on 'DataTransferItemList': 1 argument required, but only 0 present..
 PASS dataTansferItemList.remove(-1) did not throw exception.
 PASS dataTansferItemList.length is 4
 PASS dataTansferItemList.remove(999) did not throw exception.
