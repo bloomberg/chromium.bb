@@ -76,16 +76,15 @@ function SuggestAppsDialog(parentNode) {
 
   this.frame_.id = 'suggest-app-dialog';
 
+  this.spinner_ = this.document_.createElement('div');
+  this.spinner_.className = 'spinner';
+
   this.spinnerWrapper_ = this.document_.createElement('div');
   this.spinnerWrapper_.className = 'spinner-container';
   this.spinnerWrapper_.style.width = WEBVIEW_WIDTH + 'px';
   this.spinnerWrapper_.style.height = WEBVIEW_HEIGHT + 'px';
-  this.spinnerWrapper_.hidden = true;
-  this.frame_.appendChild(this.spinnerWrapper_);
-
-  this.spinner_ = this.document_.createElement('div');
-  this.spinner_.className = 'spinner';
   this.spinnerWrapper_.appendChild(this.spinner_);
+  this.frame_.insertBefore(this.spinnerWrapper_, this.text_.nextSibling);
 
   this.webviewContainer_ = this.document_.createElement('div');
   this.webviewContainer_.id = 'webview-container';
@@ -265,7 +264,6 @@ SuggestAppsDialog.prototype.show = function(extension, mime, onDialogClosed) {
 
     this.webviewContainer_.innerHTML =
         '<webview id="cws-widget" partition="persist:cwswidgets"></webview>';
-    this.webviewContainer_.classList.remove('loaded');
 
     this.webview_ = this.container_.querySelector('#cws-widget');
     this.webview_.style.width = WEBVIEW_WIDTH + 'px';
@@ -278,7 +276,7 @@ SuggestAppsDialog.prototype.show = function(extension, mime, onDialogClosed) {
         {urls: [this.widgetOrigin_ + '/*']},
         ['blocking', 'requestHeaders']);
 
-    this.spinnerWrapper_.hidden = false;
+    this.frame_.classList.add('show-spinner');
 
     this.webviewClient_ = new CWSContainerClient(
         this.webview_,
@@ -315,8 +313,7 @@ SuggestAppsDialog.prototype.onWebstoreLinkClicked_ = function(e) {
  * @private
  */
 SuggestAppsDialog.prototype.onWidgetLoaded_ = function(event) {
-  this.spinnerWrapper_.hidden = true;
-  this.webviewContainer_.classList.add('loaded');
+  this.frame_.classList.remove('show-spinner');
   this.state_ = SuggestAppsDialog.State.INITIALIZED;
 
   this.webview_.focus();
@@ -328,7 +325,7 @@ SuggestAppsDialog.prototype.onWidgetLoaded_ = function(event) {
  * @private
  */
 SuggestAppsDialog.prototype.onWidgetLoadFailed_ = function(event) {
-  this.spinnerWrapper_.hidden = true;
+  this.frame_.classList.remove('show-spinner');
   this.state_ = SuggestAppsDialog.State.INITIALIZE_FAILED_CLOSING;
 
   this.hide();
@@ -346,6 +343,7 @@ SuggestAppsDialog.prototype.onInstallRequest_ = function(e) {
   this.appInstaller_ = new AppInstaller(itemId);
   this.appInstaller_.install(this.onInstallCompleted_.bind(this));
 
+  this.frame_.classList.add('show-spinner');
   this.state_ = SuggestAppsDialog.State.INSTALLING;
 };
 
@@ -357,6 +355,8 @@ SuggestAppsDialog.prototype.onInstallRequest_ = function(e) {
  */
 SuggestAppsDialog.prototype.onInstallCompleted_ = function(result, error) {
   var success = (result === AppInstaller.Result.SUCCESS);
+
+  this.frame_.classList.remove('show-spinner');
   this.state_ = success ?
                 SuggestAppsDialog.State.INSTALLED_CLOSING :
                 SuggestAppsDialog.State.INITIALIZED;  // Back to normal state.

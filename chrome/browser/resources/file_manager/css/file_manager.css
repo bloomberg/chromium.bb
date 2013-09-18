@@ -1873,8 +1873,17 @@ menuitem#thumbnail-view[lead]:not([disabled]) {
   border-top: solid 1px #bbb;
 }
 
-#suggest-app-dialog #webview-container:not(.loaded) webview {
-  visibility: hidden;
+#suggest-app-dialog.show-spinner #webview-container webview {
+  pointer-events: none;
+}
+
+#suggest-app-dialog:not(.show-spinner) .spinner-container {
+  display: none;
+}
+
+#suggest-app-dialog .spinner-container {
+  background-color: rgba(255, 255, 255, 0.7);
+  top: 45px;  /* Title: 44px, border: 1px */
 }
 
 #suggest-app-dialog .cr-dialog-buttons,
