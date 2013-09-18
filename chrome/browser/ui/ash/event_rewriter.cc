@@ -12,8 +12,8 @@
 #include "base/strings/string_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "ui/aura/root_window.h"
-#include "ui/base/events/event.h"
-#include "ui/base/events/event_utils.h"
+#include "ui/events/event.h"
+#include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
 
 #if defined(OS_CHROMEOS)

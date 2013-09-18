@@ -7,12 +7,12 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
-#include "ui/base/events/event.h"
-#include "ui/base/events/event_constants.h"
-#include "ui/base/events/event_utils.h"
 #include "ui/base/gestures/gesture_configuration.h"
 #include "ui/base/gestures/gesture_sequence.h"
 #include "ui/base/gestures/gesture_types.h"
+#include "ui/events/event.h"
+#include "ui/events/event_constants.h"
+#include "ui/events/event_utils.h"
 
 namespace ui {
 

@@ -6,8 +6,8 @@
 
 #include "base/strings/stringprintf.h"
 #include "ui/aura/window.h"
-#include "ui/base/events/event.h"
 #include "ui/base/hit_test.h"
+#include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/skia_util.h"

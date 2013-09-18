@@ -4,12 +4,12 @@
 
 #include <Cocoa/Cocoa.h>
 
-#include "ui/base/events/event_constants.h"
+#include "ui/events/event_constants.h"
 
 #include "base/event_types.h"
 #include "base/logging.h"
 #include "base/time/time.h"
-#include "ui/base/events/event_utils.h"
+#include "ui/events/event_utils.h"
 #import "ui/events/keycodes/keyboard_code_conversion_mac.h"
 #include "ui/gfx/point.h"
 

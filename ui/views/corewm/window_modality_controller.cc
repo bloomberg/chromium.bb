@@ -12,8 +12,8 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_property.h"
-#include "ui/base/events/event.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/events/event.h"
 #include "ui/views/corewm/window_animations.h"
 #include "ui/views/corewm/window_util.h"
 

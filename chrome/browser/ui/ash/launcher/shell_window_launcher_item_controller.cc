@@ -15,7 +15,7 @@
 #include "content/public/browser/web_contents.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
-#include "ui/base/events/event.h"
+#include "ui/events/event.h"
 #include "ui/views/corewm/window_animations.h"
 
 using apps::ShellWindow;

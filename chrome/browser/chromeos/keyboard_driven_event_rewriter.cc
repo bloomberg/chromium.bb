@@ -8,7 +8,7 @@
 
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
-#include "ui/base/events/event.h"
+#include "ui/events/event.h"
 
 namespace chromeos {
 

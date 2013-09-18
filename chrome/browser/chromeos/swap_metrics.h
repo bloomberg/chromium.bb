@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
-#include "ui/base/events/event_handler.h"
+#include "ui/events/event_handler.h"
 
 namespace base {
 class FilePath;

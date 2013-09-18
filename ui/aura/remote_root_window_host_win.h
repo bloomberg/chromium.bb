@@ -11,8 +11,8 @@
 #include "base/compiler_specific.h"
 #include "base/strings/string16.h"
 #include "ui/aura/root_window_host.h"
-#include "ui/base/events/event.h"
-#include "ui/base/events/event_constants.h"
+#include "ui/events/event.h"
+#include "ui/events/event_constants.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace base {

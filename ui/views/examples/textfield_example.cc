@@ -5,7 +5,7 @@
 #include "ui/views/examples/textfield_example.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "ui/base/events/event.h"
+#include "ui/events/event.h"
 #include "ui/gfx/range/range.h"
 #include "ui/gfx/render_text.h"
 #include "ui/views/controls/button/label_button.h"

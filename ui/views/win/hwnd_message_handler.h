@@ -21,7 +21,7 @@
 #include "base/strings/string16.h"
 #include "base/win/win_util.h"
 #include "ui/base/accessibility/accessibility_types.h"
-#include "ui/base/events/event.h"
+#include "ui/events/event.h"
 #include "ui/base/sequential_id_generator.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/rect.h"

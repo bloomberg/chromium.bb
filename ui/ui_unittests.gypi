@@ -153,8 +153,6 @@
         'base/cocoa/nsgraphics_context_additions_unittest.mm',
         'base/cocoa/tracking_area_unittest.mm',
         'base/dragdrop/os_exchange_data_provider_aurax11_unittest.cc',
-        'base/events/event_dispatcher_unittest.cc',
-        'base/events/event_unittest.cc',
         'base/gtk/gtk_expanded_container_unittest.cc',
         'base/gtk/gtk_im_context_util_unittest.cc',
         'base/keycodes/usb_keycode_map_unittest.cc',
@@ -167,6 +165,8 @@
         'base/test/data/resource.h',
         'base/text/bytes_formatting_unittest.cc',
         'base/view_prop_unittest.cc',
+        'events/event_dispatcher_unittest.cc',
+        'events/event_unittest.cc',
         'gfx/blit_unittest.cc',
         'gfx/break_list_unittest.cc',
         'gfx/canvas_unittest.cc',
@@ -314,8 +314,8 @@
           ],
         }, {
           'sources!': [
-            'base/events/event_dispatcher_unittest.cc',
-            'base/events/event_unittest.cc',
+            'events/event_dispatcher_unittest.cc',
+            'events/event_unittest.cc',
           ],
         }],
         ['use_aura==1', {

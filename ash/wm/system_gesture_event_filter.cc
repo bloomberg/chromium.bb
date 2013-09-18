@@ -17,8 +17,8 @@
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "ui/aura/root_window.h"
-#include "ui/base/events/event.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/events/event.h"
 
 #if defined(OS_CHROMEOS)
 #include "ui/base/touch/touch_factory_x11.h"

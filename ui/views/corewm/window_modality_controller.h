@@ -10,7 +10,7 @@
 #include "base/compiler_specific.h"
 #include "ui/aura/env_observer.h"
 #include "ui/aura/window_observer.h"
-#include "ui/base/events/event_handler.h"
+#include "ui/events/event_handler.h"
 #include "ui/views/views_export.h"
 
 namespace ui {

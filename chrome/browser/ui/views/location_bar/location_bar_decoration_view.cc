@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_decoration_view.h"
 
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
-#include "ui/base/events/event.h"
+#include "ui/events/event.h"
 
 LocationBarDecorationView::LocationBarDecorationView()
     : could_handle_click_(true) {

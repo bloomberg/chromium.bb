@@ -12,7 +12,7 @@
 #include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/apps_grid_view.h"
 #include "ui/app_list/views/search_result_list_view.h"
-#include "ui/base/events/event.h"
+#include "ui/events/event.h"
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/view_model.h"
 #include "ui/views/view_model_utils.h"

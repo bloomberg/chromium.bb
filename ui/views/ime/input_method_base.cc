@@ -5,8 +5,8 @@
 #include "ui/views/ime/input_method_base.h"
 
 #include "base/logging.h"
-#include "ui/base/events/event.h"
 #include "ui/base/ime/text_input_client.h"
+#include "ui/events/event.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 

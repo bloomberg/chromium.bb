@@ -7,8 +7,8 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/keyboard_driven_event_rewriter.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/events/event.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/events/event.h"
 
 #include <X11/keysym.h>
 #include <X11/XF86keysym.h>

@@ -6,9 +6,9 @@
 
 #include "base/scoped_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/events/event.h"
 #include "ui/base/ime/dummy_text_input_client.h"
 #include "ui/base/ime/input_method_observer.h"
+#include "ui/events/event.h"
 
 namespace ui {
 namespace {

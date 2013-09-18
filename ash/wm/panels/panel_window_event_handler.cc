@@ -7,8 +7,8 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
-#include "ui/base/events/event.h"
 #include "ui/base/hit_test.h"
+#include "ui/events/event.h"
 
 namespace ash {
 namespace internal {

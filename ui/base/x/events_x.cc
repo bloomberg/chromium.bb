@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/events/event_constants.h"
+#include "ui/events/event_constants.h"
 
 #include <string.h>
 #include <X11/extensions/XInput.h>
@@ -12,12 +12,12 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_pump_x11.h"
-#include "ui/base/events/event_utils.h"
 #include "ui/base/touch/touch_factory_x11.h"
 #include "ui/base/x/device_data_manager.h"
 #include "ui/base/x/device_list_cache_x.h"
 #include "ui/base/x/x11_atom_cache.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/point.h"

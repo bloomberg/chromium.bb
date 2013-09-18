@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/gtk/event_utils.h"
 
 #include "base/logging.h"
-#include "ui/base/events/event_constants.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/events/event_constants.h"
 
 namespace event_utils {
 

@@ -10,11 +10,11 @@
 
 #include "base/logging.h"
 #include "base/memory/singleton.h"
-#include "ui/base/events/event_constants.h"
-#include "ui/base/events/event_utils.h"
 #include "ui/base/touch/touch_factory_x11.h"
 #include "ui/base/x/device_list_cache_x.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/events/event_constants.h"
+#include "ui/events/event_utils.h"
 
 // XIScrollClass was introduced in XI 2.1 so we need to define it here
 // for backward-compatibility with older versions of XInput.

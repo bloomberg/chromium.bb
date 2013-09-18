@@ -8,8 +8,8 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/base/events/event_handler.h"
 #include "ui/base/ime/input_method_delegate.h"
+#include "ui/events/event_handler.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/views_export.h"
 

@@ -13,8 +13,8 @@
 #include "ui/aura/test/test_activation_client.h"
 #include "ui/aura/test/test_cursor_client.h"
 #include "ui/aura/test/test_windows.h"
-#include "ui/base/events/event.h"
-#include "ui/base/events/event_utils.h"
+#include "ui/events/event.h"
+#include "ui/events/event_utils.h"
 
 namespace {
 

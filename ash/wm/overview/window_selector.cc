@@ -19,8 +19,8 @@
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
-#include "ui/base/events/event.h"
-#include "ui/base/events/event_handler.h"
+#include "ui/events/event.h"
+#include "ui/events/event_handler.h"
 
 namespace ash {
 

@@ -13,7 +13,7 @@
 #include "components/user_prefs/user_prefs.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
-#include "ui/base/events/event.h"
+#include "ui/events/event.h"
 #include "ui/views/drag_utils.h"
 #include "ui/views/widget/widget.h"
 

@@ -10,7 +10,7 @@
 #include "ash/test/ash_test_base.h"
 #include "base/callback.h"
 #include "base/strings/utf_string_conversions.h"
-#include "ui/base/events/event.h"
+#include "ui/events/event.h"
 #include "ui/gfx/point.h"
 #include "ui/message_center/message_center.h"
 #include "ui/views/view.h"

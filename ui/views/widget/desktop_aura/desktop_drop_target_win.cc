@@ -11,8 +11,8 @@
 #include "ui/aura/root_window.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_win.h"
-#include "ui/base/events/event.h"
-#include "ui/base/events/event_constants.h"
+#include "ui/events/event.h"
+#include "ui/events/event_constants.h"
 
 using aura::client::DragDropDelegate;
 using ui::OSExchangeData;

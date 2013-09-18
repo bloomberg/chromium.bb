@@ -5,8 +5,8 @@
 #import <Cocoa/Cocoa.h>
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/events/event_constants.h"
-#include "ui/base/events/event_utils.h"
+#include "ui/events/event_constants.h"
+#include "ui/events/event_utils.h"
 #include "ui/base/test/cocoa_test_event_utils.h"
 #import "ui/base/test/ui_cocoa_test_helper.h"
 #include "ui/gfx/point.h"

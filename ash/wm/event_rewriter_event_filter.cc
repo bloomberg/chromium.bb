@@ -6,7 +6,7 @@
 
 #include "ash/event_rewriter_delegate.h"
 #include "base/logging.h"
-#include "ui/base/events/event.h"
+#include "ui/events/event.h"
 
 #if defined(OS_CHROMEOS)
 #include "ash/wm/sticky_keys.h"

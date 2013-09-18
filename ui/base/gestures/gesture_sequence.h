@@ -6,9 +6,9 @@
 #define UI_BASE_GESTURES_GESTURE_SEQUENCE_H_
 
 #include "base/timer/timer.h"
-#include "ui/base/events/event_constants.h"
 #include "ui/base/gestures/gesture_point.h"
 #include "ui/base/gestures/gesture_recognizer.h"
+#include "ui/events/event_constants.h"
 #include "ui/gfx/rect.h"
 
 namespace ui {

@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "ui/aura/window.h"
-#include "ui/base/events/event.h"
+#include "ui/events/event.h"
 #include "ui/views/view_constants_aura.h"
 #include "ui/views/widget/widget.h"
 

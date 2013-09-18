@@ -144,8 +144,8 @@
 #include "extensions/common/url_pattern_set.h"
 #include "net/cookies/cookie_store.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
-#include "ui/base/events/event_constants.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 #if defined(ENABLE_CONFIGURATION_POLICY)

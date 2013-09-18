@@ -4,7 +4,7 @@
 
 #include "content/public/browser/native_web_keyboard_event.h"
 
-#include "ui/base/events/event_constants.h"
+#include "ui/events/event_constants.h"
 
 namespace content {
 

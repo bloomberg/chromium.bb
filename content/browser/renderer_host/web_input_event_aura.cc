@@ -6,8 +6,8 @@
 
 #include "content/browser/renderer_host/ui_events_helper.h"
 #include "ui/aura/window.h"
-#include "ui/base/events/event.h"
-#include "ui/base/events/event_utils.h"
+#include "ui/events/event.h"
+#include "ui/events/event_utils.h"
 
 namespace content {
 

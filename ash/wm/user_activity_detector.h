@@ -10,7 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
-#include "ui/base/events/event_handler.h"
+#include "ui/events/event_handler.h"
 
 namespace ash {
 

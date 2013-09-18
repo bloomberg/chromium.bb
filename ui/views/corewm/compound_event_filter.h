@@ -7,8 +7,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/observer_list.h"
-#include "ui/base/events/event.h"
-#include "ui/base/events/event_handler.h"
+#include "ui/events/event.h"
+#include "ui/events/event_handler.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/views_export.h"
 

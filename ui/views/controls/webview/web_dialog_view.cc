@@ -23,7 +23,7 @@
 #include "ui/web_dialogs/web_dialog_ui.h"
 
 #if defined(USE_AURA)
-#include "ui/base/events/event.h"
+#include "ui/events/event.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #include "ui/views/widget/native_widget_aura.h"
 #endif

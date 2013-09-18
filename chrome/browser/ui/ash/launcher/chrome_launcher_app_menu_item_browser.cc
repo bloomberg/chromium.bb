@@ -11,7 +11,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/notification_service.h"
-#include "ui/base/events/event_constants.h"
+#include "ui/events/event_constants.h"
 
 ChromeLauncherAppMenuItemBrowser::ChromeLauncherAppMenuItemBrowser(
     const string16 title,

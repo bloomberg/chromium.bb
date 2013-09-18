@@ -8,7 +8,7 @@
 #include "ash/shell_observer.h"
 #include "base/compiler_specific.h"
 #include "ui/aura/window.h"
-#include "ui/base/events/event_handler.h"
+#include "ui/events/event_handler.h"
 
 namespace ash {
 namespace internal {

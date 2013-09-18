@@ -7,7 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/display/display_controller.h"
-#include "ui/base/events/event_handler.h"
+#include "ui/events/event_handler.h"
 #include "ui/gfx/display_observer.h"
 #include "ui/views/widget/widget_observer.h"
 

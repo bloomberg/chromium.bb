@@ -7,8 +7,8 @@
 #include <windowsx.h>
 
 #include "base/logging.h"
-#include "ui/base/events/event.h"
-#include "ui/base/events/event_constants.h"
+#include "ui/events/event.h"
+#include "ui/events/event_constants.h"
 #include "ui/gfx/point.h"
 
 namespace views {

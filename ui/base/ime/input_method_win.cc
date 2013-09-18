@@ -5,10 +5,10 @@
 #include "ui/base/ime/input_method_win.h"
 
 #include "base/basictypes.h"
-#include "ui/base/events/event.h"
-#include "ui/base/events/event_constants.h"
-#include "ui/base/events/event_utils.h"
 #include "ui/base/ime/text_input_client.h"
+#include "ui/events/event.h"
+#include "ui/events/event_constants.h"
+#include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/win/hwnd_util.h"
 

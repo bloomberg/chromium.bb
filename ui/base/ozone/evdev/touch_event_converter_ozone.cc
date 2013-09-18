@@ -18,9 +18,9 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_pump_ozone.h"
-#include "ui/base/events/event.h"
-#include "ui/base/events/event_constants.h"
 #include "ui/base/ozone/surface_factory_ozone.h"
+#include "ui/events/event.h"
+#include "ui/events/event_constants.h"
 
 namespace {
 

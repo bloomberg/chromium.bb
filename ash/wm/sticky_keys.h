@@ -7,7 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/base/events/event_constants.h"
+#include "ui/events/event_constants.h"
 
 namespace ui {
 class KeyEvent;

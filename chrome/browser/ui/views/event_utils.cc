@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/event_utils.h"
 
-#include "ui/base/events/event.h"
+#include "ui/events/event.h"
 
 namespace event_utils {
 

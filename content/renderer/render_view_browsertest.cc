@@ -46,13 +46,13 @@
 #endif
 
 #if defined(USE_AURA)
-#include "ui/base/events/event.h"
+#include "ui/events/event.h"
 #endif
 
 #if defined(USE_AURA) && defined(USE_X11)
 #include <X11/Xlib.h>
-#include "ui/base/events/event_constants.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
 #endif
 

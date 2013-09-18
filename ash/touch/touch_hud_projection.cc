@@ -8,7 +8,7 @@
 #include "ash/shell.h"
 #include "ash/wm/property_util.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
-#include "ui/base/events/event.h"
+#include "ui/events/event.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/canvas.h"

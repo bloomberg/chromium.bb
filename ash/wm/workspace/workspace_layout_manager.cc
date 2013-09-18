@@ -21,8 +21,8 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
-#include "ui/base/events/event.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/events/event.h"
 #include "ui/views/corewm/window_util.h"
 
 using aura::Window;

@@ -9,8 +9,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/observer_list.h"
 #include "ui/aura/aura_export.h"
-#include "ui/base/events/event_handler.h"
-#include "ui/base/events/event_target.h"
+#include "ui/events/event_handler.h"
+#include "ui/events/event_target.h"
 #include "ui/gfx/point.h"
 
 #if defined(USE_X11)

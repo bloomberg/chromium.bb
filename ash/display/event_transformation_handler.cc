@@ -12,8 +12,8 @@
 #include "ash/wm/window_util.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
-#include "ui/base/events/event.h"
 #include "ui/compositor/dip_util.h"
+#include "ui/events/event.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
 

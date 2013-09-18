@@ -40,7 +40,7 @@
 #include "extensions/common/constants.h"
 #include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/events/event_utils.h"
+#include "ui/events/event_utils.h"
 #include "ui/gfx/screen.h"
 
 using content::WebContents;

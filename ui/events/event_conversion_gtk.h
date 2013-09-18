@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_EVENTS_EVENT_CONVERSION_GTK_H_
-#define UI_BASE_EVENTS_EVENT_CONVERSION_GTK_H_
+#ifndef UI_EVENTS_EVENT_CONVERSION_GTK_H_
+#define UI_EVENTS_EVENT_CONVERSION_GTK_H_
 
 #include <gtk/gtk.h>
 
@@ -17,4 +17,4 @@ UI_EXPORT GdkModifierType EventFlagToGdkModifier(int event_flag);
 
 }  // namespace ui
 
-#endif  // UI_BASE_EVENTS_EVENT_CONVERSION_GTK_H_
+#endif  // UI_EVENTS_EVENT_CONVERSION_GTK_H_

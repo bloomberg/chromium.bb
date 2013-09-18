@@ -11,10 +11,10 @@
 
 #include "ui/aura/root_window.h"
 #include "ui/aura/window_delegate.h"
-#include "ui/base/events/event.h"
-#include "ui/base/events/event_utils.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/events/event.h"
+#include "ui/events/event_utils.h"
 #include "ui/views/widget/native_widget_aura.h"
 
 namespace {

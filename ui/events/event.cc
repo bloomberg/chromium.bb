@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/events/event.h"
+#include "ui/events/event.h"
 
 #if defined(USE_X11)
 #include <X11/Xlib.h>
@@ -13,7 +13,7 @@
 
 #include "base/metrics/histogram.h"
 #include "base/strings/stringprintf.h"
-#include "ui/base/events/event_utils.h"
+#include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
 #include "ui/gfx/point3_f.h"
 #include "ui/gfx/point_conversions.h"

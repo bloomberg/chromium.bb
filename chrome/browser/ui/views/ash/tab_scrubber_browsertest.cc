@@ -25,7 +25,7 @@
 #include "content/public/test/test_utils.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
-#include "ui/base/events/event_utils.h"
+#include "ui/events/event_utils.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/chromeos_switches.h"

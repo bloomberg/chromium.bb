@@ -54,7 +54,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
-#include "ui/base/events/event.h"
+#include "ui/events/event.h"
 
 using apps::ShellWindow;
 using extensions::Extension;

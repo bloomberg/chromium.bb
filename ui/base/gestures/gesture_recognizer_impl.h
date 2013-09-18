@@ -10,9 +10,9 @@
 
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/base/events/event_constants.h"
 #include "ui/base/gestures/gesture_recognizer.h"
 #include "ui/base/ui_export.h"
+#include "ui/events/event_constants.h"
 #include "ui/gfx/point.h"
 
 namespace ui {

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/events/event_dispatcher.h"
-#include "ui/base/events/event_handler.h"
+#include "ui/events/event_handler.h"
 
-#include "ui/base/events/event.h"
+#include "ui/events/event.h"
+#include "ui/events/event_dispatcher.h"
 
 namespace ui {
 

@@ -5,7 +5,7 @@
 #include "ui/views/controls/button/custom_button.h"
 
 #include "ui/base/accessibility/accessible_view_state.h"
-#include "ui/base/events/event.h"
+#include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/screen.h"

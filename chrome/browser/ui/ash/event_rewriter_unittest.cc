@@ -11,7 +11,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/events/event.h"
+#include "ui/events/event.h"
 
 #if defined(OS_CHROMEOS)
 #include <X11/keysym.h>

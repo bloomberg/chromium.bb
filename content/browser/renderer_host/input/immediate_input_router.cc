@@ -21,7 +21,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_switches.h"
-#include "ui/base/events/event.h"
+#include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 using base::Time;

@@ -8,8 +8,8 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "ui/aura/aura_export.h"
-#include "ui/base/events/event_constants.h"
-#include "ui/base/events/event_handler.h"
+#include "ui/events/event_constants.h"
+#include "ui/events/event_handler.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gfx {

@@ -6,7 +6,7 @@
 #define UI_VIEWS_CONTROLS_BUTTON_CUSTOM_BUTTON_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "ui/base/events/event_constants.h"
+#include "ui/events/event_constants.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/views/controls/button/button.h"
 

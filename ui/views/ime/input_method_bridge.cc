@@ -4,8 +4,8 @@
 
 #include "ui/views/ime/input_method_bridge.h"
 
-#include "ui/base/events/event.h"
 #include "ui/base/ime/input_method.h"
+#include "ui/events/event.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"

@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/message_loop/message_loop.h"
-#include "ui/base/events/event.h"
+#include "ui/events/event.h"
 #include "ui/views/controls/scrollbar/native_scroll_bar_wrapper.h"
 #include "ui/views/widget/widget.h"
 

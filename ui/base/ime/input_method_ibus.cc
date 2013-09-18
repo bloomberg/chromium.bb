@@ -26,10 +26,10 @@
 #include "chromeos/dbus/ibus/ibus_text.h"
 #include "chromeos/ime/input_method_descriptor.h"
 #include "chromeos/ime/input_method_manager.h"
-#include "ui/base/events/event.h"
-#include "ui/base/events/event_constants.h"
-#include "ui/base/events/event_utils.h"
 #include "ui/base/ime/text_input_client.h"
+#include "ui/events/event.h"
+#include "ui/events/event_constants.h"
+#include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -185,7 +185,7 @@ bool InputMethodIBus::DispatchKeyEvent(const base::NativeEvent& native_event) {
   pending_key_events_.insert(current_keyevent_id_);
 
   // Since |native_event| might be treated as XEvent whose size is bigger than
-  // XKeyEvent e.g. in CopyNativeEvent() in ui/base/events/event.cc, allocating
+  // XKeyEvent e.g. in CopyNativeEvent() in ui/events/event.cc, allocating
   // |event| as XKeyEvent and casting it to XEvent is unsafe. crbug.com/151884
   XEvent* event = new XEvent;
   *event = *native_event;

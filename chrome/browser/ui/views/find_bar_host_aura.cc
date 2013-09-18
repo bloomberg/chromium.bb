@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/views/find_bar_host.h"
 
 #include "base/logging.h"
-#include "ui/base/events/event.h"
+#include "ui/events/event.h"
 
 void FindBarHost::AudibleAlert() {
 #if defined(OS_WIN)

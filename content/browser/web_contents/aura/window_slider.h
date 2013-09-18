@@ -10,7 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "ui/aura/window_observer.h"
-#include "ui/base/events/event_handler.h"
+#include "ui/events/event_handler.h"
 
 namespace ui {
 class Layer;

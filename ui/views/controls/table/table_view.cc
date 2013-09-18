@@ -8,7 +8,7 @@
 
 #include "base/auto_reset.h"
 #include "base/i18n/rtl.h"
-#include "ui/base/events/event.h"
+#include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/rect_conversions.h"

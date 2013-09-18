@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/events/event_utils.h"
+#include "ui/events/event_utils.h"
 
-#include "ui/base/events/event.h"
+#include "ui/events/event.h"
 
 namespace ui {
 

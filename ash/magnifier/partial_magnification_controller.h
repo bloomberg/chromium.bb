@@ -6,7 +6,7 @@
 #define ASH_MAGNIFIER_PARTIAL_MAGNIFICATION_CONTROLLER_H_
 
 #include "ui/aura/window_observer.h"
-#include "ui/base/events/event_handler.h"
+#include "ui/events/event_handler.h"
 #include "ui/gfx/point.h"
 #include "ui/views/widget/widget_observer.h"
 

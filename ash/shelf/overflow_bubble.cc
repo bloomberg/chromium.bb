@@ -15,7 +15,7 @@
 #include "ash/system/tray/system_tray.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/root_window.h"
-#include "ui/base/events/event.h"
+#include "ui/events/event.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/bubble/bubble_delegate.h"

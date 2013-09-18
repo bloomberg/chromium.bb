@@ -41,7 +41,7 @@
 
 #if defined(OS_WIN) || defined(USE_AURA)
 #include "content/browser/renderer_host/ui_events_helper.h"
-#include "ui/base/events/event.h"
+#include "ui/events/event.h"
 #endif
 
 using base::TimeDelta;

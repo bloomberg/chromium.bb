@@ -15,9 +15,9 @@
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_aurax11.h"
-#include "ui/base/events/event.h"
 #include "ui/base/x/selection_utils.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/events/event.h"
 #include "ui/views/widget/desktop_aura/desktop_native_cursor_manager.h"
 
 using aura::client::DragDropDelegate;

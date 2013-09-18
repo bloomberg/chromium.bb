@@ -5,7 +5,7 @@
 #include "ui/views/examples/multiline_example.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "ui/base/events/event.h"
+#include "ui/events/event.h"
 #include "ui/gfx/render_text.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"

@@ -13,7 +13,7 @@
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/cursor/cursor_loader_win.h"
-#include "ui/base/events/event.h"
+#include "ui/events/event.h"
 #include "ui/base/view_prop.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/insets.h"

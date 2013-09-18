@@ -22,7 +22,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/browser_thread.h"
-#include "ui/base/events/event.h"
+#include "ui/events/event.h"
 
 using base::FilePath;
 

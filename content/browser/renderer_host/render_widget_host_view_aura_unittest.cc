@@ -34,9 +34,9 @@
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
-#include "ui/base/events/event.h"
-#include "ui/base/events/event_utils.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/events/event.h"
+#include "ui/events/event_utils.h"
 
 using testing::_;
 

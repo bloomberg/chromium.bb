@@ -12,7 +12,7 @@
 #include "base/timer/timer.h"
 #include "ui/aura/client/tooltip_client.h"
 #include "ui/aura/window_observer.h"
-#include "ui/base/events/event_handler.h"
+#include "ui/events/event_handler.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/screen_type_delegate.h"
 #include "ui/views/views_export.h"

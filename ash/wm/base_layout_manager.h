@@ -15,8 +15,8 @@
 #include "ui/aura/client/activation_change_observer.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window_observer.h"
-#include "ui/base/events/event_handler.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/events/event_handler.h"
 
 namespace aura {
 class RootWindow;

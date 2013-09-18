@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bubble_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/events/event_constants.h"
+#include "ui/events/event_constants.h"
 #include "ui/gfx/range/range.h"
 
 class BookmarkSyncPromoViewTest : public BookmarkBubbleDelegate,

@@ -8,7 +8,7 @@
 
 #include "base/basictypes.h"
 #include "ipc/ipc_message_macros.h"
-#include "ui/base/events/event_constants.h"
+#include "ui/events/event_constants.h"
 #include "ui/gfx/native_widget_types.h"
 
 #define IPC_MESSAGE_START MetroViewerMsgStart

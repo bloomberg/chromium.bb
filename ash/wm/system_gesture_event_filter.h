@@ -9,7 +9,7 @@
 #include "ash/touch/touch_uma.h"
 #include "base/timer/timer.h"
 #include "ui/aura/window_observer.h"
-#include "ui/base/events/event_handler.h"
+#include "ui/events/event_handler.h"
 #include "ui/gfx/point.h"
 
 #include <map>

@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "content/browser/renderer_host/web_input_event_aura.h"
-#include "ui/base/events/event.h"
+#include "ui/events/event.h"
 
 namespace {
 

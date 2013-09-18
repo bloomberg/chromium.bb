@@ -13,9 +13,9 @@
 
 #include "base/basictypes.h"
 #include "base/event_types.h"
-#include "ui/base/events/event_constants.h"
 #include "ui/base/ui_export.h"
 #include "ui/base/x/x11_atom_cache.h"
+#include "ui/events/event_constants.h"
 
 template <typename T> struct DefaultSingletonTraits;
 

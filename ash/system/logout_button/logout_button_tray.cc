@@ -14,7 +14,7 @@
 #include "base/logging.h"
 #include "grit/ash_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/base/events/event.h"
+#include "ui/events/event.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/size.h"

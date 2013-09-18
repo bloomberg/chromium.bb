@@ -11,9 +11,9 @@
 #include "content/browser/web_contents/aura/shadow_layer_delegate.h"
 #include "content/public/browser/overscroll_configuration.h"
 #include "ui/aura/window.h"
-#include "ui/base/events/event.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/events/event.h"
 
 namespace content {
 

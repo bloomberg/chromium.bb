@@ -8,9 +8,9 @@
 #include <vector>
 
 #include "base/memory/scoped_vector.h"
-#include "ui/base/events/event_constants.h"
 #include "ui/base/gestures/gesture_types.h"
 #include "ui/base/ui_export.h"
+#include "ui/events/event_constants.h"
 
 namespace ui {
 // A GestureRecognizer is an abstract base class for conversion of touch events

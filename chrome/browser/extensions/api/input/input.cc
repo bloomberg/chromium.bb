@@ -9,7 +9,7 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/extensions/extension_function_registry.h"
 #include "content/public/browser/browser_thread.h"
-#include "ui/base/events/event.h"
+#include "ui/events/event.h"
 #include "ui/keyboard/keyboard_controller.h"
 
 #if defined(USE_ASH)

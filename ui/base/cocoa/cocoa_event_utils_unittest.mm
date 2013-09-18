@@ -7,7 +7,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "ui/base/cocoa/cocoa_event_utils.h"
-#include "ui/base/events/event_constants.h"
+#include "ui/events/event_constants.h"
 #import "ui/base/test/cocoa_test_event_utils.h"
 #import "ui/base/test/ui_cocoa_test_helper.h"
 

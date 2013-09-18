@@ -22,7 +22,7 @@
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/aura/window.h"
-#include "ui/base/events/event.h"
+#include "ui/events/event.h"
 #include "ui/views/corewm/window_animations.h"
 
 using extensions::Extension;

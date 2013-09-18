@@ -10,7 +10,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/accelerator_manager.h"
-#include "ui/base/events/event.h"
+#include "ui/events/event.h"
 
 namespace ash {
 namespace {

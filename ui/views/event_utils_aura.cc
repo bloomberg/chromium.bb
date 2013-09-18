@@ -8,7 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/root_window.h"
-#include "ui/base/events/event.h"
+#include "ui/events/event.h"
 #include "ui/gfx/point.h"
 
 using aura::client::ScreenPositionClient;

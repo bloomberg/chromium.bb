@@ -8,9 +8,9 @@
 #include <bitset>
 
 #include "base/compiler_specific.h"
-#include "ui/base/events/event_constants.h"
 #include "ui/base/ozone/event_converter_ozone.h"
 #include "ui/base/ui_export.h"
+#include "ui/events/event_constants.h"
 
 namespace ui {
 

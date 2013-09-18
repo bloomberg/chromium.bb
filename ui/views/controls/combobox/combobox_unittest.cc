@@ -7,8 +7,8 @@
 #include <set>
 
 #include "base/strings/utf_string_conversions.h"
-#include "ui/base/events/event.h"
 #include "ui/base/models/combobox_model.h"
+#include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/views/ime/mock_input_method.h"
 #include "ui/views/test/views_test_base.h"

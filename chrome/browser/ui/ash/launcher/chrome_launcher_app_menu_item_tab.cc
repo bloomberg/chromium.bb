@@ -9,7 +9,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "ui/base/events/event_constants.h"
+#include "ui/events/event_constants.h"
 
 ChromeLauncherAppMenuItemTab::ChromeLauncherAppMenuItemTab(
     const string16 title,

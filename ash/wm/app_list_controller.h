@@ -13,8 +13,8 @@
 #include "ui/app_list/pagination_model_observer.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/window_observer.h"
-#include "ui/base/events/event_handler.h"
 #include "ui/compositor/layer_animation_observer.h"
+#include "ui/events/event_handler.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/widget/widget_observer.h"
 

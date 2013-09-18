@@ -30,7 +30,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "net/base/net_util.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
-#include "ui/base/events/event_constants.h"
+#include "ui/events/event_constants.h"
 
 class RedirectTest : public InProcessBrowserTest {
  public:

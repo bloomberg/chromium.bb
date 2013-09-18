@@ -8,8 +8,8 @@
 #include <set>
 
 #include "base/basictypes.h"
-#include "ui/base/events/event.h"
-#include "ui/base/events/event_handler.h"
+#include "ui/events/event.h"
+#include "ui/events/event_handler.h"
 
 namespace aura {
 class Window;

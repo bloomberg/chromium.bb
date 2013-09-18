@@ -22,8 +22,8 @@
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/user_metrics.h"
 #include "net/base/net_util.h"
-#include "ui/base/events/event.h"
 #include "ui/base/models/tree_node_iterator.h"
+#include "ui/events/event.h"
 
 using base::Time;
 using content::UserMetricsAction;

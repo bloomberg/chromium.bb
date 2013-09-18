@@ -5,8 +5,8 @@
 #include "content/browser/renderer_host/ui_events_helper.h"
 
 #include "third_party/WebKit/public/web/WebInputEvent.h"
-#include "ui/base/events/event.h"
-#include "ui/base/events/event_constants.h"
+#include "ui/events/event.h"
+#include "ui/events/event_constants.h"
 
 namespace {
 

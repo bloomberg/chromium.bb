@@ -7,7 +7,7 @@
 #include "base/basictypes.h"
 #include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/events/event_constants.h"
+#include "ui/events/event_constants.h"
 
 namespace event_utils {
 
