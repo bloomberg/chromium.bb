@@ -9,11 +9,13 @@
 
 #include "base/file_util.h"
 #include "tools/gn/err.h"
+#include "tools/gn/file_template.h"
 #include "tools/gn/ninja_binary_target_writer.h"
 #include "tools/gn/ninja_copy_target_writer.h"
 #include "tools/gn/ninja_group_target_writer.h"
 #include "tools/gn/ninja_script_target_writer.h"
 #include "tools/gn/scheduler.h"
+#include "tools/gn/string_utils.h"
 #include "tools/gn/target.h"
 
 NinjaTargetWriter::NinjaTargetWriter(const Target* target, std::ostream& out)
@@ -118,4 +120,16 @@ std::string NinjaTargetWriter::GetSourcesImplicitDeps() const {
   if (has_files)
     return ret.str();
   return std::string();  // No files added.
+}
+
+FileTemplate NinjaTargetWriter::GetOutputTemplate() const {
+  const Target::FileList& outputs = target_->script_values().outputs();
+  std::vector<std::string> output_template_args;
+  for (size_t i = 0; i < outputs.size(); i++) {
+    // All outputs should be in the output dir.
+    output_template_args.push_back(
+        RemovePrefix(outputs[i].value(),
+                     settings_->build_settings()->build_dir().value()));
+  }
+  return FileTemplate(output_template_args);
 }

@@ -8,6 +8,7 @@
 #include "tools/gn/args.h"
 #include "tools/gn/commands.h"
 #include "tools/gn/err.h"
+#include "tools/gn/file_template.h"
 #include "tools/gn/functions.h"
 #include "tools/gn/input_conversion.h"
 #include "tools/gn/pattern.h"
@@ -88,6 +89,7 @@ void PrintToplevelHelp() {
   PrintShortHelp(
       "input_conversion: Processing input from exec_script and read_file.");
   PrintShortHelp("patterns: How to use patterns.");
+  PrintShortHelp("source_expansion: Map sources to outputs for scripts.");
 }
 
 }  // namespace
@@ -159,6 +161,10 @@ int RunHelp(const std::vector<std::string>& args) {
   }
   if (args[0] == "patterns") {
     OutputString(kPattern_Help);
+    return 0;
+  }
+  if (args[0] == "source_expansion") {
+    OutputString(kSourceExpansion_Help);
     return 0;
   }
 

@@ -127,6 +127,10 @@ extern const char kOutputName[];
 extern const char kOutputName_HelpShort[];
 extern const char kOutputName_Help[];
 
+extern const char kOutputs[];
+extern const char kOutputs_HelpShort[];
+extern const char kOutputs_Help[];
+
 extern const char kSourcePrereqs[];
 extern const char kSourcePrereqs_HelpShort[];
 extern const char kSourcePrereqs_Help[];

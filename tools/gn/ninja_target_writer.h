@@ -11,6 +11,7 @@
 #include "tools/gn/ninja_helper.h"
 #include "tools/gn/path_output.h"
 
+class FileTemplate;
 class Settings;
 class Target;
 
@@ -36,6 +37,9 @@ class NinjaTargetWriter {
   // "|" character so can just be appended to the source rules. If there are no
   // implicit dependencies, returns the empty string.
   std::string GetSourcesImplicitDeps() const;
+
+  // Returns the FileTemplate constructed from the outputs variable.
+  FileTemplate GetOutputTemplate() const;
 
   const Settings* settings_;  // Non-owning.
   const Target* target_;  // Non-owning.

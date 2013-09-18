@@ -12,7 +12,10 @@
 
 NinjaScriptTargetWriter::NinjaScriptTargetWriter(const Target* target,
                                                  std::ostream& out)
-    : NinjaTargetWriter(target, out) {
+    : NinjaTargetWriter(target, out),
+      path_output_no_escaping_(
+          target->settings()->build_settings()->build_dir(),
+          ESCAPE_NONE, true) {
 }
 
 NinjaScriptTargetWriter::~NinjaScriptTargetWriter() {
@@ -21,15 +24,17 @@ NinjaScriptTargetWriter::~NinjaScriptTargetWriter() {
 void NinjaScriptTargetWriter::Run() {
   WriteEnvironment();
 
-  std::string custom_rule_name = WriteRuleDefinition();
+  FileTemplate args_template(target_->script_values().args());
+  std::string custom_rule_name = WriteRuleDefinition(args_template);
   std::string implicit_deps = GetSourcesImplicitDeps();
 
   // Collects all output files for writing below.
   std::vector<OutputFile> output_files;
 
   if (has_sources()) {
-    // Write separate rules for each input source file.
-    WriteSourceRules(custom_rule_name, implicit_deps, &output_files);
+    // Write separate build lines for each input source file.
+    WriteSourceRules(custom_rule_name, implicit_deps, args_template,
+                     &output_files);
   } else {
     // No sources, write a rule that invokes the script once with the
     // outputs as outputs, and the data as inputs.
@@ -50,7 +55,8 @@ void NinjaScriptTargetWriter::Run() {
   WriteStamp(output_files);
 }
 
-std::string NinjaScriptTargetWriter::WriteRuleDefinition() {
+std::string NinjaScriptTargetWriter::WriteRuleDefinition(
+    const FileTemplate& args_template) {
   // Make a unique name for this rule.
   //
   // Use a unique name for the response file when there are multiple build
@@ -78,11 +84,8 @@ std::string NinjaScriptTargetWriter::WriteRuleDefinition() {
     // The build command goes in the rsp file.
     out_ << "  rspfile_content = $pythonpath ";
     path_output_.WriteFile(out_, target_->script_values().script());
-    for (size_t i = 0; i < target_->script_values().args().size(); i++) {
-      const std::string& arg = target_->script_values().args()[i];
-      out_ << " ";
-      WriteArg(arg);
-    }
+    args_template.WriteWithNinjaExpansions(out_);
+    out_ << std::endl;
   } else {
     // Posix can execute Python directly.
     out_ << "rule " << custom_rule_name << std::endl;
@@ -91,11 +94,7 @@ std::string NinjaScriptTargetWriter::WriteRuleDefinition() {
                           PathOutput::DIR_NO_LAST_SLASH);
     out_ << "; $pythonpath ";
     path_output_.WriteFile(out_, target_->script_values().script());
-    for (size_t i = 0; i < target_->script_values().args().size(); i++) {
-      const std::string& arg = target_->script_values().args()[i];
-      out_ << " ";
-      WriteArg(arg);
-    }
+    args_template.WriteWithNinjaExpansions(out_);
     out_ << std::endl;
     out_ << "  description = CUSTOM " << target_label << std::endl;
     out_ << "  restat = 1" << std::endl;
@@ -105,68 +104,42 @@ std::string NinjaScriptTargetWriter::WriteRuleDefinition() {
   return custom_rule_name;
 }
 
-void NinjaScriptTargetWriter::WriteArg(const std::string& arg) {
-  // This can be optimized if it's called a lot.
-  EscapeOptions options;
-  options.mode = ESCAPE_NINJA;
-  std::string output_str = EscapeString(arg, options);
+void NinjaScriptTargetWriter::WriteArgsSubstitutions(
+    const SourceFile& source,
+    const FileTemplate& args_template) {
+  std::ostringstream source_file_stream;
+  path_output_no_escaping_.WriteFile(source_file_stream, source);
 
-  // Do this substitution after escaping our our $ will be escaped (which we
-  // don't want).
-  ReplaceSubstringsAfterOffset(&output_str, 0, FileTemplate::kSource,
-                               "${source}");
-  ReplaceSubstringsAfterOffset(&output_str, 0, FileTemplate::kSourceNamePart,
-                               "${source_name_part}");
-  out_ << output_str;
+  EscapeOptions template_escape_options;
+  template_escape_options.mode = ESCAPE_NINJA_SHELL;
+  template_escape_options.inhibit_quoting = true;
+
+  args_template.WriteNinjaVariablesForSubstitution(
+      out_, source_file_stream.str(), template_escape_options);
 }
 
 void NinjaScriptTargetWriter::WriteSourceRules(
     const std::string& custom_rule_name,
     const std::string& implicit_deps,
+    const FileTemplate& args_template,
     std::vector<OutputFile>* output_files) {
-  // Construct the template for generating the output files from each source.
-  const Target::FileList& outputs = target_->script_values().outputs();
-  std::vector<std::string> output_template_args;
-  for (size_t i = 0; i < outputs.size(); i++) {
-    // All outputs should be in the output dir.
-    output_template_args.push_back(
-        RemovePrefix(outputs[i].value(),
-                     settings_->build_settings()->build_dir().value()));
-  }
-  FileTemplate output_template(output_template_args);
-
-  // Prevent re-allocating each time by initializing outside the loop.
-  std::vector<std::string> output_template_result;
+  FileTemplate output_template(GetOutputTemplate());
 
   const Target::FileList& sources = target_->sources();
   for (size_t i = 0; i < sources.size(); i++) {
-    // Write outputs for this source file computed by the template.
     out_ << "build";
-    output_template.ApplyString(sources[i].value(), &output_template_result);
-    for (size_t out_i = 0; out_i < output_template_result.size(); out_i++) {
-      OutputFile output_path(output_template_result[out_i]);
-      output_files->push_back(output_path);
-      out_ << " ";
-      path_output_.WriteFile(out_, output_path);
-    }
+    WriteOutputFilesForBuildLine(output_template, sources[i], output_files);
 
     out_ << ": " << custom_rule_name;
     path_output_.WriteFile(out_, sources[i]);
     out_ << implicit_deps << std::endl;
 
-    out_ << "  unique_name = " << i << std::endl;
+    // Windows needs a unique ID for the response file.
+    if (target_->settings()->IsWin())
+      out_ << "  unique_name = " << i << std::endl;
 
-    // The source file here should be relative to the script directory since
-    // this is the variable passed to the script. Here we slightly abuse the
-    // OutputFile object by putting a non-output-relative path in it to signal
-    // that the PathWriter should not prepend directories.
-    out_ << "  source = ";
-    path_output_.WriteFile(out_, sources[i]);
-    out_ << std::endl;
-
-    out_ << "  source_name_part = "
-         << FindFilenameNoExtension(&sources[i].value()).as_string()
-         << std::endl;
+    if (args_template.has_substitutions())
+      WriteArgsSubstitutions(sources[i], args_template);
   }
 }
 
@@ -182,4 +155,18 @@ void NinjaScriptTargetWriter::WriteStamp(
     path_output_.WriteFile(out_, output_files[i]);
   }
   out_ << std::endl;
+}
+
+void NinjaScriptTargetWriter::WriteOutputFilesForBuildLine(
+    const FileTemplate& output_template,
+    const SourceFile& source,
+    std::vector<OutputFile>* output_files) {
+  std::vector<std::string> output_template_result;
+  output_template.ApplyString(source.value(), &output_template_result);
+  for (size_t out_i = 0; out_i < output_template_result.size(); out_i++) {
+    OutputFile output_path(output_template_result[out_i]);
+    output_files->push_back(output_path);
+    out_ << " ";
+    path_output_.WriteFile(out_, output_path);
+  }
 }

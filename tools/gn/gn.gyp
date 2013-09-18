@@ -170,6 +170,8 @@
         'input_conversion_unittest.cc',
         'label_unittest.cc',
         'ninja_helper_unittest.cc',
+        'ninja_copy_target_writer_unittest.cc',
+        'ninja_script_target_writer_unittest.cc',
         'parser_unittest.cc',
         'path_output_unittest.cc',
         'pattern_unittest.cc',

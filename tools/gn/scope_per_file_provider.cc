@@ -107,6 +107,9 @@ std::string ScopePerFileProvider::GetRootOutputDirWithNoLastSlash(
   const std::string& output_dir =
       settings->build_settings()->build_dir().value();
 
+  if (output_dir == "//")
+    return "//.";
+
   // Trim off a leading and trailing slash. So "//foo/bar/" -> /foo/bar".
   DCHECK(output_dir.size() > 2 && output_dir[0] == '/' &&
          output_dir[output_dir.size() - 1] == '/');
@@ -121,6 +124,9 @@ std::string ScopePerFileProvider::GetRootGenDirWithNoLastSlash(
 
 std::string ScopePerFileProvider::GetFileDirWithNoLastSlash() const {
   const std::string& dir_value = scope_->GetSourceDir().value();
+
+  if (dir_value == "//")
+    return "//.";
 
   // Trim off a leading and trailing slash. So "//foo/bar/" -> /foo/bar".
   DCHECK(dir_value.size() > 2 && dir_value[0] == '/' &&

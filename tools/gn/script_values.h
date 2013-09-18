@@ -23,10 +23,12 @@ class ScriptValues {
   void set_script(const SourceFile& s) { script_ = s; }
 
   // Arguments to the script.
+  std::vector<std::string>& args() { return args_; }
   const std::vector<std::string>& args() const { return args_; }
   void swap_in_args(std::vector<std::string>* a) { args_.swap(*a); }
 
   // Files created by the script.
+  std::vector<SourceFile>& outputs() { return outputs_; }
   const std::vector<SourceFile>& outputs() const { return outputs_; }
   void swap_in_outputs(std::vector<SourceFile>* op) { outputs_.swap(*op); }
 

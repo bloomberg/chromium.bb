@@ -9,6 +9,7 @@
 #include "tools/gn/config.h"
 #include "tools/gn/copy_target_generator.h"
 #include "tools/gn/err.h"
+#include "tools/gn/filesystem_utils.h"
 #include "tools/gn/functions.h"
 #include "tools/gn/group_target_generator.h"
 #include "tools/gn/item_node.h"
@@ -189,6 +190,27 @@ void TargetGenerator::FillExternal() {
   if (!value->VerifyTypeIs(Value::BOOLEAN, err_))
     return;
   target_->set_external(value->boolean_value());
+}
+
+void TargetGenerator::FillOutputs() {
+  const Value* value = scope_->GetValue(variables::kOutputs, true);
+  if (!value)
+    return;
+
+  Target::FileList outputs;
+  if (!ExtractListOfRelativeFiles(scope_->settings()->build_settings(), *value,
+                                  scope_->GetSourceDir(), &outputs, err_))
+    return;
+
+  // Validate that outputs are in the output dir.
+  CHECK(outputs.size() == value->list_value().size());
+  for (size_t i = 0; i < outputs.size(); i++) {
+    if (!EnsureStringIsInOutputDir(
+            GetBuildSettings()->build_dir(),
+            outputs[i].value(), value->list_value()[i], err_))
+      return;
+  }
+  target_->script_values().swap_in_outputs(&outputs);
 }
 
 void TargetGenerator::SetToolchainDependency() {

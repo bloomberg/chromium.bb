@@ -24,11 +24,28 @@ void ScriptTargetGenerator::DoRun() {
   target_->set_output_type(Target::CUSTOM);
 
   FillExternal();
+  if (err_->has_error())
+    return;
+
   FillSources();
+  if (err_->has_error())
+    return;
+
   FillSourcePrereqs();
+  if (err_->has_error())
+    return;
+
   FillScript();
+  if (err_->has_error())
+    return;
+
   FillScriptArgs();
+  if (err_->has_error())
+    return;
+
   FillOutputs();
+  if (err_->has_error())
+    return;
 
   // Script outputs don't depend on the current toolchain so we can skip adding
   // that dependency.
@@ -60,26 +77,3 @@ void ScriptTargetGenerator::FillScriptArgs() {
     return;
   target_->script_values().swap_in_args(&args);
 }
-
-void ScriptTargetGenerator::FillOutputs() {
-  // TODO(brettw) hook up a constant in variables.h
-  const Value* value = scope_->GetValue("outputs", true);
-  if (!value)
-    return;
-
-  Target::FileList outputs;
-  if (!ExtractListOfRelativeFiles(scope_->settings()->build_settings(), *value,
-                                  scope_->GetSourceDir(), &outputs, err_))
-    return;
-
-  // Validate that outputs are in the output dir.
-  CHECK(outputs.size() == value->list_value().size());
-  for (size_t i = 0; i < outputs.size(); i++) {
-    if (!EnsureStringIsInOutputDir(
-            GetBuildSettings()->build_dir(),
-            outputs[i].value(), value->list_value()[i], err_))
-      return;
-  }
-  target_->script_values().swap_in_outputs(&outputs);
-}
-

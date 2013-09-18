@@ -9,14 +9,18 @@
 
 #include "base/strings/string_piece.h"
 
-// TODO(brettw) we may need to make this a bitfield. If we want to write a
-// shell command in a ninja file, we need the shell characters to be escaped,
-// and THEN the ninja characters. Or maybe we require the caller to do two
-// passes.
 enum EscapingMode {
-  ESCAPE_NONE,   // No escaping.
-  ESCAPE_NINJA,  // Ninja string escaping.
-  ESCAPE_SHELL,  // Shell string escaping.
+  // No escaping.
+  ESCAPE_NONE,
+
+  // Ninja string escaping.
+  ESCAPE_NINJA = 1,
+
+  // Shell string escaping.
+  ESCAPE_SHELL = 2,
+
+  // For writing shell commands to ninja files.
+  ESCAPE_NINJA_SHELL = ESCAPE_NINJA | ESCAPE_SHELL
 };
 
 struct EscapeOptions {
@@ -41,8 +45,14 @@ struct EscapeOptions {
 };
 
 // Escapes the given input, returnining the result.
+//
+// If needed_quoting is non-null, whether the string was or should have been
+// (if inhibit_quoting was set) quoted will be written to it. This value should
+// be initialized to false by the caller and will be written to only if it's
+// true (the common use-case is for chaining calls).
 std::string EscapeString(const base::StringPiece& str,
-                         const EscapeOptions& options);
+                         const EscapeOptions& options,
+                         bool* needed_quoting);
 
 // Same as EscapeString but writes the results to the given stream, saving a
 // copy.

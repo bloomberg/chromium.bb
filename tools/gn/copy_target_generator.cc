@@ -23,26 +23,28 @@ void CopyTargetGenerator::DoRun() {
   target_->set_output_type(Target::COPY_FILES);
 
   FillExternal();
+  if (err_->has_error())
+    return;
   FillSources();
-  FillDestDir();
+  if (err_->has_error())
+    return;
+  FillOutputs();
+  if (err_->has_error())
+    return;
+
+  if (target_->sources().empty()) {
+    *err_ = Err(function_token_, "Empty sources for copy command.",
+        "You have to specify at least one file to copy in the \"sources\".");
+    return;
+  }
+  if (target_->script_values().outputs().size() != 1) {
+    *err_ = Err(function_token_, "Copy command must have exactly one output.",
+        "You must specify exactly one value in the \"outputs\" array for the "
+        "destination of the copy\n(see \"gn help copy\"). If there are "
+        "multiple sources to copy, use source expansion\n(see \"gn help "
+        "source_expansion\").");
+    return;
+  }
 
   SetToolchainDependency();
 }
-
-void CopyTargetGenerator::FillDestDir() {
-  // Destdir is required for all targets that use it.
-  const Value* value = scope_->GetValue("destdir", true);
-  if (!value) {
-    *err_ = Err(function_token_, "This target type requires a \"destdir\".");
-    return;
-  }
-  if (!value->VerifyTypeIs(Value::STRING, err_))
-    return;
-
-  if (!EnsureStringIsInOutputDir(
-          GetBuildSettings()->build_dir(),
-          value->string_value(), *value, err_))
-    return;
-  target_->set_destdir(SourceDir(value->string_value()));
-}
-

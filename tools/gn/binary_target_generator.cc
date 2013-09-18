@@ -25,10 +25,24 @@ void BinaryTargetGenerator::DoRun() {
   target_->set_output_type(output_type_);
 
   FillOutputName();
+  if (err_->has_error())
+    return;
+
   FillExternal();
+  if (err_->has_error())
+    return;
+
   FillSources();
+  if (err_->has_error())
+    return;
+
   FillSourcePrereqs();
+  if (err_->has_error())
+    return;
+
   FillConfigs();
+  if (err_->has_error())
+    return;
 
   // Config values (compiler flags, etc.) set directly on this target.
   ConfigValuesGenerator gen(&target_->config_values(), scope_,

@@ -151,9 +151,6 @@ class Target : public Item {
   ScriptValues& script_values() { return script_values_; }
   const ScriptValues& script_values() const { return script_values_; }
 
-  const SourceDir& destdir() const { return destdir_; }
-  void set_destdir(const SourceDir& d) { destdir_ = d; }
-
   const OrderedSet<std::string>& all_ldflags() const { return all_ldflags_; }
 
  private:

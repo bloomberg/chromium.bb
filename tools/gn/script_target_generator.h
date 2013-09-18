@@ -23,7 +23,6 @@ class ScriptTargetGenerator : public TargetGenerator {
  private:
   void FillScript();
   void FillScriptArgs();
-  void FillOutputs();
 
   DISALLOW_COPY_AND_ASSIGN(ScriptTargetGenerator);
 };

@@ -5,6 +5,7 @@
 #include "tools/gn/ninja_copy_target_writer.h"
 
 #include "base/strings/string_util.h"
+#include "tools/gn/file_template.h"
 #include "tools/gn/string_utils.h"
 
 NinjaCopyTargetWriter::NinjaCopyTargetWriter(const Target* target,
@@ -16,32 +17,24 @@ NinjaCopyTargetWriter::~NinjaCopyTargetWriter() {
 }
 
 void NinjaCopyTargetWriter::Run() {
-  // The dest dir should be inside the output dir so we can just remove the
-  // prefix and get ninja-relative paths.
-  const std::string& output_dir =
-      settings_->build_settings()->build_dir().value();
-  const std::string& dest_dir = target_->destdir().value();
-  DCHECK(StartsWithASCII(dest_dir, output_dir, true));
-  std::string relative_dest_dir(&dest_dir[output_dir.size()],
-                                dest_dir.size() - output_dir.size());
+  CHECK(target_->script_values().outputs().size() == 1);
+  FileTemplate output_template(GetOutputTemplate());
 
-  const Target::FileList& sources = target_->sources();
-  std::vector<OutputFile> dest_files;
-  dest_files.reserve(sources.size());
+  std::vector<OutputFile> output_files;
 
-  // Write out rules for each file copied.
-  for (size_t i = 0; i < sources.size(); i++) {
-    const SourceFile& input_file = sources[i];
+  for (size_t i = 0; i < target_->sources().size(); i++) {
+    const SourceFile& input_file = target_->sources()[i];
 
-    // The files should have the same name but in the dest dir.
-    base::StringPiece name_part = FindFilename(&input_file.value());
-    OutputFile dest_file(relative_dest_dir);
-    AppendStringPiece(&dest_file.value(), name_part);
+    // Make the output file from the template.
+    std::vector<std::string> template_result;
+    output_template.ApplyString(input_file.value(), &template_result);
+    CHECK(template_result.size() == 1);
+    OutputFile output_file(template_result[0]);
 
-    dest_files.push_back(dest_file);
+    output_files.push_back(output_file);
 
     out_ << "build ";
-    path_output_.WriteFile(out_, dest_file);
+    path_output_.WriteFile(out_, output_file);
     out_ << ": copy ";
     path_output_.WriteFile(out_, input_file);
     out_ << std::endl;
@@ -53,14 +46,9 @@ void NinjaCopyTargetWriter::Run() {
   out_ << ": "
        << helper_.GetRulePrefix(target_->settings()->toolchain())
        << "stamp";
-  for (size_t i = 0; i < dest_files.size(); i++) {
+  for (size_t i = 0; i < output_files.size(); i++) {
     out_ << " ";
-    path_output_.WriteFile(out_, dest_files[i]);
+    path_output_.WriteFile(out_, output_files[i]);
   }
   out_ << std::endl;
-
-  // TODO(brettw) need some kind of stamp file for depending on this, as well
-  // as order_only=prebuild.
-  // TODO(brettw) also need to write out the dependencies of this rule (maybe
-  // we're copying output files around).
 }
