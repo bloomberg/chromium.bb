@@ -9,11 +9,16 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "base/prefs/pref_member.h"
 #include "chrome/browser/policy/cloud/cloud_policy_constants.h"
 #include "chrome/browser/policy/cloud/cloud_policy_core.h"
 #include "chrome/browser/policy/cloud/cloud_policy_store.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
+
+namespace base {
+class SequencedTaskRunner;
+}
 
 namespace policy {
 
@@ -29,8 +34,11 @@ class PolicyBundle;
 class CloudPolicyManager : public ConfigurationPolicyProvider,
                            public CloudPolicyStore::Observer {
  public:
-  CloudPolicyManager(const PolicyNamespaceKey& policy_ns_key,
-                     CloudPolicyStore* cloud_policy_store);
+  // |task_runner| is the runner for policy refresh tasks.
+  CloudPolicyManager(
+      const PolicyNamespaceKey& policy_ns_key,
+      CloudPolicyStore* cloud_policy_store,
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner);
   virtual ~CloudPolicyManager();
 
   CloudPolicyCore* core() { return &core_; }

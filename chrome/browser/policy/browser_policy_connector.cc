@@ -155,6 +155,7 @@ BrowserPolicyConnector::BrowserPolicyConnector()
     device_cloud_policy_manager_.reset(
         new DeviceCloudPolicyManagerChromeOS(
             device_cloud_policy_store.Pass(),
+            base::MessageLoopProxy::current(),
             install_attributes_.get()));
   }
 #endif

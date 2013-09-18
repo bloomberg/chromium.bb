@@ -65,7 +65,9 @@ class DeviceCloudPolicyManagerChromeOSTest
                             stub_cryptohome_client_.get()),
         store_(new DeviceCloudPolicyStoreChromeOS(&device_settings_service_,
                                                   &install_attributes_)),
-        manager_(make_scoped_ptr(store_), &install_attributes_) {
+        manager_(make_scoped_ptr(store_),
+                 loop_.message_loop_proxy(),
+                 &install_attributes_) {
     stub_cryptohome_client_->Init(NULL /* no dbus::Bus */);
   }
 

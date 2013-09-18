@@ -11,11 +11,16 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
 #include "chrome/browser/policy/cloud/cloud_policy_client.h"
 #include "chrome/browser/policy/cloud/cloud_policy_manager.h"
 #include "chrome/browser/policy/cloud/cloud_policy_store.h"
+
+namespace base {
+class SequencedTaskRunner;
+}
 
 namespace chromeos {
 namespace attestation {
@@ -40,8 +45,10 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
   typedef std::bitset<32> AllowedDeviceModes;
   typedef base::Callback<void(EnrollmentStatus)> EnrollmentCallback;
 
+  // |task_runner| is the runner for policy refresh tasks.
   DeviceCloudPolicyManagerChromeOS(
       scoped_ptr<DeviceCloudPolicyStoreChromeOS> store,
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner,
       EnterpriseInstallAttributes* install_attributes);
   virtual ~DeviceCloudPolicyManagerChromeOS();
 

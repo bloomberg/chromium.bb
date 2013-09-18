@@ -50,7 +50,8 @@ class UserCloudPolicyManagerTest : public testing::Test {
     EXPECT_CALL(*store_, Load());
     manager_.reset(
         new UserCloudPolicyManager(NULL,
-                                   scoped_ptr<UserCloudPolicyStore>(store_)));
+                                   scoped_ptr<UserCloudPolicyStore>(store_),
+                                   loop_.message_loop_proxy()));
     manager_->Init();
     manager_->AddObserver(&observer_);
     Mock::VerifyAndClearExpectations(store_);

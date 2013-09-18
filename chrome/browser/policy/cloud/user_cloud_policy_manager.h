@@ -9,12 +9,17 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/policy/cloud/cloud_policy_manager.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 
 class PrefService;
 class Profile;
+
+namespace base {
+class SequencedTaskRunner;
+}
 
 namespace policy {
 
@@ -26,8 +31,11 @@ class UserCloudPolicyStore;
 class UserCloudPolicyManager : public CloudPolicyManager,
                                public BrowserContextKeyedService {
  public:
-  UserCloudPolicyManager(Profile* profile,
-                         scoped_ptr<UserCloudPolicyStore> store);
+  // |task_runner| is the runner for policy refresh tasks.
+  UserCloudPolicyManager(
+      Profile* profile,
+      scoped_ptr<UserCloudPolicyStore> store,
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner);
   virtual ~UserCloudPolicyManager();
 
   // Initializes the cloud connection. |local_state| and

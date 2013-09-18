@@ -50,12 +50,14 @@ const char kUMAInitialFetchOAuth2NetworkError[] =
 
 UserCloudPolicyManagerChromeOS::UserCloudPolicyManagerChromeOS(
     scoped_ptr<CloudPolicyStore> store,
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner,
     scoped_ptr<ResourceCache> resource_cache,
     bool wait_for_policy_fetch,
     base::TimeDelta initial_policy_fetch_timeout)
     : CloudPolicyManager(
           PolicyNamespaceKey(dm_protocol::kChromeUserPolicyType, std::string()),
-          store.get()),
+          store.get(),
+          task_runner),
       store_(store.Pass()),
       wait_for_policy_fetch_(wait_for_policy_fetch),
       policy_fetch_timeout_(false, false) {

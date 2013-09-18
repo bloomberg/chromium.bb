@@ -162,6 +162,8 @@ class CloudPolicyInvalidatorTest : public testing::Test {
   scoped_ptr<base::HistogramSamples> GetHistogramSamples(
       const std::string& name) const;
 
+  base::MessageLoop loop_;
+
   // Objects the invalidator depends on.
   invalidation::FakeInvalidationService invalidation_service_;
   MockCloudPolicyStore store_;
@@ -192,15 +194,13 @@ class CloudPolicyInvalidatorTest : public testing::Test {
 
   // Stores starting histogram counts for kMetricPolicyInvalidations.
   scoped_ptr<base::HistogramSamples> invalidations_samples_;
-
-  // Initialize message loop.
-  base::MessageLoop loop_;
 };
 
 CloudPolicyInvalidatorTest::CloudPolicyInvalidatorTest()
     : core_(PolicyNamespaceKey(dm_protocol::kChromeUserPolicyType,
                                std::string()),
-            &store_),
+            &store_,
+            loop_.message_loop_proxy()),
       client_(NULL),
       task_runner_(new base::TestSimpleTaskRunner()),
       object_id_a_(135, "asdf"),

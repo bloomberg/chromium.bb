@@ -8,12 +8,17 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/prefs/pref_member.h"
 #include "chrome/browser/policy/cloud/cloud_policy_constants.h"
 
 class PrefService;
+
+namespace base {
+class SequencedTaskRunner;
+}
 
 namespace policy {
 
@@ -45,8 +50,10 @@ class CloudPolicyCore {
     virtual void OnCoreDisconnecting(CloudPolicyCore* core) = 0;
   };
 
+  // |task_runner| is the runner for policy refresh tasks.
   CloudPolicyCore(const PolicyNamespaceKey& policy_ns_key,
-                  CloudPolicyStore* store);
+                  CloudPolicyStore* store,
+                  const scoped_refptr<base::SequencedTaskRunner>& task_runner);
   ~CloudPolicyCore();
 
   CloudPolicyClient* client() { return client_.get(); }
@@ -95,6 +102,7 @@ class CloudPolicyCore {
 
   PolicyNamespaceKey policy_ns_key_;
   CloudPolicyStore* store_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
   scoped_ptr<CloudPolicyClient> client_;
   scoped_ptr<CloudPolicyService> service_;
   scoped_ptr<CloudPolicyRefreshScheduler> refresh_scheduler_;

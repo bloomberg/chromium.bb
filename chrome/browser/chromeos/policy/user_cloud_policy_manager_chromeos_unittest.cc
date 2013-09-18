@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_registry_simple.h"
@@ -15,6 +16,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_token_forwarder.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -79,6 +81,7 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
  protected:
   UserCloudPolicyManagerChromeOSTest()
       : store_(NULL),
+        task_runner_(new base::TestSimpleTaskRunner()),
         profile_(NULL),
         signin_profile_(NULL) {}
 
@@ -149,6 +152,7 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
     EXPECT_CALL(*store_, Load());
     manager_.reset(new UserCloudPolicyManagerChromeOS(
         scoped_ptr<CloudPolicyStore>(store_),
+        task_runner_,
         scoped_ptr<ResourceCache>(),
         wait_for_fetch,
         base::TimeDelta::FromSeconds(fetch_timeout)));
@@ -288,6 +292,7 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
   MockConfigurationPolicyObserver observer_;
   MockDeviceManagementService device_management_service_;
   MockCloudPolicyStore* store_;
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   scoped_ptr<UserCloudPolicyManagerChromeOS> manager_;
   scoped_ptr<UserCloudPolicyTokenForwarder> token_forwarder_;
 
@@ -514,11 +519,9 @@ TEST_F(UserCloudPolicyManagerChromeOSTest, NonBlockingFirstFetch) {
   register_request->SendResponse(DM_STATUS_SUCCESS, register_blob_);
 
   // The refresh scheduler takes care of the initial fetch for unmanaged users.
-  // It posts a delayed task with 0ms delay in this case, so spinning the loop
-  // issues the initial fetch.
-  base::RunLoop loop;
+  // Running the task runner issues the initial fetch.
   FetchPolicy(
-      base::Bind(&base::RunLoop::RunUntilIdle, base::Unretained(&loop)));
+      base::Bind(&base::TestSimpleTaskRunner::RunUntilIdle, task_runner_));
 }
 
 TEST_F(UserCloudPolicyManagerChromeOSTest, NonBlockingRefreshFetch) {
@@ -539,11 +542,9 @@ TEST_F(UserCloudPolicyManagerChromeOSTest, NonBlockingRefreshFetch) {
   EXPECT_TRUE(manager_->core()->client()->is_registered());
 
   // The refresh scheduler takes care of the initial fetch for unmanaged users.
-  // It posts a delayed task with 0ms delay in this case, so spinning the loop
-  // issues the initial fetch.
-  base::RunLoop loop;
+  // Running the task runner issues the initial fetch.
   FetchPolicy(
-      base::Bind(&base::RunLoop::RunUntilIdle, base::Unretained(&loop)));
+      base::Bind(&base::TestSimpleTaskRunner::RunUntilIdle, task_runner_));
 }
 
 }  // namespace policy

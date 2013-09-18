@@ -23,6 +23,10 @@
 class GoogleServiceAuthError;
 class PrefService;
 
+namespace base {
+class SequencedTaskRunner;
+}
+
 namespace net {
 class URLRequestContextGetter;
 }
@@ -42,10 +46,12 @@ class UserCloudPolicyManagerChromeOS
       public ComponentCloudPolicyService::Delegate,
       public BrowserContextKeyedService {
  public:
+  // |task_runner| is the runner for policy refresh tasks.
   // If |wait_for_policy_fetch| is true, IsInitializationComplete() will return
   // false as long as there hasn't been a successful policy fetch.
   UserCloudPolicyManagerChromeOS(
       scoped_ptr<CloudPolicyStore> store,
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner,
       scoped_ptr<ResourceCache> resource_cache,
       bool wait_for_policy_fetch,
       base::TimeDelta initial_policy_fetch_timeout);

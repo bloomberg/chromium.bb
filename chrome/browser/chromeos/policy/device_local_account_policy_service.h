@@ -10,12 +10,17 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/policy/cloud/cloud_policy_core.h"
 #include "chrome/browser/policy/cloud/cloud_policy_store.h"
 #include "content/public/browser/notification_observer.h"
+
+namespace base {
+class SequencedTaskRunner;
+}
 
 namespace chromeos {
 class CrosSettings;
@@ -33,9 +38,11 @@ class DeviceManagementService;
 // a single device-local account.
 class DeviceLocalAccountPolicyBroker {
  public:
+  // |task_runner| is the runner for policy refresh tasks.
   explicit DeviceLocalAccountPolicyBroker(
       const std::string& user_id,
-      scoped_ptr<DeviceLocalAccountPolicyStore> store);
+      scoped_ptr<DeviceLocalAccountPolicyStore> store,
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner);
   ~DeviceLocalAccountPolicyBroker();
 
   const std::string& user_id() const { return user_id_; }

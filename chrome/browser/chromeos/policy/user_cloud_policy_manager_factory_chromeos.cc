@@ -160,6 +160,7 @@ scoped_ptr<UserCloudPolicyManagerChromeOS>
   scoped_ptr<UserCloudPolicyManagerChromeOS> manager(
       new UserCloudPolicyManagerChromeOS(
           store.PassAs<CloudPolicyStore>(),
+          base::MessageLoopProxy::current(),
           resource_cache.Pass(),
           wait_for_initial_policy,
           base::TimeDelta::FromSeconds(kInitialPolicyFetchTimeoutSeconds)));

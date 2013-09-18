@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/policy/cloud/cloud_policy_client.h"
 #include "chrome/browser/policy/cloud/cloud_policy_refresh_scheduler.h"
@@ -17,10 +16,13 @@ namespace policy {
 
 CloudPolicyCore::Observer::~Observer() {}
 
-CloudPolicyCore::CloudPolicyCore(const PolicyNamespaceKey& key,
-                                 CloudPolicyStore* store)
+CloudPolicyCore::CloudPolicyCore(
+    const PolicyNamespaceKey& key,
+    CloudPolicyStore* store,
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner)
     : policy_ns_key_(key),
-      store_(store) {}
+      store_(store),
+      task_runner_(task_runner) {}
 
 CloudPolicyCore::~CloudPolicyCore() {}
 
@@ -49,9 +51,7 @@ void CloudPolicyCore::RefreshSoon() {
 void CloudPolicyCore::StartRefreshScheduler() {
   if (!refresh_scheduler_) {
     refresh_scheduler_.reset(
-        new CloudPolicyRefreshScheduler(
-            client_.get(), store_,
-            base::MessageLoop::current()->message_loop_proxy()));
+        new CloudPolicyRefreshScheduler(client_.get(), store_, task_runner_));
     UpdateRefreshDelayFromPref();
     FOR_EACH_OBSERVER(Observer, observers_, OnRefreshSchedulerStarted(this));
   }

@@ -5,6 +5,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
@@ -202,7 +203,9 @@ class UserPolicySigninServiceTest : public testing::Test {
     mock_store_ = new MockUserCloudPolicyStore();
     EXPECT_CALL(*mock_store_, Load()).Times(AnyNumber());
     manager_.reset(new UserCloudPolicyManager(
-        profile_.get(), scoped_ptr<UserCloudPolicyStore>(mock_store_)));
+        profile_.get(),
+        scoped_ptr<UserCloudPolicyStore>(mock_store_),
+        base::MessageLoopProxy::current()));
 
     Mock::VerifyAndClearExpectations(mock_store_);
     url_factory_.set_remove_fetcher_on_delete(true);

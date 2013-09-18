@@ -19,10 +19,12 @@ namespace policy {
 
 UserCloudPolicyManager::UserCloudPolicyManager(
     Profile* profile,
-    scoped_ptr<UserCloudPolicyStore> store)
+    scoped_ptr<UserCloudPolicyStore> store,
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner)
     : CloudPolicyManager(
           PolicyNamespaceKey(GetChromeUserPolicyType(), std::string()),
-          store.get()),
+          store.get(),
+          task_runner),
       profile_(profile),
       store_(store.Pass()) {
   UserCloudPolicyManagerFactory::GetInstance()->Register(profile_, this);

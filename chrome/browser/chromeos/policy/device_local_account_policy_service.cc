@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_store.h"
@@ -43,7 +44,9 @@ scoped_ptr<DeviceLocalAccountPolicyBroker> CreateBroker(
       new DeviceLocalAccountPolicyStore(account_id, session_manager_client,
                                         device_settings_service));
   scoped_ptr<DeviceLocalAccountPolicyBroker> broker(
-      new DeviceLocalAccountPolicyBroker(user_id, store.Pass()));
+      new DeviceLocalAccountPolicyBroker(user_id,
+                                         store.Pass(),
+                                         base::MessageLoopProxy::current()));
   broker->core()->store()->AddObserver(device_local_account_policy_service);
   broker->core()->store()->Load();
   return broker.Pass();
@@ -76,12 +79,14 @@ scoped_ptr<CloudPolicyClient> CreateClient(
 
 DeviceLocalAccountPolicyBroker::DeviceLocalAccountPolicyBroker(
     const std::string& user_id,
-    scoped_ptr<DeviceLocalAccountPolicyStore> store)
+    scoped_ptr<DeviceLocalAccountPolicyStore> store,
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner)
     : user_id_(user_id),
       store_(store.Pass()),
       core_(PolicyNamespaceKey(dm_protocol::kChromePublicAccountPolicyType,
                                store_->account_id()),
-            store_.get()) {}
+            store_.get(),
+            task_runner) {}
 
 DeviceLocalAccountPolicyBroker::~DeviceLocalAccountPolicyBroker() {}
 

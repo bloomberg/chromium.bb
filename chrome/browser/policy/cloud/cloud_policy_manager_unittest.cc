@@ -76,7 +76,8 @@ ConfigurationPolicyProvider* TestHarness::CreateProvider(
   store_.NotifyStoreLoaded();
   ConfigurationPolicyProvider* provider = new CloudPolicyManager(
       PolicyNamespaceKey(dm_protocol::kChromeUserPolicyType, std::string()),
-      &store_);
+      &store_,
+      task_runner);
   Mock::VerifyAndClearExpectations(&store_);
   return provider;
 }
@@ -133,11 +134,14 @@ INSTANTIATE_TEST_CASE_P(
 
 class TestCloudPolicyManager : public CloudPolicyManager {
  public:
-  explicit TestCloudPolicyManager(CloudPolicyStore* store)
+  TestCloudPolicyManager(
+      CloudPolicyStore* store,
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner)
       : CloudPolicyManager(PolicyNamespaceKey(
                                dm_protocol::kChromeUserPolicyType,
                                std::string()),
-                           store) {}
+                           store,
+                           task_runner) {}
   virtual ~TestCloudPolicyManager() {}
 
   // Publish the protected members for testing.
@@ -170,7 +174,8 @@ class CloudPolicyManagerTest : public testing::Test {
     policy_.Build();
 
     EXPECT_CALL(store_, Load());
-    manager_.reset(new TestCloudPolicyManager(&store_));
+    manager_.reset(new TestCloudPolicyManager(&store_,
+                                              loop_.message_loop_proxy()));
     manager_->Init();
     Mock::VerifyAndClearExpectations(&store_);
     manager_->AddObserver(&observer_);
