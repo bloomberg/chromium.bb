@@ -195,7 +195,8 @@ setup_launcher_socket(struct weston_launch *wl)
 	if (socketpair(AF_LOCAL, SOCK_DGRAM, 0, wl->sock) < 0)
 		error(1, errno, "socketpair failed");
 	
-	fcntl(wl->sock[0], F_SETFD, O_CLOEXEC);
+	if (fcntl(wl->sock[0], F_SETFD, FD_CLOEXEC) < 0)
+		error(1, errno, "fcntl failed");
 
 	return 0;
 }
