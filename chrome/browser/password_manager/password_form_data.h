@@ -10,6 +10,8 @@
 #include "components/autofill/core/common/password_form.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+// TODO(sync): This file must eventually be refactored away -- crbug.com/87185.
+
 // Struct used for creation of PasswordForms from static arrays of data.
 // Note: This is only meant to be used in unit test.
 struct PasswordFormData {
@@ -41,11 +43,6 @@ bool ContainsSamePasswordFormsPtr(
 bool ContainsSamePasswordForms(
     std::vector<autofill::PasswordForm>& first,
     std::vector<autofill::PasswordForm>& second);
-
-// Pretty-prints the contents of a PasswordForm.
-// TODO(sync): This file must eventually be refactored away -- crbug.com/87185.
-std::ostream& operator<<(std::ostream& os,
-                         const autofill::PasswordForm& form);
 
 // This gmock matcher is used to check that the |arg| contains exactly the same
 // PasswordForms as |forms|, regardless of order.

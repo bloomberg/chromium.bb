@@ -22,7 +22,7 @@
 
 using autofill::PasswordForm;
 
-static const int kCurrentVersionNumber = 3;
+static const int kCurrentVersionNumber = 4;
 static const int kCompatibleVersionNumber = 1;
 
 namespace {
@@ -44,7 +44,8 @@ enum LoginTableColumns {
   COLUMN_SCHEME,
   COLUMN_PASSWORD_TYPE,
   COLUMN_POSSIBLE_USERNAMES,
-  COLUMN_TIMES_USED
+  COLUMN_TIMES_USED,
+  COLUMN_FORM_DATA
 };
 
 // Using the public suffix list for matching the origin is only needed for
@@ -184,16 +185,20 @@ bool LoginDatabase::MigrateOldVersionsAsNeeded() {
                        "ADD COLUMN possible_usernames BLOB")) {
         return false;
       }
+      // Fall through.
     case 2:
-      if (!db_.Execute("ALTER TABLE logins "
-                       "ADD COLUMN times_used INTEGER")) {
+      if (!db_.Execute("ALTER TABLE logins ADD COLUMN times_used INTEGER")) {
         return false;
       }
-      break;
+      // Fall through.
+    case 3:
+      if (!db_.Execute("ALTER TABLE logins ADD COLUMN form_data BLOB")) {
+        return false;
+      }
+      // Fall through.
     case kCurrentVersionNumber:
       // Already up to date
       return true;
-      break;
     default:
       NOTREACHED();
       return false;
@@ -221,6 +226,7 @@ bool LoginDatabase::InitLoginsTable() {
                      "password_type INTEGER,"
                      "possible_usernames BLOB,"
                      "times_used INTEGER,"
+                     "form_data BLOB,"
                      "UNIQUE "
                      "(origin_url, username_element, "
                      "username_value, password_element, "
@@ -298,9 +304,9 @@ bool LoginDatabase::AddLogin(const PasswordForm& form) {
       "(origin_url, action_url, username_element, username_value, "
       " password_element, password_value, submit_element, "
       " signon_realm, ssl_valid, preferred, date_created, blacklisted_by_user, "
-      " scheme, password_type, possible_usernames, times_used) "
+      " scheme, password_type, possible_usernames, times_used, form_data) "
       "VALUES "
-      "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
+      "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
   s.BindString(COLUMN_ORIGIN_URL, form.origin.spec());
   s.BindString(COLUMN_ACTION_URL, form.action.spec());
   s.BindString16(COLUMN_USERNAME_ELEMENT, form.username_element);
@@ -316,9 +322,16 @@ bool LoginDatabase::AddLogin(const PasswordForm& form) {
   s.BindInt(COLUMN_BLACKLISTED_BY_USER, form.blacklisted_by_user);
   s.BindInt(COLUMN_SCHEME, form.scheme);
   s.BindInt(COLUMN_PASSWORD_TYPE, form.type);
-  Pickle pickle = SerializeVector(form.other_possible_usernames);
-  s.BindBlob(COLUMN_POSSIBLE_USERNAMES, pickle.data(), pickle.size());
+  Pickle usernames_pickle = SerializeVector(form.other_possible_usernames);
+  s.BindBlob(COLUMN_POSSIBLE_USERNAMES,
+             usernames_pickle.data(),
+             usernames_pickle.size());
   s.BindInt(COLUMN_TIMES_USED, form.times_used);
+  Pickle form_data_pickle;
+  autofill::SerializeFormData(form.form_data, &form_data_pickle);
+  s.BindBlob(COLUMN_FORM_DATA,
+             form_data_pickle.data(),
+             form_data_pickle.size());
 
   return s.Run();
 }
@@ -431,6 +444,11 @@ bool LoginDatabase::InitPasswordFormFromStatement(PasswordForm* form,
       s.ColumnByteLength(COLUMN_POSSIBLE_USERNAMES));
   form->other_possible_usernames = DeserializeVector(pickle);
   form->times_used = s.ColumnInt(COLUMN_TIMES_USED);
+  Pickle form_data_pickle(
+      static_cast<const char*>(s.ColumnBlob(COLUMN_FORM_DATA)),
+      s.ColumnByteLength(COLUMN_FORM_DATA));
+  PickleIterator form_data_iter(form_data_pickle);
+  autofill::DeserializeFormData(&form_data_iter, &form->form_data);
   return true;
 }
 
@@ -442,7 +460,7 @@ bool LoginDatabase::GetLogins(const PasswordForm& form,
       "username_element, username_value, "
       "password_element, password_value, submit_element, "
       "signon_realm, ssl_valid, preferred, date_created, blacklisted_by_user, "
-      "scheme, password_type, possible_usernames, times_used "
+      "scheme, password_type, possible_usernames, times_used, form_data "
       "FROM logins WHERE signon_realm == ? ";
   sql::Statement s;
   const GURL signon_realm(form.signon_realm);
@@ -521,7 +539,7 @@ bool LoginDatabase::GetLoginsCreatedBetween(
       "username_element, username_value, "
       "password_element, password_value, submit_element, "
       "signon_realm, ssl_valid, preferred, date_created, blacklisted_by_user, "
-      "scheme, password_type, possible_usernames, times_used "
+      "scheme, password_type, possible_usernames, times_used, form_data "
       "FROM logins WHERE date_created >= ? AND date_created < ?"
       "ORDER BY origin_url"));
   s.BindInt64(0, begin.ToTimeT());
@@ -556,7 +574,7 @@ bool LoginDatabase::GetAllLoginsWithBlacklistSetting(
       "username_element, username_value, "
       "password_element, password_value, submit_element, "
       "signon_realm, ssl_valid, preferred, date_created, blacklisted_by_user, "
-      "scheme, password_type, possible_usernames, times_used "
+      "scheme, password_type, possible_usernames, times_used, form_data "
       "FROM logins WHERE blacklisted_by_user == ? "
       "ORDER BY origin_url"));
   s.BindInt(0, blacklisted ? 1 : 0);
