@@ -1601,12 +1601,14 @@ def _AddWinLinkRules(master_ninja, embed_manifest, link_incremental):
                     description=dlldesc, command=dllcmd,
                     rspfile='$dll.rsp',
                     rspfile_content='$libs $in_newline $ldflags',
-                    restat=True)
+                    restat=True,
+                    pool='link_pool')
   master_ninja.rule('solink_module' + rule_name_suffix,
                     description=dlldesc, command=dllcmd,
                     rspfile='$dll.rsp',
                     rspfile_content='$libs $in_newline $ldflags',
-                    restat=True)
+                    restat=True,
+                    pool='link_pool')
   # Note that ldflags goes at the end so that it has the option of
   # overriding default settings earlier in the command line.
   exe_cmd = ('%s gyp-win-tool link-wrapper $arch '
@@ -1617,7 +1619,8 @@ def _AddWinLinkRules(master_ninja, embed_manifest, link_incremental):
                     description='LINK%s $out' % rule_name_suffix.upper(),
                     command=exe_cmd,
                     rspfile='$out.rsp',
-                    rspfile_content='$in_newline $libs $ldflags')
+                    rspfile_content='$in_newline $libs $ldflags',
+                    pool='link_pool')
 
 
 def GenerateOutputForConfig(target_list, target_dicts, data, params,
