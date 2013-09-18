@@ -30,10 +30,12 @@
       window.addEventListener('message', onPostMessageReceived, false);
 
       window.addEventListener('focus', function(e) {
+        console.log('test focus');
         notifyEmbedder(['focused', embedderTestName]);
       });
 
       window.addEventListener('blur', function(e) {
+        console.log('test blur');
         notifyEmbedder(['blurred', embedderTestName]);
       });
     </script>

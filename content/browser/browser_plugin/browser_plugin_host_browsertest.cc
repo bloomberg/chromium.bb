@@ -768,26 +768,9 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, FocusBeforeNavigation) {
 IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, FocusTracksEmbedder) {
   const char* kEmbedderURL = "/browser_plugin_embedder.html";
   StartBrowserPluginTest(kEmbedderURL, kHTMLForGuest, true, std::string());
-  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
-      test_embedder()->web_contents()->GetRenderViewHost());
-  RenderViewHostImpl* guest_rvh = static_cast<RenderViewHostImpl*>(
-      test_guest()->web_contents()->GetRenderViewHost());
-  {
-    // Focus the BrowserPlugin. This will have the effect of also focusing the
-    // current guest.
-    ExecuteSyncJSFunction(rvh, "document.getElementById('plugin').focus();");
-    // Verify that key presses go to the guest.
-    SimulateSpaceKeyPress(test_embedder()->web_contents());
-    test_guest()->WaitForInput();
-    // Verify that the guest is focused.
-    scoped_ptr<base::Value> value =
-        content::ExecuteScriptAndGetValue(guest_rvh, "document.hasFocus()");
-    bool result = false;
-    ASSERT_TRUE(value->GetAsBoolean(&result));
-    EXPECT_TRUE(result);
-  }
   // Blur the embedder.
   test_embedder()->web_contents()->GetRenderViewHost()->Blur();
+  // Ensure that the guest is also blurred.
   test_guest()->WaitForBlur();
 }
 

@@ -46,6 +46,7 @@ embedder.waitForResponseFromGuest_ =
       return;
     }
     responseCallback();
+    window.removeEventListener('message', onPostMessageReceived);
   };
   window.addEventListener('message', onPostMessageReceived);
 
@@ -53,6 +54,7 @@ embedder.waitForResponseFromGuest_ =
     // This creates a communication channel with the guest.
     webview.contentWindow.postMessage(
         JSON.stringify(['create-channel', testName]), '*');
+    webview.removeEventListener('loadstop', onWebViewLoadStop);
   };
   webview.addEventListener('loadstop', onWebViewLoadStop);
   webview.setAttribute('src', embedder.guestURL);
@@ -83,8 +85,9 @@ embedder.tests.testFocusEvent = function testFocusEvent() {
   }, 'focused', function() {
     // The focus event fires three times on first focus. We only care about
     // the first focus.
-    if (seenResponse)
+    if (seenResponse) {
       return;
+    }
     seenResponse = true;
     chrome.test.succeed();
   });
@@ -92,9 +95,14 @@ embedder.tests.testFocusEvent = function testFocusEvent() {
 
 embedder.tests.testBlurEvent = function testBlurEvent() {
   var seenResponse = false;
-  embedder.testFocus_('testFocusEvent', function(webview) {
+  embedder.testFocus_('testBlurEvent', function(webview) {
     webview.focus();
+    webview.blur();
   }, 'blurred', function() {
+    if (seenResponse) {
+      return;
+    }
+    seenResponse = true;
     chrome.test.succeed();
   });
 }
