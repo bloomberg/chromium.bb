@@ -28124,6 +28124,19 @@ other types of suffix sets.
   <affected-histogram name="Prerender.TimeUntilUsed2"/>
 </fieldtrial>
 
+<fieldtrial name="ProfilePictureDownload" separator=".">
+  <group name="Default.OOBE" label="default picture, in OOBE"/>
+  <group name="Default.LoggedIn" label="default picture, after login"/>
+  <group name="Default.Preferences" label="default picture, in Prefs"/>
+  <group name="Failure.OOBE" label="download has failed, in OOBE"/>
+  <group name="Failure.LoggedIn" label="download has failed, after login"/>
+  <group name="Failure.Preferences" label="download has failed, in Prefs"/>
+  <group name="Success.OOBE" label="download was successful, in OOBE"/>
+  <group name="Success.LoggedIn" label="download was successful, after login"/>
+  <group name="Success.Preferences" label="download was successful, in Prefs"/>
+  <affected-histogram name="UserImage.ProfileDownloadTime"/>
+</fieldtrial>
+
 <fieldtrial name="ProgressiveScan">
   <group name="FullScan" label="Using WPA_supplicant to scan."/>
   <group name="33Percent_4MinMax"
