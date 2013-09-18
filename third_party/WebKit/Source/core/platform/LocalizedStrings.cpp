@@ -35,7 +35,6 @@
 #include "core/platform/graphics/IntSize.h"
 #include "core/platform/text/DateTimeFormat.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebLocalizedString.h"
 #include "public/platform/WebString.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
@@ -45,9 +44,19 @@ using WebKit::WebString;
 
 namespace WebCore {
 
-static String query(WebLocalizedString::Name name)
+String queryLocalizedString(WebLocalizedString::Name name)
 {
     return WebKit::Platform::current()->queryLocalizedString(name);
+}
+
+String queryLocalizedString(WebLocalizedString::Name name, const String& parameter1, const String& parameter2)
+{
+    return WebKit::Platform::current()->queryLocalizedString(name, parameter1, parameter2);
+}
+
+static String query(WebLocalizedString::Name name)
+{
+    return queryLocalizedString(name);
 }
 
 static String query(WebLocalizedString::Name name, const WebString& parameter)
@@ -57,7 +66,7 @@ static String query(WebLocalizedString::Name name, const WebString& parameter)
 
 static String query(WebLocalizedString::Name name, const WebString& parameter1, const WebString& parameter2)
 {
-    return WebKit::Platform::current()->queryLocalizedString(name, parameter1, parameter2);
+    return queryLocalizedString(name, parameter1, parameter2);
 }
 
 String searchableIndexIntroduction()

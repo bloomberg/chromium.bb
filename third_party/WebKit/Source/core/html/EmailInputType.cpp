@@ -38,6 +38,10 @@
 
 namespace WebCore {
 
+using WebKit::WebLocalizedString;
+
+// http://www.whatwg.org/specs/web-apps/current-work/multipage/states-of-the-type-attribute.html#valid-e-mail-address
+static const char localPartCharacters[] = "abcdefghijklmnopqrstuvwxyz0123456789!#$%&'*+/=?^_`{|}~.-";
 static const char emailPattern[] =
     "[a-z0-9!#$%&'*+/=?^_`{|}~.-]+" // local part
     "@"
@@ -91,6 +95,30 @@ String EmailInputType::convertEmailAddressToUnicode(const String& address) const
     return builder.toString();
 }
 
+static bool isInvalidLocalPartCharacter(UChar ch)
+{
+    if (!isASCII(ch))
+        return true;
+    DEFINE_STATIC_LOCAL(const String, validCharacters, (localPartCharacters));
+    return validCharacters.find(toASCIILower(ch)) == notFound;
+}
+
+static bool isInvalidDomainCharacter(UChar ch)
+{
+    if (!isASCII(ch))
+        return true;
+    return !isASCIILower(ch) && !isASCIIUpper(ch) && !isASCIIDigit(ch) && ch != '.' && ch != '-';
+}
+
+static bool checkValidDotUsage(const String& domain)
+{
+    if (domain.isEmpty())
+        return true;
+    if (domain[0] == '.' || domain[domain.length() - 1] == '.')
+        return false;
+    return domain.find("..") == notFound;
+}
+
 static bool isValidEmailAddress(const String& address)
 {
     int addressLength = address.length();
@@ -120,19 +148,29 @@ const AtomicString& EmailInputType::formControlType() const
     return InputTypeNames::email();
 }
 
-bool EmailInputType::typeMismatchFor(const String& value) const
+// The return value is an invalid email address string if the specified string
+// contains an invalid email address. Otherwise, null string is returned.
+// If an empty string is returned, it means empty address is specified.
+// e.g. "foo@example.com,,bar@example.com" for multiple case.
+String EmailInputType::findInvalidAddress(const String& value) const
 {
     if (value.isEmpty())
-        return false;
+        return String();
     if (!element()->multiple())
-        return !isValidEmailAddress(value);
+        return isValidEmailAddress(value) ? String() : value;
     Vector<String> addresses;
     value.split(',', true, addresses);
     for (unsigned i = 0; i < addresses.size(); ++i) {
-        if (!isValidEmailAddress(stripLeadingAndTrailingHTMLSpaces(addresses[i])))
-            return true;
+        String stripped = stripLeadingAndTrailingHTMLSpaces(addresses[i]);
+        if (!isValidEmailAddress(stripped))
+            return stripped;
     }
-    return false;
+    return String();
+}
+
+bool EmailInputType::typeMismatchFor(const String& value) const
+{
+    return !findInvalidAddress(value).isNull();
 }
 
 bool EmailInputType::typeMismatch() const
@@ -142,7 +180,41 @@ bool EmailInputType::typeMismatch() const
 
 String EmailInputType::typeMismatchText() const
 {
-    return element()->multiple() ? validationMessageTypeMismatchForMultipleEmailText() : validationMessageTypeMismatchForEmailText();
+    String invalidAddress = findInvalidAddress(element()->value());
+    ASSERT(!invalidAddress.isNull());
+    if (invalidAddress.isEmpty())
+        return queryLocalizedString(WebLocalizedString::ValidationTypeMismatchForEmailEmpty);
+    String atSign = String("@");
+    size_t atIndex = invalidAddress.find('@');
+    if (atIndex == notFound)
+        return queryLocalizedString(WebLocalizedString::ValidationTypeMismatchForEmailNoAtSign, atSign, invalidAddress);
+    // We check validity against an ASCII value because of difficulty to check
+    // invalid characters. However we should show Unicode value.
+    String unicodeAddress = convertEmailAddressToUnicode(invalidAddress);
+    String localPart = invalidAddress.left(atIndex);
+    String domain = invalidAddress.substring(atIndex + 1);
+    if (localPart.isEmpty())
+        return queryLocalizedString(WebLocalizedString::ValidationTypeMismatchForEmailEmptyLocal, atSign, unicodeAddress);
+    if (domain.isEmpty())
+        return queryLocalizedString(WebLocalizedString::ValidationTypeMismatchForEmailEmptyDomain, atSign, unicodeAddress);
+    size_t invalidCharIndex = localPart.find(isInvalidLocalPartCharacter);
+    if (invalidCharIndex != notFound) {
+        unsigned charLength = U_IS_LEAD(localPart[invalidCharIndex]) ? 2 : 1;
+        return queryLocalizedString(WebLocalizedString::ValidationTypeMismatchForEmailInvalidLocal, atSign, localPart.substring(invalidCharIndex, charLength));
+    }
+    invalidCharIndex = domain.find(isInvalidDomainCharacter);
+    if (invalidCharIndex != notFound) {
+        unsigned charLength = U_IS_LEAD(domain[invalidCharIndex]) ? 2 : 1;
+        return queryLocalizedString(WebLocalizedString::ValidationTypeMismatchForEmailInvalidDomain, atSign, domain.substring(invalidCharIndex, charLength));
+    }
+    if (!checkValidDotUsage(domain)) {
+        size_t atIndexInUnicode = unicodeAddress.find('@');
+        ASSERT(atIndexInUnicode != notFound);
+        return queryLocalizedString(WebLocalizedString::ValidationTypeMismatchForEmailInvalidDots, String("."), unicodeAddress.substring(atIndexInUnicode + 1));
+    }
+    if (element()->multiple())
+        return queryLocalizedString(WebLocalizedString::ValidationTypeMismatchForMultipleEmail);
+    return queryLocalizedString(WebLocalizedString::ValidationTypeMismatchForEmail);
 }
 
 bool EmailInputType::isEmailField() const

@@ -52,6 +52,7 @@ private:
     virtual String convertFromVisibleValue(const String&) const OVERRIDE;
     virtual String visibleValue() const OVERRIDE;
     String convertEmailAddressToUnicode(const String&) const;
+    String findInvalidAddress(const String&) const;
 };
 
 } // namespace WebCore
