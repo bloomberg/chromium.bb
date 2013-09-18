@@ -124,6 +124,9 @@ public:
     bool propertyMatches(CSSPropertyID, const CSSValue*) const;
 
 protected:
+
+    enum { MaxArraySize = (1 << 28) - 1 };
+
     StylePropertySet(CSSParserMode cssParserMode)
         : m_cssParserMode(cssParserMode)
         , m_isMutable(true)
@@ -133,12 +136,12 @@ protected:
     StylePropertySet(CSSParserMode cssParserMode, unsigned immutableArraySize)
         : m_cssParserMode(cssParserMode)
         , m_isMutable(false)
-        , m_arraySize(immutableArraySize)
+        , m_arraySize(std::min(immutableArraySize, unsigned(MaxArraySize)))
     { }
 
-    unsigned m_cssParserMode : 2;
+    unsigned m_cssParserMode : 3;
     mutable unsigned m_isMutable : 1;
-    unsigned m_arraySize : 29;
+    unsigned m_arraySize : 28;
 
     friend class PropertySetCSSStyleDeclaration;
 };

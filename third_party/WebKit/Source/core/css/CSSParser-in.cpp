@@ -543,7 +543,8 @@ static bool parseSimpleLengthValue(MutableStylePropertySet* declaration, CSSProp
 {
     ASSERT(!string.isEmpty());
     bool acceptsNegativeNumbers;
-    if (!isSimpleLengthPropertyID(propertyId, acceptsNegativeNumbers))
+    // In ViewportMode, width and height are shorthands, not simple length values.
+    if (cssParserMode == ViewportMode || !isSimpleLengthPropertyID(propertyId, acceptsNegativeNumbers))
         return false;
 
     unsigned length = string.length();
@@ -1219,7 +1220,10 @@ bool CSSParser::parseValue(MutableStylePropertySet* declaration, CSSPropertyID p
     m_id = propertyID;
     m_important = important;
 
-    cssyyparse(this);
+    {
+        StyleDeclarationScope scope(this, declaration);
+        cssyyparse(this);
+    }
 
     m_rule = 0;
     m_id = CSSPropertyInvalid;
@@ -1334,7 +1338,12 @@ bool CSSParser::parseDeclaration(MutableStylePropertySet* declaration, const Str
         m_sourceDataHandler->endRuleHeader(1);
         m_sourceDataHandler->startRuleBody(0);
     }
-    cssyyparse(this);
+
+    {
+        StyleDeclarationScope scope(this, declaration);
+        cssyyparse(this);
+    }
+
     m_rule = 0;
 
     bool ok = false;
@@ -1401,7 +1410,9 @@ PassRefPtr<ImmutableStylePropertySet> CSSParser::createStylePropertySet()
     if (unusedEntries)
         results.remove(0, unusedEntries);
 
-    return ImmutableStylePropertySet::create(results.data(), results.size(), m_context.mode);
+    CSSParserMode mode = inViewport() ? ViewportMode : m_context.mode;
+
+    return ImmutableStylePropertySet::create(results.data(), results.size(), mode);
 }
 
 void CSSParser::addPropertyWithPrefixingVariant(CSSPropertyID propId, PassRefPtr<CSSValue> value, bool important, bool implicit)

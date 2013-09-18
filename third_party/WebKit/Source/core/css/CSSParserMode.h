@@ -44,7 +44,10 @@ enum CSSParserMode {
     SVGAttributeMode,
     // User agent style sheet should always be in strict mode. Enables internal
     // only properties and values.
-    UASheetMode
+    UASheetMode,
+    // Parsing @viewport descriptors. Always strict. Set as mode on StylePropertySet
+    // to make sure CSSOM modifications use CSSParser::parseViewportProperty.
+    ViewportMode
 };
 
 inline CSSParserMode strictToCSSParserMode(bool inStrictMode)
@@ -54,7 +57,7 @@ inline CSSParserMode strictToCSSParserMode(bool inStrictMode)
 
 inline bool isStrictParserMode(CSSParserMode cssParserMode)
 {
-    return cssParserMode == CSSStrictMode || cssParserMode == SVGAttributeMode || cssParserMode == UASheetMode;
+    return cssParserMode != CSSQuirksMode;
 }
 
 struct CSSParserContext {

@@ -34,6 +34,7 @@
 #include "core/css/CSSPropertySourceData.h"
 #include "core/css/CSSSelector.h"
 #include "core/css/MediaQuery.h"
+#include "core/css/StylePropertySet.h"
 #include "core/page/UseCounter.h"
 #include "core/platform/graphics/Color.h"
 #include "wtf/HashSet.h"
@@ -459,6 +460,30 @@ private:
         WebCore::CSSParser* m_parser;
     };
 
+    class StyleDeclarationScope {
+        WTF_MAKE_NONCOPYABLE(StyleDeclarationScope);
+    public:
+        StyleDeclarationScope(CSSParser* parser, const StylePropertySet* declaration)
+            : m_parser(parser)
+            , m_mode(declaration->cssParserMode())
+        {
+            if (m_mode == ViewportMode) {
+                ASSERT(!m_parser->inViewport());
+                m_parser->markViewportRuleBodyStart();
+            }
+        }
+
+        ~StyleDeclarationScope()
+        {
+            if (m_mode == ViewportMode)
+                m_parser->markViewportRuleBodyEnd();
+        }
+
+    private:
+        CSSParser* m_parser;
+        CSSParserMode m_mode;
+    };
+
     bool is8BitSource() const { return m_is8BitSource; }
 
     template <typename SourceCharacterType>
@@ -536,7 +561,7 @@ private:
 
     void setStyleSheet(StyleSheetContents* styleSheet) { m_styleSheet = styleSheet; }
 
-    inline bool inStrictMode() const { return m_context.mode == CSSStrictMode || m_context.mode == SVGAttributeMode; }
+    inline bool inStrictMode() const { return isStrictParserMode(m_context.mode); }
     inline bool inQuirksMode() const { return m_context.mode == CSSQuirksMode; }
 
     KURL completeURL(const String& url) const;

@@ -1,0 +1,7 @@
+
+PASS @viewport rule exists 
+PASS Setting width shorthand sets min-width 
+PASS Setting height shorthand sets max-height 
+PASS Setting cssText of ViewportRule.style parses width/height as shorthands 
+PASS Inserting @viewport rule parses width/height as shorthands 
+
