@@ -400,7 +400,7 @@ class MediaCodecBridge {
     }
 
     @CalledByNative
-    private static void setCodecSpecificData(MediaFormat format, int index, ByteBuffer bytes) {
+    private static void setCodecSpecificData(MediaFormat format, int index, byte[] bytes) {
         String name = null;
         if (index == 0) {
             name = "csd-0";
@@ -408,7 +408,7 @@ class MediaCodecBridge {
             name = "csd-1";
         }
         if (name != null) {
-            format.setByteBuffer(name, bytes);
+            format.setByteBuffer(name, ByteBuffer.wrap(bytes));
         }
     }
 

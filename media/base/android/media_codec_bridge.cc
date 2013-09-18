@@ -365,18 +365,16 @@ bool AudioCodecBridge::ConfigureMediaFormat(
       }
       current_pos++;
       // The first header is identification header.
-      jobject identification_header = env->NewDirectByteBuffer(
-          const_cast<uint8*>(current_pos), header_length[0]);
+      ScopedJavaLocalRef<jbyteArray> first_header =
+          base::android::ToJavaByteArray(env, current_pos, header_length[0]);
       Java_MediaCodecBridge_setCodecSpecificData(
-          env, j_format, 0, identification_header);
+          env, j_format, 0, first_header.obj());
       // The last header is codec header.
-      jobject codec_header = env->NewDirectByteBuffer(
-          const_cast<uint8*>(extra_data + total_length),
-          extra_data_size - total_length);
+      ScopedJavaLocalRef<jbyteArray> last_header =
+          base::android::ToJavaByteArray(
+              env, extra_data + total_length, extra_data_size - total_length);
       Java_MediaCodecBridge_setCodecSpecificData(
-          env, j_format, 1, codec_header);
-      env->DeleteLocalRef(codec_header);
-      env->DeleteLocalRef(identification_header);
+          env, j_format, 1, last_header.obj());
       break;
     }
     case kCodecAAC:
@@ -407,16 +405,18 @@ bool AudioCodecBridge::ConfigureMediaFormat(
         LOG(ERROR) << "Invalid AAC header";
         return false;
       }
-      uint8 csd[2];
+      const size_t kCsdLength = 2;
+      uint8 csd[kCsdLength];
       csd[0] = profile << 3 | frequency_index >> 1;
       csd[1] = (frequency_index & 0x01) << 7 | channel_config << 3;
-      jobject header = env->NewDirectByteBuffer(csd, 2);
+      ScopedJavaLocalRef<jbyteArray> byte_array =
+          base::android::ToJavaByteArray(env, csd, kCsdLength);
       Java_MediaCodecBridge_setCodecSpecificData(
-          env, j_format, 0, header);
+          env, j_format, 0, byte_array.obj());
+
       // TODO(qinmin): pass an extra variable to this function to determine
       // whether we need to call this.
       Java_MediaCodecBridge_setFrameHasADTSHeader(env, j_format);
-      env->DeleteLocalRef(header);
       break;
     }
     default:
