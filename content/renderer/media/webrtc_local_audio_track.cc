@@ -35,6 +35,7 @@ bool NeedsAudioProcessing(
     MediaConstraintsInterface::kExperimentalAutoGainControl,
     MediaConstraintsInterface::kNoiseSuppression,
     MediaConstraintsInterface::kHighpassFilter,
+    MediaConstraintsInterface::kTypingNoiseDetection,
   };
 
   for (size_t i = 0; i < arraysize(kAudioProcessingProperties); ++i) {
