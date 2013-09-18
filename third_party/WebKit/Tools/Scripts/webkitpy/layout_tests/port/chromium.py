@@ -359,6 +359,9 @@ class ChromiumPort(Port):
             VirtualTestSuite('virtual/stable/webexposed',
                              'webexposed',
                              ['--stable-release-mode']),
+            VirtualTestSuite('virtual/stable/media',
+                             'media/stable',
+                             ['--stable-release-mode']),
         ]
 
     #

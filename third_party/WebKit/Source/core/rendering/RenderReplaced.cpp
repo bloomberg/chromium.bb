@@ -24,6 +24,7 @@
 #include "config.h"
 #include "core/rendering/RenderReplaced.h"
 
+#include "RuntimeEnabledFeatures.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/rendering/LayoutRepainter.h"
 #include "core/rendering/RenderBlock.h"
@@ -314,8 +315,12 @@ LayoutRect RenderReplaced::replacedContentRect(const LayoutSize* overriddenIntri
 {
     LayoutRect contentRect = contentBoxRect();
     ObjectFit objectFit = style()->objectFit();
-    if (objectFit == ObjectFitFill)
-        return contentRect;
+
+    if (objectFit == ObjectFitFill) {
+        if (!isVideo() || RuntimeEnabledFeatures::objectFitPositionEnabled())
+            return contentRect;
+        objectFit = ObjectFitContain;
+    }
 
     LayoutSize intrinsicSize = overriddenIntrinsicSize ? *overriddenIntrinsicSize : this->intrinsicSize();
     if (!intrinsicSize.width() || !intrinsicSize.height())
