@@ -11,7 +11,6 @@ import os
 import StringIO
 import sys
 import threading
-import time
 import unittest
 import zlib
 
@@ -236,7 +235,7 @@ class IsolateServerArchiveTest(TestCase):
       ),
     ]
     # |size| is currently ignored.
-    result = isolateserver.IsolateServer(path, 'x').store(content, s, -2)
+    result = isolateserver.IsolateServer(path, 'x').push(s, -2, [content])
     self.assertEqual('ok42', result)
 
   def test_upload_blobstore_retry_500(self):
@@ -278,7 +277,7 @@ class IsolateServerArchiveTest(TestCase):
       ),
     ]
     # |size| is currently ignored.
-    result = isolateserver.IsolateServer(path, 'x').store(content, s, -2)
+    result = isolateserver.IsolateServer(path, 'x').push(s, -2, [content])
     self.assertEqual('ok42', result)
 
 
@@ -316,36 +315,28 @@ class IsolateServerDownloadTest(TestCase):
     }
     self.assertEqual(expected, actual)
 
+  def test_zip_header_error(self):
+    self.mock(
+        isolateserver.net, 'url_open',
+        lambda url, **_: isolateserver.net.HttpResponse.get_fake_response(
+            '111', url))
+    self.mock(isolateserver.time, 'sleep', lambda _x: None)
 
-def upload_file(item, _dest, _size):
-  if type(item) == type(Exception) and issubclass(item, Exception):
-    raise item()
-  elif isinstance(item, int):
-    time.sleep(int(item) / 100)
+    retriever = isolateserver.get_storage_api(
+        'https://fake-CAD.com/', 'namespace')
+    def fetch():
+      return list(retriever.fetch('foo', isolateserver.UNKNOWN_FILE_SIZE))
 
-
-class WorkerPoolTest(auto_stub.TestCase):
-  def test_remote_no_errors(self):
-    files_to_handle = 50
-    with isolateserver.WorkerPool(upload_file) as remote:
-      for i in range(files_to_handle):
-        remote.add_item(
-            isolateserver.WorkerPool.MED,
-            'obj%d' % i,
-            'dest%d' % i,
-            isolateserver.UNKNOWN_FILE_SIZE)
-      # They will be out of order so explicitly sort them.
-      items = sorted(remote.join())
-    expected = sorted('obj%d' % i for i in range(files_to_handle))
-    self.assertEqual(expected, items)
-
-  def test_remote_with_errors(self):
-    def RaiseIOError(*_):
-      raise IOError()
-    with isolateserver.WorkerPool(RaiseIOError) as remote:
-      remote.add_item(isolateserver.WorkerPool.MED, 'ignored', '',
-                      isolateserver.UNKNOWN_FILE_SIZE)
-      self.assertRaises(IOError, remote.join)
+    with isolateserver.WorkerPool() as remote:
+      # Both files will fail to be unzipped due to incorrect headers,
+      # ensure that we don't accept the files (even if the size is unknown)}.
+      remote.add_task(
+          isolateserver.WorkerPool.MED, fetch)
+      remote.add_task(isolateserver.WorkerPool.MED, fetch)
+      self.assertRaises(IOError, remote.get_one_result)
+      self.assertRaises(IOError, remote.get_one_result)
+      # Need to use join here, since get_one_result will hang.
+      self.assertEqual([], remote.join())
 
 
 if __name__ == '__main__':

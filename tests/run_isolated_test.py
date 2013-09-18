@@ -92,31 +92,6 @@ class RunIsolatedTest(auto_stub.TestCase):
     except run_isolated.ConfigError:
       pass
 
-  def test_zip_header_error(self):
-    self.mock(
-        isolateserver.net, 'url_open',
-        lambda url, **_: isolateserver.net.HttpResponse.get_fake_response(
-            '111', url))
-    self.mock(run_isolated.time, 'sleep', lambda _x: None)
-
-    retriever = isolateserver.get_storage_api(
-        'https://fake-CAD.com/', 'namespace')
-    with isolateserver.WorkerPool(retriever.retrieve) as remote:
-      # Both files will fail to be unzipped due to incorrect headers,
-      # ensure that we don't accept the files (even if the size is unknown)}.
-      remote.add_item(
-          isolateserver.WorkerPool.MED, 'zipped_A',
-          os.path.join(self.tempdir, 'run_isolated_test_A'),
-          isolateserver.UNKNOWN_FILE_SIZE)
-      remote.add_item(
-          isolateserver.WorkerPool.MED, 'zipped_B',
-          os.path.join(self.tempdir, 'run_isolated_test_B'),
-          5)
-      self.assertRaises(IOError, remote.get_one_result)
-      self.assertRaises(IOError, remote.get_one_result)
-      # Need to use join here, since get_one_result will hang.
-      self.assertEqual([], remote.join())
-
 
 if __name__ == '__main__':
   logging.basicConfig(
