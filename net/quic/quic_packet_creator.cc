@@ -32,7 +32,7 @@ QuicPacketCreator::QuicPacketCreator(QuicGuid guid,
       send_version_in_packet_(!is_server),
       sequence_number_length_(options_.send_sequence_number_length),
       packet_size_(0) {
-  framer_->set_fec_builder(reinterpret_cast<QuicFecBuilderInterface*>(this));
+  framer_->set_fec_builder(this);
 }
 
 QuicPacketCreator::~QuicPacketCreator() {

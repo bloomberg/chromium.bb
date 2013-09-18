@@ -38,6 +38,7 @@
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_received_packet_manager.h"
 #include "net/quic/quic_sent_entropy_manager.h"
+#include "net/quic/quic_sent_packet_manager.h"
 
 namespace net {
 
@@ -50,6 +51,8 @@ namespace test {
 class QuicConnectionPeer;
 }  // namespace test
 
+// Class that receives callbacks from the connection when frames are received
+// and when other interesting events happen.
 class NET_EXPORT_PRIVATE QuicConnectionVisitorInterface {
  public:
   virtual ~QuicConnectionVisitorInterface() {}
@@ -58,10 +61,7 @@ class NET_EXPORT_PRIVATE QuicConnectionVisitorInterface {
   // should determine if all frames will be accepted, and return true if so.
   // If any frames can't be processed or buffered, none of the data should
   // be used, and the callee should return false.
-  virtual bool OnPacket(const IPEndPoint& self_address,
-                        const IPEndPoint& peer_address,
-                        const QuicPacketHeader& header,
-                        const std::vector<QuicStreamFrame>& frame) = 0;
+  virtual bool OnStreamFrames(const std::vector<QuicStreamFrame>& frames) = 0;
 
   // Called when the stream is reset by the peer.
   virtual void OnRstStream(const QuicRstStreamFrame& frame) = 0;
@@ -74,9 +74,6 @@ class NET_EXPORT_PRIVATE QuicConnectionVisitorInterface {
   virtual void ConnectionClose(QuicErrorCode error,
                                bool from_peer) = 0;
 
-  // Called when packets are acked by the peer.
-  virtual void OnAck(const SequenceNumberSet& acked_packets) = 0;
-
   // Called once a specific QUIC version is agreed by both endpoints.
   virtual void OnSuccessfulVersionNegotiation(const QuicVersion& version) = 0;
 
@@ -84,6 +81,9 @@ class NET_EXPORT_PRIVATE QuicConnectionVisitorInterface {
   // this visitor are consumed by the connection successfully this should
   // return true, otherwise it should return false.
   virtual bool OnCanWrite() = 0;
+
+  // Called to ask if any handshake messages are pending in this visitor.
+  virtual bool HasPendingHandshake() const = 0;
 };
 
 // Interface which gets callbacks from the QuicConnection at interesting
@@ -188,7 +188,8 @@ class NET_EXPORT_PRIVATE QuicConnectionHelperInterface {
 class NET_EXPORT_PRIVATE QuicConnection
     : public QuicFramerVisitorInterface,
       public QuicBlockedWriterInterface,
-      public QuicPacketGenerator::DelegateInterface {
+      public QuicPacketGenerator::DelegateInterface,
+      public QuicSentPacketManager::HelperInterface {
  public:
   enum Force {
     NO_FORCE,
@@ -216,16 +217,17 @@ class NET_EXPORT_PRIVATE QuicConnection
   // if the socket was unexpectedly blocked.
   QuicConsumedData SendvStreamData(QuicStreamId id,
                                    const struct iovec* iov,
-                                   int count,
+                                   int iov_count,
                                    QuicStreamOffset offset,
                                    bool fin);
 
-  // Same as above, except that the provided delegate will be informed once ACKs
-  // have been received for all the packets written.
+  // Same as SendvStreamData, except the provided delegate will be informed
+  // once ACKs have been received for all the packets written.
   // The |delegate| is not owned by the QuicConnection and must outlive it.
-  QuicConsumedData SendStreamDataAndNotifyWhenAcked(
+  QuicConsumedData SendvStreamDataAndNotifyWhenAcked(
       QuicStreamId id,
-      base::StringPiece data,
+      const struct iovec* iov,
+      int iov_count,
       QuicStreamOffset offset,
       bool fin,
       QuicAckNotifier::DelegateInterface* delegate);
@@ -308,6 +310,12 @@ class NET_EXPORT_PRIVATE QuicConnection
   virtual QuicAckFrame* CreateAckFrame() OVERRIDE;
   virtual QuicCongestionFeedbackFrame* CreateFeedbackFrame() OVERRIDE;
   virtual bool OnSerializedPacket(const SerializedPacket& packet) OVERRIDE;
+
+  // QuicSentPacketManager::HelperInterface
+  virtual QuicPacketSequenceNumber GetPeerLargestObservedPacket() OVERRIDE;
+  virtual QuicPacketSequenceNumber GetNextPacketSequenceNumber() OVERRIDE;
+  virtual void OnPacketNacked(QuicPacketSequenceNumber sequence_number,
+                              size_t nack_count) OVERRIDE;
 
   // Accessors
   void set_visitor(QuicConnectionVisitorInterface* visitor) {
@@ -415,14 +423,17 @@ class NET_EXPORT_PRIVATE QuicConnection
   // is present in the |retransmission_map_|, then contents of this packet will
   // be retransmitted with a new sequence number if it's not acked by the peer.
   // Deletes |packet| via WritePacket call or transfers ownership to
-  // QueuedPacket, ultimately deleted via WritePacket. Also, it updates the
+  // QueuedPacket, ultimately deleted via WritePacket. Updates the
   // entropy map corresponding to |sequence_number| using |entropy_hash|.
+  // |retransmittable| is supplied to the congestion manager, and when |forced|
+  // is true, it bypasses the congestion manager.
   // TODO(wtc): none of the callers check the return value.
   virtual bool SendOrQueuePacket(EncryptionLevel level,
                                  QuicPacketSequenceNumber sequence_number,
                                  QuicPacket* packet,
                                  QuicPacketEntropyHash entropy_hash,
-                                 HasRetransmittableData retransmittable);
+                                 HasRetransmittableData retransmittable,
+                                 Force forced);
 
   // Writes the given packet to socket, encrypted with |level|, with the help
   // of helper. Returns true on successful write, false otherwise. However,
@@ -458,23 +469,35 @@ class NET_EXPORT_PRIVATE QuicConnection
  private:
   friend class test::QuicConnectionPeer;
 
+  // Inner helper function to SendvStreamData and
+  // SendvStreamDataAndNotifyWhenAcked.
+  QuicConsumedData SendvStreamDataInner(QuicStreamId id,
+                                        const struct iovec* iov,
+                                        int iov_count,
+                                        QuicStreamOffset offset,
+                                        bool fin,
+                                        QuicAckNotifier *notifier);
+
   // Packets which have not been written to the wire.
   // Owns the QuicPacket* packet.
   struct QueuedPacket {
     QueuedPacket(QuicPacketSequenceNumber sequence_number,
                  QuicPacket* packet,
                  EncryptionLevel level,
-                 HasRetransmittableData retransmittable)
+                 HasRetransmittableData retransmittable,
+                 Force forced)
         : sequence_number(sequence_number),
           packet(packet),
           encryption_level(level),
-          retransmittable(retransmittable) {
+          retransmittable(retransmittable),
+          forced(forced) {
     }
 
     QuicPacketSequenceNumber sequence_number;
     QuicPacket* packet;
     const EncryptionLevel encryption_level;
     HasRetransmittableData retransmittable;
+    Force forced;
   };
 
   struct RetransmissionInfo {
@@ -516,11 +539,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   };
 
   typedef std::list<QueuedPacket> QueuedPacketList;
-  typedef linked_hash_map<QuicPacketSequenceNumber,
-                          RetransmittableFrames*> UnackedPacketMap;
   typedef std::map<QuicFecGroupNumber, QuicFecGroup*> FecGroupMap;
-  typedef base::hash_map<QuicPacketSequenceNumber,
-                         RetransmissionInfo> RetransmissionMap;
   typedef std::priority_queue<RetransmissionTime,
                               std::vector<RetransmissionTime>,
                               RetransmissionTimeComparator>
@@ -572,11 +591,6 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   void ProcessAckFrame(const QuicAckFrame& incoming_ack);
 
-  void HandleAckForSentPackets(const QuicAckFrame& incoming_ack,
-                               SequenceNumberSet* acked_packets);
-  void HandleAckForSentFecPackets(const QuicAckFrame& incoming_ack,
-                                  SequenceNumberSet* acked_packets);
-
   // Update the |sent_info| for an outgoing ack.
   void UpdateSentPacketInfo(SentPacketInfo* sent_info);
 
@@ -615,22 +629,15 @@ class NET_EXPORT_PRIVATE QuicConnection
   std::vector<QuicCongestionFeedbackFrame> last_congestion_frames_;
   std::vector<QuicRstStreamFrame> last_rst_frames_;
   std::vector<QuicGoAwayFrame> last_goaway_frames_;
+  // Then number of packets retransmitted because of nacks
+  // while processed the current ack frame.
+  size_t retransmitted_nacked_packet_count_;
 
   QuicCongestionFeedbackFrame outgoing_congestion_feedback_;
 
   // Track some peer state so we can do less bookkeeping
   // Largest sequence sent by the peer which had an ack frame (latest ack info).
   QuicPacketSequenceNumber largest_seen_packet_with_ack_;
-
-  // When new packets are created which may be retransmitted, they are added
-  // to this map, which contains owning pointers to the contained frames.
-  UnackedPacketMap unacked_packets_;
-
-  // Pending fec packets that have not been acked yet. These packets need to be
-  // cleared out of the cgst_window after a timeout since FEC packets are never
-  // retransmitted.
-  // Ask: What should be the timeout for these packets?
-  UnackedPacketMap unacked_fec_packets_;
 
   // Collection of packets which were received before encryption was
   // established, but which could not be decrypted.  We buffer these on
@@ -645,9 +652,6 @@ class NET_EXPORT_PRIVATE QuicConnection
   // priority queue of lists of packets to be retransmitted, where list x
   // contains all packets that have been retransmitted x times.
   RetransmissionTimeouts retransmission_timeouts_;
-
-  // Map from sequence number to the retransmission info.
-  RetransmissionMap retransmission_map_;
 
   // True while OnRetransmissionTimeout is running to prevent
   // SetRetransmissionAlarm from being called erroneously.
@@ -701,6 +705,10 @@ class NET_EXPORT_PRIVATE QuicConnection
   // Congestion manager which controls the rate the connection sends packets
   // as well as collecting and generating congestion feedback.
   QuicCongestionManager congestion_manager_;
+
+  // Sent packet manager which tracks the status of packets sent by this
+  // connection.
+  QuicSentPacketManager sent_packet_manager_;
 
   // The state of connection in version negotiation finite state machine.
   QuicVersionNegotiationState version_negotiation_state_;

@@ -121,10 +121,13 @@ class QuicReliableServerStreamTest : public ::testing::Test {
   string body_;
 };
 
-QuicConsumedData ConsumeAllData(QuicStreamId id, const struct iovec* iov,
-                                int count, QuicStreamOffset offset, bool fin) {
+QuicConsumedData ConsumeAllData(QuicStreamId id,
+                                const struct iovec* iov,
+                                int iov_count,
+                                QuicStreamOffset offset,
+                                bool fin) {
   ssize_t consumed_length = 0;
-  for (int i = 0; i < count; ++i) {
+  for (int i = 0; i < iov_count; ++i) {
     consumed_length += iov[i].iov_len;
   }
   return QuicConsumedData(consumed_length, fin);

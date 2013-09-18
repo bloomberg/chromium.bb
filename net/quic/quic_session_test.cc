@@ -23,11 +23,14 @@ using std::set;
 using std::vector;
 using testing::_;
 using testing::InSequence;
+using testing::InvokeWithoutArgs;
 using testing::StrictMock;
 
 namespace net {
 namespace test {
 namespace {
+
+const QuicPriority kSomeMiddlePriority = 2;
 
 class TestCryptoStream : public QuicCryptoStream {
  public:
@@ -47,6 +50,8 @@ class TestCryptoStream : public QuicCryptoStream {
     EXPECT_EQ(QUIC_NO_ERROR, error);
     session()->OnCryptoHandshakeEvent(QuicSession::HANDSHAKE_CONFIRMED);
   }
+
+  MOCK_METHOD0(OnCanWrite, void());
 };
 
 class TestStream : public ReliableQuicStream {
@@ -64,6 +69,23 @@ class TestStream : public ReliableQuicStream {
   MOCK_METHOD0(OnCanWrite, void());
 };
 
+// Poor man's functor for use as callback in a mock.
+class StreamBlocker {
+ public:
+  StreamBlocker(QuicSession* session, QuicStreamId stream_id)
+      : session_(session),
+        stream_id_(stream_id) {
+  }
+
+  void MarkWriteBlocked() {
+    session_->MarkWriteBlocked(stream_id_, kSomeMiddlePriority);
+  }
+
+ private:
+  QuicSession* const session_;
+  const QuicStreamId stream_id_;
+};
+
 class TestSession : public QuicSession {
  public:
   TestSession(QuicConnection* connection, bool is_server)
@@ -71,7 +93,7 @@ class TestSession : public QuicSession {
         crypto_stream_(this) {
   }
 
-  virtual QuicCryptoStream* GetCryptoStream() OVERRIDE {
+  virtual TestCryptoStream* GetCryptoStream() OVERRIDE {
     return &crypto_stream_;
   }
 
@@ -91,11 +113,6 @@ class TestSession : public QuicSession {
 
   ReliableQuicStream* GetIncomingReliableStream(QuicStreamId stream_id) {
     return QuicSession::GetIncomingReliableStream(stream_id);
-  }
-
-  // Helper method for gmock
-  void MarkTwoWriteBlocked() {
-    this->MarkWriteBlocked(2, 0);
   }
 
   TestCryptoStream crypto_stream_;
@@ -240,29 +257,77 @@ TEST_F(QuicSessionTest, OnCanWrite) {
   TestStream* stream4 = session_.CreateOutgoingReliableStream();
   TestStream* stream6 = session_.CreateOutgoingReliableStream();
 
-  session_.MarkWriteBlocked(2, 0);
-  session_.MarkWriteBlocked(6, 0);
-  session_.MarkWriteBlocked(4, 0);
+  session_.MarkWriteBlocked(stream2->id(), kSomeMiddlePriority);
+  session_.MarkWriteBlocked(stream6->id(), kSomeMiddlePriority);
+  session_.MarkWriteBlocked(stream4->id(), kSomeMiddlePriority);
 
   InSequence s;
+  StreamBlocker stream2_blocker(&session_, stream2->id());
   EXPECT_CALL(*stream2, OnCanWrite()).WillOnce(
       // Reregister, to test the loop limit.
-      testing::InvokeWithoutArgs(&session_, &TestSession::MarkTwoWriteBlocked));
+      InvokeWithoutArgs(&stream2_blocker, &StreamBlocker::MarkWriteBlocked));
   EXPECT_CALL(*stream6, OnCanWrite());
   EXPECT_CALL(*stream4, OnCanWrite());
 
   EXPECT_FALSE(session_.OnCanWrite());
 }
 
+TEST_F(QuicSessionTest, BufferedHandshake) {
+  EXPECT_FALSE(session_.HasPendingHandshake());  // Default value.
+
+  // Test that blocking other streams does not change our status.
+  TestStream* stream2 = session_.CreateOutgoingReliableStream();
+  StreamBlocker stream2_blocker(&session_, stream2->id());
+  stream2_blocker.MarkWriteBlocked();
+  EXPECT_FALSE(session_.HasPendingHandshake());
+
+  TestStream* stream3 = session_.CreateOutgoingReliableStream();
+  StreamBlocker stream3_blocker(&session_, stream3->id());
+  stream3_blocker.MarkWriteBlocked();
+  EXPECT_FALSE(session_.HasPendingHandshake());
+
+  // Blocking (due to buffering of) the Crypto stream is detected.
+  session_.MarkWriteBlocked(kCryptoStreamId, kSomeMiddlePriority);
+  EXPECT_TRUE(session_.HasPendingHandshake());
+
+  TestStream* stream4 = session_.CreateOutgoingReliableStream();
+  StreamBlocker stream4_blocker(&session_, stream4->id());
+  stream4_blocker.MarkWriteBlocked();
+  EXPECT_TRUE(session_.HasPendingHandshake());
+
+  InSequence s;
+  // Force most streams to re-register, which is common scenario when we block
+  // the Crypto stream, and only the crypto stream can "really" write.
+
+  // Due to prioritization, we *should* be asked to write the crypto stream
+  // first.
+  // Don't re-register the crypto stream (which signals complete writing).
+  TestCryptoStream* crypto_stream = session_.GetCryptoStream();
+  EXPECT_CALL(*crypto_stream, OnCanWrite());
+
+  // Re-register all other streams, to show they weren't able to proceed.
+  EXPECT_CALL(*stream2, OnCanWrite()).WillOnce(
+      InvokeWithoutArgs(&stream2_blocker, &StreamBlocker::MarkWriteBlocked));
+
+  EXPECT_CALL(*stream3, OnCanWrite()).WillOnce(
+      InvokeWithoutArgs(&stream3_blocker, &StreamBlocker::MarkWriteBlocked));
+
+  EXPECT_CALL(*stream4, OnCanWrite()).WillOnce(
+      InvokeWithoutArgs(&stream4_blocker, &StreamBlocker::MarkWriteBlocked));
+
+  EXPECT_FALSE(session_.OnCanWrite());
+  EXPECT_FALSE(session_.HasPendingHandshake());  // Crypto stream wrote.
+}
+
 TEST_F(QuicSessionTest, OnCanWriteWithClosedStream) {
   TestStream* stream2 = session_.CreateOutgoingReliableStream();
   TestStream* stream4 = session_.CreateOutgoingReliableStream();
-  session_.CreateOutgoingReliableStream();  // stream 6
+  TestStream* stream6 = session_.CreateOutgoingReliableStream();
 
-  session_.MarkWriteBlocked(2, 0);
-  session_.MarkWriteBlocked(6, 0);
-  session_.MarkWriteBlocked(4, 0);
-  CloseStream(6);
+  session_.MarkWriteBlocked(stream2->id(), kSomeMiddlePriority);
+  session_.MarkWriteBlocked(stream6->id(), kSomeMiddlePriority);
+  session_.MarkWriteBlocked(stream4->id(), kSomeMiddlePriority);
+  CloseStream(stream6->id());
 
   InSequence s;
   EXPECT_CALL(*stream2, OnCanWrite());
@@ -293,11 +358,11 @@ TEST_F(QuicSessionTest, OutOfOrderHeaders) {
   // Process the second frame first.  This will cause the headers to
   // be queued up and processed after the first frame is processed.
   frames.push_back(frame2);
-  session_.OnPacket(IPEndPoint(), IPEndPoint(), header, frames);
+  session_.OnStreamFrames(frames);
 
   // Process the first frame, and un-cork the buffered headers.
   frames[0] = frame1;
-  session_.OnPacket(IPEndPoint(), IPEndPoint(), header, frames);
+  session_.OnStreamFrames(frames);
 
   // Ensure that the streams actually close and we don't DCHECK.
   connection_->CloseConnection(QUIC_CONNECTION_TIMED_OUT, true);
@@ -356,7 +421,8 @@ TEST_F(QuicSessionTest, ZombieStream) {
   // be queued up and processed after the first frame is processed.
   frames.push_back(frame1);
   EXPECT_FALSE(stream3->headers_decompressed());
-  session.OnPacket(IPEndPoint(), IPEndPoint(), header, frames);
+
+  session.OnStreamFrames(frames);
   EXPECT_EQ(1u, session.GetNumOpenStreams());
 
   EXPECT_TRUE(connection->connected());

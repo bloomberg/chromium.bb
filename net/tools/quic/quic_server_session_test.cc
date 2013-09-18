@@ -130,8 +130,7 @@ TEST_F(QuicServerSessionTest, CloseStreamDueToReset) {
   QuicStreamFrame data1(3, false, 0, "HT");
   vector<QuicStreamFrame> frames;
   frames.push_back(data1);
-  EXPECT_TRUE(visitor_->OnPacket(IPEndPoint(), IPEndPoint(),
-                                 header, frames));
+  EXPECT_TRUE(visitor_->OnStreamFrames(frames));
   EXPECT_EQ(1u, session_->GetNumOpenStreams());
 
   // Pretend we got full headers, so we won't trigger the 'unrecoverable
@@ -144,8 +143,7 @@ TEST_F(QuicServerSessionTest, CloseStreamDueToReset) {
   EXPECT_EQ(0u, session_->GetNumOpenStreams());
 
   // Send the same two bytes of payload in a new packet.
-  EXPECT_TRUE(visitor_->OnPacket(IPEndPoint(), IPEndPoint(),
-                                 header, frames));
+  EXPECT_TRUE(visitor_->OnStreamFrames(frames));
 
   // The stream should not be re-opened.
   EXPECT_EQ(0u, session_->GetNumOpenStreams());
@@ -171,8 +169,7 @@ TEST_F(QuicServerSessionTest, NeverOpenStreamDueToReset) {
   // unrecoverable compression context state.
   EXPECT_CALL(*connection_, SendConnectionClose(
       QUIC_STREAM_RST_BEFORE_HEADERS_DECOMPRESSED));
-  EXPECT_FALSE(visitor_->OnPacket(IPEndPoint(), IPEndPoint(),
-                                  header, frames));
+  EXPECT_FALSE(visitor_->OnStreamFrames(frames));
 
   // The stream should never be opened, now that the reset is received.
   EXPECT_EQ(0u, session_->GetNumOpenStreams());
@@ -193,8 +190,7 @@ TEST_F(QuicServerSessionTest, GoOverPrematureClosedStreamLimit) {
 
   EXPECT_CALL(*connection_, SendConnectionClose(
       QUIC_STREAM_RST_BEFORE_HEADERS_DECOMPRESSED));
-  EXPECT_FALSE(visitor_->OnPacket(IPEndPoint(), IPEndPoint(),
-                                  header, frames));
+  EXPECT_FALSE(visitor_->OnStreamFrames(frames));
 }
 
 TEST_F(QuicServerSessionTest, AcceptClosedStream) {
@@ -206,8 +202,7 @@ TEST_F(QuicServerSessionTest, AcceptClosedStream) {
   // Send (empty) compressed headers followed by two bytes of data.
   frames.push_back(QuicStreamFrame(3, false, 0, "\1\0\0\0\0\0\0\0HT"));
   frames.push_back(QuicStreamFrame(5, false, 0, "\2\0\0\0\0\0\0\0HT"));
-  EXPECT_TRUE(visitor_->OnPacket(IPEndPoint(), IPEndPoint(),
-                                 header, frames));
+  EXPECT_TRUE(visitor_->OnStreamFrames(frames));
 
   // Pretend we got full headers, so we won't trigger the 'unercoverable
   // compression context' state.
@@ -223,8 +218,7 @@ TEST_F(QuicServerSessionTest, AcceptClosedStream) {
   frames.clear();
   frames.push_back(QuicStreamFrame(3, false, 2, "TP"));
   frames.push_back(QuicStreamFrame(5, false, 2, "TP"));
-  EXPECT_TRUE(visitor_->OnPacket(IPEndPoint(), IPEndPoint(),
-                                 header, frames));
+  EXPECT_TRUE(visitor_->OnStreamFrames(frames));
 }
 
 TEST_F(QuicServerSessionTest, MaxNumConnections) {

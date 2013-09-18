@@ -248,7 +248,7 @@ QuicConsumedData ReliableQuicStream::WriteDataInternal(
 }
 
 QuicConsumedData ReliableQuicStream::WritevDataInternal(const struct iovec* iov,
-                                                        int count,
+                                                        int iov_count,
                                                         bool fin) {
   if (write_side_closed_) {
     DLOG(ERROR) << "Attempt to write when the write side is closed";
@@ -256,11 +256,11 @@ QuicConsumedData ReliableQuicStream::WritevDataInternal(const struct iovec* iov,
   }
 
   size_t write_length = 0u;
-  for (int i = 0; i < count; ++i) {
+  for (int i = 0; i < iov_count; ++i) {
     write_length += iov[i].iov_len;
   }
   QuicConsumedData consumed_data =
-      session()->WritevData(id(), iov, count, stream_bytes_written_, fin);
+      session()->WritevData(id(), iov, iov_count, stream_bytes_written_, fin);
   stream_bytes_written_ += consumed_data.bytes_consumed;
   if (consumed_data.bytes_consumed == write_length) {
     if (fin && consumed_data.fin_consumed) {
@@ -293,10 +293,8 @@ void ReliableQuicStream::CloseReadSide() {
 }
 
 uint32 ReliableQuicStream::ProcessRawData(const char* data, uint32 data_len) {
+  DCHECK_NE(0u, data_len);
   if (id() == kCryptoStreamId) {
-    if (data_len == 0) {
-      return 0;
-    }
     // The crypto stream does not use compression.
     return ProcessData(data, data_len);
   }

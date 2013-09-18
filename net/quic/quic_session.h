@@ -59,18 +59,16 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   virtual ~QuicSession();
 
   // QuicConnectionVisitorInterface methods:
-  virtual bool OnPacket(const IPEndPoint& self_address,
-                        const IPEndPoint& peer_address,
-                        const QuicPacketHeader& header,
-                        const std::vector<QuicStreamFrame>& frame) OVERRIDE;
+  virtual bool OnStreamFrames(
+      const std::vector<QuicStreamFrame>& frames) OVERRIDE;
   virtual void OnRstStream(const QuicRstStreamFrame& frame) OVERRIDE;
   virtual void OnGoAway(const QuicGoAwayFrame& frame) OVERRIDE;
   virtual void ConnectionClose(QuicErrorCode error, bool from_peer) OVERRIDE;
   virtual void OnSuccessfulVersionNegotiation(
       const QuicVersion& version) OVERRIDE{}
   // Not needed for HTTP.
-  virtual void OnAck(const SequenceNumberSet& acked_packets) OVERRIDE {}
   virtual bool OnCanWrite() OVERRIDE;
+  virtual bool HasPendingHandshake() const OVERRIDE;
 
   // Called by streams when they want to write data to the peer.
   // Returns a pair with the number of bytes consumed from data, and a boolean
@@ -79,7 +77,7 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   // if the socket was unexpectedly blocked.
   virtual QuicConsumedData WritevData(QuicStreamId id,
                                       const struct iovec* iov,
-                                      int count,
+                                      int iov_count,
                                       QuicStreamOffset offset,
                                       bool fin);
 
@@ -285,6 +283,9 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   bool goaway_received_;
   // Whether a GoAway has been sent.
   bool goaway_sent_;
+
+  // Indicate if there is pending data for the crypto stream.
+  bool has_pending_handshake_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicSession);
 };

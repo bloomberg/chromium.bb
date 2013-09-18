@@ -70,13 +70,6 @@ void QuicPacketGenerator::AddControlFrame(const QuicFrame& frame) {
 QuicConsumedData QuicPacketGenerator::ConsumeData(QuicStreamId id,
                                                   StringPiece data,
                                                   QuicStreamOffset offset,
-                                                  bool fin) {
-  return ConsumeData(id, data, offset, fin, NULL);
-}
-
-QuicConsumedData QuicPacketGenerator::ConsumeData(QuicStreamId id,
-                                                  StringPiece data,
-                                                  QuicStreamOffset offset,
                                                   bool fin,
                                                   QuicAckNotifier* notifier) {
   IsHandshake handshake = id == kCryptoStreamId ? IS_HANDSHAKE : NOT_HANDSHAKE;
@@ -203,7 +196,7 @@ bool QuicPacketGenerator::HasPendingFrames() const {
 
 bool QuicPacketGenerator::AddNextPendingFrame() {
   if (should_send_ack_) {
-    pending_ack_frame_.reset((delegate_->CreateAckFrame()));
+    pending_ack_frame_.reset(delegate_->CreateAckFrame());
     // If we can't this add the frame now, then we still need to do so later.
     should_send_ack_ = !AddFrame(QuicFrame(pending_ack_frame_.get()));
     // Return success if we have cleared out this flag (i.e., added the frame).
@@ -212,7 +205,7 @@ bool QuicPacketGenerator::AddNextPendingFrame() {
   }
 
   if (should_send_feedback_) {
-    pending_feedback_frame_.reset((delegate_->CreateFeedbackFrame()));
+    pending_feedback_frame_.reset(delegate_->CreateFeedbackFrame());
     // If we can't this add the frame now, then we still need to do so later.
     should_send_feedback_ = !AddFrame(QuicFrame(pending_feedback_frame_.get()));
     // Return success if we have cleared out this flag (i.e., added the frame).

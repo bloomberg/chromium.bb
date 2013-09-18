@@ -423,7 +423,29 @@ TEST_P(EndToEndTest, PostMissingBytes) {
   EXPECT_EQ(500u, client_->response_headers()->parsed_response_code());
 }
 
-TEST_P(EndToEndTest, LargePost) {
+TEST_P(EndToEndTest, LargePostNoPacketLoss) {
+  // TODO(rtenneti): Delete this when NSS is supported.
+  if (!Aes128Gcm12Encrypter::IsSupported()) {
+    LOG(INFO) << "AES GCM not supported. Test skipped.";
+    return;
+  }
+
+  ASSERT_TRUE(Initialize());
+
+  client_->client()->WaitForCryptoHandshakeConfirmed();
+
+  // 1 Mb body.
+  string body;
+  GenerateBody(&body, 1024 * 1024);
+
+  HTTPMessage request(HttpConstants::HTTP_1_1,
+                      HttpConstants::POST, "/foo");
+  request.AddBody(body, true);
+
+  EXPECT_EQ(kFooResponseBody, client_->SendCustomSynchronousRequest(request));
+}
+
+TEST_P(EndToEndTest, LargePostWithPacketLoss) {
   // TODO(rtenneti): Delete this when NSS is supported.
   if (!Aes128Gcm12Encrypter::IsSupported()) {
     LOG(INFO) << "AES GCM not supported. Test skipped.";
@@ -439,8 +461,9 @@ TEST_P(EndToEndTest, LargePost) {
   client_->client()->WaitForCryptoHandshakeConfirmed();
   // FLAGS_fake_packet_loss_percentage = 30;
 
+  // 10 Kb body.
   string body;
-  GenerateBody(&body, 10240);
+  GenerateBody(&body, 1024 * 10);
 
   HTTPMessage request(HttpConstants::HTTP_1_1,
                       HttpConstants::POST, "/foo");
@@ -563,7 +586,6 @@ TEST_P(EndToEndTest, DISABLED_MultipleTermination) {
   }
 
   ASSERT_TRUE(Initialize());
-  scoped_ptr<QuicTestClient> client2(CreateQuicClient());
 
   HTTPMessage request(HttpConstants::HTTP_1_1,
                       HttpConstants::POST, "/foo");

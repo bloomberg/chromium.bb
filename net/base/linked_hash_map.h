@@ -146,7 +146,7 @@ class linked_hash_map {
     std::pair<typename MapType::iterator, typename MapType::iterator> eq_range =
         map_.equal_range(key);
 
-    return make_pair(eq_range.first->second, eq_range.second->second);
+    return std::make_pair(eq_range.first->second, eq_range.second->second);
   }
 
   std::pair<const_iterator, const_iterator> equal_range(
@@ -159,13 +159,13 @@ class linked_hash_map {
     const const_iterator& end_iter = eq_range.second != map_.end() ?
         eq_range.second->second : end();
 
-    return make_pair(start_iter, end_iter);
+    return std::make_pair(start_iter, end_iter);
   }
 
   // Returns the value mapped to key, or an inserted iterator to that position
   // in the map.
   Value& operator[](const key_type& key) {
-    return (*((this->insert(make_pair(key, Value()))).first)).second;
+    return (*((this->insert(std::make_pair(key, Value()))).first)).second;
   }
 
   // Inserts an element into the map
@@ -174,7 +174,7 @@ class linked_hash_map {
     // return a pair with an iterator to it, and false indicating that we
     // didn't insert anything.
     typename MapType::iterator found = map_.find(pair.first);
-    if (found != map_.end()) return make_pair(found->second, false);
+    if (found != map_.end()) return std::make_pair(found->second, false);
 
     // Otherwise, insert into the list first.
     list_.push_back(pair);
@@ -184,10 +184,10 @@ class linked_hash_map {
     typename ListType::iterator last = list_.end();
     --last;
 
-    CHECK(map_.insert(make_pair(pair.first, last)).second)
+    CHECK(map_.insert(std::make_pair(pair.first, last)).second)
         << "Map and list are inconsistent";
 
-    return make_pair(last, true);
+    return std::make_pair(last, true);
   }
 
   size_type size() const {

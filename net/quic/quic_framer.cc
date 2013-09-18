@@ -1040,7 +1040,7 @@ bool QuicFramer::ProcessFrameData() {
       // TODO(jri): Retain this else block when support for
       // QUIC version < 10 removed. Remove above if block.
 
-      // Special frame type processing for QUIC version >= 10
+      // Special frame type processing for QUIC version >= 10.
       if (frame_type & kQuicFrameTypeSpecialMask) {
         // Stream Frame
         if (frame_type & kQuicFrameTypeStreamMask) {

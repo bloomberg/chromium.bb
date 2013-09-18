@@ -175,15 +175,12 @@ class MockConnectionVisitor : public QuicConnectionVisitorInterface {
   MockConnectionVisitor();
   virtual ~MockConnectionVisitor();
 
-  MOCK_METHOD4(OnPacket, bool(const IPEndPoint& self_address,
-                              const IPEndPoint& peer_address,
-                              const QuicPacketHeader& header,
-                              const std::vector<QuicStreamFrame>& frame));
+  MOCK_METHOD1(OnStreamFrames, bool(const std::vector<QuicStreamFrame>& frame));
   MOCK_METHOD1(OnRstStream, void(const QuicRstStreamFrame& frame));
   MOCK_METHOD1(OnGoAway, void(const QuicGoAwayFrame& frame));
   MOCK_METHOD2(ConnectionClose, void(QuicErrorCode error, bool from_peer));
-  MOCK_METHOD1(OnAck, void(const SequenceNumberSet& acked_packets));
   MOCK_METHOD0(OnCanWrite, bool());
+  MOCK_CONST_METHOD0(HasPendingHandshake, bool());
   MOCK_METHOD1(OnSuccessfulVersionNegotiation,
                void(const QuicVersion& version));
 
@@ -203,7 +200,7 @@ class MockHelper : public QuicConnectionHelperInterface {
   MOCK_METHOD2(WritePacketToWire, int(const QuicEncryptedPacket& packet,
                                       int* error));
   MOCK_METHOD0(IsWriteBlockedDataBuffered, bool());
-  MOCK_METHOD1(IsWriteBlocked, bool(int));
+  MOCK_METHOD1(IsWriteBlocked, bool(int stream_id));
   virtual QuicAlarm* CreateAlarm(QuicAlarm::Delegate* delegate);
 
  private:
@@ -237,6 +234,7 @@ class MockConnection : public QuicConnection {
                                 QuicStreamId last_good_stream_id,
                                 const string& reason));
   MOCK_METHOD0(OnCanWrite, bool());
+  MOCK_CONST_METHOD0(HasPendingHandshake, bool());
 
   void ProcessUdpPacketInternal(const IPEndPoint& self_address,
                                 const IPEndPoint& peer_address,
@@ -264,7 +262,8 @@ class PacketSavingConnection : public MockConnection {
       QuicPacketSequenceNumber sequence_number,
       QuicPacket* packet,
       QuicPacketEntropyHash entropy_hash,
-      HasRetransmittableData has_retransmittable_data) OVERRIDE;
+      HasRetransmittableData has_retransmittable_data,
+      Force forced) OVERRIDE;
 
   std::vector<QuicPacket*> packets_;
   std::vector<QuicEncryptedPacket*> encrypted_packets_;

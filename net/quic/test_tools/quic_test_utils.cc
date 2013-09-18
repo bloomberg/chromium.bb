@@ -243,8 +243,9 @@ bool PacketSavingConnection::SendOrQueuePacket(
     EncryptionLevel level,
     QuicPacketSequenceNumber sequence_number,
     QuicPacket* packet,
-    QuicPacketEntropyHash entropy_hash,
-    HasRetransmittableData retransmittable) {
+    QuicPacketEntropyHash /* entropy_hash */,
+    HasRetransmittableData /* retransmittable */,
+    Force /* forced */) {
   packets_.push_back(packet);
   QuicEncryptedPacket* encrypted =
       framer_.EncryptPacket(level, sequence_number, *packet);

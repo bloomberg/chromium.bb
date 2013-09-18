@@ -167,7 +167,7 @@ class NET_EXPORT_PRIVATE ReliableQuicStream : public
   // as the connection will consume.
   // Returns the number of bytes consumed by the connection.
   QuicConsumedData WritevDataInternal(const struct iovec* iov,
-                                      int count,
+                                      int iov_count,
                                       bool fin);
 
  private:
