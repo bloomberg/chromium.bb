@@ -164,7 +164,7 @@ static bool typefacesMatchesFamily(const SkTypeface* tf, const AtomicString& fam
     SkTypeface::LocalizedString actualFamily;
 
     while (actualFamilies->next(&actualFamily)) {
-        if (equalIgnoringCase(family, actualFamily.fString.c_str())) {
+        if (equalIgnoringCase(family, AtomicString::fromUTF8(actualFamily.fString.c_str()))) {
             matchesRequestedFamily = true;
             break;
         }
