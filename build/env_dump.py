@@ -20,27 +20,35 @@ def main():
                     help='File to dump the environment as JSON into.')
   parser.add_option(
       '-d', '--dump-mode', action='store_true',
-      help='Dump the environment to the file and exit immediately.')
+      help='Dump the environment to sys.stdout and exit immediately.')
 
   options, args = parser.parse_args()
-  if not options.output_json:
-    parser.error('Requires --output-json option.')
-
   if options.dump_mode:
-    if args:
-      parser.error("Cannot specify args with --dump-mode")
-    with open(options.output_json, 'w') as f:
-      json.dump(dict(os.environ), f)
+    if args or options.output_json:
+      parser.error('Cannot specify args or --output-json with --dump-mode.')
+    json.dump(dict(os.environ), sys.stdout)
   else:
+    if not options.output_json:
+      parser.error('Requires --output-json option.')
+
     envsetup_cmd = ' '.join(map(pipes.quote, args))
     full_cmd = [
         'bash', '-c',
-        '. %s; %s -d -f %s' % (envsetup_cmd, os.path.abspath(__file__),
-                               options.output_json)
+        '. %s > /dev/null; %s -d' % (envsetup_cmd, os.path.abspath(__file__))
     ]
-    ret = subprocess.call(full_cmd)
-    if ret:
-      sys.exit('Error running %s and dumping env' % envsetup_cmd)
+    try:
+      output = subprocess.check_output(full_cmd)
+    except Exception as e:
+      sys.exit('Error running %s and dumping environment.' % envsetup_cmd)
+
+    env_diff = {}
+    new_env = json.loads(output)
+    for k, val in new_env.items():
+      if k == '_' or (k in os.environ and os.environ[k] == val):
+        continue
+      env_diff[k] = val
+    with open(options.output_json, 'w') as f:
+      json.dump(env_diff, f)
 
 
 if __name__ == '__main__':
