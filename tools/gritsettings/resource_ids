@@ -214,6 +214,9 @@
   "components/component_strings.grd": {
     "messages": [30000],
   },
+  "components/dom_distiller_resources.grd": {
+    "includes": [30250],
+  },
   "third_party/WebKit/public/blink_resources.grd": {
     "includes": [30500],
   },

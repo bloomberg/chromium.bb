@@ -581,6 +581,9 @@ const char kEnableDevToolsExperiments[]     = "enable-devtools-experiments";
 // opt in to "Use web service to resolve navigation errors".)
 const char kEnableDnsProbes[]               = "enable-dns-probes";
 
+// Enables the DOM distiller.
+const char kEnableDomDistiller[]               = "enable-dom-distiller";
+
 // Enables extensions to be easily installed from sites other than the web
 // store. Without this flag, they can still be installed, but must be manually
 // dragged onto chrome://extensions/.
