@@ -229,6 +229,8 @@ bool FontFace::setPropertyValue(PassRefPtr<CSSValue> value, CSSPropertyID proper
         m_stretch = value;
         break;
     case CSSPropertyUnicodeRange:
+        if (value && !value->isValueList())
+            return false;
         m_unicodeRange = value;
         break;
     case CSSPropertyFontVariant:
