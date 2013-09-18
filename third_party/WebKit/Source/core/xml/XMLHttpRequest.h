@@ -222,7 +222,6 @@ private:
     bool m_uploadComplete;
 
     bool m_sameOriginRequest;
-    bool m_allowCrossOriginRequests;
 
     // Used for onprogress tracking
     long long m_receivedLength;
