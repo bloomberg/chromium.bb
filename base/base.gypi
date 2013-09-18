@@ -155,6 +155,7 @@
           'debug/trace_event_impl.cc',
           'debug/trace_event_impl.h',
           'debug/trace_event_impl_constants.cc',
+          'debug/trace_event_system_stats_monitor.cc',
           'debug/trace_event_memory.cc',
           'debug/trace_event_memory.h',
           'debug/trace_event_win.cc',

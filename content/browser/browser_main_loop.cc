@@ -20,6 +20,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/system_monitor/system_monitor.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/timer/hi_res_timer_manager.h"
 #include "content/browser/browser_thread_impl.h"
@@ -455,6 +456,11 @@ void BrowserMainLoop::MainMessageLoopStart() {
     TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:OnlineStateObserver")
     online_state_observer_.reset(new BrowserOnlineStateObserver);
   }
+
+  {
+    system_stats_monitor_.reset(new base::debug::TraceEventSystemStatsMonitor(
+        base::ThreadTaskRunnerHandle::Get()));
+  }
 #endif  // !defined(OS_IOS)
 
 #if defined(OS_WIN)
@@ -715,6 +721,7 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   }
 
   trace_memory_controller_.reset();
+  system_stats_monitor_.reset();
 
 #if !defined(OS_IOS)
   // Destroying the GpuProcessHostUIShims on the UI thread posts a task to

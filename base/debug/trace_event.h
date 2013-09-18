@@ -195,6 +195,7 @@
 #include "base/atomicops.h"
 #include "base/debug/trace_event_impl.h"
 #include "base/debug/trace_event_memory.h"
+#include "base/debug/trace_event_system_stats_monitor.h"
 #include "build/build_config.h"
 
 // By default, const char* argument values are assumed to have long-lived scope
