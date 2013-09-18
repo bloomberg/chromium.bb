@@ -219,9 +219,11 @@ bool NetworkStats::ConnectComplete(int result) {
   }
 
   if (start_test_after_connect_) {
-    // ReadData() reads data for all HelloReply and all subsequent probe tests.
-    if (ReadData() != net::ERR_IO_PENDING)
+    // Reads data for all HelloReply and all subsequent probe tests.
+    if (ReadData() != net::ERR_IO_PENDING) {
+      TestPhaseComplete(READ_FAILED, result);
       return false;
+    }
     SendHelloRequest();
   } else {
     // For unittesting. Only run the callback, do not destroy it.
@@ -304,7 +306,7 @@ int NetworkStats::ReadData() {
     rv = socket_->Read(
         read_buffer_.get(),
         kMaxMessageSize,
-        base::Bind(&NetworkStats::OnReadComplete, base::Unretained(this)));
+        base::Bind(&NetworkStats::OnReadComplete, weak_factory_.GetWeakPtr()));
   } while (rv > 0 && !ReadComplete(rv));
   return rv;
 }
@@ -490,7 +492,8 @@ void NetworkStats::OnReadDataTimeout(uint32 test_index) {
 void NetworkStats::TestPhaseComplete(Status status, int result) {
   // If there is no valid token, do nothing and delete self.
   // This includes all connection error, name resolve error, etc.
-  if (token_.timestamp_micros() != 0) {
+  if (token_.timestamp_micros() != 0 &&
+      (status == SUCCESS || status == READ_TIMED_OUT)) {
     TestType current_test = test_sequence_[current_test_index_];
     DCHECK_LT(current_test, TEST_TYPE_MAX);
     if (current_test != TOKEN_REQUEST)
@@ -797,14 +800,16 @@ void CollectNetworkStats(const std::string& network_stats_server,
     base::FieldTrial::Probability probability_per_group = kDivisor / 200;
 
     chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-    if (channel == chrome::VersionInfo::CHANNEL_CANARY)
-      probability_per_group = kDivisor;
-    else if (channel == chrome::VersionInfo::CHANNEL_DEV)
-      // Enable the connectivity testing for 50% of the users in dev channel.
+    if (channel == chrome::VersionInfo::CHANNEL_CANARY) {
+      // Enable the connectivity testing for 50% of the users in canary channel.
       probability_per_group = kDivisor / 2;
-    else if (channel == chrome::VersionInfo::CHANNEL_BETA)
-      // Enable the connectivity testing for 5% of the users in beta channel.
-      probability_per_group = kDivisor / 20;
+    } else if (channel == chrome::VersionInfo::CHANNEL_DEV) {
+      // Enable the connectivity testing for 10% of the users in dev channel.
+      probability_per_group = kDivisor / 10;
+    } else if (channel == chrome::VersionInfo::CHANNEL_BETA) {
+      // Enable the connectivity testing for 1% of the users in beta channel.
+      probability_per_group = kDivisor / 100;
+    }
 
     // After July 31, 2014 builds, it will always be in default group
     // (disable_network_stats).
