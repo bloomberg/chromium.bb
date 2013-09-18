@@ -103,6 +103,7 @@ class LocalFileChangeTracker
   friend class CannedSyncableFileSystem;
   friend class LocalFileChangeTrackerTest;
   friend class LocalFileSyncContext;
+  friend class LocalFileSyncContextTest;
   friend class SyncableFileSystemTest;
 
   struct ChangeInfo {
