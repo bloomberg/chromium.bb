@@ -15,8 +15,7 @@ AutofillDialogController::Create(
     content::WebContents* contents,
     const FormData& form_structure,
     const GURL& source_url,
-    const base::Callback<void(const FormStructure*,
-                              const std::string&)>& callback) {
+    const base::Callback<void(const FormStructure*)>& callback) {
   NOTIMPLEMENTED();
   return base::WeakPtr<AutofillDialogController>();
 }

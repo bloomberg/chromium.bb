@@ -87,8 +87,7 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
       content::WebContents* contents,
       const FormData& form_structure,
       const GURL& source_url,
-      const base::Callback<void(const FormStructure*,
-                                const std::string&)>& callback);
+      const base::Callback<void(const FormStructure*)>& callback);
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
@@ -230,8 +229,7 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
       content::WebContents* contents,
       const FormData& form_structure,
       const GURL& source_url,
-      const base::Callback<void(const FormStructure*,
-                                const std::string&)>& callback);
+      const base::Callback<void(const FormStructure*)>& callback);
 
   // Exposed for testing.
   AutofillDialogView* view() { return view_.get(); }
@@ -575,9 +573,8 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   // The URL of the invoking site.
   GURL source_url_;
 
-  // The callback via which we return the collected data and, if Online Wallet
-  // was used, the Google transaction id.
-  base::Callback<void(const FormStructure*, const std::string&)> callback_;
+  // The callback via which we return the collected data.
+  base::Callback<void(const FormStructure*)> callback_;
 
   // The AccountChooserModel acts as the MenuModel for the account chooser,
   // and also tracks which data source the dialog is using.

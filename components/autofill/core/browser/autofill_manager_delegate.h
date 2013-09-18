@@ -67,8 +67,7 @@ class AutofillManagerDelegate {
   virtual void ShowRequestAutocompleteDialog(
       const FormData& form,
       const GURL& source_url,
-      const base::Callback<void(const FormStructure*,
-                                const std::string&)>& callback) = 0;
+      const base::Callback<void(const FormStructure*)>& callback) = 0;
 
   // Shows an Autofill popup with the given |values|, |labels|, |icons|, and
   // |identifiers| for the element at |element_bounds|. |delegate| will be

@@ -21,7 +21,7 @@ namespace autofill {
 
 namespace {
 
-void MockCallback(const FormStructure*, const std::string&) {}
+void MockCallback(const FormStructure*) {}
 
 class TestAutofillDialogController : public AutofillDialogControllerImpl {
  public:

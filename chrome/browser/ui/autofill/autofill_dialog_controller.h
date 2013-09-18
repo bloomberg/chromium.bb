@@ -35,8 +35,7 @@ class AutofillDialogController {
       content::WebContents* contents,
       const FormData& form_structure,
       const GURL& source_url,
-      const base::Callback<void(const FormStructure*,
-                                const std::string&)>& callback);
+      const base::Callback<void(const FormStructure*)>& callback);
 
   // Registers profile preferences.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);

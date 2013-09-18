@@ -144,8 +144,7 @@ base::WeakPtr<AutofillDialogController> AutofillDialogControllerAndroid::Create(
     content::WebContents* contents,
     const FormData& form_structure,
     const GURL& source_url,
-    const base::Callback<void(const FormStructure*,
-                              const std::string&)>& callback) {
+    const base::Callback<void(const FormStructure*)>& callback) {
   // AutofillDialogControllerAndroid owns itself.
   AutofillDialogControllerAndroid* autofill_dialog_controller =
       new AutofillDialogControllerAndroid(contents,
@@ -169,8 +168,7 @@ AutofillDialogController::Create(
     content::WebContents* contents,
     const FormData& form_structure,
     const GURL& source_url,
-    const base::Callback<void(const FormStructure*,
-                              const std::string&)>& callback) {
+    const base::Callback<void(const FormStructure*)>& callback) {
   return AutofillDialogControllerAndroid::Create(contents,
                                                  form_structure,
                                                  source_url,
@@ -219,7 +217,7 @@ void AutofillDialogControllerAndroid::Show() {
 
   // Fail if the author didn't specify autocomplete types.
   if (!has_types) {
-    callback_.Run(NULL, std::string());
+    callback_.Run(NULL);
     delete this;
     return;
   }
@@ -328,7 +326,7 @@ bool AutofillDialogControllerAndroid::
 void AutofillDialogControllerAndroid::DialogCancel(JNIEnv* env,
                                                    jobject obj) {
   LogOnCancelMetrics();
-  callback_.Run(NULL, std::string());
+  callback_.Run(NULL);
 }
 
 void AutofillDialogControllerAndroid::DialogContinue(
@@ -383,7 +381,7 @@ void AutofillDialogControllerAndroid::DialogContinue(
   LogOnFinishSubmitMetrics();
 
   // Callback should be called as late as possible.
-  callback_.Run(&form_structure_, google_transaction_id);
+  callback_.Run(&form_structure_);
 
   // This might delete us.
   Hide();
@@ -393,8 +391,7 @@ AutofillDialogControllerAndroid::AutofillDialogControllerAndroid(
     content::WebContents* contents,
     const FormData& form_structure,
     const GURL& source_url,
-    const base::Callback<void(const FormStructure*,
-                              const std::string&)>& callback)
+    const base::Callback<void(const FormStructure*)>& callback)
     : profile_(Profile::FromBrowserContext(contents->GetBrowserContext())),
       contents_(contents),
       initial_user_state_(AutofillMetrics::DIALOG_USER_STATE_UNKNOWN),

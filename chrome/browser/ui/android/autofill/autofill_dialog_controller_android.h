@@ -30,8 +30,7 @@ class AutofillDialogControllerAndroid : public AutofillDialogController {
       content::WebContents* contents,
       const FormData& form_structure,
       const GURL& source_url,
-      const base::Callback<void(const FormStructure*,
-                                const std::string&)>& callback);
+      const base::Callback<void(const FormStructure*)>& callback);
 
   // Registers profile preferences for the AutofillDialogControllerAndroid.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
@@ -62,8 +61,7 @@ class AutofillDialogControllerAndroid : public AutofillDialogController {
       content::WebContents* contents,
       const FormData& form_structure,
       const GURL& source_url,
-      const base::Callback<void(const FormStructure*,
-                                const std::string&)>& callback);
+      const base::Callback<void(const FormStructure*)>& callback);
 
   const AutofillMetrics& GetMetricLogger() const {
     return metric_logger_;
@@ -98,9 +96,8 @@ class AutofillDialogControllerAndroid : public AutofillDialogController {
   // The URL of the invoking site.
   GURL source_url_;
 
-  // The callback via which we return the collected data and, if Online Wallet
-  // was used, the Google transaction id.
-  base::Callback<void(const FormStructure*, const std::string&)> callback_;
+  // The callback via which we return the collected data.
+  base::Callback<void(const FormStructure*)> callback_;
 
   // Whether |form_structure_| has asked for any details that would indicate
   // we should show a shipping section.

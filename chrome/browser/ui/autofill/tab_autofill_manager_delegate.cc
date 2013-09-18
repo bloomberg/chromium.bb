@@ -88,8 +88,7 @@ void TabAutofillManagerDelegate::ConfirmSaveCreditCard(
 void TabAutofillManagerDelegate::ShowRequestAutocompleteDialog(
     const FormData& form,
     const GURL& source_url,
-    const base::Callback<void(const FormStructure*,
-                              const std::string&)>& callback) {
+    const base::Callback<void(const FormStructure*)>& callback) {
   HideRequestAutocompleteDialog();
 
   dialog_controller_ = AutofillDialogController::Create(web_contents_,
@@ -99,7 +98,7 @@ void TabAutofillManagerDelegate::ShowRequestAutocompleteDialog(
   if (dialog_controller_) {
     dialog_controller_->Show();
   } else {
-    callback.Run(NULL, std::string());
+    callback.Run(NULL);
     NOTIMPLEMENTED();
   }
 }

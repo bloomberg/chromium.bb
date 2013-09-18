@@ -623,15 +623,6 @@ const std::vector<FormStructure*>& AutofillManager::GetFormStructures() {
   return form_structures_.get();
 }
 
-void AutofillManager::ShowRequestAutocompleteDialog(
-    const FormData& form,
-    const GURL& source_url,
-    const base::Callback<void(const FormStructure*,
-                              const std::string&)>& callback) {
-  manager_delegate_->ShowRequestAutocompleteDialog(
-      form, source_url, callback);
-}
-
 void AutofillManager::SetTestDelegate(
     autofill::AutofillManagerTestDelegate* delegate) {
   test_delegate_ = delegate;
@@ -671,7 +662,7 @@ void AutofillManager::OnRequestAutocomplete(
     return;
   }
 
-  base::Callback<void(const FormStructure*, const std::string&)> callback =
+  base::Callback<void(const FormStructure*)> callback =
       base::Bind(&AutofillManager::ReturnAutocompleteData,
                  weak_ptr_factory_.GetWeakPtr());
   ShowRequestAutocompleteDialog(form, frame_url, callback);
@@ -693,9 +684,7 @@ void AutofillManager::ReturnAutocompleteResult(
                                                        form_data));
 }
 
-void AutofillManager::ReturnAutocompleteData(
-    const FormStructure* result,
-    const std::string& unused_transaction_id) {
+void AutofillManager::ReturnAutocompleteData(const FormStructure* result) {
   if (!result) {
     ReturnAutocompleteResult(WebFormElement::AutocompleteResultErrorCancel,
                              FormData());
@@ -1125,6 +1114,14 @@ void AutofillManager::UnpackGUIDs(int id,
 
   *cc_guid = IDToGUID(cc_id);
   *profile_guid = IDToGUID(profile_id);
+}
+
+void AutofillManager::ShowRequestAutocompleteDialog(
+    const FormData& form,
+    const GURL& source_url,
+    const base::Callback<void(const FormStructure*)>& callback) {
+  manager_delegate_->ShowRequestAutocompleteDialog(
+      form, source_url, callback);
 }
 
 void AutofillManager::UpdateInitialInteractionTimestamp(

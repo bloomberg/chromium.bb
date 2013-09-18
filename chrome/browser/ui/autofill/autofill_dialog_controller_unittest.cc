@@ -241,8 +241,7 @@ class TestAutofillDialogController
       const FormData& form_structure,
       const GURL& source_url,
       const AutofillMetrics& metric_logger,
-      const base::Callback<void(const FormStructure*,
-                                const std::string&)>& callback,
+      const base::Callback<void(const FormStructure*)>& callback,
       MockNewCreditCardBubbleController* mock_new_card_bubble_controller)
       : AutofillDialogControllerImpl(contents,
                                      form_structure,
@@ -434,7 +433,7 @@ class AutofillDialogControllerTest : public ChromeRenderViewHostTestHarness {
     if (controller_)
       controller_->ViewClosed();
 
-    base::Callback<void(const FormStructure*, const std::string&)> callback =
+    base::Callback<void(const FormStructure*)> callback =
         base::Bind(&AutofillDialogControllerTest::FinishedCallback,
                    base::Unretained(this));
     controller_ = (new testing::NiceMock<TestAutofillDialogController>(
@@ -580,8 +579,7 @@ class AutofillDialogControllerTest : public ChromeRenderViewHostTestHarness {
   }
 
  private:
-  void FinishedCallback(const FormStructure* form_structure,
-                        const std::string& google_transaction_id) {
+  void FinishedCallback(const FormStructure* form_structure) {
     form_structure_ = form_structure;
   }
 

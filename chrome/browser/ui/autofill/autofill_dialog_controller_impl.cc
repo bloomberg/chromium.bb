@@ -549,8 +549,7 @@ base::WeakPtr<AutofillDialogControllerImpl>
     content::WebContents* contents,
     const FormData& form_structure,
     const GURL& source_url,
-    const base::Callback<void(const FormStructure*,
-                              const std::string&)>& callback) {
+    const base::Callback<void(const FormStructure*)>& callback) {
   // AutofillDialogControllerImpl owns itself.
   AutofillDialogControllerImpl* autofill_dialog_controller =
       new AutofillDialogControllerImpl(contents,
@@ -591,8 +590,7 @@ base::WeakPtr<AutofillDialogController> AutofillDialogController::Create(
     content::WebContents* contents,
     const FormData& form_structure,
     const GURL& source_url,
-    const base::Callback<void(const FormStructure*,
-                              const std::string&)>& callback) {
+    const base::Callback<void(const FormStructure*)>& callback) {
   return AutofillDialogControllerImpl::Create(contents,
                                               form_structure,
                                               source_url,
@@ -637,7 +635,7 @@ void AutofillDialogControllerImpl::Show() {
 
   // Fail if the author didn't specify autocomplete types.
   if (!has_types) {
-    callback_.Run(NULL, std::string());
+    callback_.Run(NULL);
     delete this;
     return;
   }
@@ -1941,7 +1939,7 @@ bool AutofillDialogControllerImpl::OnCancel() {
   HidePopup();
   if (!is_submitting_)
     LogOnCancelMetrics();
-  callback_.Run(NULL, std::string());
+  callback_.Run(NULL);
   return true;
 }
 
@@ -2325,8 +2323,7 @@ AutofillDialogControllerImpl::AutofillDialogControllerImpl(
     content::WebContents* contents,
     const FormData& form_structure,
     const GURL& source_url,
-    const base::Callback<void(const FormStructure*,
-                              const std::string&)>& callback)
+    const base::Callback<void(const FormStructure*)>& callback)
     : WebContentsObserver(contents),
       profile_(Profile::FromBrowserContext(contents->GetBrowserContext())),
       initial_user_state_(AutofillMetrics::DIALOG_USER_STATE_UNKNOWN),
@@ -3166,8 +3163,7 @@ void AutofillDialogControllerImpl::DoFinishSubmit() {
   LogOnFinishSubmitMetrics();
 
   // Callback should be called as late as possible.
-  callback_.Run(&form_structure_, !wallet_items_ ? std::string() :
-      wallet_items_->google_transaction_id());
+  callback_.Run(&form_structure_);
   data_was_passed_back_ = true;
 
   // This might delete us.

@@ -108,13 +108,6 @@ class AutofillManager : public AutofillDownloadManager::Observer {
   // Returns the present form structures seen by Autofill manager.
   const std::vector<FormStructure*>& GetFormStructures();
 
-  // Causes the dialog for request autocomplete feature to be shown.
-  virtual void ShowRequestAutocompleteDialog(
-      const FormData& form,
-      const GURL& source_url,
-      const base::Callback<void(const FormStructure*,
-                                const std::string&)>& callback);
-
   // Happens when the autocomplete dialog runs its callback when being closed.
   void RequestAutocompleteDialogClosed();
 
@@ -210,20 +203,24 @@ class AutofillManager : public AutofillDownloadManager::Observer {
     return external_delegate_;
   }
 
+  // Causes the dialog for request autocomplete feature to be shown.
+  virtual void ShowRequestAutocompleteDialog(
+      const FormData& form,
+      const GURL& source_url,
+      const base::Callback<void(const FormStructure*)>& callback);
+
   // Tell the renderer the current interactive autocomplete finished.
   virtual void ReturnAutocompleteResult(
       WebKit::WebFormElement::AutocompleteResult result,
       const FormData& form_data);
 
  private:
-
   // AutofillDownloadManager::Observer:
   virtual void OnLoadedServerPredictions(
       const std::string& response_xml) OVERRIDE;
 
   // Passes return data for an OnRequestAutocomplete call back to the page.
-  void ReturnAutocompleteData(const FormStructure* result,
-                              const std::string& unused_transaction_id);
+  void ReturnAutocompleteData(const FormStructure* result);
 
   // Fills |host| with the RenderViewHost for this tab.
   // Returns false if Autofill is disabled or if the host is unavailable.
