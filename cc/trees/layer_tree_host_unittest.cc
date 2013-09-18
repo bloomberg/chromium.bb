@@ -4648,9 +4648,10 @@ class LayerTreeHostTestMaxTransferBufferUsageBytes : public LayerTreeHostTest {
 
   virtual scoped_ptr<OutputSurface> CreateOutputSurface(bool fallback)
       OVERRIDE {
-    context_provider_ = TestContextProvider::Create();
-    context_provider_->SetMaxTransferBufferUsageBytes(1024 * 1024);
-    return FakeOutputSurface::Create3d(context_provider_)
+    scoped_refptr<TestContextProvider> context_provider =
+        TestContextProvider::Create();
+    context_provider->SetMaxTransferBufferUsageBytes(1024 * 1024);
+    return FakeOutputSurface::Create3d(context_provider)
         .PassAs<OutputSurface>();
   }
 
@@ -4682,7 +4683,6 @@ class LayerTreeHostTestMaxTransferBufferUsageBytes : public LayerTreeHostTest {
   virtual void AfterTest() OVERRIDE {}
 
  private:
-  scoped_refptr<TestContextProvider> context_provider_;
   FakeContentLayerClient client_;
 };
 
