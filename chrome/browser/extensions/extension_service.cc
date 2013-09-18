@@ -849,9 +849,6 @@ bool ExtensionService::UninstallExtension(
   // any of these resources.
   UnloadExtension(extension_id, extension_misc::UNLOAD_REASON_UNINSTALL);
 
-  extension_prefs_->OnExtensionUninstalled(extension_id, extension->location(),
-                                           external_uninstall);
-
   // Tell the backend to start deleting installed extensions on the file thread.
   if (!Manifest::IsUnpackedLocation(extension->location())) {
     if (!GetFileTaskRunner()->PostTask(
@@ -904,6 +901,9 @@ bool ExtensionService::UninstallExtension(
   delayed_installs_.Remove(extension_id);
 
   PruneSharedModulesOnUninstall(extension.get());
+
+  extension_prefs_->OnExtensionUninstalled(extension_id, extension->location(),
+                                           external_uninstall);
 
   // Track the uninstallation.
   UMA_HISTOGRAM_ENUMERATION("Extensions.ExtensionUninstalled", 1, 2);
