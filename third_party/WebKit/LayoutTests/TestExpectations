@@ -1350,8 +1350,6 @@ crbug.com/289833 [ Android ] transitions/transition-transform-translate-calculat
 crbug.com/289833 [ Android ] webaudio/stereo2mono-down-mixing.html [ Timeout Pass ]
 crbug.com/289833 [ Android ] webexposed/custom-elements.html [ Timeout Pass ]
 
-Bug(mkwst) svg/dom/SVGStringList-basics.xhtml [ NeedsRebaseline ]
-
 # These started asserting with blink r157905. The asserts are symtpoms of legitimate bugs.
 crbug.com/294237 [ Debug ] svg/custom/bug86392.html [ Crash ]
 crbug.com/294238 [ Debug ] svg/custom/unicode-in-tspan-multi-svg-crash.html [ Crash ]
