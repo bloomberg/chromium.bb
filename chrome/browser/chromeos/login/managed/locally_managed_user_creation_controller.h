@@ -48,6 +48,7 @@ class LocallyManagedUserCreationController
     virtual ~StatusConsumer();
 
     virtual void OnCreationError(ErrorCode code) = 0;
+    virtual void OnLongCreationWarning() = 0;
     virtual void OnCreationTimeout() = 0;
     virtual void OnCreationSuccess() = 0;
   };

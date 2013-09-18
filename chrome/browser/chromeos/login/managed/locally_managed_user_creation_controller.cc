@@ -18,6 +18,8 @@
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "content/public/browser/browser_thread.h"
@@ -31,7 +33,7 @@ namespace {
 
 const int kDummyAvatarIndex = -111;
 const int kMasterKeySize = 32;
-const int kUserCreationTimeoutSeconds = 60; // 60 seconds.
+const int kUserCreationTimeoutSeconds = 30; // 30 seconds.
 
 bool StoreManagedUserFiles(const std::string& token,
                            const base::FilePath& base_path) {
@@ -91,6 +93,16 @@ void LocallyManagedUserCreationController::SetManagerProfile(
 void LocallyManagedUserCreationController::StartCreation() {
   DCHECK(creation_context_);
   VLOG(1) << "Starting supervised user creation";
+
+  ProfileSyncService* sync_service =
+      ProfileSyncServiceFactory::GetInstance()->GetForProfile(
+          creation_context_->manager_profile);
+  ProfileSyncService::SyncStatusSummary status =
+      sync_service->QuerySyncStatusSummary();
+
+  if (status == ProfileSyncService::DATATYPES_NOT_INITIALIZED)
+    consumer_->OnLongCreationWarning();
+
   timeout_timer_.Start(
       FROM_HERE, base::TimeDelta::FromSeconds(kUserCreationTimeoutSeconds),
       this,
@@ -164,6 +176,7 @@ void LocallyManagedUserCreationController::OnAddKeySuccess() {
   ManagedUserRegistrationInfo info(creation_context_->display_name,
                                    kDummyAvatarIndex);
   info.master_key = creation_context_->master_key;
+  timeout_timer_.Stop();
   creation_context_->registration_utility->Register(
       creation_context_->sync_user_id,
       info,
@@ -175,9 +188,12 @@ void LocallyManagedUserCreationController::RegistrationCallback(
     const GoogleServiceAuthError& error,
     const std::string& token) {
   if (error.state() == GoogleServiceAuthError::NONE) {
+    timeout_timer_.Start(
+        FROM_HERE, base::TimeDelta::FromSeconds(kUserCreationTimeoutSeconds),
+        this,
+        &LocallyManagedUserCreationController::CreationTimedOut);
     TokenFetched(token);
   } else {
-    timeout_timer_.Stop();
     LOG(ERROR) << "Managed user creation failed. Error code " << error.state();
     if (consumer_)
       consumer_->OnCreationError(CLOUD_SERVER_ERROR);

@@ -247,6 +247,13 @@ void LocallyManagedUserCreationScreen::OnCreationTimeout() {
   }
 }
 
+void LocallyManagedUserCreationScreen::OnLongCreationWarning() {
+  if (actor_) {
+    actor_->ShowStatusMessage(true /* progress */, l10n_util::GetStringUTF16(
+        IDS_PROFILES_CREATE_MANAGED_JUST_SIGNED_IN));
+  }
+}
+
 // TODO(antrim) : this is an explicit code duplications with UserImageScreen.
 // It should be removed by issue 251179.
 

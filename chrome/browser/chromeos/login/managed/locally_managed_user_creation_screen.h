@@ -82,6 +82,7 @@ class LocallyManagedUserCreationScreen
       LocallyManagedUserCreationController::ErrorCode code) OVERRIDE;
   virtual void OnCreationTimeout() OVERRIDE;
   virtual void OnCreationSuccess() OVERRIDE;
+  virtual void OnLongCreationWarning() OVERRIDE;
 
   // NetworkPortalDetector::Observer implementation:
   virtual void OnPortalDetectionCompleted(
