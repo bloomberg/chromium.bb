@@ -562,6 +562,7 @@
         '../webkit/browser/fileapi/mock_file_system_options.h',
         '../webkit/browser/fileapi/native_file_util_unittest.cc',
         '../webkit/browser/fileapi/obfuscated_file_util_unittest.cc',
+        '../webkit/browser/fileapi/recursive_operation_delegate_unittest.cc',
         '../webkit/browser/fileapi/sandbox_database_test_helper.cc',
         '../webkit/browser/fileapi/sandbox_database_test_helper.h',
         '../webkit/browser/fileapi/sandbox_directory_database_unittest.cc',

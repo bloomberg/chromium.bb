@@ -52,6 +52,11 @@ void RemoveOperationDelegate::ProcessDirectory(const FileSystemURL& url,
   callback.Run(base::PLATFORM_FILE_OK);
 }
 
+void RemoveOperationDelegate::PostProcessDirectory(
+    const FileSystemURL& url, const StatusCallback& callback) {
+  callback.Run(base::PLATFORM_FILE_OK);
+}
+
 void RemoveOperationDelegate::DidTryRemoveFile(
     base::PlatformFileError error) {
   if (error == base::PLATFORM_FILE_OK ||

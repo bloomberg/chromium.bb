@@ -368,6 +368,12 @@ void CopyOrMoveOperationDelegate::ProcessDirectory(
                  weak_factory_.GetWeakPtr(), src_url, callback));
 }
 
+void CopyOrMoveOperationDelegate::PostProcessDirectory(
+    const FileSystemURL& src_url,
+    const StatusCallback& callback) {
+  callback.Run(base::PLATFORM_FILE_OK);
+}
+
 void CopyOrMoveOperationDelegate::DidTryCopyOrMoveFile(
     base::PlatformFileError error) {
   if (error != base::PLATFORM_FILE_ERROR_NOT_A_FILE) {

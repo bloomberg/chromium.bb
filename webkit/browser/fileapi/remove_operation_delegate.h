@@ -26,6 +26,8 @@ class RemoveOperationDelegate
                            const StatusCallback& callback) OVERRIDE;
   virtual void ProcessDirectory(const FileSystemURL& url,
                                 const StatusCallback& callback) OVERRIDE;
+  virtual void PostProcessDirectory(const FileSystemURL& url,
+                                    const StatusCallback& callback) OVERRIDE;
 
  private:
   void DidTryRemoveFile(base::PlatformFileError error);
