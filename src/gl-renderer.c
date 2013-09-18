@@ -511,7 +511,7 @@ draw_surface(struct weston_surface *es, struct weston_output *output,
 	use_shader(gr, gs->shader);
 	shader_uniforms(gs->shader, es, output);
 
-	if (es->transform.enabled || output->zoom.active || output->scale != es->buffer_scale)
+	if (es->transform.enabled || output->zoom.active || output->current_scale != es->buffer_scale)
 		filter = GL_LINEAR;
 	else
 		filter = GL_NEAREST;
@@ -583,13 +583,13 @@ texture_border(struct weston_output *output)
 
 	x[0] = -gr->border.left;
 	x[1] = 0;
-	x[2] = output->current->width;
-	x[3] = output->current->width + gr->border.right;
+	x[2] = output->current_mode->width;
+	x[3] = output->current_mode->width + gr->border.right;
 
 	y[0] = -gr->border.top;
 	y[1] = 0;
-	y[2] = output->current->height;
-	y[3] = output->current->height + gr->border.bottom;
+	y[2] = output->current_mode->height;
+	y[3] = output->current_mode->height + gr->border.bottom;
 
 	u[0] = 0.0;
 	u[1] = (GLfloat) gr->border.left / gr->border.width;
@@ -743,9 +743,9 @@ gl_renderer_repaint_output(struct weston_output *output,
 	int32_t width, height;
 	pixman_region32_t buffer_damage, total_damage;
 
-	width = output->current->width +
+	width = output->current_mode->width +
 		output->border.left + output->border.right;
-	height = output->current->height +
+	height = output->current_mode->height +
 		output->border.top + output->border.bottom;
 
 	glViewport(0, 0, width, height);

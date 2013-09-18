@@ -450,8 +450,8 @@ drm_output_prepare_scanout_surface(struct weston_output *_output,
 	if (es->geometry.x != output->base.x ||
 	    es->geometry.y != output->base.y ||
 	    buffer == NULL || c->gbm == NULL ||
-	    buffer->width != output->base.current->width ||
-	    buffer->height != output->base.current->height ||
+	    buffer->width != output->base.current_mode->width ||
+	    buffer->height != output->base.current_mode->height ||
 	    output->base.transform != es->buffer_transform ||
 	    es->transform.enabled)
 		return NULL;
@@ -581,7 +581,7 @@ drm_output_repaint(struct weston_output *output_base,
 	if (!output->next)
 		return;
 
-	mode = container_of(output->base.current, struct drm_mode, base);
+	mode = container_of(output->base.current_mode, struct drm_mode, base);
 	if (!output->current) {
 		ret = drmModeSetCrtc(compositor->drm.fd, output->crtc_id,
 				     output->next->fb_id, 0, 0,
@@ -787,7 +787,7 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 	if (es->buffer_transform != output_base->transform)
 		return NULL;
 
-	if (es->buffer_scale != output_base->scale)
+	if (es->buffer_scale != output_base->current_scale)
 		return NULL;
 
 	if (c->sprites_are_broken)
@@ -859,7 +859,7 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 	tbox = weston_transformed_rect(output_base->width,
 				       output_base->height,
 				       output_base->transform,
-				       output_base->scale,
+				       output_base->current_scale,
 				       *box);
 	s->dest_x = tbox.x1;
 	s->dest_y = tbox.y1;
@@ -978,8 +978,8 @@ drm_output_set_cursor(struct drm_output *output)
 		}
 	}
 
-	x = (es->geometry.x - output->base.x) * output->base.scale;
-	y = (es->geometry.y - output->base.y) * output->base.scale;
+	x = (es->geometry.x - output->base.x) * output->base.current_scale;
+	y = (es->geometry.y - output->base.y) * output->base.current_scale;
 	if (output->cursor_plane.x != x || output->cursor_plane.y != y) {
 		if (drmModeMoveCursor(c->drm.fd, output->crtc_id, x, y)) {
 			weston_log("failed to move cursor: %m\n");
@@ -1100,11 +1100,11 @@ choose_mode (struct drm_output *output, struct weston_mode *target_mode)
 {
 	struct drm_mode *tmp_mode = NULL, *mode;
 
-	if (output->base.current->width == target_mode->width && 
-	    output->base.current->height == target_mode->height &&
-	    (output->base.current->refresh == target_mode->refresh ||
+	if (output->base.current_mode->width == target_mode->width &&
+	    output->base.current_mode->height == target_mode->height &&
+	    (output->base.current_mode->refresh == target_mode->refresh ||
 	     target_mode->refresh == 0))
-		return (struct drm_mode *)output->base.current;
+		return (struct drm_mode *)output->base.current_mode;
 
 	wl_list_for_each(mode, &output->base.mode_list, base.link) {
 		if (mode->mode_info.hdisplay == target_mode->width &&
@@ -1151,13 +1151,13 @@ drm_output_switch_mode(struct weston_output *output_base, struct weston_mode *mo
 		return -1;
 	}
 
-	if (&drm_mode->base == output->base.current)
+	if (&drm_mode->base == output->base.current_mode)
 		return 0;
 
-	output->base.current->flags = 0;
+	output->base.current_mode->flags = 0;
 
-	output->base.current = &drm_mode->base;
-	output->base.current->flags =
+	output->base.current_mode = &drm_mode->base;
+	output->base.current_mode->flags =
 		WL_OUTPUT_MODE_CURRENT | WL_OUTPUT_MODE_PREFERRED;
 
 	/* reset rendering stuff. */
@@ -1439,8 +1439,8 @@ drm_output_init_egl(struct drm_output *output, struct drm_compositor *ec)
 	int i, flags;
 
 	output->surface = gbm_surface_create(ec->gbm,
-					     output->base.current->width,
-					     output->base.current->height,
+					     output->base.current_mode->width,
+					     output->base.current_mode->height,
 					     GBM_FORMAT_XRGB8888,
 					     GBM_BO_USE_SCANOUT |
 					     GBM_BO_USE_RENDERING);
@@ -1477,8 +1477,8 @@ drm_output_init_egl(struct drm_output *output, struct drm_compositor *ec)
 static int
 drm_output_init_pixman(struct drm_output *output, struct drm_compositor *c)
 {
-	int w = output->base.current->width;
-	int h = output->base.current->height;
+	int w = output->base.current_mode->width;
+	int h = output->base.current_mode->height;
 	unsigned int i;
 
 	/* FIXME error checking */
@@ -1898,20 +1898,20 @@ create_output_for_connector(struct drm_compositor *ec,
 		configured = current;
 
 	if (option_current_mode && current)
-		output->base.current = &current->base;
+		output->base.current_mode = &current->base;
 	else if (configured)
-		output->base.current = &configured->base;
+		output->base.current_mode = &configured->base;
 	else if (preferred)
-		output->base.current = &preferred->base;
+		output->base.current_mode = &preferred->base;
 	else if (current)
-		output->base.current = &current->base;
+		output->base.current_mode = &current->base;
 
-	if (output->base.current == NULL) {
+	if (output->base.current_mode == NULL) {
 		weston_log("no available modes for %s\n", output->base.name);
 		goto err_free;
 	}
 
-	output->base.current->flags |= WL_OUTPUT_MODE_CURRENT;
+	output->base.current_mode->flags |= WL_OUTPUT_MODE_CURRENT;
 
 	weston_output_init(&output->base, &ec->base, x, y,
 			   connector->mmWidth, connector->mmHeight,
@@ -1944,7 +1944,7 @@ create_output_for_connector(struct drm_compositor *ec,
 	if (connector->connector_type == DRM_MODE_CONNECTOR_LVDS)
 		output->base.connection_internal = 1;
 
-	output->base.origin = output->base.current;
+	output->base.original_mode = output->base.current_mode;
 	output->base.start_repaint_loop = drm_output_start_repaint_loop;
 	output->base.repaint = drm_output_repaint;
 	output->base.destroy = drm_output_destroy;
@@ -2287,7 +2287,7 @@ drm_compositor_set_modes(struct drm_compositor *compositor)
 			continue;
 		}
 
-		drm_mode = (struct drm_mode *) output->base.current;
+		drm_mode = (struct drm_mode *) output->base.current_mode;
 		ret = drmModeSetCrtc(compositor->drm.fd, output->crtc_id,
 				     output->current->fb_id, 0, 0,
 				     &output->connector_id, 1,
@@ -2494,8 +2494,8 @@ recorder_binding(struct weston_seat *seat, uint32_t time, uint32_t key,
 			      struct drm_output, base.link);
 
 	if (!output->recorder) {
-		width = output->base.current->width;
-		height = output->base.current->height;
+		width = output->base.current_mode->width;
+		height = output->base.current_mode->height;
 
 		output->recorder =
 			create_recorder(c, width, height, "capture.h264");

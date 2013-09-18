@@ -136,8 +136,8 @@ screenshooter_frame_notify(struct wl_listener *listener, void *data)
 
 	compositor->renderer->read_pixels(output,
 			     compositor->read_format, pixels,
-			     0, 0, output->current->width,
-			     output->current->height);
+			     0, 0, output->current_mode->width,
+			     output->current_mode->height);
 
 	stride = wl_shm_buffer_get_stride(l->buffer->shm_buffer);
 
@@ -148,16 +148,16 @@ screenshooter_frame_notify(struct wl_listener *listener, void *data)
 	case PIXMAN_a8r8g8b8:
 	case PIXMAN_x8r8g8b8:
 		if (compositor->capabilities & WESTON_CAP_CAPTURE_YFLIP)
-			copy_bgra_yflip(d, s, output->current->height, stride);
+			copy_bgra_yflip(d, s, output->current_mode->height, stride);
 		else
-			copy_bgra(d, pixels, output->current->height, stride);
+			copy_bgra(d, pixels, output->current_mode->height, stride);
 		break;
 	case PIXMAN_x8b8g8r8:
 	case PIXMAN_a8b8g8r8:
 		if (compositor->capabilities & WESTON_CAP_CAPTURE_YFLIP)
-			copy_rgba_yflip(d, s, output->current->height, stride);
+			copy_rgba_yflip(d, s, output->current_mode->height, stride);
 		else
-			copy_rgba(d, pixels, output->current->height, stride);
+			copy_rgba(d, pixels, output->current_mode->height, stride);
 		break;
 	default:
 		break;
@@ -191,8 +191,8 @@ screenshooter_shoot(struct wl_client *client,
 	buffer->width = wl_shm_buffer_get_width(buffer->shm_buffer);
 	buffer->height = wl_shm_buffer_get_height(buffer->shm_buffer);
 
-	if (buffer->width < output->current->width ||
-	    buffer->height < output->current->height)
+	if (buffer->width < output->current_mode->width ||
+	    buffer->height < output->current_mode->height)
 		return;
 
 	l = malloc(sizeof *l);
@@ -322,33 +322,33 @@ transform_rect(struct weston_output *output, pixman_box32_t *r)
                 break;
         case WL_OUTPUT_TRANSFORM_90:
         case WL_OUTPUT_TRANSFORM_FLIPPED_90:
-		r->x1 = output->current->width - s.y2;
+		r->x1 = output->current_mode->width - s.y2;
 		r->y1 = s.x1;
-		r->x2 = output->current->width - s.y1;
+		r->x2 = output->current_mode->width - s.y1;
 		r->y2 = s.x2;
                 break;
         case WL_OUTPUT_TRANSFORM_180:
         case WL_OUTPUT_TRANSFORM_FLIPPED_180:
-		r->x1 = output->current->width - s.x2;
-		r->y1 = output->current->height - s.y2;
-		r->x2 = output->current->width - s.x1;
-		r->y2 = output->current->height - s.y1;
+		r->x1 = output->current_mode->width - s.x2;
+		r->y1 = output->current_mode->height - s.y2;
+		r->x2 = output->current_mode->width - s.x1;
+		r->y2 = output->current_mode->height - s.y1;
                 break;
         case WL_OUTPUT_TRANSFORM_270:
         case WL_OUTPUT_TRANSFORM_FLIPPED_270:
 		r->x1 = s.y1; 
-		r->y1 = output->current->height - s.x2;
+		r->y1 = output->current_mode->height - s.x2;
 		r->x2 = s.y2; 
-		r->y2 = output->current->height - s.x1;
+		r->y2 = output->current_mode->height - s.x1;
                 break;
         default:
                 break;
         }
 
-	r->x1 *= output->scale;
-	r->y1 *= output->scale;
-	r->x2 *= output->scale;
-	r->y2 *= output->scale;
+	r->x1 *= output->current_scale;
+	r->y1 *= output->current_scale;
+	r->x2 *= output->current_scale;
+	r->y2 *= output->current_scale;
 }
 
 static void
@@ -396,14 +396,14 @@ weston_recorder_frame_notify(struct wl_listener *listener, void *data)
 	v[1].iov_base = r;
 	v[1].iov_len = n * sizeof *r;
 	recorder->total += writev(recorder->fd, v, 2);
-	stride = output->current->width;
+	stride = output->current_mode->width;
 
 	for (i = 0; i < n; i++) {
 		width = r[i].x2 - r[i].x1;
 		height = r[i].y2 - r[i].y1;
 
 		if (do_yflip)
-			y_orig = output->current->height - r[i].y2;
+			y_orig = output->current_mode->height - r[i].y2;
 		else
 			y_orig = r[i].y1;
 
@@ -467,8 +467,8 @@ weston_recorder_create(struct weston_output *output, const char *filename)
 
 	recorder = malloc(sizeof *recorder);
 
-	stride = output->current->width;
-	size = stride * 4 * output->current->height;
+	stride = output->current_mode->width;
+	size = stride * 4 * output->current_mode->height;
 	recorder->frame = zalloc(size);
 	recorder->rect = malloc(size);
 	recorder->total = 0;
@@ -505,8 +505,8 @@ weston_recorder_create(struct weston_output *output, const char *filename)
 		return;
 	}
 
-	header.width = output->current->width;
-	header.height = output->current->height;
+	header.width = output->current_mode->width;
+	header.height = output->current_mode->height;
 	recorder->total += write(recorder->fd, &header, sizeof header);
 
 	recorder->frame_listener.notify = weston_recorder_frame_notify;

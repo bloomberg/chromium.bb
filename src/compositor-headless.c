@@ -107,7 +107,7 @@ headless_compositor_create_output(struct headless_compositor *c,
 	wl_list_init(&output->base.mode_list);
 	wl_list_insert(&output->base.mode_list, &output->mode.link);
 
-	output->base.current = &output->mode;
+	output->base.current_mode = &output->mode;
 	weston_output_init(&output->base, &c->base, 0, 0, width, height,
 			   WL_OUTPUT_TRANSFORM_NORMAL, 1);
 
@@ -120,7 +120,7 @@ headless_compositor_create_output(struct headless_compositor *c,
 	output->finish_frame_timer =
 		wl_event_loop_add_timer(loop, finish_frame_handler, output);
 
-	output->base.origin = output->base.current;
+	output->base.original_mode = output->base.current_mode;
 	output->base.start_repaint_loop = headless_output_start_repaint_loop;
 	output->base.repaint = headless_output_repaint;
 	output->base.destroy = headless_output_destroy;

@@ -261,7 +261,7 @@ wayland_compositor_create_output(struct wayland_compositor *c,
 	wl_list_init(&output->base.mode_list);
 	wl_list_insert(&output->base.mode_list, &output->mode.link);
 
-	output->base.current = &output->mode;
+	output->base.current_mode = &output->mode;
 	weston_output_init(&output->base, &c->base, 0, 0, width, height,
 			   WL_OUTPUT_TRANSFORM_NORMAL, 1);
 
@@ -295,7 +295,7 @@ wayland_compositor_create_output(struct wayland_compositor *c,
 				      &shell_surface_listener, output);
 	wl_shell_surface_set_toplevel(output->parent.shell_surface);
 
-	output->base.origin = output->base.current;
+	output->base.original_mode = output->base.current_mode;
 	output->base.start_repaint_loop = wayland_output_start_repaint_loop;
 	output->base.repaint = wayland_output_repaint;
 	output->base.destroy = wayland_output_destroy;

@@ -104,8 +104,8 @@ evdev_process_key(struct evdev_device *device, struct input_event *e, int time)
 static void
 evdev_process_touch(struct evdev_device *device, struct input_event *e)
 {
-	const int screen_width = device->output->current->width;
-	const int screen_height = device->output->current->height;
+	const int screen_width = device->output->current_mode->width;
+	const int screen_height = device->output->current_mode->height;
 
 	switch (e->code) {
 	case ABS_MT_SLOT:
@@ -136,8 +136,8 @@ static inline void
 evdev_process_absolute_motion(struct evdev_device *device,
 			      struct input_event *e)
 {
-	const int screen_width = device->output->current->width;
-	const int screen_height = device->output->current->height;
+	const int screen_width = device->output->current_mode->width;
+	const int screen_height = device->output->current_mode->height;
 
 	switch (e->code) {
 	case ABS_X:

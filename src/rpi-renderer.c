@@ -896,8 +896,8 @@ rpi_renderer_read_pixels(struct weston_output *base,
 	uint32_t i;
 	int ret;
 
-	fb_width = base->current->width;
-	fb_height = base->current->height;
+	fb_width = base->current_mode->width;
+	fb_height = base->current_mode->height;
 
 	DBG("%s(%u, %u, %u, %u), resource %p\n", __func__,
 	    x, y, width, height, buffer);

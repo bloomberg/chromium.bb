@@ -369,12 +369,12 @@ rdp_switch_mode(struct weston_output *output, struct weston_mode *target_mode) {
 		return -ENOENT;
 	}
 
-	if(local_mode == output->current)
+	if(local_mode == output->current_mode)
 		return 0;
 
-	output->current->flags = 0;
-	output->current = local_mode;
-	output->current->flags = WL_OUTPUT_MODE_CURRENT | WL_OUTPUT_MODE_PREFERRED;
+	output->current_mode->flags = 0;
+	output->current_mode = local_mode;
+	output->current_mode->flags = WL_OUTPUT_MODE_CURRENT | WL_OUTPUT_MODE_PREFERRED;
 
 	pixman_renderer_output_destroy(output);
 	pixman_renderer_output_create(output);
@@ -466,7 +466,7 @@ rdp_compositor_create_output(struct rdp_compositor *c, int width, int height,
 		goto out_free_output_and_modes;
 	}
 
-	output->base.current = currentMode;
+	output->base.current_mode = currentMode;
 	weston_output_init(&output->base, &c->base, 0, 0, width, height,
 			   WL_OUTPUT_TRANSFORM_NORMAL, 1);
 
@@ -489,7 +489,7 @@ rdp_compositor_create_output(struct rdp_compositor *c, int width, int height,
 	loop = wl_display_get_event_loop(c->base.wl_display);
 	output->finish_frame_timer = wl_event_loop_add_timer(loop, finish_frame_handler, output);
 
-	output->base.origin = output->base.current;
+	output->base.original_mode = output->base.current_mode;
 	output->base.start_repaint_loop = rdp_output_start_repaint_loop;
 	output->base.repaint = rdp_output_repaint;
 	output->base.destroy = rdp_output_destroy;

@@ -203,11 +203,11 @@ struct weston_output {
 	char *make, *model, *serial_number;
 	uint32_t subpixel;
 	uint32_t transform;
-	int32_t scale;
+	int32_t current_scale;
 
-	struct weston_mode *current;
-	struct weston_mode *origin;
-	int32_t origin_scale;
+	struct weston_mode *current_mode;
+	struct weston_mode *original_mode;
+	int32_t original_scale;
 	struct wl_list mode_list;
 
 	void (*start_repaint_loop)(struct weston_output *output);

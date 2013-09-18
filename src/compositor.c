@@ -109,13 +109,13 @@ weston_output_switch_mode(struct weston_output *output, struct weston_mode *mode
 	if (ret < 0)
 		return ret;
 
-        output->scale = scale;
+        output->current_scale = scale;
 
 	pixman_region32_init(&old_output_region);
 	pixman_region32_copy(&old_output_region, &output->region);
 
 	/* Update output region and transformation matrix */
-	weston_output_transform_scale_init(output, output->transform, output->scale);
+	weston_output_transform_scale_init(output, output->transform, output->current_scale);
 
 	pixman_region32_init(&output->previous_damage);
 	pixman_region32_init_rect(&output->region, output->x, output->y,
@@ -2585,7 +2585,7 @@ bind_output(struct wl_client *client,
 				output->transform);
 	if (version >= 2)
 		wl_output_send_scale(resource,
-				     output->scale);
+				     output->current_scale);
 
 	wl_list_for_each (mode, &output->mode_list, link) {
 		wl_output_send_mode(resource,
@@ -2714,21 +2714,21 @@ weston_output_transform_scale_init(struct weston_output *output, uint32_t transf
 	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
 	case WL_OUTPUT_TRANSFORM_FLIPPED_270:
 		/* Swap width and height */
-		output->width = output->current->height;
-		output->height = output->current->width;
+		output->width = output->current_mode->height;
+		output->height = output->current_mode->width;
 		break;
 	case WL_OUTPUT_TRANSFORM_NORMAL:
 	case WL_OUTPUT_TRANSFORM_180:
 	case WL_OUTPUT_TRANSFORM_FLIPPED:
 	case WL_OUTPUT_TRANSFORM_FLIPPED_180:
-		output->width = output->current->width;
-		output->height = output->current->height;
+		output->width = output->current_mode->width;
+		output->height = output->current_mode->height;
 		break;
 	default:
 		break;
 	}
 
-        output->scale = scale;
+        output->current_scale = scale;
 	output->width /= scale;
 	output->height /= scale;
 }
@@ -2760,7 +2760,7 @@ weston_output_init(struct weston_output *output, struct weston_compositor *c,
 	output->mm_width = mm_width;
 	output->mm_height = mm_height;
 	output->dirty = 1;
-	output->origin_scale = scale;
+	output->original_scale = scale;
 
 	weston_output_transform_scale_init(output, transform, scale);
 	weston_output_init_zoom(output);
@@ -2790,8 +2790,8 @@ weston_output_transform_coordinate(struct weston_output *output,
 	wl_fixed_t tx, ty;
 	wl_fixed_t width, height;
 
-	width = wl_fixed_from_int(output->width * output->scale - 1);
-	height = wl_fixed_from_int(output->height * output->scale - 1);
+	width = wl_fixed_from_int(output->width * output->current_scale - 1);
+	height = wl_fixed_from_int(output->height * output->current_scale - 1);
 
 	switch(output->transform) {
 	case WL_OUTPUT_TRANSFORM_NORMAL:
@@ -2829,8 +2829,8 @@ weston_output_transform_coordinate(struct weston_output *output,
 		break;
 	}
 
-	*x = tx / output->scale + wl_fixed_from_int(output->x);
-	*y = ty / output->scale + wl_fixed_from_int(output->y);
+	*x = tx / output->current_scale + wl_fixed_from_int(output->x);
+	*y = ty / output->current_scale + wl_fixed_from_int(output->y);
 }
 
 static void

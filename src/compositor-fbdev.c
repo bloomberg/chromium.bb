@@ -543,8 +543,8 @@ fbdev_output_create(struct fbdev_compositor *compositor,
 	wl_list_init(&output->base.mode_list);
 	wl_list_insert(&output->base.mode_list, &output->mode.link);
 
-	output->base.current = &output->mode;
-	output->base.origin = &output->mode;
+	output->base.current_mode = &output->mode;
+	output->base.original_mode = &output->mode;
 	output->base.subpixel = WL_OUTPUT_SUBPIXEL_UNKNOWN;
 	output->base.make = "unknown";
 	output->base.model = output->fb_info.id;

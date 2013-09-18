@@ -420,10 +420,10 @@ set_clip_for_output(struct weston_output *output_base, pixman_region32_t *region
 			break;
 		}
 
-		transformed_rect.x1 *= output_base->scale;
-		transformed_rect.y1 *= output_base->scale;
-		transformed_rect.x2 *= output_base->scale;
-		transformed_rect.y2 *= output_base->scale;
+		transformed_rect.x1 *= output_base->current_scale;
+		transformed_rect.y1 *= output_base->current_scale;
+		transformed_rect.x2 *= output_base->current_scale;
+		transformed_rect.y2 *= output_base->current_scale;
 
 		output_rects[i].x = transformed_rect.x1;
 		output_rects[i].y = transformed_rect.y1;
@@ -891,8 +891,8 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 	output->base.set_backlight = NULL;
 	output->base.set_dpms = NULL;
 	output->base.switch_mode = NULL;
-	output->base.current = &output->mode;
-	output->base.origin = output->base.current;
+	output->base.current_mode = &output->mode;
+	output->base.original_mode = output->base.current_mode;
 	output->base.make = "xwayland";
 	output->base.model = "none";
 	weston_output_init(&output->base, &c->base,
