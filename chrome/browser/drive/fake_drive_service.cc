@@ -1437,7 +1437,8 @@ const base::DictionaryValue* FakeDriveService::AddNewEntry(
     const std::string& entry_kind) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (parent_resource_id != GetRootResourceId() &&
+  if (!parent_resource_id.empty() &&
+      parent_resource_id != GetRootResourceId() &&
       !FindEntryByResourceId(parent_resource_id)) {
     return NULL;
   }
@@ -1491,7 +1492,10 @@ const base::DictionaryValue* FakeDriveService::AddNewEntry(
   base::ListValue* links = new base::ListValue;
 
   base::DictionaryValue* parent_link = new base::DictionaryValue;
-  parent_link->SetString("href", GetFakeLinkUrl(parent_resource_id).spec());
+  if (parent_resource_id.empty())
+    parent_link->SetString("href", GetFakeLinkUrl(GetRootResourceId()).spec());
+  else
+    parent_link->SetString("href", GetFakeLinkUrl(parent_resource_id).spec());
   parent_link->SetString("rel",
                          "http://schemas.google.com/docs/2007#parent");
   links->Append(parent_link);

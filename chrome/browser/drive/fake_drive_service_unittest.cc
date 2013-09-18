@@ -1570,6 +1570,34 @@ TEST_F(FakeDriveServiceTest, RemoveResourceFromDirectory_Offline) {
   EXPECT_EQ(GDATA_NO_CONNECTION, error);
 }
 
+TEST_F(FakeDriveServiceTest, AddNewDirectory_EmptyParent) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
+      "gdata/root_feed.json"));
+  ASSERT_TRUE(fake_service_.LoadAccountMetadataForWapi(
+      "gdata/account_metadata.json"));
+
+  int64 old_largest_change_id = GetLargestChangeByAboutResource();
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<ResourceEntry> resource_entry;
+  fake_service_.AddNewDirectory(
+      std::string(),
+      "new directory",
+      test_util::CreateCopyResultCallback(&error, &resource_entry));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(HTTP_CREATED, error);
+  ASSERT_TRUE(resource_entry);
+  EXPECT_TRUE(resource_entry->is_folder());
+  EXPECT_EQ("resource_id_1", resource_entry->resource_id());
+  EXPECT_EQ("new directory", resource_entry->title());
+  EXPECT_TRUE(HasParent(resource_entry->resource_id(),
+                        fake_service_.GetRootResourceId()));
+  // Should be incremented as a new directory was created.
+  EXPECT_EQ(old_largest_change_id + 1, fake_service_.largest_changestamp());
+  EXPECT_EQ(old_largest_change_id + 1, GetLargestChangeByAboutResource());
+}
+
 TEST_F(FakeDriveServiceTest, AddNewDirectory_ToRootDirectory) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "gdata/root_feed.json"));
