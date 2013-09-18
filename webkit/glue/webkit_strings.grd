@@ -579,6 +579,27 @@ below:
       <message name="IDS_FORM_VALIDATION_TYPE_MISMATCH" desc="Heading or short sentence shown when a form control in a webpage requires specific type such as email address or URL, but the specified value does not comform to the type.">
         Invalid value.
       </message>
+      <message name="IDS_FORM_VALIDATION_TYPE_MISMATCH_EMAIL_EMPTY" desc="Heading or short sentence shown when there is an email field in a form and a user specified an empty value.">
+        Please enter a non-empty email address.
+      </message>
+      <message name="IDS_FORM_VALIDATION_TYPE_MISMATCH_EMAIL_EMPTY_DOMAIN" desc="Heading or short sentence shown when there is an email field in a form and a user specified an invalid value like 'user@'.">
+        Please enter a part following '<ph name="ATSIGN">$1<ex>@</ex></ph>'. '<ph name="INVALIDADDRESS">$2<ex>user@</ex></ph>' is incomplete.
+      </message>
+      <message name="IDS_FORM_VALIDATION_TYPE_MISMATCH_EMAIL_EMPTY_LOCAL" desc="Heading or short sentence shown when there is an email field in a form and a user specified an invalid value like '@example.com'.">
+        Please enter a part followed by '<ph name="ATSIGN">$1<ex>@</ex></ph>'. '<ph name="INVALIDADDRESS">$2<ex>@example.com</ex></ph>' is incomplete.
+      </message>
+      <message name="IDS_FORM_VALIDATION_TYPE_MISMATCH_EMAIL_INVALID_DOMAIN" desc="Heading or short sentence shown when there is an email field in a form and a user specified an invalid value like 'user@example,com'.">
+        A part following '<ph name="ATSIGN">$1<ex>@</ex></ph>' should not contain the symbol '<ph name="INVALIDCHARACTER">$2<ex>,</ex></ph>'.
+      </message>
+      <message name="IDS_FORM_VALIDATION_TYPE_MISMATCH_EMAIL_INVALID_DOTS" desc="Heading or short sentence shown when there is an email field in a form and a user specified an invalid value with wrong dots like 'user@example..com'.">
+        '<ph name="DOT">$1<ex>.</ex></ph>' is used at a wrong position in '<ph name="INVALIDDOMAIN">$2<ex>example..com</ex></ph>'.
+      </message>
+      <message name="IDS_FORM_VALIDATION_TYPE_MISMATCH_EMAIL_INVALID_LOCAL" desc="Heading or short sentence shown when there is an email field in a form and a user specified an invalid value like 'us,er@example.com'.">
+        A part followed by '<ph name="ATSIGN">$1<ex>@</ex></ph>' should not contain the symbol '<ph name="INVALIDCHARACTER">$2<ex>,</ex></ph>'.
+      </message>
+      <message name="IDS_FORM_VALIDATION_TYPE_MISMATCH_EMAIL_NO_AT_SIGN" desc="Heading or short sentence shown when there is an email field in a form and a user specified an invalid value liek 'user'.">
+        Please include an '<ph name="ATSIGN">$1<ex>@</ex></ph>' in the email address. '<ph name="INVALIDADDRESS">$2<ex>user</ex></ph>' is missing an '<ph name="ATSIGN">$1<ex>@</ex></ph>'.
+      </message>
       <message name="IDS_FORM_VALIDATION_TYPE_MISMATCH_MULTIPLE_EMAIL" desc="Heading or short sentence shown there is a field which accepts multiple e-mail addresses and a user specified a value which is not a comma-separated e-mail addresses.">
         Please enter a comma separated list of email addresses.
       </message>
