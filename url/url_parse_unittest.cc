@@ -371,12 +371,9 @@ TEST(URLParser, PathURL) {
   }
 }
 
-#ifdef WIN32
-
-// WindowsFile ----------------------------------------------------------------
-
-// Various incarnations of file URLs. These are for Windows only.
+// Various incarnations of file URLs.
 static URLParseCase file_cases[] = {
+#ifdef WIN32
 {"file:server",              "file", NULL, NULL, "server", -1, NULL,          NULL, NULL},
 {"  file: server  \t",       "file", NULL, NULL, " server",-1, NULL,          NULL, NULL},
 {"FiLe:c|",                  "FiLe", NULL, NULL, NULL,     -1, "c|",          NULL, NULL},
@@ -404,29 +401,96 @@ static URLParseCase file_cases[] = {
   // Queries and refs are valid for file URLs as well.
 {"file:///C:/foo.html?#",   "file", NULL, NULL,  NULL,     -1, "/C:/foo.html",  "",   ""},
 {"file:///C:/foo.html?query=yes#ref", "file", NULL, NULL, NULL, -1, "/C:/foo.html", "query=yes", "ref"},
+#else  // WIN32
+  // No slashes.
+  {"file:",                    "file", NULL, NULL, NULL,      -1, NULL,             NULL, NULL},
+  {"file:path",                "file", NULL, NULL, NULL,      -1, "path",           NULL, NULL},
+  {"file:path/",               "file", NULL, NULL, NULL,      -1, "path/",          NULL, NULL},
+  {"file:path/f.txt",          "file", NULL, NULL, NULL,      -1, "path/f.txt",     NULL, NULL},
+  // One slash.
+  {"file:/",                   "file", NULL, NULL, NULL,      -1, "/",              NULL, NULL},
+  {"file:/path",               "file", NULL, NULL, NULL,      -1, "/path",          NULL, NULL},
+  {"file:/path/",              "file", NULL, NULL, NULL,      -1, "/path/",         NULL, NULL},
+  {"file:/path/f.txt",         "file", NULL, NULL, NULL,      -1, "/path/f.txt",    NULL, NULL},
+  // Two slashes.
+  {"file://",                  "file", NULL, NULL, NULL,      -1, NULL,             NULL, NULL},
+  {"file://server",            "file", NULL, NULL, "server",  -1, NULL,             NULL, NULL},
+  {"file://server/",           "file", NULL, NULL, "server",  -1, "/",              NULL, NULL},
+  {"file://server/f.txt",      "file", NULL, NULL, "server",  -1, "/f.txt",         NULL, NULL},
+  // Three slashes.
+  {"file:///",                 "file", NULL, NULL, NULL,      -1, "/",              NULL, NULL},
+  {"file:///path",             "file", NULL, NULL, NULL,      -1, "/path",          NULL, NULL},
+  {"file:///path/",            "file", NULL, NULL, NULL,      -1, "/path/",         NULL, NULL},
+  {"file:///path/f.txt",       "file", NULL, NULL, NULL,      -1, "/path/f.txt",    NULL, NULL},
+  // More than three slashes.
+  {"file:////",                "file", NULL, NULL, NULL,      -1, "/",              NULL, NULL},
+  {"file:////path",            "file", NULL, NULL, NULL,      -1, "/path",          NULL, NULL},
+  {"file:////path/",           "file", NULL, NULL, NULL,      -1, "/path/",         NULL, NULL},
+  {"file:////path/f.txt",      "file", NULL, NULL, NULL,      -1, "/path/f.txt",    NULL, NULL},
+  // Schemeless URLs
+  {"path/f.txt",               NULL,   NULL, NULL, NULL,       -1, "path/f.txt",    NULL, NULL},
+  {"path:80/f.txt",            "path", NULL, NULL, NULL,       -1, "80/f.txt",      NULL, NULL},
+  {"path/f.txt:80",            "path/f.txt",NULL, NULL, NULL,  -1, "80",            NULL, NULL}, // Wrong.
+  {"/path/f.txt",              NULL,   NULL, NULL, NULL,       -1, "/path/f.txt",   NULL, NULL},
+  {"/path:80/f.txt",           NULL,   NULL, NULL, NULL,       -1, "/path:80/f.txt",NULL, NULL},
+  {"/path/f.txt:80",           NULL,   NULL, NULL, NULL,       -1, "/path/f.txt:80",NULL, NULL},
+  {"//server/f.txt",           NULL,   NULL, NULL, "server",   -1, "/f.txt",        NULL, NULL},
+  {"//server:80/f.txt",        NULL,   NULL, NULL, "server:80",-1, "/f.txt",        NULL, NULL},
+  {"//server/f.txt:80",        NULL,   NULL, NULL, "server",   -1, "/f.txt:80",     NULL, NULL},
+  {"///path/f.txt",            NULL,   NULL, NULL, NULL,       -1, "/path/f.txt",   NULL, NULL},
+  {"///path:80/f.txt",         NULL,   NULL, NULL, NULL,       -1, "/path:80/f.txt",NULL, NULL},
+  {"///path/f.txt:80",         NULL,   NULL, NULL, NULL,       -1, "/path/f.txt:80",NULL, NULL},
+  {"////path/f.txt",           NULL,   NULL, NULL, NULL,       -1, "/path/f.txt",   NULL, NULL},
+  {"////path:80/f.txt",        NULL,   NULL, NULL, NULL,       -1, "/path:80/f.txt",NULL, NULL},
+  {"////path/f.txt:80",        NULL,   NULL, NULL, NULL,       -1, "/path/f.txt:80",NULL, NULL},
+  // Queries and refs are valid for file URLs as well.
+  {"file:///foo.html?#",       "file", NULL, NULL, NULL,       -1, "/foo.html",     "",   ""},
+  {"file:///foo.html?q=y#ref", "file", NULL, NULL, NULL,       -1, "/foo.html",    "q=y", "ref"},
+#endif  // WIN32
 };
 
-TEST(URLParser, WindowsFile) {
+TEST(URLParser, ParseFileURL) {
   // Declared outside for loop to try to catch cases in init() where we forget
   // to reset something that is reset by the construtor.
   url_parse::Parsed parsed;
-  for (int i = 0; i < arraysize(file_cases); i++) {
+  for (size_t i = 0; i < arraysize(file_cases); i++) {
     const char* url = file_cases[i].input;
     url_parse::ParseFileURL(url, static_cast<int>(strlen(url)), &parsed);
     int port = url_parse::ParsePort(url, parsed.port);
 
-    EXPECT_TRUE(ComponentMatches(url, file_cases[i].scheme, parsed.scheme));
-    EXPECT_TRUE(ComponentMatches(url, file_cases[i].username, parsed.username));
-    EXPECT_TRUE(ComponentMatches(url, file_cases[i].password, parsed.password));
-    EXPECT_TRUE(ComponentMatches(url, file_cases[i].host, parsed.host));
-    EXPECT_EQ(file_cases[i].port, port);
-    EXPECT_TRUE(ComponentMatches(url, file_cases[i].path, parsed.path));
-    EXPECT_TRUE(ComponentMatches(url, file_cases[i].query, parsed.query));
-    EXPECT_TRUE(ComponentMatches(url, file_cases[i].ref, parsed.ref));
+    EXPECT_TRUE(ComponentMatches(url, file_cases[i].scheme, parsed.scheme))
+        << " for case #" << i << " [" << url << "] "
+        << parsed.scheme.begin << ", " << parsed.scheme.len;
+
+    EXPECT_TRUE(ComponentMatches(url, file_cases[i].username, parsed.username))
+        << " for case #" << i << " [" << url << "] "
+        << parsed.username.begin << ", " << parsed.username.len;
+
+    EXPECT_TRUE(ComponentMatches(url, file_cases[i].password, parsed.password))
+        << " for case #" << i << " [" << url << "] "
+        << parsed.password.begin << ", " << parsed.password.len;
+
+    EXPECT_TRUE(ComponentMatches(url, file_cases[i].host, parsed.host))
+        << " for case #" << i << " [" << url << "] "
+        << parsed.host.begin << ", " << parsed.host.len;
+
+    EXPECT_EQ(file_cases[i].port, port)
+        << " for case #" << i << " [ " << url << "] " << port;
+
+    EXPECT_TRUE(ComponentMatches(url, file_cases[i].path, parsed.path))
+        << " for case #" << i << " [" << url << "] "
+        << parsed.path.begin << ", " << parsed.path.len;
+
+    EXPECT_TRUE(ComponentMatches(url, file_cases[i].query, parsed.query))
+        << " for case #" << i << " [" << url << "] "
+        << parsed.query.begin << ", " << parsed.query.len;
+
+    EXPECT_TRUE(ComponentMatches(url, file_cases[i].ref, parsed.ref))
+        << " for case #" << i << " [ "<< url << "] "
+        << parsed.query.begin << ", " << parsed.scheme.len;
   }
 }
 
-#endif  // WIN32
 
 TEST(URLParser, ExtractFileName) {
   struct FileCase {
