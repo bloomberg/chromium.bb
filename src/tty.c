@@ -219,20 +219,18 @@ tty_create(struct weston_compositor *compositor, int tty_nr)
 		goto err_kdkbmode;
 	}
 
-	if (compositor->launcher == NULL) {
-		mode.mode = VT_PROCESS;
-		mode.relsig = SIGUSR1;
-		mode.acqsig = SIGUSR1;
-		if (ioctl(tty->fd, VT_SETMODE, &mode) < 0) {
-			weston_log("failed to take control of vt handling\n");
-			goto err_kdmode;
-		}
-
-		tty->vt_source =
-			wl_event_loop_add_signal(loop, SIGUSR1, vt_handler, tty);
-		if (!tty->vt_source)
-			goto err_vtmode;
+	mode.mode = VT_PROCESS;
+	mode.relsig = SIGUSR1;
+	mode.acqsig = SIGUSR1;
+	if (ioctl(tty->fd, VT_SETMODE, &mode) < 0) {
+		weston_log("failed to take control of vt handling\n");
+		goto err_kdmode;
 	}
+
+	tty->vt_source =
+		wl_event_loop_add_signal(loop, SIGUSR1, vt_handler, tty);
+	if (!tty->vt_source)
+		goto err_vtmode;
 
 	return tty;
 

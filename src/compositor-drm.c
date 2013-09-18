@@ -2242,9 +2242,11 @@ drm_restore(struct weston_compositor *ec)
 {
 	struct drm_compositor *d = (struct drm_compositor *) ec;
 
-	if (ec->launcher == NULL && drmDropMaster(d->drm.fd) < 0)
-		weston_log("failed to drop master: %m\n");
-	tty_reset(d->tty);
+	if (ec->launcher == NULL) {
+		if (drmDropMaster(d->drm.fd) < 0)
+			weston_log("failed to drop master: %m\n");
+		tty_reset(d->tty);
+	}
 }
 
 static void
@@ -2266,9 +2268,11 @@ drm_destroy(struct weston_compositor *ec)
 	if (d->gbm)
 		gbm_device_destroy(d->gbm);
 
-	if (d->base.launcher == NULL && drmDropMaster(d->drm.fd) < 0)
-		weston_log("failed to drop master: %m\n");
-	tty_destroy(d->tty);
+	if (d->base.launcher == NULL) {
+		if (drmDropMaster(d->drm.fd) < 0)
+			weston_log("failed to drop master: %m\n");
+		tty_destroy(d->tty);
+	}
 
 	close(d->drm.fd);
 
@@ -2366,7 +2370,8 @@ switch_vt_binding(struct weston_seat *seat, uint32_t time, uint32_t key, void *d
 {
 	struct drm_compositor *ec = data;
 
-	tty_activate_vt(ec->tty, key - KEY_F1 + 1);
+	if (ec->tty)
+		tty_activate_vt(ec->tty, key - KEY_F1 + 1);
 }
 
 /*
@@ -2585,10 +2590,12 @@ drm_compositor_create(struct wl_display *display,
 	ec->base.wl_display = display;
 	ec->session_listener.notify = session_notify;
 	wl_signal_add(&ec->base.session_signal, &ec->session_listener);
-	ec->tty = tty_create(&ec->base, tty);
-	if (!ec->tty) {
-		weston_log("failed to initialize tty\n");
-		goto err_udev;
+	if (ec->base.launcher == NULL) {
+		ec->tty = tty_create(&ec->base, tty);
+		if (!ec->tty) {
+			weston_log("failed to initialize tty\n");
+			goto err_udev;
+		}
 	}
 
 	drm_device = find_primary_gpu(ec, seat_id);
@@ -2692,7 +2699,8 @@ err_udev_dev:
 err_tty:
 	if (ec->base.launcher == NULL && drmDropMaster(ec->drm.fd) < 0)
 		weston_log("failed to drop master: %m\n");
-	tty_destroy(ec->tty);
+	if (ec->tty)
+		tty_destroy(ec->tty);
 err_udev:
 	udev_unref(ec->udev);
 err_compositor:
