@@ -16,7 +16,7 @@ import subprocess
 import sys
 import unittest
 
-from path_resolver import PathResolver
+from variable_expander import VariableExpander
 import verifier
 
 
@@ -39,19 +39,19 @@ class Config:
 class InstallerTest(unittest.TestCase):
   """Tests a test case in the config file."""
 
-  def __init__(self, test, config, path_resolver):
+  def __init__(self, test, config, variable_expander):
     """Constructor.
 
     Args:
       test: An array of alternating state names and action names, starting and
           ending with state names.
       config: The Config object.
-      path_resolver: A PathResolver object.
+      variable_expander: A VariableExpander object.
     """
     super(InstallerTest, self).__init__()
     self._test = test
     self._config = config
-    self._path_resolver = path_resolver
+    self._variable_expander = variable_expander
     self._clean_on_teardown = True
 
   def __str__(self):
@@ -76,7 +76,7 @@ class InstallerTest(unittest.TestCase):
     # Starting at index 1, we loop through pairs of (action, state).
     for i in range(1, len(self._test), 2):
       action = self._test[i]
-      RunCommand(self._config.actions[action], self._path_resolver)
+      RunCommand(self._config.actions[action], self._variable_expander)
 
       state = self._test[i + 1]
       self._VerifyState(state)
@@ -88,7 +88,7 @@ class InstallerTest(unittest.TestCase):
   def tearDown(self):
     """Cleans up the machine if the test case fails."""
     if self._clean_on_teardown:
-      RunCleanCommand(True, self._path_resolver)
+      RunCleanCommand(True, self._variable_expander)
 
   def shortDescription(self):
     """Overridden from unittest.TestCase.
@@ -107,38 +107,38 @@ class InstallerTest(unittest.TestCase):
       state: A state name.
     """
     try:
-      verifier.Verify(self._config.states[state], self._path_resolver)
+      verifier.Verify(self._config.states[state], self._variable_expander)
     except AssertionError as e:
       # If an AssertionError occurs, we intercept it and add the state name
       # to the error message so that we know where the test fails.
       raise AssertionError("In state '%s', %s" % (state, e))
 
 
-def RunCommand(command, path_resolver):
+def RunCommand(command, variable_expander):
   """Runs the given command from the current file's directory.
 
   This function throws an Exception if the command returns with non-zero exit
   status.
 
   Args:
-    command: A command to run. It is expanded using ResolvePath.
-    path_resolver: A PathResolver object.
+    command: A command to run. It is expanded using Expand.
+    variable_expander: A VariableExpander object.
   """
-  resolved_command = path_resolver.ResolvePath(command)
+  expanded_command = variable_expander.Expand(command)
   script_dir = os.path.dirname(os.path.abspath(__file__))
-  exit_status = subprocess.call(resolved_command, shell=True, cwd=script_dir)
+  exit_status = subprocess.call(expanded_command, shell=True, cwd=script_dir)
   if exit_status != 0:
     raise Exception('Command %s returned non-zero exit status %s' % (
-        command, exit_status))
+        expanded_command, exit_status))
 
 
-def RunCleanCommand(force_clean, path_resolver):
+def RunCleanCommand(force_clean, variable_expander):
   """Puts the machine in the clean state (i.e. Chrome not installed).
 
   Args:
     force_clean: A boolean indicating whether to force cleaning existing
         installations.
-    path_resolver: A PathResolver object.
+    variable_expander: A VariableExpander object.
   """
   # TODO(sukolsak): Read the clean state from the config file and clean
   # the machine according to it.
@@ -150,7 +150,7 @@ def RunCleanCommand(force_clean, path_resolver):
                     '--chrome-long-name="$CHROME_LONG_NAME" '
                     '--no-error-if-absent %s %s' %
                     (level_option, interactive_option))
-  RunCommand(' && '.join(commands), path_resolver)
+  RunCommand(' && '.join(commands), variable_expander)
 
 
 def MergePropertyDictionaries(current_property, new_property):
@@ -232,10 +232,10 @@ def RunTests(mini_installer_path, config, force_clean):
     True if all the tests passed, or False otherwise.
   """
   suite = unittest.TestSuite()
-  path_resolver = PathResolver(mini_installer_path)
-  RunCleanCommand(force_clean, path_resolver)
+  variable_expander = VariableExpander(mini_installer_path)
+  RunCleanCommand(force_clean, variable_expander)
   for test in config.tests:
-    suite.addTest(InstallerTest(test, config, path_resolver))
+    suite.addTest(InstallerTest(test, config, variable_expander))
   result = unittest.TextTestRunner(verbosity=2).run(suite)
   return result.wasSuccessful()
 

@@ -5,16 +5,16 @@
 import _winreg
 
 
-def VerifyRegistryEntries(entries, path_resolver):
+def VerifyRegistryEntries(entries, variable_expander):
   """Verifies that the current registry matches the specified criteria.
 
   Args:
     entries: A dictionary whose keys are registry keys and values are
         expectation dictionaries.
-    path_resolver: A PathResolver object.
+    variable_expander: A VariableExpander object.
   """
   for key, expectation in entries.iteritems():
-    VerifyRegistryEntry(key, expectation, path_resolver)
+    VerifyRegistryEntry(key, expectation, variable_expander)
 
 
 def RootKeyConstant(root_key):
@@ -48,14 +48,14 @@ def ValueTypeConstant(value_type):
   return value_type_mapping[value_type]
 
 
-def VerifyRegistryEntry(key, expectation, path_resolver):
+def VerifyRegistryEntry(key, expectation, variable_expander):
   """Verifies a registry key according to the |expectation|.
 
   The |expectation| specifies whether or not the registry key should exist
   (under 'exists') and optionally specifies expected 'values' for the key.
 
   Args:
-    key: Name of the registry key. It is expanded using ResolvePath.
+    key: Name of the registry key. It is expanded using Expand.
     expectation: A dictionary with the following keys and values:
         'exists' a boolean indicating whether the registry key should exist.
         'values' (optional) a dictionary where each key is a registry value and
@@ -63,11 +63,11 @@ def VerifyRegistryEntry(key, expectation, path_resolver):
             values:
                 'type' a string indicating the type of the registry value.
                 'data' the associated data of the registry value. If it is a
-                    string, it is expanded using ResolvePath.
-    path_resolver: A PathResolver object.
+                    string, it is expanded using Expand.
+    variable_expander: A VariableExpander object.
   """
-  resolved_key = path_resolver.ResolvePath(key)
-  root_key, sub_key = resolved_key.split('\\', 1)
+  expanded_key = variable_expander.Expand(key)
+  root_key, sub_key = expanded_key.split('\\', 1)
   try:
     # Query the Windows registry for the registry key. It will throw a
     # WindowsError if the key doesn't exist.
@@ -76,10 +76,10 @@ def VerifyRegistryEntry(key, expectation, path_resolver):
   except WindowsError:
     # Key doesn't exist. See that it matches the expectation.
     assert not expectation['exists'], ('Registry key %s is missing' %
-                                       resolved_key)
+                                       expanded_key)
     return
   # The key exists, see that it matches the expectation.
-  assert expectation['exists'], ('Registry key %s exists' % resolved_key)
+  assert expectation['exists'], ('Registry key %s exists' % expanded_key)
 
   # Verify the expected values.
   if 'values' not in expectation:
@@ -90,19 +90,19 @@ def VerifyRegistryEntry(key, expectation, path_resolver):
       data, value_type = _winreg.QueryValueEx(key_handle, value)
     except WindowsError:
       raise KeyError("Value '%s' of registry key %s is missing" % (
-          value, resolved_key))
+          value, expanded_key))
 
     # Verify the type of the value.
     expected_value_type = value_expectation['type']
     assert ValueTypeConstant(expected_value_type) == value_type, \
         "Value '%s' of registry key %s has unexpected type '%s'" % (
-            value, resolved_key, expected_value_type)
+            value, expanded_key, expected_value_type)
 
     # Verify the associated data of the value.
     expected_data = value_expectation['data']
     if isinstance(expected_data, basestring):
-      expected_data = path_resolver.ResolvePath(expected_data)
+      expected_data = variable_expander.Expand(expected_data)
     assert expected_data == data, \
         ("Value '%s' of registry key %s has unexpected data.\n"
          "  Expected: %s\n"
-         "  Actual: %s" % (value, resolved_key, expected_data, data))
+         "  Actual: %s" % (value, expanded_key, expected_data, data))

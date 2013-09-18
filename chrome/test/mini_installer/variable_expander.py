@@ -53,8 +53,8 @@ def _GetUserSpecificRegistrySuffix():
   return '.' + base64.b32encode(md5_digest).rstrip('=')
 
 
-class PathResolver:
-  """Resolves variables in file paths and registry keys."""
+class VariableExpander:
+  """Expands variables in strings."""
 
   def __init__(self, mini_installer_path):
     """Constructor.
@@ -117,8 +117,8 @@ class PathResolver:
         'USER_SPECIFIC_REGISTRY_SUFFIX': user_specific_registry_suffix,
     }
 
-  def ResolvePath(self, path):
-    """Resolves variables in a file path, and returns the resolved path.
+  def Expand(self, str):
+    """Expands variables in the given string.
 
     This method resolves only variables defined in the constructor. It does not
     resolve environment variables. Any dollar signs that are not part of
@@ -126,9 +126,9 @@ class PathResolver:
     be raised.
 
     Args:
-      path: An absolute or relative path.
+      str: A string.
 
     Returns:
-      A new path created by replacing variables with their values.
+      A new string created by replacing variables with their values.
     """
-    return string.Template(path).substitute(self._variable_mapping)
+    return string.Template(str).substitute(self._variable_mapping)

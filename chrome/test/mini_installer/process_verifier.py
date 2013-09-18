@@ -5,7 +5,7 @@
 import chrome_helper
 
 
-def VerifyProcesses(processes, path_resolver):
+def VerifyProcesses(processes, variable_expander):
   """Verifies that the running processes match the expectation dictionaries.
 
   This method will throw an AssertionError if process state doesn't match the
@@ -17,15 +17,15 @@ def VerifyProcesses(processes, path_resolver):
         the following key and value:
             'running' a boolean indicating whether the process should be
                 running.
-    path_resolver: A PathResolver object.
+    variable_expander: A VariableExpander object.
   """
   # Create a list of paths of all running processes.
   running_process_paths = [path for (_, path) in
                            chrome_helper.GetProcessIDAndPathPairs()]
 
   for process_path, expectation in processes.iteritems():
-    process_resolved_path = path_resolver.ResolvePath(process_path)
-    is_running = process_resolved_path in running_process_paths
+    process_expanded_path = variable_expander.Expand(process_path)
+    is_running = process_expanded_path in running_process_paths
     assert expectation['running'] == is_running, \
-        ('Process %s is running' % process_path) if is_running else \
-        ('Process %s is not running' % process_path)
+        ('Process %s is running' % process_expanded_path) if is_running else \
+        ('Process %s is not running' % process_expanded_path)
