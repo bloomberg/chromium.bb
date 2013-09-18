@@ -18,8 +18,8 @@ const char WebRtcTestBase::kAudioVideoCallConstraints[] =
     "'{audio: true, video: true}'";
 const char WebRtcTestBase::kAudioOnlyCallConstraints[] = "'{audio: true}'";
 const char WebRtcTestBase::kVideoOnlyCallConstraints[] = "'{video: true}'";
-const char WebRtcTestBase::kFailedWithErrorPermissionDenied[] =
-    "failed-with-error-PERMISSION_DENIED";
+const char WebRtcTestBase::kFailedWithPermissionDeniedError[] =
+    "failed-with-error-PermissionDeniedError";
 
 WebRtcTestBase::WebRtcTestBase() {
 }
@@ -61,7 +61,7 @@ void WebRtcTestBase::GetUserMediaWithSpecificConstraintsAndDeny(
 
   // Wait for WebRTC to call the fail callback.
   EXPECT_TRUE(PollingWaitUntil("obtainGetUserMediaResult()",
-                               kFailedWithErrorPermissionDenied, tab_contents));
+                               kFailedWithPermissionDeniedError, tab_contents));
 }
 
 void WebRtcTestBase::GetUserMediaAndDismiss(
@@ -73,7 +73,7 @@ void WebRtcTestBase::GetUserMediaAndDismiss(
 
   // A dismiss should be treated like a deny.
   EXPECT_TRUE(PollingWaitUntil("obtainGetUserMediaResult()",
-                               kFailedWithErrorPermissionDenied, tab_contents));
+                               kFailedWithPermissionDeniedError, tab_contents));
 }
 
 void WebRtcTestBase::GetUserMedia(content::WebContents* tab_contents,

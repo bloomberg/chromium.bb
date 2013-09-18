@@ -25,7 +25,7 @@ class WebRtcTestBase : public InProcessBrowserTest {
   static const char kAudioOnlyCallConstraints[];
   static const char kVideoOnlyCallConstraints[];
 
-  static const char kFailedWithErrorPermissionDenied[];
+  static const char kFailedWithPermissionDeniedError[];
 
   WebRtcTestBase();
   virtual ~WebRtcTestBase();
