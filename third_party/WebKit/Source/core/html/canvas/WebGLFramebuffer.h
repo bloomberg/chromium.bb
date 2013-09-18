@@ -43,18 +43,18 @@ public:
     public:
         virtual ~WebGLAttachment();
 
-        virtual GC3Dsizei getWidth() const = 0;
-        virtual GC3Dsizei getHeight() const = 0;
-        virtual GC3Denum getFormat() const = 0;
-        // For texture attachment, getType() returns the type of the attached texture.
+        virtual GC3Dsizei width() const = 0;
+        virtual GC3Dsizei height() const = 0;
+        virtual GC3Denum format() const = 0;
+        // For texture attachment, type() returns the type of the attached texture.
         // For renderbuffer attachment, the type of the renderbuffer may vary with GL implementation.
-        // To avoid confusion, it would be better to not implement getType() for renderbuffer attachment and
-        // we should always use the internalformat of the renderbuffer and avoid using getType() API.
-        virtual GC3Denum getType() const = 0;
-        virtual WebGLSharedObject* getObject() const = 0;
+        // To avoid confusion, it would be better to not implement type() for renderbuffer attachment and
+        // we should always use the internalformat of the renderbuffer and avoid using type() API.
+        virtual GC3Denum type() const = 0;
+        virtual WebGLSharedObject* object() const = 0;
         virtual bool isSharedObject(WebGLSharedObject*) const = 0;
-        virtual bool isValid() const = 0;
-        virtual bool isInitialized() const = 0;
+        virtual bool valid() const = 0;
+        virtual bool initialized() const = 0;
         virtual void setInitialized() = 0;
         virtual void onDetached(GraphicsContext3D*) = 0;
         virtual void attach(GraphicsContext3D*, GC3Denum attachment) = 0;
@@ -76,9 +76,9 @@ public:
     void removeAttachmentFromBoundFramebuffer(GC3Denum);
     WebGLSharedObject* getAttachmentObject(GC3Denum) const;
 
-    GC3Denum getColorBufferFormat() const;
-    GC3Dsizei getColorBufferWidth() const;
-    GC3Dsizei getColorBufferHeight() const;
+    GC3Denum colorBufferFormat() const;
+    GC3Dsizei colorBufferWidth() const;
+    GC3Dsizei colorBufferHeight() const;
 
     // This should always be called before drawArray, drawElements, clear,
     // readPixels, copyTexImage2D, copyTexSubImage2D if this framebuffer is

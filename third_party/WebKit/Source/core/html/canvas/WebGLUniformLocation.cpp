@@ -41,14 +41,14 @@ WebGLUniformLocation::WebGLUniformLocation(WebGLProgram* program, GC3Dint locati
 {
     ASSERT(m_program);
     ScriptWrappable::init(this);
-    m_linkCount = m_program->getLinkCount();
+    m_linkCount = m_program->linkCount();
 }
 
 WebGLProgram* WebGLUniformLocation::program() const
 {
     // If the program has been linked again, then this UniformLocation is no
     // longer valid.
-    if (m_program->getLinkCount() != m_linkCount)
+    if (m_program->linkCount() != m_linkCount)
         return 0;
     return m_program.get();
 }
@@ -57,7 +57,7 @@ GC3Dint WebGLUniformLocation::location() const
 {
     // If the program has been linked again, then this UniformLocation is no
     // longer valid.
-    ASSERT(m_program->getLinkCount() == m_linkCount);
+    ASSERT(m_program->linkCount() == m_linkCount);
     return m_location;
 }
 

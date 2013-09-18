@@ -43,17 +43,17 @@ public:
         m_internalFormat = internalformat;
         m_initialized = false;
     }
-    GC3Denum getInternalFormat() const { return m_internalFormat; }
+    GC3Denum internalFormat() const { return m_internalFormat; }
 
     void setSize(GC3Dsizei width, GC3Dsizei height)
     {
         m_width = width;
         m_height = height;
     }
-    GC3Dsizei getWidth() const { return m_width; }
-    GC3Dsizei getHeight() const { return m_height; }
+    GC3Dsizei width() const { return m_width; }
+    GC3Dsizei height() const { return m_height; }
 
-    bool isInitialized() const { return m_initialized; }
+    bool initialized() const { return m_initialized; }
     void setInitialized() { m_initialized = true; }
 
     bool hasEverBeenBound() const { return object() && m_hasEverBeenBound; }

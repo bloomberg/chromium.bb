@@ -45,10 +45,10 @@ public:
 
     bool isUsingVertexAttrib0();
 
-    bool getLinkStatus();
+    bool linkStatus();
     void setLinkStatus(bool);
 
-    unsigned getLinkCount() const { return m_linkCount; }
+    unsigned linkCount() const { return m_linkCount; }
 
     // This is to be called everytime after the program is successfully linked.
     // We don't deal with integer overflow here, assuming in reality a program

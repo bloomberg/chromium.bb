@@ -2092,7 +2092,7 @@ GC3Dint WebGLRenderingContext::getAttribLocation(WebGLProgram* program, const St
         return -1;
     if (isPrefixReserved(name))
         return -1;
-    if (!program->getLinkStatus()) {
+    if (!program->linkStatus()) {
         synthesizeGLError(GraphicsContext3D::INVALID_OPERATION, "getAttribLocation", "program not linked");
         return 0;
     }
@@ -2491,7 +2491,7 @@ WebGLGetInfo WebGLRenderingContext::getProgramParameter(WebGLProgram* program, G
         m_context->getProgramiv(objectOrZero(program), pname, &value);
         return WebGLGetInfo(static_cast<bool>(value));
     case GraphicsContext3D::LINK_STATUS:
-        return WebGLGetInfo(program->getLinkStatus());
+        return WebGLGetInfo(program->linkStatus());
     case GraphicsContext3D::ATTACHED_SHADERS:
     case GraphicsContext3D::ACTIVE_ATTRIBUTES:
     case GraphicsContext3D::ACTIVE_UNIFORMS:
@@ -2546,7 +2546,7 @@ WebGLGetInfo WebGLRenderingContext::getRenderbufferParameter(GC3Denum target, GC
         }
         return WebGLGetInfo(value);
     case GraphicsContext3D::RENDERBUFFER_INTERNAL_FORMAT:
-        return WebGLGetInfo(m_renderbufferBinding->getInternalFormat());
+        return WebGLGetInfo(m_renderbufferBinding->internalFormat());
     default:
         synthesizeGLError(GraphicsContext3D::INVALID_ENUM, "getRenderbufferParameter", "invalid parameter name");
         return WebGLGetInfo();
@@ -2619,7 +2619,7 @@ String WebGLRenderingContext::getShaderSource(WebGLShader* shader)
         return String();
     if (!validateWebGLObject("getShaderSource", shader))
         return "";
-    return ensureNotNull(shader->getSource());
+    return ensureNotNull(shader->source());
 }
 
 Vector<String> WebGLRenderingContext::getSupportedExtensions()
@@ -2821,7 +2821,7 @@ PassRefPtr<WebGLUniformLocation> WebGLRenderingContext::getUniformLocation(WebGL
         return 0;
     if (isPrefixReserved(name))
         return 0;
-    if (!program->getLinkStatus()) {
+    if (!program->linkStatus()) {
         synthesizeGLError(GraphicsContext3D::INVALID_OPERATION, "getUniformLocation", "program not linked");
         return 0;
     }
@@ -3964,7 +3964,7 @@ void WebGLRenderingContext::useProgram(WebGLProgram* program)
         return;
     if (deleted)
         program = 0;
-    if (program && !program->getLinkStatus()) {
+    if (program && !program->linkStatus()) {
         synthesizeGLError(GraphicsContext3D::INVALID_OPERATION, "useProgram", "program not valid");
         return;
     }
@@ -4395,7 +4395,7 @@ bool WebGLRenderingContext::isTexInternalFormatColorBufferCombinationValid(GC3De
 GC3Denum WebGLRenderingContext::getBoundFramebufferColorFormat()
 {
     if (m_framebufferBinding && m_framebufferBinding->object())
-        return m_framebufferBinding->getColorBufferFormat();
+        return m_framebufferBinding->colorBufferFormat();
     if (m_attributes.alpha)
         return GraphicsContext3D::RGBA;
     return GraphicsContext3D::RGB;
@@ -4404,14 +4404,14 @@ GC3Denum WebGLRenderingContext::getBoundFramebufferColorFormat()
 int WebGLRenderingContext::getBoundFramebufferWidth()
 {
     if (m_framebufferBinding && m_framebufferBinding->object())
-        return m_framebufferBinding->getColorBufferWidth();
+        return m_framebufferBinding->colorBufferWidth();
     return m_drawingBuffer->size().width();
 }
 
 int WebGLRenderingContext::getBoundFramebufferHeight()
 {
     if (m_framebufferBinding && m_framebufferBinding->object())
-        return m_framebufferBinding->getColorBufferHeight();
+        return m_framebufferBinding->colorBufferHeight();
     return m_drawingBuffer->size().height();
 }
 

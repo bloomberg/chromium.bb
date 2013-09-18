@@ -38,8 +38,8 @@ public:
 
     static PassRefPtr<WebGLShader> create(WebGLRenderingContext*, GC3Denum);
 
-    GC3Denum getType() const { return m_type; }
-    const String& getSource() const { return m_source; }
+    GC3Denum type() const { return m_type; }
+    const String& source() const { return m_source; }
 
     void setSource(const String& source) { m_source = source; }
 

@@ -88,7 +88,7 @@ bool WebGLProgram::isUsingVertexAttrib0()
     return false;
 }
 
-bool WebGLProgram::getLinkStatus()
+bool WebGLProgram::linkStatus()
 {
     cacheInfoIfNeeded();
     return m_linkStatus;
@@ -122,7 +122,7 @@ bool WebGLProgram::attachShader(WebGLShader* shader)
 {
     if (!shader || !shader->object())
         return false;
-    switch (shader->getType()) {
+    switch (shader->type()) {
     case GraphicsContext3D::VERTEX_SHADER:
         if (m_vertexShader)
             return false;
@@ -142,7 +142,7 @@ bool WebGLProgram::detachShader(WebGLShader* shader)
 {
     if (!shader || !shader->object())
         return false;
-    switch (shader->getType()) {
+    switch (shader->type()) {
     case GraphicsContext3D::VERTEX_SHADER:
         if (m_vertexShader != shader)
             return false;
