@@ -29,6 +29,7 @@
 
 #include "core/dom/Event.h"
 #include "core/page/DOMWindowLifecycleObserver.h"
+#include "core/page/PageLifecycleObserver.h"
 #include "core/platform/Supplementable.h"
 #include "modules/device_orientation/DeviceSensorEventController.h"
 
@@ -37,7 +38,7 @@ namespace WebCore {
 class DeviceMotionData;
 class DOMWindow;
 
-class DeviceMotionController : public DeviceSensorEventController, public Supplement<ScriptExecutionContext>, public DOMWindowLifecycleObserver {
+class DeviceMotionController : public DeviceSensorEventController, public Supplement<ScriptExecutionContext>, public DOMWindowLifecycleObserver, public PageLifecycleObserver {
 
 public:
     virtual ~DeviceMotionController();
@@ -47,19 +48,24 @@ public:
 
     void didChangeDeviceMotion(DeviceMotionData*);
 
-    // Inherited from DOMWindowLifecycleObserver
-    virtual void didAddEventListener(DOMWindow*, const AtomicString&) OVERRIDE;
-    virtual void didRemoveEventListener(DOMWindow*, const AtomicString&) OVERRIDE;
-    virtual void didRemoveAllEventListeners(DOMWindow*) OVERRIDE;
-
 private:
     explicit DeviceMotionController(Document*);
     virtual void registerWithDispatcher() OVERRIDE;
     virtual void unregisterWithDispatcher() OVERRIDE;
 
+    // Inherited from DOMWindowLifecycleObserver.
+    virtual void didAddEventListener(DOMWindow*, const AtomicString&) OVERRIDE;
+    virtual void didRemoveEventListener(DOMWindow*, const AtomicString&) OVERRIDE;
+    virtual void didRemoveAllEventListeners(DOMWindow*) OVERRIDE;
+
+    // Inherited from PageLifecycleObserver.
+    virtual void pageVisibilityChanged() OVERRIDE;
+
     virtual bool hasLastData() OVERRIDE;
     virtual PassRefPtr<Event> getLastEvent() OVERRIDE;
     virtual bool isNullEvent(Event*) OVERRIDE;
+
+    bool m_hasEventListener;
 };
 
 } // namespace WebCore
