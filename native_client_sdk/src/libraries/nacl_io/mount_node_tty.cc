@@ -34,7 +34,6 @@ namespace nacl_io {
 
 MountNodeTty::MountNodeTty(Mount* mount) : MountNodeCharDevice(mount),
                                            is_readable_(false),
-                                           did_resize_(false),
                                            rows_(DEFAULT_TTY_ROWS),
                                            cols_(DEFAULT_TTY_COLS) {
   output_handler_.handler = NULL;
@@ -100,15 +99,8 @@ Error MountNodeTty::Write(size_t offs,
 
 Error MountNodeTty::Read(size_t offs, void* buf, size_t count, int* out_bytes) {
   AUTO_LOCK(node_lock_);
-  did_resize_ = false;
   while (!is_readable_) {
     pthread_cond_wait(&is_readable_cond_, node_lock_.mutex());
-    if (!is_readable_ && did_resize_) {
-      // If an async resize event occured then return the failure and
-      // set EINTR.
-      *out_bytes = 0;
-      return EINTR;
-    }
   }
 
   size_t bytes_to_copy = std::min(count, input_buffer_.size());
@@ -259,13 +251,6 @@ Error MountNodeTty::Ioctl(int request, char* arg) {
         cols_ = size->ws_col;
       }
       kill(getpid(), SIGWINCH);
-
-      // Wake up any thread waiting on Read
-      {
-        AUTO_LOCK(node_lock_);
-        did_resize_ = true;
-        pthread_cond_broadcast(&is_readable_cond_);
-      }
       return 0;
     }
     case TIOCGWINSZ: {

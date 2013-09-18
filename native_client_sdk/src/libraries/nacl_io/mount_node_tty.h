@@ -53,7 +53,6 @@ class MountNodeTty : public MountNodeCharDevice {
 
   std::deque<char> input_buffer_;
   bool is_readable_;
-  bool did_resize_;
   pthread_cond_t is_readable_cond_;
   struct termios termios_;
 
