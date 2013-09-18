@@ -3,4 +3,3 @@ automated_ui_tests
 interactive_ui_tests
 _pyautolib.so
 pyautolib.py
-chromedriver
