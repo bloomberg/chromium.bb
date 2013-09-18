@@ -642,6 +642,9 @@ class TabStripModel : public content::NotificationObserver {
 
   ui::ListSelectionModel selection_model_;
 
+  // TODO(sky): remove this; used for debugging 291265.
+  bool in_notify_;
+
   DISALLOW_IMPLICIT_CONSTRUCTORS(TabStripModel);
 };
 

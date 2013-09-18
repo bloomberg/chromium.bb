@@ -115,7 +115,8 @@ void CloseTracker::Observe(int type,
 TabStripModel::TabStripModel(TabStripModelDelegate* delegate, Profile* profile)
     : delegate_(delegate),
       profile_(profile),
-      closing_all_(false) {
+      closing_all_(false),
+      in_notify_(false) {
   DCHECK(delegate_);
   registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
                  content::NotificationService::AllBrowserContextsAndSources());
@@ -262,6 +263,7 @@ WebContents* TabStripModel::DiscardWebContentsAt(int index) {
 }
 
 WebContents* TabStripModel::DetachWebContentsAt(int index) {
+  CHECK(!in_notify_);
   if (contents_data_.empty())
     return NULL;
 
@@ -1178,11 +1180,14 @@ void TabStripModel::NotifyIfActiveTabChanged(WebContents* old_contents,
     int reason = notify_types == NOTIFY_USER_GESTURE
                  ? TabStripModelObserver::CHANGE_REASON_USER_GESTURE
                  : TabStripModelObserver::CHANGE_REASON_NONE;
+    CHECK(!in_notify_);
+    in_notify_ = true;
     FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
         ActiveTabChanged(old_contents,
                          new_contents,
                          active_index(),
                          reason));
+    in_notify_ = false;
     // Activating a discarded tab reloads it, so it is no longer discarded.
     contents_data_[active_index()]->discarded = false;
   }
