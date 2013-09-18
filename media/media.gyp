@@ -1427,6 +1427,7 @@
           'type': 'none',
           'dependencies': [
             '../base/base.gyp:base',
+            'media_android_imageformat_list',
           ],
           'export_dependent_settings': [
             '../base/base.gyp:base',
@@ -1436,7 +1437,18 @@
           },
           'includes': ['../build/java.gypi'],
         },
-
+        {
+          'target_name': 'media_android_imageformat_list',
+          'type': 'none',
+          'sources': [
+            'base/android/java/src/org/chromium/media/ImageFormat.template',
+          ],
+          'variables': {
+            'package_name': 'org/chromium/media',
+            'template_deps': ['video/capture/android/imageformat_list.h'],
+          },
+          'includes': [ '../build/android/java_cpp_template.gypi' ],
+        },                  
       ],
     }],
     ['media_use_ffmpeg==1', {

@@ -54,8 +54,16 @@ class MEDIA_EXPORT VideoCaptureDeviceAndroid : public VideoCaptureDevice1 {
     kError  // Hit error. User needs to recover by destroying the object.
   };
 
+  // Automatically generated enum to interface with Java world.
+  enum AndroidImageFormat {
+#define DEFINE_ANDROID_IMAGEFORMAT(name, value) name = value,
+#include "media/video/capture/android/imageformat_list.h"
+#undef DEFINE_ANDROID_IMAGEFORMAT
+  };
+
   explicit VideoCaptureDeviceAndroid(const Name& device_name);
   bool Init();
+  VideoPixelFormat GetColorspace();
   void SetErrorState(const std::string& reason);
 
   // Prevent racing on accessing |state_| and |observer_| since both could be

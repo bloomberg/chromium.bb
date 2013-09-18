@@ -139,6 +139,13 @@ class VideoCaptureController::VideoCaptureDeviceClient
 
   // Tracks the current frame format.
   media::VideoCaptureCapability frame_info_;
+
+  // For NV21 we have to do color conversion into the intermediate buffer and
+  // from there the rotations. This variable won't be needed after
+  // http://crbug.com/292400
+#if defined(OS_IOS) || defined(OS_ANDROID)
+  scoped_ptr<uint8[]> i420_intermediate_buffer_;
+#endif  // #if defined(OS_IOS) || defined(OS_ANDROID)
 };
 
 VideoCaptureController::VideoCaptureController()
@@ -405,6 +412,7 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedFrame(
     bool flip_horiz) {
   DCHECK(frame_info_.color == media::PIXEL_FORMAT_I420 ||
          frame_info_.color == media::PIXEL_FORMAT_YV12 ||
+         frame_info_.color == media::PIXEL_FORMAT_NV21 ||
          (rotation == 0 && !flip_vert && !flip_horiz));
 
   TRACE_EVENT0("video", "VideoCaptureController::OnIncomingCapturedFrame");
@@ -439,11 +447,21 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedFrame(
           data, yplane, vplane, uplane, frame_info_.width, frame_info_.height,
           rotation, flip_vert, flip_horiz);
       break;
-    case media::PIXEL_FORMAT_NV21:
+    case media::PIXEL_FORMAT_NV21: {
       DCHECK(!chopped_width_ && !chopped_height_);
-      media::ConvertNV21ToYUV(data, yplane, uplane, vplane, frame_info_.width,
+      int num_pixels = frame_info_.width * frame_info_.height;
+      media::ConvertNV21ToYUV(data,
+                              &i420_intermediate_buffer_[0],
+                              &i420_intermediate_buffer_[num_pixels],
+                              &i420_intermediate_buffer_[num_pixels * 5 / 4],
+                              frame_info_.width,
                               frame_info_.height);
-      break;
+      RotatePackedYV12Frame(
+          i420_intermediate_buffer_.get(), yplane, uplane, vplane,
+          frame_info_.width, frame_info_.height,
+          rotation, flip_vert, flip_horiz);
+       break;
+    }
     case media::PIXEL_FORMAT_YUY2:
       DCHECK(!chopped_width_ && !chopped_height_);
       if (frame_info_.width * frame_info_.height * 2 != length) {
@@ -486,7 +504,6 @@ void
 VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedVideoFrame(
     const scoped_refptr<media::VideoFrame>& frame,
     base::Time timestamp) {
-
   if (!buffer_pool_)
     return;
 
@@ -619,6 +636,13 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnFrameInfo(
   } else {
     chopped_height_ = 0;
   }
+#if defined(OS_IOS) || defined(OS_ANDROID)
+  if (frame_info_.color == media::PIXEL_FORMAT_NV21 &&
+      !i420_intermediate_buffer_) {
+    i420_intermediate_buffer_.reset(
+        new uint8[frame_info_.width * frame_info_.height * 12 / 8]);
+  }
+#endif  // #if defined(OS_IOS) || defined(OS_ANDROID)
 
   DCHECK(!buffer_pool_.get());
 
