@@ -20,6 +20,7 @@ function MosaicMode(
 
   this.toggleMode_ = toggleMode;
   this.mosaic_.addEventListener('dblclick', this.toggleMode_);
+  this.showingTimeoutID_ = null;
 }
 
 /**
@@ -529,7 +530,8 @@ Mosaic.prototype.show = function() {
     // shortly before the large image animation is done.
     duration -= 100;
   }
-  setTimeout(function() {
+  this.showingTimeoutID_ = setTimeout(function() {
+    this.showingTimeoutID_ = null;
     // Make the selection visible.
     // If the mosaic is not animated it will start fading in now.
     this.setAttribute('visible', 'normal');
@@ -541,6 +543,10 @@ Mosaic.prototype.show = function() {
  * Hide the mosaic.
  */
 Mosaic.prototype.hide = function() {
+  if (this.showingTimeoutID_ != null) {
+    clearTimeout(this.showingTimeoutID_);
+    this.showingTimeoutID_ = null;
+  }
   this.removeAttribute('visible');
 };
 
