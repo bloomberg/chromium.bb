@@ -54,12 +54,6 @@ class PepperRendererConnection : public BrowserMessageFilter {
       PP_Instance instance,
       const std::vector<IPC::Message>& nested_msgs);
 
-  void OnMsgFileRefGetInfoForRenderer(
-      int routing_id,
-      int child_process_id,
-      int32_t sequence_num,
-      const std::vector<PP_Resource>& resources);
-
   void OnMsgDidCreateInProcessInstance(
       PP_Instance instance,
       const PepperRendererInstanceData& instance_data);

@@ -49,6 +49,11 @@ class RendererPpapiHost {
  public:
   // Returns the RendererPpapiHost associated with the given PP_Instance,
   // or NULL if the instance is invalid.
+  //
+  // Do NOT use this when dealing with an "external plugin" that serves as a
+  // bootstrap to load a second plugin. This is because the two will share a
+  // PP_Instance, and the RendererPpapiHost* for the second plugin will be
+  // returned after we switch the proxy on.
   CONTENT_EXPORT static RendererPpapiHost* GetForPPInstance(
       PP_Instance instance);
 

@@ -8,7 +8,7 @@
 #include <string>
 
 #include "ppapi/c/pp_stdint.h"
-#include "ppapi/shared_impl/ppb_file_ref_shared.h"
+#include "ppapi/shared_impl/file_ref_create_info.h"
 #include "ppapi/shared_impl/ppapi_shared_export.h"
 
 namespace ppapi {
@@ -23,8 +23,8 @@ struct PPAPI_SHARED_EXPORT URLResponseInfoData {
   std::string status_text;
   std::string redirect_url;
 
-  // Nonzero when streaming to a file.
-  PPB_FileRef_CreateInfo body_as_file_ref;
+  // Valid when streaming to a file.
+  FileRefCreateInfo body_as_file_ref;
 };
 
 }  // namespace ppapi

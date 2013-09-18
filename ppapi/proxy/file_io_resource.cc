@@ -111,9 +111,13 @@ int32_t FileIOResource::Open(PP_Resource file_ref,
   if (rv != PP_OK)
     return rv;
 
+  // Take a reference on the FileRef resource while we're opening the file; we
+  // don't want the plugin destroying it during the Open operation.
+  file_ref_ = enter.resource();
+
   Call<PpapiPluginMsg_FileIO_OpenReply>(RENDERER,
       PpapiHostMsg_FileIO_Open(
-          enter.resource()->host_resource().host_resource(),
+          file_ref,
           open_flags),
       base::Bind(&FileIOResource::OnPluginMsgOpenFileComplete, this,
                  callback));
@@ -410,6 +414,9 @@ void FileIOResource::OnPluginMsgOpenFileComplete(
     const ResourceMessageReplyParams& params) {
   DCHECK(state_manager_.get_pending_operation() ==
          FileIOStateManager::OPERATION_EXCLUSIVE);
+
+  // Release the FileRef resource.
+  file_ref_ = NULL;
   if (params.result() == PP_OK)
     state_manager_.SetOpenSucceed();
 

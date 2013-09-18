@@ -15,6 +15,10 @@
 #include "ppapi/host/resource_host.h"
 #include "ppapi/proxy/resource_message_params.h"
 
+namespace ppapi {
+struct FileRefCreateInfo;
+}
+
 namespace content {
 
 class RendererPpapiHost;
@@ -51,11 +55,17 @@ class CONTENT_EXPORT PepperFileChooserHost
                  const std::string& suggested_file_name,
                  const std::vector<std::string>& accept_mime_types);
 
+  void DidCreateResourceHosts(const std::vector<base::FilePath>& file_paths,
+                              const std::vector<std::string>& display_names,
+                              const std::vector<int>& browser_ids);
+
   // Non-owning pointer.
   RendererPpapiHost* renderer_ppapi_host_;
 
   ppapi::host::ReplyMessageContext reply_context_;
   CompletionHandler* handler_;
+
+  base::WeakPtrFactory<PepperFileChooserHost> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperFileChooserHost);
 };

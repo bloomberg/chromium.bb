@@ -8,10 +8,14 @@
 #include "base/strings/string_util.h"
 #include "content/common/fileapi/file_system_messages.h"
 #include "content/renderer/pepper/common.h"
+#include "content/renderer/pepper/host_globals.h"
+#include "content/renderer/pepper/pepper_file_ref_renderer_host.h"
+#include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/plugin_module.h"
-#include "content/renderer/pepper/ppb_file_ref_impl.h"
+#include "content/renderer/pepper/renderer_ppapi_host_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "net/http/http_util.h"
+#include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/url_request_info_data.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/enter.h"
@@ -25,10 +29,9 @@
 #include "url/url_util.h"
 #include "webkit/child/weburlrequest_extradata_impl.h"
 
-using ppapi::URLRequestInfoData;
 using ppapi::Resource;
+using ppapi::URLRequestInfoData;
 using ppapi::thunk::EnterResourceNoLock;
-using ppapi::thunk::PPB_FileRef_API;
 using WebKit::WebData;
 using WebKit::WebHTTPBody;
 using WebKit::WebString;
@@ -43,32 +46,39 @@ namespace {
 // Appends the file ref given the Resource pointer associated with it to the
 // given HTTP body, returning true on success.
 bool AppendFileRefToBody(
-    Resource* file_ref_resource,
+    PP_Instance instance,
+    PP_Resource resource,
     int64_t start_offset,
     int64_t number_of_bytes,
     PP_Time expected_last_modified_time,
     WebHTTPBody *http_body) {
-  // Get the underlying file ref impl.
-  if (!file_ref_resource)
-    return false;
-  PPB_FileRef_API* file_ref_api = file_ref_resource->AsPPB_FileRef_API();
-  if (!file_ref_api)
-    return false;
-  const PPB_FileRef_Impl* file_ref =
-      static_cast<PPB_FileRef_Impl*>(file_ref_api);
-
   base::FilePath platform_path;
-  switch (file_ref->GetFileSystemType()) {
+  PepperPluginInstanceImpl* instance_impl =
+      HostGlobals::Get()->GetInstance(instance);
+  if (!instance_impl)
+    return false;
+
+  RendererPpapiHost* renderer_ppapi_host =
+      instance_impl->module()->renderer_ppapi_host();
+  if (!renderer_ppapi_host)
+    return false;
+  ppapi::host::ResourceHost* resource_host =
+      renderer_ppapi_host->GetPpapiHost()->GetResourceHost(resource);
+  if (!resource_host || !resource_host->IsFileRefHost())
+    return false;
+  PepperFileRefRendererHost* file_ref_host =
+      static_cast<PepperFileRefRendererHost*>(resource_host);
+  switch (file_ref_host->GetFileSystemType()) {
     case PP_FILESYSTEMTYPE_LOCALTEMPORARY:
     case PP_FILESYSTEMTYPE_LOCALPERSISTENT:
       // TODO(kinuko): remove this sync IPC when we fully support
       // AppendURLRange for FileSystem URL.
       RenderThreadImpl::current()->Send(
           new FileSystemHostMsg_SyncGetPlatformPath(
-              file_ref->GetFileSystemURL(), &platform_path));
+              file_ref_host->GetFileSystemURL(), &platform_path));
       break;
     case PP_FILESYSTEMTYPE_EXTERNAL:
-      platform_path = file_ref->GetSystemPath();
+      platform_path = file_ref_host->GetExternalFilePath();
       break;
     default:
       NOTREACHED();
@@ -84,7 +94,7 @@ bool AppendFileRefToBody(
 // Checks that the request data is valid. Returns false on failure. Note that
 // method and header validation is done by the URL loader when the request is
 // opened, and any access errors are returned asynchronously.
-bool ValidateURLRequestData(const ppapi::URLRequestInfoData& data) {
+bool ValidateURLRequestData(const URLRequestInfoData& data) {
   if (data.prefetch_buffer_lower_threshold < 0 ||
       data.prefetch_buffer_upper_threshold < 0 ||
       data.prefetch_buffer_upper_threshold <=
@@ -94,33 +104,16 @@ bool ValidateURLRequestData(const ppapi::URLRequestInfoData& data) {
   return true;
 }
 
-// Ensures that the file_ref members of the given request info data are
-// populated from the resource IDs. Returns true on success.
-bool EnsureFileRefObjectsPopulated(ppapi::URLRequestInfoData* data) {
-  // Get the Resource objects for any file refs with only host resource (this
-  // is the state of the request as it comes off IPC).
-  for (size_t i = 0; i < data->body.size(); ++i) {
-    URLRequestInfoData::BodyItem& item = data->body[i];
-    if (item.is_file && !item.file_ref.get()) {
-      EnterResourceNoLock<PPB_FileRef_API> enter(
-          item.file_ref_host_resource.host_resource(), false);
-      if (!enter.succeeded())
-        return false;
-      item.file_ref = enter.resource();
-    }
-  }
-  return true;
-}
-
 }  // namespace
 
-bool CreateWebURLRequest(ppapi::URLRequestInfoData* data,
+bool CreateWebURLRequest(PP_Instance instance,
+                         URLRequestInfoData* data,
                          WebFrame* frame,
                          WebURLRequest* dest) {
   // In the out-of-process case, we've received the URLRequestInfoData
   // from the untrusted plugin and done no validation on it. We need to be
   // sure it's not being malicious by checking everything for consistency.
-  if (!ValidateURLRequestData(*data) || !EnsureFileRefObjectsPopulated(data))
+  if (!ValidateURLRequestData(*data))
     return false;
 
   dest->initialize();
@@ -148,15 +141,18 @@ bool CreateWebURLRequest(ppapi::URLRequestInfoData* data,
   if (!data->body.empty()) {
     WebHTTPBody http_body;
     http_body.initialize();
+    int file_index = 0;
     for (size_t i = 0; i < data->body.size(); ++i) {
       const URLRequestInfoData::BodyItem& item = data->body[i];
       if (item.is_file) {
-        if (!AppendFileRefToBody(item.file_ref.get(),
+        if (!AppendFileRefToBody(instance,
+                                 item.file_ref_pp_resource,
                                  item.start_offset,
                                  item.number_of_bytes,
                                  item.expected_last_modified_time,
                                  &http_body))
           return false;
+        file_index++;
       } else {
         DCHECK(!item.data.empty());
         http_body.appendData(WebData(item.data));
@@ -189,7 +185,7 @@ bool CreateWebURLRequest(ppapi::URLRequestInfoData* data,
   return true;
 }
 
-bool URLRequestRequiresUniversalAccess(const ppapi::URLRequestInfoData& data) {
+bool URLRequestRequiresUniversalAccess(const URLRequestInfoData& data) {
   return
       data.has_custom_referrer_url ||
       data.has_custom_content_transfer_encoding ||

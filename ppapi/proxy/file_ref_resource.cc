@@ -22,7 +22,7 @@ namespace proxy {
 FileRefResource::FileRefResource(
     Connection connection,
     PP_Instance instance,
-    const FileRef_CreateInfo& create_info)
+    const FileRefCreateInfo& create_info)
     : PluginResource(connection, instance),
       create_info_(create_info),
       file_system_resource_(create_info.file_system_plugin_resource) {
@@ -34,17 +34,24 @@ FileRefResource::FileRefResource(
       create_info_.internal_path.erase(path_size - 1, 1);
 
     path_var_ = new StringVar(create_info_.internal_path);
-
     create_info_.display_name = GetNameForInternalFilePath(
         create_info_.internal_path);
   }
   name_var_ = new StringVar(create_info_.display_name);
 
-  if (create_info_.pending_host_resource_id != 0) {
-    AttachToPendingHost(BROWSER, create_info_.pending_host_resource_id);
+  if (create_info_.browser_pending_host_resource_id != 0 &&
+      create_info_.renderer_pending_host_resource_id != 0) {
+    AttachToPendingHost(BROWSER, create_info_.browser_pending_host_resource_id);
+    AttachToPendingHost(RENDERER,
+                        create_info_.renderer_pending_host_resource_id);
   } else {
+    CHECK(create_info_.browser_pending_host_resource_id == 0);
+    CHECK(create_info_.renderer_pending_host_resource_id == 0);
     CHECK(create_info_.file_system_type != PP_FILESYSTEMTYPE_EXTERNAL);
     SendCreate(BROWSER, PpapiHostMsg_FileRef_CreateInternal(
+        create_info.file_system_plugin_resource,
+        create_info.internal_path));
+    SendCreate(RENDERER, PpapiHostMsg_FileRef_CreateInternal(
         create_info.file_system_plugin_resource,
         create_info.internal_path));
   }
@@ -57,7 +64,7 @@ FileRefResource::~FileRefResource() {
 PP_Resource FileRefResource::CreateFileRef(
     Connection connection,
     PP_Instance instance,
-    const FileRef_CreateInfo& create_info) {
+    const FileRefCreateInfo& create_info) {
   // If we have a valid file_system resource, ensure that its type matches that
   // of the fs_type parameter.
   if (create_info.file_system_plugin_resource != 0) {
@@ -82,9 +89,7 @@ PP_Resource FileRefResource::CreateFileRef(
 }
 
 thunk::PPB_FileRef_API* FileRefResource::AsPPB_FileRef_API() {
-  // TODO: return "this" once we update PPB_FileRef_API.
-  NOTREACHED();
-  return NULL;
+  return this;
 }
 
 PP_FileSystemType FileRefResource::GetFileSystemType() const {
@@ -111,7 +116,7 @@ PP_Resource FileRefResource::GetParent() {
     pos++;
   std::string parent_path = create_info_.internal_path.substr(0, pos);
 
-  ppapi::FileRef_CreateInfo parent_info;
+  ppapi::FileRefCreateInfo parent_info;
   parent_info.file_system_type = create_info_.file_system_type;
   parent_info.internal_path = parent_path;
   parent_info.display_name = GetNameForInternalFilePath(parent_path);
@@ -184,32 +189,8 @@ int32_t FileRefResource::ReadDirectoryEntries(
   return PP_OK_COMPLETIONPENDING;
 }
 
-/*
-const FileRef_CreateInfo& FileRefResource::GetCreateInfo() const {
+const FileRefCreateInfo& FileRefResource::GetCreateInfo() const {
   return create_info_;
-}
-*/
-const PPB_FileRef_CreateInfo& FileRefResource::GetCreateInfo() const {
-  // FIXME
-  NOTREACHED();
-  PPB_FileRef_CreateInfo *info = new PPB_FileRef_CreateInfo();
-  return *info;
-}
-
-// TODO(teravest): Remove this when we are finished moving to the new proxy.
-int32_t FileRefResource::QueryInHost(linked_ptr<PP_FileInfo> info,
-                                    scoped_refptr<TrackedCallback> callback) {
-  NOTREACHED();
-  return PP_ERROR_FAILED;
-}
-
-// TODO(teravest): Remove this when we are finished moving to the new proxy.
-int32_t FileRefResource::ReadDirectoryEntriesInHost(
-    linked_ptr<std::vector<ppapi::PPB_FileRef_CreateInfo> > files,
-    linked_ptr<std::vector<PP_FileType> > file_types,
-    scoped_refptr<TrackedCallback> callback) {
-  NOTREACHED();
-  return PP_ERROR_FAILED;
 }
 
 PP_Var FileRefResource::GetAbsolutePath() {
@@ -248,7 +229,7 @@ void FileRefResource::OnDirectoryEntriesReply(
     const PP_ArrayOutput& output,
     scoped_refptr<TrackedCallback> callback,
     const ResourceMessageReplyParams& params,
-    const std::vector<ppapi::FileRef_CreateInfo>& infos,
+    const std::vector<ppapi::FileRefCreateInfo>& infos,
     const std::vector<PP_FileType>& file_types) {
   if (!TrackedCallback::IsPending(callback))
     return;

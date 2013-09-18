@@ -46,8 +46,6 @@ class PepperInternalFileRefBackend : public PepperFileRefBackend {
       OVERRIDE;
 
   virtual fileapi::FileSystemURL GetFileSystemURL() const OVERRIDE;
-  virtual std::string GetFileSystemURLSpec() const OVERRIDE;
-  virtual base::FilePath GetExternalPath() const OVERRIDE;
 
   virtual int32_t CanRead() const OVERRIDE;
   virtual int32_t CanWrite() const OVERRIDE;

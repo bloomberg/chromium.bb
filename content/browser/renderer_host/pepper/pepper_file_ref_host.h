@@ -42,8 +42,6 @@ class PepperFileRefBackend {
   virtual int32_t GetAbsolutePath(
       ppapi::host::ReplyMessageContext context) = 0;
   virtual fileapi::FileSystemURL GetFileSystemURL() const = 0;
-  virtual std::string GetFileSystemURLSpec() const = 0;
-  virtual base::FilePath GetExternalPath() const = 0;
 
   // Returns an error from the pp_errors.h enum.
   virtual int32_t CanRead() const = 0;
@@ -78,10 +76,6 @@ class CONTENT_EXPORT PepperFileRefHost
   // Required to support Rename().
   PP_FileSystemType GetFileSystemType() const;
   fileapi::FileSystemURL GetFileSystemURL() const;
-
-  // Required to support FileIO.
-  std::string GetFileSystemURLSpec() const;
-  base::FilePath GetExternalPath() const;
 
   int32_t CanRead() const;
   int32_t CanWrite() const;

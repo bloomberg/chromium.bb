@@ -4,7 +4,7 @@
 
 #include "ppapi/proxy/url_response_info_resource.h"
 
-#include "ppapi/proxy/ppb_file_ref_proxy.h"
+#include "ppapi/proxy/file_ref_resource.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/resource_creation_api.h"
