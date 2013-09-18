@@ -205,11 +205,12 @@ PassOwnPtr<Shape> Shape::createShape(const StyleImage* styleImage, float thresho
 {
     ASSERT(styleImage && styleImage->isImageResource() && styleImage->cachedImage() && styleImage->cachedImage()->image());
 
-    OwnPtr<RasterShapeIntervals> intervals = adoptPtr(new RasterShapeIntervals());
-
     Image* image = styleImage->cachedImage()->image();
     const IntSize& imageSize = image->size();
     OwnPtr<ImageBuffer> imageBuffer = ImageBuffer::create(imageSize);
+
+    OwnPtr<RasterShapeIntervals> intervals = adoptPtr(new RasterShapeIntervals(imageSize.height()));
+
     if (imageBuffer) {
         GraphicsContext* graphicsContext = imageBuffer->context();
         graphicsContext->drawImage(image, IntPoint());
@@ -228,7 +229,7 @@ PassOwnPtr<Shape> Shape::createShape(const StyleImage* styleImage, float thresho
                 if ((startX == -1) && alpha > alphaPixelThreshold) {
                     startX = x;
                 } else if (startX != -1 && (alpha <= alphaPixelThreshold || x == imageSize.width() - 1)) {
-                    intervals->addInterval(y, startX, x);
+                    intervals->appendInterval(y, startX, x);
                     startX = -1;
                 }
             }
