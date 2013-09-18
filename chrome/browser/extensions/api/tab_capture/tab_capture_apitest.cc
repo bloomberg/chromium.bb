@@ -256,8 +256,10 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_FullscreenEvents) {
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-// http://crbug.com/177163
-#if defined(OS_WIN) && !defined(NDEBUG)
+// Times out on Win dbg bots: http://crbug.com/177163
+// #if defined(OS_WIN) && !defined(NDEBUG)
+// Times out on all Win bots: http://crbug.com/294431
+#if defined(OS_WIN)
 #define MAYBE_GrantForChromePages DISABLED_GrantForChromePages
 #else
 #define MAYBE_GrantForChromePages GrantForChromePages
