@@ -71,6 +71,8 @@ class SyncFileSystemService
   SyncStatusCode SetConflictResolutionPolicy(ConflictResolutionPolicy policy);
 
  private:
+  class SyncRunner;
+
   friend class SyncFileSystemServiceFactory;
   friend class SyncFileSystemServiceTest;
   friend struct base::DefaultDeleter<SyncFileSystemService>;
@@ -96,20 +98,15 @@ class SyncFileSystemService
   // Overrides sync_enabled_ setting. This should be called only by tests.
   void SetSyncEnabledForTesting(bool enabled);
 
-  // Called when following observer methods are called:
-  // - OnLocalChangeAvailable()
-  // - OnRemoteChangeAvailable()
-  // - OnRemoteServiceStateUpdated()
-  void MaybeStartSync();
-
-  // Called from MaybeStartSync(). (Should not be called from others)
-  void StartRemoteSync();
-  void StartLocalSync();
+  void StartLocalSync(const SyncStatusCallback& callback);
+  void StartRemoteSync(const SyncStatusCallback& callback);
 
   // Callbacks for remote/local sync.
-  void DidProcessRemoteChange(SyncStatusCode status,
+  void DidProcessRemoteChange(const SyncStatusCallback& callback,
+                              SyncStatusCode status,
                               const fileapi::FileSystemURL& url);
-  void DidProcessLocalChange(SyncStatusCode status,
+  void DidProcessLocalChange(const SyncStatusCallback& callback,
+                             SyncStatusCode status,
                              const fileapi::FileSystemURL& url);
 
   void DidGetLocalChangeStatus(const SyncFileStatusCallback& callback,
@@ -158,25 +155,14 @@ class SyncFileSystemService
   Profile* profile_;
   content::NotificationRegistrar registrar_;
 
-  int64 pending_local_changes_;
-  int64 pending_remote_changes_;
-
   scoped_ptr<LocalFileSyncService> local_file_service_;
   scoped_ptr<RemoteFileSyncService> remote_file_service_;
 
-  bool local_sync_running_;
-  bool remote_sync_running_;
-
-  // If a remote sync is returned with SYNC_STATUS_FILE_BUSY we mark this
-  // true and register the busy file URL to wait for a sync enabled event
-  // for the URL. When this flag is set to true it won't be worth trying
-  // another remote sync.
-  bool is_waiting_remote_sync_enabled_;
+  scoped_ptr<SyncRunner> local_sync_;
+  scoped_ptr<SyncRunner> remote_sync_;
 
   // Indicates if sync is currently enabled or not.
   bool sync_enabled_;
-
-  base::OneShotTimer<SyncFileSystemService> sync_retry_timer_;
 
   ObserverList<SyncEventObserver> observers_;
 
