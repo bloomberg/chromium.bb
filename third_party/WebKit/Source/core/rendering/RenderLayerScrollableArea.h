@@ -68,8 +68,8 @@ public:
     RenderLayerScrollableArea(RenderLayer*);
     virtual ~RenderLayerScrollableArea();
 
-    virtual Scrollbar* horizontalScrollbar() const OVERRIDE;
-    virtual Scrollbar* verticalScrollbar() const OVERRIDE;
+    virtual Scrollbar* horizontalScrollbar() const OVERRIDE { return m_hBar.get(); }
+    virtual Scrollbar* verticalScrollbar() const OVERRIDE { return m_vBar.get(); }
     virtual ScrollableArea* enclosingScrollableArea() const OVERRIDE;
 
     virtual void updateNeedsCompositedScrolling() OVERRIDE;
@@ -119,6 +119,8 @@ public:
     void updateAfterLayout();
     void updateAfterStyleChange(const RenderStyle*);
 
+    bool hasScrollbar() { return m_hBar || m_vBar; }
+
 private:
     bool hasHorizontalOverflow() const;
     bool hasVerticalOverflow() const;
@@ -135,17 +137,44 @@ private:
 
     void setScrollOffset(const IntSize& scrollOffset) { m_scrollOffset = scrollOffset; }
 
+    IntRect rectForHorizontalScrollbar(const IntRect& borderBoxRect) const;
+    IntRect rectForVerticalScrollbar(const IntRect& borderBoxRect) const;
+    LayoutUnit verticalScrollbarStart(int minX, int maxX) const;
+    LayoutUnit horizontalScrollbarStart(int minX) const;
+    IntSize scrollbarOffset(const Scrollbar*) const;
+
+    PassRefPtr<Scrollbar> createScrollbar(ScrollbarOrientation);
+    void destroyScrollbar(ScrollbarOrientation);
+
+    bool hasHorizontalScrollbar() const { return horizontalScrollbar(); }
+    bool hasVerticalScrollbar() const { return verticalScrollbar(); }
+
+    void setHasHorizontalScrollbar(bool hasScrollbar);
+    void setHasVerticalScrollbar(bool hasScrollbar);
+
+    int verticalScrollbarWidth(OverlayScrollbarSizeRelevancy = IgnoreOverlayScrollbarSize) const;
+    int horizontalScrollbarHeight(OverlayScrollbarSizeRelevancy = IgnoreOverlayScrollbarSize) const;
+
+    void positionOverflowControls(const IntSize& offsetFromRoot);
+    void paintOverflowControls(GraphicsContext*, const IntPoint& paintOffset, const IntRect& damageRect, bool paintingOverlayControls);
+    bool hitTestOverflowControls(HitTestResult&, const IntPoint& localPoint, const IntRect&);
+
     RenderLayerModelObject* renderer() const;
 
     RenderLayer* m_layer;
 
     unsigned m_scrollDimensionsDirty : 1;
+    unsigned m_inOverflowRelayout : 1;
 
     // The width/height of our scrolled area.
     LayoutRect m_overflowRect;
 
     // This is the (scroll) offset from scrollOrigin().
     IntSize m_scrollOffset;
+
+    // For areas with overflow, we have a pair of scrollbars.
+    RefPtr<Scrollbar> m_hBar;
+    RefPtr<Scrollbar> m_vBar;
 };
 
 } // Namespace WebCore

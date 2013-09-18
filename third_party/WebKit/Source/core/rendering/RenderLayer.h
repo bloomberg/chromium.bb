@@ -164,12 +164,6 @@ public:
 
     LayoutRect getRectToExpose(const LayoutRect& visibleRect, const LayoutRect& exposeRect, const ScrollAlignment& alignX, const ScrollAlignment& alignY);
 
-    bool hasHorizontalScrollbar() const { return horizontalScrollbar(); }
-    bool hasVerticalScrollbar() const { return verticalScrollbar(); }
-
-    int verticalScrollbarWidth(OverlayScrollbarSizeRelevancy = IgnoreOverlayScrollbarSize) const;
-    int horizontalScrollbarHeight(OverlayScrollbarSizeRelevancy = IgnoreOverlayScrollbarSize) const;
-
     // isPointInResizeControl() is used for testing if a pointer/touch position is in the resize control
     // area.
     bool isPointInResizeControl(const IntPoint& absolutePoint, ResizerHitTestType resizerHitTestType) const;
@@ -579,12 +573,6 @@ private:
         OnlyStackingContextsCanBeStackingContainers
     };
 
-    void setHasHorizontalScrollbar(bool);
-    void setHasVerticalScrollbar(bool);
-
-    PassRefPtr<Scrollbar> createScrollbar(ScrollbarOrientation);
-    void destroyScrollbar(ScrollbarOrientation);
-
     bool hasOverflowControls() const;
 
     void updateZOrderLists();
@@ -632,9 +620,6 @@ private:
     void updateIsNormalFlowOnly();
     void updateVisibilityAfterStyleChange(const RenderStyle* oldStyle);
     void updateStackingContextsAfterStyleChange(const RenderStyle* oldStyle);
-
-    void updateScrollbarsAfterStyleChange(const RenderStyle* oldStyle);
-    void updateScrollbarsAfterLayout();
 
     void updateOutOfFlowPositioned(const RenderStyle* oldStyle);
 
@@ -762,11 +747,15 @@ public:
     GraphicsLayer* layerForHorizontalScrollbar() const;
     GraphicsLayer* layerForVerticalScrollbar() const;
     GraphicsLayer* layerForScrollCorner() const;
-    Scrollbar* horizontalScrollbar() const { return m_hBar.get(); }
-    Scrollbar* verticalScrollbar() const { return m_vBar.get(); }
     bool usesCompositedScrolling() const;
 
     bool hasOverlayScrollbars() const;
+    Scrollbar* horizontalScrollbar() const;
+    Scrollbar* verticalScrollbar() const;
+    bool hasVerticalScrollbar() const;
+    bool hasHorizontalScrollbar() const;
+    int verticalScrollbarWidth(OverlayScrollbarSizeRelevancy = IgnoreOverlayScrollbarSize) const;
+    int horizontalScrollbarHeight(OverlayScrollbarSizeRelevancy = IgnoreOverlayScrollbarSize) const;
 
     int scrollXOffset() const;
     int scrollYOffset() const;
@@ -775,15 +764,10 @@ public:
     IntSize adjustedScrollOffset() const { return IntSize(scrollXOffset(), scrollYOffset()); }
 
 private:
-    void invalidateScrollbarRect(Scrollbar*, const IntRect&);
     void invalidateScrollCornerRect(const IntRect&);
     bool isActive() const;
     bool isScrollCornerVisible() const;
     IntRect scrollCornerRect() const;
-    IntRect convertFromScrollbarToContainingView(const Scrollbar*, const IntRect&) const;
-    IntRect convertFromContainingViewToScrollbar(const Scrollbar*, const IntRect&) const;
-    IntPoint convertFromScrollbarToContainingView(const Scrollbar*, const IntPoint&) const;
-    IntPoint convertFromContainingViewToScrollbar(const Scrollbar*, const IntPoint&) const;
     int scrollSize(ScrollbarOrientation) const;
     int visibleHeight() const;
     int visibleWidth() const;
@@ -804,8 +788,6 @@ private:
     IntRect scrollCornerAndResizerRect() const;
 
     void updateCompositingLayersAfterScroll();
-
-    IntSize scrollbarOffset(const Scrollbar*) const;
 
     bool requiresScrollableArea() const { return renderer()->style()->overflowX() != OVISIBLE || canResize() || usesCompositedScrolling(); }
     void updateResizerAreaSet();
@@ -868,12 +850,6 @@ private:
     friend class RenderLayerCompositor;
     friend class RenderLayerModelObject;
 
-    IntRect rectForHorizontalScrollbar(const IntRect& borderBoxRect) const;
-    IntRect rectForVerticalScrollbar(const IntRect& borderBoxRect) const;
-
-    LayoutUnit verticalScrollbarStart(int minX, int maxX) const;
-    LayoutUnit horizontalScrollbarStart(int minX) const;
-
     bool overflowControlsIntersectRect(const IntRect& localRect) const;
 
 protected:
@@ -920,7 +896,6 @@ protected:
                                  // we ended up painting this layer or any descendants (and therefore need to
                                  // blend).
     unsigned m_paintingInsideReflection : 1; // A state bit tracking if we are painting inside a replica.
-    unsigned m_inOverflowRelayout : 1;
     unsigned m_repaintStatus : 2; // RepaintStatus
 
     unsigned m_visibleContentStatusDirty : 1;
@@ -968,10 +943,6 @@ protected:
 
     // The layer's width/height
     IntSize m_layerSize;
-
-    // For layers with overflow, we have a pair of scrollbars.
-    RefPtr<Scrollbar> m_hBar;
-    RefPtr<Scrollbar> m_vBar;
 
     // For layers that establish stacking contexts, m_posZOrderList holds a sorted list of all the
     // descendant layers within the stacking context that have z-indices of 0 or greater
