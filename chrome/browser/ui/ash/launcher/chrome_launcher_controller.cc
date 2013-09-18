@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "ash/ash_switches.h"
+#include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/launcher/launcher.h"
 #include "ash/launcher/launcher_item_delegate_manager.h"
 #include "ash/launcher/launcher_model.h"
@@ -80,6 +81,9 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/default_pinned_apps_field_trial.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/login/wallpaper_manager.h"
+#include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 #endif
 
 using extensions::Extension;
@@ -192,6 +196,44 @@ void MaybePropagatePrefToLocal(PrefServiceSyncable* pref_service,
 
 }  // namespace
 
+#if defined(OS_CHROMEOS)
+// A class to get events from ChromeOS when a user gets changed.
+class ChromeLauncherControllerUserSwitchObserverChromeOS
+    : public ChromeLauncherControllerUserSwitchObserver,
+      public chromeos::UserManager::UserSessionStateObserver {
+ public:
+  ChromeLauncherControllerUserSwitchObserverChromeOS(
+      ChromeLauncherController* controller)
+      : controller_(controller) {
+    DCHECK(chromeos::UserManager::IsInitialized());
+    chromeos::UserManager::Get()->AddSessionStateObserver(this);
+  }
+  virtual ~ChromeLauncherControllerUserSwitchObserverChromeOS() {
+    chromeos::UserManager::Get()->RemoveSessionStateObserver(this);
+  }
+
+  // chromeos::UserManager::UserSessionStateObserver overrides:
+  virtual void ActiveUserChanged(const chromeos::User* active_user) OVERRIDE;
+
+ private:
+  // The owning ChromeLauncherController.
+  ChromeLauncherController* controller_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerUserSwitchObserverChromeOS);
+};
+
+void ChromeLauncherControllerUserSwitchObserverChromeOS::ActiveUserChanged(
+    const chromeos::User* active_user) {
+  const std::string& user_email = active_user->email();
+  // Forward the OS specific event to the ChromeLauncherController.
+  controller_->ActiveUserChanged(user_email);
+  // TODO(skuhne): At the moment the login screen does the wallpaper management
+  // and wallpapers are not synchronized across multiple desktops.
+  if (chromeos::WallpaperManager::Get())
+    chromeos::WallpaperManager::Get()->SetUserWallpaper(user_email);
+}
+#endif
+
 ChromeLauncherController::ChromeLauncherController(
     Profile* profile,
     ash::LauncherModel* model)
@@ -209,6 +251,9 @@ ChromeLauncherController::ChromeLauncherController(
       app_sync_ui_state_->AddObserver(this);
   }
 
+  // All profile relevant settings get bound to the current profile.
+  AttachProfile(profile_);
+
   browser_status_monitor_.reset(new BrowserStatusMonitor(this));
   model_->AddObserver(this);
   // Right now ash::Shell isn't created for tests.
@@ -217,9 +262,6 @@ ChromeLauncherController::ChromeLauncherController(
     ash::Shell::GetInstance()->display_controller()->AddObserver(this);
   // TODO(stevenjb): Find a better owner for shell_window_controller_?
   shell_window_controller_.reset(new ShellWindowLauncherController(this));
-  app_tab_helper_.reset(new LauncherAppTabHelper(profile_));
-  app_icon_loader_.reset(new extensions::AppIconLoaderImpl(
-      profile_, extension_misc::EXTENSION_ICON_SMALL, this));
 
   notification_registrar_.Add(this,
                               chrome::NOTIFICATION_EXTENSION_LOADED,
@@ -227,29 +269,21 @@ ChromeLauncherController::ChromeLauncherController(
   notification_registrar_.Add(this,
                               chrome::NOTIFICATION_EXTENSION_UNLOADED,
                               content::Source<Profile>(profile_));
-  pref_change_registrar_.Init(profile_->GetPrefs());
-  pref_change_registrar_.Add(
-      prefs::kPinnedLauncherApps,
-      base::Bind(&ChromeLauncherController::UpdateAppLaunchersFromPref,
-                 base::Unretained(this)));
-  pref_change_registrar_.Add(
-      prefs::kShelfAlignmentLocal,
-      base::Bind(&ChromeLauncherController::SetShelfAlignmentFromPrefs,
-                 base::Unretained(this)));
-  pref_change_registrar_.Add(
-      prefs::kShelfAutoHideBehaviorLocal,
-      base::Bind(&ChromeLauncherController::
-                     SetShelfAutoHideBehaviorFromPrefs,
-                 base::Unretained(this)));
-  pref_change_registrar_.Add(
-      prefs::kShelfPreferences,
-      base::Bind(&ChromeLauncherController::SetShelfBehaviorsFromPrefs,
-                 base::Unretained(this)));
 
   // This check is needed for win7_aura. Without this, all tests in
   // ChromeLauncherControllerTest will fail by win7_aura.
   if (ash::Shell::HasInstance())
     RegisterLauncherItemDelegate();
+
+#if defined(OS_CHROMEOS)
+  // On Chrome OS using multi profile we want to switch the content of the shelf
+  // with a user change. Note that for unit tests the instance can be NULL.
+  if (ChromeShellDelegate::instance() &&
+      ChromeShellDelegate::instance()->IsMultiProfilesEnabled()) {
+    user_switch_observer_.reset(
+        new ChromeLauncherControllerUserSwitchObserverChromeOS(this));
+  }
+#endif
 }
 
 ChromeLauncherController::~ChromeLauncherController() {
@@ -281,11 +315,8 @@ ChromeLauncherController::~ChromeLauncherController() {
   if (ash::Shell::HasInstance())
     ash::Shell::GetInstance()->RemoveShellObserver(this);
 
-  if (app_sync_ui_state_)
-    app_sync_ui_state_->RemoveObserver(this);
-
-  PrefServiceSyncable::FromProfile(profile_)->RemoveObserver(this);
-
+  // Release all profile dependent resources.
+  ReleaseProfile();
   if (instance_ == this)
     instance_ = NULL;
 }
@@ -992,6 +1023,19 @@ void ChromeLauncherController::LauncherItemChanged(
 void ChromeLauncherController::LauncherStatusChanged() {
 }
 
+void ChromeLauncherController::ActiveUserChanged(
+    const std::string& user_email) {
+  // Coming here the default profile is already switched. All profile specific
+  // resources get released and the new profile gets attached instead.
+  ReleaseProfile();
+  AttachProfile(ProfileManager::GetDefaultProfile());
+  // Update the user specific shell properties from the new user profile.
+  UpdateAppLaunchersFromPref();
+  SetShelfAlignmentFromPrefs();
+  SetShelfAutoHideBehaviorFromPrefs();
+  SetShelfBehaviorsFromPrefs();
+}
+
 void ChromeLauncherController::Observe(
     int type,
     const content::NotificationSource& source,
@@ -1342,7 +1386,7 @@ void ChromeLauncherController::UpdateAppLaunchersFromPref() {
       }
       // If the item wasn't found, that means id_to_item_controller_map_
       // is out of sync.
-      DCHECK(index < max_index);
+      DCHECK(index <= max_index);
     } else {
       // This app wasn't pinned before, insert a new entry.
       ash::LauncherID id = CreateAppShortcutLauncherItem(*pref_app_id, index);
@@ -1592,4 +1636,48 @@ void ChromeLauncherController::RegisterLauncherItemDelegate() {
   manager->RegisterLauncherItemDelegate(ash::TYPE_BROWSER_SHORTCUT, this);
   manager->RegisterLauncherItemDelegate(ash::TYPE_PLATFORM_APP, this);
   manager->RegisterLauncherItemDelegate(ash::TYPE_WINDOWED_APP, this);
+}
+
+void ChromeLauncherController::AttachProfile(Profile* profile) {
+  profile_ = profile;
+  // TODO(skuhne): The LauncherAppTabHelper cannot be multi user aware since
+  // that would break the UpdateAppLaunchersFromPref function. However - in
+  // other places it might be good to have it multi profile aware. Also: if
+  // running it needs to be recognized.
+  app_tab_helper_.reset(new LauncherAppTabHelper(profile_));
+  // TODO(skuhne): The AppIconLoaderImpl has the same problem. Each loaded
+  // image is associated with a profile (it's loader requires the profile).
+  // Since icon size changes are possible, the icon could be requested to be
+  // reloaded. However - having it not multi profile aware would cause problems
+  // if the icon cache gets deleted upon user switch.
+  app_icon_loader_.reset(new extensions::AppIconLoaderImpl(
+      profile_, extension_misc::EXTENSION_ICON_SMALL, this));
+
+  pref_change_registrar_.Init(profile_->GetPrefs());
+  pref_change_registrar_.Add(
+      prefs::kPinnedLauncherApps,
+      base::Bind(&ChromeLauncherController::UpdateAppLaunchersFromPref,
+                 base::Unretained(this)));
+  pref_change_registrar_.Add(
+      prefs::kShelfAlignmentLocal,
+      base::Bind(&ChromeLauncherController::SetShelfAlignmentFromPrefs,
+                 base::Unretained(this)));
+  pref_change_registrar_.Add(
+      prefs::kShelfAutoHideBehaviorLocal,
+      base::Bind(&ChromeLauncherController::
+                     SetShelfAutoHideBehaviorFromPrefs,
+                 base::Unretained(this)));
+  pref_change_registrar_.Add(
+      prefs::kShelfPreferences,
+      base::Bind(&ChromeLauncherController::SetShelfBehaviorsFromPrefs,
+                 base::Unretained(this)));
+}
+
+void ChromeLauncherController::ReleaseProfile() {
+  if (app_sync_ui_state_)
+    app_sync_ui_state_->RemoveObserver(this);
+
+  PrefServiceSyncable::FromProfile(profile_)->RemoveObserver(this);
+
+  pref_change_registrar_.RemoveAll();
 }

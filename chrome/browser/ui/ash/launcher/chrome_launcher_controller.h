@@ -64,6 +64,18 @@ class BaseWindow;
 // A list of the elements which makes up a simple menu description.
 typedef ScopedVector<ChromeLauncherAppMenuItem> ChromeLauncherAppMenuItems;
 
+// A class which needs to be overwritten dependent on the used OS to moitor
+// user switching.
+class ChromeLauncherControllerUserSwitchObserver {
+ public:
+  ChromeLauncherControllerUserSwitchObserver() {}
+  virtual ~ChromeLauncherControllerUserSwitchObserver() {}
+
+ private:
+
+  DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerUserSwitchObserver);
+};
+
 // ChromeLauncherController manages the launcher items needed for content
 // windows. Launcher items have a type, an optional app id, and a controller.
 // This incarnation groups running tabs/windows in application specific lists.
@@ -74,17 +86,18 @@ typedef ScopedVector<ChromeLauncherAppMenuItem> ChromeLauncherAppMenuItems;
 // * Shortcuts have no LauncherItemController.
 // TODO(simon.hong81): Move LauncherItemDelegate out from
 // ChromeLauncherController and makes separate subclass with it.
-class ChromeLauncherController : public ash::LauncherDelegate,
-                                 public ash::LauncherItemDelegate,
-                                 public ash::LauncherModelObserver,
-                                 public ash::ShellObserver,
-                                 public ash::DisplayController::Observer,
-                                 public content::NotificationObserver,
-                                 public extensions::AppIconLoader::Delegate,
-                                 public PrefServiceSyncableObserver,
-                                 public AppSyncUIStateObserver,
-                                 public ExtensionEnableFlowDelegate,
-                                 public ash::ShelfLayoutManagerObserver {
+class ChromeLauncherController
+    : public ash::LauncherDelegate,
+      public ash::LauncherItemDelegate,
+      public ash::LauncherModelObserver,
+      public ash::ShellObserver,
+      public ash::DisplayController::Observer,
+      public content::NotificationObserver,
+      public extensions::AppIconLoader::Delegate,
+      public PrefServiceSyncableObserver,
+      public AppSyncUIStateObserver,
+      public ExtensionEnableFlowDelegate,
+      public ash::ShelfLayoutManagerObserver {
  public:
   // Indicates if a launcher item is incognito or not.
   enum IncognitoState {
@@ -229,6 +242,8 @@ class ChromeLauncherController : public ash::LauncherDelegate,
 
   ash::LauncherModel* model();
 
+  // Accessor to the currently loaded profile. Note that in multi profile use
+  // cases this might change over time.
   Profile* profile();
 
   // Gets the shelf auto-hide behavior on |root_window|.
@@ -325,6 +340,9 @@ class ChromeLauncherController : public ash::LauncherDelegate,
   virtual void OnAutoHideBehaviorChanged(
       aura::RootWindow* root_window,
       ash::ShelfAutoHideBehavior new_behavior) OVERRIDE;
+
+  // Called when the active user has changed.
+  void ActiveUserChanged(const std::string& user_email);
 
   // Get the list of all running incarnations of this item.
   // |event_flags| specifies the flags which were set by the event which
@@ -461,6 +479,12 @@ class ChromeLauncherController : public ash::LauncherDelegate,
   // Register LauncherItemDelegate.
   void RegisterLauncherItemDelegate();
 
+  // Attach to a specific profile.
+  void AttachProfile(Profile* proifile);
+
+  // Forget the current profile to allow attaching to a new one.
+  void ReleaseProfile();
+
   static ChromeLauncherController* instance_;
 
   ash::LauncherModel* model_;
@@ -502,6 +526,9 @@ class ChromeLauncherController : public ash::LauncherDelegate,
 
   // The owned browser status monitor.
   scoped_ptr<BrowserStatusMonitor> browser_status_monitor_;
+
+  // A special observer class to detect user switches.
+  scoped_ptr<ChromeLauncherControllerUserSwitchObserver> user_switch_observer_;
 
   // If true, incoming pinned state changes should be ignored.
   bool ignore_persist_pinned_state_change_;
