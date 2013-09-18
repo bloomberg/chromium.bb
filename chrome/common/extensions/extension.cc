@@ -61,8 +61,6 @@ const char kKeyInfoEndMarker[] = "KEY-----";
 const char kPublic[] = "PUBLIC";
 const char kPrivate[] = "PRIVATE";
 
-const int kRSAKeySize = 1024;
-
 // A singleton object containing global data needed by the extension objects.
 class ExtensionConfig {
  public:

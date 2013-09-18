@@ -25,7 +25,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
-  const int kRSAKeySize = 1024;
+  const int kRSAKeySize = 2048;
 };
 
 namespace extensions {
