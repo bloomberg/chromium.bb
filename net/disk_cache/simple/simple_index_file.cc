@@ -117,7 +117,7 @@ void ProcessEntryFile(SimpleIndex::EntrySet* entries,
         EntryMetadata(last_used_time, file_size),
         entries);
   } else {
-    // Summing up the total size of the entry through all the *_[0-2] files
+    // Summing up the total size of the entry through all the *_[0-1] files
     it->second.SetEntrySize(it->second.GetEntrySize() + file_size);
   }
 }
@@ -410,10 +410,6 @@ void SimpleIndexFile::SyncRestoreFromDisk(
   base::DeleteFile(index_file_path, /* recursive = */ false);
   out_result->Reset();
   SimpleIndex::EntrySet* entries = &out_result->entries;
-
-  // TODO(felipeg,gavinp): Fix this once we have a one-file per entry format.
-  COMPILE_ASSERT(kSimpleEntryFileCount == 3,
-                 file_pattern_must_match_file_count);
 
   const bool did_succeed = TraverseCacheDirectory(
       cache_directory, base::Bind(&ProcessEntryFile, entries));

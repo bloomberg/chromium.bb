@@ -174,7 +174,8 @@ SimpleEntryImpl::SimpleEntryImpl(net::CacheType cache_type,
       state_(STATE_UNINITIALIZED),
       synchronous_entry_(NULL),
       net_log_(net::BoundNetLog::Make(
-          net_log, net::NetLog::SOURCE_DISK_CACHE_ENTRY)) {
+          net_log, net::NetLog::SOURCE_DISK_CACHE_ENTRY)),
+      stream_0_data_(new net::GrowableIOBuffer()) {
   COMPILE_ASSERT(arraysize(data_size_) == arraysize(crc32s_end_offset_),
                  arrays_should_be_same_size);
   COMPILE_ASSERT(arraysize(data_size_) == arraysize(crc32s_),
@@ -337,7 +338,7 @@ int SimpleEntryImpl::ReadData(int stream_index,
                                           false));
   }
 
-  if (stream_index < 0 || stream_index >= kSimpleEntryFileCount ||
+  if (stream_index < 0 || stream_index >= kSimpleEntryStreamCount ||
       buf_len < 0) {
     if (net_log_.IsLoggingAllEvents()) {
       net_log_.AddEvent(net::NetLog::TYPE_SIMPLE_CACHE_ENTRY_READ_END,
@@ -357,6 +358,8 @@ int SimpleEntryImpl::ReadData(int stream_index,
     RecordReadResult(cache_type_, READ_RESULT_NONBLOCK_EMPTY_RETURN);
     return 0;
   }
+
+  // TODO(clamy): return immediatly when reading from stream 0.
 
   // TODO(felipeg): Optimization: Add support for truly parallel read
   // operations.
@@ -383,8 +386,8 @@ int SimpleEntryImpl::WriteData(int stream_index,
                                           truncate));
   }
 
-  if (stream_index < 0 || stream_index >= kSimpleEntryFileCount || offset < 0 ||
-      buf_len < 0) {
+  if (stream_index < 0 || stream_index >= kSimpleEntryStreamCount ||
+      offset < 0 || buf_len < 0) {
     if (net_log_.IsLoggingAllEvents()) {
       net_log_.AddEvent(
           net::NetLog::TYPE_SIMPLE_CACHE_ENTRY_WRITE_END,
@@ -404,16 +407,11 @@ int SimpleEntryImpl::WriteData(int stream_index,
   }
   ScopedOperationRunner operation_runner(this);
 
-  // Currently, Simple Cache is only used for HTTP, which stores the headers in
-  // stream 0 and always writes them with a single, truncating write.  Detect
-  // these writes and record the size and size changes of the headers.  Also,
-  // note writes to stream 0 that violate those assumptions.
-  if (stream_index == 0) {
-    if (offset == 0 && truncate)
-      RecordHeaderSizeChange(cache_type_, data_size_[0], buf_len);
-    else
-      RecordUnexpectedStream0Write(cache_type_);
-  }
+  // Stream 0 data is kept in memory, so can be written immediatly if there are
+  // no IO operations pending.
+  if (stream_index == 0 && state_ == STATE_READY &&
+      pending_operations_.size() == 0)
+    return SetStream0Data(buf, offset, buf_len, truncate);
 
   // We can only do optimistic Write if there is no pending operations, so
   // that we are sure that the next call to RunNextOperationIfNeeded will
@@ -694,7 +692,7 @@ void SimpleEntryImpl::CreateEntryInternal(bool have_index,
   last_used_ = last_modified_ = base::Time::Now();
 
   // If creation succeeds, we should mark all streams to be saved on close.
-  for (int i = 0; i < kSimpleEntryFileCount; ++i)
+  for (int i = 0; i < kSimpleEntryStreamCount; ++i)
     have_written_[i] = true;
 
   const base::TimeTicks start_time = base::TimeTicks::Now();
@@ -729,7 +727,7 @@ void SimpleEntryImpl::CloseInternal() {
   if (state_ == STATE_READY) {
     DCHECK(synchronous_entry_);
     state_ = STATE_IO_PENDING;
-    for (int i = 0; i < kSimpleEntryFileCount; ++i) {
+    for (int i = 0; i < kSimpleEntryStreamCount; ++i) {
       if (have_written_[i]) {
         if (GetDataSize(i) == crc32s_end_offset_[i]) {
           int32 crc = GetDataSize(i) == 0 ? crc32(0, Z_NULL, 0) : crc32s_[i];
@@ -748,12 +746,13 @@ void SimpleEntryImpl::CloseInternal() {
         base::Bind(&SimpleSynchronousEntry::Close,
                    base::Unretained(synchronous_entry_),
                    SimpleEntryStat(last_used_, last_modified_, data_size_),
-                   base::Passed(&crc32s_to_write));
+                   base::Passed(&crc32s_to_write),
+                   stream_0_data_);
     Closure reply = base::Bind(&SimpleEntryImpl::CloseOperationComplete, this);
     synchronous_entry_ = NULL;
     worker_pool_->PostTaskAndReply(FROM_HERE, task, reply);
 
-    for (int i = 0; i < kSimpleEntryFileCount; ++i) {
+    for (int i = 0; i < kSimpleEntryStreamCount; ++i) {
       if (!have_written_[i]) {
         SIMPLE_CACHE_UMA(ENUMERATION,
                          "CheckCRCResult", cache_type_,
@@ -808,20 +807,31 @@ void SimpleEntryImpl::ReadDataInternal(int stream_index,
 
   buf_len = std::min(buf_len, GetDataSize(stream_index) - offset);
 
+  // Since stream 0 data is kept in memory, it is read immediately.
+  if (stream_index == 0) {
+    int ret_value = ReadStream0Data(buf, offset, buf_len);
+    if (!callback.is_null()) {
+      MessageLoopProxy::current()->PostTask(FROM_HERE,
+                                            base::Bind(callback, ret_value));
+    }
+    return;
+  }
+
   state_ = STATE_IO_PENDING;
   if (!doomed_ && backend_.get())
     backend_->index()->UseIfExists(entry_hash_);
 
   scoped_ptr<uint32> read_crc32(new uint32());
   scoped_ptr<int> result(new int());
-  scoped_ptr<base::Time> last_used(new base::Time());
+  scoped_ptr<SimpleEntryStat> entry_stat(
+      new SimpleEntryStat(last_used_, last_modified_, data_size_));
   Closure task = base::Bind(
       &SimpleSynchronousEntry::ReadData,
       base::Unretained(synchronous_entry_),
       SimpleSynchronousEntry::EntryOperationData(stream_index, offset, buf_len),
       make_scoped_refptr(buf),
       read_crc32.get(),
-      last_used.get(),
+      entry_stat.get(),
       result.get());
   Closure reply = base::Bind(&SimpleEntryImpl::ReadOperationComplete,
                              this,
@@ -829,7 +839,7 @@ void SimpleEntryImpl::ReadDataInternal(int stream_index,
                              offset,
                              callback,
                              base::Passed(&read_crc32),
-                             base::Passed(&last_used),
+                             base::Passed(&entry_stat),
                              base::Passed(&result));
   worker_pool_->PostTaskAndReply(FROM_HERE, task, reply);
 }
@@ -866,24 +876,22 @@ void SimpleEntryImpl::WriteDataInternal(int stream_index,
   }
 
   DCHECK_EQ(STATE_READY, state_);
+
+  // Since stream 0 data is kept in memory, it will be written immediatly.
+  if (stream_index == 0) {
+    int ret_value = SetStream0Data(buf, offset, buf_len, truncate);
+    if (!callback.is_null()) {
+      MessageLoopProxy::current()->PostTask(FROM_HERE,
+                                            base::Bind(callback, ret_value));
+    }
+    return;
+  }
+
   state_ = STATE_IO_PENDING;
   if (!doomed_ && backend_.get())
     backend_->index()->UseIfExists(entry_hash_);
-  // It is easy to incrementally compute the CRC from [0 .. |offset + buf_len|)
-  // if |offset == 0| or we have already computed the CRC for [0 .. offset).
-  // We rely on most write operations being sequential, start to end to compute
-  // the crc of the data. When we write to an entry and close without having
-  // done a sequential write, we don't check the CRC on read.
-  if (offset == 0 || crc32s_end_offset_[stream_index] == offset) {
-    uint32 initial_crc = (offset != 0) ? crc32s_[stream_index]
-                                       : crc32(0, Z_NULL, 0);
-    if (buf_len > 0) {
-      crc32s_[stream_index] = crc32(initial_crc,
-                                    reinterpret_cast<const Bytef*>(buf->data()),
-                                    buf_len);
-    }
-    crc32s_end_offset_[stream_index] = offset + buf_len;
-  }
+
+  AdvanceCrc(buf, offset, buf_len, stream_index);
 
   // |entry_stat| needs to be initialized before modifying |data_size_|.
   scoped_ptr<SimpleEntryStat> entry_stat(
@@ -900,6 +908,10 @@ void SimpleEntryImpl::WriteDataInternal(int stream_index,
   last_used_ = last_modified_ = base::Time::Now();
 
   have_written_[stream_index] = true;
+  // Writing on stream 1 affects the placement of stream 0 in the file, the EOF
+  // record will have to be rewritten.
+  if (stream_index == 1)
+    have_written_[0] = true;
 
   scoped_ptr<int> result(new int());
   Closure task = base::Bind(&SimpleSynchronousEntry::WriteData,
@@ -956,6 +968,13 @@ void SimpleEntryImpl::CreationOperationComplete(
 
   state_ = STATE_READY;
   synchronous_entry_ = in_results->sync_entry;
+  if (in_results->stream_0_data) {
+    stream_0_data_ = in_results->stream_0_data;
+    // The crc was read in SimpleSynchronousEntry.
+    crc_check_state_[0] = CRC_CHECK_DONE;
+    crc32s_[0] = in_results->stream_0_crc32;
+    crc32s_end_offset_[0] = in_results->entry_stat.data_size(0);
+  }
   if (key_.empty()) {
     SetKey(synchronous_entry_->key());
   } else {
@@ -1003,7 +1022,7 @@ void SimpleEntryImpl::ReadOperationComplete(
     int offset,
     const CompletionCallback& completion_callback,
     scoped_ptr<uint32> read_crc32,
-    scoped_ptr<base::Time> last_used,
+    scoped_ptr<SimpleEntryStat> entry_stat,
     scoped_ptr<int> result) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   DCHECK(synchronous_entry_);
@@ -1039,7 +1058,7 @@ void SimpleEntryImpl::ReadOperationComplete(
       Closure task = base::Bind(&SimpleSynchronousEntry::CheckEOFRecord,
                                 base::Unretained(synchronous_entry_),
                                 stream_index,
-                                data_size_[stream_index],
+                                *entry_stat,
                                 crc32s_[stream_index],
                                 new_result.get());
       Closure reply = base::Bind(&SimpleEntryImpl::ChecksumOperationComplete,
@@ -1068,10 +1087,7 @@ void SimpleEntryImpl::ReadOperationComplete(
   }
 
   EntryOperationComplete(
-      stream_index,
-      completion_callback,
-      SimpleEntryStat(*last_used, last_modified_, data_size_),
-      result.Pass());
+      stream_index, completion_callback, *entry_stat, result.Pass());
 }
 
 void SimpleEntryImpl::WriteOperationComplete(
@@ -1158,10 +1174,10 @@ void SimpleEntryImpl::UpdateDataFromEntryStat(
   DCHECK(synchronous_entry_);
   DCHECK_EQ(STATE_READY, state_);
 
-  last_used_ = entry_stat.last_used;
-  last_modified_ = entry_stat.last_modified;
-  for (int i = 0; i < kSimpleEntryFileCount; ++i) {
-    data_size_[i] = entry_stat.data_size[i];
+  last_used_ = entry_stat.last_used();
+  last_modified_ = entry_stat.last_modified();
+  for (int i = 0; i < kSimpleEntryStreamCount; ++i) {
+    data_size_[i] = entry_stat.data_size(i);
   }
   if (!doomed_ && backend_.get())
     backend_->index()->UpdateEntrySize(entry_hash_, GetDiskUsage());
@@ -1169,7 +1185,7 @@ void SimpleEntryImpl::UpdateDataFromEntryStat(
 
 int64 SimpleEntryImpl::GetDiskUsage() const {
   int64 file_size = 0;
-  for (int i = 0; i < kSimpleEntryFileCount; ++i) {
+  for (int i = 0; i < kSimpleEntryStreamCount; ++i) {
     file_size +=
         simple_util::GetFileSizeFromKeyAndDataSize(key_, data_size_[i]);
   }
@@ -1245,6 +1261,78 @@ void SimpleEntryImpl::RecordWriteDependencyType(
   SIMPLE_CACHE_UMA(ENUMERATION,
                    "WriteDependencyType", cache_type_,
                    type, WRITE_DEPENDENCY_TYPE_MAX);
+}
+
+int SimpleEntryImpl::ReadStream0Data(net::IOBuffer* buf,
+                                     int offset,
+                                     int buf_len) {
+  if (buf_len < 0) {
+    RecordReadResult(cache_type_, READ_RESULT_SYNC_READ_FAILURE);
+    return 0;
+  }
+  memcpy(buf->data(), stream_0_data_->data() + offset, buf_len);
+  UpdateDataFromEntryStat(
+      SimpleEntryStat(base::Time::Now(), last_modified_, data_size_));
+  RecordReadResult(cache_type_, READ_RESULT_SUCCESS);
+  return buf_len;
+}
+
+int SimpleEntryImpl::SetStream0Data(net::IOBuffer* buf,
+                                    int offset,
+                                    int buf_len,
+                                    bool truncate) {
+  // Currently, stream 0 is only used for HTTP headers, and always writes them
+  // with a single, truncating write.  Detect these writes and record the size
+  // changes of the headers.  Also, support writes to stream 0 that have
+  // different access patterns, as required by the API contract.
+  // All other clients of the Simple Cache are encouraged to use stream 1.
+  have_written_[0] = true;
+  int data_size = GetDataSize(0);
+  if (offset == 0 && truncate) {
+    RecordHeaderSizeChange(cache_type_, data_size, buf_len);
+    stream_0_data_->SetCapacity(buf_len);
+    memcpy(stream_0_data_->data(), buf->data(), buf_len);
+    data_size_[0] = buf_len;
+  } else {
+    RecordUnexpectedStream0Write(cache_type_);
+    const int buffer_size =
+        truncate ? offset + buf_len : std::max(offset + buf_len, data_size);
+    stream_0_data_->SetCapacity(buffer_size);
+    // If |stream_0_data_| was extended, the extension until offset needs to be
+    // zero-filled.
+    const int fill_size = offset <= data_size ? 0 : offset - data_size;
+    if (fill_size > 0)
+      memset(stream_0_data_->data() + data_size, 0, fill_size);
+    if (buf)
+      memcpy(stream_0_data_->data() + offset, buf->data(), buf_len);
+    data_size_[0] = buffer_size;
+  }
+  base::Time modification_time = base::Time::Now();
+  AdvanceCrc(buf, offset, buf_len, 0);
+  UpdateDataFromEntryStat(
+      SimpleEntryStat(modification_time, modification_time, data_size_));
+  RecordWriteResult(cache_type_, WRITE_RESULT_SUCCESS);
+  return buf_len;
+}
+
+void SimpleEntryImpl::AdvanceCrc(net::IOBuffer* buffer,
+                                 int offset,
+                                 int length,
+                                 int stream_index) {
+  // It is easy to incrementally compute the CRC from [0 .. |offset + buf_len|)
+  // if |offset == 0| or we have already computed the CRC for [0 .. offset).
+  // We rely on most write operations being sequential, start to end to compute
+  // the crc of the data. When we write to an entry and close without having
+  // done a sequential write, we don't check the CRC on read.
+  if (offset == 0 || crc32s_end_offset_[stream_index] == offset) {
+    uint32 initial_crc =
+        (offset != 0) ? crc32s_[stream_index] : crc32(0, Z_NULL, 0);
+    if (length > 0) {
+      crc32s_[stream_index] = crc32(
+          initial_crc, reinterpret_cast<const Bytef*>(buffer->data()), length);
+    }
+    crc32s_end_offset_[stream_index] = offset + length;
+  }
 }
 
 }  // namespace disk_cache

@@ -141,27 +141,55 @@ void RecordCloseResult(net::CacheType cache_type, CloseResult result) {
 
 namespace disk_cache {
 
-using simple_util::ConvertEntryHashKeyToHexString;
 using simple_util::GetEntryHashKey;
-using simple_util::GetFilenameFromEntryHashAndIndex;
+using simple_util::GetFilenameFromEntryHashAndFileIndex;
 using simple_util::GetDataSizeFromKeyAndFileSize;
 using simple_util::GetFileSizeFromKeyAndDataSize;
-using simple_util::GetFileOffsetFromKeyAndDataOffset;
+using simple_util::GetFileIndexFromStreamIndex;
 
-SimpleEntryStat::SimpleEntryStat() {}
+SimpleEntryStat::SimpleEntryStat(base::Time last_used,
+                                 base::Time last_modified,
+                                 const int32 data_size[])
+    : last_used_(last_used),
+      last_modified_(last_modified) {
+  memcpy(data_size_, data_size, sizeof(data_size_));
+}
 
-SimpleEntryStat::SimpleEntryStat(base::Time last_used_p,
-                                 base::Time last_modified_p,
-                                 const int32 data_size_p[])
-    : last_used(last_used_p),
-      last_modified(last_modified_p) {
-  memcpy(data_size, data_size_p, sizeof(data_size));
+int SimpleEntryStat::GetOffsetInFile(const std::string& key,
+                                     int offset,
+                                     int stream_index) const {
+  const int64 headers_size = sizeof(SimpleFileHeader) + key.size();
+  const int64 additional_offset =
+      stream_index == 0 ? data_size_[1] + sizeof(SimpleFileEOF) : 0;
+  return headers_size + offset + additional_offset;
+}
+
+int SimpleEntryStat::GetEOFOffsetInFile(const std::string& key,
+                                        int stream_index) const {
+  return GetOffsetInFile(key, data_size_[stream_index], stream_index);
+}
+
+int SimpleEntryStat::GetLastEOFOffsetInFile(const std::string& key,
+                                            int stream_index) const {
+  const int file_index = GetFileIndexFromStreamIndex(stream_index);
+  const int eof_data_offset =
+      file_index == 0 ? data_size_[0] + data_size_[1] + sizeof(SimpleFileEOF)
+                      : data_size_[2];
+  return GetOffsetInFile(key, eof_data_offset, stream_index);
+}
+
+int SimpleEntryStat::GetFileSize(const std::string& key, int file_index) const {
+  const int total_data_size =
+      file_index == 0 ? data_size_[0] + data_size_[1] + sizeof(SimpleFileEOF)
+                      : data_size_[2];
+  return GetFileSizeFromKeyAndDataSize(key, total_data_size);
 }
 
 SimpleEntryCreationResults::SimpleEntryCreationResults(
     SimpleEntryStat entry_stat)
     : sync_entry(NULL),
       entry_stat(entry_stat),
+      stream_0_crc32(crc32(0, Z_NULL, 0)),
       result(net::OK) {
 }
 
@@ -205,12 +233,16 @@ void SimpleSynchronousEntry::OpenEntry(
     SimpleEntryCreationResults *out_results) {
   SimpleSynchronousEntry* sync_entry =
       new SimpleSynchronousEntry(cache_type, path, "", entry_hash);
-  out_results->result = sync_entry->InitializeForOpen(
-      had_index, &out_results->entry_stat);
+  out_results->result =
+      sync_entry->InitializeForOpen(had_index,
+                                    &out_results->entry_stat,
+                                    &out_results->stream_0_data,
+                                    &out_results->stream_0_crc32);
   if (out_results->result != net::OK) {
     sync_entry->Doom();
     delete sync_entry;
     out_results->sync_entry = NULL;
+    out_results->stream_0_data = NULL;
     return;
   }
   out_results->sync_entry = sync_entry;
@@ -246,8 +278,8 @@ bool SimpleSynchronousEntry::DeleteFilesForEntryHash(
     const uint64 entry_hash) {
   bool result = true;
   for (int i = 0; i < kSimpleEntryFileCount; ++i) {
-    FilePath to_delete = path.AppendASCII(
-        GetFilenameFromEntryHashAndIndex(entry_hash, i));
+    FilePath to_delete =
+        path.AppendASCII(GetFilenameFromEntryHashAndFileIndex(entry_hash, i));
     if (!base::DeleteFile(to_delete, false)) {
       result = false;
       DLOG(ERROR) << "Could not delete " << to_delete.MaybeAsASCII();
@@ -279,17 +311,17 @@ int SimpleSynchronousEntry::DoomEntrySet(
 void SimpleSynchronousEntry::ReadData(const EntryOperationData& in_entry_op,
                                       net::IOBuffer* out_buf,
                                       uint32* out_crc32,
-                                      base::Time* out_last_used,
+                                      SimpleEntryStat* entry_stat,
                                       int* out_result) const {
   DCHECK(initialized_);
-  int64 file_offset =
-      GetFileOffsetFromKeyAndDataOffset(key_, in_entry_op.offset);
-  int bytes_read = ReadPlatformFile(files_[in_entry_op.index],
-                                    file_offset,
-                                    out_buf->data(),
-                                    in_entry_op.buf_len);
+  DCHECK_NE(0, in_entry_op.index);
+  const int64 file_offset =
+      entry_stat->GetOffsetInFile(key_, in_entry_op.offset, in_entry_op.index);
+  int file_index = GetFileIndexFromStreamIndex(in_entry_op.index);
+  int bytes_read = ReadPlatformFile(
+      files_[file_index], file_offset, out_buf->data(), in_entry_op.buf_len);
   if (bytes_read > 0) {
-    *out_last_used = Time::Now();
+    entry_stat->set_last_used(Time::Now());
     *out_crc32 = crc32(crc32(0L, Z_NULL, 0),
                        reinterpret_cast<const Bytef*>(out_buf->data()),
                        bytes_read);
@@ -307,27 +339,30 @@ void SimpleSynchronousEntry::WriteData(const EntryOperationData& in_entry_op,
                                        SimpleEntryStat* out_entry_stat,
                                        int* out_result) const {
   DCHECK(initialized_);
+  DCHECK_NE(0, in_entry_op.index);
   int index = in_entry_op.index;
+  int file_index = GetFileIndexFromStreamIndex(index);
   int offset = in_entry_op.offset;
   int buf_len = in_entry_op.buf_len;
   int truncate = in_entry_op.truncate;
-
-  bool extending_by_write = offset + buf_len > out_entry_stat->data_size[index];
+  const int64 file_offset = out_entry_stat->GetOffsetInFile(
+      key_, in_entry_op.offset, in_entry_op.index);
+  bool extending_by_write = offset + buf_len > out_entry_stat->data_size(index);
   if (extending_by_write) {
-    // We are extending the file, and need to insure the EOF record is zeroed.
-    const int64 file_eof_offset = GetFileOffsetFromKeyAndDataOffset(
-        key_, out_entry_stat->data_size[index]);
-    if (!TruncatePlatformFile(files_[index], file_eof_offset)) {
+    // The EOF record and the eventual stream afterward need to be zeroed out.
+    const int64 file_eof_offset =
+        out_entry_stat->GetEOFOffsetInFile(key_, index);
+    if (!TruncatePlatformFile(files_[file_index], file_eof_offset)) {
       RecordWriteResult(cache_type_, WRITE_RESULT_PRETRUNCATE_FAILURE);
       Doom();
       *out_result = net::ERR_CACHE_WRITE_FAILURE;
       return;
     }
   }
-  const int64 file_offset = GetFileOffsetFromKeyAndDataOffset(key_, offset);
   if (buf_len > 0) {
     if (WritePlatformFile(
-            files_[index], file_offset, in_buf->data(), buf_len) != buf_len) {
+            files_[file_index], file_offset, in_buf->data(), buf_len) !=
+        buf_len) {
       RecordWriteResult(cache_type_, WRITE_RESULT_WRITE_FAILURE);
       Doom();
       *out_result = net::ERR_CACHE_WRITE_FAILURE;
@@ -335,79 +370,89 @@ void SimpleSynchronousEntry::WriteData(const EntryOperationData& in_entry_op,
     }
   }
   if (!truncate && (buf_len > 0 || !extending_by_write)) {
-    out_entry_stat->data_size[index] =
-        std::max(out_entry_stat->data_size[index], offset + buf_len);
+    out_entry_stat->set_data_size(
+        index, std::max(out_entry_stat->data_size(index), offset + buf_len));
   } else {
-    if (!TruncatePlatformFile(files_[index], file_offset + buf_len)) {
+    out_entry_stat->set_data_size(index, offset + buf_len);
+    int file_eof_offset = out_entry_stat->GetLastEOFOffsetInFile(key_, index);
+    if (!TruncatePlatformFile(files_[file_index], file_eof_offset)) {
       RecordWriteResult(cache_type_, WRITE_RESULT_TRUNCATE_FAILURE);
       Doom();
       *out_result = net::ERR_CACHE_WRITE_FAILURE;
       return;
     }
-    out_entry_stat->data_size[index] = offset + buf_len;
   }
 
   RecordWriteResult(cache_type_, WRITE_RESULT_SUCCESS);
-  out_entry_stat->last_used = out_entry_stat->last_modified = Time::Now();
+  base::Time modification_time = Time::Now();
+  out_entry_stat->set_last_used(modification_time);
+  out_entry_stat->set_last_modified(modification_time);
   *out_result = buf_len;
 }
 
 void SimpleSynchronousEntry::CheckEOFRecord(int index,
-                                            int32 data_size,
+                                            const SimpleEntryStat& entry_stat,
                                             uint32 expected_crc32,
                                             int* out_result) const {
   DCHECK(initialized_);
-
-  SimpleFileEOF eof_record;
-  int64 file_offset = GetFileOffsetFromKeyAndDataOffset(key_, data_size);
-  if (ReadPlatformFile(files_[index],
-                       file_offset,
-                       reinterpret_cast<char*>(&eof_record),
-                       sizeof(eof_record)) != sizeof(eof_record)) {
-    RecordCheckEOFResult(cache_type_, CHECK_EOF_RESULT_READ_FAILURE);
+  uint32 crc32;
+  bool has_crc32;
+  int stream_size;
+  *out_result =
+      GetEOFRecordData(index, entry_stat, &has_crc32, &crc32, &stream_size);
+  if (*out_result != net::OK) {
     Doom();
-    *out_result = net::ERR_CACHE_CHECKSUM_READ_FAILURE;
     return;
   }
-
-  if (eof_record.final_magic_number != kSimpleFinalMagicNumber) {
-    RecordCheckEOFResult(cache_type_, CHECK_EOF_RESULT_MAGIC_NUMBER_MISMATCH);
-    DLOG(INFO) << "eof record had bad magic number.";
-    Doom();
-    *out_result = net::ERR_CACHE_CHECKSUM_READ_FAILURE;
-    return;
-  }
-
-  const bool has_crc = (eof_record.flags & SimpleFileEOF::FLAG_HAS_CRC32) ==
-                       SimpleFileEOF::FLAG_HAS_CRC32;
-  SIMPLE_CACHE_UMA(BOOLEAN, "SyncCheckEOFHasCrc", cache_type_, has_crc);
-  if (has_crc && eof_record.data_crc32 != expected_crc32) {
-    RecordCheckEOFResult(cache_type_, CHECK_EOF_RESULT_CRC_MISMATCH);
-    DLOG(INFO) << "eof record had bad crc.";
-    Doom();
+  if (has_crc32 && crc32 != expected_crc32) {
+    DLOG(INFO) << "EOF record had bad crc.";
     *out_result = net::ERR_CACHE_CHECKSUM_MISMATCH;
+    RecordCheckEOFResult(cache_type_, CHECK_EOF_RESULT_CRC_MISMATCH);
+    Doom();
     return;
   }
-
   RecordCheckEOFResult(cache_type_, CHECK_EOF_RESULT_SUCCESS);
-  *out_result = net::OK;
 }
 
 void SimpleSynchronousEntry::Close(
     const SimpleEntryStat& entry_stat,
-    scoped_ptr<std::vector<CRCRecord> > crc32s_to_write) {
+    scoped_ptr<std::vector<CRCRecord> > crc32s_to_write,
+    net::GrowableIOBuffer* stream_0_data) {
+  DCHECK(stream_0_data);
+  // Write stream 0 data.
+  int stream_0_offset = entry_stat.GetOffsetInFile(key_, 0, 0);
+  if (WritePlatformFile(files_[0],
+                        stream_0_offset,
+                        stream_0_data->data(),
+                        entry_stat.data_size(0)) != entry_stat.data_size(0)) {
+    RecordCloseResult(cache_type_, CLOSE_RESULT_WRITE_FAILURE);
+    DLOG(INFO) << "Could not write stream 0 data.";
+    Doom();
+  }
+
   for (std::vector<CRCRecord>::const_iterator it = crc32s_to_write->begin();
        it != crc32s_to_write->end(); ++it) {
     SimpleFileEOF eof_record;
+    int index = it->index;
+    eof_record.stream_size = entry_stat.data_size(index);
     eof_record.final_magic_number = kSimpleFinalMagicNumber;
     eof_record.flags = 0;
     if (it->has_crc32)
       eof_record.flags |= SimpleFileEOF::FLAG_HAS_CRC32;
     eof_record.data_crc32 = it->data_crc32;
-    int64 file_offset = GetFileOffsetFromKeyAndDataOffset(
-        key_, entry_stat.data_size[it->index]);
-    if (WritePlatformFile(files_[it->index],
-                          file_offset,
+    int file_index = GetFileIndexFromStreamIndex(index);
+    int eof_offset = entry_stat.GetEOFOffsetInFile(key_, index);
+    // If stream 0 changed size, the file needs to be resized, otherwise the
+    // next open will yield wrong stream sizes. On stream 1 and stream 2 proper
+    // resizing of the file is handled in SimpleSynchronousEntry::WriteData().
+    if (index == 0 && !TruncatePlatformFile(files_[file_index], eof_offset)) {
+      RecordCloseResult(cache_type_, CLOSE_RESULT_WRITE_FAILURE);
+      DLOG(INFO) << "Could not truncate stream 0 file.";
+      Doom();
+      break;
+    }
+    if (WritePlatformFile(files_[file_index],
+                          eof_offset,
                           reinterpret_cast<const char*>(&eof_record),
                           sizeof(eof_record)) != sizeof(eof_record)) {
       RecordCloseResult(cache_type_, CLOSE_RESULT_WRITE_FAILURE);
@@ -415,7 +460,11 @@ void SimpleSynchronousEntry::Close(
       Doom();
       break;
     }
-    const int64 file_size = file_offset + sizeof(eof_record);
+  }
+  for (int i = 0; i < kSimpleEntryFileCount; ++i) {
+    bool did_close_file = ClosePlatformFile(files_[i]);
+    DCHECK(did_close_file);
+    const int64 file_size = entry_stat.GetFileSize(key_, i);
     SIMPLE_CACHE_UMA(CUSTOM_COUNTS,
                      "LastClusterSize", cache_type_,
                      file_size % 4096, 0, 4097, 50);
@@ -423,11 +472,6 @@ void SimpleSynchronousEntry::Close(
     SIMPLE_CACHE_UMA(PERCENTAGE,
                      "LastClusterLossPercent", cache_type_,
                      cluster_loss * 100 / (cluster_loss + file_size));
-  }
-
-  for (int i = 0; i < kSimpleEntryFileCount; ++i) {
-    bool did_close_file = ClosePlatformFile(files_[i]);
-    CHECK(did_close_file);
   }
   RecordCloseResult(cache_type_, CLOSE_RESULT_SUCCESS);
   have_open_files_ = false;
@@ -460,8 +504,8 @@ bool SimpleSynchronousEntry::OpenOrCreateFiles(
     bool had_index,
     SimpleEntryStat* out_entry_stat) {
   for (int i = 0; i < kSimpleEntryFileCount; ++i) {
-    FilePath filename = path_.AppendASCII(
-        GetFilenameFromEntryHashAndIndex(entry_hash_, i));
+    FilePath filename =
+        path_.AppendASCII(GetFilenameFromEntryHashAndFileIndex(entry_hash_, i));
     int flags = PLATFORM_FILE_READ | PLATFORM_FILE_WRITE;
     if (create)
       flags |= PLATFORM_FILE_CREATE;
@@ -516,9 +560,11 @@ bool SimpleSynchronousEntry::OpenOrCreateFiles(
 
   have_open_files_ = true;
   if (create) {
-    out_entry_stat->last_modified = out_entry_stat->last_used = Time::Now();
-    for (int i = 0; i < kSimpleEntryFileCount; ++i)
-      out_entry_stat->data_size[i] = 0;
+    base::Time creation_time = Time::Now();
+    out_entry_stat->set_last_modified(creation_time);
+    out_entry_stat->set_last_used(creation_time);
+    for (int i = 0; i < kSimpleEntryStreamCount; ++i)
+      out_entry_stat->set_data_size(i, 0);
   } else {
     base::TimeDelta entry_age = base::Time::Now() - base::Time::UnixEpoch();
     for (int i = 0; i < kSimpleEntryFileCount; ++i) {
@@ -529,20 +575,31 @@ bool SimpleSynchronousEntry::OpenOrCreateFiles(
         DLOG(WARNING) << "Could not get platform file info.";
         continue;
       }
-      out_entry_stat->last_used = file_info.last_accessed;
+      out_entry_stat->set_last_used(file_info.last_accessed);
       if (simple_util::GetMTime(path_, &file_last_modified))
-        out_entry_stat->last_modified = file_last_modified;
+        out_entry_stat->set_last_modified(file_last_modified);
       else
-        out_entry_stat->last_modified = file_info.last_modified;
+        out_entry_stat->set_last_modified(file_info.last_modified);
 
       base::TimeDelta stream_age =
-          base::Time::Now() - out_entry_stat->last_modified;
+          base::Time::Now() - out_entry_stat->last_modified();
       if (stream_age < entry_age)
         entry_age = stream_age;
 
-      // Keep the file size in |data size_| briefly until the key is initialized
-      // properly.
-      out_entry_stat->data_size[i] = file_info.size;
+      // Two things prevent from knowing the right values for |data_size|:
+      // 1) The key is not known, hence its length is unknown.
+      // 2) Stream 0 and stream 1 are in the same file, and the exact size for
+      // each will only be known when reading the EOF record for stream 0.
+      //
+      // The size for file 0 and 1 is temporarily kept in
+      // |data_size(1)| and |data_size(2)| respectively. Reading the key in
+      // InitializeForOpen yields the data size for each file. In the case of
+      // file hash_1, this is the total size of stream 2, and is assigned to
+      // data_size(2). In the case of file 0, it is the combined size of stream
+      // 0, stream 1 and one EOF record. The exact distribution of sizes between
+      // stream 1 and stream 0 is only determined after reading the EOF record
+      // for stream 0 in ReadAndValidateStream0.
+      out_entry_stat->set_data_size(i + 1, file_info.size);
     }
     SIMPLE_CACHE_UMA(CUSTOM_COUNTS,
                      "SyncOpenEntryAge", cache_type_,
@@ -560,12 +617,14 @@ void SimpleSynchronousEntry::CloseFiles() {
   }
 }
 
-int SimpleSynchronousEntry::InitializeForOpen(bool had_index,
-                                              SimpleEntryStat* out_entry_stat) {
+int SimpleSynchronousEntry::InitializeForOpen(
+    bool had_index,
+    SimpleEntryStat* out_entry_stat,
+    scoped_refptr<net::GrowableIOBuffer>* stream_0_data,
+    uint32* out_stream_0_crc32) {
   DCHECK(!initialized_);
   if (!OpenOrCreateFiles(false, had_index, out_entry_stat))
     return net::ERR_FAILED;
-
   for (int i = 0; i < kSimpleEntryFileCount; ++i) {
     SimpleFileHeader header;
     int header_read_result =
@@ -602,12 +661,19 @@ int SimpleSynchronousEntry::InitializeForOpen(bool had_index,
     }
 
     key_ = std::string(key.get(), header.key_length);
-    out_entry_stat->data_size[i] =
-        GetDataSizeFromKeyAndFileSize(key_, out_entry_stat->data_size[i]);
-    if (out_entry_stat->data_size[i] < 0) {
-      // This entry can't possibly be valid, as it does not have enough space to
-      // store a valid SimpleFileEOF record.
-      return net::ERR_FAILED;
+    if (i == 0) {
+      // File size for stream 0 has been stored temporarily in data_size[1].
+      int total_data_size =
+          GetDataSizeFromKeyAndFileSize(key_, out_entry_stat->data_size(1));
+      int ret_value_stream_0 = ReadAndValidateStream0(
+          total_data_size, out_entry_stat, stream_0_data, out_stream_0_crc32);
+      if (ret_value_stream_0 != net::OK)
+        return ret_value_stream_0;
+    } else {
+      out_entry_stat->set_data_size(
+          2, GetDataSizeFromKeyAndFileSize(key_, out_entry_stat->data_size(2)));
+      if (out_entry_stat->data_size(2) < 0)
+        return net::ERR_FAILED;
     }
 
     if (base::Hash(key.get(), header.key_length) != header.key_hash) {
@@ -638,16 +704,18 @@ int SimpleSynchronousEntry::InitializeForCreate(
     header.key_length = key_.size();
     header.key_hash = base::Hash(key_);
 
-    if (WritePlatformFile(files_[i], 0, reinterpret_cast<char*>(&header),
-                          sizeof(header)) != sizeof(header)) {
-      DLOG(WARNING) << "Could not write headers to new cache entry.";
+    if (WritePlatformFile(
+            files_[i], 0, reinterpret_cast<char*>(&header), sizeof(header)) !=
+        sizeof(header)) {
+      DLOG(WARNING) << "Could not write cache file header to cache entry.";
       RecordSyncCreateResult(
           cache_type_, CREATE_ENTRY_CANT_WRITE_HEADER, had_index);
       return net::ERR_FAILED;
     }
 
-    if (WritePlatformFile(files_[i], sizeof(header), key_.data(),
-                          key_.size()) != implicit_cast<int>(key_.size())) {
+    if (WritePlatformFile(
+            files_[i], sizeof(SimpleFileHeader), key_.data(), key_.size()) !=
+        implicit_cast<int>(key_.size())) {
       DLOG(WARNING) << "Could not write keys to new cache entry.";
       RecordSyncCreateResult(
           cache_type_, CREATE_ENTRY_CANT_WRITE_KEY, had_index);
@@ -656,6 +724,88 @@ int SimpleSynchronousEntry::InitializeForCreate(
   }
   RecordSyncCreateResult(cache_type_, CREATE_ENTRY_SUCCESS, had_index);
   initialized_ = true;
+  return net::OK;
+}
+
+int SimpleSynchronousEntry::ReadAndValidateStream0(
+    int total_data_size,
+    SimpleEntryStat* out_entry_stat,
+    scoped_refptr<net::GrowableIOBuffer>* stream_0_data,
+    uint32* out_stream_0_crc32) const {
+  // Temporarily assign all the data size to stream 1 in order to read the
+  // EOF record for stream 0, which contains the size of stream 0.
+  out_entry_stat->set_data_size(0, 0);
+  out_entry_stat->set_data_size(1, total_data_size - sizeof(SimpleFileEOF));
+
+  bool has_crc32;
+  uint32 read_crc32;
+  int stream_0_size;
+  int ret_value_crc32 = GetEOFRecordData(
+      0, *out_entry_stat, &has_crc32, &read_crc32, &stream_0_size);
+  if (ret_value_crc32 != net::OK)
+    return ret_value_crc32;
+
+  if (stream_0_size > out_entry_stat->data_size(1))
+    return net::ERR_FAILED;
+
+  // These are the real values of data size.
+  out_entry_stat->set_data_size(0, stream_0_size);
+  out_entry_stat->set_data_size(
+      1, out_entry_stat->data_size(1) - stream_0_size);
+
+  // Put stream 0 data in memory.
+  *stream_0_data = new net::GrowableIOBuffer();
+  (*stream_0_data)->SetCapacity(stream_0_size);
+  int file_offset = out_entry_stat->GetOffsetInFile(key_, 0, 0);
+  int bytes_read = ReadPlatformFile(
+      files_[0], file_offset, (*stream_0_data)->data(), stream_0_size);
+  if (bytes_read != stream_0_size)
+    return net::ERR_FAILED;
+
+  // Check the CRC32.
+  uint32 expected_crc32 =
+      stream_0_size == 0
+          ? crc32(0, Z_NULL, 0)
+          : crc32(crc32(0, Z_NULL, 0),
+                  reinterpret_cast<const Bytef*>((*stream_0_data)->data()),
+                  stream_0_size);
+  if (has_crc32 && read_crc32 != expected_crc32) {
+    DLOG(INFO) << "EOF record had bad crc.";
+    RecordCheckEOFResult(cache_type_, CHECK_EOF_RESULT_CRC_MISMATCH);
+    return net::ERR_FAILED;
+  }
+  *out_stream_0_crc32 = read_crc32;
+  RecordCheckEOFResult(cache_type_, CHECK_EOF_RESULT_SUCCESS);
+  return net::OK;
+}
+
+int SimpleSynchronousEntry::GetEOFRecordData(int index,
+                                             const SimpleEntryStat& entry_stat,
+                                             bool* out_has_crc32,
+                                             uint32* out_crc32,
+                                             int* out_data_size) const {
+  SimpleFileEOF eof_record;
+  int file_offset = entry_stat.GetEOFOffsetInFile(key_, index);
+  int file_index = GetFileIndexFromStreamIndex(index);
+  if (ReadPlatformFile(files_[file_index],
+                       file_offset,
+                       reinterpret_cast<char*>(&eof_record),
+                       sizeof(eof_record)) != sizeof(eof_record)) {
+    RecordCheckEOFResult(cache_type_, CHECK_EOF_RESULT_READ_FAILURE);
+    return net::ERR_CACHE_CHECKSUM_READ_FAILURE;
+  }
+
+  if (eof_record.final_magic_number != kSimpleFinalMagicNumber) {
+    RecordCheckEOFResult(cache_type_, CHECK_EOF_RESULT_MAGIC_NUMBER_MISMATCH);
+    DLOG(INFO) << "EOF record had bad magic number.";
+    return net::ERR_CACHE_CHECKSUM_READ_FAILURE;
+  }
+
+  *out_has_crc32 = (eof_record.flags & SimpleFileEOF::FLAG_HAS_CRC32) ==
+                   SimpleFileEOF::FLAG_HAS_CRC32;
+  *out_crc32 = eof_record.data_crc32;
+  *out_data_size = eof_record.stream_size;
+  SIMPLE_CACHE_UMA(BOOLEAN, "SyncCheckEOFHasCrc", cache_type_, *out_has_crc32);
   return net::OK;
 }
 

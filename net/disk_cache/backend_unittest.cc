@@ -3250,7 +3250,7 @@ TEST_F(DiskCacheBackendTest, SimpleCacheOpenMissingFile) {
 
   // Delete one of the files in the entry.
   base::FilePath to_delete_file = cache_path_.AppendASCII(
-      disk_cache::simple_util::GetFilenameFromKeyAndIndex(key, 0));
+      disk_cache::simple_util::GetFilenameFromKeyAndFileIndex(key, 0));
   EXPECT_TRUE(base::PathExists(to_delete_file));
   EXPECT_TRUE(disk_cache::DeleteCacheFile(to_delete_file));
 
@@ -3259,9 +3259,8 @@ TEST_F(DiskCacheBackendTest, SimpleCacheOpenMissingFile) {
 
   // Confirm the rest of the files are gone.
   for (int i = 1; i < disk_cache::kSimpleEntryFileCount; ++i) {
-    base::FilePath
-        should_be_gone_file(cache_path_.AppendASCII(
-            disk_cache::simple_util::GetFilenameFromKeyAndIndex(key, i)));
+    base::FilePath should_be_gone_file(cache_path_.AppendASCII(
+        disk_cache::simple_util::GetFilenameFromKeyAndFileIndex(key, i)));
     EXPECT_FALSE(base::PathExists(should_be_gone_file));
   }
 }
@@ -3286,9 +3285,9 @@ TEST_F(DiskCacheBackendTest, SimpleCacheOpenBadFile) {
   entry->Close();
   entry = NULL;
 
-  // Write an invalid header on stream 1.
+  // Write an invalid header for stream 0 and stream 1.
   base::FilePath entry_file1_path = cache_path_.AppendASCII(
-      disk_cache::simple_util::GetFilenameFromKeyAndIndex(key, 1));
+      disk_cache::simple_util::GetFilenameFromKeyAndFileIndex(key, 0));
 
   disk_cache::SimpleFileHeader header;
   header.initial_magic_number = GG_UINT64_C(0xbadf00d);

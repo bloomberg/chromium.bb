@@ -77,13 +77,15 @@ uint64 GetEntryHashKey(const std::string& key) {
   return u.key_hash;
 }
 
-std::string GetFilenameFromEntryHashAndIndex(uint64 entry_hash,
-                                             int index) {
-  return base::StringPrintf("%016" PRIx64 "_%1d", entry_hash, index);
+std::string GetFilenameFromEntryHashAndFileIndex(uint64 entry_hash,
+                                                 int file_index) {
+  return base::StringPrintf("%016" PRIx64 "_%1d", entry_hash, file_index);
 }
 
-std::string GetFilenameFromKeyAndIndex(const std::string& key, int index) {
-  return GetEntryHashKeyAsHexString(key) + base::StringPrintf("_%1d", index);
+std::string GetFilenameFromKeyAndFileIndex(const std::string& key,
+                                           int file_index) {
+  return GetEntryHashKeyAsHexString(key) +
+         base::StringPrintf("_%1d", file_index);
 }
 
 int32 GetDataSizeFromKeyAndFileSize(const std::string& key, int64 file_size) {
@@ -98,10 +100,8 @@ int64 GetFileSizeFromKeyAndDataSize(const std::string& key, int32 data_size) {
       sizeof(SimpleFileEOF);
 }
 
-int64 GetFileOffsetFromKeyAndDataOffset(const std::string& key,
-                                        int data_offset) {
-  const int64 headers_size = sizeof(disk_cache::SimpleFileHeader) + key.size();
-  return headers_size + data_offset;
+int GetFileIndexFromStreamIndex(int stream_index) {
+  return (stream_index == 2) ? 1 : 0;
 }
 
 // TODO(clamy, gavinp): this should go in base

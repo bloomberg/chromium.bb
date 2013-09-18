@@ -40,12 +40,13 @@ NET_EXPORT_PRIVATE bool GetEntryHashKeyFromHexString(
 // Given a |key| for a (potential) entry in the simple backend and the |index|
 // of a stream on that entry, returns the filename in which that stream would be
 // stored.
-NET_EXPORT_PRIVATE std::string GetFilenameFromKeyAndIndex(
+NET_EXPORT_PRIVATE std::string GetFilenameFromKeyAndFileIndex(
     const std::string& key,
-    int index);
+    int file_index);
 
 // Same as |GetFilenameFromKeyAndIndex| above, but using a hex string.
-std::string GetFilenameFromEntryHashAndIndex(uint64 entry_hash, int index);
+std::string GetFilenameFromEntryHashAndFileIndex(uint64 entry_hash,
+                                                 int file_index);
 
 // Given the size of a file holding a stream in the simple backend and the key
 // to an entry, returns the number of bytes in the stream.
@@ -57,11 +58,9 @@ NET_EXPORT_PRIVATE int32 GetDataSizeFromKeyAndFileSize(const std::string& key,
 NET_EXPORT_PRIVATE int64 GetFileSizeFromKeyAndDataSize(const std::string& key,
                                                        int32 data_size);
 
-// Given the key to an entry, and an offset into a stream on that entry, returns
-// the file offset corresponding to |data_offset|.
-NET_EXPORT_PRIVATE int64 GetFileOffsetFromKeyAndDataOffset(
-    const std::string& key,
-    int data_offset);
+// Given the stream index, returns the number of the file the stream is stored
+// in.
+NET_EXPORT_PRIVATE int GetFileIndexFromStreamIndex(int stream_index);
 
 // Fills |out_time| with the time the file last modified time. Unlike the
 // functions in platform_file.h, the time resolution is milliseconds.

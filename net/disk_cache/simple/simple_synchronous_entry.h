@@ -11,13 +11,16 @@
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
 #include "base/time/time.h"
 #include "net/base/cache_type.h"
+#include "net/base/net_export.h"
 #include "net/disk_cache/simple/simple_entry_format.h"
 
 namespace net {
+class GrowableIOBuffer;
 class IOBuffer;
 }
 
@@ -25,15 +28,38 @@ namespace disk_cache {
 
 class SimpleSynchronousEntry;
 
-struct SimpleEntryStat {
-  SimpleEntryStat();
-  SimpleEntryStat(base::Time last_used_p,
-                  base::Time last_modified_p,
-                  const int32 data_size_p[]);
+// This class handles the passing of data about the entry between
+// SimpleEntryImplementation and SimpleSynchronousEntry and the computation of
+// file offsets based on the data size for all streams.
+class NET_EXPORT_PRIVATE SimpleEntryStat {
+ public:
+  SimpleEntryStat(base::Time last_used,
+                  base::Time last_modified,
+                  const int32 data_size[]);
 
-  base::Time last_used;
-  base::Time last_modified;
-  int32 data_size[kSimpleEntryFileCount];
+  int GetOffsetInFile(const std::string& key,
+                      int offset,
+                      int stream_index) const;
+  int GetEOFOffsetInFile(const std::string& key, int stream_index) const;
+  int GetLastEOFOffsetInFile(const std::string& key, int file_index) const;
+  int GetFileSize(const std::string& key, int file_index) const;
+
+  base::Time last_used() const { return last_used_; }
+  base::Time last_modified() const { return last_modified_; }
+  void set_last_used(base::Time last_used) { last_used_ = last_used; }
+  void set_last_modified(base::Time last_modified) {
+    last_modified_ = last_modified;
+  }
+
+  int32 data_size(int stream_index) const { return data_size_[stream_index]; }
+  void set_data_size(int stream_index, int data_size) {
+    data_size_[stream_index] = data_size;
+  }
+
+ private:
+  base::Time last_used_;
+  base::Time last_modified_;
+  int32 data_size_[kSimpleEntryStreamCount];
 };
 
 struct SimpleEntryCreationResults {
@@ -41,7 +67,9 @@ struct SimpleEntryCreationResults {
   ~SimpleEntryCreationResults();
 
   SimpleSynchronousEntry* sync_entry;
+  scoped_refptr<net::GrowableIOBuffer> stream_0_data;
   SimpleEntryStat entry_stat;
+  uint32 stream_0_crc32;
   int result;
 };
 
@@ -102,21 +130,22 @@ class SimpleSynchronousEntry {
   void ReadData(const EntryOperationData& in_entry_op,
                 net::IOBuffer* out_buf,
                 uint32* out_crc32,
-                base::Time* out_last_used,
+                SimpleEntryStat* entry_stat,
                 int* out_result) const;
   void WriteData(const EntryOperationData& in_entry_op,
                  net::IOBuffer* in_buf,
                  SimpleEntryStat* out_entry_stat,
                  int* out_result) const;
   void CheckEOFRecord(int index,
-                      int data_size,
+                      const SimpleEntryStat& entry_stat,
                       uint32 expected_crc32,
                       int* out_result) const;
 
   // Close all streams, and add write EOF records to streams indicated by the
   // CRCRecord entries in |crc32s_to_write|.
   void Close(const SimpleEntryStat& entry_stat,
-             scoped_ptr<std::vector<CRCRecord> > crc32s_to_write);
+             scoped_ptr<std::vector<CRCRecord> > crc32s_to_write,
+             net::GrowableIOBuffer* stream_0_data);
 
   const base::FilePath& path() const { return path_; }
   std::string key() const { return key_; }
@@ -140,7 +169,10 @@ class SimpleSynchronousEntry {
   // Returns a net error, i.e. net::OK on success.  |had_index| is passed
   // from the main entry for metrics purposes, and is true if the index was
   // initialized when the open operation began.
-  int InitializeForOpen(bool had_index, SimpleEntryStat* out_entry_stat);
+  int InitializeForOpen(bool had_index,
+                        SimpleEntryStat* out_entry_stat,
+                        scoped_refptr<net::GrowableIOBuffer>* stream_0_data,
+                        uint32* out_stream_0_crc32);
 
   // Returns a net error, including net::OK on success and net::FILE_EXISTS
   // when the entry already exists.  |had_index| is passed from the main entry
@@ -148,6 +180,19 @@ class SimpleSynchronousEntry {
   // create operation began.
   int InitializeForCreate(bool had_index, SimpleEntryStat* out_entry_stat);
 
+  // Allocates and fills a buffer with stream 0 data in |stream_0_data|, then
+  // checks its crc32.
+  int ReadAndValidateStream0(
+      int total_data_size,
+      SimpleEntryStat* out_entry_stat,
+      scoped_refptr<net::GrowableIOBuffer>* stream_0_data,
+      uint32* out_stream_0_crc32) const;
+
+  int GetEOFRecordData(int index,
+                       const SimpleEntryStat& entry_stat,
+                       bool* out_has_crc32,
+                       uint32* out_crc32,
+                       int* out_data_size) const;
   void Doom() const;
 
   static bool DeleteFilesForEntryHash(const base::FilePath& path,

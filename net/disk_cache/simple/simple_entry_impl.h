@@ -25,6 +25,7 @@ class TaskRunner;
 }
 
 namespace net {
+class GrowableIOBuffer;
 class IOBuffer;
 }
 
@@ -32,7 +33,7 @@ namespace disk_cache {
 
 class SimpleBackendImpl;
 class SimpleSynchronousEntry;
-struct SimpleEntryStat;
+class SimpleEntryStat;
 struct SimpleEntryCreationResults;
 
 // SimpleEntryImpl is the IO thread interface to an entry in the very simple
@@ -217,7 +218,7 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
                              int offset,
                              const CompletionCallback& completion_callback,
                              scoped_ptr<uint32> read_crc32,
-                             scoped_ptr<base::Time> last_used,
+                             scoped_ptr<SimpleEntryStat> entry_stat,
                              scoped_ptr<int> result);
 
   // Called after an asynchronous write completes.
@@ -251,6 +252,23 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
   void RecordReadIsParallelizable(const SimpleEntryOperation& operation) const;
   void RecordWriteDependencyType(const SimpleEntryOperation& operation) const;
 
+  // Reads from the stream 0 data kept in memory.
+  int ReadStream0Data(net::IOBuffer* buf, int offset, int buf_len);
+
+  // Copies data from |buf| to the internal in-memory buffer for stream 0. If
+  // |truncate| is set to true, the target buffer will be truncated at |offset|
+  // + |buf_len| before being written.
+  int SetStream0Data(net::IOBuffer* buf,
+                     int offset, int buf_len,
+                     bool truncate);
+
+  // Updates |crc32s_| and |crc32s_end_offset_| for a write of the data in
+  // |buffer| on |stream_index|, starting at |offset| and of length |length|.
+  void AdvanceCrc(net::IOBuffer* buffer,
+                  int offset,
+                  int length,
+                  int stream_index);
+
   // All nonstatic SimpleEntryImpl methods should always be called on the IO
   // thread, in all cases. |io_thread_checker_| documents and enforces this.
   base::ThreadChecker io_thread_checker_;
@@ -268,7 +286,7 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
   // TODO(clamy): Unify last_used_ with data in the index.
   base::Time last_used_;
   base::Time last_modified_;
-  int32 data_size_[kSimpleEntryFileCount];
+  int32 data_size_[kSimpleEntryStreamCount];
 
   // Number of times this object has been returned from Backend::OpenEntry() and
   // Backend::CreateEntry() without subsequent Entry::Close() calls. Used to
@@ -283,15 +301,16 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
   // write. For each stream, |crc32s_[index]| is the crc32 of that stream from
   // [0 .. |crc32s_end_offset_|). If |crc32s_end_offset_[index] == 0| then the
   // value of |crc32s_[index]| is undefined.
-  int32 crc32s_end_offset_[kSimpleEntryFileCount];
-  uint32 crc32s_[kSimpleEntryFileCount];
+  int32 crc32s_end_offset_[kSimpleEntryStreamCount];
+  uint32 crc32s_[kSimpleEntryStreamCount];
 
-  // If |have_written_[index]| is true, we have written to the stream |index|.
-  bool have_written_[kSimpleEntryFileCount];
+  // If |have_written_[index]| is true, we have written to the file that
+  // contains stream |index|.
+  bool have_written_[kSimpleEntryStreamCount];
 
   // Reflects how much CRC checking has been done with the entry. This state is
   // reported on closing each entry stream.
-  CheckCrcResult crc_check_state_[kSimpleEntryFileCount];
+  CheckCrcResult crc_check_state_[kSimpleEntryStreamCount];
 
   // The |synchronous_entry_| is the worker thread object that performs IO on
   // entries. It's owned by this SimpleEntryImpl whenever |executing_operation_|
@@ -306,6 +325,17 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
   net::BoundNetLog net_log_;
 
   scoped_ptr<SimpleEntryOperation> executing_operation_;
+
+  // Unlike other streams, stream 0 data is read from the disk when the entry is
+  // opened, and then kept in memory. All read/write operations on stream 0
+  // affect the |stream_0_data_| buffer. When the entry is closed,
+  // |stream_0_data_| is written to the disk.
+  // Stream 0 is kept in memory because it is stored in the same file as stream
+  // 1 on disk, to reduce the number of file descriptors and save disk space.
+  // This strategy allows stream 1 to change size easily. Since stream 0 is only
+  // used to write HTTP headers, the memory consumption of keeping it in memory
+  // is acceptable.
+  scoped_refptr<net::GrowableIOBuffer> stream_0_data_;
 };
 
 }  // namespace disk_cache
