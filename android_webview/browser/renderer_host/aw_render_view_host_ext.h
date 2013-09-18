@@ -63,9 +63,9 @@ class AwRenderViewHostExt : public content::WebContentsObserver,
   // the corresponding public WebView API is as well.
   const AwHitTestData& GetLastHitTestData() const;
 
-  // Sets the zoom level for text only. Used in layout modes other than
+  // Sets the zoom factor for text only. Used in layout modes other than
   // Text Autosizing.
-  void SetTextZoomLevel(double level);
+  void SetTextZoomFactor(float factor);
 
   void SetFixedLayoutSize(const gfx::Size& size);
 

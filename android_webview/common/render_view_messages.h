@@ -52,10 +52,10 @@ IPC_MESSAGE_ROUTED2(AwViewMsg_DoHitTest,
                     int /* view_x */,
                     int /* view_y */)
 
-// Sets the zoom level for text only. Used in layout modes other than
+// Sets the zoom factor for text only. Used in layout modes other than
 // Text Autosizing.
-IPC_MESSAGE_ROUTED1(AwViewMsg_SetTextZoomLevel,
-                    double /* zoom_level */)
+IPC_MESSAGE_ROUTED1(AwViewMsg_SetTextZoomFactor,
+                    float /* zoom_factor */)
 
 // Resets WebKit WebView scrolling and scale state. We need to send this
 // message whenever we want to guarantee that page's scale will be

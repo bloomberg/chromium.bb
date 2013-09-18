@@ -70,9 +70,9 @@ const AwHitTestData& AwRenderViewHostExt::GetLastHitTestData() const {
   return last_hit_test_data_;
 }
 
-void AwRenderViewHostExt::SetTextZoomLevel(double level) {
+void AwRenderViewHostExt::SetTextZoomFactor(float factor) {
   DCHECK(CalledOnValidThread());
-  Send(new AwViewMsg_SetTextZoomLevel(web_contents()->GetRoutingID(), level));
+  Send(new AwViewMsg_SetTextZoomFactor(web_contents()->GetRoutingID(), factor));
 }
 
 void AwRenderViewHostExt::SetFixedLayoutSize(const gfx::Size& size) {

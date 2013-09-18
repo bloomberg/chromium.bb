@@ -160,7 +160,7 @@ bool AwRenderViewExt::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(AwRenderViewExt, message)
     IPC_MESSAGE_HANDLER(AwViewMsg_DocumentHasImages, OnDocumentHasImagesRequest)
     IPC_MESSAGE_HANDLER(AwViewMsg_DoHitTest, OnDoHitTest)
-    IPC_MESSAGE_HANDLER(AwViewMsg_SetTextZoomLevel, OnSetTextZoomLevel)
+    IPC_MESSAGE_HANDLER(AwViewMsg_SetTextZoomFactor, OnSetTextZoomFactor)
     IPC_MESSAGE_HANDLER(AwViewMsg_ResetScrollAndScaleState,
                         OnResetScrollAndScaleState)
     IPC_MESSAGE_HANDLER(AwViewMsg_SetInitialPageScale, OnSetInitialPageScale)
@@ -284,12 +284,12 @@ void AwRenderViewExt::OnDoHitTest(int view_x, int view_y) {
   Send(new AwViewHostMsg_UpdateHitTestData(routing_id(), data));
 }
 
-void AwRenderViewExt::OnSetTextZoomLevel(double zoom_level) {
+void AwRenderViewExt::OnSetTextZoomFactor(float zoom_factor) {
   if (!render_view() || !render_view()->GetWebView())
     return;
   // Hide selection and autofill popups.
   render_view()->GetWebView()->hidePopups();
-  render_view()->GetWebView()->setZoomLevel(true, zoom_level);
+  render_view()->GetWebView()->setTextZoomFactor(zoom_factor);
 }
 
 void AwRenderViewExt::OnResetScrollAndScaleState() {

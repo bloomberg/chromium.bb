@@ -1996,10 +1996,10 @@ void RenderViewImpl::UpdateURL(WebFrame* frame) {
         host_zoom_levels_.find(GURL(request.url()));
     if (webview()->mainFrame()->document().isPluginDocument()) {
       // Reset the zoom levels for plugins.
-      webview()->setZoomLevel(false, 0);
+      webview()->setZoomLevel(0);
     } else {
       if (host_zoom != host_zoom_levels_.end())
-        webview()->setZoomLevel(false, host_zoom->second);
+        webview()->setZoomLevel(host_zoom->second);
     }
 
     if (host_zoom != host_zoom_levels_.end()) {
@@ -4833,7 +4833,7 @@ void RenderViewImpl::OnZoom(PageZoom zoom) {
       zoom_level = static_cast<int>(old_zoom_level);
     }
   }
-  webview()->setZoomLevel(false, zoom_level);
+  webview()->setZoomLevel(zoom_level);
   zoomLevelChanged();
 }
 
@@ -4866,7 +4866,7 @@ void RenderViewImpl::ZoomFactorHelper(PageZoom zoom,
 
 void RenderViewImpl::OnSetZoomLevel(double zoom_level) {
   webview()->hidePopups();
-  webview()->setZoomLevel(false, zoom_level);
+  webview()->setZoomLevel(zoom_level);
   zoomLevelChanged();
 }
 
@@ -5194,7 +5194,7 @@ void RenderViewImpl::OnSetRendererPrefs(
       !ZoomValuesEqual(old_zoom_level,
                        renderer_preferences_.default_zoom_level) &&
       ZoomValuesEqual(webview()->zoomLevel(), old_zoom_level)) {
-    webview()->setZoomLevel(false, renderer_preferences_.default_zoom_level);
+    webview()->setZoomLevel(renderer_preferences_.default_zoom_level);
     zoomLevelChanged();
   }
 }

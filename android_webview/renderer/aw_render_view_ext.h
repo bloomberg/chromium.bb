@@ -45,7 +45,7 @@ class AwRenderViewExt : public content::RenderViewObserver,
 
   void OnDoHitTest(int view_x, int view_y);
 
-  void OnSetTextZoomLevel(double zoom_level);
+  void OnSetTextZoomFactor(float zoom_factor);
 
   void OnResetScrollAndScaleState();
 
