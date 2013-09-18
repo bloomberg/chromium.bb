@@ -1,14 +1,13 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/custom_frame_view_ash.h"
+#include "ash/wm/caption_buttons/frame_maximize_button.h"
 
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/caption_buttons/frame_caption_button_container_view.h"
-#include "ash/wm/caption_buttons/frame_maximize_button.h"
 #include "ash/wm/caption_buttons/maximize_bubble_controller.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_util.h"
@@ -16,12 +15,11 @@
 #include "base/command_line.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/focus_client.h"
-#include "ui/aura/test/event_generator.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
 #include "ui/base/events/event_utils.h"
 #include "ui/base/gestures/gesture_configuration.h"
-#include "ui/views/controls/button/image_button.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -65,7 +63,7 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
   TestWidgetDelegate() {}
   virtual ~TestWidgetDelegate() {}
 
-  // Overridden from views::WidgetDelegate:
+  // views::WidgetDelegate overrides:
   virtual views::View* GetContentsView() OVERRIDE {
     return this;
   }
@@ -75,30 +73,51 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
   virtual bool CanMaximize() const OVERRIDE {
     return true;
   }
-  virtual views::NonClientFrameView* CreateNonClientFrameView(
-      views::Widget* widget) OVERRIDE {
-    // Always test CustomFrameViewAsh, which may not be the ash::Shell default.
-    CustomFrameViewAsh* frame_view = new CustomFrameViewAsh;
-    frame_view->Init(widget);
-    return frame_view;
+
+  ash::FrameCaptionButtonContainerView* caption_button_container() {
+    return caption_button_container_;
   }
 
  private:
+  // Overridden from views::View:
+  virtual void Layout() OVERRIDE {
+    caption_button_container_->Layout();
+
+    // Right align the caption button container.
+    gfx::Size preferred_size = caption_button_container_->GetPreferredSize();
+    caption_button_container_->SetBounds(width() - preferred_size.width(), 0,
+        preferred_size.width(), preferred_size.height());
+  }
+
+  virtual void ViewHierarchyChanged(
+      const ViewHierarchyChangedDetails& details) OVERRIDE {
+    if (details.is_add && details.child == this) {
+      caption_button_container_ = new FrameCaptionButtonContainerView(
+          GetWidget(), FrameCaptionButtonContainerView::MINIMIZE_ALLOWED);
+      AddChildView(caption_button_container_);
+    }
+  }
+
+  // Not owned.
+  ash::FrameCaptionButtonContainerView* caption_button_container_;
+
   DISALLOW_COPY_AND_ASSIGN(TestWidgetDelegate);
 };
 
 }  // namespace
 
-class CustomFrameViewAshTest : public ash::test::AshTestBase {
+class FrameMaximizeButtonTest : public ash::test::AshTestBase {
  public:
-  CustomFrameViewAshTest() {}
-  virtual ~CustomFrameViewAshTest() {}
+  FrameMaximizeButtonTest() {}
+  virtual ~FrameMaximizeButtonTest() {}
 
-  views::Widget* CreateWidget() {
-    views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
+  // The returned widget takes ownership of |delegate|.
+  views::Widget* CreateWidget(views::WidgetDelegate* delegate) {
+    views::Widget::InitParams params(
+        views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
     views::Widget* widget = new views::Widget;
     params.context = CurrentContext();
-    params.delegate = new TestWidgetDelegate;
+    params.delegate = delegate;
     params.bounds = gfx::Rect(10, 10, 100, 100);
     params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
     widget->Init(params);
@@ -118,11 +137,12 @@ class CustomFrameViewAshTest : public ash::test::AshTestBase {
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kAshDisableAlternateFrameCaptionButtonStyle);
 
-    widget_ = CreateWidget();
-    CustomFrameViewAsh* frame = static_cast<CustomFrameViewAsh*>(
-        widget()->non_client_view()->frame_view());
-    FrameCaptionButtonContainerView::TestApi test(
-        frame->caption_button_container_);
+    TestWidgetDelegate* delegate = new TestWidgetDelegate();
+    widget_ = CreateWidget(delegate);
+    FrameCaptionButtonContainerView* caption_button_container =
+        delegate->caption_button_container();
+
+    FrameCaptionButtonContainerView::TestApi test(caption_button_container);
     maximize_button_ = static_cast<FrameMaximizeButton*>(
         test.size_button());
   }
@@ -140,12 +160,12 @@ class CustomFrameViewAshTest : public ash::test::AshTestBase {
   views::Widget* widget_;
   FrameMaximizeButton* maximize_button_;
 
-  DISALLOW_COPY_AND_ASSIGN(CustomFrameViewAshTest);
+  DISALLOW_COPY_AND_ASSIGN(FrameMaximizeButtonTest);
 };
 
 // Tests that clicking on the resize-button toggles between maximize and normal
 // state.
-TEST_F(CustomFrameViewAshTest, ResizeButtonToggleMaximize) {
+TEST_F(FrameMaximizeButtonTest, ResizeButtonToggleMaximize) {
   aura::Window* window = widget()->GetNativeWindow();
   views::View* view = maximize_button();
   gfx::Point center = view->GetBoundsInScreen().CenterPoint();
@@ -185,7 +205,7 @@ TEST_F(CustomFrameViewAshTest, ResizeButtonToggleMaximize) {
 #endif
 
 // Tests that click+dragging on the resize-button tiles or minimizes the window.
-TEST_F(CustomFrameViewAshTest, MAYBE_ResizeButtonDrag) {
+TEST_F(FrameMaximizeButtonTest, MAYBE_ResizeButtonDrag) {
   aura::Window* window = widget()->GetNativeWindow();
   views::View* view = maximize_button();
   gfx::Point center = view->GetBoundsInScreen().CenterPoint();
@@ -304,7 +324,7 @@ TEST_F(CustomFrameViewAshTest, MAYBE_ResizeButtonDrag) {
 
 // Tests Left/Right snapping with resize button touch dragging - which should
 // trigger dependent on the available drag distance.
-TEST_F(CustomFrameViewAshTest,
+TEST_F(FrameMaximizeButtonTest,
        MAYBE_TouchDragResizeCloseToCornerDiffersFromMouse) {
   aura::Window* window = widget()->GetNativeWindow();
   views::View* view = maximize_button();
@@ -357,10 +377,10 @@ TEST_F(CustomFrameViewAshTest,
 // Test that closing the (browser) window with an opened balloon does not
 // crash the system. In other words: Make sure that shutting down the frame
 // destroys the opened balloon in an orderly fashion.
-TEST_F(CustomFrameViewAshTest, MaximizeButtonExternalShutDown) {
+TEST_F(FrameMaximizeButtonTest, MaximizeButtonExternalShutDown) {
   aura::Window* window = widget()->GetNativeWindow();
   ash::FrameMaximizeButton* maximize_button =
-      CustomFrameViewAshTest::maximize_button();
+      FrameMaximizeButtonTest::maximize_button();
   maximize_button->set_bubble_appearance_delay_ms(0);
   gfx::Point button_pos = maximize_button->GetBoundsInScreen().CenterPoint();
   gfx::Point off_pos(button_pos.x() + 100, button_pos.y() + 100);
@@ -380,10 +400,10 @@ TEST_F(CustomFrameViewAshTest, MaximizeButtonExternalShutDown) {
 
 // Test that maximizing the browser after hovering in does not crash the system
 // when the observer gets removed in the bubble destruction process.
-TEST_F(CustomFrameViewAshTest, MaximizeOnHoverThenClick) {
+TEST_F(FrameMaximizeButtonTest, MaximizeOnHoverThenClick) {
   aura::Window* window = widget()->GetNativeWindow();
   ash::FrameMaximizeButton* maximize_button =
-      CustomFrameViewAshTest::maximize_button();
+      FrameMaximizeButtonTest::maximize_button();
   maximize_button->set_bubble_appearance_delay_ms(0);
   gfx::Point button_pos = maximize_button->GetBoundsInScreen().CenterPoint();
   gfx::Point off_pos(button_pos.x() + 100, button_pos.y() + 100);
@@ -403,10 +423,10 @@ TEST_F(CustomFrameViewAshTest, MaximizeOnHoverThenClick) {
 // window. Moving then away from the button will hide it again. Then check that
 // pressing and dragging the button itself off the button will also release the
 // phantom window.
-TEST_F(CustomFrameViewAshTest, MaximizeLeftButtonDragOut) {
+TEST_F(FrameMaximizeButtonTest, MaximizeLeftButtonDragOut) {
   aura::Window* window = widget()->GetNativeWindow();
   ash::FrameMaximizeButton* maximize_button =
-      CustomFrameViewAshTest::maximize_button();
+      FrameMaximizeButtonTest::maximize_button();
   maximize_button->set_bubble_appearance_delay_ms(0);
   gfx::Point button_pos = maximize_button->GetBoundsInScreen().CenterPoint();
   gfx::Point off_pos(button_pos.x() + 100, button_pos.y() + 100);
@@ -448,10 +468,10 @@ TEST_F(CustomFrameViewAshTest, MaximizeLeftButtonDragOut) {
 
 // Test that clicking a button in the maximizer bubble (in this case the
 // maximize left button) will do the requested action.
-TEST_F(CustomFrameViewAshTest, MaximizeLeftByButton) {
+TEST_F(FrameMaximizeButtonTest, MaximizeLeftByButton) {
   aura::Window* window = widget()->GetNativeWindow();
   ash::FrameMaximizeButton* maximize_button =
-      CustomFrameViewAshTest::maximize_button();
+      FrameMaximizeButtonTest::maximize_button();
   maximize_button->set_bubble_appearance_delay_ms(0);
   gfx::Point button_pos = maximize_button->GetBoundsInScreen().CenterPoint();
   gfx::Point off_pos(button_pos.x() + 100, button_pos.y() + 100);
@@ -485,10 +505,10 @@ TEST_F(CustomFrameViewAshTest, MaximizeLeftByButton) {
 }
 
 // Test that the activation focus does not change when the bubble gets shown.
-TEST_F(CustomFrameViewAshTest, MaximizeKeepFocus) {
+TEST_F(FrameMaximizeButtonTest, MaximizeKeepFocus) {
   aura::Window* window = widget()->GetNativeWindow();
   ash::FrameMaximizeButton* maximize_button =
-      CustomFrameViewAshTest::maximize_button();
+      FrameMaximizeButtonTest::maximize_button();
   maximize_button->set_bubble_appearance_delay_ms(0);
   gfx::Point button_pos = maximize_button->GetBoundsInScreen().CenterPoint();
   gfx::Point off_pos(button_pos.x() + 100, button_pos.y() + 100);
@@ -508,11 +528,11 @@ TEST_F(CustomFrameViewAshTest, MaximizeKeepFocus) {
   EXPECT_EQ(active, aura::client::GetFocusClient(window)->GetFocusedWindow());
 }
 
-TEST_F(CustomFrameViewAshTest, MaximizeTap) {
+TEST_F(FrameMaximizeButtonTest, MaximizeTap) {
   aura::Window* window = widget()->GetNativeWindow();
   aura::RootWindow* root_window = window->GetRootWindow();
   ash::FrameMaximizeButton* maximize_button =
-      CustomFrameViewAshTest::maximize_button();
+      FrameMaximizeButtonTest::maximize_button();
   gfx::Point button_pos = maximize_button->GetBoundsInScreen().CenterPoint();
 
   const int touch_default_radius =
@@ -538,10 +558,10 @@ TEST_F(CustomFrameViewAshTest, MaximizeTap) {
 }
 
 // Test that only the left button will activate the maximize button.
-TEST_F(CustomFrameViewAshTest, OnlyLeftButtonMaximizes) {
+TEST_F(FrameMaximizeButtonTest, OnlyLeftButtonMaximizes) {
   aura::Window* window = widget()->GetNativeWindow();
   ash::FrameMaximizeButton* maximize_button =
-      CustomFrameViewAshTest::maximize_button();
+      FrameMaximizeButtonTest::maximize_button();
   maximize_button->set_bubble_appearance_delay_ms(0);
   gfx::Point button_pos = maximize_button->GetBoundsInScreen().CenterPoint();
   gfx::Point off_pos(button_pos.x() + 100, button_pos.y() + 100);
@@ -626,11 +646,11 @@ void ClickMaxButton(
 }
 
 // Test that the restore from left/right maximize is properly done.
-TEST_F(CustomFrameViewAshTest, MaximizeLeftRestore) {
+TEST_F(FrameMaximizeButtonTest, MaximizeLeftRestore) {
   aura::Window* window = widget()->GetNativeWindow();
   gfx::Rect initial_bounds = widget()->GetWindowBoundsInScreen();
   ash::FrameMaximizeButton* maximize_button =
-      CustomFrameViewAshTest::maximize_button();
+      FrameMaximizeButtonTest::maximize_button();
   maximize_button->set_bubble_appearance_delay_ms(0);
 
   ClickMaxButton(maximize_button, window, SNAP_LEFT);
@@ -654,11 +674,11 @@ TEST_F(CustomFrameViewAshTest, MaximizeLeftRestore) {
 }
 
 // Maximize, left/right maximize and then restore should works.
-TEST_F(CustomFrameViewAshTest, MaximizeMaximizeLeftRestore) {
+TEST_F(FrameMaximizeButtonTest, MaximizeMaximizeLeftRestore) {
   aura::Window* window = widget()->GetNativeWindow();
   gfx::Rect initial_bounds = widget()->GetWindowBoundsInScreen();
   ash::FrameMaximizeButton* maximize_button =
-      CustomFrameViewAshTest::maximize_button();
+      FrameMaximizeButtonTest::maximize_button();
   maximize_button->set_bubble_appearance_delay_ms(0);
 
   ClickMaxButton(maximize_button, window, SNAP_NONE);
@@ -684,11 +704,11 @@ TEST_F(CustomFrameViewAshTest, MaximizeMaximizeLeftRestore) {
 }
 
 // Left/right maximize, maximize and then restore should work.
-TEST_F(CustomFrameViewAshTest, MaximizeLeftMaximizeRestore) {
+TEST_F(FrameMaximizeButtonTest, MaximizeLeftMaximizeRestore) {
   aura::Window* window = widget()->GetNativeWindow();
   gfx::Rect initial_bounds = widget()->GetWindowBoundsInScreen();
   ash::FrameMaximizeButton* maximize_button =
-      CustomFrameViewAshTest::maximize_button();
+      FrameMaximizeButtonTest::maximize_button();
   maximize_button->set_bubble_appearance_delay_ms(0);
 
   ClickMaxButton(maximize_button, window, SNAP_LEFT);
@@ -707,37 +727,11 @@ TEST_F(CustomFrameViewAshTest, MaximizeLeftMaximizeRestore) {
   // Make sure that there is no restore rectangle left.
   EXPECT_EQ(NULL, GetRestoreBoundsInScreen(window));
 }
-
-// Starting with a window which has no restore bounds, maximize then left/right
-// maximize should not be centered but left/right maximized.
-TEST_F(CustomFrameViewAshTest, MaximizeThenLeftMaximize) {
-  aura::Window* window = widget()->GetNativeWindow();
-  gfx::Rect initial_bounds = widget()->GetWindowBoundsInScreen();
-  ash::FrameMaximizeButton* maximize_button =
-      CustomFrameViewAshTest::maximize_button();
-  maximize_button->set_bubble_appearance_delay_ms(0);
-  // Make sure that there is no restore rectangle.
-  EXPECT_EQ(NULL, GetRestoreBoundsInScreen(window));
-
-  ClickMaxButton(maximize_button, window, SNAP_NONE);
-  EXPECT_TRUE(ash::wm::IsWindowMaximized(window));
-
-  ClickMaxButton(maximize_button, window, SNAP_LEFT);
-  EXPECT_FALSE(ash::wm::IsWindowMaximized(window));
-
-  gfx::Rect new_bounds = widget()->GetWindowBoundsInScreen();
-  EXPECT_EQ(new_bounds.x(), 0);
-  EXPECT_EQ(new_bounds.y(), 0);
-  // Make sure that the restore rectangle is the original rectangle.
-  EXPECT_EQ(initial_bounds.ToString(),
-            GetRestoreBoundsInScreen(window)->ToString());
-}
-
 // Test that minimizing the window per keyboard closes the maximize bubble.
-TEST_F(CustomFrameViewAshTest, MinimizePerKeyClosesBubble) {
+TEST_F(FrameMaximizeButtonTest, MinimizePerKeyClosesBubble) {
   aura::Window* window = widget()->GetNativeWindow();
   ash::FrameMaximizeButton* maximize_button =
-      CustomFrameViewAshTest::maximize_button();
+      FrameMaximizeButtonTest::maximize_button();
 
   gfx::Point button_pos = maximize_button->GetBoundsInScreen().CenterPoint();
   gfx::Point off_pos(button_pos.x() + 100, button_pos.y() + 100);
@@ -758,10 +752,10 @@ TEST_F(CustomFrameViewAshTest, MinimizePerKeyClosesBubble) {
 }
 
 // Tests that dragging down on the maximize button minimizes the window.
-TEST_F(CustomFrameViewAshTest, MaximizeButtonDragDownMinimizes) {
+TEST_F(FrameMaximizeButtonTest, MaximizeButtonDragDownMinimizes) {
   aura::Window* window = widget()->GetNativeWindow();
   ash::FrameMaximizeButton* maximize_button =
-      CustomFrameViewAshTest::maximize_button();
+      FrameMaximizeButtonTest::maximize_button();
 
   // Drag down on a maximized window.
   wm::MaximizeWindow(window);
@@ -788,11 +782,11 @@ TEST_F(CustomFrameViewAshTest, MaximizeButtonDragDownMinimizes) {
 }
 
 // Tests that dragging Left and pressing ESC does properly abort.
-TEST_F(CustomFrameViewAshTest, MaximizeButtonDragLeftEscapeExits) {
+TEST_F(FrameMaximizeButtonTest, MaximizeButtonDragLeftEscapeExits) {
   aura::Window* window = widget()->GetNativeWindow();
   gfx::Rect initial_bounds = widget()->GetWindowBoundsInScreen();
   ash::FrameMaximizeButton* maximize_button =
-      CustomFrameViewAshTest::maximize_button();
+      FrameMaximizeButtonTest::maximize_button();
 
   gfx::Point button_pos = maximize_button->GetBoundsInScreen().CenterPoint();
   gfx::Point off_pos(button_pos.x() - button_pos.x() / 2, button_pos.y());

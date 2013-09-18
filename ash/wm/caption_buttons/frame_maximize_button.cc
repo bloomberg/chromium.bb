@@ -159,7 +159,7 @@ void FrameMaximizeButton::ExecuteSnapAndCloseMenu(SnapType snap_type) {
   // Since Snap might destroy |this|, but the snap_sizer needs to be destroyed,
   // The ownership of the snap_sizer is taken now.
   scoped_ptr<SnapSizer> snap_sizer(snap_sizer_.release());
-  Snap(*snap_sizer.get());
+  Snap(snap_sizer.get());
 }
 
 void FrameMaximizeButton::DestroyMaximizeMenu() {
@@ -377,7 +377,7 @@ bool FrameMaximizeButton::ProcessEndEvent(const ui::LocatedEvent& event) {
   // Since Snap might destroy |this|, but the snap_sizer needs to be destroyed,
   // The ownership of the snap_sizer is taken now.
   scoped_ptr<SnapSizer> snap_sizer(snap_sizer_.release());
-  Snap(*snap_sizer.get());
+  Snap(snap_sizer.get());
   return true;
 }
 
@@ -515,51 +515,23 @@ gfx::Point FrameMaximizeButton::LocationForSnapSizer(
   return result;
 }
 
-void FrameMaximizeButton::Snap(const SnapSizer& snap_sizer) {
+void FrameMaximizeButton::Snap(SnapSizer* snap_sizer) {
   ash::Shell* shell = ash::Shell::GetInstance();
   switch (snap_type_) {
     case SNAP_LEFT:
     case SNAP_RIGHT: {
+      // Others might also have set up a restore rectangle already. If so, we
+      // should not overwrite the restore rectangle.
+      gfx::Rect current_bounds_in_screen = frame_->GetWindowBoundsInScreen();
+      snap_sizer->SnapWindowToTargetBounds();
+      if (GetRestoreBoundsInScreen(frame_->GetNativeWindow()) == NULL) {
+        ash::SetRestoreBoundsInScreen(frame_->GetNativeWindow(),
+                                      current_bounds_in_screen);
+      }
       shell->delegate()->RecordUserMetricsAction(
           snap_type_ == SNAP_LEFT ?
               ash::UMA_WINDOW_MAXIMIZE_BUTTON_MAXIMIZE_LEFT :
               ash::UMA_WINDOW_MAXIMIZE_BUTTON_MAXIMIZE_RIGHT);
-      // Get the bounds in screen coordinates for restore purposes.
-      gfx::Rect restore = frame_->GetWindowBoundsInScreen();
-      if (frame_->IsMaximized() || frame_->IsFullscreen()) {
-        aura::Window* window = frame_->GetNativeWindow();
-        // In case of maximized we have a restore boundary.
-        DCHECK(ash::GetRestoreBoundsInScreen(window));
-        // If it was maximized we need to recover the old restore set.
-        restore = *ash::GetRestoreBoundsInScreen(window);
-
-        // The auto position manager will kick in when this is the only window.
-        // To avoid interference with it we tell it temporarily to not change
-        // the coordinates of this window.
-        wm::WindowSettings* settings = wm::GetWindowSettings(window);
-        bool was_managed = settings->window_position_managed();
-        settings->set_window_position_managed(false);
-
-        // Set the restore size we want to restore to.
-        ash::SetRestoreBoundsInScreen(window,
-                                      ScreenBoundsForType(snap_type_,
-                                                          snap_sizer));
-        frame_->Restore();
-
-        // After the window is where we want it to be we allow the window to be
-        // auto managed again.
-        settings->set_window_position_managed(was_managed);
-      } else {
-        // Others might also have set up a restore rectangle already. If so,
-        // we should not overwrite the restore rectangle.
-        bool restore_set =
-            GetRestoreBoundsInScreen(frame_->GetNativeWindow()) != NULL;
-        frame_->SetBounds(ScreenBoundsForType(snap_type_, snap_sizer));
-        if (restore_set)
-          break;
-      }
-      // Remember the widow's bounds for restoration.
-      ash::SetRestoreBoundsInScreen(frame_->GetNativeWindow(), restore);
       break;
     }
     case SNAP_MAXIMIZE:

@@ -61,8 +61,6 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView {
   virtual gfx::Size GetMaximumSize() OVERRIDE;
 
  private:
-  friend class test::CustomFrameViewAshTest;
-
   // Height from top of window to top of client area.
   int NonClientTopBorderHeight() const;
 

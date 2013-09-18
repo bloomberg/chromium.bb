@@ -447,11 +447,9 @@ void WorkspaceWindowResizer::CompleteDrag(int event_flags) {
     }
     DCHECK(snap_sizer_);
     if (wm::CanResizeWindow(window()) &&
-        !dock_layout_->is_dragged_window_docked() &&
-        !snap_sizer_->target_bounds().IsEmpty()) {
-      window()->SetBounds(snap_sizer_->target_bounds());
+        !dock_layout_->is_dragged_window_docked()) {
+      snap_sizer_->SnapWindowToTargetBounds();
     }
-    return;
   }
 }
 

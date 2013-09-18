@@ -133,7 +133,7 @@ class ASH_EXPORT FrameMaximizeButton : public views::ImageButton,
   gfx::Point LocationForSnapSizer(const gfx::Point& location) const;
 
   // Snaps the window to the current snap position.
-  void Snap(const internal::SnapSizer& snap_sizer);
+  void Snap(internal::SnapSizer* snap_sizer);
 
   // Determine the maximize type of this window.
   MaximizeBubbleFrameState GetMaximizeBubbleFrameState() const;
