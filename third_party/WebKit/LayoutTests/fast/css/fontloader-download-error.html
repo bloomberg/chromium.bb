@@ -33,32 +33,42 @@
 }
 </style>
 <script>
-description('Test download error cases. "load" or "error" events should be fired exactly once for each @font-face rule.');
+description('Test download error cases.');
 
 window.jsTestIsAsync = true;
 
-var events = {};
-
-function logEvent(e) {
-    var family = e.fontfaces[0].family;
-    if (!events[family])
-        events[family] = [];
-    events[family].push(e.type);
+function runTests() {
+    document.fonts.addEventListener('loading', onLoading);
+    document.fonts.addEventListener('loadingdone', onLoadingDone);
+    document.fonts.addEventListener('loadingerror', onLoadingError);
+    document.fonts.notifyWhenFontsReady(finish);
 }
 
-function runTests() {
-    document.fonts.addEventListener('loadstart', logEvent);
-    document.fonts.addEventListener('load', logEvent);
-    document.fonts.addEventListener('error', logEvent);
+var event;
+var firedEvents = [];
 
-    document.fonts.notifyWhenFontsReady(function() {
-        shouldBe("events['myfont1']", "['loadstart', 'error']");
-        shouldBe("events['myfont2']", "['loadstart', 'error']");
-        shouldBe("events['myfont3']", "['loadstart', 'error']");
-        shouldBe("events['myfont4']", "['loadstart', 'load']");
-        shouldBe("events['myfont5']", "['loadstart', 'error']");
-        finishJSTest();
-    });
+function onLoading(e) {
+    firedEvents.push(e.type);
+}
+
+function onLoadingDone(e) {
+    firedEvents.push(e.type);
+    event = e;
+    shouldBe('event.fontfaces.length', '1');
+    shouldBeEqualToString('event.fontfaces[0].family', 'myfont4');
+}
+
+function onLoadingError(e) {
+    firedEvents.push(e.type);
+    event = e;
+    shouldBe('event.fontfaces.length', '4');
+    failedFonts = e.fontfaces.map(function(face){return face.family;}).sort();
+    shouldBe('failedFonts', "['myfont1', 'myfont2', 'myfont3', 'myfont5']");
+}
+
+function finish() {
+    shouldBe("firedEvents", "['loading', 'loadingdone', 'loadingerror']");
+    finishJSTest();
 }
 
 if (document.fonts)

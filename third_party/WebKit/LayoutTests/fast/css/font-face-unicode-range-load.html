@@ -11,21 +11,20 @@ var cyrillicLoaded = false;
 var arabicLoaded = false;
 
 function runTests() {
-    document.fonts.addEventListener('load', onload);
-    document.fonts.notifyWhenFontsReady(verify);
+    document.fonts.addEventListener('loadingdone', onloadingdone);
 }
 
-function onload(e) {
-    var range = e.fontfaces[0].unicodeRange;
-    if (range == 'U+0-FF')
-        latin1Loaded = true;
-    if (range == 'U+400-4FF')
-        cyrillicLoaded = true;
-    if (range == 'U+600-6FF')
-        arabicLoaded = true;
-}
+function onloadingdone(e) {
+    for (var i = 0; i < e.fontfaces.length; i++) {
+        var range = e.fontfaces[i].unicodeRange;
+        if (range == 'U+0-FF')
+            latin1Loaded = true;
+        if (range == 'U+400-4FF')
+            cyrillicLoaded = true;
+        if (range == 'U+600-6FF')
+            arabicLoaded = true;
+    }
 
-function verify() {
     shouldBeTrue('latin1Loaded'); // Latin-1 font is loaded for basic font metrics.
     shouldBeTrue('cyrillicLoaded');
     shouldBeFalse('arabicLoaded');

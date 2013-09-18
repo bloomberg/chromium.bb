@@ -18,41 +18,42 @@ description('Test load events for a font family consists of multiple @font-faces
 
 window.jsTestIsAsync = true;
 
-var events = {};
-
-function countEvent(e) {
-    if (!events[e.type])
-        events[e.type] = 0;
-    events[e.type] += 1;
-}
-
 function runTests() {
-    document.fonts.addEventListener('loading', countEvent);
-    document.fonts.addEventListener('loadstart', countEvent);
-    document.fonts.addEventListener('load', countEvent);
-    document.fonts.addEventListener('error', countEvent);
-    document.fonts.addEventListener('loadingdone', countEvent);
+    document.fonts.addEventListener('loading', onLoading);
+    document.fonts.addEventListener('loadingdone', onLoadingDone);
+    document.fonts.addEventListener('loadingerror', onLoadingError);
+    document.fonts.notifyWhenFontsReady(finish);
 
-    document.fonts.loadFont({ font: '10px TestFont', onsuccess: onsuccess, onerror: onerror });
-    document.fonts.notifyWhenFontsReady(verify);
+    document.fonts.loadFont({font: '10px TestFont'});
 }
 
-function onsuccess() {
-    testFailed("Expected error, but onsuccess() called");
-    onerror();
+var event;
+var firedEvents = [];
+
+function onLoading(e) {
+    firedEvents.push(e.type);
 }
 
-function onerror() {
-    shouldBe("events['loading']", "1");
-    shouldBe("events['loadstart']", "2");
-    shouldBe("events['load']", "1");
-    shouldBe("events['error']", "1");
-    shouldBe("events['loadingdone']", "undefined");
-    shouldBe("document.fonts.checkFont('10px TestFont')", "false");
+function onLoadingDone(e) {
+    firedEvents.push(e.type);
+    event = e;
+    shouldBe("event.fontfaces.length", "1");
+    shouldBeEqualToString("event.fontfaces[0].unicodeRange", "U+0-10FFFF");
+    shouldBeEqualToString("event.fontfaces[0].status", "loaded");
+    loadingdoneFired = true;
 }
 
-function verify() {
-    shouldBe("events['loadingdone']", "1");
+function onLoadingError(e) {
+    firedEvents.push(e.type);
+    event = e;
+    shouldBe("event.fontfaces.length", "1");
+    shouldBeEqualToString("event.fontfaces[0].unicodeRange", "U+61-7A");
+    shouldBeEqualToString("event.fontfaces[0].status", "error");
+    shouldBeFalse("document.fonts.checkFont('10px TestFont')");
+}
+
+function finish() {
+    shouldBe("firedEvents", "['loading', 'loadingdone', 'loadingerror']");
     finishJSTest();
 }
 

@@ -89,6 +89,7 @@ namespace WebCore {
     macro(load) \
     macro(loading) \
     macro(loadingdone) \
+    macro(loadingerror) \
     macro(loadstart) \
     macro(message) \
     macro(midimessage) \

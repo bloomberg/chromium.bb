@@ -56,10 +56,8 @@ public:
         return adoptRef<CSSFontFaceLoadEvent>(new CSSFontFaceLoadEvent(type, initializer));
     }
 
-    static PassRefPtr<CSSFontFaceLoadEvent> createForFontFace(const AtomicString& type, FontFace* face)
+    static PassRefPtr<CSSFontFaceLoadEvent> createForFontFaces(const AtomicString& type, const FontFaceArray& fontfaces = FontFaceArray())
     {
-        FontFaceArray fontfaces;
-        fontfaces.append(face);
         return adoptRef<CSSFontFaceLoadEvent>(new CSSFontFaceLoadEvent(type, fontfaces));
     }
 

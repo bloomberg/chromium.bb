@@ -37,9 +37,7 @@
 
     attribute EventHandler onloading;
     attribute EventHandler onloadingdone;
-    attribute EventHandler onloadstart;
-    attribute EventHandler onload;
-    attribute EventHandler onerror;
+    attribute EventHandler onloadingerror;
 
     boolean checkFont(DOMString font, [Default=NullString] optional DOMString text);
     void loadFont(Dictionary params);

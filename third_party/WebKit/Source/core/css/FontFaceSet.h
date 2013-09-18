@@ -26,6 +26,7 @@
 #ifndef FontFaceSet_h
 #define FontFaceSet_h
 
+#include "core/css/FontFace.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/EventListener.h"
 #include "core/dom/EventNames.h"
@@ -38,7 +39,6 @@
 
 namespace WebCore {
 
-class FontFace;
 class FontResource;
 class CSSFontFaceSource;
 class Dictionary;
@@ -57,15 +57,13 @@ public:
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(loading);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(loadingdone);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(loadstart);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(load);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(loadingerror);
 
     bool checkFont(const String&, const String&);
     void loadFont(const Dictionary&);
     void notifyWhenFontsReady(PassRefPtr<VoidCallback>);
 
-    bool loading() const { return m_loadingCount > 0 || m_pendingDoneEvent; }
+    bool loading() const { return m_loadingCount > 0 || m_shouldFireDoneEvent; }
 
     virtual ScriptExecutionContext* scriptExecutionContext() const;
     virtual const AtomicString& interfaceName() const;
@@ -113,7 +111,9 @@ private:
     Vector<RefPtr<Event> > m_pendingEvents;
     Vector<RefPtr<VoidCallback> > m_pendingCallbacks;
     Vector<RefPtr<VoidCallback> > m_fontsReadyCallbacks;
-    RefPtr<Event> m_pendingDoneEvent;
+    FontFaceArray m_loadedFonts;
+    FontFaceArray m_failedFonts;
+    bool m_shouldFireDoneEvent;
     Timer<FontFaceSet> m_timer;
     FontLoadHistogram m_histogram;
 };

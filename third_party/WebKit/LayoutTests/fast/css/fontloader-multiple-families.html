@@ -18,40 +18,38 @@ description('Test load events for fonts.loadFont() with multiple font families.'
 
 window.jsTestIsAsync = true;
 
-var events = {};
-
-function countEvent(e) {
-    if (!events[e.type])
-        events[e.type] = 0;
-    events[e.type] += 1;
-}
-
 function runTests() {
-    document.fonts.addEventListener('loading', countEvent);
-    document.fonts.addEventListener('loadstart', countEvent);
-    document.fonts.addEventListener('load', countEvent);
-    document.fonts.addEventListener('error', countEvent);
-    document.fonts.addEventListener('loadingdone', countEvent);
+    document.fonts.addEventListener('loading', onLoading);
+    document.fonts.addEventListener('loadingdone', onLoadingDone);
+    document.fonts.notifyWhenFontsReady(finish);
 
-    document.fonts.loadFont({ font: '10px TestFont1, TestFont2', onsuccess: onsuccess, onerror: onerror });
-    document.fonts.notifyWhenFontsReady(verify);
+    document.fonts.loadFont({font: '10px TestFont1, TestFont2'});
 }
 
-function onsuccess() {
-    shouldBe("events['loading']", "1");
-    shouldBe("events['loadstart']", "2");
-    shouldBe("events['load']", "2");
-    shouldBe("events['error']", "undefined");
-    shouldBe("events['loadingdone']", "undefined");
-    shouldBe("document.fonts.checkFont('10px TestFont1, TestFont2')", "true");
+var event;
+var firedEvents = [];
+
+function onLoading(e) {
+    firedEvents.push(e.type);
 }
 
-function onerror() {
-    testFailed("Expected success, but onerror() called");
+function onLoadingDone(e) {
+    firedEvents.push(e.type);
+    event = e;
+    shouldBe("event.fontfaces.length", "2");
+    shouldBeEqualToString("event.fontfaces[0].status", "loaded");
+    shouldBeEqualToString("event.fontfaces[1].status", "loaded");
+    shouldBeTrue("document.fonts.checkFont('10px TestFont1')");
+    shouldBeTrue("document.fonts.checkFont('10px TestFont2')");
+    shouldBeTrue("document.fonts.checkFont('10px TestFont1, TestFont2')");
 }
 
-function verify() {
-    shouldBe("events['loadingdone']", "1");
+function onLoadingError(e) {
+    firedEvents.push(e.type);
+}
+
+function finish() {
+    shouldBe("firedEvents", "['loading', 'loadingdone']");
     finishJSTest();
 }
 

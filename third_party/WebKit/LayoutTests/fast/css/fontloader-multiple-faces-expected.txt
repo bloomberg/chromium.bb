@@ -3,13 +3,11 @@ Test load events for a font family consists of multiple @font-faces.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS events['loading'] is 1
-PASS events['loadstart'] is 2
-PASS events['load'] is 2
-PASS events['error'] is undefined
-PASS events['loadingdone'] is undefined
+PASS event.fontfaces.length is 2
+PASS event.fontfaces[0].status is "loaded"
+PASS event.fontfaces[1].status is "loaded"
 PASS document.fonts.checkFont('10px TestFont') is true
-PASS events['loadingdone'] is 1
+PASS firedEvents is ['loading', 'loadingdone']
 PASS successfullyParsed is true
 
 TEST COMPLETE
