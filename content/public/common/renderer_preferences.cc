@@ -45,7 +45,8 @@ RendererPreferences::RendererPreferences()
       report_frame_name_changes(false),
       touchpad_fling_profile(3),
       touchscreen_fling_profile(3),
-      tap_multiple_targets_strategy(TAP_MULTIPLE_TARGETS_STRATEGY_POPUP) {
+      tap_multiple_targets_strategy(TAP_MULTIPLE_TARGETS_STRATEGY_POPUP),
+      disable_client_blocked_error_page(false) {
   touchpad_fling_profile[0] = kDefaultAlpha;
   touchpad_fling_profile[1] = kDefaultBeta;
   touchpad_fling_profile[2] = kDefaultGamma;

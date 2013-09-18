@@ -3624,6 +3624,12 @@ void RenderViewImpl::didFailProvisionalLoad(WebFrame* frame,
   if (error.reason == net::ERR_ABORTED)
     return;
 
+  // Don't display "client blocked" error page if browser has asked us not to.
+  if (error.reason == net::ERR_BLOCKED_BY_CLIENT &&
+      renderer_preferences_.disable_client_blocked_error_page) {
+    return;
+  }
+
   if (RenderThreadImpl::current()->layout_test_mode())
     return;
 

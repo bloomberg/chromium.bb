@@ -553,6 +553,8 @@ void BrowserPluginGuest::Initialize(
   // Navigation is disabled in Chrome Apps. We want to make sure guest-initiated
   // navigations still continue to function inside the app.
   renderer_prefs->browser_handles_all_top_level_requests = false;
+  // Disable "client blocked" error page for browser plugin.
+  renderer_prefs->disable_client_blocked_error_page = true;
 
   // Listen to embedder visibility changes so that the guest is in a 'shown'
   // state if both the embedder is visible and the BrowserPlugin is marked as
