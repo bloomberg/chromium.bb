@@ -2011,6 +2011,9 @@
               'socket/ssl_client_socket_openssl_unittest.cc',
               'ssl/openssl_client_key_store_unittest.cc',
             ],
+            'sources/': [
+              ['exclude', '^tools/flip_server'],
+            ],
           },
         ],
         [ 'enable_websockets != 1', {
