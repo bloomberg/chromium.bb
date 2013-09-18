@@ -1022,7 +1022,8 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
   AddHistoryResultsToMap(default_history_results_, false,
                          did_not_accept_default_suggestion, &map);
 
-  AddSuggestResultsToMap(keyword_results_.suggest_results, std::string(), &map);
+  AddSuggestResultsToMap(keyword_results_.suggest_results,
+                         keyword_results_.metadata, &map);
   AddSuggestResultsToMap(default_results_.suggest_results,
                          default_results_.metadata, &map);
 
