@@ -86,6 +86,32 @@ void ImportDataHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
+void ImportDataHandler::StartImport(
+    const importer::SourceProfile& source_profile,
+    uint16 imported_items) {
+  if (!imported_items)
+    return;
+
+  // If another import is already ongoing, let it finish silently.
+  if (importer_host_)
+    importer_host_->set_observer(NULL);
+
+  base::FundamentalValue importing(true);
+  web_ui()->CallJavascriptFunction("ImportDataOverlay.setImportingState",
+                                   importing);
+  import_did_succeed_ = false;
+
+  importer_host_ = new ExternalProcessImporterHost();
+  importer_host_->set_observer(this);
+  Profile* profile = Profile::FromWebUI(web_ui());
+  importer_host_->StartImportSettings(source_profile, profile,
+                                      imported_items,
+                                      new ProfileWriter(profile));
+
+  importer::LogImporterUseToMetrics("ImportDataHandler",
+                                    source_profile.importer_type);
+}
+
 void ImportDataHandler::ImportData(const ListValue* args) {
   std::string string_value;
 
@@ -114,22 +140,9 @@ void ImportDataHandler::ImportData(const ListValue* args) {
       importer_list_->GetSourceProfileAt(browser_index);
   uint16 supported_items = source_profile.services_supported;
 
-  uint16 import_services = (selected_items & supported_items);
-  if (import_services) {
-    base::FundamentalValue state(true);
-    web_ui()->CallJavascriptFunction("ImportDataOverlay.setImportingState",
-                                     state);
-    import_did_succeed_ = false;
-
-    importer_host_ = new ExternalProcessImporterHost();
-    importer_host_->set_observer(this);
-    Profile* profile = Profile::FromWebUI(web_ui());
-    importer_host_->StartImportSettings(source_profile, profile,
-                                        import_services,
-                                        new ProfileWriter(profile));
-
-    importer::LogImporterUseToMetrics("ImportDataHandler",
-                                      source_profile.importer_type);
+  uint16 imported_items = (selected_items & supported_items);
+  if (imported_items) {
+    StartImport(source_profile, imported_items);
   } else {
     LOG(WARNING) << "There were no settings to import from '"
         << source_profile.importer_name << "'.";
@@ -203,24 +216,14 @@ void ImportDataHandler::ImportEnded() {
 }
 
 void ImportDataHandler::FileSelected(const base::FilePath& path,
-                                     int index,
-                                     void* params) {
-  base::FundamentalValue importing(true);
-  web_ui()->CallJavascriptFunction("ImportDataOverlay.setImportingState",
-                                   importing);
-  import_did_succeed_ = false;
-
-  importer_host_ = new ExternalProcessImporterHost();
-  importer_host_->set_observer(this);
+                                     int /*index*/,
+                                     void* /*params*/) {
 
   importer::SourceProfile source_profile;
   source_profile.importer_type = importer::TYPE_BOOKMARKS_FILE;
   source_profile.source_path = path;
 
-  Profile* profile = Profile::FromWebUI(web_ui());
-
-  importer_host_->StartImportSettings(
-      source_profile, profile, importer::FAVORITES, new ProfileWriter(profile));
+  StartImport(source_profile, importer::FAVORITES);
 }
 
 void ImportDataHandler::HandleChooseBookmarksFile(const base::ListValue* args) {

@@ -38,6 +38,9 @@ class ImportDataHandler : public OptionsPageUIHandler,
   virtual void RegisterMessages() OVERRIDE;
 
  private:
+  void StartImport(const importer::SourceProfile& source_profile,
+                   uint16 imported_items);
+
   void ImportData(const base::ListValue* args);
 
   // importer::ImporterListObserver:
