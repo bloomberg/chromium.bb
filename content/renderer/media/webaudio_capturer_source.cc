@@ -66,7 +66,8 @@ void WebAudioCapturerSource::Start(
     WebRtcLocalAudioSourceProvider* source_provider) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(track);
-  DCHECK(source_provider);
+  // |source_provider| may be NULL if no getUserMedia has been called before
+  // calling CreateMediaStreamDestination.
   // The downstream client should be configured the same as what WebKit
   // is feeding it.
   track->SetCaptureFormat(params_);
@@ -112,8 +113,10 @@ void WebAudioCapturerSource::consumeAudio(
   int volume = 0;
   bool key_pressed = false;
   while (fifo_->frames() >= capture_frames) {
-    source_provider_->GetAudioProcessingParams(
-        &delay_ms, &volume, &key_pressed);
+    if (source_provider_) {
+      source_provider_->GetAudioProcessingParams(
+          &delay_ms, &volume, &key_pressed);
+    }
     fifo_->Consume(capture_bus_.get(), 0, capture_frames);
     track_->Capture(capture_bus_.get(), delay_ms, volume, key_pressed);
   }

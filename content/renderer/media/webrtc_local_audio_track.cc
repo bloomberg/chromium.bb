@@ -131,7 +131,7 @@ WebRtcLocalAudioTrack::WebRtcLocalAudioTrack(
       webaudio_source_(webaudio_source),
       track_source_(track_source),
       need_audio_processing_(NeedsAudioProcessing(constraints)) {
-  DCHECK(capturer.get());
+  DCHECK(capturer.get() || webaudio_source);
   DVLOG(1) << "WebRtcLocalAudioTrack::WebRtcLocalAudioTrack()";
 }
 
@@ -298,25 +298,27 @@ void WebRtcLocalAudioTrack::RemoveSink(
 void WebRtcLocalAudioTrack::Start() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << "WebRtcLocalAudioTrack::Start()";
-  DCHECK(capturer_.get());
   if (webaudio_source_.get()) {
     // If the track is hooking up with WebAudio, do NOT add the track to the
     // capturer as its sink otherwise two streams in different clock will be
     // pushed through the same track.
-    WebRtcLocalAudioSourceProvider* source_provider =
-        static_cast<WebRtcLocalAudioSourceProvider*>(
-            capturer_->audio_source_provider());
+    WebRtcLocalAudioSourceProvider* source_provider = NULL;
+    if (capturer_.get()) {
+      source_provider = static_cast<WebRtcLocalAudioSourceProvider*>(
+          capturer_->audio_source_provider());
+    }
     webaudio_source_->Start(this, source_provider);
     return;
   }
 
-  capturer_->AddTrack(this);
+  if (capturer_.get())
+    capturer_->AddTrack(this);
 }
 
 void WebRtcLocalAudioTrack::Stop() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << "WebRtcLocalAudioTrack::Stop()";
-  if (!capturer_.get())
+  if (!capturer_.get() && !webaudio_source_.get())
     return;
 
   if (webaudio_source_.get()) {
