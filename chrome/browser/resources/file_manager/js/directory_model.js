@@ -1180,6 +1180,14 @@ DirectoryModel.prototype.isDriveMounted = function() {
 DirectoryModel.prototype.onMountChanged_ = function(callback) {
   this.updateRoots_(function() {
     var rootPath = this.getCurrentRootPath();
+    // If the current rootPath is '/', which is the initial path,
+    // just ignore the event.
+    if (rootPath == '/') {
+      // TODO(hirono): Invoke the callback function here after fixing the bug of
+      // browser_tests.
+      return;
+    }
+
     // Reduce to the DRIVE root path, if necessary.
     if (rootPath == RootDirectory.DRIVE_OFFLINE ||
         rootPath == RootDirectory.DRIVE_SHARED_WITH_ME ||
