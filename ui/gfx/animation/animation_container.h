@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_ANIMATION_ANIMATION_CONTAINER_H_
-#define UI_BASE_ANIMATION_ANIMATION_CONTAINER_H_
+#ifndef UI_GFX_ANIMATION_ANIMATION_CONTAINER_H_
+#define UI_GFX_ANIMATION_ANIMATION_CONTAINER_H_
 
 #include <set>
 
@@ -88,4 +88,4 @@ class GFX_EXPORT AnimationContainer
 
 }  // namespace gfx
 
-#endif  // UI_BASE_ANIMATION_ANIMATION_CONTAINER_H_
+#endif  // UI_GFX_ANIMATION_ANIMATION_CONTAINER_H_

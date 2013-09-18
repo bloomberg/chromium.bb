@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_ANIMATION_MULTI_ANIMATION_H_
-#define UI_BASE_ANIMATION_MULTI_ANIMATION_H_
+#ifndef UI_GFX_ANIMATION_MULTI_ANIMATION_H_
+#define UI_GFX_ANIMATION_MULTI_ANIMATION_H_
 
 #include <vector>
 
@@ -93,4 +93,4 @@ class GFX_EXPORT MultiAnimation : public Animation {
 
 }  // namespace gfx
 
-#endif  // UI_BASE_ANIMATION_MULTI_ANIMATION_H_
+#endif  // UI_GFX_ANIMATION_MULTI_ANIMATION_H_

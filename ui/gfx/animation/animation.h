@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_ANIMATION_ANIMATION_H_
-#define UI_BASE_ANIMATION_ANIMATION_H_
+#ifndef UI_GFX_ANIMATION_ANIMATION_H_
+#define UI_GFX_ANIMATION_ANIMATION_H_
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
@@ -106,4 +106,4 @@ class GFX_EXPORT Animation : public AnimationContainerElement {
 
 }  // namespace gfx
 
-#endif  // UI_BASE_ANIMATION_ANIMATION_H_
+#endif  // UI_GFX_ANIMATION_ANIMATION_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_ANIMATION_SLIDE_ANIMATION_H_
-#define UI_BASE_ANIMATION_SLIDE_ANIMATION_H_
+#ifndef UI_GFX_ANIMATION_SLIDE_ANIMATION_H_
+#define UI_GFX_ANIMATION_SLIDE_ANIMATION_H_
 
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/animation/tween.h"
@@ -98,4 +98,4 @@ class GFX_EXPORT SlideAnimation : public LinearAnimation {
 
 }  // namespace gfx
 
-#endif  // UI_BASE_ANIMATION_SLIDE_ANIMATION_H_
+#endif  // UI_GFX_ANIMATION_SLIDE_ANIMATION_H_

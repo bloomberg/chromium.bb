@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_ANIMATION_TEST_ANIMATION_DELEGATE_H_
-#define UI_BASE_ANIMATION_TEST_ANIMATION_DELEGATE_H_
+#ifndef UI_GFX_ANIMATION_TEST_ANIMATION_DELEGATE_H_
+#define UI_GFX_ANIMATION_TEST_ANIMATION_DELEGATE_H_
 
 #include "base/message_loop/message_loop.h"
 #include "ui/gfx/animation/animation_delegate.h"
@@ -45,4 +45,4 @@ class TestAnimationDelegate : public AnimationDelegate {
 
 }  // namespace gfx
 
-#endif  // UI_BASE_ANIMATION_TEST_ANIMATION_DELEGATE_H_
+#endif  // UI_GFX_ANIMATION_TEST_ANIMATION_DELEGATE_H_
