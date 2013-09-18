@@ -2001,6 +2001,11 @@ TEST(URLCanonTest, ResolveRelativeURL) {
       // is not file.
     {"http://host/a", true, false, "/c:\\foo", true, true, true, "http://host/c:/foo"},
     {"http://host/a", true, false, "//c:\\foo", true, true, true, "http://c/foo"},
+      // Ensure that ports aren't allowed for hosts relative to a file url.
+      // Although the result string shows a host:port portion, the call to
+      // resolve the relative URL returns false, indicating parse failure,
+      // which is what is required.
+    {"file:///foo.txt", true, true, "//host:80/bar.txt", true, true, false, "file://host:80/bar.txt"},
       // Filesystem URL tests; filesystem URLs are only valid and relative if
       // they have no scheme, e.g. "./index.html".  There's no valid equivalent
       // to http:index.html.

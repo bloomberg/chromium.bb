@@ -110,8 +110,9 @@ void DoParseLocalFile(const CHAR* spec,
 }
 
 // Backend for the external functions that operates on either char type.
-// We are handed the character after the "file:" at the beginning of the spec.
-// Usually this is a slash, but needn't be; we allow paths like "file:c:\foo".
+// Handles cases where there is a scheme, but also when handed the first
+// character following the "file:" at the beginning of the spec. If so,
+// this is usually a slash, but needn't be; we allow paths like "file:c:\foo".
 template<typename CHAR>
 void DoParseFileURL(const CHAR* spec, int spec_len, Parsed* parsed) {
   DCHECK(spec_len >= 0);
@@ -130,8 +131,8 @@ void DoParseFileURL(const CHAR* spec, int spec_len, Parsed* parsed) {
   int begin = 0;
   TrimURL(spec, &begin, &spec_len);
 
-  // Find the scheme.
-  int num_slashes;
+  // Find the scheme, if any.
+  int num_slashes = CountConsecutiveSlashes(spec, begin, spec_len);
   int after_scheme;
   int after_slashes;
 #ifdef WIN32
@@ -140,7 +141,6 @@ void DoParseFileURL(const CHAR* spec, int spec_len, Parsed* parsed) {
   // links like "c:/foo/bar" or "//foo/bar". This is also called by the
   // relative URL resolver when it determines there is an absolute URL, which
   // may give us input like "/c:/foo".
-  num_slashes = CountConsecutiveSlashes(spec, begin, spec_len);
   after_slashes = begin + num_slashes;
   if (DoesBeginWindowsDriveSpec(spec, after_slashes, spec_len)) {
     // Windows path, don't try to extract the scheme (for example, "c:\foo").
@@ -153,7 +153,12 @@ void DoParseFileURL(const CHAR* spec, int spec_len, Parsed* parsed) {
   } else
 #endif
   {
-    if (ExtractScheme(&spec[begin], spec_len - begin, &parsed->scheme)) {
+    // ExtractScheme doesn't understand the possibility of filenames with
+    // colons in them, in which case it returns the entire spec up to the
+    // colon as the scheme. So handle /foo.c:5 as a file but foo.c:5 as
+    // the foo.c: scheme.
+    if (!num_slashes &&
+        ExtractScheme(&spec[begin], spec_len - begin, &parsed->scheme)) {
       // Offset the results since we gave ExtractScheme a substring.
       parsed->scheme.begin += begin;
       after_scheme = parsed->scheme.end() + 1;
@@ -173,7 +178,6 @@ void DoParseFileURL(const CHAR* spec, int spec_len, Parsed* parsed) {
   }
 
   num_slashes = CountConsecutiveSlashes(spec, after_scheme, spec_len);
-
   after_slashes = after_scheme + num_slashes;
 #ifdef WIN32
   // Check whether the input is a drive again. We checked above for windows
