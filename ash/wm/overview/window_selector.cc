@@ -26,7 +26,7 @@ namespace ash {
 
 namespace {
 
-const int kOverviewDelayOnCycleMilliseconds = 300;
+const int kOverviewDelayOnCycleMilliseconds = 500;
 
 // A comparator for locating a given target window.
 struct WindowSelectorItemComparator
