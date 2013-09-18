@@ -441,8 +441,8 @@ void BookmarkMenuDelegate::BuildMenuForPermanentNode(
   }
   int id = *next_menu_id;
   (*next_menu_id)++;
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  gfx::ImageSkia* folder_icon = rb.GetImageSkiaNamed(IDR_BOOKMARK_BAR_FOLDER);
+  ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
+  gfx::ImageSkia* folder_icon = rb->GetImageSkiaNamed(IDR_BOOKMARK_BAR_FOLDER);
   MenuItemView* submenu = menu->AppendSubMenuWithIcon(
       id, node->GetTitle(), *folder_icon);
   BuildMenu(node, 0, submenu, next_menu_id);
@@ -455,7 +455,7 @@ void BookmarkMenuDelegate::BuildMenu(const BookmarkNode* parent,
                                      int* next_menu_id) {
   node_to_menu_map_[parent] = menu;
   DCHECK(parent->empty() || start_child_index < parent->child_count());
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
   for (int i = start_child_index; i < parent->child_count(); ++i) {
     const BookmarkNode* node = parent->GetChild(i);
     const int id = *next_menu_id;
@@ -465,12 +465,12 @@ void BookmarkMenuDelegate::BuildMenu(const BookmarkNode* parent,
     if (node->is_url()) {
       const gfx::Image& image = GetBookmarkModel()->GetFavicon(node);
       const gfx::ImageSkia* icon = image.IsEmpty() ?
-          rb.GetImageSkiaNamed(IDR_DEFAULT_FAVICON) : image.ToImageSkia();
+          rb->GetImageSkiaNamed(IDR_DEFAULT_FAVICON) : image.ToImageSkia();
       node_to_menu_map_[node] =
           menu->AppendMenuItemWithIcon(id, node->GetTitle(), *icon);
     } else if (node->is_folder()) {
       gfx::ImageSkia* folder_icon =
-          rb.GetImageSkiaNamed(IDR_BOOKMARK_BAR_FOLDER);
+          rb->GetImageSkiaNamed(IDR_BOOKMARK_BAR_FOLDER);
       MenuItemView* submenu = menu->AppendSubMenuWithIcon(
           id, node->GetTitle(), *folder_icon);
       BuildMenu(node, 0, submenu, next_menu_id);

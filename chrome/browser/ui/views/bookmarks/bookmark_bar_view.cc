@@ -425,16 +425,16 @@ const int BookmarkBarView::kToolbarAttachedBookmarkBarOverlap = 3;
 
 static const gfx::ImageSkia& GetDefaultFavicon() {
   if (!kDefaultFavicon) {
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    kDefaultFavicon = rb.GetImageSkiaNamed(IDR_DEFAULT_FAVICON);
+    ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
+    kDefaultFavicon = rb->GetImageSkiaNamed(IDR_DEFAULT_FAVICON);
   }
   return *kDefaultFavicon;
 }
 
 static const gfx::ImageSkia& GetFolderIcon() {
   if (!kFolderIcon) {
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    kFolderIcon = rb.GetImageSkiaNamed(IDR_BOOKMARK_BAR_FOLDER);
+    ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
+    kFolderIcon = rb->GetImageSkiaNamed(IDR_BOOKMARK_BAR_FOLDER);
   }
   return *kFolderIcon;
 }
@@ -1341,9 +1341,9 @@ MenuButton* BookmarkBarView::CreateOtherBookmarkedButton() {
 }
 
 MenuButton* BookmarkBarView::CreateOverflowButton() {
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
   MenuButton* button = new OverFlowButton(this);
-  button->SetIcon(*rb.GetImageSkiaNamed(IDR_BOOKMARK_BAR_CHEVRONS));
+  button->SetIcon(*rb->GetImageSkiaNamed(IDR_BOOKMARK_BAR_CHEVRONS));
 
   // The overflow button's image contains an arrow and therefore it is a
   // direction sensitive image and we need to flip it if the UI layout is
@@ -1383,8 +1383,8 @@ views::TextButton* BookmarkBarView::CreateAppsPageShortcutButton() {
   button->SetTooltipText(l10n_util::GetStringUTF16(
       IDS_BOOKMARK_BAR_APPS_SHORTCUT_TOOLTIP));
   button->set_id(VIEW_ID_BOOKMARK_BAR_ELEMENT);
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  button->SetIcon(*rb.GetImageSkiaNamed(IDR_BOOKMARK_BAR_APPS_SHORTCUT));
+  ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
+  button->SetIcon(*rb->GetImageSkiaNamed(IDR_BOOKMARK_BAR_APPS_SHORTCUT));
   button->set_context_menu_controller(this);
   button->set_tag(kAppsShortcutButtonTag);
   return button;

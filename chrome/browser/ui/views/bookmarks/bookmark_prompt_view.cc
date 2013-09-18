@@ -52,8 +52,8 @@ void BookmarkPromptView::Init() {
 
   views::Label* label = new views::Label(l10n_util::GetStringUTF16(
       IDS_BOOKMARK_PROMPT_MESSAGE));
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  label->SetFont(rb.GetFont(ui::ResourceBundle::MediumFont)
+  ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
+  label->SetFont(rb->GetFont(ui::ResourceBundle::MediumFont)
                    .DeriveFont(0, gfx::Font::BOLD));
   AddChildView(label);
 
