@@ -1001,7 +1001,13 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, NoPrerenderer) {
 // the main browser window to a page that sets a cookie and loads an app with
 // multiple webview tags. Each tag sets a cookie and the test checks the proper
 // storage isolation is enforced.
-IN_PROC_BROWSER_TEST_F(WebViewTest, CookieIsolation) {
+// This test is disabled due to being flaky. http://crbug.com/294196
+#if defined(OS_WIN)
+#define MAYBE_CookieIsolation DISABLED_CookieIsolation
+#else
+#define MAYBE_CookieIsolation CookieIsolation
+#endif
+IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_CookieIsolation) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   const std::string kExpire =
       "var expire = new Date(Date.now() + 24 * 60 * 60 * 1000);";
