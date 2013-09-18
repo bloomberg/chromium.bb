@@ -110,14 +110,14 @@ TEST_F(GpuControlListTest, DetailedEntryAndInvalidJson) {
               "type": "macosx",
               "version": {
                 "op": "=",
-                "number": "10.6.4"
+                "value": "10.6.4"
               }
             },
             "vendor_id": "0x10de",
             "device_id": ["0x0640"],
             "driver_version": {
               "op": "=",
-              "number": "1.6.18"
+              "value": "1.6.18"
             },
             "features": [
               "test_feature_0"
@@ -204,7 +204,7 @@ TEST_F(GpuControlListTest, ChromeVersionEntry) {
             "id": 1,
             "browser_version": {
               "op": ">=",
-              "number": "10"
+              "value": "10"
             },
             "features": [
               "test_feature_0"
@@ -420,7 +420,7 @@ TEST_F(GpuControlListTest, IgnorableEntries) {
             "vendor_id": "0x8086",
             "driver_version": {
               "op": "<",
-              "number": "10.7"
+              "value": "10.7"
             },
             "features": [
               "test_feature_0"
@@ -457,14 +457,14 @@ TEST_F(GpuControlListTest, ExceptionWithoutVendorId) {
                 "device_id": ["0x2a06"],
                 "driver_version": {
                   "op": ">=",
-                  "number": "8.1"
+                  "value": "8.1"
                 }
               },
               {
                 "device_id": ["0x2a02"],
                 "driver_version": {
                   "op": ">=",
-                  "number": "9.1"
+                  "value": "9.1"
                 }
               }
             ],

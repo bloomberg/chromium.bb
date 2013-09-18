@@ -78,14 +78,14 @@ TEST_F(GpuControlListEntryTest, DetailedEntry) {
           "type": "macosx",
           "version": {
             "op": "=",
-            "number": "10.6.4"
+            "value": "10.6.4"
           }
         },
         "vendor_id": "0x10de",
         "device_id": ["0x0640"],
         "driver_version": {
           "op": "=",
-          "number": "1.6.18"
+          "value": "1.6.18"
         },
         "features": [
           "test_feature_0"
@@ -241,7 +241,7 @@ TEST_F(GpuControlListEntryTest, DateOnWindowsEntry) {
         },
         "driver_date": {
           "op": "<",
-          "number": "2010.5.8"
+          "value": "2010.5.8"
         },
         "features": [
           "test_feature_0"
@@ -577,7 +577,7 @@ TEST_F(GpuControlListEntryTest, LexicalDriverVersionEntry) {
         "driver_version": {
           "op": "=",
           "style": "lexical",
-          "number": "8.76"
+          "value": "8.76"
         },
         "features": [
           "test_feature_0"
@@ -677,7 +677,7 @@ TEST_F(GpuControlListEntryTest, NeedsMoreInfoEntry) {
         "vendor_id": "0x8086",
         "driver_version": {
           "op": "<",
-          "number": "10.7"
+          "value": "10.7"
         },
         "features": [
           "test_feature_1"

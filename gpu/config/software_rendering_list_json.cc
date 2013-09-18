@@ -3,80 +3,9 @@
 // found in the LICENSE file.
 
 // Determines whether certain gpu-related features are blacklisted or not.
-// A valid software_rendering_list.json file are in the format of
-// {
-//   "version": "x.y",
-//   "entries": [
-//     { // entry 1
-//     },
-//     ...
-//     { // entry n
-//     }
-//   ]
-// }
-//
-// Each entry contains the following fields (fields are optional unless
-// specifically described as mandatory below):
-// 1. "id" is an integer.  0 is reserved.  This field is mandatory.
-// 2. "os" contains "type" and an optional "version". "type" could be "macosx",
-//    "linux", "win", "chromeos", or "any".  "any" is the same as not specifying
-//    "os".
-//    "version" is a VERSION structure (defined below).
-// 3. "vendor_id" is a string.  0 is reserved.
-// 4. "device_id" is an array of strings.  0 is reserved.
-// 5. "multi_gpu_style" is a string, valid values include "optimus", and
-//    "amd_switchable".
-// 6. "multi_gpu_category" is a string, valid values include "any", "primary",
-//    and "secondary".  If unspecified, the default value is "primary".
-// 7. "driver_vendor" is a STRING structure (defined below).
-// 8. "driver_version" is a VERSION structure (defined below).
-// 9. "driver_date" is a VERSION structure (defined below).
-//    The version is interpreted as "year.month.day".
-// 10. "gl_vendor" is a STRING structure (defined below).
-// 11. "gl_renderer" is a STRING structure (defined below).
-// 12. "gl_extensions" is a STRING structure (defined below).
-// 13. "gl_reset_notification_strategy" is an INT structure (defined below).
-// 14. "perf_graphics" is a FLOAT structure (defined below).
-// 15. "perf_gaming" is a FLOAT structure (defined below).
-// 16. "perf_overall" is a FLOAT structure (defined below).
-// 17. "machine_model" contais "name" and an optional "version".  "name" is a
-//     STRING structure and "version" is a VERSION structure (defined below).
-// 18. "gpu_count" is a INT structure (defined below).
-// 19  "cpu_info" is a STRING structure (defined below).
-// 20. "exceptions" is a list of entries.
-// 21. "features" is a list of gpu feature strings, valid values include
-//     "accelerated_2d_canvas", "accelerated_compositing", "webgl",
-//     "multisampling", "flash_3d", "flash_stage3d", "texture_sharing",
-//     "accelerated_video", "accelerated_video_decode", "panel_fitting",
-//     "force_compositing_mode", and "all".
-//     This field is mandatory.
-// 22. "description" has the description of the entry.
-// 23. "webkit_bugs" is an array of associated webkit bug numbers.
-// 24. "cr_bugs" is an array of associated webkit bug numbers.
-// 25. "browser_version" is a VERSION structure (defined below).  If this
-//     condition is not satisfied, the entry will be ignored.  If it is not
-//     present, then the entry applies to all versions of the browser.
-// 26. "disabled" is a boolean. If it is present, the entry will be skipped.
-//     This can not be used in exceptions.
-//
-// VERSION includes "op", "style", "number", and "number2".  "op" can be any of
-// the following values: "=", "<", "<=", ">", ">=", "any", "between".  "style"
-// is optional and can be "lexical" or "numerical"; if it's not specified, it
-// defaults to "numerical".  "number2" is only used if "op" is "between".
-// "between" is "number <= * <= number2".
-// "number" is used for all "op" values except "any". "number" and "number2"
-// are in the format of x, x.x, x.x.x, etc.
-// Only "driver_version" supports lexical style if the format is major.minor;
-// in that case, major is still numerical, but minor is lexical. 
-//
-// STRING includes "op" and "value".  "op" can be any of the following values:
-// "contains", "beginwith", "endwith", "=".  "value" is a string.
-//
-// FLOAT includes "op" "value", and "value2".  "op" can be any of the
-// following values: "=", "<", "<=", ">", ">=", "any", "between".  "value2" is
-// only used if "op" is "between".  "value" is used for all "op" values except
-// "any". "value" and "value2" are valid float numbers.
-// INT is very much like FLOAT, except that the values need to be integers.
+// The format of a valid software_rendering_list.json file is defined in
+// <gpu/config/gpu_control_list_format.txt>.
+// The supported "features" can be found in <gpu/config/gpu_blacklist.cc>.
 
 #include "gpu/config/gpu_control_list_jsons.h"
 
@@ -154,7 +83,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
           "driver_version": {
             "op": ">=",
             "style": "lexical",
-            "number": "8.98"
+            "value": "8.98"
           }
         }
       ],
@@ -199,7 +128,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       },
       "driver_date": {
         "op": "<",
-        "number": "2009.1"
+        "value": "2009.1"
       },
       "exceptions": [
         {
@@ -207,7 +136,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
           "device_id": ["0x29a2"],
           "driver_version": {
             "op": ">=",
-            "number": "7.15.10.1624"
+            "value": "7.15.10.1624"
           }
         }
       ],
@@ -229,13 +158,13 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
         "type": "win",
         "version": {
           "op": "=",
-          "number": "5"
+          "value": "5"
         }
       },
       "vendor_id": "0x1002",
       "driver_version": {
         "op": "<",
-        "number": "8.741"
+        "value": "8.741"
       },
       "features": [
         "accelerated_video",
@@ -254,13 +183,13 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
         "type": "win",
         "version": {
           "op": "=",
-          "number": "5"
+          "value": "5"
         }
       },
       "vendor_id": "0x10de",
       "driver_version": {
         "op": "<",
-        "number": "6.14.12.5721"
+        "value": "6.14.12.5721"
       },
       "features": [
         "accelerated_video",
@@ -279,13 +208,13 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
         "type": "win",
         "version": {
           "op": "=",
-          "number": "5"
+          "value": "5"
         }
       },
       "vendor_id": "0x8086",
       "driver_version": {
         "op": "<",
-        "number": "6.14.10.5294"
+        "value": "6.14.10.5294"
       },
       "features": [
         "accelerated_video",
@@ -304,7 +233,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
         "type": "macosx",
         "version": {
           "op": "<",
-          "number": "10.7.2"
+          "value": "10.7.2"
         }
       },
       "vendor_id": "0x1002",
@@ -325,28 +254,28 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
           "device_id": ["0x0102", "0x0106", "0x0112", "0x0116", "0x0122", "0x0126", "0x010a", "0x0152", "0x0156", "0x015a", "0x0162", "0x0166"],
           "driver_version": {
             "op": ">=",
-            "number": "8.0"
+            "value": "8.0"
           }
         },
         {
           "device_id": ["0xa001", "0xa002", "0xa011", "0xa012", "0x29a2", "0x2992", "0x2982", "0x2972", "0x2a12", "0x2a42", "0x2e02", "0x2e12", "0x2e22", "0x2e32", "0x2e42", "0x2e92"],
           "driver_version": {
             "op": ">",
-            "number": "8.0.2"
+            "value": "8.0.2"
           }
         },
         {
           "device_id": ["0x0042", "0x0046"],
           "driver_version": {
             "op": ">",
-            "number": "8.0.4"
+            "value": "8.0.4"
           }
         },
         {
           "device_id": ["0x2a02"],
           "driver_version": {
             "op": ">=",
-            "number": "9.1"
+            "value": "9.1"
           }
         }
       ],
@@ -375,7 +304,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
         "type": "macosx",
         "version": {
           "op": "=",
-          "number": "10.5"
+          "value": "10.5"
         }
       },
       "features": [
@@ -394,7 +323,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       },
       "driver_version": {
         "op": "<",
-        "number": "7.11"
+        "value": "7.11"
       },
       "features": [
         "all"
@@ -430,7 +359,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
           "driver_version": {
             "op": ">=",
             "style": "lexical",
-            "number": "8.98"
+            "value": "8.98"
           }
         }
       ],
@@ -578,7 +507,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
         "type": "macosx",
         "version": {
           "op": "=",
-          "number": "10.7"
+          "value": "10.7"
         }
       },
       "vendor_id": "0x10de",
@@ -595,7 +524,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
         "type": "win",
         "version": {
           "op": "=",
-          "number": "5"
+          "value": "5"
         }
       },
       "features": [
@@ -610,7 +539,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
         "type": "macosx",
         "version": {
           "op": "=",
-          "number": "10.6"
+          "value": "10.6"
         }
       },
       "vendor_id": "0x1002",
@@ -629,7 +558,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       "vendor_id": "0x8086",
       "driver_version": {
         "op": "=",
-        "number": "8.15.10.1749"
+        "value": "8.15.10.1749"
       },
       "features": [
         "texture_sharing"
@@ -643,8 +572,8 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
         "type": "macosx",
         "version": {
           "op": "between",
-          "number": "10.7.0",
-          "number2": "10.7.4"
+          "value": "10.7.0",
+          "value2": "10.7.4"
         }
       },
       "vendor_id": "0x8086",
@@ -664,7 +593,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       "vendor_id": "0x1ab8",
       "driver_version": {
         "op": "<",
-        "number": "7"
+        "value": "7"
       },
       "features": [
         "all"
@@ -697,7 +626,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       },
       "driver_version": {
         "op": "<",
-        "number": "295"
+        "value": "295"
       },
       "features": [
         "all"
@@ -732,8 +661,8 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
         "type": "macosx",
         "version": {
           "op": "between",
-          "number": "10.8.0",
-          "number2": "10.8.1"
+          "value": "10.8.0",
+          "value2": "10.8.1"
         }
       },
       "multi_gpu_style": "optimus",
@@ -767,13 +696,13 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
         "type": "win",
         "version": {
           "op": "=",
-          "number": "5"
+          "value": "5"
         }
       },
       "vendor_id": "0x10de",
       "driver_version": {
         "op": "=",
-        "number": "6.14.11.9621"
+        "value": "6.14.11.9621"
       },
       "features": [
         "all"
@@ -787,13 +716,13 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
         "type": "win",
         "version": {
           "op": "=",
-          "number": "5"
+          "value": "5"
         }
       },
       "vendor_id": "0x10de",
       "driver_version": {
         "op": "=",
-        "number": "6.14.11.8267"
+        "value": "6.14.11.8267"
       },
       "features": [
         "all"
@@ -818,7 +747,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       },
       "driver_date": {
         "op": "<",
-        "number": "2007.1"
+        "value": "2007.1"
       },
       "exceptions": [
         {
@@ -826,7 +755,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
           "device_id": ["0x29a2"],
           "driver_version": {
             "op": ">=",
-            "number": "7.15.10.1624"
+            "value": "7.15.10.1624"
           }
         }
       ],
@@ -883,7 +812,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       "vendor_id": "0x10de",
       "driver_version": {
         "op": "=",
-        "number": "8.15.11.8593"
+        "value": "8.15.11.8593"
       },
       "features": [
         "accelerated_video_decode"
@@ -897,7 +826,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
         "type": "macosx",
         "version": {
           "op": "<",
-          "number": "10.8.3"
+          "value": "10.8.3"
         }
       },
       "vendor_id": "0x10de",
@@ -913,7 +842,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
         "type": "macosx",
         "version": {
           "op": "<",
-          "number": "10.8.3"
+          "value": "10.8.3"
         }
       },
       "vendor_id": "0x8086",
@@ -934,7 +863,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       },
       "driver_version": {
         "op": "<",
-        "number": "4.1"
+        "value": "4.1"
       },
       "features": [
         "accelerated_2d_canvas"
@@ -948,7 +877,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
         "type": "macosx",
         "version": {
           "op": "<",
-          "number": "10.8.3"
+          "value": "10.8.3"
         }
       },
       "vendor_id": "0x1002",
@@ -964,7 +893,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
         "type": "win",
         "version": {
           "op": "<",
-          "number": "6.1"
+          "value": "6.1"
         }
       },
       "features": [
@@ -979,7 +908,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
         "type": "win",
         "version": {
           "op": "=",
-          "number": "6.0"
+          "value": "6.0"
         }
       },
       "features": [
@@ -994,7 +923,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
         "type": "macosx",
         "version": {
           "op": "<",
-          "number": "10.8"
+          "value": "10.8"
         }
       },
       "features": [
@@ -1009,7 +938,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
         "type": "win",
         "version": {
           "op": "=",
-          "number": "5"
+          "value": "5"
         }
       },
       "features": [
@@ -1024,13 +953,13 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
         "type": "win",
         "version": {
           "op": ">=",
-          "number": "6.0"
+          "value": "6.0"
         }
       },
       "vendor_id": "0x15ad",
       "driver_version": {
         "op": "<=",
-        "number": "7.14.1.1134"
+        "value": "7.14.1.1134"
       },
       "features": [
         "all"
@@ -1046,7 +975,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       "vendor_id": "0x10de",
       "driver_version": {
         "op": "=",
-        "number": "8.17.11.9621"
+        "value": "8.17.11.9621"
       },
       "features": [
         "flash_stage3d_baseline"
@@ -1062,7 +991,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       "vendor_id": "0x10de",
       "driver_version": {
         "op": "=",
-        "number": "8.17.11.8267"
+        "value": "8.17.11.8267"
       },
       "features": [
         "flash_stage3d_baseline"
@@ -1078,7 +1007,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       "vendor_id": "0x8086",
       "driver_version": {
         "op": "<",
-        "number": "8.15.10.2021"
+        "value": "8.15.10.2021"
       },
       "features": [
         "flash_stage3d_baseline"
@@ -1105,7 +1034,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
         "type": "macosx",
         "version": {
           "op": "<",
-          "number": "10.8"
+          "value": "10.8"
         }
       },
       "vendor_id": "0x10de",
@@ -1169,7 +1098,7 @@ LONG_STRING_CONST(
         "type": "win",
         "version": {
           "op": "=",
-          "number": "5"
+          "value": "5"
         }
       },
       "vendor_id": "0x10de",

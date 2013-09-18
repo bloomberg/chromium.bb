@@ -486,8 +486,8 @@ GpuControlList::GpuControlListEntry::GetEntryFromValue(
     const base::DictionaryValue* os_version_value = NULL;
     if (os_value->GetDictionary("version", &os_version_value)) {
       os_version_value->GetString(kOp, &os_version_op);
-      os_version_value->GetString("number", &os_version_string);
-      os_version_value->GetString("number2", &os_version_string2);
+      os_version_value->GetString("value", &os_version_string);
+      os_version_value->GetString("value2", &os_version_string2);
     }
     if (!entry->SetOsInfo(os_type, os_version_op, os_version_string,
                           os_version_string2)) {
@@ -558,8 +558,8 @@ GpuControlList::GpuControlListEntry::GetEntryFromValue(
     std::string driver_version_string2;
     driver_version_value->GetString(kOp, &driver_version_op);
     driver_version_value->GetString("style", &driver_version_style);
-    driver_version_value->GetString("number", &driver_version_string);
-    driver_version_value->GetString("number2", &driver_version_string2);
+    driver_version_value->GetString("value", &driver_version_string);
+    driver_version_value->GetString("value2", &driver_version_string2);
     if (!entry->SetDriverVersionInfo(driver_version_op,
                                      driver_version_style,
                                      driver_version_string,
@@ -576,8 +576,8 @@ GpuControlList::GpuControlListEntry::GetEntryFromValue(
     std::string driver_date_string;
     std::string driver_date_string2;
     driver_date_value->GetString(kOp, &driver_date_op);
-    driver_date_value->GetString("number", &driver_date_string);
-    driver_date_value->GetString("number2", &driver_date_string2);
+    driver_date_value->GetString("value", &driver_date_string);
+    driver_date_value->GetString("value2", &driver_date_string2);
     if (!entry->SetDriverDateInfo(driver_date_op, driver_date_string,
                                   driver_date_string2)) {
       LOG(WARNING) << "Malformed driver_date entry " << entry->id();
@@ -717,8 +717,8 @@ GpuControlList::GpuControlListEntry::GetEntryFromValue(
     const base::DictionaryValue* version_value = NULL;
     if (machine_model_value->GetDictionary("version", &version_value)) {
       version_value->GetString(kOp, &version_op);
-      version_value->GetString("number", &version_string);
-      version_value->GetString("number2", &version_string2);
+      version_value->GetString("value", &version_string);
+      version_value->GetString("value2", &version_string2);
     }
     if (!entry->SetMachineModelInfo(
             name_op, name_value, version_op, version_string, version_string2)) {
@@ -1403,8 +1403,8 @@ GpuControlList::IsEntrySupportedByCurrentBrowserVersion(
     std::string version_string;
     std::string version_string2;
     browser_version_value->GetString(kOp, &version_op);
-    browser_version_value->GetString("number", &version_string);
-    browser_version_value->GetString("number2", &version_string2);
+    browser_version_value->GetString("value", &version_string);
+    browser_version_value->GetString("value2", &version_string2);
     scoped_ptr<VersionInfo> browser_version_info;
     browser_version_info.reset(new VersionInfo(
         version_op, std::string(), version_string, version_string2));
