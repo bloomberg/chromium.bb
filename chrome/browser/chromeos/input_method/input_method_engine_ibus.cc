@@ -228,7 +228,10 @@ bool InputMethodEngineIBus::SetCandidateWindowVisible(bool visible,
   }
 
   window_visible_ = visible;
-  GetCurrentService()->UpdateLookupTable(*table_.get(), window_visible_);
+  IBusPanelCandidateWindowHandlerInterface* candidate_window =
+    IBusBridge::Get()->GetCandidateWindowHandler();
+  if (candidate_window)
+    candidate_window->UpdateLookupTable(*table_, window_visible_);
   return true;
 }
 
@@ -241,21 +244,33 @@ void InputMethodEngineIBus::SetCandidateWindowCursorVisible(bool visible) {
   // IMEs do not depend on the pagination feature of IBus.
   if (!visible)
     table_->set_cursor_position(0);
-  if (active_)
-    GetCurrentService()->UpdateLookupTable(*table_.get(), window_visible_);
+  if (active_) {
+    IBusPanelCandidateWindowHandlerInterface* candidate_window =
+      IBusBridge::Get()->GetCandidateWindowHandler();
+    if (candidate_window)
+      candidate_window->UpdateLookupTable(*table_, window_visible_);
+  }
 }
 
 void InputMethodEngineIBus::SetCandidateWindowVertical(bool vertical) {
   table_->set_orientation(vertical ? IBusLookupTable::VERTICAL :
                           IBusLookupTable::HORIZONTAL);
-  if (active_)
-    GetCurrentService()->UpdateLookupTable(*table_.get(), window_visible_);
+  if (active_) {
+    IBusPanelCandidateWindowHandlerInterface* candidate_window =
+      IBusBridge::Get()->GetCandidateWindowHandler();
+    if (candidate_window)
+      candidate_window->UpdateLookupTable(*table_, window_visible_);
+  }
 }
 
 void InputMethodEngineIBus::SetCandidateWindowPageSize(int size) {
   table_->set_page_size(size);
-  if (active_)
-    GetCurrentService()->UpdateLookupTable(*table_.get(), window_visible_);
+  if (active_) {
+    IBusPanelCandidateWindowHandlerInterface* candidate_window =
+      IBusBridge::Get()->GetCandidateWindowHandler();
+    if (candidate_window)
+      candidate_window->UpdateLookupTable(*table_, window_visible_);
+  }
 }
 
 void InputMethodEngineIBus::SetCandidateWindowAuxText(const char* text) {
@@ -281,8 +296,12 @@ void InputMethodEngineIBus::SetCandidateWindowAuxTextVisible(bool visible) {
 void InputMethodEngineIBus::SetCandidateWindowPosition(
     CandidateWindowPosition position) {
   table_->set_show_window_at_composition(position == WINDOW_POS_COMPOSITTION);
-  if (active_)
-    GetCurrentService()->UpdateLookupTable(*table_.get(), window_visible_);
+  if (active_) {
+    IBusPanelCandidateWindowHandlerInterface* candidate_window =
+      IBusBridge::Get()->GetCandidateWindowHandler();
+    if (candidate_window)
+      candidate_window->UpdateLookupTable(*table_, window_visible_);
+  }
 }
 
 bool InputMethodEngineIBus::SetCandidates(
@@ -317,7 +336,12 @@ bool InputMethodEngineIBus::SetCandidates(
 
     table_->mutable_candidates()->push_back(entry);
   }
-  GetCurrentService()->UpdateLookupTable(*table_.get(), window_visible_);
+  if (active_) {
+    IBusPanelCandidateWindowHandlerInterface* candidate_window =
+      IBusBridge::Get()->GetCandidateWindowHandler();
+    if (candidate_window)
+      candidate_window->UpdateLookupTable(*table_, window_visible_);
+  }
   return true;
 }
 
@@ -340,7 +364,10 @@ bool InputMethodEngineIBus::SetCursorPosition(int context_id, int candidate_id,
   }
 
   table_->set_cursor_position(position->second);
-  GetCurrentService()->UpdateLookupTable(*table_.get(), window_visible_);
+  IBusPanelCandidateWindowHandlerInterface* candidate_window =
+    IBusBridge::Get()->GetCandidateWindowHandler();
+  if (candidate_window)
+    candidate_window->UpdateLookupTable(*table_, window_visible_);
   return true;
 }
 

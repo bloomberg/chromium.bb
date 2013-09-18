@@ -8,7 +8,6 @@
 #include <string>
 #include "chromeos/dbus/ibus/ibus_engine_service.h"
 
-#include "chromeos/dbus/ibus/ibus_lookup_table.h"
 #include "chromeos/dbus/ibus/ibus_property.h"
 #include "chromeos/dbus/ibus/ibus_text.h"
 
@@ -32,12 +31,6 @@ class MockIBusEngineService : public IBusEngineService {
     bool is_visible;
   };
 
-  struct UpdateLookupTableArg {
-    UpdateLookupTableArg() : is_visible(false) {}
-    IBusLookupTable lookup_table;
-    bool is_visible;
-  };
-
   struct DeleteSurroundingTextArg {
     int32 offset;
     uint32 length;
@@ -55,8 +48,6 @@ class MockIBusEngineService : public IBusEngineService {
                              IBusEnginePreeditFocusOutMode mode) OVERRIDE;
   virtual void UpdateAuxiliaryText(const IBusText& ibus_text,
                                    bool is_visible) OVERRIDE;
-  virtual void UpdateLookupTable(const IBusLookupTable& lookup_table,
-                                 bool is_visible) OVERRIDE;
   virtual void UpdateProperty(const IBusProperty& property) OVERRIDE;
   virtual void ForwardKeyEvent(uint32 keyval, uint32 keycode,
                                uint32 state) OVERRIDE;
@@ -81,13 +72,6 @@ class MockIBusEngineService : public IBusEngineService {
   }
   const UpdateAuxiliaryTextArg& last_update_aux_text_arg() const {
     return *last_update_aux_text_arg_.get();
-  }
-
-  int update_lookup_table_call_count() const {
-    return update_lookup_table_call_count_;
-  }
-  const UpdateLookupTableArg& last_update_lookup_table_arg() const {
-    return *last_update_lookup_table_arg_.get();
   }
 
   int register_properties_call_count() const {
@@ -115,7 +99,6 @@ class MockIBusEngineService : public IBusEngineService {
   int register_properties_call_count_;
   int update_preedit_call_count_;
   int update_auxiliary_text_call_count_;
-  int update_lookup_table_call_count_;
   int update_property_call_count_;
   int forward_key_event_call_count_;
   int commit_text_call_count_;
@@ -124,7 +107,6 @@ class MockIBusEngineService : public IBusEngineService {
   std::string last_commit_text_;
   scoped_ptr<UpdatePreeditArg> last_update_preedit_arg_;
   scoped_ptr<UpdateAuxiliaryTextArg> last_update_aux_text_arg_;
-  scoped_ptr<UpdateLookupTableArg> last_update_lookup_table_arg_;
   scoped_ptr<IBusPropertyList> last_registered_properties_;
   scoped_ptr<IBusProperty> last_updated_property_;
   scoped_ptr<DeleteSurroundingTextArg> last_delete_surrounding_text_arg_;

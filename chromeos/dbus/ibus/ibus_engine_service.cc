@@ -54,15 +54,6 @@ class IBusEngineServiceDaemonlessImpl : public IBusEngineService {
   }
 
   // IBusEngineService override.
-  virtual void UpdateLookupTable(const IBusLookupTable& lookup_table,
-                                 bool is_visible) OVERRIDE {
-    IBusPanelCandidateWindowHandlerInterface* candidate_window =
-        IBusBridge::Get()->GetCandidateWindowHandler();
-    if (candidate_window)
-      candidate_window->UpdateLookupTable(lookup_table, is_visible);
-  }
-
-  // IBusEngineService override.
   virtual void UpdateProperty(const IBusProperty& property) OVERRIDE {
     IBusPanelPropertyHandlerInterface* property_handler =
         IBusBridge::Get()->GetPropertyHandler();

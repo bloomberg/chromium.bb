@@ -52,9 +52,6 @@ class CHROMEOS_EXPORT IBusEngineService {
   // Emits UpdateAuxiliaryText signal.
   virtual void UpdateAuxiliaryText(const IBusText& ibus_text,
                                    bool is_visible) = 0;
-  // Emits UpdateLookupTable signal.
-  virtual void UpdateLookupTable(const IBusLookupTable& lookup_table,
-                                 bool is_visible) = 0;
   // Emits UpdateProperty signal.
   virtual void UpdateProperty(const IBusProperty& property) = 0;
   // Emits ForwardKeyEvent signal.
