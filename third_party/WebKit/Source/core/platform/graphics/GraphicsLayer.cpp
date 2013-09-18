@@ -103,7 +103,6 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
     , m_paintCount(0)
     , m_contentsLayer(0)
     , m_contentsLayerId(0)
-    , m_linkHighlight(0)
     , m_contentsLayerPurpose(NoContentsLayer)
     , m_scrollableArea(0)
     , m_compositingReasons(WebKit::CompositingReasonUnknown)
@@ -122,10 +121,9 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
 
 GraphicsLayer::~GraphicsLayer()
 {
-    if (m_linkHighlight) {
-        m_linkHighlight->clearCurrentGraphicsLayer();
-        m_linkHighlight = 0;
-    }
+    for (size_t i = 0; i < m_linkHighlights.size(); ++i)
+        m_linkHighlights[i]->clearCurrentGraphicsLayer();
+    m_linkHighlights.clear();
 
 #ifndef NDEBUG
     if (m_client)
@@ -403,8 +401,8 @@ void GraphicsLayer::updateChildList()
         childHost->addChild(curChild->platformLayer());
     }
 
-    if (m_linkHighlight)
-        childHost->addChild(m_linkHighlight->layer());
+    for (size_t i = 0; i < m_linkHighlights.size(); ++i)
+        childHost->addChild(m_linkHighlights[i]->layer());
 }
 
 void GraphicsLayer::updateLayerIsDrawable()
@@ -420,8 +418,8 @@ void GraphicsLayer::updateLayerIsDrawable()
 
     if (m_drawsContent) {
         m_layer->layer()->invalidate();
-        if (m_linkHighlight)
-            m_linkHighlight->invalidate();
+        for (size_t i = 0; i < m_linkHighlights.size(); ++i)
+            m_linkHighlights[i]->invalidate();
     }
 }
 
@@ -746,10 +744,18 @@ WebKit::WebString GraphicsLayer::debugName(WebKit::WebLayer* webLayer)
     if (!m_client)
         return name;
 
+    String highlightDebugName;
+    for (size_t i = 0; i < m_linkHighlights.size(); ++i) {
+        if (webLayer == m_linkHighlights[i]->layer()) {
+            highlightDebugName = "LinkHighlight[" + String::number(i) + "] for " + m_client->debugName(this);
+            break;
+        }
+    }
+
     if (webLayer == m_contentsLayer) {
         name = "ContentsLayer for " + m_client->debugName(this);
-    } else if (m_linkHighlight && webLayer == m_linkHighlight->layer()) {
-        name = "LinkHighlight for " + m_client->debugName(this);
+    } else if (!highlightDebugName.isEmpty()) {
+        name = highlightDebugName;
     } else if (webLayer == m_layer->layer()) {
         name = m_client->debugName(this);
     } else {
@@ -896,8 +902,8 @@ void GraphicsLayer::setNeedsDisplay()
     if (drawsContent()) {
         m_layer->layer()->invalidate();
         addRepaintRect(FloatRect(FloatPoint(), m_size));
-        if (m_linkHighlight)
-            m_linkHighlight->invalidate();
+        for (size_t i = 0; i < m_linkHighlights.size(); ++i)
+            m_linkHighlights[i]->invalidate();
     }
 }
 
@@ -906,8 +912,8 @@ void GraphicsLayer::setNeedsDisplayInRect(const FloatRect& rect)
     if (drawsContent()) {
         m_layer->layer()->invalidateRect(rect);
         addRepaintRect(rect);
-        if (m_linkHighlight)
-            m_linkHighlight->invalidate();
+        for (size_t i = 0; i < m_linkHighlights.size(); ++i)
+            m_linkHighlights[i]->invalidate();
     }
 }
 
@@ -1148,11 +1154,17 @@ void GraphicsLayer::setBackgroundFilters(const FilterOperations& filters)
     m_layer->layer()->setBackgroundFilters(*webFilters);
 }
 
-void GraphicsLayer::setLinkHighlight(LinkHighlightClient* linkHighlight)
+void GraphicsLayer::addLinkHighlight(LinkHighlightClient* linkHighlight)
 {
-    m_linkHighlight = linkHighlight;
-    if (m_linkHighlight)
-        m_linkHighlight->layer()->setWebLayerClient(this);
+    ASSERT(linkHighlight && !m_linkHighlights.contains(linkHighlight));
+    m_linkHighlights.append(linkHighlight);
+    linkHighlight->layer()->setWebLayerClient(this);
+    updateChildList();
+}
+
+void GraphicsLayer::removeLinkHighlight(LinkHighlightClient* linkHighlight)
+{
+    m_linkHighlights.remove(m_linkHighlights.find(linkHighlight));
     updateChildList();
 }
 

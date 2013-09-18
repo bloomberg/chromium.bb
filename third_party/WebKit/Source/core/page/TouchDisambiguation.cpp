@@ -88,7 +88,7 @@ struct TouchTargetData {
     float score;
 };
 
-void findGoodTouchTargets(const IntRect& touchBox, Frame* mainFrame, Vector<IntRect>& goodTargets)
+void findGoodTouchTargets(const IntRect& touchBox, Frame* mainFrame, Vector<IntRect>& goodTargets, Vector<Node*>& highlightNodes)
 {
     goodTargets.clear();
 
@@ -144,6 +144,7 @@ void findGoodTouchTargets(const IntRect& touchBox, Frame* mainFrame, Vector<IntR
         if (it->value.score < bestScore * 0.5)
             continue;
         goodTargets.append(it->value.windowBoundingBox);
+        highlightNodes.append(it->key);
     }
 }
 

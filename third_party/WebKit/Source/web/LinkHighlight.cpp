@@ -142,7 +142,7 @@ RenderLayer* LinkHighlight::computeEnclosingCompositingLayer()
             clearGraphicsLayerLinkHighlightPointer();
 
         m_currentGraphicsLayer = newGraphicsLayer;
-        m_currentGraphicsLayer->setLinkHighlight(this);
+        m_currentGraphicsLayer->addLinkHighlight(this);
     }
 
     return renderLayer;
@@ -283,7 +283,7 @@ void LinkHighlight::startHighlightAnimationIfNeeded()
 void LinkHighlight::clearGraphicsLayerLinkHighlightPointer()
 {
     if (m_currentGraphicsLayer) {
-        m_currentGraphicsLayer->setLinkHighlight(0);
+        m_currentGraphicsLayer->removeLinkHighlight(this);
         m_currentGraphicsLayer = 0;
     }
 }

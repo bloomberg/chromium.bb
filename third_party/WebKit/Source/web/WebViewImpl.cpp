@@ -698,14 +698,14 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
         // Queue a highlight animation, then hand off to regular handler.
 #if OS(LINUX)
         if (settingsImpl()->gestureTapHighlightEnabled())
-            enableTapHighlight(platformEvent);
+            enableTapHighlightAtPoint(platformEvent);
 #endif
         break;
     case WebInputEvent::GestureTapCancel:
     case WebInputEvent::GestureTap:
     case WebInputEvent::GestureLongPress:
-        if (m_linkHighlight)
-            m_linkHighlight->startHighlightAnimationIfNeeded();
+        for (size_t i = 0; i < m_linkHighlights.size(); ++i)
+            m_linkHighlights[i]->startHighlightAnimationIfNeeded();
         break;
     default:
         break;
@@ -736,10 +736,15 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
             scaledEvent.data.tap.height = event.data.tap.height / pageScaleFactor();
             IntRect boundingBox(scaledEvent.x - scaledEvent.data.tap.width / 2, scaledEvent.y - scaledEvent.data.tap.height / 2, scaledEvent.data.tap.width, scaledEvent.data.tap.height);
             Vector<IntRect> goodTargets;
-            findGoodTouchTargets(boundingBox, mainFrameImpl()->frame(), goodTargets);
+            Vector<Node*> highlightNodes;
+            findGoodTouchTargets(boundingBox, mainFrameImpl()->frame(), goodTargets, highlightNodes);
             // FIXME: replace touch adjustment code when numberOfGoodTargets == 1?
             // Single candidate case is currently handled by: https://bugs.webkit.org/show_bug.cgi?id=85101
             if (goodTargets.size() >= 2 && m_client && m_client->didTapMultipleTargets(scaledEvent, goodTargets)) {
+                if (settingsImpl()->gestureTapHighlightEnabled())
+                    enableTapHighlights(highlightNodes);
+                for (size_t i = 0; i < m_linkHighlights.size(); ++i)
+                    m_linkHighlights[i]->startHighlightAnimationIfNeeded();
                 eventSwallowed = true;
                 eventCancelled = true;
                 break;
@@ -1248,24 +1253,37 @@ Node* WebViewImpl::bestTapNode(const PlatformGestureEvent& tapEvent)
     return bestTouchNode;
 }
 
-void WebViewImpl::enableTapHighlight(const PlatformGestureEvent& tapEvent)
+void WebViewImpl::enableTapHighlightAtPoint(const PlatformGestureEvent& tapEvent)
 {
-    // Always clear any existing highlight when this is invoked, even if we don't get a new target to highlight.
-    m_linkHighlight.clear();
-
     Node* touchNode = bestTapNode(tapEvent);
 
-    if (!touchNode || !touchNode->renderer() || !touchNode->renderer()->enclosingLayer())
-        return;
+    Vector<Node*> highlightNodes;
+    highlightNodes.append(touchNode);
 
-    Color highlightColor = touchNode->renderer()->style()->tapHighlightColor();
-    // Safari documentation for -webkit-tap-highlight-color says if the specified color has 0 alpha,
-    // then tap highlighting is disabled.
-    // http://developer.apple.com/library/safari/#documentation/appleapplications/reference/safaricssref/articles/standardcssproperties.html
-    if (!highlightColor.alpha())
-        return;
+    enableTapHighlights(highlightNodes);
+}
 
-    m_linkHighlight = LinkHighlight::create(touchNode, this);
+void WebViewImpl::enableTapHighlights(Vector<Node*>& highlightNodes)
+{
+    // Always clear any existing highlight when this is invoked, even if we
+    // don't get a new target to highlight.
+    m_linkHighlights.clear();
+
+    for (size_t i = 0; i < highlightNodes.size(); ++i) {
+        Node* node = highlightNodes[i];
+
+        if (!node || !node->renderer() || !node->renderer()->enclosingLayer())
+            continue;
+
+        Color highlightColor = node->renderer()->style()->tapHighlightColor();
+        // Safari documentation for -webkit-tap-highlight-color says if the specified color has 0 alpha,
+        // then tap highlighting is disabled.
+        // http://developer.apple.com/library/safari/#documentation/appleapplications/reference/safaricssref/articles/standardcssproperties.html
+        if (!highlightColor.alpha())
+            continue;
+
+        m_linkHighlights.append(LinkHighlight::create(node, this));
+    }
 }
 
 void WebViewImpl::animateDoubleTapZoom(const IntPoint& point)
@@ -1789,8 +1807,8 @@ void WebViewImpl::layout()
     if (m_layerTreeView)
         m_layerTreeView->setBackgroundColor(backgroundColor());
 
-    if (m_linkHighlight)
-        m_linkHighlight->updateGeometry();
+    for (size_t i = 0; i < m_linkHighlights.size(); ++i)
+        m_linkHighlights[i]->updateGeometry();
 }
 
 void WebViewImpl::enterForceCompositingMode(bool enter)
@@ -3651,7 +3669,7 @@ void WebViewImpl::didCommitLoad(bool* isNewNavigation, bool isNavigationWithinPa
         m_pageScaleConstraintsSet.setNeedsReset(true);
 
     // Make sure link highlight from previous page is cleared.
-    m_linkHighlight.clear();
+    m_linkHighlights.clear();
     m_gestureAnimation.clear();
     if (m_layerTreeView)
         m_layerTreeView->didStopFlinging();

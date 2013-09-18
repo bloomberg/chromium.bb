@@ -42,6 +42,7 @@
 #include "wtf/HashMap.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
+#include "wtf/Vector.h"
 
 #include "public/platform/WebAnimationDelegate.h"
 #include "public/platform/WebCompositingReasons.h"
@@ -288,9 +289,11 @@ public:
         return false;
     }
 
-    void setLinkHighlight(LinkHighlightClient*);
+    void addLinkHighlight(LinkHighlightClient*);
+    void removeLinkHighlight(LinkHighlightClient*);
     // Exposed for tests
-    LinkHighlightClient* linkHighlight() { return m_linkHighlight; }
+    unsigned numLinkHighlights() { return m_linkHighlights.size(); }
+    LinkHighlightClient* linkHighlight(int i) { return m_linkHighlights[i]; }
 
     void setScrollableArea(ScrollableArea*, bool isMainFrame);
     ScrollableArea* scrollableArea() const { return m_scrollableArea; }
@@ -401,7 +404,7 @@ private:
     // on.
     int m_contentsLayerId;
 
-    LinkHighlightClient* m_linkHighlight;
+    Vector<LinkHighlightClient*> m_linkHighlights;
 
     OwnPtr<OpaqueRectTrackingContentLayerDelegate> m_opaqueRectTrackingContentLayerDelegate;
 
