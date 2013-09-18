@@ -89,13 +89,13 @@ class CrashesDOMHandler : public WebUIMessageHandler,
 
   scoped_refptr<CrashUploadList> upload_list_;
   bool list_available_;
-  bool js_request_pending_;
+  bool first_load_;
 
   DISALLOW_COPY_AND_ASSIGN(CrashesDOMHandler);
 };
 
 CrashesDOMHandler::CrashesDOMHandler()
-    : list_available_(false), js_request_pending_(false) {
+    : list_available_(false), first_load_(true) {
   upload_list_ = CrashUploadList::Create(this);
 }
 
@@ -105,22 +105,25 @@ CrashesDOMHandler::~CrashesDOMHandler() {
 
 void CrashesDOMHandler::RegisterMessages() {
   upload_list_->LoadUploadListAsynchronously();
-
   web_ui()->RegisterMessageCallback("requestCrashList",
       base::Bind(&CrashesDOMHandler::HandleRequestCrashes,
                  base::Unretained(this)));
 }
 
 void CrashesDOMHandler::HandleRequestCrashes(const ListValue* args) {
-  if (!CrashesUI::CrashReportingUIEnabled() || list_available_)
-    UpdateUI();
-  else
-    js_request_pending_ = true;
+  if (first_load_) {
+    first_load_ = false;
+    if (list_available_)
+      UpdateUI();
+  } else {
+    list_available_ = false;
+    upload_list_->LoadUploadListAsynchronously();
+  }
 }
 
 void CrashesDOMHandler::OnUploadListAvailable() {
   list_available_ = true;
-  if (js_request_pending_)
+  if (!first_load_)
     UpdateUI();
 }
 
