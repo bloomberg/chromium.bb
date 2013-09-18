@@ -158,14 +158,14 @@ class LocalDiscoveryUITest : public WebUIBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(LocalDiscoveryUITest, EmptyTest) {
   ui_test_utils::NavigateToURL(browser(), GURL(
-      chrome::kChromeUIDevicesFrameURL));
+      chrome::kChromeUIDevicesURL));
   condition_devices_listed().Wait();
   EXPECT_TRUE(WebUIBrowserTest::RunJavascriptTest("checkNoDevices"));
 }
 
 IN_PROC_BROWSER_TEST_F(LocalDiscoveryUITest, AddRowTest) {
   ui_test_utils::NavigateToURL(browser(), GURL(
-      chrome::kChromeUIDevicesFrameURL));
+      chrome::kChromeUIDevicesURL));
   condition_devices_listed().Wait();
   DeviceDescription description;
 
