@@ -6249,7 +6249,8 @@ TEST_F(CompositorFrameMetadataTest, CompositorFrameAckCountsAsSwapComplete) {
     host_impl_->DidDrawAllLayers(frame);
   }
   CompositorFrameAck ack;
-  host_impl_->OnSwapBuffersComplete(&ack);
+  host_impl_->ReclaimResources(&ack);
+  host_impl_->OnSwapBuffersComplete();
   EXPECT_EQ(swap_buffers_complete_, 1);
 }
 

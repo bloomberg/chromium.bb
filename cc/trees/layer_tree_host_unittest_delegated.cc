@@ -238,7 +238,8 @@ class LayerTreeHostDelegatedTest : public LayerTreeTest {
     CompositorFrameAck ack;
     for (size_t i = 0; i < resources_to_return.size(); ++i)
       output_surface()->ReturnResource(resources_to_return[i], &ack);
-    host_impl->OnSwapBuffersComplete(&ack);
+    host_impl->ReclaimResources(&ack);
+    host_impl->OnSwapBuffersComplete();
   }
 };
 
@@ -1637,7 +1638,8 @@ class LayerTreeHostDelegatedTestResourceSentToParent
         // Receive 999 back from the grandparent.
         CompositorFrameAck ack;
         output_surface()->ReturnResource(map.find(999)->second, &ack);
-        host_impl->OnSwapBuffersComplete(&ack);
+        host_impl->ReclaimResources(&ack);
+        host_impl->OnSwapBuffersComplete();
         break;
       }
       case 3:

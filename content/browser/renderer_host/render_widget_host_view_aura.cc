@@ -693,6 +693,8 @@ void RenderWidgetHostViewAura::WasShown() {
   if (!host_->is_hidden())
     return;
   host_->WasShown();
+  if (framebuffer_holder_)
+    FrameMemoryManager::GetInstance()->SetFrameVisibility(this, true);
 
   aura::client::CursorClient* cursor_client =
       aura::client::GetCursorClient(window_->GetRootWindow());
@@ -715,6 +717,8 @@ void RenderWidgetHostViewAura::WasHidden() {
   if (host_->is_hidden())
     return;
   host_->WasHidden();
+  if (framebuffer_holder_)
+    FrameMemoryManager::GetInstance()->SetFrameVisibility(this, false);
 
   released_front_lock_ = NULL;
 
@@ -1273,6 +1277,7 @@ void RenderWidgetHostViewAura::UpdateExternalTexture() {
         current_surface_->device_scale_factor(), current_surface_->size());
     CheckResizeLock();
     framebuffer_holder_ = NULL;
+    FrameMemoryManager::GetInstance()->RemoveFrame(this);
   } else if (is_compositing_active && framebuffer_holder_) {
     cc::TextureMailbox mailbox;
     scoped_ptr<cc::SingleReleaseCallback> callback;
@@ -1288,6 +1293,7 @@ void RenderWidgetHostViewAura::UpdateExternalTexture() {
     resize_lock_.reset();
     host_->WasResized();
     framebuffer_holder_ = NULL;
+    FrameMemoryManager::GetInstance()->RemoveFrame(this);
   }
 }
 
@@ -1427,6 +1433,7 @@ void RenderWidgetHostViewAura::SwapDelegatedFrame(
   }
 
   framebuffer_holder_ = NULL;
+  FrameMemoryManager::GetInstance()->RemoveFrame(this);
 
   if (ShouldSkipFrame(frame_size_in_dip)) {
     cc::CompositorFrameAck ack;
@@ -1500,7 +1507,8 @@ void RenderWidgetHostViewAura::SwapSoftwareFrame(
   gfx::Size frame_size_in_dip =
       ConvertSizeToDIP(frame_device_scale_factor, frame_size);
   if (ShouldSkipFrame(frame_size_in_dip)) {
-    SendSoftwareFrameAck(output_surface_id, frame_data->id);
+    ReleaseSoftwareFrame(output_surface_id, frame_data->id);
+    SendSoftwareFrameAck(output_surface_id);
     return;
   }
 
@@ -1529,11 +1537,10 @@ void RenderWidgetHostViewAura::SwapSoftwareFrame(
   scoped_refptr<MemoryHolder> holder(new MemoryHolder(
       shared_memory.Pass(),
       frame_size,
-      base::Bind(&RenderWidgetHostViewAura::SendSoftwareFrameAck,
+      base::Bind(&RenderWidgetHostViewAura::ReleaseSoftwareFrame,
                  AsWeakPtr(),
                  output_surface_id,
                  frame_data->id)));
-  bool first_frame = !framebuffer_holder_;
   framebuffer_holder_.swap(holder);
   cc::TextureMailbox mailbox;
   scoped_ptr<cc::SingleReleaseCallback> callback;
@@ -1552,28 +1559,55 @@ void RenderWidgetHostViewAura::SwapSoftwareFrame(
   ui::Compositor* compositor = GetCompositor();
   if (compositor) {
     compositor->SetLatencyInfo(latency_info);
-    if (first_frame) {
-      // Send swap for first frame, because no frame will be released due to
-      // that.
-      AddOnCommitCallbackAndDisableLocks(
-          base::Bind(&RenderWidgetHostViewAura::SendSoftwareFrameAck,
-                     AsWeakPtr(),
-                     output_surface_id,
-                     0));
-    }
+    AddOnCommitCallbackAndDisableLocks(
+        base::Bind(&RenderWidgetHostViewAura::SendSoftwareFrameAck,
+                   AsWeakPtr(),
+                   output_surface_id));
   }
   if (paint_observer_)
     paint_observer_->OnUpdateCompositorContent();
   DidReceiveFrameFromRenderer();
+  FrameMemoryManager::GetInstance()->AddFrame(this, !host_->is_hidden());
 }
 
-void RenderWidgetHostViewAura::SendSoftwareFrameAck(
-    uint32 output_surface_id, unsigned software_frame_id) {
+void RenderWidgetHostViewAura::SendSoftwareFrameAck(uint32 output_surface_id) {
+  unsigned software_frame_id = 0;
+  if (!released_software_frames_.empty()) {
+    unsigned released_output_surface_id =
+        released_software_frames_.back().output_surface_id;
+    if (released_output_surface_id == output_surface_id) {
+      software_frame_id = released_software_frames_.back().frame_id;
+      released_software_frames_.pop_back();
+    }
+  }
+
   cc::CompositorFrameAck ack;
   ack.last_software_frame_id = software_frame_id;
   RenderWidgetHostImpl::SendSwapCompositorFrameAck(
       host_->GetRoutingID(), output_surface_id,
       host_->GetProcess()->GetID(), ack);
+  SendReclaimSoftwareFrames();
+}
+
+void RenderWidgetHostViewAura::SendReclaimSoftwareFrames() {
+  while (!released_software_frames_.empty()) {
+    cc::CompositorFrameAck ack;
+    ack.last_software_frame_id = released_software_frames_.back().frame_id;
+    RenderWidgetHostImpl::SendReclaimCompositorResources(
+        host_->GetRoutingID(),
+        released_software_frames_.back().output_surface_id,
+        host_->GetProcess()->GetID(),
+        ack);
+    released_software_frames_.pop_back();
+  }
+}
+
+void RenderWidgetHostViewAura::ReleaseSoftwareFrame(
+    uint32 output_surface_id,
+    unsigned software_frame_id) {
+  SendReclaimSoftwareFrames();
+  released_software_frames_.push_back(
+      ReleasedFrameInfo(output_surface_id, software_frame_id));
 }
 
 void RenderWidgetHostViewAura::OnSwapCompositorFrame(
@@ -1644,6 +1678,7 @@ void RenderWidgetHostViewAura::BuffersSwapped(
   scoped_refptr<ui::Texture> previous_texture(current_surface_);
   const gfx::Rect surface_rect = gfx::Rect(surface_size);
   framebuffer_holder_ = NULL;
+  FrameMemoryManager::GetInstance()->RemoveFrame(this);
 
   if (!SwapBuffersPrepare(surface_rect,
                           surface_scale_factor,
@@ -1748,7 +1783,7 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceRelease() {
 }
 
 bool RenderWidgetHostViewAura::HasAcceleratedSurface(
-      const gfx::Size& desired_size) {
+    const gfx::Size& desired_size) {
   // Aura doesn't use GetBackingStore for accelerated pages, so it doesn't
   // matter what is returned here as GetBackingStore is the only caller of this
   // method. TODO(jbates) implement this if other Aura code needs it.
@@ -2970,6 +3005,18 @@ void RenderWidgetHostViewAura::OnRootWindowHostMoved(
   UpdateScreenInfo(window_);
 }
 
+void RenderWidgetHostViewAura::ReleaseCurrentFrame() {
+  if (framebuffer_holder_.get() && !current_surface_.get()) {
+    framebuffer_holder_ = NULL;
+    ui::Compositor* compositor = GetCompositor();
+    if (compositor) {
+      AddOnCommitCallbackAndDisableLocks(base::Bind(
+          &RenderWidgetHostViewAura::SendReclaimSoftwareFrames, AsWeakPtr()));
+    }
+    UpdateExternalTexture();
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewAura, ui::CompositorObserver implementation:
 
@@ -3132,6 +3179,7 @@ RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
   // Aura root window and we don't have a way to get an input method object
   // associated with the window, but just in case.
   DetachFromInputMethod();
+  FrameMemoryManager::GetInstance()->RemoveFrame(this);
 }
 
 void RenderWidgetHostViewAura::UpdateCursorIfOverSelf() {

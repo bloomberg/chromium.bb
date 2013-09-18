@@ -35,6 +35,7 @@ IPC::ForwardingMessageFilter* CompositorOutputSurface::CreateFilter(
   uint32 messages_to_filter[] = {
     ViewMsg_UpdateVSyncParameters::ID,
     ViewMsg_SwapCompositorFrameAck::ID,
+    ViewMsg_ReclaimCompositorResources::ID,
 #if defined(OS_ANDROID)
     ViewMsg_BeginFrame::ID
 #endif
@@ -130,6 +131,7 @@ void CompositorOutputSurface::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(CompositorOutputSurface, message)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateVSyncParameters, OnUpdateVSyncParameters);
     IPC_MESSAGE_HANDLER(ViewMsg_SwapCompositorFrameAck, OnSwapAck);
+    IPC_MESSAGE_HANDLER(ViewMsg_ReclaimCompositorResources, OnReclaimResources);
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(ViewMsg_BeginFrame, OnBeginFrame);
 #endif
@@ -162,7 +164,18 @@ void CompositorOutputSurface::OnSwapAck(uint32 output_surface_id,
   // (e.g. after a lost context).
   if (output_surface_id != output_surface_id_)
     return;
-  OnSwapBuffersComplete(&ack);
+  ReclaimResources(&ack);
+  OnSwapBuffersComplete();
+}
+
+void CompositorOutputSurface::OnReclaimResources(
+    uint32 output_surface_id,
+    const cc::CompositorFrameAck& ack) {
+  // Ignore message if it's a stale one coming from a different output surface
+  // (e.g. after a lost context).
+  if (output_surface_id != output_surface_id_)
+    return;
+  ReclaimResources(&ack);
 }
 
 bool CompositorOutputSurface::Send(IPC::Message* message) {

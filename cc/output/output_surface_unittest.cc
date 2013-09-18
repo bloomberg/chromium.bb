@@ -58,7 +58,7 @@ class TestOutputSurface : public OutputSurface {
   }
 
   void OnSwapBuffersCompleteForTesting() {
-    OnSwapBuffersComplete(NULL);
+    OnSwapBuffersComplete();
   }
 
   void SetAlternateRetroactiveBeginFramePeriod(base::TimeDelta period) {

@@ -1238,14 +1238,15 @@ void LayerTreeHostImpl::BeginFrame(const BeginFrameArgs& args) {
   client_->BeginFrameOnImplThread(args);
 }
 
-void LayerTreeHostImpl::OnSwapBuffersComplete(
-    const CompositorFrameAck* ack) {
+void LayerTreeHostImpl::OnSwapBuffersComplete() {
+  client_->OnSwapBuffersCompleteOnImplThread();
+}
+
+void LayerTreeHostImpl::ReclaimResources(const CompositorFrameAck* ack) {
   // TODO(piman): We may need to do some validation on this ack before
   // processing it.
-  if (ack && renderer_)
+  if (renderer_)
     renderer_->ReceiveSwapBuffersAck(*ack);
-
-  client_->OnSwapBuffersCompleteOnImplThread();
 }
 
 void LayerTreeHostImpl::OnCanDrawStateChangedForTree() {

@@ -498,6 +498,7 @@ void Layer::SetExternalTexture(Texture* texture) {
           cc::ContentLayer::Create(this);
       SwitchToLayer(new_layer);
       content_layer_ = new_layer;
+      mailbox_ = cc::TextureMailbox();
     }
   }
   RecomputeDrawsContentAndUVRect();

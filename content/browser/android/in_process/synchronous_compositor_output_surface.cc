@@ -277,7 +277,7 @@ void SynchronousCompositorOutputSurface::InvokeComposite(
   }
 
   if (did_swap_buffer_)
-    OnSwapBuffersComplete(NULL);
+    OnSwapBuffersComplete();
 }
 
 void SynchronousCompositorOutputSurface::PostCheckForRetroactiveBeginFrame() {

@@ -64,6 +64,8 @@ class CompositorOutputSurface
  protected:
   virtual void OnSwapAck(uint32 output_surface_id,
                          const cc::CompositorFrameAck& ack);
+  virtual void OnReclaimResources(uint32 output_surface_id,
+                                  const cc::CompositorFrameAck& ack);
   uint32 output_surface_id_;
 
  private:

@@ -2418,6 +2418,19 @@ void RenderWidgetHostImpl::SendSwapCompositorFrameAck(
       route_id, output_surface_id, ack));
 }
 
+// static
+void RenderWidgetHostImpl::SendReclaimCompositorResources(
+    int32 route_id,
+    uint32 output_surface_id,
+    int renderer_host_id,
+    const cc::CompositorFrameAck& ack) {
+  RenderProcessHost* host = RenderProcessHost::FromID(renderer_host_id);
+  if (!host)
+    return;
+  host->Send(
+      new ViewMsg_ReclaimCompositorResources(route_id, output_surface_id, ack));
+}
+
 void RenderWidgetHostImpl::AcknowledgeSwapBuffersToRenderer() {
   if (!is_threaded_compositing_enabled_)
     Send(new ViewMsg_SwapBuffers_ACK(routing_id_));

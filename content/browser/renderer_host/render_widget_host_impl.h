@@ -467,6 +467,12 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
       int renderer_host_id,
       const cc::CompositorFrameAck& ack);
 
+  // Called by the view to return resources to the compositor.
+  static void SendReclaimCompositorResources(int32 route_id,
+                                             uint32 output_surface_id,
+                                             int renderer_host_id,
+                                             const cc::CompositorFrameAck& ack);
+
   // Called by the view in response to AcceleratedSurfaceBuffersSwapped for
   // platforms that support deferred GPU process descheduling. This does
   // nothing if the compositor thread is enabled.

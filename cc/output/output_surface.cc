@@ -15,6 +15,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "cc/output/compositor_frame.h"
+#include "cc/output/compositor_frame_ack.h"
 #include "cc/output/managed_memory_policy.h"
 #include "cc/output/output_surface_client.h"
 #include "cc/scheduler/delay_based_time_source.h"
@@ -200,14 +201,18 @@ void OutputSurface::DidSwapBuffers() {
   PostCheckForRetroactiveBeginFrame();
 }
 
-void OutputSurface::OnSwapBuffersComplete(const CompositorFrameAck* ack) {
+void OutputSurface::OnSwapBuffersComplete() {
   pending_swap_buffers_--;
   TRACE_EVENT1("cc", "OutputSurface::OnSwapBuffersComplete",
                "pending_swap_buffers_", pending_swap_buffers_);
-  client_->OnSwapBuffersComplete(ack);
+  client_->OnSwapBuffersComplete();
   if (frame_rate_controller_)
     frame_rate_controller_->DidSwapBuffersComplete();
   PostCheckForRetroactiveBeginFrame();
+}
+
+void OutputSurface::ReclaimResources(const CompositorFrameAck* ack) {
+  client_->ReclaimResources(ack);
 }
 
 void OutputSurface::DidLoseOutputSurface() {
@@ -299,10 +304,8 @@ void OutputSurface::SetUpContext3d() {
   context_provider_->SetLostContextCallback(
       base::Bind(&OutputSurface::DidLoseOutputSurface,
                  base::Unretained(this)));
-  context_provider_->SetSwapBuffersCompleteCallback(
-      base::Bind(&OutputSurface::OnSwapBuffersComplete,
-                 base::Unretained(this),
-                 static_cast<CompositorFrameAck*>(NULL)));
+  context_provider_->SetSwapBuffersCompleteCallback(base::Bind(
+      &OutputSurface::OnSwapBuffersComplete, base::Unretained(this)));
   context_provider_->SetMemoryPolicyChangedCallback(
       base::Bind(&OutputSurface::SetMemoryPolicy,
                  base::Unretained(this)));
@@ -389,10 +392,9 @@ void OutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
 
 void OutputSurface::PostSwapBuffersComplete() {
   base::MessageLoop::current()->PostTask(
-       FROM_HERE,
-       base::Bind(&OutputSurface::OnSwapBuffersComplete,
-                  weak_ptr_factory_.GetWeakPtr(),
-                  static_cast<CompositorFrameAck*>(NULL)));
+      FROM_HERE,
+      base::Bind(&OutputSurface::OnSwapBuffersComplete,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void OutputSurface::SetMemoryPolicy(const ManagedMemoryPolicy& policy,

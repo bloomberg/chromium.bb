@@ -112,9 +112,13 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
     return result;
   }
 
-  virtual void OnSwapBuffersComplete(const CompositorFrameAck* ack) OVERRIDE {
-    LayerTreeHostImpl::OnSwapBuffersComplete(ack);
+  virtual void OnSwapBuffersComplete() OVERRIDE {
+    LayerTreeHostImpl::OnSwapBuffersComplete();
     test_hooks_->SwapBuffersCompleteOnThread(this);
+  }
+
+  virtual void ReclaimResources(const CompositorFrameAck* ack) OVERRIDE {
+    LayerTreeHostImpl::ReclaimResources(ack);
   }
 
   virtual void UpdateVisibleTiles() OVERRIDE {

@@ -18,6 +18,7 @@
 #include "cc/resources/texture_mailbox.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/aura/image_transport_factory.h"
+#include "content/browser/renderer_host/frame_memory_manager.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/client/gl_helper.h"
@@ -75,6 +76,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
       public aura::client::CursorClientObserver,
       public ImageTransportFactoryObserver,
       public BrowserAccessibilityDelegate,
+      public FrameContainer,
       public base::SupportsWeakPtr<RenderWidgetHostViewAura> {
  public:
   // Used to notify whenever the paint-content of the view changes.
@@ -327,6 +329,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   virtual void OnRootWindowHostMoved(const aura::RootWindow* root,
                                      const gfx::Point& new_origin) OVERRIDE;
 
+  // FrameContainer implementation:
+  virtual void ReleaseCurrentFrame() OVERRIDE;
+
   bool CanCopyToBitmap() const;
 
 #if defined(OS_WIN)
@@ -516,7 +521,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
       scoped_ptr<cc::SoftwareFrameData> frame_data,
       float frame_device_scale_factor,
       const ui::LatencyInfo& latency_info);
-  void SendSoftwareFrameAck(uint32 output_surface_id,
+  void SendSoftwareFrameAck(uint32 output_surface_id);
+  void SendReclaimSoftwareFrames();
+  void ReleaseSoftwareFrame(uint32 output_surface_id,
                             unsigned software_frame_id);
 
   void DidReceiveFrameFromRenderer();
@@ -714,6 +721,14 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   TouchEditingClient* touch_editing_client_;
 
   ui::LatencyInfo software_latency_info_;
+
+  struct ReleasedFrameInfo {
+    ReleasedFrameInfo(uint32 output_id, unsigned software_frame_id)
+        : output_surface_id(output_id), frame_id(software_frame_id) {}
+    uint32 output_surface_id;
+    unsigned frame_id;
+  };
+  std::vector<ReleasedFrameInfo> released_software_frames_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAura);
 };

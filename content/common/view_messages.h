@@ -1345,6 +1345,12 @@ IPC_MESSAGE_ROUTED2(ViewMsg_SwapCompositorFrameAck,
                     uint32 /* output_surface_id */,
                     cc::CompositorFrameAck /* ack */)
 
+// Sent by browser to tell renderer compositor that some resources that were
+// given to the browser in a swap are not being used anymore.
+IPC_MESSAGE_ROUTED2(ViewMsg_ReclaimCompositorResources,
+                    uint32 /* output_surface_id */,
+                    cc::CompositorFrameAck /* ack */)
+
 // Sent by the browser to ask the renderer for a snapshot of the current view.
 IPC_MESSAGE_ROUTED1(ViewMsg_Snapshot,
                     gfx::Rect /* src_subrect */)
