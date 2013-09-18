@@ -43,6 +43,8 @@ class ContentBrowserTest : public BrowserTestBase {
 
   Shell* shell_;
 
+  bool setup_called_;
+
   // ContentRendererClient when running in single-process mode.
   scoped_ptr<ContentRendererClient> single_process_renderer_client_;
 };

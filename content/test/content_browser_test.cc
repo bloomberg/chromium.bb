@@ -33,7 +33,8 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest, MANUAL_ShouldntRun) {
   ASSERT_TRUE(false);
 }
 
-ContentBrowserTest::ContentBrowserTest() {
+ContentBrowserTest::ContentBrowserTest()
+    : setup_called_(false) {
 #if defined(OS_MACOSX)
   // See comment in InProcessBrowserTest::InProcessBrowserTest().
   base::FilePath content_shell_path;
@@ -50,9 +51,13 @@ ContentBrowserTest::ContentBrowserTest() {
 }
 
 ContentBrowserTest::~ContentBrowserTest() {
+  CHECK(setup_called_) << "Overridden SetUp() did not call parent "
+                          "implementation, so test not run.";
 }
 
 void ContentBrowserTest::SetUp() {
+  setup_called_ = true;
+
   shell_main_delegate_.reset(new ShellMainDelegate);
   shell_main_delegate_->PreSandboxStartup();
 
