@@ -86,17 +86,19 @@ bool WebExternalTextureLayerImpl::PrepareTextureMailbox(
   }
   gpu::Mailbox name;
   name.SetName(client_mailbox.name);
-  scoped_ptr<cc::SingleReleaseCallback> callback =
-      cc::SingleReleaseCallback::Create(base::Bind(
-          &WebExternalTextureLayerImpl::DidReleaseMailbox,
-          this->AsWeakPtr(),
-          client_mailbox,
-          bitmap));
   if (bitmap)
     *mailbox = cc::TextureMailbox(bitmap->shared_memory(), bitmap->size());
   else
     *mailbox = cc::TextureMailbox(name, client_mailbox.syncPoint);
-  *release_callback = callback.Pass();
+
+  if (mailbox->IsValid()) {
+    *release_callback = cc::SingleReleaseCallback::Create(base::Bind(
+        &WebExternalTextureLayerImpl::DidReleaseMailbox,
+        this->AsWeakPtr(),
+        client_mailbox,
+        bitmap));
+  }
+
   return true;
 }
 
