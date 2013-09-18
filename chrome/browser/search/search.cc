@@ -39,7 +39,7 @@ namespace chrome {
 namespace {
 
 // Configuration options for Embedded Search.
-// InstantExtended field trials are named in such a way that we can parse out
+// EmbeddedSearch field trials are named in such a way that we can parse out
 // the experiment configuration from the trial's group name in order to give
 // us maximum flexability in running experiments.
 // Field trial groups should be named things like "Group7 espv:2 instant:1".
@@ -67,7 +67,14 @@ const char kPrefetchSearchResultsOnSRP[] = "prefetch_results_srp";
 const char kSuppressInstantExtendedOnSRPFlagName[] = "suppress_on_srp";
 
 // Constants for the field trial name and group prefix.
+// Note in M30 and below this field trial was named "InstantExtended" and in
+// M31 was renamed to EmbeddedSearch for clarity and cleanliness.  Since we
+// can't easilly sync up Finch configs with the pushing of this change to
+// Dev & Canary, for now the code accepts both names.
+// TODO(dcblack): Remove the InstantExtended name once M31 hits the Beta
+// channel.
 const char kInstantExtendedFieldTrialName[] = "InstantExtended";
+const char kEmbeddedSearchFieldTrialName[] = "EmbeddedSearch";
 const char kGroupNumberPrefix[] = "Group";
 
 // If the field trial's group name ends with this string its configuration will
@@ -287,9 +294,7 @@ uint64 EmbeddedSearchPageVersion() {
 
   FieldTrialFlags flags;
   uint64 group_num = 0;
-  if (GetFieldTrialInfo(
-          base::FieldTrialList::FindFullName(kInstantExtendedFieldTrialName),
-          &flags, &group_num)) {
+  if (GetFieldTrialInfo(&flags, &group_num)) {
     if (group_num == 0)
       return kEmbeddedPageVersionDisabled;
     return GetUInt64ValueForFlagWithDefault(kEmbeddedPageVersionFlagName,
@@ -444,9 +449,7 @@ bool ShouldPreferRemoteNTPOnStartup() {
     return true;
 
   FieldTrialFlags flags;
-  if (GetFieldTrialInfo(
-      base::FieldTrialList::FindFullName(kInstantExtendedFieldTrialName),
-      &flags, NULL)) {
+  if (GetFieldTrialInfo(&flags, NULL)) {
     return GetBoolValueForFlagWithDefault(kUseRemoteNTPOnStartupFlagName, true,
                                           flags);
   }
@@ -455,9 +458,7 @@ bool ShouldPreferRemoteNTPOnStartup() {
 
 bool ShouldHideTopVerbatimMatch() {
   FieldTrialFlags flags;
-  if (GetFieldTrialInfo(
-      base::FieldTrialList::FindFullName(kInstantExtendedFieldTrialName),
-      &flags, NULL)) {
+  if (GetFieldTrialInfo(&flags, NULL)) {
     return GetBoolValueForFlagWithDefault(kHideVerbatimFlagName, false, flags);
   }
   return false;
@@ -465,9 +466,7 @@ bool ShouldHideTopVerbatimMatch() {
 
 bool ShouldUseCacheableNTP() {
   FieldTrialFlags flags;
-  if (GetFieldTrialInfo(
-          base::FieldTrialList::FindFullName(kInstantExtendedFieldTrialName),
-          &flags, NULL)) {
+  if (GetFieldTrialInfo(&flags, NULL)) {
     return GetBoolValueForFlagWithDefault(kUseCacheableNTP, false, flags);
   }
   return false;
@@ -480,9 +479,7 @@ bool ShouldShowInstantNTP() {
     return false;
 
   FieldTrialFlags flags;
-  if (GetFieldTrialInfo(
-          base::FieldTrialList::FindFullName(kInstantExtendedFieldTrialName),
-          &flags, NULL)) {
+  if (GetFieldTrialInfo(&flags, NULL)) {
     return GetBoolValueForFlagWithDefault(kShowNtpFlagName, true, flags);
   }
   return true;
@@ -490,9 +487,7 @@ bool ShouldShowInstantNTP() {
 
 bool ShouldShowRecentTabsOnNTP() {
   FieldTrialFlags flags;
-  if (GetFieldTrialInfo(
-          base::FieldTrialList::FindFullName(kInstantExtendedFieldTrialName),
-          &flags, NULL)) {
+  if (GetFieldTrialInfo(&flags, NULL)) {
     return GetBoolValueForFlagWithDefault(
         kRecentTabsOnNTPFlagName, false, flags);
   }
@@ -502,9 +497,7 @@ bool ShouldShowRecentTabsOnNTP() {
 
 bool ShouldSuppressInstantExtendedOnSRP() {
   FieldTrialFlags flags;
-  if (GetFieldTrialInfo(
-          base::FieldTrialList::FindFullName(kInstantExtendedFieldTrialName),
-          &flags, NULL)) {
+  if (GetFieldTrialInfo(&flags, NULL)) {
     return GetBoolValueForFlagWithDefault(
         kSuppressInstantExtendedOnSRPFlagName, false, flags);
   }
@@ -551,9 +544,7 @@ GURL GetEffectiveURLForInstant(const GURL& url, Profile* profile) {
 int GetInstantLoaderStalenessTimeoutSec() {
   int timeout_sec = kStalePageTimeoutDefault;
   FieldTrialFlags flags;
-  if (GetFieldTrialInfo(
-      base::FieldTrialList::FindFullName(kInstantExtendedFieldTrialName),
-      &flags, NULL)) {
+  if (GetFieldTrialInfo(&flags, NULL)) {
     timeout_sec = GetUInt64ValueForFlagWithDefault(kStalePageTimeoutFlagName,
                                                    kStalePageTimeoutDefault,
                                                    flags);
@@ -647,9 +638,7 @@ bool ShouldPrefetchSearchResultsOnSRP() {
   }
 
   FieldTrialFlags flags;
-  if (GetFieldTrialInfo(
-          base::FieldTrialList::FindFullName(kInstantExtendedFieldTrialName),
-          &flags, NULL)) {
+  if (GetFieldTrialInfo(&flags, NULL)) {
     return GetBoolValueForFlagWithDefault(kPrefetchSearchResultsOnSRP, false,
                                           flags);
   }
@@ -666,9 +655,17 @@ void DisableInstantExtendedAPIForTesting() {
   cl->AppendSwitch(switches::kDisableInstantExtendedAPI);
 }
 
-bool GetFieldTrialInfo(const std::string& group_name,
-                       FieldTrialFlags* flags,
+bool GetFieldTrialInfo(FieldTrialFlags* flags,
                        uint64* group_number) {
+  // Get the group name.  If the EmbeddedSearch trial doesn't exist, look for
+  // the older InstantExtended name.
+  std::string group_name = base::FieldTrialList::FindFullName(
+      kEmbeddedSearchFieldTrialName);
+  if (group_name.empty()) {
+    group_name = base::FieldTrialList::FindFullName(
+        kInstantExtendedFieldTrialName);
+  }
+
   if (EndsWith(group_name, kDisablingSuffix, true))
     return false;
 

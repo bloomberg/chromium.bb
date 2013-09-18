@@ -29,53 +29,115 @@
 
 namespace chrome {
 
-TEST(EmbeddedSearchFieldTrialTest, GetFieldTrialInfoEmptyAndValid) {
+class EmbeddedSearchFieldTrialTest : public testing::Test {
+ protected:
+  virtual void SetUp() {
+    field_trial_list_.reset(new base::FieldTrialList(
+        new metrics::SHA1EntropyProvider("42")));
+    base::StatisticsRecorder::Initialize();
+    ResetInstantExtendedOptInStateGateForTest();
+  }
+
+ private:
+  scoped_ptr<base::FieldTrialList> field_trial_list_;
+};
+
+TEST_F(EmbeddedSearchFieldTrialTest, GetFieldTrialInfoEmptyAndValid) {
   FieldTrialFlags flags;
   uint64 group_number = 0;
 
-  EXPECT_TRUE(GetFieldTrialInfo(std::string(), &flags, &group_number));
+  EXPECT_TRUE(GetFieldTrialInfo(&flags, &group_number));
   EXPECT_EQ(0ul, group_number);
   EXPECT_EQ(0ul, flags.size());
 
-  EXPECT_TRUE(GetFieldTrialInfo("Group77", &flags, &group_number));
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "InstantExtended", "Group77"));
+  EXPECT_TRUE(GetFieldTrialInfo(&flags, &group_number));
   EXPECT_EQ(77ul, group_number);
   EXPECT_EQ(0ul, flags.size());
 }
 
-TEST(EmbeddedSearchFieldTrialTest, GetFieldTrialInfoInvalidThenValid) {
+TEST_F(EmbeddedSearchFieldTrialTest, GetFieldTrialInfoInvalidNumber) {
   FieldTrialFlags flags;
   uint64 group_number = 0;
 
-  EXPECT_FALSE(GetFieldTrialInfo("Group77.2", &flags, &group_number));
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "InstantExtended", "Group77.2"));
+  EXPECT_FALSE(GetFieldTrialInfo(&flags, &group_number));
   EXPECT_EQ(0ul, group_number);
   EXPECT_EQ(0ul, flags.size());
+}
 
-  EXPECT_TRUE(GetFieldTrialInfo("Invalid77", &flags, &group_number));
+TEST_F(EmbeddedSearchFieldTrialTest, GetFieldTrialInfoInvalidName) {
+  FieldTrialFlags flags;
+  uint64 group_number = 0;
+
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "InstantExtended", "Invalid77"));
+  EXPECT_TRUE(GetFieldTrialInfo(&flags, &group_number));
   EXPECT_EQ(0ul, group_number);
   EXPECT_EQ(0ul, flags.size());
+}
 
-  EXPECT_TRUE(GetFieldTrialInfo("Group77 ", &flags, &group_number));
+TEST_F(EmbeddedSearchFieldTrialTest, GetFieldTrialInfoValidGroup) {
+  FieldTrialFlags flags;
+  uint64 group_number = 0;
+
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "InstantExtended", "Group77"));
+  EXPECT_TRUE(GetFieldTrialInfo(&flags, &group_number));
   EXPECT_EQ(77ul, group_number);
   EXPECT_EQ(0ul, flags.size());
 }
 
-TEST(EmbeddedSearchFieldTrialTest, GetFieldTrialInfoValidFlag) {
+TEST_F(EmbeddedSearchFieldTrialTest, GetFieldTrialInfoValidFlag) {
   FieldTrialFlags flags;
   uint64 group_number = 0;
 
   EXPECT_EQ(9999ul, GetUInt64ValueForFlagWithDefault("foo", 9999, flags));
-  EXPECT_TRUE(GetFieldTrialInfo("Group77 foo:6", &flags, &group_number));
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "InstantExtended", "Group77 foo:6"));
+  EXPECT_TRUE(GetFieldTrialInfo(&flags, &group_number));
   EXPECT_EQ(77ul, group_number);
   EXPECT_EQ(1ul, flags.size());
   EXPECT_EQ(6ul, GetUInt64ValueForFlagWithDefault("foo", 9999, flags));
 }
 
-TEST(EmbeddedSearchFieldTrialTest, GetFieldTrialInfoLotsOfFlags) {
+TEST_F(EmbeddedSearchFieldTrialTest, GetFieldTrialInfoNewName) {
   FieldTrialFlags flags;
   uint64 group_number = 0;
 
-  EXPECT_TRUE(GetFieldTrialInfo(
-      "Group77 bar:1 baz:7 cat:dogs", &flags, &group_number));
+  EXPECT_EQ(9999ul, GetUInt64ValueForFlagWithDefault("foo", 9999, flags));
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "EmbeddedSearch", "Group77 foo:6"));
+  EXPECT_TRUE(GetFieldTrialInfo(&flags, &group_number));
+  EXPECT_EQ(77ul, group_number);
+  EXPECT_EQ(1ul, flags.size());
+  EXPECT_EQ(6ul, GetUInt64ValueForFlagWithDefault("foo", 9999, flags));
+}
+
+TEST_F(EmbeddedSearchFieldTrialTest, GetFieldTrialInfoNewNameOverridesOld) {
+  FieldTrialFlags flags;
+  uint64 group_number = 0;
+
+  EXPECT_EQ(9999ul, GetUInt64ValueForFlagWithDefault("foo", 9999, flags));
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "EmbeddedSearch", "Group77 foo:6"));
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "InstantExtended", "Group78 foo:5"));
+  EXPECT_TRUE(GetFieldTrialInfo(&flags, &group_number));
+  EXPECT_EQ(77ul, group_number);
+  EXPECT_EQ(1ul, flags.size());
+  EXPECT_EQ(6ul, GetUInt64ValueForFlagWithDefault("foo", 9999, flags));
+}
+
+TEST_F(EmbeddedSearchFieldTrialTest, GetFieldTrialInfoLotsOfFlags) {
+  FieldTrialFlags flags;
+  uint64 group_number = 0;
+
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "InstantExtended", "Group77 bar:1 baz:7 cat:dogs"));
+  EXPECT_TRUE(GetFieldTrialInfo(&flags, &group_number));
   EXPECT_EQ(77ul, group_number);
   EXPECT_EQ(3ul, flags.size());
   EXPECT_EQ(true, GetBoolValueForFlagWithDefault("bar", false, flags));
@@ -86,22 +148,24 @@ TEST(EmbeddedSearchFieldTrialTest, GetFieldTrialInfoLotsOfFlags) {
             GetStringValueForFlagWithDefault("moose", "default", flags));
 }
 
-TEST(EmbeddedSearchFieldTrialTest, GetFieldTrialInfoDisabled) {
+TEST_F(EmbeddedSearchFieldTrialTest, GetFieldTrialInfoDisabled) {
   FieldTrialFlags flags;
   uint64 group_number = 0;
 
-  EXPECT_FALSE(GetFieldTrialInfo(
-      "Group77 bar:1 baz:7 cat:dogs DISABLED", &flags, &group_number));
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "InstantExtended", "Group77 bar:1 baz:7 cat:dogs DISABLED"));
+  EXPECT_FALSE(GetFieldTrialInfo(&flags, &group_number));
   EXPECT_EQ(0ul, group_number);
   EXPECT_EQ(0ul, flags.size());
 }
 
-TEST(EmbeddedSearchFieldTrialTest, GetFieldTrialInfoControlFlags) {
+TEST_F(EmbeddedSearchFieldTrialTest, GetFieldTrialInfoControlFlags) {
   FieldTrialFlags flags;
   uint64 group_number = 0;
 
-  EXPECT_TRUE(GetFieldTrialInfo(
-      "Control77 bar:1 baz:7 cat:dogs", &flags, &group_number));
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "InstantExtended", "Control77 bar:1 baz:7 cat:dogs"));
+  EXPECT_TRUE(GetFieldTrialInfo(&flags, &group_number));
   EXPECT_EQ(0ul, group_number);
   EXPECT_EQ(3ul, flags.size());
 }

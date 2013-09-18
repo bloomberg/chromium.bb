@@ -206,16 +206,16 @@ void DisableInstantExtendedAPIForTesting();
 // Type for a collection of experiment configuration parameters.
 typedef std::vector<std::pair<std::string, std::string> > FieldTrialFlags;
 
-// Given a field trial group name, parses out the group number and configuration
-// flags. On success, |flags| will be filled with the field trial flags. |flags|
-// must not be NULL. If not NULL, |group_number| will receive the experiment
-// group number.
-// Returns true iff |group_name| is successfully parsed and not disabled.
+// Finds the active field trial group name and parses out the group number and
+// configuration flags. On success, |flags| will be filled with the field trial
+// flags. |flags| must not be NULL. If not NULL, |group_number| will receive the
+// experiment group number.
+// Returns true iff the active field trial is successfully parsed and not
+// disabled.
 // Note that |flags| may be successfully populated in some cases when false is
 // returned - in these cases it should not be used.
 // Exposed for testing only.
-bool GetFieldTrialInfo(const std::string& group_name,
-                       FieldTrialFlags* flags,
+bool GetFieldTrialInfo(FieldTrialFlags* flags,
                        uint64* group_number);
 
 // Given a FieldTrialFlags object, returns the string value of the provided
