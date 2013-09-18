@@ -127,7 +127,7 @@ unsigned CSSSelector::specificityForPage() const
         case Tag:
             s += tagQName().localName() == starAtom ? 0 : 4;
             break;
-        case PseudoClass:
+        case PagePseudoClass:
             switch (component->pseudoType()) {
             case PseudoFirstPage:
                 s += 2;
