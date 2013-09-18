@@ -72,7 +72,8 @@ class BrowserOptionsHandler
   // the status to the javascript method to be called.
   enum ProfileCreationStatus {
     PROFILE_CREATION_SUCCESS,
-    PROFILE_CREATION_ERROR
+    PROFILE_CREATION_ERROR,
+    PROFILE_CREATION_WARNING
   };
 
   // Represents errors that could occur during a profile creation.
@@ -192,6 +193,9 @@ class BrowserOptionsHandler
 
   // Updates the UI to show an error when creating a profile.
   void ShowProfileCreationError(Profile* profile, const string16& error);
+
+  // Updates the UI to show a non-fatal warning when creating a profile.
+  void ShowProfileCreationWarning(const string16& warning);
 
   // Updates the UI to indicate success when creating a profile.
   void ShowProfileCreationSuccess(Profile* profile,

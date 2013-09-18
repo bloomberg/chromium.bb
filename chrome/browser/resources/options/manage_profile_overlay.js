@@ -538,7 +538,8 @@ cr.define('options', function() {
     },
 
     /**
-     * Shows an error message describing an error when creating a new profile.
+     * Shows an error message describing an error that occurred while creating
+     * a new profile.
      * Called by BrowserOptions via the BrowserOptionsHandler.
      * @param {string} error The error message to display.
      * @private
@@ -546,6 +547,16 @@ cr.define('options', function() {
     onError_: function(error) {
       this.updateCreateInProgress_(false);
       this.showErrorBubble_(error);
+    },
+
+    /**
+     * Shows a warning message giving information while creating a new profile.
+     * Called by BrowserOptions via the BrowserOptionsHandler.
+     * @param {string} warning The warning message to display.
+     * @private
+     */
+    onWarning_: function(warning) {
+      this.showErrorBubble_(warning);
     },
 
     /**
@@ -662,6 +673,7 @@ cr.define('options', function() {
     'cancelCreateProfile',
     'onError',
     'onSuccess',
+    'onWarning',
     'updateCreateInProgress',
     'updateManagedUsersAllowed',
     'updateSignedInStatus',

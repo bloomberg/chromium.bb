@@ -14343,6 +14343,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       This is a supervised user managed by <ph name="CUSTODIAN_EMAIL">$1<ex>user@gmail.com</ex>.</ph>
 Your account sign-in details are out of date.
     </message>
+    <message name="IDS_PROFILES_CREATE_MANAGED_JUST_SIGNED_IN" desc="Warning message shown in the create-profile dialog when the custodian signed in recently, sync has not yet finished initializing, and so the creation process is likely to take extra time.">
+      Creating your supervised user. This may take a few moments.
+    </message>
     <message name="IDS_PROFILES_CREATE_MANAGED_NOT_SIGNED_IN_LABEL" desc="Label for the (disabled) 'Supervised user' checkbox in the create-profile dialog when the current user is not signed in. This will be followed by a 'Sign in now' link.">
       This is a supervised user who will be managed by you.
 You need to be signed in to use this feature.

@@ -1391,21 +1391,39 @@ void ProfileSyncService::OnConfigureStart() {
   NotifyObservers();
 }
 
-std::string ProfileSyncService::QuerySyncStatusSummary() {
+ProfileSyncService::SyncStatusSummary
+      ProfileSyncService::QuerySyncStatusSummary() {
   if (HasUnrecoverableError()) {
-    return "Unrecoverable error detected";
+    return UNRECOVERABLE_ERROR;
   } else if (!backend_) {
-    return "Syncing not enabled";
+    return NOT_ENABLED;
   } else if (backend_.get() && !HasSyncSetupCompleted()) {
-    return "First time sync setup incomplete";
+    return SETUP_INCOMPLETE;
   } else if (backend_.get() && HasSyncSetupCompleted() &&
              data_type_manager_.get() &&
              data_type_manager_->state() != DataTypeManager::CONFIGURED) {
-    return "Datatypes not fully initialized";
+    return DATATYPES_NOT_INITIALIZED;
   } else if (ShouldPushChanges()) {
-    return "Sync service initialized";
-  } else {
-    return "Status unknown: Internal error?";
+    return INITIALIZED;
+  }
+  return UNKNOWN_ERROR;
+}
+
+std::string ProfileSyncService::QuerySyncStatusSummaryString() {
+  SyncStatusSummary status = QuerySyncStatusSummary();
+  switch (status) {
+    case UNRECOVERABLE_ERROR:
+      return "Unrecoverable error detected";
+    case NOT_ENABLED:
+      return "Syncing not enabled";
+    case SETUP_INCOMPLETE:
+      return "First time sync setup incomplete";
+    case DATATYPES_NOT_INITIALIZED:
+      return "Datatypes not fully initialized";
+    case INITIALIZED:
+      return "Sync service initialized";
+    default:
+      return "Status unknown: Internal error?";
   }
 }
 

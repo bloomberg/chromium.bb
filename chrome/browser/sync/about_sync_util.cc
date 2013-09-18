@@ -286,7 +286,7 @@ scoped_ptr<DictionaryValue> ConstructAboutInformation(
       syncer::sessions::SyncSessionSnapshot();
 
   if (is_status_valid)
-    summary_string.SetValue(service->QuerySyncStatusSummary());
+    summary_string.SetValue(service->QuerySyncStatusSummaryString());
 
   server_url.SetValue(service->sync_service_url().spec());
 

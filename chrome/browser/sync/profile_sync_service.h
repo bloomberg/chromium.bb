@@ -216,6 +216,15 @@ class ProfileSyncService : public ProfileSyncServiceBase,
                // during sync setup and provided a passphrase.
   };
 
+  enum SyncStatusSummary {
+    UNRECOVERABLE_ERROR,
+    NOT_ENABLED,
+    SETUP_INCOMPLETE,
+    DATATYPES_NOT_INITIALIZED,
+    INITIALIZED,
+    UNKNOWN_ERROR,
+  };
+
   // Default sync server URL.
   static const char* kSyncServerUrl;
   // Sync server URL for dev channel users
@@ -349,8 +358,11 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   virtual void OnUserChoseDatatypes(bool sync_everything,
       syncer::ModelTypeSet chosen_types);
 
-  // Get various information for displaying in the user interface.
-  std::string QuerySyncStatusSummary();
+  // Get the sync status code.
+  SyncStatusSummary QuerySyncStatusSummary();
+
+  // Get a description of the sync status for displaying in the user interface.
+  std::string QuerySyncStatusSummaryString();
 
   // Initializes a struct of status indicators with data from the backend.
   // Returns false if the backend was not available for querying; in that case
