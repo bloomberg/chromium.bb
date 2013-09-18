@@ -260,6 +260,7 @@ void ContentViewCoreImpl::Observe(int type,
               env, obj.obj(), old_pid, new_pid);
         }
       }
+      SetFocusInternal(HasFocus());
       break;
     }
     case NOTIFICATION_RENDERER_PROCESS_CREATED: {
@@ -839,6 +840,10 @@ WebContents* ContentViewCoreImpl::GetWebContents() const {
 }
 
 void ContentViewCoreImpl::SetFocus(JNIEnv* env, jobject obj, jboolean focused) {
+  SetFocusInternal(focused);
+}
+
+void ContentViewCoreImpl::SetFocusInternal(bool focused) {
   if (!GetRenderWidgetHostViewAndroid())
     return;
 

@@ -339,6 +339,9 @@ class ContentViewCoreImpl : public ContentViewCore,
   // |tab_crashed_| accordingly.
   void UpdateTabCrashedFlag();
 
+  // Update focus state of the RenderWidgetHostView.
+  void SetFocusInternal(bool focused);
+
   // A weak reference to the Java ContentViewCore object.
   JavaObjectWeakGlobalRef java_ref_;
 
