@@ -1237,6 +1237,10 @@ void AutofillDialogViews::Show() {
   focus_manager_ = window_->GetFocusManager();
   focus_manager_->AddFocusChangeListener(this);
 
+  // This line fixes http://crbug.com/271779, which happens only on Views/Win32.
+  // TODO(rouslan): Remove this line after Windows is entirely on Aura.
+  focus_manager_->SetFocusedView(GetInitiallyFocusedView());
+
   // Listen for size changes on the browser.
   views::Widget* browser_widget =
       views::Widget::GetTopLevelWidgetForNativeView(
