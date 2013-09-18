@@ -473,16 +473,14 @@ void FindAllTypesOfTasks(
     }
   }
 
-  // Google document are not opened by drive apps but file manager.
+  // List Drive apps only for non Google document files. This is to avoid dups
+  // since Files.app already provides an internal handler for Google documents.
   if (!has_google_document) {
     drive::DriveAppRegistry* app_registry =
         drive::util::GetDriveAppRegistryByProfile(profile);
-    if (!app_registry) {
-      // |app_registry| is NULL if Drive is disabled.
-      return;
-    }
-
-    FindDriveAppTasks(*app_registry, path_mime_set, result_list);
+    // |app_registry| is NULL if Drive is disabled.
+    if (app_registry)
+      FindDriveAppTasks(*app_registry, path_mime_set, result_list);
   }
 
   // Find and append file handler tasks. We know there aren't duplicates
