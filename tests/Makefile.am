@@ -10,7 +10,8 @@ TESTS =						\
 	os-wrappers-test			\
 	sanity-test				\
 	socket-test				\
-	queue-test
+	queue-test				\
+	signal-test
 
 check_PROGRAMS =				\
 	$(TESTS)				\
@@ -32,6 +33,7 @@ map_test_SOURCES = map-test.c $(test_runner_src)
 sanity_test_SOURCES = sanity-test.c $(test_runner_src)
 socket_test_SOURCES = socket-test.c $(test_runner_src)
 queue_test_SOURCES = queue-test.c $(test_runner_src)
+signal_test_SOURCES = signal-test.c $(test_runner_src)
 
 fixed_benchmark_SOURCES = fixed-benchmark.c
 
