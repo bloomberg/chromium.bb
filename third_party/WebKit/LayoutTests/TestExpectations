@@ -73,6 +73,9 @@ webkit.org/b/67434 [ Debug ] fast/overflow/overflow-height-float-not-removed-cra
 webkit.org/b/67434 [ Debug ] fast/overflow/overflow-height-float-not-removed-crash3.html [ Skip ]
 webkit.org/b/67434 [ Debug ] fast/block/float/overhanging-tall-block.html [ Skip ]
 
+crbug.com/251727 css3/compositing/background-blend-mode-gif-color.html [ NeedsRebaseline ]
+crbug.com/251727 css3/compositing/background-blend-mode-gif-color-2.html [ NeedsRebaseline ]
+
 # 'ex' unit length is different among platforms.
 crbug.com/31488 [ Linux Mac ] fast/css3-text/css3-text-indent/getComputedStyle/getComputedStyle-text-indent.html [ Failure ]
 
