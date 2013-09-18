@@ -127,15 +127,6 @@ size_t WebGLRenderingContext::oldestContextIndex()
     size_t candidateID = 0;
     for (size_t ii = 1; ii < activeContexts().size(); ++ii) {
         WebGLRenderingContext* context = activeContexts()[ii];
-        // Always evict a context that no longer belongs to any dom tree
-        // before a context that's still in a dom tree.
-        if (context->canvas()->inDocument() && !candidate->canvas()->inDocument())
-            continue;
-        if (!context->canvas()->inDocument() && candidate->canvas()->inDocument()) {
-            candidate = context;
-            candidateID = ii;
-            continue;
-        }
         if (context->graphicsContext3D() && candidate->graphicsContext3D() && context->graphicsContext3D()->lastFlushID() < candidate->graphicsContext3D()->lastFlushID()) {
             candidate = context;
             candidateID = ii;
