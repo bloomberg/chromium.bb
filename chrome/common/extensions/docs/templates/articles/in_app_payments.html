@@ -30,7 +30,7 @@ This service is currently available to Chrome users on the
 
 <p>
 You can use the In-App Payments Service to sell digital and virtual goods within your app.
-When you use the In-App Payments Service, the Chrome Wallet App, which is embedded in Chrome, communicates with the
+The In-App Payments Service, which is embedded in Chrome, communicates with the
 <a href="https://support.google.com/chrome_webstore/answer/1053354">Google Wallet</a>
 servers and handles all the required checkout details, so your app does not have to process any financial transactions.
 The In-App Payments Service requires you to package a JavaScript file, 
@@ -41,7 +41,7 @@ with your app to trigger the purchase flow.
 <h2 id="flow">Purchase flow</h2>
 
 <p>
-When a customer clicks a "Buy" button in your app to make a purchase, the Chrome Wallet App displays a payment processing window
+When a customer clicks a "Buy" button in your app to make a purchase, the In-App Payments Service displays a payment processing window
 on top of your application window:
 </p>
 
@@ -60,7 +60,7 @@ The success or failure callback in your app is invoked appropriately.
      alt="screenshot: in-app-payments confirmation dialog">
 
 <p>
-If the user is not signed up for Google Wallet, the Chrome Wallet App takes the user through the sign-up flow:
+If the user is not signed up for Google Wallet, the In-App Payments Service takes the user through the sign-up flow:
 </p>
 
 <img src="{{static}}/images/in-app-payments-set-up.png"
