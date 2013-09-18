@@ -11,7 +11,6 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "build/build_config.h"
 #include "net/base/address_list.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
@@ -200,10 +199,6 @@ TEST_F(TCPSocketTest, AcceptIPv6) {
   EXPECT_EQ(OK, connect_callback.WaitForResult());
 }
 
-// TODO(yzshen): Enable it for other platforms once TCPSocketLibevent supports
-// client socket operations.
-#if defined(OS_WIN)
-
 TEST_F(TCPSocketTest, ReadWrite) {
   ASSERT_NO_FATAL_FAILURE(SetUpListenIPv4());
 
@@ -263,8 +258,6 @@ TEST_F(TCPSocketTest, ReadWrite) {
   std::string received_message(buffer.begin(), buffer.end());
   ASSERT_EQ(message, received_message);
 }
-
-#endif
 
 }  // namespace
 }  // namespace net

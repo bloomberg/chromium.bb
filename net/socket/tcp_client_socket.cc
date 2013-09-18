@@ -5,8 +5,6 @@
 #include "net/socket/tcp_client_socket.h"
 
 #include "base/callback_helpers.h"
-#include "base/file_util.h"
-#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
@@ -14,55 +12,6 @@
 #include "net/base/net_util.h"
 
 namespace net {
-
-namespace {
-
-#if defined(OS_LINUX)
-
-// Checks to see if the system supports TCP FastOpen. Notably, it requires
-// kernel support. Additionally, this checks system configuration to ensure that
-// it's enabled.
-bool SystemSupportsTCPFastOpen() {
-  static const base::FilePath::CharType kTCPFastOpenProcFilePath[] =
-      "/proc/sys/net/ipv4/tcp_fastopen";
-  std::string system_enabled_tcp_fastopen;
-  if (!base::ReadFileToString(
-          base::FilePath(kTCPFastOpenProcFilePath),
-          &system_enabled_tcp_fastopen)) {
-    return false;
-  }
-
-  // As per http://lxr.linux.no/linux+v3.7.7/include/net/tcp.h#L225
-  // TFO_CLIENT_ENABLE is the LSB
-  if (system_enabled_tcp_fastopen.empty() ||
-      (system_enabled_tcp_fastopen[0] & 0x1) == 0) {
-    return false;
-  }
-
-  return true;
-}
-
-#else
-
-bool SystemSupportsTCPFastOpen() {
-  return false;
-}
-
-#endif
-
-}
-
-static bool g_tcp_fastopen_enabled = false;
-
-void SetTCPFastOpenEnabled(bool value) {
-  g_tcp_fastopen_enabled = value && SystemSupportsTCPFastOpen();
-}
-
-bool IsTCPFastOpenEnabled() {
-  return g_tcp_fastopen_enabled;
-}
-
-#if defined(OS_WIN)
 
 TCPClientSocket::TCPClientSocket(const AddressList& addresses,
                                  net::NetLog* net_log,
@@ -367,7 +316,5 @@ int TCPClientSocket::OpenSocket(AddressFamily family) {
 
   return OK;
 }
-
-#endif
 
 }  // namespace net

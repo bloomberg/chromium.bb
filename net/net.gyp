@@ -909,12 +909,11 @@
         'socket/stream_socket.h',
         'socket/tcp_client_socket.cc',
         'socket/tcp_client_socket.h',
-        'socket/tcp_client_socket_libevent.cc',
-        'socket/tcp_client_socket_libevent.h',
         'socket/tcp_listen_socket.cc',
         'socket/tcp_listen_socket.h',
         'socket/tcp_server_socket.cc',
         'socket/tcp_server_socket.h',
+        'socket/tcp_socket.cc',
         'socket/tcp_socket.h',
         'socket/tcp_socket_libevent.cc',
         'socket/tcp_socket_libevent.h',
@@ -1376,8 +1375,6 @@
         [ 'OS == "win"', {
             'sources!': [
               'http/http_auth_handler_ntlm_portable.cc',
-              'socket/tcp_client_socket_libevent.cc',
-              'socket/tcp_client_socket_libevent.h',
               'socket/tcp_socket_libevent.cc',
               'socket/tcp_socket_libevent.h',
               'ssl/client_cert_store_impl_nss.cc',

@@ -6,6 +6,7 @@
 #define NET_SOCKET_TCP_SOCKET_H_
 
 #include "build/build_config.h"
+#include "net/base/net_export.h"
 
 #if defined(OS_WIN)
 #include "net/socket/tcp_socket_win.h"
@@ -14,6 +15,13 @@
 #endif
 
 namespace net {
+
+// Enable/disable experimental TCP FastOpen option.
+// Not thread safe.  Must be called during initialization/startup only.
+NET_EXPORT void SetTCPFastOpenEnabled(bool value);
+
+// Check if the TCP FastOpen option is enabled.
+bool IsTCPFastOpenEnabled();
 
 // TCPSocket provides a platform-independent interface for TCP sockets.
 //

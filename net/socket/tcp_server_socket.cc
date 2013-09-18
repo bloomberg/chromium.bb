@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
-#include "build/build_config.h"
 #include "net/base/net_errors.h"
 #include "net/socket/tcp_client_socket.h"
 
@@ -88,27 +87,9 @@ int TCPServerSocket::ConvertAcceptedSocket(
   if (result != OK)
     return result;
 
-  // TODO(yzshen): Once we switch TCPClientSocketLibevent to take a connected
-  // TCPSocket object, we don't need to do platform-specific handling.
-#if defined(OS_WIN)
-  scoped_ptr<TCPClientSocket> client_socket(new TCPClientSocket(
+  output_accepted_socket->reset(new TCPClientSocket(
       temp_accepted_socket.Pass(), accepted_address_));
-#elif defined(OS_POSIX)
-  scoped_ptr<TCPClientSocket> client_socket(new TCPClientSocket(
-      AddressList(accepted_address_),
-      temp_accepted_socket->net_log().net_log(),
-      temp_accepted_socket->net_log().source()));
-  int raw_socket = temp_accepted_socket->Release();
-  result = client_socket->AdoptSocket(raw_socket);
-  if (result != OK) {
-    // |client_socket| won't take ownership of |raw_socket| on failure.
-    // Therefore, we put it back into |temp_accepted_socket| to close it.
-    temp_accepted_socket->Adopt(raw_socket);
-    return result;
-  }
-#endif
 
-  *output_accepted_socket = client_socket.Pass();
   return OK;
 }
 

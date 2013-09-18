@@ -5,42 +5,19 @@
 #ifndef NET_SOCKET_TCP_CLIENT_SOCKET_H_
 #define NET_SOCKET_TCP_CLIENT_SOCKET_H_
 
-#include "build/build_config.h"
-#include "net/base/net_export.h"
-
-// TODO(yzshen): Switch OS_POSIX to use the same platform-independent
-// TCPClientSocket.
-#if defined(OS_POSIX)
-
-#include "net/socket/tcp_client_socket_libevent.h"
-
-#elif defined(OS_WIN)
-
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/address_list.h"
 #include "net/base/completion_callback.h"
+#include "net/base/net_export.h"
 #include "net/base/net_log.h"
 #include "net/socket/stream_socket.h"
 #include "net/socket/tcp_socket.h"
 
-#endif
-
 namespace net {
 
-// Enable/disable experimental TCP FastOpen option.
-// Not thread safe.  Must be called during initialization/startup only.
-NET_EXPORT void SetTCPFastOpenEnabled(bool value);
-
-// Check if the TCP FastOpen option is enabled.
-bool IsTCPFastOpenEnabled();
-
 // A client socket that uses TCP as the transport layer.
-#if defined(OS_POSIX)
-typedef TCPClientSocketLibevent TCPClientSocket;
-#elif defined(OS_WIN)
-
 class NET_EXPORT TCPClientSocket : public StreamSocket {
  public:
   // The IP address(es) and port number to connect to.  The TCP socket will try
@@ -138,8 +115,6 @@ class NET_EXPORT TCPClientSocket : public StreamSocket {
 
   DISALLOW_COPY_AND_ASSIGN(TCPClientSocket);
 };
-
-#endif
 
 }  // namespace net
 
