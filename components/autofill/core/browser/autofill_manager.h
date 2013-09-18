@@ -157,16 +157,6 @@ class AutofillManager : public AutofillDownloadManager::Observer {
   void OnRequestAutocomplete(const FormData& form,
                              const GURL& frame_url);
 
-  // Try and upload |form|. This differs from OnFormSubmitted() in a few ways.
-  //   - This function will only label the first <input type="password"> field
-  //     as ACCOUNT_CREATION_PASSWORD. Other fields will stay unlabeled, as they
-  //     should have been labeled during the upload for OnFormSubmitted().
-  //   - This function does not assume that |form| is being uploaded during
-  //     the same browsing session as it was originally submitted (as we may
-  //     not have the necessary information to classify the form at that time)
-  //     so it bypasses the cache and doesn't log the same quality UMA metrics.
-  bool UploadPasswordGenerationForm(const FormData& form);
-
   // Resets cache.
   virtual void Reset();
 
@@ -296,9 +286,6 @@ class AutofillManager : public AutofillDownloadManager::Observer {
   // needed because IPC messages can arrive out of order.
   void UpdateInitialInteractionTimestamp(
       const base::TimeTicks& interaction_timestamp);
-
-  // Shared code to determine if |form| should be uploaded.
-  bool ShouldUploadForm(const FormStructure& form);
 
   // Provides driver-level context to the shared code of the component. Must
   // outlive this object.

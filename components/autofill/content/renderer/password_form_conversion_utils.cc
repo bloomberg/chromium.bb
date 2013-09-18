@@ -4,9 +4,7 @@
 
 #include "components/autofill/content/renderer/password_form_conversion_utils.h"
 
-#include "components/autofill/content/renderer/form_autofill_util.h"
 #include "components/autofill/core/common/password_form.h"
-#include "third_party/WebKit/public/web/WebFormControlElement.h"
 #include "third_party/WebKit/public/web/WebPasswordFormData.h"
 
 using WebKit::WebFormElement;
@@ -16,7 +14,6 @@ namespace autofill {
 namespace {
 
 scoped_ptr<PasswordForm> InitPasswordFormFromWebPasswordForm(
-    const WebFormElement& web_form,
     const WebKit::WebPasswordFormData& web_password_form) {
   PasswordForm* password_form = new PasswordForm();
   password_form->signon_realm = web_password_form.signonRealm.utf8();
@@ -41,12 +38,6 @@ scoped_ptr<PasswordForm> InitPasswordFormFromWebPasswordForm(
   password_form->preferred = false;
   password_form->blacklisted_by_user = false;
   password_form->type = PasswordForm::TYPE_MANUAL;
-  WebFormElementToFormData(web_form,
-                           WebKit::WebFormControlElement(),
-                           REQUIRE_NONE,
-                           EXTRACT_NONE,
-                           &password_form->form_data,
-                           NULL /* FormFieldData */);
   return scoped_ptr<PasswordForm>(password_form);
 }
 
@@ -55,7 +46,7 @@ scoped_ptr<PasswordForm> InitPasswordFormFromWebPasswordForm(
 scoped_ptr<PasswordForm> CreatePasswordForm(const WebFormElement& webform) {
   WebPasswordFormData web_password_form(webform);
   if (web_password_form.isValid())
-    return InitPasswordFormFromWebPasswordForm(webform, web_password_form);
+    return InitPasswordFormFromWebPasswordForm(web_password_form);
   return scoped_ptr<PasswordForm>();
 }
 

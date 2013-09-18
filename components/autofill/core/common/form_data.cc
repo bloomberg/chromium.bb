@@ -6,7 +6,6 @@
 
 #include "base/pickle.h"
 #include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/common/form_field_data.h"
 
 namespace autofill {
@@ -77,19 +76,6 @@ bool FormData::operator==(const FormData& form) const {
 
 bool FormData::operator!=(const FormData& form) const {
   return !operator==(form);
-}
-
-std::ostream& operator<<(std::ostream& os, const FormData& form) {
-  os << UTF16ToUTF8(form.name) << " "
-     << UTF16ToUTF8(form.method) << " "
-     << form.origin << " "
-     << form.action << " "
-     << form.user_submitted << " "
-     << "Fields:";
-  for (size_t i = 0; i < form.fields.size(); ++i) {
-    os << form.fields[i] << ",";
-  }
-  return os;
 }
 
 void SerializeFormData(const FormData& form_data, Pickle* pickle) {

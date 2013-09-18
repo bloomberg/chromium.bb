@@ -37,6 +37,38 @@ PasswordForm* CreatePasswordFormFromData(
   return form;
 }
 
+bool operator==(const PasswordForm& lhs, const PasswordForm& rhs) {
+  return (lhs.scheme == rhs.scheme &&
+          lhs.signon_realm == rhs.signon_realm &&
+          lhs.origin == rhs.origin &&
+          lhs.action == rhs.action &&
+          lhs.submit_element == rhs.submit_element &&
+          lhs.username_element == rhs.username_element &&
+          lhs.password_element == rhs.password_element &&
+          lhs.username_value == rhs.username_value &&
+          lhs.password_value == rhs.password_value &&
+          lhs.blacklisted_by_user == rhs.blacklisted_by_user &&
+          lhs.preferred == rhs.preferred &&
+          lhs.ssl_valid == rhs.ssl_valid &&
+          lhs.date_created == rhs.date_created);
+}
+
+std::ostream& operator<<(std::ostream& os, const PasswordForm& form) {
+  return os << "scheme: " << form.scheme << std::endl
+            << "signon_realm: " << form.signon_realm << std::endl
+            << "origin: " << form.origin << std::endl
+            << "action: " << form.action << std::endl
+            << "submit_element: " << form.submit_element << std::endl
+            << "username_elem: " << form.username_element << std::endl
+            << "password_elem: " << form.password_element << std::endl
+            << "username_value: " << form.username_value << std::endl
+            << "password_value: " << form.password_value << std::endl
+            << "blacklisted: " << form.blacklisted_by_user << std::endl
+            << "preferred: " << form.preferred << std::endl
+            << "ssl_valid: " << form.ssl_valid << std::endl
+            << "date_created: " << form.date_created.ToDoubleT();
+}
+
 typedef std::set<const autofill::PasswordForm*> SetOfForms;
 
 bool ContainsSamePasswordFormsPtr(

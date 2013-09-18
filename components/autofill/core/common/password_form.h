@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/time/time.h"
-#include "components/autofill/core/common/form_data.h"
 #include "url/gurl.h"
 
 namespace autofill {
@@ -181,19 +180,8 @@ struct PasswordForm {
   // When parsing an HTML form, this is not used.
   int times_used;
 
-  // Autofill representation of this form. Used to communicate with the
-  // Autofill servers if necessary. Currently this is only used to help
-  // determine forms where we can trigger password generation.
-  //
-  // When parsing an HTML form, this is normally set.
-  FormData form_data;
-
   // Returns true if this match was found using public suffix matching.
   bool IsPublicSuffixMatch() const;
-
-  // Equality operators for testing.
-  bool operator==(const PasswordForm& form) const;
-  bool operator!=(const PasswordForm& form) const;
 
   PasswordForm();
   ~PasswordForm();
@@ -201,10 +189,6 @@ struct PasswordForm {
 
 // Map username to PasswordForm* for convenience. See password_form_manager.h.
 typedef std::map<string16, PasswordForm*> PasswordFormMap;
-
-// For testing.
-std::ostream& operator<<(std::ostream& os,
-                         const autofill::PasswordForm& form);
 
 }  // namespace autofill
 

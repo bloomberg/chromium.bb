@@ -253,14 +253,21 @@ bool AutofillManager::OnFormSubmitted(const FormData& form,
   // Let Autocomplete know as well.
   autocomplete_history_manager_->OnFormSubmitted(form);
 
-  // Grab a copy of the form data.
-  scoped_ptr<FormStructure> submitted_form(new FormStructure(form));
+  if (!IsAutofillEnabled())
+    return false;
 
-  if (!ShouldUploadForm(*submitted_form))
+  if (driver_->GetWebContents()->GetBrowserContext()->IsOffTheRecord())
     return false;
 
   // Don't save data that was submitted through JavaScript.
   if (!form.user_submitted)
+    return false;
+
+  // Grab a copy of the form data.
+  scoped_ptr<FormStructure> submitted_form(new FormStructure(form));
+
+  // Disregard forms that we wouldn't ever autofill in the first place.
+  if (!submitted_form->ShouldBeParsed(true))
     return false;
 
   // Ignore forms not present in our cache.  These are typically forms with
@@ -772,51 +779,6 @@ void AutofillManager::UploadFormData(const FormStructure& submitted_form) {
                                         non_empty_types);
 }
 
-bool AutofillManager::UploadPasswordGenerationForm(const FormData& form) {
-  FormStructure form_structure(form);
-
-  if (!ShouldUploadForm(form_structure))
-    return false;
-
-  if (!form_structure.ShouldBeCrowdsourced())
-    return false;
-
-  // TODO(gcasto): Check that PasswordGeneration is enabled?
-
-  // Find the first password field to label. We don't try to label anything
-  // else.
-  bool found_password_field = false;
-  for (size_t i = 0; i < form_structure.field_count(); ++i) {
-    AutofillField* field = form_structure.field(i);
-
-    ServerFieldTypeSet types;
-    if (!found_password_field && field->form_control_type == "password") {
-      types.insert(ACCOUNT_CREATION_PASSWORD);
-      found_password_field = true;
-    } else {
-      types.insert(UNKNOWN_TYPE);
-    }
-    field->set_possible_types(types);
-  }
-  DCHECK(found_password_field);
-
-  // Only one field type should be present.
-  ServerFieldTypeSet available_field_types;
-  available_field_types.insert(ACCOUNT_CREATION_PASSWORD);
-
-  // Force uploading as these events are relatively rare and we want to make
-  // sure to receive them. It also makes testing easier if these requests
-  // always pass.
-  form_structure.set_upload_required(UPLOAD_REQUIRED);
-
-  if (!download_manager_)
-    return false;
-
-  return download_manager_->StartUploadRequest(form_structure,
-                                               false /* was_autofilled */,
-                                               available_field_types);
-}
-
 void AutofillManager::Reset() {
   form_structures_.clear();
   has_logged_autofill_enabled_ = false;
@@ -1168,20 +1130,6 @@ void AutofillManager::UpdateInitialInteractionTimestamp(
       interaction_timestamp < initial_interaction_timestamp_) {
     initial_interaction_timestamp_ = interaction_timestamp;
   }
-}
-
-bool AutofillManager::ShouldUploadForm(const FormStructure& form) {
-  if (!IsAutofillEnabled())
-    return false;
-
-  if (driver_->GetWebContents()->GetBrowserContext()->IsOffTheRecord())
-    return false;
-
-  // Disregard forms that we wouldn't ever autofill in the first place.
-  if (!form.ShouldBeParsed(true))
-    return false;
-
-  return true;
 }
 
 }  // namespace autofill

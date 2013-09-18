@@ -10554,16 +10554,6 @@ other types of suffix sets.
   </summary>
 </histogram>
 
-<histogram name="PasswordGeneration.UploadStarted" enum="Boolean">
-  <summary>
-    The number of times that we try to upload a form that we believe should
-    trigger password generation. False means that something about the form would
-    not allow us to try upload (not an Autofillable field, uploading disabled,
-    Autofill servers in backoff, etc.). True does not mean that the upload
-    actually completed successfully, just that it was started.
-  </summary>
-</histogram>
-
 <histogram name="PasswordManager.BlacklistedSites">
   <summary>
     The total number of sites that the user has blacklisted. Recorded by
