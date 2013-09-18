@@ -194,6 +194,7 @@ MediaError
 MediaKeyError
 MediaKeyEvent
 MediaList
+MediaSource
 MediaStreamAudioDestinationNode
 MediaStreamAudioSourceNode
 MediaStreamEvent

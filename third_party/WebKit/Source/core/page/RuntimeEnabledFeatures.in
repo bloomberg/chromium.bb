@@ -62,7 +62,7 @@ LangAttributeAwareFormControlUI
 LegacyEncryptedMedia status=stable
 LocalStorage status=stable
 Media status=stable
-MediaSource status=experimental
+MediaSource status=stable
 MediaStream status=stable
 NavigationController status=experimental
 Notifications status=stable

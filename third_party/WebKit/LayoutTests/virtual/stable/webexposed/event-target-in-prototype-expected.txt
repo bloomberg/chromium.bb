@@ -6,7 +6,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 PASS EventSource.prototype.__proto__ is EventTarget.prototype
 PASS FileReader.prototype.__proto__ is EventTarget.prototype
 PASS MediaController.prototype.__proto__ is EventTarget.prototype
-FAIL MediaSource.prototype.__proto__ should be [object Object]. Threw exception ReferenceError: MediaSource is not defined
+PASS MediaSource.prototype.__proto__ is EventTarget.prototype
 PASS MessagePort.prototype.__proto__ is EventTarget.prototype
 PASS Node.prototype.__proto__ is EventTarget.prototype
 PASS Performance.prototype.__proto__ is EventTarget.prototype
