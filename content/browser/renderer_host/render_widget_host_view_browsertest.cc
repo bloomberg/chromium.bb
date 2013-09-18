@@ -338,10 +338,17 @@ class FakeFrameSubscriber : public RenderWidgetHostViewFrameSubscriber {
 // implementation.
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
 
+// Disable the test for windows as it keeps failing in XP bot, see
+// http://crbug/294116.
+#if defined(OS_WIN)
+#define MAYBE_CopyFromBackingStore DISABLED_CopyFromBackingStore
+#else
+#define MAYBE_CopyFromBackingStore CopyFromBackingStore
+#endif
 // The CopyFromBackingStore() API should work on all platforms when compositing
 // is enabled.
 IN_PROC_BROWSER_TEST_F(CompositingRenderWidgetHostViewBrowserTest,
-                       CopyFromBackingStore) {
+                       MAYBE_CopyFromBackingStore) {
   RunBasicCopyFromBackingStoreTest();
 }
 
@@ -417,10 +424,17 @@ IN_PROC_BROWSER_TEST_F(NonCompositingRenderWidgetHostViewBrowserTest,
   EXPECT_FALSE(GetRenderWidgetHostViewPort()->CanCopyToVideoFrame());
 }
 
+// Disable the test for windows as it keeps failing in XP bot, see
+// http://crbug/294116.
+#if defined(OS_WIN)
+#define MAYBE_FrameSubscriberTest DISABLED_FrameSubscriberTest
+#else
+#define MAYBE_FrameSubscriberTest FrameSubscriberTest
+#endif
 // Test basic frame subscription functionality.  We subscribe, and then run
 // until at least one DeliverFrameCallback has been invoked.
 IN_PROC_BROWSER_TEST_F(CompositingRenderWidgetHostViewBrowserTest,
-                       FrameSubscriberTest) {
+                      MAYBE_FrameSubscriberTest) {
   SET_UP_SURFACE_OR_PASS_TEST(NULL);
   RenderWidgetHostViewPort* const view = GetRenderWidgetHostViewPort();
   if (!view->CanSubscribeFrame()) {
@@ -444,8 +458,16 @@ IN_PROC_BROWSER_TEST_F(CompositingRenderWidgetHostViewBrowserTest,
   EXPECT_LE(1, frames_captured());
 }
 
+// Disable the test for windows as it keeps failing in XP bot, see
+// http://crbug/294116.
+#if defined(OS_WIN)
+#define MAYBE_CopyTwice DISABLED_CopyTwice
+#else
+#define MAYBE_CopyTwice CopyTwice
+#endif
 // Test that we can copy twice from an accelerated composited page.
-IN_PROC_BROWSER_TEST_F(CompositingRenderWidgetHostViewBrowserTest, CopyTwice) {
+IN_PROC_BROWSER_TEST_F(CompositingRenderWidgetHostViewBrowserTest,
+                       MAYBE_CopyTwice) {
   SET_UP_SURFACE_OR_PASS_TEST(NULL);
   RenderWidgetHostViewPort* const view = GetRenderWidgetHostViewPort();
   if (!view->CanCopyToVideoFrame()) {
