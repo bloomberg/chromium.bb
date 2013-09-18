@@ -95,6 +95,12 @@ class NET_EXPORT_PRIVATE ReliableQuicStream : public
   // becomes unblocked.
   virtual void OnDecompressorAvailable();
 
+  // By default, this is the same as priority(), however it allows streams
+  // to temporarily alter effective priority.   For example if a SPDY stream has
+  // compressed but not written headers it can write the headers with a higher
+  // priority.
+  virtual QuicPriority EffectivePriority() const;
+
   QuicStreamId id() const { return id_; }
 
   QuicRstStreamErrorCode stream_error() const { return stream_error_; }
@@ -116,7 +122,6 @@ class NET_EXPORT_PRIVATE ReliableQuicStream : public
   bool GetSSLInfo(SSLInfo* ssl_info);
 
   bool headers_decompressed() const { return headers_decompressed_; }
-  QuicPriority priority() const { return priority_; }
 
  protected:
   // Returns a pair with the number of bytes consumed from data, and a boolean
@@ -141,6 +146,13 @@ class NET_EXPORT_PRIVATE ReliableQuicStream : public
 
   QuicSession* session() { return session_; }
 
+  // Sets priority_ to priority.  This should only be called before bytes are
+  // written to the server.
+  void set_priority(QuicPriority priority);
+  // This is protected because external classes should use EffectivePriority
+  // instead.
+  QuicPriority priority() const { return priority_; }
+
   // Sends as much of 'data' to the connection as the connection will consume,
   // and then buffers any remaining data in queued_data_.
   // Returns (data.size(), true) as it always consumed all data: it returns for
@@ -150,6 +162,13 @@ class NET_EXPORT_PRIVATE ReliableQuicStream : public
   // Sends as much of 'data' to the connection as the connection will consume.
   // Returns the number of bytes consumed by the connection.
   QuicConsumedData WriteDataInternal(base::StringPiece data, bool fin);
+
+  // Sends as many bytes in the first |count| buffers of |iov| to the connection
+  // as the connection will consume.
+  // Returns the number of bytes consumed by the connection.
+  QuicConsumedData WritevDataInternal(const struct iovec* iov,
+                                      int count,
+                                      bool fin);
 
  private:
   friend class test::ReliableQuicStreamPeer;

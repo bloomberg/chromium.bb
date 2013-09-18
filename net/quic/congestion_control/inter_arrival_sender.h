@@ -43,10 +43,12 @@ class NET_EXPORT_PRIVATE InterArrivalSender : public SendAlgorithmInterface {
 
   virtual void OnIncomingLoss(QuicTime ack_receive_time) OVERRIDE;
 
-  virtual void SentPacket(QuicTime sent_time,
-                          QuicPacketSequenceNumber sequence_number,
-                          QuicByteCount bytes,
-                          Retransmission is_retransmit) OVERRIDE;
+  virtual bool SentPacket(
+      QuicTime sent_time,
+      QuicPacketSequenceNumber sequence_number,
+      QuicByteCount bytes,
+      Retransmission is_retransmit,
+      HasRetransmittableData has_retransmittable_data) OVERRIDE;
 
   virtual void AbandoningPacket(QuicPacketSequenceNumber sequence_number,
                                 QuicByteCount abandoned_bytes) OVERRIDE;

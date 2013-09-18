@@ -66,6 +66,8 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   virtual void OnRstStream(const QuicRstStreamFrame& frame) OVERRIDE;
   virtual void OnGoAway(const QuicGoAwayFrame& frame) OVERRIDE;
   virtual void ConnectionClose(QuicErrorCode error, bool from_peer) OVERRIDE;
+  virtual void OnSuccessfulVersionNegotiation(
+      const QuicVersion& version) OVERRIDE{}
   // Not needed for HTTP.
   virtual void OnAck(const SequenceNumberSet& acked_packets) OVERRIDE {}
   virtual bool OnCanWrite() OVERRIDE;
@@ -75,10 +77,12 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   // indicating if the fin bit was consumed.  This does not indicate the data
   // has been sent on the wire: it may have been turned into a packet and queued
   // if the socket was unexpectedly blocked.
-  virtual QuicConsumedData WriteData(QuicStreamId id,
-                                     base::StringPiece data,
-                                     QuicStreamOffset offset,
-                                     bool fin);
+  virtual QuicConsumedData WritevData(QuicStreamId id,
+                                      const struct iovec* iov,
+                                      int count,
+                                      QuicStreamOffset offset,
+                                      bool fin);
+
   // Called by streams when they want to close the stream in both directions.
   virtual void SendRstStream(QuicStreamId id, QuicRstStreamErrorCode error);
 
@@ -137,7 +141,7 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   // been implicitly created.
   virtual size_t GetNumOpenStreams() const;
 
-  void MarkWriteBlocked(QuicStreamId id);
+  void MarkWriteBlocked(QuicStreamId id, QuicPriority priority);
 
   // Marks that |stream_id| is blocked waiting to decompress the
   // headers identified by |decompression_id|.

@@ -113,6 +113,8 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicSession {
 
   // QuicConnectionVisitorInterface methods:
   virtual void ConnectionClose(QuicErrorCode error, bool from_peer) OVERRIDE;
+  virtual void OnSuccessfulVersionNegotiation(
+      const QuicVersion& version) OVERRIDE;
 
   // Performs a crypto handshake with the server.
   int CryptoConnect(bool require_confirmation,

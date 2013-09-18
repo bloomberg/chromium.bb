@@ -11,6 +11,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 #include "net/quic/quic_client_session.h"
+#include "net/quic/quic_http_utils.h"
 #include "net/quic/quic_reliable_client_stream.h"
 #include "net/quic/quic_utils.h"
 #include "net/socket/next_proto.h"
@@ -29,6 +30,7 @@ QuicHttpStream::QuicHttpStream(const base::WeakPtr<QuicClientSession> session)
       stream_(NULL),
       request_info_(NULL),
       request_body_stream_(NULL),
+      priority_(MINIMUM_PRIORITY),
       response_info_(NULL),
       response_status_(OK),
       response_headers_received_(false),
@@ -52,6 +54,7 @@ int QuicHttpStream::InitializeStream(const HttpRequestInfo* request_info,
 
   stream_net_log_ = stream_net_log;
   request_info_ = request_info;
+  priority_ = priority;
 
   int rv = stream_request_.StartRequest(
       session_, &stream_, base::Bind(&QuicHttpStream::OnStreamReady,
@@ -82,6 +85,8 @@ int QuicHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
   CHECK(!callback.is_null());
   CHECK(response);
 
+  QuicPriority priority = ConvertRequestPriorityToQuicPriority(priority_);
+  stream_->set_priority(priority);
   // Store the serialized request headers.
   SpdyHeaderBlock headers;
   CreateSpdyHeadersFromHttpRequest(*request_info_, request_headers,
@@ -89,7 +94,8 @@ int QuicHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
   if (session_->connection()->version() < QUIC_VERSION_9) {
     request_ = stream_->compressor()->CompressHeaders(headers);
   } else {
-    request_ = stream_->compressor()->CompressHeadersWithPriority(0, headers);
+    request_ = stream_->compressor()->CompressHeadersWithPriority(priority,
+                                                                  headers);
   }
   // Log the actual request with the URL Request's net log.
   stream_net_log_.AddEvent(
@@ -207,7 +213,7 @@ void QuicHttpStream::Close(bool not_reusable) {
     stream_->SetDelegate(NULL);
     // TODO(rch): use new CANCELLED error code here once quic 11
     // is everywhere.
-    stream_->Close(QUIC_SERVER_ERROR_PROCESSING_STREAM);
+    stream_->Close(QUIC_ERROR_PROCESSING_STREAM);
     stream_ = NULL;
   }
 }
@@ -264,7 +270,7 @@ void QuicHttpStream::Drain(HttpNetworkSession* session) {
 }
 
 void QuicHttpStream::SetPriority(RequestPriority priority) {
-  // Nothing to do here (yet).
+  priority_ = priority;
 }
 
 int QuicHttpStream::OnSendData() {
@@ -334,6 +340,10 @@ void QuicHttpStream::OnError(int error) {
   response_status_ = error;
   if (!callback_.is_null())
     DoCallback(response_status_);
+}
+
+bool QuicHttpStream::HasSendHeadersComplete() {
+  return next_state_ > STATE_SEND_HEADERS_COMPLETE;
 }
 
 void QuicHttpStream::OnIOComplete(int rv) {

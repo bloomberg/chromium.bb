@@ -25,6 +25,7 @@
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/quic_framer.h"
+#include "net/quic/quic_http_utils.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/mock_clock.h"
 #include "net/quic/test_tools/mock_crypto_client_stream_factory.h"
@@ -178,7 +179,8 @@ class QuicNetworkTransactionTest : public PlatformTest {
   std::string SerializeHeaderBlock(const SpdyHeaderBlock& headers) {
     QuicSpdyCompressor compressor;
     if (QuicVersionMax() >= QUIC_VERSION_9) {
-      return compressor.CompressHeadersWithPriority(0, headers);
+      return compressor.CompressHeadersWithPriority(
+          ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY), headers);
     }
     return compressor.CompressHeaders(headers);
   }

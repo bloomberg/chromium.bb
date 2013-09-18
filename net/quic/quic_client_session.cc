@@ -314,6 +314,12 @@ void QuicClientSession::ConnectionClose(QuicErrorCode error, bool from_peer) {
   NotifyFactoryOfSessionCloseLater();
 }
 
+void QuicClientSession::OnSuccessfulVersionNegotiation(
+    const QuicVersion& version) {
+  logger_.OnSuccessfulVersionNegotiation(version);
+  QuicSession::OnSuccessfulVersionNegotiation(version);
+}
+
 void QuicClientSession::StartReading() {
   if (read_pending_) {
     return;

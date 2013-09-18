@@ -88,6 +88,9 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(QuicStreamId id,
   size_t total_bytes_consumed = 0;
   bool fin_consumed = false;
 
+  if (!packet_creator_->HasRoomForStreamFrame(id, offset)) {
+    SerializeAndSendPacket();
+  }
   while (delegate_->CanWrite(NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA,
                              handshake)) {
     QuicFrame frame;
@@ -100,8 +103,13 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(QuicStreamId id,
       bytes_consumed = packet_creator_->CreateStreamFrame(
         id, data, offset + total_bytes_consumed, fin, &frame);
     }
-    bool success = AddFrame(frame);
-    DCHECK(success);
+    if (!AddFrame(frame)) {
+      LOG(DFATAL) << "Failed to add stream frame.";
+      // Inability to add a STREAM frame creates an unrecoverable hole in a
+      // the stream, so it's best to close the connection.
+      delegate_->CloseConnection(QUIC_INTERNAL_ERROR, false);
+      return QuicConsumedData(0, false);
+    }
 
     total_bytes_consumed += bytes_consumed;
     fin_consumed = fin && bytes_consumed == data.size();

@@ -65,6 +65,7 @@ void TcpCubicSender::OnIncomingQuicCongestionFeedbackFrame(
 void TcpCubicSender::OnIncomingAck(
     QuicPacketSequenceNumber acked_sequence_number, QuicByteCount acked_bytes,
     QuicTime::Delta rtt) {
+  DCHECK_GE(bytes_in_flight_, acked_bytes);
   bytes_in_flight_ -= acked_bytes;
   CongestionAvoidance(acked_sequence_number);
   AckAccounting(rtt);
@@ -93,10 +94,16 @@ void TcpCubicSender::OnIncomingLoss(QuicTime /*ack_receive_time*/) {
   DLOG(INFO) << "Incoming loss; congestion window:" << congestion_window_;
 }
 
-void TcpCubicSender::SentPacket(QuicTime /*sent_time*/,
+bool TcpCubicSender::SentPacket(QuicTime /*sent_time*/,
                                 QuicPacketSequenceNumber sequence_number,
                                 QuicByteCount bytes,
-                                Retransmission is_retransmission) {
+                                Retransmission is_retransmission,
+                                HasRetransmittableData is_retransmittable) {
+  // Only update bytes_in_flight_ for data packets.
+  if (is_retransmittable != HAS_RETRANSMITTABLE_DATA) {
+    return false;
+  }
+
   bytes_in_flight_ += bytes;
   if (is_retransmission == NOT_RETRANSMISSION && update_end_sequence_number_) {
     end_sequence_number_ = sequence_number;
@@ -105,10 +112,12 @@ void TcpCubicSender::SentPacket(QuicTime /*sent_time*/,
       DLOG(INFO) << "Stop update end sequence number @" << sequence_number;
     }
   }
+  return true;
 }
 
 void TcpCubicSender::AbandoningPacket(QuicPacketSequenceNumber sequence_number,
                                       QuicByteCount abandoned_bytes) {
+  DCHECK_GE(bytes_in_flight_, abandoned_bytes);
   bytes_in_flight_ -= abandoned_bytes;
 }
 

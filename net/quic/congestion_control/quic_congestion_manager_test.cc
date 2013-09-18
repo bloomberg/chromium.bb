@@ -14,6 +14,7 @@
 
 using testing::_;
 using testing::StrictMock;
+using testing::Return;
 
 namespace net {
 namespace test {
@@ -64,7 +65,8 @@ TEST_F(QuicCongestionManagerTest, Bandwidth) {
     clock_.AdvanceTime(advance_time);
     EXPECT_TRUE(manager_->TimeUntilSend(
         clock_.Now(), NOT_RETRANSMISSION, kIgnored, NOT_HANDSHAKE).IsZero());
-    manager_->SentPacket(i, clock_.Now(), 1000, NOT_RETRANSMISSION);
+    manager_->SentPacket(i, clock_.Now(), 1000, NOT_RETRANSMISSION,
+                         HAS_RETRANSMITTABLE_DATA);
     // Ack the packet we sent.
     ack.received_info.largest_observed = i;
     manager_->OnIncomingAckFrame(ack, clock_.Now());
@@ -92,8 +94,8 @@ TEST_F(QuicCongestionManagerTest, BandwidthWith1SecondGap) {
     clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(10));
     EXPECT_TRUE(manager_->TimeUntilSend(
         clock_.Now(), NOT_RETRANSMISSION, kIgnored, NOT_HANDSHAKE).IsZero());
-    manager_->SentPacket(
-        sequence_number, clock_.Now(), 1000, NOT_RETRANSMISSION);
+    manager_->SentPacket(sequence_number, clock_.Now(), 1000,
+                         NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA);
     // Ack the packet we sent.
     ack.received_info.largest_observed = sequence_number;
     manager_->OnIncomingAckFrame(ack, clock_.Now());
@@ -118,7 +120,8 @@ TEST_F(QuicCongestionManagerTest, BandwidthWith1SecondGap) {
   for (int i = 1; i <= 150; ++i) {
     EXPECT_TRUE(manager_->TimeUntilSend(
         clock_.Now(), NOT_RETRANSMISSION, kIgnored, NOT_HANDSHAKE).IsZero());
-    manager_->SentPacket(i + 100, clock_.Now(), 1000, NOT_RETRANSMISSION);
+    manager_->SentPacket(i + 100, clock_.Now(), 1000, NOT_RETRANSMISSION,
+                         HAS_RETRANSMITTABLE_DATA);
     clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(10));
     // Ack the packet we sent.
     ack.received_info.largest_observed = i + 100;
@@ -141,11 +144,13 @@ TEST_F(QuicCongestionManagerTest, Rtt) {
   QuicPacketSequenceNumber sequence_number = 1;
   QuicTime::Delta expected_rtt = QuicTime::Delta::FromMilliseconds(15);
 
-  EXPECT_CALL(*send_algorithm, SentPacket(_, _, _, _)).Times(1);
+  EXPECT_CALL(*send_algorithm, SentPacket(_, _, _, _, _))
+                               .Times(1).WillOnce(Return(true));
   EXPECT_CALL(*send_algorithm,
               OnIncomingAck(sequence_number, _, expected_rtt)).Times(1);
 
-  manager_->SentPacket(sequence_number, clock_.Now(), 1000, NOT_RETRANSMISSION);
+  manager_->SentPacket(sequence_number, clock_.Now(), 1000, NOT_RETRANSMISSION,
+                       HAS_RETRANSMITTABLE_DATA);
   clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(20));
 
   QuicAckFrame ack;
@@ -167,11 +172,13 @@ TEST_F(QuicCongestionManagerTest, RttWithInvalidDelta) {
   QuicPacketSequenceNumber sequence_number = 1;
   QuicTime::Delta expected_rtt = QuicTime::Delta::Infinite();
 
-  EXPECT_CALL(*send_algorithm, SentPacket(_, _, _, _)).Times(1);
+  EXPECT_CALL(*send_algorithm, SentPacket(_, _, _, _, _))
+                               .Times(1).WillOnce(Return(true));
   EXPECT_CALL(*send_algorithm,
               OnIncomingAck(sequence_number, _, expected_rtt)).Times(1);
 
-  manager_->SentPacket(sequence_number, clock_.Now(), 1000, NOT_RETRANSMISSION);
+  manager_->SentPacket(sequence_number, clock_.Now(), 1000, NOT_RETRANSMISSION,
+                       HAS_RETRANSMITTABLE_DATA);
   clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(10));
 
   QuicAckFrame ack;
@@ -193,11 +200,13 @@ TEST_F(QuicCongestionManagerTest, RttInfiniteDelta) {
   QuicPacketSequenceNumber sequence_number = 1;
   QuicTime::Delta expected_rtt = QuicTime::Delta::Infinite();
 
-  EXPECT_CALL(*send_algorithm, SentPacket(_, _, _, _)).Times(1);
+  EXPECT_CALL(*send_algorithm, SentPacket(_, _, _, _, _))
+                               .Times(1).WillOnce(Return(true));
   EXPECT_CALL(*send_algorithm,
               OnIncomingAck(sequence_number, _, expected_rtt)).Times(1);
 
-  manager_->SentPacket(sequence_number, clock_.Now(), 1000, NOT_RETRANSMISSION);
+  manager_->SentPacket(sequence_number, clock_.Now(), 1000, NOT_RETRANSMISSION,
+                       HAS_RETRANSMITTABLE_DATA);
   clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(10));
 
   QuicAckFrame ack;
@@ -218,11 +227,13 @@ TEST_F(QuicCongestionManagerTest, RttZeroDelta) {
   QuicPacketSequenceNumber sequence_number = 1;
   QuicTime::Delta expected_rtt = QuicTime::Delta::FromMilliseconds(10);
 
-  EXPECT_CALL(*send_algorithm, SentPacket(_, _, _, _)).Times(1);
-  EXPECT_CALL(*send_algorithm,
-              OnIncomingAck(sequence_number, _, expected_rtt)).Times(1);
+  EXPECT_CALL(*send_algorithm, SentPacket(_, _, _, _, _))
+                               .Times(1).WillOnce(Return(true));
+  EXPECT_CALL(*send_algorithm, OnIncomingAck(sequence_number, _, expected_rtt))
+      .Times(1);
 
-  manager_->SentPacket(sequence_number, clock_.Now(), 1000, NOT_RETRANSMISSION);
+  manager_->SentPacket(sequence_number, clock_.Now(), 1000, NOT_RETRANSMISSION,
+                       HAS_RETRANSMITTABLE_DATA);
   clock_.AdvanceTime(expected_rtt);
 
   QuicAckFrame ack;

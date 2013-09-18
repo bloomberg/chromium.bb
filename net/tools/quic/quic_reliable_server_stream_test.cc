@@ -58,7 +58,9 @@ class QuicReliableServerStreamTest : public ::testing::Test {
     stream_.reset(new QuicSpdyServerStream(3, &session_));
   }
 
-  QuicConsumedData ValidateHeaders(StringPiece headers) {
+  QuicConsumedData ValidateHeaders(const struct iovec* iov) {
+    StringPiece headers =
+        StringPiece(static_cast<const char*>(iov[0].iov_base), iov[0].iov_len);
     headers_string_ = SpdyUtils::SerializeResponseHeaders(
         response_headers_);
     QuicSpdyDecompressor decompressor;
@@ -119,13 +121,17 @@ class QuicReliableServerStreamTest : public ::testing::Test {
   string body_;
 };
 
-QuicConsumedData ConsumeAllData(QuicStreamId id, StringPiece data,
-                                QuicStreamOffset offset, bool fin) {
-  return QuicConsumedData(data.size(), fin);
+QuicConsumedData ConsumeAllData(QuicStreamId id, const struct iovec* iov,
+                                int count, QuicStreamOffset offset, bool fin) {
+  ssize_t consumed_length = 0;
+  for (int i = 0; i < count; ++i) {
+    consumed_length += iov[i].iov_len;
+  }
+  return QuicConsumedData(consumed_length, fin);
 }
 
 TEST_F(QuicReliableServerStreamTest, TestFraming) {
-  EXPECT_CALL(session_, WriteData(_, _, _, _)).Times(AnyNumber()).
+  EXPECT_CALL(session_, WritevData(_, _, _, _, _)).Times(AnyNumber()).
       WillRepeatedly(Invoke(ConsumeAllData));
 
   EXPECT_EQ(headers_string_.size(), stream_->ProcessData(
@@ -138,7 +144,7 @@ TEST_F(QuicReliableServerStreamTest, TestFraming) {
 }
 
 TEST_F(QuicReliableServerStreamTest, TestFramingOnePacket) {
-  EXPECT_CALL(session_, WriteData(_, _, _, _)).Times(AnyNumber()).
+  EXPECT_CALL(session_, WritevData(_, _, _, _, _)).Times(AnyNumber()).
       WillRepeatedly(Invoke(ConsumeAllData));
 
   string message = headers_string_ + body_;
@@ -156,7 +162,7 @@ TEST_F(QuicReliableServerStreamTest, TestFramingExtraData) {
   string large_body = "hello world!!!!!!";
 
   // We'll automatically write out an error (headers + body)
-  EXPECT_CALL(session_, WriteData(_, _, _, _)).Times(2).
+  EXPECT_CALL(session_, WritevData(_, _, _, _, _)).Times(2).
       WillRepeatedly(Invoke(ConsumeAllData));
 
   EXPECT_EQ(headers_string_.size(), stream_->ProcessData(
@@ -183,11 +189,11 @@ TEST_F(QuicReliableServerStreamTest, TestSendResponse) {
   response_headers_.ReplaceOrAppendHeader("content-length", "3");
 
   InSequence s;
-  EXPECT_CALL(session_, WriteData(_, _, _, _)).Times(1)
+  EXPECT_CALL(session_, WritevData(_, _, 1, _, _)).Times(1)
       .WillOnce(WithArgs<1>(Invoke(
           this, &QuicReliableServerStreamTest::ValidateHeaders)));
-  StringPiece kBody = "Yum";
-  EXPECT_CALL(session_, WriteData(_, kBody, _, _)).Times(1).
+
+  EXPECT_CALL(session_, WritevData(_, _, 1, _, _)).Times(1).
       WillOnce(Return(QuicConsumedData(3, true)));
 
   stream_->SendResponse();
@@ -201,11 +207,11 @@ TEST_F(QuicReliableServerStreamTest, TestSendErrorResponse) {
   response_headers_.ReplaceOrAppendHeader("content-length", "3");
 
   InSequence s;
-  EXPECT_CALL(session_, WriteData(_, _, _, _)).Times(1)
+  EXPECT_CALL(session_, WritevData(_, _, 1, _, _)).Times(1)
       .WillOnce(WithArgs<1>(Invoke(
           this, &QuicReliableServerStreamTest::ValidateHeaders)));
-  StringPiece kBody = "bad";
-  EXPECT_CALL(session_, WriteData(_, kBody, _, _)).Times(1).
+
+  EXPECT_CALL(session_, WritevData(_, _, 1, _, _)).Times(1).
       WillOnce(Return(QuicConsumedData(3, true)));
 
   stream_->SendErrorResponse();

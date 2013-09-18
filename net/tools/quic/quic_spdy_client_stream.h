@@ -34,6 +34,10 @@ class QuicSpdyClientStream : public QuicReliableClientStream {
                               base::StringPiece body,
                               bool fin) OVERRIDE;
 
+  // While the server's set_priority shouldn't be called externally, the creator
+  // of client-side streams should be able to set the priority.
+  using QuicReliableClientStream::set_priority;
+
  private:
   int ParseResponseHeaders();
 

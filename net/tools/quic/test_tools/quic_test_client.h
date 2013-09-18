@@ -107,6 +107,8 @@ class QuicTestClient :  public ReliableQuicStream::Visitor {
 
   void set_auto_reconnect(bool reconnect) { auto_reconnect_ = reconnect; }
 
+  void set_priority(QuicPriority priority) { priority_ = priority; }
+
  private:
   void Initialize(IPEndPoint address, const string& hostname, bool secure);
 
@@ -118,6 +120,8 @@ class QuicTestClient :  public ReliableQuicStream::Visitor {
   QuicRstStreamErrorCode stream_error_;
 
   BalsaHeaders headers_;
+  QuicPriority priority_;
+
   string response_;
   uint64 bytes_read_;
   uint64 bytes_written_;

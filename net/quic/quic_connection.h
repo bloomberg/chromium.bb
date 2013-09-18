@@ -24,6 +24,7 @@
 #include <vector>
 
 #include "base/containers/hash_tables.h"
+#include "net/base/iovec.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/linked_hash_map.h"
 #include "net/quic/congestion_control/quic_congestion_manager.h"
@@ -75,6 +76,9 @@ class NET_EXPORT_PRIVATE QuicConnectionVisitorInterface {
 
   // Called when packets are acked by the peer.
   virtual void OnAck(const SequenceNumberSet& acked_packets) = 0;
+
+  // Called once a specific QUIC version is agreed by both endpoints.
+  virtual void OnSuccessfulVersionNegotiation(const QuicVersion& version) = 0;
 
   // Called when a blocked socket becomes writable.  If all pending bytes for
   // this visitor are consumed by the connection successfully this should
@@ -205,15 +209,17 @@ class NET_EXPORT_PRIVATE QuicConnection
                  QuicVersion version);
   virtual ~QuicConnection();
 
-  // Send the data payload to the peer.
+  // Send the data in |iov| to the peer in as few packets as possible.
   // Returns a pair with the number of bytes consumed from data, and a boolean
   // indicating if the fin bit was consumed.  This does not indicate the data
   // has been sent on the wire: it may have been turned into a packet and queued
   // if the socket was unexpectedly blocked.
-  QuicConsumedData SendStreamData(QuicStreamId id,
-                                  base::StringPiece data,
-                                  QuicStreamOffset offset,
-                                  bool fin);
+  QuicConsumedData SendvStreamData(QuicStreamId id,
+                                   const struct iovec* iov,
+                                   int count,
+                                   QuicStreamOffset offset,
+                                   bool fin);
+
   // Same as above, except that the provided delegate will be informed once ACKs
   // have been received for all the packets written.
   // The |delegate| is not owned by the QuicConnection and must outlive it.
@@ -240,7 +246,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   virtual void SendConnectionCloseWithDetails(QuicErrorCode error,
                                               const std::string& details);
   // Notifies the visitor of the close and marks the connection as disconnected.
-  void CloseConnection(QuicErrorCode error, bool from_peer);
+  virtual void CloseConnection(QuicErrorCode error, bool from_peer) OVERRIDE;
   virtual void SendGoAway(QuicErrorCode error,
                           QuicStreamId last_good_stream_id,
                           const std::string& reason);
@@ -334,6 +340,10 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   // Testing only.
   size_t NumQueuedPackets() const { return queued_packets_.size(); }
+
+  // Flush any queued frames immediately.  Preserves the batch write mode and
+  // does nothing if there are no pending frames.
+  void Flush();
 
   // Returns true if the connection has queued packets or frames.
   bool HasQueuedData() const;

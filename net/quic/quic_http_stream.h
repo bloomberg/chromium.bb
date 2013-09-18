@@ -15,6 +15,10 @@
 
 namespace net {
 
+namespace test {
+class QuicHttpStreamPeer;
+}  // namespace test
+
 // The QuicHttpStream is a QUIC-specific HttpStream subclass.  It holds a
 // non-owning pointer to a QuicReliableClientStream which it uses to
 // send and receive data.
@@ -62,8 +66,11 @@ class NET_EXPORT_PRIVATE QuicHttpStream :
   virtual int OnDataReceived(const char* data, int length) OVERRIDE;
   virtual void OnClose(QuicErrorCode error) OVERRIDE;
   virtual void OnError(int error) OVERRIDE;
+  virtual bool HasSendHeadersComplete() OVERRIDE;
 
  private:
+  friend class test::QuicHttpStreamPeer;
+
   enum State {
     STATE_NONE,
     STATE_SEND_HEADERS,
@@ -106,6 +113,8 @@ class NET_EXPORT_PRIVATE QuicHttpStream :
   const HttpRequestInfo* request_info_;
   // The request body to send, if any, owned by the caller.
   UploadDataStream* request_body_stream_;
+  // The priority of the request.
+  RequestPriority priority_;
   // |response_info_| is the HTTP response data object which is filled in
   // when a the response headers are read.  It is not owned by this stream.
   HttpResponseInfo* response_info_;

@@ -333,6 +333,53 @@ TEST_F(QuicPacketCreatorTest, SerializeVersionNegotiationPacket) {
   client_framer_.ProcessPacket(*encrypted.get());
 }
 
+TEST_F(QuicPacketCreatorTest, UpdatePacketSequenceNumberLengthLeastAwaiting) {
+  EXPECT_EQ(PACKET_1BYTE_SEQUENCE_NUMBER,
+            creator_.options()->send_sequence_number_length);
+
+  creator_.set_sequence_number(64);
+  creator_.UpdateSequenceNumberLength(2, 10000);
+  EXPECT_EQ(PACKET_1BYTE_SEQUENCE_NUMBER,
+            creator_.options()->send_sequence_number_length);
+
+  creator_.set_sequence_number(64 * 256);
+  creator_.UpdateSequenceNumberLength(2, 10000);
+  EXPECT_EQ(PACKET_2BYTE_SEQUENCE_NUMBER,
+            creator_.options()->send_sequence_number_length);
+
+  creator_.set_sequence_number(64 * 256 * 256);
+  creator_.UpdateSequenceNumberLength(2, 10000);
+  EXPECT_EQ(PACKET_4BYTE_SEQUENCE_NUMBER,
+            creator_.options()->send_sequence_number_length);
+
+  creator_.set_sequence_number(GG_UINT64_C(64) * 256 * 256 * 256 * 256);
+  creator_.UpdateSequenceNumberLength(2, 10000);
+  EXPECT_EQ(PACKET_6BYTE_SEQUENCE_NUMBER,
+            creator_.options()->send_sequence_number_length);
+}
+
+TEST_F(QuicPacketCreatorTest, UpdatePacketSequenceNumberLengthBandwidth) {
+  EXPECT_EQ(PACKET_1BYTE_SEQUENCE_NUMBER,
+            creator_.options()->send_sequence_number_length);
+
+  creator_.UpdateSequenceNumberLength(1, 10000);
+  EXPECT_EQ(PACKET_1BYTE_SEQUENCE_NUMBER,
+            creator_.options()->send_sequence_number_length);
+
+  creator_.UpdateSequenceNumberLength(1, 10000 * 256);
+  EXPECT_EQ(PACKET_2BYTE_SEQUENCE_NUMBER,
+            creator_.options()->send_sequence_number_length);
+
+  creator_.UpdateSequenceNumberLength(1, 10000 * 256 * 256);
+  EXPECT_EQ(PACKET_4BYTE_SEQUENCE_NUMBER,
+            creator_.options()->send_sequence_number_length);
+
+  creator_.UpdateSequenceNumberLength(
+      1, GG_UINT64_C(1000) * 256 * 256 * 256 * 256);
+  EXPECT_EQ(PACKET_6BYTE_SEQUENCE_NUMBER,
+            creator_.options()->send_sequence_number_length);
+}
+
 INSTANTIATE_TEST_CASE_P(ToggleVersionSerialization,
                         QuicPacketCreatorTest,
                         ::testing::Values(false, true));

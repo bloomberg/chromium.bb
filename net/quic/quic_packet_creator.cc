@@ -12,6 +12,7 @@
 
 using base::StringPiece;
 using std::make_pair;
+using std::max;
 using std::min;
 using std::pair;
 using std::vector;
@@ -71,6 +72,30 @@ void QuicPacketCreator::StopSendingVersion() {
   }
 }
 
+void QuicPacketCreator::UpdateSequenceNumberLength(
+      QuicPacketSequenceNumber least_packet_awaited_by_peer,
+      QuicByteCount bytes_per_second) {
+  DCHECK_LE(least_packet_awaited_by_peer, sequence_number_ + 1);
+  // Since the packet creator will not change sequence number length mid FEC
+  // group, include the size of an FEC group to be safe.
+  const QuicPacketSequenceNumber current_delta =
+      options_.max_packets_per_fec_group + sequence_number_ + 1
+      - least_packet_awaited_by_peer;
+  const uint64 congestion_window =
+      bytes_per_second / options_.max_packet_length;
+  const uint64 delta = max(current_delta, congestion_window);
+
+  if (delta < 1 << ((PACKET_1BYTE_SEQUENCE_NUMBER * 8) - 2)) {
+    options_.send_sequence_number_length = PACKET_1BYTE_SEQUENCE_NUMBER;
+  } else if (delta < 1 << ((PACKET_2BYTE_SEQUENCE_NUMBER * 8) - 2)) {
+    options_.send_sequence_number_length = PACKET_2BYTE_SEQUENCE_NUMBER;
+  } else if (delta < 1 << ((PACKET_4BYTE_SEQUENCE_NUMBER * 8) - 2)) {
+    options_.send_sequence_number_length = PACKET_4BYTE_SEQUENCE_NUMBER;
+  } else {
+    options_.send_sequence_number_length = PACKET_6BYTE_SEQUENCE_NUMBER;
+  }
+}
+
 bool QuicPacketCreator::HasRoomForStreamFrame(QuicStreamId id,
                                               QuicStreamOffset offset) const {
   return BytesFree() >
@@ -99,7 +124,12 @@ size_t QuicPacketCreator::CreateStreamFrame(QuicStreamId id,
             StreamFramePacketOverhead(
                 framer_->version(), PACKET_8BYTE_GUID, kIncludeVersion,
                 PACKET_6BYTE_SEQUENCE_NUMBER, IN_FEC_GROUP));
-  DCHECK(HasRoomForStreamFrame(id, offset));
+  if (!HasRoomForStreamFrame(id, offset)) {
+    LOG(DFATAL) << "No room for Stream frame, BytesFree: " << BytesFree()
+                << " MinStreamFrameSize: "
+                << QuicFramer::GetMinStreamFrameSize(
+                    framer_->version(), id, offset, true);
+  }
 
   const size_t free_bytes = BytesFree();
   size_t bytes_consumed = 0;

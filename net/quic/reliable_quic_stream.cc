@@ -6,6 +6,7 @@
 
 #include "net/quic/quic_session.h"
 #include "net/quic/quic_spdy_decompressor.h"
+#include "net/spdy/write_blocked_list.h"
 
 using base::StringPiece;
 using std::min;
@@ -193,6 +194,12 @@ QuicConsumedData ReliableQuicStream::WriteData(StringPiece data, bool fin) {
   return WriteOrBuffer(data, fin);
 }
 
+
+void ReliableQuicStream::set_priority(QuicPriority priority) {
+  DCHECK_EQ(0u, stream_bytes_written_);
+  priority_ = priority;
+}
+
 QuicConsumedData ReliableQuicStream::WriteOrBuffer(StringPiece data, bool fin) {
   DCHECK(!fin_buffered_);
 
@@ -235,25 +242,41 @@ void ReliableQuicStream::OnCanWrite() {
 
 QuicConsumedData ReliableQuicStream::WriteDataInternal(
     StringPiece data, bool fin) {
+  struct iovec iov = {const_cast<char*>(data.data()),
+                      static_cast<size_t>(data.size())};
+  return WritevDataInternal(&iov, 1, fin);
+}
+
+QuicConsumedData ReliableQuicStream::WritevDataInternal(const struct iovec* iov,
+                                                        int count,
+                                                        bool fin) {
   if (write_side_closed_) {
     DLOG(ERROR) << "Attempt to write when the write side is closed";
     return QuicConsumedData(0, false);
   }
 
+  size_t write_length = 0u;
+  for (int i = 0; i < count; ++i) {
+    write_length += iov[i].iov_len;
+  }
   QuicConsumedData consumed_data =
-      session()->WriteData(id(), data, stream_bytes_written_, fin);
+      session()->WritevData(id(), iov, count, stream_bytes_written_, fin);
   stream_bytes_written_ += consumed_data.bytes_consumed;
-  if (consumed_data.bytes_consumed == data.length()) {
+  if (consumed_data.bytes_consumed == write_length) {
     if (fin && consumed_data.fin_consumed) {
       fin_sent_ = true;
       CloseWriteSide();
     } else if (fin && !consumed_data.fin_consumed) {
-      session_->MarkWriteBlocked(id());
+      session_->MarkWriteBlocked(id(), EffectivePriority());
     }
   } else {
-    session_->MarkWriteBlocked(id());
+    session_->MarkWriteBlocked(id(), EffectivePriority());
   }
   return consumed_data;
+}
+
+QuicPriority ReliableQuicStream::EffectivePriority() const {
+  return priority();
 }
 
 void ReliableQuicStream::CloseReadSide() {
@@ -283,7 +306,7 @@ uint32 ReliableQuicStream::ProcessRawData(const char* data, uint32 data_len) {
     total_bytes_consumed += StripPriorityAndHeaderId(data, data_len);
     data += total_bytes_consumed;
     data_len -= total_bytes_consumed;
-    if (data_len == 0) {
+    if (data_len == 0 || !session_->connection()->connected()) {
       return total_bytes_consumed;
     }
   }
@@ -465,11 +488,18 @@ uint32 ReliableQuicStream::StripPriorityAndHeaderId(
   if (!priority_parsed_ &&
       session_->connection()->version() >= QUIC_VERSION_9 &&
       session_->connection()->is_server()) {
+    QuicPriority temporary_priority = priority_;
     total_bytes_parsed = StripUint32(
-        data, data_len, &headers_id_and_priority_buffer_, &priority_);
+        data, data_len, &headers_id_and_priority_buffer_, &temporary_priority);
     if (total_bytes_parsed > 0 && headers_id_and_priority_buffer_.size() == 0) {
-      // TODO(alyssar) check for priority out of bounds.
       priority_parsed_ = true;
+      // Spdy priorities are inverted, so the highest numerical value is the
+      // lowest legal priority.
+      if (temporary_priority > static_cast<QuicPriority>(kLowestPriority)) {
+        session_->connection()->SendConnectionClose(QUIC_INVALID_PRIORITY);
+        return 0;
+      }
+      priority_ = temporary_priority;
     }
     data += total_bytes_parsed;
     data_len -= total_bytes_parsed;

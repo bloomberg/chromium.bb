@@ -55,11 +55,15 @@ class NET_EXPORT_PRIVATE SendAlgorithmInterface {
   virtual void OnIncomingLoss(QuicTime ack_receive_time) = 0;
 
   // Inform that we sent x bytes to the wire, and if that was a retransmission.
+  // Returns true if the packet should be tracked by the congestion manager,
+  // false otherwise. This is used by implementations such as tcp_cubic_sender
+  // that do not count outgoing ACK packets against the congestion window.
   // Note: this function must be called for every packet sent to the wire.
-  virtual void SentPacket(QuicTime sent_time,
+  virtual bool SentPacket(QuicTime sent_time,
                           QuicPacketSequenceNumber sequence_number,
                           QuicByteCount bytes,
-                          Retransmission is_retransmission) = 0;
+                          Retransmission is_retransmission,
+                          HasRetransmittableData is_retransmittable) = 0;
 
   // Called when a packet is timed out.
   virtual void AbandoningPacket(QuicPacketSequenceNumber sequence_number,

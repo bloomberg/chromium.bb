@@ -19,6 +19,7 @@ using std::list;
 using std::make_pair;
 using std::min;
 using std::max;
+using std::numeric_limits;
 using std::vector;
 using std::set;
 using std::string;
@@ -282,6 +283,7 @@ bool QuicConnection::OnProtocolVersionMismatch(QuicVersion received_version) {
   }
 
   version_negotiation_state_ = NEGOTIATED_VERSION;
+  visitor_->OnSuccessfulVersionNegotiation(received_version);
 
   // Store the new version.
   framer_.set_version(received_version);
@@ -380,6 +382,7 @@ bool QuicConnection::OnPacketHeader(const QuicPacketHeader& header) {
         DCHECK_EQ(1u, header.public_header.versions.size());
         DCHECK_EQ(header.public_header.versions[0], version());
         version_negotiation_state_ = NEGOTIATED_VERSION;
+        visitor_->OnSuccessfulVersionNegotiation(version());
       }
     } else {
       DCHECK(!header.public_header.version_flag);
@@ -387,6 +390,7 @@ bool QuicConnection::OnPacketHeader(const QuicPacketHeader& header) {
       // it should stop sending version since the version negotiation is done.
       packet_creator_.StopSendingVersion();
       version_negotiation_state_ = NEGOTIATED_VERSION;
+      visitor_->OnSuccessfulVersionNegotiation(version());
     }
   }
 
@@ -781,7 +785,7 @@ void QuicConnection::MaybeSendInResponseToPacket(
       // Set the ack alarm for when any retransmittable frame is received.
       if (!ack_alarm_->IsSet()) {
         ack_alarm_->Set(clock_->ApproximateNow().Add(
-            congestion_manager_.DefaultRetransmissionTime()));
+            congestion_manager_.DelayedAckTime()));
       }
     }
     send_ack_in_response_to_packet_ = !send_ack_in_response_to_packet_;
@@ -817,26 +821,51 @@ void QuicConnection::SendVersionNegotiationPacket() {
   delete encrypted;
 }
 
-QuicConsumedData QuicConnection::SendStreamData(QuicStreamId id,
-                                                StringPiece data,
-                                                QuicStreamOffset offset,
-                                                bool fin) {
-  // To make reasoning about crypto frames easier, we don't combine them with
-  // any other frames in a single packet.
-  const bool crypto_frame_while_batch_mode =
-      id == kCryptoStreamId && packet_generator_.InBatchMode();
+QuicConsumedData QuicConnection::SendvStreamData(QuicStreamId id,
+                                                 const struct iovec* iov,
+                                                 int count,
+                                                 QuicStreamOffset offset,
+                                                 bool fin) {
+  // TODO(ianswett): Further improve sending by passing the iovec down
+  // instead of batching into multiple stream frames in a single packet.
+  const bool already_in_batch_mode = packet_generator_.InBatchMode();
+  packet_generator_.StartBatchOperations();
 
-  if (crypto_frame_while_batch_mode) {
-    // Flush pending frames to make room for a crypto frame.
+  size_t bytes_written = 0;
+  bool fin_consumed = false;
+  for (int i = 0; i < count; ++i) {
+    bool send_fin = fin && (i == count - 1);
+    if (!send_fin && iov[i].iov_len == 0) {
+      LOG(DFATAL) << "Attempt to send empty stream frame";
+    }
+    QuicConsumedData data_consumed = packet_generator_.ConsumeData(
+        id,
+        StringPiece(static_cast<char*>(iov[i].iov_base), iov[i].iov_len),
+        offset + bytes_written,
+        send_fin);
+    DCHECK_LE(data_consumed.bytes_consumed, numeric_limits<uint32>::max());
+    bytes_written += data_consumed.bytes_consumed;
+    fin_consumed = data_consumed.fin_consumed;
+    // If no bytes were consumed, bail now, because the stream can not write
+    // more data.
+    if (data_consumed.bytes_consumed < iov[i].iov_len) {
+      break;
+    }
+  }
+  // Handle the 0 byte write properly.
+  if (count == 0) {
+    DCHECK(fin);
+    QuicConsumedData data_consumed = packet_generator_.ConsumeData(
+        id, StringPiece(), offset, fin);
+    fin_consumed = data_consumed.fin_consumed;
+  }
+
+  // Leave the generator in the original batch state.
+  if (!already_in_batch_mode) {
     packet_generator_.FinishBatchOperations();
   }
-  QuicConsumedData consumed_data =
-      packet_generator_.ConsumeData(id, data, offset, fin);
-  if (crypto_frame_while_batch_mode) {
-    // Restore batch mode.
-    packet_generator_.StartBatchOperations();
-  }
-  return consumed_data;
+  DCHECK_EQ(already_in_batch_mode, packet_generator_.InBatchMode());
+  return QuicConsumedData(bytes_written, fin_consumed);
 }
 
 QuicConsumedData QuicConnection::SendStreamDataAndNotifyWhenAcked(
@@ -845,6 +874,9 @@ QuicConsumedData QuicConnection::SendStreamDataAndNotifyWhenAcked(
     QuicStreamOffset offset,
     bool fin,
     QuicAckNotifier::DelegateInterface* delegate) {
+  if (!fin && data.empty()) {
+    LOG(DFATAL) << "Attempt to send empty stream frame";
+  }
   // This notifier will be deleted in ProcessAckFrame once it has seen ACKs for
   // all the consumed data (or below if no data was consumed).
   QuicAckNotifier* notifier = new QuicAckNotifier(delegate);
@@ -953,12 +985,12 @@ bool QuicConnection::DoWrite() {
   // write more.
   if (CanWrite(NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA,
                maybe_handshake)) {
-    const bool in_batch_mode = packet_generator_.InBatchMode();
-    if (!in_batch_mode) {
+    const bool already_in_batch_mode = packet_generator_.InBatchMode();
+    if (!already_in_batch_mode) {
       packet_generator_.StartBatchOperations();
     }
     bool all_bytes_written = visitor_->OnCanWrite();
-    if (!in_batch_mode) {
+    if (!already_in_batch_mode) {
       packet_generator_.FinishBatchOperations();
     }
 
@@ -1305,7 +1337,11 @@ bool QuicConnection::WritePacket(EncryptionLevel level,
       // If the socket buffers the the data, then the packet should not
       // be queued and sent again, which would result in an unnecessary
       // duplicate packet being sent.
-      return helper_->IsWriteBlockedDataBuffered();
+      if (helper_->IsWriteBlockedDataBuffered()) {
+        delete packet;
+        return true;
+      }
+      return false;
     }
     // We can't send an error as the socket is presumably borked.
     CloseConnection(QUIC_PACKET_WRITE_ERROR, false);
@@ -1323,11 +1359,13 @@ bool QuicConnection::WritePacket(EncryptionLevel level,
 
   // TODO(ianswett): Change the sequence number length and other packet creator
   // options by a more explicit API than setting a struct value directly.
-  packet_creator_.options()->send_sequence_number_length =
-      CalculateSequenceNumberLength(sequence_number);
+  packet_creator_.UpdateSequenceNumberLength(
+      received_packet_manager_.least_packet_awaited_by_peer(),
+      congestion_manager_.BandwidthEstimate().ToBytesPerPeriod(
+          congestion_manager_.SmoothedRtt()));
 
   congestion_manager_.SentPacket(sequence_number, now, packet->length(),
-                                 retransmission);
+                                 retransmission, retransmittable);
 
   stats_.bytes_sent += encrypted->length();
   ++stats_.packets_sent;
@@ -1353,31 +1391,6 @@ int QuicConnection::WritePacketToWire(QuicPacketSequenceNumber sequence_number,
                                  bytes_written == -1 ? *error : bytes_written);
   }
   return bytes_written;
-}
-
-QuicSequenceNumberLength QuicConnection::CalculateSequenceNumberLength(
-      QuicPacketSequenceNumber sequence_number) {
-  DCHECK_LE(received_packet_manager_.least_packet_awaited_by_peer(),
-            sequence_number);
-  // Since the packet creator will not change sequence number length mid FEC
-  // group, include the size of an FEC group to be safe.
-  const QuicPacketSequenceNumber current_delta =
-      packet_creator_.options()->max_packets_per_fec_group + sequence_number
-      - received_packet_manager_.least_packet_awaited_by_peer();
-  const uint64 congestion_window =
-      congestion_manager_.BandwidthEstimate().ToBytesPerPeriod(
-          congestion_manager_.SmoothedRtt()) /
-          packet_creator_.options()->max_packet_length;
-  const uint64 delta = max(current_delta, congestion_window);
-
-  if (delta < 1 << ((PACKET_1BYTE_SEQUENCE_NUMBER * 8) - 2)) {
-    return PACKET_1BYTE_SEQUENCE_NUMBER;
-  } else if (delta < 1 << ((PACKET_2BYTE_SEQUENCE_NUMBER * 8) - 2)) {
-    return PACKET_2BYTE_SEQUENCE_NUMBER;
-  } else if (delta < 1 << ((PACKET_4BYTE_SEQUENCE_NUMBER * 8) - 2)) {
-    return PACKET_4BYTE_SEQUENCE_NUMBER;
-  }
-  return PACKET_6BYTE_SEQUENCE_NUMBER;
 }
 
 bool QuicConnection::OnSerializedPacket(
@@ -1714,6 +1727,14 @@ void QuicConnection::CloseFecGroupsBefore(
     delete fec_group;
     it = next;
   }
+}
+
+void QuicConnection::Flush() {
+  if (!packet_generator_.InBatchMode()) {
+    return;
+  }
+  packet_generator_.FinishBatchOperations();
+  packet_generator_.StartBatchOperations();
 }
 
 bool QuicConnection::HasQueuedData() const {

@@ -184,6 +184,8 @@ class MockConnectionVisitor : public QuicConnectionVisitorInterface {
   MOCK_METHOD2(ConnectionClose, void(QuicErrorCode error, bool from_peer));
   MOCK_METHOD1(OnAck, void(const SequenceNumberSet& acked_packets));
   MOCK_METHOD0(OnCanWrite, bool());
+  MOCK_METHOD1(OnSuccessfulVersionNegotiation,
+               void(const QuicVersion& version));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockConnectionVisitor);
@@ -285,10 +287,11 @@ class MockSession : public QuicSession {
                ReliableQuicStream*(QuicStreamId id));
   MOCK_METHOD0(GetCryptoStream, QuicCryptoStream*());
   MOCK_METHOD0(CreateOutgoingReliableStream, ReliableQuicStream*());
-  MOCK_METHOD4(WriteData, QuicConsumedData(QuicStreamId id,
-                                           base::StringPiece data,
-                                           QuicStreamOffset offset,
-                                           bool fin));
+  MOCK_METHOD5(WritevData, QuicConsumedData(QuicStreamId id,
+                                            const struct iovec* iov,
+                                            int count,
+                                            QuicStreamOffset offset,
+                                            bool fin));
   MOCK_METHOD0(IsHandshakeComplete, bool());
 
  private:
@@ -327,8 +330,9 @@ class MockSendAlgorithm : public SendAlgorithmInterface {
   MOCK_METHOD3(OnIncomingAck,
                void(QuicPacketSequenceNumber, QuicByteCount, QuicTime::Delta));
   MOCK_METHOD1(OnIncomingLoss, void(QuicTime));
-  MOCK_METHOD4(SentPacket, void(QuicTime sent_time, QuicPacketSequenceNumber,
-                                QuicByteCount, Retransmission));
+  MOCK_METHOD5(SentPacket,
+               bool(QuicTime sent_time, QuicPacketSequenceNumber, QuicByteCount,
+                    Retransmission, HasRetransmittableData));
   MOCK_METHOD2(AbandoningPacket, void(QuicPacketSequenceNumber sequence_number,
                                       QuicByteCount abandoned_bytes));
   MOCK_METHOD4(TimeUntilSend, QuicTime::Delta(QuicTime now, Retransmission,

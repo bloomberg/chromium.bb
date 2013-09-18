@@ -11,6 +11,7 @@
 #include "net/quic/crypto/proof_verifier.h"
 #include "net/tools/flip_server/balsa_headers.h"
 #include "net/tools/quic/quic_epoll_connection_helper.h"
+#include "net/tools/quic/quic_spdy_client_stream.h"
 #include "net/tools/quic/test_tools/http_message_test_utils.h"
 #include "url/gurl.h"
 
@@ -157,6 +158,7 @@ void QuicTestClient::Initialize(IPEndPoint address,
   server_address_ = address;
   stream_ = NULL;
   stream_error_ = QUIC_STREAM_NO_ERROR;
+  priority_ = 3;
   bytes_read_ = 0;
   bytes_written_= 0;
   never_connected_ = true;
@@ -243,10 +245,13 @@ QuicReliableClientStream* QuicTestClient::GetOrCreateStream() {
   }
   if (!stream_) {
     stream_ = client_->CreateReliableClientStream();
-    if (stream_ != NULL) {
-      stream_->set_visitor(this);
+    if (stream_ == NULL) {
+      return NULL;
     }
+    stream_->set_visitor(this);
+    reinterpret_cast<QuicSpdyClientStream*>(stream_)->set_priority(priority_);
   }
+
   return stream_;
 }
 

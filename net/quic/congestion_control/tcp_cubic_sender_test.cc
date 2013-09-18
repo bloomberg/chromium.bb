@@ -45,7 +45,7 @@ class TcpCubicSenderTest : public ::testing::Test {
     while (bytes_to_send > 0) {
       QuicByteCount bytes_in_packet = std::min(kMaxPacketSize, bytes_to_send);
       sender_->SentPacket(clock_.Now(), sequence_number_++, bytes_in_packet,
-                          NOT_RETRANSMISSION);
+                          NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA);
       bytes_to_send -= bytes_in_packet;
       if (bytes_to_send > 0) {
         EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(), NOT_RETRANSMISSION,
@@ -350,6 +350,23 @@ TEST_F(TcpCubicSenderTest, TcpCubicMaxCongestionWindow) {
   QuicByteCount expected_congestion_window =
       kMaxCongestionWindowTCP * kMaxPacketSize;
   EXPECT_EQ(expected_congestion_window, sender_->CongestionWindow());
+}
+
+TEST_F(TcpCubicSenderTest, CongestionWindowNotAffectedByAcks) {
+  QuicByteCount congestion_window = sender_->AvailableCongestionWindow();
+
+  // Send a packet with no retransmittable data, and ensure that the congestion
+  // window doesn't change.
+  QuicByteCount bytes_in_packet = std::min(kMaxPacketSize, congestion_window);
+  sender_->SentPacket(clock_.Now(), sequence_number_++, bytes_in_packet,
+                      NOT_RETRANSMISSION, NO_RETRANSMITTABLE_DATA);
+  EXPECT_EQ(congestion_window, sender_->AvailableCongestionWindow());
+
+  // Send a data packet with retransmittable data, and ensure that the
+  // congestion window has shrunk.
+  sender_->SentPacket(clock_.Now(), sequence_number_++, bytes_in_packet,
+                      NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA);
+  EXPECT_GT(congestion_window, sender_->AvailableCongestionWindow());
 }
 
 }  // namespace test

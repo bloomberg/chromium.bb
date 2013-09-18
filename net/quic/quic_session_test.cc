@@ -95,7 +95,7 @@ class TestSession : public QuicSession {
 
   // Helper method for gmock
   void MarkTwoWriteBlocked() {
-    this->MarkWriteBlocked(2);
+    this->MarkWriteBlocked(2, 0);
   }
 
   TestCryptoStream crypto_stream_;
@@ -240,9 +240,9 @@ TEST_F(QuicSessionTest, OnCanWrite) {
   TestStream* stream4 = session_.CreateOutgoingReliableStream();
   TestStream* stream6 = session_.CreateOutgoingReliableStream();
 
-  session_.MarkWriteBlocked(2);
-  session_.MarkWriteBlocked(6);
-  session_.MarkWriteBlocked(4);
+  session_.MarkWriteBlocked(2, 0);
+  session_.MarkWriteBlocked(6, 0);
+  session_.MarkWriteBlocked(4, 0);
 
   InSequence s;
   EXPECT_CALL(*stream2, OnCanWrite()).WillOnce(
@@ -259,9 +259,9 @@ TEST_F(QuicSessionTest, OnCanWriteWithClosedStream) {
   TestStream* stream4 = session_.CreateOutgoingReliableStream();
   session_.CreateOutgoingReliableStream();  // stream 6
 
-  session_.MarkWriteBlocked(2);
-  session_.MarkWriteBlocked(6);
-  session_.MarkWriteBlocked(4);
+  session_.MarkWriteBlocked(2, 0);
+  session_.MarkWriteBlocked(6, 0);
+  session_.MarkWriteBlocked(4, 0);
   CloseStream(6);
 
   InSequence s;

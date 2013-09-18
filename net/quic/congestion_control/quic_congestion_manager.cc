@@ -48,18 +48,21 @@ QuicCongestionManager::~QuicCongestionManager() {
   STLDeleteValues(&packet_history_map_);
 }
 
-void QuicCongestionManager::SentPacket(QuicPacketSequenceNumber sequence_number,
-                                       QuicTime sent_time,
-                                       QuicByteCount bytes,
-                                       Retransmission retransmission) {
+void QuicCongestionManager::SentPacket(
+    QuicPacketSequenceNumber sequence_number,
+    QuicTime sent_time,
+    QuicByteCount bytes,
+    Retransmission retransmission,
+    HasRetransmittableData has_retransmittable_data) {
   DCHECK(!ContainsKey(pending_packets_, sequence_number));
-  send_algorithm_->SentPacket(sent_time, sequence_number, bytes,
-                              retransmission);
 
-  packet_history_map_[sequence_number] =
-      new class SendAlgorithmInterface::SentPacket(bytes, sent_time);
-  pending_packets_[sequence_number] = bytes;
-  CleanupPacketHistory();
+  if (send_algorithm_->SentPacket(sent_time, sequence_number, bytes,
+                                  retransmission, has_retransmittable_data)) {
+    packet_history_map_[sequence_number] =
+        new class SendAlgorithmInterface::SentPacket(bytes, sent_time);
+    pending_packets_[sequence_number] = bytes;
+    CleanupPacketHistory();
+  }
 }
 
 // Called when a packet is timed out.
@@ -154,6 +157,23 @@ const QuicTime::Delta QuicCongestionManager::rtt() {
 
 const QuicTime::Delta QuicCongestionManager::DefaultRetransmissionTime() {
   return QuicTime::Delta::FromMilliseconds(kDefaultRetransmissionTimeMs);
+}
+
+// Ensures that the Delayed Ack timer is always set to a value lesser
+// than the retransmission timer's minimum value (MinRTO). We want the
+// delayed ack to get back to the QUIC peer before the sender's
+// retransmission timer triggers.  Since we do not know the
+// reverse-path one-way delay, we assume equal delays for forward and
+// reverse paths, and ensure that the timer is set to less than half
+// of the MinRTO.
+// There may be a value in making this delay adaptive with the help of
+// the sender and a signaling mechanism -- if the sender uses a
+// different MinRTO, we may get spurious retransmissions. May not have
+// any benefits, but if the delayed ack becomes a significant source
+// of (likely, tail) latency, then consider such a mechanism.
+
+const QuicTime::Delta QuicCongestionManager::DelayedAckTime() {
+  return QuicTime::Delta::FromMilliseconds(kMinRetransmissionTimeMs/2);
 }
 
 const QuicTime::Delta QuicCongestionManager::GetRetransmissionDelay(

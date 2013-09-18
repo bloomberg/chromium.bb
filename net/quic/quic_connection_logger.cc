@@ -12,6 +12,8 @@
 #include "net/base/net_log.h"
 #include "net/quic/crypto/crypto_handshake.h"
 
+using std::string;
+
 namespace net {
 
 namespace {
@@ -414,6 +416,13 @@ void QuicConnectionLogger::OnConnectionClose(QuicErrorCode error,
   net_log_.AddEvent(
       NetLog::TYPE_QUIC_SESSION_CLOSED,
       base::Bind(&NetLogQuicConnectionClosedCallback, error, from_peer));
+}
+
+void QuicConnectionLogger::OnSuccessfulVersionNegotiation(
+    const QuicVersion& version) {
+  string quic_version = QuicVersionToString(version);
+  net_log_.AddEvent(NetLog::TYPE_QUIC_SESSION_VERSION_NEGOTIATED,
+                    NetLog::StringCallback("version", &quic_version));
 }
 
 }  // namespace net

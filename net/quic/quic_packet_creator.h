@@ -70,6 +70,12 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
   // Makes the framer not serialize the protocol version in sent packets.
   void StopSendingVersion();
 
+  // Update the sequence number length to use in future packets as soon as it
+  // can be safely changed.
+  void UpdateSequenceNumberLength(
+      QuicPacketSequenceNumber least_packet_awaited_by_peer,
+      QuicByteCount bytes_per_second);
+
   // The overhead the framing will add for a packet with one frame.
   static size_t StreamFramePacketOverhead(
       QuicVersion version,
@@ -152,6 +158,8 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
   QuicEncryptedPacket* SerializeVersionNegotiationPacket(
       const QuicVersionVector& supported_versions);
 
+  // Sequence number of the last created packet, or 0 if no packets have been
+  // created.
   QuicPacketSequenceNumber sequence_number() const {
     return sequence_number_;
   }

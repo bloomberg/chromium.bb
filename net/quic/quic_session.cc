@@ -63,6 +63,11 @@ class VisitorShim : public QuicConnectionVisitorInterface {
     return rc;
   }
 
+  virtual void OnSuccessfulVersionNegotiation(
+      const QuicVersion& version) OVERRIDE {
+    session_->OnSuccessfulVersionNegotiation(version);
+  }
+
   virtual void ConnectionClose(QuicErrorCode error, bool from_peer) OVERRIDE {
     session_->ConnectionClose(error, from_peer);
     // The session will go away, so don't bother with cleanup.
@@ -233,11 +238,12 @@ bool QuicSession::OnCanWrite() {
   return !write_blocked_streams_.HasWriteBlockedStreams();
 }
 
-QuicConsumedData QuicSession::WriteData(QuicStreamId id,
-                                        StringPiece data,
-                                        QuicStreamOffset offset,
-                                        bool fin) {
-  return connection_->SendStreamData(id, data, offset, fin);
+QuicConsumedData QuicSession::WritevData(QuicStreamId id,
+                                         const struct iovec* iov,
+                                         int count,
+                                         QuicStreamOffset offset,
+                                         bool fin) {
+  return connection_->SendvStreamData(id, iov, count, offset, fin);
 }
 
 void QuicSession::SendRstStream(QuicStreamId id,
@@ -474,8 +480,8 @@ size_t QuicSession::GetNumOpenStreams() const {
       zombie_streams_.size();
 }
 
-void QuicSession::MarkWriteBlocked(QuicStreamId id) {
-  write_blocked_streams_.PushBack(id, 0);
+void QuicSession::MarkWriteBlocked(QuicStreamId id, QuicPriority priority) {
+  write_blocked_streams_.PushBack(id, priority);
 }
 
 void QuicSession::MarkDecompressionBlocked(QuicHeaderId header_id,

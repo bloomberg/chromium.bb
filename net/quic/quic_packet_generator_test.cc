@@ -40,6 +40,7 @@ class MockDelegate : public QuicPacketGenerator::DelegateInterface {
   MOCK_METHOD0(CreateAckFrame, QuicAckFrame*());
   MOCK_METHOD0(CreateFeedbackFrame, QuicCongestionFeedbackFrame*());
   MOCK_METHOD1(OnSerializedPacket, bool(const SerializedPacket& packet));
+  MOCK_METHOD2(CloseConnection, void(QuicErrorCode, bool));
 
   void SetCanWriteAnything() {
     EXPECT_CALL(*this, CanWrite(NOT_RETRANSMISSION, _, _))
@@ -453,6 +454,49 @@ TEST_F(QuicPacketGeneratorTest, ConsumeDataSendsFecAtEnd) {
   CheckPacketHasSingleStreamFrame(packet_);
   CheckPacketHasSingleStreamFrame(packet2_);
   CheckPacketIsFec(packet3_, 1);
+}
+
+TEST_F(QuicPacketGeneratorTest, ConsumeData_FramesPreviouslyQueued) {
+  // Set the packet size be enough for two stream frames with 0 stream offset,
+  // but not enough for a stream frame of 0 offset and one with non-zero offset.
+  creator_.options()->max_packet_length =
+      NullEncrypter().GetCiphertextSize(0) +
+      GetPacketHeaderSize(creator_.options()->send_guid_length,
+                          true,
+                          creator_.options()->send_sequence_number_length,
+                          NOT_IN_FEC_GROUP) +
+      // Add an extra 3 bytes for the payload and 1 byte so BytesFree is larger
+      // than the GetMinStreamFrameSize.
+      QuicFramer::GetMinStreamFrameSize(framer_.version(), 1, 0, false) + 3 +
+      QuicFramer::GetMinStreamFrameSize(framer_.version(), 1, 0, true) + 1;
+  delegate_.SetCanWriteAnything();
+  {
+     InSequence dummy;
+     EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
+         DoAll(SaveArg<0>(&packet_), Return(true)));
+     EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
+         DoAll(SaveArg<0>(&packet2_), Return(true)));
+  }
+  generator_.StartBatchOperations();
+  // Queue enough data to prevent a stream frame with a non-zero offset from
+  // fitting.
+  QuicConsumedData consumed = generator_.ConsumeData(1, "foo", 0, false);
+  EXPECT_EQ(3u, consumed.bytes_consumed);
+  EXPECT_FALSE(consumed.fin_consumed);
+  EXPECT_TRUE(generator_.HasQueuedFrames());
+
+  // This frame will not fit with the existing frame, causing the queued frame
+  // to be serialized, and it will not fit with another frame like it, so it is
+  // serialized by itself.
+  consumed = generator_.ConsumeData(1, "bar", 3, true);
+  EXPECT_EQ(3u, consumed.bytes_consumed);
+  EXPECT_TRUE(consumed.fin_consumed);
+  EXPECT_FALSE(generator_.HasQueuedFrames());
+
+  PacketContents contents;
+  contents.num_stream_frames = 1;
+  CheckPacketContains(contents, packet_);
+  CheckPacketContains(contents, packet2_);
 }
 
 TEST_F(QuicPacketGeneratorTest, NotWritableThenBatchOperations) {

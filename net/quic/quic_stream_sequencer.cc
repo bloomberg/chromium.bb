@@ -74,17 +74,21 @@ bool QuicStreamSequencer::OnStreamFrame(const QuicStreamFrame& frame) {
     return true;
   }
 
-  if (frame.fin) {
-    CloseStreamAtOffset(frame.offset + frame.data.size());
-  }
-
   QuicStreamOffset byte_offset = frame.offset;
   const char* data = frame.data.data();
   size_t data_len = frame.data.size();
 
-  if (data_len == 0) {
-    // TODO(rch): Close the stream if there was no data and no fin.
-    return true;
+  if (data_len == 0 && !frame.fin) {
+    // Stream frames must have data or a fin flag.
+    stream_->ConnectionClose(QUIC_INVALID_STREAM_FRAME, false);
+    return false;
+  }
+
+  if (frame.fin) {
+    CloseStreamAtOffset(frame.offset + frame.data.size());
+    if (data_len == 0) {
+      return true;
+    }
   }
 
   if (byte_offset == num_bytes_consumed_) {
@@ -96,7 +100,7 @@ bool QuicStreamSequencer::OnStreamFrame(const QuicStreamFrame& frame) {
       return true;
     }
     if (bytes_consumed > data_len) {
-      stream_->Close(QUIC_SERVER_ERROR_PROCESSING_STREAM);
+      stream_->Close(QUIC_ERROR_PROCESSING_STREAM);
       return false;
     } else if (bytes_consumed == data_len) {
       FlushBufferedFrames();
@@ -211,7 +215,7 @@ void QuicStreamSequencer::MarkConsumed(size_t num_bytes_consumed) {
                   << " end_offset: " << end_offset
                   << " offset: " << it->first
                   << " length: " << it->second.length();
-      stream_->Close(QUIC_SERVER_ERROR_PROCESSING_STREAM);
+      stream_->Close(QUIC_ERROR_PROCESSING_STREAM);
       return;
     }
 
@@ -262,7 +266,7 @@ void QuicStreamSequencer::FlushBufferedFrames() {
       return;
     }
     if (bytes_consumed > data->size()) {
-      stream_->Close(QUIC_SERVER_ERROR_PROCESSING_STREAM);  // Programming error
+      stream_->Close(QUIC_ERROR_PROCESSING_STREAM);  // Programming error
       return;
     } else if (bytes_consumed == data->size()) {
       frames_.erase(it);

@@ -56,6 +56,7 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
   void OnCryptoHandshakeMessageSent(
       const CryptoHandshakeMessage& message);
   void OnConnectionClose(QuicErrorCode error, bool from_peer);
+  void OnSuccessfulVersionNegotiation(const QuicVersion& version);
 
  private:
   BoundNetLog net_log_;

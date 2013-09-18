@@ -52,7 +52,7 @@ class QuicStreamFactoryTest : public ::testing::Test {
     header.fec_flag = false;
     header.fec_group = 0;
 
-    QuicRstStreamFrame rst(stream_id, QUIC_SERVER_ERROR_PROCESSING_STREAM);
+    QuicRstStreamFrame rst(stream_id, QUIC_ERROR_PROCESSING_STREAM);
     return scoped_ptr<QuicEncryptedPacket>(
         ConstructPacket(header, QuicFrame(&rst)));
   }

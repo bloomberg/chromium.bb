@@ -28,6 +28,7 @@ class MockDelegate : public QuicReliableClientStream::Delegate {
   MOCK_METHOD2(OnDataReceived, int(const char*, int));
   MOCK_METHOD1(OnClose, void(QuicErrorCode));
   MOCK_METHOD1(OnError, void(int));
+  MOCK_METHOD0(HasSendHeadersComplete, bool());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockDelegate);
@@ -86,7 +87,7 @@ TEST_F(QuicReliableClientStreamTest, WriteStreamData) {
   const size_t kDataLen = arraysize(kData1);
 
   // All data written.
-  EXPECT_CALL(session_, WriteData(stream_.id(), _, _, _)).WillOnce(
+  EXPECT_CALL(session_, WritevData(stream_.id(), _, _, _, _)).WillOnce(
       Return(QuicConsumedData(kDataLen, true)));
   TestCompletionCallback callback;
   EXPECT_EQ(OK, stream_.WriteStreamData(base::StringPiece(kData1, kDataLen),
@@ -94,13 +95,14 @@ TEST_F(QuicReliableClientStreamTest, WriteStreamData) {
 }
 
 TEST_F(QuicReliableClientStreamTest, WriteStreamDataAsync) {
+  EXPECT_CALL(delegate_, HasSendHeadersComplete());
   EXPECT_CALL(delegate_, OnClose(QUIC_NO_ERROR));
 
   const char kData1[] = "hello world";
   const size_t kDataLen = arraysize(kData1);
 
   // No data written.
-  EXPECT_CALL(session_, WriteData(stream_.id(), _, _, _)).WillOnce(
+  EXPECT_CALL(session_, WritevData(stream_.id(), _, _, _, _)).WillOnce(
       Return(QuicConsumedData(0, false)));
   TestCompletionCallback callback;
   EXPECT_EQ(ERR_IO_PENDING,
@@ -109,7 +111,7 @@ TEST_F(QuicReliableClientStreamTest, WriteStreamDataAsync) {
   ASSERT_FALSE(callback.have_result());
 
   // All data written.
-  EXPECT_CALL(session_, WriteData(stream_.id(), _, _, _)).WillOnce(
+  EXPECT_CALL(session_, WritevData(stream_.id(), _, _, _, _)).WillOnce(
       Return(QuicConsumedData(kDataLen, true)));
   stream_.OnCanWrite();
   ASSERT_TRUE(callback.have_result());

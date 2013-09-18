@@ -71,6 +71,7 @@ class MockStream : public ReliableQuicStream {
 
   MOCK_METHOD1(TerminateFromPeer, void(bool half_close));
   MOCK_METHOD2(ProcessData, uint32(const char* data, uint32 data_len));
+  MOCK_METHOD2(ConnectionClose, void(QuicErrorCode error, bool from_peer));
   MOCK_METHOD1(Close, void(QuicRstStreamErrorCode error));
   MOCK_METHOD0(OnCanWrite, void());
 };
@@ -182,7 +183,8 @@ TEST_F(QuicStreamSequencerTest, FullFrameConsumed) {
 }
 
 TEST_F(QuicStreamSequencerTest, EmptyFrame) {
-  EXPECT_TRUE(sequencer_->OnFrame(0, ""));
+  EXPECT_CALL(stream_, ConnectionClose(QUIC_INVALID_STREAM_FRAME, false));
+  EXPECT_FALSE(sequencer_->OnFrame(0, ""));
   EXPECT_EQ(0u, sequencer_->frames()->size());
   EXPECT_EQ(0u, sequencer_->num_bytes_consumed());
 }
@@ -399,7 +401,7 @@ TEST_F(QuicStreamSequencerTest, MarkConsumedError) {
 
   // Now, attempt to mark consumed more data than was readable
   // and expect the stream to be closed.
-  EXPECT_CALL(stream_, Close(QUIC_SERVER_ERROR_PROCESSING_STREAM));
+  EXPECT_CALL(stream_, Close(QUIC_ERROR_PROCESSING_STREAM));
   EXPECT_DFATAL(sequencer_->MarkConsumed(4),
                 "Invalid argument to MarkConsumed.  num_bytes_consumed_: 3 "
                 "end_offset: 4 offset: 9 length: 17");

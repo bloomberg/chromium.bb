@@ -7,6 +7,7 @@
 #include "base/callback_helpers.h"
 #include "net/base/net_errors.h"
 #include "net/quic/quic_session.h"
+#include "net/spdy/write_blocked_list.h"
 
 namespace net {
 
@@ -52,6 +53,13 @@ void QuicReliableClientStream::OnCanWrite() {
   if (!HasBufferedData() && !callback_.is_null()) {
     base::ResetAndReturn(&callback_).Run(OK);
   }
+}
+
+QuicPriority QuicReliableClientStream::EffectivePriority() const {
+  if (delegate_->HasSendHeadersComplete()) {
+    return ReliableQuicStream::EffectivePriority();
+  }
+  return kHighestPriority;
 }
 
 int QuicReliableClientStream::WriteStreamData(

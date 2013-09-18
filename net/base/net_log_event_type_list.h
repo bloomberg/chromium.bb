@@ -1460,6 +1460,12 @@ EVENT_TYPE(QUIC_SESSION_PUBLIC_RESET_PACKET_RECEIVED)
 //   }
 EVENT_TYPE(QUIC_SESSION_VERSION_NEGOTIATION_PACKET_RECEIVED)
 
+// Session sucessfully negotiated QUIC version number.
+//   {
+//     "version": <String of QUIC version negotiated with the server>,
+//   }
+EVENT_TYPE(QUIC_SESSION_VERSION_NEGOTIATED)
+
 // Session revived a QUIC packet packet via FEC.
 //   {
 //     "guid": <The 64-bit GUID for this connection, as a base-10 string>,

@@ -269,8 +269,8 @@ NET_EXPORT_PRIVATE size_t GetStartOfEncryptedData(
 enum QuicRstStreamErrorCode {
   QUIC_STREAM_NO_ERROR = 0,
 
-  // There was some server error which halted stream processing.
-  QUIC_SERVER_ERROR_PROCESSING_STREAM,
+  // There was some error which halted stream processing.
+  QUIC_ERROR_PROCESSING_STREAM,
   // We got two fin or reset offsets which did not match.
   QUIC_MULTIPLE_TERMINATION_OFFSETS,
   // We got bad payload and can not respond to it at the protocol level.
@@ -333,6 +333,8 @@ enum QuicErrorCode {
   QUIC_PEER_GOING_AWAY = 16,
   // A stream ID was invalid.
   QUIC_INVALID_STREAM_ID = 17,
+  // A priority was invalid.
+  QUIC_INVALID_PRIORITY = 49,
   // Too many streams already open.
   QUIC_TOO_MANY_OPEN_STREAMS = 18,
   // Received public reset for this connection.
@@ -355,6 +357,8 @@ enum QuicErrorCode {
   QUIC_PACKET_WRITE_ERROR = 27,
   // There was an error while reading from the socket.
   QUIC_PACKET_READ_ERROR = 51,
+  // We received a STREAM_FRAME with no data and no fin flag set.
+  QUIC_INVALID_STREAM_FRAME = 50,
 
 
   // Crypto errors.

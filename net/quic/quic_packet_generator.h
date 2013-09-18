@@ -71,6 +71,7 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
     virtual QuicCongestionFeedbackFrame* CreateFeedbackFrame() = 0;
     // Takes ownership of |packet.packet| and |packet.retransmittable_frames|.
     virtual bool OnSerializedPacket(const SerializedPacket& packet) = 0;
+    virtual void CloseConnection(QuicErrorCode error, bool from_peer) = 0;
   };
 
   // Interface which gets callbacks from the QuicPacketGenerator at interesting
