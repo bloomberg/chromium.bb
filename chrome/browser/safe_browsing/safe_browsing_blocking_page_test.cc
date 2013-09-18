@@ -713,8 +713,14 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, MalwareIframeProceed) {
             browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
+// http://crbug.com/273302
+#if defined(OS_WIN)
+#define MAYBE_MalwareIframeReportDetails DISABLED_MalwareIframeReportDetails
+#else
+#define MAYBE_MalwareIframeReportDetails MalwareIframeReportDetails
+#endif
 IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest,
-                       MalwareIframeReportDetails) {
+                       MAYBE_MalwareIframeReportDetails) {
   GURL url = SetupMalwareIframeWarningAndNavigate();
 
   // If the DOM details from renderer did not already return, wait for them.
