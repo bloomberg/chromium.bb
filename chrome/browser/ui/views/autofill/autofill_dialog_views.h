@@ -572,6 +572,10 @@ class AutofillDialogViews : public AutofillDialogView,
   // sign in.
   bool SignInWebviewDictatesHeight() const;
 
+  // Sets the icons in |section| according to the field values. For example,
+  // sets the credit card and CVC icons according to the credit card number.
+  void SetIconsForSection(DialogSection section);
+
   // The delegate that drives this view. Weak pointer, always non-NULL.
   AutofillDialogViewDelegate* const delegate_;
 

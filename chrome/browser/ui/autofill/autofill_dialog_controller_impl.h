@@ -131,8 +131,13 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   virtual string16 LabelForSection(DialogSection section) const OVERRIDE;
   virtual SuggestionState SuggestionStateForSection(
       DialogSection section) OVERRIDE;
+  // TODO(groby): Remove this deprecated method after Mac starts using
+  // IconsForFields. http://crbug.com/292876
   virtual gfx::Image IconForField(ServerFieldType type,
                                   const string16& user_input) const OVERRIDE;
+  virtual FieldIconMap IconsForFields(const FieldValueMap& user_inputs)
+      const OVERRIDE;
+  virtual bool FieldControlsIcons(ServerFieldType type) const OVERRIDE;
   virtual string16 InputValidityMessage(DialogSection section,
                                         ServerFieldType type,
                                         const string16& value) OVERRIDE;
@@ -423,7 +428,7 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   string16 RequiredActionTextForSection(DialogSection section) const;
   gfx::Image SuggestionIconForSection(DialogSection section);
   string16 ExtraSuggestionTextForSection(DialogSection section) const;
-  gfx::Image ExtraSuggestionIconForSection(DialogSection section) const;
+  gfx::Image ExtraSuggestionIconForSection(DialogSection section);
 
   // Loads profiles that can suggest data for |type|. |field_contents| is the
   // part the user has already typed. |inputs| is the rest of section.

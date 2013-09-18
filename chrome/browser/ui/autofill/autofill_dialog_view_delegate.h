@@ -34,6 +34,9 @@ class MenuModel;
 
 namespace autofill {
 
+typedef std::map<ServerFieldType, string16> FieldValueMap;
+typedef std::map<ServerFieldType, gfx::Image> FieldIconMap;
+
 // This class defines the interface to the controller that the dialog view sees.
 class AutofillDialogViewDelegate {
  public:
@@ -116,10 +119,19 @@ class AutofillDialogViewDelegate {
   // Returns the current state of suggestions for |section|.
   virtual SuggestionState SuggestionStateForSection(DialogSection section) = 0;
 
-  // Returns an icon to be displayed along with the input for the given type.
-  // |user_input| is the current text in the textfield.
+  // TODO(groby): Remove this deprecated method after Mac starts using
+  // IconsForFields. http://crbug.com/292876
   virtual gfx::Image IconForField(ServerFieldType type,
                                   const string16& user_input) const = 0;
+
+  // Returns the icons to be displayed along with the given |user_inputs| in a
+  // section.
+  virtual FieldIconMap IconsForFields(
+      const FieldValueMap& user_inputs) const = 0;
+
+  // Returns true if the value of this field |type| controls the icons for the
+  // rest of the fields in a section.
+  virtual bool FieldControlsIcons(ServerFieldType type) const = 0;
 
   // Decides whether input of |value| is valid for a field of type |type|. If
   // valid, the returned string will be empty. Otherwise it will contain an

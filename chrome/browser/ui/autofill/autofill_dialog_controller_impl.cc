@@ -532,6 +532,28 @@ base::string16 GenerateRandomCardNumber() {
   return ASCIIToUTF16(card_number);
 }
 
+gfx::Image CreditCardIconForType(const std::string& credit_card_type) {
+  const int input_card_idr = CreditCard::IconResourceId(credit_card_type);
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  gfx::Image result = rb.GetImageNamed(input_card_idr);
+  if (input_card_idr == IDR_AUTOFILL_CC_GENERIC) {
+    // When the credit card type is unknown, no image should be shown. However,
+    // to simplify the view code on Mac, save space for the credit card image by
+    // returning a transparent image of the appropriate size.
+    result = gfx::Image(gfx::ImageSkiaOperations::CreateTransparentImage(
+        result.AsImageSkia(), 0));
+  }
+  return result;
+}
+
+gfx::Image CvcIconForCreditCardType(const std::string& credit_card_type) {
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  if (credit_card_type == autofill::kAmericanExpressCard)
+    return rb.GetImageNamed(IDR_CREDIT_CARD_CVC_HINT_AMEX);
+
+  return rb.GetImageNamed(IDR_CREDIT_CARD_CVC_HINT);
+}
+
 }  // namespace
 
 AutofillDialogViewDelegate::~AutofillDialogViewDelegate() {}
@@ -1508,13 +1530,20 @@ gfx::Image AutofillDialogControllerImpl::SuggestionIconForSection(
 }
 
 gfx::Image AutofillDialogControllerImpl::ExtraSuggestionIconForSection(
-    DialogSection section) const {
-  if (section == SECTION_CC || section == SECTION_CC_BILLING)
-    return IconForField(CREDIT_CARD_VERIFICATION_CODE, string16());
+    DialogSection section) {
+  if (section != SECTION_CC && section != SECTION_CC_BILLING)
+    return gfx::Image();
 
-  return gfx::Image();
+  scoped_ptr<DataModelWrapper> model = CreateWrapper(section);
+  if (!model.get())
+    return gfx::Image();
+
+  return CvcIconForCreditCardType(
+      UTF16ToUTF8(model->GetInfo(AutofillType(CREDIT_CARD_TYPE))));
 }
 
+// TODO(groby): Remove this deprecated method after Mac starts using
+// IconsForFields. http://crbug.com/292876
 gfx::Image AutofillDialogControllerImpl::IconForField(
     ServerFieldType type, const string16& user_input) const {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
@@ -1536,6 +1565,33 @@ gfx::Image AutofillDialogControllerImpl::IconForField(
   }
 
   return gfx::Image();
+}
+
+FieldIconMap AutofillDialogControllerImpl::IconsForFields(
+    const FieldValueMap& user_inputs) const {
+  FieldIconMap result;
+  std::string credit_card_type = autofill::kGenericCard;
+
+  FieldValueMap::const_iterator credit_card_iter =
+      user_inputs.find(CREDIT_CARD_NUMBER);
+  if (credit_card_iter != user_inputs.end()) {
+    const string16& credit_card_number = credit_card_iter->second;
+    credit_card_type = CreditCard::GetCreditCardType(credit_card_number);
+    result[CREDIT_CARD_NUMBER] = CreditCardIconForType(credit_card_type);
+  }
+
+  if (!user_inputs.count(CREDIT_CARD_VERIFICATION_CODE))
+    return result;
+
+  result[CREDIT_CARD_VERIFICATION_CODE] =
+      CvcIconForCreditCardType(credit_card_type);
+
+  return result;
+}
+
+bool AutofillDialogControllerImpl::FieldControlsIcons(
+    ServerFieldType type) const {
+  return type == CREDIT_CARD_NUMBER;
 }
 
 // TODO(estade): Replace all the error messages here with more helpful and

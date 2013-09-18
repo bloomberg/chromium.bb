@@ -80,6 +80,21 @@ WalletItems::MaskedInstrument::Status
   return WalletItems::MaskedInstrument::INAPPLICABLE;
 }
 
+std::string StringIdentifierFromType(WalletItems::MaskedInstrument::Type type) {
+  switch (type) {
+    case WalletItems::MaskedInstrument::VISA:
+      return kVisaCard;
+    case WalletItems::MaskedInstrument::MASTER_CARD:
+      return kMasterCard;
+    case WalletItems::MaskedInstrument::AMEX:
+      return kAmericanExpressCard;
+    case WalletItems::MaskedInstrument::DISCOVER:
+      return kDiscoverCard;
+    default:
+      return kGenericCard;
+  }
+}
+
 }  // anonymous namespace
 
 WalletItems::MaskedInstrument::MaskedInstrument(
@@ -326,6 +341,9 @@ base::string16 WalletItems::MaskedInstrument::GetInfo(
 
     case CREDIT_CARD_VERIFICATION_CODE:
       break;
+
+    case CREDIT_CARD_TYPE:
+      return UTF8ToUTF16(StringIdentifierFromType(type_));
 
     default:
       NOTREACHED();

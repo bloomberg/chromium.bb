@@ -2427,4 +2427,46 @@ TEST_F(AutofillDialogControllerTest, SubmitButtonIsDisabled_NoSpinner) {
   EXPECT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
 }
 
+TEST_F(AutofillDialogControllerTest, IconsForFields_NoCreditCard) {
+  FieldValueMap values;
+  values[EMAIL_ADDRESS] = ASCIIToUTF16(kFakeEmail);
+  FieldIconMap icons = controller()->IconsForFields(values);
+  EXPECT_TRUE(icons.empty());
+}
+
+TEST_F(AutofillDialogControllerTest, IconsForFields_CreditCardNumberOnly) {
+  FieldValueMap values;
+  values[EMAIL_ADDRESS] = ASCIIToUTF16(kFakeEmail);
+  values[CREDIT_CARD_NUMBER] = ASCIIToUTF16(kTestCCNumberVisa);
+  FieldIconMap icons = controller()->IconsForFields(values);
+  EXPECT_EQ(1UL, icons.size());
+  EXPECT_EQ(1UL, icons.count(CREDIT_CARD_NUMBER));
+}
+
+TEST_F(AutofillDialogControllerTest, IconsForFields_CvcOnly) {
+  FieldValueMap values;
+  values[EMAIL_ADDRESS] = ASCIIToUTF16(kFakeEmail);
+  values[CREDIT_CARD_VERIFICATION_CODE] = ASCIIToUTF16("123");
+  FieldIconMap icons = controller()->IconsForFields(values);
+  EXPECT_EQ(1UL, icons.size());
+  EXPECT_EQ(1UL, icons.count(CREDIT_CARD_VERIFICATION_CODE));
+}
+
+TEST_F(AutofillDialogControllerTest, IconsForFields_BothCreditCardAndCvc) {
+  FieldValueMap values;
+  values[EMAIL_ADDRESS] = ASCIIToUTF16(kFakeEmail);
+  values[CREDIT_CARD_NUMBER] = ASCIIToUTF16(kTestCCNumberVisa);
+  values[CREDIT_CARD_VERIFICATION_CODE] = ASCIIToUTF16("123");
+  FieldIconMap icons = controller()->IconsForFields(values);
+  EXPECT_EQ(2UL, icons.size());
+  EXPECT_EQ(1UL, icons.count(CREDIT_CARD_VERIFICATION_CODE));
+  EXPECT_EQ(1UL, icons.count(CREDIT_CARD_NUMBER));
+}
+
+TEST_F(AutofillDialogControllerTest, FieldControlsIcons) {
+  EXPECT_TRUE(controller()->FieldControlsIcons(CREDIT_CARD_NUMBER));
+  EXPECT_FALSE(controller()->FieldControlsIcons(CREDIT_CARD_VERIFICATION_CODE));
+  EXPECT_FALSE(controller()->FieldControlsIcons(EMAIL_ADDRESS));
+}
+
 }  // namespace autofill

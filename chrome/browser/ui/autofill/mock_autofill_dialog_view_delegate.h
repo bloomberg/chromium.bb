@@ -47,8 +47,12 @@ class MockAutofillDialogViewDelegate : public AutofillDialogViewDelegate {
   MOCK_METHOD1(SuggestionStateForSection, SuggestionState(DialogSection));
   MOCK_METHOD1(EditClickedForSection, void(DialogSection section));
   MOCK_METHOD1(EditCancelledForSection, void(DialogSection section));
+  // TODO(groby): Remove this deprecated method after Mac starts using
+  // IconsForFields. http://crbug.com/292876
   MOCK_CONST_METHOD2(IconForField,
                      gfx::Image(ServerFieldType, const string16&));
+  MOCK_CONST_METHOD1(IconsForFields, FieldIconMap(const FieldValueMap&));
+  MOCK_CONST_METHOD1(FieldControlsIcons, bool(ServerFieldType));
   MOCK_METHOD3(InputValidityMessage,
       string16(DialogSection, ServerFieldType, const string16&));
   MOCK_METHOD3(InputsAreValid, ValidityData(DialogSection,

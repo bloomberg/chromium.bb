@@ -1937,10 +1937,6 @@ views::View* AutofillDialogViews::InitInputsView(DialogSection section) {
           l10n_util::GetStringUTF16(input.placeholder_text_rid),
           this);
 
-      gfx::Image icon =
-          delegate_->IconForField(input.type, input.initial_value);
-      field->SetIcon(icon);
-
       textfields->insert(std::make_pair(&input, field));
       view_to_add.reset(field);
     }
@@ -1982,6 +1978,8 @@ views::View* AutofillDialogViews::InitInputsView(DialogSection section) {
                     1, 0);
   }
 
+  SetIconsForSection(section);
+
   return view;
 }
 
@@ -2000,11 +1998,8 @@ void AutofillDialogViews::UpdateSectionImpl(
     if (text_mapping != group->textfields.end()) {
       DecoratedTextfield* decorated = text_mapping->second;
       decorated->SetEnabled(input.editable);
-      if (decorated->text().empty() || clobber_inputs) {
+      if (decorated->text().empty() || clobber_inputs)
         decorated->SetText(iter->initial_value);
-        decorated->SetIcon(
-            delegate_->IconForField(input.type, decorated->text()));
-      }
     }
 
     ComboboxMap::iterator combo_mapping = group->comboboxes.find(&input);
@@ -2023,6 +2018,7 @@ void AutofillDialogViews::UpdateSectionImpl(
     }
   }
 
+  SetIconsForSection(section);
   UpdateDetailsGroupState(*group);
 }
 
@@ -2241,7 +2237,7 @@ void AutofillDialogViews::TextfieldEditedOrActivated(
     SetValidityForInput<DecoratedTextfield>(
         decorated,
         delegate_->InputValidityMessage(group->section, type,
-                                          textfield->text()));
+                                        textfield->text()));
 
     // If the field transitioned from invalid to valid, re-validate the group,
     // since inter-field checks become meaningful with valid fields.
@@ -2249,8 +2245,8 @@ void AutofillDialogViews::TextfieldEditedOrActivated(
       ValidateGroup(*group, VALIDATE_EDIT);
   }
 
-  gfx::Image icon = delegate_->IconForField(type, textfield->text());
-  decorated->SetIcon(icon);
+  if (delegate_->FieldControlsIcons(type))
+    SetIconsForSection(group->section);
 }
 
 void AutofillDialogViews::UpdateButtonStripExtraView() {
@@ -2341,6 +2337,30 @@ void AutofillDialogViews::DetailsContainerBoundsChanged() {
 bool AutofillDialogViews::SignInWebviewDictatesHeight() const {
   return sign_in_webview_->visible() ||
       (sign_in_webview_->web_contents() && delegate_->ShouldShowSpinner());
+}
+
+void AutofillDialogViews::SetIconsForSection(DialogSection section) {
+  DetailOutputMap user_input;
+  GetUserInput(section, &user_input);
+  FieldValueMap field_values;
+  for (DetailOutputMap::const_iterator user_input_it = user_input.begin();
+       user_input_it != user_input.end();
+       ++user_input_it) {
+    const DetailInput* field_detail = user_input_it->first;
+    const string16& field_value = user_input_it->second;
+    field_values[field_detail->type] = field_value;
+  }
+  FieldIconMap field_icons = delegate_->IconsForFields(field_values);
+  TextfieldMap* textfields = &GroupForSection(section)->textfields;
+  for (TextfieldMap::const_iterator textfield_it = textfields->begin();
+       textfield_it != textfields->end();
+       ++textfield_it) {
+    ServerFieldType field_type = textfield_it->first->type;
+    FieldIconMap::const_iterator field_icon_it = field_icons.find(field_type);
+    DecoratedTextfield* textfield = textfield_it->second;
+    textfield->SetIcon(field_icon_it == field_icons.end() ?
+                           gfx::Image() : field_icon_it->second);
+  }
 }
 
 AutofillDialogViews::DetailsGroup::DetailsGroup(DialogSection section)
