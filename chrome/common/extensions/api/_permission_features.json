@@ -56,10 +56,19 @@
     "extension_types": ["extension", "legacy_packaged_app"],
     "location": "component"
   },
-  "audioCapture": {
-    "channel": "stable",
-    "extension_types": ["platform_app"]
-  },
+  "audioCapture": [
+    {
+      "channel": "stable",
+      "extension_types": ["platform_app"]
+    },
+    {
+      "channel": "stable",
+      "extension_types": ["extension"],
+      "whitelist": [
+        "mppnpdlheglhdfmldimlhpnegondlapf"  // http://crbug.com/292856
+      ]
+    }
+  ],
   "background": [
     {
       "channel": "stable",
@@ -697,10 +706,19 @@
     "channel": "stable",
     "extension_types": ["platform_app"]
   },
-  "videoCapture": {
-    "channel": "stable",
-    "extension_types": ["platform_app"]
-  },
+  "videoCapture": [
+    {
+      "channel": "stable",
+      "extension_types": ["platform_app"]
+    },
+    {
+      "channel": "stable",
+      "extension_types": ["extension"],
+      "whitelist": [
+        "mppnpdlheglhdfmldimlhpnegondlapf"  // http://crbug.com/292856
+      ]
+    }
+  ],
   "virtualKeyboardPrivate": {
     "channel": "stable",
     "whitelist": [

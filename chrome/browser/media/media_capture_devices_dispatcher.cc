@@ -55,6 +55,14 @@ const content::MediaStreamDevice* FindDeviceWithId(
   return NULL;
 };
 
+// This is a short-term solution to grant microphone access to virtual keyboard
+// extension for voice input. Once http://crbug.com/292856 is fixed, remove this
+// whitelist.
+bool IsMediaRequestWhitelistedForExtension(
+    const extensions::Extension* extension) {
+  return extension->id() == "mppnpdlheglhdfmldimlhpnegondlapf";
+}
+
 // This is a short-term solution to allow testing of the the Screen Capture API
 // with Google Hangouts in M27.
 // TODO(sergeyu): Remove this whitelist as soon as possible.
@@ -199,9 +207,10 @@ void MediaCaptureDevicesDispatcher::ProcessMediaAccessRequest(
              request.audio_type == content::MEDIA_TAB_AUDIO_CAPTURE) {
     ProcessTabCaptureAccessRequest(
         web_contents, request, callback, extension);
-  } else if (extension && extension->is_platform_app()) {
+  } else if (extension && (extension->is_platform_app() ||
+                           IsMediaRequestWhitelistedForExtension(extension))) {
     // For extensions access is approved based on extension permissions.
-    ProcessMediaAccessRequestFromPlatformApp(
+    ProcessMediaAccessRequestFromPlatformAppOrExtension(
         web_contents, request, callback, extension);
   } else {
     ProcessRegularMediaAccessRequest(web_contents, request, callback);
@@ -404,11 +413,12 @@ void MediaCaptureDevicesDispatcher::ProcessTabCaptureAccessRequest(
 #endif  // !defined(OS_ANDROID)
 }
 
-void MediaCaptureDevicesDispatcher::ProcessMediaAccessRequestFromPlatformApp(
-    content::WebContents* web_contents,
-    const content::MediaStreamRequest& request,
-    const content::MediaResponseCallback& callback,
-    const extensions::Extension* extension) {
+void MediaCaptureDevicesDispatcher::
+    ProcessMediaAccessRequestFromPlatformAppOrExtension(
+        content::WebContents* web_contents,
+        const content::MediaStreamRequest& request,
+        const content::MediaResponseCallback& callback,
+        const extensions::Extension* extension) {
   content::MediaStreamDevices devices;
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());

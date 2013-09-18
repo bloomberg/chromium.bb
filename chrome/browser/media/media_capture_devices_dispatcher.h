@@ -176,7 +176,7 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver,
       const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback,
       const extensions::Extension* extension);
-  void ProcessMediaAccessRequestFromPlatformApp(
+  void ProcessMediaAccessRequestFromPlatformAppOrExtension(
       content::WebContents* web_contents,
       const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback,
