@@ -45,6 +45,32 @@ using namespace std;
 
 namespace WebCore {
 
+class RepeatEvent : public Event {
+public:
+    static PassRefPtr<RepeatEvent> create(const AtomicString& type, int repeat)
+    {
+        return adoptRef(new RepeatEvent(type, false, false, repeat));
+    }
+
+    ~RepeatEvent() { }
+
+    int repeat() const { return m_repeat; }
+protected:
+    RepeatEvent(const AtomicString& type, bool canBubble, bool cancelable, int repeat = -1)
+        : Event(type, canBubble, cancelable)
+        , m_repeat(repeat)
+    {
+    }
+private:
+    int m_repeat;
+};
+
+inline RepeatEvent* toRepeatEvent(Event* event)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!event || event->type() == "repeatn");
+    return static_cast<RepeatEvent*>(event);
+}
+
 static SMILEventSender& smilEndEventSender()
 {
     DEFINE_STATIC_LOCAL(SMILEventSender, sender, ("endEvent"));
@@ -121,12 +147,13 @@ void ConditionEventListener::handleEvent(ScriptExecutionContext*, Event* event)
     m_animation->handleConditionEvent(event, m_condition);
 }
 
-SVGSMILElement::Condition::Condition(Type type, BeginOrEnd beginOrEnd, const String& baseID, const String& name, SMILTime offset)
+SVGSMILElement::Condition::Condition(Type type, BeginOrEnd beginOrEnd, const String& baseID, const String& name, SMILTime offset, int repeat)
     : m_type(type)
     , m_beginOrEnd(beginOrEnd)
     , m_baseID(baseID)
     , m_name(name)
     , m_offset(offset)
+    , m_repeat(repeat)
 {
 }
 
@@ -373,6 +400,7 @@ bool SVGSMILElement::parseCondition(const String& value, BeginOrEnd beginOrEnd)
     String parseString = value.stripWhiteSpace();
 
     double sign = 1.;
+    bool ok;
     size_t pos = parseString.find('+');
     if (pos == notFound) {
         pos = parseString.find('-');
@@ -407,7 +435,14 @@ bool SVGSMILElement::parseCondition(const String& value, BeginOrEnd beginOrEnd)
         return false;
 
     Condition::Type type;
-    if (nameString == "begin" || nameString == "end") {
+    int repeat = -1;
+    if (nameString.startsWith("repeat(") && nameString.endsWith(')')) {
+        repeat = nameString.substring(7, nameString.length() - 8).toUIntStrict(&ok);
+        if (!ok)
+            return false;
+        nameString = "repeatn";
+        type = Condition::EventBase;
+    } else if (nameString == "begin" || nameString == "end") {
         if (baseID.isEmpty())
             return false;
         type = Condition::Syncbase;
@@ -417,7 +452,7 @@ bool SVGSMILElement::parseCondition(const String& value, BeginOrEnd beginOrEnd)
     } else
         type = Condition::EventBase;
 
-    m_conditions.append(Condition(type, beginOrEnd, baseID, nameString, offset));
+    m_conditions.append(Condition(type, beginOrEnd, baseID, nameString, offset, repeat));
 
     if (type == Condition::EventBase && beginOrEnd == End)
         m_hasEndEventConditions = true;
@@ -1213,8 +1248,11 @@ void SVGSMILElement::removeTimeDependent(SVGSMILElement* animation)
     m_timeDependents.remove(animation);
 }
 
-void SVGSMILElement::handleConditionEvent(Event*, Condition* condition)
+void SVGSMILElement::handleConditionEvent(Event* event, Condition* condition)
 {
+    if (event->type() == "repeatn" && toRepeatEvent(event)->repeat() != condition->m_repeat)
+        return;
+
     SMILTime elapsed = this->elapsed();
     if (condition->m_beginOrEnd == Begin)
         addBeginTime(elapsed, elapsed + condition->m_offset);
@@ -1248,7 +1286,7 @@ void SVGSMILElement::dispatchPendingEvent(SMILEventSender* eventSender)
     if (eventType == "repeatn") {
         unsigned repeatEventCount = m_repeatEventCountList.first();
         m_repeatEventCountList.remove(0);
-        dispatchEvent(Event::create(String("repeat(" + String::number(repeatEventCount) + ")")));
+        dispatchEvent(RepeatEvent::create(eventType, repeatEventCount));
     } else {
         dispatchEvent(Event::create(eventType));
     }
