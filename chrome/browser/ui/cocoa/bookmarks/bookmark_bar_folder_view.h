@@ -4,6 +4,8 @@
 
 #import <Cocoa/Cocoa.h>
 
+#import "base/mac/scoped_nsobject.h"
+
 @protocol BookmarkButtonControllerProtocol;
 @class BookmarkBarFolderController;
 
@@ -13,9 +15,9 @@
  @private
   BOOL inDrag_;  // Are we in the middle of a drag?
   BOOL dropIndicatorShown_;
-  CGFloat dropIndicatorPosition_;  // y position
   // The following |controller_| is weak; used for testing only. See the imple-
   // mentation comment for - (id<BookmarkButtonControllerProtocol>)controller.
   id<BookmarkButtonControllerProtocol> controller_;
+  base::scoped_nsobject<NSBox> dropIndicator_;
 }
 @end

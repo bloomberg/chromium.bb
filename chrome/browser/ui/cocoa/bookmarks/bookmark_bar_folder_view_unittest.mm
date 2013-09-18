@@ -44,7 +44,7 @@
 }
 
 -(CGFloat)dropIndicatorPosition {
-  return dropIndicatorPosition_;
+  return NSMinY([dropIndicator_ frame]);
 }
 
 @end

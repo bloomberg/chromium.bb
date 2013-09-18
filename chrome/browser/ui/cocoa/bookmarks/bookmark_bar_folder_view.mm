@@ -19,6 +19,8 @@ using content::UserMetricsAction;
 
 @property(readonly, nonatomic) id<BookmarkButtonControllerProtocol> controller;
 
+- (void)setDropIndicatorShown:(BOOL)flag;
+
 @end
 
 @implementation BookmarkBarFolderView
@@ -45,30 +47,6 @@ using content::UserMetricsAction;
   return controller_ ? controller_ : [[self window] windowController];
 }
 
-- (void)drawRect:(NSRect)rect {
-  // TODO(jrg): copied from bookmark_bar_view but orientation changed.
-  // Code dup sucks but I'm not sure I can take 16 lines and make it
-  // generic for horiz vs vertical while keeping things simple.
-  // TODO(jrg): when throwing it all away and using animations, try
-  // hard to make a common routine for both.
-  // http://crbug.com/35966, http://crbug.com/35968
-
-  // Draw the bookmark-button-dragging drop indicator if necessary.
-  if (dropIndicatorShown_) {
-    const CGFloat kBarHeight = 1;
-    const CGFloat kBarHorizPad = 4;
-    const CGFloat kBarOpacity = 0.85;
-
-    NSRect uglyBlackBar =
-        NSMakeRect(kBarHorizPad, dropIndicatorPosition_,
-                   NSWidth([self bounds]) - 2*kBarHorizPad,
-                   kBarHeight);
-    NSColor* uglyBlackBarColor = [NSColor blackColor];
-    [[uglyBlackBarColor colorWithAlphaComponent:kBarOpacity] setFill];
-    [[NSBezierPath bezierPathWithRect:uglyBlackBar] fill];
-  }
-}
-
 // TODO(mrossetti,jrg): Identical to -[BookmarkBarView
 // dragClipboardContainsBookmarks].  http://crbug.com/35966
 // Shim function to assist in unit testing.
@@ -92,21 +70,16 @@ using content::UserMetricsAction;
     BOOL showIt = [[self controller]
                    shouldShowIndicatorShownForPoint:[info draggingLocation]];
     if (!showIt) {
-      if (dropIndicatorShown_) {
-        dropIndicatorShown_ = NO;
-        [self setNeedsDisplay:YES];
-      }
+      [self setDropIndicatorShown:NO];
     } else {
-      CGFloat y =
-      [[self controller]
-       indicatorPosForDragToPoint:[info draggingLocation]];
+      [self setDropIndicatorShown:YES];
 
-      // Need an update if the indicator wasn't previously shown or if it has
-      // moved.
-      if (!dropIndicatorShown_ || dropIndicatorPosition_ != y) {
-        dropIndicatorShown_ = YES;
-        dropIndicatorPosition_ = y;
-        [self setNeedsDisplay:YES];
+      CGFloat y = [[self controller]
+          indicatorPosForDragToPoint:[info draggingLocation]];
+      NSRect frame = [dropIndicator_ frame];
+      if (NSMinY(frame) != y) {
+        frame.origin.y = y;
+        [dropIndicator_ setFrame:frame];
       }
     }
 
@@ -121,10 +94,7 @@ using content::UserMetricsAction;
 
   // Regardless of the type of dragging which ended, we need to get rid of the
   // drop indicator if one was shown.
-  if (dropIndicatorShown_) {
-    dropIndicatorShown_ = NO;
-    [self setNeedsDisplay:YES];
-  }
+  [self setDropIndicatorShown:NO];
 }
 
 - (void)draggingEnded:(id<NSDraggingInfo>)info {
@@ -220,6 +190,25 @@ using content::UserMetricsAction;
   if ([pboard containsURLData] && [self performDragOperationForURL:info])
     return YES;
   return NO;
+}
+
+- (void)setDropIndicatorShown:(BOOL)flag {
+  if (dropIndicatorShown_ == flag)
+    return;
+
+  dropIndicatorShown_ = flag;
+  if (dropIndicatorShown_) {
+    NSRect frame = NSInsetRect([self bounds], 4, 0);
+    frame.size.height = 1;
+    dropIndicator_.reset([[NSBox alloc] initWithFrame:frame]);
+    [dropIndicator_ setBoxType:NSBoxSeparator];
+    [dropIndicator_ setBorderType:NSLineBorder];
+    [dropIndicator_ setAlphaValue:0.85];
+    [self addSubview:dropIndicator_];
+  } else {
+    [dropIndicator_ removeFromSuperview];
+    dropIndicator_.reset();
+  }
 }
 
 @end
