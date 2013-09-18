@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/message_center/message_center.h"
+#include "ui/message_center/message_center_types.h"
 #include "ui/message_center/notification_blocker.h"
 #include "ui/message_center/notification_types.h"
 
@@ -434,6 +435,55 @@ TEST_F(MessageCenterImplTest, NotificationBlockerAllowsPopups) {
   EXPECT_TRUE(PopupNotificationsContain(popups, "id3"));
   EXPECT_TRUE(PopupNotificationsContain(popups, "id4"));
   EXPECT_EQ(4u, message_center()->GetNotifications().size());
+}
+
+TEST_F(MessageCenterImplTest, QueueUpdatesWithCenterVisible) {
+  std::string id("id1");
+  std::string id2("id2");
+  NotifierId notifier_id1(NotifierId::APPLICATION, "app1");
+
+  scoped_ptr<Notification> notification(new Notification(
+      NOTIFICATION_TYPE_SIMPLE,
+      id,
+      UTF8ToUTF16("title"),
+      UTF8ToUTF16("message"),
+      gfx::Image() /* icon */,
+      base::string16() /* display_source */,
+      notifier_id1,
+      RichNotificationData(),
+      NULL));
+
+  message_center()->AddNotification(notification.Pass());
+  notification.reset(new Notification(
+      NOTIFICATION_TYPE_MULTIPLE,
+      id2,
+      UTF8ToUTF16("title"),
+      UTF8ToUTF16("message"),
+      gfx::Image() /* icon */,
+      base::string16() /* display_source */,
+      notifier_id1,
+      RichNotificationData(),
+      NULL));
+  message_center()->UpdateNotification(id, notification.Pass());
+  EXPECT_TRUE(message_center()->HasNotification(id2));
+  EXPECT_FALSE(message_center()->HasNotification(id));
+  message_center()->SetVisibility(VISIBILITY_MESSAGE_CENTER);
+  notification.reset(new Notification(
+      NOTIFICATION_TYPE_MULTIPLE,
+      id,
+      UTF8ToUTF16("title"),
+      UTF8ToUTF16("message"),
+      gfx::Image() /* icon */,
+      base::string16() /* display_source */,
+      notifier_id1,
+      RichNotificationData(),
+      NULL));
+  message_center()->UpdateNotification(id2, notification.Pass());
+  EXPECT_TRUE(message_center()->HasNotification(id2));
+  EXPECT_FALSE(message_center()->HasNotification(id));
+  message_center()->SetVisibility(VISIBILITY_TRANSIENT);
+  EXPECT_FALSE(message_center()->HasNotification(id2));
+  EXPECT_TRUE(message_center()->HasNotification(id));
 }
 
 }  // namespace internal

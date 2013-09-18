@@ -25,19 +25,39 @@ base::TimeDelta GetTimeoutForPriority(int priority) {
       message_center::kAutocloseDefaultDelaySeconds);
 }
 
-struct NotificationFinder {
-  explicit NotificationFinder(const std::string& id) : id(id) {}
-  bool operator()(message_center::Notification* notification) {
-    return notification->id() == id;
-  }
-
-  std::string id;
-};
-
 }  // namespace
 
 namespace message_center {
 namespace internal {
+
+////////////////////////////////////////////////////////////////////////////////
+// NotificationQueueItem
+
+struct NotificationQueueItem {
+ public:
+  Notification* notification;
+  bool is_update;
+  std::string pre_update_id;
+};
+
+void DeleteQueueNotification(NotificationQueueItem item) {
+  if (item.notification)
+    delete item.notification;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// NotificationFinder
+
+struct NotificationFinder {
+  explicit NotificationFinder(const std::string& id) : id(id) {}
+  bool operator()(const NotificationQueueItem& item) {
+    DCHECK(item.notification);
+    return item.notification->id() == id;
+  }
+
+  std::string id;
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 // PopupTimer
@@ -213,7 +233,10 @@ MessageCenterImpl::MessageCenterImpl()
 
 MessageCenterImpl::~MessageCenterImpl() {
   notification_list_.reset();
-  STLDeleteElements(&notification_queue_);
+  for_each(notification_queue_.begin(),
+           notification_queue_.end(),
+           internal::DeleteQueueNotification);
+  notification_queue_.clear();
 }
 
 void MessageCenterImpl::AddObserver(MessageCenterObserver* observer) {
@@ -267,12 +290,20 @@ void MessageCenterImpl::SetVisibility(Visibility visibility) {
   }
 
   if (visibility == VISIBILITY_TRANSIENT) {
-    for (std::list<Notification*>::const_iterator iter =
+    for (std::list<internal::NotificationQueueItem>::const_iterator iter =
              notification_queue_.begin();
          iter != notification_queue_.end();
          ++iter) {
-      AddNotification(scoped_ptr<Notification>(*iter));
+      // Warning: After this line, the queue will no longer own the
+      // notifications contained.
+      if ((*iter).is_update)
+        UpdateNotification((*iter).pre_update_id,
+                           scoped_ptr<Notification>((*iter).notification));
+      else
+        AddNotification(scoped_ptr<Notification>((*iter).notification));
     }
+    // This does not delete the internal notification pointers since they are
+    // now owned by the notification list.
     notification_queue_.clear();
   }
   FOR_EACH_OBSERVER(MessageCenterObserver,
@@ -328,15 +359,20 @@ void MessageCenterImpl::AddNotification(scoped_ptr<Notification> notification) {
     blockers_[i]->CheckState();
 
   if (notification_list_->is_message_center_visible()) {
-    std::list<Notification*>::iterator iter = std::find_if(
+    std::list<internal::NotificationQueueItem>::iterator iter = std::find_if(
         notification_queue_.begin(),
         notification_queue_.end(),
-        NotificationFinder(notification->id()));
+        internal::NotificationFinder(notification->id()));
     if (iter != notification_queue_.end()) {
-      delete *iter;
+      internal::DeleteQueueNotification(*iter);
       notification_queue_.erase(iter);
     }
-    notification_queue_.push_back(notification.release());
+    internal::NotificationQueueItem item = {
+      notification.release(),
+      false,
+      std::string()
+    };
+    notification_queue_.push_back(item);
     return;
   }
 
@@ -362,18 +398,32 @@ void MessageCenterImpl::UpdateNotification(
   for (size_t i = 0; i < blockers_.size(); ++i)
     blockers_[i]->CheckState();
 
+  // We will allow notifications that are progress types (and stay progress
+  // types) to be updated even if the message center is open.
+  bool update_keeps_progress_type =
+      new_notification->type() == NOTIFICATION_TYPE_PROGRESS;
+  if (!notification_list_->HasNotificationOfType(old_id,
+                                                 NOTIFICATION_TYPE_PROGRESS)) {
+    update_keeps_progress_type = false;
+  }
+
   // Updates are allowed only for progress notifications.
   if (notification_list_->is_message_center_visible() &&
-      new_notification->type() != NOTIFICATION_TYPE_PROGRESS) {
-    std::list<Notification*>::iterator iter = std::find_if(
+      !update_keeps_progress_type) {
+    std::list<internal::NotificationQueueItem>::iterator iter = std::find_if(
         notification_queue_.begin(),
         notification_queue_.end(),
-        NotificationFinder(old_id));
+        internal::NotificationFinder(old_id));
     if (iter != notification_queue_.end()) {
-      delete *iter;
+      internal::DeleteQueueNotification(*iter);
       notification_queue_.erase(iter);
     }
-    notification_queue_.push_back(new_notification.release());
+    internal::NotificationQueueItem item = {
+      new_notification.release(),
+      true,
+      old_id
+    };
+    notification_queue_.push_back(item);
     return;
   }
 
@@ -393,12 +443,12 @@ void MessageCenterImpl::UpdateNotification(
 
 void MessageCenterImpl::RemoveNotification(const std::string& id,
                                            bool by_user) {
-  std::list<Notification*>::iterator iter = std::find_if(
+  std::list<internal::NotificationQueueItem>::iterator iter = std::find_if(
       notification_queue_.begin(),
       notification_queue_.end(),
-      NotificationFinder(id));
+      internal::NotificationFinder(id));
   if (iter != notification_queue_.end()) {
-    delete *iter;
+    DeleteQueueNotification(*iter);
     notification_queue_.erase(iter);
   }
 

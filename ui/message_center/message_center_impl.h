@@ -22,6 +22,7 @@ class NotificationDelegate;
 class MessageCenterImpl;
 
 namespace internal {
+struct NotificationQueueItem;
 class PopupTimersController;
 
 // A class that manages timeout behavior for notification popups.  One instance
@@ -200,7 +201,7 @@ class MessageCenterImpl : public MessageCenter,
 
   // queue for the notifications to delay the addition/updates when the message
   // center is visible.
-  std::list<Notification*> notification_queue_;
+  std::list<internal::NotificationQueueItem> notification_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageCenterImpl);
 };

@@ -664,5 +664,31 @@ TEST_F(NotificationListTest, UnreadCountNoNegative) {
   EXPECT_EQ(1u, notification_list()->unread_count());
 }
 
+TEST_F(NotificationListTest, TestHasNotificationOfType) {
+  std::string id = AddNotification();
+
+  EXPECT_TRUE(notification_list()->HasNotificationOfType(
+      id, message_center::NOTIFICATION_TYPE_SIMPLE));
+  EXPECT_FALSE(notification_list()->HasNotificationOfType(
+      id, message_center::NOTIFICATION_TYPE_PROGRESS));
+
+  scoped_ptr<Notification> updated_notification(new Notification(
+      message_center::NOTIFICATION_TYPE_PROGRESS,
+      id,
+      UTF8ToUTF16("updated"),
+      UTF8ToUTF16("updated"),
+      gfx::Image(),
+      base::string16(),
+      NotifierId(),
+      RichNotificationData(),
+      NULL));
+  notification_list()->AddNotification(updated_notification.Pass());
+
+  EXPECT_FALSE(notification_list()->HasNotificationOfType(
+      id, message_center::NOTIFICATION_TYPE_SIMPLE));
+  EXPECT_TRUE(notification_list()->HasNotificationOfType(
+      id, message_center::NOTIFICATION_TYPE_PROGRESS));
+}
+
 }  // namespace test
 }  // namespace message_center

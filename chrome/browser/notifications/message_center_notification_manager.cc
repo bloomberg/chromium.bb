@@ -98,14 +98,6 @@ void MessageCenterNotificationManager::Add(const Notification& notification,
 
 bool MessageCenterNotificationManager::Update(const Notification& notification,
                                               Profile* profile) {
-  // Only progress notification update can be reflected immediately in the
-  // message center.
-  bool update_progress_notification =
-      notification.type() == message_center::NOTIFICATION_TYPE_PROGRESS;
-  bool is_message_center_visible = message_center_->IsMessageCenterVisible();
-  if (!update_progress_notification && is_message_center_visible)
-    return false;
-
   const string16& replace_id = notification.replace_id();
   if (replace_id.empty())
     return false;
@@ -124,12 +116,6 @@ bool MessageCenterNotificationManager::Update(const Notification& notification,
         old_notification->profile() == profile) {
       // Changing the type from non-progress to progress does not count towards
       // the immediate update allowed in the message center.
-      if (update_progress_notification && is_message_center_visible &&
-          old_notification->notification().type() !=
-              message_center::NOTIFICATION_TYPE_PROGRESS) {
-        return false;
-      }
-
       std::string old_id =
           old_notification->notification().notification_id();
       DCHECK(message_center_->HasNotification(old_id));

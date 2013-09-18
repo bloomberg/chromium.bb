@@ -172,6 +172,15 @@ bool NotificationList::HasNotification(const std::string& id) {
   return GetNotification(id) != notifications_.end();
 }
 
+bool NotificationList::HasNotificationOfType(const std::string& id,
+                                             const NotificationType type) {
+  Notifications::iterator iter = GetNotification(id);
+  if (iter == notifications_.end())
+    return false;
+
+  return (*iter)->type() == type;
+}
+
 bool NotificationList::HasPopupNotifications(
     const std::vector<NotificationBlocker*>& blockers) {
   for (Notifications::iterator iter = notifications_.begin();

@@ -84,7 +84,13 @@ class MESSAGE_CENTER_EXPORT NotificationList {
                                  int button_index,
                                  const gfx::Image& image);
 
+  // Returns true if |id| matches a notification in the list.
   bool HasNotification(const std::string& id);
+
+  // Returns true if |id| matches a notification in the list and that
+  // notification's type matches the given type.
+  bool HasNotificationOfType(const std::string& id,
+                             const NotificationType type);
 
   // Returns false if the first notification has been shown as a popup (which
   // means that all notifications have been shown).

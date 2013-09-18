@@ -332,6 +332,9 @@ IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest,
   // Expect that the notification update is not done.
   EXPECT_EQ("", observer.log());
 
+  message_center()->SetVisibility(message_center::VISIBILITY_TRANSIENT);
+  EXPECT_EQ("update-n", observer.log());
+
   delegate->Release();
 }
 
@@ -370,6 +373,9 @@ IN_PROC_BROWSER_TEST_F(
 
   // Expect that the notification update is not done.
   EXPECT_EQ("", observer.log());
+
+  message_center()->SetVisibility(message_center::VISIBILITY_TRANSIENT);
+  EXPECT_EQ("update-n", observer.log());
 
   delegate->Release();
 }
