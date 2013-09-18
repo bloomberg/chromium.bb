@@ -27,10 +27,8 @@ class FileBrowserPrivateAddMountFunction : public LoggedAsyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.addMount",
                              FILEBROWSERPRIVATE_ADDMOUNT)
 
-  FileBrowserPrivateAddMountFunction();
-
  protected:
-  virtual ~FileBrowserPrivateAddMountFunction();
+  virtual ~FileBrowserPrivateAddMountFunction() {}
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
@@ -50,10 +48,8 @@ class FileBrowserPrivateRemoveMountFunction
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.removeMount",
                              FILEBROWSERPRIVATE_REMOVEMOUNT)
 
-  FileBrowserPrivateRemoveMountFunction();
-
  protected:
-  virtual ~FileBrowserPrivateRemoveMountFunction();
+  virtual ~FileBrowserPrivateRemoveMountFunction() {}
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
@@ -71,10 +67,8 @@ class FileBrowserPrivateGetMountPointsFunction
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.getMountPoints",
                              FILEBROWSERPRIVATE_GETMOUNTPOINTS)
 
-  FileBrowserPrivateGetMountPointsFunction();
-
  protected:
-  virtual ~FileBrowserPrivateGetMountPointsFunction();
+  virtual ~FileBrowserPrivateGetMountPointsFunction() {}
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
