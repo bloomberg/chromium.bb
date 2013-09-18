@@ -282,10 +282,8 @@ void MediaStreamDependencyFactory::CreateNativeMediaSources(
       continue;
     }
     const bool is_screencast =
-        source_data->device_info().device.type ==
-            content::MEDIA_TAB_VIDEO_CAPTURE ||
-        source_data->device_info().device.type ==
-            content::MEDIA_DESKTOP_VIDEO_CAPTURE;
+        source_data->device_info().device.type == MEDIA_TAB_VIDEO_CAPTURE ||
+        source_data->device_info().device.type == MEDIA_DESKTOP_VIDEO_CAPTURE;
     source_data->SetVideoSource(
         CreateLocalVideoSource(source_data->device_info().session_id,
                                is_screencast,
@@ -396,6 +394,16 @@ bool MediaStreamDependencyFactory::AddNativeMediaStreamTrack(
   // right now they're on the source, so we fetch them from there.
   RTCMediaConstraints track_constraints(source.constraints());
 
+  WebKit::WebMediaStreamSource::Type type = track.source().type();
+  DCHECK(type == WebKit::WebMediaStreamSource::TypeAudio ||
+         type == WebKit::WebMediaStreamSource::TypeVideo);
+
+  if (type == WebKit::WebMediaStreamSource::TypeAudio) {
+    // Apply default audio constraints that enable echo cancellation,
+    // automatic gain control, noise suppression and high-pass filter.
+    ApplyFixedAudioConstraints(&track_constraints);
+  }
+
   scoped_refptr<WebAudioCapturerSource> webaudio_source;
   if (!source_data) {
     if (source.requiresAudioConsumer()) {
@@ -411,10 +419,6 @@ bool MediaStreamDependencyFactory::AddNativeMediaStreamTrack(
       return false;
     }
   }
-
-  WebKit::WebMediaStreamSource::Type type = track.source().type();
-  DCHECK(type == WebKit::WebMediaStreamSource::TypeAudio ||
-         type == WebKit::WebMediaStreamSource::TypeVideo);
 
   std::string track_id = UTF16ToUTF8(track.id());
   if (source.type() == WebKit::WebMediaStreamSource::TypeAudio) {
@@ -626,15 +630,10 @@ MediaStreamDependencyFactory::CreateWebAudioSource(
 
   scoped_refptr<WebAudioCapturerSource>
       webaudio_capturer_source(new WebAudioCapturerSource());
-  MediaStreamSourceExtraData* source_data =
-      new content::MediaStreamSourceExtraData();
+  MediaStreamSourceExtraData* source_data = new MediaStreamSourceExtraData();
 
   // Create a LocalAudioSource object which holds audio options.
-  // Use audio constraints where all values are true, i.e., enable
-  // echo cancellation, automatic gain control, noise suppression and
-  // high-pass filter. SetLocalAudioSource() affects core audio parts in
-  // third_party/Libjingle.
-  ApplyFixedAudioConstraints(constraints);
+  // SetLocalAudioSource() affects core audio parts in third_party/Libjingle.
   source_data->SetLocalAudioSource(CreateLocalAudioSource(constraints).get());
   source->setExtraData(source_data);
 
