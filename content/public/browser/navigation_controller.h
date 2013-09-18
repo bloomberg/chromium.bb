@@ -212,6 +212,8 @@ class NavigationController {
 
   // Active entry --------------------------------------------------------------
 
+  // THIS IS DEPRECATED. DO NOT USE. Use GetVisibleEntry instead.
+  //
   // Returns the active entry, which is the transient entry if any, the pending
   // entry if a navigation is in progress or the last committed entry otherwise.
   // NOTE: This can be NULL!!

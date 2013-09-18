@@ -894,7 +894,7 @@ void WebContentsImpl::SetUserAgentOverride(const std::string& override) {
 
   // Reload the page if a load is currently in progress to avoid having
   // different parts of the page loaded using different user agents.
-  NavigationEntry* entry = controller_.GetActiveEntry();
+  NavigationEntry* entry = controller_.GetVisibleEntry();
   if (is_loading_ && entry != NULL && entry->GetIsOverridingUserAgent())
     controller_.ReloadIgnoringCache(true);
 
@@ -1956,7 +1956,7 @@ void WebContentsImpl::SaveFrame(const GURL& url,
     return;
   int64 post_id = -1;
   if (is_main_frame) {
-    const NavigationEntry* entry = controller_.GetActiveEntry();
+    const NavigationEntry* entry = controller_.GetLastCommittedEntry();
     if (entry)
       post_id = entry->GetPostID();
   }
@@ -1977,12 +1977,13 @@ void WebContentsImpl::GenerateMHTML(
   MHTMLGenerationManager::GetInstance()->SaveMHTML(this, file, callback);
 }
 
+// TODO(nasko): Rename this method to IsVisibleEntry.
 bool WebContentsImpl::IsActiveEntry(int32 page_id) {
-  NavigationEntryImpl* active_entry =
-      NavigationEntryImpl::FromNavigationEntry(controller_.GetActiveEntry());
-  return (active_entry != NULL &&
-          active_entry->site_instance() == GetSiteInstance() &&
-          active_entry->GetPageID() == page_id);
+  NavigationEntryImpl* visible_entry =
+      NavigationEntryImpl::FromNavigationEntry(controller_.GetVisibleEntry());
+  return (visible_entry != NULL &&
+          visible_entry->site_instance() == GetSiteInstance() &&
+          visible_entry->GetPageID() == page_id);
 }
 
 const std::string& WebContentsImpl::GetContentsMimeType() const {
@@ -2064,10 +2065,10 @@ double WebContentsImpl::GetZoomLevel() const {
         GetRenderProcessHost()->GetID(), GetRenderViewHost()->GetRoutingID());
   } else {
     GURL url;
-    NavigationEntry* active_entry = GetController().GetActiveEntry();
+    NavigationEntry* entry = GetController().GetLastCommittedEntry();
     // Since zoom map is updated using rewritten URL, use rewritten URL
     // to get the zoom level.
-    url = active_entry ? active_entry->GetURL() : GURL::EmptyGURL();
+    url = entry ? entry->GetURL() : GURL::EmptyGURL();
     zoom_level = zoom_map->GetZoomLevelForHostAndScheme(url.scheme(),
         net::GetHostOrSpecFromURL(url));
   }
@@ -2090,11 +2091,11 @@ void WebContentsImpl::ViewSource() {
   if (!delegate_)
     return;
 
-  NavigationEntry* active_entry = GetController().GetActiveEntry();
-  if (!active_entry)
+  NavigationEntry* entry = GetController().GetLastCommittedEntry();
+  if (!entry)
     return;
 
-  delegate_->ViewSourceForTab(this, active_entry->GetURL());
+  delegate_->ViewSourceForTab(this, entry->GetURL());
 }
 
 void WebContentsImpl::ViewFrameSource(const GURL& url,
@@ -2149,7 +2150,7 @@ int WebContentsImpl::DownloadImage(const GURL& url,
 }
 
 bool WebContentsImpl::FocusLocationBarByDefault() {
-  NavigationEntry* entry = controller_.GetActiveEntry();
+  NavigationEntry* entry = controller_.GetVisibleEntry();
   if (entry && entry->GetURL() == GURL(kAboutBlankURL))
     return true;
   return delegate_ && delegate_->ShouldFocusLocationBarByDefault(this);
@@ -2947,7 +2948,7 @@ void WebContentsImpl::RenderViewCreated(RenderViewHost* render_view_host) {
   if (render_manager_.pending_web_ui())
     render_manager_.pending_web_ui()->RenderViewCreated(render_view_host);
 
-  NavigationEntry* entry = controller_.GetActiveEntry();
+  NavigationEntry* entry = controller_.GetPendingEntry();
   if (entry && entry->IsViewSourceMode()) {
     // Put the renderer in view source mode.
     render_view_host->Send(
@@ -3112,7 +3113,7 @@ void WebContentsImpl::DidNavigate(
     // forward in the history is only stored in the navigation controller's
     // entry list.
     if (did_navigate &&
-        (controller_.GetActiveEntry()->GetTransitionType() &
+        (controller_.GetLastCommittedEntry()->GetTransitionType() &
             PAGE_TRANSITION_FORWARD_BACK)) {
       transition_type = PageTransitionFromInt(
           params.transition | PAGE_TRANSITION_FORWARD_BACK);
@@ -3541,8 +3542,8 @@ bool WebContentsImpl::AddMessageToConsole(int32 level,
 WebPreferences WebContentsImpl::GetWebkitPrefs() {
   // We want to base the page config off of the real URL, rather than the
   // display URL.
-  GURL url = controller_.GetActiveEntry()
-      ? controller_.GetActiveEntry()->GetURL() : GURL::EmptyGURL();
+  GURL url = controller_.GetLastCommittedEntry()
+      ? controller_.GetLastCommittedEntry()->GetURL() : GURL::EmptyGURL();
   return GetWebkitPrefs(GetRenderViewHost(), url);
 }
 

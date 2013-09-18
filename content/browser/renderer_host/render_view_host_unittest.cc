@@ -62,8 +62,8 @@ class RenderViewHostTest : public RenderViewHostImplTestHarness {
 // See RenderViewHost::OnNavigate for a discussion.
 TEST_F(RenderViewHostTest, FilterAbout) {
   test_rvh()->SendNavigate(1, GURL("about:cache"));
-  ASSERT_TRUE(controller().GetActiveEntry());
-  EXPECT_EQ(GURL(kAboutBlankURL), controller().GetActiveEntry()->GetURL());
+  ASSERT_TRUE(controller().GetVisibleEntry());
+  EXPECT_EQ(GURL(kAboutBlankURL), controller().GetVisibleEntry()->GetURL());
 }
 
 // Create a full screen popup RenderWidgetHost and View.
