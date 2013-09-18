@@ -207,17 +207,6 @@ cr.define('options', function() {
     },
 
     /**
-     * Shows a warning message giving additional information while in the
-     * process of importing a profile. Called by BrowserOptions via the
-     * BrowserOptionsHandler.
-     * @param {string} warning The warning message to display.
-     * @private
-     */
-    onWarning_: function(warning) {
-      this.onError_(warning);
-    },
-
-    /**
      * Closes the overlay if importing the managed user was successful.
      * @private
      */
@@ -232,7 +221,6 @@ cr.define('options', function() {
     'hideErrorBubble',
     'onError',
     'onSuccess',
-    'onWarning',
     'receiveExistingManagedUsers',
   ].forEach(function(name) {
     ManagedUserImportOverlay[name] = function() {

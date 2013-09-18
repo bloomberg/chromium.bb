@@ -73,7 +73,6 @@ class BrowserOptionsHandler
   enum ProfileCreationStatus {
     PROFILE_CREATION_SUCCESS,
     PROFILE_CREATION_ERROR,
-    PROFILE_CREATION_WARNING
   };
 
   // Represents errors that could occur during a profile creation.

@@ -1079,15 +1079,6 @@ cr.define('options', function() {
     },
 
     /**
-    * Sends a warning message to be shown by the managed user import overlay.
-    * @param {string} warning The warning message to display.
-    * @private
-    */
-    showManagedUserImportWarning_: function(warning) {
-      ManagedUserImportOverlay.onWarning(warning);
-    },
-
-    /**
      * Reports successful importing of a managed user to
      * the ManagedUserImportOverlay.
      * @private
@@ -1514,7 +1505,6 @@ cr.define('options', function() {
     'showCreateProfileWarning',
     'showManagedUserImportError',
     'showManagedUserImportSuccess',
-    'showManagedUserImportWarning',
     'showMouseControls',
     'showTouchpadControls',
     'updateAccountPicture',
