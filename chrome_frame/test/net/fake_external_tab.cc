@@ -523,9 +523,6 @@ void FakeExternalTab::Initialize() {
   ResourceBundle::InitSharedInstanceWithLocale("en-US", NULL);
 
   CommandLine* cmd = CommandLine::ForCurrentProcess();
-  // Disable Device Discovery with switch because this test does not respect
-  // BrowserContextKeyedBaseFactory::ServiceIsNULLWhileTesting.
-  cmd->AppendSwitch(switches::kDisableDeviceDiscoveryNotifications);
   cmd->AppendSwitch(switches::kDisableWebResources);
   cmd->AppendSwitch(switches::kSingleProcess);
 
