@@ -11,6 +11,9 @@
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/synchronization/waitable_event.h"
+#include "base/threading/thread.h"
+#include "base/threading/thread_restrictions.h"
 #include "content/public/common/content_switches.h"
 
 namespace content {
@@ -43,9 +46,31 @@ void BrowserShutdownProfileDumper::WriteTracesToDisc(
   WriteString("{\"traceEvents\":");
   WriteString("[");
 
+  // TraceLog::Flush() requires the calling thread to have a message loop.
+  // As the message loop of the current thread may have quit, start another
+  // thread for flushing the trace.
+  base::WaitableEvent flush_complete_event(false, false);
+  base::Thread flush_thread("browser_shutdown_trace_event_flush");
+  flush_thread.Start();
+  flush_thread.message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&BrowserShutdownProfileDumper::EndTraceAndFlush,
+                 base::Unretained(this),
+                 base::Unretained(&flush_complete_event)));
+
+  bool original_wait_allowed = base::ThreadRestrictions::SetWaitAllowed(true);
+  flush_complete_event.Wait();
+  base::ThreadRestrictions::SetWaitAllowed(original_wait_allowed);
+}
+
+void BrowserShutdownProfileDumper::EndTraceAndFlush(
+    base::WaitableEvent* flush_complete_event) {
+  while (base::debug::TraceLog::GetInstance()->IsEnabled())
+    base::debug::TraceLog::GetInstance()->SetDisabled();
   base::debug::TraceLog::GetInstance()->Flush(
       base::Bind(&BrowserShutdownProfileDumper::WriteTraceDataCollected,
-      base::Unretained(this)));
+                 base::Unretained(this),
+                 base::Unretained(flush_complete_event)));
 }
 
 base::FilePath BrowserShutdownProfileDumper::GetFileName() {
@@ -61,10 +86,13 @@ base::FilePath BrowserShutdownProfileDumper::GetFileName() {
 }
 
 void BrowserShutdownProfileDumper::WriteTraceDataCollected(
+    base::WaitableEvent* flush_complete_event,
     const scoped_refptr<base::RefCountedString>& events_str,
     bool has_more_events) {
-  if (!IsFileValid())
+  if (!IsFileValid()) {
+    flush_complete_event->Signal();
     return;
+  }
   if (blocks_) {
     // Blocks are not comma separated. Beginning with the second block we
     // start therefore to add one in front of the previous block.
@@ -77,6 +105,7 @@ void BrowserShutdownProfileDumper::WriteTraceDataCollected(
     WriteString("]");
     WriteString("}");
     CloseFile();
+    flush_complete_event->Signal();
   }
 }
 

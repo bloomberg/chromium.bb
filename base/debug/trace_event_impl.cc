@@ -1334,6 +1334,7 @@ void TraceLog::Flush(const TraceLog::OutputCallback& cb) {
     scoped_refptr<RefCountedString> empty_result = new RefCountedString;
     if (!cb.is_null())
       cb.Run(empty_result, false);
+    LOG(WARNING) << "Ignored TraceLog::Flush called when tracing is enabled";
     return;
   }
 

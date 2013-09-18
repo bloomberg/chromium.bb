@@ -42,6 +42,7 @@ class Predictor;
 }
 namespace content {
 class BrowserGpuChannelHostFactory;
+class BrowserShutdownProfileDumper;
 class BrowserTestBase;
 class GLHelper;
 class GpuChannelHost;
@@ -176,6 +177,7 @@ class BASE_EXPORT ThreadRestrictions {
  private:
   // DO NOT ADD ANY OTHER FRIEND STATEMENTS, talk to jam or brettw first.
   // BEGIN ALLOWED USAGE.
+  friend class content::BrowserShutdownProfileDumper;
   friend class content::BrowserTestBase;
   friend class content::NestedMessagePumpAndroid;
   friend class content::RenderWidgetHelper;

@@ -14,6 +14,7 @@
 
 namespace base {
 class FilePath;
+class WaitableEvent;
 }
 
 namespace content {
@@ -36,12 +37,15 @@ class BrowserShutdownProfileDumper {
   // Writes all traces which happened to disk.
   void WriteTracesToDisc(const base::FilePath& file_name);
 
+  void EndTraceAndFlush(base::WaitableEvent* flush_complete_event);
+
   // Returns the file name where we should save the trace dump to.
   base::FilePath GetFileName();
 
   // The callback for the |TraceLog::Flush| function. It saves all traces to
   // disc.
   void WriteTraceDataCollected(
+      base::WaitableEvent* flush_complete_event,
       const scoped_refptr<base::RefCountedString>& events_str,
       bool has_more_events);
 
