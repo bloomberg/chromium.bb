@@ -90,10 +90,11 @@ void RenderParamsFromPrintSettings(const printing::PrintSettings& settings,
 
 PrintingMessageFilter::PrintingMessageFilter(int render_process_id,
                                              Profile* profile)
-    : print_job_manager_(g_browser_process->print_job_manager()),
-      profile_io_data_(ProfileIOData::FromResourceContext(
+    : profile_io_data_(ProfileIOData::FromResourceContext(
           profile->GetResourceContext())),
-      render_process_id_(render_process_id) {
+      render_process_id_(render_process_id),
+      queue_(g_browser_process->print_job_manager()->queue()) {
+  DCHECK(queue_);
 }
 
 PrintingMessageFilter::~PrintingMessageFilter() {
@@ -287,11 +288,9 @@ void PrintingMessageFilter::OnGetDefaultPrintSettings(IPC::Message* reply_msg) {
     OnGetDefaultPrintSettingsReply(printer_query, reply_msg);
     return;
   }
-  print_job_manager_->PopPrinterQuery(0, &printer_query);
-  if (!printer_query.get()) {
-    printer_query = new printing::PrinterQuery;
-    printer_query->SetWorkerDestination(print_job_manager_->destination());
-  }
+  printer_query = queue_->PopPrinterQuery(0);
+  if (!printer_query)
+    printer_query = queue_->CreatePrinterQuery();
 
   // Loads default settings. This is asynchronous, only the IPC message sender
   // will hang until the settings are retrieved.
@@ -326,7 +325,7 @@ void PrintingMessageFilter::OnGetDefaultPrintSettingsReply(
   if (printer_query.get()) {
     // If user hasn't cancelled.
     if (printer_query->cookie() && printer_query->settings().dpi()) {
-      print_job_manager_->QueuePrinterQuery(printer_query.get());
+      queue_->QueuePrinterQuery(printer_query.get());
     } else {
       printer_query->StopWorker();
     }
@@ -336,12 +335,10 @@ void PrintingMessageFilter::OnGetDefaultPrintSettingsReply(
 void PrintingMessageFilter::OnScriptedPrint(
     const PrintHostMsg_ScriptedPrint_Params& params,
     IPC::Message* reply_msg) {
-  scoped_refptr<printing::PrinterQuery> printer_query;
-  print_job_manager_->PopPrinterQuery(params.cookie, &printer_query);
-  if (!printer_query.get()) {
-    printer_query = new printing::PrinterQuery;
-    printer_query->SetWorkerDestination(print_job_manager_->destination());
-  }
+  scoped_refptr<printing::PrinterQuery> printer_query =
+      queue_->PopPrinterQuery(params.cookie);
+  if (!printer_query)
+    printer_query = queue_->CreatePrinterQuery();
   GetPrintSettingsForRenderViewParams settings_params;
   settings_params.ask_user_for_settings = printing::PrinterQuery::ASK_USER;
   settings_params.expected_page_count = params.expected_pages_count;
@@ -388,7 +385,7 @@ void PrintingMessageFilter::OnScriptedPrintReply(
                      routing_id, file_descriptor));
     }
 #endif
-    print_job_manager_->QueuePrinterQuery(printer_query.get());
+    queue_->QueuePrinterQuery(printer_query.get());
   } else {
     printer_query->StopWorker();
   }
@@ -413,12 +410,9 @@ void PrintingMessageFilter::OnUpdatePrintSettings(
     OnUpdatePrintSettingsReply(printer_query, reply_msg);
     return;
   }
-
-  print_job_manager_->PopPrinterQuery(document_cookie, &printer_query);
-  if (!printer_query.get()) {
-    printer_query = new printing::PrinterQuery;
-    printer_query->SetWorkerDestination(print_job_manager_->destination());
-  }
+  printer_query = queue_->PopPrinterQuery(document_cookie);
+  if (!printer_query)
+    printer_query = queue_->CreatePrinterQuery();
   printer_query->SetSettings(
       job_settings,
       base::Bind(&PrintingMessageFilter::OnUpdatePrintSettingsReply, this,
@@ -442,10 +436,11 @@ void PrintingMessageFilter::OnUpdatePrintSettingsReply(
   Send(reply_msg);
   // If user hasn't cancelled.
   if (printer_query.get()) {
-    if (printer_query->cookie() && printer_query->settings().dpi())
-      print_job_manager_->QueuePrinterQuery(printer_query.get());
-    else
+    if (printer_query->cookie() && printer_query->settings().dpi()) {
+      queue_->QueuePrinterQuery(printer_query.get());
+    } else {
       printer_query->StopWorker();
+    }
   }
 }
 

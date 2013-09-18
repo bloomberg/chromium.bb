@@ -140,6 +140,7 @@ class TestingBrowserProcess : public BrowserProcess {
   scoped_ptr<NotificationUIManager> notification_ui_manager_;
 
 #if defined(ENABLE_FULL_PRINTING)
+  scoped_ptr<printing::PrintJobManager> print_job_manager_;
   scoped_ptr<printing::BackgroundPrintingManager> background_printing_manager_;
   scoped_refptr<printing::PrintPreviewDialogController>
       print_preview_dialog_controller_;

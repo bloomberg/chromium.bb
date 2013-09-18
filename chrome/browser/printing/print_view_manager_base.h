@@ -25,6 +25,7 @@ namespace printing {
 class JobEventDetails;
 class PrintJob;
 class PrintJobWorkerOwner;
+class PrintQueriesQueue;
 
 // Base class for managing the print commands for a WebContents.
 class PrintViewManagerBase : public content::NotificationObserver,
@@ -154,6 +155,8 @@ class PrintViewManagerBase : public content::NotificationObserver,
 
   // Whether printing is enabled.
   BooleanPrefMember printing_enabled_;
+
+  scoped_refptr<printing::PrintQueriesQueue> queue_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintViewManagerBase);
 };

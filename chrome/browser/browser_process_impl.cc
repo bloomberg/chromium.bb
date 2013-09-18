@@ -338,8 +338,7 @@ unsigned int BrowserProcessImpl::ReleaseModule() {
     // Wait for the pending print jobs to finish. Don't do this later, since
     // this might cause a nested message loop to run, and we don't want pending
     // tasks to run once teardown has started.
-    print_job_manager_->OnQuit();
-    print_job_manager_.reset();
+    print_job_manager_->Shutdown();
 #endif
 
     CHECK(base::MessageLoop::current()->is_running());
@@ -560,11 +559,7 @@ bool BrowserProcessImpl::IsShuttingDown() {
 }
 
 printing::PrintJobManager* BrowserProcessImpl::print_job_manager() {
-  // TODO(abarth): DCHECK(CalledOnValidThread());
-  // http://code.google.com/p/chromium/issues/detail?id=6828
-  // print_job_manager_ is initialized in the constructor and destroyed in the
-  // destructor, so it should always be valid.
-  DCHECK(print_job_manager_.get());
+  DCHECK(CalledOnValidThread());
   return print_job_manager_.get();
 }
 

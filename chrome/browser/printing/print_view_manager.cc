@@ -75,7 +75,7 @@ bool PrintViewManager::PrintToDestination() {
   // crbug.com/142330
   UMA_HISTOGRAM_ENUMERATION("Metro.Print", 0, 2);
   // TODO(mad): Use a passed in destination interface instead.
-  g_browser_process->print_job_manager()->SetPrintDestination(
+  g_browser_process->print_job_manager()->queue()->SetDestination(
       printing::CreatePrintDestination());
   return PrintNowInternal(new PrintMsg_PrintPages(routing_id()));
 }
