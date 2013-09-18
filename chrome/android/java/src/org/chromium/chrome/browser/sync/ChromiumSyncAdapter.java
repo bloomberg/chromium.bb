@@ -149,8 +149,6 @@ public abstract class ChromiumSyncAdapter extends AbstractThreadedSyncAdapter {
                     }
                     Log.v(TAG, "Received sync tickle for " + resolvedSource + " " + objectId + ".");
                     requestSync(resolvedSource, objectId, version, payload);
-                    // Call legacy requestSync. See comment on the method.
-                    requestSync(objectId, version, payload);
                 }
                 semaphore.release();
             }
@@ -165,13 +163,6 @@ public abstract class ChromiumSyncAdapter extends AbstractThreadedSyncAdapter {
             }
         };
     }
-
-    /**
-     * Legacy requestSync method present to retain compatibility with a test which overrides it.
-     * TODO(stepco): Remove this method once the dependent test is updated to override the new
-     * requestSync method.
-     */
-    public void requestSync(String objectId, long version, String payload) {}
 
     @VisibleForTesting
     public void requestSync(int objectSource, String objectId, long version, String payload) {
