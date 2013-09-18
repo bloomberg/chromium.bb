@@ -24,6 +24,7 @@
 
 #include "core/page/FrameView.h"
 #include "core/platform/PODFreeListArena.h"
+#include "core/platform/ScrollableArea.h"
 #include "core/rendering/LayoutIndicator.h"
 #include "core/rendering/LayoutState.h"
 #include "core/rendering/RenderBlockFlow.h"
@@ -39,7 +40,8 @@ class RenderQuote;
 class RenderWidget;
 
 // The root of the render tree, corresponding to the CSS initial containing block.
-// It's dimensions match that of the viewport, and it is always at position (0,0)
+// It's dimensions match that of the logical viewport (which may be different from
+// the visible viewport in fixed-layout mode), and it is always at position (0,0)
 // relative to the document (and so isn't necessarily in view).
 class RenderView FINAL : public RenderBlockFlow {
 public:
@@ -66,10 +68,13 @@ public:
     virtual LayoutUnit availableLogicalHeight(AvailableLogicalHeightType) const OVERRIDE;
 
     // The same as the FrameView's layoutHeight/layoutWidth but with null check guards.
-    int viewHeight() const;
-    int viewWidth() const;
-    int viewLogicalWidth() const { return style()->isHorizontalWritingMode() ? viewWidth() : viewHeight(); }
-    int viewLogicalHeight() const;
+    int viewHeight(ScrollableArea::VisibleContentRectIncludesScrollbars scrollbarInclusion = ScrollableArea::ExcludeScrollbars) const;
+    int viewWidth(ScrollableArea::VisibleContentRectIncludesScrollbars scrollbarInclusion = ScrollableArea::ExcludeScrollbars) const;
+    int viewLogicalWidth(ScrollableArea::VisibleContentRectIncludesScrollbars scrollbarInclusion = ScrollableArea::ExcludeScrollbars) const
+    {
+        return style()->isHorizontalWritingMode() ? viewWidth(scrollbarInclusion) : viewHeight(scrollbarInclusion);
+    }
+    int viewLogicalHeight(ScrollableArea::VisibleContentRectIncludesScrollbars scrollbarInclusion = ScrollableArea::ExcludeScrollbars) const;
 
     float zoomFactor() const;
 
@@ -189,8 +194,6 @@ public:
 
     IntervalArena* intervalArena();
 
-    IntSize viewportSize() const { return document().viewportSize(); }
-
     void setRenderQuoteHead(RenderQuote* head) { m_renderQuoteHead = head; }
     RenderQuote* renderQuoteHead() const { return m_renderQuoteHead; }
 
@@ -205,6 +208,11 @@ public:
     virtual void addChild(RenderObject* newChild, RenderObject* beforeChild = 0) OVERRIDE;
 
     virtual bool backgroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect) const OVERRIDE FINAL;
+
+    LayoutUnit viewportPercentageWidth(float percentage) const;
+    LayoutUnit viewportPercentageHeight(float percentage) const;
+    LayoutUnit viewportPercentageMin(float percentage) const;
+    LayoutUnit viewportPercentageMax(float percentage) const;
 
 private:
     virtual void mapLocalToContainer(const RenderLayerModelObject* repaintContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = 0) const OVERRIDE;

@@ -990,29 +990,29 @@ IntRect RenderView::documentRect() const
     return IntRect(overflowRect);
 }
 
-int RenderView::viewHeight() const
+int RenderView::viewHeight(ScrollableArea::VisibleContentRectIncludesScrollbars scrollbarInclusion) const
 {
     int height = 0;
     if (!shouldUsePrintingLayout() && m_frameView) {
-        height = m_frameView->layoutHeight();
+        height = m_frameView->layoutHeight(scrollbarInclusion);
         height = m_frameView->useFixedLayout() ? ceilf(style()->effectiveZoom() * float(height)) : height;
     }
     return height;
 }
 
-int RenderView::viewWidth() const
+int RenderView::viewWidth(ScrollableArea::VisibleContentRectIncludesScrollbars scrollbarInclusion) const
 {
     int width = 0;
     if (!shouldUsePrintingLayout() && m_frameView) {
-        width = m_frameView->layoutWidth();
+        width = m_frameView->layoutWidth(scrollbarInclusion);
         width = m_frameView->useFixedLayout() ? ceilf(style()->effectiveZoom() * float(width)) : width;
     }
     return width;
 }
 
-int RenderView::viewLogicalHeight() const
+int RenderView::viewLogicalHeight(ScrollableArea::VisibleContentRectIncludesScrollbars scrollbarInclusion) const
 {
-    int height = style()->isHorizontalWritingMode() ? viewHeight() : viewWidth();
+    int height = style()->isHorizontalWritingMode() ? viewHeight(scrollbarInclusion) : viewWidth(scrollbarInclusion);
 
     if (hasColumns() && !style()->hasInlineColumnAxis()) {
         if (int pageLength = m_frameView->pagination().pageLength)
@@ -1156,6 +1156,28 @@ bool RenderView::backgroundIsKnownToBeOpaqueInRect(const LayoutRect&) const
         return false;
 
     return m_frameView->hasOpaqueBackground();
+}
+
+LayoutUnit RenderView::viewportPercentageWidth(float percentage) const
+{
+    return viewLogicalWidth(ScrollableArea::IncludeScrollbars) * percentage / 100.f;
+}
+
+LayoutUnit RenderView::viewportPercentageHeight(float percentage) const
+{
+    return viewLogicalHeight(ScrollableArea::IncludeScrollbars) * percentage / 100.f;
+}
+
+LayoutUnit RenderView::viewportPercentageMin(float percentage) const
+{
+    return std::min(viewLogicalWidth(ScrollableArea::IncludeScrollbars), viewLogicalHeight(ScrollableArea::IncludeScrollbars))
+        * percentage / 100.f;
+}
+
+LayoutUnit RenderView::viewportPercentageMax(float percentage) const
+{
+    return std::max(viewLogicalWidth(ScrollableArea::IncludeScrollbars), viewLogicalHeight(ScrollableArea::IncludeScrollbars))
+        * percentage / 100.f;
 }
 
 FragmentationDisabler::FragmentationDisabler(RenderObject* root)

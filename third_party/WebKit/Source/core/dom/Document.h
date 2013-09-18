@@ -1001,7 +1001,6 @@ public:
     void suspendScheduledTasks(ActiveDOMObject::ReasonForSuspension);
     void resumeScheduledTasks();
 
-    IntSize viewportSize() const;
     IntSize initialViewportSize() const;
 
     Prerenderer* prerenderer() { return m_prerenderer.get(); }

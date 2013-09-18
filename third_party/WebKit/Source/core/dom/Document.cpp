@@ -5142,13 +5142,6 @@ DocumentLoader* Document::loader() const
     return loader;
 }
 
-IntSize Document::viewportSize() const
-{
-    if (!view())
-        return IntSize();
-    return view()->visibleContentRect(ScrollableArea::IncludeScrollbars).size();
-}
-
 IntSize Document::initialViewportSize() const
 {
     if (!view())
