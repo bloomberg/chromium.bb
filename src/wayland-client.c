@@ -1087,7 +1087,7 @@ wl_display_prepare_read_queue(struct wl_display *display,
  * calls wl_display_read_events(), no other thread will read from the
  * file descriptor.  This only succeeds if the event queue is empty
  * though, and if there are undispatched events in the queue, -1 is
- * returned and errno set to EBUSY.
+ * returned and errno set to EAGAIN.
  *
  * If a thread successfully calls wl_display_prepare_read(), it must
  * either call wl_display_read_events() when it's ready or cancel the
