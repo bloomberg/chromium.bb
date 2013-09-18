@@ -31,7 +31,8 @@ import sys
 
 _current_dir = os.path.dirname(os.path.realpath(__file__))
 # jinja2 is in chromium's third_party directory
-sys.path.insert(0, os.path.join(_current_dir, *([os.pardir] * 4)))
+# Insert at front to override system libraries, and after path[0] == script dir
+sys.path.insert(1, os.path.join(_current_dir, *([os.pardir] * 4)))
 import jinja2
 
 

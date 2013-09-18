@@ -57,7 +57,8 @@ import sys
 # PLY is in Chromium src/third_party/ply
 module_path, module_name = os.path.split(__file__)
 third_party = os.path.join(module_path, os.pardir, os.pardir, os.pardir, os.pardir)
-sys.path.append(third_party)
+# Insert at front to override system libraries, and after path[0] == script dir
+sys.path.insert(1, third_party)
 from ply import yacc
 
 # Base parser is in Chromium src/tools/idl_parser

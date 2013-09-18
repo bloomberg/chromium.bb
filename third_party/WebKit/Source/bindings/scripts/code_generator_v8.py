@@ -39,7 +39,8 @@ import sys
 # jinja2 is in chromium's third_party directory.
 module_path, module_name = os.path.split(__file__)
 third_party = os.path.join(module_path, os.pardir, os.pardir, os.pardir, os.pardir)
-sys.path.append(third_party)
+# Insert at front to override system libraries, and after path[0] == script dir
+sys.path.insert(1, third_party)
 import jinja2
 
 templates_dir = os.path.join(module_path, os.pardir, 'templates')
