@@ -50,7 +50,7 @@ static void npObjectNamedGetter(v8::Local<v8::String> name, const v8::PropertyCa
     if (!scriptInstance)
         return;
 
-    v8::Local<v8::Object> instance = scriptInstance->newLocal(v8::Isolate::GetCurrent());
+    v8::Local<v8::Object> instance = scriptInstance->newLocal(info.GetIsolate());
     if (instance.IsEmpty())
         return;
 
@@ -65,7 +65,7 @@ static void npObjectNamedSetter(v8::Local<v8::String> name, v8::Local<v8::Value>
     if (!scriptInstance)
         return;
 
-    v8::Local<v8::Object> instance = scriptInstance->newLocal(v8::Isolate::GetCurrent());
+    v8::Local<v8::Object> instance = scriptInstance->newLocal(info.GetIsolate());
     if (instance.IsEmpty())
         return;
 
@@ -125,7 +125,7 @@ void npObjectIndexedGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Va
     if (!scriptInstance)
         return;
 
-    v8::Local<v8::Object> instance = scriptInstance->newLocal(v8::Isolate::GetCurrent());
+    v8::Local<v8::Object> instance = scriptInstance->newLocal(info.GetIsolate());
     if (instance.IsEmpty())
         return;
 
@@ -140,7 +140,7 @@ void npObjectIndexedSetter(uint32_t index, v8::Local<v8::Value> value, const v8:
     if (!scriptInstance)
         return;
 
-    v8::Local<v8::Object> instance = scriptInstance->newLocal(v8::Isolate::GetCurrent());
+    v8::Local<v8::Object> instance = scriptInstance->newLocal(info.GetIsolate());
     if (instance.IsEmpty())
         return;
 
