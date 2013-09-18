@@ -63,8 +63,6 @@ public:
     virtual void onSuccess(long long) { WEBKIT_ASSERT_NOT_REACHED(); }
     virtual void onSuccess() { WEBKIT_ASSERT_NOT_REACHED(); }
     virtual void onSuccess(const WebIDBKey& key, const WebIDBKey& primaryKey, const WebData&) { WEBKIT_ASSERT_NOT_REACHED(); }
-    // FIXME: Remove the following overload once callers are updated:
-    virtual void onBlocked() { WEBKIT_ASSERT_NOT_REACHED(); }
     virtual void onBlocked(long long oldVersion) { WEBKIT_ASSERT_NOT_REACHED(); }
     virtual void onUpgradeNeeded(long long oldVersion, WebIDBDatabase* database, const WebIDBMetadata& metadata)
     {
