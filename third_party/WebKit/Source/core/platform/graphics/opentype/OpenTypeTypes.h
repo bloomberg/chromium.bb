@@ -90,8 +90,7 @@ protected:
         return casted;
     }
 
-    // Though normally offset is 16-bit, it's 32-bit in ExtensionSubstitutionSubTable.
-    template <typename T> const T* validateOffset(const SharedBuffer& buffer, uint32_t offset) const
+    template <typename T> const T* validateOffset(const SharedBuffer& buffer, uint16_t offset) const
     {
         return validatePtr<T>(buffer, reinterpret_cast<const int8_t*>(this) + offset);
     }
