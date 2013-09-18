@@ -41,6 +41,7 @@ examples/tutorial/using_ppapi_simple/*
 [win]getting_started/make.bat
 getting_started/Makefile
 getting_started/part1/*
+getting_started/part2/*
 include/error_handling/*
 include/GLES2/*
 include/gmock/*

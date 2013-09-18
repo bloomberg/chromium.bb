@@ -15,7 +15,11 @@ VALID_TOOLCHAINS = ['newlib', 'glibc', 'pnacl', 'win', 'linux', 'mac']
 DSC_FORMAT = {
     'DISABLE': (bool, [True, False], False),
     'SEL_LDR': (bool, [True, False], False),
+    # Disable this project from being included in the NaCl packaged app.
     'DISABLE_PACKAGE': (bool, [True, False], False),
+    # Don't generate the additional files to allow this project to run as a
+    # packaged app (i.e. manifest.json, background.js, etc.).
+    'NO_PACKAGE_FILES': (bool, [True, False], False),
     'TOOLS' : (list, VALID_TOOLCHAINS, True),
     'CONFIGS' : (list, ['Debug', 'Release'], False),
     'PREREQ' : (list, '', False),

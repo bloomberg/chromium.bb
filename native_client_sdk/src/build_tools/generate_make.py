@@ -21,7 +21,7 @@ Trace.verbose = False
 
 def IsExample(desc):
   dest = desc['DEST']
-  return dest.startswith('examples') or dest.startswith('tests')
+  return dest.startswith(('examples', 'tests', 'getting_started'))
 
 
 def GenerateSourceCopyList(desc):
@@ -39,7 +39,9 @@ def GenerateSourceCopyList(desc):
   sources.extend(desc.get('DATA', []))
 
   if IsExample(desc):
-    sources.extend(['common.js', 'icon128.png', 'background.js'])
+    sources.append('common.js')
+    if not desc.get('NO_PACKAGE_FILES'):
+      sources.extend(['icon128.png', 'background.js'])
 
   return sources
 
@@ -235,7 +237,8 @@ def ProcessProject(pepperdir, srcroot, dstroot, desc, toolchains, configs=None,
   if IsExample(desc):
     ProcessHTML(srcroot, dstroot, desc, toolchains, configs,
                 first_toolchain)
-    GenerateManifest(srcroot, dstroot, desc)
+    if not desc.get('NO_PACKAGE_FILES'):
+      GenerateManifest(srcroot, dstroot, desc)
 
   return (name, desc['DEST'])
 
