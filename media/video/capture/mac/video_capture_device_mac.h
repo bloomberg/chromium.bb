@@ -39,14 +39,12 @@ class VideoCaptureDeviceMac : public VideoCaptureDevice1 {
 
   // Called to deliver captured video frames.
   void ReceiveFrame(const uint8* video_frame, int video_frame_length,
-                    const VideoCaptureCapability& frame_info,
-                    int aspect_numerator, int aspect_denominator);
+                    const VideoCaptureCapability& frame_info);
 
   void ReceiveError(const std::string& reason);
 
  private:
   void SetErrorState(const std::string& reason);
-  bool UpdateCaptureResolution();
 
   // Flag indicating the internal state.
   enum InternalState {
@@ -59,9 +57,6 @@ class VideoCaptureDeviceMac : public VideoCaptureDevice1 {
 
   Name device_name_;
   VideoCaptureDevice::EventHandler* observer_;
-
-  VideoCaptureCapability current_settings_;
-  bool sent_frame_info_ = false;
 
   // Only read and write state_ from inside this loop.
   const scoped_refptr<base::MessageLoopProxy> loop_proxy_;
