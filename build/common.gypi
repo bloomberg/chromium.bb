@@ -524,10 +524,6 @@
           'enable_one_click_signin%': 1,
         }],
 
-        ['OS=="win"', {
-          'cld_version%': 1,
-        }],
-
         ['OS=="android"', {
           'enable_automation%': 0,
           'enable_extensions%': 0,
