@@ -540,22 +540,6 @@
         'wm/workspace/workspace_window_resizer.h',
       ],
       'conditions': [
-        ['OS=="mac"', {
-          'sources/': [
-            ['exclude', 'accelerators/accelerator_commands.cc'],
-            ['exclude', 'accelerators/accelerator_commands.h'],
-            ['exclude', 'accelerators/accelerator_controller.cc'],
-            ['exclude', 'accelerators/accelerator_controller.h'],
-            ['exclude', 'accelerators/accelerator_dispatcher.cc'],
-            ['exclude', 'accelerators/accelerator_dispatcher.h'],
-            ['exclude', 'accelerators/accelerator_filter.cc'],
-            ['exclude', 'accelerators/accelerator_filter.h'],
-            ['exclude', 'accelerators/exit_warning_handler.cc'],
-            ['exclude', 'accelerators/exit_warning_handler.h'],
-            ['exclude', 'accelerators/nested_dispatcher_controller.cc'],
-            ['exclude', 'accelerators/nested_dispatcher_controller.h'],
-          ],
-        }],
         ['OS=="win"', {
           'sources/': [
             ['exclude', 'host/root_window_host_factory.cc'],
@@ -820,22 +804,6 @@
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
           'msvs_disabled_warnings': [ 4267, ],
         }],
-        ['OS=="mac"', {
-          'sources/': [
-            ['exclude', 'accelerators/accelerator_controller_unittest.cc'],
-            ['exclude', 'accelerators/accelerator_filter_unittest.cc'],
-            ['exclude', 'accelerators/nested_dispatcher_controller_unittest.cc'],
-            ['exclude', 'drag_drop/drag_drop_controller_unittest.cc'],
-            ['exclude', 'tooltips/tooltip_controller_unittest.cc'],
-          ],
-          'dependencies': [
-            # Mac tests access resources via the 'AuraShell.app' directory.
-            'ash_shell',
-          ],
-          # Special linker instructions that avoids stripping Obj-C classes that
-          # are not referenced in code, but are referenced in nibs.
-          'xcode_settings': {'OTHER_LDFLAGS': ['-Wl,-ObjC']},
-        }],
         ['use_x11!=1', {
           'sources/': [
             ['exclude', 'display/display_change_observer_chromeos_unittest.cc'],
@@ -908,7 +876,6 @@
         'shell/shell_main.cc',
         'shell/shell_main_parts.cc',
         'shell/shell_main_parts.h',
-        'shell/shell_main_parts_mac.mm',
         'shell/toplevel_window.cc',
         'shell/toplevel_window.h',
         'shell/widgets.cc',
@@ -929,26 +896,6 @@
           'dependencies': [
             '../sandbox/sandbox.gyp:sandbox',
           ],
-        }],
-        ['OS=="mac"', {
-          'product_name': 'AuraShell',
-          'mac_bundle': 1,
-          'sources/': [
-            ['exclude', 'shell/shell_main_parts.cc'],
-          ],
-          'mac_bundle_resources': [
-            'shell/cocoa/app.icns',
-            'shell/cocoa/app-Info.plist',
-            'shell/cocoa/nibs/MainMenu.xib',
-            'shell/cocoa/nibs/RootWindow.xib',
-            '<!@pymod_do_main(repack_locales -o -p <(OS) -g <(grit_out_dir) -s <(SHARED_INTERMEDIATE_DIR) -x <(SHARED_INTERMEDIATE_DIR) <(locales))',
-          ],
-          'mac_bundle_resources!': [
-            'shell/cocoa/app-Info.plist',
-          ],
-          'xcode_settings': {
-            'INFOPLIST_FILE': 'shell/cocoa/app-Info.plist',
-          },
         }],
       ],
     },

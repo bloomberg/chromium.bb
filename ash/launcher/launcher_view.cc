@@ -537,11 +537,8 @@ void LauncherView::UpdatePanelIconPosition(LauncherID id,
 }
 
 bool LauncherView::IsShowingMenu() const {
-#if !defined(OS_MACOSX)
   return (launcher_menu_runner_.get() &&
        launcher_menu_runner_->IsRunning());
-#endif
-  return false;
 }
 
 bool LauncherView::IsShowingOverflowBubble() const {
@@ -1424,10 +1421,8 @@ void LauncherView::LauncherItemAdded(int model_index) {
 }
 
 void LauncherView::LauncherItemRemoved(int model_index, LauncherID id) {
-#if !defined(OS_MACOSX)
   if (id == context_menu_id_)
     launcher_menu_runner_.reset();
-#endif
   {
     base::AutoReset<bool> cancelling_drag(
         &cancelling_drag_model_changed_, true);

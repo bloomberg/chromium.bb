@@ -266,9 +266,7 @@ WindowTypeLauncher::WindowTypeLauncher()
   AddViewToLayout(layout, show_hide_window_button_);
   AddViewToLayout(layout, show_screensaver_);
   AddViewToLayout(layout, show_web_notification_);
-#if !defined(OS_MACOSX)
   set_context_menu_controller(this);
-#endif
 }
 
 WindowTypeLauncher::~WindowTypeLauncher() {
@@ -352,17 +350,13 @@ void WindowTypeLauncher::ButtonPressed(views::Button* sender,
     ash::Shell::GetPrimaryRootWindowController()->shelf()->status_area_widget()
         ->web_notification_tray()->message_center()
         ->AddNotification(notification.Pass());
-  }
-#if !defined(OS_MACOSX)
-      else if (sender == examples_button_) {
+  } else if (sender == examples_button_) {
     views::examples::ShowExamplesWindowWithContent(
         views::examples::DO_NOTHING_ON_CLOSE,
         ash::Shell::GetInstance()->browser_context());
   }
-#endif  // !defined(OS_MACOSX)
 }
 
-#if !defined(OS_MACOSX)
 void WindowTypeLauncher::ExecuteCommand(int id, int event_flags) {
   switch (id) {
     case COMMAND_NEW_WINDOW:
@@ -375,9 +369,7 @@ void WindowTypeLauncher::ExecuteCommand(int id, int event_flags) {
       break;
   }
 }
-#endif  // !defined(OS_MACOSX)
 
-#if !defined(OS_MACOSX)
 void WindowTypeLauncher::ShowContextMenuForView(
     views::View* source,
     const gfx::Point& point,
@@ -399,7 +391,6 @@ void WindowTypeLauncher::ShowContextMenuForView(
         MenuRunner::MENU_DELETED)
     return;
 }
-#endif  // !defined(OS_MACOSX)
 
 }  // namespace shell
 }  // namespace ash

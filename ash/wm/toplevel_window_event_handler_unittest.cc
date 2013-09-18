@@ -616,7 +616,7 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDragMultipleWindows) {
 
 // Verifies pressing escape resets the bounds to the original bounds.
 // Disabled crbug.com/166219.
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_WIN)
 #define MAYBE_EscapeReverts DISABLED_EscapeReverts
 #else
 #define MAYBE_EscapeReverts EscapeReverts

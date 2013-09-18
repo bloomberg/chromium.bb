@@ -353,13 +353,11 @@ aura::client::WindowMoveResult ToplevelWindowEventHandler::RunMoveLoop(
   CreateScopedWindowResizer(source, drag_location, HTCAPTION, move_source);
   bool destroyed = false;
   destroyed_ = &destroyed;
-#if !defined(OS_MACOSX)
   base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
   base::MessageLoop::ScopedNestableTaskAllower allow_nested(loop);
   base::RunLoop run_loop(aura::Env::GetInstance()->GetDispatcher());
   quit_closure_ = run_loop.QuitClosure();
   run_loop.Run();
-#endif  // !defined(OS_MACOSX)
   if (destroyed)
     return aura::client::MOVE_CANCELED;
   destroyed_ = NULL;

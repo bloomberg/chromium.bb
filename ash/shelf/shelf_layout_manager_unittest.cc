@@ -653,8 +653,8 @@ void ShelfLayoutManagerTest::RunGestureDragTests(gfx::Vector2d delta) {
   EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
 }
 
-// Fails on Mac only.  Need to be implemented.  http://crbug.com/111279.
-#if defined(OS_MACOSX) || defined(OS_WIN)
+// Need to be implemented.  http://crbug.com/111279.
+#if defined(OS_WIN)
 #define MAYBE_SetVisible DISABLED_SetVisible
 #else
 #define MAYBE_SetVisible SetVisible

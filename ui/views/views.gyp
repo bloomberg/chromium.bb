@@ -485,14 +485,6 @@
             'widget/tooltip_manager_win.h',
           ],
           'conditions': [
-            ['OS=="mac"', {
-              'sources/': [
-                ['exclude', 'mouse_watcher.cc'],
-                ['exclude', 'controls/menu/'],
-                ['exclude', 'controls/scrollbar/'],
-                ['exclude', 'focus/accelerator_handler_aura.cc'],
-              ],
-            }],
             ['OS=="win"', {
               'sources/': [
                 ['include', 'controls/menu/menu_insertion_delegate_win.h'],

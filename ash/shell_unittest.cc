@@ -386,13 +386,7 @@ TEST_F(ShellTest, LockScreenClosesActiveMenu) {
         views::MenuRunner::CONTEXT_MENU));
 }
 
-// Fails on Mac, see http://crbug.com/115662
-#if defined(OS_MACOSX)
-#define MAYBE_ManagedWindowModeBasics DISABLED_ManagedWindowModeBasics
-#else
-#define MAYBE_ManagedWindowModeBasics ManagedWindowModeBasics
-#endif
-TEST_F(ShellTest, MAYBE_ManagedWindowModeBasics) {
+TEST_F(ShellTest, ManagedWindowModeBasics) {
   Shell* shell = Shell::GetInstance();
   Shell::TestApi test_api(shell);
 

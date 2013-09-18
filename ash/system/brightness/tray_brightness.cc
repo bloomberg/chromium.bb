@@ -89,13 +89,11 @@ class BrightnessView : public views::View,
     DCHECK_EQ(sender, slider_);
     if (reason != views::VALUE_CHANGED_BY_USER)
       return;
-#if !defined(OS_MACOSX)
     AcceleratorController* ac = Shell::GetInstance()->accelerator_controller();
     if (ac->brightness_control_delegate()) {
       double percent = std::max(value * 100.0, kMinBrightnessPercent);
       ac->brightness_control_delegate()->SetBrightnessPercent(percent, true);
     }
-#endif  // OS_MACOSX
   }
 
   // Overridden from views:SliderListener.

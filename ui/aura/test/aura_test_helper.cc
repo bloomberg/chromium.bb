@@ -105,12 +105,10 @@ void AuraTestHelper::TearDown() {
 }
 
 void AuraTestHelper::RunAllPendingInMessageLoop() {
-#if !defined(OS_MACOSX)
   // TODO(jbates) crbug.com/134753 Find quitters of this RunLoop and have them
   //              use run_loop.QuitClosure().
   base::RunLoop run_loop(Env::GetInstance()->GetDispatcher());
   run_loop.RunUntilIdle();
-#endif
 }
 
 }  // namespace test

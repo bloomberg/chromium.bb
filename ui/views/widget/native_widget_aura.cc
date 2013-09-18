@@ -169,10 +169,8 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
       params.type != Widget::InitParams::TYPE_CONTROL &&
       params.type != Widget::InitParams::TYPE_TOOLTIP;
   DCHECK(GetWidget()->GetRootView());
-#if !defined(OS_MACOSX)
   if (params.type != Widget::InitParams::TYPE_TOOLTIP)
     tooltip_manager_.reset(new views::TooltipManagerAura(window_, GetWidget()));
-#endif  // !defined(OS_MACOSX)
 
   drop_helper_.reset(new DropHelper(GetWidget()->GetRootView()));
   if (params.type != Widget::InitParams::TYPE_TOOLTIP &&

@@ -62,7 +62,6 @@ void Env::RemoveObserver(EnvObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-#if !defined(OS_MACOSX)
 base::MessageLoop::Dispatcher* Env::GetDispatcher() {
 #if defined(USE_X11)
   return base::MessagePumpX11::Current();
@@ -70,7 +69,6 @@ base::MessageLoop::Dispatcher* Env::GetDispatcher() {
   return dispatcher_.get();
 #endif
 }
-#endif
 
 void Env::RootWindowActivated(RootWindow* root_window) {
   FOR_EACH_OBSERVER(EnvObserver, observers_,

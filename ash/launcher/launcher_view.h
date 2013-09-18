@@ -343,9 +343,7 @@ class ASH_EXPORT LauncherView : public views::View,
 
   scoped_ptr<views::FocusSearch> focus_search_;
 
-#if !defined(OS_MACOSX)
   scoped_ptr<views::MenuRunner> launcher_menu_runner_;
-#endif
 
   ObserverList<LauncherIconObserver> observers_;
 

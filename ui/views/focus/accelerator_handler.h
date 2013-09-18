@@ -24,21 +24,13 @@ bool VIEWS_EXPORT DispatchXEvent(XEvent* xevent);
 
 // This class delegates the key messages to the associated FocusManager class
 // for the window that is receiving these messages for accelerator processing.
-#if defined(OS_MACOSX)
-class VIEWS_EXPORT AcceleratorHandler {
-#else
 class VIEWS_EXPORT AcceleratorHandler : public base::MessageLoop::Dispatcher {
-#endif  // defined(OS_MACOSX)
  public:
   AcceleratorHandler();
 
   // Dispatcher method. This returns true if an accelerator was processed by the
   // focus manager
-#if defined(OS_WIN) || defined(USE_AURA)
   virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
-#elif defined(OS_MACOSX)
-  // TODO(dhollowa): Implement on Mac.  http://crbug.com/109946
-#endif
 
  private:
 #if defined(OS_WIN)

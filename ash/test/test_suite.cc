@@ -14,10 +14,6 @@
 #include "ui/base/ui_base_paths.h"
 #include "ui/gfx/gfx_paths.h"
 
-#if defined(OS_MACOSX)
-#include "ash/test/test_suite_init.h"
-#endif
-
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #include "ui/base/win/atl_module.h"
@@ -46,10 +42,6 @@ void AuraShellTestSuite::Initialize() {
 
   gfx::RegisterPathProvider();
   ui::RegisterPathProvider();
-
-#if defined(OS_MACOSX)
-  ash::test::OverrideFrameworkBundle();
-#endif
 
   // Force unittests to run using en-US so if we test against string
   // output, it'll pass regardless of the system language.

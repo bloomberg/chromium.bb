@@ -224,7 +224,6 @@ int DragDropController::StartDragAndDrop(
   if (cancel_animation_)
     cancel_animation_->End();
 
-#if !defined(OS_MACOSX)
   if (should_block_during_drag_drop_) {
     base::RunLoop run_loop(aura::Env::GetInstance()->GetDispatcher());
     quit_closure_ = run_loop.QuitClosure();
@@ -232,7 +231,6 @@ int DragDropController::StartDragAndDrop(
     base::MessageLoop::ScopedNestableTaskAllower allow_nested(loop);
     run_loop.Run();
   }
-#endif  // !defined(OS_MACOSX)
 
   if (!cancel_animation_.get() || !cancel_animation_->is_animating() ||
       !pending_long_tap_.get()) {

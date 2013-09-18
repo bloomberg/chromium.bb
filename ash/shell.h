@@ -275,11 +275,9 @@ class ASH_EXPORT Shell
   void AddShellObserver(ShellObserver* observer);
   void RemoveShellObserver(ShellObserver* observer);
 
-#if !defined(OS_MACOSX)
   AcceleratorController* accelerator_controller() {
     return accelerator_controller_.get();
   }
-#endif  // !defined(OS_MACOSX)
 
   internal::DisplayManager* display_manager() {
     return display_manager_.get();
@@ -532,12 +530,8 @@ class ASH_EXPORT Shell
 
   std::vector<WindowAndBoundsPair> to_restore_;
 
-#if !defined(OS_MACOSX)
   scoped_ptr<NestedDispatcherController> nested_dispatcher_controller_;
-
   scoped_ptr<AcceleratorController> accelerator_controller_;
-#endif  // !defined(OS_MACOSX)
-
   scoped_ptr<ShellDelegate> delegate_;
   scoped_ptr<SystemTrayDelegate> system_tray_delegate_;
   scoped_ptr<SystemTrayNotifier> system_tray_notifier_;
@@ -594,10 +588,8 @@ class ASH_EXPORT Shell
   // An event filter which handles system level gestures
   scoped_ptr<internal::SystemGestureEventFilter> system_gesture_filter_;
 
-#if !defined(OS_MACOSX)
   // An event filter that pre-handles global accelerators.
   scoped_ptr<internal::AcceleratorFilter> accelerator_filter_;
-#endif
 
   // An event filter that pre-handles all key events to send them to an IME.
   scoped_ptr<views::corewm::InputMethodEventFilter> input_method_filter_;

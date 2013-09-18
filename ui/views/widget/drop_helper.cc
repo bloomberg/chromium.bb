@@ -99,7 +99,7 @@ View* DropHelper::CalculateTargetViewImpl(
          (!view->enabled() || !view->CanDrop(data))) {
     view = view->parent();
   }
-#elif !defined(OS_MACOSX)
+#else
   int formats = 0;
   std::set<OSExchangeData::CustomFormat> custom_formats;
   while (view && view != target_view_) {

@@ -2300,7 +2300,6 @@ void View::UpdateTooltip() {
 bool View::DoDrag(const ui::LocatedEvent& event,
                   const gfx::Point& press_pt,
                   ui::DragDropTypes::DragEventSource source) {
-#if !defined(OS_MACOSX)
   int drag_operations = GetDragOperations(press_pt);
   if (drag_operations == ui::DragDropTypes::DRAG_NONE)
     return false;
@@ -2325,9 +2324,6 @@ bool View::DoDrag(const ui::LocatedEvent& event,
   widget->RunShellDrag(this, data, widget_location, drag_operations, source);
   // WARNING: we may have been deleted.
   return true;
-#else
-  return false;
-#endif  // !defined(OS_MACOSX)
 }
 
 }  // namespace views

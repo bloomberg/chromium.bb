@@ -250,17 +250,9 @@ TEST_F(SystemModalContainerLayoutManagerTest, ModalNonTransient) {
   EXPECT_TRUE(do2.destroyed());
 }
 
-// Fails on Mac only.  Needs to be implemented.  http://crbug.com/111279.
-#if defined(OS_MACOSX)
-#define MAYBE_CanActivateAfterEndModalSession \
-    DISABLED_CanActivateAfterEndModalSession
-#else
-#define MAYBE_CanActivateAfterEndModalSession CanActivateAfterEndModalSession
-#endif
 // Tests that we can activate an unrelated window after a modal window is closed
 // for a window.
-TEST_F(SystemModalContainerLayoutManagerTest,
-       MAYBE_CanActivateAfterEndModalSession) {
+TEST_F(SystemModalContainerLayoutManagerTest, CanActivateAfterEndModalSession) {
   scoped_ptr<aura::Window> unrelated(OpenToplevelTestWindow(false));
   unrelated->SetBounds(gfx::Rect(100, 100, 50, 50));
   scoped_ptr<aura::Window> parent(OpenToplevelTestWindow(false));
