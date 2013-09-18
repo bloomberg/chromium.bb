@@ -241,6 +241,9 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   // Returns true if |device| is not found in audio_devices_.
   bool FoundNewDevice(const AudioDevice& device);
 
+  // Returns a sanitized AudioDevice from |node|.
+  AudioDevice GetSanitizedAudioDevice(const AudioNode& node);
+
   scoped_refptr<AudioDevicesPrefHandler> audio_pref_handler_;
   base::WeakPtrFactory<CrasAudioHandler> weak_ptr_factory_;
   ObserverList<AudioObserver> observers_;

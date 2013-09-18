@@ -529,16 +529,8 @@ bool CrasAudioHandler::NonActiveDeviceUnplugged(
     size_t old_devices_size,
     size_t new_devices_size,
     uint64 current_active_node) {
-  // There could be cases that more than one NodesChanged signals are
-  // triggered by cras for unplugging or plugging one audio devices, both coming
-  // with the same node data. After handling the first NodesChanged signal, the
-  // audio_devices_ can be overwritten by staled node data from handling 2nd
-  // NodesChanged signal. Therefore, we need to check if the device with
-  // current_active_node is consistently active or not.
-  // crbug.com/274641.
   return (new_devices_size <= old_devices_size &&
-          GetDeviceFromId(current_active_node) &&
-          audio_devices_[current_active_node].active);
+          GetDeviceFromId(current_active_node));
 }
 
 void CrasAudioHandler::SwitchToDevice(const AudioDevice& device) {
@@ -592,6 +584,49 @@ bool CrasAudioHandler::FoundNewDevice(const AudioDevice& device) {
   return false;
 }
 
+// Sanitize the audio node data. When a device is plugged in or unplugged, there
+// should be only one NodesChanged signal from cras. However, we've observed
+// the case that multiple NodesChanged signals being sent from cras. After the
+// first NodesChanged being processed, chrome sets the active node properly.
+// However, the NodesChanged received after the first one, can return stale
+// nodes data in GetNodes call, the staled nodes data does not reflect the
+// latest active node state. Since active audio node should only be set by
+// chrome, the inconsistent data from cras could be the result of stale data
+// described above and sanitized.
+AudioDevice CrasAudioHandler::GetSanitizedAudioDevice(const AudioNode& node) {
+  AudioDevice device(node);
+  if (device.is_input) {
+    if (device.active && device.id != active_input_node_id_) {
+      LOG(WARNING) << "Stale audio device data, should not be active: "
+          << " device = " << device.ToString()
+          << " current active input node id = 0x" << std::hex
+          << active_input_node_id_;
+      device.active = false;
+    } else if (device.id == active_input_node_id_ && !device.active) {
+      LOG(WARNING) << "Stale audio device data, should be active:"
+          << " device = " << device.ToString()
+          << " current active input node id = 0x" << std::hex
+          << active_input_node_id_;
+      device.active = true;
+    }
+  } else {
+    if (device.active && device.id != active_output_node_id_) {
+      LOG(WARNING) << "Stale audio device data, should not be active: "
+          << " device = " << device.ToString()
+          << " current active output node id = 0x" << std::hex
+          << active_output_node_id_;
+      device.active = false;
+    } else if (device.id == active_output_node_id_ && !device.active) {
+      LOG(WARNING) << "Stale audio device data, should be active:"
+          << " device = " << device.ToString()
+          << " current active output node id = 0x" << std::hex
+          << active_output_node_id_;
+      device.active = true;
+    }
+  }
+  return device;
+}
+
 void CrasAudioHandler::UpdateDevicesAndSwitchActive(
     const AudioNodeList& nodes) {
   size_t old_audio_devices_size = audio_devices_.size();
@@ -607,7 +642,7 @@ void CrasAudioHandler::UpdateDevicesAndSwitchActive(
     output_devices_pq_.pop();
 
   for (size_t i = 0; i < nodes.size(); ++i) {
-    AudioDevice device(nodes[i]);
+    AudioDevice device = GetSanitizedAudioDevice(nodes[i]);
     audio_devices_[device.id] = device;
 
     if (!has_alternative_input_ &&
