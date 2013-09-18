@@ -23,6 +23,7 @@ class ActivityLog;
 // The ID of the trusted/whitelisted ActivityLog extension.
 extern const char kActivityLogExtensionId[];
 extern const char kActivityLogTestExtensionId[];
+extern const char kActivityLogObsoleteExtensionId[];
 
 // Handles interactions between the Activity Log API and implementation.
 class ActivityLogAPI : public ProfileKeyedAPI,

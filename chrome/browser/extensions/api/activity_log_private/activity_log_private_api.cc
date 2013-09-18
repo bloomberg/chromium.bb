@@ -24,8 +24,12 @@ using api::activity_log_private::ActivityResultSet;
 using api::activity_log_private::ExtensionActivity;
 using api::activity_log_private::Filter;
 
-const char kActivityLogExtensionId[] = "acldcpdepobcjbdanifkmfndkjoilgba";
-const char kActivityLogTestExtensionId[] = "ajabfgledjhbabeoojlabelaifmakodf";
+const char kActivityLogExtensionId[] = "abjoigjokfeibfhiahiijggogladbmfm";
+const char kActivityLogTestExtensionId[] = "hhcnncjlpehbepkbgccanfpkneoejnpb";
+// TODO(mvrable): Delete kActivityLogObsoleteExtensionId after ensuring that it
+// is no longer in use.
+const char kActivityLogObsoleteExtensionId[] =
+    "acldcpdepobcjbdanifkmfndkjoilgba";
 
 static base::LazyInstance<ProfileKeyedAPIFactory<ActivityLogAPI> >
     g_factory = LAZY_INSTANCE_INITIALIZER;
@@ -71,7 +75,8 @@ void ActivityLogAPI::Shutdown() {
 // static
 bool ActivityLogAPI::IsExtensionWhitelisted(const std::string& extension_id) {
   return (extension_id == kActivityLogExtensionId ||
-          extension_id == kActivityLogTestExtensionId);
+          extension_id == kActivityLogTestExtensionId ||
+          extension_id == kActivityLogObsoleteExtensionId);
 }
 
 void ActivityLogAPI::OnListenerAdded(const EventListenerInfo& details) {

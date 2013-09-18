@@ -1,6 +1,6 @@
 {
   "manifest_version": 2,
-  "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDYiwqZXiIZJruD2iCxBVAHAbOgmw2DJCH7W2kmJyRNGjEAB11vgPJ2MJuqUG/N0e5OjuVyJSNo4nXhAagoKrsZA3xSUDdFfeNP1uyNw6B1NPjo3WeeBIIP8mZXHRRT9di7+xzBrZifmEhgw4dE/Pwn5g3JhUUaUZJ32Bbh9YiTvQIDAQAB",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAxPnXCkmm7uFGELamSYBSy29GuJx/akY2n5CrxnVvXQrFZt0sFBK+PeClSllm1M5u1YNOyYgcXmq/HxbcIGQNVHlrZZYgC7nAe3cc09lrY381a6/p7Rco2vdotbVOcY8FFav02WSsKjGv2yE2Zm7bxkuvO+05CY0tFQGTnz3xegargqYyyljErLvmdL03yzRSK1qKMQXCvx8e2jgV+hOiDKdea+unlN538r9trD6MVhiowWwgjeZslon+5sTyseT8JLcWCwsG1P/Us/3I+UUi05uF1j7UuYoK95sKMj6Tdx5aeMkm4Map+6dOPv+crfubUjZVaEJWfCw2wVDskDVfuwIDAQAB",
   "name": "Activity Log API Tester",
   "description": "Tests chrome.activityLogPrivate.",
   "version": "1.0",

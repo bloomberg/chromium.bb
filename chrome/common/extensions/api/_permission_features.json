@@ -15,9 +15,9 @@
     "channel": "stable",
     "extension_types": ["extension", "platform_app"],
     "whitelist": [
-      "acldcpdepobcjbdanifkmfndkjoilgba",  // Watchdog Release
-      "llifadooppchlccojjkgplcfeglhphpe",  // Watchdog Testing
-      "ajabfgledjhbabeoojlabelaifmakodf"   // For testing
+      "abjoigjokfeibfhiahiijggogladbmfm",  // Watchdog Release
+      "hhcnncjlpehbepkbgccanfpkneoejnpb",  // Watchdog Testing
+      "acldcpdepobcjbdanifkmfndkjoilgba"   // Obsolete key
     ]
   },
   "adview": {
@@ -404,7 +404,7 @@
           "lphgohfeebnhcpiohjndkgbhhkoapkjc",  // Apps Developer tool.
           "gonnpeheodhmhdjiimoiheniambmdcco",  // Apps Editor old.
           "cbelnpbjogfbjamhpbofhlnklecjpido",  // Apps Editor published.
-          "acldcpdepobcjbdanifkmfndkjoilgba"   // Activity Log (Watchdog)
+          "abjoigjokfeibfhiahiijggogladbmfm"   // Activity Log (Watchdog).
       ]
     }
   ],
