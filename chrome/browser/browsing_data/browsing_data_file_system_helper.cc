@@ -15,7 +15,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_quota_util.h"
-#include "webkit/browser/fileapi/sandbox_file_system_backend.h"
 #include "webkit/common/fileapi/file_system_types.h"
 
 using content::BrowserThread;

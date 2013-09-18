@@ -18,7 +18,6 @@
 namespace fileapi {
 class FileSystemContext;
 class FileSystemOperationContext;
-class SandboxFileSystemBackend;
 }
 
 namespace sync_file_system {
