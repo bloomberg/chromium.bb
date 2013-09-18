@@ -40,8 +40,6 @@ namespace {
 
 bool IsLoadingErrorPage(WebKit::WebFrame* frame) {
   GURL url = frame->provisionalDataSource()->request().url();
-  if (!url.is_valid())
-    return false;
   return url.spec() == kUnreachableWebDataURL;
 }
 

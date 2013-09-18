@@ -479,7 +479,7 @@ bool DoResolveRelativeURL(const char* base_url,
   // handles the special case where the URL is only slashes, since that
   // doesn't have a host part either.
   if (base_is_file &&
-      (num_slashes >= 2 || num_slashes == relative_component.len)) {
+      (num_slashes > 2 || num_slashes == relative_component.len)) {
     return DoResolveAbsoluteFile(relative_url, relative_component,
                                  query_converter, output, out_parsed);
   }
