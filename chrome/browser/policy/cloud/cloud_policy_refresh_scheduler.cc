@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/sequenced_task_runner.h"
@@ -15,6 +16,7 @@
 #include "base/time/tick_clock.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/policy/cloud/cloud_policy_constants.h"
+#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/notification_details.h"
 
 namespace policy {
@@ -26,10 +28,7 @@ const size_t kMaxRefreshesPerHour = 5;
 
 // The maximum time to wait for the invalidations service to become available
 // before starting to issue requests.
-// TODO(joaodasilva): set this to a non-zero value once the invalidations
-// service is wired to this class and we have a good estimate of how long
-// to wait.
-const int kWaitForInvalidationsTimeoutSeconds = 0;
+const int kWaitForInvalidationsTimeoutSeconds = 5;
 
 }  // namespace
 
@@ -63,7 +62,7 @@ const int64 CloudPolicyRefreshScheduler::kUnmanagedRefreshDelayMs =
 // TODO(joaodasilva): increase this value once we're confident that the
 // invalidations channel works as expected.
 const int64 CloudPolicyRefreshScheduler::kWithInvalidationsRefreshDelayMs =
-    24 * 60 * 60 * 1000;  // 1 day.
+    3 * 60 * 60 * 1000;  // 3 hours.
 const int64 CloudPolicyRefreshScheduler::kInitialErrorRetryDelayMs =
     5 * 60 * 1000;  // 5 minutes.
 const int64 CloudPolicyRefreshScheduler::kRefreshDelayMinMs =
@@ -95,7 +94,13 @@ CloudPolicyRefreshScheduler::CloudPolicyRefreshScheduler(
   net::NetworkChangeNotifier::AddIPAddressObserver(this);
 
   UpdateLastRefreshFromPolicy();
-  WaitForInvalidationService();
+
+  // Give some time for the invalidation service to become available before the
+  // first refresh if there is already policy present.
+  if (store->has_policy())
+    WaitForInvalidationService();
+  else
+    ScheduleRefresh();
 }
 
 CloudPolicyRefreshScheduler::~CloudPolicyRefreshScheduler() {
@@ -137,14 +142,12 @@ void CloudPolicyRefreshScheduler::SetInvalidationServiceAvailability(
   wait_for_invalidations_timeout_callback_.Cancel();
   invalidations_available_ = is_available;
 
-  if (invalidations_available_) {
-    ScheduleRefresh();
-  } else {
-    // If the invalidation service was previously available but is now offline
-    // then this may be a temporary failure; give it some time to recover before
-    // falling back on the polling behavior.
-    WaitForInvalidationService();
-  }
+  // Schedule a refresh since the refresh delay has been updated; however, allow
+  // some time for the invalidation service to update. If it is now online, the
+  // wait allows pending invalidations to be delivered. If it is now offline,
+  // then the wait allows for the service to recover from transient failure
+  // before falling back on the polling behavior.
+  WaitForInvalidationService();
 }
 
 void CloudPolicyRefreshScheduler::OnPolicyFetched(CloudPolicyClient* client) {
@@ -349,10 +352,17 @@ void CloudPolicyRefreshScheduler::WaitForInvalidationService() {
       base::Bind(
           &CloudPolicyRefreshScheduler::OnWaitForInvalidationServiceTimeout,
           base::Unretained(this)));
+  base::TimeDelta delay =
+      base::TimeDelta::FromSeconds(kWaitForInvalidationsTimeoutSeconds);
+  // Do not wait for the invalidation service if the feature is disabled.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableCloudPolicyPush)) {
+    delay = base::TimeDelta();
+  }
   task_runner_->PostDelayedTask(
       FROM_HERE,
       wait_for_invalidations_timeout_callback_.callback(),
-      base::TimeDelta::FromSeconds(kWaitForInvalidationsTimeoutSeconds));
+      delay);
 }
 
 void CloudPolicyRefreshScheduler::OnWaitForInvalidationServiceTimeout() {

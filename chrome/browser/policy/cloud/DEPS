@@ -66,6 +66,7 @@ specific_include_rules = {
 
   r"cloud_policy_refresh_scheduler\.cc": [
     "+chrome/browser/chrome_notification_types.h",
+    "+chrome/common/chrome_switches.h",
     "+content/public/browser/notification_details.h",
   ],
 

@@ -553,7 +553,8 @@ TEST_F(DeviceLocalAccountPolicyProviderTest, RefreshPolicies) {
   EXPECT_CALL(mock_device_management_service_, CreateJob(_))
       .WillRepeatedly(
           mock_device_management_service_.FailJob(DM_STATUS_REQUEST_FAILED));
-  EXPECT_CALL(mock_device_management_service_, StartJob(_, _, _, _, _, _, _));
+  EXPECT_CALL(mock_device_management_service_, StartJob(_, _, _, _, _, _, _))
+      .Times(AnyNumber());
   service_.Connect(&mock_device_management_service_);
   FlushDeviceSettings();
   Mock::VerifyAndClearExpectations(&mock_device_management_service_);
