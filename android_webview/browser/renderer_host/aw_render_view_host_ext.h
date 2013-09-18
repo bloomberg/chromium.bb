@@ -26,6 +26,8 @@ class AwRenderViewHostExtClient {
  public:
   // Called when the RenderView page scale changes.
   virtual void OnWebLayoutPageScaleFactorChanged(float page_scale_factor) = 0;
+  virtual void OnWebLayoutContentsSizeChanged(
+      const gfx::Size& contents_size) = 0;
 
  protected:
   virtual ~AwRenderViewHostExtClient() {}
@@ -89,6 +91,7 @@ class AwRenderViewHostExt : public content::WebContentsObserver,
   void OnDocumentHasImagesResponse(int msg_id, bool has_images);
   void OnUpdateHitTestData(const AwHitTestData& hit_test_data);
   void OnPageScaleFactorChanged(float page_scale_factor);
+  void OnContentsSizeChanged(const gfx::Size& contents_size);
 
   bool IsRenderViewReady() const;
 

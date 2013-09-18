@@ -74,7 +74,7 @@ IPC_MESSAGE_ROUTED1(AwViewMsg_SetFixedLayoutSize,
 
 // Sets the base background color for this view.
 IPC_MESSAGE_ROUTED1(AwViewMsg_SetBackgroundColor,
-                    SkColor);
+                    SkColor)
 
 IPC_MESSAGE_CONTROL1(AwViewMsg_SetJsOnlineProperty,
                      bool /* network_up */)
@@ -95,3 +95,7 @@ IPC_MESSAGE_ROUTED1(AwViewHostMsg_UpdateHitTestData,
 // Sent whenever the page scale factor (as seen by RenderView) is changed.
 IPC_MESSAGE_ROUTED1(AwViewHostMsg_PageScaleFactorChanged,
                     float /* page_scale_factor */)
+
+// Sent whenever the contents size (as seen by RenderView) is changed.
+IPC_MESSAGE_ROUTED1(AwViewHostMsg_OnContentsSizeChanged,
+                    gfx::Size /* contents_size */)

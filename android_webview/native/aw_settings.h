@@ -34,7 +34,6 @@ class AwSettings : public content::WebContentsObserver {
  private:
   AwRenderViewHostExt* GetAwRenderViewHostExt();
   void UpdateEverything();
-  void UpdatePreferredSizeMode();
 
   // WebContentsObserver overrides:
   virtual void RenderViewCreated(

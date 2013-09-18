@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/timer/timer.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/public/web/WebPermissionClient.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -39,6 +40,7 @@ class AwRenderViewExt : public content::RenderViewObserver,
                                         bool is_new_navigation) OVERRIDE;
   virtual void FocusedNodeChanged(const WebKit::WebNode& node) OVERRIDE;
   virtual void DidCommitCompositorFrame() OVERRIDE;
+  virtual void DidUpdateLayout() OVERRIDE;
   virtual void Navigate(const GURL& url) OVERRIDE;
 
   void OnDocumentHasImagesRequest(int id);
@@ -57,6 +59,8 @@ class AwRenderViewExt : public content::RenderViewObserver,
 
   void UpdatePageScaleFactor();
 
+  void CheckContentsSize();
+
   // WebKit::WebPermissionClient implementation.
   virtual bool allowDisplayingInsecureContent(
       WebKit::WebFrame* frame,
@@ -72,6 +76,9 @@ class AwRenderViewExt : public content::RenderViewObserver,
   bool capture_picture_enabled_;
 
   float page_scale_factor_;
+
+  gfx::Size last_sent_contents_size_;
+  base::OneShotTimer<AwRenderViewExt> check_contents_size_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(AwRenderViewExt);
 };

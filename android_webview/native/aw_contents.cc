@@ -843,6 +843,16 @@ void AwContents::OnWebLayoutPageScaleFactorChanged(float page_scale_factor) {
                                                          page_scale_factor);
 }
 
+void AwContents::OnWebLayoutContentsSizeChanged(
+    const gfx::Size& contents_size) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+  Java_AwContents_onWebLayoutContentsSizeChanged(
+      env, obj.obj(), contents_size.width(), contents_size.height());
+}
+
 jint AwContents::CapturePicture(JNIEnv* env,
                                 jobject obj,
                                 int width,

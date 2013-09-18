@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/android_content_detection_prefixes.h"
 #include "content/public/renderer/document_state.h"
@@ -215,12 +216,44 @@ void AwRenderViewExt::DidCommitCompositorFrame() {
   UpdatePageScaleFactor();
 }
 
+void AwRenderViewExt::DidUpdateLayout() {
+  if (check_contents_size_timer_.IsRunning())
+    return;
+
+  check_contents_size_timer_.Start(FROM_HERE,
+                                   base::TimeDelta::FromMilliseconds(0), this,
+                                   &AwRenderViewExt::CheckContentsSize);
+}
+
 void AwRenderViewExt::UpdatePageScaleFactor() {
   if (page_scale_factor_ != render_view()->GetWebView()->pageScaleFactor()) {
     page_scale_factor_ = render_view()->GetWebView()->pageScaleFactor();
     Send(new AwViewHostMsg_PageScaleFactorChanged(routing_id(),
                                                   page_scale_factor_));
   }
+}
+
+void AwRenderViewExt::CheckContentsSize() {
+  if (!render_view()->GetWebView())
+    return;
+
+  gfx::Size contents_size;
+
+  WebKit::WebFrame* main_frame = render_view()->GetWebView()->mainFrame();
+  if (main_frame)
+    contents_size = main_frame->contentsSize();
+
+  // Fall back to contentsPreferredMinimumSize if the mainFrame is reporting a
+  // 0x0 size (this happens during initial load).
+  if (contents_size.IsEmpty()) {
+    contents_size = render_view()->GetWebView()->contentsPreferredMinimumSize();
+  }
+
+  if (contents_size == last_sent_contents_size_)
+    return;
+
+  last_sent_contents_size_ = contents_size;
+  Send(new AwViewHostMsg_OnContentsSizeChanged(routing_id(), contents_size));
 }
 
 void AwRenderViewExt::Navigate(const GURL& url) {

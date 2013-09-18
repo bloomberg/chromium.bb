@@ -84,6 +84,7 @@ class CONTENT_EXPORT RenderViewObserver : public IPC::Listener,
       WebKit::WebFrame* frame,
       const WebKit::WebContextMenuData& data) {}
   virtual void DidCommitCompositorFrame() {}
+  virtual void DidUpdateLayout() {}
 
   // These match the RenderView methods.
   virtual void DidHandleMouseEvent(const WebKit::WebMouseEvent& event) {}

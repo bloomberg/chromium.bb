@@ -495,8 +495,7 @@ public class AwContents {
         mDIPScale = DeviceDisplayInfo.create(containerView.getContext()).getDIPScale();
         mLayoutSizer.setDelegate(new AwLayoutSizerDelegate());
         mLayoutSizer.setDIPScale(mDIPScale);
-        mWebContentsDelegate = new AwWebContentsDelegateAdapter(contentsClient,
-                mLayoutSizer.getPreferredSizeChangedListener(), mContainerView);
+        mWebContentsDelegate = new AwWebContentsDelegateAdapter(contentsClient, mContainerView);
         mContentsClientBridge = new AwContentsClientBridge(contentsClient);
         mZoomControls = new AwZoomControls(this);
         mIoThreadClient = new IoThreadClientImpl();
@@ -1789,6 +1788,12 @@ public class AwContents {
     private void onWebLayoutPageScaleFactorChanged(float webLayoutPageScaleFactor) {
         // This change notification comes from the renderer thread, not from the cc/ impl thread.
         mLayoutSizer.onPageScaleChanged(webLayoutPageScaleFactor);
+    }
+
+    @CalledByNative
+    private void onWebLayoutContentsSizeChanged(int widthCss, int heightCss) {
+        // This change notification comes from the renderer thread, not from the cc/ impl thread.
+        mLayoutSizer.onContentSizeChanged(widthCss, heightCss);
     }
 
     @CalledByNative

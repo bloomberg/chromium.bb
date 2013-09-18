@@ -147,6 +147,8 @@ class AwContents : public FindHelper::Listener,
   // AwRenderViewHostExtClient implementation.
   virtual void OnWebLayoutPageScaleFactorChanged(
       float page_scale_factor) OVERRIDE;
+  virtual void OnWebLayoutContentsSizeChanged(
+      const gfx::Size& contents_size) OVERRIDE;
 
   // BrowserViewRenderer::Client implementation.
   virtual bool RequestDrawGL(jobject canvas) OVERRIDE;

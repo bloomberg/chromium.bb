@@ -2789,6 +2789,8 @@ void RenderViewImpl::numberOfWheelEventHandlersChanged(unsigned num_handlers) {
 }
 
 void RenderViewImpl::didUpdateLayout() {
+  FOR_EACH_OBSERVER(RenderViewObserver, observers_, DidUpdateLayout());
+
   // We don't always want to set up a timer, only if we've been put in that
   // mode by getting a |ViewMsg_EnablePreferredSizeChangedMode|
   // message.

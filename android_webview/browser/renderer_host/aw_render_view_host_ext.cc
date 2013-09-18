@@ -139,6 +139,8 @@ bool AwRenderViewHostExt::OnMessageReceived(const IPC::Message& message) {
                         OnUpdateHitTestData)
     IPC_MESSAGE_HANDLER(AwViewHostMsg_PageScaleFactorChanged,
                         OnPageScaleFactorChanged)
+    IPC_MESSAGE_HANDLER(AwViewHostMsg_OnContentsSizeChanged,
+                        OnContentsSizeChanged)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -167,6 +169,11 @@ void AwRenderViewHostExt::OnUpdateHitTestData(
 
 void AwRenderViewHostExt::OnPageScaleFactorChanged(float page_scale_factor) {
   client_->OnWebLayoutPageScaleFactorChanged(page_scale_factor);
+}
+
+void AwRenderViewHostExt::OnContentsSizeChanged(
+    const gfx::Size& contents_size) {
+  client_->OnWebLayoutContentsSizeChanged(contents_size);
 }
 
 }  // namespace android_webview

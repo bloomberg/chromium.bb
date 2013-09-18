@@ -42,8 +42,6 @@ class AwWebContentsDelegate
                               bool* was_blocked) OVERRIDE;
   virtual void CloseContents(content::WebContents* source) OVERRIDE;
   virtual void ActivateContents(content::WebContents* contents) OVERRIDE;
-  virtual void UpdatePreferredSize(content::WebContents* web_contents,
-                                   const gfx::Size& pref_size) OVERRIDE;
 };
 
 bool RegisterAwWebContentsDelegate(JNIEnv* env);
