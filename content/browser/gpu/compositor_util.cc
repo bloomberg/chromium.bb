@@ -112,11 +112,6 @@ bool IsDelegatedRendererEnabled() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   bool enabled = false;
 
-#if defined(USE_AURA)
-  // Default to true on Aura, but allow override via flags.
-  enabled = true;
-#endif
-
   // Flags override.
   enabled |= command_line.HasSwitch(switches::kEnableDelegatedRenderer);
   enabled &= !command_line.HasSwitch(switches::kDisableDelegatedRenderer);
