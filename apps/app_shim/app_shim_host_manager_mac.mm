@@ -26,13 +26,14 @@ void CreateAppShimHost(const IPC::ChannelHandle& handle) {
 
 }  // namespace
 
-AppShimHostManager::AppShimHostManager() {
+AppShimHostManager::AppShimHostManager() {}
+
+void AppShimHostManager::Init() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   apps::AppShimHandler::SetDefaultHandler(&extension_app_shim_handler_);
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&AppShimHostManager::InitOnFileThread,
-          base::Unretained(this)));
+      base::Bind(&AppShimHostManager::InitOnFileThread, this));
 }
 
 AppShimHostManager::~AppShimHostManager() {
@@ -52,8 +53,7 @@ void AppShimHostManager::InitOnFileThread() {
   factory_.reset(new IPC::ChannelFactory(socket_path, this));
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&AppShimHostManager::ListenOnIOThread,
-          base::Unretained(this)));
+      base::Bind(&AppShimHostManager::ListenOnIOThread, this));
 }
 
 void AppShimHostManager::ListenOnIOThread() {

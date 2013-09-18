@@ -5,11 +5,10 @@
 #ifndef CHROME_BROWSER_BROWSER_PROCESS_PLATFORM_PART_MAC_H_
 #define CHROME_BROWSER_BROWSER_PROCESS_PLATFORM_PART_MAC_H_
 
+#include "apps/app_shim/app_shim_host_manager_mac.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/browser_process_platform_part_base.h"
-
-class AppShimHostManager;
 
 namespace apps {
 class ExtensionAppShimHandler;
@@ -29,7 +28,7 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
 
  private:
   // Hosts the IPC channel factory that App Shims connect to on Mac.
-  scoped_ptr<AppShimHostManager> app_shim_host_manager_;
+  scoped_refptr<AppShimHostManager> app_shim_host_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserProcessPlatformPart);
 };
