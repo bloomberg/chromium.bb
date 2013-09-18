@@ -89,6 +89,7 @@ static const char kUnprefixedClearKeyParent[] = "org.w3";
 static const char kExternalClearKey[] = "org.chromium.externalclearkey";
 static const char kWidevineAlpha[] = "com.widevine.alpha";
 static const char kWidevine[] = "com.widevine";
+static const char kWidevineAlphaHr[] = "com.widevine.alpha.hr";
 
 class EncryptedMediaIsTypeSupportedTest : public InProcessBrowserTest {
  protected:
@@ -842,6 +843,15 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedWidevineTest,
   // Non-MP4 codec.
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       "audio/mp4", vorbis_codec(), kWidevineAlpha));
+}
+
+IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedWidevineTest,
+                       Widevine_HR_Basic) {
+  // HR support cannot be detected in tests, so this is expected to fail
+  // everywhere.
+  EXPECT_FALSE(IsConcreteSupportedKeySystem(kWidevineAlphaHr));
+  EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
+      "video/webm", no_codecs(), kWidevineAlphaHr));
 }
 
 #if defined(ENABLE_PEPPER_CDMS)

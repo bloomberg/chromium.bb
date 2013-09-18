@@ -4,6 +4,8 @@
 
 #include "chrome/renderer/media/chrome_key_systems.h"
 
+#include <string>
+
 #include "base/logging.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/renderer/render_thread.h"
@@ -95,17 +97,42 @@ enum SupportedCodecs {
 #endif  // defined(USE_PROPRIETARY_CODECS)
 };
 
+enum WidevineCdmType {
+  WIDEVINE,
+  WIDEVINE_HR,
+};
+
+static bool IsWidevineHrSupported() {
+  // TODO(jrummell): Need to call CheckPlatformState() but it is
+  // asynchronous, and needs to be done in the browser.
+  return false;
+}
+
+// Return |name|'s parent key system.
+static std::string GetDirectParentName(std::string name) {
+  int last_period = name.find_last_of('.');
+  DCHECK_GT(last_period, 0);
+  return name.substr(0, last_period);
+}
+
 static void AddWidevineWithCodecs(
+    WidevineCdmType widevine_cdm_type,
     SupportedCodecs supported_codecs,
     std::vector<KeySystemInfo>* concrete_key_systems) {
-  static const char kWidevineParentKeySystem[] = "com.widevine";
-#if defined(OS_ANDROID)
-  static const uint8 kWidevineUuid[16] = {
-      0xED, 0xEF, 0x8B, 0xA9, 0x79, 0xD6, 0x4A, 0xCE,
-      0xA3, 0xC8, 0x27, 0xDC, 0xD5, 0x1D, 0x21, 0xED };
-#endif
 
   KeySystemInfo info(kWidevineKeySystem);
+
+  switch (widevine_cdm_type) {
+    case WIDEVINE:
+      // For standard Widevine, add parent name.
+      info.parent_key_system = GetDirectParentName(kWidevineKeySystem);
+      break;
+    case WIDEVINE_HR:
+      info.key_system.append(".hr");
+      break;
+    default:
+      NOTREACHED();
+  }
 
   if (supported_codecs & WEBM_VP8_AND_VORBIS) {
     info.supported_types.push_back(std::make_pair(kAudioWebM, kVorbis));
@@ -122,11 +149,12 @@ static void AddWidevineWithCodecs(
   }
 #endif  // defined(USE_PROPRIETARY_CODECS)
 
-  info.parent_key_system = kWidevineParentKeySystem;
-
 #if defined(ENABLE_PEPPER_CDMS)
   info.pepper_type = kWidevineCdmPluginMimeType;
 #elif defined(OS_ANDROID)
+  static const uint8 kWidevineUuid[16] = {
+      0xED, 0xEF, 0x8B, 0xA9, 0x79, 0xD6, 0x4A, 0xCE,
+      0xA3, 0xC8, 0x27, 0xDC, 0xD5, 0x1D, 0x21, 0xED };
   info.uuid.assign(kWidevineUuid, kWidevineUuid + arraysize(kWidevineUuid));
 #endif  // defined(ENABLE_PEPPER_CDMS)
 
@@ -160,7 +188,10 @@ static void AddPepperBasedWidevine(
 #endif
 #endif  // defined(USE_PROPRIETARY_CODECS)
 
-  AddWidevineWithCodecs(supported_codecs, concrete_key_systems);
+  AddWidevineWithCodecs(WIDEVINE, supported_codecs, concrete_key_systems);
+
+  if (IsWidevineHrSupported())
+    AddWidevineWithCodecs(WIDEVINE_HR, supported_codecs, concrete_key_systems);
 }
 #elif defined(OS_ANDROID)
 static void AddAndroidWidevine(
@@ -168,7 +199,10 @@ static void AddAndroidWidevine(
 #if defined(USE_PROPRIETARY_CODECS)
   SupportedCodecs supported_codecs =
       static_cast<SupportedCodecs>(MP4_AAC | MP4_AVC1);
-  AddWidevineWithCodecs(supported_codecs, concrete_key_systems);
+  AddWidevineWithCodecs(WIDEVINE, supported_codecs, concrete_key_systems);
+
+  if (IsWidevineHrSupported())
+    AddWidevineWithCodecs(WIDEVINE_HR, supported_codecs, concrete_key_systems);
 #endif  // defined(USE_PROPRIETARY_CODECS)
 }
 #endif  // defined(ENABLE_PEPPER_CDMS)
