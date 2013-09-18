@@ -6,12 +6,18 @@ import sys
 
 from webkitpy.common.host import Host
 
+ALL_TEST_TYPES = ['text', 'harness', 'pixel', 'ref', 'unknown']
+
 def main(argv):
     parser = optparse.OptionParser(usage='%prog [times_ms.json]')
     parser.add_option('-f', '--forward', action='store', type='int',
                       help='group times by first N directories of test')
     parser.add_option('-b', '--backward', action='store', type='int',
                      help='group times by last N directories of test')
+    parser.add_option('--fastest', action='store', type='float',
+                      help='print a list of tests that will take N % of the time')
+    parser.add_option('--type', action='append', default=[],
+                      help='type of tests to filter for (%s)' % ALL_TEST_TYPES)
 
     epilog = """
        You can print out aggregate times per directory using the -f and -b
@@ -25,34 +31,105 @@ def main(argv):
     parser.epilog = '\n'.join(s.lstrip() for s in epilog.splitlines())
 
     options, args = parser.parse_args(argv)
+    options.type = options.type or ALL_TEST_TYPES
+
     host = Host()
+    port = host.port_factory.get()
     if args and args[0]:
         times_ms_path = args[0]
     else:
-        times_ms_path = host.filesystem.join(host.port_factory.get().results_directory(), 'times_ms.json')
+        times_ms_path = host.filesystem.join(port.results_directory(), 'times_ms.json')
 
     with open(times_ms_path, 'r') as fp:
          times_trie = json.load(fp)
 
     times = convert_trie_to_flat_paths(times_trie)
 
-    def key_for(path):
-        if options.forward is not None:
-            return os.sep.join(path.split(os.sep)[:-1][:options.forward])
-        if options.backward is not None:
-            return os.sep.join(path.split(os.sep)[:-options.backward])
-        return path
+    if options.fastest:
+        print_fastest(port, options, times)
+    else:
+        print_times(options, times)
 
-    times_by_key = {}
+
+def print_times(options, times):
+    by_key = times_by_key(times, options.forward, options.backward)
+    for key in sorted(by_key):
+        print "%s %d" % (key, by_key[key])
+
+
+def print_fastest(port, options, times):
+    total = times_by_key(times, 0, None)['']
+    by_key = times_by_key(times, options.forward, options.backward)
+    keys_by_time = sorted(by_key, key=lambda k: by_key[k])
+
+    tests_by_key = {}
     for test_name in times:
-        key = key_for(test_name)
-        if key in times_by_key:
-            times_by_key[key] += times[test_name]
+        key = key_for(test_name, options.forward, options.backward)
+        if key in tests_by_key:
+            tests_by_key[key].append(test_name)
         else:
-            times_by_key[key] = times[test_name]
+            tests_by_key[key] = [test_name]
 
-    for key in sorted(times_by_key):
-        print "%s %d" % (key, times_by_key[key])
+    fast_tests_by_key = {}
+    total_so_far = 0
+    per_key = total * options.fastest / (len(keys_by_time) * 100.0)
+    budget = 0
+    while keys_by_time:
+        budget += per_key
+        key = keys_by_time.pop(0)
+        tests_by_time = sorted(tests_by_key[key], key=lambda t: times[t])
+        fast_tests_by_key[key] = []
+        while tests_by_time and total_so_far < budget:
+            test = tests_by_time.pop(0)
+            if options.type != ALL_TEST_TYPES and test_type(port, test) not in options.type:
+                continue
+            test_time = times[test]
+            if test_time and total_so_far + test_time < budget: # This test is an optimization to not include tests that are Skipped.
+                fast_tests_by_key[key].append(test)
+                total_so_far += test_time
+
+    for k in sorted(fast_tests_by_key):
+        for t in fast_tests_by_key[k]:
+            print "%s %d" % (t, times[t])
+    return
+
+
+def test_type(port, test_name):
+    fs = port.host.filesystem
+    if fs.exists(port.expected_filename(test_name, '.png')):
+        return 'pixel'
+    if port.reference_files(test_name):
+        return 'ref'
+    txt = port.expected_text(test_name)
+    if txt:
+        if 'layer at (0,0) size 800x600' in txt:
+            return 'pixel'
+        for line in txt.splitlines():
+            if line.startswith('FAIL') or line.startswith('TIMEOUT') or line.startswith('PASS'):
+                return 'harness'
+        return 'text'
+    return 'unknown'
+
+
+def key_for(path, forward, backward):
+    if forward is not None:
+        return os.sep.join(path.split(os.sep)[:-1][:forward])
+    if backward is not None:
+        return os.sep.join(path.split(os.sep)[:-backward])
+    return path
+
+
+def times_by_key(times, forward, backward):
+    by_key = {}
+    for test_name in times:
+        key = key_for(test_name, forward, backward)
+        if key in by_key:
+            by_key[key] += times[test_name]
+        else:
+            by_key[key] = times[test_name]
+    return by_key
+
+
 
 def convert_trie_to_flat_paths(trie, prefix=None):
     # Cloned from webkitpy.layout_tests.layout_package.json_results_generator
