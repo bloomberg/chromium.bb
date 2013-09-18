@@ -153,7 +153,7 @@ void TextAutosizer::recalculateMultipliers()
 
 TextAutosizer::ContentType TextAutosizer::detectContentType()
 {
-    RefPtr<NodeList> metaElements = m_document->getElementsByTagName(metaTag.localName());
+    RefPtr<NodeList> metaElements = m_document->getElementsByTagNameNS(xhtmlNamespaceURI, metaTag.localName());
     for (unsigned i = 0; i < metaElements->length(); ++i) {
         HTMLMetaElement* metaElement = toHTMLMetaElement(metaElements->item(i));
         if (equalIgnoringCase(metaElement->name(), "generator") && metaElement->content().startsWith("vBulletin", false))
