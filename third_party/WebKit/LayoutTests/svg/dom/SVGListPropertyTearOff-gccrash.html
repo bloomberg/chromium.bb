@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src="../../fast/js/resources/js-test-pre.js"></script>
+<script>
+    gc();
+    var initialNumberOfNodes;
+    if (internals)
+        initialNumberOfNodes = internals.numberOfLiveNodes();
+
+    var text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    var rotate = text.rotate;
+    text = null;
+
+    gc();
+    // Assert that the <text> svg element is deleted.
+    if (internals)
+        shouldBe('internals.numberOfLiveNodes()', 'initialNumberOfNodes');
+
+    // Accessing to properties of deleted SVGElement should not cause crash
+    rotate;
+    rotate.animVal;
+    try { rotate.animVal.getItem(0); } catch(e) {}
+</script>
+<div>PASS: Did not crash.</div>
+<script src="../../fast/js/resources/js-test-post.js"></script>
+</body>
+</html>

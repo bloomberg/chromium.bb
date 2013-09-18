@@ -32,6 +32,7 @@
 #include "core/svg/SVGAnimatedType.h"
 #include "core/svg/SVGAnimatedTypeAnimator.h"
 #include "core/svg/SVGAnimatorFactory.h"
+#include "core/svg/SVGDocumentExtensions.h"
 
 namespace WebCore {
 
@@ -50,6 +51,8 @@ PassRefPtr<SVGAnimateElement> SVGAnimateElement::create(const QualifiedName& tag
 
 SVGAnimateElement::~SVGAnimateElement()
 {
+    if (targetElement())
+        clearAnimatedType(targetElement());
 }
 
 bool SVGAnimateElement::hasValidAttributeType()
@@ -211,6 +214,10 @@ void SVGAnimateElement::resetAnimatedType()
     if (shouldApply == ApplyXMLAnimation) {
         // SVG DOM animVal animation code-path.
         m_animatedProperties = animator->findAnimatedPropertiesForAttributeName(targetElement, attributeName);
+        SVGElementAnimatedPropertyList::const_iterator end = m_animatedProperties.end();
+        for (SVGElementAnimatedPropertyList::const_iterator it = m_animatedProperties.begin(); it != end; ++it)
+            document().accessSVGExtensions()->addElementReferencingTarget(this, it->element);
+
         ASSERT(!m_animatedProperties.isEmpty());
 
         ASSERT(propertyTypesAreConsistent(m_animatedPropertyType, m_animatedProperties));

@@ -92,7 +92,8 @@ public:
 
     PassListItemTearOff getItem(unsigned index, ExceptionState& es)
     {
-        return Base::getItemValuesAndWrappers(m_animatedProperty.get(), index, es);
+        ASSERT(m_animatedProperty);
+        return Base::getItemValuesAndWrappers(m_animatedProperty, index, es);
     }
 
     PassListItemTearOff insertItemBefore(PassListItemTearOff passNewItem, unsigned index, ExceptionState& es)
@@ -107,7 +108,8 @@ public:
 
     PassListItemTearOff removeItem(unsigned index, ExceptionState& es)
     {
-        return Base::removeItemValuesAndWrappers(m_animatedProperty.get(), index, es);
+        ASSERT(m_animatedProperty);
+        return Base::removeItemValuesAndWrappers(m_animatedProperty, index, es);
     }
 
     PassListItemTearOff appendItem(PassListItemTearOff passNewItem, ExceptionState& es)
@@ -115,11 +117,27 @@ public:
         return Base::appendItemValuesAndWrappers(passNewItem, es);
     }
 
+    SVGElement* contextElement() const
+    {
+        ASSERT(m_animatedProperty);
+        return m_animatedProperty->contextElement();
+    }
+
+    void clearAnimatedProperty()
+    {
+        ASSERT(m_animatedProperty);
+        Base::detachListWrappers(0);
+        m_animatedProperty = 0;
+        m_values = 0;
+        m_wrappers = 0;
+    }
+
 protected:
     SVGListPropertyTearOff(AnimatedListPropertyTearOff* animatedProperty, SVGPropertyRole role, PropertyType& values, ListWrapperCache& wrappers)
         : SVGListProperty<PropertyType>(role, values, &wrappers)
         , m_animatedProperty(animatedProperty)
     {
+        ASSERT(m_animatedProperty);
     }
 
     virtual bool isReadOnly() const
@@ -135,6 +153,7 @@ protected:
     {
         ASSERT(m_values);
         ASSERT(m_wrappers);
+        ASSERT(m_animatedProperty);
 
         // Update existing wrappers, as the index in the values list has changed.
         unsigned size = m_wrappers->size();
@@ -143,7 +162,7 @@ protected:
             ListItemTearOff* item = m_wrappers->at(i).get();
             if (!item)
                 continue;
-            item->setAnimatedProperty(m_animatedProperty.get());
+            item->setAnimatedProperty(m_animatedProperty);
             item->setValue(m_values->at(i));
         }
 
@@ -179,6 +198,7 @@ protected:
 
         // Spec: If newItem is already in a list, it is removed from its previous list before it is inserted into this list.
         // 'newItem' is already living in another list. If it's not our list, synchronize the other lists wrappers after the removal.
+        ASSERT(m_animatedProperty);
         bool livesInOtherList = animatedPropertyOfItem != m_animatedProperty;
         AnimatedListPropertyTearOff* propertyTearOff = static_cast<AnimatedListPropertyTearOff*>(animatedPropertyOfItem);
         int indexToRemove = propertyTearOff->findItem(newItem.get());
@@ -206,7 +226,7 @@ protected:
 
     // Back pointer to the animated property that created us
     // For example (text.x.baseVal): m_animatedProperty points to the 'x' SVGAnimatedLengthList object
-    RefPtr<AnimatedListPropertyTearOff> m_animatedProperty;
+    AnimatedListPropertyTearOff* m_animatedProperty;
 };
 
 }

@@ -819,7 +819,7 @@ public:
 };
 END
 
-    my $customWrap = $interface->extendedAttributes->{"CustomToV8"};
+    my $customWrap = $interface->extendedAttributes->{"CustomToV8"} || $svgNativeType;
     if ($noToV8) {
         die "Can't suppress toV8 for subclass\n" if $interface->parent;
     } elsif ($noWrap) {
@@ -3991,6 +3991,25 @@ v8::Handle<v8::Object> wrap($implClassName* impl, v8::Handle<v8::Object> creatio
     v8::Handle<v8::Object> wrapper = ${v8ClassName}::createWrapper(impl, creationContext, isolate);
     if (!wrapper.IsEmpty())
         wrapper->SetIndexedPropertiesToExternalArrayData(impl->baseAddress(), $arrayType, impl->length());
+    return wrapper;
+}
+
+END
+    }
+
+    # Add strong reference from TearOff to SVGElement, so that SVGElement would never get GC-ed while the TearOff is alive. We do this in V8-side to avoid circular reference on Blink side.
+    my $svgNativeType = GetSVGTypeNeedingTearOff($interface->name);
+    if ($svgNativeType) {
+        # below include needed for SVGPathSegListPropertyTearOff
+        AddToImplIncludes("V8SVGPathElement.h");
+        $implementation{nameSpaceWebCore}->add(<<END);
+v8::Handle<v8::Object> wrap($svgNativeType* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+{
+    ASSERT(impl);
+    ASSERT(!DOMDataStore::containsWrapper<${v8ClassName}>(impl, isolate));
+    v8::Handle<v8::Object> wrapper = ${v8ClassName}::createWrapper(impl, creationContext, isolate);
+    if (impl->contextElement())
+        V8HiddenPropertyName::setNamedHiddenReference(wrapper, "contextElement", toV8(impl->contextElement(), creationContext, isolate));
     return wrapper;
 }
 
