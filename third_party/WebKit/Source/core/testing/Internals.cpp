@@ -57,6 +57,7 @@
 #include "core/dom/PseudoElement.h"
 #include "core/dom/Range.h"
 #include "core/dom/StaticNodeList.h"
+#include "core/dom/TouchController.h"
 #include "core/dom/TreeScope.h"
 #include "core/dom/ViewportArguments.h"
 #include "core/dom/WheelController.h"
@@ -1316,7 +1317,7 @@ unsigned Internals::touchEventHandlerCount(Document* document, ExceptionState& e
         return 0;
     }
 
-    const TouchEventTargetSet* touchHandlers = document->touchEventTargets();
+    const TouchEventTargetSet* touchHandlers = TouchController::from(document)->touchEventTargets();
     if (!touchHandlers)
         return 0;
 

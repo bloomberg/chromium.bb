@@ -41,6 +41,7 @@
 #include "core/dom/KeyboardEvent.h"
 #include "core/dom/MouseEvent.h"
 #include "core/dom/TextEvent.h"
+#include "core/dom/TouchController.h"
 #include "core/dom/TouchEvent.h"
 #include "core/dom/TouchList.h"
 #include "core/dom/UserTypingGestureIndicator.h"
@@ -3640,7 +3641,7 @@ bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
                 m_originatingTouchPointDocument = &doc;
                 freshTouchEvents = false;
             }
-            if (!doc.hasTouchEventHandlers())
+            if (!TouchController::from(&doc)->hasTouchEventHandlers())
                 continue;
             m_originatingTouchPointTargets.set(touchPointTargetKey, node);
             touchTarget = node;
@@ -3663,7 +3664,7 @@ bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
         if (!touchTarget.get())
             continue;
         Document& doc = touchTarget->toNode()->document();
-        if (!doc.hasTouchEventHandlers())
+        if (!TouchController::from(&doc)->hasTouchEventHandlers())
             continue;
         Frame* targetFrame = doc.frame();
         if (!targetFrame)

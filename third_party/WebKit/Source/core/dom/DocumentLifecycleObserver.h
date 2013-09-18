@@ -42,6 +42,7 @@ public:
     virtual ~DocumentLifecycleObserver();
     virtual void documentWasDetached() { }
     virtual void documentWasDisposed() { }
+    virtual void documentBeingDestroyed() { }
 };
 
 class DocumentLifecycleNotifier : public ContextLifecycleNotifier {
@@ -50,6 +51,7 @@ public:
 
     void notifyDocumentWasDetached();
     void notifyDocumentWasDisposed();
+    void notifyDocumentBeingDestroyed();
 
     virtual void addObserver(LifecycleObserver*) OVERRIDE;
     virtual void removeObserver(LifecycleObserver*) OVERRIDE;
@@ -78,6 +80,13 @@ inline void DocumentLifecycleNotifier::notifyDocumentWasDisposed()
     TemporaryChange<IterationType> scope(this->m_iterating, IteratingOverDocumentObservers);
     for (DocumentObserverSet::iterator i = m_documentObservers.begin(); i != m_documentObservers.end(); ++i)
         (*i)->documentWasDisposed();
+}
+
+inline void DocumentLifecycleNotifier::notifyDocumentBeingDestroyed()
+{
+    TemporaryChange<IterationType> scope(this->m_iterating, IteratingOverDocumentObservers);
+    for (DocumentObserverSet::iterator i = m_documentObservers.begin(); i != m_documentObservers.end(); ++i)
+        (*i)->documentBeingDestroyed();
 }
 
 } // namespace WebCore

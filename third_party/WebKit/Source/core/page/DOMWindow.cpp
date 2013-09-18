@@ -54,6 +54,7 @@
 #include "core/dom/PageTransitionEvent.h"
 #include "core/dom/RequestAnimationFrameCallback.h"
 #include "core/dom/ScriptExecutionContext.h"
+#include "core/dom/TouchController.h"
 #include "core/editing/Editor.h"
 #include "core/history/BackForwardController.h"
 #include "core/html/HTMLFrameOwnerElement.h"
@@ -365,7 +366,7 @@ void DOMWindow::setDocument(PassRefPtr<Document> document)
 
     if (m_frame->page() && m_frame->page()->mainFrame() == m_frame) {
         m_frame->page()->mainFrame()->notifyChromeClientWheelEventHandlerCountChanged();
-        if (m_document->hasTouchEventHandlers())
+        if (TouchController::from(m_document.get())->hasTouchEventHandlers())
             m_frame->page()->chrome().client().needTouchEvents(true);
     }
 }
@@ -1410,9 +1411,7 @@ bool DOMWindow::addEventListener(const AtomicString& eventType, PassRefPtr<Event
 
     if (Document* document = this->document()) {
         document->addListenerTypeIfNeeded(eventType);
-        if (eventNames().isTouchEventType(eventType))
-            document->didAddTouchEventHandler(document);
-        else if (eventType == eventNames().storageEvent)
+        if (eventType == eventNames().storageEvent)
             didAddStorageEventListener(this);
     }
 
@@ -1442,11 +1441,6 @@ bool DOMWindow::removeEventListener(const AtomicString& eventType, EventListener
 {
     if (!EventTarget::removeEventListener(eventType, listener, useCapture))
         return false;
-
-    if (Document* document = this->document()) {
-        if (eventNames().isTouchEventType(eventType))
-            document->didRemoveTouchEventHandler(document);
-    }
 
     lifecycleNotifier()->notifyRemoveEventListener(this, eventType);
 
@@ -1512,8 +1506,6 @@ void DOMWindow::removeAllEventListeners()
 
     if (DeviceOrientationController* controller = DeviceOrientationController::from(page()))
         controller->removeAllDeviceEventListeners(this);
-    if (Document* document = this->document())
-        document->didRemoveEventTargetNode(document);
 
     removeAllUnloadEventListeners(this);
     removeAllBeforeUnloadEventListeners(this);

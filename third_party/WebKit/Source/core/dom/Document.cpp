@@ -514,8 +514,7 @@ Document::~Document()
     if (m_templateDocument)
         m_templateDocument->setTemplateDocumentHost(0); // balanced in templateDocument().
 
-    if (Document* ownerDocument = this->ownerDocument())
-        ownerDocument->didRemoveEventTargetNode(this);
+    lifecycleNotifier()->notifyDocumentBeingDestroyed();
 
     m_scriptRunner.clear();
 
@@ -2042,9 +2041,6 @@ void Document::detach(const AttachContext& context)
 
     if (render)
         render->destroy();
-
-    if (m_touchEventTargets && m_touchEventTargets->size() && parentDocument())
-        parentDocument()->didRemoveEventTargetNode(this);
 
     // This is required, as our Frame might delete itself as soon as it detaches
     // us. However, this violates Node::detach() semantics, as it's never
@@ -5048,60 +5044,6 @@ PassRefPtr<Touch> Document::createTouch(DOMWindow* window, EventTarget* target, 
 PassRefPtr<TouchList> Document::createTouchList(Vector<RefPtr<Touch> >& touches) const
 {
     return TouchList::create(touches);
-}
-
-void Document::didAddTouchEventHandler(Node* handler)
-{
-    if (!m_touchEventTargets.get())
-        m_touchEventTargets = adoptPtr(new TouchEventTargetSet);
-    m_touchEventTargets->add(handler);
-    if (Document* parent = parentDocument()) {
-        parent->didAddTouchEventHandler(this);
-        return;
-    }
-    if (Page* page = this->page()) {
-        if (ScrollingCoordinator* scrollingCoordinator = page->scrollingCoordinator())
-            scrollingCoordinator->touchEventTargetRectsDidChange(this);
-        if (m_touchEventTargets->size() == 1)
-            page->chrome().client().needTouchEvents(true);
-    }
-}
-
-void Document::didRemoveTouchEventHandler(Node* handler)
-{
-    if (!m_touchEventTargets.get())
-        return;
-    ASSERT(m_touchEventTargets->contains(handler));
-    m_touchEventTargets->remove(handler);
-    if (Document* parent = parentDocument()) {
-        parent->didRemoveTouchEventHandler(this);
-        return;
-    }
-
-    Page* page = this->page();
-    if (!page)
-        return;
-    if (ScrollingCoordinator* scrollingCoordinator = page->scrollingCoordinator())
-        scrollingCoordinator->touchEventTargetRectsDidChange(this);
-    if (m_touchEventTargets->size())
-        return;
-    for (const Frame* frame = page->mainFrame(); frame; frame = frame->tree()->traverseNext()) {
-        if (frame->document() && frame->document()->hasTouchEventHandlers())
-            return;
-    }
-    page->chrome().client().needTouchEvents(false);
-}
-
-void Document::didRemoveEventTargetNode(Node* handler)
-{
-    if (m_touchEventTargets && !m_touchEventTargets->isEmpty()) {
-        if (handler == this)
-            m_touchEventTargets->clear();
-        else
-            m_touchEventTargets->removeAll(handler);
-        if (m_touchEventTargets->isEmpty() && parentDocument())
-            parentDocument()->didRemoveEventTargetNode(this);
-    }
 }
 
 void Document::resetLastHandledUserGestureTimestamp()

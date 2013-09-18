@@ -191,8 +191,6 @@ enum NodeListInvalidationType {
 };
 const int numNodeListInvalidationTypes = InvalidateOnAnyAttrChange + 1;
 
-typedef HashCountedSet<Node*> TouchEventTargetSet;
-
 enum DocumentClass {
     DefaultDocumentClass = 0,
     HTMLDocumentClass = 1,
@@ -987,15 +985,6 @@ public:
     double lastHandledUserGestureTimestamp() const { return m_lastHandledUserGestureTimestamp; }
     void resetLastHandledUserGestureTimestamp();
 
-    bool hasTouchEventHandlers() const { return (m_touchEventTargets.get()) ? m_touchEventTargets->size() : false; }
-
-    void didAddTouchEventHandler(Node*);
-    void didRemoveTouchEventHandler(Node*);
-
-    void didRemoveEventTargetNode(Node*);
-
-    const TouchEventTargetSet* touchEventTargets() const { return m_touchEventTargets.get(); }
-
     bool isInDocumentWrite() { return m_writeRecursionDepth > 0; }
 
     void suspendScheduledTasks(ActiveDOMObject::ReasonForSuspension);
@@ -1343,8 +1332,6 @@ private:
     RefPtr<MediaQueryMatcher> m_mediaQueryMatcher;
     bool m_writeRecursionIsTooDeep;
     unsigned m_writeRecursionDepth;
-
-    OwnPtr<TouchEventTargetSet> m_touchEventTargets;
 
     double m_lastHandledUserGestureTimestamp;
 
