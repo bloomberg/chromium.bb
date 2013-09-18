@@ -25,7 +25,12 @@
 
 enum weston_launcher_opcode {
 	WESTON_LAUNCHER_OPEN,
-	WESTON_LAUNCHER_DRM_SET_MASTER
+};
+
+enum weston_launcher_event {
+	WESTON_LAUNCHER_SUCCESS,
+	WESTON_LAUNCHER_ACTIVATE,
+	WESTON_LAUNCHER_DEACTIVATE
 };
 
 struct weston_launcher_message {
@@ -36,11 +41,6 @@ struct weston_launcher_open {
 	struct weston_launcher_message header;
 	int flags;
 	char path[0];
-};
-
-struct weston_launcher_set_master {
-	struct weston_launcher_message header;
-	int set_master;
 };
 
 #endif

@@ -46,6 +46,7 @@ union cmsg_data { unsigned char b[4]; int fd; };
 struct weston_launcher {
 	struct weston_compositor *compositor;
 	int fd;
+	struct wl_event_source *source;
 };
 
 int
@@ -111,65 +112,45 @@ weston_launcher_open(struct weston_launcher *launcher,
 	return data->fd;
 }
 
-int
-weston_launcher_drm_set_master(struct weston_launcher *launcher,
-			       int drm_fd, char master)
+static int
+weston_launcher_data(int fd, uint32_t mask, void *data)
 {
-	struct msghdr msg;
-	struct cmsghdr *cmsg;
-	struct iovec iov;
-	char control[CMSG_SPACE(sizeof(drm_fd))];
-	int ret;
-	ssize_t len;
-	struct weston_launcher_set_master message;
-	union cmsg_data *data;
+	struct weston_launcher *launcher = data;
+	int len, ret;
 
-	if (launcher == NULL) {
-		if (master)
-			return drmSetMaster(drm_fd);
-		else
-			return drmDropMaster(drm_fd);
+	if (mask & (WL_EVENT_HANGUP | WL_EVENT_ERROR)) {
+		weston_log("launcher socket closed, exiting\n");
+		exit(-1);
 	}
-
-	memset(&msg, 0, sizeof msg);
-	msg.msg_iov = &iov;
-	msg.msg_iovlen = 1;
-	msg.msg_control = control;
-	msg.msg_controllen = sizeof control;
-	cmsg = CMSG_FIRSTHDR(&msg);
-	cmsg->cmsg_level = SOL_SOCKET;
-	cmsg->cmsg_type = SCM_RIGHTS;
-	cmsg->cmsg_len = CMSG_LEN(sizeof(drm_fd));
-
-	data = (union cmsg_data *) CMSG_DATA(cmsg);
-	data->fd = drm_fd;
-	msg.msg_controllen = cmsg->cmsg_len;
-
-	iov.iov_base = &message;
-	iov.iov_len = sizeof message;
-
-	message.header.opcode = WESTON_LAUNCHER_DRM_SET_MASTER;
-	message.set_master = master;
-
-	do {
-		len = sendmsg(launcher->fd, &msg, 0);
-	} while (len < 0 && errno == EINTR);
-	if (len < 0)
-		return -1;
 
 	do {
 		len = recv(launcher->fd, &ret, sizeof ret, 0);
 	} while (len < 0 && errno == EINTR);
-	if (len < 0)
-		return -1;
 
-	return ret;
+	switch (ret) {
+	case WESTON_LAUNCHER_ACTIVATE:
+		launcher->compositor->session_active = 1;
+		wl_signal_emit(&launcher->compositor->session_signal,
+			       launcher->compositor);
+		break;
+	case WESTON_LAUNCHER_DEACTIVATE:
+		launcher->compositor->session_active = 0;
+		wl_signal_emit(&launcher->compositor->session_signal,
+			       launcher->compositor);
+		break;
+	default:
+		weston_log("unexpected event from weston-launch\n");
+		break;
+	}
+
+	return 1;
 }
 
 struct weston_launcher *
 weston_launcher_connect(struct weston_compositor *compositor)
 {
 	struct weston_launcher *launcher;
+	struct wl_event_loop *loop;
 	int fd;
 
 	fd = weston_environment_get_fd("WESTON_LAUNCHER_SOCK");
@@ -182,6 +163,16 @@ weston_launcher_connect(struct weston_compositor *compositor)
 
 	launcher->compositor = compositor;
 	launcher->fd = fd;
+
+	loop = wl_display_get_event_loop(compositor->wl_display);
+	launcher->source = wl_event_loop_add_fd(loop, launcher->fd,
+						WL_EVENT_READABLE,
+						weston_launcher_data,
+						launcher);
+	if (launcher->source == NULL) {
+		free(launcher);
+		return NULL;
+	}
 
 	return launcher;
 }

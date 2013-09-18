@@ -68,6 +68,7 @@ struct weston_launch {
 	int tty;
 	int ttynr;
 	int sock[2];
+	int drm_fd;
 	struct passwd *pw;
 
 	int signalfd;
@@ -223,6 +224,8 @@ setup_signals(struct weston_launch *wl)
 	sigaddset(&mask, SIGCHLD);
 	sigaddset(&mask, SIGINT);
 	sigaddset(&mask, SIGTERM);
+	sigaddset(&mask, SIGUSR1);
+	sigaddset(&mask, SIGUSR2);
 	ret = sigprocmask(SIG_BLOCK, &mask, NULL);
 	assert(ret == 0);
 
@@ -243,48 +246,15 @@ setenv_fd(const char *env, int fd)
 }
 
 static int
-handle_setmaster(struct weston_launch *wl, struct msghdr *msg, ssize_t len)
+send_reply(struct weston_launch *wl, int reply)
 {
-	int ret = -1;
-	struct cmsghdr *cmsg;
-	struct weston_launcher_set_master *message;
-	union cmsg_data *data;
+	int len;
 
-	if (len != sizeof(*message)) {
-		error(0, 0, "missing value in setmaster request");
-		goto out;
-	}
-
-	message = msg->msg_iov->iov_base;
-
-	cmsg = CMSG_FIRSTHDR(msg);
-	if (!cmsg ||
-	    cmsg->cmsg_level != SOL_SOCKET ||
-	    cmsg->cmsg_type != SCM_RIGHTS) {
-		error(0, 0, "invalid control message");
-		goto out;
-	}
-
-	data = (union cmsg_data *) CMSG_DATA(cmsg);
-	if (data->fd == -1) {
-		error(0, 0, "missing drm fd in socket request");
-		goto out;
-	}
-
-	if (message->set_master)
-		ret = drmSetMaster(data->fd);
-	else
-		ret = drmDropMaster(data->fd);
-
-	close(data->fd);
-out:
 	do {
-		len = send(wl->sock[0], &ret, sizeof ret, 0);
+		len = send(wl->sock[0], &reply, sizeof reply, 0);
 	} while (len < 0 && errno == EINTR);
-	if (len < 0)
-		return -1;
 
-	return 0;
+	return len;
 }
 
 static int
@@ -354,6 +324,9 @@ err0:
 	if (len < 0)
 		return -1;
 
+	if (major(s.st_rdev) == DRM_MAJOR)
+		wl->drm_fd = fd;
+
 	return 0;
 }
 
@@ -387,9 +360,6 @@ handle_socket_msg(struct weston_launch *wl)
 	switch (message->opcode) {
 	case WESTON_LAUNCHER_OPEN:
 		ret = handle_open(wl, &msg, len);
-		break;
-	case WESTON_LAUNCHER_DRM_SET_MASTER:
-		ret = handle_setmaster(wl, &msg, len);
 		break;
 	}
 
@@ -451,6 +421,16 @@ handle_signal(struct weston_launch *wl)
 		if (wl->child)
 			kill(wl->child, sig.ssi_signo);
 		break;
+	case SIGUSR1:
+		send_reply(wl, WESTON_LAUNCHER_DEACTIVATE);
+		drmDropMaster(wl->drm_fd);
+		ioctl(wl->tty, VT_RELDISP, 1);
+		break;
+	case SIGUSR2:
+		ioctl(wl->tty, VT_RELDISP, VT_ACKACQ);
+		drmSetMaster(wl->drm_fd);
+		send_reply(wl, WESTON_LAUNCHER_ACTIVATE);
+		break;
 	default:
 		return -1;
 	}
@@ -462,6 +442,7 @@ static int
 setup_tty(struct weston_launch *wl, const char *tty)
 {
 	struct stat buf;
+	struct vt_mode mode = { 0 };
 	char *t;
 
 	if (!wl->new_user) {
@@ -499,6 +480,12 @@ setup_tty(struct weston_launch *wl, const char *tty)
 
 		wl->ttynr = minor(buf.st_rdev);
 	}
+
+	mode.mode = VT_PROCESS;
+	mode.relsig = SIGUSR1;
+	mode.acqsig = SIGUSR2;
+	if (ioctl(wl->tty, VT_SETMODE, &mode) < 0)
+		error(1, errno, "failed to take control of vt handling\n");
 
 	return 0;
 }

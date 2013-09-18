@@ -38,8 +38,5 @@ weston_launcher_destroy(struct weston_launcher *launcher);
 int
 weston_launcher_open(struct weston_launcher *launcher,
 		     const char *path, int flags);
-int
-weston_launcher_drm_set_master(struct weston_launcher *launcher,
-			       int drm_fd, char master);
 
 #endif

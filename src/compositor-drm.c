@@ -2242,7 +2242,7 @@ drm_restore(struct weston_compositor *ec)
 {
 	struct drm_compositor *d = (struct drm_compositor *) ec;
 
-	if (weston_launcher_drm_set_master(d->base.launcher, d->drm.fd, 0) < 0)
+	if (ec->launcher == NULL && drmDropMaster(d->drm.fd) < 0)
 		weston_log("failed to drop master: %m\n");
 	tty_reset(d->tty);
 }
@@ -2266,7 +2266,7 @@ drm_destroy(struct weston_compositor *ec)
 	if (d->gbm)
 		gbm_device_destroy(d->gbm);
 
-	if (weston_launcher_drm_set_master(d->base.launcher, d->drm.fd, 0) < 0)
+	if (d->base.launcher == NULL && drmDropMaster(d->drm.fd) < 0)
 		weston_log("failed to drop master: %m\n");
 	tty_destroy(d->tty);
 
@@ -2318,8 +2318,7 @@ session_notify(struct wl_listener *listener, void *data)
 	if (ec->base.session_active) {
 		weston_log("activating session\n");
 		compositor->focus = 1;
-		if (weston_launcher_drm_set_master(ec->base.launcher,
-						   ec->drm.fd, 1)) {
+		if (ec->base.launcher == NULL && drmSetMaster(ec->drm.fd)) {
 			weston_log("failed to set master: %m\n");
 			wl_display_terminate(compositor->wl_display);
 		}
@@ -2357,8 +2356,7 @@ session_notify(struct wl_listener *listener, void *data)
 					output->crtc_id, 0, 0,
 					0, 0, 0, 0, 0, 0, 0, 0);
 
-		if (weston_launcher_drm_set_master(ec->base.launcher,
-						   ec->drm.fd, 0) < 0)
+		if (ec->base.launcher == NULL && drmDropMaster(ec->drm.fd) < 0)
 			weston_log("failed to drop master: %m\n");
 	};
 }
@@ -2692,8 +2690,7 @@ err_sprite:
 err_udev_dev:
 	udev_device_unref(drm_device);
 err_tty:
-	if (weston_launcher_drm_set_master(ec->base.launcher,
-					   ec->drm.fd, 0) < 0)
+	if (ec->base.launcher == NULL && drmDropMaster(ec->drm.fd) < 0)
 		weston_log("failed to drop master: %m\n");
 	tty_destroy(ec->tty);
 err_udev:
