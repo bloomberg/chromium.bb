@@ -227,7 +227,7 @@ def RunWebkitLayoutTests(options):
         '--target', options.target,
         '--builder-name', options.build_properties.get('buildername', ''),
         '--build-number', str(options.build_properties.get('buildnumber', '')),
-        '--master-name', options.build_properties.get('mastername', ''),
+        '--master-name', 'ChromiumWebKit', # TODO: Get this from the cfg.
         '--build-name', options.build_properties.get('buildername', ''),
         '--platform=android']
 
