@@ -270,6 +270,12 @@ SuggestAppsDialog.prototype.show = function(extension, mime, onDialogClosed) {
         this.authorizeRequest_.bind(this),
         {urls: [this.widgetOrigin_ + '/*']},
         ['blocking', 'requestHeaders']);
+    this.webview_.addEventListener('newwindow', function(event) {
+      // Discard the window object and reopen in an external window.
+      event.window.discard();
+      util.visitURL(event.targetUrl);
+      event.preventDefault();
+    });
 
     this.frame_.classList.add('show-spinner');
 
