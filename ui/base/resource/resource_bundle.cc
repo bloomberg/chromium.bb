@@ -35,6 +35,11 @@
 #include "ui/gfx/size_conversions.h"
 #include "ui/gfx/skbitmap_operations.h"
 
+#if defined(OS_CHROMEOS)
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/platform_font_pango.h"
+#endif
+
 namespace ui {
 
 namespace {
@@ -51,6 +56,13 @@ const unsigned char kPngScaleChunkType[4] = { 'c', 's', 'C', 'l' };
 const unsigned char kPngDataChunkType[4] = { 'I', 'D', 'A', 'T' };
 
 ResourceBundle* g_shared_instance_ = NULL;
+
+void InitDefaultFont() {
+#if defined(OS_CHROMEOS)
+  gfx::PlatformFontPango::SetDefaultFontDescription(
+      l10n_util::GetStringUTF8(IDS_UI_FONT_FAMILY_CROS));
+#endif
+}
 
 }  // namespace
 
@@ -118,6 +130,7 @@ std::string ResourceBundle::InitSharedInstanceWithLocale(
 
   g_shared_instance_->LoadCommonResources();
   std::string result = g_shared_instance_->LoadLocaleResources(pref_locale);
+  InitDefaultFont();
   return result;
 }
 
@@ -128,6 +141,7 @@ std::string ResourceBundle::InitSharedInstanceLocaleOnly(
   g_shared_instance_ = new ResourceBundle(delegate);
 
   std::string result = g_shared_instance_->LoadLocaleResources(pref_locale);
+  InitDefaultFont();
   return result;
 }
 
@@ -147,6 +161,7 @@ void ResourceBundle::InitSharedInstanceWithPakFile(
     return;
   }
   g_shared_instance_->locale_resources_data_.reset(data_pack.release());
+  InitDefaultFont();
 }
 
 // static
@@ -155,6 +170,8 @@ void ResourceBundle::InitSharedInstanceWithPakPath(const base::FilePath& path) {
   g_shared_instance_ = new ResourceBundle(NULL);
 
   g_shared_instance_->LoadTestResources(path, path);
+
+  InitDefaultFont();
 }
 
 // static

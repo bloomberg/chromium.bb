@@ -14,10 +14,8 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
-#include "grit/app_locale_settings.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkTypeface.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/pango_util.h"
@@ -60,36 +58,17 @@ std::string FindBestMatchFontFamilyName(
   return font_family;
 }
 
-// Returns a Pango font description (suitable for parsing by
-// pango_font_description_from_string()) for the default UI font.
-std::string GetDefaultFont() {
-#if !defined(TOOLKIT_GTK)
-#if defined(OS_CHROMEOS)
-  return l10n_util::GetStringUTF8(IDS_UI_FONT_FAMILY_CROS);
-#else
-  return "sans 10";
-#endif    // defined(OS_CHROMEOS)
-#else
-  GtkSettings* settings = gtk_settings_get_default();
-
-  gchar* font_name = NULL;
-  g_object_get(settings, "gtk-font-name", &font_name, NULL);
-
-  // Temporary CHECK for helping track down
-  // http://code.google.com/p/chromium/issues/detail?id=12530
-  CHECK(font_name) << " Unable to get gtk-font-name for default font.";
-
-  std::string default_font = std::string(font_name);
-  g_free(font_name);
-  return default_font;
-#endif  // !defined(TOOLKIT_GTK)
-}
-
 }  // namespace
 
 namespace gfx {
 
+// static
 Font* PlatformFontPango::default_font_ = NULL;
+
+#if defined(OS_CHROMEOS)
+// static
+std::string* PlatformFontPango::default_font_description_ = NULL;
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // PlatformFontPango, public:
@@ -153,6 +132,16 @@ void PlatformFontPango::ReloadDefaultFont() {
   delete default_font_;
   default_font_ = NULL;
 }
+
+#if defined(OS_CHROMEOS)
+// static
+void PlatformFontPango::SetDefaultFontDescription(
+    const std::string& font_description) {
+  delete default_font_description_;
+  default_font_description_ = new std::string(font_description);
+}
+
+#endif
 
 Font PlatformFontPango::DeriveFont(int size_delta, int style) const {
   // If the delta is negative, if must not push the size below 1
@@ -260,6 +249,33 @@ PlatformFontPango::PlatformFontPango(const skia::RefPtr<SkTypeface>& typeface,
 }
 
 PlatformFontPango::~PlatformFontPango() {}
+
+// static
+std::string PlatformFontPango::GetDefaultFont() {
+#if !defined(TOOLKIT_GTK)
+#if defined(OS_CHROMEOS)
+  // Font name must have been provided by way of SetDefaultFontDescription().
+  CHECK(default_font_description_);
+  return *default_font_description_;
+#else
+  return "sans 10";
+#endif    // defined(OS_CHROMEOS)
+#else
+  GtkSettings* settings = gtk_settings_get_default();
+
+  gchar* font_name = NULL;
+  g_object_get(settings, "gtk-font-name", &font_name, NULL);
+
+  // Temporary CHECK for helping track down
+  // http://code.google.com/p/chromium/issues/detail?id=12530
+  CHECK(font_name) << " Unable to get gtk-font-name for default font.";
+
+  std::string default_font = std::string(font_name);
+  g_free(font_name);
+  return default_font;
+#endif  // !defined(TOOLKIT_GTK)
+}
+
 
 void PlatformFontPango::InitWithNameAndSize(const std::string& font_name,
                                             int font_size) {

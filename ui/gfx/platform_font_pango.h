@@ -5,6 +5,8 @@
 #ifndef UI_GFX_PLATFORM_FONT_PANGO_H_
 #define UI_GFX_PLATFORM_FONT_PANGO_H_
 
+#include <string>
+
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "skia/ext/refptr.h"
@@ -30,6 +32,11 @@ class UI_EXPORT PlatformFontPango : public PlatformFont {
   // This function is useful when the system font has changed, for example, when
   // the locale has changed.
   static void ReloadDefaultFont();
+
+#if defined(OS_CHROMEOS)
+  // Sets the default font.
+  static void SetDefaultFontDescription(const std::string& font_description);
+#endif
 
   // Position as an offset from the height of the drawn text, used to draw
   // an underline. This is a negative number, so the underline would be
@@ -58,6 +65,10 @@ class UI_EXPORT PlatformFontPango : public PlatformFont {
                     int size,
                     int style);
   virtual ~PlatformFontPango();
+
+  // Returns a Pango font description (suitable for parsing by
+  // pango_font_description_from_string()) for the default UI font.
+  static std::string GetDefaultFont();
 
   // Initialize this object.
   void InitWithNameAndSize(const std::string& font_name, int font_size);
@@ -101,6 +112,10 @@ class UI_EXPORT PlatformFontPango : public PlatformFont {
 
   // The default font, used for the default constructor.
   static Font* default_font_;
+
+#if defined(OS_CHROMEOS)
+  static std::string* default_font_description_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(PlatformFontPango);
 };
