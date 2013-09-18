@@ -147,7 +147,8 @@ void KeyframeAnimation::fetchIntervalEndpointsForProperty(CSSPropertyID property
     // A scale of infinity is handled in AnimationBase::fractionalTime().
     ASSERT(scale >= 0 && (!std::isinf(scale) || prevIndex == nextIndex));
 
-    const TimingFunction* timingFunction = prevKeyframe.timingFunction(name());
+    // FIXME: This sometimes gets the wrong timing function. See crbug.com/288540.
+    const TimingFunction* timingFunction = KeyframeValue::timingFunction(prevKeyframe.style(), name());
     prog = progress(scale, offset, timingFunction);
 }
 

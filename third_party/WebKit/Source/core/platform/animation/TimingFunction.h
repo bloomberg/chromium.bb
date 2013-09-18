@@ -26,11 +26,13 @@
 #define TimingFunction_h
 
 #include "RuntimeEnabledFeatures.h"
+#include "core/platform/animation/AnimationUtilities.h" // For blend()
 #include "core/platform/graphics/UnitBezier.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
+#include "wtf/Vector.h"
 #include <algorithm>
 
 namespace WebCore {
@@ -39,7 +41,7 @@ class TimingFunction : public RefCounted<TimingFunction> {
 public:
 
     enum Type {
-        LinearFunction, CubicBezierFunction, StepsFunction
+        LinearFunction, CubicBezierFunction, StepsFunction, ChainedFunction
     };
 
     virtual ~TimingFunction() { }
@@ -252,6 +254,73 @@ private:
     int m_steps;
     bool m_stepAtStart;
     SubType m_subType;
+};
+
+class ChainedTimingFunction : public TimingFunction {
+public:
+    static PassRefPtr<ChainedTimingFunction> create()
+    {
+        return adoptRef(new ChainedTimingFunction);
+    }
+
+    void appendSegment(double upperBound, TimingFunction* timingFunction)
+    {
+        double max = m_segments.isEmpty() ? 0 : m_segments.last().max();
+        ASSERT(upperBound > max);
+        m_segments.append(Segment(max, upperBound, timingFunction));
+    }
+    virtual double evaluate(double fraction, double accuracy) const
+    {
+        RELEASE_ASSERT_WITH_MESSAGE(fraction >= 0 && fraction <= 1, "Web Animations not yet implemented: Timing function behavior outside the range [0, 1] is not yet specified");
+        ASSERT(!m_segments.isEmpty());
+        ASSERT(m_segments.last().max() == 1);
+        const Segment* segment;
+        for (size_t i = 0; i < m_segments.size(); ++i) {
+            segment = &m_segments[i];
+            if (fraction < segment->max())
+                break;
+        }
+        return segment->evaluate(fraction, accuracy);
+    }
+
+    virtual bool operator==(const TimingFunction& other) const
+    {
+        // This class is not exposed to CSS, so this method is not required.
+        ASSERT_NOT_REACHED();
+        return false;
+    }
+
+private:
+    class Segment {
+    public:
+        Segment(double min, double max, TimingFunction* timingFunction)
+            : m_min(min)
+            , m_max(max)
+            , m_timingFunction(timingFunction)
+        { }
+
+        double max() const { return m_max; }
+        double evaluate(double fraction, double accuracy) const
+        {
+            return scaleFromLocal(m_timingFunction->evaluate(scaleToLocal(fraction), accuracy));
+        }
+
+    private:
+        double scaleToLocal(double x) const { return (x - m_min) / (m_max - m_min); }
+        double scaleFromLocal(double x) const { return blend(m_min, m_max, x); }
+
+        double m_min;
+        double m_max;
+        RefPtr<TimingFunction> m_timingFunction;
+    };
+
+    ChainedTimingFunction()
+        : TimingFunction(ChainedFunction)
+    {
+        ASSERT(RuntimeEnabledFeatures::webAnimationsEnabled());
+    }
+
+    Vector<Segment> m_segments;
 };
 
 } // namespace WebCore

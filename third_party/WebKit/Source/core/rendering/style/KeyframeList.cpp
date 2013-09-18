@@ -42,9 +42,8 @@ void KeyframeValue::addProperties(const StylePropertySet* propertySet)
     }
 }
 
-TimingFunction* KeyframeValue::timingFunction(const AtomicString& name) const
+TimingFunction* KeyframeValue::timingFunction(const RenderStyle* keyframeStyle, const AtomicString& name)
 {
-    const RenderStyle* keyframeStyle = style();
     ASSERT(keyframeStyle && keyframeStyle->animations());
     for (size_t i = 0; i < keyframeStyle->animations()->size(); i++) {
         if (name == keyframeStyle->animations()->animation(i)->name())

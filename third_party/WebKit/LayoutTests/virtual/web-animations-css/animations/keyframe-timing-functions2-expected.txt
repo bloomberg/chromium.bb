@@ -1,2 +1,0 @@
-FAIL - "left" property for "box" element at 0.75s expected: 300 but saw: 452.8288269042969
-

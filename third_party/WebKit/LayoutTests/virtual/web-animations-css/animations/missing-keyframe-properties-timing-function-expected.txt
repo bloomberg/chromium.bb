@@ -1,5 +1,5 @@
-PASS - "left" property for "box1" element at 0.5s saw something close to: 132
-PASS - "webkitTransform.4" property for "box2" element at 0.5s saw something close to: 132
-FAIL - "left" property for "box1" element at 1.5s expected: 300 but saw: 248.0932159423828
-FAIL - "webkitTransform.4" property for "box2" element at 1.5s expected: 300 but saw: matrix(1, 0, 0, 1, 248.0932159423828, 0)
+FAIL - "left" property for "box1" element at 0.5s expected: 132 but saw: 150
+FAIL - "webkitTransform.4" property for "box2" element at 0.5s expected: 132 but saw: matrix(1, 0, 0, 1, 150, 0)
+PASS - "left" property for "box1" element at 1.5s saw something close to: 300
+PASS - "webkitTransform.4" property for "box2" element at 1.5s saw something close to: 300
 

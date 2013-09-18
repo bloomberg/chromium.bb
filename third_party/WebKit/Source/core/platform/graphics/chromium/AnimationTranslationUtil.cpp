@@ -242,13 +242,17 @@ PassOwnPtr<WebKit::WebAnimation> createWebAnimation(const KeyframeValueList& val
                 timingFunctionType = WebKit::WebAnimationCurve::TimingFunctionTypeLinear;
                 break;
             case TimingFunction::CubicBezierFunction:
-                const CubicBezierTimingFunction* originalBezierTimingFunction = static_cast<const CubicBezierTimingFunction*>(originalTimingFunction);
-                isUsingCustomBezierTimingFunction = true;
-                x1 = originalBezierTimingFunction->x1();
-                y1 = originalBezierTimingFunction->y1();
-                x2 = originalBezierTimingFunction->x2();
-                y2 = originalBezierTimingFunction->y2();
-                break;
+                {
+                    const CubicBezierTimingFunction* originalBezierTimingFunction = static_cast<const CubicBezierTimingFunction*>(originalTimingFunction);
+                    isUsingCustomBezierTimingFunction = true;
+                    x1 = originalBezierTimingFunction->x1();
+                    y1 = originalBezierTimingFunction->y1();
+                    x2 = originalBezierTimingFunction->x2();
+                    y2 = originalBezierTimingFunction->y2();
+                    break;
+                }
+            default:
+                ASSERT_NOT_REACHED();
             } // switch
         }
 

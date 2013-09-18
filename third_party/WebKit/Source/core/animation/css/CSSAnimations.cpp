@@ -65,7 +65,8 @@ bool isLaterPhase(TimedItem::Phase target, TimedItem::Phase reference)
 
 namespace WebCore {
 
-void timingFromAnimationData(const CSSAnimationData* animationData, Timing& timing)
+// Returns the default timing function.
+const PassRefPtr<TimingFunction> timingFromAnimationData(const CSSAnimationData* animationData, Timing& timing)
 {
     if (animationData->isDelaySet())
         timing.startDelay = animationData->delay();
@@ -78,16 +79,6 @@ void timingFromAnimationData(const CSSAnimationData* animationData, Timing& timi
             timing.iterationCount = std::numeric_limits<double>::infinity();
         else
             timing.iterationCount = animationData->iterationCount();
-    }
-    // For CSS animations, timing functions apply to individual keyframes, not
-    // to the complete animation.
-    // FIXME: Until chained timing functions are implemented, we simply apply
-    // the default timing function to the complete animation.
-    if (animationData->isTimingFunctionSet()) {
-        if (animationData->timingFunction()->type() != TimingFunction::LinearFunction)
-            timing.timingFunction = animationData->timingFunction();
-    } else {
-        timing.timingFunction = CSSAnimationData::initialAnimationTimingFunction();
     }
     if (animationData->isFillModeSet()) {
         switch (animationData->fillMode()) {
@@ -125,6 +116,7 @@ void timingFromAnimationData(const CSSAnimationData* animationData, Timing& timi
             ASSERT_NOT_REACHED();
         }
     }
+    return animationData->isTimingFunctionSet() ? animationData->timingFunction() : CSSAnimationData::initialAnimationTimingFunction();
 }
 
 CSSAnimationUpdateScope::CSSAnimationUpdateScope(Element* target)
@@ -186,11 +178,11 @@ PassOwnPtr<CSSAnimationUpdate> CSSAnimations::calculateUpdate(const Element* ele
                 }
             }
 
+            Timing timing;
+            RefPtr<TimingFunction> defaultTimingFunction = timingFromAnimationData(animationData, timing);
             KeyframeAnimationEffect::KeyframeVector keyframes;
-            resolver->resolveKeyframes(element, style, animationName.impl(), keyframes);
+            resolver->resolveKeyframes(element, style, animationName, defaultTimingFunction.get(), keyframes, timing.timingFunction);
             if (!keyframes.isEmpty()) {
-                Timing timing;
-                timingFromAnimationData(animationData, timing);
                 if (!update)
                     update = adoptPtr(new CSSAnimationUpdate());
                 // FIXME: crbug.com/268791 - Keyframes are already normalized, perhaps there should be a flag on KeyframeAnimationEffect to skip normalization.

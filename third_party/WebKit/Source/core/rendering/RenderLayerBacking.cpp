@@ -1771,7 +1771,7 @@ bool RenderLayerBacking::startAnimation(double timeOffset, const CSSAnimationDat
             continue;
 
         // Get timing function.
-        RefPtr<TimingFunction> tf = currentKeyframe.timingFunction(keyframes.animationName());
+        RefPtr<TimingFunction> tf = KeyframeValue::timingFunction(currentKeyframe.style(), keyframes.animationName());
 
         bool isFirstOrLastKeyframe = key == 0 || key == 1;
         if ((hasTransform && isFirstOrLastKeyframe) || currentKeyframe.containsProperty(CSSPropertyWebkitTransform))

@@ -195,7 +195,7 @@ public:
     // The body of calculateCSSAnimationUpdate can move to CSSAnimations.cpp and take just const element, const style,
     // and const ScopedStyleTree
     void calculateCSSAnimationUpdate(StyleResolverState&);
-    void resolveKeyframes(const Element*, const RenderStyle*, const StringImpl* animationName, KeyframeAnimationEffect::KeyframeVector&);
+    void resolveKeyframes(const Element*, const RenderStyle*, const AtomicString& animationName, TimingFunction* defaultTimingFunction, KeyframeAnimationEffect::KeyframeVector&, RefPtr<TimingFunction>&);
     void keyframeStylesForAnimation(Element*, const RenderStyle*, KeyframeList&);
     const StyleRuleKeyframes* matchScopedKeyframesRule(const Element*, const StringImpl* animationName);
     PassRefPtr<RenderStyle> styleForKeyframe(Element*, const RenderStyle*, const StyleKeyframe*);
