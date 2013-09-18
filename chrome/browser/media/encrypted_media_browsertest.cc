@@ -216,11 +216,6 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaTest, ConfigChangeVideo_ClearKey) {
   TestConfigChange(kClearKeyKeySystem, kEnded);
 }
 
-IN_PROC_BROWSER_TEST_F(EncryptedMediaTest, InvalidKeySystem) {
-  TestMSESimplePlayback("bear-320x240-av-enc_av.webm", kWebMAudioVideo,
-                        "com.example.invalid", kEmeGkrException);
-}
-
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_WebM) {
   TestSimplePlayback("bear-a-enc_a.webm", kWebMAudioOnly, GetParam(), kEnded);
 }
@@ -277,12 +272,6 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_MP4) {
                         std::tr1::get<0>(test_params), kEnded);
 }
 #endif  // defined(USE_PROPRIETARY_CODECS)
-
-IN_PROC_BROWSER_TEST_F(EncryptedMediaTest, UnknownKeySystemThrowsException) {
-  RunEncryptedMediaTest("encrypted_media_player.html", "bear-a-enc_a.webm",
-                        kWebMAudioOnly, "com.example.foo", SRC,
-                        kEmeGkrException);
-}
 
 // Run only when WV CDM is available.
 #if defined(WIDEVINE_CDM_AVAILABLE)

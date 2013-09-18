@@ -25,6 +25,34 @@ static std::string ToASCIIOrEmpty(const WebKit::WebString& string) {
   return IsStringASCII(string) ? UTF16ToASCII(string) : std::string();
 }
 
+static const char kClearKeyKeySystem[] = "webkit-org.w3.clearkey";
+
+static const char kAudioWebM[] = "audio/webm";
+static const char kVideoWebM[] = "video/webm";
+static const char kVorbis[] = "vorbis";
+static const char kVorbisVP8[] = "vorbis,vp8,vp8.0";
+
+static const char kAudioMp4[] = "audio/mp4";
+static const char kVideoMp4[] = "video/mp4";
+static const char kMp4a[] = "mp4a";
+static const char kAvc1[] = "avc1";
+static const char kMp4aAvc1[] = "mp4a,avc1";
+
+static void AddClearKey(std::vector<KeySystemInfo>* concrete_key_systems) {
+  KeySystemInfo info(kClearKeyKeySystem);
+
+  info.supported_types.push_back(std::make_pair(kAudioWebM, kVorbis));
+  info.supported_types.push_back(std::make_pair(kVideoWebM, kVorbisVP8));
+#if defined(USE_PROPRIETARY_CODECS)
+  info.supported_types.push_back(std::make_pair(kAudioMp4, kMp4a));
+  info.supported_types.push_back(std::make_pair(kVideoMp4, kMp4aAvc1));
+#endif  // defined(USE_PROPRIETARY_CODECS)
+
+  info.use_aes_decryptor = true;
+
+  concrete_key_systems->push_back(info);
+}
+
 class KeySystems {
  public:
   static KeySystems& GetInstance();
@@ -114,6 +142,8 @@ KeySystems& KeySystems::GetInstance() {
 KeySystems::KeySystems() {
   std::vector<KeySystemInfo> key_systems_info;
   GetContentClient()->renderer()->AddKeySystems(&key_systems_info);
+  // Clear Key is always supported.
+  AddClearKey(&key_systems_info);
   AddConcreteSupportedKeySystems(key_systems_info);
 }
 

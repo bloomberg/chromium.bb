@@ -206,10 +206,10 @@ class KeySystemsTest : public testing::Test {
 // TODO(ddorwin): Consider moving GetUUID() into these tests or moving
 // GetPepperType() calls out to their own test.
 
-TEST_F(KeySystemsTest, ClearKeyNotRegistered) {
-  // Not registered in content.
-  EXPECT_FALSE(IsConcreteSupportedKeySystemUTF8(kPrefixedClearKey));
-  EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
+// Clear Key is the only key system registered in content.
+TEST_F(KeySystemsTest, ClearKey) {
+  EXPECT_TRUE(IsConcreteSupportedKeySystemUTF8(kPrefixedClearKey));
+  EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(
       kVideoWebM, no_codecs(), kPrefixedClearKey));
 
   EXPECT_EQ("ClearKey", KeySystemNameForUMAUTF8(kPrefixedClearKey));
@@ -299,7 +299,7 @@ TEST_F(KeySystemsTest,
       kAudioWebM, fooaudio_codec(), kUsesAes));
 }
 
-// No parent is registered for Clear.
+// No parent is registered for UsesAes.
 TEST_F(KeySystemsTest, Parent_NoParentRegistered) {
   EXPECT_FALSE(IsConcreteSupportedKeySystemUTF8(kUsesAesParent));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
@@ -348,7 +348,7 @@ TEST_F(KeySystemsTest, IsSupportedKeySystem_InvalidVariants) {
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       kVideoWebM, no_codecs(), "org.example.clearz"));
 
-  // There are no child key systems for Clear Key.
+  // There are no child key systems for UsesAes.
   EXPECT_FALSE(IsConcreteSupportedKeySystem("org.example.clear.foo"));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       kVideoWebM, no_codecs(), "org.example.clear.foo"));

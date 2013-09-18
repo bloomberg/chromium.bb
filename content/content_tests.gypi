@@ -819,7 +819,6 @@
             '../testing/gtest.gyp:gtest',
             '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
             '../third_party/mesa/mesa.gyp:osmesa',
-            '../third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
             '../ui/gl/gl.gyp:gl',
             '../ui/snapshot/snapshot.gyp:snapshot',
             '../ui/ui.gyp:shell_dialogs',
@@ -1033,13 +1032,6 @@
               'sources!': [
                 'browser/plugin_service_impl_browsertest.cc',
                 'browser/plugin_data_remover_impl_browsertest.cc',
-              ],
-            }],
-            ['enable_pepper_cdms==1', {
-              'dependencies': [
-                # Runtime dependencies.
-                '../third_party/widevine/cdm/widevine_cdm.gyp:widevinecdmadapter',
-                '../media/media.gyp:clearkeycdmadapter',
               ],
             }],
             ['input_speech==0', {
