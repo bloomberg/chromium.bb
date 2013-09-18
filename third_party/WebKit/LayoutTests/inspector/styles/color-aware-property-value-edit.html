@@ -105,7 +105,7 @@ function test()
     function setFormat(newFormat)
     {
         format = newFormat;
-        WebInspector.panel("elements").sidebarPanes.styles._updateColorFormatFilter();
+        WebInspector.panel("elements").sidebarPanes.styles._colorFormatSettingChanged();
     }
 
     function startEditingAndDumpValue(format, propertyName, next)
