@@ -5,22 +5,29 @@
 #ifndef CHROME_BROWSER_MEDIA_MEDIA_BROWSERTEST_H_
 #define CHROME_BROWSER_MEDIA_MEDIA_BROWSERTEST_H_
 
+#include <utility>
+#include <vector>
+
 #include "chrome/test/base/in_process_browser_test.h"
 
+namespace content {
+class TitleWatcher;
+}
 
 // Class used to automate running media related browser tests. The functions
 // assume that media files are located under files/media/ folder known to
 // the test http server.
 class MediaBrowserTest : public InProcessBrowserTest {
  protected:
-  MediaBrowserTest();
-  virtual ~MediaBrowserTest();
+  typedef std::pair<const char*, const char*> StringPair;
 
+  // Common test results.
   static const char kEnded[];
   static const char kError[];
   static const char kFailed[];
 
-  typedef std::pair<const char*, const char*> StringPair;
+  MediaBrowserTest();
+  virtual ~MediaBrowserTest();
 
   // Runs a html page with a list of URL query parameters.
   // If http is true, the test starts a local http test server to load the test
@@ -33,6 +40,8 @@ class MediaBrowserTest : public InProcessBrowserTest {
   // Opens a URL and waits for the document title to match either one of the
   // default strings or the expected string.
   string16 RunTest(const GURL& gurl, const char* expected);
+
+  virtual void AddWaitForTitles(content::TitleWatcher* title_watcher);
 };
 
 #endif  // CHROME_BROWSER_MEDIA_MEDIA_BROWSERTEST_H_

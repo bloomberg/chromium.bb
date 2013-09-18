@@ -59,16 +59,20 @@ void MediaBrowserTest::RunMediaTestPage(
 }
 
 void MediaBrowserTest::RunTest(const GURL& gurl, const char* expected) {
-  const string16 kExpected = ASCIIToUTF16(expected);
+  const string16 expected_title = ASCIIToUTF16(expected);
   DVLOG(1) << "Running test URL: " << gurl;
-  TitleWatcher title_watcher(shell()->web_contents(), kExpected);
-  title_watcher.AlsoWaitForTitle(ASCIIToUTF16(kEnded));
-  title_watcher.AlsoWaitForTitle(ASCIIToUTF16(kError));
-  title_watcher.AlsoWaitForTitle(ASCIIToUTF16(kFailed));
+  TitleWatcher title_watcher(shell()->web_contents(), expected_title);
+  AddWaitForTitles(&title_watcher);
   NavigateToURL(shell(), gurl);
 
   string16 final_title = title_watcher.WaitAndGetTitle();
-  EXPECT_EQ(kExpected, final_title);
+  EXPECT_EQ(expected_title, final_title);
+}
+
+void MediaBrowserTest::AddWaitForTitles(content::TitleWatcher* title_watcher) {
+  title_watcher->AlsoWaitForTitle(ASCIIToUTF16(kEnded));
+  title_watcher->AlsoWaitForTitle(ASCIIToUTF16(kError));
+  title_watcher->AlsoWaitForTitle(ASCIIToUTF16(kFailed));
 }
 
 // Tests playback and seeking of an audio or video file over file or http based

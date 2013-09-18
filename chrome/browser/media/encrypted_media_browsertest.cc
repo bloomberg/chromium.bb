@@ -42,15 +42,15 @@ static const char kWebMAudioVideo[] = "video/webm; codecs=\"vorbis, vp8\"";
 static const char kMP4AudioOnly[] = "audio/mp4; codecs=\"mp4a.40.2\"";
 static const char kMP4VideoOnly[] = "video/mp4; codecs=\"avc1.4D4041\"";
 
-// Common test expectations.
-static const char kKeyError[] = "KEYERROR";
+// EME-specific test results and errors.
+static const char kEmeGkrException[] = "GENERATE_KEY_REQUEST_EXCEPTION";
+static const char kEmeKeyError[] = "KEYERROR";
 
 // The type of video src used to load media.
 enum SrcType {
   SRC,
   MSE
 };
-
 
 // Tests encrypted media playback with a combination of parameters:
 // - char*: Key system name.
@@ -105,6 +105,13 @@ class EncryptedMediaTest : public MediaBrowserTest,
   }
 
  protected:
+  // We want to fail quickly when a test fails because an error is encountered.
+  virtual void AddWaitForTitles(content::TitleWatcher* title_watcher) OVERRIDE {
+    MediaBrowserTest::AddWaitForTitles(title_watcher);
+    title_watcher->AlsoWaitForTitle(ASCIIToUTF16(kEmeGkrException));
+    title_watcher->AlsoWaitForTitle(ASCIIToUTF16(kEmeKeyError));
+  }
+
 #if defined(ENABLE_PEPPER_CDMS)
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     RegisterPepperCdm(command_line, kClearKeyCdmAdapterFileName,
@@ -170,7 +177,7 @@ class WVEncryptedMediaTest : public EncryptedMediaTest {
     }
 #endif  // defined(OS_LINUX)
     EncryptedMediaTest::TestMSESimplePlayback(encrypted_media, media_type,
-                                              key_system, kKeyError);
+                                              key_system, kEmeKeyError);
     bool receivedKeyMessage = false;
     EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
         browser()->tab_strip_model()->GetActiveWebContents(),
@@ -211,8 +218,7 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaTest, ConfigChangeVideo_ClearKey) {
 
 IN_PROC_BROWSER_TEST_F(EncryptedMediaTest, InvalidKeySystem) {
   TestMSESimplePlayback("bear-320x240-av-enc_av.webm", kWebMAudioVideo,
-                        "com.example.invalid",
-                        "GENERATE_KEY_REQUEST_EXCEPTION");
+                        "com.example.invalid", kEmeGkrException);
 }
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_WebM) {
@@ -275,16 +281,15 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_MP4) {
 IN_PROC_BROWSER_TEST_F(EncryptedMediaTest, UnknownKeySystemThrowsException) {
   RunEncryptedMediaTest("encrypted_media_player.html", "bear-a-enc_a.webm",
                         kWebMAudioOnly, "com.example.foo", SRC,
-                        "GENERATE_KEY_REQUEST_EXCEPTION");
+                        kEmeGkrException);
 }
 
 // Run only when WV CDM is available.
 #if defined(WIDEVINE_CDM_AVAILABLE)
 // The parent key system cannot be used in generateKeyRequest.
-IN_PROC_BROWSER_TEST_F(EncryptedMediaTest, WVParentThrowsException) {
+IN_PROC_BROWSER_TEST_F(WVEncryptedMediaTest, WVParentThrowsException) {
   RunEncryptedMediaTest("encrypted_media_player.html", "bear-a-enc_a.webm",
-                        kWebMAudioOnly, "com.widevine", SRC,
-                        "GENERATE_KEY_REQUEST_EXCEPTION");
+                        kWebMAudioOnly, "com.widevine", SRC, kEmeGkrException);
 }
 
 IN_PROC_BROWSER_TEST_F(WVEncryptedMediaTest, Playback_AudioOnly_WebM) {
