@@ -111,13 +111,24 @@ static void
 run_test(const struct test *t)
 {
 	int cur_alloc = num_alloc;
-	int cur_fds;
+	int cur_fds, num_fds;
 
 	cur_fds = count_open_fds();
 	t->run();
 	if (leak_check_enabled) {
-		assert(cur_alloc == num_alloc && "memory leak detected in test.");
-		assert(cur_fds == count_open_fds() && "fd leak detected");
+		if (cur_alloc != num_alloc) {
+			fprintf(stderr, "Memory leak detected in test. "
+				"Allocated %d blocks, unfreed %d\n", num_alloc,
+				num_alloc - cur_alloc);
+			abort();
+		}
+		num_fds = count_open_fds();
+		if (cur_fds != num_fds) {
+			fprintf(stderr, "fd leak detected in test. "
+				"Opened %d files, unclosed %d\n", num_fds,
+				num_fds - cur_fds);
+			abort();
+		}
 	}
 	exit(EXIT_SUCCESS);
 }
