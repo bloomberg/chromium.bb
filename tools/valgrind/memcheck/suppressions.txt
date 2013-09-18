@@ -7178,17 +7178,6 @@
    fun:_ZN7WebCore*V8InternalL*MethodCallbackERKN2v820FunctionCallbackInfoINS1_5ValueEEE
 }
 {
-   bug_293043
-   Memcheck:Leak
-   fun:malloc
-   fun:CustomSetup
-   fun:VP8EnterCritical
-   fun:DecodePartition0
-   fun:IDecode
-   fun:WebPIUpdate
-   fun:_ZN7WebCore16WEBPImageDecoder6decodeEPKhmbm
-}
-{
    bug_293049
    Memcheck:Uninitialized
    fun:_ZNK7WebCore8Document24webkitPointerLockElementEv
