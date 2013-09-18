@@ -311,6 +311,8 @@ static int ToMessageID(WebLocalizedString::Name name) {
       return IDS_FORM_VALIDATION_RANGE_UNDERFLOW;
     case WebLocalizedString::ValidationStepMismatch:
       return IDS_FORM_VALIDATION_STEP_MISMATCH;
+    case WebLocalizedString::ValidationStepMismatchCloseToLimit:
+      return IDS_FORM_VALIDATION_STEP_MISMATCH_CLOSE_TO_LIMIT;
     case WebLocalizedString::ValidationTooLong:
       return IDS_FORM_VALIDATION_TOO_LONG;
     case WebLocalizedString::ValidationTypeMismatch:
