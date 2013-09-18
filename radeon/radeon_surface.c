@@ -1382,10 +1382,16 @@ static int si_surface_sanity(struct radeon_surface_manager *surf_man,
         break;
     case RADEON_SURF_MODE_1D:
         if (surf->flags & RADEON_SURF_SBUFFER) {
-            *stencil_tile_mode = SI_TILE_MODE_DEPTH_STENCIL_1D;
+            if (surf_man->family >= CHIP_BONAIRE)
+                *stencil_tile_mode = CIK_TILE_MODE_DEPTH_STENCIL_1D;
+            else
+                *stencil_tile_mode = SI_TILE_MODE_DEPTH_STENCIL_1D;
         }
         if (surf->flags & RADEON_SURF_ZBUFFER) {
-            *tile_mode = SI_TILE_MODE_DEPTH_STENCIL_1D;
+            if (surf_man->family >= CHIP_BONAIRE)
+                *tile_mode = CIK_TILE_MODE_DEPTH_STENCIL_1D;
+            else
+                *tile_mode = SI_TILE_MODE_DEPTH_STENCIL_1D;
         } else if (surf->flags & RADEON_SURF_SCANOUT) {
             *tile_mode = SI_TILE_MODE_COLOR_1D_SCANOUT;
         } else {
@@ -1643,7 +1649,10 @@ static int si_surface_init_2d(struct radeon_surface_manager *surf_man,
                 tile_mode = SI_TILE_MODE_COLOR_1D_SCANOUT;
                 break;
             case SI_TILE_MODE_DEPTH_STENCIL_2D:
-                tile_mode = SI_TILE_MODE_DEPTH_STENCIL_1D;
+                if (surf_man->family >= CHIP_BONAIRE)
+                    tile_mode = CIK_TILE_MODE_DEPTH_STENCIL_1D;
+                else
+                    tile_mode = SI_TILE_MODE_DEPTH_STENCIL_1D;
                 break;
             default:
                 return -EINVAL;
