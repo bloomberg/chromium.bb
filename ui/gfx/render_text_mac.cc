@@ -47,8 +47,7 @@ std::vector<RenderText::FontSpan> RenderTextMac::GetFontSpansForTesting() {
   for (size_t i = 0; i < runs_.size(); ++i) {
     gfx::Font font(runs_[i].font_name, runs_[i].text_size);
     const CFRange cf_range = CTRunGetStringRange(runs_[i].ct_run);
-    const gfx::Range range(cf_range.location,
-                          cf_range.location + cf_range.length);
+    const Range range(cf_range.location, cf_range.location + cf_range.length);
     spans.push_back(RenderText::FontSpan(font, range));
   }
 
@@ -69,12 +68,12 @@ SelectionModel RenderTextMac::AdjacentWordSelectionModel(
   return SelectionModel();
 }
 
-gfx::Range RenderTextMac::GetGlyphBounds(size_t index) {
+Range RenderTextMac::GetGlyphBounds(size_t index) {
   // TODO(asvitkine): Implement this. http://crbug.com/131618
-  return gfx::Range();
+  return Range();
 }
 
-std::vector<Rect> RenderTextMac::GetSubstringBounds(const gfx::Range& range) {
+std::vector<Rect> RenderTextMac::GetSubstringBounds(const Range& range) {
   // TODO(asvitkine): Implement this. http://crbug.com/131618
   return std::vector<Rect>();
 }

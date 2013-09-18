@@ -32,10 +32,10 @@ TEST_F(BreakListTest, ApplyValue) {
   breaks.SetMax(max);
 
   // Ensure ApplyValue is a no-op on invalid and empty ranges.
-  breaks.ApplyValue(true, gfx::Range::InvalidRange());
+  breaks.ApplyValue(true, Range::InvalidRange());
   EXPECT_TRUE(breaks.EqualsValueForTesting(false));
   for (size_t i = 0; i < 3; ++i) {
-    breaks.ApplyValue(true, gfx::Range(i, i));
+    breaks.ApplyValue(true, Range(i, i));
     EXPECT_TRUE(breaks.EqualsValueForTesting(false));
   }
 
@@ -45,7 +45,7 @@ TEST_F(BreakListTest, ApplyValue) {
   expected.push_back(std::pair<size_t, bool>(2, true));
   expected.push_back(std::pair<size_t, bool>(3, false));
   for (size_t i = 0; i < 2; ++i) {
-    breaks.ApplyValue(true, gfx::Range(2, 3));
+    breaks.ApplyValue(true, Range(2, 3));
     EXPECT_TRUE(breaks.EqualsForTesting(expected));
   }
 
@@ -54,43 +54,43 @@ TEST_F(BreakListTest, ApplyValue) {
   EXPECT_TRUE(breaks.EqualsValueForTesting(true));
 
   // Ensure applying a value over [0, |max|) is the same as setting a value.
-  breaks.ApplyValue(false, gfx::Range(0, max));
+  breaks.ApplyValue(false, Range(0, max));
   EXPECT_TRUE(breaks.EqualsValueForTesting(false));
 
   // Ensure applying a value that is already applied has no effect.
-  breaks.ApplyValue(false, gfx::Range(0, 2));
-  breaks.ApplyValue(false, gfx::Range(3, 6));
-  breaks.ApplyValue(false, gfx::Range(7, max));
+  breaks.ApplyValue(false, Range(0, 2));
+  breaks.ApplyValue(false, Range(3, 6));
+  breaks.ApplyValue(false, Range(7, max));
   EXPECT_TRUE(breaks.EqualsValueForTesting(false));
 
   // Ensure applying an identical neighboring value merges the ranges.
-  breaks.ApplyValue(true, gfx::Range(0, 3));
-  breaks.ApplyValue(true, gfx::Range(3, 6));
-  breaks.ApplyValue(true, gfx::Range(6, max));
+  breaks.ApplyValue(true, Range(0, 3));
+  breaks.ApplyValue(true, Range(3, 6));
+  breaks.ApplyValue(true, Range(6, max));
   EXPECT_TRUE(breaks.EqualsValueForTesting(true));
 
   // Ensure applying a value with the same range overrides the ranged value.
-  breaks.ApplyValue(false, gfx::Range(2, 3));
-  breaks.ApplyValue(true, gfx::Range(2, 3));
+  breaks.ApplyValue(false, Range(2, 3));
+  breaks.ApplyValue(true, Range(2, 3));
   EXPECT_TRUE(breaks.EqualsValueForTesting(true));
 
   // Ensure applying a value with a containing range overrides contained values.
-  breaks.ApplyValue(false, gfx::Range(0, 1));
-  breaks.ApplyValue(false, gfx::Range(2, 3));
-  breaks.ApplyValue(true, gfx::Range(0, 3));
+  breaks.ApplyValue(false, Range(0, 1));
+  breaks.ApplyValue(false, Range(2, 3));
+  breaks.ApplyValue(true, Range(0, 3));
   EXPECT_TRUE(breaks.EqualsValueForTesting(true));
-  breaks.ApplyValue(false, gfx::Range(4, 5));
-  breaks.ApplyValue(false, gfx::Range(6, 7));
-  breaks.ApplyValue(false, gfx::Range(8, 9));
-  breaks.ApplyValue(true, gfx::Range(4, 9));
+  breaks.ApplyValue(false, Range(4, 5));
+  breaks.ApplyValue(false, Range(6, 7));
+  breaks.ApplyValue(false, Range(8, 9));
+  breaks.ApplyValue(true, Range(4, 9));
   EXPECT_TRUE(breaks.EqualsValueForTesting(true));
 
   // Ensure applying various overlapping values yields the intended results.
-  breaks.ApplyValue(false, gfx::Range(1, 4));
-  breaks.ApplyValue(false, gfx::Range(5, 8));
-  breaks.ApplyValue(true, gfx::Range(0, 2));
-  breaks.ApplyValue(true, gfx::Range(3, 6));
-  breaks.ApplyValue(true, gfx::Range(7, max));
+  breaks.ApplyValue(false, Range(1, 4));
+  breaks.ApplyValue(false, Range(5, 8));
+  breaks.ApplyValue(true, Range(0, 2));
+  breaks.ApplyValue(true, Range(3, 6));
+  breaks.ApplyValue(true, Range(7, max));
   std::vector<std::pair<size_t, bool> > overlap;
   overlap.push_back(std::pair<size_t, bool>(0, true));
   overlap.push_back(std::pair<size_t, bool>(2, false));
@@ -104,9 +104,9 @@ TEST_F(BreakListTest, SetMax) {
   // Ensure values adjust to accommodate max position changes.
   BreakList<bool> breaks(false);
   breaks.SetMax(9);
-  breaks.ApplyValue(true, gfx::Range(0, 2));
-  breaks.ApplyValue(true, gfx::Range(3, 6));
-  breaks.ApplyValue(true, gfx::Range(7, 9));
+  breaks.ApplyValue(true, Range(0, 2));
+  breaks.ApplyValue(true, Range(3, 6));
+  breaks.ApplyValue(true, Range(7, 9));
 
   std::vector<std::pair<size_t, bool> > expected;
   expected.push_back(std::pair<size_t, bool>(0, true));
@@ -134,25 +134,25 @@ TEST_F(BreakListTest, SetMax) {
 TEST_F(BreakListTest, GetBreakAndRange) {
   BreakList<bool> breaks(false);
   breaks.SetMax(8);
-  breaks.ApplyValue(true, gfx::Range(1, 2));
-  breaks.ApplyValue(true, gfx::Range(4, 6));
+  breaks.ApplyValue(true, Range(1, 2));
+  breaks.ApplyValue(true, Range(4, 6));
 
   struct {
     size_t position;
     size_t break_index;
-    gfx::Range range;
+    Range range;
   } cases[] = {
-    { 0, 0, gfx::Range(0, 1) },
-    { 1, 1, gfx::Range(1, 2) },
-    { 2, 2, gfx::Range(2, 4) },
-    { 3, 2, gfx::Range(2, 4) },
-    { 4, 3, gfx::Range(4, 6) },
-    { 5, 3, gfx::Range(4, 6) },
-    { 6, 4, gfx::Range(6, 8) },
-    { 7, 4, gfx::Range(6, 8) },
+    { 0, 0, Range(0, 1) },
+    { 1, 1, Range(1, 2) },
+    { 2, 2, Range(2, 4) },
+    { 3, 2, Range(2, 4) },
+    { 4, 3, Range(4, 6) },
+    { 5, 3, Range(4, 6) },
+    { 6, 4, Range(6, 8) },
+    { 7, 4, Range(6, 8) },
     // Positions at or beyond the max simply return the last break and range.
-    { 8, 4, gfx::Range(6, 8) },
-    { 9, 4, gfx::Range(6, 8) },
+    { 8, 4, Range(6, 8) },
+    { 9, 4, Range(6, 8) },
   };
 
 

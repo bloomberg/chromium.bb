@@ -134,25 +134,25 @@ bool IsUnicodeBidiControlCharacter(char16 c) {
 // Returns the corresponding glyph range of the given character range.
 // |range| is in text-space (0 corresponds to |GetLayoutText()[0]|).
 // Returned value is in run-space (0 corresponds to the first glyph in the run).
-gfx::Range CharRangeToGlyphRange(const internal::TextRun& run,
-                                const gfx::Range& range) {
+Range CharRangeToGlyphRange(const internal::TextRun& run,
+                            const Range& range) {
   DCHECK(run.range.Contains(range));
   DCHECK(!range.is_reversed());
   DCHECK(!range.is_empty());
-  const gfx::Range run_range = gfx::Range(range.start() - run.range.start(),
-                                        range.end() - run.range.start());
-  gfx::Range result;
+  const Range run_range(range.start() - run.range.start(),
+                        range.end() - run.range.start());
+  Range result;
   if (run.script_analysis.fRTL) {
-    result = gfx::Range(run.logical_clusters[run_range.end() - 1],
+    result = Range(run.logical_clusters[run_range.end() - 1],
         run_range.start() > 0 ? run.logical_clusters[run_range.start() - 1]
                               : run.glyph_count);
   } else {
-    result = gfx::Range(run.logical_clusters[run_range.start()],
+    result = Range(run.logical_clusters[run_range.start()],
         run_range.end() < run.range.length() ?
             run.logical_clusters[run_range.end()] : run.glyph_count);
   }
   DCHECK(!result.is_reversed());
-  DCHECK(gfx::Range(0, run.glyph_count).Contains(result));
+  DCHECK(Range(0, run.glyph_count).Contains(result));
   return result;
 }
 
@@ -534,8 +534,8 @@ std::vector<RenderText::FontSpan> RenderTextWin::GetFontSpansForTesting() {
   std::vector<RenderText::FontSpan> spans;
   for (size_t i = 0; i < runs_.size(); ++i) {
     spans.push_back(RenderText::FontSpan(runs_[i]->font,
-        gfx::Range(LayoutIndexToTextIndex(runs_[i]->range.start()),
-                  LayoutIndexToTextIndex(runs_[i]->range.end()))));
+        Range(LayoutIndexToTextIndex(runs_[i]->range.start()),
+              LayoutIndexToTextIndex(runs_[i]->range.end()))));
   }
 
   return spans;
@@ -632,7 +632,7 @@ SelectionModel RenderTextWin::AdjacentWordSelectionModel(
   return SelectionModel(pos, CURSOR_FORWARD);
 }
 
-gfx::Range RenderTextWin::GetGlyphBounds(size_t index) {
+Range RenderTextWin::GetGlyphBounds(size_t index) {
   const size_t run_index =
       GetRunContainingCaret(SelectionModel(index, CURSOR_FORWARD));
   // Return edge bounds if the index is invalid or beyond the layout text size.
@@ -640,16 +640,16 @@ gfx::Range RenderTextWin::GetGlyphBounds(size_t index) {
     return Range(string_width_);
   internal::TextRun* run = runs_[run_index];
   const size_t layout_index = TextIndexToLayoutIndex(index);
-  return gfx::Range(GetGlyphXBoundary(run, layout_index, false),
-                   GetGlyphXBoundary(run, layout_index, true));
+  return Range(GetGlyphXBoundary(run, layout_index, false),
+               GetGlyphXBoundary(run, layout_index, true));
 }
 
-std::vector<Rect> RenderTextWin::GetSubstringBounds(const gfx::Range& range) {
+std::vector<Rect> RenderTextWin::GetSubstringBounds(const Range& range) {
   DCHECK(!needs_layout_);
-  DCHECK(gfx::Range(0, text().length()).Contains(range));
-  gfx::Range layout_range(TextIndexToLayoutIndex(range.start()),
-                         TextIndexToLayoutIndex(range.end()));
-  DCHECK(gfx::Range(0, GetLayoutText().length()).Contains(layout_range));
+  DCHECK(Range(0, text().length()).Contains(range));
+  Range layout_range(TextIndexToLayoutIndex(range.start()),
+                     TextIndexToLayoutIndex(range.end()));
+  DCHECK(Range(0, GetLayoutText().length()).Contains(layout_range));
 
   std::vector<Rect> rects;
   if (layout_range.is_empty())
@@ -660,11 +660,11 @@ std::vector<Rect> RenderTextWin::GetSubstringBounds(const gfx::Range& range) {
   // TODO(msw): The bounds should probably not always be leading the range ends.
   for (size_t i = 0; i < runs_.size(); ++i) {
     const internal::TextRun* run = runs_[visual_to_logical_[i]];
-    gfx::Range intersection = run->range.Intersect(layout_range);
+    Range intersection = run->range.Intersect(layout_range);
     if (intersection.IsValid()) {
       DCHECK(!intersection.is_reversed());
-      gfx::Range range_x(GetGlyphXBoundary(run, intersection.start(), false),
-                        GetGlyphXBoundary(run, intersection.end(), false));
+      Range range_x(GetGlyphXBoundary(run, intersection.start(), false),
+                    GetGlyphXBoundary(run, intersection.end(), false));
       if (range_x.is_empty())
         continue;
       range_x = Range(range_x.GetMin(), range_x.GetMax());

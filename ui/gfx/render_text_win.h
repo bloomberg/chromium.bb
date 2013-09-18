@@ -23,7 +23,7 @@ struct TextRun {
   TextRun();
   ~TextRun();
 
-  gfx::Range range;
+  Range range;
   Font font;
   // A gfx::Font::FontStyle flag to specify bold and italic styles.
   // Supersedes |font.GetFontStyle()|. Stored separately to avoid calling
@@ -76,9 +76,8 @@ class RenderTextWin : public RenderText {
   virtual SelectionModel AdjacentWordSelectionModel(
       const SelectionModel& selection,
       VisualCursorDirection direction) OVERRIDE;
-  virtual gfx::Range GetGlyphBounds(size_t index) OVERRIDE;
-  virtual std::vector<Rect> GetSubstringBounds(
-      const gfx::Range& range) OVERRIDE;
+  virtual Range GetGlyphBounds(size_t index) OVERRIDE;
+  virtual std::vector<Rect> GetSubstringBounds(const Range& range) OVERRIDE;
   virtual size_t TextIndexToLayoutIndex(size_t index) const OVERRIDE;
   virtual size_t LayoutIndexToTextIndex(size_t index) const OVERRIDE;
   virtual bool IsCursorablePosition(size_t position) OVERRIDE;

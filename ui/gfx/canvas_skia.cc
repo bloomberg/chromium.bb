@@ -84,15 +84,15 @@ bool PixelShouldGetHalo(const SkBitmap& bitmap,
 // Strips accelerator character prefixes in |text| if needed, based on |flags|.
 // Returns a range in |text| to underline or gfx::Range::InvalidRange() if
 // underlining is not needed.
-gfx::Range StripAcceleratorChars(int flags, base::string16* text) {
+Range StripAcceleratorChars(int flags, base::string16* text) {
   if (flags & (Canvas::SHOW_PREFIX | Canvas::HIDE_PREFIX)) {
     int char_pos = -1;
     int char_span = 0;
     *text = RemoveAcceleratorChar(*text, '&', &char_pos, &char_span);
     if ((flags & Canvas::SHOW_PREFIX) && char_pos != -1)
-      return gfx::Range(char_pos, char_pos + char_span);
+      return Range(char_pos, char_pos + char_span);
   }
-  return gfx::Range::InvalidRange();
+  return Range::InvalidRange();
 }
 
 // Elides |text| and adjusts |range| appropriately. If eliding causes |range|
@@ -100,7 +100,7 @@ gfx::Range StripAcceleratorChars(int flags, base::string16* text) {
 void ElideTextAndAdjustRange(const FontList& font_list,
                              int width,
                              base::string16* text,
-                             gfx::Range* range) {
+                             Range* range) {
   const base::char16 start_char =
       (range->IsValid() ? text->at(range->start()) : 0);
   *text = gfx::ElideText(*text, font_list, width, gfx::ELIDE_AT_END);
@@ -108,7 +108,7 @@ void ElideTextAndAdjustRange(const FontList& font_list,
     return;
   if (range->start() >= text->length() ||
       text->at(range->start()) != start_char) {
-    *range = gfx::Range::InvalidRange();
+    *range = Range::InvalidRange();
   }
 }
 
@@ -272,7 +272,7 @@ void Canvas::DrawStringRectWithShadows(const base::string16& text,
                            &strings);
 
     for (size_t i = 0; i < strings.size(); i++) {
-      gfx::Range range = StripAcceleratorChars(flags, &strings[i]);
+      Range range = StripAcceleratorChars(flags, &strings[i]);
       UpdateRenderText(rect, strings[i], font_list, flags, color,
                        render_text.get());
       int line_padding = 0;
@@ -299,7 +299,7 @@ void Canvas::DrawStringRectWithShadows(const base::string16& text,
       rect += Vector2d(0, line_height);
     }
   } else {
-    gfx::Range range = StripAcceleratorChars(flags, &adjusted_text);
+    Range range = StripAcceleratorChars(flags, &adjusted_text);
     bool elide_text = ((flags & NO_ELLIPSIS) == 0);
 
 #if defined(OS_LINUX)

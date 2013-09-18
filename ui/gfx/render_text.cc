@@ -288,8 +288,8 @@ StyleIterator::StyleIterator(const BreakList<SkColor>& colors,
 
 StyleIterator::~StyleIterator() {}
 
-gfx::Range StyleIterator::GetRange() const {
-  gfx::Range range(colors_.GetRange(color_));
+Range StyleIterator::GetRange() const {
+  Range range(colors_.GetRange(color_));
   for (size_t i = 0; i < NUM_TEXT_STYLES; ++i)
     range = range.Intersect(styles_[i].GetRange(style_[i]));
   return range;
@@ -450,8 +450,8 @@ void RenderText::MoveCursor(BreakType break_type,
 bool RenderText::MoveCursorTo(const SelectionModel& model) {
   // Enforce valid selection model components.
   size_t text_length = text().length();
-  gfx::Range range(std::min(model.selection().start(), text_length),
-                  std::min(model.caret_pos(), text_length));
+  Range range(std::min(model.selection().start(), text_length),
+              std::min(model.caret_pos(), text_length));
   // The current model only supports caret positions at valid character indices.
   if (!IsCursorablePosition(range.start()) ||
       !IsCursorablePosition(range.end()))
@@ -469,9 +469,9 @@ bool RenderText::MoveCursorTo(const Point& point, bool select) {
   return MoveCursorTo(position);
 }
 
-bool RenderText::SelectRange(const gfx::Range& range) {
-  gfx::Range sel(std::min(range.start(), text().length()),
-                std::min(range.end(), text().length()));
+bool RenderText::SelectRange(const Range& range) {
+  Range sel(std::min(range.start(), text().length()),
+            std::min(range.end(), text().length()));
   if (!IsCursorablePosition(sel.start()) || !IsCursorablePosition(sel.end()))
     return false;
   LogicalCursorDirection affinity =
@@ -495,8 +495,7 @@ void RenderText::ClearSelection() {
 
 void RenderText::SelectAll(bool reversed) {
   const size_t length = text().length();
-  const gfx::Range all = reversed ? gfx::Range(length, 0) :
-      gfx::Range(0, length);
+  const Range all = reversed ? Range(length, 0) : Range(0, length);
   const bool success = SelectRange(all);
   DCHECK(success);
 }
@@ -537,13 +536,13 @@ void RenderText::SelectWord() {
   MoveCursorTo(reversed ? selection_min : selection_max, true);
 }
 
-const gfx::Range& RenderText::GetCompositionRange() const {
+const Range& RenderText::GetCompositionRange() const {
   return composition_range_;
 }
 
-void RenderText::SetCompositionRange(const gfx::Range& composition_range) {
+void RenderText::SetCompositionRange(const Range& composition_range) {
   CHECK(!composition_range.IsValid() ||
-        gfx::Range(0, text_.length()).Contains(composition_range));
+        Range(0, text_.length()).Contains(composition_range));
   composition_range_.set_end(composition_range.end());
   composition_range_.set_start(composition_range.start());
   ResetLayout();
@@ -559,7 +558,7 @@ void RenderText::SetColor(SkColor value) {
 #endif
 }
 
-void RenderText::ApplyColor(SkColor value, const gfx::Range& range) {
+void RenderText::ApplyColor(SkColor value, const Range& range) {
   colors_.ApplyValue(value, range);
 
 #if defined(OS_WIN)
@@ -584,9 +583,7 @@ void RenderText::SetStyle(TextStyle style, bool value) {
   }
 }
 
-void RenderText::ApplyStyle(TextStyle style,
-                            bool value,
-                            const gfx::Range& range) {
+void RenderText::ApplyStyle(TextStyle style, bool value, const Range& range) {
   styles_[style].ApplyValue(value, range);
 
   // Only invalidate the layout on font changes; not for colors or decorations.
@@ -728,7 +725,7 @@ Rect RenderText::GetCursorBounds(const SelectionModel& caret,
   } else {
     size_t grapheme_start = (caret_affinity == CURSOR_FORWARD) ?
         caret_pos : IndexOfAdjacentGrapheme(caret_pos, CURSOR_BACKWARD);
-    gfx::Range xspan(GetGlyphBounds(grapheme_start));
+    Range xspan(GetGlyphBounds(grapheme_start));
     if (insert_mode) {
       x = (caret_affinity == CURSOR_BACKWARD) ? xspan.end() : xspan.start();
     } else {  // overtype mode
@@ -769,7 +766,7 @@ size_t RenderText::IndexOfAdjacentGrapheme(size_t index,
 }
 
 SelectionModel RenderText::GetSelectionModelForSelectionStart() {
-  const gfx::Range& sel = selection();
+  const Range& sel = selection();
   if (sel.is_empty())
     return selection_model_;
   return SelectionModel(sel.start(),
@@ -792,7 +789,7 @@ RenderText::RenderText()
       selection_color_(kDefaultColor),
       selection_background_focused_color_(kDefaultSelectionBackgroundColor),
       focused_(false),
-      composition_range_(gfx::Range::InvalidRange()),
+      composition_range_(Range::InvalidRange()),
       colors_(kDefaultColor),
       styles_(NUM_TEXT_STYLES),
       composition_and_selection_styles_applied_(false),
@@ -875,7 +872,7 @@ void RenderText::ApplyCompositionAndSelectionStyles() {
 
   // Apply the selected text color to the [un-reversed] selection range.
   if (!selection().is_empty()) {
-    const gfx::Range range(selection().GetMin(), selection().GetMax());
+    const Range range(selection().GetMin(), selection().GetMax());
     colors_.ApplyValue(selection_color_, range);
   }
   composition_and_selection_styles_applied_ = true;
@@ -1029,20 +1026,20 @@ void RenderText::ApplyTextShadows(internal::SkiaTextRenderer* renderer) {
 }
 
 // static
-bool RenderText::RangeContainsCaret(const gfx::Range& range,
+bool RenderText::RangeContainsCaret(const Range& range,
                                     size_t caret_pos,
                                     LogicalCursorDirection caret_affinity) {
   // NB: exploits unsigned wraparound (WG14/N1124 section 6.2.5 paragraph 9).
   size_t adjacent = (caret_affinity == CURSOR_BACKWARD) ?
       caret_pos - 1 : caret_pos + 1;
-  return range.Contains(gfx::Range(caret_pos, adjacent));
+  return range.Contains(Range(caret_pos, adjacent));
 }
 
 void RenderText::MoveCursorTo(size_t position, bool select) {
   size_t cursor = std::min(position, text().length());
   if (IsCursorablePosition(cursor))
     SetSelectionModel(SelectionModel(
-        gfx::Range(select ? selection().start() : cursor, cursor),
+        Range(select ? selection().start() : cursor, cursor),
         (cursor == 0) ? CURSOR_FORWARD : CURSOR_BACKWARD));
 }
 

@@ -10,14 +10,17 @@
 namespace gfx {
 
 SelectionModel::SelectionModel()
-  : selection_(0), caret_affinity_(CURSOR_BACKWARD) {}
+    : selection_(0),
+      caret_affinity_(CURSOR_BACKWARD) {}
 
 SelectionModel::SelectionModel(size_t position, LogicalCursorDirection affinity)
-  : selection_(position), caret_affinity_(affinity) {}
+    : selection_(position),
+      caret_affinity_(affinity) {}
 
-SelectionModel::SelectionModel(gfx::Range selection,
+SelectionModel::SelectionModel(const Range& selection,
                                LogicalCursorDirection affinity)
-  : selection_(selection), caret_affinity_(affinity) {}
+    : selection_(selection),
+      caret_affinity_(affinity) {}
 
 bool SelectionModel::operator==(const SelectionModel& sel) const {
   return selection_ == sel.selection() &&

@@ -40,7 +40,7 @@ class BreakList {
   void SetValue(T value);
 
   // Adjust the breaks to apply |value| over the supplied |range|.
-  void ApplyValue(T value, const gfx::Range& range);
+  void ApplyValue(T value, const Range& range);
 
   // Set the max position and trim any breaks at or beyond that position.
   void SetMax(size_t max);
@@ -52,7 +52,7 @@ class BreakList {
 
   // Get the range of the supplied break; returns the break's start position and
   // the next break's start position (or |max_| for the terminal break).
-  gfx::Range GetRange(const typename BreakList<T>::const_iterator& i) const;
+  Range GetRange(const typename BreakList<T>::const_iterator& i) const;
 
   // Comparison functions for testing purposes.
   bool EqualsValueForTesting(T value) const;
@@ -83,12 +83,12 @@ void BreakList<T>::SetValue(T value) {
 }
 
 template<class T>
-void BreakList<T>::ApplyValue(T value, const gfx::Range& range) {
+void BreakList<T>::ApplyValue(T value, const Range& range) {
   if (!range.IsValid() || range.is_empty())
     return;
   DCHECK(!breaks_.empty());
   DCHECK(!range.is_reversed());
-  DCHECK(gfx::Range(0, max_).Contains(range));
+  DCHECK(Range(0, max_).Contains(range));
 
   // Erase any breaks in |range|, then add start and end breaks as needed.
   typename std::vector<Break>::iterator start = GetBreak(range.start());
@@ -136,10 +136,10 @@ typename std::vector<std::pair<size_t, T> >::const_iterator
 }
 
 template<class T>
-gfx::Range BreakList<T>::GetRange(
+Range BreakList<T>::GetRange(
     const typename BreakList<T>::const_iterator& i) const {
   const typename BreakList<T>::const_iterator next = i + 1;
-  return gfx::Range(i->first, next == breaks_.end() ? max_ : next->first);
+  return Range(i->first, next == breaks_.end() ? max_ : next->first);
 }
 
 template<class T>
