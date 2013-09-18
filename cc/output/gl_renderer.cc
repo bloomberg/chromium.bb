@@ -653,8 +653,8 @@ scoped_ptr<ScopedResource> GLRenderer::DrawBackgroundFilters(
   scoped_ptr<ScopedResource> device_background_texture =
       ScopedResource::create(resource_provider_);
   if (!device_background_texture->Allocate(window_rect.size(),
-                                           ResourceProvider::TextureUsageAny,
-                                           RGBA_8888)) {
+                                           GL_RGB,
+                                           ResourceProvider::TextureUsageAny)) {
     return scoped_ptr<ScopedResource>();
   } else {
     ResourceProvider::ScopedWriteLockGL lock(resource_provider_,
@@ -679,8 +679,8 @@ scoped_ptr<ScopedResource> GLRenderer::DrawBackgroundFilters(
   scoped_ptr<ScopedResource> background_texture =
       ScopedResource::create(resource_provider_);
   if (!background_texture->Allocate(quad->rect.size(),
-                                    ResourceProvider::TextureUsageFramebuffer,
-                                    RGBA_8888))
+                                    GL_RGBA,
+                                    ResourceProvider::TextureUsageFramebuffer))
     return scoped_ptr<ScopedResource>();
 
   const RenderPass* target_render_pass = frame->current_render_pass;
@@ -1702,10 +1702,10 @@ void GLRenderer::DrawPictureQuad(const DrawingFrame* frame,
 
     on_demand_tile_raster_resource_id_ = resource_provider_->CreateGLTexture(
         quad->texture_size,
+        GL_RGBA,
         GL_TEXTURE_POOL_UNMANAGED_CHROMIUM,
         GL_CLAMP_TO_EDGE,
-        ResourceProvider::TextureUsageAny,
-        quad->texture_format);
+        ResourceProvider::TextureUsageAny);
   }
 
   SkBitmapDevice device(on_demand_tile_raster_bitmap_);
@@ -1714,25 +1714,9 @@ void GLRenderer::DrawPictureQuad(const DrawingFrame* frame,
   quad->picture_pile->RasterToBitmap(&canvas, quad->content_rect,
                                      quad->contents_scale, NULL);
 
-  uint8_t* bitmap_pixels = NULL;
-  SkBitmap on_demand_tile_raster_bitmap_dest;
-  SkBitmap::Config config = SkBitmapConfigFromFormat(quad->texture_format);
-  if (on_demand_tile_raster_bitmap_.getConfig() != config) {
-    on_demand_tile_raster_bitmap_.copyTo(&on_demand_tile_raster_bitmap_dest,
-                                         config);
-    // TODO(kaanb): The GL pipeline assumes a 4-byte alignment for the
-    // bitmap data. This check will be removed once crbug.com/293728 is fixed.
-    CHECK_EQ(0u, on_demand_tile_raster_bitmap_dest.rowBytes() % 4);
-    bitmap_pixels = reinterpret_cast<uint8_t*>(
-        on_demand_tile_raster_bitmap_dest.getPixels());
-  } else {
-    bitmap_pixels = reinterpret_cast<uint8_t*>(
-        on_demand_tile_raster_bitmap_.getPixels());
-  }
-
   resource_provider_->SetPixels(
       on_demand_tile_raster_resource_id_,
-      bitmap_pixels,
+      reinterpret_cast<uint8_t*>(on_demand_tile_raster_bitmap_.getPixels()),
       gfx::Rect(quad->texture_size),
       gfx::Rect(quad->texture_size),
       gfx::Vector2d());
@@ -2214,7 +2198,7 @@ void GLRenderer::GetFramebufferPixelsAsync(
         GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
     GLC(context_, context_->texParameteri(
         GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
-    GetFramebufferTexture(texture_id, RGBA_8888, window_rect);
+    GetFramebufferTexture(texture_id, GL_RGBA, window_rect);
 
     gpu::Mailbox mailbox;
     unsigned sync_point = 0;
@@ -2306,7 +2290,7 @@ void GLRenderer::DoGetFramebufferPixels(
     // Copy the contents of the current (IOSurface-backed) framebuffer into a
     // temporary texture.
     GetFramebufferTexture(temporary_texture,
-                          RGBA_8888,
+                          GL_RGBA,
                           gfx::Rect(current_surface_size_));
     temporary_fbo = context_->createFramebuffer();
     // Attach this texture to an FBO, and perform the readback from that FBO.
@@ -2456,8 +2440,9 @@ void GLRenderer::PassOnSkBitmap(
     request->SendBitmapResult(bitmap.Pass());
 }
 
-void GLRenderer::GetFramebufferTexture(
-    unsigned texture_id, ResourceFormat texture_format, gfx::Rect window_rect) {
+void GLRenderer::GetFramebufferTexture(unsigned texture_id,
+                                       unsigned texture_format,
+                                       gfx::Rect window_rect) {
   DCHECK(texture_id);
   DCHECK_GE(window_rect.x(), 0);
   DCHECK_GE(window_rect.y(), 0);
@@ -2466,15 +2451,14 @@ void GLRenderer::GetFramebufferTexture(
 
   GLC(context_, context_->bindTexture(GL_TEXTURE_2D, texture_id));
   GLC(context_,
-      context_->copyTexImage2D(
-          GL_TEXTURE_2D,
-          0,
-          ResourceProvider::GetGLDataFormat(texture_format),
-          window_rect.x(),
-          window_rect.y(),
-          window_rect.width(),
-          window_rect.height(),
-          0));
+      context_->copyTexImage2D(GL_TEXTURE_2D,
+                               0,
+                               texture_format,
+                               window_rect.x(),
+                               window_rect.y(),
+                               window_rect.width(),
+                               window_rect.height(),
+                               0));
   GLC(context_, context_->bindTexture(GL_TEXTURE_2D, 0));
 }
 

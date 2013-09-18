@@ -13,7 +13,6 @@
 #include "base/memory/weak_ptr.h"
 #include "cc/base/cc_export.h"
 #include "cc/resources/release_callback.h"
-#include "cc/resources/resource_format.h"
 #include "cc/resources/texture_mailbox.h"
 #include "ui/gfx/size.h"
 
@@ -76,12 +75,12 @@ class CC_EXPORT VideoResourceUpdater
   struct PlaneResource {
     unsigned resource_id;
     gfx::Size resource_size;
-    ResourceFormat resource_format;
+    unsigned resource_format;
     gpu::Mailbox mailbox;
 
     PlaneResource(unsigned resource_id,
                   gfx::Size resource_size,
-                  ResourceFormat resource_format,
+                  unsigned resource_format,
                   gpu::Mailbox mailbox)
         : resource_id(resource_id),
           resource_size(resource_size),
@@ -99,7 +98,7 @@ class CC_EXPORT VideoResourceUpdater
   struct RecycleResourceData {
     unsigned resource_id;
     gfx::Size resource_size;
-    ResourceFormat resource_format;
+    unsigned resource_format;
     gpu::Mailbox mailbox;
   };
   static void RecycleResource(base::WeakPtr<VideoResourceUpdater> updater,

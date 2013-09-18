@@ -16,14 +16,14 @@ ScopedResource::~ScopedResource() {
 }
 
 bool ScopedResource::Allocate(gfx::Size size,
-                              ResourceProvider::TextureUsageHint hint,
-                              ResourceFormat format) {
+                              GLenum format,
+                              ResourceProvider::TextureUsageHint hint) {
   DCHECK(!id());
   DCHECK(!size.IsEmpty());
 
   set_dimensions(size, format);
   set_id(resource_provider_->CreateResource(
-      size, GL_CLAMP_TO_EDGE, hint, format));
+      size, format, GL_CLAMP_TO_EDGE, hint));
 
 #ifndef NDEBUG
   allocate_thread_id_ = base::PlatformThread::CurrentId();

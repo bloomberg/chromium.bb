@@ -127,8 +127,9 @@ void ContentLayer::CreateUpdaterIfNeeded() {
   }
   updater_->SetOpaque(contents_opaque());
 
-  SetTextureFormat(
-      layer_tree_host()->GetRendererCapabilities().best_texture_format);
+  unsigned texture_format =
+      layer_tree_host()->GetRendererCapabilities().best_texture_format;
+  SetTextureFormat(texture_format);
 }
 
 void ContentLayer::SetContentsOpaque(bool opaque) {

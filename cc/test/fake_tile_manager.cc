@@ -32,9 +32,7 @@ class FakeRasterWorkerPool : public RasterWorkerPool {
       completed_tasks_.pop_front();
     }
   }
-  virtual ResourceFormat GetResourceFormat() const OVERRIDE {
-    return RGBA_8888;
-  }
+  virtual GLenum GetResourceFormat() const OVERRIDE { return GL_RGBA; }
   virtual void OnRasterTasksFinished() OVERRIDE {}
   virtual void OnRasterTasksRequiredForActivationFinished() OVERRIDE {}
 

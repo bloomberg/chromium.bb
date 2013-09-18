@@ -11,7 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/scoped_ptr_deque.h"
-#include "cc/resources/resource_provider.h"
+#include "third_party/khronos/GLES2/gl2.h"
 
 namespace WebKit { class WebGraphicsContext3D; }
 
@@ -46,7 +46,7 @@ class CC_EXPORT TextureUploader {
               gfx::Rect content_rect,
               gfx::Rect source_rect,
               gfx::Vector2d dest_offset,
-              ResourceFormat format,
+              GLenum format,
               gfx::Size size);
 
   void Flush();
@@ -97,12 +97,12 @@ class CC_EXPORT TextureUploader {
                              gfx::Rect image_rect,
                              gfx::Rect source_rect,
                              gfx::Vector2d dest_offset,
-                             ResourceFormat format);
+                             GLenum format);
   void UploadWithMapTexSubImage(const uint8* image,
                                 gfx::Rect image_rect,
                                 gfx::Rect source_rect,
                                 gfx::Vector2d dest_offset,
-                                ResourceFormat format);
+                                GLenum format);
 
   WebKit::WebGraphicsContext3D* context_;
   ScopedPtrDeque<Query> pending_queries_;

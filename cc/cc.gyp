@@ -317,8 +317,6 @@
         'resources/release_callback.h',
         'resources/resource.cc',
         'resources/resource.h',
-        'resources/resource_format.h',
-        'resources/resource_format.cc',
         'resources/resource_pool.cc',
         'resources/resource_pool.h',
         'resources/resource_provider.cc',

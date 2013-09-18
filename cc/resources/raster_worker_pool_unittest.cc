@@ -35,10 +35,8 @@ class TestRasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
         did_raster_(false) {}
 
   // Overridden from internal::WorkerPoolTask:
-  virtual bool RunOnWorkerThread(unsigned thread_index,
-                                 void* buffer,
-                                 gfx::Size size,
-                                 int stride) OVERRIDE {
+  virtual bool RunOnWorkerThread(SkBaseDevice* device, unsigned thread_index)
+      OVERRIDE {
     did_raster_ = true;
     return true;
   }
@@ -67,8 +65,8 @@ class RasterWorkerPoolTest : public testing::Test,
     output_surface_ = FakeOutputSurface::Create3d(context_provider_).Pass();
     CHECK(output_surface_->BindToClient(&output_surface_client_));
 
-    resource_provider_ =
-        ResourceProvider::Create(output_surface_.get(), 0, false).Pass();
+    resource_provider_ = ResourceProvider::Create(output_surface_.get(),
+                                                  0).Pass();
   }
   virtual ~RasterWorkerPoolTest() {
     resource_provider_.reset();
@@ -106,11 +104,8 @@ class RasterWorkerPoolTest : public testing::Test,
       raster_worker_pool_ = ImageRasterWorkerPool::Create(
           resource_provider(), 1);
     } else {
-      raster_worker_pool_ =
-          PixelBufferRasterWorkerPool::Create(
-              resource_provider(),
-              1,
-              std::numeric_limits<size_t>::max());
+      raster_worker_pool_ = PixelBufferRasterWorkerPool::Create(
+          resource_provider(), 1, std::numeric_limits<size_t>::max());
     }
 
     raster_worker_pool_->SetClient(this);
@@ -160,7 +155,7 @@ class RasterWorkerPoolTest : public testing::Test,
 
     scoped_ptr<ScopedResource> resource(
         ScopedResource::create(resource_provider()));
-    resource->Allocate(size, ResourceProvider::TextureUsageAny, RGBA_8888);
+    resource->Allocate(size, GL_RGBA, ResourceProvider::TextureUsageAny);
     const Resource* const_resource = resource.get();
 
     RasterWorkerPool::Task::Set empty;

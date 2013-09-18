@@ -1741,7 +1741,7 @@ class EvictionTestLayer : public Layer {
       return;
     texture_ = PrioritizedResource::Create(
         layer_tree_host()->contents_texture_manager());
-    texture_->SetDimensions(gfx::Size(10, 10), RGBA_8888);
+    texture_->SetDimensions(gfx::Size(10, 10), GL_RGBA);
     bitmap_.setConfig(SkBitmap::kARGB_8888_Config, 10, 10);
   }
 

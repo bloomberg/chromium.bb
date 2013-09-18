@@ -170,8 +170,7 @@ class TransferStateInternal
                  "width", define_params_.width,
                  "height", define_params_.height);
     DCHECK(texture_id_);
-    if (EGL_NO_IMAGE_KHR == egl_image_)
-      return;
+    DCHECK_NE(EGL_NO_IMAGE_KHR, egl_image_);
 
     glBindTexture(GL_TEXTURE_2D, texture_id_);
     glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, egl_image_);
@@ -204,8 +203,7 @@ class TransferStateInternal
         egl_buffer,
         egl_attrib_list);
 
-    DLOG_IF(ERROR, EGL_NO_IMAGE_KHR == egl_image_)
-        << "eglCreateImageKHR failed";
+    DCHECK_NE(EGL_NO_IMAGE_KHR, egl_image_);
   }
 
   void CreateEglImageOnUploadThread() {
@@ -261,10 +259,7 @@ class TransferStateInternal
                  tex_params.height);
     DCHECK(!thread_texture_id_);
     DCHECK_EQ(0, tex_params.level);
-    if (EGL_NO_IMAGE_KHR == egl_image_) {
-      MarkAsCompleted();
-      return;
-    }
+    DCHECK_EQ(EGL_NO_IMAGE_KHR, egl_image_);
 
     void* data =
         AsyncPixelTransferDelegate::GetAddress(safe_shared_memory, mem_params);

@@ -24,7 +24,6 @@
 #include "cc/input/top_controls_state.h"
 #include "cc/layers/layer_lists.h"
 #include "cc/output/output_surface.h"
-#include "cc/resources/resource_format.h"
 #include "cc/resources/scoped_ui_resource.h"
 #include "cc/resources/ui_resource_bitmap.h"
 #include "cc/resources/ui_resource_client.h"
@@ -74,7 +73,7 @@ struct CC_EXPORT RendererCapabilities {
   RendererCapabilities();
   ~RendererCapabilities();
 
-  ResourceFormat best_texture_format;
+  unsigned best_texture_format;
   bool using_partial_swap;
   bool using_set_visibility;
   bool using_egl_image;

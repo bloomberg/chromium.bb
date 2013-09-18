@@ -86,7 +86,7 @@ class UpdatableTile : public LayerTilingData::Tile {
 
 TiledLayer::TiledLayer()
     : ContentsScalingLayer(),
-      texture_format_(RGBA_8888),
+      texture_format_(GL_INVALID_ENUM),
       skips_draw_(false),
       failed_update_(false),
       tiling_option_(AUTO_TILE) {

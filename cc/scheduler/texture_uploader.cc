@@ -135,7 +135,7 @@ void TextureUploader::Upload(const uint8* image,
                              gfx::Rect image_rect,
                              gfx::Rect source_rect,
                              gfx::Vector2d dest_offset,
-                             ResourceFormat format,
+                             GLenum format,
                              gfx::Size size) {
   CHECK(image_rect.Contains(source_rect));
 
@@ -178,7 +178,7 @@ void TextureUploader::UploadWithTexSubImage(const uint8* image,
                                             gfx::Rect image_rect,
                                             gfx::Rect source_rect,
                                             gfx::Vector2d dest_offset,
-                                            ResourceFormat format) {
+                                            GLenum format) {
   // Instrumentation to debug issue 156107
   int source_rect_x = source_rect.x();
   int source_rect_y = source_rect.y();
@@ -207,10 +207,10 @@ void TextureUploader::UploadWithTexSubImage(const uint8* image,
   gfx::Vector2d offset(source_rect.origin() - image_rect.origin());
 
   const uint8* pixel_source;
-  unsigned bytes_per_pixel = ResourceProvider::BytesPerPixel(format);
+  unsigned int bytes_per_pixel = Resource::BytesPerPixel(format);
   // Use 4-byte row alignment (OpenGL default) for upload performance.
   // Assuming that GL_UNPACK_ALIGNMENT has not changed from default.
-  unsigned upload_image_stride =
+  unsigned int upload_image_stride =
       RoundUp(bytes_per_pixel * source_rect.width(), 4u);
 
   if (upload_image_stride == image_rect.width() * bytes_per_pixel &&
@@ -239,8 +239,8 @@ void TextureUploader::UploadWithTexSubImage(const uint8* image,
                           dest_offset.y(),
                           source_rect.width(),
                           source_rect.height(),
-                          ResourceProvider::GetGLDataFormat(format),
-                          ResourceProvider::GetGLDataType(format),
+                          format,
+                          GL_UNSIGNED_BYTE,
                           pixel_source);
 }
 
@@ -248,7 +248,7 @@ void TextureUploader::UploadWithMapTexSubImage(const uint8* image,
                                                gfx::Rect image_rect,
                                                gfx::Rect source_rect,
                                                gfx::Vector2d dest_offset,
-                                               ResourceFormat format) {
+                                               GLenum format) {
   // Instrumentation to debug issue 156107
   int source_rect_x = source_rect.x();
   int source_rect_y = source_rect.y();
@@ -277,10 +277,10 @@ void TextureUploader::UploadWithMapTexSubImage(const uint8* image,
   // Offset from image-rect to source-rect.
   gfx::Vector2d offset(source_rect.origin() - image_rect.origin());
 
-  unsigned bytes_per_pixel = ResourceProvider::BytesPerPixel(format);
+  unsigned int bytes_per_pixel = Resource::BytesPerPixel(format);
   // Use 4-byte row alignment (OpenGL default) for upload performance.
   // Assuming that GL_UNPACK_ALIGNMENT has not changed from default.
-  unsigned upload_image_stride =
+  unsigned int upload_image_stride =
       RoundUp(bytes_per_pixel * source_rect.width(), 4u);
 
   // Upload tile data via a mapped transfer buffer
@@ -291,10 +291,8 @@ void TextureUploader::UploadWithMapTexSubImage(const uint8* image,
                                          dest_offset.y(),
                                          source_rect.width(),
                                          source_rect.height(),
-                                         ResourceProvider::GetGLDataFormat(
-                                             format),
-                                         ResourceProvider::GetGLDataType(
-                                             format),
+                                         format,
+                                         GL_UNSIGNED_BYTE,
                                          GL_WRITE_ONLY));
 
   if (!pixel_dest) {

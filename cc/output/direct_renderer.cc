@@ -168,8 +168,7 @@ void DirectRenderer::DecideRenderPassAllocationsForFrame(
 
     const RenderPass* render_pass_in_frame = it->second;
     gfx::Size required_size = RenderPassTextureSize(render_pass_in_frame);
-    ResourceFormat required_format =
-        RenderPassTextureFormat(render_pass_in_frame);
+    GLenum required_format = RenderPassTextureFormat(render_pass_in_frame);
     CachedResource* texture = pass_iter->second;
     DCHECK(texture);
 
@@ -399,8 +398,8 @@ bool DirectRenderer::UseRenderPass(DrawingFrame* frame,
                enlarge_pass_texture_amount_.y());
   if (!texture->id() &&
       !texture->Allocate(size,
-                         ResourceProvider::TextureUsageFramebuffer,
-                         RenderPassTextureFormat(render_pass)))
+                         RenderPassTextureFormat(render_pass),
+                         ResourceProvider::TextureUsageFramebuffer))
     return false;
 
   return BindFramebufferToTexture(frame, texture, render_pass->output_rect);
@@ -421,9 +420,8 @@ gfx::Size DirectRenderer::RenderPassTextureSize(const RenderPass* render_pass) {
 }
 
 // static
-ResourceFormat DirectRenderer::RenderPassTextureFormat(
-    const RenderPass* render_pass) {
-  return RGBA_8888;
+GLenum DirectRenderer::RenderPassTextureFormat(const RenderPass* render_pass) {
+  return GL_RGBA;
 }
 
 }  // namespace cc

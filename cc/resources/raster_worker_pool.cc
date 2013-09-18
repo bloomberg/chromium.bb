@@ -13,24 +13,10 @@
 #include "cc/resources/picture_pile_impl.h"
 #include "skia/ext/lazy_pixel_ref.h"
 #include "skia/ext/paint_simplifier.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace cc {
 
 namespace {
-
-// Subclass of Allocator that takes a suitably allocated pointer and uses
-// it as the pixel memory for the bitmap.
-class IdentityAllocator : public SkBitmap::Allocator {
- public:
-  explicit IdentityAllocator(void* buffer) : buffer_(buffer) {}
-  virtual bool allocPixelRef(SkBitmap* dst, SkColorTable*) OVERRIDE {
-    dst->setPixels(buffer_);
-    return true;
-  }
- private:
-  void* buffer_;
-};
 
 // Flag to indicate whether we should try and detect that
 // a tile is of solid color.
@@ -103,10 +89,7 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
     analysis_.is_solid_color &= kUseColorEstimator;
   }
 
-  bool RunRasterOnThread(unsigned thread_index,
-                         void* buffer,
-                         gfx::Size size,
-                         int stride) {
+  bool RunRasterOnThread(SkBaseDevice* device, unsigned thread_index) {
     TRACE_EVENT2(
         benchmark_instrumentation::kCategory,
         benchmark_instrumentation::kRunRasterOnThread,
@@ -119,7 +102,7 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
         devtools_instrumentation::kRasterTask, layer_id_);
 
     DCHECK(picture_pile_.get());
-    DCHECK(buffer);
+    DCHECK(device);
 
     if (analysis_.is_solid_color)
       return false;
@@ -127,31 +110,8 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
     PicturePileImpl* picture_clone =
         picture_pile_->GetCloneForDrawingOnThread(thread_index);
 
-    SkBitmap bitmap;
-    switch (resource()->format()) {
-      case RGBA_4444:
-        // Use the default stride if we will eventually convert this
-        // bitmap to 4444.
-        bitmap.setConfig(SkBitmap::kARGB_8888_Config,
-                         size.width(),
-                         size.height());
-        bitmap.allocPixels();
-        break;
-      case RGBA_8888:
-      case BGRA_8888:
-        bitmap.setConfig(SkBitmap::kARGB_8888_Config,
-                         size.width(),
-                         size.height(),
-                         stride);
-        bitmap.setPixels(buffer);
-        break;
-      case LUMINANCE_8:
-        NOTREACHED();
-        break;
-    }
+    SkCanvas canvas(device);
 
-    SkBitmapDevice device(bitmap);
-    SkCanvas canvas(&device);
     skia::RefPtr<SkDrawFilter> draw_filter;
     switch (raster_mode_) {
       case LOW_QUALITY_RASTER_MODE:
@@ -189,20 +149,14 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
       picture_clone->RasterToBitmap(
           &canvas, content_rect_, contents_scale_, NULL);
     }
-
-    ChangeBitmapConfigIfNeeded(bitmap, buffer);
-
     return true;
   }
 
   // Overridden from internal::RasterWorkerPoolTask:
-  virtual bool RunOnWorkerThread(unsigned thread_index,
-                                 void* buffer,
-                                 gfx::Size size,
-                                 int stride)
+  virtual bool RunOnWorkerThread(SkBaseDevice* device, unsigned thread_index)
       OVERRIDE {
     RunAnalysisOnThread(thread_index);
-    return RunRasterOnThread(thread_index, buffer, size, stride);
+    return RunRasterOnThread(device, thread_index);
   }
   virtual void CompleteOnOriginThread() OVERRIDE {
     reply_.Run(analysis_, !HasFinishedRunning() || WasCanceled());
@@ -221,21 +175,6 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
     res->SetInteger("source_frame_number", source_frame_number_);
     res->SetInteger("layer_id", layer_id_);
     return res.PassAs<base::Value>();
-  }
-
-  void ChangeBitmapConfigIfNeeded(const SkBitmap& bitmap,
-                                  void* buffer) {
-    TRACE_EVENT0("cc", "RasterWorkerPoolTaskImpl::ChangeBitmapConfigIfNeeded");
-    SkBitmap::Config config = SkBitmapConfigFromFormat(
-        resource()->format());
-    if (bitmap.getConfig() != config) {
-      SkBitmap bitmap_dest;
-      IdentityAllocator allocator(buffer);
-      bitmap.copyTo(&bitmap_dest, config, &allocator);
-      // TODO(kaanb): The GL pipeline assumes a 4-byte alignment for the
-      // bitmap data. This check will be removed once crbug.com/293728 is fixed.
-      CHECK_EQ(0u, bitmap_dest.rowBytes() % 4);
-    }
   }
 
   PicturePileImpl::Analysis analysis_;

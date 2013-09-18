@@ -12,7 +12,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "cc/base/util.h"
 #include "cc/output/gl_renderer.h"  // For the GLC() macro.
 #include "cc/resources/platform_color.h"
 #include "cc/resources/returned_resource.h"
@@ -35,31 +34,24 @@ namespace {
 const double kSoftwareUploadTickRate = 0.000250;
 const double kTextureUploadTickRate = 0.004;
 
-GLenum TextureToStorageFormat(ResourceFormat format) {
+GLenum TextureToStorageFormat(GLenum texture_format) {
   GLenum storage_format = GL_RGBA8_OES;
-  switch (format) {
-    case RGBA_8888:
-    case RGBA_4444:
-    case LUMINANCE_8:
+  switch (texture_format) {
+    case GL_RGBA:
       break;
-    case BGRA_8888:
+    case GL_BGRA_EXT:
       storage_format = GL_BGRA8_EXT;
+      break;
+    default:
+      NOTREACHED();
       break;
   }
 
   return storage_format;
 }
 
-bool IsFormatSupportedForStorage(ResourceFormat format) {
-  switch (format) {
-    case RGBA_8888:
-    case BGRA_8888:
-      return true;
-    case RGBA_4444:
-    case LUMINANCE_8:
-      return false;
-  }
-  return false;
+bool IsTextureFormatSupportedForStorage(GLenum format) {
+  return (format == GL_RGBA || format == GL_BGRA_EXT);
 }
 
 class ScopedSetActiveTexture {
@@ -103,6 +95,7 @@ ResourceProvider::Resource::Resource()
       enable_read_lock_fences(false),
       read_lock_fence(NULL),
       size(),
+      format(0),
       original_filter(0),
       filter(0),
       target(0),
@@ -110,19 +103,18 @@ ResourceProvider::Resource::Resource()
       texture_pool(0),
       wrap_mode(0),
       hint(TextureUsageAny),
-      type(static_cast<ResourceType>(0)),
-      format(RGBA_8888) {}
+      type(static_cast<ResourceType>(0)) {}
 
 ResourceProvider::Resource::~Resource() {}
 
 ResourceProvider::Resource::Resource(
     unsigned texture_id,
     gfx::Size size,
+    GLenum format,
     GLenum filter,
     GLenum texture_pool,
     GLint wrap_mode,
-    TextureUsageHint hint,
-    ResourceFormat format)
+    TextureUsageHint hint)
     : gl_id(texture_id),
       gl_pixel_buffer_id(0),
       gl_upload_query_id(0),
@@ -140,6 +132,7 @@ ResourceProvider::Resource::Resource(
       enable_read_lock_fences(false),
       read_lock_fence(NULL),
       size(size),
+      format(format),
       original_filter(filter),
       filter(filter),
       target(0),
@@ -147,14 +140,14 @@ ResourceProvider::Resource::Resource(
       texture_pool(texture_pool),
       wrap_mode(wrap_mode),
       hint(hint),
-      type(GLTexture),
-      format(format) {
+      type(GLTexture) {
   DCHECK(wrap_mode == GL_CLAMP_TO_EDGE || wrap_mode == GL_REPEAT);
 }
 
 ResourceProvider::Resource::Resource(
     uint8_t* pixels,
     gfx::Size size,
+    GLenum format,
     GLenum filter,
     GLint wrap_mode)
     : gl_id(0),
@@ -174,6 +167,7 @@ ResourceProvider::Resource::Resource(
       enable_read_lock_fences(false),
       read_lock_fence(NULL),
       size(size),
+      format(format),
       original_filter(filter),
       filter(filter),
       target(0),
@@ -181,8 +175,7 @@ ResourceProvider::Resource::Resource(
       texture_pool(0),
       wrap_mode(wrap_mode),
       hint(TextureUsageAny),
-      type(Bitmap),
-      format(RGBA_8888) {
+      type(Bitmap) {
   DCHECK(wrap_mode == GL_CLAMP_TO_EDGE || wrap_mode == GL_REPEAT);
 }
 
@@ -192,12 +185,9 @@ ResourceProvider::Child::~Child() {}
 
 scoped_ptr<ResourceProvider> ResourceProvider::Create(
     OutputSurface* output_surface,
-    int highp_threshold_min,
-    bool use_rgba_4444_texture_format) {
+    int highp_threshold_min) {
   scoped_ptr<ResourceProvider> resource_provider(
-      new ResourceProvider(output_surface,
-                           highp_threshold_min,
-                           use_rgba_4444_texture_format));
+      new ResourceProvider(output_surface, highp_threshold_min));
 
   bool success = false;
   if (resource_provider->Context3d()) {
@@ -227,20 +217,17 @@ bool ResourceProvider::InUseByConsumer(ResourceId id) {
 }
 
 ResourceProvider::ResourceId ResourceProvider::CreateResource(
-    gfx::Size size,
-    GLint wrap_mode,
-    TextureUsageHint hint,
-    ResourceFormat format) {
+    gfx::Size size, GLenum format, GLint wrap_mode, TextureUsageHint hint) {
   DCHECK(!size.IsEmpty());
   switch (default_resource_type_) {
     case GLTexture:
-      return CreateGLTexture(size,
-                             GL_TEXTURE_POOL_UNMANAGED_CHROMIUM,
-                             wrap_mode,
-                             hint,
-                             format);
+      return CreateGLTexture(size, format, GL_TEXTURE_POOL_UNMANAGED_CHROMIUM,
+                             wrap_mode, hint);
     case Bitmap:
-      DCHECK_EQ(RGBA_8888, format);
+      // The only wrap_mode currently implemented in software mode is
+      // GL_CLAMP_TO_EDGE.
+      // http://crbug.com/284796
+      DCHECK(format == GL_RGBA);
       return CreateBitmap(size);
     case InvalidType:
       break;
@@ -251,20 +238,14 @@ ResourceProvider::ResourceId ResourceProvider::CreateResource(
 }
 
 ResourceProvider::ResourceId ResourceProvider::CreateManagedResource(
-    gfx::Size size,
-    GLint wrap_mode,
-    TextureUsageHint hint,
-    ResourceFormat format) {
+    gfx::Size size, GLenum format, GLint wrap_mode, TextureUsageHint hint) {
   DCHECK(!size.IsEmpty());
   switch (default_resource_type_) {
     case GLTexture:
-      return CreateGLTexture(size,
-                             GL_TEXTURE_POOL_MANAGED_CHROMIUM,
-                             wrap_mode,
-                             hint,
-                             format);
+      return CreateGLTexture(size, format, GL_TEXTURE_POOL_MANAGED_CHROMIUM,
+                             wrap_mode, hint);
     case Bitmap:
-      DCHECK_EQ(RGBA_8888, format);
+      DCHECK(format == GL_RGBA);
       return CreateBitmap(size);
     case InvalidType:
       break;
@@ -276,16 +257,16 @@ ResourceProvider::ResourceId ResourceProvider::CreateManagedResource(
 
 ResourceProvider::ResourceId ResourceProvider::CreateGLTexture(
     gfx::Size size,
+    GLenum format,
     GLenum texture_pool,
     GLint wrap_mode,
-    TextureUsageHint hint,
-    ResourceFormat format) {
+    TextureUsageHint hint) {
   DCHECK_LE(size.width(), max_texture_size_);
   DCHECK_LE(size.height(), max_texture_size_);
   DCHECK(thread_checker_.CalledOnValidThread());
 
   ResourceId id = next_id_++;
-  Resource resource(0, size, GL_LINEAR, texture_pool, wrap_mode, hint, format);
+  Resource resource(0, size, format, GL_LINEAR, texture_pool, wrap_mode, hint);
   resource.allocated = false;
   resources_[id] = resource;
   return id;
@@ -297,7 +278,7 @@ ResourceProvider::ResourceId ResourceProvider::CreateBitmap(gfx::Size size) {
   uint8_t* pixels = new uint8_t[4 * size.GetArea()];
 
   ResourceId id = next_id_++;
-  Resource resource(pixels, size, GL_LINEAR, GL_CLAMP_TO_EDGE);
+  Resource resource(pixels, size, GL_RGBA, GL_LINEAR, GL_CLAMP_TO_EDGE);
   resource.allocated = true;
   resources_[id] = resource;
   return id;
@@ -322,13 +303,8 @@ ResourceProvider::CreateResourceFromExternalTexture(
       texture_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
 
   ResourceId id = next_id_++;
-  Resource resource(texture_id,
-                    gfx::Size(),
-                    GL_LINEAR,
-                    0,
-                    GL_CLAMP_TO_EDGE,
-                    TextureUsageAny,
-                    RGBA_8888);
+  Resource resource(texture_id, gfx::Size(), 0, GL_LINEAR, 0, GL_CLAMP_TO_EDGE,
+                    TextureUsageAny);
   resource.external = true;
   resource.allocated = true;
   resources_[id] = resource;
@@ -344,20 +320,15 @@ ResourceProvider::ResourceId ResourceProvider::CreateResourceFromTextureMailbox(
   DCHECK(mailbox.IsValid());
   Resource& resource = resources_[id];
   if (mailbox.IsTexture()) {
-    resource = Resource(0,
-                        gfx::Size(),
-                        GL_LINEAR,
-                        0,
-                        GL_CLAMP_TO_EDGE,
-                        TextureUsageAny,
-                        RGBA_8888);
+    resource = Resource(0, gfx::Size(), 0, GL_LINEAR, 0, GL_CLAMP_TO_EDGE,
+                        TextureUsageAny);
   } else {
     DCHECK(mailbox.IsSharedMemory());
     base::SharedMemory* shared_memory = mailbox.shared_memory();
     DCHECK(shared_memory->memory());
     uint8_t* pixels = reinterpret_cast<uint8_t*>(shared_memory->memory());
-    resource = Resource(
-        pixels, mailbox.shared_memory_size(), GL_LINEAR, GL_CLAMP_TO_EDGE);
+    resource = Resource(pixels, mailbox.shared_memory_size(),
+                        GL_RGBA, GL_LINEAR, GL_CLAMP_TO_EDGE);
   }
   resource.external = true;
   resource.allocated = true;
@@ -477,7 +448,7 @@ void ResourceProvider::SetPixels(ResourceId id,
 
   if (resource->pixels) {
     DCHECK(resource->allocated);
-    DCHECK_EQ(RGBA_8888, resource->format);
+    DCHECK(resource->format == GL_RGBA);
     SkBitmap src_full;
     src_full.setConfig(
         SkBitmap::kARGB_8888_Config, image_rect.width(), image_rect.height());
@@ -701,7 +672,7 @@ ResourceProvider::ScopedWriteLockGL::~ScopedWriteLockGL() {
 void ResourceProvider::PopulateSkBitmapWithResource(
     SkBitmap* sk_bitmap, const Resource* resource) {
   DCHECK(resource->pixels);
-  DCHECK_EQ(RGBA_8888, resource->format);
+  DCHECK(resource->format == GL_RGBA);
   sk_bitmap->setConfig(SkBitmap::kARGB_8888_Config,
                        resource->size.width(),
                        resource->size.height());
@@ -736,8 +707,7 @@ ResourceProvider::ScopedWriteLockSoftware::~ScopedWriteLockSoftware() {
 }
 
 ResourceProvider::ResourceProvider(OutputSurface* output_surface,
-                                   int highp_threshold_min,
-                                   bool use_rgba_4444_texture_format)
+                                   int highp_threshold_min)
     : output_surface_(output_surface),
       lost_output_surface_(false),
       highp_threshold_min_(highp_threshold_min),
@@ -748,8 +718,7 @@ ResourceProvider::ResourceProvider(OutputSurface* output_surface,
       use_texture_usage_hint_(false),
       use_shallow_flush_(false),
       max_texture_size_(0),
-      best_texture_format_(RGBA_8888),
-      use_rgba_4444_texture_format_(use_rgba_4444_texture_format) {
+      best_texture_format_(0) {
   DCHECK(output_surface_->HasClient());
 }
 
@@ -761,7 +730,7 @@ void ResourceProvider::InitializeSoftware() {
 
   default_resource_type_ = Bitmap;
   max_texture_size_ = INT_MAX / 2;
-  best_texture_format_ = RGBA_8888;
+  best_texture_format_ = GL_RGBA;
 }
 
 bool ResourceProvider::InitializeGL() {
@@ -962,16 +931,10 @@ void ResourceProvider::ReceiveFromChild(
     GLC(context3d, context3d->bindTexture(GL_TEXTURE_2D, texture_id));
     GLC(context3d, context3d->consumeTextureCHROMIUM(GL_TEXTURE_2D,
                                                      it->mailbox.name));
-
     ResourceId id = next_id_++;
     Resource resource(
-        texture_id,
-        it->size,
-        it->filter,
-        0,
-        GL_CLAMP_TO_EDGE,
-        TextureUsageAny,
-        it->format);
+        texture_id, it->size, it->format, it->filter, 0, GL_CLAMP_TO_EDGE,
+        TextureUsageAny);
     resource.mailbox.SetName(it->mailbox);
     // Don't allocate a texture for a child.
     resource.allocated = true;
@@ -1060,11 +1023,9 @@ void ResourceProvider::AcquirePixelBuffer(ResourceId id) {
     context3d->bindBuffer(
         GL_PIXEL_UNPACK_TRANSFER_BUFFER_CHROMIUM,
         resource->gl_pixel_buffer_id);
-    unsigned bytes_per_pixel = BytesPerPixel(resource->format);
     context3d->bufferData(
         GL_PIXEL_UNPACK_TRANSFER_BUFFER_CHROMIUM,
-        resource->size.height() * RoundUp(bytes_per_pixel
-            * resource->size.width(), 4u),
+        4 * resource->size.GetArea(),
         NULL,
         GL_DYNAMIC_DRAW);
     context3d->bindBuffer(GL_PIXEL_UNPACK_TRANSFER_BUFFER_CHROMIUM, 0);
@@ -1240,27 +1201,25 @@ void ResourceProvider::BeginSetPixels(ResourceId id) {
         GL_ASYNC_PIXEL_UNPACK_COMPLETED_CHROMIUM,
         resource->gl_upload_query_id);
     if (allocate) {
-      context3d->asyncTexImage2DCHROMIUM(
-          GL_TEXTURE_2D,
-          0, /* level */
-          GetGLInternalFormat(resource->format),
-          resource->size.width(),
-          resource->size.height(),
-          0, /* border */
-          GetGLDataFormat(resource->format),
-          GetGLDataType(resource->format),
-          NULL);
+      context3d->asyncTexImage2DCHROMIUM(GL_TEXTURE_2D,
+                                         0, /* level */
+                                         resource->format,
+                                         resource->size.width(),
+                                         resource->size.height(),
+                                         0, /* border */
+                                         resource->format,
+                                         GL_UNSIGNED_BYTE,
+                                         NULL);
     } else {
-      context3d->asyncTexSubImage2DCHROMIUM(
-          GL_TEXTURE_2D,
-          0, /* level */
-          0, /* x */
-          0, /* y */
-          resource->size.width(),
-          resource->size.height(),
-          GetGLDataFormat(resource->format),
-          GetGLDataType(resource->format),
-          NULL);
+      context3d->asyncTexSubImage2DCHROMIUM(GL_TEXTURE_2D,
+                                            0, /* level */
+                                            0, /* x */
+                                            0, /* y */
+                                            resource->size.width(),
+                                            resource->size.height(),
+                                            resource->format,
+                                            GL_UNSIGNED_BYTE,
+                                            NULL);
     }
     context3d->endQueryEXT(GL_ASYNC_PIXEL_UNPACK_COMPLETED_CHROMIUM);
     context3d->bindBuffer(GL_PIXEL_UNPACK_TRANSFER_BUFFER_CHROMIUM, 0);
@@ -1269,7 +1228,7 @@ void ResourceProvider::BeginSetPixels(ResourceId id) {
   if (resource->pixels) {
     DCHECK(!resource->mailbox.IsValid());
     DCHECK(resource->pixel_buffer);
-    DCHECK_EQ(RGBA_8888, resource->format);
+    DCHECK(resource->format == GL_RGBA);
 
     std::swap(resource->pixels, resource->pixel_buffer);
     delete[] resource->pixel_buffer;
@@ -1375,9 +1334,9 @@ void ResourceProvider::LazyAllocate(Resource* resource) {
   resource->allocated = true;
   WebGraphicsContext3D* context3d = Context3d();
   gfx::Size& size = resource->size;
-  ResourceFormat format = resource->format;
+  GLenum format = resource->format;
   GLC(context3d, context3d->bindTexture(GL_TEXTURE_2D, resource->gl_id));
-  if (use_texture_storage_ext_ && IsFormatSupportedForStorage(format)) {
+  if (use_texture_storage_ext_ && IsTextureFormatSupportedForStorage(format)) {
     GLenum storage_format = TextureToStorageFormat(format);
     GLC(context3d, context3d->texStorage2DEXT(GL_TEXTURE_2D,
                                               1,
@@ -1387,12 +1346,12 @@ void ResourceProvider::LazyAllocate(Resource* resource) {
   } else {
     GLC(context3d, context3d->texImage2D(GL_TEXTURE_2D,
                                          0,
-                                         GetGLInternalFormat(format),
+                                         format,
                                          size.width(),
                                          size.height(),
                                          0,
-                                         GetGLDataFormat(format),
-                                         GetGLDataType(format),
+                                         format,
+                                         GL_UNSIGNED_BYTE,
                                          NULL));
   }
 }
@@ -1417,7 +1376,7 @@ void ResourceProvider::AcquireImage(ResourceId id) {
   resource->allocated = true;
   WebGraphicsContext3D* context3d = Context3d();
   DCHECK(context3d);
-  DCHECK_EQ(RGBA_8888, resource->format);
+  DCHECK_EQ(static_cast<GLenum>(GL_RGBA), resource->format);
   resource->image_id = context3d->createImageCHROMIUM(
       resource->size.width(), resource->size.height(), GL_RGBA8_OES);
   DCHECK(resource->image_id);
@@ -1495,64 +1454,6 @@ GLint ResourceProvider::GetActiveTextureUnit(WebGraphicsContext3D* context) {
 WebKit::WebGraphicsContext3D* ResourceProvider::Context3d() const {
   ContextProvider* context_provider = output_surface_->context_provider();
   return context_provider ? context_provider->Context3d() : NULL;
-}
-
-size_t ResourceProvider::BytesPerPixel(ResourceFormat format) {
-  size_t components_per_pixel = 0;
-  switch (format) {
-    case RGBA_8888:
-    case RGBA_4444:
-    case BGRA_8888:
-      components_per_pixel = 4;
-      break;
-    case LUMINANCE_8:
-      components_per_pixel = 1;
-      break;
-  }
-  size_t bits_per_component = 0;
-  switch (format) {
-    case RGBA_8888:
-    case BGRA_8888:
-    case LUMINANCE_8:
-      bits_per_component = 8;
-      break;
-    case RGBA_4444:
-      bits_per_component = 4;
-      break;
-  }
-  const size_t kBitsPerByte = 8;
-  return (components_per_pixel * bits_per_component) / kBitsPerByte;
-}
-
-GLenum ResourceProvider::GetGLDataType(ResourceFormat format) {
-  switch (format) {
-    case RGBA_4444:
-      return GL_UNSIGNED_SHORT_4_4_4_4;
-    case RGBA_8888:
-    case BGRA_8888:
-    case LUMINANCE_8:
-      return GL_UNSIGNED_BYTE;
-  }
-  NOTREACHED();
-  return GL_UNSIGNED_BYTE;
-}
-
-GLenum ResourceProvider::GetGLDataFormat(ResourceFormat format) {
-  switch (format) {
-    case RGBA_8888:
-    case RGBA_4444:
-      return GL_RGBA;
-    case BGRA_8888:
-      return GL_BGRA_EXT;
-    case LUMINANCE_8:
-      return GL_LUMINANCE;
-  }
-  NOTREACHED();
-  return GL_RGBA;
-}
-
-GLenum ResourceProvider::GetGLInternalFormat(ResourceFormat format) {
-  return GetGLDataFormat(format);
 }
 
 }  // namespace cc

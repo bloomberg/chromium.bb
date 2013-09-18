@@ -40,9 +40,9 @@ class PerfRasterWorkerPool : public RasterWorkerPool {
   virtual void ScheduleTasks(RasterTask::Queue* queue) OVERRIDE {
     NOTREACHED();
   }
-  virtual ResourceFormat GetResourceFormat() const OVERRIDE {
+  virtual GLenum GetResourceFormat() const OVERRIDE {
     NOTREACHED();
-    return RGBA_8888;
+    return GL_RGBA;
   }
   virtual void OnRasterTasksFinished() OVERRIDE {
     NOTREACHED();

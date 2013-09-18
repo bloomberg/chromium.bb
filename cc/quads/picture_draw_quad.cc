@@ -6,7 +6,6 @@
 
 #include "base/values.h"
 #include "cc/base/math_util.h"
-#include "cc/resources/platform_color.h"
 
 namespace cc {
 
@@ -25,24 +24,18 @@ void PictureDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                              gfx::Rect opaque_rect,
                              const gfx::RectF& tex_coord_rect,
                              gfx::Size texture_size,
-                             ResourceFormat texture_format,
+                             bool swizzle_contents,
                              gfx::Rect content_rect,
                              float contents_scale,
                              bool can_draw_direct_to_backbuffer,
                              scoped_refptr<PicturePileImpl> picture_pile) {
-  ContentDrawQuadBase::SetNew(shared_quad_state,
-                              DrawQuad::PICTURE_CONTENT,
-                              rect,
-                              opaque_rect,
-                              tex_coord_rect,
-                              texture_size,
-                              !PlatformColor::SameComponentOrder(
-                                  texture_format));
+  ContentDrawQuadBase::SetNew(shared_quad_state, DrawQuad::PICTURE_CONTENT,
+                              rect, opaque_rect, tex_coord_rect, texture_size,
+                              swizzle_contents);
   this->content_rect = content_rect;
   this->contents_scale = contents_scale;
   this->can_draw_direct_to_backbuffer = can_draw_direct_to_backbuffer;
   this->picture_pile = picture_pile;
-  this->texture_format = texture_format;
 }
 
 void PictureDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
@@ -52,26 +45,19 @@ void PictureDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
                              bool needs_blending,
                              const gfx::RectF& tex_coord_rect,
                              gfx::Size texture_size,
-                             ResourceFormat texture_format,
+                             bool swizzle_contents,
                              gfx::Rect content_rect,
                              float contents_scale,
                              bool can_draw_direct_to_backbuffer,
                              scoped_refptr<PicturePileImpl> picture_pile) {
   ContentDrawQuadBase::SetAll(shared_quad_state,
-                              DrawQuad::PICTURE_CONTENT,
-                              rect,
-                              opaque_rect,
-                              visible_rect,
-                              needs_blending,
-                              tex_coord_rect,
-                              texture_size,
-                              !PlatformColor::SameComponentOrder(
-                                  texture_format));
+                              DrawQuad::PICTURE_CONTENT, rect, opaque_rect,
+                              visible_rect, needs_blending, tex_coord_rect,
+                              texture_size, swizzle_contents);
   this->content_rect = content_rect;
   this->contents_scale = contents_scale;
   this->can_draw_direct_to_backbuffer = can_draw_direct_to_backbuffer;
   this->picture_pile = picture_pile;
-  this->texture_format = texture_format;
 }
 
 void PictureDrawQuad::IterateResources(
@@ -91,7 +77,6 @@ void PictureDrawQuad::ExtendValue(base::DictionaryValue* value) const {
   value->SetDouble("contents_scale", contents_scale);
   value->SetBoolean("can_draw_direct_to_backbuffer",
                     can_draw_direct_to_backbuffer);
-  value->SetInteger("texture_format", texture_format);
   // TODO(piman): picture_pile?
 }
 

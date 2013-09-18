@@ -41,7 +41,6 @@ CC_EXPORT extern const char kEnablePartialSwap[];
 CC_EXPORT extern const char kStrictLayerPropertyChangeChecking[];
 CC_EXPORT extern const char kEnableMapImage[];
 CC_EXPORT extern const char kDisableMapImage[];
-CC_EXPORT extern const char kDisable4444Textures[];
 
 // Switches for both the renderer and ui compositors.
 CC_EXPORT extern const char kUIDisablePartialSwap[];

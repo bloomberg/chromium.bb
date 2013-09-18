@@ -15,21 +15,23 @@ namespace cc {
 class CC_EXPORT Resource {
  public:
   Resource() : id_(0) {}
-  Resource(unsigned id, gfx::Size size, ResourceFormat format)
+  Resource(unsigned id, gfx::Size size, GLenum format)
       : id_(id),
         size_(size),
         format_(format) {}
 
   ResourceProvider::ResourceId id() const { return id_; }
   gfx::Size size() const { return size_; }
-  ResourceFormat format() const { return format_; }
+  GLenum format() const { return format_; }
+
   size_t bytes() const;
 
-  static size_t MemorySizeBytes(gfx::Size size, ResourceFormat format);
+  static size_t BytesPerPixel(GLenum format);
+  static size_t MemorySizeBytes(gfx::Size size, GLenum format);
 
  protected:
   void set_id(ResourceProvider::ResourceId id) { id_ = id; }
-  void set_dimensions(gfx::Size size, ResourceFormat format) {
+  void set_dimensions(gfx::Size size, GLenum format) {
     size_ = size;
     format_ = format;
   }
@@ -37,7 +39,7 @@ class CC_EXPORT Resource {
  private:
   ResourceProvider::ResourceId id_;
   gfx::Size size_;
-  ResourceFormat format_;
+  GLenum format_;
 
   DISALLOW_COPY_AND_ASSIGN(Resource);
 };

@@ -19,7 +19,6 @@
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface.h"
 #include "cc/resources/release_callback.h"
-#include "cc/resources/resource_format.h"
 #include "cc/resources/single_release_callback.h"
 #include "cc/resources/texture_mailbox.h"
 #include "cc/resources/transferable_resource.h"
@@ -57,8 +56,8 @@ class CC_EXPORT ResourceProvider {
   };
 
   static scoped_ptr<ResourceProvider> Create(OutputSurface* output_surface,
-                                             int highp_threshold_min,
-                                             bool use_rgba_4444_texture_format);
+                                             int highp_threshold_min);
+
   virtual ~ResourceProvider();
 
   void InitializeSoftware();
@@ -67,10 +66,7 @@ class CC_EXPORT ResourceProvider {
   void DidLoseOutputSurface() { lost_output_surface_ = true; }
 
   int max_texture_size() const { return max_texture_size_; }
-  ResourceFormat memory_efficient_texture_format() const {
-    return use_rgba_4444_texture_format_ ? RGBA_4444 : best_texture_format_;
-  }
-  ResourceFormat best_texture_format() const { return best_texture_format_; }
+  GLenum best_texture_format() const { return best_texture_format_; }
   size_t num_resources() const { return resources_.size(); }
 
   // Checks whether a resource is in use by a consumer.
@@ -84,23 +80,23 @@ class CC_EXPORT ResourceProvider {
 
   // Creates a resource of the default resource type.
   ResourceId CreateResource(gfx::Size size,
+                            GLenum format,
                             GLint wrap_mode,
-                            TextureUsageHint hint,
-                            ResourceFormat format);
+                            TextureUsageHint hint);
 
   // Creates a resource which is tagged as being managed for GPU memory
   // accounting purposes.
   ResourceId CreateManagedResource(gfx::Size size,
+                                   GLenum format,
                                    GLint wrap_mode,
-                                   TextureUsageHint hint,
-                                   ResourceFormat format);
+                                   TextureUsageHint hint);
 
   // You can also explicitly create a specific resource type.
   ResourceId CreateGLTexture(gfx::Size size,
+                             GLenum format,
                              GLenum texture_pool,
                              GLint wrap_mode,
-                             TextureUsageHint hint,
-                             ResourceFormat format);
+                             TextureUsageHint hint);
 
   ResourceId CreateBitmap(gfx::Size size);
   // Wraps an external texture into a GL resource.
@@ -338,10 +334,6 @@ class CC_EXPORT ResourceProvider {
   bool CanLockForWrite(ResourceId id);
 
   static GLint GetActiveTextureUnit(WebKit::WebGraphicsContext3D* context);
-  static size_t BytesPerPixel(ResourceFormat format);
-  static GLenum GetGLDataType(ResourceFormat format);
-  static GLenum GetGLDataFormat(ResourceFormat format);
-  static GLenum GetGLInternalFormat(ResourceFormat format);
 
  private:
   struct Resource {
@@ -349,13 +341,14 @@ class CC_EXPORT ResourceProvider {
     ~Resource();
     Resource(unsigned texture_id,
              gfx::Size size,
+             GLenum format,
              GLenum filter,
              GLenum texture_pool,
              GLint wrap_mode,
-             TextureUsageHint hint,
-             ResourceFormat format);
+             TextureUsageHint hint);
     Resource(uint8_t* pixels,
              gfx::Size size,
+             GLenum format,
              GLenum filter,
              GLint wrap_mode);
 
@@ -380,6 +373,7 @@ class CC_EXPORT ResourceProvider {
     bool enable_read_lock_fences;
     scoped_refptr<Fence> read_lock_fence;
     gfx::Size size;
+    GLenum format;
     // TODO(skyostil): Use a separate sampler object for filter state.
     GLenum original_filter;
     GLenum filter;
@@ -389,7 +383,6 @@ class CC_EXPORT ResourceProvider {
     GLint wrap_mode;
     TextureUsageHint hint;
     ResourceType type;
-    ResourceFormat format;
   };
   typedef base::hash_map<ResourceId, Resource> ResourceMap;
   struct Child {
@@ -406,9 +399,8 @@ class CC_EXPORT ResourceProvider {
            resource->read_lock_fence->HasPassed();
   }
 
-  ResourceProvider(OutputSurface* output_surface,
-                   int highp_threshold_min,
-                   bool use_rgba_4444_texture_format);
+  explicit ResourceProvider(OutputSurface* output_surface,
+                            int highp_threshold_min);
 
   void CleanUpGLIfNeeded();
 
@@ -459,12 +451,11 @@ class CC_EXPORT ResourceProvider {
   bool use_shallow_flush_;
   scoped_ptr<TextureUploader> texture_uploader_;
   int max_texture_size_;
-  ResourceFormat best_texture_format_;
+  GLenum best_texture_format_;
 
   base::ThreadChecker thread_checker_;
 
   scoped_refptr<Fence> current_read_lock_fence_;
-  bool use_rgba_4444_texture_format_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceProvider);
 };

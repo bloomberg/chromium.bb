@@ -94,9 +94,8 @@ bool HeadsUpDisplayLayerImpl::WillDraw(DrawMode draw_mode,
     hud_resource_->Free();
 
   if (!hud_resource_->id()) {
-    hud_resource_->Allocate(content_bounds(),
-                            ResourceProvider::TextureUsageAny,
-                            RGBA_8888);
+    hud_resource_->Allocate(
+        content_bounds(), GL_RGBA, ResourceProvider::TextureUsageAny);
   }
 
   return LayerImpl::WillDraw(draw_mode, resource_provider);

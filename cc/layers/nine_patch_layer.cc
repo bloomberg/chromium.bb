@@ -40,9 +40,10 @@ void NinePatchLayer::SetTexturePriorities(
   if (resource_) {
     resource_->texture()->set_request_priority(
         PriorityCalculator::UIPriority(true));
+    GLenum texture_format =
+        layer_tree_host()->GetRendererCapabilities().best_texture_format;
     resource_->texture()->SetDimensions(
-        gfx::Size(bitmap_.width(), bitmap_.height()),
-        layer_tree_host()->GetRendererCapabilities().best_texture_format);
+        gfx::Size(bitmap_.width(), bitmap_.height()), texture_format);
   }
 }
 

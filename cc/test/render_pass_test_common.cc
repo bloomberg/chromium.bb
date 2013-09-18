@@ -36,51 +36,51 @@ void TestRenderPass::AppendOneOfEveryQuadType(
   cc::ResourceProvider::ResourceId resource1 =
       resource_provider->CreateResource(
           gfx::Size(45, 5),
+          resource_provider->best_texture_format(),
           GL_CLAMP_TO_EDGE,
-          ResourceProvider::TextureUsageAny,
-          resource_provider->best_texture_format());
+          ResourceProvider::TextureUsageAny);
   resource_provider->AllocateForTesting(resource1);
   cc::ResourceProvider::ResourceId resource2 =
       resource_provider->CreateResource(
           gfx::Size(346, 61),
+          resource_provider->best_texture_format(),
           GL_CLAMP_TO_EDGE,
-          ResourceProvider::TextureUsageAny,
-          resource_provider->best_texture_format());
+          ResourceProvider::TextureUsageAny);
   resource_provider->AllocateForTesting(resource2);
   cc::ResourceProvider::ResourceId resource3 =
       resource_provider->CreateResource(
           gfx::Size(12, 134),
+          resource_provider->best_texture_format(),
           GL_CLAMP_TO_EDGE,
-          ResourceProvider::TextureUsageAny,
-          resource_provider->best_texture_format());
+          ResourceProvider::TextureUsageAny);
   resource_provider->AllocateForTesting(resource3);
   cc::ResourceProvider::ResourceId resource4 =
       resource_provider->CreateResource(
           gfx::Size(56, 12),
+          resource_provider->best_texture_format(),
           GL_CLAMP_TO_EDGE,
-          ResourceProvider::TextureUsageAny,
-          resource_provider->best_texture_format());
+          ResourceProvider::TextureUsageAny);
   resource_provider->AllocateForTesting(resource4);
   cc::ResourceProvider::ResourceId resource5 =
       resource_provider->CreateResource(
           gfx::Size(73, 26),
+          resource_provider->best_texture_format(),
           GL_CLAMP_TO_EDGE,
-          ResourceProvider::TextureUsageAny,
-          resource_provider->best_texture_format());
+          ResourceProvider::TextureUsageAny);
   resource_provider->AllocateForTesting(resource5);
   cc::ResourceProvider::ResourceId resource6 =
       resource_provider->CreateResource(
           gfx::Size(64, 92),
+          resource_provider->best_texture_format(),
           GL_CLAMP_TO_EDGE,
-          ResourceProvider::TextureUsageAny,
-          resource_provider->best_texture_format());
+          ResourceProvider::TextureUsageAny);
   resource_provider->AllocateForTesting(resource6);
   cc::ResourceProvider::ResourceId resource7 =
       resource_provider->CreateResource(
           gfx::Size(9, 14),
+          resource_provider->best_texture_format(),
           GL_CLAMP_TO_EDGE,
-          ResourceProvider::TextureUsageAny,
-          resource_provider->best_texture_format());
+          ResourceProvider::TextureUsageAny);
   resource_provider->AllocateForTesting(resource7);
 
   scoped_ptr<cc::SharedQuadState> shared_state = cc::SharedQuadState::Create();
@@ -220,9 +220,9 @@ void TestRenderPass::AppendOneOfEveryQuadType(
     plane_resources[i] =
         resource_provider->CreateResource(
             gfx::Size(20, 12),
+            resource_provider->best_texture_format(),
             GL_CLAMP_TO_EDGE,
-            ResourceProvider::TextureUsageAny,
-            resource_provider->best_texture_format());
+            ResourceProvider::TextureUsageAny);
     resource_provider->AllocateForTesting(plane_resources[i]);
   }
   scoped_ptr<cc::YUVVideoDrawQuad> yuv_quad =

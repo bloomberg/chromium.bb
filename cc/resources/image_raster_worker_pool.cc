@@ -34,10 +34,14 @@ class ImageWorkerPoolTaskImpl : public internal::WorkerPoolTask {
     if (!buffer_)
       return;
 
-    task_->RunOnWorkerThread(thread_index,
-                             buffer_,
-                             task_->resource()->size(),
-                             stride_);
+    SkBitmap bitmap;
+    bitmap.setConfig(SkBitmap::kARGB_8888_Config,
+                     task_->resource()->size().width(),
+                     task_->resource()->size().height(),
+                     stride_);
+    bitmap.setPixels(buffer_);
+    SkBitmapDevice device(bitmap);
+    task_->RunOnWorkerThread(&device, thread_index);
   }
   virtual void CompleteOnOriginThread() OVERRIDE {
     reply_.Run(!HasFinishedRunning());
@@ -152,9 +156,8 @@ void ImageRasterWorkerPool::ScheduleTasks(RasterTask::Queue* queue) {
       "state", TracedValue::FromValue(StateAsValue().release()));
 }
 
-ResourceFormat ImageRasterWorkerPool::GetResourceFormat() const {
-  // Only format supported by CHROMIUM_map_image
-  return RGBA_8888;
+GLenum ImageRasterWorkerPool::GetResourceFormat() const {
+  return GL_RGBA;  // Only format supported by CHROMIUM_map_image
 }
 
 void ImageRasterWorkerPool::OnRasterTasksFinished() {

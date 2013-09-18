@@ -71,7 +71,7 @@ FakeTiledLayer::FakeTiledLayer(PrioritizedResourceManager* resource_manager)
       fake_updater_(make_scoped_refptr(new FakeLayerUpdater)),
       resource_manager_(resource_manager) {
   SetTileSize(tile_size());
-  SetTextureFormat(RGBA_8888);
+  SetTextureFormat(GL_RGBA);
   SetBorderTexelOption(LayerTilingData::NO_BORDER_TEXELS);
   // So that we don't get false positives if any of these
   // tests expect to return false from DrawsContent() for other reasons.

@@ -136,7 +136,7 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
                  opaque_rect,
                  texture_rect,
                  texture_size,
-                 RGBA_8888,
+                 false,
                  quad_content_rect,
                  contents_scale,
                  draw_direct_to_backbuffer,
@@ -248,17 +248,17 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
         gfx::Rect opaque_rect = iter->opaque_rect();
         opaque_rect.Intersect(content_rect);
 
-        ResourceProvider* resource_provider =
-            layer_tree_impl()->resource_provider();
-        ResourceFormat format =
-            resource_provider->memory_efficient_texture_format();
         scoped_ptr<PictureDrawQuad> quad = PictureDrawQuad::Create();
         quad->SetNew(shared_quad_state,
                      geometry_rect,
                      opaque_rect,
                      texture_rect,
                      iter.texture_size(),
-                     format,
+                     // TODO(reveman): This assumes the renderer will use
+                     // GL_RGBA as format of temporary resource. The need
+                     // to swizzle should instead be determined by the
+                     // renderer.
+                     !PlatformColor::SameComponentOrder(GL_RGBA),
                      iter->content_rect(),
                      iter->contents_scale(),
                      draw_direct_to_backbuffer,

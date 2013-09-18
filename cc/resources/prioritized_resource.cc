@@ -15,7 +15,7 @@ namespace cc {
 
 PrioritizedResource::PrioritizedResource(PrioritizedResourceManager* manager,
                                          gfx::Size size,
-                                         ResourceFormat format)
+                                         GLenum format)
     : size_(size),
       format_(format),
       bytes_(0),
@@ -25,7 +25,10 @@ PrioritizedResource::PrioritizedResource(PrioritizedResourceManager* manager,
       is_self_managed_(false),
       backing_(NULL),
       manager_(NULL) {
-  bytes_ = Resource::MemorySizeBytes(size, format);
+  // manager_ is set in RegisterTexture() so validity can be checked.
+  DCHECK(format || size.IsEmpty());
+  if (format)
+    bytes_ = Resource::MemorySizeBytes(size, format);
   if (manager)
     manager->RegisterTexture(this);
 }
@@ -45,7 +48,7 @@ void PrioritizedResource::SetTextureManager(
     manager->RegisterTexture(this);
 }
 
-void PrioritizedResource::SetDimensions(gfx::Size size, ResourceFormat format) {
+void PrioritizedResource::SetDimensions(gfx::Size size, GLenum format) {
   if (format_ != format || size_ != size) {
     is_above_priority_cutoff_ = false;
     format_ = format;
@@ -110,7 +113,7 @@ void PrioritizedResource::Unlink() {
 }
 
 void PrioritizedResource::SetToSelfManagedMemoryPlaceholder(size_t bytes) {
-  SetDimensions(gfx::Size(), RGBA_8888);
+  SetDimensions(gfx::Size(), GL_RGBA);
   set_is_self_managed(true);
   bytes_ = bytes;
 }
@@ -118,7 +121,7 @@ void PrioritizedResource::SetToSelfManagedMemoryPlaceholder(size_t bytes) {
 PrioritizedResource::Backing::Backing(unsigned id,
                                       ResourceProvider* resource_provider,
                                       gfx::Size size,
-                                      ResourceFormat format)
+                                      GLenum format)
     : Resource(id, size, format),
       owner_(NULL),
       priority_at_last_priority_update_(PriorityCalculator::LowestPriority()),

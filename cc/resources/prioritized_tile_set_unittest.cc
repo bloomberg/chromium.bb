@@ -56,8 +56,8 @@ class PrioritizedTileSetTest : public testing::Test {
     output_surface_ = FakeOutputSurface::Create3d().Pass();
     CHECK(output_surface_->BindToClient(&output_surface_client_));
 
-    resource_provider_ =
-        ResourceProvider::Create(output_surface_.get(), 0, false).Pass();
+    resource_provider_ = ResourceProvider::Create(output_surface_.get(),
+                                                  0).Pass();
     tile_manager_.reset(new FakeTileManager(&tile_manager_client_,
                                             resource_provider_.get()));
     picture_pile_ = FakePicturePileImpl::CreatePile();

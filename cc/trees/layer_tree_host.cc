@@ -47,7 +47,7 @@ static int s_num_layer_tree_instances;
 namespace cc {
 
 RendererCapabilities::RendererCapabilities()
-    : best_texture_format(RGBA_8888),
+    : best_texture_format(0),
       using_partial_swap(false),
       using_set_visibility(false),
       using_egl_image(false),
@@ -197,7 +197,7 @@ LayerTreeHost::OnCreateAndInitializeOutputSurfaceAttempted(bool success) {
       contents_texture_manager_ =
           PrioritizedResourceManager::Create(proxy_.get());
       surface_memory_placeholder_ =
-          contents_texture_manager_->CreateTexture(gfx::Size(), RGBA_8888);
+          contents_texture_manager_->CreateTexture(gfx::Size(), GL_RGBA);
     }
 
     client_->DidInitializeOutputSurface(true);
@@ -930,7 +930,7 @@ size_t LayerTreeHost::CalculateMemoryForRenderSurfaces(
 
     size_t bytes =
         Resource::MemorySizeBytes(render_surface->content_rect().size(),
-                                  RGBA_8888);
+                                  GL_RGBA);
     contents_texture_bytes += bytes;
 
     if (render_surface_layer->background_filters().IsEmpty())
@@ -940,7 +940,7 @@ size_t LayerTreeHost::CalculateMemoryForRenderSurfaces(
       max_background_texture_bytes = bytes;
     if (!readback_bytes) {
       readback_bytes = Resource::MemorySizeBytes(device_viewport_size_,
-                                                 RGBA_8888);
+                                                 GL_RGBA);
     }
   }
   return readback_bytes + max_background_texture_bytes + contents_texture_bytes;

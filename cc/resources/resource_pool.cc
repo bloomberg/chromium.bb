@@ -10,12 +10,12 @@ namespace cc {
 
 ResourcePool::Resource::Resource(cc::ResourceProvider* resource_provider,
                                  gfx::Size size,
-                                 ResourceFormat format)
+                                 GLenum format)
     : cc::Resource(resource_provider->CreateManagedResource(
                        size,
+                       format,
                        GL_CLAMP_TO_EDGE,
-                       ResourceProvider::TextureUsageAny,
-                       format),
+                       ResourceProvider::TextureUsageAny),
                    size,
                    format),
       resource_provider_(resource_provider) {
@@ -43,7 +43,7 @@ ResourcePool::~ResourcePool() {
 }
 
 scoped_ptr<ResourcePool::Resource> ResourcePool::AcquireResource(
-    gfx::Size size, ResourceFormat format) {
+    gfx::Size size, GLenum format) {
   for (ResourceList::iterator it = unused_resources_.begin();
        it != unused_resources_.end(); ++it) {
     Resource* resource = *it;
