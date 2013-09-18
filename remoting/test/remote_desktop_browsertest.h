@@ -49,10 +49,7 @@ class RemoteDesktopBrowserTest : public ExtensionBrowserTest {
   // InProcessBrowserTest Overrides
   virtual void TearDownInProcessBrowserTestFixture() OVERRIDE;
 
-
-  /*                                                    */
-  /* The following helpers each perform a simple task.  */
-  /*                                                    */
+  // The following helpers each perform a simple task.
 
   // Verify the test has access to the internet (specifically google.com)
   void VerifyInternetAccess();
@@ -91,10 +88,7 @@ class RemoteDesktopBrowserTest : public ExtensionBrowserTest {
                                 bool alt,
                                 bool command);
 
-
-  /*                                                      */
-  /* The following helpers each perform a composite task. */
-  /*                                                      */
+  // The following helpers each perform a composite task.
 
   // Install the chromoting extension
   void Install();
@@ -127,10 +121,7 @@ class RemoteDesktopBrowserTest : public ExtensionBrowserTest {
 
   void ParseCommandLine();
 
-
-  /*                    */
-  /* Accessor methods.  */
-  /*                    */
+  // Accessor methods.
 
   // Helper to get the path to the crx file of the webapp to be tested.
   base::FilePath WebAppCrxPath() { return webapp_crx_; }
@@ -156,22 +147,20 @@ class RemoteDesktopBrowserTest : public ExtensionBrowserTest {
     return browser()->tab_strip_model()->GetActiveWebContents()->GetURL();
   }
 
-
-  /*                                                    */
-  /* Helpers to execute javascript code on a web page.  */
-  /*                                                    */
+  // Helpers to execute javascript code on a web page.
 
   // Helper to execute a javascript code snippet on the current page.
   void ExecuteScript(const std::string& script);
 
   // Helper to execute a javascript code snippet on the current page and
   // wait for page load to complete.
-  void ExecuteScriptAndWait(const std::string& script);
+  void ExecuteScriptAndWaitForAnyPageLoad(const std::string& script);
 
   // Helper to execute a javascript code snippet on the current page and
   // wait until the target url is loaded. This is used when the target page
   // is loaded after multiple redirections.
-  void ExecuteScriptAndWaitUntil(const std::string& script, const GURL& target);
+  void ExecuteScriptAndWaitForPageLoad(const std::string& script,
+                                       const GURL& target);
 
   // Helper to execute a javascript code snippet on the current page and
   // extract the boolean result.
@@ -186,7 +175,7 @@ class RemoteDesktopBrowserTest : public ExtensionBrowserTest {
   std::string ExecuteScriptAndExtractString(const std::string& script);
 
   // Helper to navigate to a given url.
-  void NavigateToURLAndWait(const GURL& url);
+  void NavigateToURLAndWaitForPageLoad(const GURL& url);
 
   // Helper to check whether an html element with the given name exists on
   // the current page.
@@ -204,10 +193,22 @@ class RemoteDesktopBrowserTest : public ExtensionBrowserTest {
   // Wait for the me2me connection to be established.
   void WaitForConnection();
 
+  // Checking whether the localHost has been initialized.
+  bool IsLocalHostReady();
 
-  /*        */
-  /* Fields */
-  /*        */
+  // Callback used by EnterPin to check whether the pin form is visible
+  // and to dismiss the host-needs-update dialog.
+  bool IsPinFormVisible();
+
+  // Callback used by WaitForConnection to check whether the connection
+  // has been established.
+  bool IsSessionConnected();
+
+  // Callback used by ExecuteScriptAndWaitForPageLoad to check whether
+  // the given page is currently loaded.
+  bool IsURLLoaded(const GURL& url);
+
+  // Fields
 
   // This test needs to make live DNS requests for access to
   // GAIA and sync server URLs under google.com. We use a scoped version

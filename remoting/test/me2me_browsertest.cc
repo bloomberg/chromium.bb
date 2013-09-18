@@ -6,7 +6,10 @@
 
 namespace remoting {
 
-IN_PROC_BROWSER_TEST_F(RemoteDesktopBrowserTest,
+class Me2MeBrowserTest : public RemoteDesktopBrowserTest {
+};
+
+IN_PROC_BROWSER_TEST_F(Me2MeBrowserTest,
                        MANUAL_Me2Me_Connect_Localhost) {
   VerifyInternetAccess();
 
@@ -20,8 +23,6 @@ IN_PROC_BROWSER_TEST_F(RemoteDesktopBrowserTest,
   StartMe2Me();
 
   ConnectToLocalHost();
-
-  EnterPin(me2me_pin());
 
   Cleanup();
 }

@@ -1199,6 +1199,8 @@
         '../remoting/test/me2me_browsertest.cc',
         '../remoting/test/remote_desktop_browsertest.cc',
         '../remoting/test/remote_desktop_browsertest.h',
+        '../remoting/test/waiter.cc',
+        '../remoting/test/waiter.h',
         'app/breakpad_mac_stubs.mm',
         'app/chrome_command_ids.h',
         'app/chrome_dll.rc',

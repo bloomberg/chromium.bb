@@ -12,6 +12,7 @@
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/test/test_utils.h"
+#include "remoting/test/waiter.h"
 
 using extensions::Extension;
 
@@ -40,7 +41,7 @@ void RemoteDesktopBrowserTest::TearDownInProcessBrowserTestFixture() {
 
 void RemoteDesktopBrowserTest::VerifyInternetAccess() {
   GURL google_url("http://www.google.com");
-  NavigateToURLAndWait(google_url);
+  NavigateToURLAndWaitForPageLoad(google_url);
 
   EXPECT_EQ(GetCurrentURL().host(), "www.google.com");
 }
@@ -111,7 +112,7 @@ void RemoteDesktopBrowserTest::LaunchChromotingApp() {
   ASSERT_FALSE(ChromotingID().empty());
 
   const GURL chromoting_main = Chromoting_Main_URL();
-  NavigateToURLAndWait(chromoting_main);
+  NavigateToURLAndWaitForPageLoad(chromoting_main);
 
   EXPECT_EQ(GetCurrentURL(), chromoting_main);
 }
@@ -126,7 +127,8 @@ void RemoteDesktopBrowserTest::Authorize() {
   ASSERT_FALSE(ExecuteScriptAndExtractBool(
       "remoting.OAuth2.prototype.isAuthenticated()"));
 
-  ExecuteScriptAndWait("remoting.OAuth2.prototype.doAuthRedirect();");
+  ExecuteScriptAndWaitForAnyPageLoad(
+      "remoting.OAuth2.prototype.doAuthRedirect();");
 
   // Verify the active tab is at the "Google Accounts" login page.
   EXPECT_EQ(GetCurrentURL().host(), "accounts.google.com");
@@ -144,14 +146,14 @@ void RemoteDesktopBrowserTest::Authenticate() {
   ASSERT_TRUE(HtmlElementExists("Passwd"));
 
   // Now log in using the username and password passed in from the command line.
-  ExecuteScriptAndWait(
+  ExecuteScriptAndWaitForAnyPageLoad(
       "document.getElementById(\"Email\").value = \"" + username_ + "\";" +
       "document.getElementById(\"Passwd\").value = \"" + password_ +"\";" +
       "document.forms[\"gaia_loginform\"].submit();");
 
   EXPECT_EQ(GetCurrentURL().host(), "accounts.google.com");
 
-  // TODO: Is there a better way to verify we are on the
+  // TODO(weitaosu): Is there a better way to verify we are on the
   // "Request for Permission" page?
   EXPECT_TRUE(HtmlElementExists("submit_approve_access"));
 }
@@ -168,7 +170,7 @@ void RemoteDesktopBrowserTest::Approve() {
   ASSERT_TRUE(HtmlElementExists("submit_approve_access"));
 
   const GURL chromoting_main = Chromoting_Main_URL();
-  ExecuteScriptAndWaitUntil(
+  ExecuteScriptAndWaitForPageLoad(
       "lso.approveButtonAction();"
       "document.forms[\"connect-approve\"].submit();",
       chromoting_main);
@@ -198,6 +200,19 @@ void RemoteDesktopBrowserTest::StartMe2Me() {
 
   EXPECT_TRUE(HtmlElementVisible("me2me-content"));
   EXPECT_FALSE(HtmlElementVisible("me2me-first-run"));
+
+  // Wait until localHost is initialized. This can take a while.
+  ConditionalTimeoutWaiter waiter(
+      base::TimeDelta::FromSeconds(5),
+      base::TimeDelta::FromSeconds(1),
+      base::Bind(&RemoteDesktopBrowserTest::IsLocalHostReady, this));
+  EXPECT_TRUE(waiter.Wait());
+
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      "remoting.hostList.localHost_.hostName && "
+      "remoting.hostList.localHost_.hostId && "
+      "remoting.hostList.localHost_.status && "
+      "remoting.hostList.localHost_.status == 'ONLINE'"));
 }
 
 void RemoteDesktopBrowserTest::SimulateKeyPressWithCode(
@@ -224,7 +239,7 @@ void RemoteDesktopBrowserTest::SimulateKeyPressWithCode(
 }
 
 void RemoteDesktopBrowserTest::Install() {
-  // TODO: add support for installing unpacked extension (the v2 app needs it).
+  // TODO(weitaosu): add support for unpacked extension (the v2 app needs it).
   if (!NoInstall()) {
     VerifyChromotingLoaded(false);
     InstallChromotingApp();
@@ -234,7 +249,8 @@ void RemoteDesktopBrowserTest::Install() {
 }
 
 void RemoteDesktopBrowserTest::Cleanup() {
-  // TODO: Remove this hack by blocking on the appropriate notification.
+  // TODO(weitaosu): Remove this hack by blocking on the appropriate
+  // notification.
   // The browser may still be loading images embedded in the webapp. If we
   // uinstall it now those load will fail. Navigating away to avoid the load
   // failures.
@@ -253,21 +269,20 @@ void RemoteDesktopBrowserTest::Auth() {
 }
 
 void RemoteDesktopBrowserTest::ConnectToLocalHost() {
-  // Wait until remoting.hostList.localHost_ is initialized.
-  // This can take a while.
-  // TODO: Instead of polling, can we register a callback to
-  // remoting.hostList.setLocalHost_?
-  while (ExecuteScriptAndExtractBool(
-      "remoting.hostList.localHost_ == null")) {
-  }
-
+  // Verify that the local host is online.
   ASSERT_TRUE(ExecuteScriptAndExtractBool(
       "remoting.hostList.localHost_.hostName && "
       "remoting.hostList.localHost_.hostId && "
       "remoting.hostList.localHost_.status && "
       "remoting.hostList.localHost_.status == 'ONLINE'"));
 
+  // Connect.
   ClickOnControl("this-host-connect");
+
+  // Enter the pin # passed in from the command line.
+  EnterPin(me2me_pin());
+
+  WaitForConnection();
 }
 
 void RemoteDesktopBrowserTest::EnableDNSLookupForThisTest(
@@ -329,7 +344,8 @@ void RemoteDesktopBrowserTest::ExecuteScript(const std::string& script) {
       browser()->tab_strip_model()->GetActiveWebContents(), script));
 }
 
-void RemoteDesktopBrowserTest::ExecuteScriptAndWait(const std::string& script) {
+void RemoteDesktopBrowserTest::ExecuteScriptAndWaitForAnyPageLoad(
+    const std::string& script) {
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<content::NavigationController>(
@@ -341,27 +357,16 @@ void RemoteDesktopBrowserTest::ExecuteScriptAndWait(const std::string& script) {
   observer.Wait();
 }
 
-void RemoteDesktopBrowserTest::ExecuteScriptAndWaitUntil(
+void RemoteDesktopBrowserTest::ExecuteScriptAndWaitForPageLoad(
     const std::string& script,
     const GURL& target) {
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
-      content::Source<content::NavigationController>(
-          &browser()->tab_strip_model()->GetActiveWebContents()->
-              GetController()));
+      base::Bind(&RemoteDesktopBrowserTest::IsURLLoaded, this, target));
 
   ExecuteScript(script);
 
   observer.Wait();
-
-  // TODO: is there a better way to wait for all the redirections to complete?
-  while (GetCurrentURL() != target) {
-    content::WindowedNotificationObserver(
-        content::NOTIFICATION_LOAD_STOP,
-        content::Source<content::NavigationController>(
-            &browser()->tab_strip_model()->GetActiveWebContents()->
-                GetController())).Wait();
-  }
 }
 
 bool RemoteDesktopBrowserTest::ExecuteScriptAndExtractBool(
@@ -398,7 +403,8 @@ std::string RemoteDesktopBrowserTest::ExecuteScriptAndExtractString(
 }
 
 // Helper to navigate to a given url.
-void RemoteDesktopBrowserTest::NavigateToURLAndWait(const GURL& url) {
+void RemoteDesktopBrowserTest::NavigateToURLAndWaitForPageLoad(
+    const GURL& url) {
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<content::NavigationController>(
@@ -419,33 +425,62 @@ void RemoteDesktopBrowserTest::ClickOnControl(const std::string& name) {
 void RemoteDesktopBrowserTest::EnterPin(const std::string& pin) {
   // Wait for the pin-form to be displayed. This can take a while.
   // We also need to dismiss the host-needs-update dialog if it comes up.
-  // TODO 1: Instead of polling, can we register a callback to be called
-  // when the pin-form is ready?
-  // TODO 2: Instead of blindly dismiss the host-needs-update dialog,
+  // TODO(weitaosu) 1: Instead of polling, can we register a callback to be
+  // called when the pin-form is ready?
+  // TODO(weitaosu) 2: Instead of blindly dismiss the host-needs-update dialog,
   // we should verify that it only pops up at the right circumstance. That
   // probably belongs in a separate test case though.
-  do {
-    if (HtmlElementVisible("host-needs-update-connect-button")) {
-      ClickOnControl("host-needs-update-connect-button");
-    }
-  } while (!HtmlElementVisible("pin-form"));
+  ConditionalTimeoutWaiter waiter(
+      base::TimeDelta::FromSeconds(3),
+      base::TimeDelta::FromSeconds(1),
+      base::Bind(&RemoteDesktopBrowserTest::IsPinFormVisible, this));
+  EXPECT_TRUE(waiter.Wait());
 
   ExecuteScript(
       "document.getElementById(\"pin-entry\").value = \"" + pin + "\";");
 
   ClickOnControl("pin-connect-button");
-
-  WaitForConnection();
 }
 
 void RemoteDesktopBrowserTest::WaitForConnection() {
   // Wait until the client has connected to the server.
   // This can take a while.
-  // TODO: Instead of polling, can we register a callback to
+  // TODO(weitaosu): Instead of polling, can we register a callback to
   // remoting.clientSession.onStageChange_?
-  while (ExecuteScriptAndExtractBool(
-      "remoting.clientSession == null")) {
-  }
+  ConditionalTimeoutWaiter waiter(
+      base::TimeDelta::FromSeconds(8),
+      base::TimeDelta::FromSeconds(1),
+      base::Bind(&RemoteDesktopBrowserTest::IsSessionConnected, this));
+  EXPECT_TRUE(waiter.Wait());
+
+  // The client is not yet ready to take input when the session state becomes
+  // CONNECTED. Wait for 3 seconds for the client to become ready.
+  // TODO(weitaosu): Find a way to detect when the client is truly ready.
+  TimeoutWaiter(base::TimeDelta::FromSeconds(3)).Wait();
+}
+
+bool RemoteDesktopBrowserTest::IsLocalHostReady() {
+  // TODO(weitaosu): Instead of polling, can we register a callback to
+  // remoting.hostList.setLocalHost_?
+  return ExecuteScriptAndExtractBool("remoting.hostList.localHost_ != null");
+}
+
+bool RemoteDesktopBrowserTest::IsSessionConnected() {
+  return ExecuteScriptAndExtractBool(
+      "remoting.clientSession != null && "
+      "remoting.clientSession.getState() == "
+      "remoting.ClientSession.State.CONNECTED");
+}
+
+bool RemoteDesktopBrowserTest::IsPinFormVisible() {
+  if (HtmlElementVisible("host-needs-update-connect-button"))
+    ClickOnControl("host-needs-update-connect-button");
+
+  return HtmlElementVisible("pin-form");
+}
+
+bool RemoteDesktopBrowserTest::IsURLLoaded(const GURL& url) {
+  return GetCurrentURL() == url;
 }
 
 }  // namespace remoting
