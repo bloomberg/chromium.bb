@@ -2,14 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_POLICY_CLOUD_CLOUD_EXTERNAL_DATA_STORE_H_
-#define CHROME_BROWSER_POLICY_CLOUD_CLOUD_EXTERNAL_DATA_STORE_H_
+#ifndef CHROME_BROWSER_CHROMEOS_POLICY_CLOUD_EXTERNAL_DATA_STORE_H_
+#define CHROME_BROWSER_CHROMEOS_POLICY_CLOUD_EXTERNAL_DATA_STORE_H_
 
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/memory/ref_counted.h"
 #include "chrome/browser/policy/cloud/cloud_external_data_manager.h"
+
+namespace base {
+class SequencedTaskRunner;
+}
 
 namespace policy {
 
@@ -21,14 +25,15 @@ class ResourceCache;
 // to be kept. Instances of this class may be created on any thread and may
 // share the same cache, however:
 // * After creation, the cache and all stores using it must always be accessed
-//   from the same thread (or, in the future, via the same SequencedWorkerPool
-//   with the same sequence identifier).
+//   via the same |task_runner| only.
 // * Stores sharing a cache must use different cache_keys to avoid namespace
 //   overlaps.
 // * The cache must outlive all stores using it.
-class CloudExternalDataStore : public base::NonThreadSafe {
+class CloudExternalDataStore {
  public:
-  CloudExternalDataStore(const std::string& cache_key, ResourceCache* cache);
+  CloudExternalDataStore(const std::string& cache_key,
+                         scoped_refptr<base::SequencedTaskRunner> task_runner,
+                         ResourceCache* cache);
   ~CloudExternalDataStore();
 
   // Removes all entries from the store whose (policy, hash) pair is not found
@@ -51,6 +56,10 @@ class CloudExternalDataStore : public base::NonThreadSafe {
 
  private:
   std::string cache_key_;
+
+  // Task runner that |this| runs on.
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+
   ResourceCache* cache_;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(CloudExternalDataStore);
@@ -58,4 +67,4 @@ class CloudExternalDataStore : public base::NonThreadSafe {
 
 }  // namespace policy
 
-#endif  // CHROME_BROWSER_POLICY_CLOUD_CLOUD_EXTERNAL_DATA_STORE_H_
+#endif  // CHROME_BROWSER_CHROMEOS_POLICY_CLOUD_EXTERNAL_DATA_STORE_H_

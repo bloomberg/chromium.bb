@@ -35,6 +35,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/test/test_utils.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "policy/policy_constants.h"
 #include "policy/proto/chrome_settings.pb.h"
 #include "policy/proto/cloud_policy.pb.h"
@@ -188,6 +189,7 @@ class CloudPolicyTest : public InProcessBrowserTest,
         UserCloudPolicyManagerFactory::GetForProfile(browser()->profile());
     ASSERT_TRUE(policy_manager);
     policy_manager->Connect(g_browser_process->local_state(),
+                            g_browser_process->system_request_context(),
                             UserCloudPolicyManager::CreateCloudPolicyClient(
                                 connector->device_management_service()).Pass());
 #endif  // defined(OS_CHROMEOS)

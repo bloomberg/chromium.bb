@@ -21,8 +21,13 @@ namespace base {
 class SequencedTaskRunner;
 }
 
+namespace net {
+class URLRequestContextGetter;
+}
+
 namespace policy {
 
+class CloudExternalDataManager;
 class DeviceManagementService;
 class UserCloudPolicyStore;
 
@@ -35,14 +40,19 @@ class UserCloudPolicyManager : public CloudPolicyManager,
   UserCloudPolicyManager(
       Profile* profile,
       scoped_ptr<UserCloudPolicyStore> store,
+      scoped_ptr<CloudExternalDataManager> external_data_manager,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner);
   virtual ~UserCloudPolicyManager();
 
-  // Initializes the cloud connection. |local_state| and
-  // |device_management_service| must stay valid until this object is deleted or
-  // DisconnectAndRemovePolicy() gets called. Virtual for mocking.
-  virtual void Connect(PrefService* local_state,
-                       scoped_ptr<CloudPolicyClient> client);
+  virtual void Shutdown() OVERRIDE;
+
+  // Initializes the cloud connection. |local_state| must stay valid until this
+  // object is deleted or DisconnectAndRemovePolicy() gets called. Virtual for
+  // mocking.
+  virtual void Connect(
+      PrefService* local_state,
+      scoped_refptr<net::URLRequestContextGetter> request_context,
+      scoped_ptr<CloudPolicyClient> client);
 
   // Shuts down the UserCloudPolicyManager (removes and stops refreshing the
   // cached cloud policy). This is typically called when a profile is being
@@ -67,6 +77,9 @@ class UserCloudPolicyManager : public CloudPolicyManager,
   // Typed pointer to the store owned by UserCloudPolicyManager. Note that
   // CloudPolicyManager only keeps a plain CloudPolicyStore pointer.
   scoped_ptr<UserCloudPolicyStore> store_;
+
+  // Manages external data referenced by policies.
+  scoped_ptr<CloudExternalDataManager> external_data_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyManager);
 };

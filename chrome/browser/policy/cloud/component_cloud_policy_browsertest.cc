@@ -25,6 +25,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "policy/proto/cloud_policy.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -146,6 +147,7 @@ class ComponentCloudPolicyTest : public ExtensionBrowserTest {
         UserCloudPolicyManagerFactory::GetForProfile(browser()->profile());
     ASSERT_TRUE(policy_manager);
     policy_manager->Connect(g_browser_process->local_state(),
+                            g_browser_process->system_request_context(),
                             UserCloudPolicyManager::CreateCloudPolicyClient(
                                 connector->device_management_service()).Pass());
 #endif  // defined(OS_CHROMEOS)

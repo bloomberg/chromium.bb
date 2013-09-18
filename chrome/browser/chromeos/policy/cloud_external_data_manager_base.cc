@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/policy/cloud/cloud_external_data_manager_base.h"
+#include "chrome/browser/chromeos/policy/cloud_external_data_manager_base.h"
 
 #include <map>
 #include <string>
@@ -16,7 +16,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/policy/cloud/cloud_external_data_store.h"
+#include "chrome/browser/chromeos/policy/cloud_external_data_store.h"
 #include "chrome/browser/policy/cloud/cloud_policy_store.h"
 #include "chrome/browser/policy/cloud/external_policy_data_fetcher.h"
 #include "chrome/browser/policy/cloud/external_policy_data_updater.h"
@@ -31,6 +31,10 @@ namespace {
 
 // Fetch data for at most two external data references at the same time.
 const int kMaxParallelFetches = 2;
+
+// Allows policies to reference |max_external_data_size_for_testing| bytes of
+// external data even if no |max_size| was specified in policy_templates.json.
+int max_external_data_size_for_testing = 0;
 
 }  // namespace
 
@@ -293,6 +297,9 @@ void CloudExternalDataManagerBase::Backend::FetchAll() {
 
 size_t CloudExternalDataManagerBase::Backend::GetMaxExternalDataSize(
     const std::string& policy) const {
+  if (max_external_data_size_for_testing)
+    return max_external_data_size_for_testing;
+
   // Look up the maximum size that the data referenced by |policy| can have in
   // policy_definitions_, which is constructed from the information in
   // policy_templates.json, allowing the maximum data size to be specified as
@@ -428,6 +435,12 @@ void CloudExternalDataManagerBase::Fetch(
   DCHECK(CalledOnValidThread());
   backend_task_runner_->PostTask(FROM_HERE, base::Bind(
       &Backend::Fetch, base::Unretained(backend_.get()), policy, callback));
+}
+
+// static
+void CloudExternalDataManagerBase::SetMaxExternalDataSizeForTesting(
+    int max_size) {
+  max_external_data_size_for_testing = max_size;
 }
 
 void CloudExternalDataManagerBase::FetchAll() {

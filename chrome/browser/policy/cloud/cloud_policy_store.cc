@@ -17,7 +17,9 @@ CloudPolicyStore::CloudPolicyStore()
       invalidation_version_(0),
       is_initialized_(false) {}
 
-CloudPolicyStore::~CloudPolicyStore() {}
+CloudPolicyStore::~CloudPolicyStore() {
+  DCHECK(!external_data_manager_);
+}
 
 void CloudPolicyStore::Store(
     const enterprise_management::PolicyFetchResponse& policy,
@@ -56,6 +58,11 @@ void CloudPolicyStore::SetExternalDataManager(
   external_data_manager_ = external_data_manager;
   if (is_initialized_)
     external_data_manager_->OnPolicyStoreLoaded();
+}
+
+void CloudPolicyStore::SetPolicyMapForTesting(const PolicyMap& policy_map) {
+  policy_map_.CopyFrom(policy_map);
+  NotifyStoreLoaded();
 }
 
 }  // namespace policy

@@ -21,16 +21,19 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "google_apis/gaia/gaia_constants.h"
+#include "net/url_request/url_request_context_getter.h"
 
 namespace policy {
 
 UserPolicySigninService::UserPolicySigninService(
     Profile* profile,
     PrefService* local_state,
+    scoped_refptr<net::URLRequestContextGetter> request_context,
     DeviceManagementService* device_management_service,
     ProfileOAuth2TokenService* token_service)
     : UserPolicySigninServiceBase(profile,
                                   local_state,
+                                  request_context,
                                   device_management_service),
       oauth2_token_service_(token_service) {
   if (profile->GetPrefs()->GetBoolean(prefs::kDisableCloudPolicyOnSignin))

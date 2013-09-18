@@ -4,6 +4,7 @@
 
 #include "chrome/browser/policy/cloud/user_policy_signin_service_factory.h"
 
+#include "base/memory/ref_counted.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
@@ -14,6 +15,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 #include "components/user_prefs/pref_registry_syncable.h"
+#include "net/url_request/url_request_context_getter.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/policy/cloud/user_policy_signin_service_android.h"
@@ -73,6 +75,7 @@ UserPolicySigninServiceFactory::BuildServiceInstanceFor(
   return new UserPolicySigninService(
       profile,
       g_browser_process->local_state(),
+      g_browser_process->system_request_context(),
       device_management_service,
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile));
 }

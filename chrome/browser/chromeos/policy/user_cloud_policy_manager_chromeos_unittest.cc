@@ -4,24 +4,21 @@
 
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
-#include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_simple_task_runner.h"
-#include "base/time/time.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_token_forwarder.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/policy/cloud/cloud_policy_constants.h"
-#include "chrome/browser/policy/cloud/cloud_policy_service.h"
+#include "chrome/browser/policy/cloud/cloud_external_data_manager.h"
+#include "chrome/browser/policy/cloud/mock_cloud_external_data_manager.h"
 #include "chrome/browser/policy/cloud/mock_cloud_policy_store.h"
 #include "chrome/browser/policy/cloud/mock_device_management_service.h"
 #include "chrome/browser/policy/cloud/resource_cache.h"
@@ -81,6 +78,7 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
  protected:
   UserCloudPolicyManagerChromeOSTest()
       : store_(NULL),
+        external_data_manager_(NULL),
         task_runner_(new base::TestSimpleTaskRunner()),
         profile_(NULL),
         signin_profile_(NULL) {}
@@ -149,9 +147,12 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
 
   void CreateManager(bool wait_for_fetch, int fetch_timeout) {
     store_ = new MockCloudPolicyStore();
+    external_data_manager_ = new MockCloudExternalDataManager;
+    external_data_manager_->SetPolicyStore(store_);
     EXPECT_CALL(*store_, Load());
     manager_.reset(new UserCloudPolicyManagerChromeOS(
         scoped_ptr<CloudPolicyStore>(store_),
+        scoped_ptr<CloudExternalDataManager>(external_data_manager_),
         task_runner_,
         scoped_ptr<ResourceCache>(),
         wait_for_fetch,
@@ -291,7 +292,8 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
   TestingPrefServiceSimple prefs_;
   MockConfigurationPolicyObserver observer_;
   MockDeviceManagementService device_management_service_;
-  MockCloudPolicyStore* store_;
+  MockCloudPolicyStore* store_;  // Not owned.
+  MockCloudExternalDataManager* external_data_manager_;  // Not owned.
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   scoped_ptr<UserCloudPolicyManagerChromeOS> manager_;
   scoped_ptr<UserCloudPolicyTokenForwarder> token_forwarder_;

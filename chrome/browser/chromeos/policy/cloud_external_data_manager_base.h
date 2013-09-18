@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_POLICY_CLOUD_CLOUD_EXTERNAL_DATA_MANAGER_BASE_H_
-#define CHROME_BROWSER_POLICY_CLOUD_CLOUD_EXTERNAL_DATA_MANAGER_BASE_H_
+#ifndef CHROME_BROWSER_CHROMEOS_POLICY_CLOUD_EXTERNAL_DATA_MANAGER_BASE_H_
+#define CHROME_BROWSER_CHROMEOS_POLICY_CLOUD_EXTERNAL_DATA_MANAGER_BASE_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -56,6 +56,13 @@ class CloudExternalDataManagerBase : public CloudExternalDataManager,
       const std::string& policy,
       const ExternalDataFetcher::FetchCallback& callback) OVERRIDE;
 
+  // Allows policies to reference |max_size| bytes of external data even if no
+  // |max_size| was specified in policy_templates.json.
+  // TODO(bartfab): This override is only needed because there are no policies
+  // that reference external data and have a |max_size| yet. Once the first such
+  // policy is added, use that policy in tests and remove the override.
+  static void SetMaxExternalDataSizeForTesting(int max_size);
+
  protected:
   friend class CouldExternalDataManagerBaseTest;
 
@@ -87,4 +94,4 @@ class CloudExternalDataManagerBase : public CloudExternalDataManager,
 
 }  // namespace policy
 
-#endif  // CHROME_BROWSER_POLICY_CLOUD_CLOUD_EXTERNAL_DATA_MANAGER_BASE_H_
+#endif  // CHROME_BROWSER_CHROMEOS_POLICY_CLOUD_EXTERNAL_DATA_MANAGER_BASE_H_

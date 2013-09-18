@@ -10,10 +10,12 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
+#include "base/sequenced_task_runner.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/policy_oauth2_token_fetcher.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_factory_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/policy/cloud/cloud_external_data_manager.h"
 #include "chrome/browser/policy/cloud/cloud_policy_refresh_scheduler.h"
 #include "chrome/browser/policy/cloud/resource_cache.h"
 #include "chrome/browser/policy/policy_bundle.h"
@@ -50,6 +52,7 @@ const char kUMAInitialFetchOAuth2NetworkError[] =
 
 UserCloudPolicyManagerChromeOS::UserCloudPolicyManagerChromeOS(
     scoped_ptr<CloudPolicyStore> store,
+    scoped_ptr<CloudExternalDataManager> external_data_manager,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
     scoped_ptr<ResourceCache> resource_cache,
     bool wait_for_policy_fetch,
@@ -59,6 +62,7 @@ UserCloudPolicyManagerChromeOS::UserCloudPolicyManagerChromeOS(
           store.get(),
           task_runner),
       store_(store.Pass()),
+      external_data_manager_(external_data_manager.Pass()),
       wait_for_policy_fetch_(wait_for_policy_fetch),
       policy_fetch_timeout_(false, false) {
   time_init_started_ = base::Time::Now();
@@ -99,6 +103,8 @@ void UserCloudPolicyManagerChromeOS::Connect(
   core()->Connect(cloud_policy_client.Pass());
   client()->AddObserver(this);
 
+  external_data_manager_->Connect(request_context);
+
   if (component_policy_service_)
     component_policy_service_->Connect(client(), request_context);
 
@@ -131,6 +137,7 @@ void UserCloudPolicyManagerChromeOS::Shutdown() {
     service()->RemoveObserver(this);
   token_fetcher_.reset();
   component_policy_service_.reset();
+  external_data_manager_->Disconnect();
   CloudPolicyManager::Shutdown();
 }
 

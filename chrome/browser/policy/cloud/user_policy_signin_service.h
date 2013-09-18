@@ -9,11 +9,16 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/policy/cloud/user_policy_signin_service_base.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 
 class Profile;
+
+namespace net {
+class URLRequestContextGetter;
+}
 
 namespace policy {
 
@@ -25,10 +30,12 @@ class UserPolicySigninService : public UserPolicySigninServiceBase,
                                 public OAuth2TokenService::Observer {
  public:
   // Creates a UserPolicySigninService associated with the passed |profile|.
-  UserPolicySigninService(Profile* profile,
-                          PrefService* local_state,
-                          DeviceManagementService* device_management_service,
-                          ProfileOAuth2TokenService* oauth2_token_service);
+  UserPolicySigninService(
+      Profile* profile,
+      PrefService* local_state,
+      scoped_refptr<net::URLRequestContextGetter> request_context,
+      DeviceManagementService* device_management_service,
+      ProfileOAuth2TokenService* oauth2_token_service);
   virtual ~UserPolicySigninService();
 
   // Registers a CloudPolicyClient for fetching policy for a user. The

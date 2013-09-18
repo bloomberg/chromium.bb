@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "chrome/browser/policy/cloud/cloud_external_data_manager.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_store.h"
 #include "chrome/browser/profiles/profile.h"
@@ -62,6 +63,7 @@ scoped_ptr<UserCloudPolicyManager>
   scoped_ptr<UserCloudPolicyManager> manager(
       new UserCloudPolicyManager(profile,
                                  store.Pass(),
+                                 scoped_ptr<CloudExternalDataManager>(),
                                  base::MessageLoopProxy::current()));
   manager->Init();
   return manager.Pass();
@@ -73,10 +75,8 @@ void UserCloudPolicyManagerFactory::BrowserContextShutdown(
   if (profile->IsOffTheRecord())
     return;
   UserCloudPolicyManager* manager = GetManagerForProfile(profile);
-  if (manager) {
-    manager->CloudPolicyManager::Shutdown();
-    manager->BrowserContextKeyedService::Shutdown();
-  }
+  if (manager)
+    manager->Shutdown();
 }
 
 void UserCloudPolicyManagerFactory::SetEmptyTestingFactory(

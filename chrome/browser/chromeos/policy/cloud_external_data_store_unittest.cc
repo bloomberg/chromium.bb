@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/policy/cloud/cloud_external_data_store.h"
+#include "chrome/browser/chromeos/policy/cloud_external_data_store.h"
 
 #include "base/compiler_specific.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/sha1.h"
 #include "base/test/test_simple_task_runner.h"
@@ -38,6 +37,7 @@ class CouldExternalDataStoreTest : public testing::Test {
   const std::string kData1Hash;
   const std::string kData2Hash;
 
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ScopedTempDir temp_dir_;
   scoped_ptr<ResourceCache> resource_cache_;
 
@@ -46,19 +46,18 @@ class CouldExternalDataStoreTest : public testing::Test {
 
 CouldExternalDataStoreTest::CouldExternalDataStoreTest()
     : kData1Hash(base::SHA1HashString(kData1)),
-      kData2Hash(base::SHA1HashString(kData2)) {
+      kData2Hash(base::SHA1HashString(kData2)),
+      task_runner_(new base::TestSimpleTaskRunner) {
 }
 
 void CouldExternalDataStoreTest::SetUp() {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  resource_cache_.reset(new ResourceCache(
-      temp_dir_.path(),
-      make_scoped_refptr(new base::TestSimpleTaskRunner)));
+  resource_cache_.reset(new ResourceCache(temp_dir_.path(), task_runner_));
 }
 
 TEST_F(CouldExternalDataStoreTest, StoreAndLoad) {
   // Write an entry to a store.
-  CloudExternalDataStore store(kKey1, resource_cache_.get());
+  CloudExternalDataStore store(kKey1, task_runner_, resource_cache_.get());
   EXPECT_TRUE(store.Store(kPolicy1, kData1Hash, kData1));
 
   // Check that loading and verifying the entry against an invalid hash fails.
@@ -72,7 +71,7 @@ TEST_F(CouldExternalDataStoreTest, StoreAndLoad) {
 
 TEST_F(CouldExternalDataStoreTest, StoreTooLargeAndLoad) {
   // Write an entry to a store.
-  CloudExternalDataStore store(kKey1, resource_cache_.get());
+  CloudExternalDataStore store(kKey1, task_runner_, resource_cache_.get());
   EXPECT_TRUE(store.Store(kPolicy1, kData1Hash, kData2));
 
   // Check that the entry has been written to the resource cache backing the
@@ -95,7 +94,7 @@ TEST_F(CouldExternalDataStoreTest, StoreTooLargeAndLoad) {
 
 TEST_F(CouldExternalDataStoreTest, StoreInvalidAndLoad) {
   // Construct a store entry whose hash and contents do not match.
-  CloudExternalDataStore store(kKey1, resource_cache_.get());
+  CloudExternalDataStore store(kKey1, task_runner_, resource_cache_.get());
   EXPECT_TRUE(store.Store(kPolicy1, kData1Hash, kData2));
 
   // Check that the entry has been written to the resource cache backing the
@@ -117,7 +116,7 @@ TEST_F(CouldExternalDataStoreTest, StoreInvalidAndLoad) {
 
 TEST_F(CouldExternalDataStoreTest, Prune) {
   // Write two entries to a store.
-  CloudExternalDataStore store(kKey1, resource_cache_.get());
+  CloudExternalDataStore store(kKey1, task_runner_, resource_cache_.get());
   EXPECT_TRUE(store.Store(kPolicy1, kData1Hash, kData1));
   EXPECT_TRUE(store.Store(kPolicy2, kData2Hash, kData2));
 
@@ -156,9 +155,9 @@ TEST_F(CouldExternalDataStoreTest, Prune) {
 
 TEST_F(CouldExternalDataStoreTest, SharedCache) {
   // Write entries to two stores for two different cache_keys sharing a cache.
-  CloudExternalDataStore store1(kKey1, resource_cache_.get());
+  CloudExternalDataStore store1(kKey1, task_runner_, resource_cache_.get());
   EXPECT_TRUE(store1.Store(kPolicy1, kData1Hash, kData1));
-  CloudExternalDataStore store2(kKey2, resource_cache_.get());
+  CloudExternalDataStore store2(kKey2, task_runner_, resource_cache_.get());
   EXPECT_TRUE(store2.Store(kPolicy2, kData2Hash, kData2));
 
   // Check that the entries have been assigned to the correct keys in the

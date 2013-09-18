@@ -4,13 +4,15 @@
 
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager.h"
 
-#include "base/basictypes.h"
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_proxy.h"
+#include "base/sequenced_task_runner.h"
+#include "chrome/browser/policy/cloud/cloud_external_data_manager.h"
 #include "chrome/browser/policy/cloud/mock_user_cloud_policy_store.h"
 #include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -26,8 +28,7 @@ namespace {
 
 class UserCloudPolicyManagerTest : public testing::Test {
  protected:
-  UserCloudPolicyManagerTest()
-      : store_(NULL) {}
+  UserCloudPolicyManagerTest() : store_(NULL) {}
 
   virtual void SetUp() OVERRIDE {
     // Set up a policy map for testing.
@@ -40,18 +41,18 @@ class UserCloudPolicyManagerTest : public testing::Test {
   virtual void TearDown() OVERRIDE {
     if (manager_) {
       manager_->RemoveObserver(&observer_);
-      manager_->CloudPolicyManager::Shutdown();
-      manager_->BrowserContextKeyedService::Shutdown();
+      manager_->Shutdown();
     }
   }
 
   void CreateManager() {
     store_ = new MockUserCloudPolicyStore();
     EXPECT_CALL(*store_, Load());
-    manager_.reset(
-        new UserCloudPolicyManager(NULL,
-                                   scoped_ptr<UserCloudPolicyStore>(store_),
-                                   loop_.message_loop_proxy()));
+    manager_.reset(new UserCloudPolicyManager(
+        NULL,
+        scoped_ptr<UserCloudPolicyStore>(store_),
+        scoped_ptr<CloudExternalDataManager>(),
+        loop_.message_loop_proxy()));
     manager_->Init();
     manager_->AddObserver(&observer_);
     Mock::VerifyAndClearExpectations(store_);
@@ -66,7 +67,7 @@ class UserCloudPolicyManagerTest : public testing::Test {
 
   // Policy infrastructure.
   MockConfigurationPolicyObserver observer_;
-  MockUserCloudPolicyStore* store_;
+  MockUserCloudPolicyStore* store_;  // Not owned.
   scoped_ptr<UserCloudPolicyManager> manager_;
 
  private:

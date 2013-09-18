@@ -118,6 +118,14 @@ class CloudPolicyStore {
   void SetExternalDataManager(
       base::WeakPtr<CloudExternalDataManager> external_data_manager);
 
+  // Replaces |policy_map_| and calls the registered observers, simulating a
+  // successful load of |policy_map| from persistent storage.
+  // TODO(bartfab): This override is only needed because there are no policies
+  // that reference external data and therefore, no ExternalDataFetchers in the
+  // |policy_map_|. Once the first such policy is added, use that policy in
+  // tests and remove the override.
+  void SetPolicyMapForTesting(const PolicyMap& policy_map);
+
  protected:
   // Invokes the corresponding callback on all registered observers.
   void NotifyStoreLoaded();

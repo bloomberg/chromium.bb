@@ -19,15 +19,18 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_source.h"
+#include "net/url_request/url_request_context_getter.h"
 
 namespace policy {
 
 UserPolicySigninServiceBase::UserPolicySigninServiceBase(
     Profile* profile,
     PrefService* local_state,
+    scoped_refptr<net::URLRequestContextGetter> request_context,
     DeviceManagementService* device_management_service)
     : profile_(profile),
       local_state_(local_state),
+      request_context_(request_context),
       device_management_service_(device_management_service),
       weak_factory_(this) {
   if (profile_->GetPrefs()->GetBoolean(prefs::kDisableCloudPolicyOnSignin))
@@ -222,7 +225,7 @@ void UserPolicySigninServiceBase::InitializeUserCloudPolicyManager(
     scoped_ptr<CloudPolicyClient> client) {
   UserCloudPolicyManager* manager = GetManager();
   DCHECK(!manager->core()->client());
-  manager->Connect(local_state_, client.Pass());
+  manager->Connect(local_state_, request_context_, client.Pass());
   DCHECK(manager->core()->service());
 
   // Observe the client to detect errors fetching policy.

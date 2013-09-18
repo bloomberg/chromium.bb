@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/prefs/pref_service.h"
@@ -12,6 +10,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/policy/cloud/cloud_external_data_manager.h"
 #include "chrome/browser/policy/cloud/cloud_policy_constants.h"
 #include "chrome/browser/policy/cloud/mock_device_management_service.h"
 #include "chrome/browser/policy/cloud/mock_user_cloud_policy_store.h"
@@ -146,7 +145,8 @@ class FakeAndroidProfileOAuth2TokenService
 class UserPolicySigninServiceTest : public testing::Test {
  public:
   UserPolicySigninServiceTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+      : mock_store_(NULL),
+        thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         register_completed_(false) {}
 
   MOCK_METHOD1(OnPolicyRefresh, void(bool));
@@ -205,6 +205,7 @@ class UserPolicySigninServiceTest : public testing::Test {
     manager_.reset(new UserCloudPolicyManager(
         profile_.get(),
         scoped_ptr<UserCloudPolicyStore>(mock_store_),
+        scoped_ptr<CloudExternalDataManager>(),
         base::MessageLoopProxy::current()));
 
     Mock::VerifyAndClearExpectations(mock_store_);
@@ -352,9 +353,7 @@ class UserPolicySigninServiceTest : public testing::Test {
   }
 
   scoped_ptr<TestingProfile> profile_;
-  // Weak pointer to a MockUserCloudPolicyStore - lifetime is managed by the
-  // UserCloudPolicyManager.
-  MockUserCloudPolicyStore* mock_store_;
+  MockUserCloudPolicyStore* mock_store_;  // Not owned.
   scoped_ptr<UserCloudPolicyManager> manager_;
 
   // BrowserPolicyConnector and UrlFetcherFactory want to initialize and free

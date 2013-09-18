@@ -9,6 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
+#include "chrome/browser/policy/cloud/mock_cloud_external_data_manager.h"
 #include "chrome/browser/policy/cloud/mock_cloud_policy_store.h"
 #include "chrome/browser/policy/cloud/policy_builder.h"
 #include "chrome/browser/signin/fake_signin_manager.h"
@@ -17,13 +18,16 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::AllOf;
 using testing::Eq;
+using testing::Mock;
 using testing::Property;
+using testing::Sequence;
 
 namespace policy {
 
@@ -51,6 +55,8 @@ class UserCloudPolicyStoreTest : public testing::Test {
                                     PolicyBuilder::kFakeUsername);
     signin->Initialize(profile_.get(), NULL);
     store_.reset(new UserCloudPolicyStore(profile_.get(), policy_file()));
+    external_data_manager_.reset(new MockCloudExternalDataManager);
+    external_data_manager_->SetPolicyStore(store_.get());
     store_->AddObserver(&observer_);
 
     policy_.payload().mutable_passwordmanagerenabled()->set_value(true);
@@ -62,6 +68,7 @@ class UserCloudPolicyStoreTest : public testing::Test {
 
   virtual void TearDown() OVERRIDE {
     store_->RemoveObserver(&observer_);
+    external_data_manager_.reset();
     store_.reset();
     RunUntilIdle();
   }
@@ -91,6 +98,7 @@ class UserCloudPolicyStoreTest : public testing::Test {
   UserPolicyBuilder policy_;
   MockCloudPolicyStoreObserver observer_;
   scoped_ptr<UserCloudPolicyStore> store_;
+  scoped_ptr<MockCloudExternalDataManager> external_data_manager_;
 
   // CloudPolicyValidator() requires a FILE thread so declare one here. Both
   // |ui_thread_| and |file_thread_| share the same MessageLoop |loop_| so
@@ -109,7 +117,9 @@ TEST_F(UserCloudPolicyStoreTest, LoadWithNoFile) {
   EXPECT_FALSE(store_->policy());
   EXPECT_TRUE(store_->policy_map().empty());
 
-  EXPECT_CALL(observer_, OnStoreLoaded(store_.get()));
+  Sequence s;
+  EXPECT_CALL(*external_data_manager_, OnPolicyStoreLoaded()).InSequence(s);
+  EXPECT_CALL(observer_, OnStoreLoaded(store_.get())).InSequence(s);
   store_->Load();
   RunUntilIdle();
 
@@ -141,7 +151,9 @@ TEST_F(UserCloudPolicyStoreTest, LoadImmediatelyWithNoFile) {
   EXPECT_FALSE(store_->policy());
   EXPECT_TRUE(store_->policy_map().empty());
 
-  EXPECT_CALL(observer_, OnStoreLoaded(store_.get()));
+  Sequence s;
+  EXPECT_CALL(*external_data_manager_, OnPolicyStoreLoaded()).InSequence(s);
+  EXPECT_CALL(observer_, OnStoreLoaded(store_.get())).InSequence(s);
   store_->LoadImmediately();  // Should load without running the message loop.
 
   EXPECT_FALSE(store_->policy());
@@ -173,7 +185,9 @@ TEST_F(UserCloudPolicyStoreTest, Store) {
 
   // Store a simple policy and make sure it ends up as the currently active
   // policy.
-  EXPECT_CALL(observer_, OnStoreLoaded(store_.get()));
+  Sequence s;
+  EXPECT_CALL(*external_data_manager_, OnPolicyStoreLoaded()).InSequence(s);
+  EXPECT_CALL(observer_, OnStoreLoaded(store_.get())).InSequence(s);
   store_->Store(policy_.policy());
   RunUntilIdle();
 
@@ -191,17 +205,24 @@ TEST_F(UserCloudPolicyStoreTest, StoreThenClear) {
 
   // Store a simple policy and make sure the file exists.
   // policy.
-  EXPECT_CALL(observer_, OnStoreLoaded(store_.get()));
+  Sequence s1;
+  EXPECT_CALL(*external_data_manager_, OnPolicyStoreLoaded()).InSequence(s1);
+  EXPECT_CALL(observer_, OnStoreLoaded(store_.get())).InSequence(s1);
   store_->Store(policy_.policy());
   RunUntilIdle();
 
   EXPECT_TRUE(store_->policy());
   EXPECT_FALSE(store_->policy_map().empty());
 
+  Mock::VerifyAndClearExpectations(external_data_manager_.get());
+  Mock::VerifyAndClearExpectations(&observer_);
+
   // Policy file should exist.
   ASSERT_TRUE(base::PathExists(policy_file()));
 
-  EXPECT_CALL(observer_, OnStoreLoaded(store_.get()));
+  Sequence s2;
+  EXPECT_CALL(*external_data_manager_, OnPolicyStoreLoaded()).InSequence(s2);
+  EXPECT_CALL(observer_, OnStoreLoaded(store_.get())).InSequence(s2);
   store_->Clear();
   RunUntilIdle();
 
@@ -221,13 +242,22 @@ TEST_F(UserCloudPolicyStoreTest, StoreTwoTimes) {
   // Store a simple policy then store a second policy before the first one
   // finishes validating, and make sure the second policy ends up as the active
   // policy.
-  EXPECT_CALL(observer_, OnStoreLoaded(store_.get())).Times(2);
+  Sequence s1;
+  EXPECT_CALL(*external_data_manager_, OnPolicyStoreLoaded()).InSequence(s1);
+  EXPECT_CALL(observer_, OnStoreLoaded(store_.get())).InSequence(s1);
 
   UserPolicyBuilder first_policy;
   first_policy.payload().mutable_passwordmanagerenabled()->set_value(false);
   first_policy.Build();
   store_->Store(first_policy.policy());
   RunUntilIdle();
+
+  Mock::VerifyAndClearExpectations(external_data_manager_.get());
+  Mock::VerifyAndClearExpectations(&observer_);
+
+  Sequence s2;
+  EXPECT_CALL(*external_data_manager_, OnPolicyStoreLoaded()).InSequence(s2);
+  EXPECT_CALL(observer_, OnStoreLoaded(store_.get())).InSequence(s2);
 
   store_->Store(policy_.policy());
   RunUntilIdle();
@@ -243,7 +273,9 @@ TEST_F(UserCloudPolicyStoreTest, StoreTwoTimes) {
 TEST_F(UserCloudPolicyStoreTest, StoreThenLoad) {
   // Store a simple policy and make sure it can be read back in.
   // policy.
-  EXPECT_CALL(observer_, OnStoreLoaded(store_.get()));
+  Sequence s;
+  EXPECT_CALL(*external_data_manager_, OnPolicyStoreLoaded()).InSequence(s);
+  EXPECT_CALL(observer_, OnStoreLoaded(store_.get())).InSequence(s);
   store_->Store(policy_.policy());
   RunUntilIdle();
 
@@ -266,7 +298,9 @@ TEST_F(UserCloudPolicyStoreTest, StoreThenLoad) {
 TEST_F(UserCloudPolicyStoreTest, StoreThenLoadImmediately) {
   // Store a simple policy and make sure it can be read back in.
   // policy.
-  EXPECT_CALL(observer_, OnStoreLoaded(store_.get()));
+  Sequence s;
+  EXPECT_CALL(*external_data_manager_, OnPolicyStoreLoaded()).InSequence(s);
+  EXPECT_CALL(observer_, OnStoreLoaded(store_.get())).InSequence(s);
   store_->Store(policy_.policy());
   RunUntilIdle();
 
@@ -299,7 +333,9 @@ TEST_F(UserCloudPolicyStoreTest, StoreValidationError) {
 
 TEST_F(UserCloudPolicyStoreTest, LoadValidationError) {
   // Force a validation error by changing the username after policy is stored.
-  EXPECT_CALL(observer_, OnStoreLoaded(store_.get()));
+  Sequence s;
+  EXPECT_CALL(*external_data_manager_, OnPolicyStoreLoaded()).InSequence(s);
+  EXPECT_CALL(observer_, OnStoreLoaded(store_.get())).InSequence(s);
   store_->Store(policy_.policy());
   RunUntilIdle();
 

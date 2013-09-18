@@ -33,6 +33,7 @@ class URLRequestContextGetter;
 
 namespace policy {
 
+class CloudExternalDataManager;
 class DeviceManagementService;
 class PolicyOAuth2TokenFetcher;
 class ResourceCache;
@@ -51,6 +52,7 @@ class UserCloudPolicyManagerChromeOS
   // false as long as there hasn't been a successful policy fetch.
   UserCloudPolicyManagerChromeOS(
       scoped_ptr<CloudPolicyStore> store,
+      scoped_ptr<CloudExternalDataManager> external_data_manager,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner,
       scoped_ptr<ResourceCache> resource_cache,
       bool wait_for_policy_fetch,
@@ -123,6 +125,9 @@ class UserCloudPolicyManagerChromeOS
 
   // Owns the store, note that CloudPolicyManager just keeps a plain pointer.
   scoped_ptr<CloudPolicyStore> store_;
+
+  // Manages external data referenced by policies.
+  scoped_ptr<CloudExternalDataManager> external_data_manager_;
 
   // Handles fetching and storing cloud policy for components. It uses the
   // |store_|, so destroy it first.

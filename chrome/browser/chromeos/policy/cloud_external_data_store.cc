@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/policy/cloud/cloud_external_data_store.h"
+#include "chrome/browser/chromeos/policy/cloud_external_data_store.h"
 
 #include <set>
 
 #include "base/logging.h"
+#include "base/sequenced_task_runner.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/policy/cloud/resource_cache.h"
@@ -26,19 +27,22 @@ std::string GetSubkey(const std::string& policy, const std::string& hash) {
 
 }  // namespace
 
-CloudExternalDataStore::CloudExternalDataStore(const std::string& cache_key,
-                                               ResourceCache* cache)
+CloudExternalDataStore::CloudExternalDataStore(
+    const std::string& cache_key,
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    ResourceCache* cache)
     : cache_key_(cache_key),
+      task_runner_(task_runner),
       cache_(cache) {
-  DetachFromThread();
 }
 
 CloudExternalDataStore::~CloudExternalDataStore() {
-  DCHECK(CalledOnValidThread());
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
 }
 
 void CloudExternalDataStore::Prune(
     const CloudExternalDataManager::Metadata& metadata) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
   std::set<std::string> subkeys_to_keep;
   for (CloudExternalDataManager::Metadata::const_iterator it = metadata.begin();
        it != metadata.end(); ++it) {
@@ -50,7 +54,7 @@ void CloudExternalDataStore::Prune(
 bool CloudExternalDataStore::Store(const std::string& policy,
                                    const std::string& hash,
                                    const std::string& data) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
   return cache_->Store(cache_key_, GetSubkey(policy, hash), data);
 }
 
@@ -58,7 +62,7 @@ bool CloudExternalDataStore::Load(const std::string& policy,
                                   const std::string& hash,
                                   size_t max_size,
                                   std::string* data) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
   const std::string subkey = GetSubkey(policy, hash);
   if (cache_->Load(cache_key_, subkey, data)) {
     if (data->size() <= max_size && base::SHA1HashString(*data) == hash)

@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/policy/cloud/cloud_policy_client.h"
@@ -21,6 +22,10 @@
 class PrefService;
 class Profile;
 class SigninManager;
+
+namespace net {
+class URLRequestContextGetter;
+}
 
 namespace policy {
 
@@ -57,6 +62,7 @@ class UserPolicySigninServiceBase : public BrowserContextKeyedService,
   UserPolicySigninServiceBase(
       Profile* profile,
       PrefService* local_state,
+      scoped_refptr<net::URLRequestContextGetter> request_context,
       DeviceManagementService* device_management_service);
   virtual ~UserPolicySigninServiceBase();
 
@@ -139,6 +145,7 @@ class UserPolicySigninServiceBase : public BrowserContextKeyedService,
   content::NotificationRegistrar registrar_;
 
   PrefService* local_state_;
+  scoped_refptr<net::URLRequestContextGetter> request_context_;
   DeviceManagementService* device_management_service_;
 
   base::WeakPtrFactory<UserPolicySigninServiceBase> weak_factory_;

@@ -21,6 +21,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "net/base/network_change_notifier.h"
+#include "net/url_request/url_request_context_getter.h"
 
 namespace policy {
 
@@ -38,10 +39,12 @@ enterprise_management::DeviceRegisterRequest::Type GetRegistrationType() {
 UserPolicySigninService::UserPolicySigninService(
     Profile* profile,
     PrefService* local_state,
+    scoped_refptr<net::URLRequestContextGetter> request_context,
     DeviceManagementService* device_management_service,
     AndroidProfileOAuth2TokenService* token_service)
     : UserPolicySigninServiceBase(profile,
                                   local_state,
+                                  request_context,
                                   device_management_service),
       weak_factory_(this),
       oauth2_token_service_(token_service) {}

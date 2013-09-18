@@ -1049,6 +1049,7 @@
         'browser/chromeos/policy/login_screen_default_policy_browsertest.cc',
         'browser/chromeos/policy/policy_cert_verifier_browsertest.cc',
         'browser/chromeos/policy/power_policy_browsertest.cc',
+        'browser/chromeos/policy/user_cloud_external_data_manager_browsertest.cc',
         'browser/chromeos/policy/variations_service_policy_browsertest.cc',
         'browser/chromeos/power/peripheral_battery_observer_browsertest.cc',
         'browser/chromeos/profiles/profile_helper_browsertest.cc',
