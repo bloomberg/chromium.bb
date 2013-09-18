@@ -167,6 +167,7 @@ void CouldExternalDataManagerBaseTest::SetUp() {
 }
 
 void CouldExternalDataManagerBaseTest::TearDown() {
+  external_data_manager_.reset();
   base::RunLoop().RunUntilIdle();
   ResetCallbackData();
 }
