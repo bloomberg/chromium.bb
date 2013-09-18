@@ -43,7 +43,7 @@ class SignedInDevicesGetFunction : public SyncExtensionFunction {
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION("SignedInDevices.get", SIGNED_IN_DEVICES_GET)
+  DECLARE_EXTENSION_FUNCTION("signedInDevices.get", SIGNED_IN_DEVICES_GET)
 };
 
 }  // namespace extensions

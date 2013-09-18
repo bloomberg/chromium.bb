@@ -186,11 +186,11 @@ std::string DeviceInfo::MakeUserAgentForSyncApi(
 
 base::DictionaryValue* DeviceInfo::ToValue() {
   base::DictionaryValue* value = new base::DictionaryValue();
-  value->SetString("id", public_id_);
   value->SetString("name", client_name_);
-  value->SetString("chromeVersion", chrome_version_);
+  value->SetString("id", public_id_);
   value->SetString("os", GetOS(device_type_));
-  value->SetString("Device Type", DeviceTypeToString(device_type_));
+  value->SetString("type", DeviceTypeToString(device_type_));
+  value->SetString("chromeVersion", chrome_version_);
   return value;
 }
 
