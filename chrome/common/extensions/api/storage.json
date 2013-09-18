@@ -100,7 +100,7 @@
                 "name": "items",
                 "type": "object",
                 "additionalProperties": { "type": "any" },
-                "description": "Object specifying items to augment storage with. Values that cannot be serialized (functions, etc) will be ignored."
+                "description": "<p>An object which gives each key/value pair to update storage with. Any other key/value pairs in storage will not be affected.</p><p>Primitive values such as numbers will serialize as expected. Values with a <code>typeof</code> <code>\"object\"</code> and <code>\"function\"</code> will typically serialize to <code>{}</code>, with the exception of <code>Array</code> (serializes as expected), <code>Date</code>, and <code>Regex</code> (serialize using their <code>String</code> representation).</p>"
               },
               {
                 "name": "callback",
