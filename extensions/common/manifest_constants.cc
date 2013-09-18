@@ -598,6 +598,8 @@ const char kLaunchPathAndURLAreExclusive[] =
     "both be set.";
 const char kLaunchURLRequired[] =
     "Either 'app.launch.local_path' or 'app.launch.web_url' is required.";
+const char kLocalesInvalidLocale[] =
+    "Invalid locale file '*': *";
 const char kLocalesMessagesFileMissing[] =
     "Messages file is missing for locale.";
 const char kLocalesNoDefaultLocaleSpecified[] =

@@ -4384,6 +4384,23 @@ TEST_F(ExtensionServiceTest, GenerateID) {
   ASSERT_EQ(previous_id, loaded_[0]->id());
 }
 
+TEST_F(ExtensionServiceTest, UnpackedValidatesLocales) {
+  InitializeEmptyExtensionService();
+
+  base::FilePath bad_locale = data_dir_.AppendASCII("unpacked").
+      AppendASCII("bad_messages_file");
+  extensions::UnpackedInstaller::Create(service_)->Load(bad_locale);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1u, GetErrors().size());
+  base::FilePath ms_messages_file = bad_locale.AppendASCII("_locales")
+                                              .AppendASCII("ms")
+                                              .AppendASCII("messages.json");
+  EXPECT_THAT(UTF16ToUTF8(GetErrors()[0]), testing::AllOf(
+       testing::HasSubstr(UTF16ToUTF8(ms_messages_file.LossyDisplayName())),
+       testing::HasSubstr("Dictionary keys must be quoted.")));
+  ASSERT_EQ(0u, loaded_.size());
+}
+
 void ExtensionServiceTest::TestExternalProvider(
     MockExtensionProvider* provider, Manifest::Location location) {
   // Verify that starting with no providers loads no extensions.

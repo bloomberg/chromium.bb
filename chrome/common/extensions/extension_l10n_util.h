@@ -97,6 +97,11 @@ extensions::MessageBundle* LoadMessageCatalogs(
     const std::set<std::string>& valid_locales,
     std::string* error);
 
+// Loads message catalogs for all locales to check for validity.
+bool ValidateExtensionLocales(const base::FilePath& extension_path,
+                              const base::DictionaryValue* manifest,
+                              std::string* error);
+
 // Returns true if directory has "." in the name (for .svn) or if it doesn't
 // belong to Chrome locales.
 // |locales_path| is extension_id/_locales

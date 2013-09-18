@@ -8,12 +8,15 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/message_bundle.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/error_utils.h"
 #include "extensions/common/manifest_constants.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -25,6 +28,28 @@ namespace errors = extensions::manifest_errors;
 namespace keys = extensions::manifest_keys;
 
 namespace {
+
+TEST(ExtensionL10nUtil, ValidateLocalesWithBadLocale) {
+  base::ScopedTempDir temp;
+  ASSERT_TRUE(temp.CreateUniqueTempDir());
+
+  base::FilePath src_path = temp.path().Append(kLocaleFolder);
+  base::FilePath locale = src_path.AppendASCII("ms");
+  ASSERT_TRUE(file_util::CreateDirectory(locale));
+
+  base::FilePath messages_file = locale.Append(kMessagesFilename);
+  std::string data = "{ \"name\":";
+  ASSERT_TRUE(file_util::WriteFile(messages_file, data.c_str(), data.length()));
+
+  base::DictionaryValue manifest;
+  manifest.SetString(keys::kDefaultLocale, "en");
+  std::string error;
+  EXPECT_FALSE(extension_l10n_util::ValidateExtensionLocales(
+      temp.path(), &manifest, &error));
+  EXPECT_THAT(error,
+              testing::HasSubstr(
+                  UTF16ToUTF8(messages_file.LossyDisplayName())));
+}
 
 TEST(ExtensionL10nUtil, GetValidLocalesEmptyLocaleFolder) {
   base::ScopedTempDir temp;
@@ -161,9 +186,8 @@ TEST(ExtensionL10nUtil, LoadMessageCatalogsBadJSONFormat) {
   ASSERT_TRUE(file_util::CreateDirectory(locale));
 
   std::string data = "{ \"name\":";
-  ASSERT_TRUE(
-      file_util::WriteFile(locale.Append(kMessagesFilename),
-                           data.c_str(), data.length()));
+  base::FilePath messages_file = locale.Append(kMessagesFilename);
+  ASSERT_TRUE(file_util::WriteFile(messages_file, data.c_str(), data.length()));
 
   std::set<std::string> valid_locales;
   valid_locales.insert("sr");
@@ -174,7 +198,12 @@ TEST(ExtensionL10nUtil, LoadMessageCatalogsBadJSONFormat) {
                                                                "sr",
                                                                valid_locales,
                                                                &error));
-  EXPECT_EQ("Line: 1, column: 10, Unexpected token.", error);
+  EXPECT_EQ(
+      extensions::ErrorUtils::FormatErrorMessage(
+          errors::kLocalesInvalidLocale,
+          base::UTF16ToUTF8(messages_file.LossyDisplayName()),
+          "Line: 1, column: 10, Unexpected token."),
+      error);
 }
 
 TEST(ExtensionL10nUtil, LoadMessageCatalogsDuplicateKeys) {

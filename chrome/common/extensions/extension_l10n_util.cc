@@ -15,17 +15,50 @@
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/message_bundle.h"
 #include "chrome/common/url_constants.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/error_utils.h"
 #include "extensions/common/manifest_constants.h"
 #include "third_party/icu/source/common/unicode/uloc.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace errors = extensions::manifest_errors;
 namespace keys = extensions::manifest_keys;
+
+namespace {
+
+// Loads contents of the messages file for given locale. If file is not found,
+// or there was parsing error we return NULL and set |error|.
+// Caller owns the returned object.
+base::DictionaryValue* LoadMessageFile(const base::FilePath& locale_path,
+                                       const std::string& locale,
+                                       std::string* error) {
+  base::FilePath file = locale_path.AppendASCII(locale)
+      .Append(extensions::kMessagesFilename);
+  JSONFileValueSerializer messages_serializer(file);
+  base::Value* dictionary = messages_serializer.Deserialize(NULL, error);
+  if (!dictionary) {
+    if (error->empty()) {
+      // JSONFileValueSerializer just returns NULL if file cannot be found. It
+      // doesn't set the error, so we have to do it.
+      *error = base::StringPrintf("Catalog file is missing for locale %s.",
+                                  locale.c_str());
+    } else {
+      *error = extensions::ErrorUtils::FormatErrorMessage(
+          errors::kLocalesInvalidLocale,
+          UTF16ToUTF8(file.LossyDisplayName()),
+          *error);
+    }
+  }
+
+  return static_cast<base::DictionaryValue*>(dictionary);
+}
+
+}  // namespace
 
 static std::string& GetProcessLocale() {
   CR_DEFINE_STATIC_LOCAL(std::string, locale, ());
@@ -46,7 +79,6 @@ std::string GetDefaultLocaleFromManifest(const base::DictionaryValue& manifest,
 
   *error = errors::kInvalidDefaultLocale;
   return std::string();
-
 }
 
 bool ShouldRelocalizeManifest(const base::DictionaryValue* manifest) {
@@ -291,33 +323,11 @@ bool GetValidLocales(const base::FilePath& locale_path,
   }
 
   if (valid_locales->empty()) {
-    *error = extensions::manifest_errors::kLocalesNoValidLocaleNamesListed;
+    *error = errors::kLocalesNoValidLocaleNamesListed;
     return false;
   }
 
   return true;
-}
-
-// Loads contents of the messages file for given locale. If file is not found,
-// or there was parsing error we return NULL and set |error|.
-// Caller owns the returned object.
-static base::DictionaryValue* LoadMessageFile(
-    const base::FilePath& locale_path,
-    const std::string& locale,
-    std::string* error) {
-  std::string extension_locale = locale;
-  base::FilePath file = locale_path.AppendASCII(extension_locale)
-      .Append(extensions::kMessagesFilename);
-  JSONFileValueSerializer messages_serializer(file);
-  base::Value *dictionary = messages_serializer.Deserialize(NULL, error);
-  if (!dictionary && error->empty()) {
-    // JSONFileValueSerializer just returns NULL if file cannot be found. It
-    // doesn't set the error, so we have to do it.
-    *error = base::StringPrintf("Catalog file is missing for locale %s.",
-                                extension_locale.c_str());
-  }
-
-  return static_cast<base::DictionaryValue*>(dictionary);
 }
 
 extensions::MessageBundle* LoadMessageCatalogs(
@@ -347,6 +357,37 @@ extensions::MessageBundle* LoadMessageCatalogs(
   }
 
   return extensions::MessageBundle::Create(catalogs, error);
+}
+
+bool ValidateExtensionLocales(const base::FilePath& extension_path,
+                              const base::DictionaryValue* manifest,
+                              std::string* error) {
+  std::string default_locale = GetDefaultLocaleFromManifest(*manifest, error);
+
+  if (default_locale.empty())
+    return true;
+
+  base::FilePath locale_path =
+      extension_path.Append(extensions::kLocaleFolder);
+
+  std::set<std::string> valid_locales;
+  if (!GetValidLocales(locale_path, &valid_locales, error))
+    return false;
+
+  for (std::set<std::string>::const_iterator locale = valid_locales.begin();
+       locale != valid_locales.end(); ++locale) {
+    std::string locale_error;
+    scoped_ptr<DictionaryValue> catalog(
+        LoadMessageFile(locale_path, *locale, &locale_error));
+
+    if (!locale_error.empty()) {
+      if (!error->empty())
+        error->append(" ");
+      error->append(locale_error);
+    }
+  }
+
+  return error->empty();
 }
 
 bool ShouldSkipValidation(const base::FilePath& locales_path,

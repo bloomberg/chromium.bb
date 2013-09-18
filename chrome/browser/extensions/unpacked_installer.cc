@@ -18,6 +18,7 @@
 #include "chrome/common/extensions/api/plugins/plugins_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
+#include "chrome/common/extensions/extension_l10n_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/id_util.h"
 #include "extensions/common/manifest.h"
@@ -135,7 +136,11 @@ bool UnpackedInstaller::LoadFromCommandLine(const base::FilePath& path_in,
   installer_.set_extension(extension_file_util::LoadExtension(
       extension_path_, Manifest::COMMAND_LINE, GetFlags(), &error).get());
 
-  if (!installer_.extension().get()) {
+  if (!installer_.extension().get() ||
+      !extension_l10n_util::ValidateExtensionLocales(
+          extension_path_,
+          installer_.extension()->manifest()->value(),
+          &error)) {
     ReportExtensionLoadError(error);
     return false;
   }
@@ -251,7 +256,11 @@ void UnpackedInstaller::LoadWithFileAccess(int flags) {
   installer_.set_extension(extension_file_util::LoadExtension(
       extension_path_, Manifest::UNPACKED, flags, &error).get());
 
-  if (!installer_.extension().get()) {
+  if (!installer_.extension().get() ||
+      !extension_l10n_util::ValidateExtensionLocales(
+          extension_path_,
+          installer_.extension()->manifest()->value(),
+          &error)) {
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,
