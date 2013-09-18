@@ -161,7 +161,15 @@ ScopedTransformOverviewWindow::~ScopedTransformOverviewWindow() {
   if (window_) {
     WindowSelectorAnimationSettings animation_settings(window_);
     gfx::Transform transform;
-    window_->SetTransform(original_transform_);
+    // If the initial window wasn't destroyed and we have copied the window
+    // layer, the copy needs to be animated out.
+    // CleanupWidgetAfterAnimationObserver will destroy the widget and
+    // layer after the animation is complete.
+    if (window_copy_)
+      new CleanupWidgetAfterAnimationObserver(window_copy_, layer_);
+    AnimateTransformOnWindowAndTransientChildren(original_transform_);
+    window_copy_ = NULL;
+    layer_ = NULL;
     if (minimized_ && window_->GetProperty(aura::client::kShowStateKey) !=
         ui::SHOW_STATE_MINIMIZED) {
       // Setting opacity 0 and visible false ensures that the property change
@@ -172,22 +180,12 @@ ScopedTransformOverviewWindow::~ScopedTransformOverviewWindow() {
       window_->SetProperty(aura::client::kShowStateKey,
                            ui::SHOW_STATE_MINIMIZED);
     }
-  }
-  // If a copy of the window was created, clean it up.
-  if (window_copy_) {
-    if (window_) {
-      // If the initial window wasn't destroyed, the copy needs to be animated
-      // out. CleanupWidgetAfterAnimationObserver will destroy the widget and
-      // layer after the animation is complete.
-      new CleanupWidgetAfterAnimationObserver(window_copy_, layer_);
-      WindowSelectorAnimationSettings animation_settings(
-          window_copy_->GetNativeWindow());
-      window_copy_->GetNativeWindow()->SetTransform(original_transform_);
-    } else {
-      window_copy_->Close();
-      if (layer_)
-        views::corewm::DeepDeleteLayers(layer_);
-    }
+  } else if (window_copy_) {
+    // If this class still owns a copy of the window, clean up the copy. This
+    // will be the case if the window was destroyed.
+    window_copy_->Close();
+    if (layer_)
+      views::corewm::DeepDeleteLayers(layer_);
     window_copy_ = NULL;
     layer_ = NULL;
   }
@@ -243,18 +241,43 @@ void ScopedTransformOverviewWindow::SetTransform(
     overview_started_ = true;
   }
 
-  if (root_window != window_->GetRootWindow()) {
-    if (!window_copy_) {
-      DCHECK(!layer_);
-      layer_ = views::corewm::RecreateWindowLayers(window_, true);
-      window_copy_ = CreateCopyOfWindow(root_window, window_, layer_);
-    }
+  if (root_window != window_->GetRootWindow() && !window_copy_) {
+    DCHECK(!layer_);
+    layer_ = views::corewm::RecreateWindowLayers(window_, true);
+    window_copy_ = CreateCopyOfWindow(root_window, window_, layer_);
+  }
+  AnimateTransformOnWindowAndTransientChildren(transform);
+}
+
+void ScopedTransformOverviewWindow::
+    AnimateTransformOnWindowAndTransientChildren(
+        const gfx::Transform& transform) {
+  WindowSelectorAnimationSettings animation_settings(window_);
+  window_->SetTransform(transform);
+
+  if (window_copy_) {
     WindowSelectorAnimationSettings animation_settings(
         window_copy_->GetNativeWindow());
     window_copy_->GetNativeWindow()->SetTransform(transform);
   }
-  WindowSelectorAnimationSettings animation_settings(window_);
-  window_->SetTransform(transform);
+
+  // TODO(flackr): Create copies of the transient children windows as well.
+  // Currently they will only be visible on the window's initial display.
+  aura::Window::Windows transient_children = window_->transient_children();
+  for (aura::Window::Windows::iterator iter = transient_children.begin();
+       iter != transient_children.end(); ++iter) {
+    aura::Window* transient_child = *iter;
+    WindowSelectorAnimationSettings animation_settings(transient_child);
+    gfx::Transform transient_window_transform;
+    gfx::Rect window_bounds = window_->bounds();
+    gfx::Rect child_bounds = transient_child->bounds();
+    transient_window_transform.Translate(window_bounds.x() - child_bounds.x(),
+                                         window_bounds.y() - child_bounds.y());
+    transient_window_transform.PreconcatTransform(transform);
+    transient_window_transform.Translate(child_bounds.x() - window_bounds.x(),
+                                         child_bounds.y() - window_bounds.y());
+    transient_child->SetTransform(transient_window_transform);
+  }
 }
 
 void ScopedTransformOverviewWindow::OnOverviewStarted() {

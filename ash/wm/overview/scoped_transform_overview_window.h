@@ -70,6 +70,11 @@ class ScopedTransformOverviewWindow {
   virtual void OnOverviewStarted();
 
  private:
+  // Applies the |transform| to the overview window and all of its transient
+  // children using animations.
+  void AnimateTransformOnWindowAndTransientChildren(
+      const gfx::Transform& transform);
+
   // A weak pointer to the real window in the overview.
   aura::Window* window_;
 
