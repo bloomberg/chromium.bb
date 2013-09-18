@@ -24,7 +24,7 @@ namespace local_discovery {
 class PrivetDeviceLister;
 class PrivetHTTPAsynchronousFactory;
 class PrivetHTTPResolution;
-class ServiceDiscoveryHostClient;
+class ServiceDiscoverySharedClient;
 struct DeviceDescription;
 
 // Contains logic related to notifications not tied actually displaying them.
@@ -115,7 +115,7 @@ class PrivetNotificationService
 
   content::BrowserContext* profile_;
   scoped_ptr<PrivetDeviceLister> device_lister_;
-  scoped_refptr<ServiceDiscoveryHostClient> service_discovery_client_;
+  scoped_refptr<ServiceDiscoverySharedClient> service_discovery_client_;
   scoped_ptr<PrivetNotificationsListener> privet_notifications_listener_;
 };
 

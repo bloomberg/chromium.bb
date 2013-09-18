@@ -162,7 +162,6 @@ PrivetNotificationService::PrivetNotificationService(
 }
 
 PrivetNotificationService::~PrivetNotificationService() {
-  ServiceDiscoveryHostClientFactory::ReleaseClient();
 }
 
 void PrivetNotificationService::DeviceChanged(
@@ -224,7 +223,7 @@ void PrivetNotificationService::PrivetRemoveNotification(
 }
 
 void PrivetNotificationService::Start() {
-  service_discovery_client_ = ServiceDiscoveryHostClientFactory::GetClient();
+  service_discovery_client_ = ServiceDiscoverySharedClient::GetInstance();
   device_lister_.reset(new PrivetDeviceListerImpl(service_discovery_client_,
                                                   this));
   device_lister_->Start();

@@ -15,8 +15,7 @@
 using local_discovery::ServiceDescription;
 using local_discovery::ServiceResolver;
 using local_discovery::ServiceWatcher;
-using local_discovery::ServiceDiscoveryHostClientFactory;
-using local_discovery::ServiceDiscoveryHostClient;
+using local_discovery::ServiceDiscoverySharedClient;
 
 namespace extensions {
 
@@ -39,7 +38,7 @@ void FillServiceInfo(const ServiceDescription& service_description,
 DnsSdDeviceLister::DnsSdDeviceLister(
     DnsSdDelegate* delegate,
     const std::string& service_type,
-    scoped_refptr<ServiceDiscoveryHostClient> service_discovery_client)
+    ServiceDiscoverySharedClient* service_discovery_client)
     : delegate_(delegate),
       service_type_(service_type),
       service_discovery_client_(service_discovery_client) {

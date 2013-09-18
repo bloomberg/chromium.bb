@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 
+#include "base/cancelable_callback.h"
 #include "base/memory/singleton.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/common/local_discovery/service_discovery_client.h"
@@ -29,8 +30,7 @@ namespace local_discovery {
 class ServiceDiscoveryHostClient
     : public base::NonThreadSafe,
       public ServiceDiscoveryClient,
-      public content::UtilityProcessHostClient,
-      public net::NetworkChangeNotifier::NetworkChangeObserver {
+      public content::UtilityProcessHostClient {
  public:
   ServiceDiscoveryHostClient();
 
@@ -55,10 +55,6 @@ class ServiceDiscoveryHostClient
   // UtilityProcessHostClient implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
-  // net::NetworkChangeNotifier::NetworkChangeObserver implementation.
-  virtual void OnNetworkChanged(
-      net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
-
  protected:
   virtual ~ServiceDiscoveryHostClient();
 
@@ -66,6 +62,7 @@ class ServiceDiscoveryHostClient
   class ServiceWatcherProxy;
   class ServiceResolverProxy;
   class LocalDomainResolverProxy;
+  friend class ServiceDiscoverySharedClient;
 
   typedef std::map<uint64, ServiceWatcher::UpdatedCallback> WatcherCallbacks;
   typedef std::map<uint64, ServiceResolver::ResolveCompleteCallback>
@@ -75,9 +72,8 @@ class ServiceDiscoveryHostClient
 
   void StartOnIOThread();
   void ShutdownOnIOThread();
-  void RestartOnIOThread();
 
-  void Restart();
+  void InvalidateWatchers();
 
   void Send(IPC::Message* msg);
   void SendOnIOThread(IPC::Message* msg);
@@ -134,24 +130,42 @@ class ServiceDiscoveryHostClient
   DISALLOW_COPY_AND_ASSIGN(ServiceDiscoveryHostClient);
 };
 
-class ServiceDiscoveryHostClientFactory : public base::NonThreadSafe {
+class ServiceDiscoverySharedClient
+    : public base::RefCounted<ServiceDiscoverySharedClient>,
+      public base::NonThreadSafe,
+      public ServiceDiscoveryClient,
+      public net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
-  ServiceDiscoveryHostClientFactory();
-  ~ServiceDiscoveryHostClientFactory();
+  static scoped_refptr<ServiceDiscoverySharedClient> GetInstance();
 
-  static ServiceDiscoveryHostClient* GetClient();
-  static void ReleaseClient();
+  // ServiceDiscoveryClient implementation.
+  virtual scoped_ptr<ServiceWatcher> CreateServiceWatcher(
+      const std::string& service_type,
+      const ServiceWatcher::UpdatedCallback& callback) OVERRIDE;
+  virtual scoped_ptr<ServiceResolver> CreateServiceResolver(
+      const std::string& service_name,
+      const ServiceResolver::ResolveCompleteCallback& callback) OVERRIDE;
+  virtual scoped_ptr<LocalDomainResolver> CreateLocalDomainResolver(
+      const std::string& domain,
+      net::AddressFamily address_family,
+      const LocalDomainResolver::IPAddressCallback& callback) OVERRIDE;
+
+  // net::NetworkChangeNotifier::NetworkChangeObserver implementation.
+  virtual void OnNetworkChanged(
+      net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
 
  private:
-  friend class Singleton<ServiceDiscoveryHostClientFactory>;
+  friend class base::RefCounted<ServiceDiscoverySharedClient>;
+  ServiceDiscoverySharedClient();
+  virtual ~ServiceDiscoverySharedClient();
 
-  static ServiceDiscoveryHostClientFactory* GetInstance();
+  void StartNewClient();
 
-  ServiceDiscoveryHostClient* GetClientInternal();
-  void ReleaseClientInternal();
+  base::CancelableClosure network_change_callback_;
 
-  scoped_refptr<ServiceDiscoveryHostClient> instance_;
-  int references_;
+  scoped_refptr<ServiceDiscoveryHostClient> host_client_;
+
+  DISALLOW_COPY_AND_ASSIGN(ServiceDiscoverySharedClient);
 };
 
 }  // namespace local_discovery

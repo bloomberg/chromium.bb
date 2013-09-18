@@ -23,8 +23,7 @@ class DnsSdDeviceLister {
   DnsSdDeviceLister(
       DnsSdDelegate* delegate,
       const std::string& service_type,
-      scoped_refptr<local_discovery::ServiceDiscoveryHostClient>
-          service_discovery_client);
+      local_discovery::ServiceDiscoverySharedClient* service_discovery_client);
   virtual ~DnsSdDeviceLister();
 
   // Requests that the service watcher issue an immediate query for services.
@@ -54,7 +53,7 @@ class DnsSdDeviceLister {
   const std::string service_type_;
 
   // The instance of the service discovery client.
-  scoped_refptr<local_discovery::ServiceDiscoveryHostClient>
+  scoped_refptr<local_discovery::ServiceDiscoverySharedClient>
       service_discovery_client_;
 
   // The instance of the service watcher.

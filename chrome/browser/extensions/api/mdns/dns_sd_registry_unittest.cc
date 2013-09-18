@@ -43,7 +43,7 @@ class TestDnsSdRegistry : public DnsSdRegistry {
   virtual DnsSdDeviceLister* CreateDnsSdDeviceLister(
       DnsSdDelegate* delegate,
       const std::string& service_type,
-      scoped_refptr<local_discovery::ServiceDiscoveryHostClient>
+      local_discovery::ServiceDiscoverySharedClient*
           discovery_client) OVERRIDE {
     delegate_ = delegate;
     MockDnsSdDeviceLister* lister = new MockDnsSdDeviceLister();

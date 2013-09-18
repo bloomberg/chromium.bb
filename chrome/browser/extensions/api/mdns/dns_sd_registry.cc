@@ -8,8 +8,7 @@
 #include "chrome/browser/extensions/api/mdns/dns_sd_device_lister.h"
 #include "chrome/browser/local_discovery/service_discovery_host_client.h"
 
-using local_discovery::ServiceDiscoveryHostClientFactory;
-using local_discovery::ServiceDiscoveryHostClient;
+using local_discovery::ServiceDiscoverySharedClient;
 
 namespace extensions {
 
@@ -81,14 +80,12 @@ DnsSdRegistry::ServiceTypeData::GetServiceList() {
 }
 
 DnsSdRegistry::DnsSdRegistry() {
-#if !defined(OS_MACOSX)
-  service_discovery_client_ = ServiceDiscoveryHostClientFactory::GetClient();
-#else
-  service_discovery_client_ = NULL;
+#if defined(ENABLED_MDNS)
+  service_discovery_client_ = ServiceDiscoverySharedClient::GetInstance();
 #endif
 }
 
-DnsSdRegistry::DnsSdRegistry(ServiceDiscoveryHostClient* client) {
+DnsSdRegistry::DnsSdRegistry(ServiceDiscoverySharedClient* client) {
   service_discovery_client_ = client;
 }
 
@@ -106,8 +103,7 @@ void DnsSdRegistry::RemoveObserver(DnsSdObserver* observer) {
 DnsSdDeviceLister* DnsSdRegistry::CreateDnsSdDeviceLister(
     DnsSdDelegate* delegate,
     const std::string& service_type,
-    scoped_refptr<local_discovery::ServiceDiscoveryHostClient>
-        discovery_client) {
+    local_discovery::ServiceDiscoverySharedClient* discovery_client) {
   return new DnsSdDeviceLister(delegate, service_type, discovery_client);
 }
 

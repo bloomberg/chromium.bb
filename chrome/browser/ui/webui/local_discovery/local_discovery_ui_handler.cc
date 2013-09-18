@@ -57,10 +57,6 @@ LocalDiscoveryUIHandler::LocalDiscoveryUIHandler(
 LocalDiscoveryUIHandler::~LocalDiscoveryUIHandler() {
   ResetCurrentRegistration();
   SetIsVisible(false);
-  if (service_discovery_client_.get()) {
-    service_discovery_client_ = NULL;
-    ServiceDiscoveryHostClientFactory::ReleaseClient();
-  }
 }
 
 // static
@@ -109,7 +105,7 @@ void LocalDiscoveryUIHandler::HandleStart(const base::ListValue* args) {
   // If privet_lister_ is already set, it is a mock used for tests or the result
   // of a reload.
   if (!privet_lister_) {
-    service_discovery_client_ = ServiceDiscoveryHostClientFactory::GetClient();
+    service_discovery_client_ = ServiceDiscoverySharedClient::GetInstance();
     privet_lister_.reset(new PrivetDeviceListerImpl(
         service_discovery_client_.get(), this));
     privet_http_factory_ =

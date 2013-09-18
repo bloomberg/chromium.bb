@@ -21,7 +21,7 @@ namespace local_discovery {
 class PrivetConfirmApiCallFlow;
 class PrivetHTTPAsynchronousFactory;
 class PrivetHTTPResolution;
-class ServiceDiscoveryHostClient;
+class ServiceDiscoverySharedClient;
 
 // UI Handler for chrome://devices/
 // It listens to local discovery notifications and passes those notifications
@@ -157,7 +157,7 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
   scoped_ptr<PrivetDeviceLister> privet_lister_;
 
   // The service discovery client used listen for devices on the local network.
-  scoped_refptr<ServiceDiscoveryHostClient> service_discovery_client_;
+  scoped_refptr<ServiceDiscoverySharedClient> service_discovery_client_;
 
   // A factory for creating the privet HTTP Client.
   scoped_ptr<PrivetHTTPAsynchronousFactory> privet_http_factory_;

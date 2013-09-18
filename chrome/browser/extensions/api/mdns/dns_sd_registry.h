@@ -16,7 +16,7 @@
 #include "chrome/browser/extensions/api/mdns/dns_sd_delegate.h"
 
 namespace local_discovery {
-class ServiceDiscoveryHostClient;
+class ServiceDiscoverySharedClient;
 }
 
 namespace extensions {
@@ -39,7 +39,7 @@ class DnsSdRegistry : public DnsSdDelegate {
   };
 
   DnsSdRegistry();
-  explicit DnsSdRegistry(local_discovery::ServiceDiscoveryHostClient* client);
+  explicit DnsSdRegistry(local_discovery::ServiceDiscoverySharedClient* client);
   virtual ~DnsSdRegistry();
 
   // Observer registration for parties interested in discovery events.
@@ -84,8 +84,7 @@ class DnsSdRegistry : public DnsSdDelegate {
   virtual DnsSdDeviceLister* CreateDnsSdDeviceLister(
       DnsSdDelegate* delegate,
       const std::string& service_type,
-      scoped_refptr<local_discovery::ServiceDiscoveryHostClient>
-          discovery_client);
+      local_discovery::ServiceDiscoverySharedClient* discovery_client);
 
   // DnsSdDelegate implementation:
   virtual void ServiceChanged(const std::string& service_type,
@@ -99,7 +98,7 @@ class DnsSdRegistry : public DnsSdDelegate {
  private:
   void DispatchApiEvent(const std::string& service_type);
 
-  scoped_refptr<local_discovery::ServiceDiscoveryHostClient>
+  scoped_refptr<local_discovery::ServiceDiscoverySharedClient>
       service_discovery_client_;
   ObserverList<DnsSdObserver> observers_;
 
