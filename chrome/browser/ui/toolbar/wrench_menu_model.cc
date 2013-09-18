@@ -204,7 +204,7 @@ void ToolsMenuModel::Build(Browser* browser) {
 
   AddSeparator(ui::NORMAL_SEPARATOR);
 
-#if defined(GOOLGE_CHROME_BUILD)
+#if defined(GOOGLE_CHROME_BUILD)
 #if !defined(OS_CHROMEOS)
   // Show IDC_FEEDBACK in "Tools" menu for non-ChromeOS platforms.
   if (!chrome::UseAlternateSendFeedbackLocation()) {
