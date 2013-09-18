@@ -2136,8 +2136,8 @@ class BisectPerformanceMetrics(object):
       # overall graph is.
       dist_between_groups = min(math.fabs(bounds_broken[1] - bounds_working[0]),
           math.fabs(bounds_broken[0] - bounds_working[1]))
-      len_working_group = CalculateStandardError(working_mean)
-      len_broken_group = CalculateStandardError(broken_mean)
+      len_working_group = CalculateStandardDeviation(working_mean)
+      len_broken_group = CalculateStandardDeviation(broken_mean)
 
       confidence = (dist_between_groups / (
           max(0.0001, (len_broken_group + len_working_group ))))
