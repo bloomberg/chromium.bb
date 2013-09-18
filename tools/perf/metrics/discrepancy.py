@@ -16,7 +16,7 @@ def NormalizeSamples(samples):
       is not bounded (it is for Monte Carlo integration, where discrepancy was
       first used).
   '''
-  if not samples or len(samples) == 0:
+  if not samples:
     return samples, 1.0
   samples = sorted(samples)
   low = min(samples)
@@ -37,7 +37,7 @@ def Discrepancy(samples, interval_multiplier = 10000):
       http://en.wikipedia.org/wiki/Low-discrepancy_sequence
       http://mathworld.wolfram.com/Discrepancy.html
   '''
-  if not samples or len(samples) == 0:
+  if not samples:
     return 1.0
 
   max_local_discrepancy = 0
@@ -102,6 +102,8 @@ def FrameDiscrepancy(frame_timestamps, absolute = True,
       The time stamp series C = [0,2,3,4] and D = [0,2,3,4,5] have the same
       absolute discrepancy, but D has lower relative discrepancy than C.
   '''
+  if not frame_timestamps:
+    return 1.0
   samples, sample_scale = NormalizeSamples(frame_timestamps)
   discrepancy = Discrepancy(samples, interval_multiplier)
   inv_sample_count = 1.0 / len(samples)
