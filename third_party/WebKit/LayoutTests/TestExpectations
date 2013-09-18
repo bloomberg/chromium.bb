@@ -243,9 +243,6 @@ crbug.com/264211 svg/text/text-layout-crash.html [ Crash ]
 
 webkit.org/b/111626 [ Mac Debug ] svg/css/font-face-crash.html [ Crash Pass ]
 
-crbug.com/266213 [ Debug ] svg/custom/bug86392.html [ Crash ]
-crbug.com/266213 [ Debug ] svg/custom/unicode-in-tspan-multi-svg-crash.html [ Crash ]
-
 # -----------------------------------------------------------------
 # End SVG TESTS
 # -----------------------------------------------------------------
