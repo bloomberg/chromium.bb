@@ -112,6 +112,9 @@ class UserManager {
   // in, the current user will be returned.
   virtual const UserList& GetLRULoggedInUsers() = 0;
 
+  // Returns a list of users who can unlock the device.
+  virtual UserList GetUnlockUsers() const = 0;
+
   // Returns the email of the owner user. Returns an empty string if there is
   // no owner for the device.
   virtual const std::string& GetOwnerEmail() = 0;
@@ -193,6 +196,10 @@ class UserManager {
   // we support only one of them being active.
   virtual const User* GetActiveUser() const = 0;
   virtual User* GetActiveUser() = 0;
+
+  // Returns the primary user of the current session. It is recorded for the
+  // first signed-in user and does not change thereafter.
+  virtual const User* GetPrimaryUser() const = 0;
 
   // Saves user's oauth token status in local state preferences.
   virtual void SaveUserOAuthStatus(

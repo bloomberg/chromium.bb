@@ -25,6 +25,10 @@ User* MockUserManager::GetLoggedInUser() {
   return user_;
 }
 
+UserList MockUserManager::GetUnlockUsers() const {
+  return user_list_;
+}
+
 const std::string& MockUserManager::GetOwnerEmail() {
   return user_->email();
 }
@@ -34,6 +38,10 @@ const User* MockUserManager::GetActiveUser() const {
 }
 
 User* MockUserManager::GetActiveUser() {
+  return user_;
+}
+
+const User* MockUserManager::GetPrimaryUser() const {
   return user_;
 }
 

@@ -142,8 +142,8 @@ class ScreenLocker : public LoginStatusConsumer {
   // ScreenLockerDelegate instance in use.
   scoped_ptr<ScreenLockerDelegate> delegate_;
 
-  // Logged in users. First user in list is active user.
-  const UserList& users_;
+  // Users that can unlock the device.
+  UserList users_;
 
   // Used to authenticate the user to unlock.
   scoped_refptr<Authenticator> authenticator_;

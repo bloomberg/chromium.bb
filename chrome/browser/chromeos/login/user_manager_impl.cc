@@ -220,6 +220,7 @@ UserManagerImpl::UserManagerImpl()
       device_local_account_policy_service_(NULL),
       users_loaded_(false),
       active_user_(NULL),
+      primary_user_(NULL),
       session_started_(false),
       user_sessions_restored_(false),
       is_current_user_owner_(false),
@@ -307,6 +308,13 @@ const UserList& UserManagerImpl::GetLRULoggedInUsers() {
   return lru_logged_in_users_;
 }
 
+UserList UserManagerImpl::GetUnlockUsers() const {
+  UserList unlock_users;
+  CHECK(primary_user_);
+  unlock_users.push_back(primary_user_);
+  return unlock_users;
+}
+
 const std::string& UserManagerImpl::GetOwnerEmail() {
   return owner_email_;
 }
@@ -368,6 +376,9 @@ void UserManagerImpl::UserLoggedIn(const std::string& email,
   // Place user who just signed in to the top of the logged in users.
   logged_in_users_.insert(logged_in_users_.begin(), active_user_);
   SetLRUUser(active_user_);
+
+  if (!primary_user_)
+    primary_user_ = active_user_;
 
   UMA_HISTOGRAM_ENUMERATION("UserManager.LoginUserType",
                             active_user_->GetType(), User::NUM_USER_TYPES);
@@ -627,6 +638,11 @@ const User* UserManagerImpl::GetActiveUser() const {
 User* UserManagerImpl::GetActiveUser() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return active_user_;
+}
+
+const User* UserManagerImpl::GetPrimaryUser() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  return primary_user_;
 }
 
 void UserManagerImpl::SaveUserOAuthStatus(

@@ -54,6 +54,7 @@ class UserManagerImpl
   virtual UserList GetUsersAdmittedForMultiProfile() const OVERRIDE;
   virtual const UserList& GetLoggedInUsers() const OVERRIDE;
   virtual const UserList& GetLRULoggedInUsers() OVERRIDE;
+  virtual UserList GetUnlockUsers() const OVERRIDE;
   virtual const std::string& GetOwnerEmail() OVERRIDE;
   virtual void UserLoggedIn(const std::string& email,
                             const std::string& username_hash,
@@ -72,6 +73,7 @@ class UserManagerImpl
   virtual User* GetLoggedInUser() OVERRIDE;
   virtual const User* GetActiveUser() const OVERRIDE;
   virtual User* GetActiveUser() OVERRIDE;
+  virtual const User* GetPrimaryUser() const OVERRIDE;
   virtual void SaveUserOAuthStatus(
       const std::string& username,
       User::OAuthTokenStatus oauth_token_status) OVERRIDE;
@@ -331,6 +333,10 @@ class UserManagerImpl
   // of the User instances in |users_|, the |guest_user_| instance or an
   // ephemeral user instance.
   User* active_user_;
+
+  // The primary user of the current session. It is recorded for the first
+  // signed-in user and does not change thereafter.
+  User* primary_user_;
 
   // True if SessionStarted() has been called.
   bool session_started_;

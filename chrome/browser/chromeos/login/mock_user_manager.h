@@ -103,10 +103,12 @@ class MockUserManager : public UserManager {
   // User objects but the UserManagerImpl and us.
   virtual const UserList& GetUsers() const OVERRIDE;
   virtual const User* GetLoggedInUser() const OVERRIDE;
+  virtual UserList GetUnlockUsers() const OVERRIDE;
   virtual const std::string& GetOwnerEmail() OVERRIDE;
   virtual User* GetLoggedInUser() OVERRIDE;
   virtual const User* GetActiveUser() const OVERRIDE;
   virtual User* GetActiveUser() OVERRIDE;
+  virtual const User* GetPrimaryUser() const OVERRIDE;
 
   virtual UserImageManager* GetUserImageManager() OVERRIDE;
 
