@@ -829,12 +829,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.spinner_ = dom.querySelector('#spinner-with-text');
     this.showSpinner_(true);
 
-    this.searchBreadcrumbs_ = new BreadcrumbsController(
-         dom.querySelector('#search-breadcrumbs'), this.metadataCache_);
-    this.searchBreadcrumbs_.addEventListener(
-         'pathclick', this.onBreadcrumbClick_.bind(this));
-    this.searchBreadcrumbs_.setHideLast(false);
-
     // Check the option to hide the selecting checkboxes.
     this.table_.showCheckboxes = this.showCheckboxes_;
 
@@ -853,6 +847,10 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         PreviewPanel.Event.VISIBILITY_CHANGE,
         this.onPreviewPanelVisibilityChange_.bind(this));
     this.previewPanel_.initialize();
+
+    this.previewPanel_.breadcrumbs.addEventListener(
+         'pathclick', this.onBreadcrumbClick_.bind(this));
+    this.previewPanel_.breadcrumbs.setHideLast(false);
 
     this.progressCenterPanel_ = new ProgressCenterPanel(
         dom.querySelector('#progress-center'));
@@ -1482,7 +1480,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         'too-short',
         this.searchBoxWrapper_.clientWidth < 100);
 
-    this.searchBreadcrumbs_.truncate();
+    this.previewPanel_.breadcrumbs.truncate();
   };
 
   /**

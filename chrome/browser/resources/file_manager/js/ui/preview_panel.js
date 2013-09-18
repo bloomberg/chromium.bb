@@ -47,6 +47,12 @@ var PreviewPanel = function(element,
   this.element_ = element;
 
   /**
+   * @type {BreadcrumbsController}
+   */
+  this.breadcrumbs = new BreadcrumbsController(
+      element.querySelector('#search-breadcrumbs'), metadataCache);
+
+  /**
    * @type {PreviewPanel.Thumbnails}
    */
   this.thumbnails = new PreviewPanel.Thumbnails(
@@ -130,6 +136,7 @@ PreviewPanel.prototype = {
   set currentPath(path) {
     this.currentPath_ = path;
     this.updateVisibility_();
+    this.updatePreviewArea_();
   },
 
   /**
@@ -163,7 +170,7 @@ PreviewPanel.prototype = {
 PreviewPanel.prototype.initialize = function() {
   this.element_.addEventListener('webkitTransitionEnd',
                                  this.onTransitionEnd_.bind(this));
-  this.updatePreviewText_();
+  this.updatePreviewArea_();
   this.updateVisibility_();
 };
 
@@ -175,7 +182,7 @@ PreviewPanel.prototype.setSelection = function(selection) {
   this.sequence_++;
   this.selection_ = selection;
   this.updateVisibility_();
-  this.updatePreviewText_();
+  this.updatePreviewArea_();
 };
 
 /**
@@ -218,18 +225,28 @@ PreviewPanel.prototype.updateVisibility_ = function() {
 
 /**
  * Update the text in the preview panel.
+ *
+ * @param {boolean} breadCrumbsVisible Whether the bread crumbs is visible or
+ *     not.
  * @private
  */
-PreviewPanel.prototype.updatePreviewText_ = function() {
+PreviewPanel.prototype.updatePreviewArea_ = function(breadCrumbsVisible) {
   var selection = this.selection_;
 
-  // Hides the preview text if zero or one file is selected. We shows a
-  // breadcrumb list instead on the preview panel.
-  if (selection.totalCount <= 1) {
+  // Check if the breadcrumb list should show instead on the preview text.
+  var path;
+  if (this.selection_.totalCount == 1)
+    path = this.selection_.entries[0].fullPath;
+  else if (this.selection_.totalCount == 0)
+    path = this.currentPath_;
+
+  if (path) {
+    this.breadcrumbs.show(PathUtil.getRootPath(path), path);
     this.calculatingSizeLabel_.hidden = true;
     this.previewText_.textContent = '';
     return;
   }
+  this.breadcrumbs.hide();
 
   // Obtains the preview text.
   var text;
@@ -254,7 +271,7 @@ PreviewPanel.prototype.updatePreviewText_ = function() {
       // Selection has been already updated.
       if (this.sequence_ != sequence)
         return;
-      this.updatePreviewText_();
+      this.updatePreviewArea_();
     }.bind(this, this.sequence_));
   }
 };

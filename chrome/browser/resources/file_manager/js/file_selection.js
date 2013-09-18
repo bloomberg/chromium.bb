@@ -171,7 +171,6 @@ function FileSelectionHandler(fileManager) {
       querySelector('.calculating-size');
   this.calculatingSize_.textContent = str('CALCULATING_SIZE');
 
-  this.searchBreadcrumbs_ = fileManager.searchBreadcrumbs_;
   this.taskItems_ = fileManager.taskItems_;
 
   this.animationTimeout_ = null;
@@ -324,30 +323,10 @@ FileSelectionHandler.prototype.updateFileSelectionAsync = function(selection) {
 
   // Update preview panels.
   var wasVisible = this.previewPanel_.visible;
-  var thumbnailSelection;
-  if (selection.totalCount != 0) {
-    thumbnailSelection = selection;
-  } else {
-    thumbnailSelection = {
-      entries: [this.fileManager_.getCurrentDirectoryEntry()]
-    };
-  }
   this.previewPanel_.setSelection(selection);
-  this.previewPanel_.thumbnails.selection = thumbnailSelection;
-
-  // Update breadcrums.
-  var updateTarget = null;
-  var path = this.fileManager_.getCurrentDirectory();
-  if (selection.totalCount == 1) {
-    // Shows the breadcrumb list when a file is selected.
-    updateTarget = selection.entries[0].fullPath;
-  } else if (selection.totalCount == 0 &&
-             this.previewPanel_.visible) {
-    // Shows the breadcrumb list when no file is selected and the preview
-    // panel is visible.
-    updateTarget = path;
-  }
-  this.updatePreviewPanelBreadcrumbs_(updateTarget);
+  this.previewPanel_.thumbnails.selection = (selection.totalCount != 0) ?
+      selection :
+      {entries: [this.fileManager_.getCurrentDirectoryEntry()]};
 
   // Scroll to item
   if (!wasVisible && this.selection.totalCount == 1) {
@@ -366,38 +345,4 @@ FileSelectionHandler.prototype.updateFileSelectionAsync = function(selection) {
   if (selection.totalCount > 0) {
     chrome.test.sendMessage('selection-change-complete');
   }
-};
-
-/**
- * Updates the breadcrumbs in the preview panel.
- *
- * @param {?string} path Path to be shown in the breadcrumbs list
- * @private
- */
-FileSelectionHandler.prototype.updatePreviewPanelBreadcrumbs_ = function(path) {
-  if (!path)
-    this.searchBreadcrumbs_.hide();
-  else
-    this.searchBreadcrumbs_.show(PathUtil.getRootPath(path), path);
-};
-
-/**
- * Updates the search breadcrumbs. This method should not be used in the new ui.
- *
- * @private
- */
-FileSelectionHandler.prototype.updateSearchBreadcrumbs_ = function() {
-  var selectedIndexes =
-      this.fileManager_.getCurrentList().selectionModel.selectedIndexes;
-  if (selectedIndexes.length !== 1 ||
-      !this.fileManager_.directoryModel_.isSearching()) {
-    this.searchBreadcrumbs_.hide();
-    return;
-  }
-
-  var entry = this.fileManager_.getFileList().item(
-      selectedIndexes[0]);
-  this.searchBreadcrumbs_.show(
-      PathUtil.getRootPath(entry.fullPath),
-      entry.fullPath);
 };

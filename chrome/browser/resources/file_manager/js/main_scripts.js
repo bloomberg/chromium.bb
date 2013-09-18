@@ -78,7 +78,6 @@
 //<include src="path_util.js"/>
 //<include src="util.js"/>
 //<include src="action_choice_util.js"/>
-//<include src="breadcrumbs_controller.js"/>
 //<include src="butter_bar.js"/>
 //<include src="cws_container_client.js"/>
 //<include src="directory_contents.js"/>
@@ -104,6 +103,7 @@
 //<include src="suggest_apps_dialog.js"/>
 //<include src="text_measure.js"/>
 //<include src="tree.css.js"/>
+//<include src="ui/breadcrumbs_controller.js"/>
 //<include src="ui/preview_panel.js"/>
 //<include src="ui/progress_center_panel.js"/>
 //<include src="url_constants.js"/>
