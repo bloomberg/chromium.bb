@@ -86,7 +86,7 @@ LOAD_BUILDBOT_DATA({
                 },
                 "layout-tests": {
                     "builders": [
-                        "WebKit (Content Shell) Android",
+                        "WebKit Android (Nexus4)",
                         "WebKit Linux",
                         "WebKit Mac10.6",
                         "WebKit Mac10.7 (dbg)",

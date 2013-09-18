@@ -51,6 +51,7 @@ _exact_matches = {
     "WebKit Mac10.7 (dbg)": {"port_name": "mac-lion"},
     "WebKit Mac10.8": {"port_name": "mac-mountainlion"},
     "WebKit Mac10.8 (retina)": {"port_name": "mac-retina"},
+    "WebKit Android (Nexus4)": {"port_name": "android"},
 }
 
 
@@ -68,8 +69,6 @@ _deps_builders = {
 
 
 _ports_without_builders = [
-    # FIXME: Move to _exact_matches.
-    "android",
 ]
 
 
