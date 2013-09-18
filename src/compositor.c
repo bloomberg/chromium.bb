@@ -96,20 +96,76 @@ static void
 weston_compositor_build_surface_list(struct weston_compositor *compositor);
 
 WL_EXPORT int
-weston_output_switch_mode(struct weston_output *output, struct weston_mode *mode, int32_t scale)
+weston_output_switch_mode(struct weston_output *output, struct weston_mode *mode,
+		int32_t scale, enum weston_mode_switch_op op)
 {
 	struct weston_seat *seat;
+	struct wl_resource *resource;
 	pixman_region32_t old_output_region;
-	int ret;
+	int ret, notify_mode_changed, notify_scale_changed;
+	int temporary_mode, temporary_scale;
 
 	if (!output->switch_mode)
 		return -1;
 
-	ret = output->switch_mode(output, mode);
-	if (ret < 0)
-		return ret;
+	temporary_mode = (output->original_mode != 0);
+	temporary_scale = (output->current_scale != output->original_scale);
+	ret = 0;
 
-        output->current_scale = scale;
+	notify_mode_changed = 0;
+	notify_scale_changed = 0;
+	switch(op) {
+	case WESTON_MODE_SWITCH_SET_NATIVE:
+		output->native_mode = mode;
+		if (!temporary_mode) {
+			notify_mode_changed = 1;
+			ret = output->switch_mode(output, mode);
+			if (ret < 0)
+				return ret;
+		}
+
+		output->native_scale = scale;
+		if(!temporary_scale)
+			notify_scale_changed = 1;
+		break;
+	case WESTON_MODE_SWITCH_SET_TEMPORARY:
+		if (!temporary_mode)
+			output->original_mode = output->native_mode;
+		if (!temporary_scale)
+			output->original_scale = output->native_scale;
+
+		ret = output->switch_mode(output, mode);
+		if (ret < 0)
+			return ret;
+
+		output->current_mode = mode;
+		output->current_scale = scale;
+		break;
+	case WESTON_MODE_SWITCH_RESTORE_NATIVE:
+		if (!temporary_mode) {
+			weston_log("already in the native mode\n");
+			return -1;
+		}
+
+		notify_mode_changed = (output->original_mode != output->native_mode);
+
+		ret = output->switch_mode(output, mode);
+		if (ret < 0)
+			return ret;
+
+		if (output->original_scale != output->native_scale) {
+			notify_scale_changed = 1;
+			scale = output->native_scale;
+			output->original_scale = scale;
+		}
+		output->original_mode = 0;
+
+		output->current_scale = output->native_scale;
+		break;
+	default:
+		weston_log("unknown weston_switch_mode_op %d\n", op);
+		break;
+	}
 
 	pixman_region32_init(&old_output_region);
 	pixman_region32_copy(&old_output_region, &output->region);
@@ -151,6 +207,25 @@ weston_output_switch_mode(struct weston_output *output, struct weston_mode *mode
 	}
 
 	pixman_region32_fini(&old_output_region);
+
+	/* notify clients of the changes */
+	if (notify_mode_changed || notify_scale_changed) {
+		wl_resource_for_each(resource, &output->resource_list) {
+			if(notify_mode_changed) {
+				wl_output_send_mode(resource,
+						mode->flags | WL_OUTPUT_MODE_CURRENT,
+						mode->width,
+						mode->height,
+						mode->refresh);
+			}
+
+			if (notify_scale_changed)
+				wl_output_send_scale(resource, scale);
+
+			if (wl_resource_get_version(resource) >= 2)
+				   wl_output_send_done(resource);
+		}
+	}
 
 	return ret;
 }
@@ -1874,7 +1949,7 @@ weston_subsurface_commit_to_cache(struct weston_subsurface *sub)
 	 * If this commit would cause the surface to move by the
 	 * attach(dx, dy) parameters, the old damage region must be
 	 * translated to correspond to the new surface coordinate system
-	 * origin.
+	 * original_mode.
 	 */
 	pixman_region32_translate(&sub->cached.damage,
 				  -surface->pending.sx, -surface->pending.sy);
@@ -2728,7 +2803,7 @@ weston_output_transform_scale_init(struct weston_output *output, uint32_t transf
 		break;
 	}
 
-        output->current_scale = scale;
+	output->native_scale = output->current_scale = scale;
 	output->width /= scale;
 	output->height /= scale;
 }

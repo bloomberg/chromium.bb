@@ -1944,7 +1944,6 @@ create_output_for_connector(struct drm_compositor *ec,
 	if (connector->connector_type == DRM_MODE_CONNECTOR_LVDS)
 		output->base.connection_internal = 1;
 
-	output->base.original_mode = output->base.current_mode;
 	output->base.start_repaint_loop = drm_output_start_repaint_loop;
 	output->base.repaint = drm_output_repaint;
 	output->base.destroy = drm_output_destroy;

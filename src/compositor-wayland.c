@@ -295,7 +295,6 @@ wayland_compositor_create_output(struct wayland_compositor *c,
 				      &shell_surface_listener, output);
 	wl_shell_surface_set_toplevel(output->parent.shell_surface);
 
-	output->base.original_mode = output->base.current_mode;
 	output->base.start_repaint_loop = wayland_output_start_repaint_loop;
 	output->base.repaint = wayland_output_repaint;
 	output->base.destroy = wayland_output_destroy;

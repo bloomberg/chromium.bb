@@ -1627,11 +1627,12 @@ get_default_output(struct weston_compositor *compositor)
 static void
 restore_output_mode(struct weston_output *output)
 {
-	if (output->current != output->origin ||
-	    (int32_t)output->scale != output->origin_scale)
+	if (output->current_mode != output->original_mode ||
+	    (int32_t)output->current_scale != output->original_scale)
 		weston_output_switch_mode(output,
-					  output->origin,
-					  output->origin_scale);
+					  output->original_mode,
+					  output->original_scale,
+					  WESTON_MODE_SWITCH_RESTORE_NATIVE);
 }
 
 static void
@@ -1958,7 +1959,8 @@ shell_configure_fullscreen(struct shell_surface *shsurf)
 				surf_height * surface->buffer_scale,
 				shsurf->fullscreen.framerate};
 
-			if (weston_output_switch_mode(output, &mode, surface->buffer_scale) == 0) {
+			if (weston_output_switch_mode(output, &mode, surface->buffer_scale,
+					WESTON_MODE_SWITCH_SET_TEMPORARY) == 0) {
 				weston_surface_set_position(surface,
 							    output->x - surf_x,
 							    output->y - surf_y);

@@ -174,6 +174,12 @@ enum dpms_enum {
 	WESTON_DPMS_OFF
 };
 
+enum weston_mode_switch_op {
+	WESTON_MODE_SWITCH_SET_NATIVE,
+	WESTON_MODE_SWITCH_SET_TEMPORARY,
+	WESTON_MODE_SWITCH_RESTORE_NATIVE
+};
+
 struct weston_output {
 	uint32_t id;
 	char *name;
@@ -203,11 +209,13 @@ struct weston_output {
 	char *make, *model, *serial_number;
 	uint32_t subpixel;
 	uint32_t transform;
+	int32_t native_scale;
 	int32_t current_scale;
+	int32_t original_scale;
 
+	struct weston_mode *native_mode;
 	struct weston_mode *current_mode;
 	struct weston_mode *original_mode;
-	int32_t original_scale;
 	struct wl_list mode_list;
 
 	void (*start_repaint_loop)(struct weston_output *output);
@@ -1211,7 +1219,8 @@ void
 weston_surface_destroy(struct weston_surface *surface);
 
 int
-weston_output_switch_mode(struct weston_output *output, struct weston_mode *mode, int32_t scale);
+weston_output_switch_mode(struct weston_output *output, struct weston_mode *mode,
+			int32_t scale, enum weston_mode_switch_op op);
 
 int
 noop_renderer_init(struct weston_compositor *ec);

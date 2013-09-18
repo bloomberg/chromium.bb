@@ -892,7 +892,6 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 	output->base.set_dpms = NULL;
 	output->base.switch_mode = NULL;
 	output->base.current_mode = &output->mode;
-	output->base.original_mode = output->base.current_mode;
 	output->base.make = "xwayland";
 	output->base.model = "none";
 	weston_output_init(&output->base, &c->base,

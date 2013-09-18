@@ -120,7 +120,6 @@ headless_compositor_create_output(struct headless_compositor *c,
 	output->finish_frame_timer =
 		wl_event_loop_add_timer(loop, finish_frame_handler, output);
 
-	output->base.original_mode = output->base.current_mode;
 	output->base.start_repaint_loop = headless_output_start_repaint_loop;
 	output->base.repaint = headless_output_repaint;
 	output->base.destroy = headless_output_destroy;
