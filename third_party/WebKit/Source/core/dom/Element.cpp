@@ -2464,15 +2464,24 @@ void Element::updatePseudoElement(PseudoId pseudoId, StyleRecalcChange change)
 
 void Element::createPseudoElementIfNeeded(PseudoId pseudoId)
 {
+    if (needsPseudoElement(pseudoId))
+        createPseudoElement(pseudoId);
+}
+
+bool Element::needsPseudoElement(PseudoId pseudoId) const
+{
     if (pseudoId == BACKDROP && !isInTopLayer())
-        return;
-
+        return false;
     if (!renderer() || !pseudoElementRendererIsNeeded(renderer()->getCachedPseudoStyle(pseudoId)))
-        return;
-
+        return false;
     if (!renderer()->canHaveGeneratedChildren())
-        return;
+        return false;
+    return true;
+}
 
+void Element::createPseudoElement(PseudoId pseudoId)
+{
+    ASSERT(needsPseudoElement(pseudoId));
     ASSERT(!isPseudoElement());
     RefPtr<PseudoElement> element = PseudoElement::create(this, pseudoId);
     if (pseudoId == BACKDROP)

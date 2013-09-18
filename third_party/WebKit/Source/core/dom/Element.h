@@ -703,7 +703,10 @@ private:
     void rebuildPresentationAttributeStyle();
 
     void updatePseudoElement(PseudoId, StyleRecalcChange);
-    void createPseudoElementIfNeeded(PseudoId);
+
+    inline void createPseudoElementIfNeeded(PseudoId);
+    inline bool needsPseudoElement(PseudoId) const;
+    void createPseudoElement(PseudoId);
 
     // FIXME: Everyone should allow author shadows.
     virtual bool areAuthorShadowsAllowed() const { return true; }

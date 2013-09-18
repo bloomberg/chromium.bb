@@ -43,15 +43,6 @@
 
 namespace WebCore {
 
-NodeRenderingContext::NodeRenderingContext(Node* node, RenderStyle* style)
-    : m_node(node)
-    , m_renderingParent(0)
-    , m_style(style)
-    , m_parentFlowRenderer(0)
-{
-    m_renderingParent = NodeRenderingTraversal::parent(node, &m_parentDetails);
-}
-
 static bool isRendererReparented(const RenderObject* renderer)
 {
     if (!renderer->node()->isElementNode())
