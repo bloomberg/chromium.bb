@@ -12,6 +12,7 @@
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_test_util.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.pb.h"
+#include "chrome/browser/sync_file_system/sync_file_system_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
@@ -24,9 +25,6 @@ namespace drive_backend {
 namespace {
 
 typedef MetadataDatabase::FileIDList FileIDList;
-
-using test_util::DatabaseCreateResultCallback;
-using test_util::SyncStatusResultCallback;
 
 const int64 kInitialChangeID = 1234;
 const int64 kSyncRootTrackerID = 100;
@@ -172,8 +170,8 @@ class MetadataDatabaseTest : public testing::Test {
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
     MetadataDatabase::Create(base::MessageLoopProxy::current(),
                              database_dir_.path(),
-                             base::Bind(&DatabaseCreateResultCallback,
-                                        &status, &metadata_database_));
+                             CreateResultReceiver(&status,
+                                                  &metadata_database_));
     message_loop_.RunUntilIdle();
     return status;
   }
@@ -507,7 +505,7 @@ class MetadataDatabaseTest : public testing::Test {
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
     metadata_database_->RegisterApp(
         app_id, folder_id,
-        base::Bind(&SyncStatusResultCallback, &status));
+        CreateResultReceiver(&status));
     message_loop_.RunUntilIdle();
     return status;
   }
@@ -515,7 +513,7 @@ class MetadataDatabaseTest : public testing::Test {
   SyncStatusCode DisableApp(const std::string& app_id) {
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
     metadata_database_->DisableApp(
-        app_id, base::Bind(&SyncStatusResultCallback, &status));
+        app_id, CreateResultReceiver(&status));
     message_loop_.RunUntilIdle();
     return status;
   }
@@ -523,7 +521,7 @@ class MetadataDatabaseTest : public testing::Test {
   SyncStatusCode EnableApp(const std::string& app_id) {
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
     metadata_database_->EnableApp(
-        app_id, base::Bind(&SyncStatusResultCallback, &status));
+        app_id, CreateResultReceiver(&status));
     message_loop_.RunUntilIdle();
     return status;
   }
@@ -531,7 +529,7 @@ class MetadataDatabaseTest : public testing::Test {
   SyncStatusCode UnregisterApp(const std::string& app_id) {
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
     metadata_database_->UnregisterApp(
-        app_id, base::Bind(&SyncStatusResultCallback, &status));
+        app_id, CreateResultReceiver(&status));
     message_loop_.RunUntilIdle();
     return status;
   }
@@ -540,7 +538,7 @@ class MetadataDatabaseTest : public testing::Test {
       ScopedVector<google_apis::ChangeResource> changes) {
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
     metadata_database_->UpdateByChangeList(
-        changes.Pass(), base::Bind(&SyncStatusResultCallback, &status));
+        changes.Pass(), CreateResultReceiver(&status));
     message_loop_.RunUntilIdle();
     return status;
   }
@@ -550,7 +548,7 @@ class MetadataDatabaseTest : public testing::Test {
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
     metadata_database_->PopulateFolderByChildList(
         folder_id, listed_children,
-        base::Bind(&SyncStatusResultCallback, &status));
+        CreateResultReceiver(&status));
     message_loop_.RunUntilIdle();
     return status;
   }
@@ -559,7 +557,7 @@ class MetadataDatabaseTest : public testing::Test {
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
     metadata_database_->UpdateTracker(
         tracker.tracker_id(), tracker.synced_details(),
-        base::Bind(&SyncStatusResultCallback, &status));
+        CreateResultReceiver(&status));
     message_loop_.RunUntilIdle();
     return status;
   }
@@ -573,7 +571,7 @@ class MetadataDatabaseTest : public testing::Test {
         largest_change_id,
         sync_root_folder,
         app_root_folders,
-        base::Bind(&SyncStatusResultCallback, &status));
+        CreateResultReceiver(&status));
     message_loop_.RunUntilIdle();
     return status;
   }

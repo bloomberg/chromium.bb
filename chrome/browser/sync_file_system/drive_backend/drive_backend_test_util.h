@@ -38,18 +38,6 @@ void ExpectEquivalentResourceAndMetadata(
 void ExpectEquivalentMetadataAndTracker(const FileMetadata& metadata,
                                         const FileTracker& tracker);
 
-void SyncStatusResultCallback(SyncStatusCode* status_out,
-                              SyncStatusCode status);
-void DatabaseCreateResultCallback(SyncStatusCode* status_out,
-                                  scoped_ptr<MetadataDatabase>* database_out,
-                                  SyncStatusCode status,
-                                  scoped_ptr<MetadataDatabase> database);
-void ResourceEntryResultCallback(
-    google_apis::GDataErrorCode* error_out,
-    scoped_ptr<google_apis::ResourceEntry>* entry_out,
-    google_apis::GDataErrorCode error,
-    scoped_ptr<google_apis::ResourceEntry> entry);
-
 }  // namespace test_util
 }  // namespace drive_backend
 }  // namespace sync_file_system

@@ -64,7 +64,7 @@ void ExpectEquivalentTrackers(const FileTracker& left,
   EXPECT_EQ(left.needs_folder_listing(), right.needs_folder_listing());
 }
 
-void ExpectCompatibleResourceAndMetadata(
+void ExpectEquivalentResourceAndMetadata(
     const google_apis::FileResource& resource,
     const FileMetadata& metadata) {
   EXPECT_EQ(resource.file_id(), metadata.file_id());
@@ -94,38 +94,11 @@ void ExpectCompatibleResourceAndMetadata(
   EXPECT_EQ(resource.labels().is_trashed(), details.deleted());
 }
 
-void ExpectCompatibleMetadataAndTracker(const FileMetadata& metadata,
+void ExpectEquivalentMetadataAndTracker(const FileMetadata& metadata,
                                         const FileTracker& tracker) {
   EXPECT_EQ(metadata.file_id(), tracker.file_id());
   if (!tracker.dirty())
     ExpectEquivalentDetails(metadata.details(), tracker.synced_details());
-}
-
-void SyncStatusResultCallback(SyncStatusCode* status_out,
-                              SyncStatusCode status) {
-  EXPECT_EQ(SYNC_STATUS_UNKNOWN, *status_out);
-  *status_out = status;
-}
-
-void DatabaseCreateResultCallback(SyncStatusCode* status_out,
-                                  scoped_ptr<MetadataDatabase>* database_out,
-                                  SyncStatusCode status,
-                                  scoped_ptr<MetadataDatabase> database) {
-  EXPECT_EQ(SYNC_STATUS_UNKNOWN, *status_out);
-  *status_out = status;
-  *database_out = database.Pass();
-}
-
-void ResourceEntryResultCallback(
-    google_apis::GDataErrorCode* error_out,
-    scoped_ptr<google_apis::ResourceEntry>* entry_out,
-    google_apis::GDataErrorCode error,
-    scoped_ptr<google_apis::ResourceEntry> entry) {
-  ASSERT_TRUE(error_out);
-  ASSERT_TRUE(entry_out);
-  EXPECT_EQ(google_apis::GDATA_OTHER_ERROR, *error_out);
-  *error_out = error;
-  *entry_out = entry.Pass();
 }
 
 }  // namespace test_util

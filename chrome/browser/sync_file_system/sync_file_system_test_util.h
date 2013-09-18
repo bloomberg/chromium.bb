@@ -6,12 +6,9 @@
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_SYNC_FILE_SYSTEM_TEST_UTIL_H_
 
 #include "base/callback_forward.h"
-#include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace base {
 class RunLoop;
-class SingleThreadTaskRunner;
 }
 
 namespace sync_file_system {
@@ -21,6 +18,13 @@ void AssignAndQuit(base::RunLoop* run_loop, R* result_out, R result);
 
 template <typename R> base::Callback<void(R)>
 AssignAndQuitCallback(base::RunLoop* run_loop, R* result);
+
+template <typename Arg>
+base::Callback<void(Arg)> CreateResultReceiver(Arg* arg_out);
+
+template <typename Arg1, typename Arg2>
+base::Callback<void(Arg1, Arg2)> CreateResultReceiver(Arg1* arg1_out,
+                                                      Arg2* arg2_out);
 
 }  // namespace sync_file_system
 
