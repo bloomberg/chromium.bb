@@ -1283,27 +1283,99 @@ enum cursor_type {
 	XWM_CURSOR_LEFT_PTR,
 };
 
-static const char *cursors[] = {
-	"top_side",
-	"bottom_side",
-	"left_side",
-	"right_side",
-	"top_left_corner",
-	"top_right_corner",
+/*
+ * The following correspondences between file names and cursors was copied
+ * from: https://bugs.kde.org/attachment.cgi?id=67313
+ */
+
+static const char *bottom_left_corners[] = {
 	"bottom_left_corner",
+	"sw-resize",
+	"size_bdiag"
+};
+
+static const char *bottom_right_corners[] = {
 	"bottom_right_corner",
-	"left_ptr"
+	"se-resize",
+	"size_fdiag"
+};
+
+static const char *bottom_sides[] = {
+	"bottom_side",
+	"s-resize",
+	"size_ver"
+};
+
+static const char *left_ptrs[] = {
+	"left_ptr",
+	"default",
+	"top_left_arrow",
+	"left-arrow"
+};
+
+static const char *left_sides[] = {
+	"left_side",
+	"w-resize",
+	"size_hor"
+};
+
+static const char *right_sides[] = {
+	"right_side",
+	"e-resize",
+	"size_hor"
+};
+
+static const char *top_left_corners[] = {
+	"top_left_corner",
+	"nw-resize",
+	"size_fdiag"
+};
+
+static const char *top_right_corners[] = {
+	"top_right_corner",
+	"ne-resize",
+	"size_bdiag"
+};
+
+static const char *top_sides[] = {
+	"top_side",
+	"n-resize",
+	"size_ver"
+};
+
+struct cursor_alternatives {
+	const char **names;
+	size_t count;
+};
+
+static const struct cursor_alternatives cursors[] = {
+	{top_sides, ARRAY_LENGTH(top_sides)},
+	{bottom_sides, ARRAY_LENGTH(bottom_sides)},
+	{left_sides, ARRAY_LENGTH(left_sides)},
+	{right_sides, ARRAY_LENGTH(right_sides)},
+	{top_left_corners, ARRAY_LENGTH(top_left_corners)},
+	{top_right_corners, ARRAY_LENGTH(top_right_corners)},
+	{bottom_left_corners, ARRAY_LENGTH(bottom_left_corners)},
+	{bottom_right_corners, ARRAY_LENGTH(bottom_right_corners)},
+	{left_ptrs, ARRAY_LENGTH(left_ptrs)},
 };
 
 static void
 weston_wm_create_cursors(struct weston_wm *wm)
 {
+	const char *name;
 	int i, count = ARRAY_LENGTH(cursors);
+	size_t j;
 
 	wm->cursors = malloc(count * sizeof(xcb_cursor_t));
 	for (i = 0; i < count; i++) {
-		wm->cursors[i] =
-			xcb_cursor_library_load_cursor(wm, cursors[i]);
+		for (j = 0; j < cursors[i].count; j++) {
+			name = cursors[i].names[j];
+			wm->cursors[i] =
+				xcb_cursor_library_load_cursor(wm, name);
+			if (wm->cursors[i] != (xcb_cursor_t)-1)
+				break;
+		}
 	}
 
 	wm->last_cursor = -1;
