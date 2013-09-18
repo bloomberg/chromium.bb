@@ -1422,7 +1422,7 @@ class ValidationPool(object):
             logging.error('Communication with gerrit server failed: %r', e)
           submitted_changes += int(was_change_submitted)
 
-        if not was_change_submitted:
+        if not was_change_submitted and not self.dryrun:
           changes_that_failed_to_submit.append(change)
           submit_changes = False
 
