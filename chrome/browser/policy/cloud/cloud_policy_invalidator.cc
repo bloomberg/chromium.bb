@@ -25,7 +25,7 @@
 namespace policy {
 
 const int CloudPolicyInvalidator::kMissingPayloadDelay = 5;
-const int CloudPolicyInvalidator::kMaxFetchDelayDefault = 5000;
+const int CloudPolicyInvalidator::kMaxFetchDelayDefault = 120000;
 const int CloudPolicyInvalidator::kMaxFetchDelayMin = 1000;
 const int CloudPolicyInvalidator::kMaxFetchDelayMax = 300000;
 
