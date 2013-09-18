@@ -977,13 +977,18 @@ void InspectorCSSAgent::getMatchedStylesForNode(ErrorString* errorString, int no
     if (!element)
         return;
 
+    Element* originalElement = element;
+    PseudoId elementPseudoId = element->pseudoId();
+    if (elementPseudoId)
+        element = element->parentOrShadowHostElement();
+
     // Matched rules.
     StyleResolver* styleResolver = element->ownerDocument()->styleResolver();
-    RefPtr<CSSRuleList> matchedRules = styleResolver->styleRulesForElement(element, StyleResolver::AllCSSRules);
-    matchedCSSRules = buildArrayForMatchedRuleList(matchedRules.get(), styleResolver, element);
+    RefPtr<CSSRuleList> matchedRules = styleResolver->pseudoStyleRulesForElement(element, elementPseudoId, StyleResolver::AllCSSRules);
+    matchedCSSRules = buildArrayForMatchedRuleList(matchedRules.get(), styleResolver, originalElement);
 
     // Pseudo elements.
-    if (!includePseudo || *includePseudo) {
+    if (!elementPseudoId && (!includePseudo || *includePseudo)) {
         RefPtr<TypeBuilder::Array<TypeBuilder::CSS::PseudoIdMatches> > pseudoElements = TypeBuilder::Array<TypeBuilder::CSS::PseudoIdMatches>::create();
         for (PseudoId pseudoId = FIRST_PUBLIC_PSEUDOID; pseudoId < AFTER_LAST_INTERNAL_PSEUDOID; pseudoId = static_cast<PseudoId>(pseudoId + 1)) {
             RefPtr<CSSRuleList> matchedRules = styleResolver->pseudoStyleRulesForElement(element, pseudoId, StyleResolver::AllCSSRules);
@@ -999,7 +1004,7 @@ void InspectorCSSAgent::getMatchedStylesForNode(ErrorString* errorString, int no
     }
 
     // Inherited styles.
-    if (!includeInherited || *includeInherited) {
+    if (!elementPseudoId && (!includeInherited || *includeInherited)) {
         RefPtr<TypeBuilder::Array<TypeBuilder::CSS::InheritedStyleEntry> > entries = TypeBuilder::Array<TypeBuilder::CSS::InheritedStyleEntry>::create();
         Element* parentElement = element->parentElement();
         while (parentElement) {
@@ -1614,6 +1619,18 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSRule> > InspectorCSSAgent::bu
     return result.release();
 }
 
+static inline bool matchesPseudoElement(const CSSSelector* selector, PseudoId elementPseudoId)
+{
+    // According to http://www.w3.org/TR/css3-selectors/#pseudo-elements, "Only one pseudo-element may appear per selector."
+    // As such, check the last selector in the tag history.
+    for (; !selector->isLastInTagHistory(); ++selector) { }
+    PseudoId selectorPseudoId = selector->matchesPseudoElement() ? CSSSelector::pseudoId(selector->pseudoType()) : NOPSEUDO;
+
+    // FIXME: This only covers the case of matching pseudo-element selectors against PseudoElements.
+    // We should come up with a solution for matching pseudo-element selectors against ordinary Elements, too.
+    return selectorPseudoId == elementPseudoId;
+}
+
 PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::RuleMatch> > InspectorCSSAgent::buildArrayForMatchedRuleList(CSSRuleList* ruleList, StyleResolver* styleResolver, Element* element)
 {
     RefPtr<TypeBuilder::Array<TypeBuilder::CSS::RuleMatch> > result = TypeBuilder::Array<TypeBuilder::CSS::RuleMatch>::create();
@@ -1628,15 +1645,20 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::RuleMatch> > InspectorCSSAgent::
         RefPtr<TypeBuilder::Array<int> > matchingSelectors = TypeBuilder::Array<int>::create();
         const CSSSelectorList& selectorList = rule->styleRule()->selectorList();
         long index = 0;
+        PseudoId elementPseudoId = element->pseudoId();
         for (const CSSSelector* selector = selectorList.first(); selector; selector = CSSSelectorList::next(selector)) {
-            bool matched = element->webkitMatchesSelector(selector->selectorText(), IGNORE_EXCEPTION);
+            const CSSSelector* firstTagHistorySelector = selector;
+            bool matched = false;
+            if (elementPseudoId)
+                matched = matchesPseudoElement(selector, elementPseudoId); // Modifies |selector|.
+            matched |= element->webkitMatchesSelector(firstTagHistorySelector->selectorText(), IGNORE_EXCEPTION);
             if (matched)
                 matchingSelectors->addItem(index);
             ++index;
         }
         RefPtr<TypeBuilder::CSS::RuleMatch> match = TypeBuilder::CSS::RuleMatch::create()
-            .setRule(ruleObject)
-            .setMatchingSelectors(matchingSelectors);
+            .setRule(ruleObject.release())
+            .setMatchingSelectors(matchingSelectors.release());
         result->addItem(match);
     }
 
