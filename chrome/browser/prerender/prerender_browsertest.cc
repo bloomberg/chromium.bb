@@ -871,8 +871,14 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
   }
 
   void NavigateToURL(const std::string& dest_html_file) const {
+    NavigateToURLWithDisposition(dest_html_file, CURRENT_TAB, true);
+  }
+
+  void NavigateToURLWithDisposition(const std::string& dest_html_file,
+                                    WindowOpenDisposition disposition,
+                                    bool expect_swap_to_succeed) const {
     GURL dest_url = test_server()->GetURL(dest_html_file);
-    NavigateToURLImpl(dest_url, CURRENT_TAB, true);
+    NavigateToURLImpl(dest_url, disposition, expect_swap_to_succeed);
   }
 
   bool UrlIsInPrerenderManager(const std::string& html_file) const {
@@ -2059,61 +2065,84 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   ASSERT_TRUE(IsEmptyPrerenderLinkManager());
 }
 
-// Checks that we correctly use a prerendered page when navigating to a
-// fragment.
-// DISABLED: http://crbug.com/84154
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       DISABLED_PrerenderPageNavigateFragment) {
+                       PrerenderPageWithRedirectedFragment) {
+  PrerenderTestURL(
+      CreateClientRedirect("files/prerender/prerender_page.html#fragment"),
+      FINAL_STATUS_USED,
+      2);
+
+  ChannelDestructionWatcher channel_close_watcher;
+  channel_close_watcher.WatchChannel(browser()->tab_strip_model()->
+      GetActiveWebContents()->GetRenderProcessHost());
+  NavigateToDestURL();
+  channel_close_watcher.WaitForChannelClose();
+
+  ASSERT_TRUE(IsEmptyPrerenderLinkManager());
+}
+
+// Checks that we do not use a prerendered page when navigating from
+// the main page to a fragment.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderPageNavigateFragment) {
   PrerenderTestURL("files/prerender/no_prerender_page.html",
                    FINAL_STATUS_APP_TERMINATING,
                    1);
-  NavigateToURL("files/prerender/no_prerender_page.html#fragment");
+  NavigateToURLWithDisposition(
+      "files/prerender/no_prerender_page.html#fragment",
+      CURRENT_TAB, false);
 }
 
-// Checks that we correctly use a prerendered page when we prerender a fragment
+// Checks that we do not use a prerendered page when we prerender a fragment
 // but navigate to the main page.
-// http://crbug.com/83901
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       DISABLED_PrerenderFragmentNavigatePage) {
+                       PrerenderFragmentNavigatePage) {
   PrerenderTestURL("files/prerender/no_prerender_page.html#fragment",
                    FINAL_STATUS_APP_TERMINATING,
                    1);
-  NavigateToURL("files/prerender/no_prerender_page.html");
+  NavigateToURLWithDisposition(
+      "files/prerender/no_prerender_page.html",
+      CURRENT_TAB, false);
 }
 
-// Checks that we correctly use a prerendered page when we prerender a fragment
+// Checks that we do not use a prerendered page when we prerender a fragment
 // but navigate to a different fragment on the same page.
-// DISABLED: http://crbug.com/84154
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       DISABLED_PrerenderFragmentNavigateFragment) {
+                       PrerenderFragmentNavigateFragment) {
   PrerenderTestURL("files/prerender/no_prerender_page.html#other_fragment",
                    FINAL_STATUS_APP_TERMINATING,
                    1);
-  NavigateToURL("files/prerender/no_prerender_page.html#fragment");
+  NavigateToURLWithDisposition(
+      "files/prerender/no_prerender_page.html#fragment",
+      CURRENT_TAB, false);
 }
 
-// Checks that we correctly use a prerendered page when the page uses a client
+// Checks that we do not use a prerendered page when the page uses a client
 // redirect to refresh from a fragment on the same page.
-// http://crbug.com/83901
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       DISABLED_PrerenderClientRedirectFromFragment) {
+                       PrerenderClientRedirectFromFragment) {
+  // The # needs to be percent-encoded. Otherwise it never gets sent
+  // to the server.
   PrerenderTestURL(
-      CreateClientRedirect("files/prerender/no_prerender_page.html#fragment"),
+      CreateClientRedirect("files/prerender/no_prerender_page.html%23fragment"),
       FINAL_STATUS_APP_TERMINATING,
       2);
-  NavigateToURL("files/prerender/no_prerender_page.html");
+  NavigateToURLWithDisposition(
+      "files/prerender/no_prerender_page.html",
+      CURRENT_TAB, false);
 }
 
-// Checks that we correctly use a prerendered page when the page uses a client
+// Checks that we do not use a prerendered page when the page uses a client
 // redirect to refresh to a fragment on the same page.
-// DISABLED: http://crbug.com/84154
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       DISABLED_PrerenderClientRedirectToFragment) {
+                       PrerenderClientRedirectToFragment) {
   PrerenderTestURL(
       CreateClientRedirect("files/prerender/no_prerender_page.html"),
       FINAL_STATUS_APP_TERMINATING,
       2);
-  NavigateToURL("files/prerender/no_prerender_page.html#fragment");
+  NavigateToURLWithDisposition(
+      "files/prerender/no_prerender_page.html#fragment",
+      CURRENT_TAB, false);
 }
 
 // Checks that we correctly use a prerendered page when the page uses JS to set

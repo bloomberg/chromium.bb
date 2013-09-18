@@ -1348,7 +1348,7 @@ class TestPageHandler(testserver_base.BasePageHandler):
     if query_char < 0 or len(self.path) <= query_char + 1:
       self.sendRedirectHelp(test_name)
       return True
-    dest = self.path[query_char + 1:]
+    dest = urllib.unquote(self.path[query_char + 1:])
 
     self.send_response(301)  # moved permanently
     self.send_header('Location', dest)
@@ -1372,7 +1372,7 @@ class TestPageHandler(testserver_base.BasePageHandler):
     if query_char < 0 or len(self.path) <= query_char + 1:
       self.sendRedirectHelp(test_name)
       return True
-    dest = self.path[query_char + 1:]
+    dest = urllib.unquote(self.path[query_char + 1:])
 
     self.send_response(200)
     self.send_header('Content-Type', 'text/html')
