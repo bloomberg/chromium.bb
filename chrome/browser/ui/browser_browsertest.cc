@@ -2338,6 +2338,13 @@ IN_PROC_BROWSER_TEST_F(ClickModifierTest, HrefShiftMiddleClickTest) {
 #define MAYBE_GetSizeForNewRenderView GetSizeForNewRenderView
 #endif
 IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_GetSizeForNewRenderView) {
+  ASSERT_TRUE(test_server()->Start());
+  // Create an HTTPS server for cross-site transition.
+  net::SpawnedTestServer https_test_server(net::SpawnedTestServer::TYPE_HTTPS,
+                                           net::SpawnedTestServer::kLocalhost,
+                                           base::FilePath(kDocRoot));
+  ASSERT_TRUE(https_test_server.Start());
+
   // Start with NTP.
   ui_test_utils::NavigateToURL(browser(), GURL("chrome://newtab"));
   ASSERT_EQ(BookmarkBar::DETACHED, browser()->bookmark_bar_state());
@@ -2351,7 +2358,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_GetSizeForNewRenderView) {
   RenderViewSizeObserver observer(web_contents, browser()->window());
 
   // Navigate to a non-NTP page, without resizing WebContentsView.
-  ui_test_utils::NavigateToURL(browser(), GURL("http://foo0.com"));
+  ui_test_utils::NavigateToURL(browser(),
+                               test_server()->GetURL("files/title1.html"));
   ASSERT_EQ(BookmarkBar::HIDDEN, browser()->bookmark_bar_state());
   // A new RenderViewHost should be created.
   EXPECT_NE(prev_rvh, web_contents->GetRenderViewHost());
@@ -2378,7 +2386,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_GetSizeForNewRenderView) {
   EXPECT_EQ(wcv_commit_size0, web_contents->GetView()->GetContainerSize());
 
   // Navigate to another non-NTP page, without resizing WebContentsView.
-  ui_test_utils::NavigateToURL(browser(), GURL("http://foo1.com"));
+  ui_test_utils::NavigateToURL(browser(),
+                               https_test_server.GetURL("files/title2.html"));
   ASSERT_EQ(BookmarkBar::HIDDEN, browser()->bookmark_bar_state());
   // A new RenderVieHost should be created.
   EXPECT_NE(prev_rvh, web_contents->GetRenderViewHost());
@@ -2397,7 +2406,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_GetSizeForNewRenderView) {
   ui_test_utils::NavigateToURL(browser(), GURL("chrome://newtab"));
   gfx::Size wcv_resize_insets(-34, -57);
   observer.set_wcv_resize_insets(wcv_resize_insets);
-  ui_test_utils::NavigateToURL(browser(), GURL("http://foo2.com"));
+  ui_test_utils::NavigateToURL(browser(),
+                               test_server()->GetURL("files/title2.html"));
   ASSERT_EQ(BookmarkBar::HIDDEN, browser()->bookmark_bar_state());
   gfx::Size rwhv_create_size2, rwhv_commit_size2, wcv_commit_size2;
   observer.GetSizeForRenderViewHost(web_contents->GetRenderViewHost(),

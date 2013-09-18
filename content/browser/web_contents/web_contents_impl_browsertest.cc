@@ -265,13 +265,21 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, FrameTree) {
 // WebContentsDelegate::GetSizeForNewRenderView().
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
                        MAYBE_GetSizeForNewRenderView) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  // Create a new server with a different site.
+  net::SpawnedTestServer https_server(
+      net::SpawnedTestServer::TYPE_HTTPS,
+      net::SpawnedTestServer::kLocalhost,
+      base::FilePath(FILE_PATH_LITERAL("content/test/data")));
+  ASSERT_TRUE(https_server.Start());
+
   scoped_ptr<RenderViewSizeDelegate> delegate(new RenderViewSizeDelegate());
   shell()->web_contents()->SetDelegate(delegate.get());
   ASSERT_TRUE(shell()->web_contents()->GetDelegate() == delegate.get());
 
   // When no size is set, RenderWidgetHostView adopts the size of
   // WebContenntsView.
-  NavigateToURL(shell(), GURL("http://foo0.com"));
+  NavigateToURL(shell(), embedded_test_server()->GetURL("/title2.html"));
   EXPECT_EQ(shell()->web_contents()->GetView()->GetContainerSize(),
             shell()->web_contents()->GetRenderWidgetHostView()->GetViewBounds().
                 size());
@@ -282,7 +290,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   gfx::Size size_insets(-10, -15);
   ResizeWebContentsView(shell(), size, true);
   delegate->set_size_insets(size_insets);
-  NavigateToURL(shell(), GURL("http://foo1.com"));
+  NavigateToURL(shell(), https_server.GetURL("/"));
   size.Enlarge(size_insets.width(), size_insets.height());
   EXPECT_EQ(size,
             shell()->web_contents()->GetRenderWidgetHostView()->GetViewBounds().
@@ -298,7 +306,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   ResizeWebContentsView(shell(), init_size, true);
   delegate->set_size_insets(size_insets);
   RenderViewSizeObserver observer(shell(), new_size);
-  NavigateToURL(shell(), GURL("http://foo2.com"));
+  NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html"));
   // RenderWidgetHostView is created at specified size.
   init_size.Enlarge(size_insets.width(), size_insets.height());
   EXPECT_EQ(init_size, observer.rwhv_create_size());
