@@ -113,10 +113,6 @@ class UI_EXPORT InputMethodIBus
   // Checks if there is pending input method result.
   bool HasInputMethodResult() const;
 
-  // Fabricates a key event with VKEY_PROCESSKEY key code and dispatches it to
-  // the focused View.
-  void SendFakeProcessKeyEvent(bool pressed) const;
-
   // Abandons all pending key events. It usually happends when we lose keyboard
   // focus, the text input type is changed or we are destroyed.
   void AbandonAllPendingKeyEvents();

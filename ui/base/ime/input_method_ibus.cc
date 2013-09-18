@@ -557,12 +557,6 @@ bool InputMethodIBus::HasInputMethodResult() const {
   return result_text_.length() || composition_changed_;
 }
 
-void InputMethodIBus::SendFakeProcessKeyEvent(bool pressed) const {
-  DispatchFabricatedKeyEventPostIME(pressed ? ET_KEY_PRESSED : ET_KEY_RELEASED,
-                                    VKEY_PROCESSKEY,
-                                    0);
-}
-
 void InputMethodIBus::AbandonAllPendingKeyEvents() {
   pending_key_events_.clear();
 }
@@ -588,9 +582,7 @@ void InputMethodIBus::CommitText(const chromeos::IBusText& text) {
   // If we are not handling key event, do not bother sending text result if the
   // focused text input client does not support text input.
   if (pending_key_events_.empty() && !IsTextInputTypeNone()) {
-    SendFakeProcessKeyEvent(true);
     GetTextInputClient()->InsertText(utf16_text);
-    SendFakeProcessKeyEvent(false);
     result_text_.clear();
   }
 }
@@ -662,9 +654,7 @@ void InputMethodIBus::UpdatePreeditText(const chromeos::IBusText& text,
   // If we receive a composition text without pending key event, then we need to
   // send it to the focused text input client directly.
   if (pending_key_events_.empty()) {
-    SendFakeProcessKeyEvent(true);
     GetTextInputClient()->SetCompositionText(composition_);
-    SendFakeProcessKeyEvent(false);
     composition_changed_ = false;
     composition_.Clear();
   }
