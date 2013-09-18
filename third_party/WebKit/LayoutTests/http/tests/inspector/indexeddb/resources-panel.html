@@ -43,7 +43,8 @@ function test()
         }
     }
 
-    WebInspector.showPanel("resources");
+    // Load panel to install listeners.
+    WebInspector.panel("resources");
 
     InspectorTest.addSniffer(WebInspector.IndexedDBTreeElement.prototype, "_indexedDBAdded", indexedDBAdded, true);
     function indexedDBAdded()
@@ -62,6 +63,8 @@ function test()
     {
         InspectorTest.addResult("Database loaded.");
     }
+
+    WebInspector.showPanel("resources");
 
     InspectorTest.addResult("Expanded IndexedDB tree element.");
     WebInspector.panels.resources.indexedDBListTreeElement.expand();
