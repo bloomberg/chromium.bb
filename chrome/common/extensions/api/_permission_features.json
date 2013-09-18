@@ -226,10 +226,21 @@
       "whitelist": ["80B9DC58E5210749F052F5B4DB239C50CF72AEB6"]
     }
   ],
-  "dns": {
-    "channel": "dev",
-    "extension_types": ["extension", "platform_app"]
-  },
+  "dns": [
+    {
+      "channel": "dev",
+      "extension_types": ["extension", "platform_app"]
+    },
+    {
+      "channel": "stable",
+      "extension_types": ["extension", "platform_app"],
+      "whitelist": [
+        "mlocfejafidcakdddnndjdngfmncfbeg",  // CCD Development
+        "ganomidahfnpdchomfgdoppjmmedlhia",  // CCD Testing
+        "eemlkeanncmjljgehlbplemhmdmalhdc"   // CCD Release
+      ]
+    }
+  ],
   "downloads": {
     "channel": "beta",
     "extension_types": ["extension"]
