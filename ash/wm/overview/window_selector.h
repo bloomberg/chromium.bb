@@ -5,6 +5,7 @@
 #ifndef ASH_WM_OVERVIEW_WINDOW_SELECTOR_H_
 #define ASH_WM_OVERVIEW_WINDOW_SELECTOR_H_
 
+#include <set>
 #include <vector>
 
 #include "ash/ash_export.h"
@@ -31,7 +32,7 @@ class WindowSelectorTest;
 
 class WindowOverview;
 class WindowSelectorDelegate;
-class WindowSelectorWindow;
+class WindowSelectorItem;
 
 // The WindowSelector allows selecting a window by alt-tabbing (CYCLE mode) or
 // by clicking or tapping on it (OVERVIEW mode). A WindowOverview will be shown
@@ -94,9 +95,12 @@ class ASH_EXPORT WindowSelector
   // |focus|, restores focus to the stored window.
   void ResetFocusRestoreWindow(bool focus);
 
-  // The collection of windows in the overview wrapped by a helper class which
+  // The collection of items in the overview wrapped by a helper class which
   // restores their state and helps transform them to other root windows.
-  ScopedVector<WindowSelectorWindow> windows_;
+  ScopedVector<WindowSelectorItem> windows_;
+
+  // Tracks observed windows.
+  std::set<aura::Window*> observed_windows_;
 
   // The window selection mode.
   Mode mode_;

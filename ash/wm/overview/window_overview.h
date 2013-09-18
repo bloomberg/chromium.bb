@@ -11,6 +11,7 @@
 #include "ui/base/events/event_handler.h"
 
 namespace aura {
+class Window;
 class RootWindow;
 }
 
@@ -25,21 +26,21 @@ class Widget;
 namespace ash {
 
 class WindowSelector;
-class WindowSelectorWindow;
+class WindowSelectorItem;
 
 // The WindowOverview shows a grid of all of your windows and allows selecting
 // a window by clicking or tapping on it. It also displays a selection widget
 // used to indicate the current selection when alt-tabbing between windows.
 class WindowOverview : public ui::EventHandler {
  public:
-  typedef ScopedVector<WindowSelectorWindow> WindowSelectorWindowList;
+  typedef ScopedVector<WindowSelectorItem> WindowSelectorItemList;
 
   // Enters an overview mode displaying |windows| and dispatches methods
   // on |window_selector| when a window is selected or selection is canceled.
   // If |single_root_window| is not NULL, all windows will be positioned on the
   // given root window.
   WindowOverview(WindowSelector* window_selector,
-                 WindowSelectorWindowList* windows,
+                 WindowSelectorItemList* windows,
                  aura::RootWindow* single_root_window);
   virtual ~WindowOverview();
 
@@ -58,7 +59,7 @@ class WindowOverview : public ui::EventHandler {
  private:
   // Returns the target of |event| or NULL if the event is not targeted at
   // any of the windows in the selector.
-  WindowSelectorWindow* GetEventTarget(ui::LocatedEvent* event);
+  aura::Window* GetEventTarget(ui::LocatedEvent* event);
 
   // Position all of the windows based on the current selection mode.
   void PositionWindows();
@@ -66,7 +67,7 @@ class WindowOverview : public ui::EventHandler {
   void PositionWindowsFromRoot(aura::RootWindow* root_window);
   // Position all of the |windows| to fit on the |root_window|.
   void PositionWindowsOnRoot(aura::RootWindow* root_window,
-                             const std::vector<WindowSelectorWindow*>& windows);
+                             const std::vector<WindowSelectorItem*>& windows);
 
   void InitializeSelectionWidget();
 
@@ -80,7 +81,7 @@ class WindowOverview : public ui::EventHandler {
   // A weak pointer to the collection of windows in the overview wrapped by a
   // helper class which restores their state and helps transform them to other
   // root windows.
-  WindowSelectorWindowList* windows_;
+  WindowSelectorItemList* windows_;
 
   // Widget indicating which window is currently selected.
   scoped_ptr<views::Widget> selection_widget_;

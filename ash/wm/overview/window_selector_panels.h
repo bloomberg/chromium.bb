@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_OVERVIEW_WINDOW_SELECTOR_WINDOW_H_
-#define ASH_WM_OVERVIEW_WINDOW_SELECTOR_WINDOW_H_
+#ifndef ASH_WM_OVERVIEW_WINDOW_SELECTOR_PANELS_H_
+#define ASH_WM_OVERVIEW_WINDOW_SELECTOR_PANELS_H_
 
-#include "ash/wm/overview/scoped_transform_overview_window.h"
 #include "ash/wm/overview/window_selector_item.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_vector.h"
 #include "ui/gfx/rect.h"
 
 namespace aura {
@@ -17,12 +17,19 @@ class Window;
 
 namespace ash {
 
-// This implements a window overview item with a single window which can be
-// selected.
-class WindowSelectorWindow : public WindowSelectorItem {
+class ScopedTransformOverviewWindow;
+
+// This class implements a window selector item containing one or more attached
+// panel windows. These panels are grouped into a single overview item in
+// overview mode and the callout arrows are hidden at this point.
+class WindowSelectorPanels : public WindowSelectorItem {
  public:
-  WindowSelectorWindow(aura::Window* window);
-  virtual ~WindowSelectorWindow();
+  WindowSelectorPanels();
+  virtual ~WindowSelectorPanels();
+
+  // Adds |window| to the selector item. This window should be an attached
+  // panel window.
+  void AddWindow(aura::Window* window);
 
   // WindowSelectorItem:
   virtual const aura::RootWindow* GetRootWindow() const OVERRIDE;
@@ -36,11 +43,12 @@ class WindowSelectorWindow : public WindowSelectorItem {
                              const gfx::Rect& target_bounds) OVERRIDE;
 
  private:
-  ScopedTransformOverviewWindow transform_window_;
+  typedef ScopedVector<ScopedTransformOverviewWindow> WindowList;
+  WindowList transform_windows_;
 
-  DISALLOW_COPY_AND_ASSIGN(WindowSelectorWindow);
+  DISALLOW_COPY_AND_ASSIGN(WindowSelectorPanels);
 };
 
 }  // namespace ash
 
-#endif  // ASH_WM_OVERVIEW_WINDOW_SELECTOR_WINDOW_H_
+#endif  // ASH_WM_OVERVIEW_WINDOW_SELECTOR_PANELS_H_
