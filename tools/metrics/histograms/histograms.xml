@@ -10385,6 +10385,22 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Omnibox.ZeroSuggest.MostVisitedResultsCounterfactual">
+  <summary>
+    The number of most visited suggestions returned when ZeroSuggest would have
+    triggered.  The suggestions appear when the user has focused but not
+    modified the omnibox.
+  </summary>
+</histogram>
+
+<histogram name="Omnibox.ZeroSuggestRequests" enum="OmniboxZeroSuggestRequests">
+  <summary>
+    Counts about the number of zero suggest requests (requests for suggestions
+    when the user has focused but not modified the omnibox) the omnibox sent,
+    invalidated, and replies received.
+  </summary>
+</histogram>
+
 <histogram name="OutdatedUpgradeBubble.NumLaterPerReinstall">
   <summary>
     Counts the number of times the user clicked on the later button of the
@@ -23798,6 +23814,12 @@ other types of suffix sets.
 </enum>
 
 <enum name="OmniboxSuggestRequests" type="int">
+  <int value="1" label="requests sent"/>
+  <int value="2" label="requests invalidated"/>
+  <int value="3" label="(non-invalidated) replies received"/>
+</enum>
+
+<enum name="OmniboxZeroSuggestRequests" type="int">
   <int value="1" label="requests sent"/>
   <int value="2" label="requests invalidated"/>
   <int value="3" label="(non-invalidated) replies received"/>

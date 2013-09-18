@@ -22,6 +22,8 @@
 #include "chrome/browser/autocomplete/search_provider.h"
 #include "chrome/browser/autocomplete/url_prefix.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/history/history_types.h"
+#include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/metrics/variations/variations_http_header_provider.h"
 #include "chrome/browser/omnibox/omnibox_field_trial.h"
 #include "chrome/browser/profiles/profile.h"
@@ -133,23 +135,18 @@ void ZeroSuggestProvider::OnURLFetchComplete(const net::URLFetcher* source) {
   const bool request_succeeded =
       source->GetStatus().is_success() && source->GetResponseCode() == 200;
 
-  bool have_results = false;
   if (request_succeeded) {
     JSONStringValueSerializer deserializer(json_data);
     deserializer.set_allow_trailing_comma(true);
     scoped_ptr<Value> data(deserializer.Deserialize(NULL, NULL));
-    if (data.get()) {
+    if (data.get())
       ParseSuggestResults(*data.get());
-      have_results = !query_matches_map_.empty() ||
-          !navigation_results_.empty();
-    }
   }
   done_ = true;
 
-  if (have_results) {
-    ConvertResultsToAutocompleteMatches();
+  ConvertResultsToAutocompleteMatches();
+  if (!matches_.empty())
     listener_->OnProviderUpdate(true);
-  }
 }
 
 void ZeroSuggestProvider::StartZeroSuggest(
@@ -182,7 +179,8 @@ ZeroSuggestProvider::ZeroSuggestProvider(
       have_pending_request_(false),
       verbatim_relevance_(kDefaultVerbatimZeroSuggestRelevance),
       field_trial_triggered_(false),
-      field_trial_triggered_in_session_(false) {
+      field_trial_triggered_in_session_(false),
+      weak_ptr_factory_(this) {
 }
 
 ZeroSuggestProvider::~ZeroSuggestProvider() {
@@ -410,6 +408,16 @@ void ZeroSuggestProvider::Run() {
   fetcher_->SetExtraRequestHeaders(headers.ToString());
 
   fetcher_->Start();
+
+  if (OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial()) {
+    most_visited_urls_.clear();
+    history::TopSites* ts = profile_->GetTopSites();
+    if (ts) {
+      ts->GetMostVisitedURLs(
+          base::Bind(&ZeroSuggestProvider::OnMostVisitedUrlsAvailable,
+                     weak_ptr_factory_.GetWeakPtr()));
+    }
+  }
   have_pending_request_ = true;
   LogOmniboxZeroSuggestRequest(ZERO_SUGGEST_REQUEST_SENT);
 }
@@ -423,6 +431,11 @@ void ZeroSuggestProvider::ParseSuggestResults(const Value& root_val) {
   AddSuggestResultsToMap(suggest_results,
                          template_url_service_->GetDefaultSearchProvider(),
                          &query_matches_map_);
+}
+
+void ZeroSuggestProvider::OnMostVisitedUrlsAvailable(
+    const history::MostVisitedURLList& urls) {
+  most_visited_urls_ = urls;
 }
 
 void ZeroSuggestProvider::ConvertResultsToAutocompleteMatches() {
@@ -440,6 +453,25 @@ void ZeroSuggestProvider::ConvertResultsToAutocompleteMatches() {
   UMA_HISTOGRAM_COUNTS("ZeroSuggest.QueryResults", num_query_results);
   UMA_HISTOGRAM_COUNTS("ZeroSuggest.URLResults",  num_nav_results);
   UMA_HISTOGRAM_COUNTS("ZeroSuggest.AllResults", num_results);
+
+  // Show Most Visited results after ZeroSuggest response is received.
+  if (OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial()) {
+    matches_.push_back(current_url_match_);
+    int relevance = 600;
+    if (num_results > 0) {
+      UMA_HISTOGRAM_COUNTS(
+          "Omnibox.ZeroSuggest.MostVisitedResultsCounterfactual",
+          most_visited_urls_.size());
+    }
+    for (size_t i = 0; i < most_visited_urls_.size(); i++) {
+      const history::MostVisitedURL& url = most_visited_urls_[i];
+      SearchProvider::NavigationResult nav(*this, url.url, url.title, false,
+                                           relevance, true);
+      matches_.push_back(NavigationToMatch(nav));
+      --relevance;
+    }
+    return;
+  }
 
   if (num_results == 0)
     return;

@@ -24,6 +24,9 @@ const char kHUPCullRedirectsFieldTrialName[] = "OmniboxHUPCullRedirects";
 const char kHUPCreateShorterMatchFieldTrialName[] =
     "OmniboxHUPCreateShorterMatch";
 const char kStopTimerFieldTrialName[] = "OmniboxStopTimer";
+const char kEnableZeroSuggestGroupPrefix[] = "EnableZeroSuggest";
+const char kEnableZeroSuggestMostVisitedGroupPrefix[] =
+    "EnableZeroSuggestMostVisited";
 
 // The autocomplete dynamic field trial name prefix.  Each field trial is
 // configured dynamically and is retrieved automatically by Chrome during
@@ -181,20 +184,29 @@ bool OmniboxFieldTrial::InStopTimerFieldTrialExperimentGroup() {
           kStopTimerExperimentGroupName);
 }
 
-bool OmniboxFieldTrial::InZeroSuggestFieldTrial() {
+bool OmniboxFieldTrial::HasDynamicFieldTrialGroupPrefix(
+    const char* group_prefix) {
   // Make sure that Autocomplete dynamic field trials are activated.  It's OK to
   // call this method multiple times.
   ActivateDynamicTrials();
 
-  // Look for group names starting with "EnableZeroSuggest"
+  // Look for group names starting with |group_prefix|.
   for (int i = 0; i < kMaxAutocompleteDynamicFieldTrials; ++i) {
     const std::string& group_name = base::FieldTrialList::FindFullName(
         DynamicFieldTrialName(i));
-    const char kEnableZeroSuggest[] = "EnableZeroSuggest";
-    if (StartsWithASCII(group_name, kEnableZeroSuggest, true))
+    if (StartsWithASCII(group_name, group_prefix, true))
       return true;
   }
   return false;
+}
+
+bool OmniboxFieldTrial::InZeroSuggestFieldTrial() {
+  return HasDynamicFieldTrialGroupPrefix(kEnableZeroSuggestGroupPrefix);
+}
+
+bool OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial() {
+  return HasDynamicFieldTrialGroupPrefix(
+      kEnableZeroSuggestMostVisitedGroupPrefix);
 }
 
 bool OmniboxFieldTrial::ShortcutsScoringMaxRelevance(

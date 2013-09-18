@@ -42,6 +42,10 @@ class OmniboxFieldTrial {
   // are OR-ed together and returned as the final result.
   static int GetDisabledProviderTypes();
 
+  // Returns whether the user is in any dynamic field trial where the
+  // group has a the prefix |group_prefix|.
+  static bool HasDynamicFieldTrialGroupPrefix(const char *group_prefix);
+
   // ---------------------------------------------------------
   // For the suggest field trial.
 
@@ -92,6 +96,11 @@ class OmniboxFieldTrial {
   // ZeroSuggestProvider should be used to get suggestions when the
   // user clicks on the omnibox but has not typed anything yet.
   static bool InZeroSuggestFieldTrial();
+
+  // Returns whether the user is in a ZeroSuggest field trial, but should
+  // show most visited URL instead.  This is used to compare metrics of
+  // ZeroSuggest and most visited suggestions.
+  static bool InZeroSuggestMostVisitedFieldTrial();
 
   // ---------------------------------------------------------
   // For the ShortcutsScoringMaxRelevance experiment that's part of the
