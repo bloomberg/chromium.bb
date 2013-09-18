@@ -15,8 +15,6 @@ h1 {
 
 function test()
 {
-    var section;
-
     InspectorTest.runTestSuite([
         function testInit(next)
         {
@@ -24,7 +22,7 @@ function test()
 
             function expandSection()
             {
-                section = WebInspector.panels.elements.sidebarPanes.styles.sections[0][2];
+                var section = WebInspector.panels.elements.sidebarPanes.styles.sections[0][2];
                 section.expand();
                 next();
             }
@@ -32,7 +30,7 @@ function test()
 
         function testAlterColor(next)
         {
-            var colorTreeElement = section.findTreeElementWithName("color");
+            var colorTreeElement = InspectorTest.getMatchedStylePropertyTreeItem("color");
             colorTreeElement.startEditing(colorTreeElement.valueElement);
 
             // Most significant digit increment ('F') should not change the value.
@@ -46,7 +44,7 @@ function test()
 
         function testAlterNumber(next)
         {
-            var opacityTreeElement = section.findTreeElementWithName("opacity");
+            var opacityTreeElement = InspectorTest.getMatchedStylePropertyTreeItem("opacity");
             opacityTreeElement.startEditing(opacityTreeElement.valueElement);
             // 0.5 (initial)
             opacityTreeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("Up", false, true, false)); // Alt-Up
@@ -61,7 +59,7 @@ function test()
 
         function testAlterBigNumber(next)
         {
-            var treeElement = section.findTreeElementWithName("-webkit-transform");
+            var treeElement = InspectorTest.getMatchedStylePropertyTreeItem("-webkit-transform");
             treeElement.startEditing(treeElement.valueElement);
             var selection = window.getSelection();
             var range = selection.getRangeAt(0);
