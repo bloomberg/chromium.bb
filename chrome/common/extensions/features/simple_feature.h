@@ -89,6 +89,8 @@ class SimpleFeature : public Feature {
   virtual bool IsInternal() const OVERRIDE;
 
   virtual bool IsIdInWhitelist(const std::string& extension_id) const OVERRIDE;
+  static bool IsIdInWhitelist(const std::string& extension_id,
+                              const std::set<std::string>& whitelist);
 
  protected:
   Availability CreateAvailability(AvailabilityResult result) const;

@@ -443,6 +443,12 @@ bool SimpleFeature::IsInternal() const {
 }
 
 bool SimpleFeature::IsIdInWhitelist(const std::string& extension_id) const {
+  return IsIdInWhitelist(extension_id, whitelist_);
+}
+
+// static
+bool SimpleFeature::IsIdInWhitelist(const std::string& extension_id,
+                                    const std::set<std::string>& whitelist) {
   // Belt-and-suspenders philosophy here. We should be pretty confident by this
   // point that we've validated the extension ID format, but in case something
   // slips through, we avoid a class of attack where creative ID manipulation
@@ -450,9 +456,10 @@ bool SimpleFeature::IsIdInWhitelist(const std::string& extension_id) const {
   if (extension_id.length() != 32)  // 128 bits / 4 = 32 mpdecimal characters
     return false;
 
-  if (whitelist_.find(extension_id) != whitelist_.end() ||
-      whitelist_.find(HashExtensionId(extension_id)) != whitelist_.end())
+  if (whitelist.find(extension_id) != whitelist.end() ||
+      whitelist.find(HashExtensionId(extension_id)) != whitelist.end()) {
     return true;
+  }
 
   return false;
 }

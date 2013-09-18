@@ -6,6 +6,7 @@
 
 #include "chrome/browser/extensions/api/tab_capture/tab_capture_api.h"
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -21,6 +22,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/features/simple_feature.h"
 #include "chrome/common/extensions/permissions/permissions_data.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -48,6 +50,17 @@ const char kGrantError[] =
 const char kMediaStreamSource[] = "chromeMediaSource";
 const char kMediaStreamSourceId[] = "chromeMediaSourceId";
 const char kMediaStreamSourceTab[] = "tab";
+
+// Whitelisted extensions that do not check for a browser action grant because
+// they provide API's.
+const char* whitelisted_extensions[] = {
+  "enhhojjnijigcajfphajepfemndkmdlo",  // Dev
+  "pkedcjkdefgpdelpbcmbmeomcjbeemfm",  // Trusted Tester
+  "fmfcbgogabcbclcofgocippekhfcmgfj",  // Staging
+  "hfaagokkkhdbgiakmmlclaapfelnkoah",  // Canary
+  "F155646B5D1CA545F7E1E4E20D573DFDD44C2540",  // Trusted Tester (public)
+  "16CA7A47AAE4BE49B1E75A6B960C3875E945B264"   // Release
+};
 
 }  // namespace
 
@@ -83,8 +96,11 @@ bool TabCaptureCaptureFunction::RunImpl() {
           extension, tab_id, APIPermission::kTabCaptureForTab) &&
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kWhitelistedExtensionID) != extension_id &&
-      !FeatureProvider::GetByName("permission")->GetFeature("tabCapture")->
-          IsIdInWhitelist(extension_id)) {
+      !SimpleFeature::IsIdInWhitelist(
+          extension_id,
+          std::set<std::string>(
+              whitelisted_extensions,
+              whitelisted_extensions + arraysize(whitelisted_extensions)))) {
     error_ = kGrantError;
     return false;
   }
