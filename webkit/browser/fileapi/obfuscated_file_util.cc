@@ -387,10 +387,9 @@ PlatformFileError ObfuscatedFileUtil::CreateDirectory(
     int64 growth = UsageForPath(file_info.name.size());
     if (!AllocateQuota(context, growth))
       return base::PLATFORM_FILE_ERROR_NO_SPACE;
-    if (!db->AddFileInfo(file_info, &parent_id)) {
-      NOTREACHED();
-      return base::PLATFORM_FILE_ERROR_FAILED;
-    }
+    base::PlatformFileError error = db->AddFileInfo(file_info, &parent_id);
+    if (error != base::PLATFORM_FILE_OK)
+      return error;
     UpdateUsage(context, url, growth);
     context->change_observers()->Notify(
         &FileChangeObserver::OnCreateDirectory, MakeTuple(url));
@@ -1130,6 +1129,7 @@ PlatformFileError ObfuscatedFileUtil::CreateFile(
       DCHECK_NE(base::kInvalidPlatformFileValue, *handle);
       base::ClosePlatformFile(*handle);
       base::DeleteFile(dest_local_path, false /* recursive */);
+      *handle = base::kInvalidPlatformFileValue;
     }
     return base::PLATFORM_FILE_ERROR_FAILED;
   }
@@ -1140,13 +1140,15 @@ PlatformFileError ObfuscatedFileUtil::CreateFile(
       dest_local_path.value().substr(root.value().length() + 1));
 
   FileId file_id;
-  if (!db->AddFileInfo(*dest_file_info, &file_id)) {
+  error = db->AddFileInfo(*dest_file_info, &file_id);
+  if (error != base::PLATFORM_FILE_OK) {
     if (handle) {
       DCHECK_NE(base::kInvalidPlatformFileValue, *handle);
       base::ClosePlatformFile(*handle);
+      *handle = base::kInvalidPlatformFileValue;
     }
     base::DeleteFile(dest_local_path, false /* recursive */);
-    return base::PLATFORM_FILE_ERROR_FAILED;
+    return error;
   }
   TouchDirectory(db, dest_file_info->parent_id);
 

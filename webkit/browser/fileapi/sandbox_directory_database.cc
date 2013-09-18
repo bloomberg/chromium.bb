@@ -518,10 +518,10 @@ bool SandboxDirectoryDatabase::GetFileInfo(FileId file_id, FileInfo* info) {
   return false;
 }
 
-bool SandboxDirectoryDatabase::AddFileInfo(
+base::PlatformFileError SandboxDirectoryDatabase::AddFileInfo(
     const FileInfo& info, FileId* file_id) {
   if (!Init(REPAIR_ON_CORRUPTION))
-    return false;
+    return base::PLATFORM_FILE_ERROR_FAILED;
   DCHECK(file_id);
   std::string child_key = GetChildLookupKey(info.parent_id, info.name);
   std::string child_id_string;
@@ -529,36 +529,36 @@ bool SandboxDirectoryDatabase::AddFileInfo(
       db_->Get(leveldb::ReadOptions(), child_key, &child_id_string);
   if (status.ok()) {
     LOG(ERROR) << "File exists already!";
-    return false;
+    return base::PLATFORM_FILE_ERROR_EXISTS;
   }
   if (!status.IsNotFound()) {
     HandleError(FROM_HERE, status);
-    return false;
+    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
   }
 
   if (!VerifyIsDirectory(info.parent_id))
-    return false;
+    return base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
 
   // This would be a fine place to limit the number of files in a directory, if
   // we decide to add that restriction.
 
   FileId temp_id;
   if (!GetLastFileId(&temp_id))
-    return false;
+    return base::PLATFORM_FILE_ERROR_FAILED;
   ++temp_id;
 
   leveldb::WriteBatch batch;
   if (!AddFileInfoHelper(info, temp_id, &batch))
-    return false;
+    return base::PLATFORM_FILE_ERROR_FAILED;
 
   batch.Put(LastFileIdKey(), base::Int64ToString(temp_id));
   status = db_->Write(leveldb::WriteOptions(), &batch);
   if (!status.ok()) {
     HandleError(FROM_HERE, status);
-    return false;
+    return base::PLATFORM_FILE_ERROR_FAILED;
   }
   *file_id = temp_id;
-  return true;
+  return base::PLATFORM_FILE_OK;
 }
 
 bool SandboxDirectoryDatabase::RemoveFileInfo(FileId file_id) {

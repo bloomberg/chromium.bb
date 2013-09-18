@@ -2372,4 +2372,32 @@ TEST_F(ObfuscatedFileUtilTest, MigrationBackFromIsolated) {
   EXPECT_EQ(kFakeDirectoryData, origin_db_data);
 }
 
+TEST_F(ObfuscatedFileUtilTest, OpenPathInNonDirectory) {
+  FileSystemURL file(CreateURLFromUTF8("file"));
+  FileSystemURL path_in_file(CreateURLFromUTF8("file/file"));
+  bool created;
+
+  ASSERT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->EnsureFileExists(UnlimitedContext().get(), file, &created));
+  ASSERT_TRUE(created);
+
+  created = false;
+  base::PlatformFile file_handle = base::kInvalidPlatformFileValue;
+  int file_flags = base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_WRITE;
+  ASSERT_EQ(base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY,
+            ofu()->CreateOrOpen(UnlimitedContext().get(),
+                                path_in_file,
+                                file_flags,
+                                &file_handle,
+                                &created));
+  ASSERT_FALSE(created);
+  ASSERT_EQ(base::kInvalidPlatformFileValue, file_handle);
+
+  ASSERT_EQ(base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY,
+            ofu()->CreateDirectory(UnlimitedContext().get(),
+                                   path_in_file,
+                                   false /* exclusive */,
+                                   false /* recursive */));
+}
+
 }  // namespace fileapi
