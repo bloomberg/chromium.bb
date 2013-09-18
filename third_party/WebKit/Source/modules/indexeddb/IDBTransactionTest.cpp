@@ -129,4 +129,36 @@ TEST_F(IDBTransactionTest, EnsureLifetime)
     EXPECT_EQ(1, transaction->refCount());
 }
 
+TEST_F(IDBTransactionTest, TransactionFinish)
+{
+    RefPtr<FakeIDBDatabaseBackendProxy> proxy = FakeIDBDatabaseBackendProxy::create();
+    RefPtr<FakeIDBDatabaseCallbacks> connection = FakeIDBDatabaseCallbacks::create();
+    RefPtr<IDBDatabase> db = IDBDatabase::create(scriptExecutionContext(), proxy, connection);
+
+    const int64_t transactionId = 1234;
+    const Vector<String> transactionScope;
+    RefPtr<IDBTransaction> transaction = IDBTransaction::create(scriptExecutionContext(), transactionId, transactionScope, IndexedDB::TransactionReadOnly, db.get());
+
+    // Local reference, IDBDatabase's reference and IDBPendingTransactionMonitor's reference:
+    EXPECT_EQ(3, transaction->refCount());
+
+    IDBPendingTransactionMonitor::deactivateNewTransactions();
+
+    // Local reference, IDBDatabase's reference
+    EXPECT_EQ(2, transaction->refCount());
+
+    IDBTransaction* transactionPtr = transaction.get();
+    transaction.clear();
+
+    // IDBDatabase's reference
+    EXPECT_EQ(1, transactionPtr->refCount());
+
+    // Stop the context, so events don't get queued (which would keep the transaction alive).
+    scriptExecutionContext()->stopActiveDOMObjects();
+
+    // Fire an abort to make sure this doesn't free the transaction during use. The test
+    // will not fail if it is, but ASAN would notice the error.
+    db->onAbort(transactionId, DOMError::create(AbortError, "Aborted"));
+}
+
 } // namespace

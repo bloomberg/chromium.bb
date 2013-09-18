@@ -266,6 +266,9 @@ void IDBTransaction::onAbort(PassRefPtr<DOMError> prpError)
 
     // Enqueue events before notifying database, as database may close which enqueues more events and order matters.
     enqueueEvent(Event::createBubble(eventNames().abortEvent));
+
+    // If script has stopped and GC has completed, database may have last reference to this object.
+    RefPtr<IDBTransaction> protect(this);
     m_database->transactionFinished(this);
 }
 
@@ -278,6 +281,9 @@ void IDBTransaction::onComplete()
 
     // Enqueue events before notifying database, as database may close which enqueues more events and order matters.
     enqueueEvent(Event::create(eventNames().completeEvent));
+
+    // If script has stopped and GC has completed, database may have last reference to this object.
+    RefPtr<IDBTransaction> protect(this);
     m_database->transactionFinished(this);
 }
 
