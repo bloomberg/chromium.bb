@@ -44,7 +44,7 @@ AppSearchProvider::AppSearchProvider(
       list_controller_(list_controller) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<Profile>(profile_->GetOriginalProfile()));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
                  content::Source<Profile>(profile_->GetOriginalProfile()));
   RefreshApps();
 }
