@@ -42,6 +42,63 @@ struct SameSizeAsFloatingObject {
 
 COMPILE_ASSERT(sizeof(FloatingObject) == sizeof(SameSizeAsFloatingObject), FloatingObject_should_stay_small);
 
+FloatingObject::FloatingObject(RenderBox* renderer)
+    : m_renderer(renderer)
+    , m_originatingLine(0)
+    , m_paginationStrut(0)
+    , m_shouldPaint(true)
+    , m_isDescendant(false)
+    , m_isPlaced(false)
+#ifndef NDEBUG
+    , m_isInPlacedTree(false)
+#endif
+{
+    EFloat type = renderer->style()->floating();
+    ASSERT(type != NoFloat);
+    if (type == LeftFloat)
+        m_type = FloatLeft;
+    else if (type == RightFloat)
+        m_type = FloatRight;
+}
+
+FloatingObject::FloatingObject(RenderBox* renderer, Type type, const LayoutRect& frameRect, bool shouldPaint, bool isDescendant)
+    : m_renderer(renderer)
+    , m_originatingLine(0)
+    , m_frameRect(frameRect)
+    , m_paginationStrut(0)
+    , m_type(type)
+    , m_shouldPaint(shouldPaint)
+    , m_isDescendant(isDescendant)
+    , m_isPlaced(true)
+#ifndef NDEBUG
+    , m_isInPlacedTree(false)
+#endif
+{
+}
+
+PassOwnPtr<FloatingObject> FloatingObject::create(RenderBox* renderer)
+{
+    OwnPtr<FloatingObject> newObj = adoptPtr(new FloatingObject(renderer));
+    newObj->setShouldPaint(!renderer->hasSelfPaintingLayer()); // If a layer exists, the float will paint itself. Otherwise someone else will.
+    newObj->setIsDescendant(true);
+
+    return newObj.release();
+}
+
+PassOwnPtr<FloatingObject> FloatingObject::copyToNewContainer(LayoutSize offset, bool shouldPaint, bool isDescendant) const
+{
+    return adoptPtr(new FloatingObject(renderer(), type(), LayoutRect(frameRect().location() - offset, frameRect().size()), shouldPaint, isDescendant));
+}
+
+PassOwnPtr<FloatingObject> FloatingObject::unsafeClone() const
+{
+    OwnPtr<FloatingObject> cloneObject = adoptPtr(new FloatingObject(renderer(), type(), m_frameRect, m_shouldPaint, m_isDescendant));
+    cloneObject->m_originatingLine = m_originatingLine;
+    cloneObject->m_paginationStrut = m_paginationStrut;
+    cloneObject->m_isPlaced = m_isPlaced;
+    return cloneObject.release();
+}
+
 template <FloatingObject::Type FloatTypeValue>
 class ComputeFloatOffsetAdapter {
 public:
@@ -116,9 +173,7 @@ FloatingObjects::FloatingObjects(const RenderBlock* renderer, bool horizontalWri
 
 void FloatingObjects::clear()
 {
-    // FIXME: This should call deleteAllValues, except clearFloats
-    // like to play fast and loose with ownership of these pointers.
-    // If we move to OwnPtr that will fix this ownership oddness.
+    deleteAllValues(m_set);
     m_set.clear();
     m_placedFloatsTree.clear();
     m_leftObjectsCount = 0;
@@ -203,6 +258,18 @@ void FloatingObjects::markLowestFloatLogicalBottomCacheAsDirty()
         m_lowestFloatBottomCache[i].dirty = true;
 }
 
+void FloatingObjects::moveAllToFloatInfoMap(RendererToFloatInfoMap& map)
+{
+    FloatingObjectSetIterator end = m_set.end();
+    for (FloatingObjectSetIterator it = m_set.begin(); it != end; ++it)
+        map.add((*it)->renderer(), *it);
+
+    // clear set before clearing this because we don't want to delete all of
+    // the objects we have just transferred.
+    m_set.clear();
+    clear();
+}
+
 inline void FloatingObjects::increaseObjectsCount(FloatingObject::Type type)
 {
     if (type == FloatingObject::FloatLeft)
@@ -256,13 +323,15 @@ void FloatingObjects::removePlacedObject(FloatingObject* floatingObject)
     markLowestFloatLogicalBottomCacheAsDirty();
 }
 
-void FloatingObjects::add(FloatingObject* floatingObject)
+FloatingObject* FloatingObjects::add(PassOwnPtr<FloatingObject> floatingObject)
 {
-    increaseObjectsCount(floatingObject->type());
-    m_set.add(floatingObject);
-    if (floatingObject->isPlaced())
-        addPlacedObject(floatingObject);
+    FloatingObject* newObject = floatingObject.leakPtr();
+    increaseObjectsCount(newObject->type());
+    m_set.add(newObject);
+    if (newObject->isPlaced())
+        addPlacedObject(newObject);
     markLowestFloatLogicalBottomCacheAsDirty();
+    return newObject;
 }
 
 void FloatingObjects::remove(FloatingObject* floatingObject)
@@ -273,6 +342,8 @@ void FloatingObjects::remove(FloatingObject* floatingObject)
     if (floatingObject->isPlaced())
         removePlacedObject(floatingObject);
     markLowestFloatLogicalBottomCacheAsDirty();
+    ASSERT(!floatingObject->originatingLine());
+    delete floatingObject;
 }
 
 void FloatingObjects::computePlacedFloatsTree()
