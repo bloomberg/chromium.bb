@@ -17,6 +17,7 @@
 #include "chrome/browser/sync_file_system/local/syncable_file_operation_runner.h"
 #include "chrome/browser/sync_file_system/local/syncable_file_system_operation.h"
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/blob/mock_blob_url_request_context.h"
 #include "webkit/browser/fileapi/file_system_context.h"
@@ -45,7 +46,7 @@ class SyncableFileOperationRunnerTest : public testing::Test {
   // Use the current thread as IO thread so that we can directly call
   // operations in the tests.
   SyncableFileOperationRunnerTest()
-      : message_loop_(base::MessageLoop::TYPE_IO),
+      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         file_system_(GURL("http://example.com"),
                      base::MessageLoopProxy::current().get(),
                      base::MessageLoopProxy::current().get()),
@@ -77,7 +78,6 @@ class SyncableFileOperationRunnerTest : public testing::Test {
     sync_context_ = NULL;
 
     file_system_.TearDown();
-    message_loop_.RunUntilIdle();
     RevokeSyncableFileSystem();
   }
 
@@ -131,7 +131,7 @@ class SyncableFileOperationRunnerTest : public testing::Test {
   ScopedEnableSyncFSDirectoryOperation enable_directory_operation_;
   base::ScopedTempDir dir_;
 
-  base::MessageLoop message_loop_;
+  content::TestBrowserThreadBundle thread_bundle_;
   CannedSyncableFileSystem file_system_;
   scoped_refptr<LocalFileSyncContext> sync_context_;
 
