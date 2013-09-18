@@ -70,6 +70,7 @@
 
 namespace WebCore {
 
+using WebKit::WebLocalizedString;
 using namespace HTMLNames;
 using namespace std;
 
@@ -389,8 +390,16 @@ String InputType::validationMessage() const
         return validationMessageRangeOverflowText(serialize(stepRange.maximum()));
 
     if (stepRange.stepMismatch(numericValue)) {
-        const String stepString = stepRange.hasStep() ? serializeForNumberType(stepRange.step() / stepRange.stepScaleFactor()) : emptyString();
-        return validationMessageStepMismatchText(serialize(stepRange.stepBase()), stepString);
+        ASSERT(stepRange.hasStep());
+        Decimal candidate1 = stepRange.clampValue(numericValue);
+        String localizedCandidate1 = localizeValue(serialize(candidate1));
+        Decimal candidate2 = candidate1 < numericValue ? candidate1 + stepRange.step() : candidate1 - stepRange.step();
+        if (!candidate2.isFinite() || candidate2 < stepRange.minimum() || candidate2 > stepRange.maximum())
+            return queryLocalizedString(WebLocalizedString::ValidationStepMismatchCloseToLimit, localizedCandidate1);
+        String localizedCandidate2 = localizeValue(serialize(candidate2));
+        if (candidate1 < candidate2)
+            return queryLocalizedString(WebLocalizedString::ValidationStepMismatch, localizedCandidate1, localizedCandidate2);
+        return queryLocalizedString(WebLocalizedString::ValidationStepMismatch, localizedCandidate2, localizedCandidate1);
     }
 
     return emptyString();

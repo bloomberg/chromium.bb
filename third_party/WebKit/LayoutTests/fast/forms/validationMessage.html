@@ -86,6 +86,17 @@ debug("badInput and valueMissing:");
 numberInput.required = true;
 shouldBe("numberInput.validationMessage", "nonRequiredBadInputMessage");
 
+debug("stepMismatch:");
+numberInput.min = "0";
+numberInput.step = "0.1";
+numberInput.value = "0.11";
+debug("input stepMismatch: " + numberInput.validationMessage);
+numberInput.value = "0.19";
+debug("input stepMismatch: " + numberInput.validationMessage);
+numberInput.max = "10.02";
+numberInput.value = "10.01";
+debug("input stepMismatch: " + numberInput.validationMessage);
+
 // A button can't be valited and, thus, has a blank validationMessage
 var but = document.createElement("button");
 but.name = "button";

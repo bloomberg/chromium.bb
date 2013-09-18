@@ -49,6 +49,11 @@ String queryLocalizedString(WebLocalizedString::Name name)
     return WebKit::Platform::current()->queryLocalizedString(name);
 }
 
+String queryLocalizedString(WebLocalizedString::Name name, const String& parameter)
+{
+    return WebKit::Platform::current()->queryLocalizedString(name, parameter);
+}
+
 String queryLocalizedString(WebLocalizedString::Name name, const String& parameter1, const String& parameter2)
 {
     return WebKit::Platform::current()->queryLocalizedString(name, parameter1, parameter2);
@@ -61,7 +66,7 @@ static String query(WebLocalizedString::Name name)
 
 static String query(WebLocalizedString::Name name, const WebString& parameter)
 {
-    return WebKit::Platform::current()->queryLocalizedString(name, parameter);
+    return queryLocalizedString(name, parameter);
 }
 
 static String query(WebLocalizedString::Name name, const WebString& parameter1, const WebString& parameter2)

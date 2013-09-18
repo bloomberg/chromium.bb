@@ -23,6 +23,10 @@ input typeMismatch for foo@example.com,bar@..example.com: '.' is used at a wrong
 input badInput: Please enter a number.
 badInput and valueMissing:
 PASS numberInput.validationMessage is nonRequiredBadInputMessage
+stepMismatch:
+input stepMismatch: Please enter a valid value. The two nearest valid values are 0.1 and 0.2.
+input stepMismatch: Please enter a valid value. The two nearest valid values are 0.1 and 0.2.
+input stepMismatch: Please enter a valid value. The nearest valid value is 10.
 PASS but.validationMessage is ''
 PASS anoninput.validationMessage is ''
 PASS happyFieldset.validationMessage is ''

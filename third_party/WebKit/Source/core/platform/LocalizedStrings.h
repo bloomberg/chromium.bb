@@ -35,6 +35,7 @@ namespace WebCore {
     class IntSize;
 
     String queryLocalizedString(WebKit::WebLocalizedString::Name);
+    String queryLocalizedString(WebKit::WebLocalizedString::Name, const String& parameter);
     String queryLocalizedString(WebKit::WebLocalizedString::Name, const String& parameter1, const String& parameter2);
 
     // FIXME: Use queryLocalizedString instead of the following functions.
