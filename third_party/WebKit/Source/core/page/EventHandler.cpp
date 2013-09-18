@@ -1105,13 +1105,6 @@ OptionalCursor EventHandler::selectCursor(const MouseEventWithHitTestResults& ev
     bool horizontalText = !style || style->isHorizontalWritingMode();
     const Cursor& iBeam = horizontalText ? iBeamCursor() : verticalTextCursor();
 
-    // During selection, use an I-beam no matter what we're over.
-    // If a drag may be starting or we're capturing mouse events for a particular node, don't treat this as a selection.
-    if (m_mousePressed && m_mouseDownMayStartSelect
-        && !m_mouseDownMayStartDrag
-        && m_frame->selection().isCaretOrRange() && !m_capturingMouseEventsNode)
-        return iBeam;
-
     if (renderer) {
         Cursor overrideCursor;
         switch (renderer->getCursor(roundedIntPoint(event.localPoint()), overrideCursor)) {
@@ -1168,6 +1161,16 @@ OptionalCursor EventHandler::selectCursor(const MouseEventWithHitTestResults& ev
                     inResizer = layer->isPointInResizeControl(view->windowToContents(event.event().position()), ResizerForPointer);
             }
         }
+
+        // During selection, use an I-beam no matter what we're over.
+        // If a drag may be starting or we're capturing mouse events for a particular node, don't treat this as a selection.
+        if (m_mousePressed && m_mouseDownMayStartSelect
+            && !m_mouseDownMayStartDrag
+            && m_frame->selection().isCaretOrRange()
+            && !m_capturingMouseEventsNode) {
+            return iBeam;
+        }
+
         if ((editable || (renderer && renderer->isText() && node->canStartSelection())) && !inResizer && !scrollbar)
             return iBeam;
         return pointerCursor();
