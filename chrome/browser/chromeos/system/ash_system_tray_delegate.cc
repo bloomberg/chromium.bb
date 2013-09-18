@@ -335,7 +335,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
       : ui_weak_ptr_factory_(
           new base::WeakPtrFactory<SystemTrayDelegate>(this)),
         user_profile_(NULL),
-        clock_type_(base::k24HourClock),
+        clock_type_(base::GetHourClockType()),
         search_key_mapped_to_(input_method::kSearchKey),
         screen_locked_(false),
         have_session_start_time_(false),
@@ -1021,12 +1021,16 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         kSystemUse24HourClock, &system_use_24_hour_clock);
 
     if (status == ash::user::LOGGED_IN_NONE)
-      return (system_value_found ? system_use_24_hour_clock : true);
+      return (system_value_found
+                  ? system_use_24_hour_clock
+                  : (base::GetHourClockType() == base::k24HourClock));
 
     const PrefService::Preference* user_pref =
         user_pref_registrar_->prefs()->FindPreference(prefs::kUse24HourClock);
     if (status == ash::user::LOGGED_IN_GUEST && user_pref->IsDefaultValue())
-      return (system_value_found ? system_use_24_hour_clock : true);
+      return (system_value_found
+                  ? system_use_24_hour_clock
+                  : (base::GetHourClockType() == base::k24HourClock));
 
     bool use_24_hour_clock = true;
     user_pref->GetValue()->GetAsBoolean(&use_24_hour_clock);
