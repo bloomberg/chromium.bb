@@ -257,10 +257,12 @@ TEST_F(KernelWrapTest, read) {
   read(4567, NULL, 5678);
 }
 
+#ifdef __GLIBC__
 TEST_F(KernelWrapTest, remove) {
   EXPECT_CALL(mock, remove(StrEq("remove"))).Times(1);
   remove("remove");
 }
+#endif
 
 TEST_F(KernelWrapTest, rmdir) {
   EXPECT_CALL(mock, rmdir(StrEq("rmdir"))).Times(1);

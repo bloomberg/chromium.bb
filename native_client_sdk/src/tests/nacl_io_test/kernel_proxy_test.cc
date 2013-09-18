@@ -74,7 +74,6 @@ class KernelProxyTest : public ::testing::Test {
 TEST_F(KernelProxyTest, FileLeak) {
   const size_t buffer_size = 1024;
   char filename[128];
-  int file_num;
   int garbage[buffer_size];
 
   MountMem* mount = (MountMem*)kp_.RootMount();
@@ -83,7 +82,7 @@ TEST_F(KernelProxyTest, FileLeak) {
   EXPECT_EQ(0, mount->Open(Path("/"), O_RDONLY, &root));
   EXPECT_EQ(0, root->ChildCount());
 
-  for (file_num = 0; file_num < 4096; file_num++) {
+  for (int file_num = 0; file_num < 4096; file_num++) {
     sprintf(filename, "/foo%i.tmp", file_num++);
     FILE* f = fopen(filename, "w");
     EXPECT_NE((FILE*)0, f);
