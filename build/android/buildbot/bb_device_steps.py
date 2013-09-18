@@ -9,6 +9,7 @@ import hashlib
 import multiprocessing
 import os
 import random
+import re
 import shutil
 import sys
 
@@ -254,11 +255,10 @@ def RunWebkitLayoutTests(options):
     builder_name = options.build_properties.get('buildername', '')
     build_number = str(options.build_properties.get('buildnumber', ''))
     bb_annotations.PrintLink('results',
-        '%s/%s/%s/layout-test-results/results.html' % (base, builder_name,
-        build_number))
-    bb_annotations.PrintLink('(zip)',
-        '%s/%s/%s/layout-test-results.zip' % (base, builder_name,
-        build_number))
+        '%s/%s/%s/layout-test-results/results.html' % (
+        base, EscapeBuilderName(builder_name), build_number))
+    bb_annotations.PrintLink('(zip)', '%s/%s/%s/layout-test-results.zip' % (
+        base, EscapeBuilderName(builder_name), build_number))
     gs_bucket = 'gs://chromium-layout-test-archives'
     RunCmd([os.path.join(SLAVE_SCRIPTS_DIR, 'chromium',
                          'archive_layout_test_results.py'),
@@ -267,6 +267,10 @@ def RunWebkitLayoutTests(options):
         '--build-number', build_number,
         '--builder-name', builder_name,
         '--gs-bucket', gs_bucket])
+
+
+def EscapeBuilderName(builder_name):
+  return re.sub('[ ()]', '_', builder_name)
 
 
 def SpawnLogcatMonitor():
