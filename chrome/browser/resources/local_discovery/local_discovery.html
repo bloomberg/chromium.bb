@@ -14,12 +14,13 @@
   <script src="chrome://resources/js/util.js"></script>
   <script src="chrome://resources/js/load_time_data.js"></script>
   <script src="chrome://resources/js/cr/ui/overlay.js"></script>
+  <script src="chrome://resources/js/cr/ui/focus_manager.js"></script>
   <script src="local_discovery.js"></script>
   <script src="strings.js"></script>
 </head>
 <body class="uber-frame"
       i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
-  <div class="page">
+  <div class="page" id="main-page">
     <div class="overlay" id="overlay" hidden>
       <div id="register-overlay" class="page">
         <div class="close-button"></div>

@@ -37,6 +37,11 @@ cr.define('local_discovery', function() {
   var isUserLoggedIn = true;
 
   /**
+   * Focus manager for page.
+   */
+  var focusManager = null;
+
+  /**
    * Object that represents a device in the device list.
    * @param {Object} info Information about the device.
    * @constructor
@@ -114,6 +119,25 @@ cr.define('local_discovery', function() {
   };
 
   /**
+   * Manages focus for local devices page.
+   * @constructor
+   * @extends {cr.ui.FocusManager}
+   */
+  function LocalDiscoveryFocusManager() {
+    cr.ui.FocusManager.call(this);
+    this.focusParent_ = document.body;
+  }
+
+  LocalDiscoveryFocusManager.prototype = {
+    __proto__: cr.ui.FocusManager.prototype,
+    /** @override */
+    getFocusParent: function() {
+      return document.querySelector('#overlay .showing') ||
+        $('main-page');
+    }
+  };
+
+  /**
    * Returns a textual representation of the number of printers on the network.
    * @return {string} Number of printers on the network as localized string.
    */
@@ -172,7 +196,11 @@ cr.define('local_discovery', function() {
    */
   function showRegisterOverlay() {
     recordUmaAction('DevicesPage_AddPrintersClicked');
-    $('register-overlay').classList.add('showing');
+
+    var registerOverlay = $('register-overlay');
+    registerOverlay.classList.add('showing');
+    registerOverlay.focus();
+
     $('overlay').hidden = false;
     uber.invokeMethodOnParent('beginInterceptingEvents');
     setRegisterPage('register-page-choose');
@@ -460,6 +488,9 @@ cr.define('local_discovery', function() {
 
     var title = loadTimeData.getString('devicesTitle');
     uber.invokeMethodOnParent('setTitle', {title: title});
+
+    focusManager = new LocalDiscoveryFocusManager();
+    focusManager.initialize();
 
     chrome.send('start');
     recordUmaAction('DevicesPage_Opened');
