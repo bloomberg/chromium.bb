@@ -74,8 +74,10 @@ class ASH_EXPORT WorkspaceLayoutManager : public BaseLayoutManager {
 
   void UpdateDesktopVisibility();
 
-  // Updates the bounds of the window from a show state change.
-  void UpdateBoundsFromShowState(aura::Window* window);
+  // Updates the bounds of the window for a show state change from
+  // |last_show_state|.
+  void UpdateBoundsFromShowState(aura::Window* window,
+                                 ui::WindowShowState last_show_state);
 
   // If |window| is maximized or fullscreen the bounds of the window are set and
   // true is returned. Does nothing otherwise.

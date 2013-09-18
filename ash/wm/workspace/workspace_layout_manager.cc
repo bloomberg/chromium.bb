@@ -178,7 +178,7 @@ void WorkspaceLayoutManager::OnWindowPropertyChanged(Window* window,
       SetRestoreBoundsInScreen(window, window->GetBoundsInScreen());
     }
 
-    UpdateBoundsFromShowState(window);
+    UpdateBoundsFromShowState(window, old_state);
     ShowStateChanged(window, old_state);
 
     // Set the restore rectangle to the previously set restore rectangle.
@@ -280,7 +280,9 @@ void WorkspaceLayoutManager::UpdateDesktopVisibility() {
   FramePainter::UpdateSoloWindowHeader(window_->GetRootWindow());
 }
 
-void WorkspaceLayoutManager::UpdateBoundsFromShowState(Window* window) {
+void WorkspaceLayoutManager::UpdateBoundsFromShowState(
+    Window* window,
+    ui::WindowShowState last_show_state) {
   // See comment in SetMaximizedOrFullscreenBounds() as to why we use parent in
   // these calculation.
   switch (window->GetProperty(aura::client::kShowStateKey)) {
@@ -318,20 +320,30 @@ void WorkspaceLayoutManager::UpdateBoundsFromShowState(Window* window) {
       break;
     }
 
-    case ui::SHOW_STATE_MAXIMIZED:
+    case ui::SHOW_STATE_MAXIMIZED: {
       MoveToDisplayForRestore(window);
-      CrossFadeToBounds(window, ScreenAsh::GetMaximizedWindowBoundsInParent(
-          window->parent()->parent()));
+      gfx::Rect new_bounds = ScreenAsh::GetMaximizedWindowBoundsInParent(
+          window->parent()->parent());
+      // If the window is restored from minimized state, do not make the cross
+      // fade animation and set the child bounds directly. The restoring
+      // animation will be done by ash/wm/window_animations.cc.
+      if (last_show_state == ui::SHOW_STATE_MINIMIZED)
+        SetChildBoundsDirect(window, new_bounds);
+      else
+        CrossFadeToBounds(window, new_bounds);
       break;
+    }
 
     case ui::SHOW_STATE_FULLSCREEN: {
       MoveToDisplayForRestore(window);
       gfx::Rect new_bounds = ScreenAsh::GetDisplayBoundsInParent(
           window->parent()->parent());
-      if (window->GetProperty(kAnimateToFullscreenKey))
+      if (window->GetProperty(kAnimateToFullscreenKey) &&
+          last_show_state != ui::SHOW_STATE_MINIMIZED) {
         CrossFadeToBounds(window, new_bounds);
-      else
+      } else {
         SetChildBoundsDirect(window, new_bounds);
+      }
       break;
     }
 
