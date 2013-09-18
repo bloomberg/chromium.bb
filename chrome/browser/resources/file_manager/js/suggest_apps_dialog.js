@@ -182,8 +182,6 @@ SuggestAppsDialog.prototype.onInputFocus = function() {
 
 /**
  * Injects headers into the passed request.
- * TODO(yoshiki): Removes this method  after the CWS widget supports the access
- * token in 'initialization' message.
  *
  * @param {Event} e Request event.
  * @return {{requestHeaders: HttpHeaders}} Modified headers.
@@ -268,9 +266,6 @@ SuggestAppsDialog.prototype.show = function(extension, mime, onDialogClosed) {
     this.webview_ = this.container_.querySelector('#cws-widget');
     this.webview_.style.width = WEBVIEW_WIDTH + 'px';
     this.webview_.style.height = WEBVIEW_HEIGHT + 'px';
-
-    // TODO(yoshiki): Removes the 'Authentication' header after the CWS widget
-    // supports the access token in 'initialization' message.
     this.webview_.request.onBeforeSendHeaders.addListener(
         this.authorizeRequest_.bind(this),
         {urls: [this.widgetOrigin_ + '/*']},
@@ -282,8 +277,7 @@ SuggestAppsDialog.prototype.show = function(extension, mime, onDialogClosed) {
         this.webview_,
         extension, mime,
         WEBVIEW_WIDTH, WEBVIEW_HEIGHT,
-        this.widgetUrl_, this.widgetOrigin_,
-        this.accessToken_);
+        this.widgetUrl_, this.widgetOrigin_);
     this.webviewClient_.addEventListener(CWSContainerClient.Events.LOADED,
                                          this.onWidgetLoaded_.bind(this));
     this.webviewClient_.addEventListener(CWSContainerClient.Events.LOAD_FAILED,
