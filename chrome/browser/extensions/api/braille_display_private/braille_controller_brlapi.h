@@ -54,6 +54,8 @@ class BrailleControllerImpl : public BrailleController {
   void StartConnecting();
   void OnSocketDirChanged(const base::FilePath& path, bool error);
   void TryToConnect();
+  void ResetRetryConnectHorizon();
+  void ScheduleTryToConnect();
   void Disconnect();
   scoped_ptr<BrlapiConnection> CreateBrlapiConnection();
   void DispatchKeys();
@@ -68,6 +70,8 @@ class BrailleControllerImpl : public BrailleController {
   scoped_ptr<BrlapiConnection> connection_;
   base::FilePathWatcher file_path_watcher_;
   bool started_connecting_;
+  bool connect_scheduled_;
+  base::Time retry_connect_horizon_;
 
   // Manipulated on the UI thread.
   ObserverList<BrailleObserver> observers_;

@@ -28,7 +28,7 @@ static const int kDefaultTtyChromeOS = 1;
 class BrlapiConnectionImpl : public BrlapiConnection,
                              MessageLoopForIO::Watcher {
  public:
-  BrlapiConnectionImpl(LibBrlapiLoader* loader) :
+  explicit BrlapiConnectionImpl(LibBrlapiLoader* loader) :
       libbrlapi_loader_(loader) {}
 
   virtual ~BrlapiConnectionImpl() {
@@ -95,6 +95,23 @@ bool BrlapiConnectionImpl::Connect(const OnDataReadyCallback& on_data_ready) {
   if (libbrlapi_loader_->brlapi__enterTtyModeWithPath(
           handle_.get(), path, pathElements, NULL) < 0) {
     LOG(ERROR) << "brlapi: couldn't enter tty mode: " << BrlapiStrError();
+    Disconnect();
+    return false;
+  }
+
+  size_t size;
+  if (!GetDisplaySize(&size)) {
+    // Error already logged.
+    Disconnect();
+    return false;
+  }
+
+  // A display size of 0 means no display connected.  We can't reliably
+
+  // detect when a display gets connected, so fail and let the caller
+  // retry connecting.
+  if (size == 0) {
+    LOG(ERROR) << "No braille display connected";
     Disconnect();
     return false;
   }
@@ -179,6 +196,6 @@ bool BrlapiConnectionImpl::CheckConnected() {
   return true;
 }
 
-}  // braille_display_private
-}  // api
-}  // extensions
+}  // namespace braille_display_private
+}  // namespace api
+}  // namespace extensions
