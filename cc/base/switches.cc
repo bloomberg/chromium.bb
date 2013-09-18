@@ -141,6 +141,9 @@ const char kDisableMapImage[] = "disable-map-image";
 // Prevents the layer tree unit tests from timing out.
 const char kCCLayerTreeTestNoTimeout[] = "cc-layer-tree-test-no-timeout";
 
+// Disable textures using RGBA_4444 layout.
+const char kDisable4444Textures[] = "disable-4444-textures";
+
 bool IsLCDTextEnabled() {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(cc::switches::kDisableLCDText))

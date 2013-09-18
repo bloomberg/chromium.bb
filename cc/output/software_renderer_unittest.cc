@@ -33,7 +33,8 @@ class SoftwareRendererTest : public testing::Test, public RendererClient {
         software_output_device.Pass());
     CHECK(output_surface_->BindToClient(&output_surface_client_));
 
-    resource_provider_ = ResourceProvider::Create(output_surface_.get(), 0);
+    resource_provider_ =
+        ResourceProvider::Create(output_surface_.get(), 0, false);
     renderer_ = SoftwareRenderer::Create(
         this, &settings_, output_surface_.get(), resource_provider());
   }
@@ -124,13 +125,15 @@ TEST_F(SoftwareRendererTest, TileQuad) {
   InitializeRenderer(make_scoped_ptr(new SoftwareOutputDevice));
 
   ResourceProvider::ResourceId resource_yellow =
-      resource_provider()->CreateResource(
-          outer_size, GL_RGBA, GL_CLAMP_TO_EDGE,
-          ResourceProvider::TextureUsageAny);
+      resource_provider()->CreateResource(outer_size,
+                                          GL_CLAMP_TO_EDGE,
+                                          ResourceProvider::TextureUsageAny,
+                                          RGBA_8888);
   ResourceProvider::ResourceId resource_cyan =
-      resource_provider()->CreateResource(
-          inner_size, GL_RGBA, GL_CLAMP_TO_EDGE,
-          ResourceProvider::TextureUsageAny);
+      resource_provider()->CreateResource(inner_size,
+                                          GL_CLAMP_TO_EDGE,
+                                          ResourceProvider::TextureUsageAny,
+                                          RGBA_8888);
 
   SkBitmap yellow_tile;
   yellow_tile.setConfig(
@@ -214,9 +217,10 @@ TEST_F(SoftwareRendererTest, TileQuadVisibleRect) {
   InitializeRenderer(make_scoped_ptr(new SoftwareOutputDevice));
 
   ResourceProvider::ResourceId resource_cyan =
-      resource_provider()->CreateResource(
-          tile_size, GL_RGBA, GL_CLAMP_TO_EDGE,
-          ResourceProvider::TextureUsageAny);
+      resource_provider()->CreateResource(tile_size,
+                                          GL_CLAMP_TO_EDGE,
+                                          ResourceProvider::TextureUsageAny,
+                                          RGBA_8888);
 
   SkBitmap cyan_tile;  // The lowest five rows are yellow.
   cyan_tile.setConfig(

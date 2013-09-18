@@ -151,7 +151,7 @@ class TestWebGraphicsContext3DTextureUpload : public TestWebGraphicsContext3D {
 };
 
 void UploadTexture(TextureUploader* uploader,
-                   WGC3Denum format,
+                   ResourceFormat format,
                    gfx::Size size,
                    const uint8* data) {
   uploader->Upload(data,
@@ -170,17 +170,17 @@ TEST(TextureUploaderTest, NumBlockingUploads) {
 
   fake_context->SetResultAvailable(0);
   EXPECT_EQ(0u, uploader->NumBlockingUploads());
-  UploadTexture(uploader.get(), GL_RGBA, gfx::Size(), NULL);
+  UploadTexture(uploader.get(), RGBA_8888, gfx::Size(), NULL);
   EXPECT_EQ(1u, uploader->NumBlockingUploads());
-  UploadTexture(uploader.get(), GL_RGBA, gfx::Size(), NULL);
+  UploadTexture(uploader.get(), RGBA_8888, gfx::Size(), NULL);
   EXPECT_EQ(2u, uploader->NumBlockingUploads());
 
   fake_context->SetResultAvailable(1);
   EXPECT_EQ(0u, uploader->NumBlockingUploads());
-  UploadTexture(uploader.get(), GL_RGBA, gfx::Size(), NULL);
+  UploadTexture(uploader.get(), RGBA_8888, gfx::Size(), NULL);
   EXPECT_EQ(0u, uploader->NumBlockingUploads());
-  UploadTexture(uploader.get(), GL_RGBA, gfx::Size(), NULL);
-  UploadTexture(uploader.get(), GL_RGBA, gfx::Size(), NULL);
+  UploadTexture(uploader.get(), RGBA_8888, gfx::Size(), NULL);
+  UploadTexture(uploader.get(), RGBA_8888, gfx::Size(), NULL);
   EXPECT_EQ(0u, uploader->NumBlockingUploads());
 }
 
@@ -192,18 +192,18 @@ TEST(TextureUploaderTest, MarkPendingUploadsAsNonBlocking) {
 
   fake_context->SetResultAvailable(0);
   EXPECT_EQ(0u, uploader->NumBlockingUploads());
-  UploadTexture(uploader.get(), GL_RGBA, gfx::Size(), NULL);
-  UploadTexture(uploader.get(), GL_RGBA, gfx::Size(), NULL);
+  UploadTexture(uploader.get(), RGBA_8888, gfx::Size(), NULL);
+  UploadTexture(uploader.get(), RGBA_8888, gfx::Size(), NULL);
   EXPECT_EQ(2u, uploader->NumBlockingUploads());
 
   uploader->MarkPendingUploadsAsNonBlocking();
   EXPECT_EQ(0u, uploader->NumBlockingUploads());
-  UploadTexture(uploader.get(), GL_RGBA, gfx::Size(), NULL);
+  UploadTexture(uploader.get(), RGBA_8888, gfx::Size(), NULL);
   EXPECT_EQ(1u, uploader->NumBlockingUploads());
 
   fake_context->SetResultAvailable(1);
   EXPECT_EQ(0u, uploader->NumBlockingUploads());
-  UploadTexture(uploader.get(), GL_RGBA, gfx::Size(), NULL);
+  UploadTexture(uploader.get(), RGBA_8888, gfx::Size(), NULL);
   uploader->MarkPendingUploadsAsNonBlocking();
   EXPECT_EQ(0u, uploader->NumBlockingUploads());
 }
@@ -222,7 +222,7 @@ TEST(TextureUploaderTest, UploadContentsTest) {
     buffer[i * 4 * 256] = 0x1;
     buffer[(i + 1) * 4 * 256 - 1] = 0x2;
   }
-  UploadTexture(uploader.get(), GL_RGBA, gfx::Size(256, 256), buffer);
+  UploadTexture(uploader.get(), RGBA_8888, gfx::Size(256, 256), buffer);
 
   // Upload a tightly packed 41x43 RGBA texture.
   memset(buffer, 0, sizeof(buffer));
@@ -231,7 +231,7 @@ TEST(TextureUploaderTest, UploadContentsTest) {
     buffer[i * 4 * 41] = 0x1;
     buffer[(i + 1) * 4 * 41 - 1] = 0x2;
   }
-  UploadTexture(uploader.get(), GL_RGBA, gfx::Size(41, 43), buffer);
+  UploadTexture(uploader.get(), RGBA_8888, gfx::Size(41, 43), buffer);
 
   // Upload a tightly packed 82x86 LUMINANCE texture.
   memset(buffer, 0, sizeof(buffer));
@@ -240,7 +240,7 @@ TEST(TextureUploaderTest, UploadContentsTest) {
     buffer[i * 1 * 82] = 0x1;
     buffer[(i + 1) * 82 - 1] = 0x2;
   }
-  UploadTexture(uploader.get(), GL_LUMINANCE, gfx::Size(82, 86), buffer);
+  UploadTexture(uploader.get(), LUMINANCE_8, gfx::Size(82, 86), buffer);
 }
 
 }  // namespace

@@ -17,7 +17,6 @@
 #include "cc/resources/priority_calculator.h"
 #include "cc/resources/resource.h"
 #include "cc/trees/proxy.h"
-#include "third_party/khronos/GLES2/gl2.h"
 #include "ui/gfx/size.h"
 
 #if defined(COMPILER_GCC)
@@ -40,7 +39,8 @@ class CC_EXPORT PrioritizedResourceManager {
   static scoped_ptr<PrioritizedResourceManager> Create(const Proxy* proxy) {
     return make_scoped_ptr(new PrioritizedResourceManager(proxy));
   }
-  scoped_ptr<PrioritizedResource> CreateTexture(gfx::Size size, GLenum format) {
+  scoped_ptr<PrioritizedResource> CreateTexture(
+      gfx::Size size, ResourceFormat format) {
     return make_scoped_ptr(new PrioritizedResource(this, size, format));
   }
   ~PrioritizedResourceManager();
@@ -184,7 +184,7 @@ class CC_EXPORT PrioritizedResourceManager {
                                    ResourceProvider* resource_provider);
   PrioritizedResource::Backing* CreateBacking(
       gfx::Size size,
-      GLenum format,
+      ResourceFormat format,
       ResourceProvider* resource_provider);
   void EvictFirstBackingResource(ResourceProvider* resource_provider);
   void SortBackings();

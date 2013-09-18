@@ -15,10 +15,10 @@
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "ui/gfx/size_conversions.h"
 
-const unsigned kYUVResourceFormat = GL_LUMINANCE;
-const unsigned kRGBResourceFormat = GL_RGBA;
-
 namespace cc {
+
+const ResourceFormat kYUVResourceFormat = LUMINANCE_8;
+const ResourceFormat kRGBResourceFormat = RGBA_8888;
 
 VideoFrameExternalResources::VideoFrameExternalResources() : type(NONE) {}
 
@@ -90,7 +90,7 @@ bool VideoResourceUpdater::VerifyFrame(
 static gfx::Size SoftwarePlaneDimension(
     media::VideoFrame::Format input_frame_format,
     gfx::Size coded_size,
-    GLenum output_resource_format,
+    ResourceFormat output_resource_format,
     int plane_index) {
   if (output_resource_format == kYUVResourceFormat) {
     if (plane_index == media::VideoFrame::kYPlane ||
@@ -116,7 +116,7 @@ static gfx::Size SoftwarePlaneDimension(
     }
   }
 
-  DCHECK_EQ(output_resource_format, static_cast<unsigned>(kRGBResourceFormat));
+  DCHECK_EQ(output_resource_format, kRGBResourceFormat);
   return coded_size;
 }
 
@@ -143,7 +143,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
 
   bool software_compositor = context_provider_ == NULL;
 
-  GLenum output_resource_format = kYUVResourceFormat;
+  ResourceFormat output_resource_format = kYUVResourceFormat;
   size_t output_plane_count =
       (input_frame_format == media::VideoFrame::YV12A) ? 4 : 3;
 
@@ -194,9 +194,9 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
       // ResourceProvider and stop using ResourceProvider in this class.
       resource_id =
           resource_provider_->CreateResource(output_plane_resource_size,
-                                             output_resource_format,
                                              GL_CLAMP_TO_EDGE,
-                                             ResourceProvider::TextureUsageAny);
+                                             ResourceProvider::TextureUsageAny,
+                                             output_resource_format);
 
       DCHECK(mailbox.IsZero());
 
@@ -284,8 +284,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
 
   for (size_t i = 0; i < plane_resources.size(); ++i) {
     // Update each plane's resource id with its content.
-    DCHECK_EQ(plane_resources[i].resource_format,
-              static_cast<unsigned>(kYUVResourceFormat));
+    DCHECK_EQ(plane_resources[i].resource_format, kYUVResourceFormat);
 
     const uint8_t* input_plane_pixels = video_frame->data(i);
 

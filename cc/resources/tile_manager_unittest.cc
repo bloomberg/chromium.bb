@@ -25,7 +25,8 @@ class TileManagerTest : public testing::TestWithParam<bool> {
     output_surface_ = FakeOutputSurface::Create3d();
     CHECK(output_surface_->BindToClient(&output_surface_client_));
 
-    resource_provider_ = ResourceProvider::Create(output_surface_.get(), 0);
+    resource_provider_ =
+        ResourceProvider::Create(output_surface_.get(), 0, false);
     tile_manager_ = make_scoped_ptr(
         new FakeTileManager(&tile_manager_client_, resource_provider_.get()));
 

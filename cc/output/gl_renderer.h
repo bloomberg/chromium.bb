@@ -102,7 +102,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   void GetFramebufferPixelsAsync(gfx::Rect rect,
                                  scoped_ptr<CopyOutputRequest> request);
   void GetFramebufferTexture(unsigned texture_id,
-                             unsigned texture_format,
+                             ResourceFormat texture_format,
                              gfx::Rect device_rect);
   void ReleaseRenderPassTextures();
 

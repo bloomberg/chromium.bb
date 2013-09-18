@@ -12,7 +12,6 @@
 #include "cc/resources/priority_calculator.h"
 #include "cc/resources/resource.h"
 #include "cc/resources/resource_provider.h"
-#include "third_party/khronos/GLES2/gl2.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/vector2d.h"
@@ -24,13 +23,16 @@ class Proxy;
 
 class CC_EXPORT PrioritizedResource {
  public:
-  static scoped_ptr<PrioritizedResource>
-  Create(PrioritizedResourceManager* manager, gfx::Size size, GLenum format) {
+  static scoped_ptr<PrioritizedResource> Create(
+      PrioritizedResourceManager* manager,
+      gfx::Size size,
+      ResourceFormat format) {
     return make_scoped_ptr(new PrioritizedResource(manager, size, format));
   }
   static scoped_ptr<PrioritizedResource> Create(
       PrioritizedResourceManager* manager) {
-    return make_scoped_ptr(new PrioritizedResource(manager, gfx::Size(), 0));
+    return make_scoped_ptr(
+        new PrioritizedResource(manager, gfx::Size(), RGBA_8888));
   }
   ~PrioritizedResource();
 
@@ -38,8 +40,8 @@ class CC_EXPORT PrioritizedResource {
   // Setting these to the same value is a no-op.
   void SetTextureManager(PrioritizedResourceManager* manager);
   PrioritizedResourceManager* resource_manager() { return manager_; }
-  void SetDimensions(gfx::Size size, GLenum format);
-  GLenum format() const { return format_; }
+  void SetDimensions(gfx::Size size, ResourceFormat format);
+  ResourceFormat format() const { return format_; }
   gfx::Size size() const { return size_; }
   size_t bytes() const { return bytes_; }
   bool contents_swizzled() const { return contents_swizzled_; }
@@ -106,7 +108,7 @@ class CC_EXPORT PrioritizedResource {
     Backing(unsigned id,
             ResourceProvider* resource_provider,
             gfx::Size size,
-            GLenum format);
+            ResourceFormat format);
     ~Backing();
     void UpdatePriority();
     void UpdateInDrawingImplTree();
@@ -146,7 +148,7 @@ class CC_EXPORT PrioritizedResource {
 
   PrioritizedResource(PrioritizedResourceManager* resource_manager,
                       gfx::Size size,
-                      GLenum format);
+                      ResourceFormat format);
 
   bool is_above_priority_cutoff() { return is_above_priority_cutoff_; }
   void set_above_priority_cutoff(bool is_above_priority_cutoff) {
@@ -161,7 +163,7 @@ class CC_EXPORT PrioritizedResource {
   void Unlink();
 
   gfx::Size size_;
-  GLenum format_;
+  ResourceFormat format_;
   size_t bytes_;
   bool contents_swizzled_;
 
