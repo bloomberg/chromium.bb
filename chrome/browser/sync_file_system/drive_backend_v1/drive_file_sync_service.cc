@@ -1055,6 +1055,14 @@ bool DriveFileSyncService::AppendRemoteChangeInternal(
       remote_file_md5 == local_file_md5)
     return false;
 
+  // Drop the change if remote change is for directory addition that is
+  // already known.
+  if (file_type == SYNC_FILE_TYPE_DIRECTORY &&
+      !is_deleted &&
+      !local_resource_id.empty() &&
+      metadata.type() == DriveMetadata_ResourceType_RESOURCE_TYPE_FOLDER)
+    return false;
+
   // Drop any change if the change has unknown resource id.
   if (!remote_resource_id.empty() &&
       !local_resource_id.empty() &&
