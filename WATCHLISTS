@@ -575,14 +575,20 @@
                   'ui/views/view.cc|'\
                   'ui/views/widget/',
     },
+    'webkit': {
+      'filepath': 'webkit/',
+    },
+    'webrtc_media': {
+      'filepath': 'chrome/browser/media/|'\
+                  'content/browser/renderer_host/media/|'\
+                  'content/renderer/media/|'\
+                  'media/video/capture/',
+    },
     'website_settings': {
       'filepath': 'chrome/browser/content_settings/'\
                   '|chrome/browser/ui/views/website_settings/'\
                   '|chrome/browser/ui/website_settings/'\
                   '|chrome/common/content_settings',
-    },
-    'webkit': {
-      'filepath': 'webkit/',
     },
     'worker': {
       'filepath': 'chrome/browser/worker_host/|chrome/worker/|'\
@@ -794,8 +800,9 @@
                  'timurrrr+watch@chromium.org'],
     'views': ['tfarina@chromium.org'],
     'views_core': ['ben+watch@chromium.org'],
-    'website_settings': ['markusheintz@chromium.org'],
     'webkit': ['darin-cc@chromium.org'],
+    'webrtc_media': ['wjia+watch@chromium.org'],
+    'website_settings': ['markusheintz@chromium.org'],
     'worker': ['jam@chromium.org'],
     'x11': ['derat+watch@chromium.org',
             'sadrul@chromium.org',
