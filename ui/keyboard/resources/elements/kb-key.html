@@ -108,14 +108,26 @@
 </polymer-element>
 
 <!--
-  -- TODO(kevers): Display popup menu for selecting layout on keypress. Display
-  -- code for keyboard layout in place of image.
+  -- TODO(kevers): Rip this out if and when we are done implementing the proper
+  -- layout switcher.
   -->
 <polymer-element name="kb-layout-selector" class="layout-selector dark" char="Invalid"
     extends="kb-key">
   <script>
     Polymer('kb-layout-selector', {
       toLayout: 'qwerty'
+    });
+  </script>
+</polymer-element>
+
+<polymer-element name="kb-hide-keyboard-key" class="hide-keyboard dark" char="Invalid"
+    extends="kb-key">
+  <script>
+    Polymer('kb-hide-keyboard-key', {
+      down: function(event) {},
+      up: function(event) {
+        hideKeyboard();
+      }
     });
   </script>
 </polymer-element>
