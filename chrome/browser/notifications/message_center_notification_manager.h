@@ -107,7 +107,6 @@ class MessageCenterNotificationManager
     void StartDownloadWithImage(const Notification& notification,
                                 const gfx::Image* image,
                                 const GURL& url,
-                                int size,
                                 const SetImageCallback& callback);
     void StartDownloadByKey(const Notification& notification,
                             const char* key,
@@ -119,8 +118,8 @@ class MessageCenterNotificationManager
                           int download_id,
                           int http_status_code,
                           const GURL& image_url,
-                          int requested_size,
-                          const std::vector<SkBitmap>& bitmaps);
+                          const std::vector<SkBitmap>& bitmaps,
+                          const std::vector<gfx::Size>& original_bitmap_sizes);
    private:
     // Used to keep track of the number of pending downloads.  Once this
     // reaches zero, we can tell the delegate that we don't need the

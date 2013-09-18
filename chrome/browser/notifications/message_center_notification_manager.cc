@@ -310,7 +310,6 @@ void MessageCenterNotificationManager::ImageDownloads::StartDownloads(
       notification,
       &notification.icon(),
       notification.icon_url(),
-      message_center::kNotificationIconSize,
       base::Bind(&message_center::MessageCenter::SetNotificationIcon,
                  base::Unretained(message_center_),
                  notification.notification_id()));
@@ -320,7 +319,6 @@ void MessageCenterNotificationManager::ImageDownloads::StartDownloads(
       notification,
       NULL,
       notification.image_url(),
-      message_center::kNotificationPreferredImageSize,
       base::Bind(&message_center::MessageCenter::SetNotificationImage,
                  base::Unretained(message_center_),
                  notification.notification_id()));
@@ -330,7 +328,6 @@ void MessageCenterNotificationManager::ImageDownloads::StartDownloads(
       notification,
       NULL,
       notification.button_one_icon_url(),
-      message_center::kNotificationButtonIconSize,
       base::Bind(&message_center::MessageCenter::SetNotificationButtonIcon,
                  base::Unretained(message_center_),
                  notification.notification_id(),
@@ -339,7 +336,6 @@ void MessageCenterNotificationManager::ImageDownloads::StartDownloads(
       notification,
       NULL,
       notification.button_two_icon_url(),
-      message_center::kNotificationButtonIconSize,
       base::Bind(&message_center::MessageCenter::SetNotificationButtonIcon,
                  base::Unretained(message_center_),
                  notification.notification_id(),
@@ -353,7 +349,6 @@ void MessageCenterNotificationManager::ImageDownloads::StartDownloadWithImage(
     const Notification& notification,
     const gfx::Image* image,
     const GURL& url,
-    int size,
     const SetImageCallback& callback) {
   // Set the image directly if we have it.
   if (image && !image->IsEmpty()) {
@@ -383,7 +378,6 @@ void MessageCenterNotificationManager::ImageDownloads::StartDownloadWithImage(
   contents->DownloadImage(
       url,
       false,  // Not a favicon
-      size,  // Preferred size
       0,  // No maximum size
       base::Bind(
           &MessageCenterNotificationManager::ImageDownloads::DownloadComplete,
@@ -396,8 +390,8 @@ void MessageCenterNotificationManager::ImageDownloads::DownloadComplete(
     int download_id,
     int http_status_code,
     const GURL& image_url,
-    int requested_size,
-    const std::vector<SkBitmap>& bitmaps) {
+    const std::vector<SkBitmap>& bitmaps,
+    const std::vector<gfx::Size>& original_bitmap_sizes) {
   PendingDownloadCompleted();
 
   if (bitmaps.empty())

@@ -39,13 +39,6 @@ class FaviconUtil {
       const std::vector<chrome::FaviconBitmapResult>& png_data,
       const std::vector<ui::ScaleFactor>& scale_factors,
       int favicon_size);
-
-  // Takes a vector of bitmaps and returns the index of the image that will best
-  // produce an image of size |desired_size| for the given |scale_factors|.
-  static size_t SelectBestFaviconFromBitmaps(
-      const std::vector<SkBitmap>& bitmaps,
-      const std::vector<ui::ScaleFactor>& scale_factors,
-      int desired_size);
 };
 
 #endif  // CHROME_BROWSER_FAVICON_FAVICON_UTIL_H_

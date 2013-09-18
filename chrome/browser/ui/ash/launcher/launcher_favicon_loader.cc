@@ -49,8 +49,8 @@ class FaviconBitmapHandler : public content::WebContentsObserver {
       int id,
       int http_status_code,
       const GURL& image_url,
-      int requested_size,
-      const std::vector<SkBitmap>& bitmaps);
+      const std::vector<SkBitmap>& bitmaps,
+      const std::vector<gfx::Size>& original_bitmap_sizes);
 
   void AddFavicon(const GURL& image_url, const SkBitmap& new_bitmap);
 
@@ -113,7 +113,6 @@ void FaviconBitmapHandler::DidUpdateFaviconURL(
     web_contents_->DownloadImage(
         *iter,
         true,  // is a favicon
-        0,     // no preferred size
         0,     // no maximum size
         base::Bind(&FaviconBitmapHandler::DidDownloadFavicon,
                    weak_ptr_factory_.GetWeakPtr()));
@@ -128,8 +127,8 @@ void FaviconBitmapHandler::DidDownloadFavicon(
     int id,
     int http_status_code,
     const GURL& image_url,
-    int requested_size,
-    const std::vector<SkBitmap>& bitmaps) {
+    const std::vector<SkBitmap>& bitmaps,
+    const std::vector<gfx::Size>& original_bitmap_sizes) {
   UrlSet::iterator iter = pending_requests_.find(image_url);
   if (iter == pending_requests_.end()) {
     // Updates are received for all downloads; ignore unrequested urls.

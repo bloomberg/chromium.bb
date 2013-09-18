@@ -8,6 +8,7 @@
 #include "chrome/common/favicon/favicon_types.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/image/image_png_rep.h"
@@ -74,6 +75,62 @@ std::vector<gfx::ImagePNGRep> SelectFaviconFramesFromPNGsWithoutResizing(
   }
 
   return png_reps;
+}
+
+// Returns a resampled bitmap of
+// |desired_size_in_pixel| x |desired_size_in_pixel| by resampling the best
+// bitmap out of |input_bitmaps|. ResizeBitmapByDownsamplingIfPossible() is
+// similar to SelectFaviconFrames() but it operates on bitmaps which have
+// already been resampled via SelectFaviconFrames().
+SkBitmap ResizeBitmapByDownsamplingIfPossible(
+    const std::vector<SkBitmap>& input_bitmaps,
+    int desired_size_in_pixel) {
+  DCHECK(!input_bitmaps.empty());
+  DCHECK_NE(desired_size_in_pixel, 0);
+
+  SkBitmap best_bitmap;
+  for (size_t i = 0; i < input_bitmaps.size(); ++i) {
+    const SkBitmap& input_bitmap = input_bitmaps[i];
+    if (input_bitmap.width() == desired_size_in_pixel &&
+        input_bitmap.height() == desired_size_in_pixel) {
+      return input_bitmap;
+    } else if (best_bitmap.isNull()) {
+      best_bitmap = input_bitmap;
+    } else if (input_bitmap.width() >= best_bitmap.width() &&
+               input_bitmap.height() >= best_bitmap.height()) {
+      if (best_bitmap.width() < desired_size_in_pixel ||
+          best_bitmap.height() < desired_size_in_pixel) {
+        best_bitmap = input_bitmap;
+      }
+    } else {
+      if (input_bitmap.width() >= desired_size_in_pixel &&
+          input_bitmap.height() >= desired_size_in_pixel) {
+        best_bitmap = input_bitmap;
+      }
+    }
+  }
+
+  if (desired_size_in_pixel % best_bitmap.width() == 0 &&
+      desired_size_in_pixel % best_bitmap.height() == 0) {
+    // Use nearest neighbour resampling if upsampling by an integer. This
+    // makes the result look similar to the result of SelectFaviconFrames().
+    SkBitmap bitmap;
+    bitmap.setConfig(SkBitmap::kARGB_8888_Config,
+                     desired_size_in_pixel,
+                     desired_size_in_pixel);
+    bitmap.allocPixels();
+    if (!best_bitmap.isOpaque())
+      bitmap.eraseARGB(0, 0, 0, 0);
+
+    SkCanvas canvas(bitmap);
+    SkRect dest(SkRect::MakeWH(desired_size_in_pixel, desired_size_in_pixel));
+    canvas.drawBitmapRect(best_bitmap, NULL, dest);
+    return bitmap;
+  }
+  return skia::ImageOperations::Resize(best_bitmap,
+                                       skia::ImageOperations::RESIZE_LANCZOS3,
+                                       desired_size_in_pixel,
+                                       desired_size_in_pixel);
 }
 
 }  // namespace
@@ -168,8 +225,16 @@ gfx::Image FaviconUtil::SelectFaviconFramesFromPNGs(
   if (bitmaps.empty())
     return gfx::Image();
 
-  gfx::ImageSkia resized_image_skia = SelectFaviconFrames(bitmaps,
-      scale_factors_to_generate, favicon_size, NULL);
+  gfx::ImageSkia resized_image_skia;
+  for (size_t i = 0; i < scale_factors_to_generate.size(); ++i) {
+    ui::ScaleFactor scale_factor = scale_factors_to_generate[i];
+    int desired_size_in_pixel =
+        ceil(favicon_size * ui::GetScaleFactorScale(scale_factor));
+    SkBitmap bitmap = ResizeBitmapByDownsamplingIfPossible(
+        bitmaps, desired_size_in_pixel);
+    resized_image_skia.AddRepresentation(
+        gfx::ImageSkiaRep(bitmap, scale_factor));
+  }
 
   if (png_reps.empty())
     return gfx::Image(resized_image_skia);
@@ -186,19 +251,4 @@ gfx::Image FaviconUtil::SelectFaviconFramesFromPNGs(
   }
 
   return gfx::Image(png_reps);
-}
-
-// static
-size_t FaviconUtil::SelectBestFaviconFromBitmaps(
-    const std::vector<SkBitmap>& bitmaps,
-    const std::vector<ui::ScaleFactor>& scale_factors,
-    int desired_size) {
-  std::vector<gfx::Size> sizes;
-  for (size_t i = 0; i < bitmaps.size(); ++i)
-    sizes.push_back(gfx::Size(bitmaps[i].width(), bitmaps[i].height()));
-  std::vector<size_t> selected_bitmap_indices;
-  SelectFaviconFrameIndices(sizes, scale_factors, desired_size,
-                            &selected_bitmap_indices, NULL);
-  DCHECK_EQ(1u, selected_bitmap_indices.size());
-  return selected_bitmap_indices[0];
 }

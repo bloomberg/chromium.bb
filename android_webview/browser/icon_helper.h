@@ -15,6 +15,10 @@ namespace content {
 struct FaviconURL;
 }
 
+namespace gfx {
+class Size;
+}
+
 namespace android_webview {
 
 // A helper that observes favicon changes for Webview.
@@ -39,9 +43,12 @@ class IconHelper : public content::WebContentsObserver {
   virtual void DidUpdateFaviconURL(int32 page_id,
       const std::vector<content::FaviconURL>& candidates) OVERRIDE;
 
-  void DownloadFaviconCallback(int id, int http_status_code,
-      const GURL& image_url, int requested_size,
-      const std::vector<SkBitmap>& bitmaps);
+  void DownloadFaviconCallback(
+      int id,
+      int http_status_code,
+      const GURL& image_url,
+      const std::vector<SkBitmap>& bitmaps,
+      const std::vector<gfx::Size>& original_bitmap_sizes);
 
  private:
   Listener* listener_;

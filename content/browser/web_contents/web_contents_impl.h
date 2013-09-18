@@ -306,8 +306,7 @@ class CONTENT_EXPORT WebContentsImpl
   virtual void DidEndColorChooser() OVERRIDE;
   virtual int DownloadImage(const GURL& url,
                             bool is_favicon,
-                            uint32_t preferred_image_size,
-                            uint32_t max_image_size,
+                            uint32_t max_bitmap_size,
                             const ImageDownloadCallback& callback) OVERRIDE;
 
   // Implementation of PageNavigator.
@@ -633,8 +632,8 @@ class CONTENT_EXPORT WebContentsImpl
   void OnDidDownloadImage(int id,
                           int http_status_code,
                           const GURL& image_url,
-                          int requested_size,
-                          const std::vector<SkBitmap>& bitmaps);
+                          const std::vector<SkBitmap>& bitmaps,
+                          const std::vector<gfx::Size>& original_bitmap_sizes);
   void OnUpdateFaviconURL(int32 page_id,
                           const std::vector<FaviconURL>& candidates);
   void OnFrameAttached(int64 parent_frame_id,

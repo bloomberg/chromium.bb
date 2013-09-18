@@ -465,20 +465,21 @@ void CreateUrlApplicationShortcutView::FetchIcon() {
   pending_download_id_ = web_contents_->DownloadImage(
       unprocessed_icons_.back().url,
       true,  // is a favicon
-      preferred_size,
       0,  // no maximum size
       base::Bind(&CreateUrlApplicationShortcutView::DidDownloadFavicon,
-                 weak_ptr_factory_.GetWeakPtr()));
+                 weak_ptr_factory_.GetWeakPtr(),
+                 preferred_size));
 
   unprocessed_icons_.pop_back();
 }
 
 void CreateUrlApplicationShortcutView::DidDownloadFavicon(
+    int requested_size,
     int id,
     int http_status_code,
     const GURL& image_url,
-    int requested_size,
-    const std::vector<SkBitmap>& bitmaps) {
+    const std::vector<SkBitmap>& bitmaps,
+    const std::vector<gfx::Size>& original_bitmap_sizes) {
   if (id != pending_download_id_)
     return;
   pending_download_id_ = -1;
@@ -490,10 +491,13 @@ void CreateUrlApplicationShortcutView::DidDownloadFavicon(
     ui::ScaleFactor scale_factor = ui::GetScaleFactorForNativeView(
         web_contents_->GetRenderViewHost()->GetView()->GetNativeView());
     scale_factors.push_back(scale_factor);
-    size_t closest_index = FaviconUtil::SelectBestFaviconFromBitmaps(
-        bitmaps,
-        scale_factors,
-        requested_size);
+    std::vector<size_t> closest_indices;
+    SelectFaviconFrameIndices(original_bitmap_sizes,
+                              scale_factors,
+                              requested_size,
+                              &closest_indices,
+                              NULL);
+    size_t closest_index = closest_indices[0];
     image = bitmaps[closest_index];
   }
 

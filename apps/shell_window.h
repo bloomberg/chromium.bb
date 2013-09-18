@@ -338,8 +338,8 @@ class ShellWindow : public content::NotificationObserver,
   void DidDownloadFavicon(int id,
                           int http_status_code,
                           const GURL& image_url,
-                          int requested_size,
-                          const std::vector<SkBitmap>& bitmaps);
+                          const std::vector<SkBitmap>& bitmaps,
+                          const std::vector<gfx::Size>& original_bitmap_sizes);
 
   // extensions::IconImage::Observer implementation.
   virtual void OnExtensionIconImageChanged(

@@ -14,13 +14,6 @@
 
 namespace {
 
-// Return gfx::Size vector with the pixel sizes of |bitmaps|.
-void SizesFromBitmaps(const std::vector<SkBitmap>& bitmaps,
-                      std::vector<gfx::Size>* sizes) {
-  for (size_t i = 0; i < bitmaps.size(); ++i)
-    sizes->push_back(gfx::Size(bitmaps[i].width(), bitmaps[i].height()));
-}
-
 size_t BiggestCandidate(const std::vector<gfx::Size>& candidate_sizes) {
   size_t max_index = 0;
   int max_area = candidate_sizes[0].GetArea();
@@ -209,14 +202,12 @@ const float kSelectFaviconFramesInvalidScore = -1.0f;
 
 gfx::ImageSkia SelectFaviconFrames(
     const std::vector<SkBitmap>& bitmaps,
+    const std::vector<gfx::Size>& original_sizes,
     const std::vector<ui::ScaleFactor>& scale_factors,
     int desired_size,
     float* match_score) {
-  std::vector<gfx::Size> candidate_sizes;
-  SizesFromBitmaps(bitmaps, &candidate_sizes);
-
   std::vector<SelectionResult> results;
-  GetCandidateIndicesWithBestScores(candidate_sizes, scale_factors,
+  GetCandidateIndicesWithBestScores(original_sizes, scale_factors,
       desired_size, match_score, &results);
 
   gfx::ImageSkia multi_image;

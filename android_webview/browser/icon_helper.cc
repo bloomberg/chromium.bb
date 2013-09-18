@@ -11,6 +11,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/favicon_url.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/size.h"
 
 using content::BrowserThread;
 using content::WebContents;
@@ -30,8 +31,11 @@ void IconHelper::SetListener(Listener* listener) {
 }
 
 void IconHelper::DownloadFaviconCallback(
-  int id, int http_status_code, const GURL& image_url, int requested_size,
-  const std::vector<SkBitmap>& bitmaps) {
+    int id,
+    int http_status_code,
+    const GURL& image_url,
+    const std::vector<SkBitmap>& bitmaps,
+    const std::vector<gfx::Size>& original_bitmap_sizes) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (bitmaps.size() == 0) {
     return;
@@ -61,7 +65,6 @@ void IconHelper::DidUpdateFaviconURL(int32 page_id,
         // but we should decouple that setting via a boolean setting)
         web_contents()->DownloadImage(i->icon_url,
             true,  // Is a favicon
-            0,  // No preferred size
             0,  // No maximum size
             base::Bind(
                 &IconHelper::DownloadFaviconCallback, base::Unretained(this)));

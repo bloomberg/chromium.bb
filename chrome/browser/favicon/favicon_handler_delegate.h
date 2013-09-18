@@ -23,13 +23,11 @@ class FaviconHandlerDelegate {
   // will call OnDidDownloadFavicon() with the results.
   // Returns the unique id of the download request. The id will be passed
   // in OnDidDownloadFavicon().
-  // |preferred_image_size| is used to select the size of the returned image if
-  // the |url| is a multi resolution image.
-  // |max_image_size| is the maximal size of the image. If the image at |url| is
-  // bigger than this, it will be resized. 0 means unlimited.
-  virtual int StartDownload(const GURL& url,
-                            int preferred_image_size,
-                            int max_image_size) = 0;
+  // Bitmaps with pixel sizes larger than |max_bitmap_size| are filtered out
+  // from the bitmap results. If there are no bitmap results <=
+  // |max_bitmap_size|, the smallest bitmap is resized to |max_bitmap_size| and
+  // is the only result. A |max_bitmap_size| of 0 means unlimited.
+  virtual int StartDownload(const GURL& url, int max_bitmap_size) = 0;
 
   // Notifies the delegate that the favicon for the active entry was updated.
   // |icon_url_changed| is true if a favicon with a different icon URL has

@@ -245,7 +245,6 @@ class MetroPinTabHelper::FaviconChooser {
   // Update the |best_candidate_| with the newly downloaded favicons provided.
   void UpdateCandidate(int id,
                        const GURL& image_url,
-                       int requested_size,
                        const std::vector<SkBitmap>& bitmaps);
 
   void AddPendingRequest(int request_id);
@@ -288,7 +287,6 @@ void MetroPinTabHelper::FaviconChooser::UseChosenCandidate() {
 void MetroPinTabHelper::FaviconChooser::UpdateCandidate(
     int id,
     const GURL& image_url,
-    int requested_size,
     const std::vector<SkBitmap>& bitmaps) {
   const int kMaxIconSize = 32;
 
@@ -394,7 +392,6 @@ void MetroPinTabHelper::TogglePinnedToStartScreen() {
   }
 
   // Request all the candidates.
-  int preferred_image_size = 0;  // Request the first image.
   int max_image_size = 0;  // Do not resize images.
   for (std::vector<content::FaviconURL>::const_iterator iter =
            favicon_url_candidates_.begin();
@@ -403,7 +400,6 @@ void MetroPinTabHelper::TogglePinnedToStartScreen() {
     favicon_chooser_->AddPendingRequest(
         web_contents()->DownloadImage(iter->icon_url,
             true,
-            preferred_image_size,
             max_image_size,
             base::Bind(&MetroPinTabHelper::DidDownloadFavicon,
                        base::Unretained(this))));
@@ -432,10 +428,10 @@ void MetroPinTabHelper::DidDownloadFavicon(
     int id,
     int http_status_code,
     const GURL& image_url,
-    int requested_size,
-    const std::vector<SkBitmap>& bitmaps) {
+    const std::vector<SkBitmap>& bitmaps,
+    const std::vector<gfx::Size>& original_bitmap_sizes) {
   if (favicon_chooser_.get()) {
-    favicon_chooser_->UpdateCandidate(id, image_url, requested_size, bitmaps);
+    favicon_chooser_->UpdateCandidate(id, image_url, bitmaps);
   }
 }
 

@@ -134,9 +134,7 @@ NavigationEntry* FaviconTabHelper::GetActiveEntry() {
   return web_contents()->GetController().GetActiveEntry();
 }
 
-int FaviconTabHelper::StartDownload(const GURL& url,
-                                    int preferred_image_size,
-                                    int max_image_size) {
+int FaviconTabHelper::StartDownload(const GURL& url, int max_image_size) {
   FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
       profile_->GetOriginalProfile(), Profile::IMPLICIT_ACCESS);
   if (favicon_service && favicon_service->WasUnableToDownloadFavicon(url)) {
@@ -147,7 +145,6 @@ int FaviconTabHelper::StartDownload(const GURL& url,
   return web_contents()->DownloadImage(
       url,
       true,
-      preferred_image_size,
       max_image_size,
       base::Bind(&FaviconTabHelper::DidDownloadFavicon,base::Unretained(this)));
 }
@@ -194,8 +191,8 @@ void FaviconTabHelper::DidDownloadFavicon(
     int id,
     int http_status_code,
     const GURL& image_url,
-    int requested_size,
-    const std::vector<SkBitmap>& bitmaps) {
+    const std::vector<SkBitmap>& bitmaps,
+    const std::vector<gfx::Size>& original_bitmap_sizes) {
 
   if (bitmaps.empty() && http_status_code == 404) {
     DVLOG(1) << "Failed to Download Favicon:" << image_url;
@@ -206,9 +203,9 @@ void FaviconTabHelper::DidDownloadFavicon(
   }
 
   favicon_handler_->OnDidDownloadFavicon(
-      id, image_url, requested_size, bitmaps);
+      id, image_url, bitmaps, original_bitmap_sizes);
   if (touch_icon_handler_.get()) {
     touch_icon_handler_->OnDidDownloadFavicon(
-        id, image_url, requested_size, bitmaps);
+        id, image_url, bitmaps, original_bitmap_sizes);
   }
 }

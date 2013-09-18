@@ -103,10 +103,13 @@ class FaviconHandler {
   // Message handler for ImageHostMsg_DidDownloadImage. Called when the image
   // at |image_url| has been downloaded.
   // |bitmaps| is a list of all the frames of the image at |image_url|.
-  void OnDidDownloadFavicon(int id,
-                            const GURL& image_url,
-                            int requested_size,
-                            const std::vector<SkBitmap>& bitmaps);
+  // |original_bitmap_sizes| are the sizes of |bitmaps| before they were resized
+  // to the maximum bitmap size passed to DownloadFavicon().
+  void OnDidDownloadFavicon(
+      int id,
+      const GURL& image_url,
+      const std::vector<SkBitmap>& bitmaps,
+      const std::vector<gfx::Size>& original_bitmap_sizes);
 
   // For testing.
   const std::deque<content::FaviconURL>& image_urls() const {
@@ -122,9 +125,7 @@ class FaviconHandler {
   virtual content::NavigationEntry* GetEntry();
 
   // Asks the render to download favicon, returns the request id.
-  virtual int DownloadFavicon(const GURL& image_url,
-                              int image_size,
-                              chrome::IconType icon_type);
+  virtual int DownloadFavicon(const GURL& image_url, int max_bitmap_size);
 
   // Ask the favicon from history
   virtual void UpdateFaviconMappingAndFetch(
@@ -155,6 +156,11 @@ class FaviconHandler {
 
   // Returns true if the favicon should be saved.
   virtual bool ShouldSaveFavicon(const GURL& url);
+
+  // Notifies the delegate that the favicon for the active entry was updated.
+  // |icon_url_changed| is true if a favicon with a different icon URL has been
+  // selected since the previous call to NotifyFaviconUpdated().
+  virtual void NotifyFaviconUpdated(bool icon_url_changed);
 
  private:
   friend class TestFaviconHandler; // For testing
@@ -208,7 +214,6 @@ class FaviconHandler {
   // download_requests_.
   int ScheduleDownload(const GURL& url,
                        const GURL& image_url,
-                       int image_size,
                        chrome::IconType icon_type);
 
   // Updates |favicon_candidate_| and returns true if it is an exact match.

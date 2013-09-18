@@ -96,11 +96,12 @@ class CreateUrlApplicationShortcutView : public CreateApplicationShortcutView {
 
   // Favicon download callback.
   void DidDownloadFavicon(
+      int requested_size,
       int id,
       int http_status_code,
       const GURL& image_url,
-      int requested_size,
-      const std::vector<SkBitmap>& bitmaps);
+      const std::vector<SkBitmap>& bitmaps,
+      const std::vector<gfx::Size>& original_bitmap_sizes);
 
   // The tab whose URL is being turned into an app.
   content::WebContents* web_contents_;

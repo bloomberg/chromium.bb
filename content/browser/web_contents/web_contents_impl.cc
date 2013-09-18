@@ -165,15 +165,13 @@ g_created_callbacks = LAZY_INSTANCE_INITIALIZER;
 static int StartDownload(content::RenderViewHost* rvh,
                          const GURL& url,
                          bool is_favicon,
-                         uint32_t preferred_image_size,
-                         uint32_t max_image_size) {
+                         uint32_t max_bitmap_size) {
   static int g_next_image_download_id = 0;
   rvh->Send(new ImageMsg_DownloadImage(rvh->GetRoutingID(),
                                        ++g_next_image_download_id,
                                        url,
                                        is_favicon,
-                                       preferred_image_size,
-                                       max_image_size));
+                                       max_bitmap_size));
   return g_next_image_download_id;
 }
 
@@ -2142,12 +2140,10 @@ void WebContentsImpl::DidEndColorChooser() {
 
 int WebContentsImpl::DownloadImage(const GURL& url,
                                    bool is_favicon,
-                                   uint32_t preferred_image_size,
-                                   uint32_t max_image_size,
+                                   uint32_t max_bitmap_size,
                                    const ImageDownloadCallback& callback) {
   RenderViewHost* host = GetRenderViewHost();
-  int id = StartDownload(
-      host, url, is_favicon, preferred_image_size, max_image_size);
+  int id = StartDownload(host, url, is_favicon, max_bitmap_size);
   image_download_map_[id] = callback;
   return id;
 }
@@ -2610,8 +2606,8 @@ void WebContentsImpl::OnDidDownloadImage(
     int id,
     int http_status_code,
     const GURL& image_url,
-    int requested_size,
-    const std::vector<SkBitmap>& bitmaps) {
+    const std::vector<SkBitmap>& bitmaps,
+    const std::vector<gfx::Size>& original_bitmap_sizes) {
   ImageDownloadMap::iterator iter = image_download_map_.find(id);
   if (iter == image_download_map_.end()) {
     // Currently WebContents notifies us of ANY downloads so that it is
@@ -2619,7 +2615,8 @@ void WebContentsImpl::OnDidDownloadImage(
     return;
   }
   if (!iter->second.is_null()) {
-    iter->second.Run(id, http_status_code, image_url, requested_size, bitmaps);
+    iter->second.Run(
+        id, http_status_code, image_url, bitmaps, original_bitmap_sizes);
   }
   image_download_map_.erase(id);
 }

@@ -50,18 +50,27 @@ SkBitmap ResizeImage(const SkBitmap& image, uint32_t max_image_size) {
 // size |max_image_size|. Returns the result if it is not empty. Otherwise,
 // find the smallest image in the array and resize it proportionally to fit
 // in a box of size |max_image_size|.
-std::vector<SkBitmap> FilterAndResizeImageForMaximalSize(
-    const std::vector<SkBitmap>& images,
-    uint32_t max_image_size) {
-  if (!images.size() || max_image_size == 0)
-    return images;
-  std::vector<SkBitmap> result;
+// Sets |original_image_sizes| to the sizes of |images| before resizing.
+void FilterAndResizeImagesForMaximalSize(
+    const std::vector<SkBitmap>& unfiltered,
+    uint32_t max_image_size,
+    std::vector<SkBitmap>* images,
+    std::vector<gfx::Size>* original_image_sizes) {
+  images->clear();
+  original_image_sizes->clear();
+
+  if (!unfiltered.size())
+    return;
+
+  if (max_image_size == 0)
+    max_image_size = std::numeric_limits<uint32_t>::max();
+
   const SkBitmap* min_image = NULL;
   uint32_t min_image_size = std::numeric_limits<uint32_t>::max();
   // Filter the images by |max_image_size|, and also identify the smallest image
   // in case all the images are bigger than |max_image_size|.
-  for (std::vector<SkBitmap>::const_iterator it = images.begin();
-       it != images.end();
+  for (std::vector<SkBitmap>::const_iterator it = unfiltered.begin();
+       it != unfiltered.end();
        ++it) {
     const SkBitmap& image = *it;
     uint32_t current_size = std::max(it->width(), it->height());
@@ -71,16 +80,18 @@ std::vector<SkBitmap> FilterAndResizeImageForMaximalSize(
     }
     if (static_cast<uint32_t>(image.width()) <= max_image_size &&
         static_cast<uint32_t>(image.height()) <= max_image_size) {
-      result.push_back(image);
+      images->push_back(image);
+      original_image_sizes->push_back(gfx::Size(image.width(), image.height()));
     }
   }
   DCHECK(min_image);
-  if (result.size())
-    return result;
+  if (images->size())
+    return;
   // Proportionally resize the minimal image to fit in a box of size
-  // max_image_size.
-  result.push_back(ResizeImage(*min_image, max_image_size));
-  return result;
+  // |max_image_size|.
+  images->push_back(ResizeImage(*min_image, max_image_size));
+  original_image_sizes->push_back(
+      gfx::Size(min_image->width(), min_image->height()));
 }
 
 }  // namespace
@@ -97,16 +108,18 @@ ImageLoadingHelper::~ImageLoadingHelper() {
 void ImageLoadingHelper::OnDownloadImage(int id,
                                          const GURL& image_url,
                                          bool is_favicon,
-                                         uint32_t preferred_image_size,
                                          uint32_t max_image_size) {
   std::vector<SkBitmap> result_images;
+  std::vector<gfx::Size> result_original_image_sizes;
   if (image_url.SchemeIs(chrome::kDataScheme)) {
     SkBitmap data_image = ImageFromDataUrl(image_url);
-    if (!data_image.empty())
+    if (!data_image.empty()) {
       result_images.push_back(ResizeImage(data_image, max_image_size));
+      result_original_image_sizes.push_back(
+          gfx::Size(data_image.width(), data_image.height()));
+    }
   } else {
-    if (DownloadImage(
-            id, image_url, is_favicon, preferred_image_size, max_image_size)) {
+    if (DownloadImage(id, image_url, is_favicon, max_image_size)) {
       // Will complete asynchronously via ImageLoadingHelper::DidDownloadImage
       return;
     }
@@ -116,14 +129,13 @@ void ImageLoadingHelper::OnDownloadImage(int id,
                                          id,
                                          0,
                                          image_url,
-                                         preferred_image_size,
-                                         result_images));
+                                         result_images,
+                                         result_original_image_sizes));
 }
 
 bool ImageLoadingHelper::DownloadImage(int id,
                                        const GURL& image_url,
                                        bool is_favicon,
-                                       uint32_t preferred_image_size,
                                        uint32_t max_image_size) {
   // Make sure webview was not shut down.
   if (!render_view()->GetWebView())
@@ -137,24 +149,27 @@ bool ImageLoadingHelper::DownloadImage(int id,
                    WebURLRequest::TargetIsImage,
       base::Bind(&ImageLoadingHelper::DidDownloadImage,
                  base::Unretained(this),
-                 preferred_image_size,
                  max_image_size)));
   return true;
 }
 
 void ImageLoadingHelper::DidDownloadImage(
-    uint32_t preferred_image_size,
     uint32_t max_image_size,
     MultiResolutionImageResourceFetcher* fetcher,
     const std::vector<SkBitmap>& images) {
+  std::vector<SkBitmap> result_images;
+  std::vector<gfx::Size> result_original_image_sizes;
+  FilterAndResizeImagesForMaximalSize(images, max_image_size, &result_images,
+      &result_original_image_sizes);
+
   // Notify requester of image download status.
   Send(new ImageHostMsg_DidDownloadImage(
       routing_id(),
       fetcher->id(),
       fetcher->http_status_code(),
       fetcher->image_url(),
-      preferred_image_size,
-      FilterAndResizeImageForMaximalSize(images, max_image_size)));
+      result_images,
+      result_original_image_sizes));
 
   // Remove the image fetcher from our pending list. We're in the callback from
   // MultiResolutionImageResourceFetcher, best to delay deletion.
