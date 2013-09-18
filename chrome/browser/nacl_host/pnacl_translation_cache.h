@@ -42,12 +42,14 @@ class PnaclTranslationCache
   PnaclTranslationCache();
   virtual ~PnaclTranslationCache();
 
-  // Initialize the translation cache in |cache_dir| (or in memory if
-  // |in_memory| is true). Call |callback| with a 0 argument on sucess and
-  // <0 otherwise.
-  int InitCache(const base::FilePath& cache_dir,
-                bool in_memory,
-                const CompletionCallback& callback);
+  // Initialize the translation cache in |cache_dir|.
+  // Call |callback| with a 0 argument on sucess and <0 otherwise.
+  int InitOnDisk(const base::FilePath& cache_dir,
+                 const CompletionCallback& callback);
+
+  // Initialize the translation cache in memory.
+  // Call |callback| with a 0 argument on sucess and <0 otherwise.
+  int InitInMemory(const CompletionCallback& callback);
 
   // Store the nexe in the translation cache. A reference to |nexe_data| is
   // held until completion or cancellation.
@@ -85,12 +87,6 @@ class PnaclTranslationCache
   // OpComplete and backend methods on PnaclTranslationCache.
   void OpComplete(PnaclTranslationCacheEntry* entry);
   disk_cache::Backend* backend() { return disk_cache_.get(); }
-
-  int InitWithDiskBackend(const base::FilePath& disk_cache_dir,
-                          int cache_size,
-                          const CompletionCallback& callback);
-
-  int InitWithMemBackend(int cache_size, const CompletionCallback& callback);
 
   int Init(net::CacheType,
            const base::FilePath& directory,

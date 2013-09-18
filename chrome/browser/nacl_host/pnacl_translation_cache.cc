@@ -312,19 +312,6 @@ PnaclTranslationCache::PnaclTranslationCache() : in_memory_(false) {}
 
 PnaclTranslationCache::~PnaclTranslationCache() {}
 
-int PnaclTranslationCache::InitWithDiskBackend(
-    const base::FilePath& cache_dir,
-    int cache_size,
-    const CompletionCallback& callback) {
-  return Init(net::DISK_CACHE, cache_dir, cache_size, callback);
-}
-
-int PnaclTranslationCache::InitWithMemBackend(
-    int cache_size,
-    const CompletionCallback& callback) {
-  return Init(net::MEMORY_CACHE, base::FilePath(), cache_size, callback);
-}
-
 int PnaclTranslationCache::Init(net::CacheType cache_type,
                                 const base::FilePath& cache_dir,
                                 int cache_size,
@@ -382,18 +369,15 @@ void PnaclTranslationCache::GetNexe(const std::string& key,
   entry->Start();
 }
 
-int PnaclTranslationCache::InitCache(const base::FilePath& cache_directory,
-                                     bool in_memory,
-                                     const CompletionCallback& callback) {
-  int rv;
-  in_memory_ = in_memory;
-  if (in_memory_) {
-    rv = InitWithMemBackend(kMaxMemCacheSize, callback);
-  } else {
-    rv = InitWithDiskBackend(cache_directory, 0, callback);
-  }
+int PnaclTranslationCache::InitOnDisk(const base::FilePath& cache_directory,
+                                      const CompletionCallback& callback) {
+  in_memory_ = false;
+  return Init(net::DISK_CACHE, cache_directory, 0 /* auto size */, callback);
+}
 
-  return rv;
+int PnaclTranslationCache::InitInMemory(const CompletionCallback& callback) {
+  in_memory_ = true;
+  return Init(net::MEMORY_CACHE, base::FilePath(), kMaxMemCacheSize, callback);
 }
 
 int PnaclTranslationCache::Size() {

@@ -96,9 +96,8 @@ void PnaclHost::Init() {
     return;
   disk_cache_.reset(new pnacl::PnaclTranslationCache());
   cache_state_ = CacheInitializing;
-  disk_cache_->InitCache(
+  disk_cache_->InitOnDisk(
       cache_path,
-      false,
       base::Bind(&PnaclHost::OnCacheInitialized, weak_factory_.GetWeakPtr()));
 }
 
@@ -109,9 +108,7 @@ void PnaclHost::InitForTest(base::FilePath temp_dir) {
   disk_cache_.reset(new pnacl::PnaclTranslationCache());
   cache_state_ = CacheInitializing;
   temp_dir_ = temp_dir;
-  disk_cache_->InitCache(
-      temp_dir,
-      true,  // Use in-memory backend
+  disk_cache_->InitInMemory(
       base::Bind(&PnaclHost::OnCacheInitialized, weak_factory_.GetWeakPtr()));
 }
 

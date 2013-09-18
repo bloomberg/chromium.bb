@@ -20,6 +20,8 @@ using base::FilePath;
 
 namespace pnacl {
 
+const int kTestDiskCacheSize = 16 * 1024 * 1024;
+
 class PnaclTranslationCacheTest : public testing::Test {
  protected:
   PnaclTranslationCacheTest()
@@ -50,7 +52,11 @@ void PnaclTranslationCacheTest::InitBackend(bool in_mem) {
   if (!in_mem) {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   }
-  int rv = cache_->InitCache(temp_dir_.path(), in_mem, init_cb.callback());
+  // Use the private init method so we can control the size
+  int rv = cache_->Init(in_mem ? net::MEMORY_CACHE : net::DISK_CACHE,
+                        temp_dir_.path(),
+                        in_mem ? kMaxMemCacheSize : kTestDiskCacheSize,
+                        init_cb.callback());
   if (in_mem)
     ASSERT_EQ(net::OK, rv);
   ASSERT_EQ(net::OK, init_cb.GetResult(rv));
@@ -106,13 +112,15 @@ std::string PnaclTranslationCacheTest::GetNexe(const std::string& key) {
   int rv;
   scoped_refptr<net::DrainableIOBuffer> buf(load_cb.GetResult(&rv));
   EXPECT_EQ(net::OK, rv);
+  if (buf.get() == NULL) // for some reason ASSERT macros don't work here.
+    return std::string();
   std::string nexe(buf->data(), buf->size());
   return nexe;
 }
 
 static const std::string test_key("1");
 static const std::string test_store_val("testnexe");
-static const int kLargeNexeSize = 16 * 1024 * 1024;
+static const int kLargeNexeSize = 2 * 1024 * 1024;
 
 TEST(PnaclTranslationCacheKeyTest, CacheKeyTest) {
   nacl::PnaclCacheInfo info;
@@ -187,11 +195,7 @@ TEST_F(PnaclTranslationCacheTest, StoreSmallOnDisk) {
   EXPECT_EQ(1, cache_->Size());
 }
 
-#if defined(OS_LINUX)
-TEST_F(PnaclTranslationCacheTest, DISABLED_StoreLargeOnDisk) {
-#else
 TEST_F(PnaclTranslationCacheTest, StoreLargeOnDisk) {
-#endif
   // Test a value too large(?) for a single I/O operation
   InitBackend(false);
   const std::string large_buffer(kLargeNexeSize, 'a');
@@ -225,11 +229,7 @@ TEST_F(PnaclTranslationCacheTest, GetOneOnDisk) {
   EXPECT_EQ(0, GetNexe(test_key).compare(test_store_val));
 }
 
-#if defined(OS_LINUX)
-TEST_F(PnaclTranslationCacheTest, DISABLED_GetLargeOnDisk) {
-#else
 TEST_F(PnaclTranslationCacheTest, GetLargeOnDisk) {
-#endif
   InitBackend(false);
   const std::string large_buffer(kLargeNexeSize, 'a');
   StoreNexe(test_key, large_buffer);
