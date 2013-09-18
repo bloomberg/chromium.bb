@@ -4,15 +4,49 @@
 
 var embedder = {};
 embedder.tests = {};
-embedder.baseGuestURL = '';
-embedder.guestURL = '';
+embedder.triggerNavUrl =
+    'data:text/html,<html><body>trigger navigation<body></html>';
 
-embedder.setUp = function(config) {
-  embedder.baseGuestURL = 'http://localhost:' + config.testServer.port;
-  embedder.guestURL = embedder.baseGuestURL +
-      '/extensions/platform_apps/web_view/focus' +
-      '/guest.html';
-  chrome.test.log('Guest url is: ' + embedder.guestURL);
+window.runTest = function(testName) {
+  if (!embedder.test.testList[testName]) {
+    console.log('Incorrect testName: ' + testName);
+    embedder.test.fail();
+    return;
+  }
+
+  // Run the test.
+  embedder.test.testList[testName]();
+};
+// window.* exported functions end.
+
+embedder.test = {};
+embedder.test.succeed = function() {
+  chrome.test.sendMessage('TEST_PASSED');
+};
+
+embedder.test.fail = function() {
+  chrome.test.sendMessage('TEST_FAILED');
+};
+
+embedder.test.assertEq = function(a, b) {
+  if (a != b) {
+    console.log('assertion failed: ' + a + ' != ' + b);
+    embedder.test.fail();
+  }
+};
+
+embedder.test.assertTrue = function(condition) {
+  if (!condition) {
+    console.log('assertion failed: true != ' + condition);
+    embedder.test.fail();
+  }
+};
+
+embedder.test.assertFalse = function(condition) {
+  if (condition) {
+    console.log('assertion failed: false != ' + condition);
+    embedder.test.fail();
+  }
 };
 
 /** @private */
@@ -21,7 +55,7 @@ embedder.setUpGuest_ = function() {
       '<webview style="width: 100px; height: 100px;"></webview>';
   var webview = document.querySelector('webview');
   if (!webview) {
-    chrome.test.fail('No <webview> element created');
+    embedder.test.fail('No <webview> element created');
   }
   return webview;
 };
@@ -29,20 +63,17 @@ embedder.setUpGuest_ = function() {
 /** @private */
 embedder.waitForResponseFromGuest_ =
     function(webview,
-             testName,
              channelCreationCallback,
              expectedResponse,
              responseCallback) {
   var onPostMessageReceived = function(e) {
     var data = JSON.parse(e.data);
     var response = data[0];
-    if (response == 'channel-created') {
+    if (response == 'connected') {
       channelCreationCallback(webview);
       return;
     }
-    var name = data[1];
-    if ((response != expectedResponse) || (name != testName)) {
-      chrome.test.log('Unexpected response from guest.');
+    if (response != expectedResponse) {
       return;
     }
     responseCallback();
@@ -51,13 +82,19 @@ embedder.waitForResponseFromGuest_ =
   window.addEventListener('message', onPostMessageReceived);
 
   var onWebViewLoadStop = function(e) {
-    // This creates a communication channel with the guest.
-    webview.contentWindow.postMessage(
-        JSON.stringify(['create-channel', testName]), '*');
+    console.log('loadstop');
+    webview.executeScript(
+      {file: 'inject_focus.js'},
+      function(results) {
+        console.log('Injected script into webview.');
+        // Establish a communication channel with the webview1's guest.
+        var msg = ['connect'];
+        webview.contentWindow.postMessage(JSON.stringify(msg), '*');
+      });
     webview.removeEventListener('loadstop', onWebViewLoadStop);
   };
   webview.addEventListener('loadstop', onWebViewLoadStop);
-  webview.setAttribute('src', embedder.guestURL);
+  webview.src = embedder.triggerNavUrl;
 };
 
 // Tests begin.
@@ -65,22 +102,20 @@ embedder.waitForResponseFromGuest_ =
 // The embedder has to initiate a post message so that the guest can get a
 // reference to embedder to send the reply back.
 
-embedder.testFocus_ = function(testName,
-                               channelCreationCallback,
+embedder.testFocus_ = function(channelCreationCallback,
                                expectedResponse,
                                responseCallback) {
   var webview = embedder.setUpGuest_();
 
   embedder.waitForResponseFromGuest_(webview,
-                                     testName,
                                      channelCreationCallback,
                                      expectedResponse,
                                      responseCallback);
 };
 
-embedder.tests.testFocusEvent = function testFocusEvent() {
+function testFocusEvent() {
   var seenResponse = false;
-  embedder.testFocus_('testFocusEvent', function(webview) {
+  embedder.testFocus_(function(webview) {
     webview.focus();
   }, 'focused', function() {
     // The focus event fires three times on first focus. We only care about
@@ -89,13 +124,13 @@ embedder.tests.testFocusEvent = function testFocusEvent() {
       return;
     }
     seenResponse = true;
-    chrome.test.succeed();
+    embedder.test.succeed();
   });
 }
 
-embedder.tests.testBlurEvent = function testBlurEvent() {
+function testBlurEvent() {
   var seenResponse = false;
-  embedder.testFocus_('testBlurEvent', function(webview) {
+  embedder.testFocus_(function(webview) {
     webview.focus();
     webview.blur();
   }, 'blurred', function() {
@@ -103,16 +138,17 @@ embedder.tests.testBlurEvent = function testBlurEvent() {
       return;
     }
     seenResponse = true;
-    chrome.test.succeed();
+    embedder.test.succeed();
   });
 }
 
+embedder.test.testList = {
+  'testFocusEvent': testFocusEvent,
+  'testBlurEvent': testBlurEvent
+};
+
 onload = function() {
   chrome.test.getConfig(function(config) {
-    embedder.setUp(config);
-    chrome.test.runTests([
-      embedder.tests.testFocusEvent,
-      embedder.tests.testBlurEvent
-    ]);
+    chrome.test.sendMessage('Launched');
   });
 };

@@ -66,7 +66,6 @@ embedder.test.assertFalse = function(condition) {
 // Tests begin.
 // This test verifies that a webview loses pointer lock when it loses focus.
 function testPointerLockLostWithFocus() {
-  var guestUrl = 'data:text/html, guest';
   var webview1 = document.createElement('webview');
   var webview2 = document.createElement('webview');
 
