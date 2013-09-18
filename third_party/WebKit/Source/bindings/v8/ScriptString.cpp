@@ -35,20 +35,20 @@ namespace WebCore {
 
 ScriptString ScriptString::concatenateWith(const String& string)
 {
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    v8::HandleScope handleScope(isolate);
-    v8::Handle<v8::String> b = v8String(string, isolate);
+    v8::Isolate* nonNullIsolate = isolate();
+    v8::HandleScope handleScope(nonNullIsolate);
+    v8::Handle<v8::String> b = v8String(string, nonNullIsolate);
     if (hasNoValue())
-        return ScriptString(b);
+        return ScriptString(b, nonNullIsolate);
     v8::Handle<v8::String> a = v8::Handle<v8::String>::Cast(v8Value());
-    return ScriptString(v8::String::Concat(a, b));
+    return ScriptString(v8::String::Concat(a, b), nonNullIsolate);
 }
 
 String ScriptString::flattenToString() const
 {
     if (hasNoValue())
         return String();
-    v8::HandleScope handleScope(v8::Isolate::GetCurrent());
+    v8::HandleScope handleScope(isolate());
     v8::Handle<v8::String> value = v8::Handle<v8::String>::Cast(v8Value());
     return v8StringToWebCoreString<String>(value, Externalize);
 }

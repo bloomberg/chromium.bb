@@ -40,8 +40,7 @@ namespace WebCore {
 class ScriptString : public ScriptValue {
 public:
     ScriptString() { }
-    // FIXME: This constructor should take an isolate.
-    explicit ScriptString(v8::Handle<v8::String> value) : ScriptValue(value, v8::Isolate::GetCurrent()) { }
+    ScriptString(v8::Handle<v8::String> value, v8::Isolate* isolate) : ScriptValue(value, isolate) { }
 
     ScriptString concatenateWith(const String&);
     String flattenToString() const;

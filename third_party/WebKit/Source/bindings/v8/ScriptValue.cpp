@@ -62,12 +62,12 @@ ScriptValue ScriptValue::deserialize(ScriptState* scriptState, SerializedScriptV
     return ScriptValue(value->deserialize(), scriptState->isolate());
 }
 
-bool ScriptValue::getString(String& result, v8::Isolate* isolate) const
+bool ScriptValue::getString(String& result) const
 {
     if (hasNoValue())
         return false;
 
-    v8::HandleScope handleScope(isolate);
+    v8::HandleScope handleScope(m_isolate);
     v8::Handle<v8::Value> string = v8Value();
     if (string.IsEmpty() || !string->IsString())
         return false;
@@ -75,7 +75,7 @@ bool ScriptValue::getString(String& result, v8::Isolate* isolate) const
     return true;
 }
 
-String ScriptValue::toString(ScriptState*) const
+String ScriptValue::toString() const
 {
     v8::TryCatch block;
     v8::Handle<v8::String> string = v8Value()->ToString();

@@ -77,7 +77,7 @@ bool ScriptArguments::getFirstArgumentAsString(String& result, bool checkForNull
         return false;
     }
 
-    result = value.toString(globalState());
+    result = value.toString();
     return true;
 }
 
