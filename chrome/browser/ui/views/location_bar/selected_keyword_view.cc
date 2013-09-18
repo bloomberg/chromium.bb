@@ -22,18 +22,18 @@ const int kBackgroundImages[] = IMAGE_GRID(IDR_OMNIBOX_SELECTED_KEYWORD_BUBBLE);
 }
 
 
-SelectedKeywordView::SelectedKeywordView(const gfx::Font& font,
+SelectedKeywordView::SelectedKeywordView(const gfx::FontList& font_list,
                                          int font_y_offset,
                                          SkColor text_color,
                                          SkColor parent_background_color,
                                          Profile* profile)
     : IconLabelBubbleView(kBackgroundImages, NULL, IDR_KEYWORD_SEARCH_MAGNIFIER,
-                          font, font_y_offset, text_color,
+                          font_list, font_y_offset, text_color,
                           parent_background_color, false),
       profile_(profile) {
-  full_label_.SetFont(font);
+  full_label_.SetFontList(font_list);
   full_label_.SetVisible(false);
-  partial_label_.SetFont(font);
+  partial_label_.SetFontList(font_list);
   partial_label_.SetVisible(false);
 }
 

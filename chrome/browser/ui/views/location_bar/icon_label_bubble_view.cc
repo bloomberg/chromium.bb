@@ -18,7 +18,7 @@
 IconLabelBubbleView::IconLabelBubbleView(const int background_images[],
                                          const int hover_background_images[],
                                          int contained_image,
-                                         const gfx::Font& font,
+                                         const gfx::FontList& font_list,
                                          int font_y_offset,
                                          SkColor text_color,
                                          SkColor parent_background_color,
@@ -26,7 +26,7 @@ IconLabelBubbleView::IconLabelBubbleView(const int background_images[],
     : background_painter_(
           views::Painter::CreateImageGridPainter(background_images)),
       image_(new views::ImageView()),
-      label_(new views::Label()),
+      label_(new views::Label(string16(), font_list)),
       is_extension_icon_(false),
       in_hover_(false) {
   image_->SetImage(
@@ -44,7 +44,6 @@ IconLabelBubbleView::IconLabelBubbleView(const int background_images[],
   }
 
   label_->set_border(views::Border::CreateEmptyBorder(font_y_offset, 0, 0, 0));
-  label_->SetFont(font);
   label_->SetEnabledColor(text_color);
   // Calculate the actual background color for the label.  The background images
   // are painted atop |parent_background_color|.  We grab the color of the

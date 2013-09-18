@@ -14,7 +14,7 @@
 class Profile;
 
 namespace gfx {
-class Font;
+class FontList;
 }
 
 namespace views {
@@ -33,7 +33,7 @@ class Label;
 class KeywordHintView : public views::View {
  public:
   KeywordHintView(Profile* profile,
-                  const gfx::Font& font,
+                  const gfx::FontList& font_list,
                   int font_y_offset,
                   SkColor text_color,
                   SkColor background_color);
@@ -48,7 +48,7 @@ class KeywordHintView : public views::View {
   virtual void Layout() OVERRIDE;
 
  private:
-  views::Label* CreateLabel(const gfx::Font& font,
+  views::Label* CreateLabel(const gfx::FontList& font_list,
                             int font_y_offset,
                             SkColor text_color,
                             SkColor background_color);

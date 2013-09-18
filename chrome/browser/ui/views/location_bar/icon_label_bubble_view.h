@@ -13,7 +13,7 @@
 
 namespace gfx {
 class Canvas;
-class Font;
+class FontList;
 class ImageSkia;
 }
 
@@ -34,7 +34,7 @@ class IconLabelBubbleView : public views::View {
   IconLabelBubbleView(const int background_images[],
                       const int hover_background_images[],
                       int contained_image,
-                      const gfx::Font& font,
+                      const gfx::FontList& font_list,
                       int font_y_offset,
                       SkColor text_color,
                       SkColor parent_background_color,

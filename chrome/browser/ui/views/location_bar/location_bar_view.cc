@@ -256,7 +256,6 @@ void LocationBarView::Init() {
   int location_height = GetInternalHeight(true);
   int font_y_offset;
   CalculateFontAndOffsetForHeight(location_height, &font_list, &font_y_offset);
-  const gfx::Font& font = font_list.GetPrimaryFont();
 
   // Determine the font for use inside the bubbles.
   gfx::FontList bubble_font_list(font_list);
@@ -268,12 +267,11 @@ void LocationBarView::Init() {
       location_height - ((kBubblePadding + kBubbleInteriorVerticalPadding) * 2),
       &bubble_font_list, &bubble_font_y_offset);
   bubble_font_y_offset += kBubbleInteriorVerticalPadding;
-  const gfx::Font& bubble_font = font_list.GetPrimaryFont();
 
   const SkColor background_color =
       GetColor(ToolbarModel::NONE, LocationBarView::BACKGROUND);
   ev_bubble_view_ = new EVBubbleView(
-      bubble_font, bubble_font_y_offset,
+      bubble_font_list, bubble_font_y_offset,
       GetColor(ToolbarModel::EV_SECURE, SECURITY_TEXT), background_color, this);
   ev_bubble_view_->set_drag_controller(this);
   AddChildView(ev_bubble_view_);
@@ -287,22 +285,9 @@ void LocationBarView::Init() {
 
   // Initialize the inline autocomplete view which is visible only when IME is
   // turned on.  Use the same font with the omnibox and highlighted background.
-  ime_inline_autocomplete_view_ = new views::Label(string16(), font);
-  {
-    // views::Label (|ime_inline_autocomplete_view_|) supports only gfx::Font
-    // and ignores the rest of fonts but the first in |font_list| while
-    // views::Textfield (|location_entry_view_|) supports gfx::FontList and
-    // layouts text based on all fonts in the list.  Thus the font height and
-    // baseline can be different between them.  We add padding to align them
-    // on the same baseline.
-    // TODO(yukishiino): Remove this hack once views::Label supports
-    // gfx::FontList.
-    const int baseline_diff = location_entry_view_->GetBaseline() -
-        ime_inline_autocomplete_view_->GetBaseline();
-    ime_inline_autocomplete_view_->set_border(
-        views::Border::CreateEmptyBorder(
-            font_y_offset + baseline_diff, 0, 0, 0));
-  }
+  ime_inline_autocomplete_view_ = new views::Label(string16(), font_list);
+  ime_inline_autocomplete_view_->set_border(
+      views::Border::CreateEmptyBorder(font_y_offset, 0, 0, 0));
   ime_inline_autocomplete_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   ime_inline_autocomplete_view_->SetAutoColorReadabilityEnabled(false);
   ime_inline_autocomplete_view_->set_background(
@@ -316,11 +301,11 @@ void LocationBarView::Init() {
 
   const SkColor text_color = GetColor(ToolbarModel::NONE, TEXT);
   selected_keyword_view_ = new SelectedKeywordView(
-      bubble_font, bubble_font_y_offset, text_color, background_color,
+      bubble_font_list, bubble_font_y_offset, text_color, background_color,
       profile_);
   AddChildView(selected_keyword_view_);
 
-  suggested_text_view_ = new views::Label(string16(), font);
+  suggested_text_view_ = new views::Label(string16(), font_list);
   suggested_text_view_->set_border(
       views::Border::CreateEmptyBorder(font_y_offset, 0, 0, 0));
   suggested_text_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -331,7 +316,7 @@ void LocationBarView::Init() {
   AddChildView(suggested_text_view_);
 
   keyword_hint_view_ = new KeywordHintView(
-      profile_, font, font_y_offset,
+      profile_, font_list, font_y_offset,
       GetColor(ToolbarModel::NONE, LocationBarView::DEEMPHASIZED_TEXT),
       background_color);
   AddChildView(keyword_hint_view_);
@@ -354,7 +339,7 @@ void LocationBarView::Init() {
   for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
     ContentSettingImageView* content_blocked_view =
         new ContentSettingImageView(static_cast<ContentSettingsType>(i), this,
-                                    bubble_font, bubble_font_y_offset,
+                                    bubble_font_list, bubble_font_y_offset,
                                     text_color, background_color);
     content_setting_views_.push_back(content_blocked_view);
     content_blocked_view->SetVisible(false);

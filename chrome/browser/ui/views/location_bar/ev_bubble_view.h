@@ -13,7 +13,7 @@ class LocationBarView;
 // EVBubbleView displays the EV Bubble in the LocationBarView.
 class EVBubbleView : public IconLabelBubbleView {
  public:
-  EVBubbleView(const gfx::Font& font,
+  EVBubbleView(const gfx::FontList& font_list,
                int font_y_offset,
                SkColor text_color,
                SkColor parent_background_color,

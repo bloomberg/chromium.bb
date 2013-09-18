@@ -33,7 +33,7 @@ const int ContentSettingImageView::kAnimationDurationMS =
 ContentSettingImageView::ContentSettingImageView(
     ContentSettingsType content_type,
     LocationBarView* parent,
-    const gfx::Font& font,
+    const gfx::FontList& font_list,
     int font_y_offset,
     SkColor text_color,
     SkColor parent_background_color)
@@ -44,7 +44,7 @@ ContentSettingImageView::ContentSettingImageView(
       background_painter_(
           views::Painter::CreateImageGridPainter(kBackgroundImages)),
       icon_(new views::ImageView),
-      text_label_(new views::Label),
+      text_label_(new views::Label(string16(), font_list)),
       slide_animator_(this),
       pause_animation_(false),
       pause_animation_state_(0.0),
@@ -55,7 +55,6 @@ ContentSettingImageView::ContentSettingImageView(
   text_label_->SetVisible(false);
   text_label_->set_border(
       views::Border::CreateEmptyBorder(font_y_offset, 0, 0, 0));
-  text_label_->SetFont(font);
   text_label_->SetEnabledColor(text_color);
   // Calculate the actual background color for the label.  The background images
   // are painted atop |parent_background_color|.  We grab the color of the

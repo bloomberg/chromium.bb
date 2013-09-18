@@ -9,7 +9,6 @@
 #include "chrome/common/content_settings_types.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/slide_animation.h"
-#include "ui/gfx/font.h"
 #include "ui/views/painter.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget_observer.h"
@@ -19,6 +18,10 @@ class LocationBarView;
 
 namespace content {
 class WebContents;
+}
+
+namespace gfx {
+class FontList;
 }
 
 namespace views {
@@ -35,7 +38,7 @@ class ContentSettingImageView : public gfx::AnimationDelegate,
  public:
   ContentSettingImageView(ContentSettingsType content_type,
                           LocationBarView* parent,
-                          const gfx::Font& font,
+                          const gfx::FontList& font_list,
                           int font_y_offset,
                           SkColor text_color,
                           SkColor parent_background_color);
