@@ -56,7 +56,11 @@ void AddDuplicateItem(NSMenuItem* top_level_item,
 // Used by AppShimMenuController to manage menu items that are a copy of a
 // Chrome menu item but with a different action. This manages unsetting and
 // restoring the original item's key equivalent, so that we can use the same
-// key equivalent in the copied item with a different action.
+// key equivalent in the copied item with a different action. If |resourceId_|
+// is non-zero, this will also update the title to include the app name.
+// If the copy (menuItem) has no key equivalent, and the title does not have the
+// app name, then enableForApp and disable do not need to be called. I.e. the
+// doppelganger just copies the item and sets a new action.
 @interface DoppelgangerMenuItem : NSObject {
  @private
   base::scoped_nsobject<NSMenuItem> menuItem_;
@@ -97,7 +101,7 @@ void AddDuplicateItem(NSMenuItem* top_level_item,
     DCHECK(sourceItem_);
     sourceKeyEquivalent_.reset([[sourceItem_ keyEquivalent] copy]);
     menuItem_.reset([[NSMenuItem alloc]
-        initWithTitle:@""
+        initWithTitle:[sourceItem_ title]
                action:action
         keyEquivalent:keyEquivalent]);
     [menuItem_ setTarget:controller];
@@ -146,6 +150,8 @@ void AddDuplicateItem(NSMenuItem* top_level_item,
 - (void)quitCurrentPlatformApp;
 // If the currently focused window belongs to a platform app, hide the app.
 - (void)hideCurrentPlatformApp;
+// If the currently focused window belongs to a platform app, focus the app.
+- (void)focusCurrentPlatformApp;
 @end
 
 @implementation AppShimMenuController
@@ -178,6 +184,13 @@ void AddDuplicateItem(NSMenuItem* top_level_item,
               resourceId:IDS_EXIT_MAC
                   action:@selector(quitCurrentPlatformApp)
            keyEquivalent:@"q"]);
+  allToFrontDoppelganger_.reset([[DoppelgangerMenuItem alloc]
+      initWithController:self
+                 menuTag:IDC_WINDOW_MENU
+                 itemTag:IDC_ALL_WINDOWS_FRONT
+              resourceId:0
+                  action:@selector(focusCurrentPlatformApp)
+           keyEquivalent:@""]);
 
   // The app's menu.
   appMenuItem_.reset([[NSMenuItem alloc] initWithTitle:@""
@@ -203,7 +216,7 @@ void AddDuplicateItem(NSMenuItem* top_level_item,
   AddDuplicateItem(windowMenuItem_, IDC_WINDOW_MENU, IDC_MINIMIZE_WINDOW);
   AddDuplicateItem(windowMenuItem_, IDC_WINDOW_MENU, IDC_MAXIMIZE_WINDOW);
   [[windowMenuItem_ submenu] addItem:[NSMenuItem separatorItem]];
-  AddDuplicateItem(windowMenuItem_, IDC_WINDOW_MENU, IDC_ALL_WINDOWS_FRONT);
+  [[windowMenuItem_ submenu] addItem:[allToFrontDoppelganger_ menuItem]];
 }
 
 - (void)registerEventHandlers {
@@ -310,6 +323,14 @@ void AddDuplicateItem(NSMenuItem* top_level_item,
           [NSApp keyWindow]);
   if (shellWindow)
     apps::ExtensionAppShimHandler::HideAppForWindow(shellWindow);
+}
+
+- (void)focusCurrentPlatformApp {
+  apps::ShellWindow* shellWindow =
+      apps::ShellWindowRegistry::GetShellWindowForNativeWindowAnyProfile(
+          [NSApp keyWindow]);
+  if (shellWindow)
+    apps::ExtensionAppShimHandler::FocusAppForWindow(shellWindow);
 }
 
 @end

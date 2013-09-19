@@ -65,6 +65,22 @@ void SetAppHidden(Profile* profile, const std::string& app_id, bool hidden) {
   }
 }
 
+bool FocusWindows(const ShellWindowList& windows) {
+  if (windows.empty())
+    return false;
+
+  std::set<gfx::NativeWindow> native_windows;
+  for (ShellWindowList::const_iterator it = windows.begin();
+       it != windows.end(); ++it) {
+    native_windows.insert((*it)->GetNativeWindow());
+  }
+  // Allow workspace switching. For the browser process, we can reasonably rely
+  // on OS X to switch spaces for us and honor relevant user settings. But shims
+  // don't have windows, so we have to do it ourselves.
+  ui::FocusWindowSet(native_windows, true);
+  return true;
+}
+
 }  // namespace
 
 namespace apps {
@@ -198,6 +214,24 @@ void ExtensionAppShimHandler::HideAppForWindow(ShellWindow* shell_window) {
     SetAppHidden(profile, shell_window->extension_id(), true);
 }
 
+
+void ExtensionAppShimHandler::FocusAppForWindow(ShellWindow* shell_window) {
+  ExtensionAppShimHandler* handler =
+      g_browser_process->platform_part()->app_shim_host_manager()->
+          extension_app_shim_handler();
+  Profile* profile = shell_window->profile();
+  const std::string& app_id = shell_window->extension_id();
+  Host* host = handler->FindHost(profile, app_id);
+  if (host) {
+    handler->OnShimFocus(host,
+                         APP_SHIM_FOCUS_NORMAL,
+                         std::vector<base::FilePath>());
+  } else {
+    FocusWindows(
+        apps::ShellWindowRegistry::Get(profile)->GetShellWindowsForApp(app_id));
+  }
+}
+
 // static
 bool ExtensionAppShimHandler::RequestUserAttentionForWindow(
     ShellWindow* shell_window) {
@@ -313,21 +347,10 @@ void ExtensionAppShimHandler::OnShimFocus(
 
   const ShellWindowList windows =
       delegate_->GetWindows(profile, host->GetAppId());
-  std::set<gfx::NativeWindow> native_windows;
-  for (ShellWindowList::const_iterator it = windows.begin();
-       it != windows.end(); ++it) {
-    native_windows.insert((*it)->GetNativeWindow());
-  }
-  if (!native_windows.empty()) {
-    // Allow workspace switching. For the browser process, we can
-    // reasonably rely on OS X to switch spaces for us and honor
-    // relevant user settings. But shims don't have windows, so we
-    // have to do it ourselves.
-    ui::FocusWindowSet(native_windows, true);
-  }
+  bool windows_focused = FocusWindows(windows);
 
   if (focus_type == APP_SHIM_FOCUS_NORMAL ||
-      (focus_type == APP_SHIM_FOCUS_REOPEN && !native_windows.empty())) {
+      (focus_type == APP_SHIM_FOCUS_REOPEN && windows_focused)) {
     return;
   }
 

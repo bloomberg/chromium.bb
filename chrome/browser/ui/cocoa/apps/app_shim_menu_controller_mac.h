@@ -24,6 +24,7 @@
   // Items that need a doppelganger.
   base::scoped_nsobject<DoppelgangerMenuItem> hideDoppelganger_;
   base::scoped_nsobject<DoppelgangerMenuItem> quitDoppelganger_;
+  base::scoped_nsobject<DoppelgangerMenuItem> allToFrontDoppelganger_;
   // Menu items for the currently focused packaged app.
   base::scoped_nsobject<NSMenuItem> appMenuItem_;
   base::scoped_nsobject<NSMenuItem> fileMenuItem_;
