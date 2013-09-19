@@ -439,17 +439,14 @@ bool WebAppShortcutCreator::CreateShortcuts(
 
   std::vector<base::FilePath> paths;
 
-  // For the app list shim, place a copy in Chrome's user data dir for use in
-  // the OSX Dock, and do not create the copy in the profile dir. This is done
-  // because the kAppLauncherHasBeenEnabled preference is tied to the local
-  // state, rather than per-profile.
+  // The app list shim is not tied to a particular profile, so omit the copy
+  // placed under the profile path. For shims, this copy is used when the
+  // version under Applications is removed, and not needed for app list because
+  // setting LSUIElement means there is no Dock "running" status to show.
   const bool is_app_list = info_.extension_id == app_mode::kAppListModeId;
   if (is_app_list) {
-    base::FilePath user_data_dir;
-    CHECK(PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
     path_to_add_to_dock = base::SysUTF8ToNSString(
-        user_data_dir.Append(GetShortcutBasename()).AsUTF8Unsafe());
-    paths.push_back(user_data_dir);
+        applications_dir.Append(GetShortcutBasename()).AsUTF8Unsafe());
   } else {
     paths.push_back(app_data_dir_);
   }
