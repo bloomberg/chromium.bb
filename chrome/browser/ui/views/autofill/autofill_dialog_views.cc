@@ -563,6 +563,7 @@ AutofillDialogViews::AccountChooser::AccountChooser(
       menu_button_(new views::MenuButton(NULL, base::string16(), this, true)),
       link_(new views::Link()),
       delegate_(delegate) {
+  set_border(views::Border::CreateEmptyBorder(0, 0, 0, 10));
   SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0,
                            kAroundTextPadding));
