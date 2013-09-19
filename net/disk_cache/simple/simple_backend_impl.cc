@@ -33,6 +33,7 @@
 #include "net/disk_cache/simple/simple_index_file.h"
 #include "net/disk_cache/simple/simple_synchronous_entry.h"
 #include "net/disk_cache/simple/simple_util.h"
+#include "net/disk_cache/simple/simple_version_upgrade.h"
 
 using base::Callback;
 using base::Closure;
@@ -132,65 +133,12 @@ void DeleteBackendImpl(disk_cache::Backend** backend,
 // Detects if the files in the cache directory match the current disk cache
 // backend type and version. If the directory contains no cache, occupies it
 // with the fresh structure.
-//
-// There is a convention among disk cache backends: looking at the magic in the
-// file "index" it should be sufficient to determine if the cache belongs to the
-// currently running backend. The Simple Backend stores its index in the file
-// "the-real-index" (see simple_index.cc) and the file "index" only signifies
-// presence of the implementation's magic and version. There are two reasons for
-// that:
-// 1. Absence of the index is itself not a fatal error in the Simple Backend
-// 2. The Simple Backend has pickled file format for the index making it hacky
-//    to have the magic in the right place.
 bool FileStructureConsistent(const base::FilePath& path) {
   if (!base::PathExists(path) && !file_util::CreateDirectory(path)) {
     LOG(ERROR) << "Failed to create directory: " << path.LossyDisplayName();
     return false;
   }
-  const base::FilePath fake_index = path.AppendASCII("index");
-  base::PlatformFileError error;
-  base::PlatformFile fake_index_file = base::CreatePlatformFile(
-      fake_index,
-      base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ,
-      NULL,
-      &error);
-  if (error == base::PLATFORM_FILE_ERROR_NOT_FOUND) {
-    base::PlatformFile file = base::CreatePlatformFile(
-        fake_index,
-        base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_WRITE,
-        NULL, &error);
-    disk_cache::SimpleFileHeader file_contents;
-    file_contents.initial_magic_number = disk_cache::kSimpleInitialMagicNumber;
-    file_contents.version = disk_cache::kSimpleVersion;
-    int bytes_written = base::WritePlatformFile(
-        file, 0, reinterpret_cast<char*>(&file_contents),
-        sizeof(file_contents));
-    if (!base::ClosePlatformFile(file) ||
-        bytes_written != sizeof(file_contents)) {
-      LOG(ERROR) << "Failed to write cache structure file: "
-                 << path.LossyDisplayName();
-      return false;
-    }
-    return true;
-  } else if (error != base::PLATFORM_FILE_OK) {
-    LOG(ERROR) << "Could not open cache structure file: "
-               << path.LossyDisplayName();
-    return false;
-  } else {
-    disk_cache::SimpleFileHeader file_header;
-    int bytes_read = base::ReadPlatformFile(
-        fake_index_file, 0, reinterpret_cast<char*>(&file_header),
-        sizeof(file_header));
-    if (!base::ClosePlatformFile(fake_index_file) ||
-        bytes_read != sizeof(file_header) ||
-        file_header.initial_magic_number !=
-            disk_cache::kSimpleInitialMagicNumber ||
-        file_header.version != disk_cache::kSimpleVersion) {
-      LOG(ERROR) << "File structure does not match the disk cache backend.";
-      return false;
-    }
-    return true;
-  }
+  return disk_cache::UpgradeSimpleCacheOnDisk(path);
 }
 
 // A short bindable thunk that can call a completion callback. Intended to be

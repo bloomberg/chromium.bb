@@ -1,20 +1,17 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_DISK_CACHE_SIMPLE_SIMPLE_ENTRY_FORMAT_H_
-#define NET_DISK_CACHE_SIMPLE_SIMPLE_ENTRY_FORMAT_H_
-
+#ifndef NET_DISK_CACHE_SIMPLE_SIMPLE_ENTRY_FORMAT_HISTORY_H_
+#define NET_DISK_CACHE_SIMPLE_SIMPLE_ENTRY_FORMAT_HISTORY_H_
 
 #include "base/basictypes.h"
 #include "base/port.h"
 #include "net/base/net_export.h"
 
-namespace base {
-class Time;
-}
-
 namespace disk_cache {
+
+namespace simplecache_v5 {
 
 const uint64 kSimpleInitialMagicNumber = GG_UINT64_C(0xfcfb6d1ba7725c30);
 const uint64 kSimpleFinalMagicNumber = GG_UINT64_C(0xf4fa6f45970d41d8);
@@ -58,6 +55,8 @@ struct NET_EXPORT_PRIVATE SimpleFileEOF {
   uint32 stream_size;
 };
 
+}  // namespace simplecache_v5
+
 }  // namespace disk_cache
 
-#endif  // NET_DISK_CACHE_SIMPLE_SIMPLE_ENTRY_FORMAT_H_
+#endif  // NET_DISK_CACHE_SIMPLE_SIMPLE_ENTRY_FORMAT_HISTORY_H_

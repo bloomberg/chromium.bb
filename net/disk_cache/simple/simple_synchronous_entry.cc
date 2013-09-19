@@ -18,6 +18,7 @@
 #include "base/strings/stringprintf.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "net/disk_cache/simple/simple_backend_version.h"
 #include "net/disk_cache/simple/simple_histogram_macros.h"
 #include "net/disk_cache/simple/simple_util.h"
 #include "third_party/zlib/zlib.h"
@@ -645,7 +646,7 @@ int SimpleSynchronousEntry::InitializeForOpen(
       return net::ERR_FAILED;
     }
 
-    if (header.version != kSimpleVersion) {
+    if (header.version != kSimpleEntryVersionOnDisk) {
       DLOG(WARNING) << "Unreadable version.";
       RecordSyncOpenResult(cache_type_, OPEN_ENTRY_BAD_VERSION, had_index);
       return net::ERR_FAILED;
@@ -699,7 +700,7 @@ int SimpleSynchronousEntry::InitializeForCreate(
   for (int i = 0; i < kSimpleEntryFileCount; ++i) {
     SimpleFileHeader header;
     header.initial_magic_number = kSimpleInitialMagicNumber;
-    header.version = kSimpleVersion;
+    header.version = kSimpleEntryVersionOnDisk;
 
     header.key_length = key_.size();
     header.key_hash = base::Hash(key_);
