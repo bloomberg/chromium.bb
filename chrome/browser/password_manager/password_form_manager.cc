@@ -281,7 +281,8 @@ void PasswordFormManager::OnRequestDone(
   // copies to a minimum here.
 
   int best_score = 0;
-  std::vector<PasswordForm> empties;  // Empty-path matches in result set.
+  // These credentials will be in the final result regardless of score.
+  std::vector<PasswordForm> credentials_to_keep;
   for (size_t i = 0; i < logins_result.size(); i++) {
     if (IgnoreResult(*logins_result[i])) {
       delete logins_result[i];
@@ -304,8 +305,18 @@ void PasswordFormManager::OnRequestDone(
     if ((observed_form_.scheme == PasswordForm::SCHEME_HTML) &&
         (observed_form_.signon_realm == logins_result[i]->origin.spec()) &&
         (current_score > 0) && (!logins_result[i]->blacklisted_by_user)) {
-      empties.push_back(*logins_result[i]);
+      credentials_to_keep.push_back(*logins_result[i]);
     }
+
+    // Always keep generated passwords as part of the result set. If a user
+    // generates a password on a signup form, it should show on a login form
+    // even if they have a previous login saved.
+    // TODO(gcasto): We don't want to cut credentials that were saved on signup
+    // forms even if they weren't generated, but currently it's hard to
+    // distinguish between those forms and two different login forms on the
+    // same domain. Filed http://crbug.com/294468 to look into this.
+    if (logins_result[i]->type == PasswordForm::TYPE_GENERATED)
+      credentials_to_keep.push_back(*logins_result[i]);
 
     if (current_score < best_score) {
       delete logins_result[i];
@@ -332,11 +343,12 @@ void PasswordFormManager::OnRequestDone(
     return;
   }
 
-  for (std::vector<PasswordForm>::const_iterator it = empties.begin();
-       it != empties.end(); ++it) {
+  for (std::vector<PasswordForm>::const_iterator it =
+           credentials_to_keep.begin();
+       it != credentials_to_keep.end(); ++it) {
     // If we don't already have a result with the same username, add the
-    // lower-scored empty-path match (if it had equal score it would already be
-    // in best_matches_).
+    // lower-scored match (if it had equal score it would already be in
+    // best_matches_).
     if (best_matches_.find(it->username_value) == best_matches_.end())
       best_matches_[it->username_value] = new PasswordForm(*it);
   }

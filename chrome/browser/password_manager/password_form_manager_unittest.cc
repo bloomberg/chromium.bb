@@ -50,7 +50,17 @@ class TestPasswordManager : public PasswordManager {
       const autofill::PasswordForm& form_for_autofill,
       const autofill::PasswordFormMap& best_matches,
       const autofill::PasswordForm& preferred_match,
-      bool wait_for_username) const OVERRIDE {}
+      bool wait_for_username) const OVERRIDE {
+    best_matches_ = best_matches;
+  }
+
+  const autofill::PasswordFormMap& GetLatestBestMatches() {
+    return best_matches_;
+  }
+
+ private:
+  // Marked mutable to get around constness of Autofill().
+  mutable autofill::PasswordFormMap best_matches_;
 };
 
 }  // namespace
@@ -511,6 +521,41 @@ TEST_F(PasswordFormManagerTest, TestSendNotBlacklistedMessage) {
   result.push_back(CreateSavedMatch(true));
   SimulateResponseFromPasswordStore(manager.get(), result);
   EXPECT_EQ(0u, manager->num_sent_messages());
+}
+
+TEST_F(PasswordFormManagerTest, TestForceInclusionOfGeneratedPasswords) {
+  TestPasswordManagerDelegate delegate(profile());
+  TestPasswordManager password_manager(&delegate);
+  scoped_ptr<TestPasswordFormManager> manager(new TestPasswordFormManager(
+      profile(), &password_manager, *observed_form(), false));
+
+  // Simulate having two matches for this origin, one of which was from a form
+  // with different HTML tags for elements. Because of scoring differences,
+  // only the first form will be sent to Autofill().
+  std::vector<PasswordForm*> results;
+  results.push_back(CreateSavedMatch(false));
+  results.push_back(CreateSavedMatch(false));
+  results[1]->username_value = ASCIIToUTF16("other@gmail.com");
+  results[1]->password_element = ASCIIToUTF16("signup_password");
+  results[1]->username_element = ASCIIToUTF16("signup_username");
+  SimulateFetchMatchingLoginsFromPasswordStore(manager.get());
+  SimulateResponseFromPasswordStore(manager.get(), results);
+  EXPECT_EQ(1u, password_manager.GetLatestBestMatches().size());
+  results.clear();
+
+  // Same thing, except this time the credentials that don't match quite as
+  // well are generated. They should now be sent to Autofill().
+  manager.reset(new TestPasswordFormManager(
+      profile(), &password_manager, *observed_form(), false));
+  results.push_back(CreateSavedMatch(false));
+  results.push_back(CreateSavedMatch(false));
+  results[1]->username_value = ASCIIToUTF16("other@gmail.com");
+  results[1]->password_element = ASCIIToUTF16("signup_password");
+  results[1]->username_element = ASCIIToUTF16("signup_username");
+  results[1]->type = PasswordForm::TYPE_GENERATED;
+  SimulateFetchMatchingLoginsFromPasswordStore(manager.get());
+  SimulateResponseFromPasswordStore(manager.get(), results);
+  EXPECT_EQ(2u, password_manager.GetLatestBestMatches().size());
 }
 
 TEST_F(PasswordFormManagerTest, TestSanitizePossibleUsernames) {
