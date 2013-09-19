@@ -147,43 +147,41 @@ def ValidateClobber(buildroot):
 
 # =========================== Main Commands ===================================
 
-def BuildRootGitCleanup(buildroot, debug_run):
+def BuildRootGitCleanup(buildroot):
   """Put buildroot onto manifest branch. Delete branches created on last run.
 
   Args:
     buildroot: buildroot to clean up.
-    debug_run: whether the job is running with the --debug flag.  i.e., whether
-               it is not a production run.
   """
   lock_path = os.path.join(buildroot, '.clean_lock')
 
   def RunCleanupCommands(cwd):
     with locking.FileLock(lock_path, verbose=False).read_lock() as lock:
-      if not os.path.isdir(cwd):
-        return
+      # Calculate where the git repository is stored.
+      relpath = os.path.relpath(cwd, buildroot)
+      projects_dir = os.path.join(buildroot, '.repo', 'projects')
+      repo_store = '%s.git' % os.path.join(projects_dir, relpath)
 
       try:
-        git.CleanAndCheckoutUpstream(cwd, False)
+        if os.path.isdir(cwd):
+          git.CleanAndCheckoutUpstream(cwd, False)
       except cros_build_lib.RunCommandError, e:
         result = e.result
-        logging.warn('\n%s', result.output)
+        logging.warn('\n%s', result.error)
         logging.warn('Deleting %s because %s failed', cwd, e.result.cmd)
         lock.write_lock()
         osutils.RmDir(cwd, ignore_missing=True)
         # Delete the backing store as well for production jobs, because we
         # want to make sure any corruption is wiped.  Don't do it for
         # tryjobs so the error is visible and can be debugged.
-        if not debug_run:
-          relpath = os.path.relpath(cwd, buildroot)
-          projects_dir = os.path.join(buildroot, '.repo', 'projects')
-          repo_store = '%s.git' % os.path.join(projects_dir, relpath)
-          logging.warn('Deleting %s as well', repo_store)
-          osutils.RmDir(repo_store, ignore_missing=True)
+        logging.warn('Deleting %s as well', repo_store)
+        osutils.RmDir(repo_store, ignore_missing=True)
         cros_build_lib.PrintBuildbotStepWarnings()
-        return
-
-      git.RunGit(cwd, ['branch', '-D'] + list(constants.CREATED_BRANCHES),
-                 error_code_ok=True)
+      else:
+        # Delete all branches created by cbuildbot.
+        if os.path.isdir(repo_store):
+          git.RunGit(cwd, ['--git-dir', repo_store, 'branch', '-D'] +
+                          list(constants.CREATED_BRANCHES), error_code_ok=True)
 
   # Cleanup all of the directories.
   dirs = [[os.path.join(buildroot, attrs['path'])] for attrs in

@@ -162,7 +162,13 @@ class GitBranch(object):
   """Wrapper class for a git branch."""
 
   def __init__(self, branch_name, tracking_branch, cwd):
-    """Sets up variables but does not create the branch."""
+    """Sets up variables but does not create the branch.
+
+    Arguments:
+      branch_name: The name of the branch.
+      tracking_branch: The associated tracking branch.
+      cwd: The git repository to work in.
+    """
     self.branch_name = branch_name
     self.tracking_branch = tracking_branch
     self.cwd = cwd

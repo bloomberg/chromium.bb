@@ -388,9 +388,8 @@ class CleanUpStage(bs.BuilderStage):
       self._DeleteChroot()
       repository.ClearBuildRoot(self._build_root, self._options.preserve_paths)
     else:
-      commands.BuildRootGitCleanup(self._build_root, self._options.debug)
       tasks = [functools.partial(commands.BuildRootGitCleanup,
-                                 self._build_root, self._options.debug),
+                                 self._build_root),
                functools.partial(commands.WipeOldOutput, self._build_root),
                self._DeleteArchivedTrybotImages,
                self._DeleteArchivedPerfResults]
