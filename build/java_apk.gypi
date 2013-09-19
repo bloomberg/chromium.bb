@@ -250,7 +250,6 @@
             'configuration_name': '<(CONFIGURATION_NAME)',
           },
           'dependencies': [
-            '<(DEPTH)/tools/android/md5sum/md5sum.gyp:md5sum',
             '<(DEPTH)/build/android/setup.gyp:get_build_device_configurations',
           ],
           'actions': [
@@ -383,6 +382,9 @@
         '<(DEPTH)/tools/android/android_tools.gyp:android_tools',
       ]
     }],
+  ],
+  'dependencies': [
+    '<(DEPTH)/tools/android/md5sum/md5sum.gyp:md5sum',
   ],
   'actions': [
     {
