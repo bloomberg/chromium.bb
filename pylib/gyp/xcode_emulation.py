@@ -261,11 +261,13 @@ class XcodeSettings(object):
   def _GetSdkVersionInfoItem(self, sdk, infoitem):
     return self._GetStdout(['xcodebuild', '-version', '-sdk', sdk, infoitem])
 
-  def _SdkRoot(self):
-    return self.GetPerTargetSetting('SDKROOT', default='')
+  def _SdkRoot(self, configname):
+    if configname is None:
+      configname = self.configname
+    return self.GetPerConfigSetting('SDKROOT', configname, default='')
 
-  def _SdkPath(self):
-    sdk_root = self._SdkRoot()
+  def _SdkPath(self, configname=None):
+    sdk_root = self._SdkRoot(configname)
     if sdk_root.startswith('/'):
       return sdk_root
     if sdk_root not in XcodeSettings._sdk_path_cache:
@@ -665,6 +667,12 @@ class XcodeSettings(object):
             del result[key]
     return result
 
+  def GetPerConfigSetting(self, setting, configname, default=None):
+    if configname in self.xcode_settings:
+      return self.xcode_settings[configname].get(setting, default)
+    else:
+      return self.GetPerTargetSetting(setting, default)
+
   def GetPerTargetSetting(self, setting, default=None):
     """Tries to get xcode_settings.setting from spec. Assumes that the setting
        has the same value in all configurations and throws otherwise."""
@@ -677,7 +685,7 @@ class XcodeSettings(object):
       else:
         assert result == self.xcode_settings[configname].get(setting, None), (
             "Expected per-target setting for '%s', got per-config setting "
-            "(target %s)" % (setting, spec['target_name']))
+            "(target %s)" % (setting, self.spec['target_name']))
     if result is None:
       return default
     return result
@@ -743,7 +751,7 @@ class XcodeSettings(object):
         self._GetDebugInfoPostbuilds(configname, output, output_binary, quiet) +
         self._GetStripPostbuilds(configname, output_binary, quiet))
 
-  def _AdjustLibrary(self, library):
+  def _AdjustLibrary(self, library, config_name=None):
     if library.endswith('.framework'):
       l = '-framework ' + os.path.splitext(os.path.basename(library))[0]
     else:
@@ -752,13 +760,14 @@ class XcodeSettings(object):
         l = '-l' + m.group(1)
       else:
         l = library
-    return l.replace('$(SDKROOT)', self._SdkPath())
+    return l.replace('$(SDKROOT)', self._SdkPath(config_name))
 
-  def AdjustLibraries(self, libraries):
+  def AdjustLibraries(self, libraries, config_name=None):
     """Transforms entries like 'Cocoa.framework' in libraries into entries like
     '-framework Cocoa', 'libcrypto.dylib' into '-lcrypto', etc.
     """
-    libraries = [ self._AdjustLibrary(library) for library in libraries]
+    libraries = [self._AdjustLibrary(library, config_name)
+                 for library in libraries]
     return libraries
 
   def _BuildMachineOSBuild(self):
@@ -776,7 +785,7 @@ class XcodeSettings(object):
     build = build.split()[-1]
     return version, build
 
-  def GetExtraPlistItems(self):
+  def GetExtraPlistItems(self, configname=None):
     """Returns a dictionary with extra items to insert into Info.plist."""
     if not XcodeSettings._plist_cache:
       cache = XcodeSettings._plist_cache
@@ -786,7 +795,7 @@ class XcodeSettings(object):
       cache['DTXcode'] = xcode
       cache['DTXcodeBuild'] = xcode_build
 
-      sdk_root = self._SdkRoot()
+      sdk_root = self._SdkRoot(configname)
       cache['DTSDKName'] = sdk_root
       if xcode >= '0430':
         cache['DTSDKBuild'] = self._GetSdkVersionInfoItem(
@@ -1051,8 +1060,8 @@ def _GetXcodeEnv(xcode_settings, built_products_dir, srcroot, configuration,
     'TARGET_BUILD_DIR' : built_products_dir,
     'TEMP_DIR' : '${TMPDIR}',
   }
-  if xcode_settings.GetPerTargetSetting('SDKROOT'):
-    env['SDKROOT'] = xcode_settings._SdkPath()
+  if xcode_settings.GetPerConfigSetting('SDKROOT', configuration):
+    env['SDKROOT'] = xcode_settings._SdkPath(configuration)
   else:
     env['SDKROOT'] = ''
 

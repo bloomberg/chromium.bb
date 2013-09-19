@@ -769,7 +769,7 @@ class NinjaWriter:
     env = self.GetSortedXcodeEnv(additional_settings=extra_env)
     env = self.ComputeExportEnvString(env)
 
-    keys = self.xcode_settings.GetExtraPlistItems()
+    keys = self.xcode_settings.GetExtraPlistItems(self.config_name)
     keys = [QuoteShellArgument(v, self.flavor) for v in sum(keys.items(), ())]
     self.ninja.build(out, 'copy_infoplist', info_plist,
                      variables=[('env', env), ('keys', keys)])
@@ -1066,7 +1066,7 @@ class NinjaWriter:
     libraries = gyp.common.uniquer(map(self.ExpandSpecial,
                                        spec.get('libraries', [])))
     if self.flavor == 'mac':
-      libraries = self.xcode_settings.AdjustLibraries(libraries)
+      libraries = self.xcode_settings.AdjustLibraries(libraries, config_name)
     elif self.flavor == 'win':
       libraries = self.msvs_settings.AdjustLibraries(libraries)
 
