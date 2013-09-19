@@ -231,9 +231,6 @@ class WebMediaPlayerAndroid
                          const base::Closure& destroy_demuxer_cb);
 #endif
 
-  // Called when DemuxerStreamPlayer needs to read data from ChunkDemuxer.
-  void OnReadFromDemuxer(media::DemuxerStream::Type type);
-
  protected:
   // Helper method to update the playing state.
   void UpdatePlayingState(bool is_playing_);

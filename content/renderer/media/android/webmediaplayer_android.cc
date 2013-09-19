@@ -1176,13 +1176,6 @@ bool WebMediaPlayerAndroid::InjectMediaStream(
 }
 #endif
 
-void WebMediaPlayerAndroid::OnReadFromDemuxer(media::DemuxerStream::Type type) {
-  if (media_source_delegate_)
-    media_source_delegate_->OnReadFromDemuxer(type);
-  else
-    NOTIMPLEMENTED();
-}
-
 void WebMediaPlayerAndroid::enterFullscreen() {
   if (manager_->CanEnterFullscreen(frame_)) {
     proxy_->EnterFullscreen(player_id_);
