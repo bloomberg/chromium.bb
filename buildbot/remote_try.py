@@ -8,9 +8,7 @@ import constants
 import getpass
 import json
 import os
-import shutil
 import sys
-import tempfile
 import time
 
 if __name__ == '__main__':
@@ -19,6 +17,7 @@ if __name__ == '__main__':
 from chromite.buildbot import repository
 from chromite.buildbot import manifest_version
 from chromite.lib import cros_build_lib
+from chromite.lib import cache
 from chromite.lib import git
 
 
@@ -69,6 +68,7 @@ class RemoteTryJob(object):
     """
     self.options = options
     self.user = getpass.getuser()
+    self.repo_cache = cache.DiskCache(self.options.cache_dir)
     cwd = os.path.dirname(os.path.realpath(__file__))
     self.user_email = git.GetProjectUserEmail(cwd)
     cros_build_lib.Info('Using email:%s', self.user_email)
@@ -90,14 +90,15 @@ class RemoteTryJob(object):
 
     self.extra_args.append('--remote-version=%s'
                            % (self.TRYJOB_FORMAT_VERSION,))
-    self.tryjob_repo = None
     self.local_patches = local_patches
     self.repo_url = self.PUBLIC_URL
+    self.cache_key = ('trybot',)
     self.manifest = None
     if repository.IsARepoRoot(options.sourceroot):
       self.manifest = git.ManifestCheckout.Cached(options.sourceroot)
       if repository.IsInternalRepoCheckout(options.sourceroot):
         self.repo_url = self.INTERNAL_URL
+        self.cache_key = ('trybot-internal',)
 
   @property
   def values(self):
@@ -131,7 +132,7 @@ class RemoteTryJob(object):
           'limit.  If you have a lot of local patches, upload them and use the '
           '-g flag instead.')
 
-  def _Submit(self, testjob, dryrun):
+  def _Submit(self, workdir, testjob, dryrun):
     """Internal submission function.  See Submit() for arg description."""
     # TODO(rcui): convert to shallow clone when that's available.
     current_time = str(int(time.time()))
@@ -158,8 +159,8 @@ class RemoteTryJob(object):
                                 patch.tracking_branch, tag))
 
     self._VerifyForBuildbot()
-    repository.CloneGitRepo(self.tryjob_repo, self.repo_url)
-    version_path = os.path.join(self.tryjob_repo,
+    repository.UpdateGitRepo(workdir, self.repo_url)
+    version_path = os.path.join(workdir,
                                 self.TRYJOB_FORMAT_FILE)
     with open(version_path, 'r') as f:
       try:
@@ -171,12 +172,12 @@ class RemoteTryJob(object):
     push_branch = manifest_version.PUSH_BRANCH
 
     remote_branch = ('origin', 'refs/remotes/origin/test') if testjob else None
-    git.CreatePushBranch(push_branch, self.tryjob_repo, sync=False,
+    git.CreatePushBranch(push_branch, workdir, sync=False,
                          remote_push_branch=remote_branch)
 
     file_name = '%s.%s' % (self.user,
                            current_time)
-    user_dir = os.path.join(self.tryjob_repo, self.user)
+    user_dir = os.path.join(workdir, self.user)
     if not os.path.isdir(user_dir):
       os.mkdir(user_dir)
 
@@ -184,7 +185,7 @@ class RemoteTryJob(object):
     with open(fullpath, 'w+') as job_desc_file:
       json.dump(self.values, job_desc_file)
 
-    cros_build_lib.RunCommand(['git', 'add', fullpath], cwd=self.tryjob_repo)
+    cros_build_lib.RunCommand(['git', 'add', fullpath], cwd=workdir)
     extra_env = {
       # The committer field makes sure the creds match what the remote
       # gerrit instance expects while the author field allows lookup
@@ -193,11 +194,10 @@ class RemoteTryJob(object):
       'GIT_AUTHOR_EMAIL'    : self.user_email,
     }
     cros_build_lib.RunCommand(['git', 'commit', '-m', self.description],
-                              cwd=self.tryjob_repo, extra_env=extra_env)
+                              cwd=workdir, extra_env=extra_env)
 
     try:
-      git.PushWithRetry(
-          push_branch, self.tryjob_repo, retries=3, dryrun=dryrun)
+      git.PushWithRetry(push_branch, workdir, retries=3, dryrun=dryrun)
     except cros_build_lib.RunCommandError:
       cros_build_lib.Error(
           'Failed to submit tryjob.  This could be due to too many '
@@ -215,15 +215,11 @@ class RemoteTryJob(object):
                will be ignored by production master.
       dryrun: Setting to true will run everything except the final submit step.
     """
-    self.tryjob_repo = workdir
-    if self.tryjob_repo is None:
-      self.tryjob_repo = tempfile.mkdtemp()
-
-    try:
-      self._Submit(testjob, dryrun)
-    finally:
-      if workdir is None:
-        shutil.rmtree(self.tryjob_repo)
+    if workdir is None:
+      with self.repo_cache.Lookup(self.cache_key) as ref:
+        self._Submit(ref.path, testjob, dryrun)
+    else:
+      self._Submit(workdir, testjob, dryrun)
 
   def GetTrybotConsoleLink(self):
     """Get link to the console for the user."""
