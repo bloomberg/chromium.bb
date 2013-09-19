@@ -26,9 +26,17 @@ const double kDefaultHDMIOutputVolume = 100.0;
 const int kPrefMuteOff = 0;
 const int kPrefMuteOn = 1;
 
+// Gets the device id string for storing audio preference. The format of
+// device string is a string consisting of 3 parts.
+// |device_name| : |integer from lower 32 bit of device id| :
+// |0(output device) or 1(input device)|
+// If an audio device has both integrated input and output devices, the first 2
+// parts of the string could be identical, only the last part will differentiate
+// them.
 std::string GetDeviceIdString(const chromeos::AudioDevice& device) {
   return device.device_name + " : " +
-         base::Uint64ToString(device.id & static_cast<uint64>(0xffffffff));
+         base::Uint64ToString(device.id & static_cast<uint64>(0xffffffff)) +
+         " : " + (device.is_input ? "1" : "0");
 }
 
 }  // namespace
