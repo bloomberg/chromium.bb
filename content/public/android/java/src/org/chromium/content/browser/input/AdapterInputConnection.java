@@ -164,9 +164,8 @@ public class AdapterInputConnection extends BaseInputConnection {
     }
 
     @VisibleForTesting
-    protected void updateSelection(
-            int selectionStart, int selectionEnd,
-            int compositionStart, int compositionEnd) {
+    protected void updateSelection(int selectionStart, int selectionEnd, int compositionStart,
+            int compositionEnd) {
         // Avoid sending update if we sent an exact update already previously.
         if (mLastUpdateSelectionStart == selectionStart &&
                 mLastUpdateSelectionEnd == selectionEnd &&
@@ -296,14 +295,17 @@ public class AdapterInputConnection extends BaseInputConnection {
      * @see BaseInputConnection#deleteSurroundingText(int, int)
      */
     @Override
-    public boolean deleteSurroundingText(int leftLength, int rightLength) {
+    public boolean deleteSurroundingText(int beforeLength, int afterLength) {
         if (DEBUG) {
-            Log.w(TAG, "deleteSurroundingText [" + leftLength + " " + rightLength + "]");
+            Log.w(TAG, "deleteSurroundingText [" + beforeLength + " " + afterLength + "]");
         }
-        if (!super.deleteSurroundingText(leftLength, rightLength)) {
-            return false;
-        }
-        return mImeAdapter.deleteSurroundingText(leftLength, rightLength);
+        Editable editable = getEditable();
+        int availableBefore = Selection.getSelectionStart(editable);
+        int availableAfter = editable.length() - Selection.getSelectionEnd(editable);
+        beforeLength = Math.min(beforeLength, availableBefore);
+        afterLength = Math.min(afterLength, availableAfter);
+        super.deleteSurroundingText(beforeLength, afterLength);
+        return mImeAdapter.deleteSurroundingText(beforeLength, afterLength);
     }
 
     /**
