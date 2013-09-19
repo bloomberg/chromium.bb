@@ -676,7 +676,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, DISABLED_AccessKeys) {
 }
 
 // Flaky, http://crbug.com/69475.
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || (defined(OS_WIN) && defined(USE_AURA))
 #define MAYBE_ReservedAccelerators DISABLED_ReservedAccelerators
 #else
 #define MAYBE_ReservedAccelerators ReservedAccelerators
