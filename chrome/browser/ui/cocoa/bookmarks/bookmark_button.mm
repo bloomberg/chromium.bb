@@ -357,6 +357,24 @@ BookmarkButton* gDraggedButton = nil; // Weak
     [id(delegate_) mouseDragged:theEvent];
 }
 
+- (void)rightMouseDown:(NSEvent*)event {
+  // Ensure that right-clicking on a button while a context menu is open
+  // highlights the new button.
+  GradientButtonCell* cell =
+      base::mac::ObjCCastStrict<GradientButtonCell>([self cell]);
+  [delegate_ mouseEnteredButton:self event:event];
+  [cell setMouseInside:YES animate:YES];
+
+  // Keep a ref to |self|, in case -rightMouseDown: deletes this bookmark.
+  base::scoped_nsobject<BookmarkButton> keepAlive([self retain]);
+  [super rightMouseDown:event];
+
+  if (![cell isMouseReallyInside]) {
+    [cell setMouseInside:NO animate:YES];
+    [delegate_ mouseExitedButton:self event:event];
+  }
+}
+
 + (BookmarkButton*)draggedButton {
   return gDraggedButton;
 }
