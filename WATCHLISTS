@@ -260,6 +260,9 @@
                   'file_manager|' \
                   'filebrowse'
     },
+    'filesapp': {
+      'filepath': 'chrome/browser/resources/file_manager',
+    },
     'ftp': {
       'filepath': 'ftp',
     },
@@ -695,6 +698,7 @@
                   'extensions-reviews@chromium.org'],
     'fileapi': ['kinuko+watch@chromium.org', 'tzik+watch@chromium.org'],
     'filebrowse': ['rginda+watch@chromium.org'],
+    'filesapp': ['mtomasz+watch@chromium.org'],
     'ftp': ['phajdan.jr@chromium.org'],
     'fullscreen_controller': ['scheib+watch@chromium.org'],
     'geolocation': ['mvanouwerkerk@chromium.org'],
