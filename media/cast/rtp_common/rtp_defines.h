@@ -37,7 +37,6 @@ struct RtpCastHeader {
 class RtpPayloadFeedback {
  public:
   virtual void CastFeedback(const RtcpCastMessage& cast_feedback) = 0;
-  virtual void RequestKeyFrame() = 0;  // TODO(pwestin): can we remove this?
 
  protected:
   virtual ~RtpPayloadFeedback() {}

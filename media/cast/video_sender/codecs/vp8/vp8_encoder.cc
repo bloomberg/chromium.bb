@@ -327,7 +327,7 @@ void Vp8Encoder::LatestFrameIdToReference(uint8 frame_id) {
   }
 }
 
-void Vp8Encoder::RequestKeyFrame() {
+void Vp8Encoder::GenerateKeyFrame() {
   key_frame_requested_ = true;
 }
 

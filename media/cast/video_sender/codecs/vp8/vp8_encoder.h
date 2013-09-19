@@ -33,7 +33,7 @@ class Vp8Encoder {
   void UpdateRates(uint32 new_bitrate);
 
   // Set the next frame to be a key frame.
-  void RequestKeyFrame();
+  void GenerateKeyFrame();
 
   void LatestFrameIdToReference(uint8 frame_id);
 

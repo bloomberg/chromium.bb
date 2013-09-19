@@ -59,7 +59,7 @@ void VideoEncoder::EncodeVideoFrameEncoderThread(
     const FrameEncodedCallback& frame_encoded_callback,
     const base::Closure frame_release_callback) {
   if (dynamic_config.key_frame_requested) {
-    vp8_encoder_->RequestKeyFrame();
+    vp8_encoder_->GenerateKeyFrame();
   }
   vp8_encoder_->LatestFrameIdToReference(
       dynamic_config.latest_frame_id_to_reference);

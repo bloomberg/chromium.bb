@@ -27,10 +27,6 @@ class NackFeedbackVerification : public RtpPayloadFeedback {
         last_frame_acked_(0) {}
 
 
-  virtual void RequestKeyFrame() OVERRIDE {
-    request_key_frame_ = true;
-  }
-
   virtual void CastFeedback(const RtcpCastMessage& cast_feedback) OVERRIDE {
     EXPECT_EQ(kSsrc, cast_feedback.media_ssrc_);
 
@@ -64,18 +60,12 @@ class NackFeedbackVerification : public RtpPayloadFeedback {
     return ret_val;
   }
 
-  bool request_key_frame() {
-    bool ret_val = request_key_frame_;
-    request_key_frame_ = false;
-    return ret_val;
-  }
   uint8 last_frame_acked() { return last_frame_acked_; }
 
  private:
   bool triggered_;
   MissingPacketsMap missing_packets_;  // Missing packets per frame.
   uint8 last_frame_acked_;
-  bool request_key_frame_;
 };
 
 class CastMessageBuilderTest : public ::testing::Test {
