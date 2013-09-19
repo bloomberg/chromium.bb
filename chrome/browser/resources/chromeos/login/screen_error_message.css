@@ -4,7 +4,7 @@
  */
 
 #error-message {
-  max-width: 650px;
+  width: 650px;
 }
 
 .show-with-ui-state-update,
