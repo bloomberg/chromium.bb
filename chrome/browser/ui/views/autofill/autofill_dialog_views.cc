@@ -1098,6 +1098,8 @@ bool AutofillDialogViews::SuggestionView::CanUseVerticallyCompactText(
     sizing_view.SetLabelText(state_.vertically_compact_text);
     sizing_view.SetIcon(state_.icon);
     sizing_view.SetTextfield(state_.extra_text, state_.extra_icon);
+    sizing_view.label_->SetSize(gfx::Size(available_width, 0));
+    sizing_view.label_line_2_->SetSize(gfx::Size(available_width, 0));
 
     // Shortcut |sizing_view|'s GetHeightForWidth() to avoid an infinite loop.
     // Its BoxLayout must do these calculations for us.
