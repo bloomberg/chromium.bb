@@ -36,8 +36,6 @@
 
 namespace WebCore {
 
-class CSSValue;
-
 class AnimatableValue : public RefCounted<AnimatableValue> {
 public:
     virtual ~AnimatableValue() { }
