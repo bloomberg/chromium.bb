@@ -41,7 +41,6 @@ class DriveAPIService : public DriveServiceInterface,
                         public google_apis::AuthServiceObserver {
  public:
   // |oauth2_token_service| is used for obtaining OAuth2 access tokens.
-  // |account_id| identifies account used to obtain OAuth2 access tokens.
   // |url_request_context_getter| is used to initialize URLFetcher.
   // |blocking_task_runner| is used to run blocking tasks (like parsing JSON).
   // |base_url| is used to generate URLs for communication with the drive API.
@@ -54,7 +53,6 @@ class DriveAPIService : public DriveServiceInterface,
   // requests issues through the service if the value is not empty.
   DriveAPIService(
       OAuth2TokenService* oauth2_token_service,
-      const std::string& account_id,
       net::URLRequestContextGetter* url_request_context_getter,
       base::TaskRunner* blocking_task_runner,
       const GURL& base_url,
@@ -194,7 +192,6 @@ class DriveAPIService : public DriveServiceInterface,
   virtual void OnOAuth2RefreshTokenChanged() OVERRIDE;
 
   OAuth2TokenService* oauth2_token_service_;
-  std::string account_id_;
   net::URLRequestContextGetter* url_request_context_getter_;
   scoped_refptr<base::TaskRunner> blocking_task_runner_;
   scoped_ptr<google_apis::RequestSender> sender_;

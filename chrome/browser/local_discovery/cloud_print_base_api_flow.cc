@@ -25,12 +25,10 @@ const char kUserURLParameterKey[] = "user";
 CloudPrintBaseApiFlow::CloudPrintBaseApiFlow(
     net::URLRequestContextGetter* request_context,
     OAuth2TokenService* token_service,
-    const std::string& account_id,
     const GURL& automated_claim_url,
     Delegate* delegate)
     : request_context_(request_context),
       token_service_(token_service),
-      account_id_(account_id),
       user_index_(kAccountIndexUseOAuth2),
       url_(automated_claim_url),
       delegate_(delegate) {
@@ -44,7 +42,6 @@ CloudPrintBaseApiFlow::CloudPrintBaseApiFlow(
     Delegate* delegate)
     : request_context_(request_context),
       token_service_(NULL),
-      account_id_(""),
       user_index_(user_index),
       xsrf_token_(xsrf_token),
       url_(automated_claim_url),
@@ -58,7 +55,6 @@ CloudPrintBaseApiFlow::CloudPrintBaseApiFlow(
     Delegate* delegate)
     : request_context_(request_context),
       token_service_(NULL),
-      account_id_(""),
       user_index_(user_index),
       url_(automated_claim_url),
       delegate_(delegate) {
@@ -71,9 +67,7 @@ void CloudPrintBaseApiFlow::Start() {
   if (UseOAuth2()) {
     OAuth2TokenService::ScopeSet oauth_scopes;
     oauth_scopes.insert(cloud_print::kCloudPrintAuth);
-    oauth_request_ = token_service_->StartRequest(account_id_,
-                                                  oauth_scopes,
-                                                  this);
+    oauth_request_ = token_service_->StartRequest(oauth_scopes, this);
   } else {
     GURL cookie_url = url_;
 

@@ -128,10 +128,9 @@ void PeopleProvider::RequestAccessToken() {
   if (access_token_request_ != NULL)
     return;
 
-  ProfileOAuth2TokenService* token_service =
+  OAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
-  access_token_request_ = token_service->StartRequest(
-      token_service->GetPrimaryAccountId(), oauth2_scope_, this);
+  access_token_request_ = token_service->StartRequest(oauth2_scope_, this);
 }
 
 GURL PeopleProvider::GetQueryUrl(const std::string& query) {

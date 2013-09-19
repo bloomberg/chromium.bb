@@ -10,7 +10,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/invalidation/invalidation_service.h"
 #include "chrome/browser/invalidation/invalidator_storage.h"
-#include "chrome/browser/signin/profile_oauth2_token_service.h"
+#include "chrome/browser/signin/token_service.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -35,11 +35,11 @@ class TiclInvalidationService
       public InvalidationService,
       public content::NotificationObserver,
       public OAuth2TokenService::Consumer,
-      public OAuth2TokenService::Observer,
       public syncer::InvalidationHandler {
  public:
   TiclInvalidationService(SigninManagerBase* signin,
-                          ProfileOAuth2TokenService* oauth2_token_service,
+                          TokenService* token_service,
+                          OAuth2TokenService* oauth2_token_service,
                           Profile* profile);
   virtual ~TiclInvalidationService();
 
@@ -76,10 +76,6 @@ class TiclInvalidationService
       const OAuth2TokenService::Request* request,
       const GoogleServiceAuthError& error) OVERRIDE;
 
-  // OAuth2TokenService::Observer implementation
-  virtual void OnRefreshTokenAvailable(const std::string& account_id) OVERRIDE;
-  virtual void OnRefreshTokenRevoked(const std::string& account_id) OVERRIDE;
-
   // syncer::InvalidationHandler implementation.
   virtual void OnInvalidatorStateChange(
       syncer::InvalidatorState state) OVERRIDE;
@@ -106,7 +102,8 @@ class TiclInvalidationService
 
   Profile *const profile_;
   SigninManagerBase *const signin_manager_;
-  ProfileOAuth2TokenService *const oauth2_token_service_;
+  TokenService *const token_service_;
+  OAuth2TokenService *const oauth2_token_service_;
 
   scoped_ptr<syncer::InvalidatorRegistrar> invalidator_registrar_;
   scoped_ptr<InvalidatorStorage> invalidator_storage_;

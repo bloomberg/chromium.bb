@@ -37,7 +37,6 @@ class ManagedUserRefreshTokenFetcher {
 
   static scoped_ptr<ManagedUserRefreshTokenFetcher> Create(
       OAuth2TokenService* oauth2_token_service,
-      const std::string& account_id,
       net::URLRequestContextGetter* context);
 
   virtual ~ManagedUserRefreshTokenFetcher();

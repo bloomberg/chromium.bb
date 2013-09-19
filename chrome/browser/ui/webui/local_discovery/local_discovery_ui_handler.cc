@@ -149,14 +149,13 @@ void LocalDiscoveryUIHandler::HandleCancelRegistration(
 void LocalDiscoveryUIHandler::HandleRequestPrinterList(
     const base::ListValue* args) {
   Profile* profile = Profile::FromWebUI(web_ui());
-  ProfileOAuth2TokenService* token_service =
+  OAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
 
   cloud_print_printer_list_.reset(new CloudPrintPrinterList(
       profile->GetRequestContext(),
       GetCloudPrintBaseUrl(),
       token_service,
-      token_service->GetPrimaryAccountId(),
       this));
   cloud_print_printer_list_->Start();
 }
@@ -230,7 +229,7 @@ void LocalDiscoveryUIHandler::OnPrivetRegisterClaimToken(
 
   Profile* profile = Profile::FromWebUI(web_ui());
 
-  ProfileOAuth2TokenService* token_service =
+  OAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
 
   if (!token_service) {
@@ -241,7 +240,6 @@ void LocalDiscoveryUIHandler::OnPrivetRegisterClaimToken(
   confirm_api_call_flow_.reset(new PrivetConfirmApiCallFlow(
       profile->GetRequestContext(),
       token_service,
-      token_service->GetPrimaryAccountId(),
       automated_claim_url,
       base::Bind(&LocalDiscoveryUIHandler::OnConfirmDone,
                  base::Unretained(this))));

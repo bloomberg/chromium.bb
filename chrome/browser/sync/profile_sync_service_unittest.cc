@@ -141,10 +141,12 @@ class ProfileSyncServiceTestHarness {
   }
 
   void IssueTestTokens() {
-    ProfileOAuth2TokenServiceFactory::GetForProfile(profile.get())
-        ->UpdateCredentials("test", "oauth2_login_token");
-    TokenServiceFactory::GetForProfile(profile.get())
-        ->IssueAuthTokenForTest(GaiaConstants::kSyncService, "token");
+    TokenService* token_service =
+        TokenServiceFactory::GetForProfile(profile.get());
+    token_service->IssueAuthTokenForTest(
+        GaiaConstants::kGaiaOAuth2LoginRefreshToken, "oauth2_login_token");
+    token_service->IssueAuthTokenForTest(
+          GaiaConstants::kSyncService, "token");
   }
 
   scoped_ptr<TestProfileSyncService> service;
@@ -294,7 +296,7 @@ TEST_F(ProfileSyncServiceTest, DisableAndEnableSyncTemporarily) {
 TEST_F(ProfileSyncServiceTest, EnableSyncAndSignOut) {
   SigninManager* signin =
       SigninManagerFactory::GetForProfile(harness_.profile.get());
-  signin->SetAuthenticatedUsername("test");
+  signin->SetAuthenticatedUsername("test@test.com");
   ProfileSyncComponentsFactoryMock* factory =
       new ProfileSyncComponentsFactoryMock();
   harness_.service.reset(new TestProfileSyncService(

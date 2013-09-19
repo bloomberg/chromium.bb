@@ -51,16 +51,6 @@ public final class AndroidProfileOAuth2TokenServiceHelper {
     }
 
     /**
-     * Called by native to list the accounts with OAuth2 refresh tokens.
-     */
-    @CalledByNative
-    public static String[] getAccounts(Context context) {
-        AccountManagerHelper accountManagerHelper = AccountManagerHelper.get(context);
-        java.util.List<String> accountNames = accountManagerHelper.getGoogleAccountNames();
-        return accountNames.toArray(new String[accountNames.size()]);
-    }
-
-    /**
      * Called by native to retrieve OAuth2 tokens.
      *
      * @param username The native username (full address).
@@ -143,14 +133,6 @@ public final class AndroidProfileOAuth2TokenServiceHelper {
             Log.w(TAG, "Got interrupted while waiting for auth token");
             return null;
         }
-    }
-
-    /**
-     * Called by native to check wether the account has an OAuth2 refresh token.
-     */
-    @CalledByNative
-    public static boolean hasOAuth2RefreshToken(Context context, String accountName) {
-        return AccountManagerHelper.get(context).hasAccountForName(accountName);
     }
 
     /**

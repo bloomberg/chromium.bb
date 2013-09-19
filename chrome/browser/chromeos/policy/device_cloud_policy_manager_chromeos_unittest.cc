@@ -364,12 +364,10 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
     if (done_)
       return;
 
-    chromeos::DeviceOAuth2TokenService* token_service =
-        chromeos::DeviceOAuth2TokenServiceFactory::Get();
     // Process robot refresh token store.
     EXPECT_EQ(
         "refreshToken4Test",
-        token_service->GetRefreshToken(token_service->GetRobotAccountId()));
+        chromeos::DeviceOAuth2TokenServiceFactory::Get()->GetRefreshToken());
   }
 
   bool is_auto_enrollment_;

@@ -52,7 +52,6 @@ class FakeProfileOAuth2TokenService
     PendingRequest();
     ~PendingRequest();
 
-    std::string account_id;
     std::string client_id;
     std::string client_secret;
     ScopeSet scopes;
@@ -61,10 +60,6 @@ class FakeProfileOAuth2TokenService
 
   FakeProfileOAuth2TokenService();
   virtual ~FakeProfileOAuth2TokenService();
-
-  // Overriden to make sure it works on Android.
-  virtual bool RefreshTokenIsAvailable(
-      const std::string& account_id) OVERRIDE;
 
   // Sets the current refresh token. If |token| is non-empty, this will invoke
   // OnRefreshTokenAvailable() on all Observers, otherwise this will invoke
@@ -76,7 +71,6 @@ class FakeProfileOAuth2TokenService
   std::vector<PendingRequest> GetPendingRequests();
 
   // Helper routines to issue tokens for pending requests.
-  // TODO(fgorski): Add account IDs as parameters.
   void IssueTokenForScope(const ScopeSet& scopes,
                           const std::string& access_token,
                           const base::Time& expiration);
@@ -96,13 +90,12 @@ class FakeProfileOAuth2TokenService
  protected:
   // OAuth2TokenService overrides.
   virtual void FetchOAuth2Token(RequestImpl* request,
-                                const std::string& account_id,
                                 net::URLRequestContextGetter* getter,
                                 const std::string& client_id,
                                 const std::string& client_secret,
                                 const ScopeSet& scopes) OVERRIDE;
 
-  virtual std::string GetRefreshToken(const std::string& account_id) OVERRIDE;
+  virtual std::string GetRefreshToken() OVERRIDE;
 
   virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
 

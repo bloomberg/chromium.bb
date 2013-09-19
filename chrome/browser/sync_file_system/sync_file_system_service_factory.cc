@@ -83,12 +83,9 @@ SyncFileSystemServiceFactory::BuildServiceInstanceFor(
     scoped_refptr<base::SequencedWorkerPool> worker_pool(
         content::BrowserThread::GetBlockingPool());
 
-    ProfileOAuth2TokenService* token_service =
-        ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
     scoped_ptr<drive::DriveAPIService> drive_api_service(
         new drive::DriveAPIService(
-            token_service,
-            token_service->GetPrimaryAccountId(),
+            ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
             context->GetRequestContext(),
             worker_pool.get(),
             base_drive_url, base_download_url, wapi_base_url,

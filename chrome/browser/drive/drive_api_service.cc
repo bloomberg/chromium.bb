@@ -250,7 +250,6 @@ const char kDriveApiRootDirectoryResourceId[] = "root";
 
 DriveAPIService::DriveAPIService(
     OAuth2TokenService* oauth2_token_service,
-    const std::string& account_id,
     net::URLRequestContextGetter* url_request_context_getter,
     base::TaskRunner* blocking_task_runner,
     const GURL& base_url,
@@ -258,7 +257,6 @@ DriveAPIService::DriveAPIService(
     const GURL& wapi_base_url,
     const std::string& custom_user_agent)
     : oauth2_token_service_(oauth2_token_service),
-      account_id_(account_id),
       url_request_context_getter_(url_request_context_getter),
       blocking_task_runner_(blocking_task_runner),
       url_generator_(base_url, base_download_url),
@@ -285,13 +283,11 @@ void DriveAPIService::Initialize() {
   scopes.push_back(util::kDriveAppsScope);
 
   sender_.reset(new RequestSender(
-      new google_apis::AuthService(oauth2_token_service_,
-                                   account_id_,
-                                   url_request_context_getter_,
-                                   scopes),
-      url_request_context_getter_,
-      blocking_task_runner_.get(),
-      custom_user_agent_));
+     new google_apis::AuthService(
+         oauth2_token_service_, url_request_context_getter_, scopes),
+     url_request_context_getter_,
+     blocking_task_runner_.get(),
+     custom_user_agent_));
   sender_->auth_service()->AddObserver(this);
 }
 

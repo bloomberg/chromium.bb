@@ -82,8 +82,7 @@ class MockProfileOAuth2TokenService : public ProfileOAuth2TokenService {
   virtual ~MockProfileOAuth2TokenService();
 
   virtual scoped_ptr<OAuth2TokenService::Request> StartRequest(
-      const std::string& account_id,
-      const OAuth2TokenService::ScopeSet& scopes,
+      const std::set<std::string>& scopes,
       OAuth2TokenService::Consumer* consumer) OVERRIDE;
 
   void SetExpectation(bool success, std::string oauth2_access_token);
@@ -123,9 +122,8 @@ MockProfileOAuth2TokenService::MockProfileOAuth2TokenService()
 MockProfileOAuth2TokenService::~MockProfileOAuth2TokenService() {
 }
 
-void MockProfileOAuth2TokenService::SetExpectation(
-    bool success,
-    std::string oauth2_access_token) {
+void MockProfileOAuth2TokenService::SetExpectation(bool success,
+                                            std::string oauth2_access_token) {
   success_ = success;
   oauth2_access_token_ = oauth2_access_token;
 }
@@ -139,8 +137,7 @@ void MockProfileOAuth2TokenService::InformConsumer(
 
 scoped_ptr<OAuth2TokenService::Request>
     MockProfileOAuth2TokenService::StartRequest(
-        const std::string& account_id,
-        const OAuth2TokenService::ScopeSet& scopes,
+        const std::set<std::string>& scopes,
         OAuth2TokenService::Consumer* consumer) {
   scoped_ptr<Request> request;
   if (success_) {
@@ -199,8 +196,7 @@ TEST_F(ProfileOAuth2TokenServiceRequestTest,
   scoped_ptr<ProfileOAuth2TokenServiceRequest> request(
       ProfileOAuth2TokenServiceRequest::CreateAndStart(
           profile_.get(),
-          std::string(),
-          OAuth2TokenService::ScopeSet(),
+          std::set<std::string>(),
           &consumer_));
   ui_loop_.RunUntilIdle();
   EXPECT_EQ(0, consumer_.number_of_successful_tokens_);
@@ -212,8 +208,7 @@ TEST_F(ProfileOAuth2TokenServiceRequestTest,
   scoped_ptr<ProfileOAuth2TokenServiceRequest> request(
       ProfileOAuth2TokenServiceRequest::CreateAndStart(
           profile_.get(),
-          std::string(),
-          OAuth2TokenService::ScopeSet(),
+          std::set<std::string>(),
           &consumer_));
   ui_loop_.RunUntilIdle();
   EXPECT_EQ(1, consumer_.number_of_successful_tokens_);
@@ -226,8 +221,7 @@ TEST_F(ProfileOAuth2TokenServiceRequestTest,
   scoped_ptr<ProfileOAuth2TokenServiceRequest> request(
       ProfileOAuth2TokenServiceRequest::CreateAndStart(
           profile_.get(),
-          std::string(),
-          OAuth2TokenService::ScopeSet(),
+          std::set<std::string>(),
           &consumer_));
   request.reset();
   ui_loop_.RunUntilIdle();
@@ -240,8 +234,7 @@ TEST_F(ProfileOAuth2TokenServiceRequestTest,
   scoped_ptr<ProfileOAuth2TokenServiceRequest> request(
       ProfileOAuth2TokenServiceRequest::CreateAndStart(
           profile_.get(),
-          std::string(),
-          OAuth2TokenService::ScopeSet(),
+          std::set<std::string>(),
           &consumer_));
   ui_loop_.RunUntilIdle();
   request.reset();

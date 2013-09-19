@@ -76,13 +76,9 @@ void OAuth2LoginVerifier::VerifyProfileTokens(Profile* profile) {
 void OAuth2LoginVerifier::StartFetchingOAuthLoginAccessToken(Profile* profile) {
   OAuth2TokenService::ScopeSet scopes;
   scopes.insert(GaiaUrls::GetInstance()->oauth1_login_scope());
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
-  login_token_request_ = token_service->StartRequestWithContext(
-      token_service->GetPrimaryAccountId(),
-      system_request_context_.get(),
-      scopes,
-      this);
+  login_token_request_ = ProfileOAuth2TokenServiceFactory::
+      GetForProfile(profile)->StartRequestWithContext(
+          system_request_context_.get(), scopes, this);
 }
 
 void OAuth2LoginVerifier::StartOAuthLoginForUberToken() {

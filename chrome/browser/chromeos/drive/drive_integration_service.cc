@@ -188,7 +188,7 @@ DriveIntegrationService::DriveIntegrationService(
   blocking_task_runner_ = blocking_pool->GetSequencedTaskRunner(
       blocking_pool->GetSequenceToken());
 
-  ProfileOAuth2TokenService* oauth_service =
+  OAuth2TokenService* oauth_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
 
   if (test_drive_service) {
@@ -196,7 +196,6 @@ DriveIntegrationService::DriveIntegrationService(
   } else if (util::IsDriveV2ApiEnabled()) {
     drive_service_.reset(new DriveAPIService(
         oauth_service,
-        oauth_service->GetPrimaryAccountId(),
         g_browser_process->system_request_context(),
         blocking_task_runner_.get(),
         GURL(google_apis::DriveApiUrlGenerator::kBaseUrlForProduction),
@@ -206,7 +205,6 @@ DriveIntegrationService::DriveIntegrationService(
   } else {
     drive_service_.reset(new GDataWapiService(
         oauth_service,
-        oauth_service->GetPrimaryAccountId(),
         g_browser_process->system_request_context(),
         blocking_task_runner_.get(),
         GURL(google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction),

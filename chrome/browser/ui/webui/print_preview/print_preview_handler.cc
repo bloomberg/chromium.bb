@@ -259,21 +259,13 @@ class PrintPreviewHandler::AccessTokenService
       return;  // Already in progress.
 
     OAuth2TokenService* service = NULL;
-    std::string account_id;
     if (type == "profile") {
       Profile* profile = Profile::FromWebUI(handler_->web_ui());
-      if (profile) {
-        ProfileOAuth2TokenService* token_service =
-            ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
-        account_id = token_service->GetPrimaryAccountId();
-        service = token_service;
-      }
+      if (profile)
+        service = ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
     } else if (type == "device") {
 #if defined(OS_CHROMEOS)
-      chromeos::DeviceOAuth2TokenService* token_service =
-          chromeos::DeviceOAuth2TokenServiceFactory::Get();
-      account_id = token_service->GetRobotAccountId();
-      service = token_service;
+      service = chromeos::DeviceOAuth2TokenServiceFactory::Get();
 #endif
     }
 
@@ -281,7 +273,7 @@ class PrintPreviewHandler::AccessTokenService
       OAuth2TokenService::ScopeSet oauth_scopes;
       oauth_scopes.insert(cloud_print::kCloudPrintAuth);
       scoped_ptr<OAuth2TokenService::Request> request(
-          service->StartRequest(account_id, oauth_scopes, this));
+          service->StartRequest(oauth_scopes, this));
       requests_[type].reset(request.release());
     } else {
       handler_->SendAccessToken(type, std::string());  // Unknown type.

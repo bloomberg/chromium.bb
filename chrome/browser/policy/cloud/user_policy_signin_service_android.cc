@@ -41,7 +41,7 @@ UserPolicySigninService::UserPolicySigninService(
     PrefService* local_state,
     scoped_refptr<net::URLRequestContextGetter> request_context,
     DeviceManagementService* device_management_service,
-    ProfileOAuth2TokenService* token_service)
+    AndroidProfileOAuth2TokenService* token_service)
     : UserPolicySigninServiceBase(profile,
                                   local_state,
                                   request_context,

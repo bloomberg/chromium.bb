@@ -39,7 +39,6 @@ class CloudPrintPrinterList : public CloudPrintBaseApiFlow::Delegate {
   CloudPrintPrinterList(net::URLRequestContextGetter* request_context,
                         const std::string& cloud_print_url,
                         OAuth2TokenService* token_service,
-                        const std::string& account_id,
                         Delegate* delegate);
   virtual ~CloudPrintPrinterList();
 

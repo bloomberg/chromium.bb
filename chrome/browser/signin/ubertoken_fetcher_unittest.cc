@@ -43,8 +43,7 @@ class MockUbertokenConsumer : public UbertokenConsumer {
 class MockOAuth2TokenService : public ProfileOAuth2TokenService {
   // OAuth2TokenService overrides:
   virtual scoped_ptr<OAuth2TokenService::Request>
-      StartRequest(const std::string& account_id,
-                   const OAuth2TokenService::ScopeSet& scopes,
+      StartRequest(const OAuth2TokenService::ScopeSet& scopes,
                    OAuth2TokenService::Consumer* consumer) OVERRIDE {
     // Don't actually make a request.
     scoped_ptr<OAuth2TokenService::Request> request;

@@ -129,13 +129,10 @@ void GoogleContactStore::Init() {
     std::vector<std::string> scopes;
     scopes.push_back(kContactsScope);
 
-    ProfileOAuth2TokenService* oauth2_service =
-        ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
     gdata_service_.reset(new GDataContactsService(
         url_request_context_getter_,
         new google_apis::AuthService(
-            oauth2_service,
-            oauth2_service->GetPrimaryAccountId(),
+            ProfileOAuth2TokenServiceFactory::GetForProfile(profile_),
             url_request_context_getter_, scopes)));
   }
 

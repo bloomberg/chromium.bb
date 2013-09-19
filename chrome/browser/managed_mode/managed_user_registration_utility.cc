@@ -135,13 +135,9 @@ ManagedUserRegistrationUtility::Create(Profile* profile) {
     g_instance_for_tests = NULL;
     return make_scoped_ptr(result);
   }
-
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
   scoped_ptr<ManagedUserRefreshTokenFetcher> token_fetcher =
       ManagedUserRefreshTokenFetcher::Create(
-          token_service,
-          token_service->GetPrimaryAccountId(),
+          ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
           profile->GetRequestContext());
   ManagedUserSyncService* managed_user_sync_service =
       ManagedUserSyncServiceFactory::GetForProfile(profile);

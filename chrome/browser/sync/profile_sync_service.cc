@@ -215,8 +215,7 @@ bool ProfileSyncService::IsOAuthRefreshTokenAvailable() {
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
     if (!token_service)
       return false;
-    return token_service->RefreshTokenIsAvailable(
-        token_service->GetPrimaryAccountId());
+    return token_service->RefreshTokenIsAvailable();
   } else {
     TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);
     if (!token_service)
@@ -716,16 +715,12 @@ void ProfileSyncService::OnGetTokenFailure(
 
 void ProfileSyncService::OnRefreshTokenAvailable(
     const std::string& account_id) {
-  if (ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)->
-          GetPrimaryAccountId() == account_id) {
-    OnRefreshTokensLoaded();
-  }
+  OnRefreshTokensLoaded();
 }
 
 void ProfileSyncService::OnRefreshTokenRevoked(
     const std::string& account_id) {
   if (!IsOAuthRefreshTokenAvailable()) {
-    access_token_.clear();
     // The additional check around IsOAuthRefreshTokenAvailable() above
     // prevents us sounding the alarm if we actually have a valid token but
     // a refresh attempt by TokenService failed for any variety of reasons
@@ -748,6 +743,10 @@ void ProfileSyncService::OnRefreshTokensLoaded() {
   } else {
     TryStart();
   }
+}
+
+void ProfileSyncService::OnRefreshTokensCleared() {
+  access_token_.clear();
 }
 
 void ProfileSyncService::Shutdown() {
@@ -1905,16 +1904,14 @@ void ProfileSyncService::RequestAccessToken() {
     oauth2_scopes.insert(GaiaConstants::kChromeSyncOAuth2Scope);
   }
 
-  ProfileOAuth2TokenService* token_service =
+  OAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
   // Invalidate previous token, otherwise token service will return the same
   // token again.
-  const std::string& account_id = token_service->GetPrimaryAccountId();
   if (!access_token_.empty())
-    token_service->InvalidateToken(account_id, oauth2_scopes, access_token_);
+    token_service->InvalidateToken(oauth2_scopes, access_token_);
   access_token_.clear();
-  access_token_request_ = token_service->StartRequest(
-      account_id, oauth2_scopes, this);
+  access_token_request_ = token_service->StartRequest(oauth2_scopes, this);
 }
 
 void ProfileSyncService::SetEncryptionPassphrase(const std::string& passphrase,

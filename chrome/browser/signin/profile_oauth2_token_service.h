@@ -58,11 +58,9 @@ class ProfileOAuth2TokenService : public OAuth2TokenService,
   // SigninGlobalError::AuthStatusProvider implementation.
   virtual GoogleServiceAuthError GetAuthStatus() const OVERRIDE;
 
-  // Gets an account id of the primary account related to the profile.
-  std::string GetPrimaryAccountId();
-
-  // Lists account IDs of all accounts with a refresh token.
-  virtual std::vector<std::string> GetAccounts() OVERRIDE;
+  // Takes injected TokenService for testing.
+  bool ShouldCacheForRefreshToken(TokenService *token_service,
+                                  const std::string& refresh_token);
 
   // Updates a |refresh_token| for an |account_id|. Credentials are persisted,
   // and avialable through |LoadCredentials| after service is restarted.
@@ -91,27 +89,29 @@ class ProfileOAuth2TokenService : public OAuth2TokenService,
   virtual ~ProfileOAuth2TokenService();
 
   // OAuth2TokenService overrides.
-  virtual std::string GetRefreshToken(const std::string& account_id) OVERRIDE;
+  virtual std::string GetRefreshToken() OVERRIDE;
 
   // OAuth2TokenService implementation.
   virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
 
   // Updates the internal cache of the result from the most-recently-completed
   // auth request (used for reporting errors to the user).
-  virtual void UpdateAuthError(
-      const std::string& account_id,
-      const GoogleServiceAuthError& error) OVERRIDE;
+  virtual void UpdateAuthError(const GoogleServiceAuthError& error) OVERRIDE;
 
-  // Persists credentials for |account_id|. Enables overriding for
-  // testing purposes, or other cases, when accessing the DB is not desired.
-  virtual void PersistCredentials(const std::string& account_id,
-                                  const std::string& refresh_token);
-
-  // Clears credentials persisted for |account_id|. Enables overriding for
-  // testing purposes, or other cases, when accessing the DB is not desired.
-  virtual void ClearPersistedCredentials(const std::string& account_id);
+  // Overridden to not cache tokens if the TokenService refresh token
+  // changes while a token fetch is in-flight.  If the user logs out and
+  // logs back in with a different account, then any in-flight token
+  // fetches will be for the old account's refresh token.  Therefore
+  // when they come back, they shouldn't be cached.
+  virtual void RegisterCacheEntry(const std::string& client_id,
+                                  const std::string& refresh_token,
+                                  const ScopeSet& scopes,
+                                  const std::string& access_token,
+                                  const base::Time& expiration_date) OVERRIDE;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(ProfileOAuth2TokenServiceTest,
+                           StaleRefreshTokensNotCached);
   FRIEND_TEST_ALL_PREFIXES(ProfileOAuth2TokenServiceTest,
                            TokenServiceUpdateClearsCache);
   FRIEND_TEST_ALL_PREFIXES(ProfileOAuth2TokenServiceTest,

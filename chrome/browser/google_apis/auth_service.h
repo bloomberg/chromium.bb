@@ -34,7 +34,6 @@ class AuthService : public AuthServiceInterface,
   //
   // |scopes| specifies OAuth2 scopes.
   AuthService(OAuth2TokenService* oauth2_token_service,
-              const std::string& account_id,
               net::URLRequestContextGetter* url_request_context_getter,
               const std::vector<std::string>& scopes);
   virtual ~AuthService();
@@ -64,7 +63,6 @@ class AuthService : public AuthServiceInterface,
                        const std::string& access_token);
 
   OAuth2TokenService* oauth2_token_service_;
-  std::string account_id_;
   net::URLRequestContextGetter* url_request_context_getter_;  // Not owned.
   bool has_refresh_token_;
   std::string access_token_;

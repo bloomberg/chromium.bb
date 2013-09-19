@@ -26,7 +26,8 @@ class ProfileOAuth2TokenServiceTest : public TokenServiceTestHarness,
   ProfileOAuth2TokenServiceTest()
       : token_available_count_(0),
         token_revoked_count_(0),
-        tokens_loaded_count_(0) {
+        tokens_loaded_count_(0),
+        tokens_cleared_count_(0) {
   }
 
   virtual void SetUp() OVERRIDE {
@@ -53,17 +54,22 @@ class ProfileOAuth2TokenServiceTest : public TokenServiceTestHarness,
   virtual void OnRefreshTokensLoaded() OVERRIDE {
     ++tokens_loaded_count_;
   }
+  virtual void OnRefreshTokensCleared() OVERRIDE {
+    ++tokens_cleared_count_;
+  }
 
   void ResetObserverCounts() {
     token_available_count_ = 0;
     token_revoked_count_ = 0;
     tokens_loaded_count_ = 0;
+    tokens_cleared_count_ = 0;
   }
 
   void ExpectNoNotifications() {
     EXPECT_EQ(0, token_available_count_);
     EXPECT_EQ(0, token_revoked_count_);
     EXPECT_EQ(0, tokens_loaded_count_);
+    EXPECT_EQ(0, tokens_cleared_count_);
     ResetObserverCounts();
   }
 
@@ -71,6 +77,7 @@ class ProfileOAuth2TokenServiceTest : public TokenServiceTestHarness,
     EXPECT_EQ(1, token_available_count_);
     EXPECT_EQ(0, token_revoked_count_);
     EXPECT_EQ(0, tokens_loaded_count_);
+    EXPECT_EQ(0, tokens_cleared_count_);
     ResetObserverCounts();
   }
 
@@ -78,6 +85,7 @@ class ProfileOAuth2TokenServiceTest : public TokenServiceTestHarness,
     EXPECT_EQ(0, token_available_count_);
     EXPECT_EQ(1, token_revoked_count_);
     EXPECT_EQ(0, tokens_loaded_count_);
+    EXPECT_EQ(0, tokens_cleared_count_);
     ResetObserverCounts();
   }
 
@@ -85,6 +93,15 @@ class ProfileOAuth2TokenServiceTest : public TokenServiceTestHarness,
     EXPECT_EQ(0, token_available_count_);
     EXPECT_EQ(0, token_revoked_count_);
     EXPECT_EQ(1, tokens_loaded_count_);
+    EXPECT_EQ(0, tokens_cleared_count_);
+    ResetObserverCounts();
+  }
+
+  void ExpectOneTokensClearedNotification() {
+    EXPECT_EQ(0, token_available_count_);
+    EXPECT_EQ(0, token_revoked_count_);
+    EXPECT_EQ(0, tokens_loaded_count_);
+    EXPECT_EQ(1, tokens_cleared_count_);
     ResetObserverCounts();
   }
 
@@ -95,6 +112,7 @@ class ProfileOAuth2TokenServiceTest : public TokenServiceTestHarness,
   int token_available_count_;
   int token_revoked_count_;
   int tokens_loaded_count_;
+  int tokens_cleared_count_;
 };
 
 TEST_F(ProfileOAuth2TokenServiceTest, Notifications) {
@@ -105,6 +123,7 @@ TEST_F(ProfileOAuth2TokenServiceTest, Notifications) {
 
   service()->EraseTokensFromDB();
   service()->ResetCredentialsInMemory();
+  ExpectOneTokensClearedNotification();
 }
 
 TEST_F(ProfileOAuth2TokenServiceTest, PersistenceDBUpgrade) {
@@ -129,7 +148,7 @@ TEST_F(ProfileOAuth2TokenServiceTest, PersistenceDBUpgrade) {
   // Legacy tokens get discarded, but the old refresh token is kept.
   EXPECT_EQ(1, tokens_loaded_count_);
   EXPECT_EQ(1, token_available_count_);
-  EXPECT_TRUE(oauth2_service_->RefreshTokenIsAvailable(main_account_id));
+  EXPECT_TRUE(oauth2_service_->RefreshTokenIsAvailable());
   EXPECT_EQ(1U, oauth2_service_->refresh_tokens_.size());
   EXPECT_EQ(main_refresh_token,
             oauth2_service_->refresh_tokens_[main_account_id]);
@@ -156,9 +175,7 @@ TEST_F(ProfileOAuth2TokenServiceTest, PersistenceDBUpgrade) {
   // token is present it is not overwritten.
   EXPECT_EQ(2, token_available_count_);
   EXPECT_EQ(1, tokens_loaded_count_);
-  EXPECT_TRUE(oauth2_service_->RefreshTokenIsAvailable(main_account_id));
-  // TODO(fgorski): cover both using RefreshTokenIsAvailable() and then get the
-  // tokens using GetRefreshToken()
+  EXPECT_TRUE(oauth2_service_->RefreshTokenIsAvailable());
   EXPECT_EQ(2U, oauth2_service_->refresh_tokens_.size());
   EXPECT_EQ(main_refresh_token,
             oauth2_service_->refresh_tokens_[main_account_id]);
@@ -197,13 +214,14 @@ TEST_F(ProfileOAuth2TokenServiceTest, PersistenceRevokeCredentials) {
   EXPECT_EQ(0, token_available_count_);
   EXPECT_EQ(1, token_revoked_count_);
   EXPECT_EQ(0, tokens_loaded_count_);
+  EXPECT_EQ(1, tokens_cleared_count_);
   ResetObserverCounts();
 }
 
 TEST_F(ProfileOAuth2TokenServiceTest, PersistenceLoadCredentials) {
   // Ensure DB is clean.
   oauth2_service_->RevokeAllCredentials();
-  ResetObserverCounts();
+  ExpectOneTokensClearedNotification();
   // Perform a load from an empty DB.
   oauth2_service_->LoadCredentials();
   base::RunLoop().RunUntilIdle();
@@ -220,6 +238,7 @@ TEST_F(ProfileOAuth2TokenServiceTest, PersistenceLoadCredentials) {
   EXPECT_EQ(2, token_available_count_);
   EXPECT_EQ(0, token_revoked_count_);
   EXPECT_EQ(1, tokens_loaded_count_);
+  EXPECT_EQ(0, tokens_cleared_count_);
   ResetObserverCounts();
 
   // TODO(fgorski): Enable below when implemented:
@@ -230,6 +249,7 @@ TEST_F(ProfileOAuth2TokenServiceTest, PersistenceLoadCredentials) {
   EXPECT_EQ(0, token_available_count_);
   EXPECT_EQ(2, token_revoked_count_);
   EXPECT_EQ(0, tokens_loaded_count_);
+  EXPECT_EQ(1, tokens_cleared_count_);
   ResetObserverCounts();
 }
 
@@ -251,21 +271,8 @@ TEST_F(ProfileOAuth2TokenServiceTest, PersistanceNotifications) {
   ExpectOneTokenAvailableNotification();
 
   oauth2_service_->RevokeAllCredentials();
+  EXPECT_EQ(1, tokens_cleared_count_);
   ResetObserverCounts();
-}
-
-TEST_F(ProfileOAuth2TokenServiceTest, GetAccounts) {
-  EXPECT_TRUE(oauth2_service_->GetAccounts().empty());
-  oauth2_service_->UpdateCredentials("account_id1", "refresh_token1");
-  oauth2_service_->UpdateCredentials("account_id2", "refresh_token2");
-  std::vector<std::string> accounts = oauth2_service_->GetAccounts();
-  EXPECT_EQ(2u, accounts.size());
-  EXPECT_EQ(1, count(accounts.begin(), accounts.end(), "account_id1"));
-  EXPECT_EQ(1, count(accounts.begin(), accounts.end(), "account_id2"));
-  oauth2_service_->RevokeCredentials("account_id2");
-  accounts = oauth2_service_->GetAccounts();
-  EXPECT_EQ(1u, oauth2_service_->GetAccounts().size());
-  EXPECT_EQ(1, count(accounts.begin(), accounts.end(), "account_id1"));
 }
 
 // Until the TokenService class is removed, finish token loading in TokenService
@@ -295,12 +302,11 @@ TEST_F(ProfileOAuth2TokenServiceTest, TokenServiceUpdateClearsCache) {
   EXPECT_EQ(0, oauth2_service_->cache_size_for_testing());
   std::set<std::string> scope_list;
   scope_list.insert("scope");
-  oauth2_service_->UpdateCredentials(oauth2_service_->GetPrimaryAccountId(),
-                                    "refreshToken");
+  service()->IssueAuthTokenForTest(GaiaConstants::kGaiaOAuth2LoginRefreshToken,
+                                   "refreshToken");
   ExpectOneTokenAvailableNotification();
-
   scoped_ptr<OAuth2TokenService::Request> request(oauth2_service_->StartRequest(
-      oauth2_service_->GetPrimaryAccountId(), scope_list, &consumer_));
+      scope_list, &consumer_));
   base::RunLoop().RunUntilIdle();
   net::TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
   fetcher->set_response_code(net::HTTP_OK);
@@ -312,16 +318,18 @@ TEST_F(ProfileOAuth2TokenServiceTest, TokenServiceUpdateClearsCache) {
   EXPECT_EQ(1, oauth2_service_->cache_size_for_testing());
 
   // Signs out and signs in
-  oauth2_service_->RevokeCredentials(oauth2_service_->GetPrimaryAccountId());
-  ExpectOneTokenRevokedNotification();
+  service()->IssueAuthTokenForTest(GaiaConstants::kGaiaOAuth2LoginRefreshToken,
+                                  "");
+  ExpectOneTokenAvailableNotification();
+  service()->EraseTokensFromDB();
+  ExpectOneTokensClearedNotification();
 
   EXPECT_EQ(0, oauth2_service_->cache_size_for_testing());
-  oauth2_service_->UpdateCredentials(oauth2_service_->GetPrimaryAccountId(),
-                                    "refreshToken");
+  service()->IssueAuthTokenForTest(GaiaConstants::kGaiaOAuth2LoginRefreshToken,
+                                  "refreshToken");
   ExpectOneTokenAvailableNotification();
 
-  request = oauth2_service_->StartRequest(
-      oauth2_service_->GetPrimaryAccountId(), scope_list, &consumer_);
+  request = oauth2_service_->StartRequest(scope_list, &consumer_);
   base::RunLoop().RunUntilIdle();
   fetcher = factory_.GetFetcherByID(0);
   fetcher->set_response_code(net::HTTP_OK);
@@ -332,3 +340,23 @@ TEST_F(ProfileOAuth2TokenServiceTest, TokenServiceUpdateClearsCache) {
   EXPECT_EQ("another token", consumer_.last_token_);
   EXPECT_EQ(1, oauth2_service_->cache_size_for_testing());
 }
+
+// Android doesn't use the current profile's TokenService login refresh token.
+#if !defined(OS_ANDROID)
+TEST_F(ProfileOAuth2TokenServiceTest, StaleRefreshTokensNotCached) {
+  EXPECT_FALSE(service()->HasOAuthLoginToken());
+  EXPECT_FALSE(oauth2_service_->ShouldCacheForRefreshToken(service(), "T1"));
+
+  service()->IssueAuthTokenForTest(GaiaConstants::kGaiaOAuth2LoginRefreshToken,
+                                  "T1");
+  ExpectOneTokenAvailableNotification();
+  EXPECT_TRUE(oauth2_service_->ShouldCacheForRefreshToken(service(), "T1"));
+  EXPECT_FALSE(oauth2_service_->ShouldCacheForRefreshToken(service(), "T2"));
+
+  service()->IssueAuthTokenForTest(GaiaConstants::kGaiaOAuth2LoginRefreshToken,
+                                  "T2");
+  ExpectOneTokenAvailableNotification();
+  EXPECT_TRUE(oauth2_service_->ShouldCacheForRefreshToken(service(), "T2"));
+  EXPECT_FALSE(oauth2_service_->ShouldCacheForRefreshToken(NULL, "T2"));
+}
+#endif

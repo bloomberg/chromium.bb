@@ -153,8 +153,7 @@ void StartupAppLauncher::InitializeTokenService() {
 
   ProfileOAuth2TokenService* profile_token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
-  if (profile_token_service->RefreshTokenIsAvailable(
-          profile_token_service->GetPrimaryAccountId())) {
+  if (profile_token_service->RefreshTokenIsAvailable()) {
     InitializeNetwork();
     return;
   }

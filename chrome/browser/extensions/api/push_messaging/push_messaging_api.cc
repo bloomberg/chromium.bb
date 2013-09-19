@@ -126,10 +126,9 @@ void PushMessagingGetChannelIdFunction::StartAccessTokenFetch() {
   std::vector<std::string> scope_vector =
       extensions::ObfuscatedGaiaIdFetcher::GetScopes();
   OAuth2TokenService::ScopeSet scopes(scope_vector.begin(), scope_vector.end());
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile());
-  fetcher_access_token_request_ = token_service->StartRequest(
-      token_service->GetPrimaryAccountId(), scopes, this);
+  fetcher_access_token_request_ =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile())
+          ->StartRequest(scopes, this);
 }
 
 void PushMessagingGetChannelIdFunction::OnRefreshTokenAvailable(
@@ -190,10 +189,8 @@ void PushMessagingGetChannelIdFunction::StartGaiaIdFetch(
 
 // Check if the user is logged in.
 bool PushMessagingGetChannelIdFunction::IsUserLoggedIn() const {
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile());
-  return token_service->RefreshTokenIsAvailable(
-      token_service->GetPrimaryAccountId());
+  return ProfileOAuth2TokenServiceFactory::GetForProfile(profile())
+      ->RefreshTokenIsAvailable();
 }
 
 void PushMessagingGetChannelIdFunction::ReportResult(

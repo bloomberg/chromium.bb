@@ -44,7 +44,6 @@ class CloudPrintBaseApiFlow : public net::URLFetcherDelegate,
   // Create an OAuth2-based confirmation.
   CloudPrintBaseApiFlow(net::URLRequestContextGetter* request_context,
                         OAuth2TokenService* token_service_,
-                        const std::string& account_id,
                         const GURL& automated_claim_url,
                         Delegate* delegate);
 
@@ -90,7 +89,6 @@ class CloudPrintBaseApiFlow : public net::URLFetcherDelegate,
   scoped_ptr<OAuth2TokenService::Request> oauth_request_;
   scoped_refptr<net::URLRequestContextGetter> request_context_;
   OAuth2TokenService* token_service_;
-  std::string account_id_;
   int user_index_;
   std::string xsrf_token_;
   GURL url_;

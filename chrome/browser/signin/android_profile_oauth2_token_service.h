@@ -28,15 +28,21 @@ class TokenService;
 // request from other thread, please use ProfileOAuth2TokenServiceRequest.
 class AndroidProfileOAuth2TokenService : public ProfileOAuth2TokenService {
  public:
-  virtual bool RefreshTokenIsAvailable(
-      const std::string& account_id) OVERRIDE;
+  // StartRequest() fetches a token for the currently signed-in account; this
+  // version uses the account corresponding to |username|. This allows fetching
+  // tokens before a user is signed-in (e.g. during the sign-in flow).
+  scoped_ptr<OAuth2TokenService::Request> StartRequestForUsername(
+      const std::string& username,
+      const OAuth2TokenService::ScopeSet& scopes,
+      OAuth2TokenService::Consumer* consumer);
+
+  virtual bool RefreshTokenIsAvailable() OVERRIDE;
+  virtual void InvalidateToken(const ScopeSet& scopes,
+                               const std::string& invalid_token) OVERRIDE;
 
   // Registers the AndroidProfileOAuth2TokenService's native methods through
   // JNI.
   static bool Register(JNIEnv* env);
-
-  // Lists account IDs of all accounts with a refresh token.
-  virtual std::vector<std::string> GetAccounts() OVERRIDE;
 
  protected:
   friend class ProfileOAuth2TokenServiceFactory;
@@ -46,18 +52,17 @@ class AndroidProfileOAuth2TokenService : public ProfileOAuth2TokenService {
   // Overridden from OAuth2TokenService to intercept token fetch requests and
   // redirect them to the Account Manager.
   virtual void FetchOAuth2Token(RequestImpl* request,
-                                const std::string& account_id,
                                 net::URLRequestContextGetter* getter,
                                 const std::string& client_id,
                                 const std::string& client_secret,
                                 const ScopeSet& scopes) OVERRIDE;
 
-  // Overridden from OAuth2TokenService to intercept token fetch requests and
-  // redirect them to the Account Manager.
-  virtual void InvalidateOAuth2Token(const std::string& account_id,
-                                     const std::string& client_id,
-                                     const ScopeSet& scopes,
-                                     const std::string& access_token) OVERRIDE;
+  // Low-level helper function used by both FetchOAuth2Token and
+  // StartRequestForUsername to fetch tokens. virtual to enable mocks.
+  virtual void FetchOAuth2TokenWithUsername(
+      RequestImpl* request,
+      const std::string& username,
+      const ScopeSet& scope);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AndroidProfileOAuth2TokenService);

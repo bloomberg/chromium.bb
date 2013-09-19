@@ -23,7 +23,7 @@
 namespace {
 const char kServiceScopeGetUserInfo[] =
     "https://www.googleapis.com/auth/userinfo.email";
-}
+}  // namespace
 
 namespace chromeos {
 
@@ -115,7 +115,7 @@ void DeviceOAuth2TokenService::ValidatingConsumer::StartValidation(
 
   gaia_oauth_client_->RefreshToken(
       client_info,
-      token_service_->GetRefreshToken(token_service_->GetRobotAccountId()),
+      token_service_->GetRefreshToken(),
       std::vector<std::string>(1, kServiceScopeGetUserInfo),
       token_service_->max_refresh_token_validation_retries_,
       this);
@@ -221,21 +221,18 @@ DeviceOAuth2TokenService::~DeviceOAuth2TokenService() {
 }
 
 scoped_ptr<OAuth2TokenService::Request> DeviceOAuth2TokenService::StartRequest(
-    const std::string& account_id,
     const OAuth2TokenService::ScopeSet& scopes,
     OAuth2TokenService::Consumer* consumer) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  DCHECK_EQ(account_id, GetRobotAccountId());
 
   if (refresh_token_is_valid_) {
-    return OAuth2TokenService::StartRequest(
-        account_id, scopes, consumer).Pass();
+    return OAuth2TokenService::StartRequest(scopes, consumer).Pass();
   } else {
     scoped_ptr<ValidatingConsumer> validating_consumer(
         new ValidatingConsumer(this, consumer));
 
     scoped_ptr<Request> request = OAuth2TokenService::StartRequest(
-        account_id, scopes, validating_consumer.get());
+        scopes, validating_consumer.get());
     validating_consumer->StartValidation(request.Pass());
     return validating_consumer.PassAs<Request>();
   }
@@ -263,9 +260,7 @@ void DeviceOAuth2TokenService::SetAndSaveRefreshToken(
                           encrypted_refresh_token);
 }
 
-std::string DeviceOAuth2TokenService::GetRefreshToken(
-    const std::string& account_id) {
-  DCHECK_EQ(account_id, GetRobotAccountId());
+std::string DeviceOAuth2TokenService::GetRefreshToken() {
   if (refresh_token_.empty()) {
     std::string encrypted_refresh_token =
         local_state_->GetString(prefs::kDeviceRobotAnyApiRefreshToken);

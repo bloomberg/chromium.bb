@@ -219,12 +219,9 @@ void IdentityGetAuthTokenFunction::StartMintToken(
                   IsEnterpriseManaged()) {
             OAuth2TokenService::ScopeSet scope_set(oauth2_info.scopes.begin(),
                                                    oauth2_info.scopes.end());
-            chromeos::DeviceOAuth2TokenService* token_service =
-                chromeos::DeviceOAuth2TokenServiceFactory::Get();
             device_token_request_ =
-                token_service->StartRequest(token_service->GetRobotAccountId(),
-                                            scope_set,
-                                            this);
+                chromeos::DeviceOAuth2TokenServiceFactory::Get()->StartRequest(
+                    scope_set, this);
           } else {
             gaia_mint_token_mode_ = OAuth2MintTokenFlow::MODE_MINT_TOKEN_FORCE;
             StartLoginAccessTokenRequest();
@@ -427,8 +424,7 @@ void IdentityGetAuthTokenFunction::StartLoginAccessTokenRequest() {
     if (chromeos::UserManager::Get()->GetAppModeChromeClientOAuthInfo(
            &app_client_id, &app_client_secret)) {
       login_token_request_ =
-          service->StartRequestForClient(service->GetPrimaryAccountId(),
-                                         app_client_id,
+          service->StartRequestForClient(app_client_id,
                                          app_client_secret,
                                          OAuth2TokenService::ScopeSet(),
                                          this);
@@ -436,8 +432,8 @@ void IdentityGetAuthTokenFunction::StartLoginAccessTokenRequest() {
     }
   }
 #endif
-  login_token_request_ = service->StartRequest(
-      service->GetPrimaryAccountId(), OAuth2TokenService::ScopeSet(), this);
+  login_token_request_ = service->StartRequest(OAuth2TokenService::ScopeSet(),
+                                               this);
 }
 
 void IdentityGetAuthTokenFunction::StartGaiaRequest(
@@ -481,10 +477,8 @@ OAuth2MintTokenFlow* IdentityGetAuthTokenFunction::CreateMintTokenFlow(
 }
 
 bool IdentityGetAuthTokenFunction::HasLoginToken() const {
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile());
-  return token_service->RefreshTokenIsAvailable(
-      token_service->GetPrimaryAccountId());
+  return ProfileOAuth2TokenServiceFactory::GetForProfile(profile())->
+      RefreshTokenIsAvailable();
 }
 
 std::string IdentityGetAuthTokenFunction::MapOAuth2ErrorToDescription(
