@@ -9,6 +9,8 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/infobars/infobar_delegate.h"
+#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/managed_mode/managed_user_service.h"
 #include "chrome/browser/managed_mode/managed_user_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -16,6 +18,9 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/interstitial_page.h"
+#include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_details.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/browser_resources.h"
@@ -43,6 +48,29 @@ ManagedModeInterstitial::ManagedModeInterstitial(
     DispatchContinueRequest(true);
     delete this;
     return;
+  }
+
+  InfoBarService* service = InfoBarService::FromWebContents(web_contents);
+  if (service) {
+    // Remove all the infobars which are attached to |web_contents| and for
+    // which ShouldExpire() returns true.
+    content::LoadCommittedDetails details;
+    // |details.is_in_page| is default false, and |details.is_main_frame| is
+    // default true. This results in is_navigation_to_different_page() returning
+    // true.
+    DCHECK(details.is_navigation_to_different_page());
+    const content::NavigationController& controller =
+        web_contents->GetController();
+    details.entry = controller.GetActiveEntry();
+    if (controller.GetLastCommittedEntry()) {
+      details.previous_entry_index = controller.GetLastCommittedEntryIndex();
+      details.previous_url = controller.GetLastCommittedEntry()->GetURL();
+    }
+    details.type = content::NAVIGATION_TYPE_NEW_PAGE;
+    for (int i = service->infobar_count() - 1; i >= 0; --i) {
+      if (service->infobar_at(i)->ShouldExpire(details))
+        service->RemoveInfoBar(service->infobar_at(i));
+    }
   }
 
   // TODO(bauerb): Extract an observer callback on ManagedUserService for this.
