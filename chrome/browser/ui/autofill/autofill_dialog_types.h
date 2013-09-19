@@ -116,9 +116,6 @@ class DialogNotification {
   void set_checked(bool checked) { checked_ = checked; }
   bool checked() const { return checked_; }
 
-  void set_interactive(bool interactive) { interactive_ = interactive; }
-  bool interactive() const { return interactive_; }
-
  private:
   Type type_;
   string16 display_text_;
@@ -135,11 +132,6 @@ class DialogNotification {
   // Whether the dialog notification's checkbox should be checked. Only applies
   // when |HasCheckbox()| is true.
   bool checked_;
-
-  // When false, this disables user interaction with the notification. For
-  // example, WALLET_USAGE_CONFIRMATION notifications set this to false after
-  // the submit flow has started.
-  bool interactive_;
 };
 
 extern SkColor const kWarningColor;

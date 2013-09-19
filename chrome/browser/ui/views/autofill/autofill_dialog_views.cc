@@ -293,8 +293,6 @@ class NotificationView : public views::View,
     if (data.HasCheckbox()) {
       scoped_ptr<views::Checkbox> checkbox(
           new views::Checkbox(base::string16()));
-      if (!data.interactive())
-        checkbox->SetState(views::Button::STATE_DISABLED);
       checkbox->SetText(data.display_text());
       checkbox->SetTextMultiLine(true);
       checkbox->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -303,6 +301,7 @@ class NotificationView : public views::View,
       checkbox->SetTextColor(views::Button::STATE_HOVERED,
                              data.GetTextColor());
       checkbox->SetChecked(data.checked());
+      checkbox->set_listener(this);
       checkbox_ = checkbox.get();
       label_view.reset(checkbox.release());
     } else {
@@ -585,6 +584,8 @@ void AutofillDialogViews::AccountChooser::Update() {
   gfx::Image icon = delegate_->AccountChooserImage();
   image_->SetImage(icon.AsImageSkia());
   menu_button_->SetText(delegate_->AccountChooserText());
+  // This allows the button to shrink if the new text is smaller.
+  menu_button_->ClearMaxTextSize();
 
   bool show_link = !delegate_->MenuModelForAccountChooser();
   menu_button_->SetVisible(!show_link);

@@ -315,9 +315,6 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   // Initializes or updates |suggested_cc_| et al.
   void SuggestionsUpdated();
 
-  // Whether the user's wallet items have at least one address and instrument.
-  bool HasCompleteWallet() const;
-
   // Starts fetching the wallet items from Online Wallet.
   void GetWalletItems();
 
@@ -667,11 +664,6 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   content::NotificationRegistrar signin_registrar_;
 
   base::WeakPtrFactory<AutofillDialogControllerImpl> weak_ptr_factory_;
-
-  // Whether the wallet promos should be shown in the notification area. Based
-  // on whether the user has paid with Wallet or has signed into this dialog.
-  bool should_show_wallet_promo_;
-  bool has_shown_wallet_usage_confirmation_;
 
   // Whether a user accepted legal documents while this dialog is running.
   bool has_accepted_legal_documents_;

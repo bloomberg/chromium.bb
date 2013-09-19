@@ -85,12 +85,11 @@
 
     // Add optional checkbox.
     if (notification.HasCheckbox()) {
-      DCHECK(checkboxNotification_);
+      // No more than one notification with a checkbox.
+      DCHECK(!checkboxNotification_);
       checkboxNotification_.reset(
           new autofill::DialogNotification(notification));
       [notificationController setHasCheckbox:YES];
-      if (!notification.interactive())
-          [[notificationController checkbox] setEnabled:FALSE];
       [[notificationController checkbox] setState:
           (notification.checked() ? NSOnState : NSOffState)];
       [[notificationController checkbox] setTarget:self];
