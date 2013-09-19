@@ -842,6 +842,7 @@ void AutofillDialogViews::OnWidgetBoundsChanged(views::Widget* widget,
       base::TimeDelta::FromMilliseconds(100),
       base::Bind(&AutofillDialogViews::ContentsPreferredSizeChanged,
                  base::Unretained(this)));
+  error_bubble_.reset();
 }
 
 bool AutofillDialogViews::NotificationArea::HasArrow() {
