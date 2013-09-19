@@ -1105,10 +1105,15 @@ cr.define('cr.ui', function() {
       var sm = this.selectionModel;
       var leadIndex = sm.leadIndex;
 
+      // If the pinned item is hidden and it is not the lead item, then remove
+      // it from cache. Note, that we restore the hidden status to false, since
+      // the item is still in cache, and may be reused.
       if (this.pinnedItem_ &&
           this.pinnedItem_ != this.cachedItems_[leadIndex]) {
-        if (this.pinnedItem_.hidden)
+        if (this.pinnedItem_.hidden) {
           this.removeChild(this.pinnedItem_);
+          this.pinnedItem_.hidden = false;
+        }
         this.pinnedItem_ = undefined;
       }
 
