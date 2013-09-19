@@ -12,7 +12,9 @@
 #include "content/public/common/content_switches.h"
 #include "gpu/config/gpu_feature_type.h"
 
-#if defined(OS_WIN)
+#if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
+#elif defined(OS_WIN)
 #include "base/win/windows_version.h"
 #endif
 
@@ -84,27 +86,21 @@ bool IsForceCompositingModeEnabled() {
   if (!CanDoAcceleratedCompositing())
     return false;
 
-#if defined(OS_WIN)
-  // Windows Vista+ has been shipping with FCM enabled at 100% since M24; skip
-  // the field trial check to ensure this is always enabled on the try bots.
+  // Hardcode some platforms to use FCM, this has to be done here instead of via
+  // the field trial so that this configuration is used on try bots as well.
   // TODO(gab): Do the same thing in IsThreadedCompositingEnabled() once this is
   // stable.
-  // TODO(gab): Do the same thing for Mac OS (which has been enabled at 100%
-  // since M28) as well and get rid of the field trial code.
-  // TODO(gab): Use the GPU blacklist instead of hardcoding OS version here
+  // TODO(gab): Use the GPU blacklist instead of hardcoding OS versions here
   // https://codereview.chromium.org/23534006.
+#if defined(OS_MACOSX)
+  // Mac OSX 10.8+ has been shipping with FCM enabled at 100% since M28.
+  return base::mac::IsOSMountainLionOrLater();
+#elif defined(OS_WIN)
+  // Windows Vista+ has been shipping with FCM enabled at 100% since M24.
   return base::win::GetVersion() >= base::win::VERSION_VISTA;
 #endif
 
-  base::FieldTrial* trial =
-      base::FieldTrialList::Find(kGpuCompositingFieldTrialName);
-
-  // Force compositing is enabled in both the force compositing
-  // and threaded compositing mode field trials.
-  return trial &&
-        (trial->group_name() ==
-            kGpuCompositingFieldTrialForceCompositingEnabledName ||
-         trial->group_name() == kGpuCompositingFieldTrialThreadEnabledName);
+  return false;
 }
 
 bool IsDelegatedRendererEnabled() {

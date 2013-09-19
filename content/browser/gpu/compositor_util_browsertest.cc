@@ -5,7 +5,9 @@
 #include "content/browser/gpu/compositor_util.h"
 #include "content/test/content_browser_test.h"
 
-#if defined(OS_WIN)
+#if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
+#elif defined(OS_WIN)
 #include "base/win/windows_version.h"
 #endif
 
@@ -23,6 +25,9 @@ IN_PROC_BROWSER_TEST_F(CompositorUtilTest, CompositingModeAsExpected) {
   } expected_mode = DISABLED;
 #if defined(OS_ANDROID) || defined(USE_AURA)
   expected_mode = THREADED;
+#elif defined(OS_MACOSX)
+  if (base::mac::IsOSMountainLionOrLater())
+    expected_mode = ENABLED;
 #elif defined(OS_WIN)
   if (base::win::GetVersion() >= base::win::VERSION_VISTA)
     expected_mode = ENABLED;
