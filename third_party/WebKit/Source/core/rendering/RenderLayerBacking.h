@@ -37,6 +37,7 @@ namespace WebCore {
 
 class KeyframeList;
 class RenderLayerCompositor;
+class WebAnimationProvider;
 
 enum CompositingLayerType {
     NormalCompositingLayer, // non-tiled layer with backing store
@@ -244,9 +245,6 @@ private:
 
     void doPaintTask(GraphicsLayerPaintInfo&, GraphicsContext*, const IntRect& clip);
 
-    static CSSPropertyID graphicsLayerToCSSProperty(AnimatedPropertyID);
-    static AnimatedPropertyID cssToGraphicsLayerProperty(CSSPropertyID);
-
     RenderLayer* m_owningLayer;
 
     // The hierarchy of layers that is maintained by the RenderLayerBacking looks like this:
@@ -315,6 +313,8 @@ private:
     OwnPtr<GraphicsLayer> m_layerForHorizontalScrollbar;
     OwnPtr<GraphicsLayer> m_layerForVerticalScrollbar;
     OwnPtr<GraphicsLayer> m_layerForScrollCorner;
+
+    OwnPtr<WebAnimationProvider> m_animationProvider;
 
     IntRect m_compositedBounds;
 

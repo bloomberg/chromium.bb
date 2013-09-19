@@ -24,7 +24,7 @@
 
 #include "config.h"
 
-#include "core/platform/graphics/chromium/AnimationTranslationUtil.h"
+#include "core/platform/animation/AnimationTranslationUtil.h"
 
 #include "core/css/LengthFunctions.h"
 #include "core/platform/animation/CSSAnimationData.h"
