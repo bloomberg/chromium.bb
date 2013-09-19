@@ -223,8 +223,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
   ASSERT_TRUE(peerconnection_server_.Stop());
 }
 
-IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
-                       MANUAL_RendererCpuUsage20Seconds) {
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MANUAL_CpuUsage15Seconds) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   ASSERT_TRUE(peerconnection_server_.Start());
 
@@ -236,28 +235,26 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
   content::WebContents* left_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
 
-  base::ProcessHandle renderer_pid =
-      left_tab->GetRenderProcessHost()->GetHandle();
-
 #if defined(OS_MACOSX)
-  // TODO(phoglund): This will not report correct values on mac:
-  // move renderer process measurement to content browser test.
-  scoped_ptr<base::ProcessMetrics> renderer_process_metrics(
-      base::ProcessMetrics::CreateProcessMetrics(renderer_pid, NULL));
+  // Don't measure renderer CPU on mac: requires a mach broker we don't have
+  // access to from the browser test.
   scoped_ptr<base::ProcessMetrics> browser_process_metrics(
       base::ProcessMetrics::CreateProcessMetrics(
       base::Process::Current().handle(), NULL));
+  browser_process_metrics->GetCPUUsage();
 #else
+  // Measure rendering CPU on platforms that support it.
+  base::ProcessHandle renderer_pid =
+      left_tab->GetRenderProcessHost()->GetHandle();
   scoped_ptr<base::ProcessMetrics> renderer_process_metrics(
       base::ProcessMetrics::CreateProcessMetrics(renderer_pid));
+  renderer_process_metrics->GetCPUUsage();
+
   scoped_ptr<base::ProcessMetrics> browser_process_metrics(
       base::ProcessMetrics::CreateProcessMetrics(
           base::Process::Current().handle()));
-#endif
-
-  // Start measuring CPU.
-  renderer_process_metrics->GetCPUUsage();
   browser_process_metrics->GetCPUUsage();
+#endif
 
   GetUserMediaAndAccept(left_tab);
 
@@ -282,7 +279,9 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
   WaitUntilHangupVerified(left_tab);
   WaitUntilHangupVerified(right_tab);
 
+#if !defined(OS_MACOSX)
   PrintProcessMetrics(renderer_process_metrics.get(), "_r");
+#endif
   PrintProcessMetrics(browser_process_metrics.get(), "_b");
 
   AssertNoAsynchronousErrors(left_tab);
