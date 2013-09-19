@@ -49,6 +49,10 @@ class NewTabUI : public content::WebUIController,
                                       const string16& title,
                                       const GURL& gurl);
 
+  // Adds "full_name" and "full_name_direction" keys on incoming dictionary.
+  static void SetFullNameAndDirection(const string16& full_name,
+                                      base::DictionaryValue* dictionary);
+
   // Returns a pointer to a NewTabUI if the WebUIController object is a new tab
   // page.
   static NewTabUI* FromWebUIController(content::WebUIController* ui);

@@ -233,15 +233,18 @@ cr.define('ntp', function() {
       if (this.useSmallIcon_) {
         this.imgDiv_ = this.querySelector('.app-icon-div');
         this.addLaunchClickTarget_(this.imgDiv_);
-        this.imgDiv_.title = this.appData_.title;
+        this.imgDiv_.title = this.appData_.full_name;
         chrome.send('getAppIconDominantColor', [this.id]);
       } else {
         this.addLaunchClickTarget_(this.appImgContainer_);
-        this.appImgContainer_.title = this.appData_.title;
+        this.appImgContainer_.title = this.appData_.full_name;
       }
 
+      // The app's full name is shown in the tooltip, whereas the short name
+      // is used for the label.
       var appSpan = this.appContents_.querySelector('.title');
-      appSpan.textContent = appSpan.title = this.appData_.title;
+      appSpan.textContent = this.appData_.title;
+      appSpan.title = this.appData_.full_name;
       this.addLaunchClickTarget_(appSpan);
 
       this.addEventListener('keydown', cr.ui.contextMenuHandler);

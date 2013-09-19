@@ -76,6 +76,13 @@ const char kLTRHtmlTextDirection[] = "ltr";
 
 static base::LazyInstance<std::set<const WebUIController*> > g_live_new_tabs;
 
+const char* GetHtmlTextDirection(const string16& text) {
+  if (base::i18n::IsRTL() && base::i18n::StringContainsStrongRTLChars(text))
+    return kRTLHtmlTextDirection;
+  else
+    return kLTRHtmlTextDirection;
+}
+
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -313,15 +320,20 @@ void NewTabUI::SetUrlTitleAndDirection(DictionaryValue* dictionary,
   // title will be rendered as "!Yahoo" if its "dir" attribute is not set to
   // "ltr".
   std::string direction;
-  if (!using_url_as_the_title &&
-      base::i18n::IsRTL() &&
-      base::i18n::StringContainsStrongRTLChars(title)) {
-    direction = kRTLHtmlTextDirection;
-  } else {
+  if (using_url_as_the_title)
     direction = kLTRHtmlTextDirection;
-  }
+  else
+    direction = GetHtmlTextDirection(title);
+
   dictionary->SetString("title", title_to_set);
   dictionary->SetString("direction", direction);
+}
+
+// static
+void NewTabUI::SetFullNameAndDirection(const string16& full_name,
+                                       base::DictionaryValue* dictionary) {
+  dictionary->SetString("full_name", full_name);
+  dictionary->SetString("full_name_direction", GetHtmlTextDirection(full_name));
 }
 
 // static
