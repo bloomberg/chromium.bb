@@ -144,7 +144,6 @@ drm_backend_la_CFLAGS =				\
 	$(GCC_CFLAGS)
 drm_backend_la_SOURCES =			\
 	compositor-drm.c			\
-	tty.c					\
 	udev-seat.c				\
 	udev-seat.h				\
 	evdev.c					\
@@ -193,7 +192,8 @@ rpi_backend_la_SOURCES =			\
 	rpi-renderer.c				\
 	rpi-renderer.h				\
 	rpi-bcm-stubs.h 			\
-	tty.c					\
+	launcher-util.c				\
+	launcher-util.h				\
 	evdev.c					\
 	evdev.h					\
 	evdev-touchpad.c
@@ -224,13 +224,13 @@ fbdev_backend_la_CFLAGS = \
 	$(GCC_CFLAGS)
 fbdev_backend_la_SOURCES = \
 	compositor-fbdev.c \
-	tty.c \
 	udev-seat.c \
 	udev-seat.h \
 	evdev.c \
 	evdev.h \
 	evdev-touchpad.c \
-	launcher-util.c
+	launcher-util.c \
+	launcher-util.h
 endif
 
 if ENABLE_RDP_COMPOSITOR

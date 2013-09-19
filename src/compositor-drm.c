@@ -30,6 +30,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <linux/input.h>
+#include <linux/vt.h>
 #include <assert.h>
 #include <sys/mman.h>
 #include <time.h>
@@ -83,7 +84,6 @@ struct drm_compositor {
 	int num_crtcs;
 	uint32_t crtc_allocator;
 	uint32_t connector_allocator;
-	struct tty *tty;
 	struct wl_listener session_listener;
 
 	/* we need these parameters in order to not fail drmModeAddFB2()
@@ -2240,13 +2240,7 @@ udev_drm_event(int fd, uint32_t mask, void *data)
 static void
 drm_restore(struct weston_compositor *ec)
 {
-	struct drm_compositor *d = (struct drm_compositor *) ec;
-
-	if (ec->launcher == NULL) {
-		if (drmDropMaster(d->drm.fd) < 0)
-			weston_log("failed to drop master: %m\n");
-		tty_reset(d->tty);
-	}
+	weston_launcher_restore(ec->launcher);
 }
 
 static void
@@ -2268,11 +2262,7 @@ drm_destroy(struct weston_compositor *ec)
 	if (d->gbm)
 		gbm_device_destroy(d->gbm);
 
-	if (d->base.launcher == NULL) {
-		if (drmDropMaster(d->drm.fd) < 0)
-			weston_log("failed to drop master: %m\n");
-		tty_destroy(d->tty);
-	}
+	weston_launcher_destroy(d->base.launcher);
 
 	close(d->drm.fd);
 
@@ -2368,10 +2358,9 @@ session_notify(struct wl_listener *listener, void *data)
 static void
 switch_vt_binding(struct weston_seat *seat, uint32_t time, uint32_t key, void *data)
 {
-	struct drm_compositor *ec = data;
+	struct weston_compositor *compositor = data;
 
-	if (ec->tty)
-		tty_activate_vt(ec->tty, key - KEY_F1 + 1);
+	weston_launcher_activate_vt(compositor->launcher, key - KEY_F1 + 1);
 }
 
 /*
@@ -2575,7 +2564,7 @@ drm_compositor_create(struct wl_display *display,
 
 	/* Check if we run drm-backend using weston-launch */
 	ec->base.launcher = weston_launcher_connect(&ec->base);
-	if (ec->base.launcher == NULL && geteuid() != 0) {
+	if (ec->base.launcher == NULL) {
 		weston_log("fatal: drm backend should be run "
 			   "using weston-launch binary or as root\n");
 		goto err_compositor;
@@ -2584,24 +2573,17 @@ drm_compositor_create(struct wl_display *display,
 	ec->udev = udev_new();
 	if (ec->udev == NULL) {
 		weston_log("failed to initialize udev context\n");
-		goto err_compositor;
+		goto err_launcher;
 	}
 
 	ec->base.wl_display = display;
 	ec->session_listener.notify = session_notify;
 	wl_signal_add(&ec->base.session_signal, &ec->session_listener);
-	if (ec->base.launcher == NULL) {
-		ec->tty = tty_create(&ec->base, tty);
-		if (!ec->tty) {
-			weston_log("failed to initialize tty\n");
-			goto err_udev;
-		}
-	}
 
 	drm_device = find_primary_gpu(ec, seat_id);
 	if (drm_device == NULL) {
 		weston_log("no drm device found\n");
-		goto err_tty;
+		goto err_udev;
 	}
 	path = udev_device_get_syspath(drm_device);
 
@@ -2696,11 +2678,8 @@ err_sprite:
 	destroy_sprites(ec);
 err_udev_dev:
 	udev_device_unref(drm_device);
-err_tty:
-	if (ec->base.launcher == NULL && drmDropMaster(ec->drm.fd) < 0)
-		weston_log("failed to drop master: %m\n");
-	if (ec->tty)
-		tty_destroy(ec->tty);
+err_launcher:
+	weston_launcher_destroy(ec->base.launcher);
 err_udev:
 	udev_unref(ec->udev);
 err_compositor:

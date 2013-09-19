@@ -50,7 +50,6 @@ struct fbdev_compositor {
 	uint32_t prev_state;
 
 	struct udev *udev;
-	struct tty *tty;
 	struct udev_input input;
 	int use_pixman;
 	struct wl_listener session_listener;
@@ -799,7 +798,7 @@ fbdev_compositor_destroy(struct weston_compositor *base)
 
 	/* Chain up. */
 	compositor->base.renderer->destroy(&compositor->base);
-	tty_destroy(compositor->tty);
+	weston_launcher_destroy(compositor->base.launcher);
 
 	free(compositor);
 }
@@ -849,19 +848,17 @@ session_notify(struct wl_listener *listener, void *data)
 }
 
 static void
-fbdev_restore(struct weston_compositor *base)
+fbdev_restore(struct weston_compositor *compositor)
 {
-	struct fbdev_compositor *compositor = to_fbdev_compositor(base);
-
-	tty_reset(compositor->tty);
+	weston_launcher_restore(compositor->launcher);
 }
 
 static void
 switch_vt_binding(struct weston_seat *seat, uint32_t time, uint32_t key, void *data)
 {
-	struct fbdev_compositor *ec = data;
+	struct weston_compositor *compositor = data;
 
-	tty_activate_vt(ec->tty, key - KEY_F1 + 1);
+	weston_launcher_activate_vt(compositor->launcher, key - KEY_F1 + 1);
 }
 
 static struct weston_compositor *
@@ -901,9 +898,9 @@ fbdev_compositor_create(struct wl_display *display, int *argc, char *argv[],
 	compositor->session_listener.notify = session_notify;
 	wl_signal_add(&compositor->base.session_signal,
 		      &compositor->session_listener);
-	compositor->tty = tty_create(&compositor->base, param->tty);
-	if (!compositor->tty) {
-		weston_log("Failed to initialize tty.\n");
+	compositor->base.launcher = weston_launcher_connect(&compositor->base);
+	if (!compositor->base.launcher) {
+		weston_log("Failed to set up launcher.\n");
 		goto out_udev;
 	}
 
@@ -921,12 +918,12 @@ fbdev_compositor_create(struct wl_display *display, int *argc, char *argv[],
 		                                  compositor);
 	if (compositor->use_pixman) {
 		if (pixman_renderer_init(&compositor->base) < 0)
-			goto out_tty;
+			goto out_launcher;
 	} else {
 		if (gl_renderer_create(&compositor->base, EGL_DEFAULT_DISPLAY,
 			gl_renderer_opaque_attribs, NULL) < 0) {
 			weston_log("gl_renderer_create failed.\n");
-			goto out_tty;
+			goto out_launcher;
 		}
 	}
 
@@ -940,8 +937,8 @@ fbdev_compositor_create(struct wl_display *display, int *argc, char *argv[],
 out_pixman:
 	compositor->base.renderer->destroy(&compositor->base);
 
-out_tty:
-	tty_destroy(compositor->tty);
+out_launcher:
+	weston_launcher_destroy(compositor->base.launcher);
 
 out_udev:
 	udev_unref(compositor->udev);

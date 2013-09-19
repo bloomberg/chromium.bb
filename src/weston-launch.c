@@ -28,7 +28,6 @@
 #include <assert.h>
 #include <poll.h>
 #include <errno.h>
-#include <termios.h>
 
 #include <error.h>
 #include <getopt.h>
@@ -43,7 +42,6 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-#include <termios.h>
 #include <linux/vt.h>
 #include <linux/major.h>
 #include <linux/kd.h>
@@ -62,6 +60,10 @@
 
 #define DRM_MAJOR 226
 
+#ifndef KDSKBMUTE
+#define KDSKBMUTE	0x4B51
+#endif
+
 #define MAX_ARGV_SIZE 256
 
 struct weston_launch {
@@ -71,7 +73,6 @@ struct weston_launch {
 	int ttynr;
 	int sock[2];
 	int drm_fd;
-	struct termios terminal_attributes;
 	int kb_mode;
 	struct passwd *pw;
 
@@ -391,15 +392,12 @@ quit(struct weston_launch *wl, int status)
 		pam_end(wl->ph, err);
 	}
 
-	if (ioctl(wl->tty, KDSKBMODE, wl->kb_mode))
+	if (ioctl(wl->tty, KDSKBMUTE, 0) &&
+	    ioctl(wl->tty, KDSKBMODE, wl->kb_mode))
 		fprintf(stderr, "failed to restore keyboard mode: %m\n");
 
 	if (ioctl(wl->tty, KDSETMODE, KD_TEXT))
 		fprintf(stderr, "failed to set KD_TEXT mode on tty: %m\n");
-
-	if (tcsetattr(wl->tty, TCSANOW, &wl->terminal_attributes) < 0)
-		fprintf(stderr,
-			"could not restore terminal to canonical mode\n");
 
 	mode.mode = VT_AUTO;
 	if (ioctl(wl->tty, VT_SETMODE, &mode) < 0)
@@ -464,11 +462,9 @@ handle_signal(struct weston_launch *wl)
 static int
 setup_tty(struct weston_launch *wl, const char *tty)
 {
-	struct termios raw_attributes;
 	struct stat buf;
 	struct vt_mode mode = { 0 };
 	char *t;
-	int ret;
 
 	if (!wl->new_user) {
 		wl->tty = STDIN_FILENO;
@@ -506,28 +502,14 @@ setup_tty(struct weston_launch *wl, const char *tty)
 		wl->ttynr = minor(buf.st_rdev);
 	}
 
-	if (tcgetattr(wl->tty, &wl->terminal_attributes) < 0)
-		error(1, errno, "could not get terminal attributes: %m\n");
+	if (ioctl(wl->tty, KDGKBMODE, &wl->kb_mode))
+		error(1, errno, "failed to get current keyboard mode: %m\n");
 
-	/* Ignore control characters and disable echo */
-	raw_attributes = wl->terminal_attributes;
-	cfmakeraw(&raw_attributes);
+	if (ioctl(wl->tty, KDSKBMUTE, 1) &&
+	    ioctl(wl->tty, KDSKBMODE, K_OFF))
+		error(1, errno, "failed to set K_OFF keyboard mode: %m\n");
 
-	/* Fix up line endings to be normal (cfmakeraw hoses them) */
-	raw_attributes.c_oflag |= OPOST | OCRNL;
-
-	if (tcsetattr(wl->tty, TCSANOW, &raw_attributes) < 0)
-		error(1, errno, "could not put terminal into raw mode: %m\n");
-
-	ioctl(wl->tty, KDGKBMODE, &wl->kb_mode);
-	ret = ioctl(wl->tty, KDSKBMODE, K_OFF);
-	if (ret)
-		ret = ioctl(wl->tty, KDSKBMODE, K_RAW);
-	if (ret)
-		error(1, errno, "failed to set keyboard mode on tty: %m\n");
-
-	ret = ioctl(wl->tty, KDSETMODE, KD_GRAPHICS);
-	if (ret)
+	if (ioctl(wl->tty, KDSETMODE, KD_GRAPHICS))
 		error(1, errno, "failed to set KD_GRAPHICS mode on tty: %m\n");
 
 	mode.mode = VT_PROCESS;
@@ -597,9 +579,7 @@ launch_compositor(struct weston_launch *wl, int argc, char *argv[])
 
 	drop_privileges(wl);
 
-	if (wl->tty != STDIN_FILENO)
-		setenv_fd("WESTON_TTY_FD", wl->tty);
-
+	setenv_fd("WESTON_TTY_FD", wl->tty);
 	setenv_fd("WESTON_LAUNCHER_SOCK", wl->sock[1]);
 
 	unsetenv("DISPLAY");

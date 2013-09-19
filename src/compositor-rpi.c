@@ -44,6 +44,7 @@
 #include "compositor.h"
 #include "rpi-renderer.h"
 #include "evdev.h"
+#include "launcher-util.h"
 
 #if 0
 #define DBG(...) \
@@ -86,7 +87,6 @@ struct rpi_compositor {
 	uint32_t prev_state;
 
 	struct udev *udev;
-	struct tty *tty;
 	struct wl_listener session_listener;
 
 	int single_buffer;
@@ -656,7 +656,7 @@ rpi_compositor_destroy(struct weston_compositor *base)
 	weston_compositor_shutdown(&compositor->base);
 
 	compositor->base.renderer->destroy(&compositor->base);
-	tty_destroy(compositor->tty);
+	weston_launcher_destroy(compositor->base.launcher);
 
 	bcm_host_deinit();
 	free(compositor);
@@ -705,19 +705,17 @@ session_notify(struct wl_listener *listener, void *data)
 }
 
 static void
-rpi_restore(struct weston_compositor *base)
+rpi_restore(struct weston_compositor *compositor)
 {
-	struct rpi_compositor *compositor = to_rpi_compositor(base);
-
-	tty_reset(compositor->tty);
+	weston_launcher_restore(compositor->launcher);
 }
 
 static void
 switch_vt_binding(struct weston_seat *seat, uint32_t time, uint32_t key, void *data)
 {
-	struct rpi_compositor *ec = data;
+	struct weston_compositor *compositor = data;
 
-	tty_activate_vt(ec->tty, key - KEY_F1 + 1);
+	weston_launcher_activate_vt(compositor->launcher, key - KEY_F1 + 1);
 }
 
 struct rpi_parameters {
@@ -754,8 +752,8 @@ rpi_compositor_create(struct wl_display *display, int *argc, char *argv[],
 	compositor->session_listener.notify = session_notify;
 	wl_signal_add(&compositor->base.session_signal,
 		      &compositor ->session_listener);
-	compositor->tty = tty_create(&compositor->base, param->tty);
-	if (!compositor->tty) {
+	compositor->base.launcher = weston_launcher_connect(&compositor->base);
+	if (!compositor->base.launcher) {
 		weston_log("Failed to initialize tty.\n");
 		goto out_udev;
 	}
@@ -785,7 +783,7 @@ rpi_compositor_create(struct wl_display *display, int *argc, char *argv[],
 	bcm_host_init();
 
 	if (rpi_renderer_create(&compositor->base, &param->renderer) < 0)
-		goto out_tty;
+		goto out_launcher;
 
 	if (rpi_output_create(compositor, param->output_transform) < 0)
 		goto out_renderer;
@@ -797,8 +795,8 @@ rpi_compositor_create(struct wl_display *display, int *argc, char *argv[],
 out_renderer:
 	compositor->base.renderer->destroy(&compositor->base);
 
-out_tty:
-	tty_destroy(compositor->tty);
+out_launcher:
+	weston_launcher_destroy(compositor->base.launcher);
 
 out_udev:
 	udev_unref(compositor->udev);
