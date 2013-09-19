@@ -4,6 +4,8 @@
 
 #include "base/metrics/field_trial.h"
 
+#include <algorithm>
+
 #include "base/build_time.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
@@ -38,9 +40,26 @@ Time CreateTimeFromParams(int year, int month, int day_of_month) {
   return Time::FromLocalExploded(exploded);
 }
 
-}  // namespace
+// Returns the boundary value for comparing against the FieldTrial's added
+// groups for a given |divisor| (total probability) and |entropy_value|.
+FieldTrial::Probability GetGroupBoundaryValue(
+    FieldTrial::Probability divisor,
+    double entropy_value) {
+  // Add a tiny epsilon value to get consistent results when converting floating
+  // points to int. Without it, boundary values have inconsistent results, e.g.:
+  //
+  //   static_cast<FieldTrial::Probability>(100 * 0.56) == 56
+  //   static_cast<FieldTrial::Probability>(100 * 0.57) == 56
+  //   static_cast<FieldTrial::Probability>(100 * 0.58) == 57
+  //   static_cast<FieldTrial::Probability>(100 * 0.59) == 59
+  const double kEpsilon = 1e-8;
+  const FieldTrial::Probability result =
+      static_cast<FieldTrial::Probability>(divisor * entropy_value + kEpsilon);
+  // Ensure that adding the epsilon still results in a value < |divisor|.
+  return std::min(result, divisor - 1);
+}
 
-static const char kHistogramFieldTrialSeparator('_');
+}  // namespace
 
 // statics
 const int FieldTrial::kNotFinalized = -1;
@@ -60,7 +79,7 @@ FieldTrial::FieldTrial(const std::string& trial_name,
     : trial_name_(trial_name),
       divisor_(total_probability),
       default_group_name_(default_group_name),
-      random_(static_cast<Probability>(divisor_ * entropy_value)),
+      random_(GetGroupBoundaryValue(total_probability, entropy_value)),
       accumulated_group_probability_(0),
       next_group_number_(kDefaultGroupNumber + 1),
       group_(kNotFinalized),
