@@ -530,6 +530,24 @@ void FileCache::Destroy() {
       base::Bind(&FileCache::DestroyOnBlockingPool, base::Unretained(this)));
 }
 
+bool FileCache::CanonicalizeIDs(
+    const ResourceIdCanonicalizer& id_canonicalizer) {
+  scoped_ptr<Iterator> it = GetIterator();
+  for (; !it->IsAtEnd(); it->Advance()) {
+    const std::string id_canonicalized = id_canonicalizer.Run(it->GetID());
+    if (id_canonicalized != it->GetID()) {
+      // Replace the existing entry and rename the file when needed.
+      const base::FilePath path_old = GetCacheFilePath(it->GetID());
+      const base::FilePath path_new = GetCacheFilePath(id_canonicalized);
+      if (!storage_->RemoveCacheEntry(it->GetID()) ||
+          (base::PathExists(path_old) && !base::Move(path_old, path_new)) ||
+          !storage_->PutCacheEntry(id_canonicalized, it->GetValue()))
+        return false;
+    }
+  }
+  return !it->HasError();
+}
+
 void FileCache::DestroyOnBlockingPool() {
   AssertOnSequencedWorkerPool();
   delete this;

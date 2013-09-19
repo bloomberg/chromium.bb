@@ -309,9 +309,8 @@ bool DriveAPIService::CanSendRequest() const {
   return HasRefreshToken();
 }
 
-std::string DriveAPIService::CanonicalizeResourceId(
-    const std::string& resource_id) const {
-  return drive::util::CanonicalizeResourceId(resource_id);
+ResourceIdCanonicalizer DriveAPIService::GetResourceIdCanonicalizer() const {
+  return base::Bind(&drive::util::CanonicalizeResourceId);
 }
 
 std::string DriveAPIService::GetRootResourceId() const {

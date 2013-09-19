@@ -328,7 +328,7 @@ void CopyOperation::TransferFileFromLocalToRemoteAfterPrepare(
 
   // GDoc file may contain a resource ID in the old format.
   const std::string canonicalized_resource_id =
-      drive_service_->CanonicalizeResourceId(*gdoc_resource_id);
+      drive_service_->GetResourceIdCanonicalizer().Run(*gdoc_resource_id);
 
   // If Drive API v2 is enabled, we can copy resources on server side.
   if (util::IsDriveV2ApiEnabled()) {

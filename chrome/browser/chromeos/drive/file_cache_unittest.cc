@@ -12,6 +12,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/md5.h"
 #include "base/run_loop.h"
+#include "base/strings/string_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/fake_free_disk_space_getter.h"
@@ -26,6 +27,8 @@
 namespace drive {
 namespace internal {
 namespace {
+
+const char kCacheFileDirectory[] = "files";
 
 // Bitmask of cache states in FileCacheEntry.
 enum TestFileCacheState {
@@ -63,7 +66,8 @@ class FileCacheTestOnUIThread : public testing::Test {
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     const base::FilePath metadata_dir = temp_dir_.path().AppendASCII("meta");
-    const base::FilePath cache_dir = temp_dir_.path().AppendASCII("files");
+    const base::FilePath cache_dir =
+        temp_dir_.path().AppendASCII(kCacheFileDirectory);
 
     ASSERT_TRUE(file_util::CreateDirectory(metadata_dir));
     ASSERT_TRUE(file_util::CreateDirectory(cache_dir));
@@ -777,7 +781,7 @@ class FileCacheTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     const base::FilePath metadata_dir = temp_dir_.path().AppendASCII("meta");
-    cache_files_dir_ = temp_dir_.path().AppendASCII("files");
+    cache_files_dir_ = temp_dir_.path().AppendASCII(kCacheFileDirectory);
 
     ASSERT_TRUE(file_util::CreateDirectory(metadata_dir));
     ASSERT_TRUE(file_util::CreateDirectory(cache_files_dir_));
@@ -813,7 +817,8 @@ class FileCacheTest : public testing::Test {
 
 TEST_F(FileCacheTest, ScanCacheFile) {
   // Set up files in the cache directory.
-  const base::FilePath file_directory = temp_dir_.path().AppendASCII("files");
+  const base::FilePath file_directory =
+      temp_dir_.path().AppendASCII(kCacheFileDirectory);
   ASSERT_TRUE(google_apis::test_util::WriteStringToFile(
       file_directory.AppendASCII("id_foo"), "foo"));
 
@@ -880,8 +885,35 @@ TEST_F(FileCacheTest, FreeDiskSpaceIfNeededFor) {
   EXPECT_FALSE(cache_->FreeDiskSpaceIfNeededFor(kNeededBytes));
 }
 
+TEST_F(FileCacheTest, CanonicalizeIDs) {
+  ResourceIdCanonicalizer id_canonicalizer = base::Bind(
+      (ResourceIdCanonicalizer::RunType*)(&StringToUpperASCII));
+  const std::string id("abc");
+  const std::string md5("abcdef0123456789");
+
+  const base::FilePath file_directory =
+      temp_dir_.path().AppendASCII(kCacheFileDirectory);
+
+  // Store a file to the cache.
+  base::FilePath file;
+  EXPECT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir_.path(), &file));
+  EXPECT_EQ(FILE_ERROR_OK,
+            cache_->Store(id, md5, file, FileCache::FILE_OPERATION_COPY));
+  EXPECT_TRUE(base::PathExists(file_directory.AppendASCII(id)));
+
+  // Canonicalize IDs.
+  EXPECT_TRUE(cache_->CanonicalizeIDs(id_canonicalizer));
+
+  const std::string canonicalized_id = id_canonicalizer.Run(id);
+  FileCacheEntry entry;
+  EXPECT_FALSE(cache_->GetCacheEntry(id, &entry));
+  EXPECT_TRUE(cache_->GetCacheEntry(canonicalized_id, &entry));
+  EXPECT_TRUE(base::PathExists(file_directory.AppendASCII(canonicalized_id)));
+}
+
 TEST_F(FileCacheTest, RenameCacheFilesToNewFormat) {
-  const base::FilePath file_directory = temp_dir_.path().AppendASCII("files");
+  const base::FilePath file_directory =
+      temp_dir_.path().AppendASCII(kCacheFileDirectory);
 
   // File with an old style "<ID>.<MD5>" name.
   ASSERT_TRUE(google_apis::test_util::WriteStringToFile(

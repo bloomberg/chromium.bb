@@ -95,7 +95,8 @@ FileError InitializeMetadata(
     const base::FilePath& cache_root_directory,
     internal::ResourceMetadataStorage* metadata_storage,
     internal::FileCache* cache,
-    internal::ResourceMetadata* resource_metadata) {
+    internal::ResourceMetadata* resource_metadata,
+    const ResourceIdCanonicalizer& id_canonicalizer) {
   if (!file_util::CreateDirectory(cache_root_directory.Append(
           kMetadataDirectory)) ||
       !file_util::CreateDirectory(cache_root_directory.Append(
@@ -122,7 +123,7 @@ FileError InitializeMetadata(
     return FILE_ERROR_FAILED;
   }
 
-  if (!cache->Initialize()) {
+  if (!cache->Initialize() || !cache->CanonicalizeIDs(id_canonicalizer)) {
     LOG(WARNING) << "Failed to initialize the cache.";
     return FILE_ERROR_FAILED;
   }
@@ -431,7 +432,8 @@ void DriveIntegrationService::Initialize() {
                  cache_root_directory_,
                  metadata_storage_.get(),
                  cache_.get(),
-                 resource_metadata_.get()),
+                 resource_metadata_.get(),
+                 drive_service_->GetResourceIdCanonicalizer()),
       base::Bind(&DriveIntegrationService::InitializeAfterMetadataInitialized,
                  weak_ptr_factory_.GetWeakPtr()));
 }
