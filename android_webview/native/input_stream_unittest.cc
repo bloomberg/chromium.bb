@@ -89,10 +89,10 @@ TEST_F(InputStreamTest, ReadStreamCompletely) {
 }
 
 TEST_F(InputStreamTest, TryReadMoreThanBuffer) {
-  const int bytes_requested = 3 * InputStreamImpl::kBufferSize;
+  const int buffer_size = 3 * InputStreamImpl::kBufferSize;
   int bytes_read = 0;
-  DoReadCountedStreamTest(bytes_requested, bytes_requested, &bytes_read);
-  EXPECT_EQ(InputStreamImpl::kBufferSize, bytes_read);
+  DoReadCountedStreamTest(buffer_size, buffer_size * 2, &bytes_read);
+  EXPECT_EQ(buffer_size, bytes_read);
 }
 
 TEST_F(InputStreamTest, CheckContentsReadCorrectly) {
@@ -104,4 +104,18 @@ TEST_F(InputStreamTest, CheckContentsReadCorrectly) {
   for (int i = 0; i < bytes_requested; ++i) {
     EXPECT_EQ(i, (unsigned char)buffer->data()[i]);
   }
+}
+
+TEST_F(InputStreamTest, ReadLargeStreamPartial) {
+  const int bytes_requested = 3 * InputStreamImpl::kBufferSize;
+  int bytes_read = 0;
+  DoReadCountedStreamTest(bytes_requested + 32, bytes_requested, &bytes_read);
+  EXPECT_EQ(bytes_requested, bytes_read);
+}
+
+TEST_F(InputStreamTest, ReadLargeStreamCompletely) {
+  const int bytes_requested = 3 * InputStreamImpl::kBufferSize;
+  int bytes_read = 0;
+  DoReadCountedStreamTest(bytes_requested, bytes_requested, &bytes_read);
+  EXPECT_EQ(bytes_requested, bytes_read);
 }
