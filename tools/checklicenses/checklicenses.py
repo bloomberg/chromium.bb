@@ -368,6 +368,11 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         'UNKNOWN',
     ],
 
+    # https://github.com/kennethreitz/requests/issues/1610
+    'tools/swarm_client/third_party/requests': [
+        'UNKNOWN',
+    ],
+
     'third_party/swig/Lib/linkruntime.c': [  # http://crbug.com/98585
         'UNKNOWN',
     ],
