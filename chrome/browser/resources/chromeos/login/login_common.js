@@ -251,6 +251,15 @@ cr.define('cr.ui', function() {
     chrome.send('completeLogin', [username, password]);
   };
 
+  /**
+   * Authenticate for autotests.
+   * @param {string} username Login username.
+   * @param {string} password Login password.
+   */
+  Oobe.authenticateForTesting = function(username, password) {
+    chrome.send('authenticateUser', [username, password]);
+  };
+
   // Export
   return {
     Oobe: Oobe
