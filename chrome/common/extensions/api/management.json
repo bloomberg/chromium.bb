@@ -29,6 +29,10 @@
             "description": "The name of this extension, app, or theme.",
             "type": "string"
           },
+          "shortName": {
+            "description": "A short version of the name of this extension, app, or theme.",
+            "type": "string"
+          },
           "description": {
             "description": "The description of this extension, app, or theme.",
             "type": "string"

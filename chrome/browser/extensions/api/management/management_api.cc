@@ -94,6 +94,7 @@ scoped_ptr<management::ExtensionInfo> CreateExtensionInfo(
 
   info->id = extension.id();
   info->name = extension.name();
+  info->short_name = extension.short_name();
   info->enabled = service->IsExtensionEnabled(info->id);
   info->offline_enabled = OfflineEnabledInfo::IsOfflineEnabled(&extension);
   info->version = extension.VersionString();

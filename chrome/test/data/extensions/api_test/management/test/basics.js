@@ -45,12 +45,14 @@ function checkHostPermission(item, perm) {
 var tests = [
   function simple() {
     chrome.management.getAll(callback(function(items) {
-      chrome.test.assertEq(10, items.length);
+      chrome.test.assertEq(11, items.length);
 
       checkItemInList(items, "Extension Management API Test", true,
                       "extension");
       checkItemInList(items, "description", true, "extension",
           { "description": "a short description" });
+      checkItemInList(items, "short_name", true, "extension",
+          { "shortName": "a short name" });
       checkItemInList(items, "enabled_app", true, "hosted_app",
           { "appLaunchUrl": "http://www.google.com/",
             "offlineEnabled": true,

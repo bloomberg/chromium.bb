@@ -48,11 +48,12 @@ class ExtensionManagementApiTest : public ExtensionApiTest {
   virtual void LoadExtensions() {
     base::FilePath basedir = test_data_dir_.AppendASCII("management");
 
-    // Load 4 enabled items.
+    // Load 5 enabled items.
     LoadNamedExtension(basedir, "enabled_extension");
     LoadNamedExtension(basedir, "enabled_app");
     LoadNamedExtension(basedir, "description");
     LoadNamedExtension(basedir, "permissions");
+    LoadNamedExtension(basedir, "short_name");
 
     // Load 2 disabled items.
     LoadNamedExtension(basedir, "disabled_extension");
