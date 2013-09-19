@@ -225,12 +225,6 @@ public:
 
     void setNeedsCompositedScrolling(Element*, unsigned value, ExceptionState&);
 
-    bool isScrollParent(Element* child, Element* parent, ExceptionState&);
-    bool isClipParent(Element* child, Element* parent, ExceptionState&);
-
-    PassRefPtr<ClientRect> scrollClip(Element*, ExceptionState&);
-    PassRefPtr<ClientRect> ancestorScrollClip(Element*, ExceptionState&);
-
     String repaintRectsAsText(Document*, ExceptionState&) const;
     String scrollingStateTreeAsText(Document*, ExceptionState&) const;
     String mainThreadScrollingReasons(Document*, ExceptionState&) const;

@@ -172,7 +172,7 @@ RenderLayerBacking::RenderLayerBacking(RenderLayer* layer)
 
 RenderLayerBacking::~RenderLayerBacking()
 {
-    updateClippingLayers(false, false, false);
+    updateClippingLayers(false, false);
     updateOverflowControlsLayers(false, false, false);
     updateForegroundLayer(false);
     updateBackgroundLayer(false);
@@ -380,16 +380,14 @@ void RenderLayerBacking::updateAfterLayout(UpdateAfterLayoutFlags flags)
         // The solution is to update compositing children of this layer here,
         // via updateCompositingChildrenGeometry().
         updateCompositedBounds();
-        HashSet<RenderLayer*> visited;
-        layerCompositor->updateCompositingDescendantGeometry(m_owningLayer, m_owningLayer, visited, flags & CompositingChildrenOnly);
-        visited.clear();
+        layerCompositor->updateCompositingDescendantGeometry(m_owningLayer, m_owningLayer, flags & CompositingChildrenOnly);
 
         if (flags & IsUpdateRoot) {
             updateGraphicsLayerGeometry();
             layerCompositor->updateRootLayerPosition();
             RenderLayer* stackingContainer = m_owningLayer->enclosingStackingContainer();
             if (!layerCompositor->compositingLayersNeedRebuild() && stackingContainer && (stackingContainer != m_owningLayer))
-                layerCompositor->updateCompositingDescendantGeometry(stackingContainer, stackingContainer, visited, flags & CompositingChildrenOnly);
+                layerCompositor->updateCompositingDescendantGeometry(stackingContainer, stackingContainer, flags & CompositingChildrenOnly);
         }
     }
 
@@ -423,8 +421,13 @@ bool RenderLayerBacking::updateGraphicsLayerConfiguration()
 
     RenderLayer* scrollParent = m_owningLayer->scrollParent();
     bool needsAncestorClip = compositor->clippedByAncestor(m_owningLayer);
-    bool needsScrollClip = !!scrollParent;
-    if (updateClippingLayers(needsAncestorClip, needsDescendentsClippingLayer, needsScrollClip))
+    if (scrollParent) {
+        // If our containing block is our ancestor scrolling layer, then we'll already be clipped
+        // to it via our scroll parent and we don't need an ancestor clipping layer.
+        if (m_owningLayer->renderer()->containingBlock()->enclosingLayer() == m_owningLayer->ancestorScrollingLayer())
+            needsAncestorClip = false;
+    }
+    if (updateClippingLayers(needsAncestorClip, needsDescendentsClippingLayer))
         layerConfigChanged = true;
 
     if (updateOverflowControlsLayers(requiresHorizontalScrollbarLayer(), requiresVerticalScrollbarLayer(), requiresScrollCornerLayer()))
@@ -550,30 +553,6 @@ void RenderLayerBacking::updateGraphicsLayerGeometry()
         IntSize scrollOffset = compAncestor->scrolledContentOffset();
         IntPoint scrollOrigin(renderBox->borderLeft(), renderBox->borderTop());
         graphicsLayerParentLocation = scrollOrigin - scrollOffset;
-    }
-
-    if (compAncestor && m_ancestorScrollClippingLayer && m_owningLayer->ancestorScrollingLayer()) {
-        // Our scroll parent must have been processed before us. The code in RenderLayerCompositor
-        // that coordinates updating graphics layer geometry has been set up to guarantee that this is the case.
-        RenderLayer* scrollParent = m_owningLayer->ancestorScrollingLayer();
-        GraphicsLayer* scrollParentClippingLayer = scrollParent->backing()->scrollingLayer();
-
-        // Not relative to our parent graphics layer.
-        FloatPoint position;
-        GraphicsLayer* scrollParentChildForSuperlayers = scrollParent->backing()->childForSuperlayers();
-
-        for (GraphicsLayer* scrollAncestor = scrollParentClippingLayer; scrollAncestor; scrollAncestor = scrollAncestor->parent()) {
-            ASSERT(scrollAncestor->transform().isIdentity());
-            position = position + toFloatSize(scrollAncestor->position());
-            if (scrollAncestor == scrollParentChildForSuperlayers)
-                break;
-        }
-
-        m_ancestorScrollClippingLayer->setPosition(position);
-        m_ancestorScrollClippingLayer->setSize(scrollParentClippingLayer->size());
-        m_ancestorScrollClippingLayer->setOffsetFromRenderer(toIntSize(roundedIntPoint(-position)));
-
-        graphicsLayerParentLocation = roundedIntPoint(position);
     }
 
     if (compAncestor && m_ancestorClippingLayer) {
@@ -782,9 +761,6 @@ void RenderLayerBacking::registerScrollingLayers()
 
 void RenderLayerBacking::updateInternalHierarchy()
 {
-    if (m_ancestorScrollClippingLayer)
-        m_ancestorScrollClippingLayer->removeAllChildren();
-
     // m_foregroundLayer has to be inserted in the correct order with child layers,
     // so it's not inserted here.
     if (m_ancestorClippingLayer)
@@ -794,13 +770,6 @@ void RenderLayerBacking::updateInternalHierarchy()
 
     if (m_ancestorClippingLayer)
         m_ancestorClippingLayer->addChild(m_graphicsLayer.get());
-
-    if (m_ancestorScrollClippingLayer) {
-        if (m_ancestorClippingLayer)
-            m_ancestorScrollClippingLayer->addChild(m_ancestorClippingLayer.get());
-        else
-            m_ancestorScrollClippingLayer->addChild(m_graphicsLayer.get());
-    }
 
     if (m_childContainmentLayer) {
         m_childContainmentLayer->removeFromParent();
@@ -880,7 +849,7 @@ void RenderLayerBacking::updateDrawsContent(bool isSimpleContainer)
 }
 
 // Return true if the layers changed.
-bool RenderLayerBacking::updateClippingLayers(bool needsAncestorClip, bool needsDescendantClip, bool needsScrollClip)
+bool RenderLayerBacking::updateClippingLayers(bool needsAncestorClip, bool needsDescendantClip)
 {
     bool layersChanged = false;
 
@@ -907,18 +876,6 @@ bool RenderLayerBacking::updateClippingLayers(bool needsAncestorClip, bool needs
     } else if (hasClippingLayer()) {
         m_childContainmentLayer->removeFromParent();
         m_childContainmentLayer = nullptr;
-        layersChanged = true;
-    }
-
-    if (needsScrollClip) {
-        if (!m_ancestorScrollClippingLayer) {
-            m_ancestorScrollClippingLayer = createGraphicsLayer(CompositingReasonLayerForClip);
-            m_ancestorScrollClippingLayer->setMasksToBounds(true);
-            layersChanged = true;
-        }
-    } else if (m_ancestorScrollClippingLayer) {
-        m_ancestorScrollClippingLayer->removeFromParent();
-        m_ancestorScrollClippingLayer = nullptr;
         layersChanged = true;
     }
 
@@ -1511,9 +1468,6 @@ GraphicsLayer* RenderLayerBacking::parentForSublayers() const
 
 GraphicsLayer* RenderLayerBacking::childForSuperlayers() const
 {
-    if (m_ancestorScrollClippingLayer)
-        return m_ancestorScrollClippingLayer.get();
-
     if (m_ancestorClippingLayer)
         return m_ancestorClippingLayer.get();
 
@@ -1984,8 +1938,6 @@ String RenderLayerBacking::debugName(const GraphicsLayer* graphicsLayer)
     String name;
     if (graphicsLayer == m_graphicsLayer.get()) {
         name = m_owningLayer->debugName();
-    } else if (graphicsLayer == m_ancestorScrollClippingLayer.get()) {
-        name = "Ancestor Scroll Clipping Layer";
     } else if (graphicsLayer == m_ancestorClippingLayer.get()) {
         name = "Ancestor Clipping Layer";
     } else if (graphicsLayer == m_foregroundLayer.get()) {

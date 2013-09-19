@@ -5014,25 +5014,7 @@ GraphicsLayer* RenderLayer::layerForScrolling() const
 
 GraphicsLayer* RenderLayer::layerForScrollChild() const
 {
-    // If we have an ancestor clipping layer because of our scroll parent, we do not want to
-    // scroll that clip layer -- we need it to stay put and we will slide within it. If, on
-    // the other hand, we have an ancestor clipping layer due to some other clipping layer, we
-    // want to scroll the root of the layer's associated graphics layer subtree. I.e., we want it
-    // and its clip to move in concert.
-
-    if (!backing())
-        return 0;
-
-    if (backing()->hasAncestorScrollClippingLayer()) {
-        return backing()->hasAncestorClippingLayer()
-            ? backing()->ancestorClippingLayer()
-            : backing()->graphicsLayer();
-    }
-
-    if (renderer()->containingBlock()->enclosingLayer() == ancestorScrollingLayer())
-        return backing()->graphicsLayer();
-
-    return backing()->childForSuperlayers();
+    return m_backing ? m_backing->childForSuperlayers() : 0;
 }
 
 GraphicsLayer* RenderLayer::layerForHorizontalScrollbar() const

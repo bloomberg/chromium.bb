@@ -439,10 +439,9 @@ void RenderLayerCompositor::updateCompositingLayers(CompositingUpdateType update
     if (needHierarchyUpdate) {
         // Update the hierarchy of the compositing layers.
         Vector<GraphicsLayer*> childList;
-        HashSet<RenderLayer*> visited;
         {
             TRACE_EVENT0("blink_rendering", "RenderLayerCompositor::rebuildCompositingLayerTree");
-            rebuildCompositingLayerTree(updateRoot, childList, visited, 0);
+            rebuildCompositingLayerTree(updateRoot, childList, 0);
         }
 
         // Host the document layer in the RenderView's root layer.
@@ -457,8 +456,7 @@ void RenderLayerCompositor::updateCompositingLayers(CompositingUpdateType update
     } else if (needGeometryUpdate) {
         // We just need to do a geometry update. This is only used for position:fixed scrolling;
         // most of the time, geometry is updated via RenderLayer::styleChanged().
-        HashSet<RenderLayer*> visited;
-        updateLayerTreeGeometry(updateRoot, visited, 0);
+        updateLayerTreeGeometry(updateRoot, 0);
     }
 
 #if !LOG_DISABLED
@@ -1065,46 +1063,7 @@ bool RenderLayerCompositor::canAccelerateVideoRendering(RenderVideo* o) const
     return o->supportsAcceleratedRendering();
 }
 
-// The purpose of this function is to ensure that we call rebuildCompostingLayerTree on curLayer's
-// scroll parent (if it has one) before we call it on curLayer. This is necessary because rebuilding the
-// compositing layer tree for curLayer will use values we computed for the scroll parent. More specifically,
-// rebuildCompositingLayreTree will call RenderLayerBacking::updateGraphicsLayerGeometry, and it's this
-// function that will pull values from a scroll parent's graphics layers. Unfortunately,
-// the childList needs to be populated as if we'd visited all the layers in paint order. To work around
-// this, when we visit a scroll parent out of order, we'll set its additions to childList aside (in
-// scrollParentChildLists), and add them to the real childList when we visit the scroll parent in paint
-// order.
-void RenderLayerCompositor::rebuildCompositingLayerTreeForLayerAndScrollParents(RenderLayer* curLayer, Vector<GraphicsLayer*>& childList, HashSet<RenderLayer*>& visited, HashMap<RenderLayer*, Vector<GraphicsLayer*> >& scrollParentChildLists, int depth)
-{
-    ASSERT(curLayer->zIndex() >= 0 || !visited.contains(curLayer));
-    if (visited.contains(curLayer)) {
-        // We've already processed this layer, but since we processed it out of order, its
-        // contribution to childList was not added. We must do that now.
-        HashMap<RenderLayer*, Vector<GraphicsLayer*> >::iterator it = scrollParentChildLists.find(curLayer);
-        ASSERT(it != scrollParentChildLists.end());
-        childList.append(it->value);
-        scrollParentChildLists.remove(it);
-        return;
-    }
-
-    if (requiresCompositingForOverflowScrollingParent(curLayer)) {
-        RenderLayer* scrollParent = curLayer->ancestorScrollingLayer();
-        if (!visited.contains(scrollParent)) {
-            ASSERT(!scrollParentChildLists.contains(scrollParent));
-            // We will populate scrollParentChildList rather than childList, since we're visiting it
-            // out of order.
-            Vector<GraphicsLayer*> scrollParentChildList;
-            rebuildCompositingLayerTreeForLayerAndScrollParents(scrollParent, scrollParentChildList, visited, scrollParentChildLists, depth);
-            // We will set aside the scrollParentChildList in scrollParentChildLists so that we can
-            // add it to childList when we visit the scrollParent normally.
-            scrollParentChildLists.add(scrollParent, scrollParentChildList);
-        }
-    }
-
-    rebuildCompositingLayerTree(curLayer, childList, visited, depth);
-}
-
-void RenderLayerCompositor::rebuildCompositingLayerTree(RenderLayer* layer, Vector<GraphicsLayer*>& childLayersOfEnclosingLayer, HashSet<RenderLayer*>& visited, int depth)
+void RenderLayerCompositor::rebuildCompositingLayerTree(RenderLayer* layer, Vector<GraphicsLayer*>& childLayersOfEnclosingLayer, int depth)
 {
     // Make the layer compositing if necessary, and set up clipping and content layers.
     // Note that we can only do work here that is independent of whether the descendant layers
@@ -1119,8 +1078,6 @@ void RenderLayerCompositor::rebuildCompositingLayerTree(RenderLayer* layer, Vect
         pixelsWithoutPromotingAllTransitions = 0.0;
         pixelsAddedByPromotingAllTransitions = 0.0;
     }
-
-    visited.add(layer);
 
     RenderLayerBacking* layerBacking = layer->backing();
     if (layerBacking) {
@@ -1164,13 +1121,12 @@ void RenderLayerCompositor::rebuildCompositingLayerTree(RenderLayer* layer, Vect
     LayerListMutationDetector mutationChecker(layer);
 #endif
 
-    HashMap<RenderLayer*, Vector<GraphicsLayer*> > scrollParentChildLists;
     if (layer->isStackingContainer()) {
         if (Vector<RenderLayer*>* negZOrderList = layer->negZOrderList()) {
             size_t listSize = negZOrderList->size();
             for (size_t i = 0; i < listSize; ++i) {
                 RenderLayer* curLayer = negZOrderList->at(i);
-                rebuildCompositingLayerTreeForLayerAndScrollParents(curLayer, childList, visited, scrollParentChildLists, depth + 1);
+                rebuildCompositingLayerTree(curLayer, childList, depth + 1);
             }
         }
 
@@ -1183,7 +1139,7 @@ void RenderLayerCompositor::rebuildCompositingLayerTree(RenderLayer* layer, Vect
         size_t listSize = normalFlowList->size();
         for (size_t i = 0; i < listSize; ++i) {
             RenderLayer* curLayer = normalFlowList->at(i);
-            rebuildCompositingLayerTreeForLayerAndScrollParents(curLayer, childList, visited, scrollParentChildLists, depth + 1);
+            rebuildCompositingLayerTree(curLayer, childList, depth + 1);
         }
     }
 
@@ -1192,7 +1148,7 @@ void RenderLayerCompositor::rebuildCompositingLayerTree(RenderLayer* layer, Vect
             size_t listSize = posZOrderList->size();
             for (size_t i = 0; i < listSize; ++i) {
                 RenderLayer* curLayer = posZOrderList->at(i);
-                rebuildCompositingLayerTreeForLayerAndScrollParents(curLayer, childList, visited, scrollParentChildLists, depth + 1);
+                rebuildCompositingLayerTree(curLayer, childList, depth + 1);
             }
         }
     }
@@ -1394,29 +1350,9 @@ bool RenderLayerCompositor::parentFrameContentLayers(RenderPart* renderer)
     return true;
 }
 
-// The purpose of this function is to ensure that we call updateLayerTreeGeometry on layer's
-// scroll parent (if it has one) before we call it on layer. This is necessary because updating
-// layer tree geometry for layer will use values we computed for its scroll parent.
-void RenderLayerCompositor::updateLayerTreeGeometryForLayerAndScrollParents(RenderLayer* layer, HashSet<RenderLayer*>& visited, int depth)
-{
-    ASSERT(layer->zIndex() >= 0 || !visited.contains(layer));
-    if (visited.contains(layer))
-        return;
-
-    if (requiresCompositingForOverflowScrollingParent(layer)) {
-        RenderLayer* scrollParent = layer->ancestorScrollingLayer();
-        if (!visited.contains(scrollParent))
-            updateLayerTreeGeometryForLayerAndScrollParents(scrollParent, visited, depth);
-    }
-
-    updateLayerTreeGeometry(layer, visited, depth);
-}
-
 // This just updates layer geometry without changing the hierarchy.
-void RenderLayerCompositor::updateLayerTreeGeometry(RenderLayer* layer, HashSet<RenderLayer*>& visited, int depth)
+void RenderLayerCompositor::updateLayerTreeGeometry(RenderLayer* layer, int depth)
 {
-    visited.add(layer);
-
     if (RenderLayerBacking* layerBacking = layer->backing()) {
         // The compositing state of all our children has been updated already, so now
         // we can compute and cache the composited bounds for this layer.
@@ -1444,52 +1380,32 @@ void RenderLayerCompositor::updateLayerTreeGeometry(RenderLayer* layer, HashSet<
     LayerListMutationDetector mutationChecker(layer);
 #endif
 
-    if (Vector<RenderLayer*>* normalFlowList = layer->normalFlowList()) {
-        size_t listSize = normalFlowList->size();
-        for (size_t i = 0; i < listSize; ++i)
-            updateLayerTreeGeometry(normalFlowList->at(i), visited, depth + 1);
-    }
-
     if (layer->isStackingContainer()) {
         if (Vector<RenderLayer*>* negZOrderList = layer->negZOrderList()) {
             size_t listSize = negZOrderList->size();
             for (size_t i = 0; i < listSize; ++i)
-                updateLayerTreeGeometryForLayerAndScrollParents(negZOrderList->at(i), visited, depth + 1);
+                updateLayerTreeGeometry(negZOrderList->at(i), depth + 1);
         }
+    }
+
+    if (Vector<RenderLayer*>* normalFlowList = layer->normalFlowList()) {
+        size_t listSize = normalFlowList->size();
+        for (size_t i = 0; i < listSize; ++i)
+            updateLayerTreeGeometry(normalFlowList->at(i), depth + 1);
     }
 
     if (layer->isStackingContainer()) {
         if (Vector<RenderLayer*>* posZOrderList = layer->posZOrderList()) {
             size_t listSize = posZOrderList->size();
             for (size_t i = 0; i < listSize; ++i)
-                updateLayerTreeGeometryForLayerAndScrollParents(posZOrderList->at(i), visited, depth + 1);
+                updateLayerTreeGeometry(posZOrderList->at(i), depth + 1);
         }
     }
 }
 
-// The purpose of this function is to ensure that we call updateCompositingDescendantGeometry on layer's
-// scroll parent (if it has one) before we call it on layer. This is necessary because updating
-// layer tree geometry for layer will use values we computed for its scroll parent.
-void RenderLayerCompositor::updateCompositingDescendantGeometryForLayerAndScrollParents(RenderLayer* compositingAncestor, RenderLayer* layer, HashSet<RenderLayer*>& visited, bool compositedChildrenOnly)
-{
-    ASSERT(layer->zIndex() >= 0 || !visited.contains(layer));
-    if (visited.contains(layer))
-        return;
-
-    if (requiresCompositingForOverflowScrollingParent(layer)) {
-        RenderLayer* scrollParent = layer->ancestorScrollingLayer();
-        if (!visited.contains(scrollParent))
-            updateCompositingDescendantGeometryForLayerAndScrollParents(compositingAncestor, scrollParent, visited, compositedChildrenOnly);
-    }
-
-    updateCompositingDescendantGeometry(compositingAncestor, layer, visited, compositedChildrenOnly);
-}
-
 // Recurs down the RenderLayer tree until its finds the compositing descendants of compositingAncestor and updates their geometry.
-void RenderLayerCompositor::updateCompositingDescendantGeometry(RenderLayer* compositingAncestor, RenderLayer* layer, HashSet<RenderLayer*>& visited, bool compositedChildrenOnly)
+void RenderLayerCompositor::updateCompositingDescendantGeometry(RenderLayer* compositingAncestor, RenderLayer* layer, bool compositedChildrenOnly)
 {
-    visited.add(layer);
-
     if (layer != compositingAncestor) {
         if (RenderLayerBacking* layerBacking = layer->backing()) {
             layerBacking->updateCompositedBounds();
@@ -1506,7 +1422,7 @@ void RenderLayerCompositor::updateCompositingDescendantGeometry(RenderLayer* com
     }
 
     if (layer->reflectionLayer())
-        updateCompositingDescendantGeometry(compositingAncestor, layer->reflectionLayer(), visited, compositedChildrenOnly);
+        updateCompositingDescendantGeometry(compositingAncestor, layer->reflectionLayer(), compositedChildrenOnly);
 
     if (!layer->hasCompositingDescendant())
         return;
@@ -1519,21 +1435,21 @@ void RenderLayerCompositor::updateCompositingDescendantGeometry(RenderLayer* com
         if (Vector<RenderLayer*>* negZOrderList = layer->negZOrderList()) {
             size_t listSize = negZOrderList->size();
             for (size_t i = 0; i < listSize; ++i)
-                updateCompositingDescendantGeometryForLayerAndScrollParents(compositingAncestor, negZOrderList->at(i), visited, compositedChildrenOnly);
+                updateCompositingDescendantGeometry(compositingAncestor, negZOrderList->at(i), compositedChildrenOnly);
         }
     }
 
     if (Vector<RenderLayer*>* normalFlowList = layer->normalFlowList()) {
         size_t listSize = normalFlowList->size();
         for (size_t i = 0; i < listSize; ++i)
-            updateCompositingDescendantGeometryForLayerAndScrollParents(compositingAncestor, normalFlowList->at(i), visited, compositedChildrenOnly);
+            updateCompositingDescendantGeometry(compositingAncestor, normalFlowList->at(i), compositedChildrenOnly);
     }
 
     if (layer->isStackingContainer()) {
         if (Vector<RenderLayer*>* posZOrderList = layer->posZOrderList()) {
             size_t listSize = posZOrderList->size();
             for (size_t i = 0; i < listSize; ++i)
-                updateCompositingDescendantGeometryForLayerAndScrollParents(compositingAncestor, posZOrderList->at(i), visited, compositedChildrenOnly);
+                updateCompositingDescendantGeometry(compositingAncestor, posZOrderList->at(i), compositedChildrenOnly);
         }
     }
 }
@@ -1878,11 +1794,7 @@ bool RenderLayerCompositor::clippedByAncestor(const RenderLayer* layer) const
     if (!layer->isComposited() || !layer->parent())
         return false;
 
-    // Scroll children use their scrolling ancestor as their clip root.
-    RenderLayer* compositingAncestor = requiresCompositingForOverflowScrollingParent(layer)
-        ? layer->ancestorScrollingLayer()
-        : layer->ancestorCompositingLayer();
-
+    const RenderLayer* compositingAncestor = layer->ancestorCompositingLayer();
     if (!compositingAncestor)
         return false;
 

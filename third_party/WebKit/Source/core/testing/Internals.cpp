@@ -1832,44 +1832,6 @@ void Internals::setNeedsCompositedScrolling(Element* element, unsigned needsComp
         layer->setForceNeedsCompositedScrolling(static_cast<RenderLayer::ForceNeedsCompositedScrollingMode>(needsCompositedScrolling));
 }
 
-bool Internals::isScrollParent(Element* child, Element* parent, ExceptionState& es)
-{
-    RenderLayer* childLayer = getRenderLayerForElement(child, es);
-    RenderLayer* parentLayer = getRenderLayerForElement(parent, es);
-    return childLayer && parentLayer && childLayer->scrollParent() == parentLayer;
-}
-
-bool Internals::isClipParent(Element* child, Element* parent, ExceptionState& es)
-{
-    RenderLayer* childLayer = getRenderLayerForElement(child, es);
-    RenderLayer* parentLayer = getRenderLayerForElement(parent, es);
-    return childLayer && parentLayer && childLayer->clipParent() == parentLayer;
-}
-
-PassRefPtr<ClientRect> Internals::scrollClip(Element* element, ExceptionState& es)
-{
-    RenderLayer* layer = getRenderLayerForElement(element, es);
-    if (!layer || !layer->backing() || !layer->backing()->scrollingLayer())
-        return ClientRect::create();
-
-    return ClientRect::create(
-        FloatRect(
-            layer->backing()->scrollingLayer()->boundsOrigin(),
-            layer->backing()->scrollingLayer()->size()));
-}
-
-PassRefPtr<ClientRect> Internals::ancestorScrollClip(Element* element, ExceptionState& es)
-{
-    RenderLayer* layer = getRenderLayerForElement(element, es);
-    if (!layer || !layer->backing() || !layer->backing()->ancestorScrollClippingLayer())
-        return ClientRect::create();
-
-    return ClientRect::create(
-        FloatRect(
-            layer->backing()->ancestorScrollClippingLayer()->boundsOrigin(),
-            layer->backing()->ancestorScrollClippingLayer()->size()));
-}
-
 String Internals::repaintRectsAsText(Document* document, ExceptionState& es) const
 {
     if (!document || !document->frame()) {
