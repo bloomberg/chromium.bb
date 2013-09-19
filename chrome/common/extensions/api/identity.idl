@@ -10,7 +10,7 @@ namespace identity {
     // approve the application's requested scopes. If the interactive
     // flag is <code>true</code>, <code>getAuthToken</code> will
     // prompt the user as necessary. When the flag is
-    // <code>false</code> or ommitted, <code>getAuthToken</code> will
+    // <code>false</code> or omitted, <code>getAuthToken</code> will
     // return failure any time a prompt would be required.
     boolean? interactive;
   };
@@ -33,7 +33,7 @@ namespace identity {
     //
     // If the interactive flag is <code>true</code>, the window will
     // be displayed when a page load completes. If the flag is
-    // <code>false</code> or ommitted, <code>launchWebAuthFlow</code>
+    // <code>false</code> or omitted, <code>launchWebAuthFlow</code>
     // will return with an error if the initial navigation does not
     // complete the flow.
     boolean? interactive;
