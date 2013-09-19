@@ -77,6 +77,11 @@ DISK_FILE_CHUNK = 1024 * 1024
 # response from the server within this timeout whole download will be aborted.
 DOWNLOAD_READ_TIMEOUT = 60
 
+# Maximum expected delay (in seconds) between successive file fetches
+# in run_tha_test. If it takes longer than that, a deadlock might be happening
+# and all stack frames for all threads are dumped to log.
+DEADLOCK_TIMEOUT = 5 * 60
+
 
 # The delay (in seconds) to wait between logging statements when retrieving
 # the required files. This is intended to let the user (or buildbot) know that
@@ -253,22 +258,6 @@ def create_links(base_directory, files):
       lchmod = getattr(os, 'lchmod', None)
       if lchmod:
         lchmod(outfile, properties['m'])
-
-
-def setup_commands(base_directory, cwd, cmd):
-  """Correctly adjusts and then returns the required working directory
-  and command needed to run the test.
-  """
-  assert not os.path.isabs(cwd), 'The cwd must be a relative path, got %s' % cwd
-  cwd = os.path.join(base_directory, cwd)
-  if not os.path.isdir(cwd):
-    os.makedirs(cwd)
-
-  # Ensure paths are correctly separated on windows.
-  cmd[0] = cmd[0].replace('/', os.path.sep)
-  cmd = tools.fix_python_path(cmd)
-
-  return cwd, cmd
 
 
 def generate_remaining_files(files):
@@ -696,16 +685,18 @@ class MemoryCache(object):
   in the target directory directly.
   """
 
-  def __init__(self, target_directory, pool, remote):
-    self.target_directory = target_directory
-    self.pool = pool
+  def __init__(self, remote):
     self.remote = remote
+    self._pool = None
     self._lock = threading.Lock()
     self._contents = {}
 
+  def set_pool(self, pool):
+    self._pool = pool
+
   def retrieve(self, priority, item, size):
     """Gets the requested file."""
-    self.pool.add_task(priority, self._store, item, size)
+    self._pool.add_task(priority, self._on_content, item, size)
 
   def wait_for(self, items):
     """Starts a loop that waits for at least one of |items| to be retrieved.
@@ -719,17 +710,22 @@ class MemoryCache(object):
           return item
 
     while True:
-      downloaded = self.pool.get_one_result()
+      downloaded = self._pool.get_one_result()
       if downloaded in items:
         return downloaded
 
-  def path(self, item):
-    return os.path.join(self.target_directory, item)
+  def add(self, filepath, item):
+    with self._lock:
+      with open(filepath, 'rb') as f:
+        self._contents[item] = f.read()
 
   def read(self, item):
     return self._contents[item]
 
-  def _store(self, item, size):
+  def store_to(self, item, dest):
+    file_write(dest, [self._contents[item]])
+
+  def _on_content(self, item, size):
     data = ''.join(self.remote.fetch(item, size))
     with self._lock:
       self._contents[item] = data
@@ -739,6 +735,8 @@ class MemoryCache(object):
     return self
 
   def __exit__(self, _exc_type, _exec_value, _traceback):
+    with self._lock:
+      self._contents = {}
     return False
 
 
@@ -787,9 +785,21 @@ def load_isolated(content, os_flavor, algo):
               raise ConfigError('Expected int, got %r' % subsubvalue)
           else:
             raise ConfigError('Unknown subsubkey %s' % subsubkey)
-        if bool('h' in subvalue) and bool('l' in subvalue):
+        if bool('h' in subvalue) == bool('l' in subvalue):
           raise ConfigError(
-              'Did not expect both \'h\' (sha-1) and \'l\' (link), got: %r' %
+              'Need only one of \'h\' (sha-1) or \'l\' (link), got: %r' %
+              subvalue)
+        if bool('h' in subvalue) != bool('s' in subvalue):
+          raise ConfigError(
+              'Both \'h\' (sha-1) and \'s\' (size) should be set, got: %r' %
+              subvalue)
+        if bool('s' in subvalue) == bool('l' in subvalue):
+          raise ConfigError(
+              'Need only one of \'s\' (size) or \'l\' (link), got: %r' %
+              subvalue)
+        if bool('l' in subvalue) and bool('m' in subvalue):
+          raise ConfigError(
+              'Cannot use \'m\' (mode) and \'l\' (link), got: %r' %
               subvalue)
 
     elif key == 'includes':
@@ -818,6 +828,20 @@ def load_isolated(content, os_flavor, algo):
     else:
       raise ConfigError('Unknown key %s' % key)
 
+  # Automatically fix os.path.sep if necessary. While .isolated files are always
+  # in the the native path format, someone could want to download an .isolated
+  # tree from another OS.
+  wrong_path_sep = '/' if os.path.sep == '\\' else '\\'
+  if 'files' in data:
+    data['files'] = dict(
+        (k.replace(wrong_path_sep, os.path.sep), v)
+        for k, v in data['files'].iteritems())
+    for v in data['files'].itervalues():
+      if 'l' in v:
+        v['l'] = v['l'].replace(wrong_path_sep, os.path.sep)
+  if 'relative_cwd' in data:
+    data['relative_cwd'] = data['relative_cwd'].replace(
+        wrong_path_sep, os.path.sep)
   return data
 
 
@@ -845,13 +869,13 @@ class IsolatedFile(object):
     # Set once the files are fetched.
     self.files_fetched = False
 
-  def load(self, content):
+  def load(self, os_flavor, content):
     """Verifies the .isolated file is valid and loads this object with the json
     data.
     """
     logging.debug('IsolatedFile.load(%s)' % self.obj_hash)
     assert not self._is_parsed
-    self.data = load_isolated(content, None, self.algo)
+    self.data = load_isolated(content, os_flavor, self.algo)
     self.children = [
         IsolatedFile(i, self.algo) for i in self.data.get('includes', [])
     ]
@@ -893,7 +917,7 @@ class Settings(object):
     # The main .isolated file, a IsolatedFile instance.
     self.root = None
 
-  def load(self, cache, root_isolated_hash, algo):
+  def load(self, cache, root_isolated_hash, os_flavor, algo):
     """Loads the .isolated and all the included .isolated asynchronously.
 
     It enables support for "included" .isolated files. They are processed in
@@ -932,7 +956,7 @@ class Settings(object):
     while pending:
       item_hash = cache.wait_for(pending)
       item = pending.pop(item_hash)
-      item.load(cache.read(item_hash))
+      item.load(os_flavor, cache.read(item_hash))
       if item_hash == root_isolated_hash:
         # It's the root item.
         item.can_fetch = True
@@ -968,12 +992,80 @@ class Settings(object):
     node.fetch_files(cache, self.files)
     # Grabs properties.
     if not self.command and node.data.get('command'):
+      # Ensure paths are correctly separated on windows.
       self.command = node.data['command']
+      if self.command:
+        self.command[0] = self.command[0].replace('/', os.path.sep)
+        self.command = tools.fix_python_path(self.command)
     if self.read_only is None and node.data.get('read_only') is not None:
       self.read_only = node.data['read_only']
     if (self.relative_cwd is None and
         node.data.get('relative_cwd') is not None):
       self.relative_cwd = node.data['relative_cwd']
+
+
+def fetch_isolated(
+    isolated_hash, cache, outdir, os_flavor, algo, require_command):
+  """Aggressively downloads the .isolated file(s), then download all the files.
+  """
+  settings = Settings()
+  with WorkerPool() as pool:
+    with cache:
+      cache.set_pool(pool)
+      with tools.Profiler('GetIsolateds'):
+        # Optionally support local files.
+        if not is_valid_hash(isolated_hash, algo):
+          # Adds it in the cache. While not strictly necessary, this
+          # simplifies the rest.
+          h = hash_file(isolated_hash, algo)
+          cache.add(isolated_hash, h)
+          isolated_hash = h
+        settings.load(cache, isolated_hash, os_flavor, algo)
+
+      if require_command and not settings.command:
+        raise ConfigError('No command to run')
+
+      with tools.Profiler('GetRest'):
+        create_directories(outdir, settings.files)
+        create_links(outdir, settings.files.iteritems())
+        remaining = generate_remaining_files(settings.files.iteritems())
+
+        cwd = os.path.normpath(os.path.join(outdir, settings.relative_cwd))
+        if not os.path.isdir(cwd):
+          os.makedirs(cwd)
+
+        # Now block on the remaining files to be downloaded and mapped.
+        logging.info('Retrieving remaining files')
+        last_update = time.time()
+        with threading_utils.DeadlockDetector(DEADLOCK_TIMEOUT) as detector:
+          while remaining:
+            detector.ping()
+            obj = cache.wait_for(remaining)
+            for filepath, properties in remaining.pop(obj):
+              outfile = os.path.join(outdir, filepath)
+              cache.store_to(obj, outfile)
+              if 'm' in properties:
+                # It's not set on Windows.
+                os.chmod(outfile, properties['m'])
+
+            duration = time.time() - last_update
+            if duration > DELAY_BETWEEN_UPDATES_IN_SECS:
+              msg = '%d files remaining...' % len(remaining)
+              print msg
+              logging.info(msg)
+              last_update = time.time()
+  return settings
+
+
+def download_isolated_tree(isolated_hash, target_directory, remote):
+  """Downloads the dependencies to the given directory."""
+  if not os.path.exists(target_directory):
+    os.makedirs(target_directory)
+
+  algo = hashlib.sha1
+  cache = MemoryCache(remote)
+  return fetch_isolated(
+      isolated_hash, cache, target_directory, None, algo, False)
 
 
 @subcommand.usage('<file1..fileN> or - to read from stdin')
@@ -1016,8 +1108,13 @@ def CMDarchive(parser, args):
 def CMDdownload(parser, args):
   """Download data from the server.
 
-  It can download individual files.
+  It can either download individual files or a complete tree from a .isolated
+  file.
   """
+  parser.add_option(
+      '-i', '--isolated', metavar='HASH',
+      help='hash of an isolated file, .isolated file content is discarded, use '
+           '--file if you need it')
   parser.add_option(
       '-f', '--file', metavar='HASH DEST', default=[], action='append', nargs=2,
       help='hash and destination of a file, can be used multiple times')
@@ -1027,8 +1124,8 @@ def CMDdownload(parser, args):
   options, args = parser.parse_args(args)
   if args:
     parser.error('Unsupported arguments: %s' % args)
-  if not options.file:
-    parser.error('Use one of --file is required.')
+  if bool(options.isolated) == bool(options.file):
+    parser.error('Use one of --isolated or --file, and only one.')
 
   options.target = os.path.abspath(options.target)
   remote = get_storage_api(options.isolate_server, options.namespace)
@@ -1037,6 +1134,12 @@ def CMDdownload(parser, args):
     file_write(
         os.path.join(options.target, dest),
         remote.fetch(h, UNKNOWN_FILE_SIZE))
+  if options.isolated:
+    settings = download_isolated_tree(options.isolated, options.target, remote)
+    rel = os.path.join(options.target, settings.relative_cwd)
+    print('To run this test please run from the directory %s:' %
+          os.path.join(options.target, rel))
+    print('  ' + ' '.join(settings.command))
   return 0
 
 

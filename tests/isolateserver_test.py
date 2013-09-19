@@ -9,8 +9,10 @@ import json
 import logging
 import os
 import random
+import shutil
 import StringIO
 import sys
+import tempfile
 import threading
 import unittest
 import zlib
@@ -294,6 +296,15 @@ class IsolateServerArchiveTest(TestCase):
 
 
 class IsolateServerDownloadTest(TestCase):
+  tempdir = None
+
+  def tearDown(self):
+    try:
+      if self.tempdir:
+        shutil.rmtree(self.tempdir)
+    finally:
+      super(IsolateServerDownloadTest, self).tearDown()
+
   def test_download_two_files(self):
     # Test downloading two files.
     actual = {}
@@ -327,28 +338,57 @@ class IsolateServerDownloadTest(TestCase):
     }
     self.assertEqual(expected, actual)
 
-  def test_zip_header_error(self):
-    self.mock(
-        isolateserver.net, 'url_open',
-        lambda url, **_: isolateserver.net.HttpResponse.get_fake_response(
-            '111', url))
-    self.mock(isolateserver.time, 'sleep', lambda _x: None)
+  def test_download_isolated(self):
+    # Test downloading an isolated tree.
+    self.tempdir = tempfile.mkdtemp(prefix='isolateserver')
+    actual = {}
+    def file_write_mock(key, generator):
+      actual[key] = ''.join(generator)
+    self.mock(isolateserver, 'file_write', file_write_mock)
+    self.mock(os, 'makedirs', lambda _: None)
+    stdout = StringIO.StringIO()
+    self.mock(sys, 'stdout', stdout)
+    server = 'http://example.com'
 
-    retriever = isolateserver.get_storage_api(
-        'https://fake-CAD.com/', 'namespace')
-    def fetch():
-      return list(retriever.fetch('foo', isolateserver.UNKNOWN_FILE_SIZE))
-
-    with isolateserver.WorkerPool() as remote:
-      # Both files will fail to be unzipped due to incorrect headers,
-      # ensure that we don't accept the files (even if the size is unknown)}.
-      remote.add_task(
-          isolateserver.WorkerPool.MED, fetch)
-      remote.add_task(isolateserver.WorkerPool.MED, fetch)
-      self.assertRaises(IOError, remote.get_one_result)
-      self.assertRaises(IOError, remote.get_one_result)
-      # Need to use join here, since get_one_result will hang.
-      self.assertEqual([], remote.join())
+    files = {
+      'a/foo': 'Content',
+      'b': 'More content',
+      }
+    isolated = {
+      'command': ['Absurb', 'command'],
+      'relative_cwd': 'a',
+      'files': dict(
+          (k, {'h': ALGO(v).hexdigest(), 's': len(v)})
+          for k, v in files.iteritems()),
+    }
+    isolated_data = json.dumps(isolated, sort_keys=True, separators=(',',':'))
+    isolated_hash = ALGO(isolated_data).hexdigest()
+    requests = [(v['h'], files[k]) for k, v in isolated['files'].iteritems()]
+    requests.append((isolated_hash, isolated_data))
+    self._requests = [
+      (
+        server + '/content/retrieve/default-gzip/' + h,
+        {
+          'read_timeout': isolateserver.DOWNLOAD_READ_TIMEOUT,
+          'retry_404': True,
+        },
+        zlib.compress(v),
+      ) for h, v in requests
+    ]
+    cmd = [
+      'download',
+      '--isolate-server', server,
+      '--target', self.tempdir,
+      '--isolated', isolated_hash,
+    ]
+    self.assertEqual(0, isolateserver.main(cmd))
+    expected = dict(
+        (os.path.join(self.tempdir, k), v) for k, v in files.iteritems())
+    self.assertEqual(expected, actual)
+    expected_stdout = (
+        'To run this test please run from the directory %s:\n  Absurb command\n'
+        % os.path.join(self.tempdir, 'a'))
+    self.assertEqual(expected_stdout, stdout.getvalue())
 
 
 class TestIsolated(unittest.TestCase):
@@ -362,11 +402,11 @@ class TestIsolated(unittest.TestCase):
       u'files': {
         u'a': {
           u'l': u'somewhere',
-          u'm': 123,
         },
         u'b': {
           u'm': 123,
-          u'h': u'0123456789abcdef0123456789abcdef01234567'
+          u'h': u'0123456789abcdef0123456789abcdef01234567',
+          u's': 3,
         }
       },
       u'includes': [u'0123456789abcdef0123456789abcdef01234567'],
@@ -408,6 +448,26 @@ class TestIsolated(unittest.TestCase):
       self.fail()
     except isolateserver.ConfigError:
       pass
+
+  def test_load_isolated_path(self):
+    # Automatically convert the path case.
+    wrong_path_sep = u'\\' if os.path.sep == '/' else u'/'
+    def gen_data(path_sep):
+      return {
+        u'command': [u'foo', u'bar'],
+        u'files': {
+          path_sep.join(('a', 'b')): {
+            u'l': path_sep.join(('..', 'somewhere')),
+          },
+        },
+        u'os': u'oPhone',
+        u'relative_cwd': path_sep.join(('somewhere', 'else')),
+      }
+
+    data = gen_data(wrong_path_sep)
+    actual = isolateserver.load_isolated(json.dumps(data), None, ALGO)
+    expected = gen_data(os.path.sep)
+    self.assertEqual(expected, actual)
 
 
 if __name__ == '__main__':

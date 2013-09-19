@@ -446,7 +446,8 @@ def process_input(filepath, prevdict, read_only, flavor, algo):
       filemode |= stat.S_IXGRP
     else:
       filemode &= ~stat.S_IXGRP
-    out['m'] = filemode
+    if not is_link:
+      out['m'] = filemode
 
   # Used to skip recalculating the hash or link destination. Use the most recent
   # update time.

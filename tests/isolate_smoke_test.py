@@ -218,14 +218,12 @@ class IsolateModeBase(IsolateBase):
         v[u's'] = filestats.st_size
         if isolate.get_flavor() != 'win':
           v[u'm'] = self._fix_file_mode(relfile, read_only)
-      else:
-        v[u'm'] = 488
       if with_time:
         # Used to skip recalculating the hash. Use the most recent update
         # time.
         v[u't'] = int(round(filestats.st_mtime))
       if is_link:
-        v['l'] = os.readlink(filepath)  # pylint: disable=E1101
+        v[u'l'] = os.readlink(filepath)  # pylint: disable=E1101
       else:
         # Upgrade the value to unicode so diffing the structure in case of
         # test failure is easier, since the basestring type must match,

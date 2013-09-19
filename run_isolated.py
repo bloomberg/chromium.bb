@@ -26,7 +26,6 @@ import time
 from third_party.depot_tools import fix_encoding
 
 from utils import lru
-from utils import threading_utils
 from utils import tools
 from utils import zip_package
 
@@ -249,19 +248,18 @@ class DiskCache(object):
   """
   STATE_FILE = 'state.json'
 
-  def __init__(self, cache_dir, pool, retriever, policies, algo):
+  def __init__(self, cache_dir, retriever, policies, algo):
     """
     Arguments:
     - cache_dir: Directory where to place the cache.
-    - pool: isolateserver.WorkerPool.
     - retriever: API where to fetch items from.
     - policies: cache retention policies.
     - algo: hashing algorithm used.
     """
     self.cache_dir = cache_dir
-    self.pool = pool
     self.retriever = retriever
     self.policies = policies
+    self._pool = None
     self.state_file = os.path.join(cache_dir, self.STATE_FILE)
     self.lru = lru.LRUDict()
 
@@ -298,7 +296,7 @@ class DiskCache(object):
         # An untracked file.
         if not isolateserver.is_valid_hash(filename, algo):
           logging.warning('Removing unknown file %s from cache', filename)
-          os.remove(self.path(filename))
+          os.remove(self._path(filename))
           continue
         # File that's not referenced in 'state.json'.
         # TODO(vadimsh): Verify its SHA1 matches file name.
@@ -316,6 +314,10 @@ class DiskCache(object):
         for filename in previous:
           self.lru.pop(filename)
       self.trim()
+
+  def set_pool(self, pool):
+    """Sets an isolateserver.WorkerPool."""
+    self._pool = pool
 
   def __enter__(self):
     return self
@@ -377,12 +379,12 @@ class DiskCache(object):
     the correct size), retrieving it again if it isn't.
     """
     assert not '/' in item
-    path = self.path(item)
+    path = self._path(item)
     found = False
 
     if item in self.lru:
       # Note that is doesn't compute the hash so it could still be corrupted.
-      if not isolateserver.is_valid_file(self.path(item), size):
+      if not isolateserver.is_valid_file(self._path(item), size):
         self.lru.pop(item)
         self._delete_file(item, size)
       else:
@@ -401,22 +403,21 @@ class DiskCache(object):
       #   space, it'll crash.
       # - Make sure there's enough free disk space to fit all dependencies of
       #   this run! If not, abort early.
-      self.pool.add_task(priority, self._store, item, path, size)
+      self._pool.add_task(priority, self._store, item, path, size)
       self._pending_queue.add(item)
 
   def add(self, filepath, obj):
     """Forcibly adds a file to the cache."""
     if obj not in self.lru:
-      link_file(self.path(obj), filepath, HARDLINK)
+      link_file(self._path(obj), filepath, HARDLINK)
       self._add(obj)
 
-  def path(self, item):
-    """Returns the path to one item."""
-    return os.path.join(self.cache_dir, item)
+  def store_to(self, obj, dest):
+    link_file(dest, self._path(obj), HARDLINK)
 
   def read(self, item):
     """Reads an item from the cache."""
-    with open(self.path(item), 'rb') as f:
+    with open(self._path(item), 'rb') as f:
       return f.read()
 
   def wait_for(self, items):
@@ -437,11 +438,15 @@ class DiskCache(object):
     #     len(self._remote._queue) + len(self._remote.done))
     # There is no lock-free way to verify that.
     while self._pending_queue:
-      item = self.pool.get_one_result()
+      item = self._pool.get_one_result()
       self._pending_queue.remove(item)
       self._add(item)
       if item in items:
         return item
+
+  def _path(self, item):
+    """Returns the path to one item."""
+    return os.path.join(self.cache_dir, item)
 
   def _save(self):
     """Saves the LRU ordering."""
@@ -455,7 +460,7 @@ class DiskCache(object):
 
   def _add(self, item):
     """Adds an item into LRU cache marking it as a newest one."""
-    size = os.stat(self.path(item)).st_size
+    size = os.stat(self._path(item)).st_size
     self._added.append(size)
     self.lru.add(item, size)
 
@@ -463,7 +468,7 @@ class DiskCache(object):
     """Adds a bunch of items into LRU cache marking them as oldest ones."""
     pairs = []
     for item in items:
-      size = os.stat(self.path(item)).st_size
+      size = os.stat(self._path(item)).st_size
       self._added.append(size)
       pairs.append((item, size))
     self.lru.batch_insert_oldest(pairs)
@@ -477,7 +482,7 @@ class DiskCache(object):
     """Deletes cache file from the file system."""
     self._removed.append(size)
     try:
-      os.remove(self.path(item))
+      os.remove(self._path(item))
     except OSError as e:
       logging.error('Error attempting to delete a file\n%s' % e)
 
@@ -489,62 +494,21 @@ def run_tha_test(isolated_hash, cache_dir, retriever, policies):
   algo = hashlib.sha1
   outdir = None
   try:
-    settings = isolateserver.Settings()
-    # |pool| must outlive |cache|.
-    with isolateserver.WorkerPool() as pool:
-      with DiskCache(cache_dir, pool, retriever, policies, algo) as cache:
-        # |cache_dir| may not exist until DiskCache() instance is created.
-        outdir = make_temp_dir('run_tha_test', cache_dir)
-        # Initiate all the files download.
-        with tools.Profiler('GetIsolateds'):
-          # Optionally support local files.
-          if not isolateserver.is_valid_hash(isolated_hash, algo):
-            # Adds it in the cache. While not strictly necessary, this
-            # simplifies the rest.
-            h = isolateserver.hash_file(isolated_hash, algo)
-            cache.add(isolated_hash, h)
-            isolated_hash = h
-          settings.load(cache, isolated_hash, algo)
-
-        if not settings.command:
-          print >> sys.stderr, 'No command to run'
-          return 1
-
-        with tools.Profiler('GetRest'):
-          isolateserver.create_directories(outdir, settings.files)
-          isolateserver.create_links(outdir, settings.files.iteritems())
-          remaining = isolateserver.generate_remaining_files(
-              settings.files.iteritems())
-
-          # Do bookkeeping while files are being downloaded in the background.
-          cwd, cmd = isolateserver.setup_commands(
-              outdir, settings.relative_cwd, settings.command[:])
-
-          # Now block on the remaining files to be downloaded and mapped.
-          logging.info('Retrieving remaining files')
-          last_update = time.time()
-          with threading_utils.DeadlockDetector(DEADLOCK_TIMEOUT) as detector:
-            while remaining:
-              detector.ping()
-              obj = cache.wait_for(remaining)
-              for filepath, properties in remaining.pop(obj):
-                outfile = os.path.join(outdir, filepath)
-                link_file(outfile, cache.path(obj), HARDLINK)
-                if 'm' in properties:
-                  # It's not set on Windows.
-                  os.chmod(outfile, properties['m'])
-
-              duration = time.time() - last_update
-              if duration > isolateserver.DELAY_BETWEEN_UPDATES_IN_SECS:
-                msg = '%d files remaining...' % len(remaining)
-                print msg
-                logging.info(msg)
-                last_update = time.time()
+    cache = DiskCache(cache_dir, retriever, policies, algo)
+    # |cache_dir| may not exist until DiskCache() instance is created.
+    outdir = make_temp_dir('run_tha_test', cache_dir)
+    try:
+      settings = isolateserver.fetch_isolated(
+          isolated_hash, cache, outdir, get_flavor(), algo, True)
+    except isolateserver.ConfigError as e:
+      print >> sys.stderr, str(e)
+      return 1
 
     if settings.read_only:
       logging.info('Making files read only')
       make_writable(outdir, True)
-    logging.info('Running %s, cwd=%s' % (cmd, cwd))
+    cwd = os.path.normpath(os.path.join(outdir, settings.relative_cwd))
+    logging.info('Running %s, cwd=%s' % (settings.command, cwd))
 
     # TODO(csharp): This should be specified somewhere else.
     # TODO(vadimsh): Pass it via 'env_vars' in manifest.
@@ -554,10 +518,10 @@ def run_tha_test(isolated_hash, cache_dir, retriever, policies):
                   os.path.join(MAIN_DIR, RUN_TEST_CASES_LOG))
     try:
       with tools.Profiler('RunTest'):
-        return subprocess.call(cmd, cwd=cwd, env=env)
+        return subprocess.call(settings.command, cwd=cwd, env=env)
     except OSError:
-      print >> sys.stderr, 'Failed to run %s; cwd=%s' % (cmd, cwd)
-      raise
+      print >> sys.stderr, 'Failed to run %s; cwd=%s' % (settings.command, cwd)
+      return 1
   finally:
     if outdir:
       rmtree(outdir)
