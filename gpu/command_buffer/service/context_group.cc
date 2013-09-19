@@ -120,15 +120,12 @@ bool ContextGroup::Initialize(
     draw_buffer_ = GL_BACK;
   }
 
-  const bool depth24_supported = feature_info_->feature_flags().oes_depth24;
-
   buffer_manager_.reset(
       new BufferManager(memory_tracker_.get(), feature_info_.get()));
   framebuffer_manager_.reset(
       new FramebufferManager(max_draw_buffers_, max_color_attachments_));
   renderbuffer_manager_.reset(new RenderbufferManager(
-      memory_tracker_.get(), max_renderbuffer_size, max_samples,
-      depth24_supported));
+      memory_tracker_.get(), max_renderbuffer_size, max_samples));
   shader_manager_.reset(new ShaderManager());
 
   // Lookup GL things we need to know.

@@ -126,8 +126,7 @@ class GPU_EXPORT RenderbufferManager {
  public:
   RenderbufferManager(MemoryTracker* memory_tracker,
                       GLint max_renderbuffer_size,
-                      GLint max_samples,
-                      bool depth24_supported);
+                      GLint max_samples);
   ~RenderbufferManager();
 
   GLint max_renderbuffer_size() const {
@@ -164,12 +163,9 @@ class GPU_EXPORT RenderbufferManager {
     return memory_tracker_->GetMemRepresented();
   }
 
-  bool ComputeEstimatedRenderbufferSize(int width,
-                                        int height,
-                                        int samples,
-                                        int internal_format,
-                                        uint32* size) const;
-  GLenum InternalRenderbufferFormatToImplFormat(GLenum impl_format) const;
+  static bool ComputeEstimatedRenderbufferSize(
+      int width, int height, int samples, int internal_format, uint32* size);
+  static GLenum InternalRenderbufferFormatToImplFormat(GLenum impl_format);
 
  private:
   friend class Renderbuffer;
@@ -181,7 +177,6 @@ class GPU_EXPORT RenderbufferManager {
 
   GLint max_renderbuffer_size_;
   GLint max_samples_;
-  bool depth24_supported_;
 
   int num_uncleared_renderbuffers_;
 

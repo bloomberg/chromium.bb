@@ -17,13 +17,11 @@ namespace gles2 {
 RenderbufferManager::RenderbufferManager(
     MemoryTracker* memory_tracker,
     GLint max_renderbuffer_size,
-    GLint max_samples,
-    bool depth24_supported)
+    GLint max_samples)
     : memory_tracker_(
           new MemoryTypeTracker(memory_tracker, MemoryTracker::kUnmanaged)),
       max_renderbuffer_size_(max_renderbuffer_size),
       max_samples_(max_samples),
-      depth24_supported_(depth24_supported),
       num_uncleared_renderbuffers_(0),
       renderbuffer_count_(0),
       have_context_(true) {
@@ -40,7 +38,7 @@ RenderbufferManager::~RenderbufferManager() {
 
 size_t Renderbuffer::EstimatedSize() {
   uint32 size = 0;
-  manager_->ComputeEstimatedRenderbufferSize(
+  RenderbufferManager::ComputeEstimatedRenderbufferSize(
       width_, height_, samples_, internal_format_, &size);
   return size;
 }
@@ -151,11 +149,8 @@ void RenderbufferManager::RemoveRenderbuffer(GLuint client_id) {
   }
 }
 
-bool RenderbufferManager::ComputeEstimatedRenderbufferSize(int width,
-                                                           int height,
-                                                           int samples,
-                                                           int internal_format,
-                                                           uint32* size) const {
+bool RenderbufferManager::ComputeEstimatedRenderbufferSize(
+    int width, int height, int samples, int internal_format, uint32* size) {
   DCHECK(size);
 
   uint32 temp = 0;
@@ -175,7 +170,7 @@ bool RenderbufferManager::ComputeEstimatedRenderbufferSize(int width,
 }
 
 GLenum RenderbufferManager::InternalRenderbufferFormatToImplFormat(
-    GLenum impl_format) const {
+    GLenum impl_format) {
   if (gfx::GetGLImplementation() != gfx::kGLImplementationEGLGLES2) {
     switch (impl_format) {
       case GL_DEPTH_COMPONENT16:
@@ -186,10 +181,6 @@ GLenum RenderbufferManager::InternalRenderbufferFormatToImplFormat(
       case GL_RGB565:
         return GL_RGB;
     }
-  } else {
-    // Upgrade 16-bit depth to 24-bit if possible.
-    if (impl_format == GL_DEPTH_COMPONENT16 && depth24_supported_)
-      return GL_DEPTH_COMPONENT24;
   }
   return impl_format;
 }

@@ -1941,8 +1941,8 @@ bool BackRenderbuffer::AllocateStorage(const gfx::Size& size, GLenum format,
   ScopedRenderBufferBinder binder(decoder_, id_);
 
   uint32 estimated_size = 0;
-  if (!decoder_->renderbuffer_manager()->ComputeEstimatedRenderbufferSize(
-           size.width(), size.height(), samples, format, &estimated_size)) {
+  if (!RenderbufferManager::ComputeEstimatedRenderbufferSize(
+      size.width(), size.height(), samples, format, &estimated_size)) {
     return false;
   }
 
@@ -5022,8 +5022,8 @@ void GLES2DecoderImpl::DoRenderbufferStorageMultisample(
   }
 
   uint32 estimated_size = 0;
-  if (!renderbuffer_manager()->ComputeEstimatedRenderbufferSize(
-           width, height, samples, internalformat, &estimated_size)) {
+  if (!RenderbufferManager::ComputeEstimatedRenderbufferSize(
+      width, height, samples, internalformat, &estimated_size)) {
     LOCAL_SET_GL_ERROR(
         GL_OUT_OF_MEMORY,
         "glRenderbufferStorageMultsample", "dimensions too large");
@@ -5037,9 +5037,8 @@ void GLES2DecoderImpl::DoRenderbufferStorageMultisample(
     return;
   }
 
-  GLenum impl_format =
-      renderbuffer_manager()->InternalRenderbufferFormatToImplFormat(
-          internalformat);
+  GLenum impl_format = RenderbufferManager::
+      InternalRenderbufferFormatToImplFormat(internalformat);
   LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("glRenderbufferStorageMultisample");
   if (IsAngle()) {
     glRenderbufferStorageMultisampleANGLE(
@@ -5191,8 +5190,8 @@ void GLES2DecoderImpl::DoRenderbufferStorage(
   }
 
   uint32 estimated_size = 0;
-  if (!renderbuffer_manager()->ComputeEstimatedRenderbufferSize(
-           width, height, 1, internalformat, &estimated_size)) {
+  if (!RenderbufferManager::ComputeEstimatedRenderbufferSize(
+      width, height, 1, internalformat, &estimated_size)) {
     LOCAL_SET_GL_ERROR(
         GL_OUT_OF_MEMORY, "glRenderbufferStorage", "dimensions too large");
     return;
@@ -5206,11 +5205,9 @@ void GLES2DecoderImpl::DoRenderbufferStorage(
 
   LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("glRenderbufferStorage");
   glRenderbufferStorageEXT(
-      target,
-      renderbuffer_manager()->InternalRenderbufferFormatToImplFormat(
-          internalformat),
-      width,
-      height);
+      target, RenderbufferManager::
+          InternalRenderbufferFormatToImplFormat(internalformat),
+      width, height);
   GLenum error = LOCAL_PEEK_GL_ERROR("glRenderbufferStorage");
   if (error == GL_NO_ERROR) {
     // TODO(gman): If tetxures tracked which framebuffers they were attached to

@@ -8,7 +8,6 @@
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/mocks.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_mock.h"
 
 using ::testing::StrictMock;
@@ -22,11 +21,11 @@ class RenderbufferManagerTestBase : public testing::Test {
   static const GLint kMaxSamples = 4;
 
  protected:
-  void SetUpBase(MemoryTracker* memory_tracker, bool depth24_supported) {
+  void SetUpBase(MemoryTracker* memory_tracker) {
     gl_.reset(new ::testing::StrictMock<gfx::MockGLInterface>());
     ::gfx::GLInterface::SetGLInterface(gl_.get());
     manager_.reset(new RenderbufferManager(
-        memory_tracker, kMaxSize, kMaxSamples, depth24_supported));
+        memory_tracker, kMaxSize, kMaxSamples));
   }
 
   virtual void TearDown() {
@@ -44,8 +43,7 @@ class RenderbufferManagerTestBase : public testing::Test {
 class RenderbufferManagerTest : public RenderbufferManagerTestBase {
  protected:
   virtual void SetUp() {
-    bool depth24_supported = false;
-    SetUpBase(NULL, depth24_supported);
+    SetUpBase(NULL);
   }
 };
 
@@ -54,8 +52,7 @@ class RenderbufferManagerMemoryTrackerTest
  protected:
   virtual void SetUp() {
     mock_memory_tracker_ = new StrictMock<MockMemoryTracker>();
-    bool depth24_supported = false;
-    SetUpBase(mock_memory_tracker_.get(), depth24_supported);
+    SetUpBase(mock_memory_tracker_.get());
   }
 
   scoped_refptr<MockMemoryTracker> mock_memory_tracker_;
@@ -182,9 +179,9 @@ TEST_F(RenderbufferManagerMemoryTrackerTest, Basic) {
   const GLsizei kHeight2 = 32;
   uint32 expected_size_1 = 0;
   uint32 expected_size_2 = 0;
-  manager_->ComputeEstimatedRenderbufferSize(
+  RenderbufferManager::ComputeEstimatedRenderbufferSize(
       kWidth, kHeight1, kSamples, kFormat, &expected_size_1);
-  manager_->ComputeEstimatedRenderbufferSize(
+  RenderbufferManager::ComputeEstimatedRenderbufferSize(
       kWidth, kHeight2, kSamples, kFormat, &expected_size_2);
   EXPECT_MEMORY_ALLOCATION_CHANGE(
       0, expected_size_1, MemoryTracker::kUnmanaged);
@@ -292,28 +289,6 @@ TEST_F(RenderbufferManagerTest, AddToSignature) {
   EXPECT_CALL(*gl_, DeleteRenderbuffersEXT(1, ::testing::Pointee(kService1Id)))
       .Times(1)
       .RetiresOnSaturation();
-}
-
-class RenderbufferManagerFormatTest : public RenderbufferManagerTestBase {
- protected:
-  virtual void SetUp() {
-    bool depth24_supported = true;
-    SetUpBase(NULL, depth24_supported);
-  }
-};
-
-TEST_F(RenderbufferManagerFormatTest, UpgradeDepthFormatOnGLES) {
-  gfx::SetGLImplementation(gfx::kGLImplementationEGLGLES2);
-  GLenum impl_format =
-      manager_->InternalRenderbufferFormatToImplFormat(GL_DEPTH_COMPONENT16);
-  EXPECT_EQ(static_cast<GLenum>(GL_DEPTH_COMPONENT24), impl_format);
-}
-
-TEST_F(RenderbufferManagerFormatTest, UseUnsizedDepthFormatOnNonGLES) {
-  gfx::SetGLImplementation(gfx::kGLImplementationDesktopGL);
-  GLenum impl_format =
-      manager_->InternalRenderbufferFormatToImplFormat(GL_DEPTH_COMPONENT16);
-  EXPECT_EQ(static_cast<GLenum>(GL_DEPTH_COMPONENT), impl_format);
 }
 
 }  // namespace gles2
