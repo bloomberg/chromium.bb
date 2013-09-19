@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "net/base/ip_endpoint.h"
 #include "net/dns/dns_query.h"
 #include "net/dns/dns_response.h"
 #include "net/dns/record_parsed.h"
@@ -153,6 +154,8 @@ class NET_EXPORT MDnsClient {
   // Create the default MDnsClient
   static scoped_ptr<MDnsClient> CreateDefault();
 };
+
+IPEndPoint NET_EXPORT GetMDnsIPEndPoint(AddressFamily address_family);
 
 }  // namespace net
 #endif  // NET_DNS_MDNS_CLIENT_H_

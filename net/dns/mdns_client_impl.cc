@@ -24,8 +24,6 @@
 namespace net {
 
 namespace {
-const char kMDnsMulticastGroupIPv4[] = "224.0.0.251";
-const char kMDnsMulticastGroupIPv6[] = "FF02::FB";
 const unsigned MDnsTransactionTimeoutSeconds = 3;
 }
 
@@ -99,11 +97,9 @@ int MDnsConnection::SocketHandler::Bind() {
 
 MDnsConnection::MDnsConnection(MDnsConnection::SocketFactory* socket_factory,
                                MDnsConnection::Delegate* delegate)
-    : socket_handler_ipv4_(this,
-                           GetMDnsIPEndPoint(kMDnsMulticastGroupIPv4),
+    : socket_handler_ipv4_(this, GetMDnsIPEndPoint(ADDRESS_FAMILY_IPV4),
                            socket_factory),
-      socket_handler_ipv6_(this,
-                           GetMDnsIPEndPoint(kMDnsMulticastGroupIPv6),
+      socket_handler_ipv6_(this, GetMDnsIPEndPoint(ADDRESS_FAMILY_IPV6),
                            socket_factory),
       delegate_(delegate) {
 }
@@ -144,15 +140,6 @@ void MDnsConnection::OnError(SocketHandler* loop,
   // TODO(noamsml): Specific handling of intermittent errors that can be handled
   // in the connection.
   delegate_->OnConnectionError(error);
-}
-
-IPEndPoint MDnsConnection::GetMDnsIPEndPoint(const char* address) {
-  IPAddressNumber multicast_group_number;
-  bool success = ParseIPLiteralToNumber(address,
-                                        &multicast_group_number);
-  DCHECK(success);
-  return IPEndPoint(multicast_group_number,
-                    dns_protocol::kDefaultPortMulticast);
 }
 
 void MDnsConnection::OnDatagramReceived(

@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/local_discovery/privet_device_lister_impl.h"
 #include "chrome/browser/local_discovery/privet_http_asynchronous_factory.h"
+#include "chrome/browser/local_discovery/privet_traffic_detector.h"
 #include "chrome/browser/local_discovery/service_discovery_host_client.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
@@ -36,7 +37,7 @@ const int kTenMinutesInSeconds = 600;
 const char kPrivetInfoKeyUptime[] = "uptime";
 const char kPrivetNotificationIDPrefix[] = "privet_notification:";
 const char kPrivetNotificationOriginUrl[] = "chrome://devices";
-const int kStartDelaySeconds = 30;
+const int kStartDelaySeconds = 5;
 }
 
 PrivetNotificationsListener::PrivetNotificationsListener(
@@ -222,6 +223,20 @@ void PrivetNotificationService::PrivetRemoveNotification(
 }
 
 void PrivetNotificationService::Start() {
+  traffic_detector_v4_ =
+      new PrivetTrafficDetector(
+          net::ADDRESS_FAMILY_IPV4,
+          base::Bind(&PrivetNotificationService::StartLister, AsWeakPtr()));
+  traffic_detector_v6_ =
+      new PrivetTrafficDetector(
+          net::ADDRESS_FAMILY_IPV6,
+          base::Bind(&PrivetNotificationService::StartLister, AsWeakPtr()));
+}
+
+void PrivetNotificationService::StartLister() {
+  traffic_detector_v4_ = NULL;
+  traffic_detector_v6_ = NULL;
+  DCHECK(!service_discovery_client_);
   service_discovery_client_ = ServiceDiscoverySharedClient::GetInstance();
   device_lister_.reset(new PrivetDeviceListerImpl(service_discovery_client_,
                                                   this));

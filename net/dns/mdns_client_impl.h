@@ -85,8 +85,6 @@ class NET_EXPORT_PRIVATE MDnsConnection {
 
   void OnError(SocketHandler* loop, int error);
 
-  IPEndPoint GetMDnsIPEndPoint(const char* address);
-
   SocketHandler socket_handler_ipv4_;
   SocketHandler socket_handler_ipv6_;
 
