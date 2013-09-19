@@ -29,18 +29,13 @@
 
 """Compile an .idl file to Blink V8 bindings (.h and .cpp files).
 
-We are porting the IDL compiler from Perl to Python. The plan is as follows.
-We will temporarily have two build flows (see ../derived_sources.gyp):
-[1] Perl: deprecated_generate_bindings.pl, which calls:
-    deprecated_idl_parser.pm => deprecated_code_generator_v8.pm
-[2] Python: idl_compiler.py, which calls:
-    IDL lexer => IDL parser => Python object builder =>
-    interface dependency resolver => IDL semantic validator =>
-    C++ code generator
-
-We will move IDL files from the Perl build flow [1] to the Python build flow [2]
-incrementally. See http://crbug.com/239771
+FIXME: Not currently used in build.
+This is a rewrite of the Perl IDL compiler in Python, but is not complete.
+Once it is complete, we will switch all IDL files over to Python at once.
+Until then, please work on the Perl IDL compiler.
+For details, see bug http://crbug.com/239771
 """
+
 import optparse
 import os
 import pickle
@@ -52,7 +47,8 @@ import code_generator_v8
 import idl_reader
 
 module_path, _ = os.path.split(__file__)
-source_path = os.path.normpath(os.path.join(module_path, os.pardir, os.pardir))
+source_path = os.path.normpath(os.path.join(module_path, os.pardir, os.pardir, os.pardir))
+
 
 def parse_options():
     parser = optparse.OptionParser()

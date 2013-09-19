@@ -125,8 +125,8 @@ class IdlDefinitions(BaseIdl):
         """Returns a JSON string representing the Definitions.
 
         The JSON output should be identical with the output of the Perl parser,
-        specifically the function serializeJSON in deprecated_idl_serializer.pm,
-        which takes a Perl object created by deprecated_idl_parser.pm.
+        specifically the function serializeJSON in idl_serializer.pm,
+        which takes a Perl object created by idl_parser.pm.
         """
         # Sort so order consistent, allowing comparison of output
         if debug:

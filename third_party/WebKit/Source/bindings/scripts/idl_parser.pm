@@ -19,7 +19,7 @@
 # Boston, MA 02110-1301, USA.
 #
 
-package deprecated_idl_parser;
+package idl_parser;
 
 use strict;
 
@@ -152,7 +152,7 @@ sub assertTokenValue
     my $line = shift;
     my $msg = "Next token should be " . $value . ", but " . $token->value() . " at " . $self->{Line};
     if (defined ($line)) {
-        $msg .= " deprecated_idl_parser.pm:" . $line;
+        $msg .= " idl_parser.pm:" . $line;
     }
     die $msg unless $token->value() eq $value;
 }
@@ -172,7 +172,7 @@ sub assertUnexpectedToken
     my $line = shift;
     my $msg = "Unexpected token " . $token . " at " . $self->{Line};
     if (defined ($line)) {
-        $msg .= " deprecated_idl_parser.pm:" . $line;
+        $msg .= " idl_parser.pm:" . $line;
     }
     die $msg;
 }
@@ -185,7 +185,7 @@ sub assertNoExtendedAttributesInTypedef
     my $typedef = $typedefs{$name};
     my $msg = "Unexpected extendedAttributeList in typedef \"$name\" at " . $self->{Line};
     if (defined ($line)) {
-        $msg .= " deprecated_idl_parser.pm:" . $line;
+        $msg .= " idl_parser.pm:" . $line;
     }
     die $msg if %{$typedef->extendedAttributes};
 }

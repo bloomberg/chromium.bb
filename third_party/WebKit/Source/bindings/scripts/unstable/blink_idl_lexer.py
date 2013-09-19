@@ -56,7 +56,7 @@ import sys
 
 # Base lexer is in Chromium src/tools/idl_parser
 module_path, module_name = os.path.split(__file__)
-tools_dir = os.path.join(module_path, os.pardir, os.pardir, os.pardir, os.pardir, os.pardir, 'tools')
+tools_dir = os.path.join(module_path, os.pardir, os.pardir, os.pardir, os.pardir, os.pardir, os.pardir, 'tools')
 sys.path.append(tools_dir)
 
 from idl_parser.idl_lexer import IDLLexer

@@ -26,6 +26,15 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+"""Functions shared by various parts of the code generator.
+
+FIXME: Not currently used in build.
+This is a rewrite of the Perl IDL compiler in Python, but is not complete.
+Once it is complete, we will switch all IDL files over to Python at once.
+Until then, please work on the Perl IDL compiler.
+For details, see bug http://crbug.com/239771
+"""
+
 # FIXME: eliminate this file if possible
 
 import v8_types

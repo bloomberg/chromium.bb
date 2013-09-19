@@ -82,8 +82,9 @@ provider = ScopedTempFileProvider()
 
 
 class BindingsTests(object):
-    def __init__(self, reset_results, executive):
+    def __init__(self, reset_results, test_python, executive):
         self.reset_results = reset_results
+        self.test_python = test_python
         self.executive = executive
         _, self.interface_dependencies_filename = provider.newtempfile()
         if reset_results:
@@ -99,7 +100,7 @@ class BindingsTests(object):
                '-Ibindings/scripts',
                '-Icore/scripts',
                '-I../../JSON/out/lib/perl5',
-               'bindings/scripts/deprecated_generate_bindings.pl',
+               'bindings/scripts/generate_bindings.pl',
                # idl include directories (path relative to generate-bindings.pl)
                '--include', '.',
                '--outputDir', output_directory,
@@ -117,7 +118,7 @@ class BindingsTests(object):
 
     def generate_from_idl_py(self, idl_file, output_directory):
         cmd = ['python',
-               'bindings/scripts/idl_compiler.py',
+               'bindings/scripts/unstable/idl_compiler.py',
                '--output-dir', output_directory,
                '--idl-attributes-file', 'bindings/scripts/IDLAttributes.txt',
                '--include', '.',
@@ -234,10 +235,11 @@ class BindingsTests(object):
                        for input_file in os.listdir(input_directory)
                        if input_file.endswith('.idl')])
         print
-        print 'Python:'
-        passed &= all([generate_and_check_output_py(input_file)
-                       for input_file in os.listdir(input_directory)
-                       if input_file.endswith('.idl')])
+        if self.test_python:
+            print 'Python:'
+            passed &= all([generate_and_check_output_py(input_file)
+                           for input_file in os.listdir(input_directory)
+                           if input_file.endswith('.idl')])
         return passed
 
     def main(self):

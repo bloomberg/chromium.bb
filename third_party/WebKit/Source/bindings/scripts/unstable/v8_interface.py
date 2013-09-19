@@ -26,7 +26,14 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""Generate template values for an interface."""
+"""Generate template values for an interface.
+
+FIXME: Not currently used in build.
+This is a rewrite of the Perl IDL compiler in Python, but is not complete.
+Once it is complete, we will switch all IDL files over to Python at once.
+Until then, please work on the Perl IDL compiler.
+For details, see bug http://crbug.com/239771
+"""
 
 import v8_attributes
 from v8_utilities import cpp_class_name, runtime_enable_function_name, v8_class_name

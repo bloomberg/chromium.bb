@@ -28,6 +28,12 @@
 
 """Generate Blink V8 bindings (.h and .cpp files).
 
+FIXME: Not currently used in build.
+This is a rewrite of the Perl IDL compiler in Python, but is not complete.
+Once it is complete, we will switch all IDL files over to Python at once.
+Until then, please work on the Perl IDL compiler.
+For details, see bug http://crbug.com/239771
+
 Input: An object of class IdlDefinitions, containing an IDL interface X
 Output: V8X.h and V8X.cpp
 """
@@ -38,12 +44,12 @@ import sys
 
 # jinja2 is in chromium's third_party directory.
 module_path, module_name = os.path.split(__file__)
-third_party = os.path.join(module_path, os.pardir, os.pardir, os.pardir, os.pardir)
+third_party = os.path.join(module_path, os.pardir, os.pardir, os.pardir, os.pardir, os.pardir)
 # Insert at front to override system libraries, and after path[0] == script dir
 sys.path.insert(1, third_party)
 import jinja2
 
-templates_dir = os.path.join(module_path, os.pardir, 'templates')
+templates_dir = os.path.join(module_path, os.pardir, os.pardir, 'templates')
 
 import v8_callback_interface
 import v8_interface

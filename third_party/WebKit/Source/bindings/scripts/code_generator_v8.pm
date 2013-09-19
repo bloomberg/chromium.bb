@@ -107,7 +107,7 @@ sub toString
 }
 
 
-package deprecated_code_generator_v8;
+package code_generator_v8;
 
 use strict;
 use Cwd;
@@ -304,7 +304,7 @@ sub ParseInterface
     print "  |  |>  Parsing parent IDL \"$filename\" for interface \"$interfaceName\"\n" if $verbose;
 
     # Step #2: Parse the found IDL file (in quiet mode).
-    my $parser = deprecated_idl_parser->new(1);
+    my $parser = idl_parser->new(1);
     my $document = $parser->Parse($filename, $preprocessor);
 
     foreach my $interface (@{$document->interfaces}) {

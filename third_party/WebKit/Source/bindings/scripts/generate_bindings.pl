@@ -29,9 +29,9 @@ use Getopt::Long;
 use Text::ParseWords;
 use Cwd;
 
-use deprecated_idl_parser;
-use deprecated_code_generator_v8;
-use deprecated_idl_serializer;
+use idl_parser;
+use code_generator_v8;
+use idl_serializer;
 
 my @idlDirectories;
 my $outputDirectory;
@@ -104,7 +104,7 @@ if ($interfaceDependenciesFile) {
 }
 
 # Parse the target IDL file.
-my $targetParser = deprecated_idl_parser->new(!$verbose);
+my $targetParser = idl_parser->new(!$verbose);
 my $targetDocument = $targetParser->Parse($targetIdlFile, $preprocessor);
 
 if ($idlAttributesFile) {
@@ -116,7 +116,7 @@ foreach my $idlFile (@dependencyIdlFiles) {
     next if $idlFile eq $targetIdlFile;
 
     my $interfaceName = fileparse(basename($idlFile), ".idl");
-    my $parser = deprecated_idl_parser->new(!$verbose);
+    my $parser = idl_parser->new(!$verbose);
     my $document = $parser->Parse($idlFile, $preprocessor);
 
     foreach my $interface (@{$document->interfaces}) {
@@ -174,7 +174,7 @@ $targetDocument = deserializeJSON(serializeJSON($targetDocument));
 
 # Generate desired output for the target IDL file.
 my @interfaceIdlFiles = ($targetDocument->fileName(), @dependencyIdlFiles);
-my $codeGenerator = deprecated_code_generator_v8->new($targetDocument, \@idlDirectories, $preprocessor, $verbose, \@interfaceIdlFiles, $writeFileOnlyIfChanged);
+my $codeGenerator = code_generator_v8->new($targetDocument, \@idlDirectories, $preprocessor, $verbose, \@interfaceIdlFiles, $writeFileOnlyIfChanged);
 my $interfaces = $targetDocument->interfaces;
 foreach my $interface (@$interfaces) {
     print "Generating bindings code for IDL interface \"" . $interface->name . "\"...\n" if $verbose;

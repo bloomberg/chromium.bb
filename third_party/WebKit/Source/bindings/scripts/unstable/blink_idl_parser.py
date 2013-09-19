@@ -56,13 +56,13 @@ import sys
 
 # PLY is in Chromium src/third_party/ply
 module_path, module_name = os.path.split(__file__)
-third_party = os.path.join(module_path, os.pardir, os.pardir, os.pardir, os.pardir)
+third_party = os.path.join(module_path, os.pardir, os.pardir, os.pardir, os.pardir, os.pardir)
 # Insert at front to override system libraries, and after path[0] == script dir
 sys.path.insert(1, third_party)
 from ply import yacc
 
 # Base parser is in Chromium src/tools/idl_parser
-tools_dir = os.path.join(module_path, os.pardir, os.pardir, os.pardir, os.pardir, os.pardir, 'tools')
+tools_dir = os.path.join(module_path, os.pardir, os.pardir, os.pardir, os.pardir, os.pardir, os.pardir, 'tools')
 sys.path.append(tools_dir)
 from idl_parser.idl_parser import IDLParser, ListFromConcat
 from idl_parser.idl_parser import ParseFile as parse_file
