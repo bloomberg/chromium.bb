@@ -4,14 +4,12 @@
 
 #include "chrome/browser/guestview/webview/webview_guest.h"
 
-#include "base/command_line.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/extension_renderer_state.h"
 #include "chrome/browser/extensions/script_executor.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/guestview/guestview_constants.h"
 #include "chrome/browser/guestview/webview/webview_constants.h"
-#include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_details.h"
@@ -22,7 +20,6 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
 #include "net/base/net_errors.h"
 
@@ -212,22 +209,6 @@ bool WebViewGuest::HandleKeyboardEvent(
   }
 #endif
   return false;
-}
-
-bool WebViewGuest::IsDragAndDropEnabled() {
-#if defined(OS_CHROMEOS)
-  return true;
-#else
-  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-  if (channel != chrome::VersionInfo::CHANNEL_STABLE &&
-      channel != chrome::VersionInfo::CHANNEL_BETA) {
-    // Drag and drop is enabled in canary and dev channel.
-    return true;
-  }
-
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableBrowserPluginDragDrop);
-#endif
 }
 
 void WebViewGuest::LoadProgressed(double progress) {
