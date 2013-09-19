@@ -680,12 +680,18 @@ void CompositeEditCommand::prepareWhitespaceAtPositionForSplit(Position& positio
 
     VisiblePosition visiblePos(position);
     VisiblePosition previousVisiblePos(visiblePos.previous());
-    Position previous(previousVisiblePos.deepEquivalent());
+    replaceCollapsibleWhitespaceWithNonBreakingSpaceIfNeeded(previousVisiblePos);
+    replaceCollapsibleWhitespaceWithNonBreakingSpaceIfNeeded(visiblePos);
+}
 
-    if (isCollapsibleWhitespace(previousVisiblePos.characterAfter()) && previous.deprecatedNode()->isTextNode() && !previous.deprecatedNode()->hasTagName(brTag))
-        replaceTextInNodePreservingMarkers(toText(previous.deprecatedNode()), previous.deprecatedEditingOffset(), 1, nonBreakingSpaceString());
-    if (isCollapsibleWhitespace(visiblePos.characterAfter()) && position.deprecatedNode()->isTextNode() && !position.deprecatedNode()->hasTagName(brTag))
-        replaceTextInNodePreservingMarkers(toText(position.deprecatedNode()), position.deprecatedEditingOffset(), 1, nonBreakingSpaceString());
+void CompositeEditCommand::replaceCollapsibleWhitespaceWithNonBreakingSpaceIfNeeded(const VisiblePosition& visiblePosition)
+{
+    if (!isCollapsibleWhitespace(visiblePosition.characterAfter()))
+        return;
+    Position pos = visiblePosition.deepEquivalent().downstream();
+    if (!pos.containerNode() || !pos.containerNode()->isTextNode() || pos.containerNode()->hasTagName(brTag))
+        return;
+    replaceTextInNodePreservingMarkers(pos.containerText(), pos.offsetInContainerNode(), 1, nonBreakingSpaceString());
 }
 
 void CompositeEditCommand::rebalanceWhitespace()

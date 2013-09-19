@@ -112,6 +112,7 @@ protected:
     void rebalanceWhitespaceAt(const Position&);
     void rebalanceWhitespaceOnTextSubstring(PassRefPtr<Text>, int startOffset, int endOffset);
     void prepareWhitespaceAtPositionForSplit(Position&);
+    void replaceCollapsibleWhitespaceWithNonBreakingSpaceIfNeeded(const VisiblePosition&);
     bool canRebalance(const Position&) const;
     bool shouldRebalanceLeadingWhitespaceFor(const String&) const;
     void removeCSSProperty(PassRefPtr<Element>, CSSPropertyID);
