@@ -68,8 +68,6 @@
       'sources': [
         'test/automation/proxy_launcher.cc',
         'test/automation/proxy_launcher.h',
-        'test/reliability/automated_ui_test_base.cc',
-        'test/reliability/automated_ui_test_base.h',
         'test/ui/javascript_test_util.cc',
         'test/ui/run_all_unittests.cc',
         'test/ui/ui_perf_test.cc',
@@ -98,70 +96,6 @@
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],
-    },
-    {
-      'target_name': 'automated_ui_tests',
-      'type': 'executable',
-      'dependencies': [
-        'browser',
-        'chrome_resources.gyp:theme_resources',
-        'renderer',
-        'test_support_common',
-        'test_support_ui',
-        'test_support_ui_runner',
-        '../base/base.gyp:base',
-        '../skia/skia.gyp:skia',
-        '../third_party/libxml/libxml.gyp:libxml',
-        '../testing/gtest.gyp:gtest',
-      ],
-      'include_dirs': [
-        '..',
-      ],
-      'sources': [
-        'test/reliability/automated_ui_tests.cc',
-        'test/reliability/automated_ui_tests.h',
-      ],
-      'conditions': [
-        ['OS=="win" and buildtype=="Official"', {
-          'configurations': {
-            'Release': {
-              'msvs_settings': {
-                'VCCLCompilerTool': {
-                  'WholeProgramOptimization': 'false',
-                },
-              },
-            },
-          },
-        },],
-        ['use_x11==1', {
-          'dependencies': [
-            '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
-          ],
-        }],
-        ['OS=="win"', {
-          'dependencies': [
-            'automated_ui_tests_exe_pdb_workaround',
-          ],
-          'include_dirs': [
-            '<(DEPTH)/third_party/wtl/include',
-          ],
-          'conditions': [
-            ['win_use_allocator_shim==1', {
-              'dependencies': [
-                '<(allocator_target)',
-              ],
-            }],
-          ],
-        }],
-        ['OS=="linux" and enable_webrtc==1', {
-          'dependencies': [
-            # TODO(tommi): Figure out why the 32bit lucid builder fails to
-            # find this dependency for this target (other builders pick it up
-            # correctly).  crbug.com/231068.
-            '../third_party/libjingle/libjingle.gyp:libpeerconnection',
-          ],
-        }],
-      ],
     },
     {
       'target_name': 'interactive_ui_tests',
@@ -2101,71 +2035,6 @@
       ],  # conditions
     },  # target performance_browser_tests
     {
-      # To run the tests from page_load_test.cc on Linux, we need to:
-      #
-      #   a) Run with CHROME_HEADLESS=1 to generate crash dumps.
-      #   b) Strip the binary if it's a debug build. (binary may be over 2GB)
-      'target_name': 'reliability_tests',
-      'type': 'executable',
-      'dependencies': [
-        'browser',
-        'chrome',
-        'chrome_resources.gyp:theme_resources',
-        'test_support_common',
-        'test_support_ui',
-        'test_support_ui_runner',
-        '../skia/skia.gyp:skia',
-        '../testing/gtest.gyp:gtest',
-        '../third_party/WebKit/public/blink.gyp:blink',
-      ],
-      'include_dirs': [
-        '..',
-      ],
-      'sources': [
-        'test/reliability/page_load_test.cc',
-      ],
-      'conditions': [
-        ['OS=="win" and buildtype=="Official"', {
-          'configurations': {
-            'Release': {
-              'msvs_settings': {
-                'VCCLCompilerTool': {
-                  'WholeProgramOptimization': 'false',
-                },
-              },
-            },
-          },
-        },],
-        ['OS=="win" and win_use_allocator_shim==1', {
-          'dependencies': [
-            '<(allocator_target)',
-          ],
-          'configurations': {
-            'Debug': {
-              'msvs_settings': {
-                'VCLinkerTool': {
-                  'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
-                },
-              },
-            },
-          },
-        },],
-        ['toolkit_uses_gtk == 1', {
-          'dependencies': [
-            '../build/linux/system.gyp:gtk',
-          ],
-        },],
-        ['OS=="linux" and enable_webrtc==1', {
-          'dependencies': [
-            # TODO(tommi): Figure out why the 32bit lucid builder fails to
-            # find this dependency for this target (other builders pick it up
-            # correctly).  crbug.com/231068.
-            '../third_party/libjingle/libjingle.gyp:libpeerconnection',
-          ],
-        }],
-      ],
-    },
-    {
       'target_name': 'performance_ui_tests',
       'type': 'executable',
       'dependencies': [
@@ -2965,7 +2834,6 @@
           'suppress_wildcard': 1,
           'type': 'none',
           'dependencies': [
-            'automated_ui_tests',
             '../base/base.gyp:base_unittests',
             # browser_tests's use of subprocesses chokes gcov on 10.6?
             # Disabling for now (enabled on linux/windows below).
@@ -3010,7 +2878,6 @@
                 'gpu_tests',
                 'performance_ui_tests',
                 'pyautolib',
-                'reliability_tests',
                 'sync_integration_tests',
               ]}],
             ['OS=="mac"', {
@@ -3222,21 +3089,6 @@
     }],
     ['OS=="win"', {
       'targets' : [
-        {
-          # This target is only depended upon in Windows.
-          'target_name': 'automated_ui_tests_exe_pdb_workaround',
-          'type': 'static_library',
-          'sources': [ 'empty_pdb_workaround.cc' ],
-          'msvs_settings': {
-            'VCCLCompilerTool': {
-              # This *in the compile phase* must match the pdb name that's
-              # output by the final link. See empty_pdb_workaround.cc for
-              # more details.
-              'DebugInformationFormat': '3',
-              'ProgramDataBaseFileName': '<(PRODUCT_DIR)/automated_ui_tests.exe.pdb',
-            },
-          },
-        },
         {
           # This target is only depended upon in Windows.
           'target_name': 'browser_tests_exe_pdb_workaround',
