@@ -4,5 +4,7 @@
 Application Structure
 #####################
 
+.. _manifest_file:
+
 foo
 

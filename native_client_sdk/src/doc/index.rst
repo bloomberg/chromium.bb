@@ -29,4 +29,5 @@ Contents:
    devguide/coding/progress-events.rst
    devguide/distributing.rst
    community/application-gallery.rst
+   community/middleware.rst
    peppercpp/index.rst

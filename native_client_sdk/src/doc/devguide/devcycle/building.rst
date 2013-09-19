@@ -19,6 +19,8 @@ If you haven't read the Native Client :doc:`Technical Overview
 <../../overview>` and :doc:`Tutorial <../tutorial>`, we recommend starting
 with those.
 
+.. _target_architectures:
+
 Target architectures
 --------------------
 
@@ -194,6 +196,8 @@ targets the x86-64 architecture, i.e., ``x86_64-nacl-gcc``.
 
 You should name executable modules with a ``.nexe`` filename extension,
 regardless of what platform you're using.
+
+.. _compile_flags:
 
 Compile flags for different development scenarios
 =================================================
