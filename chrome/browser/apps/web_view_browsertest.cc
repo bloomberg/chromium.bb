@@ -613,8 +613,16 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestAutosizeRemoveAttributes) {
              "web_view/shim");
 }
 
+// This test is disabled due to being flaky. http://crbug.com/282116
+#if defined(OS_WIN)
+#define MAYBE_Shim_TestAutosizeWithPartialAttributes \
+    DISABLED_Shim_TestAutosizeWithPartialAttributes
+#else
+#define MAYBE_Shim_TestAutosizeWithPartialAttributes \
+    Shim_TestAutosizeWithPartialAttributes
+#endif
 IN_PROC_BROWSER_TEST_F(WebViewTest,
-                       Shim_TestAutosizeWithPartialAttributes) {
+                       MAYBE_Shim_TestAutosizeWithPartialAttributes) {
   TestHelper("testAutosizeWithPartialAttributes",
              "DoneShimTest.PASSED",
              "DoneShimTest.FAILED",
