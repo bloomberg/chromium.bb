@@ -737,7 +737,7 @@
  "win-release/media_tests_av_perf/ttp/Wifi_roller.webm": {"reva": 175328, "revb": 176157, "type": "absolute", "better": "lower", "improve": 906.775, "regress": 1184.925, "sha1": "d49e638f"},
  "xp-release/sizes/chrome.dll/chrome.dll": {"reva": 223290, "revb": 223296, "type": "absolute", "better": "lower", "improve": 33567436, "regress": 38859879, "sha1": "4f942df3"},
  "xp-release/sizes/chrome.exe/chrome.exe": {"reva": 183841, "revb": 184954, "type": "absolute", "better": "lower", "improve": 720358, "regress": 796186, "sha1": "b5aa4523"},
- "xp-release/sizes/mini_installer.exe/mini_installer.exe": {"reva": 212973, "revb": 213132, "type": "absolute", "better": "lower", "improve": 28051174, "regress": 31094247, "sha1": "303dac45"},
+ "xp-release/sizes/mini_installer.exe/mini_installer.exe": {"reva": 223825, "revb": 224162, "type": "absolute", "better": "lower", "improve": 30193766, "regress": 33489255, "sha1": "1cd4e3aa"},
  "xp-release/sizes/npchrome_frame.dll/npchrome_frame.dll": {"reva": 213618, "revb": 213647, "type": "absolute", "better": "lower", "improve": 2320128, "regress": 2567040, "sha1": "a9618db1"},
  "xp-release/sizes/setup.exe/setup.exe": {"reva": 183841, "revb": 184954, "type": "absolute", "better": "lower", "improve": 1080780, "regress": 1195085, "sha1": "c56e884e"},
  "load": true
