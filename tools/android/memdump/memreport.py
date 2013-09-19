@@ -23,25 +23,25 @@ from pylib import constants
 
 
 _ENTRIES = [
-    ('Total', '.* r... .*'),
-    ('Read-only', '.* r--. .*'),
-    ('Read-write', '.* rw.. .*'),
-    ('Executable', '.* ..x. .*'),
-    ('Anonymous total', '.* .... .* .*other=[0-9]+ $'),
-    ('Anonymous read-write', '.* rw.. .* .*other=[0-9]+ $'),
-    ('Anonymous executable (JIT\'ed code)', '.* ..x. .* shared_other=[0-9]+ $'),
-    ('File total', '.* .... .* /.*'),
-    ('File read-write', '.* rw.. .* /.*'),
-    ('File executable', '.* ..x. .* /.*'),
-    ('/dev files', '.* r... .* /dev/.*'),
-    ('Dalvik', '.* rw.. .* /.*dalvik.*'),
-    ('Dalvik heap', '.* rw.. .* /.*dalvik-heap.*'),
-    ('Native heap (malloc)', '.* r... .* .*malloc.*'),
-    ('Ashmem', '.* rw.. .* /dev/ashmem .*'),
-    ('libchromeview.so total', '.* r... .* /.*libchromeview.so'),
-    ('libchromeview.so read-only', '.* r--. .* /.*libchromeview.so'),
-    ('libchromeview.so read-write', '.* rw-. .* /.*libchromeview.so'),
-    ('libchromeview.so executable', '.* r.x. .* /.*libchromeview.so'),
+    ('Total', '.* r... '),
+    ('Read-only', '.* r--. '),
+    ('Read-write', '.* rw.. '),
+    ('Executable', '.* ..x. '),
+    ('Anonymous total', '.* ""'),
+    ('Anonymous read-write', '.* rw.. .* ""'),
+    ('Anonymous executable (JIT\'ed code)', '.* ..x. .* ""'),
+    ('File total', '.* .... .* "/.*"'),
+    ('File read-write', '.* rw.. .* "/.*"'),
+    ('File executable', '.* ..x. .* "/.*"'),
+    ('/dev files', '.* r... .* "/dev/.*"'),
+    ('Dalvik', '.* rw.. .* "/.*dalvik.*"'),
+    ('Dalvik heap', '.* rw.. .* "/.*dalvik-heap.*"'),
+    ('Native heap (malloc)', '.* r... .* ".*malloc.*"'),
+    ('Ashmem', '.* rw.. .* "/dev/ashmem '),
+    ('Native library total', '.* r... .* "/data/app-lib/'),
+    ('Native library read-only', '.* r--. .* "/data/app-lib/'),
+    ('Native library read-write', '.* rw-. .* "/data/app-lib/'),
+    ('Native library executable', '.* r.x. .* "/data/app-lib/'),
 ]
 
 
@@ -65,6 +65,7 @@ def _CollectMemoryStats(memdump, region_filters):
               'private_unevictable': 0,
               'private': 0,
               'shared_app': 0.0,
+              'shared_app_unevictable': 0.0,
               'shared_other_unevictable': 0,
               'shared_other': 0,
           }
@@ -76,10 +77,13 @@ def _CollectMemoryStats(memdump, region_filters):
             field = token.split('=')[1]
             if key != 'shared_app':
               mem_usage[key] += int(field)
-            else:  # shared_app=[\d,\d...]
-              array = eval(field)
+            else:  # shared_app=[\d:\d,\d:\d...]
+              array = field[1:-1].split(',')
               for i in xrange(len(array)):
-                mem_usage[key] += float(array[i]) / (i + 2)
+                shared_app, shared_app_unevictable = array[i].split(':')
+                mem_usage['shared_app'] += float(shared_app) / (i + 2)
+                mem_usage['shared_app_unevictable'] += \
+                    float(shared_app_unevictable) / (i + 2)
             break
   return processes
 
@@ -94,21 +98,23 @@ def _DumpCSV(processes_stats):
   for process in processes_stats:
     i += 1
     print (',Process ' + str(i) + ',private,private_unevictable,shared_app,' +
-           'shared_other,shared_other_unevictable,')
+           'shared_app_unevictable,shared_other,shared_other_unevictable,')
     for (k, v) in _ENTRIES:
       if not v in process:
-        print ',' + k + ',0,0,0,0,'
+        print ',' + k + ',0,0,0,0,0,'
         continue
       if not v in total_map:
         total_map[v] = {'resident':0, 'unevictable':0}
       total_map[v]['resident'] += (process[v]['private'] +
                                    process[v]['shared_app'])
-      total_map[v]['unevictable'] += process[v]['private_unevictable']
+      total_map[v]['unevictable'] += process[v]['private_unevictable'] + \
+          process[v]['shared_app_unevictable']
       print (
           ',' + k + ',' +
           _ConvertMemoryField(process[v]['private']) + ',' +
           _ConvertMemoryField(process[v]['private_unevictable']) + ',' +
           _ConvertMemoryField(process[v]['shared_app']) + ',' +
+          _ConvertMemoryField(process[v]['shared_app_unevictable']) + ',' +
           _ConvertMemoryField(process[v]['shared_other']) + ',' +
           _ConvertMemoryField(process[v]['shared_other_unevictable']) + ','
           )
@@ -124,8 +130,9 @@ def _DumpCSV(processes_stats):
 
 
 def _RunManualGraph(package_name, interval):
-  _AREA_TYPES = ('private', 'private_unevictable',
-                 'shared_app', 'shared_other', 'shared_other_unevictable')
+  _AREA_TYPES = ('private', 'private_unevictable', 'shared_app',
+                 'shared_app_unevictable', 'shared_other',
+                 'shared_other_unevictable')
   all_pids = {}
   legends = ['Seconds'] + [entry + '_' + area
                            for entry, _ in _ENTRIES
