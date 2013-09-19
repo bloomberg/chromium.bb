@@ -88,6 +88,7 @@ enum IPCMessageStart {
   WebRTCIdentityMsgStart,
   LocalDiscoveryMsgStart,
   PowerMonitorMsgStart,
+  EncryptedMediaMsgStart,
   LastIPCMsgStart      // Must come last.
 };
 

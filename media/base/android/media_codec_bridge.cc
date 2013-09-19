@@ -130,7 +130,13 @@ bool MediaCodecBridge::CanDecode(const std::string& codec, bool is_secure) {
   if (mime.empty())
     return false;
   ScopedJavaLocalRef<jstring> j_mime = ConvertUTF8ToJavaString(env, mime);
-  return !Java_MediaCodecBridge_create(env, j_mime.obj(), is_secure).is_null();
+  ScopedJavaLocalRef<jobject> j_media_codec_bridge =
+      Java_MediaCodecBridge_create(env, j_mime.obj(), is_secure);
+  if (!j_media_codec_bridge.is_null()) {
+    Java_MediaCodecBridge_release(env, j_media_codec_bridge.obj());
+    return true;
+  }
+  return false;
 }
 
 MediaCodecBridge::MediaCodecBridge(const std::string& mime, bool is_secure) {

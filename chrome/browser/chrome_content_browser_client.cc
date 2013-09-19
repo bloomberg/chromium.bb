@@ -163,6 +163,7 @@
 #include "chrome/browser/android/crash_dump_manager.h"
 #include "chrome/browser/android/webapps/single_tab_mode_tab_helper.h"
 #include "chrome/browser/chrome_browser_main_android.h"
+#include "chrome/browser/media/encrypted_media_message_filter_android.h"
 #include "chrome/common/descriptors_android.h"
 #elif defined(OS_POSIX)
 #include "chrome/browser/chrome_browser_main_posix.h"
@@ -856,6 +857,9 @@ void ChromeContentBrowserClient::RenderProcessHostCreated(
       id, profile->IsOffTheRecord(),
       profile->GetPath(), extension_info_map,
       context));
+#endif
+#if defined(OS_ANDROID)
+  host->GetChannel()->AddFilter(new EncryptedMediaMessageFilterAndroid());
 #endif
 
   host->Send(new ChromeViewMsg_SetIsIncognitoProcess(

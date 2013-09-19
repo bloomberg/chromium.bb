@@ -1014,6 +1014,8 @@
         'browser/media/desktop_media_picker.h',
         'browser/media/desktop_media_picker_model.cc',
         'browser/media/desktop_media_picker_model.h',
+        'browser/media/encrypted_media_message_filter_android.cc',
+        'browser/media/encrypted_media_message_filter_android.h',
         'browser/media/media_capture_devices_dispatcher.cc',
         'browser/media/media_capture_devices_dispatcher.h',
         'browser/media/media_stream_capture_indicator.cc',

@@ -127,6 +127,15 @@ class MediaDrmBridge {
         return createMediaCrypto();
     }
 
+    /**
+     * Check whether the crypto scheme is supported for the given container.
+     * If |containerMimeType| is an empty string, we just return whether
+     * the crypto scheme is supported.
+     * TODO(qinmin): Implement the checking for container.
+     *
+     * @return true if the container and the crypto scheme is supported, or
+     * false otherwise.
+     */
     @CalledByNative
     private static boolean isCryptoSchemeSupported(byte[] schemeUUID, String containerMimeType) {
         UUID cryptoScheme = getUUIDFromBytes(schemeUUID);
