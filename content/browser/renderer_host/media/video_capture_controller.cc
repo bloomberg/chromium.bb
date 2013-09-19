@@ -387,7 +387,7 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedFrame(
         uv_plane_stride,
         crop_x,
         crop_y,
-        frame_info_.width,
+        frame_info_.width + chopped_width_,
         frame_info_.height * (flip_vert ^ flip_horiz ? -1 : 1),
         frame_info_.width,
         frame_info_.height,
