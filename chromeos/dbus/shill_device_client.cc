@@ -215,7 +215,7 @@ class ShillDeviceClientImpl : public ShillDeviceClient {
     // There is no helper for the profile, create it.
     dbus::ObjectProxy* object_proxy =
         bus_->GetObjectProxy(flimflam::kFlimflamServiceName, device_path);
-    ShillClientHelper* helper = new ShillClientHelper(object_proxy);
+    ShillClientHelper* helper = new ShillClientHelper(bus_, object_proxy);
     CHECK(helper) << "Unable to create Shill client helper.";
     helper->MonitorPropertyChanged(flimflam::kFlimflamDeviceInterface);
     helpers_.insert(HelperMap::value_type(device_path.value(), helper));

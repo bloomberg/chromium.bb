@@ -5,13 +5,11 @@
 #include "chromeos/dbus/shill_service_client.h"
 
 #include "base/bind.h"
-#include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "chromeos/dbus/shill_property_changed_observer.h"
 #include "chromeos/dbus/shill_service_client_stub.h"
-#include "chromeos/network/network_event_log.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_proxy.h"
@@ -56,8 +54,7 @@ class ShillServiceClientImpl : public ShillServiceClient {
  public:
   explicit ShillServiceClientImpl()
       : bus_(NULL),
-        helpers_deleter_(&helpers_),
-        weak_ptr_factory_(this) {
+        helpers_deleter_(&helpers_) {
   }
 
   virtual void AddPropertyChangedObserver(
@@ -225,34 +222,17 @@ class ShillServiceClientImpl : public ShillServiceClient {
       return it->second;
 
     // There is no helper for the profile, create it.
-    NET_LOG_DEBUG("AddShillClientHelper", service_path.value());
     dbus::ObjectProxy* object_proxy =
         bus_->GetObjectProxy(flimflam::kFlimflamServiceName, service_path);
-    ShillClientHelper* helper = new ShillClientHelper(object_proxy);
-    helper->SetReleasedCallback(
-        base::Bind(&ShillServiceClientImpl::NotifyReleased,
-                   weak_ptr_factory_.GetWeakPtr()));
+    ShillClientHelper* helper = new ShillClientHelper(bus_, object_proxy);
     helper->MonitorPropertyChanged(flimflam::kFlimflamServiceInterface);
     helpers_.insert(HelperMap::value_type(service_path.value(), helper));
     return helper;
   }
 
-  void NotifyReleased(ShillClientHelper* helper) {
-    // New Shill Service DBus objects are created relatively frequently, so
-    // remove them when they become inactive (no observers and no active method
-    // calls).
-    const dbus::ObjectPath& object_path = helper->object_proxy()->object_path();
-    NET_LOG_DEBUG("RemoveShillClientHelper", object_path.value());
-    bus_->RemoveObjectProxy(flimflam::kFlimflamServiceName,
-                            object_path, base::Bind(&base::DoNothing));
-    helpers_.erase(object_path.value());
-    delete helper;
-  }
-
   dbus::Bus* bus_;
   HelperMap helpers_;
   STLValueDeleter<HelperMap> helpers_deleter_;
-  base::WeakPtrFactory<ShillServiceClientImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ShillServiceClientImpl);
 };

@@ -153,8 +153,6 @@ class CHROME_DBUS_EXPORT ObjectProxy
   // BLOCKING CALL.
   virtual void Detach();
 
-  const ObjectPath& object_path() const { return object_path_; }
-
   // Returns an empty callback that does nothing. Can be used for
   // CallMethod().
   static ResponseCallback EmptyResponseCallback();
