@@ -79,8 +79,8 @@ void TrayLocallyManagedUser::CreateOrUpdateNotification(
   scoped_ptr<Notification> notification(new Notification(
       message_center::NOTIFICATION_TYPE_SIMPLE,
       kNotificationId,
+      string16() /* no title */,
       new_message,
-      base::string16() /* body is empty */,
       bundle.GetImageNamed(IDR_AURA_UBER_TRAY_MANAGED_USER),
       base::string16() /* display_source */,
       message_center::NotifierId(
