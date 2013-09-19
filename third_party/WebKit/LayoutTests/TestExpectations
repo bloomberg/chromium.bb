@@ -1327,20 +1327,6 @@ crbug.com/289833 [ Android ] webexposed/custom-elements.html [ Timeout Pass ]
 crbug.com/294237 [ Debug ] svg/custom/bug86392.html [ Crash ]
 crbug.com/294238 [ Debug ] svg/custom/unicode-in-tspan-multi-svg-crash.html [ Crash ]
 
-#Below test case need to rebaseline after crbug.com/252694
-crbug.com/252694 fast/table/007.html [ NeedsRebaseline ]
-crbug.com/252694 fast/table/colspanMinWidth.html [ NeedsRebaseline ]
-crbug.com/252694 fast/table/colspanMinWidth-vertical.html [ NeedsRebaseline ]
-crbug.com/252694 fast/table/spanOverlapRepaint.html [ NeedsRebaseline ]
-crbug.com/252694 tables/mozilla/bugs/bug133756-1.html [ NeedsRebaseline ]
-crbug.com/252694 tables/mozilla/bugs/bug133756-2.html [ NeedsRebaseline ]
-crbug.com/252694 tables/mozilla/bugs/bug6304.html [ NeedsRebaseline ]
-crbug.com/252694 tables/mozilla/bugs/bug7714.html [ NeedsRebaseline ]
-crbug.com/252694 tables/mozilla/core/row_span.html [ NeedsRebaseline ]
-crbug.com/252694 tables/mozilla_expected_failures/bugs/bug131020-3.html [ NeedsRebaseline ]
-crbug.com/252694 tables/mozilla_expected_failures/bugs/bug65372.html [ NeedsRebaseline ]
-crbug.com/252694 tables/mozilla/bugs/bug13169.html [ NeedsRebaseline ]
-
 crbug.com/269500 fast/backgrounds/size/contain-and-cover-zoomed.html [ NeedsRebaseline ]
 crbug.com/269500 fast/backgrounds/size/contain-and-cover.html [ NeedsRebaseline ]
 
