@@ -1356,7 +1356,14 @@ class PreCQLauncherStage(SyncStage):
           self.launching[change] = datetime.datetime.now()
         elif self._HasLaunchTimedOut(change):
           if change in self.retried:
-            msg = 'Failed twice to launch a Pre-CQ trybot for this change.'
+            msg = ('We were not able to launch a pre-cq trybot for your change.'
+                   '\n\n'
+                   'This problem can happen if the trybot waterfall is very '
+                   'busy, or if there is an infrastructure issue. Please '
+                   'notify the sheriff and mark your change as ready again. If '
+                   'this problem occurs multiple times in a row, please file a '
+                   'bug.')
+
             pool.SendNotification(change, '%(details)s', details=msg)
             pool.RemoveCommitReady(change)
             pool.UpdateCLStatus(PRE_CQ, change, self.STATUS_FAILED,
