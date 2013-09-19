@@ -161,6 +161,7 @@ bool DocumentStyleSheetCollection::updateActiveStyleSheets(StyleEngine* collecti
 
     if (styleResolverUpdateType == Reconstruct) {
         document()->clearStyleResolver();
+        document()->styleEngine()->resetFontSelector();
     } else {
         StyleResolver* styleResolver = document()->styleResolverIfExists();
         ASSERT(styleResolver);

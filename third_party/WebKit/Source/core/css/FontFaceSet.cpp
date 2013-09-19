@@ -348,7 +348,7 @@ Vector<RefPtr<FontFace> > FontFaceSet::match(const String& fontString, const Str
     }
 
     for (const FontFamily* f = &font.family(); f; f = f->next()) {
-        CSSSegmentedFontFace* face = document()->styleResolver()->fontSelector()->getFontFace(font.fontDescription(), f->family());
+        CSSSegmentedFontFace* face = document()->styleEngine()->fontSelector()->getFontFace(font.fontDescription(), f->family());
         if (face)
             matchedFonts.append(face->fontFaces());
     }
@@ -364,12 +364,12 @@ ScriptPromise FontFaceSet::load(const String& fontString, const String&, Excepti
         return ScriptPromise();
     }
 
-    Document* d = document();
+    Document* document = this->document();
     RefPtr<LoadFontPromiseResolver> resolver = LoadFontPromiseResolver::create(font.family(), scriptExecutionContext());
     for (const FontFamily* f = &font.family(); f; f = f->next()) {
-        CSSSegmentedFontFace* face = d->styleResolver()->fontSelector()->getFontFace(font.fontDescription(), f->family());
+        CSSSegmentedFontFace* face = document->styleEngine()->fontSelector()->getFontFace(font.fontDescription(), f->family());
         if (!face) {
-            resolver->error(d);
+            resolver->error(document);
             continue;
         }
         face->loadFont(font.fontDescription(), resolver);
@@ -387,7 +387,7 @@ bool FontFaceSet::check(const String& fontString, const String&, ExceptionState&
     }
 
     for (const FontFamily* f = &font.family(); f; f = f->next()) {
-        CSSSegmentedFontFace* face = document()->styleResolver()->fontSelector()->getFontFace(font.fontDescription(), f->family());
+        CSSSegmentedFontFace* face = document()->styleEngine()->fontSelector()->getFontFace(font.fontDescription(), f->family());
         if (!face || !face->checkFont())
             return false;
     }
@@ -432,11 +432,10 @@ bool FontFaceSet::resolveFontStyle(const String& fontString, Font& font)
         CSSPropertyValue(CSSPropertyFontSize, *parsedStyle),
         CSSPropertyValue(CSSPropertyLineHeight, *parsedStyle),
     };
-    StyleResolver* styleResolver = document()->styleResolver();
-    styleResolver->applyPropertiesToStyle(properties, WTF_ARRAY_LENGTH(properties), style.get());
+    document()->styleResolver()->applyPropertiesToStyle(properties, WTF_ARRAY_LENGTH(properties), style.get());
 
     font = style->font();
-    font.update(styleResolver->fontSelector());
+    font.update(document()->styleEngine()->fontSelector());
     return true;
 }
 

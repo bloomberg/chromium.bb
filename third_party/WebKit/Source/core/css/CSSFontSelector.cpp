@@ -64,7 +64,24 @@ CSSFontSelector::CSSFontSelector(Document* document)
 
 CSSFontSelector::~CSSFontSelector()
 {
-    clearDocument();
+    if (!m_document) {
+        ASSERT(!m_beginLoadingTimer.isActive());
+        ASSERT(m_fontsToBeginLoading.isEmpty());
+        return;
+    }
+
+    m_beginLoadingTimer.stop();
+
+    ResourceFetcher* fetcher = m_document->fetcher();
+    for (size_t i = 0; i < m_fontsToBeginLoading.size(); ++i) {
+        // Balances incrementRequestCount() in beginLoadingFontSoon().
+        fetcher->decrementRequestCount(m_fontsToBeginLoading[i].get());
+    }
+
+    m_fontsToBeginLoading.clear();
+
+    m_document = 0;
+
     fontCache()->removeClient(this);
 }
 
@@ -348,27 +365,6 @@ void CSSFontSelector::willUseFontData(const FontDescription& fontDescription, co
     CSSSegmentedFontFace* face = getFontFace(fontDescription, family);
     if (face)
         face->willUseFontData(fontDescription);
-}
-
-void CSSFontSelector::clearDocument()
-{
-    if (!m_document) {
-        ASSERT(!m_beginLoadingTimer.isActive());
-        ASSERT(m_fontsToBeginLoading.isEmpty());
-        return;
-    }
-
-    m_beginLoadingTimer.stop();
-
-    ResourceFetcher* fetcher = m_document->fetcher();
-    for (size_t i = 0; i < m_fontsToBeginLoading.size(); ++i) {
-        // Balances incrementRequestCount() in beginLoadingFontSoon().
-        fetcher->decrementRequestCount(m_fontsToBeginLoading[i].get());
-    }
-
-    m_fontsToBeginLoading.clear();
-
-    m_document = 0;
 }
 
 void CSSFontSelector::beginLoadingFontSoon(FontResource* font)

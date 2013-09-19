@@ -547,8 +547,6 @@ Document::~Document()
     if (m_elemSheet)
         m_elemSheet->clearOwnerNode();
 
-    clearStyleResolver(); // We need to destory CSSFontSelector before destroying m_fetcher.
-
     // It's possible for multiple Documents to end up referencing the same ResourceFetcher (e.g., SVGImages
     // load the initial empty document and the SVGDocument with the same DocumentLoader).
     if (m_fetcher->document() == this)
@@ -661,6 +659,7 @@ void Document::setDoctype(PassRefPtr<DocumentType> docType)
     }
     // Doctype affects the interpretation of the stylesheets.
     clearStyleResolver();
+    styleEngine()->resetFontSelector();
 }
 
 DOMImplementation* Document::implementation()
@@ -685,6 +684,7 @@ void Document::childrenChanged(bool changedByParser, Node* beforeChange, Node* a
     m_documentElement = newDocumentElement;
     // The root style used for media query matching depends on the document element.
     clearStyleResolver();
+    styleEngine()->resetFontSelector();
 }
 
 PassRefPtr<Element> Document::createElement(const AtomicString& name, ExceptionState& es)
@@ -1606,8 +1606,7 @@ void Document::setStyleDependentState(RenderStyle* documentStyle)
 
     FontBuilder fontBuilder;
     fontBuilder.initForStyleResolve(*this, documentStyle, isSVGDocument());
-    RefPtr<CSSFontSelector> selector = m_styleResolver ? m_styleResolver->fontSelector() : 0;
-    fontBuilder.createFontForDocument(selector, documentStyle);
+    fontBuilder.createFontForDocument(styleEngine()->fontSelector(), documentStyle);
 }
 
 void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
@@ -1716,7 +1715,7 @@ void Document::recalcStyle(StyleRecalcChange change)
 
         if ((change == Force) || (shouldDisplaySeamlesslyWithParent() && (change >= Inherit))) {
             m_hasNodesWithPlaceholderStyle = false;
-            RefPtr<RenderStyle> documentStyle = StyleResolver::styleForDocument(*this, m_styleResolver ? m_styleResolver->fontSelector() : 0);
+            RefPtr<RenderStyle> documentStyle = StyleResolver::styleForDocument(*this, m_styleEngine->fontSelector());
             StyleRecalcChange localChange = RenderStyle::compare(documentStyle.get(), renderer()->style());
             if (localChange != NoChange)
                 renderer()->setStyle(documentStyle.release());
@@ -2038,6 +2037,7 @@ void Document::detach(const AttachContext& context)
     unscheduleStyleRecalc();
 
     clearStyleResolver();
+    styleEngine()->resetFontSelector();
 
     if (render)
         render->destroy();
@@ -4476,6 +4476,7 @@ void Document::styleResolverThrowawayTimerFired(Timer<Document>*)
 {
     ASSERT(!m_inStyleRecalc);
     clearStyleResolver();
+    styleEngine()->resetFontSelector();
 }
 
 const Vector<IconURL>& Document::shortcutIconURLs()

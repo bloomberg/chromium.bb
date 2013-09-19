@@ -39,6 +39,7 @@
 
 namespace WebCore {
 
+class CSSFontSelector;
 class CSSStyleSheet;
 class Node;
 class RuleFeatureSet;
@@ -67,6 +68,11 @@ public:
     void addStyleSheetCandidateNode(Node*, bool createdByParser);
     void removeStyleSheetCandidateNode(Node*, ContainerNode* scopingNode = 0);
     void modifiedStyleSheetCandidateNode(Node*);
+
+    // FIXME: Investigate why it is important to throw away a FontSelector instance at each
+    // callsite of this function.
+    void resetFontSelector();
+    CSSFontSelector* fontSelector() const { return m_fontSelector.get(); }
 
     void clearPageUserSheet();
     void updatePageUserSheet();
@@ -123,6 +129,8 @@ private:
     static void insertTreeScopeInDocumentOrder(TreeScopeSet&, TreeScope*);
 
     Document& m_document;
+
+    RefPtr<CSSFontSelector> m_fontSelector;
 
     // Track the number of currently loading top-level stylesheets needed for rendering.
     // Sheets loaded using the @import directive are not included in this count.
