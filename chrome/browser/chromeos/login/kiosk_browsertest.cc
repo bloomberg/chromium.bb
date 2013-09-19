@@ -6,7 +6,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
-#include "base/strings/stringprintf.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
@@ -42,24 +41,19 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
+#include "google_apis/gaia/fake_gaia.h"
 #include "google_apis/gaia/gaia_switches.h"
-#include "net/base/host_port_pair.h"
 #include "net/base/network_change_notifier.h"
-#include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using namespace net::test_server;
 
 namespace chromeos {
 
 namespace {
-
-const char kWebstoreDomain[] = "cws.com";
-const base::FilePath kServiceLogin("chromeos/service_login.html");
 
 // Webstore data json is in
 //   chrome/test/data/chromeos/app_mode/webstore/inlineinstall/
@@ -192,22 +186,19 @@ class KioskTest : public InProcessBrowserTest,
   virtual ~KioskTest() {}
 
  protected:
-  virtual void SetUpOnMainThread() OVERRIDE {
-    test_server_.reset(new EmbeddedTestServer(
-        content::BrowserThread::GetMessageLoopProxyForThread(
-            content::BrowserThread::IO)));
-    CHECK(test_server_->InitializeAndWaitUntilReady());
-    test_server_->RegisterRequestHandler(
-        base::Bind(&KioskTest::HandleRequest, base::Unretained(this)));
-    LOG(INFO) << "Set up http server at " << test_server_->base_url();
-
-    const GURL gaia_url("http://localhost:" + test_server_->base_url().port());
-    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        ::switches::kGaiaUrl, gaia_url.spec());
+  virtual void SetUp() OVERRIDE {
+    base::FilePath test_data_dir;
+    PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
+    embedded_test_server()->ServeFilesFromDirectory(test_data_dir);
+    embedded_test_server()->RegisterRequestHandler(
+        base::Bind(&FakeGaia::HandleRequest, base::Unretained(&fake_gaia_)));
+    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
     mock_user_manager_.reset(new MockUserManager);
     AppLaunchController::SkipSplashWaitForTesting();
     AppLaunchController::SetNetworkWaitForTesting(kTestNetworkTimeoutSeconds);
+
+    InProcessBrowserTest::SetUp();
   }
 
   virtual void CleanUpOnMainThread() OVERRIDE {
@@ -228,45 +219,12 @@ class KioskTest : public InProcessBrowserTest,
     // Clean up while main thread still runs.
     // See http://crbug.com/176659.
     KioskAppManager::Get()->CleanUp();
-
-    LOG(INFO) << "Stopping the http server.";
-    EXPECT_TRUE(test_server_->ShutdownAndWaitUntilComplete());
-    test_server_.reset();  // Destructor wants UI thread.
-  }
-
-  scoped_ptr<HttpResponse> HandleRequest(const HttpRequest& request) {
-    GURL url = test_server_->GetURL(request.relative_url);
-    LOG(INFO) << "Http request: " << url.spec();
-
-    scoped_ptr<BasicHttpResponse> http_response(new BasicHttpResponse());
-    if (url.path() == "/ServiceLogin") {
-      http_response->set_code(net::HTTP_OK);
-      http_response->set_content(service_login_response_);
-      http_response->set_content_type("text/html");
-    } else if (url.path() == "/ServiceLoginAuth") {
-      LOG(INFO) << "Params: " << request.content;
-      static const char kContinueParam[] = "continue=";
-      int continue_arg_begin = request.content.find(kContinueParam) +
-          arraysize(kContinueParam) - 1;
-      int continue_arg_end = request.content.find("&", continue_arg_begin);
-      const std::string continue_url = request.content.substr(
-          continue_arg_begin, continue_arg_end - continue_arg_begin);
-      http_response->set_code(net::HTTP_OK);
-      const std::string redirect_js =
-          "document.location.href = unescape('" + continue_url + "');";
-      http_response->set_content(
-          "<HTML><HEAD><SCRIPT>\n" + redirect_js + "\n</SCRIPT></HEAD></HTML>");
-      http_response->set_content_type("text/html");
-    } else {
-      LOG(ERROR) << "Unsupported url: " << url.path();
-    }
-    return http_response.PassAs<HttpResponse>();
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    if (GetParam()) {
+    if (GetParam())
       command_line->AppendSwitch(::switches::kMultiProfiles);
-    }
+
     command_line->AppendSwitch(chromeos::switches::kLoginManager);
     command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
     command_line->AppendSwitch(
@@ -274,27 +232,18 @@ class KioskTest : public InProcessBrowserTest,
     command_line->AppendSwitch(::switches::kDisableBackgroundNetworking);
     command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
 
-    ASSERT_TRUE(test_server()->Start());
-    net::HostPortPair host_port = test_server()->host_port_pair();
-    std::string test_gallery_url = base::StringPrintf(
-        "http://%s:%d/files/chromeos/app_mode/webstore",
-        kWebstoreDomain, host_port.port());
+    const GURL& server_url = embedded_test_server()->base_url();
+    command_line->AppendSwitchASCII(::switches::kGaiaUrl, server_url.spec());
+    command_line->AppendSwitchASCII(::switches::kLsoUrl, server_url.spec());
+    command_line->AppendSwitchASCII(::switches::kGoogleApisUrl,
+                                    server_url.spec());
     command_line->AppendSwitchASCII(
-        ::switches::kAppsGalleryURL, test_gallery_url);
-
-    std::string test_gallery_download_url = test_gallery_url;
-    test_gallery_download_url.append("/downloads/%s.crx");
+        ::switches::kAppsGalleryURL,
+        server_url.Resolve("/chromeos/app_mode/webstore").spec());
     command_line->AppendSwitchASCII(
-        ::switches::kAppsGalleryDownloadURL, test_gallery_download_url);
-  }
-
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    base::FilePath test_data_dir;
-    PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
-    CHECK(base::ReadFileToString(test_data_dir.Append(kServiceLogin),
-                                 &service_login_response_));
-
-    host_resolver()->AddRule(kWebstoreDomain, "127.0.0.1");
+        ::switches::kAppsGalleryDownloadURL,
+        server_url.Resolve(
+            "/chromeos/app_mode/webstore/downloads/%s.crx").spec());
   }
 
   void ReloadKioskApps() {
@@ -430,8 +379,7 @@ class KioskTest : public InProcessBrowserTest,
         ->GetAppLaunchController();
   }
 
-  std::string service_login_response_;
-  scoped_ptr<EmbeddedTestServer> test_server_;
+  FakeGaia fake_gaia_;
   scoped_ptr<net::NetworkChangeNotifier::DisableForTest>
       disable_network_notifier_;
   scoped_ptr<FakeNetworkChangeNotifier> fake_network_notifier_;

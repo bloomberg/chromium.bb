@@ -106,5 +106,25 @@
         'google_api_keys_unittest.cc',
       ],
     },
+    {
+      'target_name': 'google_apis_test_support',
+      'type': 'static_library',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../base/base.gyp:test_support_base',
+        '../net/net.gyp:net',
+        '../net/net.gyp:net_test_support',
+      ],
+      'export_dependent_settings': [
+        '../base/base.gyp:base',
+        '../base/base.gyp:test_support_base',
+        '../net/net.gyp:net',
+        '../net/net.gyp:net_test_support',
+      ],
+      'sources': [
+        'gaia/fake_gaia.cc',
+        'gaia/fake_gaia.h',
+      ],
+    },
   ],
 }
