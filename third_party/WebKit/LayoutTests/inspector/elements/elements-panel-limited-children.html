@@ -34,23 +34,19 @@ function test()
     {
         InspectorTest.addResult("=========== Loaded 5 children ===========");
         InspectorTest.dumpElementsTree();
-        InspectorTest.evaluateInPage("insertNode()", step3);
+        InspectorTest.addSniffer(WebInspector.ElementsTreeUpdater.prototype, "_updateModifiedNodes", step3);
+        InspectorTest.evaluateInPage("insertNode()");
     }
 
     function step3()
     {
+        InspectorTest.addResult("=========== Modified children ===========");
+        InspectorTest.dumpElementsTree();
+        dataTreeElement.handleLoadAllChildren();
         InspectorTest.runAfterPendingDispatches(step4);
     }
 
     function step4()
-    {   
-        InspectorTest.addResult("=========== Modified children ===========");
-        InspectorTest.dumpElementsTree();
-        dataTreeElement.handleLoadAllChildren();
-        InspectorTest.runAfterPendingDispatches(step5);
-    }
-
-    function step5()
     {
         InspectorTest.addResult("=========== Loaded all children ===========");
         InspectorTest.dumpElementsTree();
