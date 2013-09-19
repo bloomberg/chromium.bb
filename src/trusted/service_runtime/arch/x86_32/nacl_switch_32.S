@@ -114,6 +114,7 @@ __x86.get_pc_thunk.ax:
         ret
         .cfi_endproc
 #else
+        .globl __x86.get_pc_thunk.ax
 __x86.get_pc_thunk.ax:
         movl (%esp), %eax
         ret

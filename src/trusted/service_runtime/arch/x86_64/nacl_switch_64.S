@@ -54,6 +54,12 @@ MACROENTRY
 # error "What OS/compiler is the service runtime being compiled with?"
 #endif
 
+        /*
+         * TODO(mcgrathr): Perhaps drop callee-saved registers (these six)
+         * from this restore and instead just clear them at startup
+         * (i.e. have NaClStartThreadInApp call a NaClStartSwitch that
+         * clears them and calls NaClSwitch).
+         */
         movq    NACL_THREAD_CONTEXT_OFFSET_RBX(%r11), %rbx
         movq    NACL_THREAD_CONTEXT_OFFSET_RBP(%r11), %rbp
         movq    NACL_THREAD_CONTEXT_OFFSET_R12(%r11), %r12

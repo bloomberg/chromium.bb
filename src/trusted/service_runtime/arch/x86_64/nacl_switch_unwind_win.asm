@@ -4,6 +4,8 @@
 
 include ksamd64.inc
 
+EXTERN NaClSwitch : QWORD
+
 PUBLIC NaClSwitchSavingStackPtr
 
 _TEXT SEGMENT
@@ -26,7 +28,6 @@ _TEXT SEGMENT
 
 ; Arg 1 (rcx):  user_context (&natp->user), passed on to NaClSwitch()
 ; Arg 2 (rdx):  address of natp->user.trusted_stack_ptr
-; Arg 3 (r8):  address of CPUID-specific NaClSwitch() function
 NaClSwitchSavingStackPtr PROC FRAME
         ; Save all callee-saved registers.  This is necessary in case
         ; the caller is using a frame pointer.  The Windows ABI
@@ -51,8 +52,23 @@ NaClSwitchSavingStackPtr PROC FRAME
         sub   r12, 8
         mov   [rdx], r12
 
-        call  r8
-        hlt
+        call  qword ptr [NaClSwitch]
+
+        ; We get here after returning from a system call.
+        ; NaClSyscallCSegHook returned the struct NaClThreadContext
+        ; pointer.  Now make that the argument to the NaClSwitch
+        ; function.  Note that the address of this instruction, pushed
+        ; by the call above as its return address, stays at the top of
+        ; the trusted stack.  It will be reused again and again, as
+        ; the return address when NaClSyscallCSegHook returns after
+        ; each system call.  Hence it's important to use a jmp rather
+        ; than a call here, so that this return address is not clobbered.
+        ; The NaClSwitch functions never look at the incoming
+        ; (trusted) stack--they immediately switch the rsp to the
+        ; untrusted stack pointer--so they don't care whether they're
+        ; entered via call or jmp.
+        mov   rcx, rax
+        jmp   qword ptr [NaClSwitch]
 NaClSwitchSavingStackPtr ENDP
 
 _TEXT ENDS

@@ -49,6 +49,12 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSwitch):
   addiu   $t6, $t6, %lo(NACL_CONTROL_FLOW_MASK)
   lui     $t7, %hi(NACL_DATA_FLOW_MASK)
   addiu   $t7, $t7, %lo(NACL_DATA_FLOW_MASK)
+  /*
+   * TODO(mcgrathr): Perhaps drop callee-saved registers (s0-s8)
+   * from this restore and instead just clear them at startup
+   * (i.e. have NaClStartThreadInApp call a NaClStartSwitch that
+   * clears them and calls NaClSwitch).
+   */
   lw $s0, NACL_THREAD_CONTEXT_OFFSET_S0($a0)
   lw $s1, NACL_THREAD_CONTEXT_OFFSET_S1($a0)
   lw $s2, NACL_THREAD_CONTEXT_OFFSET_S2($a0)
@@ -80,4 +86,3 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSwitch):
   nop
 
   .set reorder
-

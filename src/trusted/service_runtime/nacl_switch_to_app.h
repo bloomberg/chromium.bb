@@ -24,13 +24,13 @@ struct NaClSwitchRemainingRegsState;
 void NaClInitSwitchToApp(struct NaClApp *nap);
 
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
+extern NORETURN_PTR void (*NaClSwitch)(struct NaClThreadContext *context);
 extern NORETURN void NaClSwitchAVX(struct NaClThreadContext *context);
 extern NORETURN void NaClSwitchSSE(struct NaClThreadContext *context);
 extern NORETURN void NaClSwitchNoSSE(struct NaClThreadContext *context);
 extern NORETURN void NaClSwitchSavingStackPtr(
     struct NaClThreadContext *user_context,
-    uintptr_t *trusted_stack_ptr_addr,
-    void (*NaClSwitch)(struct NaClThreadContext *context));
+    uintptr_t *trusted_stack_ptr_addr);
 #if NACL_OSX
 /* Same as NaClSwitchNoSSE but context in %ecx */
 extern NORETURN void NaClSwitchNoSSEViaECX(void);
@@ -43,8 +43,6 @@ extern NORETURN void NaClSwitch(struct NaClThreadContext *context);
 
 NORETURN void NaClStartThreadInApp(struct NaClAppThread *natp,
                                    nacl_reg_t           new_prog_ctr);
-
-NORETURN void NaClSwitchToApp(struct NaClAppThread *natp);
 
 void NaClSwitchRemainingRegsSetup(struct NaClSwitchRemainingRegsState *state,
                                   struct NaClAppThread                *natp,

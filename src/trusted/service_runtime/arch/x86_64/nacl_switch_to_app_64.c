@@ -21,7 +21,7 @@
 # define NORETURN_PTR NORETURN
 #endif
 
-static NORETURN_PTR void (*NaClSwitch)(struct NaClThreadContext *context);
+NORETURN_PTR void (*NaClSwitch)(struct NaClThreadContext *context);
 
 void NaClInitSwitchToApp(struct NaClApp *nap) {
   /* TODO(jfb) Use a safe cast here. */
@@ -81,20 +81,8 @@ NORETURN void NaClStartThreadInApp(struct NaClAppThread *natp,
 
 #if NACL_WINDOWS
   /* This sets up a stack containing a return address that has unwind info. */
-  NaClSwitchSavingStackPtr(context, &context->trusted_stack_ptr, NaClSwitch);
+  NaClSwitchSavingStackPtr(context, &context->trusted_stack_ptr);
 #else
   NaClSwitch(context);
 #endif
-}
-
-/*
- * Not really different that NaClStartThreadInApp, since when we start
- * a thread in x86_64 we do not need to save any extra state (e.g.,
- * segment registers) as in the x86_32 case.  We do not, however, save
- * the stack pointer, since o/w we will slowly exhaust the trusted
- * stack.
- */
-
-NORETURN void NaClSwitchToApp(struct NaClAppThread *natp) {
-  NaClSwitch(&natp->user);
 }

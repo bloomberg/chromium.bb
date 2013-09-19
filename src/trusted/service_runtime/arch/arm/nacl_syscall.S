@@ -56,16 +56,15 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSegRegsSaved):
   fmxr fpscr, r2
 
   bl  NaClSyscallCSegHook
-DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSegEnd):
-
-  /* NOTREACHED */
 
   /*
-   * if the thread returns, which must not happen, it will be halted
-   * by the following instruction
+   * NaClSyscallCSegHook returned with the NaClThreadContext pointer
+   * back in r0, which is conveniently already where it's needed to
+   * be the argument to NaClSwitch.
    */
+  b NaClSwitch
 
-  .word NACL_HALT_WORD
+DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSegEnd):
 
 DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallThreadCaptureFault):
   .word NACL_HALT_WORD

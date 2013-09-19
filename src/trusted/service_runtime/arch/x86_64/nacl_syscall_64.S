@@ -184,9 +184,8 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSegRegsSaved):
 # error "What OS/compiler is the service runtime being compiled with?"
 #endif
         /*
-         * Although NaClSyscallCSegHook() never returns, we want to
-         * make sure that the return address on the stack will be
-         * handled properly by the host system's stack unwinder.
+         * We want to make sure that the return address on the stack will
+         * be handled properly by the host system's stack unwinder.
          *
          * For Linux, it is fine that the return address does not have
          * associated unwind info, because libgcc's stack unwinder
@@ -206,9 +205,17 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSegRegsSaved):
          * associated unwind info.
          */
 #if NACL_WINDOWS
+        /* NaClSyscallCSegHook returns to NaClSwitchSavingStackPtr. */
         jmp     IDENTIFIER(NaClSyscallCSegHook)
 #else
         call    IDENTIFIER(NaClSyscallCSegHook)
+        /*
+         * NaClSyscallCSegHook returned the struct NaClThreadContext
+         * pointer (in %rax), which will be the argument (in %rdi) to
+         * the NaClSwitch function.
+         */
+        movq    %rax, %rdi
+        call    *IDENTIFIER(NaClSwitch)(%rip)
         hlt
         /* noret */
 #endif

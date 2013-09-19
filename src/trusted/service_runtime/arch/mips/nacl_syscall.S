@@ -113,8 +113,16 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallThreadCaptureFault):
   lw $sp, NACL_THREAD_CONTEXT_OFFSET_TRUSTED_STACK_PTR($a0)
 
   lw    $t9,%call16(NaClSyscallCSegHook)($gp)
-  jr    $t9
+  jalr  $t9
   nop
+
+  /*
+   * NaClSyscallCSegHook returned the NaClThreadContext pointer in $v0.
+   * Make that the argument (in $a0) to NaClSwitch.
+   */
+  lw    $t9,%call16(NaClSwitch)($gp)
+  jr    $t9
+  move  $a0, $v0 /* delay slot */
 
   /* NOTREACHED */
 
@@ -124,4 +132,3 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallThreadCaptureFault):
    */
 
   .word NACL_HALT_WORD
-

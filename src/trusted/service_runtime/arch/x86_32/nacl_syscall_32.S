@@ -126,6 +126,18 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(MACROARG3): /* NaClSyscallSegRegsSaved */
         lss     NACL_THREAD_CONTEXT_OFFSET_TRUSTED_STACK_PTR(%edx), %esp
         push    %edx
         call    IDENTIFIER(NaClSyscallCSegHook)
+
+        /* NaClSyscallCSegHook return value is argument to NaClSwitch. */
+        push    %eax
+
+        /*
+         * Now switch back to untrusted code.  This does not return.
+         * The first call is standard PIC magic.
+         * See nacl_switch_32.S for the definition.
+         */
+        call    __x86.get_pc_thunk.ax
+        call    *(IDENTIFIER(NaClSwitch)-.)(%eax)
+
         /*
          * If stack usage in the above code changes, modify initial %esp
          * computation -- see nacl_switch_to_app.c:NaClStartThreadInApp.
@@ -141,3 +153,13 @@ ENDMACRO
          */
         syscallseg NaClSyscallSegNoSSE, 0, NaClSyscallSegRegsSavedNoSSE, NaClSyscallThreadCaptureFaultNoSSE
         syscallseg NaClSyscallSegSSE, 1, NaClSyscallSegRegsSavedSSE, NaClSyscallThreadCaptureFaultSSE
+
+        /*
+         * This is defined here rather than in C because the assembler for
+         * MacOS cannot handle the PC-relative reference above unless the
+         * symbol is defined in the same file.
+         */
+        .data
+        .globl IDENTIFIER(NaClSwitch)
+IDENTIFIER(NaClSwitch):
+        .long 0

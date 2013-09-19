@@ -88,7 +88,7 @@ static void HandleStackContext(struct NaClAppThread *natp,
   *sp_user_out = sp_user;
 }
 
-NORETURN void NaClSyscallCSegHook(struct NaClThreadContext *ntcp) {
+struct NaClThreadContext *NaClSyscallCSegHook(struct NaClThreadContext *ntcp) {
   struct NaClAppThread      *natp = NaClAppThreadFromThreadContext(ntcp);
   struct NaClApp            *nap;
   uint32_t                  tramp_ret;
@@ -157,17 +157,14 @@ NORETURN void NaClSyscallCSegHook(struct NaClThreadContext *ntcp) {
 
   /*
    * After this NaClAppThreadSetSuspendState() call, we should not
-   * claim any mutexes, otherwise we risk deadlock.  Note that if
-   * NACLVERBOSITY is set high enough to enable the NaClLog() calls in
-   * NaClSwitchToApp(), these calls could deadlock.
+   * claim any mutexes, otherwise we risk deadlock.
    */
   NaClAppThreadSetSuspendState(natp, NACL_APP_THREAD_TRUSTED,
                                NACL_APP_THREAD_UNTRUSTED);
   NaClStackSafetyNowOnUntrustedStack();
 
-  NaClSwitchToApp(natp);
-  /* NOTREACHED */
-
-  fprintf(stderr, "NORETURN NaClSwitchToApp returned!?!\n");
-  NaClAbort();
+  /*
+   * The caller switches back to untrusted code after this return.
+   */
+  return ntcp;
 }
