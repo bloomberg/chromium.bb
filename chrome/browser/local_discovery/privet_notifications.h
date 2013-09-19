@@ -94,8 +94,7 @@ class PrivetNotificationService
       public PrivetNotificationsListener::Delegate,
       public base::SupportsWeakPtr<PrivetNotificationService> {
  public:
-  PrivetNotificationService(content::BrowserContext* profile,
-                            NotificationUIManager* notification_manager);
+  explicit PrivetNotificationService(content::BrowserContext* profile);
   virtual ~PrivetNotificationService();
 
   // PrivetDeviceLister::Delegate implementation:
@@ -117,7 +116,6 @@ class PrivetNotificationService
   void StartLister();
 
   content::BrowserContext* profile_;
-  NotificationUIManager* notification_manager_;
   scoped_ptr<PrivetDeviceLister> device_lister_;
   scoped_refptr<ServiceDiscoverySharedClient> service_discovery_client_;
   scoped_refptr<PrivetTrafficDetector> traffic_detector_v4_;
