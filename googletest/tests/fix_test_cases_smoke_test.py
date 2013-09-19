@@ -116,6 +116,7 @@ class FixTestCases(unittest.TestCase):
     run_test_cases_py = os.path.join(self.srcdir, 'run_test_cases.py')
     algo = hashlib.sha1
     expected_isolated = {
+      u'algo': u'sha-1',
       u'command': [u'run_test_cases.py', u'gtest_fake_pass.py'],
       u'files': {
         u'gtest_fake_base.py': {
@@ -141,6 +142,7 @@ class FixTestCases(unittest.TestCase):
       },
       u'os': unicode(run_isolated.get_flavor()),
       u'relative_cwd': u'.',
+      u'version': u'1.0',
     }
     if sys.platform == 'win32':
       for value in expected_isolated['files'].itervalues():

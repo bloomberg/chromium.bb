@@ -89,6 +89,19 @@ DEADLOCK_TIMEOUT = 5 * 60
 DELAY_BETWEEN_UPDATES_IN_SECS = 30
 
 
+# Sadly, hashlib uses 'sha1' instead of the standard 'sha-1' so explicitly
+# specify the names here.
+SUPPORTED_ALGOS = {
+  'md5': hashlib.md5,
+  'sha-1': hashlib.sha1,
+  'sha-512': hashlib.sha512,
+}
+
+
+# Used for serialization.
+SUPPORTED_ALGOS_REVERSE = dict((v, k) for k, v in SUPPORTED_ALGOS.iteritems())
+
+
 class ConfigError(ValueError):
   """Generic failure to load a .isolated file."""
   pass
@@ -743,6 +756,12 @@ class MemoryCache(object):
 def load_isolated(content, os_flavor, algo):
   """Verifies the .isolated file is valid and loads this object with the json
   data.
+
+  Arguments:
+  - content: raw serialized content to load.
+  - os_flavor: OS to load this file on. Optional.
+  - algo: hashlib algorithm class. Used to confirm the algorithm matches the
+          algorithm used on the Isolate Server.
   """
   try:
     data = json.loads(content)
@@ -752,8 +771,33 @@ def load_isolated(content, os_flavor, algo):
   if not isinstance(data, dict):
     raise ConfigError('Expected dict, got %r' % data)
 
+  # Check 'version' first, since it could modify the parsing after.
+  value = data.get('version', '1.0')
+  if not isinstance(value, basestring):
+    raise ConfigError('Expected string, got %r' % value)
+  if not re.match(r'^(\d+)\.(\d+)$', value):
+    raise ConfigError('Expected a compatible version, got %r' % value)
+  if value.split('.', 1)[0] != '1':
+    raise ConfigError('Expected compatible \'1.x\' version, got %r' % value)
+
+  if algo is None:
+    # Default the algorithm used in the .isolated file itself, falls back to
+    # 'sha-1' if unspecified.
+    algo = SUPPORTED_ALGOS_REVERSE[data.get('algo', 'sha-1')]
+
   for key, value in data.iteritems():
-    if key == 'command':
+    if key == 'algo':
+      if not isinstance(value, basestring):
+        raise ConfigError('Expected string, got %r' % value)
+      if value not in SUPPORTED_ALGOS:
+        raise ConfigError(
+            'Expected one of \'%s\', got %r' %
+            (', '.join(sorted(SUPPORTED_ALGOS)), value))
+      if value != SUPPORTED_ALGOS_REVERSE[algo]:
+        raise ConfigError(
+            'Expected \'%s\', got %r' % (SUPPORTED_ALGOS_REVERSE[algo], value))
+
+    elif key == 'command':
       if not isinstance(value, list):
         raise ConfigError('Expected list, got %r' % value)
       if not value:
@@ -825,8 +869,12 @@ def load_isolated(content, os_flavor, algo):
             'Expected \'os\' to be \'%s\' but got \'%s\'' %
             (os_flavor, value))
 
+    elif key == 'version':
+      # Already checked above.
+      pass
+
     else:
-      raise ConfigError('Unknown key %s' % key)
+      raise ConfigError('Unknown key %r' % key)
 
   # Automatically fix os.path.sep if necessary. While .isolated files are always
   # in the the native path format, someone could want to download an .isolated
@@ -1062,10 +1110,9 @@ def download_isolated_tree(isolated_hash, target_directory, remote):
   if not os.path.exists(target_directory):
     os.makedirs(target_directory)
 
-  algo = hashlib.sha1
   cache = MemoryCache(remote)
   return fetch_isolated(
-      isolated_hash, cache, target_directory, None, algo, False)
+      isolated_hash, cache, target_directory, None, remote.algo, False)
 
 
 @subcommand.usage('<file1..fileN> or - to read from stdin')
@@ -1081,15 +1128,14 @@ def CMDarchive(parser, args):
   if not options.isolate_server:
     parser.error('Nowhere to send. Please specify --isolate-server')
 
-  # Load the necessary metadata. This is going to be rewritten eventually to be
-  # more efficient.
-  algo = hashlib.sha1
+  # Load the necessary metadata.
+  # TODO(maruel): Use a worker pool to upload as the hashing is being done.
   infiles = dict(
       (
         f,
         {
           's': os.stat(f).st_size,
-          'h': hash_file(f, algo),
+          'h': hash_file(f, get_hash_algo(options.namespace)),
         }
       )
       for f in files)

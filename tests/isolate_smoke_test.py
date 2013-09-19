@@ -241,12 +241,14 @@ class IsolateModeBase(IsolateBase):
         item.pop('t', None)
     return files
 
-  def _expected_result(self, args, read_only, empty_file):
+  def _expected_isolated(self, args, read_only, empty_file):
     """Verifies self.isolated contains the expected data."""
     expected = {
+      u'algo': u'sha-1',
       u'files': self._gen_files(read_only, empty_file, False),
       u'os': unicode(isolate.get_flavor()),
       u'relative_cwd': unicode(RELATIVE_CWD[self.case()]),
+      u'version': u'1.0',
     }
     if read_only is not None:
       expected[u'read_only'] = read_only
@@ -258,6 +260,7 @@ class IsolateModeBase(IsolateBase):
     flavor = isolate.get_flavor()
     chromeos_value = int(flavor == 'linux')
     expected = {
+      u'algo': u'sha-1',
       u'child_isolated_files': [],
       u'command': [],
       u'files': self._gen_files(read_only, empty_file, True),
@@ -270,6 +273,7 @@ class IsolateModeBase(IsolateBase):
         u'OS': unicode(flavor),
         u'chromeos': chromeos_value,
       },
+      u'version': u'1.0',
     }
     if args:
       expected[u'command'] = [u'python'] + [unicode(x) for x in args]
@@ -277,7 +281,7 @@ class IsolateModeBase(IsolateBase):
     self.assertEqual(expected, json.load(open(self.saved_state(), 'r')))
 
   def _expect_results(self, args, read_only, extra_vars, empty_file):
-    self._expected_result(args, read_only, empty_file)
+    self._expected_isolated(args, read_only, empty_file)
     self._expected_saved_state(args, read_only, empty_file, extra_vars)
     # Also verifies run_isolated.py will be able to read it.
     isolate.isolateserver.load_isolated(
@@ -477,7 +481,7 @@ class Isolate_check(IsolateModeBase):
     self._execute('check', 'touch_only.isolate', ['-V', 'FLAG', 'gyp'], False)
     self._expect_no_tree()
     empty = os.path.join('files1', 'test_file1.txt')
-    self._expected_result(['touch_only.py', 'gyp'], None, empty)
+    self._expected_isolated(['touch_only.py', 'gyp'], None, empty)
 
   def test_touch_root(self):
     self._execute('check', 'touch_root.isolate', [], False)
@@ -564,29 +568,35 @@ class Isolate_archive(IsolateModeBase):
     tree.extend(isolated_hashes)
     self.assertEqual(sorted(tree), map(unicode, self._result_tree()))
 
-    # Reimplement _expected_result():
+    # Reimplement _expected_isolated():
     files = self._gen_files(None, None, False)
     expected = {
+      u'algo': u'sha-1',
       u'command': [u'python', u'split.py'],
       u'files': {u'split.py': files['split.py']},
       u'includes': isolated_hashes,
       u'os': unicode(isolate.get_flavor()),
       u'relative_cwd': unicode(RELATIVE_CWD[self.case()]),
+      u'version': u'1.0',
     }
     self.assertEqual(expected, json.load(open(self.isolated, 'r')))
 
     key = os.path.join(u'test', 'data', 'foo.txt')
     expected = {
+      u'algo': u'sha-1',
       u'files': {key: files[key]},
       u'os': unicode(isolate.get_flavor()),
+      u'version': u'1.0',
     }
     self.assertEqual(
         expected, json.load(open(isolated_base + '.0.isolated', 'r')))
 
     key = os.path.join(u'files1', 'subdir', '42.txt')
     expected = {
+      u'algo': u'sha-1',
       u'files': {key: files[key]},
       u'os': unicode(isolate.get_flavor()),
+      u'version': u'1.0',
     }
     self.assertEqual(
         expected, json.load(open(isolated_base + '.1.isolated', 'r')))
@@ -598,7 +608,7 @@ class Isolate_archive(IsolateModeBase):
         'archive', 'touch_only.isolate', ['-V', 'FLAG', 'gyp'], False)
     empty = os.path.join('files1', 'test_file1.txt')
     self._expected_hash_tree(empty)
-    self._expected_result(['touch_only.py', 'gyp'], None, empty)
+    self._expected_isolated(['touch_only.py', 'gyp'], None, empty)
 
   def test_touch_root(self):
     self._execute('archive', 'touch_root.isolate', [], False)

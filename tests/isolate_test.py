@@ -58,6 +58,7 @@ class IsolateTest(IsolateBase):
       'isolate_file': 'fake.isolate',
     }
     expected = {
+      'algo': 'sha-1',
       'child_isolated_files': [],
       'command': [],
       'files': {},
@@ -65,6 +66,7 @@ class IsolateTest(IsolateBase):
       'variables': {
         'OS': isolate.get_flavor(),
       },
+      'version': '1.0',
     }
     saved_state = isolate.SavedState.load(values, self.cwd)
     self.assertEqual(expected, saved_state.flatten())
@@ -81,6 +83,7 @@ class IsolateTest(IsolateBase):
       },
     }
     expected = {
+      'algo': 'sha-1',
       'child_isolated_files': [],
       'command': [],
       'files': {},
@@ -89,6 +92,7 @@ class IsolateTest(IsolateBase):
         'foo': 42,
         'OS': isolate.get_flavor(),
       },
+      'version': '1.0',
     }
     saved_state = isolate.SavedState.load(values, self.cwd)
     self.assertEqual(expected, saved_state.flatten())
@@ -1133,6 +1137,7 @@ class IsolateLoad(IsolateBase):
     actual_saved_state = complete_state.saved_state.flatten()
 
     expected_isolated = {
+      'algo': 'sha-1',
       'command': ['python', 'touch_root.py'],
       'files': {
         os.path.join(u'tests', 'isolate', 'touch_root.py'): {
@@ -1140,19 +1145,21 @@ class IsolateLoad(IsolateBase):
           'h': hash_file('tests', 'isolate', 'touch_root.py'),
           's': _size('tests', 'isolate', 'touch_root.py'),
         },
-        'isolate.py': {
+        u'isolate.py': {
           'm': 488,
           'h': hash_file('isolate.py'),
           's': _size('isolate.py'),
         },
       },
       'os': isolate.get_flavor(),
-      'relative_cwd': os.path.join('tests', 'isolate'),
+      'relative_cwd': os.path.join(u'tests', 'isolate'),
+      'version': '1.0',
     }
     self._cleanup_isolated(expected_isolated)
     self.assertEqual(expected_isolated, actual_isolated)
 
     expected_saved_state = {
+      'algo': 'sha-1',
       'child_isolated_files': [],
       'command': ['python', 'touch_root.py'],
       'files': {
@@ -1175,7 +1182,8 @@ class IsolateLoad(IsolateBase):
         'foo': 'bar',
         'OS': isolate.get_flavor(),
         'chromeos': options.variables['chromeos'],
-      }
+      },
+      'version': '1.0',
     }
     self._cleanup_isolated(expected_saved_state)
     self._cleanup_saved_state(actual_saved_state)
@@ -1195,21 +1203,24 @@ class IsolateLoad(IsolateBase):
     actual_saved_state = complete_state.saved_state.flatten()
 
     expected_isolated =  {
+      'algo': 'sha-1',
       'command': ['python', 'touch_root.py'],
       'files': {
-        os.path.join('tests', 'isolate', 'touch_root.py'): {
+        os.path.join(u'tests', 'isolate', 'touch_root.py'): {
           'm': 488,
           'h': hash_file('tests', 'isolate', 'touch_root.py'),
           's': _size('tests', 'isolate', 'touch_root.py'),
         },
       },
       'os': isolate.get_flavor(),
-      'relative_cwd': os.path.join('tests', 'isolate'),
+      'relative_cwd': os.path.join(u'tests', 'isolate'),
+      'version': '1.0',
     }
     self._cleanup_isolated(expected_isolated)
     self.assertEqual(expected_isolated, actual_isolated)
 
     expected_saved_state = {
+      'algo': 'sha-1',
       'child_isolated_files': [],
       'command': ['python', 'touch_root.py'],
       'files': {
@@ -1228,6 +1239,7 @@ class IsolateLoad(IsolateBase):
         'OS': isolate.get_flavor(),
         'chromeos': chromeos_value,
       },
+      'version': '1.0',
     }
     self._cleanup_isolated(expected_saved_state)
     self._cleanup_saved_state(actual_saved_state)
@@ -1248,6 +1260,7 @@ class IsolateLoad(IsolateBase):
     actual_saved_state = complete_state.saved_state.flatten()
 
     expected_isolated =  {
+      'algo': 'sha-1',
       'command': ['python', 'touch_root.py'],
       'files': {
         os.path.join('tests', 'isolate', 'touch_root.py'): {
@@ -1258,11 +1271,13 @@ class IsolateLoad(IsolateBase):
       },
       'os': isolate.get_flavor(),
       'relative_cwd': os.path.join(u'tests', 'isolate'),
+      'version': '1.0',
     }
     self._cleanup_isolated(expected_isolated)
     self.assertEqual(expected_isolated, actual_isolated)
 
     expected_saved_state = {
+      'algo': 'sha-1',
       'child_isolated_files': [],
       'command': ['python', 'touch_root.py'],
       'files': {
@@ -1282,6 +1297,7 @@ class IsolateLoad(IsolateBase):
         'OS': isolate.get_flavor(),
         'chromeos': chromeos_value,
       },
+      'version': '1.0',
     }
     self._cleanup_isolated(expected_saved_state)
     self._cleanup_saved_state(actual_saved_state)
@@ -1314,26 +1330,29 @@ class IsolateLoad(IsolateBase):
     actual_saved_state = complete_state.saved_state.flatten()
 
     expected_isolated =  {
+      'algo': 'sha-1',
       'command': ['python', 'touch_root.py'],
       'files': {
-        'isolate.py': {
+        u'isolate.py': {
           'm': 488,
           'h': hash_file('isolate.py'),
           's': _size('isolate.py'),
         },
-        os.path.join('tests', 'isolate', 'touch_root.py'): {
+        os.path.join(u'tests', 'isolate', 'touch_root.py'): {
           'm': 488,
           'h': hash_file('tests', 'isolate', 'touch_root.py'),
           's': _size('tests', 'isolate', 'touch_root.py'),
         },
       },
       'os': isolate.get_flavor(),
-      'relative_cwd': os.path.join('tests', 'isolate'),
+      'relative_cwd': os.path.join(u'tests', 'isolate'),
+      'version': '1.0',
     }
     self._cleanup_isolated(expected_isolated)
     self.assertEqual(expected_isolated, actual_isolated)
 
     expected_saved_state = {
+      'algo': 'sha-1',
       'child_isolated_files': [],
       'command': ['python', 'touch_root.py'],
       'files': {
@@ -1358,6 +1377,7 @@ class IsolateLoad(IsolateBase):
         'OS': isolate.get_flavor(),
         'chromeos': chromeos_value,
       },
+      'version': '1.0',
     }
     self._cleanup_isolated(expected_saved_state)
     self._cleanup_saved_state(actual_saved_state)
@@ -1386,6 +1406,7 @@ class IsolateLoad(IsolateBase):
     actual_saved_state = complete_state.saved_state.flatten()
 
     expected_isolated = {
+      'algo': 'sha-1',
       'files': {
         os.path.join(u'tests', 'isolate', 'files1', 'subdir', '42.txt'): {
           'm': 416,
@@ -1410,11 +1431,13 @@ class IsolateLoad(IsolateBase):
       },
       'os': isolate.get_flavor(),
       'relative_cwd': os.path.join(u'tests', 'isolate'),
+      'version': '1.0',
     }
     self._cleanup_isolated(expected_isolated)
     self.assertEqual(expected_isolated, actual_isolated)
 
     expected_saved_state = {
+      'algo': 'sha-1',
       'child_isolated_files': [],
       'command': [],
       'files': {
@@ -1449,6 +1472,7 @@ class IsolateLoad(IsolateBase):
         'OS': isolate.get_flavor(),
         'chromeos': chromeos_value,
       },
+      'version': '1.0',
     }
     self._cleanup_isolated(expected_saved_state)
     self._cleanup_saved_state(actual_saved_state)
@@ -1473,6 +1497,7 @@ class IsolateLoad(IsolateBase):
     actual_isolated_master = isolate.trace_inputs.read_json(
         os.path.join(self.directory, 'foo.isolated'))
     expected_isolated_master = {
+      u'algo': u'sha-1',
       u'command': [u'python', u'split.py'],
       u'files': {
         u'split.py': {
@@ -1487,6 +1512,7 @@ class IsolateLoad(IsolateBase):
       ],
       u'os': unicode(isolate.get_flavor()),
       u'relative_cwd': u'.',
+      u'version': u'1.0',
     }
     self._cleanup_isolated(expected_isolated_master)
     self.assertEqual(expected_isolated_master, actual_isolated_master)
@@ -1494,6 +1520,7 @@ class IsolateLoad(IsolateBase):
     actual_isolated_0 = isolate.trace_inputs.read_json(
         os.path.join(self.directory, 'foo.0.isolated'))
     expected_isolated_0 = {
+      u'algo': u'sha-1',
       u'files': {
         os.path.join(u'test', 'data', 'foo.txt'): {
           u'm': 416,
@@ -1503,6 +1530,7 @@ class IsolateLoad(IsolateBase):
         },
       },
       u'os': unicode(isolate.get_flavor()),
+      u'version': u'1.0',
     }
     self._cleanup_isolated(expected_isolated_0)
     self.assertEqual(expected_isolated_0, actual_isolated_0)
@@ -1510,6 +1538,7 @@ class IsolateLoad(IsolateBase):
     actual_isolated_1 = isolate.trace_inputs.read_json(
         os.path.join(self.directory, 'foo.1.isolated'))
     expected_isolated_1 = {
+      u'algo': u'sha-1',
       u'files': {
         os.path.join(u'files1', 'subdir', '42.txt'): {
           u'm': 416,
@@ -1519,6 +1548,7 @@ class IsolateLoad(IsolateBase):
         },
       },
       u'os': unicode(isolate.get_flavor()),
+      u'version': u'1.0',
     }
     self._cleanup_isolated(expected_isolated_1)
     self.assertEqual(expected_isolated_1, actual_isolated_1)
@@ -1527,6 +1557,7 @@ class IsolateLoad(IsolateBase):
         isolate.isolatedfile_to_state(options.isolated))
     isolated_base = unicode(os.path.basename(options.isolated))
     expected_saved_state = {
+      u'algo': u'sha-1',
       u'child_isolated_files': [
         isolated_base[:-len('.isolated')] + '.0.isolated',
         isolated_base[:-len('.isolated')] + '.1.isolated',
@@ -1560,6 +1591,7 @@ class IsolateLoad(IsolateBase):
         u'DEPTH': u'.',
         u'PRODUCT_DIR': u'files1',
       },
+      u'version': u'1.0',
     }
     self._cleanup_isolated(expected_saved_state)
     self._cleanup_saved_state(actual_saved_state)
@@ -1618,25 +1650,27 @@ class IsolateCommand(IsolateBase):
       with open(isolated_file, 'rb') as f:
         actual = json.load(f)
       mapped = [
-        os.path.join('files2', 'subdir', '42.txt'),
-        os.path.join('files2', 'test_file1.txt'),
-        os.path.join('files2', 'test_file2.txt'),
-        os.path.join('symlink_full.py'),
+        os.path.join(u'files2', 'subdir', '42.txt'),
+        os.path.join(u'files2', 'test_file1.txt'),
+        os.path.join(u'files2', 'test_file2.txt'),
+        os.path.join(u'symlink_full.py'),
       ]
       files = dict(
           (
             f,
             {
-              'h': hash_file('tests', 'isolate', f),
-              's': _size('tests', 'isolate', f),
+              u'h': unicode(hash_file('tests', 'isolate', f)),
+              u's': _size('tests', 'isolate', f),
             }
           )
           for f in mapped)
       expected = {
+        u'algo': u'sha-1',
         u'command': [u'python', u'symlink_full.py'],
         u'files': files,
         u'os': u'win',
         u'relative_cwd': u'.',
+        u'version': u'1.0',
       }
       self.assertEqual(expected, actual)
 

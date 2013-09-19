@@ -108,6 +108,7 @@ class IsolateTestCases(unittest.TestCase):
         GOOGLETEST_DIR, gtest_fake_pass_py)
     rel_gtest_fake_pass_py = os.path.join(u'gtest_fake', 'gtest_fake_pass.py')
     expected_isolated = {
+      u'algo': u'sha-1',
       u'command': [u'../gtest_fake/gtest_fake_pass.py'],
       u'files': {
         rel_gtest_fake_pass_py: {
@@ -119,6 +120,7 @@ class IsolateTestCases(unittest.TestCase):
       },
       u'os': unicode(isolate.get_flavor()),
       u'relative_cwd': u'isolate_test_cases',
+      u'version': u'1.0',
     }
     if sys.platform == 'win32':
       expected_isolated['files'][rel_gtest_fake_pass_py].pop('m')

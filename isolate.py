@@ -15,7 +15,6 @@ See more information at
 
 import ast
 import copy
-import hashlib
 import itertools
 import logging
 import optparse
@@ -1396,7 +1395,12 @@ def chromium_save_isolated(isolated, data, variables, algo):
   slaves = []
 
   def extract_into_included_isolated(prefix):
-    new_slave = {'files': {}, 'os': data['os']}
+    new_slave = {
+      'algo': data['algo'],
+      'files': {},
+      'os': data['os'],
+      'version': data['version'],
+    }
     for f in data['files'].keys():
       if f.startswith(prefix):
         new_slave['files'][f] = data['files'].pop(f)
@@ -1478,6 +1482,9 @@ class SavedState(Flattenable):
   separator instead of '/' used in .isolate file.
   """
   MEMBERS = (
+    # Algorithm used to generate the hash. The only supported value is at the
+    # time of writting 'sha-1'.
+    'algo',
     # Cache of the processed command. This value is saved because .isolated
     # files are never loaded by isolate.py so it's the only way to load the
     # command safely.
@@ -1497,6 +1504,9 @@ class SavedState(Flattenable):
     # a user can use isolate.py after building and the GYP variables are still
     # defined.
     'variables',
+    # Version of the file format in format 'major.minor'. Any non-breaking
+    # change must update minor. Any breaking change must update major.
+    'version',
   )
 
   def __init__(self, isolated_basedir):
@@ -1510,6 +1520,8 @@ class SavedState(Flattenable):
     assert os.path.isdir(isolated_basedir), isolated_basedir
     self.isolated_basedir = isolated_basedir
 
+    # The default algorithm used.
+    self.algo = isolateserver.SUPPORTED_ALGOS['sha-1']
     self.command = []
     self.files = {}
     self.isolate_file = None
@@ -1517,6 +1529,8 @@ class SavedState(Flattenable):
     self.read_only = None
     self.relative_cwd = None
     self.variables = {'OS': get_flavor()}
+    # The current version.
+    self.version = '1.0'
 
   def update(self, isolate_file, variables):
     """Updates the saved state with new data to keep GYP variables and internal
@@ -1557,16 +1571,18 @@ class SavedState(Flattenable):
   def to_isolated(self):
     """Creates a .isolated dictionary out of the saved state.
 
-    https://code.google.com/p/swarming/wiki/IsolateDesign
+    https://code.google.com/p/swarming/wiki/IsolatedDesign
     """
     def strip(data):
       """Returns a 'files' entry with only the whitelisted keys."""
       return dict((k, data[k]) for k in ('h', 'l', 'm', 's') if k in data)
 
     out = {
+      'algo': isolateserver.SUPPORTED_ALGOS_REVERSE[self.algo],
       'files': dict(
           (filepath, strip(data)) for filepath, data in self.files.iteritems()),
       'os': self.variables['OS'],
+      'version': self.version,
     }
     if self.command:
       out['command'] = self.command
@@ -1596,11 +1612,30 @@ class SavedState(Flattenable):
     if out.variables['OS'] != get_flavor():
       raise run_isolated.ConfigError(
           'The .isolated.state file was created on another platform')
+
+    # Converts human readable form back into the proper class type.
+    algo = data.get('algo', 'sha-1')
+    if not algo in isolateserver.SUPPORTED_ALGOS:
+      raise run_isolated.ConfigError('Unknown algo \'%s\'' % out.algo)
+    out.algo = isolateserver.SUPPORTED_ALGOS[algo]
+
+    # For example, 1.1 is guaranteed to be backward compatible with 1.0 code.
+    if not re.match(r'^(\d+)\.(\d+)$', out.version):
+      raise run_isolated.ConfigError('Unknown version \'%s\'' % out.version)
+    if out.version.split('.', 1)[0] != '1':
+      raise run_isolated.ConfigError('Unsupported version \'%s\'' % out.version)
+
     # The .isolate file must be valid. It could be absolute on Windows if the
     # drive containing the .isolate and the drive containing the .isolated files
     # differ.
     assert not os.path.isabs(out.isolate_file) or sys.platform == 'win32'
     assert os.path.isfile(out.isolate_filepath), out.isolate_filepath
+    return out
+
+  def flatten(self):
+    """Makes sure 'algo' is in human readable form."""
+    out = super(SavedState, self).flatten()
+    out['algo'] = isolateserver.SUPPORTED_ALGOS_REVERSE[out['algo']]
     return out
 
   def __str__(self):
@@ -1626,7 +1661,6 @@ class CompleteState(object):
     # Contains the data to ease developer's use-case but that is not strictly
     # necessary.
     self.saved_state = saved_state
-    self.algo = hashlib.sha1
 
   @classmethod
   def load_files(cls, isolated_filepath):
@@ -1737,7 +1771,7 @@ class CompleteState(object):
             self.saved_state.files[infile],
             self.saved_state.read_only,
             self.saved_state.variables['OS'],
-            self.algo)
+            self.saved_state.algo)
 
   def save_files(self):
     """Saves self.saved_state and creates a .isolated file."""
@@ -1746,7 +1780,7 @@ class CompleteState(object):
         self.isolated_filepath,
         self.saved_state.to_isolated(),
         self.saved_state.variables,
-        self.algo)
+        self.saved_state.algo)
     total_bytes = sum(
         i.get('s', 0) for i in self.saved_state.files.itervalues())
     if total_bytes:
@@ -1967,7 +2001,8 @@ def CMDarchive(parser, args):
         # likely smallish (under 500kb) and its file size is needed.
         with open(item_path, 'rb') as f:
           content = f.read()
-        isolated_hash.append(hashlib.sha1(content).hexdigest())
+        isolated_hash.append(
+            complete_state.saved_state.algo(content).hexdigest())
         isolated_metadata = {
           'h': isolated_hash[-1],
           's': len(content),
