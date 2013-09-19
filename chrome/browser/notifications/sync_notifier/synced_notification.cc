@@ -87,6 +87,9 @@ sync_pb::EntitySpecifics SyncedNotification::GetEntitySpecifics() const {
   return entity_specifics;
 }
 
+// TODO(petewil): The fetch mechanism appears to be returning two bitmaps on the
+// mac - perhaps one is regular, one is high dpi?  If so, ensure we use the high
+// dpi bitmap when appropriate.
 void SyncedNotification::OnFetchComplete(const GURL url,
                                          const SkBitmap* bitmap) {
   // TODO(petewil): Add timeout mechanism in case bitmaps take too long.  Do we
@@ -114,8 +117,26 @@ void SyncedNotification::OnFetchComplete(const GURL url,
 
   // Count off the bitmaps as they arrive.
   --active_fetcher_count_;
+
+  DVLOG(2) << __FUNCTION__ << " popping bitmap " << url;
+  DVLOG(2) << __FUNCTION__ << " size is " << bitmap->getSize();
+
+  // Check to see if all images we need are now present.
+  bool app_icon_ready = GetAppIconUrl().is_empty() ||
+      !app_icon_bitmap_.IsEmpty();
+  bool images_ready = GetImageUrl().is_empty() || !image_bitmap_.IsEmpty();
+  bool sender_picture_ready = GetProfilePictureUrl(0).is_empty() ||
+      !sender_bitmap_.IsEmpty();
+  bool button_bitmaps_ready = true;
+  for (unsigned int j = 0; j < GetButtonCount(); ++j) {
+    if (!GetButtonIconUrl(j).is_empty() && button_bitmaps_[j].IsEmpty()) {
+      button_bitmaps_ready = false;
+      break;
+    }
+  }
   // See if all bitmaps are accounted for, if so call Show.
-  if (active_fetcher_count_ == 0) {
+  if (app_icon_ready && images_ready && sender_picture_ready &&
+      button_bitmaps_ready) {
     Show(notification_manager_, notifier_service_, profile_);
   }
 }
@@ -180,6 +201,7 @@ void SyncedNotification::AddBitmapToFetchQueue(const GURL& url) {
   if (url.is_valid()) {
     ++active_fetcher_count_;
     fetchers_.push_back(new NotificationBitmapFetcher(url, this));
+    DVLOG(2) << __FUNCTION__ << "Pushing bitmap " << url;
   }
 }
 
@@ -298,7 +320,7 @@ void SyncedNotification::Show(NotificationUIManager* notification_manager,
 
   DVLOG(1) << "Showing Synced Notification! " << heading << " " << text
            << " " << GetAppIconUrl() << " " << replace_key << " "
-           << GetReadState();
+           << GetProfilePictureUrl(0) << " " << GetReadState();
 
   return;
 }

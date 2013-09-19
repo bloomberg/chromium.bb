@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_vector.h"
+#include "base/prefs/pref_member.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/notifications/sync_notifier/synced_notification.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
@@ -17,11 +18,18 @@
 class NotificationUIManager;
 class Profile;
 
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
+
 namespace message_center {
 struct Notifier;
 }
 
 namespace notifier {
+
+extern const char kFirstSyncedNotificationServiceId[];
+extern const char kServiceEnabledOnce[];
 
 // The ChromeNotifierService holds notifications which represent the state of
 // delivered notifications for chrome. These are obtained from the sync service
@@ -74,6 +82,9 @@ class ChromeNotifierService : public syncer::SyncableService,
       const std::string& notifier_id,
       bool enabled);
 
+  // Register the preferences we use to save state.
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+
   Profile* profile() const { return profile_; }
 
   // Functions for test.
@@ -86,6 +97,9 @@ class ChromeNotifierService : public syncer::SyncableService,
   static void set_avoid_bitmap_fetching_for_test(bool avoid) {
     avoid_bitmap_fetching_for_test_ = avoid;
   }
+
+  // Initialize the preferences we use for the ChromeNotificationService.
+  void InitializePrefs();
 
  private:
   // Add a notification to our list.  This takes ownership of the pointer.
@@ -102,17 +116,37 @@ class ChromeNotifierService : public syncer::SyncableService,
 
   // When a service it turned on, scan our cache for any notifications
   // for that service, and display them if they are unread.
-  void DisplayUnreadNotificationsFromSource(std::string notifier_id);
+  void DisplayUnreadNotificationsFromSource(const std::string& notifier_id);
 
   // When a service it turned off, scan our cache for any notifications
   // for that service, and remove them from the message center.
-  void RemoveUnreadNotificationsFromSource(std::string notifier_id);
+  void RemoveUnreadNotificationsFromSource(const std::string& notifier_id);
+
+  // When we start up or hear of a new service, turn it on by default.
+  void AddNewSendingServices();
+
+  // Called when the string list pref has been changed.
+  void OnEnabledSendingServiceListPrefChanged(std::set<std::string>* ids_field);
+
+  // Called when the string list pref has been changed.
+  void OnInitializedSendingServiceListPrefChanged(
+      std::set<std::string>* ids_field);
+
+  // Convert our internal set of strings to a list value.
+  // The second param is an outparam which the function fills in.
+  void BuildServiceListValueInplace(
+      std::set<std::string> services, std::vector<std::string>* string_vector);
+
+  // Preferences for storing which SyncedNotificationServices are enabled
+  StringListPrefMember enabled_sending_services_prefs_;
+  StringListPrefMember initialized_sending_services_prefs_;
 
   // Back pointer to the owning profile.
   Profile* const profile_;
   NotificationUIManager* const notification_manager_;
   scoped_ptr<syncer::SyncChangeProcessor> sync_processor_;
-  std::vector<std::string> enabled_sending_services_;
+  std::set<std::string> enabled_sending_services_;
+  std::set<std::string> initialized_sending_services_;
   static bool avoid_bitmap_fetching_for_test_;
 
   // TODO(petewil): Consider whether a map would better suit our data.
@@ -121,6 +155,11 @@ class ChromeNotifierService : public syncer::SyncableService,
 
   friend class ChromeNotifierServiceTest;
   FRIEND_TEST_ALL_PREFIXES(ChromeNotifierServiceTest, ServiceEnabledTest);
+  FRIEND_TEST_ALL_PREFIXES(ChromeNotifierServiceTest,
+                           AddNewSendingServicesTest);
+  FRIEND_TEST_ALL_PREFIXES(ChromeNotifierServiceTest,
+                           GetEnabledSendingServicesFromPreferencesTest);
+
 
   DISALLOW_COPY_AND_ASSIGN(ChromeNotifierService);
 };

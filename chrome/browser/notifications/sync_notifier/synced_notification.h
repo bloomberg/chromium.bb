@@ -124,6 +124,8 @@ class SyncedNotification : public NotificationBitmapFetcherDelegate {
   gfx::Image image_bitmap_;
   std::vector<gfx::Image> button_bitmaps_;
 
+  friend class SyncedNotificationTest;
+
   FRIEND_TEST_ALL_PREFIXES(SyncedNotificationTest, AddBitmapToFetchQueueTest);
   FRIEND_TEST_ALL_PREFIXES(SyncedNotificationTest, OnFetchCompleteTest);
   FRIEND_TEST_ALL_PREFIXES(SyncedNotificationTest, QueueBitmapFetchJobsTest);

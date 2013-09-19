@@ -355,24 +355,6 @@ DesktopNotificationService::DesktopNotificationService(
           base::Unretained(&enabled_sync_notifier_ids_)));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
                  content::Source<Profile>(profile_));
-  // TODO(mukai, petewil): invoking notifier_service here directly may cause
-  // crashes on several tests, since notifier_service relies on
-  // NotificationUIManager in g_browser_process. To suppress the crashes,
-  // here checks if it really needs to ping notifier_service here.
-  if (!enabled_sync_notifier_ids_.empty()) {
-    notifier::ChromeNotifierService* notifier_service =
-        notifier::ChromeNotifierServiceFactory::GetInstance()->GetForProfile(
-            profile_, Profile::EXPLICIT_ACCESS);
-    // incognito profiles have enabled sync notifier ids but not a notifier
-    // service.
-    if (notifier_service) {
-      for (std::set<std::string>::const_iterator it =
-               enabled_sync_notifier_ids_.begin();
-           it != enabled_sync_notifier_ids_.end(); ++it) {
-        notifier_service->OnSyncedNotificationServiceEnabled(*it, true);
-      }
-    }
-  }
 }
 
 DesktopNotificationService::~DesktopNotificationService() {

@@ -145,6 +145,13 @@ class SyncedNotificationTest : public testing::Test {
   virtual void TearDown() OVERRIDE {
   }
 
+  virtual void AddButtonBitmaps(SyncedNotification* notification,
+                                unsigned int how_many) {
+    for (unsigned int i = 0; i < how_many; ++i) {
+      notification->button_bitmaps_.push_back(gfx::Image());
+    }
+  }
+
   scoped_ptr<SyncedNotification> notification1_;
   scoped_ptr<SyncedNotification> notification2_;
   scoped_ptr<SyncedNotification> notification3_;
@@ -373,10 +380,13 @@ TEST_F(SyncedNotificationTest, OnFetchCompleteTest) {
   // Set up the internal state that FetchBitmaps() would have set.
   notification1_->notification_manager_ = &notification_manager;
 
-  // Add two bitmaps to the queue for us to match up.
+  // Add the bitmaps to the queue for us to match up.
   notification1_->AddBitmapToFetchQueue(GURL(kIconUrl1));
-  notification1_->AddBitmapToFetchQueue(GURL(kIconUrl2));
-  EXPECT_EQ(2, notification1_->active_fetcher_count_);
+  notification1_->AddBitmapToFetchQueue(GURL(kImageUrl1));
+  notification1_->AddBitmapToFetchQueue(GURL(kButtonOneIconUrl));
+  notification1_->AddBitmapToFetchQueue(GURL(kButtonTwoIconUrl));
+
+  EXPECT_EQ(4, notification1_->active_fetcher_count_);
 
   // Put some realistic looking bitmap data into the url_fetcher.
   SkBitmap bitmap;
@@ -386,11 +396,20 @@ TEST_F(SyncedNotificationTest, OnFetchCompleteTest) {
   bitmap.allocPixels();
   bitmap.eraseColor(SK_ColorGREEN);
 
+  // Allocate the button_bitmaps_ array as the calling function normally would.
+  AddButtonBitmaps(notification1_.get(), 2);
+
   notification1_->OnFetchComplete(GURL(kIconUrl1), &bitmap);
+  EXPECT_EQ(3, notification1_->active_fetcher_count_);
+
+  // When we call OnFetchComplete on the last bitmap, show should be called.
+  notification1_->OnFetchComplete(GURL(kImageUrl1), &bitmap);
+  EXPECT_EQ(2, notification1_->active_fetcher_count_);
+
+  notification1_->OnFetchComplete(GURL(kButtonOneIconUrl), &bitmap);
   EXPECT_EQ(1, notification1_->active_fetcher_count_);
 
-  // When we call OnFetchComplete on the second bitmap, show should be called.
-  notification1_->OnFetchComplete(GURL(kIconUrl2), &bitmap);
+  notification1_->OnFetchComplete(GURL(kButtonTwoIconUrl), &bitmap);
   EXPECT_EQ(0, notification1_->active_fetcher_count_);
 
   // Since we check Show() thoroughly in its own test, we only check cursorily.

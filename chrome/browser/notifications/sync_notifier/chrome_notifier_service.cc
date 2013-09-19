@@ -12,12 +12,16 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/prefs/pref_service.h"
+#include "base/values.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/notifications/sync_notifier/chrome_notifier_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/pref_names.h"
+#include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -33,17 +37,16 @@
 #include "url/gurl.h"
 
 namespace notifier {
-namespace {
 
 const char kFirstSyncedNotificationServiceId[] = "Google+";
-
-}
 
 bool ChromeNotifierService::avoid_bitmap_fetching_for_test_ = false;
 
 ChromeNotifierService::ChromeNotifierService(Profile* profile,
                                              NotificationUIManager* manager)
     : profile_(profile), notification_manager_(manager) {
+  InitializePrefs();
+  AddNewSendingServices();
 }
 ChromeNotifierService::~ChromeNotifierService() {}
 
@@ -143,7 +146,8 @@ syncer::SyncMergeResult ChromeNotifierService::MergeDataAndStartSyncing(
 
 void ChromeNotifierService::StopSyncing(syncer::ModelType type) {
   DCHECK_EQ(syncer::SYNCED_NOTIFICATIONS, type);
-  // TODO(petewil): implement
+  // Since this data type is not user-unselectable, we chose not to implement
+  // the stop syncing method, and instead do nothing here.
 }
 
 syncer::SyncDataList ChromeNotifierService::GetAllSyncData(
@@ -346,6 +350,17 @@ void ChromeNotifierService::GetSyncedNotificationServices(
   notifier_service->icon = ui::ResourceBundle::GetSharedInstance().
       GetImageNamed(IDR_TEMPORARY_GOOGLE_PLUS_ICON);
 
+  // Enable or disable the sending service per saved settings.
+  std::set<std::string>::iterator iter;
+
+  iter = find(enabled_sending_services_.begin(),
+              enabled_sending_services_.end(),
+              notifier_id.id);
+  if (iter != enabled_sending_services_.end())
+    notifier_service->enabled = true;
+  else
+    notifier_service->enabled = false;
+
   notifiers->push_back(notifier_service);
 }
 
@@ -376,7 +391,7 @@ void ChromeNotifierService::Add(scoped_ptr<SyncedNotification> notification) {
   notification_data_.push_back(notification.release());
 
   // If the user is not interested in this type of notification, ignore it.
-  std::vector<std::string>::iterator iter =
+  std::set<std::string>::iterator iter =
       find(enabled_sending_services_.begin(),
            enabled_sending_services_.end(),
            notification_copy->GetSendingServiceId());
@@ -429,29 +444,57 @@ void ChromeNotifierService::Display(SyncedNotification* notification) {
 
 void ChromeNotifierService::OnSyncedNotificationServiceEnabled(
     const std::string& notifier_id, bool enabled) {
-  std::vector<std::string>::iterator iter;
+  std::set<std::string>::iterator iter;
+
+  // Make a copy of the notifier_id, which might not have lifetime long enough
+  // for this function to finish all of its work.
+  std::string notifier_id_copy(notifier_id);
 
   iter = find(enabled_sending_services_.begin(),
               enabled_sending_services_.end(),
-              notifier_id);
+              notifier_id_copy);
+
+  std::vector<std::string> synced_notification_services;
 
   // Add the notifier_id if it is enabled and not already there.
   if (iter == enabled_sending_services_.end() && enabled) {
-    enabled_sending_services_.push_back(notifier_id);
+    enabled_sending_services_.insert(notifier_id_copy);
     // Check now for any outstanding notifications.
     DisplayUnreadNotificationsFromSource(notifier_id);
+    BuildServiceListValueInplace(enabled_sending_services_,
+                                 &synced_notification_services);
+    // Add this preference to the enabled list.
+    enabled_sending_services_prefs_.SetValue(synced_notification_services);
   // Remove the notifier_id if it is disabled and present.
   } else if (iter != enabled_sending_services_.end() && !enabled) {
     enabled_sending_services_.erase(iter);
-    RemoveUnreadNotificationsFromSource(notifier_id);
+    BuildServiceListValueInplace(enabled_sending_services_,
+                                 &synced_notification_services);
+    // Remove this peference from the enabled list.
+    enabled_sending_services_prefs_.SetValue(synced_notification_services);
+    RemoveUnreadNotificationsFromSource(notifier_id_copy);
   }
 
   // Otherwise, nothing to do, we can exit.
   return;
 }
 
+void ChromeNotifierService::BuildServiceListValueInplace(
+    std::set<std::string> services, std::vector<std::string>* string_vector) {
+  std::set<std::string>::iterator iter;
+
+  // Iterate over the strings, adding each one to the list value
+  for (iter = services.begin();
+       iter != services.end();
+       ++iter) {
+    std::string string_value(*iter);
+    string_vector->push_back(string_value);
+
+  }
+}
+
 void ChromeNotifierService::DisplayUnreadNotificationsFromSource(
-    std::string notifier_id) {
+    const std::string& notifier_id) {
   for (std::vector<SyncedNotification*>::const_iterator iter =
           notification_data_.begin();
        iter != notification_data_.end();
@@ -463,16 +506,110 @@ void ChromeNotifierService::DisplayUnreadNotificationsFromSource(
 }
 
 void ChromeNotifierService::RemoveUnreadNotificationsFromSource(
-    std::string notifier_id) {
+    const std::string& notifier_id) {
   for (std::vector<SyncedNotification*>::const_iterator iter =
           notification_data_.begin();
        iter != notification_data_.end();
        ++iter) {
     if ((*iter)->GetSendingServiceId() == notifier_id &&
-        (*iter)->GetReadState() == SyncedNotification::kUnread)
+        (*iter)->GetReadState() == SyncedNotification::kUnread) {
       notification_manager_->CancelById((*iter)->GetKey());
+    }
   }
 }
 
+void ChromeNotifierService::OnEnabledSendingServiceListPrefChanged(
+    std::set<std::string>* ids_field) {
+  ids_field->clear();
+  const std::vector<std::string> pref_list =
+      enabled_sending_services_prefs_.GetValue();
+  for (size_t i = 0; i < pref_list.size(); ++i) {
+    std::string element = pref_list[i];
+    if (!element.empty())
+      ids_field->insert(element);
+    else
+      LOG(WARNING) << i << "-th element is not a string "
+                   << prefs::kEnabledSyncedNotificationSendingServices;
+  }
+}
+
+void ChromeNotifierService::OnInitializedSendingServiceListPrefChanged(
+    std::set<std::string>* ids_field) {
+  ids_field->clear();
+  const std::vector<std::string> pref_list =
+      initialized_sending_services_prefs_.GetValue();
+  for (size_t i = 0; i < pref_list.size(); ++i) {
+    std::string element = pref_list[i];
+    if (!element.empty())
+      ids_field->insert(element);
+    else
+      LOG(WARNING) << i << "-th element is not a string for "
+                   << prefs::kInitializedSyncedNotificationSendingServices;
+  }
+}
+
+void ChromeNotifierService::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  // Register the pref for the list of enabled services.
+  registry->RegisterListPref(
+      prefs::kEnabledSyncedNotificationSendingServices,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  // Register the pref for the list of initialized services.
+  registry->RegisterListPref(
+      prefs::kInitializedSyncedNotificationSendingServices,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+}
+
+void ChromeNotifierService::InitializePrefs() {
+  // Set up any pref changes to update our list of services.
+  enabled_sending_services_prefs_.Init(
+      prefs::kEnabledSyncedNotificationSendingServices,
+      profile_->GetPrefs(),
+      base::Bind(
+          &ChromeNotifierService::OnEnabledSendingServiceListPrefChanged,
+          base::Unretained(this),
+          base::Unretained(&enabled_sending_services_)));
+  initialized_sending_services_prefs_.Init(
+      prefs::kInitializedSyncedNotificationSendingServices,
+      profile_->GetPrefs(),
+      base::Bind(
+          &ChromeNotifierService::OnInitializedSendingServiceListPrefChanged,
+          base::Unretained(this),
+          base::Unretained(&initialized_sending_services_)));
+
+  // Get the prefs from last session into our memeber varilables
+  OnEnabledSendingServiceListPrefChanged(&enabled_sending_services_);
+  OnInitializedSendingServiceListPrefChanged(&initialized_sending_services_);
+
+}
+
+void ChromeNotifierService::AddNewSendingServices() {
+  // TODO(petewil): When we have the new sync datatype for senders, use it
+  // instead of hardcoding the service name.
+
+  // Check to see if all known services are in the initialized list.
+  // If so, we can exit.
+  std::set<std::string>::iterator iter;
+  std::string first_synced_notification_service_id(
+      kFirstSyncedNotificationServiceId);
+
+  iter = find(initialized_sending_services_.begin(),
+              initialized_sending_services_.end(),
+              first_synced_notification_service_id);
+  if (initialized_sending_services_.end() != iter)
+    return;
+
+  // Build a ListValue with the list of services to be enabled.
+  std::vector<std::string> synced_notification_services;
+  std::string string_value(first_synced_notification_service_id);
+  synced_notification_services.push_back(string_value);
+
+  // Mark any new services as enabled in preferences.
+  enabled_sending_services_.insert(first_synced_notification_service_id);
+  enabled_sending_services_prefs_.SetValue(synced_notification_services);
+  // Mark it as having been initialized, so we don't try to turn it on again.
+  initialized_sending_services_.insert(first_synced_notification_service_id);
+  initialized_sending_services_prefs_.SetValue(synced_notification_services);
+}
 
 }  // namespace notifier
