@@ -22,7 +22,6 @@
 #include "url/gurl.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_url.h"
-#include "webkit/common/blob/scoped_file.h"
 
 using content::BrowserThread;
 using fileapi::FileSystemURL;
@@ -34,8 +33,7 @@ namespace {
 void PrepareForProcessRemoteChangeCallbackAdapter(
     const RemoteChangeProcessor::PrepareChangeCallback& callback,
     SyncStatusCode status,
-    const LocalFileSyncInfo& sync_file_info,
-    scoped_ptr<webkit_blob::ScopedFile> snapshot) {
+    const LocalFileSyncInfo& sync_file_info) {
   callback.Run(status, sync_file_info.metadata, sync_file_info.changes);
 }
 
@@ -99,7 +97,6 @@ void LocalFileSyncService::OriginChangeMap::SetOriginEnabled(
 LocalFileSyncService::LocalFileSyncService(Profile* profile)
     : profile_(profile),
       sync_context_(new LocalFileSyncContext(
-          profile_->GetPath(),
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI).get(),
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)
               .get())),
@@ -365,8 +362,7 @@ void LocalFileSyncService::RunLocalSyncCallback(
 
 void LocalFileSyncService::DidGetFileForLocalSync(
     SyncStatusCode status,
-    const LocalFileSyncInfo& sync_file_info,
-    scoped_ptr<webkit_blob::ScopedFile> snapshot) {
+    const LocalFileSyncInfo& sync_file_info) {
   DCHECK(!local_sync_callback_.is_null());
   if (status != SYNC_STATUS_OK) {
     RunLocalSyncCallback(status, sync_file_info.url);
@@ -390,12 +386,11 @@ void LocalFileSyncService::DidGetFileForLocalSync(
       sync_file_info.metadata,
       sync_file_info.url,
       base::Bind(&LocalFileSyncService::ProcessNextChangeForURL,
-                 AsWeakPtr(), base::Passed(&snapshot), sync_file_info,
+                 AsWeakPtr(), sync_file_info,
                  next_change, sync_file_info.changes.PopAndGetNewList()));
 }
 
 void LocalFileSyncService::ProcessNextChangeForURL(
-    scoped_ptr<webkit_blob::ScopedFile> snapshot,
     const LocalFileSyncInfo& sync_file_info,
     const FileChange& processed_change,
     const FileChangeList& changes,
@@ -412,8 +407,7 @@ void LocalFileSyncService::ProcessNextChangeForURL(
         sync_file_info.metadata,
         sync_file_info.url,
         base::Bind(&LocalFileSyncService::ProcessNextChangeForURL,
-                   AsWeakPtr(), base::Passed(&snapshot),
-                   sync_file_info, processed_change, changes));
+                   AsWeakPtr(), sync_file_info, processed_change, changes));
     return;
   }
 
@@ -440,7 +434,7 @@ void LocalFileSyncService::ProcessNextChangeForURL(
       sync_file_info.metadata,
       url,
       base::Bind(&LocalFileSyncService::ProcessNextChangeForURL,
-                 AsWeakPtr(), base::Passed(&snapshot), sync_file_info,
+                 AsWeakPtr(), sync_file_info,
                  next_change, changes.PopAndGetNewList()));
 }
 

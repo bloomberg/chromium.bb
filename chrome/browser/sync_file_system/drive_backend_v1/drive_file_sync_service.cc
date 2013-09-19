@@ -48,6 +48,15 @@ typedef RemoteFileSyncService::OriginStatusMap OriginStatusMap;
 namespace {
 
 const base::FilePath::CharType kTempDirName[] = FILE_PATH_LITERAL("tmp");
+const base::FilePath::CharType kSyncFileSystemDir[] =
+    FILE_PATH_LITERAL("Sync FileSystem");
+const base::FilePath::CharType kSyncFileSystemDirDev[] =
+    FILE_PATH_LITERAL("Sync FileSystem Dev");
+
+const base::FilePath::CharType* GetSyncFileSystemDir() {
+  return IsSyncFSDirectoryOperationEnabled()
+      ? kSyncFileSystemDirDev : kSyncFileSystemDir;
+}
 
 void EmptyStatusCallback(SyncStatusCode status) {}
 
@@ -342,14 +351,14 @@ void DriveFileSyncService::Initialize(
 
   task_manager_ = task_manager.Pass();
 
-  temporary_file_dir_ = sync_file_system::GetSyncFileSystemDir(
-      profile_->GetPath()).Append(kTempDirName);
+  temporary_file_dir_ =
+      profile_->GetPath().Append(GetSyncFileSystemDir()).Append(kTempDirName);
 
   api_util_.reset(new drive_backend::APIUtil(profile_, temporary_file_dir_));
   api_util_->AddObserver(this);
 
   metadata_store_.reset(new DriveMetadataStore(
-      GetSyncFileSystemDir(profile_->GetPath()),
+      profile_->GetPath().Append(GetSyncFileSystemDir()),
       content::BrowserThread::GetMessageLoopProxyForThread(
           content::BrowserThread::FILE).get()));
 

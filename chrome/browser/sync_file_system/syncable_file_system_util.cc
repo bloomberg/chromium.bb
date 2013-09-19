@@ -28,11 +28,6 @@ const char kEnableSyncFSDirectoryOperation[] =
 const char kSyncableMountName[] = "syncfs";
 const char kSyncableMountNameForInternalSync[] = "syncfs-internal";
 
-const base::FilePath::CharType kSyncFileSystemDir[] =
-    FILE_PATH_LITERAL("Sync FileSystem");
-const base::FilePath::CharType kSyncFileSystemDirDev[] =
-    FILE_PATH_LITERAL("Sync FileSystem Dev");
-
 bool is_directory_operation_enabled = false;
 
 }  // namespace
@@ -110,12 +105,6 @@ bool IsSyncFSDirectoryOperationEnabled() {
   return is_directory_operation_enabled ||
       CommandLine::ForCurrentProcess()->HasSwitch(
           kEnableSyncFSDirectoryOperation);
-}
-
-base::FilePath GetSyncFileSystemDir(const base::FilePath& profile_base_dir) {
-  return profile_base_dir.Append(
-      IsSyncFSDirectoryOperationEnabled() ? kSyncFileSystemDirDev
-                                          : kSyncFileSystemDir);
 }
 
 ScopedEnableSyncFSDirectoryOperation::ScopedEnableSyncFSDirectoryOperation() {
