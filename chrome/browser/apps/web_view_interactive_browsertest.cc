@@ -405,11 +405,6 @@ class WebViewInteractiveTest
   }
 
  protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    command_line->AppendSwitch(switches::kEnableBrowserPluginDragDrop);
-    extensions::PlatformAppBrowserTest::SetUpCommandLine(command_line);
-  }
-
   content::WebContents* guest_web_contents_;
   content::WebContents* embedder_web_contents_;
   gfx::Point corner_;
@@ -653,7 +648,6 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, DISABLED_PopupPositioningMoved) {
 // but the tests don't work on anything except chromeos for now. This is because
 // of simulating mouse drag code's dependency on platforms.
 #if defined(OS_CHROMEOS)
-// http://crbug.com/281001
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, DragDropWithinWebView) {
   SetupTest(
       "web_view/dnd_within_webview",

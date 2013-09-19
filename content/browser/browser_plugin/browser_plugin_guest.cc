@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -39,7 +38,6 @@
 #include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents_view.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/common/drop_data.h"
 #include "content/public/common/media_stream_request.h"
 #include "content/public/common/result_codes.h"
@@ -1040,9 +1038,8 @@ void BrowserPluginGuest::DidCommitProvisionalLoadForFrame(
 }
 
 void BrowserPluginGuest::DidStopLoading(RenderViewHost* render_view_host) {
-  bool disable_dragdrop = !CommandLine::ForCurrentProcess()->HasSwitch(
-                              switches::kEnableBrowserPluginDragDrop);
-  if (disable_dragdrop) {
+  bool enable_dragdrop = delegate_ && delegate_->IsDragAndDropEnabled();
+  if (!enable_dragdrop) {
     // Initiating a drag from inside a guest is currently not supported without
     // the kEnableBrowserPluginDragDrop flag on a linux platform. So inject some
     // JS to disable it. http://crbug.com/161112
