@@ -335,7 +335,6 @@
             '../chromeos/chromeos.gyp:chromeos',
           ],
           'sources': [
-            'browser/chromeos/input_method/keyboard_browsertest.cc',
             'browser/chromeos/input_method/textinput_browsertest.cc',
             'browser/chromeos/input_method/textinput_surroundingtext_browsertest.cc',
             'browser/chromeos/input_method/textinput_test_helper.cc',
