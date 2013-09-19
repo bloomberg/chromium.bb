@@ -438,11 +438,10 @@ testCases.push({
 });
 
 testCases.push({
-  // TODO(karenlees): this is failing on the mac with Actual: 92, Expected: 0
-  // Fix and re-enable (crbug.com/292243).
-  disabled: {'mac' : true},
   func: function deleteGoogleUrls() {
-    chrome.activityLogPrivate.deleteUrls(['http://www.google.com']);
+    chrome.activityLogPrivate.deleteUrls(
+        ['http://www.google.com', 'http://www.google.com/b/build/slave/']);
+
     var filter = new Object();
     filter.extensionId = 'pknkgggnfecklokoggaggchhaebkajji';
     filter.activityType = 'any';
