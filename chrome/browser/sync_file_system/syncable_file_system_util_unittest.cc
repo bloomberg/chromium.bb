@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
 
+#include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
@@ -124,7 +125,8 @@ TEST(SyncableFileSystemUtilTest, SerializeBeforeOpenFileSystem) {
                                        base::MessageLoopProxy::current().get());
   file_system.SetUp();
   scoped_refptr<LocalFileSyncContext> sync_context =
-      new LocalFileSyncContext(base::MessageLoopProxy::current().get(),
+      new LocalFileSyncContext(base::FilePath(),
+                               base::MessageLoopProxy::current().get(),
                                base::MessageLoopProxy::current().get());
 
   // Before calling initialization we would not be able to get a valid

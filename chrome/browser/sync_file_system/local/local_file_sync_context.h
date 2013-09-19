@@ -33,6 +33,10 @@ class FileSystemContext;
 class FileSystemURL;
 }
 
+namespace webkit_blob {
+class ScopedFile;
+}
+
 namespace sync_file_system {
 
 class FileChange;
@@ -56,14 +60,17 @@ class LocalFileSyncContext
   };
 
   typedef base::Callback<void(
-      SyncStatusCode status, const LocalFileSyncInfo& sync_file_info)>
+      SyncStatusCode status,
+      const LocalFileSyncInfo& sync_file_info,
+      scoped_ptr<webkit_blob::ScopedFile> snapshot)>
           LocalFileSyncInfoCallback;
 
   typedef base::Callback<void(SyncStatusCode status,
                               bool has_pending_changes)>
       HasPendingLocalChangeCallback;
 
-  LocalFileSyncContext(base::SingleThreadTaskRunner* ui_task_runner,
+  LocalFileSyncContext(const base::FilePath& base_path,
+                       base::SingleThreadTaskRunner* ui_task_runner,
                        base::SingleThreadTaskRunner* io_task_runner);
 
   // Initializes |file_system_context| for syncable file operations
@@ -237,7 +244,8 @@ class LocalFileSyncContext
       std::deque<fileapi::FileSystemURL>* remaining_urls,
       const LocalFileSyncInfoCallback& callback,
       SyncStatusCode status,
-      const LocalFileSyncInfo& sync_file_info);
+      const LocalFileSyncInfo& sync_file_info,
+      scoped_ptr<webkit_blob::ScopedFile> snapshot);
 
   // Callback routine for PrepareForSync and GetFileForLocalSync.
   void DidGetWritingStatusForSync(
@@ -247,9 +255,16 @@ class LocalFileSyncContext
       SyncMode sync_mode,
       const LocalFileSyncInfoCallback& callback);
 
-  // Helper routine for ClearSyncFlagForURL.
-  void EnableWritingOnIOThread(const fileapi::FileSystemURL& url,
-                               bool may_have_updates);
+  // Helper routine for sync/writing flag handling, primarily for
+  // ClearSyncFlagForURL but is also called by other internal routines.
+  // If |keep_url_in_writing| is true this increments the writing counter
+  // for |url| (after clearing syncing flag), so that the caller can
+  // continue to hold a shared lock on the URL.
+  // (The counter must be manually decremented by EndWritingOnIOThread
+  // if that's the case)
+  void ClearSyncFlagOnIOThread(const fileapi::FileSystemURL& url,
+                               bool keep_url_in_writing);
+  void EndWritingOnIOThread(const fileapi::FileSystemURL& url);
 
   void DidRemoveExistingEntryForApplyRemoteChange(
       fileapi::FileSystemContext* file_system_context,
@@ -278,6 +293,8 @@ class LocalFileSyncContext
       const fileapi::FileSystemURL& dest_url,
       const StatusCallback& callback,
       base::PlatformFileError error);
+
+  const base::FilePath local_base_path_;
 
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;

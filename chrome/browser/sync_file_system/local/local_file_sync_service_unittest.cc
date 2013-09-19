@@ -104,7 +104,7 @@ class LocalFileSyncServiceTest
  protected:
   LocalFileSyncServiceTest()
       : thread_bundle_(content::TestBrowserThreadBundle::REAL_FILE_THREAD |
-                        content::TestBrowserThreadBundle::REAL_IO_THREAD),
+                       content::TestBrowserThreadBundle::REAL_IO_THREAD),
         num_changes_(0) {}
 
   virtual void SetUp() OVERRIDE {
@@ -139,6 +139,7 @@ class LocalFileSyncServiceTest
     file_system_->TearDown();
     RevokeSyncableFileSystem();
     content::RunAllPendingInMessageLoop(BrowserThread::FILE);
+    content::RunAllPendingInMessageLoop(BrowserThread::IO);
   }
 
   // LocalChangeObserver overrides.
@@ -321,10 +322,12 @@ TEST_F(LocalFileSyncServiceTest, ProcessLocalChange_CreateFile) {
 
   base::RunLoop run_loop;
 
-  // We should get called OnSyncEnabled on kFile.
+  // We should get called OnSyncEnabled and OnWriteEnabled on kFile.
+  // (OnWriteEnabled is called because we release lock before returning
+  // from ApplyLocalChange)
   StrictMock<MockSyncStatusObserver> status_observer;
-  EXPECT_CALL(status_observer, OnSyncEnabled(kFile))
-      .Times(AtLeast(1));
+  EXPECT_CALL(status_observer, OnSyncEnabled(kFile)).Times(AtLeast(1));
+  EXPECT_CALL(status_observer, OnWriteEnabled(kFile)).Times(AtLeast(0));
   file_system_->AddSyncStatusObserver(&status_observer);
 
   // Creates and writes into a file.
@@ -332,7 +335,7 @@ TEST_F(LocalFileSyncServiceTest, ProcessLocalChange_CreateFile) {
   EXPECT_EQ(kTestFileDataSize,
             file_system_->WriteString(kFile, std::string(kTestFileData)));
 
-  // Retrieve the expected platform_path.
+  // Retrieve the expected file info.
   base::PlatformFileInfo info;
   base::FilePath platform_path;
   EXPECT_EQ(base::PLATFORM_FILE_OK,
@@ -353,7 +356,7 @@ TEST_F(LocalFileSyncServiceTest, ProcessLocalChange_CreateFile) {
   const FileChange change(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
                           SYNC_FILE_TYPE_FILE);
   EXPECT_CALL(local_change_processor,
-              ApplyLocalChange(change, platform_path, metadata, kFile, _))
+              ApplyLocalChange(change, _, metadata, kFile, _))
       .WillOnce(MockStatusCallback(SYNC_STATUS_OK));
 
   local_service_->SetLocalChangeProcessor(&local_change_processor);
@@ -373,10 +376,11 @@ TEST_F(LocalFileSyncServiceTest, ProcessLocalChange_CreateAndRemoveFile) {
 
   base::RunLoop run_loop;
 
-  // We should get called OnSyncEnabled and OnWriteEnabled on kFile.
+  // We should get called OnSyncEnabled and possibly OnWriteEnabled (depends
+  // on timing) on kFile.
   StrictMock<MockSyncStatusObserver> status_observer;
-  EXPECT_CALL(status_observer, OnSyncEnabled(kFile))
-      .Times(AtLeast(1));
+  EXPECT_CALL(status_observer, OnSyncEnabled(kFile)).Times(AtLeast(1));
+  EXPECT_CALL(status_observer, OnWriteEnabled(kFile)).Times(AtLeast(0));
   file_system_->AddSyncStatusObserver(&status_observer);
 
   // Creates and then deletes a file.
@@ -465,6 +469,11 @@ TEST_F(LocalFileSyncServiceTest, ProcessLocalChange_MultipleChanges) {
       .WillOnce(MockStatusCallbackAndRecordChange(SYNC_STATUS_OK, &changes))
       .WillOnce(MockStatusCallbackAndRecordChange(SYNC_STATUS_OK, &changes));
   local_service_->SetLocalChangeProcessor(&local_change_processor);
+
+  // OnWriteEnabled will be notified on kPath (in multi-threaded this
+  // could be delayed, so AtLeast(0)).
+  EXPECT_CALL(status_observer, OnWriteEnabled(kPath)).Times(AtLeast(0));
+
   local_service_->ProcessLocalChange(
       base::Bind(&OnSyncCompleted, FROM_HERE, run_loop.QuitClosure(),
                  SYNC_STATUS_OK, kPath));

@@ -43,7 +43,8 @@ class LocalFileChangeTrackerTest : public testing::Test {
     file_system_.SetUp();
 
     sync_context_ =
-        new LocalFileSyncContext(base::MessageLoopProxy::current().get(),
+        new LocalFileSyncContext(base::FilePath(),
+                                 base::MessageLoopProxy::current().get(),
                                  base::MessageLoopProxy::current().get());
     ASSERT_EQ(
         sync_file_system::SYNC_STATUS_OK,

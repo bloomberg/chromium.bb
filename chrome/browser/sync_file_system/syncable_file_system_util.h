@@ -85,6 +85,9 @@ void SetEnableSyncFSDirectoryOperation(bool flag);
 // away when we fully support directory operations. (http://crbug.com/161442)
 bool IsSyncFSDirectoryOperationEnabled();
 
+// Returns SyncFileSystem sub-directory path.
+base::FilePath GetSyncFileSystemDir(const base::FilePath& profile_base_dir);
+
 // Enables directory operation for syncable filesystems temporarily for testing.
 class ScopedEnableSyncFSDirectoryOperation {
  public:

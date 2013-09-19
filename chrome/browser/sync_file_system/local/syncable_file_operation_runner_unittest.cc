@@ -60,9 +60,10 @@ class SyncableFileOperationRunnerTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(dir_.CreateUniqueTempDir());
     file_system_.SetUp();
-    sync_context_ =
-        new LocalFileSyncContext(base::MessageLoopProxy::current().get(),
-                                 base::MessageLoopProxy::current().get());
+    sync_context_ = new LocalFileSyncContext(
+        dir_.path(),
+        base::MessageLoopProxy::current().get(),
+        base::MessageLoopProxy::current().get());
     ASSERT_EQ(
         SYNC_STATUS_OK,
         file_system_.MaybeInitializeFileSystemContext(sync_context_.get()));

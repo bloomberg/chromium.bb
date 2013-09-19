@@ -39,10 +39,13 @@ class SyncableFileSystemTest : public testing::Test {
         weak_factory_(this) {}
 
   virtual void SetUp() {
+    ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
+
     file_system_.SetUp();
 
     sync_context_ =
-        new LocalFileSyncContext(base::MessageLoopProxy::current().get(),
+        new LocalFileSyncContext(data_dir_.path(),
+                                 base::MessageLoopProxy::current().get(),
                                  base::MessageLoopProxy::current().get());
     ASSERT_EQ(
         sync_file_system::SYNC_STATUS_OK,
