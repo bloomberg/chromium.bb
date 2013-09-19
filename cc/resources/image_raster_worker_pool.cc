@@ -100,6 +100,8 @@ void ImageRasterWorkerPool::ScheduleTasks(RasterTask::Queue* queue) {
   for (RasterTaskVector::const_iterator it = raster_tasks().begin();
        it != raster_tasks().end(); ++it) {
     internal::RasterWorkerPoolTask* task = it->get();
+    DCHECK(!task->HasCompleted());
+    DCHECK(!task->WasCanceled());
 
     TaskMap::iterator image_it = image_tasks_.find(task);
     if (image_it != image_tasks_.end()) {

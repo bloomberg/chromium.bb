@@ -158,7 +158,8 @@ TileManager::TileManager(
       resources_releasable_(0),
       ever_exceeded_memory_budget_(false),
       rendering_stats_instrumentation_(rendering_stats_instrumentation),
-      did_initialize_visible_tile_(false) {
+      did_initialize_visible_tile_(false),
+      did_check_for_completed_tasks_since_last_schedule_tasks_(true) {
   raster_worker_pool_->SetClient(this);
 }
 
@@ -169,8 +170,8 @@ TileManager::~TileManager() {
 
   DCHECK_EQ(0u, tiles_.size());
 
-  TileVector empty;
-  ScheduleTasks(empty);
+  RasterWorkerPool::RasterTask::Queue empty;
+  raster_worker_pool_->ScheduleTasks(&empty);
 
   // This should finish all pending tasks and release any uninitialized
   // resources.
@@ -242,6 +243,7 @@ void TileManager::DidFinishRunningTasks() {
     return;
 
   raster_worker_pool_->CheckForCompletedTasks();
+  did_check_for_completed_tasks_since_last_schedule_tasks_ = true;
 
   TileVector tiles_that_need_to_be_rasterized;
   AssignGpuMemoryToTiles(GetPrioritizedTileSet(),
@@ -397,6 +399,13 @@ void TileManager::GetTilesWithAssignedBins(PrioritizedTileSet* tiles) {
 void TileManager::ManageTiles() {
   TRACE_EVENT0("cc", "TileManager::ManageTiles");
 
+  // We need to call CheckForCompletedTasks() once in-between each call
+  // to ScheduleTasks() to prevent canceled tasks from being scheduled.
+  if (!did_check_for_completed_tasks_since_last_schedule_tasks_) {
+    raster_worker_pool_->CheckForCompletedTasks();
+    did_check_for_completed_tasks_since_last_schedule_tasks_ = true;
+  }
+
   TileVector tiles_that_need_to_be_rasterized;
   AssignGpuMemoryToTiles(GetPrioritizedTileSet(),
                          &tiles_that_need_to_be_rasterized);
@@ -417,6 +426,7 @@ bool TileManager::UpdateVisibleTiles() {
   TRACE_EVENT0("cc", "TileManager::UpdateVisibleTiles");
 
   raster_worker_pool_->CheckForCompletedTasks();
+  did_check_for_completed_tasks_since_last_schedule_tasks_ = true;
 
   TRACE_EVENT_INSTANT1(
       "cc", "DidUpdateVisibleTiles", TRACE_EVENT_SCOPE_THREAD,
@@ -674,6 +684,8 @@ void TileManager::ScheduleTasks(
                "count", tiles_that_need_to_be_rasterized.size());
   RasterWorkerPool::RasterTask::Queue tasks;
 
+  DCHECK(did_check_for_completed_tasks_since_last_schedule_tasks_);
+
   // Build a new task queue containing all task currently needed. Tasks
   // are added in order of priority, highest priority task first.
   for (TileVector::const_iterator it = tiles_that_need_to_be_rasterized.begin();
@@ -701,6 +713,8 @@ void TileManager::ScheduleTasks(
   // scheduled tasks and effectively cancels all tasks not present
   // in |tasks|.
   raster_worker_pool_->ScheduleTasks(&tasks);
+
+  did_check_for_completed_tasks_since_last_schedule_tasks_ = false;
 }
 
 RasterWorkerPool::Task TileManager::CreateImageDecodeTask(

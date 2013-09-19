@@ -177,6 +177,7 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient {
   RenderingStatsInstrumentation* rendering_stats_instrumentation_;
 
   bool did_initialize_visible_tile_;
+  bool did_check_for_completed_tasks_since_last_schedule_tasks_;
 
   typedef base::hash_map<uint32_t, RasterWorkerPool::Task> PixelRefTaskMap;
   typedef base::hash_map<int, PixelRefTaskMap> LayerPixelRefTaskMap;

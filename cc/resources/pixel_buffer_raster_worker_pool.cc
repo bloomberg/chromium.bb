@@ -154,6 +154,7 @@ void PixelBufferRasterWorkerPool::ScheduleTasks(RasterTask::Queue* queue) {
     internal::RasterWorkerPoolTask* task = it->get();
     DCHECK(new_pixel_buffer_tasks.find(task) == new_pixel_buffer_tasks.end());
     DCHECK(!task->HasCompleted());
+    DCHECK(!task->WasCanceled());
 
     new_pixel_buffer_tasks[task] = pixel_buffer_tasks_[task];
     pixel_buffer_tasks_.erase(task);
