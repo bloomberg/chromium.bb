@@ -9,6 +9,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_timeouts.h"
 #include "base/values.h"
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/navigation_controller_impl.h"
 #include "content/browser/web_contents/navigation_entry_impl.h"
@@ -365,20 +368,20 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
   // Do not end the overscroll sequence.
 }
 
-// Disable the test for windows as it keeps failing in XP bot, see
-// http://crbug/294116.
-#if defined(OS_WIN)
-#define MAYBE_OverscrollScreenshot DISABLED_OverscrollScreenshot
-#else
-#define MAYBE_OverscrollScreenshot OverscrollScreenshot
-#endif
 // Tests that the page has has a screenshot when navigation happens:
 //  - from within the page (from a JS function)
 //  - interactively, when user does an overscroll gesture
 //  - interactively, when user navigates in history without the overscroll
 //    gesture.
-IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
-                       MAYBE_OverscrollScreenshot) {
+IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, OverscrollScreenshot) {
+  // Disable the test for WinXP.  See http://crbug/294116.
+#if defined(OS_WIN)
+  if (base::win::GetVersion() < base::win::VERSION_VISTA) {
+    LOG(WARNING) << "Test disabled due to unknown bug on WinXP.";
+    return;
+  }
+#endif
+
   ASSERT_NO_FATAL_FAILURE(
       StartTestWithPage("files/overscroll_navigation.html"));
   WebContentsImpl* web_contents =
