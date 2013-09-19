@@ -39,6 +39,8 @@ class WebString;
 struct WebRect;
 
 // Client interface to handle form validation message UI.
+// Depecated: This wil be removed when Chromium code siwtches to WebViewClient
+// functions.
 class WebValidationMessageClient {
 public:
     // Show a notification popup for the specified form vaidation messages
