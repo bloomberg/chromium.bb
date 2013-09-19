@@ -71,7 +71,7 @@ public:
     static void setNamedHiddenReference(v8::Handle<v8::Object> parent, const char* name, v8::Handle<v8::Value> child);
 
 private:
-    static void createString(const char* key, v8::Persistent<v8::String>* handle);
+    static void createString(const char* key, v8::Persistent<v8::String>* handle, v8::Isolate*);
 #define V8_DECLARE_FIELD(name) v8::Persistent<v8::String> m_##name;
     V8_HIDDEN_PROPERTIES(V8_DECLARE_FIELD);
 #undef V8_DECLARE_FIELD
