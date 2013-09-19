@@ -12,6 +12,7 @@
 #include "remoting/proto/video.pb.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_region.h"
 
 extern "C" {
 #define VPX_CODEC_DISABLE_COMPAT 1
@@ -145,30 +146,31 @@ bool VideoEncoderVp8::Init(const webrtc::DesktopSize& size) {
 }
 
 void VideoEncoderVp8::PrepareImage(const webrtc::DesktopFrame& frame,
-                                   SkRegion* updated_region) {
+                                   webrtc::DesktopRegion* updated_region) {
   if (frame.updated_region().is_empty()) {
-    updated_region->setEmpty();
+    updated_region->Clear();
     return;
   }
 
   // Align the region to macroblocks, to avoid encoding artefacts.
   // This also ensures that all rectangles have even-aligned top-left, which
   // is required for ConvertRGBToYUVWithRect() to work.
-  std::vector<SkIRect> aligned_rects;
+  std::vector<webrtc::DesktopRect> aligned_rects;
   for (webrtc::DesktopRegion::Iterator r(frame.updated_region());
        !r.IsAtEnd(); r.Advance()) {
     const webrtc::DesktopRect& rect = r.rect();
-    aligned_rects.push_back(AlignRect(
-      SkIRect::MakeLTRB(rect.left(), rect.top(), rect.right(), rect.bottom())));
+    aligned_rects.push_back(AlignRect(webrtc::DesktopRect::MakeLTRB(
+        rect.left(), rect.top(), rect.right(), rect.bottom())));
   }
   DCHECK(!aligned_rects.empty());
-  updated_region->setRects(&aligned_rects[0], aligned_rects.size());
+  updated_region->Clear();
+  updated_region->AddRects(&aligned_rects[0], aligned_rects.size());
 
   // Clip back to the screen dimensions, in case they're not macroblock aligned.
   // The conversion routines don't require even width & height, so this is safe
   // even if the source dimensions are not even.
-  updated_region->op(SkIRect::MakeWH(image_->w, image_->h),
-                     SkRegion::kIntersect_Op);
+  updated_region->IntersectWith(
+      webrtc::DesktopRect::MakeWH(image_->w, image_->h));
 
   // Convert the updated region to YUV ready for encoding.
   const uint8* rgb_data = frame.data();
@@ -179,22 +181,25 @@ void VideoEncoderVp8::PrepareImage(const webrtc::DesktopFrame& frame,
   uint8* y_data = image_->planes[0];
   uint8* u_data = image_->planes[1];
   uint8* v_data = image_->planes[2];
-  for (SkRegion::Iterator r(*updated_region); !r.done(); r.next()) {
-    const SkIRect& rect = r.rect();
+  for (webrtc::DesktopRegion::Iterator r(*updated_region); !r.IsAtEnd();
+       r.Advance()) {
+    const webrtc::DesktopRect& rect = r.rect();
     ConvertRGB32ToYUVWithRect(
         rgb_data, y_data, u_data, v_data,
-        rect.x(), rect.y(), rect.width(), rect.height(),
+        rect.left(), rect.top(), rect.width(), rect.height(),
         rgb_stride, y_stride, uv_stride);
   }
 }
 
-void VideoEncoderVp8::PrepareActiveMap(const SkRegion& updated_region) {
+void VideoEncoderVp8::PrepareActiveMap(
+    const webrtc::DesktopRegion& updated_region) {
   // Clear active map first.
   memset(active_map_.get(), 0, active_map_width_ * active_map_height_);
 
   // Mark updated areas active.
-  for (SkRegion::Iterator r(updated_region); !r.done(); r.next()) {
-    const SkIRect& rect = r.rect();
+  for (webrtc::DesktopRegion::Iterator r(updated_region); !r.IsAtEnd();
+       r.Advance()) {
+    const webrtc::DesktopRect& rect = r.rect();
     int left = rect.left() / kMacroBlockSize;
     int right = (rect.right() - 1) / kMacroBlockSize;
     int top = rect.top() / kMacroBlockSize;
@@ -227,7 +232,7 @@ scoped_ptr<VideoPacket> VideoEncoderVp8::Encode(
   }
 
   // Convert the updated capture data ready for encode.
-  SkRegion updated_region;
+  webrtc::DesktopRegion updated_region;
   PrepareImage(frame, &updated_region);
 
   // Update active map based on updated region.
@@ -263,8 +268,8 @@ scoped_ptr<VideoPacket> VideoEncoderVp8::Encode(
   scoped_ptr<VideoPacket> packet(new VideoPacket());
 
   while (!got_data) {
-    const vpx_codec_cx_pkt_t* vpx_packet = vpx_codec_get_cx_data(codec_.get(),
-                                                                 &iter);
+    const vpx_codec_cx_pkt_t* vpx_packet =
+        vpx_codec_get_cx_data(codec_.get(), &iter);
     if (!vpx_packet)
       continue;
 
@@ -290,10 +295,11 @@ scoped_ptr<VideoPacket> VideoEncoderVp8::Encode(
     packet->mutable_format()->set_x_dpi(frame.dpi().x());
     packet->mutable_format()->set_y_dpi(frame.dpi().y());
   }
-  for (SkRegion::Iterator r(updated_region); !r.done(); r.next()) {
+  for (webrtc::DesktopRegion::Iterator r(updated_region); !r.IsAtEnd();
+       r.Advance()) {
     Rect* rect = packet->add_dirty_rects();
-    rect->set_x(r.rect().x());
-    rect->set_y(r.rect().y());
+    rect->set_x(r.rect().left());
+    rect->set_y(r.rect().top());
     rect->set_width(r.rect().width());
     rect->set_height(r.rect().height());
   }

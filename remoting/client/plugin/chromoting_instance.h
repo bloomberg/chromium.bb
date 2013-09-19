@@ -33,9 +33,6 @@
 #include "remoting/protocol/mouse_input_filter.h"
 #include "remoting/protocol/negotiating_client_authenticator.h"
 #include "remoting/protocol/third_party_client_authenticator.h"
-#include "third_party/skia/include/core/SkPoint.h"
-#include "third_party/skia/include/core/SkRegion.h"
-#include "third_party/skia/include/core/SkSize.h"
 
 namespace base {
 class DictionaryValue;
@@ -45,6 +42,12 @@ namespace pp {
 class InputEvent;
 class Module;
 }  // namespace pp
+
+namespace webrtc {
+class DesktopRegion;
+class DesktopSize;
+class DesktopVector;
+}  // namespace webrtc
 
 namespace remoting {
 
@@ -132,8 +135,9 @@ class ChromotingInstance :
       const protocol::CursorShapeInfo& cursor_shape) OVERRIDE;
 
   // Called by PepperView.
-  void SetDesktopSize(const SkISize& size, const SkIPoint& dpi);
-  void SetDesktopShape(const SkRegion& shape);
+  void SetDesktopSize(const webrtc::DesktopSize& size,
+                      const webrtc::DesktopVector& dpi);
+  void SetDesktopShape(const webrtc::DesktopRegion& shape);
   void OnFirstFrameReceived();
 
   // Return statistics record by ChromotingClient.
@@ -239,7 +243,7 @@ class ChromotingInstance :
   pp::View plugin_view_;
 
   // Contains the most-recently-reported desktop shape, if any.
-  scoped_ptr<SkRegion> desktop_shape_;
+  scoped_ptr<webrtc::DesktopRegion> desktop_shape_;
 
   scoped_ptr<DelegatingSignalStrategy> signal_strategy_;
 

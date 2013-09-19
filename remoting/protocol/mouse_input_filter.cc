@@ -14,15 +14,13 @@ MouseInputFilter::MouseInputFilter() {
 
 MouseInputFilter::MouseInputFilter(InputStub* input_stub)
     : InputFilter(input_stub) {
-  input_max_.setEmpty();
-  output_max_.setEmpty();
 }
 
 MouseInputFilter::~MouseInputFilter() {
 }
 
 void MouseInputFilter::InjectMouseEvent(const MouseEvent& event) {
-  if (input_max_.isEmpty() || output_max_.isEmpty())
+  if (input_max_.is_empty() || output_max_.is_empty())
     return;
 
   // We scale based on the maximum input & output coordinates, rather than the
@@ -44,12 +42,12 @@ void MouseInputFilter::InjectMouseEvent(const MouseEvent& event) {
   InputFilter::InjectMouseEvent(out_event);
 }
 
-void MouseInputFilter::set_input_size(const SkISize& size) {
-  input_max_ = SkISize::Make(size.width() - 1, size.height() - 1);
+void MouseInputFilter::set_input_size(const webrtc::DesktopSize& size) {
+  input_max_.set(size.width() - 1, size.height() - 1);
 }
 
-void MouseInputFilter::set_output_size(const SkISize& size) {
-  output_max_ = SkISize::Make(size.width() - 1, size.height() - 1);
+void MouseInputFilter::set_output_size(const webrtc::DesktopSize& size) {
+  output_max_.set(size.width() - 1, size.height() - 1);
 }
 
 }  // namespace protocol

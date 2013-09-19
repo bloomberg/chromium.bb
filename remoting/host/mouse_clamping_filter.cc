@@ -24,8 +24,9 @@ void MouseClampingFilter::ProcessVideoPacket(
   // Configure the MouseInputFilter to clamp to the video dimensions.
   if (video_packet->format().has_screen_width() &&
       video_packet->format().has_screen_height()) {
-    SkISize screen_size = SkISize::Make(video_packet->format().screen_width(),
-                                        video_packet->format().screen_height());
+    webrtc::DesktopSize screen_size =
+        webrtc::DesktopSize(video_packet->format().screen_width(),
+                            video_packet->format().screen_height());
     input_filter_.set_input_size(screen_size);
     input_filter_.set_output_size(screen_size);
   }

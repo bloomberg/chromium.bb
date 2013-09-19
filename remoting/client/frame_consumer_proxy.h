@@ -29,13 +29,13 @@ class FrameConsumerProxy
   FrameConsumerProxy(scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // FrameConsumer implementation.
-  virtual void ApplyBuffer(const SkISize& view_size,
-                           const SkIRect& clip_area,
+  virtual void ApplyBuffer(const webrtc::DesktopSize& view_size,
+                           const webrtc::DesktopRect& clip_area,
                            webrtc::DesktopFrame* buffer,
-                           const SkRegion& region) OVERRIDE;
+                           const webrtc::DesktopRegion& region) OVERRIDE;
   virtual void ReturnBuffer(webrtc::DesktopFrame* buffer) OVERRIDE;
-  virtual void SetSourceSize(const SkISize& source_size,
-                             const SkIPoint& dpi) OVERRIDE;
+  virtual void SetSourceSize(const webrtc::DesktopSize& source_size,
+                             const webrtc::DesktopVector& dpi) OVERRIDE;
 
   // Attaches to |frame_consumer_|.
   // This must only be called from |frame_consumer_message_loop_|.

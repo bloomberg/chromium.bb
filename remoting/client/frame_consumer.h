@@ -6,12 +6,13 @@
 #define REMOTING_CLIENT_FRAME_CONSUMER_H_
 
 #include "base/basictypes.h"
-#include "third_party/skia/include/core/SkRect.h"
-#include "third_party/skia/include/core/SkRegion.h"
-#include "third_party/skia/include/core/SkSize.h"
 
 namespace webrtc {
 class DesktopFrame;
+class DesktopRect;
+class DesktopRegion;
+class DesktopSize;
+class DesktopVector;
 }  // namespace webrtc
 
 namespace remoting {
@@ -26,10 +27,10 @@ class FrameConsumer {
   //
   // N.B. Both |clip_area| and |region| are in output coordinates relative to
   // the frame.
-  virtual void ApplyBuffer(const SkISize& view_size,
-                           const SkIRect& clip_area,
+  virtual void ApplyBuffer(const webrtc::DesktopSize& view_size,
+                           const webrtc::DesktopRect& clip_area,
                            webrtc::DesktopFrame* buffer,
-                           const SkRegion& region) = 0;
+                           const webrtc::DesktopRegion& region) = 0;
 
   // Accepts a buffer that couldn't be used for drawing for any reason (shutdown
   // is in progress, the view area has changed, etc.). The accepted buffer can
@@ -37,8 +38,8 @@ class FrameConsumer {
   virtual void ReturnBuffer(webrtc::DesktopFrame* buffer) = 0;
 
   // Set the dimension of the entire host screen.
-  virtual void SetSourceSize(const SkISize& source_size,
-                             const SkIPoint& dpi) = 0;
+  virtual void SetSourceSize(const webrtc::DesktopSize& source_size,
+                             const webrtc::DesktopVector& dpi) = 0;
 
  protected:
   FrameConsumer() {}

@@ -351,8 +351,8 @@ bool ChromotingInstance::HandleInputEvent(const pp::InputEvent& event) {
   return input_handler_.HandleInputEvent(event);
 }
 
-void ChromotingInstance::SetDesktopSize(const SkISize& size,
-                                        const SkIPoint& dpi) {
+void ChromotingInstance::SetDesktopSize(const webrtc::DesktopSize& size,
+                                        const webrtc::DesktopVector& dpi) {
   mouse_input_filter_.set_output_size(size);
 
   scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
@@ -365,18 +365,18 @@ void ChromotingInstance::SetDesktopSize(const SkISize& size,
   PostChromotingMessage("onDesktopSize", data.Pass());
 }
 
-void ChromotingInstance::SetDesktopShape(const SkRegion& shape) {
-  if (desktop_shape_ && shape == *desktop_shape_)
+void ChromotingInstance::SetDesktopShape(const webrtc::DesktopRegion& shape) {
+  if (desktop_shape_ && shape.Equals(*desktop_shape_))
     return;
 
-  desktop_shape_.reset(new SkRegion(shape));
+  desktop_shape_.reset(new webrtc::DesktopRegion(shape));
 
   scoped_ptr<base::ListValue> rects_value(new base::ListValue());
-  for (SkRegion::Iterator i(shape); !i.done(); i.next()) {
-    SkIRect rect = i.rect();
+  for (webrtc::DesktopRegion::Iterator i(shape); !i.IsAtEnd(); i.Advance()) {
+    const webrtc::DesktopRect& rect = i.rect();
     scoped_ptr<base::ListValue> rect_value(new base::ListValue());
-    rect_value->AppendInteger(rect.x());
-    rect_value->AppendInteger(rect.y());
+    rect_value->AppendInteger(rect.left());
+    rect_value->AppendInteger(rect.top());
     rect_value->AppendInteger(rect.width());
     rect_value->AppendInteger(rect.height());
     rects_value->Append(rect_value.release());

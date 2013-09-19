@@ -8,6 +8,7 @@
 #include "remoting/client/frame_consumer.h"
 
 #include "base/compiler_specific.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 
 namespace webrtc {
 class DesktopFrame;
@@ -29,13 +30,13 @@ class JniFrameConsumer : public FrameConsumer {
   void set_frame_producer(FrameProducer* producer);
 
   // FrameConsumer implementation.
-  virtual void ApplyBuffer(const SkISize& view_size,
-                           const SkIRect& clip_area,
+  virtual void ApplyBuffer(const webrtc::DesktopSize& view_size,
+                           const webrtc::DesktopRect& clip_area,
                            webrtc::DesktopFrame* buffer,
-                           const SkRegion& region) OVERRIDE;
+                           const webrtc::DesktopRegion& region) OVERRIDE;
   virtual void ReturnBuffer(webrtc::DesktopFrame* buffer) OVERRIDE;
-  virtual void SetSourceSize(const SkISize& source_size,
-                             const SkIPoint& dpi) OVERRIDE;
+  virtual void SetSourceSize(const webrtc::DesktopSize& source_size,
+                             const webrtc::DesktopVector& dpi) OVERRIDE;
 
  private:
   // Variables are to be used from the display thread.
@@ -48,8 +49,8 @@ class JniFrameConsumer : public FrameConsumer {
   bool in_dtor_;
 
   FrameProducer* frame_producer_;
-  SkISize view_size_;
-  SkIRect clip_area_;
+  webrtc::DesktopSize view_size_;
+  webrtc::DesktopRect clip_area_;
 
   // If |provide_buffer_|, allocates a new buffer of |view_size_|, informs
   // Java about it, and tells the producer to draw onto it. Otherwise, no-op.

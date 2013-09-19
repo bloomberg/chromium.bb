@@ -12,7 +12,6 @@ namespace protocol {
 
 InputEventTracker::InputEventTracker(InputStub* input_stub)
     : input_stub_(input_stub),
-      mouse_pos_(SkIPoint::Make(0, 0)),
       mouse_button_state_(0) {
 }
 
@@ -74,7 +73,7 @@ void InputEventTracker::InjectKeyEvent(const KeyEvent& event) {
 
 void InputEventTracker::InjectMouseEvent(const MouseEvent& event) {
   if (event.has_x() && event.has_y()) {
-    mouse_pos_ = SkIPoint::Make(event.x(), event.y());
+    mouse_pos_ = webrtc::DesktopVector(event.x(), event.y());
   }
   if (event.has_button() && event.has_button_down()) {
     // Button values are defined in remoting/proto/event.proto.
