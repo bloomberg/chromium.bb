@@ -92,7 +92,7 @@
     "example": []
   },
   "name": {
-    "documentation": "manifest/name.html",
+    "documentation": "manifest/name.html#name",
     "example": "My {{title}}",
     "level": "required"
   },
@@ -130,6 +130,10 @@
   "sandbox": {
     "documentation": "manifest/sandbox.html",
     "example": []
+  },
+  "short_name": {
+    "documentation": "manifest/name.html#short_name",
+    "example": "Short Name"
   },
   "theme": {
     "documentation": "themes.html",
