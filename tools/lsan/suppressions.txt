@@ -21,12 +21,16 @@ leak:net::NSSCertDatabase::ImportFromPKCS12
 leak:net::NSSCertDatabase::ListCerts
 leak:net::NSSCertDatabase::DeleteCertAndKey
 leak:crypto::ScopedTestNSSDB::ScopedTestNSSDB
-# The suppressions above will not fire when the fast stack unwinder is used,
+# Another leak due to not shutting down NSS properly. http://crbug.com/124445
+leak:error_get_my_stack
+
+# The NSS suppressions above will not fire when the fast stack unwinder is used,
 # because it can't unwind through NSS libraries. Apply blanket supressions for now.
 leak:libnssutil3
 leak:libnspr4
 leak:libnss3
 leak:libplds4
+leak:libnssckbi
 
 # Skia leaks. http://crbug.com/189170
 leak:FontConfigTypeface::LegacyCreateTypeface
