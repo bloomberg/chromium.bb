@@ -16,6 +16,11 @@ var appWindows = {};
 var queue = new AsyncUtil.Queue();
 
 /**
+ * Synchronous queue for the onExecute handler.
+ */
+var executeQueue = new AsyncUtil.Queue();
+
+/**
  * @return {Array.<DOMWindow>} Array of content windows for all currently open
  *   app windows.
  */
@@ -177,9 +182,13 @@ AppWindowWrapper.prototype.launch = function(appState, callback) {
 /**
  * Enqueues opening the window.
  * @param {Object} appState App state.
+ * @param {function()=} opt_callback Callback function to be called at the end
+ *     of launch.
  */
-AppWindowWrapper.prototype.enqueueLaunch = function(appState) {
+AppWindowWrapper.prototype.enqueueLaunch = function(appState, opt_callback) {
   this.queue_.run(this.launch.bind(this, appState));
+  if (opt_callback)
+    this.queue_.run(function(nextStep) { opt_callback(); nextStep(); });
 };
 
 /**
@@ -257,6 +266,7 @@ var FILES_ID_PATTERN = new RegExp('^' + FILES_ID_PREFIX + '(\\d*)$');
  * Value of the next file manager window ID.
  */
 var nextFileManagerWindowID = 0;
+
 
 /**
  * @return {Object} File manager window create options.
@@ -354,9 +364,8 @@ function launchFileManager(opt_appState, opt_id, opt_type, opt_callback) {
         'main.html',
         appId,
         createFileManagerOptions);
-    appWindow.enqueueLaunch(opt_appState || {});
-    if (opt_callback)
-      opt_callback(appId);
+    appWindow.enqueueLaunch(opt_appState || {},
+                            opt_callback && opt_callback.bind(null, appId));
     onTaskCompleted();
   });
 }
@@ -402,9 +411,8 @@ function onExecute(action, details) {
       break;
 
     default:
-      var steps = new AsyncUtil.Queue();
       var launchEnable = null;
-      steps.run(function(nextStep) {
+      executeQueue.run(function(nextStep) {
         // If it is not auto-open (triggered by mounting external devices), we
         // always launch Files.app.
         if (action != 'auto-open') {
@@ -420,9 +428,11 @@ function onExecute(action, details) {
           nextStep();
         });
       });
-      steps.run(function() {
-        if (!launchEnable)
+      executeQueue.run(function(nextStep) {
+        if (!launchEnable) {
+          nextStep();
           return;
+        }
 
         // Every other action opens a Files app window.
         var appState = {
@@ -437,7 +447,8 @@ function onExecute(action, details) {
             LaunchType.FOCUS_SAME_OR_CREATE;
         launchFileManager(appState,
                           undefined,  // App ID.
-                          type);
+                          type,
+                          nextStep);
       });
       break;
   }
