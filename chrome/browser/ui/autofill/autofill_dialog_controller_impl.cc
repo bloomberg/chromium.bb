@@ -546,9 +546,9 @@ gfx::Image CreditCardIconForType(const std::string& credit_card_type) {
   return result;
 }
 
-gfx::Image CvcIconForCreditCardType(const std::string& credit_card_type) {
+gfx::Image CvcIconForCreditCardType(const base::string16& credit_card_type) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  if (credit_card_type == autofill::kAmericanExpressCard)
+  if (credit_card_type == l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_AMEX))
     return rb.GetImageNamed(IDR_CREDIT_CARD_CVC_HINT_AMEX);
 
   return rb.GetImageNamed(IDR_CREDIT_CARD_CVC_HINT);
@@ -1539,7 +1539,7 @@ gfx::Image AutofillDialogControllerImpl::ExtraSuggestionIconForSection(
     return gfx::Image();
 
   return CvcIconForCreditCardType(
-      UTF16ToUTF8(model->GetInfo(AutofillType(CREDIT_CARD_TYPE))));
+      model->GetInfo(AutofillType(CREDIT_CARD_TYPE)));
 }
 
 // TODO(groby): Remove this deprecated method after Mac starts using
@@ -1570,14 +1570,15 @@ gfx::Image AutofillDialogControllerImpl::IconForField(
 FieldIconMap AutofillDialogControllerImpl::IconsForFields(
     const FieldValueMap& user_inputs) const {
   FieldIconMap result;
-  std::string credit_card_type = autofill::kGenericCard;
+  base::string16 credit_card_type;
 
   FieldValueMap::const_iterator credit_card_iter =
       user_inputs.find(CREDIT_CARD_NUMBER);
   if (credit_card_iter != user_inputs.end()) {
-    const string16& credit_card_number = credit_card_iter->second;
-    credit_card_type = CreditCard::GetCreditCardType(credit_card_number);
-    result[CREDIT_CARD_NUMBER] = CreditCardIconForType(credit_card_type);
+    const string16& number = credit_card_iter->second;
+    const std::string type = CreditCard::GetCreditCardType(number);
+    credit_card_type = CreditCard::TypeForDisplay(type);
+    result[CREDIT_CARD_NUMBER] = CreditCardIconForType(type);
   }
 
   if (!user_inputs.count(CREDIT_CARD_VERIFICATION_CODE))
