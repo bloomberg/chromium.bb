@@ -29,7 +29,6 @@
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_mac.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/mac/app_mode_common.h"
 #include "content/public/browser/browser_thread.h"
@@ -169,29 +168,6 @@ void CreateAppListShim(const base::FilePath& profile_path) {
 
   local_state->SetInteger(apps::prefs::kAppLauncherShortcutVersion,
                           kShortcutVersion);
-}
-
-// Check that there is an app list shim. If enabling and there is not, make one.
-// If the flag is not present, and there is a shim, delete it.
-void CheckAppListShimOnFileThread(const base::FilePath& profile_path) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
-  const bool enable =
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableAppListShim);
-  base::FilePath install_path = web_app::GetAppInstallPath(
-      GetAppListShortcutInfo(profile_path));
-  if (enable == base::PathExists(install_path))
-    return;
-
-  if (enable) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&CreateAppListShim, profile_path));
-    return;
-  }
-
-  // Sanity check because deleting things recursively is scary.
-  CHECK(install_path.MatchesExtension(".app"));
-  base::DeleteFile(install_path, true /* recursive */);
 }
 
 void CreateShortcutsInDefaultLocation(
@@ -411,12 +387,6 @@ void AppListServiceMac::Init(Profile* initial_profile) {
     PrefService* local_state = g_browser_process->local_state();
     if (!apps::IsAppLauncherEnabled()) {
       local_state->SetInteger(apps::prefs::kAppLauncherShortcutVersion, 0);
-
-      // Not yet enabled via the Web Store. Check for the chrome://flag.
-      content::BrowserThread::PostTask(
-          content::BrowserThread::FILE, FROM_HERE,
-          base::Bind(&CheckAppListShimOnFileThread,
-                     initial_profile->GetPath()));
     } else {
       int installed_shortcut_version =
           local_state->GetInteger(apps::prefs::kAppLauncherShortcutVersion);

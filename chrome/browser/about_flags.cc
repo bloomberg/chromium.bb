@@ -1525,13 +1525,6 @@ const Experiment kExperiments[] = {
   },
 #if defined(OS_MACOSX)
   {
-    "enable-app-list-shim",
-    IDS_FLAGS_ENABLE_APP_LIST_SHIM_NAME,
-    IDS_FLAGS_ENABLE_APP_LIST_SHIM_DESCRIPTION,
-    kOsMac,
-    SINGLE_VALUE_TYPE(switches::kEnableAppListShim)
-  },
-  {
     "enable-app-shims",
     IDS_FLAGS_ENABLE_APP_SHIMS_NAME,
     IDS_FLAGS_ENABLE_APP_SHIMS_DESCRIPTION,

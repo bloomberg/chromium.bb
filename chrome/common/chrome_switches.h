@@ -436,7 +436,6 @@ extern const char kMigrateDataDirForSxS[];
 
 #if defined(OS_MACOSX)
 extern const char kDisableSystemFullscreenForTesting[];
-extern const char kEnableAppListShim[];
 extern const char kEnableAppShims[];
 extern const char kEnableExposeForTabs[];
 extern const char kEnableSimplifiedFullscreen[];
