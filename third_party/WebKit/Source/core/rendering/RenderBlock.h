@@ -442,6 +442,8 @@ protected:
     void layoutPositionedObjects(bool relayoutChildren, bool fixedPositionObjectsOnly = false);
     void markFixedPositionObjectForLayoutIfNeeded(RenderObject* child, SubtreeLayoutScope&);
 
+    LayoutUnit marginIntrinsicLogicalWidthForChild(RenderBox* child) const;
+
     virtual bool supportsPartialLayout() const OVERRIDE { return true; };
 
     virtual void paint(PaintInfo&, const LayoutPoint&);

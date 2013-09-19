@@ -333,20 +333,18 @@ LayoutUnit RenderGrid::computePreferredTrackWidth(const GridLength& gridLength, 
     if (length.isMinContent()) {
         LayoutUnit minContentSize = 0;
         GridIterator iterator(m_grid, ForColumns, trackIndex);
-        while (RenderBox* gridItem = iterator.nextGridItem()) {
-            // FIXME: We should include the child's fixed margins like RenderFlexibleBox.
-            minContentSize = std::max(minContentSize, gridItem->minPreferredLogicalWidth());
-        }
+        while (RenderBox* gridItem = iterator.nextGridItem())
+            minContentSize = std::max(minContentSize, gridItem->minPreferredLogicalWidth() + marginIntrinsicLogicalWidthForChild(gridItem));
+
         return minContentSize;
     }
 
     if (length.isMaxContent()) {
         LayoutUnit maxContentSize = 0;
         GridIterator iterator(m_grid, ForColumns, trackIndex);
-        while (RenderBox* gridItem = iterator.nextGridItem()) {
-            // FIXME: We should include the child's fixed margins like RenderFlexibleBox.
-            maxContentSize = std::max(maxContentSize, gridItem->maxPreferredLogicalWidth());
-        }
+        while (RenderBox* gridItem = iterator.nextGridItem())
+            maxContentSize = std::max(maxContentSize, gridItem->maxPreferredLogicalWidth() + marginIntrinsicLogicalWidthForChild(gridItem));
+
         return maxContentSize;
     }
 
