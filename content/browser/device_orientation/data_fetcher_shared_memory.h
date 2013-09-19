@@ -46,9 +46,13 @@ class CONTENT_EXPORT DataFetcherSharedMemory
   class SensorEventSinkMotion;
   class SensorEventSinkOrientation;
 
-  void SetBufferAvailableState(ConsumerType consumer_type, bool enabled);
+  virtual bool IsPolling() const OVERRIDE;
+  virtual base::TimeDelta GetPollDelay() const OVERRIDE;
+
   bool RegisterForSensor(REFSENSOR_TYPE_ID sensor_type, ISensor** sensor,
       scoped_refptr<SensorEventSink> event_sink);
+  void DisableSensors(ConsumerType consumer_type);
+  void SetBufferAvailableState(ConsumerType consumer_type, bool enabled);
 
   base::win::ScopedComPtr<ISensor> sensor_inclinometer_;
   base::win::ScopedComPtr<ISensor> sensor_accelerometer_;

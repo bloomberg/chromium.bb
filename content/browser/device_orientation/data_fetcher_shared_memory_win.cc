@@ -15,6 +15,7 @@
 
 namespace {
 
+const double kMeanGravity = 9.80665;
 const int kPeriodInMilliseconds = 100;
 
 }  // namespace
@@ -61,11 +62,25 @@ class DataFetcherSharedMemory::SensorEventSink
     return S_OK;
   }
 
+  STDMETHODIMP OnDataUpdated(ISensor* sensor,
+                             ISensorDataReport* new_data) OVERRIDE {
+    if (NULL == new_data || NULL == sensor)
+      return E_INVALIDARG;
+    return UpdateSharedMemoryBuffer(sensor, new_data) ? S_OK : E_FAIL;
+  }
+
+protected:
+  virtual bool UpdateSharedMemoryBuffer(
+      ISensor* sensor, ISensorDataReport* new_data) = 0;
+
   void GetSensorValue(REFPROPERTYKEY property, ISensorDataReport* new_data,
       double* value, bool* has_value) {
     PROPVARIANT variant_value = {};
     if (SUCCEEDED(new_data->GetSensorValue(property, &variant_value))) {
-      *value = variant_value.fltVal;
+      if (variant_value.vt == VT_R8)
+        *value = variant_value.dblVal;
+      else if (variant_value.vt == VT_R4)
+        *value = variant_value.fltVal;
       *has_value = true;
     } else {
       *value = 0;
@@ -81,15 +96,13 @@ class DataFetcherSharedMemory::SensorEventSink
 class DataFetcherSharedMemory::SensorEventSinkOrientation
     : public DataFetcherSharedMemory::SensorEventSink {
  public:
-  explicit SensorEventSinkOrientation(DeviceOrientationHardwareBuffer* buffer)
-      : buffer_(buffer) {}
+  explicit SensorEventSinkOrientation(
+      DeviceOrientationHardwareBuffer* const buffer) : buffer_(buffer) {}
   virtual ~SensorEventSinkOrientation() {}
 
-  STDMETHODIMP OnDataUpdated(ISensor* sensor,
-                             ISensorDataReport* new_data) OVERRIDE {
-    if (NULL == new_data || NULL == sensor)
-      return E_INVALIDARG;
-
+protected:
+  virtual bool UpdateSharedMemoryBuffer(
+      ISensor* sensor, ISensorDataReport* new_data) OVERRIDE {
     double alpha, beta, gamma;
     bool has_alpha, has_beta, has_gamma;
 
@@ -114,11 +127,11 @@ class DataFetcherSharedMemory::SensorEventSinkOrientation
       buffer_->seqlock.WriteEnd();
     }
 
-    return S_OK;
+    return true;
   }
 
  private:
-  DeviceOrientationHardwareBuffer* buffer_;
+  DeviceOrientationHardwareBuffer* const buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(SensorEventSinkOrientation);
 };
@@ -126,41 +139,56 @@ class DataFetcherSharedMemory::SensorEventSinkOrientation
 class DataFetcherSharedMemory::SensorEventSinkMotion
     : public DataFetcherSharedMemory::SensorEventSink {
  public:
-  explicit SensorEventSinkMotion(DeviceMotionHardwareBuffer* buffer)
+  explicit SensorEventSinkMotion(DeviceMotionHardwareBuffer* const buffer)
       : buffer_(buffer) {}
   virtual ~SensorEventSinkMotion() {}
 
-  STDMETHODIMP OnDataUpdated(ISensor* sensor,
-                             ISensorDataReport* new_data) OVERRIDE {
-    if (NULL == new_data || NULL == sensor)
-      return E_INVALIDARG;
+ protected:
+  virtual bool UpdateSharedMemoryBuffer(
+      ISensor* sensor, ISensorDataReport* new_data) OVERRIDE {
 
     SENSOR_TYPE_ID sensor_type = GUID_NULL;
     if (!SUCCEEDED(sensor->GetType(&sensor_type)))
-      return E_INVALIDARG;
+      return false;
 
     if (IsEqualIID(sensor_type, SENSOR_TYPE_ACCELEROMETER_3D)) {
-      double accelerationX, accelerationY, accelerationZ;
-      bool has_accelerationX, has_accelerationY, has_accelerationZ;
+      double acceleration_including_gravity_x;
+      double acceleration_including_gravity_y;
+      double acceleration_including_gravity_z;
+      bool has_acceleration_including_gravity_x;
+      bool has_acceleration_including_gravity_y;
+      bool has_acceleration_including_gravity_z;
 
       GetSensorValue(SENSOR_DATA_TYPE_ACCELERATION_X_G, new_data,
-          &accelerationX, &has_accelerationX);
+          &acceleration_including_gravity_x,
+          &has_acceleration_including_gravity_x);
       GetSensorValue(SENSOR_DATA_TYPE_ACCELERATION_Y_G, new_data,
-          &accelerationY, &has_accelerationY);
+          &acceleration_including_gravity_y,
+          &has_acceleration_including_gravity_y);
       GetSensorValue(SENSOR_DATA_TYPE_ACCELERATION_Z_G, new_data,
-          &accelerationZ, &has_accelerationZ);
+          &acceleration_including_gravity_z,
+          &has_acceleration_including_gravity_z);
 
-      buffer_->seqlock.WriteBegin();
-      buffer_->data.accelerationX = accelerationX;
-      buffer_->data.hasAccelerationX = has_accelerationX;
-      buffer_->data.accelerationY = accelerationY;
-      buffer_->data.hasAccelerationY = has_accelerationY;
-      buffer_->data.accelerationZ = accelerationZ;
-      buffer_->data.hasAccelerationZ = has_accelerationZ;
-      // TODO(timvolodine): consider setting this to true after
-      // all sensors have fired.
-      buffer_->data.allAvailableSensorsAreActive = true;
-      buffer_->seqlock.WriteEnd();
+      if (buffer_) {
+        buffer_->seqlock.WriteBegin();
+        buffer_->data.accelerationIncludingGravityX =
+            -acceleration_including_gravity_x * kMeanGravity;
+        buffer_->data.hasAccelerationIncludingGravityX =
+            has_acceleration_including_gravity_x;
+        buffer_->data.accelerationIncludingGravityY =
+            -acceleration_including_gravity_y * kMeanGravity;
+        buffer_->data.hasAccelerationIncludingGravityY =
+            has_acceleration_including_gravity_y;
+        buffer_->data.accelerationIncludingGravityZ =
+            -acceleration_including_gravity_z * kMeanGravity;
+        buffer_->data.hasAccelerationIncludingGravityZ =
+            has_acceleration_including_gravity_z;
+        // TODO(timvolodine): consider setting the two variables below
+        // after all sensors have fired.
+        buffer_->data.interval = kPeriodInMilliseconds;
+        buffer_->data.allAvailableSensorsAreActive = true;
+        buffer_->seqlock.WriteEnd();
+      }
 
     } else if (IsEqualIID(sensor_type, SENSOR_TYPE_GYROMETER_3D)) {
       double alpha, beta, gamma;
@@ -173,22 +201,25 @@ class DataFetcherSharedMemory::SensorEventSinkMotion
       GetSensorValue(SENSOR_DATA_TYPE_ANGULAR_VELOCITY_Z_DEGREES_PER_SECOND,
           new_data, &gamma, &has_gamma);
 
-      buffer_->seqlock.WriteBegin();
-      buffer_->data.rotationRateAlpha = alpha;
-      buffer_->data.hasRotationRateAlpha = true;
-      buffer_->data.rotationRateBeta = beta;
-      buffer_->data.hasRotationRateBeta = true;
-      buffer_->data.rotationRateGamma = gamma;
-      buffer_->data.hasRotationRateGamma = true;
-      buffer_->data.allAvailableSensorsAreActive = true;
-      buffer_->seqlock.WriteEnd();
+      if (buffer_) {
+        buffer_->seqlock.WriteBegin();
+        buffer_->data.rotationRateAlpha = alpha;
+        buffer_->data.hasRotationRateAlpha = has_alpha;
+        buffer_->data.rotationRateBeta = beta;
+        buffer_->data.hasRotationRateBeta = has_beta;
+        buffer_->data.rotationRateGamma = gamma;
+        buffer_->data.hasRotationRateGamma = has_gamma;
+        buffer_->data.interval = kPeriodInMilliseconds;
+        buffer_->data.allAvailableSensorsAreActive = true;
+        buffer_->seqlock.WriteEnd();
+      }
     }
 
-    return S_OK;
+    return true;
   }
 
   private:
-   DeviceMotionHardwareBuffer* buffer_;
+   DeviceMotionHardwareBuffer* const buffer_;
 
    DISALLOW_COPY_AND_ASSIGN(SensorEventSinkMotion);
  };
@@ -200,6 +231,16 @@ DataFetcherSharedMemory::DataFetcherSharedMemory()
 }
 
 DataFetcherSharedMemory::~DataFetcherSharedMemory() {
+}
+
+bool DataFetcherSharedMemory::IsPolling() const {
+  return true;
+}
+
+base::TimeDelta DataFetcherSharedMemory::GetPollDelay() const {
+  // We only need a new thread for this fetcher, the actual interface
+  // is push-bashed so no need for explicit callbacks to Fetch().
+  return base::TimeDelta::FromMilliseconds(0);
 }
 
 bool DataFetcherSharedMemory::Start(ConsumerType consumer_type, void* buffer) {
@@ -242,45 +283,19 @@ bool DataFetcherSharedMemory::Start(ConsumerType consumer_type, void* buffer) {
 }
 
 bool DataFetcherSharedMemory::Stop(ConsumerType consumer_type) {
+  DisableSensors(consumer_type);
+  SetBufferAvailableState(consumer_type, false);
   switch (consumer_type) {
     case CONSUMER_TYPE_ORIENTATION:
-      if (sensor_inclinometer_)
-        sensor_inclinometer_->SetEventSink(NULL);
-      SetBufferAvailableState(consumer_type, false);
       orientation_buffer_ = NULL;
       return true;
     case CONSUMER_TYPE_MOTION:
-      if (sensor_accelerometer_)
-        sensor_accelerometer_->SetEventSink(NULL);
-      if (sensor_gyrometer_)
-        sensor_gyrometer_->SetEventSink(NULL);
-      SetBufferAvailableState(consumer_type, false);
       motion_buffer_ = NULL;
       return true;
     default:
       NOTREACHED();
   }
   return false;
-}
-
-void DataFetcherSharedMemory::SetBufferAvailableState(
-    ConsumerType consumer_type, bool enabled) {
-  switch(consumer_type) {
-    case CONSUMER_TYPE_ORIENTATION:
-      if (orientation_buffer_) {
-        orientation_buffer_->seqlock.WriteBegin();
-        orientation_buffer_->data.allAvailableSensorsAreActive = enabled;
-        orientation_buffer_->seqlock.WriteEnd();
-      }
-    case CONSUMER_TYPE_MOTION:
-      if (motion_buffer_) {
-        motion_buffer_->seqlock.WriteBegin();
-        motion_buffer_->data.allAvailableSensorsAreActive = enabled;
-        motion_buffer_->seqlock.WriteEnd();
-      }
-    default:
-      NOTREACHED();
-  }
 }
 
 bool DataFetcherSharedMemory::RegisterForSensor(
@@ -308,7 +323,7 @@ bool DataFetcherSharedMemory::RegisterForSensor(
     return false;
 
   hr = sensor_collection->GetAt(0, sensor);
-  if (FAILED(hr) || !sensor)
+  if (FAILED(hr) || !(*sensor))
     return false;
 
   base::win::ScopedComPtr<IPortableDeviceValues> device_values;
@@ -331,6 +346,49 @@ bool DataFetcherSharedMemory::RegisterForSensor(
     return false;
 
   return true;
+}
+
+void DataFetcherSharedMemory::DisableSensors(ConsumerType consumer_type) {
+  switch(consumer_type) {
+    case CONSUMER_TYPE_ORIENTATION:
+      if (sensor_inclinometer_) {
+        sensor_inclinometer_->SetEventSink(NULL);
+        sensor_inclinometer_.Release();
+      }
+      break;
+    case CONSUMER_TYPE_MOTION:
+      if (sensor_accelerometer_) {
+        sensor_accelerometer_->SetEventSink(NULL);
+        sensor_accelerometer_.Release();
+      }
+      if (sensor_gyrometer_) {
+        sensor_gyrometer_->SetEventSink(NULL);
+        sensor_gyrometer_.Release();
+      }
+      break;
+    default:
+      NOTREACHED();
+  }
+}
+
+void DataFetcherSharedMemory::SetBufferAvailableState(
+    ConsumerType consumer_type, bool enabled) {
+  switch(consumer_type) {
+    case CONSUMER_TYPE_ORIENTATION:
+      if (orientation_buffer_) {
+        orientation_buffer_->seqlock.WriteBegin();
+        orientation_buffer_->data.allAvailableSensorsAreActive = enabled;
+        orientation_buffer_->seqlock.WriteEnd();
+      }
+    case CONSUMER_TYPE_MOTION:
+      if (motion_buffer_) {
+        motion_buffer_->seqlock.WriteBegin();
+        motion_buffer_->data.allAvailableSensorsAreActive = enabled;
+        motion_buffer_->seqlock.WriteEnd();
+      }
+    default:
+      NOTREACHED();
+  }
 }
 
 }  // namespace content
