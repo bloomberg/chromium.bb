@@ -14,7 +14,7 @@ PASS testIt("200", "", "100") is "Value must be less than or equal to 100."
 Range underflow
 PASS testIt("10", "50", "100") is "Value must be greater than or equal to 50."
 Step mismatch
-PASS testIt("55", "0", "100", "10") is "Invalid value."
+PASS testIt("55", "0", "100", "10") is "Please enter a valid value. The two nearest valid values are 50 and 60."
 PASS successfullyParsed is true
 
 TEST COMPLETE
