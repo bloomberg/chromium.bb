@@ -9,6 +9,7 @@ var defineGetter = Object.prototype.__defineGetter__;
 var defineSetter = Object.prototype.__defineSetter__;
 var Error = window.Error;
 var forEach = Array.prototype.forEach;
+var push = Array.prototype.push;
 var hasOwnProperty = Object.prototype.hasOwnProperty;
 var getOwnPropertyNames = Object.getOwnPropertyNames;
 var stringify = JSON.stringify;
@@ -73,7 +74,7 @@ var results = {
 };
 
 // Make the messages sent vaguely complex, but unambiguously JSON-ifiable.
-var message = [{'a': {'b': 10}}, 20, 'c\x10\x11'];
+var kMessage = [{'a': {'b': 10}}, 20, 'c\x10\x11'];
 
 // Our tab's location. Normally this would be our document's location but if
 // we're an iframe it will be the location of the parent - in which case,
@@ -101,7 +102,7 @@ function checkLastError(reply) {
   return false;
 }
 
-function checkResponse(response, reply) {
+function checkResponse(response, reply, expectedMessage) {
   // The response will be an echo of both the original message *and* the
   // MessageSender (with the tab field stripped down).
   //
@@ -131,7 +132,7 @@ function checkResponse(response, reply) {
   }
 
   // Check the correct content was echoed.
-  var expectedJson = stringify(message);
+  var expectedJson = stringify(expectedMessage);
   var actualJson = stringify(response.message);
   if (actualJson == expectedJson)
     return true;
@@ -160,7 +161,7 @@ window.actions = {
 };
 
 window.assertions = {
-  canConnectAndSendMessages: function(extensionId) {
+  canConnectAndSendMessages: function(extensionId, message) {
     if (!chrome.runtime) {
       sendToBrowser(results.NAMESPACE_NOT_DEFINED);
       return;
@@ -171,9 +172,12 @@ window.assertions = {
       return;
     }
 
+    if (!message)
+      message = kMessage;
+
     function canSendMessage(reply) {
       chrome.runtime.sendMessage(extensionId, message, function(response) {
-        if (checkLastError(reply) && checkResponse(response, reply))
+        if (checkLastError(reply) && checkResponse(response, reply, message))
           reply(results.OK);
       });
     }
@@ -190,7 +194,8 @@ window.assertions = {
       var ok = true;
       port.onMessage.addListener(function(response) {
         pendingResponses--;
-        ok = ok && checkLastError(reply) && checkResponse(response, reply);
+        ok = ok && checkLastError(reply) &&
+            checkResponse(response, reply, message);
         if (pendingResponses == 0 && ok)
           reply(results.OK);
       });

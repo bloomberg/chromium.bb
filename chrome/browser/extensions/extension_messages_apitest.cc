@@ -154,6 +154,13 @@ class ExternallyConnectableMessagingTest : public ExtensionApiTest {
     return CanConnectAndSendMessages(browser(), extension_id, "");
   }
 
+  Result CanConnectAndSendMessages(const std::string& extension_id,
+                                   const char* frame_xpath,
+                                   const char* message) {
+    return CanConnectAndSendMessages(browser(), extension_id, frame_xpath,
+                                     message);
+  }
+
   Result CanConnectAndSendMessages(Browser* browser,
                                    const std::string& extension_id) {
     return CanConnectAndSendMessages(browser, extension_id, "");
@@ -166,12 +173,17 @@ class ExternallyConnectableMessagingTest : public ExtensionApiTest {
 
   Result CanConnectAndSendMessages(Browser* browser,
                                    const std::string& extension_id,
-                                   const char* frame_xpath) {
+                                   const char* frame_xpath,
+                                   const char* message = NULL) {
     int result;
+    std::string args = "'" + extension_id + "'";
+    if (message)
+      args += std::string(", '") + message + "'";
     CHECK(content::ExecuteScriptInFrameAndExtractInt(
         browser->tab_strip_model()->GetActiveWebContents(),
         frame_xpath,
-        "assertions.canConnectAndSendMessages('" + extension_id + "')",
+        base::StringPrintf("assertions.canConnectAndSendMessages(%s)",
+                           args.c_str()).c_str(),
         &result));
     return static_cast<Result>(result);
   }
@@ -274,20 +286,32 @@ class ExternallyConnectableMessagingTest : public ExtensionApiTest {
     host_resolver()->AddRule("*", embedded_test_server()->base_url().host());
   }
 
+  const char* close_background_message() {
+    return "closeBackgroundPage";
+  }
+
  private:
   const Extension* LoadExtensionIntoDir(TestExtensionDir* dir,
                                         const std::string& manifest) {
     dir->WriteManifest(manifest);
     dir->WriteFile(FILE_PATH_LITERAL("background.js"),
+                   base::StringPrintf(
+        "function maybeClose(message) {\n"
+        "  if (message.indexOf('%s') >= 0)\n"
+        "    window.setTimeout(function() { window.close() }, 0);\n"
+        "}\n"
         "chrome.runtime.onMessageExternal.addListener(\n"
         "    function(message, sender, reply) {\n"
         "  reply({ message: message, sender: sender });\n"
+        "  maybeClose(message);\n"
         "});\n"
         "chrome.runtime.onConnectExternal.addListener(function(port) {\n"
         "  port.onMessage.addListener(function(message) {\n"
         "    port.postMessage({ message: message, sender: port.sender });\n"
+        "    maybeClose(message);\n"
         "  });\n"
-        "});\n");
+        "});\n",
+                   close_background_message()));
     return LoadExtension(dir->unpacked_path());
   }
 
@@ -350,6 +374,23 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
   EXPECT_EQ(NAMESPACE_NOT_DEFINED,
             CanConnectAndSendMessages(not_connectable->id()));
   EXPECT_FALSE(AreAnyNonWebApisDefined());
+}
+
+IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
+                       BackgroundPageClosesOnMessageReceipt) {
+  InitializeTestServer();
+
+  // Install the web connectable extension.
+  const Extension* chromium_connectable = LoadChromiumConnectableExtension();
+
+  ui_test_utils::NavigateToURL(browser(), chromium_org_url());
+  // If the background page closes after receipt of the message, it will still
+  // reply to this message...
+  EXPECT_EQ(OK, CanConnectAndSendMessages(chromium_connectable->id(),
+                                          "",
+                                          close_background_message()));
+  // and be re-opened by receipt of a subsequent message.
+  EXPECT_EQ(OK, CanConnectAndSendMessages(chromium_connectable->id()));
 }
 
 // Tests that enabling and disabling an extension makes the runtime bindings
