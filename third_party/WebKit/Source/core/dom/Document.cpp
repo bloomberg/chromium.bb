@@ -3680,6 +3680,9 @@ void Document::didMergeTextNodes(Text* oldNode, unsigned offset)
             (*it)->didMergeTextNodes(oldNodeWithIndex, offset);
     }
 
+    if (m_frame)
+        m_frame->selection().didMergeTextNodes(*oldNode, offset);
+
     // FIXME: This should update markers for spelling and grammar checking.
 }
 

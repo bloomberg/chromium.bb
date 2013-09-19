@@ -30,6 +30,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/NodeRenderStyle.h"
 #include "core/dom/NodeRenderingContext.h"
+#include "core/dom/NodeTraversal.h"
 #include "core/dom/ScopedEventQueue.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/rendering/RenderCombineText.h"
@@ -50,6 +51,50 @@ PassRefPtr<Text> Text::create(Document& document, const String& data)
 PassRefPtr<Text> Text::createEditingText(Document& document, const String& data)
 {
     return adoptRef(new Text(document, data, CreateEditingText));
+}
+
+PassRefPtr<Node> Text::mergeNextSiblingNodesIfPossible()
+{
+    RefPtr<Node> protect(this);
+
+    // Remove empty text nodes.
+    if (!length()) {
+        // Care must be taken to get the next node before removing the current node.
+        RefPtr<Node> nextNode(NodeTraversal::nextPostOrder(this));
+        remove(IGNORE_EXCEPTION);
+        return nextNode.release();
+    }
+
+    // Merge text nodes.
+    while (Node* nextSibling = this->nextSibling()) {
+        if (nextSibling->nodeType() != TEXT_NODE)
+            break;
+
+        RefPtr<Text> nextText = toText(nextSibling);
+
+        // Remove empty text nodes.
+        if (!nextText->length()) {
+            nextText->remove(IGNORE_EXCEPTION);
+            continue;
+        }
+
+        // Both non-empty text nodes. Merge them.
+        unsigned offset = length();
+        String nextTextData = nextText->data();
+        String oldTextData = data();
+        setDataWithoutUpdate(data() + nextTextData);
+        updateTextRenderer(oldTextData.length(), 0);
+        // Empty nextText for layout update.
+        nextText->setDataWithoutUpdate(emptyString());
+        document().didMergeTextNodes(nextText.get(), offset);
+        // Restore nextText for mutation event.
+        nextText->setDataWithoutUpdate(nextTextData);
+        document().incDOMTreeVersion();
+        didModifyData(oldTextData);
+        nextText->remove(IGNORE_EXCEPTION);
+    }
+
+    return NodeTraversal::nextPostOrder(this);
 }
 
 PassRefPtr<Text> Text::splitText(unsigned offset, ExceptionState& es)

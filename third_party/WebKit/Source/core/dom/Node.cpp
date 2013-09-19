@@ -510,41 +510,10 @@ void Node::normalize()
         if (node == this)
             break;
 
-        if (type != TEXT_NODE) {
+        if (type == TEXT_NODE)
+            node = toText(node.get())->mergeNextSiblingNodesIfPossible();
+        else
             node = NodeTraversal::nextPostOrder(node.get());
-            continue;
-        }
-
-        RefPtr<Text> text = toText(node.get());
-
-        // Remove empty text nodes.
-        if (!text->length()) {
-            // Care must be taken to get the next node before removing the current node.
-            node = NodeTraversal::nextPostOrder(node.get());
-            text->remove(IGNORE_EXCEPTION);
-            continue;
-        }
-
-        // Merge text nodes.
-        while (Node* nextSibling = node->nextSibling()) {
-            if (nextSibling->nodeType() != TEXT_NODE)
-                break;
-            RefPtr<Text> nextText = toText(nextSibling);
-
-            // Remove empty text nodes.
-            if (!nextText->length()) {
-                nextText->remove(IGNORE_EXCEPTION);
-                continue;
-            }
-
-            // Both non-empty text nodes. Merge them.
-            unsigned offset = text->length();
-            text->appendData(nextText->data());
-            document().didMergeTextNodes(nextText.get(), offset);
-            nextText->remove(IGNORE_EXCEPTION);
-        }
-
-        node = NodeTraversal::nextPostOrder(node.get());
     }
 }
 

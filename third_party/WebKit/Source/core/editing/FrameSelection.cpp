@@ -430,6 +430,34 @@ void FrameSelection::didUpdateCharacterData(CharacterData* node, unsigned offset
     updateSelectionIfNeeded(base, extent, start, end);
 }
 
+static Position updatePostionAfterAdoptingTextNodesMerged(const Position& position, const Text& oldNode, unsigned offset)
+{
+    if (!position.anchorNode() || position.anchorType() != Position::PositionIsOffsetInAnchor)
+        return position;
+
+    ASSERT(position.offsetInContainerNode() >= 0);
+    unsigned positionOffset = static_cast<unsigned>(position.offsetInContainerNode());
+
+    if (position.anchorNode() == &oldNode)
+        return Position(toText(oldNode.previousSibling()), positionOffset + offset);
+
+    if (position.anchorNode() == oldNode.parentNode() && positionOffset == offset)
+        return Position(toText(oldNode.previousSibling()), offset);
+
+    return position;
+}
+
+void FrameSelection::didMergeTextNodes(const Text& oldNode, unsigned offset)
+{
+    if (isNone() || nodeIsDetachedFromDocument(oldNode))
+        return;
+    Position base = updatePostionAfterAdoptingTextNodesMerged(m_selection.base(), oldNode, offset);
+    Position extent = updatePostionAfterAdoptingTextNodesMerged(m_selection.extent(), oldNode, offset);
+    Position start = updatePostionAfterAdoptingTextNodesMerged(m_selection.start(), oldNode, offset);
+    Position end = updatePostionAfterAdoptingTextNodesMerged(m_selection.end(), oldNode, offset);
+    updateSelectionIfNeeded(base, extent, start, end);
+}
+
 static Position updatePostionAfterAdoptingTextNodeSplit(const Position& position, const Text& oldNode)
 {
     if (!position.anchorNode() || position.anchorNode() != &oldNode || position.anchorType() != Position::PositionIsOffsetInAnchor)
