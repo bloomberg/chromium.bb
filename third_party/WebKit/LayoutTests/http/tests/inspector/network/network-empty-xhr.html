@@ -26,11 +26,11 @@ function test()
 
     function step1()
     {
-        InspectorTest.makeSimpleXHR("GET", "resources/empty.html", false, firstXHRLoaded);
+        InspectorTest.makeSimpleXHR("GET", "resources/empty.html?sync", false, firstXHRLoaded);
 
         function firstXHRLoaded()
         {
-            InspectorTest.makeSimpleXHR("GET", "resources/empty.html", true, step2);
+            InspectorTest.makeSimpleXHR("GET", "resources/empty.html?async", true, step2);
         }
     }
 

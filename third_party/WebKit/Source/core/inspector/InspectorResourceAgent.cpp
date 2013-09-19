@@ -350,7 +350,7 @@ void InspectorResourceAgent::didReceiveResourceResponse(unsigned long identifier
     }
 
     InspectorPageAgent::ResourceType type = cachedResource ? InspectorPageAgent::cachedResourceType(*cachedResource) : InspectorPageAgent::OtherResource;
-    if (m_loadingXHRSynchronously || m_resourcesData->resourceType(requestId) == InspectorPageAgent::XHRResource)
+    if (m_resourcesData->resourceType(requestId) == InspectorPageAgent::XHRResource)
         type = InspectorPageAgent::XHRResource;
     else if (m_resourcesData->resourceType(requestId) == InspectorPageAgent::ScriptResource)
         type = InspectorPageAgent::ScriptResource;
@@ -377,7 +377,7 @@ void InspectorResourceAgent::didReceiveData(unsigned long identifier, const char
 
     if (data) {
         NetworkResourcesData::ResourceData const* resourceData = m_resourcesData->data(requestId);
-        if (resourceData && !m_loadingXHRSynchronously && (!resourceData->cachedResource() || resourceData->cachedResource()->dataBufferingPolicy() == DoNotBufferData || isErrorStatusCode(resourceData->httpStatusCode())))
+        if (resourceData && (!resourceData->cachedResource() || resourceData->cachedResource()->dataBufferingPolicy() == DoNotBufferData || isErrorStatusCode(resourceData->httpStatusCode())))
             m_resourcesData->maybeAddResourceData(requestId, data, dataLength);
     }
 
@@ -452,26 +452,12 @@ void InspectorResourceAgent::didFailXHRLoading(ThreadableLoaderClient* client)
 
 void InspectorResourceAgent::didFinishXHRLoading(ThreadableLoaderClient* client, unsigned long identifier, ScriptString sourceString, const String&, const String&, unsigned)
 {
-    // For Asynchronous XHRs, the inspector can grab the data directly off of the Resource. For sync XHRs, we need to
-    // provide the data here, since no Resource was involved.
-    if (m_loadingXHRSynchronously)
-        m_resourcesData->setResourceContent(IdentifiersFactory::requestId(identifier), sourceString.flattenToString());
     m_pendingXHRReplayData.remove(client);
 }
 
 void InspectorResourceAgent::didReceiveXHRResponse(unsigned long identifier)
 {
     m_resourcesData->setResourceType(IdentifiersFactory::requestId(identifier), InspectorPageAgent::XHRResource);
-}
-
-void InspectorResourceAgent::willLoadXHRSynchronously()
-{
-    m_loadingXHRSynchronously = true;
-}
-
-void InspectorResourceAgent::didLoadXHRSynchronously()
-{
-    m_loadingXHRSynchronously = false;
 }
 
 void InspectorResourceAgent::willDestroyResource(Resource* cachedResource)
@@ -783,7 +769,6 @@ InspectorResourceAgent::InspectorResourceAgent(InstrumentingAgents* instrumentin
     , m_overlay(overlay)
     , m_frontend(0)
     , m_resourcesData(adoptPtr(new NetworkResourcesData()))
-    , m_loadingXHRSynchronously(false)
     , m_isRecalculatingStyle(false)
 {
 }

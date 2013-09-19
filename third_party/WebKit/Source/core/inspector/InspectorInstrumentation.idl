@@ -307,12 +307,6 @@ interface InspectorInstrumentation {
     void didReceiveXHRResponse(ScriptExecutionContext*, unsigned long identifier);
 
     [Resource]
-    void willLoadXHRSynchronously(ScriptExecutionContext*);
-
-    [Resource]
-    void didLoadXHRSynchronously(ScriptExecutionContext*);
-
-    [Resource]
     void scriptImported(ScriptExecutionContext*, unsigned long identifier, const String& sourceString);
 
     [Debugger]

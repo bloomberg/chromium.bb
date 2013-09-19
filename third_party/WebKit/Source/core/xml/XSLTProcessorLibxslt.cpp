@@ -23,13 +23,16 @@
 #include "config.h"
 #include "core/xml/XSLTProcessor.h"
 
+#include "FetchInitiatorTypeNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/TransformSource.h"
 #include "core/editing/markup.h"
+#include "core/fetch/Resource.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
 #include "core/page/PageConsole.h"
+#include "core/platform/SharedBuffer.h"
 #include "core/platform/network/ResourceError.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "core/platform/network/ResourceResponse.h"
@@ -97,20 +100,13 @@ static xmlDocPtr docLoaderFunc(const xmlChar* uri,
         xmlChar* base = xmlNodeGetBase(context->document->doc, context->node);
         KURL url(KURL(ParsedURLString, reinterpret_cast<const char*>(base)), reinterpret_cast<const char*>(uri));
         xmlFree(base);
-        ResourceError error;
-        ResourceResponse response;
 
-        Vector<char> data;
-
-        bool requestAllowed = globalResourceFetcher->frame() && globalResourceFetcher->document()->securityOrigin()->canRequest(url);
-        if (requestAllowed) {
-            globalResourceFetcher->fetchSynchronously(url, AllowStoredCredentials, error, response, data);
-            requestAllowed = globalResourceFetcher->document()->securityOrigin()->canRequest(response.url());
-        }
-        if (!requestAllowed) {
-            data.clear();
-            globalResourceFetcher->printAccessDeniedMessage(url);
-        }
+        ResourceLoaderOptions fetchOptions(ResourceFetcher::defaultResourceOptions());
+        fetchOptions.requestOriginPolicy = RestrictToSameOrigin;
+        FetchRequest request(ResourceRequest(url), FetchInitiatorTypeNames::xml, fetchOptions);
+        ResourcePtr<Resource> resource = globalResourceFetcher->fetchSynchronously(request);
+        if (!resource || !globalProcessor)
+            return 0;
 
         PageConsole* console = 0;
         Frame* frame = globalProcessor->xslStylesheet()->ownerDocument()->frame();
@@ -121,7 +117,8 @@ static xmlDocPtr docLoaderFunc(const xmlChar* uri,
 
         // We don't specify an encoding here. Neither Gecko nor WinIE respects
         // the encoding specified in the HTTP headers.
-        xmlDocPtr doc = xmlReadMemory(data.data(), data.size(), (const char*)uri, 0, options);
+        SharedBuffer* data = resource->resourceBuffer();
+        xmlDocPtr doc = data ? xmlReadMemory(data->data(), data->size(), (const char*)uri, 0, options) : 0;
 
         xmlSetStructuredErrorFunc(0, 0);
         xmlSetGenericErrorFunc(0, 0);

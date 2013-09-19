@@ -3,11 +3,11 @@ CONSOLE MESSAGE: line 6: XHR loaded: 2
 Tests cyrillic xhr content is correctly loaded in inspector.
 
 Bug 79026
-http://127.0.0.1:8000/inspector/network/resources/cyrillic.html
+http://127.0.0.1:8000/inspector/network/resources/cyrillic.html?sync
 resource.content: The following line contains a word "success" written with cyrillic letters.
 SUССЕSS
 
-http://127.0.0.1:8000/inspector/network/resources/cyrillic.html
+http://127.0.0.1:8000/inspector/network/resources/cyrillic.html?async
 resource.content: The following line contains a word "success" written with cyrillic letters.
 SUССЕSS
 

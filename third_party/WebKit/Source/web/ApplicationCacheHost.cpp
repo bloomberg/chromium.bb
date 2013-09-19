@@ -150,14 +150,6 @@ void ApplicationCacheHost::willStartLoadingResource(ResourceRequest& request)
     }
 }
 
-void ApplicationCacheHost::willStartLoadingSynchronously(ResourceRequest& request)
-{
-    if (m_internal) {
-        WrappedResourceRequest wrapped(request);
-        m_internal->m_outerHost->willStartSubResourceRequest(wrapped);
-    }
-}
-
 void ApplicationCacheHost::setApplicationCache(ApplicationCache* domApplicationCache)
 {
     ASSERT(!m_domApplicationCache || !domApplicationCache);

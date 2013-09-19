@@ -118,7 +118,6 @@ namespace WebCore {
         void failedLoadingMainResource();
 
         void willStartLoadingResource(ResourceRequest&);
-        void willStartLoadingSynchronously(ResourceRequest&);
 
         Status status() const;
         bool update();

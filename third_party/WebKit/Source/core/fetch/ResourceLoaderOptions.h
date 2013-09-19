@@ -97,6 +97,11 @@ enum MixedContentBlockingTreatment {
     TreatAsAlwaysAllowedContent
 };
 
+enum SynchronousPolicy {
+    RequestSynchronously,
+    RequestAsynchronously
+};
+
 struct ResourceLoaderOptions {
     ResourceLoaderOptions()
         : sendLoadCallbacks(DoNotSendCallbacks)
@@ -110,6 +115,7 @@ struct ResourceLoaderOptions {
         , requestOriginPolicy(UseDefaultOriginRestrictionsForType)
         , requestInitiatorContext(DocumentContext)
         , mixedContentBlockingTreatment(TreatAsDefaultForType)
+        , synchronousPolicy(RequestAsynchronously)
     {
     }
 
@@ -135,6 +141,7 @@ struct ResourceLoaderOptions {
         , requestOriginPolicy(requestOriginPolicy)
         , requestInitiatorContext(requestInitiatorContext)
         , mixedContentBlockingTreatment(TreatAsDefaultForType)
+        , synchronousPolicy(RequestAsynchronously)
     {
     }
 
@@ -150,6 +157,7 @@ struct ResourceLoaderOptions {
     RequestOriginPolicy requestOriginPolicy;
     RequestInitiatorContext requestInitiatorContext;
     MixedContentBlockingTreatment mixedContentBlockingTreatment;
+    SynchronousPolicy synchronousPolicy;
 };
 
 } // namespace WebCore

@@ -63,7 +63,6 @@ PassRefPtr<ResourceLoader> ResourceLoader::create(ResourceLoaderHost* host, Reso
 {
     RefPtr<ResourceLoader> loader(adoptRef(new ResourceLoader(host, resource, options)));
     loader->init(request);
-    loader->start();
     return loader.release();
 }
 
@@ -131,6 +130,11 @@ void ResourceLoader::start()
     ASSERT(m_deferredRequest.isNull());
 
     m_host->willStartLoadingResource(m_request);
+
+    if (m_options.synchronousPolicy == RequestSynchronously) {
+        requestSynchronously();
+        return;
+    }
 
     if (m_defersLoading) {
         m_deferredRequest = m_request;
@@ -388,24 +392,30 @@ bool ResourceLoader::isLoadedBy(ResourceLoaderHost* loader) const
     return m_host->isLoadedBy(loader);
 }
 
-void ResourceLoader::loadResourceSynchronously(const ResourceRequest& request, StoredCredentials storedCredentials, ResourceError& error, ResourceResponse& response, Vector<char>& data)
+void ResourceLoader::requestSynchronously()
 {
     OwnPtr<WebKit::WebURLLoader> loader = adoptPtr(WebKit::Platform::current()->createURLLoader());
     ASSERT(loader);
 
-    WebKit::WrappedResourceRequest requestIn(request);
-    requestIn.setAllowStoredCredentials(storedCredentials == AllowStoredCredentials);
-    WebKit::WrappedResourceResponse responseOut(response);
+    RELEASE_ASSERT(m_connectionState == ConnectionStateNew);
+    m_connectionState = ConnectionStateStarted;
+
+    WebKit::WrappedResourceRequest requestIn(m_request);
+    requestIn.setAllowStoredCredentials(m_options.allowCredentials == AllowStoredCredentials);
+    WebKit::WebURLResponse responseOut;
+    responseOut.initialize();
     WebKit::WebURLError errorOut;
     WebKit::WebData dataOut;
-
     loader->loadSynchronously(requestIn, responseOut, errorOut, dataOut);
-
-    error = errorOut;
-    data.clear();
-    RefPtr<SharedBuffer> buffer = dataOut;
-    if (buffer)
-        buffer->moveTo(data);
+    if (errorOut.reason) {
+        didFail(0, errorOut);
+        return;
+    }
+    didReceiveResponse(0, responseOut);
+    RefPtr<ResourceLoadInfo> resourceLoadInfo = responseOut.toResourceResponse().resourceLoadInfo();
+    m_host->didReceiveData(m_resource, dataOut.data(), dataOut.size(), resourceLoadInfo ? resourceLoadInfo->encodedDataLength : -1, m_options);
+    m_resource->setResourceBuffer(dataOut);
+    didFinishLoading(0, responseOut.responseTime());
 }
 
 }

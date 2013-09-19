@@ -20,6 +20,7 @@ function onObsolete()
     try {
         var req = new XMLHttpRequest;
         req.open("GET", "empty.txt", false);
+        req.setRequestHeader("Cache-control", "no-store");
         req.send(null);
         alert("FAIL: XMLHttpRequest for an uncached resource didn't raise an exception");
     } catch (ex) {

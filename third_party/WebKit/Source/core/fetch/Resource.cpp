@@ -181,13 +181,9 @@ void Resource::load(ResourceFetcher* fetcher, const ResourceLoaderOptions& optio
         request.setURL(url);
         m_fragmentIdentifierForRequest = String();
     }
-
-    m_loader = ResourceLoader::create(fetcher, this, request, options);
-    if (!m_loader) {
-        failBeforeStarting();
-        return;
-    }
     m_status = Pending;
+    m_loader = ResourceLoader::create(fetcher, this, request, options);
+    m_loader->start();
 }
 
 void Resource::checkNotify()
@@ -210,6 +206,15 @@ void Resource::appendData(const char* data, int length)
         m_data->append(data, length);
     else
         m_data = SharedBuffer::create(data, length);
+    setEncodedSize(m_data->size());
+}
+
+void Resource::setResourceBuffer(PassRefPtr<SharedBuffer> resourceBuffer)
+{
+    ASSERT(!m_resourceToRevalidate);
+    ASSERT(!errorOccurred());
+    ASSERT(m_options.dataBufferingPolicy == BufferData);
+    m_data = resourceBuffer;
     setEncodedSize(m_data->size());
 }
 

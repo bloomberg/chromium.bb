@@ -41,7 +41,7 @@ document.getElementById("login").innerHTML = isAuthenticated() ? "PASS" : "FAIL"
 
 // Test that a request sent before logout actually has credentials.
 var r = new XMLHttpRequest;
-r.open("GET", "resources/logout/resource.php?isAuthenticated", true);
+r.open("GET", "resources/logout/resource.php?isAuthenticated2", true);
 r.onload = function() {
     document.getElementById("async").innerHTML = r.status == 200 ? "PASS" : "FAIL";
 

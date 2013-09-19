@@ -183,6 +183,7 @@ public:
     void clearLoader();
 
     SharedBuffer* resourceBuffer() const { ASSERT(!m_purgeableData); return m_data.get(); }
+    void setResourceBuffer(PassRefPtr<SharedBuffer>);
 
     virtual void willSendRequest(ResourceRequest&, const ResourceResponse&) { m_requestedFromNetworkingLayer = true; }
     virtual void responseReceived(const ResourceResponse&);

@@ -49,7 +49,7 @@ public:
     static PassRefPtr<ResourceLoader> create(ResourceLoaderHost*, Resource*, const ResourceRequest&, const ResourceLoaderOptions&);
     virtual ~ResourceLoader();
 
-    static void loadResourceSynchronously(const ResourceRequest&, StoredCredentials, ResourceError&, ResourceResponse&, Vector<char>& data);
+    void start();
 
     void cancel();
     void cancel(const ResourceError&);
@@ -87,7 +87,7 @@ private:
     ResourceLoader(ResourceLoaderHost*, Resource*, const ResourceLoaderOptions&);
 
     void init(const ResourceRequest&);
-    void start();
+    void requestSynchronously();
 
     void didFinishLoadingOnePart(double finishTime);
 

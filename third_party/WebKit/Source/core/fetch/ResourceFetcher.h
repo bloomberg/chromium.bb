@@ -81,8 +81,7 @@ public:
     using RefCounted<ResourceFetcher>::ref;
     using RefCounted<ResourceFetcher>::deref;
 
-    unsigned long fetchSynchronously(const ResourceRequest&, StoredCredentials, ResourceError&, ResourceResponse&, Vector<char>&);
-
+    ResourcePtr<Resource> fetchSynchronously(FetchRequest&);
     ResourcePtr<ImageResource> fetchImage(FetchRequest&);
     ResourcePtr<CSSStyleSheetResource> fetchCSSStyleSheet(FetchRequest&);
     ResourcePtr<CSSStyleSheetResource> fetchUserCSSStyleSheet(FetchRequest&);
@@ -131,9 +130,7 @@ public:
     void preload(Resource::Type, FetchRequest&, const String& charset);
     void checkForPendingPreloads();
     void printPreloadStats();
-    bool canRequest(Resource::Type, const KURL&, const ResourceLoaderOptions&, bool forPreload = false);
     bool canAccess(Resource*);
-    bool checkInsecureContent(Resource::Type, const KURL&, MixedContentBlockingTreatment) const;
 
     void setDefersLoading(bool);
     void stopFetching();
@@ -180,6 +177,9 @@ private:
     void determineTargetType(ResourceRequest&, Resource::Type);
     ResourceRequestCachePolicy resourceRequestCachePolicy(const ResourceRequest&, Resource::Type);
     void addAdditionalRequestHeaders(ResourceRequest&, Resource::Type);
+
+    bool canRequest(Resource::Type, const KURL&, const ResourceLoaderOptions&, bool forPreload = false);
+    bool checkInsecureContent(Resource::Type, const KURL&, MixedContentBlockingTreatment) const;
 
     void notifyLoadedFromMemoryCache(Resource*);
 

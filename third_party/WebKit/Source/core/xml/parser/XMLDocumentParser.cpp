@@ -26,6 +26,7 @@
 #include "config.h"
 #include "core/xml/parser/XMLDocumentParser.h"
 
+#include "FetchInitiatorTypeNames.h"
 #include "HTMLNames.h"
 #include "XMLNSNames.h"
 #include "bindings/v8/ExceptionState.h"
@@ -50,6 +51,7 @@
 #include "core/loader/ImageLoader.h"
 #include "core/page/Frame.h"
 #include "core/page/UseCounter.h"
+#include "core/platform/SharedBuffer.h"
 #include "core/platform/network/ResourceError.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "core/platform/network/ResourceResponse.h"
@@ -641,23 +643,27 @@ static void* openFunc(const char* uri)
     if (!shouldAllowExternalLoad(url))
         return &globalDescriptor;
 
-    ResourceError error;
-    ResourceResponse response;
+    KURL finalURL;
     Vector<char> data;
-
 
     {
         ResourceFetcher* fetcher = XMLDocumentParserScope::currentFetcher;
         XMLDocumentParserScope scope(0);
         // FIXME: We should restore the original global error handler as well.
 
-        if (fetcher->frame())
-            fetcher->fetchSynchronously(url, AllowStoredCredentials, error, response, data);
+        if (fetcher->frame()) {
+            FetchRequest request(ResourceRequest(url), FetchInitiatorTypeNames::xml, ResourceFetcher::defaultResourceOptions());
+            ResourcePtr<Resource> resource = fetcher->fetchSynchronously(request);
+            if (resource && !resource->errorOccurred()) {
+                resource->resourceBuffer()->moveTo(data);
+                finalURL = resource->response().url();
+            }
+        }
     }
 
     // We have to check the URL again after the load to catch redirects.
     // See <https://bugs.webkit.org/show_bug.cgi?id=21963>.
-    if (!shouldAllowExternalLoad(response.url()))
+    if (!shouldAllowExternalLoad(finalURL))
         return &globalDescriptor;
 
     return new OffsetBuffer(data);

@@ -104,8 +104,6 @@ public:
     void didFailXHRLoading(ThreadableLoaderClient*);
     void didFinishXHRLoading(ThreadableLoaderClient*, unsigned long identifier, ScriptString sourceString, const String&, const String&, unsigned);
     void didReceiveXHRResponse(unsigned long identifier);
-    void willLoadXHRSynchronously();
-    void didLoadXHRSynchronously();
 
     void willDestroyResource(Resource*);
 
@@ -160,7 +158,6 @@ private:
     InspectorFrontend::Network* m_frontend;
     String m_userAgentOverride;
     OwnPtr<NetworkResourcesData> m_resourcesData;
-    bool m_loadingXHRSynchronously;
 
     typedef HashMap<ThreadableLoaderClient*, RefPtr<XHRReplayData> > PendingXHRReplayDataMap;
     PendingXHRReplayDataMap m_pendingXHRReplayData;

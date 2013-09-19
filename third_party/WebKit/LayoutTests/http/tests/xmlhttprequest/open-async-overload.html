@@ -29,23 +29,23 @@
         testRunner.dumpAsText();
 
     req = new XMLHttpRequest();
-    req.open("GET", "methods.cgi", true);
+    req.open("GET", "methods.cgi?1", true);
     shouldSendBehaveAs(req, true, "if async argument is true, send() should behave asynchronously");
 
     req = new XMLHttpRequest();
-    req.open("GET", "methods.cgi", false);
+    req.open("GET", "methods.cgi?2", false);
     shouldSendBehaveAs(req, false, "if async argument is false, send() should behave synchronously");
 
     req = new XMLHttpRequest();
-    req.open("GET", "methods.cgi");
+    req.open("GET", "methods.cgi?3");
     shouldSendBehaveAs(req, true, "if async argument is not given, send() should behave like as async=true");
 
     req = new XMLHttpRequest();
-    req.open("GET", "methods.cgi", undefined);
+    req.open("GET", "methods.cgi?4", undefined);
     shouldSendBehaveAs(req, false, "if async argument is undefined, send() should behave like as async=false");
 
     req = new XMLHttpRequest();
-    req.open("GET", "methods.cgi", "OK");
+    req.open("GET", "methods.cgi?5", "OK");
     shouldSendBehaveAs(req, true, "if async argument is a non-empty string, send() should behave like as async=true");
 
 </script>

@@ -26,11 +26,11 @@ function test()
 
     function step1()
     {
-        InspectorTest.makeSimpleXHR("GET", "resources/cyrillic.html", false, firstXHRLoaded);
+        InspectorTest.makeSimpleXHR("GET", "resources/cyrillic.html?sync", false, firstXHRLoaded);
 
         function firstXHRLoaded()
         {
-            InspectorTest.makeSimpleXHR("GET", "resources/cyrillic.html", true, step2);
+            InspectorTest.makeSimpleXHR("GET", "resources/cyrillic.html?async", true, step2);
         }
     }
 

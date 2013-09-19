@@ -45,6 +45,7 @@
 #include "core/platform/ContextMenuItem.h"
 #include "core/platform/JSONValues.h"
 #include "core/platform/Pasteboard.h"
+#include "core/platform/SharedBuffer.h"
 #include "core/platform/network/ResourceError.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "core/platform/network/ResourceResponse.h"
@@ -218,21 +219,19 @@ void InspectorFrontendHost::showContextMenu(Event* event, const Vector<ContextMe
 
 String InspectorFrontendHost::loadResourceSynchronously(const String& url)
 {
-    ResourceRequest request(url);
-    request.setHTTPMethod("GET");
-
-    Vector<char> data;
-    ResourceError error;
-    ResourceResponse response;
-    m_frontendPage->mainFrame()->document()->fetcher()->fetchSynchronously(request, DoNotAllowStoredCredentials, error, response, data);
-    WTF::TextEncoding textEncoding(response.textEncodingName());
+    FetchRequest request(url, FetchInitiatorInfo());
+    ResourcePtr<Resource> resource = m_frontendPage->mainFrame()->document()->fetcher()->fetchSynchronously(request);
+    if (!resource)
+        return emptyString();
+    WTF::TextEncoding textEncoding(resource->response().textEncodingName());
     bool useDetector = false;
     if (!textEncoding.isValid()) {
         textEncoding = UTF8Encoding();
         useDetector = true;
     }
     RefPtr<TextResourceDecoder> decoder = TextResourceDecoder::create("text/plain", textEncoding, useDetector);
-    return decoder->decode(data.data(), data.size()) + decoder->flush();
+    SharedBuffer* data = resource->resourceBuffer();
+    return decoder->decode(data->data(), data->size()) + decoder->flush();
 }
 
 String InspectorFrontendHost::getSelectionBackgroundColor()
