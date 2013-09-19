@@ -6,6 +6,8 @@
 
 function test()
 {
+    WebInspector.showPanel("elements");
+
     var namePrompt = new WebInspector.StylesSidebarPane.CSSPropertyPrompt(WebInspector.CSSMetadata.cssPropertiesMetainfo, null, true);
     var valuePrompt = new WebInspector.StylesSidebarPane.CSSPropertyPrompt(WebInspector.CSSMetadata.keywordsForProperty("color"), null, false);
 
