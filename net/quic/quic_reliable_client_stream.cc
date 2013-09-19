@@ -56,7 +56,7 @@ void QuicReliableClientStream::OnCanWrite() {
 }
 
 QuicPriority QuicReliableClientStream::EffectivePriority() const {
-  if (delegate_->HasSendHeadersComplete()) {
+  if (delegate_ && delegate_->HasSendHeadersComplete()) {
     return ReliableQuicStream::EffectivePriority();
   }
   return kHighestPriority;
