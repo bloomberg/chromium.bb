@@ -1309,7 +1309,7 @@ class PreCQLauncherStage(SyncStage):
   # The number of minutes we allow before considering a launch attempt failed.
   # If this window isn't hit in a given launcher run, the window will start
   # again from scratch in the next run.
-  LAUNCH_DELAY = 10
+  LAUNCH_DELAY = 30
 
   def __init__(self, options, build_config):
     super(PreCQLauncherStage, self).__init__(options, build_config)
