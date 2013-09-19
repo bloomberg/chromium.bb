@@ -131,8 +131,8 @@ public:
 
     // PopupListBox methods
 
-    // Hides the popup.
-    void hidePopup();
+    // Closes the popup
+    void abandon();
 
     // Updates our internal list to match the client.
     void updateFromElement();
@@ -192,8 +192,8 @@ private:
         clear();
     }
 
-    // Closes the popup
-    void abandon();
+    // Hides the popup. Other classes should not call this. Use abandon instead.
+    void hidePopup();
 
     // Returns true if the selection can be changed to index.
     // Disabled items, or labels cannot be selected.

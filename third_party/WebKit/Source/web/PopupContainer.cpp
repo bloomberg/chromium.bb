@@ -228,7 +228,7 @@ void PopupContainer::showPopup(FrameView* view)
 
 void PopupContainer::hidePopup()
 {
-    listBox()->hidePopup();
+    listBox()->abandon();
 }
 
 void PopupContainer::notifyPopupHidden()
