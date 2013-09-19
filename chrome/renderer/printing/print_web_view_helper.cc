@@ -755,6 +755,9 @@ PrintWebViewHelper::~PrintWebViewHelper() {}
 
 bool PrintWebViewHelper::IsScriptInitiatedPrintAllowed(
     WebKit::WebFrame* frame, bool user_initiated) {
+#if defined(OS_ANDROID)
+  return false;
+#endif  // defined(OS_ANDROID)
   if (is_scripted_printing_blocked_)
     return false;
   // If preview is enabled, then the print dialog is tab modal, and the user
