@@ -126,6 +126,9 @@ For some code (like shell samples), we want to disable pretty-printing:
 
 By default ``:prettyprint:`` is ``1``.
 
+For short inline code, use fixed-formatting like ``int x = 2;``. Note that this
+won't get syntax-highlighted and may be line-wrapped, so keep it very short.
+
 .. _link_for_section_heading:
 
 Section heading

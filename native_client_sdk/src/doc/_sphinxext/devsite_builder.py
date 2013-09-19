@@ -61,6 +61,11 @@ class DevsiteHTMLTranslator(HTMLTranslator):
 
       Hooked into the HTML builder by setting the html_translator_class
       option in conf.py
+
+      HTMLTranslator is provided by Sphinx. It's a subclass of the
+      HTMLTranslator provided by docutils, with Sphinx-specific features added.
+      Here we provide devsite-specific behavior by overriding some of the
+      visiting methods.
   """
   def __init__(self, builder, *args, **kwds):
     # HTMLTranslator is an old-style Python class, so 'super' doesn't work: use
@@ -84,6 +89,17 @@ class DevsiteHTMLTranslator(HTMLTranslator):
     else:
       # Override to not pop anything from context
       self.body.append('</ul>\n')
+
+  def visit_literal(self, node):
+    # Sphinx emits <tt></tt> for literals (``like this``), with <span> per word
+    # to protect against wrapping, etc. We're required to emit plain <code>
+    # tags for them.
+    # Emit a simple <code> tag without enabling "protect_literal_text" mode,
+    # so Sphinx's visit_Text doesn't mess with the contents.
+    self.body.append(self.starttag(node, 'code', suffix=''))
+
+  def depart_literal(self, node):
+    self.body.append('</code>')
 
   def visit_literal_block(self, node):
     # We don't use Sphinx's buildin pygments integration for code highlighting,
