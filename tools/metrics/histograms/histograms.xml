@@ -20269,7 +20269,7 @@ other types of suffix sets.
   <int value="45" label="EXPERIMENTAL_DISCOVERY_REMOVESUGGESTION"/>
   <int value="46" label="VIRTUALKEYBOARDPRIVATE_SENDKEYEVENT"/>
   <int value="47" label="BOOKMARKMANAGERPRIVATE_GETSUBTREE"/>
-  <int value="48" label="EXPERIMENTAL_RLZ_RECORDPRODUCTEVENT"/>
+  <int value="48" label="DELETED_EXPERIMENTAL_RLZ_RECORDPRODUCTEVENT"/>
   <int value="49" label="BOOKMARKS_GETRECENT"/>
   <int value="50" label="APP_CURRENTWINDOWINTERNAL_SETBOUNDS"/>
   <int value="51" label="CLOUDPRINTPRIVATE_SETUPCONNECTOR"/>
@@ -20341,7 +20341,7 @@ other types of suffix sets.
   <int value="117" label="EXTENSION_SETUPDATEURLDATA"/>
   <int value="118" label="SERIAL_WRITE"/>
   <int value="119" label="IDLE_QUERYSTATE"/>
-  <int value="120" label="EXPERIMENTAL_RLZ_GETACCESSPOINTRLZ"/>
+  <int value="120" label="DELETED_EXPERIMENTAL_RLZ_GETACCESSPOINTRLZ"/>
   <int value="121" label="WEBSTOREPRIVATE_SETSTORELOGIN"/>
   <int value="122" label="PAGEACTIONS_ENABLEFORTAB"/>
   <int value="123" label="COOKIES_SET"/>
@@ -20389,7 +20389,7 @@ other types of suffix sets.
   <int value="164" label="MANAGEMENT_GET"/>
   <int value="165" label="PERMISSIONS_GETALL"/>
   <int value="166" label="DOWNLOADS_SHOW"/>
-  <int value="167" label="EXPERIMENTAL_RLZ_CLEARPRODUCTSTATE"/>
+  <int value="167" label="DELETED_EXPERIMENTAL_RLZ_CLEARPRODUCTSTATE"/>
   <int value="168" label="TABS_REMOVE"/>
   <int value="169" label="MANAGEMENT_GETPERMISSIONWARNINGSBYID"/>
   <int value="170" label="WINDOWS_GET"/>
@@ -20489,7 +20489,7 @@ other types of suffix sets.
   <int value="264" label="DEVELOPERPRIVATE_GETITEMSINFO"/>
   <int value="265" label="BLUETOOTH_STOPDISCOVERY"/>
   <int value="266" label="COOKIES_REMOVE"/>
-  <int value="267" label="EXPERIMENTAL_RLZ_SENDFINANCIALPING"/>
+  <int value="267" label="DELETED_EXPERIMENTAL_RLZ_SENDFINANCIALPING"/>
   <int value="268" label="TABCAPTURE_GETCAPTUREDTABS"/>
   <int value="269" label="WINDOWS_REMOVE"/>
   <int value="270" label="WALLPAPERPRIVATE_GETOFFLINEWALLPAPERLIST"/>

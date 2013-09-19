@@ -9,7 +9,6 @@
 #include "chrome/browser/extensions/api/preference/preference_api.h"
 #include "chrome/browser/extensions/api/runtime/runtime_api.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
-#include "chrome/browser/rlz/rlz_extension_api.h"
 #include "chrome/common/extensions/api/generated_api.h"
 
 // static
@@ -28,14 +27,6 @@ void ExtensionFunctionRegistry::ResetFunctions() {
 #if defined(ENABLE_EXTENSIONS)
 
   // Register all functions here.
-
-  // RLZ (not supported on ChromeOS yet).
-#if defined(ENABLE_RLZ) && !defined(OS_CHROMEOS)
-  RegisterFunction<RlzRecordProductEventFunction>();
-  RegisterFunction<RlzGetAccessPointRlzFunction>();
-  RegisterFunction<RlzSendFinancialPingFunction>();
-  RegisterFunction<RlzClearProductStateFunction>();
-#endif
 
   // WebRequest.
   RegisterFunction<WebRequestAddEventListener>();

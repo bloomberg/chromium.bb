@@ -1313,7 +1313,6 @@
         'browser/renderer_host/render_process_host_chrome_browsertest.cc',
         'browser/renderer_host/web_cache_manager_browsertest.cc',
         'browser/repost_form_warning_browsertest.cc',
-        'browser/rlz/rlz_extension_apitest.cc',
         'browser/safe_browsing/local_safebrowsing_test_server.cc',
         'browser/safe_browsing/safe_browsing_blocking_page_test.cc',
         'browser/safe_browsing/safe_browsing_service_browsertest.cc',
@@ -1737,11 +1736,6 @@
         ['OS!="linux" or toolkit_views==1', {
           'sources!': [
             'browser/ui/gtk/view_id_util_browsertest.cc',
-          ],
-        }],
-        ['enable_rlz==0', {
-          'sources!': [
-            'browser/rlz/rlz_extension_apitest.cc',
           ],
         }],
         ['enable_webrtc==0', {

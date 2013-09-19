@@ -241,8 +241,6 @@ void ExtensionAPI::InitDefaultConfiguration() {
       IDR_EXTENSION_API_JSON_DECLARATIVE_CONTENT);
   RegisterSchemaResource("declarativeWebRequest",
       IDR_EXTENSION_API_JSON_DECLARATIVE_WEBREQUEST);
-  RegisterSchemaResource("experimental.rlz",
-      IDR_EXTENSION_API_JSON_EXPERIMENTAL_RLZ);
   RegisterSchemaResource("runtime", IDR_EXTENSION_API_JSON_RUNTIME);
   RegisterSchemaResource("fileBrowserHandler",
       IDR_EXTENSION_API_JSON_FILEBROWSERHANDLER);

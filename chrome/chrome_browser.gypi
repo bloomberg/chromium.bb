@@ -2623,8 +2623,6 @@
             'browser/accessibility/accessibility_extension_api.h',
             'browser/infobars/infobar_extension_api.cc',
             'browser/infobars/infobar_extension_api.h',
-            'browser/rlz/rlz_extension_api.cc',
-            'browser/rlz/rlz_extension_api.h',
             'browser/speech/extension_api/tts_extension_api.cc',
             'browser/speech/extension_api/tts_extension_api.h',
             'browser/speech/extension_api/tts_engine_extension_api.cc',
