@@ -104,6 +104,7 @@ FeatureInfo::FeatureFlags::FeatureFlags()
       use_img_for_multisampled_render_to_texture(false),
       oes_standard_derivatives(false),
       oes_egl_image_external(false),
+      oes_depth24(false),
       npot_ok(false),
       enable_texture_float_linear(false),
       enable_texture_half_float_linear(false),
@@ -497,6 +498,7 @@ void FeatureInfo::InitializeFeatures() {
 
   if (extensions.Contains("GL_OES_depth24") || gfx::HasDesktopGLFeatures()) {
     AddExtensionString("GL_OES_depth24");
+    feature_flags_.oes_depth24 = true;
     validators_.render_buffer_format.AddValue(GL_DEPTH_COMPONENT24);
   }
 

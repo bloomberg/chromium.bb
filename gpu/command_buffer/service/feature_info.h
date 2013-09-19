@@ -32,6 +32,7 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool use_img_for_multisampled_render_to_texture;
     bool oes_standard_derivatives;
     bool oes_egl_image_external;
+    bool oes_depth24;
     bool npot_ok;
     bool enable_texture_float_linear;
     bool enable_texture_half_float_linear;
