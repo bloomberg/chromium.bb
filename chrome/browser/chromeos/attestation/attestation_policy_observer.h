@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "content/public/browser/notification_observer.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
 
 namespace policy {
 class CloudPolicyClient;
@@ -28,7 +28,7 @@ class AttestationFlow;
 
 // A class which observes policy changes and triggers device attestation work if
 // necessary.
-class AttestationPolicyObserver : public content::NotificationObserver {
+class AttestationPolicyObserver {
  public:
   // The observer immediately connects with CrosSettings to listen for policy
   // changes.  The CloudPolicyClient is used to upload the device certificate to
@@ -43,12 +43,7 @@ class AttestationPolicyObserver : public content::NotificationObserver {
                             CryptohomeClient* cryptohome_client,
                             AttestationFlow* attestation_flow);
 
-  virtual ~AttestationPolicyObserver();
-
-  // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  ~AttestationPolicyObserver();
 
   // Sets the retry delay in seconds; useful in testing.
   void set_retry_delay(int retry_delay) {
@@ -56,6 +51,9 @@ class AttestationPolicyObserver : public content::NotificationObserver {
   }
 
  private:
+  // Called when the attestation setting changes.
+  void AttestationSettingChanged();
+
   // Checks attestation policy and starts any necessary work.
   void Start();
 
@@ -97,6 +95,8 @@ class AttestationPolicyObserver : public content::NotificationObserver {
   scoped_ptr<AttestationFlow> default_attestation_flow_;
   int num_retries_;
   int retry_delay_;
+
+  scoped_ptr<CrosSettings::ObserverSubscription> attestation_subscription_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.

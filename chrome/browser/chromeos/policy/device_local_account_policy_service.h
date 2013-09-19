@@ -14,9 +14,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/policy/cloud/cloud_policy_core.h"
 #include "chrome/browser/policy/cloud/cloud_policy_store.h"
-#include "content/public/browser/notification_observer.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -75,8 +75,7 @@ class DeviceLocalAccountPolicyBroker {
 // The actual policy blobs are brokered by session_manager (to prevent file
 // manipulation), and we're making signature checks on the policy blobs to
 // ensure they're issued by the device owner.
-class DeviceLocalAccountPolicyService : public content::NotificationObserver,
-                                        public CloudPolicyStore::Observer {
+class DeviceLocalAccountPolicyService : public CloudPolicyStore::Observer {
  public:
   // Interface for interested parties to observe policy changes.
   class Observer {
@@ -113,11 +112,6 @@ class DeviceLocalAccountPolicyService : public content::NotificationObserver,
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  // NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
   // CloudPolicyStore::Observer:
   virtual void OnStoreLoaded(CloudPolicyStore* store) OVERRIDE;
   virtual void OnStoreError(CloudPolicyStore* store) OVERRIDE;
@@ -151,6 +145,9 @@ class DeviceLocalAccountPolicyService : public content::NotificationObserver,
   // and updates |policy_brokers_| to match that list.
   void UpdateAccountList();
 
+  // Calls |UpdateAccountList| if there are no previous calls pending.
+  void UpdateAccountListIfNonePending();
+
   // Deletes brokers in |map| and clears it.
   void DeleteBrokers(PolicyBrokerMap* map);
 
@@ -167,6 +164,9 @@ class DeviceLocalAccountPolicyService : public content::NotificationObserver,
   PolicyBrokerMap policy_brokers_;
 
   ObserverList<Observer, true> observers_;
+
+  scoped_ptr<chromeos::CrosSettings::ObserverSubscription>
+      local_accounts_subscription_;
 
   // Weak pointer factory for cros_settings_->PrepareTrustedValues() callbacks.
   base::WeakPtrFactory<DeviceLocalAccountPolicyService>

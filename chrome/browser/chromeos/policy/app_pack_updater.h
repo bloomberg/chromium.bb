@@ -11,9 +11,10 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/extensions/external_cache.h"
-#include "content/public/browser/notification_observer.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
 
 namespace extensions {
 class ExternalLoader;
@@ -31,8 +32,7 @@ class EnterpriseInstallAttributes;
 // The AppPackUpdater manages a set of extensions that are configured via a
 // device policy to be locally cached and installed into the Demo user account
 // at login time.
-class AppPackUpdater : public content::NotificationObserver,
-                       public chromeos::ExternalCache::Delegate {
+class AppPackUpdater : public chromeos::ExternalCache::Delegate {
  public:
   // Callback to listen for updates to the screensaver extension's path.
   typedef base::Callback<void(const base::FilePath&)> ScreenSaverUpdateCallback;
@@ -63,14 +63,12 @@ class AppPackUpdater : public content::NotificationObserver,
   void OnDamagedFileDetected(const base::FilePath& path);
 
  private:
-  // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
   // Implementation of ExternalCache::Delegate:
   virtual void OnExtensionListsUpdated(
       const base::DictionaryValue* prefs) OVERRIDE;
+
+  // Called when the app pack device setting changes.
+  void AppPackChanged();
 
   // Loads the current policy and schedules a cache update.
   void LoadPolicy();
@@ -104,6 +102,9 @@ class AppPackUpdater : public content::NotificationObserver,
 
   // Extension cache.
   chromeos::ExternalCache external_cache_;
+
+  scoped_ptr<chromeos::CrosSettings::ObserverSubscription>
+      app_pack_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(AppPackUpdater);
 };

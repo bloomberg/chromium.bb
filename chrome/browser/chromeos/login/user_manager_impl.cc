@@ -236,10 +236,14 @@ UserManagerImpl::UserManagerImpl()
   registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
       content::NotificationService::AllSources());
   RetrieveTrustedDevicePolicies();
-  cros_settings_->AddSettingsObserver(kAccountsPrefDeviceLocalAccounts,
-                                      this);
-  cros_settings_->AddSettingsObserver(kAccountsPrefSupervisedUsersEnabled,
-                                      this);
+  local_accounts_subscription_ = cros_settings_->AddSettingsObserver(
+      kAccountsPrefDeviceLocalAccounts,
+      base::Bind(&UserManagerImpl::RetrieveTrustedDevicePolicies,
+                 base::Unretained(this)));
+  supervised_users_subscription_ = cros_settings_->AddSettingsObserver(
+      kAccountsPrefSupervisedUsersEnabled,
+      base::Bind(&UserManagerImpl::RetrieveTrustedDevicePolicies,
+                 base::Unretained(this)));
   UpdateLoginState();
 }
 
@@ -260,11 +264,8 @@ UserManagerImpl::~UserManagerImpl() {
 
 void UserManagerImpl::Shutdown() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  cros_settings_->RemoveSettingsObserver(kAccountsPrefDeviceLocalAccounts,
-                                         this);
-  cros_settings_->RemoveSettingsObserver(
-      kAccountsPrefSupervisedUsersEnabled,
-      this);
+  local_accounts_subscription_.reset();
+  supervised_users_subscription_.reset();
   // Stop the session length limiter.
   session_length_limiter_.reset();
 
@@ -792,14 +793,6 @@ void UserManagerImpl::Observe(int type,
         }
       }
       break;
-    case chrome::NOTIFICATION_SYSTEM_SETTING_CHANGED: {
-      std::string changed_setting =
-          *content::Details<const std::string>(details).ptr();
-      DCHECK(changed_setting == kAccountsPrefDeviceLocalAccounts ||
-             changed_setting == kAccountsPrefSupervisedUsersEnabled);
-      RetrieveTrustedDevicePolicies();
-      break;
-    }
     default:
       NOTREACHED();
   }

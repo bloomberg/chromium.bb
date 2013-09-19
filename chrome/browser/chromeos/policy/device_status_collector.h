@@ -11,15 +11,16 @@
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/version_loader.h"
 #include "chrome/browser/idle.h"
 #include "chrome/browser/policy/cloud/cloud_policy_client.h"
 #include "chrome/common/cancelable_task_tracker.h"
 #include "content/public/browser/geolocation_provider.h"
-#include "content/public/browser/notification_observer.h"
 #include "content/public/common/geoposition.h"
 
 namespace chromeos {
@@ -44,8 +45,7 @@ class PrefService;
 namespace policy {
 
 // Collects and summarizes the status of an enterprised-managed ChromeOS device.
-class DeviceStatusCollector : public CloudPolicyClient::StatusProvider,
-                              public content::NotificationObserver {
+class DeviceStatusCollector : public CloudPolicyClient::StatusProvider {
  public:
   // TODO(bartfab): Remove this once crbug.com/125931 is addressed and a proper
   // way to mock geolocation exists.
@@ -93,7 +93,7 @@ class DeviceStatusCollector : public CloudPolicyClient::StatusProvider,
   unsigned int max_stored_future_activity_days_;
 
  private:
-  // A helper class to manage receiving geolocation notifications on the IO
+  // A helper class to manage receiving geolocation callbacks on the IO
   // thread.
   class Context : public base::RefCountedThreadSafe<Context> {
    public:
@@ -151,12 +151,6 @@ class DeviceStatusCollector : public CloudPolicyClient::StatusProvider,
   // Update the cached values of the reporting settings.
   void UpdateReportingSettings();
 
-  // content::NotificationObserver interface.
-  virtual void Observe(
-      int type,
-      const content::NotificationSource& source,
-      const content::NotificationDetails& details) OVERRIDE;
-
   void ScheduleGeolocationUpdateRequest();
 
   // content::GeolocationUpdateCallback implementation.
@@ -209,6 +203,17 @@ class DeviceStatusCollector : public CloudPolicyClient::StatusProvider,
   bool report_network_interfaces_;
 
   scoped_refptr<Context> context_;
+
+  scoped_ptr<chromeos::CrosSettings::ObserverSubscription>
+      version_info_subscription_;
+  scoped_ptr<chromeos::CrosSettings::ObserverSubscription>
+      activity_times_subscription_;
+  scoped_ptr<chromeos::CrosSettings::ObserverSubscription>
+      boot_mode_subscription_;
+  scoped_ptr<chromeos::CrosSettings::ObserverSubscription>
+      location_subscription_;
+  scoped_ptr<chromeos::CrosSettings::ObserverSubscription>
+      network_interfaces_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceStatusCollector);
 };

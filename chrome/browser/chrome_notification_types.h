@@ -881,11 +881,6 @@ enum NotificationType {
   // unregistration is impossible due to unpredictable deletion order.
   NOTIFICATION_OWNERSHIP_STATUS_CHANGED,
 
-  // This is sent to a ChromeOS settings observer when a system setting is
-  // changed. The source is the CrosSettings and the details a std::string of
-  // the changed setting.
-  NOTIFICATION_SYSTEM_SETTING_CHANGED,
-
   // Sent by SIM unlock dialog when it has finished with the process of
   // updating RequirePin setting. RequirePin setting might have been changed
   // to a new value or update might have been canceled.

@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_store.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -23,7 +22,6 @@
 #include "chrome/browser/policy/cloud/device_management_service.h"
 #include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
 #include "chromeos/dbus/session_manager_client.h"
-#include "content/public/browser/notification_details.h"
 #include "policy/policy_constants.h"
 
 namespace em = enterprise_management;
@@ -166,14 +164,15 @@ DeviceLocalAccountPolicyService::DeviceLocalAccountPolicyService(
       cros_settings_(cros_settings),
       device_management_service_(NULL),
       cros_settings_callback_factory_(this) {
-  cros_settings_->AddSettingsObserver(
-      chromeos::kAccountsPrefDeviceLocalAccounts, this);
+  local_accounts_subscription_ = cros_settings_->AddSettingsObserver(
+      chromeos::kAccountsPrefDeviceLocalAccounts,
+      base::Bind(&DeviceLocalAccountPolicyService::
+                     UpdateAccountListIfNonePending,
+                 base::Unretained(this)));
   UpdateAccountList();
 }
 
 DeviceLocalAccountPolicyService::~DeviceLocalAccountPolicyService() {
-  cros_settings_->RemoveSettingsObserver(
-      chromeos::kAccountsPrefDeviceLocalAccounts, this);
   DeleteBrokers(&policy_brokers_);
 }
 
@@ -224,24 +223,6 @@ void DeviceLocalAccountPolicyService::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void DeviceLocalAccountPolicyService::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  if (type != chrome::NOTIFICATION_SYSTEM_SETTING_CHANGED ||
-      *content::Details<const std::string>(details).ptr() !=
-          chromeos::kAccountsPrefDeviceLocalAccounts) {
-    NOTREACHED();
-    return;
-  }
-
-  // Avoid unnecessary calls to UpdateAccountList(): If an earlier call is still
-  // pending (because the |cros_settings_| are not trusted yet), the updated
-  // account list will be processed by that call when it eventually runs.
-  if (!cros_settings_callback_factory_.HasWeakPtrs())
-    UpdateAccountList();
-}
-
 void DeviceLocalAccountPolicyService::OnStoreLoaded(CloudPolicyStore* store) {
   DeviceLocalAccountPolicyBroker* broker = GetBrokerForStore(store);
   DCHECK(broker);
@@ -257,6 +238,14 @@ void DeviceLocalAccountPolicyService::OnStoreError(CloudPolicyStore* store) {
   if (!broker)
     return;
   FOR_EACH_OBSERVER(Observer, observers_, OnPolicyUpdated(broker->user_id()));
+}
+
+void DeviceLocalAccountPolicyService::UpdateAccountListIfNonePending() {
+  // Avoid unnecessary calls to UpdateAccountList(): If an earlier call is still
+  // pending (because the |cros_settings_| are not trusted yet), the updated
+  // account list will be processed by that call when it eventually runs.
+  if (!cros_settings_callback_factory_.HasWeakPtrs())
+    UpdateAccountList();
 }
 
 void DeviceLocalAccountPolicyService::UpdateAccountList() {

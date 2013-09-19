@@ -12,7 +12,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/proxy_cros_settings_parser.h"
@@ -22,9 +21,6 @@
 #include "chrome/browser/ui/webui/chromeos/ui_account_tweaks.h"
 #include "chrome/browser/ui/webui/options/chromeos/accounts_options_handler.h"
 #include "chrome/common/pref_names.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_ui.h"
 
@@ -167,7 +163,14 @@ void CoreChromeOSOptionsHandler::ObservePref(const std::string& pref_name) {
   }
   if (!CrosSettings::IsCrosSettings(pref_name))
     return ::options::CoreOptionsHandler::ObservePref(pref_name);
-  CrosSettings::Get()->AddSettingsObserver(pref_name.c_str(), this);
+
+  linked_ptr<CrosSettings::ObserverSubscription> subscription(
+      CrosSettings::Get()->AddSettingsObserver(
+          pref_name.c_str(),
+          base::Bind(&CoreChromeOSOptionsHandler::NotifySettingsChanged,
+                     base::Unretained(this),
+                     pref_name)).release());
+  pref_subscription_map_.insert(make_pair(pref_name, subscription));
 }
 
 void CoreChromeOSOptionsHandler::SetPref(const std::string& pref_name,
@@ -195,7 +198,7 @@ void CoreChromeOSOptionsHandler::StopObservingPref(const std::string& path) {
     return;  // We unregister those in the destructor.
   // Unregister this instance from observing prefs of chrome os settings.
   if (CrosSettings::IsCrosSettings(path))
-    CrosSettings::Get()->RemoveSettingsObserver(path.c_str(), this);
+    pref_subscription_map_.erase(path);
   else  // Call base class to handle regular preferences.
     ::options::CoreOptionsHandler::StopObservingPref(path);
 }
@@ -206,17 +209,6 @@ void CoreChromeOSOptionsHandler::GetLocalizedValues(
   CoreOptionsHandler::GetLocalizedValues(localized_strings);
 
   AddAccountUITweaksLocalizedValues(localized_strings);
-}
-
-void CoreChromeOSOptionsHandler::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_SYSTEM_SETTING_CHANGED) {
-    NotifySettingsChanged(content::Details<std::string>(details).ptr());
-    return;
-  }
-  ::options::CoreOptionsHandler::Observe(type, source, details);
 }
 
 void CoreChromeOSOptionsHandler::SelectNetworkCallback(
@@ -252,12 +244,12 @@ void CoreChromeOSOptionsHandler::OnPreferenceChanged(
 }
 
 void CoreChromeOSOptionsHandler::NotifySettingsChanged(
-    const std::string* setting_name) {
-  DCHECK(CrosSettings::Get()->IsCrosSettings(*setting_name));
-  scoped_ptr<base::Value> value(FetchPref(*setting_name));
+    const std::string& setting_name) {
+  DCHECK(CrosSettings::Get()->IsCrosSettings(setting_name));
+  scoped_ptr<base::Value> value(FetchPref(setting_name));
   if (!value.get())
     NOTREACHED();
-  DispatchPrefChangeNotification(*setting_name, value.Pass());
+  DispatchPrefChangeNotification(setting_name, value.Pass());
 }
 
 void CoreChromeOSOptionsHandler::NotifyProxyPrefsChanged() {

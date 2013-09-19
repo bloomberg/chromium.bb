@@ -7,11 +7,12 @@
 
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/version_loader.h"
 #include "chrome/browser/policy/cloud/cloud_policy_store.h"
-#include "content/public/browser/notification_observer.h"
 
 namespace chromeos {
 
@@ -19,8 +20,7 @@ class CrosSettings;
 
 // Fetches all info we want to show on OOBE/Login screens about system
 // version, boot times and cloud policy.
-class VersionInfoUpdater : public policy::CloudPolicyStore::Observer,
-                           public content::NotificationObserver {
+class VersionInfoUpdater : public policy::CloudPolicyStore::Observer {
  public:
   class Delegate {
    public:
@@ -50,12 +50,6 @@ class VersionInfoUpdater : public policy::CloudPolicyStore::Observer,
   virtual void OnStoreLoaded(policy::CloudPolicyStore* store) OVERRIDE;
   virtual void OnStoreError(policy::CloudPolicyStore* store) OVERRIDE;
 
-  // content::NotificationObserver interface.
-  virtual void Observe(
-      int type,
-      const content::NotificationSource& source,
-      const content::NotificationDetails& details) OVERRIDE;
-
   // Update the version label.
   void UpdateVersionLabel();
 
@@ -80,6 +74,8 @@ class VersionInfoUpdater : public policy::CloudPolicyStore::Observer,
 
   // Full text for the OS version label.
   std::string os_version_label_text_;
+
+  ScopedVector<CrosSettings::ObserverSubscription> subscriptions_;
 
   chromeos::CrosSettings* cros_settings_;
 

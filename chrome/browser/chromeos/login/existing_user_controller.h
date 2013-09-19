@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/login/login_performer.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/user.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -146,6 +147,9 @@ class ExistingUserController : public LoginDisplay::Delegate,
 
   // LoginUtils::Delegate implementation:
   virtual void OnProfilePrepared(Profile* profile) OVERRIDE;
+
+  // Called when device settings change.
+  void DeviceSettingsChanged();
 
   // Starts WizardController with the specified screen.
   void ActivateWizard(const std::string& screen_name);
@@ -297,6 +301,15 @@ class ExistingUserController : public LoginDisplay::Delegate,
   base::OneShotTimer<ExistingUserController> reboot_timer_;
 
   scoped_ptr<login::NetworkStateHelper> network_state_helper_;
+
+  scoped_ptr<CrosSettings::ObserverSubscription> show_user_names_subscription_;
+  scoped_ptr<CrosSettings::ObserverSubscription> allow_new_user_subscription_;
+  scoped_ptr<CrosSettings::ObserverSubscription> allow_guest_subscription_;
+  scoped_ptr<CrosSettings::ObserverSubscription> users_subscription_;
+  scoped_ptr<CrosSettings::ObserverSubscription>
+      local_account_auto_login_id_subscription_;
+  scoped_ptr<CrosSettings::ObserverSubscription>
+      local_account_auto_login_delay_subscription_;
 
   FRIEND_TEST_ALL_PREFIXES(ExistingUserControllerTest, ExistingUserLogin);
 

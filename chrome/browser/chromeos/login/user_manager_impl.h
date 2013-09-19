@@ -404,6 +404,11 @@ class UserManagerImpl
   // Time at which this object was created.
   base::TimeTicks manager_creation_time_;
 
+  scoped_ptr<CrosSettings::ObserverSubscription>
+      local_accounts_subscription_;
+  scoped_ptr<CrosSettings::ObserverSubscription>
+      supervised_users_subscription_;
+
   DISALLOW_COPY_AND_ASSIGN(UserManagerImpl);
 };
 

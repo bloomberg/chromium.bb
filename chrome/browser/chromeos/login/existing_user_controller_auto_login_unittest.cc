@@ -87,12 +87,10 @@ class ExistingUserControllerAutoLoginTest : public ::testing::Test {
     CrosSettings::Get()->Set(kAccountsPrefDeviceLocalAccounts, accounts);
 
     // Prevent settings changes from auto-starting the timer.
-    CrosSettings::Get()->RemoveSettingsObserver(
-        kAccountsPrefDeviceLocalAccountAutoLoginId,
-        existing_user_controller());
-    CrosSettings::Get()->RemoveSettingsObserver(
-        kAccountsPrefDeviceLocalAccountAutoLoginDelay,
-        existing_user_controller());
+    existing_user_controller_->
+        local_account_auto_login_id_subscription_.reset();
+    existing_user_controller_->
+        local_account_auto_login_delay_subscription_.reset();
   }
 
   const ExistingUserController* existing_user_controller() const {

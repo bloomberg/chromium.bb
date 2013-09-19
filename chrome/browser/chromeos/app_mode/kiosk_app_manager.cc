@@ -15,7 +15,6 @@
 #include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_data.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager_observer.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -100,7 +99,7 @@ std::string KioskAppManager::GetAutoLaunchApp() const {
 
 void KioskAppManager::SetAutoLaunchApp(const std::string& app_id) {
   SetAutoLoginState(AUTOLOGIN_REQUESTED);
-  // Clean first, so the proper change notifications are triggered even
+  // Clean first, so the proper change callbacks are triggered even
   // if we are only changing AutoLoginState here.
   if (!auto_launch_app_id_.empty()) {
     CrosSettings::Get()->SetString(kAccountsPrefDeviceLocalAccountAutoLoginId,
@@ -314,19 +313,21 @@ void KioskAppManager::RemoveObserver(KioskAppManagerObserver* observer) {
 
 KioskAppManager::KioskAppManager() : ownership_established_(false) {
   UpdateAppData();
-  CrosSettings::Get()->AddSettingsObserver(
-      kAccountsPrefDeviceLocalAccounts, this);
-  CrosSettings::Get()->AddSettingsObserver(
-      kAccountsPrefDeviceLocalAccountAutoLoginId, this);
+  local_accounts_subscription_ =
+      CrosSettings::Get()->AddSettingsObserver(
+          kAccountsPrefDeviceLocalAccounts,
+          base::Bind(&KioskAppManager::UpdateAppData, base::Unretained(this)));
+  local_account_auto_login_id_subscription_ =
+      CrosSettings::Get()->AddSettingsObserver(
+          kAccountsPrefDeviceLocalAccountAutoLoginId,
+          base::Bind(&KioskAppManager::UpdateAppData, base::Unretained(this)));
 }
 
 KioskAppManager::~KioskAppManager() {}
 
 void KioskAppManager::CleanUp() {
-  CrosSettings::Get()->RemoveSettingsObserver(
-      kAccountsPrefDeviceLocalAccounts, this);
-  CrosSettings::Get()->RemoveSettingsObserver(
-      kAccountsPrefDeviceLocalAccountAutoLoginId, this);
+  local_accounts_subscription_.reset();
+  local_account_auto_login_id_subscription_.reset();
   apps_.clear();
 }
 
@@ -392,13 +393,6 @@ void KioskAppManager::UpdateAppData() {
 
   FOR_EACH_OBSERVER(KioskAppManagerObserver, observers_,
                     OnKioskAppsSettingsChanged());
-}
-
-void KioskAppManager::Observe(int type,
-                              const content::NotificationSource& source,
-                              const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_SYSTEM_SETTING_CHANGED, type);
-  UpdateAppData();
 }
 
 void KioskAppManager::GetKioskAppIconCacheDir(base::FilePath* cache_dir) {

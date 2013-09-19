@@ -10,12 +10,14 @@
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_image.h"
 #include "chrome/browser/chromeos/login/user_image_loader.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
@@ -285,9 +287,6 @@ class WallpaperManager: public content::NotificationObserver {
                  bool update_wallpaper,
                  const base::FilePath& wallpaper_path);
 
-  // True if wallpaper manager is not observering other objects.
-  bool no_observers_;
-
   // The number of loaded wallpapers.
   int loaded_wallpapers_;
 
@@ -316,6 +315,9 @@ class WallpaperManager: public content::NotificationObserver {
   std::string last_selected_user_;
 
   bool should_cache_wallpaper_;
+
+  scoped_ptr<CrosSettings::ObserverSubscription>
+      show_user_name_on_signin_subscription_;
 
   base::WeakPtrFactory<WallpaperManager> weak_factory_;
 

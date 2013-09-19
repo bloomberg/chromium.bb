@@ -15,7 +15,6 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
@@ -27,8 +26,6 @@
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 using base::Time;
@@ -148,13 +145,19 @@ DeviceStatusCollector::DeviceStatusCollector(
 
   // Watch for changes to the individual policies that control what the status
   // reports contain.
-  cros_settings_->AddSettingsObserver(chromeos::kReportDeviceVersionInfo, this);
-  cros_settings_->AddSettingsObserver(chromeos::kReportDeviceActivityTimes,
-                                      this);
-  cros_settings_->AddSettingsObserver(chromeos::kReportDeviceBootMode, this);
-  cros_settings_->AddSettingsObserver(chromeos::kReportDeviceLocation, this);
-  cros_settings_->AddSettingsObserver(chromeos::kReportDeviceNetworkInterfaces,
-                                      this);
+  base::Closure callback =
+      base::Bind(&DeviceStatusCollector::UpdateReportingSettings,
+                 base::Unretained(this));
+  version_info_subscription_ = cros_settings_->AddSettingsObserver(
+      chromeos::kReportDeviceVersionInfo, callback);
+  activity_times_subscription_ = cros_settings_->AddSettingsObserver(
+      chromeos::kReportDeviceActivityTimes, callback);
+  boot_mode_subscription_ = cros_settings_->AddSettingsObserver(
+      chromeos::kReportDeviceBootMode, callback);
+  location_subscription_ = cros_settings_->AddSettingsObserver(
+      chromeos::kReportDeviceLocation, callback);
+  network_interfaces_subscription_ = cros_settings_->AddSettingsObserver(
+      chromeos::kReportDeviceNetworkInterfaces, callback);
 
   // The last known location is persisted in local state. This makes location
   // information available immediately upon startup and avoids the need to
@@ -191,14 +194,6 @@ DeviceStatusCollector::DeviceStatusCollector(
 }
 
 DeviceStatusCollector::~DeviceStatusCollector() {
-  cros_settings_->RemoveSettingsObserver(chromeos::kReportDeviceVersionInfo,
-                                         this);
-  cros_settings_->RemoveSettingsObserver(chromeos::kReportDeviceActivityTimes,
-                                         this);
-  cros_settings_->RemoveSettingsObserver(chromeos::kReportDeviceBootMode, this);
-  cros_settings_->RemoveSettingsObserver(chromeos::kReportDeviceLocation, this);
-  cros_settings_->RemoveSettingsObserver(
-      chromeos::kReportDeviceNetworkInterfaces, this);
 }
 
 // static
@@ -497,16 +492,6 @@ void DeviceStatusCollector::OnOSVersion(const std::string& version) {
 
 void DeviceStatusCollector::OnOSFirmware(const std::string& version) {
   firmware_version_ = version;
-}
-
-void DeviceStatusCollector::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_SYSTEM_SETTING_CHANGED)
-    UpdateReportingSettings();
-  else
-    NOTREACHED();
 }
 
 void DeviceStatusCollector::ScheduleGeolocationUpdateRequest() {

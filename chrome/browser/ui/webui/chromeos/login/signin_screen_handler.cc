@@ -403,8 +403,14 @@ SigninScreenHandler::SigninScreenHandler(
   DCHECK(error_screen_actor_);
   DCHECK(core_oobe_actor_);
   network_state_informer_->AddObserver(this);
-  CrosSettings::Get()->AddSettingsObserver(kAccountsPrefAllowNewUser, this);
-  CrosSettings::Get()->AddSettingsObserver(kAccountsPrefAllowGuest, this);
+  allow_new_user_subscription_ = CrosSettings::Get()->AddSettingsObserver(
+      kAccountsPrefAllowNewUser,
+      base::Bind(&SigninScreenHandler::UserSettingsChanged,
+                 base::Unretained(this)));
+  allow_guest_subscription_ = CrosSettings::Get()->AddSettingsObserver(
+      kAccountsPrefAllowGuest,
+      base::Bind(&SigninScreenHandler::UserSettingsChanged,
+                 base::Unretained(this)));
 
   registrar_.Add(this,
                  chrome::NOTIFICATION_AUTH_NEEDED,
@@ -426,8 +432,6 @@ SigninScreenHandler::~SigninScreenHandler() {
   if (delegate_)
     delegate_->SetWebUIHandler(NULL);
   network_state_informer_->RemoveObserver(this);
-  CrosSettings::Get()->RemoveSettingsObserver(kAccountsPrefAllowNewUser, this);
-  CrosSettings::Get()->RemoveSettingsObserver(kAccountsPrefAllowGuest, this);
 }
 
 void SigninScreenHandler::DeclareLocalizedValues(
@@ -993,11 +997,6 @@ void SigninScreenHandler::Observe(int type,
                                   const content::NotificationSource& source,
                                   const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_SYSTEM_SETTING_CHANGED: {
-      UpdateAuthExtension();
-      UpdateAddButtonStatus();
-      break;
-    }
     case chrome::NOTIFICATION_AUTH_NEEDED: {
       has_pending_auth_ui_ = true;
       break;
@@ -1179,6 +1178,11 @@ void SigninScreenHandler::LoadAuthExtension(
 
   frame_state_ = FRAME_STATE_LOADING;
   CallJS("login.GaiaSigninScreen.loadAuthExtension", params);
+}
+
+void SigninScreenHandler::UserSettingsChanged() {
+  UpdateAuthExtension();
+  UpdateAddButtonStatus();
 }
 
 void SigninScreenHandler::UpdateAuthExtension() {

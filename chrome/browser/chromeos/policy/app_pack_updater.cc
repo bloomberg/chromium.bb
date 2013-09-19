@@ -6,16 +6,12 @@
 
 #include "base/bind.h"
 #include "base/values.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
 #include "chrome/browser/extensions/external_loader.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
 
 using content::BrowserThread;
 
@@ -67,7 +63,9 @@ AppPackUpdater::AppPackUpdater(net::URLRequestContextGetter* request_context,
       created_extension_loader_(false),
       install_attributes_(install_attributes),
       external_cache_(kAppPackCacheDir, request_context, this, false) {
-  chromeos::CrosSettings::Get()->AddSettingsObserver(chromeos::kAppPack, this);
+  app_pack_subscription_ = chromeos::CrosSettings::Get()->AddSettingsObserver(
+      chromeos::kAppPack,
+      base::Bind(&AppPackUpdater::AppPackChanged, base::Unretained(this)));
 
   if (install_attributes_->GetMode() == DEVICE_MODE_RETAIL_KIOSK) {
     // Already in Kiosk mode, start loading.
@@ -81,8 +79,6 @@ AppPackUpdater::AppPackUpdater(net::URLRequestContextGetter* request_context,
 }
 
 AppPackUpdater::~AppPackUpdater() {
-  chromeos::CrosSettings::Get()->RemoveSettingsObserver(
-      chromeos::kAppPack, this);
 }
 
 extensions::ExternalLoader* AppPackUpdater::CreateExternalLoader() {
@@ -111,20 +107,9 @@ void AppPackUpdater::SetScreenSaverUpdateCallback(
   }
 }
 
-void AppPackUpdater::Observe(int type,
-                             const content::NotificationSource& source,
-                             const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_SYSTEM_SETTING_CHANGED:
-      DCHECK_EQ(chromeos::kAppPack,
-                *content::Details<const std::string>(details).ptr());
-      if (install_attributes_->GetMode() == DEVICE_MODE_RETAIL_KIOSK)
-        LoadPolicy();
-      break;
-
-    default:
-      NOTREACHED();
-  }
+void AppPackUpdater::AppPackChanged() {
+  if (install_attributes_->GetMode() == DEVICE_MODE_RETAIL_KIOSK)
+    LoadPolicy();
 }
 
 void AppPackUpdater::LoadPolicy() {

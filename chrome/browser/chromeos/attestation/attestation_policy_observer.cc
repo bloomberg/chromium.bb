@@ -102,7 +102,10 @@ AttestationPolicyObserver::AttestationPolicyObserver(
       retry_delay_(kRetryDelay),
       weak_factory_(this) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  cros_settings_->AddSettingsObserver(kDeviceAttestationEnabled, this);
+  attestation_subscription_ = cros_settings_->AddSettingsObserver(
+      kDeviceAttestationEnabled,
+      base::Bind(&AttestationPolicyObserver::AttestationSettingChanged,
+                 base::Unretained(this)));
   Start();
 }
 
@@ -118,26 +121,19 @@ AttestationPolicyObserver::AttestationPolicyObserver(
       retry_delay_(kRetryDelay),
       weak_factory_(this) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  cros_settings_->AddSettingsObserver(kDeviceAttestationEnabled, this);
+  attestation_subscription_ = cros_settings_->AddSettingsObserver(
+      kDeviceAttestationEnabled,
+      base::Bind(&AttestationPolicyObserver::AttestationSettingChanged,
+                 base::Unretained(this)));
   Start();
 }
 
 AttestationPolicyObserver::~AttestationPolicyObserver() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  cros_settings_->RemoveSettingsObserver(kDeviceAttestationEnabled, this);
 }
 
-void AttestationPolicyObserver::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
+void AttestationPolicyObserver::AttestationSettingChanged() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  std::string* path = content::Details<std::string>(details).ptr();
-  if (type != chrome::NOTIFICATION_SYSTEM_SETTING_CHANGED ||
-      *path != kDeviceAttestationEnabled) {
-    LOG(WARNING) << "AttestationPolicyObserver: Unexpected event received.";
-    return;
-  }
   num_retries_ = 0;
   Start();
 }

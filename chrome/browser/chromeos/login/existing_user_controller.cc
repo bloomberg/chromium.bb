@@ -151,16 +151,32 @@ ExistingUserController::ExistingUserController(LoginDisplayHost* host)
   registrar_.Add(this,
                  chrome::NOTIFICATION_SESSION_STARTED,
                  content::NotificationService::AllSources());
-  cros_settings_->AddSettingsObserver(kAccountsPrefShowUserNamesOnSignIn, this);
-  cros_settings_->AddSettingsObserver(kAccountsPrefAllowNewUser, this);
-  cros_settings_->AddSettingsObserver(kAccountsPrefAllowGuest, this);
-  cros_settings_->AddSettingsObserver(kAccountsPrefUsers, this);
-  cros_settings_->AddSettingsObserver(
-      kAccountsPrefDeviceLocalAccountAutoLoginId,
-      this);
-  cros_settings_->AddSettingsObserver(
-      kAccountsPrefDeviceLocalAccountAutoLoginDelay,
-      this);
+  show_user_names_subscription_ = cros_settings_->AddSettingsObserver(
+      kAccountsPrefShowUserNamesOnSignIn,
+      base::Bind(&ExistingUserController::DeviceSettingsChanged,
+                 base::Unretained(this)));
+  allow_new_user_subscription_ = cros_settings_->AddSettingsObserver(
+      kAccountsPrefAllowNewUser,
+      base::Bind(&ExistingUserController::DeviceSettingsChanged,
+                 base::Unretained(this)));
+  allow_guest_subscription_ = cros_settings_->AddSettingsObserver(
+      kAccountsPrefAllowGuest,
+      base::Bind(&ExistingUserController::DeviceSettingsChanged,
+                 base::Unretained(this)));
+  users_subscription_ = cros_settings_->AddSettingsObserver(
+      kAccountsPrefUsers,
+      base::Bind(&ExistingUserController::DeviceSettingsChanged,
+                 base::Unretained(this)));
+  local_account_auto_login_id_subscription_ =
+      cros_settings_->AddSettingsObserver(
+          kAccountsPrefDeviceLocalAccountAutoLoginId,
+          base::Bind(&ExistingUserController::ConfigurePublicSessionAutoLogin,
+                     base::Unretained(this)));
+  local_account_auto_login_delay_subscription_ =
+      cros_settings_->AddSettingsObserver(
+          kAccountsPrefDeviceLocalAccountAutoLoginDelay,
+          base::Bind(&ExistingUserController::ConfigurePublicSessionAutoLogin,
+                     base::Unretained(this)));
 }
 
 void ExistingUserController::Init(const UserList& users) {
@@ -232,22 +248,9 @@ void ExistingUserController::Observe(
     registrar_.RemoveAll();
     return;
   }
-  if (type == chrome::NOTIFICATION_SYSTEM_SETTING_CHANGED) {
-    const std::string setting = *content::Details<const std::string>(
-        details).ptr();
-    if (setting == kAccountsPrefDeviceLocalAccountAutoLoginId ||
-        setting == kAccountsPrefDeviceLocalAccountAutoLoginDelay) {
-      ConfigurePublicSessionAutoLogin();
-    }
-  }
-  if (type == chrome::NOTIFICATION_SYSTEM_SETTING_CHANGED ||
-      type == chrome::NOTIFICATION_USER_LIST_CHANGED) {
-    if (host_ != NULL) {
-      // Signed settings or user list changed. Notify views and update them.
-      UpdateLoginDisplay(chromeos::UserManager::Get()->GetUsers());
-      ConfigurePublicSessionAutoLogin();
-      return;
-    }
+  if (type == chrome::NOTIFICATION_USER_LIST_CHANGED) {
+    DeviceSettingsChanged();
+    return;
   }
   if (type == chrome::NOTIFICATION_AUTH_SUPPLIED) {
     // Possibly the user has authenticated against a proxy server and we might
@@ -284,18 +287,6 @@ void ExistingUserController::Observe(
 
 ExistingUserController::~ExistingUserController() {
   LoginUtils::Get()->DelegateDeleted(this);
-
-  cros_settings_->RemoveSettingsObserver(kAccountsPrefShowUserNamesOnSignIn,
-                                         this);
-  cros_settings_->RemoveSettingsObserver(kAccountsPrefAllowNewUser, this);
-  cros_settings_->RemoveSettingsObserver(kAccountsPrefAllowGuest, this);
-  cros_settings_->RemoveSettingsObserver(kAccountsPrefUsers, this);
-  cros_settings_->RemoveSettingsObserver(
-      kAccountsPrefDeviceLocalAccountAutoLoginId,
-      this);
-  cros_settings_->RemoveSettingsObserver(
-      kAccountsPrefDeviceLocalAccountAutoLoginDelay,
-      this);
 
   if (current_controller_ == this) {
     current_controller_ = NULL;
@@ -939,6 +930,15 @@ void ExistingUserController::OnOnlineChecked(const std::string& username,
 
 ////////////////////////////////////////////////////////////////////////////////
 // ExistingUserController, private:
+
+void ExistingUserController::DeviceSettingsChanged() {
+  if (host_ != NULL) {
+    // Signed settings or user list changed. Notify views and update them.
+    UpdateLoginDisplay(chromeos::UserManager::Get()->GetUsers());
+    ConfigurePublicSessionAutoLogin();
+    return;
+  }
+}
 
 void ExistingUserController::ActivateWizard(const std::string& screen_name) {
   scoped_ptr<DictionaryValue> params;
