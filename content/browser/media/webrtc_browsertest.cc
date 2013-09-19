@@ -50,10 +50,6 @@ class WebrtcBrowserTest: public ContentBrowserTest {
   WebrtcBrowserTest() {}
   virtual ~WebrtcBrowserTest() {}
 
-  virtual void SetUpOnMainThread() OVERRIDE {
-    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
-  }
-
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     // We need fake devices in this test since we want to run on naked VMs. We
     // assume these switches are set by default in content_browsertests.
@@ -83,6 +79,8 @@ class WebrtcBrowserTest: public ContentBrowserTest {
 // see that the success callback is called. If the error callback is called or
 // none of the callbacks are called the tests will simply time out and fail.
 IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, GetVideoStreamAndStop) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
   NavigateToURL(shell(), url);
 
@@ -92,6 +90,8 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, GetVideoStreamAndStop) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, GetAudioAndVideoStreamAndStop) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
   NavigateToURL(shell(), url);
 
@@ -101,6 +101,8 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, GetAudioAndVideoStreamAndStop) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, GetAudioAndVideoStreamAndClone) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
   NavigateToURL(shell(), url);
 
@@ -120,6 +122,8 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, GetAudioAndVideoStreamAndClone) {
 // These tests will make a complete PeerConnection-based call and verify that
 // video is playing for the call.
 IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MAYBE_CanSetupVideoCall) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
   GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
   NavigateToURL(shell(), url);
 
@@ -135,6 +139,8 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MAYBE_CanSetupVideoCall) {
 #endif
 
 IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MAYBE_CanSetupAudioAndVideoCall) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
   GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
   NavigateToURL(shell(), url);
 
@@ -143,6 +149,8 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MAYBE_CanSetupAudioAndVideoCall) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MANUAL_CanSetupCallAndSendDtmf) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
   GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
   NavigateToURL(shell(), url);
 
@@ -152,6 +160,8 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MANUAL_CanSetupCallAndSendDtmf) {
 
 IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
                        DISABLED_CanMakeEmptyCallThenAddStreamsAndRenegotiate) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
   GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
   NavigateToURL(shell(), url);
 
@@ -179,6 +189,8 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
 #endif
 IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
                        MAYBE_CanSetupAudioAndVideoCallWithoutMsidAndBundle) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
   GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
   NavigateToURL(shell(), url);
 
@@ -189,6 +201,8 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
 // This test will make a PeerConnection-based call and test an unreliable text
 // dataChannel.
 IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, CallWithDataOnly) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
   GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
   NavigateToURL(shell(), url);
 
@@ -206,6 +220,8 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, CallWithDataOnly) {
 // This test will make a PeerConnection-based call and test an unreliable text
 // dataChannel and audio and video tracks.
 IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MAYBE_CallWithDataAndMedia) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
   GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
   NavigateToURL(shell(), url);
 
@@ -224,6 +240,8 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MAYBE_CallWithDataAndMedia) {
 // This test will make a PeerConnection-based call and test an unreliable text
 // dataChannel and later add an audio and video track.
 IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MAYBE_CallWithDataAndLaterAddMedia) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
   GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
   NavigateToURL(shell(), url);
 
@@ -242,6 +260,8 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MAYBE_CallWithDataAndLaterAddMedia) {
 // MediaStream that has been created based on a MediaStream created with
 // getUserMedia.
 IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MAYBE_CallWithNewVideoMediaStream) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
   GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
   NavigateToURL(shell(), url);
 
@@ -256,6 +276,8 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MAYBE_CallWithNewVideoMediaStream) {
 // TODO(phoglund): This test is manual since not all buildbots has an audio
 // input.
 IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MANUAL_CallAndModifyStream) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
   GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
   NavigateToURL(shell(), url);
 
@@ -266,6 +288,8 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MANUAL_CallAndModifyStream) {
 
 // This test calls getUserMedia in sequence with different constraints.
 IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, TestGetUserMediaConstraints) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
 
   std::vector<std::string> list_of_get_user_media_calls;
@@ -297,6 +321,8 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, TestGetUserMediaConstraints) {
 
 // This test calls getUserMedia and checks for aspect ratio behavior.
 IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, TestGetUserMediaAspectRatio) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
 
   std::string constraints_4_3 = GenerateGetUserMediaCall(
@@ -316,6 +342,8 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, TestGetUserMediaAspectRatio) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, AddTwoMediaStreamsToOnePC) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
   GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
   NavigateToURL(shell(), url);
 
