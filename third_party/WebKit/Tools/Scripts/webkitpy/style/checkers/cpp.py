@@ -3284,11 +3284,9 @@ def check_language(filename, clean_lines, line_number, file_extension, include_s
         error(line_number, 'runtime/unsigned', 1,
               'Omit int when using unsigned')
 
-    # Check that we're not using static_cast<Text*>.
-    if search(r'\bstatic_cast<Text\*>', line):
-        error(line_number, 'readability/check', 4,
-              'Consider using toText helper function in WebCore/dom/Text.h '
-              'instead of static_cast<Text*>')
+    # Check for usage of static_cast<Classname*>.
+    check_for_object_static_cast(filename, line_number, line, error)
+
 
 def check_identifier_name_in_declaration(filename, line_number, line, file_state, error):
     """Checks if identifier names contain any underscores.
@@ -3420,6 +3418,115 @@ def check_identifier_name_in_declaration(filename, line_number, line, file_state
 
         number_of_identifiers += 1
         line = line[matched.end():]
+
+
+def check_for_toFoo_definition(filename, pattern, error):
+    """ Reports for using static_cast instead of toFoo convenience function.
+
+    This function will output warnings to make sure you are actually using
+    the added toFoo conversion functions rather than directly hard coding
+    the static_cast<Classname*> call. For example, you should toHTMLELement(Node*)
+    to convert Node* to HTMLElement*, instead of static_cast<HTMLElement*>(Node*)
+
+    Args:
+      filename: The name of the header file in which to check for toFoo definition.
+      pattern: The conversion function pattern to grep for.
+      error: The function to call with any errors found.
+    """
+    def get_abs_filepath(filename, subdirectory=None):
+        if subdirectory:
+            start_dir = subdirectory
+        else:
+            start_dir = os.path.dirname(os.path.abspath(filename))
+
+        for root, dirs, names in os.walk(start_dir):
+            if filename in names:
+                return os.path.join(root, filename)
+        return None
+
+    def grep(lines, pattern, error):
+        matches = []
+        function_state = None
+        for line_number in xrange(lines.num_lines()):
+            line = (lines.elided[line_number]).rstrip()
+            if pattern in line:
+                if not function_state:
+                    function_state = _FunctionState(1)
+                detect_functions(lines, line_number, function_state, error)
+                # Exclude the match of dummy conversion function. Dummy function is just to
+                # catch invalid conversions and shouldn't be part of possible alternatives.
+                result = re.search(r'%s(\s+)%s' % ("void", pattern), line)
+                if not result:
+                    matches.append([line, function_state.body_start_position.row, function_state.end_position.row + 1])
+                    function_state = None
+
+        return matches
+
+    file_path = get_abs_filepath(filename)
+    if not file_path:
+        return None
+
+    f = open(file_path)
+    clean_lines = CleansedLines(f.readlines())
+    f.close()
+
+    # Make a list of all genuine alternatives to static_cast.
+    matches = grep(clean_lines, pattern, error)
+    return matches
+
+
+def check_for_object_static_cast(processing_file, line_number, line, error):
+    """Checks for a Cpp-style static cast on objects by looking for the pattern.
+
+    Args:
+      processing_file: The name of the processing file.
+      line_number: The number of the line to check.
+      line: The line of code to check.
+      error: The function to call with any errors found.
+    """
+    matched = search(r'\bstatic_cast<(\s*\w*:?:?\w+\s*\*+\s*)>', line)
+    if not matched:
+        return
+
+    class_name = re.sub('[\*]', '', matched.group(1))
+    class_name = class_name.strip()
+    # Ignore (for now) when the casting is to void*,
+    if class_name == 'void':
+        return
+
+    namespace_pos = class_name.rfind(':')
+    if not namespace_pos == -1:
+        class_name = class_name[namespace_pos + 1:]
+
+    header_file = ''.join((class_name, '.h'))
+    matches = check_for_toFoo_definition(header_file, ''.join(('to', class_name)), error)
+    # Ignore (for now) if not able to find the header where toFoo might be defined.
+    # TODO: Handle cases where Classname might be defined in some other header.
+    if matches is None:
+        return
+
+    report_error = True
+    # Ensure found static_cast instance is not from within toFoo definition itself.
+    if (os.path.basename(processing_file) == header_file):
+        for item in matches:
+            if line_number in range(item[1], item[2]):
+                report_error = False
+                break
+
+    if report_error:
+        if len(matches):
+            # toFoo is defined - enforce using it.
+            # TODO: Suggest an appropriate toFoo from the alternatives present in matches.
+            error(line_number, 'readability/check', 4,
+                  'static_cast of class objects is not allowed. Use to%s defined in %s.' %
+                  (class_name, header_file))
+        else:
+            # No toFoo defined - enforce definition & usage.
+            # TODO: Automate the generation of toFoo() to avoid any slippages ever.
+            error(line_number, 'readability/check', 4,
+                  'static_cast of class objects is not allowed. Add to%s in %s and use it instead.' %
+                  (class_name, header_file))
+
 
 def check_c_style_cast(line_number, line, raw_line, cast_type, pattern,
                        error):
