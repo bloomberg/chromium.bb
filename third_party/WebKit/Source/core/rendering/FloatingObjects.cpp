@@ -168,6 +168,7 @@ FloatingObjects::FloatingObjects(const RenderBlock* renderer, bool horizontalWri
     , m_rightObjectsCount(0)
     , m_horizontalWritingMode(horizontalWritingMode)
     , m_renderer(renderer)
+    , m_cachedHorizontalWritingMode(false)
 {
 }
 
