@@ -21,7 +21,7 @@
   ],
   'DEST': 'examples/demo',
   'NAME': 'nacl_io',
-  'TITLE': 'Nacl IO Demo',
+  'TITLE': 'NaCl IO Demo',
   'GROUP': 'Demo',
   'PERMISSIONS': [
     'unlimitedStorage'
