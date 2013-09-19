@@ -40,6 +40,11 @@ websocket_deflater.cc
 websocket_deflater_test.cc
 websocket_errors.cc
 websocket_errors.h
+websocket_extension.cc
+websocket_extension.h
+websocket_extension_parser.cc
+websocket_extension_parser.h
+websocket_extension_parser_test.cc
 websocket_errors_test.cc
 websocket_event_interface.h
 websocket_frame.cc
