@@ -20,6 +20,7 @@
 #ifndef SVGForeignObjectElement_h
 #define SVGForeignObjectElement_h
 
+#include "SVGNames.h"
 #include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGAnimatedLength.h"
 #include "core/svg/SVGExternalResourcesRequired.h"
@@ -56,6 +57,12 @@ private:
         DECLARE_ANIMATED_BOOLEAN(ExternalResourcesRequired, externalResourcesRequired)
     END_DECLARE_ANIMATED_PROPERTIES
 };
+
+inline SVGForeignObjectElement* toSVGForeignObjectElement(Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(SVGNames::foreignObjectTag));
+    return static_cast<SVGForeignObjectElement*>(node);
+}
 
 } // namespace WebCore
 
