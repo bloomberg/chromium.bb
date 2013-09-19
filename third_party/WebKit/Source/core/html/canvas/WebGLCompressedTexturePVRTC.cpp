@@ -46,7 +46,7 @@ WebGLCompressedTexturePVRTC::~WebGLCompressedTexturePVRTC()
 {
 }
 
-WebGLExtension::ExtensionName WebGLCompressedTexturePVRTC::getName() const
+WebGLExtension::ExtensionName WebGLCompressedTexturePVRTC::name() const
 {
     return WebGLCompressedTexturePVRTCName;
 }
@@ -58,11 +58,11 @@ PassRefPtr<WebGLCompressedTexturePVRTC> WebGLCompressedTexturePVRTC::create(WebG
 
 bool WebGLCompressedTexturePVRTC::supported(WebGLRenderingContext* context)
 {
-    Extensions3D* extensions = context->graphicsContext3D()->getExtensions();
+    Extensions3D* extensions = context->graphicsContext3D()->extensions();
     return extensions->supports("GL_IMG_texture_compression_pvrtc");
 }
 
-const char* WebGLCompressedTexturePVRTC::getExtensionName()
+const char* WebGLCompressedTexturePVRTC::extensionName()
 {
     return "WEBGL_compressed_texture_pvrtc";
 }

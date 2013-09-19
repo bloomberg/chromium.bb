@@ -38,10 +38,10 @@ class WebGLCompressedTextureATC : public WebGLExtension, public ScriptWrappable 
 public:
     static PassRefPtr<WebGLCompressedTextureATC> create(WebGLRenderingContext*);
     static bool supported(WebGLRenderingContext*);
-    static const char* getExtensionName();
+    static const char* extensionName();
 
     virtual ~WebGLCompressedTextureATC();
-    virtual ExtensionName getName() const;
+    virtual ExtensionName name() const;
 
 private:
     WebGLCompressedTextureATC(WebGLRenderingContext*);

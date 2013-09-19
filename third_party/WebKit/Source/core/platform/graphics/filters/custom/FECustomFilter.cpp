@@ -227,7 +227,7 @@ bool FECustomFilter::createMultisampleBuffer()
     ASSERT(!m_triedMultisampleBuffer);
     m_triedMultisampleBuffer = true;
 
-    Extensions3D* extensions = m_context->getExtensions();
+    Extensions3D* extensions = m_context->extensions();
     if (!extensions
         || !extensions->supports("GL_ANGLE_framebuffer_multisample")
         || !extensions->supports("GL_ANGLE_framebuffer_blit")
@@ -254,8 +254,8 @@ void FECustomFilter::resolveMultisampleBuffer()
     m_context->bindFramebuffer(Extensions3D::READ_FRAMEBUFFER, m_multisampleFrameBuffer);
     m_context->bindFramebuffer(Extensions3D::DRAW_FRAMEBUFFER, m_frameBuffer);
 
-    ASSERT(m_context->getExtensions());
-    m_context->getExtensions()->blitFramebuffer(0, 0, m_contextSize.width(), m_contextSize.height(), 0, 0, m_contextSize.width(), m_contextSize.height(), GraphicsContext3D::COLOR_BUFFER_BIT, GraphicsContext3D::NEAREST);
+    ASSERT(m_context->extensions());
+    m_context->extensions()->blitFramebuffer(0, 0, m_contextSize.width(), m_contextSize.height(), 0, 0, m_contextSize.width(), m_contextSize.height(), GraphicsContext3D::COLOR_BUFFER_BIT, GraphicsContext3D::NEAREST);
 
     m_context->bindFramebuffer(Extensions3D::READ_FRAMEBUFFER, 0);
     m_context->bindFramebuffer(Extensions3D::DRAW_FRAMEBUFFER, 0);
@@ -285,7 +285,7 @@ bool FECustomFilter::resizeMultisampleBuffers(const IntSize& newContextSize)
         return false;
     }
 
-    Extensions3D* extensions = m_context->getExtensions();
+    Extensions3D* extensions = m_context->extensions();
     ASSERT(extensions);
 
     m_context->bindFramebuffer(GraphicsContext3D::FRAMEBUFFER, m_multisampleFrameBuffer);

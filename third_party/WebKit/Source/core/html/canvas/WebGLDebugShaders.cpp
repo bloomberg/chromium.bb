@@ -43,7 +43,7 @@ WebGLDebugShaders::~WebGLDebugShaders()
 {
 }
 
-WebGLExtension::ExtensionName WebGLDebugShaders::getName() const
+WebGLExtension::ExtensionName WebGLDebugShaders::name() const
 {
     return WebGLDebugShadersName;
 }
@@ -59,16 +59,16 @@ String WebGLDebugShaders::getTranslatedShaderSource(WebGLShader* shader)
         return String();
     if (!m_context->validateWebGLObject("getTranslatedShaderSource", shader))
         return "";
-    return m_context->graphicsContext3D()->getExtensions()->getTranslatedShaderSourceANGLE(shader->object());
+    return m_context->graphicsContext3D()->extensions()->getTranslatedShaderSourceANGLE(shader->object());
 }
 
 bool WebGLDebugShaders::supported(WebGLRenderingContext* context)
 {
-    Extensions3D* extensions = context->graphicsContext3D()->getExtensions();
+    Extensions3D* extensions = context->graphicsContext3D()->extensions();
     return extensions->supports("GL_ANGLE_translated_shader_source");
 }
 
-const char* WebGLDebugShaders::getExtensionName()
+const char* WebGLDebugShaders::extensionName()
 {
     return "WEBGL_debug_shaders";
 }

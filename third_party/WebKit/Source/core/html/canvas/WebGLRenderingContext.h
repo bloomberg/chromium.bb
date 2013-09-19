@@ -326,7 +326,7 @@ public:
     void removeSharedObject(WebGLSharedObject*);
     void removeContextObject(WebGLContextObject*);
 
-    unsigned getMaxVertexAttribs() const { return m_maxVertexAttribs; }
+    unsigned maxVertexAttribs() const { return m_maxVertexAttribs; }
 
     // ActiveDOMObject notifications
     virtual bool hasPendingActivity() const;
@@ -553,17 +553,17 @@ public:
         {
         }
 
-        bool getPrefixed() const
+        bool prefixed() const
         {
             return m_prefixed;
         }
 
-        bool getPrivileged() const
+        bool privileged() const
         {
             return m_privileged;
         }
 
-        bool getDraft() const
+        bool draft() const
         {
             return m_draft;
         }
@@ -572,7 +572,7 @@ public:
 
         virtual PassRefPtr<WebGLExtension> getExtension(WebGLRenderingContext*) const = 0;
         virtual bool supported(WebGLRenderingContext*) const = 0;
-        virtual const char* getExtensionName() const = 0;
+        virtual const char* extensionName() const = 0;
         virtual void loseExtension() = 0;
 
     private:
@@ -612,9 +612,9 @@ public:
             return T::supported(context);
         }
 
-        virtual const char* getExtensionName() const
+        virtual const char* extensionName() const
         {
-            return T::getExtensionName();
+            return T::extensionName();
         }
 
         virtual void loseExtension()
@@ -673,13 +673,13 @@ public:
                                                         GC3Denum colorBufferFormat);
 
     // Helper function to get the bound framebuffer's color buffer format.
-    GC3Denum getBoundFramebufferColorFormat();
+    GC3Denum boundFramebufferColorFormat();
 
     // Helper function to get the bound framebuffer's width.
-    int getBoundFramebufferWidth();
+    int boundFramebufferWidth();
 
     // Helper function to get the bound framebuffer's height.
-    int getBoundFramebufferHeight();
+    int boundFramebufferHeight();
 
     // Helper function to verify limits on the length of uniform and attribute locations.
     bool validateLocationLength(const char* functionName, const String&);
@@ -882,8 +882,8 @@ public:
 
     // First time called, if EXT_draw_buffers is supported, query the value; otherwise return 0.
     // Later, return the cached value.
-    GC3Dint getMaxDrawBuffers();
-    GC3Dint getMaxColorAttachments();
+    GC3Dint maxDrawBuffers();
+    GC3Dint maxColorAttachments();
 
     void setBackDrawBuffer(GC3Denum);
 

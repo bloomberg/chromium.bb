@@ -38,14 +38,14 @@ OESVertexArrayObject::OESVertexArrayObject(WebGLRenderingContext* context)
     : WebGLExtension(context)
 {
     ScriptWrappable::init(this);
-    context->graphicsContext3D()->getExtensions()->ensureEnabled("GL_OES_vertex_array_object");
+    context->graphicsContext3D()->extensions()->ensureEnabled("GL_OES_vertex_array_object");
 }
 
 OESVertexArrayObject::~OESVertexArrayObject()
 {
 }
 
-WebGLExtension::ExtensionName OESVertexArrayObject::getName() const
+WebGLExtension::ExtensionName OESVertexArrayObject::name() const
 {
     return OESVertexArrayObjectName;
 }
@@ -84,7 +84,7 @@ GC3Dboolean OESVertexArrayObject::isVertexArrayOES(WebGLVertexArrayObjectOES* ar
     if (!arrayObject->hasEverBeenBound())
         return 0;
 
-    Extensions3D* extensions = m_context->graphicsContext3D()->getExtensions();
+    Extensions3D* extensions = m_context->graphicsContext3D()->extensions();
     return extensions->isVertexArrayOES(arrayObject->object());
 }
 
@@ -98,7 +98,7 @@ void OESVertexArrayObject::bindVertexArrayOES(WebGLVertexArrayObjectOES* arrayOb
         return;
     }
 
-    Extensions3D* extensions = m_context->graphicsContext3D()->getExtensions();
+    Extensions3D* extensions = m_context->graphicsContext3D()->extensions();
     if (arrayObject && !arrayObject->isDefaultObject() && arrayObject->object()) {
         extensions->bindVertexArrayOES(arrayObject->object());
 
@@ -112,11 +112,11 @@ void OESVertexArrayObject::bindVertexArrayOES(WebGLVertexArrayObjectOES* arrayOb
 
 bool OESVertexArrayObject::supported(WebGLRenderingContext* context)
 {
-    Extensions3D* extensions = context->graphicsContext3D()->getExtensions();
+    Extensions3D* extensions = context->graphicsContext3D()->extensions();
     return extensions->supports("GL_OES_vertex_array_object");
 }
 
-const char* OESVertexArrayObject::getExtensionName()
+const char* OESVertexArrayObject::extensionName()
 {
     return "OES_vertex_array_object";
 }

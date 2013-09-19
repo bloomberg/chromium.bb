@@ -44,9 +44,9 @@ WebGLVertexArrayObjectOES::WebGLVertexArrayObjectOES(WebGLRenderingContext* ctx,
     , m_boundElementArrayBuffer(0)
 {
     ScriptWrappable::init(this);
-    m_vertexAttribState.resize(ctx->getMaxVertexAttribs());
+    m_vertexAttribState.resize(ctx->maxVertexAttribs());
 
-    Extensions3D* extensions = context()->graphicsContext3D()->getExtensions();
+    Extensions3D* extensions = context()->graphicsContext3D()->extensions();
     switch (m_type) {
     case VaoTypeDefault:
         break;
@@ -63,7 +63,7 @@ WebGLVertexArrayObjectOES::~WebGLVertexArrayObjectOES()
 
 void WebGLVertexArrayObjectOES::deleteObjectImpl(GraphicsContext3D* context3d, Platform3DObject object)
 {
-    Extensions3D* extensions = context3d->getExtensions();
+    Extensions3D* extensions = context3d->extensions();
     switch (m_type) {
     case VaoTypeDefault:
         break;

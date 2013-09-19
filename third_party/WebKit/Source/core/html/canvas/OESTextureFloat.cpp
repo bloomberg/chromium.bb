@@ -34,14 +34,14 @@ OESTextureFloat::OESTextureFloat(WebGLRenderingContext* context)
     : WebGLExtension(context)
 {
     ScriptWrappable::init(this);
-    context->graphicsContext3D()->getExtensions()->ensureEnabled("GL_OES_texture_float");
+    context->graphicsContext3D()->extensions()->ensureEnabled("GL_OES_texture_float");
 }
 
 OESTextureFloat::~OESTextureFloat()
 {
 }
 
-WebGLExtension::ExtensionName OESTextureFloat::getName() const
+WebGLExtension::ExtensionName OESTextureFloat::name() const
 {
     return OESTextureFloatName;
 }
@@ -53,11 +53,11 @@ PassRefPtr<OESTextureFloat> OESTextureFloat::create(WebGLRenderingContext* conte
 
 bool OESTextureFloat::supported(WebGLRenderingContext* context)
 {
-    Extensions3D* extensions = context->graphicsContext3D()->getExtensions();
+    Extensions3D* extensions = context->graphicsContext3D()->extensions();
     return extensions->supports("GL_OES_texture_float");
 }
 
-const char* OESTextureFloat::getExtensionName()
+const char* OESTextureFloat::extensionName()
 {
     return "OES_texture_float";
 }

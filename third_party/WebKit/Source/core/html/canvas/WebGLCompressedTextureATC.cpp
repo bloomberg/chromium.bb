@@ -44,7 +44,7 @@ WebGLCompressedTextureATC::~WebGLCompressedTextureATC()
 {
 }
 
-WebGLExtension::ExtensionName WebGLCompressedTextureATC::getName() const
+WebGLExtension::ExtensionName WebGLCompressedTextureATC::name() const
 {
     return WebGLCompressedTextureATCName;
 }
@@ -56,11 +56,11 @@ PassRefPtr<WebGLCompressedTextureATC> WebGLCompressedTextureATC::create(WebGLRen
 
 bool WebGLCompressedTextureATC::supported(WebGLRenderingContext* context)
 {
-    Extensions3D* extensions = context->graphicsContext3D()->getExtensions();
+    Extensions3D* extensions = context->graphicsContext3D()->extensions();
     return extensions->supports("GL_AMD_compressed_ATC_texture");
 }
 
-const char* WebGLCompressedTextureATC::getExtensionName()
+const char* WebGLCompressedTextureATC::extensionName()
 {
     return "WEBGL_compressed_texture_atc";
 }

@@ -530,7 +530,7 @@ bool WebMediaPlayerClientImpl::copyVideoTextureToPlatformTexture(WebCore::Graphi
 {
     if (!context || !m_webMediaPlayer)
         return false;
-    Extensions3D* extensions = context->getExtensions();
+    Extensions3D* extensions = context->extensions();
     if (!extensions || !extensions->supports("GL_CHROMIUM_copy_texture") || !extensions->supports("GL_CHROMIUM_flipy")
         || !extensions->canUseCopyTextureCHROMIUM(internalFormat, type, level) || !context->makeContextCurrent())
         return false;
@@ -631,7 +631,7 @@ void WebMediaPlayerClientImpl::paintOnAndroid(WebCore::GraphicsContext* context,
     if (!context || !context3D || !m_webMediaPlayer || context->paintingDisabled())
         return;
 
-    Extensions3D* extensions = context3D->getExtensions();
+    Extensions3D* extensions = context3D->extensions();
     if (!extensions || !extensions->supports("GL_CHROMIUM_copy_texture") || !extensions->supports("GL_CHROMIUM_flipy")
         || !context3D->makeContextCurrent())
         return;

@@ -76,7 +76,7 @@ public:
     bool hasEverBeenBound() const { return object() && m_hasEverBeenBound; }
     void setHasEverBeenBound() { m_hasEverBeenBound = true; }
 
-    PassRefPtr<WebGLBuffer> getElementArrayBuffer() const { return m_boundElementArrayBuffer; }
+    PassRefPtr<WebGLBuffer> boundElementArrayBuffer() const { return m_boundElementArrayBuffer; }
     void setElementArrayBuffer(PassRefPtr<WebGLBuffer>);
 
     VertexAttribState& getVertexAttribState(int index) { return m_vertexAttribState[index]; }

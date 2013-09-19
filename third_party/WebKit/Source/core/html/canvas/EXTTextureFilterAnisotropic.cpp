@@ -34,14 +34,14 @@ EXTTextureFilterAnisotropic::EXTTextureFilterAnisotropic(WebGLRenderingContext* 
     : WebGLExtension(context)
 {
     ScriptWrappable::init(this);
-    context->graphicsContext3D()->getExtensions()->ensureEnabled("GL_EXT_texture_filter_anisotropic");
+    context->graphicsContext3D()->extensions()->ensureEnabled("GL_EXT_texture_filter_anisotropic");
 }
 
 EXTTextureFilterAnisotropic::~EXTTextureFilterAnisotropic()
 {
 }
 
-WebGLExtension::ExtensionName EXTTextureFilterAnisotropic::getName() const
+WebGLExtension::ExtensionName EXTTextureFilterAnisotropic::name() const
 {
     return EXTTextureFilterAnisotropicName;
 }
@@ -53,11 +53,11 @@ PassRefPtr<EXTTextureFilterAnisotropic> EXTTextureFilterAnisotropic::create(WebG
 
 bool EXTTextureFilterAnisotropic::supported(WebGLRenderingContext* context)
 {
-    Extensions3D* extensions = context->graphicsContext3D()->getExtensions();
+    Extensions3D* extensions = context->graphicsContext3D()->extensions();
     return extensions->supports("GL_EXT_texture_filter_anisotropic");
 }
 
-const char* EXTTextureFilterAnisotropic::getExtensionName()
+const char* EXTTextureFilterAnisotropic::extensionName()
 {
     return "EXT_texture_filter_anisotropic";
 }

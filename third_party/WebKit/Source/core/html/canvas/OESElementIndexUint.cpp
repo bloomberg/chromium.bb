@@ -34,14 +34,14 @@ OESElementIndexUint::OESElementIndexUint(WebGLRenderingContext* context)
     : WebGLExtension(context)
 {
     ScriptWrappable::init(this);
-    context->graphicsContext3D()->getExtensions()->ensureEnabled("GL_OES_element_index_uint");
+    context->graphicsContext3D()->extensions()->ensureEnabled("GL_OES_element_index_uint");
 }
 
 OESElementIndexUint::~OESElementIndexUint()
 {
 }
 
-WebGLExtension::ExtensionName OESElementIndexUint::getName() const
+WebGLExtension::ExtensionName OESElementIndexUint::name() const
 {
     return OESElementIndexUintName;
 }
@@ -53,11 +53,11 @@ PassRefPtr<OESElementIndexUint> OESElementIndexUint::create(WebGLRenderingContex
 
 bool OESElementIndexUint::supported(WebGLRenderingContext* context)
 {
-    Extensions3D* extensions = context->graphicsContext3D()->getExtensions();
+    Extensions3D* extensions = context->graphicsContext3D()->extensions();
     return extensions->supports("GL_OES_element_index_uint");
 }
 
-const char* OESElementIndexUint::getExtensionName()
+const char* OESElementIndexUint::extensionName()
 {
     return "OES_element_index_uint";
 }

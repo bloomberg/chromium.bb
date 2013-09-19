@@ -36,10 +36,10 @@ class OESTextureFloat : public WebGLExtension, public ScriptWrappable {
 public:
     static PassRefPtr<OESTextureFloat> create(WebGLRenderingContext*);
     static bool supported(WebGLRenderingContext*);
-    static const char* getExtensionName();
+    static const char* extensionName();
 
     virtual ~OESTextureFloat();
-    virtual ExtensionName getName() const;
+    virtual ExtensionName name() const;
 
 private:
     OESTextureFloat(WebGLRenderingContext*);

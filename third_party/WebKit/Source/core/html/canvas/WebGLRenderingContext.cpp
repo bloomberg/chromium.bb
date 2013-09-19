@@ -544,7 +544,7 @@ PassOwnPtr<WebGLRenderingContext> WebGLRenderingContext::create(HTMLCanvasElemen
         return nullptr;
     }
 
-    Extensions3D* extensions = context->getExtensions();
+    Extensions3D* extensions = context->extensions();
     if (extensions->supports("GL_EXT_debug_marker"))
         extensions->pushGroupMarkerEXT("WebGLRenderingContext");
 
@@ -717,8 +717,8 @@ void WebGLRenderingContext::setupFlags()
         }
     }
 
-    m_isGLES2NPOTStrict = !m_context->getExtensions()->isEnabled("GL_OES_texture_npot");
-    m_isDepthStencilSupported = m_context->getExtensions()->isEnabled("GL_OES_packed_depth_stencil");
+    m_isGLES2NPOTStrict = !m_context->extensions()->isEnabled("GL_OES_texture_npot");
+    m_isDepthStencilSupported = m_context->extensions()->isEnabled("GL_OES_packed_depth_stencil");
 }
 
 bool WebGLRenderingContext::allowPrivilegedExtensions() const
@@ -1478,7 +1478,7 @@ void WebGLRenderingContext::copyTexImage2D(GC3Denum target, GC3Dint level, GC3De
     WebGLTexture* tex = validateTextureBinding("copyTexImage2D", target, true);
     if (!tex)
         return;
-    if (!isTexInternalFormatColorBufferCombinationValid(internalformat, getBoundFramebufferColorFormat())) {
+    if (!isTexInternalFormatColorBufferCombinationValid(internalformat, boundFramebufferColorFormat())) {
         synthesizeGLError(GraphicsContext3D::INVALID_OPERATION, "copyTexImage2D", "framebuffer is incompatible format");
         return;
     }
@@ -1521,7 +1521,7 @@ void WebGLRenderingContext::copyTexSubImage2D(GC3Denum target, GC3Dint level, GC
     GC3Denum internalformat = tex->getInternalFormat(target, level);
     if (!validateSettableTexFormat("copyTexSubImage2D", internalformat))
         return;
-    if (!isTexInternalFormatColorBufferCombinationValid(internalformat, getBoundFramebufferColorFormat())) {
+    if (!isTexInternalFormatColorBufferCombinationValid(internalformat, boundFramebufferColorFormat())) {
         synthesizeGLError(GraphicsContext3D::INVALID_OPERATION, "copyTexSubImage2D", "framebuffer is incompatible format");
         return;
     }
@@ -1850,7 +1850,7 @@ void WebGLRenderingContext::drawArraysInstancedANGLE(GC3Denum mode, GC3Dint firs
     clearIfComposited();
 
     handleTextureCompleteness("drawArraysInstancedANGLE", true);
-    m_context->getExtensions()->drawArraysInstancedANGLE(mode, first, count, primcount);
+    m_context->extensions()->drawArraysInstancedANGLE(mode, first, count, primcount);
     handleTextureCompleteness("drawArraysInstancedANGLE", false);
     markContextChanged();
 }
@@ -1866,7 +1866,7 @@ void WebGLRenderingContext::drawElementsInstancedANGLE(GC3Denum mode, GC3Dsizei 
     clearIfComposited();
 
     handleTextureCompleteness("drawElementsInstancedANGLE", true);
-    m_context->getExtensions()->drawElementsInstancedANGLE(mode, count, type, static_cast<GC3Dintptr>(offset), primcount);
+    m_context->extensions()->drawElementsInstancedANGLE(mode, count, type, static_cast<GC3Dintptr>(offset), primcount);
     handleTextureCompleteness("drawElementsInstancedANGLE", false);
     markContextChanged();
 }
@@ -2161,7 +2161,7 @@ bool WebGLRenderingContext::ExtensionTracker::matchesNameWithPrefixes(const Stri
 
     const char** prefixes = m_prefixes ? m_prefixes : unprefixed;
     for (; *prefixes; ++prefixes) {
-        String prefixedName = String(*prefixes) + getExtensionName();
+        String prefixedName = String(*prefixes) + extensionName();
         if (equalIgnoringCase(prefixedName, name)) {
             return true;
         }
@@ -2177,9 +2177,9 @@ PassRefPtr<WebGLExtension> WebGLRenderingContext::getExtension(const String& nam
     for (size_t i = 0; i < m_extensions.size(); ++i) {
         ExtensionTracker* tracker = m_extensions[i];
         if (tracker->matchesNameWithPrefixes(name)) {
-            if (tracker->getPrivileged() && !allowPrivilegedExtensions())
+            if (tracker->privileged() && !allowPrivilegedExtensions())
                 return 0;
-            if (tracker->getDraft() && !RuntimeEnabledFeatures::webGLDraftExtensionsEnabled())
+            if (tracker->draft() && !RuntimeEnabledFeatures::webGLDraftExtensionsEnabled())
                 return 0;
             if (!tracker->supported(this))
                 return 0;
@@ -2304,7 +2304,7 @@ WebGLGetInfo WebGLRenderingContext::getParameter(GC3Denum pname)
     case GraphicsContext3D::DITHER:
         return getBooleanParameter(pname);
     case GraphicsContext3D::ELEMENT_ARRAY_BUFFER_BINDING:
-        return WebGLGetInfo(PassRefPtr<WebGLBuffer>(m_boundVertexArrayObject->getElementArrayBuffer()));
+        return WebGLGetInfo(PassRefPtr<WebGLBuffer>(m_boundVertexArrayObject->boundElementArrayBuffer()));
     case GraphicsContext3D::FRAMEBUFFER_BINDING:
         return WebGLGetInfo(PassRefPtr<WebGLFramebuffer>(m_framebufferBinding));
     case GraphicsContext3D::FRONT_FACE:
@@ -2454,18 +2454,18 @@ WebGLGetInfo WebGLRenderingContext::getParameter(GC3Denum pname)
         return WebGLGetInfo();
     case Extensions3D::MAX_COLOR_ATTACHMENTS_EXT: // EXT_draw_buffers BEGIN
         if (m_webglDrawBuffers)
-            return WebGLGetInfo(getMaxColorAttachments());
+            return WebGLGetInfo(maxColorAttachments());
         synthesizeGLError(GraphicsContext3D::INVALID_ENUM, "getParameter", "invalid parameter name, WEBGL_draw_buffers not enabled");
         return WebGLGetInfo();
     case Extensions3D::MAX_DRAW_BUFFERS_EXT:
         if (m_webglDrawBuffers)
-            return WebGLGetInfo(getMaxDrawBuffers());
+            return WebGLGetInfo(maxDrawBuffers());
         synthesizeGLError(GraphicsContext3D::INVALID_ENUM, "getParameter", "invalid parameter name, WEBGL_draw_buffers not enabled");
         return WebGLGetInfo();
     default:
         if (m_webglDrawBuffers
             && pname >= Extensions3D::DRAW_BUFFER0_EXT
-            && pname < static_cast<GC3Denum>(Extensions3D::DRAW_BUFFER0_EXT + getMaxDrawBuffers())) {
+            && pname < static_cast<GC3Denum>(Extensions3D::DRAW_BUFFER0_EXT + maxDrawBuffers())) {
             GC3Dint value = GraphicsContext3D::NONE;
             if (m_framebufferBinding)
                 value = m_framebufferBinding->getDrawBuffer(pname);
@@ -2630,12 +2630,12 @@ Vector<String> WebGLRenderingContext::getSupportedExtensions()
 
     for (size_t i = 0; i < m_extensions.size(); ++i) {
         ExtensionTracker* tracker = m_extensions[i];
-        if (tracker->getPrivileged() && !allowPrivilegedExtensions())
+        if (tracker->privileged() && !allowPrivilegedExtensions())
             continue;
-        if (tracker->getDraft() && !RuntimeEnabledFeatures::webGLDraftExtensionsEnabled())
+        if (tracker->draft() && !RuntimeEnabledFeatures::webGLDraftExtensionsEnabled())
             continue;
         if (tracker->supported(this))
-            result.append(String(tracker->getPrefixed()  ? "WEBKIT_" : "") + tracker->getExtensionName());
+            result.append(String(tracker->prefixed()  ? "WEBKIT_" : "") + tracker->extensionName());
     }
 
     return result;
@@ -4099,7 +4099,7 @@ void WebGLRenderingContext::vertexAttribDivisorANGLE(GC3Duint index, GC3Duint di
     }
 
     m_boundVertexArrayObject->setVertexAttribDivisor(index, divisor);
-    m_context->getExtensions()->vertexAttribDivisorANGLE(index, divisor);
+    m_context->extensions()->vertexAttribDivisorANGLE(index, divisor);
 }
 
 void WebGLRenderingContext::viewport(GC3Dint x, GC3Dint y, GC3Dsizei width, GC3Dsizei height)
@@ -4133,7 +4133,7 @@ void WebGLRenderingContext::loseContextImpl(WebGLRenderingContext::LostContextMo
         // Inform the embedder that a lost context was received. In response, the embedder might
         // decide to take action such as asking the user for permission to use WebGL again.
         if (Frame* frame = canvas()->document().frame())
-            frame->loader()->client()->didLoseWebGLContext(m_context->getExtensions()->getGraphicsResetStatusARB());
+            frame->loader()->client()->didLoseWebGLContext(m_context->extensions()->getGraphicsResetStatusARB());
     }
 
     // Make absolutely sure we do not refer to an already-deleted texture or framebuffer.
@@ -4392,7 +4392,7 @@ bool WebGLRenderingContext::isTexInternalFormatColorBufferCombinationValid(GC3De
     return (need & have) == need;
 }
 
-GC3Denum WebGLRenderingContext::getBoundFramebufferColorFormat()
+GC3Denum WebGLRenderingContext::boundFramebufferColorFormat()
 {
     if (m_framebufferBinding && m_framebufferBinding->object())
         return m_framebufferBinding->colorBufferFormat();
@@ -4401,14 +4401,14 @@ GC3Denum WebGLRenderingContext::getBoundFramebufferColorFormat()
     return GraphicsContext3D::RGB;
 }
 
-int WebGLRenderingContext::getBoundFramebufferWidth()
+int WebGLRenderingContext::boundFramebufferWidth()
 {
     if (m_framebufferBinding && m_framebufferBinding->object())
         return m_framebufferBinding->colorBufferWidth();
     return m_drawingBuffer->size().width();
 }
 
-int WebGLRenderingContext::getBoundFramebufferHeight()
+int WebGLRenderingContext::boundFramebufferHeight()
 {
     if (m_framebufferBinding && m_framebufferBinding->object())
         return m_framebufferBinding->colorBufferHeight();
@@ -4977,7 +4977,7 @@ bool WebGLRenderingContext::validateFramebufferFuncParameters(const char* functi
     default:
         if (m_webglDrawBuffers
             && attachment > GraphicsContext3D::COLOR_ATTACHMENT0
-            && attachment < static_cast<GC3Denum>(GraphicsContext3D::COLOR_ATTACHMENT0 + getMaxColorAttachments()))
+            && attachment < static_cast<GC3Denum>(GraphicsContext3D::COLOR_ATTACHMENT0 + maxColorAttachments()))
             break;
         synthesizeGLError(GraphicsContext3D::INVALID_ENUM, functionName, "invalid attachment");
         return false;
@@ -5089,7 +5089,7 @@ WebGLBuffer* WebGLRenderingContext::validateBufferDataParameters(const char* fun
     WebGLBuffer* buffer = 0;
     switch (target) {
     case GraphicsContext3D::ELEMENT_ARRAY_BUFFER:
-        buffer = m_boundVertexArrayObject->getElementArrayBuffer().get();
+        buffer = m_boundVertexArrayObject->boundElementArrayBuffer().get();
         break;
     case GraphicsContext3D::ARRAY_BUFFER:
         buffer = m_boundArrayBuffer.get();
@@ -5220,7 +5220,7 @@ bool WebGLRenderingContext::validateDrawElements(const char* functionName, GC3De
         return false;
     }
 
-    if (!m_boundVertexArrayObject->getElementArrayBuffer()) {
+    if (!m_boundVertexArrayObject->boundElementArrayBuffer()) {
         synthesizeGLError(GraphicsContext3D::INVALID_OPERATION, functionName, "no ELEMENT_ARRAY_BUFFER bound");
         return false;
     }
@@ -5526,7 +5526,7 @@ IntSize WebGLRenderingContext::clampedCanvasSize()
                    clamp(canvas()->height(), 1, m_maxViewportDims[1]));
 }
 
-GC3Dint WebGLRenderingContext::getMaxDrawBuffers()
+GC3Dint WebGLRenderingContext::maxDrawBuffers()
 {
     if (isContextLost() || !m_webglDrawBuffers)
         return 0;
@@ -5538,7 +5538,7 @@ GC3Dint WebGLRenderingContext::getMaxDrawBuffers()
     return std::min(m_maxDrawBuffers, m_maxColorAttachments);
 }
 
-GC3Dint WebGLRenderingContext::getMaxColorAttachments()
+GC3Dint WebGLRenderingContext::maxColorAttachments()
 {
     if (isContextLost() || !m_webglDrawBuffers)
         return 0;

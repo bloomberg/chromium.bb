@@ -2288,7 +2288,7 @@ bool Internals::loseSharedGraphicsContext3D()
     RefPtr<GraphicsContext3D> sharedContext = SharedGraphicsContext3D::get();
     if (!sharedContext)
         return false;
-    sharedContext->getExtensions()->loseContextCHROMIUM(Extensions3D::GUILTY_CONTEXT_RESET_ARB, Extensions3D::INNOCENT_CONTEXT_RESET_ARB);
+    sharedContext->extensions()->loseContextCHROMIUM(Extensions3D::GUILTY_CONTEXT_RESET_ARB, Extensions3D::INNOCENT_CONTEXT_RESET_ARB);
     // To prevent tests that call loseSharedGraphicsContext3D from being
     // flaky, we call finish so that the context is guaranteed to be lost
     // synchronously (i.e. before returning).

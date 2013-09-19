@@ -36,10 +36,10 @@ class EXTTextureFilterAnisotropic : public WebGLExtension, public ScriptWrappabl
 public:
     static PassRefPtr<EXTTextureFilterAnisotropic> create(WebGLRenderingContext*);
     static bool supported(WebGLRenderingContext*);
-    static const char* getExtensionName();
+    static const char* extensionName();
 
     virtual ~EXTTextureFilterAnisotropic();
-    virtual ExtensionName getName() const;
+    virtual ExtensionName name() const;
 
 private:
     EXTTextureFilterAnisotropic(WebGLRenderingContext*);

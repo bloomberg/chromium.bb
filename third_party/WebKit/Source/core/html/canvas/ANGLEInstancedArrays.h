@@ -43,10 +43,10 @@ class ANGLEInstancedArrays : public WebGLExtension, public ScriptWrappable {
 public:
     static PassRefPtr<ANGLEInstancedArrays> create(WebGLRenderingContext*);
     static bool supported(WebGLRenderingContext*);
-    static const char* getExtensionName();
+    static const char* extensionName();
 
     virtual ~ANGLEInstancedArrays();
-    virtual ExtensionName getName() const;
+    virtual ExtensionName name() const;
 
     void drawArraysInstancedANGLE(GC3Denum mode, GC3Dint first, GC3Dsizei count, GC3Dsizei primcount);
     void drawElementsInstancedANGLE(GC3Denum mode, GC3Dsizei count, GC3Denum type, GC3Dintptr offset, GC3Dsizei primcount);

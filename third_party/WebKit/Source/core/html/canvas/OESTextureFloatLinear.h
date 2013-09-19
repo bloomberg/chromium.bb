@@ -36,10 +36,10 @@ class OESTextureFloatLinear : public WebGLExtension, public ScriptWrappable {
 public:
     static PassRefPtr<OESTextureFloatLinear> create(WebGLRenderingContext*);
     static bool supported(WebGLRenderingContext*);
-    static const char* getExtensionName();
+    static const char* extensionName();
 
     virtual ~OESTextureFloatLinear();
-    virtual ExtensionName getName() const;
+    virtual ExtensionName name() const;
 
 private:
     OESTextureFloatLinear(WebGLRenderingContext*);

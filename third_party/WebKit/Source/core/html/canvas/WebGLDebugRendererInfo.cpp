@@ -39,7 +39,7 @@ WebGLDebugRendererInfo::~WebGLDebugRendererInfo()
 {
 }
 
-WebGLExtension::ExtensionName WebGLDebugRendererInfo::getName() const
+WebGLExtension::ExtensionName WebGLDebugRendererInfo::name() const
 {
     return WebGLDebugRendererInfoName;
 }
@@ -54,7 +54,7 @@ bool WebGLDebugRendererInfo::supported(WebGLRenderingContext*)
     return true;
 }
 
-const char* WebGLDebugRendererInfo::getExtensionName()
+const char* WebGLDebugRendererInfo::extensionName()
 {
     return "WEBGL_debug_renderer_info";
 }

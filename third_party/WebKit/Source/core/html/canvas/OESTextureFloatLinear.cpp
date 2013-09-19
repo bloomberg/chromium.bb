@@ -35,14 +35,14 @@ OESTextureFloatLinear::OESTextureFloatLinear(WebGLRenderingContext* context)
     : WebGLExtension(context)
 {
     ScriptWrappable::init(this);
-    context->graphicsContext3D()->getExtensions()->ensureEnabled("GL_OES_texture_float_linear");
+    context->graphicsContext3D()->extensions()->ensureEnabled("GL_OES_texture_float_linear");
 }
 
 OESTextureFloatLinear::~OESTextureFloatLinear()
 {
 }
 
-WebGLExtension::ExtensionName OESTextureFloatLinear::getName() const
+WebGLExtension::ExtensionName OESTextureFloatLinear::name() const
 {
     return OESTextureFloatLinearName;
 }
@@ -54,11 +54,11 @@ PassRefPtr<OESTextureFloatLinear> OESTextureFloatLinear::create(WebGLRenderingCo
 
 bool OESTextureFloatLinear::supported(WebGLRenderingContext* context)
 {
-    Extensions3D* extensions = context->graphicsContext3D()->getExtensions();
+    Extensions3D* extensions = context->graphicsContext3D()->extensions();
     return extensions->supports("GL_OES_texture_float_linear");
 }
 
-const char* OESTextureFloatLinear::getExtensionName()
+const char* OESTextureFloatLinear::extensionName()
 {
     return "OES_texture_float_linear";
 }

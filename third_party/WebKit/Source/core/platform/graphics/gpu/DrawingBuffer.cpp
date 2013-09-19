@@ -80,7 +80,7 @@ private:
 
 PassRefPtr<DrawingBuffer> DrawingBuffer::create(GraphicsContext3D* context, const IntSize& size, PreserveDrawingBuffer preserve, PassRefPtr<ContextEvictionManager> contextEvictionManager)
 {
-    Extensions3D* extensions = context->getExtensions();
+    Extensions3D* extensions = context->extensions();
     bool multisampleSupported = extensions->supports("GL_ANGLE_framebuffer_blit")
         && extensions->supports("GL_ANGLE_framebuffer_multisample")
         && extensions->supports("GL_OES_rgb8_rgba8");
@@ -170,7 +170,7 @@ bool DrawingBuffer::prepareMailbox(WebKit::WebExternalTextureMailbox* outMailbox
     ScopedTextureUnit0BindingRestorer restorer(m_context.get(), m_activeTextureUnit, m_texture2DBinding);
 
     // First try to recycle an old buffer.
-    RefPtr<MailboxInfo> nextFrontColorBuffer = getRecycledMailbox();
+    RefPtr<MailboxInfo> nextFrontColorBuffer = recycledMailbox();
 
     // No buffer available to recycle, create a new one.
     if (!nextFrontColorBuffer) {
@@ -192,7 +192,7 @@ bool DrawingBuffer::prepareMailbox(WebKit::WebExternalTextureMailbox* outMailbox
         m_context->bindFramebuffer(GraphicsContext3D::FRAMEBUFFER, m_fbo);
         m_context->framebufferTexture2D(GraphicsContext3D::FRAMEBUFFER, GraphicsContext3D::COLOR_ATTACHMENT0, GraphicsContext3D::TEXTURE_2D, m_colorBuffer, 0);
     } else {
-        Extensions3D* extensions = m_context->getExtensions();
+        Extensions3D* extensions = m_context->extensions();
         extensions->copyTextureCHROMIUM(GraphicsContext3D::TEXTURE_2D, m_colorBuffer, nextFrontColorBuffer->textureId, 0, GraphicsContext3D::RGBA, GraphicsContext3D::UNSIGNED_BYTE);
     }
 
@@ -226,7 +226,7 @@ void DrawingBuffer::mailboxReleased(const WebKit::WebExternalTextureMailbox& mai
      ASSERT_NOT_REACHED();
 }
 
-PassRefPtr<DrawingBuffer::MailboxInfo> DrawingBuffer::getRecycledMailbox()
+PassRefPtr<DrawingBuffer::MailboxInfo> DrawingBuffer::recycledMailbox()
 {
     if (!m_context || m_recycledMailboxes.isEmpty())
         return PassRefPtr<MailboxInfo>();
@@ -316,10 +316,10 @@ WebKit::WebLayer* DrawingBuffer::platformLayer()
 
 void DrawingBuffer::paintCompositedResultsToCanvas(ImageBuffer* imageBuffer)
 {
-    if (!m_context || !m_context->makeContextCurrent() || m_context->getExtensions()->getGraphicsResetStatusARB() != GraphicsContext3D::NO_ERROR)
+    if (!m_context || !m_context->makeContextCurrent() || m_context->extensions()->getGraphicsResetStatusARB() != GraphicsContext3D::NO_ERROR)
         return;
 
-    Extensions3D* extensions = m_context->getExtensions();
+    Extensions3D* extensions = m_context->extensions();
     // Since the m_frontColorBuffer was produced and sent to the compositor, it cannot be bound to an fbo.
     // We have to make a copy of it here and bind that copy instead.
     // FIXME: That's not true any more, provided we don't change texture
@@ -469,7 +469,7 @@ bool DrawingBuffer::resizeMultisampleFramebuffer(const IntSize& size)
         m_context->bindFramebuffer(GraphicsContext3D::FRAMEBUFFER, m_multisampleFBO);
 
         m_context->bindRenderbuffer(GraphicsContext3D::RENDERBUFFER, m_multisampleColorBuffer);
-        m_context->getExtensions()->renderbufferStorageMultisample(GraphicsContext3D::RENDERBUFFER, sampleCount, m_internalRenderbufferFormat, size.width(), size.height());
+        m_context->extensions()->renderbufferStorageMultisample(GraphicsContext3D::RENDERBUFFER, sampleCount, m_internalRenderbufferFormat, size.width(), size.height());
 
         if (m_context->getError() == GraphicsContext3D::OUT_OF_MEMORY)
             return false;
@@ -490,7 +490,7 @@ void DrawingBuffer::resizeDepthStencil(const IntSize& size, int sampleCount)
             m_depthStencilBuffer = m_context->createRenderbuffer();
         m_context->bindRenderbuffer(GraphicsContext3D::RENDERBUFFER, m_depthStencilBuffer);
         if (multisample())
-            m_context->getExtensions()->renderbufferStorageMultisample(GraphicsContext3D::RENDERBUFFER, sampleCount, Extensions3D::DEPTH24_STENCIL8, size.width(), size.height());
+            m_context->extensions()->renderbufferStorageMultisample(GraphicsContext3D::RENDERBUFFER, sampleCount, Extensions3D::DEPTH24_STENCIL8, size.width(), size.height());
         else
             m_context->renderbufferStorage(GraphicsContext3D::RENDERBUFFER, Extensions3D::DEPTH24_STENCIL8, size.width(), size.height());
         m_context->framebufferRenderbuffer(GraphicsContext3D::FRAMEBUFFER, GraphicsContext3D::STENCIL_ATTACHMENT, GraphicsContext3D::RENDERBUFFER, m_depthStencilBuffer);
@@ -501,7 +501,7 @@ void DrawingBuffer::resizeDepthStencil(const IntSize& size, int sampleCount)
                 m_depthBuffer = m_context->createRenderbuffer();
             m_context->bindRenderbuffer(GraphicsContext3D::RENDERBUFFER, m_depthBuffer);
             if (multisample())
-                m_context->getExtensions()->renderbufferStorageMultisample(GraphicsContext3D::RENDERBUFFER, sampleCount, GraphicsContext3D::DEPTH_COMPONENT16, size.width(), size.height());
+                m_context->extensions()->renderbufferStorageMultisample(GraphicsContext3D::RENDERBUFFER, sampleCount, GraphicsContext3D::DEPTH_COMPONENT16, size.width(), size.height());
             else
                 m_context->renderbufferStorage(GraphicsContext3D::RENDERBUFFER, GraphicsContext3D::DEPTH_COMPONENT16, size.width(), size.height());
             m_context->framebufferRenderbuffer(GraphicsContext3D::FRAMEBUFFER, GraphicsContext3D::DEPTH_ATTACHMENT, GraphicsContext3D::RENDERBUFFER, m_depthBuffer);
@@ -511,7 +511,7 @@ void DrawingBuffer::resizeDepthStencil(const IntSize& size, int sampleCount)
                 m_stencilBuffer = m_context->createRenderbuffer();
             m_context->bindRenderbuffer(GraphicsContext3D::RENDERBUFFER, m_stencilBuffer);
             if (multisample())
-                m_context->getExtensions()->renderbufferStorageMultisample(GraphicsContext3D::RENDERBUFFER, sampleCount, GraphicsContext3D::STENCIL_INDEX8, size.width(), size.height());
+                m_context->extensions()->renderbufferStorageMultisample(GraphicsContext3D::RENDERBUFFER, sampleCount, GraphicsContext3D::STENCIL_INDEX8, size.width(), size.height());
             else
                 m_context->renderbufferStorage(GraphicsContext3D::RENDERBUFFER, GraphicsContext3D::STENCIL_INDEX8, size.width(), size.height());
             m_context->framebufferRenderbuffer(GraphicsContext3D::FRAMEBUFFER, GraphicsContext3D::STENCIL_ATTACHMENT, GraphicsContext3D::RENDERBUFFER, m_stencilBuffer);
@@ -670,7 +670,7 @@ void DrawingBuffer::commit(long x, long y, long width, long height)
             m_context->disable(GraphicsContext3D::SCISSOR_TEST);
 
         // Use NEAREST, because there is no scale performed during the blit.
-        m_context->getExtensions()->blitFramebuffer(x, y, width, height, x, y, width, height, GraphicsContext3D::COLOR_BUFFER_BIT, GraphicsContext3D::NEAREST);
+        m_context->extensions()->blitFramebuffer(x, y, width, height, x, y, width, height, GraphicsContext3D::COLOR_BUFFER_BIT, GraphicsContext3D::NEAREST);
 
         if (m_scissorEnabled)
             m_context->enable(GraphicsContext3D::SCISSOR_TEST);

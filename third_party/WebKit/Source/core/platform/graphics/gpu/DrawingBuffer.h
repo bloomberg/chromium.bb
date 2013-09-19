@@ -149,7 +149,7 @@ private:
 
     void clearPlatformLayer();
 
-    PassRefPtr<MailboxInfo> getRecycledMailbox();
+    PassRefPtr<MailboxInfo> recycledMailbox();
     PassRefPtr<MailboxInfo> createNewMailbox(unsigned);
 
     // Updates the current size of the buffer, ensuring that s_currentResourceUsePixels is updated.

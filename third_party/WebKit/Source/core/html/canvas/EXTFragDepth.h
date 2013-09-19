@@ -36,10 +36,10 @@ class EXTFragDepth : public WebGLExtension, public ScriptWrappable {
 public:
     static PassRefPtr<EXTFragDepth> create(WebGLRenderingContext*);
     static bool supported(WebGLRenderingContext*);
-    static const char* getExtensionName();
+    static const char* extensionName();
 
     virtual ~EXTFragDepth();
-    virtual ExtensionName getName() const;
+    virtual ExtensionName name() const;
 
 private:
     explicit EXTFragDepth(WebGLRenderingContext*);

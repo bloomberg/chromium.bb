@@ -386,7 +386,7 @@ bool WebGLFramebuffer::isAttachmentComplete(WebGLAttachment* attachedObject, GC3
         }
     } else if (attachment == GraphicsContext3D::COLOR_ATTACHMENT0
         || (context()->m_webglDrawBuffers && attachment > GraphicsContext3D::COLOR_ATTACHMENT0
-            && attachment < static_cast<GC3Denum>(GraphicsContext3D::COLOR_ATTACHMENT0 + context()->getMaxColorAttachments()))) {
+            && attachment < static_cast<GC3Denum>(GraphicsContext3D::COLOR_ATTACHMENT0 + context()->maxColorAttachments()))) {
         if (object->isRenderbuffer()) {
             if (!isColorRenderable(internalformat)) {
                 *reason = "the internalformat of the attached renderbuffer is not color-renderable";
@@ -626,7 +626,7 @@ void WebGLFramebuffer::drawBuffersIfNecessary(bool force)
         }
     }
     if (reset) {
-        context()->graphicsContext3D()->getExtensions()->drawBuffersEXT(
+        context()->graphicsContext3D()->extensions()->drawBuffersEXT(
             m_filteredDrawBuffers.size(), m_filteredDrawBuffers.data());
     }
 }

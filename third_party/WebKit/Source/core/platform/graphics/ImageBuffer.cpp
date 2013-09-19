@@ -221,7 +221,7 @@ bool ImageBuffer::copyToPlatformTexture(GraphicsContext3D& context, Platform3DOb
     if (!context.makeContextCurrent())
         return false;
 
-    Extensions3D* extensions = context.getExtensions();
+    Extensions3D* extensions = context.extensions();
     if (!extensions->supports("GL_CHROMIUM_copy_texture") || !extensions->supports("GL_CHROMIUM_flipy")
         || !extensions->canUseCopyTextureCHROMIUM(internalFormat, destType, level))
         return false;

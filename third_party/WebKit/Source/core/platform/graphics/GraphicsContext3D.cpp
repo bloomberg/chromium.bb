@@ -669,7 +669,7 @@ DELEGATE_TO_WEBCONTEXT_1(deleteTexture, Platform3DObject)
 
 DELEGATE_TO_WEBCONTEXT_1(synthesizeGLError, GC3Denum)
 
-Extensions3D* GraphicsContext3D::getExtensions()
+Extensions3D* GraphicsContext3D::extensions()
 {
     if (!m_extensions)
         m_extensions = adoptPtr(new Extensions3D(this));

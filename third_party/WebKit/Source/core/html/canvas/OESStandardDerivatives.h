@@ -36,10 +36,10 @@ class OESStandardDerivatives : public WebGLExtension, public ScriptWrappable {
 public:
     static PassRefPtr<OESStandardDerivatives> create(WebGLRenderingContext*);
     static bool supported(WebGLRenderingContext*);
-    static const char* getExtensionName();
+    static const char* extensionName();
 
     virtual ~OESStandardDerivatives();
-    virtual ExtensionName getName() const;
+    virtual ExtensionName name() const;
 
 private:
     OESStandardDerivatives(WebGLRenderingContext*);

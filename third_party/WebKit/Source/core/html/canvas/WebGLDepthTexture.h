@@ -36,10 +36,10 @@ class WebGLDepthTexture : public WebGLExtension, public ScriptWrappable {
 public:
     static PassRefPtr<WebGLDepthTexture> create(WebGLRenderingContext*);
     static bool supported(WebGLRenderingContext*);
-    static const char* getExtensionName();
+    static const char* extensionName();
 
     virtual ~WebGLDepthTexture();
-    virtual ExtensionName getName() const;
+    virtual ExtensionName name() const;
 
 private:
     WebGLDepthTexture(WebGLRenderingContext*);

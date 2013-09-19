@@ -35,14 +35,14 @@ EXTFragDepth::EXTFragDepth(WebGLRenderingContext* context)
     : WebGLExtension(context)
 {
     ScriptWrappable::init(this);
-    context->graphicsContext3D()->getExtensions()->ensureEnabled("GL_EXT_frag_depth");
+    context->graphicsContext3D()->extensions()->ensureEnabled("GL_EXT_frag_depth");
 }
 
 EXTFragDepth::~EXTFragDepth()
 {
 }
 
-WebGLExtension::ExtensionName EXTFragDepth::getName() const
+WebGLExtension::ExtensionName EXTFragDepth::name() const
 {
     return EXTFragDepthName;
 }
@@ -54,11 +54,11 @@ PassRefPtr<EXTFragDepth> EXTFragDepth::create(WebGLRenderingContext* context)
 
 bool EXTFragDepth::supported(WebGLRenderingContext* context)
 {
-    Extensions3D* extensions = context->graphicsContext3D()->getExtensions();
+    Extensions3D* extensions = context->graphicsContext3D()->extensions();
     return extensions->supports("GL_EXT_frag_depth");
 }
 
-const char* EXTFragDepth::getExtensionName()
+const char* EXTFragDepth::extensionName()
 {
     return "EXT_frag_depth";
 }

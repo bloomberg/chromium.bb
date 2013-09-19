@@ -36,10 +36,10 @@ class OESTextureHalfFloatLinear : public WebGLExtension, public ScriptWrappable 
 public:
     static PassRefPtr<OESTextureHalfFloatLinear> create(WebGLRenderingContext*);
     static bool supported(WebGLRenderingContext*);
-    static const char* getExtensionName();
+    static const char* extensionName();
 
     virtual ~OESTextureHalfFloatLinear();
-    virtual ExtensionName getName() const;
+    virtual ExtensionName name() const;
 
 private:
     OESTextureHalfFloatLinear(WebGLRenderingContext*);

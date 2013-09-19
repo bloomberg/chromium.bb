@@ -68,7 +68,7 @@ public:
         }
 
         if (m_context && wasCreated)
-            m_context->getExtensions()->pushGroupMarkerEXT("SharedGraphicsContext");
+            m_context->extensions()->pushGroupMarkerEXT("SharedGraphicsContext");
         return m_context;
     }
 

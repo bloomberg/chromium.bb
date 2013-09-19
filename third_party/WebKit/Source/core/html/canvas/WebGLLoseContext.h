@@ -38,10 +38,10 @@ class WebGLLoseContext : public WebGLExtension, public ScriptWrappable {
 public:
     static PassRefPtr<WebGLLoseContext> create(WebGLRenderingContext*);
     static bool supported(WebGLRenderingContext*);
-    static const char* getExtensionName();
+    static const char* extensionName();
 
     virtual ~WebGLLoseContext();
-    virtual ExtensionName getName() const;
+    virtual ExtensionName name() const;
     virtual void lose(bool);
 
     void loseContext();

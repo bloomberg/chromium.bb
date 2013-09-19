@@ -47,7 +47,7 @@ void WebGLLoseContext::lose(bool force)
         WebGLExtension::lose(true);
 }
 
-WebGLExtension::ExtensionName WebGLLoseContext::getName() const
+WebGLExtension::ExtensionName WebGLLoseContext::name() const
 {
     return WebGLLoseContextName;
 }
@@ -74,7 +74,7 @@ bool WebGLLoseContext::supported(WebGLRenderingContext*)
     return true;
 }
 
-const char* WebGLLoseContext::getExtensionName()
+const char* WebGLLoseContext::extensionName()
 {
     return "WEBGL_lose_context";
 }

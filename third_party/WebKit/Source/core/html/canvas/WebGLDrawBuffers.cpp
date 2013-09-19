@@ -35,14 +35,14 @@ WebGLDrawBuffers::WebGLDrawBuffers(WebGLRenderingContext* context)
     : WebGLExtension(context)
 {
     ScriptWrappable::init(this);
-    context->graphicsContext3D()->getExtensions()->ensureEnabled("GL_EXT_draw_buffers");
+    context->graphicsContext3D()->extensions()->ensureEnabled("GL_EXT_draw_buffers");
 }
 
 WebGLDrawBuffers::~WebGLDrawBuffers()
 {
 }
 
-WebGLExtension::ExtensionName WebGLDrawBuffers::getName() const
+WebGLExtension::ExtensionName WebGLDrawBuffers::name() const
 {
     return WebGLExtension::WebGLDrawBuffersName;
 }
@@ -55,12 +55,12 @@ PassRefPtr<WebGLDrawBuffers> WebGLDrawBuffers::create(WebGLRenderingContext* con
 // static
 bool WebGLDrawBuffers::supported(WebGLRenderingContext* context)
 {
-    Extensions3D* extensions = context->graphicsContext3D()->getExtensions();
+    Extensions3D* extensions = context->graphicsContext3D()->extensions();
     return (extensions->supports("GL_EXT_draw_buffers")
         && satisfiesWebGLRequirements(context));
 }
 
-const char* WebGLDrawBuffers::getExtensionName()
+const char* WebGLDrawBuffers::extensionName()
 {
     return "WEBGL_draw_buffers";
 }
@@ -82,10 +82,10 @@ void WebGLDrawBuffers::drawBuffersWEBGL(const Vector<GC3Denum>& buffers)
         }
         // Because the backbuffer is simulated on all current WebKit ports, we need to change BACK to COLOR_ATTACHMENT0.
         GC3Denum value = (bufs[0] == GraphicsContext3D::BACK) ? GraphicsContext3D::COLOR_ATTACHMENT0 : GraphicsContext3D::NONE;
-        m_context->graphicsContext3D()->getExtensions()->drawBuffersEXT(1, &value);
+        m_context->graphicsContext3D()->extensions()->drawBuffersEXT(1, &value);
         m_context->setBackDrawBuffer(bufs[0]);
     } else {
-        if (n > m_context->getMaxDrawBuffers()) {
+        if (n > m_context->maxDrawBuffers()) {
             m_context->synthesizeGLError(GraphicsContext3D::INVALID_VALUE, "drawBuffersWEBGL", "more than max draw buffers");
             return;
         }
@@ -116,11 +116,11 @@ bool WebGLDrawBuffers::satisfiesWebGLRequirements(WebGLRenderingContext* webglCo
     context->bindFramebuffer(GraphicsContext3D::FRAMEBUFFER, fbo);
 
     const unsigned char* buffer = 0; // Chromium doesn't allow init data for depth/stencil tetxures.
-    bool supportsDepth = (context->getExtensions()->supports("GL_CHROMIUM_depth_texture")
-        || context->getExtensions()->supports("GL_OES_depth_texture")
-        || context->getExtensions()->supports("GL_ARB_depth_texture"));
-    bool supportsDepthStencil = (context->getExtensions()->supports("GL_EXT_packed_depth_stencil")
-        || context->getExtensions()->supports("GL_OES_packed_depth_stencil"));
+    bool supportsDepth = (context->extensions()->supports("GL_CHROMIUM_depth_texture")
+        || context->extensions()->supports("GL_OES_depth_texture")
+        || context->extensions()->supports("GL_ARB_depth_texture"));
+    bool supportsDepthStencil = (context->extensions()->supports("GL_EXT_packed_depth_stencil")
+        || context->extensions()->supports("GL_OES_packed_depth_stencil"));
     Platform3DObject depthStencil = 0;
     if (supportsDepthStencil) {
         depthStencil = context->createTexture();

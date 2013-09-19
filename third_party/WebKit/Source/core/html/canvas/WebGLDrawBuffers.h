@@ -36,10 +36,10 @@ class WebGLDrawBuffers : public WebGLExtension, public ScriptWrappable {
 public:
     static PassRefPtr<WebGLDrawBuffers> create(WebGLRenderingContext*);
     static bool supported(WebGLRenderingContext*);
-    static const char* getExtensionName();
+    static const char* extensionName();
 
     virtual ~WebGLDrawBuffers();
-    virtual ExtensionName getName() const;
+    virtual ExtensionName name() const;
 
     void drawBuffersWEBGL(const Vector<GC3Denum>& buffers);
 

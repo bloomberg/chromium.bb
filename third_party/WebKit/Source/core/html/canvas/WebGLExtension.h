@@ -59,7 +59,7 @@ public:
     WebGLRenderingContext* context() { return m_context; }
 
     virtual ~WebGLExtension();
-    virtual ExtensionName getName() const = 0;
+    virtual ExtensionName name() const = 0;
 
     // Lose this extension. Passing true = force loss. Some extensions
     // like WEBGL_lose_context are not normally lost when the context

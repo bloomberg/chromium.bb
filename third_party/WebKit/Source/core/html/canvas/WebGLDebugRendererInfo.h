@@ -41,10 +41,10 @@ public:
 
     static PassRefPtr<WebGLDebugRendererInfo> create(WebGLRenderingContext*);
     static bool supported(WebGLRenderingContext*);
-    static const char* getExtensionName();
+    static const char* extensionName();
 
     virtual ~WebGLDebugRendererInfo();
-    virtual ExtensionName getName() const;
+    virtual ExtensionName name() const;
 
 private:
     WebGLDebugRendererInfo(WebGLRenderingContext*);

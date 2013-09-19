@@ -36,10 +36,10 @@ class OESElementIndexUint : public WebGLExtension, public ScriptWrappable {
 public:
     static PassRefPtr<OESElementIndexUint> create(WebGLRenderingContext*);
     static bool supported(WebGLRenderingContext*);
-    static const char* getExtensionName();
+    static const char* extensionName();
 
     virtual ~OESElementIndexUint();
-    virtual ExtensionName getName() const;
+    virtual ExtensionName name() const;
 
 private:
     OESElementIndexUint(WebGLRenderingContext*);
