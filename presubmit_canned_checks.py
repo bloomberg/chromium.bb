@@ -822,7 +822,7 @@ def CheckOwners(input_api, output_api, source_file_filter=None,
         output('Missing %s for these files:\n    %s' %
                (needed, '\n    '.join(sorted(missing_files))))]
     if not input_api.is_committing:
-      suggested_owners = owners_db.reviewers_for(affected_files, owner_email)
+      suggested_owners = owners_db.reviewers_for(missing_files, owner_email)
       output_list.append(output('Suggested OWNERS:\n    %s' %
                                 ('\n    '.join(suggested_owners or []))))
     return output_list

@@ -2494,7 +2494,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
         fake_db.files_not_covered_by(set(['foo/xyz.cc']),
             people).AndReturn(uncovered_files)
       if not is_committing and uncovered_files:
-        fake_db.reviewers_for(set(['foo/xyz.cc']),
+        fake_db.reviewers_for(set(['foo']),
             change.author_email).AndReturn(change.author_email)
 
     self.mox.ReplayAll()
