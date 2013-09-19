@@ -4287,7 +4287,6 @@
    fun:_ZN5mediaL19ConvertYUVToRGB32_CEhhhPh
    fun:_ZN5media35LinearScaleYUVToRGB32RowWithRange_CEPKhS1_S1_Phiii
    fun:_ZN5media23ScaleYUVToRGB32WithRectEPKhS1_S1_Phiiiiiiiiiii
-   fun:_ZN8remoting29ConvertAndScaleYUVToRGB32RectEPKhS1_S1_iiRK7SkTSizeIiERK7SkIRectPhiS5_S8_S8_
 }
 {
    bug_115294
