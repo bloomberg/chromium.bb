@@ -142,32 +142,6 @@ void ResourceMetadata::DestroyOnBlockingPool() {
   delete this;
 }
 
-void ResourceMetadata::GetLargestChangestampOnUIThread(
-    const GetChangestampCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner_.get(),
-      FROM_HERE,
-      base::Bind(&ResourceMetadata::GetLargestChangestamp,
-                 base::Unretained(this)),
-      callback);
-}
-
-void ResourceMetadata::SetLargestChangestampOnUIThread(
-    int64 value,
-    const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner_.get(),
-      FROM_HERE,
-      base::Bind(&ResourceMetadata::SetLargestChangestamp,
-                 base::Unretained(this),
-                 value),
-      callback);
-}
-
 int64 ResourceMetadata::GetLargestChangestamp() {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
   return storage_->GetLargestChangestamp();

@@ -966,7 +966,11 @@ void FileSystem::GetMetadata(
   metadata.last_update_check_time = last_update_check_time_;
   metadata.last_update_check_error = last_update_check_error_;
 
-  resource_metadata_->GetLargestChangestampOnUIThread(
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_,
+      FROM_HERE,
+      base::Bind(&internal::ResourceMetadata::GetLargestChangestamp,
+                 base::Unretained(resource_metadata_)),
       base::Bind(&OnGetLargestChangestamp, metadata, callback));
 }
 

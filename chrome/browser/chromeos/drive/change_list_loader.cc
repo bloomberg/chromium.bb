@@ -429,7 +429,11 @@ void ChangeListLoader::Load(const DirectoryFetchInfo& directory_fetch_info,
   }
 
   // Check the current status of local metadata, and start loading if needed.
-  resource_metadata_->GetLargestChangestampOnUIThread(
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_,
+      FROM_HERE,
+      base::Bind(&ResourceMetadata::GetLargestChangestamp,
+                 base::Unretained(resource_metadata_)),
       base::Bind(is_initial_load ? &ChangeListLoader::DoInitialLoad
                                  : &ChangeListLoader::DoUpdateLoad,
                  weak_ptr_factory_.GetWeakPtr(),

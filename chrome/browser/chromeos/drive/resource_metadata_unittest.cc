@@ -216,22 +216,6 @@ class ResourceMetadataTestOnUIThread : public testing::Test {
       resource_metadata_;
 };
 
-TEST_F(ResourceMetadataTestOnUIThread, LargestChangestamp) {
-  FileError error = FILE_ERROR_FAILED;
-  int64 in_changestamp = 123456;
-  resource_metadata_->SetLargestChangestampOnUIThread(
-      in_changestamp,
-      google_apis::test_util::CreateCopyResultCallback(&error));
-  test_util::RunBlockingPoolTask();
-  EXPECT_EQ(FILE_ERROR_OK, error);
-
-  int64 out_changestamp = 0;
-  resource_metadata_->GetLargestChangestampOnUIThread(
-      google_apis::test_util::CreateCopyResultCallback(&out_changestamp));
-  test_util::RunBlockingPoolTask();
-  DCHECK_EQ(in_changestamp, out_changestamp);
-}
-
 TEST_F(ResourceMetadataTestOnUIThread, GetResourceEntryById_RootDirectory) {
   // Look up the root directory by its resource ID.
   FileError error = FILE_ERROR_FAILED;
@@ -384,6 +368,13 @@ class ResourceMetadataTest : public testing::Test {
   scoped_ptr<ResourceMetadata, test_util::DestroyHelperForTests>
       resource_metadata_;
 };
+
+TEST_F(ResourceMetadataTest, LargestChangestamp) {
+  const int64 kChangestamp = 123456;
+  EXPECT_EQ(FILE_ERROR_OK,
+            resource_metadata_->SetLargestChangestamp(kChangestamp));
+  EXPECT_EQ(kChangestamp, resource_metadata_->GetLargestChangestamp());
+}
 
 TEST_F(ResourceMetadataTest, RefreshEntry) {
   base::FilePath drive_file_path;

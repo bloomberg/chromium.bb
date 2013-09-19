@@ -34,8 +34,6 @@ typedef base::Callback<void(FileError error,
                             scoped_ptr<ResourceEntryVector> entries)>
     ReadDirectoryCallback;
 
-typedef base::Callback<void(int64)> GetChangestampCallback;
-
 typedef base::Callback<void(const ResourceEntry& entry)> IterateCallback;
 
 namespace internal {
@@ -62,17 +60,10 @@ class ResourceMetadata {
   // Resets this object.
   FileError Reset();
 
-  // Largest change timestamp that was the source of content for the current
-  // state of the root directory.
-  // Must be called on the UI thread.
-  void GetLargestChangestampOnUIThread(const GetChangestampCallback& callback);
-  void SetLargestChangestampOnUIThread(int64 value,
-                                       const FileOperationCallback& callback);
-
-  // Synchronous version of GetLargestChangestampOnUIThread.
+  // Returns the largest changestamp.
   int64 GetLargestChangestamp();
 
-  // Synchronous version of SetLargestChangestampOnUIThread.
+  // Sets the largest changestamp.
   FileError SetLargestChangestamp(int64 value);
 
   // Adds |entry| to the metadata tree based on its parent_local_id.
