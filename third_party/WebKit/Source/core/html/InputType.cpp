@@ -373,7 +373,7 @@ String InputType::validationMessage() const
         return validationMessagePatternMismatchText();
 
     if (element()->tooLong())
-        return validationMessageTooLongText(numGraphemeClusters(value), element()->maxLength());
+        return validationMessageTooLongText(value.length(), element()->maxLength());
 
     if (!isSteppable())
         return emptyString();

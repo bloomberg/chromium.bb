@@ -259,7 +259,7 @@ bool HTMLInputElement::tooLong(const String& value, NeedsToCheckDirtyFlag check)
         if (!hasDirtyValue() || !m_wasModifiedByUser)
             return false;
     }
-    return numGraphemeClusters(value) > static_cast<unsigned>(max);
+    return value.length() > static_cast<unsigned>(max);
 }
 
 bool HTMLInputElement::rangeUnderflow() const

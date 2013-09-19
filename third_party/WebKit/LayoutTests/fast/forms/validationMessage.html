@@ -97,6 +97,25 @@ numberInput.max = "10.02";
 numberInput.value = "10.01";
 debug("input stepMismatch: " + numberInput.validationMessage);
 
+debug("tooLong:");
+var inputWithMax = document.createElement("input");
+inputWithMax.maxLength = 3;
+inputWithMax.value = "abcdef";
+document.body.appendChild(inputWithMax);
+inputWithMax.focus();
+document.execCommand("delete");
+debug("input tooLong: " + inputWithMax.validationMessage);
+// fancyX should be treated as 3 characters.
+// U+0305 COMBINING OVERLINE
+// U+0332 COMBINING LOW LINE
+var fancyX = "x\u0305\u0332";
+inputWithMax.maxLength = 2;
+inputWithMax.value = fancyX + "X";
+inputWithMax.focus();
+inputWithMax.setSelectionRange(4, 4);
+document.execCommand("delete");
+debug("input tooLong: " + inputWithMax.validationMessage);
+
 // A button can't be valited and, thus, has a blank validationMessage
 var but = document.createElement("button");
 but.name = "button";
