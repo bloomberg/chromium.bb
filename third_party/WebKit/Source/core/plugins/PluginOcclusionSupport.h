@@ -17,8 +17,8 @@
     Boston, MA 02110-1301, USA.
 */
 
-#ifndef IFrameShimSupport_h
-#define IFrameShimSupport_h
+#ifndef PluginOcclusionSupport_h
+#define PluginOcclusionSupport_h
 
 #include "wtf/Vector.h"
 
@@ -31,4 +31,4 @@ void getPluginOcclusions(Element*, Widget* parentWidget, const IntRect& frameRec
 
 } // namespace WebCore
 
-#endif // IFrameShimSupport_h
+#endif // PluginOcclusionSupport_h

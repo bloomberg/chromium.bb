@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/plugins/IFrameShimSupport.h"
+#include "core/plugins/PluginOcclusionSupport.h"
 
 #include "HTMLNames.h"
 #include "core/dom/Element.h"
@@ -42,8 +42,7 @@
 #include "core/rendering/RenderObject.h"
 #include "wtf/HashSet.h"
 
-// This file provides plugin-related utility functions for iframe shims and is shared by platforms that inherit
-// from PluginView (e.g. Qt) and those that do not (e.g. Chromium).
+// This file provides a utility function to support rendering certain elements above plugins.
 
 namespace WebCore {
 
@@ -60,7 +59,7 @@ static void getObjectStack(const RenderObject* ro, Vector<const RenderObject*>* 
 static bool iframeIsAbovePlugin(const Vector<const RenderObject*>& iframeZstack, const Vector<const RenderObject*>& pluginZstack)
 {
     for (size_t i = 0; i < iframeZstack.size() && i < pluginZstack.size(); i++) {
-        // The root is at the end of these stacks.  We want to iterate
+        // The root is at the end of these stacks. We want to iterate
         // root-downwards so we index backwards from the end.
         const RenderObject* ro1 = iframeZstack[iframeZstack.size() - 1 - i];
         const RenderObject* ro2 = pluginZstack[pluginZstack.size() - 1 - i];
@@ -95,7 +94,7 @@ static bool iframeIsAbovePlugin(const Vector<const RenderObject*>& iframeZstack,
                 return true;
             }
 
-            // Inspect the document order.  Later order means higher stacking.
+            // Inspect the document order. Later order means higher stacking.
             const RenderObject* parent = ro1->parent();
             if (!parent)
                 return false;
@@ -114,10 +113,40 @@ static bool iframeIsAbovePlugin(const Vector<const RenderObject*>& iframeZstack,
     return true;
 }
 
+static bool intersectsRect(const RenderObject* renderer, const IntRect& rect)
+{
+    return renderer->absoluteBoundingBoxRectIgnoringTransforms().intersects(rect)
+        && (!renderer->style() || renderer->style()->visibility() == VISIBLE);
+}
+
+static void addToOcclusions(const RenderBox* renderer, Vector<IntRect>& occlusions)
+{
+    IntPoint point = roundedIntPoint(renderer->localToAbsolute());
+    IntSize size(renderer->width(), renderer->height());
+    occlusions.append(IntRect(point, size));
+}
+
+static void addTreeToOcclusions(const RenderObject* renderer, const IntRect& frameRect, Vector<IntRect>& occlusions)
+{
+    if (!renderer)
+        return;
+    if (renderer->isBox() && intersectsRect(renderer, frameRect))
+        addToOcclusions(toRenderBox(renderer), occlusions);
+    for (RenderObject* child = renderer->firstChild(); child; child = child->nextSibling())
+        addTreeToOcclusions(child, frameRect, occlusions);
+}
+
+static const Element* topLayerAncestor(const Element* element)
+{
+    while (element && !element->isInTopLayer())
+        element = element->parentOrShadowHostElement();
+    return element;
+}
+
 // Return a set of rectangles that should not be overdrawn by the
-// plugin ("cutouts").  This helps implement the "iframe shim"
+// plugin ("cutouts"). This helps implement the "iframe shim"
 // technique of overlaying a windowed plugin with content from the
-// page.  In a nutshell, iframe elements should occlude plugins when
+// page. In a nutshell, iframe elements should occlude plugins when
 // they occur higher in the stacking order.
 void getPluginOcclusions(Element* element, Widget* parentWidget, const IntRect& frameRect, Vector<IntRect>& occlusions)
 {
@@ -134,6 +163,7 @@ void getPluginOcclusions(Element* element, Widget* parentWidget, const IntRect& 
 
     FrameView* parentFrameView = toFrameView(parentWidget);
 
+    // Occlusions by iframes.
     const HashSet<RefPtr<Widget> >* children = parentFrameView->children();
     for (HashSet<RefPtr<Widget> >::const_iterator it = children->begin(); it != children->end(); ++it) {
         // We only care about FrameView's because iframes show up as FrameViews.
@@ -149,18 +179,24 @@ void getPluginOcclusions(Element* element, Widget* parentWidget, const IntRect& 
 
         RenderObject* iframeRenderer = element->renderer();
 
-        if (element->hasTagName(HTMLNames::iframeTag)
-            && iframeRenderer->absoluteBoundingBoxRectIgnoringTransforms().intersects(frameRect)
-            && (!iframeRenderer->style() || iframeRenderer->style()->visibility() == VISIBLE)) {
+        if (element->hasTagName(HTMLNames::iframeTag) && intersectsRect(iframeRenderer, frameRect)) {
             getObjectStack(iframeRenderer, &iframeZstack);
-            if (iframeIsAbovePlugin(iframeZstack, pluginZstack)) {
-                IntPoint point = roundedIntPoint(iframeRenderer->localToAbsolute());
-                RenderBox* rbox = toRenderBox(iframeRenderer);
-                IntSize size(rbox->width(), rbox->height());
-                occlusions.append(IntRect(point, size));
-            }
+            if (iframeIsAbovePlugin(iframeZstack, pluginZstack))
+                addToOcclusions(toRenderBox(iframeRenderer), occlusions);
         }
     }
+
+    // Occlusions by top layer elements.
+    // FIXME: There's no handling yet for the interaction between top layer and
+    // iframes. For example, a plugin in the top layer will be occluded by an
+    // iframe. And a plugin inside an iframe in the top layer won't be respected
+    // as being in the top layer.
+    const Element* ancestor = topLayerAncestor(element);
+    Document* document = parentFrameView->frame().document();
+    const Vector<RefPtr<Element> >& elements = document->topLayerElements();
+    size_t start = ancestor ? elements.find(ancestor) + 1 : 0;
+    for (size_t i = start; i < elements.size(); ++i)
+        addTreeToOcclusions(elements[i]->renderer(), frameRect, occlusions);
 }
 
 } // namespace WebCore
