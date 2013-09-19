@@ -161,20 +161,20 @@ class WebrtcBrowserTest : public WebRtcTestBase {
     perf_test::PrintResult("cpu", "", "cpu" + suffix,
                            process_metrics->GetCPUUsage(),
                            "%", true);
-    perf_test::PrintResult("memory", "", "ws_final" + suffix,
-                           process_metrics->GetWorkingSetSize(),
-                           "bytes", true);
     perf_test::PrintResult("memory", "", "ws_peak" + suffix,
                            process_metrics->GetPeakWorkingSetSize(),
                            "bytes", true);
+    perf_test::PrintResult("memory", "", "ws_final" + suffix,
+                           process_metrics->GetWorkingSetSize(),
+                           "bytes", false);
 
     size_t private_mem;
     size_t shared_mem;
     if (process_metrics->GetMemoryBytes(&private_mem, &shared_mem)) {
       perf_test::PrintResult("memory", "", "private_mem_final" + suffix,
-                             private_mem, "bytes", true);
+                             private_mem, "bytes", false);
       perf_test::PrintResult("memory", "", "shared_mem_final" + suffix,
-                             shared_mem, "bytes", true);
+                             shared_mem, "bytes", false);
     }
   }
 
