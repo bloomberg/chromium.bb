@@ -66,12 +66,14 @@ void TrayMonitor::OnGotHandles(const std::list<base::ProcessHandle>& handles) {
   base::string16 free_bytes =
       ui::FormatBytes(static_cast<int64>(mem_info.free) * 1024);
   output = base::StringPrintf("free: %s", UTF16ToUTF8(free_bytes).c_str());
+#if defined(OS_CHROMEOS)
   if (mem_info.gem_size != -1) {
     base::string16 gem_size = ui::FormatBytes(mem_info.gem_size);
     output += base::StringPrintf("  gmem: %s", UTF16ToUTF8(gem_size).c_str());
     if (mem_info.gem_objects != -1)
       output += base::StringPrintf("  gobjects: %d", mem_info.gem_objects);
   }
+#endif
   size_t total_private_bytes = 0, total_shared_bytes = 0;
   for (std::list<base::ProcessHandle>::const_iterator i = handles.begin();
        i != handles.end(); ++i) {
