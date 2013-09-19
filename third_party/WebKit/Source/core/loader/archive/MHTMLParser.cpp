@@ -139,10 +139,15 @@ PassRefPtr<ArchiveResource> MHTMLParser::parseNextPart(const MIMEHeader& mimeHea
 {
     ASSERT(endOfPartBoundary.isEmpty() == endOfDocumentBoundary.isEmpty());
 
+    // If no content transfer encoding is specified, default to binary encoding.
+    MIMEHeader::Encoding contentTransferEncoding = mimeHeader.contentTransferEncoding();
+    if (contentTransferEncoding == MIMEHeader::Unknown)
+        contentTransferEncoding = MIMEHeader::Binary;
+
     RefPtr<SharedBuffer> content = SharedBuffer::create();
     const bool checkBoundary = !endOfPartBoundary.isEmpty();
     bool endOfPartReached = false;
-    if (mimeHeader.contentTransferEncoding() == MIMEHeader::Binary) {
+    if (contentTransferEncoding == MIMEHeader::Binary) {
         if (!checkBoundary) {
             LOG_ERROR("Binary contents requires end of part");
             return 0;
@@ -180,7 +185,7 @@ PassRefPtr<ArchiveResource> MHTMLParser::parseNextPart(const MIMEHeader& mimeHea
             }
             // Note that we use line.utf8() and not line.ascii() as ascii turns special characters (such as tab, line-feed...) into '?'.
             content->append(line.utf8().data(), line.length());
-            if (mimeHeader.contentTransferEncoding() == MIMEHeader::QuotedPrintable) {
+            if (contentTransferEncoding == MIMEHeader::QuotedPrintable) {
                 // The line reader removes the \r\n, but we need them for the content in this case as the QuotedPrintable decoder expects CR-LF terminated lines.
                 content->append("\r\n", 2);
             }
@@ -192,7 +197,7 @@ PassRefPtr<ArchiveResource> MHTMLParser::parseNextPart(const MIMEHeader& mimeHea
     }
 
     Vector<char> data;
-    switch (mimeHeader.contentTransferEncoding()) {
+    switch (contentTransferEncoding) {
     case MIMEHeader::Base64:
         if (!base64Decode(content->data(), content->size(), data)) {
             LOG_ERROR("Invalid base64 content for MHTML part.");
