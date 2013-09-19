@@ -111,7 +111,7 @@ AC_DEFUN([LIBDRM_CC_TRY_FLAG], [
   libdrm_save_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS $1"
 
-  AC_COMPILE_IFELSE([ ], [libdrm_cc_flag=yes], [libdrm_cc_flag=no])
+  AC_COMPILE_IFELSE([AC_LANG_SOURCE([ ])], [libdrm_cc_flag=yes], [libdrm_cc_flag=no])
   CFLAGS="$libdrm_save_CFLAGS"
 
   if test "x$libdrm_cc_flag" = "xyes"; then
