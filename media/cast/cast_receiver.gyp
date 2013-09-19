@@ -4,7 +4,7 @@
 
 {
   'includes': [
-#    'audio_receiver/audio_receiver.gypi',
+     'audio_receiver/audio_receiver.gypi',
 #    'video_receiver/video_receiver.gypi',
   ],
   'targets': [
@@ -13,13 +13,13 @@
       'type': 'static_library',
       'sources': [
         'cast_receiver.h',
-#        'cast_receiver_impl.cc',
-#        'cast_receiver_impl.h',
+#       'cast_receiver_impl.cc',
+#       'cast_receiver_impl.h',
       ], # source
       'dependencies': [
-         'rtp_receiver/rtp_receiver.gyp:*',
-#        'audio_receiver',
-#        'video_receiver',
+        'rtp_receiver/rtp_receiver.gyp:*',
+        'cast_audio_receiver',
+#       'video_receiver',
         'framer/framer.gyp:cast_framer',
         'pacing/paced_sender.gyp:paced_sender',
       ],

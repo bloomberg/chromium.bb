@@ -9,11 +9,19 @@
 #define MEDIA_CAST_CAST_RECEIVER_H_
 
 #include "base/basictypes.h"
+#include "base/callback.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "media/cast/cast_config.h"
+#include "media/cast/cast_thread.h"
 
 namespace media {
 namespace cast {
+// Callback in which the raw audio frame and render time will be returned
+// once decoding is complete.
+typedef base::Callback<void(scoped_ptr<PcmAudioFrame>,
+    const base::TimeTicks)> AudioFrameDecodedCallback;
 
 // This Class is thread safe.
 class FrameReceiver : public base::RefCountedThreadSafe<FrameReceiver>{
@@ -29,8 +37,7 @@ class FrameReceiver : public base::RefCountedThreadSafe<FrameReceiver>{
 
   virtual bool GetRawAudioFrame(int number_of_10ms_blocks,
                                 int desired_frequency,
-                                PcmAudioFrame* audio_frame,
-                                base::TimeTicks* playout_time) = 0;
+                                const AudioFrameDecodedCallback callback) = 0;
 
   virtual bool GetCodedAudioFrame(EncodedAudioFrame* audio_frame,
                                   base::TimeTicks* playout_time) = 0;

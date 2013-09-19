@@ -58,6 +58,8 @@
             '<(DEPTH)/third_party/webrtc/',
           ],
           'sources': [
+            'audio_receiver/audio_decoder_unittest.cc',
+            'audio_receiver/audio_receiver_unittest.cc',
             'audio_sender/audio_encoder_unittest.cc',
             'audio_sender/audio_sender_unittest.cc',
             'congestion_control/congestion_control_unittest.cc',
