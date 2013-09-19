@@ -37,6 +37,8 @@ content::WebUIDataSource* CreateKeyboardUIDataSource() {
   source->AddResourcePath("elements/kb-keyset.html",
                           IDR_KEYBOARD_ELEMENTS_KEYSET);
   source->AddResourcePath("elements/kb-row.html", IDR_KEYBOARD_ELEMENTS_ROW);
+  source->AddResourcePath("elements/kb-shift-key.html",
+                          IDR_KEYBOARD_ELEMENTS_SHIFT_KEY);
   source->AddResourcePath("images/microphone.svg",
                           IDR_KEYBOARD_IMAGES_MICROPHONE);
   source->AddResourcePath("images/microphone-green.svg",

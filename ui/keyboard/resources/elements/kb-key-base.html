@@ -109,30 +109,20 @@
         }
       },
       down: function(event) {
-        var detail = this.PopulateDetails();
+        var detail = this.populateDetails();
         if (this.keysetRules && this.keysetRules.down != undefined) {
           detail.toKeyset = this.keysetRules.down[TO_KEYSET - OFFSET];
           detail.nextKeyset = this.keysetRules.down[NEXT_KEYSET - OFFSET];
         }
         this.fire('key-down', detail);
-        this.longPressTimer = this.asyncMethod(function() {
-          var detail = {
-            char: this.charValue,
-            hintText: this.hintText
-          };
-          if (this.keysetRules && this.keysetRules.long != undefined) {
-            detail.toKeyset = this.keysetRules.long[TO_KEYSET - OFFSET];
-            detail.nextKeyset = this.keysetRules.long[NEXT_KEYSET - OFFSET];
-          }
-          this.fire('key-longpress', detail);
-        }, null, LONGPRESS_DELAY_MSEC);
+        this.longPressTimer = this.generateLongPressTimer();
       },
       out: function(event) {
         clearTimeout(this.longPressTimer);
       },
       up: function(event) {
         clearTimeout(this.longPressTimer);
-        var detail = this.PopulateDetails();
+        var detail = this.populateDetails();
         if (this.keysetRules && this.keysetRules.up != undefined) {
           detail.toKeyset = this.keysetRules.up[TO_KEYSET - OFFSET];
           detail.nextKeyset = this.keysetRules.up[NEXT_KEYSET - OFFSET];
@@ -150,12 +140,26 @@
         return this.char || this.textContent;
       },
 
-      PopulateDetails: function() {
+      populateDetails: function() {
          return {
             char: this.charValue,
             toLayout: this.toLayout,
             repeat: this.repeat
          };
+      },
+
+      generateLongPressTimer: function() {
+        return this.asyncMethod(function() {
+          var detail = {
+            char: this.charValue,
+            hintText: this.hintText
+          };
+          if (this.keysetRules && this.keysetRules.long != undefined) {
+            detail.toKeyset = this.keysetRules.long[TO_KEYSET - OFFSET];
+            detail.nextKeyset = this.keysetRules.long[NEXT_KEYSET - OFFSET];
+          }
+          this.fire('key-longpress', detail);
+        }, null, LONGPRESS_DELAY_MSEC);
       },
     });
   </script>

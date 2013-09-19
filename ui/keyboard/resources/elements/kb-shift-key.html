@@ -1,0 +1,156 @@
+<!--
+  -- Copyright 2013 The Chromium Authors. All rights reserved.
+  -- Use of this source code is governed by a BSD-style license that can be
+  -- found in the LICENSE file.
+  -->
+
+<polymer-element name="kb-shift-key" attributes="unlockedCase lockedCase state"
+    class="shift dark" char="Shift" extends="kb-key">
+  <script>
+    (function () {
+
+      /**
+       * The possible states of the shift key.
+       * Unlocked is the default state. Locked for capslocked, pressed is a
+       * key-down and tapped for a key-down followed by an immediate key-up.
+       * @const
+       * @type {Enum}
+       */
+      var KEY_STATES = {
+        PRESSED: "pressed", // Key-down on shift key.
+        LOCKED: "locked", // Key is capslocked.
+        UNLOCKED: "unlocked", // Default state.
+        TAPPED: "tapped" // Key-down followed by key-up.
+      };
+
+      /**
+       * Uses a closure to define one long press timer among all shift keys
+       * regardless of the layout they are in.
+       * @type {function}
+       */
+      var shiftLongPressTimer = undefined;
+
+      /**
+       * The current state of the shift key.
+       * @type {Enum}
+       */
+      var state = KEY_STATES.UNLOCKED;
+
+      Polymer('kb-shift-key', {
+        /**
+         * Defines how capslock effects keyset transition. We always transition
+         * from the unlockedCase to the lockedCase if capslock is on.
+         * @type {string}
+         */
+        unlockedCase: 'lower',
+        lockedCase: 'upper',
+
+        up: function(event) {
+          if (state == KEY_STATES.PRESSED) {
+            state = KEY_STATES.TAPPED;
+            // TODO(rsadam@): Add chording logic here.
+          }
+          this.super();
+        },
+
+        down: function(event) {
+          // First transition state so that populateDetails generates
+          // correct data.
+          switch (state) {
+            case KEY_STATES.UNLOCKED:
+              state = KEY_STATES.PRESSED;
+              break;
+            case KEY_STATES.TAPPED:
+            case KEY_STATES.LOCKED:
+              state = KEY_STATES.UNLOCKED;
+              break;
+            case KEY_STATES.PRESSED:
+              // We pressed another shift key at the same time,
+              // so ignore second press.
+              break;
+            default:
+              console.error("Undefined shift key state: " + this.state);
+              break;
+          }
+          // Trigger parent behaviour.
+          this.super();
+          this.fire('enable-sel');
+          // Populate double click transition details.
+          var detail = {};
+          detail.char = this.char || this.textContent;
+          detail.toKeyset = this.lockedCase;
+          detail.nextKeyset = undefined;
+          detail.callback = this.onDoubleClick;
+          this.fire('enable-dbl', detail);
+        },
+
+        generateLongPressTimer: function() {
+          return this.asyncMethod(function() {
+            var detail = this.populateDetails();
+            if (this.state == KEY_STATES.LOCKED) {
+              // We don't care about the longpress if we are already
+              // capitalized.
+              return;
+            } else {
+              this.state = KEY_STATES.LOCKED;
+              detail.shiftState = KEY_STATES.LOCKED;
+              detail.toKeyset = this.lockedCase;
+            }
+            this.fire('key-longpress', detail);
+          }, null, LONGPRESS_DELAY_MSEC);
+        },
+
+        /**
+         * Callback function for when a double click is triggered.
+         */
+        onDoubleClick: function() {
+          state = KEY_STATES.LOCKED;
+        },
+
+        populateDetails: function() {
+          var detail = this.super();
+          detail.shiftState = this.state;
+          switch(this.state) {
+            case(KEY_STATES.LOCKED):
+              detail.toKeyset = this.lockedCase;
+              break;
+            case(KEY_STATES.UNLOCKED):
+              detail.toKeyset = this.unlockedCase;
+              break;
+            case(KEY_STATES.PRESSED):
+              detail.toKeyset = this.lockedCase;
+             // detail.nextKeyset = this.unlockedCase;
+              break;
+            case(KEY_STATES.TAPPED):
+              detail.toKeyset = this.lockedCase;
+              detail.nextKeyset = this.unlockedCase;
+              break;
+          }
+          return detail;
+        },
+
+        /**
+         *  Resets the shift key state.
+         */
+        reset: function() {
+          state = KEY_STATES.UNLOCKED;
+        },
+
+        /**
+         * Overrides longPressTimer for the shift key.
+         */
+        get longPressTimer() {
+          return shiftLongPressTimer;
+        },
+
+        set longPressTimer(timer) {
+          shiftLongPressTimer = timer;
+        },
+
+        get state() {
+          return state;
+        }
+      });
+    })();
+  </script>
+</polymer-element>

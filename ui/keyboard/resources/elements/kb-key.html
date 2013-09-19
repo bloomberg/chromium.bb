@@ -45,7 +45,7 @@
        * Returns a subset of the key attributes.
        * @return {Object} Mapping of attributes for the key element.
        */
-      PopulateDetails: function() {
+      populateDetails: function() {
         var details = this.super();
         details.keyCode = this.keyCode;
         details.shiftModifier = this.shiftModifier;
@@ -56,56 +56,6 @@
 </polymer-element>
 
 <!-- Special keys -->
-
-<polymer-element name="kb-shift-key" attributes="unlockedCase lockedCase"
-    class="shift dark" char="Shift" extends="kb-key">
-  <script>
-
-    (function () {
-      /**
-       * Uses a closure to define one long press timer among all shift keys
-       * regardless of the layout they are in.
-       * @type {function}
-       */
-      var shiftLongPressTimer = undefined;
-
-      Polymer('kb-shift-key', {
-         /**
-          * Defines how capslock effects keyset transition. We always transition
-          * from the unlockedCase to the lockedCase if capslock is on.
-          * @type {string}
-          */
-        unlockedCase: 'lower',
-        lockedCase: 'upper',
-        control: true,
-
-        down: function(event) {
-          this.super();
-          var detail = {};
-          if (this.keysetRules && this.keysetRules.dbl != undefined) {
-            detail.char = this.char || this.textContent;
-            detail.toKeyset = this.keysetRules.dbl[TO_KEYSET - OFFSET];
-            detail.nextKeyset = this.keysetRules.dbl[NEXT_KEYSET - OFFSET];
-          }
-          this.fire('enable-dbl', detail);
-          this.fire('enable-sel');
-        },
-
-        /**
-         * Overrides longPressTimer for the shift key.
-         */
-        get longPressTimer() {
-          return shiftLongPressTimer;
-        },
-
-        set longPressTimer(timer) {
-          shiftLongPressTimer = timer;
-        },
-      });
-    })();
-
-  </script>
-</polymer-element>
 
 <!--
   -- TODO(kevers): Rip this out if and when we are done implementing the proper

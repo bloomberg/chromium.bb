@@ -336,6 +336,7 @@
           this.dblDetail_.clickCount = 0;
           var self = this;
           this.dblTimer_ = setTimeout(function() {
+            self.dblDetail_.callback = null;
             self.dblDetail_ = null;
           }, DBL_INTERVAL_MSEC);
         }
@@ -372,6 +373,7 @@
         if (this.dblDetail_) {
           this.dblDetail_.clickCount++;
           if (this.dblDetail_.clickCount == 2) {
+            this.dblDetail_.callback();
             this.keyset = this.dblDetail_.toKeyset;
             var keysetId = '#' + this.layout + '-' + this.keyset;
             var keyset = this.querySelector(keysetId);
@@ -521,6 +523,9 @@
       cacheCapsLock: function() {
         var shift = this.querySelector('kb-shift-key');
         if (shift) {
+          shift.reset();
+          // TODO(rsadam@): Change this such that the keyboard knows
+          // only about the shift state. Move this logic into the shift key.
           this.capsLock = { 'lockedCase' : shift.lockedCase,
                             'unlockedCase' : shift.unlockedCase
                           };
