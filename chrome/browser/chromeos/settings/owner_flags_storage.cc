@@ -47,7 +47,7 @@ OwnerFlagsStorage::OwnerFlagsStorage(PrefService *prefs,
 
 OwnerFlagsStorage::~OwnerFlagsStorage() {}
 
-bool OwnerFlagsStorage::SetFlags(std::set<std::string> flags) {
+bool OwnerFlagsStorage::SetFlags(const std::set<std::string>& flags) {
   PrefServiceFlagsStorage::SetFlags(flags);
 
   base::ListValue experiments_list;

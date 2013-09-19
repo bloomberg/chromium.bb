@@ -20,7 +20,7 @@ class FlagsStorage {
   // Retrieves the flags as a set of strings.
   virtual std::set<std::string> GetFlags() = 0;
   // Stores the |flags| and returns true on success.
-  virtual bool SetFlags(std::set<std::string> flags) = 0;
+  virtual bool SetFlags(const std::set<std::string>& flags) = 0;
 };
 
 }  // namespace about_flags

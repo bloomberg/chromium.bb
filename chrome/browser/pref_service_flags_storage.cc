@@ -33,7 +33,7 @@ std::set<std::string> PrefServiceFlagsStorage::GetFlags() {
   return flags;
 }
 
-bool PrefServiceFlagsStorage::SetFlags(std::set<std::string> flags) {
+bool PrefServiceFlagsStorage::SetFlags(const std::set<std::string>& flags) {
   ListPrefUpdate update(prefs_, prefs::kEnabledLabsExperiments);
   ListValue* experiments_list = update.Get();
 
