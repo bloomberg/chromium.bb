@@ -331,8 +331,8 @@ content::WebContents* AvatarMenuModel::BeginSignOut() {
   cache.SetProfileSigninRequiredAtIndex(index, true);
 
   std::string landing_url = signin::GetLandingURL("close", 1).spec();
-  GURL logout_url(GaiaUrls::GetInstance()->service_logout_url() +
-                  "?continue=" + landing_url);
+  GURL logout_url(GaiaUrls::GetInstance()->service_logout_url().Resolve(
+                  "?continue=" + landing_url));
   if (!logout_override_.empty()) {
     // We're testing...
     landing_url = logout_override_;

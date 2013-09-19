@@ -8,11 +8,10 @@ namespace switches {
 
 const char kClientLoginToOAuth2Url[]        = "client-login-to-oauth2-url";
 const char kGaiaUrl[]                       = "gaia-url";
-const char kGoogleApisHost[]                = "google-apis-host";
+const char kGoogleApisUrl[]                 = "google-apis-url";
 const char kLsoUrl[]                        = "lso-url";
 const char kOAuth1LoginScope[]              = "oauth1-login-scope";
-const char kOAuth2IssueTokenUrl[]           = "oauth2-issue-token-url";
-const char kOAuth2TokenUrl[]                = "oauth2-token-url";
-const char kOAuthUserInfoUrl[]              = "oauth-user-info-url";
+const char kOAuthWrapBridgeUserInfoScope[] =
+    "oauth-wrap-bridge-user-info-scope";
 
 }  // namespace switches

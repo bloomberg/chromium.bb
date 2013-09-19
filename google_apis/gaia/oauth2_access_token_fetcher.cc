@@ -182,7 +182,7 @@ void OAuth2AccessTokenFetcher::OnURLFetchComplete(
 
 // static
 GURL OAuth2AccessTokenFetcher::MakeGetAccessTokenUrl() {
-  return GURL(GaiaUrls::GetInstance()->oauth2_token_url());
+  return GaiaUrls::GetInstance()->oauth2_token_url();
 }
 
 // static

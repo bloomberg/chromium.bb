@@ -43,8 +43,8 @@
 #endif
 
 using content::NavigationController;
-using content::NotificationSource;
 using content::NotificationDetails;
+using content::NotificationSource;
 
 
 // AutoLoginRedirector --------------------------------------------------------
@@ -128,7 +128,7 @@ void AutoLoginRedirector::OnUbertokenFailure(
 void AutoLoginRedirector::RedirectToMergeSession(const std::string& token) {
   // TODO(rogerta): what is the correct page transition?
   navigation_controller_->LoadURL(
-      GURL(GaiaUrls::GetInstance()->merge_session_url() +
+      GaiaUrls::GetInstance()->merge_session_url().Resolve(
           "?source=chrome&uberauth=" + token + "&" + args_),
       content::Referrer(), content::PAGE_TRANSITION_AUTO_BOOKMARK,
       std::string());

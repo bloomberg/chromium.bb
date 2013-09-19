@@ -103,7 +103,7 @@ const char GaiaAuthFetcher::kMergeSessionFormat[] =
     "source=%s";
 // static
 const char GaiaAuthFetcher::kUberAuthTokenURLFormat[] =
-    "%s?source=%s&"
+    "?source=%s&"
     "issueuberauth=1";
 
 const char GaiaAuthFetcher::kOAuthLoginFormat[] = "service=%s&source=%s";
@@ -179,8 +179,8 @@ GaiaAuthFetcher::GaiaAuthFetcher(GaiaAuthConsumer* consumer,
       oauth2_revoke_gurl_(GaiaUrls::GetInstance()->oauth2_revoke_url()),
       get_user_info_gurl_(GaiaUrls::GetInstance()->get_user_info_url()),
       merge_session_gurl_(GaiaUrls::GetInstance()->merge_session_url()),
-      uberauth_token_gurl_(base::StringPrintf(kUberAuthTokenURLFormat,
-          GaiaUrls::GetInstance()->oauth1_login_url().c_str(), source.c_str())),
+      uberauth_token_gurl_(GaiaUrls::GetInstance()->oauth1_login_url().Resolve(
+          base::StringPrintf(kUberAuthTokenURLFormat, source.c_str()))),
       oauth_login_gurl_(GaiaUrls::GetInstance()->oauth1_login_url()),
       client_login_to_oauth2_gurl_(
           GaiaUrls::GetInstance()->client_login_to_oauth2_url()),
@@ -517,7 +517,7 @@ void GaiaAuthFetcher::StartLsoForOAuthLoginTokenExchange(
   DVLOG(1) << "Starting OAuth login token exchange with auth_token";
   request_body_ = MakeGetAuthCodeBody();
   client_login_to_oauth2_gurl_ =
-      GURL(GaiaUrls::GetInstance()->client_login_to_oauth2_url());
+      GaiaUrls::GetInstance()->client_login_to_oauth2_url();
 
   fetcher_.reset(CreateGaiaFetcher(getter_,
                                    request_body_,
@@ -551,11 +551,12 @@ void GaiaAuthFetcher::StartCookieForOAuthLoginTokenExchange(
   DVLOG(1) << "Starting OAuth login token fetch with cookie jar";
   request_body_ = MakeGetAuthCodeBody();
 
-  std::string url = GaiaUrls::GetInstance()->client_login_to_oauth2_url();
-  if (!session_index.empty())
-    url += "?authuser=" + session_index;
-
-  client_login_to_oauth2_gurl_ = GURL(url);
+  client_login_to_oauth2_gurl_ =
+      GaiaUrls::GetInstance()->client_login_to_oauth2_url();
+  if (!session_index.empty()) {
+    client_login_to_oauth2_gurl_ =
+        client_login_to_oauth2_gurl_.Resolve("?authuser=" + session_index);
+  }
 
   fetcher_.reset(CreateGaiaFetcher(getter_,
                                    request_body_,
@@ -684,7 +685,7 @@ GoogleServiceAuthError GaiaAuthFetcher::GenerateAuthError(
 
     if (error == kCaptchaError) {
       GURL image_url(
-          GaiaUrls::GetInstance()->captcha_url_prefix() + captcha_url);
+          GaiaUrls::GetInstance()->captcha_base_url().Resolve(captcha_url));
       GURL unlock_url(url);
       return GoogleServiceAuthError::FromClientLoginCaptchaChallenge(
           captcha_token, image_url, unlock_url);
@@ -737,7 +738,7 @@ GoogleServiceAuthError GaiaAuthFetcher::GenerateOAuthLoginError(
 
     if (error == kCaptchaErrorCode) {
       GURL image_url(
-          GaiaUrls::GetInstance()->captcha_url_prefix() + captcha_url);
+          GaiaUrls::GetInstance()->captcha_base_url().Resolve(captcha_url));
       GURL unlock_url(url);
       return GoogleServiceAuthError::FromClientLoginCaptchaChallenge(
           captcha_token, image_url, unlock_url);

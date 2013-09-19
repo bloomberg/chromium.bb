@@ -179,8 +179,6 @@ GURL GetLandingURL(const char* option, int value) {
 GURL GetPromoURL(Source source, bool auto_close) {
   DCHECK_NE(SOURCE_UNKNOWN, source);
 
-  std::string url_string;
-
   // Build a Gaia-based URL that can be used to sign the user into chrome.
   // There are required request parameters:
   //
@@ -195,19 +193,18 @@ GURL GetPromoURL(Source source, bool auto_close) {
   // It is also parsed for the |auto_close| flag, which indicates that the tab
   // must be closed after sync setup is successful.
   // See OneClickSigninHelper for details.
-  url_string = GaiaUrls::GetInstance()->service_login_url();
-  url_string.append("?service=chromiumsync&sarp=1");
+  std::string query_string = "?service=chromiumsync&sarp=1";
 
   std::string continue_url = GetLandingURL(kSignInPromoQueryKeySource,
                                            static_cast<int>(source)).spec();
   if (auto_close)
     base::StringAppendF(&continue_url, "&%s=1", kSignInPromoQueryKeyAutoClose);
 
-  base::StringAppendF(&url_string, "&%s=%s", kSignInPromoQueryKeyContinue,
+  base::StringAppendF(&query_string, "&%s=%s", kSignInPromoQueryKeyContinue,
                       net::EscapeQueryParamValue(
                           continue_url, false).c_str());
 
-  return GURL(url_string);
+  return GaiaUrls::GetInstance()->service_login_url().Resolve(query_string);
 }
 
 GURL GetNextPageURLForPromoURL(const GURL& url) {

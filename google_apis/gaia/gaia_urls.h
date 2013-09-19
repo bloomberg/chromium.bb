@@ -16,36 +16,35 @@ class GaiaUrls {
   static GaiaUrls* GetInstance();
 
   // The URLs for different calls in the Google Accounts programmatic login API.
-  const std::string& captcha_url_prefix() const;
-
   const GURL& gaia_url() const;
-  const std::string& client_login_url() const;
-  const std::string& service_login_url() const;
-  const std::string& service_logout_url() const;
-  const std::string& issue_auth_token_url() const;
-  const std::string& get_user_info_url() const;
-  const std::string& token_auth_url() const;
-  const std::string& merge_session_url() const;
-  const std::string& get_oauth_token_url() const;
-  const std::string& oauth_get_access_token_url() const;
-  const std::string& oauth_wrap_bridge_url() const;
-  const std::string& oauth_user_info_url() const;
-  const std::string& oauth_revoke_token_url() const;
-  const std::string& oauth1_login_url() const;
+  const GURL& captcha_base_url() const;
+  const GURL& client_login_url() const;
+  const GURL& service_login_url() const;
+  const GURL& service_logout_url() const;
+  const GURL& issue_auth_token_url() const;
+  const GURL& get_user_info_url() const;
+  const GURL& token_auth_url() const;
+  const GURL& merge_session_url() const;
+  const GURL& get_oauth_token_url() const;
+  const GURL& oauth_get_access_token_url() const;
+  const GURL& oauth_wrap_bridge_url() const;
+  const GURL& oauth_user_info_url() const;
+  const GURL& oauth_revoke_token_url() const;
+  const GURL& oauth1_login_url() const;
 
   const std::string& oauth1_login_scope() const;
   const std::string& oauth_wrap_bridge_user_info_scope() const;
 
   const std::string& oauth2_chrome_client_id() const;
   const std::string& oauth2_chrome_client_secret() const;
-  const std::string& client_login_to_oauth2_url() const;
-  const std::string& oauth2_auth_url() const;
-  const std::string& oauth2_token_url() const;
-  const std::string& oauth2_issue_token_url() const;
-  const std::string& oauth2_token_info_url() const;
-  const std::string& oauth2_revoke_url() const;
+  const GURL& client_login_to_oauth2_url() const;
+  const GURL& oauth2_auth_url() const;
+  const GURL& oauth2_token_url() const;
+  const GURL& oauth2_issue_token_url() const;
+  const GURL& oauth2_token_info_url() const;
+  const GURL& oauth2_revoke_url() const;
 
-  const std::string& gaia_login_form_realm() const;
+  const GURL& gaia_login_form_realm() const;
 
  private:
   GaiaUrls();
@@ -53,38 +52,40 @@ class GaiaUrls {
 
   friend struct DefaultSingletonTraits<GaiaUrls>;
 
-  std::string captcha_url_prefix_;
-
   GURL gaia_url_;
-  std::string lso_origin_url_;
-  std::string google_apis_origin_url_;
-  std::string client_login_url_;
-  std::string service_login_url_;
-  std::string service_logout_url_;
-  std::string issue_auth_token_url_;
-  std::string get_user_info_url_;
-  std::string token_auth_url_;
-  std::string merge_session_url_;
-  std::string get_oauth_token_url_;
-  std::string oauth_get_access_token_url_;
-  std::string oauth_wrap_bridge_url_;
-  std::string oauth_user_info_url_;
-  std::string oauth_revoke_token_url_;
-  std::string oauth1_login_url_;
+  GURL captcha_base_url_;
+
+  GURL lso_origin_url_;
+  GURL google_apis_origin_url_;
+
+  GURL client_login_url_;
+  GURL service_login_url_;
+  GURL service_logout_url_;
+  GURL issue_auth_token_url_;
+  GURL get_user_info_url_;
+  GURL token_auth_url_;
+  GURL merge_session_url_;
+  GURL get_oauth_token_url_;
+  GURL oauth_get_access_token_url_;
+  GURL oauth_wrap_bridge_url_;
+  GURL oauth_user_info_url_;
+  GURL oauth_revoke_token_url_;
+  GURL oauth1_login_url_;
 
   std::string oauth1_login_scope_;
   std::string oauth_wrap_bridge_user_info_scope_;
 
   std::string oauth2_chrome_client_id_;
   std::string oauth2_chrome_client_secret_;
-  std::string client_login_to_oauth2_url_;
-  std::string oauth2_auth_url_;
-  std::string oauth2_token_url_;
-  std::string oauth2_issue_token_url_;
-  std::string oauth2_token_info_url_;
-  std::string oauth2_revoke_url_;
 
-  std::string gaia_login_form_realm_;
+  GURL client_login_to_oauth2_url_;
+  GURL oauth2_auth_url_;
+  GURL oauth2_token_url_;
+  GURL oauth2_issue_token_url_;
+  GURL oauth2_token_info_url_;
+  GURL oauth2_revoke_url_;
+
+  GURL gaia_login_form_realm_;
 
   DISALLOW_COPY_AND_ASSIGN(GaiaUrls);
 };

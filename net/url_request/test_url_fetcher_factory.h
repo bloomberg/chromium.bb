@@ -377,6 +377,12 @@ class FakeURLFetcherFactory : public URLFetcherFactory,
 
   // Sets the fake response for a given URL.  If success is true we will serve
   // an HTTP/200 and an HTTP/500 otherwise.  The |response_data| may be empty.
+  void SetFakeResponseForURL(const GURL& url,
+                             const std::string& response_data,
+                             bool success);
+
+  // Convenience helper that calls SetFakeResponseForURL with GURL(url).
+  // TODO(mnissler): Convert callers to SetFakeResponseForURL.
   void SetFakeResponse(const std::string& url,
                        const std::string& response_data,
                        bool success);

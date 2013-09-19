@@ -13,38 +13,38 @@ namespace {
 
 // Gaia service constants
 const char kDefaultGaiaUrl[] = "https://accounts.google.com";
-const char kDefaultGoogleApisBaseUrl[] = "www.googleapis.com";
-const char kCaptchaUrlPrefixSuffix[] = "/";
+const char kDefaultGoogleApisBaseUrl[] = "https://www.googleapis.com";
 
 // API calls from accounts.google.com
-const char kClientLoginUrlSuffix[] = "/ClientLogin";
-const char kServiceLoginUrlSuffix[] = "/ServiceLogin";
-const char kServiceLogoutUrlSuffix[] = "/Logout";
-const char kIssueAuthTokenUrlSuffix[] = "/IssueAuthToken";
-const char kGetUserInfoUrlSuffix[] = "/GetUserInfo";
-const char kTokenAuthUrlSuffix[] = "/TokenAuth";
-const char kMergeSessionUrlSuffix[] = "/MergeSession";
-const char kOAuthGetAccessTokenUrlSuffix[] = "/OAuthGetAccessToken";
-const char kOAuthWrapBridgeUrlSuffix[] = "/OAuthWrapBridge";
-const char kOAuth1LoginUrlSuffix[] = "/OAuthLogin";
-const char kOAuthRevokeTokenUrlSuffix[] = "/AuthSubRevokeToken";
+const char kClientLoginUrlSuffix[] = "ClientLogin";
+const char kServiceLoginUrlSuffix[] = "ServiceLogin";
+const char kServiceLogoutUrlSuffix[] = "Logout";
+const char kIssueAuthTokenUrlSuffix[] = "IssueAuthToken";
+const char kGetUserInfoUrlSuffix[] = "GetUserInfo";
+const char kTokenAuthUrlSuffix[] = "TokenAuth";
+const char kMergeSessionUrlSuffix[] = "MergeSession";
+const char kOAuthGetAccessTokenUrlSuffix[] = "OAuthGetAccessToken";
+const char kOAuthWrapBridgeUrlSuffix[] = "OAuthWrapBridge";
+const char kOAuth1LoginUrlSuffix[] = "OAuthLogin";
+const char kOAuthRevokeTokenUrlSuffix[] = "AuthSubRevokeToken";
+
+// OAuth scopes
+const char kOAuth1LoginScope[] = "https://www.google.com/accounts/OAuthLogin";
+const char kOAuthWrapBridgeUserInfoScope[] =
+    "https://www.googleapis.com/auth/userinfo.email";
 
 // API calls from accounts.google.com (LSO)
-const char kGetOAuthTokenUrlSuffix[] = "/o/oauth/GetOAuthToken/";
-const char kClientLoginToOAuth2UrlSuffix[] = "/o/oauth2/programmatic_auth";
-const char kOAuth2AuthUrlSuffix[] = "/o/oauth2/auth";
-const char kOAuth2RevokeUrlSuffix[] = "/o/oauth2/revoke";
-const char kOAuth2TokenUrlSuffix[] = "/o/oauth2/token";
-const char kClientOAuthUrlSuffix[] = "/ClientOAuth";
+const char kGetOAuthTokenUrlSuffix[] = "o/oauth/GetOAuthToken/";
+const char kClientLoginToOAuth2UrlSuffix[] = "o/oauth2/programmatic_auth";
+const char kOAuth2AuthUrlSuffix[] = "o/oauth2/auth";
+const char kOAuth2RevokeUrlSuffix[] = "o/oauth2/revoke";
+const char kOAuth2TokenUrlSuffix[] = "o/oauth2/token";
+const char kClientOAuthUrlSuffix[] = "ClientOAuth";
 
 // API calls from www.googleapis.com
-const char kOAuth2IssueTokenUrlSuffix[] = "/oauth2/v2/IssueToken";
-const char kOAuth2TokenInfoUrlSuffix[] = "/oauth2/v2/tokeninfo";
-const char kOAuthUserInfoUrlSuffix[] = "/oauth2/v1/userinfo";
-const char kOAuthWrapBridgeUserInfoScopeUrlSuffix[] = "/auth/userinfo.email";
-
-const char kOAuth1LoginScope[] =
-    "https://www.google.com/accounts/OAuthLogin";
+const char kOAuth2IssueTokenUrlSuffix[] = "oauth2/v2/IssueToken";
+const char kOAuth2TokenInfoUrlSuffix[] = "oauth2/v2/tokeninfo";
+const char kOAuthUserInfoUrlSuffix[] = "oauth2/v1/userinfo";
 
 void GetSwitchValueWithDefault(const char* switch_value,
                                const char* default_value,
@@ -57,6 +57,16 @@ void GetSwitchValueWithDefault(const char* switch_value,
   }
 }
 
+GURL GetURLSwitchValueWithDefault(const char* switch_value,
+                                  const char* default_value) {
+  std::string string_value;
+  GetSwitchValueWithDefault(switch_value, default_value, &string_value);
+  const GURL result(string_value);
+  DCHECK(result.is_valid());
+  return result;
+}
+
+
 }  // namespace
 
 GaiaUrls* GaiaUrls::GetInstance() {
@@ -64,27 +74,15 @@ GaiaUrls* GaiaUrls::GetInstance() {
 }
 
 GaiaUrls::GaiaUrls() {
-  std::string gaia_url_str;
-  GetSwitchValueWithDefault(switches::kGaiaUrl,
-                            kDefaultGaiaUrl,
-                            &gaia_url_str);
-  gaia_url_ = GURL(gaia_url_str);
-  DCHECK(gaia_url_.is_valid());
+  gaia_url_ = GetURLSwitchValueWithDefault(switches::kGaiaUrl, kDefaultGaiaUrl);
+  lso_origin_url_ =
+      GetURLSwitchValueWithDefault(switches::kLsoUrl, kDefaultGaiaUrl);
+  google_apis_origin_url_ = GetURLSwitchValueWithDefault(
+      switches::kGoogleApisUrl, kDefaultGoogleApisBaseUrl);
 
-  GetSwitchValueWithDefault(switches::kLsoUrl,
-                            kDefaultGaiaUrl,
-                            &lso_origin_url_);
-
-  std::string google_apis_base;
-  GetSwitchValueWithDefault(switches::kGoogleApisHost,
-                            kDefaultGoogleApisBaseUrl,
-                            &google_apis_base);
-
-  captcha_url_prefix_ = "http://" + gaia_url_.host() +
-                        (gaia_url_.has_port() ? ":" + gaia_url_.port() : "") +
-                        kCaptchaUrlPrefixSuffix;
-
-  google_apis_origin_url_ = "https://" + google_apis_base;
+  captcha_base_url_ =
+      GURL("http://" + gaia_url_.host() +
+           (gaia_url_.has_port() ? ":" + gaia_url_.port() : ""));
 
   oauth2_chrome_client_id_ =
       google_apis::GetOAuth2ClientID(google_apis::CLIENT_MAIN);
@@ -92,115 +90,106 @@ GaiaUrls::GaiaUrls() {
       google_apis::GetOAuth2ClientSecret(google_apis::CLIENT_MAIN);
 
   // URLs from accounts.google.com.
-  gaia_login_form_realm_ = gaia_url_str + "/";
-  client_login_url_ = gaia_url_str + kClientLoginUrlSuffix;
-  service_login_url_ = gaia_url_str + kServiceLoginUrlSuffix;
-  service_logout_url_ = gaia_url_str + kServiceLogoutUrlSuffix;
-  issue_auth_token_url_ = gaia_url_str + kIssueAuthTokenUrlSuffix;
-  get_user_info_url_ = gaia_url_str + kGetUserInfoUrlSuffix;
-  token_auth_url_ = gaia_url_str + kTokenAuthUrlSuffix;
-  merge_session_url_ = gaia_url_str + kMergeSessionUrlSuffix;
-  oauth_get_access_token_url_ = gaia_url_str + kOAuthGetAccessTokenUrlSuffix;
-  oauth_wrap_bridge_url_ = gaia_url_str + kOAuthWrapBridgeUrlSuffix;
-  oauth_revoke_token_url_ = gaia_url_str + kOAuthRevokeTokenUrlSuffix;
-  oauth1_login_url_ = gaia_url_str + kOAuth1LoginUrlSuffix;
+  client_login_url_ = gaia_url_.Resolve(kClientLoginUrlSuffix);
+  service_login_url_ = gaia_url_.Resolve(kServiceLoginUrlSuffix);
+  service_logout_url_ = gaia_url_.Resolve(kServiceLogoutUrlSuffix);
+  issue_auth_token_url_ = gaia_url_.Resolve(kIssueAuthTokenUrlSuffix);
+  get_user_info_url_ = gaia_url_.Resolve(kGetUserInfoUrlSuffix);
+  token_auth_url_ = gaia_url_.Resolve(kTokenAuthUrlSuffix);
+  merge_session_url_ = gaia_url_.Resolve(kMergeSessionUrlSuffix);
+  oauth_get_access_token_url_ =
+      gaia_url_.Resolve(kOAuthGetAccessTokenUrlSuffix);
+  oauth_wrap_bridge_url_ = gaia_url_.Resolve(kOAuthWrapBridgeUrlSuffix);
+  oauth_revoke_token_url_ = gaia_url_.Resolve(kOAuthRevokeTokenUrlSuffix);
+  oauth1_login_url_ = gaia_url_.Resolve(kOAuth1LoginUrlSuffix);
 
   // URLs from accounts.google.com (LSO).
-  get_oauth_token_url_ = lso_origin_url_ + kGetOAuthTokenUrlSuffix;
-  std::string client_login_to_oauth2_url = lso_origin_url_ +
-                                           kClientLoginToOAuth2UrlSuffix;
-  oauth2_auth_url_ = lso_origin_url_ + kOAuth2AuthUrlSuffix;
-  std::string oauth2_token_url = lso_origin_url_ + kOAuth2TokenUrlSuffix;
-  oauth2_revoke_url_ = lso_origin_url_ + kOAuth2RevokeUrlSuffix;
+  get_oauth_token_url_ = lso_origin_url_.Resolve(kGetOAuthTokenUrlSuffix);
+  client_login_to_oauth2_url_ =
+      lso_origin_url_.Resolve(kClientLoginToOAuth2UrlSuffix);
+  oauth2_auth_url_ = lso_origin_url_.Resolve(kOAuth2AuthUrlSuffix);
+  oauth2_token_url_ = lso_origin_url_.Resolve(kOAuth2TokenUrlSuffix);
+  oauth2_revoke_url_ = lso_origin_url_.Resolve(kOAuth2RevokeUrlSuffix);
 
   // URLs from www.googleapis.com.
-  oauth_wrap_bridge_user_info_scope_ = google_apis_origin_url_ +
-      kOAuthWrapBridgeUserInfoScopeUrlSuffix;
-  std::string oauth2_issue_token_url = google_apis_origin_url_ +
-                                       kOAuth2IssueTokenUrlSuffix;
-  oauth2_token_info_url_ = google_apis_origin_url_ + kOAuth2TokenInfoUrlSuffix;
-  std::string oauth_user_info_url = google_apis_origin_url_ +
-                                    kOAuthUserInfoUrlSuffix;
+  oauth2_issue_token_url_ =
+      google_apis_origin_url_.Resolve(kOAuth2IssueTokenUrlSuffix);
+  oauth2_token_info_url_ =
+      google_apis_origin_url_.Resolve(kOAuth2TokenInfoUrlSuffix);
+  oauth_user_info_url_ =
+      google_apis_origin_url_.Resolve(kOAuthUserInfoUrlSuffix);
 
-  // TODO(zelidrag): Get rid of all these switches since all URLs should be
-  // controlled only with --gaia-url, --lso-url and --google-apis-host.
+  gaia_login_form_realm_ = gaia_url_;
+
+  // OAuth scopes.
+  GetSwitchValueWithDefault(switches::kOAuthWrapBridgeUserInfoScope,
+                            kOAuthWrapBridgeUserInfoScope,
+                            &oauth_wrap_bridge_user_info_scope_);
   GetSwitchValueWithDefault(switches::kOAuth1LoginScope,
                             kOAuth1LoginScope,
                             &oauth1_login_scope_);
-  GetSwitchValueWithDefault(switches::kClientLoginToOAuth2Url,
-                            client_login_to_oauth2_url.c_str(),
-                            &client_login_to_oauth2_url_);
-  GetSwitchValueWithDefault(switches::kOAuth2TokenUrl,
-                            oauth2_token_url.c_str(),
-                            &oauth2_token_url_);
-  GetSwitchValueWithDefault(switches::kOAuth2IssueTokenUrl,
-                            oauth2_issue_token_url.c_str(),
-                            &oauth2_issue_token_url_);
-  GetSwitchValueWithDefault(switches::kOAuthUserInfoUrl,
-                            oauth_user_info_url.c_str(),
-                            &oauth_user_info_url_);
 }
 
 GaiaUrls::~GaiaUrls() {
-}
-
-const std::string& GaiaUrls::captcha_url_prefix() const {
-  return captcha_url_prefix_;
 }
 
 const GURL& GaiaUrls::gaia_url() const {
   return gaia_url_;
 }
 
-const std::string& GaiaUrls::client_login_url() const {
+const GURL& GaiaUrls::captcha_base_url() const {
+  return captcha_base_url_;
+}
+
+const GURL& GaiaUrls::client_login_url() const {
   return client_login_url_;
 }
 
-const std::string& GaiaUrls::service_login_url() const {
+const GURL& GaiaUrls::service_login_url() const {
   return service_login_url_;
 }
 
-const std::string& GaiaUrls::service_logout_url() const {
+const GURL& GaiaUrls::service_logout_url() const {
   return service_logout_url_;
 }
 
-const std::string& GaiaUrls::issue_auth_token_url() const {
+const GURL& GaiaUrls::issue_auth_token_url() const {
   return issue_auth_token_url_;
 }
 
-const std::string& GaiaUrls::get_user_info_url() const {
+const GURL& GaiaUrls::get_user_info_url() const {
   return get_user_info_url_;
 }
 
-const std::string& GaiaUrls::token_auth_url() const {
+const GURL& GaiaUrls::token_auth_url() const {
   return token_auth_url_;
 }
 
-const std::string& GaiaUrls::merge_session_url() const {
+const GURL& GaiaUrls::merge_session_url() const {
   return merge_session_url_;
 }
 
-const std::string& GaiaUrls::get_oauth_token_url() const {
+const GURL& GaiaUrls::get_oauth_token_url() const {
   return get_oauth_token_url_;
 }
 
-const std::string& GaiaUrls::oauth_get_access_token_url() const {
+const GURL& GaiaUrls::oauth_get_access_token_url() const {
   return oauth_get_access_token_url_;
 }
 
-const std::string& GaiaUrls::oauth_wrap_bridge_url() const {
+const GURL& GaiaUrls::oauth_wrap_bridge_url() const {
   return oauth_wrap_bridge_url_;
 }
 
-const std::string& GaiaUrls::oauth_user_info_url() const {
+const GURL& GaiaUrls::oauth_user_info_url() const {
   return oauth_user_info_url_;
 }
 
-const std::string& GaiaUrls::oauth_revoke_token_url() const {
+const GURL& GaiaUrls::oauth_revoke_token_url() const {
   return oauth_revoke_token_url_;
 }
 
-const std::string& GaiaUrls::oauth1_login_url() const {
+const GURL& GaiaUrls::oauth1_login_url() const {
   return oauth1_login_url_;
 }
 
@@ -220,30 +209,30 @@ const std::string& GaiaUrls::oauth2_chrome_client_secret() const {
   return oauth2_chrome_client_secret_;
 }
 
-const std::string& GaiaUrls::client_login_to_oauth2_url() const {
+const GURL& GaiaUrls::client_login_to_oauth2_url() const {
   return client_login_to_oauth2_url_;
 }
 
-const std::string& GaiaUrls::oauth2_auth_url() const {
+const GURL& GaiaUrls::oauth2_auth_url() const {
   return oauth2_auth_url_;
 }
 
-const std::string& GaiaUrls::oauth2_token_url() const {
+const GURL& GaiaUrls::oauth2_token_url() const {
   return oauth2_token_url_;
 }
 
-const std::string& GaiaUrls::oauth2_issue_token_url() const {
+const GURL& GaiaUrls::oauth2_issue_token_url() const {
   return oauth2_issue_token_url_;
 }
 
-const std::string& GaiaUrls::oauth2_token_info_url() const {
+const GURL& GaiaUrls::oauth2_token_info_url() const {
   return oauth2_token_info_url_;
 }
 
-const std::string& GaiaUrls::oauth2_revoke_url() const {
+const GURL& GaiaUrls::oauth2_revoke_url() const {
   return oauth2_revoke_url_;
 }
 
-const std::string& GaiaUrls::gaia_login_form_realm() const {
-  return gaia_login_form_realm_;
+const GURL& GaiaUrls::gaia_login_form_realm() const {
+  return gaia_url_;
 }

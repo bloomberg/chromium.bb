@@ -513,8 +513,8 @@ TEST_F(URLBlacklistManagerTest, DontBlockResources) {
   block_signin_urls = true;
 #endif
 
-  GURL sync_url(
-      GaiaUrls::GetInstance()->service_login_url() + "?service=chromiumsync");
+  GURL sync_url(GaiaUrls::GetInstance()->service_login_url().Resolve(
+      "?service=chromiumsync"));
   net::URLRequest sync_request(sync_url, NULL, &context);
   sync_request.set_load_flags(net::LOAD_MAIN_FRAME);
   EXPECT_EQ(block_signin_urls,

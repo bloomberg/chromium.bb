@@ -22,7 +22,7 @@ GaiaWebAuthFlow::GaiaWebAuthFlow(Delegate* delegate,
       profile_(profile) {
   const char kOAuth2RedirectPathFormat[] = "/%s#";
   const char kOAuth2AuthorizeFormat[] =
-      "%s?response_type=token&approval_prompt=force&authuser=0&"
+      "?response_type=token&approval_prompt=force&authuser=0&"
       "client_id=%s&"
       "scope=%s&"
       "origin=chrome-extension://%s/&"
@@ -37,16 +37,15 @@ GaiaWebAuthFlow::GaiaWebAuthFlow(Delegate* delegate,
   redirect_path_prefix_ =
       base::StringPrintf(kOAuth2RedirectPathFormat, extension_id.c_str());
 
-  auth_url_ = GURL(base::StringPrintf(
-      kOAuth2AuthorizeFormat,
-      GaiaUrls::GetInstance()->oauth2_auth_url().c_str(),
-      oauth2_info.client_id.c_str(),
-      net::EscapeUrlEncodedData(JoinString(oauth2_info.scopes, ' '), true)
-          .c_str(),
-      extension_id.c_str(),
-      redirect_scheme_.c_str(),
-      extension_id.c_str(),
-      locale.c_str()));
+  auth_url_ = GaiaUrls::GetInstance()->oauth2_auth_url().Resolve(
+      base::StringPrintf(kOAuth2AuthorizeFormat,
+                         oauth2_info.client_id.c_str(),
+                         net::EscapeUrlEncodedData(
+                             JoinString(oauth2_info.scopes, ' '), true).c_str(),
+                         extension_id.c_str(),
+                         redirect_scheme_.c_str(),
+                         extension_id.c_str(),
+                         locale.c_str()));
 }
 
 GaiaWebAuthFlow::~GaiaWebAuthFlow() {
@@ -68,7 +67,8 @@ void GaiaWebAuthFlow::OnUbertokenSuccess(const std::string& token) {
       kMergeSessionQueryFormat,
       net::EscapeUrlEncodedData(token, true).c_str(),
       net::EscapeUrlEncodedData(auth_url_.spec(), true).c_str());
-  GURL merge_url(GaiaUrls::GetInstance()->merge_session_url() + merge_query);
+  GURL merge_url(
+      GaiaUrls::GetInstance()->merge_session_url().Resolve(merge_query));
 
   web_flow_ = CreateWebAuthFlow(merge_url);
   web_flow_->Start();
@@ -172,4 +172,4 @@ scoped_ptr<WebAuthFlow> GaiaWebAuthFlow::CreateWebAuthFlow(GURL url) {
                                                  WebAuthFlow::INTERACTIVE));
 }
 
-}  // extensions
+}  // namespace extensions

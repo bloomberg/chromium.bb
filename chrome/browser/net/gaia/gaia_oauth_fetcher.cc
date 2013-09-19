@@ -88,7 +88,7 @@ net::URLFetcher* GaiaOAuthFetcher::CreateGaiaFetcher(
 GURL GaiaOAuthFetcher::MakeGetOAuthTokenUrl(
     const std::string& oauth1_login_scope,
     const std::string& product_name) {
-  return GURL(GaiaUrls::GetInstance()->get_oauth_token_url() +
+  return GaiaUrls::GetInstance()->get_oauth_token_url().Resolve(
       "?scope=" + oauth1_login_scope +
       "&xoauth_display_name=" +
       OAuthRequestSigner::Encode(product_name));
@@ -105,7 +105,7 @@ std::string GaiaOAuthFetcher::MakeOAuthLoginBody(
   parameters["source"] = source;
   std::string signed_request;
   bool is_signed = OAuthRequestSigner::SignURL(
-      GURL(GaiaUrls::GetInstance()->oauth1_login_url()),
+      GaiaUrls::GetInstance()->oauth1_login_url(),
       parameters,
       OAuthRequestSigner::HMAC_SHA1_SIGNATURE,
       OAuthRequestSigner::POST_METHOD,
@@ -124,7 +124,7 @@ std::string GaiaOAuthFetcher::MakeOAuthGetAccessTokenBody(
   OAuthRequestSigner::Parameters empty_parameters;
   std::string signed_request;
   bool is_signed = OAuthRequestSigner::SignURL(
-      GURL(GaiaUrls::GetInstance()->oauth_get_access_token_url()),
+      GaiaUrls::GetInstance()->oauth_get_access_token_url(),
       empty_parameters,
       OAuthRequestSigner::HMAC_SHA1_SIGNATURE,
       OAuthRequestSigner::POST_METHOD,
@@ -148,7 +148,7 @@ std::string GaiaOAuthFetcher::MakeOAuthWrapBridgeBody(
   parameters["wrap_scope"] = oauth2_scope;
   std::string signed_request;
   bool is_signed = OAuthRequestSigner::SignURL(
-      GURL(GaiaUrls::GetInstance()->oauth_wrap_bridge_url()),
+      GaiaUrls::GetInstance()->oauth_wrap_bridge_url(),
       parameters,
       OAuthRequestSigner::HMAC_SHA1_SIGNATURE,
       OAuthRequestSigner::POST_METHOD,
@@ -357,7 +357,7 @@ void GaiaOAuthFetcher::StartOAuthRevokeAccessToken(const std::string& token,
   OAuthRequestSigner::Parameters empty_parameters;
   std::string auth_header;
   bool is_signed = OAuthRequestSigner::SignAuthHeader(
-      GURL(GaiaUrls::GetInstance()->oauth_revoke_token_url()),
+      GaiaUrls::GetInstance()->oauth_revoke_token_url(),
       empty_parameters,
       OAuthRequestSigner::HMAC_SHA1_SIGNATURE,
       OAuthRequestSigner::GET_METHOD,

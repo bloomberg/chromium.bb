@@ -96,7 +96,7 @@ void SavePasswordInfoBarDelegate::Create(content::WebContents* web_contents,
   GURL realm(form_to_save->realm());
   // TODO(mathp): Checking only against associated_username() causes a bug
   // referenced here: crbug.com/133275
-  if (((realm == GURL(GaiaUrls::GetInstance()->gaia_login_form_realm())) ||
+  if (((realm == GaiaUrls::GetInstance()->gaia_login_form_realm()) ||
        (realm == GURL("https://www.google.com/"))) &&
       OneClickSigninHelper::CanOffer(
           web_contents, OneClickSigninHelper::CAN_OFFER_FOR_INTERSTITAL_ONLY,

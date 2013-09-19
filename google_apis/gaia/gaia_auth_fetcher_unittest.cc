@@ -27,8 +27,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-using ::testing::_;
 using ::testing::Invoke;
+using ::testing::_;
 
 namespace {
 static const char kGetAuthCodeValidCookie[] =
@@ -111,9 +111,9 @@ class GaiaAuthFetcherTest : public testing::Test {
         oauth2_token_source_(GaiaUrls::GetInstance()->oauth2_token_url()),
         token_auth_source_(GaiaUrls::GetInstance()->token_auth_url()),
         merge_session_source_(GaiaUrls::GetInstance()->merge_session_url()),
-        uberauth_token_source_(base::StringPrintf(
-            "%s?source=&issueuberauth=1",
-            GaiaUrls::GetInstance()->oauth1_login_url().c_str())),
+        uberauth_token_source_(
+            GaiaUrls::GetInstance()->oauth1_login_url().Resolve(
+                "?source=&issueuberauth=1")),
         oauth_login_gurl_(GaiaUrls::GetInstance()->oauth1_login_url()) {}
 
   void RunParsingTest(const std::string& data,

@@ -357,11 +357,18 @@ URLFetcher* FakeURLFetcherFactory::CreateURLFetcher(
   return fake_fetcher.release();
 }
 
+void FakeURLFetcherFactory::SetFakeResponseForURL(
+    const GURL& url,
+    const std::string& response_data,
+    bool success) {
+  // Overwrite existing URL if it already exists.
+  fake_responses_[url] = std::make_pair(response_data, success);
+}
+
 void FakeURLFetcherFactory::SetFakeResponse(const std::string& url,
                                             const std::string& response_data,
                                             bool success) {
-  // Overwrite existing URL if it already exists.
-  fake_responses_[GURL(url)] = std::make_pair(response_data, success);
+  SetFakeResponseForURL(GURL(url), response_data, success);
 }
 
 void FakeURLFetcherFactory::ClearFakeResponses() {

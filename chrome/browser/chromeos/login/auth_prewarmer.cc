@@ -92,8 +92,8 @@ void AuthPrewarmer::DoPrewarm() {
   const int kConnectionsNeeded = 1;
 
   std::vector<GURL> urls;
-  urls.push_back(GURL(GaiaUrls::GetInstance()->client_login_url()));
-  urls.push_back(GURL(GaiaUrls::GetInstance()->service_login_url()));
+  urls.push_back(GaiaUrls::GetInstance()->client_login_url());
+  urls.push_back(GaiaUrls::GetInstance()->service_login_url());
 
   for (size_t i = 0; i < urls.size(); ++i) {
     chrome_browser_net::PreconnectOnUIThread(

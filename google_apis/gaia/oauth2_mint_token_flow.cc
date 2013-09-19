@@ -151,7 +151,7 @@ void OAuth2MintTokenFlow::ReportFailure(
 }
 
 GURL OAuth2MintTokenFlow::CreateApiCallUrl() {
-  return GURL(GaiaUrls::GetInstance()->oauth2_issue_token_url());
+  return GaiaUrls::GetInstance()->oauth2_issue_token_url();
 }
 
 std::string OAuth2MintTokenFlow::CreateApiCallBody() {

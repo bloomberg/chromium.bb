@@ -45,7 +45,7 @@ const char kGetTokenPairValidResponse[] =
     "  \"token_type\": \"Bearer\""
     "}";
 
-const char kUberAuthTokenURLFormat[] = "%s?source=%s&issueuberauth=1";
+const char kUberAuthTokenURLFormat[] = "?source=%s&issueuberauth=1";
 
 }  // namespace
 
@@ -78,7 +78,7 @@ class SigninManagerTest : public TokenServiceTestHarness {
     TokenServiceTestHarness::TearDown();
   }
 
-  void SetupFetcherAndComplete(const std::string& url,
+  void SetupFetcherAndComplete(const GURL& url,
                                int response_code,
                                const net::ResponseCookies& cookies,
                                const std::string& response_string) {
@@ -87,7 +87,7 @@ class SigninManagerTest : public TokenServiceTestHarness {
     DCHECK(fetcher->delegate());
 
     cookies_.insert(cookies_.end(), cookies.begin(), cookies.end());
-    fetcher->set_url(GURL(url));
+    fetcher->set_url(url);
     fetcher->set_status(net::URLRequestStatus());
     fetcher->set_response_code(response_code);
     fetcher->SetResponseString(response_string);
@@ -134,10 +134,9 @@ class SigninManagerTest : public TokenServiceTestHarness {
   void SimulateValidUberToken() {
     SetupFetcherAndComplete(GaiaUrls::GetInstance()->oauth2_token_url(), 200,
                             net::ResponseCookies(), kGetTokenPairValidResponse);
-    std::string  uberauth_token_gurl = base::StringPrintf(
-        kUberAuthTokenURLFormat,
-        GaiaUrls::GetInstance()->oauth1_login_url().c_str(),
-        "source");
+    const GURL uberauth_token_gurl =
+        GaiaUrls::GetInstance()->oauth1_login_url().Resolve(
+            base::StringPrintf(kUberAuthTokenURLFormat, "source"));
     SetupFetcherAndComplete(uberauth_token_gurl, 200,
                             net::ResponseCookies(), "ut1");
 

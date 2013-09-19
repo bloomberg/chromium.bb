@@ -53,7 +53,7 @@ class SigninBrowserTest : public InProcessBrowserTest {
   virtual void SetUp() OVERRIDE {
     factory_.reset(new net::URLFetcherImplFactory());
     fake_factory_.reset(new net::FakeURLFetcherFactory(factory_.get()));
-    fake_factory_->SetFakeResponse(
+    fake_factory_->SetFakeResponseForURL(
         GaiaUrls::GetInstance()->service_login_url(),
         std::string(),
         true);

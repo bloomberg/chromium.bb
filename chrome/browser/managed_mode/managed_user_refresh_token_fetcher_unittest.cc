@@ -144,7 +144,7 @@ ManagedUserRefreshTokenFetcherTest::GetIssueTokenRequest() {
     return NULL;
 
   EXPECT_EQ(GaiaUrls::GetInstance()->oauth2_issue_token_url(),
-            url_fetcher->GetOriginalURL().spec());
+            url_fetcher->GetOriginalURL());
   std::string access_token;
   net::HttpRequestHeaders headers;
   url_fetcher->GetExtraRequestHeaders(&headers);
@@ -168,7 +168,7 @@ ManagedUserRefreshTokenFetcherTest::GetRefreshTokenRequest() {
     return NULL;
 
   EXPECT_EQ(GaiaUrls::GetInstance()->oauth2_token_url(),
-            url_fetcher->GetOriginalURL().spec());
+            url_fetcher->GetOriginalURL());
   std::string auth_code;
   EXPECT_TRUE(GetValueForKey(url_fetcher->upload_data(), "code", &auth_code));
   EXPECT_EQ(kAuthorizationCode, auth_code);

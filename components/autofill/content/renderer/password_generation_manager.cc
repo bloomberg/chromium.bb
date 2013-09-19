@@ -145,7 +145,7 @@ void PasswordGenerationManager::DidFinishLoad(WebKit::WebFrame* frame) {
     // Do not generate password for GAIA since it is used to retrieve the
     // generated paswords.
     GURL realm(password_form->signon_realm);
-    if (realm == GURL(GaiaUrls::GetInstance()->gaia_login_form_realm()))
+    if (realm == GaiaUrls::GetInstance()->gaia_login_form_realm())
       continue;
 
     std::vector<WebKit::WebInputElement> passwords;
