@@ -784,8 +784,6 @@
                 {
                   'action_name': 'strip_reliability_tests',
                   'inputs': [
-                    '<(PRODUCT_DIR)/automated_ui_tests',
-                    '<(PRODUCT_DIR)/reliability_tests',
                     '<(PRODUCT_DIR)/_pyautolib.so',
                   ],
                   'outputs': [
@@ -796,10 +794,6 @@
                              '<@(_inputs)'],
                   'message': 'Stripping reliability tests',
                 },
-              ],
-              'dependencies': [
-                'automated_ui_tests',
-                'reliability_tests',
               ],
             }],
           ],
