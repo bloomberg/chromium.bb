@@ -34,10 +34,6 @@ const int kButtonHoverSize = 28;
 
 const int kBackgroundOffset = (48 - kButtonHoverSize) / 2;
 
-// Padding from the inner edge of the shelf (towards center of display) to
-// the edge of the background image of the overflow button.
-const int kImagePaddingFromShelf = 5;
-
 }  // namesapce
 
 OverflowButton::OverflowButton(views::ButtonListener* listener)
@@ -108,18 +104,19 @@ void OverflowButton::OnPaint(gfx::Canvas* canvas) {
         rb.GetImageNamed(background_image_id).ToImageSkia();
     if (alignment == SHELF_ALIGNMENT_LEFT) {
       bounds = gfx::Rect(
-          bounds.right() - background->width() - kImagePaddingFromShelf,
+          bounds.right() - background->width() -
+              ShelfLayoutManager::kShelfItemInset,
           bounds.y() + (bounds.height() - background->height()) / 2,
           background->width(), background->height());
     } else if (alignment == SHELF_ALIGNMENT_RIGHT) {
       bounds = gfx::Rect(
-          bounds.x() + kImagePaddingFromShelf,
+          bounds.x() + ShelfLayoutManager::kShelfItemInset,
           bounds.y() + (bounds.height() - background->height()) / 2,
           background->width(), background->height());
     } else {
       bounds = gfx::Rect(
           bounds.x() + (bounds.width() - background->width()) / 2,
-          bounds.y() + kImagePaddingFromShelf,
+          bounds.y() + ShelfLayoutManager::kShelfItemInset,
           background->width(), background->height());
     }
     canvas->DrawImageInt(*background, bounds.x(), bounds.y());

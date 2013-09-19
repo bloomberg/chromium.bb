@@ -1836,5 +1836,45 @@ TEST_F(ShelfLayoutManagerTest, ShelfBackgroundColorAutoHide) {
   EXPECT_EQ(SHELF_BACKGROUND_OVERLAP, GetShelfWidget()->GetBackgroundType());
 }
 
+#if defined(OS_CHROMEOS)
+#define MAYBE_StatusAreaHitBoxCoversEdge StatusAreaHitBoxCoversEdge
+#else
+#define MAYBE_StatusAreaHitBoxCoversEdge DISABLED_StatusAreaHitBoxCoversEdge
+#endif
+
+// Verify the hit bounds of the status area extend to the edge of the shelf.
+TEST_F(ShelfLayoutManagerTest, MAYBE_StatusAreaHitBoxCoversEdge) {
+  UpdateDisplay("400x400");
+  ShelfLayoutManager* shelf = GetShelfLayoutManager();
+  StatusAreaWidget* status_area_widget =
+      Shell::GetPrimaryRootWindowController()->shelf()->status_area_widget();
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  generator.MoveMouseTo(399,399);
+
+  // Test bottom right pixel for bottom alignment.
+  EXPECT_FALSE(status_area_widget->IsMessageBubbleShown());
+  generator.ClickLeftButton();
+  EXPECT_TRUE(status_area_widget->IsMessageBubbleShown());
+  generator.ClickLeftButton();
+  EXPECT_FALSE(status_area_widget->IsMessageBubbleShown());
+
+  // Test bottom right pixel for right alignment.
+  shelf->SetAlignment(SHELF_ALIGNMENT_RIGHT);
+  EXPECT_FALSE(status_area_widget->IsMessageBubbleShown());
+  generator.ClickLeftButton();
+  EXPECT_TRUE(status_area_widget->IsMessageBubbleShown());
+  generator.ClickLeftButton();
+  EXPECT_FALSE(status_area_widget->IsMessageBubbleShown());
+
+  // Test bottom left pixel for left alignment.
+  generator.MoveMouseTo(0, 399);
+  shelf->SetAlignment(SHELF_ALIGNMENT_LEFT);
+  EXPECT_FALSE(status_area_widget->IsMessageBubbleShown());
+  generator.ClickLeftButton();
+  EXPECT_TRUE(status_area_widget->IsMessageBubbleShown());
+  generator.ClickLeftButton();
+  EXPECT_FALSE(status_area_widget->IsMessageBubbleShown());
+}
+
 }  // namespace internal
 }  // namespace ash

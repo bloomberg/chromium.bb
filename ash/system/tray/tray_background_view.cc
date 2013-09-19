@@ -443,41 +443,57 @@ void TrayBackgroundView::SetShelfAlignment(ShelfAlignment alignment) {
 
 void TrayBackgroundView::SetBorder() {
   views::View* parent = status_area_widget_->status_area_widget_delegate();
-
+  // Tray views are laid out right-to-left or bottom-to-top
+  bool on_edge = (this == parent->child_at(0));
+  int left_edge, top_edge, right_edge, bottom_edge;
   if (ash::switches::UseAlternateShelfLayout()) {
-    set_border(views::Border::CreateEmptyBorder(
-        0,
-        0,
-        ShelfLayoutManager::kAutoHideSize,
-        0));
+    if (shelf_alignment() == SHELF_ALIGNMENT_BOTTOM) {
+      top_edge = ShelfLayoutManager::kShelfItemInset;
+      left_edge = 0;
+      bottom_edge = ShelfLayoutManager::GetPreferredShelfSize() -
+          ShelfLayoutManager::kShelfItemInset - GetShelfItemHeight();
+      right_edge = on_edge ? kPaddingFromEdgeOfShelf : 0;
+    } else if (shelf_alignment() == SHELF_ALIGNMENT_LEFT) {
+      top_edge = 0;
+      left_edge = ShelfLayoutManager::GetPreferredShelfSize() -
+          ShelfLayoutManager::kShelfItemInset - GetShelfItemHeight();
+      bottom_edge = on_edge ? kPaddingFromEdgeOfShelf : 0;
+      right_edge = ShelfLayoutManager::kShelfItemInset;
+    } else { // SHELF_ALIGNMENT_RIGHT
+      top_edge = 0;
+      left_edge = ShelfLayoutManager::kShelfItemInset;
+      bottom_edge = on_edge ? kPaddingFromEdgeOfShelf : 0;
+      right_edge = ShelfLayoutManager::GetPreferredShelfSize() -
+          ShelfLayoutManager::kShelfItemInset - GetShelfItemHeight();
+    }
   } else {
-    // Tray views are laid out right-to-left or bottom-to-top
-    int on_edge = (this == parent->child_at(0));
     // Change the border padding for different shelf alignment.
     if (shelf_alignment() == SHELF_ALIGNMENT_BOTTOM) {
-      set_border(views::Border::CreateEmptyBorder(
-          0, 0,
-          on_edge ? kPaddingFromBottomOfScreenBottomAlignment :
-                    kPaddingFromBottomOfScreenBottomAlignment - 1,
-          on_edge ? kPaddingFromRightEdgeOfScreenBottomAlignment : 0));
+      top_edge = 0;
+      left_edge = 0;
+      bottom_edge = on_edge ? kPaddingFromBottomOfScreenBottomAlignment :
+          kPaddingFromBottomOfScreenBottomAlignment - 1;
+      right_edge = on_edge ? kPaddingFromRightEdgeOfScreenBottomAlignment : 0;
     } else if (shelf_alignment() == SHELF_ALIGNMENT_TOP) {
-      set_border(views::Border::CreateEmptyBorder(
-          on_edge ? kPaddingFromBottomOfScreenBottomAlignment :
-                    kPaddingFromBottomOfScreenBottomAlignment - 1,
-          0, 0,
-          on_edge ? kPaddingFromRightEdgeOfScreenBottomAlignment : 0));
+      top_edge = on_edge ? kPaddingFromBottomOfScreenBottomAlignment :
+          kPaddingFromBottomOfScreenBottomAlignment - 1;
+      left_edge = 0;
+      bottom_edge = 0;
+      right_edge = on_edge ? kPaddingFromRightEdgeOfScreenBottomAlignment : 0;
     } else if (shelf_alignment() == SHELF_ALIGNMENT_LEFT) {
-      set_border(views::Border::CreateEmptyBorder(
-          0, kPaddingFromOuterEdgeOfLauncherVerticalAlignment,
-          on_edge ? kPaddingFromBottomOfScreenVerticalAlignment : 0,
-          kPaddingFromInnerEdgeOfLauncherVerticalAlignment));
+      top_edge = 0;
+      left_edge = kPaddingFromOuterEdgeOfLauncherVerticalAlignment;
+      bottom_edge = on_edge ? kPaddingFromBottomOfScreenVerticalAlignment : 0;
+      right_edge = kPaddingFromInnerEdgeOfLauncherVerticalAlignment;
     } else {
-      set_border(views::Border::CreateEmptyBorder(
-          0, kPaddingFromInnerEdgeOfLauncherVerticalAlignment,
-          on_edge ? kPaddingFromBottomOfScreenVerticalAlignment : 0,
-          kPaddingFromOuterEdgeOfLauncherVerticalAlignment));
+      top_edge = 0;
+      left_edge = kPaddingFromInnerEdgeOfLauncherVerticalAlignment;
+      bottom_edge = on_edge ? kPaddingFromBottomOfScreenVerticalAlignment : 0;
+      right_edge = kPaddingFromOuterEdgeOfLauncherVerticalAlignment;
     }
   }
+  set_border(views::Border::CreateEmptyBorder(
+      top_edge, left_edge, bottom_edge, right_edge));
 }
 
 void TrayBackgroundView::InitializeBubbleAnimations(
@@ -509,31 +525,50 @@ gfx::Rect TrayBackgroundView::GetBubbleAnchorRect(
     if (anchor_type == TrayBubbleView::ANCHOR_TYPE_TRAY) {
       if (anchor_alignment == TrayBubbleView::ANCHOR_ALIGNMENT_BOTTOM) {
         bool rtl = base::i18n::IsRTL();
-        rect.Inset(
-            rtl ? kPaddingFromRightEdgeOfScreenBottomAlignment : 0,
-            kTrayBubbleAnchorTopInsetBottomAnchor,
-            rtl ? 0 : kPaddingFromRightEdgeOfScreenBottomAlignment,
-            kPaddingFromBottomOfScreenBottomAlignment);
+        if (!ash::switches::UseAlternateShelfLayout()) {
+          rect.Inset(
+              rtl ? kPaddingFromRightEdgeOfScreenBottomAlignment : 0,
+              kTrayBubbleAnchorTopInsetBottomAnchor,
+              rtl ? 0 : kPaddingFromRightEdgeOfScreenBottomAlignment,
+              kPaddingFromBottomOfScreenBottomAlignment);
+        } else {
+          rect.Inset(
+              rtl ? kAlternateLayoutBubblePaddingHorizontalSide : 0,
+              kAlternateLayoutBubblePaddingHorizontalBottom,
+              rtl ? 0 : kAlternateLayoutBubblePaddingHorizontalSide,
+              0);
+        }
       } else if (anchor_alignment == TrayBubbleView::ANCHOR_ALIGNMENT_LEFT) {
-        rect.Inset(0, 0, kPaddingFromInnerEdgeOfLauncherVerticalAlignment + 5,
-                   kPaddingFromBottomOfScreenVerticalAlignment);
+        if (!ash::switches::UseAlternateShelfLayout()) {
+          rect.Inset(0, 0, kPaddingFromInnerEdgeOfLauncherVerticalAlignment + 5,
+                     kPaddingFromBottomOfScreenVerticalAlignment);
+        } else {
+          rect.Inset(0, 0, kAlternateLayoutBubblePaddingVerticalSide + 4,
+                     kAlternateLayoutBubblePaddingVerticalBottom);
+        }
       } else {
-        rect.Inset(kPaddingFromInnerEdgeOfLauncherVerticalAlignment + 1,
-                   0, 0, kPaddingFromBottomOfScreenVerticalAlignment);
+        if (!ash::switches::UseAlternateShelfLayout()) {
+          rect.Inset(kPaddingFromInnerEdgeOfLauncherVerticalAlignment + 1,
+                     0, 0, kPaddingFromBottomOfScreenVerticalAlignment);
+        } else {
+          rect.Inset(kAlternateLayoutBubblePaddingVerticalSide, 0, 0,
+                     kAlternateLayoutBubblePaddingVerticalBottom);
+        }
       }
     } else if (anchor_type == TrayBubbleView::ANCHOR_TYPE_BUBBLE) {
       // Invert the offsets to align with the bubble below.
       // Note that with the alternate shelf layout the tips are not shown and
       // the offsets for left and right alignment do not need to be applied.
       int vertical_alignment = ash::switches::UseAlternateShelfLayout() ?
-          0 : kPaddingFromInnerEdgeOfLauncherVerticalAlignment;
-      if (anchor_alignment == TrayBubbleView::ANCHOR_ALIGNMENT_LEFT) {
-        rect.Inset(vertical_alignment,
-                   0, 0, kPaddingFromBottomOfScreenVerticalAlignment);
-      } else if (anchor_alignment == TrayBubbleView::ANCHOR_ALIGNMENT_RIGHT) {
-        rect.Inset(0, 0, vertical_alignment,
-                   kPaddingFromBottomOfScreenVerticalAlignment);
-      }
+          0 :
+          kPaddingFromInnerEdgeOfLauncherVerticalAlignment;
+      int horizontal_alignment = ash::switches::UseAlternateShelfLayout() ?
+          kAlternateLayoutBubblePaddingVerticalBottom :
+          kPaddingFromBottomOfScreenVerticalAlignment;
+      if (anchor_alignment == TrayBubbleView::ANCHOR_ALIGNMENT_LEFT)
+        rect.Inset(vertical_alignment, 0, 0, horizontal_alignment);
+      else if (anchor_alignment == TrayBubbleView::ANCHOR_ALIGNMENT_RIGHT)
+        rect.Inset(0, 0, vertical_alignment, horizontal_alignment);
     }
   }
 

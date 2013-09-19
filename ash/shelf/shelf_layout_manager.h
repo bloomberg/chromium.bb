@@ -81,6 +81,10 @@ class ASH_EXPORT ShelfLayoutManager :
   // settings see ash::switches::UseAlternateShelfLayout).
   static const int kShelfSize;
 
+  // Inset between the inner edge of the shelf (towards centre of screen), and
+  // the launcher items, notifications, status area etc.
+  static const int kShelfItemInset;
+
   // Returns the preferred size for the shelf (either kLauncherPreferredSize or
   // kShelfSize).
   static int GetPreferredShelfSize();

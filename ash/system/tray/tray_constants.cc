@@ -15,7 +15,12 @@ const int kPaddingFromOuterEdgeOfLauncherVerticalAlignment = 8;
 const int kPaddingFromInnerEdgeOfLauncherVerticalAlignment = 9;
 const int kPaddingFromBottomOfScreenVerticalAlignment = 10;
 
-// Inset between the edge of the shelf region and the status tray.
+// Padding used to position the system menu relative to the status area.
+const int kAlternateLayoutBubblePaddingHorizontalBottom = 6;
+const int kAlternateLayoutBubblePaddingHorizontalSide = 10;
+const int kAlternateLayoutBubblePaddingVerticalBottom = 3;
+const int kAlternateLayoutBubblePaddingVerticalSide = 15;
+
 const int kPaddingFromEdgeOfShelf = 3;
 
 // Top inset of system tray bubble for bottom anchor alignment.

@@ -25,9 +25,6 @@
 
 namespace ash {
 namespace internal {
-namespace {
-const int kImagePaddingFromShelf = 5;
-}  // namespace
 
 // static
 const int AlternateAppListButton::kImageBoundsSize = 7;
@@ -110,15 +107,15 @@ void AlternateAppListButton::OnPaint(gfx::Canvas* canvas) {
   background_bounds.set_size(background_image->size());
   if (alignment == SHELF_ALIGNMENT_LEFT) {
     background_bounds.set_x(contents_bounds.width() -
-        kImagePaddingFromShelf - background_image->width());
+        ShelfLayoutManager::kShelfItemInset - background_image->width());
     background_bounds.set_y(contents_bounds.y() +
         (contents_bounds.height() - background_image->height()) / 2);
   } else if(alignment == SHELF_ALIGNMENT_RIGHT) {
-    background_bounds.set_x(kImagePaddingFromShelf);
+    background_bounds.set_x(ShelfLayoutManager::kShelfItemInset);
     background_bounds.set_y(contents_bounds.y() +
         (contents_bounds.height() - background_image->height()) / 2);
   } else {
-    background_bounds.set_y(kImagePaddingFromShelf);
+    background_bounds.set_y(ShelfLayoutManager::kShelfItemInset);
     background_bounds.set_x(contents_bounds.x() +
         (contents_bounds.width() - background_image->width()) / 2);
   }
