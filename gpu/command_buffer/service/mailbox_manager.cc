@@ -40,14 +40,12 @@ void MailboxManager::GenerateMailboxName(MailboxName* name) {
 
 Texture* MailboxManager::ConsumeTexture(unsigned target,
                                         const MailboxName& name) {
-  if (!IsMailboxNameValid(name))
-    return NULL;
-
   MailboxToTextureMap::iterator it =
       mailbox_to_textures_.find(TargetName(target, name));
   if (it == mailbox_to_textures_.end())
     return NULL;
 
+  DCHECK(IsMailboxNameValid(name));
   return it->second->first;
 }
 
