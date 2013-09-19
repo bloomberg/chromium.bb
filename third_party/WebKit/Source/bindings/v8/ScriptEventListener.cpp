@@ -60,15 +60,19 @@ PassRefPtr<V8LazyEventListener> createAttributeEventListener(Node* node, const Q
     TextPosition position(OrdinalNumber::fromZeroBasedInt(1), OrdinalNumber::first());
     String sourceURL;
 
+    v8::Isolate* isolate;
     if (Frame* frame = node->document().frame()) {
+        isolate = toIsolate(frame);
         ScriptController* scriptController = frame->script();
         if (!scriptController->canExecuteScripts(AboutToExecuteScript))
             return 0;
         position = scriptController->eventHandlerPosition();
         sourceURL = node->document().url().string();
+    } else {
+        isolate = v8::Isolate::GetCurrent();
     }
 
-    return V8LazyEventListener::create(name.localName().string(), eventParameterName(node->isSVGElement()), value, sourceURL, position, node);
+    return V8LazyEventListener::create(name.localName().string(), eventParameterName(node->isSVGElement()), value, sourceURL, position, node, isolate);
 }
 
 PassRefPtr<V8LazyEventListener> createAttributeEventListener(Frame* frame, const QualifiedName& name, const AtomicString& value)
@@ -86,7 +90,7 @@ PassRefPtr<V8LazyEventListener> createAttributeEventListener(Frame* frame, const
     TextPosition position = scriptController->eventHandlerPosition();
     String sourceURL = frame->document()->url().string();
 
-    return V8LazyEventListener::create(name.localName().string(), eventParameterName(frame->document()->isSVGDocument()), value, sourceURL, position, 0);
+    return V8LazyEventListener::create(name.localName().string(), eventParameterName(frame->document()->isSVGDocument()), value, sourceURL, position, 0, toIsolate(frame));
 }
 
 String eventListenerHandlerBody(Document* document, EventListener* listener)
