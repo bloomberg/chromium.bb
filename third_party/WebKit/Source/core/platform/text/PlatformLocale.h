@@ -28,6 +28,7 @@
 
 #include "core/platform/DateComponents.h"
 #include "core/platform/Language.h"
+#include "public/platform/WebLocalizedString.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 
@@ -39,6 +40,10 @@ class Locale {
 public:
     static PassOwnPtr<Locale> create(const AtomicString& localeIdentifier);
     static PassOwnPtr<Locale> createDefault();
+
+    String queryString(WebKit::WebLocalizedString::Name);
+    String queryString(WebKit::WebLocalizedString::Name, const String& parameter);
+    String queryString(WebKit::WebLocalizedString::Name, const String& parameter1, const String& parameter2);
 
     // Converts the specified number string to another number string localized
     // for this Locale locale. The input string must conform to HTML

@@ -34,11 +34,7 @@ namespace WebCore {
 
     class IntSize;
 
-    String queryLocalizedString(WebKit::WebLocalizedString::Name);
-    String queryLocalizedString(WebKit::WebLocalizedString::Name, const String& parameter);
-    String queryLocalizedString(WebKit::WebLocalizedString::Name, const String& parameter1, const String& parameter2);
-
-    // FIXME: Use queryLocalizedString instead of the following functions.
+    // FIXME: Use Locale::queryString instead of the following functions.
 
     String inputElementAltText();
     String resetButtonDefaultLabel();
@@ -118,14 +114,11 @@ namespace WebCore {
     String validationMessageValueMissingForRadioText();
     String validationMessageValueMissingForSelectText();
     String validationMessageTypeMismatchText();
-    String validationMessageTypeMismatchForEmailText();
-    String validationMessageTypeMismatchForMultipleEmailText();
     String validationMessageTypeMismatchForURLText();
     String validationMessagePatternMismatchText();
     String validationMessageTooLongText(int valueLength, int maxLength);
     String validationMessageRangeUnderflowText(const String& minimum);
     String validationMessageRangeOverflowText(const String& maximum);
-    String validationMessageStepMismatchText(const String& base, const String& step);
     String validationMessageBadInputForNumberText();
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
     String validationMessageBadInputForDateTimeText();

@@ -242,6 +242,7 @@ public:
 protected:
     InputType(HTMLInputElement* element) : InputTypeView(element) { }
     Chrome* chrome() const;
+    Locale& locale() const;
     Decimal parseToNumberOrNaN(const String&) const;
     void observeFeatureIfVisible(UseCounter::Feature) const;
 

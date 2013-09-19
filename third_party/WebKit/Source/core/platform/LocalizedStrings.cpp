@@ -44,34 +44,19 @@ using WebKit::WebString;
 
 namespace WebCore {
 
-String queryLocalizedString(WebLocalizedString::Name name)
+static String query(WebLocalizedString::Name name)
 {
     return WebKit::Platform::current()->queryLocalizedString(name);
 }
 
-String queryLocalizedString(WebLocalizedString::Name name, const String& parameter)
+static String query(WebLocalizedString::Name name, const WebString& parameter)
 {
     return WebKit::Platform::current()->queryLocalizedString(name, parameter);
 }
 
-String queryLocalizedString(WebLocalizedString::Name name, const String& parameter1, const String& parameter2)
-{
-    return WebKit::Platform::current()->queryLocalizedString(name, parameter1, parameter2);
-}
-
-static String query(WebLocalizedString::Name name)
-{
-    return queryLocalizedString(name);
-}
-
-static String query(WebLocalizedString::Name name, const WebString& parameter)
-{
-    return queryLocalizedString(name, parameter);
-}
-
 static String query(WebLocalizedString::Name name, const WebString& parameter1, const WebString& parameter2)
 {
-    return queryLocalizedString(name, parameter1, parameter2);
+    return WebKit::Platform::current()->queryLocalizedString(name, parameter1, parameter2);
 }
 
 String searchableIndexIntroduction()
@@ -467,16 +452,6 @@ String validationMessageTypeMismatchText()
     return query(WebLocalizedString::ValidationTypeMismatch);
 }
 
-String validationMessageTypeMismatchForEmailText()
-{
-    return query(WebLocalizedString::ValidationTypeMismatchForEmail);
-}
-
-String validationMessageTypeMismatchForMultipleEmailText()
-{
-    return query(WebLocalizedString::ValidationTypeMismatchForMultipleEmail);
-}
-
 String validationMessageTypeMismatchForURLText()
 {
     return query(WebLocalizedString::ValidationTypeMismatchForURL);
@@ -500,11 +475,6 @@ String validationMessageRangeUnderflowText(const String& minimum)
 String validationMessageRangeOverflowText(const String& maximum)
 {
     return query(WebLocalizedString::ValidationRangeOverflow, maximum);
-}
-
-String validationMessageStepMismatchText(const String& base, const String& step)
-{
-    return query(WebLocalizedString::ValidationStepMismatch, base, step);
 }
 
 String validationMessageBadInputForNumberText()

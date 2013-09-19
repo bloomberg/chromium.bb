@@ -33,9 +33,13 @@
 
 #include "core/platform/LocalizedStrings.h"
 #include "core/platform/text/DateTimeFormat.h"
+#include "public/platform/Platform.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
+
+using WebKit::Platform;
+using WebKit::WebLocalizedString;
 
 class DateTimeStringBuilder : private DateTimeFormat::TokenHandler {
     WTF_MAKE_NONCOPYABLE(DateTimeStringBuilder);
@@ -178,6 +182,24 @@ String DateTimeStringBuilder::toString()
 
 Locale::~Locale()
 {
+}
+
+String Locale::queryString(WebLocalizedString::Name name)
+{
+    // FIXME: Returns a string locazlied for this locale.
+    return Platform::current()->queryLocalizedString(name);
+}
+
+String Locale::queryString(WebLocalizedString::Name name, const String& parameter)
+{
+    // FIXME: Returns a string locazlied for this locale.
+    return Platform::current()->queryLocalizedString(name, parameter);
+}
+
+String Locale::queryString(WebLocalizedString::Name name, const String& parameter1, const String& parameter2)
+{
+    // FIXME: Returns a string locazlied for this locale.
+    return Platform::current()->queryLocalizedString(name, parameter1, parameter2);
 }
 
 void Locale::setLocaleData(const Vector<String, DecimalSymbolsSize>& symbols, const String& positivePrefix, const String& positiveSuffix, const String& negativePrefix, const String& negativeSuffix)

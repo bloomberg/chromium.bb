@@ -65,6 +65,7 @@
 #include "core/html/shadow/HTMLShadowElement.h"
 #include "core/page/Page.h"
 #include "core/platform/LocalizedStrings.h"
+#include "core/platform/text/PlatformLocale.h"
 #include "core/platform/text/TextBreakIterator.h"
 #include "core/rendering/RenderTheme.h"
 
@@ -395,11 +396,11 @@ String InputType::validationMessage() const
         String localizedCandidate1 = localizeValue(serialize(candidate1));
         Decimal candidate2 = candidate1 < numericValue ? candidate1 + stepRange.step() : candidate1 - stepRange.step();
         if (!candidate2.isFinite() || candidate2 < stepRange.minimum() || candidate2 > stepRange.maximum())
-            return queryLocalizedString(WebLocalizedString::ValidationStepMismatchCloseToLimit, localizedCandidate1);
+            return locale().queryString(WebLocalizedString::ValidationStepMismatchCloseToLimit, localizedCandidate1);
         String localizedCandidate2 = localizeValue(serialize(candidate2));
         if (candidate1 < candidate2)
-            return queryLocalizedString(WebLocalizedString::ValidationStepMismatch, localizedCandidate1, localizedCandidate2);
-        return queryLocalizedString(WebLocalizedString::ValidationStepMismatch, localizedCandidate2, localizedCandidate1);
+            return locale().queryString(WebLocalizedString::ValidationStepMismatch, localizedCandidate1, localizedCandidate2);
+        return locale().queryString(WebLocalizedString::ValidationStepMismatch, localizedCandidate2, localizedCandidate1);
     }
 
     return emptyString();
@@ -467,6 +468,11 @@ Chrome* InputType::chrome() const
     if (Page* page = element()->document().page())
         return &page->chrome();
     return 0;
+}
+
+Locale& InputType::locale() const
+{
+    return element()->locale();
 }
 
 bool InputType::canSetStringValue() const
