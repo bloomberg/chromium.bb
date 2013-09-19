@@ -805,7 +805,6 @@
             ['include', 'platform/chromium/FileSystemChromiumLinux\\.cpp$'],
             ['include', 'platform/graphics/chromium/GlyphPageTreeNodeLinux\\.cpp$'],
             ['include', 'platform/graphics/chromium/VDMXParser\\.cpp$'],
-            ['exclude', 'platform/graphics/skia/FontCacheSkia\\.cpp$'],
           ],
         }, { # OS!="android"
           'sources/': [
