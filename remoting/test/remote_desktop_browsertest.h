@@ -208,6 +208,8 @@ class RemoteDesktopBrowserTest : public ExtensionBrowserTest {
   // the given page is currently loaded.
   bool IsURLLoaded(const GURL& url);
 
+  bool RetrieveRedirectURL();
+
   // Fields
 
   // This test needs to make live DNS requests for access to
@@ -222,6 +224,10 @@ class RemoteDesktopBrowserTest : public ExtensionBrowserTest {
   std::string username_;
   std::string password_;
   std::string me2me_pin_;
+
+  // TODO: Remove this when issue 291207 is fixed.
+  // http://crbug.com/294343
+  std::string oauth_redirect_url_;
 };
 
 }  // namespace remoting

@@ -170,10 +170,38 @@ void RemoteDesktopBrowserTest::Approve() {
   ASSERT_TRUE(HtmlElementExists("submit_approve_access"));
 
   const GURL chromoting_main = Chromoting_Main_URL();
-  ExecuteScriptAndWaitForPageLoad(
+
+  content::WindowedNotificationObserver observer(
+      content::NOTIFICATION_LOAD_STOP,
+      base::Bind(&RemoteDesktopBrowserTest::RetrieveRedirectURL, this));
+
+  // TODO: HACK starts
+  // Remove this and uncomment the code above when issue 291207 is fixed.
+  // http://crbug.com/294343
+  ExecuteScript(
       "lso.approveButtonAction();"
-      "document.forms[\"connect-approve\"].submit();",
-      chromoting_main);
+      "document.forms[\"connect-approve\"].submit();");
+
+  observer.Wait();
+
+  if (GetCurrentURL() != chromoting_main) {
+    ASSERT_TRUE(GetCurrentURL().spec() == "about:blank");
+
+    content::WindowedNotificationObserver observer2(
+        content::NOTIFICATION_LOAD_STOP,
+        base::Bind(
+            &RemoteDesktopBrowserTest::IsURLLoaded, this, chromoting_main));
+
+    // Chrome doesn't allow redirection from the internet context to a page
+    // inside an extension. Our content script does exactly that: redirecting
+    // from a talkgadget page to a page inside the chrmoting app.
+    // Until we fix this issue, we need to manually navigate to that page
+    // in our test.
+    ui_test_utils::NavigateToURL(browser(), GURL(oauth_redirect_url_));
+
+    observer2.Wait();
+  }
+  // TODO: HACK ends.
 
   ASSERT_TRUE(GetCurrentURL() == chromoting_main);
 
@@ -481,6 +509,26 @@ bool RemoteDesktopBrowserTest::IsPinFormVisible() {
 
 bool RemoteDesktopBrowserTest::IsURLLoaded(const GURL& url) {
   return GetCurrentURL() == url;
+}
+
+// TODO: Remove this when issue 291207 is fixed.
+// http://crbug.com/294343
+bool RemoteDesktopBrowserTest::RetrieveRedirectURL() {
+  static const char kOAuthRedirectUrlPathPrefix[] =
+      "/talkgadget/oauth/chrome-remote-desktop/";
+
+  // Mimic the logic in cs_oauth2_trampoline.js
+  GURL url = GetCurrentURL();
+  if (url.path().compare(0,
+                         arraysize(kOAuthRedirectUrlPathPrefix) - 1,
+                         kOAuthRedirectUrlPathPrefix) == 0) {
+    oauth_redirect_url_ = "chrome-extension://" + ChromotingID();
+    oauth_redirect_url_ += "/oauth2_callback.html?";
+    oauth_redirect_url_ += url.query();
+    return false;
+  }
+
+  return url.spec() == "about:blank" || url == Chromoting_Main_URL();
 }
 
 }  // namespace remoting
