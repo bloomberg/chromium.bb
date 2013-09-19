@@ -19,7 +19,6 @@ import StringIO
 import sys
 import tempfile
 import time
-import unittest
 
 import constants
 sys.path.insert(0, constants.SOURCE_ROOT)
@@ -41,6 +40,7 @@ from chromite.lib import cros_test_lib
 from chromite.lib import gerrit
 from chromite.lib import git
 from chromite.lib import git_unittest
+from chromite.lib import gob_util
 from chromite.lib import gs_unittest
 from chromite.lib import osutils
 from chromite.lib import parallel
@@ -1640,8 +1640,7 @@ class BaseCQTest(StageTest):
     self.sync_stage = stages.CommitQueueSyncStage(self.options,
                                                   self.build_config)
     # Mock out methods as needed.
-    self.AutoPatch([[gerrit.GerritHelper, '_SqlQuery'],
-                    [lkgm_manager, 'GenerateBlameList']])
+    self.PatchObject(lkgm_manager, 'GenerateBlameList')
     self.PatchObject(repository.RepoRepository, 'ExportManifest',
                      return_value=self.MANIFEST_CONTENTS, autospec=True)
     self.StartPatcher(git_unittest.ManifestMock())
@@ -1650,6 +1649,15 @@ class BaseCQTest(StageTest):
     manifest_version_unittest.VersionInfoTest.WriteFakeVersionFile(version_file)
     rc_mock = self.StartPatcher(cros_build_lib_unittest.RunCommandMock())
     rc_mock.SetDefaultCmdResult()
+
+    # Block the CQ from contacting GoB.
+    self.PatchObject(gerrit.GerritOnBorgHelper, 'RemoveCommitReady')
+    self.PatchObject(gerrit.GerritOnBorgHelper, 'SubmitChange')
+    self.PatchObject(validation_pool.PaladinMessage, 'Send')
+
+    # If a test is still contacting GoB, something is busted.
+    self.PatchObject(gob_util, 'CreateHttpConn',
+                     side_effect=AssertionError('Test should not contact GoB'))
 
     # Create a fake repo / manifest on disk that is used by subclasses.
     for subdir in ('repo', 'manifests'):
@@ -1664,10 +1672,10 @@ class BaseCQTest(StageTest):
     """Helper to perform a basic sync for master commit queue."""
     p = MockPatch(remote=remote, tracking_branch=tracking_branch)
     my_patches = [p] * num_patches
-    self.PatchObject(gerrit.GerritHelper, 'IsChangeCommitted',
+    self.PatchObject(gerrit.GerritOnBorgHelper, 'IsChangeCommitted',
                      return_value=committed, autospec=True)
-    self.PatchObject(gerrit.GerritHelper, 'Query', return_value=my_patches,
-                     autospec=True)
+    self.PatchObject(gerrit.GerritOnBorgHelper, 'Query',
+                     return_value=my_patches, autospec=True)
     self.PatchObject(cros_build_lib, 'TreeOpen', return_value=tree_open,
                      autospec=True)
     exit_it = itertools.chain([False] * runs, itertools.repeat(True))
@@ -1712,31 +1720,26 @@ class MasterCQSyncTest(BaseCQTest):
     self.PatchObject(lkgm_manager.LKGMManager, 'CreateNewCandidate',
                      return_value=self.manifest_path, autospec=True)
 
-  @unittest.skip('Broken by GoB transition')
   def testCommitNonManifestChange(self, **kwargs):
     """Test the commit of a non-manifest change."""
     # Setting tracking_branch=foo makes this a non-manifest change.
     kwargs.setdefault('committed', True)
     self.PerformSync(tracking_branch='foo', **kwargs)
 
-  @unittest.skip('Broken by GoB transition')
   def testFailedCommitOfNonManifestChange(self):
     """Test that the commit of a non-manifest change fails."""
     self.testCommitNonManifestChange(committed=False)
 
-  @unittest.skip('Broken by GoB transition')
   def testCommitManifestChange(self, **kwargs):
     """Test committing a change to a project that's part of the manifest."""
     self.PatchObject(validation_pool.ValidationPool, '_FilterNonCrosProjects',
                      side_effect=lambda x, _: (x, []))
     self.PerformSync(**kwargs)
 
-  @unittest.skip('Broken by GoB transition')
   def testDefaultSync(self):
     """Test basic ability to sync with standard options."""
     self.PerformSync()
 
-  @unittest.skip('Broken by GoB transition')
   def testNoGerritHelper(self):
     """Test that setting a non-standard remote raises an exception."""
     self.assertRaises(validation_pool.GerritHelperNotAvailable,
@@ -1749,13 +1752,10 @@ class ExtendedMasterCQSyncTest(MasterCQSyncTest):
   These only apply to the paladin master and not to any other stages.
   """
 
-  @unittest.skip('Broken by GoB transition')
   def testReload(self):
     """Test basic ability to sync and reload the patches from disk."""
-    # Use zero patches because MockPatches can't be pickled. Also set debug mode
-    # so that the CQ won't wait for more patches.
-    self.options.debug = True
-    self.PerformSync(num_patches=0)
+    # Use zero patches because MockPatches can't be pickled.
+    self.PerformSync(num_patches=0, runs=0)
     self.ReloadPool()
 
   def testTreeClosureBlocksCommit(self):
@@ -1775,10 +1775,11 @@ class CLStatusMock(partial_mock.PartialMock):
     self.calls = {}
     self.status = {}
 
-  def GetCLStatus(self, _inst, _bot, change):
+  def GetCLStatus(self, _bot, change):
     return self.status.get(change)
 
-  def UpdateCLStatus(self, _inst, _bot, change, status):
+  def UpdateCLStatus(self, _bot, change, status, dry_run):
+    # pylint: disable=W0613
     self.calls[status] = self.calls.get(status, 0) + 1
     self.status[change] = status
 
@@ -1800,7 +1801,6 @@ class PreCQLauncherStageTest(MasterCQSyncTest):
     """Test that tree closures block commits."""
     self.testCommitNonManifestChange(tree_open=False)
 
-  @unittest.skip('Broken by GoB transition')
   def testLaunchTrybot(self):
     """Test launching a trybot."""
     self.testCommitManifestChange()
@@ -1813,7 +1813,6 @@ class PreCQLauncherStageTest(MasterCQSyncTest):
     self.assertEqual(self.pre_cq.calls.get(self.STATUS_WAITING, 0), waiting)
     self.assertEqual(self.pre_cq.calls.get(self.STATUS_FAILED, 0), failed)
 
-  @unittest.skip('Broken by GoB transition')
   def testLaunchTrybotTimesOutOnce(self):
     """Test what happens when a trybot launch times out."""
     it = itertools.chain([True], itertools.repeat(False))
@@ -1821,7 +1820,6 @@ class PreCQLauncherStageTest(MasterCQSyncTest):
                      side_effect=it)
     self.runTrybotTest(launching=2, waiting=1, failed=0, runs=3)
 
-  @unittest.skip('Broken by GoB transition')
   def testLaunchTrybotTimesOutTwice(self):
     """Test what happens when a trybot launch times out."""
     self.PatchObject(stages.PreCQLauncherStage, '_HasLaunchTimedOut',
