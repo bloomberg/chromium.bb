@@ -7,10 +7,16 @@ event = document.createEvent('DeviceOrientationEvent')
 PASS event.alpha == null is true
 PASS event.beta == null is true
 PASS event.gamma == null is true
+PASS event.absolute == null is true
 event.initDeviceOrientationEvent('', false, false, 0, 1, 2)
 PASS event.alpha == 0 is true
 PASS event.beta == 1 is true
 PASS event.gamma == 2 is true
+event.initDeviceOrientationEvent('', false, false, 0, 1, 2, true)
+PASS event.alpha == 0 is true
+PASS event.beta == 1 is true
+PASS event.gamma == 2 is true
+PASS event.absolute is true
 event.initDeviceOrientationEvent()
 PASS event.alpha == null is true
 PASS event.beta == null is true
