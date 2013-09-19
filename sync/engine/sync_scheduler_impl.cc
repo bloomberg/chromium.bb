@@ -174,7 +174,7 @@ SyncSchedulerImpl::SyncSchedulerImpl(const std::string& name,
 
 SyncSchedulerImpl::~SyncSchedulerImpl() {
   DCHECK(CalledOnValidThread());
-  StopImpl();
+  Stop();
 }
 
 void SyncSchedulerImpl::OnCredentialsUpdated() {
@@ -643,17 +643,9 @@ void SyncSchedulerImpl::RestartWaiting() {
   }
 }
 
-void SyncSchedulerImpl::RequestStop() {
-  syncer_->RequestEarlyExit();  // Safe to call from any thread.
-  DCHECK(weak_handle_this_.IsInitialized());
-  SDVLOG(3) << "Posting StopImpl";
-  weak_handle_this_.Call(FROM_HERE,
-                         &SyncSchedulerImpl::StopImpl);
-}
-
-void SyncSchedulerImpl::StopImpl() {
+void SyncSchedulerImpl::Stop() {
   DCHECK(CalledOnValidThread());
-  SDVLOG(2) << "StopImpl called";
+  SDVLOG(2) << "Stop called";
 
   // Kill any in-flight method calls.
   weak_ptr_factory_.InvalidateWeakPtrs();
@@ -861,7 +853,7 @@ void SyncSchedulerImpl::OnReceivedClientInvalidationHintBufferSize(int size) {
 void SyncSchedulerImpl::OnShouldStopSyncingPermanently() {
   DCHECK(CalledOnValidThread());
   SDVLOG(2) << "OnShouldStopSyncingPermanently";
-  syncer_->RequestEarlyExit();  // Thread-safe.
+  Stop();
   Notify(SyncEngineEvent::STOP_SYNCING_PERMANENTLY);
 }
 
@@ -880,7 +872,7 @@ void SyncSchedulerImpl::OnSyncProtocolError(
   if (ShouldRequestEarlyExit(
           snapshot.model_neutral_state().sync_protocol_error)) {
     SDVLOG(2) << "Sync Scheduler requesting early exit.";
-    syncer_->RequestEarlyExit();  // Thread-safe.
+    Stop();
   }
   if (IsActionableError(snapshot.model_neutral_state().sync_protocol_error))
     OnActionableError(snapshot);

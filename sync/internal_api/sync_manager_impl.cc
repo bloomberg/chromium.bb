@@ -19,6 +19,7 @@
 #include "sync/engine/sync_scheduler.h"
 #include "sync/engine/syncer_types.h"
 #include "sync/internal_api/change_reorder_buffer.h"
+#include "sync/internal_api/public/base/cancelation_signal.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/base_node.h"
 #include "sync/internal_api/public/configure_reason.h"
@@ -354,12 +355,14 @@ void SyncManagerImpl::Init(
     Encryptor* encryptor,
     scoped_ptr<UnrecoverableErrorHandler> unrecoverable_error_handler,
     ReportUnrecoverableErrorFunction report_unrecoverable_error_function,
-    bool use_oauth2_token) {
+    bool use_oauth2_token,
+    CancelationSignal* cancelation_signal) {
   CHECK(!initialized_);
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(post_factory.get());
   DCHECK(!credentials.email.empty());
   DCHECK(!credentials.sync_token.empty());
+  DCHECK(cancelation_signal);
   DVLOG(1) << "SyncManager starting Init...";
 
   weak_handle_this_ = MakeWeakHandle(weak_ptr_factory_.GetWeakPtr());
@@ -419,7 +422,7 @@ void SyncManagerImpl::Init(
 
   connection_manager_.reset(new SyncAPIServerConnectionManager(
       sync_server_and_path, port, use_ssl, use_oauth2_token,
-      post_factory.release()));
+      post_factory.release(), cancelation_signal));
   connection_manager_->set_client_id(directory()->cache_guid());
   connection_manager_->AddListener(this);
 
@@ -447,7 +450,7 @@ void SyncManagerImpl::Init(
       invalidator_client_id).Pass();
   session_context_->set_account_name(credentials.email);
   scheduler_ = internal_components_factory->BuildScheduler(
-      name_, session_context_.get()).Pass();
+      name_, session_context_.get(), cancelation_signal).Pass();
 
   scheduler_->Start(SyncScheduler::CONFIGURATION_MODE);
 
@@ -616,13 +619,6 @@ void SyncManagerImpl::AddObserver(SyncManager::Observer* observer) {
 void SyncManagerImpl::RemoveObserver(SyncManager::Observer* observer) {
   DCHECK(thread_checker_.CalledOnValidThread());
   observers_.RemoveObserver(observer);
-}
-
-void SyncManagerImpl::StopSyncingForShutdown() {
-  DVLOG(2) << "StopSyncingForShutdown";
-  scheduler_->RequestStop();
-  if (connection_manager_)
-    connection_manager_->TerminateAllIO();
 }
 
 void SyncManagerImpl::ShutdownOnSyncThread() {

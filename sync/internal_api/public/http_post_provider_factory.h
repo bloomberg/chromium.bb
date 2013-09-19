@@ -5,6 +5,8 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_HTTP_POST_PROVIDER_FACTORY_H_
 #define SYNC_INTERNAL_API_PUBLIC_HTTP_POST_PROVIDER_FACTORY_H_
 
+#include <string>
+
 #include "sync/base/sync_export.h"
 
 namespace syncer {
@@ -19,6 +21,8 @@ class SYNC_EXPORT HttpPostProviderFactory {
  public:
   virtual ~HttpPostProviderFactory() {}
 
+  virtual void Init(const std::string& user_agent) = 0;
+
   // Obtain a new HttpPostProviderInterface instance, owned by caller.
   virtual HttpPostProviderInterface* Create() = 0;
 
@@ -28,10 +32,6 @@ class SYNC_EXPORT HttpPostProviderFactory {
   // reference counted, which is useful if a particular implementation uses
   // multiple threads to serve network requests.
   virtual void Destroy(HttpPostProviderInterface* http) = 0;
-
-  // Clean up when the factory is no longer needed. Create() must not be
-  // called after Shutdown() is called. Can be called from any thread.
-  virtual void Shutdown() = 0;
 };
 
 }  // namespace syncer

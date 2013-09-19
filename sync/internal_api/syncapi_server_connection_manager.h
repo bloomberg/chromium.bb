@@ -55,14 +55,16 @@ class SYNC_EXPORT_PRIVATE SyncAPIServerConnectionManager
                                  int port,
                                  bool use_ssl,
                                  bool use_oauth2_token,
-                                 HttpPostProviderFactory* factory);
+                                 HttpPostProviderFactory* factory,
+                                 CancelationSignal* cancelation_signal);
   virtual ~SyncAPIServerConnectionManager();
 
   // ServerConnectionManager overrides.
   virtual Connection* MakeConnection() OVERRIDE;
-  virtual void TerminateAllIO() OVERRIDE;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(SyncAPIServerConnectionManagerTest,
+                           VeryEarlyAbortPost);
   FRIEND_TEST_ALL_PREFIXES(SyncAPIServerConnectionManagerTest, EarlyAbortPost);
   FRIEND_TEST_ALL_PREFIXES(SyncAPIServerConnectionManagerTest, AbortPost);
 

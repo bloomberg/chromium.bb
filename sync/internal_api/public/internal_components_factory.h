@@ -21,6 +21,7 @@ namespace syncer {
 class ExtensionsActivity;
 class ServerConnectionManager;
 class SyncEngineEventListener;
+class CancelationSignal;
 class SyncScheduler;
 class TrafficRecorder;
 
@@ -75,7 +76,8 @@ class SYNC_EXPORT InternalComponentsFactory {
 
   virtual scoped_ptr<SyncScheduler> BuildScheduler(
       const std::string& name,
-      sessions::SyncSessionContext* context) = 0;
+      sessions::SyncSessionContext* context,
+      CancelationSignal* cancelation_signal) = 0;
 
   virtual scoped_ptr<sessions::SyncSessionContext> BuildContext(
       ServerConnectionManager* connection_manager,

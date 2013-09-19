@@ -16,6 +16,7 @@
 #include "net/http/http_status_code.h"
 #include "sync/engine/net/url_translator.h"
 #include "sync/engine/syncer.h"
+#include "sync/internal_api/public/base/cancelation_signal.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/syncable/directory.h"
 #include "url/gurl.h"
@@ -177,7 +178,8 @@ ServerConnectionManager::ServerConnectionManager(
     const string& server,
     int port,
     bool use_ssl,
-    bool use_oauth2_token)
+    bool use_oauth2_token,
+    CancelationSignal* cancelation_signal)
     : sync_server_(server),
       sync_server_port_(port),
       use_ssl_(use_ssl),
@@ -185,10 +187,22 @@ ServerConnectionManager::ServerConnectionManager(
       proto_sync_path_(kSyncServerSyncPath),
       server_status_(HttpResponse::NONE),
       terminated_(false),
-      active_connection_(NULL) {
+      active_connection_(NULL),
+      cancelation_signal_(cancelation_signal),
+      signal_handler_registered_(false) {
+  signal_handler_registered_ = cancelation_signal_->TryRegisterHandler(this);
+  if (!signal_handler_registered_) {
+    // Calling a virtual function from a constructor.  We can get away with it
+    // here because ServerConnectionManager::OnSignalReceived() is the function
+    // we want to call.
+    OnSignalReceived();
+  }
 }
 
 ServerConnectionManager::~ServerConnectionManager() {
+  if (signal_handler_registered_) {
+    cancelation_signal_->UnregisterHandler(this);
+  }
 }
 
 ServerConnectionManager::Connection*
@@ -348,7 +362,7 @@ ServerConnectionManager::Connection* ServerConnectionManager::MakeConnection()
   return NULL;  // For testing.
 }
 
-void ServerConnectionManager::TerminateAllIO() {
+void ServerConnectionManager::OnSignalReceived() {
   base::AutoLock lock(terminate_connection_lock_);
   terminated_ = true;
   if (active_connection_)

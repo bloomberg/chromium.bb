@@ -31,6 +31,8 @@ TestHttpBridgeFactory::TestHttpBridgeFactory() {}
 
 TestHttpBridgeFactory::~TestHttpBridgeFactory() {}
 
+void TestHttpBridgeFactory::Init(const std::string& user_agent) {}
+
 syncer::HttpPostProviderInterface* TestHttpBridgeFactory::Create() {
   return new TestHttpBridge();
 }
@@ -38,7 +40,5 @@ syncer::HttpPostProviderInterface* TestHttpBridgeFactory::Create() {
 void TestHttpBridgeFactory::Destroy(syncer::HttpPostProviderInterface* http) {
   delete static_cast<TestHttpBridge*>(http);
 }
-
-void TestHttpBridgeFactory::Shutdown() {}
 
 }  // namespace browser_sync

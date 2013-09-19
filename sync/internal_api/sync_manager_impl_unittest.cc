@@ -24,6 +24,7 @@
 #include "base/test/values_test_util.h"
 #include "base/values.h"
 #include "sync/engine/sync_scheduler.h"
+#include "sync/internal_api/public/base/cancelation_signal.h"
 #include "sync/internal_api/public/base/model_type_test_util.h"
 #include "sync/internal_api/public/change_record.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
@@ -729,13 +730,13 @@ class TestHttpPostProviderInterface : public HttpPostProviderInterface {
 class TestHttpPostProviderFactory : public HttpPostProviderFactory {
  public:
   virtual ~TestHttpPostProviderFactory() {}
+  virtual void Init(const std::string& user_agent) OVERRIDE { }
   virtual HttpPostProviderInterface* Create() OVERRIDE {
     return new TestHttpPostProviderInterface();
   }
   virtual void Destroy(HttpPostProviderInterface* http) OVERRIDE {
     delete static_cast<TestHttpPostProviderInterface*>(http);
   }
-  virtual void Shutdown() OVERRIDE {}
 };
 
 class SyncManagerObserverMock : public SyncManager::Observer {
@@ -836,7 +837,8 @@ class SyncManagerTest : public testing::Test,
         scoped_ptr<UnrecoverableErrorHandler>(
             new TestUnrecoverableErrorHandler).Pass(),
         NULL,
-        false);
+        false,
+        &cancelation_signal_);
 
     sync_manager_.GetEncryptionHandler()->AddObserver(&encryption_observer_);
 
@@ -1019,6 +1021,7 @@ class SyncManagerTest : public testing::Test,
  protected:
   FakeEncryptor encryptor_;
   SyncManagerImpl sync_manager_;
+  CancelationSignal cancelation_signal_;
   WeakHandle<JsBackend> js_backend_;
   StrictMock<SyncManagerObserverMock> manager_observer_;
   StrictMock<SyncEncryptionHandlerObserverMock> encryption_observer_;
@@ -2797,7 +2800,8 @@ class ComponentsFactory : public TestInternalComponentsFactory {
 
   virtual scoped_ptr<SyncScheduler> BuildScheduler(
       const std::string& name,
-      sessions::SyncSessionContext* context) OVERRIDE {
+      sessions::SyncSessionContext* context,
+      CancelationSignal* stop_handle) OVERRIDE {
     *session_context_ = context;
     return scheduler_to_use_.Pass();
   }

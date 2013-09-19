@@ -9,6 +9,7 @@
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_test_util.h"
+#include "sync/internal_api/public/base/cancelation_signal.h"
 #include "sync/internal_api/public/http_bridge.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -407,14 +408,16 @@ TEST_F(SyncHttpBridgeTest, AbortAndReleaseBeforeFetchComplete) {
 
 void HttpBridgeRunOnSyncThread(
     net::URLRequestContextGetter* baseline_context_getter,
+    CancelationSignal* factory_cancelation_signal,
     syncer::HttpPostProviderFactory** bridge_factory_out,
     syncer::HttpPostProviderInterface** bridge_out,
     base::WaitableEvent* signal_when_created,
     base::WaitableEvent* wait_for_shutdown) {
-  scoped_ptr<syncer::HttpPostProviderFactory> bridge_factory(
+  scoped_ptr<syncer::HttpBridgeFactory> bridge_factory(
       new syncer::HttpBridgeFactory(baseline_context_getter,
-                                    "test",
-                                    NetworkTimeUpdateCallback()));
+                                    NetworkTimeUpdateCallback(),
+                                    factory_cancelation_signal));
+  bridge_factory->Init("test");
   *bridge_factory_out = bridge_factory.get();
 
   HttpPostProviderInterface* bridge = bridge_factory->Create();
@@ -447,18 +450,21 @@ TEST_F(SyncHttpBridgeTest, RequestContextGetterReleaseOrder) {
   base::WaitableEvent signal_when_created(false, false);
   base::WaitableEvent wait_for_shutdown(false, false);
 
+  CancelationSignal release_request_context_signal;
+
   // Create bridge factory and factory on sync thread and wait for the creation
   // to finish.
   sync_thread.message_loop()->PostTask(FROM_HERE,
       base::Bind(&HttpBridgeRunOnSyncThread,
                  base::Unretained(baseline_context_getter.get()),
-                 &factory, &bridge, &signal_when_created, &wait_for_shutdown));
+                 &release_request_context_signal ,&factory, &bridge,
+                 &signal_when_created, &wait_for_shutdown));
   signal_when_created.Wait();
 
   // Simulate sync shutdown by aborting bridge and shutting down factory on
   // frontend.
   bridge->Abort();
-  factory->Shutdown();
+  release_request_context_signal.Signal();
 
   // Wait for sync's RequestContextGetter to be cleared on IO thread and
   // check for reference count.

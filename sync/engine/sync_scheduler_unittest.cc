@@ -11,6 +11,7 @@
 #include "sync/engine/backoff_delay_provider.h"
 #include "sync/engine/sync_scheduler_impl.h"
 #include "sync/engine/syncer.h"
+#include "sync/internal_api/public/base/cancelation_signal.h"
 #include "sync/internal_api/public/base/model_type_test_util.h"
 #include "sync/notifier/invalidation_util.h"
 #include "sync/notifier/object_id_invalidation_map.h"
@@ -41,6 +42,7 @@ using sync_pb::GetUpdatesCallerInfo;
 
 class MockSyncer : public Syncer {
  public:
+  MockSyncer();
   MOCK_METHOD3(NormalSyncShare, bool(ModelTypeSet,
                                      const sessions::NudgeTracker&,
                                      sessions::SyncSession*));
@@ -50,6 +52,9 @@ class MockSyncer : public Syncer {
                     SyncSession*));
   MOCK_METHOD2(PollSyncShare, bool(ModelTypeSet, sessions::SyncSession*));
 };
+
+MockSyncer::MockSyncer()
+  : Syncer(NULL) {}
 
 typedef std::vector<TimeTicks> SyncShareTimes;
 
@@ -126,7 +131,8 @@ class SyncSchedulerTest : public testing::Test {
       workers.push_back(it->get());
     }
 
-    connection_.reset(new MockConnectionManager(directory()));
+    connection_.reset(new MockConnectionManager(directory(),
+                                                &cancelation_signal_));
     connection_->SetServerReachable();
     context_.reset(new SyncSessionContext(
             connection_.get(), directory(), workers,
@@ -218,6 +224,7 @@ class SyncSchedulerTest : public testing::Test {
   base::MessageLoop loop_;
   base::WeakPtrFactory<SyncSchedulerTest> weak_ptr_factory_;
   TestDirectorySetterUpper dir_maker_;
+  CancelationSignal cancelation_signal_;
   scoped_ptr<MockConnectionManager> connection_;
   scoped_ptr<SyncSessionContext> context_;
   scoped_ptr<SyncSchedulerImpl> scheduler_;

@@ -12,6 +12,7 @@
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "net/base/net_errors.h"
+#include "sync/internal_api/public/base/cancelation_signal.h"
 #include "sync/internal_api/public/http_post_provider_factory.h"
 #include "sync/internal_api/public/http_post_provider_interface.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -57,25 +58,27 @@ class BlockingHttpPost : public HttpPostProviderInterface {
 class BlockingHttpPostFactory : public HttpPostProviderFactory {
  public:
   virtual ~BlockingHttpPostFactory() {}
+  virtual void Init(const std::string& user_agent) OVERRIDE {}
   virtual HttpPostProviderInterface* Create() OVERRIDE {
     return new BlockingHttpPost();
   }
   virtual void Destroy(HttpPostProviderInterface* http) OVERRIDE {
     delete static_cast<BlockingHttpPost*>(http);
   }
-  virtual void Shutdown() OVERRIDE {}
 };
 
 }  // namespace
 
-TEST(SyncAPIServerConnectionManagerTest, EarlyAbortPost) {
+// Ask the ServerConnectionManager to stop before it is created.
+TEST(SyncAPIServerConnectionManagerTest, VeryEarlyAbortPost) {
+  CancelationSignal signal;
+  signal.Signal();
   SyncAPIServerConnectionManager server(
-      "server", 0, true, false, new BlockingHttpPostFactory());
+      "server", 0, true, false, new BlockingHttpPostFactory(), &signal);
 
   ServerConnectionManager::PostBufferParams params;
   ScopedServerStatusWatcher watcher(&server, &params.response);
 
-  server.TerminateAllIO();
   bool result = server.PostBufferToPath(
       &params, "/testpath", "testauth", &watcher);
 
@@ -84,9 +87,29 @@ TEST(SyncAPIServerConnectionManagerTest, EarlyAbortPost) {
             params.response.server_status);
 }
 
-TEST(SyncAPIServerConnectionManagerTest, AbortPost) {
+// Ask the ServerConnectionManager to stop before its first request is made.
+TEST(SyncAPIServerConnectionManagerTest, EarlyAbortPost) {
+  CancelationSignal signal;
   SyncAPIServerConnectionManager server(
-      "server", 0, true, false, new BlockingHttpPostFactory());
+      "server", 0, true, false, new BlockingHttpPostFactory(), &signal);
+
+  ServerConnectionManager::PostBufferParams params;
+  ScopedServerStatusWatcher watcher(&server, &params.response);
+
+  signal.Signal();
+  bool result = server.PostBufferToPath(
+      &params, "/testpath", "testauth", &watcher);
+
+  EXPECT_FALSE(result);
+  EXPECT_EQ(HttpResponse::CONNECTION_UNAVAILABLE,
+            params.response.server_status);
+}
+
+// Ask the ServerConnectionManager to stop during a request.
+TEST(SyncAPIServerConnectionManagerTest, AbortPost) {
+  CancelationSignal signal;
+  SyncAPIServerConnectionManager server(
+      "server", 0, true, false, new BlockingHttpPostFactory(), &signal);
 
   ServerConnectionManager::PostBufferParams params;
   ScopedServerStatusWatcher watcher(&server, &params.response);
@@ -95,8 +118,8 @@ TEST(SyncAPIServerConnectionManagerTest, AbortPost) {
   ASSERT_TRUE(abort_thread.Start());
   abort_thread.message_loop()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&ServerConnectionManager::TerminateAllIO,
-                 base::Unretained(&server)),
+      base::Bind(&CancelationSignal::Signal,
+                 base::Unretained(&signal)),
       TestTimeouts::tiny_timeout());
 
   bool result = server.PostBufferToPath(

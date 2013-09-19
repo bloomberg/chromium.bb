@@ -218,10 +218,9 @@ class SyncBackendHost
   bool SetDecryptionPassphrase(const std::string& passphrase)
       WARN_UNUSED_RESULT;
 
-  // Called on |frontend_loop_| to kick off shutdown procedure. After this, no
-  // further sync activity will occur with the sync server and no further
-  // change applications will occur from changes already downloaded.
-  // Furthermore, no notifications will be sent to any invalidation handler.
+  // Called on |frontend_loop_| to kick off shutdown procedure.  Attempts to cut
+  // short any long-lived or blocking sync thread tasks so that the shutdown on
+  // sync thread task that we're about to post won't have to wait very long.
   virtual void StopSyncingForShutdown();
 
   // Called on |frontend_loop_| to kick off shutdown.
@@ -313,9 +312,6 @@ class SyncBackendHost
   // TODO(akalin): Figure out a better way for tests to hook into
   // SyncBackendHost.
 
-  typedef base::Callback<scoped_ptr<syncer::HttpPostProviderFactory>(void)>
-      MakeHttpBridgeFactoryFn;
-
   // Utility struct for holding initialization options.
   struct DoInitializeOptions {
     DoInitializeOptions(
@@ -326,7 +322,7 @@ class SyncBackendHost
         const scoped_refptr<syncer::ExtensionsActivity>& extensions_activity,
         const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
         const GURL& service_url,
-        MakeHttpBridgeFactoryFn make_http_bridge_factory_fn,
+        scoped_ptr<syncer::HttpPostProviderFactory> http_bridge_factory,
         const syncer::SyncCredentials& credentials,
         const std::string& invalidator_client_id,
         scoped_ptr<syncer::SyncManagerFactory> sync_manager_factory,
@@ -350,7 +346,7 @@ class SyncBackendHost
     syncer::WeakHandle<syncer::JsEventHandler> event_handler;
     GURL service_url;
     // Overridden by tests.
-    MakeHttpBridgeFactoryFn make_http_bridge_factory_fn;
+    scoped_ptr<syncer::HttpPostProviderFactory> http_bridge_factory;
     syncer::SyncCredentials credentials;
     const std::string invalidator_client_id;
     scoped_ptr<syncer::SyncManagerFactory> sync_manager_factory;
@@ -522,10 +518,6 @@ class SyncBackendHost
       syncer::InvalidatorState state) OVERRIDE;
   virtual void OnIncomingInvalidation(
       const syncer::ObjectIdInvalidationMap& invalidation_map) OVERRIDE;
-
-  // Handles stopping the core's SyncManager, accounting for whether
-  // initialization is done yet.
-  void StopSyncManagerForShutdown();
 
   base::WeakPtrFactory<SyncBackendHost> weak_ptr_factory_;
 

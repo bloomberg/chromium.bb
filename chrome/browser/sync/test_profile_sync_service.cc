@@ -64,8 +64,7 @@ scoped_ptr<syncer::HttpPostProviderFactory> MakeTestHttpBridgeFactory() {
 
 void SyncBackendHostForProfileSyncTest::InitCore(
     scoped_ptr<DoInitializeOptions> options) {
-  options->make_http_bridge_factory_fn =
-      base::Bind(&MakeTestHttpBridgeFactory);
+  options->http_bridge_factory = MakeTestHttpBridgeFactory();
   options->credentials.email = "testuser@gmail.com";
   options->credentials.sync_token = "token";
   options->restored_key_for_bootstrapping = "";

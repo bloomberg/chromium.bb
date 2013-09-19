@@ -15,6 +15,7 @@
 #include "sync/engine/model_changing_syncer_command.h"
 #include "sync/engine/traffic_recorder.h"
 #include "sync/internal_api/debug_info_event_listener.h"
+#include "sync/internal_api/public/base/cancelation_signal.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/sessions/debug_info_getter.h"
 #include "sync/sessions/sync_session.h"
@@ -104,7 +105,8 @@ class SyncerCommandTestBase : public testing::Test,
   // Install a MockServerConnection.  Resets the context.  By default,
   // the context does not have a MockServerConnection attached.
   void ConfigureMockServerConnection() {
-    mock_server_.reset(new MockConnectionManager(directory()));
+    mock_server_.reset(new MockConnectionManager(directory(),
+                                                 &cancelation_signal_));
     ResetContext();
   }
 
@@ -169,6 +171,7 @@ class SyncerCommandTestBase : public testing::Test,
   DebugInfoEventListener debug_info_event_listener_;
   scoped_refptr<ExtensionsActivity> extensions_activity_;
   TrafficRecorder traffic_recorder_;
+  CancelationSignal cancelation_signal_;
   DISALLOW_COPY_AND_ASSIGN(SyncerCommandTestBase);
 };
 

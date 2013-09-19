@@ -44,6 +44,7 @@
 #include "jingle/notifier/base/notifier_options.h"
 #include "net/base/host_port_pair.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "sync/internal_api/public/base/cancelation_signal.h"
 #include "sync/internal_api/public/base_transaction.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/internal_api/public/http_bridge.h"
@@ -198,11 +199,11 @@ class SyncBackendHost::Core
   void DoFinishInitialProcessControlTypes();
 
   // The shutdown order is a bit complicated:
-  // 1) Call DoStopSyncManagerForShutdown() from |frontend_loop_| to request
-  //    sync manager to stop as soon as possible.
+  // 1) Call ShutdownOnUIThread() from |frontend_loop_| to request sync manager
+  //    to stop as soon as possible.
   // 2) Post DoShutdown() to sync loop to clean up backend state, save
   //    directory and destroy sync manager.
-  void DoStopSyncManagerForShutdown();
+  void ShutdownOnUIThread();
   void DoShutdown(bool sync_disabled);
   void DoDestroySyncManager();
 
@@ -235,6 +236,12 @@ class SyncBackendHost::Core
   // time sync is enabled for a user (to prevent accidentally reusing old
   // sync databases), as well as shutdown when you're no longer syncing.
   void DeleteSyncDataFolder();
+
+  // We expose this member because it's required in the construction of the
+  // HttpBridgeFactory.
+  syncer::CancelationSignal* GetRequestContextCancelationSignal() {
+    return &release_request_context_signal_;
+  }
 
  private:
   friend class base::RefCountedThreadSafe<SyncBackendHost::Core>;
@@ -286,6 +293,14 @@ class SyncBackendHost::Core
 
   base::WeakPtrFactory<Core> weak_ptr_factory_;
 
+  // These signals allow us to send requests to shut down the HttpBridgeFactory
+  // and ServerConnectionManager without having to wait for those classes to
+  // finish initializing first.
+  //
+  // See comments in Core::ShutdownOnUIThread() for more details.
+  syncer::CancelationSignal release_request_context_signal_;
+  syncer::CancelationSignal stop_syncing_signal_;
+
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
 
@@ -323,21 +338,6 @@ SyncBackendHost::~SyncBackendHost() {
   DCHECK(!core_.get() && !frontend_) << "Must call Shutdown before destructor.";
   DCHECK(!registrar_.get());
 }
-
-namespace {
-
-scoped_ptr<syncer::HttpPostProviderFactory> MakeHttpBridgeFactory(
-    const scoped_refptr<net::URLRequestContextGetter>& getter,
-    const NetworkTimeTracker::UpdateCallback& update_callback) {
-  chrome::VersionInfo version_info;
-  return scoped_ptr<syncer::HttpPostProviderFactory>(
-      new syncer::HttpBridgeFactory(
-          getter.get(),
-          DeviceInfo::MakeUserAgentForSyncApi(version_info),
-          update_callback));
-}
-
-}  // namespace
 
 void SyncBackendHost::Initialize(
     SyncFrontend* frontend,
@@ -388,9 +388,11 @@ void SyncBackendHost::Initialize(
       extensions_activity_monitor_.GetExtensionsActivity(),
       event_handler,
       sync_service_url,
-      base::Bind(&MakeHttpBridgeFactory,
-                 make_scoped_refptr(profile_->GetRequestContext()),
-                 NetworkTimeTracker::BuildNotifierUpdateCallback()),
+      scoped_ptr<syncer::HttpPostProviderFactory>(
+          new syncer::HttpBridgeFactory(
+              make_scoped_refptr(profile_->GetRequestContext()),
+              NetworkTimeTracker::BuildNotifierUpdateCallback(),
+              core_->GetRequestContextCancelationSignal())),
       credentials,
       invalidator_->GetInvalidatorClientId(),
       sync_manager_factory.Pass(),
@@ -492,24 +494,9 @@ bool SyncBackendHost::SetDecryptionPassphrase(const std::string& passphrase) {
   return true;
 }
 
-void SyncBackendHost::StopSyncManagerForShutdown() {
-  DCHECK_GT(initialization_state_, NOT_ATTEMPTED);
-  if (initialization_state_ == CREATING_SYNC_MANAGER) {
-    // We post here to implicitly wait for the SyncManager to be created,
-    // if needed.  We have to wait, since we need to shutdown immediately,
-    // and we need to tell the SyncManager so it can abort any activity
-    // (net I/O, data application).
-    DCHECK(registrar_->sync_thread()->IsRunning());
-    registrar_->sync_thread()->message_loop()->PostTask(FROM_HERE,
-        base::Bind(&SyncBackendHost::Core::DoStopSyncManagerForShutdown,
-                   core_.get()));
-  } else {
-    core_->DoStopSyncManagerForShutdown();
-  }
-}
-
 void SyncBackendHost::StopSyncingForShutdown() {
   DCHECK_EQ(base::MessageLoop::current(), frontend_loop_);
+  DCHECK_GT(initialization_state_, NOT_ATTEMPTED);
 
   // Immediately stop sending messages to the frontend.
   frontend_ = NULL;
@@ -521,7 +508,7 @@ void SyncBackendHost::StopSyncingForShutdown() {
 
   registrar_->RequestWorkerStopOnUIThread();
 
-  StopSyncManagerForShutdown();
+  core_->ShutdownOnUIThread();
 }
 
 scoped_ptr<base::Thread> SyncBackendHost::Shutdown(ShutdownOption option) {
@@ -872,7 +859,7 @@ SyncBackendHost::DoInitializeOptions::DoInitializeOptions(
     const scoped_refptr<syncer::ExtensionsActivity>& extensions_activity,
     const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
     const GURL& service_url,
-    MakeHttpBridgeFactoryFn make_http_bridge_factory_fn,
+    scoped_ptr<syncer::HttpPostProviderFactory> http_bridge_factory,
     const syncer::SyncCredentials& credentials,
     const std::string& invalidator_client_id,
     scoped_ptr<syncer::SyncManagerFactory> sync_manager_factory,
@@ -891,7 +878,7 @@ SyncBackendHost::DoInitializeOptions::DoInitializeOptions(
       extensions_activity(extensions_activity),
       event_handler(event_handler),
       service_url(service_url),
-      make_http_bridge_factory_fn(make_http_bridge_factory_fn),
+      http_bridge_factory(http_bridge_factory.Pass()),
       credentials(credentials),
       invalidator_client_id(invalidator_client_id),
       sync_manager_factory(sync_manager_factory.Pass()),
@@ -1133,6 +1120,12 @@ void SyncBackendHost::Core::DoInitialize(
   sync_loop_ = options->sync_loop;
   DCHECK(sync_loop_);
 
+  // Finish initializing the HttpBridgeFactory.  We do this here because
+  // building the user agent may block on some platforms.
+  chrome::VersionInfo version_info;
+  options->http_bridge_factory->Init(
+      DeviceInfo::MakeUserAgentForSyncApi(version_info));
+
   // Blow away the partial or corrupt sync data folder before doing any more
   // initialization, if necessary.
   if (options->delete_sync_data_folder) {
@@ -1156,7 +1149,7 @@ void SyncBackendHost::Core::DoInitialize(
                       options->service_url.host() + options->service_url.path(),
                       options->service_url.EffectiveIntPort(),
                       options->service_url.SchemeIsSecure(),
-                      options->make_http_bridge_factory_fn.Run().Pass(),
+                      options->http_bridge_factory.Pass(),
                       options->workers,
                       options->extensions_activity,
                       options->registrar /* as SyncManager::ChangeDelegate */,
@@ -1168,7 +1161,8 @@ void SyncBackendHost::Core::DoInitialize(
                       &encryptor_,
                       options->unrecoverable_error_handler.Pass(),
                       options->report_unrecoverable_error_function,
-                      options->use_oauth2_token);
+                      options->use_oauth2_token,
+                      &stop_syncing_signal_);
 
   // |sync_manager_| may end up being NULL here in tests (in
   // synchronous initialization mode).
@@ -1278,13 +1272,30 @@ void SyncBackendHost::Core::DoEnableEncryptEverything() {
   sync_manager_->GetEncryptionHandler()->EnableEncryptEverything();
 }
 
-void SyncBackendHost::Core::DoStopSyncManagerForShutdown() {
-  if (sync_manager_)
-    sync_manager_->StopSyncingForShutdown();
+void SyncBackendHost::Core::ShutdownOnUIThread() {
+  // This will cut short any blocking network tasks, cut short any in-progress
+  // sync cycles, and prevent the creation of new blocking network tasks and new
+  // sync cycles.  If there was an in-progress network request, it would have
+  // had a reference to the RequestContextGetter.  This reference will be
+  // dropped by the time this function returns.
+  //
+  // It is safe to call this even if Sync's backend classes have not been
+  // initialized yet.  Those classes will receive the message when the sync
+  // thread finally getes around to constructing them.
+  stop_syncing_signal_.Signal();
+
+  // This will drop the HttpBridgeFactory's reference to the
+  // RequestContextGetter.  Once this has been called, the HttpBridgeFactory can
+  // no longer be used to create new HttpBridge instances.  We can get away with
+  // this because the stop_syncing_signal_ has already been signalled, which
+  // guarantees that the ServerConnectionManager will no longer attempt to
+  // create new connections.
+  release_request_context_signal_.Signal();
 }
 
 void SyncBackendHost::Core::DoShutdown(bool sync_disabled) {
   DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
+
   // It's safe to do this even if the type was never activated.
   registrar_->DeactivateDataType(syncer::DEVICE_INFO);
   synced_device_tracker_.reset();

@@ -22,7 +22,9 @@ TestInternalComponentsFactory::TestInternalComponentsFactory(
 TestInternalComponentsFactory::~TestInternalComponentsFactory() { }
 
 scoped_ptr<SyncScheduler> TestInternalComponentsFactory::BuildScheduler(
-    const std::string& name, sessions::SyncSessionContext* context) {
+    const std::string& name,
+    sessions::SyncSessionContext* context,
+    syncer::CancelationSignal* cancelation_signal) {
   return scoped_ptr<SyncScheduler>(new FakeSyncScheduler());
 }
 
