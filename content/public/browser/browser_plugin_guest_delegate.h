@@ -44,6 +44,8 @@ class CONTENT_EXPORT BrowserPluginGuestDelegate {
 
   virtual bool HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
 
+  virtual bool IsDragAndDropEnabled();
+
   // Notification that a load in the guest resulted in abort. Note that |url|
   // may be invalid.
   virtual void LoadAbort(bool is_top_level,

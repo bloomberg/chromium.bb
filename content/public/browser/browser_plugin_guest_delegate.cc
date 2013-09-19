@@ -11,6 +11,10 @@ bool BrowserPluginGuestDelegate::HandleKeyboardEvent(
   return false;
 }
 
+bool BrowserPluginGuestDelegate::IsDragAndDropEnabled() {
+  return false;
+}
+
 bool BrowserPluginGuestDelegate::RequestPermission(
     BrowserPluginPermissionType permission_type,
     const base::DictionaryValue& request_info,
