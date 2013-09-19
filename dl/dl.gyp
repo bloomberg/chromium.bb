@@ -26,6 +26,11 @@
         # runtime detection.
         '-mfpu=neon',
       ],
+      'direct_dependent_settings': {
+        'include_dirs': [
+          '../',
+        ],
+      },
       'sources': [
         'api/armCOMM_s.h',
         'api/armOMX.h',
