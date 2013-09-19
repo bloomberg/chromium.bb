@@ -15105,7 +15105,7 @@ Do you accept?
       Devices
     </message>
     <message name="IDS_LOCAL_DISCOVERY_REGISTER_CONFIRMATION" desc="Confirmation for registering a printer to Google Cloud Print">
-      The following devices can be added to your account from your local network:
+      Do you wish to register the printer <ph name="PRINTER_NAME">$1</ph> to Google Cloud Print?
     </message>
     <message name="IDS_LOCAL_DISCOVERY_REGISTER_USER" desc="Label for user picker in registration dialog">
       User:
@@ -15163,6 +15163,12 @@ Do you accept?
     </message>
     <message name="IDS_LOCAL_DISCOVERY_CLOUD_DEVICES_LOGIN" desc="Text on login button for local discovery page">
       sign in
+    </message>
+    <message name="IDS_LOCAL_DISCOVERY_AVAILABLE_DEVICES" desc="Title for 'available devices' section in devices page">
+      Available Devices
+    </message>
+        <message name="IDS_LOCAL_DISCOVERY_MY_DEVICES" desc="Title for 'my devices' section in devices page">
+      Cloud Devices
     </message>
   </messages>
 

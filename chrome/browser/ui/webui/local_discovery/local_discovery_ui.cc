@@ -71,6 +71,10 @@ content::WebUIDataSource* CreateLocalDiscoveryHTMLSource() {
                              IDS_LOCAL_DISCOVERY_CLOUD_DEVICES_LOGIN);
   source->AddLocalizedString("registerNeedLogin",
                              IDS_LOCAL_DISCOVERY_REGISTER_NEED_LOGIN);
+  source->AddLocalizedString("availableDevicesTitle",
+                             IDS_LOCAL_DISCOVERY_AVAILABLE_DEVICES);
+  source->AddLocalizedString("myDevicesTitle",
+                             IDS_LOCAL_DISCOVERY_MY_DEVICES);
 
   source->SetJsonPath("strings.js");
 

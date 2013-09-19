@@ -12,9 +12,6 @@
  * registering a device on the local network.
  */
 
-
-<include src="../uber/uber_utils.js" />
-
 cr.define('local_discovery', function() {
   'use strict';
 
@@ -86,7 +83,7 @@ cr.define('local_discovery', function() {
         this.info.human_readable_name,
         this.info.description,
         loadTimeData.getString('serviceRegister'),
-        this.register.bind(this));
+        this.showRegister.bind(this));
 
       this.setRegisterEnabled(this.registerEnabled);
     },
@@ -103,9 +100,20 @@ cr.define('local_discovery', function() {
      * Register the device.
      */
     register: function() {
-      recordUmaAction('DevicesPage_RegisterClicked');
+      recordUmaAction('DevicesPage_RegisterConfirmed');
       chrome.send('registerDevice', [this.info.service_name]);
       setRegisterPage('register-page-adding1');
+    },
+    /**
+     * Show registrtation UI for device.
+     */
+    showRegister: function() {
+      recordUmaAction('DevicesPage_RegisterClicked');
+      $('register-message').textContent = loadTimeData.getStringF(
+        'registerConfirmMessage',
+        this.info.human_readable_name);
+      $('register-continue-button').onclick = this.register.bind(this);
+      showRegisterOverlay();
     },
     /**
      * Set registration button enabled/disabled
@@ -202,8 +210,7 @@ cr.define('local_discovery', function() {
     registerOverlay.focus();
 
     $('overlay').hidden = false;
-    uber.invokeMethodOnParent('beginInterceptingEvents');
-    setRegisterPage('register-page-choose');
+    setRegisterPage('register-page-confirm');
   }
 
   /**
@@ -212,7 +219,6 @@ cr.define('local_discovery', function() {
   function hideRegisterOverlay() {
     $('register-overlay').classList.remove('showing');
     $('overlay').hidden = true;
-    uber.invokeMethodOnParent('stopInterceptingEvents');
   }
 
   /**
@@ -320,19 +326,13 @@ cr.define('local_discovery', function() {
    */
   function updateUIToReflectState() {
     var numberPrinters = $('register-device-list').children.length;
-    $('printer-num').textContent = generateNumberPrintersAvailableText(
-      numberPrinters);
-
     if (numberPrinters == 0) {
-      $('register-message').textContent = loadTimeData.getString(
-        'noPrintersOnNetworkExplanation');
+      $('no-printers-message').hidden = false;
 
       $('register-login-promo').hidden = true;
     } else {
+      $('no-printers-message').hidden = true;
       $('register-login-promo').hidden = isUserLoggedIn;
-
-      $('register-message').textContent = loadTimeData.getString(
-        'registerConfirmMessage');
     }
   }
 
@@ -453,8 +453,6 @@ cr.define('local_discovery', function() {
   }
 
   document.addEventListener('DOMContentLoaded', function() {
-    uber.onContentFrameLoaded();
-
     cr.ui.overlay.setupOverlay($('overlay'));
     cr.ui.overlay.globalInitialization();
     $('overlay').addEventListener('cancelOverlay', cancelRegistration);
@@ -467,9 +465,6 @@ cr.define('local_discovery', function() {
 
     $('register-error-exit').addEventListener('click', cancelRegistration);
 
-
-    $('add-printers-button').addEventListener('click',
-                                              showRegisterOverlay);
 
     $('cloud-devices-retry-button').addEventListener('click',
                                                      retryLoadCloudDevices);
@@ -486,8 +481,6 @@ cr.define('local_discovery', function() {
     document.addEventListener('webkitvisibilitychange', updateVisibility,
                               false);
 
-    var title = loadTimeData.getString('devicesTitle');
-    uber.invokeMethodOnParent('setTitle', {title: title});
 
     focusManager = new LocalDiscoveryFocusManager();
     focusManager.initialize();
