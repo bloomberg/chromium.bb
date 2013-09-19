@@ -5,7 +5,7 @@
 {
   'includes': [
      'audio_receiver/audio_receiver.gypi',
-#    'video_receiver/video_receiver.gypi',
+     'video_receiver/video_receiver.gypi',
   ],
   'targets': [
     {
@@ -19,7 +19,7 @@
       'dependencies': [
         'rtp_receiver/rtp_receiver.gyp:*',
         'cast_audio_receiver',
-#       'video_receiver',
+        'cast_video_receiver',
         'framer/framer.gyp:cast_framer',
         'pacing/paced_sender.gyp:paced_sender',
       ],

@@ -23,12 +23,15 @@ namespace cast {
 typedef base::Callback<void(scoped_ptr<PcmAudioFrame>,
     const base::TimeTicks)> AudioFrameDecodedCallback;
 
+// Callback in which the raw frame and render time will be returned once
+// decoding is complete.
+typedef base::Callback<void(scoped_ptr<I420VideoFrame>,
+    const base::TimeTicks)> VideoFrameDecodedCallback;
+
 // This Class is thread safe.
 class FrameReceiver : public base::RefCountedThreadSafe<FrameReceiver>{
  public:
-  // TODO(pwestin): These functions must be updated.
-  virtual bool GetRawVideoFrame(I420VideoFrame* video_frame,
-                                base::TimeTicks* render_time) = 0;
+  virtual bool GetRawVideoFrame(const VideoFrameDecodedCallback& callback) = 0;
 
   virtual bool GetEncodedVideoFrame(EncodedVideoFrame* video_frame,
                                     base::TimeTicks* render_time) = 0;
