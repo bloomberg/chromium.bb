@@ -350,7 +350,7 @@ BasicSourceLineResolver::Module::ParseFunction(char *function_line) {
 
 BasicSourceLineResolver::Line* BasicSourceLineResolver::Module::ParseLine(
     char *line_line) {
-  // <address> <line number> <source file id>
+  // <address> <size> <line number> <source file id>
   vector<char*> tokens;
   if (!Tokenize(line_line, kWhitespace, 4, &tokens)) {
     return NULL;
@@ -360,7 +360,14 @@ BasicSourceLineResolver::Line* BasicSourceLineResolver::Module::ParseLine(
   uint64_t size     = strtoull(tokens[1], NULL, 16);
   int line_number   = atoi(tokens[2]);
   int source_file   = atoi(tokens[3]);
-  if (line_number <= 0) {
+
+  // Valid line numbers normally start from 1, however there are functions that
+  // are associated with a source file but not associated with any line number
+  // (block helper function) and for such functions the symbol file contains 0
+  // for the line numbers.  Hence, 0 shoud be treated as a valid line number.
+  // For more information on block helper functions, please, take a look at:
+  // http://clang.llvm.org/docs/Block-ABI-Apple.html
+  if (line_number < 0) {
     return NULL;
   }
 
