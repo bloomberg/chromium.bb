@@ -221,27 +221,6 @@ else
   dbg_list=
 fi
 
-# Install the Chrome OS default fonts.
-if test "$do_inst_chromeos_fonts" != "0"; then
-  echo
-  echo "Installing Chrome OS fonts."
-  dir=`echo $0 | sed -r -e 's/\/[^/]+$//'`
-  if ! sudo $dir/linux/install-chromeos-fonts.py; then
-    echo "ERROR: The installation of the Chrome OS default fonts failed."
-    if [ `stat -f -c %T $dir` == "nfs" ]; then
-      echo "The reason is that your repo is installed on a remote file system."
-    else
-      echo "This is expected if your repo is installed on a remote file system."
-    fi
-    echo "It is recommended to install your repo on a local file system."
-    echo "You can skip the installation of the Chrome OS default founts with"
-    echo "the command line option: --no-chromeos-fonts."
-    exit 1
-  fi
-else
-  echo "Skipping installation of Chrome OS fonts."
-fi
-
 # When cross building for arm on 64-bit systems the host binaries
 # that are part of v8 need to be compiled with -m32 which means
 # that basic multilib support is needed.
@@ -303,6 +282,28 @@ else
   echo "You will have to install the above packages yourself."
   echo
   exit 100
+fi
+
+# Install the Chrome OS default fonts. This must go after running
+# apt-get, since install-chromeos-fonts depends on curl.
+if test "$do_inst_chromeos_fonts" != "0"; then
+  echo
+  echo "Installing Chrome OS fonts."
+  dir=`echo $0 | sed -r -e 's/\/[^/]+$//'`
+  if ! sudo $dir/linux/install-chromeos-fonts.py; then
+    echo "ERROR: The installation of the Chrome OS default fonts failed."
+    if [ `stat -f -c %T $dir` == "nfs" ]; then
+      echo "The reason is that your repo is installed on a remote file system."
+    else
+      echo "This is expected if your repo is installed on a remote file system."
+    fi
+    echo "It is recommended to install your repo on a local file system."
+    echo "You can skip the installation of the Chrome OS default founts with"
+    echo "the command line option: --no-chromeos-fonts."
+    exit 1
+  fi
+else
+  echo "Skipping installation of Chrome OS fonts."
 fi
 
 # Install 32bit backwards compatibility support for 64bit systems
