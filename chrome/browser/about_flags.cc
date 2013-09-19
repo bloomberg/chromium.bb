@@ -696,6 +696,15 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableSmoothScrolling)
   },
   {
+    "enable-overlay-scrollbars",
+    IDS_FLAGS_ENABLE_OVERLAY_SCROLLBARS_NAME,
+    IDS_FLAGS_ENABLE_OVERLAY_SCROLLBARS_DESCRIPTION,
+    // Uses the system preference on Mac (a different implementation).
+    // On Android, this is always enabled.
+    kOsWin | kOsLinux | kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kEnableOverlayScrollbars)
+  },
+  {
     "enable-panels",
     IDS_FLAGS_ENABLE_PANELS_NAME,
     IDS_FLAGS_ENABLE_PANELS_DESCRIPTION,

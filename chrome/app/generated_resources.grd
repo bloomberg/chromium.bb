@@ -5763,6 +5763,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_SMOOTH_SCROLLING_DESCRIPTION" desc="Description for the flag to turn on smooth scrolling">
         Enable the experimental smooth scrolling implementation.
       </message>
+      <message name="IDS_FLAGS_ENABLE_OVERLAY_SCROLLBARS_NAME" desc="Title for the flag to turn on overlay scrollbars">
+        Overlay Scrollbars
+      </message>
+      <message name="IDS_FLAGS_ENABLE_OVERLAY_SCROLLBARS_DESCRIPTION" desc="Description for the flag to turn on overlay scrollbars">
+        Enable the experimental overlay scrollbars implementation. You must also enable threaded compositing to have the scrollbars animate.
+      </message>
       <message name="IDS_FLAGS_ENABLE_AUTOLOGIN_NAME" desc="Title for the flag to auto-login the user">
         Enable auto-login
       </message>
