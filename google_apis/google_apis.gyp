@@ -91,5 +91,20 @@
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [4267, ],
     },
+    {
+      'target_name': 'google_apis_unittests',
+      'type': 'executable',
+      'dependencies': [
+        '../base/base.gyp:run_all_unittests',
+        '../testing/gtest.gyp:gtest',
+        'google_apis',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'google_api_keys_unittest.cc',
+      ],
+    },
   ],
 }
