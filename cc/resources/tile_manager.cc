@@ -256,12 +256,6 @@ void TileManager::DidFinishRunningTasks() {
     return;
   }
 
-  // We don't reserve memory for required-for-activation tiles during
-  // accelerated gestures, so we just postpone activation when we don't
-  // have these tiles, and activate after the accelerated gesture.
-  bool allow_rasterize_on_demand =
-      global_state_.tree_priority != SMOOTHNESS_TAKES_PRIORITY;
-
   // Use on-demand raster for any required-for-activation tiles that have not
   // been been assigned memory after reaching a steady memory state. This
   // ensures that we activate even when OOM.
@@ -271,12 +265,8 @@ void TileManager::DidFinishRunningTasks() {
     ManagedTileState::TileVersion& tile_version =
         mts.tile_versions[mts.raster_mode];
 
-    if (tile->required_for_activation() && !tile_version.IsReadyToDraw()) {
-      // If we can't raster on demand, give up early (and don't activate).
-      if (!allow_rasterize_on_demand)
-        return;
+    if (tile->required_for_activation() && !tile_version.IsReadyToDraw())
       tile_version.set_rasterize_on_demand();
-    }
   }
 
   client_->NotifyReadyToActivate();
