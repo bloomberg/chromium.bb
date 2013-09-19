@@ -11,7 +11,7 @@ vars = {
     'git_url':
          'https://chromium.googlesource.com',
     'webkit_rev':
-         '@caf4c70dfffade8efc537bc85f4d5722b9b676b8'
+         '@dbcf41b256f5fe999b2091f7b739a4cd70b466cb'
 }
 
 deps = {
@@ -104,7 +104,7 @@ deps = {
     'src/third_party/skia/include':
         Var('git_url') + '/external/skia/include.git@34db20f8f70d8e6673b3982be356d6fe895db5ba',
     'src/third_party/skia/src':
-        Var('git_url') + '/external/skia/src.git@1f603c5428961650e2b0d11bd58fdca7378e7e5d',
+        Var('git_url') + '/external/skia/src.git@9db1c1da3b9ce27de89476002fcec98d2648a263',
     'src/third_party/smhasher/src':
         Var('git_url') + '/external/smhasher.git@6f63a4882e6b2cf87e8eec1a3ef8644e0d963283',
     'src/third_party/snappy/src':
