@@ -24,6 +24,7 @@ Contents:
    devguide/coding/3D-graphics.rst
    devguide/coding/audio.rst
    devguide/coding/application-structure.rst
+   devguide/coding/native-client-modules.rst
    devguide/coding/FileIO.rst
    devguide/coding/message-system.rst
    devguide/coding/progress-events.rst
