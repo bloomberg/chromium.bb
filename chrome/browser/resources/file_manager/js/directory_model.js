@@ -891,7 +891,6 @@ DirectoryModel.prototype.changeDirectory = function(path, opt_errorCallback) {
 DirectoryModel.prototype.resolveDirectory = function(
     path, successCallback, errorCallback) {
   if (PathUtil.getRootType(path) == RootType.DRIVE) {
-    var driveStatus = this.volumeManager_.getDriveStatus();
     if (!this.volumeManager_.getVolumeInfo(RootDirectory.DRIVE)) {
       errorCallback(util.createFileError(FileError.NOT_FOUND_ERR));
       return;

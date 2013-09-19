@@ -1168,10 +1168,10 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    */
   FileManager.prototype.updateMiddleBarVisibility_ = function() {
     var currentPath = this.directoryModel_.getCurrentDirPath();
-    var driveStatus = this.volumeManager_.getDriveStatus();
+    var driveVolume = this.volumeManager_.getVolumeInfo(RootDirectory.DRIVE);
     var visible =
         DirectoryTreeUtil.isEligiblePathForDirectoryTree(currentPath) &&
-        driveStatus == VolumeManager.DriveStatus.MOUNTED;
+        driveVolume && !driveVolume.error;
     this.dialogDom_.
         querySelector('.dialog-middlebar-contents').hidden = !visible;
     this.dialogDom_.querySelector('#middlebar-splitter').hidden = !visible;

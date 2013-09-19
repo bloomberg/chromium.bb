@@ -343,8 +343,10 @@ function VolumeManager() {
   this.driveEnabled = false;
 
   this.initMountPoints_();
-  this.driveStatus_ = VolumeManager.DriveStatus.UNMOUNTED;
 
+  // These status should be merged into VolumeManager.
+  // TODO(hidehiko): Remove them after the migration.
+  this.driveStatus_ = VolumeManager.DriveStatus.UNMOUNTED;
   this.driveConnectionState_ = {
       type: VolumeManager.DriveConnectionType.OFFLINE,
       reasons: VolumeManager.DriveConnectionType.NO_SERVICE
@@ -402,7 +404,6 @@ VolumeManager.Error = {
  */
 VolumeManager.DriveStatus = {
   UNMOUNTED: 'unmounted',
-  MOUNTING: 'mounting',
   ERROR: 'error',
   MOUNTED: 'mounted'
 };
@@ -440,12 +441,6 @@ VolumeManager.DriveConnectionReason = {
  * mount/unmount received the request supposed failed.
  */
 VolumeManager.TIMEOUT = 15 * 60 * 1000;
-
-/**
- * Delay in milliseconds DRIVE changes its state from |UNMOUNTED| to
- * |MOUNTING|. Used to display progress in the UI.
- */
-VolumeManager.MOUNTING_DELAY = 500;
 
 /**
  * The singleton instance of VolumeManager. Initialized by the first invocation
@@ -492,13 +487,6 @@ VolumeManager.prototype.setDriveStatus_ = function(newStatus) {
     this.driveStatus_ = newStatus;
     cr.dispatchSimpleEvent(this, 'drive-status-changed');
   }
-};
-
-/**
- * @return {VolumeManager.DriveStatus} Current DRIVE status.
- */
-VolumeManager.prototype.getDriveStatus = function() {
-  return this.driveStatus_;
 };
 
 /**
@@ -579,15 +567,6 @@ VolumeManager.prototype.onMountCompleted_ = function(event) {
           'mount', event.volumeType, event.sourcePath);
       var error = event.status == 'success' ? '' : event.status;
 
-      var timeout = null;
-      if (event.volumeType == 'drive') {
-        timeout = setTimeout(function() {
-          if (this.getDriveStatus() == VolumeManager.DriveStatus.UNMOUNTED)
-            this.setDriveStatus_(VolumeManager.DriveStatus.MOUNTING);
-          timeout = null;
-        }.bind(this), VolumeManager.MOUNTING_DELAY);
-      }
-
       volumeManagerUtil.createVolumeInfo(
           event.mountPath, error, function(volume) {
             this.volumeInfoList.add(volume);
@@ -597,8 +576,6 @@ VolumeManager.prototype.onMountCompleted_ = function(event) {
             // For mounting Drive File System, we need to update some
             // VolumeManager's state.
             if (event.volumeType == 'drive') {
-              if (timeout != null)
-                clearTimeout(timeout);
               // Set Drive status here.
               this.setDriveStatus_(
                   volume.error ? VolumeManager.DriveStatus.ERROR :
@@ -669,16 +646,15 @@ VolumeManager.prototype.makeRequestKey_ = function(requestType,
  * @param {function(VolumeManager.Error)} errorCallback Error callback.
  */
 VolumeManager.prototype.mountDrive = function(successCallback, errorCallback) {
-  if (this.getDriveStatus() == VolumeManager.DriveStatus.ERROR) {
+  if (this.driveStatus_ == VolumeManager.DriveStatus.ERROR) {
     this.setDriveStatus_(VolumeManager.DriveStatus.UNMOUNTED);
   }
-  this.setDriveStatus_(VolumeManager.DriveStatus.MOUNTING);
   var self = this;
   this.mount_(
       '', 'drive',
       successCallback,
       function(error) {
-        if (self.getDriveStatus() != VolumeManager.DriveStatus.MOUNTED)
+        if (self.driveStatus_ != VolumeManager.DriveStatus.MOUNTED)
           self.setDriveStatus_(VolumeManager.DriveStatus.ERROR);
         errorCallback(error);
       });
