@@ -5394,7 +5394,7 @@ TEST(HttpCache, CachedRedirect) {
   MockHttpRequest request(kTestTransaction);
   net::TestCompletionCallback callback;
 
-  // write to the cache
+  // Write to the cache.
   {
     scoped_ptr<net::HttpTransaction> trans;
     int rv = cache.http_cache()->CreateTransaction(
@@ -5415,6 +5415,9 @@ TEST(HttpCache, CachedRedirect) {
     std::string location;
     info->headers->EnumerateHeader(NULL, "Location", &location);
     EXPECT_EQ(location, "http://www.bar.com/");
+
+    // Mark the transaction as completed so it is cached.
+    trans->DoneReading();
 
     // Destroy transaction when going out of scope. We have not actually
     // read the response body -- want to test that it is still getting cached.
@@ -5423,7 +5426,12 @@ TEST(HttpCache, CachedRedirect) {
   EXPECT_EQ(0, cache.disk_cache()->open_count());
   EXPECT_EQ(1, cache.disk_cache()->create_count());
 
-  // read from the cache
+  // Active entries in the cache are not retired synchronously. Make
+  // sure the next run hits the MockHttpCache and open_count is
+  // correct.
+  base::MessageLoop::current()->RunUntilIdle();
+
+  // Read from the cache.
   {
     scoped_ptr<net::HttpTransaction> trans;
     int rv = cache.http_cache()->CreateTransaction(
@@ -5444,6 +5452,9 @@ TEST(HttpCache, CachedRedirect) {
     std::string location;
     info->headers->EnumerateHeader(NULL, "Location", &location);
     EXPECT_EQ(location, "http://www.bar.com/");
+
+    // Mark the transaction as completed so it is cached.
+    trans->DoneReading();
 
     // Destroy transaction when going out of scope. We have not actually
     // read the response body -- want to test that it is still getting cached.
@@ -5893,6 +5904,39 @@ TEST(HttpCache, FilterCompletion) {
 
   // Read from the cache.
   RunTransactionTest(cache.http_cache(), kSimpleGET_Transaction);
+
+  EXPECT_EQ(1, cache.network_layer()->transaction_count());
+  EXPECT_EQ(1, cache.disk_cache()->open_count());
+  EXPECT_EQ(1, cache.disk_cache()->create_count());
+}
+
+// Tests that we don't mark entries as truncated and release the cache
+// entry when DoneReading() is called before any Read() calls, such as
+// for a redirect.
+TEST(HttpCache, DoneReading) {
+  MockHttpCache cache;
+  net::TestCompletionCallback callback;
+
+  ScopedMockTransaction transaction(kSimpleGET_Transaction);
+  transaction.data = "";
+
+  scoped_ptr<net::HttpTransaction> trans;
+  int rv = cache.http_cache()->CreateTransaction(
+      net::DEFAULT_PRIORITY, &trans, NULL);
+  EXPECT_EQ(net::OK, rv);
+
+  MockHttpRequest request(transaction);
+  rv = trans->Start(&request, callback.callback(), net::BoundNetLog());
+  EXPECT_EQ(net::OK, callback.GetResult(rv));
+
+  trans->DoneReading();
+  // Leave the transaction around.
+
+  // Make sure that the ActiveEntry is gone.
+  base::MessageLoop::current()->RunUntilIdle();
+
+  // Read from the cache. This should not deadlock.
+  RunTransactionTest(cache.http_cache(), transaction);
 
   EXPECT_EQ(1, cache.network_layer()->transaction_count());
   EXPECT_EQ(1, cache.disk_cache()->open_count());

@@ -449,10 +449,13 @@ bool HttpCache::Transaction::GetFullRequestHeaders(
 
 void HttpCache::Transaction::DoneReading() {
   if (cache_.get() && entry_) {
-    DCHECK(reading_);
     DCHECK_NE(mode_, UPDATE);
-    if (mode_ & WRITE)
+    if (mode_ & WRITE) {
       DoneWritingToEntry(true);
+    } else {
+      cache_->DoneReadingFromEntry(entry_, this);
+      entry_ = NULL;
+    }
   }
 }
 
@@ -1340,10 +1343,6 @@ int HttpCache::Transaction::DoTruncateCachedMetadataComplete(int result) {
     }
   }
 
-  // If this response is a redirect, then we can stop writing now.  (We don't
-  // need to cache the response body of a redirect.)
-  if (response_.headers->IsRedirect(NULL))
-    DoneWritingToEntry(true);
   next_state_ = STATE_PARTIAL_HEADERS_RECEIVED;
   return OK;
 }

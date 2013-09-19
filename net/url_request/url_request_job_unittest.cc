@@ -37,6 +37,24 @@ const MockTransaction kGZip_Transaction = {
   net::OK
 };
 
+const MockTransaction kRedirect_Transaction = {
+  "http://www.google.com/redirect",
+  "GET",
+  base::Time(),
+  "",
+  net::LOAD_NORMAL,
+  "HTTP/1.1 302 Found",
+  "Cache-Control: max-age=10000\n"
+  "Location: http://www.google.com/destination\n"
+  "Content-Length: 5\n",
+  base::Time(),
+  "hello",
+  TEST_MODE_NORMAL,
+  NULL,
+  0,
+  net::OK
+};
+
 }  // namespace
 
 TEST(URLRequestJob, TransactionNotifiedWhenDone) {
@@ -77,4 +95,23 @@ TEST(URLRequestJob, SyncTransactionNotifiedWhenDone) {
   EXPECT_TRUE(network_layer.done_reading_called());
 
   RemoveMockTransaction(&transaction);
+}
+
+TEST(URLRequestJob, RedirectTransactionNotifiedWhenDone) {
+  MockNetworkLayer network_layer;
+  net::TestURLRequestContext context;
+  context.set_http_transaction_factory(&network_layer);
+
+  net::TestDelegate d;
+  net::TestURLRequest req(GURL(kRedirect_Transaction.url), &d, &context, NULL);
+  AddMockTransaction(&kRedirect_Transaction);
+
+  req.set_method("GET");
+  req.Start();
+
+  base::MessageLoop::current()->Run();
+
+  EXPECT_TRUE(network_layer.done_reading_called());
+
+  RemoveMockTransaction(&kRedirect_Transaction);
 }

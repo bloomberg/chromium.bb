@@ -392,7 +392,7 @@ void HttpCache::CloseAllConnections() {
   HttpNetworkSession* session = network->GetSession();
   if (session)
     session->CloseAllConnections();
-  }
+}
 
 void HttpCache::CloseIdleConnections() {
   net::HttpNetworkLayer* network =

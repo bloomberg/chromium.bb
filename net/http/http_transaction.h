@@ -109,6 +109,9 @@ class NET_EXPORT_PRIVATE HttpTransaction {
   // of the stream. This is equivalent to performing an extra Read() at the end
   // that should return 0 bytes. This method should not be called if the
   // transaction is busy processing a previous operation (like a pending Read).
+  //
+  // DoneReading may also be called before the first Read() to notify that the
+  // entire response body is to be ignored (e.g., in a redirect).
   virtual void DoneReading() = 0;
 
   // Returns the response info for this transaction or NULL if the response

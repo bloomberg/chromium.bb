@@ -319,6 +319,10 @@ void URLRequestJob::NotifyHeadersComplete() {
       new_location = new_location.ReplaceComponents(replacements);
     }
 
+    // Redirect response bodies are not read. Notify the transaction
+    // so it does not treat being stopped as an error.
+    DoneReading();
+
     bool defer_redirect = false;
     request_->NotifyReceivedRedirect(new_location, &defer_redirect);
 
