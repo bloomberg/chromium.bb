@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <iostream>
+#include <ostream>
 
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
