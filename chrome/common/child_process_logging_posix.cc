@@ -4,7 +4,6 @@
 
 #include "chrome/common/child_process_logging.h"
 
-#include "base/command_line.h"
 #include "base/format_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -24,12 +23,7 @@ static const size_t kClientIdSize = 32 + 1;
 char g_client_id[kClientIdSize];
 
 static const size_t kNumSize = 32;
-char g_num_switches[kNumSize] = "";
 char g_num_variations[kNumSize] = "";
-
-// Assume command line switches are less than 64 chars.
-static const size_t kMaxSwitchesSize = kSwitchLen * kMaxSwitches + 1;
-char g_switches[kMaxSwitchesSize] = "";
 
 static const size_t kMaxVariationChunksSize =
     kMaxVariationChunkSize * kMaxReportedVariationChunks + 1;
@@ -49,23 +43,6 @@ void SetClientId(const std::string& client_id) {
 
 std::string GetClientId() {
   return std::string(g_client_id);
-}
-
-void SetCommandLine(const CommandLine* command_line) {
-  const CommandLine::StringVector& argv = command_line->argv();
-
-  snprintf(g_num_switches, arraysize(g_num_switches), "%" PRIuS,
-           argv.size() - 1);
-
-  std::string command_line_str;
-  for (size_t argv_i = 1;
-       argv_i < argv.size() && argv_i <= kMaxSwitches;
-       ++argv_i) {
-    command_line_str += argv[argv_i];
-    // Truncate long switches, align short ones with spaces to be trimmed later.
-    command_line_str.resize(argv_i * kSwitchLen, ' ');
-  }
-  base::strlcpy(g_switches, command_line_str.c_str(), arraysize(g_switches));
 }
 
 void SetExperimentList(const std::vector<string16>& experiments) {

@@ -6,7 +6,6 @@
 
 #include <windows.h>
 
-#include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -21,10 +20,6 @@ namespace {
 
 // exported in breakpad_win.cc: void __declspec(dllexport) __cdecl SetClientId.
 typedef void (__cdecl *MainSetClientId)(const wchar_t*);
-
-// exported in breakpad_win.cc:
-//   void __declspec(dllexport) __cdecl SetCommandLine2
-typedef void (__cdecl *MainSetCommandLine)(const wchar_t**, size_t);
 
 // exported in breakpad_field_trial_win.cc:
 //   void __declspec(dllexport) __cdecl SetExperimentList3
@@ -84,27 +79,6 @@ std::string GetClientId() {
     return WideToASCII(wstr_client_id);
   else
     return std::string();
-}
-
-void SetCommandLine(const CommandLine* command_line) {
-  static MainSetCommandLine set_command_line = NULL;
-  // note: benign race condition on set_command_line.
-  if (!set_command_line) {
-    HMODULE exe_module = GetModuleHandle(chrome::kBrowserProcessExecutableName);
-    if (!exe_module)
-      return;
-    set_command_line = reinterpret_cast<MainSetCommandLine>(
-        GetProcAddress(exe_module, "SetCommandLine2"));
-    if (!set_command_line)
-      return;
-  }
-
-  if (command_line->argv().empty())
-    return;
-
-  std::vector<const wchar_t*> cstrings;
-  StringVectorToCStringVector(command_line->argv(), &cstrings);
-  (set_command_line)(&cstrings[0], cstrings.size());
 }
 
 void SetExperimentList(const std::vector<string16>& experiments) {

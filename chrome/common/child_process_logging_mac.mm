@@ -6,11 +6,8 @@
 
 #import <Foundation/Foundation.h>
 
-#include "base/command_line.h"
-#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/metrics/variations/variations_util.h"
 #include "chrome/installer/util/google_update_settings.h"
@@ -46,34 +43,6 @@ void SetClientId(const std::string& client_id) {
 
 std::string GetClientId() {
   return std::string(g_client_id);
-}
-
-void SetCommandLine(const CommandLine* command_line) {
-  DCHECK(command_line);
-  if (!command_line)
-    return;
-
-  // These should match the corresponding strings in breakpad_win.cc.
-  const char* kNumSwitchesKey = "num-switches";
-  const char* kSwitchKeyFormat = "switch-%zu";  // 1-based.
-
-  // Note the total number of switches, not including the exec path.
-  const CommandLine::StringVector& argv = command_line->argv();
-  SetCrashKeyValue(kNumSwitchesKey,
-                   base::StringPrintf("%zu", argv.size() - 1));
-
-  size_t key_i = 0;
-  for (size_t i = 1; i < argv.size() && key_i < kMaxSwitches; ++i, ++key_i) {
-    // TODO(shess): Skip boring switches.
-    std::string key = base::StringPrintf(kSwitchKeyFormat, key_i + 1);
-    SetCrashKeyValue(key, argv[i]);
-  }
-
-  // Clear out any stale keys.
-  for (; key_i < kMaxSwitches; ++key_i) {
-    std::string key = base::StringPrintf(kSwitchKeyFormat, key_i + 1);
-    ClearCrashKey(key);
-  }
 }
 
 void SetExperimentList(const std::vector<string16>& experiments) {

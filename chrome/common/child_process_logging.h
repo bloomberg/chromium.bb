@@ -13,8 +13,6 @@
 #include "base/debug/crash_logging.h"
 #include "base/strings/string16.h"
 
-class CommandLine;
-
 // The maximum number of variation chunks we will report.
 // Also used in chrome/app, but we define it here to avoid a common->app
 // dependency.
@@ -25,22 +23,13 @@ static const size_t kMaxReportedVariationChunks = 15;
 // limit of google_breakpad::CustomInfoEntry::kValueMaxLength.
 static const size_t kMaxVariationChunkSize = 64;
 
-// The maximum number of command line switches to include in the crash
-// report's metadata. Note that the mini-dump itself will also contain the
-// (original) command line arguments within the PEB.
-// Also used in chrome/app, but we define it here to avoid a common->app
-// dependency.
-static const size_t kMaxSwitches = 15;
-
 namespace child_process_logging {
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 // These are declared here so the crash reporter can access them directly in
 // compromised context without going through the standard library.
 extern char g_client_id[];
-extern char g_num_switches[];
 extern char g_num_variations[];
-extern char g_switches[];
 extern char g_variation_chunks[];
 
 // Assume command line switches are less than 64 chars.
@@ -53,10 +42,6 @@ void SetClientId(const std::string& client_id);
 // Gets the Client ID to be used as GUID for crash reporting. Returns the client
 // id in |client_id| if it's known, an empty string otherwise.
 std::string GetClientId();
-
-// Sets the command line arguments to send along with crash reports to the
-// values in |command_line|.
-void SetCommandLine(const CommandLine* command_line);
 
 // Initialize the list of experiment info to send along with crash reports.
 void SetExperimentList(const std::vector<string16>& state);

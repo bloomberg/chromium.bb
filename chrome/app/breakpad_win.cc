@@ -105,8 +105,6 @@ typedef NTSTATUS (WINAPI* NtTerminateProcessPtr)(HANDLE ProcessHandle,
 char* g_real_terminate_process_stub = NULL;
 
 static size_t g_client_id_offset = 0;
-static size_t g_num_switches_offset = 0;
-static size_t g_switches_offset = 0;
 static size_t g_dynamic_keys_offset = 0;
 typedef std::map<std::wstring, google_breakpad::CustomInfoEntry*>
     DynamicEntriesMap;
@@ -266,63 +264,6 @@ static void SetIntegerValue(size_t offset, int value) {
                 google_breakpad::CustomInfoEntry::kValueMaxLength);
 }
 
-bool IsBoringCommandLineSwitch(const std::wstring& flag) {
-  return StartsWith(flag, L"--channel=", true) ||
-
-         // No point to including this since we already have a ptype field.
-         StartsWith(flag, L"--type=", true) ||
-
-         // Not particularly interesting
-         StartsWith(flag, L"--flash-broker=", true) ||
-
-         // Just about everything has this, don't bother.
-         StartsWith(flag, L"/prefetch:", true) ||
-
-         // We handle the plugin path separately since it is usually too big
-         // to fit in the switches (limited to 63 characters).
-         StartsWith(flag, L"--plugin-path=", true) ||
-
-         // This is too big so we end up truncating it anyway.
-         StartsWith(flag, L"--force-fieldtest=", true) ||
-
-         // These surround the flags that were added by about:flags, it lets
-         // you distinguish which flags were added manually via the command
-         // line versus those added through about:flags. For the most part
-         // we don't care how an option was enabled, so we strip these.
-         // (If you need to know can always look at the PEB).
-         flag == L"--flag-switches-begin" ||
-         flag == L"--flag-switches-end";
-}
-
-// Note that this is suffixed with "2" due to a parameter change that was made
-// to the predecessor "SetCommandLine()". If the signature changes again, use
-// a new name.
-extern "C" void __declspec(dllexport) __cdecl SetCommandLine2(
-    const wchar_t** argv, size_t argc) {
-  if (!g_custom_entries)
-    return;
-
-  // Copy up to the kMaxSwitches arguments into the custom entries array. Skip
-  // past the first argument, as it is just the executable path.
-  size_t argv_i = 1;
-  size_t num_added = 0;
-
-  for (; argv_i < argc && num_added < kMaxSwitches; ++argv_i) {
-    // Don't bother including boring command line switches in crash reports.
-    if (IsBoringCommandLineSwitch(argv[argv_i]))
-      continue;
-
-    base::wcslcpy((*g_custom_entries)[g_switches_offset + num_added].value,
-                  argv[argv_i],
-                  google_breakpad::CustomInfoEntry::kValueMaxLength);
-    num_added++;
-  }
-
-  // Make note of the total number of switches. This is useful in case we have
-  // truncated at kMaxSwitches, to see how many were unaccounted for.
-  SetIntegerValue(g_num_switches_offset, static_cast<int>(argc) - 1);
-}
-
 // Appends the plugin path to |g_custom_entries|.
 void SetPluginPath(const std::wstring& path) {
   DCHECK(g_custom_entries);
@@ -465,27 +406,6 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& exe_path,
   g_client_id_offset = g_custom_entries->size();
   g_custom_entries->push_back(
       google_breakpad::CustomInfoEntry(L"guid", guid.c_str()));
-
-  // Add empty values for the command line switches. We will fill them with
-  // actual values as part of SetCommandLine2().
-  g_num_switches_offset = g_custom_entries->size();
-  g_custom_entries->push_back(
-      google_breakpad::CustomInfoEntry(L"num-switches", L""));
-
-  g_switches_offset = g_custom_entries->size();
-  // one-based index for the name suffix.
-  for (int i = 1; i <= kMaxSwitches; ++i) {
-    g_custom_entries->push_back(google_breakpad::CustomInfoEntry(
-        base::StringPrintf(L"switch-%i", i).c_str(), L""));
-  }
-
-  // Fill in the command line arguments using CommandLine::ForCurrentProcess().
-  // The browser process may call SetCommandLine2() again later on with a
-  // command line that has been augmented with the about:flags experiments.
-  std::vector<const wchar_t*> switches;
-  StringVectorToCStringVector(
-      CommandLine::ForCurrentProcess()->argv(), &switches);
-  SetCommandLine2(&switches[0], switches.size());
 
   if (type == L"plugin" || type == L"ppapi") {
     std::wstring plugin_path =

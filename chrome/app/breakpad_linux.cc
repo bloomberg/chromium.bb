@@ -1158,16 +1158,6 @@ void HandleCrashDump(const BreakpadInfo& info) {
   //   BOUNDARY \r\n
   //
   //   zero or one:
-  //   Content-Disposition: form-data; name="num-switches" \r\n \r\n
-  //   5 \r\n
-  //   BOUNDARY \r\n
-  //
-  //   zero to 15:
-  //   Content-Disposition: form-data; name="switch-1" \r\n \r\n
-  //   --foo \r\n
-  //   BOUNDARY \r\n
-  //
-  //   zero or one:
   //   Content-Disposition: form-data; name="oom-size" \r\n \r\n
   //   1234567890 \r\n
   //   BOUNDARY \r\n
@@ -1272,26 +1262,6 @@ void HandleCrashDump(const BreakpadInfo& info) {
     writer.AddPairString(distro_msg, info.distro);
     writer.AddBoundary();
     writer.Flush();
-  }
-
-  if (*child_process_logging::g_num_switches) {
-    writer.AddPairString("num-switches",
-                         child_process_logging::g_num_switches);
-    writer.AddBoundary();
-    writer.Flush();
-  }
-
-  unsigned switches_len =
-      my_strlen(child_process_logging::g_switches);
-  if (switches_len) {
-    static const char switch_msg[] = "switch-";
-    static const unsigned kMaxSwitchLen =
-        kMaxSwitches * child_process_logging::kSwitchLen;
-    writer.AddPairDataInChunks(switch_msg, sizeof(switch_msg) - 1,
-        child_process_logging::g_switches,
-        std::min(switches_len, kMaxSwitchLen),
-        child_process_logging::kSwitchLen,
-        true /* Strip whitespace since switches are padded to kSwitchLen. */);
   }
 
   if (*child_process_logging::g_num_variations) {

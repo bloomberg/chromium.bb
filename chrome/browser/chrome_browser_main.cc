@@ -105,7 +105,6 @@
 #include "chrome/browser/ui/user_data_dir_dialog.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/browser/user_data_dir_extractor.h"
-#include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_result_codes.h"
@@ -861,7 +860,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
 
   // Reset the command line in the crash report details, since we may have
   // just changed it to include experiments.
-  child_process_logging::SetCommandLine(CommandLine::ForCurrentProcess());
+  crash_keys::SetSwitchesFromCommandLine(CommandLine::ForCurrentProcess());
 
   // If we're running tests (ui_task is non-null), then the ResourceBundle
   // has already been initialized.
