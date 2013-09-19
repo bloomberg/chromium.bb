@@ -1349,5 +1349,3 @@ crbug.com/289833 [ Android ] webexposed/custom-elements.html [ Timeout Pass ]
 # These started asserting with blink r157905. The asserts are symtpoms of legitimate bugs.
 crbug.com/294237 [ Debug ] svg/custom/bug86392.html [ Crash ]
 crbug.com/294238 [ Debug ] svg/custom/unicode-in-tspan-multi-svg-crash.html [ Crash ]
-
-crbug.com/260691 ietestcenter/css3/bordersbackgrounds/background-size-aspect-ratio.htm [ NeedsRebaseline ]
