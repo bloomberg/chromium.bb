@@ -58,19 +58,21 @@ MergeSessionLoadPage::MergeSessionLoadPage(WebContents* web_contents,
       proceeded_(false),
       web_contents_(web_contents),
       url_(url) {
-  OAuth2LoginManager* manager = GetOAuth2LoginManager();
-  manager->AddObserver(this);
   interstitial_page_ = InterstitialPage::Create(web_contents, true, url, this);
 }
 
 MergeSessionLoadPage::~MergeSessionLoadPage() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  OAuth2LoginManager* manager = GetOAuth2LoginManager();
-  manager->RemoveObserver(this);
 }
 
 void MergeSessionLoadPage::Show() {
-  interstitial_page_->Show();
+  OAuth2LoginManager* manager = GetOAuth2LoginManager();
+  if (manager && manager->ShouldBlockTabLoading()) {
+    manager->AddObserver(this);
+    interstitial_page_->Show();
+  } else {
+    interstitial_page_->Proceed();
+  }
 }
 
 std::string MergeSessionLoadPage::GetHTMLContents() {
@@ -128,6 +130,10 @@ void MergeSessionLoadPage::CommandReceived(const std::string& cmd) {
 }
 
 void MergeSessionLoadPage::NotifyBlockingPageComplete() {
+  OAuth2LoginManager* manager = GetOAuth2LoginManager();
+  if (manager)
+    manager->RemoveObserver(this);
+
   if (!callback_.is_null()) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE, callback_);
