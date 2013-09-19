@@ -698,9 +698,9 @@ int RenderViewHostManager::CreateRenderView(
 
 bool RenderViewHostManager::InitRenderView(RenderViewHost* render_view_host,
                                            int opener_route_id) {
-  // If the pending navigation is to a WebUI, tell the RenderView about any
-  // bindings it will need enabled.
-  if (pending_web_ui())
+  // If the pending navigation is to a WebUI and the RenderView is not in a
+  // guest process, tell the RenderView about any bindings it will need enabled.
+  if (pending_web_ui() && !render_view_host->GetProcess()->IsGuest())
     render_view_host->AllowBindings(pending_web_ui()->GetBindings());
 
   return delegate_->CreateRenderViewForRenderManager(render_view_host,
