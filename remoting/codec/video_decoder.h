@@ -7,12 +7,9 @@
 
 #include "base/basictypes.h"
 #include "remoting/proto/video.pb.h"
-
-namespace webrtc {
-class DesktopRect;
-class DesktopRegion;
-class DesktopSize;
-}  // namespace webrtc
+#include "third_party/skia/include/core/SkRect.h"
+#include "third_party/skia/include/core/SkRegion.h"
+#include "third_party/skia/include/core/SkSize.h"
 
 namespace remoting {
 
@@ -34,7 +31,7 @@ class VideoDecoder {
 
   // Initializes the decoder and sets the output dimensions.
   // |screen size| must not be empty.
-  virtual void Initialize(const webrtc::DesktopSize& screen_size) = 0;
+  virtual void Initialize(const SkISize& screen_size) = 0;
 
   // Feeds more data into the decoder.
   virtual DecodeResult DecodePacket(const VideoPacket* packet) = 0;
@@ -47,8 +44,8 @@ class VideoDecoder {
   // Marks the specified |region| of the view for update the next time
   // RenderFrame() is called.  |region| is expressed in |view_size| coordinates.
   // |view_size| must not be empty.
-  virtual void Invalidate(const webrtc::DesktopSize& view_size,
-                          const webrtc::DesktopRegion& region) = 0;
+  virtual void Invalidate(const SkISize& view_size,
+                          const SkRegion& region) = 0;
 
   // Copies invalidated pixels within |clip_area| to |image_buffer|. Pixels are
   // invalidated either by new data received in DecodePacket(), or by explicit
@@ -62,15 +59,15 @@ class VideoDecoder {
   //
   // On return, |output_region| contains the updated area, in |view_size|
   // coordinates.
-  virtual void RenderFrame(const webrtc::DesktopSize& view_size,
-                           const webrtc::DesktopRect& clip_area,
+  virtual void RenderFrame(const SkISize& view_size,
+                           const SkIRect& clip_area,
                            uint8* image_buffer,
                            int image_stride,
-                           webrtc::DesktopRegion* output_region) = 0;
+                           SkRegion* output_region) = 0;
 
   // Returns the "shape", if any, of the most recently rendered frame.
   // The shape is returned in source dimensions.
-  virtual const webrtc::DesktopRegion* GetImageShape() = 0;
+  virtual const SkRegion* GetImageShape() = 0;
 };
 
 }  // namespace remoting

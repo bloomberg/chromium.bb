@@ -28,7 +28,8 @@ const uint32 kTransparent = 0;
 VideoDecoderVp8::VideoDecoderVp8()
     : state_(kUninitialized),
       codec_(NULL),
-      last_image_(NULL) {
+      last_image_(NULL),
+      screen_size_(SkISize::Make(0, 0)) {
 }
 
 VideoDecoderVp8::~VideoDecoderVp8() {
@@ -39,17 +40,13 @@ VideoDecoderVp8::~VideoDecoderVp8() {
   delete codec_;
 }
 
-bool VideoDecoderVp8::IsReadyForData() {
-  return state_ == kReady;
-}
-
-void VideoDecoderVp8::Initialize(const webrtc::DesktopSize& screen_size) {
-  DCHECK(!screen_size.is_empty());
+void VideoDecoderVp8::Initialize(const SkISize& screen_size) {
+  DCHECK(!screen_size.isEmpty());
 
   screen_size_ = screen_size;
   state_ = kReady;
 
-  transparent_region_.SetRect(webrtc::DesktopRect::MakeSize(screen_size_));
+  transparent_region_.setRect(SkIRect::MakeSize(screen_size_));
 }
 
 VideoDecoder::DecodeResult VideoDecoderVp8::DecodePacket(
@@ -67,7 +64,8 @@ VideoDecoder::DecodeResult VideoDecoderVp8::DecodePacket(
     config.h = 0;
     config.threads = 2;
     vpx_codec_err_t ret =
-        vpx_codec_dec_init(codec_, vpx_codec_vp8_dx(), &config, 0);
+        vpx_codec_dec_init(
+            codec_, vpx_codec_vp8_dx(), &config, 0);
     if (ret != VPX_CODEC_OK) {
       LOG(INFO) << "Cannot initialize codec.";
       delete codec_;
@@ -97,30 +95,33 @@ VideoDecoder::DecodeResult VideoDecoderVp8::DecodePacket(
   }
   last_image_ = image;
 
-  webrtc::DesktopRegion region;
+  SkRegion region;
   for (int i = 0; i < packet->dirty_rects_size(); ++i) {
     Rect remoting_rect = packet->dirty_rects(i);
-    region.AddRect(webrtc::DesktopRect::MakeXYWH(
-        remoting_rect.x(), remoting_rect.y(),
-        remoting_rect.width(), remoting_rect.height()));
+    SkIRect rect = SkIRect::MakeXYWH(remoting_rect.x(),
+                                     remoting_rect.y(),
+                                     remoting_rect.width(),
+                                     remoting_rect.height());
+    region.op(rect, SkRegion::kUnion_Op);
   }
 
-  updated_region_.AddRegion(region);
+  updated_region_.op(region, SkRegion::kUnion_Op);
 
   // Update the desktop shape region.
-  webrtc::DesktopRegion desktop_shape_region;
+  SkRegion desktop_shape_region;
   if (packet->has_use_desktop_shape()) {
     for (int i = 0; i < packet->desktop_shape_rects_size(); ++i) {
       Rect remoting_rect = packet->desktop_shape_rects(i);
-      desktop_shape_region.AddRect(webrtc::DesktopRect::MakeXYWH(
-          remoting_rect.x(), remoting_rect.y(),
-          remoting_rect.width(), remoting_rect.height()));
+      SkIRect rect = SkIRect::MakeXYWH(remoting_rect.x(),
+                                       remoting_rect.y(),
+                                       remoting_rect.width(),
+                                       remoting_rect.height());
+      desktop_shape_region.op(rect, SkRegion::kUnion_Op);
     }
   } else {
     // Fallback for the case when the host didn't include the desktop shape
     // region.
-    desktop_shape_region =
-        webrtc::DesktopRegion(webrtc::DesktopRect::MakeSize(screen_size_));
+    desktop_shape_region = SkRegion(SkIRect::MakeSize(screen_size_));
   }
 
   UpdateImageShapeRegion(&desktop_shape_region);
@@ -128,69 +129,72 @@ VideoDecoder::DecodeResult VideoDecoderVp8::DecodePacket(
   return DECODE_DONE;
 }
 
+bool VideoDecoderVp8::IsReadyForData() {
+  return state_ == kReady;
+}
+
 VideoPacketFormat::Encoding VideoDecoderVp8::Encoding() {
   return VideoPacketFormat::ENCODING_VP8;
 }
 
-void VideoDecoderVp8::Invalidate(const webrtc::DesktopSize& view_size,
-                                 const webrtc::DesktopRegion& region) {
+void VideoDecoderVp8::Invalidate(const SkISize& view_size,
+                                 const SkRegion& region) {
   DCHECK_EQ(kReady, state_);
-  DCHECK(!view_size.is_empty());
+  DCHECK(!view_size.isEmpty());
 
-  for (webrtc::DesktopRegion::Iterator i(region); !i.IsAtEnd(); i.Advance()) {
-    updated_region_.AddRect(ScaleRect(i.rect(), view_size, screen_size_));
+  for (SkRegion::Iterator i(region); !i.done(); i.next()) {
+    SkIRect rect = i.rect();
+    rect = ScaleRect(rect, view_size, screen_size_);
+    updated_region_.op(rect, SkRegion::kUnion_Op);
   }
 
   // Updated areas outside of the new desktop shape region should be made
   // transparent, not repainted.
-  webrtc::DesktopRegion difference = updated_region_;
-  difference.Subtract(desktop_shape_);
-  updated_region_.Subtract(difference);
-  transparent_region_.AddRegion(difference);
+  SkRegion difference = updated_region_;
+  difference.op(desktop_shape_, SkRegion::kDifference_Op);
+  updated_region_.op(difference, SkRegion::kDifference_Op);
+  transparent_region_.op(difference, SkRegion::kUnion_Op);
 }
 
-void VideoDecoderVp8::RenderFrame(const webrtc::DesktopSize& view_size,
-                                  const webrtc::DesktopRect& clip_area,
+void VideoDecoderVp8::RenderFrame(const SkISize& view_size,
+                                  const SkIRect& clip_area,
                                   uint8* image_buffer,
                                   int image_stride,
-                                  webrtc::DesktopRegion* output_region) {
+                                  SkRegion* output_region) {
   DCHECK_EQ(kReady, state_);
-  DCHECK(!view_size.is_empty());
+  DCHECK(!view_size.isEmpty());
 
   // Early-return and do nothing if we haven't yet decoded any frames.
   if (!last_image_)
     return;
 
-  webrtc::DesktopRect source_clip =
-      webrtc::DesktopRect::MakeWH(last_image_->d_w, last_image_->d_h);
+  SkIRect source_clip = SkIRect::MakeWH(last_image_->d_w, last_image_->d_h);
 
   // ScaleYUVToRGB32WithRect does not currently support up-scaling.  We won't
   // be asked to up-scale except during resizes or if page zoom is >100%, so
   // we work-around the limitation by using the slower ScaleYUVToRGB32.
   // TODO(wez): Remove this hack if/when ScaleYUVToRGB32WithRect can up-scale.
-  if (!updated_region_.is_empty() &&
+  if (!updated_region_.isEmpty() &&
       (source_clip.width() < view_size.width() ||
        source_clip.height() < view_size.height())) {
     // We're scaling only |clip_area| into the |image_buffer|, so we need to
     // work out which source rectangle that corresponds to.
-    webrtc::DesktopRect source_rect =
-        ScaleRect(clip_area, view_size, screen_size_);
-    source_rect = webrtc::DesktopRect::MakeLTRB(
-        RoundToTwosMultiple(source_rect.left()),
-        RoundToTwosMultiple(source_rect.top()),
-        source_rect.right(),
-        source_rect.bottom());
+    SkIRect source_rect = ScaleRect(clip_area, view_size, screen_size_);
+    source_rect = SkIRect::MakeLTRB(RoundToTwosMultiple(source_rect.left()),
+                                    RoundToTwosMultiple(source_rect.top()),
+                                    source_rect.right(),
+                                    source_rect.bottom());
 
     // If there were no changes within the clip source area then don't render.
-    webrtc::DesktopRegion intersection(source_rect);
-    intersection.IntersectWith(updated_region_);
-    if (intersection.is_empty())
+    if (!updated_region_.intersects(source_rect))
       return;
 
     // Scale & convert the entire clip area.
-    int y_offset = CalculateYOffset(source_rect.left(), source_rect.top(),
+    int y_offset = CalculateYOffset(source_rect.x(),
+                                    source_rect.y(),
                                     last_image_->stride[0]);
-    int uv_offset = CalculateUVOffset(source_rect.left(), source_rect.top(),
+    int uv_offset = CalculateUVOffset(source_rect.x(),
+                                      source_rect.y(),
                                       last_image_->stride[1]);
     ScaleYUVToRGB32(last_image_->planes[0] + y_offset,
                     last_image_->planes[1] + uv_offset,
@@ -207,21 +211,18 @@ void VideoDecoderVp8::RenderFrame(const webrtc::DesktopSize& view_size,
                     media::ROTATE_0,
                     media::FILTER_BILINEAR);
 
-    output_region->AddRect(clip_area);
-    updated_region_.Subtract(source_rect);
+    output_region->op(clip_area, SkRegion::kUnion_Op);
+    updated_region_.op(source_rect, SkRegion::kDifference_Op);
     return;
   }
 
-  for (webrtc::DesktopRegion::Iterator i(updated_region_);
-       !i.IsAtEnd(); i.Advance()) {
+  for (SkRegion::Iterator i(updated_region_); !i.done(); i.next()) {
     // Determine the scaled area affected by this rectangle changing.
-    webrtc::DesktopRect rect = i.rect();
-    rect.IntersectWith(source_clip);
-    if (rect.is_empty())
+    SkIRect rect = i.rect();
+    if (!rect.intersect(source_clip))
       continue;
     rect = ScaleRect(rect, screen_size_, view_size);
-    rect.IntersectWith(clip_area);
-    if (rect.is_empty())
+    if (!rect.intersect(clip_area))
       continue;
 
     ConvertAndScaleYUVToRGB32Rect(last_image_->planes[0],
@@ -237,41 +238,38 @@ void VideoDecoderVp8::RenderFrame(const webrtc::DesktopSize& view_size,
                                   clip_area,
                                   rect);
 
-    output_region->AddRect(rect);
+    output_region->op(rect, SkRegion::kUnion_Op);
   }
 
-  updated_region_.Subtract(ScaleRect(clip_area, view_size, screen_size_));
+  updated_region_.op(ScaleRect(clip_area, view_size, screen_size_),
+                     SkRegion::kDifference_Op);
 
-  for (webrtc::DesktopRegion::Iterator i(transparent_region_);
-       !i.IsAtEnd(); i.Advance()) {
+  for (SkRegion::Iterator i(transparent_region_); !i.done(); i.next()) {
     // Determine the scaled area affected by this rectangle changing.
-    webrtc::DesktopRect rect = i.rect();
-    rect.IntersectWith(source_clip);
-    if (rect.is_empty())
+    SkIRect rect = i.rect();
+    if (!rect.intersect(source_clip))
       continue;
     rect = ScaleRect(rect, screen_size_, view_size);
-    rect.IntersectWith(clip_area);
-    if (rect.is_empty())
+    if (!rect.intersect(clip_area))
       continue;
 
     // Fill the rectange with transparent pixels.
     FillRect(image_buffer, image_stride, rect, kTransparent);
-    output_region->AddRect(rect);
+    output_region->op(rect, SkRegion::kUnion_Op);
   }
 
-  webrtc::DesktopRect scaled_clip_area =
-      ScaleRect(clip_area, view_size, screen_size_);
-  updated_region_.Subtract(scaled_clip_area);
-  transparent_region_.Subtract(scaled_clip_area);
+  SkIRect scaled_clip_area = ScaleRect(clip_area, view_size, screen_size_);
+  updated_region_.op(scaled_clip_area, SkRegion::kDifference_Op);
+  transparent_region_.op(scaled_clip_area, SkRegion::kDifference_Op);
 }
 
-const webrtc::DesktopRegion* VideoDecoderVp8::GetImageShape() {
+const SkRegion* VideoDecoderVp8::GetImageShape() {
   return &desktop_shape_;
 }
 
 void VideoDecoderVp8::FillRect(uint8* buffer,
                                int stride,
-                               const webrtc::DesktopRect& rect,
+                               const SkIRect& rect,
                                uint32 color) {
   uint32* ptr = reinterpret_cast<uint32*>(buffer + (rect.top() * stride) +
       (rect.left() * kBytesPerPixelRGB32));
@@ -282,23 +280,22 @@ void VideoDecoderVp8::FillRect(uint8* buffer,
   }
 }
 
-void VideoDecoderVp8::UpdateImageShapeRegion(
-    webrtc::DesktopRegion* new_desktop_shape) {
+void VideoDecoderVp8::UpdateImageShapeRegion(SkRegion* new_desktop_shape) {
   // Add all areas that have been updated or become transparent to the
   // transparent region. Exclude anything within the new desktop shape.
-  transparent_region_.AddRegion(desktop_shape_);
-  transparent_region_.AddRegion(updated_region_);
-  transparent_region_.Subtract(*new_desktop_shape);
+  transparent_region_.op(desktop_shape_, SkRegion::kUnion_Op);
+  transparent_region_.op(updated_region_, SkRegion::kUnion_Op);
+  transparent_region_.op(*new_desktop_shape, SkRegion::kDifference_Op);
 
   // Add newly exposed areas to the update region and limit updates to the new
   // desktop shape.
-  webrtc::DesktopRegion difference = *new_desktop_shape;
-  difference.Subtract(desktop_shape_);
-  updated_region_.AddRegion(difference);
-  updated_region_.IntersectWith(*new_desktop_shape);
+  SkRegion difference = *new_desktop_shape;
+  difference.op(desktop_shape_, SkRegion::kDifference_Op);
+  updated_region_.op(difference, SkRegion::kUnion_Op);
+  updated_region_.op(*new_desktop_shape, SkRegion::kIntersect_Op);
 
   // Set the new desktop shape region.
-  desktop_shape_.Swap(new_desktop_shape);
+  desktop_shape_.swap(*new_desktop_shape);
 }
 
 }  // namespace remoting

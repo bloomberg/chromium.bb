@@ -64,12 +64,12 @@ class VideoDecoderTester {
         view_size_.width() * view_size_.height() * kBytesPerPixel]);
     EXPECT_TRUE(image_data_.get());
     decoder_->Initialize(
-        webrtc::DesktopSize(screen_size_.width(), screen_size_.height()));
+        SkISize::Make(screen_size_.width(), screen_size_.height()));
   }
 
   void Reset() {
     expected_region_.Clear();
-    update_region_.Clear();
+    update_region_.setEmpty();
   }
 
   void ResetRenderedData() {
@@ -89,9 +89,10 @@ class VideoDecoderTester {
 
   void RenderFrame() {
     decoder_->RenderFrame(
-        webrtc::DesktopSize(view_size_.width(), view_size_.height()),
-        webrtc::DesktopRect::MakeWH(view_size_.width(), view_size_.height()),
-        image_data_.get(), view_size_.width() * kBytesPerPixel,
+        SkISize::Make(view_size_.width(), view_size_.height()),
+        SkIRect::MakeWH(view_size_.width(), view_size_.height()),
+        image_data_.get(),
+        view_size_.width() * kBytesPerPixel,
         &update_region_);
   }
 
@@ -124,10 +125,14 @@ class VideoDecoderTester {
     ASSERT_TRUE(frame_);
 
     // Test the content of the update region.
-    EXPECT_TRUE(expected_region_.Equals(update_region_));
+    webrtc::DesktopRegion update_region;
+    for (SkRegion::Iterator i(update_region_); !i.done(); i.next()) {
+      update_region.AddRect(webrtc::DesktopRect::MakeXYWH(
+          i.rect().x(), i.rect().y(), i.rect().width(), i.rect().height()));
+    }
+    EXPECT_TRUE(expected_region_.Equals(update_region));
 
-    for (webrtc::DesktopRegion::Iterator i(update_region_); !i.IsAtEnd();
-         i.Advance()) {
+    for (SkRegion::Iterator i(update_region_); !i.done(); i.next()) {
       const int stride = view_size_.width() * kBytesPerPixel;
       EXPECT_EQ(stride, frame_->stride());
       const int offset =  stride * i.rect().top() +
@@ -152,8 +157,7 @@ class VideoDecoderTester {
     double max_error = 0.0;
     double sum_error = 0.0;
     int error_num = 0;
-    for (webrtc::DesktopRegion::Iterator i(update_region_); !i.IsAtEnd();
-         i.Advance()) {
+    for (SkRegion::Iterator i(update_region_); !i.done(); i.next()) {
       const int stride = view_size_.width() * kBytesPerPixel;
       const int offset =  stride * i.rect().top() +
           kBytesPerPixel * i.rect().left();
@@ -195,7 +199,7 @@ class VideoDecoderTester {
   DesktopSize view_size_;
   bool strict_;
   webrtc::DesktopRegion expected_region_;
-  webrtc::DesktopRegion update_region_;
+  SkRegion update_region_;
   VideoDecoder* decoder_;
   scoped_ptr<uint8[]> image_data_;
   webrtc::DesktopFrame* frame_;
@@ -377,9 +381,8 @@ void TestVideoEncoderDecoderGradient(VideoEncoder* encoder,
   // invalidates the frame.
   decoder_tester.ResetRenderedData();
   decoder->Invalidate(
-      webrtc::DesktopSize(view_size.width(), view_size.height()),
-      webrtc::DesktopRegion(
-          webrtc::DesktopRect::MakeWH(view_size.width(), view_size.height())));
+      SkISize::Make(view_size.width(), view_size.height()),
+      SkRegion(SkIRect::MakeWH(view_size.width(), view_size.height())));
   decoder_tester.RenderFrame();
   decoder_tester.VerifyResultsApprox(expected_result->data(),
                                      max_error_limit, mean_error_limit);

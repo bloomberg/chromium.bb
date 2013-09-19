@@ -7,7 +7,8 @@
 
 #include "base/compiler_specific.h"
 #include "remoting/protocol/input_filter.h"
-#include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
+#include "third_party/skia/include/core/SkTypes.h"
+#include "third_party/skia/include/core/SkSize.h"
 
 namespace remoting {
 namespace protocol {
@@ -22,17 +23,17 @@ class MouseInputFilter : public InputFilter {
   virtual ~MouseInputFilter();
 
   // Specify the input dimensions for mouse events.
-  void set_input_size(const webrtc::DesktopSize& size);
+  void set_input_size(const SkISize& size);
 
   // Specify the output dimensions.
-  void set_output_size(const webrtc::DesktopSize& size);
+  void set_output_size(const SkISize& size);
 
   // InputStub overrides.
   virtual void InjectMouseEvent(const protocol::MouseEvent& event) OVERRIDE;
 
  private:
-  webrtc::DesktopSize input_max_;
-  webrtc::DesktopSize output_max_;
+  SkISize input_max_;
+  SkISize output_max_;
 
   DISALLOW_COPY_AND_ASSIGN(MouseInputFilter);
 };

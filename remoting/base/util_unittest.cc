@@ -6,7 +6,8 @@
 
 #include "remoting/base/util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
+#include "third_party/skia/include/core/SkRect.h"
+#include "third_party/skia/include/core/SkSize.h"
 
 static const int kWidth = 32 ;
 static const int kHeight = 24 ;
@@ -44,7 +45,7 @@ class YuvToRgbTester {
     memset(rgb_buffer_.get(), 0, rgb_buffer_size_);
   }
 
-  void FillRgbBuffer(const webrtc::DesktopRect& rect) {
+  void FillRgbBuffer(const SkIRect& rect) {
     uint32* ptr = reinterpret_cast<uint32*>(
         rgb_buffer_.get() + (rect.top() * kRgbStride) +
         (rect.left() * kBytesPerPixel));
@@ -56,7 +57,7 @@ class YuvToRgbTester {
   }
 
   // Check the the desination buffer is filled within expected bounds.
-  void  CheckRgbBuffer(const webrtc::DesktopRect& rect) {
+  void  CheckRgbBuffer(const SkIRect& rect) {
     uint32* ptr = reinterpret_cast<uint32*>(rgb_buffer_.get());
     for (int y = 0; y < kHeight; ++y) {
       if (y < rect.top() || rect.bottom() <= y) {
@@ -80,10 +81,8 @@ class YuvToRgbTester {
     }
   }
 
-  void RunTest(const webrtc::DesktopSize dest_size,
-               const webrtc::DesktopRect& rect) {
-    ASSERT_TRUE(
-        DoesRectContain(webrtc::DesktopRect::MakeSize(dest_size), rect));
+  void RunTest(const SkISize dest_size, const SkIRect& rect) {
+    ASSERT_TRUE(SkIRect::MakeSize(dest_size).contains(rect));
 
     // Reset buffers.
     ResetYuvBuffer();
@@ -110,12 +109,12 @@ class YuvToRgbTester {
                                   vplane_,
                                   kYStride,
                                   kUvStride,
-                                  webrtc::DesktopSize(kWidth, kHeight),
-                                  webrtc::DesktopRect::MakeWH(kWidth, kHeight),
+                                  SkISize::Make(kWidth, kHeight),
+                                  SkIRect::MakeWH(kWidth, kHeight),
                                   rgb_buffer_.get(),
                                   kRgbStride,
                                   dest_size,
-                                  webrtc::DesktopRect::MakeSize(dest_size),
+                                  SkIRect::MakeSize(dest_size),
                                   rect);
 
     // Check if it worked out.
@@ -124,8 +123,7 @@ class YuvToRgbTester {
 
   void TestBasicConversion() {
     // Whole buffer.
-    RunTest(webrtc::DesktopSize(kWidth, kHeight),
-            webrtc::DesktopRect::MakeWH(kWidth, kHeight));
+    RunTest(SkISize::Make(kWidth, kHeight), SkIRect::MakeWH(kWidth, kHeight));
   }
 
  private:
@@ -149,15 +147,18 @@ TEST(YuvToRgbTest, BasicConversion) {
 TEST(YuvToRgbTest, Clipping) {
   YuvToRgbTester tester;
 
-  webrtc::DesktopSize dest_size = webrtc::DesktopSize(kWidth, kHeight);
-  webrtc::DesktopRect rect =
-      webrtc::DesktopRect::MakeLTRB(0, 0, kWidth - 1, kHeight - 1);
+  SkISize dest_size = SkISize::Make(kWidth, kHeight);
+  SkIRect rect = SkIRect::MakeLTRB(0, 0, kWidth - 1, kHeight - 1);
   for (int i = 0; i < 16; ++i) {
-    webrtc::DesktopRect dest_rect = webrtc::DesktopRect::MakeLTRB(
-        rect.left() + ((i & 1) ? 1 : 0),
-        rect.top() + ((i & 2) ? 1 : 0),
-        rect.right() + ((i & 4) ? 1 : 0),
-        rect.bottom() + ((i & 8) ? 1 : 0));
+    SkIRect dest_rect = rect;
+    if ((i & 1) != 0)
+      dest_rect.fLeft += 1;
+    if ((i & 2) != 0)
+      dest_rect.fTop += 1;
+    if ((i & 4) != 0)
+      dest_rect.fRight += 1;
+    if ((i & 8) != 0)
+      dest_rect.fBottom += 1;
 
     tester.RunTest(dest_size, dest_rect);
   }
@@ -166,16 +167,18 @@ TEST(YuvToRgbTest, Clipping) {
 TEST(YuvToRgbTest, ClippingAndScaling) {
   YuvToRgbTester tester;
 
-  webrtc::DesktopSize dest_size =
-      webrtc::DesktopSize(kWidth - 10, kHeight - 10);
-  webrtc::DesktopRect rect =
-      webrtc::DesktopRect::MakeLTRB(5, 5, kWidth - 11, kHeight - 11);
+  SkISize dest_size = SkISize::Make(kWidth - 10, kHeight - 10);
+  SkIRect rect = SkIRect::MakeLTRB(5, 5, kWidth - 11, kHeight - 11);
   for (int i = 0; i < 16; ++i) {
-    webrtc::DesktopRect dest_rect = webrtc::DesktopRect::MakeLTRB(
-        rect.left() + ((i & 1) ? 1 : 0),
-        rect.top() + ((i & 2) ? 1 : 0),
-        rect.right() + ((i & 4) ? 1 : 0),
-        rect.bottom() + ((i & 8) ? 1 : 0));
+    SkIRect dest_rect = rect;
+    if ((i & 1) != 0)
+      dest_rect.fLeft += 1;
+    if ((i & 2) != 0)
+      dest_rect.fTop += 1;
+    if ((i & 4) != 0)
+      dest_rect.fRight += 1;
+    if ((i & 8) != 0)
+      dest_rect.fBottom += 1;
 
     tester.RunTest(dest_size, dest_rect);
   }

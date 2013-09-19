@@ -14,7 +14,8 @@ namespace {
 const int kBytesPerPixel = 4;
 }  // namespace
 
-VideoDecoderVerbatim::VideoDecoderVerbatim() {}
+VideoDecoderVerbatim::VideoDecoderVerbatim()
+    : screen_size_(SkISize::Make(0, 0)) {}
 
 VideoDecoderVerbatim::~VideoDecoderVerbatim() {}
 
@@ -22,13 +23,13 @@ bool VideoDecoderVerbatim::IsReadyForData() {
   return true;
 }
 
-void VideoDecoderVerbatim::Initialize(const webrtc::DesktopSize& screen_size) {
-  updated_region_.Clear();
+void VideoDecoderVerbatim::Initialize(const SkISize& screen_size) {
+  updated_region_.setEmpty();
   screen_buffer_.reset();
 
   screen_size_ = screen_size;
   // Allocate the screen buffer, if necessary.
-  if (!screen_size_.is_empty()) {
+  if (!screen_size_.isEmpty()) {
     screen_buffer_.reset(
         new uint8
             [screen_size_.width() * screen_size_.height() * kBytesPerPixel]);
@@ -37,26 +38,27 @@ void VideoDecoderVerbatim::Initialize(const webrtc::DesktopSize& screen_size) {
 
 VideoDecoder::DecodeResult VideoDecoderVerbatim::DecodePacket(
     const VideoPacket* packet) {
-  webrtc::DesktopRegion region;
+  SkRegion region;
 
   const char* in = packet->data().data();
   int stride = kBytesPerPixel * screen_size_.width();
   for (int i = 0; i < packet->dirty_rects_size(); ++i) {
     Rect proto_rect = packet->dirty_rects(i);
-    webrtc::DesktopRect rect =
-        webrtc::DesktopRect::MakeXYWH(proto_rect.x(), proto_rect.y(),
-                                      proto_rect.width(), proto_rect.height());
-    region.AddRect(rect);
+    SkIRect rect = SkIRect::MakeXYWH(proto_rect.x(),
+                                     proto_rect.y(),
+                                     proto_rect.width(),
+                                     proto_rect.height());
+    region.op(rect, SkRegion::kUnion_Op);
 
-    if (!DoesRectContain(webrtc::DesktopRect::MakeSize(screen_size_), rect)) {
+    if (!SkIRect::MakeSize(screen_size_).contains(rect)) {
       LOG(ERROR) << "Invalid packet received";
       return DECODE_ERROR;
     }
 
     int rect_row_size = kBytesPerPixel * rect.width();
-    uint8_t* out = screen_buffer_.get() + rect.top() * stride +
-                   rect.left() * kBytesPerPixel;
-    for (int y = rect.top(); y < rect.top() + rect.height(); ++y) {
+    uint8_t* out = screen_buffer_.get() + rect.y() * stride +
+                   rect.x() * kBytesPerPixel;
+    for (int y = rect.y(); y < rect.y() + rect.height(); ++y) {
       if (in + rect_row_size > packet->data().data() + packet->data().size()) {
         LOG(ERROR) << "Invalid packet received";
         return DECODE_ERROR;
@@ -72,7 +74,7 @@ VideoDecoder::DecodeResult VideoDecoderVerbatim::DecodePacket(
     return DECODE_ERROR;
   }
 
-  updated_region_.AddRegion(region);
+  updated_region_.op(region, SkRegion::kUnion_Op);
 
   return DECODE_DONE;
 }
@@ -81,31 +83,28 @@ VideoPacketFormat::Encoding VideoDecoderVerbatim::Encoding() {
   return VideoPacketFormat::ENCODING_VERBATIM;
 }
 
-void VideoDecoderVerbatim::Invalidate(const webrtc::DesktopSize& view_size,
-                                      const webrtc::DesktopRegion& region) {
-  updated_region_.AddRegion(region);
+void VideoDecoderVerbatim::Invalidate(const SkISize& view_size,
+                                      const SkRegion& region) {
+  updated_region_.op(region, SkRegion::kUnion_Op);
 }
 
-void VideoDecoderVerbatim::RenderFrame(const webrtc::DesktopSize& view_size,
-                                       const webrtc::DesktopRect& clip_area,
+void VideoDecoderVerbatim::RenderFrame(const SkISize& view_size,
+                                       const SkIRect& clip_area,
                                        uint8* image_buffer,
                                        int image_stride,
-                                       webrtc::DesktopRegion* output_region) {
-  output_region->Clear();
+                                       SkRegion* output_region) {
+  output_region->setEmpty();
 
   // TODO(alexeypa): scaling is not implemented.
-  webrtc::DesktopRect clip_rect = webrtc::DesktopRect::MakeSize(screen_size_);
-  clip_rect.IntersectWith(clip_area);
-  if (clip_rect.is_empty())
+  SkIRect clip_rect = SkIRect::MakeSize(screen_size_);
+  if (!clip_rect.intersect(clip_area))
     return;
 
   int screen_stride = screen_size_.width() * kBytesPerPixel;
 
-  for (webrtc::DesktopRegion::Iterator i(updated_region_);
-       !i.IsAtEnd(); i.Advance()) {
-    webrtc::DesktopRect rect(i.rect());
-    rect.IntersectWith(clip_rect);
-    if (rect.is_empty())
+  for (SkRegion::Iterator i(updated_region_); !i.done(); i.next()) {
+    SkIRect rect(i.rect());
+    if (!rect.intersect(clip_rect))
       continue;
 
     CopyRGB32Rect(screen_buffer_.get(), screen_stride,
@@ -113,13 +112,13 @@ void VideoDecoderVerbatim::RenderFrame(const webrtc::DesktopSize& view_size,
                   image_buffer, image_stride,
                   clip_area,
                   rect);
-    output_region->AddRect(rect);
+    output_region->op(rect, SkRegion::kUnion_Op);
   }
 
-  updated_region_.Clear();
+  updated_region_.setEmpty();
 }
 
-const webrtc::DesktopRegion* VideoDecoderVerbatim::GetImageShape() {
+const SkRegion* VideoDecoderVerbatim::GetImageShape() {
   return NULL;
 }
 
