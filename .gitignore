@@ -35,26 +35,28 @@
 .pydevproject
 # Settings directory for eclipse
 /.settings
+cscope.*
+Session.vim
 tags
 Thumbs.db
 v8.log
 /Makefile
 /_out
 /arm-sysroot
+/base/base_unittests_run.xml
 /breakpad/src/
 /build/Debug
 /build/Debug_x64
-/build/Release
-/build/Release_x64
 /build/gomacc.lock
 /build/ipch/
+/build/Release
+/build/Release_x64
 /build/util/LASTCHANGE*
 /build/util/support
 /build/x64/
 # The Chrome OS build creates a /c symlink due to http://crbug.com/54866.
 /c
 /ceee/internal/
-/base/base_unittests_run.xml
 /chrome/app/policy/chrome_settings_proto_compile.xml
 /chrome/app/policy/chrome_settings_proto_generated_compile.xml
 /chrome/app/policy/cloud_policy_backend_header_compile.xml
@@ -87,6 +89,7 @@ v8.log
 /chrome/installer/mini_installer/mini_installer.aps
 /chrome/installer/mini_installer/support
 /chrome/installer/mini_installer_syzygy.xml
+/chrome/installer/mini_installer_tests_run.xml
 /chrome/installer_util_strings.xml
 /chrome/interactive_ui_tests_run.xml
 /chrome/setup.xml
@@ -121,6 +124,7 @@ v8.log
 /chrome_frame/chrome_frame_version_resources.xml
 /chrome_frame/tools/test/reference_build
 /cloud_print/cloud_print_version_resources.xml
+/components/variations.xml
 /content/test/data/layout_tests/
 /content/test/data/plugin/
 /data
@@ -325,5 +329,3 @@ v8.log
 /win8/metro_driver/metro_driver_version_resources.xml
 /x86-generic_out/
 /xcodebuild
-cscope.*
-Session.vim
