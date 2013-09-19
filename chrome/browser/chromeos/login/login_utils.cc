@@ -265,7 +265,7 @@ void LoginUtilsImpl::DoBrowserLaunch(Profile* profile,
     VLOG(1) << "Restarting to apply per-session flags...";
     DBusThreadManager::Get()->GetSessionManagerClient()->SetFlagsForUser(
         UserManager::Get()->GetActiveUser()->email(), flags);
-    chrome::ExitCleanly();
+    chrome::AttemptExit();
     return;
   }
 
