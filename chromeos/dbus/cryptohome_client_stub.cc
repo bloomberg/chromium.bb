@@ -139,7 +139,8 @@ void CryptohomeClientStubImpl::TpmGetPassword(
   const char kStubTpmPassword[] = "Stub-TPM-password";
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
-      base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, kStubTpmPassword));
+      base::Bind(callback, DBUS_METHOD_CALL_SUCCESS,
+                 std::string(kStubTpmPassword)));
 }
 
 void CryptohomeClientStubImpl::TpmIsOwned(

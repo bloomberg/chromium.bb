@@ -1645,7 +1645,7 @@ Press any key to continue exploring.
     System installation settings
   </message>
   <message name="IDS_EULA_TPM_DESCRIPTION" desc="Dialog box text">
-    Your computer contains a Trusted Platform Module (TPM) security device, which is used to implement many critical security features in Chrome OS.
+    Your computer contains a Trusted Platform Module (TPM) security device, which is used to implement many critical security features in Chrome OS. Visit the Chromebook Help Center to learn more: http://support.google.com/chromebook/?p=tpm
   </message>
   <message name="IDS_EULA_TPM_KEY_DESCRIPTION" desc="Dialog box text">
     Below is the randomly generated TPM password that has been assigned to your computer:
