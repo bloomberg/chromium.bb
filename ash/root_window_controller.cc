@@ -693,6 +693,7 @@ void RootWindowController::CreateContainersInRootWindow(
       kShellWindowId_DockedContainer,
       "DockedContainer",
       non_lock_screen_containers);
+  views::corewm::SetChildWindowVisibilityChangesAnimated(docked_container);
   SetUsesScreenCoordinates(docked_container);
 
   aura::Window* panel_container = CreateContainer(

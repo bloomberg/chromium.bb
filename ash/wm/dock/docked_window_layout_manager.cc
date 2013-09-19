@@ -13,6 +13,7 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/coordinate_conversion.h"
+#include "ash/wm/window_animations.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
 #include "base/auto_reset.h"
@@ -64,7 +65,6 @@ class DockedBackgroundWidget : public views::Widget {
     content_view->set_background(
         views::Background::CreateSolidBackground(kDockBackgroundColor));
     SetContentsView(content_view);
-    GetNativeWindow()->layer()->SetOpacity(kDockBackgroundOpacity);
     Hide();
   }
 
@@ -475,6 +475,8 @@ void DockedWindowLayoutManager::WillChangeVisibilityState(
     base::AutoReset<bool> auto_reset_in_layout(&in_layout_, true);
     for (size_t i = 0; i < dock_container_->children().size(); ++i) {
       aura::Window* window = dock_container_->children()[i];
+      if (window->type() == aura::client::WINDOW_TYPE_POPUP)
+        continue;
       if (shelf_hidden_) {
         if (window->IsVisible())
           MinimizeWindow(window);
@@ -492,12 +494,16 @@ void DockedWindowLayoutManager::WillChangeVisibilityState(
 // DockLayoutManager private implementation:
 
 void DockedWindowLayoutManager::MinimizeWindow(aura::Window* window) {
+  DCHECK_NE(window->type(), aura::client::WINDOW_TYPE_POPUP);
+  views::corewm::SetWindowVisibilityAnimationType(
+      window, WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE);
   window->Hide();
   if (wm::IsActiveWindow(window))
     wm::DeactivateWindow(window);
 }
 
 void DockedWindowLayoutManager::RestoreWindow(aura::Window* window) {
+  DCHECK_NE(window->type(), aura::client::WINDOW_TYPE_POPUP);
   window->Show();
 }
 
@@ -660,10 +666,13 @@ void DockedWindowLayoutManager::UpdateDockBounds() {
       Shell::GetScreen()->GetDisplayNearestWindow(dock_container_).work_area();
   background_bounds.set_height(work_area.height());
   background_widget_->SetBounds(background_bounds);
-  if (docked_width_ > 0)
+  if (docked_width_ > 0) {
     background_widget_->Show();
-  else
+    background_widget_->GetNativeWindow()->layer()->SetOpacity(
+        kDockBackgroundOpacity);
+  } else {
     background_widget_->Hide();
+  }
 }
 
 void DockedWindowLayoutManager::UpdateStacking(aura::Window* active_window) {
