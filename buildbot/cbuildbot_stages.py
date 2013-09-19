@@ -1398,7 +1398,8 @@ class PreCQLauncherStage(SyncStage):
     cros_build_lib.RunCommand(cmd, cwd=self._build_root)
     for patch in plan:
       if pool.GetCLStatus(PRE_CQ, patch) != self.STATUS_PASSED:
-        pool.UpdateCLStatus(PRE_CQ, patch, self.STATUS_LAUNCHING)
+        pool.UpdateCLStatus(PRE_CQ, patch, self.STATUS_LAUNCHING,
+                            self._options.debug_forced)
 
   def GetDisjointTransactionsToTest(self, pool, changes):
     """Get the list of disjoint transactions to test.
