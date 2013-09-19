@@ -24497,6 +24497,18 @@ other types of suffix sets.
   <int value="69" label="pps invalid file format"/>
   <int value="70" label="ppsx invalid file format"/>
   <int value="71" label="ppsm invalid file format"/>
+  <int value="72" label="doc editing dom sync error"/>
+  <int value="73" label="docx editing dom sync error"/>
+  <int value="74" label="docm editing dom sync error"/>
+  <int value="75" label="xls editing dom sync error"/>
+  <int value="76" label="xlsx editing dom sync error"/>
+  <int value="77" label="xlsm editing dom sync error"/>
+  <int value="78" label="ppt editing dom sync error"/>
+  <int value="79" label="pptx editing dom sync error"/>
+  <int value="80" label="pptm editing dom sync error"/>
+  <int value="81" label="pps editing dom sync error"/>
+  <int value="82" label="ppsx editing dom sync error"/>
+  <int value="83" label="ppsm editing dom sync error"/>
 </enum>
 
 <enum name="QuickofficeFileFormat" type="int">
