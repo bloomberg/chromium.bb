@@ -775,7 +775,7 @@ int SimpleSynchronousEntry::ReadAndValidateStream0(
     RecordCheckEOFResult(cache_type_, CHECK_EOF_RESULT_CRC_MISMATCH);
     return net::ERR_FAILED;
   }
-  *out_stream_0_crc32 = read_crc32;
+  *out_stream_0_crc32 = expected_crc32;
   RecordCheckEOFResult(cache_type_, CHECK_EOF_RESULT_SUCCESS);
   return net::OK;
 }
