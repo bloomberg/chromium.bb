@@ -83,7 +83,6 @@ public:
     };
 
     virtual void contextDestroyed();
-    virtual void didTimeout();
     virtual bool canSuspend() const;
     virtual void suspend(ReasonForSuspension);
     virtual void resume();
@@ -173,6 +172,8 @@ private:
     String getRequestHeader(const AtomicString& name) const;
     void setRequestHeaderInternal(const AtomicString& name, const String& value);
 
+    // Changes m_state and dispatches a readyStateChange event if new m_state
+    // value is different from last one.
     void changeState(State newState);
     void callReadyStateChangeListener();
     void dropProtectionSoon();
@@ -184,9 +185,17 @@ private:
 
     void createRequest(ExceptionState&);
 
-    void genericError();
-    void networkError();
-    void abortError();
+    // Dispatches an event of the specified type to m_upload and
+    // m_progressEventThrottle.
+    void dispatchEventAndLoadEnd(const AtomicString&);
+    // Does clean up common for all kind of didFail() call.
+    void handleDidFailGeneric();
+    // Handles didFail() call not caused by cancellation or timeout.
+    void handleNetworkError();
+    // Handles didFail() call triggered by m_loader->cancel().
+    void handleDidCancel();
+    // Handles didFail() call for timeout.
+    void handleDidTimeout();
 
     OwnPtr<XMLHttpRequestUpload> m_upload;
 
@@ -228,6 +237,9 @@ private:
 
     unsigned m_lastSendLineNumber;
     String m_lastSendURL;
+    // An exception to throw in synchronous mode. It's set when failure
+    // notification is received from m_loader and thrown at the end of send() if
+    // any.
     ExceptionCode m_exceptionCode;
 
     XMLHttpRequestProgressEventThrottle m_progressEventThrottle;

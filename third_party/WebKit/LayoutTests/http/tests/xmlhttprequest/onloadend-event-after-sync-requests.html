@@ -4,7 +4,7 @@
 </head>
 <body>
 <p> Test case for <a href="https://bugs.webkit.org/show_bug.cgi?id=40952"> bug 40952</a>: Onloadend event is not supported in XMLHttpRequest</p>
-<p> Verify that a loadend ProgressEvent is dispatched after a load, error, or abort ProgressEvent when a synchronous request completes normally, fails, or is aborted respectively.</p>
+<p> Verify that a loadend ProgressEvent is dispatched after a load or abort ProgressEvent when a synchronous request completes normally or is aborted respectively.</p>
 <p>PASS PASS PASS should appear below:</p>
 <p id=console></p>
 <script type="text/javascript">
@@ -60,9 +60,9 @@ function testError()
 
     xhr.onloadstart = logUnexpectedProgressEvent;
     xhr.onabort = logUnexpectedProgressEvent;
-    xhr.onerror = logProgressEvent;
+    xhr.onerror = logUnexpectedProgressEvent;
     xhr.onload = logUnexpectedProgressEvent;
-    xhr.onloadend = logProgressEvent;
+    xhr.onloadend = logUnexpectedProgressEvent;
 
     xhr.open("GET", "resources/infinite-loop.php", false); 
     try {
@@ -73,7 +73,7 @@ function testError()
             results += " " + e;
     }
     
-    completeTest(" error loadend");
+    completeTest("");
 }
 
 function testAbort()

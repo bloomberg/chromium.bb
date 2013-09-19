@@ -889,36 +889,53 @@ void XMLHttpRequest::clearRequest()
     m_requestEntityBody = 0;
 }
 
-void XMLHttpRequest::genericError()
+void XMLHttpRequest::handleDidFailGeneric()
 {
     clearResponse();
     clearRequest();
-    m_error = true;
 
-    changeState(DONE);
+    m_error = true;
 }
 
-void XMLHttpRequest::networkError()
+void XMLHttpRequest::dispatchEventAndLoadEnd(const AtomicString& type)
 {
-    genericError();
     if (!m_uploadComplete) {
         m_uploadComplete = true;
         if (m_upload && m_uploadEventsAllowed)
-            m_upload->dispatchEventAndLoadEnd(XMLHttpRequestProgressEvent::create(eventNames().errorEvent));
+            m_upload->dispatchEventAndLoadEnd(XMLHttpRequestProgressEvent::create(type));
     }
-    m_progressEventThrottle.dispatchEventAndLoadEnd(XMLHttpRequestProgressEvent::create(eventNames().errorEvent));
+    m_progressEventThrottle.dispatchEventAndLoadEnd(XMLHttpRequestProgressEvent::create(type));
+}
+
+void XMLHttpRequest::handleNetworkError()
+{
+    m_exceptionCode = NetworkError;
+
+    handleDidFailGeneric();
+
+    if (m_async) {
+        changeState(DONE);
+        dispatchEventAndLoadEnd(eventNames().errorEvent);
+    } else {
+        m_state = DONE;
+    }
+
     internalAbort();
 }
 
-void XMLHttpRequest::abortError()
+void XMLHttpRequest::handleDidCancel()
 {
-    genericError();
-    if (!m_uploadComplete) {
-        m_uploadComplete = true;
-        if (m_upload && m_uploadEventsAllowed)
-            m_upload->dispatchEventAndLoadEnd(XMLHttpRequestProgressEvent::create(eventNames().abortEvent));
+    m_exceptionCode = AbortError;
+
+    handleDidFailGeneric();
+
+    if (!m_async) {
+        m_state = DONE;
+        return;
     }
-    m_progressEventThrottle.dispatchEventAndLoadEnd(XMLHttpRequestProgressEvent::create(eventNames().abortEvent));
+    changeState(DONE);
+
+    dispatchEventAndLoadEnd(eventNames().abortEvent);
 }
 
 void XMLHttpRequest::dropProtectionSoon()
@@ -1086,19 +1103,17 @@ String XMLHttpRequest::statusText(ExceptionState& es) const
 
 void XMLHttpRequest::didFail(const ResourceError& error)
 {
-
     // If we are already in an error state, for instance we called abort(), bail out early.
     if (m_error)
         return;
 
     if (error.isCancellation()) {
-        m_exceptionCode = AbortError;
-        abortError();
+        handleDidCancel();
         return;
     }
 
     if (error.isTimeout()) {
-        didTimeout();
+        handleDidTimeout();
         return;
     }
 
@@ -1106,13 +1121,12 @@ void XMLHttpRequest::didFail(const ResourceError& error)
     if (error.domain() == errorDomainWebKitInternal)
         logConsoleError(scriptExecutionContext(), "XMLHttpRequest cannot load " + error.failingURL() + ". " + error.localizedDescription());
 
-    m_exceptionCode = NetworkError;
-    networkError();
+    handleNetworkError();
 }
 
 void XMLHttpRequest::didFailRedirectCheck()
 {
-    networkError();
+    handleNetworkError();
 }
 
 void XMLHttpRequest::didFinishLoading(unsigned long identifier, double)
@@ -1236,32 +1250,23 @@ void XMLHttpRequest::didReceiveData(const char* data, int len)
     }
 }
 
-void XMLHttpRequest::didTimeout()
+void XMLHttpRequest::handleDidTimeout()
 {
     // internalAbort() calls dropProtection(), which may release the last reference.
     RefPtr<XMLHttpRequest> protect(this);
     internalAbort();
 
-    clearResponse();
-    clearRequest();
-
-    m_error = true;
     m_exceptionCode = TimeoutError;
+
+    handleDidFailGeneric();
 
     if (!m_async) {
         m_state = DONE;
-        m_exceptionCode = TimeoutError;
         return;
     }
-
     changeState(DONE);
 
-    if (!m_uploadComplete) {
-        m_uploadComplete = true;
-        if (m_upload && m_uploadEventsAllowed)
-            m_upload->dispatchEventAndLoadEnd(XMLHttpRequestProgressEvent::create(eventNames().timeoutEvent));
-    }
-    m_progressEventThrottle.dispatchEventAndLoadEnd(XMLHttpRequestProgressEvent::create(eventNames().timeoutEvent));
+    dispatchEventAndLoadEnd(eventNames().timeoutEvent);
 }
 
 bool XMLHttpRequest::canSuspend() const
