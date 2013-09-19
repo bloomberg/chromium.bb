@@ -179,6 +179,8 @@ void Scheduler::PollForAnticipatedDrawTriggers() {
   state_machine_.DidEnterPollForAnticipatedDrawTriggers();
   ProcessScheduledActions();
   state_machine_.DidLeavePollForAnticipatedDrawTriggers();
+
+  poll_for_draw_triggers_closure_.Cancel();
 }
 
 void Scheduler::DrawAndSwapIfPossible() {
