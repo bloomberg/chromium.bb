@@ -1,0 +1,221 @@
+<html>
+<head>
+<style>
+#inspected:before {
+  content: "BEFORE";
+}
+
+#inspected:after {
+  content: "AFTER";
+}
+</style>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/elements-test.js"></script>
+<script>
+
+var initialize_PseudoElementsTest = function() {
+
+InspectorTest.selectIdNodeWithId = function(idValue, pseudoType, callback)
+{
+    callback = InspectorTest.safeWrap(callback);
+    function onNodeFound(node)
+    {
+        if (node)
+            WebInspector._updateFocusedNode(node.id);
+        callback(node);
+    }
+
+    InspectorTest.findNode(nodeIdMatches, onNodeFound);
+    function nodeIdMatches(node)
+    {
+        return node.parentNode && node.pseudoType() === pseudoType && node.parentNode.getAttribute("id") === idValue;
+    }
+}
+
+InspectorTest.waitForPseudoIdNodeStyles = function(idValue, pseudoType, callback, requireRebuild)
+{
+    callback = InspectorTest.safeWrap(callback);
+
+    (function sniff(node, rebuild)
+    {
+        if ((rebuild || !requireRebuild) && node && node.parentNode && node.pseudoType() === pseudoType && node.parentNode.getAttribute("id") === idValue) {
+            callback();
+            return;
+        }
+        InspectorTest.addSniffer(WebInspector.StylesSidebarPane.prototype, "_nodeStylesUpdatedForTest", sniff);
+    })(null);
+}
+
+InspectorTest.selectPseudoIdNodeAndWaitForStyles = function(idValue, pseudoType, callback)
+{
+    WebInspector.showPanel("elements");
+    callback = InspectorTest.safeWrap(callback);
+
+    var targetNode;
+
+    InspectorTest.waitForPseudoIdNodeStyles(idValue, pseudoType, stylesUpdated, true);
+    InspectorTest.selectIdNodeWithId(idValue, pseudoType, nodeSelected);
+
+    function nodeSelected(node)
+    {
+        targetNode = node;
+    }
+
+    function stylesUpdated()
+    {
+        callback(targetNode);
+    }
+}
+
+};
+
+function removeLastRule()
+{
+    document.styleSheets[0].deleteRule(document.styleSheets[0].cssRules.length - 1);
+}
+
+function addAfterRule()
+{
+    document.styleSheets[0].addRule("#inspected:after", "content: \"AFTER\"");
+}
+
+function addBeforeRule()
+{
+    document.styleSheets[0].addRule("#inspected:before", "content: \"BEFORE\"");
+}
+
+function modifyTextContent()
+{
+    document.getElementById("inspected").textContent = "bar";
+}
+
+function clearTextContent()
+{
+    document.getElementById("inspected").textContent = "";
+}
+
+function removeNode()
+{
+    document.getElementById("inspected").remove();
+}
+
+function test()
+{
+    var containerNode;
+    var inspectedNode;
+
+    InspectorTest.runTestSuite([
+        function dumpOriginalTree(next)
+        {
+            InspectorTest.expandElementsTree(callback);
+            function callback()
+            {
+                containerNode = InspectorTest.expandedNodeWithId("container");
+                inspectedNode = InspectorTest.expandedNodeWithId("inspected");
+                InspectorTest.addResult("Original elements tree:");
+                InspectorTest.dumpElementsTree(containerNode);
+                next();
+            }
+        },
+
+        function dumpNormalNodeStyles(next)
+        {
+            selectNodeAndDumpStyles("inspected", "", next);
+        },
+
+        function dumpBeforeStyles(next)
+        {
+            selectNodeAndDumpStyles("inspected", "before", next);
+        },
+
+        function dumpAfterStyles(next)
+        {
+            selectNodeAndDumpStyles("inspected", "after", next);
+        },
+
+        function removeAfter(next)
+        {
+            executeAndDumpTree("removeLastRule()", WebInspector.DOMAgent.Events.NodeRemoved, next);
+        },
+
+        function removeBefore(next)
+        {
+            executeAndDumpTree("removeLastRule()", WebInspector.DOMAgent.Events.NodeRemoved, next);
+        },
+
+        function addAfter(next)
+        {
+            executeAndDumpTree("addAfterRule()", WebInspector.DOMAgent.Events.NodeInserted, next);
+        },
+
+        function addBefore(next)
+        {
+            executeAndDumpTree("addBeforeRule()", WebInspector.DOMAgent.Events.NodeInserted, next);
+        },
+
+        function modifyTextContent(next)
+        {
+            executeAndDumpTree("modifyTextContent()", WebInspector.DOMAgent.Events.NodeInserted, next);
+        },
+
+        function clearTextContent(next)
+        {
+            executeAndDumpTree("clearTextContent()", WebInspector.DOMAgent.Events.NodeRemoved, next);
+        },
+
+        function removeNodeAndCheckPseudoElementsUnbound(next)
+        {
+            var inspectedBefore = inspectedNode.pseudoElements()["before"];
+            var inspectedAfter = inspectedNode.pseudoElements()["after"];
+
+            executeAndDumpTree("removeNode()", WebInspector.DOMAgent.Events.NodeRemoved, callback);
+            function callback()
+            {
+                InspectorTest.addResult("inspected:before DOMNode in DOMAgent: " + !!(WebInspector.domAgent.nodeForId(inspectedBefore.id)));
+                InspectorTest.addResult("inspected:after DOMNode in DOMAgent: " + !!(WebInspector.domAgent.nodeForId(inspectedAfter.id)));
+                next();
+            }
+        }
+    ]);
+
+    function executeAndDumpTree(pageFunction, eventName, next)
+    {
+        WebInspector.domAgent.addEventListener(eventName, callback, this);
+        InspectorTest.evaluateInPage(pageFunction);
+        function callback()
+        {
+            InspectorTest.dumpElementsTree(containerNode);
+            WebInspector.domAgent.removeEventListener(eventName, callback, this);
+            next();
+        }
+    }
+
+    function selectNodeAndDumpStyles(id, pseudoTypeName, callback)
+    {
+        if (pseudoTypeName)
+            InspectorTest.selectPseudoIdNodeAndWaitForStyles("inspected", pseudoTypeName, stylesCallback);
+        else
+            InspectorTest.selectNodeAndWaitForStyles("inspected", stylesCallback);
+
+        function stylesCallback()
+        {
+            InspectorTest.dumpSelectedElementStyles(false, false, false, true);
+            callback();
+        }
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that pseudo elements and their styles are handled properly.
+</p>
+
+<div id="container">
+    <div id="inspected">Text</div>
+</div>
+
+</body>
+</html>

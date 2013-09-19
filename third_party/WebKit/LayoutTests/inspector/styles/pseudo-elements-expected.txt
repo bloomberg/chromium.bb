@@ -1,0 +1,110 @@
+Tests that pseudo elements and their styles are handled properly.
+
+
+Running: dumpOriginalTree
+Original elements tree:
+- <div id="container">
+    - <div id="inspected">
+          :before
+          "Text"
+          :after
+      </div>
+  </div>
+
+Running: dumpNormalNodeStyles
+[expanded] 
+
+[expanded] 
+element.style  { ()
+
+[expanded] 
+[$div$]  { (user agent stylesheet)
+display: block;
+
+
+======== Pseudo ::before element ========
+[expanded] 
+#inspected:before  { (pseudo-elements.html:4 -> pseudo-elements.html:4:1)
+content: "BEFORE";
+
+
+======== Pseudo ::after element ========
+[expanded] 
+#inspected:after  { (pseudo-elements.html:8 -> pseudo-elements.html:8:1)
+content: "AFTER";
+
+
+
+Running: dumpBeforeStyles
+[expanded] 
+
+[expanded] 
+[$#inspected:before$]  { (pseudo-elements.html:4 -> pseudo-elements.html:4:1)
+content: "BEFORE";
+
+
+
+Running: dumpAfterStyles
+[expanded] 
+
+[expanded] 
+[$#inspected:after$]  { (pseudo-elements.html:8 -> pseudo-elements.html:8:1)
+content: "AFTER";
+
+
+
+Running: removeAfter
+- <div id="container">
+    - <div id="inspected">
+          :before
+          "Text"
+      </div>
+  </div>
+
+Running: removeBefore
+- <div id="container">
+    - <div id="inspected">
+          "Text"
+      </div>
+  </div>
+
+Running: addAfter
+- <div id="container">
+    - <div id="inspected">
+          "Text"
+          :after
+      </div>
+  </div>
+
+Running: addBefore
+- <div id="container">
+    - <div id="inspected">
+          :before
+          "Text"
+          :after
+      </div>
+  </div>
+
+Running: modifyTextContent
+- <div id="container">
+    - <div id="inspected">
+          :before
+          "bar"
+          :after
+      </div>
+  </div>
+
+Running: clearTextContent
+- <div id="container">
+    - <div id="inspected">
+          :before
+          :after
+      </div>
+  </div>
+
+Running: removeNodeAndCheckPseudoElementsUnbound
+- <div id="container">
+  </div>
+inspected:before DOMNode in DOMAgent: false
+inspected:after DOMNode in DOMAgent: false
+

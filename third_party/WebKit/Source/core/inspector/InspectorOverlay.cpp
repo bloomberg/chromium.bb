@@ -35,6 +35,7 @@
 #include "bindings/v8/ScriptSourceCode.h"
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
+#include "core/dom/PseudoElement.h"
 #include "core/inspector/InspectorClient.h"
 #include "core/inspector/InspectorOverlayHost.h"
 #include "core/loader/DocumentLoader.h"
@@ -51,6 +52,7 @@
 #include "core/rendering/RenderBoxModelObject.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderObject.h"
+#include "core/rendering/style/RenderStyleConstants.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
@@ -532,13 +534,19 @@ void InspectorOverlay::drawNodeHighlight()
     if (node->isElementNode() && m_nodeHighlightConfig.showInfo && node->renderer() && node->document().frame()) {
         RefPtr<JSONObject> elementInfo = JSONObject::create();
         Element* element = toElement(node);
-        bool isXHTML = element->document().isXHTMLDocument();
-        elementInfo->setString("tagName", isXHTML ? element->nodeName() : element->nodeName().lower());
-        elementInfo->setString("idValue", element->getIdAttribute());
-        HashSet<AtomicString> usedClassNames;
-        if (element->hasClass() && element->isStyledElement()) {
-            StringBuilder classNames;
-            const SpaceSplitString& classNamesString = element->classNames();
+        Element* realElement = element;
+        PseudoElement* pseudoElement = 0;
+        if (element->isPseudoElement()) {
+            pseudoElement = toPseudoElement(element);
+            realElement = element->parentOrShadowHostElement();
+        }
+        bool isXHTML = realElement->document().isXHTMLDocument();
+        elementInfo->setString("tagName", isXHTML ? realElement->nodeName() : realElement->nodeName().lower());
+        elementInfo->setString("idValue", realElement->getIdAttribute());
+        StringBuilder classNames;
+        if (realElement->hasClass() && realElement->isStyledElement()) {
+            HashSet<AtomicString> usedClassNames;
+            const SpaceSplitString& classNamesString = realElement->classNames();
             size_t classNameCount = classNamesString.size();
             for (size_t i = 0; i < classNameCount; ++i) {
                 const AtomicString& className = classNamesString[i];
@@ -547,8 +555,15 @@ void InspectorOverlay::drawNodeHighlight()
                 classNames.append('.');
                 classNames.append(className);
             }
-            elementInfo->setString("className", classNames.toString());
         }
+        if (pseudoElement) {
+            if (pseudoElement->pseudoId() == BEFORE)
+                classNames.append(":before");
+            else if (pseudoElement->pseudoId() == AFTER)
+                classNames.append(":after");
+        }
+        if (!classNames.isEmpty())
+            elementInfo->setString("className", classNames.toString());
 
         RenderObject* renderer = node->renderer();
         Frame* containingFrame = node->document().frame();

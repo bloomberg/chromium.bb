@@ -62,10 +62,6 @@ PseudoElement::PseudoElement(Element* parent, PseudoId pseudoId)
     setHasCustomStyleCallbacks();
 }
 
-PseudoElement::~PseudoElement()
-{
-}
-
 PassRefPtr<RenderStyle> PseudoElement::customStyleForRenderer()
 {
     return parentOrShadowHostElement()->renderer()->getCachedPseudoStyle(m_pseudoId);
