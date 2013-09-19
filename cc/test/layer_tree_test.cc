@@ -589,8 +589,7 @@ void LayerTreeTest::RunTest(bool threaded,
     ASSERT_TRUE(impl_thread_->Start());
   }
 
-  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_ =
-      base::MessageLoopProxy::current();
+  main_task_runner_ = base::MessageLoopProxy::current();
 
   delegating_renderer_ = delegating_renderer;
 

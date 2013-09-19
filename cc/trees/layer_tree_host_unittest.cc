@@ -1830,7 +1830,6 @@ class LayerTreeHostTestEvictTextures : public LayerTreeHostTest {
   }
 
   void PostEvictTextures() {
-    DCHECK(HasImplThread());
     ImplThreadTaskRunner()->PostTask(
         FROM_HERE,
         base::Bind(&LayerTreeHostTestEvictTextures::EvictTexturesOnImplThread,
@@ -3274,13 +3273,10 @@ class LayerTreeHostTestAsyncReadbackLostOutputSurface
         result_.reset();
 
         // Check that it is released.
-        base::SingleThreadTaskRunner* task_runner =
-            HasImplThread() ? ImplThreadTaskRunner()
-                            : base::MessageLoopProxy::current();
-        task_runner->PostTask(
+        ImplThreadTaskRunner()->PostTask(
             FROM_HERE,
             base::Bind(&LayerTreeHostTestAsyncReadbackLostOutputSurface::
-                           CheckNumTextures,
+                            CheckNumTextures,
                        base::Unretained(this),
                        num_textures_after_loss_ - 1));
         break;

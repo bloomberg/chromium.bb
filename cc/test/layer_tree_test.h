@@ -148,7 +148,9 @@ class LayerTreeTest : public testing::Test, public TestHooks {
 
   bool HasImplThread() { return proxy() ? proxy()->HasImplThread() : false; }
   base::SingleThreadTaskRunner* ImplThreadTaskRunner() {
-    return proxy() ? proxy()->ImplThreadTaskRunner() : NULL;
+    DCHECK(proxy());
+    return proxy()->ImplThreadTaskRunner() ? proxy()->ImplThreadTaskRunner()
+                                           : main_task_runner_.get();
   }
   Proxy* proxy() const {
     return layer_tree_host_ ? layer_tree_host_->proxy() : NULL;
