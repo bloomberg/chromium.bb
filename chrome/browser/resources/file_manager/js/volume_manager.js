@@ -465,6 +465,8 @@ VolumeManager.getInstance = function(callback) {
  * Enables/disables Drive file system. Dispatches
  * 'drive-enabled-status-changed' event, when the enabled state is actually
  * changed.
+ * TODO(hidehiko): Enable/Disable of drive based on preference is managed by
+ * backend (C++) layer. Remove this.
  * @param {boolean} enabled True if Drive file system is enabled.
  */
 VolumeManager.prototype.setDriveEnabled = function(enabled) {
@@ -475,10 +477,6 @@ VolumeManager.prototype.setDriveEnabled = function(enabled) {
   // When drive is enabled, start to mount.
   if (enabled)
     this.mountDrive(function() {}, function() {});
-
-  var e = new cr.Event('drive-enabled-status-changed');
-  e.enabled = enabled;
-  this.dispatchEvent(e);
 };
 
 /**
