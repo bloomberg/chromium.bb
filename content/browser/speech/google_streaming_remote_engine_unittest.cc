@@ -6,7 +6,9 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/safe_numerics.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/sys_byteorder.h"
 #include "content/browser/speech/audio_buffer.h"
 #include "content/browser/speech/google_streaming_remote_engine.h"
 #include "content/browser/speech/proto/google_streaming_api.pb.h"
@@ -17,6 +19,8 @@
 #include "net/url_request/url_request_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::HostToNet32;
+using base::checked_numeric_cast;
 using net::URLRequestStatus;
 using net::TestURLFetcher;
 using net::TestURLFetcherFactory;
@@ -62,7 +66,6 @@ class GoogleStreamingRemoteEngineTest : public SpeechRecognitionEngineDelegate,
                               const SpeechRecognitionResults& b);
   static std::string SerializeProtobufResponse(
       const proto::SpeechRecognitionEvent& msg);
-  static std::string ToBigEndian32(uint32 value);
 
   TestURLFetcher* GetUpstreamFetcher();
   TestURLFetcher* GetDownstreamFetcher();
@@ -487,17 +490,10 @@ std::string GoogleStreamingRemoteEngineTest::SerializeProtobufResponse(
 
   // Prepend 4 byte prefix length indication to the protobuf message as
   // envisaged by the google streaming recognition webservice protocol.
-  msg_string.insert(0, ToBigEndian32(msg_string.size()));
-  return msg_string;
-}
+  uint32 prefix = HostToNet32(checked_numeric_cast<uint32>(msg_string.size()));
+  msg_string.insert(0, reinterpret_cast<char*>(&prefix), sizeof(prefix));
 
-std::string GoogleStreamingRemoteEngineTest::ToBigEndian32(uint32 value) {
-  char raw_data[4];
-  raw_data[0] = static_cast<uint8>((value >> 24) & 0xFF);
-  raw_data[1] = static_cast<uint8>((value >> 16) & 0xFF);
-  raw_data[2] = static_cast<uint8>((value >> 8) & 0xFF);
-  raw_data[3] = static_cast<uint8>(value & 0xFF);
-  return std::string(raw_data, sizeof(raw_data));
+  return msg_string;
 }
 
 }  // namespace content
