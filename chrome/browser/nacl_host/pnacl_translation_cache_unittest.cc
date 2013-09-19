@@ -53,7 +53,7 @@ void PnaclTranslationCacheTest::InitBackend(bool in_mem) {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   }
   // Use the private init method so we can control the size
-  int rv = cache_->Init(in_mem ? net::MEMORY_CACHE : net::DISK_CACHE,
+  int rv = cache_->Init(in_mem ? net::MEMORY_CACHE : net::PNACL_CACHE,
                         temp_dir_.path(),
                         in_mem ? kMaxMemCacheSize : kTestDiskCacheSize,
                         init_cb.callback());
@@ -120,7 +120,7 @@ std::string PnaclTranslationCacheTest::GetNexe(const std::string& key) {
 
 static const std::string test_key("1");
 static const std::string test_store_val("testnexe");
-static const int kLargeNexeSize = 2 * 1024 * 1024;
+static const int kLargeNexeSize = 8 * 1024 * 1024;
 
 TEST(PnaclTranslationCacheKeyTest, CacheKeyTest) {
   nacl::PnaclCacheInfo info;

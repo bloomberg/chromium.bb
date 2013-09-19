@@ -13,7 +13,8 @@ enum CacheType {
   MEMORY_CACHE,  // Data is stored only in memory.
   MEDIA_CACHE,  // Optimized to handle media files.
   APP_CACHE,  // Backing store for an AppCache.
-  SHADER_CACHE  // Backing store for the GL shader cache.
+  SHADER_CACHE, // Backing store for the GL shader cache.
+  PNACL_CACHE, // Backing store the PNaCl translation cache
 };
 
 // The types of disk cache backend, only used at backend instantiation.

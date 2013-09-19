@@ -867,7 +867,7 @@ int32 BackendImpl::GetCurrentEntryId() const {
 }
 
 int BackendImpl::MaxFileSize() const {
-  return max_size_ / 8;
+  return cache_type() == net::PNACL_CACHE ? max_size_ : max_size_ / 8;
 }
 
 void BackendImpl::ModifyStorageSize(int32 old_size, int32 new_size) {

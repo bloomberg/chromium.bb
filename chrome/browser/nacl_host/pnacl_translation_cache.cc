@@ -372,7 +372,7 @@ void PnaclTranslationCache::GetNexe(const std::string& key,
 int PnaclTranslationCache::InitOnDisk(const base::FilePath& cache_directory,
                                       const CompletionCallback& callback) {
   in_memory_ = false;
-  return Init(net::DISK_CACHE, cache_directory, 0 /* auto size */, callback);
+  return Init(net::PNACL_CACHE, cache_directory, 0 /* auto size */, callback);
 }
 
 int PnaclTranslationCache::InitInMemory(const CompletionCallback& callback) {
