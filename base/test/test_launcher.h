@@ -68,6 +68,15 @@ struct TestResult {
 // which tests and how are run.
 class TestLauncherDelegate {
  public:
+  // Called to get a test name for filtering purposes. Usually it's
+  // test case's name and test's name joined by a dot (e.g.
+  // "TestCaseName.TestName").
+  // TODO(phajdan.jr): Remove after transitioning away from run_test_cases.py,
+  // http://crbug.com/236893 .
+  virtual std::string GetTestNameForFiltering(
+      const testing::TestCase* test_case,
+      const testing::TestInfo* test_info) = 0;
+
   // Called before a test is considered for running. If it returns false,
   // the test is not run. If it returns true, the test will be run provided
   // it is part of the current shard.
@@ -90,6 +99,11 @@ class TestLauncherDelegate {
  protected:
   virtual ~TestLauncherDelegate();
 };
+
+// If |result| is not successful, prints that test's failure message
+// (extracted from |full_output|) to stdout.
+void PrintTestOutputSnippetOnFailure(const TestResult& result,
+                                     const std::string& full_output);
 
 // Launches a child process (assumed to be gtest-based binary)
 // using |command_line|. If |wrapper| is not empty, it is prepended

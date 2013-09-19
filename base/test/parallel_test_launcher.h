@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -29,10 +30,10 @@ class ParallelTestLauncher {
   ~ParallelTestLauncher();
 
   // Callback called after a child process finishes. First argument is the exit
-  // code, second one is true if the child process was terminated because of
-  // a timeout, and third one contains output of the child (stdout and stderr
-  // together).
-  typedef Callback<void(int, bool, const std::string&)>
+  // code, second one is child process elapsed time, third one is true if
+  // the child process was terminated because of a timeout, and fourth one
+  // contains output of the child (stdout and stderr together).
+  typedef Callback<void(int, const TimeDelta&, bool, const std::string&)>
       LaunchChildGTestProcessCallback;
 
   // Launches a child process (assumed to be gtest-based binary) using
@@ -45,17 +46,34 @@ class ParallelTestLauncher {
                                base::TimeDelta timeout,
                                const LaunchChildGTestProcessCallback& callback);
 
+  // Similar to above, but with processes sharing the same value of |token_name|
+  // being serialized, with order matching order of calls of this method.
+  void LaunchNamedSequencedChildGTestProcess(
+      const std::string& token_name,
+      const CommandLine& command_line,
+      const std::string& wrapper,
+      base::TimeDelta timeout,
+      const LaunchChildGTestProcessCallback& callback);
+
   // Resets the output watchdog, indicating some test results have been printed
   // out. If a pause between the calls exceeds an internal treshold, a message
   // will be printed listing all child processes we're still waiting for.
   void ResetOutputWatchdog();
 
  private:
+  void LaunchSequencedChildGTestProcess(
+      SequencedWorkerPool::SequenceToken sequence_token,
+      const CommandLine& command_line,
+      const std::string& wrapper,
+      base::TimeDelta timeout,
+      const LaunchChildGTestProcessCallback& callback);
+
   // Called on a worker thread after a child process finishes.
   void OnLaunchTestProcessFinished(
       size_t sequence_number,
       const LaunchChildGTestProcessCallback& callback,
       int exit_code,
+      const TimeDelta& elapsed_time,
       bool was_timeout,
       const std::string& output);
 

@@ -16,11 +16,14 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/parallel_test_launcher.h"
 #include "base/test/test_launcher.h"
 #include "base/test/test_suite.h"
+#include "base/test/test_switches.h"
 #include "base/test/test_timeouts.h"
 #include "base/time/time.h"
 #include "content/public/app/content_main.h"
@@ -57,99 +60,11 @@ const char kPreTestPrefix[] = "PRE_";
 const char kManualTestPrefix[] = "MANUAL_";
 
 TestLauncherDelegate* g_launcher_delegate;
-}
 
-namespace {
-
-int DoRunTestInternal(const testing::TestCase* test_case,
-                      const std::string& test_name,
-                      const CommandLine& command_line,
-                      base::TimeDelta default_timeout,
-                      bool* was_timeout) {
-  if (test_case) {
-    std::string pre_test_name = test_name;
-    std::string replace_string = std::string(".") + kPreTestPrefix;
-    ReplaceFirstSubstringAfterOffset(&pre_test_name, 0, ".", replace_string);
-    for (int i = 0; i < test_case->total_test_count(); ++i) {
-      const testing::TestInfo* test_info = test_case->GetTestInfo(i);
-      std::string cur_test_name = test_info->test_case_name();
-      cur_test_name.append(".");
-      cur_test_name.append(test_info->name());
-      if (cur_test_name == pre_test_name) {
-        int exit_code = DoRunTestInternal(test_case,
-                                          pre_test_name,
-                                          command_line,
-                                          default_timeout,
-                                          was_timeout);
-        if (exit_code != 0)
-          return exit_code;
-      }
-    }
-  }
-
-  CommandLine new_cmd_line(command_line.GetProgram());
-  CommandLine::SwitchMap switches = command_line.GetSwitches();
-
-  // Strip out gtest_output flag because otherwise we would overwrite results
-  // of the other tests.
-  switches.erase(base::kGTestOutputFlag);
-
-  for (CommandLine::SwitchMap::const_iterator iter = switches.begin();
-       iter != switches.end(); ++iter) {
-    new_cmd_line.AppendSwitchNative(iter->first, iter->second);
-  }
-
-  // Always enable disabled tests.  This method is not called with disabled
-  // tests unless this flag was specified to the browser test executable.
-  new_cmd_line.AppendSwitch("gtest_also_run_disabled_tests");
-  new_cmd_line.AppendSwitchASCII("gtest_filter", test_name);
-  new_cmd_line.AppendSwitch(kSingleProcessTestsFlag);
-
-  char* browser_wrapper = getenv("BROWSER_WRAPPER");
-  int exit_code = base::LaunchChildGTestProcess(
-      new_cmd_line,
-      browser_wrapper ? browser_wrapper : std::string(),
-      default_timeout,
-      was_timeout);
-  if (*was_timeout) {
-    LOG(ERROR) << "Test timeout (" << default_timeout.InMilliseconds()
-               << " ms) exceeded for " << test_name;
-  }
-
-  return exit_code;
-}
-
-// Runs test specified by |test_name| in a child process,
-// and returns the exit code.
-int DoRunTest(TestLauncherDelegate* launcher_delegate,
-              const testing::TestCase* test_case,
-              const std::string& test_name,
-              base::TimeDelta default_timeout,
-              bool* was_timeout) {
-  if (was_timeout)
-    *was_timeout = false;
-
-#if defined(OS_MACOSX)
-  // Some of the below method calls will leak objects if there is no
-  // autorelease pool in place.
-  base::mac::ScopedNSAutoreleasePool pool;
-#endif
-
-  base::ScopedTempDir temp_dir;
-  // Create a new data dir and pass it to the child.
-  if (!temp_dir.CreateUniqueTempDir() || !temp_dir.IsValid()) {
-    LOG(ERROR) << "Error creating temp data directory";
-    return -1;
-  }
-
-  CommandLine new_cmd_line(*CommandLine::ForCurrentProcess());
-  if (!launcher_delegate->AdjustChildProcessCommandLine(&new_cmd_line,
-                                                        temp_dir.path())) {
-    return -1;
-  }
-
-  return DoRunTestInternal(
-      test_case, test_name, new_cmd_line, default_timeout, was_timeout);
+std::string RemoveAnyPrePrefixes(const std::string& test_name) {
+  std::string result(test_name);
+  ReplaceSubstringsAfterOffset(&result, 0, kPreTestPrefix, std::string());
+  return result;
 }
 
 void PrintUsage() {
@@ -171,14 +86,19 @@ void PrintUsage() {
 // wrapping a lower-level test launcher with content-specific code.
 class WrapperTestLauncherDelegate : public base::TestLauncherDelegate {
  public:
-  explicit WrapperTestLauncherDelegate(
-      content::TestLauncherDelegate* launcher_delegate)
+  WrapperTestLauncherDelegate(content::TestLauncherDelegate* launcher_delegate,
+                              size_t jobs)
       : launcher_delegate_(launcher_delegate),
         timeout_count_(0),
-        printed_timeout_message_(false) {
+        printed_timeout_message_(false),
+        parallel_launcher_(jobs) {
+    CHECK(temp_dir_.CreateUniqueTempDir());
   }
 
   // base::TestLauncherDelegate:
+  virtual std::string GetTestNameForFiltering(
+      const testing::TestCase* test_case,
+      const testing::TestInfo* test_info) OVERRIDE;
   virtual bool ShouldRunTest(const testing::TestCase* test_case,
                              const testing::TestInfo* test_info) OVERRIDE;
   virtual void RunTest(
@@ -188,6 +108,25 @@ class WrapperTestLauncherDelegate : public base::TestLauncherDelegate {
   virtual void RunRemainingTests() OVERRIDE;
 
  private:
+  struct TestInfo {
+    std::string test_case_name;
+    std::string test_name;
+    base::TestLauncherDelegate::TestResultCallback callback;
+  };
+
+  friend bool CompareTestInfo(const TestInfo& a, const TestInfo& b);
+
+  // Launches test from |test_info| using |command_line| and parallel launcher.
+  void DoRunTest(const TestInfo& test_info, const CommandLine& command_line);
+
+  // Callback to receive result of a test.
+  void GTestCallback(
+      const TestInfo& test_info,
+      int exit_code,
+      const base::TimeDelta& elapsed_time,
+      bool was_timeout,
+      const std::string& output);
+
   content::TestLauncherDelegate* launcher_delegate_;
 
   // Number of times a test timeout occurred.
@@ -197,18 +136,28 @@ class WrapperTestLauncherDelegate : public base::TestLauncherDelegate {
   // to avoid doing it more than once.
   bool printed_timeout_message_;
 
+  base::ParallelTestLauncher parallel_launcher_;
+
+  // Store all tests to run before running any of them to properly
+  // handle PRE_ tests.
+  std::vector<TestInfo> tests_to_run_;
+
+  // Temporary directory for user data directories.
+  base::ScopedTempDir temp_dir_;
+
   DISALLOW_COPY_AND_ASSIGN(WrapperTestLauncherDelegate);
 };
+
+std::string WrapperTestLauncherDelegate::GetTestNameForFiltering(
+    const testing::TestCase* test_case,
+    const testing::TestInfo* test_info) {
+  return RemoveAnyPrePrefixes(
+      std::string(test_case->name()) + "." + test_info->name());
+}
 
 bool WrapperTestLauncherDelegate::ShouldRunTest(
     const testing::TestCase* test_case,
     const testing::TestInfo* test_info) {
-  std::string test_name =
-      std::string(test_case->name()) + "." + test_info->name();
-
-  if (StartsWithASCII(test_info->name(), kPreTestPrefix, true))
-    return false;
-
   if (StartsWithASCII(test_info->name(), kManualTestPrefix, true) &&
       !CommandLine::ForCurrentProcess()->HasSwitch(kRunManualTestsFlag)) {
     return false;
@@ -230,21 +179,114 @@ void WrapperTestLauncherDelegate::RunTest(
     const testing::TestCase* test_case,
     const testing::TestInfo* test_info,
     const base::TestLauncherDelegate::TestResultCallback& callback) {
-  base::TimeTicks start_time = base::TimeTicks::Now();
-  bool was_timeout = false;
-  std::string test_name =
-      std::string(test_case->name()) + "." + test_info->name();
-  int exit_code = DoRunTest(launcher_delegate_,
-                            test_case,
-                            test_name,
-                            TestTimeouts::action_max_timeout(),
-                            &was_timeout);
-  if (was_timeout)
-    timeout_count_++;
+  TestInfo run_test_info;
+  run_test_info.test_case_name = test_case->name();
+  run_test_info.test_name = test_info->name();
+  run_test_info.callback = callback;
+  tests_to_run_.push_back(run_test_info);
+}
 
+bool CompareTestInfo(const WrapperTestLauncherDelegate::TestInfo& a,
+                     const WrapperTestLauncherDelegate::TestInfo& b) {
+  if (a.test_case_name == b.test_case_name) {
+    // Put PRE_ tests before tests that depend on them (e.g. PRE_Foo before Foo,
+    // and PRE_PRE_Foo before PRE_Foo).
+    if (std::string(kPreTestPrefix) + a.test_name == b.test_name)
+      return false;
+    if (a.test_name == std::string(kPreTestPrefix) + b.test_name)
+      return true;
+  }
+
+  // Otherwise sort by full names, disregarding PRE_ completely so that
+  // this can still be Strict Weak Ordering.
+  std::string a_full(
+      RemoveAnyPrePrefixes(a.test_case_name + "." + a.test_name));
+  std::string b_full(
+      RemoveAnyPrePrefixes(b.test_case_name + "." + b.test_name));
+
+  return a_full < b_full;
+}
+
+void WrapperTestLauncherDelegate::RunRemainingTests() {
+  std::sort(tests_to_run_.begin(), tests_to_run_.end(), CompareTestInfo);
+
+  // PRE_ tests and tests that depend on them must share the same
+  // data directory. Using test name as directory name leads to too long
+  // names (exceeding UNIX_PATH_MAX, which creates a problem with
+  // process_singleton_linux). Create a randomly-named temporary directory
+  // and keep track of the names so that PRE_ tests can still re-use them.
+  std::map<std::string, base::FilePath> temp_directories;
+
+  for (size_t i = 0; i < tests_to_run_.size(); i++) {
+    TestInfo test_info(tests_to_run_[i]);
+
+    // Make sure PRE_ tests and tests that depend on them share the same
+    // data directory - based it on the test name without prefixes.
+    std::string test_name_no_pre = RemoveAnyPrePrefixes(
+        test_info.test_case_name + "." + test_info.test_name);
+    if (!ContainsKey(temp_directories, test_name_no_pre)) {
+      base::FilePath temp_dir;
+      CHECK(file_util::CreateTemporaryDirInDir(
+                temp_dir_.path(), FILE_PATH_LITERAL("d"), &temp_dir));
+      temp_directories[test_name_no_pre] = temp_dir;
+    }
+
+    CommandLine new_cmd_line(*CommandLine::ForCurrentProcess());
+    CHECK(launcher_delegate_->AdjustChildProcessCommandLine(
+              &new_cmd_line, temp_directories[test_name_no_pre]));
+
+    DoRunTest(test_info, new_cmd_line);
+  }
+}
+
+void WrapperTestLauncherDelegate::DoRunTest(const TestInfo& test_info,
+                                            const CommandLine& command_line) {
+  CommandLine new_cmd_line(command_line.GetProgram());
+  CommandLine::SwitchMap switches = command_line.GetSwitches();
+
+  // Strip out gtest_output flag because otherwise we would overwrite results
+  // of the other tests.
+  switches.erase(base::kGTestOutputFlag);
+
+  for (CommandLine::SwitchMap::const_iterator iter = switches.begin();
+       iter != switches.end(); ++iter) {
+    new_cmd_line.AppendSwitchNative(iter->first, iter->second);
+  }
+
+  // Always enable disabled tests.  This method is not called with disabled
+  // tests unless this flag was specified to the browser test executable.
+  new_cmd_line.AppendSwitch("gtest_also_run_disabled_tests");
+  new_cmd_line.AppendSwitchASCII(
+      "gtest_filter",
+      test_info.test_case_name + "." + test_info.test_name);
+  new_cmd_line.AppendSwitch(kSingleProcessTestsFlag);
+
+  char* browser_wrapper = getenv("BROWSER_WRAPPER");
+
+  // PRE_ tests and tests that depend on them should share the sequence token
+  // name, so that they are run serially.
+  std::string test_name_no_pre = RemoveAnyPrePrefixes(
+      test_info.test_case_name + "." + test_info.test_name);
+
+  parallel_launcher_.LaunchNamedSequencedChildGTestProcess(
+      test_name_no_pre,
+      new_cmd_line,
+      browser_wrapper ? browser_wrapper : std::string(),
+      TestTimeouts::action_max_timeout(),
+      base::Bind(&WrapperTestLauncherDelegate::GTestCallback,
+                 base::Unretained(this),
+                 test_info));
+}
+
+void WrapperTestLauncherDelegate::GTestCallback(
+    const TestInfo& test_info,
+    int exit_code,
+    const base::TimeDelta& elapsed_time,
+    bool was_timeout,
+    const std::string& output) {
   base::TestResult result;
-  result.test_case_name = test_case->name();
-  result.test_name = test_info->name();
+  result.test_case_name = test_info.test_case_name;
+  result.test_name = test_info.test_name;
 
   // TODO(phajdan.jr): Recognize crashes.
   if (exit_code == 0)
@@ -254,13 +296,29 @@ void WrapperTestLauncherDelegate::RunTest(
   else
     result.status = base::TestResult::TEST_FAILURE;
 
-  result.elapsed_time = (base::TimeTicks::Now() - start_time);
+  result.elapsed_time = elapsed_time;
 
-  callback.Run(result);
+  // TODO(phajdan.jr): Use base::PrintTestOutputSnippetOnFailure after migrating
+  // away from run_test_cases.py (http://crbug.com/236893).
+  fprintf(stdout, "%s", output.c_str());
+  fflush(stdout);
+
+  test_info.callback.Run(result);
+  parallel_launcher_.ResetOutputWatchdog();
 }
 
-void WrapperTestLauncherDelegate::RunRemainingTests() {
-  // No need to do anything else here, we launch tests synchronously.
+bool GetSwitchValueAsInt(const std::string& switch_name, int* result) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switch_name))
+    return true;
+
+  std::string switch_value =
+      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(switch_name);
+  if (!base::StringToInt(switch_value, result) || *result < 1) {
+    LOG(ERROR) << "Invalid value for " << switch_name << ": " << switch_value;
+    return false;
+  }
+
+  return true;
 }
 
 }  // namespace
@@ -357,9 +415,13 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
   testing::InitGoogleTest(&argc, argv);
   TestTimeouts::Initialize();
 
+  int jobs = 1;  // TODO(phajdan.jr): Default to half the number of CPU cores.
+  if (!GetSwitchValueAsInt(switches::kTestLauncherJobs, &jobs))
+    return 1;
+
   base::MessageLoopForIO message_loop;
 
-  WrapperTestLauncherDelegate delegate(launcher_delegate);
+  WrapperTestLauncherDelegate delegate(launcher_delegate, jobs);
   return base::LaunchTests(&delegate, argc, argv);
 }
 

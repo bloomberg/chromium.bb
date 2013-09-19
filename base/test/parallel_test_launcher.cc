@@ -45,9 +45,10 @@ const int kOutputTimeoutSeconds = 15;
 void RunCallback(
     const ParallelTestLauncher::LaunchChildGTestProcessCallback& callback,
     int exit_code,
+    const TimeDelta& elapsed_time,
     bool was_timeout,
     const std::string& output) {
-  callback.Run(exit_code, was_timeout, output);
+  callback.Run(exit_code, elapsed_time, was_timeout, output);
 }
 
 void DoLaunchChildTestProcess(
@@ -55,6 +56,8 @@ void DoLaunchChildTestProcess(
     base::TimeDelta timeout,
     scoped_refptr<MessageLoopProxy> message_loop_proxy,
     const ParallelTestLauncher::LaunchChildGTestProcessCallback& callback) {
+  TimeTicks start_time = TimeTicks::Now();
+
   // Redirect child process output to a file.
   base::FilePath output_file;
   CHECK(file_util::CreateTemporaryFile(&output_file));
@@ -116,6 +119,7 @@ void DoLaunchChildTestProcess(
       Bind(&RunCallback,
            callback,
            exit_code,
+           TimeTicks::Now() - start_time,
            was_timeout,
            output_file_contents));
 }
@@ -147,6 +151,43 @@ void ParallelTestLauncher::LaunchChildGTestProcess(
     const LaunchChildGTestProcessCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  LaunchSequencedChildGTestProcess(
+      worker_pool_owner_->pool()->GetSequenceToken(),
+      command_line,
+      wrapper,
+      timeout,
+      callback);
+}
+
+void ParallelTestLauncher::LaunchNamedSequencedChildGTestProcess(
+    const std::string& token_name,
+    const CommandLine& command_line,
+    const std::string& wrapper,
+    base::TimeDelta timeout,
+    const LaunchChildGTestProcessCallback& callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  LaunchSequencedChildGTestProcess(
+      worker_pool_owner_->pool()->GetNamedSequenceToken(token_name),
+      command_line,
+      wrapper,
+      timeout,
+      callback);
+}
+
+void ParallelTestLauncher::ResetOutputWatchdog() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  timer_.Reset();
+}
+
+void ParallelTestLauncher::LaunchSequencedChildGTestProcess(
+    SequencedWorkerPool::SequenceToken sequence_token,
+    const CommandLine& command_line,
+    const std::string& wrapper,
+    base::TimeDelta timeout,
+    const LaunchChildGTestProcessCallback& callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   // Record the exact command line used to launch the child.
   CommandLine new_command_line(
       PrepareCommandLineForGTest(command_line, wrapper));
@@ -154,7 +195,8 @@ void ParallelTestLauncher::LaunchChildGTestProcess(
   running_processes_map_.insert(
       std::make_pair(launch_sequence_number_, new_command_line));
 
-  worker_pool_owner_->pool()->PostWorkerTask(
+  worker_pool_owner_->pool()->PostSequencedWorkerTask(
+      sequence_token,
       FROM_HERE,
       Bind(&DoLaunchChildTestProcess,
            new_command_line,
@@ -166,20 +208,16 @@ void ParallelTestLauncher::LaunchChildGTestProcess(
                 callback)));
 }
 
-void ParallelTestLauncher::ResetOutputWatchdog() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  timer_.Reset();
-}
-
 void ParallelTestLauncher::OnLaunchTestProcessFinished(
     size_t sequence_number,
     const LaunchChildGTestProcessCallback& callback,
     int exit_code,
+    const TimeDelta& elapsed_time,
     bool was_timeout,
     const std::string& output) {
   DCHECK(thread_checker_.CalledOnValidThread());
   running_processes_map_.erase(sequence_number);
-  callback.Run(exit_code, was_timeout, output);
+  callback.Run(exit_code, elapsed_time, was_timeout, output);
 }
 
 void ParallelTestLauncher::OnOutputTimeout() {

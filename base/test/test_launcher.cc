@@ -483,10 +483,13 @@ void RunTests(TestLauncherDelegate* launcher_delegate,
         continue;
       }
 
+      std::string filtering_test_name =
+          launcher_delegate->GetTestNameForFiltering(test_case, test_info);
+
       // Skip the test that doesn't match the filter string (if given).
       if ((!positive_filter.empty() &&
-           !MatchesFilter(test_name, positive_filter)) ||
-          MatchesFilter(test_name, negative_filter)) {
+           !MatchesFilter(filtering_test_name, positive_filter)) ||
+          MatchesFilter(filtering_test_name, negative_filter)) {
         continue;
       }
 
@@ -567,6 +570,35 @@ TestResult::TestResult() : status(TEST_UNKNOWN) {
 }
 
 TestLauncherDelegate::~TestLauncherDelegate() {
+}
+
+void PrintTestOutputSnippetOnFailure(const TestResult& result,
+                                     const std::string& full_output) {
+  if (result.status == TestResult::TEST_SUCCESS)
+    return;
+
+  size_t run_pos = full_output.find(std::string("[ RUN      ] ") +
+                                    result.GetFullName());
+  if (run_pos == std::string::npos)
+    return;
+
+  size_t end_pos = full_output.find(std::string("[  FAILED  ] ") +
+                                    result.GetFullName(),
+                                    run_pos);
+  if (end_pos != std::string::npos) {
+    size_t newline_pos = full_output.find("\n", end_pos);
+    if (newline_pos != std::string::npos)
+      end_pos = newline_pos + 1;
+  }
+
+  std::string snippet(full_output.substr(run_pos));
+  if (end_pos != std::string::npos)
+    snippet = full_output.substr(run_pos, end_pos - run_pos);
+
+  // TODO(phajdan.jr): Indent each line of the snippet so it's more
+  // noticeable.
+  fprintf(stdout, "%s", snippet.c_str());
+  fflush(stdout);
 }
 
 int LaunchChildGTestProcess(const CommandLine& command_line,
