@@ -1,15 +1,15 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/lazy_instance.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/api/recovery_private/error_messages.h"
-#include "chrome/browser/extensions/api/recovery_private/recovery_operation.h"
-#include "chrome/browser/extensions/api/recovery_private/recovery_operation_manager.h"
-#include "chrome/browser/extensions/api/recovery_private/write_from_file_operation.h"
-#include "chrome/browser/extensions/api/recovery_private/write_from_url_operation.h"
+#include "chrome/browser/extensions/api/image_writer_private/error_messages.h"
+#include "chrome/browser/extensions/api/image_writer_private/operation.h"
+#include "chrome/browser/extensions/api/image_writer_private/operation_manager.h"
+#include "chrome/browser/extensions/api/image_writer_private/write_from_file_operation.h"
+#include "chrome/browser/extensions/api/image_writer_private/write_from_url_operation.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/event_router_forwarder.h"
 #include "chrome/browser/extensions/extension_host.h"
@@ -19,14 +19,14 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 
-namespace recovery_api = extensions::api::recovery_private;
+namespace image_writer_api = extensions::api::image_writer_private;
 
 namespace extensions {
-namespace recovery {
+namespace image_writer {
 
 using content::BrowserThread;
 
-RecoveryOperationManager::RecoveryOperationManager(Profile* profile)
+OperationManager::OperationManager(Profile* profile)
     : profile_(profile) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
                  content::Source<Profile>(profile_));
@@ -40,28 +40,28 @@ RecoveryOperationManager::RecoveryOperationManager(Profile* profile)
                  content::Source<Profile>(profile_));
 }
 
-RecoveryOperationManager::~RecoveryOperationManager() {
+OperationManager::~OperationManager() {
 }
 
-void RecoveryOperationManager::Shutdown() {
+void OperationManager::Shutdown() {
   for (OperationMap::iterator iter = operations_.begin();
        iter != operations_.end();
        iter++) {
     BrowserThread::PostTask(BrowserThread::FILE,
                             FROM_HERE,
-                            base::Bind(&RecoveryOperation::Abort,
+                            base::Bind(&Operation::Abort,
                                        iter->second));
   }
 }
 
-void RecoveryOperationManager::StartWriteFromUrl(
+void OperationManager::StartWriteFromUrl(
     const ExtensionId& extension_id,
     GURL url,
     content::RenderViewHost* rvh,
     const std::string& hash,
     bool saveImageAsDownload,
     const std::string& storage_unit_id,
-    const RecoveryOperation::StartWriteCallback& callback) {
+    const Operation::StartWriteCallback& callback) {
 
   OperationMap::iterator existing_operation = operations_.find(extension_id);
 
@@ -70,7 +70,7 @@ void RecoveryOperationManager::StartWriteFromUrl(
                         error::kOperationAlreadyInProgress);
   }
 
-  scoped_refptr<RecoveryOperation> operation(
+  scoped_refptr<Operation> operation(
       new WriteFromUrlOperation(this, extension_id, rvh, url,
                                 hash, saveImageAsDownload,
                                 storage_unit_id));
@@ -79,24 +79,24 @@ void RecoveryOperationManager::StartWriteFromUrl(
 
   BrowserThread::PostTask(BrowserThread::FILE,
                           FROM_HERE,
-                          base::Bind(&RecoveryOperation::Start,
+                          base::Bind(&Operation::Start,
                                      operation.get()));
 
   callback.Run(true, "");
 }
 
-void RecoveryOperationManager::StartWriteFromFile(
+void OperationManager::StartWriteFromFile(
     const ExtensionId& extension_id,
     const std::string& storage_unit_id,
-    const RecoveryOperation::StartWriteCallback& callback) {
+    const Operation::StartWriteCallback& callback) {
   // Currently unimplemented.
   callback.Run(false, error::kFileOperationsNotImplemented);
 }
 
-void RecoveryOperationManager::CancelWrite(
+void OperationManager::CancelWrite(
     const ExtensionId& extension_id,
-    const RecoveryOperation::CancelWriteCallback& callback) {
-  RecoveryOperation* existing_operation = GetOperation(extension_id);
+    const Operation::CancelWriteCallback& callback) {
+  Operation* existing_operation = GetOperation(extension_id);
 
   if (existing_operation == NULL) {
     callback.Run(false, error::kNoOperationInProgress);
@@ -106,31 +106,31 @@ void RecoveryOperationManager::CancelWrite(
   }
 }
 
-void RecoveryOperationManager::OnProgress(const ExtensionId& extension_id,
-                                          recovery_api::Stage stage,
-                                          int progress) {
+void OperationManager::OnProgress(const ExtensionId& extension_id,
+                                  image_writer_api::Stage stage,
+                                  int progress) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  recovery_api::ProgressInfo info;
   DVLOG(2) << "progress - " << stage << " at " << progress << "%";
 
+  image_writer_api::ProgressInfo info;
   info.stage = stage;
   info.percent_complete = progress;
 
   scoped_ptr<base::ListValue> args(
-      recovery_api::OnWriteProgress::Create(info));
+      image_writer_api::OnWriteProgress::Create(info));
   scoped_ptr<Event> event(new Event(
-      recovery_api::OnWriteProgress::kEventName, args.Pass()));
+      image_writer_api::OnWriteProgress::kEventName, args.Pass()));
 
   ExtensionSystem::Get(profile_)->event_router()->
       DispatchEventToExtension(extension_id, event.Pass());
 }
 
-void RecoveryOperationManager::OnComplete(const ExtensionId& extension_id) {
+void OperationManager::OnComplete(const ExtensionId& extension_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  scoped_ptr<base::ListValue> args(recovery_api::OnWriteComplete::Create());
+  scoped_ptr<base::ListValue> args(image_writer_api::OnWriteComplete::Create());
   scoped_ptr<Event> event(new Event(
-      recovery_api::OnWriteComplete::kEventName, args.Pass()));
+      image_writer_api::OnWriteComplete::kEventName, args.Pass()));
 
   ExtensionSystem::Get(profile_)->event_router()->
       DispatchEventToExtension(extension_id, event.Pass());
@@ -138,14 +138,14 @@ void RecoveryOperationManager::OnComplete(const ExtensionId& extension_id) {
   DeleteOperation(extension_id);
 }
 
-void RecoveryOperationManager::OnError(const ExtensionId& extension_id,
-                                       recovery_api::Stage stage,
-                                       int progress,
-                                       const std::string& error_message) {
+void OperationManager::OnError(const ExtensionId& extension_id,
+                               image_writer_api::Stage stage,
+                               int progress,
+                               const std::string& error_message) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  recovery_api::ProgressInfo info;
+  image_writer_api::ProgressInfo info;
 
-  DLOG(ERROR) << "Recovery error: " << error_message;
+  DLOG(ERROR) << "ImageWriter error: " << error_message;
 
   // TODO(haven): Set up error messages. http://crbug.com/284880
 
@@ -153,9 +153,9 @@ void RecoveryOperationManager::OnError(const ExtensionId& extension_id,
   info.percent_complete = progress;
 
   scoped_ptr<base::ListValue> args(
-      recovery_api::OnWriteError::Create(info, error_message));
+      image_writer_api::OnWriteError::Create(info, error_message));
   scoped_ptr<Event> event(new Event(
-      recovery_api::OnWriteError::kEventName, args.Pass()));
+      image_writer_api::OnWriteError::kEventName, args.Pass()));
 
   ExtensionSystem::Get(profile_)->event_router()->
       DispatchEventToExtension(extension_id, event.Pass());
@@ -163,8 +163,7 @@ void RecoveryOperationManager::OnError(const ExtensionId& extension_id,
   DeleteOperation(extension_id);
 }
 
-RecoveryOperation* RecoveryOperationManager::GetOperation(
-    const ExtensionId& extension_id) {
+Operation* OperationManager::GetOperation(const ExtensionId& extension_id) {
   OperationMap::iterator existing_operation = operations_.find(extension_id);
 
   if (existing_operation == operations_.end())
@@ -172,22 +171,20 @@ RecoveryOperation* RecoveryOperationManager::GetOperation(
   return existing_operation->second.get();
 }
 
-void RecoveryOperationManager::DeleteOperation(
-    const ExtensionId& extension_id) {
+void OperationManager::DeleteOperation(const ExtensionId& extension_id) {
   OperationMap::iterator existing_operation = operations_.find(extension_id);
   if (existing_operation != operations_.end()) {
     BrowserThread::PostTask(BrowserThread::FILE,
                             FROM_HERE,
-                            base::Bind(&RecoveryOperation::Cancel,
+                            base::Bind(&Operation::Cancel,
                                        existing_operation->second));
     operations_.erase(existing_operation);
   }
 }
 
-void RecoveryOperationManager::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
+void OperationManager::Observe(int type,
+                               const content::NotificationSource& source,
+                               const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_UNINSTALLED: {
       DeleteOperation(content::Details<const Extension>(details).ptr()->id());
@@ -218,19 +215,19 @@ void RecoveryOperationManager::Observe(
   }
 }
 
-RecoveryOperationManager* RecoveryOperationManager::Get(Profile* profile) {
-  return ProfileKeyedAPIFactory<RecoveryOperationManager>::
+OperationManager* OperationManager::Get(Profile* profile) {
+  return ProfileKeyedAPIFactory<OperationManager>::
       GetForProfile(profile);
 }
 
-static base::LazyInstance<ProfileKeyedAPIFactory<RecoveryOperationManager> >
+static base::LazyInstance<ProfileKeyedAPIFactory<OperationManager> >
     g_factory = LAZY_INSTANCE_INITIALIZER;
 
-ProfileKeyedAPIFactory<RecoveryOperationManager>*
-    RecoveryOperationManager::GetFactoryInstance() {
+ProfileKeyedAPIFactory<OperationManager>*
+    OperationManager::GetFactoryInstance() {
   return &g_factory.Get();
 }
 
 
-} // namespace recovery
+} // namespace image_writer
 } // namespace extensions

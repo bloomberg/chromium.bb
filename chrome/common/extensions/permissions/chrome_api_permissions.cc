@@ -214,7 +214,7 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
       APIPermissionInfo::kFlagCannotBeOptional },
     { APIPermission::kFeedbackPrivate, "feedbackPrivate",
       APIPermissionInfo::kFlagCannotBeOptional },
-    { APIPermission::kRecoveryPrivate, "recoveryPrivate",
+    { APIPermission::kImageWriterPrivate, "imageWriterPrivate",
       APIPermissionInfo::kFlagCannotBeOptional },
     { APIPermission::kRtcPrivate, "rtcPrivate",
       APIPermissionInfo::kFlagCannotBeOptional },

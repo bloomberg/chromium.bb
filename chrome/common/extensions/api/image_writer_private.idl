@@ -1,10 +1,10 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Use the <code>chrome.recovery</code> API to write images to
+// Use the <code>chrome.image_writer</code> API to write images to
 // removable media.
-[nodoc] namespace recoveryPrivate {
+[nodoc] namespace imageWriterPrivate {
   // The different stages of a write call.
   //
   // <dl>

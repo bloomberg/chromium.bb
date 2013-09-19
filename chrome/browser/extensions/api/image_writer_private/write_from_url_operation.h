@@ -1,12 +1,12 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_RECOVERY_PRIVATE_WRITE_FROM_URL_OPERATION_H_
-#define CHROME_BROWSER_EXTENSIONS_API_RECOVERY_PRIVATE_WRITE_FROM_URL_OPERATION_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_IMAGE_WRITER_PRIVATE_WRITE_FROM_URL_OPERATION_H_
+#define CHROME_BROWSER_EXTENSIONS_API_IMAGE_WRITER_PRIVATE_WRITE_FROM_URL_OPERATION_H_
 
 #include "base/scoped_observer.h"
-#include "chrome/browser/extensions/api/recovery_private/recovery_operation.h"
+#include "chrome/browser/extensions/api/image_writer_private/operation.h"
 #include "content/public/browser/download_item.h"
 #include "net/base/net_errors.h"
 #include "url/gurl.h"
@@ -18,15 +18,15 @@ class RenderViewHost;
 }  // namespace content
 
 namespace extensions {
-namespace recovery {
+namespace image_writer {
 
-class RecoveryOperationManager;
+class OperationManager;
 
 // Encapsulates a write of an image accessed via URL.
-class WriteFromUrlOperation : public RecoveryOperation,
+class WriteFromUrlOperation : public Operation,
                               public content::DownloadItem::Observer {
  public:
-  WriteFromUrlOperation(RecoveryOperationManager* manager,
+  WriteFromUrlOperation(OperationManager* manager,
                         const ExtensionId& extension_id,
                         content::RenderViewHost* rvh,
                         GURL url,
@@ -59,7 +59,7 @@ class WriteFromUrlOperation : public RecoveryOperation,
   base::FilePath download_path_;
 };
 
-} // namespace recovery
+} // namespace image_writer
 } // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_RECOVERY_PRIVATE_WRITE_FROM_URL_OPERATION_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_API_IMAGE_WRITER_PRIVATE_WRITE_FROM_URL_OPERATION_H_

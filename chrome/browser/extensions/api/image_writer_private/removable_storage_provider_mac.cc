@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/recovery_private/removable_storage_provider.h"
+#include "chrome/browser/extensions/api/image_writer_private/removable_storage_provider.h"
 
 namespace extensions {
 

@@ -414,8 +414,8 @@
     "dependencies": ["permission:pushMessaging"],
     "contexts": ["blessed_extension"]
   },
-  "recoveryPrivate": {
-    "dependencies": ["permission:recoveryPrivate"],
+  "imageWriterPrivate": {
+    "dependencies": ["permission:imageWriterPrivate"],
     "extension_types": ["platform_app"],
     "contexts": ["blessed_extension"]
   },

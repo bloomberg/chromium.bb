@@ -5,20 +5,20 @@
 #include "base/file_util.h"
 #include "base/files/file_enumerator.h"
 #include "base/threading/worker_pool.h"
-#include "chrome/browser/extensions/api/recovery_private/error_messages.h"
-#include "chrome/browser/extensions/api/recovery_private/recovery_operation.h"
-#include "chrome/browser/extensions/api/recovery_private/recovery_operation_manager.h"
+#include "chrome/browser/extensions/api/image_writer_private/error_messages.h"
+#include "chrome/browser/extensions/api/image_writer_private/operation.h"
+#include "chrome/browser/extensions/api/image_writer_private/operation_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/zlib/google/zip.h"
 
 namespace extensions {
-namespace recovery {
+namespace image_writer {
 
 using content::BrowserThread;
 
 const int kBurningBlockSize = 8 * 1024;  // 8 KiB
 
-void RecoveryOperation::WriteStart() {
+void Operation::WriteStart() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   if (IsCancelled()) {
     return;
@@ -32,16 +32,16 @@ void RecoveryOperation::WriteStart() {
   DVLOG(1) << "Starting write of " << image_path_.value()
            << " to " << storage_unit_id_;
 
-  stage_ = recovery_api::STAGE_WRITE;
+  stage_ = image_writer_api::STAGE_WRITE;
   progress_ = 0;
   SendProgress();
 
   // TODO (haven): Unmount partitions before writing. http://crbug.com/284834
 
-  scoped_ptr<recovery_utils::ImageReader> reader(
-      new recovery_utils::ImageReader());
-  scoped_ptr<recovery_utils::ImageWriter> writer(
-      new recovery_utils::ImageWriter());
+  scoped_ptr<image_writer_utils::ImageReader> reader(
+      new image_writer_utils::ImageReader());
+  scoped_ptr<image_writer_utils::ImageWriter> writer(
+      new image_writer_utils::ImageWriter());
   base::FilePath storage_path(storage_unit_id_);
 
   if (reader->Open(image_path_)) {
@@ -58,16 +58,16 @@ void RecoveryOperation::WriteStart() {
   BrowserThread::PostTask(
     BrowserThread::FILE,
     FROM_HERE,
-    base::Bind(&RecoveryOperation::WriteChunk,
+    base::Bind(&Operation::WriteChunk,
                this,
                base::Passed(&reader),
                base::Passed(&writer),
                0));
 }
 
-void RecoveryOperation::WriteChunk(
-    scoped_ptr<recovery_utils::ImageReader> reader,
-    scoped_ptr<recovery_utils::ImageWriter> writer,
+void Operation::WriteChunk(
+    scoped_ptr<image_writer_utils::ImageReader> reader,
+    scoped_ptr<image_writer_utils::ImageWriter> writer,
     int64 bytes_written) {
   if (IsCancelled()) {
     WriteCleanup(reader.Pass(), writer.Pass());
@@ -91,7 +91,7 @@ void RecoveryOperation::WriteChunk(
       BrowserThread::PostTask(
         BrowserThread::FILE,
         FROM_HERE,
-        base::Bind(&RecoveryOperation::WriteChunk,
+        base::Bind(&Operation::WriteChunk,
                    this,
                    base::Passed(&reader),
                    base::Passed(&writer),
@@ -106,7 +106,7 @@ void RecoveryOperation::WriteChunk(
         BrowserThread::PostTask(
           BrowserThread::FILE,
           FROM_HERE,
-          base::Bind(&RecoveryOperation::WriteComplete,
+          base::Bind(&Operation::WriteComplete,
                      this));
       }
     } else {
@@ -119,9 +119,9 @@ void RecoveryOperation::WriteChunk(
   }
 }
 
-bool RecoveryOperation::WriteCleanup(
-    scoped_ptr<recovery_utils::ImageReader> reader,
-    scoped_ptr<recovery_utils::ImageWriter> writer) {
+bool Operation::WriteCleanup(
+    scoped_ptr<image_writer_utils::ImageReader> reader,
+    scoped_ptr<image_writer_utils::ImageWriter> writer) {
 
   bool success = true;
   if (!reader->Close()) {
@@ -136,7 +136,7 @@ bool RecoveryOperation::WriteCleanup(
   return success;
 }
 
-void RecoveryOperation::WriteComplete() {
+void Operation::WriteComplete() {
 
   DVLOG(2) << "Completed write of " << image_path_.value();
   progress_ = 100;
@@ -145,11 +145,11 @@ void RecoveryOperation::WriteComplete() {
   BrowserThread::PostTask(
     BrowserThread::FILE,
     FROM_HERE,
-    base::Bind(&RecoveryOperation::VerifyWriteStart,
+    base::Bind(&Operation::VerifyWriteStart,
                this));
 }
 
-void RecoveryOperation::VerifyWriteStart() {
+void Operation::VerifyWriteStart() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   if (IsCancelled()) {
     return;
@@ -157,7 +157,7 @@ void RecoveryOperation::VerifyWriteStart() {
 
   DVLOG(1) << "Starting verification stage.";
 
-  stage_ = recovery_api::STAGE_VERIFYWRITE;
+  stage_ = image_writer_api::STAGE_VERIFYWRITE;
   progress_ = 0;
   SendProgress();
 
@@ -168,11 +168,12 @@ void RecoveryOperation::VerifyWriteStart() {
       -1,
       0, // progress_offset
       50, // progress_scale
-      base::Bind(&RecoveryOperation::VerifyWriteStage2,
+      base::Bind(&Operation::VerifyWriteStage2,
                  this));
 }
 
-void RecoveryOperation::VerifyWriteStage2(scoped_ptr<std::string> image_hash) {
+void Operation::VerifyWriteStage2(
+    scoped_ptr<std::string> image_hash) {
   DVLOG(1) << "Building MD5 sum of device: " << storage_unit_id_;
 
   int64 image_size;
@@ -188,12 +189,12 @@ void RecoveryOperation::VerifyWriteStage2(scoped_ptr<std::string> image_hash) {
       image_size,
       50, // progress_offset
       50, // progress_scale
-      base::Bind(&RecoveryOperation::VerifyWriteCompare,
+      base::Bind(&Operation::VerifyWriteCompare,
                  this,
                  base::Passed(&image_hash)));
 }
 
-void RecoveryOperation::VerifyWriteCompare(
+void Operation::VerifyWriteCompare(
     scoped_ptr<std::string> image_hash,
     scoped_ptr<std::string> device_hash) {
   DVLOG(1) << "Comparing hashes: " << *image_hash << " vs " << *device_hash;
@@ -210,5 +211,5 @@ void RecoveryOperation::VerifyWriteCompare(
   Finish();
 }
 
-} // namespace recovery
+} // namespace image_writer
 } // namespace extensions

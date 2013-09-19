@@ -6,7 +6,7 @@
 
 #include "base/file_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "chrome/browser/extensions/api/recovery_private/removable_storage_provider.h"
+#include "chrome/browser/extensions/api/image_writer_private/removable_storage_provider.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace extensions {
@@ -102,8 +102,8 @@ bool RemovableStorageProvider::GetDevicesOnFileThread(
       continue;
     }
 
-    linked_ptr<api::recovery_private::RemovableStorageDevice> device(
-      new api::recovery_private::RemovableStorageDevice());
+    linked_ptr<api::image_writer_private::RemovableStorageDevice> device(
+      new api::image_writer_private::RemovableStorageDevice());
     device->vendor = udev_device_get_sysattr_value(parent, "vendor");
     device->model = udev_device_get_sysattr_value(parent, "model");
     // TODO (smaskell): Don't expose raw device path

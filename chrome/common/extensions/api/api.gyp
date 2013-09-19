@@ -86,7 +86,7 @@
           'preferences_private.json',
           'power.idl',
           'push_messaging.idl',
-          'recovery_private.idl',
+          'image_writer_private.idl',
           'rtc_private.idl',
           'runtime.json',
           'serial.idl',

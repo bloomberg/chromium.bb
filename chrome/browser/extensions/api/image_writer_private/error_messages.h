@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_RECOVERY_PRIVATE_ERROR_MESSAGES_H_
-#define CHROME_BROWSER_EXTENSIONS_API_RECOVERY_PRIVATE_ERROR_MESSAGES_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_IMAGE_WRITER_PRIVATE_ERROR_MESSAGES_H_
+#define CHROME_BROWSER_EXTENSIONS_API_IMAGE_WRITER_PRIVATE_ERROR_MESSAGES_H_
 
 namespace extensions {
-namespace recovery {
+namespace image_writer {
 namespace error {
 
 extern const char kAborted[];
@@ -39,7 +39,7 @@ extern const char kWriteHash[];
 extern const char kWriteImage[];
 
 } // namespace error
-} // namespace recovery
+} // namespace image_writer
 } // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_RECOVERY_PRIVATE_ERROR_MESSAGES_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_API_IMAGE_WRITER_PRIVATE_ERROR_MESSAGES_H_

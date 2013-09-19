@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
-#include "chrome/browser/extensions/api/recovery_private/recovery_utils.h"
+#include "chrome/browser/extensions/api/image_writer_private/image_writer_utils.h"
 
 namespace extensions {
-namespace recovery_utils
+namespace image_writer_utils
 {
 
 const int kFsyncRatio = 1024;
@@ -121,5 +121,5 @@ int64 ImageReader::GetSize() {
   }
 }
 
-} // namespace recovery_utils
+} // namespace image_writer_utils
 } // namespace extensions

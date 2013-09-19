@@ -1,13 +1,13 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/file_util.h"
 #include "base/threading/worker_pool.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/api/recovery_private/error_messages.h"
-#include "chrome/browser/extensions/api/recovery_private/recovery_operation_manager.h"
-#include "chrome/browser/extensions/api/recovery_private/write_from_url_operation.h"
+#include "chrome/browser/extensions/api/image_writer_private/error_messages.h"
+#include "chrome/browser/extensions/api/image_writer_private/operation_manager.h"
+#include "chrome/browser/extensions/api/image_writer_private/write_from_url_operation.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
@@ -16,18 +16,19 @@
 #include "extensions/common/error_utils.h"
 
 namespace extensions {
-namespace recovery {
+namespace image_writer {
 
 using content::BrowserThread;
 
-WriteFromUrlOperation::WriteFromUrlOperation(RecoveryOperationManager* manager,
-                                             const ExtensionId& extension_id,
-                                             content::RenderViewHost* rvh,
-                                             GURL url,
-                                             const std::string& hash,
-                                             bool saveImageAsDownload,
-                                             const std::string& storage_unit_id)
-    : RecoveryOperation(manager, extension_id, storage_unit_id),
+WriteFromUrlOperation::WriteFromUrlOperation(
+    OperationManager* manager,
+    const ExtensionId& extension_id,
+    content::RenderViewHost* rvh,
+    GURL url,
+    const std::string& hash,
+    bool saveImageAsDownload,
+    const std::string& storage_unit_id)
+    : Operation(manager, extension_id, storage_unit_id),
       rvh_(rvh),
       url_(url),
       hash_(hash),
@@ -36,7 +37,7 @@ WriteFromUrlOperation::WriteFromUrlOperation(RecoveryOperationManager* manager,
 }
 
 WriteFromUrlOperation::~WriteFromUrlOperation() {
-  if (stage_ == recovery_api::STAGE_DOWNLOAD && download_) {
+  if (stage_ == image_writer_api::STAGE_DOWNLOAD && download_) {
     download_->RemoveObserver(this);
     download_->Cancel(false);
   }
@@ -44,7 +45,7 @@ WriteFromUrlOperation::~WriteFromUrlOperation() {
 void WriteFromUrlOperation::Start() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  stage_ = recovery_api::STAGE_DOWNLOAD;
+  stage_ = image_writer_api::STAGE_DOWNLOAD;
   progress_ = 0;
 
   if (saveImageAsDownload_){
@@ -62,12 +63,12 @@ void WriteFromUrlOperation::Start() {
 
 void WriteFromUrlOperation::Cancel() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  if (stage_ == recovery_api::STAGE_DOWNLOAD && download_) {
+  if (stage_ == image_writer_api::STAGE_DOWNLOAD && download_) {
     download_->RemoveObserver(this);
     download_->Cancel(true);
   }
 
-  RecoveryOperation::Cancel();
+  Operation::Cancel();
 }
 
 void WriteFromUrlOperation::CreateTempFile() {
@@ -96,7 +97,7 @@ void WriteFromUrlOperation::DownloadStart() {
     return;
   }
 
-  stage_ = recovery_api::STAGE_DOWNLOAD;
+  stage_ = image_writer_api::STAGE_DOWNLOAD;
   progress_ = 0;
 
   Profile* current_profile = manager_->profile();
@@ -198,7 +199,7 @@ void WriteFromUrlOperation::VerifyDownloadStart() {
 
   DVLOG(1) << "Download verification started.";
 
-  stage_ = recovery_api::STAGE_VERIFYDOWNLOAD;
+  stage_ = image_writer_api::STAGE_VERIFYDOWNLOAD;
   progress_ = 0;
 
   SendProgress();
@@ -246,5 +247,5 @@ void WriteFromUrlOperation::VerifyDownloadComplete() {
   UnzipStart(download_path.Pass());
 }
 
-} // namespace recovery
+} // namespace image_writer
 } // namespace extensions

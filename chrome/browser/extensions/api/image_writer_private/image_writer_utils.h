@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_RECOVERY_PRIVATE_RECOVERY_UTILS_H_
-#define CHROME_BROWSER_EXTENSIONS_API_RECOVERY_PRIVATE_RECOVERY_UTILS_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_IMAGE_WRITER_PRIVATE_IMAGE_WRITER_UTILS_H_
+#define CHROME_BROWSER_EXTENSIONS_API_IMAGE_WRITER_PRIVATE_IMAGE_WRITER_UTILS_H_
 
 #include "base/files/file_path.h"
 #include "base/platform_file.h"
 
 namespace extensions {
-namespace recovery_utils {
+namespace image_writer_utils {
 
 // Utility class for writing data to a removable disk.
 class ImageWriter {
@@ -47,7 +47,7 @@ class ImageReader {
   base::PlatformFile file_;
 };
 
-} // namespace recovery_utils
+} // namespace image_writer_utils
 } // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_RECOVERY_PRIVATE_RECOVERY_UTILS_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_API_IMAGE_WRITER_PRIVATE_IMAGE_WRITER_UTILS_H_

@@ -572,11 +572,11 @@
     "channel": "stable",
     "extension_types": ["extension", "platform_app"]
   },
-  "recoveryPrivate": {
+  "imageWriterPrivate": {
     "channel": "dev",
     "extension_types": ["platform_app"],
     "whitelist": [
-      "nmedaodmkamdcnmfceajookiaicfnkhd", // Recovery API Dev App
+      "nmedaodmkamdcnmfceajookiaicfnkhd", // ImageWriter API Dev App
       "jdnamgpmgjhphalijaakigbpccepfllk", // Chrome OS Recovery Tool local
       "jobolcahaebjkjhdedcfcnfkgpjcmkcg" // Chrome OS Recovery Tool CWS
     ]

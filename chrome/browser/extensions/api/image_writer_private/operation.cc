@@ -1,53 +1,53 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/file_util.h"
 #include "base/files/file_enumerator.h"
 #include "base/threading/worker_pool.h"
-#include "chrome/browser/extensions/api/recovery_private/error_messages.h"
-#include "chrome/browser/extensions/api/recovery_private/recovery_operation.h"
-#include "chrome/browser/extensions/api/recovery_private/recovery_operation_manager.h"
+#include "chrome/browser/extensions/api/image_writer_private/error_messages.h"
+#include "chrome/browser/extensions/api/image_writer_private/operation.h"
+#include "chrome/browser/extensions/api/image_writer_private/operation_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/zlib/google/zip.h"
 
 namespace extensions {
-namespace recovery {
+namespace image_writer {
 
 using content::BrowserThread;
 
 const int kBurningBlockSize = 8 * 1024;  // 8 KiB
 const int kMD5BufferSize = 1024;
 
-RecoveryOperation::RecoveryOperation(RecoveryOperationManager* manager,
-                                     const ExtensionId& extension_id,
-                                     const std::string& storage_unit_id)
+Operation::Operation(OperationManager* manager,
+                     const ExtensionId& extension_id,
+                     const std::string& storage_unit_id)
     : manager_(manager),
       extension_id_(extension_id),
       storage_unit_id_(storage_unit_id) {
 }
 
-RecoveryOperation::~RecoveryOperation() {
+Operation::~Operation() {
 }
 
-void RecoveryOperation::Cancel() {
+void Operation::Cancel() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  DVLOG(1) << "Cancelling recovery operation for ext: " << extension_id_;
+  DVLOG(1) << "Cancelling image writing operation for ext: " << extension_id_;
 
-  stage_ = recovery_api::STAGE_NONE;
+  stage_ = image_writer_api::STAGE_NONE;
 }
 
-void RecoveryOperation::Abort() {
+void Operation::Abort() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   Error(error::kAborted);
 }
 
-void RecoveryOperation::Error(const std::string& error_message) {
+void Operation::Error(const std::string& error_message) {
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
-      base::Bind(&RecoveryOperationManager::OnError,
+      base::Bind(&OperationManager::OnError,
                  manager_->AsWeakPtr(),
                  extension_id_,
                  stage_,
@@ -55,37 +55,37 @@ void RecoveryOperation::Error(const std::string& error_message) {
                  error_message));
 }
 
-void RecoveryOperation::SendProgress() {
+void Operation::SendProgress() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
-      base::Bind(&RecoveryOperationManager::OnProgress,
+      base::Bind(&OperationManager::OnProgress,
                  manager_->AsWeakPtr(),
                  extension_id_,
                  stage_,
                  progress_));
 }
 
-void RecoveryOperation::Finish() {
+void Operation::Finish() {
   DVLOG(1) << "Write operation complete.";
 
-  stage_ = recovery_api::STAGE_NONE;
+  stage_ = image_writer_api::STAGE_NONE;
   progress_ = 0;
 
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
-      base::Bind(&RecoveryOperationManager::OnComplete,
+      base::Bind(&OperationManager::OnComplete,
                  manager_->AsWeakPtr(),
                  extension_id_));
 }
 
-bool RecoveryOperation::IsCancelled() {
-  return stage_ == recovery_api::STAGE_NONE;
+bool Operation::IsCancelled() {
+  return stage_ == image_writer_api::STAGE_NONE;
 }
 
-void RecoveryOperation::UnzipStart(scoped_ptr<base::FilePath> zip_file) {
+void Operation::UnzipStart(scoped_ptr<base::FilePath> zip_file) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   if (IsCancelled()) {
     return;
@@ -93,7 +93,7 @@ void RecoveryOperation::UnzipStart(scoped_ptr<base::FilePath> zip_file) {
 
   DVLOG(1) << "Starting unzip stage for " << zip_file->value();
 
-  stage_ = recovery_api::STAGE_UNZIP;
+  stage_ = image_writer_api::STAGE_UNZIP;
   progress_ = 0;
 
   SendProgress();
@@ -136,11 +136,11 @@ void RecoveryOperation::UnzipStart(scoped_ptr<base::FilePath> zip_file) {
   BrowserThread::PostTask(
       BrowserThread::FILE,
       FROM_HERE,
-      base::Bind(&RecoveryOperation::WriteStart,
+      base::Bind(&Operation::WriteStart,
                  this));
 }
 
-void RecoveryOperation::GetMD5SumOfFile(
+void Operation::GetMD5SumOfFile(
     scoped_ptr<base::FilePath> file_path,
     int64 file_size,
     int progress_offset,
@@ -151,8 +151,8 @@ void RecoveryOperation::GetMD5SumOfFile(
   }
 
   base::MD5Init(&md5_context_);
-  scoped_ptr<recovery_utils::ImageReader> reader(
-      new recovery_utils::ImageReader());
+  scoped_ptr<image_writer_utils::ImageReader> reader(
+      new image_writer_utils::ImageReader());
 
   if (!reader->Open(*file_path)) {
     Error(error::kOpenImage);
@@ -164,7 +164,7 @@ void RecoveryOperation::GetMD5SumOfFile(
 
   BrowserThread::PostTask(BrowserThread::FILE,
                           FROM_HERE,
-                          base::Bind(&RecoveryOperation::MD5Chunk,
+                          base::Bind(&Operation::MD5Chunk,
                                      this,
                                      base::Passed(&reader),
                                      0,
@@ -174,8 +174,8 @@ void RecoveryOperation::GetMD5SumOfFile(
                                      callback));
 }
 
-void RecoveryOperation::MD5Chunk(
-    scoped_ptr<recovery_utils::ImageReader> reader,
+void Operation::MD5Chunk(
+    scoped_ptr<image_writer_utils::ImageReader> reader,
     int64 bytes_processed,
     int64 bytes_total,
     int progress_offset,
@@ -209,7 +209,7 @@ void RecoveryOperation::MD5Chunk(
 
     BrowserThread::PostTask(BrowserThread::FILE,
                             FROM_HERE,
-                            base::Bind(&RecoveryOperation::MD5Chunk,
+                            base::Bind(&Operation::MD5Chunk,
                                        this,
                                        base::Passed(&reader),
                                        bytes_processed + len,
@@ -234,5 +234,5 @@ void RecoveryOperation::MD5Chunk(
   }
 }
 
-} // namespace recovery
+} // namespace image_writer
 } // namespace extensions

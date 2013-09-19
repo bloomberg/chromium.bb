@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/recovery_private/error_messages.h"
-#include "chrome/browser/extensions/api/recovery_private/recovery_operation.h"
+#include "chrome/browser/extensions/api/image_writer_private/error_messages.h"
+#include "chrome/browser/extensions/api/image_writer_private/operation.h"
 
 namespace extensions {
-namespace recovery {
+namespace image_writer {
 
-void RecoveryOperation::WriteStart() {
+void Operation::WriteStart() {
   Error(error::kUnsupportedOperation);
 }
 
-void RecoveryOperation::VerifyWriteStart() {
+void Operation::VerifyWriteStart() {
   Error(error::kUnsupportedOperation);
 }
 
-} // namespace recovery
+} // namespace image_writer
 } // namespace extensions

@@ -1,19 +1,19 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_RECOVERY_PRIVATE_RECOVERY_OPERATION_H_
-#define CHROME_BROWSER_EXTENSIONS_API_RECOVERY_PRIVATE_RECOVERY_OPERATION_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_IMAGE_WRITER_PRIVATE_OPERATION_H_
+#define CHROME_BROWSER_EXTENSIONS_API_IMAGE_WRITER_PRIVATE_OPERATION_H_
 
 #include "base/callback.h"
 #include "base/md5.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/extensions/api/recovery_private/recovery_utils.h"
+#include "chrome/browser/extensions/api/image_writer_private/image_writer_utils.h"
 #include "chrome/common/cancelable_task_tracker.h"
-#include "chrome/common/extensions/api/recovery_private.h"
+#include "chrome/common/extensions/api/image_writer_private.h"
 
-namespace recovery_api = extensions::api::recovery_private;
+namespace image_writer_api = extensions::api::image_writer_private;
 
 namespace base {
 
@@ -22,29 +22,30 @@ class FilePath;
 } // namespace base
 
 namespace extensions {
-namespace recovery {
+namespace image_writer {
 
-class RecoveryOperationManager;
+class OperationManager;
 
 // Encapsulates an operation being run on behalf of the
-// RecoveryOperationManager.  Construction of the operation does not start
+// OperationManager.  Construction of the operation does not start
 // anything.  The operation's Start method should be called to start it, and
 // then the Cancel method will stop it.  The operation will call back to the
-// RecoveryOperationManager periodically or on any significant event.
+// OperationManager periodically or on any significant event.
 //
 // Each stage of the operation is generally divided into three phases: Start,
 // Run, Complete.  Start and Complete run on the UI thread and are responsible
 // for advancing to the next stage and other UI interaction.  The Run phase does
 // the work on the FILE thread and calls SendProgress or Error as appropriate.
-class RecoveryOperation : public base::RefCountedThreadSafe<RecoveryOperation> {
+class Operation
+    : public base::RefCountedThreadSafe<Operation> {
  public:
   typedef base::Callback<void(bool, const std::string&)> StartWriteCallback;
   typedef base::Callback<void(bool, const std::string&)> CancelWriteCallback;
   typedef std::string ExtensionId;
 
-  RecoveryOperation(RecoveryOperationManager* manager,
-                    const ExtensionId& extension_id,
-                    const std::string& storage_unit_id);
+  Operation(OperationManager* manager,
+            const ExtensionId& extension_id,
+            const std::string& storage_unit_id);
 
   // Starts the operation.
   virtual void Start() = 0;
@@ -58,7 +59,7 @@ class RecoveryOperation : public base::RefCountedThreadSafe<RecoveryOperation> {
   // Aborts the operation, cancelling it and generating an error.
   virtual void Abort();
  protected:
-  virtual ~RecoveryOperation();
+  virtual ~Operation();
 
   // Generates an error.
   // |error_message| is used to create an OnWriteError event which is
@@ -88,11 +89,11 @@ class RecoveryOperation : public base::RefCountedThreadSafe<RecoveryOperation> {
       int progress_scale,
       const base::Callback<void(scoped_ptr<std::string>)>& callback);
 
-  RecoveryOperationManager* manager_;
+  OperationManager* manager_;
   const ExtensionId extension_id_;
 
   // This field is owned by the UI thread.
-  recovery_api::Stage stage_;
+  image_writer_api::Stage stage_;
 
   // The amount of work completed for the current stage as a percentage.  This
   // variable may be modified by both the FILE and UI threads, but it is only
@@ -108,17 +109,15 @@ class RecoveryOperation : public base::RefCountedThreadSafe<RecoveryOperation> {
   base::FilePath image_path_;
   const std::string storage_unit_id_;
  private:
-  friend class base::RefCountedThreadSafe<RecoveryOperation>;
+  friend class base::RefCountedThreadSafe<Operation>;
 
 #if defined(OS_LINUX) && !defined(CHROMEOS)
   void WriteRun();
-  void WriteChunk(
-      scoped_ptr<recovery_utils::ImageReader> reader,
-      scoped_ptr<recovery_utils::ImageWriter> writer,
-      int64 bytes_written);
-  bool WriteCleanup(
-      scoped_ptr<recovery_utils::ImageReader> reader,
-      scoped_ptr<recovery_utils::ImageWriter> writer);
+  void WriteChunk(scoped_ptr<image_writer_utils::ImageReader> reader,
+                  scoped_ptr<image_writer_utils::ImageWriter> writer,
+                  int64 bytes_written);
+  bool WriteCleanup(scoped_ptr<image_writer_utils::ImageReader> reader,
+                    scoped_ptr<image_writer_utils::ImageWriter> writer);
   void WriteComplete();
 
   void VerifyWriteStage2(scoped_ptr<std::string> image_hash);
@@ -126,7 +125,7 @@ class RecoveryOperation : public base::RefCountedThreadSafe<RecoveryOperation> {
                           scoped_ptr<std::string> device_hash);
 #endif
 
-  void MD5Chunk(scoped_ptr<recovery_utils::ImageReader> reader,
+  void MD5Chunk(scoped_ptr<image_writer_utils::ImageReader> reader,
                 int64 bytes_processed,
                 int64 bytes_total,
                 int progress_offset,
@@ -139,7 +138,7 @@ class RecoveryOperation : public base::RefCountedThreadSafe<RecoveryOperation> {
 
 };
 
-} // namespace recovery
+} // namespace image_writer
 } // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_RECOVERY_PRIVATE_RECOVERY_OPERATION_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_API_IMAGE_WRITER_PRIVATE_OPERATION_H_

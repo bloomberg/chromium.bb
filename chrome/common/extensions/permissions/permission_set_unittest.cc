@@ -720,7 +720,7 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kMetricsPrivate);
   skip.insert(APIPermission::kMDns);
   skip.insert(APIPermission::kPreferencesPrivate);
-  skip.insert(APIPermission::kRecoveryPrivate);
+  skip.insert(APIPermission::kImageWriterPrivate);
   skip.insert(APIPermission::kRtcPrivate);
   skip.insert(APIPermission::kStreamsPrivate);
   skip.insert(APIPermission::kSystemPrivate);

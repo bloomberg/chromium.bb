@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/recovery_private/error_messages.h"
+#include "chrome/browser/extensions/api/image_writer_private/error_messages.h"
 
 namespace extensions {
-namespace recovery {
+namespace image_writer {
 namespace error {
 
 const char kAborted[] = "Aborted.";
@@ -40,5 +40,5 @@ const char kWriteHash[] = "Writing image resulted in incorrect hash.";
 const char kWriteImage[] = "Writing image to device failed.";
 
 } // namespace error
-} // namespace recovery
+} // namespace image_writer
 } // namespace extensions
