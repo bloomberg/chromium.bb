@@ -258,25 +258,14 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         {
             ASSERT(newCapacity);
             RELEASE_ASSERT(newCapacity <= QuantizedAllocation::kMaxUnquantizedAllocation / sizeof(T));
-            size_t originalSizeToAllocate = newCapacity * sizeof(T);
-            size_t sizeToAllocate = QuantizedAllocation::quantizedSize(originalSizeToAllocate);
+            size_t sizeToAllocate = allocationSize(newCapacity);
             m_capacity = sizeToAllocate / sizeof(T);
             m_buffer = static_cast<T*>(fastMalloc(sizeToAllocate));
         }
 
-        bool shouldReallocateBuffer(size_t newCapacity) const
+        size_t allocationSize(size_t capacity) const
         {
-            return VectorTraits<T>::canMoveWithMemcpy && m_capacity && newCapacity;
-        }
-
-        void reallocateBuffer(size_t newCapacity)
-        {
-            ASSERT(shouldReallocateBuffer(newCapacity));
-            RELEASE_ASSERT(newCapacity <= QuantizedAllocation::kMaxUnquantizedAllocation / sizeof(T));
-            size_t originalSizeToAllocate = newCapacity * sizeof(T);
-            size_t sizeToAllocate = QuantizedAllocation::quantizedSize(originalSizeToAllocate);
-            m_capacity = sizeToAllocate / sizeof(T);
-            m_buffer = static_cast<T*>(fastRealloc(m_buffer, sizeToAllocate));
+            return QuantizedAllocation::quantizedSize(capacity * sizeof(T));
         }
 
         T* buffer() { return m_buffer; }
@@ -353,8 +342,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         }
 
         using Base::allocateBuffer;
-        using Base::shouldReallocateBuffer;
-        using Base::reallocateBuffer;
+        using Base::allocationSize;
 
         using Base::buffer;
         using Base::capacity;
@@ -417,16 +405,11 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
                 resetBufferPointer();
         }
 
-        bool shouldReallocateBuffer(size_t newCapacity) const
+        size_t allocationSize(size_t capacity) const
         {
-            // We cannot reallocate the inline buffer.
-            return Base::shouldReallocateBuffer(newCapacity) && std::min(static_cast<size_t>(m_capacity), newCapacity) > inlineCapacity;
-        }
-
-        void reallocateBuffer(size_t newCapacity)
-        {
-            ASSERT(shouldReallocateBuffer(newCapacity));
-            Base::reallocateBuffer(newCapacity);
+            if (capacity <= inlineCapacity)
+                return m_inlineBufferSize;
+            return Base::allocationSize(capacity);
         }
 
         void swap(VectorBuffer<T, inlineCapacity>& other)
@@ -623,8 +606,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         using Base::capacity;
         using Base::swap;
         using Base::allocateBuffer;
-        using Base::shouldReallocateBuffer;
-        using Base::reallocateBuffer;
+        using Base::allocationSize;
     };
 
     template<typename T, size_t inlineCapacity>
@@ -884,10 +866,9 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
 
         T* oldBuffer = begin();
         if (newCapacity > 0) {
-            if (Base::shouldReallocateBuffer(newCapacity)) {
-                Base::reallocateBuffer(newCapacity);
+            // Optimization: if we're downsizing inside the same allocator bucket, we can exit with no additional work.
+            if (Base::allocationSize(capacity()) == Base::allocationSize(newCapacity))
                 return;
-            }
 
             T* oldEnd = end();
             Base::allocateBuffer(newCapacity);
