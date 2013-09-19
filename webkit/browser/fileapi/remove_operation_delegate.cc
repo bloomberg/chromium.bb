@@ -28,39 +28,30 @@ void RemoveOperationDelegate::Run() {
 }
 
 void RemoveOperationDelegate::RunRecursively() {
-  StartRecursiveOperation(
-      url_,
-      base::Bind(&RemoveOperationDelegate::RemoveNextDirectory,
-                 weak_factory_.GetWeakPtr()));
+  StartRecursiveOperation(url_, callback_);
 }
 
 void RemoveOperationDelegate::ProcessFile(const FileSystemURL& url,
                                           const StatusCallback& callback) {
-  if (to_remove_directories_.size() == 1u &&
-      to_remove_directories_.top() == url) {
-    // We seem to have been re-directed from ProcessDirectory.
-    to_remove_directories_.pop();
-  }
-  operation_runner()->RemoveFile(url, base::Bind(
-      &RemoveOperationDelegate::DidRemoveFile,
-      weak_factory_.GetWeakPtr(), callback));
+  operation_runner()->RemoveFile(
+      url,
+      base::Bind(&RemoveOperationDelegate::DidRemoveFile,
+                 weak_factory_.GetWeakPtr(), callback));
 }
 
 void RemoveOperationDelegate::ProcessDirectory(const FileSystemURL& url,
                                                const StatusCallback& callback) {
-  to_remove_directories_.push(url);
   callback.Run(base::PLATFORM_FILE_OK);
 }
 
 void RemoveOperationDelegate::PostProcessDirectory(
     const FileSystemURL& url, const StatusCallback& callback) {
-  callback.Run(base::PLATFORM_FILE_OK);
+  operation_runner()->RemoveDirectory(url, callback);
 }
 
 void RemoveOperationDelegate::DidTryRemoveFile(
     base::PlatformFileError error) {
-  if (error == base::PLATFORM_FILE_OK ||
-      error != base::PLATFORM_FILE_ERROR_NOT_A_FILE) {
+  if (error != base::PLATFORM_FILE_ERROR_NOT_A_FILE) {
     callback_.Run(error);
     return;
   }
@@ -74,20 +65,6 @@ void RemoveOperationDelegate::DidRemoveFile(const StatusCallback& callback,
     return;
   }
   callback.Run(error);
-}
-
-void RemoveOperationDelegate::RemoveNextDirectory(
-    base::PlatformFileError error) {
-  if (error != base::PLATFORM_FILE_OK ||
-      to_remove_directories_.empty()) {
-    callback_.Run(error);
-    return;
-  }
-  FileSystemURL url = to_remove_directories_.top();
-  to_remove_directories_.pop();
-  operation_runner()->RemoveDirectory(url, base::Bind(
-      &RemoveOperationDelegate::RemoveNextDirectory,
-      weak_factory_.GetWeakPtr()));
 }
 
 }  // namespace fileapi
