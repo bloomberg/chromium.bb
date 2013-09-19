@@ -42,15 +42,15 @@ class Frame;
 
 class V8ErrorHandler : public V8EventListener {
 public:
-    static PassRefPtr<V8ErrorHandler> create(v8::Local<v8::Object> listener, bool isInline)
+    static PassRefPtr<V8ErrorHandler> create(v8::Local<v8::Object> listener, bool isInline, v8::Isolate* isolate)
     {
-        return adoptRef(new V8ErrorHandler(listener, isInline));
+        return adoptRef(new V8ErrorHandler(listener, isInline, isolate));
     }
 
     static void storeExceptionOnErrorEventWrapper(ErrorEvent*, v8::Handle<v8::Value>, v8::Isolate*);
 
 private:
-    V8ErrorHandler(v8::Local<v8::Object> listener, bool isInline);
+    V8ErrorHandler(v8::Local<v8::Object> listener, bool isInline, v8::Isolate*);
 
     virtual v8::Local<v8::Value> callListenerFunction(ScriptExecutionContext*, v8::Handle<v8::Value> jsEvent, Event*);
     virtual bool shouldPreventDefault(v8::Local<v8::Value> returnValue);

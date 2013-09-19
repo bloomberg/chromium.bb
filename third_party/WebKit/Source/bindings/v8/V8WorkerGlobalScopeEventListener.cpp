@@ -44,8 +44,8 @@
 
 namespace WebCore {
 
-V8WorkerGlobalScopeEventListener::V8WorkerGlobalScopeEventListener(v8::Local<v8::Object> listener, bool isInline)
-    : V8EventListener(listener, isInline)
+V8WorkerGlobalScopeEventListener::V8WorkerGlobalScopeEventListener(v8::Local<v8::Object> listener, bool isInline, v8::Isolate* isolate)
+    : V8EventListener(listener, isInline, isolate)
 {
 }
 

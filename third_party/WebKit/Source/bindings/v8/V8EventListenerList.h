@@ -60,7 +60,7 @@ public:
     }
 
     template<typename WrapperType>
-    static PassRefPtr<V8EventListener> findOrCreateWrapper(v8::Local<v8::Value>, bool isAttribute);
+    static PassRefPtr<V8EventListener> findOrCreateWrapper(v8::Local<v8::Value>, bool isAttribute, v8::Isolate*);
 
     static void clearWrapper(v8::Handle<v8::Object> listenerObject, bool isAttribute)
     {
@@ -88,7 +88,7 @@ private:
 };
 
 template<typename WrapperType>
-PassRefPtr<V8EventListener> V8EventListenerList::findOrCreateWrapper(v8::Local<v8::Value> value, bool isAttribute)
+PassRefPtr<V8EventListener> V8EventListenerList::findOrCreateWrapper(v8::Local<v8::Value> value, bool isAttribute, v8::Isolate* isolate)
 {
     ASSERT(v8::Context::InContext());
     if (!value->IsObject())
@@ -101,7 +101,7 @@ PassRefPtr<V8EventListener> V8EventListenerList::findOrCreateWrapper(v8::Local<v
     if (wrapper)
         return wrapper;
 
-    RefPtr<V8EventListener> wrapperPtr = WrapperType::create(object, isAttribute);
+    RefPtr<V8EventListener> wrapperPtr = WrapperType::create(object, isAttribute, isolate);
     if (wrapperPtr)
         object->SetHiddenValue(wrapperProperty, v8::External::New(wrapperPtr.get()));
 

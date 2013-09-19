@@ -45,8 +45,8 @@ PassRefPtr<EventListener> V8EventListenerList::getEventListener(v8::Local<v8::Va
     if (lookup == ListenerFindOnly)
         return V8EventListenerList::findWrapper(value, isAttribute);
     if (V8DOMWrapper::isWrapperOfType(toInnerGlobalObject(context), &V8Window::info))
-        return V8EventListenerList::findOrCreateWrapper<V8EventListener>(value, isAttribute);
-    return V8EventListenerList::findOrCreateWrapper<V8WorkerGlobalScopeEventListener>(value, isAttribute);
+        return V8EventListenerList::findOrCreateWrapper<V8EventListener>(value, isAttribute, context->GetIsolate());
+    return V8EventListenerList::findOrCreateWrapper<V8WorkerGlobalScopeEventListener>(value, isAttribute, context->GetIsolate());
 }
 
 } // namespace WebCore
