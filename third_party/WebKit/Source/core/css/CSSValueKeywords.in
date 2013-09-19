@@ -838,11 +838,6 @@ windowed
 // -webkit-hyphenate-limit-lines
 no-limit
 
-// -webkit-hyphens
-// none
-manual
-// auto
-
 // -webkit-writing-mode
 // SVG compatibility
 lr
