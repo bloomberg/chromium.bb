@@ -51,8 +51,16 @@ public:
     void reset();
 
 private:
+    RenderBox* firstChildBox();
+    RenderBox* nextSiblingBox();
+
+    // If |m_children| is not empty, we will use it to iterate over this fixed subset.
     const RenderBox* m_containerBox;
+    Vector<RenderBox*> m_children;
+
     RenderBox* m_currentChild;
+    size_t m_childIndex;
+
     // The inline capacity for a single item is used to cover the most
     // common case by far: if we only have the default 'order' value 0.
     typedef Vector<int, 1> OrderValues;
@@ -73,6 +81,7 @@ public:
 
     ~OrderIteratorPopulator();
 
+    void storeChild(RenderBox*);
     void collectChild(const RenderBox*);
 
 private:

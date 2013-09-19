@@ -91,6 +91,7 @@ private:
     TrackSizingDirection autoPlacementMinorAxisDirection() const;
 
     void layoutGridItems();
+    void populateGridPositions(const Vector<GridTrack>& columnTracks, const Vector<GridTrack>& rowTracks);
 
     virtual bool supportsPartialLayout() const OVERRIDE { return false; }
 
@@ -148,6 +149,8 @@ private:
     typedef Vector<Vector<GridCell> > GridRepresentation;
     GridRepresentation m_grid;
     bool m_gridIsDirty;
+    Vector<LayoutUnit> m_rowPositions;
+    Vector<LayoutUnit> m_columnPositions;
     HashMap<const RenderBox*, GridCoordinate> m_gridItemCoordinate;
     OrderIterator m_orderIterator;
 };
