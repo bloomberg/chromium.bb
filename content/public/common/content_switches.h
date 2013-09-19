@@ -51,6 +51,7 @@ CONTENT_EXPORT extern const char kDisableCompositingForTransition[];
 CONTENT_EXPORT extern const char kDisableDatabases[];
 CONTENT_EXPORT extern const char kDisableDelegatedRenderer[];
 extern const char kDisableDesktopNotifications[];
+CONTENT_EXPORT extern const char kDisableDeviceMotion[];
 CONTENT_EXPORT extern const char kDisableDeviceOrientation[];
 CONTENT_EXPORT extern const char kDisableExperimentalWebGL[];
 CONTENT_EXPORT extern const char kDisableFileSystem[];
@@ -114,7 +115,6 @@ CONTENT_EXPORT extern const char kEnableCompositingForTransition[];
 CONTENT_EXPORT extern const char kEnableCssShaders[];
 CONTENT_EXPORT extern const char kEnableDeferredImageDecoding[];
 CONTENT_EXPORT extern const char kEnableDelegatedRenderer[];
-CONTENT_EXPORT extern const char kEnableDeviceMotion[];
 CONTENT_EXPORT extern const char kEnableDownloadResumption[];
 extern const char kEnableEncryptedMedia[];
 CONTENT_EXPORT extern const char kEnableExperimentalCanvasFeatures[];
@@ -259,7 +259,6 @@ extern const char kEnableWebRtcTcpServerSocket[];
 #endif
 
 #if defined(OS_ANDROID)
-CONTENT_EXPORT extern const char kDisableDeviceMotion[];
 CONTENT_EXPORT extern const char kDisableGestureRequirementForMediaFullscreen[];
 CONTENT_EXPORT extern const char kDisableGestureRequirementForMediaPlayback[];
 extern const char kDisableMediaHistoryLogging[];

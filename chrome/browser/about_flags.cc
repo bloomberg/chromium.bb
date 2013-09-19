@@ -1681,13 +1681,6 @@ const Experiment kExperiments[] = {
     MULTI_VALUE_TYPE(kMapImageChoices)
   },
   {
-    "enable-device-motion",
-    IDS_FLAGS_ENABLE_DEVICE_MOTION_NAME,
-    IDS_FLAGS_ENABLE_DEVICE_MOTION_DESCRIPTION,
-    kOsDesktop,
-    SINGLE_VALUE_TYPE(switches::kEnableDeviceMotion)
-  },
-  {
     "enable-add-to-homescreen",
     IDS_FLAGS_ENABLE_ADD_TO_HOMESCREEN_NAME,
     IDS_FLAGS_ENABLE_ADD_TO_HOMESCREEN_DESCRIPTION,

@@ -140,7 +140,10 @@ const char kDisableDelegatedRenderer[]      = "disable-delegated-renderer";
 // Disables desktop notifications (default enabled on windows).
 const char kDisableDesktopNotifications[]   = "disable-desktop-notifications";
 
-// Disables device orientation events.
+// Disable device motion events.
+const char kDisableDeviceMotion[]           = "disable-device-motion";
+
+// Disable device orientation events.
 const char kDisableDeviceOrientation[]      = "disable-device-orientation";
 
 // Disable experimental WebGL support.
@@ -371,9 +374,6 @@ const char kEnableDeferredImageDecoding[]   = "enable-deferred-image-decoding";
 
 // Enables delegated renderer.
 const char kEnableDelegatedRenderer[]       = "enable-delegated-renderer";
-
-// Enables device motion events.
-const char kEnableDeviceMotion[]            = "enable-device-motion";
 
 // Enables restarting interrupted downloads.
 const char kEnableDownloadResumption[]      = "enable-download-resumption";
@@ -904,9 +904,6 @@ const char kEnableWebRtcTcpServerSocket[]   = "enable-webrtc-tcp-server-socket";
 #endif
 
 #if defined(OS_ANDROID)
-// Disables device motion events.
-const char kDisableDeviceMotion[]           = "disable-device-motion";
-
 // Disable user gesture requirement for the media element to enter fullscreen.
 const char kDisableGestureRequirementForMediaFullscreen[] =
     "disable-gesture-requirement-for-media-fullscreen";
