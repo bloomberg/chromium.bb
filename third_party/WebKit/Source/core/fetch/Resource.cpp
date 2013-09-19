@@ -278,10 +278,13 @@ double Resource::currentAge() const
 
 double Resource::freshnessLifetime() const
 {
+#if !OS(ANDROID)
+    // On desktop, local files should be reloaded in case they change.
     if (m_response.url().isLocalFile())
         return 0;
+#endif
 
-    // Cache non-http resources liberally
+    // Cache other non-http resources liberally.
     if (!m_response.url().protocolIsInHTTPFamily())
         return std::numeric_limits<double>::max();
 
