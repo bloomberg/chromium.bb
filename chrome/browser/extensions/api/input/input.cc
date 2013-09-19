@@ -26,7 +26,7 @@ const char kNotYetImplementedError[] =
 
 namespace extensions {
 
-bool InsertTextFunction::RunImpl() {
+bool VirtualKeyboardPrivateInsertTextFunction::RunImpl() {
 #if defined(USE_ASH)
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
@@ -39,7 +39,7 @@ bool InsertTextFunction::RunImpl() {
   return false;
 }
 
-bool MoveCursorFunction::RunImpl() {
+bool VirtualKeyboardPrivateMoveCursorFunction::RunImpl() {
 #if defined(USE_ASH)
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
@@ -55,7 +55,7 @@ bool MoveCursorFunction::RunImpl() {
   return false;
 }
 
-bool SendKeyEventFunction::RunImpl() {
+bool VirtualKeyboardPrivateSendKeyEventFunction::RunImpl() {
 #if defined(USE_ASH)
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
@@ -83,7 +83,7 @@ bool SendKeyEventFunction::RunImpl() {
   return false;
 }
 
-bool HideKeyboardFunction::RunImpl() {
+bool VirtualKeyboardPrivateHideKeyboardFunction::RunImpl() {
 #if defined(USE_ASH)
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
@@ -97,12 +97,6 @@ bool HideKeyboardFunction::RunImpl() {
 }
 
 InputAPI::InputAPI(Profile* profile) {
-  ExtensionFunctionRegistry* registry =
-      ExtensionFunctionRegistry::GetInstance();
-  registry->RegisterFunction<InsertTextFunction>();
-  registry->RegisterFunction<MoveCursorFunction>();
-  registry->RegisterFunction<SendKeyEventFunction>();
-  registry->RegisterFunction<HideKeyboardFunction>();
 }
 
 InputAPI::~InputAPI() {

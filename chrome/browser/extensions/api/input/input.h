@@ -13,51 +13,53 @@ class Profile;
 
 namespace extensions {
 
-class InsertTextFunction : public SyncExtensionFunction {
+class VirtualKeyboardPrivateInsertTextFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("virtualKeyboardPrivate.insertText",
                              VIRTUALKEYBOARDPRIVATE_INSERTTEXT);
 
  protected:
-  virtual ~InsertTextFunction() {}
+  virtual ~VirtualKeyboardPrivateInsertTextFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
-class MoveCursorFunction : public SyncExtensionFunction {
+class VirtualKeyboardPrivateMoveCursorFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("virtualKeyboardPrivate.moveCursor",
                              VIRTUALKEYBOARDPRIVATE_MOVECURSOR);
 
  protected:
-  virtual ~MoveCursorFunction() {}
+  virtual ~VirtualKeyboardPrivateMoveCursorFunction() {}
 
   // ExtensionFunction.
   virtual bool RunImpl() OVERRIDE;
 };
 
-class SendKeyEventFunction : public SyncExtensionFunction {
+class VirtualKeyboardPrivateSendKeyEventFunction
+    : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION(
       "virtualKeyboardPrivate.sendKeyEvent",
       VIRTUALKEYBOARDPRIVATE_SENDKEYEVENT);
 
  protected:
-  virtual ~SendKeyEventFunction() {}
+  virtual ~VirtualKeyboardPrivateSendKeyEventFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
-class HideKeyboardFunction : public SyncExtensionFunction {
+class VirtualKeyboardPrivateHideKeyboardFunction
+    : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION(
       "virtualKeyboardPrivate.hideKeyboard",
       VIRTUALKEYBOARDPRIVATE_HIDEKEYBOARD);
 
  protected:
-  virtual ~HideKeyboardFunction() {}
+  virtual ~VirtualKeyboardPrivateHideKeyboardFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;

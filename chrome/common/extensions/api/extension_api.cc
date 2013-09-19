@@ -260,8 +260,6 @@ void ExtensionAPI::InitDefaultConfiguration() {
   RegisterSchemaResource("tts", IDR_EXTENSION_API_JSON_TTS);
   RegisterSchemaResource("types", IDR_EXTENSION_API_JSON_TYPES);
   RegisterSchemaResource("types.private", IDR_EXTENSION_API_JSON_TYPES_PRIVATE);
-  RegisterSchemaResource("virtualKeyboardPrivate",
-      IDR_EXTENSION_API_JSON_VIRTUALKEYBOARDPRIVATE);
   RegisterSchemaResource("webRequestInternal",
       IDR_EXTENSION_API_JSON_WEBREQUESTINTERNAL);
   RegisterSchemaResource("webstore", IDR_EXTENSION_API_JSON_WEBSTORE);
