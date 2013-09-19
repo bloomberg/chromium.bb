@@ -726,6 +726,9 @@ const char kRendererProcessLimit[]          = "renderer-process-limit";
 // Causes the renderer process to display a dialog on launch.
 const char kRendererStartupDialog[]         = "renderer-startup-dialog";
 
+// Causes the process to run as a sandbox IPC subprocess.
+const char kSandboxIPCProcess[]             = "sandbox-ipc";
+
 // Enables or disables scroll end effect in response to vertical overscroll.
 // Set the value to '1' to enable the feature, and set to '0' to disable.
 // Defaults to disabled.

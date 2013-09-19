@@ -30,6 +30,8 @@
 #include "content/child/webkitplatformsupport_impl.h"
 #include "content/common/font_config_ipc_linux.h"
 #include "content/common/sandbox_linux.h"
+#include "content/common/set_process_title.h"
+#include "content/public/common/content_switches.h"
 #include "skia/ext/skia_utils_base.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/linux/WebFontInfo.h"
@@ -71,6 +73,15 @@ class SandboxIPCProcess  {
     // positioning, so we pass the current setting through to WebKit.
     WebFontInfo::setSubpixelPositioning(
         gfx::GetDefaultWebkitSubpixelPositioning());
+
+    CommandLine& command_line = *CommandLine::ForCurrentProcess();
+    command_line.AppendSwitchASCII(switches::kProcessType,
+                                   switches::kSandboxIPCProcess);
+
+    // Update the process title. The argv was already cached by the call to
+    // SetProcessTitleFromCommandLine in content_main_runner.cc, so we can pass
+    // NULL here (we don't have the original argv at this point).
+    SetProcessTitleFromCommandLine(NULL);
   }
 
   ~SandboxIPCProcess();
