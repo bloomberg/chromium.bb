@@ -29,32 +29,21 @@ function runTest()
     if (document.activeElement != textInput)
         alert("FAILED!");
 
-    // Try to loose the focus touching on a non-editable element.
+    // Try to lose the focus touching on a non-editable element.
     var theDiv = document.getElementById("theDiv");
     var w = theDiv.clientWidth;
     var h = theDiv.clientHeight;
     var x = theDiv.offsetLeft + w/2;
     var y = theDiv.offsetTop + h/2;
 
-    eventSender.clearTouchPoints();
-    eventSender.setTouchPointRadius(10, 10);
-    eventSender.addTouchPoint(x, y);
-    eventSender.touchStart();
-    eventSender.releaseTouchPoint(0);
-    eventSender.touchEnd();
+    eventSender.gestureTap(x, y, 10, 10);
 
-    // Need to wait a bit so the gesture recognizer will be sure this isn't a double tap.
-    setTimeout(function() {
-        if (document.activeElement == document.body)
-            alert("PASS!")
-        else
-            alert("FAILED, " + document.activeElement.id + " is focused.");
-        testRunner.notifyDone();
-    }, 800);
+    if (document.activeElement == document.body)
+        alert("PASS!")
+    else
+        alert("FAILED, " + document.activeElement.id + " is focused.");
 
-    // Wait and see...
-    testRunner.waitUntilDone();
-
+    testRunner.notifyDone();
 }
 
 </script>

@@ -561,9 +561,6 @@ crbug.com/244884 fast/layers/no-clipping-overflow-hidden-added-after-transform.h
 crbug.com/244884 fast/layers/no-clipping-overflow-hidden-added-after-transition.html [ ImageOnlyFailure Pass ]
 crbug.com/244884 fast/layers/no-clipping-overflow-hidden-hardware-acceleration.html [ ImageOnlyFailure Pass ]
 
-# Skipped until setTouchPointRadius get implemented
-crbug.com/261276 touchadjustment/focusout-on-touch.html [ Skip ]
-
 webkit.org/b/91946 fast/events/rtl-scrollbar.html [ Failure Pass ]
 
 crbug.com/249595 animations/cross-fade-webkit-mask-box-image.html [ ImageOnlyFailure Pass ]
