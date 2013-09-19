@@ -1353,3 +1353,7 @@ crbug.com/252694 tables/mozilla/core/row_span.html [ NeedsRebaseline ]
 crbug.com/252694 tables/mozilla_expected_failures/bugs/bug131020-3.html [ NeedsRebaseline ]
 crbug.com/252694 tables/mozilla_expected_failures/bugs/bug65372.html [ NeedsRebaseline ]
 crbug.com/252694 tables/mozilla/bugs/bug13169.html [ NeedsRebaseline ]
+
+#Below test cases need to be rebaseline after crbug.com/269500
+crbug.com/269500 fast/backgrounds/size/contain-and-cover-zoomed.html [ NeedsRebaseline ]
+crbug.com/269500 fast/backgrounds/size/contain-and-cover.html [ NeedsRebaseline ]
