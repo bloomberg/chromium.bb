@@ -310,9 +310,8 @@ struct weston_pointer {
 	struct weston_seat *seat;
 
 	struct wl_list resource_list;
+	struct wl_list focus_resource_list;
 	struct weston_surface *focus;
-	struct wl_resource *focus_resource;
-	struct wl_listener focus_listener;
 	uint32_t focus_serial;
 	struct wl_signal focus_signal;
 
@@ -336,9 +335,8 @@ struct weston_touch {
 	struct weston_seat *seat;
 
 	struct wl_list resource_list;
+	struct wl_list focus_resource_list;
 	struct weston_surface *focus;
-	struct wl_resource *focus_resource;
-	struct wl_listener focus_listener;
 	uint32_t focus_serial;
 	struct wl_signal focus_signal;
 
@@ -431,9 +429,8 @@ struct weston_keyboard {
 	struct weston_seat *seat;
 
 	struct wl_list resource_list;
+	struct wl_list focus_resource_list;
 	struct weston_surface *focus;
-	struct wl_resource *focus_resource;
-	struct wl_listener focus_listener;
 	uint32_t focus_serial;
 	struct wl_signal focus_signal;
 

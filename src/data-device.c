@@ -435,15 +435,15 @@ destroy_selection_data_source(struct wl_listener *listener, void *data)
 	struct weston_seat *seat = container_of(listener, struct weston_seat,
 						selection_data_source_listener);
 	struct wl_resource *data_device;
-	struct wl_resource *focus = NULL;
+	struct weston_surface *focus = NULL;
 
 	seat->selection_data_source = NULL;
 
 	if (seat->keyboard)
-		focus = seat->keyboard->focus_resource;
-	if (focus) {
+		focus = seat->keyboard->focus;
+	if (focus && focus->resource) {
 		data_device = wl_resource_find_for_client(&seat->drag_resource_list,
-							  wl_resource_get_client(focus));
+							  wl_resource_get_client(focus->resource));
 		if (data_device)
 			wl_data_device_send_selection(data_device, NULL);
 	}
@@ -456,7 +456,7 @@ weston_seat_set_selection(struct weston_seat *seat,
 			  struct weston_data_source *source, uint32_t serial)
 {
 	struct wl_resource *data_device, *offer;
-	struct wl_resource *focus = NULL;
+	struct weston_surface *focus = NULL;
 
 	if (seat->selection_data_source &&
 	    seat->selection_serial - serial < UINT32_MAX / 2)
@@ -472,10 +472,10 @@ weston_seat_set_selection(struct weston_seat *seat,
 	seat->selection_serial = serial;
 
 	if (seat->keyboard)
-		focus = seat->keyboard->focus_resource;
-	if (focus) {
+		focus = seat->keyboard->focus;
+	if (focus && focus->resource) {
 		data_device = wl_resource_find_for_client(&seat->drag_resource_list,
-							  wl_resource_get_client(focus));
+							  wl_resource_get_client(focus->resource));
 		if (data_device && source) {
 			offer = weston_data_source_send_offer(seat->selection_data_source,
 							      data_device);
@@ -629,18 +629,19 @@ bind_manager(struct wl_client *client,
 WL_EXPORT void
 wl_data_device_set_keyboard_focus(struct weston_seat *seat)
 {
-	struct wl_resource *data_device, *focus, *offer;
+	struct wl_resource *data_device, *offer;
 	struct weston_data_source *source;
+	struct weston_surface *focus;
 
 	if (!seat->keyboard)
 		return;
 
-	focus = seat->keyboard->focus_resource;
-	if (!focus)
+	focus = seat->keyboard->focus;
+	if (!focus || !focus->resource)
 		return;
 
 	data_device = wl_resource_find_for_client(&seat->drag_resource_list,
-						  wl_resource_get_client(focus));
+						  wl_resource_get_client(focus->resource));
 	if (!data_device)
 		return;
 

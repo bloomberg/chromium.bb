@@ -2160,13 +2160,14 @@ static void
 popup_grab_motion(struct weston_pointer_grab *grab, uint32_t time)
 {
 	struct weston_pointer *pointer = grab->pointer;
+	struct wl_resource *resource;
 	wl_fixed_t sx, sy;
 
-	if (pointer->focus_resource) {
+	wl_resource_for_each(resource, &pointer->focus_resource_list) {
 		weston_surface_from_global_fixed(pointer->focus,
 						 pointer->x, pointer->y,
 						 &sx, &sy);
-		wl_pointer_send_motion(pointer->focus_resource, time, sx, sy);
+		wl_pointer_send_motion(resource, time, sx, sy);
 	}
 }
 
@@ -2180,11 +2181,15 @@ popup_grab_button(struct weston_pointer_grab *grab,
 	struct wl_display *display = shseat->seat->compositor->wl_display;
 	enum wl_pointer_button_state state = state_w;
 	uint32_t serial;
+	struct wl_list *resource_list;
 
-	resource = grab->pointer->focus_resource;
-	if (resource) {
+	resource_list = &grab->pointer->focus_resource_list;
+	if (!wl_list_empty(resource_list)) {
 		serial = wl_display_get_serial(display);
-		wl_pointer_send_button(resource, serial, time, button, state);
+		wl_resource_for_each(resource, resource_list) {
+			wl_pointer_send_button(resource, serial,
+					       time, button, state);
+		}
 	} else if (state == WL_POINTER_BUTTON_STATE_RELEASED &&
 		   (shseat->popup_grab.initial_up ||
 		    time - shseat->seat->pointer->grab_time > 500)) {
@@ -4252,6 +4257,7 @@ debug_binding_key(struct weston_keyboard_grab *grab, uint32_t time,
 	int send = 0, terminate = 0;
 	int check_binding = 1;
 	int i;
+	struct wl_list *resource_list;
 
 	if (state == WL_KEYBOARD_KEY_STATE_RELEASED) {
 		/* Do not run bindings on key releases */
@@ -4298,10 +4304,9 @@ debug_binding_key(struct weston_keyboard_grab *grab, uint32_t time,
 	}
 
 	if (send) {
-		resource = grab->keyboard->focus_resource;
-
-		if (resource) {
-			serial = wl_display_next_serial(display);
+		serial = wl_display_next_serial(display);
+		resource_list = &grab->keyboard->focus_resource_list;
+		wl_resource_for_each(resource, resource_list) {
 			wl_keyboard_send_key(resource, serial, time, key, state);
 		}
 	}
@@ -4320,13 +4325,14 @@ debug_binding_modifiers(struct weston_keyboard_grab *grab, uint32_t serial,
 			uint32_t mods_locked, uint32_t group)
 {
 	struct wl_resource *resource;
+	struct wl_list *resource_list;
 
-	resource = grab->keyboard->focus_resource;
-	if (!resource)
-		return;
+	resource_list = &grab->keyboard->focus_resource_list;
 
-	wl_keyboard_send_modifiers(resource, serial, mods_depressed,
-				   mods_latched, mods_locked, group);
+	wl_resource_for_each(resource, resource_list) {
+		wl_keyboard_send_modifiers(resource, serial, mods_depressed,
+					   mods_latched, mods_locked, group);
+	}
 }
 
 struct weston_keyboard_grab_interface debug_binding_keyboard_grab = {

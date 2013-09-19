@@ -160,7 +160,6 @@ binding_key(struct weston_keyboard_grab *grab,
 	struct weston_keyboard *keyboard = grab->keyboard;
 	struct wl_display *display = keyboard->seat->compositor->wl_display;
 
-	resource = grab->keyboard->focus_resource;
 	if (key == b->key) {
 		if (state == WL_KEYBOARD_KEY_STATE_RELEASED) {
 			weston_keyboard_end_grab(grab->keyboard);
@@ -168,9 +167,15 @@ binding_key(struct weston_keyboard_grab *grab,
 				keyboard->grab = &keyboard->input_method_grab;
 			free(b);
 		}
-	} else if (resource) {
+	} else if (!wl_list_empty(&keyboard->focus_resource_list)) {
 		serial = wl_display_next_serial(display);
-		wl_keyboard_send_key(resource, serial, time, key, state);
+		wl_resource_for_each(resource, &keyboard->focus_resource_list) {
+			wl_keyboard_send_key(resource,
+					     serial,
+					     time,
+					     key,
+					     state);
+		}
 	}
 }
 
@@ -181,12 +186,10 @@ binding_modifiers(struct weston_keyboard_grab *grab, uint32_t serial,
 {
 	struct wl_resource *resource;
 
-	resource = grab->keyboard->focus_resource;
-	if (!resource)
-		return;
-
-	wl_keyboard_send_modifiers(resource, serial, mods_depressed,
-				   mods_latched, mods_locked, group);
+	wl_resource_for_each(resource, &grab->keyboard->focus_resource_list) {
+		wl_keyboard_send_modifiers(resource, serial, mods_depressed,
+					   mods_latched, mods_locked, group);
+	}
 }
 
 static const struct weston_keyboard_grab_interface binding_grab = {

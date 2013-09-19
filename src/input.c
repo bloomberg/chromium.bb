@@ -71,30 +71,25 @@ weston_compositor_idle_release(struct weston_compositor *compositor)
 }
 
 static void
-lose_pointer_focus(struct wl_listener *listener, void *data)
+move_resources(struct wl_list *destination, struct wl_list *source)
 {
-	struct weston_pointer *pointer =
-		container_of(listener, struct weston_pointer, focus_listener);
-
-	pointer->focus_resource = NULL;
+	wl_list_insert_list(destination, source);
+	wl_list_init(source);
 }
 
 static void
-lose_keyboard_focus(struct wl_listener *listener, void *data)
+move_resources_for_client(struct wl_list *destination,
+			  struct wl_list *source,
+			  struct wl_client *client)
 {
-	struct weston_keyboard *keyboard =
-		container_of(listener, struct weston_keyboard, focus_listener);
-
-	keyboard->focus_resource = NULL;
-}
-
-static void
-lose_touch_focus(struct wl_listener *listener, void *data)
-{
-	struct weston_touch *touch =
-		container_of(listener, struct weston_touch, focus_listener);
-
-	touch->focus_resource = NULL;
+	struct wl_resource *resource, *tmp;
+	wl_resource_for_each_safe(resource, tmp, source) {
+		if (wl_resource_get_client(resource) == client) {
+			wl_list_remove(wl_resource_get_link(resource));
+			wl_list_insert(destination,
+				       wl_resource_get_link(resource));
+		}
+	}
 }
 
 static void
@@ -120,12 +115,15 @@ default_grab_motion(struct weston_pointer_grab *grab, uint32_t time)
 {
 	struct weston_pointer *pointer = grab->pointer;
 	wl_fixed_t sx, sy;
+	struct wl_list *resource_list;
+	struct wl_resource *resource;
 
-	if (pointer->focus_resource) {
+	resource_list = &pointer->focus_resource_list;
+	wl_resource_for_each(resource, resource_list) {
 		weston_surface_from_global_fixed(pointer->focus,
 						 pointer->x, pointer->y,
 						 &sx, &sy);
-		wl_pointer_send_motion(pointer->focus_resource, time, sx, sy);
+		wl_pointer_send_motion(resource, time, sx, sy);
 	}
 }
 
@@ -141,11 +139,17 @@ default_grab_button(struct weston_pointer_grab *grab,
 	enum wl_pointer_button_state state = state_w;
 	struct wl_display *display = compositor->wl_display;
 	wl_fixed_t sx, sy;
+	struct wl_list *resource_list;
 
-	resource = pointer->focus_resource;
-	if (resource) {
+	resource_list = &pointer->focus_resource_list;
+	if (!wl_list_empty(resource_list)) {
 		serial = wl_display_next_serial(display);
-		wl_pointer_send_button(resource, serial, time, button, state_w);
+		wl_resource_for_each(resource, resource_list)
+			wl_pointer_send_button(resource,
+					       serial,
+					       time,
+					       button,
+					       state_w);
 	}
 
 	if (pointer->button_count == 0 &&
@@ -173,12 +177,17 @@ default_grab_touch_down(struct weston_touch_grab *grab, uint32_t time,
 	struct weston_touch *touch = grab->touch;
 	struct wl_display *display = touch->seat->compositor->wl_display;
 	uint32_t serial;
+	struct wl_resource *resource;
+	struct wl_list *resource_list;
 
-	if (touch->focus_resource && touch->focus) {
+	resource_list = &touch->focus_resource_list;
+
+	if (!wl_list_empty(resource_list) && touch->focus) {
 		serial = wl_display_next_serial(display);
-		wl_touch_send_down(touch->focus_resource, serial, time,
-				   touch->focus->resource,
-				   touch_id, sx, sy);
+		wl_resource_for_each(resource, resource_list)
+				wl_touch_send_down(resource, serial, time,
+						   touch->focus->resource,
+						   touch_id, sx, sy);
 	}
 }
 
@@ -189,10 +198,15 @@ default_grab_touch_up(struct weston_touch_grab *grab,
 	struct weston_touch *touch = grab->touch;
 	struct wl_display *display = touch->seat->compositor->wl_display;
 	uint32_t serial;
+	struct wl_resource *resource;
+	struct wl_list *resource_list;
 
-	if (touch->focus_resource) {
+	resource_list = &touch->focus_resource_list;
+
+	if (!wl_list_empty(resource_list)) {
 		serial = wl_display_next_serial(display);
-		wl_touch_send_up(touch->focus_resource, serial, time, touch_id);
+		wl_resource_for_each(resource, resource_list)
+			wl_touch_send_up(resource, serial, time, touch_id);
 	}
 }
 
@@ -201,9 +215,13 @@ default_grab_touch_motion(struct weston_touch_grab *grab, uint32_t time,
 			  int touch_id, wl_fixed_t sx, wl_fixed_t sy)
 {
 	struct weston_touch *touch = grab->touch;
+	struct wl_resource *resource;
+	struct wl_list *resource_list;
 
-	if (touch->focus_resource) {
-		wl_touch_send_motion(touch->focus_resource, time,
+	resource_list = &touch->focus_resource_list;
+
+	wl_resource_for_each(resource, resource_list) {
+		wl_touch_send_motion(resource, time,
 				     touch_id, sx, sy);
 	}
 }
@@ -222,11 +240,46 @@ default_grab_key(struct weston_keyboard_grab *grab,
 	struct wl_resource *resource;
 	struct wl_display *display = keyboard->seat->compositor->wl_display;
 	uint32_t serial;
+	struct wl_list *resource_list;
 
-	resource = keyboard->focus_resource;
-	if (resource) {
+	resource_list = &keyboard->focus_resource_list;
+	if (!wl_list_empty(resource_list)) {
 		serial = wl_display_next_serial(display);
-		wl_keyboard_send_key(resource, serial, time, key, state);
+		wl_resource_for_each(resource, resource_list)
+			wl_keyboard_send_key(resource,
+					     serial,
+					     time,
+					     key,
+					     state);
+	}
+}
+
+static void
+send_modifiers_to_resource(struct weston_keyboard *keyboard,
+			   struct wl_resource *resource,
+			   uint32_t serial)
+{
+	wl_keyboard_send_modifiers(resource,
+				   serial,
+				   keyboard->modifiers.mods_depressed,
+				   keyboard->modifiers.mods_latched,
+				   keyboard->modifiers.mods_locked,
+				   keyboard->modifiers.group);
+}
+
+static void
+send_modifiers_to_client_in_list(struct wl_client *client,
+				 struct wl_list *list,
+				 uint32_t serial,
+				 struct weston_keyboard *keyboard)
+{
+	struct wl_resource *resource;
+
+	wl_resource_for_each(resource, list) {
+		if (wl_resource_get_client(resource) == client)
+			send_modifiers_to_resource(keyboard,
+						   resource,
+						   serial);
 	}
 }
 
@@ -248,27 +301,23 @@ default_grab_modifiers(struct weston_keyboard_grab *grab, uint32_t serial,
 		       uint32_t mods_locked, uint32_t group)
 {
 	struct weston_keyboard *keyboard = grab->keyboard;
-	struct weston_pointer *pointer = keyboard->seat->pointer;
-	struct wl_resource *resource, *pr;
+	struct weston_pointer *pointer = grab->keyboard->seat->pointer;
+	struct wl_resource *resource;
+	struct wl_list *resource_list;
 
-	resource = keyboard->focus_resource;
-	if (!resource)
-		return;
+	resource_list = &keyboard->focus_resource_list;
 
-	wl_keyboard_send_modifiers(resource, serial, mods_depressed,
-				   mods_latched, mods_locked, group);
-
+	wl_resource_for_each(resource, resource_list) {
+		wl_keyboard_send_modifiers(resource, serial, mods_depressed,
+					   mods_latched, mods_locked, group);
+	}
 	if (pointer && pointer->focus && pointer->focus != keyboard->focus) {
-		pr = find_resource_for_surface(&keyboard->resource_list,
-					       pointer->focus);
-		if (pr) {
-			wl_keyboard_send_modifiers(pr,
-						   serial,
-						   keyboard->modifiers.mods_depressed,
-						   keyboard->modifiers.mods_latched,
-						   keyboard->modifiers.mods_locked,
-						   keyboard->modifiers.group);
-		}
+		struct wl_client *pointer_client =
+			wl_resource_get_client(pointer->focus->resource);
+		send_modifiers_to_client_in_list(pointer_client,
+						 &keyboard->resource_list,
+						 serial,
+						 keyboard);
 	}
 }
 
@@ -310,7 +359,7 @@ weston_pointer_create(void)
 		return NULL;
 
 	wl_list_init(&pointer->resource_list);
-	pointer->focus_listener.notify = lose_pointer_focus;
+	wl_list_init(&pointer->focus_resource_list);
 	pointer->default_grab.interface = &default_pointer_grab_interface;
 	pointer->default_grab.pointer = pointer;
 	pointer->grab = &pointer->default_grab;
@@ -332,8 +381,7 @@ weston_pointer_destroy(struct weston_pointer *pointer)
 		pointer_unmap_sprite(pointer);
 
 	/* XXX: What about pointer->resource_list? */
-	if (pointer->focus_resource)
-		wl_list_remove(&pointer->focus_listener.link);
+
 	free(pointer);
 }
 
@@ -344,11 +392,11 @@ weston_keyboard_create(void)
 
 	keyboard = zalloc(sizeof *keyboard);
 	if (keyboard == NULL)
-		return NULL;
+	    return NULL;
 
 	wl_list_init(&keyboard->resource_list);
+	wl_list_init(&keyboard->focus_resource_list);
 	wl_array_init(&keyboard->keys);
-	keyboard->focus_listener.notify = lose_keyboard_focus;
 	keyboard->default_grab.interface = &default_keyboard_grab_interface;
 	keyboard->default_grab.keyboard = keyboard;
 	keyboard->grab = &keyboard->default_grab;
@@ -361,8 +409,7 @@ WL_EXPORT void
 weston_keyboard_destroy(struct weston_keyboard *keyboard)
 {
 	/* XXX: What about keyboard->resource_list? */
-	if (keyboard->focus_resource)
-		wl_list_remove(&keyboard->focus_listener.link);
+
 	wl_array_release(&keyboard->keys);
 	free(keyboard);
 }
@@ -377,7 +424,7 @@ weston_touch_create(void)
 		return NULL;
 
 	wl_list_init(&touch->resource_list);
-	touch->focus_listener.notify = lose_touch_focus;
+	wl_list_init(&touch->focus_resource_list);
 	touch->default_grab.interface = &default_touch_grab_interface;
 	touch->default_grab.touch = touch;
 	touch->grab = &touch->default_grab;
@@ -390,8 +437,7 @@ WL_EXPORT void
 weston_touch_destroy(struct weston_touch *touch)
 {
 	/* XXX: What about touch->resource_list? */
-	if (touch->focus_resource)
-		wl_list_remove(&touch->focus_listener.link);
+
 	free(touch);
 }
 
@@ -419,46 +465,71 @@ weston_pointer_set_focus(struct weston_pointer *pointer,
 			 wl_fixed_t sx, wl_fixed_t sy)
 {
 	struct weston_keyboard *kbd = pointer->seat->keyboard;
-	struct wl_resource *resource, *kr;
+	struct wl_resource *resource;
 	struct wl_display *display = pointer->seat->compositor->wl_display;
 	uint32_t serial;
+	struct wl_list *focus_resource_list;
 
-	resource = pointer->focus_resource;
-	if (resource && pointer->focus != surface) {
+	focus_resource_list = &pointer->focus_resource_list;
+
+	if (!wl_list_empty(focus_resource_list) && pointer->focus != surface) {
 		serial = wl_display_next_serial(display);
-		wl_pointer_send_leave(resource, serial,
-				      pointer->focus->resource);
-		wl_list_remove(&pointer->focus_listener.link);
+		wl_resource_for_each(resource, focus_resource_list) {
+			wl_pointer_send_leave(resource, serial,
+					      pointer->focus->resource);
+		}
+
+		move_resources(&pointer->resource_list, focus_resource_list);
 	}
 
-	resource = find_resource_for_surface(&pointer->resource_list,
-					     surface);
-	if (resource &&
-	    (pointer->focus != surface ||
-	     pointer->focus_resource != resource)) {
+	if (find_resource_for_surface(&pointer->resource_list, surface) &&
+	    pointer->focus != surface) {
+		struct wl_client *surface_client =
+			wl_resource_get_client(surface->resource);
+
 		serial = wl_display_next_serial(display);
-		if (kbd) {
-			kr = find_resource_for_surface(&kbd->resource_list,
-						       surface);
-			if (kr) {
-				wl_keyboard_send_modifiers(kr,
-							   serial,
-							   kbd->modifiers.mods_depressed,
-							   kbd->modifiers.mods_latched,
-							   kbd->modifiers.mods_locked,
-							   kbd->modifiers.group);
-			}
+
+		move_resources_for_client(focus_resource_list,
+					  &pointer->resource_list,
+					  surface_client);
+
+		wl_resource_for_each(resource, focus_resource_list) {
+			wl_pointer_send_enter(resource,
+					      serial,
+					      surface->resource,
+					      sx, sy);
 		}
-		wl_pointer_send_enter(resource, serial, surface->resource,
-				      sx, sy);
-		wl_resource_add_destroy_listener(resource,
-						 &pointer->focus_listener);
+
 		pointer->focus_serial = serial;
 	}
 
-	pointer->focus_resource = resource;
+	if (kbd && surface && kbd->focus != pointer->focus) {
+		struct wl_client *surface_client =
+			wl_resource_get_client(surface->resource);
+		send_modifiers_to_client_in_list(surface_client,
+						 &kbd->resource_list,
+						 serial,
+						 kbd);
+	}
+
 	pointer->focus = surface;
 	wl_signal_emit(&pointer->focus_signal, pointer);
+}
+
+static void
+send_enter_to_resource_list(struct wl_list *list,
+			    struct weston_keyboard *keyboard,
+			    struct weston_surface *surface,
+			    uint32_t serial)
+{
+	struct wl_resource *resource;
+
+	wl_resource_for_each(resource, list) {
+		send_modifiers_to_resource(keyboard, resource, serial);
+		wl_keyboard_send_enter(resource, serial,
+				       surface->resource,
+				       &keyboard->keys);
+	}
 }
 
 WL_EXPORT void
@@ -468,34 +539,36 @@ weston_keyboard_set_focus(struct weston_keyboard *keyboard,
 	struct wl_resource *resource;
 	struct wl_display *display = keyboard->seat->compositor->wl_display;
 	uint32_t serial;
+	struct wl_list *focus_resource_list;
 
-	if (keyboard->focus_resource && keyboard->focus != surface) {
-		resource = keyboard->focus_resource;
+	focus_resource_list = &keyboard->focus_resource_list;
+
+	if (!wl_list_empty(focus_resource_list) && keyboard->focus != surface) {
 		serial = wl_display_next_serial(display);
-		wl_keyboard_send_leave(resource, serial,
-				       keyboard->focus->resource);
-		wl_list_remove(&keyboard->focus_listener.link);
+		wl_resource_for_each(resource, focus_resource_list) {
+			wl_keyboard_send_leave(resource, serial,
+					keyboard->focus->resource);
+		}
+		move_resources(&keyboard->resource_list, focus_resource_list);
 	}
 
-	resource = find_resource_for_surface(&keyboard->resource_list,
-					     surface);
-	if (resource &&
-	    (keyboard->focus != surface ||
-	     keyboard->focus_resource != resource)) {
+	if (find_resource_for_surface(&keyboard->resource_list, surface) &&
+	    keyboard->focus != surface) {
+		struct wl_client *surface_client =
+			wl_resource_get_client(surface->resource);
+
 		serial = wl_display_next_serial(display);
-		wl_keyboard_send_modifiers(resource, serial,
-					   keyboard->modifiers.mods_depressed,
-					   keyboard->modifiers.mods_latched,
-					   keyboard->modifiers.mods_locked,
-					   keyboard->modifiers.group);
-		wl_keyboard_send_enter(resource, serial, surface->resource,
-				       &keyboard->keys);
-		wl_resource_add_destroy_listener(resource,
-						 &keyboard->focus_listener);
+
+		move_resources_for_client(focus_resource_list,
+					  &keyboard->resource_list,
+					  surface_client);
+		send_enter_to_resource_list(focus_resource_list,
+					    keyboard,
+					    surface,
+					    serial);
 		keyboard->focus_serial = serial;
 	}
 
-	keyboard->focus_resource = resource;
 	keyboard->focus = surface;
 	wl_signal_emit(&keyboard->focus_signal, keyboard);
 }
@@ -705,6 +778,8 @@ notify_axis(struct weston_seat *seat, uint32_t time, uint32_t axis,
 	struct weston_surface *focus =
 		(struct weston_surface *) pointer->focus;
 	uint32_t serial = wl_display_next_serial(compositor->wl_display);
+	struct wl_resource *resource;
+	struct wl_list *resource_list;
 
 	if (compositor->ping_handler && focus)
 		compositor->ping_handler(focus, serial);
@@ -718,8 +793,9 @@ notify_axis(struct weston_seat *seat, uint32_t time, uint32_t axis,
 						   time, axis, value))
 		return;
 
-	if (pointer->focus_resource)
-		wl_pointer_send_axis(pointer->focus_resource, time, axis,
+	resource_list = &pointer->focus_resource_list;
+	wl_resource_for_each(resource, resource_list)
+		wl_pointer_send_axis(resource, time, axis,
 				     value);
 }
 
@@ -976,30 +1052,26 @@ notify_keyboard_focus_out(struct weston_seat *seat)
 WL_EXPORT void
 weston_touch_set_focus(struct weston_seat *seat, struct weston_surface *surface)
 {
-	struct wl_resource *resource;
+	struct wl_list *focus_resource_list;
+
+	focus_resource_list = &seat->touch->focus_resource_list;
 
 	if (seat->touch->focus == surface)
 		return;
 
-	if (seat->touch->focus_resource)
-		wl_list_remove(&seat->touch->focus_listener.link);
-	seat->touch->focus = NULL;
-	seat->touch->focus_resource = NULL;
+	if (!wl_list_empty(focus_resource_list)) {
+		move_resources(&seat->touch->resource_list,
+			       focus_resource_list);
+	}
 
 	if (surface) {
-		resource =
-			find_resource_for_surface(&seat->touch->resource_list,
-						  surface);
-		if (!resource) {
-			weston_log("couldn't find resource\n");
-			return;
-		}
-
-		seat->touch->focus = surface;
-		seat->touch->focus_resource = resource;
-		wl_resource_add_destroy_listener(resource,
-						 &seat->touch->focus_listener);
+		struct wl_client *surface_client =
+			wl_resource_get_client(surface->resource);
+		move_resources_for_client(focus_resource_list,
+					  &seat->touch->resource_list,
+					  surface_client);
 	}
+	seat->touch->focus = surface;
 }
 
 /**
@@ -1187,6 +1259,9 @@ seat_get_pointer(struct wl_client *client, struct wl_resource *resource,
 		return;
 	}
 
+	/* May be moved to focused list later by either
+	 * weston_pointer_set_focus or directly if this client is already
+	 * focused */
 	wl_list_insert(&seat->pointer->resource_list, wl_resource_get_link(cr));
 	wl_resource_set_implementation(cr, &pointer_interface, seat->pointer,
 				       unbind_resource);
@@ -1202,10 +1277,14 @@ seat_get_pointer(struct wl_client *client, struct wl_resource *resource,
 						 seat->pointer->y,
 						 &sx,
 						 &sy);
-		weston_pointer_set_focus(seat->pointer,
-					 seat->pointer->focus,
-					 sx,
-					 sy);
+
+		wl_list_remove(wl_resource_get_link(cr));
+		wl_list_insert(&seat->pointer->focus_resource_list,
+			       wl_resource_get_link(cr));
+		wl_pointer_send_enter(cr,
+				      seat->pointer->focus_serial,
+				      surface->resource,
+				      sx, sy);
 	}
 }
 
@@ -1218,6 +1297,23 @@ keyboard_release(struct wl_client *client, struct wl_resource *resource)
 static const struct wl_keyboard_interface keyboard_interface = {
 	keyboard_release
 };
+
+static int
+should_send_modifiers_to_client(struct weston_seat *seat,
+				struct wl_client *client)
+{
+	if (seat->keyboard &&
+	    seat->keyboard->focus &&
+	    wl_resource_get_client(seat->keyboard->focus->resource) == client)
+		return 1;
+
+	if (seat->pointer &&
+	    seat->pointer->focus &&
+	    wl_resource_get_client(seat->pointer->focus->resource) == client)
+		return 1;
+
+	return 0;
+}
 
 static void
 seat_get_keyboard(struct wl_client *client, struct wl_resource *resource,
@@ -1236,6 +1332,9 @@ seat_get_keyboard(struct wl_client *client, struct wl_resource *resource,
 		return;
 	}
 
+	/* May be moved to focused list later by either
+	 * weston_keyboard_set_focus or directly if this client is already
+	 * focused */
 	wl_list_insert(&seat->keyboard->resource_list, wl_resource_get_link(cr));
 	wl_resource_set_implementation(cr, &keyboard_interface,
 				       seat, unbind_resource);
@@ -1252,11 +1351,30 @@ seat_get_keyboard(struct wl_client *client, struct wl_resource *resource,
 		close(null_fd);
 	}
 
+	if (should_send_modifiers_to_client(seat, client)) {
+		send_modifiers_to_resource(seat->keyboard,
+					   cr,
+					   seat->keyboard->focus_serial);
+	}
+
 	if (seat->keyboard->focus &&
 	    wl_resource_get_client(seat->keyboard->focus->resource) == client) {
-		weston_keyboard_set_focus(seat->keyboard,
-					  seat->keyboard->focus);
-		wl_data_device_set_keyboard_focus(seat);
+		struct weston_surface *surface =
+			(struct weston_surface *) seat->keyboard->focus;
+
+		wl_list_remove(wl_resource_get_link(cr));
+		wl_list_insert(&seat->keyboard->focus_resource_list,
+			       wl_resource_get_link(cr));
+		wl_keyboard_send_enter(cr,
+				       seat->keyboard->focus_serial,
+				       surface->resource,
+				       &seat->keyboard->keys);
+
+		/* If this is the first keyboard resource for this
+		 * client... */
+		if (seat->keyboard->focus_resource_list.prev ==
+		    wl_resource_get_link(cr))
+			wl_data_device_set_keyboard_focus(seat);
 	}
 }
 
@@ -1287,7 +1405,14 @@ seat_get_touch(struct wl_client *client, struct wl_resource *resource,
 		return;
 	}
 
-	wl_list_insert(&seat->touch->resource_list, wl_resource_get_link(cr));
+	if (seat->touch->focus &&
+	    wl_resource_get_client(seat->touch->focus->resource) == client) {
+		wl_list_insert(&seat->touch->resource_list,
+			       wl_resource_get_link(cr));
+	} else {
+		wl_list_insert(&seat->touch->focus_resource_list,
+			       wl_resource_get_link(cr));
+	}
 	wl_resource_set_implementation(cr, &touch_interface,
 				       seat, unbind_resource);
 }
