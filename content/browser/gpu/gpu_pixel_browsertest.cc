@@ -484,7 +484,7 @@ IN_PROC_BROWSER_TEST_F(GpuPixelBrowserTest, MANUAL_CSS3DBlueBox) {
 IN_PROC_BROWSER_TEST_F(GpuPixelBrowserTest, MANUAL_Canvas2DRedBoxHD) {
   // If test baseline needs to be updated after a given revision, update the
   // following number. If no revision requirement, then 0.
-  const int64 ref_img_revision_update = 123489;
+  const int64 ref_img_revision_update = 224170;
 
   const ReferencePixel ref_pixels[] = {
     // x, y, r, g, b
@@ -513,7 +513,7 @@ class GpuPixelTestCanvas2DSD : public GpuPixelBrowserTest {
 IN_PROC_BROWSER_TEST_F(GpuPixelTestCanvas2DSD, MANUAL_Canvas2DRedBoxSD) {
   // If test baseline needs to be updated after a given revision, update the
   // following number. If no revision requirement, then 0.
-  const int64 ref_img_revision_update = 123489;
+  const int64 ref_img_revision_update = 224170;
 
   const ReferencePixel ref_pixels[] = {
     // x, y, r, g, b
