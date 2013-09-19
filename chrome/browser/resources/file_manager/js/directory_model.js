@@ -892,12 +892,8 @@ DirectoryModel.prototype.resolveDirectory = function(
     path, successCallback, errorCallback) {
   if (PathUtil.getRootType(path) == RootType.DRIVE) {
     var driveStatus = this.volumeManager_.getDriveStatus();
-    if (!this.isDriveMounted() &&
-        driveStatus != VolumeManager.DriveStatus.MOUNTING) {
-      if (path == DirectoryModel.fakeDriveEntry_.fullPath)
-        successCallback(DirectoryModel.fakeDriveEntry_);
-      else  // Subdirectory.
-        errorCallback({ code: FileError.NOT_FOUND_ERR });
+    if (!this.volumeManager_.getVolumeInfo(RootDirectory.DRIVE)) {
+      errorCallback(util.createFileError(FileError.NOT_FOUND_ERR));
       return;
     }
   }
@@ -1164,14 +1160,6 @@ DirectoryModel.prototype.updateRoots_ = function(opt_callback) {
 };
 
 /**
- * @return {boolean} True if DRIVE is fully mounted.
- */
-DirectoryModel.prototype.isDriveMounted = function() {
-  var driveStatus = this.volumeManager_.getDriveStatus();
-  return driveStatus == VolumeManager.DriveStatus.MOUNTED;
-};
-
-/**
  * Handler for the VolumeManager's 'change' event.
  *
  * @param {function()} callback Completion callback.
@@ -1189,7 +1177,7 @@ DirectoryModel.prototype.onMountChanged_ = function(callback) {
     // When the volume where we are is unmounted, fallback to
     // DEFAULT_DIRECTORY.
     // Note: during the initialization, rootType can be undefined.
-    if (rootType && !this.volumeManager_.isMounted(rootPath))
+    if (rootType && !this.volumeManager_.getVolumeInfo(rootPath))
       this.changeDirectory(PathUtil.DEFAULT_DIRECTORY);
 
     callback();
@@ -1205,7 +1193,8 @@ DirectoryModel.prototype.onMountChanged_ = function(callback) {
 DirectoryModel.prototype.onDriveStatusChanged_ = function(callback) {
   this.updateRoots_(function() {
     var currentDirEntry = this.getCurrentDirEntry();
-    if (this.isDriveMounted()) {
+    var driveVolume = this.volumeManager_.getVolumeInfo(RootDirectory.DRIVE);
+    if (driveVolume && !driveVolume.error) {
       if (currentDirEntry == DirectoryModel.fakeDriveEntry_) {
         // Replace the fake entry by real DirectoryEntry silently.
         for (var i = 0; i < this.rootsList_.length; i++) {

@@ -1559,7 +1559,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         this.finishSetupCurrentDirectory_(path);
         return;
       }
-      if (this.volumeManager_.isMounted(RootDirectory.DRIVE)) {
+      if (this.volumeManager_.getVolumeInfo(RootDirectory.DRIVE)) {
         this.finishSetupCurrentDirectory_(path);
         return;
       }

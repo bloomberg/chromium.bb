@@ -21,6 +21,10 @@ function VolumeInfo(mountPath, root, error, deviceType, isReadOnly) {
   // TODO(hidehiko): This should include FileSystem instance.
   this.mountPath = mountPath;
   this.root = root;
+
+  // Note: This represents if the mounting of the volume is successfully done
+  // or not. (If error is empty string, the mount is successfully done).
+  // TODO(hidehiko): Rename to make this more understandable.
   this.error = error;
   this.deviceType = deviceType;
   this.isReadOnly = isReadOnly;
@@ -495,15 +499,6 @@ VolumeManager.prototype.setDriveStatus_ = function(newStatus) {
  */
 VolumeManager.prototype.getDriveStatus = function() {
   return this.driveStatus_;
-};
-
-/**
- * @param {string} mountPath Volume root path.
- * @return {boolean} True if mounted.
- */
-VolumeManager.prototype.isMounted = function(mountPath) {
-  volumeManagerUtil.validateMountPath(mountPath);
-  return !!this.volumeInfoList.find(mountPath);
 };
 
 /**

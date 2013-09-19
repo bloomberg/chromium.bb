@@ -266,7 +266,7 @@ ActionChoice.prototype.checkDrive_ = function(callback) {
     callback();
   }.bind(this);
 
-  if (this.volumeManager_.isMounted(RootDirectory.DRIVE)) {
+  if (this.volumeManager_.getVolumeInfo(RootDirectory.DRIVE)) {
     onMounted();
   } else {
     this.volumeManager_.mountDrive(onMounted, callback);

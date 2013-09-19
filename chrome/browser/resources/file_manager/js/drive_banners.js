@@ -296,8 +296,9 @@ FileListBannerController.prototype.checkSpaceAndMaybeShowWelcomeBanner_ =
     return;
   }
 
+  var driveVolume = this.volumeManager_.getVolumeInfo(RootDirectory.DRIVE);
   if (this.welcomeHeaderCounter_ >= WELCOME_HEADER_COUNTER_LIMIT ||
-      !this.directoryModel_.isDriveMounted()) {
+      !driveVolume || driveVolume.error) {
     // The banner is already shown enough times or the drive FS is not mounted.
     // So, do nothing here.
     return;

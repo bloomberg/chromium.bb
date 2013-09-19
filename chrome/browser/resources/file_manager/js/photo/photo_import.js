@@ -151,7 +151,7 @@ PhotoImport.prototype.initMyPhotos_ = function() {
     util.getOrCreateDirectory(this.filesystem_.root, dir, onDirectory, onError);
   }.bind(this);
 
-  if (this.volumeManager_.isMounted(RootDirectory.DRIVE)) {
+  if (this.volumeManager_.getVolumeInfo(RootDirectory.DRIVE)) {
     onMounted();
   } else {
     this.volumeManager_.mountDrive(onMounted, onError);
