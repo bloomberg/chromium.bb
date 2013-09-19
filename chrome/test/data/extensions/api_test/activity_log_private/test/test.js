@@ -403,6 +403,41 @@ testCases.push({
 });
 
 testCases.push({
+  func: function checkOtherObject() {
+    var filter = new Object();
+    filter.extensionId = 'pknkgggnfecklokoggaggchhaebkajji';
+    filter.activityType = 'dom_access';
+    filter.apiCall = 'Document.location';
+    chrome.activityLogPrivate.getExtensionActivities(
+        filter,
+        function(result) {
+          chrome.test.assertEq('pknkgggnfecklokoggaggchhaebkajji',
+              result['activities'][0]['extensionId']);
+          chrome.test.assertEq('Document.location',
+              result['activities'][0]['apiCall']);
+          chrome.test.assertEq('setter',
+              result['activities'][0]['other']['domVerb']);
+          chrome.test.succeed();
+        });
+    var filter = new Object();
+    filter.extensionId = 'pknkgggnfecklokoggaggchhaebkajji';
+    filter.activityType = 'any';
+    filter.apiCall = 'webRequest.onHeadersReceived';
+    chrome.activityLogPrivate.getExtensionActivities(
+        filter,
+        function(result) {
+          chrome.test.assertEq('pknkgggnfecklokoggaggchhaebkajji',
+              result['activities'][0]['extensionId']);
+          chrome.test.assertEq('webRequest.onHeadersReceived',
+              result['activities'][0]['apiCall']);
+          chrome.test.assertEq('{"added_request_headers":true}',
+              result['activities'][0]['other']['webRequest']);
+          chrome.test.succeed();
+        });
+  }
+});
+
+testCases.push({
   // TODO(karenlees): this is failing on the mac with Actual: 92, Expected: 0
   // Fix and re-enable (crbug.com/292243).
   disabled: {'mac' : true},

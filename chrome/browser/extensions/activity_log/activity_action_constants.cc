@@ -9,7 +9,6 @@
 namespace activity_log_constants {
 
 // Keys that may be used in the "other" attribute of an Action.
-const char kActionBlockedReason[] = "blocked_reason";
 const char kActionDomVerb[] = "dom_verb";
 const char kActionExtra[] = "extra";
 const char kActionPrerender[] = "prerender";

@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/activity_log/fullstream_ui_policy.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/dom_action_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "sql/statement.h"
@@ -173,7 +174,57 @@ scoped_ptr<ExtensionActivity> Action::ConvertToExtensionActivity() {
   }
   if (arg_url().is_valid())
     result->arg_url.reset(new std::string(SerializeArgUrl()));
-  result->extra.reset(new std::string(Serialize(other())));
+
+  if (other()) {
+    scoped_ptr<ExtensionActivity::Other> other_field(
+        new ExtensionActivity::Other);
+    bool prerender;
+    if (other()->GetBooleanWithoutPathExpansion(constants::kActionPrerender,
+                                                &prerender)) {
+      other_field->prerender.reset(new bool(prerender));
+    }
+    const DictionaryValue* web_request;
+    if (other()->GetDictionaryWithoutPathExpansion(constants::kActionWebRequest,
+                                                   &web_request)) {
+      other_field->web_request.reset(new std::string(
+          ActivityLogPolicy::Util::Serialize(web_request)));
+    }
+    std::string extra;
+    if (other()->GetStringWithoutPathExpansion(constants::kActionExtra, &extra))
+      other_field->extra.reset(new std::string(extra));
+    int dom_verb;
+    if (other()->GetIntegerWithoutPathExpansion(constants::kActionDomVerb,
+                                                &dom_verb)) {
+      switch (static_cast<DomActionType::Type>(dom_verb)) {
+        case DomActionType::GETTER:
+          other_field->dom_verb = ExtensionActivity::Other::DOM_VERB_GETTER;
+          break;
+        case DomActionType::SETTER:
+          other_field->dom_verb = ExtensionActivity::Other::DOM_VERB_SETTER;
+          break;
+        case DomActionType::METHOD:
+          other_field->dom_verb = ExtensionActivity::Other::DOM_VERB_METHOD;
+          break;
+        case DomActionType::INSERTED:
+          other_field->dom_verb = ExtensionActivity::Other::DOM_VERB_INSERTED;
+          break;
+        case DomActionType::XHR:
+          other_field->dom_verb = ExtensionActivity::Other::DOM_VERB_XHR;
+          break;
+        case DomActionType::WEBREQUEST:
+          other_field->dom_verb = ExtensionActivity::Other::DOM_VERB_WEBREQUEST;
+          break;
+        case DomActionType::MODIFIED:
+          other_field->dom_verb = ExtensionActivity::Other::DOM_VERB_MODIFIED;
+          break;
+        default:
+          other_field->dom_verb = ExtensionActivity::Other::DOM_VERB_NONE;
+      }
+    } else {
+      other_field->dom_verb = ExtensionActivity::Other::DOM_VERB_NONE;
+    }
+    result->other.reset(other_field.release());
+  }
 
   return result.Pass();
 }

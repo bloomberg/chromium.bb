@@ -21,7 +21,16 @@
           "pageUrl": {"type": "string", "optional": true},
           "pageTitle": {"type": "string", "optional": true},
           "argUrl": {"type": "string", "optional": true},
-          "extra": {"type": "string", "optional": true}
+          "other": {
+            "type": "object",
+            "optional": true,
+            "properties": {
+              "prerender": {"type": "boolean", "optional": true},
+              "domVerb": {"type": "string", "enum": ["getter", "setter", "method", "inserted", "xhr", "webrequest", "modified"], "optional": true},
+              "webRequest": {"type": "string", "optional": true},
+              "extra": {"type": "string", "optional": true}
+            }
+          }
         }
       },
       {

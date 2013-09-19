@@ -53,13 +53,17 @@ TEST_F(ActivityLogApiUnitTest, ConvertDomAction) {
   action->set_page_title("Title");
   action->mutable_other()->SetInteger(activity_log_constants::kActionDomVerb,
                                       DomActionType::INSERTED);
+  action->mutable_other()->SetBoolean(activity_log_constants::kActionPrerender,
+                                      false);
   scoped_ptr<ExtensionActivity> result = action->ConvertToExtensionActivity();
   ASSERT_EQ(kExtensionId, *(result->extension_id.get()));
   ASSERT_EQ("http://www.google.com/", *(result->page_url.get()));
   ASSERT_EQ("Title", *(result->page_title.get()));
   ASSERT_EQ(kApiCall, *(result->api_call.get()));
   ASSERT_EQ(kArgs, *(result->args.get()));
-  ASSERT_EQ("{\"dom_verb\":3}", *(result->extra.get()));
+  scoped_ptr<ExtensionActivity::Other> other(result->other.Pass());
+  ASSERT_EQ(ExtensionActivity::Other::DOM_VERB_INSERTED, other->dom_verb);
+  ASSERT_TRUE(other->prerender.get());
 }
 
 }  // namespace extensions
