@@ -45,6 +45,12 @@ class ExternalPrefLoader : public ExternalLoader {
     return (options_ & option) != 0;
   }
 
+  // The resource id of the base path with the information about the json
+  // file containing which extensions to load.
+  const int base_path_id_;
+
+  const Options options_;
+
  private:
   friend class base::RefCountedThreadSafe<ExternalLoader>;
 
@@ -65,12 +71,6 @@ class ExternalPrefLoader : public ExternalLoader {
   // information.
   // Must be called from the File thread.
   void ReadStandaloneExtensionPrefFiles(DictionaryValue * prefs);
-
-  // The resource id of the base path with the information about the json
-  // file containing which extensions to load.
-  int base_path_id_;
-
-  Options options_;
 
   // The path (coresponding to |base_path_id_| containing the json files
   // describing which extensions to load.

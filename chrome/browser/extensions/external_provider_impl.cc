@@ -371,7 +371,6 @@ void ExternalProviderImpl::CreateExternalProviders(
   bool is_chromeos_demo_session = false;
   int bundled_extension_creation_flags = Extension::NO_FLAGS;
 #if defined(OS_CHROMEOS)
-  typedef chromeos::ExternalPrefCacheLoader PrefLoader;
   chromeos::UserManager* user_manager = chromeos::UserManager::Get();
   is_chromeos_demo_session =
       user_manager && user_manager->IsLoggedInAsDemoUser() &&
@@ -379,22 +378,17 @@ void ExternalProviderImpl::CreateExternalProviders(
           policy::DEVICE_MODE_RETAIL_KIOSK;
   bundled_extension_creation_flags = Extension::FROM_WEBSTORE |
       Extension::WAS_INSTALLED_BY_DEFAULT;
-#else
-  typedef ExternalPrefLoader PrefLoader;
 #endif
 
-#if defined(OS_LINUX)
-  if (!is_chromeos_demo_session) {
-    int external_apps_path_id = profile->IsManaged() ?
-        chrome::DIR_MANAGED_USERS_DEFAULT_APPS :
-        chrome::DIR_STANDALONE_EXTERNAL_EXTENSIONS;
-
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  if (!profile->IsManaged()) {
     provider_list->push_back(
         linked_ptr<ExternalProviderInterface>(
             new ExternalProviderImpl(
                 service,
-                new PrefLoader(external_apps_path_id,
-                               ExternalPrefLoader::NONE),
+                new ExternalPrefLoader(
+                    chrome::DIR_STANDALONE_EXTERNAL_EXTENSIONS,
+                    ExternalPrefLoader::NONE),
                 profile,
                 Manifest::EXTERNAL_PREF,
                 Manifest::EXTERNAL_PREF_DOWNLOAD,
@@ -403,6 +397,21 @@ void ExternalProviderImpl::CreateExternalProviders(
 #endif
 
 #if defined(OS_CHROMEOS)
+  if (!is_chromeos_demo_session) {
+    int external_apps_path_id = profile->IsManaged() ?
+        chrome::DIR_MANAGED_USERS_DEFAULT_APPS :
+        chrome::DIR_STANDALONE_EXTERNAL_EXTENSIONS;
+    provider_list->push_back(
+        linked_ptr<ExternalProviderInterface>(
+            new ExternalProviderImpl(
+                service,
+                new chromeos::ExternalPrefCacheLoader(external_apps_path_id),
+                profile,
+                Manifest::EXTERNAL_PREF,
+                Manifest::EXTERNAL_PREF_DOWNLOAD,
+                bundled_extension_creation_flags)));
+  }
+
   policy::AppPackUpdater* app_pack_updater =
       g_browser_process->browser_policy_connector()->GetAppPackUpdater();
   if (is_chromeos_demo_session && app_pack_updater &&
