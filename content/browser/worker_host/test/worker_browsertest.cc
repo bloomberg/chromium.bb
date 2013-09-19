@@ -285,4 +285,13 @@ IN_PROC_BROWSER_TEST_F(WorkerTest, WebSocketSharedWorker) {
   EXPECT_EQ(expected_title, final_title);
 }
 
+IN_PROC_BROWSER_TEST_F(WorkerTest, PassMessagePortToSharedWorker) {
+  RunTest("pass_messageport_to_sharedworker.html", "");
+}
+
+IN_PROC_BROWSER_TEST_F(WorkerTest,
+                       PassMessagePortToSharedWorkerDontWaitForConnect) {
+  RunTest("pass_messageport_to_sharedworker_dont_wait_for_connect.html", "");
+}
+
 }  // namespace content

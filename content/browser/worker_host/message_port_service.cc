@@ -20,6 +20,13 @@ struct MessagePortService::MessagePort {
   // The globally unique id of the entangled message port.
   int entangled_message_port_id;
   // If true, all messages to this message port are queued and not delivered.
+  // This is needed so that when a message port is sent between processes all
+  // pending message get transferred. There are two possibilities for pending
+  // messages: either they are already received by the child process, or they're
+  // in-flight. This flag ensures that the latter type get flushed through the
+  // system.
+  // This flag should only be set to true in response to
+  // WorkerProcessHostMsg_QueueMessages.
   bool queue_messages;
   QueuedMessages queued_messages;
 };
@@ -139,10 +146,8 @@ void MessagePortService::PostMessageTo(
   MessagePort& entangled_port = message_ports_[message_port_id];
 
   std::vector<MessagePort*> sent_ports(sent_message_port_ids.size());
-  for (size_t i = 0; i < sent_message_port_ids.size(); ++i) {
+  for (size_t i = 0; i < sent_message_port_ids.size(); ++i)
     sent_ports[i] = &message_ports_[sent_message_port_ids[i]];
-    sent_ports[i]->queue_messages = true;
-  }
 
   if (entangled_port.queue_messages) {
     entangled_port.queued_messages.push_back(

@@ -61,7 +61,7 @@ class WebMessagePortChannelImpl
   void OnMessage(const string16& message,
                  const std::vector<int>& sent_message_port_ids,
                  const std::vector<int>& new_routing_ids);
-  void OnMessagedQueued();
+  void OnMessagesQueued();
 
   struct Message {
     Message();

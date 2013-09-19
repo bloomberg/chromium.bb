@@ -195,7 +195,7 @@ bool WebMessagePortChannelImpl::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(WebMessagePortChannelImpl, message)
     IPC_MESSAGE_HANDLER(WorkerProcessMsg_Message, OnMessage)
-    IPC_MESSAGE_HANDLER(WorkerProcessMsg_MessagesQueued, OnMessagedQueued)
+    IPC_MESSAGE_HANDLER(WorkerProcessMsg_MessagesQueued, OnMessagesQueued)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -223,7 +223,7 @@ void WebMessagePortChannelImpl::OnMessage(
     client_->messageAvailable();
 }
 
-void WebMessagePortChannelImpl::OnMessagedQueued() {
+void WebMessagePortChannelImpl::OnMessagesQueued() {
   std::vector<QueuedMessage> queued_messages;
 
   {
@@ -236,6 +236,7 @@ void WebMessagePortChannelImpl::OnMessagedQueued() {
       std::vector<int> port_ids(channel_array.size());
       for (size_t i = 0; i < channel_array.size(); ++i) {
         port_ids[i] = channel_array[i]->message_port_id();
+        channel_array[i]->QueueMessages();
       }
       queued_messages.push_back(std::make_pair(message, port_ids));
       message_queue_.pop();
