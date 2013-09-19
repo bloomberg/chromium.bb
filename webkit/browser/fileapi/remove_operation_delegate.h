@@ -30,6 +30,8 @@ class RemoveOperationDelegate : public RecursiveOperationDelegate {
 
  private:
   void DidTryRemoveFile(base::PlatformFileError error);
+  void DidTryRemoveDirectory(base::PlatformFileError remove_file_error,
+                             base::PlatformFileError remove_directory_error);
   void DidRemoveFile(const StatusCallback& callback,
                      base::PlatformFileError error);
 

@@ -56,12 +56,7 @@ void RecursiveOperationDelegate::DidTryProcessFile(
   DCHECK_EQ(1, inflight_operations_);
 
   --inflight_operations_;
-  // If the operation for a file is not permitted, the operation may fail
-  // with SECURITY, even if the path points a directory and the operation is
-  // permitted for a directory.
-  if (canceled_ ||
-      (error != base::PLATFORM_FILE_ERROR_NOT_A_FILE &&
-       error != base::PLATFORM_FILE_ERROR_SECURITY)) {
+  if (canceled_ || error != base::PLATFORM_FILE_ERROR_NOT_A_FILE) {
     Done(error);
     return;
   }

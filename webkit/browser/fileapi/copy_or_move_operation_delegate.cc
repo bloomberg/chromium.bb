@@ -325,15 +325,11 @@ void CopyOrMoveOperationDelegate::RunRecursively() {
     return;
   }
 
-  if (!progress_callback_.is_null()) {
-    progress_callback_.Run(
-        FileSystemOperation::BEGIN_COPY_ENTRY, src_root_, 0);
-  }
-
-  // First try to copy/move it as a file.
-  CopyOrMoveFile(src_root_, dest_root_,
-                 base::Bind(&CopyOrMoveOperationDelegate::DidTryCopyOrMoveFile,
-                            weak_factory_.GetWeakPtr()));
+  // Start to process the source directory recursively.
+  // TODO(kinuko): This could be too expensive for same_file_system_==true
+  // and operation==MOVE case, probably we can just rename the root directory.
+  // http://crbug.com/172187
+  StartRecursiveOperation(src_root_, callback_);
 }
 
 void CopyOrMoveOperationDelegate::ProcessFile(
@@ -342,112 +338,7 @@ void CopyOrMoveOperationDelegate::ProcessFile(
   if (!progress_callback_.is_null())
     progress_callback_.Run(FileSystemOperation::BEGIN_COPY_ENTRY, src_url, 0);
 
-  CopyOrMoveFile(src_url, CreateDestURL(src_url),
-                 base::Bind(&CopyOrMoveOperationDelegate::DidCopyEntry,
-                            weak_factory_.GetWeakPtr(), src_url, callback));
-}
-
-void CopyOrMoveOperationDelegate::ProcessDirectory(
-    const FileSystemURL& src_url,
-    const StatusCallback& callback) {
   FileSystemURL dest_url = CreateDestURL(src_url);
-
-  if (!progress_callback_.is_null() && src_url != src_root_) {
-    // We do not invoke |progress_callback_| for source root, because it is
-    // already called in RunRecursively().
-    progress_callback_.Run(FileSystemOperation::BEGIN_COPY_ENTRY, src_url, 0);
-  }
-
-  // If operation_type == Move we may need to record directories and
-  // restore directory timestamps in the end, though it may have
-  // negative performance impact.
-  // See http://crbug.com/171284 for more details.
-  operation_runner()->CreateDirectory(
-      dest_url, false /* exclusive */, false /* recursive */,
-      base::Bind(&CopyOrMoveOperationDelegate::DidCopyEntry,
-                 weak_factory_.GetWeakPtr(), src_url, callback));
-}
-
-void CopyOrMoveOperationDelegate::PostProcessDirectory(
-    const FileSystemURL& src_url,
-    const StatusCallback& callback) {
-  callback.Run(base::PLATFORM_FILE_OK);
-}
-
-void CopyOrMoveOperationDelegate::DidTryCopyOrMoveFile(
-    base::PlatformFileError error) {
-  if (error != base::PLATFORM_FILE_ERROR_NOT_A_FILE) {
-    if (error == base::PLATFORM_FILE_OK && !progress_callback_.is_null()) {
-      progress_callback_.Run(
-          FileSystemOperation::END_COPY_ENTRY, src_root_, 0);
-    }
-
-    callback_.Run(error);
-    return;
-  }
-
-  // The src_root_ looks to be a directory.
-  // Try removing the dest_root_ to see if it exists and/or it is an
-  // empty directory.
-  operation_runner()->RemoveDirectory(
-      dest_root_,
-      base::Bind(&CopyOrMoveOperationDelegate::DidTryRemoveDestRoot,
-                 weak_factory_.GetWeakPtr()));
-}
-
-void CopyOrMoveOperationDelegate::DidTryRemoveDestRoot(
-    base::PlatformFileError error) {
-  if (error == base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY) {
-    callback_.Run(base::PLATFORM_FILE_ERROR_INVALID_OPERATION);
-    return;
-  }
-  if (error != base::PLATFORM_FILE_OK &&
-      error != base::PLATFORM_FILE_ERROR_NOT_FOUND) {
-    callback_.Run(error);
-    return;
-  }
-
-  // Start to process the source directory recursively.
-  // TODO(kinuko): This could be too expensive for same_file_system_==true
-  // and operation==MOVE case, probably we can just rename the root directory.
-  // http://crbug.com/172187
-  StartRecursiveOperation(
-      src_root_,
-      base::Bind(&CopyOrMoveOperationDelegate::DidFinishRecursiveCopyDir,
-                 weak_factory_.GetWeakPtr(), src_root_, callback_));
-}
-
-void CopyOrMoveOperationDelegate::DidFinishRecursiveCopyDir(
-    const FileSystemURL& src,
-    const StatusCallback& callback,
-    base::PlatformFileError error) {
-  if (error != base::PLATFORM_FILE_OK ||
-      operation_type_ == OPERATION_COPY) {
-    callback.Run(error);
-    return;
-  }
-
-  DCHECK_EQ(OPERATION_MOVE, operation_type_);
-
-  // Remove the source for finalizing move operation.
-  operation_runner()->Remove(
-      src, true /* recursive */,
-      base::Bind(&CopyOrMoveOperationDelegate::DidRemoveSourceForMove,
-                 weak_factory_.GetWeakPtr(), callback));
-}
-
-void CopyOrMoveOperationDelegate::DidRemoveSourceForMove(
-    const StatusCallback& callback,
-    base::PlatformFileError error) {
-  if (error == base::PLATFORM_FILE_ERROR_NOT_FOUND)
-    error = base::PLATFORM_FILE_OK;
-  callback.Run(error);
-}
-
-void CopyOrMoveOperationDelegate::CopyOrMoveFile(
-    const FileSystemURL& src_url,
-    const FileSystemURL& dest_url,
-    const StatusCallback& callback) {
   CopyOrMoveImpl* impl = NULL;
   if (same_file_system_) {
     impl = new CopyOrMoveOnSameFileSystemImpl(
@@ -476,10 +367,94 @@ void CopyOrMoveOperationDelegate::CopyOrMoveFile(
   // Register the running task.
   running_copy_set_.insert(impl);
   impl->Run(base::Bind(&CopyOrMoveOperationDelegate::DidCopyOrMoveFile,
-                       weak_factory_.GetWeakPtr(), impl, callback));
+                       weak_factory_.GetWeakPtr(), src_url, callback, impl));
 }
 
-void CopyOrMoveOperationDelegate::DidCopyEntry(
+void CopyOrMoveOperationDelegate::ProcessDirectory(
+    const FileSystemURL& src_url,
+    const StatusCallback& callback) {
+  if (src_url == src_root_) {
+    // The src_root_ looks to be a directory.
+    // Try removing the dest_root_ to see if it exists and/or it is an
+    // empty directory.
+    // We do not invoke |progress_callback_| for source root, because it is
+    // already called in ProcessFile().
+    operation_runner()->RemoveDirectory(
+        dest_root_,
+        base::Bind(&CopyOrMoveOperationDelegate::DidTryRemoveDestRoot,
+                   weak_factory_.GetWeakPtr(), callback));
+    return;
+  }
+
+  if (!progress_callback_.is_null())
+    progress_callback_.Run(FileSystemOperation::BEGIN_COPY_ENTRY, src_url, 0);
+
+  ProcessDirectoryInternal(src_url, CreateDestURL(src_url), callback);
+}
+
+void CopyOrMoveOperationDelegate::PostProcessDirectory(
+    const FileSystemURL& src_url,
+    const StatusCallback& callback) {
+  if (operation_type_ == OPERATION_COPY) {
+    callback.Run(base::PLATFORM_FILE_OK);
+    return;
+  }
+
+  DCHECK_EQ(OPERATION_MOVE, operation_type_);
+
+  // All files and subdirectories in the directory should be moved here,
+  // so remove the source directory for finalizing move operation.
+  operation_runner()->Remove(
+      src_url, false /* recursive */,
+      base::Bind(&CopyOrMoveOperationDelegate::DidRemoveSourceForMove,
+                 weak_factory_.GetWeakPtr(), callback));
+}
+
+void CopyOrMoveOperationDelegate::DidCopyOrMoveFile(
+    const FileSystemURL& src_url,
+    const StatusCallback& callback,
+    CopyOrMoveImpl* impl,
+    base::PlatformFileError error) {
+  running_copy_set_.erase(impl);
+  delete impl;
+
+  if (!progress_callback_.is_null() && error == base::PLATFORM_FILE_OK)
+    progress_callback_.Run(FileSystemOperation::END_COPY_ENTRY, src_url, 0);
+
+  callback.Run(error);
+}
+
+void CopyOrMoveOperationDelegate::DidTryRemoveDestRoot(
+    const StatusCallback& callback,
+    base::PlatformFileError error) {
+  if (error == base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY) {
+    callback_.Run(base::PLATFORM_FILE_ERROR_INVALID_OPERATION);
+    return;
+  }
+  if (error != base::PLATFORM_FILE_OK &&
+      error != base::PLATFORM_FILE_ERROR_NOT_FOUND) {
+    callback_.Run(error);
+    return;
+  }
+
+  ProcessDirectoryInternal(src_root_, dest_root_, callback);
+}
+
+void CopyOrMoveOperationDelegate::ProcessDirectoryInternal(
+    const FileSystemURL& src_url,
+    const FileSystemURL& dest_url,
+    const StatusCallback& callback) {
+  // If operation_type == Move we may need to record directories and
+  // restore directory timestamps in the end, though it may have
+  // negative performance impact.
+  // See http://crbug.com/171284 for more details.
+  operation_runner()->CreateDirectory(
+      dest_url, false /* exclusive */, false /* recursive */,
+      base::Bind(&CopyOrMoveOperationDelegate::DidCreateDirectory,
+                 weak_factory_.GetWeakPtr(), src_url, callback));
+}
+
+void CopyOrMoveOperationDelegate::DidCreateDirectory(
     const FileSystemURL& src_url,
     const StatusCallback& callback,
     base::PlatformFileError error) {
@@ -489,12 +464,11 @@ void CopyOrMoveOperationDelegate::DidCopyEntry(
   callback.Run(error);
 }
 
-void CopyOrMoveOperationDelegate::DidCopyOrMoveFile(
-    CopyOrMoveImpl* impl,
+void CopyOrMoveOperationDelegate::DidRemoveSourceForMove(
     const StatusCallback& callback,
     base::PlatformFileError error) {
-  running_copy_set_.erase(impl);
-  delete impl;
+  if (error == base::PLATFORM_FILE_ERROR_NOT_FOUND)
+    error = base::PLATFORM_FILE_OK;
   callback.Run(error);
 }
 

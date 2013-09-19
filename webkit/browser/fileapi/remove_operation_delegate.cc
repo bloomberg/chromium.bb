@@ -51,11 +51,24 @@ void RemoveOperationDelegate::PostProcessDirectory(
 
 void RemoveOperationDelegate::DidTryRemoveFile(
     base::PlatformFileError error) {
-  if (error != base::PLATFORM_FILE_ERROR_NOT_A_FILE) {
+  if (error != base::PLATFORM_FILE_ERROR_NOT_A_FILE &&
+      error != base::PLATFORM_FILE_ERROR_SECURITY) {
     callback_.Run(error);
     return;
   }
-  operation_runner()->RemoveDirectory(url_, callback_);
+  operation_runner()->RemoveDirectory(
+      url_,
+      base::Bind(&RemoveOperationDelegate::DidTryRemoveDirectory,
+                 weak_factory_.GetWeakPtr(), error));
+}
+
+void RemoveOperationDelegate::DidTryRemoveDirectory(
+    base::PlatformFileError remove_file_error,
+    base::PlatformFileError remove_directory_error) {
+  callback_.Run(
+      remove_directory_error == base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY ?
+      remove_file_error :
+      remove_directory_error);
 }
 
 void RemoveOperationDelegate::DidRemoveFile(const StatusCallback& callback,
