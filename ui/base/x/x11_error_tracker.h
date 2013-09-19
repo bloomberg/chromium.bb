@@ -5,13 +5,14 @@
 #include <X11/Xlib.h>
 
 #include "base/basictypes.h"
+#include "ui/base/ui_export.h"
 
 namespace ui {
 
 // X11ErrorTracker catches X11 errors in a non-fatal way. It does so by
 // temporarily changing the X11 error handler. The old error handler is
 // restored when the tracker is destroyed.
-class X11ErrorTracker {
+class UI_EXPORT X11ErrorTracker {
  public:
   X11ErrorTracker();
   ~X11ErrorTracker();

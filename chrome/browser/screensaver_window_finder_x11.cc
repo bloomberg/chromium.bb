@@ -4,12 +4,8 @@
 
 #include "chrome/browser/screensaver_window_finder_x11.h"
 
-#if defined(TOOLKIT_GTK)
-#include <gdk/gdk.h>
-#include <gdk/gdkx.h>
-#endif
-
 #include "base/basictypes.h"
+#include "ui/base/x/x11_error_tracker.h"
 #include "ui/base/x/x11_util.h"
 
 ScreensaverWindowFinder::ScreensaverWindowFinder()
@@ -17,16 +13,10 @@ ScreensaverWindowFinder::ScreensaverWindowFinder()
 }
 
 bool ScreensaverWindowFinder::ScreensaverWindowExists() {
-#if defined(TOOLKIT_GTK)
-  gdk_error_trap_push();
-#endif
+  ui::X11ErrorTracker err_tracker;
   ScreensaverWindowFinder finder;
   ui::EnumerateTopLevelWindows(&finder);
-  bool got_error = false;
-#if defined(TOOLKIT_GTK)
-  got_error = gdk_error_trap_pop();
-#endif
-  return finder.exists_ && !got_error;
+  return finder.exists_ && !err_tracker.FoundNewError();
 }
 
 bool ScreensaverWindowFinder::ShouldStopIterating(XID window) {
