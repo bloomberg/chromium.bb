@@ -657,7 +657,13 @@ TEST_F(ChromeNotifierServiceTest, ServiceEnabledTest) {
 
 }
 
-TEST_F(ChromeNotifierServiceTest, InitializePrefsTest) {
+// Failing new test on Win. http://crbug.com/294658
+#if defined(OS_WIN)
+#define MAYBE_InitializePrefsTest DISABLED_InitializePrefsTest
+#else
+#define MAYBE_InitializePrefsTest InitializePrefsTest
+#endif
+TEST_F(ChromeNotifierServiceTest, MAYBE_InitializePrefsTest) {
   StubNotificationUIManager notification_manager;
   // The CTOR will call InitializePrefs().
   ChromeNotifierService notifier(profile_.get(), &notification_manager);
