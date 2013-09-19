@@ -477,6 +477,13 @@ class ThroughputTestSW : public ThroughputTest {
 ////////////////////////////////////////////////////////////////////////////////
 /// Tests
 
+#if defined(OS_WIN) && defined(USE_AURA)
+// crbug.com/292897
+#define MAYBE(x) DISABLED_ ## x
+#else
+#define MAYBE(x) x
+#endif
+
 // Run this test with a URL on the command line:
 // performance_browser_tests --gtest_also_run_disabled_tests --enable-gpu
 //     --gtest_filter=ThroughputTest*URL --extra-chrome-flags=http://...
@@ -503,23 +510,23 @@ IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, DISABLED_TestURL) {
   RunTestWithURL(kAllowExternalDNS);
 }
 
-IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, Particles) {
+IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, MAYBE(Particles)) {
   RunTest("particles", kInternal);
 }
 
-IN_PROC_BROWSER_TEST_F(ThroughputTestThread, Particles) {
+IN_PROC_BROWSER_TEST_F(ThroughputTestThread, MAYBE(Particles)) {
   RunTest("particles", kInternal);
 }
 
-IN_PROC_BROWSER_TEST_F(ThroughputTestSW, CanvasDemoSW) {
+IN_PROC_BROWSER_TEST_F(ThroughputTestSW, MAYBE(CanvasDemoSW)) {
   RunTest("canvas-demo", kInternal);
 }
 
-IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, CanvasDemoGPU) {
+IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, MAYBE(CanvasDemoGPU)) {
   RunTest("canvas-demo", kInternal | kIsGpuCanvasTest);
 }
 
-IN_PROC_BROWSER_TEST_F(ThroughputTestThread, CanvasDemoGPU) {
+IN_PROC_BROWSER_TEST_F(ThroughputTestThread, MAYBE(CanvasDemoGPU)) {
   RunTest("canvas-demo", kInternal | kIsGpuCanvasTest);
 }
 
@@ -535,11 +542,11 @@ IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, DISABLED_CompositingHugeDivGPU) {
   RunTest("compositing_huge_div", kNone);
 }
 
-IN_PROC_BROWSER_TEST_F(ThroughputTestSW, DrawImageShadowSW) {
+IN_PROC_BROWSER_TEST_F(ThroughputTestSW, MAYBE(DrawImageShadowSW)) {
   RunTest("canvas2d_balls_with_shadow", kNone);
 }
 
-IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, DrawImageShadowGPU) {
+IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, MAYBE(DrawImageShadowGPU)) {
   // TODO(junov): Fix test flakiness crbug.com/272383
   RunTest("canvas2d_balls_with_shadow", kNone | kIsGpuCanvasTest | kIsFlaky);
 }
@@ -551,14 +558,14 @@ IN_PROC_BROWSER_TEST_F(ThroughputTestThread, DISABLED_DrawImageShadowGPU) {
   RunTest("canvas2d_balls_with_shadow", kNone | kIsGpuCanvasTest | kIsFlaky);
 }
 
-IN_PROC_BROWSER_TEST_F(ThroughputTestSW, CanvasToCanvasDrawSW) {
+IN_PROC_BROWSER_TEST_F(ThroughputTestSW, MAYBE(CanvasToCanvasDrawSW)) {
   if (IsGpuAvailable() &&
       gpu::GPUTestBotConfig::CurrentConfigMatches("MAC AMD"))
     return;
   RunTest("canvas2d_balls_draw_from_canvas", kNone);
 }
 
-IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, CanvasToCanvasDrawGPU) {
+IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, MAYBE(CanvasToCanvasDrawGPU)) {
   if (IsGpuAvailable() &&
       gpu::GPUTestBotConfig::CurrentConfigMatches("MAC AMD"))
     return;
@@ -573,38 +580,38 @@ IN_PROC_BROWSER_TEST_F(ThroughputTestSW, DISABLED_CanvasTextSW) {
   RunTest("canvas2d_balls_text", kNone);
 }
 
-IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, CanvasTextGPU) {
+IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, MAYBE(CanvasTextGPU)) {
   RunTest("canvas2d_balls_text", kNone | kIsGpuCanvasTest);
 }
 
-IN_PROC_BROWSER_TEST_F(ThroughputTestSW, CanvasFillPathSW) {
+IN_PROC_BROWSER_TEST_F(ThroughputTestSW, MAYBE(CanvasFillPathSW)) {
   RunTest("canvas2d_balls_fill_path", kNone);
 }
 
-IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, CanvasFillPathGPU) {
+IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, MAYBE(CanvasFillPathGPU)) {
   RunTest("canvas2d_balls_fill_path", kNone | kIsGpuCanvasTest);
 }
 
-IN_PROC_BROWSER_TEST_F(ThroughputTestSW, CanvasSingleImageSW) {
+IN_PROC_BROWSER_TEST_F(ThroughputTestSW, MAYBE(CanvasSingleImageSW)) {
   RunCanvasBenchTest("single_image", kNone);
 }
 
-IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, CanvasSingleImageGPU) {
+IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, MAYBE(CanvasSingleImageGPU)) {
   if (IsGpuAvailable() &&
       gpu::GPUTestBotConfig::CurrentConfigMatches("MAC AMD"))
     return;
   RunCanvasBenchTest("single_image", kNone | kIsGpuCanvasTest);
 }
 
-IN_PROC_BROWSER_TEST_F(ThroughputTestSW, CanvasManyImagesSW) {
+IN_PROC_BROWSER_TEST_F(ThroughputTestSW, MAYBE(CanvasManyImagesSW)) {
   RunCanvasBenchTest("many_images", kNone);
 }
 
-IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, CanvasManyImagesGPU) {
+IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, MAYBE(CanvasManyImagesGPU)) {
   RunCanvasBenchTest("many_images", kNone | kIsGpuCanvasTest);
 }
 
-IN_PROC_BROWSER_TEST_F(ThroughputTestThread, CanvasManyImagesGPU) {
+IN_PROC_BROWSER_TEST_F(ThroughputTestThread, MAYBE(CanvasManyImagesGPU)) {
   RunCanvasBenchTest("many_images", kNone | kIsGpuCanvasTest);
 }
 
