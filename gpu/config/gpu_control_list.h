@@ -85,9 +85,6 @@ class GPU_EXPORT GpuControlList {
   // If yes, we should create a gl context and do a full gpu info collection.
   bool needs_more_info() const { return needs_more_info_; }
 
-  // Check if any entries contain unknown fields.  This is only for tests.
-  bool contains_unknown_fields() const { return contains_unknown_fields_; }
-
   // Returns the number of entries.  This is only for tests.
   size_t num_entries() const;
 
@@ -320,15 +317,6 @@ class GPU_EXPORT GpuControlList {
     // Returns the blacklisted features in this entry.
     const std::set<int>& features() const;
 
-    // Returns true if an unknown field is encountered.
-    bool contains_unknown_fields() const {
-      return contains_unknown_fields_;
-    }
-    // Returns true if an unknown blacklist feature is encountered.
-    bool contains_unknown_features() const {
-      return contains_unknown_features_;
-    }
-
    private:
     friend class base::RefCounted<GpuControlListEntry>;
 
@@ -457,8 +445,6 @@ class GPU_EXPORT GpuControlList {
     scoped_ptr<IntInfo> gpu_count_info_;
     std::set<int> features_;
     std::vector<ScopedGpuControlListEntry> exceptions_;
-    bool contains_unknown_fields_;
-    bool contains_unknown_features_;
   };
 
   // Gets the current OS type.
@@ -487,8 +473,6 @@ class GPU_EXPORT GpuControlList {
   std::vector<ScopedGpuControlListEntry> active_entries_;
 
   uint32 max_entry_id_;
-
-  bool contains_unknown_fields_;
 
   bool needs_more_info_;
 

@@ -252,13 +252,8 @@ TEST_F(GpuControlListTest, UnknownField) {
   );
   scoped_ptr<GpuControlList> control_list(Create());
 
-  EXPECT_TRUE(control_list->LoadList(
+  EXPECT_FALSE(control_list->LoadList(
       unknown_field_json, GpuControlList::kAllOs));
-  EXPECT_EQ(1u, control_list->num_entries());
-  EXPECT_TRUE(control_list->contains_unknown_fields());
-  std::set<int> features = control_list->MakeDecision(
-      GpuControlList::kOsWin, kOsVersion, gpu_info());
-  EXPECT_SINGLE_FEATURE(features, TEST_FEATURE_0);
 }
 
 TEST_F(GpuControlListTest, UnknownExceptionField) {
@@ -296,13 +291,8 @@ TEST_F(GpuControlListTest, UnknownExceptionField) {
   );
   scoped_ptr<GpuControlList> control_list(Create());
 
-  EXPECT_TRUE(control_list->LoadList(
+  EXPECT_FALSE(control_list->LoadList(
       unknown_exception_field_json, GpuControlList::kAllOs));
-  EXPECT_EQ(1u, control_list->num_entries());
-  EXPECT_TRUE(control_list->contains_unknown_fields());
-  std::set<int> features = control_list->MakeDecision(
-      GpuControlList::kOsWin, kOsVersion, gpu_info());
-  EXPECT_SINGLE_FEATURE(features, TEST_FEATURE_0);
 }
 
 TEST_F(GpuControlListTest, DisabledEntry) {

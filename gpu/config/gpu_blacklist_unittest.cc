@@ -80,7 +80,6 @@ TEST_F(GpuBlacklistTest, CurrentBlacklistValidation) {
   scoped_ptr<GpuBlacklist> blacklist(GpuBlacklist::Create());
   EXPECT_TRUE(blacklist->LoadList(
       kSoftwareRenderingListJson, GpuBlacklist::kAllOs));
-  EXPECT_FALSE(blacklist->contains_unknown_fields());
 }
 
 #define GPU_BLACKLIST_FEATURE_TEST(test_name, feature_name, feature_type) \

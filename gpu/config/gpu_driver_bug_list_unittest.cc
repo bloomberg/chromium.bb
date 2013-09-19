@@ -50,7 +50,6 @@ TEST_F(GpuDriverBugListTest, CurrentDriverBugListValidation) {
   scoped_ptr<GpuDriverBugList> list(GpuDriverBugList::Create());
   std::string json;
   EXPECT_TRUE(list->LoadList(kGpuDriverBugListJson, GpuControlList::kAllOs));
-  EXPECT_FALSE(list->contains_unknown_fields());
 }
 
 TEST_F(GpuDriverBugListTest, CurrentListForARM) {

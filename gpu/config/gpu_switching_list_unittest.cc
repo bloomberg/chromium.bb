@@ -53,7 +53,6 @@ TEST_F(GpuSwitchingListTest, CurrentSwitchingListValidation) {
   scoped_ptr<GpuSwitchingList> switching_list(GpuSwitchingList::Create());
   EXPECT_TRUE(switching_list->LoadList(
       kGpuSwitchingListJson, GpuControlList::kAllOs));
-  EXPECT_FALSE(switching_list->contains_unknown_fields());
 }
 
 TEST_F(GpuSwitchingListTest, GpuSwitching) {
