@@ -42,11 +42,11 @@ class WebViewImpl;
 
 class ValidationMessageClientImpl : public WebCore::ValidationMessageClient {
 public:
-    static PassOwnPtr<ValidationMessageClientImpl> create(WebViewImpl&, WebValidationMessageClient&);
+    static PassOwnPtr<ValidationMessageClientImpl> create(WebViewImpl&, WebValidationMessageClient*);
     virtual ~ValidationMessageClientImpl();
 
 private:
-    ValidationMessageClientImpl(WebViewImpl&, WebValidationMessageClient&);
+    ValidationMessageClientImpl(WebViewImpl&, WebValidationMessageClient*);
     void checkAnchorStatus(WebCore::Timer<ValidationMessageClientImpl>*);
     WebCore::FrameView* currentView();
 
@@ -56,7 +56,7 @@ private:
     virtual void documentDetached(const WebCore::Document&) OVERRIDE;
 
     WebViewImpl& m_webView;
-    WebValidationMessageClient& m_client;
+    WebValidationMessageClient* m_client;
     const WebCore::Element* m_currentAnchor;
     String m_message;
     WebCore::IntRect m_lastAnchorRectInScreen;

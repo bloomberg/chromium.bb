@@ -343,7 +343,7 @@ void WebViewImpl::setDevToolsAgentClient(WebDevToolsAgentClient* devToolsClient)
 void WebViewImpl::setValidationMessageClient(WebValidationMessageClient* client)
 {
     ASSERT(client);
-    m_validationMessage = ValidationMessageClientImpl::create(*this, *client);
+    m_validationMessage = ValidationMessageClientImpl::create(*this, client);
     m_page->setValidationMessageClient(m_validationMessage.get());
 }
 
@@ -463,6 +463,8 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     m_geolocationClientProxy->setController(GeolocationController::from(m_page.get()));
 
     provideLocalFileSystemTo(m_page.get(), LocalFileSystemClient::create());
+    m_validationMessage = ValidationMessageClientImpl::create(*this, 0);
+    m_page->setValidationMessageClient(m_validationMessage.get());
 
     m_page->setGroupType(Page::SharedPageGroup);
 
