@@ -132,8 +132,6 @@ $(document).ready(function() {
         expected.appendChild(failuresView);
     }
 
-    onebar.perf().appendChild(new ui.perf.View());
-
     update();
 });
 

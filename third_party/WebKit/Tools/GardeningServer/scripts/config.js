@@ -55,11 +55,9 @@ config.kPlatforms = {
             return base.underscoredBuilderName(builderName);
         },
         _builderApplies: function(builderName) {
-            // FIXME: Should garden-o-matic show these?
-            // WebKit Android and ASAN are red all the time.
-            // Remove this function entirely once they are better supported.
+            // FIXME: Remove the Perf check once the bots are gone.
             return builderName.indexOf('GPU') == -1 &&
-                   builderName.indexOf('ASAN') == -1;
+                   builderName.indexOf('Perf') == -1;
         },
     },
 };
