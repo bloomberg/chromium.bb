@@ -32,7 +32,8 @@ AM_CPPFLAGS =					\
 if BUILD_SIMPLE_CLIENTS
 simple_clients_programs =			\
 	weston-simple-shm			\
-	weston-simple-touch
+	weston-simple-touch			\
+	weston-multi-resource
 
 weston_simple_shm_SOURCES = simple-shm.c 	\
 	../shared/os-compatibility.c		\
@@ -45,6 +46,12 @@ weston_simple_touch_SOURCES = simple-touch.c	\
 	../shared/os-compatibility.h
 weston_simple_touch_CPPFLAGS = $(SIMPLE_CLIENT_CFLAGS)
 weston_simple_touch_LDADD = $(SIMPLE_CLIENT_LIBS)
+
+weston_multi_resource_SOURCES = multi-resource.c	\
+	../shared/os-compatibility.c			\
+	../shared/os-compatibility.h
+weston_multi_resource_CPPFLAGS = $(SIMPLE_CLIENT_CFLAGS)
+weston_multi_resource_LDADD = $(SIMPLE_CLIENT_LIBS)
 endif
 
 if BUILD_SIMPLE_EGL_CLIENTS
