@@ -186,9 +186,13 @@ void PicturePileImpl::RasterCommon(
       // encompasses all invalidated pixels at any larger scale level.
       gfx::Rect content_clip = gfx::ScaleToEnclosedRect(
           (*i)->LayerRect(), contents_scale);
+
       DCHECK(!content_clip.IsEmpty()) <<
           "Layer rect: " << (*i)->LayerRect().ToString() <<
           "Contents scale: " << contents_scale;
+
+      content_clip.Intersect(canvas_rect);
+
       if (!unclipped.Intersects(content_clip))
         continue;
 
@@ -215,16 +219,15 @@ void PicturePileImpl::RasterCommon(
       }
 
       if (raster_stats) {
-        gfx::Rect raster_rect = canvas_rect;
-        raster_rect.Intersect(content_clip);
         raster_stats->total_pixels_rasterized +=
-            repeat_count * raster_rect.width() * raster_rect.height();
+            repeat_count * content_clip.width() * content_clip.height();
         raster_stats->total_rasterize_time += total_duration;
         raster_stats->best_rasterize_time += best_duration;
       }
 
       if (show_debug_picture_borders_) {
-        gfx::Rect border = content_clip;
+        gfx::Rect border = gfx::ScaleToEnclosedRect(
+             (*i)->LayerRect(), contents_scale);
         border.Inset(0, 0, 1, 1);
 
         SkPaint picture_border_paint;
