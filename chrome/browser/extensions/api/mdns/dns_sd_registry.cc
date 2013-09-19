@@ -80,7 +80,7 @@ DnsSdRegistry::ServiceTypeData::GetServiceList() {
 }
 
 DnsSdRegistry::DnsSdRegistry() {
-#if defined(ENABLED_MDNS)
+#if defined(ENABLE_MDNS)
   service_discovery_client_ = ServiceDiscoverySharedClient::GetInstance();
 #endif
 }
