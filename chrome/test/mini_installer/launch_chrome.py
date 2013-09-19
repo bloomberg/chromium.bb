@@ -30,7 +30,7 @@ def WaitForWindow(process_id, class_pattern):
   while time.time() - start_time < 30:
     if chrome_helper.WindowExists([process_id], class_pattern):
       return True
-    time.sleep(0)
+    time.sleep(0.1)
   return False
 
 

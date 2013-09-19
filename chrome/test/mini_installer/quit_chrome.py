@@ -42,7 +42,7 @@ def CloseWindows(process_path):
         # It's normal that some window handles have become invalid.
         if error.args[0] != winerror.ERROR_INVALID_WINDOW_HANDLE:
           raise
-    time.sleep(0)
+    time.sleep(0.1)
   return False
 
 
