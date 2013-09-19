@@ -112,7 +112,7 @@ bool GLContextEGL::GetTotalGpuMemory(size_t* bytes) {
   // Droid Razr M(1GB)  91MB
   // Galaxy Nexus(1GB)  85MB
   // Xoom(1GB)          85MB
-  // Nexus S(low-end)   16MB
+  // Nexus S(low-end)   8MB
   static size_t limit_bytes = 0;
   if (limit_bytes == 0) {
     if (!base::android::SysUtils::IsLowEndDevice()) {
@@ -125,7 +125,7 @@ bool GLContextEGL::GetTotalGpuMemory(size_t* bytes) {
       else
         limit_bytes = physical_memory_mb / 16;
     } else {
-      limit_bytes = physical_memory_mb / 32;
+      limit_bytes = physical_memory_mb / 64;
     }
     limit_bytes = limit_bytes * 1024 * 1024;
   }
