@@ -69,10 +69,9 @@ bool IsThreadedCompositingEnabled() {
 }
 
 bool IsForceCompositingModeEnabled() {
-#if defined(USE_AURA)
-  // We always want compositing on Aura.
-  return true;
-#endif
+  // Force compositing mode is a subset of threaded compositing mode.
+  if (IsThreadedCompositingEnabled())
+    return true;
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
