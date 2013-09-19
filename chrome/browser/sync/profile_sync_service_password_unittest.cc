@@ -92,13 +92,14 @@ class NullPasswordStore : public MockPasswordStore {
 
 class PasswordTestProfileSyncService : public TestProfileSyncService {
  public:
-  PasswordTestProfileSyncService(
-      ProfileSyncComponentsFactory* factory,
-      Profile* profile,
-      SigninManagerBase* signin)
+  PasswordTestProfileSyncService(ProfileSyncComponentsFactory* factory,
+                                 Profile* profile,
+                                 SigninManagerBase* signin,
+                                 OAuth2TokenService* oauth2_token_service)
       : TestProfileSyncService(factory,
                                profile,
                                signin,
+                               oauth2_token_service,
                                ProfileSyncService::AUTO_START,
                                false) {}
 
@@ -115,9 +116,12 @@ class PasswordTestProfileSyncService : public TestProfileSyncService {
     Profile* profile = static_cast<Profile*>(context);
     SigninManagerBase* signin =
         SigninManagerFactory::GetForProfile(profile);
+    OAuth2TokenService* oauth2_token_service =
+        ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
     ProfileSyncComponentsFactoryMock* factory =
         new ProfileSyncComponentsFactoryMock();
-    return new PasswordTestProfileSyncService(factory, profile, signin);
+    return new PasswordTestProfileSyncService(
+        factory, profile, signin, oauth2_token_service);
   }
 
   void set_passphrase_accept_callback(const base::Closure& callback) {

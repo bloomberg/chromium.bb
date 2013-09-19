@@ -47,6 +47,7 @@
 #include "sync/js/sync_js_controller.h"
 #include "url/gurl.h"
 
+class OAuth2TokenService;
 class Profile;
 class ProfileSyncComponentsFactory;
 class SigninManagerBase;
@@ -60,14 +61,16 @@ class DeviceInfo;
 class JsController;
 class SessionModelAssociator;
 
-namespace sessions { class SyncSessionSnapshot; }
-}
+namespace sessions {
+class SyncSessionSnapshot;
+}  // namespace sessions
+}  // namespace browser_sync
 
 namespace syncer {
 class BaseTransaction;
 struct SyncCredentials;
 struct UserShare;
-}
+}  // namespace syncer
 
 namespace sync_pb {
 class EncryptedData;
@@ -234,6 +237,7 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   ProfileSyncService(ProfileSyncComponentsFactory* factory,
                      Profile* profile,
                      SigninManagerBase* signin,
+                     OAuth2TokenService* oauth2_token_service,
                      StartBehavior start_behavior);
   virtual ~ProfileSyncService();
 
@@ -951,6 +955,9 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // communications with sync and xmpp servers.
   // TODO(pavely): Remove once android is converted to oauth2 tokens.
   bool use_oauth2_token_;
+
+  // ProfileSyncService uses this service to get access tokens.
+  OAuth2TokenService* oauth2_token_service_;
 
   // ProfileSyncService needs to remember access token in order to invalidate it
   // with OAuth2TokenService.

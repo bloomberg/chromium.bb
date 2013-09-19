@@ -8,6 +8,8 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "chrome/browser/signin/profile_oauth2_token_service.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/profile_sync_components_factory_impl.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -94,6 +96,7 @@ class ProfileSyncComponentsFactoryImplTest : public testing::Test {
                                                  command_line_.get()),
             profile_.get(),
             NULL,
+            ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get()),
             ProfileSyncService::MANUAL_START));
     pss->factory()->RegisterDataTypes(pss.get());
     DataTypeController::StateMap controller_states;
@@ -109,12 +112,11 @@ class ProfileSyncComponentsFactoryImplTest : public testing::Test {
 };
 
 TEST_F(ProfileSyncComponentsFactoryImplTest, CreatePSSDefault) {
-  scoped_ptr<ProfileSyncService> pss(
-      new ProfileSyncService(
-          new ProfileSyncComponentsFactoryImpl(profile_.get(),
-                                               command_line_.get()),
+  scoped_ptr<ProfileSyncService> pss(new ProfileSyncService(
+      new ProfileSyncComponentsFactoryImpl(profile_.get(), command_line_.get()),
       profile_.get(),
       NULL,
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get()),
       ProfileSyncService::MANUAL_START));
   pss->factory()->RegisterDataTypes(pss.get());
   DataTypeController::StateMap controller_states;

@@ -30,8 +30,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/about_signin_internals.h"
 #include "chrome/browser/signin/about_signin_internals_factory.h"
-#include "chrome/browser/signin/profile_oauth2_token_service.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/token_service.h"
@@ -152,6 +150,7 @@ bool ShouldShowActionOnUI(
 ProfileSyncService::ProfileSyncService(ProfileSyncComponentsFactory* factory,
                                        Profile* profile,
                                        SigninManagerBase* signin_manager,
+                                       OAuth2TokenService* oauth2_token_service,
                                        StartBehavior start_behavior)
     : last_auth_error_(AuthError::AuthErrorNone()),
       passphrase_required_reason_(syncer::REASON_PASSPHRASE_NOT_REQUIRED),
@@ -175,6 +174,8 @@ ProfileSyncService::ProfileSyncService(ProfileSyncComponentsFactory* factory,
       auto_start_enabled_(start_behavior == AUTO_START),
       configure_status_(DataTypeManager::UNKNOWN),
       setup_in_progress_(false),
+      use_oauth2_token_(false),
+      oauth2_token_service_(oauth2_token_service),
       request_access_token_backoff_(&kRequestAccessTokenBackoffPolicy) {
   // By default, dev, canary, and unbranded Chromium users will go to the
   // development servers. Development servers have more features than standard
@@ -211,15 +212,14 @@ bool ProfileSyncService::IsOAuthRefreshTokenAvailable() {
   // and sync token otherwise (for android).
   // TODO(pavely): Remove "else" part once use_oauth2_token_ is gone.
   if (use_oauth2_token_) {
-    ProfileOAuth2TokenService* token_service =
-        ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
-    if (!token_service)
+    if (!oauth2_token_service_)
       return false;
-    return token_service->RefreshTokenIsAvailable();
+    return oauth2_token_service_->RefreshTokenIsAvailable();
   } else {
     TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);
     if (!token_service)
       return false;
+
     return token_service->HasTokenForService(GaiaConstants::kSyncService);
   }
 }
@@ -347,9 +347,7 @@ void ProfileSyncService::StartSyncingWithServer() {
 }
 
 void ProfileSyncService::RegisterAuthNotifications() {
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
-  token_service->AddObserver(this);
+  oauth2_token_service_->AddObserver(this);
 
   registrar_.Add(this,
                  chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL,
@@ -360,9 +358,7 @@ void ProfileSyncService::RegisterAuthNotifications() {
 }
 
 void ProfileSyncService::UnregisterAuthNotifications() {
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
-  token_service->RemoveObserver(this);
+  oauth2_token_service_->RemoveObserver(this);
   registrar_.RemoveAll();
 }
 
@@ -1904,14 +1900,14 @@ void ProfileSyncService::RequestAccessToken() {
     oauth2_scopes.insert(GaiaConstants::kChromeSyncOAuth2Scope);
   }
 
-  OAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
   // Invalidate previous token, otherwise token service will return the same
   // token again.
   if (!access_token_.empty())
-    token_service->InvalidateToken(oauth2_scopes, access_token_);
+    oauth2_token_service_->InvalidateToken(oauth2_scopes, access_token_);
+
   access_token_.clear();
-  access_token_request_ = token_service->StartRequest(oauth2_scopes, this);
+  access_token_request_ =
+      oauth2_token_service_->StartRequest(oauth2_scopes, this);
 }
 
 void ProfileSyncService::SetEncryptionPassphrase(const std::string& passphrase,

@@ -4,6 +4,8 @@
 
 #include "base/prefs/pref_service.h"
 #include "base/prefs/testing_pref_store.h"
+#include "chrome/browser/signin/profile_oauth2_token_service.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/common/pref_names.h"
@@ -11,18 +13,20 @@
 #include "chrome/test/base/testing_profile.h"
 
 ProfileSyncServiceMock::ProfileSyncServiceMock()
-    : ProfileSyncService(NULL,
-                         NULL,
-                         NULL,
-                         ProfileSyncService::MANUAL_START) {
-}
+    : ProfileSyncService(
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          ProfileSyncService::MANUAL_START) {}
 
-ProfileSyncServiceMock::ProfileSyncServiceMock(
-    Profile* profile) : ProfileSyncService(NULL,
-                                           profile,
-                                           NULL,
-                                           ProfileSyncService::MANUAL_START) {
-}
+ProfileSyncServiceMock::ProfileSyncServiceMock(Profile* profile)
+    : ProfileSyncService(
+          NULL,
+          profile,
+          NULL,
+          ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
+          ProfileSyncService::MANUAL_START) {}
 
 ProfileSyncServiceMock::~ProfileSyncServiceMock() {
 }

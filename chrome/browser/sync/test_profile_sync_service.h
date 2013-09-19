@@ -24,8 +24,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 class Profile;
-class Task;
-class TestProfileSyncService;
 
 ACTION(ReturnNewDataTypeManager) {
   return new browser_sync::DataTypeManagerImpl(arg0,
@@ -121,6 +119,7 @@ class TestProfileSyncService : public ProfileSyncService {
       ProfileSyncComponentsFactory* factory,
       Profile* profile,
       SigninManagerBase* signin,
+      OAuth2TokenService* oauth2_token_service,
       ProfileSyncService::StartBehavior behavior,
       bool synchronous_backend_initialization);
 

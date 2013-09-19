@@ -195,6 +195,7 @@ class OneClickTestProfileSyncService : public TestProfileSyncService {
        : TestProfileSyncService(NULL,
                                 profile,
                                 NULL,
+                                NULL,
                                 ProfileSyncService::MANUAL_START,
                                 false),  // synchronous_backend_init
          first_setup_in_progress_(false) {}

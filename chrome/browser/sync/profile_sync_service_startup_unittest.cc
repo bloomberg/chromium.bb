@@ -120,11 +120,13 @@ class ProfileSyncServiceStartupTest : public testing::Test {
   }
 
   static BrowserContextKeyedService* BuildService(
-      content::BrowserContext* profile) {
+      content::BrowserContext* browser_context) {
+    Profile* profile = static_cast<Profile*>(browser_context);
     return new TestProfileSyncService(
         new ProfileSyncComponentsFactoryMock(),
-        static_cast<Profile*>(profile),
-        SigninManagerFactory::GetForProfile(static_cast<Profile*>(profile)),
+        profile,
+        SigninManagerFactory::GetForProfile(profile),
+        ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
         ProfileSyncService::MANUAL_START,
         true);
   }
@@ -169,12 +171,15 @@ class ProfileSyncServiceStartupCrosTest : public ProfileSyncServiceStartupTest {
         SigninManagerFactory::GetForProfile(profile);
     profile->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
                                    "test_user@gmail.com");
+    OAuth2TokenService* oauth2_token_service =
+        ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
     signin->Initialize(profile, NULL);
     EXPECT_FALSE(signin->GetAuthenticatedUsername().empty());
     return new TestProfileSyncService(
         new ProfileSyncComponentsFactoryMock(),
         profile,
         signin,
+        oauth2_token_service,
         ProfileSyncService::AUTO_START,
         true);
   }

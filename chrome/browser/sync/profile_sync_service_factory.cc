@@ -19,6 +19,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/signin/about_signin_internals_factory.h"
+#include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -105,6 +106,7 @@ BrowserContextKeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
                                            CommandLine::ForCurrentProcess()),
       profile,
       signin,
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
       behavior);
 
   pss->factory()->RegisterDataTypes(pss);
