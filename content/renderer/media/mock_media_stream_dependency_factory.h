@@ -26,6 +26,7 @@ class MockVideoSource : public webrtc::VideoSourceInterface {
   virtual cricket::VideoCapturer* GetVideoCapturer() OVERRIDE;
   virtual void AddSink(cricket::VideoRenderer* output) OVERRIDE;
   virtual void RemoveSink(cricket::VideoRenderer* output) OVERRIDE;
+  virtual cricket::VideoRenderer* FrameInput() OVERRIDE;
   virtual const cricket::VideoOptions* options() const OVERRIDE;
 
   // Changes the state of the source to live and notifies the observer.
@@ -86,7 +87,6 @@ class MockLocalVideoTrack : public webrtc::VideoTrackInterface {
   virtual void AddRenderer(webrtc::VideoRendererInterface* renderer) OVERRIDE;
   virtual void RemoveRenderer(
       webrtc::VideoRendererInterface* renderer) OVERRIDE;
-  virtual cricket::VideoRenderer* FrameInput() OVERRIDE;
   virtual std::string kind() const OVERRIDE;
   virtual std::string id() const OVERRIDE;
   virtual bool enabled() const OVERRIDE;

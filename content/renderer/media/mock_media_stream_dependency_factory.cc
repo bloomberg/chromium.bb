@@ -174,6 +174,11 @@ void MockVideoSource::RemoveSink(cricket::VideoRenderer* output) {
   NOTIMPLEMENTED();
 }
 
+cricket::VideoRenderer* MockVideoSource::FrameInput() {
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
 void MockVideoSource::RegisterObserver(webrtc::ObserverInterface* observer) {
   observers_.push_back(observer);
 }
@@ -234,11 +239,6 @@ void MockLocalVideoTrack::AddRenderer(VideoRendererInterface* renderer) {
 
 void MockLocalVideoTrack::RemoveRenderer(VideoRendererInterface* renderer) {
   NOTIMPLEMENTED();
-}
-
-cricket::VideoRenderer* MockLocalVideoTrack::FrameInput() {
-  NOTIMPLEMENTED();
-  return NULL;
 }
 
 std::string MockLocalVideoTrack::kind() const {
