@@ -111,6 +111,43 @@ TEST(SyncableFileSystemUtilTest,
   RevokeSyncableFileSystem();
 }
 
+TEST(SyncableFileSystemUtilTest, SerializeBeforeOpenFileSystem) {
+  ScopedEnableSyncFSDirectoryOperation enable_directory_operation_;
+  const std::string serialized = kSyncableFileSystemRootURI +
+      CreateNormalizedFilePath(kPath).AsUTF8Unsafe();
+  FileSystemURL deserialized;
+  base::MessageLoop message_loop;
+
+  // Setting up a full syncable filesystem environment.
+  CannedSyncableFileSystem file_system(GURL(kOrigin),
+                                       base::MessageLoopProxy::current().get(),
+                                       base::MessageLoopProxy::current().get());
+  file_system.SetUp();
+  scoped_refptr<LocalFileSyncContext> sync_context =
+      new LocalFileSyncContext(base::MessageLoopProxy::current().get(),
+                               base::MessageLoopProxy::current().get());
+
+  // Before calling initialization we would not be able to get a valid
+  // deserialized URL.
+  EXPECT_FALSE(DeserializeSyncableFileSystemURL(serialized, &deserialized));
+  EXPECT_FALSE(deserialized.is_valid());
+
+  ASSERT_EQ(sync_file_system::SYNC_STATUS_OK,
+            file_system.MaybeInitializeFileSystemContext(sync_context.get()));
+
+  // After initialization this should be ok (even before opening the file
+  // system).
+  EXPECT_TRUE(DeserializeSyncableFileSystemURL(serialized, &deserialized));
+  EXPECT_TRUE(deserialized.is_valid());
+
+  // Shutting down.
+  file_system.TearDown();
+  RevokeSyncableFileSystem();
+  sync_context->ShutdownOnUIThread();
+  sync_context = NULL;
+  base::MessageLoop::current()->RunUntilIdle();
+}
+
 TEST(SyncableFileSystemUtilTest, SyncableFileSystemURL_IsParent) {
   RegisterSyncableFileSystem();
 

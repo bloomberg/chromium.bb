@@ -10,7 +10,6 @@
 #include "base/process/process.h"
 #include "content/child/child_thread.h"
 #include "content/common/fileapi/file_system_messages.h"
-#include "webkit/common/fileapi/file_system_info.h"
 
 namespace content {
 
@@ -21,7 +20,6 @@ class FileSystemDispatcher::CallbackDispatcher {
   typedef FileSystemDispatcher::MetadataCallback MetadataCallback;
   typedef FileSystemDispatcher::ReadDirectoryCallback ReadDirectoryCallback;
   typedef FileSystemDispatcher::OpenFileSystemCallback OpenFileSystemCallback;
-  typedef FileSystemDispatcher::ResolveURLCallback ResolveURLCallback;
   typedef FileSystemDispatcher::WriteCallback WriteCallback;
   typedef FileSystemDispatcher::OpenFileCallback OpenFileCallback;
 
@@ -56,13 +54,6 @@ class FileSystemDispatcher::CallbackDispatcher {
                                     const StatusCallback& error_callback) {
     CallbackDispatcher* dispatcher = new CallbackDispatcher;
     dispatcher->filesystem_callback_ = callback;
-    dispatcher->error_callback_ = error_callback;
-    return dispatcher;
-  }
-  static CallbackDispatcher* Create(const ResolveURLCallback& callback,
-                                    const StatusCallback& error_callback) {
-    CallbackDispatcher* dispatcher = new CallbackDispatcher;
-    dispatcher->resolve_callback_ = callback;
     dispatcher->error_callback_ = error_callback;
     return dispatcher;
   }
@@ -114,12 +105,6 @@ class FileSystemDispatcher::CallbackDispatcher {
     filesystem_callback_.Run(name, root);
   }
 
-  void DidResolveURL(const fileapi::FileSystemInfo& info,
-                     const base::FilePath& file_path,
-                     bool is_directory) {
-    resolve_callback_.Run(info, file_path, is_directory);
-  }
-
   void DidWrite(int64 bytes, bool complete) {
     write_callback_.Run(bytes, complete);
   }
@@ -138,7 +123,6 @@ class FileSystemDispatcher::CallbackDispatcher {
   CreateSnapshotFileCallback snapshot_callback_;
   ReadDirectoryCallback directory_callback_;
   OpenFileSystemCallback filesystem_callback_;
-  ResolveURLCallback resolve_callback_;
   WriteCallback write_callback_;
   OpenFileCallback open_callback_;
 
@@ -166,7 +150,6 @@ bool FileSystemDispatcher::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(FileSystemDispatcher, msg)
     IPC_MESSAGE_HANDLER(FileSystemMsg_DidOpenFileSystem, OnDidOpenFileSystem)
-    IPC_MESSAGE_HANDLER(FileSystemMsg_DidResolveURL, OnDidResolveURL)
     IPC_MESSAGE_HANDLER(FileSystemMsg_DidSucceed, OnDidSucceed)
     IPC_MESSAGE_HANDLER(FileSystemMsg_DidReadDirectory, OnDidReadDirectory)
     IPC_MESSAGE_HANDLER(FileSystemMsg_DidReadMetadata, OnDidReadMetadata)
@@ -189,16 +172,6 @@ void FileSystemDispatcher::OpenFileSystem(
       CallbackDispatcher::Create(success_callback, error_callback));
   ChildThread::current()->Send(new FileSystemHostMsg_Open(
           request_id, origin_url, type, size, create));
-}
-
-void FileSystemDispatcher::ResolveURL(
-    const GURL& filesystem_url,
-    const ResolveURLCallback& success_callback,
-    const StatusCallback& error_callback) {
-  int request_id = dispatchers_.Add(
-      CallbackDispatcher::Create(success_callback, error_callback));
-  ChildThread::current()->Send(new FileSystemHostMsg_ResolveURL(
-          request_id, filesystem_url));
 }
 
 void FileSystemDispatcher::DeleteFileSystem(
@@ -386,17 +359,6 @@ void FileSystemDispatcher::OnDidOpenFileSystem(int request_id,
   CallbackDispatcher* dispatcher = dispatchers_.Lookup(request_id);
   DCHECK(dispatcher);
   dispatcher->DidOpenFileSystem(name, root);
-  dispatchers_.Remove(request_id);
-}
-
-void FileSystemDispatcher::OnDidResolveURL(int request_id,
-                                           const fileapi::FileSystemInfo& info,
-                                           const base::FilePath& file_path,
-                                           bool is_directory) {
-  DCHECK(info.root_url.is_valid());
-  CallbackDispatcher* dispatcher = dispatchers_.Lookup(request_id);
-  DCHECK(dispatcher);
-  dispatcher->DidResolveURL(info, file_path, is_directory);
   dispatchers_.Remove(request_id);
 }
 

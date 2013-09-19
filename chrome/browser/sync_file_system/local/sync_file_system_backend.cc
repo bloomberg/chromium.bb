@@ -66,10 +66,6 @@ SyncFileSystemBackend::SyncFileSystemBackend(Profile* profile)
   DCHECK(CalledOnUIThread());
   if (profile)
     profile_holder_.reset(new ProfileHolder(profile));
-
-  // Register the service name here to enable to crack an URL on SyncFileSystem
-  // even if SyncFileSystemService has not started yet.
-  RegisterSyncableFileSystem();
 }
 
 SyncFileSystemBackend::~SyncFileSystemBackend() {

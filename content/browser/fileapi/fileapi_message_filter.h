@@ -37,7 +37,6 @@ class FileSystemURL;
 class FileSystemContext;
 class FileSystemOperationRunner;
 struct DirectoryEntry;
-struct FileSystemInfo;
 }
 
 namespace net {
@@ -94,8 +93,6 @@ class CONTENT_EXPORT FileAPIMessageFilter : public BrowserMessageFilter {
               fileapi::FileSystemType type,
               int64 requested_size,
               bool create);
-  void OnResolveURL(int request_id,
-                    const GURL& filesystem_url);
   void OnDeleteFileSystem(int request_id,
                           const GURL& origin_url,
                           fileapi::FileSystemType type);
@@ -204,13 +201,8 @@ class CONTENT_EXPORT FileAPIMessageFilter : public BrowserMessageFilter {
                 bool complete);
   void DidOpenFileSystem(int request_id,
                          base::PlatformFileError result,
-                         const std::string& filesystem_name,
+                         const std::string& name,
                          const GURL& root);
-  void DidResolveURL(int request_id,
-                     base::PlatformFileError result,
-                     const fileapi::FileSystemInfo& info,
-                     const base::FilePath& file_path,
-                     bool is_directory);
   void DidDeleteFileSystem(int request_id,
                            base::PlatformFileError result);
   void DidCreateSnapshot(

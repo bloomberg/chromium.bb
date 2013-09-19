@@ -27,7 +27,6 @@
 #include "webkit/browser/fileapi/test_file_system_backend.h"
 #include "webkit/browser/quota/quota_manager.h"
 #include "webkit/browser/quota/special_storage_policy.h"
-#include "webkit/common/fileapi/file_system_info.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
 using quota::QuotaClient;
@@ -48,19 +47,6 @@ void DidOpenFileSystem(
     const std::string& filesystem_name,
     base::PlatformFileError error) {
   callback.Run(error, filesystem_name, filesystem_root);
-}
-
-void DidGetMetadataForResolveURL(
-    const base::FilePath& path,
-    const FileSystemContext::ResolveURLCallback& callback,
-    const FileSystemInfo& info,
-    base::PlatformFileError error,
-    const base::PlatformFileInfo& file_info) {
-  if (error != base::PLATFORM_FILE_OK) {
-    callback.Run(error, FileSystemInfo(), base::FilePath(), false);
-    return;
-  }
-  callback.Run(error, info, path, file_info.is_directory);
 }
 
 }  // namespace
@@ -289,26 +275,6 @@ void FileSystemContext::OpenFileSystem(
                           base::Bind(&DidOpenFileSystem, callback));
 }
 
-void FileSystemContext::ResolveURL(
-    const FileSystemURL& url,
-    const ResolveURLCallback& callback) {
-  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
-  DCHECK(!callback.is_null());
-
-  FileSystemBackend* backend = GetFileSystemBackend(url.type());
-  if (!backend) {
-    callback.Run(base::PLATFORM_FILE_ERROR_SECURITY,
-                 FileSystemInfo(), base::FilePath(), false);
-    return;
-  }
-
-  backend->OpenFileSystem(
-      url.origin(), url.type(),
-      OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT,
-      base::Bind(&FileSystemContext::DidOpenFileSystemForResolveURL,
-                 this, url, callback));
-}
-
 void FileSystemContext::DeleteFileSystem(
     const GURL& origin_url,
     FileSystemType type,
@@ -458,7 +424,8 @@ FileSystemURL FileSystemContext::CrackFileSystemURL(
   return current;
 }
 
-void FileSystemContext::RegisterBackend(FileSystemBackend* backend) {
+void FileSystemContext::RegisterBackend(
+    FileSystemBackend* backend) {
   const FileSystemType mount_types[] = {
     kFileSystemTypeTemporary,
     kFileSystemTypePersistent,
@@ -483,37 +450,6 @@ void FileSystemContext::RegisterBackend(FileSystemBackend* backend) {
       DCHECK(inserted);
     }
   }
-}
-
-void FileSystemContext::DidOpenFileSystemForResolveURL(
-    const FileSystemURL& url,
-    const FileSystemContext::ResolveURLCallback& callback,
-    const GURL& filesystem_root,
-    const std::string& filesystem_name,
-    base::PlatformFileError error) {
-  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
-
-  if (error != base::PLATFORM_FILE_OK) {
-    callback.Run(error, FileSystemInfo(), base::FilePath(), false);
-    return;
-  }
-
-  fileapi::FileSystemInfo info(
-      filesystem_name, filesystem_root, url.mount_type());
-
-  // Extract the virtual path not containing a filesystem type part from |url|.
-  base::FilePath parent =
-      base::FilePath::FromUTF8Unsafe(filesystem_root.path());
-  base::FilePath child = base::FilePath::FromUTF8Unsafe(url.ToGURL().path());
-  base::FilePath path;
-
-  if (parent != child) {
-    bool result = parent.AppendRelativePath(child, &path);
-    DCHECK(result);
-  }
-
-  operation_runner()->GetMetadata(
-      url, base::Bind(&DidGetMetadataForResolveURL, path, callback, info));
 }
 
 }  // namespace fileapi

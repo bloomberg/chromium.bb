@@ -54,9 +54,6 @@ class WebFileSystemImpl
       const WebKit::WebFileSystemType type,
       bool create,
       WebKit::WebFileSystemCallbacks);
-  virtual void resolveURL(
-      const WebKit::WebURL& filesystem_url,
-      WebKit::WebFileSystemCallbacks) OVERRIDE;
   virtual void deleteFileSystem(
       const WebKit::WebURL& storage_partition,
       const WebKit::WebFileSystemType type,

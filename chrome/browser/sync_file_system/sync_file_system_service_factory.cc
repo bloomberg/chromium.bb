@@ -71,6 +71,8 @@ SyncFileSystemServiceFactory::BuildServiceInstanceFor(
     remote_file_service = mock_remote_file_service_.Pass();
   } else if (CommandLine::ForCurrentProcess()->HasSwitch(
       kEnableSyncFileSystemV2)) {
+    RegisterSyncableFileSystem();
+
     GURL base_drive_url(
         google_apis::DriveApiUrlGenerator::kBaseUrlForProduction);
     GURL base_download_url(
@@ -113,6 +115,9 @@ SyncFileSystemServiceFactory::BuildServiceInstanceFor(
     sync_engine->Initialize();
     remote_file_service = sync_engine.PassAs<RemoteFileSyncService>();
   } else {
+    // FileSystem needs to be registered before DriveFileSyncService runs
+    // its initialization code.
+    RegisterSyncableFileSystem();
     remote_file_service =
         DriveFileSyncService::Create(profile).PassAs<RemoteFileSyncService>();
   }

@@ -38,7 +38,6 @@
 #include "webkit/common/blob/blob_data.h"
 #include "webkit/common/blob/shareable_file_reference.h"
 #include "webkit/common/fileapi/directory_entry.h"
-#include "webkit/common/fileapi/file_system_info.h"
 #include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
@@ -169,7 +168,6 @@ bool FileAPIMessageFilter::OnMessageReceived(
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(FileAPIMessageFilter, message, *message_was_ok)
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_Open, OnOpen)
-    IPC_MESSAGE_HANDLER(FileSystemHostMsg_ResolveURL, OnResolveURL)
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_DeleteFileSystem, OnDeleteFileSystem)
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_Move, OnMove)
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_Copy, OnCopy)
@@ -250,23 +248,6 @@ void FileAPIMessageFilter::OnOpen(
              : fileapi::OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT;
   context_->OpenFileSystem(origin_url, type, mode, base::Bind(
       &FileAPIMessageFilter::DidOpenFileSystem, this, request_id));
-}
-
-void FileAPIMessageFilter::OnResolveURL(
-    int request_id,
-    const GURL& filesystem_url) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  FileSystemURL url(context_->CrackURL(filesystem_url));
-  if (!ValidateFileSystemURL(request_id, url))
-    return;
-  if (!security_policy_->CanReadFileSystemFile(process_id_, url)) {
-    Send(new FileSystemMsg_DidFail(request_id,
-                                   base::PLATFORM_FILE_ERROR_SECURITY));
-    return;
-  }
-
-  context_->ResolveURL(url, base::Bind(
-      &FileAPIMessageFilter::DidResolveURL, this, request_id));
 }
 
 void FileAPIMessageFilter::OnDeleteFileSystem(
@@ -892,33 +873,16 @@ void FileAPIMessageFilter::DidWrite(int request_id,
 
 void FileAPIMessageFilter::DidOpenFileSystem(int request_id,
                                              base::PlatformFileError result,
-                                             const std::string& filesystem_name,
+                                             const std::string& name,
                                              const GURL& root) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (result == base::PLATFORM_FILE_OK) {
     DCHECK(root.is_valid());
-    Send(new FileSystemMsg_DidOpenFileSystem(
-        request_id, filesystem_name, root));
+    Send(new FileSystemMsg_DidOpenFileSystem(request_id, name, root));
   } else {
     Send(new FileSystemMsg_DidFail(request_id, result));
   }
   // For OpenFileSystem we do not create a new operation, so no unregister here.
-}
-
-void FileAPIMessageFilter::DidResolveURL(int request_id,
-                                         base::PlatformFileError result,
-                                         const fileapi::FileSystemInfo& info,
-                                         const base::FilePath& file_path,
-                                         bool is_directory) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (result == base::PLATFORM_FILE_OK) {
-    DCHECK(info.root_url.is_valid());
-    Send(new FileSystemMsg_DidResolveURL(
-        request_id, info, file_path, is_directory));
-  } else {
-    Send(new FileSystemMsg_DidFail(request_id, result));
-  }
-  // For ResolveURL we do not create a new operation, so no unregister here.
 }
 
 void FileAPIMessageFilter::DidDeleteFileSystem(

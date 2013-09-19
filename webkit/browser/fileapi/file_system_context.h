@@ -49,8 +49,8 @@ class CopyOrMoveFileValidatorFactory;
 class ExternalFileSystemBackend;
 class ExternalMountPoints;
 class FileStreamWriter;
-class FileSystemBackend;
 class FileSystemFileUtil;
+class FileSystemBackend;
 class FileSystemOperation;
 class FileSystemOperationRunner;
 class FileSystemOptions;
@@ -61,7 +61,6 @@ class MountPoints;
 class SandboxFileSystemBackend;
 
 struct DefaultContextDeleter;
-struct FileSystemInfo;
 
 // This class keeps and provides a file system context for FileSystem API.
 // An instance of this class is created and owned by profile.
@@ -155,12 +154,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemContext
                               const std::string& name,
                               const GURL& root)> OpenFileSystemCallback;
 
-  // Used for ResolveURL.
-  typedef base::Callback<void(base::PlatformFileError result,
-                              const FileSystemInfo& info,
-                              const base::FilePath& file_path,
-                              bool is_directory)> ResolveURLCallback;
-
   // Used for DeleteFileSystem.
   typedef base::Callback<void(base::PlatformFileError result)>
       DeleteFileSystemCallback;
@@ -176,15 +169,8 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemContext
       OpenFileSystemMode mode,
       const OpenFileSystemCallback& callback);
 
-  // Opens the filesystem for the given |url| as read-only, and then checks the
-  // existence of the file entry referred by the URL. This should be called on
-  // the IO thread.
-  void ResolveURL(
-      const FileSystemURL& url,
-      const ResolveURLCallback& callback);
-
   // Deletes the filesystem for the given |origin_url| and |type|. This should
-  // be called on the IO thread.
+  // be called on the IO Thread.
   void DeleteFileSystem(
       const GURL& origin_url,
       FileSystemType type,
@@ -287,13 +273,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemContext
   // For initial backend_map construction. This must be called only from
   // the constructor.
   void RegisterBackend(FileSystemBackend* backend);
-
-  void DidOpenFileSystemForResolveURL(
-      const FileSystemURL& url,
-      const ResolveURLCallback& callback,
-      const GURL& filesystem_root,
-      const std::string& filesystem_name,
-      base::PlatformFileError error);
 
   // Returns a FileSystemBackend, used only by test code.
   SandboxFileSystemBackend* sandbox_backend() const {
