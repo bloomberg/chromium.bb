@@ -798,7 +798,7 @@ PassRefPtr<CDATASection> Document::createCDATASection(const String& data, Except
         es.throwDOMException(NotSupportedError);
         return 0;
     }
-    if (data.find("]]>") != WTF::notFound) {
+    if (data.find("]]>") != WTF::kNotFound) {
         es.throwDOMException(InvalidCharacterError, "String cannot contain ']]>' since that is the end delimiter of a CData section.");
         return 0;
     }
@@ -4960,7 +4960,7 @@ void Document::removeFromTopLayer(Element* element)
     if (!element->isInTopLayer())
         return;
     size_t position = m_topLayerElements.find(element);
-    ASSERT(position != notFound);
+    ASSERT(position != kNotFound);
     m_topLayerElements.remove(position);
     element->setIsInTopLayer(false);
 }

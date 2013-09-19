@@ -561,7 +561,7 @@ void RenderLayer::collectBeforePromotionZOrderList(RenderLayer* ancestorStacking
 
     if (!posZOrderListBeforePromote)
         posZOrderListBeforePromote = adoptPtr(new Vector<RenderLayer*>());
-    else if (posZOrderListBeforePromote->find(this) != notFound)
+    else if (posZOrderListBeforePromote->find(this) != kNotFound)
         return;
 
     // The current layer will appear in the z-order lists after promotion, so

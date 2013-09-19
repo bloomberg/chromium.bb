@@ -681,7 +681,7 @@ void String::split(const String& separator, bool allowEmptyEntries, Vector<Strin
 
     unsigned startPos = 0;
     size_t endPos;
-    while ((endPos = find(separator, startPos)) != notFound) {
+    while ((endPos = find(separator, startPos)) != kNotFound) {
         if (allowEmptyEntries || startPos != endPos)
             result.append(substring(startPos, endPos - startPos));
         startPos = endPos + separator.length();
@@ -696,7 +696,7 @@ void String::split(UChar separator, bool allowEmptyEntries, Vector<String>& resu
 
     unsigned startPos = 0;
     size_t endPos;
-    while ((endPos = find(separator, startPos)) != notFound) {
+    while ((endPos = find(separator, startPos)) != kNotFound) {
         if (allowEmptyEntries || startPos != endPos)
             result.append(substring(startPos, endPos - startPos));
         startPos = endPos + 1;

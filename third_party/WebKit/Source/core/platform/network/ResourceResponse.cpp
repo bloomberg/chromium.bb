@@ -474,7 +474,7 @@ bool ResourceResponse::isAttachment() const
     DEFINE_STATIC_LOCAL(const AtomicString, headerName, ("content-disposition", AtomicString::ConstructFromLiteral));
     String value = m_httpHeaderFields.get(headerName);
     size_t loc = value.find(';');
-    if (loc != notFound)
+    if (loc != kNotFound)
         value = value.left(loc);
     value = value.stripWhiteSpace();
     DEFINE_STATIC_LOCAL(const AtomicString, attachmentString, ("attachment", AtomicString::ConstructFromLiteral));
@@ -627,7 +627,7 @@ static void parseCacheHeader(const String& header, Vector<pair<String, String> >
     for (unsigned pos = 0; pos < max; /* pos incremented in loop */) {
         size_t nextCommaPosition = safeHeader.find(',', pos);
         size_t nextEqualSignPosition = safeHeader.find('=', pos);
-        if (nextEqualSignPosition != notFound && (nextEqualSignPosition < nextCommaPosition || nextCommaPosition == notFound)) {
+        if (nextEqualSignPosition != kNotFound && (nextEqualSignPosition < nextCommaPosition || nextCommaPosition == kNotFound)) {
             // Get directive name, parse right hand side of equal sign, then add to map
             String directive = trimToNextSeparator(safeHeader.substring(pos, nextEqualSignPosition - pos).stripWhiteSpace());
             pos += nextEqualSignPosition - pos + 1;
@@ -636,13 +636,13 @@ static void parseCacheHeader(const String& header, Vector<pair<String, String> >
             if (value[0] == '"') {
                 // The value is a quoted string
                 size_t nextDoubleQuotePosition = value.find('"', 1);
-                if (nextDoubleQuotePosition != notFound) {
+                if (nextDoubleQuotePosition != kNotFound) {
                     // Store the value as a quoted string without quotes
                     result.append(pair<String, String>(directive, value.substring(1, nextDoubleQuotePosition - 1).stripWhiteSpace()));
                     pos += (safeHeader.find('"', pos) - pos) + nextDoubleQuotePosition + 1;
                     // Move past next comma, if there is one
                     size_t nextCommaPosition2 = safeHeader.find(',', pos);
-                    if (nextCommaPosition2 != notFound)
+                    if (nextCommaPosition2 != kNotFound)
                         pos += nextCommaPosition2 - pos + 1;
                     else
                         return; // Parse error if there is anything left with no comma
@@ -654,7 +654,7 @@ static void parseCacheHeader(const String& header, Vector<pair<String, String> >
             } else {
                 // The value is a token until the next comma
                 size_t nextCommaPosition2 = value.find(',');
-                if (nextCommaPosition2 != notFound) {
+                if (nextCommaPosition2 != kNotFound) {
                     // The value is delimited by the next comma
                     result.append(pair<String, String>(directive, trimToNextSeparator(value.substring(0, nextCommaPosition2).stripWhiteSpace())));
                     pos += (safeHeader.find(',', pos) - pos) + 1;
@@ -664,7 +664,7 @@ static void parseCacheHeader(const String& header, Vector<pair<String, String> >
                     return;
                 }
             }
-        } else if (nextCommaPosition != notFound && (nextCommaPosition < nextEqualSignPosition || nextEqualSignPosition == notFound)) {
+        } else if (nextCommaPosition != kNotFound && (nextCommaPosition < nextEqualSignPosition || nextEqualSignPosition == kNotFound)) {
             // Add directive to map with empty string as value
             result.append(pair<String, String>(trimToNextSeparator(safeHeader.substring(pos, nextCommaPosition - pos).stripWhiteSpace()), ""));
             pos += nextCommaPosition - pos + 1;

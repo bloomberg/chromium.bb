@@ -72,7 +72,7 @@ RenderObject* NodeRenderingContext::nextRenderer() const
 
         const Vector<RefPtr<Element> >& topLayerElements = element->document().topLayerElements();
         size_t position = topLayerElements.find(element);
-        ASSERT(position != notFound);
+        ASSERT(position != kNotFound);
         for (size_t i = position + 1; i < topLayerElements.size(); ++i) {
             if (RenderObject* renderer = topLayerElements[i]->renderer())
                 return renderer;

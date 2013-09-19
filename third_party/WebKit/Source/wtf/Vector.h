@@ -707,7 +707,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
     template<typename U>
     bool Vector<T, inlineCapacity>::contains(const U& value) const
     {
-        return find(value) != notFound;
+        return find(value) != kNotFound;
     }
 
     template<typename T, size_t inlineCapacity>
@@ -720,7 +720,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
             if (*iter == value)
                 return iter - b;
         }
-        return notFound;
+        return kNotFound;
     }
 
     template<typename T, size_t inlineCapacity>
@@ -734,7 +734,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
             if (*iter == value)
                 return iter - b;
         }
-        return notFound;
+        return kNotFound;
     }
 
     template<typename T, size_t inlineCapacity>

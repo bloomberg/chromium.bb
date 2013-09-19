@@ -66,7 +66,7 @@ public:
         MutexLocker locker(m_mutex);
 
         size_t index = m_processors.find(processor);
-        if (index == notFound) {
+        if (index == kNotFound) {
             ASSERT_NOT_REACHED();
             return;
         }
@@ -196,14 +196,14 @@ size_t TimelineTraceEventProcessor::TraceEvent::findParameter(const char* name) 
         if (!strcmp(name, m_argumentNames[i]))
             return i;
     }
-    return notFound;
+    return kNotFound;
 }
 
 const TimelineTraceEventProcessor::TraceValueUnion& TimelineTraceEventProcessor::TraceEvent::parameter(const char* name, TraceValueTypes expectedType) const
 {
     static TraceValueUnion missingValue;
     size_t index = findParameter(name);
-    if (index == notFound || m_argumentTypes[index] != expectedType) {
+    if (index == kNotFound || m_argumentTypes[index] != expectedType) {
         ASSERT_NOT_REACHED();
         return missingValue;
     }

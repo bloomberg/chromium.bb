@@ -52,12 +52,12 @@ PassRefPtr<SecurityOrigin> createSecurityOriginFromDatabaseIdentifier(const Stri
 
     // Make sure there's a first separator
     size_t separator1 = databaseIdentifier.find(separatorCharacter);
-    if (separator1 == notFound)
+    if (separator1 == kNotFound)
         return SecurityOrigin::createUnique();
 
     // Make sure there's a second separator
     size_t separator2 = databaseIdentifier.reverseFind(separatorCharacter);
-    if (separator2 == notFound)
+    if (separator2 == kNotFound)
         return SecurityOrigin::createUnique();
 
     // Ensure there were at least 2 separator characters. Some hostnames on intranets have

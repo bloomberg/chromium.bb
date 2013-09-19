@@ -459,7 +459,7 @@ void InspectorDOMDebuggerAgent::didFireWebGLWarning()
 
 void InspectorDOMDebuggerAgent::didFireWebGLErrorOrWarning(const String& message)
 {
-    if (message.findIgnoringCase("error") != WTF::notFound)
+    if (message.findIgnoringCase("error") != WTF::kNotFound)
         didFireWebGLError(String());
     else
         didFireWebGLWarning();

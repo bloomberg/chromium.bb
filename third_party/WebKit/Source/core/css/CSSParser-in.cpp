@@ -1087,7 +1087,7 @@ static bool parseTransformArguments(CSSTransformValue* transformValue, Character
 {
     while (expectedCount) {
         size_t end = WTF::find(characters, length, expectedCount == 1 ? ')' : ',', start);
-        if (end == notFound || (expectedCount == 1 && end != length - 1))
+        if (end == kNotFound || (expectedCount == 1 && end != length - 1))
             return false;
         unsigned argumentLength = end - start;
         CSSPrimitiveValue::UnitTypes unit = CSSPrimitiveValue::CSS_NUMBER;

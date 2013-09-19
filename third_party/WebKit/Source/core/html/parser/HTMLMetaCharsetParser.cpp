@@ -62,7 +62,7 @@ String HTMLMetaCharsetParser::extractCharset(const String& value)
 
     while (pos < length) {
         pos = value.find(charsetString, pos, false);
-        if (pos == notFound)
+        if (pos == kNotFound)
             break;
 
         pos += charsetLength;

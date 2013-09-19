@@ -55,11 +55,11 @@ void MediaStreamDescriptor::addComponent(PassRefPtr<MediaStreamComponent> compon
 {
     switch (component->source()->type()) {
     case MediaStreamSource::TypeAudio:
-        if (m_audioComponents.find(component) == notFound)
+        if (m_audioComponents.find(component) == kNotFound)
             m_audioComponents.append(component);
         break;
     case MediaStreamSource::TypeVideo:
-        if (m_videoComponents.find(component) == notFound)
+        if (m_videoComponents.find(component) == kNotFound)
             m_videoComponents.append(component);
         break;
     }
@@ -67,16 +67,16 @@ void MediaStreamDescriptor::addComponent(PassRefPtr<MediaStreamComponent> compon
 
 void MediaStreamDescriptor::removeComponent(PassRefPtr<MediaStreamComponent> component)
 {
-    size_t pos = notFound;
+    size_t pos = kNotFound;
     switch (component->source()->type()) {
     case MediaStreamSource::TypeAudio:
         pos = m_audioComponents.find(component);
-        if (pos != notFound)
+        if (pos != kNotFound)
             m_audioComponents.remove(pos);
         break;
     case MediaStreamSource::TypeVideo:
         pos = m_videoComponents.find(component);
-        if (pos != notFound)
+        if (pos != kNotFound)
             m_videoComponents.remove(pos);
         break;
     }

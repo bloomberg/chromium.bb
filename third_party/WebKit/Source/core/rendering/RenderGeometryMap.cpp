@@ -36,7 +36,7 @@
 namespace WebCore {
 
 RenderGeometryMap::RenderGeometryMap(MapCoordinatesFlags flags)
-    : m_insertionPosition(notFound)
+    : m_insertionPosition(kNotFound)
     , m_nonUniformStepsCount(0)
     , m_transformedStepsCount(0)
     , m_fixedStepsCount(0)
@@ -229,7 +229,7 @@ void RenderGeometryMap::push(const RenderObject* renderer, const LayoutSize& off
 {
 //    fprintf(stderr, "RenderGeometryMap::push %p %d,%d isNonUniform=%d\n", renderer, offsetFromContainer.width().toInt(), offsetFromContainer.height().toInt(), isNonUniform);
 
-    ASSERT(m_insertionPosition != notFound);
+    ASSERT(m_insertionPosition != kNotFound);
     ASSERT(!renderer->isRenderView() || !m_insertionPosition || m_mapCoordinatesFlags & TraverseDocumentBoundaries);
     ASSERT(offsetForFixedPosition.isZero() || renderer->isRenderView());
 
@@ -244,7 +244,7 @@ void RenderGeometryMap::push(const RenderObject* renderer, const LayoutSize& off
 
 void RenderGeometryMap::push(const RenderObject* renderer, const TransformationMatrix& t, bool accumulatingTransform, bool isNonUniform, bool isFixedPosition, bool hasTransform, LayoutSize offsetForFixedPosition)
 {
-    ASSERT(m_insertionPosition != notFound);
+    ASSERT(m_insertionPosition != kNotFound);
     ASSERT(!renderer->isRenderView() || !m_insertionPosition || m_mapCoordinatesFlags & TraverseDocumentBoundaries);
     ASSERT(offsetForFixedPosition.isZero() || renderer->isRenderView());
 

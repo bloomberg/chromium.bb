@@ -200,15 +200,15 @@ void RenderTable::addChild(RenderObject* child, RenderObject* beforeChild)
 
 void RenderTable::addCaption(const RenderTableCaption* caption)
 {
-    ASSERT(m_captions.find(caption) == notFound);
+    ASSERT(m_captions.find(caption) == kNotFound);
     m_captions.append(const_cast<RenderTableCaption*>(caption));
 }
 
 void RenderTable::removeCaption(const RenderTableCaption* oldCaption)
 {
     size_t index = m_captions.find(oldCaption);
-    ASSERT(index != notFound);
-    if (index == notFound)
+    ASSERT(index != kNotFound);
+    if (index == kNotFound)
         return;
 
     m_captions.remove(index);

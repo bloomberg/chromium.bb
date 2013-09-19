@@ -64,10 +64,10 @@ bool CustomElement::isValidName(const AtomicString& name, NameSet validNames)
 {
     validNames = NameSet(validNames & enabledNameSet());
 
-    if ((validNames & EmbedderNames) && notFound != embedderCustomElementNames().find(name))
+    if ((validNames & EmbedderNames) && kNotFound != embedderCustomElementNames().find(name))
         return Document::isValidName(name);
 
-    if ((validNames & StandardNames) && notFound != name.find('-')) {
+    if ((validNames & StandardNames) && kNotFound != name.find('-')) {
         DEFINE_STATIC_LOCAL(Vector<AtomicString>, reservedNames, ());
         if (reservedNames.isEmpty()) {
             reservedNames.append(MathMLNames::annotation_xmlTag.localName());
@@ -80,7 +80,7 @@ bool CustomElement::isValidName(const AtomicString& name, NameSet validNames)
             reservedNames.append(SVGNames::missing_glyphTag.localName());
         }
 
-        if (notFound == reservedNames.find(name))
+        if (kNotFound == reservedNames.find(name))
             return Document::isValidName(name.string());
     }
 

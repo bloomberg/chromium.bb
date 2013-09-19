@@ -65,7 +65,7 @@ void WebKitSourceBufferList::add(PassRefPtr<WebKitSourceBuffer> buffer)
 bool WebKitSourceBufferList::remove(WebKitSourceBuffer* buffer)
 {
     size_t index = m_list.find(buffer);
-    if (index == notFound)
+    if (index == kNotFound)
         return false;
 
     buffer->removedFromMediaSource();

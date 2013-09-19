@@ -45,7 +45,7 @@ public:
     PlainTextOffsets(int start, int length);
     size_t end() const { return m_end; }
     size_t start() const { return m_start; }
-    bool isNull() const { return m_start == notFound; }
+    bool isNull() const { return m_start == kNotFound; }
 private:
     size_t m_start;
     size_t m_end;

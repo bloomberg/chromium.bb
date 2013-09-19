@@ -250,12 +250,12 @@ void DateTimeFormat::quoteAndAppendLiteral(const String& literal, StringBuilder&
     if (literal.length() <= 0)
         return;
 
-    if (literal.find(isASCIIAlphabetOrQuote) == notFound) {
+    if (literal.find(isASCIIAlphabetOrQuote) == kNotFound) {
         buffer.append(literal);
         return;
     }
 
-    if (literal.find('\'') == notFound) {
+    if (literal.find('\'') == kNotFound) {
         buffer.append("'");
         buffer.append(literal);
         buffer.append("'");

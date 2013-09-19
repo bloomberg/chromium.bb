@@ -112,11 +112,11 @@ void MediaFragmentURIParser::parseFragments()
         //    percent-encoded octets are decoded.
         size_t parameterStart = offset;
         size_t parameterEnd = fragmentString.find('&', offset);
-        if (parameterEnd == notFound)
+        if (parameterEnd == kNotFound)
             parameterEnd = end;
 
         size_t equalOffset = fragmentString.find('=', offset);
-        if (equalOffset == notFound || equalOffset > parameterEnd) {
+        if (equalOffset == kNotFound || equalOffset > parameterEnd) {
             offset = parameterEnd + 1;
             continue;
         }

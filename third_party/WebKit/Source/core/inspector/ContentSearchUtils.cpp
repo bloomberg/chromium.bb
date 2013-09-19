@@ -49,7 +49,7 @@ static String createSearchRegexSource(const String& text)
     String specials(regexSpecialCharacters);
 
     for (unsigned i = 0; i < text.length(); i++) {
-        if (specials.find(text[i]) != notFound)
+        if (specials.find(text[i]) != kNotFound)
             result.append("\\");
         result.append(text[i]);
     }
@@ -129,7 +129,7 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::Page::SearchMatch> > searchInTextByLi
 
 static String findMagicComment(const String& content, const String& name, MagicCommentType commentType, bool* deprecated = 0)
 {
-    ASSERT(name.find("=") == notFound);
+    ASSERT(name.find("=") == kNotFound);
     if (deprecated)
         *deprecated = false;
     String pattern;
@@ -162,7 +162,7 @@ static String findMagicComment(const String& content, const String& name, MagicC
 
     String match = content.substring(offset, matchLength);
     size_t separator = match.find("=");
-    ASSERT(separator != notFound);
+    ASSERT(separator != kNotFound);
     match = match.substring(separator + 1);
 
     switch (commentType) {
@@ -170,7 +170,7 @@ static String findMagicComment(const String& content, const String& name, MagicC
         return match.stripWhiteSpace();
     case CSSMagicComment: {
         size_t lastStarIndex = match.reverseFind('*');
-        ASSERT(lastStarIndex != notFound);
+        ASSERT(lastStarIndex != kNotFound);
         return match.substring(0, lastStarIndex).stripWhiteSpace();
     }
     default:

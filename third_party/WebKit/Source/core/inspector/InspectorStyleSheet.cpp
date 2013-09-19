@@ -362,7 +362,7 @@ void StyleSheetHandler::endProperty(bool isImportant, bool isParsed, unsigned of
     if (propertyString.endsWith(';'))
         propertyString = propertyString.left(propertyString.length() - 1);
     size_t colonIndex = propertyString.find(':');
-    ASSERT(colonIndex != notFound);
+    ASSERT(colonIndex != kNotFound);
 
     String name = propertyString.left(colonIndex).stripWhiteSpace();
     String value = propertyString.substring(colonIndex + 1, propertyString.length()).stripWhiteSpace();
@@ -1539,7 +1539,7 @@ unsigned InspectorStyleSheet::ruleIndexByRule(const CSSRule* rule) const
 {
     ensureFlatRules();
     size_t index = m_flatRules.find(rule);
-    return index == notFound ? UINT_MAX : static_cast<unsigned>(index);
+    return index == kNotFound ? UINT_MAX : static_cast<unsigned>(index);
 }
 
 bool InspectorStyleSheet::checkPageStyleSheet(ExceptionState& es) const

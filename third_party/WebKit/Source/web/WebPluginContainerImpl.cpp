@@ -602,7 +602,7 @@ bool WebPluginContainerImpl::wantsWheelEvents()
 void WebPluginContainerImpl::willDestroyPluginLoadObserver(WebPluginLoadObserver* observer)
 {
     size_t pos = m_pluginLoadObservers.find(observer);
-    if (pos == notFound)
+    if (pos == kNotFound)
         return;
     m_pluginLoadObservers.remove(pos);
 }

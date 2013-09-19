@@ -37,7 +37,7 @@ PassOwnPtr<Vector<unsigned> > lineEndings(const String& text)
     unsigned start = 0;
     while (start < text.length()) {
         size_t lineEnd = text.find('\n', start);
-        if (lineEnd == notFound)
+        if (lineEnd == kNotFound)
             break;
 
         result->append(static_cast<unsigned>(lineEnd));

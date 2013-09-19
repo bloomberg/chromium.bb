@@ -54,7 +54,7 @@ public:
     virtual void free(void* ptr)
     {
         size_t slot = m_allocatedRegions.find(ptr);
-        ASSERT_NE(slot, notFound);
+        ASSERT_NE(slot, kNotFound);
         m_allocatedRegions.remove(slot);
         PODArena::FastMallocAllocator::free(ptr);
     }

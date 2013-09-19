@@ -189,7 +189,7 @@ public:
         , m_yOffset(0)
         , m_width(0)
         , m_height(0)
-        , m_transparentPixel(notFound)
+        , m_transparentPixel(kNotFound)
         , m_disposalMethod(WebCore::ImageFrame::DisposeNotSpecified)
         , m_dataSize(0)
         , m_progressiveDisplay(false)
@@ -258,7 +258,7 @@ private:
     unsigned m_yOffset; // With respect to "screen" origin.
     unsigned m_width;
     unsigned m_height;
-    size_t m_transparentPixel; // Index of transparent pixel. Value is notFound if there is no transparent pixel.
+    size_t m_transparentPixel; // Index of transparent pixel. Value is kNotFound if there is no transparent pixel.
     WebCore::ImageFrame::DisposalMethod m_disposalMethod; // Restore to background, leave in place, etc.
     int m_dataSize;
 

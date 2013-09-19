@@ -99,7 +99,7 @@ Vector<Length> parseHTMLAreaElementCoords(const String& string)
     unsigned pos = 0;
     size_t pos2;
 
-    while ((pos2 = str->find(' ', pos)) != notFound) {
+    while ((pos2 = str->find(' ', pos)) != kNotFound) {
         r[i++] = parseHTMLAreaCoordinate(str->characters8() + pos, pos2 - pos);
         pos = pos2 + 1;
     }

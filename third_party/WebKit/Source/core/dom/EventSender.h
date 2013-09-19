@@ -45,7 +45,7 @@ public:
 #ifndef NDEBUG
     bool hasPendingEvents(T* sender) const
     {
-        return m_dispatchSoonList.find(sender) != notFound || m_dispatchingList.find(sender) != notFound;
+        return m_dispatchSoonList.find(sender) != kNotFound || m_dispatchingList.find(sender) != kNotFound;
     }
 #endif
 

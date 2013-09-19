@@ -49,7 +49,7 @@ static inline String languageFromLocale(const String& locale)
     String normalizedLocale = locale;
     normalizedLocale.replace('-', '_');
     size_t separatorPosition = normalizedLocale.find('_');
-    if (separatorPosition == notFound)
+    if (separatorPosition == kNotFound)
         return normalizedLocale;
     return normalizedLocale.left(separatorPosition);
 }

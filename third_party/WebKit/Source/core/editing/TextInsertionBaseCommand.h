@@ -53,7 +53,7 @@ void forEachLineInString(const String& string, const LineOperation& operation)
 {
     unsigned offset = 0;
     size_t newline;
-    while ((newline = string.find('\n', offset)) != notFound) {
+    while ((newline = string.find('\n', offset)) != kNotFound) {
         operation(offset, newline - offset, false);
         offset = newline + 1;
     }

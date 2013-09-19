@@ -360,7 +360,7 @@ void RuleSet::addChildRules(const Vector<RefPtr<StyleRuleBase> >& rules, const M
             StyleRule* styleRule = static_cast<StyleRule*>(rule);
 
             const CSSSelectorList& selectorList = styleRule->selectorList();
-            for (size_t selectorIndex = 0; selectorIndex != notFound; selectorIndex = selectorList.indexOfNextSelectorAfter(selectorIndex)) {
+            for (size_t selectorIndex = 0; selectorIndex != kNotFound; selectorIndex = selectorList.indexOfNextSelectorAfter(selectorIndex)) {
                 if (selectorList.hasShadowDistributedAt(selectorIndex)) {
                     if (isDocumentScope(scope))
                         continue;
@@ -424,7 +424,7 @@ void RuleSet::addRulesFromSheet(StyleSheetContents* sheet, const MediaQueryEvalu
 
 void RuleSet::addStyleRule(StyleRule* rule, AddRuleFlags addRuleFlags)
 {
-    for (size_t selectorIndex = 0; selectorIndex != notFound; selectorIndex = rule->selectorList().indexOfNextSelectorAfter(selectorIndex))
+    for (size_t selectorIndex = 0; selectorIndex != kNotFound; selectorIndex = rule->selectorList().indexOfNextSelectorAfter(selectorIndex))
         addRule(rule, selectorIndex, addRuleFlags);
 }
 

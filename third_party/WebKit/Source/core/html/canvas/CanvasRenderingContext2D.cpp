@@ -2161,7 +2161,7 @@ static void replaceCharacterInString(String& text, WTF::CharacterMatchFunctionPt
 {
     const size_t replacementLength = replacement.length();
     size_t index = 0;
-    while ((index = text.find(matchFunction, index)) != notFound) {
+    while ((index = text.find(matchFunction, index)) != kNotFound) {
         text.replace(index, 1, replacement);
         index += replacementLength;
     }

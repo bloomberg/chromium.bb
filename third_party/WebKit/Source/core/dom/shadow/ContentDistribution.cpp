@@ -49,7 +49,7 @@ size_t ContentDistribution::find(const Node* node) const
 {
     HashMap<const Node*, size_t>::const_iterator it = m_indices.find(node);
     if (it == m_indices.end())
-        return notFound;
+        return kNotFound;
 
     return it.get()->value;
 }
@@ -57,7 +57,7 @@ size_t ContentDistribution::find(const Node* node) const
 Node* ContentDistribution::nextTo(const Node* node) const
 {
     size_t index = find(node);
-    if (index == notFound || index + 1 == size())
+    if (index == kNotFound || index + 1 == size())
         return 0;
     return at(index + 1).get();
 }
@@ -65,7 +65,7 @@ Node* ContentDistribution::nextTo(const Node* node) const
 Node* ContentDistribution::previousTo(const Node* node) const
 {
     size_t index = find(node);
-    if (index == notFound || !index)
+    if (index == kNotFound || !index)
         return 0;
     return at(index - 1).get();
 }

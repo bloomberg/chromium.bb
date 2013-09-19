@@ -586,7 +586,7 @@ void TextIterator::handleTextBox()
                 m_offset = runStart + 1;
             } else {
                 size_t subrunEnd = str.find('\n', runStart);
-                if (subrunEnd == notFound || subrunEnd > runEnd)
+                if (subrunEnd == kNotFound || subrunEnd > runEnd)
                     subrunEnd = runEnd;
 
                 m_offset = subrunEnd;
@@ -2321,7 +2321,7 @@ PassRefPtr<Range> TextIterator::rangeFromLocationAndLength(ContainerNode* scope,
 
 bool TextIterator::getLocationAndLengthFromRange(Node* scope, const Range* range, size_t& location, size_t& length)
 {
-    location = notFound;
+    location = kNotFound;
     length = 0;
 
     if (!range->startContainer())

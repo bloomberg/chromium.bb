@@ -361,7 +361,7 @@ void Element::removeAttribute(const QualifiedName& name)
         return;
 
     size_t index = elementData()->getAttributeItemIndex(name);
-    if (index == notFound)
+    if (index == kNotFound)
         return;
 
     removeAttributeInternal(index, NotInSynchronizationOfLazyAttribute);
@@ -838,33 +838,33 @@ void Element::setAttribute(const AtomicString& localName, const AtomicString& va
     synchronizeAttribute(localName);
     const AtomicString& caseAdjustedLocalName = shouldIgnoreAttributeCase(this) ? localName.lower() : localName;
 
-    size_t index = elementData() ? elementData()->getAttributeItemIndex(caseAdjustedLocalName, false) : notFound;
-    const QualifiedName& qName = index != notFound ? attributeItem(index)->name() : QualifiedName(nullAtom, caseAdjustedLocalName, nullAtom);
+    size_t index = elementData() ? elementData()->getAttributeItemIndex(caseAdjustedLocalName, false) : kNotFound;
+    const QualifiedName& qName = index != kNotFound ? attributeItem(index)->name() : QualifiedName(nullAtom, caseAdjustedLocalName, nullAtom);
     setAttributeInternal(index, qName, value, NotInSynchronizationOfLazyAttribute);
 }
 
 void Element::setAttribute(const QualifiedName& name, const AtomicString& value)
 {
     synchronizeAttribute(name);
-    size_t index = elementData() ? elementData()->getAttributeItemIndex(name) : notFound;
+    size_t index = elementData() ? elementData()->getAttributeItemIndex(name) : kNotFound;
     setAttributeInternal(index, name, value, NotInSynchronizationOfLazyAttribute);
 }
 
 void Element::setSynchronizedLazyAttribute(const QualifiedName& name, const AtomicString& value)
 {
-    size_t index = elementData() ? elementData()->getAttributeItemIndex(name) : notFound;
+    size_t index = elementData() ? elementData()->getAttributeItemIndex(name) : kNotFound;
     setAttributeInternal(index, name, value, InSynchronizationOfLazyAttribute);
 }
 
 inline void Element::setAttributeInternal(size_t index, const QualifiedName& name, const AtomicString& newValue, SynchronizationOfLazyAttribute inSynchronizationOfLazyAttribute)
 {
     if (newValue.isNull()) {
-        if (index != notFound)
+        if (index != kNotFound)
             removeAttributeInternal(index, inSynchronizationOfLazyAttribute);
         return;
     }
 
-    if (index == notFound) {
+    if (index == kNotFound) {
         addAttributeInternal(name, newValue, inSynchronizationOfLazyAttribute);
         return;
     }
@@ -1833,7 +1833,7 @@ PassRefPtr<Attr> Element::setAttributeNode(Attr* attrNode, ExceptionState& es)
     UniqueElementData* elementData = ensureUniqueElementData();
 
     size_t index = elementData->getAttributeItemIndex(attrNode->qualifiedName(), shouldIgnoreAttributeCase(this));
-    if (index != notFound) {
+    if (index != kNotFound) {
         if (oldAttrNode)
             detachAttrNodeFromElementWithValue(oldAttrNode.get(), elementData->attributeItem(index)->value());
         else
@@ -1870,7 +1870,7 @@ PassRefPtr<Attr> Element::removeAttributeNode(Attr* attr, ExceptionState& es)
     synchronizeAttribute(attr->qualifiedName());
 
     size_t index = elementData()->getAttrIndex(attr);
-    if (index == notFound) {
+    if (index == kNotFound) {
         es.throwDOMException(NotFoundError);
         return 0;
     }
@@ -1945,7 +1945,7 @@ void Element::removeAttribute(const AtomicString& name)
 
     AtomicString localName = shouldIgnoreAttributeCase(this) ? name.lower() : name;
     size_t index = elementData()->getAttributeItemIndex(localName, false);
-    if (index == notFound) {
+    if (index == kNotFound) {
         if (UNLIKELY(localName == styleAttr) && elementData()->m_styleAttributeIsDirty && isStyledElement())
             removeAllInlineStyleProperties();
         return;
@@ -3611,7 +3611,7 @@ size_t ElementData::getAttrIndex(Attr* attr) const
         if (attributeItem(i)->name() == attr->qualifiedName())
             return i;
     }
-    return notFound;
+    return kNotFound;
 }
 
 size_t ElementData::getAttributeItemIndexSlowCase(const AtomicString& name, bool shouldIgnoreAttributeCase) const
@@ -3630,7 +3630,7 @@ size_t ElementData::getAttributeItemIndexSlowCase(const AtomicString& name, bool
                 return i;
         }
     }
-    return notFound;
+    return kNotFound;
 }
 
 Attribute* UniqueElementData::getAttributeItem(const QualifiedName& name)

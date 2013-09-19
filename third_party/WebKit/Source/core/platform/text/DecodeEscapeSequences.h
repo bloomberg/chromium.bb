@@ -130,7 +130,7 @@ String decodeEscapeSequences(const String& string, const WTF::TextEncoding& enco
     size_t decodedPosition = 0;
     size_t searchPosition = 0;
     size_t encodedRunPosition;
-    while ((encodedRunPosition = EscapeSequence::findInString(string, searchPosition)) != notFound) {
+    while ((encodedRunPosition = EscapeSequence::findInString(string, searchPosition)) != kNotFound) {
         size_t encodedRunEnd = EscapeSequence::findEndOfRun(string, encodedRunPosition, length);
         searchPosition = encodedRunEnd;
         if (encodedRunEnd == encodedRunPosition) {

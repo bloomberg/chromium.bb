@@ -153,7 +153,7 @@ Document* HTMLImportLoader::importedDocument() const
 
 void HTMLImportLoader::addClient(HTMLImportLoaderClient* client)
 {
-    ASSERT(notFound == m_clients.find(client));
+    ASSERT(kNotFound == m_clients.find(client));
     m_clients.append(client);
     if (isDone())
         client->didFinish();
@@ -161,7 +161,7 @@ void HTMLImportLoader::addClient(HTMLImportLoaderClient* client)
 
 void HTMLImportLoader::removeClient(HTMLImportLoaderClient* client)
 {
-    ASSERT(notFound != m_clients.find(client));
+    ASSERT(kNotFound != m_clients.find(client));
     m_clients.remove(m_clients.find(client));
 }
 

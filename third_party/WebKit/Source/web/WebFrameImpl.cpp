@@ -1126,13 +1126,13 @@ bool WebFrameImpl::firstRectForCharacterRange(unsigned location, unsigned length
 size_t WebFrameImpl::characterIndexForPoint(const WebPoint& webPoint) const
 {
     if (!frame())
-        return notFound;
+        return kNotFound;
 
     IntPoint point = frame()->view()->windowToContents(webPoint);
     HitTestResult result = frame()->eventHandler()->hitTestResultAtPoint(point, HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::DisallowShadowContent);
     RefPtr<Range> range = frame()->rangeForPoint(result.roundedPointInInnerNodeFrame());
     if (!range)
-        return notFound;
+        return kNotFound;
 
     size_t location, length;
     TextIterator::getLocationAndLengthFromRange(frame()->selection().rootEditableElementOrDocumentElement(), range.get(), location, length);

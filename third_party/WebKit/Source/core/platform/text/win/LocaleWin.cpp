@@ -57,7 +57,7 @@ typedef HashMap<String, LCID> NameToLCIDMap;
 static String extractLanguageCode(const String& locale)
 {
     size_t dashPosition = locale.find('-');
-    if (dashPosition == notFound)
+    if (dashPosition == kNotFound)
         return locale;
     return locale.left(dashPosition);
 }
@@ -65,7 +65,7 @@ static String extractLanguageCode(const String& locale)
 static String removeLastComponent(const String& name)
 {
     size_t lastSeparator = name.reverseFind('-');
-    if (lastSeparator == notFound)
+    if (lastSeparator == kNotFound)
         return emptyString();
     return name.left(lastSeparator);
 }
@@ -455,7 +455,7 @@ String LocaleWin::shortTimeFormat()
         builder.append(getLocaleInfoString(LOCALE_STIME));
         builder.append("ss");
         size_t pos = format.reverseFind(builder.toString());
-        if (pos != notFound)
+        if (pos != kNotFound)
             format.remove(pos, builder.length());
     }
     m_timeFormatWithoutSeconds = convertWindowsDateTimeFormat(format);

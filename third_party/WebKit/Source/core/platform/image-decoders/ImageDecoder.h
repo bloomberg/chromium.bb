@@ -221,7 +221,7 @@ namespace WebCore {
         bool m_premultiplyAlpha;
 
         // The frame that must be decoded before this frame can be decoded.
-        // WTF::notFound if this frame doesn't require any previous frame.
+        // WTF::kNotFound if this frame doesn't require any previous frame.
         // This is used by ImageDecoder::clearCacheExceptFrame(), and will never
         // be read for image formats that do not have multiple frames.
         size_t m_requiredPreviousFrameIndex;
@@ -398,7 +398,7 @@ namespace WebCore {
         bool failed() const { return m_failed; }
 
         // Clears decoded pixel data from all frames except the provided frame.
-        // Callers may pass WTF::notFound to clear all frames.
+        // Callers may pass WTF::kNotFound to clear all frames.
         // Note: If |m_frameBufferCache| contains only one frame, it won't be cleared.
         // Returns the number of bytes of frame data actually cleared.
         virtual size_t clearCacheExceptFrame(size_t);
@@ -423,7 +423,7 @@ namespace WebCore {
         // order to decode frame |frameIndex|, based on frame disposal methods
         // and |frameRectIsOpaque|, where |frameRectIsOpaque| signifies whether
         // the rectangle of frame at |frameIndex| is known to be opaque.
-        // If no previous frame's data is required, returns WTF::notFound.
+        // If no previous frame's data is required, returns WTF::kNotFound.
         //
         // This function requires that the previous frame's
         // |m_requiredPreviousFrameIndex| member has been set correctly. The

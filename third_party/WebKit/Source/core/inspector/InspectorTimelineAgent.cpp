@@ -652,7 +652,7 @@ void InspectorTimelineAgent::consoleTimelineEnd(ScriptExecutionContext* context,
         return;
 
     size_t index = m_consoleTimelines.find(title);
-    if (index == notFound) {
+    if (index == kNotFound) {
         String message = String::format("Timeline '%s' was not started.", title.utf8().data());
         page()->console().addMessage(ConsoleAPIMessageSource, DebugMessageLevel, message, String(), 0, 0, 0, state);
         return;

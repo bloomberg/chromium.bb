@@ -271,7 +271,7 @@ void TextTrackRegion::parseSettingValue(RegionSetting setting, const String& val
 
     switch (setting) {
     case Id:
-        if (value.find("-->") == notFound)
+        if (value.find("-->") == kNotFound)
             m_id = value;
         break;
     case Width:
@@ -322,7 +322,7 @@ void TextTrackRegion::parseSetting(const String& input, unsigned* position)
     String setting = WebVTTParser::collectWord(input, position);
 
     size_t equalOffset = setting.find('=', 1);
-    if (equalOffset == notFound || !equalOffset || equalOffset == setting.length() - 1)
+    if (equalOffset == kNotFound || !equalOffset || equalOffset == setting.length() - 1)
         return;
 
     RegionSetting name = getSettingFromString(setting.substring(0, equalOffset));

@@ -163,7 +163,7 @@ bool isCompatibleGlyph(const SVGGlyph& identifier, bool isVerticalText, const St
         String languagePrefix;
 
         size_t subCodeSeparator = language.find('-');
-        if (subCodeSeparator != notFound)
+        if (subCodeSeparator != kNotFound)
             languagePrefix = language.left(subCodeSeparator);
 
         Vector<String>::const_iterator it = identifier.languages.begin();

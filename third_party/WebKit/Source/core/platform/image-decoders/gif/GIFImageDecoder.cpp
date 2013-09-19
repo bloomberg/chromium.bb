@@ -228,8 +228,8 @@ bool GIFImageDecoder::frameComplete(size_t frameIndex)
         // resulting buffer was non-transparent, and we can setHasAlpha(false).
         if (buffer.originalFrameRect().contains(IntRect(IntPoint(), size()))) {
             buffer.setHasAlpha(false);
-            buffer.setRequiredPreviousFrameIndex(notFound);
-        } else if (buffer.requiredPreviousFrameIndex() != notFound) {
+            buffer.setRequiredPreviousFrameIndex(kNotFound);
+        } else if (buffer.requiredPreviousFrameIndex() != kNotFound) {
             // Tricky case.  This frame does not have alpha only if everywhere
             // outside its rect doesn't have alpha.  To know whether this is
             // true, we check the start state of the frame -- if it doesn't have
@@ -327,7 +327,7 @@ void GIFImageDecoder::decode(size_t frameIndex)
     do {
         framesToDecode.append(frameToDecode);
         frameToDecode = m_frameBufferCache[frameToDecode].requiredPreviousFrameIndex();
-    } while (frameToDecode != notFound && m_frameBufferCache[frameToDecode].status() != ImageFrame::FrameComplete);
+    } while (frameToDecode != kNotFound && m_frameBufferCache[frameToDecode].status() != ImageFrame::FrameComplete);
 
     for (size_t i = framesToDecode.size(); i > 0; --i) {
         size_t frameIndex = framesToDecode[i - 1];
@@ -354,7 +354,7 @@ bool GIFImageDecoder::initFrameBuffer(size_t frameIndex)
     ImageFrame* const buffer = &m_frameBufferCache[frameIndex];
 
     size_t requiredPreviousFrameIndex = buffer->requiredPreviousFrameIndex();
-    if (requiredPreviousFrameIndex == notFound) {
+    if (requiredPreviousFrameIndex == kNotFound) {
         // This frame doesn't rely on any previous data.
         if (!buffer->setSize(size().width(), size().height()))
             return setFailed();

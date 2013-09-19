@@ -66,7 +66,7 @@ private:
 
     explicit PageOverlayList(WebViewImpl*);
 
-    // Returns the index of the client found. Otherwise, returns WTF::notFound.
+    // Returns the index of the client found. Otherwise, returns WTF::kNotFound.
     size_t find(WebPageOverlay*);
 
     WebViewImpl* m_viewImpl;

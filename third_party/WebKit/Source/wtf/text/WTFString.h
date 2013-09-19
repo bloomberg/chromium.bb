@@ -214,34 +214,34 @@ public:
 
     // Find a single character or string, also with match function & latin1 forms.
     size_t find(UChar c, unsigned start = 0) const
-        { return m_impl ? m_impl->find(c, start) : notFound; }
+        { return m_impl ? m_impl->find(c, start) : kNotFound; }
 
     size_t find(const String& str) const
-        { return m_impl ? m_impl->find(str.impl()) : notFound; }
+        { return m_impl ? m_impl->find(str.impl()) : kNotFound; }
     size_t find(const String& str, unsigned start) const
-        { return m_impl ? m_impl->find(str.impl(), start) : notFound; }
+        { return m_impl ? m_impl->find(str.impl(), start) : kNotFound; }
 
     size_t find(CharacterMatchFunctionPtr matchFunction, unsigned start = 0) const
-        { return m_impl ? m_impl->find(matchFunction, start) : notFound; }
+        { return m_impl ? m_impl->find(matchFunction, start) : kNotFound; }
     size_t find(const LChar* str, unsigned start = 0) const
-        { return m_impl ? m_impl->find(str, start) : notFound; }
+        { return m_impl ? m_impl->find(str, start) : kNotFound; }
 
     size_t findNextLineStart(unsigned start = 0) const
-        { return m_impl ? m_impl->findNextLineStart(start) : notFound; }
+        { return m_impl ? m_impl->findNextLineStart(start) : kNotFound; }
 
     // Find the last instance of a single character or string.
     size_t reverseFind(UChar c, unsigned start = UINT_MAX) const
-        { return m_impl ? m_impl->reverseFind(c, start) : notFound; }
+        { return m_impl ? m_impl->reverseFind(c, start) : kNotFound; }
     size_t reverseFind(const String& str, unsigned start = UINT_MAX) const
-        { return m_impl ? m_impl->reverseFind(str.impl(), start) : notFound; }
+        { return m_impl ? m_impl->reverseFind(str.impl(), start) : kNotFound; }
 
     // Case insensitive string matching.
     size_t findIgnoringCase(const LChar* str, unsigned start = 0) const
-        { return m_impl ? m_impl->findIgnoringCase(str, start) : notFound; }
+        { return m_impl ? m_impl->findIgnoringCase(str, start) : kNotFound; }
     size_t findIgnoringCase(const String& str, unsigned start = 0) const
-        { return m_impl ? m_impl->findIgnoringCase(str.impl(), start) : notFound; }
+        { return m_impl ? m_impl->findIgnoringCase(str.impl(), start) : kNotFound; }
     size_t reverseFindIgnoringCase(const String& str, unsigned start = UINT_MAX) const
-        { return m_impl ? m_impl->reverseFindIgnoringCase(str.impl(), start) : notFound; }
+        { return m_impl ? m_impl->reverseFindIgnoringCase(str.impl(), start) : kNotFound; }
 
     // Wrappers for find & reverseFind adding dynamic sensitivity check.
     size_t find(const LChar* str, unsigned start, bool caseSensitive) const
@@ -265,9 +265,9 @@ public:
 
     UChar32 characterStartingAt(unsigned) const;
 
-    bool contains(UChar c) const { return find(c) != notFound; }
-    bool contains(const LChar* str, bool caseSensitive = true) const { return find(str, 0, caseSensitive) != notFound; }
-    bool contains(const String& str, bool caseSensitive = true) const { return find(str, 0, caseSensitive) != notFound; }
+    bool contains(UChar c) const { return find(c) != kNotFound; }
+    bool contains(const LChar* str, bool caseSensitive = true) const { return find(str, 0, caseSensitive) != kNotFound; }
+    bool contains(const String& str, bool caseSensitive = true) const { return find(str, 0, caseSensitive) != kNotFound; }
 
     bool startsWith(const String& s, bool caseSensitive = true) const
         { return m_impl ? m_impl->startsWith(s.impl(), caseSensitive) : s.isEmpty(); }

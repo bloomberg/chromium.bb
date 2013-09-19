@@ -95,13 +95,13 @@ public:
 
     void registerDOMDataStore(DOMDataStore* domDataStore)
     {
-        ASSERT(m_domDataList.find(domDataStore) == notFound);
+        ASSERT(m_domDataList.find(domDataStore) == kNotFound);
         m_domDataList.append(domDataStore);
     }
 
     void unregisterDOMDataStore(DOMDataStore* domDataStore)
     {
-        ASSERT(m_domDataList.find(domDataStore) != notFound);
+        ASSERT(m_domDataList.find(domDataStore) != kNotFound);
         m_domDataList.remove(m_domDataList.find(domDataStore));
     }
 

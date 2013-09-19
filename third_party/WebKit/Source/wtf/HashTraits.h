@@ -207,9 +207,9 @@ namespace WTF {
         {
         }
 
-        KeyValuePair(const KeyTypeArg& key, const ValueTypeArg& value)
-            : key(key)
-            , value(value)
+        KeyValuePair(const KeyTypeArg& _key, const ValueTypeArg& _value)
+            : key(_key)
+            , value(_value)
         {
         }
 

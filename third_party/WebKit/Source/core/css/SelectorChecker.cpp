@@ -322,7 +322,7 @@ static bool attributeValueMatches(const Attribute* attributeItem, CSSSelector::M
             unsigned startSearchAt = 0;
             while (true) {
                 size_t foundPos = value.find(selectorValue, startSearchAt, caseSensitive);
-                if (foundPos == notFound)
+                if (foundPos == kNotFound)
                     return false;
                 if (!foundPos || isHTMLSpace(value[foundPos - 1])) {
                     unsigned endStr = foundPos + selectorValue.length();

@@ -208,7 +208,7 @@ HTMLMapElement* TreeScope::getImageMap(const String& url) const
     if (!m_imageMapsByName)
         return 0;
     size_t hashPos = url.find('#');
-    String name = (hashPos == notFound ? url : url.substring(hashPos + 1)).impl();
+    String name = (hashPos == kNotFound ? url : url.substring(hashPos + 1)).impl();
     if (rootNode()->document().isHTMLDocument())
         return toHTMLMapElement(m_imageMapsByName->getElementByLowercasedMapName(AtomicString(name.lower()).impl(), this));
     return toHTMLMapElement(m_imageMapsByName->getElementByMapName(AtomicString(name).impl(), this));

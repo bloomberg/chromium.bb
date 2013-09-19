@@ -109,7 +109,7 @@ bool TextTrackCueList::add(PassRefPtr<TextTrackCue> prpCue, size_t start, size_t
 bool TextTrackCueList::remove(TextTrackCue* cue)
 {
     size_t index = m_list.find(cue);
-    if (index == notFound)
+    if (index == kNotFound)
         return false;
 
     cue->setIsActive(false);

@@ -408,7 +408,7 @@ void Chrome::registerPopupOpeningObserver(PopupOpeningObserver* observer)
 void Chrome::unregisterPopupOpeningObserver(PopupOpeningObserver* observer)
 {
     size_t index = m_popupOpeningObservers.find(observer);
-    ASSERT(index != notFound);
+    ASSERT(index != kNotFound);
     m_popupOpeningObservers.remove(index);
 }
 

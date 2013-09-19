@@ -265,7 +265,7 @@ bool WebPageSerializer::retrieveAllResources(WebView* view,
         // A frame's src can point to the same URL as another resource, keep the
         // resource URL only in such cases.
         size_t index = frameKURLs.find(resourceKURLs[i]);
-        if (index != notFound)
+        if (index != kNotFound)
             frameKURLs.remove(index);
     }
     *resourceURLs = resultResourceURLs;

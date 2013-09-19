@@ -42,7 +42,7 @@ void ContinuousPainter::setNeedsDisplayRecursive(GraphicsLayer* layer, PageOverl
     if (!layer)
         return;
 
-    if (pageOverlays && pageOverlays->findGraphicsLayer(layer) != WTF::notFound)
+    if (pageOverlays && pageOverlays->findGraphicsLayer(layer) != WTF::kNotFound)
         return;
 
     TRACE_EVENT0("webkit", "ContinuousPainter::setNeedsDisplayRecursive");

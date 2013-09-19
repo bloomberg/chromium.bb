@@ -137,7 +137,7 @@ void SecurityPolicy::removeOriginAccessWhitelistEntry(const SecurityOrigin& sour
 
     OriginAccessWhiteList* list = it->value.get();
     size_t index = list->find(OriginAccessEntry(destinationProtocol, destinationDomain, allowDestinationSubdomains ? OriginAccessEntry::AllowSubdomains : OriginAccessEntry::DisallowSubdomains));
-    if (index == notFound)
+    if (index == kNotFound)
         return;
 
     list->remove(index);

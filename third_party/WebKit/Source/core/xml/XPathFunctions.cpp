@@ -478,7 +478,7 @@ Value FunSubstringBefore::evaluate() const
 
     size_t i = s1.find(s2);
 
-    if (i == notFound)
+    if (i == kNotFound)
         return "";
 
     return s1.left(i);
@@ -490,7 +490,7 @@ Value FunSubstringAfter::evaluate() const
     String s2 = arg(1)->evaluate().toString();
 
     size_t i = s1.find(s2);
-    if (i == notFound)
+    if (i == kNotFound)
         return "";
 
     return s1.substring(i + s2.length());
@@ -556,7 +556,7 @@ Value FunTranslate::evaluate() const
         UChar ch = s1[i1];
         size_t i2 = s2.find(ch);
 
-        if (i2 == notFound)
+        if (i2 == kNotFound)
             result.append(ch);
         else if (i2 < s3.length())
             result.append(s3[i2]);
@@ -607,7 +607,7 @@ Value FunLang::evaluate() const
 
         // Remove suffixes one by one.
         size_t index = langValue.reverseFind('-');
-        if (index == notFound)
+        if (index == kNotFound)
             break;
         langValue = langValue.left(index);
     }

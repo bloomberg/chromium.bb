@@ -129,7 +129,7 @@ bool InsertTextCommand::performOverwrite(const String& text, bool selectInserted
 
 void InsertTextCommand::doApply()
 {
-    ASSERT(m_text.find('\n') == notFound);
+    ASSERT(m_text.find('\n') == kNotFound);
 
     if (!endingSelection().isNonOrphanedCaretOrRange())
         return;

@@ -163,7 +163,7 @@ bool parseContentType(const String& contentType, ReceiverType& receiver)
 
     // There should not be any quoted strings until we reach the parameters.
     size_t semiColonIndex = contentType.find(';', index);
-    if (semiColonIndex == notFound) {
+    if (semiColonIndex == kNotFound) {
         receiver.setContentType(SubstringRange(index, contentTypeLength - index));
         return true;
     }

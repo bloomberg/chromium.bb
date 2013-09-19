@@ -377,7 +377,7 @@ SMILTime SVGSMILElement::parseClockValue(const String& data)
         if (!ok)
             return SMILTime::unresolved();
         result += parse.substring(6).toDouble(&ok);
-    } else if (doublePointOne == 2 && doublePointTwo == notFound && parse.length() >= 5) {
+    } else if (doublePointOne == 2 && doublePointTwo == kNotFound && parse.length() >= 5) {
         result += parse.substring(0, 2).toUIntStrict(&ok) * 60;
         if (!ok)
             return SMILTime::unresolved();
@@ -402,14 +402,14 @@ bool SVGSMILElement::parseCondition(const String& value, BeginOrEnd beginOrEnd)
     double sign = 1.;
     bool ok;
     size_t pos = parseString.find('+');
-    if (pos == notFound) {
+    if (pos == kNotFound) {
         pos = parseString.find('-');
-        if (pos != notFound)
+        if (pos != kNotFound)
             sign = -1.;
     }
     String conditionString;
     SMILTime offset = 0;
-    if (pos == notFound)
+    if (pos == kNotFound)
         conditionString = parseString;
     else {
         conditionString = parseString.left(pos).stripWhiteSpace();
@@ -425,7 +425,7 @@ bool SVGSMILElement::parseCondition(const String& value, BeginOrEnd beginOrEnd)
 
     String baseID;
     String nameString;
-    if (pos == notFound)
+    if (pos == kNotFound)
         nameString = conditionString;
     else {
         baseID = conditionString.left(pos);

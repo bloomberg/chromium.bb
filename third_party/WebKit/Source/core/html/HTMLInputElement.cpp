@@ -1242,7 +1242,7 @@ static inline bool isRFC2616TokenCharacter(UChar ch)
 static bool isValidMIMEType(const String& type)
 {
     size_t slashPosition = type.find('/');
-    if (slashPosition == notFound || !slashPosition || slashPosition == type.length() - 1)
+    if (slashPosition == kNotFound || !slashPosition || slashPosition == type.length() - 1)
         return false;
     for (size_t i = 0; i < type.length(); ++i) {
         if (!isRFC2616TokenCharacter(type[i]) && i != slashPosition)

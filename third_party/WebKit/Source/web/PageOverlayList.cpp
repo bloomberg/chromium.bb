@@ -53,7 +53,7 @@ bool PageOverlayList::add(WebPageOverlay* overlay, int zOrder)
 {
     bool added = false;
     size_t index = find(overlay);
-    if (index == WTF::notFound) {
+    if (index == WTF::kNotFound) {
         OwnPtr<PageOverlay> pageOverlay = PageOverlay::create(m_viewImpl, overlay);
         m_pageOverlays.append(pageOverlay.release());
         index = m_pageOverlays.size() - 1;
@@ -98,7 +98,7 @@ bool PageOverlayList::add(WebPageOverlay* overlay, int zOrder)
 bool PageOverlayList::remove(WebPageOverlay* overlay)
 {
     size_t index = find(overlay);
-    if (index == WTF::notFound)
+    if (index == WTF::kNotFound)
         return false;
 
     m_pageOverlays[index]->clear();
@@ -124,7 +124,7 @@ size_t PageOverlayList::find(WebPageOverlay* overlay)
         if (m_pageOverlays[i]->overlay() == overlay)
             return i;
     }
-    return WTF::notFound;
+    return WTF::kNotFound;
 }
 
 size_t PageOverlayList::findGraphicsLayer(WebCore::GraphicsLayer* layer)
@@ -133,7 +133,7 @@ size_t PageOverlayList::findGraphicsLayer(WebCore::GraphicsLayer* layer)
         if (m_pageOverlays[i]->graphicsLayer() == layer)
             return i;
     }
-    return WTF::notFound;
+    return WTF::kNotFound;
 }
 
 } // namespace WebKit

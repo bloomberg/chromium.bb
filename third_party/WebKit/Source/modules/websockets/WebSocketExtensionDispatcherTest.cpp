@@ -123,8 +123,8 @@ TEST_F(WebSocketExtensionDispatcherTest, TestMultiple)
     addMockProcessor("mux");
     addMockProcessor("deflate-frame");
     EXPECT_TRUE(m_extensions.processHeaderValue("mux ;  max-channels =4;flow-control, deflate-frame  "));
-    EXPECT_TRUE(m_extensions.acceptedExtensions().find("mux") != notFound);
-    EXPECT_TRUE(m_extensions.acceptedExtensions().find("deflate-frame") != notFound);
+    EXPECT_TRUE(m_extensions.acceptedExtensions().find("mux") != kNotFound);
+    EXPECT_TRUE(m_extensions.acceptedExtensions().find("deflate-frame") != kNotFound);
     for (size_t i = 0; i < sizeof(expected) / sizeof(expected[0]); ++i) {
         EXPECT_EQ(expected[i].token, m_parsedExtensionTokens[i]);
         const HashMap<String, String>& expectedParameters = expected[i].parameters;

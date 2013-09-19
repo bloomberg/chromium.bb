@@ -67,7 +67,7 @@ bool UserContentURLPattern::parse(const String& pattern)
     DEFINE_STATIC_LOCAL(const String, schemeSeparator, ("://"));
 
     size_t schemeEndPos = pattern.find(schemeSeparator);
-    if (schemeEndPos == notFound)
+    if (schemeEndPos == kNotFound)
         return false;
 
     m_scheme = pattern.left(schemeEndPos);
@@ -82,7 +82,7 @@ bool UserContentURLPattern::parse(const String& pattern)
         pathStartPos = hostStartPos;
     else {
         size_t hostEndPos = pattern.find("/", hostStartPos);
-        if (hostEndPos == notFound)
+        if (hostEndPos == kNotFound)
             return false;
 
         m_host = pattern.substring(hostStartPos, hostEndPos - hostStartPos);
@@ -99,7 +99,7 @@ bool UserContentURLPattern::parse(const String& pattern)
         }
 
         // No other '*' can occur in the host.
-        if (m_host.find("*") != notFound)
+        if (m_host.find("*") != kNotFound)
             return false;
 
         pathStartPos = hostEndPos;

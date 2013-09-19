@@ -47,7 +47,7 @@ public:
     void remove(Animation* animation)
     {
         size_t position = m_activeAnimations.find(animation);
-        ASSERT(position != notFound);
+        ASSERT(position != kNotFound);
         m_activeAnimations.remove(position);
     }
     bool isEmpty() const { return m_activeAnimations.isEmpty(); }

@@ -117,11 +117,11 @@ bool DOMFilePath::isValidPath(const String& path)
         return true;
 
     // Embedded NULs are not allowed.
-    if (path.find(static_cast<UChar>(0)) != WTF::notFound)
+    if (path.find(static_cast<UChar>(0)) != WTF::kNotFound)
         return false;
 
     // While not [yet] restricted by the spec, '\\' complicates implementation for Chromium.
-    if (path.find('\\') != WTF::notFound)
+    if (path.find('\\') != WTF::kNotFound)
         return false;
 
     // This method is only called on fully-evaluated absolute paths. Any sign of ".." or "." is likely an attempt to break out of the sandbox.

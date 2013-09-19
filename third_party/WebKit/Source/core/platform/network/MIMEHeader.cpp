@@ -66,7 +66,7 @@ static KeyValueMap retrieveKeyValuePairs(WebCore::SharedBufferChunkReader* buffe
             value.clear();
         }
         size_t semiColonIndex = line.find(':');
-        if (semiColonIndex == notFound) {
+        if (semiColonIndex == kNotFound) {
             // This is not a key value pair, ignore.
             continue;
         }

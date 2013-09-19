@@ -931,7 +931,7 @@ void TextTrackCue::setCueSettings(const String& input)
         String setting = WebVTTParser::collectWord(input, &endOfSetting);
         CueSetting name;
         size_t colonOffset = setting.find(':', 1);
-        if (colonOffset == notFound || colonOffset == 0 || colonOffset == setting.length() - 1)
+        if (colonOffset == kNotFound || !colonOffset || colonOffset == setting.length() - 1)
             goto NextSetting;
 
         // 2. Let name be the leading substring of setting up to and excluding the first U+003A COLON character (:) in that string.
@@ -978,7 +978,7 @@ void TextTrackCue::setCueSettings(const String& input)
             // 4. If any character in value other than the last character is a U+0025 PERCENT SIGN character (%), then
             //    jump to the step labeled next setting.
             String linePosition = linePositionBuilder.toString();
-            if (linePosition.find('-', 1) != notFound || linePosition.reverseFind("%", linePosition.length() - 2) != notFound)
+            if (linePosition.find('-', 1) != kNotFound || linePosition.reverseFind("%", linePosition.length() - 2) != kNotFound)
                 break;
 
             // 5. If the first character in value is a U+002D HYPHEN-MINUS character (-) and the last character in value is a

@@ -578,13 +578,13 @@ bool HTMLFormElement::isURLAttribute(const Attribute& attribute) const
 
 void HTMLFormElement::registerImgElement(HTMLImageElement* e)
 {
-    ASSERT(m_imageElements.find(e) == notFound);
+    ASSERT(m_imageElements.find(e) == kNotFound);
     m_imageElements.append(e);
 }
 
 void HTMLFormElement::removeImgElement(HTMLImageElement* e)
 {
-    ASSERT(m_imageElements.find(e) != notFound);
+    ASSERT(m_imageElements.find(e) != kNotFound);
     removeFromPastNamesMap(*e);
     removeFromVector(m_imageElements, e);
 }
@@ -696,11 +696,11 @@ Node* HTMLFormElement::elementFromPastNamesMap(const AtomicString& pastName) con
         return 0;
     ASSERT_WITH_SECURITY_IMPLICATION(toHTMLElement(node)->form() == this);
     if (node->hasTagName(imgTag)) {
-        ASSERT_WITH_SECURITY_IMPLICATION(m_imageElements.find(node) != notFound);
+        ASSERT_WITH_SECURITY_IMPLICATION(m_imageElements.find(node) != kNotFound);
     } else if (node->hasTagName(objectTag)) {
-        ASSERT_WITH_SECURITY_IMPLICATION(m_associatedElements.find(toHTMLObjectElement(node)) != notFound);
+        ASSERT_WITH_SECURITY_IMPLICATION(m_associatedElements.find(toHTMLObjectElement(node)) != kNotFound);
     } else {
-        ASSERT_WITH_SECURITY_IMPLICATION(m_associatedElements.find(toHTMLFormControlElement(node)) != notFound);
+        ASSERT_WITH_SECURITY_IMPLICATION(m_associatedElements.find(toHTMLFormControlElement(node)) != kNotFound);
     }
 #endif
     return node;

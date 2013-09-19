@@ -120,7 +120,7 @@ Vector<HTMLDimension> parseListOfDimensions(const String& input)
     size_t lastParsedIndex = 0;
     while (true) {
         size_t nextComma = trimmedString.find(comma, lastParsedIndex);
-        if (nextComma == notFound)
+        if (nextComma == kNotFound)
             break;
 
         parsedDimensions.append(parseDimension(trimmedString, lastParsedIndex, nextComma));

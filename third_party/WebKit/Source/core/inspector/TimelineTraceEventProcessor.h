@@ -175,7 +175,7 @@ private:
         long long asInt(const char* name) const
         {
             size_t index = findParameter(name);
-            if (index == notFound || (m_argumentTypes[index] != TypeInt && m_argumentTypes[index] != TypeUInt)) {
+            if (index == kNotFound || (m_argumentTypes[index] != TypeInt && m_argumentTypes[index] != TypeUInt)) {
                 ASSERT_NOT_REACHED();
                 return 0;
             }

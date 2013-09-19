@@ -62,7 +62,7 @@ void ScriptGCEvent::removeEventListener(ScriptGCEventListener* eventListener)
     GCEventData::GCEventListeners& listeners = isolateGCEventData()->listeners();
     ASSERT(!listeners.isEmpty());
     size_t i = listeners.find(eventListener);
-    ASSERT(i != notFound);
+    ASSERT(i != kNotFound);
     listeners.remove(i);
     if (listeners.isEmpty()) {
         v8::V8::RemoveGCPrologueCallback(ScriptGCEvent::gcPrologueCallback);

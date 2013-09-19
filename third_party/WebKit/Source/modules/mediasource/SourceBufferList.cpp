@@ -58,7 +58,7 @@ void SourceBufferList::add(PassRefPtr<SourceBuffer> buffer)
 void SourceBufferList::remove(SourceBuffer* buffer)
 {
     size_t index = m_list.find(buffer);
-    if (index == notFound)
+    if (index == kNotFound)
         return;
     m_list.remove(index);
     scheduleEvent(eventNames().removesourcebufferEvent);

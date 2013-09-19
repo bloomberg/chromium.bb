@@ -54,7 +54,7 @@ public:
 
     void add(PassRefPtr<SourceBuffer>);
     void remove(SourceBuffer*);
-    bool contains(SourceBuffer* buffer) { return m_list.find(buffer) != notFound; }
+    bool contains(SourceBuffer* buffer) { return m_list.find(buffer) != kNotFound; }
     void clear();
 
     // EventTarget interface

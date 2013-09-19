@@ -61,7 +61,7 @@ void DeviceSensorEventDispatcher::removeController(DeviceSensorEventController* 
     // This is to correctly handle the re-entrancy case when a controller is destroyed
     // while in the didChangeDeviceMotion/Orientation method.
     size_t index = m_controllers.find(controller);
-    if (index == notFound)
+    if (index == kNotFound)
         return;
 
     m_controllers[index] = 0;

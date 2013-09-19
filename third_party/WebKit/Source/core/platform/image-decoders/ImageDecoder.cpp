@@ -157,13 +157,13 @@ size_t ImageDecoder::findRequiredPreviousFrame(size_t frameIndex, bool frameRect
     ASSERT(frameIndex <= m_frameBufferCache.size());
     if (!frameIndex) {
         // The first frame doesn't rely on any previous data.
-        return notFound;
+        return kNotFound;
     }
 
     const ImageFrame* currBuffer = &m_frameBufferCache[frameIndex];
     if ((frameRectIsOpaque || currBuffer->alphaBlendSource() == ImageFrame::BlendAtopBgcolor)
         && currBuffer->originalFrameRect().contains(IntRect(IntPoint(), size())))
-        return notFound;
+        return kNotFound;
 
     // The starting state for this frame depends on the previous frame's
     // disposal method.
@@ -190,10 +190,10 @@ size_t ImageDecoder::findRequiredPreviousFrame(size_t frameIndex, bool frameRect
         // this frame is a blank frame, so it can again be decoded alone.
         // Otherwise, the previous frame contributes to this frame.
         return (prevBuffer->originalFrameRect().contains(IntRect(IntPoint(), size()))
-            || (prevBuffer->requiredPreviousFrameIndex() == notFound)) ? notFound : prevFrame;
+            || (prevBuffer->requiredPreviousFrameIndex() == kNotFound)) ? kNotFound : prevFrame;
     default:
         ASSERT_NOT_REACHED();
-        return notFound;
+        return kNotFound;
     }
 }
 

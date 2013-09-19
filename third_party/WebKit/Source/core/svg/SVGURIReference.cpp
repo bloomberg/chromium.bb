@@ -46,7 +46,7 @@ bool SVGURIReference::isKnownAttribute(const QualifiedName& attrName)
 String SVGURIReference::fragmentIdentifierFromIRIString(const String& url, const Document& document)
 {
     size_t start = url.find('#');
-    if (start == notFound)
+    if (start == kNotFound)
         return emptyString();
 
     KURL base = start ? KURL(document.baseURI(), url.substring(0, start)) : document.baseURI();
@@ -59,7 +59,7 @@ String SVGURIReference::fragmentIdentifierFromIRIString(const String& url, const
 static inline KURL urlFromIRIStringWithFragmentIdentifier(const String& url, const Document& document, String& fragmentIdentifier)
 {
     size_t startOfFragmentIdentifier = url.find('#');
-    if (startOfFragmentIdentifier == notFound)
+    if (startOfFragmentIdentifier == kNotFound)
         return KURL();
 
     // Exclude the '#' character when determining the fragmentIdentifier.

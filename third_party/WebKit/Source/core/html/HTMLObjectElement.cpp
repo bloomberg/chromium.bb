@@ -96,7 +96,7 @@ void HTMLObjectElement::parseAttribute(const QualifiedName& name, const AtomicSt
     else if (name == typeAttr) {
         m_serviceType = value.lower();
         size_t pos = m_serviceType.find(";");
-        if (pos != notFound)
+        if (pos != kNotFound)
             m_serviceType = m_serviceType.left(pos);
         if (renderer())
             setNeedsWidgetUpdate(true);
@@ -166,7 +166,7 @@ void HTMLObjectElement::parametersForPlugin(Vector<String>& paramNames, Vector<S
         if (serviceType.isEmpty() && equalIgnoringCase(name, "type")) {
             serviceType = p->value();
             size_t pos = serviceType.find(";");
-            if (pos != notFound)
+            if (pos != kNotFound)
                 serviceType = serviceType.left(pos);
         }
     }

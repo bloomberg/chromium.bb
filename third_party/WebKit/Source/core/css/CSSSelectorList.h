@@ -54,7 +54,7 @@ public:
         const CSSSelector* current = selectorAt(index);
         current = next(current);
         if (!current)
-            return notFound;
+            return kNotFound;
         return current - m_selectorArray;
     }
 

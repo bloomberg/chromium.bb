@@ -114,7 +114,7 @@ void BitmapImage::destroyDecodedData(bool destroyAll)
         m_frames[i].clear(false);
     }
 
-    destroyMetadataAndNotify(m_source.clearCacheExceptFrame(destroyAll ? notFound : m_currentFrame));
+    destroyMetadataAndNotify(m_source.clearCacheExceptFrame(destroyAll ? kNotFound : m_currentFrame));
 }
 
 void BitmapImage::destroyDecodedDataIfNecessary()

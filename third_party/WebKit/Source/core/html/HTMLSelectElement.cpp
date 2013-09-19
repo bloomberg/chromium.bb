@@ -955,7 +955,7 @@ size_t HTMLSelectElement::searchOptionsForValue(const String& value, size_t list
         if (toHTMLOptionElement(items[i])->value() == value)
             return i;
     }
-    return notFound;
+    return kNotFound;
 }
 
 void HTMLSelectElement::restoreFormControlState(const FormControlState& state)
@@ -975,16 +975,16 @@ void HTMLSelectElement::restoreFormControlState(const FormControlState& state)
 
     if (!multiple()) {
         size_t foundIndex = searchOptionsForValue(state[0], 0, itemsSize);
-        if (foundIndex != notFound)
+        if (foundIndex != kNotFound)
             toHTMLOptionElement(items[foundIndex])->setSelectedState(true);
     } else {
         size_t startIndex = 0;
         for (size_t i = 0; i < state.valueSize(); ++i) {
             const String& value = state[i];
             size_t foundIndex = searchOptionsForValue(value, startIndex, itemsSize);
-            if (foundIndex == notFound)
+            if (foundIndex == kNotFound)
                 foundIndex = searchOptionsForValue(value, 0, startIndex);
-            if (foundIndex == notFound)
+            if (foundIndex == kNotFound)
                 continue;
             toHTMLOptionElement(items[foundIndex])->setSelectedState(true);
             startIndex = foundIndex + 1;

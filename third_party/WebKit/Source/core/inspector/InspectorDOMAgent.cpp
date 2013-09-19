@@ -960,12 +960,12 @@ void InspectorDOMAgent::performSearch(ErrorString*, const String& whitespaceTrim
             case Node::COMMENT_NODE:
             case Node::CDATA_SECTION_NODE: {
                 String text = node->nodeValue();
-                if (text.findIgnoringCase(whitespaceTrimmedQuery) != notFound)
+                if (text.findIgnoringCase(whitespaceTrimmedQuery) != kNotFound)
                     resultCollector.add(node);
                 break;
             }
             case Node::ELEMENT_NODE: {
-                if ((!startTagFound && !endTagFound && (node->nodeName().findIgnoringCase(tagNameQuery) != notFound))
+                if ((!startTagFound && !endTagFound && (node->nodeName().findIgnoringCase(tagNameQuery) != kNotFound))
                     || (startTagFound && endTagFound && equalIgnoringCase(node->nodeName(), tagNameQuery))
                     || (startTagFound && !endTagFound && node->nodeName().startsWith(tagNameQuery, false))
                     || (!startTagFound && endTagFound && node->nodeName().endsWith(tagNameQuery, false))) {
@@ -981,12 +981,12 @@ void InspectorDOMAgent::performSearch(ErrorString*, const String& whitespaceTrim
                 for (unsigned i = 0; i < numAttrs; ++i) {
                     // Add attribute pair
                     const Attribute* attribute = element->attributeItem(i);
-                    if (attribute->localName().find(whitespaceTrimmedQuery) != notFound) {
+                    if (attribute->localName().find(whitespaceTrimmedQuery) != kNotFound) {
                         resultCollector.add(node);
                         break;
                     }
                     size_t foundPosition = attribute->value().find(attributeQuery);
-                    if (foundPosition != notFound) {
+                    if (foundPosition != kNotFound) {
                         if (!exactAttributeMatch || (!foundPosition && attribute->value().length() == attributeQuery.length())) {
                             resultCollector.add(node);
                             break;

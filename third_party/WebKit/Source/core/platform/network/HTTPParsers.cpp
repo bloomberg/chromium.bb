@@ -246,7 +246,7 @@ String filenameFromHTTPContentDisposition(const String& value)
     unsigned length = keyValuePairs.size();
     for (unsigned i = 0; i < length; i++) {
         size_t valueStartPos = keyValuePairs[i].find('=');
-        if (valueStartPos == notFound)
+        if (valueStartPos == kNotFound)
             continue;
 
         String key = keyValuePairs[i].left(valueStartPos).stripWhiteSpace();
@@ -318,7 +318,7 @@ void findCharsetInMediaType(const String& mediaType, unsigned int& charsetPos, u
 
     while (pos < length) {
         pos = mediaType.find("charset", pos, false);
-        if (pos == notFound || pos == 0) {
+        if (pos == kNotFound || !pos) {
             charsetLen = 0;
             return;
         }

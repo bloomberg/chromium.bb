@@ -37,9 +37,9 @@ String mimeTypeFromDataURL(const String& url)
 {
     ASSERT(protocolIs(url, "data"));
     size_t index = url.find(';');
-    if (index == notFound)
+    if (index == kNotFound)
         index = url.find(',');
-    if (index != notFound) {
+    if (index != kNotFound) {
         if (index > 5)
             return url.substring(5, index - 5).lower();
         return "text/plain"; // Data URLs with no MIME type are considered text/plain.

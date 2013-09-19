@@ -162,7 +162,7 @@ void WebGLRenderingContext::activateContext(WebGLRenderingContext* context)
 void WebGLRenderingContext::deactivateContext(WebGLRenderingContext* context, bool addToEvictedList)
 {
     size_t position = activeContexts().find(context);
-    if (position != WTF::notFound)
+    if (position != WTF::kNotFound)
         activeContexts().remove(position);
 
     if (addToEvictedList && !forciblyEvictedContexts().contains(context))
@@ -172,7 +172,7 @@ void WebGLRenderingContext::deactivateContext(WebGLRenderingContext* context, bo
 void WebGLRenderingContext::willDestroyContext(WebGLRenderingContext* context)
 {
     size_t position = forciblyEvictedContexts().find(context);
-    if (position != WTF::notFound)
+    if (position != WTF::kNotFound)
         forciblyEvictedContexts().remove(position);
 
     deactivateContext(context, false);
@@ -5481,7 +5481,7 @@ void WebGLRenderingContext::synthesizeGLError(GC3Denum error, const char* functi
     if (!isContextLost())
         m_context->synthesizeGLError(error);
     else {
-        if (lost_context_errors_.find(error) == WTF::notFound)
+        if (lost_context_errors_.find(error) == WTF::kNotFound)
             lost_context_errors_.append(error);
     }
     InspectorInstrumentation::didFireWebGLError(canvas(), errorType);

@@ -391,7 +391,7 @@ UScriptCode localeToScriptCodeForFontSelection(const String& locale)
         if (it != localeScriptMap.end())
             return it->value;
         size_t pos = canonicalLocale.reverseFind('_');
-        if (pos == notFound)
+        if (pos == kNotFound)
             break;
         UScriptCode code = scriptNameToCode(canonicalLocale.substring(pos + 1));
         if (code != USCRIPT_INVALID_CODE && code != USCRIPT_UNKNOWN)

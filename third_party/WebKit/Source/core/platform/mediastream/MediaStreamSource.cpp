@@ -66,7 +66,7 @@ void MediaStreamSource::addObserver(MediaStreamSource::Observer* observer)
 void MediaStreamSource::removeObserver(MediaStreamSource::Observer* observer)
 {
     size_t pos = m_observers.find(observer);
-    if (pos != notFound)
+    if (pos != kNotFound)
         m_observers.remove(pos);
 }
 
@@ -82,7 +82,7 @@ bool MediaStreamSource::removeAudioConsumer(AudioDestinationConsumer* consumer)
     ASSERT(m_requiresConsumer);
     MutexLocker locker(m_audioConsumersLock);
     size_t pos = m_audioConsumers.find(consumer);
-    if (pos != notFound) {
+    if (pos != kNotFound) {
         m_audioConsumers.remove(pos);
         return true;
     }

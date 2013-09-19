@@ -212,7 +212,7 @@ void PropertySetCSSStyleDeclaration::setProperty(const String& propertyName, con
     if (!propertyID)
         return;
 
-    bool important = priority.find("important", 0, false) != notFound;
+    bool important = priority.find("important", 0, false) != kNotFound;
 
     willMutate();
 

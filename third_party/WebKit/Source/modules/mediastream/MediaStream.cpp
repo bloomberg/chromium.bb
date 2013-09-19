@@ -181,21 +181,21 @@ void MediaStream::removeTrack(PassRefPtr<MediaStreamTrack> prpTrack, ExceptionSt
 
     RefPtr<MediaStreamTrack> track = prpTrack;
 
-    size_t pos = notFound;
+    size_t pos = kNotFound;
     switch (track->component()->source()->type()) {
     case MediaStreamSource::TypeAudio:
         pos = m_audioTracks.find(track);
-        if (pos != notFound)
+        if (pos != kNotFound)
             m_audioTracks.remove(pos);
         break;
     case MediaStreamSource::TypeVideo:
         pos = m_videoTracks.find(track);
-        if (pos != notFound)
+        if (pos != kNotFound)
             m_videoTracks.remove(pos);
         break;
     }
 
-    if (pos == notFound)
+    if (pos == kNotFound)
         return;
 
     m_descriptor->removeComponent(track->component());
@@ -316,14 +316,14 @@ void MediaStream::removeRemoteTrack(MediaStreamComponent* component)
         break;
     }
 
-    size_t index = notFound;
+    size_t index = kNotFound;
     for (size_t i = 0; i < tracks->size(); ++i) {
         if ((*tracks)[i]->component() == component) {
             index = i;
             break;
         }
     }
-    if (index == notFound)
+    if (index == kNotFound)
         return;
 
     m_descriptor->removeComponent(component);

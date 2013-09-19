@@ -62,8 +62,8 @@ PassRefPtr<Node> NamedNodeMap::getNamedItemNS(const AtomicString& namespaceURI, 
 
 PassRefPtr<Node> NamedNodeMap::removeNamedItem(const AtomicString& name, ExceptionState& es)
 {
-    size_t index = m_element->hasAttributes() ? m_element->getAttributeItemIndex(name, shouldIgnoreAttributeCase(m_element)) : notFound;
-    if (index == notFound) {
+    size_t index = m_element->hasAttributes() ? m_element->getAttributeItemIndex(name, shouldIgnoreAttributeCase(m_element)) : kNotFound;
+    if (index == kNotFound) {
         es.throwDOMException(NotFoundError);
         return 0;
     }
@@ -72,8 +72,8 @@ PassRefPtr<Node> NamedNodeMap::removeNamedItem(const AtomicString& name, Excepti
 
 PassRefPtr<Node> NamedNodeMap::removeNamedItemNS(const AtomicString& namespaceURI, const AtomicString& localName, ExceptionState& es)
 {
-    size_t index = m_element->hasAttributes() ? m_element->getAttributeItemIndex(QualifiedName(nullAtom, localName, namespaceURI)) : notFound;
-    if (index == notFound) {
+    size_t index = m_element->hasAttributes() ? m_element->getAttributeItemIndex(QualifiedName(nullAtom, localName, namespaceURI)) : kNotFound;
+    if (index == kNotFound) {
         es.throwDOMException(NotFoundError);
         return 0;
     }

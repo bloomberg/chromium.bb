@@ -2218,8 +2218,8 @@ void Node::unregisterMutationObserver(MutationObserverRegistration* registration
         return;
 
     size_t index = registry->find(registration);
-    ASSERT(index != notFound);
-    if (index == notFound)
+    ASSERT(index != kNotFound);
+    if (index == kNotFound)
         return;
 
     // Deleting the registration may cause this node to be derefed, so we must make sure the Vector operation completes

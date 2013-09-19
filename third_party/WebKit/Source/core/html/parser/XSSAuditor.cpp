@@ -261,7 +261,7 @@ void XSSAuditor::init(Document* document, XSSAuditorDelegate* auditorDelegate)
         m_encoding = document->encoding();
 
     m_decodedURL = fullyDecodeString(m_documentURL.string(), m_encoding);
-    if (m_decodedURL.find(isRequiredForInjection) == notFound)
+    if (m_decodedURL.find(isRequiredForInjection) == kNotFound)
         m_decodedURL = String();
 
     String httpBodyAsString;
@@ -299,7 +299,7 @@ void XSSAuditor::init(Document* document, XSSAuditorDelegate* auditorDelegate)
             httpBodyAsString = httpBody->flattenToString();
             if (!httpBodyAsString.isEmpty()) {
                 m_decodedHTTPBody = fullyDecodeString(httpBodyAsString, m_encoding);
-                if (m_decodedHTTPBody.find(isRequiredForInjection) == notFound)
+                if (m_decodedHTTPBody.find(isRequiredForInjection) == kNotFound)
                     m_decodedHTTPBody = String();
                 if (m_decodedHTTPBody.length() >= miniumLengthForSuffixTree)
                     m_decodedHTTPBodySuffixTree = adoptPtr(new SuffixTree<ASCIICodebook>(m_decodedHTTPBody, suffixTreeDepth));
@@ -611,9 +611,9 @@ String XSSAuditor::decodedSnippetForAttribute(const FilterTokenRequest& request,
         // !-- following a less-than sign. We stop instead on any ampersand
         // slash, or less-than sign.
         size_t position = 0;
-        if ((position = decodedSnippet.find("=")) != notFound
-            && (position = decodedSnippet.find(isNotHTMLSpace, position + 1)) != notFound
-            && (position = decodedSnippet.find(isTerminatingCharacter, isHTMLQuote(decodedSnippet[position]) ? position + 1 : position)) != notFound) {
+        if ((position = decodedSnippet.find("=")) != kNotFound
+            && (position = decodedSnippet.find(isNotHTMLSpace, position + 1)) != kNotFound
+            && (position = decodedSnippet.find(isTerminatingCharacter, isHTMLQuote(decodedSnippet[position]) ? position + 1 : position)) != kNotFound) {
             decodedSnippet.truncate(position);
         }
     }
@@ -625,7 +625,7 @@ String XSSAuditor::decodedSnippetForJavaScript(const FilterTokenRequest& request
     String string = request.sourceTracker.sourceForToken(request.token);
     size_t startPosition = 0;
     size_t endPosition = string.length();
-    size_t foundPosition = notFound;
+    size_t foundPosition = kNotFound;
 
     // Skip over initial comments to find start of code.
     while (startPosition < endPosition) {
@@ -644,7 +644,7 @@ String XSSAuditor::decodedSnippetForJavaScript(const FilterTokenRequest& request
             while (startPosition < endPosition && !isJSNewline(string[startPosition]))
                 startPosition++;
         } else if (startsMultiLineCommentAt(string, startPosition)) {
-            if (startPosition + 2 < endPosition && (foundPosition = string.find("*/", startPosition + 2)) != notFound)
+            if (startPosition + 2 < endPosition && (foundPosition = string.find("*/", startPosition + 2)) != kNotFound)
                 startPosition = foundPosition + 2;
             else
                 startPosition = endPosition;
@@ -687,11 +687,11 @@ bool XSSAuditor::isContainedInRequest(const String& decodedSnippet)
 {
     if (decodedSnippet.isEmpty())
         return false;
-    if (m_decodedURL.find(decodedSnippet, 0, false) != notFound)
+    if (m_decodedURL.find(decodedSnippet, 0, false) != kNotFound)
         return true;
     if (m_decodedHTTPBodySuffixTree && !m_decodedHTTPBodySuffixTree->mightContain(decodedSnippet))
         return false;
-    return m_decodedHTTPBody.find(decodedSnippet, 0, false) != notFound;
+    return m_decodedHTTPBody.find(decodedSnippet, 0, false) != kNotFound;
 }
 
 bool XSSAuditor::isLikelySafeResource(const String& url)

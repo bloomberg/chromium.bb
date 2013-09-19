@@ -83,7 +83,7 @@ TEST(ImageDecoderTest, requiredPreviousFrameIndex)
     decoder->resetRequiredPreviousFrames();
 
     // The first frame doesn't require any previous frame.
-    EXPECT_EQ(notFound, frameBuffers[0].requiredPreviousFrameIndex());
+    EXPECT_EQ(kNotFound, frameBuffers[0].requiredPreviousFrameIndex());
     // The previous DisposeNotSpecified frame is required.
     EXPECT_EQ(0u, frameBuffers[1].requiredPreviousFrameIndex());
     // DisposeKeep is treated as DisposeNotSpecified.
@@ -103,7 +103,7 @@ TEST(ImageDecoderTest, requiredPreviousFrameIndexDisposeOverwriteBgcolor)
     // Fully covering DisposeOverwriteBgcolor previous frame resets the starting state.
     frameBuffers[1].setDisposalMethod(ImageFrame::DisposeOverwriteBgcolor);
     decoder->resetRequiredPreviousFrames();
-    EXPECT_EQ(notFound, frameBuffers[2].requiredPreviousFrameIndex());
+    EXPECT_EQ(kNotFound, frameBuffers[2].requiredPreviousFrameIndex());
 
     // Partially covering DisposeOverwriteBgcolor previous frame is required by this frame.
     frameBuffers[1].setOriginalFrameRect(IntRect(50, 50, 50, 50));
@@ -124,20 +124,20 @@ TEST(ImageDecoderTest, requiredPreviousFrameIndexForFrame1)
     // resets the starting state.
     frameBuffers[0].setDisposalMethod(ImageFrame::DisposeOverwritePrevious);
     decoder->resetRequiredPreviousFrames();
-    EXPECT_EQ(notFound, frameBuffers[1].requiredPreviousFrameIndex());
+    EXPECT_EQ(kNotFound, frameBuffers[1].requiredPreviousFrameIndex());
     frameBuffers[0].setDisposalMethod(ImageFrame::DisposeOverwriteBgcolor);
     decoder->resetRequiredPreviousFrames();
-    EXPECT_EQ(notFound, frameBuffers[1].requiredPreviousFrameIndex());
+    EXPECT_EQ(kNotFound, frameBuffers[1].requiredPreviousFrameIndex());
 
     // ... even if it partially covers.
     frameBuffers[0].setOriginalFrameRect(IntRect(50, 50, 50, 50));
 
     frameBuffers[0].setDisposalMethod(ImageFrame::DisposeOverwritePrevious);
     decoder->resetRequiredPreviousFrames();
-    EXPECT_EQ(notFound, frameBuffers[1].requiredPreviousFrameIndex());
+    EXPECT_EQ(kNotFound, frameBuffers[1].requiredPreviousFrameIndex());
     frameBuffers[0].setDisposalMethod(ImageFrame::DisposeOverwriteBgcolor);
     decoder->resetRequiredPreviousFrames();
-    EXPECT_EQ(notFound, frameBuffers[1].requiredPreviousFrameIndex());
+    EXPECT_EQ(kNotFound, frameBuffers[1].requiredPreviousFrameIndex());
 }
 
 TEST(ImageDecoderTest, requiredPreviousFrameIndexBlendAtopBgcolor)
@@ -153,7 +153,7 @@ TEST(ImageDecoderTest, requiredPreviousFrameIndexBlendAtopBgcolor)
     for (int disposeMethod = ImageFrame::DisposeNotSpecified; disposeMethod <= ImageFrame::DisposeOverwritePrevious; ++disposeMethod) {
         frameBuffers[1].setDisposalMethod(static_cast<ImageFrame::DisposalMethod>(disposeMethod));
         decoder->resetRequiredPreviousFrames();
-        EXPECT_EQ(notFound, frameBuffers[2].requiredPreviousFrameIndex());
+        EXPECT_EQ(kNotFound, frameBuffers[2].requiredPreviousFrameIndex());
     }
 
     // A non-full frame with 'blending method == BlendAtopBgcolor' does depend on a prior frame.
@@ -161,7 +161,7 @@ TEST(ImageDecoderTest, requiredPreviousFrameIndexBlendAtopBgcolor)
     for (int disposeMethod = ImageFrame::DisposeNotSpecified; disposeMethod <= ImageFrame::DisposeOverwritePrevious; ++disposeMethod) {
         frameBuffers[1].setDisposalMethod(static_cast<ImageFrame::DisposalMethod>(disposeMethod));
         decoder->resetRequiredPreviousFrames();
-        EXPECT_NE(notFound, frameBuffers[2].requiredPreviousFrameIndex());
+        EXPECT_NE(kNotFound, frameBuffers[2].requiredPreviousFrameIndex());
     }
 }
 
@@ -177,7 +177,7 @@ TEST(ImageDecoderTest, requiredPreviousFrameIndexKnownOpaque)
     for (int disposeMethod = ImageFrame::DisposeNotSpecified; disposeMethod <= ImageFrame::DisposeOverwritePrevious; ++disposeMethod) {
         frameBuffers[1].setDisposalMethod(static_cast<ImageFrame::DisposalMethod>(disposeMethod));
         decoder->resetRequiredPreviousFrames(true);
-        EXPECT_EQ(notFound, frameBuffers[2].requiredPreviousFrameIndex());
+        EXPECT_EQ(kNotFound, frameBuffers[2].requiredPreviousFrameIndex());
     }
 
     // A non-full frame that is known to be opaque does depend on a prior frame.
@@ -185,7 +185,7 @@ TEST(ImageDecoderTest, requiredPreviousFrameIndexKnownOpaque)
     for (int disposeMethod = ImageFrame::DisposeNotSpecified; disposeMethod <= ImageFrame::DisposeOverwritePrevious; ++disposeMethod) {
         frameBuffers[1].setDisposalMethod(static_cast<ImageFrame::DisposalMethod>(disposeMethod));
         decoder->resetRequiredPreviousFrames(true);
-        EXPECT_NE(notFound, frameBuffers[2].requiredPreviousFrameIndex());
+        EXPECT_NE(kNotFound, frameBuffers[2].requiredPreviousFrameIndex());
     }
 }
 
@@ -196,7 +196,7 @@ TEST(ImageDecoderTest, clearCacheExceptFrameDoNothing)
 
     // This should not crash.
     decoder->initFrames(20);
-    decoder->clearCacheExceptFrame(notFound);
+    decoder->clearCacheExceptFrame(kNotFound);
 }
 
 TEST(ImageDecoderTest, clearCacheExceptFrameAll)
@@ -208,7 +208,7 @@ TEST(ImageDecoderTest, clearCacheExceptFrameAll)
     for (size_t i = 0; i < numFrames; ++i)
         frameBuffers[i].setStatus(i % 2 ? ImageFrame::FramePartial : ImageFrame::FrameComplete);
 
-    decoder->clearCacheExceptFrame(notFound);
+    decoder->clearCacheExceptFrame(kNotFound);
 
     for (size_t i = 0; i < numFrames; ++i) {
         SCOPED_TRACE(testing::Message() << i);

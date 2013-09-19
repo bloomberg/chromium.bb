@@ -41,7 +41,7 @@ ImageFrame::ImageFrame()
     , m_disposalMethod(DisposeNotSpecified)
     , m_alphaBlendSource(BlendAtopPreviousFrame)
     , m_premultiplyAlpha(true)
-    , m_requiredPreviousFrameIndex(notFound)
+    , m_requiredPreviousFrameIndex(kNotFound)
 #if !ASSERT_DISABLED
     , m_requiredPreviousFrameIndexValid(false)
 #endif

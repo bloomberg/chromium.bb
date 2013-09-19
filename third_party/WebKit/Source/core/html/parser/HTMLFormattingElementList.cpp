@@ -65,7 +65,7 @@ bool HTMLFormattingElementList::contains(Element* element)
 HTMLFormattingElementList::Entry* HTMLFormattingElementList::find(Element* element)
 {
     size_t index = m_entries.reverseFind(element);
-    if (index != notFound) {
+    if (index != kNotFound) {
         // This is somewhat of a hack, and is why this method can't be const.
         return &m_entries[index];
     }
@@ -75,7 +75,7 @@ HTMLFormattingElementList::Entry* HTMLFormattingElementList::find(Element* eleme
 HTMLFormattingElementList::Bookmark HTMLFormattingElementList::bookmarkFor(Element* element)
 {
     size_t index = m_entries.reverseFind(element);
-    ASSERT(index != notFound);
+    ASSERT(index != kNotFound);
     return Bookmark(&at(index));
 }
 
@@ -103,7 +103,7 @@ void HTMLFormattingElementList::append(PassRefPtr<HTMLStackItem> item)
 void HTMLFormattingElementList::remove(Element* element)
 {
     size_t index = m_entries.reverseFind(element);
-    if (index != notFound)
+    if (index != kNotFound)
         m_entries.remove(index);
 }
 

@@ -432,11 +432,11 @@ namespace WTF {
 
         typedef typename HashMap<T, U, V, W, X>::const_iterator const_iterator;
 
-        const_iterator end = a.end();
-        const_iterator notFound = b.end();
-        for (const_iterator it = a.begin(); it != end; ++it) {
+        const_iterator aEnd = a.end();
+        const_iterator bEnd = b.end();
+        for (const_iterator it = a.begin(); it != aEnd; ++it) {
             const_iterator bPos = b.find(it->key);
-            if (bPos == notFound || it->value != bPos->value)
+            if (bPos == bEnd || it->value != bPos->value)
                 return false;
         }
 

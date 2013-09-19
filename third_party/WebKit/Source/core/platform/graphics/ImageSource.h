@@ -76,7 +76,7 @@ public:
     ~ImageSource();
 
     // Tells the ImageSource that the Image no longer cares about decoded frame
-    // data except for the specified frame. Callers may pass WTF::notFound to
+    // data except for the specified frame. Callers may pass WTF::kNotFound to
     // clear all frames.
     //
     // In response, the ImageSource should delete cached decoded data for other

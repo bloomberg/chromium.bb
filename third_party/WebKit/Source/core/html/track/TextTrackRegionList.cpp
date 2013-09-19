@@ -69,7 +69,7 @@ void TextTrackRegionList::add(PassRefPtr<TextTrackRegion> region)
 bool TextTrackRegionList::remove(TextTrackRegion* region)
 {
     size_t index = m_list.find(region);
-    if (index == notFound)
+    if (index == kNotFound)
         return false;
 
     m_list.remove(index);

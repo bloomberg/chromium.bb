@@ -123,7 +123,7 @@ ImageFrame* WEBPImageDecoder::frameBufferAtIndex(size_t index)
         do {
             framesToDecode.append(frameToDecode);
             frameToDecode = m_frameBufferCache[frameToDecode].requiredPreviousFrameIndex();
-        } while (frameToDecode != notFound && m_frameBufferCache[frameToDecode].status() != ImageFrame::FrameComplete);
+        } while (frameToDecode != kNotFound && m_frameBufferCache[frameToDecode].status() != ImageFrame::FrameComplete);
 
         ASSERT(m_demux);
         for (size_t i = framesToDecode.size(); i > 0; --i) {
@@ -238,7 +238,7 @@ bool WEBPImageDecoder::updateDemuxer()
             m_frameBufferCache[i].setPremultiplyAlpha(m_premultiplyAlpha);
             if (!hasAnimation) {
                 ASSERT(!i);
-                m_frameBufferCache[i].setRequiredPreviousFrameIndex(notFound);
+                m_frameBufferCache[i].setRequiredPreviousFrameIndex(kNotFound);
                 continue;
             }
             WebPIterator animatedFrame;
@@ -269,7 +269,7 @@ bool WEBPImageDecoder::initFrameBuffer(size_t frameIndex)
         return true;
 
     const size_t requiredPreviousFrameIndex = buffer.requiredPreviousFrameIndex();
-    if (requiredPreviousFrameIndex == notFound) {
+    if (requiredPreviousFrameIndex == kNotFound) {
         // This frame doesn't rely on any previous data.
         if (!buffer.setSize(size().width(), size().height()))
             return setFailed();
@@ -416,7 +416,7 @@ void WEBPImageDecoder::applyPostProcessing(size_t frameIndex)
     // pixels based on disposal method of the previous frame and the previous frame buffer.
     // FIXME: This could be avoided if libwebp decoder had an API that used the previous required frame
     // to do the alpha-blending by itself.
-    if ((m_formatFlags & ANIMATION_FLAG) && frameIndex && buffer.alphaBlendSource() == ImageFrame::BlendAtopPreviousFrame && buffer.requiredPreviousFrameIndex() != notFound) {
+    if ((m_formatFlags & ANIMATION_FLAG) && frameIndex && buffer.alphaBlendSource() == ImageFrame::BlendAtopPreviousFrame && buffer.requiredPreviousFrameIndex() != kNotFound) {
         ImageFrame& prevBuffer = m_frameBufferCache[frameIndex - 1];
         ASSERT(prevBuffer.status() == ImageFrame::FrameComplete);
         ImageFrame::DisposalMethod prevDisposalMethod = prevBuffer.disposalMethod();

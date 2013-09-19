@@ -235,7 +235,7 @@ String NumberInputType::localizeValue(const String& proposedValue) const
     if (proposedValue.isEmpty())
         return proposedValue;
     // We don't localize scientific notations.
-    if (proposedValue.find(isE) != notFound)
+    if (proposedValue.find(isE) != kNotFound)
         return proposedValue;
     return element()->locale().convertToLocalizedNumber(proposedValue);
 }
@@ -250,7 +250,7 @@ String NumberInputType::convertFromVisibleValue(const String& visibleValue) cons
     if (visibleValue.isEmpty())
         return visibleValue;
     // We don't localize scientific notations.
-    if (visibleValue.find(isE) != notFound)
+    if (visibleValue.find(isE) != kNotFound)
         return visibleValue;
     return element()->locale().convertFromLocalizedNumber(visibleValue);
 }

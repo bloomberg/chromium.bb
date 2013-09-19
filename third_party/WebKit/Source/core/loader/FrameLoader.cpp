@@ -350,7 +350,7 @@ void FrameLoader::didBeginDocument(bool dispatch)
         String headerContentLanguage = m_documentLoader->response().httpHeaderField("Content-Language");
         if (!headerContentLanguage.isEmpty()) {
             size_t commaIndex = headerContentLanguage.find(',');
-            headerContentLanguage.truncate(commaIndex); // notFound == -1 == don't truncate
+            headerContentLanguage.truncate(commaIndex); // kNotFound == -1 == don't truncate
             headerContentLanguage = headerContentLanguage.stripWhiteSpace(isHTMLSpace);
             if (!headerContentLanguage.isEmpty())
                 m_frame->document()->setContentLanguage(headerContentLanguage);

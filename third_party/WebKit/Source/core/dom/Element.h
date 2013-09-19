@@ -1035,7 +1035,7 @@ inline const StylePropertySet* ElementData::presentationAttributeStyle() const
 inline const Attribute* ElementData::getAttributeItem(const AtomicString& name, bool shouldIgnoreAttributeCase) const
 {
     size_t index = getAttributeItemIndex(name, shouldIgnoreAttributeCase);
-    if (index != notFound)
+    if (index != kNotFound)
         return attributeItem(index);
     return 0;
 }
@@ -1055,7 +1055,7 @@ inline size_t ElementData::getAttributeItemIndex(const QualifiedName& name, bool
         if (attribute.name().matchesPossiblyIgnoringCase(name, shouldIgnoreCase))
             return i;
     }
-    return notFound;
+    return kNotFound;
 }
 
 // We use a boolean parameter instead of calling shouldIgnoreAttributeCase so that the caller
@@ -1078,7 +1078,7 @@ inline size_t ElementData::getAttributeItemIndex(const AtomicString& name, bool 
 
     if (doSlowCheck)
         return getAttributeItemIndexSlowCase(name, shouldIgnoreAttributeCase);
-    return notFound;
+    return kNotFound;
 }
 
 inline const Attribute* ElementData::getAttributeItem(const QualifiedName& name) const

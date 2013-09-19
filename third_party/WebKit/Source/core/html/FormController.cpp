@@ -219,7 +219,7 @@ PassOwnPtr<SavedFormState> SavedFormState::deserialize(const Vector<String>& sta
         String name = stateVector[index++];
         String type = stateVector[index++];
         FormControlState state = FormControlState::deserialize(stateVector, index);
-        if (type.isEmpty() || type.find(isNotFormControlTypeCharacter) != notFound || state.isFailure())
+        if (type.isEmpty() || type.find(isNotFormControlTypeCharacter) != kNotFound || state.isFailure())
             return nullptr;
         savedFormState->appendControlState(name, type, state);
     }

@@ -96,7 +96,7 @@ void HTMLEmbedElement::parseAttribute(const QualifiedName& name, const AtomicStr
     if (name == typeAttr) {
         m_serviceType = value.string().lower();
         size_t pos = m_serviceType.find(";");
-        if (pos != notFound)
+        if (pos != kNotFound)
             m_serviceType = m_serviceType.left(pos);
     } else if (name == codeAttr)
         m_url = stripLeadingAndTrailingHTMLSpaces(value);

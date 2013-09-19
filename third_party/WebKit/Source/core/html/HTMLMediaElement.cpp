@@ -1318,7 +1318,7 @@ void HTMLMediaElement::textTrackRemoveCue(TextTrack*, PassRefPtr<TextTrackCue> c
     m_cueTree.remove(interval);
 
     size_t index = m_currentlyActiveCues.find(interval);
-    if (index != notFound) {
+    if (index != kNotFound) {
         m_currentlyActiveCues.remove(index);
         cue->setIsActive(false);
     }
@@ -2716,7 +2716,7 @@ void HTMLMediaElement::didRemoveTrack(HTMLTrackElement* trackElement)
     removeTrack(textTrack.get());
 
     size_t index = m_textTracksWhenResourceSelectionBegan.find(textTrack.get());
-    if (index != notFound)
+    if (index != kNotFound)
         m_textTracksWhenResourceSelectionBegan.remove(index);
 }
 

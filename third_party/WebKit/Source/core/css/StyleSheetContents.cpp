@@ -481,7 +481,7 @@ void StyleSheetContents::registerClient(CSSStyleSheet* sheet)
 void StyleSheetContents::unregisterClient(CSSStyleSheet* sheet)
 {
     size_t position = m_clients.find(sheet);
-    ASSERT(position != notFound);
+    ASSERT(position != kNotFound);
     m_clients.remove(position);
 }
 

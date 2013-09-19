@@ -111,7 +111,7 @@ static bool addListenerToVector(EventListenerVector* vector, PassRefPtr<EventLis
 {
     RegisteredEventListener registeredListener(listener, useCapture);
 
-    if (vector->find(registeredListener) != notFound)
+    if (vector->find(registeredListener) != kNotFound)
         return false; // Duplicate listener.
 
     vector->append(registeredListener);
@@ -135,7 +135,7 @@ static bool removeListenerFromVector(EventListenerVector* listenerVector, EventL
 {
     RegisteredEventListener registeredListener(listener, useCapture);
     indexOfRemovedListener = listenerVector->find(registeredListener);
-    if (indexOfRemovedListener == notFound)
+    if (indexOfRemovedListener == kNotFound)
         return false;
     listenerVector->remove(indexOfRemovedListener);
     return true;

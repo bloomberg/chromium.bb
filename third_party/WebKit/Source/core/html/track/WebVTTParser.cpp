@@ -96,7 +96,7 @@ FloatPoint WebVTTParser::parseFloatPercentageValuePair(const String& value, char
     // percentages (x%,y%) implies that at least the first two characters
     // are the first percentage value.
     size_t delimiterOffset = value.find(delimiter, 2);
-    if (delimiterOffset == notFound || delimiterOffset == value.length() - 1) {
+    if (delimiterOffset == kNotFound || delimiterOffset == value.length() - 1) {
         isValidSetting = false;
         return FloatPoint(0, 0);
     }
@@ -280,7 +280,7 @@ WebVTTParser::ParseState WebVTTParser::collectTimingsAndSettings(const String& l
     skipWhiteSpace(line, &position);
 
     // 6-9 - If the next three characters are not "-->", abort and return failure.
-    if (line.find("-->", position) == notFound)
+    if (line.find("-->", position) == kNotFound)
         return BadCue;
     position += 3;
     if (position >= line.length())

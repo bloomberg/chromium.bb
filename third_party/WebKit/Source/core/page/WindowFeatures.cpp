@@ -244,16 +244,16 @@ void WindowFeatures::parseDialogFeatures(const String& string, DialogFeaturesMap
 
         size_t separatorPosition = featureString.find('=');
         size_t colonPosition = featureString.find(':');
-        if (separatorPosition != notFound && colonPosition != notFound)
+        if (separatorPosition != kNotFound && colonPosition != kNotFound)
             continue; // ignore strings that have both = and :
-        if (separatorPosition == notFound)
+        if (separatorPosition == kNotFound)
             separatorPosition = colonPosition;
 
         String key = featureString.left(separatorPosition).stripWhiteSpace().lower();
 
         // Null string for value indicates key without value.
         String value;
-        if (separatorPosition != notFound) {
+        if (separatorPosition != kNotFound) {
             value = featureString.substring(separatorPosition + 1).stripWhiteSpace().lower();
             value = value.left(value.find(' '));
         }

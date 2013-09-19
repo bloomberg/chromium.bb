@@ -159,7 +159,7 @@ PassRefPtr<SimpleFontData> CSSFontFaceSource::getFontData(const FontDescription&
                 if (!m_externalSVGFontElement) {
                     String fragmentIdentifier;
                     size_t start = m_string.find('#');
-                    if (start != notFound)
+                    if (start != kNotFound)
                         fragmentIdentifier = m_string.string().substring(start + 1);
                     m_externalSVGFontElement = m_font->getSVGFontById(fragmentIdentifier);
                 }

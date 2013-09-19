@@ -418,7 +418,7 @@ void RTCPeerConnection::removeStream(PassRefPtr<MediaStream> prpStream, Exceptio
     RefPtr<MediaStream> stream = prpStream;
 
     size_t pos = m_localStreams.find(stream);
-    if (pos == notFound)
+    if (pos == kNotFound)
         return;
 
     m_localStreams.remove(pos);
@@ -595,7 +595,7 @@ void RTCPeerConnection::didRemoveRemoteStream(MediaStreamDescriptor* streamDescr
         return;
 
     size_t pos = m_remoteStreams.find(stream);
-    ASSERT(pos != notFound);
+    ASSERT(pos != kNotFound);
     m_remoteStreams.remove(pos);
 
     scheduleDispatchEvent(MediaStreamEvent::create(eventNames().removestreamEvent, false, false, stream.release()));
