@@ -70,3 +70,4 @@ OneClickSigninBubbleViewTest.ShowBubble
 
 # http://crbug.com/292960
 SyncBackendHostTest.DownloadControlTypes
+SyncBackendHostTest.SilentlyFailToDownloadControlTypes
