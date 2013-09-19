@@ -40,7 +40,6 @@
 
 namespace WebKit {
 class WebDeviceMotionData;
-class WebDeviceOrientationData;
 class WebFrame;
 class WebGamepads;
 class WebHistoryItem;
@@ -65,10 +64,7 @@ public:
     // Set the gamepads to return from Platform::sampleGamepads().
     virtual void setGamepadData(const WebKit::WebGamepads&) = 0;
 
-    // Set data to return when registering via Platform::setDeviceMotionListener().
     virtual void setDeviceMotionData(const WebKit::WebDeviceMotionData&) = 0;
-    // Set data to return when registering via Platform::setDeviceOrientationListener().
-    virtual void setDeviceOrientationData(const WebKit::WebDeviceOrientationData&) = 0;
 
     // Add a message to the text dump for the layout test.
     virtual void printMessage(const std::string& message) = 0;

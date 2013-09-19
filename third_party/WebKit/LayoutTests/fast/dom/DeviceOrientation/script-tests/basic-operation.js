@@ -3,10 +3,9 @@ description('Tests the basic operation of DeviceOrientation using the mock.');
 var mockAlpha = 1.1;
 var mockBeta = 2.2;
 var mockGamma = 3.3;
-var mockAbsolute = true;
 
 if (window.testRunner)
-    testRunner.setMockDeviceOrientation(true, mockAlpha, true, mockBeta, true, mockGamma, true, mockAbsolute);
+    testRunner.setMockDeviceOrientation(true, mockAlpha, true, mockBeta, true, mockGamma);
 else
     debug('This test can not be run without the TestRunner');
 
@@ -16,7 +15,6 @@ window.addEventListener('deviceorientation', function(e) {
     shouldBe('deviceOrientationEvent.alpha', 'mockAlpha');
     shouldBe('deviceOrientationEvent.beta', 'mockBeta');
     shouldBe('deviceOrientationEvent.gamma', 'mockGamma');
-    shouldBe('deviceOrientationEvent.absolute', 'mockAbsolute');
     finishJSTest();
 });
 

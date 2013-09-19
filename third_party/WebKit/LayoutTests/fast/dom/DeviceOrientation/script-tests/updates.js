@@ -1,10 +1,10 @@
 description('Tests that updates to the orientation causes new events to fire.');
 
 var mockEvent;
-function setMockOrientation(alpha, beta, gamma, absolute) {
-    mockEvent = {alpha: alpha, beta: beta, gamma: gamma, absolute: absolute};
+function setMockOrientation(alpha, beta, gamma) {
+    mockEvent = {alpha: alpha, beta: beta, gamma: gamma};
     if (window.testRunner)
-        testRunner.setMockDeviceOrientation(true, mockEvent.alpha, true, mockEvent.beta, true, mockEvent.gamma, true, mockEvent.absolute);
+        testRunner.setMockDeviceOrientation(true, mockEvent.alpha, true, mockEvent.beta, true, mockEvent.gamma);
     else
         debug('This test can not be run without the TestRunner');
 }
@@ -15,17 +15,13 @@ function checkOrientation(event) {
     shouldBe('deviceOrientationEvent.alpha', 'mockEvent.alpha');
     shouldBe('deviceOrientationEvent.beta', 'mockEvent.beta');
     shouldBe('deviceOrientationEvent.gamma', 'mockEvent.gamma');
-    shouldBe('deviceOrientationEvent.absolute', 'mockEvent.absolute');
 }
 
 function firstListener(event) {
     checkOrientation(event);
     window.removeEventListener('deviceorientation', firstListener);
-    setTimeout(function(){initUpdateListener();}, 0);
-}
 
-function initUpdateListener() {
-    setMockOrientation(11.1, 22.2, 33.3, true);
+    setMockOrientation(11.1, 22.2, 33.3);
     window.addEventListener('deviceorientation', updateListener);
 }
 
@@ -34,7 +30,7 @@ function updateListener(event) {
     finishJSTest();
 }
 
-setMockOrientation(1.1, 2.2, 3.3, true);
+setMockOrientation(1.1, 2.2, 3.3);
 window.addEventListener('deviceorientation', firstListener);
 
 window.jsTestIsAsync = true;

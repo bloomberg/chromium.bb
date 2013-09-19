@@ -36,6 +36,7 @@
 #include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/ScriptController.h"
 #include "core/dom/DOMImplementation.h"
+#include "core/dom/DeviceOrientationController.h"
 #include "core/dom/Document.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/fetch/CSSStyleSheetResource.h"
@@ -68,7 +69,6 @@
 #include "core/platform/Cookie.h"
 #include "core/platform/JSONValues.h"
 #include "core/platform/text/RegularExpression.h"
-#include "modules/device_orientation/NewDeviceOrientationController.h"
 #include "modules/geolocation/GeolocationController.h"
 #include "weborigin/SecurityOrigin.h"
 #include "wtf/CurrentTime.h"
@@ -1198,7 +1198,7 @@ GeolocationPosition* InspectorPageAgent::overrideGeolocationPosition(Geolocation
 
 void InspectorPageAgent::setDeviceOrientationOverride(ErrorString* error, double alpha, double beta, double gamma)
 {
-    NewDeviceOrientationController* controller = NewDeviceOrientationController::from(mainFrame()->document());
+    DeviceOrientationController* controller = DeviceOrientationController::from(m_page);
     if (!controller) {
         *error = "Internal error: unable to override device orientation";
         return;

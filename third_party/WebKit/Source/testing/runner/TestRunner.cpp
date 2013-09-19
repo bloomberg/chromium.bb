@@ -39,7 +39,6 @@
 #include "WebPermissions.h"
 #include "public/platform/WebData.h"
 #include "public/platform/WebDeviceMotionData.h"
-#include "public/platform/WebDeviceOrientationData.h"
 #include "public/platform/WebPoint.h"
 #include "public/platform/WebURLResponse.h"
 #include "public/testing/WebPreferences.h"
@@ -1545,32 +1544,22 @@ void TestRunner::setMockDeviceMotion(const CppArgumentList& arguments, CppVarian
 void TestRunner::setMockDeviceOrientation(const CppArgumentList& arguments, CppVariant* result)
 {
     result->setNull();
-    if (arguments.size() < 8
-        || !arguments[0].isBool() || !arguments[1].isNumber() // alpha
-        || !arguments[2].isBool() || !arguments[3].isNumber() // beta
-        || !arguments[4].isBool() || !arguments[5].isNumber() // gamma
-        || !arguments[6].isBool() || !arguments[7].isBool()) // absolute
+    if (arguments.size() < 6 || !arguments[0].isBool() || !arguments[1].isNumber() || !arguments[2].isBool() || !arguments[3].isNumber() || !arguments[4].isBool() || !arguments[5].isNumber())
         return;
 
-    WebDeviceOrientationData orientation;
+    WebDeviceOrientation orientation;
+    orientation.setNull(false);
+    if (arguments[0].toBoolean())
+        orientation.setAlpha(arguments[1].toDouble());
+    if (arguments[2].toBoolean())
+        orientation.setBeta(arguments[3].toDouble());
+    if (arguments[4].toBoolean())
+        orientation.setGamma(arguments[5].toDouble());
 
-    // alpha
-    orientation.hasAlpha = arguments[0].toBoolean();
-    orientation.alpha = arguments[1].toDouble();
-
-    // beta
-    orientation.hasBeta = arguments[2].toBoolean();
-    orientation.beta = arguments[3].toDouble();
-
-    // gamma
-    orientation.hasGamma = arguments[4].toBoolean();
-    orientation.gamma = arguments[5].toDouble();
-
-    // absolute
-    orientation.hasAbsolute = arguments[6].toBoolean();
-    orientation.absolute = arguments[7].toBoolean();
-
-    m_delegate->setDeviceOrientationData(orientation);
+    // Note that we only call setOrientation on the main page's mock since this
+    // tests require. If necessary, we could get a list of WebViewHosts from th
+    // call setOrientation on each DeviceOrientationClientMock.
+    m_proxy->deviceOrientationClientMock()->setOrientation(orientation);
 }
 
 void TestRunner::setUserStyleSheetEnabled(const CppArgumentList& arguments, CppVariant* result)
