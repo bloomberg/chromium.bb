@@ -273,6 +273,20 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
   return titleView_;
 }
 
+- (NSView*)audioIndicatorView {
+  return audioIndicatorView_;
+}
+
+- (void)setAudioIndicatorView:(NSView*)audioIndicatorView {
+  if (audioIndicatorView == audioIndicatorView_)
+    return;
+  [audioIndicatorView_ removeFromSuperview];
+  audioIndicatorView_.reset([audioIndicatorView retain]);
+  [self updateVisibility];
+  if (audioIndicatorView_)
+    [[self view] addSubview:audioIndicatorView_];
+}
+
 - (HoverCloseButton*)closeButton {
   return closeButton_;
 }
@@ -286,26 +300,49 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 // how much space we have available.
 - (int)iconCapacity {
   CGFloat width = NSMaxX([closeButton_ frame]) - NSMinX(originalIconFrame_);
-  CGFloat iconWidth = NSWidth(originalIconFrame_);
+  const int kPaddingBetweenIcons = 2;
+  CGFloat iconWidth = NSWidth(originalIconFrame_) + kPaddingBetweenIcons;
 
   return width / iconWidth;
 }
 
 // Returns YES if we should show the icon. When tabs get too small, we clip
 // the favicon before the close button for selected tabs, and prefer the
-// favicon for unselected tabs.  The icon can also be suppressed more directly
+// favicon for unselected tabs. Exception: We clip the favicon before the audio
+// indicator in all cases. The icon can also be suppressed more directly
 // by clearing iconView_.
 - (BOOL)shouldShowIcon {
   if (!iconView_)
     return NO;
+  const BOOL shouldShowAudioIndicator = [self shouldShowAudioIndicator];
+  if ([self mini])
+    return !shouldShowAudioIndicator;
+  int required_capacity = shouldShowAudioIndicator ? 2 : 1;
+  if ([self selected]) {
+    // Active tabs give priority to the close button, then the audio indicator,
+    // then the favicon.
+    ++required_capacity;
+  } else {
+    // Non-selected tabs give priority to the audio indicator, then the favicon,
+    // and finally the close button.
+  }
+  return [self iconCapacity] >= required_capacity;
+}
 
+// Returns YES if we should show the audio indicator. When tabs get too small,
+// we clip the audio indicator before the close button for selected tabs, and
+// prefer the audio indicator for unselected tabs.
+- (BOOL)shouldShowAudioIndicator {
+  if (!audioIndicatorView_)
+    return NO;
   if ([self mini])
     return YES;
-
-  int iconCapacity = [self iconCapacity];
-  if ([self selected])
-    return iconCapacity >= 2;
-  return iconCapacity >= 1;
+  if ([self selected]) {
+    // The active tab clips the audio indicator before the close button.
+    return [self iconCapacity] >= 2;
+  }
+  // Non-selected tabs clip close button before the audio indicator.
+  return [self iconCapacity] >= 1;
 }
 
 // Returns YES if we should be showing the close button. The selected tab
@@ -332,6 +369,34 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 
   [closeButton_ setHidden:!newShowCloseButton];
 
+  BOOL newShowAudioIndicator = [self shouldShowAudioIndicator];
+
+  if (audioIndicatorView_) {
+    [audioIndicatorView_ setHidden:!newShowAudioIndicator];
+
+    NSRect newFrame = [audioIndicatorView_ frame];
+    if ([self app] || [self mini]) {
+      // Tab is pinned: Position the audio indicator in the center.
+      const CGFloat tabWidth = [self app] ?
+          [TabController appTabWidth] : [TabController miniTabWidth];
+      newFrame.origin.x = std::floor((tabWidth - NSWidth(newFrame)) / 2);
+      newFrame.origin.y = NSMinY(originalIconFrame_) -
+          std::floor((NSHeight(newFrame) - NSHeight(originalIconFrame_)) / 2);
+    } else {
+      // The Frame for the audioIndicatorView_ depends on whether iconView_
+      // and/or closeButton_ are visible, and where they have been positioned.
+      const NSRect closeButtonFrame = [closeButton_ frame];
+      newFrame.origin.x = NSMinX(closeButtonFrame);
+      // Position to the left of the close button when it is showing.
+      if (newShowCloseButton)
+        newFrame.origin.x -= NSWidth(newFrame);
+      // Audio indicator is centered vertically, with respect to closeButton_.
+      newFrame.origin.y = NSMinY(closeButtonFrame) -
+          std::floor((NSHeight(newFrame) - NSHeight(closeButtonFrame)) / 2);
+    }
+    [audioIndicatorView_ setFrame:newFrame];
+  }
+
   // Adjust the title view based on changes to the icon's and close button's
   // visibility.
   NSRect oldTitleFrame = [titleView_ frame];
@@ -345,7 +410,10 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
     newTitleFrame.origin.x = originalIconFrame_.origin.x;
   }
 
-  if (newShowCloseButton) {
+  if (newShowAudioIndicator) {
+    newTitleFrame.size.width = NSMinX([audioIndicatorView_ frame]) -
+                               newTitleFrame.origin.x;
+  } else if (newShowCloseButton) {
     newTitleFrame.size.width = NSMinX([closeButton_ frame]) -
                                newTitleFrame.origin.x;
   } else {

@@ -68,7 +68,6 @@
         <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_MINIMIZE_H" file="win/app_window_minimize_hover.png" />
         <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_MINIMIZE_P" file="win/app_window_minimize_active.png" />
       </if>
-      <structure type="chrome_scaled_image" name="IDR_AUDIO_EQUALIZER_COLUMN" file="common/audio_equalizer_column.png" />
       <structure type="chrome_scaled_image" name="IDR_AUTOFILL_DIALOG_MENU_BUTTON" file="common/autofill_dialog_menu_button_normal.png" />
       <structure type="chrome_scaled_image" name="IDR_AUTOFILL_DIALOG_MENU_BUTTON_P" file="common/autofill_dialog_menu_button_pressed.png" />
       <structure type="chrome_scaled_image" name="IDR_AUTOFILL_DIALOG_MENU_BUTTON_H" file="common/autofill_dialog_menu_button_hover.png" />
@@ -805,6 +804,7 @@
       <structure type="chrome_scaled_image" name="IDR_CLOSE_1_H" file="common/close_1_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_CLOSE_1_MASK" file="common/close_1_mask.png" />
       <structure type="chrome_scaled_image" name="IDR_CLOSE_1_P" file="common/close_1_pressed.png" />
+      <structure type="chrome_scaled_image" name="IDR_TAB_AUDIO_INDICATOR" file="common/tab_audio_indicator.png" />
       <structure type="chrome_scaled_image" name="IDR_TAB_DROP_DOWN" file="tab_drop_down.png" />
       <structure type="chrome_scaled_image" name="IDR_TAB_DROP_UP" file="tab_drop_up.png" />
       <if expr="not pp_ifdef('toolkit_views') and not is_macosx and not is_ios">

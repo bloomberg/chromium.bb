@@ -42,6 +42,7 @@ class MenuDelegate;
  @private
   base::scoped_nsobject<NSView> iconView_;
   base::scoped_nsobject<NSTextField> titleView_;
+  base::scoped_nsobject<NSView> audioIndicatorView_;
   base::scoped_nsobject<HoverCloseButton> closeButton_;
 
   NSRect originalIconFrame_;  // frame of iconView_ as loaded from nib
@@ -82,6 +83,7 @@ class MenuDelegate;
 @property(assign, nonatomic) GURL url;
 @property(assign, nonatomic) NSView* iconView;
 @property(readonly, nonatomic) NSTextField* titleView;
+@property(assign, nonatomic) NSView* audioIndicatorView;
 @property(readonly, nonatomic) HoverCloseButton* closeButton;
 
 // Minimum and maximum allowable tab width. The minimum width does not show
@@ -121,6 +123,7 @@ class MenuDelegate;
 - (NSString*)toolTip;
 - (int)iconCapacity;
 - (BOOL)shouldShowIcon;
+- (BOOL)shouldShowAudioIndicator;
 - (BOOL)shouldShowCloseButton;
 @end  // TabController(TestingAPI)
 

@@ -10,7 +10,6 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/ui/tabs/tab_audio_indicator.h"
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
 #include "ui/base/layout.h"
 #include "ui/gfx/animation/animation_delegate.h"
@@ -38,8 +37,7 @@ class ImageButton;
 //  A View that renders a Tab, either in a TabStrip or in a DraggedTabView.
 //
 ///////////////////////////////////////////////////////////////////////////////
-class Tab : public TabAudioIndicator::Delegate,
-            public gfx::AnimationDelegate,
+class Tab : public gfx::AnimationDelegate,
             public views::ButtonListener,
             public views::ContextMenuController,
             public views::View {
@@ -153,9 +151,6 @@ class Tab : public TabAudioIndicator::Delegate,
 
   typedef std::list<ImageCacheEntry> ImageCache;
 
-  // Overridden from TabAudioIndicator::Delegate:
-  virtual void ScheduleAudioIndicatorPaint() OVERRIDE;
-
   // Overridden from gfx::AnimationDelegate:
   virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
   virtual void AnimationCanceled(const gfx::Animation* animation) OVERRIDE;
@@ -198,6 +193,10 @@ class Tab : public TabAudioIndicator::Delegate,
   const gfx::Rect& GetTitleBounds() const;
   const gfx::Rect& GetIconBounds() const;
 
+  // Invoked from Layout to adjust the position of the favicon or audio
+  // indicator for mini tabs.
+  void MaybeAdjustLeftForMiniTab(gfx::Rect* bounds) const;
+
   // Invoked from SetData after |data_| has been updated to the new data.
   void DataChanged(const TabRendererData& old);
 
@@ -217,9 +216,10 @@ class Tab : public TabAudioIndicator::Delegate,
                                                  int tab_id);
   void PaintActiveTabBackground(gfx::Canvas* canvas);
 
-  // Paints the icon at the specified coordinates, mirrored for RTL if needed.
+  // Paints the icon, audio indicator icon, etc., mirrored for RTL if needed.
   void PaintIcon(gfx::Canvas* canvas);
   void PaintCaptureState(gfx::Canvas* canvas, gfx::Rect bounds);
+  void PaintAudioIndicator(gfx::Canvas* canvas);
   void PaintTitle(gfx::Canvas* canvas, SkColor title_color);
 
   // Invoked if data_.network_state changes, or the network_state is not none.
@@ -232,6 +232,9 @@ class Tab : public TabAudioIndicator::Delegate,
 
   // Returns whether the Tab should display a favicon.
   bool ShouldShowIcon() const;
+
+  // Returns whether the Tab should display the audio indicator.
+  bool ShouldShowAudioIndicator() const;
 
   // Returns whether the Tab should display a close button.
   bool ShouldShowCloseBox() const;
@@ -321,8 +324,6 @@ class Tab : public TabAudioIndicator::Delegate,
 
   scoped_refptr<gfx::AnimationContainer> animation_container_;
 
-  scoped_ptr<TabAudioIndicator> tab_audio_indicator_;
-
   views::ImageButton* close_button_;
 
   ui::ThemeProvider* theme_provider_;
@@ -334,6 +335,7 @@ class Tab : public TabAudioIndicator::Delegate,
   // The bounds of various sections of the display.
   gfx::Rect favicon_bounds_;
   gfx::Rect title_bounds_;
+  gfx::Rect audio_indicator_bounds_;
 
   // The offset used to paint the inactive background image.
   gfx::Point background_offset_;
@@ -352,6 +354,10 @@ class Tab : public TabAudioIndicator::Delegate,
   // Whether we're showing the icon. It is cached so that we can detect when it
   // changes and layout appropriately.
   bool showing_icon_;
+
+  // Whether we're showing the audio indicator. It is cached so that we can
+  // detect when it changes and layout appropriately.
+  bool showing_audio_indicator_;
 
   // Whether we are showing the close button. It is cached so that we can
   // detect when it changes and layout appropriately.
