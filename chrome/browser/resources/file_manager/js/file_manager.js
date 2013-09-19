@@ -1206,10 +1206,14 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   FileManager.prototype.refocus = function() {
+    var targetElement;
     if (this.dialogType == DialogType.SELECT_SAVEAS_FILE)
-      this.filenameInput_.focus();
+      targetElement = this.filenameInput_;
     else
-      this.currentList_.focus();
+      targetElement = this.currentList_;
+
+    if (targetElement.tabIndex != -1)
+      targetElement.focus();
   };
 
   /**
