@@ -1,10 +1,10 @@
 Tests invalid and valid syntaxes.
 
 Test calling functions with too few parameters.
-TEST(video.webkitGenerateKeyRequest()) THROWS("TypeError: Not enough arguments") OK
-TEST(video.webkitAddKey()) THROWS("TypeError: Not enough arguments") OK
-TEST(video.webkitAddKey('webkit-org.w3.clearkey')) THROWS("TypeError: Not enough arguments") OK
-TEST(video.webkitCancelKeyRequest()) THROWS("TypeError: Not enough arguments") OK
+TEST(video.webkitGenerateKeyRequest()) THROWS("TypeError: Failed to execute 'webkitGenerateKeyRequest' on 'HTMLMediaElement': 1 argument required, but only 0 present.") OK
+TEST(video.webkitAddKey()) THROWS("TypeError: Failed to execute 'webkitAddKey' on 'HTMLMediaElement': 2 arguments required, but only 0 present.") OK
+TEST(video.webkitAddKey('webkit-org.w3.clearkey')) THROWS("TypeError: Failed to execute 'webkitAddKey' on 'HTMLMediaElement': 2 arguments required, but only 1 present.") OK
+TEST(video.webkitCancelKeyRequest()) THROWS("TypeError: Failed to execute 'webkitCancelKeyRequest' on 'HTMLMediaElement': 1 argument required, but only 0 present.") OK
 
 Verify invalid key system parameter is caught before checking whether loading has started.
 EXPECTED (video.networkState == '0') OK
