@@ -383,6 +383,12 @@
       <if expr="pp_ifdef('_google_chrome')">
         <include name="IDR_PREF_HASH_SEED_BIN" file="resources\settings_internal\pref_hash_seed.bin" type="BINDATA" />
       </if>
+      <if expr="pp_ifdef('chromeos')">
+        <include name="IDR_SOUND_STARTUP_WAV" file="resources\chromeos\sounds\startup.wav" type="BINDATA" />
+        <include name="IDR_SOUND_LOCK_WAV" file="resources\chromeos\sounds\lock.wav" type="BINDATA" />
+        <include name="IDR_SOUND_UNLOCK_WAV" file="resources\chromeos\sounds\unlock.wav" type="BINDATA" />
+        <include name="IDR_SOUND_SHUTDOWN_WAV" file="resources\chromeos\sounds\shutdown.wav" type="BINDATA" />
+      </if>
     </includes>
   </release>
 </grit>
