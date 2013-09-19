@@ -1455,8 +1455,12 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
                                 queue_time_after_change);
     }
 
+    bool system_only =
+        (key_.host_resolver_flags & HOST_RESOLVER_SYSTEM_ONLY) != 0;
+
     // Caution: Job::Start must not complete synchronously.
-    if (had_dns_config_ && !ResemblesMulticastDNSName(key_.hostname)) {
+    if (!system_only && had_dns_config_ &&
+        !ResemblesMulticastDNSName(key_.hostname)) {
       StartDnsTask();
     } else {
       StartProcTask();

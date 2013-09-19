@@ -12,9 +12,12 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "net/base/address_list.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
 #include "net/base/net_log.h"
+#include "net/dns/host_resolver.h"
+#include "net/dns/single_request_host_resolver.h"
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_resolver.h"
 #include "url/gurl.h"
@@ -105,6 +108,8 @@ class NET_EXPORT_PRIVATE ProxyScriptDecider {
     STATE_NONE,
     STATE_WAIT,
     STATE_WAIT_COMPLETE,
+    STATE_QUICK_CHECK,
+    STATE_QUICK_CHECK_COMPLETE,
     STATE_FETCH_PAC_SCRIPT,
     STATE_FETCH_PAC_SCRIPT_COMPLETE,
     STATE_VERIFY_PAC_SCRIPT,
@@ -120,6 +125,9 @@ class NET_EXPORT_PRIVATE ProxyScriptDecider {
 
   int DoWait();
   int DoWaitComplete(int result);
+
+  int DoQuickCheck();
+  int DoQuickCheckComplete(int result);
 
   int DoFetchPacScript();
   int DoFetchPacScriptComplete(int result);
@@ -161,6 +169,9 @@ class NET_EXPORT_PRIVATE ProxyScriptDecider {
   // (i.e. fallback to direct connections are prohibited).
   bool pac_mandatory_;
 
+  // Whether we have an existing custom PAC URL.
+  bool have_custom_pac_url_;
+
   PacSourceList pac_sources_;
   State next_state_;
 
@@ -175,6 +186,10 @@ class NET_EXPORT_PRIVATE ProxyScriptDecider {
   ProxyConfig effective_config_;
   scoped_refptr<ProxyResolverScriptData> script_data_;
 
+  AddressList wpad_addresses_;
+  base::OneShotTimer<ProxyScriptDecider> quick_check_timer_;
+  scoped_ptr<SingleRequestHostResolver> host_resolver_;
+  base::Time quick_check_start_time_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyScriptDecider);
 };

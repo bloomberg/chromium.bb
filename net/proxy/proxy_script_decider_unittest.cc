@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -14,11 +15,13 @@
 #include "net/base/net_log.h"
 #include "net/base/net_log_unittest.h"
 #include "net/base/test_completion_callback.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/proxy/dhcp_proxy_script_fetcher.h"
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_resolver.h"
 #include "net/proxy/proxy_script_decider.h"
 #include "net/proxy/proxy_script_fetcher.h"
+#include "net/url_request/url_request_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -93,7 +96,12 @@ class Rules {
 
 class RuleBasedProxyScriptFetcher : public ProxyScriptFetcher {
  public:
-  explicit RuleBasedProxyScriptFetcher(const Rules* rules) : rules_(rules) {}
+  explicit RuleBasedProxyScriptFetcher(const Rules* rules)
+      : rules_(rules), request_context_(NULL) {}
+
+  virtual void SetRequestContext(URLRequestContext* context) {
+    request_context_ = context;
+  }
 
   // ProxyScriptFetcher implementation.
   virtual int Fetch(const GURL& url,
@@ -109,10 +117,13 @@ class RuleBasedProxyScriptFetcher : public ProxyScriptFetcher {
 
   virtual void Cancel() OVERRIDE {}
 
-  virtual URLRequestContext* GetRequestContext() const OVERRIDE { return NULL; }
+  virtual URLRequestContext* GetRequestContext() const OVERRIDE {
+    return request_context_;
+  }
 
  private:
   const Rules* rules_;
+  URLRequestContext* request_context_;
 };
 
 // Succeed using custom PAC script.
@@ -241,6 +252,91 @@ TEST(ProxyScriptDeciderTest, AutodetectSuccess) {
 
   EXPECT_TRUE(decider.effective_config().has_pac_url());
   EXPECT_EQ(rule.url, decider.effective_config().pac_url());
+}
+
+class ProxyScriptDeciderQuickCheckTest : public ::testing::Test {
+ public:
+  ProxyScriptDeciderQuickCheckTest()
+      : rule_(rules_.AddSuccessRule("http://wpad/wpad.dat")),
+        fetcher_(&rules_) { }
+
+  virtual void SetUp() OVERRIDE {
+    request_context_.set_host_resolver(&resolver_);
+    fetcher_.SetRequestContext(&request_context_);
+    config_.set_auto_detect(true);
+    decider_.reset(new ProxyScriptDecider(&fetcher_, &dhcp_fetcher_, NULL));
+  }
+
+  int StartDecider() {
+    return decider_->Start(config_, base::TimeDelta(), true,
+                            callback_.callback());
+  }
+
+ protected:
+  scoped_ptr<ProxyScriptDecider> decider_;
+  MockHostResolver resolver_;
+  Rules rules_;
+  Rules::Rule rule_;
+  TestCompletionCallback callback_;
+
+ private:
+  URLRequestContext request_context_;
+
+  RuleBasedProxyScriptFetcher fetcher_;
+  DoNothingDhcpProxyScriptFetcher dhcp_fetcher_;
+
+  ProxyConfig config_;
+};
+
+// Fails if a synchronous DNS lookup success for wpad causes QuickCheck to fail.
+TEST_F(ProxyScriptDeciderQuickCheckTest, SyncSuccess) {
+  resolver_.set_synchronous_mode(true);
+  resolver_.rules()->AddRule("wpad", "1.2.3.4");
+
+  EXPECT_EQ(OK, StartDecider());
+  EXPECT_EQ(rule_.text(), decider_->script_data()->utf16());
+
+  EXPECT_TRUE(decider_->effective_config().has_pac_url());
+  EXPECT_EQ(rule_.url, decider_->effective_config().pac_url());
+}
+
+// Fails if an asynchronous DNS lookup success for wpad causes QuickCheck to
+// fail.
+TEST_F(ProxyScriptDeciderQuickCheckTest, AsyncSuccess) {
+  resolver_.set_ondemand_mode(true);
+  resolver_.rules()->AddRule("wpad", "1.2.3.4");
+
+  EXPECT_EQ(ERR_IO_PENDING, StartDecider());
+  ASSERT_TRUE(resolver_.has_pending_requests());
+  resolver_.ResolveAllPending();
+  callback_.WaitForResult();
+  EXPECT_FALSE(resolver_.has_pending_requests());
+  EXPECT_EQ(rule_.text(), decider_->script_data()->utf16());
+  EXPECT_TRUE(decider_->effective_config().has_pac_url());
+  EXPECT_EQ(rule_.url, decider_->effective_config().pac_url());
+}
+
+// Fails if an asynchronous DNS lookup failure (i.e. an NXDOMAIN) still causes
+// ProxyScriptDecider to yield a PAC URL.
+TEST_F(ProxyScriptDeciderQuickCheckTest, AsyncFail) {
+  resolver_.set_ondemand_mode(true);
+  resolver_.rules()->AddSimulatedFailure("wpad");
+  EXPECT_EQ(ERR_IO_PENDING, StartDecider());
+  ASSERT_TRUE(resolver_.has_pending_requests());
+  resolver_.ResolveAllPending();
+  callback_.WaitForResult();
+  EXPECT_FALSE(decider_->effective_config().has_pac_url());
+}
+
+// Fails if a DNS lookup timeout either causes ProxyScriptDecider to yield a PAC
+// URL or causes ProxyScriptDecider not to cancel its pending resolution.
+TEST_F(ProxyScriptDeciderQuickCheckTest, AsyncTimeout) {
+  resolver_.set_ondemand_mode(true);
+  EXPECT_EQ(ERR_IO_PENDING, StartDecider());
+  ASSERT_TRUE(resolver_.has_pending_requests());
+  callback_.WaitForResult();
+  EXPECT_FALSE(resolver_.has_pending_requests());
+  EXPECT_FALSE(decider_->effective_config().has_pac_url());
 }
 
 // Fails at WPAD (downloading), but succeeds in choosing the custom PAC.

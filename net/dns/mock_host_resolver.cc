@@ -347,12 +347,14 @@ int RuleBasedHostResolverProc::Resolve(const std::string& host,
     bool matches_address_family =
         r->address_family == ADDRESS_FAMILY_UNSPECIFIED ||
         r->address_family == address_family;
+    // Ignore HOST_RESOLVER_SYSTEM_ONLY, since it should have no impact on
+    // whether a rule matches.
+    HostResolverFlags flags = host_resolver_flags & ~HOST_RESOLVER_SYSTEM_ONLY;
     // Flags match if all of the bitflags in host_resolver_flags are enabled
     // in the rule's host_resolver_flags. However, the rule may have additional
     // flags specified, in which case the flags should still be considered a
     // match.
-    bool matches_flags = (r->host_resolver_flags & host_resolver_flags) ==
-        host_resolver_flags;
+    bool matches_flags = (r->host_resolver_flags & flags) == flags;
     if (matches_flags && matches_address_family &&
         MatchPattern(host, r->host_pattern)) {
       if (r->latency_ms != 0) {

@@ -1563,6 +1563,24 @@ TEST_F(HostResolverImplDnsTest, BypassDnsTask) {
     EXPECT_EQ(OK, requests_[i]->WaitForResult()) << i;
 }
 
+TEST_F(HostResolverImplDnsTest, SystemOnlyBypassesDnsTask) {
+  ChangeDnsConfig(CreateValidDnsConfig());
+
+  proc_->AddRuleForAllFamilies(std::string(), std::string());
+
+  HostResolver::RequestInfo info_bypass(HostPortPair("ok", 80));
+  info_bypass.set_host_resolver_flags(HOST_RESOLVER_SYSTEM_ONLY);
+  EXPECT_EQ(ERR_IO_PENDING, CreateRequest(info_bypass, MEDIUM)->Resolve());
+
+  HostResolver::RequestInfo info(HostPortPair("ok", 80));
+  EXPECT_EQ(ERR_IO_PENDING, CreateRequest(info, MEDIUM)->Resolve());
+
+  proc_->SignalMultiple(requests_.size());
+
+  EXPECT_EQ(ERR_NAME_NOT_RESOLVED, requests_[0]->WaitForResult());
+  EXPECT_EQ(OK, requests_[1]->WaitForResult());
+}
+
 TEST_F(HostResolverImplDnsTest, DisableDnsClientOnPersistentFailure) {
   ChangeDnsConfig(CreateValidDnsConfig());
 
