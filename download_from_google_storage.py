@@ -86,13 +86,13 @@ def check_bucket_permissions(bucket, gsutil):
   base_url = 'gs://%s' % bucket
 
   code, _, ls_err = gsutil.check_call('ls', base_url)
+  if code != 0:
+    print >> sys.stderr, ls_err
   if code == 403:
     print >> sys.stderr, 'Got error 403 while authenticating to %s.' % base_url
     print >> sys.stderr, 'Try running "download_from_google_storage --config".'
   elif code == 404:
     print >> sys.stderr, '%s not found.' % base_url
-  elif code != 0:
-    print >> sys.stderr, ls_err
   return (base_url, code)
 
 
