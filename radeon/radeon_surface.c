@@ -1412,7 +1412,11 @@ static void si_surf_minify(struct radeon_surface *surf,
                            uint32_t xalign, uint32_t yalign, uint32_t zalign,
                            uint32_t slice_align, unsigned offset)
 {
-    surflevel->npix_x = mip_minify(surf->npix_x, level);
+    if (level == 0) {
+        surflevel->npix_x = surf->npix_x;
+    } else {
+        surflevel->npix_x = mip_minify(next_power_of_two(surf->npix_x), level);
+    }
     surflevel->npix_y = mip_minify(surf->npix_y, level);
     surflevel->npix_z = mip_minify(surf->npix_z, level);
 
@@ -1434,7 +1438,7 @@ static void si_surf_minify(struct radeon_surface *surf,
     if (level == 0 && surf->last_level == 0)
         /* Non-mipmap pitch padded to slice alignment */
         xalign = MAX2(xalign, slice_align / surf->bpe);
-    else
+    else if (surflevel->mode == RADEON_SURF_MODE_LINEAR_ALIGNED)
         /* Small rows evenly distributed across slice */
         xalign = MAX2(xalign, slice_align / surf->bpe / surflevel->nblk_y);
 
@@ -1456,7 +1460,11 @@ static void si_surf_minify_2d(struct radeon_surface *surf,
 {
     unsigned mtile_pr, mtile_ps;
 
-    surflevel->npix_x = mip_minify(surf->npix_x, level);
+    if (level == 0) {
+        surflevel->npix_x = surf->npix_x;
+    } else {
+        surflevel->npix_x = mip_minify(next_power_of_two(surf->npix_x), level);
+    }
     surflevel->npix_y = mip_minify(surf->npix_y, level);
     surflevel->npix_z = mip_minify(surf->npix_z, level);
 
