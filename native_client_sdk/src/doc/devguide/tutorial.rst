@@ -369,7 +369,7 @@ Look for the JavaScript function ``moduleDidLoad()``, and add the new code below
 (indicated by boldface type) to send a 'hello' message to the Native Client
 module:
 
-..naclcode::
+.. naclcode::
 
   function moduleDidLoad() {
         HelloTutorialModule = document.getElementById('hello_tutorial');
