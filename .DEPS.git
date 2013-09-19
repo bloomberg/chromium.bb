@@ -136,7 +136,7 @@ deps = {
     'src/tools/page_cycler/acid3':
         Var('git_url') + '/chromium/deps/acid3.git@6be0a66a1ebd7ebc5abc1b2f405a945f6d871521',
     'src/tools/swarm_client':
-        Var('git_url') + '/chromium/tools/swarm_client.git@0f08cb80f1a07c71187cea80ff6baf2b400b2ede',
+        Var('git_url') + '/chromium/tools/swarm_client.git@8750e4b9c3f0f20a05cd127353587cb2c62a0e95',
     'src/v8':
         Var('git_url') + '/external/v8.git@27ce87485ab441498d1e5122df29234e01d0b945',
 }
