@@ -252,6 +252,23 @@ class CrosDisksClientImpl : public CrosDisksClient {
       error_callback.Run();
       return;
     }
+
+    // Temporarly allow Unmount method to report failure both by setting dbus
+    // error (in which case response is not set) and by returning mount error
+    // different from MOUNT_ERROR_NONE. This is done so we can change Unmount
+    // method to return mount error (http://crbug.com/288974) without breaking
+    // Chrome.
+    // TODO(tbarzic): When Unmount implementation is changed on cros disks side,
+    // make this fail if reader is not able to read the error code value from
+    // the response.
+    dbus::MessageReader reader(response);
+    unsigned int error_code;
+    if (reader.PopUint32(&error_code) &&
+        static_cast<MountError>(error_code) != MOUNT_ERROR_NONE) {
+      error_callback.Run();
+      return;
+    }
+
     callback.Run();
   }
 
