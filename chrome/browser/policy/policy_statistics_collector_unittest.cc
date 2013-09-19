@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
@@ -18,8 +19,7 @@
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/policy_statistics_collector.h"
 #include "chrome/browser/policy/policy_types.h"
-#include "chrome/browser/prefs/browser_prefs.h"
-#include "chrome/common/pref_names.h"
+#include "components/policy/core/common/policy_pref_names.h"
 #include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -62,7 +62,7 @@ class PolicyStatisticsCollectorTest : public testing::Test {
   }
 
   virtual void SetUp() OVERRIDE {
-    chrome::RegisterLocalState(prefs_.registry());
+    prefs_.registry()->RegisterInt64Pref(prefs::kLastPolicyStatisticsUpdate, 0);
 
     // Find ids for kTestPolicy1 and kTestPolicy2.
     const policy::PolicyDefinitionList* policy_list =

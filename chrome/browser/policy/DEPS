@@ -77,13 +77,4 @@ specific_include_rules = {
   r"policy_path_parser_win\.cc": [
     "+chrome/common/chrome_switches.h",
   ],
-
-  r"policy_statistics_collector\.cc": [
-    "+chrome/common/pref_names.h",
-  ],
-
-  r"policy_statistics_collector_unittest\.cc": [
-    "+chrome/browser/prefs/browser_prefs.h",
-    "+chrome/common/pref_names.h",
-  ],
 }

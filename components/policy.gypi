@@ -20,6 +20,8 @@
       'conditions': [
         ['configuration_policy==1', {
           'sources': [
+            'policy/core/common/policy_pref_names.cc',
+            'policy/core/common/policy_pref_names.h',
             'policy/core/common/policy_schema.cc',
             'policy/core/common/policy_schema.h',
             'policy/core/common/schema.cc',

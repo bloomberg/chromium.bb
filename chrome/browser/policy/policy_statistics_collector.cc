@@ -14,7 +14,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/task_runner.h"
 #include "chrome/browser/policy/policy_service.h"
-#include "chrome/common/pref_names.h"
+#include "components/policy/core/common/policy_pref_names.h"
 #include "policy/policy_constants.h"
 
 namespace policy {

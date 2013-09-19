@@ -887,8 +887,6 @@ extern const char kGestureConfigIsTrustworthy[];
 extern const char kNetworkProfileWarningsLeft[];
 extern const char kNetworkProfileLastWarningTime[];
 
-extern const char kLastPolicyStatisticsUpdate[];
-
 #if defined(OS_CHROMEOS)
 extern const char kRLZBrand[];
 extern const char kRLZDisabled[];
