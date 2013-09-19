@@ -34,6 +34,7 @@ PrivetNotificationServiceFactory::BuildServiceInstanceFor(
 
 bool
 PrivetNotificationServiceFactory::ServiceIsCreatedWithBrowserContext() const {
+  return false;
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   using switches::kDisableDeviceDiscovery;
   using switches::kDisableDeviceDiscoveryNotifications;
