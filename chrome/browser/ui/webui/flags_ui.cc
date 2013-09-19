@@ -37,6 +37,8 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/owner_flags_storage.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/session_manager_client.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #endif
 
@@ -215,7 +217,24 @@ void FlagsDOMHandler::HandleEnableFlagsExperimentMessage(
 
 void FlagsDOMHandler::HandleRestartBrowser(const ListValue* args) {
   DCHECK(flags_storage_);
+#if !defined(OS_CHROMEOS)
   chrome::AttemptRestart();
+#else
+  // On ChromeOS be less intrusive and restart inside the user session after
+  // we apply the newly selected flags.
+  CommandLine user_flags(CommandLine::NO_PROGRAM);
+  about_flags::ConvertFlagsToSwitches(flags_storage_.get(),
+                                      &user_flags,
+                                      about_flags::kAddSentinels);
+  CommandLine::StringVector flags;
+  // argv[0] is the program name |CommandLine::NO_PROGRAM|.
+  flags.assign(user_flags.argv().begin() + 1, user_flags.argv().end());
+  VLOG(1) << "Restarting to apply per-session flags...";
+  chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->
+      SetFlagsForUser(chromeos::UserManager::Get()->GetActiveUser()->email(),
+                      flags);
+  chrome::ExitCleanly();
+#endif
 }
 
 void FlagsDOMHandler::HandleResetAllFlags(const ListValue* args) {
