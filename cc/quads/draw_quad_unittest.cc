@@ -665,7 +665,7 @@ TEST(DrawQuadTest, CopyPictureDrawQuad) {
   gfx::Rect opaque_rect(33, 44, 22, 33);
   gfx::RectF tex_coord_rect(31.f, 12.f, 54.f, 20.f);
   gfx::Size texture_size(85, 32);
-  bool swizzle_contents = true;
+  ResourceFormat texture_format = RGBA_8888;
   gfx::Rect content_rect(30, 40, 20, 30);
   float contents_scale = 3.141592f;
   bool can_draw_direct_to_backbuffer = true;
@@ -676,7 +676,7 @@ TEST(DrawQuadTest, CopyPictureDrawQuad) {
                     opaque_rect,
                     tex_coord_rect,
                     texture_size,
-                    swizzle_contents,
+                    texture_format,
                     content_rect,
                     contents_scale,
                     can_draw_direct_to_backbuffer,
@@ -685,7 +685,7 @@ TEST(DrawQuadTest, CopyPictureDrawQuad) {
   EXPECT_RECT_EQ(opaque_rect, copy_quad->opaque_rect);
   EXPECT_EQ(tex_coord_rect, copy_quad->tex_coord_rect);
   EXPECT_EQ(texture_size, copy_quad->texture_size);
-  EXPECT_EQ(swizzle_contents, copy_quad->swizzle_contents);
+  EXPECT_EQ(texture_format, copy_quad->texture_format);
   EXPECT_RECT_EQ(content_rect, copy_quad->content_rect);
   EXPECT_EQ(contents_scale, copy_quad->contents_scale);
   EXPECT_EQ(can_draw_direct_to_backbuffer,
@@ -695,7 +695,7 @@ TEST(DrawQuadTest, CopyPictureDrawQuad) {
   CREATE_QUAD_7_ALL(PictureDrawQuad,
                     tex_coord_rect,
                     texture_size,
-                    swizzle_contents,
+                    texture_format,
                     content_rect,
                     contents_scale,
                     can_draw_direct_to_backbuffer,
@@ -703,7 +703,7 @@ TEST(DrawQuadTest, CopyPictureDrawQuad) {
   EXPECT_EQ(DrawQuad::PICTURE_CONTENT, copy_quad->material);
   EXPECT_EQ(tex_coord_rect, copy_quad->tex_coord_rect);
   EXPECT_EQ(texture_size, copy_quad->texture_size);
-  EXPECT_EQ(swizzle_contents, copy_quad->swizzle_contents);
+  EXPECT_EQ(texture_format, copy_quad->texture_format);
   EXPECT_RECT_EQ(content_rect, copy_quad->content_rect);
   EXPECT_EQ(contents_scale, copy_quad->contents_scale);
   EXPECT_EQ(can_draw_direct_to_backbuffer,
@@ -893,7 +893,7 @@ TEST_F(DrawQuadIteratorTest, DISABLED_PictureDrawQuad) {
   gfx::Rect opaque_rect(33, 44, 22, 33);
   gfx::RectF tex_coord_rect(31.f, 12.f, 54.f, 20.f);
   gfx::Size texture_size(85, 32);
-  bool swizzle_contents = true;
+  ResourceFormat texture_format = RGBA_8888;
   gfx::Rect content_rect(30, 40, 20, 30);
   float contents_scale = 3.141592f;
   bool can_draw_direct_to_backbuffer = true;
@@ -904,7 +904,7 @@ TEST_F(DrawQuadIteratorTest, DISABLED_PictureDrawQuad) {
                     opaque_rect,
                     tex_coord_rect,
                     texture_size,
-                    swizzle_contents,
+                    texture_format,
                     content_rect,
                     contents_scale,
                     can_draw_direct_to_backbuffer,

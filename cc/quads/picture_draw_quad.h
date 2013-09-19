@@ -27,7 +27,7 @@ class CC_EXPORT PictureDrawQuad : public ContentDrawQuadBase {
               gfx::Rect opaque_rect,
               const gfx::RectF& tex_coord_rect,
               gfx::Size texture_size,
-              bool swizzle_contents,
+              ResourceFormat texture_format,
               gfx::Rect content_rect,
               float contents_scale,
               bool can_draw_direct_to_backbuffer,
@@ -40,7 +40,7 @@ class CC_EXPORT PictureDrawQuad : public ContentDrawQuadBase {
               bool needs_blending,
               const gfx::RectF& tex_coord_rect,
               gfx::Size texture_size,
-              bool swizzle_contents,
+              ResourceFormat texture_format,
               gfx::Rect content_rect,
               float contents_scale,
               bool can_draw_direct_to_backbuffer,
@@ -50,6 +50,7 @@ class CC_EXPORT PictureDrawQuad : public ContentDrawQuadBase {
   float contents_scale;
   bool can_draw_direct_to_backbuffer;
   scoped_refptr<PicturePileImpl> picture_pile;
+  ResourceFormat texture_format;
 
   virtual void IterateResources(const ResourceIteratorCallback& callback)
       OVERRIDE;

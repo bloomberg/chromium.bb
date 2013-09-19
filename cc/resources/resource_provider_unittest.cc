@@ -41,7 +41,7 @@ using WebKit::WebGLId;
 namespace cc {
 namespace {
 
-size_t TextureSize(gfx::Size size, WGC3Denum format) {
+size_t TextureSize(gfx::Size size, ResourceFormat format) {
   unsigned int components_per_pixel = 4;
   unsigned int bytes_per_component = 1;
   return size.width() * size.height() * components_per_pixel *
@@ -65,16 +65,17 @@ class TextureStateTrackingContext : public TestWebGraphicsContext3D {
 };
 
 struct Texture : public base::RefCounted<Texture> {
-  Texture() : format(0), filter(GL_NEAREST_MIPMAP_LINEAR) {}
+  Texture() : format(RGBA_8888),
+              filter(GL_NEAREST_MIPMAP_LINEAR) {}
 
-  void Reallocate(gfx::Size size, WGC3Denum format) {
+  void Reallocate(gfx::Size size, ResourceFormat format) {
     this->size = size;
     this->format = format;
     this->data.reset(new uint8_t[TextureSize(size, format)]);
   }
 
   gfx::Size size;
-  WGC3Denum format;
+  ResourceFormat format;
   WGC3Denum filter;
   scoped_ptr<uint8_t[]> data;
 
@@ -237,7 +238,9 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
     ASSERT_EQ(static_cast<unsigned>(GL_TEXTURE_2D), target);
     ASSERT_FALSE(level);
     ASSERT_TRUE(textures_[current_texture_].get());
-    ASSERT_EQ(textures_[current_texture_]->format, format);
+    ASSERT_EQ(
+        ResourceProvider::GetGLDataFormat(textures_[current_texture_]->format),
+        format);
     ASSERT_EQ(static_cast<unsigned>(GL_UNSIGNED_BYTE), type);
     ASSERT_TRUE(pixels);
     SetPixels(xoffset, yoffset, width, height, pixels);
@@ -280,7 +283,7 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
         mailbox, last_waited_sync_point_);
   }
 
-  void GetPixels(gfx::Size size, WGC3Denum format, uint8_t* pixels) {
+  void GetPixels(gfx::Size size, ResourceFormat format, uint8_t* pixels) {
     ASSERT_TRUE(current_texture_);
     scoped_refptr<Texture> texture = textures_[current_texture_];
     ASSERT_TRUE(texture.get());
@@ -311,7 +314,16 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
     ASSERT_TRUE(current_texture_);
     scoped_refptr<Texture> texture = textures_[current_texture_];
     ASSERT_TRUE(texture.get());
-    texture->Reallocate(size, format);
+    ResourceFormat texture_format = RGBA_8888;
+    switch (format) {
+      case GL_RGBA:
+        texture_format = RGBA_8888;
+        break;
+      case GL_BGRA_EXT:
+        texture_format = BGRA_8888;
+        break;
+    }
+    texture->Reallocate(size, texture_format);
   }
 
   void SetPixels(int xoffset,
@@ -356,7 +368,7 @@ void GetResourcePixels(ResourceProvider* resource_provider,
                        ResourceProviderContext* context,
                        ResourceProvider::ResourceId id,
                        gfx::Size size,
-                       WGC3Denum format,
+                       ResourceFormat format,
                        uint8_t* pixels) {
   switch (resource_provider->default_resource_type()) {
     case ResourceProvider::GLTexture: {
@@ -408,7 +420,8 @@ class ResourceProviderTest
         break;
     }
     CHECK(output_surface_->BindToClient(&output_surface_client_));
-    resource_provider_ = ResourceProvider::Create(output_surface_.get(), 0);
+    resource_provider_ = ResourceProvider::Create(
+        output_surface_.get(), 0, false);
   }
 
   static void SetResourceFilter(ResourceProvider* resource_provider,
@@ -434,12 +447,12 @@ void CheckCreateResource(ResourceProvider::ResourceType expected_default_type,
   DCHECK_EQ(expected_default_type, resource_provider->default_resource_type());
 
   gfx::Size size(1, 1);
-  WGC3Denum format = GL_RGBA;
+  ResourceFormat format = RGBA_8888;
   size_t pixel_size = TextureSize(size, format);
   ASSERT_EQ(4U, pixel_size);
 
   ResourceProvider::ResourceId id = resource_provider->CreateResource(
-      size, format, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny);
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
   EXPECT_EQ(1, static_cast<int>(resource_provider->num_resources()));
   if (expected_default_type == ResourceProvider::GLTexture)
     EXPECT_EQ(0, context->texture_count());
@@ -466,12 +479,12 @@ TEST_P(ResourceProviderTest, Basic) {
 
 TEST_P(ResourceProviderTest, Upload) {
   gfx::Size size(2, 2);
-  WGC3Denum format = GL_RGBA;
+  ResourceFormat format = RGBA_8888;
   size_t pixel_size = TextureSize(size, format);
   ASSERT_EQ(16U, pixel_size);
 
   ResourceProvider::ResourceId id = resource_provider_->CreateResource(
-      size, format, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny);
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
 
   uint8_t image[16] = { 0 };
   gfx::Rect image_rect(size);
@@ -547,21 +560,21 @@ TEST_P(ResourceProviderTest, TransferResources) {
   CHECK(child_output_surface->BindToClient(&child_output_surface_client));
 
   scoped_ptr<ResourceProvider> child_resource_provider(
-      ResourceProvider::Create(child_output_surface.get(), 0));
+      ResourceProvider::Create(child_output_surface.get(), 0, false));
 
   gfx::Size size(1, 1);
-  WGC3Denum format = GL_RGBA;
+  ResourceFormat format = RGBA_8888;
   size_t pixel_size = TextureSize(size, format);
   ASSERT_EQ(4U, pixel_size);
 
   ResourceProvider::ResourceId id1 = child_resource_provider->CreateResource(
-      size, format, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny);
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
   uint8_t data1[4] = { 1, 2, 3, 4 };
   gfx::Rect rect(size);
   child_resource_provider->SetPixels(id1, data1, rect, rect, gfx::Vector2d());
 
   ResourceProvider::ResourceId id2 = child_resource_provider->CreateResource(
-      size, format, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny);
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
   uint8_t data2[4] = { 5, 5, 5, 5 };
   child_resource_provider->SetPixels(id2, data2, rect, rect, gfx::Vector2d());
 
@@ -683,15 +696,15 @@ TEST_P(ResourceProviderTest, DeleteTransferredResources) {
   CHECK(child_output_surface->BindToClient(&child_output_surface_client));
 
   scoped_ptr<ResourceProvider> child_resource_provider(
-      ResourceProvider::Create(child_output_surface.get(), 0));
+      ResourceProvider::Create(child_output_surface.get(), 0, false));
 
   gfx::Size size(1, 1);
-  WGC3Denum format = GL_RGBA;
+  ResourceFormat format = RGBA_8888;
   size_t pixel_size = TextureSize(size, format);
   ASSERT_EQ(4U, pixel_size);
 
   ResourceProvider::ResourceId id = child_resource_provider->CreateResource(
-      size, format, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny);
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
   uint8_t data[4] = { 1, 2, 3, 4 };
   gfx::Rect rect(size);
   child_resource_provider->SetPixels(id, data, rect, rect, gfx::Vector2d());
@@ -744,7 +757,7 @@ class ResourceProviderTestTextureFilters : public ResourceProviderTest {
     CHECK(child_output_surface->BindToClient(&child_output_surface_client));
 
     scoped_ptr<ResourceProvider> child_resource_provider(
-        ResourceProvider::Create(child_output_surface.get(), 0));
+        ResourceProvider::Create(child_output_surface.get(), 0, false));
 
     scoped_ptr<TextureStateTrackingContext> parent_context_owned(
         new TextureStateTrackingContext);
@@ -756,17 +769,17 @@ class ResourceProviderTestTextureFilters : public ResourceProviderTest {
     CHECK(parent_output_surface->BindToClient(&parent_output_surface_client));
 
     scoped_ptr<ResourceProvider> parent_resource_provider(
-        ResourceProvider::Create(parent_output_surface.get(), 0));
+        ResourceProvider::Create(parent_output_surface.get(), 0, false));
 
     gfx::Size size(1, 1);
-    WGC3Denum format = GL_RGBA;
+    ResourceFormat format = RGBA_8888;
     int texture_id = 1;
 
     size_t pixel_size = TextureSize(size, format);
     ASSERT_EQ(4U, pixel_size);
 
     ResourceProvider::ResourceId id = child_resource_provider->CreateResource(
-        size, format, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny);
+        size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
 
     // The new texture is created with GL_LINEAR.
     EXPECT_CALL(*child_context, bindTexture(GL_TEXTURE_2D, texture_id))
@@ -944,7 +957,8 @@ TEST_P(ResourceProviderTest, TransferMailboxResources) {
     context()->bindTexture(GL_TEXTURE_2D, other_texture);
     context()->consumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
     uint8_t test_data[4] = { 0 };
-    context()->GetPixels(gfx::Size(1, 1), GL_RGBA, test_data);
+    context()->GetPixels(
+        gfx::Size(1, 1), RGBA_8888, test_data);
     EXPECT_EQ(0, memcmp(data, test_data, sizeof(data)));
     context()->produceTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
     context()->deleteTexture(other_texture);
@@ -991,7 +1005,8 @@ TEST_P(ResourceProviderTest, TransferMailboxResources) {
     context()->bindTexture(GL_TEXTURE_2D, other_texture);
     context()->consumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
     uint8_t test_data[4] = { 0 };
-    context()->GetPixels(gfx::Size(1, 1), GL_RGBA, test_data);
+    context()->GetPixels(
+        gfx::Size(1, 1), RGBA_8888, test_data);
     EXPECT_EQ(0, memcmp(data, test_data, sizeof(data)));
     context()->produceTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
     context()->deleteTexture(other_texture);
@@ -1168,14 +1183,14 @@ TEST_P(ResourceProviderTest, ScopedSampler) {
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(output_surface.get(), 0));
+      ResourceProvider::Create(output_surface.get(), 0, false));
 
   gfx::Size size(1, 1);
-  WGC3Denum format = GL_RGBA;
+  ResourceFormat format = RGBA_8888;
   int texture_id = 1;
 
   ResourceProvider::ResourceId id = resource_provider->CreateResource(
-      size, format, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny);
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
 
   // Check that the texture gets created with the right sampler settings.
   EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id))
@@ -1194,6 +1209,7 @@ TEST_P(ResourceProviderTest, ScopedSampler) {
               texParameteri(GL_TEXTURE_2D,
                             GL_TEXTURE_POOL_CHROMIUM,
                             GL_TEXTURE_POOL_UNMANAGED_CHROMIUM));
+
   resource_provider->AllocateForTesting(id);
   Mock::VerifyAndClearExpectations(context);
 
@@ -1248,15 +1264,15 @@ TEST_P(ResourceProviderTest, ManagedResource) {
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(output_surface.get(), 0));
+      ResourceProvider::Create(output_surface.get(), 0, false));
 
   gfx::Size size(1, 1);
-  WGC3Denum format = GL_RGBA;
+  ResourceFormat format = RGBA_8888;
   int texture_id = 1;
 
   // Check that the texture gets created with the right sampler settings.
   ResourceProvider::ResourceId id = resource_provider->CreateManagedResource(
-      size, format, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny);
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
   EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id));
   EXPECT_CALL(*context,
               texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
@@ -1293,19 +1309,22 @@ TEST_P(ResourceProviderTest, TextureWrapMode) {
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(output_surface.get(), 0));
+      ResourceProvider::Create(output_surface.get(), 0, false));
 
   gfx::Size size(1, 1);
-  WGC3Denum format = GL_RGBA;
+  ResourceFormat format = RGBA_8888;
   int texture_id = 1;
   GLenum texture_pool = GL_TEXTURE_POOL_UNMANAGED_CHROMIUM;
 
   for (int i = 0; i < 2; ++i) {
     GLint wrap_mode = i ? GL_CLAMP_TO_EDGE : GL_REPEAT;
     // Check that the texture gets created with the right sampler settings.
-    ResourceProvider::ResourceId id = resource_provider->CreateGLTexture(
-        size, format, texture_pool, wrap_mode,
-        ResourceProvider::TextureUsageAny);
+    ResourceProvider::ResourceId id =
+        resource_provider->CreateGLTexture(size,
+                                           texture_pool,
+                                           wrap_mode,
+                                           ResourceProvider::TextureUsageAny,
+                                           format);
     EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id));
     EXPECT_CALL(*context,
                 texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
@@ -1346,7 +1365,7 @@ TEST_P(ResourceProviderTest, TextureMailbox_SharedMemory) {
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(output_surface.get(), 0));
+      ResourceProvider::Create(output_surface.get(), 0, false));
 
   scoped_ptr<SingleReleaseCallback> callback = SingleReleaseCallback::Create(
       base::Bind(&EmptyReleaseCallback));
@@ -1381,7 +1400,7 @@ TEST_P(ResourceProviderTest, TextureMailbox_GLTexture2D) {
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(output_surface.get(), 0));
+      ResourceProvider::Create(output_surface.get(), 0, false));
 
   unsigned texture_id = 1;
   unsigned sync_point = 30;
@@ -1445,7 +1464,7 @@ TEST_P(ResourceProviderTest, TextureMailbox_GLTextureExternalOES) {
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(output_surface.get(), 0));
+      ResourceProvider::Create(output_surface.get(), 0, false));
 
   unsigned texture_id = 1;
   unsigned sync_point = 30;
@@ -1565,19 +1584,19 @@ TEST_P(ResourceProviderTest, TextureAllocation) {
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(output_surface.get(), 0));
+      ResourceProvider::Create(output_surface.get(), 0, false));
 
   gfx::Size size(2, 2);
   gfx::Vector2d offset(0, 0);
   gfx::Rect rect(0, 0, 2, 2);
-  WGC3Denum format = GL_RGBA;
+  ResourceFormat format = RGBA_8888;
   ResourceProvider::ResourceId id = 0;
   uint8_t pixels[16] = { 0 };
   int texture_id = 123;
 
   // Lazy allocation. Don't allocate when creating the resource.
   id = resource_provider->CreateResource(
-      size, format, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny);
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
 
   EXPECT_CALL(*context, createTexture()).WillOnce(Return(texture_id));
   EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id)).Times(1);
@@ -1590,7 +1609,7 @@ TEST_P(ResourceProviderTest, TextureAllocation) {
 
   // Do allocate when we set the pixels.
   id = resource_provider->CreateResource(
-      size, format, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny);
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
 
   EXPECT_CALL(*context, createTexture()).WillOnce(Return(texture_id));
   EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id)).Times(3);
@@ -1605,7 +1624,7 @@ TEST_P(ResourceProviderTest, TextureAllocation) {
 
   // Same for async version.
   id = resource_provider->CreateResource(
-      size, format, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny);
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
   resource_provider->AcquirePixelBuffer(id);
 
   EXPECT_CALL(*context, createTexture()).WillOnce(Return(texture_id));
@@ -1636,15 +1655,15 @@ TEST_P(ResourceProviderTest, PixelBuffer_GLTexture) {
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   gfx::Size size(2, 2);
-  WGC3Denum format = GL_RGBA;
+  ResourceFormat format = RGBA_8888;
   ResourceProvider::ResourceId id = 0;
   int texture_id = 123;
 
   scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(output_surface.get(), 0));
+      ResourceProvider::Create(output_surface.get(), 0, false));
 
   id = resource_provider->CreateResource(
-      size, format, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny);
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
   resource_provider->AcquirePixelBuffer(id);
 
   EXPECT_CALL(*context, createTexture()).WillOnce(Return(texture_id));
@@ -1673,15 +1692,15 @@ TEST_P(ResourceProviderTest, PixelBuffer_Bitmap) {
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   gfx::Size size(1, 1);
-  WGC3Denum format = GL_RGBA;
+  ResourceFormat format = RGBA_8888;
   ResourceProvider::ResourceId id = 0;
   const uint32_t kBadBeef = 0xbadbeef;
 
   scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(output_surface.get(), 0));
+      ResourceProvider::Create(output_surface.get(), 0, false));
 
   id = resource_provider->CreateResource(
-      size, format, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny);
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
   resource_provider->AcquirePixelBuffer(id);
 
   void* data = resource_provider->MapPixelBuffer(id);
@@ -1719,15 +1738,15 @@ TEST_P(ResourceProviderTest, ForcingAsyncUploadToComplete) {
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   gfx::Size size(2, 2);
-  WGC3Denum format = GL_RGBA;
+  ResourceFormat format = RGBA_8888;
   ResourceProvider::ResourceId id = 0;
   int texture_id = 123;
 
   scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(output_surface.get(), 0));
+      ResourceProvider::Create(output_surface.get(), 0, false));
 
   id = resource_provider->CreateResource(
-      size, format, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny);
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
   resource_provider->AcquirePixelBuffer(id);
 
   EXPECT_CALL(*context, createTexture()).WillOnce(Return(texture_id));
@@ -1760,17 +1779,17 @@ TEST_P(ResourceProviderTest, PixelBufferLostContext) {
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   gfx::Size size(2, 2);
-  WGC3Denum format = GL_RGBA;
+  ResourceFormat format = RGBA_8888;
   ResourceProvider::ResourceId id = 0;
   int texture_id = 123;
 
   scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(output_surface.get(), 0));
+      ResourceProvider::Create(output_surface.get(), 0, false));
 
   EXPECT_CALL(*context, createTexture()).WillRepeatedly(Return(texture_id));
 
   id = resource_provider->CreateResource(
-      size, format, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny);
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
   context->loseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
                                GL_INNOCENT_CONTEXT_RESET_ARB);
   resource_provider->AcquirePixelBuffer(id);
@@ -1797,16 +1816,16 @@ TEST_P(ResourceProviderTest, Image_GLTexture) {
   const int kWidth = 2;
   const int kHeight = 2;
   gfx::Size size(kWidth, kHeight);
-  WGC3Denum format = GL_RGBA;
+  ResourceFormat format = RGBA_8888;
   ResourceProvider::ResourceId id = 0;
   const unsigned kTextureId = 123u;
   const unsigned kImageId = 234u;
 
   scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(output_surface.get(), 0));
+      ResourceProvider::Create(output_surface.get(), 0, false));
 
   id = resource_provider->CreateResource(
-      size, format, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny);
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
   EXPECT_CALL(*context, createImageCHROMIUM(kWidth, kHeight, GL_RGBA8_OES))
       .WillOnce(Return(kImageId))
       .RetiresOnSaturation();
@@ -1869,15 +1888,15 @@ TEST_P(ResourceProviderTest, Image_Bitmap) {
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   gfx::Size size(1, 1);
-  WGC3Denum format = GL_RGBA;
+  ResourceFormat format = RGBA_8888;
   ResourceProvider::ResourceId id = 0;
   const uint32_t kBadBeef = 0xbadbeef;
 
   scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(output_surface.get(), 0));
+      ResourceProvider::Create(output_surface.get(), 0, false));
 
   id = resource_provider->CreateResource(
-      size, format, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny);
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
   resource_provider->AcquireImage(id);
 
   const int kStride = 0;
@@ -1925,7 +1944,7 @@ TEST(ResourceProviderTest, BasicInitializeGLSoftware) {
           scoped_ptr<SoftwareOutputDevice>(new SoftwareOutputDevice)));
   EXPECT_TRUE(output_surface->BindToClient(&client));
   scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(output_surface.get(), 0));
+      ResourceProvider::Create(output_surface.get(), 0, false));
 
   CheckCreateResource(ResourceProvider::Bitmap, resource_provider.get(), NULL);
 

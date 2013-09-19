@@ -8,7 +8,6 @@
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/picture_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
-#include "cc/resources/platform_color.h"
 #include "cc/resources/sync_point_helper.h"
 #include "cc/test/fake_picture_pile_impl.h"
 #include "cc/test/pixel_test.h"
@@ -111,9 +110,11 @@ scoped_ptr<TextureDrawQuad> CreateTestTextureDrawQuad(
                           SkColorGetB(texel_color));
   std::vector<uint32_t> pixels(rect.size().GetArea(), pixel_color);
 
-  ResourceProvider::ResourceId resource = resource_provider->CreateResource(
-      rect.size(), GL_RGBA, GL_CLAMP_TO_EDGE,
-      ResourceProvider::TextureUsageAny);
+  ResourceProvider::ResourceId resource =
+      resource_provider->CreateResource(rect.size(),
+                                        GL_CLAMP_TO_EDGE,
+                                        ResourceProvider::TextureUsageAny,
+                                        RGBA_8888);
   resource_provider->SetPixels(
       resource,
       reinterpret_cast<uint8_t*>(&pixels.front()),
@@ -409,28 +410,28 @@ class VideoGLRendererPixelTest : public GLRendererPixelTest {
     ResourceProvider::ResourceId y_resource =
         resource_provider_->CreateResource(
             this->device_viewport_size_,
-            GL_LUMINANCE,
             GL_CLAMP_TO_EDGE,
-            ResourceProvider::TextureUsageAny);
+            ResourceProvider::TextureUsageAny,
+            LUMINANCE_8);
     ResourceProvider::ResourceId u_resource =
         resource_provider_->CreateResource(
             this->device_viewport_size_,
-            GL_LUMINANCE,
             GL_CLAMP_TO_EDGE,
-            ResourceProvider::TextureUsageAny);
+            ResourceProvider::TextureUsageAny,
+            LUMINANCE_8);
     ResourceProvider::ResourceId v_resource =
         resource_provider_->CreateResource(
             this->device_viewport_size_,
-            GL_LUMINANCE,
             GL_CLAMP_TO_EDGE,
-            ResourceProvider::TextureUsageAny);
+            ResourceProvider::TextureUsageAny,
+            LUMINANCE_8);
     ResourceProvider::ResourceId a_resource = 0;
     if (with_alpha) {
       a_resource = resource_provider_->CreateResource(
                        this->device_viewport_size_,
-                       GL_LUMINANCE,
                        GL_CLAMP_TO_EDGE,
-                       ResourceProvider::TextureUsageAny);
+                       ResourceProvider::TextureUsageAny,
+                       LUMINANCE_8);
     }
 
     int w = this->device_viewport_size_.width();
@@ -1366,7 +1367,7 @@ TYPED_TEST(RendererPixelTestWithSkiaGPUBackend, PictureDrawQuadIdentityScale) {
   gfx::Rect viewport(this->device_viewport_size_);
   bool use_skia_gpu_backend = this->UseSkiaGPUBackend();
   // TODO(enne): the renderer should figure this out on its own.
-  bool contents_swizzled = !PlatformColor::SameComponentOrder(GL_RGBA);
+  ResourceFormat texture_format = RGBA_8888;
 
   RenderPass::Id id(1, 1);
   gfx::Transform transform_to_root;
@@ -1404,7 +1405,7 @@ TYPED_TEST(RendererPixelTestWithSkiaGPUBackend, PictureDrawQuadIdentityScale) {
                     gfx::Rect(),
                     viewport,
                     viewport.size(),
-                    contents_swizzled,
+                    texture_format,
                     viewport,
                     1.f,
                     use_skia_gpu_backend,
@@ -1429,7 +1430,7 @@ TYPED_TEST(RendererPixelTestWithSkiaGPUBackend, PictureDrawQuadIdentityScale) {
                      gfx::Rect(),
                      gfx::RectF(0.f, 0.f, 1.f, 1.f),
                      viewport.size(),
-                     contents_swizzled,
+                     texture_format,
                      viewport,
                      1.f,
                      use_skia_gpu_backend,
@@ -1451,7 +1452,7 @@ TYPED_TEST(RendererPixelTest, PictureDrawQuadOpacity) {
   gfx::Size pile_tile_size(1000, 1000);
   gfx::Rect viewport(this->device_viewport_size_);
   bool use_skia_gpu_backend = this->UseSkiaGPUBackend();
-  bool contents_swizzled = !PlatformColor::SameComponentOrder(GL_RGBA);
+  ResourceFormat texture_format = RGBA_8888;
 
   RenderPass::Id id(1, 1);
   gfx::Transform transform_to_root;
@@ -1477,7 +1478,7 @@ TYPED_TEST(RendererPixelTest, PictureDrawQuadOpacity) {
                      gfx::Rect(),
                      gfx::RectF(0, 0, 1, 1),
                      viewport.size(),
-                     contents_swizzled,
+                     texture_format,
                      viewport,
                      1.f,
                      use_skia_gpu_backend,
@@ -1502,7 +1503,7 @@ TYPED_TEST(RendererPixelTest, PictureDrawQuadOpacity) {
                      gfx::Rect(),
                      gfx::RectF(0, 0, 1, 1),
                      viewport.size(),
-                     contents_swizzled,
+                     texture_format,
                      viewport,
                      1.f,
                      use_skia_gpu_backend,
@@ -1525,7 +1526,7 @@ TYPED_TEST(RendererPixelTestWithSkiaGPUBackend,
   gfx::Rect viewport(this->device_viewport_size_);
   bool use_skia_gpu_backend = this->UseSkiaGPUBackend();
   // TODO(enne): the renderer should figure this out on its own.
-  bool contents_swizzled = !PlatformColor::SameComponentOrder(GL_RGBA);
+  ResourceFormat texture_format = RGBA_8888;
 
   RenderPass::Id id(1, 1);
   gfx::Transform transform_to_root;
@@ -1559,7 +1560,7 @@ TYPED_TEST(RendererPixelTestWithSkiaGPUBackend,
                       gfx::Rect(),
                       gfx::RectF(green_rect1.size()),
                       green_rect1.size(),
-                      contents_swizzled,
+                      texture_format,
                       green_rect1,
                       1.f,
                       use_skia_gpu_backend,
@@ -1572,7 +1573,7 @@ TYPED_TEST(RendererPixelTestWithSkiaGPUBackend,
                       gfx::Rect(),
                       gfx::RectF(green_rect2.size()),
                       green_rect2.size(),
-                      contents_swizzled,
+                      texture_format,
                       green_rect2,
                       1.f,
                       use_skia_gpu_backend,
@@ -1644,7 +1645,7 @@ TYPED_TEST(RendererPixelTestWithSkiaGPUBackend,
                     gfx::Rect(),
                     quad_content_rect,
                     content_union_rect.size(),
-                    contents_swizzled,
+                    texture_format,
                     content_union_rect,
                     contents_scale,
                     use_skia_gpu_backend,

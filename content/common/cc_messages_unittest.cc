@@ -510,7 +510,7 @@ TEST_F(CCMessagesTest, Resources) {
   TransferableResource arbitrary_resource1;
   arbitrary_resource1.id = 2178312;
   arbitrary_resource1.sync_point = arbitrary_uint1;
-  arbitrary_resource1.format = 7;
+  arbitrary_resource1.format = cc::RGBA_8888;
   arbitrary_resource1.filter = 53;
   arbitrary_resource1.size = gfx::Size(37189, 123123);
   arbitrary_resource1.mailbox.SetName(arbitrary_mailbox1);
@@ -518,7 +518,7 @@ TEST_F(CCMessagesTest, Resources) {
   TransferableResource arbitrary_resource2;
   arbitrary_resource2.id = 789132;
   arbitrary_resource1.sync_point = arbitrary_uint2;
-  arbitrary_resource2.format = 30;
+  arbitrary_resource2.format = cc::RGBA_4444;
   arbitrary_resource1.filter = 47;
   arbitrary_resource2.size = gfx::Size(89123, 23789);
   arbitrary_resource2.mailbox.SetName(arbitrary_mailbox2);

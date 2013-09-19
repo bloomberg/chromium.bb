@@ -11,9 +11,9 @@
 #include "cc/base/cc_export.h"
 #include "cc/output/renderer.h"
 #include "cc/resources/resource.h"
+#include "cc/resources/resource_format.h"
 
 namespace cc {
-class ResourceProvider;
 
 class CC_EXPORT ResourcePool {
  public:
@@ -21,7 +21,7 @@ class CC_EXPORT ResourcePool {
    public:
     Resource(ResourceProvider* resource_provider,
              gfx::Size size,
-             GLenum format);
+             ResourceFormat format);
     ~Resource();
 
    private:
@@ -36,8 +36,8 @@ class CC_EXPORT ResourcePool {
 
   virtual ~ResourcePool();
 
-  scoped_ptr<ResourcePool::Resource> AcquireResource(gfx::Size size,
-                                                     GLenum format);
+  scoped_ptr<ResourcePool::Resource> AcquireResource(
+      gfx::Size size, ResourceFormat format);
   void ReleaseResource(scoped_ptr<ResourcePool::Resource>);
 
   void SetResourceUsageLimits(size_t max_memory_usage_bytes,

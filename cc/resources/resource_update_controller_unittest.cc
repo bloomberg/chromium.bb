@@ -124,7 +124,8 @@ class ResourceUpdateControllerTest : public Test {
 
     for (int i = 0; i < 4; i++) {
       textures_[i] = PrioritizedResource::Create(resource_manager_.get(),
-                                                 gfx::Size(300, 150), GL_RGBA);
+                                                 gfx::Size(300, 150),
+                                                 RGBA_8888);
       textures_[i]->
           set_request_priority(PriorityCalculator::VisiblePriority(true));
     }
@@ -135,7 +136,8 @@ class ResourceUpdateControllerTest : public Test {
             new WebGraphicsContext3DForUploadTest(this)));
     CHECK(output_surface_->BindToClient(&output_surface_client_));
 
-    resource_provider_ = ResourceProvider::Create(output_surface_.get(), 0);
+    resource_provider_ =
+        ResourceProvider::Create(output_surface_.get(), 0, false);
   }
 
   void AppendFullUploadsOfIndexedTextureToUpdateQueue(int count,

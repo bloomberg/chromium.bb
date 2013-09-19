@@ -449,13 +449,16 @@ void PrioritizedResourceManager::ReturnBackingTexture(
 
 PrioritizedResource::Backing* PrioritizedResourceManager::CreateBacking(
     gfx::Size size,
-    GLenum format,
+    ResourceFormat format,
     ResourceProvider* resource_provider) {
   DCHECK(proxy_->IsImplThread() && proxy_->IsMainThreadBlocked());
   DCHECK(resource_provider);
   ResourceProvider::ResourceId resource_id =
       resource_provider->CreateManagedResource(
-          size, format, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny);
+          size,
+          GL_CLAMP_TO_EDGE,
+          ResourceProvider::TextureUsageAny,
+          format);
   PrioritizedResource::Backing* backing = new PrioritizedResource::Backing(
       resource_id, resource_provider, size, format);
   memory_use_bytes_ += backing->bytes();

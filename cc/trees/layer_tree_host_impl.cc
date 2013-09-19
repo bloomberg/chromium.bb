@@ -1699,7 +1699,9 @@ bool LayerTreeHostImpl::InitializeRenderer(
     return false;
 
   scoped_ptr<ResourceProvider> resource_provider = ResourceProvider::Create(
-      output_surface.get(), settings_.highp_threshold_min);
+      output_surface.get(),
+      settings_.highp_threshold_min,
+      settings_.use_rgba_4444_textures);
   if (!resource_provider)
     return false;
 
@@ -2650,9 +2652,9 @@ void LayerTreeHostImpl::CreateUIResource(
     DeleteUIResource(uid);
   id = resource_provider_->CreateResource(
       bitmap->GetSize(),
-      resource_provider_->best_texture_format(),
       wrap_mode,
-      ResourceProvider::TextureUsageAny);
+      ResourceProvider::TextureUsageAny,
+      resource_provider_->best_texture_format());
 
   ui_resource_map_[uid] = id;
   resource_provider_->SetPixels(id,

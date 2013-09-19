@@ -9,7 +9,6 @@
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/tiled_layer_test_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/khronos/GLES2/gl2.h"
 
 namespace cc {
 namespace {
@@ -20,7 +19,7 @@ TEST(ScopedResourceTest, NewScopedResource) {
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(output_surface.get(), 0));
+      ResourceProvider::Create(output_surface.get(), 0, false));
   scoped_ptr<ScopedResource> texture =
       ScopedResource::create(resource_provider.get());
 
@@ -38,18 +37,19 @@ TEST(ScopedResourceTest, CreateScopedResource) {
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(output_surface.get(), 0));
+      ResourceProvider::Create(output_surface.get(), 0, false));
   scoped_ptr<ScopedResource> texture =
       ScopedResource::create(resource_provider.get());
-  texture->Allocate(
-      gfx::Size(30, 30), GL_RGBA, ResourceProvider::TextureUsageAny);
+  texture->Allocate(gfx::Size(30, 30),
+                    ResourceProvider::TextureUsageAny,
+                    RGBA_8888);
 
   // The texture has an allocated byte-size now.
   size_t expected_bytes = 30 * 30 * 4;
   EXPECT_EQ(expected_bytes, texture->bytes());
 
   EXPECT_LT(0u, texture->id());
-  EXPECT_EQ(static_cast<unsigned>(GL_RGBA), texture->format());
+  EXPECT_EQ(static_cast<unsigned>(RGBA_8888), texture->format());
   EXPECT_EQ(gfx::Size(30, 30), texture->size());
 }
 
@@ -59,14 +59,15 @@ TEST(ScopedResourceTest, ScopedResourceIsDeleted) {
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(output_surface.get(), 0));
+      ResourceProvider::Create(output_surface.get(), 0, false));
   {
     scoped_ptr<ScopedResource> texture =
         ScopedResource::create(resource_provider.get());
 
     EXPECT_EQ(0u, resource_provider->num_resources());
-    texture->Allocate(
-        gfx::Size(30, 30), GL_RGBA, ResourceProvider::TextureUsageAny);
+    texture->Allocate(gfx::Size(30, 30),
+                      ResourceProvider::TextureUsageAny,
+                      RGBA_8888);
     EXPECT_LT(0u, texture->id());
     EXPECT_EQ(1u, resource_provider->num_resources());
   }
@@ -76,8 +77,9 @@ TEST(ScopedResourceTest, ScopedResourceIsDeleted) {
     scoped_ptr<ScopedResource> texture =
         ScopedResource::create(resource_provider.get());
     EXPECT_EQ(0u, resource_provider->num_resources());
-    texture->Allocate(
-        gfx::Size(30, 30), GL_RGBA, ResourceProvider::TextureUsageAny);
+    texture->Allocate(gfx::Size(30, 30),
+                      ResourceProvider::TextureUsageAny,
+                      RGBA_8888);
     EXPECT_LT(0u, texture->id());
     EXPECT_EQ(1u, resource_provider->num_resources());
     texture->Free();
@@ -91,14 +93,15 @@ TEST(ScopedResourceTest, LeakScopedResource) {
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(output_surface.get(), 0));
+      ResourceProvider::Create(output_surface.get(), 0, false));
   {
     scoped_ptr<ScopedResource> texture =
         ScopedResource::create(resource_provider.get());
 
     EXPECT_EQ(0u, resource_provider->num_resources());
-    texture->Allocate(
-        gfx::Size(30, 30), GL_RGBA, ResourceProvider::TextureUsageAny);
+    texture->Allocate(gfx::Size(30, 30),
+                      ResourceProvider::TextureUsageAny,
+                      RGBA_8888);
     EXPECT_LT(0u, texture->id());
     EXPECT_EQ(1u, resource_provider->num_resources());
 

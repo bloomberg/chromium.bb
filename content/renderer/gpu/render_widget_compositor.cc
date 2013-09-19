@@ -7,6 +7,10 @@
 #include <limits>
 #include <string>
 
+#if defined(OS_ANDROID)
+#include "base/android/sys_utils.h"
+#endif
+
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
@@ -276,6 +280,12 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
   // Android WebView handles root layer flings itself.
   settings.ignore_root_layer_flings =
       widget->UsingSynchronousRendererCompositor();
+  // RGBA_4444 textures are only enabled for low end devices
+  // and are disabled for Android WebView as it doesn't support the format.
+  settings.use_rgba_4444_textures =
+      base::android::SysUtils::IsLowEndDevice() &&
+      !widget->UsingSynchronousRendererCompositor() &&
+      !cmd->HasSwitch(cc::switches::kDisable4444Textures);
 #elif !defined(OS_MACOSX)
   if (cmd->HasSwitch(switches::kEnableOverlayScrollbars)) {
     settings.scrollbar_animator = cc::LayerTreeSettings::Thinning;

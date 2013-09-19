@@ -1529,9 +1529,9 @@ class MissingTextureAnimatingLayer : public DidDrawCheckLayer {
     if (!tile_missing) {
       ResourceProvider::ResourceId resource =
           resource_provider->CreateResource(gfx::Size(1, 1),
-                                            GL_RGBA,
                                             GL_CLAMP_TO_EDGE,
-                                            ResourceProvider::TextureUsageAny);
+                                            ResourceProvider::TextureUsageAny,
+                                            RGBA_8888);
       resource_provider->AllocateForTesting(resource);
       PushTileProperties(0, 0, resource, gfx::Rect(), false);
     }
@@ -2621,9 +2621,9 @@ class BlendStateCheckLayer : public LayerImpl {
         quad_visible_rect_(5, 5, 5, 5),
         resource_id_(resource_provider->CreateResource(
             gfx::Size(1, 1),
-            GL_RGBA,
             GL_CLAMP_TO_EDGE,
-            ResourceProvider::TextureUsageAny)) {
+            ResourceProvider::TextureUsageAny,
+            RGBA_8888)) {
     resource_provider->AllocateForTesting(resource_id_);
     SetAnchorPoint(gfx::PointF());
     SetBounds(gfx::Size(10, 10));
@@ -5371,7 +5371,7 @@ TEST_F(LayerTreeHostImplTest, TestRemoveRenderPasses) {
   ASSERT_TRUE(output_surface->context_provider());
 
   scoped_ptr<ResourceProvider> resource_provider =
-      ResourceProvider::Create(output_surface.get(), 0);
+      ResourceProvider::Create(output_surface.get(), 0, false);
 
   scoped_ptr<TestRenderer> renderer = TestRenderer::Create(
       &settings, resource_provider.get(), output_surface.get(), &proxy_);

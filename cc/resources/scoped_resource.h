@@ -26,8 +26,8 @@ class CC_EXPORT ScopedResource : public Resource {
   virtual ~ScopedResource();
 
   bool Allocate(gfx::Size size,
-                GLenum format,
-                ResourceProvider::TextureUsageHint hint);
+                ResourceProvider::TextureUsageHint hint,
+                ResourceFormat texture_format);
   void Free();
   void Leak();
 
