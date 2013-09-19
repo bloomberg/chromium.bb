@@ -26,7 +26,6 @@
 #include "ash/focus_cycler.h"
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/host/root_window_host_factory.h"
-#include "ash/launcher/app_list_launcher_item_delegate.h"
 #include "ash/launcher/launcher_delegate.h"
 #include "ash/launcher/launcher_item_delegate.h"
 #include "ash/launcher/launcher_item_delegate_manager.h"
@@ -36,6 +35,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/screen_ash.h"
 #include "ash/session_state_delegate.h"
+#include "ash/shelf/app_list_shelf_item_delegate.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell_delegate.h"
@@ -856,8 +856,8 @@ LauncherDelegate* Shell::GetLauncherDelegate() {
     launcher_model_.reset(new LauncherModel);
     launcher_delegate_.reset(
         delegate_->CreateLauncherDelegate(launcher_model_.get()));
-    app_list_launcher_item_delegate_.reset(
-        new internal::AppListLauncherItemDelegate);
+    app_list_shelf_item_delegate_.reset(
+        new internal::AppListShelfItemDelegate);
   }
   return launcher_delegate_.get();
 }

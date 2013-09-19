@@ -101,7 +101,7 @@ class WindowSelectorController;
 namespace internal {
 class AcceleratorFilter;
 class AppListController;
-class AppListLauncherItemDelegate;
+class AppListShelfItemDelegate;
 class CaptureController;
 class DisplayChangeObserver;
 class DisplayErrorObserver;
@@ -540,8 +540,8 @@ class ASH_EXPORT Shell
   scoped_ptr<SessionStateDelegate> session_state_delegate_;
   scoped_ptr<LauncherDelegate> launcher_delegate_;
   scoped_ptr<LauncherItemDelegateManager> launcher_item_delegate_manager_;
-  scoped_ptr<internal::AppListLauncherItemDelegate>
-      app_list_launcher_item_delegate_;
+  scoped_ptr<internal::AppListShelfItemDelegate>
+      app_list_shelf_item_delegate_;
 
   scoped_ptr<LauncherModel> launcher_model_;
 

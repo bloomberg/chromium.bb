@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_LAUNCHER_APP_LIST_LAUNCHER_ITEM_DELEGATE_H_
-#define ASH_LAUNCHER_APP_LIST_LAUNCHER_ITEM_DELEGATE_H_
+#ifndef ASH_SHELF_APP_LIST_SHELF_ITEM_DELEGATE_H_
+#define ASH_SHELF_APP_LIST_SHELF_ITEM_DELEGATE_H_
 
 #include "ash/launcher/launcher_item_delegate.h"
 #include "base/basictypes.h"
@@ -13,11 +13,11 @@ namespace ash {
 namespace internal {
 
 // LauncherItemDelegate for TYPE_APP_LIST.
-class AppListLauncherItemDelegate : public LauncherItemDelegate {
+class AppListShelfItemDelegate : public LauncherItemDelegate {
  public:
-  AppListLauncherItemDelegate();
+  AppListShelfItemDelegate();
 
-  virtual ~AppListLauncherItemDelegate();
+  virtual ~AppListShelfItemDelegate();
 
   // ash::LauncherItemDelegate overrides:
   virtual void ItemSelected(const LauncherItem& item,
@@ -33,10 +33,10 @@ class AppListLauncherItemDelegate : public LauncherItemDelegate {
   virtual bool ShouldShowTooltip(const LauncherItem& item) OVERRIDE;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(AppListLauncherItemDelegate);
+  DISALLOW_COPY_AND_ASSIGN(AppListShelfItemDelegate);
 };
 
 }  // namespace internal
 }  // namespace ash
 
-#endif  // ASH_LAUNCHER_APP_LIST_LAUNCHER_ITEM_DELEGATE_H_
+#endif  // ASH_SHELF_APP_LIST_SHELF_ITEM_DELEGATE_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/launcher/app_list_launcher_item_delegate.h"
+#include "ash/shelf/app_list_shelf_item_delegate.h"
 
 #include "ash/launcher/launcher_item_delegate_manager.h"
 #include "ash/launcher/launcher_model.h"
@@ -14,7 +14,7 @@
 namespace ash {
 namespace internal {
 
-AppListLauncherItemDelegate::AppListLauncherItemDelegate() {
+AppListShelfItemDelegate::AppListShelfItemDelegate() {
   LauncherItem app_list;
   app_list.type = TYPE_APP_LIST;
   Shell::GetInstance()->launcher_model()->Add(app_list);
@@ -23,18 +23,18 @@ AppListLauncherItemDelegate::AppListLauncherItemDelegate() {
       RegisterLauncherItemDelegate(ash::TYPE_APP_LIST, this);
 }
 
-AppListLauncherItemDelegate::~AppListLauncherItemDelegate() {
+AppListShelfItemDelegate::~AppListShelfItemDelegate() {
   // Don't unregister this from LauncherItemDelegateManager.
   // LauncherItemDelegateManager is already destroyed.
 }
 
-void AppListLauncherItemDelegate::ItemSelected(const LauncherItem& item,
-                                               const ui::Event& event) {
+void AppListShelfItemDelegate::ItemSelected(const LauncherItem& item,
+                                            const ui::Event& event) {
   // Pass NULL here to show the app list in the currently active RootWindow.
   Shell::GetInstance()->ToggleAppList(NULL);
 }
 
-base::string16 AppListLauncherItemDelegate::GetTitle(const LauncherItem& item) {
+base::string16 AppListShelfItemDelegate::GetTitle(const LauncherItem& item) {
   LauncherModel* model = Shell::GetInstance()->launcher_model();
   DCHECK(model);
   return model->status() == LauncherModel::STATUS_LOADING ?
@@ -42,24 +42,24 @@ base::string16 AppListLauncherItemDelegate::GetTitle(const LauncherItem& item) {
       l10n_util::GetStringUTF16(IDS_AURA_APP_LIST_TITLE);
 }
 
-ui::MenuModel* AppListLauncherItemDelegate::CreateContextMenu(
+ui::MenuModel* AppListShelfItemDelegate::CreateContextMenu(
     const LauncherItem& item,
     aura::RootWindow* root_window) {
   return NULL;
 }
 
-LauncherMenuModel* AppListLauncherItemDelegate::CreateApplicationMenu(
+LauncherMenuModel* AppListShelfItemDelegate::CreateApplicationMenu(
     const LauncherItem& item,
     int event_flags) {
   // AppList does not show an application menu.
   return NULL;
 }
 
-bool AppListLauncherItemDelegate::IsDraggable(const LauncherItem& item) {
+bool AppListShelfItemDelegate::IsDraggable(const LauncherItem& item) {
   return false;
 }
 
-bool AppListLauncherItemDelegate::ShouldShowTooltip(const LauncherItem& item) {
+bool AppListShelfItemDelegate::ShouldShowTooltip(const LauncherItem& item) {
   return true;
 }
 
