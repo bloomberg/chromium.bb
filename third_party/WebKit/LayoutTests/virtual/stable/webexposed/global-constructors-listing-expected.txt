@@ -69,6 +69,7 @@ DataTransferItemList
 DataView
 Date
 DelayNode
+DeviceMotionEvent
 DeviceOrientationEvent
 Document
 DocumentFragment
