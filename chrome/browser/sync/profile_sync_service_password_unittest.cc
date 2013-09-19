@@ -229,10 +229,10 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
           WillOnce(ReturnNewDataTypeManager());
 
       // We need tokens to get the tests going
-      token_service_->IssueAuthTokenForTest(
-          GaiaConstants::kGaiaOAuth2LoginRefreshToken, "oauth2_login_token");
-      token_service_->IssueAuthTokenForTest(
-          GaiaConstants::kSyncService, "token");
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get())
+          ->UpdateCredentials("test_user@gmail.com", "oauth2_login_token");
+      token_service_->IssueAuthTokenForTest(GaiaConstants::kSyncService,
+                                            "token");
 
       sync_service_->RegisterDataTypeController(data_type_controller);
       sync_service_->Initialize();

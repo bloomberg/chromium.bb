@@ -81,7 +81,8 @@ class RequestImpl : public WebHistoryService::Request,
 
     ProfileOAuth2TokenService* token_service =
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
-    token_request_ = token_service->StartRequest(oauth_scopes, this);
+    token_request_ = token_service->StartRequest(
+        token_service->GetPrimaryAccountId(), oauth_scopes, this);
     is_pending_ = true;
   }
 
@@ -99,10 +100,13 @@ class RequestImpl : public WebHistoryService::Request,
     if (response_code_ == net::HTTP_UNAUTHORIZED && ++auth_retry_count_ <= 1) {
       OAuth2TokenService::ScopeSet oauth_scopes;
       oauth_scopes.insert(kHistoryOAuthScope);
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)
-          ->InvalidateToken(oauth_scopes, access_token_);
+      ProfileOAuth2TokenService* token_service =
+          ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
+      token_service->InvalidateToken(token_service->GetPrimaryAccountId(),
+                                     oauth_scopes,
+                                     access_token_);
 
-      access_token_ = std::string();
+      access_token_.clear();
       Start();
       return;
     }

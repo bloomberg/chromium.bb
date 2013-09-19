@@ -31,15 +31,17 @@ namespace {
 
 bool FetchUsernameThroughSigninManager(Profile* profile, std::string* output) {
   // In an incognito window these services are not available.
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
-  if (!token_service || !token_service->RefreshTokenIsAvailable())
-    return false;
-
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetInstance()->GetForProfile(profile);
   if (!signin_manager)
     return false;
+
+  ProfileOAuth2TokenService* token_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
+  if (!token_service || !token_service->RefreshTokenIsAvailable(
+          token_service->GetPrimaryAccountId())) {
+    return false;
+  }
 
   *output = signin_manager->GetAuthenticatedUsername();
   return true;

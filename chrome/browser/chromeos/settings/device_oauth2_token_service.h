@@ -34,12 +34,18 @@ namespace chromeos {
 //
 // See |OAuth2TokenService| for usage details.
 //
+// When using DeviceOAuth2TokenSerivce, a value of |GetRobotAccountId| should
+// be used in places where API expects |account_id|.
+//
 // Note that requests must be made from the UI thread.
 class DeviceOAuth2TokenService : public OAuth2TokenService {
  public:
   // Specialization of StartRequest that in parallel validates that the refresh
   // token stored on the device is owned by the device service account.
-  virtual scoped_ptr<Request> StartRequest(const ScopeSet& scopes,
+  // TODO(fgorski): Remove override of StartRequest to make the method
+  // non-virtual. See crbug.com/282454 for details.
+  virtual scoped_ptr<Request> StartRequest(const std::string& account_id,
+                                           const ScopeSet& scopes,
                                            Consumer* consumer) OVERRIDE;
 
   // Persist the given refresh token on the device.  Overwrites any previous
@@ -48,12 +54,14 @@ class DeviceOAuth2TokenService : public OAuth2TokenService {
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
-  virtual std::string GetRefreshToken() OVERRIDE;
+  // Gets the refresh token used by the service. |account_id| is expected to be
+  // a value of |GetRobotAccountId|.
+  virtual std::string GetRefreshToken(const std::string& account_id) OVERRIDE;
 
- protected:
   // Pull the robot account ID from device policy.
   virtual std::string GetRobotAccountId();
 
+ protected:
   // Implementation of OAuth2TokenService.
   virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
 

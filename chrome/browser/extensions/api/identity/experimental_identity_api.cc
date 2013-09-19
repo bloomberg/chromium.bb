@@ -235,7 +235,8 @@ void ExperimentalIdentityGetAuthTokenFunction::StartLoginAccessTokenRequest() {
     if (chromeos::UserManager::Get()->GetAppModeChromeClientOAuthInfo(
            &app_client_id, &app_client_secret)) {
       login_token_request_ =
-          service->StartRequestForClient(app_client_id,
+          service->StartRequestForClient(service->GetPrimaryAccountId(),
+                                         app_client_id,
                                          app_client_secret,
                                          OAuth2TokenService::ScopeSet(),
                                          this);
@@ -243,8 +244,8 @@ void ExperimentalIdentityGetAuthTokenFunction::StartLoginAccessTokenRequest() {
     }
   }
 #endif
-  login_token_request_ = service->StartRequest(OAuth2TokenService::ScopeSet(),
-                                               this);
+  login_token_request_ = service->StartRequest(
+      service->GetPrimaryAccountId(), OAuth2TokenService::ScopeSet(), this);
 }
 
 void ExperimentalIdentityGetAuthTokenFunction::StartGaiaRequest(
@@ -288,8 +289,10 @@ ExperimentalIdentityGetAuthTokenFunction::CreateMintTokenFlow(
 }
 
 bool ExperimentalIdentityGetAuthTokenFunction::HasLoginToken() const {
-  return ProfileOAuth2TokenServiceFactory::GetForProfile(profile())->
-      RefreshTokenIsAvailable();
+  ProfileOAuth2TokenService* token_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile());
+  return token_service->RefreshTokenIsAvailable(
+      token_service->GetPrimaryAccountId());
 }
 
 ExperimentalIdentityLaunchWebAuthFlowFunction::

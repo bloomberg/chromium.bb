@@ -126,12 +126,14 @@ void ConvertAppListAndRun(
 
 GDataWapiService::GDataWapiService(
     OAuth2TokenService* oauth2_token_service,
+    const std::string& account_id,
     net::URLRequestContextGetter* url_request_context_getter,
     base::TaskRunner* blocking_task_runner,
     const GURL& base_url,
     const GURL& base_download_url,
     const std::string& custom_user_agent)
     : oauth2_token_service_(oauth2_token_service),
+      account_id_(account_id),
       url_request_context_getter_(url_request_context_getter),
       blocking_task_runner_(blocking_task_runner),
       url_generator_(base_url, base_download_url),
@@ -155,8 +157,10 @@ void GDataWapiService::Initialize() {
   // Drive App scope is required for even WAPI v3 apps access.
   scopes.push_back(util::kDriveAppsScope);
   sender_.reset(new RequestSender(
-      new AuthService(
-          oauth2_token_service_, url_request_context_getter_, scopes),
+      new AuthService(oauth2_token_service_,
+                      account_id_,
+                      url_request_context_getter_,
+                      scopes),
       url_request_context_getter_,
       blocking_task_runner_.get(),
       custom_user_agent_));

@@ -633,7 +633,6 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   virtual void OnRefreshTokenAvailable(const std::string& account_id) OVERRIDE;
   virtual void OnRefreshTokenRevoked(const std::string& account_id) OVERRIDE;
   virtual void OnRefreshTokensLoaded() OVERRIDE;
-  virtual void OnRefreshTokensCleared() OVERRIDE;
 
   // BrowserContextKeyedService implementation.  This must be called exactly
   // once (before this object is destroyed).

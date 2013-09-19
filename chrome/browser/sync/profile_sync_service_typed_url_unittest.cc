@@ -238,10 +238,11 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
       EXPECT_CALL(*components, CreateDataTypeManager(_, _, _, _, _, _)).
           WillOnce(ReturnNewDataTypeManager());
 
-      token_service_->IssueAuthTokenForTest(
-          GaiaConstants::kGaiaOAuth2LoginRefreshToken, "oauth2_login_token");
-      token_service_->IssueAuthTokenForTest(
-          GaiaConstants::kSyncService, "token");
+      ProfileOAuth2TokenService* oauth2_token_service =
+          ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get());
+      oauth2_token_service->UpdateCredentials("test", "oauth2_login_token");
+      token_service_->IssueAuthTokenForTest(GaiaConstants::kSyncService,
+                                            "token");
 
       sync_service_->RegisterDataTypeController(data_type_controller);
 

@@ -41,7 +41,7 @@ class TestOAuth2TokenService : public OAuth2TokenService {
       : request_context_(request_context) {
   }
  protected:
-  virtual std::string GetRefreshToken() OVERRIDE {
+  virtual std::string GetRefreshToken(const std::string& account_id) OVERRIDE {
     return "SampleToken";
   }
 
@@ -73,6 +73,7 @@ class CloudPrintPrinterListTest : public testing::Test {
         new CloudPrintPrinterList(request_context_.get(),
                                   "http://SoMeUrL.com/cloudprint",
                                   &token_service_,
+                                  "account_id",
                                   &delegate_));
 
     fallback_fetcher_factory_.reset(new net::TestURLFetcherFactory());

@@ -200,11 +200,19 @@ class TestProfileSyncService : public ProfileSyncService {
 class FakeOAuth2TokenService : public ProfileOAuth2TokenService {
  public:
   virtual scoped_ptr<OAuth2TokenService::Request> StartRequest(
+      const std::string& account_id,
       const OAuth2TokenService::ScopeSet& scopes,
       OAuth2TokenService::Consumer* consumer) OVERRIDE;
 
   static BrowserContextKeyedService* BuildTokenService(
       content::BrowserContext* context);
+
+ protected:
+  virtual void PersistCredentials(const std::string& account_id,
+                                  const std::string& refresh_token) OVERRIDE;
+
+  virtual void ClearPersistedCredentials(
+      const std::string& account_id) OVERRIDE;
 };
 
 #endif  // CHROME_BROWSER_SYNC_TEST_PROFILE_SYNC_SERVICE_H_

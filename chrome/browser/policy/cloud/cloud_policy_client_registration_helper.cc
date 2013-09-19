@@ -16,9 +16,7 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
-#if defined(OS_ANDROID)
-#include "chrome/browser/signin/android_profile_oauth2_token_service.h"
-#else
+#if !defined(OS_ANDROID)
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher.h"
 #endif
@@ -45,13 +43,7 @@ class CloudPolicyClientRegistrationHelper::TokenServiceHelper
   TokenServiceHelper();
 
   void FetchAccessToken(
-#if defined(OS_ANDROID)
-      // TODO(atwilson): Remove this when StartRequestForUsername() is merged
-      // into the base OAuth2TokenService class.
-      AndroidProfileOAuth2TokenService* token_service,
-#else
       OAuth2TokenService* token_service,
-#endif
       const std::string& username,
       const StringCallback& callback);
 
@@ -70,29 +62,21 @@ class CloudPolicyClientRegistrationHelper::TokenServiceHelper
 CloudPolicyClientRegistrationHelper::TokenServiceHelper::TokenServiceHelper() {}
 
 void CloudPolicyClientRegistrationHelper::TokenServiceHelper::FetchAccessToken(
-#if defined(OS_ANDROID)
-    AndroidProfileOAuth2TokenService* token_service,
-#else
     OAuth2TokenService* token_service,
-#endif
-    const std::string& username,
+    const std::string& account_id,
     const StringCallback& callback) {
   DCHECK(!token_request_);
   // Either the caller must supply a username, or the user must be signed in
   // already.
-  DCHECK(!username.empty() || token_service->RefreshTokenIsAvailable());
+  DCHECK(!account_id.empty());
+  DCHECK(token_service->RefreshTokenIsAvailable(account_id));
+
   callback_ = callback;
 
   OAuth2TokenService::ScopeSet scopes;
   scopes.insert(GaiaConstants::kDeviceManagementServiceOAuth);
   scopes.insert(kServiceScopeGetUserInfo);
-
-#if defined(OS_ANDROID)
-  token_request_ =
-      token_service->StartRequestForUsername(username, scopes, this);
-#else
-  token_request_ = token_service->StartRequest(scopes, this);
-#endif
+  token_request_ = token_service->StartRequest(account_id, scopes, this);
 }
 
 void CloudPolicyClientRegistrationHelper::TokenServiceHelper::OnGetTokenSuccess(
@@ -195,12 +179,8 @@ CloudPolicyClientRegistrationHelper::~CloudPolicyClientRegistrationHelper() {
 
 
 void CloudPolicyClientRegistrationHelper::StartRegistration(
-#if defined(OS_ANDROID)
-    AndroidProfileOAuth2TokenService* token_service,
-#else
     OAuth2TokenService* token_service,
-#endif
-    const std::string& username,
+    const std::string& account_id,
     const base::Closure& callback) {
   DVLOG(1) << "Starting registration process with username";
   DCHECK(!client_->is_registered());
@@ -210,7 +190,7 @@ void CloudPolicyClientRegistrationHelper::StartRegistration(
   token_service_helper_.reset(new TokenServiceHelper());
   token_service_helper_->FetchAccessToken(
       token_service,
-      username,
+      account_id,
       base::Bind(&CloudPolicyClientRegistrationHelper::OnTokenFetched,
                  base::Unretained(this)));
 }

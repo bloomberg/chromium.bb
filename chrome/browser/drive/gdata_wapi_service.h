@@ -43,6 +43,7 @@ class GDataWapiService : public DriveServiceInterface,
                          public google_apis::AuthServiceObserver {
  public:
   // |oauth2_token_service| is used for obtaining OAuth2 access tokens.
+  // |account_id| identifies account used to obtain OAuth2 access tokens.
   // |url_request_context_getter| is used to initialize URLFetcher.
   // |blocking_task_runner| is used to run blocking tasks (like parsing JSON).
   // |base_url| is used to generate URLs for communicating with the WAPI
@@ -50,6 +51,7 @@ class GDataWapiService : public DriveServiceInterface,
   // |custom_user_agent| is used for the User-Agent header in HTTP
   // requests issued through the service if the value is not empty.
   GDataWapiService(OAuth2TokenService* oauth2_token_service,
+                   const std::string& account_id,
                    net::URLRequestContextGetter* url_request_context_getter,
                    base::TaskRunner* blocking_task_runner,
                    const GURL& base_url,
@@ -189,6 +191,7 @@ class GDataWapiService : public DriveServiceInterface,
   virtual void OnOAuth2RefreshTokenChanged() OVERRIDE;
 
   OAuth2TokenService* oauth2_token_service_;  // Not owned.
+  std::string account_id_;
   net::URLRequestContextGetter* url_request_context_getter_;  // Not owned.
   scoped_refptr<base::TaskRunner> blocking_task_runner_;
   scoped_ptr<google_apis::RequestSender> sender_;

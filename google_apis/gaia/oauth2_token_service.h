@@ -29,7 +29,8 @@ class GoogleServiceAuthError;
 
 // Abstract base class for a service that fetches and caches OAuth2 access
 // tokens. Concrete subclasses should implement GetRefreshToken to return
-// the appropriate refresh token.
+// the appropriate refresh token. Derived services might maintain refresh tokens
+// for multiple accounts.
 //
 // All calls are expected from the UI thread.
 //
@@ -76,8 +77,6 @@ class OAuth2TokenService : public base::NonThreadSafe {
 
   // Classes that want to listen for token availability should implement this
   // interface and register with the AddObserver() call.
-  // TODO(rogerta): may get rid of |error| argument for OnRefreshTokenRevoked()
-  // once we stop supporting ClientLogin.  Need to evaluate if its still useful.
   class Observer {
    public:
     // Called whenever a new login-scoped refresh token is available for
@@ -91,8 +90,6 @@ class OAuth2TokenService : public base::NonThreadSafe {
     // Called after all refresh tokens are loaded during OAuth2TokenService
     // startup.
     virtual void OnRefreshTokensLoaded() {}
-    // Called after all refresh tokens are removed from OAuth2TokenService.
-    virtual void OnRefreshTokensCleared() {}
    protected:
     virtual ~Observer() {}
   };
@@ -107,21 +104,24 @@ class OAuth2TokenService : public base::NonThreadSafe {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  // Checks in the cache for a valid access token, and if not found starts
-  // a request for an OAuth2 access token using the OAuth2 refresh token
-  // maintained by this instance. The caller owns the returned Request.
+  // Checks in the cache for a valid access token for a specified |account_id|
+  // and |scopes|, and if not found starts a request for an OAuth2 access token
+  // using the OAuth2 refresh token maintained by this instance for that
+  // |account_id|. The caller owns the returned Request.
   // |scopes| is the set of scopes to get an access token for, |consumer| is
   // the object that will be called back with results if the returned request
   // is not deleted.
   // TODO(atwilson): Make this non-virtual when we change
   // ProfileOAuth2TokenServiceRequestTest to use FakeProfileOAuth2TokenService.
-  virtual scoped_ptr<Request> StartRequest(const ScopeSet& scopes,
+  virtual scoped_ptr<Request> StartRequest(const std::string& account_id,
+                                           const ScopeSet& scopes,
                                            Consumer* consumer);
 
   // This method does the same as |StartRequest| except it uses |client_id| and
   // |client_secret| to identify OAuth client app instead of using
   // Chrome's default values.
   scoped_ptr<Request> StartRequestForClient(
+      const std::string& account_id,
       const std::string& client_id,
       const std::string& client_secret,
       const ScopeSet& scopes,
@@ -131,20 +131,35 @@ class OAuth2TokenService : public base::NonThreadSafe {
   // context given by |getter| instead of using the one returned by
   // |GetRequestContext| implemented by derived classes.
   scoped_ptr<Request> StartRequestWithContext(
+      const std::string& account_id,
       net::URLRequestContextGetter* getter,
       const ScopeSet& scopes,
       Consumer* consumer);
 
-  // Returns true if a refresh token exists. If false, calls to
-  // |StartRequest| will result in a Consumer::OnGetTokenFailure callback.
-  virtual bool RefreshTokenIsAvailable();
+  // Lists account IDs of all accounts with a refresh token maintained by this
+  // instance.
+  virtual std::vector<std::string> GetAccounts();
 
-  // Mark an OAuth2 access token as invalid. This should be done if the token
-  // was received from this class, but was not accepted by the server (e.g.,
-  // the server returned 401 Unauthorized). The token will be removed from the
-  // cache for the given scopes.
-  virtual void InvalidateToken(const ScopeSet& scopes,
-                               const std::string& invalid_token);
+  // Returns true if a refresh token exists for |account_id|. If false, calls to
+  // |StartRequest| will result in a Consumer::OnGetTokenFailure callback.
+  virtual bool RefreshTokenIsAvailable(const std::string& account_id);
+
+  // Mark an OAuth2 |access_token| issued for |account_id| and |scopes| as
+  // invalid. This should be done if the token was received from this class,
+  // but was not accepted by the server (e.g., the server returned
+  // 401 Unauthorized). The token will be removed from the cache for the given
+  // scopes.
+  void InvalidateToken(const std::string& account_id,
+                       const ScopeSet& scopes,
+                       const std::string& access_token);
+
+  // Like |InvalidateToken| except is uses |client_id| to identity OAuth2 client
+  // app that issued the request instead of Chrome's default values.
+  void InvalidateTokenForClient(const std::string& account_id,
+                                const std::string& client_id,
+                                const ScopeSet& scopes,
+                                const std::string& access_token);
+
 
   // Return the current number of entries in the cache.
   int cache_size_for_testing() const;
@@ -152,20 +167,10 @@ class OAuth2TokenService : public base::NonThreadSafe {
   // Returns the current number of pending fetchers matching given params.
   size_t GetNumPendingRequestsForTesting(
       const std::string& client_id,
-      const std::string& refresh_token,
+      const std::string& account_id,
       const ScopeSet& scopes) const;
 
  protected:
-  struct ClientScopeSet {
-    ClientScopeSet(const std::string& client_id,
-                   const ScopeSet& scopes);
-    ~ClientScopeSet();
-    bool operator<(const ClientScopeSet& set) const;
-
-    std::string client_id;
-    ScopeSet scopes;
-  };
-
   // Implements a cancelable |OAuth2TokenService::Request|, which should be
   // operated on the UI thread.
   // TODO(davidroche): move this out of header file.
@@ -187,75 +192,81 @@ class OAuth2TokenService : public base::NonThreadSafe {
     Consumer* const consumer_;
   };
 
-  // Subclasses should return the refresh token maintained.
+  // Subclasses should return the maintained refresh token for |account_id|.
   // If no token is available, return an empty string.
-  virtual std::string GetRefreshToken() = 0;
+  virtual std::string GetRefreshToken(const std::string& account_id) = 0;
 
   // Subclasses can override if they want to report errors to the user.
-  virtual void UpdateAuthError(const GoogleServiceAuthError& error);
+  virtual void UpdateAuthError(
+      const std::string& account_id,
+      const GoogleServiceAuthError& error);
 
   // Add a new entry to the cache.
   // Subclasses can override if there are implementation-specific reasons
   // that an access token should ever not be cached.
   virtual void RegisterCacheEntry(const std::string& client_id,
-                                  const std::string& refresh_token,
+                                  const std::string& account_id,
                                   const ScopeSet& scopes,
                                   const std::string& access_token,
                                   const base::Time& expiration_date);
 
-  // Returns true if GetCacheEntry would return a valid cache entry for the
-  // given scopes.
-  bool HasCacheEntry(const ClientScopeSet& client_scopes);
-
-  // Posts a task to fire the Consumer callback with the cached token.  Must
-  // Must only be called if HasCacheEntry() returns true.
-  void StartCacheLookupRequest(RequestImpl* request,
-                               const ClientScopeSet& client_scopes,
-                               Consumer* consumer);
-
   // Clears the internal token cache.
   void ClearCache();
+
+  // Clears all of the tokens belonging to |account_id| from the internal token
+  // cache. It does not matter what other parameters, like |client_id| were
+  // used to request the tokens.
+  void ClearCacheForAccount(const std::string& account_id);
 
   // Cancels all requests that are currently in progress.
   void CancelAllRequests();
 
-  // Cancels all requests related to a given refresh token.
-  void CancelRequestsForToken(const std::string& refresh_token);
+  // Cancels all requests related to a given |account_id|.
+  void CancelRequestsForAccount(const std::string& account_id);
 
   // Called by subclasses to notify observers.
   void FireRefreshTokenAvailable(const std::string& account_id);
   void FireRefreshTokenRevoked(const std::string& account_id);
   void FireRefreshTokensLoaded();
-  void FireRefreshTokensCleared();
 
   // Fetches an OAuth token for the specified client/scopes. Virtual so it can
   // be overridden for tests and for platform-specific behavior on Android.
   virtual void FetchOAuth2Token(RequestImpl* request,
+                                const std::string& account_id,
                                 net::URLRequestContextGetter* getter,
                                 const std::string& client_id,
                                 const std::string& client_secret,
                                 const ScopeSet& scopes);
+
+  // Invalidates the |access_token| issued for |account_id|, |client_id| and
+  // |scopes|. Virtual so it can be overriden for tests and for platform-
+  // specifc behavior.
+  virtual void InvalidateOAuth2Token(const std::string& account_id,
+                                     const std::string& client_id,
+                                     const ScopeSet& scopes,
+                                     const std::string& access_token);
+
  private:
   class Fetcher;
   friend class Fetcher;
 
   // The parameters used to fetch an OAuth2 access token.
-  struct FetchParameters {
-    FetchParameters(const std::string& client_id,
-                    const std::string& refresh_token,
-                    const ScopeSet& scopes);
-    ~FetchParameters();
-    bool operator<(const FetchParameters& params) const;
+  struct RequestParameters {
+    RequestParameters(const std::string& client_id,
+                      const std::string& account_id,
+                      const ScopeSet& scopes);
+    ~RequestParameters();
+    bool operator<(const RequestParameters& params) const;
 
     // OAuth2 client id.
     std::string client_id;
-    // Refresh token used for minting access tokens within this request.
-    std::string refresh_token;
+    // Account id for which the request is made.
+    std::string account_id;
     // URL scopes for the requested access token.
     ScopeSet scopes;
   };
 
-  typedef std::map<FetchParameters, Fetcher*> PendingFetcherMap;
+  typedef std::map<RequestParameters, Fetcher*> PendingFetcherMap;
 
   // Derived classes must provide a request context used for fetching access
   // tokens with the |StartRequest| method.
@@ -271,24 +282,33 @@ class OAuth2TokenService : public base::NonThreadSafe {
   // uses |client_id| and |client_secret| to identify OAuth
   // client app instead of using Chrome's default values.
   scoped_ptr<Request> StartRequestForClientWithContext(
+      const std::string& account_id,
       net::URLRequestContextGetter* getter,
       const std::string& client_id,
       const std::string& client_secret,
       const ScopeSet& scopes,
       Consumer* consumer);
 
+  // Returns true if GetCacheEntry would return a valid cache entry for the
+  // given scopes.
+  bool HasCacheEntry(const RequestParameters& client_scopes);
+
+  // Posts a task to fire the Consumer callback with the cached token.  Must
+  // Must only be called if HasCacheEntry() returns true.
+  void StartCacheLookupRequest(RequestImpl* request,
+                               const RequestParameters& client_scopes,
+                               Consumer* consumer);
+
   // Returns a currently valid OAuth2 access token for the given set of scopes,
   // or NULL if none have been cached. Note the user of this method should
   // ensure no entry with the same |client_scopes| is added before the usage of
   // the returned entry is done.
-  const CacheEntry* GetCacheEntry(const ClientScopeSet& client_scopes);
-
+  const CacheEntry* GetCacheEntry(const RequestParameters& client_scopes);
 
   // Removes an access token for the given set of scopes from the cache.
   // Returns true if the entry was removed, otherwise false.
-  bool RemoveCacheEntry(const ClientScopeSet& client_scopes,
+  bool RemoveCacheEntry(const RequestParameters& client_scopes,
                         const std::string& token_to_remove);
-
 
   // Called when |fetcher| finishes fetching.
   void OnFetchComplete(Fetcher* fetcher);
@@ -297,7 +317,7 @@ class OAuth2TokenService : public base::NonThreadSafe {
   void CancelFetchers(std::vector<Fetcher*> fetchers_to_cancel);
 
   // The cache of currently valid tokens.
-  typedef std::map<ClientScopeSet, CacheEntry> TokenCache;
+  typedef std::map<RequestParameters, CacheEntry> TokenCache;
   TokenCache token_cache_;
 
   // A map from fetch parameters to a fetcher that is fetching an OAuth2 access
@@ -311,8 +331,7 @@ class OAuth2TokenService : public base::NonThreadSafe {
   // Maximum number of retries in fetching an OAuth2 access token.
   static int max_fetch_retry_num_;
 
-  FRIEND_TEST_ALL_PREFIXES(OAuth2TokenServiceTest, ClientScopeSetOrderTest);
-  FRIEND_TEST_ALL_PREFIXES(OAuth2TokenServiceTest, FetchParametersOrderTest);
+  FRIEND_TEST_ALL_PREFIXES(OAuth2TokenServiceTest, RequestParametersOrderTest);
   FRIEND_TEST_ALL_PREFIXES(OAuth2TokenServiceTest,
                            SameScopesRequestedForDifferentClients);
 

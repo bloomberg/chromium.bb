@@ -168,11 +168,12 @@ APIUtil::APIUtil(Profile* profile,
                kBaseDownloadUrlForProduction)),
       upload_next_key_(0),
       temp_dir_path_(temp_dir_path) {
-  OAuth2TokenService* oauth_service =
+  ProfileOAuth2TokenService* oauth_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
   if (IsDriveAPIDisabled()) {
     drive_service_.reset(new drive::GDataWapiService(
         oauth_service,
+        oauth_service->GetPrimaryAccountId(),
         profile->GetRequestContext(),
         content::BrowserThread::GetBlockingPool(),
         GURL(google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction),
@@ -181,6 +182,7 @@ APIUtil::APIUtil(Profile* profile,
   } else {
     drive_service_.reset(new drive::DriveAPIService(
         oauth_service,
+        oauth_service->GetPrimaryAccountId(),
         profile->GetRequestContext(),
         content::BrowserThread::GetBlockingPool(),
         GURL(google_apis::DriveApiUrlGenerator::kBaseUrlForProduction),

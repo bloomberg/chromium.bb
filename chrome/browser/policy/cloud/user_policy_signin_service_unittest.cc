@@ -18,6 +18,7 @@
 #include "chrome/browser/policy/cloud/user_policy_signin_service_factory.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 #include "chrome/browser/signin/fake_signin_manager.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
@@ -41,10 +42,8 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/policy/cloud/user_policy_signin_service_android.h"
-#include "chrome/browser/signin/android_profile_oauth2_token_service.h"
 #else
 #include "chrome/browser/policy/cloud/user_policy_signin_service.h"
-#include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 #endif
 
 namespace em = enterprise_management;
@@ -89,59 +88,6 @@ class SigninManagerFake : public FakeSigninManager {
   }
 };
 
-#if defined(OS_ANDROID)
-// TODO(atwilson): Remove this when ProfileOAuth2TokenService supports
-// usernames.
-class FakeAndroidProfileOAuth2TokenService
-    : public AndroidProfileOAuth2TokenService {
- public:
-  explicit FakeAndroidProfileOAuth2TokenService(Profile* profile) {
-    Initialize(profile);
-  }
-
-  static BrowserContextKeyedService* Build(content::BrowserContext* profile) {
-    return new FakeAndroidProfileOAuth2TokenService(
-        static_cast<Profile*>(profile));
-  }
-
-  // AndroidProfileOAuth2TokenService overrides:
-  virtual void FetchOAuth2TokenWithUsername(
-      RequestImpl* request,
-      const std::string& username,
-      const OAuth2TokenService::ScopeSet& scope) OVERRIDE {
-    ASSERT_TRUE(!HasPendingRequest());
-    ASSERT_EQ(kTestUser, username);
-    ASSERT_EQ(2U, scope.size());
-    EXPECT_EQ(1U, scope.count(GaiaConstants::kDeviceManagementServiceOAuth));
-    EXPECT_EQ(1U, scope.count(
-        "https://www.googleapis.com/auth/userinfo.email"));
-    pending_request_ = request->AsWeakPtr();
-  }
-
-  void IssueToken(const std::string& token) {
-    ASSERT_TRUE(HasPendingRequest());
-    GoogleServiceAuthError error = GoogleServiceAuthError::AuthErrorNone();
-    if (token.empty())
-      error = GoogleServiceAuthError::FromServiceError("fail");
-    if (pending_request_) {
-      pending_request_->InformConsumer(
-          error,
-          token,
-          base::Time::Now() + base::TimeDelta::FromDays(1));
-    }
-    pending_request_.reset();
-  }
-
-  bool HasPendingRequest() const {
-    return pending_request_;
-  }
-
- private:
-  base::WeakPtr<RequestImpl> pending_request_;
-};
-
-#endif
-
 class UserPolicySigninServiceTest : public testing::Test {
  public:
   UserPolicySigninServiceTest()
@@ -157,6 +103,12 @@ class UserPolicySigninServiceTest : public testing::Test {
   }
 
   void RegisterPolicyClientWithCallback(UserPolicySigninService* service) {
+    // Policy client registration on Android depends on Token Service having
+    // a valid login token, while on other platforms, the login refresh token
+    // is specified directly.
+#if defined(OS_ANDROID)
+    GetTokenService()->IssueRefreshToken("oauth2_login_refresh_token");
+#endif
     service->RegisterPolicyClient(
         kTestUser,
 #if !defined(OS_ANDROID)
@@ -188,13 +140,8 @@ class UserPolicySigninServiceTest : public testing::Test {
     builder.SetPrefService(scoped_ptr<PrefServiceSyncable>(prefs.Pass()));
     builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
                               SigninManagerFake::Build);
-#if defined(OS_ANDROID)
-    builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
-                              FakeAndroidProfileOAuth2TokenService::Build);
-#else
     builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
                               FakeProfileOAuth2TokenService::Build);
-#endif
 
     profile_ = builder.Build().Pass();
     signin_manager_ = static_cast<SigninManagerFake*>(
@@ -225,37 +172,24 @@ class UserPolicySigninServiceTest : public testing::Test {
     run_loop.RunUntilIdle();
   }
 
-#if defined(OS_ANDROID)
-  FakeAndroidProfileOAuth2TokenService* GetTokenService() {
-    ProfileOAuth2TokenService* service =
-        ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get());
-    return static_cast<FakeAndroidProfileOAuth2TokenService*>(service);
-  }
-#else
   FakeProfileOAuth2TokenService* GetTokenService() {
     ProfileOAuth2TokenService* service =
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get());
     return static_cast<FakeProfileOAuth2TokenService*>(service);
   }
-#endif
 
   bool IsRequestActive() {
-#if defined(OS_ANDROID)
-    if (GetTokenService()->HasPendingRequest())
-      return true;
-#else
     if (!GetTokenService()->GetPendingRequests().empty())
       return true;
-#endif
     return url_factory_.GetFetcherByID(0);
   }
 
   void MakeOAuthTokenFetchSucceed() {
-#if defined(OS_ANDROID)
-    ASSERT_TRUE(GetTokenService()->HasPendingRequest());
-    GetTokenService()->IssueToken("fake_token");
-#else
     ASSERT_TRUE(IsRequestActive());
+#if defined(OS_ANDROID)
+    GetTokenService()->IssueTokenForAllPendingRequests("access_token",
+                                                       base::Time::Now());
+#else
     net::TestURLFetcher* fetcher = url_factory_.GetFetcherByID(0);
     fetcher->set_response_code(net::HTTP_OK);
     fetcher->SetResponseString(kValidTokenResponse);
@@ -626,8 +560,9 @@ TEST_F(UserPolicySigninServiceTest, RegisterPolicyClientOAuthFailure) {
 
   // Cause the access token fetch to fail - callback should be invoked.
 #if defined(OS_ANDROID)
-  ASSERT_TRUE(GetTokenService()->HasPendingRequest());
-  GetTokenService()->IssueToken("");
+  ASSERT_TRUE(!GetTokenService()->GetPendingRequests().empty());
+  GetTokenService()->IssueErrorForAllPendingRequests(
+      GoogleServiceAuthError::FromServiceError("fail"));
 #else
   net::TestURLFetcher* fetcher = url_factory_.GetFetcherByID(0);
   fetcher->set_status(net::URLRequestStatus(net::URLRequestStatus::FAILED, -1));

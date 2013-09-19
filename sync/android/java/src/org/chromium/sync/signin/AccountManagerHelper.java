@@ -136,6 +136,13 @@ public class AccountManagerHelper {
     }
 
     /**
+     * Returns whether the accounts exists.
+     */
+    public boolean hasAccountForName(String accountName) {
+        return getAccountFromName(accountName) != null;
+    }
+
+    /**
      * @return Whether or not there is an account authenticator for Google accounts.
      */
     public boolean hasGoogleAccountAuthenticator() {

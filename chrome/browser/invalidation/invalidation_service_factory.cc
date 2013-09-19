@@ -16,15 +16,11 @@
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/signin/token_service.h"
-#include "chrome/browser/signin/token_service_factory.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/invalidation/invalidation_controller_android.h"
 #endif  // defined(OS_ANDROID)
-
-class TokenService;
 
 namespace invalidation {
 
@@ -97,13 +93,11 @@ BrowserContextKeyedService* InvalidationServiceFactory::BuildServiceInstanceFor(
 #else
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfile(profile);
-  TokenService* token_service = TokenServiceFactory::GetForProfile(profile);
-  OAuth2TokenService* oauth2_token_service =
+  ProfileOAuth2TokenService* oauth2_token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
 
   TiclInvalidationService* service = new TiclInvalidationService(
       signin_manager,
-      token_service,
       oauth2_token_service,
       profile);
   service->Init();
