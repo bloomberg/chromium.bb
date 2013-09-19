@@ -24,18 +24,18 @@ class WindowSelectorItem {
   virtual ~WindowSelectorItem();
 
   // Returns the root window on which this item is shown.
-  virtual const aura::RootWindow* GetRootWindow() const = 0;
+  virtual aura::RootWindow* GetRootWindow() = 0;
 
   // Returns the targeted window given the event |target| window.
   // Returns NULL if no Window in this item was selected.
-  virtual aura::Window* TargetedWindow(const aura::Window* target) const = 0;
+  virtual aura::Window* TargetedWindow(const aura::Window* target) = 0;
 
   // Restores |window| on exiting window overview rather than returning it
   // to its previous state.
   virtual void RestoreWindowOnExit(aura::Window* window) = 0;
 
   // Returns the |window| to activate on selecting of this item.
-  virtual aura::Window* SelectionWindow() const = 0;
+  virtual aura::Window* SelectionWindow() = 0;
 
   // Removes |window| from this item. Check empty() after calling this to see
   // if the entire item is now empty.

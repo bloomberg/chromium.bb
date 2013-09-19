@@ -37,7 +37,7 @@ struct WindowSelectorItemComparator
       : target(target_window) {
   }
 
-  bool operator()(const WindowSelectorItem* window) const {
+  bool operator()(WindowSelectorItem* window) const {
     return window->TargetedWindow(target) != NULL;
   }
 

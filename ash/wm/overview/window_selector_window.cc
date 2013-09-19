@@ -15,12 +15,11 @@ WindowSelectorWindow::WindowSelectorWindow(aura::Window* window)
 WindowSelectorWindow::~WindowSelectorWindow() {
 }
 
-const aura::RootWindow* WindowSelectorWindow::GetRootWindow() const {
+aura::RootWindow* WindowSelectorWindow::GetRootWindow() {
   return transform_window_.window()->GetRootWindow();
 }
 
-aura::Window* WindowSelectorWindow::TargetedWindow(
-    const aura::Window* target) const {
+aura::Window* WindowSelectorWindow::TargetedWindow(const aura::Window* target) {
   if (transform_window_.Contains(target))
     return transform_window_.window();
   return NULL;
@@ -30,7 +29,7 @@ void WindowSelectorWindow::RestoreWindowOnExit(aura::Window* window) {
   transform_window_.RestoreWindowOnExit();
 }
 
-aura::Window* WindowSelectorWindow::SelectionWindow() const {
+aura::Window* WindowSelectorWindow::SelectionWindow() {
   return transform_window_.window();
 }
 

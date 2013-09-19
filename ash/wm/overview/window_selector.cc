@@ -35,7 +35,7 @@ struct WindowSelectorItemComparator
       : target(target_window) {
   }
 
-  bool operator()(const WindowSelectorItem* window) const {
+  bool operator()(WindowSelectorItem* window) const {
     return window->TargetedWindow(target) != NULL;
   }
 
@@ -49,7 +49,7 @@ struct WindowSelectorItemForRoot
       : root_window(root) {
   }
 
-  bool operator()(const WindowSelectorItem* item) const {
+  bool operator()(WindowSelectorItem* item) const {
     return item->GetRootWindow() == root_window;
   }
 
@@ -279,7 +279,7 @@ void WindowSelector::OnAttemptToReactivateWindow(aura::Window* request_active,
 void WindowSelector::StartOverview() {
   DCHECK(!window_overview_);
   window_overview_.reset(new WindowOverview(this, &windows_,
-      mode_ == CYCLE ? Shell::GetTargetRootWindow() : NULL));
+      mode_ == CYCLE ? windows_[selected_window_]->GetRootWindow() : NULL));
   if (mode_ == CYCLE)
     window_overview_->SetSelection(selected_window_);
 }

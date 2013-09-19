@@ -88,17 +88,30 @@ class WindowSelectorTest : public test::AshTestBase {
         StartOverview();
   }
 
+  gfx::Transform GetTransformRelativeTo(gfx::PointF origin,
+                                        const gfx::Transform& transform) {
+    gfx::Transform t;
+    t.Translate(origin.x(), origin.y());
+    t.PreconcatTransform(transform);
+    t.Translate(-origin.x(), -origin.y());
+    return t;
+  }
+
   gfx::RectF GetTransformedBounds(aura::Window* window) {
     gfx::RectF bounds(ash::ScreenAsh::ConvertRectToScreen(
         window->parent(), window->layer()->bounds()));
-    window->layer()->transform().TransformRect(&bounds);
+    gfx::Transform transform(GetTransformRelativeTo(bounds.origin(),
+        window->layer()->transform()));
+    transform.TransformRect(&bounds);
     return bounds;
   }
 
   gfx::RectF GetTransformedTargetBounds(aura::Window* window) {
     gfx::RectF bounds(ash::ScreenAsh::ConvertRectToScreen(
         window->parent(), window->layer()->GetTargetBounds()));
-    window->layer()->GetTargetTransform().TransformRect(&bounds);
+    gfx::Transform transform(GetTransformRelativeTo(bounds.origin(),
+        window->layer()->GetTargetTransform()));
+    transform.TransformRect(&bounds);
     return bounds;
   }
 
@@ -369,8 +382,8 @@ TEST_F(WindowSelectorTest, MultipleDisplays) {
 
   UpdateDisplay("600x400,600x400");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
-  gfx::Rect bounds1(0, 0, 200, 200);
-  gfx::Rect bounds2(650, 0, 200, 200);
+  gfx::Rect bounds1(0, 0, 400, 400);
+  gfx::Rect bounds2(650, 0, 400, 400);
 
   scoped_ptr<aura::Window> window1(CreateWindow(bounds1));
   scoped_ptr<aura::Window> window2(CreateWindow(bounds1));
@@ -401,26 +414,52 @@ TEST_F(WindowSelectorTest, MultipleDisplays) {
   EXPECT_EQ(root_windows[1], panel3->GetRootWindow());
   EXPECT_EQ(root_windows[1], panel4->GetRootWindow());
 
-  root_windows[0]->bounds().Contains(
-      ToEnclosingRect(GetTransformedBounds(window1.get())));
-  root_windows[0]->bounds().Contains(
-      ToEnclosingRect(GetTransformedBounds(window2.get())));
-  root_windows[1]->bounds().Contains(
-      ToEnclosingRect(GetTransformedBounds(window3.get())));
-  root_windows[1]->bounds().Contains(
-      ToEnclosingRect(GetTransformedBounds(window4.get())));
+  EXPECT_TRUE(root_windows[0]->GetBoundsInScreen().Contains(
+      ToEnclosingRect(GetTransformedTargetBounds(window1.get()))));
+  EXPECT_TRUE(root_windows[0]->GetBoundsInScreen().Contains(
+      ToEnclosingRect(GetTransformedTargetBounds(window2.get()))));
+  EXPECT_TRUE(root_windows[1]->GetBoundsInScreen().Contains(
+      ToEnclosingRect(GetTransformedTargetBounds(window3.get()))));
+  EXPECT_TRUE(root_windows[1]->GetBoundsInScreen().Contains(
+      ToEnclosingRect(GetTransformedTargetBounds(window4.get()))));
 
-  root_windows[0]->bounds().Contains(
-      ToEnclosingRect(GetTransformedBounds(panel1.get())));
-  root_windows[0]->bounds().Contains(
-      ToEnclosingRect(GetTransformedBounds(panel2.get())));
-  root_windows[1]->bounds().Contains(
-      ToEnclosingRect(GetTransformedBounds(panel3.get())));
-  root_windows[1]->bounds().Contains(
-      ToEnclosingRect(GetTransformedBounds(panel4.get())));
+  EXPECT_TRUE(root_windows[0]->GetBoundsInScreen().Contains(
+      ToEnclosingRect(GetTransformedTargetBounds(panel1.get()))));
+  EXPECT_TRUE(root_windows[0]->GetBoundsInScreen().Contains(
+      ToEnclosingRect(GetTransformedTargetBounds(panel2.get()))));
+  EXPECT_TRUE(root_windows[1]->GetBoundsInScreen().Contains(
+      ToEnclosingRect(GetTransformedTargetBounds(panel3.get()))));
+  EXPECT_TRUE(root_windows[1]->GetBoundsInScreen().Contains(
+      ToEnclosingRect(GetTransformedTargetBounds(panel4.get()))));
   EXPECT_TRUE(WindowsOverlapping(panel1.get(), panel2.get()));
   EXPECT_TRUE(WindowsOverlapping(panel3.get(), panel4.get()));
   EXPECT_FALSE(WindowsOverlapping(panel1.get(), panel3.get()));
+}
+
+// Verifies that the single display overview used during alt tab cycling uses
+// the display of the currently selected window.
+TEST_F(WindowSelectorTest, CycleOverviewUsesCurrentDisplay) {
+  if (!SupportsMultipleDisplays())
+    return;
+
+  UpdateDisplay("400x400,400x400");
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+
+  scoped_ptr<aura::Window> window1(CreateWindow(gfx::Rect(0, 0, 100, 100)));
+  scoped_ptr<aura::Window> window2(CreateWindow(gfx::Rect(450, 0, 100, 100)));
+  EXPECT_EQ(root_windows[0], window1->GetRootWindow());
+  EXPECT_EQ(root_windows[1], window2->GetRootWindow());
+  wm::ActivateWindow(window2.get());
+  wm::ActivateWindow(window1.get());
+  EXPECT_EQ(root_windows[0], Shell::GetTargetRootWindow());
+
+  Cycle(WindowSelector::FORWARD);
+  FireOverviewStartTimer();
+
+  EXPECT_TRUE(root_windows[1]->GetBoundsInScreen().Contains(
+      ToEnclosingRect(GetTransformedTargetBounds(window1.get()))));
+  EXPECT_TRUE(root_windows[1]->GetBoundsInScreen().Contains(
+      ToEnclosingRect(GetTransformedTargetBounds(window2.get()))));
 }
 
 }  // namespace internal

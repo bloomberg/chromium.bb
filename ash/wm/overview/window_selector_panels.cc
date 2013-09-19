@@ -97,12 +97,11 @@ void WindowSelectorPanels::AddWindow(aura::Window* window) {
   transform_windows_.push_back(new ScopedTransformPanelWindow(window));
 }
 
-const aura::RootWindow* WindowSelectorPanels::GetRootWindow() const {
+aura::RootWindow* WindowSelectorPanels::GetRootWindow() {
   return transform_windows_.front()->window()->GetRootWindow();
 }
 
-aura::Window* WindowSelectorPanels::TargetedWindow(
-    const aura::Window* target) const {
+aura::Window* WindowSelectorPanels::TargetedWindow(const aura::Window* target) {
   for (WindowList::const_iterator iter = transform_windows_.begin();
        iter != transform_windows_.end(); ++iter) {
     if ((*iter)->Contains(target))
@@ -121,7 +120,7 @@ void WindowSelectorPanels::RestoreWindowOnExit(aura::Window* window) {
   }
 }
 
-aura::Window* WindowSelectorPanels::SelectionWindow() const {
+aura::Window* WindowSelectorPanels::SelectionWindow() {
   return transform_windows_.front()->window();
 }
 
