@@ -103,39 +103,36 @@ void MaybeInitInternalDisplay(int64 id) {
 
 // Scoped objects used to either create or close the mirror window
 // at specific timing.
-class MirrorWindowCreator {
+class MirrorWindowUpdater {
  public:
-  MirrorWindowCreator(DisplayManager::Delegate* delegate,
-                      const DisplayInfo& display_info)
-      : delegate_(delegate),
-        display_info_(display_info) {
+  MirrorWindowUpdater(DisplayManager* manager,
+                      DisplayManager::Delegate* delegate)
+      : manager_(manager),
+        delegate_(delegate),
+        enabled_(manager_->software_mirroring_enabled() &&
+                 manager_->mirrored_display().is_valid()) {
   }
 
-  virtual ~MirrorWindowCreator() {
-    if (delegate_)
-      delegate_->CreateOrUpdateMirrorWindow(display_info_);
-  }
+  ~MirrorWindowUpdater() {
+    if (!delegate_)
+      return;
 
- private:
-  DisplayManager::Delegate* delegate_;
-  const DisplayInfo display_info_;
-  DISALLOW_COPY_AND_ASSIGN(MirrorWindowCreator);
-};
-
-class MirrorWindowCloser {
- public:
-  explicit MirrorWindowCloser(DisplayManager::Delegate* delegate)
-      : delegate_(delegate)  {}
-
-  virtual ~MirrorWindowCloser() {
-    if (delegate_)
+    if (enabled_) {
+      DisplayInfo display_info = manager_->GetDisplayInfo(
+          manager_->mirrored_display().id());
+      delegate_->CreateOrUpdateMirrorWindow(display_info);
+    } else {
       delegate_->CloseMirrorWindow();
+    }
   }
 
- private:
-  DisplayManager::Delegate* delegate_;
+  bool enabled() const { return enabled_; }
 
-  DISALLOW_COPY_AND_ASSIGN(MirrorWindowCloser);
+ private:
+  DisplayManager* manager_;
+  DisplayManager::Delegate* delegate_;
+  bool enabled_;
+  DISALLOW_COPY_AND_ASSIGN(MirrorWindowUpdater);
 };
 
 }  // namespace
@@ -206,9 +203,9 @@ float DisplayManager::GetNextUIScale(const DisplayInfo& info, bool up) {
 
 void DisplayManager::InitFromCommandLine() {
   DisplayInfoList info_list;
-
-  const string size_str = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-      switches::kAshHostWindowBounds);
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  const string size_str =
+      command_line->GetSwitchValueASCII(switches::kAshHostWindowBounds);
   vector<string> parts;
   base::SplitString(size_str, ',', &parts);
   for (vector<string>::const_iterator iter = parts.begin();
@@ -217,6 +214,10 @@ void DisplayManager::InitFromCommandLine() {
   }
   if (info_list.size())
     MaybeInitInternalDisplay(info_list[0].id());
+  if (info_list.size() > 1 &&
+      command_line->HasSwitch(switches::kAshEnableSoftwareMirroring)) {
+    SetSoftwareMirroring(true);
+  }
   OnNativeDisplaysChanged(info_list);
 }
 
@@ -538,8 +539,6 @@ void DisplayManager::UpdateDisplays(
 
   DisplayList new_displays;
 
-  scoped_ptr<MirrorWindowCreator> mirror_window_creater;
-
   // Use the internal display or 1st as the mirror source, then scale
   // the root window so that it matches the external display's
   // resolution. This is necessary in order for scaling to work while
@@ -555,10 +554,7 @@ void DisplayManager::UpdateDisplays(
       DisplayInfo info = *new_info_iter;
       info.SetOverscanInsets(gfx::Insets());
       InsertAndUpdateDisplayInfo(info);
-
       mirrored_display_ = CreateDisplayFromDisplayInfoById(new_info_iter->id());
-      mirror_window_creater.reset(new MirrorWindowCreator(
-          delegate_, display_info_[new_info_iter->id()]));
       ++new_info_iter;
       // Remove existing external dispaly if it is going to be mirrored.
       if (curr_iter != displays_.end() &&
@@ -623,10 +619,8 @@ void DisplayManager::UpdateDisplays(
     }
   }
 
-  scoped_ptr<MirrorWindowCloser> mirror_window_closer;
-  // Try to close mirror window unless mirror window is necessary.
-  if (!mirror_window_creater.get())
-    mirror_window_closer.reset(new MirrorWindowCloser(delegate_));
+  scoped_ptr<MirrorWindowUpdater> mirror_window_updater(
+      new MirrorWindowUpdater(this, delegate_));
 
   // Do not update |displays_| if there's nothing to be updated. Without this,
   // it will not update the display layout, which causes the bug
@@ -665,7 +659,8 @@ void DisplayManager::UpdateDisplays(
   }
   // Close the mirror window here to avoid creating two compositor on
   // one display.
-  mirror_window_closer.reset();
+  if (!mirror_window_updater->enabled())
+    mirror_window_updater.reset();
   for (std::vector<size_t>::iterator iter = added_display_indices.begin();
        iter != added_display_indices.end(); ++iter) {
     Shell::GetInstance()->screen()->NotifyDisplayAdded(displays_[*iter]);
@@ -673,7 +668,7 @@ void DisplayManager::UpdateDisplays(
   // Create the mirror window after all displays are added so that
   // it can mirror the display newly added. This can happen when switching
   // from dock mode to software mirror mode.
-  mirror_window_creater.reset();
+  mirror_window_updater.reset();
   for (std::vector<size_t>::iterator iter = changed_display_indices.begin();
        iter != changed_display_indices.end(); ++iter) {
     Shell::GetInstance()->screen()->NotifyBoundsChanged(displays_[*iter]);
@@ -817,6 +812,10 @@ bool DisplayManager::UpdateDisplayBounds(int64 display_id,
   return false;
 }
 
+void DisplayManager::CreateMirrorWindowIfAny() {
+  MirrorWindowUpdater updater(this, delegate_);
+}
+
 gfx::Display* DisplayManager::FindDisplayForId(int64 id) {
   for (DisplayList::iterator iter = displays_.begin();
        iter != displays_.end(); ++iter) {
@@ -899,6 +898,7 @@ bool DisplayManager::UpdateSecondaryDisplayBoundsForLayout(
   }
   return false;
 }
+
 
 // static
 void DisplayManager::UpdateDisplayBoundsForLayout(

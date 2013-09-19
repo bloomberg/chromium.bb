@@ -103,8 +103,11 @@ void AshTestBase::SetUp() {
   // TODO(jamescook): Can we do this without changing command line?
   // Use the origin (1,1) so that it doesn't over
   // lap with the native mouse cursor.
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kAshHostWindowBounds, "1+1-800x600");
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (!command_line->HasSwitch(switches::kAshHostWindowBounds)) {
+    command_line->AppendSwitchASCII(
+        switches::kAshHostWindowBounds, "1+1-800x600");
+  }
 #if defined(OS_WIN)
   aura::test::SetUsePopupAsRootWindowForTest(true);
 #endif
@@ -119,8 +122,7 @@ void AshTestBase::SetUp() {
 
 #if defined(OS_WIN)
   if (base::win::GetVersion() >= base::win::VERSION_WIN8 &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          ash::switches::kForceAshToDesktop)) {
+      !command_line->HasSwitch(ash::switches::kForceAshToDesktop)) {
     ipc_thread_.reset(new base::Thread("test_metro_viewer_ipc_thread"));
     base::Thread::Options options;
     options.message_loop_type = base::MessageLoop::TYPE_IO;

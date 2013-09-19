@@ -217,10 +217,18 @@ class ASH_EXPORT DisplayManager
 #else
   void SetSoftwareMirroring(bool enabled);
 #endif
+  bool software_mirroring_enabled() const {
+    return software_mirroring_enabled_;
+  };
 
   // Update the bounds of the display given by |display_id|.
   bool UpdateDisplayBounds(int64 display_id,
                            const gfx::Rect& new_bounds);
+
+  // Creates mirror window if the software mirror mode is enabled.
+  // This is used only for bootstrap.
+  void CreateMirrorWindowIfAny();
+
 private:
   FRIEND_TEST_ALL_PREFIXES(ExtendedDesktopTest, ConvertPoint);
   FRIEND_TEST_ALL_PREFIXES(DisplayManagerTest, TestNativeDisplaysChanged);

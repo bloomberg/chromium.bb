@@ -125,6 +125,9 @@ const char kAshEnableOak[] = "ash-enable-oak";
 // Disables overview mode for window switching.
 const char kAshDisableOverviewMode[] = "ash-disable-overview-mode";
 
+// Enables software based mirroring.
+const char kAshEnableSoftwareMirroring[] = "ash-enable-software-mirroring";
+
 // Enables "sticky" edges instead of "snap-to-edge"
 const char kAshEnableStickyEdges[] = "ash-enable-sticky-edges";
 

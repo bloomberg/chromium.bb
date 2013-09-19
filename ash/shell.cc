@@ -621,6 +621,14 @@ void Shell::Init() {
     // Let the first mouse event show the cursor.
     env_filter_->set_cursor_hidden_by_filter(true);
   }
+
+  // The compositor thread and main message loop have to be running in
+  // order to create mirror window. Run it after the main message loop
+  // is started.
+  base::MessageLoopForUI::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&internal::DisplayManager::CreateMirrorWindowIfAny,
+                 base::Unretained(display_manager_.get())));
 }
 
 void Shell::ShowContextMenu(const gfx::Point& location_in_screen,
