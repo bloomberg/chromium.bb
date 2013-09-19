@@ -746,6 +746,12 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Aura.CreatedGpuBrowserCompositor" enum="CompositorType">
+  <summary>
+    Whether the browser compositor uses GPU or the software renderer.
+  </summary>
+</histogram>
+
 <histogram name="Autocheckout.Bubble" enum="AutocheckoutBubble">
   <obsolete>
     Deprecated as of 8/2013.
@@ -19150,6 +19156,11 @@ other types of suffix sets.
   <int value="0" label="Is scrollable area"/>
   <int value="1" label="Needs to be stacking container"/>
   <int value="2" label="Will use composited scrolling"/>
+</enum>
+
+<enum name="CompositorType" type="int">
+  <int value="0" label="Software compositor"/>
+  <int value="1" label="GPU compositor"/>
 </enum>
 
 <enum name="ConnectionType" type="int">

@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/output_surface.h"
 #include "content/browser/aura/browser_compositor_output_surface.h"
@@ -229,6 +230,9 @@ scoped_ptr<cc::OutputSurface> GpuProcessTransportFactory::CreateOutputSurface(
             data->surface_id),
             "Compositor");
   }
+
+  UMA_HISTOGRAM_BOOLEAN("Aura.CreatedGpuBrowserCompositor", !!context_provider);
+
   if (!context_provider.get()) {
     if (ui::Compositor::WasInitializedWithThread()) {
       LOG(FATAL) << "Failed to create UI context, but can't use software"
