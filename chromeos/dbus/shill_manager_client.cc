@@ -220,7 +220,7 @@ class ShillManagerClientImpl : public ShillManagerClient {
     proxy_ =
         bus->GetObjectProxy(flimflam::kFlimflamServiceName,
                             dbus::ObjectPath(flimflam::kFlimflamServicePath));
-    helper_.reset(new ShillClientHelper(bus, proxy_));
+    helper_.reset(new ShillClientHelper(proxy_));
     helper_->MonitorPropertyChanged(flimflam::kFlimflamManagerInterface);
   }
 
