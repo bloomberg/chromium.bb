@@ -25,10 +25,12 @@ This test ensures that the descendants of children of non-stacking context overf
             (GraphicsLayer
               (position 1.00 386.00)
               (bounds 385.00 15.00)
+              (drawsContent 1)
             )
             (GraphicsLayer
               (position 386.00 1.00)
               (bounds 15.00 385.00)
+              (drawsContent 1)
             )
             (GraphicsLayer
               (position 386.00 386.00)
@@ -38,32 +40,50 @@ This test ensures that the descendants of children of non-stacking context overf
           )
         )
         (GraphicsLayer
-          (position 39.00 331.00)
-          (bounds 180.00 300.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #808080)
-        )
-        (GraphicsLayer
-          (position 39.00 961.00)
-          (bounds 180.00 300.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #0000FF)
-        )
-        (GraphicsLayer
-          (position 39.00 641.00)
-          (bounds 180.00 300.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #808080)
+          (position 29.00 321.00)
+          (bounds 385.00 385.00)
           (children 1
             (GraphicsLayer
-              (position 0.00 -200.00)
-              (bounds 100.00 100.00)
+              (position 10.00 10.00)
+              (bounds 180.00 300.00)
               (contentsOpaque 1)
               (drawsContent 1)
-              (backgroundColor #000000)
+              (backgroundColor #808080)
+            )
+          )
+        )
+        (GraphicsLayer
+          (position 29.00 321.00)
+          (bounds 385.00 385.00)
+          (children 1
+            (GraphicsLayer
+              (position 10.00 640.00)
+              (bounds 180.00 300.00)
+              (contentsOpaque 1)
+              (drawsContent 1)
+              (backgroundColor #0000FF)
+            )
+          )
+        )
+        (GraphicsLayer
+          (position 29.00 321.00)
+          (bounds 385.00 385.00)
+          (children 1
+            (GraphicsLayer
+              (position 10.00 320.00)
+              (bounds 180.00 300.00)
+              (contentsOpaque 1)
+              (drawsContent 1)
+              (backgroundColor #808080)
+              (children 1
+                (GraphicsLayer
+                  (position 0.00 -200.00)
+                  (bounds 100.00 100.00)
+                  (contentsOpaque 1)
+                  (drawsContent 1)
+                  (backgroundColor #000000)
+                )
+              )
             )
           )
         )
