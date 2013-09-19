@@ -25,12 +25,16 @@
       'media-galleries-section',
       'network-section',
       'notifications-section',
-      'sync-section',
-      'sync-users-section'
+      'sync-section'
     ];
 
     for (var i = 0; i < whitelistedSections.length; i++)
       $(whitelistedSections[i]).hidden = false;
+
+    // Avoid showing an empty Users section on ash. Note that profiles-section
+    // is actually a div element, rather than section, so is not hidden after
+    // the querySelectorAll(), above.
+    $('sync-users-section').hidden = $('profiles-section').hidden;
 
     // Hide Import bookmarks and settings button.
     $('import-data').hidden = true;

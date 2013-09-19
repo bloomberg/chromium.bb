@@ -7,6 +7,8 @@
 #include <string>
 #include <vector>
 
+#include "apps/shell_window.h"
+#include "apps/shell_window_registry.h"
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -1085,12 +1087,20 @@ void BrowserOptionsHandler::SendProfilesInfo() {
 }
 
 chrome::HostDesktopType BrowserOptionsHandler::GetDesktopType() {
-  Browser* browser =
-      chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
-  chrome::HostDesktopType desktop_type = chrome::HOST_DESKTOP_TYPE_NATIVE;
+  content::WebContents* web_contents = web_ui()->GetWebContents();
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   if (browser)
-    desktop_type = browser->host_desktop_type();
-  return desktop_type;
+    return browser->host_desktop_type();
+
+  apps::ShellWindow* shell_window =
+      apps::ShellWindowRegistry::Get(Profile::FromWebUI(web_ui()))->
+          GetShellWindowForRenderViewHost(web_contents->GetRenderViewHost());
+  if (shell_window) {
+    return chrome::GetHostDesktopTypeForNativeWindow(
+        shell_window->GetNativeWindow());
+  }
+
+  return chrome::GetActiveDesktop();
 }
 
 void BrowserOptionsHandler::CreateProfile(const ListValue* args) {
