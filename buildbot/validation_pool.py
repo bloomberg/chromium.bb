@@ -788,24 +788,6 @@ class PatchSeries(object):
           self.failed_tot[change.id] = e
         raise
       applied.append(change)
-      if hasattr(change, 'url'):
-        project = os.path.basename(change.project)
-        gerrit_number = cros_patch.FormatGerritNumber(
-            change.gerrit_number, force_internal=change.internal)
-        s = '%s | %s | %s' % (project, change.owner, gerrit_number)
-
-        # Print a count of how many times a given CL has passed or failed the
-        # CQ.
-        failures = ValidationPool.GetCLStatusCount(
-            CQ, change, ValidationPool.STATUS_FAILED)
-        if failures > 0:
-          s += ' | fails:%d' % failures
-        passed = ValidationPool.GetCLStatusCount(
-            CQ, change, ValidationPool.STATUS_PASSED)
-        if passed > 0:
-          s += ' | passed:%d' % passed
-
-        cros_build_lib.PrintBuildbotLink(s, change.url)
 
     logging.debug('Done investigating changes.  Applied %s',
                   ' '.join([c.id for c in applied]))
@@ -1286,6 +1268,41 @@ class ValidationPool(object):
           error = getattr(error, 'error', None)
     return results
 
+  def PrintLinksToChanges(self, changes):
+    """Print links to the specified |changes|.
+
+    Arguments:
+      changes: A list of cros_patch.GerritPatch instances to generate
+        transactions for.
+    """
+    failure_stats = {}
+    for change in changes:
+      failure_stats[change] = ValidationPool.GetCLStatusCount(
+          CQ, change, ValidationPool.STATUS_FAILED)
+
+    def SortKeyForChanges(change):
+      return (-failure_stats[change], os.path.basename(change.project),
+              change.gerrit_number)
+
+    # Now, sort and print the changes.
+    for change in sorted(changes, key=SortKeyForChanges):
+      project = os.path.basename(change.project)
+      gerrit_number = cros_patch.FormatGerritNumber(
+          change.gerrit_number, force_internal=change.internal)
+      s = '%s | %s | %s' % (project, change.owner, gerrit_number)
+
+      # Print a count of how many times a given CL has passed or failed the
+      # CQ.
+      failures = failure_stats[change]
+      if failures > 0:
+        s += ' | fails:%d' % failures
+      passed = ValidationPool.GetCLStatusCount(
+          CQ, change, ValidationPool.STATUS_PASSED)
+      if passed > 0:
+        s += ' | passed:%d' % passed
+
+      cros_build_lib.PrintBuildbotLink(s, change.url)
+
   def ApplyPoolIntoRepo(self, manifest=None):
     """Applies changes from pool into the directory specified by the buildroot.
 
@@ -1323,6 +1340,8 @@ class ValidationPool(object):
           # If it's not a mox error, let it fly.
           raise
       raise exc[0], exc[1], exc[2]
+
+    self.PrintLinksToChanges(applied)
 
     if self.is_master:
       for change in applied:
