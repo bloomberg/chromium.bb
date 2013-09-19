@@ -261,16 +261,6 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   scoped_refptr<RendererGpuVideoAcceleratorFactories> GetGpuFactories(
       const scoped_refptr<base::MessageLoopProxy>& factories_loop);
 
-  // Returns a graphics context shared among all
-  // RendererGpuVideoDecoderFactories, or NULL on error.  Context remains owned
-  // by this class and must be null-tested before each use to detect context
-  // loss.  The returned context is only valid on the compositor thread when
-  // threaded compositing is enabled.
-  WebGraphicsContext3DCommandBufferImpl* GetGpuVDAContext3D();
-
-  // Handle loss of the shared GpuVDAContext3D context above.
-  static void OnGpuVDAContextLoss();
-
   scoped_refptr<cc::ContextProvider>
       OffscreenContextProviderForMainThread();
   scoped_refptr<cc::ContextProvider>
@@ -476,9 +466,7 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
 
   ObserverList<RenderProcessObserver> observers_;
 
-  class GpuVDAContextLostCallback;
-  scoped_ptr<GpuVDAContextLostCallback> context_lost_cb_;
-  scoped_ptr<WebGraphicsContext3DCommandBufferImpl> gpu_vda_context3d_;
+  scoped_refptr<ContextProviderCommandBuffer> gpu_va_context_provider_;
 
   scoped_ptr<AudioRendererMixerManager> audio_renderer_mixer_manager_;
   scoped_ptr<media::AudioHardwareConfig> audio_hardware_config_;

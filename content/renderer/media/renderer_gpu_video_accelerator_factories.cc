@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "content/child/child_thread.h"
+#include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
@@ -21,34 +22,30 @@ RendererGpuVideoAcceleratorFactories::~RendererGpuVideoAcceleratorFactories() {}
 RendererGpuVideoAcceleratorFactories::RendererGpuVideoAcceleratorFactories(
     GpuChannelHost* gpu_channel_host,
     const scoped_refptr<base::MessageLoopProxy>& message_loop,
-    WebGraphicsContext3DCommandBufferImpl* context)
+    const scoped_refptr<ContextProviderCommandBuffer>& context_provider)
     : message_loop_(message_loop),
       gpu_channel_host_(gpu_channel_host),
+      context_provider_(context_provider),
       thread_safe_sender_(ChildThread::current()->thread_safe_sender()),
       aborted_waiter_(true, false),
       message_loop_async_waiter_(false, false) {
-  // |context| is only required to support HW-accelerated decode.
-  if (!context)
+  // |context_provider_| is only required to support HW-accelerated decode.
+  if (!context_provider_)
     return;
 
   if (message_loop_->BelongsToCurrentThread()) {
-    AsyncGetContext(context);
+    AsyncBindContext();
     message_loop_async_waiter_.Reset();
     return;
   }
   // Wait for the context to be acquired.
   message_loop_->PostTask(
       FROM_HERE,
-      base::Bind(&RendererGpuVideoAcceleratorFactories::AsyncGetContext,
+      base::Bind(&RendererGpuVideoAcceleratorFactories::AsyncBindContext,
                  // Unretained to avoid ref/deref'ing |*this|, which is not yet
                  // stored in a scoped_refptr.  Safe because the Wait() below
                  // keeps us alive until this task completes.
-                 base::Unretained(this),
-                 // OK to pass raw because the pointee is only deleted on the
-                 // compositor thread, and only as the result of a PostTask from
-                 // the render thread which can only happen after this function
-                 // returns, so our PostTask will run first.
-                 context));
+                 base::Unretained(this)));
   message_loop_async_waiter_.Wait();
 }
 
@@ -56,16 +53,25 @@ RendererGpuVideoAcceleratorFactories::RendererGpuVideoAcceleratorFactories()
     : aborted_waiter_(true, false),
       message_loop_async_waiter_(false, false) {}
 
-void RendererGpuVideoAcceleratorFactories::AsyncGetContext(
-    WebGraphicsContext3DCommandBufferImpl* context) {
-  context_ = context->AsWeakPtr();
-  if (context_.get()) {
-    if (context_->makeContextCurrent()) {
-      // Called once per media player, but is a no-op after the first one in
-      // each renderer.
-      context_->insertEventMarkerEXT("GpuVDAContext3D");
-    }
+WebGraphicsContext3DCommandBufferImpl*
+RendererGpuVideoAcceleratorFactories::GetContext3d() {
+  DCHECK(message_loop_->BelongsToCurrentThread());
+  if (!context_provider_)
+    return NULL;
+  WebGraphicsContext3DCommandBufferImpl* context =
+      context_provider_->Context3d();
+  if (context->isContextLost()) {
+    context_provider_->VerifyContexts();
+    context_provider_ = NULL;
+    return NULL;
   }
+  return context;
+}
+
+void RendererGpuVideoAcceleratorFactories::AsyncBindContext() {
+  DCHECK(message_loop_->BelongsToCurrentThread());
+  if (!context_provider_->BindToCurrentThread())
+    context_provider_ = NULL;
   message_loop_async_waiter_.Signal();
 }
 
@@ -138,9 +144,10 @@ void RendererGpuVideoAcceleratorFactories::AsyncCreateVideoDecodeAccelerator(
     media::VideoDecodeAccelerator::Client* client) {
   DCHECK(message_loop_->BelongsToCurrentThread());
 
-  if (context_.get() && context_->GetCommandBufferProxy()) {
+  WebGraphicsContext3DCommandBufferImpl* context = GetContext3d();
+  if (context && context->GetCommandBufferProxy()) {
     vda_ = gpu_channel_host_->CreateVideoDecoder(
-        context_->GetCommandBufferProxy()->GetRouteID(), profile, client);
+        context->GetCommandBufferProxy()->GetRouteID(), profile, client);
   }
   message_loop_async_waiter_.Signal();
 }
@@ -194,11 +201,12 @@ void RendererGpuVideoAcceleratorFactories::AsyncCreateTextures(
   DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK(texture_target);
 
-  if (!context_.get()) {
+  WebGraphicsContext3DCommandBufferImpl* context = GetContext3d();
+  if (!context) {
     message_loop_async_waiter_.Signal();
     return;
   }
-  gpu::gles2::GLES2Implementation* gles2 = context_->GetImplementation();
+  gpu::gles2::GLES2Implementation* gles2 = context->GetImplementation();
   created_textures_.resize(count);
   created_texture_mailboxes_.resize(count);
   gles2->GenTextures(count, &created_textures_[0]);
@@ -223,7 +231,7 @@ void RendererGpuVideoAcceleratorFactories::AsyncCreateTextures(
     }
     // GLES2Implementation doesn't currently have the fast path of mailbox
     // generation, but WebGraphicsContext3DCommandBufferImpl does.
-    context_->genMailboxCHROMIUM(created_texture_mailboxes_[i].name);
+    context->genMailboxCHROMIUM(created_texture_mailboxes_[i].name);
     gles2->ProduceTextureCHROMIUM(texture_target,
                                   created_texture_mailboxes_[i].name);
   }
@@ -253,10 +261,11 @@ void RendererGpuVideoAcceleratorFactories::DeleteTexture(uint32 texture_id) {
 void RendererGpuVideoAcceleratorFactories::AsyncDeleteTexture(
     uint32 texture_id) {
   DCHECK(message_loop_->BelongsToCurrentThread());
-  if (!context_.get())
+  WebGraphicsContext3DCommandBufferImpl* context = GetContext3d();
+  if (!context)
     return;
 
-  gpu::gles2::GLES2Implementation* gles2 = context_->GetImplementation();
+  gpu::gles2::GLES2Implementation* gles2 = context->GetImplementation();
   gles2->DeleteTextures(1, &texture_id);
   DCHECK_EQ(gles2->GetError(), static_cast<GLenum>(GL_NO_ERROR));
 }
@@ -281,12 +290,13 @@ void RendererGpuVideoAcceleratorFactories::WaitSyncPoint(uint32 sync_point) {
 void RendererGpuVideoAcceleratorFactories::AsyncWaitSyncPoint(
     uint32 sync_point) {
   DCHECK(message_loop_->BelongsToCurrentThread());
-  if (!context_) {
+  WebGraphicsContext3DCommandBufferImpl* context = GetContext3d();
+  if (!context) {
     message_loop_async_waiter_.Signal();
     return;
   }
 
-  gpu::gles2::GLES2Implementation* gles2 = context_->GetImplementation();
+  gpu::gles2::GLES2Implementation* gles2 = context->GetImplementation();
   gles2->WaitSyncPointCHROMIUM(sync_point);
   message_loop_async_waiter_.Signal();
 }
@@ -325,12 +335,13 @@ void RendererGpuVideoAcceleratorFactories::AsyncReadPixels(
     uint32 texture_target,
     const gfx::Size& size) {
   DCHECK(message_loop_->BelongsToCurrentThread());
-  if (!context_.get()) {
+  WebGraphicsContext3DCommandBufferImpl* context = GetContext3d();
+  if (!context) {
     message_loop_async_waiter_.Signal();
     return;
   }
 
-  gpu::gles2::GLES2Implementation* gles2 = context_->GetImplementation();
+  gpu::gles2::GLES2Implementation* gles2 = context->GetImplementation();
 
   GLuint tmp_texture;
   gles2->GenTextures(1, &tmp_texture);
@@ -339,7 +350,7 @@ void RendererGpuVideoAcceleratorFactories::AsyncReadPixels(
   gles2->TexParameteri(texture_target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   gles2->TexParameteri(texture_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   gles2->TexParameteri(texture_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  context_->copyTextureCHROMIUM(
+  context->copyTextureCHROMIUM(
       texture_target, texture_id, tmp_texture, 0, GL_RGBA, GL_UNSIGNED_BYTE);
 
   GLuint fb;
@@ -383,7 +394,7 @@ RendererGpuVideoAcceleratorFactories::Clone() {
       new RendererGpuVideoAcceleratorFactories();
   factories->message_loop_ = message_loop_;
   factories->gpu_channel_host_ = gpu_channel_host_;
-  factories->context_ = context_;
+  factories->context_provider_ = context_provider_;
   factories->thread_safe_sender_ = thread_safe_sender_;
   return factories;
 }

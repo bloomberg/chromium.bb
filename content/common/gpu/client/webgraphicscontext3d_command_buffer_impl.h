@@ -73,8 +73,7 @@ class WebGraphicsContext3DSwapBuffersClient {
 class WebGraphicsContext3DErrorMessageCallback;
 
 class WebGraphicsContext3DCommandBufferImpl
-    : public WebKit::WebGraphicsContext3D,
-      public base::SupportsWeakPtr<WebGraphicsContext3DCommandBufferImpl> {
+    : public WebKit::WebGraphicsContext3D {
  public:
   enum MappedMemoryReclaimLimit {
     kNoLimit = 0,

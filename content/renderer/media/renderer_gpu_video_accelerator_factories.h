@@ -23,6 +23,7 @@ class WaitableEvent;
 }
 
 namespace content {
+class ContextProviderCommandBuffer;
 class GpuChannelHost;
 class WebGraphicsContext3DCommandBufferImpl;
 
@@ -42,7 +43,7 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
   RendererGpuVideoAcceleratorFactories(
       GpuChannelHost* gpu_channel_host,
       const scoped_refptr<base::MessageLoopProxy>& message_loop,
-      WebGraphicsContext3DCommandBufferImpl* wgc3dcbi);
+      const scoped_refptr<ContextProviderCommandBuffer>& context_provider);
 
   // media::GpuVideoAcceleratorFactories implementation.
   virtual scoped_ptr<media::VideoDecodeAccelerator>
@@ -78,9 +79,13 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
  private:
   RendererGpuVideoAcceleratorFactories();
 
+  // Helper to get a pointer to the WebGraphicsContext3DCommandBufferImpl,
+  // if it has not been lost yet.
+  WebGraphicsContext3DCommandBufferImpl* GetContext3d();
+
   // Helper for the constructor to acquire the ContentGLContext on
   // |message_loop_|.
-  void AsyncGetContext(WebGraphicsContext3DCommandBufferImpl* context);
+  void AsyncBindContext();
 
   // Async versions of the public methods, run on |message_loop_|.
   // They use output parameters instead of return values and each takes
@@ -107,7 +112,7 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
 
   scoped_refptr<base::MessageLoopProxy> message_loop_;
   scoped_refptr<GpuChannelHost> gpu_channel_host_;
-  base::WeakPtr<WebGraphicsContext3DCommandBufferImpl> context_;
+  scoped_refptr<ContextProviderCommandBuffer> context_provider_;
 
   // For sending requests to allocate shared memory in the Browser process.
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
