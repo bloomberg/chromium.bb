@@ -43,12 +43,12 @@ protected:
     virtual RenderObject* createRenderer(RenderStyle*);
 };
 
-class TextControlInnerElement FINAL : public HTMLDivElement {
+class EditingViewPortElement FINAL : public HTMLDivElement {
 public:
-    static PassRefPtr<TextControlInnerElement> create(Document&);
+    static PassRefPtr<EditingViewPortElement> create(Document&);
 
 protected:
-    TextControlInnerElement(Document&);
+    EditingViewPortElement(Document&);
     virtual PassRefPtr<RenderStyle> customStyleForRenderer() OVERRIDE;
 
 private:

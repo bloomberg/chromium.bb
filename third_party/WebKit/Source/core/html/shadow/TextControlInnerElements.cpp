@@ -63,36 +63,38 @@ RenderObject* TextControlInnerContainer::createRenderer(RenderStyle*)
     return new RenderTextControlInnerContainer(this);
 }
 
-TextControlInnerElement::TextControlInnerElement(Document& document)
+// ---------------------------
+
+EditingViewPortElement::EditingViewPortElement(Document& document)
     : HTMLDivElement(divTag, document)
 {
     setHasCustomStyleCallbacks();
 }
 
-PassRefPtr<TextControlInnerElement> TextControlInnerElement::create(Document& document)
+PassRefPtr<EditingViewPortElement> EditingViewPortElement::create(Document& document)
 {
-    return adoptRef(new TextControlInnerElement(document));
+    return adoptRef(new EditingViewPortElement(document));
 }
 
-PassRefPtr<RenderStyle> TextControlInnerElement::customStyleForRenderer()
+PassRefPtr<RenderStyle> EditingViewPortElement::customStyleForRenderer()
 {
     // FXIME: Move these styles to html.css.
 
-    RefPtr<RenderStyle> innerBlockStyle = RenderStyle::create();
-    innerBlockStyle->inheritFrom(shadowHost()->renderStyle());
+    RefPtr<RenderStyle> style = RenderStyle::create();
+    style->inheritFrom(shadowHost()->renderStyle());
 
-    innerBlockStyle->setFlexGrow(1);
+    style->setFlexGrow(1);
     // min-width: 0; is needed for correct shrinking.
     // FIXME: Remove this line when https://bugs.webkit.org/show_bug.cgi?id=111790 is fixed.
-    innerBlockStyle->setMinWidth(Length(0, Fixed));
-    innerBlockStyle->setDisplay(BLOCK);
-    innerBlockStyle->setDirection(LTR);
+    style->setMinWidth(Length(0, Fixed));
+    style->setDisplay(BLOCK);
+    style->setDirection(LTR);
 
     // We don't want the shadow dom to be editable, so we set this block to
     // read-only in case the input itself is editable.
-    innerBlockStyle->setUserModify(READ_ONLY);
+    style->setUserModify(READ_ONLY);
 
-    return innerBlockStyle.release();
+    return style.release();
 }
 
 // ---------------------------

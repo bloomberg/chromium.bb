@@ -43,7 +43,7 @@ protected:
     virtual void centerContainerIfNeeded(RenderBox*) const { }
     virtual LayoutUnit computeLogicalHeightLimit() const;
     HTMLElement* containerElement() const;
-    HTMLElement* innerBlockElement() const;
+    HTMLElement* editingViewPortElement() const;
     HTMLInputElement* inputElement() const;
     virtual void updateFromElement() OVERRIDE;
 
@@ -89,9 +89,9 @@ inline HTMLElement* RenderTextControlSingleLine::containerElement() const
     return inputElement()->containerElement();
 }
 
-inline HTMLElement* RenderTextControlSingleLine::innerBlockElement() const
+inline HTMLElement* RenderTextControlSingleLine::editingViewPortElement() const
 {
-    return inputElement()->innerBlockElement();
+    return inputElement()->editingViewPortElement();
 }
 
 inline RenderTextControlSingleLine* toRenderTextControlSingleLine(RenderObject* object)

@@ -240,7 +240,7 @@ void TextFieldInputType::createShadowSubtree()
     ASSERT(element()->shadow());
 
     ASSERT(!m_innerText);
-    ASSERT(!m_innerBlock);
+    ASSERT(!m_editingViewPort);
 
     Document& document = element()->document();
     bool shouldHaveSpinButton = this->shouldHaveSpinButton();
@@ -257,9 +257,9 @@ void TextFieldInputType::createShadowSubtree()
     m_container->setPart(AtomicString("-webkit-textfield-decoration-container", AtomicString::ConstructFromLiteral));
     shadowRoot->appendChild(m_container);
 
-    m_innerBlock = TextControlInnerElement::create(document);
-    m_innerBlock->appendChild(m_innerText);
-    m_container->appendChild(m_innerBlock);
+    m_editingViewPort = EditingViewPortElement::create(document);
+    m_editingViewPort->appendChild(m_innerText);
+    m_container->appendChild(m_editingViewPort);
 
 #if ENABLE(INPUT_SPEECH)
     if (element()->isSpeechEnabled())
@@ -275,9 +275,9 @@ HTMLElement* TextFieldInputType::containerElement() const
     return m_container.get();
 }
 
-HTMLElement* TextFieldInputType::innerBlockElement() const
+HTMLElement* TextFieldInputType::editingViewPortElement() const
 {
-    return m_innerBlock.get();
+    return m_editingViewPort.get();
 }
 
 HTMLElement* TextFieldInputType::innerTextElement() const
@@ -296,7 +296,7 @@ void TextFieldInputType::destroyShadowSubtree()
     InputType::destroyShadowSubtree();
     m_innerText.clear();
     m_placeholder.clear();
-    m_innerBlock.clear();
+    m_editingViewPort.clear();
     if (SpinButtonElement* spinButton = spinButtonElement())
         spinButton->removeSpinButtonOwner();
     m_container.clear();

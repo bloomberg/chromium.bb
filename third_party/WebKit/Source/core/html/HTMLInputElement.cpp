@@ -187,9 +187,9 @@ HTMLElement* HTMLInputElement::innerTextElement() const
     return m_inputType->innerTextElement();
 }
 
-HTMLElement* HTMLInputElement::innerBlockElement() const
+HTMLElement* HTMLInputElement::editingViewPortElement() const
 {
-    return m_inputType->innerBlockElement();
+    return m_inputType->editingViewPortElement();
 }
 
 HTMLElement* HTMLInputElement::passwordGeneratorButtonElement() const

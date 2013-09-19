@@ -91,12 +91,12 @@ void SearchInputType::createShadowSubtree()
 {
     TextFieldInputType::createShadowSubtree();
     HTMLElement* container = containerElement();
-    HTMLElement* textWrapper = innerBlockElement();
+    HTMLElement* viewPort = editingViewPortElement();
     ASSERT(container);
-    ASSERT(textWrapper);
+    ASSERT(viewPort);
 
-    container->insertBefore(SearchFieldDecorationElement::create(element()->document()), textWrapper);
-    container->insertBefore(SearchFieldCancelButtonElement::create(element()->document()), textWrapper->nextSibling());
+    container->insertBefore(SearchFieldDecorationElement::create(element()->document()), viewPort);
+    container->insertBefore(SearchFieldCancelButtonElement::create(element()->document()), viewPort->nextSibling());
 }
 
 void SearchInputType::handleKeydownEvent(KeyboardEvent* event)

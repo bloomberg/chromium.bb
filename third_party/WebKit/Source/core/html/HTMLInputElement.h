@@ -121,7 +121,7 @@ public:
 
     HTMLElement* containerElement() const;
     virtual HTMLElement* innerTextElement() const;
-    HTMLElement* innerBlockElement() const;
+    HTMLElement* editingViewPortElement() const;
     HTMLElement* passwordGeneratorButtonElement() const;
     virtual HTMLElement* placeholderElement() const;
 

@@ -60,8 +60,8 @@ inline HTMLElement* RenderTextControlSingleLine::innerSpinButtonElement() const
 
 RenderStyle* RenderTextControlSingleLine::textBaseStyle() const
 {
-    HTMLElement* innerBlock = innerBlockElement();
-    return innerBlock ? innerBlock->renderer()->style() : style();
+    HTMLElement* viewPort = editingViewPortElement();
+    return viewPort ? viewPort->renderer()->style() : style();
 }
 
 void RenderTextControlSingleLine::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
@@ -104,16 +104,16 @@ void RenderTextControlSingleLine::layout()
     // because of compability.
 
     RenderBox* innerTextRenderer = innerTextElement()->renderBox();
-    RenderBox* innerBlockRenderer = innerBlockElement() ? innerBlockElement()->renderBox() : 0;
+    RenderBox* viewPortRenderer = editingViewPortElement() ? editingViewPortElement()->renderBox() : 0;
 
     // To ensure consistency between layouts, we need to reset any conditionally overriden height.
     if (innerTextRenderer && !innerTextRenderer->style()->logicalHeight().isAuto()) {
         innerTextRenderer->style()->setLogicalHeight(Length(Auto));
         layoutScope.setNeedsLayout(innerTextRenderer);
     }
-    if (innerBlockRenderer && !innerBlockRenderer->style()->logicalHeight().isAuto()) {
-        innerBlockRenderer->style()->setLogicalHeight(Length(Auto));
-        layoutScope.setNeedsLayout(innerBlockRenderer);
+    if (viewPortRenderer && !viewPortRenderer->style()->logicalHeight().isAuto()) {
+        viewPortRenderer->style()->setLogicalHeight(Length(Auto));
+        layoutScope.setNeedsLayout(viewPortRenderer);
     }
 
     RenderBlockFlow::layoutBlock(false);
@@ -132,9 +132,9 @@ void RenderTextControlSingleLine::layout()
 
         innerTextRenderer->style()->setLogicalHeight(Length(desiredLogicalHeight, Fixed));
         layoutScope.setNeedsLayout(innerTextRenderer);
-        if (innerBlockRenderer) {
-            innerBlockRenderer->style()->setLogicalHeight(Length(desiredLogicalHeight, Fixed));
-            layoutScope.setNeedsLayout(innerBlockRenderer);
+        if (viewPortRenderer) {
+            viewPortRenderer->style()->setLogicalHeight(Length(desiredLogicalHeight, Fixed));
+            layoutScope.setNeedsLayout(viewPortRenderer);
         }
     }
     // The container might be taller because of decoration elements.
@@ -185,8 +185,8 @@ void RenderTextControlSingleLine::layout()
         LayoutPoint textOffset;
         if (innerTextRenderer)
             textOffset = innerTextRenderer->location();
-        if (innerBlockElement() && innerBlockElement()->renderBox())
-            textOffset += toLayoutSize(innerBlockElement()->renderBox()->location());
+        if (editingViewPortElement() && editingViewPortElement()->renderBox())
+            textOffset += toLayoutSize(editingViewPortElement()->renderBox()->location());
         if (containerRenderer)
             textOffset += toLayoutSize(containerRenderer->location());
         placeholderBox->setLocation(textOffset);
@@ -215,9 +215,9 @@ bool RenderTextControlSingleLine::nodeAtPoint(const HitTestRequest& request, Hit
     HTMLElement* container = containerElement();
     if (result.innerNode()->isDescendantOf(innerTextElement()) || result.innerNode() == node() || (container && container == result.innerNode())) {
         LayoutPoint pointInParent = locationInContainer.point();
-        if (container && innerBlockElement()) {
-            if (innerBlockElement()->renderBox())
-                pointInParent -= toLayoutSize(innerBlockElement()->renderBox()->location());
+        if (container && editingViewPortElement()) {
+            if (editingViewPortElement()->renderBox())
+                pointInParent -= toLayoutSize(editingViewPortElement()->renderBox()->location());
             if (container->renderBox())
                 pointInParent -= toLayoutSize(container->renderBox()->location());
         }
@@ -233,10 +233,10 @@ void RenderTextControlSingleLine::styleDidChange(StyleDifference diff, const Ren
 
     // We may have set the width and the height in the old style in layout().
     // Reset them now to avoid getting a spurious layout hint.
-    HTMLElement* innerBlock = innerBlockElement();
-    if (RenderObject* innerBlockRenderer = innerBlock ? innerBlock->renderer() : 0) {
-        innerBlockRenderer->style()->setHeight(Length());
-        innerBlockRenderer->style()->setWidth(Length());
+    HTMLElement* viewPort = editingViewPortElement();
+    if (RenderObject* viewPortRenderer = viewPort ? viewPort->renderer() : 0) {
+        viewPortRenderer->style()->setHeight(Length());
+        viewPortRenderer->style()->setWidth(Length());
     }
     HTMLElement* container = containerElement();
     if (RenderObject* containerRenderer = container ? container->renderer() : 0) {
