@@ -22,11 +22,21 @@ class AutofillDialogSignInDelegate: public content::WebContentsDelegate,
                                     public content::WebContentsObserver {
  public:
   AutofillDialogSignInDelegate(AutofillDialogView* dialog_view,
-                               content::WebContents* web_contents);
+                               content::WebContents* web_contents,
+                               content::WebContentsDelegate* wrapped_delegate);
 
   // WebContentsDelegate implementation.
   virtual void ResizeDueToAutoResize(content::WebContents* source,
                                      const gfx::Size& pref_size) OVERRIDE;
+  virtual content::WebContents* OpenURLFromTab(
+      content::WebContents* source,
+      const content::OpenURLParams& params) OVERRIDE;
+  virtual void AddNewContents(content::WebContents* source,
+                              content::WebContents* new_contents,
+                              WindowOpenDisposition disposition,
+                              const gfx::Rect& initial_pos,
+                              bool user_gesture,
+                              bool* was_blocked) OVERRIDE;
 
   // WebContentsObserver implementation.
   virtual void RenderViewCreated(
@@ -43,6 +53,9 @@ class AutofillDialogSignInDelegate: public content::WebContentsDelegate,
 
   AutofillDialogView* dialog_view_;
   int min_width_;
+
+  // The delegate for the WebContents hosting this dialog.
+  content::WebContentsDelegate* const wrapped_delegate_;
 };
 
 }  // namespace autofill

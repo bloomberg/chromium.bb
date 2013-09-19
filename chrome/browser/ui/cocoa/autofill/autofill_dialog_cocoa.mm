@@ -261,8 +261,7 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
     [mainContainer_ setTarget:self];
 
     signInContainer_.reset(
-        [[AutofillSignInContainer alloc]
-            initWithDelegate:autofillDialog->delegate()]);
+        [[AutofillSignInContainer alloc] initWithDialog:autofillDialog]);
     [[signInContainer_ view] setHidden:YES];
 
     NSRect clientRect = [[mainContainer_ view] frame];

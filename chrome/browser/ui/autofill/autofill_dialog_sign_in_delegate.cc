@@ -12,16 +12,36 @@ namespace autofill {
 
 AutofillDialogSignInDelegate::AutofillDialogSignInDelegate(
     AutofillDialogView* dialog_view,
-    content::WebContents* web_contents)
+    content::WebContents* web_contents,
+    content::WebContentsDelegate* wrapped_delegate)
     : WebContentsObserver(web_contents),
       dialog_view_(dialog_view),
-      min_width_(400) {
+      min_width_(400),
+      wrapped_delegate_(wrapped_delegate) {
+  DCHECK(wrapped_delegate_);
   web_contents->SetDelegate(this);
 }
 
 void AutofillDialogSignInDelegate::ResizeDueToAutoResize(
     content::WebContents* source, const gfx::Size& pref_size) {
   dialog_view_->OnSignInResize(pref_size);
+}
+
+content::WebContents* AutofillDialogSignInDelegate::OpenURLFromTab(
+    content::WebContents* source,
+    const content::OpenURLParams& params) {
+  return wrapped_delegate_->OpenURLFromTab(source, params);
+}
+
+void AutofillDialogSignInDelegate::AddNewContents(
+    content::WebContents* source,
+    content::WebContents* new_contents,
+    WindowOpenDisposition disposition,
+    const gfx::Rect& initial_pos,
+    bool user_gesture,
+    bool* was_blocked) {
+  wrapped_delegate_->AddNewContents(source, new_contents, disposition,
+                                    initial_pos, user_gesture, was_blocked);
 }
 
 void AutofillDialogSignInDelegate::RenderViewCreated(

@@ -6,10 +6,12 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/ui/autofill/mock_autofill_dialog_view_delegate.h"
+#import "chrome/browser/ui/cocoa/autofill/autofill_dialog_cocoa.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_view.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -25,18 +27,32 @@
 
 namespace {
 
+// A trivial concrete instance of a WebContentsDelegate.
+class TestWebContentsDelegate : public content::WebContentsDelegate {
+ public:
+  TestWebContentsDelegate() {}
+  virtual ~TestWebContentsDelegate() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestWebContentsDelegate);
+};
+
 class AutofillSignInContainerTest : public ChromeRenderViewHostTestHarness {
  public:
-  AutofillSignInContainerTest() : test_window_(nil) {}
+  AutofillSignInContainerTest() : dialog_(&delegate_), test_window_(nil) {}
   virtual void SetUp() {
     ChromeRenderViewHostTestHarness::SetUp();
     // Inherting from ChromeRenderViewHostTestHarness means we can't inherit
     // from from CocoaTest, so do a bootstrap and create test window.
     CocoaTest::BootstrapCocoa();
+
+    web_contents()->SetDelegate(&dummy_web_contents_delegate_);
     container_.reset(
-        [[AutofillSignInContainer alloc] initWithDelegate:&delegate_]);
+        [[AutofillSignInContainer alloc] initWithDialog:&dialog_]);
     EXPECT_CALL(delegate_, profile())
         .WillOnce(testing::Return(this->profile()));
+    EXPECT_CALL(delegate_, GetWebContents())
+        .WillOnce(testing::Return(this->web_contents()));
     [[test_window() contentView] addSubview:[container_ view]];
   }
 
@@ -62,6 +78,8 @@ class AutofillSignInContainerTest : public ChromeRenderViewHostTestHarness {
  protected:
   base::scoped_nsobject<AutofillSignInContainer> container_;
   testing::NiceMock<autofill::MockAutofillDialogViewDelegate> delegate_;
+  autofill::AutofillDialogCocoa dialog_;
+  TestWebContentsDelegate dummy_web_contents_delegate_;
   CocoaTestHelperWindow* test_window_;
 };
 

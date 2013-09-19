@@ -10,26 +10,27 @@
 #include "base/memory/scoped_ptr.h"
 
 namespace autofill {
-  class AutofillDialogViewDelegate;
+class AutofillDialogCocoa;
+class AutofillDialogSignInDelegate;
 }
 
 namespace content {
-  class WebContents;
-  class NavigationController;
+class WebContents;
+class NavigationController;
 }
 
 // Controls the sign-in dialog of the AutofillDialog.
 @interface AutofillSignInContainer : NSViewController {
  @private
-  autofill::AutofillDialogViewDelegate* delegate_;  // Not owned.
+  autofill::AutofillDialogCocoa* dialog_;  // Not owned.
   scoped_ptr<content::WebContents> webContents_;
+  scoped_ptr<autofill::AutofillDialogSignInDelegate> signInDelegate_;
 }
 
-- (id)initWithDelegate:(autofill::AutofillDialogViewDelegate*)delegate;
+- (id)initWithDialog:(autofill::AutofillDialogCocoa*)dialog;
 - (void)loadSignInPage;
 - (content::NavigationController*)navigationController;
 
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_AUTOFILL_AUTOFILL_SIGN_IN_CONTAINER_H_
-
