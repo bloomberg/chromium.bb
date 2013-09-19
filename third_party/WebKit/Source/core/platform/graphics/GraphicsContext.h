@@ -135,6 +135,7 @@ public:
     int getNormalizedAlpha() const;
 
     bool getClipBounds(SkRect* bounds) const;
+    bool getTransformedClipBounds(FloatRect* bounds) const;
     const SkMatrix& getTotalMatrix() const;
     bool isPrintingDevice() const;
 

@@ -322,6 +322,18 @@ bool GraphicsContext::getClipBounds(SkRect* bounds) const
     return m_canvas->getClipBounds(bounds);
 }
 
+bool GraphicsContext::getTransformedClipBounds(FloatRect* bounds) const
+{
+    if (paintingDisabled())
+        return false;
+    SkIRect skIBounds;
+    if (!m_canvas->getClipDeviceBounds(&skIBounds))
+        return false;
+    SkRect skBounds = SkRect::MakeFromIRect(skIBounds);
+    *bounds = FloatRect(skBounds);
+    return true;
+}
+
 const SkMatrix& GraphicsContext::getTotalMatrix() const
 {
     if (paintingDisabled())

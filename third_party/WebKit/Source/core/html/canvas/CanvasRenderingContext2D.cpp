@@ -895,6 +895,9 @@ void CanvasRenderingContext2D::fill(const String& windingRuleString)
         return;
     if (!state().m_invertibleCTM)
         return;
+    FloatRect clipBounds;
+    if (!drawingContext()->getTransformedClipBounds(&clipBounds))
+        return;
 
     // If gradient size is zero, then paint nothing.
     Gradient* gradient = c->fillGradient();
@@ -910,14 +913,17 @@ void CanvasRenderingContext2D::fill(const String& windingRuleString)
 
         if (isFullCanvasCompositeMode(state().m_globalComposite)) {
             fullCanvasCompositedFill(m_path);
-            didDrawEntireCanvas();
+            didDraw(clipBounds);
         } else if (state().m_globalComposite == CompositeCopy) {
             clearCanvas();
             c->fillPath(m_path);
-            didDrawEntireCanvas();
+            didDraw(clipBounds);
         } else {
-            c->fillPath(m_path);
-            didDraw(m_path.boundingRect());
+            FloatRect dirtyRect;
+            if (computeDirtyRect(m_path.boundingRect(), clipBounds, &dirtyRect)) {
+                c->fillPath(m_path);
+                didDraw(dirtyRect);
+            }
         }
 
         c->setFillRule(windRule);
@@ -938,11 +944,13 @@ void CanvasRenderingContext2D::stroke()
         return;
 
     if (!m_path.isEmpty()) {
-        FloatRect dirtyRect = m_path.boundingRect();
-        inflateStrokeRect(dirtyRect);
-
-        c->strokePath(m_path);
-        didDraw(dirtyRect);
+        FloatRect bounds = m_path.boundingRect();
+        inflateStrokeRect(bounds);
+        FloatRect dirtyRect;
+        if (computeDirtyRect(bounds, &dirtyRect)) {
+            c->strokePath(m_path);
+            didDraw(dirtyRect);
+        }
     }
 }
 
@@ -1018,6 +1026,10 @@ void CanvasRenderingContext2D::clearRect(float x, float y, float width, float he
         return;
     FloatRect rect(x, y, width, height);
 
+    FloatRect dirtyRect;
+    if (!computeDirtyRect(rect, &dirtyRect))
+        return;
+
     bool saved = false;
     if (shouldDrawShadows()) {
         context->save();
@@ -1041,7 +1053,8 @@ void CanvasRenderingContext2D::clearRect(float x, float y, float width, float he
     context->clearRect(rect);
     if (saved)
         context->restore();
-    didDraw(rect);
+
+    didDraw(dirtyRect);
 }
 
 void CanvasRenderingContext2D::fillRect(float x, float y, float width, float height)
@@ -1054,6 +1067,9 @@ void CanvasRenderingContext2D::fillRect(float x, float y, float width, float hei
         return;
     if (!state().m_invertibleCTM)
         return;
+    FloatRect clipBounds;
+    if (!drawingContext()->getTransformedClipBounds(&clipBounds))
+        return;
 
     // from the HTML5 Canvas spec:
     // If x0 = x1 and y0 = y1, then the linear gradient must paint nothing
@@ -1063,20 +1079,22 @@ void CanvasRenderingContext2D::fillRect(float x, float y, float width, float hei
         return;
 
     FloatRect rect(x, y, width, height);
-
-    if (rectContainsCanvas(rect)) {
+    if (rectContainsTransformedRect(rect, clipBounds)) {
         c->fillRect(rect);
-        didDrawEntireCanvas();
+        didDraw(clipBounds);
     } else if (isFullCanvasCompositeMode(state().m_globalComposite)) {
         fullCanvasCompositedFill(rect);
-        didDrawEntireCanvas();
+        didDraw(clipBounds);
     } else if (state().m_globalComposite == CompositeCopy) {
         clearCanvas();
         c->fillRect(rect);
-        didDrawEntireCanvas();
+        didDraw(clipBounds);
     } else {
-        c->fillRect(rect);
-        didDraw(rect);
+        FloatRect dirtyRect;
+        if (computeDirtyRect(rect, clipBounds, &dirtyRect)) {
+            c->fillRect(rect);
+            didDraw(dirtyRect);
+        }
     }
 }
 
@@ -1103,9 +1121,11 @@ void CanvasRenderingContext2D::strokeRect(float x, float y, float width, float h
 
     FloatRect boundingRect = rect;
     boundingRect.inflate(state().m_lineWidth / 2);
-
-    c->strokeRect(rect, state().m_lineWidth);
-    didDraw(boundingRect);
+    FloatRect dirtyRect;
+    if (computeDirtyRect(boundingRect, &dirtyRect)) {
+        c->strokeRect(rect, state().m_lineWidth);
+        didDraw(dirtyRect);
+    }
 }
 
 void CanvasRenderingContext2D::setShadow(float width, float height, float blur)
@@ -1238,20 +1258,26 @@ void CanvasRenderingContext2D::drawImageInternal(Image* image, const FloatRect& 
         return;
     if (!state().m_invertibleCTM)
         return;
+    FloatRect clipBounds;
+    if (!drawingContext()->getTransformedClipBounds(&clipBounds))
+        return;
 
-    if (rectContainsCanvas(dstRect)) {
+    if (rectContainsTransformedRect(dstRect, clipBounds)) {
         c->drawImage(image, dstRect, srcRect, op, blendMode);
-        didDrawEntireCanvas();
+        didDraw(clipBounds);
     } else if (isFullCanvasCompositeMode(op)) {
         fullCanvasCompositedDrawImage(image, dstRect, srcRect, op);
-        didDrawEntireCanvas();
+        didDraw(clipBounds);
     } else if (op == CompositeCopy) {
         clearCanvas();
         c->drawImage(image, dstRect, srcRect, op, blendMode);
-        didDrawEntireCanvas();
+        didDraw(clipBounds);
     } else {
-        c->drawImage(image, dstRect, srcRect, op, blendMode);
-        didDraw(dstRect);
+        FloatRect dirtyRect;
+        if (computeDirtyRect(dstRect, &dirtyRect)) {
+            c->drawImage(image, dstRect, srcRect, op, blendMode);
+            didDraw(dirtyRect);
+        }
     }
 }
 
@@ -1470,6 +1496,10 @@ void CanvasRenderingContext2D::drawImage(HTMLCanvasElement* sourceCanvas, const 
     if (!buffer)
         return;
 
+    FloatRect clipBounds;
+    if (!drawingContext()->getTransformedClipBounds(&clipBounds))
+        return;
+
     checkOrigin(sourceCanvas);
 
     // If we're drawing from one accelerated canvas 2d to another, avoid calling sourceCanvas->makeRenderingResultsAvailable()
@@ -1479,19 +1509,22 @@ void CanvasRenderingContext2D::drawImage(HTMLCanvasElement* sourceCanvas, const 
     if (sourceContext && sourceContext->is3d())
         sourceContext->paintRenderingResultsToCanvas();
 
-    if (rectContainsCanvas(normalizedDstRect)) {
+    if (rectContainsTransformedRect(normalizedDstRect, clipBounds)) {
         c->drawImageBuffer(buffer, normalizedDstRect, normalizedSrcRect, state().m_globalComposite, state().m_globalBlend);
-        didDrawEntireCanvas();
+        didDraw(clipBounds);
     } else if (isFullCanvasCompositeMode(state().m_globalComposite)) {
         fullCanvasCompositedDrawImage(buffer, normalizedDstRect, normalizedSrcRect, state().m_globalComposite);
-        didDrawEntireCanvas();
+        didDraw(clipBounds);
     } else if (state().m_globalComposite == CompositeCopy) {
         clearCanvas();
         c->drawImageBuffer(buffer, normalizedDstRect, normalizedSrcRect, state().m_globalComposite, state().m_globalBlend);
-        didDrawEntireCanvas();
+        didDraw(clipBounds);
     } else {
-        c->drawImageBuffer(buffer, normalizedDstRect, normalizedSrcRect, state().m_globalComposite, state().m_globalBlend);
-        didDraw(normalizedDstRect);
+        FloatRect dirtyRect;
+        if (computeDirtyRect(normalizedDstRect, clipBounds, &dirtyRect)) {
+            c->drawImageBuffer(buffer, normalizedDstRect, normalizedSrcRect, state().m_globalComposite, state().m_globalBlend);
+            didDraw(dirtyRect);
+        }
     }
 }
 
@@ -1555,6 +1588,10 @@ void CanvasRenderingContext2D::drawImage(HTMLVideoElement* video, const FloatRec
 
     checkOrigin(video);
 
+    FloatRect dirtyRect;
+    if (!computeDirtyRect(normalizedDstRect, &dirtyRect))
+        return;
+
     GraphicsContextStateSaver stateSaver(*c);
     c->clip(normalizedDstRect);
     c->translate(normalizedDstRect.x(), normalizedDstRect.y());
@@ -1562,7 +1599,8 @@ void CanvasRenderingContext2D::drawImage(HTMLVideoElement* video, const FloatRec
     c->translate(-normalizedSrcRect.x(), -normalizedSrcRect.y());
     video->paintCurrentFrameInContext(c, IntRect(IntPoint(), sizeFor(video)));
     stateSaver.restore();
-    didDraw(dstRect);
+
+    didDraw(dirtyRect);
 }
 
 void CanvasRenderingContext2D::drawImageFromRect(HTMLImageElement* image,
@@ -1601,11 +1639,11 @@ void CanvasRenderingContext2D::clearCanvas()
     c->restore();
 }
 
-bool CanvasRenderingContext2D::rectContainsCanvas(const FloatRect& rect) const
+bool CanvasRenderingContext2D::rectContainsTransformedRect(const FloatRect& rect, const FloatRect& transformedRect) const
 {
     FloatQuad quad(rect);
-    FloatQuad canvasQuad(FloatRect(0, 0, canvas()->width(), canvas()->height()));
-    return state().m_transform.mapQuad(quad).containsQuad(canvasQuad);
+    FloatQuad transformedQuad(transformedRect);
+    return state().m_transform.mapQuad(quad).containsQuad(transformedQuad);
 }
 
 static void drawImageToContext(Image* image, GraphicsContext* context, const FloatRect& dest, const FloatRect& src, CompositeOperator op)
@@ -1725,17 +1763,38 @@ PassRefPtr<CanvasPattern> CanvasRenderingContext2D::createPattern(HTMLCanvasElem
     return CanvasPattern::create(canvas->copiedImage(), repeatX, repeatY, canvas->originClean());
 }
 
-void CanvasRenderingContext2D::didDrawEntireCanvas()
+bool CanvasRenderingContext2D::computeDirtyRect(const FloatRect& localRect, FloatRect* dirtyRect)
 {
-    didDraw(FloatRect(FloatPoint::zero(), canvas()->size()), CanvasDidDrawApplyClip);
+    FloatRect clipBounds;
+    if (!drawingContext()->getTransformedClipBounds(&clipBounds))
+        return false;
+    return computeDirtyRect(localRect, clipBounds, dirtyRect);
 }
 
-void CanvasRenderingContext2D::didDraw(const FloatRect& r, unsigned options)
+bool CanvasRenderingContext2D::computeDirtyRect(const FloatRect& localRect, const FloatRect& transformedClipBounds, FloatRect* dirtyRect)
 {
-    GraphicsContext* c = drawingContext();
-    if (!c)
-        return;
-    if (!state().m_invertibleCTM)
+    FloatRect canvasRect = state().m_transform.mapRect(localRect);
+
+    if (alphaChannel(state().m_shadowColor)) {
+        FloatRect shadowRect(canvasRect);
+        shadowRect.move(state().m_shadowOffset);
+        shadowRect.inflate(state().m_shadowBlur);
+        canvasRect.unite(shadowRect);
+    }
+
+    canvasRect.intersect(transformedClipBounds);
+    if (canvasRect.isEmpty())
+        return false;
+
+    if (dirtyRect)
+        *dirtyRect = canvasRect;
+
+    return true;
+}
+
+void CanvasRenderingContext2D::didDraw(const FloatRect& dirtyRect)
+{
+    if (dirtyRect.isEmpty())
         return;
 
     // If we are drawing to hardware and we have a composited layer, just call contentChanged().
@@ -1744,29 +1803,9 @@ void CanvasRenderingContext2D::didDraw(const FloatRect& r, unsigned options)
         if (renderBox && renderBox->hasAcceleratedCompositing()) {
             renderBox->contentChanged(CanvasPixelsChanged);
             canvas()->clearCopiedImage();
-            canvas()->notifyObserversCanvasChanged(r);
+            canvas()->notifyObserversCanvasChanged(dirtyRect);
             return;
         }
-    }
-
-    FloatRect dirtyRect = r;
-    if (options & CanvasDidDrawApplyTransform) {
-        AffineTransform ctm = state().m_transform;
-        dirtyRect = ctm.mapRect(r);
-    }
-
-    if (options & CanvasDidDrawApplyShadow && alphaChannel(state().m_shadowColor)) {
-        // The shadow gets applied after transformation
-        FloatRect shadowRect(dirtyRect);
-        shadowRect.move(state().m_shadowOffset);
-        shadowRect.inflate(state().m_shadowBlur);
-        dirtyRect.unite(shadowRect);
-    }
-
-    if (options & CanvasDidDrawApplyClip) {
-        // FIXME: apply the current clip to the rectangle. Unfortunately we can't get the clip
-        // back out of the GraphicsContext, so to take clip into account for incremental painting,
-        // we'd have to keep the clip path around.
     }
 
     canvas()->didDraw(dirtyRect);
@@ -1952,7 +1991,7 @@ void CanvasRenderingContext2D::putImageData(ImageData* data, ImageBuffer::Coordi
         dirtyRect.scale(1 / canvas()->deviceScaleFactor());
         destRect = enclosingIntRect(dirtyRect);
     }
-    didDraw(destRect, CanvasDidDrawApplyNone); // ignore transform, shadow and clip
+    didDraw(destRect);
 }
 
 String CanvasRenderingContext2D::font() const
@@ -2215,6 +2254,10 @@ void CanvasRenderingContext2D::drawTextInternal(const String& text, float x, flo
     if (!fill)
         inflateStrokeRect(textRunPaintInfo.bounds);
 
+    FloatRect dirtyRect;
+    if (!computeDirtyRect(textRunPaintInfo.bounds, &dirtyRect))
+        return;
+
     c->setTextDrawingMode(fill ? TextModeFill : TextModeStroke);
     if (useMaxWidth) {
         GraphicsContextStateSaver stateSaver(*c);
@@ -2225,7 +2268,7 @@ void CanvasRenderingContext2D::drawTextInternal(const String& text, float x, flo
     } else
         c->drawBidiText(font, textRunPaintInfo, location, Font::UseFallbackIfFontNotReady);
 
-    didDraw(textRunPaintInfo.bounds);
+    didDraw(dirtyRect);
 }
 
 void CanvasRenderingContext2D::inflateStrokeRect(FloatRect& rect) const
@@ -2357,6 +2400,10 @@ void CanvasRenderingContext2D::drawFocusRing(const Path& path)
     if (!c)
         return;
 
+    FloatRect dirtyRect;
+    if (!computeDirtyRect(path.boundingRect(), &dirtyRect))
+        return;
+
     c->save();
     c->setAlpha(1.0);
     c->clearShadow();
@@ -2367,9 +2414,10 @@ void CanvasRenderingContext2D::drawFocusRing(const Path& path)
     const int focusRingWidth = 5;
     const int focusRingOutline = 0;
     c->drawFocusRing(path, focusRingWidth, focusRingOutline, focusRingColor);
-    didDraw(path.boundingRect());
 
     c->restore();
+
+    didDraw(dirtyRect);
 }
 
 } // namespace WebCore

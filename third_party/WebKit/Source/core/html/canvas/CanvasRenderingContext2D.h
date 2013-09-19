@@ -270,14 +270,6 @@ private:
         bool m_realizedFont;
     };
 
-    enum CanvasDidDrawOption {
-        CanvasDidDrawApplyNone = 0,
-        CanvasDidDrawApplyTransform = 1,
-        CanvasDidDrawApplyShadow = 1 << 1,
-        CanvasDidDrawApplyClip = 1 << 2,
-        CanvasDidDrawApplyAll = 0xffffffff
-    };
-
     CanvasRenderingContext2D(HTMLCanvasElement*, const Canvas2DContextAttributes* attrs, bool usesCSSCompatibilityParseMode);
 
     State& modifiableState() { ASSERT(!m_unrealizedSaveCount); return m_stateStack.last(); }
@@ -289,8 +281,9 @@ private:
     bool shouldDrawShadows() const;
 
     void drawImageInternal(Image*, const FloatRect&, const FloatRect&, const CompositeOperator&, const BlendMode&);
-    void didDraw(const FloatRect&, unsigned options = CanvasDidDrawApplyAll);
-    void didDrawEntireCanvas();
+    bool computeDirtyRect(const FloatRect& localBounds, FloatRect*);
+    bool computeDirtyRect(const FloatRect& localBounds, const FloatRect& transformedClipBounds, FloatRect*);
+    void didDraw(const FloatRect&);
 
     GraphicsContext* drawingContext() const;
 
@@ -310,7 +303,7 @@ private:
     const Font& accessFont();
 
     void clearCanvas();
-    bool rectContainsCanvas(const FloatRect&) const;
+    bool rectContainsTransformedRect(const FloatRect&, const FloatRect&) const;
 
     void inflateStrokeRect(FloatRect&) const;
 
