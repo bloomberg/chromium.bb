@@ -38,7 +38,7 @@ public class AwLayoutSizer {
 
     private double mDIPScale;
 
-    // Was our heightSpec set to AT_MOST the last time onMeasure was called?
+    // Was our height larger than the AT_MOST constraint the last time onMeasure was called?
     private boolean mHeightMeasurementLimited;
     // If mHeightMeasurementLimited is true then this contains the height limit.
     private int mHeightMeasurementLimit;
@@ -152,12 +152,11 @@ public class AwLayoutSizer {
         // Always use the given size unless unspecified. This matches WebViewClassic behavior.
         mWidthMeasurementIsFixed = (widthMode != MeasureSpec.UNSPECIFIED);
         mHeightMeasurementIsFixed = (heightMode == MeasureSpec.EXACTLY);
-        mHeightMeasurementLimited = (heightMode == MeasureSpec.AT_MOST);
+        mHeightMeasurementLimited =
+            (heightMode == MeasureSpec.AT_MOST) && (contentHeightPix > heightSize);
         mHeightMeasurementLimit = heightSize;
 
-        final boolean measuredHeightClipped =
-            mHeightMeasurementLimited && (contentHeightPix > heightSize);
-        if (mHeightMeasurementIsFixed || measuredHeightClipped) {
+        if (mHeightMeasurementIsFixed || mHeightMeasurementLimited) {
             measuredHeight = heightSize;
         }
 

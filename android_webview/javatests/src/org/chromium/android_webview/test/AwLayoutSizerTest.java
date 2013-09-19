@@ -151,6 +151,32 @@ public class AwLayoutSizerTest extends InstrumentationTestCase {
 
     @SmallTest
     @Feature({"AndroidWebView"})
+    public void testContentHeightGrowthRequestsLayoutInAtMostSizeMode() {
+        AwLayoutSizer layoutSizer = new AwLayoutSizer();
+        LayoutSizerDelegate delegate = new LayoutSizerDelegate();
+        layoutSizer.setDelegate(delegate);
+        layoutSizer.setDIPScale(DIP_SCALE);
+
+        layoutSizer.onPageScaleChanged(INITIAL_PAGE_SCALE);
+        layoutSizer.onContentSizeChanged(SMALLER_CONTENT_SIZE, SMALLER_CONTENT_SIZE);
+        layoutSizer.onMeasure(
+                MeasureSpec.makeMeasureSpec(AT_MOST_MEASURE_SIZE, MeasureSpec.AT_MOST),
+                MeasureSpec.makeMeasureSpec(AT_MOST_MEASURE_SIZE, MeasureSpec.AT_MOST));
+        assertEquals(AT_MOST_MEASURE_SIZE, delegate.measuredWidth);
+        assertEquals(SMALLER_CONTENT_SIZE, delegate.measuredHeight);
+
+        int requestLayoutCallCount = delegate.requestLayoutCallCount;
+        layoutSizer.onContentSizeChanged(SMALLER_CONTENT_SIZE, AT_MOST_MEASURE_SIZE - 1);
+        assertEquals(requestLayoutCallCount + 1, delegate.requestLayoutCallCount);
+
+        // Test that crossing the AT_MOST_MEASURE_SIZE threshold results in a requestLayout.
+        requestLayoutCallCount = delegate.requestLayoutCallCount;
+        layoutSizer.onContentSizeChanged(SMALLER_CONTENT_SIZE, AT_MOST_MEASURE_SIZE + 1);
+        assertEquals(requestLayoutCallCount + 1, delegate.requestLayoutCallCount);
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
     public void testContentHeightShrinksAfterAtMostSize() {
         AwLayoutSizer layoutSizer = new AwLayoutSizer();
         LayoutSizerDelegate delegate = new LayoutSizerDelegate();
