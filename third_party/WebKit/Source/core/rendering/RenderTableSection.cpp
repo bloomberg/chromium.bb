@@ -253,6 +253,27 @@ void RenderTableSection::addCell(RenderTableCell* cell, RenderTableRow* row)
     cell->setCol(table()->effColToCol(col));
 }
 
+bool RenderTableSection::rowHasOnlySpanningCells(unsigned row)
+{
+    unsigned totalCols = m_grid[row].row.size();
+
+    if (!totalCols)
+        return false;
+
+    for (unsigned col = 0; col < totalCols; col++) {
+        const CellStruct& rowSpanCell = cellAt(row, col);
+
+        // Empty cell is not a valid cell so it is not a rowspan cell.
+        if (rowSpanCell.cells.isEmpty())
+            return false;
+
+        if (rowSpanCell.cells[0]->rowSpan() == 1)
+            return false;
+    }
+
+    return true;
+}
+
 void RenderTableSection::populateSpanningRowsHeightFromCell(RenderTableCell* cell, struct SpanningRowsHeight& spanningRowsHeight)
 {
     const unsigned rowSpan = cell->rowSpan();
@@ -264,7 +285,11 @@ void RenderTableSection::populateSpanningRowsHeightFromCell(RenderTableCell* cel
     spanningRowsHeight.totalRowsHeight = 0;
     for (unsigned row = 0; row < rowSpan; row++) {
         unsigned actualRow = row + rowIndex;
+
         spanningRowsHeight.rowHeight[row] = m_rowPos[actualRow + 1] - m_rowPos[actualRow] - borderSpacingForRow(actualRow);
+        if (!spanningRowsHeight.rowHeight[row])
+            spanningRowsHeight.rowWithOnlySpanningCells |= rowHasOnlySpanningCells(actualRow);
+
         spanningRowsHeight.totalRowsHeight += spanningRowsHeight.rowHeight[row];
         spanningRowsHeight.spanningCellHeightIgnoringBorderSpacing -= borderSpacingForRow(actualRow);
     }
@@ -395,6 +420,48 @@ static bool compareRowSpanCellsInHeightDistributionOrder(const RenderTableCell* 
     return false;
 }
 
+unsigned RenderTableSection::calcRowHeightHavingOnlySpanningCells(unsigned row)
+{
+    ASSERT(rowHasOnlySpanningCells(row));
+
+    unsigned totalCols = m_grid[row].row.size();
+
+    if (!totalCols)
+        return 0;
+
+    unsigned rowHeight = 0;
+
+    for (unsigned col = 0; col < totalCols; col++) {
+        const CellStruct& rowSpanCell = cellAt(row, col);
+        if (rowSpanCell.cells.size() && rowSpanCell.cells[0]->rowSpan() > 1)
+            rowHeight = max(rowHeight, rowSpanCell.cells[0]->logicalHeightForRowSizing() / rowSpanCell.cells[0]->rowSpan());
+    }
+
+    return rowHeight;
+}
+
+void RenderTableSection::updateRowsHeightHavingOnlySpanningCells(RenderTableCell* cell, struct SpanningRowsHeight& spanningRowsHeight)
+{
+    ASSERT(spanningRowsHeight.rowHeight.size());
+
+    int accumulatedPositionIncrease = 0;
+    const unsigned rowSpan = cell->rowSpan();
+    const unsigned rowIndex = cell->rowIndex();
+
+    ASSERT(rowSpan == spanningRowsHeight.rowHeight.size());
+
+    for (unsigned row = 0; row < spanningRowsHeight.rowHeight.size(); row++) {
+        unsigned actualRow = row + rowIndex;
+        if (!spanningRowsHeight.rowHeight[row] && rowHasOnlySpanningCells(actualRow)) {
+            spanningRowsHeight.rowHeight[row] = calcRowHeightHavingOnlySpanningCells(actualRow);
+            accumulatedPositionIncrease += spanningRowsHeight.rowHeight[row];
+        }
+        m_rowPos[actualRow + 1] += accumulatedPositionIncrease;
+    }
+
+    spanningRowsHeight.totalRowsHeight += accumulatedPositionIncrease;
+}
+
 // Distribute rowSpan cell height in rows those comes in rowSpan cell based on the ratio of row's height if
 // 1. RowSpan cell height is greater then the total height of rows in rowSpan cell
 void RenderTableSection::distributeRowSpanHeightToRows(SpanningRenderTableCells& rowSpanCells)
@@ -444,8 +511,13 @@ void RenderTableSection::distributeRowSpanHeightToRows(SpanningRenderTableCells&
 
         populateSpanningRowsHeightFromCell(cell, spanningRowsHeight);
 
-        if (!spanningRowsHeight.totalRowsHeight || spanningRowsHeight.spanningCellHeightIgnoringBorderSpacing <= spanningRowsHeight.totalRowsHeight)
+        if (spanningRowsHeight.rowWithOnlySpanningCells)
+            updateRowsHeightHavingOnlySpanningCells(cell, spanningRowsHeight);
+
+        if (!spanningRowsHeight.totalRowsHeight || spanningRowsHeight.spanningCellHeightIgnoringBorderSpacing <= spanningRowsHeight.totalRowsHeight) {
+            extraHeightToPropagate = m_rowPos[rowIndex + rowSpan] - originalBeforePosition;
             continue;
+        }
 
         int totalPercent = 0;
         int totalAutoRowsHeight = 0;

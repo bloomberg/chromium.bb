@@ -1255,7 +1255,6 @@ crbug.com/284789 http/tests/media/media-source/mediasource-buffered.html [ Failu
 crbug.com/284793 http/tests/media/media-source/mediasource-play-then-seek-back.html [ Failure Pass ]
 
 crbug.com/286081 inspector/debugger/long-resume-vs-reload.html [ Failure Pass Timeout ]
-crbug.com/285703 [ Debug ] fast/table/table-rowspan-crash-with-huge-rowspan-cells.html [ Crash Pass ]
 crbug.com/286287 http/tests/inspector/network/network-initiator.html [ Failure Pass ]
 
 # Temporarily allow failures until content_shell is fixed. ddorwin to remove by 9/23.
@@ -1349,3 +1348,17 @@ crbug.com/289833 [ Android ] webexposed/custom-elements.html [ Timeout Pass ]
 # These started asserting with blink r157905. The asserts are symtpoms of legitimate bugs.
 crbug.com/294237 [ Debug ] svg/custom/bug86392.html [ Crash ]
 crbug.com/294238 [ Debug ] svg/custom/unicode-in-tspan-multi-svg-crash.html [ Crash ]
+
+#Below test case need to rebaseline after crbug.com/252694
+crbug.com/252694 fast/table/007.html [ NeedsRebaseline ]
+crbug.com/252694 fast/table/colspanMinWidth.html [ NeedsRebaseline ]
+crbug.com/252694 fast/table/colspanMinWidth-vertical.html [ NeedsRebaseline ]
+crbug.com/252694 fast/table/spanOverlapRepaint.html [ NeedsRebaseline ]
+crbug.com/252694 tables/mozilla/bugs/bug133756-1.html [ NeedsRebaseline ]
+crbug.com/252694 tables/mozilla/bugs/bug133756-2.html [ NeedsRebaseline ]
+crbug.com/252694 tables/mozilla/bugs/bug6304.html [ NeedsRebaseline ]
+crbug.com/252694 tables/mozilla/bugs/bug7714.html [ NeedsRebaseline ]
+crbug.com/252694 tables/mozilla/core/row_span.html [ NeedsRebaseline ]
+crbug.com/252694 tables/mozilla_expected_failures/bugs/bug131020-3.html [ NeedsRebaseline ]
+crbug.com/252694 tables/mozilla_expected_failures/bugs/bug65372.html [ NeedsRebaseline ]
+crbug.com/252694 tables/mozilla/bugs/bug13169.html [ NeedsRebaseline ]
