@@ -1359,12 +1359,14 @@ class PreCQLauncherStage(SyncStage):
             msg = 'Failed twice to launch a Pre-CQ trybot for this change.'
             pool.SendNotification(change, '%(details)s', details=msg)
             pool.RemoveCommitReady(change)
-            pool.UpdatePreCQStatus(change, self.STATUS_FAILED)
+            pool.UpdateCLStatus(PRE_CQ, change, self.STATUS_FAILED,
+                                self._options.debug_forced)
             self.retried.discard(change)
           else:
             # Try the change again.
             self.retried.add(change)
-            pool.UpdatePreCQStatus(change, self.STATUS_WAITING)
+            pool.UpdateCLStatus(PRE_CQ, change, self.STATUS_WAITING,
+                                self._options.debug_forced)
       elif status == self.STATUS_INFLIGHT:
         # Once a Pre-CQ run actually starts, it'll set the status to
         # STATUS_INFLIGHT.
@@ -1375,7 +1377,8 @@ class PreCQLauncherStage(SyncStage):
         # test this, mark the CL as 'waiting' for now. If the CL is still marked
         # as 'Ready' next time we check, we'll know the CL is truly still ready.
         busy.add(change)
-        pool.UpdatePreCQStatus(change, self.STATUS_WAITING)
+        pool.UpdateCLStatus(PRE_CQ, change, self.STATUS_WAITING,
+                            self._options.debug_forced)
       elif status == self.STATUS_PASSED:
         passed.add(change)
 
