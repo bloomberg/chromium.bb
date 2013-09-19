@@ -53,7 +53,7 @@ public:
     virtual bool supportsPlaceholder() const = 0;
     String strippedPlaceholder() const;
     bool placeholderShouldBeVisible() const;
-    virtual HTMLElement* placeholderElement() const = 0;
+    HTMLElement* placeholderElement() const;
     void updatePlaceholderVisibility(bool);
 
     VisiblePosition visiblePositionForIndex(int) const;

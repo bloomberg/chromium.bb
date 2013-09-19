@@ -197,11 +197,6 @@ HTMLElement* HTMLInputElement::passwordGeneratorButtonElement() const
     return m_inputType->passwordGeneratorButtonElement();
 }
 
-HTMLElement* HTMLInputElement::placeholderElement() const
-{
-    return m_inputType->placeholderElement();
-}
-
 bool HTMLInputElement::shouldAutocomplete() const
 {
     if (m_autocomplete != Uninitialized)

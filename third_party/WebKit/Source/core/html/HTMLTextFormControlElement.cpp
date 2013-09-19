@@ -34,9 +34,11 @@
 #include "core/dom/EventNames.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/Text.h"
+#include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/TextIterator.h"
 #include "core/html/HTMLBRElement.h"
+#include "core/html/shadow/ShadowElementNames.h"
 #include "core/page/Frame.h"
 #include "core/page/UseCounter.h"
 #include "core/rendering/RenderBlock.h"
@@ -141,6 +143,11 @@ bool HTMLTextFormControlElement::placeholderShouldBeVisible() const
         && !isPlaceholderEmpty()
         && (document().focusedElement() != this || (RenderTheme::theme().shouldShowPlaceholderWhenFocused()))
         && (!renderer() || renderer()->style()->visibility() == VISIBLE);
+}
+
+HTMLElement* HTMLTextFormControlElement::placeholderElement() const
+{
+    return toHTMLElement(userAgentShadowRoot()->getElementById(ShadowElementNames::placeholder()));
 }
 
 void HTMLTextFormControlElement::updatePlaceholderVisibility(bool placeholderValueChanged)

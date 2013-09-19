@@ -535,11 +535,6 @@ bool InputType::canBeSuccessfulSubmitButton()
     return false;
 }
 
-HTMLElement* InputType::placeholderElement() const
-{
-    return 0;
-}
-
 bool InputType::rendererIsNeeded()
 {
     return true;

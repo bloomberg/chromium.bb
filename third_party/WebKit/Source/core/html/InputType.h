@@ -171,7 +171,6 @@ public:
     virtual HTMLElement* editingViewPortElement() const { return 0; }
     virtual HTMLElement* innerTextElement() const { return 0; }
     virtual HTMLElement* passwordGeneratorButtonElement() const { return 0; }
-    virtual HTMLElement* placeholderElement() const;
 
     // Miscellaneous functions
 

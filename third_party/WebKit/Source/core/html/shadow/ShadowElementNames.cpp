@@ -59,6 +59,12 @@ const AtomicString& pickerIndicator()
     return name;
 }
 
+const AtomicString& placeholder()
+{
+    DEFINE_STATIC_LOCAL(AtomicString, name, ("placeholder", AtomicString::ConstructFromLiteral));
+    return name;
+}
+
 const AtomicString& searchDecoration()
 {
     DEFINE_STATIC_LOCAL(AtomicString, name, ("decoration", AtomicString::ConstructFromLiteral));

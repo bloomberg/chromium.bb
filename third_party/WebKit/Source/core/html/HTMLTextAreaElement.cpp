@@ -42,6 +42,7 @@
 #include "core/editing/TextIterator.h"
 #include "core/html/FormController.h"
 #include "core/html/FormDataList.h"
+#include "core/html/shadow/ShadowElementNames.h"
 #include "core/html/shadow/TextControlInnerElements.h"
 #include "core/page/Frame.h"
 #include "core/platform/LocalizedStrings.h"
@@ -84,7 +85,6 @@ HTMLTextAreaElement::HTMLTextAreaElement(const QualifiedName& tagName, Document&
     , m_rows(defaultRows)
     , m_cols(defaultCols)
     , m_wrap(SoftWrap)
-    , m_placeholder(0)
     , m_isDirty(false)
     , m_wasModifiedByUser(false)
 {
@@ -514,11 +514,6 @@ bool HTMLTextAreaElement::shouldUseInputMethod()
     return true;
 }
 
-HTMLElement* HTMLTextAreaElement::placeholderElement() const
-{
-    return m_placeholder;
-}
-
 bool HTMLTextAreaElement::matchesReadOnlyPseudoClass() const
 {
     return isReadOnly();
@@ -531,21 +526,21 @@ bool HTMLTextAreaElement::matchesReadWritePseudoClass() const
 
 void HTMLTextAreaElement::updatePlaceholderText()
 {
+    HTMLElement* placeholder = placeholderElement();
     String placeholderText = strippedPlaceholder();
     if (placeholderText.isEmpty()) {
-        if (m_placeholder) {
-            userAgentShadowRoot()->removeChild(m_placeholder);
-            m_placeholder = 0;
-        }
+        if (placeholder)
+            userAgentShadowRoot()->removeChild(placeholder);
         return;
     }
-    if (!m_placeholder) {
-        RefPtr<HTMLDivElement> placeholder = HTMLDivElement::create(document());
-        m_placeholder = placeholder.get();
-        m_placeholder->setPart(AtomicString("-webkit-input-placeholder", AtomicString::ConstructFromLiteral));
-        userAgentShadowRoot()->insertBefore(m_placeholder, innerTextElement()->nextSibling());
+    if (!placeholder) {
+        RefPtr<HTMLDivElement> newElement = HTMLDivElement::create(document());
+        placeholder = newElement.get();
+        placeholder->setPart(AtomicString("-webkit-input-placeholder", AtomicString::ConstructFromLiteral));
+        placeholder->setAttribute(idAttr, ShadowElementNames::placeholder());
+        userAgentShadowRoot()->insertBefore(placeholder, innerTextElement()->nextSibling());
     }
-    m_placeholder->setTextContent(placeholderText, ASSERT_NO_EXCEPTION);
+    placeholder->setTextContent(placeholderText, ASSERT_NO_EXCEPTION);
 }
 
 }
