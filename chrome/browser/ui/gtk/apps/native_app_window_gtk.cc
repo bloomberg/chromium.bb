@@ -211,6 +211,8 @@ gfx::Rect NativeAppWindowGtk::GetRestoredBounds() const {
 ui::WindowShowState NativeAppWindowGtk::GetRestoredState() const {
   if (IsMaximized())
     return ui::SHOW_STATE_MAXIMIZED;
+  if (IsFullscreen())
+    return ui::SHOW_STATE_FULLSCREEN;
   return ui::SHOW_STATE_NORMAL;
 }
 
@@ -596,7 +598,12 @@ void NativeAppWindowGtk::SetFullscreen(bool fullscreen) {
 }
 
 bool NativeAppWindowGtk::IsFullscreenOrPending() const {
-  return content_thinks_its_fullscreen_;
+  // |content_thinks_its_fullscreen_| is used when transitioning, and when
+  // the state change will not be made for some time. However, it is possible
+  // for a state update to be made before the final fullscreen state comes.
+  // In that case, |content_thinks_its_fullscreen_| will be cleared, but we
+  // will fall back to |IsFullscreen| which will soon have the correct state.
+  return content_thinks_its_fullscreen_ || IsFullscreen();
 }
 
 bool NativeAppWindowGtk::IsDetached() const {
