@@ -106,18 +106,8 @@ bool GetPyProtoPath(base::FilePath* dir) {
 
 bool GetPythonCommand(CommandLine* python_cmd) {
   DCHECK(python_cmd);
-  base::FilePath dir;
-#if defined(OS_WIN)
-  if (!PathService::Get(base::DIR_SOURCE_ROOT, &dir))
-    return false;
-  dir = dir.Append(FILE_PATH_LITERAL("third_party"))
-           .Append(FILE_PATH_LITERAL("python_26"))
-           .Append(FILE_PATH_LITERAL("python.exe"));
-#elif defined(OS_POSIX)
-  dir = base::FilePath("python");
-#endif
 
-  python_cmd->SetProgram(dir);
+  python_cmd->SetProgram(base::FilePath(FILE_PATH_LITERAL("python")));
 
   // Launch python in unbuffered mode, so that python output doesn't mix with
   // gtest output in buildbot log files. See http://crbug.com/147368.
