@@ -255,6 +255,8 @@ const wchar_t kBrowserCrashDumpAttemptsRegistryPath[] =
 
 #if defined(OS_CHROMEOS)
 const char kProfileDirPrefix[] = "u-";
+const char kLegacyProfileDir[] = "user";
+const char kTestUserProfileDir[] = "test-user";
 #endif
 
 // This GUID is associated with any 'don't ask me again' settings that the

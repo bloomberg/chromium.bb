@@ -143,6 +143,12 @@ extern const wchar_t kBrowserCrashDumpAttemptsRegistryPath[];
 // Profile path format: [user_data_dir]/u-[$hash]
 // Ex.: /home/chronos/u-0123456789
 extern const char kProfileDirPrefix[];
+
+// Legacy profile dir that was used when only one cryptohome has been mounted.
+extern const char kLegacyProfileDir[];
+
+// This must be kept in sync with TestingProfile::kTestUserProfileDir.
+extern const char kTestUserProfileDir[];
 #endif
 
 // Used to identify the application to the system AV function in Windows.

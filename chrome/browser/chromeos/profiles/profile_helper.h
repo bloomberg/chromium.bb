@@ -63,6 +63,9 @@ class ProfileHelper : public BrowsingDataRemover::Observer,
   // Returns active user profile dir in a format [u-$hash].
   base::FilePath GetActiveUserProfileDir();
 
+  // Returns user profile dir in a format [u-user_id_hash].
+  base::FilePath GetUserProfileDir(const std::string& user_id_hash);
+
   // Should called once after UserManager instance has been created.
   void Initialize();
 

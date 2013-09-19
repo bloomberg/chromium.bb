@@ -316,8 +316,18 @@ base::FilePath ProfileManager::GetInitialProfileDir() {
     base::FilePath profile_dir;
     // If the user has logged in, pick up the new profile.
     if (command_line.HasSwitch(chromeos::switches::kLoginProfile)) {
-      profile_dir = command_line.GetSwitchValuePath(
-          chromeos::switches::kLoginProfile);
+      // TODO(nkostylev): Remove this code completely once we eliminate
+      // legacy --login-profile=user switch and enable multi-profiles on CrOS
+      // by default. http://crbug.com/294628
+      std::string login_profile_value =
+          command_line.GetSwitchValueASCII(chromeos::switches::kLoginProfile);
+      if (login_profile_value == chrome::kLegacyProfileDir ||
+          login_profile_value == chrome::kTestUserProfileDir) {
+        profile_dir = base::FilePath(login_profile_value);
+      } else {
+        profile_dir = g_browser_process->platform_part()->profile_helper()->
+            GetUserProfileDir(login_profile_value);
+      }
     } else if (!command_line.HasSwitch(switches::kMultiProfiles)) {
       // We should never be logged in with no profile dir unless
       // multi-profiles are enabled.

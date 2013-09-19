@@ -78,6 +78,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/rlz/rlz.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
@@ -375,9 +376,8 @@ void ChromeBrowserMainPartsChromeos::PreEarlyInitialization() {
     singleton_command_line->AppendSwitchASCII(
         switches::kLoginUser, UserManager::kStubUser);
     if (!parsed_command_line().HasSwitch(switches::kLoginProfile)) {
-      // This must be kept in sync with TestingProfile::kTestUserProfileDir.
-      singleton_command_line->AppendSwitchASCII(
-          switches::kLoginProfile, "test-user");
+      singleton_command_line->AppendSwitchASCII(switches::kLoginProfile,
+                                                chrome::kTestUserProfileDir);
     }
     LOG(INFO) << "Running as stub user with profile dir: "
               << singleton_command_line->GetSwitchValuePath(

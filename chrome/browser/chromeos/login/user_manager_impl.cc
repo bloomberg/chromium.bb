@@ -1641,6 +1641,7 @@ base::FilePath UserManagerImpl::GetUserProfileDir(
     const std::string& email) const {
   // TODO(dpolukhin): Remove Chrome OS specific profile path logic from
   // ProfileManager and use only this function to construct profile path.
+  // TODO(nkostylev): Cleanup profile dir related code paths crbug.com/294233
   base::FilePath profile_dir;
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(::switches::kMultiProfiles)) {
@@ -1650,8 +1651,15 @@ base::FilePath UserManagerImpl::GetUserProfileDir(
           chrome::kProfileDirPrefix + user->username_hash());
     }
   } else if (command_line.HasSwitch(chromeos::switches::kLoginProfile)) {
-    profile_dir = command_line.GetSwitchValuePath(
-        chromeos::switches::kLoginProfile);
+    std::string login_profile_value =
+        command_line.GetSwitchValueASCII(chromeos::switches::kLoginProfile);
+    if (login_profile_value == chrome::kLegacyProfileDir ||
+        login_profile_value == chrome::kTestUserProfileDir) {
+      profile_dir = base::FilePath(login_profile_value);
+    } else {
+      profile_dir = base::FilePath(
+          chrome::kProfileDirPrefix + login_profile_value);
+    }
   } else {
     // We should never be logged in with no profile dir unless
     // multi-profiles are enabled.

@@ -9,6 +9,7 @@
 #include "chrome/browser/chromeos/input_method/mock_input_method_manager.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -25,7 +26,6 @@ namespace input_method {
 namespace {
 const char kInputId1[] = "xkb:us:dvorak:eng";
 const char kInputId2[] = "xkb:us:colemak:eng";
-const char kProfileName[] = "input_method_test";
 }
 
 class InputMethodPersistenceTest : public testing::Test {
@@ -38,9 +38,9 @@ class InputMethodPersistenceTest : public testing::Test {
     // ProfileManager::GetDefaultProfile().
     ASSERT_TRUE(mock_profile_manager_.SetUp());
     TestingProfile* mock_profile =
-        mock_profile_manager_.CreateTestingProfile(kProfileName);
+        mock_profile_manager_.CreateTestingProfile(chrome::kTestUserProfileDir);
     CommandLine *cl = CommandLine::ForCurrentProcess();
-    cl->AppendSwitchASCII(switches::kLoginProfile, kProfileName);
+    cl->AppendSwitchASCII(switches::kLoginProfile, chrome::kTestUserProfileDir);
     mock_profile_manager_.SetLoggedIn(true);
     ProfileManager::AllowGetDefaultProfile();
     EXPECT_TRUE(ProfileManager::GetDefaultProfile() != NULL);

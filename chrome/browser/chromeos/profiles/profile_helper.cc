@@ -118,8 +118,13 @@ void ProfileHelper::ProfileStartup(Profile* profile, bool process_startup) {
 }
 
 base::FilePath ProfileHelper::GetActiveUserProfileDir() {
-  DCHECK(!active_user_id_hash_.empty());
-  return base::FilePath(chrome::kProfileDirPrefix + active_user_id_hash_);
+  return GetUserProfileDir(active_user_id_hash_);
+}
+
+base::FilePath ProfileHelper::GetUserProfileDir(
+    const std::string& user_id_hash) {
+  DCHECK(!user_id_hash.empty());
+  return base::FilePath(chrome::kProfileDirPrefix + user_id_hash);
 }
 
 void ProfileHelper::Initialize() {

@@ -166,7 +166,7 @@ TEST_F(ProfileManagerTest, DefaultProfileDir) {
 // This functionality only exists on Chrome OS.
 TEST_F(ProfileManagerTest, LoggedInProfileDir) {
   CommandLine *cl = CommandLine::ForCurrentProcess();
-  std::string profile_dir("my_user");
+  std::string profile_dir(chrome::kTestUserProfileDir);
 
   cl->AppendSwitchASCII(chromeos::switches::kLoginProfile, profile_dir);
 
