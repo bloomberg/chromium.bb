@@ -320,7 +320,8 @@ PepperPortAllocator::PepperPortAllocator(
   // username fragment is shared between all candidates for this
   // channel.
   set_flags(cricket::PORTALLOCATOR_DISABLE_TCP |
-            cricket::PORTALLOCATOR_ENABLE_SHARED_UFRAG);
+            cricket::PORTALLOCATOR_ENABLE_SHARED_UFRAG|
+            cricket::PORTALLOCATOR_ENABLE_IPV6);
 }
 
 PepperPortAllocator::~PepperPortAllocator() {

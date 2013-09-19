@@ -405,7 +405,8 @@ LibjingleTransportFactory::LibjingleTransportFactory()
       cricket::PORTALLOCATOR_DISABLE_TCP |
       cricket::PORTALLOCATOR_DISABLE_STUN |
       cricket::PORTALLOCATOR_DISABLE_RELAY |
-      cricket::PORTALLOCATOR_ENABLE_SHARED_UFRAG);
+      cricket::PORTALLOCATOR_ENABLE_SHARED_UFRAG |
+      cricket::PORTALLOCATOR_ENABLE_IPV6);
 }
 
 LibjingleTransportFactory::~LibjingleTransportFactory() {
