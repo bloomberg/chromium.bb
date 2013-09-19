@@ -74,16 +74,14 @@ void PepperNetworkManager::OnNetworkList(int32_t result,
     if (addresses.size() == 0)
       continue;
 
-    talk_base::Network* network = new talk_base::Network(
-        list.GetName(i), list.GetDisplayName(i), talk_base::IPAddress(), 0);
-
     for (size_t i = 0; i < addresses.size(); ++i) {
       talk_base::SocketAddress address;
       PpNetAddressToSocketAddress(addresses[i], &address);
+      talk_base::Network* network = new talk_base::Network(
+          list.GetName(i), list.GetDisplayName(i), address.ipaddr(), 0);
       network->AddIP(address.ipaddr());
+      networks.push_back(network);
     }
-
-    networks.push_back(network);
   }
 
   bool changed = false;
