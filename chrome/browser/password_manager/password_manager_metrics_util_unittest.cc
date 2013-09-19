@@ -26,7 +26,7 @@ TEST(PasswordManagerMetricsUtilTest, MonitoredDomainGroupAssigmentTest) {
       "https://www.wikipedia.org",
       "https://www.linkedin.com",
       "https://www.twitter.com",
-      "https://www.live.com",
+      "https://www.facebook.com",
       "https://www.amazon.com",
       "https://www.ebay.com",
       "https://www.tumblr.com",
@@ -59,7 +59,7 @@ TEST(PasswordManagerMetricsUtilTest, MonitoredDomainGroupAssigmentTest) {
 TEST(PasswordManagerMetricsUtilTest, MonitoredDomainGroupTest) {
   EXPECT_TRUE(IsMonitored("https://www.linkedin.com"));
   EXPECT_TRUE(IsMonitored("https://www.amazon.com"));
-  EXPECT_FALSE(IsMonitored("https://www.facebook.com"));
+  EXPECT_TRUE(IsMonitored("https://www.facebook.com"));
   EXPECT_TRUE(IsMonitored("http://wikipedia.org"));
   EXPECT_FALSE(IsMonitored("http://thisisnotwikipedia.org"));
 }
