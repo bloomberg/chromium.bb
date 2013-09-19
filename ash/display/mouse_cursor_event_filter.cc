@@ -38,6 +38,7 @@ const int kIndicatorThickness = 1;
 
 MouseCursorEventFilter::MouseCursorEventFilter()
     : mouse_warp_mode_(WARP_ALWAYS),
+      was_mouse_warped_(false),
       drag_source_root_(NULL),
       shared_display_edge_indicator_(new SharedDisplayEdgeIndicator) {
 }
@@ -96,6 +97,17 @@ bool MouseCursorEventFilter::WarpMouseCursorIfNecessary(
   if (Shell::GetScreen()->GetNumDisplays() <= 1 ||
       mouse_warp_mode_ == WARP_NONE)
     return false;
+
+  // Do not warp again right after the cursor was warped. Sometimes the offset
+  // is not long enough and the cursor moves at the edge of the destination
+  // display. See crbug.com/278885
+  // TODO(mukai): simplify the offset calculation below, it would not be
+  // necessary anymore with this flag.
+  if (was_mouse_warped_) {
+    was_mouse_warped_ = false;
+    return false;
+  }
+
   const float scale_at_target = ui::GetDeviceScaleFactor(target_root->layer());
 
   aura::RootWindow* root_at_point = wm::GetRootWindowAt(point_in_screen);
@@ -145,6 +157,7 @@ bool MouseCursorEventFilter::WarpMouseCursorIfNecessary(
 
   if (dst_root->bounds().Contains(point_in_dst_screen)) {
     DCHECK_NE(dst_root, root_at_point);
+    was_mouse_warped_ = true;
     dst_root->MoveCursorTo(point_in_dst_screen);
     return true;
   }

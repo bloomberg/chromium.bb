@@ -50,22 +50,19 @@ class ASH_EXPORT MouseCursorEventFilter : public ui::EventHandler {
   virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
 
  private:
+  friend class DragWindowResizerTest;
+  friend class MouseCursorEventFilterTest;
+  FRIEND_TEST_ALL_PREFIXES(MouseCursorEventFilterTest, DoNotWarpTwice);
   FRIEND_TEST_ALL_PREFIXES(MouseCursorEventFilterTest, SetMouseWarpModeFlag);
-  FRIEND_TEST_ALL_PREFIXES(MouseCursorEventFilterTest, WarpMouse);
-  FRIEND_TEST_ALL_PREFIXES(MouseCursorEventFilterTest,
-                           WarpMouseDifferentSizeDisplays);
-  FRIEND_TEST_ALL_PREFIXES(MouseCursorEventFilterTest,
-                           WarpMouseDifferentScaleDisplays);
   FRIEND_TEST_ALL_PREFIXES(MouseCursorEventFilterTest,
                            IndicatorBoundsTestOnRight);
   FRIEND_TEST_ALL_PREFIXES(MouseCursorEventFilterTest,
                            IndicatorBoundsTestOnLeft);
   FRIEND_TEST_ALL_PREFIXES(MouseCursorEventFilterTest,
                            IndicatorBoundsTestOnTopBottom);
-  FRIEND_TEST_ALL_PREFIXES(MouseCursorEventFilterTest, CursorDeviceScaleFactor);
   FRIEND_TEST_ALL_PREFIXES(DragWindowResizerTest, WarpMousePointer);
-  FRIEND_TEST_ALL_PREFIXES(DragWindowResizerTest, CursorDeviceScaleFactor);
-  FRIEND_TEST_ALL_PREFIXES(DragWindowResizerTest, MoveWindowAcrossDisplays);
+
+  void reset_was_mouse_warped_for_test() { was_mouse_warped_ = false; }
 
   // Warps the mouse cursor to an alternate root window when the
   // |point_in_screen|, which is the location of the mouse cursor,
@@ -79,6 +76,10 @@ class ASH_EXPORT MouseCursorEventFilter : public ui::EventHandler {
   void UpdateVerticalIndicatorWindowBounds();
 
   MouseWarpMode mouse_warp_mode_;
+
+  // This flag is used to suppress the accidental mouse warp back to the
+  // original display.
+  bool was_mouse_warped_;
 
   // The bounds for warp hole windows. |dst_indicator_bounds_| is kept
   // in the instance for testing.
