@@ -280,13 +280,17 @@ handle_open(struct weston_launch *wl, struct msghdr *msg, ssize_t len)
 	/* Ensure path is null-terminated */
 	((char *) message)[len-1] = '\0';
 
-	if (stat(message->path, &s) < 0)
-		goto err0;
-
 	fd = open(message->path, message->flags);
 	if (fd < 0) {
 		fprintf(stderr, "Error opening device %s: %m\n",
 			message->path);
+		goto err0;
+	}
+
+	if (fstat(fd, &s) < 0) {
+		close(fd);
+		fd = -1;
+		fprintf(stderr, "Failed to stat %s\n", message->path);
 		goto err0;
 	}
 
