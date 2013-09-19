@@ -194,4 +194,16 @@ void CSSSegmentedFontFace::loadFont(const FontDescription& fontDescription, Pass
     }
 }
 
+Vector<RefPtr<FontFace> > CSSSegmentedFontFace::fontFaces() const
+{
+    Vector<RefPtr<FontFace> > fontFaces;
+    unsigned size = m_fontFaces.size();
+    for (unsigned i = 0; i < size; i++) {
+        RefPtr<FontFace> face = m_fontFaces[i]->fontFace();
+        if (face)
+            fontFaces.append(face);
+    }
+    return fontFaces;
+}
+
 }

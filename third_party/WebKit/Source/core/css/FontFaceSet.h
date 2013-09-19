@@ -26,25 +26,33 @@
 #ifndef FontFaceSet_h
 #define FontFaceSet_h
 
+#include "bindings/v8/ScriptPromise.h"
 #include "core/css/FontFace.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/EventListener.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/EventTarget.h"
-#include "core/html/VoidCallback.h"
 #include "core/platform/Timer.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 
+// Mac OS X 10.6 SDK defines check() macro that interfares with our check() method
+#ifdef check
+#undef check
+#endif
+
 namespace WebCore {
 
-class FontResource;
 class CSSFontFaceSource;
 class Dictionary;
 class Document;
 class Event;
+class ExceptionState;
 class Font;
+class FontResource;
+class FontsReadyPromiseResolver;
+class LoadFontPromiseResolver;
 class ScriptExecutionContext;
 
 class FontFaceSet : public RefCounted<FontFaceSet>, public ActiveDOMObject, public EventTarget {
@@ -59,11 +67,12 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(loadingdone);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(loadingerror);
 
-    bool checkFont(const String&, const String&);
-    void loadFont(const Dictionary&);
-    void notifyWhenFontsReady(PassRefPtr<VoidCallback>);
+    Vector<RefPtr<FontFace> > match(const String& font, const String& text, ExceptionState&);
+    bool check(const String& font, const String& text, ExceptionState&);
+    ScriptPromise load(const String& font, const String& text, ExceptionState&);
+    ScriptPromise ready();
 
-    bool loading() const { return m_loadingCount > 0 || m_shouldFireDoneEvent; }
+    AtomicString status() const;
 
     virtual ScriptExecutionContext* scriptExecutionContext() const;
     virtual const AtomicString& interfaceName() const;
@@ -77,7 +86,7 @@ public:
     void beginFontLoading(FontFace*);
     void fontLoaded(FontFace*);
     void loadError(FontFace*);
-    void scheduleCallback(PassRefPtr<VoidCallback>);
+    void scheduleResolve(LoadFontPromiseResolver*);
 
 private:
     class FontLoadHistogram {
@@ -101,7 +110,7 @@ private:
     void scheduleEvent(PassRefPtr<Event>);
     void queueDoneEvent(FontFace*);
     void firePendingEvents();
-    void firePendingCallbacks();
+    void resolvePendingLoadPromises();
     void fireDoneEventIfPossible();
     bool resolveFontStyle(const String&, Font&);
     void timerFired(Timer<FontFaceSet>*);
@@ -109,8 +118,8 @@ private:
     EventTargetData m_eventTargetData;
     unsigned m_loadingCount;
     Vector<RefPtr<Event> > m_pendingEvents;
-    Vector<RefPtr<VoidCallback> > m_pendingCallbacks;
-    Vector<RefPtr<VoidCallback> > m_fontsReadyCallbacks;
+    Vector<RefPtr<LoadFontPromiseResolver> > m_pendingLoadResolvers;
+    Vector<OwnPtr<FontsReadyPromiseResolver> > m_readyResolvers;
     FontFaceArray m_loadedFonts;
     FontFaceArray m_failedFonts;
     bool m_shouldFireDoneEvent;

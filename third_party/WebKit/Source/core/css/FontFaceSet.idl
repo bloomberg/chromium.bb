@@ -28,6 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+enum FontFaceSetLoadStatus { "loading", "loaded" };
+
 [
     NoInterfaceObject,
     EnabledAtRuntime=FontLoadEvents,
@@ -39,8 +41,10 @@
     attribute EventHandler onloadingdone;
     attribute EventHandler onloadingerror;
 
-    boolean checkFont(DOMString font, [Default=NullString] optional DOMString text);
-    void loadFont(Dictionary params);
-    void notifyWhenFontsReady(VoidCallback callback);
-    readonly attribute boolean loading;
+    [RaisesException] sequence<FontFace> match(DOMString font, [Default=NullString] optional DOMString text);
+    [RaisesException] boolean check(DOMString font, [Default=NullString] optional DOMString text);
+    [EnabledAtRuntime=Promise, RaisesException] Promise load(DOMString font, [Default=NullString] optional DOMString text);
+    [EnabledAtRuntime=Promise] Promise ready();
+
+    readonly attribute FontFaceSetLoadStatus status;
 };

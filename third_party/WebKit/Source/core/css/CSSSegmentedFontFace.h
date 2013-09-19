@@ -38,6 +38,7 @@ class CSSFontFace;
 class CSSFontSelector;
 class FontData;
 class FontDescription;
+class FontFace;
 class SegmentedFontData;
 
 class CSSSegmentedFontFace : public RefCounted<CSSSegmentedFontFace> {
@@ -68,6 +69,7 @@ public:
 
     bool checkFont() const;
     void loadFont(const FontDescription&, PassRefPtr<LoadFontCallback> loadCallback);
+    Vector<RefPtr<FontFace> > fontFaces() const;
     void willUseFontData(const FontDescription&);
 
 private:

@@ -28,8 +28,8 @@ function runTests() {
         shouldBeEqualToString('window.getComputedStyle(testDiv, 0).width', '48px');
     };
 
-    document.fonts.notifyWhenFontsReady(function() {
-        debug('notifyWhenFontsReady() callback');
+    document.fonts.ready().then(function() {
+        debug('ready() promise fulfilled');
         shouldBeEqualToString('window.getComputedStyle(testDiv, 0).width', '48px');
         finishJSTest();
     });

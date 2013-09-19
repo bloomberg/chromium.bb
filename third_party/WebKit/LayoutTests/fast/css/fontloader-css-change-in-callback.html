@@ -24,7 +24,7 @@ function addCss() {
 }
 
 if (document.fonts)
-    document.fonts.loadFont({font:"12px ahem", onsuccess:addCss})
+    document.fonts.load("12px ahem").then(addCss);
 else {
     testFailed('document.fonts does not exist');
     finishJSTest();

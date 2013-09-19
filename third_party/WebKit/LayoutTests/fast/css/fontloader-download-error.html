@@ -41,7 +41,7 @@ function runTests() {
     document.fonts.addEventListener('loading', onLoading);
     document.fonts.addEventListener('loadingdone', onLoadingDone);
     document.fonts.addEventListener('loadingerror', onLoadingError);
-    document.fonts.notifyWhenFontsReady(finish);
+    document.fonts.ready().then(finish);
 }
 
 var event;

@@ -21,9 +21,9 @@ window.jsTestIsAsync = true;
 function runTests() {
     document.fonts.addEventListener('loading', onLoading);
     document.fonts.addEventListener('loadingdone', onLoadingDone);
-    document.fonts.notifyWhenFontsReady(finish);
+    document.fonts.ready().then(finish);
 
-    document.fonts.loadFont({font: '10px TestFont1, TestFont2'});
+    document.fonts.load('10px TestFont1, TestFont2');
 }
 
 var event;
@@ -39,9 +39,9 @@ function onLoadingDone(e) {
     shouldBe("event.fontfaces.length", "2");
     shouldBeEqualToString("event.fontfaces[0].status", "loaded");
     shouldBeEqualToString("event.fontfaces[1].status", "loaded");
-    shouldBeTrue("document.fonts.checkFont('10px TestFont1')");
-    shouldBeTrue("document.fonts.checkFont('10px TestFont2')");
-    shouldBeTrue("document.fonts.checkFont('10px TestFont1, TestFont2')");
+    shouldBeTrue("document.fonts.check('10px TestFont1')");
+    shouldBeTrue("document.fonts.check('10px TestFont2')");
+    shouldBeTrue("document.fonts.check('10px TestFont1, TestFont2')");
 }
 
 function onLoadingError(e) {

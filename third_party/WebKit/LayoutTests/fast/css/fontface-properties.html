@@ -16,15 +16,8 @@
 <script>
 description('Test getting/setting FontFace properties.');
 
-window.jsTestIsAsync = true;
-
 function runTests() {
-    document.fonts.onloadingdone = verify;
-    document.fonts.loadFont({'font': 'italic small-caps 10px Ahem'});
-}
-
-function verify(e) {
-    ahemFace = e.fontfaces[0];
+    ahemFace = document.fonts.match('italic small-caps 10px Ahem')[0];
     shouldBeEqualToString('ahemFace.family', 'Ahem');
     shouldBeEqualToString('ahemFace.style', 'italic');
     shouldBeEqualToString('ahemFace.weight', '300');
@@ -81,15 +74,12 @@ function verify(e) {
     shouldThrow("face.unicodeRange = 'U+'", syntaxError);
     shouldThrow("face.variant = '???'", syntaxError);
     shouldThrow("face.featureSettings = null", syntaxError);
-
-    finishJSTest();
 }
 
 if (document.fonts)
     runTests();
 else {
     testFailed('document.fonts does not exist');
-    finishJSTest();
 }
 </script>
 </head>

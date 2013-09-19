@@ -8,25 +8,25 @@
   }
 </style>
 <script>
-description('Test for FontFaceSet.loading attribute');
+description('Test for FontFaceSet.status attribute');
 
 window.jsTestIsAsync = true;
 
 function runTests() {
-    shouldBe("document.fonts.checkFont('10px TestFont')", "false");
-    shouldBe("document.fonts.loading", "false");
-    document.fonts.loadFont({ font: '10px TestFont', onsuccess: onsuccess });
-    shouldBe("document.fonts.loading", "true");
+    shouldBeFalse("document.fonts.check('10px TestFont')");
+    shouldBeEqualToString("document.fonts.status", "loaded");
+    document.fonts.load('10px TestFont').then(onsuccess);
+    shouldBeEqualToString("document.fonts.status", "loading");
 }
 
 function onsuccess() {
-    shouldBe("document.fonts.checkFont('10px TestFont')", "true");
-    shouldBe("document.fonts.loading", "true");
-    document.fonts.notifyWhenFontsReady(onFontsReady);
+    shouldBeTrue("document.fonts.check('10px TestFont')");
+    shouldBeEqualToString("document.fonts.status", "loaded");
+    document.fonts.ready().then(onFontsReady);
 }
 
 function onFontsReady() {
-    shouldBe("document.fonts.loading", "false");
+    shouldBeEqualToString("document.fonts.status", "loaded");
     finishJSTest();
 }
 

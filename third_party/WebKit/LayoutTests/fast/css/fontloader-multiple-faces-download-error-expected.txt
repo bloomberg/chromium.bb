@@ -9,7 +9,7 @@ PASS event.fontfaces[0].status is "loaded"
 PASS event.fontfaces.length is 1
 PASS event.fontfaces[0].unicodeRange is "U+61-7A"
 PASS event.fontfaces[0].status is "error"
-PASS document.fonts.checkFont('10px TestFont') is false
+PASS document.fonts.check('10px TestFont') is false
 PASS firedEvents is ['loading', 'loadingdone', 'loadingerror']
 PASS successfullyParsed is true
 

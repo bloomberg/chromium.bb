@@ -26,7 +26,7 @@ function runTests() {
     document.fonts.onloadingdone = handleEvent;
     document.fonts.onloadingerror = handleEvent;
 
-    document.fonts.notifyWhenFontsReady(function() {
+    document.fonts.ready().then(function() {
         shouldBe('numberOfEvents', '2');
         finishJSTest();
     });
