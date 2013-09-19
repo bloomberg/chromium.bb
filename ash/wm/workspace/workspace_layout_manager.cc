@@ -310,11 +310,13 @@ void WorkspaceLayoutManager::UpdateBoundsFromShowState(
           bounds_in_parent.SetRect(0, 0, 0, 0);
       }
       if (!bounds_in_parent.IsEmpty()) {
-        CrossFadeToBounds(
-            window,
-            BaseLayoutManager::BoundsWithScreenEdgeVisible(
-                window->parent()->parent(),
-                bounds_in_parent));
+        gfx::Rect new_bounds = BaseLayoutManager::BoundsWithScreenEdgeVisible(
+            window->parent()->parent(),
+            bounds_in_parent);
+        if (last_show_state == ui::SHOW_STATE_MINIMIZED)
+          SetChildBoundsDirect(window, new_bounds);
+        else
+          CrossFadeToBounds(window, new_bounds);
       }
       ClearRestoreBounds(window);
       break;
