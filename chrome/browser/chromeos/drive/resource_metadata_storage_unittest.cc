@@ -321,18 +321,46 @@ TEST_F(ResourceMetadataStorageTest, OpenExistingDB) {
   EXPECT_EQ(child_id1, storage_->GetChild(parent_id1, child_name1));
 }
 
-TEST_F(ResourceMetadataStorageTest, IncompatibleDB) {
+TEST_F(ResourceMetadataStorageTest, IncompatibleDB_Old) {
   const int64 kLargestChangestamp = 1234567890;
   const std::string key1 = "abcd";
 
   // Put some data.
-  ResourceEntry entry;
   EXPECT_TRUE(storage_->SetLargestChangestamp(kLargestChangestamp));
+  ResourceEntry entry;
   EXPECT_TRUE(storage_->PutEntry(key1, ResourceEntry()));
   EXPECT_TRUE(storage_->GetEntry(key1, &entry));
+  FileCacheEntry cache_entry;
+  EXPECT_TRUE(storage_->PutCacheEntry(key1, FileCacheEntry()));
+  EXPECT_TRUE(storage_->GetCacheEntry(key1, &cache_entry));
 
-  // Set incompatible version and reopen DB.
+  // Set older version and reopen DB.
   SetDBVersion(ResourceMetadataStorage::kDBVersion - 1);
+  storage_.reset(new ResourceMetadataStorage(
+      temp_dir_.path(), base::MessageLoopProxy::current().get()));
+  ASSERT_TRUE(storage_->Initialize());
+
+  // Data is erased, except cache entries, because of the incompatible version.
+  EXPECT_EQ(0, storage_->GetLargestChangestamp());
+  EXPECT_FALSE(storage_->GetEntry(key1, &entry));
+  EXPECT_TRUE(storage_->GetCacheEntry(key1, &cache_entry));
+}
+
+TEST_F(ResourceMetadataStorageTest, IncompatibleDB_Unknown) {
+  const int64 kLargestChangestamp = 1234567890;
+  const std::string key1 = "abcd";
+
+  // Put some data.
+  EXPECT_TRUE(storage_->SetLargestChangestamp(kLargestChangestamp));
+  ResourceEntry entry;
+  EXPECT_TRUE(storage_->PutEntry(key1, ResourceEntry()));
+  EXPECT_TRUE(storage_->GetEntry(key1, &entry));
+  FileCacheEntry cache_entry;
+  EXPECT_TRUE(storage_->PutCacheEntry(key1, FileCacheEntry()));
+  EXPECT_TRUE(storage_->GetCacheEntry(key1, &cache_entry));
+
+  // Set newer version and reopen DB.
+  SetDBVersion(ResourceMetadataStorage::kDBVersion + 1);
   storage_.reset(new ResourceMetadataStorage(
       temp_dir_.path(), base::MessageLoopProxy::current().get()));
   ASSERT_TRUE(storage_->Initialize());
@@ -340,6 +368,7 @@ TEST_F(ResourceMetadataStorageTest, IncompatibleDB) {
   // Data is erased because of the incompatible version.
   EXPECT_EQ(0, storage_->GetLargestChangestamp());
   EXPECT_FALSE(storage_->GetEntry(key1, &entry));
+  EXPECT_FALSE(storage_->GetCacheEntry(key1, &cache_entry));
 }
 
 TEST_F(ResourceMetadataStorageTest, WrongPath) {

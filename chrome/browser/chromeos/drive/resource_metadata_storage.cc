@@ -123,6 +123,12 @@ bool IsUnrecoverableError(const leveldb::Status& status) {
   return false;
 }
 
+ResourceMetadataHeader GetDefaultHeaderEntry() {
+  ResourceMetadataHeader header;
+  header.set_version(ResourceMetadataStorage::kDBVersion);
+  return header;
+}
+
 }  // namespace
 
 ResourceMetadataStorage::Iterator::Iterator(scoped_ptr<leveldb::Iterator> it)
@@ -259,7 +265,7 @@ ResourceMetadataStorage::ResourceMetadataStorage(
     const base::FilePath& directory_path,
     base::SequencedTaskRunner* blocking_task_runner)
     : directory_path_(directory_path),
-      opened_existing_db_(false),
+      cache_file_scan_is_needed_(true),
       blocking_task_runner_(blocking_task_runner) {
 }
 
@@ -295,19 +301,45 @@ bool ResourceMetadataStorage::Initialize() {
     resource_map_.reset(db);
 
     // Check the validity of existing DB.
+    int db_version = -1;
     ResourceMetadataHeader header;
-    if (!GetHeader(&header) || header.version() != kDBVersion) {
+    if (GetHeader(&header))
+      db_version = header.version();
+
+    bool should_discard_db = true;
+    if (db_version != kDBVersion) {
       open_existing_result = DB_INIT_INCOMPATIBLE;
+
+      // We can reuse cache entries when appropriate.
+      if (6 <= db_version && db_version < kDBVersion) {
+        // Remove all entries except cache entries.
+        leveldb::ReadOptions options;
+        options.verify_checksums = true;
+        scoped_ptr<leveldb::Iterator> it(resource_map_->NewIterator(options));
+
+        leveldb::WriteBatch batch;
+        for (it->SeekToFirst(); it->Valid(); it->Next()) {
+          if (!IsCacheEntryKey(it->key()))
+            batch.Delete(it->key());
+        }
+
+        should_discard_db =
+            !it->status().ok() ||
+            !resource_map_->Write(leveldb::WriteOptions(), &batch).ok() ||
+            !PutHeader(GetDefaultHeaderEntry());
+      }
       LOG(INFO) << "Reject incompatible DB.";
     } else if (!CheckValidity()) {
       open_existing_result = DB_INIT_BROKEN;
       LOG(ERROR) << "Reject invalid DB.";
+    } else {
+      should_discard_db = false;
     }
 
-    if (open_existing_result == DB_INIT_SUCCESS)
-      opened_existing_db_ = true;
-    else
+    if (should_discard_db)
       resource_map_.reset();
+    else
+      cache_file_scan_is_needed_ = false;
   }
 
   UMA_HISTOGRAM_ENUMERATION("Drive.MetadataDBOpenExistingResult",
@@ -334,9 +366,7 @@ bool ResourceMetadataStorage::Initialize() {
       resource_map_.reset(db);
 
       // Set up header.
-      ResourceMetadataHeader header;
-      header.set_version(kDBVersion);
-      if (!PutHeader(header)) {
+      if (!PutHeader(GetDefaultHeaderEntry())) {
         init_result = DB_INIT_FAILED;
         resource_map_.reset();
       }

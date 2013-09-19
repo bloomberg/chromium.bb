@@ -505,7 +505,7 @@ bool FileCache::Initialize() {
 
   RenameCacheFilesToNewFormat();
 
-  if (!storage_->opened_existing_db()) {
+  if (storage_->cache_file_scan_is_needed()) {
     CacheMap cache_map;
     ScanCacheDirectory(cache_file_directory_, &cache_map);
     for (CacheMap::const_iterator it = cache_map.begin();
