@@ -157,6 +157,11 @@ PassRefPtr<SimpleFontData> FontCache::getFontDataForCharacter(const Font& font, 
     return 0;
 }
 
+static inline bool equalIgnoringCase(const AtomicString& a, const SkString& b)
+{
+    return equalIgnoringCase(a, AtomicString::fromUTF8(b.c_str()));
+}
+
 static bool typefacesMatchesFamily(const SkTypeface* tf, const AtomicString& family)
 {
     SkTypeface::LocalizedStrings* actualFamilies = tf->createFamilyNameIterator();
@@ -164,7 +169,7 @@ static bool typefacesMatchesFamily(const SkTypeface* tf, const AtomicString& fam
     SkTypeface::LocalizedString actualFamily;
 
     while (actualFamilies->next(&actualFamily)) {
-        if (equalIgnoringCase(family, AtomicString::fromUTF8(actualFamily.fString.c_str()))) {
+        if (equalIgnoringCase(family, actualFamily.fString)) {
             matchesRequestedFamily = true;
             break;
         }
