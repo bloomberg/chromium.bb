@@ -124,10 +124,10 @@
 
     // Mozilla version
     const unsigned short ALLOW_KEYBOARD_INPUT = 1;
-    [EnabledAtRuntime=Fullscreen] void webkitRequestFullScreen([Default=Undefined] optional unsigned short flags);
+    [EnabledAtRuntime=Fullscreen, PerWorldBindings, ActivityLog=Access] void webkitRequestFullScreen([Default=Undefined] optional unsigned short flags);
 
     // W3C version
-    [EnabledAtRuntime=Fullscreen] void webkitRequestFullscreen();
+    [EnabledAtRuntime=Fullscreen, PerWorldBindings, ActivityLog=Access] void webkitRequestFullscreen();
 
     void webkitRequestPointerLock();
 
