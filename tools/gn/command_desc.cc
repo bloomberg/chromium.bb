@@ -315,8 +315,8 @@ const char kDesc_Help[] =
     "      Shows defines set for the //base:base target, annotated by where\n"
     "      each one was set from.\n";
 
-#define OUTPUT_CONFIG_VALUE(name) \
-    OutputRecursiveTargetConfig(target, #name, &ConfigValues::name);
+#define OUTPUT_CONFIG_VALUE(name, type) \
+    OutputRecursiveTargetConfig<type>(target, #name, &ConfigValues::name);
 
 int RunDesc(const std::vector<std::string>& args) {
   if (args.size() != 1 && args.size() != 2) {
@@ -329,8 +329,8 @@ int RunDesc(const std::vector<std::string>& args) {
   if (!target)
     return 1;
 
-#define CONFIG_VALUE_HANDLER(name) \
-    } else if (what == #name) { OUTPUT_CONFIG_VALUE(name)
+#define CONFIG_VALUE_HANDLER(name, type) \
+    } else if (what == #name) { OUTPUT_CONFIG_VALUE(name, type)
 
   if (args.size() == 2) {
     // User specified one thing to display.
@@ -344,13 +344,13 @@ int RunDesc(const std::vector<std::string>& args) {
     } else if (what == "ldflags") {
       PrintLdflags(target, false);
 
-    CONFIG_VALUE_HANDLER(defines)
-    CONFIG_VALUE_HANDLER(includes)
-    CONFIG_VALUE_HANDLER(cflags)
-    CONFIG_VALUE_HANDLER(cflags_c)
-    CONFIG_VALUE_HANDLER(cflags_cc)
-    CONFIG_VALUE_HANDLER(cflags_objc)
-    CONFIG_VALUE_HANDLER(cflags_objcc)
+    CONFIG_VALUE_HANDLER(defines, std::string)
+    CONFIG_VALUE_HANDLER(includes, SourceDir)
+    CONFIG_VALUE_HANDLER(cflags, std::string)
+    CONFIG_VALUE_HANDLER(cflags_c, std::string)
+    CONFIG_VALUE_HANDLER(cflags_cc, std::string)
+    CONFIG_VALUE_HANDLER(cflags_objc, std::string)
+    CONFIG_VALUE_HANDLER(cflags_objcc, std::string)
 
     } else {
       OutputString("Don't know how to display \"" + what + "\".\n");
@@ -380,13 +380,13 @@ int RunDesc(const std::vector<std::string>& args) {
   PrintSources(target, true);
   PrintConfigs(target, true);
 
-  OUTPUT_CONFIG_VALUE(defines)
-  OUTPUT_CONFIG_VALUE(includes)
-  OUTPUT_CONFIG_VALUE(cflags)
-  OUTPUT_CONFIG_VALUE(cflags_c)
-  OUTPUT_CONFIG_VALUE(cflags_cc)
-  OUTPUT_CONFIG_VALUE(cflags_objc)
-  OUTPUT_CONFIG_VALUE(cflags_objcc)
+  OUTPUT_CONFIG_VALUE(defines, std::string)
+  OUTPUT_CONFIG_VALUE(includes, SourceDir)
+  OUTPUT_CONFIG_VALUE(cflags, std::string)
+  OUTPUT_CONFIG_VALUE(cflags_c, std::string)
+  OUTPUT_CONFIG_VALUE(cflags_cc, std::string)
+  OUTPUT_CONFIG_VALUE(cflags_objc, std::string)
+  OUTPUT_CONFIG_VALUE(cflags_objcc, std::string)
   PrintLdflags(target, true);
 
   PrintDeps(target, true);

@@ -29,11 +29,13 @@ executable("chrome") {
     "../content/app/startup_helper_win.cc",
   ]
 
-  configs += [
-    # TODO(brettw) this is wrong, it should be picked up from deps.
-    "//build/config/linux:gtk",
-    "//build/config/linux:x11",
-  ]
+  if (is_linux) {
+    configs += [
+      # TODO(brettw) this is wrong, it should be picked up from deps.
+      "//build/config/linux:gtk",
+      "//build/config/linux:x11",
+    ]
+  }
 
   deps = [
     # TODO(brettw) this is right on linux? Everything is linked into the
@@ -69,9 +71,11 @@ static_library("browser") {
       ldflags += "-lgconf-2"
     }
   }
-  configs += [
-    "//build/config/linux:x11",
-  ]
+  if (is_linux) {
+    configs += [
+      "//build/config/linux:x11",
+    ]
+  }
 
   deps = [
     "//third_party/expat",

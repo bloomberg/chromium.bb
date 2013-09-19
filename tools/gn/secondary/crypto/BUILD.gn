@@ -102,10 +102,12 @@ component("crypto") {
   }
 
   if (!is_linux) {
-    sources -= [
-      "openpgp_symmetric_encryption.cc",
-      "openpgp_symmetric_encryption.h",
-    ]
+    if (use_nss) {  # Removed for non-NSS in all cases below.
+      sources -= [
+        "openpgp_symmetric_encryption.cc",
+        "openpgp_symmetric_encryption.h",
+      ]
+    }
   }
   if (!is_mac) {
     sources -= [
@@ -132,7 +134,6 @@ component("crypto") {
       "hmac_nss.cc",
       "nss_util.cc",
       "nss_util.h",
-      "openpgp_symmetric_encryption.cc",
       "rsa_private_key_nss.cc",
       "secure_hash_default.cc",
       "signature_creator_nss.cc",
@@ -141,11 +142,9 @@ component("crypto") {
       "third_party/nss/chromium-blapi.h",
       "third_party/nss/chromium-blapit.h",
       "third_party/nss/chromium-nss.h",
-      "third_party/nss/chromium-sha256.h",
       "third_party/nss/pk11akey.cc",
       "third_party/nss/rsawrapr.c",
       "third_party/nss/secsign.cc",
-      "third_party/nss/sha512.cc",
     ]
   }
   if (!use_openssl) {

@@ -94,14 +94,15 @@ void NinjaBinaryTargetWriter::Run() {
 void NinjaBinaryTargetWriter::WriteCompilerVars() {
   // Defines.
   out_ << "defines =";
-  RecursiveTargetConfigToStream(target_, &ConfigValues::defines,
-                                DefineWriter(), out_);
+  RecursiveTargetConfigToStream<std::string>(target_, &ConfigValues::defines,
+                                             DefineWriter(), out_);
   out_ << std::endl;
 
   // Includes.
   out_ << "includes =";
-  RecursiveTargetConfigToStream(target_, &ConfigValues::includes,
-                                IncludeWriter(path_output_, helper_), out_);
+  RecursiveTargetConfigToStream<SourceDir>(target_, &ConfigValues::includes,
+                                           IncludeWriter(path_output_, helper_),
+                                           out_);
 
   out_ << std::endl;
 

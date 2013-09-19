@@ -192,11 +192,11 @@ const char* GetExtensionForOutputType(Target::OutputType type,
   return "";
 }
 
-std::string FilePathToUTF8(const base::FilePath& path) {
+std::string FilePathToUTF8(const base::FilePath::StringType& str) {
 #if defined(OS_WIN)
-  return WideToUTF8(path.value());
+  return WideToUTF8(str);
 #else
-  return path.value();
+  return str;
 #endif
 }
 

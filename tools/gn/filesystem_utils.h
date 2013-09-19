@@ -40,7 +40,10 @@ SourceFileType GetSourceFileType(const SourceFile& file,
 const char* GetExtensionForOutputType(Target::OutputType type,
                                       Settings::TargetOS os);
 
-std::string FilePathToUTF8(const base::FilePath& path);
+std::string FilePathToUTF8(const base::FilePath::StringType& str);
+inline std::string FilePathToUTF8(const base::FilePath& path) {
+  return FilePathToUTF8(path.value());
+}
 base::FilePath UTF8ToFilePath(const base::StringPiece& sp);
 
 // Extensions -----------------------------------------------------------------
