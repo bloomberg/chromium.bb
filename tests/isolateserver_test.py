@@ -57,6 +57,57 @@ class TestCase(auto_stub.TestCase):
     self.fail('Unknown request %s' % url)
 
 
+class StorageApiTest(TestCase):
+  def test_batch_files_for_check(self):
+    items = {
+      'foo': {'s': 12},
+      'bar': {},
+      'blow': {'s': 0},
+      'bizz': {'s': 1222},
+      'buzz': {'s': 1223},
+    }
+    expected = [
+      [
+        ('buzz', {'s': 1223}),
+        ('bizz', {'s': 1222}),
+        ('foo', {'s': 12}),
+        ('blow', {'s': 0}),
+      ],
+    ]
+    batches = list(isolateserver.StorageApi.batch_files_for_check(items))
+    self.assertEqual(batches, expected)
+
+  def test_get_missing_files(self):
+    items = {
+      'foo': {'s': 12},
+      'bar': {},
+      'blow': {'s': 0},
+      'bizz': {'s': 1222},
+      'buzz': {'s': 1223},
+    }
+    missing = {
+      'bizz': {'s': 1222},
+      'buzz': {'s': 1223},
+    }
+    fake_upload_urls = ('a', 'b')
+
+    class MockedStorageApi(isolateserver.StorageApi):  # pylint: disable=W0223
+      def check_missing_files(self, files):
+        return [f + (fake_upload_urls,) for f in files if f[0] in missing]
+    server = MockedStorageApi()
+
+    # 'get_missing_files' is a generator, materialize its result in a list.
+    result = list(server.get_missing_files(items))
+
+    # Ensure it's a list of triplets.
+    self.assertTrue(all(len(x) ==  3 for x in result))
+    # Verify upload urls are set.
+    self.assertTrue(all(x[2] == fake_upload_urls for x in result))
+    # 'get_missing_files' doesn't guarantee order of its results, so convert
+    # it to unordered dict and compare dicts.
+    self.assertEqual(dict(x[:2] for x in result), missing)
+
+
 class IsolateServerArchiveTest(TestCase):
   def setUp(self):
     super(IsolateServerArchiveTest, self).setUp()
@@ -92,7 +143,7 @@ class IsolateServerArchiveTest(TestCase):
     compressed = [
         zlib.compress(
             open(f, 'rb').read(),
-            isolateserver.compression_level(f))
+            isolateserver.get_zip_compression_level(f))
         for f in files
     ]
     path = 'http://random/'
@@ -126,7 +177,7 @@ class IsolateServerArchiveTest(TestCase):
       # MIN_SIZE_FOR_DIRECT_BLOBSTORE.
       content += ''.join(chr(random.randint(0, 255)) for _ in xrange(20*1024))
       compressed = zlib.compress(
-          content, isolateserver.compression_level('foo.txt'))
+          content, isolateserver.get_zip_compression_level('foo.txt'))
 
     s = ALGO(content).hexdigest()
     infiles = {
@@ -159,7 +210,9 @@ class IsolateServerArchiveTest(TestCase):
       ),
     ]
 
-    self.mock(isolateserver, 'read_and_compress', lambda x, y: compressed)
+    # Setup mocks for zip_compress to return |compressed|.
+    self.mock(isolateserver, 'file_read', lambda *_: None)
+    self.mock(isolateserver, 'zip_compress', lambda *_: [compressed])
     result = isolateserver.upload_tree(
           base_url=path,
           indir=os.getcwd(),
@@ -167,48 +220,6 @@ class IsolateServerArchiveTest(TestCase):
           namespace='default-gzip')
 
     self.assertEqual(0, result)
-
-  def test_batch_files_for_check(self):
-    items = {
-      'foo': {'s': 12},
-      'bar': {},
-      'blow': {'s': 0},
-      'bizz': {'s': 1222},
-      'buzz': {'s': 1223},
-    }
-    expected = [
-      [
-        ('buzz', {'s': 1223}),
-        ('bizz', {'s': 1222}),
-        ('foo', {'s': 12}),
-        ('blow', {'s': 0}),
-      ],
-    ]
-    batches = list(isolateserver.batch_files_for_check(items))
-    self.assertEqual(batches, expected)
-
-  def test_get_files_to_upload(self):
-    items = {
-      'foo': {'s': 12},
-      'bar': {},
-      'blow': {'s': 0},
-      'bizz': {'s': 1222},
-      'buzz': {'s': 1223},
-    }
-    missing = {
-      'bizz': {'s': 1222},
-      'buzz': {'s': 1223},
-    }
-
-    def mock_check(url, items):
-      self.assertEqual('fakeurl', url)
-      return [item for item in items if item[0] in missing]
-    self.mock(isolateserver, 'check_files_exist_on_server', mock_check)
-
-    # 'get_files_to_upload' doesn't guarantee order of its results, so convert
-    # list of pairs to unordered dict and compare dicts.
-    result = dict(isolateserver.get_files_to_upload('fakeurl', items))
-    self.assertEqual(result, missing)
 
   def test_upload_blobstore_simple(self):
     # A tad over 20kb so it triggers uploading to the blob store.
