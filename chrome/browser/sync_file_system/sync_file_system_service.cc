@@ -14,6 +14,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/sync_file_system/extension_sync_event_observer.h"
 #include "chrome/browser/extensions/api/sync_file_system/sync_file_system_api_helpers.h"
+#include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -35,6 +36,8 @@
 #include "webkit/browser/fileapi/file_system_context.h"
 
 using content::BrowserThread;
+using extensions::Extension;
+using extensions::ExtensionPrefs;
 using fileapi::FileSystemURL;
 using fileapi::FileSystemURLSet;
 
@@ -631,11 +634,10 @@ void SyncFileSystemService::Observe(
 
 void SyncFileSystemService::HandleExtensionInstalled(
     const content::NotificationDetails& details) {
-  const extensions::Extension* extension =
+  const Extension* extension =
       content::Details<const extensions::InstalledExtensionInfo>(details)->
           extension;
-  GURL app_origin =
-      extensions::Extension::GetBaseURLFromExtensionId(extension->id());
+  GURL app_origin = Extension::GetBaseURLFromExtensionId(extension->id());
   DVLOG(1) << "Handle extension notification for INSTALLED: " << app_origin;
   // NOTE: When an app is uninstalled and re-installed in a sequence,
   // |local_file_service_| may still keeps |app_origin| as disabled origin.
@@ -646,11 +648,24 @@ void SyncFileSystemService::HandleExtensionUnloaded(
     int type,
     const content::NotificationDetails& details) {
   content::Details<const extensions::UnloadedExtensionInfo> info(details);
-  std::string extension_id = info->extension->id();
-  GURL app_origin =
-      extensions::Extension::GetBaseURLFromExtensionId(extension_id);
   if (info->reason != extension_misc::UNLOAD_REASON_DISABLE)
     return;
+
+  std::string extension_id = info->extension->id();
+  GURL app_origin = Extension::GetBaseURLFromExtensionId(extension_id);
+
+  int reasons = ExtensionPrefs::Get(profile_)->GetDisableReasons(extension_id);
+  if (reasons & Extension::DISABLE_RELOAD) {
+    // Bypass disabling the origin since the app will be re-enabled soon.
+    // NOTE: If re-enabling the app fails, the app is disabled while it is
+    // handled as enabled origin in the SyncFS. This should be safe and will be
+    // recovered when the user re-enables the app manually or the sync service
+    // restarts.
+    DVLOG(1) << "Handle extension notification for UNLOAD(DISABLE_RELOAD): "
+             << app_origin;
+    return;
+  }
+
   DVLOG(1) << "Handle extension notification for UNLOAD(DISABLE): "
            << app_origin;
   remote_file_service_->DisableOrigin(
@@ -663,10 +678,8 @@ void SyncFileSystemService::HandleExtensionUnloaded(
 void SyncFileSystemService::HandleExtensionUninstalled(
     int type,
     const content::NotificationDetails& details) {
-  std::string extension_id =
-      content::Details<const extensions::Extension>(details)->id();
-  GURL app_origin =
-      extensions::Extension::GetBaseURLFromExtensionId(extension_id);
+  std::string extension_id = content::Details<const Extension>(details)->id();
+  GURL app_origin = Extension::GetBaseURLFromExtensionId(extension_id);
   DVLOG(1) << "Handle extension notification for UNINSTALLED: "
            << app_origin;
   remote_file_service_->UninstallOrigin(
@@ -679,10 +692,8 @@ void SyncFileSystemService::HandleExtensionUninstalled(
 void SyncFileSystemService::HandleExtensionEnabled(
     int type,
     const content::NotificationDetails& details) {
-  std::string extension_id =
-      content::Details<const extensions::Extension>(details)->id();
-  GURL app_origin =
-      extensions::Extension::GetBaseURLFromExtensionId(extension_id);
+  std::string extension_id = content::Details<const Extension>(details)->id();
+  GURL app_origin = Extension::GetBaseURLFromExtensionId(extension_id);
   DVLOG(1) << "Handle extension notification for ENABLED: " << app_origin;
   remote_file_service_->EnableOrigin(
       app_origin,
