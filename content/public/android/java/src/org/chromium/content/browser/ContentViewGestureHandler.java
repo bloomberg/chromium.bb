@@ -675,6 +675,12 @@ class ContentViewGestureHandler implements LongPressDelegate {
      */
     void fling(long timeMs, int x, int y, int velocityX, int velocityY) {
         endFlingIfNecessary(timeMs);
+
+        if (velocityX == 0 && velocityY == 0) {
+            endTouchScrollIfNecessary(timeMs, true);
+            return;
+        }
+
         if (!mTouchScrolling) {
             // The native side needs a GESTURE_SCROLL_BEGIN before GESTURE_FLING_START
             // to send the fling to the correct target. Send if it has not sent.

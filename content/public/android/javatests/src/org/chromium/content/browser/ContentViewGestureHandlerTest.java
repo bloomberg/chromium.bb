@@ -656,6 +656,57 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
     }
 
     /**
+     * Verify that a zero-velocity fling is never forwarded, and cancels any
+     * previous fling or scroll sequence.
+     * @throws Exception
+     */
+    @SmallTest
+    @Feature({"Gestures"})
+    public void testZeroVelocityFling() throws Exception {
+        final long downTime = SystemClock.uptimeMillis();
+        final long eventTime = SystemClock.uptimeMillis();
+
+        GestureRecordingMotionEventDelegate mockDelegate =
+                new GestureRecordingMotionEventDelegate();
+        mGestureHandler = new ContentViewGestureHandler(
+                getInstrumentation().getTargetContext(), mockDelegate, mMockZoomManager,
+                ContentViewCore.INPUT_EVENTS_DELIVERED_AT_VSYNC);
+
+        mGestureHandler.fling(eventTime, 5, 5, 0, 0);
+        assertEquals("A zero-velocity fling should not be forwrded",
+                null, mockDelegate.mMostRecentGestureEvent);
+
+        mGestureHandler.fling(eventTime, 5, 5, 5, 0);
+        assertEquals("Subsequent flings should work properly",
+                ContentViewGestureHandler.GESTURE_FLING_START,
+                        mockDelegate.mMostRecentGestureEvent.mType);
+
+        mGestureHandler.fling(eventTime, 5, 5, 0, 0);
+        assertEquals("A zero-velocity fling should cancel any outstanding fling",
+                ContentViewGestureHandler.GESTURE_FLING_CANCEL,
+                        mockDelegate.mMostRecentGestureEvent.mType);
+
+        MotionEvent event = motionEvent(MotionEvent.ACTION_DOWN, downTime, downTime);
+        assertTrue(mGestureHandler.onTouchEvent(event));
+        event = MotionEvent.obtain(
+                downTime, eventTime + 10, MotionEvent.ACTION_MOVE,
+                FAKE_COORD_X * 5, FAKE_COORD_Y * 5, 0);
+        assertTrue(mGestureHandler.onTouchEvent(event));
+        assertTrue(mGestureHandler.isNativeScrolling());
+        assertTrue("A scrollStart event should have been sent",
+                mockDelegate.mGestureTypeList.contains(
+                        ContentViewGestureHandler.GESTURE_SCROLL_START));
+        assertEquals("We should have started scrolling",
+                ContentViewGestureHandler.GESTURE_SCROLL_BY,
+                mockDelegate.mMostRecentGestureEvent.mType);
+
+        mGestureHandler.fling(eventTime, 5, 5, 0, 0);
+        assertEquals("A zero-velicty fling should end the current scroll sequence",
+                ContentViewGestureHandler.GESTURE_SCROLL_END,
+                        mockDelegate.mMostRecentGestureEvent.mType);
+    }
+
+    /**
      * Verify that a show pressed state gesture followed by a long press followed by the focus
      * loss in the window due to context menu cancels show pressed.
      * @throws Exception
