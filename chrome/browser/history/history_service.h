@@ -236,6 +236,13 @@ class HistoryService : public CancelableRequestProvider,
                              const GURL& url,
                              base::Time end_ts);
 
+  // Indexing ------------------------------------------------------------------
+
+  // Notifies history of the body text of the given recently-visited URL.
+  // If the URL was not visited "recently enough," the history system may
+  // discard it.
+  void SetPageContents(const GURL& url, const string16& contents);
+
   // Querying ------------------------------------------------------------------
 
   // Returns the information about the requested URL. If the URL is found,

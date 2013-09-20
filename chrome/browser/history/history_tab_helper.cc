@@ -84,6 +84,16 @@ HistoryTabHelper::CreateHistoryAddPageArgs(
   return add_page_args;
 }
 
+bool HistoryTabHelper::OnMessageReceived(const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(HistoryTabHelper, message)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_PageContents, OnPageContents)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+
+  return handled;
+}
+
 void HistoryTabHelper::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
@@ -153,6 +163,25 @@ void HistoryTabHelper::Observe(int type,
     UpdateHistoryPageTitle(*title->first);
     received_page_title_ = title->second;
   }
+}
+
+void HistoryTabHelper::OnPageContents(const GURL& url,
+                                      const string16& contents) {
+  // Don't index any https pages. People generally don't want their bank
+  // accounts, etc. indexed on their computer, especially since some of these
+  // things are not marked cachable.
+  // TODO(brettw) we may want to consider more elaborate heuristics such as
+  // the cachability of the page. We may also want to consider subframes (this
+  // test will still index subframes if the subframe is SSL).
+  // TODO(zelidrag) bug chromium-os:2808 - figure out if we want to reenable
+  // content indexing for chromeos in some future releases.
+#if !defined(OS_CHROMEOS)
+  if (!url.SchemeIsSecure()) {
+    HistoryService* hs = GetHistoryService();
+    if (hs)
+      hs->SetPageContents(url, contents);
+  }
+#endif
 }
 
 HistoryService* HistoryTabHelper::GetHistoryService() {

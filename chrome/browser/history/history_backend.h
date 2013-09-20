@@ -38,6 +38,7 @@ class AndroidProviderBackend;
 
 class CommitLaterTask;
 class HistoryPublisher;
+class PageCollector;
 class VisitFilter;
 struct DownloadRow;
 
@@ -157,6 +158,11 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
                              int32 page_id,
                              const GURL& url,
                              base::Time end_ts);
+
+
+  // Indexing ------------------------------------------------------------------
+
+  void SetPageContents(const GURL& url, const string16& contents);
 
   // Querying ------------------------------------------------------------------
 
@@ -832,6 +838,9 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   // Stores old history in a larger, slower database.
   scoped_ptr<ArchivedDatabase> archived_db_;
+
+  // Helper to collect page data for vending to history_publisher_.
+  scoped_ptr<PageCollector> page_collector_;
 
   // Manages expiration between the various databases.
   ExpireHistoryBackend expirer_;

@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <set>
 #include <vector>
-#include <fstream>
 
 #include "base/basictypes.h"
 #include "base/bind.h"
@@ -2745,15 +2744,6 @@ TEST_F(HistoryBackendTest, RemoveNotification) {
   service->DeleteURL(url);
 }
 
-// Simple function to create a new dummy file.
-void CreateDummyFile(const base::FilePath& filename) {
-  std::wofstream file;
-  file.open(filename.value().c_str());
-  ASSERT_TRUE(file.is_open());
-  file << L"Dummy";
-  file.close();
-}
-
 // Test DeleteFTSIndexDatabases deletes expected files.
 TEST_F(HistoryBackendTest, DeleteFTSIndexDatabases) {
   ASSERT_TRUE(backend_.get());
@@ -2766,10 +2756,12 @@ TEST_F(HistoryBackendTest, DeleteFTSIndexDatabases) {
   base::FilePath db2_actual(history_path.AppendASCII("Underlying DB"));
 
   // Setup dummy index database files.
-  CreateDummyFile(db1);
-  CreateDummyFile(db1_journal);
-  CreateDummyFile(db1_wal);
-  CreateDummyFile(db2_actual);
+  const char* data = "Dummy";
+  const size_t data_len = 5;
+  ASSERT_TRUE(file_util::WriteFile(db1, data, data_len));
+  ASSERT_TRUE(file_util::WriteFile(db1_journal, data, data_len));
+  ASSERT_TRUE(file_util::WriteFile(db1_wal, data, data_len));
+  ASSERT_TRUE(file_util::WriteFile(db2_actual, data, data_len));
 #if defined(OS_POSIX)
   EXPECT_TRUE(file_util::CreateSymbolicLink(db2_actual, db2_symlink));
 #endif

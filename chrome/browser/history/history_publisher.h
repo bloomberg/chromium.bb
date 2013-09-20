@@ -16,6 +16,10 @@
 #include "history_indexer.h"
 #endif
 
+// TODO(shess): HistoryPublisher is being deprecated.  I am still
+// trying to track down who depends on it, meanwhile talk to me
+// before removing interactions with it.
+
 class GURL;
 
 namespace base {
