@@ -203,13 +203,14 @@ bool UtilityProcessHostImpl::StartProcess() {
     // TODO(port): Sandbox this on Linux.  Also, zygote this to work with
     // Linux updating.
     if (has_cmd_prefix) {
-      // launch the utility child process with some prefix (usually "xterm -e gdb
-      // --args").
+      // launch the utility child process with some prefix
+      // (usually "xterm -e gdb --args").
       cmd_line->PrependWrapper(browser_command_line.GetSwitchValueNative(
           switches::kUtilityCmdPrefix));
     }
 
-    cmd_line->AppendSwitchPath(switches::kUtilityProcessAllowedDir, exposed_dir_);
+    cmd_line->AppendSwitchPath(switches::kUtilityProcessAllowedDir,
+                               exposed_dir_);
 #endif
 
     if (is_mdns_enabled_)
