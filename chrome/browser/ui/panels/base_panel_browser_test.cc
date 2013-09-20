@@ -80,6 +80,7 @@ class MockDisplaySettingsProviderImpl :
       DesktopBarAlignment alignment) const OVERRIDE;
   virtual DesktopBarVisibility GetDesktopBarVisibility(
       DesktopBarAlignment alignment) const OVERRIDE;
+  virtual bool IsFullScreen() OVERRIDE;
 
   // Overridden from MockDisplaySettingsProvider:
   virtual void SetPrimaryDisplay(
@@ -93,6 +94,7 @@ class MockDisplaySettingsProviderImpl :
       DesktopBarAlignment alignment, DesktopBarVisibility visibility) OVERRIDE;
   virtual void SetDesktopBarThickness(DesktopBarAlignment alignment,
                                       int thickness) OVERRIDE;
+  virtual void EnableFullScreenMode(bool enabled) OVERRIDE;
 
  private:
   gfx::Rect primary_display_area_;
@@ -100,12 +102,14 @@ class MockDisplaySettingsProviderImpl :
   gfx::Rect secondary_display_area_;
   gfx::Rect secondary_work_area_;
   MockDesktopBar mock_desktop_bars[3];
+  bool full_screen_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(MockDisplaySettingsProviderImpl);
 };
 
 
-MockDisplaySettingsProviderImpl::MockDisplaySettingsProviderImpl() {
+MockDisplaySettingsProviderImpl::MockDisplaySettingsProviderImpl()
+    : full_screen_enabled_(false) {
   memset(mock_desktop_bars, 0, sizeof(mock_desktop_bars));
 }
 
@@ -171,6 +175,10 @@ MockDisplaySettingsProviderImpl::GetDesktopBarVisibility(
   return mock_desktop_bars[static_cast<int>(alignment)].visibility;
 }
 
+bool MockDisplaySettingsProviderImpl::IsFullScreen() {
+  return full_screen_enabled_;
+}
+
 void MockDisplaySettingsProviderImpl::EnableAutoHidingDesktopBar(
     DesktopBarAlignment alignment, bool enabled, int thickness) {
   MockDesktopBar* bar = &(mock_desktop_bars[static_cast<int>(alignment)]);
@@ -220,6 +228,11 @@ void MockDisplaySettingsProviderImpl::SetDesktopBarThickness(
       DesktopBarObserver,
       desktop_bar_observers(),
       OnAutoHidingDesktopBarThicknessChanged(alignment, thickness));
+}
+
+void MockDisplaySettingsProviderImpl::EnableFullScreenMode(bool enabled) {
+  full_screen_enabled_ = enabled;
+  CheckFullScreenMode(PERFORM_FULLSCREEN_CHECK);
 }
 
 }  // namespace

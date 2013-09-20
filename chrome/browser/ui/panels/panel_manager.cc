@@ -206,12 +206,7 @@ void PanelManager::OnFullScreenModeChanged(bool is_full_screen) {
   std::vector<Panel*> all_panels = panels();
   for (std::vector<Panel*>::const_iterator iter = all_panels.begin();
        iter != all_panels.end(); ++iter) {
-    Panel* panel = *iter;
-    PanelCollection* panel_collection = panel->collection();
-    // When the panel is not always on top, there is no need to hide/show
-    // the panel in response to entering/leaving full-screen mode.
-    if (panel_collection && panel_collection->UsesAlwaysOnTopPanels())
-      panel->FullScreenModeChanged(is_full_screen);
+    (*iter)->FullScreenModeChanged(is_full_screen);
   }
 }
 

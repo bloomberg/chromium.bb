@@ -132,6 +132,7 @@ class NativePanelTesting {
   // minimized by the system.
   virtual bool VerifySystemMinimizeState() const = 0;
 
+  virtual bool IsWindowVisible() const = 0;
   virtual bool IsWindowSizeKnown() const = 0;
   virtual bool IsAnimatingBounds() const = 0;
   virtual bool IsButtonVisible(panel::TitlebarButtonType button_type) const = 0;

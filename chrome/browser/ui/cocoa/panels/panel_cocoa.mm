@@ -346,6 +346,7 @@ class CocoaNativePanelTesting : public NativePanelTesting {
   virtual bool VerifyActiveState(bool is_active) OVERRIDE;
   virtual bool VerifyAppIcon() const OVERRIDE;
   virtual bool VerifySystemMinimizeState() const OVERRIDE;
+  virtual bool IsWindowVisible() const OVERRIDE;
   virtual bool IsWindowSizeKnown() const OVERRIDE;
   virtual bool IsAnimatingBounds() const OVERRIDE;
   virtual bool IsButtonVisible(
@@ -423,6 +424,10 @@ bool CocoaNativePanelTesting::VerifyAppIcon() const {
 bool CocoaNativePanelTesting::VerifySystemMinimizeState() const {
   // TODO(jianli): to be implemented.
   return true;
+}
+
+bool CocoaNativePanelTesting::IsWindowVisible() const {
+  return [[native_panel_window_->controller_ window] isVisible];
 }
 
 bool CocoaNativePanelTesting::IsWindowSizeKnown() const {

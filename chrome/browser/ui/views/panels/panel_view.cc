@@ -103,6 +103,7 @@ class NativePanelTestingWin : public NativePanelTesting {
   virtual bool VerifyActiveState(bool is_active) OVERRIDE;
   virtual bool VerifyAppIcon() const OVERRIDE;
   virtual bool VerifySystemMinimizeState() const OVERRIDE;
+  virtual bool IsWindowVisible() const OVERRIDE;
   virtual bool IsWindowSizeKnown() const OVERRIDE;
   virtual bool IsAnimatingBounds() const OVERRIDE;
   virtual bool IsButtonVisible(
@@ -192,6 +193,15 @@ bool NativePanelTestingWin::VerifySystemMinimizeState() const {
          placement.showCmd == SW_SHOWMINIMIZED;
 #else
   return true;
+#endif
+}
+
+bool NativePanelTestingWin::IsWindowVisible() const {
+#if defined(OS_WIN)
+  HWND native_window = views::HWNDForWidget(panel_view_->window());
+  return ::IsWindowVisible(native_window) == TRUE;
+#else
+  return panel_view_->visible();
 #endif
 }
 
@@ -568,20 +578,22 @@ void PanelView::HandlePanelKeyboardEvent(
 
 void PanelView::FullScreenModeChanged(bool is_full_screen) {
   if (is_full_screen) {
-    if (window_->IsVisible())
+    if (window_->IsVisible() && always_on_top_)
       window_->Hide();
   } else {
-    ShowPanelInactive();
+    if (!window_->IsVisible()) {
+      ShowPanelInactive();
 
 #if defined(OS_WIN)
-    // When hiding and showing again a top-most window that belongs to a
-    // background application (i.e. the application is not a foreground one),
-    // the window may loose top-most placement even though its WS_EX_TOPMOST
-    // bit is still set. Re-issuing SetWindowsPos() returns the window to its
-    // top-most placement.
-    if (always_on_top_)
-      window_->SetAlwaysOnTop(true);
+      // When hiding and showing again a top-most window that belongs to a
+      // background application (i.e. the application is not a foreground one),
+      // the window may loose top-most placement even though its WS_EX_TOPMOST
+      // bit is still set. Re-issuing SetWindowsPos() returns the window to its
+      // top-most placement.
+      if (always_on_top_)
+        window_->SetAlwaysOnTop(true);
 #endif
+    }
   }
 }
 

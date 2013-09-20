@@ -994,8 +994,17 @@ void PanelGtk::HandlePanelKeyboardEvent(
 }
 
 void PanelGtk::FullScreenModeChanged(bool is_full_screen) {
-  // Nothing to do here as z-order rules for panels ensures that they're below
-  // any app running in full screen mode.
+  // No need to hide panels when entering the full-screen mode because the
+  // full-screen window will automatically be placed above all other windows.
+  if (is_full_screen)
+    return;
+
+  // Show the panel if not yet when leaving the full-screen mode. This is
+  // because the panel is not shown when it is being created under full-screen
+  // mode.
+  GdkWindow* gdk_window = gtk_widget_get_window(GTK_WIDGET(window_));
+  if (!GDK_IS_WINDOW(gdk_window) || !gdk_window_is_visible(gdk_window))
+    ShowPanelInactive();
 }
 
 void PanelGtk::PanelExpansionStateChanging(
@@ -1105,6 +1114,7 @@ class GtkNativePanelTesting : public NativePanelTesting {
   virtual bool VerifyActiveState(bool is_active) OVERRIDE;
   virtual bool VerifyAppIcon() const OVERRIDE;
   virtual bool VerifySystemMinimizeState() const OVERRIDE;
+  virtual bool IsWindowVisible() const OVERRIDE;
   virtual bool IsWindowSizeKnown() const OVERRIDE;
   virtual bool IsAnimatingBounds() const OVERRIDE;
   virtual bool IsButtonVisible(
@@ -1198,6 +1208,12 @@ bool GtkNativePanelTesting::VerifyAppIcon() const {
 bool GtkNativePanelTesting::VerifySystemMinimizeState() const {
   // TODO(jianli): to be implemented.
   return true;
+}
+
+bool GtkNativePanelTesting::IsWindowVisible() const {
+  GdkWindow* gdk_window =
+      gtk_widget_get_window(GTK_WIDGET(panel_gtk_->GetNativePanelWindow()));
+  return GDK_IS_WINDOW(gdk_window) && gdk_window_is_visible(gdk_window);
 }
 
 bool GtkNativePanelTesting::IsWindowSizeKnown() const {

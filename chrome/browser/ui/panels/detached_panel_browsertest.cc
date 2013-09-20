@@ -207,3 +207,48 @@ IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest,
 
   panel_manager->CloseAll();
 }
+
+IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest,
+                       KeepShowingDetachedPanelCreatedBeforeFullScreenMode) {
+  // Create a detached panel.
+  CreatePanelParams params("1", gfx::Rect(300, 200, 250, 200), SHOW_AS_ACTIVE);
+  params.create_mode = PanelManager::CREATE_AS_DETACHED;
+  Panel* panel = CreatePanelWithParams(params);
+  scoped_ptr<NativePanelTesting> panel_testing(CreateNativePanelTesting(panel));
+
+  // Panel should be visible at first.
+  EXPECT_TRUE(panel_testing->IsWindowVisible());
+
+  // Panel's visibility should not be affected when entering full-screen mode.
+  mock_display_settings_provider()->EnableFullScreenMode(true);
+  EXPECT_TRUE(panel_testing->IsWindowVisible());
+
+  // Panel's visibility should not be affected when leaving full-screen mode.
+  mock_display_settings_provider()->EnableFullScreenMode(false);
+  EXPECT_TRUE(panel_testing->IsWindowVisible());
+
+  PanelManager::GetInstance()->CloseAll();
+}
+
+IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest,
+                       HideDetachedPanelCreatedOnFullScreenMode) {
+  // Enable full-screen mode first.
+  mock_display_settings_provider()->EnableFullScreenMode(true);
+
+  // Create a detached panel without waiting it to be shown since it is not
+  // supposed to be shown on full-screen mode.
+  CreatePanelParams params("1", gfx::Rect(300, 200, 250, 200), SHOW_AS_ACTIVE);
+  params.create_mode = PanelManager::CREATE_AS_DETACHED;
+  params.wait_for_fully_created = false;
+  Panel* panel = CreatePanelWithParams(params);
+  scoped_ptr<NativePanelTesting> panel_testing(CreateNativePanelTesting(panel));
+
+  // Panel should not be shown on full-screen mode.
+  EXPECT_FALSE(panel_testing->IsWindowVisible());
+
+  // Panel should become visible when leaving full-screen mode.
+  mock_display_settings_provider()->EnableFullScreenMode(false);
+  EXPECT_TRUE(panel_testing->IsWindowVisible());
+
+  PanelManager::GetInstance()->CloseAll();
+}

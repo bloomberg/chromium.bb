@@ -36,6 +36,7 @@ class BasePanelBrowserTest : public InProcessBrowserTest {
                                          DesktopBarVisibility visibility) = 0;
     virtual void SetDesktopBarThickness(DesktopBarAlignment alignment,
                                         int thickness) = 0;
+    virtual void EnableFullScreenMode(bool enabled) = 0;
   };
 
   BasePanelBrowserTest();
