@@ -70,8 +70,7 @@ public:
         LinkSubresource,
         TextTrack,
         Shader,
-        ImportResource,
-        NumberOfTypes,
+        ImportResource
     };
 
     enum Status {
