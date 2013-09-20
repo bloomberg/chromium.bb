@@ -86,18 +86,17 @@ class ChromeLauncherControllerUserSwitchObserver {
 // * Shortcuts have no LauncherItemController.
 // TODO(simon.hong81): Move LauncherItemDelegate out from
 // ChromeLauncherController and makes separate subclass with it.
-class ChromeLauncherController
-    : public ash::LauncherDelegate,
-      public ash::LauncherItemDelegate,
-      public ash::LauncherModelObserver,
-      public ash::ShellObserver,
-      public ash::DisplayController::Observer,
-      public content::NotificationObserver,
-      public extensions::AppIconLoader::Delegate,
-      public PrefServiceSyncableObserver,
-      public AppSyncUIStateObserver,
-      public ExtensionEnableFlowDelegate,
-      public ash::ShelfLayoutManagerObserver {
+class ChromeLauncherController : public ash::LauncherDelegate,
+                                 public ash::LauncherItemDelegate,
+                                 public ash::LauncherModelObserver,
+                                 public ash::ShellObserver,
+                                 public ash::DisplayController::Observer,
+                                 public content::NotificationObserver,
+                                 public extensions::AppIconLoader::Delegate,
+                                 public PrefServiceSyncableObserver,
+                                 public AppSyncUIStateObserver,
+                                 public ExtensionEnableFlowDelegate,
+                                 public ash::ShelfLayoutManagerObserver {
  public:
   // Indicates if a launcher item is incognito or not.
   enum IncognitoState {
@@ -420,6 +419,15 @@ class ChromeLauncherController
   void DoPinAppWithID(const std::string& app_id);
   void DoUnpinAppWithID(const std::string& app_id);
 
+  // Pin a running app with |launcher_id| internally to |index|. It returns
+  // the index where the item was pinned.
+  int PinRunningAppInternal(int index, ash::LauncherID launcher_id);
+
+  // Unpin a locked application. This is an internal call which converts the
+  // model type of the given app index from a shortcut into an unpinned running
+  // app.
+  void UnpinRunningAppInternal(int index);
+
   // Re-syncs launcher model with prefs::kPinnedLauncherApps.
   void UpdateAppLaunchersFromPref();
 
@@ -459,7 +467,7 @@ class ChromeLauncherController
   ash::LauncherID CreateBrowserShortcutLauncherItem();
 
   // Check if the given |web_contents| is in incognito mode.
-  bool IsIncognito(content::WebContents* web_contents) const;
+  bool IsIncognito(const content::WebContents* web_contents) const;
 
   // Update browser shortcut's index.
   void PersistChromeItemIndex(int index);
@@ -467,14 +475,16 @@ class ChromeLauncherController
   // Get browser shortcut's index from pref.
   int GetChromeIconIndexFromPref() const;
 
+  // Get the browser shortcut's index in the shelf using the current's systems
+  // configuration of pinned and known (but not running) apps.
+  int GetChromeIconIndexForCreation();
+
+  // Get the list of pinned programs from the preferences.
+  std::vector<std::string> GetListOfPinnedAppsAndBrowser();
+
   // Close all windowed V1 applications of a certain extension which was already
   // deleted.
   void CloseWindowedAppsFromRemovedExtension(const std::string& app_id);
-
-  // Move a launcher item ignoring the pinned state changes from |index| to
-  // |target_index|.
-  void MoveItemWithoutPinnedStateChangeNotification(int source_index,
-                                                    int target_index);
 
   // Register LauncherItemDelegate.
   void RegisterLauncherItemDelegate();
