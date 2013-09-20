@@ -73,18 +73,12 @@ DesktopBackgroundWidgetController::DesktopBackgroundWidgetController(
   widget_->AddObserver(this);
 }
 
-DesktopBackgroundWidgetController::DesktopBackgroundWidgetController(
-    ui::Layer* layer) : widget_(NULL) {
-  layer_.reset(layer);
-}
-
 DesktopBackgroundWidgetController::~DesktopBackgroundWidgetController() {
   if (widget_) {
     widget_->RemoveObserver(this);
     widget_->CloseNow();
     widget_ = NULL;
-  } else if (layer_)
-    layer_.reset(NULL);
+  }
 }
 
 void DesktopBackgroundWidgetController::OnWidgetDestroying(
@@ -96,8 +90,6 @@ void DesktopBackgroundWidgetController::OnWidgetDestroying(
 void DesktopBackgroundWidgetController::SetBounds(gfx::Rect bounds) {
   if (widget_)
     widget_->SetBounds(bounds);
-  else if (layer_)
-    layer_->SetBounds(bounds);
 }
 
 bool DesktopBackgroundWidgetController::Reparent(aura::RootWindow* root_window,
@@ -106,11 +98,6 @@ bool DesktopBackgroundWidgetController::Reparent(aura::RootWindow* root_window,
   if (widget_) {
     views::Widget::ReparentNativeView(widget_->GetNativeView(),
         root_window->GetChildById(dest_container));
-    return true;
-  } else if (layer_) {
-    ui::Layer* layer = layer_.get();
-    root_window->GetChildById(src_container)->layer()->Remove(layer);
-    root_window->GetChildById(dest_container)->layer()->Add(layer);
     return true;
   }
   // Nothing to reparent.
@@ -132,8 +119,7 @@ void DesktopBackgroundWidgetController::StartAnimating(
     settings.SetTransitionDuration(base::TimeDelta());
     widget_->Show();
     widget_->GetNativeView()->SetName("DesktopBackgroundView");
-  } else if (layer_)
-    root_window_controller->OnWallpaperAnimationFinished(NULL);
+  }
 }
 
 AnimatingDesktopController::AnimatingDesktopController(
@@ -146,8 +132,7 @@ AnimatingDesktopController::~AnimatingDesktopController() {
 
 void AnimatingDesktopController::StopAnimating() {
   if (controller_) {
-    ui::Layer* layer = controller_->layer() ? controller_->layer() :
-        controller_->widget()->GetNativeView()->layer();
+    ui::Layer* layer = controller_->widget()->GetNativeView()->layer();
     layer->GetAnimator()->StopAnimating();
   }
 }

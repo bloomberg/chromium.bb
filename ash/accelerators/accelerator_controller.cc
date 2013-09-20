@@ -271,15 +271,24 @@ bool HandleRotateScreen() {
 }
 
 bool HandleToggleDesktopBackgroundMode() {
+  static int index = 0;
+  static const SkColor kColorOptions[] = {
+    SK_ColorBLACK, SK_ColorBLUE, SK_ColorRED, SK_ColorGREEN
+  };
   DesktopBackgroundController* desktop_background_controller =
       Shell::GetInstance()->desktop_background_controller();
-  if (desktop_background_controller->desktop_background_mode() ==
-      DesktopBackgroundController::BACKGROUND_IMAGE) {
-    desktop_background_controller->SetDesktopBackgroundSolidColorMode(
-        SK_ColorBLACK);
-  } else {
+  SkColor color = kColorOptions[++index % arraysize(kColorOptions)];
+  if (color == SK_ColorBLACK) {
     ash::Shell::GetInstance()->user_wallpaper_delegate()->
         InitializeWallpaper();
+  } else {
+    SkBitmap bitmap;
+    bitmap.setConfig(SkBitmap::kARGB_8888_Config, 10, 10, 0);
+    bitmap.allocPixels();
+    bitmap.eraseColor(color);
+    desktop_background_controller->SetCustomWallpaper(
+        gfx::ImageSkia::CreateFrom1xBitmap(bitmap), WALLPAPER_LAYOUT_STRETCH);
+
   }
   return true;
 }

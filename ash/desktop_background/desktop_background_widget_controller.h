@@ -16,8 +16,7 @@ namespace ash {
 namespace internal {
 class RootWindowController;
 
-// This class hides difference between two possible background implementations:
-// effective Layer-based for solid color, and Widget-based for images.
+// This class implements a widget-based wallpaper.
 // DesktopBackgroundWidgetController is owned by RootWindowController.
 // When the animation completes the old DesktopBackgroundWidgetController is
 // destroyed. Exported for tests.
@@ -26,7 +25,6 @@ class ASH_EXPORT DesktopBackgroundWidgetController
  public:
   // Create
   explicit DesktopBackgroundWidgetController(views::Widget* widget);
-  explicit DesktopBackgroundWidgetController(ui::Layer* layer);
 
   virtual ~DesktopBackgroundWidgetController();
 
@@ -49,11 +47,9 @@ class ASH_EXPORT DesktopBackgroundWidgetController
   void StartAnimating(RootWindowController* root_window_controller);
 
   views::Widget* widget() { return widget_; }
-  ui::Layer* layer() { return layer_.get(); }
 
  private:
   views::Widget* widget_;
-  scoped_ptr<ui::Layer> layer_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopBackgroundWidgetController);
 };

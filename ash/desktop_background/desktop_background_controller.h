@@ -72,7 +72,6 @@ class ASH_EXPORT DesktopBackgroundController {
   enum BackgroundMode {
     BACKGROUND_NONE,
     BACKGROUND_IMAGE,
-    BACKGROUND_SOLID_COLOR
   };
 
   DesktopBackgroundController();
@@ -91,7 +90,7 @@ class ASH_EXPORT DesktopBackgroundController {
   void RemoveObserver(DesktopBackgroundControllerObserver* observer);
 
   // Provides current image on the background, or empty gfx::ImageSkia if there
-  // is no image, e.g. background is solid color.
+  // is no image, e.g. background is none.
   gfx::ImageSkia GetWallpaper() const;
 
   WallpaperLayout GetWallpaperLayout() const;
@@ -111,10 +110,6 @@ class ASH_EXPORT DesktopBackgroundController {
 
   // Cancels the current wallpaper loading operation.
   void CancelPendingWallpaperOperation();
-
-  // Sets the desktop background to solid color mode and creates a solid
-  // |color| layout.
-  void SetDesktopBackgroundSolidColorMode(SkColor color);
 
   // Creates an empty wallpaper. Some tests require a wallpaper widget is ready
   // when running. However, the wallpaper widgets are now created asynchronously
@@ -157,11 +152,6 @@ class ASH_EXPORT DesktopBackgroundController {
   // Creates a new background widget and sets the background mode to image mode.
   // Called after a default wallpaper has been loaded successfully.
   void OnDefaultWallpaperLoadCompleted(scoped_refptr<WallpaperLoader> loader);
-
-  // Adds layer with solid |color| to container |container_id| in |root_window|.
-  ui::Layer* SetColorLayerForContainer(SkColor color,
-                                       aura::RootWindow* root_window,
-                                       int container_id);
 
   // Creates and adds component for current mode (either Widget or Layer) to
   // |root_window|.
