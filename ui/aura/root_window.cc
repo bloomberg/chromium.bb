@@ -280,6 +280,13 @@ void RootWindow::SetCursor(gfx::NativeCursor cursor) {
 }
 
 void RootWindow::OnCursorVisibilityChanged(bool show) {
+  // Clear any existing mouse hover effects when the cursor becomes invisible.
+  // Note we do not need to dispatch a mouse enter when the cursor becomes
+  // visible because that can only happen in response to a mouse event, which
+  // will trigger its own mouse enter.
+  if (!show)
+    DispatchMouseExitAtPoint(GetLastMouseLocationInRoot());
+
   host_->OnCursorVisibilityChanged(show);
 }
 
@@ -382,13 +389,13 @@ void RootWindow::DispatchMouseExitToHidingWindow(Window* window) {
   // |window| is the capture window.
   gfx::Point last_mouse_location = GetLastMouseLocationInRoot();
   if (window->Contains(mouse_moved_handler_) &&
-      window->ContainsPointInRoot(last_mouse_location)) {
-    ui::MouseEvent event(ui::ET_MOUSE_EXITED,
-                         last_mouse_location,
-                         last_mouse_location,
-                         ui::EF_NONE);
-    DispatchMouseEnterOrExit(event, ui::ET_MOUSE_EXITED);
-  }
+      window->ContainsPointInRoot(last_mouse_location))
+    DispatchMouseExitAtPoint(last_mouse_location);
+}
+
+void RootWindow::DispatchMouseExitAtPoint(const gfx::Point& point) {
+  ui::MouseEvent event(ui::ET_MOUSE_EXITED, point, point, ui::EF_NONE);
+  DispatchMouseEnterOrExit(event, ui::ET_MOUSE_EXITED);
 }
 
 void RootWindow::OnWindowVisibilityChanged(Window* window, bool is_visible) {

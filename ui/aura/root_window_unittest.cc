@@ -402,10 +402,14 @@ namespace {
 class EventFilterRecorder : public ui::EventHandler {
  public:
   typedef std::vector<ui::EventType> Events;
+  typedef std::vector<gfx::Point> MouseEventLocations;
 
   EventFilterRecorder() {}
 
   Events& events() { return events_; }
+
+  MouseEventLocations& mouse_locations() { return mouse_locations_; }
+  gfx::Point mouse_location(int i) const { return mouse_locations_[i]; }
 
   // ui::EventHandler overrides:
   virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE {
@@ -414,6 +418,7 @@ class EventFilterRecorder : public ui::EventHandler {
 
   virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
     events_.push_back(event->type());
+    mouse_locations_.push_back(event->location());
   }
 
   virtual void OnScrollEvent(ui::ScrollEvent* event) OVERRIDE {
@@ -430,6 +435,7 @@ class EventFilterRecorder : public ui::EventHandler {
 
  private:
   Events events_;
+  MouseEventLocations mouse_locations_;
 
   DISALLOW_COPY_AND_ASSIGN(EventFilterRecorder);
 };
@@ -677,6 +683,41 @@ TEST_F(RootWindowTest, DispatchSyntheticMouseEvents) {
   cursor_client.DisableMouseEvents();
   root_window()->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse2);
   EXPECT_TRUE(filter->events().empty());
+}
+
+// Tests that a mouse exit is dispatched to the last known cursor location
+// when the cursor becomes invisible.
+TEST_F(RootWindowTest, DispatchMouseExitWhenCursorHidden) {
+  EventFilterRecorder* filter = new EventFilterRecorder;
+  root_window()->SetEventFilter(filter);  // passes ownership
+
+  test::TestWindowDelegate delegate;
+  gfx::Point window_origin(7, 18);
+  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      &delegate, 1234, gfx::Rect(window_origin,
+      gfx::Size(100, 100)), root_window()));
+  window->Show();
+
+  // Dispatch a mouse move event into the window.
+  gfx::Point mouse_location(gfx::Point(15, 25));
+  ui::MouseEvent mouse1(ui::ET_MOUSE_MOVED, mouse_location,
+                        mouse_location, 0);
+  EXPECT_TRUE(filter->events().empty());
+  root_window()->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse1);
+  EXPECT_FALSE(filter->events().empty());
+  filter->events().clear();
+
+  // Hide the cursor and verify a mouse exit was dispatched.
+  root_window()->OnCursorVisibilityChanged(false);
+  EXPECT_FALSE(filter->events().empty());
+  EXPECT_EQ("MOUSE_EXITED", EventTypesToString(filter->events()));
+
+  // Verify the mouse exit was dispatched at the correct location
+  // (in the correct coordinate space).
+  int translated_x = mouse_location.x() - window_origin.x();
+  int translated_y = mouse_location.y() - window_origin.y();
+  gfx::Point translated_point(translated_x, translated_y);
+  EXPECT_EQ(filter->mouse_location(0).ToString(), translated_point.ToString());
 }
 
 class DeletingEventFilter : public ui::EventHandler {

@@ -1129,9 +1129,6 @@ void Widget::OnKeyEvent(ui::KeyEvent* event) {
 }
 
 void Widget::OnMouseEvent(ui::MouseEvent* event) {
-  if (!IsMouseEventsEnabled())
-    return;
-
   View* root_view = GetRootView();
   switch (event->type()) {
     case ui::ET_MOUSE_PRESSED: {

@@ -163,6 +163,9 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // Dispatches OnMouseExited to the |window| which is hiding if nessessary.
   void DispatchMouseExitToHidingWindow(Window* window);
 
+  // Dispatches a ui::ET_MOUSE_EXITED event at |point|.
+  void DispatchMouseExitAtPoint(const gfx::Point& point);
+
   // Invoked when |window|'s visibility has changed.
   void OnWindowVisibilityChanged(Window* window, bool is_visible);
 
