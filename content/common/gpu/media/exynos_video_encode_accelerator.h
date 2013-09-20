@@ -85,6 +85,8 @@ class ExynosVideoEncodeAccelerator : public media::VideoEncodeAccelerator {
     MfcOutputRecord();
     bool at_device;
     linked_ptr<BitstreamBufferRef> buffer_ref;
+    void* address;
+    size_t length;
   };
 
   enum {
