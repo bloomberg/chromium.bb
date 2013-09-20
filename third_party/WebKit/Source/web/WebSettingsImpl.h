@@ -105,6 +105,7 @@ public:
     virtual void setFullScreenEnabled(bool);
     virtual void setGestureTapHighlightEnabled(bool);
     virtual void setHyperlinkAuditingEnabled(bool);
+    virtual void setIgnoreMainFrameOverflowHiddenQuirk(bool);
     virtual void setImagesEnabled(bool);
     virtual void setJavaEnabled(bool);
     virtual void setJavaScriptCanAccessClipboard(bool);

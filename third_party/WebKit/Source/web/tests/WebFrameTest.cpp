@@ -917,6 +917,43 @@ TEST_F(WebFrameTest, ZeroValuesQuirk)
     EXPECT_EQ(1.0f, m_webView->pageScaleFactor());
 }
 
+TEST_F(WebFrameTest, OverflowHiddenDisablesScrolling)
+{
+    registerMockedHttpURLLoad("body-overflow-hidden.html");
+
+    FixedLayoutTestWebViewClient client;
+    client.m_screenInfo.deviceScaleFactor = 1;
+    int viewportWidth = 640;
+    int viewportHeight = 480;
+
+    m_webView = FrameTestHelpers::createWebView(true, 0, &client);
+    FrameTestHelpers::loadFrame(m_webView->mainFrame(), m_baseURL + "body-overflow-hidden.html");
+    Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
+    m_webView->resize(WebSize(viewportWidth, viewportHeight));
+
+    WebCore::FrameView* view = webViewImpl()->mainFrameImpl()->frameView();
+    EXPECT_FALSE(view->userInputScrollable(WebCore::VerticalScrollbar));
+}
+
+TEST_F(WebFrameTest, IgnoreOverflowHiddenQuirk)
+{
+    registerMockedHttpURLLoad("body-overflow-hidden.html");
+
+    FixedLayoutTestWebViewClient client;
+    client.m_screenInfo.deviceScaleFactor = 1;
+    int viewportWidth = 640;
+    int viewportHeight = 480;
+
+    m_webView = FrameTestHelpers::createWebView(true, 0, &client);
+    m_webView->settings()->setIgnoreMainFrameOverflowHiddenQuirk(true);
+    FrameTestHelpers::loadFrame(m_webView->mainFrame(), m_baseURL + "body-overflow-hidden.html");
+    Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
+    m_webView->resize(WebSize(viewportWidth, viewportHeight));
+
+    WebCore::FrameView* view = webViewImpl()->mainFrameImpl()->frameView();
+    EXPECT_TRUE(view->userInputScrollable(WebCore::VerticalScrollbar));
+}
+
 TEST_F(WebFrameTest, ScaleFactorShouldNotOscillate)
 {
     registerMockedHttpURLLoad("scale_oscillate.html");
