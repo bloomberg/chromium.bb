@@ -606,8 +606,14 @@ below:
       <message name="IDS_FORM_VALIDATION_RANGE_UNDERFLOW" desc="Heading or short sentence shown when a form control value in a webpage needs to be larger than or equal to a minimum value specified by the page author, but a user specified a too small value.">
         Value must be greater than or equal to <ph name="MINIMUM">$1<ex>0</ex></ph>.
       </message>
+      <message name="IDS_FORM_VALIDATION_RANGE_UNDERFLOW_DATETIME" desc="Heading or short sentence shown when a form control value in a webpage needs to be later or equal to a minimum date/time value specified by the page author, but a user specified an earlier date/time.">
+        Value must be <ph name="MINIMUM_DATE_OR_TIME">$1<ex>01/04/2013</ex></ph> or later.
+      </message>
       <message name="IDS_FORM_VALIDATION_RANGE_OVERFLOW" desc="Heading or short sentence shown when a form control value in a webpage needs to be smaller than or equal to a maximum value specified by the page author, but a user specified a too large value.">
         Value must be less than or equal to <ph name="MAXIMUM">$1<ex>100</ex></ph>.
+      </message>
+      <message name="IDS_FORM_VALIDATION_RANGE_OVERFLOW_DATETIME" desc="Heading or short sentence shown when a form control value in a webpage needs to be earlier than or equal to a maximum date/time value specified by the page author, but a user specified a later date/time.">
+        Value must be <ph name="MAXIMUM_DATE_OR_TIME">$1<ex>12/31/2013</ex></ph> or earlier.
       </message>
       <message name="IDS_FORM_VALIDATION_BAD_INPUT_DATETIME" desc="Heading or short sentence shown when a user specified an incomplete value or an invalid date (such as 02/31/2012) to a date/time form control in a webpage.">
 	Please enter a valid value. The field is incomplete or has an invalid date.
