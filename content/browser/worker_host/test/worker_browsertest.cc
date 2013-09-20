@@ -156,9 +156,10 @@ IN_PROC_BROWSER_TEST_F(WorkerTest, LimitPerPage) {
   ASSERT_TRUE(WaitForWorkerProcessCount(max_workers_per_tab));
 }
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
-// This test is flaky inside the Linux SUID sandbox.
-// http://crbug.com/130116
+
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_MACOSX)
+// This test is flaky inside the Linux SUID sandbox: http://crbug.com/130116
+// Also flaky on Mac: http://crbug.com/295193
 IN_PROC_BROWSER_TEST_F(WorkerTest, DISABLED_LimitTotal) {
 #else
 // http://crbug.com/36800
