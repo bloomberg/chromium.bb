@@ -777,8 +777,14 @@ class XcodeSettings(object):
     # `xcodebuild -version` output looks like
     #    Xcode 4.6.3
     #    Build version 4H1503
+    # or like
+    #    Xcode 3.2.6
+    #    Component versions: DevToolsCore-1809.0; DevToolsSupport-1806.0
+    #    BuildVersion: 10M2518
     # Convert that to '0463', '4H1503'.
-    version, build = self._GetStdout(['xcodebuild', '-version']).splitlines()
+    version_list = self._GetStdout(['xcodebuild', '-version']).splitlines()
+    version = version_list[0]
+    build = version_list[-1]
     # Be careful to convert "4.2" to "0420":
     version = version.split()[-1].replace('.', '')
     version = (version + '0' * (3 - len(version))).zfill(4)
