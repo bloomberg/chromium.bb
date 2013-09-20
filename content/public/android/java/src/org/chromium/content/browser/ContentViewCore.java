@@ -1894,12 +1894,24 @@ import java.util.Map;
         }
     }
 
+    /**
+     * Called by native side when the corresponding renderer crashes. Note that if a renderer is
+     * shared between tabs, this might be called multiple times while the tab is crashed. This is
+     * because the tabs sharing a renderer also share RenderProcessHost. When one of those tabs
+     * reloads and a new renderer is created for the shared RenderProcessHost, all tabs are notified
+     * in onRenderProcessSwap(), not only the one that reloads. If this renderer dies, all the other
+     * dead tabs are notified again.
+     * @param alreadyCrashed true iff this tab is already in crashed state but the shared renderer
+     *                       resurrected and died again since the last time this was called.
+     */
     @SuppressWarnings("unused")
     @CalledByNative
-    private void onTabCrash() {
+    private void onTabCrash(boolean alreadyCrashed) {
         assert mPid != 0;
-        getContentViewClient().onRendererCrash(
-                ChildProcessLauncher.getBindingManager().isOomProtected(mPid));
+        if (!alreadyCrashed) {
+            getContentViewClient().onRendererCrash(
+                    ChildProcessLauncher.getBindingManager().isOomProtected(mPid));
+        }
         mPid = 0;
     }
 

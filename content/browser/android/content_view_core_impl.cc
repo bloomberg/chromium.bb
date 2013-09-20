@@ -358,17 +358,17 @@ void ContentViewCoreImpl::OnTabCrashed() {
     return;
   Java_ContentViewCore_resetVSyncNotification(env, obj.obj());
 
-  // If |tab_crashed_| is already true, just return. e.g. if two tabs share the
-  // render process, this will be called for each tab when the render process
-  // crashed. If user reload one tab, a new render process is created. It can be
-  // shared by the other tab. But if user closes the tab before reload the other
+  // Note that we might reach this place multiple times while the
+  // ContentViewCore remains crashed. E.g. if two tabs share the render process
+  // and the process crashes, this will be called for each tab. If the user
+  // reload one tab, a new render process is created and it can be shared by the
+  // other tab. But if user closes the reloaded tab before reloading the other
   // tab, the new render process will be shut down. This will trigger the other
   // tab's OnTabCrashed() called again as two tabs share the same
-  // BrowserRenderProcessHost.
-  if (tab_crashed_)
-    return;
+  // BrowserRenderProcessHost. The Java side will distinguish this case using
+  // tab_crashed_ passed below.
+  Java_ContentViewCore_onTabCrash(env, obj.obj(), tab_crashed_);
   tab_crashed_ = true;
-  Java_ContentViewCore_onTabCrash(env, obj.obj());
 }
 
 // All positions and sizes are in CSS pixels.
