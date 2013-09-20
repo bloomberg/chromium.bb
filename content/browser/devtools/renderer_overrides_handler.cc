@@ -97,6 +97,11 @@ RendererOverridesHandler::RendererOverridesHandler(DevToolsAgentHost* agent)
           &RendererOverridesHandler::PageNavigate,
           base::Unretained(this)));
   RegisterCommandHandler(
+      devtools::Page::reload::kName,
+      base::Bind(
+          &RendererOverridesHandler::PageReload,
+          base::Unretained(this)));
+  RegisterCommandHandler(
       devtools::Page::getNavigationHistory::kName,
       base::Bind(
           &RendererOverridesHandler::PageGetNavigationHistory,
@@ -308,6 +313,24 @@ RendererOverridesHandler::PageNavigate(
     }
   }
   return command->InternalErrorResponse("No WebContents to navigate");
+}
+
+scoped_refptr<DevToolsProtocol::Response>
+RendererOverridesHandler::PageReload(
+    scoped_refptr<DevToolsProtocol::Command> command) {
+  RenderViewHost* host = agent_->GetRenderViewHost();
+  if (host) {
+    WebContents* web_contents = host->GetDelegate()->GetAsWebContents();
+    if (web_contents) {
+      // Override only if it is crashed.
+      if (!web_contents->IsCrashed())
+        return NULL;
+
+      web_contents->GetController().Reload(false);
+      return command->SuccessResponse(NULL);
+    }
+  }
+  return command->InternalErrorResponse("No WebContents to reload");
 }
 
 scoped_refptr<DevToolsProtocol::Response>

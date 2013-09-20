@@ -53,6 +53,8 @@ class RendererOverridesHandler : public DevToolsProtocol::Handler {
       scoped_refptr<DevToolsProtocol::Command> command);
   scoped_refptr<DevToolsProtocol::Response> PageNavigate(
       scoped_refptr<DevToolsProtocol::Command> command);
+  scoped_refptr<DevToolsProtocol::Response> PageReload(
+      scoped_refptr<DevToolsProtocol::Command> command);
   scoped_refptr<DevToolsProtocol::Response> PageGetNavigationHistory(
       scoped_refptr<DevToolsProtocol::Command> command);
   scoped_refptr<DevToolsProtocol::Response> PageNavigateToHistoryEntry(

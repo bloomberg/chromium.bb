@@ -91,6 +91,10 @@ namespace Page {
     extern const char kParamUrl[];
   }  // navigate
 
+  namespace reload {
+    extern const char kName[];
+  }  // reload
+
   namespace getNavigationHistory {
     extern const char kName[];
     extern const char kResponseCurrentIndex[];

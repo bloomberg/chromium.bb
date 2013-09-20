@@ -82,6 +82,10 @@ namespace navigate {
   const char kParamUrl[] = "url";
 }  // navigate
 
+namespace reload {
+  const char kName[] = "Page.reload";
+}  // reload
+
 namespace getNavigationHistory {
   const char kName[] = "Page.getNavigationHistory";
   const char kResponseCurrentIndex[] = "currentIndex";
