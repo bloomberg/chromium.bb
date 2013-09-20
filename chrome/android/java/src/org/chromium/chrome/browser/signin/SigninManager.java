@@ -136,17 +136,16 @@ public class SigninManager {
             return;
         }
 
-        if (mPassive) {
-            // The account has policy management, but the user should be asked before signing-in
-            // to an account with management enabled. Don't show the policy dialog since this is a
-            // passive interaction (e.g. auto signing-in), and just don't auto-signin in this case.
+        if (mSignInActivity.isDestroyed()) {
+            // The activity is no longer running, cancel sign in.
             cancelSignIn();
             return;
         }
 
-        if (mSignInActivity.isDestroyed()) {
-            // The activity is no longer running, cancel sign in.
-            cancelSignIn();
+        if (mPassive) {
+            // If this is a passive interaction (e.g. auto signin) then don't show the confirmation
+            // dialog.
+            nativeFetchPolicyBeforeSignIn(mNativeSigninManagerAndroid);
             return;
         }
 
