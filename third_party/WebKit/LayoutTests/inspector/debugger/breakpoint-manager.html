@@ -510,8 +510,6 @@ function test()
                 breakpointManager._debuggerModel.dispatchEventToListeners(WebInspector.DebuggerModel.Events.BreakpointResolved, eventData);
                 var breakpoints = breakpointManager._breakpoints.keys();
                 InspectorTest.assertEquals(breakpoints.length, 1, "Exactly one breakpoint should be registered in breakpoint manager.");
-                // FIXME: we should fix this leak and check that _primaryUILocation is actually cleared for provisional breakpoints here.
-                InspectorTest.assertTrue(breakpoints[0]._primaryUILocation, "_primaryUILocation field should not be cleared for provisional breapoint.");
                 resetBreakpointManager(breakpointManager, next);
             }
         }
