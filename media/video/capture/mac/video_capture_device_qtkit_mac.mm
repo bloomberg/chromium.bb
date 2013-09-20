@@ -108,6 +108,13 @@
     // particular crash.
     base::debug::SetCrashKeyValue("VideoCaptureDeviceQTKit", "OpenedDevice");
 
+    // Set the video pixel format to 2VUY (a.k.a UYVY, packed 4:2:2).
+    NSDictionary *captureDictionary = [NSDictionary
+        dictionaryWithObject:
+            [NSNumber numberWithUnsignedInt:kCVPixelFormatType_422YpCbCr8]
+                      forKey:(id)kCVPixelBufferPixelFormatTypeKey];
+    [captureDecompressedOutput setPixelBufferAttributes:captureDictionary];
+
     return YES;
   } else {
     // Remove the previously set capture device.
@@ -160,25 +167,29 @@
     return NO;
   }
 
-  frameWidth_ = width;
-  frameHeight_ = height;
   frameRate_ = frameRate;
+
+  QTCaptureDecompressedVideoOutput *output =
+      [[captureSession_ outputs] objectAtIndex:0];
+
+  // The old capture dictionary is used to retrieve the initial pixel
+  // format, which must be maintained.
+  NSDictionary *oldCaptureDictionary = [output pixelBufferAttributes];
 
   // Set up desired output properties.
   NSDictionary *captureDictionary =
       [NSDictionary dictionaryWithObjectsAndKeys:
-          [NSNumber numberWithDouble:frameWidth_],
+          [NSNumber numberWithDouble:width],
           (id)kCVPixelBufferWidthKey,
-          [NSNumber numberWithDouble:frameHeight_],
+          [NSNumber numberWithDouble:height],
           (id)kCVPixelBufferHeightKey,
-          [NSNumber numberWithUnsignedInt:kCVPixelFormatType_422YpCbCr8],
+          [oldCaptureDictionary
+              valueForKey:(id)kCVPixelBufferPixelFormatTypeKey],
           (id)kCVPixelBufferPixelFormatTypeKey,
           nil];
-  [[[captureSession_ outputs] objectAtIndex:0]
-      setPixelBufferAttributes:captureDictionary];
+  [output setPixelBufferAttributes:captureDictionary];
 
-  [[[captureSession_ outputs] objectAtIndex:0]
-      setMinimumVideoFrameInterval:(NSTimeInterval)1/(float)frameRate];
+  [output setMinimumVideoFrameInterval:(NSTimeInterval)1/(float)frameRate];
   return YES;
 }
 
@@ -232,10 +243,11 @@
       == kCVReturnSuccess) {
     void *baseAddress = CVPixelBufferGetBaseAddress(videoFrame);
     size_t bytesPerRow = CVPixelBufferGetBytesPerRow(videoFrame);
-    int frameHeight = CVPixelBufferGetHeight(videoFrame);
-    int frameSize = bytesPerRow * frameHeight;
+    size_t frameWidth = CVPixelBufferGetWidth(videoFrame);
+    size_t frameHeight = CVPixelBufferGetHeight(videoFrame);
+    size_t frameSize = bytesPerRow * frameHeight;
 
-    // TODO(shess): bytesPerRow may not correspond to frameWidth_*4,
+    // TODO(shess): bytesPerRow may not correspond to frameWidth_*2,
     // but VideoCaptureController::OnIncomingCapturedFrame() requires
     // it to do so.  Plumbing things through is intrusive, for now
     // just deliver an adjusted buffer.
@@ -243,7 +255,8 @@
     // VideoCaptureController::OnIncomingCapturedVideoFrame, which supports
     // pitches.
     UInt8* addressToPass = static_cast<UInt8*>(baseAddress);
-    size_t expectedBytesPerRow = frameWidth_ * 4;
+    // UYVY is 2 bytes per pixel.
+    size_t expectedBytesPerRow = frameWidth * 2;
     if (bytesPerRow > expectedBytesPerRow) {
       // TODO(shess): frameHeight and frameHeight_ are not the same,
       // try to do what the surrounding code seems to assume.
@@ -253,7 +266,7 @@
       // std::vector is contiguous according to standard.
       UInt8* adjustedAddress = &adjustedFrame_[0];
 
-      for (int y = 0; y < frameHeight; ++y) {
+      for (size_t y = 0; y < frameHeight; ++y) {
         memcpy(adjustedAddress + y * expectedBytesPerRow,
                addressToPass + y * bytesPerRow,
                expectedBytesPerRow);
@@ -263,15 +276,33 @@
       frameSize = frameHeight * expectedBytesPerRow;
     }
     media::VideoCaptureCapability captureCapability;
-    captureCapability.width = frameWidth_;
-    captureCapability.height = frameHeight_;
+    captureCapability.width = frameWidth;
+    captureCapability.height = frameHeight;
     captureCapability.frame_rate = frameRate_;
     captureCapability.color = media::PIXEL_FORMAT_UYVY;
     captureCapability.expected_capture_delay = 0;
     captureCapability.interlaced = false;
 
+    // The aspect ratio dictionary is often missing, in which case we report
+    // a pixel aspect ratio of 0:0.
+    int aspectNumerator = 0, aspectDenominator = 0;
+    CFDictionaryRef aspectRatioDict = (CFDictionaryRef)CVBufferGetAttachment(
+        videoFrame, kCVImageBufferPixelAspectRatioKey, NULL);
+    if (aspectRatioDict) {
+      CFNumberRef aspectNumeratorRef = (CFNumberRef)CFDictionaryGetValue(
+          aspectRatioDict, kCVImageBufferPixelAspectRatioHorizontalSpacingKey);
+      CFNumberRef aspectDenominatorRef = (CFNumberRef)CFDictionaryGetValue(
+          aspectRatioDict, kCVImageBufferPixelAspectRatioVerticalSpacingKey);
+      DCHECK(aspectNumeratorRef && aspectDenominatorRef) <<
+          "Aspect Ratio dictionary missing its entries.";
+      CFNumberGetValue(aspectNumeratorRef, kCFNumberIntType, &aspectNumerator);
+      CFNumberGetValue(
+          aspectDenominatorRef, kCFNumberIntType, &aspectDenominator);
+    }
+
     // Deliver the captured video frame.
-    frameReceiver_->ReceiveFrame(addressToPass, frameSize, captureCapability);
+    frameReceiver_->ReceiveFrame(addressToPass, frameSize, captureCapability,
+        aspectNumerator, aspectDenominator);
 
     CVPixelBufferUnlockBaseAddress(videoFrame, kLockFlags);
   }
