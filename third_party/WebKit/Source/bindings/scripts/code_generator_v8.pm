@@ -2352,6 +2352,9 @@ sub GenerateParametersCheck
     my $forMainWorldSuffix = shift;
     my $style = shift || "new";
 
+    my $functionName = $function->name;
+    my $implClassName = GetImplName($interface);
+
     my $parameterCheckString = "";
     my $paramIndex = 0;
     my %replacements = ();
@@ -2471,8 +2474,13 @@ sub GenerateParametersCheck
             my $jsValue = $parameter->isOptional && $default eq "NullString" ? "argumentOrNull(args, $paramIndex)" : "args[$paramIndex]";
             $parameterCheckString .= JSValueToNativeStatement($parameter->type, $parameter->extendedAttributes, $jsValue, $parameterName, "    ", "args.GetIsolate()");
             if ($nativeType eq 'Dictionary' or $nativeType eq 'ScriptPromise') {
+                my $humanFriendlyIndex = $paramIndex + 1;
                 $parameterCheckString .= "    if (!$parameterName.isUndefinedOrNull() && !$parameterName.isObject()) {\n";
-                $parameterCheckString .= "        throwTypeError(\"Not an object.\", args.GetIsolate());\n";
+                if ($functionName eq "Constructor") {
+                    $parameterCheckString .= "        throwTypeError(ExceptionMessages::failedToConstruct(\"$implClassName\", \"parameter ${humanFriendlyIndex} ('${parameterName}') is not an object.\"), args.GetIsolate());\n";
+                } else {
+                    $parameterCheckString .= "        throwTypeError(ExceptionMessages::failedToExecute(\"$functionName\", \"$implClassName\", \"parameter ${humanFriendlyIndex} ('${parameterName}') is not an object.\"), args.GetIsolate());\n";
+                }
                 $parameterCheckString .= "        return;\n";
                 $parameterCheckString .= "    }\n";
             }

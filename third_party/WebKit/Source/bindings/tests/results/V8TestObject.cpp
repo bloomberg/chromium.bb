@@ -3178,12 +3178,12 @@ static void optionsObjectMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
     TestObj* imp = V8TestObject::toNative(args.Holder());
     V8TRYCATCH_VOID(Dictionary, oo, Dictionary(args[0], args.GetIsolate()));
     if (!oo.isUndefinedOrNull() && !oo.isObject()) {
-        throwTypeError("Not an object.", args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("optionsObject", "TestObj", "parameter 1 ('oo') is not an object."), args.GetIsolate());
         return;
     }
     V8TRYCATCH_VOID(Dictionary, ooo, Dictionary(args[1], args.GetIsolate()));
     if (!ooo.isUndefinedOrNull() && !ooo.isObject()) {
-        throwTypeError("Not an object.", args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("optionsObject", "TestObj", "parameter 2 ('ooo') is not an object."), args.GetIsolate());
         return;
     }
     imp->optionsObject(oo, ooo);

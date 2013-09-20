@@ -13,8 +13,8 @@ PASS candidate.candidate is "foo"
 PASS candidate.sdpMid is "bar"
 PASS candidate.sdpMLineIndex is 6
 PASS new RTCIceCandidate({}); threw exception TypeMismatchError: The type of an object was incompatible with the expected type of the parameter associated to the object..
-PASS new RTCIceCandidate(5); threw exception TypeError: Not an object..
-PASS new RTCIceCandidate("foobar"); threw exception TypeError: Not an object..
+PASS new RTCIceCandidate(5); threw exception TypeError: Failed to construct 'RTCIceCandidate': parameter 1 ('dictionary') is not an object..
+PASS new RTCIceCandidate("foobar"); threw exception TypeError: Failed to construct 'RTCIceCandidate': parameter 1 ('dictionary') is not an object..
 PASS new RTCIceCandidate(candidate:""); threw exception SyntaxError: Unexpected token :.
 PASS new RTCIceCandidate({candidate:"x"}); did not throw exception.
 PASS successfullyParsed is true

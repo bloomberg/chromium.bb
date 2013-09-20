@@ -11,8 +11,8 @@ PASS sessionDescription = new RTCSessionDescription(initializer); did not throw 
 PASS sessionDescription.type is "offer"
 PASS sessionDescription.sdp is "foobar"
 PASS new RTCSessionDescription({}); threw exception TypeMismatchError: The type of an object was incompatible with the expected type of the parameter associated to the object..
-PASS new RTCSessionDescription(5); threw exception TypeError: Not an object..
-PASS new RTCSessionDescription('foobar'); threw exception TypeError: Not an object..
+PASS new RTCSessionDescription(5); threw exception TypeError: Failed to construct 'RTCSessionDescription': parameter 1 ('dictionary') is not an object..
+PASS new RTCSessionDescription('foobar'); threw exception TypeError: Failed to construct 'RTCSessionDescription': parameter 1 ('dictionary') is not an object..
 PASS new RTCSessionDescription({type:'foobar', sdp:'x'}); threw exception TypeMismatchError: The type of an object was incompatible with the expected type of the parameter associated to the object..
 PASS new RTCSessionDescription({type:'offer', sdp:''}); threw exception TypeMismatchError: The type of an object was incompatible with the expected type of the parameter associated to the object..
 PASS new RTCSessionDescription({type:'offer', sdp:'x'}); did not throw exception.
