@@ -1315,6 +1315,9 @@ IPC_MESSAGE_ROUTED1(ViewMsg_BeginFrame,
 // processed on the browser side.
 IPC_MESSAGE_ROUTED0(ViewMsg_ImeEventAck)
 
+// Sent by the browser when we should pause video playback.
+IPC_MESSAGE_ROUTED0(ViewMsg_PauseVideo);
+
 #elif defined(OS_MACOSX)
 // Let the RenderView know its window has changed visibility.
 IPC_MESSAGE_ROUTED1(ViewMsg_SetWindowVisibility,

@@ -1413,6 +1413,7 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
                         OnUndoScrollFocusedEditableNodeIntoRect)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateTopControlsState,
                         OnUpdateTopControlsState)
+    IPC_MESSAGE_HANDLER(ViewMsg_PauseVideo, OnPauseVideo)
 #elif defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(InputMsg_CopyToFindPboard, OnCopyToFindPboard)
     IPC_MESSAGE_HANDLER(ViewMsg_PluginImeCompositionCompleted,
@@ -1921,6 +1922,14 @@ void RenderViewImpl::OnUndoScrollFocusedEditableNodeIntoRect() {
   const WebNode node = GetFocusedNode();
   if (!node.isNull() && IsEditableNode(node))
     webview()->restoreScrollAndScaleState();
+}
+
+void RenderViewImpl::OnPauseVideo() {
+  // Inform RendererMediaPlayerManager to release all video player resources.
+  // If something is in progress the resource will not be freed, it will
+  // only be freed once the tab is destroyed or if the user navigates away
+  // via WebMediaPlayerAndroid::Destroy.
+  media_player_manager_->ReleaseVideoResources();
 }
 #endif
 
@@ -5699,18 +5708,9 @@ bool RenderViewImpl::HasTouchEventHandlersAt(const gfx::Point& point) const {
 void RenderViewImpl::OnWasHidden() {
   RenderWidget::OnWasHidden();
 
-#if defined(OS_ANDROID)
-  // Inform RendererMediaPlayerManager to release all media player resources.
-  // unless some audio is playing.
-  // If something is in progress the resource will not be freed, it will
-  // only be freed once the tab is destroyed or if the user navigates away
-  // via WebMediaPlayerAndroid::Destroy
-  media_player_manager_->ReleaseMediaResources();
-
-#if defined(ENABLE_WEBRTC)
+#if defined(OS_ANDROID) && defined(ENABLE_WEBRTC)
   RenderThreadImpl::current()->video_capture_impl_manager()->
       SuspendDevices(true);
-#endif
 #endif
 
   if (webview())

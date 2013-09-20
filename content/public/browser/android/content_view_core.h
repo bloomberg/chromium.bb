@@ -54,6 +54,7 @@ class CONTENT_EXPORT ContentViewCore {
   virtual float GetDpiScale() const = 0;
   virtual void RequestContentClipping(const gfx::Rect& clipping,
                                       const gfx::Size& content_size) = 0;
+  virtual void PauseVideo() = 0;
 
   // Observer callback for frame metadata updates.
   typedef base::Callback<void(

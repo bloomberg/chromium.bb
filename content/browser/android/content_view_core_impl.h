@@ -60,6 +60,7 @@ class ContentViewCoreImpl : public ContentViewCore,
   virtual float GetDpiScale() const OVERRIDE;
   virtual void RequestContentClipping(const gfx::Rect& clipping,
                                       const gfx::Size& content_size) OVERRIDE;
+  virtual void PauseVideo() OVERRIDE;
 
   // --------------------------------------------------------------------------
   // Methods called from Java via JNI

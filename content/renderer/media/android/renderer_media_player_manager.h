@@ -32,9 +32,9 @@ class RendererMediaPlayerManager {
   int RegisterMediaPlayer(WebMediaPlayerAndroid* player);
   void UnregisterMediaPlayer(int player_id);
 
-  // Release all the media resources managed by this object unless
-  // an audio play is in progress.
-  void ReleaseMediaResources();
+  // Release the media resources managed by this object when a video
+  // is playing.
+  void ReleaseVideoResources();
 
   // Check whether a player can enter fullscreen.
   bool CanEnterFullscreen(WebKit::WebFrame* frame);

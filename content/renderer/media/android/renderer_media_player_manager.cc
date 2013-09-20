@@ -33,7 +33,7 @@ void RendererMediaPlayerManager::UnregisterMediaPlayer(int player_id) {
   media_players_.erase(player_id);
 }
 
-void RendererMediaPlayerManager::ReleaseMediaResources() {
+void RendererMediaPlayerManager::ReleaseVideoResources() {
   std::map<int, WebMediaPlayerAndroid*>::iterator player_it;
   for (player_it = media_players_.begin();
       player_it != media_players_.end(); ++player_it) {

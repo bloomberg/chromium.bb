@@ -1019,6 +1019,8 @@ class CONTENT_EXPORT RenderViewImpl
   void OnUpdateTopControlsState(bool enable_hiding,
                                 bool enable_showing,
                                 bool animate);
+  void OnPauseVideo();
+
 #elif defined(OS_MACOSX)
   void OnCopyToFindPboard();
   void OnPluginImeCompositionCompleted(const string16& text, int plugin_id);

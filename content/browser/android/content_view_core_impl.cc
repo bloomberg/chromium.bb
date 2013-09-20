@@ -342,6 +342,13 @@ void ContentViewCoreImpl::Show() {
 
 void ContentViewCoreImpl::Hide() {
   GetWebContents()->WasHidden();
+  PauseVideo();
+}
+
+void ContentViewCoreImpl::PauseVideo() {
+  RenderViewHost* host = web_contents_->GetRenderViewHost();
+  if (host)
+    host->Send(new ViewMsg_PauseVideo(host->GetRoutingID()));
 }
 
 void ContentViewCoreImpl::OnTabCrashed() {

@@ -686,6 +686,12 @@ void AwContents::SetWindowVisibility(JNIEnv* env, jobject obj, bool visible) {
 
 void AwContents::SetIsPaused(JNIEnv* env, jobject obj, bool paused) {
   browser_view_renderer_->SetIsPaused(paused);
+  if (paused) {
+    ContentViewCore* cvc =
+        ContentViewCore::FromWebContents(web_contents_.get());
+    if (cvc)
+      cvc->PauseVideo();
+  }
 }
 
 void AwContents::OnAttachedToWindow(JNIEnv* env, jobject obj, int w, int h) {
