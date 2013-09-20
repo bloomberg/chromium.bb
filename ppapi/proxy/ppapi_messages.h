@@ -633,9 +633,12 @@ IPC_MESSAGE_ROUTED3(
     int32_t /* result */)
 
 // PPP_ContentDecryptor_Dev
-IPC_MESSAGE_ROUTED4(PpapiMsg_PPPContentDecryptor_GenerateKeyRequest,
+IPC_MESSAGE_ROUTED3(PpapiMsg_PPPContentDecryptor_Initialize,
                     PP_Instance /* instance */,
                     ppapi::proxy::SerializedVar /* key_system, String */,
+                    bool /* can_challenge_platform */)
+IPC_MESSAGE_ROUTED3(PpapiMsg_PPPContentDecryptor_GenerateKeyRequest,
+                    PP_Instance /* instance */,
                     ppapi::proxy::SerializedVar /* type, String */,
                     ppapi::proxy::SerializedVar /* init_data, ArrayBuffer */)
 IPC_MESSAGE_ROUTED4(PpapiMsg_PPPContentDecryptor_AddKey,
@@ -968,11 +971,6 @@ IPC_SYNC_MESSAGE_ROUTED2_2(
     ppapi::proxy::SerializedHandle /* result_shm_handle */)
 
 // PPB_ContentDecryptor_Dev messages handled in PPB_Instance_Proxy.
-IPC_MESSAGE_ROUTED4(PpapiHostMsg_PPBInstance_NeedKey,
-                    PP_Instance /* instance */,
-                    ppapi::proxy::SerializedVar /* key_system, String */,
-                    ppapi::proxy::SerializedVar /* session_id, String */,
-                    ppapi::proxy::SerializedVar /* init_data, ArrayBuffer */)
 IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBInstance_KeyAdded,
                     PP_Instance /* instance */,
                     ppapi::proxy::SerializedVar /* key_system, String */,

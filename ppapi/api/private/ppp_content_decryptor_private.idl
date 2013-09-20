@@ -9,7 +9,7 @@
  * Decryption Modules, not normal plugins.
  */
 label Chrome {
-  M24 = 0.6
+  M31 = 0.7
 };
 
 /**
@@ -21,6 +21,21 @@ label Chrome {
  */
 interface PPP_ContentDecryptor_Private {
   /**
+   * Initialize for the specified key system.
+   *
+   * @param[in] key_system A <code>PP_Var</code> of type
+   * <code>PP_VARTYPE_STRING</code> containing the name of the key system.
+   *
+   * @param[in] can_challenge_platform A <code>PP_Bool</code> that
+   * indicates if the underlying host platform can be challenged;
+   * i.e., verified as a trusted platform.
+   */
+  void Initialize(
+      [in] PP_Instance instance,
+      [in] PP_Var key_system,
+      [in] PP_Bool can_challenge_platform);
+
+  /**
    * Generates a key request. key_system specifies the key or licensing system
    * to use. type contains the MIME type of init_data. init_data is a data
    * buffer containing data for use in generating the request.
@@ -29,9 +44,6 @@ interface PPP_ContentDecryptor_Private {
    * other methods on this interface. The session ID must be provided to the
    * browser by the CDM via <code>KeyMessage()</code> on the
    * <code>PPB_ContentDecryptor_Private</code> interface.
-   *
-   * @param[in] key_system A <code>PP_Var</code> of type
-   * <code>PP_VARTYPE_STRING</code> containing the name of the key system.
    *
    * @param[in] type A <code>PP_Var</code> of type
    * <code>PP_VARTYPE_STRING</code> containing the MIME type for init_data.
@@ -42,7 +54,6 @@ interface PPP_ContentDecryptor_Private {
    */
   void GenerateKeyRequest(
       [in] PP_Instance instance,
-      [in] PP_Var key_system,
       [in] PP_Var type,
       [in] PP_Var init_data);
 

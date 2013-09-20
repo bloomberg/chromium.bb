@@ -30,8 +30,10 @@ class PPP_ContentDecryptor_Private_Proxy : public InterfaceProxy {
   virtual bool OnMessageReceived(const IPC::Message& msg);
 
   // Message handlers.
+  void OnMsgInitialize(PP_Instance instance,
+                       SerializedVarReceiveInput key_system,
+                       bool can_challenge_platform);
   void OnMsgGenerateKeyRequest(PP_Instance instance,
-                               SerializedVarReceiveInput key_system,
                                SerializedVarReceiveInput type,
                                SerializedVarReceiveInput init_data);
   void OnMsgAddKey(PP_Instance instance,

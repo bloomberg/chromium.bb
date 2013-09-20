@@ -442,10 +442,6 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
       PP_URLComponents_Dev* components) OVERRIDE;
 
   // PPB_ContentDecryptor_Private implementation.
-  virtual void NeedKey(PP_Instance instance,
-                       PP_Var key_system,
-                       PP_Var session_id,
-                       PP_Var init_data) OVERRIDE;
   virtual void KeyAdded(PP_Instance instance,
                         PP_Var key_system,
                         PP_Var session_id) OVERRIDE;

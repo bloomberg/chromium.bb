@@ -12,7 +12,7 @@
 [generate_thunk]
 
 label Chrome {
-  M24 = 0.6
+  M31 = 0.7
 };
 
 /**
@@ -23,35 +23,6 @@ label Chrome {
  * proposed Encrypted Media Extensions: http://goo.gl/rbdnR
  */
 interface PPB_ContentDecryptor_Private {
-  /**
-   * The decryptor requires a key that has not been provided.
-   *
-   * Sent when the decryptor encounters encrypted content, but it does not have
-   * the key required to decrypt the data. The plugin will call this method in
-   * response to a call to the <code>Decrypt()</code> method on the
-   * <code>PPP_ContentDecryptor_Private<code> interface.
-   *
-   * The browser must notify the application that a key is needed, and, in
-   * response, the web application must direct the browser to call
-   * <code>AddKey()</code> on the <code>PPP_ContentDecryptor_Private</code>
-   * interface.
-   *
-   * @param[in] key_system A <code>PP_Var</code> of type
-   * <code>PP_VARTYPE_STRING</code> containing the name of the key system.
-   *
-   * @param[in] session_id A <code>PP_Var</code> of type
-   * <code>PP_VARTYPE_STRING</code> containing the session ID.
-   *
-   * @param[in] init_data A <code>PP_Var</code> of type
-   * <code>PP_VARTYPE_ARRAY_BUFFER</code> containing container-specific
-   * initialization data.
-   */
-  void NeedKey(
-      [in] PP_Instance instance,
-      [in] PP_Var key_system,
-      [in] PP_Var session_id,
-      [in] PP_Var init_data);
-
   /**
    * A key has been added as the result of a call to the <code>AddKey()</code>
    * method on the <code>PPP_ContentDecryptor_Private</code> interface.

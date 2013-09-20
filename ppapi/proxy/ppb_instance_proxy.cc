@@ -175,8 +175,6 @@ bool PPB_Instance_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnHostMsgGetPluginInstanceURL)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_GetPluginReferrerURL,
                         OnHostMsgGetPluginReferrerURL)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_NeedKey,
-                        OnHostMsgNeedKey)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_KeyAdded,
                         OnHostMsgKeyAdded)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_KeyMessage,
@@ -537,19 +535,6 @@ PP_Var PPB_Instance_Proxy::GetPluginReferrerURL(
   return PPB_URLUtil_Shared::ConvertComponentsAndReturnURL(
       result.Return(dispatcher()),
       components);
-}
-
-void PPB_Instance_Proxy::NeedKey(PP_Instance instance,
-                                 PP_Var key_system,
-                                 PP_Var session_id,
-                                 PP_Var init_data) {
-  dispatcher()->Send(
-      new PpapiHostMsg_PPBInstance_NeedKey(
-          API_ID_PPB_INSTANCE,
-          instance,
-          SerializedVarSendInput(dispatcher(), key_system),
-          SerializedVarSendInput(dispatcher(), session_id),
-          SerializedVarSendInput(dispatcher(), init_data)));
 }
 
 void PPB_Instance_Proxy::KeyAdded(PP_Instance instance,
@@ -1054,21 +1039,6 @@ void PPB_Instance_Proxy::OnHostMsgGetPluginReferrerURL(
   if (enter.succeeded()) {
     result.Return(dispatcher(),
                   enter.functions()->GetPluginReferrerURL(instance, NULL));
-  }
-}
-
-void PPB_Instance_Proxy::OnHostMsgNeedKey(PP_Instance instance,
-                                          SerializedVarReceiveInput key_system,
-                                          SerializedVarReceiveInput session_id,
-                                          SerializedVarReceiveInput init_data) {
-  if (!dispatcher()->permissions().HasPermission(PERMISSION_PRIVATE))
-    return;
-  EnterInstanceNoLock enter(instance);
-  if (enter.succeeded()) {
-    enter.functions()->NeedKey(instance,
-                               key_system.Get(dispatcher()),
-                               session_id.Get(dispatcher()),
-                               init_data.Get(dispatcher()));
   }
 }
 

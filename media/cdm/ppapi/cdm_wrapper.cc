@@ -498,8 +498,9 @@ class CdmWrapper : public pp::Instance,
   // PPP_ContentDecryptor_Private implementation.
   // Note: Results of calls to these methods must be reported through the
   // PPB_ContentDecryptor_Private interface.
-  virtual void GenerateKeyRequest(const std::string& key_system,
-                                  const std::string& type,
+  virtual void Initialize(const std::string& key_system,
+                          bool can_challenge_platform) OVERRIDE;
+  virtual void GenerateKeyRequest(const std::string& type,
                                   pp::VarArrayBuffer init_data) OVERRIDE;
   virtual void AddKey(const std::string& session_id,
                       pp::VarArrayBuffer key,
@@ -636,11 +637,25 @@ bool CdmWrapper::CreateCdmInstance(const std::string& key_system) {
   return (cdm_ != NULL);
 }
 
-void CdmWrapper::GenerateKeyRequest(const std::string& key_system,
-                                    const std::string& type,
-                                    pp::VarArrayBuffer init_data) {
+void CdmWrapper::Initialize(const std::string& key_system,
+                            bool can_challenge_platform) {
   PP_DCHECK(!key_system.empty());
-  PP_DCHECK(key_system_.empty() || key_system_ == key_system);
+  PP_DCHECK(key_system_.empty() || (key_system_ == key_system && cdm_));
+
+  if (!cdm_) {
+    if (!CreateCdmInstance(key_system)) {
+      // TODO(jrummell): Is UnknownKeyError the correct response?
+      SendUnknownKeyError(key_system, std::string());
+      return;
+    }
+  }
+  PP_DCHECK(cdm_);
+  key_system_ = key_system;
+}
+
+void CdmWrapper::GenerateKeyRequest(const std::string& type,
+                                    pp::VarArrayBuffer init_data) {
+  PP_DCHECK(cdm_);  // Initialize() should have succeeded.
 
 #if defined(CHECK_DOCUMENT_URL)
   PP_URLComponents_Dev url_components = {};
@@ -652,36 +667,19 @@ void CdmWrapper::GenerateKeyRequest(const std::string& key_system,
   PP_DCHECK(0 < url_components.host.len);
 #endif  // defined(CHECK_DOCUMENT_URL)
 
-  if (!cdm_) {
-    if (!CreateCdmInstance(key_system)) {
-      SendUnknownKeyError(key_system, std::string());
-      return;
-    }
-  }
-  PP_DCHECK(cdm_);
-
-  // Must be set here in case the CDM synchronously calls a cdm::Host method.
-  // Clear below on error.
-  // TODO(ddorwin): Set/clear key_system_ & cdm_ at same time; clear both on
-  // error below.
-  key_system_ = key_system;
   cdm::Status status = cdm_->GenerateKeyRequest(
       type.data(), type.size(),
       static_cast<const uint8_t*>(init_data.Map()),
       init_data.ByteLength());
   PP_DCHECK(status == cdm::kSuccess || status == cdm::kSessionError);
-  if (status != cdm::kSuccess) {
-    key_system_.clear();  // See comment above.
-    return;
-  }
-
-  key_system_ = key_system;
+  if (status != cdm::kSuccess)
+    SendUnknownKeyError(key_system_, std::string());
 }
 
 void CdmWrapper::AddKey(const std::string& session_id,
                         pp::VarArrayBuffer key,
                         pp::VarArrayBuffer init_data) {
-  PP_DCHECK(cdm_);  // GenerateKeyRequest() should have succeeded.
+  PP_DCHECK(cdm_);  // Initialize() should have succeeded.
   if (!cdm_) {
     SendUnknownKeyError(key_system_, session_id);
     return;
@@ -711,7 +709,7 @@ void CdmWrapper::AddKey(const std::string& session_id,
 }
 
 void CdmWrapper::CancelKeyRequest(const std::string& session_id) {
-  PP_DCHECK(cdm_);  // GenerateKeyRequest() should have succeeded.
+  PP_DCHECK(cdm_);  // Initialize() should have succeeded.
   if (!cdm_) {
     SendUnknownKeyError(key_system_, session_id);
     return;
@@ -729,7 +727,7 @@ void CdmWrapper::CancelKeyRequest(const std::string& session_id) {
 
 void CdmWrapper::Decrypt(pp::Buffer_Dev encrypted_buffer,
                          const PP_EncryptedBlockInfo& encrypted_block_info) {
-  PP_DCHECK(cdm_);  // GenerateKeyRequest() should have succeeded.
+  PP_DCHECK(cdm_);  // Initialize() should have succeeded.
   PP_DCHECK(!encrypted_buffer.is_null());
 
   // Release a buffer that the caller indicated it is finished with.
@@ -759,7 +757,7 @@ void CdmWrapper::Decrypt(pp::Buffer_Dev encrypted_buffer,
 void CdmWrapper::InitializeAudioDecoder(
     const PP_AudioDecoderConfig& decoder_config,
     pp::Buffer_Dev extra_data_buffer) {
-  PP_DCHECK(cdm_);  // GenerateKeyRequest() should have succeeded.
+  PP_DCHECK(cdm_);  // Initialize() should have succeeded.
 
   cdm::Status status = cdm::kSessionError;
   if (cdm_) {
@@ -786,7 +784,7 @@ void CdmWrapper::InitializeAudioDecoder(
 void CdmWrapper::InitializeVideoDecoder(
     const PP_VideoDecoderConfig& decoder_config,
     pp::Buffer_Dev extra_data_buffer) {
-  PP_DCHECK(cdm_);  // GenerateKeyRequest() should have succeeded.
+  PP_DCHECK(cdm_);  // Initialize() should have succeeded.
 
   cdm::Status status = cdm::kSessionError;
   if (cdm_) {
@@ -815,7 +813,7 @@ void CdmWrapper::InitializeVideoDecoder(
 
 void CdmWrapper::DeinitializeDecoder(PP_DecryptorStreamType decoder_type,
                                      uint32_t request_id) {
-  PP_DCHECK(cdm_);  // GenerateKeyRequest() should have succeeded.
+  PP_DCHECK(cdm_);  // Initialize() should have succeeded.
   if (cdm_) {
     cdm_->DeinitializeDecoder(
         PpDecryptorStreamTypeToCdmStreamType(decoder_type));
@@ -829,7 +827,7 @@ void CdmWrapper::DeinitializeDecoder(PP_DecryptorStreamType decoder_type,
 
 void CdmWrapper::ResetDecoder(PP_DecryptorStreamType decoder_type,
                               uint32_t request_id) {
-  PP_DCHECK(cdm_);  // GenerateKeyRequest() should have succeeded.
+  PP_DCHECK(cdm_);  // Initialize() should have succeeded.
   if (cdm_)
     cdm_->ResetDecoder(PpDecryptorStreamTypeToCdmStreamType(decoder_type));
 
@@ -842,7 +840,7 @@ void CdmWrapper::DecryptAndDecode(
     PP_DecryptorStreamType decoder_type,
     pp::Buffer_Dev encrypted_buffer,
     const PP_EncryptedBlockInfo& encrypted_block_info) {
-  PP_DCHECK(cdm_);  // GenerateKeyRequest() should have succeeded.
+  PP_DCHECK(cdm_);  // Initialize() should have succeeded.
 
   // Release a buffer that the caller indicated it is finished with.
   allocator_.Release(encrypted_block_info.tracking_info.buffer_id);

@@ -243,10 +243,16 @@ ContentDecryptorDelegate::ContentDecryptorDelegate(
 ContentDecryptorDelegate::~ContentDecryptorDelegate() {
 }
 
-void ContentDecryptorDelegate::Initialize(const std::string& key_system) {
-  // TODO(ddorwin): Add an Initialize method to PPP_ContentDecryptor_Private.
+void ContentDecryptorDelegate::Initialize(const std::string& key_system,
+                                          bool can_challenge_platform) {
   DCHECK(!key_system.empty());
+  DCHECK(key_system_.empty());
   key_system_ = key_system;
+
+  plugin_decryption_interface_->Initialize(
+      pp_instance_,
+      StringVar::StringToPPVar(key_system_),
+      PP_FromBool(can_challenge_platform));
 }
 
 void ContentDecryptorDelegate::SetKeyEventCallbacks(
@@ -267,7 +273,6 @@ bool ContentDecryptorDelegate::GenerateKeyRequest(const std::string& type,
 
   plugin_decryption_interface_->GenerateKeyRequest(
       pp_instance_,
-      StringVar::StringToPPVar(key_system_),  // TODO(ddorwin): Remove.
       StringVar::StringToPPVar(type),
       init_data_array);
   return true;

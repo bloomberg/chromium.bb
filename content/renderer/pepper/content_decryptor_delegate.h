@@ -39,7 +39,8 @@ class ContentDecryptorDelegate {
       const PPP_ContentDecryptor_Private* plugin_decryption_interface);
   ~ContentDecryptorDelegate();
 
-  void Initialize(const std::string& key_system);
+  void Initialize(const std::string& key_system,
+                  const bool can_challenge_platform);
 
   void SetKeyEventCallbacks(const media::KeyAddedCB& key_added_cb,
                             const media::KeyErrorCB& key_error_cb,

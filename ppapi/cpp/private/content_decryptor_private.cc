@@ -23,10 +23,9 @@ namespace {
 static const char kPPPContentDecryptorInterface[] =
     PPP_CONTENTDECRYPTOR_PRIVATE_INTERFACE;
 
-void GenerateKeyRequest(PP_Instance instance,
-                        PP_Var key_system_arg,
-                        PP_Var type_arg,
-                        PP_Var init_data_arg) {
+void Initialize(PP_Instance instance,
+                PP_Var key_system_arg,
+                PP_Bool can_challenge_platform) {
   void* object =
       Instance::GetPerInstanceObject(instance, kPPPContentDecryptorInterface);
   if (!object)
@@ -34,6 +33,19 @@ void GenerateKeyRequest(PP_Instance instance,
 
   pp::Var key_system_var(pp::PASS_REF, key_system_arg);
   if (!key_system_var.is_string())
+    return;
+
+  static_cast<ContentDecryptor_Private*>(object)->Initialize(
+      key_system_var.AsString(),
+      PP_ToBool(can_challenge_platform));
+}
+
+void GenerateKeyRequest(PP_Instance instance,
+                        PP_Var type_arg,
+                        PP_Var init_data_arg) {
+  void* object =
+      Instance::GetPerInstanceObject(instance, kPPPContentDecryptorInterface);
+  if (!object)
     return;
 
   pp::Var type_var(pp::PASS_REF, type_arg);
@@ -46,7 +58,6 @@ void GenerateKeyRequest(PP_Instance instance,
   pp::VarArrayBuffer init_data_array_buffer(init_data_var);
 
   static_cast<ContentDecryptor_Private*>(object)->GenerateKeyRequest(
-      key_system_var.AsString(),
       type_var.AsString(),
       init_data_array_buffer);
 }
@@ -184,6 +195,7 @@ void DecryptAndDecode(PP_Instance instance,
 }
 
 const PPP_ContentDecryptor_Private ppp_content_decryptor = {
+  &Initialize,
   &GenerateKeyRequest,
   &AddKey,
   &CancelKeyRequest,
@@ -212,22 +224,6 @@ ContentDecryptor_Private::~ContentDecryptor_Private() {
   Instance::RemovePerInstanceObject(associated_instance_,
                                     kPPPContentDecryptorInterface,
                                     this);
-}
-
-void ContentDecryptor_Private::NeedKey(const std::string& key_system,
-                                       const std::string& session_id,
-                                       pp::VarArrayBuffer init_data) {
-  // session_id can be empty here.
-  if (has_interface<PPB_ContentDecryptor_Private>()) {
-    pp::Var key_system_var(key_system);
-    pp::Var session_id_var(session_id);
-
-    get_interface<PPB_ContentDecryptor_Private>()->NeedKey(
-        associated_instance_.pp_instance(),
-        key_system_var.pp_var(),
-        session_id_var.pp_var(),
-        init_data.pp_var());
-  }
 }
 
 void ContentDecryptor_Private::KeyAdded(const std::string& key_system,

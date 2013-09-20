@@ -109,8 +109,24 @@ bool InitializePppDecryptorBuffer(PP_Instance instance,
   return true;
 }
 
+void Initialize(PP_Instance instance,
+                PP_Var key_system,
+                PP_Bool can_challenge_platform) {
+  HostDispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
+  if (!dispatcher) {
+    NOTREACHED();
+    return;
+  }
+
+  dispatcher->Send(
+      new PpapiMsg_PPPContentDecryptor_Initialize(
+          API_ID_PPP_CONTENT_DECRYPTOR_PRIVATE,
+          instance,
+          SerializedVarSendInput(dispatcher, key_system),
+          PP_ToBool(can_challenge_platform)));
+}
+
 void GenerateKeyRequest(PP_Instance instance,
-                        PP_Var key_system,
                         PP_Var type,
                         PP_Var init_data) {
   HostDispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
@@ -123,7 +139,6 @@ void GenerateKeyRequest(PP_Instance instance,
       new PpapiMsg_PPPContentDecryptor_GenerateKeyRequest(
           API_ID_PPP_CONTENT_DECRYPTOR_PRIVATE,
           instance,
-          SerializedVarSendInput(dispatcher, key_system),
           SerializedVarSendInput(dispatcher, type),
           SerializedVarSendInput(dispatcher, init_data)));
 }
@@ -349,6 +364,7 @@ void DecryptAndDecode(PP_Instance instance,
 }
 
 static const PPP_ContentDecryptor_Private content_decryptor_interface = {
+  &Initialize,
   &GenerateKeyRequest,
   &AddKey,
   &CancelKeyRequest,
@@ -390,6 +406,8 @@ bool PPP_ContentDecryptor_Private_Proxy::OnMessageReceived(
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PPP_ContentDecryptor_Private_Proxy, msg)
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPPContentDecryptor_Initialize,
+                        OnMsgInitialize)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPPContentDecryptor_GenerateKeyRequest,
                         OnMsgGenerateKeyRequest)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPPContentDecryptor_AddKey,
@@ -414,15 +432,26 @@ bool PPP_ContentDecryptor_Private_Proxy::OnMessageReceived(
   return handled;
 }
 
-void PPP_ContentDecryptor_Private_Proxy::OnMsgGenerateKeyRequest(
+void PPP_ContentDecryptor_Private_Proxy::OnMsgInitialize(
     PP_Instance instance,
     SerializedVarReceiveInput key_system,
+    bool can_challenge_platform) {
+  if (ppp_decryptor_impl_) {
+    CallWhileUnlocked(
+        ppp_decryptor_impl_->Initialize,
+        instance,
+        ExtractReceivedVarAndAddRef(dispatcher(), &key_system),
+        PP_FromBool(can_challenge_platform));
+  }
+}
+
+void PPP_ContentDecryptor_Private_Proxy::OnMsgGenerateKeyRequest(
+    PP_Instance instance,
     SerializedVarReceiveInput type,
     SerializedVarReceiveInput init_data) {
   if (ppp_decryptor_impl_) {
     CallWhileUnlocked(ppp_decryptor_impl_->GenerateKeyRequest,
                       instance,
-                      ExtractReceivedVarAndAddRef(dispatcher(), &key_system),
                       ExtractReceivedVarAndAddRef(dispatcher(), &type),
                       ExtractReceivedVarAndAddRef(dispatcher(), &init_data));
   }

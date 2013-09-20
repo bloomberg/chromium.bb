@@ -2179,14 +2179,6 @@ PP_Var PepperPluginInstanceImpl::GetDefaultCharSet(PP_Instance instance) {
 // PPP_ContentDecryptor_Private calls made on |content_decryptor_delegate_|.
 // Therefore, |content_decryptor_delegate_| must have been initialized when
 // the following methods are called.
-void PepperPluginInstanceImpl::NeedKey(PP_Instance instance,
-                                       PP_Var key_system_var,
-                                       PP_Var session_id_var,
-                                       PP_Var init_data_var) {
-  content_decryptor_delegate_->NeedKey(
-      key_system_var, session_id_var, init_data_var);
-}
-
 void PepperPluginInstanceImpl::KeyAdded(PP_Instance instance,
                                         PP_Var key_system_var,
                                         PP_Var session_id_var) {

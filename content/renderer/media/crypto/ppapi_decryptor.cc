@@ -36,7 +36,10 @@ scoped_ptr<PpapiDecryptor> PpapiDecryptor::Create(
     return scoped_ptr<PpapiDecryptor>();
   }
 
-  plugin_cdm_delegate->Initialize(key_system);
+  // TODO(jrummell): How do we get the can_challenge_platform value from
+  // the browser?
+  const bool can_challenge_platform = false;
+  plugin_cdm_delegate->Initialize(key_system, can_challenge_platform);
 
   return scoped_ptr<PpapiDecryptor>(new PpapiDecryptor(plugin_instance,
                                                        plugin_cdm_delegate,

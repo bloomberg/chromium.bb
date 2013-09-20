@@ -4,7 +4,7 @@
  */
 
 /* From private/ppb_content_decryptor_private.idl,
- *   modified Thu Mar 28 15:22:02 2013.
+ *   modified Tue Sep 17 11:31:05 2013.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPB_CONTENT_DECRYPTOR_PRIVATE_H_
@@ -18,10 +18,10 @@
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/private/pp_content_decryptor.h"
 
-#define PPB_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_6 \
-    "PPB_ContentDecryptor_Private;0.6"
+#define PPB_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_7 \
+    "PPB_ContentDecryptor_Private;0.7"
 #define PPB_CONTENTDECRYPTOR_PRIVATE_INTERFACE \
-    PPB_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_6
+    PPB_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_7
 
 /**
  * @file
@@ -42,34 +42,7 @@
  * browser side support for the Content Decryption Module (CDM) for v0.1 of the
  * proposed Encrypted Media Extensions: http://goo.gl/rbdnR
  */
-struct PPB_ContentDecryptor_Private_0_6 {
-  /**
-   * The decryptor requires a key that has not been provided.
-   *
-   * Sent when the decryptor encounters encrypted content, but it does not have
-   * the key required to decrypt the data. The plugin will call this method in
-   * response to a call to the <code>Decrypt()</code> method on the
-   * <code>PPP_ContentDecryptor_Private<code> interface.
-   *
-   * The browser must notify the application that a key is needed, and, in
-   * response, the web application must direct the browser to call
-   * <code>AddKey()</code> on the <code>PPP_ContentDecryptor_Private</code>
-   * interface.
-   *
-   * @param[in] key_system A <code>PP_Var</code> of type
-   * <code>PP_VARTYPE_STRING</code> containing the name of the key system.
-   *
-   * @param[in] session_id A <code>PP_Var</code> of type
-   * <code>PP_VARTYPE_STRING</code> containing the session ID.
-   *
-   * @param[in] init_data A <code>PP_Var</code> of type
-   * <code>PP_VARTYPE_ARRAY_BUFFER</code> containing container-specific
-   * initialization data.
-   */
-  void (*NeedKey)(PP_Instance instance,
-                  struct PP_Var key_system,
-                  struct PP_Var session_id,
-                  struct PP_Var init_data);
+struct PPB_ContentDecryptor_Private_0_7 {
   /**
    * A key has been added as the result of a call to the <code>AddKey()</code>
    * method on the <code>PPP_ContentDecryptor_Private</code> interface.
@@ -271,7 +244,7 @@ struct PPB_ContentDecryptor_Private_0_6 {
       const struct PP_DecryptedBlockInfo* decrypted_block_info);
 };
 
-typedef struct PPB_ContentDecryptor_Private_0_6 PPB_ContentDecryptor_Private;
+typedef struct PPB_ContentDecryptor_Private_0_7 PPB_ContentDecryptor_Private;
 /**
  * @}
  */
