@@ -445,3 +445,77 @@ class CachingRietveld(Rietveld):
         'get_patchset_properties',
         (issue, patchset),
         super(CachingRietveld, self).get_patchset_properties)
+
+
+class ReadOnlyRietveld(object):
+  """
+  Only provides read operations, and simulates writes locally.
+
+  Intentionally do not inherit from Rietveld to avoid any write-issuing
+  logic to be invoked accidentally.
+  """
+
+  # Dictionary of local changes, indexed by issue number as int.
+  _local_changes = {}
+
+  def __init__(self, *args, **kwargs):
+    # We still need an actual Rietveld instance to issue reads, just keep
+    # it hidden.
+    self._rietveld = Rietveld(*args, **kwargs)
+
+  @classmethod
+  def _get_local_changes(cls, issue):
+    """Returns dictionary of local changes for |issue|, if any."""
+    return cls._local_changes.get(issue, {})
+
+  @property
+  def url(self):
+    return self._rietveld.url
+
+  @property
+  def email(self):
+    return self._rietveld.email
+
+  def get_pending_issues(self):
+    pending_issues = self._rietveld.get_pending_issues()
+
+    # Filter out issues we've closed or unchecked the commit checkbox.
+    return [issue for issue in pending_issues
+            if not self._get_local_changes(issue).get('closed', False) and
+            self._get_local_changes(issue).get('commit', True)]
+
+  def close_issue(self, issue):  # pylint:disable=R0201
+    logging.info('ReadOnlyRietveld: closing issue %d' % issue)
+    ReadOnlyRietveld._local_changes.setdefault(issue, {})['closed'] = True
+
+  def get_issue_properties(self, issue, messages):
+    data = self._rietveld.get_issue_properties(issue, messages)
+    data.update(self._get_local_changes(issue))
+    return data
+
+  def get_patchset_properties(self, issue, patchset):
+    return self._rietveld.get_patchset_properties(issue, patchset)
+
+  def get_patch(self, issue, patchset):
+    return self._rietveld.get_patch(issue, patchset)
+
+  def update_description(self, issue, description):  # pylint:disable=R0201
+    logging.info('ReadOnlyRietveld: new description for issue %d: %s' %
+        (issue, description))
+
+  def add_comment(self,  # pylint:disable=R0201
+                  issue,
+                  message,
+                  add_as_reviewer=False):
+    logging.info('ReadOnlyRietveld: posting comment "%s" to issue %d' %
+        (message, issue))
+
+  def set_flag(self, issue, patchset, flag, value):  # pylint:disable=R0201
+    logging.info('ReadOnlyRietveld: setting flag "%s" to "%s" for issue %d' %
+        (flag, value, issue))
+    ReadOnlyRietveld._local_changes.setdefault(issue, {})[flag] = value
+
+  def trigger_try_jobs(  # pylint:disable=R0201
+      self, issue, patchset, reason, clobber, revision, builders_and_tests):
+    logging.info('ReadOnlyRietveld: triggering try jobs %r for issue %d' %
+        (builders_and_tests, issue))
