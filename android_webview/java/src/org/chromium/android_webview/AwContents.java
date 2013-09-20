@@ -527,6 +527,9 @@ public class AwContents {
         setScrollBarStyle(mInternalAccessAdapter.super_getScrollBarStyle());
 
         setNewAwContents(nativeInit(browserContext));
+
+        onVisibilityChanged(mContainerView, mContainerView.getVisibility());
+        onWindowVisibilityChanged(mContainerView.getWindowVisibility());
     }
 
     /**
