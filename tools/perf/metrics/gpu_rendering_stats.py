@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 class GpuRenderingStats(object):
-  def __init__(self, timeline_marker, rendering_stats_deltas,
+  def __init__(self, smoothness_marker, gesture_marker, rendering_stats_deltas,
                used_gpu_benchmarking):
     """
     Utility class for extracting rendering statistics from the timeline (or
@@ -16,9 +16,9 @@ class GpuRenderingStats(object):
 
     All *_time values are measured in seconds.
     """
-    self.renderer_process = timeline_marker.start_thread.parent
-    self.start = timeline_marker.start
-    self.end = self.start + timeline_marker.duration
+    self.renderer_process = smoothness_marker.start_thread.parent
+    self.start = gesture_marker.start
+    self.end = self.start + gesture_marker.duration
 
     self.total_time = (self.end - self.start) / 1000.0
     self.animation_frame_count = []

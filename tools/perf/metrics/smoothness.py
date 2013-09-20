@@ -7,6 +7,7 @@ from telemetry.core import util
 from metrics import discrepancy
 
 TIMELINE_MARKER = 'smoothness_scroll'
+SYNTHETIC_GESTURE_MARKER = 'SyntheticGestureController::running'
 
 class SmoothnessMetrics(object):
   def __init__(self, tab):

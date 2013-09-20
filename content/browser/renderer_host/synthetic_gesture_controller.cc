@@ -40,6 +40,8 @@ void SyntheticGestureController::BeginSmoothScroll(
       params.mouse_event_x,
       params.mouse_event_y);
 
+  TRACE_EVENT_ASYNC_BEGIN0("benchmark", "SyntheticGestureController::running",
+      pending_synthetic_gesture_);
   timer_.Start(FROM_HERE, GetSyntheticGestureMessageInterval(), this,
                &SyntheticGestureController::OnTimer);
 }
@@ -57,6 +59,8 @@ void SyntheticGestureController::BeginPinch(
       params.anchor_x,
       params.anchor_y);
 
+  TRACE_EVENT_ASYNC_BEGIN0("benchmark", "SyntheticGestureController::running",
+      pending_synthetic_gesture_);
   timer_.Start(FROM_HERE, GetSyntheticGestureMessageInterval(), this,
                &SyntheticGestureController::OnTimer);
 }
@@ -70,6 +74,8 @@ void SyntheticGestureController::OnTimer() {
   base::TimeTicks now = base::TimeTicks::Now();
   if (!pending_synthetic_gesture_->ForwardInputEvents(now, rwh_)) {
     timer_.Stop();
+    TRACE_EVENT_ASYNC_END0("benchmark", "SyntheticGestureController::running",
+        pending_synthetic_gesture_);
     pending_synthetic_gesture_ = NULL;
     rwh_->Send(new ViewMsg_SyntheticGestureCompleted(rwh_->GetRoutingID()));
   }
