@@ -1825,7 +1825,7 @@ END
             AddToImplIncludes("bindings/v8/ExceptionState.h");
             $code .= "    $svgNativeType* wrapper = ${v8ClassName}::toNative(info.Holder());\n";
             $code .= "    if (wrapper->isReadOnly()) {\n";
-            $code .= "        setDOMException(NoModificationAllowedError, info.GetIsolate());\n";
+            $code .= "        setDOMException(NoModificationAllowedError, ExceptionMessages::failedToSet(\"${attrName}\", \"${interfaceName}\", \"The attribute is read-only.\"), info.GetIsolate());\n";
             $code .= "        return;\n";
             $code .= "    }\n";
             $code .= "    $svgWrappedNativeType& impInstance = wrapper->propertyReference();\n";
@@ -2229,7 +2229,7 @@ END
             AddToImplIncludes("core/dom/ExceptionCode.h");
             $code .= "    $nativeClassName wrapper = ${v8ClassName}::toNative(args.Holder());\n";
             $code .= "    if (wrapper->isReadOnly()) {\n";
-            $code .= "        setDOMException(NoModificationAllowedError, args.GetIsolate());\n";
+            $code .= "        setDOMException(NoModificationAllowedError, ExceptionMessages::failedToExecute(\"${name}\", \"${implClassName}\", \"The object is read-only.\"), args.GetIsolate());\n";
             $code .= "        return;\n";
             $code .= "    }\n";
             my $svgWrappedNativeType = GetSVGWrappedTypeNeedingTearOff($interfaceName);
