@@ -1610,20 +1610,21 @@ class SavedState(Flattenable):
     if 'os' in data:
       out.variables['OS'] = data['os']
     if out.variables['OS'] != get_flavor():
-      raise run_isolated.ConfigError(
+      raise isolateserver.ConfigError(
           'The .isolated.state file was created on another platform')
 
     # Converts human readable form back into the proper class type.
     algo = data.get('algo', 'sha-1')
     if not algo in isolateserver.SUPPORTED_ALGOS:
-      raise run_isolated.ConfigError('Unknown algo \'%s\'' % out.algo)
+      raise isolateserver.ConfigError('Unknown algo \'%s\'' % out.algo)
     out.algo = isolateserver.SUPPORTED_ALGOS[algo]
 
     # For example, 1.1 is guaranteed to be backward compatible with 1.0 code.
     if not re.match(r'^(\d+)\.(\d+)$', out.version):
-      raise run_isolated.ConfigError('Unknown version \'%s\'' % out.version)
+      raise isolateserver.ConfigError('Unknown version \'%s\'' % out.version)
     if out.version.split('.', 1)[0] != '1':
-      raise run_isolated.ConfigError('Unsupported version \'%s\'' % out.version)
+      raise isolateserver.ConfigError(
+          'Unsupported version \'%s\'' % out.version)
 
     # The .isolate file must be valid. It could be absolute on Windows if the
     # drive containing the .isolate and the drive containing the .isolated files
