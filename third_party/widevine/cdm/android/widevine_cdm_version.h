@@ -10,13 +10,6 @@
 // Indicates that the Widevine CDM is available.
 #define WIDEVINE_CDM_AVAILABLE
 
-// TODO(ddorwin): Remove when we have CDM availability detection
-// (http://crbug.com/224793).
-#define DISABLE_WIDEVINE_CDM_CANPLAYTYPE
-
-// Indicates that ISO BMFF CENC support is available in the Widevine CDM.
-// Must be enabled if any of the codecs below are enabled.
-#define WIDEVINE_CDM_CENC_SUPPORT_AVAILABLE
 // Indicates that AVC1 decoding is available for ISO BMFF CENC.
 #define WIDEVINE_CDM_AVC1_SUPPORT_AVAILABLE
 // Indicates that AAC decoding is available for ISO BMFF CENC.
