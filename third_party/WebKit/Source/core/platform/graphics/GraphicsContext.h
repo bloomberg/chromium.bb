@@ -164,6 +164,9 @@ public:
     CompositeOperator compositeOperation() const { return m_state->m_compositeOperator; }
     BlendMode blendModeOperation() const { return m_state->m_blendMode; }
 
+    void setDrawLuminanceMask(bool drawLuminanceMask) { m_state->m_drawLuminanceMask = drawLuminanceMask; }
+    bool drawLuminanceMask() const { return m_state->m_drawLuminanceMask; }
+
     // Change the way document markers are rendered.
     // Any deviceScaleFactor higher than 1.5 is enough to justify setting this flag.
     void setUseHighResMarkers(bool isHighRes) { m_useHighResMarker = isHighRes; }

@@ -1725,6 +1725,8 @@ void GraphicsContext::setupPaintCommon(SkPaint* paint) const
 
     if (!SkXfermode::IsMode(m_state->m_xferMode.get(), SkXfermode::kSrcOver_Mode))
         paint->setXfermode(m_state->m_xferMode.get());
+    if (this->drawLuminanceMask())
+        paint->setXfermode(SkLumaMaskXfermode::Create(SkXfermode::kSrcOver_Mode));
 
     if (m_state->m_looper)
         paint->setLooper(m_state->m_looper.get());
