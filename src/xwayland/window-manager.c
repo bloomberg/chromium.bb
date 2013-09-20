@@ -2159,6 +2159,12 @@ xserver_set_window_id(struct wl_client *client, struct wl_resource *resource,
 
 	weston_wm_window_read_properties(window);
 
+	/* A weston_wm_window may have many different surfaces assigned
+	 * throughout its life, so we must make sure to remove the listener
+	 * from the old surface signal list. */
+	if (window->surface)
+		wl_list_remove(&window->surface_destroy_listener.link);
+
 	window->surface = (struct weston_surface *) surface;
 	window->surface_destroy_listener.notify = surface_destroy;
 	wl_signal_add(&surface->destroy_signal,
