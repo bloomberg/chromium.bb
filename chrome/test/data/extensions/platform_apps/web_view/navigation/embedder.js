@@ -4,8 +4,6 @@
 
 var embedder = {};
 embedder.tests = {};
-embedder.baseGuestURL = '';
-embedder.guestURL = '';
 
 window.runTest = function(testName) {
   if (!embedder.test.testList[testName]) {

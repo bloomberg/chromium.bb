@@ -4,16 +4,6 @@
 
 var embedder = {};
 embedder.tests = {};
-embedder.baseGuestURL = '';
-embedder.guestURL = '';
-
-embedder.setUp = function(config) {
-  embedder.baseGuestURL = 'http://localhost:' + config.testServer.port;
-  embedder.guestURL = embedder.baseGuestURL +
-      '/extensions/platform_apps/web_view/edit_commands' +
-      '/guest.html';
-  chrome.test.log('Guest url is: ' + embedder.guestURL);
-};
 
 /** @private */
 embedder.setUpGuest_ = function() {
@@ -36,7 +26,8 @@ embedder.waitForResponseFromGuest_ =
   var onPostMessageReceived = function(e) {
     var data = JSON.parse(e.data);
     var response = data[0];
-    if (response == 'channel-created') {
+    console.log('Received response "' + response + '" from the guest content.');
+    if (response == 'connected') {
       channelCreationCallback(webview);
       chrome.test.sendMessage('connected');
       return;
@@ -45,8 +36,7 @@ embedder.waitForResponseFromGuest_ =
       chrome.test.sendMessage('selected-all');
       return;
     }
-    var name = data[1];
-    if ((response != expectedResponse) || (name != testName)) {
+    if (response != expectedResponse) {
       return;
     }
     responseCallback();
@@ -54,12 +44,19 @@ embedder.waitForResponseFromGuest_ =
   window.addEventListener('message', onPostMessageReceived);
 
   var onWebViewLoadStop = function(e) {
-    // This creates a communication channel with the guest.
-    webview.contentWindow.postMessage(
-        JSON.stringify(['create-channel', testName]), '*');
+    webview.executeScript(
+      {file: 'inject_edit_commands.js'},
+      function(results) {
+        console.log('Injected script into webview.');
+        // Establish a communication channel with the webview1's guest.
+        var msg = ['connect'];
+        webview.contentWindow.postMessage(JSON.stringify(msg), '*');
+      });
+    webview.removeEventListener('loadstop', onWebViewLoadStop);
   };
   webview.addEventListener('loadstop', onWebViewLoadStop);
-  webview.setAttribute('src', embedder.guestURL);
+
+  webview.setAttribute('src', 'about:blank');
 };
 
 // Tests begin.
@@ -98,7 +95,6 @@ embedder.tests.testEditCommandsWhenFocused =
 
 onload = function() {
   chrome.test.getConfig(function(config) {
-    embedder.setUp(config);
     embedder.startTests();
   });
 };

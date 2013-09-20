@@ -142,12 +142,18 @@ class WebViewInteractiveTest
     }
   }
 
+  enum TestServer {
+    NEEDS_TEST_SERVER,
+    NO_TEST_SERVER
+  };
+
   scoped_ptr<ExtensionTestMessageListener> RunAppHelper(
       const std::string& test_name,
       const std::string& app_location,
+      TestServer test_server,
       content::WebContents** embedder_web_contents) {
     // For serving guest pages.
-    if (!StartEmbeddedTestServer()) {
+    if ((test_server == NEEDS_TEST_SERVER) && !StartEmbeddedTestServer()) {
       LOG(ERROR) << "FAILED TO START TEST SERVER.";
       return scoped_ptr<ExtensionTestMessageListener>();
     }
@@ -183,15 +189,19 @@ class WebViewInteractiveTest
   }
 
   void TestHelper(const std::string& test_name,
-                  const std::string& app_location) {
+                  const std::string& app_location,
+                  TestServer test_server) {
     content::WebContents* embedder_web_contents = NULL;
     scoped_ptr<ExtensionTestMessageListener> done_listener(
-        RunAppHelper(test_name, app_location, &embedder_web_contents));
+        RunAppHelper(
+            test_name, app_location, test_server, &embedder_web_contents));
 
     ASSERT_TRUE(done_listener);
     ASSERT_TRUE(done_listener->WaitUntilSatisfied());
   }
 
+  void RunTest(const std::string& app_name) {
+  }
   void SetupTest(const std::string& app_name,
                  const std::string& guest_url_spec) {
     ASSERT_TRUE(StartEmbeddedTestServer());
@@ -497,18 +507,21 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, PointerLock) {
 
 // Tests that setting focus on the <webview> sets focus on the guest.
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, Focus_FocusEvent) {
-  TestHelper("testFocusEvent", "web_view/focus");
+  TestHelper("testFocusEvent", "web_view/focus", NO_TEST_SERVER);
 }
 
 // Tests that setting focus on the <webview> sets focus on the guest.
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, Focus_BlurEvent) {
-  TestHelper("testBlurEvent", "web_view/focus");
+  TestHelper("testBlurEvent", "web_view/focus", NO_TEST_SERVER);
 }
 
 // Tests that guests receive edit commands and respond appropriately.
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, EditCommands) {
-  SetupTest("web_view/edit_commands",
-            "/extensions/platform_apps/web_view/edit_commands/guest.html");
+  ExtensionTestMessageListener guest_connected_listener("connected", false);
+  LoadAndLaunchPlatformApp("web_view/edit_commands");
+  // Wait until the guest process reports that it has established a message
+  // channel with the app.
+  ASSERT_TRUE(guest_connected_listener.WaitUntilSatisfied());
 
   ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(
       GetPlatformAppWindow()));
@@ -543,44 +556,62 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, EditCommandsNoMenu) {
 
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest,
                        NewWindow_NewWindowNameTakesPrecedence) {
-  TestHelper("testNewWindowNameTakesPrecedence", "web_view/newwindow");
+  TestHelper("testNewWindowNameTakesPrecedence",
+             "web_view/newwindow",
+             NEEDS_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest,
                        NewWindow_WebViewNameTakesPrecedence) {
-  TestHelper("testWebViewNameTakesPrecedence", "web_view/newwindow");
+  TestHelper("testWebViewNameTakesPrecedence",
+             "web_view/newwindow",
+             NEEDS_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, NewWindow_NoName) {
-  TestHelper("testNoName", "web_view/newwindow");
+  TestHelper("testNoName",
+             "web_view/newwindow",
+             NEEDS_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, NewWindow_Redirect) {
-  TestHelper("testNewWindowRedirect", "web_view/newwindow");
+  TestHelper("testNewWindowRedirect",
+             "web_view/newwindow",
+             NEEDS_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, NewWindow_Close) {
-  TestHelper("testNewWindowClose", "web_view/newwindow");
+  TestHelper("testNewWindowClose",
+             "web_view/newwindow",
+             NEEDS_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, NewWindow_ExecuteScript) {
-  TestHelper("testNewWindowExecuteScript", "web_view/newwindow");
+  TestHelper("testNewWindowExecuteScript",
+             "web_view/newwindow",
+             NEEDS_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, NewWindow_WebRequest) {
-  TestHelper("testNewWindowWebRequest", "web_view/newwindow");
+  TestHelper("testNewWindowWebRequest",
+             "web_view/newwindow",
+             NEEDS_TEST_SERVER);
 }
 
 // A custom elements bug needs to be addressed to enable this test:
 // See http://crbug.com/282477 for more information.
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest,
                        DISABLED_NewWindow_WebRequestCloseWindow) {
-  TestHelper("testNewWindowWebRequestCloseWindow", "web_view/newwindow");
+  TestHelper("testNewWindowWebRequestCloseWindow",
+             "web_view/newwindow",
+             NEEDS_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest,
                        NewWindow_WebRequestRemoveElement) {
-  TestHelper("testNewWindowWebRequestRemoveElement", "web_view/newwindow");
+  TestHelper("testNewWindowWebRequestRemoveElement",
+             "web_view/newwindow",
+             NEEDS_TEST_SERVER);
 }
 
 // Tests that Ctrl+Click/Cmd+Click on a link fires up the newwindow API.
@@ -591,6 +622,7 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, NewWindow_OpenInNewTab) {
   scoped_ptr<ExtensionTestMessageListener> done_listener(
     RunAppHelper("testNewWindowOpenInNewTab",
                  "web_view/newwindow",
+                 NEEDS_TEST_SERVER,
                  &embedder_web_contents));
 
   loaded_listener.WaitUntilSatisfied();
@@ -667,11 +699,10 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, DragDropWithinWebView) {
 #endif  // (defined(OS_CHROMEOS))
 
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, Navigation) {
-  TestHelper("testNavigation", "web_view/navigation");
+  TestHelper("testNavigation", "web_view/navigation", NO_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, Navigation_BackForwardKeys) {
-  ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
   ExtensionTestMessageListener launched_listener("Launched", false);
   LoadAndLaunchPlatformApp("web_view/navigation");
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
@@ -706,16 +737,9 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, Navigation_BackForwardKeys) {
   ASSERT_TRUE(done_listener.WaitUntilSatisfied());
 }
 
-// Fail at least once a day on Windows. See http://crbug.com/293445.
-#if defined(OS_WIN)
-#define MAYBE_PointerLock_PointerLockLostWithFocus \
-    DISABLED_PointerLock_PointerLockLostWithFocus
-#else
-#define MAYBE_PointerLock_PointerLockLostWithFocus \
-    PointerLock_PointerLockLostWithFocus
-#endif
-
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest,
-                       MAYBE_PointerLock_PointerLockLostWithFocus) {
-  TestHelper("testPointerLockLostWithFocus", "web_view/pointerlock");
+                       PointerLock_PointerLockLostWithFocus) {
+  TestHelper("testPointerLockLostWithFocus",
+             "web_view/pointerlock",
+             NO_TEST_SERVER);
 }
