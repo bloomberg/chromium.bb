@@ -31,8 +31,6 @@
 #include "config.h"
 #include "core/dom/CustomElementCallbackQueue.h"
 
-#include "core/dom/Element.h"
-
 namespace WebCore {
 
 PassOwnPtr<CustomElementCallbackQueue> CustomElementCallbackQueue::create(PassRefPtr<Element> element)

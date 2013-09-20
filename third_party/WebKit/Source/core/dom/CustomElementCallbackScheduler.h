@@ -31,6 +31,9 @@
 #ifndef CustomElementCallbackScheduler_h
 #define CustomElementCallbackScheduler_h
 
+#include "core/dom/CustomElementCallbackQueue.h"
+#include "wtf/HashMap.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/AtomicString.h"
 
@@ -46,8 +49,21 @@ public:
     static void scheduleEnteredViewCallback(PassRefPtr<CustomElementLifecycleCallbacks>, PassRefPtr<Element>);
     static void scheduleLeftViewCallback(PassRefPtr<CustomElementLifecycleCallbacks>, PassRefPtr<Element>);
 
+protected:
+    friend class CustomElementCallbackDispatcher;
+    static void clearElementCallbackQueueMap();
+
 private:
-    CustomElementCallbackScheduler();
+    CustomElementCallbackScheduler() { }
+
+    static CustomElementCallbackScheduler& instance();
+
+    CustomElementCallbackQueue* ensureCallbackQueue(PassRefPtr<Element>);
+    CustomElementCallbackQueue* schedule(PassRefPtr<Element>);
+    CustomElementCallbackQueue* scheduleInCurrentElementQueue(PassRefPtr<Element>);
+
+    typedef HashMap<Element*, OwnPtr<CustomElementCallbackQueue> > ElementCallbackQueueMap;
+    ElementCallbackQueueMap m_elementCallbackQueueMap;
 };
 
 }

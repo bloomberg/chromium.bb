@@ -31,14 +31,12 @@
 #ifndef CustomElementCallbackDispatcher_h
 #define CustomElementCallbackDispatcher_h
 
-#include "core/dom/CustomElementCallbackQueue.h"
-#include "core/dom/Element.h"
-#include "wtf/HashMap.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
+
+class CustomElementCallbackQueue;
+class CustomElementCallbackScheduler;
 
 class CustomElementCallbackDispatcher {
     WTF_MAKE_NONCOPYABLE(CustomElementCallbackDispatcher);
@@ -72,9 +70,7 @@ public:
 
 protected:
     friend class CustomElementCallbackScheduler;
-
-    CustomElementCallbackQueue* schedule(PassRefPtr<Element>);
-    CustomElementCallbackQueue* scheduleInCurrentElementQueue(PassRefPtr<Element>);
+    void enqueue(CustomElementCallbackQueue*);
 
 private:
     CustomElementCallbackDispatcher()
@@ -106,17 +102,11 @@ private:
     static void processElementQueueAndPop();
     void processElementQueueAndPop(size_t start, size_t end);
 
-    CustomElementCallbackQueue* ensureCallbackQueue(PassRefPtr<Element>);
-    void ensureInCurrentElementQueue(CustomElementCallbackQueue*);
-
     // The processing stack, flattened. Element queues lower in the
     // stack appear toward the head of the vector. The first element
     // is a null sentinel value.
     static const size_t kNumSentinels = 1;
     Vector<CustomElementCallbackQueue*> m_flattenedProcessingStack;
-
-    typedef HashMap<Element*, OwnPtr<CustomElementCallbackQueue> > ElementCallbackQueueMap;
-    ElementCallbackQueueMap m_elementCallbackQueueMap;
 };
 
 }

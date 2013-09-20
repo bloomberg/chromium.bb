@@ -31,7 +31,8 @@
 #include "config.h"
 #include "core/dom/CustomElementCallbackDispatcher.h"
 
-#include "core/dom/CustomElementCallbackInvocation.h"
+#include "core/dom/CustomElementCallbackQueue.h"
+#include "core/dom/CustomElementCallbackScheduler.h"
 #include "wtf/MainThread.h"
 
 namespace WebCore {
@@ -73,8 +74,7 @@ bool CustomElementCallbackDispatcher::dispatch()
     s_elementQueueEnd = kNumSentinels;
     m_flattenedProcessingStack.resize(s_elementQueueEnd);
 
-    ElementCallbackQueueMap emptyMap;
-    m_elementCallbackQueueMap.swap(emptyMap);
+    CustomElementCallbackScheduler::clearElementCallbackQueueMap();
 
     bool didWork = start < end;
     return didWork;
@@ -107,46 +107,11 @@ void CustomElementCallbackDispatcher::processElementQueueAndPop(size_t start, si
     m_flattenedProcessingStack.resize(start);
     s_elementQueueEnd = start;
 
-    if (start == kNumSentinels) {
-        ElementCallbackQueueMap emptyMap;
-        m_elementCallbackQueueMap.swap(emptyMap);
-    }
+    if (start == kNumSentinels)
+        CustomElementCallbackScheduler::clearElementCallbackQueueMap();
 }
 
-CustomElementCallbackQueue* CustomElementCallbackDispatcher::ensureCallbackQueue(PassRefPtr<Element> element)
-{
-    Element* key = element.get();
-    ElementCallbackQueueMap::iterator it = m_elementCallbackQueueMap.find(key);
-    if (it == m_elementCallbackQueueMap.end())
-        it = m_elementCallbackQueueMap.add(key, CustomElementCallbackQueue::create(element)).iterator;
-    return it->value.get();
-}
-
-// Finds or creates the callback queue for element. If the
-// createdCallback has not finished running, the callback queue is not
-// moved to the top-of-stack. Otherwise like
-// scheduleInCurrentElementQueue.
-CustomElementCallbackQueue* CustomElementCallbackDispatcher::schedule(PassRefPtr<Element> element)
-{
-    CustomElementCallbackQueue* callbackQueue = ensureCallbackQueue(element);
-    if (!callbackQueue->inCreatedCallback())
-        ensureInCurrentElementQueue(callbackQueue);
-    return callbackQueue;
-}
-
-// Finds or creates the callback queue for element. If the element's
-// callback queue is scheduled in an earlier processing stack frame,
-// its owner is set to the element queue on the top of the processing
-// stack. Because callback queues are processed exhaustively, this
-// effectively moves the callback queue to the top of the stack.
-CustomElementCallbackQueue* CustomElementCallbackDispatcher::scheduleInCurrentElementQueue(PassRefPtr<Element> element)
-{
-    CustomElementCallbackQueue* callbackQueue = ensureCallbackQueue(element);
-    ensureInCurrentElementQueue(callbackQueue);
-    return callbackQueue;
-}
-
-void CustomElementCallbackDispatcher::ensureInCurrentElementQueue(CustomElementCallbackQueue* callbackQueue)
+void CustomElementCallbackDispatcher::enqueue(CustomElementCallbackQueue* callbackQueue)
 {
     if (callbackQueue->owner() == currentElementQueue())
         return;

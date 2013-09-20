@@ -32,6 +32,7 @@
 #define CustomElementCallbackQueue_h
 
 #include "core/dom/CustomElementCallbackInvocation.h"
+#include "core/dom/Element.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
