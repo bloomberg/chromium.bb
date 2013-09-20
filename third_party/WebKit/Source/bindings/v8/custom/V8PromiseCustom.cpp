@@ -32,7 +32,6 @@
 #include "bindings/v8/custom/V8PromiseCustom.h"
 
 #include "V8Promise.h"
-#include "V8PromiseResolver.h"
 #include "bindings/v8/ScopedPersistent.h"
 #include "bindings/v8/ScriptFunctionCall.h"
 #include "bindings/v8/ScriptState.h"
@@ -93,6 +92,13 @@ v8::Local<v8::ObjectTemplate> internalObjectTemplate(v8::Isolate* isolate)
     // This is only for getting a unique pointer which we can pass to privateTemplate.
     static int privateTemplateUniqueKey = 0;
     return cachedObjectTemplate(&privateTemplateUniqueKey, V8PromiseCustom::InternalFieldCount, isolate);
+}
+
+v8::Local<v8::ObjectTemplate> resolverObjectTemplate(v8::Isolate* isolate)
+{
+    // This is only for getting a unique pointer which we can pass to privateTemplate.
+    static int privateTemplateUniqueKey = 0;
+    return cachedObjectTemplate(&privateTemplateUniqueKey, V8PromiseCustom::ResolverFieldCount, isolate);
 }
 
 class PromiseTask : public ScriptExecutionContext::Task {
@@ -287,6 +293,42 @@ v8::Local<v8::Object> promiseEveryEnvironment(v8::Handle<v8::Object> resolver, v
     return environment;
 }
 
+void promiseResolve(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    v8::Local<v8::Object> resolver = args.Data().As<v8::Object>();
+    ASSERT(!resolver.IsEmpty());
+    if (V8PromiseCustom::isInternalDetached(resolver))
+        return;
+    v8::Local<v8::Object> internal = V8PromiseCustom::getInternal(resolver);
+    if (V8PromiseCustom::getState(internal) != V8PromiseCustom::Pending)
+        return;
+    v8::Isolate* isolate = args.GetIsolate();
+    V8PromiseCustom::setState(internal, V8PromiseCustom::PendingWithResolvedFlagSet, isolate);
+
+    v8::Local<v8::Value> result = v8::Undefined(isolate);
+    if (args.Length() > 0)
+        result = args[0];
+    V8PromiseCustom::resolveResolver(resolver, result, V8PromiseCustom::Asynchronous, isolate);
+}
+
+void promiseReject(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    v8::Local<v8::Object> resolver = args.Data().As<v8::Object>();
+    ASSERT(!resolver.IsEmpty());
+    if (V8PromiseCustom::isInternalDetached(resolver))
+        return;
+    v8::Local<v8::Object> internal = V8PromiseCustom::getInternal(resolver);
+    if (V8PromiseCustom::getState(internal) != V8PromiseCustom::Pending)
+        return;
+    v8::Isolate* isolate = args.GetIsolate();
+    V8PromiseCustom::setState(internal, V8PromiseCustom::PendingWithResolvedFlagSet, isolate);
+
+    v8::Local<v8::Value> result = v8::Undefined(isolate);
+    if (args.Length() > 0)
+        result = args[0];
+    V8PromiseCustom::rejectResolver(resolver, result, V8PromiseCustom::Asynchronous, isolate);
+}
+
 } // namespace
 
 void V8Promise::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -301,7 +343,8 @@ void V8Promise::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& arg
     v8::Local<v8::Object> promise, resolver;
     V8PromiseCustom::createPromise(args.Holder(), &promise, &resolver, isolate);
     v8::Handle<v8::Value> argv[] = {
-        resolver,
+        createClosure(promiseResolve, resolver),
+        createClosure(promiseReject, resolver)
     };
     v8::TryCatch trycatch;
     if (V8ScriptRunner::callFunction(init, getScriptExecutionContext(), promise, WTF_ARRAY_LENGTH(argv), argv, isolate).IsEmpty()) {
@@ -489,13 +532,18 @@ void V8Promise::someMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args
 void V8PromiseCustom::createPromise(v8::Handle<v8::Object> creationContext, v8::Local<v8::Object>* promise, v8::Local<v8::Object>* resolver, v8::Isolate* isolate)
 {
     v8::Local<v8::ObjectTemplate> internalTemplate = internalObjectTemplate(isolate);
+    v8::Local<v8::ObjectTemplate> resolverTemplate = resolverObjectTemplate(isolate);
     v8::Local<v8::Object> internal = internalTemplate->NewInstance();
+    *resolver = resolverTemplate->NewInstance();
     *promise = V8DOMWrapper::createWrapper(creationContext, &V8Promise::info, 0, isolate);
-    *resolver = V8DOMWrapper::createWrapper(creationContext, &V8PromiseResolver::info, 0, isolate);
 
     clearInternal(internal, V8PromiseCustom::Pending, v8::Undefined(isolate), isolate);
 
     (*promise)->SetInternalField(v8DOMWrapperObjectIndex, internal);
+    // v8DOMWrapperObjectIndex is the same value as ResolverInternalIndex.
+    // To extract a internal object from a promise and resolver object
+    // by the same internal field index, use v8DOMWrapperObjectIndex
+    // for resolver objects.
     (*resolver)->SetInternalField(v8DOMWrapperObjectIndex, internal);
 }
 

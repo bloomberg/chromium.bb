@@ -4,8 +4,8 @@ description('Test Promise.');
 
 jsTestIsAsync = true;
 
-var resolver;
-var promise = new Promise(function(r) { resolver = r; });
+var resolve;
+var promise = new Promise(function(r) { resolve = r; });
 var promiseState = 'pending';
 var promiseResult = undefined;
 promise.then(function(result) {
@@ -18,7 +18,7 @@ promise.then(function(result) {
 
 shouldBeEqualToString('promiseState', 'pending');
 
-resolver.fulfill('hello');
+resolve('hello');
 
 shouldBeEqualToString('promiseState', 'pending');
 

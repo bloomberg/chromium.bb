@@ -6,11 +6,11 @@ var global = this;
 
 global.jsTestIsAsync = true;
 
-var resolver;
+var resolve;
 
-var firstPromise = new Promise(function(newResolver) {
+var firstPromise = new Promise(function(newResolve) {
   global.thisInInit = this;
-  resolver = newResolver;
+  resolve = newResolve;
 });
 
 var secondPromise = firstPromise.then(function(result) {
@@ -23,4 +23,4 @@ var secondPromise = firstPromise.then(function(result) {
 
 shouldBeTrue('thisInInit === firstPromise');
 
-resolver.fulfill('hello');
+resolve('hello');

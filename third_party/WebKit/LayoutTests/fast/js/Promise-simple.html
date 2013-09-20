@@ -11,11 +11,11 @@ description('Test Promise.');
 
 window.jsTestIsAsync = true;
 
-var resolver;
+var resolve;
 
-var firstPromise = new Promise(function(newResolver) {
+var firstPromise = new Promise(function(newResolve) {
   window.thisInInit = this;
-  resolver = newResolver;
+  resolve = newResolve;
 });
 
 var secondPromise = firstPromise.then(function(result) {
@@ -28,7 +28,7 @@ var secondPromise = firstPromise.then(function(result) {
 
 shouldBeTrue('thisInInit === firstPromise');
 
-resolver.fulfill('hello');
+resolve('hello');
 
 </script>
 <script src="resources/js-test-post.js"></script>

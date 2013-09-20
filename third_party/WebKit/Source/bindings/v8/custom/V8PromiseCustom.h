@@ -25,6 +25,8 @@
 #ifndef V8PromiseCustom_h
 #define V8PromiseCustom_h
 
+#include "bindings/v8/WrapperTypeInfo.h"
+
 #include <v8.h>
 
 namespace WebCore {
@@ -57,6 +59,11 @@ public:
     enum PrimitiveWrapperFieldIndex {
         PrimitiveWrapperPrimitiveIndex,
         PrimitiveWrapperFieldCount, // This entry must always be at the bottom.
+    };
+
+    enum ResolverFieldIndex {
+        ResolverInternalIndex = v8DOMWrapperObjectIndex,
+        ResolverFieldCount, // This entry must always be at the bottom.
     };
 
     enum PromiseState {

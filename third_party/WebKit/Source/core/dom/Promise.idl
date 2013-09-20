@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-callback PromiseInit = void (PromiseResolver resolver);
+callback PromiseInit = void (any resolve, any reject);
 callback AnyCallback = any (optional any value);
 [
    GlobalContext=Window&WorkerGlobalScope,

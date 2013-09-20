@@ -12,60 +12,59 @@ description('Test Promise.');
 window.jsTestIsAsync = true;
 result = undefined;
 
-var p1 = new Promise(function(r) { r.fulfill('p1'); });
-var p2 = new Promise(function(r) { r.fulfill('p2'); });
-var p3 = new Promise(function(r) { r.fulfill('p3'); });
+var p1 = new Promise(function(resolve) { resolve('p1'); });
+var p2 = new Promise(function(resolve) { resolve('p2'); });
+var p3 = new Promise(function(resolve) { resolve('p3'); });
 var p4 = new Promise(function() {});
 var p5 = new Promise(function() {});
-var p6 = new Promise(function(r) { r.reject('p6'); });
-var p7 = new Promise(function(r) { r.reject('p7'); });
-var p8 = new Promise(function(r) { r.reject('p8'); });
-var p9 = new Promise(function(r) { r.fulfill(p2); });
+var p6 = new Promise(function(_, reject) { reject('p6'); });
+var p7 = new Promise(function(_, reject) { reject('p7'); });
+var p8 = new Promise(function(_, reject) { reject('p8'); });
+var p9 = new Promise(function(resolve) { resolve(p2); });
 
-var case0 = Promise.every().then(function(result) {
-  testPassed('Promise.every() is fulfilled.');
-  window.result = result;
-  shouldBe('result', 'undefined');
-}, function() {
-  testFailed('Promise.every() is rejected.');
-});
-
-var case1 = Promise.every(p1, p2, p3).then(function(result) {
-  testPassed('Promise.every(p1, p2, p3) is fulfilled.');
-  window.result = result;
-  shouldBe('result.length', '3');
-  shouldBeEqualToString('result[0]', 'p1');
-  shouldBeEqualToString('result[1]', 'p2');
-  shouldBeEqualToString('result[2]', 'p3');
-}, function() {
-  testFailed('Promise.every(p1, p2, p3) is rejected.');
-});
-
-var case2 = Promise.every(p1, p2, p5).then(function(result) {
+Promise.every(p1, p2, p5).then(function(result) {
   testFailed('Promise.every(p1, p2, p5) is fulfilled.');
 }, function() {
   testFailed('Promise.every(p1, p2, p5) is rejected.');
 });
 
-var case3 = Promise.every(p1, p6, p5).then(function(result) {
-  testFailed('Promise.every(p1, p6, p5) is fulfilled.');
-}, function(result) {
-  testPassed('Promise.every(p1, p6, p5) is rejected.');
+Promise.every().then(function(result) {
+  testPassed('Promise.every() is fulfilled.');
   window.result = result;
-  shouldBeEqualToString('result', 'p6');
-});
-
-var case4 = Promise.every(p9).then(function(result) {
-  testPassed('Promise.every(p9) is fulfilled.');
-  window.result = result;
-  shouldBe('result.length', '1');
-  shouldBeEqualToString('result[0]', 'p2');
-}, function(result) {
-  testFailed('Promise.every(p9) is rejected.');
-});
+  shouldBe('result', 'undefined');
+}, function() {
+  testFailed('Promise.every() is rejected.');
+}).then(function() {
+  return Promise.every(p1, p2, p3).then(function(result) {
+    testPassed('Promise.every(p1, p2, p3) is fulfilled.');
+    window.result = result;
+    shouldBe('result.length', '3');
+    shouldBeEqualToString('result[0]', 'p1');
+    shouldBeEqualToString('result[1]', 'p2');
+    shouldBeEqualToString('result[2]', 'p3');
+  }, function() {
+    testFailed('Promise.every(p1, p2, p3) is rejected.');
+  });
+}).then(function() {
+  return Promise.every(p1, p6, p5).then(function(result) {
+    testFailed('Promise.every(p1, p6, p5) is fulfilled.');
+  }, function(result) {
+    testPassed('Promise.every(p1, p6, p5) is rejected.');
+    window.result = result;
+    shouldBeEqualToString('result', 'p6');
+  });
+}).then(function() {
+  return Promise.every(p9).then(function(result) {
+    testPassed('Promise.every(p9) is fulfilled.');
+    window.result = result;
+    shouldBe('result.length', '1');
+    shouldBeEqualToString('result[0]', 'p2');
+  }, function(result) {
+    testFailed('Promise.every(p9) is rejected.');
+  });
+}).then(finishJSTest, finishJSTest);
 
 shouldBe('result', 'undefined');
-Promise.every(case0, case1, case3, case4).then(finishJSTest, finishJSTest);
 
 </script>
 <script src="resources/js-test-post.js"></script>

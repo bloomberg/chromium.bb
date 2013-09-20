@@ -20,7 +20,7 @@ var value = {
   }
 };
 finishJSTest();
-var promise = new Promise(function(r) { r.resolve(value); });
+var promise = new Promise(function(resolve) { resolve(value); });
 
 promise.then(function(result) {
   testPassed('fulfilled');

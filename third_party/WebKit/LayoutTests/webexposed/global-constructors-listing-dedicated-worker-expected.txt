@@ -39,7 +39,6 @@ Starting worker: resources/global-context-constructors-listing.js
 [Worker] Number
 [Worker] Object
 [Worker] Promise
-[Worker] PromiseResolver
 [Worker] RangeError
 [Worker] ReferenceError
 [Worker] RegExp

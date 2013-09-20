@@ -12,59 +12,58 @@ description('Test Promise.');
 window.jsTestIsAsync = true;
 result = undefined;
 
-var p1 = new Promise(function(r) { r.fulfill('p1'); });
-var p2 = new Promise(function(r) { r.fulfill('p2'); });
-var p3 = new Promise(function(r) { r.fulfill('p3'); });
+var p1 = new Promise(function(resolve) { resolve('p1'); });
+var p2 = new Promise(function(resolve) { resolve('p2'); });
+var p3 = new Promise(function(resolve) { resolve('p3'); });
 var p4 = new Promise(function() {});
 var p5 = new Promise(function() {});
-var p6 = new Promise(function(r) { r.reject('p6'); });
-var p7 = new Promise(function(r) { r.reject('p7'); });
-var p8 = new Promise(function(r) { r.reject('p8'); });
-var p9 = new Promise(function(r) { r.fulfill(p2); });
+var p6 = new Promise(function(_, reject) { reject('p6'); });
+var p7 = new Promise(function(_, reject) { reject('p7'); });
+var p8 = new Promise(function(_, reject) { reject('p8'); });
+var p9 = new Promise(function(resolve) { resolve(p2); });
 
-var case0 = Promise.some().then(function(result) {
-  debug('PASS Promise.some() is fulfilled.');
-  window.result = result;
-  shouldBe('result', 'undefined');
-}, function() {
-  debug('FAIL Promise.some() is rejected.');
-});
-
-var case1 = Promise.some(p6, p7, p8).then(function(result) {
-  debug('FAIL Promise.some(p6, p7, p8) is fulfilled.');
-}, function(result) {
-  debug('PASS Promise.some(p6, p7, p8) is rejected.');
-  window.result = result;
-  shouldBe('result.length', '3');
-  shouldBeEqualToString('result[0]', 'p6');
-  shouldBeEqualToString('result[1]', 'p7');
-  shouldBeEqualToString('result[2]', 'p8');
-});
-
-var case2 = Promise.some(p5, p6, p7).then(function(result) {
+Promise.some(p5, p6, p7).then(function(result) {
   debug('FAIL Promise.some(p5, p6, p7) is fulfilled.');
 }, function() {
   debug('FAIL Promise.some(p5, p6, p7) is rejected.');
 });
 
-var case3 = Promise.some(p5, p7, p1).then(function(result) {
-  debug('PASS Promise.some(p5, p7, p1) is fulfilled.');
+Promise.some().then(function(result) {
+  debug('PASS Promise.some() is fulfilled.');
   window.result = result;
-  shouldBeEqualToString('result', 'p1');
-}, function(result) {
-  debug('FAIL Promise.some(p5, p7, p1) is rejected.');
-});
-
-var case4 = Promise.some(p9).then(function(result) {
-  debug('PASS Promise.some(p9) is fulfilled.');
-  window.result = result;
-  shouldBeEqualToString('result', 'p2');
-}, function(result) {
-  debug('FAIL Promise.some(p9) is rejected.');
-});
+  shouldBe('result', 'undefined');
+}, function() {
+  debug('FAIL Promise.some() is rejected.');
+}).then(function() {
+  return Promise.some(p6, p7, p8).then(function(result) {
+    debug('FAIL Promise.some(p6, p7, p8) is fulfilled.');
+  }, function(result) {
+    debug('PASS Promise.some(p6, p7, p8) is rejected.');
+    window.result = result;
+    shouldBe('result.length', '3');
+    shouldBeEqualToString('result[0]', 'p6');
+    shouldBeEqualToString('result[1]', 'p7');
+    shouldBeEqualToString('result[2]', 'p8');
+  });
+}).then(function() {
+  return Promise.some(p5, p7, p1).then(function(result) {
+    debug('PASS Promise.some(p5, p7, p1) is fulfilled.');
+    window.result = result;
+    shouldBeEqualToString('result', 'p1');
+  }, function(result) {
+    debug('FAIL Promise.some(p5, p7, p1) is rejected.');
+  });
+}).then(function() {
+  return Promise.some(p9).then(function(result) {
+    debug('PASS Promise.some(p9) is fulfilled.');
+    window.result = result;
+    shouldBeEqualToString('result', 'p2');
+  }, function(result) {
+    debug('FAIL Promise.some(p9) is rejected.');
+  });
+}).then(finishJSTest, finishJSTest);
 
 shouldBe('result', 'undefined');
-Promise.every(case0, case1, case3, case4).then(finishJSTest, finishJSTest);
 
 </script>
 <script src="resources/js-test-post.js"></script>

@@ -6,11 +6,11 @@ var global = this;
 
 global.jsTestIsAsync = true;
 
-var resolver;
+var resolve;
 
-var firstPromise = new Promise(function(newResolver) {
+var firstPromise = new Promise(function(newResolve) {
   global.thisInInit = this;
-  resolver = newResolver;
+  resolve = newResolve;
 });
 
 var secondPromise = firstPromise.then(function(result) {
@@ -30,6 +30,6 @@ shouldThrow('firstPromise.then(null)', '"TypeError: fulfillCallback must be a fu
 shouldThrow('firstPromise.then(undefined, null)', '"TypeError: rejectCallback must be a function or undefined"');
 shouldThrow('firstPromise.then(37)', '"TypeError: fulfillCallback must be a function or undefined"');
 
-resolver.fulfill('hello');
+resolve('hello');
 
 

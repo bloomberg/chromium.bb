@@ -5,11 +5,11 @@ description('Test Promise.');
 var global = this;
 
 global.jsTestIsAsync = true;
-var resolver;
+var reject;
 
-var firstPromise = new Promise(function(newResolver) {
+var firstPromise = new Promise(function(newResolve, newReject) {
   global.thisInInit = this;
-  resolver = newResolver;
+  reject = newReject;
 });
 
 var secondPromise = firstPromise.catch(function(result) {
@@ -39,5 +39,5 @@ shouldBeTrue('secondPromise instanceof Promise');
 shouldThrow('firstPromise.catch(null)', '"TypeError: rejectCallback must be a function or undefined"');
 shouldThrow('firstPromise.catch(37)', '"TypeError: rejectCallback must be a function or undefined"');
 
-resolver.reject('hello');
+reject('hello');
 

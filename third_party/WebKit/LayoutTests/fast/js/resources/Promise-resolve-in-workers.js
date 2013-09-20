@@ -5,8 +5,8 @@ description('Test Promise.');
 var global = this;
 global.jsTestIsAsync = true;
 
-var firstPromise = new Promise(function(resolver) {
-  resolver.resolve('hello');
+var firstPromise = new Promise(function(resolve) {
+  resolve('hello');
 });
 
 var secondPromise = firstPromise.then(function(result) {

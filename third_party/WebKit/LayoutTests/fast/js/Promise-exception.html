@@ -11,9 +11,9 @@ description('Test Promise.');
 
 window.jsTestIsAsync = true;
 
-var firstPromise = new Promise(function(resolver) {
+var firstPromise = new Promise(function(resolve) {
   window.thisInInit = this;
-  resolver.fulfill('hello');
+  resolve('hello');
 });
 
 var secondPromise = firstPromise.then(function(result) {

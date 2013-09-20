@@ -11,8 +11,10 @@ description('Test Promise.');
 
 window.jsTestIsAsync = true;
 
-var future = new Promise(function(resolver) {
-  resolver.fulfill('hello');
+var future = new Promise(function(resolve) {
+  setTimeout(function() {
+    resolve('hello');
+  }, 0);
 }).then(function(result) {
   window.result = result;
   shouldBeEqualToString('result', 'hello');
