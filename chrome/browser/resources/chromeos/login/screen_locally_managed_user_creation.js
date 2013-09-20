@@ -580,6 +580,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
             12, 4);
         this.setButtonDisabledStatus('next', true);
       }
+      this.disabled = false;
     },
 
     /**

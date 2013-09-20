@@ -16,6 +16,7 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "grit/generated_resources.h"
 #include "net/base/data_url.h"
+#include "net/base/escape.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
@@ -244,6 +245,10 @@ void LocallyManagedUserCreationScreenHandler::HandleCheckLocallyManagedUserName(
     CallJS("managedUserNameError", name,
            l10n_util::GetStringUTF16(
                IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_USERNAME_ALREADY_EXISTS));
+  } else if (net::EscapeForHTML(name) != name) {
+    CallJS("managedUserNameError", name,
+           l10n_util::GetStringUTF16(
+               IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_ILLEGAL_USERNAME));
   } else {
     CallJS("managedUserNameOk", name);
   }
@@ -262,8 +267,13 @@ void LocallyManagedUserCreationScreenHandler::HandleCreateManagedUser(
                new_user_name));
     return;
   }
+  if (net::EscapeForHTML(new_user_name) != new_user_name) {
+    CallJS("managedUserNameError", new_user_name,
+           l10n_util::GetStringUTF16(
+               IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_ILLEGAL_USERNAME));
+    return;
+  }
 
-  // TODO(antrim): Any other password checks here?
   if (new_user_password.length() == 0) {
     CallJS("showPasswordError",
            l10n_util::GetStringUTF16(

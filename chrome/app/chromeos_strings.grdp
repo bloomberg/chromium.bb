@@ -559,6 +559,9 @@ Press any key to continue exploring.
   <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_USERNAME_ALREADY_EXISTS" desc="Error text shown in supervised user creation dialog when local account with suggested name already exists on a device.">
     Whoops, this name is already in use!
   </message>
+  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_ILLEGAL_USERNAME" desc="Error text shown in supervised user creation dialog when suggested name contains illegal characters (e.g. html tags).">
+    Whoops, illegal symbols in name!
+  </message>
   <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PASSWORD_MISMATCH_ERROR" desc="Error text shown in supervised user creation dialog when typed passwords does not match.">
     Whoops, passwords do not match!
   </message>
