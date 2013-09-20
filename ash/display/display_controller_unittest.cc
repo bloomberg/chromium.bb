@@ -29,7 +29,7 @@
 #include "ui/views/widget/widget.h"
 
 #if defined(USE_X11)
-#include "ui/base/x/x11_util.h"
+#include "ui/gfx/x/x11_types.h"
 #include <X11/Xlib.h>
 #undef RootWindow
 #endif
@@ -288,7 +288,7 @@ void GetPrimaryAndSeconary(aura::RootWindow** primary,
 
 std::string GetXWindowName(aura::RootWindow* window) {
   char* name = NULL;
-  XFetchName(ui::GetXDisplay(), window->GetAcceleratedWidget(), &name);
+  XFetchName(gfx::GetXDisplay(), window->GetAcceleratedWidget(), &name);
   std::string ret(name);
   XFree(name);
   return ret;

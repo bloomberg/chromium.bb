@@ -26,7 +26,7 @@ void EnumerateAllChildWindows(ui::EnumerateWindowsDelegate* delegate,
     // to old school enumeration of all X windows.
     XID root, parent, *children;
     unsigned int num_children;
-    int status = XQueryTree(ui::GetXDisplay(), window, &root, &parent,
+    int status = XQueryTree(gfx::GetXDisplay(), window, &root, &parent,
                             &children, &num_children);
     if (status) {
       for (long i = static_cast<long>(num_children) - 1; i >= 0; i--)

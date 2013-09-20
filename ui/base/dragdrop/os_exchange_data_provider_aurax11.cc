@@ -42,7 +42,7 @@ const char* kAtomsToCache[] = {
 OSExchangeDataProviderAuraX11::OSExchangeDataProviderAuraX11(
     ::Window x_window,
     const SelectionFormatMap& selection)
-    : x_display_(GetXDisplay()),
+    : x_display_(gfx::GetXDisplay()),
       x_root_window_(DefaultRootWindow(x_display_)),
       own_window_(false),
       x_window_(x_window),
@@ -55,7 +55,7 @@ OSExchangeDataProviderAuraX11::OSExchangeDataProviderAuraX11(
 }
 
 OSExchangeDataProviderAuraX11::OSExchangeDataProviderAuraX11()
-    : x_display_(GetXDisplay()),
+    : x_display_(gfx::GetXDisplay()),
       x_root_window_(DefaultRootWindow(x_display_)),
       own_window_(true),
       x_window_(XCreateWindow(

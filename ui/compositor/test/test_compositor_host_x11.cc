@@ -13,9 +13,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "ui/base/x/x11_util.h"
 #include "ui/compositor/compositor.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/x/x11_types.h"
 
 namespace ui {
 
@@ -55,7 +55,7 @@ TestCompositorHostX11::~TestCompositorHostX11() {
 }
 
 void TestCompositorHostX11::Show() {
-  Display* display = GetXDisplay();
+  XDisplay* display = gfx::GetXDisplay();
   XSetWindowAttributes swa;
   swa.event_mask = StructureNotifyMask | ExposureMask;
   swa.override_redirect = True;

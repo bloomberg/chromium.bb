@@ -10,7 +10,7 @@ namespace {
 
 unsigned char g_x11_error_code = 0;
 
-int X11ErrorHandler(Display* display, XErrorEvent* error) {
+int X11ErrorHandler(XDisplay* display, XErrorEvent* error) {
   g_x11_error_code = error->error_code;
   return 0;
 }
@@ -28,7 +28,7 @@ X11ErrorTracker::~X11ErrorTracker() {
 }
 
 bool X11ErrorTracker::FoundNewError() {
-  XSync(GetXDisplay(), False);
+  XSync(gfx::GetXDisplay(), False);
   unsigned char error = g_x11_error_code;
   g_x11_error_code = 0;
   return error != 0;

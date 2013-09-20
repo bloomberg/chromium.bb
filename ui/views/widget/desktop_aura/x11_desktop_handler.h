@@ -12,6 +12,7 @@
 #include "base/message_loop/message_loop.h"
 #include "ui/aura/env_observer.h"
 #include "ui/base/x/x11_atom_cache.h"
+#include "ui/gfx/x/x11_types.h"
 #include "ui/views/views_export.h"
 
 template <typename T> struct DefaultSingletonTraits;
@@ -48,7 +49,7 @@ class VIEWS_EXPORT X11DesktopHandler : public base::MessageLoop::Dispatcher,
   void OnActiveWindowChanged(::Window window);
 
   // The display and the native X window hosting the root window.
-  Display* xdisplay_;
+  XDisplay* xdisplay_;
 
   // The native root window.
   ::Window x_root_window_;

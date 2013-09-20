@@ -35,7 +35,7 @@
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(USE_X11)
-#include "ui/base/x/x11_util.h"
+#include "ui/gfx/x/x11_types.h"
 #endif
 
 namespace ash {
@@ -47,7 +47,7 @@ namespace {
 void DisableInput(XID window) {
   long event_mask = ExposureMask | VisibilityChangeMask |
       StructureNotifyMask | PropertyChangeMask;
-  XSelectInput(ui::GetXDisplay(), window, event_mask);
+  XSelectInput(gfx::GetXDisplay(), window, event_mask);
 }
 #endif
 

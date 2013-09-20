@@ -10,10 +10,11 @@
 
 #include <vector>
 
+#include "third_party/WebKit/public/web/WebScreenInfo.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/gtk_compat.h"
 #include "ui/gfx/rect.h"
-#include "third_party/WebKit/public/web/WebScreenInfo.h"
+#include "ui/gfx/x/x11_types.h"
 
 namespace content {
 
@@ -44,7 +45,7 @@ gfx::Rect GetWorkArea(Window window) {
                    property[start_index + 2], property[start_index + 3]);
 }
 
-WebKit::WebScreenInfo GetScreenInfo(Display* display, int screenNumber) {
+WebKit::WebScreenInfo GetScreenInfo(XDisplay* display, int screenNumber) {
   // XDisplayWidth() and XDisplayHeight() return cached values. To ensure that
   // we return the correct dimensions after the screen is resized, query the
   // root window's geometry each time.

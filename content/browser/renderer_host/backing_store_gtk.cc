@@ -29,10 +29,10 @@
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/gtk/gtk_signal.h"
-#include "ui/base/x/x11_util.h"
 #include "ui/base/x/x11_util_internal.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_conversions.h"
+#include "ui/gfx/x/x11_types.h"
 #include "ui/surface/transport_dib.h"
 
 namespace content {
@@ -59,7 +59,7 @@ static const int kMaxVideoLayerSize = 23170;
 
 // Destroys the image and the associated shared memory structures. This is a
 // helper function for code using shared memory.
-void DestroySharedImage(Display* display,
+void DestroySharedImage(XDisplay* display,
                         XImage* image,
                         XShmSegmentInfo* shminfo) {
   XShmDetach(display, shminfo);
@@ -72,7 +72,7 @@ void DestroySharedImage(Display* display,
 // XSyncExtension to push a callback into the X11 event queue and get a
 // callback instead of blocking until the event queue is cleared.
 //
-// TODO(erg): If ui::GetXDisplay() ever gets fixed to handle multiple Displays,
+// TODO(erg): If gfx::GetXDisplay() ever gets fixed to handle multiple Displays,
 // this must be modified to be per Display instead of a Singleton.
 class XSyncHandler {
  public:
@@ -85,7 +85,7 @@ class XSyncHandler {
   }
 
   void PushPaintCounter(TransportDIB* dib,
-                        Display* display,
+                        XDisplay* display,
                         Picture picture,
                         Pixmap pixmap,
                         const base::Closure& completion_callback);
@@ -96,7 +96,7 @@ class XSyncHandler {
   // A struct that has cleanup and callback tasks that were queued into the
   // future and are run on |g_backing_store_sync_alarm| firing.
   struct BackingStoreEvents {
-    BackingStoreEvents(TransportDIB* dib, Display* d, Picture pic, Pixmap pix,
+    BackingStoreEvents(TransportDIB* dib, XDisplay* d, Picture pic, Pixmap pix,
                        const base::Closure& c)
         : dib(dib),
           display(d),
@@ -109,7 +109,7 @@ class XSyncHandler {
     TransportDIB* dib;
 
     // The display we're running on.
-    Display* display;
+    XDisplay* display;
 
     // Data to delete.
     Picture picture;
@@ -142,7 +142,7 @@ class XSyncHandler {
 };
 
 void XSyncHandler::PushPaintCounter(TransportDIB* dib,
-                                    Display* display,
+                                    XDisplay* display,
                                     Picture picture,
                                     Pixmap pixmap,
                                     const base::Closure& completion_callback) {
@@ -153,7 +153,7 @@ void XSyncHandler::PushPaintCounter(TransportDIB* dib,
   // alarm when it is processed.
   XSyncValue value;
   XSyncIntToValue(&value, 1);
-  XSyncChangeCounter(ui::GetXDisplay(),
+  XSyncChangeCounter(gfx::GetXDisplay(),
                      backing_store_sync_counter_,
                      value);
 }
@@ -164,7 +164,7 @@ XSyncHandler::XSyncHandler()
       xsync_error_base_(0),
       backing_store_sync_counter_(0),
       backing_store_sync_alarm_(0) {
-  Display* display = ui::GetXDisplay();
+  XDisplay* display = gfx::GetXDisplay();
   if (XSyncQueryExtension(display,
                           &xsync_event_base_,
                           &xsync_error_base_)) {
@@ -191,7 +191,7 @@ XSyncHandler::~XSyncHandler() {
   if (loaded_extension_)
     gdk_window_remove_filter(NULL, &OnEventThunk, this);
 
-  XSync(ui::GetXDisplay(), False);
+  XSync(gfx::GetXDisplay(), False);
   while (!backing_store_events_.empty()) {
     // We delete the X11 resources we're holding onto. We don't run the
     // callbacks because we are shutting down.
@@ -248,7 +248,7 @@ BackingStoreGtk::BackingStoreGtk(RenderWidgetHost* widget,
                                  void* visual,
                                  int depth)
     : BackingStore(widget, size),
-      display_(ui::GetXDisplay()),
+      display_(gfx::GetXDisplay()),
       shared_memory_support_(ui::QuerySharedMemorySupport(display_)),
       use_render_(ui::QueryRenderSupport(display_)),
       visual_(visual),

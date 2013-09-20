@@ -237,7 +237,7 @@ void EventRewriter::DeviceAdded(int device_id) {
   }
 
   int ndevices_return = 0;
-  XIDeviceInfo* device_info = XIQueryDevice(ui::GetXDisplay(),
+  XIDeviceInfo* device_info = XIQueryDevice(gfx::GetXDisplay(),
                                             device_id,
                                             &ndevices_return);
 
@@ -282,7 +282,7 @@ KeyCode EventRewriter::NativeKeySymToNativeKeycode(KeySym keysym) {
   if (keysym_to_keycode_map_.count(keysym))
     return keysym_to_keycode_map_[keysym];
 
-  Display* display = ui::GetXDisplay();
+  XDisplay* display = gfx::GetXDisplay();
   KeyCode keycode = XKeysymToKeycode(display, keysym);
   keysym_to_keycode_map_[keysym] = keycode;
   return keycode;

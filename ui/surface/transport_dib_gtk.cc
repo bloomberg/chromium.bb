@@ -133,7 +133,7 @@ TransportDIB::Handle TransportDIB::handle() const {
   return key_.shmkey;
 }
 
-XID TransportDIB::MapToX(Display* display) {
+XID TransportDIB::MapToX(XDisplay* display) {
   if (!x_shm_) {
     x_shm_ = ui::AttachSharedMemory(display, key_.shmkey);
     display_ = display;

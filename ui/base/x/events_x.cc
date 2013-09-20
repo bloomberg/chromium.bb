@@ -260,7 +260,7 @@ double GetTouchParamFromXEvent(XEvent* xev,
 }
 
 Atom GetNoopEventAtom() {
-  return XInternAtom(ui::GetXDisplay(), "noop", False);
+  return XInternAtom(gfx::GetXDisplay(), "noop", False);
 }
 
 }  // namespace
@@ -268,7 +268,7 @@ Atom GetNoopEventAtom() {
 namespace ui {
 
 void UpdateDeviceList() {
-  Display* display = GetXDisplay();
+  XDisplay* display = gfx::GetXDisplay();
   DeviceListCacheX::GetInstance()->UpdateDeviceList(display);
   TouchFactory::GetInstance()->UpdateDeviceList(display);
   DeviceDataManager::GetInstance()->UpdateDeviceList(display);

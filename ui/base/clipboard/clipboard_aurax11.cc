@@ -90,9 +90,9 @@ SelectionChangeObserver::SelectionChangeObserver()
       clipboard_sequence_number_(0),
       primary_sequence_number_(0) {
   int ignored;
-  if (XFixesQueryExtension(GetXDisplay(), &event_base_, &ignored)) {
-    clipboard_atom_ = XInternAtom(GetXDisplay(), kClipboard, false);
-    XFixesSelectSelectionInput(GetXDisplay(), GetX11RootWindow(),
+  if (XFixesQueryExtension(gfx::GetXDisplay(), &event_base_, &ignored)) {
+    clipboard_atom_ = XInternAtom(gfx::GetXDisplay(), kClipboard, false);
+    XFixesSelectSelectionInput(gfx::GetXDisplay(), GetX11RootWindow(),
                                clipboard_atom_,
                                XFixesSetSelectionOwnerNotifyMask |
                                XFixesSelectionWindowDestroyNotifyMask |
@@ -100,7 +100,7 @@ SelectionChangeObserver::SelectionChangeObserver()
     // This seems to be semi-optional. For some reason, registering for any
     // selection notify events seems to subscribe us to events for both the
     // primary and the clipboard buffers. Register anyway just to be safe.
-    XFixesSelectSelectionInput(GetXDisplay(), GetX11RootWindow(),
+    XFixesSelectSelectionInput(gfx::GetXDisplay(), GetX11RootWindow(),
                                XA_PRIMARY,
                                XFixesSetSelectionOwnerNotifyMask |
                                XFixesSelectionWindowDestroyNotifyMask |
@@ -309,7 +309,7 @@ class Clipboard::AuraX11Details : public base::MessagePumpDispatcher {
 };
 
 Clipboard::AuraX11Details::AuraX11Details()
-    : x_display_(GetXDisplay()),
+    : x_display_(gfx::GetXDisplay()),
       x_root_window_(DefaultRootWindow(x_display_)),
       x_window_(XCreateWindow(
           x_display_, x_root_window_,

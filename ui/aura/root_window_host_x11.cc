@@ -87,7 +87,7 @@ bool IsSideBezelsEnabled() {
 #endif
 
 void SelectEventsForRootWindow() {
-  Display* display = ui::GetXDisplay();
+  XDisplay* display = gfx::GetXDisplay();
   ::Window root_window = ui::GetX11RootWindow();
 
   // Receive resize events for the root-window so |x_root_bounds_| can be
@@ -363,7 +363,7 @@ class RootWindowHostX11::MouseMoveFilter {
 
 RootWindowHostX11::RootWindowHostX11(const gfx::Rect& bounds)
     : delegate_(NULL),
-      xdisplay_(ui::GetXDisplay()),
+      xdisplay_(gfx::GetXDisplay()),
       xwindow_(0),
       x_root_window_(DefaultRootWindow(xdisplay_)),
       current_cursor_(ui::kCursorNull),
@@ -1090,7 +1090,7 @@ RootWindowHost* RootWindowHost::Create(const gfx::Rect& bounds) {
 
 // static
 gfx::Size RootWindowHost::GetNativeScreenSize() {
-  ::Display* xdisplay = ui::GetXDisplay();
+  ::XDisplay* xdisplay = gfx::GetXDisplay();
   return gfx::Size(DisplayWidth(xdisplay, 0), DisplayHeight(xdisplay, 0));
 }
 

@@ -12,9 +12,9 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/hit_test.h"
-#include "ui/base/x/x11_util.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
+#include "ui/gfx/x/x11_types.h"
 #include "ui/views/widget/native_widget_aura.h"
 
 namespace {
@@ -59,7 +59,7 @@ namespace views {
 
 X11WindowEventFilter::X11WindowEventFilter(
     aura::RootWindow* root_window)
-    : xdisplay_(ui::GetXDisplay()),
+    : xdisplay_(gfx::GetXDisplay()),
       xwindow_(root_window->GetAcceleratedWidget()),
       x_root_window_(DefaultRootWindow(xdisplay_)),
       atom_cache_(xdisplay_, kAtomsToCache),
@@ -76,7 +76,7 @@ void X11WindowEventFilter::SetUseHostWindowBorders(bool use_os_border) {
   motif_hints.decorations = use_os_border ? 1 : 0;
 
   ::Atom hint_atom = atom_cache_.GetAtom("_MOTIF_WM_HINTS");
-  XChangeProperty(ui::GetXDisplay(),
+  XChangeProperty(gfx::GetXDisplay(),
                   xwindow_,
                   hint_atom,
                   hint_atom,

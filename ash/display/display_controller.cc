@@ -44,6 +44,7 @@
 #include "ash/display/output_configurator_animation.h"
 #include "chromeos/display/output_configurator.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/gfx/x/x11_types.h"
 
 // Including this at the bottom to avoid other
 // potential conflict with chrome headers.
@@ -824,7 +825,7 @@ void DisplayController::UpdateHostWindowNames() {
     std::string name =
         root_windows[i] == primary ? "aura_root_0" : "aura_root_x";
     gfx::AcceleratedWidget xwindow = root_windows[i]->GetAcceleratedWidget();
-    XStoreName(ui::GetXDisplay(), xwindow, name.c_str());
+    XStoreName(gfx::GetXDisplay(), xwindow, name.c_str());
   }
 #endif
 }

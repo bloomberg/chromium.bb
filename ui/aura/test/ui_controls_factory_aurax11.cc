@@ -73,7 +73,7 @@ class EventWaiter : public base::MessageLoopForUI::Observer {
 
 // Returns atom that indidates that the XEvent is marker event.
 Atom MarkerEventAtom() {
-  return XInternAtom(ui::GetXDisplay(), "marker_event", False);
+  return XInternAtom(gfx::GetXDisplay(), "marker_event", False);
 }
 
 // Returns true when the event is a marker event.
@@ -115,7 +115,7 @@ class UIControlsX11 : public UIControlsAura {
     if (alt)
       SetKeycodeAndSendThenMask(&xevent, XK_Alt_L, Mod1Mask);
     xevent.xkey.keycode =
-        XKeysymToKeycode(ui::GetXDisplay(),
+        XKeysymToKeycode(gfx::GetXDisplay(),
                          ui::XKeysymForWindowsKeyCode(key, shift));
     root_window_->PostNativeEvent(&xevent);
 
@@ -225,7 +225,7 @@ class UIControlsX11 : public UIControlsAura {
                                  KeySym keysym,
                                  unsigned int mask) {
     xevent->xkey.keycode =
-        XKeysymToKeycode(ui::GetXDisplay(), keysym);
+        XKeysymToKeycode(gfx::GetXDisplay(), keysym);
     root_window_->PostNativeEvent(xevent);
     xevent->xkey.state |= mask;
   }
@@ -235,7 +235,7 @@ class UIControlsX11 : public UIControlsAura {
                                    KeySym keysym) {
     xevent->xkey.state ^= mask;
     xevent->xkey.keycode =
-        XKeysymToKeycode(ui::GetXDisplay(), keysym);
+        XKeysymToKeycode(gfx::GetXDisplay(), keysym);
     root_window_->PostNativeEvent(xevent);
   }
 

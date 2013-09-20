@@ -16,6 +16,7 @@
 #include <windows.h>
 #elif defined(TOOLKIT_GTK)
 #include "ui/base/x/x11_util.h"
+#include "ui/gfx/x/x11_types.h"
 #endif
 
 class SkCanvas;
@@ -189,7 +190,7 @@ class SURFACE_EXPORT TransportDIB {
 #if defined(TOOLKIT_GTK)
   // Map the shared memory into the X server and return an id for the shared
   // segment.
-  XID MapToX(Display* connection);
+  XID MapToX(XDisplay* connection);
 
   void IncreaseInFlightCounter() { inflight_counter_++; }
   // Decreases the inflight counter, and deletes the transport DIB if it is
@@ -211,7 +212,7 @@ class SURFACE_EXPORT TransportDIB {
   Id key_;  // SysV shared memory id
   void* address_;  // mapped address
   XSharedMemoryId x_shm_;  // X id for the shared segment
-  Display* display_;  // connection to the X server
+  XDisplay* display_;  // connection to the X server
   size_t inflight_counter_;  // How many requests to the X server are in flight
   bool detached_;  // If true, delete the transport DIB when it is idle
 #else

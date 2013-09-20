@@ -190,7 +190,7 @@ bool ConvertKeyCodeToText(
   XEvent event;
   memset(&event, 0, sizeof(XEvent));
   XKeyEvent* key_event = &event.xkey;
-  Display* display = ui::GetXDisplay();
+  XDisplay* display = gfx::GetXDisplay();
   if (!display) {
     *error_msg =
         "an X display is required for keycode conversions, consider using Xvfb";

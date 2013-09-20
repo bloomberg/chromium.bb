@@ -5,7 +5,7 @@
 #include "chrome/browser/idle_query_x11.h"
 
 #include <X11/extensions/scrnsaver.h>
-#include "ui/base/x/x11_util.h"
+#include "ui/gfx/x/x11_types.h"
 
 namespace chrome {
 
@@ -14,7 +14,7 @@ class IdleData {
   IdleData() {
     int event_base;
     int error_base;
-    if (XScreenSaverQueryExtension(ui::GetXDisplay(), &event_base,
+    if (XScreenSaverQueryExtension(gfx::GetXDisplay(), &event_base,
                                    &error_base)) {
       mit_info = XScreenSaverAllocInfo();
     } else {
@@ -38,8 +38,8 @@ int IdleQueryX11::IdleTime() {
   if (!idle_data_->mit_info)
     return 0;
 
-  if (XScreenSaverQueryInfo(ui::GetXDisplay(),
-                            RootWindow(ui::GetXDisplay(), 0),
+  if (XScreenSaverQueryInfo(gfx::GetXDisplay(),
+                            RootWindow(gfx::GetXDisplay(), 0),
                             idle_data_->mit_info)) {
     return (idle_data_->mit_info->idle) / 1000;
   } else {

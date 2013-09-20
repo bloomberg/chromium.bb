@@ -103,7 +103,7 @@ class RootWindowHostX11 : public RootWindowHost,
   RootWindowHostDelegate* delegate_;
 
   // The display and the native X window hosting the root window.
-  Display* xdisplay_;
+  XDisplay* xdisplay_;
   ::Window xwindow_;
 
   // The native root window.

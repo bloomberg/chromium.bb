@@ -13,6 +13,7 @@
 #include "base/message_loop/message_loop.h"
 #include "ui/base/x/x11_atom_cache.h"
 #include "ui/events/event_handler.h"
+#include "ui/gfx/x/x11_types.h"
 #include "ui/views/views_export.h"
 
 namespace aura {
@@ -46,7 +47,7 @@ class VIEWS_EXPORT X11WindowEventFilter : public ui::EventHandler {
                                       const gfx::Point& screen_location);
 
   // The display and the native X window hosting the root window.
-  Display* xdisplay_;
+  XDisplay* xdisplay_;
   ::Window xwindow_;
 
   // The native root window.

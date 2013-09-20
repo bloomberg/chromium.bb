@@ -75,7 +75,7 @@ WebPluginProxy::WebPluginProxy(
   // If the X server supports SHM pixmaps
   // and the color depth and masks match,
   // then consider using SHM pixmaps for windowless plugin painting.
-  Display* display = ui::GetXDisplay();
+  XDisplay* display = gfx::GetXDisplay();
   if (ui::QuerySharedMemorySupport(display) == ui::SHARED_MEMORY_PIXMAP &&
       ui::BitsPerPixelForPixmapDepth(
           display, DefaultDepth(display, DefaultScreen(display))) == 32) {
@@ -92,9 +92,9 @@ WebPluginProxy::WebPluginProxy(
 WebPluginProxy::~WebPluginProxy() {
 #if defined(USE_X11)
   if (windowless_shm_pixmaps_[0] != None)
-    XFreePixmap(ui::GetXDisplay(), windowless_shm_pixmaps_[0]);
+    XFreePixmap(gfx::GetXDisplay(), windowless_shm_pixmaps_[0]);
   if (windowless_shm_pixmaps_[1] != None)
-    XFreePixmap(ui::GetXDisplay(), windowless_shm_pixmaps_[1]);
+    XFreePixmap(gfx::GetXDisplay(), windowless_shm_pixmaps_[1]);
 #endif
 
 #if defined(OS_MACOSX)
@@ -557,7 +557,7 @@ void WebPluginProxy::CreateShmPixmapFromDIB(
     const gfx::Rect& window_rect,
     XID* pixmap_out) {
   if (dib) {
-    Display* display = ui::GetXDisplay();
+    XDisplay* display = gfx::GetXDisplay();
     XID root_window = ui::GetX11RootWindow();
     XShmSegmentInfo shminfo = {0};
 

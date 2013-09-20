@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_AURA_SOFTWARE_OUTPUT_DEVICE_X11_H_
 
 #include "cc/output/software_output_device.h"
-#include "ui/base/x/x11_util.h"
+#include "ui/gfx/x/x11_types.h"
 
 namespace ui {
 class Compositor;
@@ -28,7 +28,7 @@ class SoftwareOutputDeviceX11 : public cc::SoftwareOutputDevice {
   void ClearImage();
 
   ui::Compositor* compositor_;
-  Display* display_;
+  XDisplay* display_;
   GC gc_;
   XImage* image_;
 };

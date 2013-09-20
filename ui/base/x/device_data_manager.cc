@@ -116,12 +116,12 @@ DeviceDataManager* DeviceDataManager::GetInstance() {
 
 DeviceDataManager::DeviceDataManager()
     : natural_scroll_enabled_(false),
-      atom_cache_(ui::GetXDisplay(), kCachedAtoms) {
+      atom_cache_(gfx::GetXDisplay(), kCachedAtoms) {
   InitializeXInputInternal();
 
   // Make sure the sizes of enum and kCachedAtoms are aligned.
   CHECK(arraysize(kCachedAtoms) == static_cast<size_t>(DT_LAST_ENTRY) + 1);
-  UpdateDeviceList(ui::GetXDisplay());
+  UpdateDeviceList(gfx::GetXDisplay());
 }
 
 DeviceDataManager::~DeviceDataManager() {
@@ -132,7 +132,7 @@ bool DeviceDataManager::InitializeXInputInternal() {
   xi_opcode_ = -1;
   int opcode, event, error;
   if (!XQueryExtension(
-      ui::GetXDisplay(), "XInputExtension", &opcode, &event, &error)) {
+      gfx::GetXDisplay(), "XInputExtension", &opcode, &event, &error)) {
     VLOG(1) << "X Input extension not available: error=" << error;
     return false;
   }
@@ -144,7 +144,7 @@ bool DeviceDataManager::InitializeXInputInternal() {
 #else
   int major = 2, minor = 0;
 #endif
-  if (XIQueryVersion(ui::GetXDisplay(), &major, &minor) == BadRequest) {
+  if (XIQueryVersion(gfx::GetXDisplay(), &major, &minor) == BadRequest) {
     VLOG(1) << "XInput2 not supported in the server.";
     return false;
   }

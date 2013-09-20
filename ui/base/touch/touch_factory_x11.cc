@@ -19,7 +19,7 @@
 #include "base/strings/string_split.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/x/device_list_cache_x.h"
-#include "ui/base/x/x11_util.h"
+#include "ui/gfx/x/x11_types.h"
 
 namespace ui {
 
@@ -37,7 +37,7 @@ TouchFactory::TouchFactory()
     return;
 #endif
 
-  Display* display = GetXDisplay();
+  XDisplay* display = gfx::GetXDisplay();
   UpdateDeviceList(display);
 
   CommandLine* cmdline = CommandLine::ForCurrentProcess();
@@ -177,7 +177,7 @@ void TouchFactory::SetupXI2ForXWindow(Window window) {
   // the events from uninteresting devices. We do the latter because that's
   // simpler.
 
-  Display* display = ui::GetXDisplay();
+  XDisplay* display = gfx::GetXDisplay();
 
   unsigned char mask[XIMaskLen(XI_LASTEVENT)];
   memset(mask, 0, sizeof(mask));

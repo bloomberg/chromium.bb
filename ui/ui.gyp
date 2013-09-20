@@ -604,6 +604,8 @@
         'gfx/win/singleton_hwnd.h',
         'gfx/win/window_impl.cc',
         'gfx/win/window_impl.h',
+        'gfx/x/x11_types.cc',
+        'gfx/x/x11_types.h',
         'webui/jstemplate_builder.cc',
         'webui/jstemplate_builder.h',
         'webui/web_ui_util.cc',

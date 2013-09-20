@@ -12,7 +12,7 @@
 #include "build/build_config.h"
 #include "content/browser/renderer_host/backing_store.h"
 #include "content/common/content_export.h"
-#include "ui/base/x/x11_util.h"
+#include "ui/gfx/x/x11_types.h"
 
 namespace gfx {
 class Point;
@@ -39,7 +39,7 @@ class CONTENT_EXPORT BackingStoreGtk : public BackingStore {
 
   virtual ~BackingStoreGtk();
 
-  Display* display() const { return display_; }
+  XDisplay* display() const { return display_; }
   XID root_window() const { return root_window_; }
 
   // Copy from the server-side backing store to the target window
@@ -79,7 +79,7 @@ class CONTENT_EXPORT BackingStoreGtk : public BackingStore {
 
   // This is the connection to the X server where this backing store will be
   // displayed.
-  Display* const display_;
+  XDisplay* const display_;
   // What flavor, if any, MIT-SHM (X shared memory) support we have.
   const ui::SharedMemorySupport shared_memory_support_;
   // If this is true, then we can use Xrender to composite our pixmaps.

@@ -22,7 +22,7 @@ int GetXInputOpCode() {
   int error;
 
   if (!XQueryExtension(
-          ui::GetXDisplay(), kExtensionName, &xi_opcode, &event, &error)) {
+          gfx::GetXDisplay(), kExtensionName, &xi_opcode, &event, &error)) {
     VLOG(1) << "X Input extension not available: error=" << error;
     return -1;
   }

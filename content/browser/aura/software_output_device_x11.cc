@@ -16,7 +16,7 @@ namespace content {
 
 SoftwareOutputDeviceX11::SoftwareOutputDeviceX11(ui::Compositor* compositor)
     : compositor_(compositor),
-      display_(ui::GetXDisplay()),
+      display_(gfx::GetXDisplay()),
       gc_(NULL),
       image_(NULL) {
   // TODO(skaslev) Remove this when crbug.com/180702 is fixed.

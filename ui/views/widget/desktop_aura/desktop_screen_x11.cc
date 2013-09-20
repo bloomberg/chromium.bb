@@ -12,17 +12,17 @@
 #include "base/logging.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/root_window_host.h"
-#include "ui/base/x/x11_util.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/screen.h"
+#include "ui/gfx/x/x11_types.h"
 
 namespace {
 
 // TODO(erg): This method is a temporary hack, until we can reliably extract
 // location data out of XRandR.
 gfx::Size GetPrimaryDisplaySize() {
-  ::Display* display = ui::GetXDisplay();
+  ::XDisplay* display = gfx::GetXDisplay();
   ::Screen* screen = DefaultScreenOfDisplay(display);
   int width = WidthOfScreen(screen);
   int height = HeightOfScreen(screen);
@@ -74,7 +74,7 @@ bool DesktopScreenX11::IsDIPEnabled() {
 }
 
 gfx::Point DesktopScreenX11::GetCursorScreenPoint() {
-  Display* display = ui::GetXDisplay();
+  XDisplay* display = gfx::GetXDisplay();
 
   ::Window root, child;
   int root_x, root_y, win_x, win_y;

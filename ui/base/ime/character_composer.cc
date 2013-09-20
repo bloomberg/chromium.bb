@@ -15,8 +15,8 @@
 // '#define GDK_KeyName 0xNNNN' macros and does not #include any Gtk headers.
 #include "third_party/gtk+/gdk/gdkkeysyms.h"
 #include "ui/base/glib/glib_integers.h"
-#include "ui/base/x/x11_util.h"
 #include "ui/events/event_constants.h"
+#include "ui/gfx/x/x11_types.h"
 
 // Note for Gtk removal: gtkimcontextsimpleseqs.h does not #include any Gtk
 // headers and only contains one big guint16 array |gtk_compose_seqs_compact|
@@ -371,7 +371,7 @@ bool UTF32CharacterToUTF16(uint32 character, string16* output) {
 
 // Converts a X keycode to a X keysym with no modifiers.
 KeySym XKeyCodeToXKeySym(unsigned int keycode) {
-  Display* display = ui::GetXDisplay();
+  XDisplay* display = gfx::GetXDisplay();
   if (!display)
     return NoSymbol;
 

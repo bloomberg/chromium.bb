@@ -51,7 +51,7 @@ SystemKeyEventListener::SystemKeyEventListener()
   num_lock_mask_ = xkeyboard->GetNumLockMask();
   xkeyboard->GetLockedModifiers(&caps_lock_is_on_, NULL);
 
-  Display* display = ui::GetXDisplay();
+  XDisplay* display = gfx::GetXDisplay();
   int xkb_major_version = XkbMajorVersion;
   int xkb_minor_version = XkbMinorVersion;
   if (!XkbQueryExtension(display,

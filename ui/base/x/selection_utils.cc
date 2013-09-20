@@ -133,7 +133,7 @@ std::vector< ::Atom> SelectionFormatMap::GetTypes() const {
 
 SelectionData::SelectionData()
     : type_(None),
-      atom_cache_(ui::GetXDisplay(), kSelectionDataAtoms) {
+      atom_cache_(gfx::GetXDisplay(), kSelectionDataAtoms) {
 }
 
 SelectionData::SelectionData(
@@ -141,13 +141,13 @@ SelectionData::SelectionData(
     const scoped_refptr<base::RefCountedMemory>& memory)
     : type_(type),
       memory_(memory),
-      atom_cache_(ui::GetXDisplay(), kSelectionDataAtoms) {
+      atom_cache_(gfx::GetXDisplay(), kSelectionDataAtoms) {
 }
 
 SelectionData::SelectionData(const SelectionData& rhs)
     : type_(rhs.type_),
       memory_(rhs.memory_),
-      atom_cache_(ui::GetXDisplay(), kSelectionDataAtoms) {
+      atom_cache_(gfx::GetXDisplay(), kSelectionDataAtoms) {
 }
 
 SelectionData::~SelectionData() {}
