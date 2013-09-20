@@ -36,7 +36,7 @@ enum evdev_event_type {
 	EVDEV_ABSOLUTE_MT_MOTION = (1 << 2),
 	EVDEV_ABSOLUTE_MT_UP = (1 << 3),
 	EVDEV_RELATIVE_MOTION = (1 << 4),
-	EVDEV_SYN = (1 << 5),
+	EVDEV_SYN_OR_SLOT = (1 << 5),
 };
 
 enum evdev_device_capability {

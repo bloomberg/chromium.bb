@@ -110,6 +110,7 @@ evdev_process_touch(struct evdev_device *device, struct input_event *e)
 	switch (e->code) {
 	case ABS_MT_SLOT:
 		device->mt.slot = e->value;
+		device->pending_events |= EVDEV_SYN_OR_SLOT;
 		break;
 	case ABS_MT_TRACKING_ID:
 		if (e->value >= 0)
@@ -261,11 +262,11 @@ evdev_flush_motion(struct evdev_device *device, uint32_t time)
        int32_t cx, cy;
        int slot;
 
-       if (!(device->pending_events & EVDEV_SYN))
+       if (!(device->pending_events & EVDEV_SYN_OR_SLOT))
 		return;
 
 	slot = device->mt.slot;
-	device->pending_events &= ~EVDEV_SYN;
+	device->pending_events &= ~EVDEV_SYN_OR_SLOT;
 	if (device->pending_events & EVDEV_RELATIVE_MOTION) {
 		notify_motion(master, time, device->rel.dx, device->rel.dy);
 		device->pending_events &= ~EVDEV_RELATIVE_MOTION;
@@ -332,7 +333,7 @@ fallback_process(struct evdev_dispatch *dispatch,
 		evdev_process_key(device, event, time);
 		break;
 	case EV_SYN:
-		device->pending_events |= EVDEV_SYN;
+		device->pending_events |= EVDEV_SYN_OR_SLOT;
 		break;
 	}
 }
