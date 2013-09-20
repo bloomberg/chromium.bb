@@ -23,6 +23,7 @@
 
 #include "RuntimeEnabledFeatures.h"
 #include "V8Node.h"
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMConfiguration.h"
@@ -77,7 +78,7 @@ void V8TestNode::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& 
 {
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "DOMConstructor");
     if (!args.IsConstructCall()) {
-        throwTypeError("DOM object constructor cannot be called as a function.", args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToConstruct("TestNode", "Please use the 'new' operator, this DOM object constructor cannot be called as a function."), args.GetIsolate());
         return;
     }
 

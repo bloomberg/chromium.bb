@@ -525,7 +525,7 @@ void V8TestTypedefs::constructorCallback(const v8::FunctionCallbackInfo<v8::Valu
 {
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "DOMConstructor");
     if (!args.IsConstructCall()) {
-        throwTypeError("DOM object constructor cannot be called as a function.", args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToConstruct("TestTypedefs", "Please use the 'new' operator, this DOM object constructor cannot be called as a function."), args.GetIsolate());
         return;
     }
 

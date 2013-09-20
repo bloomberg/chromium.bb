@@ -2642,7 +2642,7 @@ sub GenerateConstructorCallback
     $code .= "    TRACE_EVENT_SCOPED_SAMPLING_STATE(\"Blink\", \"DOMConstructor\");\n";
     $code .= GenerateFeatureObservation($interface->extendedAttributes->{"MeasureAs"});
     $code .= GenerateDeprecationNotification($interface->extendedAttributes->{"DeprecateAs"});
-    $code .= GenerateConstructorHeader();
+    $code .= GenerateConstructorHeader($implClassName);
     if (HasCustomConstructor($interface)) {
         $code .= "    ${v8ClassName}::constructorCustom(args);\n";
     } else {
@@ -2825,7 +2825,7 @@ static void ${v8ClassName}ConstructorCallback(const v8::FunctionCallbackInfo<v8:
 END
     $code .= $maybeObserveFeature if $maybeObserveFeature;
     $code .= $maybeDeprecateFeature if $maybeDeprecateFeature;
-    $code .= GenerateConstructorHeader();
+    $code .= GenerateConstructorHeader($implClassName);
     AddToImplIncludes("V8Document.h");
     $code .= <<END;
     Document* document = currentDocument();
@@ -2914,10 +2914,13 @@ END
 
 sub GenerateConstructorHeader
 {
+    my $name = shift;
+
+    AddToImplIncludes("bindings/v8/ExceptionMessages.h");
     AddToImplIncludes("bindings/v8/V8ObjectConstructor.h");
     my $content = <<END;
     if (!args.IsConstructCall()) {
-        throwTypeError("DOM object constructor cannot be called as a function.", args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToConstruct("$name", "Please use the 'new' operator, this DOM object constructor cannot be called as a function."), args.GetIsolate());
         return;
     }
 
