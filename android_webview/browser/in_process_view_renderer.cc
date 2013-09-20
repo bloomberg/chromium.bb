@@ -370,18 +370,27 @@ void InProcessViewRenderer::DrawGL(AwDrawGLInfo* draw_info) {
   gpu::InProcessCommandBuffer::ProcessGpuWorkOnCurrentThread();
   ScopedAllowGL allow_gl;
 
-  if (attached_to_window_ && compositor_ && !hardware_initialized_) {
-    if (InitializeHwDraw()) {
-      last_egl_context_ = current_context;
-    } else {
-      return;
-    }
+  if (!attached_to_window_) {
+    TRACE_EVENT_INSTANT0(
+        "android_webview", "EarlyOut_NotAttached", TRACE_EVENT_SCOPE_THREAD);
+    return;
   }
 
   if (draw_info->mode == AwDrawGLInfo::kModeProcess) {
     TRACE_EVENT_INSTANT0(
         "android_webview", "EarlyOut_ModeProcess", TRACE_EVENT_SCOPE_THREAD);
     return;
+  }
+
+  if (compositor_ && !hardware_initialized_) {
+    if (InitializeHwDraw()) {
+      last_egl_context_ = current_context;
+    } else {
+      TRACE_EVENT_INSTANT0(
+          "android_webview", "EarlyOut_HwInitFail", TRACE_EVENT_SCOPE_THREAD);
+      LOG(ERROR) << "WebView hardware initialization failed";
+      return;
+    }
   }
 
   UpdateCachedGlobalVisibleRect();
