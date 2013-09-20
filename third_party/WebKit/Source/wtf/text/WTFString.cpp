@@ -91,7 +91,7 @@ void String::append(const String& string)
     // FIXME: This is extremely inefficient. So much so that we might want to take this
     // out of String's API. We can make it better by optimizing the case where exactly
     // one String is pointing at this StringImpl, but even then it's going to require a
-    // call to fastMalloc every single time.
+    // call into the allocator every single time.
 
     if (m_impl->is8Bit() && string.m_impl->is8Bit()) {
         LChar* data;
@@ -126,7 +126,7 @@ inline void String::appendInternal(CharacterType c)
     // FIXME: This is extremely inefficient. So much so that we might want to take this
     // out of String's API. We can make it better by optimizing the case where exactly
     // one String is pointing at this StringImpl, but even then it's going to require a
-    // call to fastMalloc every single time.
+    // call into the allocator every single time.
     if (!m_impl) {
         m_impl = StringImpl::create(&c, 1);
         return;

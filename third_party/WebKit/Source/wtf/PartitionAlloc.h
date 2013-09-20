@@ -110,6 +110,15 @@ static const size_t kBucketShift = (kAllocationGranularity == 8) ? 3 : 2;
 static const size_t kPartitionPageSize = 1 << 14; // 16KB
 static const size_t kPartitionPageOffsetMask = kPartitionPageSize - 1;
 static const size_t kPartitionPageBaseMask = ~kPartitionPageOffsetMask;
+// To avoid fragmentation via never-used freelist entries, we hand out partition
+// freelist sections gradually, in units that resemble the dominant system page
+// size.
+// What we're actually doing is avoiding filling the full partition page
+// (typically 16KB) will freelist pointers right away. Writing freelist
+// pointers will fault and dirty a private page, which is very wasteful if we
+// never actually store objects there.
+static const size_t kSubPartitionPageSize = 1 << 12; // 4KB
+static const size_t kSubPartitionPageMask = kSubPartitionPageSize - 1;
 // Special bucket id for free page metadata.
 static const size_t kFreePageBucket = 0;
 
@@ -122,6 +131,7 @@ struct PartitionFreelistEntry {
 
 struct PartitionPageHeader {
     int numAllocatedSlots; // Deliberately signed.
+    unsigned numUnprovisionedSlots;
     PartitionBucket* bucket;
     PartitionFreelistEntry* freelistHead;
     PartitionPageHeader* next;
@@ -207,6 +217,7 @@ ALWAYS_INLINE void* partitionAlloc(PartitionRoot* root, size_t size)
     RELEASE_ASSERT(result);
     return result;
 #else
+    ASSERT(root->initialized);
     size_t index = size >> kBucketShift;
     ASSERT(index < root->numBuckets);
     ASSERT(size == index << kBucketShift);
@@ -259,6 +270,7 @@ ALWAYS_INLINE void* partitionAllocGeneric(PartitionRoot* root, size_t size)
     RELEASE_ASSERT(result);
     return result;
 #else
+    ASSERT(root->initialized);
     if (LIKELY(size <= root->maxAllocation)) {
         size = partitionAllocRoundup(size);
         spinLockLock(&root->lock);

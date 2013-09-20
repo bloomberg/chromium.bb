@@ -30,19 +30,27 @@
 
 #include "config.h"
 
+#include "wtf/CryptographicallyRandomNumber.h"
 #include "wtf/MainThread.h"
 #include "wtf/WTF.h"
 #include <base/test/test_suite.h>
 #include <gmock/gmock.h>
+#include <string.h>
 
 static double CurrentTime()
 {
     return 0.0;
 }
 
+static void AlwaysZeroNumberSource(unsigned char* buf, size_t len)
+{
+    memset(buf, '\0', len);
+}
+
 int main(int argc, char** argv)
 {
     ::testing::InitGoogleMock(&argc, argv);
+    WTF::setRandomSource(AlwaysZeroNumberSource);
     WTF::initialize(CurrentTime, 0);
     WTF::initializeMainThread(0);
     return base::TestSuite(argc, argv).Run();
