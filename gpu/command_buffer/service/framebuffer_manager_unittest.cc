@@ -15,19 +15,24 @@ using ::testing::Return;
 
 namespace gpu {
 namespace gles2 {
+namespace {
+
+const GLint kMaxTextureSize = 64;
+const GLint kMaxCubemapSize = 64;
+const GLint kMaxRenderbufferSize = 64;
+const GLint kMaxSamples = 4;
+const bool kDepth24Supported = false;
+
+}  // namespace
 
 class FramebufferManagerTest : public testing::Test {
- static const GLint kMaxTextureSize = 64;
- static const GLint kMaxCubemapSize = 64;
- static const GLint kMaxRenderbufferSize = 64;
- static const GLint kMaxSamples = 4;
-
  public:
   FramebufferManagerTest()
       : manager_(1, 1),
         texture_manager_(
           NULL, new FeatureInfo(), kMaxTextureSize, kMaxCubemapSize),
-        renderbuffer_manager_(NULL, kMaxRenderbufferSize, kMaxSamples) {
+        renderbuffer_manager_(NULL, kMaxRenderbufferSize, kMaxSamples,
+                              kDepth24Supported) {
 
   }
   virtual ~FramebufferManagerTest() {
@@ -53,13 +58,6 @@ class FramebufferManagerTest : public testing::Test {
   TextureManager texture_manager_;
   RenderbufferManager renderbuffer_manager_;
 };
-
-// GCC requires these declarations, but MSVC requires they not be present
-#ifndef COMPILER_MSVC
-const GLint FramebufferManagerTest::kMaxTextureSize;
-const GLint FramebufferManagerTest::kMaxCubemapSize;
-const GLint FramebufferManagerTest::kMaxRenderbufferSize;
-#endif
 
 TEST_F(FramebufferManagerTest, Basic) {
   const GLuint kClient1Id = 1;
@@ -110,16 +108,12 @@ class FramebufferInfoTest : public testing::Test {
   static const GLuint kClient1Id = 1;
   static const GLuint kService1Id = 11;
 
-  static const GLint kMaxTextureSize = 64;
-  static const GLint kMaxCubemapSize = 64;
-  static const GLint kMaxRenderbufferSize = 64;
-  static const GLint kMaxSamples = 4;
-
   FramebufferInfoTest()
       : manager_(1, 1),
         texture_manager_(
           NULL, new FeatureInfo(), kMaxTextureSize, kMaxCubemapSize),
-        renderbuffer_manager_(NULL, kMaxRenderbufferSize, kMaxSamples) {
+        renderbuffer_manager_(NULL, kMaxRenderbufferSize, kMaxSamples,
+                              kDepth24Supported) {
   }
   virtual ~FramebufferInfoTest() {
     manager_.Destroy(false);
@@ -155,9 +149,6 @@ class FramebufferInfoTest : public testing::Test {
 #ifndef COMPILER_MSVC
 const GLuint FramebufferInfoTest::kClient1Id;
 const GLuint FramebufferInfoTest::kService1Id;
-const GLint FramebufferInfoTest::kMaxTextureSize;
-const GLint FramebufferInfoTest::kMaxCubemapSize;
-const GLint FramebufferInfoTest::kMaxRenderbufferSize;
 #endif
 
 TEST_F(FramebufferInfoTest, Basic) {
