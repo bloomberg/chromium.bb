@@ -478,7 +478,7 @@ void PrintWebViewHelper::PrintHeaderAndFooter(
   WebKit::WebPrintParams webkit_params(page_size);
   webkit_params.printerDPI = GetDPI(&params);
 
-  frame->printBegin(webkit_params, WebKit::WebNode(), NULL);
+  frame->printBegin(webkit_params);
   frame->printPage(0, canvas);
   frame->printEnd();
 
@@ -599,7 +599,7 @@ PrepareFrameAndViewForPrint::PrepareFrameAndViewForPrint(
                        print_params.print_scaling_option ==
                             WebKit::WebPrintScalingOptionFitToPrintableArea;
     ComputeWebKitPrintParamsInDesiredDpi(params, &web_print_params_);
-    frame->printBegin(web_print_params_, node_to_print_, NULL);
+    frame->printBegin(web_print_params_, node_to_print_);
     print_params = CalculatePrintParamsForCss(frame, 0, print_params,
                                               ignore_css_margins, fit_to_page,
                                               NULL);
@@ -639,10 +639,8 @@ void PrepareFrameAndViewForPrint::StartPrinting() {
   ResizeForPrinting();
   WebKit::WebView* web_view = frame_.view();
   web_view->settings()->setShouldPrintBackgrounds(should_print_backgrounds_);
-  // TODO(vitalybuka): Update call after
-  // https://bugs.webkit.org/show_bug.cgi?id=107718 is fixed.
   expected_pages_count_ =
-      frame()->printBegin(web_print_params_, node_to_print_, NULL);
+      frame()->printBegin(web_print_params_, node_to_print_);
   is_printing_started_ = true;
 }
 
