@@ -3557,4 +3557,53 @@ TEST_F(DiskCacheEntryTest, SimpleCacheStream1SizeChanges) {
   entry = NULL;
 }
 
+// Test that writing within the range for which the crc has already been
+// computed will properly invalidate the computed crc.
+TEST_F(DiskCacheEntryTest, SimpleCacheCRCRewrite) {
+  // Test sequence:
+  // Create, Write (big data), Write (small data in the middle), Close.
+  // Open, Read (all), Close.
+  SetSimpleCacheMode();
+  InitCache();
+  disk_cache::Entry* null = NULL;
+  const char key[] = "the first key";
+
+  const int kHalfSize = 200;
+  const int kSize = 2 * kHalfSize;
+  scoped_refptr<net::IOBuffer> buffer1(new net::IOBuffer(kSize));
+  scoped_refptr<net::IOBuffer> buffer2(new net::IOBuffer(kHalfSize));
+  CacheTestFillBuffer(buffer1->data(), kSize, false);
+  CacheTestFillBuffer(buffer2->data(), kHalfSize, false);
+
+  disk_cache::Entry* entry = NULL;
+  ASSERT_EQ(net::OK, CreateEntry(key, &entry));
+  EXPECT_NE(null, entry);
+  entry->Close();
+
+  for (int i = 0; i < disk_cache::kSimpleEntryStreamCount; ++i) {
+    ASSERT_EQ(net::OK, OpenEntry(key, &entry));
+    int offset = 0;
+    int buf_len = kSize;
+
+    EXPECT_EQ(buf_len,
+              WriteData(entry, i, offset, buffer1.get(), buf_len, false));
+    offset = kHalfSize;
+    buf_len = kHalfSize;
+    EXPECT_EQ(buf_len,
+              WriteData(entry, i, offset, buffer2.get(), buf_len, false));
+    entry->Close();
+
+    ASSERT_EQ(net::OK, OpenEntry(key, &entry));
+
+    scoped_refptr<net::IOBuffer> buffer1_read1(new net::IOBuffer(kSize));
+    EXPECT_EQ(kSize, ReadData(entry, i, 0, buffer1_read1.get(), kSize));
+    EXPECT_EQ(0, memcmp(buffer1->data(), buffer1_read1->data(), kHalfSize));
+    EXPECT_EQ(
+        0,
+        memcmp(buffer2->data(), buffer1_read1->data() + kHalfSize, kHalfSize));
+
+    entry->Close();
+  }
+}
+
 #endif  // defined(OS_POSIX)

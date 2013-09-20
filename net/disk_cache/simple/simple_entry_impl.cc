@@ -1332,6 +1332,10 @@ void SimpleEntryImpl::AdvanceCrc(net::IOBuffer* buffer,
           initial_crc, reinterpret_cast<const Bytef*>(buffer->data()), length);
     }
     crc32s_end_offset_[stream_index] = offset + length;
+  } else if (offset < crc32s_end_offset_[stream_index]) {
+    // If a range for which the crc32 was already computed is rewritten, the
+    // computation of the crc32 need to start from 0 again.
+    crc32s_end_offset_[stream_index] = 0;
   }
 }
 
