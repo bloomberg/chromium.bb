@@ -69,6 +69,9 @@ namespace autofill {
 
 namespace {
 
+// The width for the section container.
+const int kSectionContainerWidth = 420;
+
 // The minimum useful height of the contents area of the dialog.
 const int kMinimumContentsHeight = 100;
 
@@ -876,13 +879,13 @@ AutofillDialogViews::SectionContainer::SectionContainer(
   label_bar->SetLayoutManager(label_bar_layout);
   const int kColumnSetId = 0;
   views::ColumnSet* columns = label_bar_layout->AddColumnSet(kColumnSetId);
-  // TODO(estade): do something about this '480'.
-  columns->AddColumn(views::GridLayout::LEADING,
-                     views::GridLayout::LEADING,
-                     0,
-                     views::GridLayout::FIXED,
-                     480,
-                     0);
+  columns->AddColumn(
+      views::GridLayout::LEADING,
+      views::GridLayout::LEADING,
+      0,
+      views::GridLayout::FIXED,
+      kSectionContainerWidth - proxy_button->GetPreferredSize().width(),
+      0);
   columns->AddColumn(views::GridLayout::LEADING,
                      views::GridLayout::LEADING,
                      0,
