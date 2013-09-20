@@ -43,8 +43,6 @@ namespace WTF {
     //   RemoveConstVolatile<T>::Type
     //   RemoveExtent<T>::Type
     //
-    //   DecayArray<T>::Type
-    //
     //   COMPILE_ASSERT's in TypeTraits.cpp illustrate their usage and what they do.
 
     template <bool Predicate, class If, class Then> struct Conditional  { typedef If Type; };
@@ -223,26 +221,6 @@ namespace WTF {
 
     template <typename T, size_t N> struct RemoveExtent<T[N]> {
         typedef T Type;
-    };
-
-    template <class T> struct DecayArray {
-        typedef typename RemoveReference<T>::Type U;
-    public:
-        typedef typename Conditional<
-            IsArray<U>::value,
-            typename RemoveExtent<U>::Type*,
-            typename RemoveConstVolatile<U>::Type
-        >::Type Type;
-    };
-
-    // VC8 (VS2005) and later has __has_trivial_constructor and __has_trivial_destructor,
-    // but the implementation returns false for built-in types. We add the extra IsPod condition to
-    // work around this.
-    template <typename T> struct HasTrivialConstructor {
-        static const bool value = __has_trivial_constructor(T) || IsPod<RemoveConstVolatile<T> >::value;
-    };
-    template <typename T> struct HasTrivialDestructor {
-        static const bool value = __has_trivial_destructor(T) || IsPod<RemoveConstVolatile<T> >::value;
     };
 
 #define EnsurePtrConvertibleArgDecl(From, To) \
