@@ -67,12 +67,12 @@ namespace WTF {
         typedef PtrType PassOwnPtr::*UnspecifiedBoolType;
         operator UnspecifiedBoolType() const { return m_ptr ? &PassOwnPtr::m_ptr : 0; }
 
-        PassOwnPtr& operator=(const PassOwnPtr&) { COMPILE_ASSERT(!sizeof(T*), PassOwnPtr_should_never_be_assigned_to); return *this; }
-
         template<typename U> friend PassOwnPtr<U> adoptPtr(U*);
 
     private:
         explicit PassOwnPtr(PtrType ptr) : m_ptr(ptr) { }
+
+        PassOwnPtr& operator=(const PassOwnPtr&) { COMPILE_ASSERT(!sizeof(T*), PassOwnPtr_should_never_be_assigned_to); ASSERT_NOT_REACHED(); return *this; }
 
         // We should never have two OwnPtrs for the same underlying object (otherwise we'll get
         // double-destruction), so these equality operators should never be needed.

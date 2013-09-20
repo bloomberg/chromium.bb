@@ -65,12 +65,12 @@ public:
     typedef PtrType PassOwnArrayPtr::*UnspecifiedBoolType;
     operator UnspecifiedBoolType() const { return m_ptr ? &PassOwnArrayPtr::m_ptr : 0; }
 
-    PassOwnArrayPtr& operator=(const PassOwnArrayPtr&) { COMPILE_ASSERT(!sizeof(T*), PassOwnArrayPtr_should_never_be_assigned_to); return *this; }
-
     template<typename U> friend PassOwnArrayPtr<U> adoptArrayPtr(U*);
 
 private:
     explicit PassOwnArrayPtr(PtrType ptr) : m_ptr(ptr) { }
+
+    PassOwnArrayPtr& operator=(const PassOwnArrayPtr&) { COMPILE_ASSERT(!sizeof(T*), PassOwnArrayPtr_should_never_be_assigned_to); ASSERT_NOT_REACHED(); return *this; }
 
     mutable PtrType m_ptr;
 };
