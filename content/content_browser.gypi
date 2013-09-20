@@ -700,6 +700,8 @@
     'browser/media/android/browser_demuxer_android.h',
     'browser/media/android/browser_media_player_manager.cc',
     'browser/media/android/browser_media_player_manager.h',
+    'browser/media/android/media_drm_credential_manager.cc',
+    'browser/media/android/media_drm_credential_manager.h',
     'browser/media/android/media_resource_getter_impl.cc',
     'browser/media/android/media_resource_getter_impl.h',
     'browser/media/media_internals.cc',

@@ -29,6 +29,8 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys {
     SECURITY_LEVEL_3 = 3,
   };
 
+  typedef base::Callback<void(bool)> ResetCredentialsCB;
+
   virtual ~MediaDrmBridge();
 
   // Returns a MediaDrmBridge instance if |scheme_uuid| is supported, or a NULL
@@ -82,6 +84,12 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys {
   // Called when error happens.
   void OnKeyError(JNIEnv* env, jobject, jstring j_session_id);
 
+  // Reset the device credentials.
+  void ResetDeviceCredentials(const ResetCredentialsCB& callback);
+
+  // Called by the java object when credential reset is completed.
+  void OnResetDeviceCredentialsCompleted(JNIEnv* env, jobject, bool success);
+
   // Helper function to determine whether a protected surface is needed for the
   // video playback.
   bool IsProtectedSurfaceRequired();
@@ -112,6 +120,8 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys {
   MediaPlayerManager* manager_;
 
   base::Closure media_crypto_ready_cb_;
+
+  ResetCredentialsCB reset_credentials_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaDrmBridge);
 };

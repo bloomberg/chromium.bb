@@ -337,4 +337,17 @@ bool MediaDrmBridge::IsProtectedSurfaceRequired() {
   return IsSecureDecoderRequired(GetSecurityLevel());
 }
 
+void MediaDrmBridge::ResetDeviceCredentials(
+    const ResetCredentialsCB& callback) {
+  DCHECK(reset_credentials_cb_.is_null());
+  reset_credentials_cb_ = callback;
+  JNIEnv* env = AttachCurrentThread();
+  Java_MediaDrmBridge_resetDeviceCredentials(env, j_media_drm_.obj());
+}
+
+void MediaDrmBridge::OnResetDeviceCredentialsCompleted(
+    JNIEnv* env, jobject, bool success) {
+  base::ResetAndReturn(&reset_credentials_cb_).Run(success);
+}
+
 }  // namespace media
