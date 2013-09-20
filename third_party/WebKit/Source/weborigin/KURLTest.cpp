@@ -293,7 +293,8 @@ TEST(KURLTest, Decode)
     EXPECT_EQ(invalidExpected, invalid);
 }
 
-TEST(KURLTest, Encode)
+// Restore after forthcoming two-sided patch for crbug.com/292740
+TEST(KURLTest, DISABLED_Encode)
 {
     struct EncodeCase {
         const char* input;
