@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body style="position:fixed; left:150px;">
+<h3>Test for chromium bug : <a href="https://code.google.com/p/chromium/issues/detail?id=31286">31286</a>. css rendering bug : fixed-position-element and 'left'.</h3>
+<h4>If fixed position inline element does not have left and/or right position then it should render as normal flow.</h4>
+
+<h5>
+Case 1 : fixed text box should be just after relative text box.
+<br/>
+
+<div style="position:relative; left:100px; background:green; width:400px;">
+relative
+<span style="position:fixed; background:red;">
+fixed
+</span>
+</span>
+</div>
+
+Case 2 : fixed text box should be just before relative text box.
+<br/>
+
+<div style="position:relative; left:100px; background:green; direction:rtl; width:400px;">
+relative
+<span style="position:fixed; background:red;">
+fixed
+</span>
+</span>
+</div>
+
+Case 3 : fixed text box should be just after relative text box.
+<br/>
+
+<div style="position:relative; right:100px; background:green; width:400px;">
+relative
+<span style="position:fixed; background:red;">
+fixed
+</span>
+</span>
+</div>
+
+Case 4 : fixed text box should be just before relative text box.
+<br/>
+
+<div style="position:relative; right:100px; background:green; direction:rtl; width:400px;">
+relative
+<span style="position:fixed; background:red;">
+fixed
+</span>
+</span>
+</div>
+
+Case 5 : fixed text box should be just after relative2 text box.
+<br/>
+
+<div style="position:relative; left:100px; background:gray; width:400px;">
+relative
+<span style="position:relative; left:100px; background:green;">
+relative2
+<span style="position:fixed; background:red;">
+fixed
+</span>
+</span>
+</div>
+
+Case 6 : fixed text box should be after relative text box in some distance and before relative2 in some distance.
+<br/>
+
+<div style="position:relative; left:100px; background:gray; direction:rtl; width:400px;">
+relative
+<span style="position:relative; left:100px; background:green;">
+relative2
+<span style="position:fixed; background:red;">
+fixed
+</span>
+</span>
+</div>
+
+Case 7 : fixed text box should be just after relative2 text box.
+<br/>
+
+<div style="position:relative; left:100px; background:gray; width:400px;">
+relative
+<span style="position:relative; right:100px; background:green;">
+relative2
+<span style="position:fixed; background:red;">
+fixed
+</span>
+</span>
+</div>
+
+Case 8 : fixed text box should be before relative2 text box in some distance.
+<br/>
+
+<div style="position:relative; left:100px; background:gray; direction:rtl; width:400px;">
+relative
+<span style="position:relative; right:100px; background:green;">
+relative2
+<span style="position:fixed; background:red;">
+fixed
+</span>
+</span>
+</div>
+
+Case 9 : fixed text box should be just after relative2 text box.
+<br/>
+
+<div style="position:relative; right:100px; background:gray; width:400px;">
+relative
+<span style="position:relative; left:100px; background:green;">
+relative2
+<span style="position:fixed; background:red;">
+fixed
+</span>
+</span>
+</div>
+
+Case 10 : fixed text box should be after relative text box in some distance and before relative2 in some distance.
+<br/>
+
+<div style="position:relative; right:100px; background:gray; direction:rtl; width:400px;">
+relative
+<span style="position:relative; left:100px; background:green;">
+relative2
+<span style="position:fixed; background:red;">
+fixed
+</span>
+</span>
+</div>
+
+Case 11 : fixed text box should be just after relative2 text box.
+<br/>
+
+<div style="position:relative; right:100px; background:gray; width:400px;">
+relative
+<span style="position:relative; right:100px; background:green;">
+relative2
+<span style="position:fixed; background:red;">
+fixed
+</span>
+</span>
+</div>
+
+Case 12 : fixed text box should be before relative2 text box in some distance.
+<br/>
+
+<div style="position:relative; right:100px; background:gray; direction:rtl; width:400px;">
+relative
+<span style="position:relative; right:100px; background:green;">
+relative2
+<span style="position:fixed; background:red;">
+fixed
+</span>
+</span>
+</div>
+
+</h5>
