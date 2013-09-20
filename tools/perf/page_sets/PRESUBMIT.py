@@ -1,6 +1,7 @@
 # Copyright (c) 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
 import os
 import re
 import sys
@@ -20,7 +21,10 @@ def _SyncFilesToCloud(input_api, output_api):
   finally:
     sys.path = old_sys_path
 
-  hashes_in_cloud_storage = cloud_storage.List(cloud_storage.DEFAULT_BUCKET)
+  # Look in both buckets, in case the user uploaded the file manually. But this
+  # script focuses on WPR archives, so it only uploads to the internal bucket.
+  hashes_in_cloud_storage = cloud_storage.List(cloud_storage.INTERNAL_BUCKET)
+  hashes_in_cloud_storage += cloud_storage.List(cloud_storage.PUBLIC_BUCKET)
 
   results = []
   for hash_path in input_api.AbsoluteLocalPaths():
@@ -49,7 +53,7 @@ def _SyncFilesToCloud(input_api, output_api):
       continue
 
     try:
-      cloud_storage.Insert(cloud_storage.DEFAULT_BUCKET, file_hash, file_path)
+      cloud_storage.Insert(cloud_storage.INTERNAL_BUCKET, file_hash, file_path)
     except cloud_storage.CloudStorageError:
       results.append(output_api.PresubmitError(
           'Unable to upload to Cloud Storage: %s' % hash_path))

@@ -1,7 +1,7 @@
 {
   "description": "Pages hand-picked from top-lists in Q32012.",
-  "archive_data_file": "../data/2012Q3.json",
-  "credentials_path": "../data/credentials.json",
+  "archive_data_file": "data/2012Q3.json",
+  "credentials_path": "data/credentials.json",
   "smoothness": { "action": "scroll" },
   "reload_and_gc": [
     {"action": "reload" },

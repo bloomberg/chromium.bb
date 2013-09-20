@@ -1,0 +1,9 @@
+{
+    "page_set": "../pica.json", 
+    "description": "Describes the Web Page Replay archives for a page set. Don't edit by hand! Use record_wpr for updating.", 
+    "archives": {
+        "pica_000.wpr": [
+            "http://localhost/polymer/projects/pica/"
+        ]
+    }
+}

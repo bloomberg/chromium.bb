@@ -1,6 +1,6 @@
 {
   "description": "Pages designed to represent the median, not highly optimized web",
-  "archive_data_file": "../data/typical_25.json",
+  "archive_data_file": "data/typical_25.json",
   "user_agent_type": "desktop",
   "smoothness": { "action": "scroll" },
   "pages": [

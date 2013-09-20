@@ -1,6 +1,6 @@
 {
   "description": "Popular pages in Hindi and Russian.",
-  "archive_data_file": "../data/intl_hi_ru.json",
+  "archive_data_file": "data/intl_hi_ru.json",
   "user_agent_type": "desktop",
   "smoothness": { "action": "scroll" },
   "pages": [

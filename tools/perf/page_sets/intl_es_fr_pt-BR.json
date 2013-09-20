@@ -1,6 +1,6 @@
 {
   "description": "Popular pages in Romance languages Spanish, French and Brazilian Portuguese.",
-  "archive_data_file": "../data/intl_es_fr_pt-BR.json",
+  "archive_data_file": "data/intl_es_fr_pt-BR.json",
   "user_agent_type": "desktop",
   "smoothness": { "action": "scroll" },
   "pages": [

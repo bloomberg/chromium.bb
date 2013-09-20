@@ -1,6 +1,6 @@
 {
   "description": "Popular pages in Japanese and Chinese.",
-  "archive_data_file": "../data/intl_ja_zh.json",
+  "archive_data_file": "data/intl_ja_zh.json",
   "user_agent_type": "desktop",
   "smoothness": { "action": "scroll" },
   "pages": [

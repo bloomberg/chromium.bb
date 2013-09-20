@@ -1,6 +1,6 @@
 {
   "description": "Popular pages in right-to-left languages Arabic, Farsi and Hebrew.",
-  "archive_data_file": "../data/intl_ar_fa_he.json",
+  "archive_data_file": "data/intl_ar_fa_he.json",
   "user_agent_type": "desktop",
   "smoothness": { "action": "scroll" },
   "pages": [

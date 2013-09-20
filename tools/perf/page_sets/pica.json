@@ -1,6 +1,6 @@
 {
   "description": "Pica demo app for the Polymer UI toolkit",
-  "archive_data_file": "../data/pica.json",
+  "archive_data_file": "data/pica.json",
   "pages": [
     { "url": "http://localhost/polymer/projects/pica/",
       "script_to_evaluate_on_commit":

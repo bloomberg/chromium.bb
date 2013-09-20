@@ -1,0 +1,10 @@
+{
+    "description": "Describes the Web Page Replay archives for a page set. Don't edit by hand! Use record_wpr for updating.",
+    "page_set": "../jsgamebench.json",
+    "archives": {
+        "jsgamebench_000.wpr" : [
+            "http://localhost/"
+        ]
+    }
+}
+

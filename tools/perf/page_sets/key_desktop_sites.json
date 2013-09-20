@@ -1,7 +1,7 @@
 {
   "description": "Sites of Interest",
-  "archive_data_file": "../data/sites_of_interest.json",
-  "credentials_path": "../data/credentials.json",
+  "archive_data_file": "data/key_desktop_sites.json",
+  "credentials_path": "data/credentials.json",
   "smoothness": { "action": "scroll" },
   "pages": [
     {

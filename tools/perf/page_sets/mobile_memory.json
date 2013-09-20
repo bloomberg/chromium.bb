@@ -1,7 +1,7 @@
 {
   "description": "Mobile sites with interesting memory characteristics",
-  "archive_data_file": "../data/mobile_memory.json",
-  "credentials_path": "../data/credentials.json",
+  "archive_data_file": "data/mobile_memory.json",
+  "credentials_path": "data/credentials.json",
   "user_agent_type": "mobile",
   "reload_and_gc": [
     {"action": "reload" },

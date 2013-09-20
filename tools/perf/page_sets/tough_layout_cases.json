@@ -1,7 +1,7 @@
 {
   "description": "The slowest layouts observed in the alexa top 1 million sites in July 2013.",
-  "archive_data_file": "../data/tough_layout_cases.json",
-  "credentials_path": "../data/credentials.json",
+  "archive_data_file": "data/tough_layout_cases.json",
+  "credentials_path": "data/credentials.json",
   "user_agent_type": "desktop",
   "smoothness": { "action": "scroll" },
   "pages": [

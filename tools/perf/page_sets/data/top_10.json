@@ -1,0 +1,18 @@
+{
+    "page_set": "../top_10.json", 
+    "description": "Describes the Web Page Replay archives for a page set. Don't edit by hand! Use record_wpr for updating.", 
+    "archives": {
+        "top_10_000.wpr": [
+            "https://www.google.com/#hl=en&q=barack+obama", 
+            "https://mail.google.com/mail/", 
+            "https://www.google.com/calendar/", 
+            "http://www.youtube.com", 
+            "http://www.facebook.com/barackobama", 
+            "http://en.wikipedia.org/wiki/Wikipedia", 
+            "http://www.amazon.com", 
+            "http://www.yahoo.com/", 
+            "http://www.bing.com/", 
+            "http://www.ask.com/"
+        ]
+    }
+}

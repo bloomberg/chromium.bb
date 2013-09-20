@@ -1,7 +1,7 @@
 {
   "description": "Chrome Endure test for GMail.",
-  "archive_data_file": "../data/gmail_alt_two_labels.json",
-  "credentials_path": "../data/credentials.json",
+  "archive_data_file": "data/gmail_alt_two_labels.json",
+  "credentials_path": "data/credentials.json",
   "user_agent_type": "desktop",
   "pages": [
     {
