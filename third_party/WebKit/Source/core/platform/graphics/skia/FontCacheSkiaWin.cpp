@@ -176,6 +176,16 @@ static bool typefacesMatchesFamily(const SkTypeface* tf, const AtomicString& fam
     }
     actualFamilies->unref();
 
+    // getFamilyName may return a name not returned by the createFamilyNameIterator.
+    // Specifically in cases where Windows substitutes the font based on the
+    // HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontSubstitutes registry entries.
+    if (!matchesRequestedFamily) {
+        SkString familyName;
+        tf->getFamilyName(&familyName);
+        if (equalIgnoringCase(family, familyName))
+            matchesRequestedFamily = true;
+    }
+
     return matchesRequestedFamily;
 }
 
