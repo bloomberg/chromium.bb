@@ -302,9 +302,17 @@ void DesktopRootWindowHostX11::GetWindowPlacement(
     ui::WindowShowState* show_state) const {
   *bounds = bounds_;
 
-  // TODO(erg): This needs a better implementation. For now, we're just pass
-  // back the normal state until we keep track of this.
-  *show_state = ui::SHOW_STATE_NORMAL;
+  if (IsFullscreen()) {
+    *show_state = ui::SHOW_STATE_FULLSCREEN;
+  } else if (IsMinimized()) {
+    *show_state = ui::SHOW_STATE_MINIMIZED;
+  } else if (IsMaximized()) {
+    *show_state = ui::SHOW_STATE_MAXIMIZED;
+  } else if (!IsActive()) {
+    *show_state = ui::SHOW_STATE_INACTIVE;
+  } else {
+    *show_state = ui::SHOW_STATE_NORMAL;
+  }
 }
 
 gfx::Rect DesktopRootWindowHostX11::GetWindowBoundsInScreen() const {
