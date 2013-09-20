@@ -7,12 +7,12 @@
 #   http://www.gnu.org/software/make/manual/make.html
 #
 
-PROJECTS:= \
+PROJECTS := \
 [[for project in projects:]]
   {{project}} \
 [[]]
 
-HTTPD:={{rel_sdk}}/tools/httpd.py
+HTTPD_PY := python {{rel_sdk}}/tools/httpd.py
 
 ifeq ($(TOOLCHAIN),all)
 TOOLCHAIN_ARG:=TOOLCHAIN=all
@@ -54,13 +54,14 @@ all: $(ALL_TARGET_LIST)
 clean: $(CLEAN_TARGET_LIST)
 	@echo Done cleaning targets.
 
-.PHONY: run
-run: all
+.PHONY: serve
+serve: all
 	@echo Starting up python webserver.
-	python $(HTTPD)
+	@$(HTTPD_PY)
 
 # Phony aliases for backward compatibility
 RUN: run
+run: serve
 
 all_versions:
 	+$(MAKE) TOOLCHAIN=all

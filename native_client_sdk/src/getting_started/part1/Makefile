@@ -54,41 +54,10 @@ hello_tutorial.pexe: hello_tutorial.bc
 
 
 #
-# File to redirect to to in order to hide output.
+# Makefile target to run the SDK's simple HTTP server and serve this example.
 #
-ifeq ($(OSNAME),win)
-DEV_NULL = nul
-else
-DEV_NULL = /dev/null
-endif
+HTTPD_PY := python $(NACL_SDK_ROOT)/tools/httpd.py
 
-#
-# Assign a sensible default to CHROME_PATH.
-#
-CHROME_PATH ?= $(shell $(GETOS) --chrome 2> $(DEV_NULL))
-
-#
-# Verify we can find the Chrome executable if we need to launch it.
-#
-.PHONY: check_for_chrome
-check_for_chrome:
-ifeq (,$(wildcard $(CHROME_PATH)))
-	$(warning No valid Chrome found at CHROME_PATH=$(CHROME_PATH))
-	$(error Set CHROME_PATH via an environment variable, or command-line.)
-else
-	$(warning Using chrome at: $(CHROME_PATH))
-endif
-
-#
-# Variables for running examples with Chrome.
-#
-RUN_PY := python $(NACL_SDK_ROOT)/tools/run.py
-
-# Additional arguments to pass to Chrome.
-CHROME_ARGS += --enable-pnacl --no-first-run
-CHROME_ARGS += --user-data-dir=$(CURDIR)/user-data-dir
-
-# Define a phony rule so it always runs, to run the pexe.
-.PHONY: run
-run: check_for_chrome all
-	$(RUN_PY) -C $(CURDIR) -P index.html -- $(CHROME_PATH) $(CHROME_ARGS)
+.PHONY: serve
+serve: all
+	$(HTTPD_PY) -C $(CURDIR)

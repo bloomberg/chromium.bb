@@ -426,6 +426,7 @@ endif
 # Variables for running examples with Chrome.
 #
 RUN_PY := python $(NACL_SDK_ROOT)/tools/run.py
+HTTPD_PY := python $(NACL_SDK_ROOT)/tools/httpd.py
 
 # Add this to launch Chrome with additional environment variables defined.
 # Each element should be specified as KEY=VALUE, with whitespace separating
@@ -491,6 +492,10 @@ debug: check_for_chrome all $(PAGE)
 	    --enable-nacl-debug \
 	    --register-pepper-plugins="$(PPAPI_DEBUG),$(PPAPI_RELEASE)"
 endif
+
+.PHONY: serve
+serve: all
+	$(HTTPD_PY) -C $(CURDIR)
 
 
 # uppercase aliases (for backward compatibility)
