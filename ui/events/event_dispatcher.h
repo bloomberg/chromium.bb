@@ -6,16 +6,16 @@
 #define UI_EVENTS_EVENT_DISPATCHER_H_
 
 #include "base/auto_reset.h"
+#include "ui/base/ui_export.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_target.h"
-#include "ui/events/events_export.h"
 
 namespace ui {
 
 class EventDispatcher;
 
-class EVENTS_EXPORT EventDispatcherDelegate {
+class UI_EXPORT EventDispatcherDelegate {
  public:
   EventDispatcherDelegate();
   virtual ~EventDispatcherDelegate();
@@ -42,7 +42,7 @@ class EVENTS_EXPORT EventDispatcherDelegate {
 };
 
 // Dispatches events to appropriate targets.
-class EVENTS_EXPORT EventDispatcher {
+class UI_EXPORT EventDispatcher {
  public:
   explicit EventDispatcher(EventDispatcherDelegate* delegate);
   virtual ~EventDispatcher();

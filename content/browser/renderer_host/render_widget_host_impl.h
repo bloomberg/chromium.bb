@@ -35,7 +35,7 @@
 #include "ipc/ipc_listener.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
-#include "ui/events/latency_info.h"
+#include "ui/base/latency_info.h"
 #include "ui/gfx/native_widget_types.h"
 
 class WebCursor;

@@ -14,7 +14,7 @@
 #include "content/common/input/web_input_event_payload.h"
 #include "content/common/input_messages.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/events/latency_info.h"
+#include "ui/base/latency_info.h"
 
 namespace content {
 namespace {

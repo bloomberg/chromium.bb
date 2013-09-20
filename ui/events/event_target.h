@@ -7,14 +7,14 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "ui/base/ui_export.h"
 #include "ui/events/event_handler.h"
-#include "ui/events/events_export.h"
 
 namespace ui {
 
 class EventDispatcher;
 
-class EVENTS_EXPORT EventTarget : public EventHandler {
+class UI_EXPORT EventTarget : public EventHandler {
  public:
   typedef std::vector<EventTarget*> EventTargets;
 

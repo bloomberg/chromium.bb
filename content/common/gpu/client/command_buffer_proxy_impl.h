@@ -24,7 +24,7 @@
 #include "gpu/command_buffer/common/command_buffer_shared.h"
 #include "ipc/ipc_listener.h"
 #include "media/video/video_decode_accelerator.h"
-#include "ui/events/latency_info.h"
+#include "ui/base/latency_info.h"
 
 struct GPUCommandBufferConsoleMessage;
 

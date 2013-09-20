@@ -7,13 +7,13 @@
 
 #include <gtk/gtk.h>
 
-#include "ui/events/events_export.h"
+#include "ui/base/ui_export.h"
 
 namespace ui {
 
-EVENTS_EXPORT int GdkModifierToEventFlag(GdkModifierType gdk_modifier);
+UI_EXPORT int GdkModifierToEventFlag(GdkModifierType gdk_modifier);
 
-EVENTS_EXPORT GdkModifierType EventFlagToGdkModifier(int event_flag);
+UI_EXPORT GdkModifierType EventFlagToGdkModifier(int event_flag);
 
 }  // namespace ui
 

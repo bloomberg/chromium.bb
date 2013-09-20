@@ -35,7 +35,7 @@
 #include "cc/trees/occlusion_tracker.h"
 #include "cc/trees/proxy.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/events/latency_info.h"
+#include "ui/base/latency_info.h"
 #include "ui/gfx/rect.h"
 
 namespace WebKit { class WebGraphicsContext3D; }

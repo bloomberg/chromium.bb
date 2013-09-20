@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_EVENTS_LATENCY_INFO_H_
-#define UI_EVENTS_LATENCY_INFO_H_
+#ifndef UI_BASE_LATENCY_INFO_H_
+#define UI_BASE_LATENCY_INFO_H_
 
 #include <map>
 #include <utility>
 
 #include "base/basictypes.h"
 #include "base/time/time.h"
-#include "ui/events/events_export.h"
+#include "ui/base/ui_export.h"
 
 namespace ui {
 
@@ -35,7 +35,7 @@ enum LatencyComponentType {
   INPUT_EVENT_LATENCY_ACKED_COMPONENT
 };
 
-struct EVENTS_EXPORT LatencyInfo {
+struct UI_EXPORT LatencyInfo {
   struct LatencyComponent {
     // Nondecreasing number that can be used to determine what events happened
     // in the component at the time this struct was sent on to the next
@@ -93,4 +93,4 @@ struct EVENTS_EXPORT LatencyInfo {
 
 }  // namespace ui
 
-#endif  // UI_EVENTS_LATENCY_INFO_H_
+#endif  // UI_BASE_LATENCY_INFO_H_

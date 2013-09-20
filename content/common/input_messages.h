@@ -19,7 +19,7 @@
 #include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
-#include "ui/events/latency_info.h"
+#include "ui/base/latency_info.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 
