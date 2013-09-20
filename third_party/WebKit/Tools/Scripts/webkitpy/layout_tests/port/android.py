@@ -508,7 +508,11 @@ class AndroidPort(chromium.ChromiumPort):
             num_workers = min(num_workers, num_child_processes)
         if num_workers > 1:
             pool = ThreadPool(num_workers)
-            pool.map(setup_device, range(num_workers))
+            try:
+                pool.map(setup_device, range(num_workers))
+            except KeyboardInterrupt:
+                pool.terminate()
+                raise
         else:
             setup_device(0)
 
