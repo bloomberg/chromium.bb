@@ -135,9 +135,11 @@ void PrefixSelector::EnsureCaretInRect(const gfx::Rect& rect) {
 }
 
 void PrefixSelector::OnTextInput(const string16& text) {
-  // Small hack to filter out 'tab' input, as the expectation is that tabs
-  // should cycle input elements, not influence selection.
-  if (text.length() == 1 && text.at(0) == 0x09)
+  // Small hack to filter out 'tab' and 'enter' input, as the expectation is
+  // that they are control characters and will not affect the currently-active
+  // prefix.
+  if (text.length() == 1 &&
+      (text[0] == L'\t' || text[0] == L'\r' || text[0] == L'\n'))
     return;
 
   const int row_count = prefix_delegate_->GetRowCount();
