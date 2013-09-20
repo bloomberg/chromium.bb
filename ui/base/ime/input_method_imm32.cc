@@ -153,8 +153,7 @@ LRESULT InputMethodIMM32::OnImeSetContext(HWND window_handle,
                                           WPARAM wparam,
                                           LPARAM lparam,
                                           BOOL* handled) {
-  active_ = (wparam == TRUE);
-  if (active_)
+  if (!!wparam)
     imm32_manager_.CreateImeWindow(window_handle);
 
   OnInputMethodChanged();
