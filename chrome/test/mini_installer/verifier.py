@@ -2,29 +2,18 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import file_verifier
-import process_verifier
-import registry_verifier
 
+class Verifier:
+  """Verifies that the current machine states match the expectation."""
 
-def Verify(property, variable_expander):
-  """Verifies that the current machine states match the property dictionary.
+  def Verify(self, verifier_input, variable_expander):
+    """Verifies that the current machine states match |verifier_input|.
 
-  A property dictionary is a dictionary where each key is a verifier's name and
-  the associated value is the input to that verifier. For details about the
-  input format for each verifier, take a look at http://goo.gl/1P85WL
+    This is an abstract method for subclasses to override.
 
-  Args:
-    property: A property dictionary.
-    variable_expander: A VariableExpander object.
-  """
-  for verifier_name, value in property.iteritems():
-    if verifier_name == 'Files':
-      file_verifier.VerifyFiles(value, variable_expander)
-    elif verifier_name == 'Processes':
-      process_verifier.VerifyProcesses(value, variable_expander)
-    elif verifier_name == 'RegistryEntries':
-      registry_verifier.VerifyRegistryEntries(value, variable_expander)
-    else:
-      # TODO(sukolsak): Implement other verifiers
-      raise KeyError('Unknown verifier %s' % verifier_name)
+    Args:
+      verifier_input: An input to the verifier. Each subclass can specify a
+          different input to the verifier.
+      variable_expander: A VariableExpander object.
+    """
+    raise NotImplementedError()

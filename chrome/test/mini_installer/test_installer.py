@@ -17,7 +17,7 @@ import sys
 import unittest
 
 from variable_expander import VariableExpander
-import verifier
+import verifier_runner
 
 
 class Config:
@@ -52,6 +52,7 @@ class InstallerTest(unittest.TestCase):
     self._test = test
     self._config = config
     self._variable_expander = variable_expander
+    self._verifier_runner = verifier_runner.VerifierRunner()
     self._clean_on_teardown = True
 
   def __str__(self):
@@ -107,7 +108,8 @@ class InstallerTest(unittest.TestCase):
       state: A state name.
     """
     try:
-      verifier.Verify(self._config.states[state], self._variable_expander)
+      self._verifier_runner.VerifyAll(self._config.states[state],
+                                      self._variable_expander)
     except AssertionError as e:
       # If an AssertionError occurs, we intercept it and add the state name
       # to the error message so that we know where the test fails.
