@@ -35,12 +35,6 @@ ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 TOOLS_PATH = os.path.join(ROOT_DIR, 'tools')
 
 
-# Default servers.
-# TODO(maruel): Chromium-specific.
-ISOLATE_SERVER = 'https://isolateserver-dev.appspot.com/'
-SWARM_SERVER = 'https://chromium-swarm-dev.appspot.com'
-
-
 # The default time to wait for a shard to finish running.
 DEFAULT_SHARD_WAIT_TIME = 80 * 60.
 
@@ -50,11 +44,19 @@ NO_OUTPUT_FOUND = (
   '\n')
 
 
-PLATFORM_MAPPING = {
+# TODO(maruel): cygwin != Windows. If a swarm_bot is running in cygwin, it's
+# different from running in native python.
+PLATFORM_MAPPING_SWARMING = {
   'cygwin': 'Windows',
   'darwin': 'Mac',
   'linux2': 'Linux',
   'win32': 'Windows',
+}
+
+PLATFORM_MAPPING_ISOLATE = {
+  'linux2': 'linux',
+  'darwin': 'mac',
+  'win32': 'win',
 }
 
 
@@ -91,7 +93,7 @@ class Manifest(object):
     self._test_name = test_name
     self._shards = shards
     self._test_filter = test_filter
-    self._target_platform = PLATFORM_MAPPING[slave_os]
+    self._target_platform = PLATFORM_MAPPING_SWARMING[slave_os]
     self._working_dir = working_dir
 
     self.isolate_server = isolate_server
@@ -334,20 +336,20 @@ def chromium_setup(manifest):
   manifest.add_task('Clean Up', ['python', cleanup_script_name])
 
 
-def archive(isolated, isolate_server, algo, verbose):
+def archive(isolated, isolate_server, os_slave, algo, verbose):
   """Archives a .isolated and all the dependencies on the CAC."""
   tempdir = None
   try:
-    logging.info('Archiving')
+    logging.info('archive(%s, %s)', isolated, isolate_server)
     cmd = [
       sys.executable,
       os.path.join(ROOT_DIR, 'isolate.py'),
-      'hashtable',
+      'archive',
       '--outdir', isolate_server,
       '--isolated', isolated,
+      '-V', 'OS', PLATFORM_MAPPING_ISOLATE[os_slave],
     ]
-    if verbose:
-      cmd.append('--verbose')
+    cmd.extend(['--verbose'] * verbose)
     logging.info(' '.join(cmd))
     if subprocess.call(cmd, verbose):
       return
@@ -365,7 +367,8 @@ def process_manifest(
   Optionally archives an .isolated file.
   """
   if file_hash_or_isolated.endswith('.isolated'):
-    file_hash = archive(file_hash_or_isolated, isolate_server, algo, verbose)
+    file_hash = archive(
+        file_hash_or_isolated, isolate_server, slave_os, algo, verbose)
     if not file_hash:
       print >> sys.stderr, 'Archival failure %s' % file_hash_or_isolated
       return 1
@@ -489,9 +492,8 @@ def add_trigger_options(parser):
   """Adds all options to trigger a task on Swarming."""
   parser.add_option(
       '-I', '--isolate-server',
-      default=ISOLATE_SERVER,
-      metavar='URL',
-      help='Isolate server where data is stored. default: %default')
+      metavar='URL', default='',
+      help='Isolate server to use')
   parser.add_option(
       '-w', '--working_dir', default='swarm_tests',
       help='Working directory on the swarm slave side. default: %default.')
@@ -518,7 +520,7 @@ def process_trigger_options(parser, options):
   if options.os in ('', 'None'):
     # Use the current OS.
     options.os = sys.platform
-  if not options.os in PLATFORM_MAPPING:
+  if not options.os in PLATFORM_MAPPING_SWARMING:
     parser.error('Invalid --os option.')
 
 
@@ -649,8 +651,9 @@ class OptionParserSwarming(tools.OptionParserWithLogging):
     tools.OptionParserWithLogging.__init__(
         self, prog='swarming.py', **kwargs)
     self.add_option(
-        '-S', '--swarming', default=SWARM_SERVER,
-        help='Specify the url of the Swarming server, default: %default')
+        '-S', '--swarming',
+        metavar='URL', default='',
+        help='Swarming server to use')
 
   def parse_args(self, *args, **kwargs):
     options, args = tools.OptionParserWithLogging.parse_args(

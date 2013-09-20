@@ -1355,15 +1355,19 @@ def load_isolate_for_config(isolate_dir, content, variables):
   # dependencies.
   isolate = load_isolate_as_config(isolate_dir, eval_content(content), None)
   try:
-    config = tuple(variables[var] for var in isolate.config_variables)
+    config_name = tuple(variables[var] for var in isolate.config_variables)
   except KeyError:
     raise ExecutionError(
         'These configuration variables were missing from the command line: %s' %
         ', '.join(sorted(set(isolate.config_variables) - set(variables))))
-  config = isolate.by_config.get(config)
+  config = isolate.by_config.get(config_name)
   if not config:
-    raise ExecutionError('Failed to load configuration for (%s)' %
-        ', '.join(isolate.config_variables))
+    raise ExecutionError(
+        'Failed to load configuration for variable \'%s\' for config(s) \'%s\''
+        '\nAvailable configs: %s' %
+        (', '.join(isolate.config_variables),
+        ', '.join(config_name),
+        ', '.join(str(s) for s in isolate.by_config)))
   # Merge tracked and untracked variables, isolate.py doesn't care about the
   # trackability of the variables, only the build tool does.
   dependencies = [
@@ -1464,10 +1468,10 @@ class Flattenable(object):
     try:
       out = cls.load(trace_inputs.read_json(filename), *args, **kwargs)
       logging.debug('Loaded %s(%s)', cls.__name__, filename)
-    except (IOError, ValueError):
+    except (IOError, ValueError) as e:
       # On failure, loads the default instance.
       out = cls(*args, **kwargs)
-      logging.warn('Failed to load %s', filename)
+      logging.warn('Failed to load %s: %s', filename, e)
     return out
 
 
@@ -1609,9 +1613,6 @@ class SavedState(Flattenable):
     out = super(SavedState, cls).load(data, isolated_basedir)
     if 'os' in data:
       out.variables['OS'] = data['os']
-    if out.variables['OS'] != get_flavor():
-      raise isolateserver.ConfigError(
-          'The .isolated.state file was created on another platform')
 
     # Converts human readable form back into the proper class type.
     algo = data.get('algo', 'sha-1')

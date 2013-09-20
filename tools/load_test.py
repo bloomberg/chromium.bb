@@ -250,8 +250,9 @@ def main():
 
   parser = optparse.OptionParser(description=sys.modules[__name__].__doc__)
   parser.add_option(
-      '-I', '--isolate-server', metavar='URL',
-      default='https://isolateserver-dev.appspot.com')
+      '-I', '--isolate-server',
+      metavar='URL', default='',
+      help='Isolate server to use')
   parser.add_option(
       '--namespace', default='temporary%d-gzip' % time.time(), metavar='XX',
       help='Namespace to use on the server, default: %default')

@@ -28,13 +28,12 @@ def run(cmd):
 
 def main():
   parser = optparse.OptionParser(description=sys.modules[__name__].__doc__)
-  parser.add_option('-v', '--verbose', action='store_true')
+  parser.add_option('-v', '--verbose', action='count', default=0)
   options, args = parser.parse_args()
   if args:
     parser.error('Unsupported argument %s' % args)
 
-  if options.verbose:
-    os.environ['ISOLATE_DEBUG'] = '1'
+  os.environ['ISOLATE_DEBUG'] = str(options.verbose)
 
   try:
     # All the files are put in a temporary directory. This is optional and
@@ -56,7 +55,7 @@ def main():
     run(
         [
           'isolate.py',
-          'hashtable',
+          'archive',
           '--isolate', os.path.join(ROOT_DIR, 'hello_world.isolate'),
           '--isolated', isolated,
           '--outdir', hashtabledir,
@@ -70,11 +69,13 @@ def main():
           '--cache', cachedir,
           '--isolate-server', hashtabledir,
           '--hash', hashval,
+          '--no-log',
         ])
-
+    return 0
+  except subprocess.CalledProcessError as e:
+    return e.returncode
   finally:
     shutil.rmtree(tempdir)
-  return 0
 
 
 if __name__ == '__main__':

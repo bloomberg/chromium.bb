@@ -29,15 +29,16 @@ def run(cmd):
 def main():
   parser = optparse.OptionParser(description=sys.modules[__name__].__doc__)
   parser.add_option(
-      '-i', '--isolate-server',
-      default='https://isolateserver.appspot.com/',
-      help='Isolate server to use default:%default')
-  parser.add_option('-v', '--verbose', action='store_true')
+      '-I', '--isolate-server',
+      metavar='URL', default='',
+      help='Isolate server to use')
+  parser.add_option('-v', '--verbose', action='count', default=0)
   options, args = parser.parse_args()
   if args:
     parser.error('Unsupported argument %s' % args)
-  if options.verbose:
-    os.environ['ISOLATE_DEBUG'] = '1'
+  if not options.isolate_server:
+    parser.error('--isolate-server is required.')
+  os.environ['ISOLATE_DEBUG'] = str(options.verbose)
 
   try:
     # All the files are put in a temporary directory. This is optional and
@@ -57,27 +58,27 @@ def main():
     run(
         [
           'isolate.py',
-          'hashtable',
+          'archive',
           '--isolate', os.path.join(ROOT_DIR, 'hello_world.isolate'),
           '--isolated', isolated,
           '--outdir', options.isolate_server,
         ])
 
     print('\nRunning')
-    # TODO(maruel): This makes it not work with NFS.
-    remote = (
-        options.isolate_server.rstrip('/') + '/content/retrieve/default-gzip/')
     hashval = hashlib.sha1(open(isolated, 'rb').read()).hexdigest()
     run(
         [
           'run_isolated.py',
           '--cache', cachedir,
-          '--isolate-server', remote,
+          '--isolate-server', options.isolate_server,
           '--hash', hashval,
+          '--no-log',
         ])
+    return 0
+  except subprocess.CalledProcessError as e:
+    return e.returncode
   finally:
     shutil.rmtree(tempdir)
-  return 0
 
 
 if __name__ == '__main__':

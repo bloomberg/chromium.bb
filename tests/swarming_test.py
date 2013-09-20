@@ -417,7 +417,7 @@ def generate_expected_json(
     isolate_server,
     profile):
   retrieval_url = isolate_server + u'/content/retrieve/default/'
-  os_value = unicode(swarming.PLATFORM_MAPPING[slave_os])
+  os_value = unicode(swarming.PLATFORM_MAPPING_SWARMING[slave_os])
   expected = {
     u'cleanup': u'root',
     u'configurations': [
@@ -610,7 +610,9 @@ class ManifestTest(auto_stub.TestCase):
 
   def test_no_request(self):
     try:
-      swarming.main(['trigger'])
+      swarming.main([
+          'trigger', '--swarming', 'https://example.com',
+          '--isolate-server', 'https://example.com'])
       self.fail()
     except SystemExit as e:
       self.assertEqual(2, e.code)

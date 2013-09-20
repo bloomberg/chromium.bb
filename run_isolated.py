@@ -543,10 +543,9 @@ def main():
       '-H', '--hash',
       help='Hash of the .isolated to grab from the hash table')
   group.add_option(
-      '-I', '--isolate-server', metavar='URL',
-      default=
-          'https://isolateserver.appspot.com',
-      help='Remote where to get the items. Defaults to %default')
+      '-I', '--isolate-server',
+      metavar='URL', default='',
+      help='Isolate server to use')
   group.add_option(
       '-n', '--namespace',
       default='default-gzip',
@@ -589,6 +588,8 @@ def main():
   if args:
     logging.debug('Unsupported args %s' % ' '.join(args))
     parser.error('Unsupported args %s' % ' '.join(args))
+  if not options.isolate_server:
+    parser.error('--isolate-server is required.')
 
   options.cache = os.path.abspath(options.cache)
   policies = CachePolicies(

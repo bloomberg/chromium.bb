@@ -30,11 +30,6 @@ from utils import threading_utils
 OSES = {'win32': 'win', 'linux2': 'linux', 'darwin': 'mac'}
 
 
-# Default servers.
-SWARM_SERVER = 'https://chromium-swarm-dev.appspot.com/'
-ISOLATE_SERVER = 'https://isolateserver-dev.appspot.com/'
-
-
 class Runner(object):
   def __init__(self, isolate_server, swarm_server, add_task, progress, tempdir):
     self.isolate_server = isolate_server
@@ -70,7 +65,7 @@ class Runner(object):
       returncode, stdout, duration = self._call(
           [
             'isolate.py',
-            'hashtable',
+            'archive',
             '--isolate', os.path.join(BASE_DIR, 'run_a_test.isolate'),
             '--isolated', isolated,
             '--outdir', self.isolate_server,
@@ -185,13 +180,13 @@ def run_swarm_tests_on_swarm(oses, tests, logs, isolate_server, swarm_server):
 def main():
   parser = optparse.OptionParser(description=sys.modules[__name__].__doc__)
   parser.add_option(
-      '-i', '--isolate-server',
-      default=ISOLATE_SERVER,
-      help='Isolate server to use default:%default')
+      '-I', '--isolate-server',
+      metavar='URL', default='',
+      help='Isolate server to use')
   parser.add_option(
-      '-s', '--swarm-server',
-      default=SWARM_SERVER,
-      help='Isolate server to use default:%default')
+      '-S', '--swarming',
+      metavar='URL', default='',
+      help='Swarming server to use')
   parser.add_option(
       '-l', '--logs',
       help='Destination where to store the failure logs (recommended)')
@@ -203,6 +198,11 @@ def main():
     parser.error('Unsupported argument %s' % args)
   if options.verbose:
     os.environ['ISOLATE_DEBUG'] = '1'
+
+  if not options.isolate_server:
+    parser.error('--isolate-server is required.')
+  if not options.swarming:
+    parser.error('--swarming is required.')
 
   logging.basicConfig(level=logging.DEBUG if options.verbose else logging.ERROR)
 
@@ -241,7 +241,7 @@ def main():
       tests,
       options.logs,
       options.isolate_server,
-      options.swarm_server)
+      options.swarming)
 
 
 if __name__ == '__main__':

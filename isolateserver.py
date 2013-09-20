@@ -30,11 +30,6 @@ from utils import threading_utils
 from utils import tools
 
 
-# Default server.
-# TODO(maruel): Chromium-specific.
-ISOLATE_SERVER = 'https://isolateserver-dev.appspot.com/'
-
-
 # The minimum size of files to upload directly to the blobstore.
 MIN_SIZE_FOR_DIRECT_BLOBSTORE = 20 * 1024
 
@@ -1125,8 +1120,6 @@ def CMDarchive(parser, args):
 
   if not files:
     parser.error('Nothing to upload')
-  if not options.isolate_server:
-    parser.error('Nowhere to send. Please specify --isolate-server')
 
   # Load the necessary metadata.
   # TODO(maruel): Use a worker pool to upload as the hashing is being done.
@@ -1194,9 +1187,8 @@ class OptionParserIsolateServer(tools.OptionParserWithLogging):
     tools.OptionParserWithLogging.__init__(self, **kwargs)
     self.add_option(
         '-I', '--isolate-server',
-        default=ISOLATE_SERVER,
-        metavar='URL',
-        help='Isolate server where data is stored. default: %default')
+        metavar='URL', default='',
+        help='Isolate server to use')
     self.add_option(
         '--namespace', default='default-gzip',
         help='The namespace to use on the server, default: %default')
