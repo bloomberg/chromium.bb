@@ -1230,7 +1230,7 @@ void WebFrameImpl::replaceMisspelledRange(const WebString& text)
     RefPtr<Range> caretRange = frame()->selection().toNormalizedRange();
     if (!caretRange)
         return;
-    Vector<DocumentMarker*> markers = frame()->document()->markers()->markersInRange(caretRange.get(), DocumentMarker::Spelling | DocumentMarker::Grammar);
+    Vector<DocumentMarker*> markers = frame()->document()->markers()->markersInRange(caretRange.get(), DocumentMarker::MisspellingMarkers());
     if (markers.size() < 1 || markers[0]->startOffset() >= markers[0]->endOffset())
         return;
     RefPtr<Range> markerRange = Range::create(caretRange->ownerDocument(), caretRange->startContainer(), markers[0]->startOffset(), caretRange->endContainer(), markers[0]->endOffset());
@@ -1244,7 +1244,7 @@ void WebFrameImpl::replaceMisspelledRange(const WebString& text)
 
 void WebFrameImpl::removeSpellingMarkers()
 {
-    frame()->document()->markers()->removeMarkers(DocumentMarker::Spelling | DocumentMarker::Grammar);
+    frame()->document()->markers()->removeMarkers(DocumentMarker::MisspellingMarkers());
 }
 
 bool WebFrameImpl::hasSelection() const

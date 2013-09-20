@@ -1387,10 +1387,8 @@ void Editor::showSpellingGuessPanel()
 void Editor::clearMisspellingsAndBadGrammar(const VisibleSelection &movingSelection)
 {
     RefPtr<Range> selectedRange = movingSelection.toNormalizedRange();
-    if (selectedRange) {
-        frame().document()->markers()->removeMarkers(selectedRange.get(), DocumentMarker::Spelling);
-        frame().document()->markers()->removeMarkers(selectedRange.get(), DocumentMarker::Grammar);
-    }
+    if (selectedRange)
+        frame().document()->markers()->removeMarkers(selectedRange.get(), DocumentMarker::MisspellingMarkers());
 }
 
 void Editor::markMisspellingsAndBadGrammar(const VisibleSelection &movingSelection)
@@ -1752,7 +1750,7 @@ void Editor::updateMarkersForWordsAffectedByEditing(bool doNotRemoveIfSelectionA
     ASSERT(document);
     RefPtr<Range> wordRange = Range::create(*document, startOfFirstWord.deepEquivalent(), endOfLastWord.deepEquivalent());
 
-    document->markers()->removeMarkers(wordRange.get(), DocumentMarker::Spelling | DocumentMarker::Grammar, DocumentMarkerController::RemovePartiallyOverlappingMarker);
+    document->markers()->removeMarkers(wordRange.get(), DocumentMarker::MisspellingMarkers(), DocumentMarkerController::RemovePartiallyOverlappingMarker);
 }
 
 PassRefPtr<Range> Editor::rangeForPoint(const IntPoint& windowPoint)

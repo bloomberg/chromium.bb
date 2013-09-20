@@ -68,6 +68,14 @@ public:
         }
     };
 
+    class MisspellingMarkers : public MarkerTypes {
+    public:
+        MisspellingMarkers()
+            : MarkerTypes(Spelling | Grammar)
+        {
+        }
+    };
+
     DocumentMarker();
     DocumentMarker(MarkerType, unsigned startOffset, unsigned endOffset);
     DocumentMarker(MarkerType, unsigned startOffset, unsigned endOffset, const String& description);

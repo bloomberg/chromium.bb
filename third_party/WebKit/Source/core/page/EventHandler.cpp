@@ -444,8 +444,7 @@ void EventHandler::selectClosestMisspellingFromHitTestResult(const HitTestResult
         Position start = pos.deepEquivalent();
         Position end = pos.deepEquivalent();
         if (pos.isNotNull()) {
-            Vector<DocumentMarker*> markers = innerNode->document().markers()->markersInRange(
-                makeRange(pos, pos).get(), DocumentMarker::Spelling | DocumentMarker::Grammar);
+            Vector<DocumentMarker*> markers = innerNode->document().markers()->markersInRange(makeRange(pos, pos).get(), DocumentMarker::MisspellingMarkers());
             if (markers.size() == 1) {
                 start.moveToOffset(markers[0]->startOffset());
                 end.moveToOffset(markers[0]->endOffset());
