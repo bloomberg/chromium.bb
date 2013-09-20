@@ -776,25 +776,6 @@
         }],
         ['proprietary_codecs==1 or branding=="Chrome"', {
           'sources': [
-            'mp2t/es_parser.h',
-            'mp2t/es_parser_adts.cc',
-            'mp2t/es_parser_adts.h',
-            'mp2t/es_parser_h264.cc',
-            'mp2t/es_parser_h264.h',
-            'mp2t/mp2t_common.h',
-            'mp2t/mp2t_stream_parser.cc',
-            'mp2t/mp2t_stream_parser.h',
-            'mp2t/ts_packet.cc',
-            'mp2t/ts_packet.h',
-            'mp2t/ts_section.h',
-            'mp2t/ts_section_pat.cc',
-            'mp2t/ts_section_pat.h',
-            'mp2t/ts_section_pes.cc',
-            'mp2t/ts_section_pes.h',
-            'mp2t/ts_section_pmt.cc',
-            'mp2t/ts_section_pmt.h',
-            'mp2t/ts_section_psi.cc',
-            'mp2t/ts_section_psi.h',
             'mp4/aac.cc',
             'mp4/aac.h',
             'mp4/avc.cc',
@@ -1058,7 +1039,6 @@
         }],
         ['proprietary_codecs==1 or branding=="Chrome"', {
           'sources': [
-            'mp2t/mp2t_stream_parser_unittest.cc',
             'mp4/aac_unittest.cc',
             'mp4/avc_unittest.cc',
             'mp4/box_reader_unittest.cc',
