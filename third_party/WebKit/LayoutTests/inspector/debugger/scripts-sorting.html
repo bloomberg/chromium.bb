@@ -7,9 +7,9 @@
 <script>
 function test()
 {
-    WebInspector.showPanel("scripts");
+    WebInspector.showPanel("sources");
     InspectorTest.createWorkspace(true);
-    var panel = new WebInspector.ScriptsPanel(InspectorTest.testWorkspace);
+    var panel = new WebInspector.SourcesPanel(InspectorTest.testWorkspace);
     var navigator = panel._navigator;
 
     var uiSourceCodes = [];

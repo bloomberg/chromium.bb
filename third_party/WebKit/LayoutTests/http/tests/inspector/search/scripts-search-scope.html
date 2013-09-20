@@ -10,7 +10,7 @@ function test()
 
     function step1()
     {
-        WebInspector.showPanel("scripts");
+        WebInspector.showPanel("sources");
         InspectorTest.runAfterResourcesAreFinished(["search.html", "search.js", "search.css"], step2)
     }
 
@@ -18,7 +18,7 @@ function test()
     function runSearchAndDumpResults(searchConfig, callback)
     {
         var searchResults = [];
-        var scope = new WebInspector.ScriptsSearchScope(WebInspector.workspace);
+        var scope = new WebInspector.SourcesSearchScope(WebInspector.workspace);
         var progress = new WebInspector.Progress();
         scope.performSearch(searchConfig, progress, searchResultCallback, searchFinishedCallback);
 

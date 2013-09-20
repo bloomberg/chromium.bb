@@ -31,7 +31,7 @@ var test = function()
     function step2()
     {
         InspectorFrontendHost.copyText = InspectorTest.addResult.bind(InspectorTest);
-        WebInspector.panels.scripts.sidebarPanes.callstack._copyStackTrace();
+        WebInspector.panels.sources.sidebarPanes.callstack._copyStackTrace();
         InspectorTest.completeDebuggerTest();
     }
 }

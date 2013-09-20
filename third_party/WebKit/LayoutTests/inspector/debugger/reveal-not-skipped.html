@@ -23,7 +23,7 @@ var test = function()
 
             function step2()
             {
-                InspectorTest.addResult("Script source was shown for '" + WebInspector.panels.scripts.visibleView._uiSourceCode.name() + "'.");
+                InspectorTest.addResult("Script source was shown for '" + WebInspector.panels.sources.visibleView._uiSourceCode.name() + "'.");
                 InspectorTest.addResult("Throwing exception...");
                 InspectorTest.evaluateInPage("setTimeout(throwAnException, 0)");
                 InspectorTest.addSniffer(WebInspector.TabbedEditorContainer.prototype, "showFile", step3);
@@ -31,7 +31,7 @@ var test = function()
 
             function step3()
             {
-                InspectorTest.addResult("Script source was shown for '" + WebInspector.panels.scripts.visibleView._uiSourceCode.name() + "'.");
+                InspectorTest.addResult("Script source was shown for '" + WebInspector.panels.sources.visibleView._uiSourceCode.name() + "'.");
                 InspectorTest.addResult("Reloading page...");
                 InspectorTest.reloadPage(step4);
             }
@@ -44,7 +44,7 @@ var test = function()
 
             function step5()
             {
-                InspectorTest.addResult("Script source was shown for '" + WebInspector.panels.scripts.visibleView._uiSourceCode.name() + "'.");
+                InspectorTest.addResult("Script source was shown for '" + WebInspector.panels.sources.visibleView._uiSourceCode.name() + "'.");
                 InspectorTest.addResult("Throwing exception...");
                 InspectorTest.evaluateInPage("setTimeout(throwAnException, 0)");
                 InspectorTest.addSniffer(WebInspector.TabbedEditorContainer.prototype, "showFile", step6);
@@ -52,7 +52,7 @@ var test = function()
 
             function step6()
             {
-                InspectorTest.addResult("Script source was shown for '" + WebInspector.panels.scripts.visibleView._uiSourceCode.name() + "'.");
+                InspectorTest.addResult("Script source was shown for '" + WebInspector.panels.sources.visibleView._uiSourceCode.name() + "'.");
                 next();
             }
         },
@@ -69,15 +69,15 @@ var test = function()
 
             function step3()
             {
-                InspectorTest.addResult("Script source was shown for '" + WebInspector.panels.scripts.visibleView._uiSourceCode.name() + "'.");
+                InspectorTest.addResult("Script source was shown for '" + WebInspector.panels.sources.visibleView._uiSourceCode.name() + "'.");
                 InspectorTest.addResult("Formatting...");
                 InspectorTest.addSniffer(WebInspector.TabbedEditorContainer.prototype, "showFile", step4);
-                WebInspector.panels.scripts._toggleFormatSource();
+                WebInspector.panels.sources._toggleFormatSource();
             }
 
             function step4()
             {
-                InspectorTest.addResult("Script source was shown for '" + WebInspector.panels.scripts.visibleView._uiSourceCode.name() + "'.");
+                InspectorTest.addResult("Script source was shown for '" + WebInspector.panels.sources.visibleView._uiSourceCode.name() + "'.");
                 next();
             }
         }

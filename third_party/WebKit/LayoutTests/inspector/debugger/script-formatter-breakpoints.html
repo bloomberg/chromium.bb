@@ -16,7 +16,7 @@ function f1()
 var test = function()
 {
     WebInspector.breakpointManager._storage._breakpoints = {};
-    var panel = WebInspector.panels.scripts;
+    var panel = WebInspector.panels.sources;
     var sourceFrame;
 
     InspectorTest.runDebuggerTestSuite([
@@ -125,7 +125,7 @@ var test = function()
 
     function dumpBreakpointSidebarPane(title)
     {
-        var paneElement = WebInspector.panels.scripts.sidebarPanes.jsBreakpoints.listElement
+        var paneElement = WebInspector.panels.sources.sidebarPanes.jsBreakpoints.listElement
         InspectorTest.addResult("Breakpoint sidebar pane " + title);
         InspectorTest.addResult(InspectorTest.textContentWithLineBreaks(paneElement));
     }

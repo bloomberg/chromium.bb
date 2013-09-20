@@ -4,7 +4,7 @@ InspectorTest.startDebuggerTest = function(callback, quiet)
 {
     if (quiet !== undefined)
         InspectorTest._quiet = quiet;
-    WebInspector.showPanel("scripts");
+    WebInspector.showPanel("sources");
 
     if (WebInspector.debuggerModel.debuggerEnabled())
         startTest();
@@ -24,7 +24,7 @@ InspectorTest.startDebuggerTest = function(callback, quiet)
 
 InspectorTest.finishDebuggerTest = function(callback)
 {
-    var scriptsPanel = WebInspector.panels.scripts;
+    var sourcesPanel = WebInspector.panels.sources;
 
     WebInspector.debuggerModel.setBreakpointsActive(true);
     InspectorTest.resumeExecution(disableDebugger);
@@ -105,8 +105,8 @@ InspectorTest.waitUntilResumed = function(callback)
 
 InspectorTest.resumeExecution = function(callback)
 {
-    if (WebInspector.panels.scripts.paused)
-        WebInspector.panels.scripts._togglePause();
+    if (WebInspector.panels.sources.paused)
+        WebInspector.panels.sources._togglePause();
     InspectorTest.waitUntilResumed(callback);
 };
 
@@ -165,7 +165,7 @@ InspectorTest._resumedScript = function()
 
 InspectorTest.showUISourceCode = function(uiSourceCode, callback)
 {
-    var panel = WebInspector.showPanel("scripts");
+    var panel = WebInspector.showPanel("sources");
     panel.showUISourceCode(uiSourceCode);
     var sourceFrame = panel.visibleView;
     if (sourceFrame.loaded)
@@ -176,7 +176,7 @@ InspectorTest.showUISourceCode = function(uiSourceCode, callback)
 
 InspectorTest.showScriptSource = function(scriptName, callback)
 {
-    var panel = WebInspector.showPanel("scripts");
+    var panel = WebInspector.showPanel("sources");
     var uiSourceCodes = panel._workspace.uiSourceCodes();
     for (var i = 0; i < uiSourceCodes.length; ++i) {
         if (uiSourceCodes[i].name() === scriptName) {
@@ -185,14 +185,14 @@ InspectorTest.showScriptSource = function(scriptName, callback)
         }
     }
 
-    InspectorTest.addSniffer(WebInspector.ScriptsPanel.prototype, "_addUISourceCode", InspectorTest.showScriptSource.bind(InspectorTest, scriptName, callback));
+    InspectorTest.addSniffer(WebInspector.SourcesPanel.prototype, "_addUISourceCode", InspectorTest.showScriptSource.bind(InspectorTest, scriptName, callback));
 };
 
 InspectorTest.dumpScriptsNavigator = function(navigator, prefix)
 {
     prefix = prefix || "";
     InspectorTest.addResult(prefix + "Dumping ScriptsNavigator 'Scripts' tab:");
-    dumpNavigatorTreeOutline(prefix, navigator._scriptsView._scriptsTree);
+    dumpNavigatorTreeOutline(prefix, navigator._sourcesView._scriptsTree);
     InspectorTest.addResult(prefix + "Dumping ScriptsNavigator 'Content scripts' tab:");
     dumpNavigatorTreeOutline(prefix, navigator._contentScriptsView._scriptsTree);
 

@@ -13,8 +13,8 @@ function sendRequest(url)
 
 function test()
 {
-    WebInspector.showPanel("scripts");
-    var pane = WebInspector.panels.scripts.sidebarPanes.xhrBreakpoints;
+    WebInspector.showPanel("sources");
+    var pane = WebInspector.panels.sources.sidebarPanes.xhrBreakpoints;
     InspectorTest.runDebuggerTestSuite([
         function testXHRBreakpoint(next)
         {

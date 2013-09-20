@@ -10,7 +10,7 @@ function test()
     InspectorTest.runDebuggerTestSuite([
         function testSourceFramesCount(next)
         {
-            var panel = WebInspector.panels.scripts;
+            var panel = WebInspector.panels.sources;
             var sourceFrameCount = 0;
 
             InspectorTest.showScriptSource("script1.js", didShowScriptSources);

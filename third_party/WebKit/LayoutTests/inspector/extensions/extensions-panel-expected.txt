@@ -30,7 +30,7 @@ Panel resized, switching away...
 Panel hidden, test passed.
 RUNNING TEST: extension_testOpenResource
 Showing .../extensions-panel.html
-Showing resource .../inspector/extensions/extensions-panel.html in panel scripts (scripts), line: 1001
+Showing resource .../inspector/extensions/extensions-panel.html in panel sources (sources), line: 1001
 Showing .../abe.png
 Showing resource .../extensions/resources/abe.png in panel resources (resources), line: 1002
 Showing .../missing.txt

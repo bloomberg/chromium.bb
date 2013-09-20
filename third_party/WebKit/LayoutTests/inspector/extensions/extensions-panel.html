@@ -59,7 +59,7 @@ function initialize_extensionsPanelTest()
             var url = anchor.href.replace(/^.*(([/][^/]*){3}[^/)]*)$/, "...$1");
             InspectorTest.addResult("Showing resource " + url + " in panel " + this.name + " (" + WebInspector.inspectorView.currentPanel().name + "), line: " + anchor.lineNumber);
         }
-        var panels = ["scripts", "resources", "network"];
+        var panels = ["sources", "resources", "network"];
         for (var i = 0; i < panels.length; ++i)
             InspectorTest.addSniffer(WebInspector.panel(panels[i]), "showAnchorLocation", showAnchorLocationHook, true);
     }

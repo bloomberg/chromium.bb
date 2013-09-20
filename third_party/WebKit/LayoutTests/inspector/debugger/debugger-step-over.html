@@ -35,7 +35,7 @@ var test = function()
         InspectorTest.captureStackTrace(callFrames);
         if (stepCount < 2) {
             InspectorTest.addResult("Stepping over...");
-            WebInspector.panels.scripts._stepOverButton.element.click();
+            WebInspector.panels.sources._stepOverButton.element.click();
             InspectorTest.waitUntilResumed(InspectorTest.waitUntilPaused.bind(InspectorTest, step2));
         } else
             InspectorTest.completeDebuggerTest();

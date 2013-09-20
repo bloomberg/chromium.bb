@@ -7,9 +7,9 @@
 <script>
 function test()
 {
-    WebInspector.showPanel("scripts");
+    WebInspector.showPanel("sources");
     InspectorTest.createWorkspace(true);
-    var panel = new WebInspector.ScriptsPanel(InspectorTest.testWorkspace);
+    var panel = new WebInspector.SourcesPanel(InspectorTest.testWorkspace);
     var navigator = panel._navigator;
 
     var uiSourceCodes = [];
@@ -27,7 +27,7 @@ function test()
 
     function expandDomains(tree)
     {
-        var children = navigator._scriptsView._scriptsTree.children;
+        var children = navigator._sourcesView._scriptsTree.children;
         for (var i = 0; i < children.length; ++i)
           children[i].expand();
     }
@@ -37,7 +37,7 @@ function test()
     addUISourceCode(rootURL + "foo/bar/script.js", false);
     dumpNavigator();
     InspectorTest.addResult("Expanding domains:");
-    expandDomains(navigator._scriptsView._scriptsTree);
+    expandDomains(navigator._sourcesView._scriptsTree);
     dumpNavigator();
     InspectorTest.addResult("Adding second resource:");
     addUISourceCode(rootURL + "foo/bar/script.js?a=2", false);

@@ -6,7 +6,7 @@
 <script>
 function test()
 {
-    WebInspector.showPanel("scripts");
+    WebInspector.showPanel("sources");
     InspectorTest.createWorkspace(true);
 
     function createContentProvider(url)
@@ -44,7 +44,7 @@ function test()
 
             addNetworkFile(workspace, "foobar.js");
 
-            var panel = new WebInspector.ScriptsPanel(workspace);
+            var panel = new WebInspector.SourcesPanel(workspace);
             panel.show();
 
             addNetworkFile(workspace, "foo.js");
@@ -65,7 +65,7 @@ function test()
         {
             var workspace = createMockWorkspace();
             var workspaceController = new WebInspector.WorkspaceController(workspace);
-            var panel = new WebInspector.ScriptsPanel(workspace);
+            var panel = new WebInspector.SourcesPanel(workspace);
             panel.show();
 
             addNetworkFile(workspace, "foo.js");
@@ -87,7 +87,7 @@ function test()
         function testDebuggerUISourceCodeAddedAndRemoved(next)
         {
             var workspace = createMockWorkspace();
-            var panel = new WebInspector.ScriptsPanel(workspace);
+            var panel = new WebInspector.SourcesPanel(workspace);
             panel.show();
 
             var uiSourceCode = addNetworkFile(workspace, "foo.js");

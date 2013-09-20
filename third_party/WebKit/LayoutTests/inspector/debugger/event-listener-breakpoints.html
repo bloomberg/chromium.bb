@@ -23,8 +23,8 @@ function timerFired()
 
 function test()
 {
-    WebInspector.showPanel("scripts");
-    var pane = WebInspector.panels.scripts.sidebarPanes.eventListenerBreakpoints;
+    WebInspector.showPanel("sources");
+    var pane = WebInspector.panels.sources.sidebarPanes.eventListenerBreakpoints;
     InspectorTest.runDebuggerTestSuite([
         function testClickBreakpoint(next)
         {

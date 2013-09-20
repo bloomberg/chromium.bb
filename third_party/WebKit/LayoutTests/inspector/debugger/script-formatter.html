@@ -8,7 +8,7 @@
 
 var test = function()
 {
-    var panel = WebInspector.panels.scripts;
+    var panel = WebInspector.panels.sources;
     var worker = new Worker("ScriptFormatterWorker.js");
 
     InspectorTest.runDebuggerTestSuite([
@@ -41,7 +41,7 @@ var test = function()
 
             function didFormatContent(content, mapping)
             {
-                var source = WebInspector.panels.scripts.visibleView._textEditor.text();
+                var source = WebInspector.panels.sources.visibleView._textEditor.text();
                 var formattedSource = content;
 
                 function testMapping(string)

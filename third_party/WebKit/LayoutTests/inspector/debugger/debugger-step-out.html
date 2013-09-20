@@ -28,7 +28,7 @@ var test = function()
         InspectorTest.captureStackTrace(callFrames);
         InspectorTest.addResult("Stepping out...");
         InspectorTest.waitUntilResumed(InspectorTest.waitUntilPaused.bind(InspectorTest, step3));
-        WebInspector.panels.scripts._stepOutButton.element.click();
+        WebInspector.panels.sources._stepOutButton.element.click();
     }
 
     function step3(callFrames)

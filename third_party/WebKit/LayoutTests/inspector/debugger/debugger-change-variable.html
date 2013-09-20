@@ -27,7 +27,7 @@ var test = function()
 
     function step2(callFrames)
     {
-        var pane = WebInspector.panels.scripts.sidebarPanes.callstack;
+        var pane = WebInspector.panels.sources.sidebarPanes.callstack;
         pane._placardSelected(pane.placards[1]);
         InspectorTest.runAfterPendingDispatches(step3);
     }
@@ -41,7 +41,7 @@ var test = function()
     {
         InspectorTest.addResult("Evaluated script on the calling frame: " + result);
 
-        var pane = WebInspector.panels.scripts.sidebarPanes.scopechain;
+        var pane = WebInspector.panels.sources.sidebarPanes.scopechain;
         var localsSection = pane._sections[0];
         localsSection.object.setPropertyValue("localObject", "({ a: -290})", step5);
     }

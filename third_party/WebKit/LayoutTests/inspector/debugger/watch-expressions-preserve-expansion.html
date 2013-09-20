@@ -18,13 +18,13 @@ var test = function()
 {
     var watchExpressionsSection;
 
-    // We need to initialize scripts panel so that watch expressions section is created.
-    WebInspector.showPanel("scripts");
+    // We need to initialize sources panel so that watch expressions section is created.
+    WebInspector.showPanel("sources");
     InspectorTest.startDebuggerTest(step1);
 
     function step1()
     {
-        var watchExpressionsPane = WebInspector.panels.scripts.sidebarPanes.watchExpressions;
+        var watchExpressionsPane = WebInspector.panels.sources.sidebarPanes.watchExpressions;
         watchExpressionsPane.expand();
 
         watchExpressionsSection = watchExpressionsPane.section;
