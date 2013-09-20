@@ -54,31 +54,33 @@ syncer::SyncError PasswordModelAssociator::AssociateModels(
     syncer::SyncMergeResult* syncer_merge_result) {
   DCHECK(expected_loop_ == base::MessageLoop::current());
 
-  // We must not be holding a transaction when we interact with the password
-  // store, as it can post tasks to the UI thread which can itself be blocked
-  // on our transaction, resulting in deadlock. (http://crbug.com/70658)
-  std::vector<autofill::PasswordForm*> passwords;
-  if (!password_store_->FillAutofillableLogins(&passwords) ||
-      !password_store_->FillBlacklistLogins(&passwords)) {
-    STLDeleteElements(&passwords);
-
-    // Password store often fails to load passwords. Track failures with UMA.
-    // (http://crbug.com/249000)
-    UMA_HISTOGRAM_ENUMERATION("Sync.LocalDataFailedToLoad",
-                              ModelTypeToHistogramInt(syncer::PASSWORDS),
-                              syncer::MODEL_TYPE_COUNT);
-    return syncer::SyncError(FROM_HERE,
-                             syncer::SyncError::DATATYPE_ERROR,
-                             "Could not get the password entries.",
-                             model_type());
-  }
-
   PasswordVector new_passwords;
   PasswordVector updated_passwords;
   {
     base::AutoLock lock(association_lock_);
     if (abort_association_requested_)
       return syncer::SyncError();
+
+    CHECK(password_store_.get());
+
+    // We must not be holding a transaction when we interact with the password
+    // store, as it can post tasks to the UI thread which can itself be blocked
+    // on our transaction, resulting in deadlock. (http://crbug.com/70658)
+    std::vector<autofill::PasswordForm*> passwords;
+    if (!password_store_->FillAutofillableLogins(&passwords) ||
+        !password_store_->FillBlacklistLogins(&passwords)) {
+      STLDeleteElements(&passwords);
+
+      // Password store often fails to load passwords. Track failures with UMA.
+      // (http://crbug.com/249000)
+      UMA_HISTOGRAM_ENUMERATION("Sync.LocalDataFailedToLoad",
+                                ModelTypeToHistogramInt(syncer::PASSWORDS),
+                                syncer::MODEL_TYPE_COUNT);
+      return syncer::SyncError(FROM_HERE,
+                               syncer::SyncError::DATATYPE_ERROR,
+                               "Could not get the password entries.",
+                               model_type());
+    }
 
     std::set<std::string> current_passwords;
     syncer::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
@@ -233,6 +235,7 @@ void PasswordModelAssociator::AbortAssociation() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   base::AutoLock lock(association_lock_);
   abort_association_requested_ = true;
+  password_store_ = NULL;
 }
 
 bool PasswordModelAssociator::CryptoReadyIfNecessary() {
@@ -292,6 +295,12 @@ syncer::SyncError PasswordModelAssociator::WriteToPasswordStore(
     const PasswordVector* new_passwords,
     const PasswordVector* updated_passwords,
     const PasswordVector* deleted_passwords) {
+  base::AutoLock lock(association_lock_);
+  if (abort_association_requested_)
+    return syncer::SyncError();
+
+  CHECK(password_store_.get());
+
   if (new_passwords) {
     for (PasswordVector::const_iterator password = new_passwords->begin();
          password != new_passwords->end(); ++password) {

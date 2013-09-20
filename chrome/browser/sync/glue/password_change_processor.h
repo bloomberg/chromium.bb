@@ -73,7 +73,7 @@ class PasswordChangeProcessor : public ChangeProcessor,
   // The model we are processing changes from.  This is owned by the
   // WebDataService which is kept alive by our data type controller
   // holding a reference.
-  PasswordStore* password_store_;
+  scoped_refptr<PasswordStore> password_store_;
 
   // Buffers used between ApplyChangesFromSyncModel and
   // CommitChangesFromSyncModel.

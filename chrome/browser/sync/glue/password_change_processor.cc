@@ -253,6 +253,7 @@ void PasswordChangeProcessor::Disconnect() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   base::AutoLock lock(disconnect_lock_);
   disconnected_ = true;
+  password_store_ = NULL;
 }
 
 void PasswordChangeProcessor::StartImpl(Profile* profile) {

@@ -123,7 +123,7 @@ class PasswordModelAssociator
   typedef std::map<int64, std::string> SyncIdToPasswordMap;
 
   ProfileSyncService* sync_service_;
-  PasswordStore* password_store_;
+  scoped_refptr<PasswordStore> password_store_;
   int64 password_node_id_;
 
   // Set true by AbortAssociation.
