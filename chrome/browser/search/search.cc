@@ -740,7 +740,7 @@ GURL GetNewTabPageURL(Profile* profile) {
   if (!ShouldUseCacheableNTP())
     return GURL();
 
-  if (!profile)
+  if (!profile || !IsSuggestPrefEnabled(profile))
     return GURL();
 
   TemplateURL* template_url = GetDefaultSearchProviderTemplateURL(profile);
